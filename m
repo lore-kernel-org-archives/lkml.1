@@ -1,92 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756870AbYBWMnt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757003AbYBWMpy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756870AbYBWMnt (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 23 Feb 2008 07:43:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752052AbYBWMnk
+	id S1757003AbYBWMpy (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 23 Feb 2008 07:45:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753467AbYBWMpr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 23 Feb 2008 07:43:40 -0500
-Received: from smtp-106-saturday.nerim.net ([62.4.16.106]:60131 "EHLO
-	kraid.nerim.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751294AbYBWMnj (ORCPT
+	Sat, 23 Feb 2008 07:45:47 -0500
+Received: from hawking.rebel.net.au ([203.20.69.83]:36990 "EHLO
+	hawking.rebel.net.au" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751676AbYBWMpq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 23 Feb 2008 07:43:39 -0500
-Date: Sat, 23 Feb 2008 13:43:35 +0100
-From: Jean Delvare <khali@linux-fr.org>
-To: Jochen Friedrich <jochen@scram.de>
-Cc: Scott Wood <scottwood@freescale.com>,
-       Kumar Gala <galak@kernel.crashing.org>,
-       Vitaly Bordug <vitb@kernel.crashing.org>, linux-kernel@vger.kernel.org,
-       linuxppc-dev list <linuxppc-dev@ozlabs.org>, i2c@lm-sensors.org
-Subject: Re: [PATCHv4 2.6.25] i2c: adds support for i2c bus on Freescale
- CPM1/CPM2  controllers
-Message-ID: <20080223134335.0f5c7d79@hyperion.delvare>
-In-Reply-To: <47BEAF00.50106@scram.de>
-References: <47A1C4E9.4000003@scram.de>
-	<20080221130520.12b01553@hyperion.delvare>
-	<47BEAF00.50106@scram.de>
-X-Mailer: Sylpheed-Claws 2.5.5 (GTK+ 2.10.6; x86_64-suse-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Sat, 23 Feb 2008 07:45:46 -0500
+Message-ID: <47C0159E.5020806@davidnewall.com>
+Date: Sat, 23 Feb 2008 23:16:22 +1030
+From: David Newall <davidn@davidnewall.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20071022)
+MIME-Version: 1.0
+To: Matthew Wilcox <matthew@wil.cx>
+CC: WANG Cong <xiyou.wangcong@gmail.com>, Andrew Morton <akpm@osdl.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Kyle McMartin <kyle@parisc-linux.org>
+Subject: Re: Accessor macros vs reference counting
+References: <12037544592096-git-send-email-xiyou.wangcong@gmail.com> <12037544671847-git-send-email-xiyou.wangcong@gmail.com> <1203754478165-git-send-email-xiyou.wangcong@gmail.com> <1203754488669-git-send-email-xiyou.wangcong@gmail.com> <12037544991876-git-send-email-xiyou.wangcong@gmail.com> <1203754509934-git-send-email-xiyou.wangcong@gmail.com> <20080223090613.GJ16995@parisc-linux.org>
+In-Reply-To: <20080223090613.GJ16995@parisc-linux.org>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Jochen,
+Matthew Wilcox wrote:
+> On Sat, Feb 23, 2008 at 04:14:08PM +0800, WANG Cong wrote:
+>   
+>> Use get_personality() macro instead of explicit reference
+>> for parisc code.
+>> -	if (personality(current->personality) == PER_LINUX32
+>> +	if (personality(get_personality()) == PER_LINUX32
+>>     
+>
+> Hm.  We have an interesting clash of conventions here.
+>
+> On the one hand, we have the java-style accessor convention.
+> get_personality()/set_personality().
+>   
 
-On Fri, 22 Feb 2008 12:16:16 +0100, Jochen Friedrich wrote:
-> Hi Jean,
-> 
-> >> +/*
-> >> + * Wait for patch from Jon Smirl
-> >> + * #include "powerpc-common.h"
-> >> + */
-> > 
-> > It doesn't make sense to merge this comment upstream.
-> 
-> I know you don't like the patch from Jon Smirl and you also explained your reasons.
-> Fortunately, I2c no longer uses numeric device IDs but names. So what are the alternatives?
-> 
-> 1. modify the I2c subsystem to accept OF names additionally to I2c names (proposed by Jon smirl).
-
-The problem I have with this is that it breaks compatibility. The chip
-name is not only used for device/driver matching, it is also exported
-to userspace as a sysfs attribute ("name"). Applications might rely on
-it. At least libsensors does.
-
-One way to work around the problem would be to use separate fields for
-device/driver matching and the "name" attribute. However, this will add
-some complexity to the i2c-core code and cost some memory as well, so
-it is far from perfect.
-
-> 2. record the I2c name in the dts tree, either as seperate tag (like linux,i2c-name="<i2c-name>")
->    or as additional compatible entry (like compatible="...", "linux,<i2c-name>").
-
-This would work, and it would require almost no change to the current
-i2c-core code, but I thought that these dts files were not under our
-control?
-
-The problem I see with this approach is that the name translation would
-have to be done for each dts file, rather than just once for each device
-type. This means more work, but maybe this can be done if at least part
-of it is automated. I admit that I never considered this option because
-I considered the dts files as read-only. If this assumption was
-incorrect, then maybe this is the best solution. Can you please
-elaborate on the details of this proposal?
-
-> 3. use a glue layer with a translation map.
-
-This is what we do at the moment (see i2c_devices in
-arch/powerpc/sysdev/fsl_soc.c). Jon Smirl is worried that it won't
-scale well though, and I can't disagree.
-
-> What is the preferred way to do this?
-
-I still have to think about it. I didn't have much time to work on this
-during the last 2 weeks, hopefully I will fine some time to experiment
-again soon. As I underlined before, my patch set affects no less than 5
-subsystems with different needs and expectations, it's no trivial
-change.
-
--- 
-Jean Delvare
+Is get_personality() thought to be better than current->personality?  To
+me, the latter seems more meaningful, and I'd rather see it than the former.
