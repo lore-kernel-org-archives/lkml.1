@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932444AbYBWAmH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936699AbYBWAmg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932444AbYBWAmH (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Feb 2008 19:42:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752283AbYBWAet
+	id S936699AbYBWAmg (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Feb 2008 19:42:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764936AbYBWAey
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Feb 2008 19:34:49 -0500
-Received: from cantor2.suse.de ([195.135.220.15]:55515 "EHLO mx2.suse.de"
+	Fri, 22 Feb 2008 19:34:54 -0500
+Received: from mail.suse.de ([195.135.220.2]:44823 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S934853AbYBWAer (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Feb 2008 19:34:47 -0500
-Date: Fri, 22 Feb 2008 16:30:39 -0800
+	id S934936AbYBWAew (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 22 Feb 2008 19:34:52 -0500
+Date: Fri, 22 Feb 2008 16:30:42 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -20,14 +20,15 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
        Domenico Andreoli <cavokz@gmail.com>, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
+       Arnaldo Carvalho de Melo <acme@redhat.com>,
        Herbert Xu <herbert@gondor.apana.org.au>,
        "David S. Miller" <davem@davemloft.net>
-Subject: [patch 18/38] IPCOMP: Fetch nexthdr before ipch is destroyed
-Message-ID: <20080223003039.GS7268@suse.de>
+Subject: [patch 19/38] INET_DIAG: Fix inet_diag_lock_handler error path.
+Message-ID: <20080223003042.GT7268@suse.de>
 References: <20080223001946.979768610@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="ipcomp-fetch-nexthdr-before-ipch-is-destroyed.patch"
+Content-Disposition: inline; filename="inet_diag-fix-inet_diag_lock_handler-error-path.patch"
 In-Reply-To: <20080223002907.GA7268@suse.de>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -38,79 +39,71 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 know.
 
 ------------------
-Upstream commit: 2614fa59fa805cd488083c5602eb48533cdbc018
+Upstream commit: 8cf8e5a67fb07f583aac94482ba51a7930dab493
 
-When I moved the nexthdr setting out of IPComp I accidently moved
-the reading of ipch->nexthdr after the decompression.  Unfortunately
-this means that we'd be reading from a stale ipch pointer which
-doesn't work very well.
+Fixes: http://bugzilla.kernel.org/show_bug.cgi?id=9825
 
-This patch moves the reading up so that we get the correct nexthdr
-value.
+The inet_diag_lock_handler function uses ERR_PTR to encode errors but
+its callers were testing against NULL.
 
-Signed-off-by: Herbert Xu <herbert@gondor.apana.org.au>
+This only happens when the only inet_diag modular user, DCCP, is not
+built into the kernel or available as a module.
+
+Also there was a problem with not dropping the mutex lock when a handler
+was not found, also fixed in this patch.
+
+This caused an OOPS and ss would then hang on subsequent calls, as
+&inet_diag_table_mutex was being left locked.
+
+Thanks to spike at ml.yaroslavl.ru for report it after trying 'ss -d'
+on a kernel that doesn't have DCCP available.
+
+This bug was introduced in cset
+d523a328fb0271e1a763e985a21f2488fd816e7e ("Fix inet_diag dead-lock
+regression"), after 2.6.24-rc3, so just 2.6.24 seems to be affected.
+
+Signed-off-by: Arnaldo Carvalho de Melo <acme@redhat.com>
+Acked-by: Herbert Xu <herbert@gondor.apana.org.au>
 Signed-off-by: David S. Miller <davem@davemloft.net>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- net/ipv4/ipcomp.c  |    5 ++++-
- net/ipv6/ipcomp6.c |    5 ++++-
- 2 files changed, 8 insertions(+), 2 deletions(-)
+ net/ipv4/inet_diag.c |   11 ++++++-----
+ 1 file changed, 6 insertions(+), 5 deletions(-)
 
---- a/net/ipv4/ipcomp.c
-+++ b/net/ipv4/ipcomp.c
-@@ -74,6 +74,7 @@ out:
+--- a/net/ipv4/inet_diag.c
++++ b/net/ipv4/inet_diag.c
+@@ -259,8 +259,10 @@ static int inet_diag_get_exact(struct sk
+ 	const struct inet_diag_handler *handler;
  
- static int ipcomp_input(struct xfrm_state *x, struct sk_buff *skb)
- {
-+	int nexthdr;
- 	int err = -ENOMEM;
- 	struct ip_comp_hdr *ipch;
+ 	handler = inet_diag_lock_handler(nlh->nlmsg_type);
+-	if (!handler)
+-		return -ENOENT;
++	if (IS_ERR(handler)) {
++		err = PTR_ERR(handler);
++		goto unlock;
++	}
  
-@@ -84,13 +85,15 @@ static int ipcomp_input(struct xfrm_stat
+ 	hashinfo = handler->idiag_hashinfo;
+ 	err = -EINVAL;
+@@ -708,8 +710,8 @@ static int inet_diag_dump(struct sk_buff
+ 	struct inet_hashinfo *hashinfo;
  
- 	/* Remove ipcomp header and decompress original payload */
- 	ipch = (void *)skb->data;
-+	nexthdr = ipch->nexthdr;
-+
- 	skb->transport_header = skb->network_header + sizeof(*ipch);
- 	__skb_pull(skb, sizeof(*ipch));
- 	err = ipcomp_decompress(x, skb);
- 	if (err)
- 		goto out;
+ 	handler = inet_diag_lock_handler(cb->nlh->nlmsg_type);
+-	if (!handler)
+-		goto no_handler;
++	if (IS_ERR(handler))
++		goto unlock;
  
--	err = ipch->nexthdr;
-+	err = nexthdr;
+ 	hashinfo = handler->idiag_hashinfo;
  
- out:
- 	return err;
---- a/net/ipv6/ipcomp6.c
-+++ b/net/ipv6/ipcomp6.c
-@@ -64,6 +64,7 @@ static LIST_HEAD(ipcomp6_tfms_list);
+@@ -838,7 +840,6 @@ done:
+ 	cb->args[2] = num;
+ unlock:
+ 	inet_diag_unlock_handler(handler);
+-no_handler:
+ 	return skb->len;
+ }
  
- static int ipcomp6_input(struct xfrm_state *x, struct sk_buff *skb)
- {
-+	int nexthdr;
- 	int err = -ENOMEM;
- 	struct ip_comp_hdr *ipch;
- 	int plen, dlen;
-@@ -79,6 +80,8 @@ static int ipcomp6_input(struct xfrm_sta
- 
- 	/* Remove ipcomp header and decompress original payload */
- 	ipch = (void *)skb->data;
-+	nexthdr = ipch->nexthdr;
-+
- 	skb->transport_header = skb->network_header + sizeof(*ipch);
- 	__skb_pull(skb, sizeof(*ipch));
- 
-@@ -108,7 +111,7 @@ static int ipcomp6_input(struct xfrm_sta
- 	skb->truesize += dlen - plen;
- 	__skb_put(skb, dlen - plen);
- 	skb_copy_to_linear_data(skb, scratch, dlen);
--	err = ipch->nexthdr;
-+	err = nexthdr;
- 
- out_put_cpu:
- 	put_cpu();
 
 -- 
