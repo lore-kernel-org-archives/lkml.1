@@ -1,47 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762562AbYBWTAi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763343AbYBWTBD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762562AbYBWTAi (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 23 Feb 2008 14:00:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759644AbYBWTAU
+	id S1763343AbYBWTBD (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 23 Feb 2008 14:01:03 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760405AbYBWTAv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 23 Feb 2008 14:00:20 -0500
-Received: from smtp1.linux-foundation.org ([207.189.120.13]:37206 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1761354AbYBWTAS (ORCPT
+	Sat, 23 Feb 2008 14:00:51 -0500
+Received: from fg-out-1718.google.com ([72.14.220.155]:6111 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759644AbYBWTAu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 23 Feb 2008 14:00:18 -0500
-Date: Sat, 23 Feb 2008 10:59:33 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: "Paul Menage" <menage@google.com>
-Cc: balbir@linux.vnet.ibm.com, xemul@openvz.org, balbir@in.ibm.com,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org
-Subject: Re: [PATCH 2/2] ResCounter: Use read_uint in memory controller
-Message-Id: <20080223105933.e6884808.akpm@linux-foundation.org>
-In-Reply-To: <6599ad830802230633i483c8dd1q5b541be1a92a5795@mail.gmail.com>
-References: <20080221203518.544461000@menage.corp.google.com>
-	<20080221205525.349180000@menage.corp.google.com>
-	<47BE4FB5.5040902@linux.vnet.ibm.com>
-	<6599ad830802230633i483c8dd1q5b541be1a92a5795@mail.gmail.com>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Sat, 23 Feb 2008 14:00:50 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=pTgWlyr7fPwAvPZgcwvQSp1jD0E++DzzlTLyAkEaEPIQ+Q+ROetU1ZVIL7UD3exVIPImVvs+g5+ST+cz0P72g9gBWQMFiuhD+CrB5asvHA44+pkuZDEKhTr5qFjcb5wGOJdQykYfxeTbKln3aPvxMcHrqBeljIyAEQAJayDffeo=
+Message-ID: <6101e8c40802231100t3af57018r139de0b52cd556b5@mail.gmail.com>
+Date: Sat, 23 Feb 2008 20:00:48 +0100
+From: "Oliver Pinter" <oliver.pntr@gmail.com>
+To: "Soeren Sonnenburg" <kernel@nn7.de>
+Subject: Re: 2.6.25-current-git hangs on boot
+Cc: "Linux Kernel" <linux-kernel@vger.kernel.org>
+In-Reply-To: <1203789325.4063.9.camel@localhost>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <1203789325.4063.9.camel@localhost>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 23 Feb 2008 06:33:34 -0800 "Paul Menage" <menage@google.com> wrote:
+the pci=nommconf kernel parameter helped it?
 
-> On Thu, Feb 21, 2008 at 8:29 PM, Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
-> >
-> >  Looks good, except for the name uint(), can we make it u64(). Integers are 32
-> >  bit on both ILP32 and LP64, but we really read/write 64 bit values.
-> 
-> Yes, that's true. But read_uint() is more consistent with all the
-> other instances in cgroups and subsystems. So if we were to call it
-> res_counter_read_u64() I'd also want to rename all the other
-> *read_uint functions/fields to *read_u64 too. Can I do that in a
-> separate patch?
-> 
+On 2/23/08, Soeren Sonnenburg <kernel@nn7.de> wrote:
+> Hi,
+>
+> trying out newest git, I see a hang with
+> ACPI: SSDT 7feb9c10, 02ae (r1 APPLE CPU0Ist 3000 intl 20050309)
+> ACPI: SSDT 7feb9910, 02c3 (r1 APPLE CPU0Cst 3001 intl 20050309)
+> ...
+> ACPI: Processor [CPU0] (supports 8 throttling states)
+> ACPI: SSDT 7feb9f10, 0087 (r1 APPLE CPU1Ist 3000 intl 20050309)
+> ACPI: SSDT 7feb8f10, 0085 (r1 APPLE CPU1Cst 3001 intl 20050309)
+> ...
+> ACPI: ACPI0007:01 is registered as cooling_device1
+> ACPI: Processor [CPU1] (supports 8 throttling states)
+>
+> as the last message...
+>
+> Any ideas?
+> Soeren
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+>
 
-Sounds sensible to me.
+
+-- 
+Thanks,
+Oliver
