@@ -1,45 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757838AbYBWNtW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756832AbYBWN6W@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757838AbYBWNtW (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 23 Feb 2008 08:49:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754078AbYBWNtO
+	id S1756832AbYBWN6W (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 23 Feb 2008 08:58:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754037AbYBWN6N
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 23 Feb 2008 08:49:14 -0500
-Received: from smtp02.citrix.com ([66.165.176.63]:2122 "EHLO SMTP02.CITRIX.COM"
+	Sat, 23 Feb 2008 08:58:13 -0500
+Received: from khc.piap.pl ([195.187.100.11]:52089 "EHLO khc.piap.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753539AbYBWNtN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 23 Feb 2008 08:49:13 -0500
-X-SBRS: 2.8
-X-MesageID: 43203882
-X-Ironport-Server: ftlpip02.citrite.net
-X-Remote-IP: 216.142.71.134
-X-Policy: $Relay
-X-IronPort-AV: E=Sophos;i="4.25,394,1199682000"; 
-   d="scan'208";a="43203882"
-Date: Sat, 23 Feb 2008 14:47:54 +0100
-From: Samuel Thibault <samuel.thibault@ens-lyon.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, linuxconsole-dev@lists.sourceforge.net
-Subject: Re: [PATCH] VT notifier extension for accessibility
-Message-ID: <20080223134754.GG4244@implementation>
-Mail-Followup-To: Samuel Thibault <samuel.thibault@ens-lyon.org>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	linux-kernel@vger.kernel.org,
-	linuxconsole-dev@lists.sourceforge.net
-References: <20080215172516.GK4511@implementation> <20080223000713.2707833e.akpm@linux-foundation.org>
+	id S1753625AbYBWN6M (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 23 Feb 2008 08:58:12 -0500
+To: Pavel Machek <pavel@ucw.cz>
+Cc: Jeff Garzik <jeff@garzik.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Adrian Bunk <bunk@kernel.org>, Roland Dreier <rdreier@cisco.com>,
+       Glenn Streiff <gstreiff@NetEffect.com>,
+       Faisal Latif <flatif@NetEffect.com>, linux-kernel@vger.kernel.org,
+       general@lists.openfabrics.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Greg Kroah-Hartman <greg@kroah.com>
+Subject: Re: Merging of completely unreviewed drivers
+References: <5E701717F2B2ED4EA60F87C8AA57B7CC0794FFFF@venom2>
+	<20080221154951.GA28328@cs181133002.pp.htv.fi>
+	<adahcg2awag.fsf@cisco.com>
+	<20080221210124.GD28328@cs181133002.pp.htv.fi>
+	<alpine.LFD.1.00.0802211310370.19896@woody.linux-foundation.org>
+	<m3tzk1q3rt.fsf@maximus.localdomain> <47BE0C12.604@garzik.org>
+	<m3k5kxq2ih.fsf@maximus.localdomain> <20080222184518.GB6060@ucw.cz>
+	<m3zlts393a.fsf@maximus.localdomain>
+	<20080223094334.GA3081@elf.ucw.cz>
+From: Krzysztof Halasa <khc@pm.waw.pl>
+Date: Sat, 23 Feb 2008 14:58:10 +0100
+In-Reply-To: <20080223094334.GA3081@elf.ucw.cz> (Pavel Machek's message of "Sat\, 23 Feb 2008 10\:43\:34 +0100")
+Message-ID: <m3ablrdbbh.fsf@maximus.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20080223000713.2707833e.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.12-2006-07-14
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton, le Sat 23 Feb 2008 00:07:13 -0800, a écrit :
-> Did we have a signed-off-by: from Karl?
+Pavel Machek <pavel@ucw.cz> writes:
 
-He didn't give any.
+>> Come on, are you doing Linux kernel development on PDA?
+>
+> I review patches on it, sometimes, yes.
 
-Samuel
+I take it the "sometimes" is the key word :-)
+-- 
+Krzysztof Halasa
