@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759163AbYBWAUm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935204AbYBWAVF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759163AbYBWAUm (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Feb 2008 19:20:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764992AbYBWATA
+	id S935204AbYBWAVF (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Feb 2008 19:21:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765487AbYBWATF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Feb 2008 19:19:00 -0500
-Received: from ns2.suse.de ([195.135.220.15]:53783 "EHLO mx2.suse.de"
+	Fri, 22 Feb 2008 19:19:05 -0500
+Received: from cantor2.suse.de ([195.135.220.15]:53806 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1764789AbYBWAS5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Feb 2008 19:18:57 -0500
-Date: Fri, 22 Feb 2008 16:17:28 -0800
+	id S1764051AbYBWATB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 22 Feb 2008 19:19:01 -0500
+Date: Fri, 22 Feb 2008 16:17:30 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -21,12 +21,12 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Domenico Andreoli <cavokz@gmail.com>, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
        Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>
-Subject: [patch 4/8] hrtimer: check relative timeouts for overflow
-Message-ID: <20080223001728.GE27727@suse.de>
+Subject: [patch 5/8] genirq: do not leave interupts enabled on free_irq
+Message-ID: <20080223001730.GF27727@suse.de>
 References: <20080223001123.939868182@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="hrtimer-check-relative-timeouts-for-overflow.patch"
+Content-Disposition: inline; filename="genirq-do-not-leave-interupts-enabled-on-free_irq.patch"
 In-Reply-To: <20080223001702.GA27727@suse.de>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -39,150 +39,72 @@ know.
 ------------------
 From: Thomas Gleixner <tglx@linutronix.de>
 
-commit: 5a7780e725d1bb4c3094fcc12f1c5c5faea1e988
+commit 89d694b9dbe769ca1004e01db0ca43964806a611
 
-Various user space callers ask for relative timeouts. While we fixed
-that overflow issue in hrtimer_start(), the sites which convert
-relative user space values to absolute timeouts themself were uncovered.
+The default_disable() function was changed in commit:
 
-Instead of putting overflow checks into each place add a function
-which does the sanity checking and convert all affected callers to use
-it.
+ 76d2160147f43f982dfe881404cfde9fd0a9da21
+ genirq: do not mask interrupts by default
 
-Thanks to Frans Pop, who reported the problem and tested the fixes.
+It removed the mask function in favour of the default delayed
+interrupt disabling. Unfortunately this also broke the shutdown in
+free_irq() when the last handler is removed from the interrupt for
+those architectures which rely on the default implementations. Now we
+can end up with a enabled interrupt line after the last handler was
+removed, which can result in spurious interrupts.
 
+Fix this by adding a default_shutdown function, which is only
+installed, when the irqchip implementation does provide neither a
+shutdown nor a disable function.
+
+
+Pointed-out-by: Michael Hennerich <Michael.Hennerich@analog.com>
 Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
 Acked-by: Ingo Molnar <mingo@elte.hu>
-Tested-by: Frans Pop <elendil@planet.nl>
+Tested-by: Michael Hennerich <Michael.Hennerich@analog.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 
 ---
- include/linux/ktime.h |    2 ++
- kernel/futex.c        |    2 +-
- kernel/futex_compat.c |    2 +-
- kernel/hrtimer.c      |   38 +++++++++++++++++++++-----------------
- kernel/posix-timers.c |    8 +++++---
- 5 files changed, 30 insertions(+), 22 deletions(-)
+ kernel/irq/chip.c |   20 +++++++++++++++++++-
+ 1 file changed, 19 insertions(+), 1 deletion(-)
 
---- a/include/linux/ktime.h
-+++ b/include/linux/ktime.h
-@@ -289,6 +289,8 @@ static inline ktime_t ktime_add_us(const
- 	return ktime_add_ns(kt, usec * 1000);
+--- a/kernel/irq/chip.c
++++ b/kernel/irq/chip.c
+@@ -246,6 +246,17 @@ static unsigned int default_startup(unsi
  }
  
-+extern ktime_t ktime_add_safe(const ktime_t lhs, const ktime_t rhs);
-+
  /*
-  * The resolution of the clocks. The resolution value is returned in
-  * the clock_getres() system call to give application programmers an
---- a/kernel/futex.c
-+++ b/kernel/futex.c
-@@ -2063,7 +2063,7 @@ asmlinkage long sys_futex(u32 __user *ua
- 
- 		t = timespec_to_ktime(ts);
- 		if (cmd == FUTEX_WAIT)
--			t = ktime_add(ktime_get(), t);
-+			t = ktime_add_safe(ktime_get(), t);
- 		tp = &t;
- 	}
- 	/*
---- a/kernel/futex_compat.c
-+++ b/kernel/futex_compat.c
-@@ -175,7 +175,7 @@ asmlinkage long compat_sys_futex(u32 __u
- 
- 		t = timespec_to_ktime(ts);
- 		if (cmd == FUTEX_WAIT)
--			t = ktime_add(ktime_get(), t);
-+			t = ktime_add_safe(ktime_get(), t);
- 		tp = &t;
- 	}
- 	if (cmd == FUTEX_REQUEUE || cmd == FUTEX_CMP_REQUEUE)
---- a/kernel/hrtimer.c
-+++ b/kernel/hrtimer.c
-@@ -301,6 +301,24 @@ unsigned long ktime_divns(const ktime_t 
- }
- #endif /* BITS_PER_LONG >= 64 */
- 
-+/*
-+ * Add two ktime values and do a safety check for overflow:
++ * default shutdown function
 + */
-+
-+ktime_t ktime_add_safe(const ktime_t lhs, const ktime_t rhs)
++static void default_shutdown(unsigned int irq)
 +{
-+	ktime_t res = ktime_add(lhs, rhs);
++	struct irq_desc *desc = irq_desc + irq;
 +
-+	/*
-+	 * We use KTIME_SEC_MAX here, the maximum timeout which we can
-+	 * return to user space in a timespec:
-+	 */
-+	if (res.tv64 < 0 || res.tv64 < lhs.tv64 || res.tv64 < rhs.tv64)
-+		res = ktime_set(KTIME_SEC_MAX, 0);
-+
-+	return res;
++	desc->chip->mask(irq);
++	desc->status |= IRQ_MASKED;
 +}
 +
- /* High resolution timer related functions */
- #ifdef CONFIG_HIGH_RES_TIMERS
- 
-@@ -658,13 +676,7 @@ hrtimer_forward(struct hrtimer *timer, k
- 		 */
- 		orun++;
- 	}
--	timer->expires = ktime_add(timer->expires, interval);
--	/*
--	 * Make sure, that the result did not wrap with a very large
--	 * interval.
--	 */
--	if (timer->expires.tv64 < 0)
--		timer->expires = ktime_set(KTIME_SEC_MAX, 0);
-+	timer->expires = ktime_add_safe(timer->expires, interval);
- 
- 	return orun;
- }
-@@ -815,7 +827,7 @@ hrtimer_start(struct hrtimer *timer, kti
- 	new_base = switch_hrtimer_base(timer, base);
- 
- 	if (mode == HRTIMER_MODE_REL) {
--		tim = ktime_add(tim, new_base->get_time());
-+		tim = ktime_add_safe(tim, new_base->get_time());
- 		/*
- 		 * CONFIG_TIME_LOW_RES is a temporary way for architectures
- 		 * to signal that they simply return xtime in
-@@ -824,16 +836,8 @@ hrtimer_start(struct hrtimer *timer, kti
- 		 * timeouts. This will go away with the GTOD framework.
- 		 */
- #ifdef CONFIG_TIME_LOW_RES
--		tim = ktime_add(tim, base->resolution);
-+		tim = ktime_add_safe(tim, base->resolution);
- #endif
--		/*
--		 * Careful here: User space might have asked for a
--		 * very long sleep, so the add above might result in a
--		 * negative number, which enqueues the timer in front
--		 * of the queue.
--		 */
--		if (tim.tv64 < 0)
--			tim.tv64 = KTIME_MAX;
- 	}
- 	timer->expires = tim;
- 
---- a/kernel/posix-timers.c
-+++ b/kernel/posix-timers.c
-@@ -765,9 +765,11 @@ common_timer_set(struct k_itimer *timr, 
- 	/* SIGEV_NONE timers are not queued ! See common_timer_get */
- 	if (((timr->it_sigev_notify & ~SIGEV_THREAD_ID) == SIGEV_NONE)) {
- 		/* Setup correct expiry time for relative timers */
--		if (mode == HRTIMER_MODE_REL)
--			timer->expires = ktime_add(timer->expires,
--						   timer->base->get_time());
-+		if (mode == HRTIMER_MODE_REL) {
-+			timer->expires =
-+				ktime_add_safe(timer->expires,
-+					       timer->base->get_time());
-+		}
- 		return 0;
- 	}
- 
++/*
+  * Fixup enable/disable function pointers
+  */
+ void irq_chip_set_defaults(struct irq_chip *chip)
+@@ -256,8 +267,15 @@ void irq_chip_set_defaults(struct irq_ch
+ 		chip->disable = default_disable;
+ 	if (!chip->startup)
+ 		chip->startup = default_startup;
++	/*
++	 * We use chip->disable, when the user provided its own. When
++	 * we have default_disable set for chip->disable, then we need
++	 * to use default_shutdown, otherwise the irq line is not
++	 * disabled on free_irq():
++	 */
+ 	if (!chip->shutdown)
+-		chip->shutdown = chip->disable;
++		chip->shutdown = chip->disable != default_disable ?
++			chip->disable : default_shutdown;
+ 	if (!chip->name)
+ 		chip->name = chip->typename;
+ 	if (!chip->end)
 
 -- 
