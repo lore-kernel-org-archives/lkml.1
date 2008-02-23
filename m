@@ -1,99 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758064AbYBWAQp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760954AbYBWASk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758064AbYBWAQp (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Feb 2008 19:16:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750849AbYBWAQf
+	id S1760954AbYBWASk (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Feb 2008 19:18:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751798AbYBWASa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Feb 2008 19:16:35 -0500
-Received: from py-out-1112.google.com ([64.233.166.178]:5909 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750782AbYBWAQ1 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Feb 2008 19:16:27 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:reply-to:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
-        b=bkVEA7D6vPgN101uSu1AvaOQ1hFuYkmOifyPNM67uXPVQqTFCMVKKdqCCQqIuUyj1x1pv1hb+z+/XMBPJzlZ6d0JgxBiHmLFqg2yxJbdXYv0qCkr8voTPoGbumWvsNvvf5NKDKg79qhK/vq94maRp/CGSM+ZVj4ecVlEPzo4Qdw=
-Date: Sat, 23 Feb 2008 02:56:28 +0300
-From: Anton Vorontsov <cbouatmailru@gmail.com>
-To: David Brownell <david-b@pacbell.net>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Florian Fainelli <florian.fainelli@telecomint.eu>,
-       linux-kernel@vger.kernel.org, hpa@zytor.com, tglx@linutronix.de,
-       Ingo Molnar <mingo@elte.hu>,
-       Mauro Carvalho Chehab <mchehab@infradead.org>
-Subject: Re: [PATCH 1/4 resend] [x86] Add generic GPIO support to x86
-Message-ID: <20080222235628.GA31683@zarina>
-Reply-To: cbouatmailru@gmail.com
-References: <200710181551.24912.florian.fainelli@telecomint.eu> <20080213140258.78380f5d.akpm@linux-foundation.org> <200802131755.30921.david-b@pacbell.net>
+	Fri, 22 Feb 2008 19:18:30 -0500
+Received: from cantor2.suse.de ([195.135.220.15]:53725 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751709AbYBWAS3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 22 Feb 2008 19:18:29 -0500
+Date: Fri, 22 Feb 2008 16:17:02 -0800
+From: Greg KH <gregkh@suse.de>
+To: linux-kernel@vger.kernel.org, stable@kernel.org
+Cc: Justin Forbes <jmforbes@linuxtx.org>,
+       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
+       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
+       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
+       Chris Wedgwood <reviews@ml.cw.f00f.org>,
+       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
+       Domenico Andreoli <cavokz@gmail.com>, torvalds@linux-foundation.org,
+       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk
+Subject: [patch 0/8] 2.6.23-stable review
+Message-ID: <20080223001702.GA27727@suse.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <200802131755.30921.david-b@pacbell.net>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Feb 13, 2008 at 05:55:30PM -0800, David Brownell wrote:
-> On Wednesday 13 February 2008, Andrew Morton wrote:
-> > It would be more modern to have a <linux/gpio.h> which takes care of
-> > cruddy details, but it's getting too late for that.
-> 
-> Sort of like this?  For drivers that don't want to list themselves
-> in Kconfig as depending on GENERIC_GPIO (e.g. one NAND driver I heard
-> about), this lets them use <linux/gpio.h> ... existing code can't
-> break, and it won't hurt if new code uses this.
-> 
-> - Dave
-> 
-> 
-> ============== CUT HERE
-> Add a <linux/gpio.h> defining fail/warn stubs for GPIO calls on
-> platforms that don't support the GPIO programming interface.  It
-> includes the arch-specific interface glue otherwise.
-> 
-> Signed-off-by: David Brownell <dbrownell@users.sourceforge.net>
-> ---
->  include/linux/gpio.h |   93 +++++++++++++++++++++++++++++++++++++++++++++++++++
->  1 file changed, 93 insertions(+)
-> 
-> --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-> +++ g26/include/linux/gpio.h	2008-02-13 17:40:06.000000000 -0800
-> @@ -0,0 +1,93 @@
-> +#ifndef __LINUX_GPIO_H
-> +#define __LINUX_GPIO_H
-> +
-> +#ifdef CONFIG_GENERIC_GPIO
-> +#include <asm/gpio.h>
-> +
-> +#else
-> +
-> +/*
-> + * Some platforms don't support the GPIO programming interface.
-> + *
-> + * In case some driver uses it anyway (it should normally have
-> + * depended on GENERIC_GPIO), these routines help the compiler
-> + * optimize out much GPIO-related code ... or trigger a runtime
-> + * warning when something is wrongly called.
-> + */
-> +
-> +static inline int gpio_is_valid(int number)
-> +{
-> +	return 0;
-> +}
-> +
-> +static inline int gpio_request(unsigned gpio, const char *label)
-> +{
-> +	return -EINVAL;
+This is the start of the stable review cycle for the 2.6.23.17 release.
+There are 8 patches in this series, all will be posted as a response
+to this one.  If anyone has any issues with these being applied, please
+let us know.  If anyone is a maintainer of the proper subsystem, and
+wants to add a Signed-off-by: line to the patch, please respond with it.
 
-Could we return -ENOSYS instead, so drivers will able to distinguish
-between "something really failed" and "there is no gpio support,
-fallback to other methods"? Without this, the notorious NAND driver
-will hardly benefit from this change. ;-)
+These patches are sent out with a number of different people on the
+Cc: line.  If you wish to be a reviewer, please email stable@kernel.org
+to add your name to the list.  If you want to be off the reviewer list,
+also email us.
 
--- 
-Anton Vorontsov
-email: cbou@mail.ru
-backup email: ya-cbou@yandex.ru
-irc://irc.freenode.net/bd2
+Responses should be made by Tuesday, Feb 25, 2008, 00:10:00 UTC.
+Anything received after that time might be too late.
+
+The whole patch series can be found in one patch at:
+	kernel.org/pub/linux/kernel/v2.6/stable-review/patch-2.6.23.17-rc1.gz
+and the diffstat can be found below.
+
+Note, this will probably be the last 2.6.23-stable release done by me,
+barring any severe problems found.
+
+thanks,
+
+greg k-h
+
+----------
+
+ Makefile                                  |    2 -
+ arch/powerpc/platforms/powermac/feature.c |   11 +++++++-
+ arch/x86_64/mm/pageattr.c                 |    2 -
+ drivers/macintosh/smu.c                   |   25 ++++++++++++++++++-
+ drivers/scsi/sd.c                         |   34 ++++++++++++--------------
+ fs/nfs/write.c                            |   20 +++++++++++++--
+ include/asm-powerpc/pmac_feature.h        |    8 ++++++
+ include/linux/ktime.h                     |    2 +
+ kernel/futex.c                            |    2 -
+ kernel/futex_compat.c                     |    2 -
+ kernel/hrtimer.c                          |   38 ++++++++++++++++--------------
+ kernel/irq/chip.c                         |   20 +++++++++++++++
+ kernel/posix-timers.c                     |    8 +++---
+ mm/memory.c                               |    2 +
+ net/netfilter/nf_conntrack_proto_tcp.c    |   33 ++++++++++++++++++++------
+ 15 files changed, 154 insertions(+), 55 deletions(-)
