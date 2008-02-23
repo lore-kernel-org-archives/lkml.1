@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760124AbYBWAnl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S937236AbYBWAoB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760124AbYBWAnl (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Feb 2008 19:43:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763707AbYBWAfM
+	id S937236AbYBWAoB (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Feb 2008 19:44:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763764AbYBWAfQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Feb 2008 19:35:12 -0500
-Received: from mail.suse.de ([195.135.220.2]:44864 "EHLO mx1.suse.de"
+	Fri, 22 Feb 2008 19:35:16 -0500
+Received: from mx1.suse.de ([195.135.220.2]:44883 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753654AbYBWAfI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Feb 2008 19:35:08 -0500
-Date: Fri, 22 Feb 2008 16:30:51 -0800
+	id S1764051AbYBWAfN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 22 Feb 2008 19:35:13 -0500
+Date: Fri, 22 Feb 2008 16:30:54 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -20,15 +20,15 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
        Domenico Andreoli <cavokz@gmail.com>, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Dave Young <hidave.darkstar@gmail.com>,
+       Herbert Xu <herbert@gondor.apana.org.au>,
+       James Morris <jmorris@namei.org>,
        "David S. Miller" <davem@davemloft.net>
-Subject: [patch 21/38] BLUETOOTH: Add conn add/del workqueues to avoid
-	connection fail.
-Message-ID: <20080223003051.GV7268@suse.de>
+Subject: [patch 22/38] AUDIT: Increase skb->truesize in audit_expand
+Message-ID: <20080223003054.GW7268@suse.de>
 References: <20080223001946.979768610@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="bluetooth-add-conn-add-del-workqueues-to-avoid-connection-fail.patch"
+Content-Disposition: inline; filename="audit-increase-skb-truesize-in-audit_expand.patch"
 In-Reply-To: <20080223002907.GA7268@suse.de>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -39,121 +39,48 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 know.
 
 ------------------
-Upstream commit: b6c0632105f7d7548f1d642ba830088478d4f2b0
+Upstream commit: 406a1d868001423c85a3165288e566e65f424fe6
 
-The bluetooth hci_conn sysfs add/del executed in the default
-workqueue.  If the del_conn is executed after the new add_conn with
-same target, add_conn will failed with warning of "same kobject name".
+The recent UDP patch exposed this bug in the audit code.  It
+was calling pskb_expand_head without increasing skb->truesize.
+The caller of pskb_expand_head needs to do so because that function
+is designed to be called in places where truesize is already fixed
+and therefore it doesn't update its value.
 
-Here add btaddconn & btdelconn workqueues, flush the btdelconn
-workqueue in the add_conn function to avoid the issue.
+Because the audit system is using it in a place where the truesize
+has not yet been fixed, it needs to update its value manually.
 
-Signed-off-by: Dave Young <hidave.darkstar@gmail.com>
+Signed-off-by: Herbert Xu <herbert@gondor.apana.org.au>
+Acked-by: James Morris <jmorris@namei.org>
 Signed-off-by: David S. Miller <davem@davemloft.net>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- net/bluetooth/hci_sysfs.c |   48 +++++++++++++++++++++++++++++++++++-----------
- 1 file changed, 37 insertions(+), 11 deletions(-)
+ kernel/audit.c |   10 +++++++---
+ 1 file changed, 7 insertions(+), 3 deletions(-)
 
---- a/net/bluetooth/hci_sysfs.c
-+++ b/net/bluetooth/hci_sysfs.c
-@@ -12,6 +12,8 @@
- #undef  BT_DBG
- #define BT_DBG(D...)
- #endif
-+static struct workqueue_struct *btaddconn;
-+static struct workqueue_struct *btdelconn;
- 
- static inline char *typetostr(int type)
+--- a/kernel/audit.c
++++ b/kernel/audit.c
+@@ -1200,13 +1200,17 @@ struct audit_buffer *audit_log_start(str
+ static inline int audit_expand(struct audit_buffer *ab, int extra)
  {
-@@ -279,6 +281,7 @@ static void add_conn(struct work_struct 
- 	struct hci_conn *conn = container_of(work, struct hci_conn, work);
- 	int i;
- 
-+	flush_workqueue(btdelconn);
- 	if (device_add(&conn->dev) < 0) {
- 		BT_ERR("Failed to register connection device");
- 		return;
-@@ -313,6 +316,7 @@ void hci_conn_add_sysfs(struct hci_conn 
- 
- 	INIT_WORK(&conn->work, add_conn);
- 
-+	queue_work(btaddconn, &conn->work);
- 	schedule_work(&conn->work);
- }
- 
-@@ -349,6 +353,7 @@ void hci_conn_del_sysfs(struct hci_conn 
- 
- 	INIT_WORK(&conn->work, del_conn);
- 
-+	queue_work(btdelconn, &conn->work);
- 	schedule_work(&conn->work);
- }
- 
-@@ -398,31 +403,52 @@ int __init bt_sysfs_init(void)
- {
- 	int err;
- 
-+	btaddconn = create_singlethread_workqueue("btaddconn");
-+	if (!btaddconn) {
-+		err = -ENOMEM;
-+		goto out;
-+	}
-+	btdelconn = create_singlethread_workqueue("btdelconn");
-+	if (!btdelconn) {
-+		err = -ENOMEM;
-+		goto out_del;
-+	}
+ 	struct sk_buff *skb = ab->skb;
+-	int ret = pskb_expand_head(skb, skb_headroom(skb), extra,
+-				   ab->gfp_mask);
++	int oldtail = skb_tailroom(skb);
++	int ret = pskb_expand_head(skb, 0, extra, ab->gfp_mask);
++	int newtail = skb_tailroom(skb);
 +
- 	bt_platform = platform_device_register_simple("bluetooth", -1, NULL, 0);
--	if (IS_ERR(bt_platform))
--		return PTR_ERR(bt_platform);
-+	if (IS_ERR(bt_platform)) {
-+		err = PTR_ERR(bt_platform);
-+		goto out_platform;
-+	}
- 
- 	err = bus_register(&bt_bus);
--	if (err < 0) {
--		platform_device_unregister(bt_platform);
--		return err;
--	}
-+	if (err < 0)
-+		goto out_bus;
- 
- 	bt_class = class_create(THIS_MODULE, "bluetooth");
- 	if (IS_ERR(bt_class)) {
--		bus_unregister(&bt_bus);
--		platform_device_unregister(bt_platform);
--		return PTR_ERR(bt_class);
-+		err = PTR_ERR(bt_class);
-+		goto out_class;
+ 	if (ret < 0) {
+ 		audit_log_lost("out of memory in audit_expand");
+ 		return 0;
  	}
- 
- 	return 0;
+-	return skb_tailroom(skb);
 +
-+out_class:
-+	bus_unregister(&bt_bus);
-+out_bus:
-+	platform_device_unregister(bt_platform);
-+out_platform:
-+	destroy_workqueue(btdelconn);
-+out_del:
-+	destroy_workqueue(btaddconn);
-+out:
-+	return err;
++	skb->truesize += newtail - oldtail;
++	return newtail;
  }
  
- void bt_sysfs_cleanup(void)
- {
-+	destroy_workqueue(btaddconn);
-+	destroy_workqueue(btdelconn);
- 	class_destroy(bt_class);
--
- 	bus_unregister(&bt_bus);
--
- 	platform_device_unregister(bt_platform);
- }
+ /*
 
 -- 
