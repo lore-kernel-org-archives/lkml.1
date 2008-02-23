@@ -1,126 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757353AbYBWAci@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762279AbYBWAdT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757353AbYBWAci (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Feb 2008 19:32:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751019AbYBWAc1
+	id S1762279AbYBWAdT (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Feb 2008 19:33:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753643AbYBWAdA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Feb 2008 19:32:27 -0500
-Received: from mga11.intel.com ([192.55.52.93]:63983 "EHLO mga11.intel.com"
+	Fri, 22 Feb 2008 19:33:00 -0500
+Received: from mx1.suse.de ([195.135.220.2]:44595 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751061AbYBWAcZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Feb 2008 19:32:25 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.25,393,1199692800"; 
-   d="scan'208";a="523166595"
-Date: Fri, 22 Feb 2008 16:22:19 -0800
-From: Kristen Carlson Accardi <kristen.c.accardi@intel.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Paul Martin <pm@debian.org>, linux-kernel@vger.kernel.org,
-       linux-acpi@vger.kernel.org
-Subject: Re: 2.6.25-rc2 Thinkpad T30 docking fails with oops.
-Message-ID: <20080222162219.44573451@appleyard>
-In-Reply-To: <20080222003417.0e43860d.akpm@linux-foundation.org>
-References: <20080219204708.GA8059@nowster.org.uk>
-	<20080222003417.0e43860d.akpm@linux-foundation.org>
-Reply-To: kristen.c.accardi@intel.com
-X-Mailer: Claws Mail 3.3.0 (GTK+ 2.12.5; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	id S1751019AbYBWAc7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 22 Feb 2008 19:32:59 -0500
+Date: Fri, 22 Feb 2008 16:29:07 -0800
+From: Greg KH <gregkh@suse.de>
+To: linux-kernel@vger.kernel.org, stable@kernel.org
+Cc: Justin Forbes <jmforbes@linuxtx.org>,
+       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
+       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
+       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
+       Chris Wedgwood <reviews@ml.cw.f00f.org>,
+       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
+       Domenico Andreoli <cavokz@gmail.com>, torvalds@linux-foundation.org,
+       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk
+Subject: [patch 00/38] 2.6.24-stable review
+Message-ID: <20080223002907.GA7268@suse.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 22 Feb 2008 00:34:17 -0800
-Andrew Morton <akpm@linux-foundation.org> wrote:
+This is the start of the stable review cycle for the 2.6.24.3 release.
+There are 38 patches in this series, all will be posted as a response
+to this one.  If anyone has any issues with these being applied, please
+let us know.  If anyone is a maintainer of the proper subsystem, and
+wants to add a Signed-off-by: line to the patch, please respond with it.
 
-> On Tue, 19 Feb 2008 20:47:08 +0000 Paul Martin <pm@debian.org> wrote:
-> 
-> > Now, this was working in 2.6.23, but is not in any later kernel.
-> > Previously reported, but I guess that the previous report was
-> > ignored due to the kernel being tainted.
-> 
-> Not really.  A lot of acpi-related bug reports get the
-> crickets-chirping treatment.
-> 
-> The usual response with acpi is "please raise a bugzilla report", and
-> the acpi developers do respond well to bugzilla reports.  But really,
-> a recent and oops-causing regression shouldn't require such actions -
-> developers should be running around with their hair on fire.
-> 
-> > Well, there's nothing other than pure Linus here.
-> > 
-> > When booted up docked, there is no oops until you try to undock.
-> > 
-> > Whilst I will be looking for replies in the list, I'd appreciate
-> > being CC'd on any replies.
-> > 
-> > ACPI: \_SB_.PCI0.PCI1.DOCK - docking
-> > PCI: Transparent bridge - 0000:02:03.0
-> > ACPI: PCI Interrupt Routing Table [\_SB_.PCI0.PCI1.DOCK._PRT]
-> > BUG: unable to handle kernel NULL pointer dereference at 00000000
-> > IP: [<c01dd6f2>] pdev_sort_resources+0x8a/0x116
-> > *pde = 00000000 
-> > Oops: 0000 [#1] PREEMPT SMP 
-> > Modules linked in: radeon drm rfcomm l2cap bluetooth ppdev lp ipv6
-> > ext3 jbd mbcache fuse dm_crypt crypto_blkcipher dm_mod
-> > cpufreq_stats speedstep_ich speedstep_lib thinkpad_acpi nvram
-> > acpiphp bay dock pcmcia firmware_class joydev yenta_socket
-> > rsrc_nonstatic pcmcia_core battery irtty_sir ac sir_dev
-> > snd_intel8x0 snd_ac97_codec nsc_ircc ac97_bus snd_pcm_oss
-> > snd_mixer_oss snd_pcm snd_timer irda parport_pc i2c_i801 button
-> > shpchp pci_hotplug crc_ccitt parport snd psmouse intel_agp agpgart
-> > iTCO_wdt evdev serio_raw soundcore snd_page_alloc rtc pcspkr xfs
-> > floppy e100 mii uhci_hcd usbcore sg sr_mod cdrom sd_mod thermal
-> > processor fan ata_piix libata scsi_mod radeonfb fb_ddc i2c_algo_bit
-> > i2c_core
-> > 
-> > Pid: 39, comm: kacpi_notify Not tainted (2.6.25-rc2 #1)
-> > EIP: 0060:[<c01dd6f2>] EFLAGS: 00010246 CPU: 0
-> > EIP is at pdev_sort_resources+0x8a/0x116
-> > EAX: 00000000 EBX: 00000000 ECX: 00000000 EDX: 00000fff
-> > ESI: f5e30cc4 EDI: f74f1e80 EBP: f74f1e68 ESP: f74f1e48
-> >  DS: 007b ES: 007b FS: 00d8 GS: 0000 SS: 0068
-> > Process kacpi_notify (pid: 39, ti=f74f0000 task=f74cf120
-> > task.ti=f74f0000) Stack: 00000000 f5e30cf0 f74f1e80 f5e30c00
-> > 00000007 f5e30c00 f74cb414 f74cb400 f74f1e9c c02a9cce f5e30c08
-> > f7431f90 f7431978 f5420c00 00000000 f7d6d408 f7d6d3c0 f74f1e9c
-> > 00000000 f7d6d3c8 f7d6d3c0 f74f1ed8 f9b278ca f74cb40c Call Trace:
-> >  [<c02a9cce>] ? pci_bus_assign_resources+0x59/0x341
-> >  [<f9b278ca>] ? acpiphp_enable_slot+0x2a1/0x3a3 [acpiphp]
-> >  [<f9b27ad9>] ? handle_hotplug_event_func+0x63/0x101 [acpiphp]
-> >  [<f9b27167>] ? post_dock_fixups+0x6c/0x79 [acpiphp]
-> >  [<c013506e>] ? notifier_call_chain+0x2b/0x4a
-> >  [<f9b27a76>] ? handle_hotplug_event_func+0x0/0x101 [acpiphp]
-> >  [<f9b22168>] ? hotplug_dock_devices+0x39/0xe1 [dock]
-> >  [<f9b22441>] ? dock_notify+0x75/0xc0 [dock]
-> >  [<c01f83c9>] ? acpi_ev_notify_dispatch+0x4f/0x5a
-> >  [<c01f32c0>] ? acpi_os_execute_deferred+0x20/0x2c
-> >  [<c012ef41>] ? run_workqueue+0x78/0xfb
-> >  [<c01f32a0>] ? acpi_os_execute_deferred+0x0/0x2c
-> >  [<c012f79d>] ? worker_thread+0xb6/0xc2
-> >  [<c0131b25>] ? autoremove_wake_function+0x0/0x30
-> >  [<c012f6e7>] ? worker_thread+0x0/0xc2
-> >  [<c0131a52>] ? kthread+0x3b/0x61
-> >  [<c0131a17>] ? kthread+0x0/0x61
-> >  [<c010568f>] ? kernel_thread_helper+0x7/0x10
-> >  =======================
-> > Code: 50 52 51 ff 75 f0 68 a0 af 34 c0 e8 ce 4e f4 ff 83 c4 1c e9
-> > 87 00 00 00 8b 7d e8 8d 42 01 83 7d f0 06 89 7d e0 0f 4e c8 8b 45
-> > e0 <8b> 18 31 c0 85 db 74 29 8b 53 04 8b 43 08 89 d7 05 8c 01 00 00
-> > EIP: [<c01dd6f2>] pdev_sort_resources+0x8a/0x116 SS:ESP
-> > 0068:f74f1e48 ---[ end trace 623ea8d57da4defe ]---
-> 
-> I suppose that if you're feeling keen, a bisection search as per
-> http://www.kernel.org/doc/local/git-quick.html would help things
-> along, thanks.
-> 
+These patches are sent out with a number of different people on the
+Cc: line.  If you wish to be a reviewer, please email stable@kernel.org
+to add your name to the list.  If you want to be off the reviewer list,
+also email us.
 
-Well, I seem to be having problems finding a system to duplicate.  I
-guess we'll have to do this the hard way.  Can you reproduce with
-acpiphp loaded with debug=1 and send me the dmesg output when you first
-load the driver?  Also, do you get the same problem if you boot
-undocked, dock, then undock again?
+Responses should be made by Tuesday, Feb 25, 2008, 00:10:00 UTC.
+Anything received after that time might be too late.
 
-Unfortunately, I'll be out of town next week, but I'll try to look more
-at this the week after.
+The whole patch series can be found in one patch at:
+	kernel.org/pub/linux/kernel/v2.6/stable-review/patch-2.6.24.3-rc1.gz
+and the diffstat can be found below.
+
+
+thanks,
+
+greg k-h
+
+ Makefile                                  |    9 +-
+ arch/powerpc/platforms/chrp/pci.c         |    4 -
+ arch/powerpc/platforms/powermac/feature.c |   11 +++
+ arch/s390/lib/uaccess_std.c               |    8 +-
+ arch/sparc/lib/rwsem.S                    |    2 
+ arch/sparc64/lib/rwsem.S                  |    2 
+ arch/x86/mm/pageattr_64.c                 |    2 
+ drivers/macintosh/smu.c                   |   25 +++++++
+ drivers/net/bonding/bond_main.c           |   16 ++--
+ drivers/net/dl2k.h                        |    4 -
+ drivers/net/pcmcia/smc91c92_cs.c          |   12 +++
+ drivers/scsi/gdth.c                       |    9 ++
+ drivers/scsi/sd.c                         |   34 ++++------
+ drivers/usb/class/usblp.c                 |    1 
+ fs/inotify_user.c                         |    2 
+ fs/nfs/write.c                            |   20 +++++-
+ fs/super.c                                |    1 
+ fs/xfs/linux-2.6/xfs_file.c               |    3 
+ include/asm-powerpc/pmac_feature.h        |    8 ++
+ include/linux/Kbuild                      |    1 
+ include/linux/hrtimer.h                   |    2 
+ include/linux/hugetlb.h                   |    1 
+ include/linux/ktime.h                     |    2 
+ kernel/audit.c                            |   10 ++-
+ kernel/compat.c                           |   44 ++++++++++++-
+ kernel/futex.c                            |    2 
+ kernel/futex_compat.c                     |    2 
+ kernel/hrtimer.c                          |  100 +++++++++++++++++-------------
+ kernel/irq/chip.c                         |   20 +++++-
+ kernel/posix-timers.c                     |   25 ++-----
+ kernel/sysctl.c                           |    2 
+ mm/hugetlb.c                              |   10 +++
+ mm/memory.c                               |    2 
+ mm/slub.c                                 |    3 
+ net/bluetooth/hci_sysfs.c                 |   48 +++++++++++---
+ net/ipv4/fib_hash.c                       |   47 +++++++++-----
+ net/ipv4/fib_trie.c                       |   57 ++++++++++-------
+ net/ipv4/inet_diag.c                      |   11 +--
+ net/ipv4/ip_output.c                      |    4 -
+ net/ipv4/ipcomp.c                         |    5 +
+ net/ipv4/sysctl_net_ipv4.c                |    2 
+ net/ipv4/xfrm4_tunnel.c                   |    2 
+ net/ipv6/ip6_output.c                     |    4 -
+ net/ipv6/ipcomp6.c                        |    5 +
+ net/netfilter/nf_conntrack_proto_tcp.c    |   35 ++++++++--
+ net/sched/em_meta.c                       |   10 +--
+ net/sched/ematch.c                        |    5 -
+ security/selinux/ss/services.c            |    1 
+ 48 files changed, 439 insertions(+), 196 deletions(-)
