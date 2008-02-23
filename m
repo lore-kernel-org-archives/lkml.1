@@ -1,95 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762430AbYBWTsm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763293AbYBWTtF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762430AbYBWTsm (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 23 Feb 2008 14:48:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755507AbYBWTsd
+	id S1763293AbYBWTtF (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 23 Feb 2008 14:49:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760288AbYBWTsg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 23 Feb 2008 14:48:33 -0500
-Received: from smtp-out.google.com ([216.239.33.17]:1663 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753503AbYBWTsc (ORCPT
+	Sat, 23 Feb 2008 14:48:36 -0500
+Received: from fxip-0047f.externet.hu ([88.209.222.127]:49782 "EHLO
+	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758271AbYBWTse (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 23 Feb 2008 14:48:32 -0500
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=received:message-id:date:from:to:subject:cc:in-reply-to:
-	mime-version:content-type:content-transfer-encoding:
-	content-disposition:references;
-	b=U4y31mxRaMMZkaKGWNFcHxeWEywgPXhGFtck8zCSF9vVrVsj0mkFptAMN/aT09GOc
-	OFfIjDR921DKWLHVr0I1w==
-Message-ID: <6599ad830802231148w518d937cyd75d1d0a35702d9d@mail.gmail.com>
-Date: Sat, 23 Feb 2008 11:48:23 -0800
-From: "Paul Menage" <menage@google.com>
-To: "Peter Zijlstra" <a.p.zijlstra@chello.nl>
-Subject: Re: [PATCH 3/8] sched: rt-group: interface
-Cc: "Ingo Molnar" <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-       tong.n.li@intel.com
-In-Reply-To: <20080204211836.968632000@chello.nl>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20080204210258.118479000@chello.nl>
-	 <20080204211836.968632000@chello.nl>
+	Sat, 23 Feb 2008 14:48:34 -0500
+To: viro@ZenIV.linux.org.uk
+CC: miklos@szeredi.hu, hch@infradead.org, akpm@linux-foundation.org,
+       serue@us.ibm.com, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org, haveblue@us.ibm.com
+In-reply-to: <20080223185701.GS27894@ZenIV.linux.org.uk> (message from Al Viro
+	on Sat, 23 Feb 2008 18:57:01 +0000)
+Subject: Re: [patch 00/10] mount ownership and unprivileged mount syscall (v8)
+References: <20080205213616.343721693@szeredi.hu> <20080214222103.a5d8f4fe.akpm@linux-foundation.org> <20080215090120.GA6266@infradead.org> <20080215010951.163fe10e.akpm@linux-foundation.org> <20080215091438.GA24386@infradead.org> <E1JR4TX-000392-Cu@pomaz-ex.szeredi.hu> <20080223160956.GR27894@ZenIV.linux.org.uk> <E1JSyFN-0003dA-0a@pomaz-ex.szeredi.hu> <20080223185701.GS27894@ZenIV.linux.org.uk>
+Message-Id: <E1JT0ME-0003rT-9N@pomaz-ex.szeredi.hu>
+From: Miklos Szeredi <miklos@szeredi.hu>
+Date: Sat, 23 Feb 2008 20:48:26 +0100
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Feb 4, 2008 at 1:03 PM, Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:
->  +static int cpu_rt_runtime_write(struct cgroup *cgrp, struct cftype *cft,
->  +                               struct file *file,
->  +                               const char __user *userbuf,
->  +                               size_t nbytes, loff_t *unused_ppos)
->  +{
->  +       char buffer[64];
->  +       int retval = 0;
->  +       s64 val;
->  +       char *end;
->  +
->  +       if (!nbytes)
->  +               return -EINVAL;
->  +       if (nbytes >= sizeof(buffer))
->  +               return -E2BIG;
->  +       if (copy_from_user(buffer, userbuf, nbytes))
->  +               return -EFAULT;
->  +
->  +       buffer[nbytes] = 0;     /* nul-terminate */
->  +
->  +       /* strip newline if necessary */
->  +       if (nbytes && (buffer[nbytes-1] == '\n'))
->  +               buffer[nbytes-1] = 0;
->  +       val = simple_strtoll(buffer, &end, 0);
->  +       if (*end)
->  +               return -EINVAL;
->  +
->  +       /* Pass to subsystem */
->  +       retval = sched_group_set_rt_runtime(cgroup_tg(cgrp), val);
->  +       if (!retval)
->  +               retval = nbytes;
->  +       return retval;
->   }
->
->  -static u64 cpu_rt_ratio_read_uint(struct cgroup *cgrp, struct cftype *cft)
->  -{
->  -       struct task_group *tg = cgroup_tg(cgrp);
->  +static ssize_t cpu_rt_runtime_read(struct cgroup *cgrp, struct cftype *cft,
->  +                                  struct file *file,
->  +                                  char __user *buf, size_t nbytes,
->  +                                  loff_t *ppos)
->  +{
->  +       char tmp[64];
->  +       long val = sched_group_rt_runtime(cgroup_tg(cgrp));
->  +       int len = sprintf(tmp, "%ld\n", val);
->
->  -       return (u64) tg->rt_ratio;
->  +       return simple_read_from_buffer(buf, nbytes, ppos, tmp, len);
->   }
+> On Sat, Feb 23, 2008 at 06:33:13PM +0100, Miklos Szeredi wrote:
+> > > 	c) just what is limited by that sysctl?  AFAICS, rbind is allowed
+> > > if mountpoint is on user vfsmount and it seems to create vfsmounts without
+> > > eating into that limit just fine...  What's the point of limiting the
+> > > amount of vfsmounts marked user when you do not limit the number of vfsmount
+> > > one can allocate?
+> > 
+> > The limit is there, so that unprivileged users cannot create insane
+> > number of mounts.  It's just a safety thing, analogous to
+> > /proc/sys/fs/file-max.
+> 
+> Can't they?  Looks like one can create any number of vfsmounts without
+> getting more than one marked MNT_USER...
 
-What's the reason that you can't use the cgroup read_uint/write_uint
-methods for this? Is it just because you have -1 as your "unlimited"
-value.
+permit_mount() will set MS_SETUSER in flags, and do_loopback() will
+set CL_SETUSER based on that flag.
 
-If so, could we avoid that problem by using 0 rather than -1 as the
-"unlimited" value? It looks from what I've read in the Documentation
-changes as though 0 isn't really a meaningful value.
+> If you are trying to limit the number of superblocks (i.e. active instances
+> of filesystems), then I'd say that vfsmounts make piss-poor proxies for
+> those and it would be better to count the objects you really want to count...
 
-Paul
+I think I really want to limit vfsmounts.  But not because these take
+so much memory or anything, just to be safe against a stupid users
+playing rbind and propagation, and things like that.
+
+Miklos
