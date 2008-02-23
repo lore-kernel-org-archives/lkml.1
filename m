@@ -1,78 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757036AbYBWSTv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760975AbYBWSXA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757036AbYBWSTv (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 23 Feb 2008 13:19:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760058AbYBWSTT
+	id S1760975AbYBWSXA (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 23 Feb 2008 13:23:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754550AbYBWSWu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 23 Feb 2008 13:19:19 -0500
-Received: from smtp1.linux-foundation.org ([207.189.120.13]:36613 "EHLO
+	Sat, 23 Feb 2008 13:22:50 -0500
+Received: from smtp1.linux-foundation.org ([207.189.120.13]:44862 "EHLO
 	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1758524AbYBWSTS (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 23 Feb 2008 13:19:18 -0500
-Date: Sat, 23 Feb 2008 10:18:43 -0800
+	by vger.kernel.org with ESMTP id S1752709AbYBWSWs convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 23 Feb 2008 13:22:48 -0500
+Date: Sat, 23 Feb 2008 10:21:59 -0800
 From: Andrew Morton <akpm@linux-foundation.org>
-To: Russell King - ARM Linux <linux@arm.linux.org.uk>
-Cc: Liam Girdwood <lg@opensource.wolfsonmicro.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       linux-arm-kernel <linux-arm-kernel@lists.arm.linux.org.uk>
-Subject: Re: [PATCH 4/6] regulator: regulator core.
-Message-Id: <20080223101843.d7c001e7.akpm@linux-foundation.org>
-In-Reply-To: <20080223095217.GA28356@flint.arm.linux.org.uk>
-References: <1203527351.4071.92.camel@localhost.localdomain>
-	<20080223000538.e1f086e1.akpm@linux-foundation.org>
-	<20080223095217.GA28356@flint.arm.linux.org.uk>
+To: =?ISO-8859-1?B?IklscG8gSuRydmluZW4i?= <ilpo.jarvinen@helsinki.fi>
+Cc: Netdev <netdev@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>,
+       David Miller <davem@davemloft.net>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>
+Subject: Re: [RFC PATCH 8/8] Jhash in too big for inlining, move under lib/
+Message-Id: <20080223102159.74a465cb.akpm@linux-foundation.org>
+In-Reply-To: <Pine.LNX.4.64.0802231006360.29504@kivilampi-30.cs.helsinki.fi>
+References: <1203515238-22848-1-git-send-email-ilpo.jarvinen@helsinki.fi>
+	<1203515238-22848-2-git-send-email-ilpo.jarvinen@helsinki.fi>
+	<1203515238-22848-3-git-send-email-ilpo.jarvinen@helsinki.fi>
+	<1203515238-22848-4-git-send-email-ilpo.jarvinen@helsinki.fi>
+	<1203515238-22848-5-git-send-email-ilpo.jarvinen@helsinki.fi>
+	<1203515238-22848-6-git-send-email-ilpo.jarvinen@helsinki.fi>
+	<1203515238-22848-7-git-send-email-ilpo.jarvinen@helsinki.fi>
+	<1203515238-22848-8-git-send-email-ilpo.jarvinen@helsinki.fi>
+	<1203515238-22848-9-git-send-email-ilpo.jarvinen@helsinki.fi>
+	<20080223000214.81b1390a.akpm@linux-foundation.org>
+	<Pine.LNX.4.64.0802231006360.29504@kivilampi-30.cs.helsinki.fi>
 X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 23 Feb 2008 09:52:17 +0000 Russell King - ARM Linux <linux@arm.linux.org.uk> wrote:
+On Sat, 23 Feb 2008 12:05:36 +0200 (EET) "Ilpo Järvinen" <ilpo.jarvinen@helsinki.fi> wrote:
 
-> On Sat, Feb 23, 2008 at 12:05:38AM -0800, Andrew Morton wrote:
-> > On Wed, 20 Feb 2008 17:09:11 +0000 Liam Girdwood <lg@opensource.wolfsonmicro.com> wrote:
+> On Sat, 23 Feb 2008, Andrew Morton wrote:
+> 
+> > On Wed, 20 Feb 2008 15:47:18 +0200 "Ilpo Järvinen" <ilpo.jarvinen@helsinki.fi> wrote:
 > > 
-> > > This patch provides the regulator framework core. The core also provides a
-> > > sysfs interface for userspace information.
+> > > vmlinux.o:
+> > >  62 functions changed, 66 bytes added, 10935 bytes removed, diff: -10869
 > > > 
-> > > ...
-> > >
-> > > +
-> > > +/* We need to undef the current macro (from include/asm/current.h) otherwise
-> > > + * our "current" sysfs entry becomes "(get_current())".
-> > > + */
-> > > +#undef current
+> > > ...+ these to lib/jhash.o:
+> > >  jhash_3words: 112
+> > >  jhash2: 276
+> > >  jhash: 475
+> > > 
+> > > select for networking code might need a more fine-grained approach.
 > > 
-> > err, no ;)  Please rename your stuff.
+> > It should be possible to use a modular jhash.ko.  The things which you
+> > have identified as clients of the jhash library are usually loaded as modules.
+> > But in the case where someone does (say) NFSD=y we do need jhash.o linked into
+> > vmlinux also. This is doable in Kconfig but I always forget how.
 > 
-> Renaming is not an option - "current" is an electronic term for which
-> there is no alternative.
+> Ok, even though its not that likely that one lives without e.g.
+> net/ipv4/inet_connection_sock.c or net/netlink/af_netlink.c?
 
-amps, milliamps, amperage (the latter of which I've always disliked)
+Sure, the number of people who will want CONFIG_JHASH=n is very small.
 
->  The real problem is this __ATTR macro crap:
+> But maybe 
+> some guys "really know what they are doing" and can come up with config 
+> that would be able to build it as module (for other than proof-of-concept 
+> uses I mean)... :-/
 > 
-> +       __ATTR(current, 0444, regulator_uA_show, NULL),
-
-This interface would actually be *improved* if that sysfs file were named
-"microamps" rather than "current".  Because its units become
-self-documenting.  Similarly, s/voltage/millivolts/g
-
-> #define __ATTR(_name,_mode,_show,_store) { \
-> 	.attr = {.name = __stringify(_name), .mode = _mode },	\
-> 	.show	= _show,					\
-> 	.store	= _store,					\
-> }
+> > Adrian, Sam and Randy are the repositories of knowledge here ;)
 > 
-> If __ATTR allowed the name to be passed as a string, instead of stupidly
-> stringifying it, then this wouldn't be needed.  So I suggest that the
-> #undef stands _until_ we fix this stupid macro.
+> Thanks, I'll consult them in this. I've never needed to do any Kconfig 
+> stuff so far so it's no surprise I have very little clue... :-)
 
-yeah, macros suck.
+Thanks.  If it gets messy I'd just put lib/jhash.o in obj-y.  I assume it's
+pretty small.
 
->  Or we rename the
-> "current" macro to something that doesn't clash with accepted scientific
-> and engineering terminology.
+> I've one question for you Andrew, how would you like this kind of 
+> cross-subsys toucher to be merged, through you directly I suppose?
+
+Sure, I can scrounge around for appropriate reviews and acks and can make
+sure that nobody's pending work gets disrupted.
+
