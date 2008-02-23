@@ -1,26 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S937289AbYBWI1q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S937368AbYBWI2X@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S937289AbYBWI1q (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 23 Feb 2008 03:27:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932963AbYBWIKW
+	id S937368AbYBWI2X (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 23 Feb 2008 03:28:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932987AbYBWIMy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 23 Feb 2008 03:10:22 -0500
-Received: from smtp1.linux-foundation.org ([207.189.120.13]:48709 "EHLO
+	Sat, 23 Feb 2008 03:12:54 -0500
+Received: from smtp1.linux-foundation.org ([207.189.120.13]:48212 "EHLO
 	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S932541AbYBWIKT (ORCPT
+	by vger.kernel.org with ESMTP id S934983AbYBWIMw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 23 Feb 2008 03:10:19 -0500
-Date: Sat, 23 Feb 2008 00:05:28 -0800
+	Sat, 23 Feb 2008 03:12:52 -0500
+Date: Sat, 23 Feb 2008 00:11:30 -0800
 From: Andrew Morton <akpm@linux-foundation.org>
-To: Liam Girdwood <lg@opensource.wolfsonmicro.com>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>,
-       linux-arm-kernel <linux-arm-kernel@lists.arm.linux.org.uk>,
-       Mark Brown <broonie@opensource.wolfsonmicro.com>
-Subject: Re: [PATCH 1/6] regulator: consumer driver regulator control
- framework.
-Message-Id: <20080223000528.c01e1b51.akpm@linux-foundation.org>
-In-Reply-To: <1203527333.4071.89.camel@localhost.localdomain>
-References: <1203527333.4071.89.camel@localhost.localdomain>
+To: Arjan van de Ven <arjan@infradead.org>
+Cc: linux-kernel@vger.kernel.org, mingo@elte.hu, sandmann@redhat.com,
+       tglx@tglx.de, hpa@zytor.com
+Subject: Re: [PATCH] x86: add the debugfs interface for the sysprof tool
+Message-Id: <20080223001130.d8922136.akpm@linux-foundation.org>
+In-Reply-To: <20080219123756.6261c13c@laptopd505.fenrus.org>
+References: <20080219123756.6261c13c@laptopd505.fenrus.org>
 X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
@@ -29,328 +27,427 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 20 Feb 2008 17:08:53 +0000 Liam Girdwood <lg@opensource.wolfsonmicro.com> wrote:
+On Tue, 19 Feb 2008 12:37:56 -0800 Arjan van de Ven <arjan@infradead.org> wrote:
 
-> This framework provides voltage and current regulator control to allow
-> consumer drivers to control their supply voltages and current levels.
+> From: Soren Sandmann <sandmann@redhat.com>
+> Subject: [PATCH] x86: add the debugfs interface for the sysprof tool
 > 
-> The framework is similar to the kernel clock interface in that client or
-> consumer drivers can get() and put() a regulator (like they can with clocks
-> atm).
+> The sysprof tool is a very easy to use GUI tool to find out where
+> userspace is spending CPU time. See
+> http://www.daimi.au.dk/~sandmann/sysprof/
+> for more information and screenshots on this tool.
 > 
-> Consumers can also get() or set() :- voltage, current, operating mode.
-> Consumers can also enable and disable regulators.
-> 
-> The framework also compiles out if not in use so drivers can be reused in
-> systems with no software PMIC power control.
+> Sysprof needs a 200 line kernel module to do it's work, this
+> module puts some simple profiling data into debugfs.
 > 
 > ...
 >
-> +#define REGULATOR_MODE_FAST			0x1
-> +#define REGULATOR_MODE_NORMAL			0x2
-> +#define REGULATOR_MODE_IDLE			0x4
-> +#define REGULATOR_MODE_STANDBY			0x8
 
-The values which you chose here would imply that these values can be ORed
-together.  But they can't can they?
+Seems a poor idea to me.  Sure, oprofile is "hard to set up", but not if
+your distributor already did it for you.
 
-If not, plain old 0,1,2,3 would be clearer.
+Sidebar: the code uses the utterly crappy register_timer_hook() which 
 
-We often use enums for this sort of thing.
+a) is woefully misnamed and
 
-> +/*
-> + * Regulator notifier events.
-> + *
-> + * @UNDER_VOLTAGE:  Regulator output is under voltage.
-> + * @OVER_CURRENT:   Regulator output current is too high.
-> + * @POWER_ON:       Regulator power ON event.
-> + * @POWER_OFF:      Regulator power OFF event.
-> + * @REGULATION_OUT: Regulator output is out of regulation.
-> + * @FAIL:           Regulator output has failed.
-> + * @OVER_TEMP:      Regulator over temp.
-> + */
+b) is racy and 
 
-The above makes it look like this is a kerneldoc comment, but it isn't.
-
-> +#define REGULATOR_EVENT_UNDER_VOLTAGE		0x1
-> +#define REGULATOR_EVENT_OVER_CURRENT		0x2
-> +#define REGULATOR_EVENT_POWER_ON		0x4
-> +#define REGULATOR_EVENT_POWER_OFF		0x8
-> +#define REGULATOR_EVENT_REGULATION_OUT		0x10
-> +#define REGULATOR_EVENT_FAIL			0x20
-> +#define REGULATOR_EVENT_OVER_TEMP		0x40
-
-These I assume _can_ legitimately be ORed together.
-
-These also could be a enum.
-
-> +/*
-> + * Convenience conversion.
-> + * Here atm, maybe there is somewhere better for this.
-> + */
-> +#define mV_to_uV(mV)	(mV * 1000)
-> +#define uV_to_mV(uV)	(uV / 1000)
-> +#define V_to_uV(V)	(mV_to_uV(V * 1000))
-> +#define uV_to_V(uV)	(uV_to_mV(uV) / 1000)
-> +#define mA_to_uA(mA)	(mA * 1000)
-> +#define uA_to_mA(uA)	(uA / 1000)
-> +#define A_to_uA(A)	(mA_to_uA(A * 1000))
-> +#define uA_to_A(uA)	(uA_to_mA(uA) / 1000)
-
-hm.  It might be nicer to make these static inline functions.  Especially
-if the code is consistent about what C type is used to represent voltage
-and current.
+c) will disrupt oprofile if it is being used.  And vice versa.
 
 
-> +struct regulator;
-> +
-> +#if defined (CONFIG_REGULATOR)
-> +
-> +/**
-> + * regulator_get - lookup and obtain a reference to a regulator.
-> + * @dev: device for regulator "consumer"
-> + * @id: regulator ID
-> + *
-> + * Returns a struct regulator corresponding to the regulator producer, or
-> + * IS_ERR() condition containing errno.
-> + */
-> +struct regulator * __must_check regulator_get(struct device *dev,
-> +	const char *id);
 
-We conventionally put the kerneldoc at the definition site, not at the
-declaration site.
+This code adds a new kernel->userspace interface which is not even
+documented in code comments.  It appears to use a pollable debugfs file in
+/proc somewhere, carrying an unspecified payload.
 
-> +/**
-> + * regulator_put - "free" the regulator source
-> + * @regulator: regulator source
-> + *
-> + * Note: drivers must ensure that all regulator_enable calls made on this
-> + * regulator source are balanced by regulator_disable calls prior to calling
-> + * this function.
-> + */
-> +void regulator_put(struct regulator *regulator);
-> +
-> +/**
-> + * regulator_enable - enable regulator output
-> + * @regulator: regulator source
-> + *
-> + * Enable the regulator output at the predefined voltage or current value.
-> + * NOTE: the output value can be set by other drivers, bootloader or may be
-> + * hardwired in the regulator.
-> + */
-> +int regulator_enable(struct regulator *regulator);
-> +
-> +/**
-> + * regulator_disable - disable regulator output
-> + * @regulator: regulator source
-> + *
-> + * Disable the regulator output voltage or current.
-> + * NOTE: this will only disable the regulator output iff no other consumer
-> + * devices have it enabled.
-> + */
-> +int regulator_disable(struct regulator *regulator);
-> +
-> +/**
-> + * regulator_is_enabled - is the regulator output enabled
-> + * @regulator: regulator source
-> + *
-> + * Returns zero for disabled otherwise return number of enable requests.
-> + */
-> +int regulator_is_enabled(struct regulator *regulator);
-> +
-> +/**
-> + * regulator_set_voltage - set regulator output voltage
-> + * @regulator: regulator source
-> + * @uV: voltage in uV
-> + *
-> + * Sets a voltage regulator to the desired output voltage. This can be set
-> + * during any regulator state. IOW, regulator can be disabled or enabled.
-> + *
-> + * If the regulator is enabled then the voltage will change to the new value
-> + * immediately otherwise if the regulator is disabled the regulator will
-> + * output at the new voltage when enabled.
-> + *
-> + * NOTE: If the regulator is shared between several devices then the lowest
-> + * request voltage that meets the system constraints will be used.
-> + * NOTE: Regulator system constraints must be set for this regulator before
-> + * calling this function otherwise this call will fail.
-> + */
-> +int regulator_set_voltage(struct regulator *regulator, int uV);
-> +
-> +/**
-> + * regulator_get_voltage - get regulator output voltage
-> + * @regulator: regulator source
-> + *
-> + * This returns the current regulator voltage in uV.
-> + *
-> + * NOTE: If the regulator is disabled it will return the voltage value. This
-> + * function should not be used to determine regulator state.
-> + */
-> +int regulator_get_voltage(struct regulator *regulator);
-> +
-> +/**
-> + * regulator_set_current - set regulator output current for a current sink
-> + * @regulator: regulator source
-> + * @uA: current in uA
-> + *
-> + * Sets current sink to the desired output current. This can be set during
-> + * any regulator state. IOW, regulator can be disabled or enabled.
-> + *
-> + * If the regulator is enabled then the current will change to the new value
-> + * immediately otherwise if the regulator is disabled the regulator will
-> + * output at the new current when enabled.
-> + *
-> + * NOTE: Regulator system constraints must be set for this regulator before
-> + * calling this function otherwise this call will fail.
-> + */
-> +int regulator_set_current(struct regulator *regulator, int uA);
-> +
-> +/**
-> + * regulator_get_current - get regulator output current
-> + * @regulator: regulator source
-> + *
-> + * This returns the current supplied by the specified current sink in uA.
-> + *
-> + * NOTE: If the regulator is disabled it will return the current value. This
-> + * function should not be used to determine regulator state.
-> + */
-> +int regulator_get_current(struct regulator *regulator);
-> +
-> +/**
-> + * regulator_set_mode - set regulator operating mode
-> + * @regulator: regulator source
-> + * @mode: operating mode - one of the REGULATOR_MODE constants
-> + *
-> + * Set regulator operating mode to increase regulator efficiency or improve
-> + * regulation performance.
-> + *
-> + * NOTE: Regulator system constraints must be set for this regulator before
-> + * calling this function otherwise this call will fail.
-> + */
-> +int regulator_set_mode(struct regulator *regulator, unsigned int mode);
-> +
-> +/**
-> + * regulator_get_mode - set regulator operating mode
 
-s/set/get/
+What happens when multiple processes are consuming data from the same
+debugfs file?
 
-> + * @regulator: regulator source
-> + *
-> + * Get the current regulator operating mode.
-> + */
-> +unsigned int regulator_get_mode(struct regulator *regulator);
-> +
-> +/**
-> + * regulator_get_optimum_mode - get regulator optimum operating mode
-> + * @regulator: regulator source
-> + * @input_uV: input voltage
-> + * @output_uV: output voltage
-> + * @load_uV: load current
-> + *
-> + * Get the most efficient regulator operating mode for the given input
-> + * and output voltages at a specific load..
-> + */
-> +unsigned int regulator_get_optimum_mode(struct regulator *regulator,
-> +	int input_uV, int output_uV, int load_uA);
-> +
-> +/**
-> + * regulator_register_client - register regulator event notifier
-> + * @regulator: regulator source
-> + * @notifier_block: notifier block
-> + *
-> + * Register notifier block to receive regulator events.
-> + */
-> +int regulator_register_client(struct regulator *regulator,
-> +	struct notifier_block *nb);
-> +
-> +/**
-> + * regulator_unregister_client - unregister regulator event notifier
-> + * @regulator: regulator source
-> + * @notifier_block: notifier block
-> + *
-> + * Unregister regulator event notifier block.
-> + */
-> +int regulator_unregister_client(struct regulator *regulator,
-> +	struct notifier_block *nb);
-> +
-> +/**
-> + * regulator_notify_load - notify regulator of new device load
-> + * @regulator: regulator
-> + * @dev: device
-> + * @uA: load
-> + *
-> + * Notifies the regulator core of a new device load. This is then used by
-> + * DRMS (if enabled by constraints) to select the most efficient regulator
-> + * operating mode for the new regulator loading.
-> + *
-> + * Client devices notify their supply regulator of the maximum power
-> + * they will require (can be taken from device datasheet in the power
-> + * consumption tables) when they change operational status and hence power
-> + * state. Examples of operational state changes that can affect power
-> + * consumption are :-
-> + *
-> + *    o Device is opened / closed.
-> + *    o Device I/O is about to begin or has just finished.
-> + *    o Device is idling in between work.
-> + *
-> + * This information is also exported via sysfs to userspace.
 
-Is the sysfs interface documented in here somewhere so we can review it?
+>  arch/x86/Kconfig.debug    |   10 ++
+>  arch/x86/kernel/Makefile  |    2 +
+>  arch/x86/kernel/sysprof.c |  200 +++++++++++++++++++++++++++++++++++++++++++++
+>  arch/x86/kernel/sysprof.h |   34 ++++++++
+>  4 files changed, 246 insertions(+), 0 deletions(-)
+>  create mode 100644 arch/x86/kernel/sysprof.c
+>  create mode 100644 arch/x86/kernel/sysprof.h
+> 
+> diff --git a/arch/x86/Kconfig.debug b/arch/x86/Kconfig.debug
+> index 12c98ea..8eb06c0 100644
+> --- a/arch/x86/Kconfig.debug
+> +++ b/arch/x86/Kconfig.debug
+> @@ -206,6 +206,16 @@ config MMIOTRACE_TEST
+>  
+>  	  Say N, unless you absolutely know what you are doing.
+>  
+> +config SYSPROF
+> +	tristate "Enable sysprof userland performance sampler"
+> +	depends on PROFILING
 
-Greg like sysfs stuff to be documented in Documentation/ABI
+Missing dependency on DEBUG_FS
 
-> + * DRMS would then sum the total requested load on the regulator and change
-> + * to the most efficient operating mode if platform constraints allow.
-> + */
-> +void regulator_drms_notify_load(struct regulator *regulator, int uA);
+> +	help
+> +	  This option enables the sysprof debugfs file that is used by the
+> +	  sysprof tool. sysprof is a tool to show where in userspace CPU
+> +	  time is spent.
 > +
-> +/**
-> + * regulator_get_drvdata - get regulator driver data
-> + * @regulator: regulator
-> + */
-> +void *regulator_get_drvdata(struct regulator *regulator);
-> +
-> +/**
-> + * regulator_set_drvdata - get regulator driver data
-> + * @regulator: regulator
-> + * @data: data
-> + */
-> +void regulator_set_drvdata(struct regulator *regulator, void *data);
-> +
-> +#else
-> +
-> +/*
-> + * Make sure client drivers will still build on systems with no software
-> + * controllable voltage or current regulators.
-> + */
-> +#define regulator_get(dev, id)	({ (void)(dev); (void)(id); NULL; })
-> +#define regulator_put(regulator) do { (void)(regulator);} while (0)
-> +#define regulator_enable(regulator) ({ (void)(regulator); 0; })
-> +#define regulator_disable(regulator) ({ (void)(regulator); 0; })
-> +#define regulator_is_enabled(regulator) ({ (void)(regulator); 1; })
-> +#define regulator_set_voltage(regulator, uV) \
-> +	({ (void)(regulator); (void)(uV); 0; })
-> +#define regulator_get_voltage(regulator) ({ (void)(regulator); 0; })
-> +#define regulator_set_current(regulator, uA) \
-> +	({ (void)(regulator); (void)(uA); 0; })
-> +#define regulator_get_current(regulator) ({ (void)(regulator); 0; })
-> +#define regulator_set_mode(regulator, mode) \
-> +	({ (void)(regulator); (void)(mode); 0; })
-> +#define regulator_get_mode(regulator) ({ (void)(regulator); 0; })
-> +#define regulator_get_optimum_mode(regulator, input_uV, output_uV, load_uA) \
-> +	({ (void)(regulator); (void)(input_uV); (void)(output_uV);\
-> +		(void)(load_uA); 0; })
-> +#define regulator_register_client(regulator, nb) \
-> +	({ (void)(regulator); (void)(nb); 0; })
-> +#define regulator_unregister_client(regulator, nb) \
-> +	do { (void)(regulator); (void)(nb);} while (0)
-> +#define regulator_notify_load(regulator, dev, uA) \
-> +	do { (void)(regulator); (void)(dev); (void)(uA);} while (0)
-> +#define regulator_get_drvdata(regulator) ({ (void)(regulator); NULL; })
-> +#define regulator_set_drvdata(regulator, data) \
-> +	do { (void)(regulator); (void)(data);} while (0)
+> +	  When in doubt, say N
 > +
 
-I think you'll find that all these can be implemented more nicely as static
-inlines.
+And it's x86-specific.
+
+>  #
+>  # IO delay types:
+>  #
+> diff --git a/arch/x86/kernel/Makefile b/arch/x86/kernel/Makefile
+> index 4a4260c..1e8fb66 100644
+> --- a/arch/x86/kernel/Makefile
+> +++ b/arch/x86/kernel/Makefile
+> @@ -80,6 +80,8 @@ obj-$(CONFIG_DEBUG_NX_TEST)	+= test_nx.o
+>  obj-$(CONFIG_VMI)		+= vmi_32.o vmiclock_32.o
+>  obj-$(CONFIG_PARAVIRT)		+= paravirt.o paravirt_patch_$(BITS).o
+>  
+> +obj-$(CONFIG_SYSPROF)		+= sysprof.o
+> +
+>  ifdef CONFIG_INPUT_PCSPKR
+>  obj-y				+= pcspeaker.o
+>  endif
+> diff --git a/arch/x86/kernel/sysprof.c b/arch/x86/kernel/sysprof.c
+> new file mode 100644
+> index 0000000..6220b9f
+> --- /dev/null
+> +++ b/arch/x86/kernel/sysprof.c
+> @@ -0,0 +1,200 @@
+> +/* -*- c-basic-offset: 8 -*- */
+> +
+> +/* Sysprof -- Sampling, systemwide CPU profiler
+> + * Copyright 2004, Red Hat, Inc.
+> + * Copyright 2004, 2005, Soeren Sandmann
+> + *
+> + * This program is free software; you can redistribute it and/or modify
+> + * it under the terms of the GNU General Public License as published by
+> + * the Free Software Foundation; either version 2 of the License, or
+> + * (at your option) any later version.
+> + *
+> + * This program is distributed in the hope that it will be useful,
+> + * but WITHOUT ANY WARRANTY; without even the implied warranty of
+> + * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+> + * GNU General Public License for more details.
+> + *
+> + * You should have received a copy of the GNU General Public License
+> + * along with this program; if not, write to the Free Software
+> + * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+> + */
+> +
+> +#include <linux/kernel.h>
+> +#include <linux/module.h>
+> +#include <linux/proc_fs.h>
+> +#include <linux/poll.h>
+> +#include <linux/highmem.h>
+> +#include <linux/pagemap.h>
+> +#include <linux/profile.h>
+> +#include <linux/debugfs.h>
+> +#include <asm/uaccess.h>
+
+checkpatch used to warn that linux/uaccess.h is preferred over asm/uaccess.h
+but this is another of those checkpatch features which seems to have
+mysteriously disappeared, or it broke?
+
+> +#include <asm/atomic.h>
+> +
+> +#include "sysprof.h"
+> +
+> +#define SAMPLES_PER_SECOND (200)
+> +#define INTERVAL ((HZ <= SAMPLES_PER_SECOND)? 1 : (HZ / SAMPLES_PER_SECOND))
+> +#define N_TRACES 256
+> +
+> +static struct sysprof_stacktrace stack_traces[N_TRACES];
+> +static struct sysprof_stacktrace *head = &stack_traces[0];
+> +static struct sysprof_stacktrace *tail = &stack_traces[0];
+
+Access to head and tail appear to be racy.  See below.
+
+> +static DECLARE_WAIT_QUEUE_HEAD(wait_for_trace);
+> +static DECLARE_WAIT_QUEUE_HEAD(wait_for_exit);
+> +
+> +struct userspace_reader {
+> +	struct task_struct *task;
+> +	unsigned long cache_address;
+> +	unsigned long *cache;
+> +};
+> +
+> +struct stack_frame;
+> +
+> +struct stack_frame {
+> +	struct stack_frame __user *next;
+> +	unsigned long return_address;
+> +};
+> +
+> +static int read_frame(struct stack_frame __user *frame_pointer,
+> +					struct stack_frame *frame)
+> +{
+> +	if (__copy_from_user_inatomic(frame, frame_pointer,
+> +					sizeof(struct stack_frame)))
+> +		return 1;
+> +	return 0;
+> +}
+> +
+> +static DEFINE_PER_CPU(int, n_samples);
+> +
+> +static int timer_notify(struct pt_regs *regs)
+> +{
+> +	struct sysprof_stacktrace *trace = head;
+
+We read `head' before taking the "lock".  Another CPU could modify it after
+we took a local copy.
+
+> +	int i;
+> +	int is_user;
+> +	static atomic_t in_timer_notify = ATOMIC_INIT(1);
+> +	int n;
+> +
+> +	n = ++get_cpu_var(n_samples);
+> +	put_cpu_var(n_samples);
+
+Needlessly disables preemption.  Use __get_cpu_var().
+
+> +	if (n % INTERVAL != 0)
+> +		return 0;
+
+It'd be nice to make INTERVAL a power of 2.
+
+> +	/* 0: locked, 1: unlocked */
+> +
+> +	if (!atomic_dec_and_test(&in_timer_notify))
+> +		goto out;
+
+Why not use spin_trylock()?  Then you get lockdep support too.
+
+And why not use spin_lock()?  At least a comment should be added explaining
+and justifying this peculiar home-made-not-really-locking design.
+
+> +	is_user = user_mode(regs);
+> +
+> +	if (!current || current->pid == 0)
+> +		goto out;
+
+And the changelog should explain and justify why we cannot profile root's
+code.  I cannot begin to imagine why it was done and I cannot fathom why it
+passed uncommented in documentation, code, changelog and "review" comments. 
+It greatly reduces the usefulness of an already dubious feature.
+
+If this limitation _was_ documented then I'd be in a position to ask what is
+special about root, as opposed to some non-root user who has <unspecified>
+capabilities.  And why we penalise a root who has dropped <unspecified>
+capabilities.  etcetera.
+
+Is this open-coded test of ->pid correct in a containerised environment?
+
+> +	if (is_user && current->state != TASK_RUNNING)
+> +		goto out;
+
+Needs a comment (although this one is fairly obvious)
+
+> +	if (!is_user) {
+> +		/* kernel */
+> +		trace->pid = current->pid;
+> +		trace->truncated = 0;
+> +		trace->n_addresses = 1;
+> +
+> +		/* 0x1 is taken by sysprof to mean "in kernel" */
+> +		trace->addresses[0] = 0x1;
+> +	} else {
+> +		struct stack_frame __user *frame_pointer;
+> +		struct stack_frame frame;
+> +		memset(trace, 0, sizeof(struct sysprof_stacktrace));
+> +
+> +		trace->pid = current->pid;
+
+This is ambiguous in a containerised environment.
+
+Ingo, please be alert for anything which exposes raw pids to userspace.
+
+I don't know what a correct and suitable interface might be - perhaps Pavel
+or Eric can suggest something.
+
+> +		trace->truncated = 0;
+> +
+> +		i = 0;
+> +
+> +		trace->addresses[i++] = regs->ip;
+> +
+> +		frame_pointer = (struct stack_frame __user *)regs->bp;
+> +
+> +		while (read_frame(frame_pointer, &frame) == 0 &&
+> +		       i < SYSPROF_MAX_ADDRESSES &&
+> +		       (unsigned long)frame_pointer >= regs->sp) {
+> +			trace->addresses[i++] = frame.return_address;
+> +			frame_pointer = frame.next;
+> +		}
+
+The (absent) interface documentation should explain what happens when a
+fault causes this information to be truncated.
+
+> +		trace->n_addresses = i;
+> +
+> +		if (i == SYSPROF_MAX_ADDRESSES)
+> +			trace->truncated = 1;
+> +		else
+> +			trace->truncated = 0;
+> +	}
+> +
+> +	if (head++ == &stack_traces[N_TRACES - 1])
+> +		head = &stack_traces[0];
+
+`head' can just merrily advance over `tail' and there is no notification to
+userspace of the lost data.
+
+> +	wake_up(&wait_for_trace);
+> +
+> +out:
+> +	atomic_inc(&in_timer_notify);
+> +	return 0;
+> +}
+> +
+> +static ssize_t procfile_read(struct file *filp, char __user *buffer,
+> +			size_t count, loff_t *ppos)
+> +{
+> +	ssize_t bcount;
+> +	if (head == tail)
+> +		return -EWOULDBLOCK;
+
+Please put a blank line between end-of-variables and start-of-code.
+
+This seems to be a wrong return value?  Shouldn't it just return zero if
+there was nothing there?  As can happen if some other process is reading the
+same debugfs file?
+
+> +	BUG_ON(tail->pid == 0);
+
+whee.  There was no locking above to prevent the tasks's pid from
+transitioning from non-zero to zero after it was tested.  Which means this
+is triggerable.  Perhaps the implicit locking due to cpu-pinnedness and
+interruption will prevent that race.  If so, such a subtlety should be
+commented, no?
+
+> +	*ppos = 0;
+> +	bcount = simple_read_from_buffer(buffer, count, ppos,
+> +			tail, sizeof(struct sysprof_stacktrace));
+> +
+> +	if (tail++ == &stack_traces[N_TRACES - 1])
+> +		tail = &stack_traces[0];
+
+There is no locking for `tail', and afaict we support multiple simultaneous
+readers.
+
+> +	return bcount;
+> +}
+
+This reads a single item even if there were 100 queued, which is quite 
+inefficient.
+
+We already have infrastructure for bulk kernel->user transfer in
+kernel/relay.c?
+
+> +static unsigned int procfile_poll(struct file *filp, poll_table * poll_table)
+
+checkpatch missed this coding-style error.
+
+> +{
+> +	if (head != tail)
+> +		return POLLIN | POLLRDNORM;
+> +
+> +	poll_wait(filp, &wait_for_trace, poll_table);
+> +
+> +	if (head != tail)
+> +		return POLLIN | POLLRDNORM;
+> +
+> +	return 0;
+> +}
+> +
+> +static const struct file_operations sysprof_fops = {
+> +	.owner = THIS_MODULE,
+> +	.read = procfile_read,
+> +	.poll = procfile_poll,
+> +};
+> +
+> +static struct dentry *debugfs_pe;
+> +int init_module(void)
+> +{
+> +	debugfs_pe = debugfs_create_file("sysprof-trace", 0600, NULL, NULL,
+> +				&sysprof_fops);
+> +	if (!debugfs_pe)
+> +		return -ENODEV;
+> +	register_timer_hook(timer_notify);
+> +	return 0;
+> +}
+
+This function will enable sysprof-trace even if prof_on==0,
+prof_on==SLEEP_PROFILING, etc which is pointless.
+
+> +void cleanup_module(void)
+> +{
+> +	unregister_timer_hook(timer_notify);
+> +	debugfs_remove(debugfs_pe);
+> +}
+> +
+> +MODULE_LICENSE("GPL");
+> +MODULE_AUTHOR("Soeren Sandmann (sandmann@daimi.au.dk)");
+> +MODULE_DESCRIPTION("Kernel driver for the sysprof performance analysis tool");
+> diff --git a/arch/x86/kernel/sysprof.h b/arch/x86/kernel/sysprof.h
+> new file mode 100644
+> index 0000000..6e16d6f
+> --- /dev/null
+> +++ b/arch/x86/kernel/sysprof.h
+> @@ -0,0 +1,34 @@
+> +/* Sysprof -- Sampling, systemwide CPU profiler
+> + * Copyright 2004, Red Hat, Inc.
+> + * Copyright 2004, 2005, Soeren Sandmann
+> + *
+> + * This program is free software; you can redistribute it and/or modify
+> + * it under the terms of the GNU General Public License as published by
+> + * the Free Software Foundation; either version 2 of the License, or
+> + * (at your option) any later version.
+> + *
+> + * This program is distributed in the hope that it will be useful,
+> + * but WITHOUT ANY WARRANTY; without even the implied warranty of
+> + * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+> + * GNU General Public License for more details.
+> + *
+> + * You should have received a copy of the GNU General Public License
+> + * along with this program; if not, write to the Free Software
+> + * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+> + */
+> +
+> +#ifndef SYSPROF_MODULE_H
+> +#define SYSPROF_MODULE_H
+> +
+> +#define SYSPROF_MAX_ADDRESSES 512
+> +
+> +struct sysprof_stacktrace {
+> +    int	pid;		/* -1 if in kernel */
+> +    int truncated;
+> +    int n_addresses;	/* note: this can be 1 if the process was compiled
+> +			 * with -fomit-frame-pointer or is otherwise weird
+> +			 */
+> +    unsigned long addresses[SYSPROF_MAX_ADDRESSES];
+> +};
+
+This is broken for 32-bit userspace running on a 64-bit kernel.  Unless
+said userspace jumps through hoops and works out that it's running under a
+64-bit kernel.
+
+There might be alignment issues for addresses[], being at offset 12.
+
+
+On Wed, 20 Feb 2008 10:10:22 +0100 Ingo Molnar <mingo@elte.hu> wrote:
+>
+> thanks, looks good to me - applied.
+
+This is pretty distressing, frankly.  The threshold for getting code into
+Linux should be much higher than this.
+
+I do not have the time to review everything which goes into all the git
+trees.  Better review, please.
 
