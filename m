@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752782AbYBWAiS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763719AbYBWAik@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752782AbYBWAiS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Feb 2008 19:38:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934102AbYBWAeH
+	id S1763719AbYBWAik (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Feb 2008 19:38:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934215AbYBWAeL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Feb 2008 19:34:07 -0500
-Received: from ns2.suse.de ([195.135.220.15]:55378 "EHLO mx2.suse.de"
+	Fri, 22 Feb 2008 19:34:11 -0500
+Received: from cantor2.suse.de ([195.135.220.15]:55398 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S934056AbYBWAeE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Feb 2008 19:34:04 -0500
-Date: Fri, 22 Feb 2008 16:30:08 -0800
+	id S934135AbYBWAeI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 22 Feb 2008 19:34:08 -0500
+Date: Fri, 22 Feb 2008 16:30:15 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -20,15 +20,14 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
        Domenico Andreoli <cavokz@gmail.com>, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Shan Wei <shanwei@cn.fujitsu.com>,
        Stephen Hemminger <shemminger@vyatta.com>,
        "David S. Miller" <davem@davemloft.net>
-Subject: [patch 10/38] TCP: Fix a bug in strategy_allowed_congestion_control
-Message-ID: <20080223003008.GK7268@suse.de>
+Subject: [patch 11/38] TC: oops in em_meta
+Message-ID: <20080223003015.GL7268@suse.de>
 References: <20080223001946.979768610@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="tcp-fix-a-bug-in-strategy_allowed_congestion_control.patch"
+Content-Disposition: inline; filename="tc-oops-in-em_meta.patch"
 In-Reply-To: <20080223002907.GA7268@suse.de>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -39,34 +38,45 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 know.
 
 ------------------
- 
- Upstream commit: 16ca3f913001efdb6171a2781ef41c77474e3895
 
-In strategy_allowed_congestion_control of the 2.6.24 kernel, when
-sysctl_string return 1 on success,it should call
-tcp_set_allowed_congestion_control to set the allowed congestion
-control.But, it don't.  the sysctl_string return 1 on success,
-otherwise return negative, never return 0.The patch fix the problem.
+Upstream commit: 04f217aca4d803fe72c2c54fe460d68f5233ce52
 
-Signed-off-by: Shan Wei <shanwei@cn.fujitsu.com>
-Acked-by: Stephen Hemminger <shemminger@vyatta.com>
+If userspace passes a unknown match index into em_meta, then
+em_meta_change will return an error and the data for the match will
+not be set. This then causes an null pointer dereference when the
+cleanup is done in the error path via tcf_em_tree_destroy. Since the
+tree structure comes kzalloc, it is initialized to NULL.
+
+Discovered when testing a new version of tc command against an
+accidental older kernel.
+
+Signed-off-by: Stephen Hemminger <shemminger@vyatta.com>
 Signed-off-by: David S. Miller <davem@davemloft.net>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- net/ipv4/sysctl_net_ipv4.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ net/sched/em_meta.c |   10 ++++++----
+ 1 file changed, 6 insertions(+), 4 deletions(-)
 
---- a/net/ipv4/sysctl_net_ipv4.c
-+++ b/net/ipv4/sysctl_net_ipv4.c
-@@ -248,7 +248,7 @@ static int strategy_allowed_congestion_c
+--- a/net/sched/em_meta.c
++++ b/net/sched/em_meta.c
+@@ -719,11 +719,13 @@ static int em_meta_match(struct sk_buff 
  
- 	tcp_get_available_congestion_control(tbl.data, tbl.maxlen);
- 	ret = sysctl_string(&tbl, name, nlen, oldval, oldlenp, newval, newlen);
--	if (ret == 0 && newval && newlen)
-+	if (ret == 1 && newval && newlen)
- 		ret = tcp_set_allowed_congestion_control(tbl.data);
- 	kfree(tbl.data);
+ static inline void meta_delete(struct meta_match *meta)
+ {
+-	struct meta_type_ops *ops = meta_type_ops(&meta->lvalue);
++	if (meta) {
++		struct meta_type_ops *ops = meta_type_ops(&meta->lvalue);
  
+-	if (ops && ops->destroy) {
+-		ops->destroy(&meta->lvalue);
+-		ops->destroy(&meta->rvalue);
++		if (ops && ops->destroy) {
++			ops->destroy(&meta->lvalue);
++			ops->destroy(&meta->rvalue);
++		}
+ 	}
+ 
+ 	kfree(meta);
 
 -- 
