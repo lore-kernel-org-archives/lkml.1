@@ -1,60 +1,117 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753434AbYBWFER@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753244AbYBWFme@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753434AbYBWFER (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 23 Feb 2008 00:04:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750753AbYBWFD5
+	id S1753244AbYBWFme (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 23 Feb 2008 00:42:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750913AbYBWFmZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 23 Feb 2008 00:03:57 -0500
-Received: from srv5.dvmed.net ([207.36.208.214]:60907 "EHLO mail.dvmed.net"
+	Sat, 23 Feb 2008 00:42:25 -0500
+Received: from hera.kernel.org ([140.211.167.34]:43308 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750712AbYBWFD4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 23 Feb 2008 00:03:56 -0500
-Message-ID: <47BFA938.3050504@garzik.org>
-Date: Sat, 23 Feb 2008 00:03:52 -0500
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+	id S1750872AbYBWFmY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 23 Feb 2008 00:42:24 -0500
+From: Len Brown <lenb@kernel.org>
+Organization: Intel Open Source Technology Center
+To: Randy Dunlap <randy.dunlap@oracle.com>
+Subject: Re: [PATCH] [BUILD_FAILURE] 2.6.25-rc2-mm1 - Build Failure at acpi_os
+Date: Sat, 23 Feb 2008 00:41:23 -0500
+User-Agent: KMail/1.9.5
+Cc: Sam Ravnborg <sam@ravnborg.org>,
+       Nish Aravamudan <nish.aravamudan@gmail.com>,
+       Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-acpi@vger.kernel.org, Andy Whitcroft <apw@shadowen.org>
+References: <20080216002522.9c4bd0fb.akpm@linux-foundation.org> <20080222185648.GA6843@uranus.ravnborg.org> <20080222112504.04e6b6a9.randy.dunlap@oracle.com>
+In-Reply-To: <20080222112504.04e6b6a9.randy.dunlap@oracle.com>
 MIME-Version: 1.0
-To: Daniel Barkalow <barkalow@iabervon.org>
-CC: Chase Venters <chase.venters@clientec.com>, linux-kernel@vger.kernel.org,
-       git@vger.kernel.org
-Subject: Re: Question about your git habits
-References: <200802221837.37680.chase.venters@clientec.com> <alpine.LNX.1.00.0802222249480.19024@iabervon.org>
-In-Reply-To: <alpine.LNX.1.00.0802222249480.19024@iabervon.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.4 (----)
-X-Spam-Report: SpamAssassin version 3.2.3 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.4 points, 5.0 required)
+Content-Disposition: inline
+Message-Id: <200802230041.24272.lenb@kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Daniel Barkalow wrote:
-> I find that the sequence of changes I make is pretty much unrelated to the 
-> sequence of changes that end up in the project's history, because my 
-> changes as I make them involve writing a lot of stubs (so I can build) and 
-> then filling them out. It's beneficial to have version control on this so 
-> that, if I screw up filling out a stub, I can get back to where I was.
+works for me!
+
+applied.
+
+thanks,
+-len
+
+ps.  CONFIG_ACPI_CUSTOM_DSDT's only use is to guard the use of
+CONFIG_ACPI_CUSTOM_DSDT_FILE:
+
+#ifdef CONFIG_ACPI_CUSTOM_DSDT
+#include CONFIG_ACPI_CUSTOM_DSDT_FILE
+#endif
+
+we could get rid of it if cpp could so something like
+
+#if (CONFIG_ACPI_CUSTOM_DSDT_FILE != "")
+#include CONFIG_ACPI_CUSTOM_DSDT_FILE
+#endif
+
+but it doesn't look like cpp has a concept of strings in expressions.
+
+On Friday 22 February 2008 14:25, Randy Dunlap wrote:
+> Let's see what the ACPI people think about this change.
 > 
-> Having made a complete series, I then generate a new series of commits, 
-> each of which does one thing, without any bugs that I've resolved, such 
-> that the net result is the end of the messy history, except with any 
-> debugging or useless stuff skipped. It's this series that gets merged into 
-> the project history, and I discard the other history.
+> Thanks, Sam.
+> ---
+> From: Randy Dunlap <randy.dunlap@oracle.com>
 > 
-> The real trick is that the early patches in a lot of series often refactor 
-> existing code in ways that are generally good and necessary for your 
-> eventual outcome, but which you'd never think of until you've written more 
-> of the series.
-
-That summarizes well how I do original development, too.  Whether its a 
-branch of an existing repo, or a newly cloned repo, when working on new 
-code I will do a first pass, committing as I go to provide useful 
-checkpoints.
-
-Once I reach a satisfactory state, I'll refactor the patches so that 
-they make sense for upstream submission.
-
-	Jeff
-
-
+> Make ACPI_CUSTOM_DSDT boolean config symbol a hidden and derived
+> value, based on the value of ACPI_CUSTOM_DSDT_FILE (string).
+> Only the latter is presented to the user as a config option.
+> 
+> This fixes problems with "make randconfig" setting ACPI_CUSTOM_DSDT
+> but leaving ACPI_CUSTOM_DSDT_FILE empty/blank.
+> 
+> Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
+> ---
+>  drivers/acpi/Kconfig |   19 +++++++++----------
+>  1 file changed, 9 insertions(+), 10 deletions(-)
+> 
+> --- linux-2.6.25-rc2-git5.orig/drivers/acpi/Kconfig
+> +++ linux-2.6.25-rc2-git5/drivers/acpi/Kconfig
+> @@ -283,24 +283,23 @@ config ACPI_TOSHIBA
+>  	  If you have a legacy free Toshiba laptop (such as the Libretto L1
+>  	  series), say Y.
+>  
+> -config ACPI_CUSTOM_DSDT
+> -	bool "Include Custom DSDT"
+> +config ACPI_CUSTOM_DSDT_FILE
+> +	string "Custom DSDT Table file to include"
+> +	default ""
+>  	depends on !STANDALONE
+> -	default n 
+>  	help
+>  	  This option supports a custom DSDT by linking it into the kernel.
+>  	  See Documentation/acpi/dsdt-override.txt
+>  
+> -	  If unsure, say N.
+> -
+> -config ACPI_CUSTOM_DSDT_FILE
+> -	string "Custom DSDT Table file to include"
+> -	depends on ACPI_CUSTOM_DSDT
+> -	default ""
+> -	help
+>  	  Enter the full path name to the file which includes the AmlCode
+>  	  declaration.
+>  
+> +	  If unsure, don't enter a file name.
+> +
+> +config ACPI_CUSTOM_DSDT
+> +	bool
+> +	default ACPI_CUSTOM_DSDT_FILE != ""
+> +
+>  config ACPI_CUSTOM_DSDT_INITRD
+>  	bool "Read Custom DSDT from initramfs"
+>  	depends on BLK_DEV_INITRD
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+> 
