@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754056AbYBWAvl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934961AbYBWAwU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754056AbYBWAvl (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Feb 2008 19:51:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764903AbYBWAg2
+	id S934961AbYBWAwU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Feb 2008 19:52:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763359AbYBWAgd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Feb 2008 19:36:28 -0500
-Received: from cantor.suse.de ([195.135.220.2]:45060 "EHLO mx1.suse.de"
+	Fri, 22 Feb 2008 19:36:33 -0500
+Received: from ns2.suse.de ([195.135.220.15]:55789 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1764496AbYBWAg0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Feb 2008 19:36:26 -0500
-Date: Fri, 22 Feb 2008 16:31:37 -0800
+	id S935065AbYBWAgb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 22 Feb 2008 19:36:31 -0500
+Date: Fri, 22 Feb 2008 16:31:40 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -20,63 +20,67 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
        Domenico Andreoli <cavokz@gmail.com>, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Paul Mackerras <paulus@samba.org>, Olaf Hering <olaf@aepfle.de>
-Subject: [patch 36/38] POWERPC: Revert chrp_pci_fixup_vt8231_ata devinit to
-	fix libata on pegasos
-Message-ID: <20080223003137.GK7268@suse.de>
+       Jay Vosburgh <fubar@us.ibm.com>, Jeff Garzik <jeff@garzik.org>,
+       "David S. Miller" <davem@davemloft.net>
+Subject: [patch 37/38] bonding: fix NULL pointer deref in startup processing
+Message-ID: <20080223003140.GL7268@suse.de>
 References: <20080223001946.979768610@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="powerpc-revert-chrp_pci_fixup_vt8231_ata-devinit-to-fix-libata-on-pegasos.patch"
+Content-Disposition: inline; filename="bonding-fix-null-pointer-deref-in-startup-processing.patch"
 In-Reply-To: <20080223002907.GA7268@suse.de>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+
 2.6.24-stable review patch.  If anyone has any objections, please let us
 know.
 
 ------------------
-From: Olaf Hering <olaf@aepfle.de>
+From: Jay Vosburgh <fubar@us.ibm.com>
 
-Commit: 092ca5bd61da6344f3b249754b337f2d48dfe08d
+patch 4fe4763cd8cacd81d892193efb48b99c99c15323 in mainline.
 
-[POWERPC] Revert chrp_pci_fixup_vt8231_ata devinit to fix libata on pegasos
+	Fix the "are we creating a duplicate" check to not compare
+the name if the name is NULL (meaning that the system should select
+a name).  Bug reported by Benny Amorsen <benny+usenet@amorsen.dk>.
 
-Commit 6d98bda79bea0e1be26c0767d0e9923ad3b72f2e changed the init order
-for chrp_pci_fixup_vt8231_ata().
-
-It can not work anymore because either the irq is not yet set to 14 or
-pci_get_device() returns nothing.  At least the printk() in
-chrp_pci_fixup_vt8231_ata() does not trigger anymore.
-pata_via works again on Pegasos with the change below.
-
-Signed-off-by: Olaf Hering <olaf@aepfle.de>
-Signed-off-by: Paul Mackerras <paulus@samba.org>
-Cc: Chuck Ebbert <cebbert@redhat.com>
+Signed-off-by: Jay Vosburgh <fubar@us.ibm.com>
+Signed-off-by: Jeff Garzik <jeff@garzik.org>
+Signed-off-by: David S. Miller <davem@davemloft.net>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- arch/powerpc/platforms/chrp/pci.c |    4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ drivers/net/bonding/bond_main.c |   16 +++++++++-------
+ 1 file changed, 9 insertions(+), 7 deletions(-)
 
---- a/arch/powerpc/platforms/chrp/pci.c
-+++ b/arch/powerpc/platforms/chrp/pci.c
-@@ -354,7 +354,7 @@ DECLARE_PCI_FIXUP_EARLY(PCI_VENDOR_ID_WI
-  * mode as well. The same fixup must be done to the class-code property in
-  * the IDE node /pci@80000000/ide@C,1
-  */
--static void __devinit chrp_pci_fixup_vt8231_ata(struct pci_dev *viaide)
-+static void chrp_pci_fixup_vt8231_ata(struct pci_dev *viaide)
- {
- 	u8 progif;
- 	struct pci_dev *viaisa;
-@@ -375,4 +375,4 @@ static void __devinit chrp_pci_fixup_vt8
+--- a/drivers/net/bonding/bond_main.c
++++ b/drivers/net/bonding/bond_main.c
+@@ -4883,14 +4883,16 @@ int bond_create(char *name, struct bond_
+ 	down_write(&bonding_rwsem);
  
- 	pci_dev_put(viaisa);
- }
--DECLARE_PCI_FIXUP_EARLY(PCI_VENDOR_ID_VIA, PCI_DEVICE_ID_VIA_82C586_1, chrp_pci_fixup_vt8231_ata);
-+DECLARE_PCI_FIXUP_FINAL(PCI_VENDOR_ID_VIA, PCI_DEVICE_ID_VIA_82C586_1, chrp_pci_fixup_vt8231_ata);
+ 	/* Check to see if the bond already exists. */
+-	list_for_each_entry_safe(bond, nxt, &bond_dev_list, bond_list)
+-		if (strnicmp(bond->dev->name, name, IFNAMSIZ) == 0) {
+-			printk(KERN_ERR DRV_NAME
++	if (name) {
++		list_for_each_entry_safe(bond, nxt, &bond_dev_list, bond_list)
++			if (strnicmp(bond->dev->name, name, IFNAMSIZ) == 0) {
++				printk(KERN_ERR DRV_NAME
+ 			       ": cannot add bond %s; it already exists\n",
+-			       name);
+-			res = -EPERM;
+-			goto out_rtnl;
+-		}
++				       name);
++				res = -EPERM;
++				goto out_rtnl;
++			}
++	}
+ 
+ 	bond_dev = alloc_netdev(sizeof(struct bonding), name ? name : "",
+ 				ether_setup);
 
 -- 
