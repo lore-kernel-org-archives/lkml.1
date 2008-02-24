@@ -1,52 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757325AbYBWX5c@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756956AbYBXAJX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757325AbYBWX5c (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 23 Feb 2008 18:57:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754855AbYBWX5Z
+	id S1756956AbYBXAJX (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 23 Feb 2008 19:09:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754930AbYBXAJL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 23 Feb 2008 18:57:25 -0500
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:49363 "EHLO amd.ucw.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1754863AbYBWX5Z (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 23 Feb 2008 18:57:25 -0500
-Date: Sun, 24 Feb 2008 00:57:42 +0100
-From: Pavel Machek <pavel@ucw.cz>
-To: kernel list <linux-kernel@vger.kernel.org>
-Cc: dwmw2@infradead.org, linux-mtd@lists.infradead.org
-Subject: jffs2: -ENOSPC when truncating file?!
-Message-ID: <20080223235742.GE2202@elf.ucw.cz>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.17 (2007-11-01)
+	Sat, 23 Feb 2008 19:09:11 -0500
+Received: from accolon.hansenpartnership.com ([76.243.235.52]:54065 "EHLO
+	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752000AbYBXAJJ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 23 Feb 2008 19:09:09 -0500
+Subject: Re: [GIT PATCH] scsi fixes for 2.6.25-rc2
+From: James Bottomley <James.Bottomley@HansenPartnership.com>
+To: Jeff Garzik <jeff@garzik.org>
+Cc: Olof Johansson <olof@lixom.net>, Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-scsi <linux-scsi@vger.kernel.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+In-Reply-To: <47C0ACC1.1050306@garzik.org>
+References: <1203779614.3139.4.camel@localhost.localdomain>
+	 <20080223230126.GA23265@lixom.net>  <47C0ACC1.1050306@garzik.org>
+Content-Type: text/plain
+Date: Sat, 23 Feb 2008 18:09:04 -0600
+Message-Id: <1203811744.3139.11.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.3 (2.12.3-1.fc8) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
 
-I'm trying to free space by truncating big file, and I get:
+On Sat, 2008-02-23 at 18:31 -0500, Jeff Garzik wrote:
+> Olof Johansson wrote:
+> > Hi,
+> > 
+> > On Sat, Feb 23, 2008 at 09:13:33AM -0600, James Bottomley wrote:
+> > 
+> >> Jeff Garzik (1):
+> >>       mvsas: Add Marvell 6440 SAS/SATA driver
+> > [...]
+> >>  drivers/scsi/mvsas.c                | 2981 ++++++++++++++++++++++++++++++++++++
+> > 
+> > I just noticed that the file permissions on that file are 755 in current
+> > git, that was probably not intentional?
+> 
+> Definitely not intentional.  They were 0644 in the original changeset 
+> (the one from me you highlighted), then the second changeset updating 
+> mvsas somehow changed the perms.
 
-root@fic-gta01:~# ls -al gps.nmea 
--rw-r--r--    1 root     root      2332070 Feb 19 22:13 gps.nmea
-root@fic-gta01:~# > gps.nmea 
--sh: cannot create gps.nmea: No space left on device
-root@fic-gta01:~# rm gps.nmea
-root@fic-gta01:~# > gps.nmea
-root@fic-gta01:~# 
+Actually, unfortunately, it was ... I just didn't spot it.  The second
+patch has this in the header:
 
-:-(
+diff --git a/drivers/scsi/mvsas.c b/drivers/scsi/mvsas.c
+old mode 100644
+new mode 100755
 
-Kernel is not-so-ancient, on openmoko:
+It's git slang for change the mode to executable ... no idea why marvell
+would do that unless it's something windows related?  Anyway, I'll
+change it back.
 
-root@fic-gta01:~# uname -a
-Linux fic-gta01 2.6.24 #1 PREEMPT Mon Feb 18 21:30:53 GMT 2008 armv4tl
-unknown
-root@fic-gta01:~# 
+James
 
 
-								Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
