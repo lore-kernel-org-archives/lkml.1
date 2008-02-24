@@ -1,160 +1,147 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754272AbYBXP6N@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757428AbYBXQAT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754272AbYBXP6N (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 24 Feb 2008 10:58:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752213AbYBXP6E
+	id S1757428AbYBXQAT (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 24 Feb 2008 11:00:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752213AbYBXQAH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 24 Feb 2008 10:58:04 -0500
-Received: from ug-out-1314.google.com ([66.249.92.170]:17950 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751014AbYBXP6B (ORCPT
+	Sun, 24 Feb 2008 11:00:07 -0500
+Received: from 41-052.adsl.zetnet.co.uk ([194.247.41.52]:55671 "EHLO
+	mail.esperi.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751487AbYBXQAF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 24 Feb 2008 10:58:01 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:to:cc:subject:message-id:mime-version:content-type:content-disposition:user-agent:from;
-        b=GUlgevoEZZZbFvylBO/bw7USdj/ePFcNWrAUqo9KYPyZ8VFgrf5yTGhHXitTi17fbCBLiZXwPZCsaZV39gyLE87M8PP7qiCS6FYrBF5nnHOS94J9DrlccfbOuEpMAKaSVRWHI+K2m1sIbgYC7wS6b63TcIcm66JMuJJkQsZ8c9s=
-Date: Sun, 24 Feb 2008 17:55:15 +0200
-To: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
-       "H. Peter Anvin" <hpa@zytor.com>, Rusty Russell <rusty@rustcorp.com.au>
-Cc: LKML <linux-kernel@vger.kernel.org>, lguest@ozlabs.org,
-       akpm <akpm@linux-foundation.org>
-Subject: [BUG + PATCH/Bugfix] x86/lguest: fix pgdir pmd index calculation
-Message-ID: <20080224155515.GA24831@ubuntu>
+	Sun, 24 Feb 2008 11:00:05 -0500
+To: linux-kernel@vger.kernel.org
+Cc: petero2@telia.com, dm-devel@redhat.com
+Subject: Re: 2.6.24.2: 4KSTACKS + pcdrw + dm + mount -> stack overflow: ide-cd related? dm-related?
+References: <87wsovkth5.fsf@hades.wkstn.nix>
+From: Nix <nix@esperi.org.uk>
+Emacs: don't cry -- it won't help.
+Date: Sun, 24 Feb 2008 15:59:23 +0000
+In-Reply-To: <87wsovkth5.fsf@hades.wkstn.nix> (nix@esperi.org.uk's message of "24 Feb 2008 01:56:56 -0000")
+Message-ID: <87skzipcpw.fsf@hades.wkstn.nix>
+User-Agent: Gnus/5.1008 (Gnus v5.10.8) XEmacs/21.5-b28 (linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
-From: "Ahmed S. Darwish" <darwish.07@gmail.com>
+X-DCC--Metrics: hades 1356; Body=3 Fuz1=3 Fuz2=3
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi all,
+On 24 Feb 2008, nix@esperi.org.uk outgrape:
 
-Beginning from commits close to v2.6.25-rc2, running lguest always oopses
-the host kernel. Oops is at [1].
+> A loop mount/umounting a pcdrw or iso9660 (through the pktcdvd device)
+> sees a stack overflow in four or five tries. Doing the same thing with
+> the same CD in a normal non-pktcdvd-mounted drive doesn't cause a crash.
 
-Bisection led to the following commit:
+> (This may or may not be PREEMPT+PREEMPT_BKL-specific: I'll try turning
+> them off tomorrow and repeating.)
 
-commit 37cc8d7f963ba2deec29c9b68716944516a3244f
+It is not preempt-specific, nor dm-specific. Nor it is very easy to
+capture tracebacks of: even netconsole generally gives up when faced
+with a string of recursive tracebacks blurring past forever at blinding
+speed.
 
-    x86/early_ioremap: don't assume we're using swapper_pg_dir
-    
-    At the early stages of boot, before the kernel pagetable has been
-    fully initialized, a Xen kernel will still be running off the
-    Xen-provided pagetables rather than swapper_pg_dir[].  Therefore,
-    readback cr3 to determine the base of the pagetable rather than
-    assuming swapper_pg_dir[].
-    
- static inline pmd_t * __init early_ioremap_pmd(unsigned long addr)
- {
--	pgd_t *pgd = &swapper_pg_dir[pgd_index(addr)];
-+	/* Don't assume we're using swapper_pg_dir at this point */
-+	pgd_t *base = __va(read_cr3());
-+	pgd_t *pgd = &base[pgd_index(addr)];
- 	pud_t *pud = pud_offset(pgd, addr);
- 	pmd_t *pmd = pmd_offset(pud, addr);
- 
-Trying to analyze the problem, it seems on the guest side of lguest, 
-%cr3 has a different value from &swapper_pg-dir (which
-is AFAIK fine on a pravirt guest): 
+But while I'd normally blame pktcdvd there's only one pktcdvd function
+in these tracebacks (pkt_open) and it's not got a significant stack
+footprint.
 
-Putting some debugging messages in early_ioremap_pmd:
+More notable is a great stack of mutual recursion between
+dm_bio_destructor() and the CDROM code: it seems to burn most of the
+stack on this sort of thrashing. Here's one of those tracebacks again:
 
-/* Appears 3 times */
-[    0.000000] ***************************
-[    0.000000] __va(%cr3) = c0000000, &swapper_pg_dir = c02cc000
-[    0.000000] ***************************
+do_IRQ: stack overflow: 480
+id: 4645, comm: mount Not tainted 2.6.24.2-dirty #4
+ [<c0104171>] do_IRQ+0x66/0xc5
+ [<c0102f8b>] common_interrupt+0x23/0x28
+ [<c027b5da>] ide_outsl+0x5/0x9
+ [<c027c540>] ata_output_data+0x4d/0x64
+ [<c027b8a6>] atapi_output_bytes+0x19/0x3f
+ [<c0285377>] cdrom_transfer_packet_command+0xb5/0xde
+ [<c0282607>] cdrom_timer_expiry+0x0/0x51
+ [<c02840c3>] cdrom_start_packet_command+0x14f/0x157
+ [<c02853e9>] cdrom_do_pc_continuation+0x0/0x2c
+ [<c027aa33>] ide_do_request+0x70a/0x943
+ [<c0363ef3>] schedule_timeout+0x13/0x8b
+ [<c021faeb>] elv_drain_elevator+0x15/0x58
+ [<c0220277>] elv_insert+0xf6/0x1d9
+ [<c0285377>] cdrom_transfer_packet_command+0xb5/0xde
+ [<c0282607>] cdrom_timer_expiry+0x0/0x51
+ [<c027b038>] ide_do_drive_cmd+0x99/0xe9
+ [<c0282abe>] cdrom_queue_packet_command+0x35/0xa9
+ [<c0363b2b>] schedule+0x321/0x33e
+ [<c0363ef3>] schedule_timeout+0x13/0x8b
+ [<c0282d11>] cdrom_read_tocentry+0x96/0xa1
+ [<c02220d3>] blk_end_sync_rq+0x0/0x23
+ [<c028315b>] cdrom_read_toc+0x14b/0x42e
+ [<c02220d3>] blk_end_sync_rq+0x0/0x23
+ [<c027b07e>] ide_do_drive_cmd+0xdf/0xe9
+ [<c0283ed2>] ide_cdrom_audio_ioctl+0x13c/0x1de
+ [<c02af8fe>] dm_bio_destructor+0x0/0x8
+ [<c017162c>] end_bio_bh_io_sync+0x0/0x27
+ [<c0282f42>] cdrom_check_status+0x55/0x60
+ [<c02220d3>] blk_end_sync_rq+0x0/0x23
+ [<c02865ba>] cdrom_count_tracks+0x64/0x16a
+ [<c02afbd9>] clone_endio+0x0/0xa3
+ [<c02af8fe>] dm_bio_destructor+0x0/0x8
+ [<c02896c4>] cdrom_open+0x190/0x8f8
+ [<c017162c>] end_bio_bh_io_sync+0x0/0x27
+ [<c0172e9a>] bio_fs_destructor+0x0/0xb
+ [<c017162c>] end_bio_bh_io_sync+0x0/0x27
+ [<c0172e9a>] bio_fs_destructor+0x0/0xb
+ [<c02afbd9>] clone_endio+0x0/0xa3
+ [<c02af8fe>] dm_bio_destructor+0x0/0x8
+ [<c017162c>] end_bio_bh_io_sync+0x0/0x27
+ [<c0172e9a>] bio_fs_destructor+0x0/0xb
+ [<c02afbd9>] clone_endio+0x0/0xa3
+ [<c02af8fe>] dm_bio_destructor+0x0/0x8
+ [<c02252d3>] get_disk+0x4e/0x65
+ [<c02252f1>] exact_lock+0x7/0xd
+ [<c025a2cc>] kobj_lookup+0x104/0x12e
+ [<c02828e8>] idecd_open+0x72/0x86
+ [<c0174458>] do_open+0x198/0x238
+ [<c02afbd9>] clone_endio+0x0/0xa3
+ [<c0174561>] __blkdev_get+0x69/0x74
+ [<c017457e>] blkdev_get+0x12/0x14
+ [<c0263333>] pkt_open+0x8d/0xc96
+ [<c017162c>] end_bio_bh_io_sync+0x0/0x27
+ [<c0172e9a>] bio_fs_destructor+0x0/0xb
+ [<c02afbd9>] clone_endio+0x0/0xa3
+ [<c02af8fe>] dm_bio_destructor+0x0/0x8
+ [<c02afbd9>] clone_endio+0x0/0xa3
+ [<c02af8fe>] dm_bio_destructor+0x0/0x8
+ [<c017162c>] end_bio_bh_io_sync+0x0/0x27
+ [<c0172e9a>] bio_fs_destructor+0x0/0xb
+ [<c017162c>] end_bio_bh_io_sync+0x0/0x27
+ [<c0172e9a>] bio_fs_destructor+0x0/0xb
+ [<c017162c>] end_bio_bh_io_sync+0x0/0x27
+ [<c0172e9a>] bio_fs_destructor+0x0/0xb
+ [<c017162c>] end_bio_bh_io_sync+0x0/0x27
+ [<c0172e9a>] bio_fs_destructor+0x0/0xb
+ [<c02afbd9>] clone_endio+0x0/0xa3
+ [<c02af8fe>] dm_bio_destructor+0x0/0x8
+ [<c022998c>] kobject_get+0xf/0x13
+ [<c02252d3>] get_disk+0x4e/0x65
+ [<c02252f1>] exact_lock+0x7/0xd
+ [<c025a2cc>] kobj_lookup+0x104/0x12e
+ [<c0224ed0>] exact_match+0x0/0x4
+ [<c0174344>] do_open+0x84/0x238
+ [<c0174561>] 
+EIP: 0060:[<c01033d2>] EFLAGS: 00010093 CPU: 0
+EIP is at dump_trace+0x52/0x8b
+EAX: 0000082a EBX: 00000046 ECX: 0000020a EDX: 00000000
+ESI: 00000000 EDI: 00000000 EBP: 00000ffc ESP: eeede1c4
+ DS: 007b ES: 007b FS: 0000 GS: 0033 SS: 0068
+rocess mount (pid: 4645, ti=eeede000 task=ee537320 task.ti=eeede000)v<tack:  00001000 c03f6c0c 00000000 c0523b64 00000000 c0103423 c036e79c c03f6c0c 
+       00000002 c0103bf2 c03f6c0c c0103f85 c03ccd19 00001225 ee5375d0 c0505178 
+       c0429436 00000002 c0429477 eeede220 0000000d c0104171 c03cce23 000001e0 
 
-After 8 hours of debugging and staring on lguest code, I noticed something
-strange in paravirt_ops->set_pmd hypercall invocation:
-
-static void lguest_set_pmd(pmd_t *pmdp, pmd_t pmdval)
-{
-	*pmdp = pmdval;	
-	lazy_hcall(LHCALL_SET_PMD, __pa(pmdp)&PAGE_MASK,
-		   (__pa(pmdp)&(PAGE_SIZE-1))/4, 0);
-}
-
-The first hcall parameter is global pgdir which looks fine. The second
-parameter is the pmd index in the pgdir which is suspectful.
-
-AFAIK, calculating the index of pmd does not need a divisoin over four. 
-Removing the division made lguest work fine again . Patch is at [2].
-
-I am not sure why the division over four existed in the first place. It
-seems bogus, maybe the Xen patch just made the problem appear ?
-
-[2]: The patch:
-
-[PATCH] lguest: fix pgdir pmd index cacluation
-
-Remove an error in index calculation which leads to removing
-a not existing shadow page table (leading to a Null dereference).
-
-Signed-off-by: Ahmed S. Darwish <darwish.07@gmail.com>
----
-diff --git a/arch/x86/lguest/boot.c b/arch/x86/lguest/boot.c
-index 5afdde4..6636750 100644
---- a/arch/x86/lguest/boot.c
-+++ b/arch/x86/lguest/boot.c
-@@ -489,7 +489,7 @@ static void lguest_set_pmd(pmd_t *pmdp, pmd_t pmdval)
- {
- 	*pmdp = pmdval;
- 	lazy_hcall(LHCALL_SET_PMD, __pa(pmdp)&PAGE_MASK,
--		   (__pa(pmdp)&(PAGE_SIZE-1))/4, 0);
-+		   (__pa(pmdp)&(PAGE_SIZE-1)), 0);
- }
- 
- /* There are a couple of legacy places where the kernel sets a PTE, but we
-
-
-[1]: The oops:
-
-[    9.936880] BUG: unable to handle kernel NULL pointer dereference at 00000ff8
-[    9.938015] IP: [<c0204ef6>] release_pgd+0x6/0x60
-[    9.938379] *pde = 00000000 
-[    9.938618] Oops: 0000 [#1] 
-[    9.938680] Modules linked in:
-[    9.938680] 
-[    9.938680] Pid: 173, comm: lguest Not tainted (2.6.25-rc2-dirty #59)
-[    9.938680] EIP: 0060:[<c0204ef6>] EFLAGS: 00000202 CPU: 0
-[    9.938680] EIP is at release_pgd+0x6/0x60
-[    9.938680] EAX: c7cfe000 EBX: c7d06fb8 ECX: 00000000 EDX: 00000ff8
-[    9.938680] ESI: c7cfe004 EDI: 00000ff8 EBP: 00000000 ESP: c7cebe5c
-[    9.938680]  DS: 007b ES: 007b FS: 0000 GS: 0033 SS: 0058
-[    9.938680] Process lguest (pid: 173, ti=c7cea000 task=c7c94ac0 task.ti=c7cea000)
-[    9.938680] Stack: c7d06fb8 c7cfe004 c7cfe004 00000000 c0204a61 00000000 00000246 00000246 
-[    9.938680]        c7cbd528 c10ed500 b5d65000 00000002 c02110f4 076a8067 c0151ccc c7cc8668 
-[    9.938680]        01d65000 c7cbd528 00000007 c7cc8668 00000000 b5d65000 c01531b8 00000246 
-[    9.938680] Call Trace:
-[    9.938680]  [<c0204a61>] do_hcall+0x1a1/0x230
-[    9.938680]  [<c02110f4>] _spin_unlock+0x14/0x20
-[    9.938680]  [<c0151ccc>] follow_page+0x9c/0x190
-[    9.938680]  [<c01531b8>] get_user_pages+0x108/0x2c0
-[    9.938680]  [<c01bd9af>] copy_to_user+0x3f/0x70
-[    9.938680]  [<c0206ae0>] read+0x0/0xb8
-[    9.938680]  [<c0204ba9>] do_hypercalls+0xb9/0x2a0
-[    9.938680]  [<c0207b5a>] lguest_arch_run_guest+0xfa/0x1d0
-[    9.938680]  [<c0204651>] run_guest+0xc1/0x110
-[    9.938680]  [<c0206ae0>] read+0x0/0xb8
-[    9.938680]  [<c02045bb>] run_guest+0x2b/0x110
-[    9.938680]  [<c01655df>] vfs_read+0x8f/0xc0
-[    9.938680]  [<c0165ab6>] sys_pread64+0x76/0x80
-[    9.938680]  [<c0103864>] sysenter_past_esp+0x6d/0xc5
-[    9.938680]  =======================
-[    9.938680] Code: 75 03 5b c3 90 89 d8 e8 39 dc f0 ff 90 8b 1d d8 44 4f c0 c1 e8 0c c1 e0 05 01 d8 5b e9 24 81 f4 ff 8d 74 26 00 55 57 89 d7 56 53 <8b> 02 e8 f3 db f0 ff 90 a8 01 74 3f 8b 07 e8 e7 db f0 ff 90 25 
-[    9.938680] EIP: [<c0204ef6>] release_pgd+0x6/0x60 SS:ESP 0058:c7cebe5c
-[    9.939759] ---[ end trace 0cda9e589a597173 ]---
-
-Regards,
+Just looking for `dm_' in there should point out something odd.  (Of
+course dm is just acting on behalf of others here, so it may be that the
+IDE CDROM code is doing something demented: in which case why does this
+only stack-overrun if I mount /dev/pktcdvd/cdrw, and not /dev/cdrw?
+For that matter, why is dm getting involved at all? This CD-RW isn't
+dm-managed in any way, shape or form...)
 
 -- 
-
-"Better to light a candle, than curse the darkness"
-
-Ahmed S. Darwish
-Homepage: http://darwish.07.googlepages.com
-Blog: http://darwish-07.blogspot.com
-
+`The rest is a tale of post and counter-post.' --- Ian Rawlings
+                                                   describes USENET
