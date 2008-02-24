@@ -1,72 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754308AbYBXPlL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756341AbYBXPqV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754308AbYBXPlL (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 24 Feb 2008 10:41:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751233AbYBXPk7
+	id S1756341AbYBXPqV (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 24 Feb 2008 10:46:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751470AbYBXPqG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 24 Feb 2008 10:40:59 -0500
-Received: from gepetto.dc.ltu.se ([130.240.42.40]:50252 "EHLO
-	gepetto.dc.ltu.se" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750900AbYBXPk6 (ORCPT
+	Sun, 24 Feb 2008 10:46:06 -0500
+Received: from nf-out-0910.google.com ([64.233.182.187]:33582 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751458AbYBXPqF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 24 Feb 2008 10:40:58 -0500
-Message-ID: <47C19001.7010609@student.ltu.se>
-Date: Sun, 24 Feb 2008 16:40:49 +0100
-From: Richard Knutsson <ricknu-0@student.ltu.se>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+	Sun, 24 Feb 2008 10:46:05 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
+        b=CFamkdY75T/3SkqgstnL0g83A3sL+0G+3gB4zyg0tPQoG32j4+Iw7nKT8l4b2KH3MfwDbK1pP7GZ+6STeVSMxKxHzuF/gmeWgEtNv0NhQtSYSnJ2iEnV7BQXh8fDhhDf2XgarKeU8EsYwETDuMyKeg7CbfF6yXt1D84/KipsWys=
+Message-ID: <3a0f49600802240746q4fcc2979x56a91dd25ef606da@mail.gmail.com>
+Date: Sun, 24 Feb 2008 16:46:01 +0100
+From: "Gabor Czigola" <czigola@gmail.com>
+To: lkml <linux-kernel@vger.kernel.org>
+Subject: [PATCH] invert the axes for HDAPS on Lenovo R61i ThinkPads
 MIME-Version: 1.0
-To: Krzysztof Halasa <khc@pm.waw.pl>
-CC: Linux kernel mailing list <linux-kernel@vger.kernel.org>
-Subject: Re: Tabs, spaces, indent and 80 character lines
-References: <47C0BEE7.4040409@student.ltu.se> <m3ejb2bdxx.fsf@maximus.localdomain>
-In-Reply-To: <m3ejb2bdxx.fsf@maximus.localdomain>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Krzysztof Halasa wrote:
-> Richard Knutsson <ricknu-0@student.ltu.se> writes:
->
->   
->> Why hinder a developer who prefer
->> 2, 4, 6 or any other != 8 width?
->>     
->
-> I guess we could use tabs only at the line start, for indentation
-> only. Rather hard to implement, most text editors can't do that yet.
->   
-You mean for split lines? Hopefully there won't be that many, so there 
-is just to delete the tabs it added and replace it with spaces.
->   
->> By only using tabs as indents, and
->> changing the CodeStyle to be something like "maximum 80
->> characters-wide lines, with a tab-setting of 8 spaces",
->>     
->
-> This changes nothing.
->   
-Exactly! But then we can remove the "we use 8 wide tabs in the kernel" 
-in CodeStyle.
->   
->> that is
->> possible + easier to write code-checkers [2].
->>     
->
-> I doubt it.
->   
-Easier to write code-checkers? OK, maybe not. Just that I got hit by 
-this problem at a time when I wrote a simple checker (don't remember its 
-purpose).
->   
->> Or are we really that concerned about the disk-space? ;)
->>     
->
-> Unpacked sources will be much bigger with not tabs, sure.
->   
-Without no tabs at all, you mean? Don't want to think about that 
-scenario, but with this suggestion, I would estimate maybe 0,5 - 1% bigger.
+--- /usr/src/linux-source-2.6.24/drivers/hwmon/hdaps.c  2008-02-08
+02:20:38.000000000 +0100
++++ /tmp/hdaps.c        2008-02-24 16:42:52.000000000 +0100
+@@ -527,6 +527,7 @@
+        HDAPS_DMI_MATCH_INVERT("LENOVO", "ThinkPad X60"),
+        HDAPS_DMI_MATCH_NORMAL("IBM", "ThinkPad Z60m"),
+        HDAPS_DMI_MATCH_NORMAL("IBM", "ThinkPad T61P"),
++       HDAPS_DMI_MATCH_INVERT("LENOVO", "ThinkPad R61i"),
+        HDAPS_DMI_MATCH_NORMAL("IBM", "ThinkPad R61"),
+        HDAPS_DMI_MATCH_NORMAL("IBM", "ThinkPad T61"),
+        { .ident = NULL }
 
-Thanks for your input
-
+-- 
+Czigola, Gabor
