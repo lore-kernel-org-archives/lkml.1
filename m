@@ -1,139 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753603AbYBXK5i@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756882AbYBXK5x@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753603AbYBXK5i (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 24 Feb 2008 05:57:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751157AbYBXK53
+	id S1756882AbYBXK5x (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 24 Feb 2008 05:57:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755642AbYBXK5j
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 24 Feb 2008 05:57:29 -0500
-Received: from ug-out-1314.google.com ([66.249.92.175]:41694 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751462AbYBXK52 (ORCPT
+	Sun, 24 Feb 2008 05:57:39 -0500
+Received: from bombadil.infradead.org ([18.85.46.34]:46856 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755547AbYBXK5i (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 24 Feb 2008 05:57:28 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:x-mailer:mime-version:content-type:content-transfer-encoding;
-        b=eiAErX9TuTOJ7c6yIljc1xexMTsORBZjAcyL1fDtJx9p1Of1+jX2+0w/IF+y5Qa8wicA1v2qm5TebzLHOwVFK9F28NVJVCMIADzEn53Pc3mxwiQ1RhI80+i/6iU2GYvxIpWCnzrGzm0TH39Y1OJecnHchY31tQr4OxyIMNagkmY=
-Date: Sun, 24 Feb 2008 11:57:22 +0100
-From: Paolo Ciarrocchi <paolo.ciarrocchi@gmail.com>
-To: hpa <hpa@zytor.com>, Ingo Molnar <mingo@elte.hu>,
-       tglx <tglx@linutronix.de>
-Cc: Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: [PATCH 1/2] x86: Coding Style fixes to arch/x86/power/cpu_32.c
-Message-ID: <20080224115722.62989d5c@paolo-desktop>
-X-Mailer: Sylpheed-Claws 1.0.5 (GTK+ 1.2.10; i486-pc-linux-gnu)
+	Sun, 24 Feb 2008 05:57:38 -0500
+Subject: Re: jffs2: -ENOSPC when truncating file?!
+From: David Woodhouse <dwmw2@infradead.org>
+To: =?ISO-8859-1?Q?J=F6rn?= Engel <joern@logfs.org>
+Cc: Pavel Machek <pavel@ucw.cz>, linux-mtd@lists.infradead.org,
+       kernel list <linux-kernel@vger.kernel.org>
+In-Reply-To: <20080224065751.GA31293@lazybastard.org>
+References: <20080223235742.GE2202@elf.ucw.cz>
+	 <1203813368.5771.174.camel@shinybook.infradead.org>
+	 <20080224065751.GA31293@lazybastard.org>
+Content-Type: text/plain; charset=UTF-8
+Date: Sun, 24 Feb 2008 18:57:32 +0800
+Message-Id: <1203850653.13749.9.camel@shinybook.infradead.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+X-Mailer: Evolution 2.12.3 (2.12.3-1.fc8.dwmw2.1) 
+Content-Transfer-Encoding: 8bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-File is now error free.
-Compile tested.
-Patch is against x86#testing
 
+On Sun, 2008-02-24 at 07:57 +0100, Jörn Engel wrote:
+> Could a naïve implementation of this get exploited by doing a large
+> number of truncates that just shave single bytes off various files?
 
-Signed-off-by: Paolo Ciarrocchi <paolo.ciarrocchi@gmail.com>
----
- arch/x86/power/cpu_32.c |   41 +++++++++++++++++++++++------------------
- 1 files changed, 23 insertions(+), 18 deletions(-)
+Yeah, which is why _my_ naïve implementation would do it for
+truncate-to-zero instead of just _any_ truncate (which could even be
+truncate-to-larger).
 
-diff --git a/arch/x86/power/cpu_32.c b/arch/x86/power/cpu_32.c
-index 7f9c6da..7dc5d5c 100644
---- a/arch/x86/power/cpu_32.c
-+++ b/arch/x86/power/cpu_32.c
-@@ -27,17 +27,17 @@ static void __save_processor_state(struct saved_context *ctxt)
- 	/*
- 	 * descriptor tables
- 	 */
-- 	store_gdt(&ctxt->gdt);
-- 	store_idt(&ctxt->idt);
-- 	store_tr(ctxt->tr);
-+	store_gdt(&ctxt->gdt);
-+	store_idt(&ctxt->idt);
-+	store_tr(ctxt->tr);
- 
- 	/*
- 	 * segment registers
- 	 */
-- 	savesegment(es, ctxt->es);
-- 	savesegment(fs, ctxt->fs);
-- 	savesegment(gs, ctxt->gs);
-- 	savesegment(ss, ctxt->ss);
-+	savesegment(es, ctxt->es);
-+	savesegment(fs, ctxt->fs);
-+	savesegment(gs, ctxt->gs);
-+	savesegment(ss, ctxt->ss);
- 
- 	/*
- 	 * control registers
-@@ -48,10 +48,12 @@ static void __save_processor_state(struct saved_context *ctxt)
- 	ctxt->cr4 = read_cr4();
- }
- 
-+/* Needed by apm.c */
- void save_processor_state(void)
- {
- 	__save_processor_state(&saved_context);
- }
-+EXPORT_SYMBOL(save_processor_state);
- 
- static void do_fpu_end(void)
- {
-@@ -64,9 +66,14 @@ static void do_fpu_end(void)
- static void fix_processor_context(void)
- {
- 	int cpu = smp_processor_id();
--	struct tss_struct * t = &per_cpu(init_tss, cpu);
-+	struct tss_struct *t = &per_cpu(init_tss, cpu);
- 
--	set_tss_desc(cpu,t);	/* This just modifies memory; should not be necessary. But... This is necessary, because 386 hardware has concept of busy TSS or some similar stupidity. */
-+	set_tss_desc(cpu, t);	/*
-+				 * This just modifies memory; should not be
-+				 * necessary. But... This is necessary, because
-+				 * 386 hardware has concept of busy TSS or some
-+				 * similar stupidity.
-+				 */
- 
- 	load_TR_desc();				/* This does ltr */
- 	load_LDT(&current->active_mm->context);	/* This does lldt */
-@@ -100,16 +107,16 @@ static void __restore_processor_state(struct saved_context *ctxt)
- 	 * now restore the descriptor tables to their proper values
- 	 * ltr is done i fix_processor_context().
- 	 */
-- 	load_gdt(&ctxt->gdt);
-- 	load_idt(&ctxt->idt);
-+	load_gdt(&ctxt->gdt);
-+	load_idt(&ctxt->idt);
- 
- 	/*
- 	 * segment registers
- 	 */
-- 	loadsegment(es, ctxt->es);
-- 	loadsegment(fs, ctxt->fs);
-- 	loadsegment(gs, ctxt->gs);
-- 	loadsegment(ss, ctxt->ss);
-+	loadsegment(es, ctxt->es);
-+	loadsegment(fs, ctxt->fs);
-+	loadsegment(gs, ctxt->gs);
-+	loadsegment(ss, ctxt->ss);
- 
- 	/*
- 	 * sysenter MSRs
-@@ -123,11 +130,9 @@ static void __restore_processor_state(struct saved_context *ctxt)
- 	mcheck_init(&boot_cpu_data);
- }
- 
-+/* Needed by apm.c */
- void restore_processor_state(void)
- {
- 	__restore_processor_state(&saved_context);
- }
--
--/* Needed by apm.c */
--EXPORT_SYMBOL(save_processor_state);
- EXPORT_SYMBOL(restore_processor_state);
+A more complex version might allow _any_ transaction to eat into the
+ALLOC_DELETION pool if it is ultimately going to reduce the amount of
+space taken on the file system -- even overwriting 'real' data with
+zeroes which compress better. That's going to be hard to calculate in
+the general case though.
+
+If allowing only truncate-to-zero isn't good enough, perhaps we could
+allow truncation to use the ALLOC_DELETION pool when it's going to
+obsolete at least one full data node. That's not so hard to check.
+
 -- 
-1.5.4.2.316.gf7a7
+dwmw2
 
