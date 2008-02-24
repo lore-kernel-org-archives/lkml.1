@@ -1,46 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754271AbYBXRKG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753850AbYBXRR2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754271AbYBXRKG (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 24 Feb 2008 12:10:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751181AbYBXRJ4
+	id S1753850AbYBXRR2 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 24 Feb 2008 12:17:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751345AbYBXRRT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 24 Feb 2008 12:09:56 -0500
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:38772 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751158AbYBXRJz (ORCPT
+	Sun, 24 Feb 2008 12:17:19 -0500
+Received: from vs166246.vserver.de ([62.75.166.246]:49760 "EHLO
+	vs166246.vserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751313AbYBXRRS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 24 Feb 2008 12:09:55 -0500
-Date: Sun, 24 Feb 2008 16:59:55 +0000
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: "Robert P. J. Day" <rpjday@crashcourse.ca>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@osdl.org>
-Subject: Re: [PATCH] DIGIEPCA:  Remove long-obsolete digiepca driver.
-Message-ID: <20080224165955.790d1360@core>
-In-Reply-To: <alpine.LFD.1.00.0802241010040.7616@localhost.localdomain>
-References: <alpine.LFD.1.00.0802241010040.7616@localhost.localdomain>
-X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Sun, 24 Feb 2008 12:17:18 -0500
+From: Michael Buesch <mb@bu3sch.de>
+To: "Alexey Zaytsev" <alexey.zaytsev@gmail.com>
+Subject: Re: bcm43xx regression in 2.6.24 (with patch)
+Date: Sun, 24 Feb 2008 18:16:01 +0100
+User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
+Cc: "Ingo Molnar" <mingo@elte.hu>, "Pekka Enberg" <penberg@cs.helsinki.fi>,
+       "Alexey Zaytsev" <zaytsev.a@protei.ru>, "Greg KH" <greg@kroah.com>,
+       linux-kernel@vger.kernel.org,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "Linus Torvalds" <torvalds@linux-foundation.org>
+References: <47BEAF3B.3080809@protei.ru> <200802241529.50967.mb@bu3sch.de> <f19298770802240839w2c19fd52vb0d170359ba56fc5@mail.gmail.com>
+In-Reply-To: <f19298770802240839w2c19fd52vb0d170359ba56fc5@mail.gmail.com>
+MIME-Version: 1.0
+Content-Disposition: inline
+Message-Id: <200802241816.01784.mb@bu3sch.de>
+Content-Type: text/plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 24 Feb 2008 10:12:41 -0500 (EST)
-"Robert P. J. Day" <rpjday@crashcourse.ca> wrote:
-
+On Sunday 24 February 2008, Alexey Zaytsev wrote:
+> On Sun, Feb 24, 2008 at 5:29 PM, Michael Buesch <mb@bu3sch.de> wrote:
+> > On Saturday 23 February 2008 12:32:50 Alexey Zaytsev wrote:
+> >  > The problem is not with enabling both b43 and bcm43xx (will, whis won't work
+> >  > anyway, and there is no chance fixing it). The problem is with enabling the
+> >  > bcm43xx wifi driver and the b44 Ethernet driver. The ethernet driver then
+> >  > wrongly autosolects some config options that prevent the bcm43xx
+> >  > driver from loading, so I'm left with either no wifi or no ethenet.
+> >
+> >  Ok, so I just tested this on a machine and it is _not_ true.
+> >  It works just fine to run b44/ssb with bcm43xx in parallel.
+> >
+> >  Can you please stop fooling me and spreading this FUD?
+> >
 > 
-> Given that the removal of this driver has been under discussion for
-> over a year:
-> 
->   http://lkml.org/lkml/2006/10/26/231
-> 
-> it would seem time to get rid of it.
+> The ony way I see this was possible, you manually changed the
+> module loading order, so that the b43xx module was loaded prior
+> to the ssb and b44 modules. Right?
 
-NAK - not until a replacement driver supporting the hardware is merged.
+Right. So "so I'm left with either no wifi or no ethenet" being wrong.
 
-Alan
+> Looks like this, kind of, ruins my statement that is is impossible to get
+> working wifi in 2.6.24. Sorry, it was not intensinal. ;)
+
+Ok, I see.
+
+> But there still are lots of valid combinations where the b43xx driver
+> silently won't work. E.g. when either the ssb or the b44 modules are
+> loaded prior to it, or when either of them are built statically (building
+> the b43xx driver staticaly won't help here). And my patch fixes them.
+
+With your patch you can still artificially create situations that
+something doesn't work.
+My point being: It works just fine without the patch.
+And as I'm not really sure about the implications of the patch, I
+won't ack this. But it seems Larry acked it. So that's also fine, if
+he takes over responsibility for that change then. So the next
+"You broke my kernel!!11" round can go to his mail address and I won't
+be bothered by this anymore. ;)
