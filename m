@@ -1,66 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758913AbYBXDJZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755918AbYBXDMn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758913AbYBXDJZ (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 23 Feb 2008 22:09:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754434AbYBXDJG
+	id S1755918AbYBXDMn (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 23 Feb 2008 22:12:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751236AbYBXDMg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 23 Feb 2008 22:09:06 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:40261 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751132AbYBXDJD (ORCPT
+	Sat, 23 Feb 2008 22:12:36 -0500
+Received: from qmta08.westchester.pa.mail.comcast.net ([76.96.62.80]:44090
+	"EHLO QMTA08.westchester.pa.mail.comcast.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751008AbYBXDMf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 23 Feb 2008 22:09:03 -0500
-Date: Sat, 23 Feb 2008 22:08:52 -0500
-From: Christoph Hellwig <hch@infradead.org>
-To: Suresh Siddha <suresh.b.siddha@intel.com>
-Cc: mingo@elte.hu, hpa@zytor.com, tglx@linutronix.de, andi@firstfloor.org,
-       linux-kernel@vger.kernel.org, Arjan van de Ven <arjan@linux.intel.com>
-Subject: Re: [patch 2/2] x86,fpu: lazy allocation of FPU area
-Message-ID: <20080224030852.GB7282@infradead.org>
-References: <20080224023547.264625000@linux-os.sc.intel.com> <20080224023547.412501000@linux-os.sc.intel.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080224023547.412501000@linux-os.sc.intel.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
+	Sat, 23 Feb 2008 22:12:35 -0500
+X-Authority-Analysis: v=1.0 c=1 a=d2AfEDShp-gA:10 a=V11zJMkrBZ6MfeP-V_gA:9
+ a=dmoIiHOOxeDtBW5onrjMaKwPchIA:4 a=si9q_4b84H0A:10 a=WuK_CZDBSqoA:10
+Subject: Re: [PATCH] x86: add the debugfs interface for the sysprof tool
+From: Nicholas Miell <nmiell@comcast.net>
+To: Pekka Enberg <penberg@cs.helsinki.fi>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Arjan van de Ven <arjan@infradead.org>, linux-kernel@vger.kernel.org,
+       mingo@elte.hu, sandmann@redhat.com, tglx@tglx.de, hpa@zytor.com
+In-Reply-To: <47C0DB2E.5000404@cs.helsinki.fi>
+References: <20080219123756.6261c13c@laptopd505.fenrus.org>
+	 <20080223001130.d8922136.akpm@linux-foundation.org>
+	 <84144f020802230351o24b11282vbb1cecf518d91825@mail.gmail.com>
+	 <20080223104611.a3430285.akpm@linux-foundation.org>
+	 <47C0DB2E.5000404@cs.helsinki.fi>
+Content-Type: text/plain
+Date: Sat, 23 Feb 2008 19:12:27 -0800
+Message-Id: <1203822747.2439.1.camel@entropy>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.1 (2.12.1-3.fc8.0.njm.3) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Feb 23, 2008 at 06:34:39PM -0800, Suresh Siddha wrote:
-> +	if (!tsk->thread.cntxt)
-> +                tsk->thread.cntxt = alloc_cntxt_struct();
 
-Please use tabs, not spaces for indentation.
+On Sun, 2008-02-24 at 04:49 +0200, Pekka Enberg wrote:
+> Hi Andrew,
+> 
+> Andrew Morton wrote:
+> > I didn't need to write a new kernel module to enable that
+> > thirteen-character shell script, and I don't believe one needs to write a
+> > new kernel module to put a nice easy-to-use GUI around oprofile either.
+> > 
+> > This is one of those i-cant-believe-im-having-this-discussion discussions.
+> 
+> Sysprof tracks the full stack frame so it can provide meaningful call 
+> tree (who called what) which is invaluable for spotting hot _paths_. I 
+> don't see how oprofile can do that as it tracks instruction pointers only.
+> 
+> 			Pekka
 
-> +union thread_cntxt *alloc_cntxt_struct(void)
-> +{
-> +	return kmem_cache_alloc(task_cntxt_cachep, GFP_KERNEL);
-> +}
+You could try passing the --callgraph option to opcontrol.
 
-Why do you need this wrapper at all?
-
-> +struct task_struct * alloc_task_struct(struct task_struct *src)
->  {
->  	struct task_struct *tsk;
->  	tsk = kmem_cache_alloc(task_struct_cachep, GFP_KERNEL);
-> +	if (tsk && src->thread.cntxt) {
-> +		tsk->thread.cntxt = alloc_cntxt_struct();
-> +		if (!tsk->thread.cntxt) {
-> +			kmem_cache_free(task_struct_cachep, tsk);
-> +			return NULL;
-> +		}
-> +		WARN_ON((unsigned long)tsk->thread.cntxt & 15);
-> +	} else if (tsk)
-> +		tsk->thread.cntxt = NULL;
->  	return tsk;
-
-I think passing the src here doesn't make much sense.  Copying
-the fpu context structure should be done by the arch dup_task_struct
-hook.  Now if you free the fpu context in free_thread_info that means
-you don't have to have your own arch-specific task_struct allocator
-which would be a _lot_ cleaner.  Talking about clean I think
-the .cntxt field really wants a more descriptive name :)
+-- 
+Nicholas Miell <nmiell@comcast.net>
 
