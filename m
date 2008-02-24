@@ -1,53 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755631AbYBXS1T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759537AbYBXS1m@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755631AbYBXS1T (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 24 Feb 2008 13:27:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752419AbYBXS1L
+	id S1759537AbYBXS1m (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 24 Feb 2008 13:27:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752419AbYBXS1a
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 24 Feb 2008 13:27:11 -0500
-Received: from mail2.shareable.org ([80.68.89.115]:51271 "EHLO
-	mail2.shareable.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751584AbYBXS1K (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 24 Feb 2008 13:27:10 -0500
-X-Greylist: delayed 1851 seconds by postgrey-1.27 at vger.kernel.org; Sun, 24 Feb 2008 13:27:10 EST
-Date: Sun, 24 Feb 2008 16:11:35 +0000
-From: Jamie Lokier <jamie@shareable.org>
-To: Pavel Machek <pavel@ucw.cz>
-Cc: David Woodhouse <dwmw2@infradead.org>, linux-mtd@lists.infradead.org,
-       kernel list <linux-kernel@vger.kernel.org>
-Subject: Re: jffs2: -ENOSPC when truncating file?!
-Message-ID: <20080224161135.GA4918@shareable.org>
-References: <20080223235742.GE2202@elf.ucw.cz> <1203813368.5771.174.camel@shinybook.infradead.org> <20080224072423.GF2202@elf.ucw.cz>
-MIME-Version: 1.0
+	Sun, 24 Feb 2008 13:27:30 -0500
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:3386 "EHLO spitz.ucw.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752432AbYBXS13 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 24 Feb 2008 13:27:29 -0500
+Date: Sun, 24 Feb 2008 09:51:36 +0100
+From: Pavel Machek <pavel@ucw.cz>
+To: ian <spyro@f2s.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Russell King - ARM Linux <linux@arm.linux.org.uk>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       linux-arm-kernel <linux-arm-kernel@lists.arm.linux.org.uk>
+Subject: Re: [PATCH 4/6] regulator: regulator core.
+Message-ID: <20080224085135.GB4784@ucw.cz>
+References: <1203527351.4071.92.camel@localhost.localdomain> <20080223000538.e1f086e1.akpm@linux-foundation.org> <20080223095217.GA28356@flint.arm.linux.org.uk> <20080223101843.d7c001e7.akpm@linux-foundation.org> <1203794796.17284.1.camel@wirenth>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080224072423.GF2202@elf.ucw.cz>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <1203794796.17284.1.camel@wirenth>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Pavel Machek wrote:
-> > You need to write a log entry indicating the new length of the file.
-> > There is no space for new log entries.
-> > 
-> > There is a special case for removal -- 'rm gps.nmea' would work. Perhaps
-> > we should add a special case for truncation too, so that it can also use
-> > the extra pool of free space.
+On Sat 2008-02-23 19:26:36, ian wrote:
 > 
-> Yes, that would be nice. I somehow assumed that truncate can't fail
-> for -ENOSPC ... I was trying to actually free some space on the
-> filesystem...
+> On Sat, 2008-02-23 at 10:18 -0800, Andrew Morton wrote:
+> > > Renaming is not an option - "current" is an electronic term for
+> > which
+> > > there is no alternative.
+> > 
+> > amps, milliamps,
+> 
+> Are units of current, not current itself.
 
-Same here!  When I got ENOSPC from truncate, trying to free some
-space, I was so surprised (and a bit disappointed) that I assumed
-removal could fail too.  So now I'm pleasantly surprised to learn I
-can at least remove a file.
+And what? You can't measure anything but current in amps, so ambiguity
+is not a problem.
 
-It does seem odd that truncate to zero length can fail.  It is
-guaranteed to free up one or more data nodes, so there should be
-enough space for the size change node, provided GC is invoked when
-necessary and the node sizes are compatible for this in corner cases.
-
--- Jamie
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
