@@ -1,195 +1,238 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755867AbYBXUAz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756999AbYBXUCb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755867AbYBXUAz (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 24 Feb 2008 15:00:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752330AbYBXUAp
+	id S1756999AbYBXUCb (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 24 Feb 2008 15:02:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752403AbYBXUCX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 24 Feb 2008 15:00:45 -0500
-Received: from wa-out-1112.google.com ([209.85.146.180]:57550 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752120AbYBXUAo (ORCPT
+	Sun, 24 Feb 2008 15:02:23 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:54173 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752120AbYBXUCV convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 24 Feb 2008 15:00:44 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=l+Tt6PLmVEyZonSY4bFdFpl2hiJbiwq2nYgUA8X8yFc77zALSTQ/1toRW6L9ZFLC3Rd6moEUFjrnReerlR/1wTTXvdSaJ3ohTHMDT8IUrbv0+m6eXMW6XjunC+ON/hOI3jdw2lTc6SV2OLYaVcxr8T7KuVkUkP8o33XT4iuvgWI=
-Message-ID: <e367bd3e0802241200x152a46adw47bfa98c563103c6@mail.gmail.com>
-Date: Sun, 24 Feb 2008 15:00:42 -0500
-From: "Nicholas Marquez" <nicholas.marquez@gatech.edu>
-To: "Nick Andrew" <nick@nick-andrew.net>
-Subject: Re: [PATCH] More accessible usage of custom flags
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <20080224125011.GB18845@tull.net>
+	Sun, 24 Feb 2008 15:02:21 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Kevin Winchester <kjwinchester@gmail.com>
+Subject: Re: linux-next: Tree for Feb 24
+Date: Sun, 24 Feb 2008 21:00:45 +0100
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>, len.brown@intel.com, pavel@suse.cz,
+       linux-pm@lists.linux-foundation.org
+References: <20080224162309.3e67dd22.sfr@canb.auug.org.au> <47C1B52B.3080104@gmail.com>
+In-Reply-To: <47C1B52B.3080104@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8BIT
 Content-Disposition: inline
-References: <e367bd3e0802161852v1265f101h86326b16362dd860@mail.gmail.com>
-	 <e367bd3e0802231328l1eb928f5pe538264c3a42e3d2@mail.gmail.com>
-	 <20080223220458.GA3496@tull.net>
-	 <e367bd3e0802231428k11a7d8ddgdfafacfba4c4d078@mail.gmail.com>
-	 <20080223233906.GA18845@tull.net>
-	 <e367bd3e0802240136kf9d30b9xfbaa84fa3e05661d@mail.gmail.com>
-	 <20080224125011.GB18845@tull.net>
-X-Google-Sender-Auth: 81616cafc1eff78c
+Message-Id: <200802242100.46474.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Feb 24, 2008 at 7:50 AM, Nick Andrew <nick@nick-andrew.net> wrote:
-> On Sun, Feb 24, 2008 at 04:36:24AM -0500, Nicholas Marquez wrote:
->  > Yes, I would like to expand them.  If possibly, I'd like to take out
->  > the individual config options for gcc flags and integrate them into
->  > the help description.  I feel that the redundancy would not only be
->  > ugly, but possibly confusing.
->
->  If you allow CUSTOM_CFLAGS and friends (as an open-ended set of flags for
->  the compiler) then yes, having config options like CC_OPTIMIZE_FOR_SIZE
->  is redundant and should be removed.
->
->  Alternately, don't have a CUSTOM_CFLAGS and expand on the set of config
->  options which set individual compiler flags.  They could be in their
->  own menu, a bunch of checkboxes to tweak GCC's various optimisation
->  algorithms and/or warnings. That's certainly going to be friendlier
->  for the not-very-experienced kernel builder, if less flexible than
->  CUSTOM_CFLAGS.
+On Sunday, 24 of February 2008, Kevin Winchester wrote:
+> Stephen Rothwell wrote:
+> > Hi all,
 
-The problem with this is that it is very static.  As you are well
-aware, options differ between gcc versions.  Some options also differ
-in result depending on the gcc version; for example, -ftree-vectorize
-in gcc 3.x versus gcc 4.x.  I believe that it would be cleaner to have
-the custom flag menu and suggest some flags for specific uses, such as
--Os,  in the help description. It might look something like:
+Hi,
 
-help
-         You can use this to easily set custom gcc CFLAGS to be used
-         for the entire kernel build process (including modules).
+> > I have created today's linux-next tree at
+> > git://git.kernel.org/pub/scm/linux/kernel/git/sfr/linux-next.git.
+> > 
+> > You can see which trees have been included by looking in the Next/Trees
+> > file in the source.  There are also quilt-import.log and merge.log files
+> > in the Next directory.  Between each merge, the tree was built with
+> > allmodconfig for both powerpc and x86_64.
+> > 
+> > There only one minor merge problem and a few build failures (the two in
+> > Linus' tree have been fixed and the other reported).
+> > 
+> > We are up to 32 trees, more are welcome (even if they are currently
+> > empty).
+> > 
+> > Status of my local build tests is at
+> > http://kisskb.ellerman.id.au/kisskb/branch/9/.
+> > 
+> 
+> I tried something with this tree that I haven't tried in a while - Suspend
+> to RAM.  It has not often worked for me in the past with any tree, but
+> normally there isn't any information in the log that indicates the cause of
+> the failure.
+> 
+> Today was different - I attempted to suspend and resume from the console,
+> and the machine did not come back up.  I found the following in my log -
+> any help would be appreciated.
+> 
+> Feb 24 13:59:56 alekhine kernel: [  456.497875] PM: Syncing filesystems ... done.
+> Feb 24 14:00:20 alekhine kernel: [  456.507273] Freezing user space processes ... (elapsed 0.00 seconds) done.
+> Feb 24 14:00:20 alekhine kernel: [  456.510447] Freezing remaining freezable tasks ... (elapsed 0.00 seconds) done.
+> Feb 24 14:00:20 alekhine kernel: [  456.510754] ACPI: Preparing to enter system sleep state S3
+> Feb 24 14:00:20 alekhine kernel: [  456.612370] Suspending console(s)
+> Feb 24 14:00:20 alekhine kernel: [  456.616254] sd 3:0:0:0: [sda] Synchronizing SCSI cache
+> Feb 24 14:00:20 alekhine kernel: [  456.616521] sd 3:0:0:0: [sda] Stopping disk
+> Feb 24 14:00:20 alekhine kernel: [  456.618221] ACPI: PCI interrupt for device 0000:00:11.5 disabled
+> Feb 24 14:00:20 alekhine kernel: [  456.630296] ACPI: PCI interrupt for device 0000:00:10.4 disabled
+> Feb 24 14:00:20 alekhine kernel: [  456.641085] ACPI: PCI interrupt for device 0000:00:10.3 disabled
+> Feb 24 14:00:20 alekhine kernel: [  456.651877] ACPI: PCI interrupt for device 0000:00:10.2 disabled
+> Feb 24 14:00:20 alekhine kernel: [  456.662716] ACPI: PCI interrupt for device 0000:00:10.1 disabled
+> Feb 24 14:00:20 alekhine kernel: [  456.673550] ACPI: PCI interrupt for device 0000:00:10.0 disabled
+> Feb 24 14:00:20 alekhine kernel: [  456.684385] ACPI: PCI interrupt for device 0000:00:0f.1 disabled
+> Feb 24 14:00:20 alekhine kernel: [  456.695056] ACPI: PCI interrupt for device 0000:00:0f.0 disabled
+> Feb 24 14:00:20 alekhine kernel: [  456.705856] 5 locks held by bash/2929:
+> Feb 24 14:00:20 alekhine kernel: [  456.705856]  #0:  (&buffer->mutex){--..}, at: [<c018960c>] sysfs_write_file+0x25/0xe3
+> Feb 24 14:00:20 alekhine kernel: [  456.705856]  #1:  (pm_mutex){--..}, at: [<c0138c54>] enter_state+0xea/0x100
+> Feb 24 14:00:20 alekhine kernel: [  456.705856]  #2:  (pm_sleep_rwsem){----}, at: [<c023c4b8>] device_suspend+0x25/0x251
+> Feb 24 14:00:20 alekhine kernel: [  456.705856]  #3:  (&data->update_lock#2){--..}, at: [<c029cb2b>] abituguru_suspend+0x13/0x18
+> Feb 24 14:00:20 alekhine kernel: [  456.705856]  #4:  (&vptr->lock){++..}, at: [<c0244665>] velocity_suspend+0x37/0x302
+> Feb 24 14:00:20 alekhine kernel: [  456.705856] irq event stamp: 19374
+> Feb 24 14:00:20 alekhine kernel: [  456.705856] hardirqs last  enabled at (19373): [<c0326664>] __mutex_unlock_slowpath+0xd5/0xef
+> Feb 24 14:00:20 alekhine kernel: [  456.705856] hardirqs last disabled at (19374): [<c0327bca>] _spin_lock_irqsave+0xf/0x3c
+> Feb 24 14:00:20 alekhine kernel: [  456.705856] softirqs last  enabled at (18484): [<c011e6ba>] __do_softirq+0x99/0x9e
+> Feb 24 14:00:20 alekhine kernel: [  456.705856] softirqs last disabled at (18479): [<c0104f15>] do_softirq+0x58/0xa8
+> Feb 24 14:00:20 alekhine kernel: [  456.705856] Pid: 2929, comm: bash Not tainted 2.6.25-rc2-next-20080224 #58
+> Feb 24 14:00:20 alekhine kernel: [  456.705856]  [<c01177c7>] __schedule_bug+0x58/0x5f
+> Feb 24 14:00:20 alekhine kernel: [  456.705856]  [<c0325b43>] schedule+0x67/0x3b3
 
-         Examples include:
-         ~"-Os" to optimize for size, i.e. for an embedded system or for
-         more efficient cache usage
-         ~"-s" to strip all symbol table and relocation information
+Well, could you check what's at schedule+0x67, please?
 
-         Other compiler flags can be used for increasing or reducing
-         optimisation, enabling debugging, cross compilation
-         and so on.  Please use "info gcc" or "man gcc" for more
-         reference.
+> Feb 24 14:00:20 alekhine kernel: [  456.705856]  [<c0121c39>] ? __mod_timer+0x8d/0x98
+> Feb 24 14:00:20 alekhine kernel: [  456.705856]  [<c0326043>] schedule_timeout+0x73/0x91
+> Feb 24 14:00:20 alekhine kernel: [  456.705856]  [<c012185c>] ? process_timeout+0x0/0xa
+> Feb 24 14:00:20 alekhine kernel: [  456.705856]  [<c0326075>] schedule_timeout_uninterruptible+0x14/0x16
+> Feb 24 14:00:20 alekhine kernel: [  456.705856]  [<c0121c54>] msleep+0x10/0x16
+> Feb 24 14:00:20 alekhine kernel: [  456.705856]  [<c01e0e51>] pci_set_power_state+0x17f/0x200
+> Feb 24 14:00:20 alekhine kernel: [  456.705856]  [<c0244917>] velocity_suspend+0x2e9/0x302
 
-         If unsure, leave blank.
+velocity_suspend() seems to be at fault.
 
-And for LDFLAGS, examples include:
-          ~"-S" to strip all debugging symbols, which are usually unnecessary
-          unless you intend to debug the kernel
-          ~"-s" to strip all symbol information from the kernel
+At the moment I have to take care of some more urgent things, I'll have a look
+at it tomorrow.
 
-And for MAKEFLAGS, examples could include:
-          ~"-j{n}" where n is the number of jobs you'd like to run for
-          make.  This will make the kernel building process be greatly
-          faster.  A good rule of thumb is for n to be 1 + the number of
-          processor cores that are on the compiling machine.
-          ~"-K" to attempt to continue compilation, even if errors are
-          encountered, running until all other compilation paths (that
-          do not depend on any that have errored) complete.
-
-These are of course, just a few examples, but it serves to show the idea.
-
->
->
->  > >  I'm hoping we don't need any stern warnings in the kernel configuration.
->  > >  Although I expect configuring bogus gcc flags is going to break the
->  > >  build far worse than selecting bad options otherwise. If the user
->  > >  makes a mistake in CUSTOM_CFLAGS is the build going to fail with
->  > >  a message "error in CUSTOM_CFLAGS" or is it going to spew out pages
->  > >  of gcc error messages?  It is nice if error messages can point back
->  > >  to the source of the error, so the user doesn't have to look through
->  > >  the entire kernel configuration for what they did wrong.
->  >
->  > I hadn't thought of that.  It would certainly be more useful than a
->  > stern warning.  ^^;  Have you any ideas on how to implement such a
->  > thing?  I would imagine a configure-script-like test on the flags to
->  > make sure that gcc could take them correctly would be in order.  Then
->  > one could also capture any warnings or errors that gcc outputs (such
->  > as redundant flags, improper invocation, etc.), fail the build, and
->  > output the messages.  As far as capturing dangerous flags for the
->  > kernel (such as -ffast-math or -fmerge-all-constants), there could be
->  > a blacklist... but that would depend on the gcc version used... :/
->
->  I think that's a very interesting idea. Yes, you can test the flags by
->  compiling and linking a simple program. If it fails, your flags are
->  bad. You can stop the build right there and say "fix your flags".
->
->  The build could also capture the GCC warning/error output and
->  post-process it. Certain types of warnings might be suppressed,
->  or cause the build to fail (based on selected config options). My
->  kernel builds always show a handful of "may be used uninitialised" or
->  similar ... I just assume that those warnings are harmless. It is best
->  of course that these warnings don't occur at all, and I expect kernel
->  developers to fix them when they get a chance.  The idea in this
->  paragraph would be desirable to me, independent of how the CFLAGS are
->  specified.
-
-Glad you agree. ;)
->
->
->
->  > >  > Something else that could be included is a link to the manual for the
->  > >  > (currently used) gcc's command flags
->  > >  > (http://gcc.gnu.org/onlinedocs/gcc-4.2.3/gcc/index.html#toc_Invoking-GCC)
->  > >  > or at least to the online docs, considering that specifying one
->  > >  > specific gcc version's manual would yield various issues.
->  > >
->  > >  "info gcc" will give all that information in far more detail than I
->  > >  have time to read.
->  >
->  > I believe you misunderstand.  I mean to include the link in the help
->  > message.  Like how the links to the appropriate sites for device
->  > drivers are included in their help messages.
->
->  No, I think I understood correctly. If you tell the user to go to that
->  long URL then you run the risk of pointing to the documentation for a
->  different version of GCC. On the other hand, if you tell them to type
->  "info gcc" then they will see the documentation for the version of GCC
->  which they have installed. And it's also a lot friendlier to write:
->  "Type 'info gcc' to see a full list of the compiler options".
->
->
->  > >  > I feel that perhaps it is a bit silly to put in such description, as
->  > >  > one using the flags should only do so in knowing specifically which
->  > >  > ones they wish to use and why ahead of time.  However, it cannot hurt
->  > >  > to put in more help documentation, so it's a fine suggestion.
->  > >
->  > >  Well, it can't be both silly and a fine suggestion. Does it dumb down
->  > >  the kernel configuration process too much?
->  >
->  > No, I feel that both adjectives are perfectly reconcilable, at least
->  > in this case.  Again, more documentation couldn't hurt.  "Dumbing
->  > down" kernel configuration may be less aesthetically pleasing to
->  > purists, but that is a tiny price to pay for usability and a widening
->  > of kernel builders.
->
->  I'm looking to find a balance among the competing objectives. Time
->  will tell with any improvements. I'm also hoping for an aesthetically
->  pleasing config menu -- perhaps someone else can take on the challenge of
->  restructuring it to improve the ordering, structure and names of options.
-
-Is anyone else out there reading these messages?  Cleaning and
-"upgrading" the kernel's configuration and build systems is something
-that could both use a lot of input and a lot of helping hands.  ;)  If
-you've any patches for usability, aesthetics, optimization,
-configuration or build robustness, etc., now would be the time to
-share.
->
->
->  > PS to Nick:  Sorry for the double-send. Didn't CC lkml;  a forward
->  > would be ugly.
->
->  No prob.
->
->
->
->  Nick.
->  --
->  PGP Key ID = 0x418487E7                      http://www.nick-andrew.net/
->  PGP Key fingerprint = B3ED 6894 8E49 1770 C24A  67E3 6266 6EB9 4184 87E7
->
+> Feb 24 14:00:20 alekhine kernel: [  456.705856]  [<c0133854>] ? mark_held_locks+0x4e/0x66
+> Feb 24 14:00:20 alekhine kernel: [  456.705856]  [<c0326664>] ? __mutex_unlock_slowpath+0xd5/0xef
+> Feb 24 14:00:20 alekhine kernel: [  456.705856]  [<c01339dd>] ? trace_hardirqs_on+0xe5/0x120
+> Feb 24 14:00:20 alekhine kernel: [  456.705856]  [<c01e249e>] pci_device_suspend+0x1b/0x4b
+> Feb 24 14:00:20 alekhine kernel: [  456.705856]  [<c023c625>] device_suspend+0x192/0x251
+> Feb 24 14:00:20 alekhine kernel: [  456.705856]  [<c0138a7a>] suspend_devices_and_enter+0x3d/0xe0
+> Feb 24 14:00:20 alekhine kernel: [  456.705856]  [<c0138c1c>] enter_state+0xb2/0x100
+> Feb 24 14:00:20 alekhine kernel: [  456.705856]  [<c0138cfe>] state_store+0x94/0xac
+> Feb 24 14:00:20 alekhine kernel: [  456.705856]  [<c0138c6a>] ? state_store+0x0/0xac
+> Feb 24 14:00:20 alekhine kernel: [  456.705856]  [<c01d50c5>] kobj_attr_store+0x1a/0x22
+> Feb 24 14:00:20 alekhine kernel: [  456.705856]  [<c018969f>] sysfs_write_file+0xb8/0xe3
+> Feb 24 14:00:20 alekhine kernel: [  456.705856]  [<c01895e7>] ? sysfs_write_file+0x0/0xe3
+> Feb 24 14:00:20 alekhine kernel: [  456.705856]  [<c01597d7>] vfs_write+0x88/0xf8
+> Feb 24 14:00:20 alekhine kernel: [  456.705856]  [<c0159c6e>] sys_write+0x3b/0x60
+> Feb 24 14:00:20 alekhine kernel: [  456.705856]  [<c0102bfa>] sysenter_past_esp+0x5f/0xa5
+> Feb 24 14:00:20 alekhine kernel: [  456.705856]  =======================
+> Feb 24 14:00:20 alekhine kernel: [  456.716732] 
+> Feb 24 14:00:20 alekhine kernel: [  456.716732] =================================
+> Feb 24 14:00:20 alekhine kernel: [  456.716732] [ INFO: inconsistent lock state ]
+> Feb 24 14:00:20 alekhine kernel: [  456.716732] 2.6.25-rc2-next-20080224 #58
+> Feb 24 14:00:20 alekhine kernel: [  456.716732] ---------------------------------
+> Feb 24 14:00:20 alekhine kernel: [  456.716732] inconsistent {in-hardirq-W} -> {hardirq-on-W} usage.
+> Feb 24 14:00:20 alekhine kernel: [  456.716732] bash/2929 [HC0[0]:SC0[0]:HE1:SE1] takes:
+> Feb 24 14:00:20 alekhine kernel: [  456.716732]  (&vptr->lock){++..}, at: [<c0244665>] velocity_suspend+0x37/0x302
+> Feb 24 14:00:20 alekhine kernel: [  456.716732] {in-hardirq-W} state was registered at:
+> Feb 24 14:00:20 alekhine kernel: [  456.716732]   [<c013416b>] __lock_acquire+0x3ac/0xb43
+> Feb 24 14:00:20 alekhine kernel: [  456.716732]   [<c0134963>] lock_acquire+0x61/0x7d
+> Feb 24 14:00:20 alekhine kernel: [  456.716732]   [<c0243940>] velocity_intr+0x24/0x579
+> Feb 24 14:00:20 alekhine kernel: [  456.716732]   [<c03279fb>] _spin_lock+0x23/0x32
+> Feb 24 14:00:20 alekhine kernel: [  456.716732]   [<c0243940>] velocity_intr+0x24/0x579
+> Feb 24 14:00:20 alekhine kernel: [  456.716733]   [<c0243940>] velocity_intr+0x24/0x579
+> Feb 24 14:00:20 alekhine kernel: [  456.716733]   [<c02ca5e1>] snd_via8233_interrupt+0xdc/0xe7
+> Feb 24 14:00:20 alekhine kernel: [  456.716733]   [<c013a884>] handle_fasteoi_irq+0x95/0xab
+> Feb 24 14:00:20 alekhine kernel: [  456.716733]   [<c01398b3>] handle_IRQ_event+0x1a/0x46
+> Feb 24 14:00:20 alekhine kernel: [  456.716733]   [<c013a88d>] handle_fasteoi_irq+0x9e/0xab
+> Feb 24 14:00:20 alekhine kernel: [  456.716733]   [<c013a7ef>] handle_fasteoi_irq+0x0/0xab
+> Feb 24 14:00:20 alekhine kernel: [  456.716733]   [<c0105010>] do_IRQ+0xab/0xd4
+> Feb 24 14:00:20 alekhine kernel: [  456.716733]   [<ffffffff>] 0xffffffff
+> Feb 24 14:00:20 alekhine kernel: [  456.716733] irq event stamp: 19374
+> Feb 24 14:00:20 alekhine kernel: [  456.716733] hardirqs last  enabled at (19373): [<c0326664>] __mutex_unlock_slowpath+0xd5/0xef
+> Feb 24 14:00:20 alekhine kernel: [  456.716733] hardirqs last disabled at (19374): [<c0327bca>] _spin_lock_irqsave+0xf/0x3c
+> Feb 24 14:00:20 alekhine kernel: [  456.716733] softirqs last  enabled at (18484): [<c011e6ba>] __do_softirq+0x99/0x9e
+> Feb 24 14:00:20 alekhine kernel: [  456.716733] softirqs last disabled at (18479): [<c0104f15>] do_softirq+0x58/0xa8
+> Feb 24 14:00:20 alekhine kernel: [  456.716733] 
+> Feb 24 14:00:20 alekhine kernel: [  456.716733] other info that might help us debug this:
+> Feb 24 14:00:20 alekhine kernel: [  456.716733] 5 locks held by bash/2929:
+> Feb 24 14:00:20 alekhine kernel: [  456.716733]  #0:  (&buffer->mutex){--..}, at: [<c018960c>] sysfs_write_file+0x25/0xe3
+> Feb 24 14:00:20 alekhine kernel: [  456.716733]  #1:  (pm_mutex){--..}, at: [<c0138c54>] enter_state+0xea/0x100
+> Feb 24 14:00:20 alekhine kernel: [  456.716733]  #2:  (pm_sleep_rwsem){----}, at: [<c023c4b8>] device_suspend+0x25/0x251
+> Feb 24 14:00:20 alekhine kernel: [  456.716733]  #3:  (&data->update_lock#2){--..}, at: [<c029cb2b>] abituguru_suspend+0x13/0x18
+> Feb 24 14:00:20 alekhine kernel: [  456.716733]  #4:  (&vptr->lock){++..}, at: [<c0244665>] velocity_suspend+0x37/0x302
+> Feb 24 14:00:20 alekhine kernel: [  456.716733] 
+> Feb 24 14:00:20 alekhine kernel: [  456.716733] stack backtrace:
+> Feb 24 14:00:20 alekhine kernel: [  456.716733] Pid: 2929, comm: bash Not tainted 2.6.25-rc2-next-20080224 #58
+> Feb 24 14:00:20 alekhine kernel: [  456.716733]  [<c0132d3b>] print_usage_bug+0x10d/0x11a
+> Feb 24 14:00:20 alekhine kernel: [  456.716733]  [<c013361f>] mark_lock+0x1f1/0x3d8
+> Feb 24 14:00:20 alekhine kernel: [  456.716733]  [<c0133854>] mark_held_locks+0x4e/0x66
+> Feb 24 14:00:20 alekhine kernel: [  456.716733]  [<c0327ec3>] ? _spin_unlock_irq+0x22/0x42
+> Feb 24 14:00:20 alekhine kernel: [  456.716733]  [<c01339c7>] trace_hardirqs_on+0xcf/0x120
+> Feb 24 14:00:20 alekhine kernel: [  456.716733]  [<c0327ec3>] _spin_unlock_irq+0x22/0x42
+> Feb 24 14:00:20 alekhine kernel: [  456.716733]  [<c0117322>] finish_task_switch+0x46/0x7d
+> Feb 24 14:00:20 alekhine kernel: [  456.716733]  [<c01172dc>] ? finish_task_switch+0x0/0x7d
+> Feb 24 14:00:20 alekhine kernel: [  456.716733]  [<c0325e39>] schedule+0x35d/0x3b3
+> Feb 24 14:00:20 alekhine kernel: [  456.716733]  [<c0121c39>] ? __mod_timer+0x8d/0x98
+> Feb 24 14:00:20 alekhine kernel: [  456.716733]  [<c0326043>] schedule_timeout+0x73/0x91
+> Feb 24 14:00:20 alekhine kernel: [  456.716733]  [<c012185c>] ? process_timeout+0x0/0xa
+> Feb 24 14:00:20 alekhine kernel: [  456.716733]  [<c0326075>] schedule_timeout_uninterruptible+0x14/0x16
+> Feb 24 14:00:20 alekhine kernel: [  456.716733]  [<c0121c54>] msleep+0x10/0x16
+> Feb 24 14:00:20 alekhine kernel: [  456.716733]  [<c01e0e51>] pci_set_power_state+0x17f/0x200
+> Feb 24 14:00:20 alekhine kernel: [  456.716733]  [<c0244917>] velocity_suspend+0x2e9/0x302
+> Feb 24 14:00:20 alekhine kernel: [  456.716733]  [<c0133854>] ? mark_held_locks+0x4e/0x66
+> Feb 24 14:00:20 alekhine kernel: [  456.716733]  [<c0326664>] ? __mutex_unlock_slowpath+0xd5/0xef
+> Feb 24 14:00:20 alekhine kernel: [  456.716733]  [<c01339dd>] ? trace_hardirqs_on+0xe5/0x120
+> Feb 24 14:00:20 alekhine kernel: [  456.716733]  [<c01e249e>] pci_device_suspend+0x1b/0x4b
+> Feb 24 14:00:20 alekhine kernel: [  456.716733]  [<c023c625>] device_suspend+0x192/0x251
+> Feb 24 14:00:20 alekhine kernel: [  456.716733]  [<c0138a7a>] suspend_devices_and_enter+0x3d/0xe0
+> Feb 24 14:00:20 alekhine kernel: [  456.716733]  [<c0138c1c>] enter_state+0xb2/0x100
+> Feb 24 14:00:20 alekhine kernel: [  456.716733]  [<c0138cfe>] state_store+0x94/0xac
+> Feb 24 14:00:20 alekhine kernel: [  456.716733]  [<c0138c6a>] ? state_store+0x0/0xac
+> Feb 24 14:00:20 alekhine kernel: [  456.716733]  [<c01d50c5>] kobj_attr_store+0x1a/0x22
+> Feb 24 14:00:20 alekhine kernel: [  456.716733]  [<c018969f>] sysfs_write_file+0xb8/0xe3
+> Feb 24 14:00:20 alekhine kernel: [  456.716733]  [<c01895e7>] ? sysfs_write_file+0x0/0xe3
+> Feb 24 14:00:20 alekhine kernel: [  456.716733]  [<c01597d7>] vfs_write+0x88/0xf8
+> Feb 24 14:00:20 alekhine kernel: [  456.716733]  [<c0159c6e>] sys_write+0x3b/0x60
+> Feb 24 14:00:20 alekhine kernel: [  456.716733]  [<c0102bfa>] sysenter_past_esp+0x5f/0xa5
+> Feb 24 14:00:20 alekhine kernel: [  456.716733]  =======================
+> Feb 24 14:00:20 alekhine kernel: [  456.729170] Intel machine check architecture supported.
+> Feb 24 14:00:20 alekhine kernel: [  456.729170] Intel machine check reporting enabled on CPU#0.
+> Feb 24 14:00:20 alekhine kernel: [  456.733181] Velocity is AUTO mode
+> Feb 24 14:00:20 alekhine kernel: [  456.733182] ACPI: PCI Interrupt 0000:00:0f.0[B] -> Link [ALKA] -> GSI 20 (level, low) -> IRQ 20
+> Feb 24 14:00:20 alekhine kernel: [  456.733184] ACPI: PCI Interrupt 0000:00:0f.1[A] -> Link [ALKA] -> GSI 20 (level, low) -> IRQ 20
+> Feb 24 14:00:20 alekhine kernel: [  456.733185] ACPI: PCI Interrupt 0000:00:10.0[A] -> GSI 21 (level, low) -> IRQ 21
+> Feb 24 14:00:20 alekhine kernel: [  456.733185] usb usb2: root hub lost power or was reset
+> Feb 24 14:00:20 alekhine kernel: [  456.744080] ACPI: PCI Interrupt 0000:00:10.1[A] -> GSI 21 (level, low) -> IRQ 21
+> Feb 24 14:00:20 alekhine kernel: [  456.744080] usb usb3: root hub lost power or was reset
+> Feb 24 14:00:20 alekhine kernel: [  456.754997] ACPI: PCI Interrupt 0000:00:10.2[B] -> GSI 21 (level, low) -> IRQ 21
+> Feb 24 14:00:20 alekhine kernel: [  456.754997] usb usb4: root hub lost power or was reset
+> Feb 24 14:00:20 alekhine kernel: [  456.765914] ACPI: PCI Interrupt 0000:00:10.3[B] -> GSI 21 (level, low) -> IRQ 21
+> Feb 24 14:00:20 alekhine kernel: [  456.765914] usb usb5: root hub lost power or was reset
+> Feb 24 14:00:20 alekhine kernel: [  456.776818] ACPI: PCI Interrupt 0000:00:10.4[C] -> GSI 21 (level, low) -> IRQ 21
+> Feb 24 14:00:20 alekhine kernel: [  456.787745] ACPI: PCI Interrupt 0000:00:11.5[C] -> GSI 22 (level, low) -> IRQ 22
+> Feb 24 14:00:20 alekhine kernel: [  456.789881] ACPI: PCI Interrupt 0000:01:00.0[A] -> GSI 16 (level, low) -> IRQ 16
+> Feb 24 14:00:20 alekhine kernel: [  456.789961] sd 3:0:0:0: [sda] Starting disk
+> Feb 24 14:00:20 alekhine kernel: [  457.031803] ata3.01: ACPI cmd ef/03:0c:00:00:00:b0 filtered out
+> Feb 24 14:00:20 alekhine kernel: [  457.031803] ata3.01: ACPI cmd ef/03:42:00:00:00:b0 filtered out
+> Feb 24 14:00:20 alekhine kernel: [  457.185224] ata3.00: ACPI cmd ef/03:0c:00:00:00:a0 filtered out
+> Feb 24 14:00:20 alekhine kernel: [  457.185224] ata3.00: ACPI cmd ef/03:42:00:00:00:a0 filtered out
+> Feb 24 14:00:20 alekhine kernel: [  457.340841] ata3.00: configured for UDMA/33
+> Feb 24 14:00:20 alekhine kernel: [  457.528347] ata3.01: configured for UDMA/33
+> Feb 24 14:00:20 alekhine kernel: [  460.975795] ata4.00: ACPI cmd ef/03:0c:00:00:00:a0 filtered out
+> Feb 24 14:00:20 alekhine kernel: [  460.975795] ata4.00: ACPI cmd ef/03:45:00:00:00:a0 filtered out
+> Feb 24 14:00:20 alekhine kernel: [  460.978040] ata4.00: configured for UDMA/100
+> Feb 24 14:00:20 alekhine kernel: [  460.981191] sd 3:0:0:0: [sda] 156301488 512-byte hardware sectors (80026 MB)
+> Feb 24 14:00:20 alekhine kernel: [  460.981191] sd 3:0:0:0: [sda] Write Protect is off
+> Feb 24 14:00:20 alekhine kernel: [  460.981191] sd 3:0:0:0: [sda] Write cache: enabled, read cache: enabled, doesn't support DPO or FUA
+> Feb 24 14:00:20 alekhine kernel: [  461.524370] Restarting tasks ... <6>usb 2-1: USB disconnect, address 2
+> Feb 24 14:00:20 alekhine kernel: [  461.569374] done.
+> Feb 24 14:00:21 alekhine kernel: [  461.755858] usb 2-1: new low speed USB device using uhci_hcd and address 4
+> Feb 24 14:00:21 alekhine kernel: [  461.915256] usb 2-1: configuration #1 chosen from 1 choice
+> Feb 24 14:00:21 alekhine kernel: [  461.955599] input: Logitech USB Mouse as /devices/pci0000:00/0000:00:10.0/usb2/2-1/2-1:1.0/input/input5
+> Feb 24 14:00:21 alekhine kernel: [  461.979344] input: USB HID v1.10 Mouse [Logitech USB Mouse] on usb-0000:00:10.0-1
+> Feb 24 14:00:21 alekhine kernel: [  461.979553] usb 2-2: USB disconnect, address 3
+> Feb 24 14:00:21 alekhine kernel: [  462.236114] usb 2-2: new low speed USB device using uhci_hcd and address 5
+> Feb 24 14:00:21 alekhine kernel: [  462.405538] usb 2-2: configuration #1 chosen from 1 choice
+> Feb 24 14:00:21 alekhine kernel: [  462.439929] input: Microsoft Microsoft® Digital Media Pro Keyboard as /devices/pci0000:00/0000:00:10.0/usb2/2-2/2-2:1.0/input/input6
+> Feb 24 14:00:21 alekhine kernel: [  462.463834] input: USB HID v1.11 Keyboard [Microsoft Microsoft® Digital Media Pro Keyboard] on usb-0000:00:10.0-2
+> Feb 24 14:00:21 alekhine kernel: [  462.492181] input: Microsoft Microsoft® Digital Media Pro Keyboard as /devices/pci0000:00/0000:00:10.0/usb2/2-2/2-2:1.1/input/input7
+> Feb 24 14:00:21 alekhine kernel: [  462.517592] input: USB HID v1.11 Device [Microsoft Microsoft® Digital Media Pro Keyboard] on usb-0000:00:10.0-2
