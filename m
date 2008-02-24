@@ -1,40 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760090AbYBXF6z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752963AbYBXGQG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760090AbYBXF6z (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 24 Feb 2008 00:58:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753725AbYBXF6p
+	id S1752963AbYBXGQG (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 24 Feb 2008 01:16:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750814AbYBXGPz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 24 Feb 2008 00:58:45 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:41628
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1751853AbYBXF6o (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 24 Feb 2008 00:58:44 -0500
-Date: Sat, 23 Feb 2008 21:59:24 -0800 (PST)
-Message-Id: <20080223.215924.141439027.davem@davemloft.net>
-To: jeff@garzik.org
-Cc: romieu@fr.zoreil.com, bfields@fieldses.org, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [git patches] net driver fixes
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <47C10546.7050508@garzik.org>
-References: <20080220224053.GA8500@electric-eye.fr.zoreil.com>
-	<20080220.150753.17432290.davem@davemloft.net>
-	<47C10546.7050508@garzik.org>
-X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Sun, 24 Feb 2008 01:15:55 -0500
+Received: from nn7.de ([85.214.94.156]:42961 "EHLO nn7.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750796AbYBXGPz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 24 Feb 2008 01:15:55 -0500
+Subject: Re: 2.6.25-current-git hangs on boot
+From: Soeren Sonnenburg <kernel@nn7.de>
+To: Oliver Pinter <oliver.pntr@gmail.com>
+Cc: Linux Kernel <linux-kernel@vger.kernel.org>
+In-Reply-To: <6101e8c40802231100t3af57018r139de0b52cd556b5@mail.gmail.com>
+References: <1203789325.4063.9.camel@localhost>
+	 <6101e8c40802231100t3af57018r139de0b52cd556b5@mail.gmail.com>
+Content-Type: text/plain
 Content-Transfer-Encoding: 7bit
+Date: Sun, 24 Feb 2008 07:15:10 +0100
+Message-Id: <1203833710.4006.3.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.3 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Jeff Garzik <jeff@garzik.org>
-Date: Sun, 24 Feb 2008 00:48:54 -0500
+On Sat, 2008-02-23 at 20:00 +0100, Oliver Pinter wrote:
+> the pci=nommconf kernel parameter helped it?
 
-> I trust you...  Otherwise I wouldn't have volunteered to move my 
-> upstream from Linus to you :)
-...
-> So (as you saw in last email)... rebased and resend.
+yes indeed, this switch reliably helps to over come the hang at *this
+stage* (I tried booting with booth the switch and w/o).
 
-Thanks :)
+however with 50% chance I still see a hang directly after
+
+cpuidle: using governor ladder
+
+note that I've never seen these hangs on 2.6.24* ...
+
+Soeren
+
+> On 2/23/08, Soeren Sonnenburg <kernel@nn7.de> wrote:
+> > Hi,
+> >
+> > trying out newest git, I see a hang with
+> > ACPI: SSDT 7feb9c10, 02ae (r1 APPLE CPU0Ist 3000 intl 20050309)
+> > ACPI: SSDT 7feb9910, 02c3 (r1 APPLE CPU0Cst 3001 intl 20050309)
+> > ...
+> > ACPI: Processor [CPU0] (supports 8 throttling states)
+> > ACPI: SSDT 7feb9f10, 0087 (r1 APPLE CPU1Ist 3000 intl 20050309)
+> > ACPI: SSDT 7feb8f10, 0085 (r1 APPLE CPU1Cst 3001 intl 20050309)
+> > ...
+> > ACPI: ACPI0007:01 is registered as cooling_device1
+> > ACPI: Processor [CPU1] (supports 8 throttling states)
+> >
+> > as the last message...
+> >
+> > Any ideas?
+> > Soeren
+> > --
+> > To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> > the body of a message to majordomo@vger.kernel.org
+> > More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> > Please read the FAQ at  http://www.tux.org/lkml/
+> >
+> 
+> 
