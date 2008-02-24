@@ -1,266 +1,302 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754121AbYBXWzk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756764AbYBXXNB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754121AbYBXWzk (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 24 Feb 2008 17:55:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756243AbYBXWzb
+	id S1756764AbYBXXNB (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 24 Feb 2008 18:13:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752985AbYBXXMv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 24 Feb 2008 17:55:31 -0500
-Received: from smtp121.sbc.mail.sp1.yahoo.com ([69.147.64.94]:29681 "HELO
-	smtp121.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1753849AbYBXWz3 (ORCPT
+	Sun, 24 Feb 2008 18:12:51 -0500
+Received: from mk-filter-3-a-1.mail.uk.tiscali.com ([212.74.100.54]:60099 "EHLO
+	mk-filter-3-a-4.mail.uk.tiscali.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1751706AbYBXXMt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 24 Feb 2008 17:55:29 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:Received:Date:From:To:Subject:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-Id;
-  b=BTlGOC1gKDwSbsD+LsH0tqMfgW781XqyAbGoeXjjgDadT0fChwWmroITl4Q3BsiOXojvB3zTPkm4ZOcaPQYJgcXJINEzbY8vRHbdkG8UKLz9LpJNK8BjFsTGUK47u9hDapCKrWiwqoa7345ji56OWH01WL5VbKnd8ZqMNsFw56Q=  ;
-X-YMail-OSG: mP9._csVM1ngFAhJ60X1LgsasHCv9w._DRliyd5M6lcL9BJPt6qp2jvqCX58TtdaAGA9mQPJNw--
-X-Yahoo-Newman-Property: ymail-3
-Date: Sun, 24 Feb 2008 14:55:27 -0800
-From: David Brownell <david-b@pacbell.net>
-To: hskinnemoen@atmel.com
-Subject: Re: [patch 2.6.25-rc2-git 1/2] atmel_tc library
-Cc: nicolas.ferre@rfo.atmel.com, linux@maxim.org.za,
-       linux-kernel@vger.kernel.org, akpm@linux-foundation.org
-References: <200802221723.24003.david-b@pacbell.net>
- <20080224184554.2c863f63@siona>
-In-Reply-To: <20080224184554.2c863f63@siona>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Sun, 24 Feb 2008 18:12:49 -0500
+X-Trace: 687592974/mk-filter-3.mail.uk.tiscali.com/B2C/$THROTTLED-DYNAMIC/CUSTOMER-DYNAMIC-IP/81.1.89.66
+X-SBRS: None
+X-RemoteIP: 81.1.89.66
+X-IP-MAIL-FROM: adrian@newgolddream.dyndns.info
+X-IP-BHB: Once
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: Ah4FAMqIwUdRAVlC/2dsb2JhbACBVagb
+Subject: Re: [PATCH] input: support maple controller on SEGA Dreamcast
+From: Adrian McMenamin <adrian@newgolddream.dyndns.info>
+To: Paul Mundt <lethal@linux-sh.org>
+Cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       linux-sh <linux-sh@vger.kernel.org>, Andrew Morton <akpm@osdl.org>
+In-Reply-To: <1203862726.6474.18.camel@localhost.localdomain>
+References: <1203862726.6474.18.camel@localhost.localdomain>
+Content-Type: text/plain
+Date: Sun, 24 Feb 2008 23:10:22 +0000
+Message-Id: <1203894622.6299.6.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.1 
 Content-Transfer-Encoding: 7bit
-Message-Id: <20080224225527.62D5D28E1A2@adsl-69-226-248-13.dsl.pltn13.pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 24 Feb 2008 18:45:54 +0100
-Haavard Skinnemoen <hskinnemoen@atmel.com> wrote:
->
-> On Fri, 22 Feb 2008 17:23:23 -0800
-> David Brownell <david-b@pacbell.net> wrote:
->
-> > Create <linux/atmel_tc.h> based on <asm-arm/arch-at91/at91-tc.h> and the
-> > at91sam9263 and at32ap7000 datasheets.  Most AT91 and AT32 SOCs have one
-> > or two of these TC blocks, which include three 16-bit timers that can be
-> > interconnected in various ways.
-> > 
-> > These TC blocks can be used for external interfacing (such as PWM and
-> > measurement), or used as somewhat quirky sixteen-bit timers.
-> > 
-> > Signed-off-by: David Brownell <dbrownell@users.sourceforge.net>
-> > ---
->
-> Sorry for the delay...some late comments coming up.
+Add support for the Dreamcast maple controller (as a joystick).
 
-Happens.  :)
+Earlier patches caused subdevice detection headaches. Please use this one.
 
+Signed-off-by: Adrian McMenamin <adrian@mcmen.demon.co.uk>
+---
 
-> > Note that this won't be usable until the AT91 and AT32 platforms
-> > incorporate patches to configure the relevant platform devices.
-> > Those changes are probably 2.6.26 material.
-
-More specifically (and all those patches are available now):
-
- - AT91 needs clocksource/clockevent support for the SAM9 PIT timer;
- - AVR32 needs more extensive clocksource/clockevent updates;
- - Both also need platform device setup;
-
-Merging these two patches before those is a perfectly safe NOP.
-
-
-> Right...and there are a few funny dependencies we need to watch out
-> for. AVR32 currently uses one of the TC blocks as a system timer. That
-> code needs to be ripped out, but that will cause a fourfold increase in
-> the power consumption of the AP7000 CPU.
-
-Because the AVR32 count/compare clocksource (architectural registers)
-precludes using the "idle" state in the idle loop ... it counts CPU
-cycles, which don't happen in the "idle" state.
-
-
->	So I want to keep the window
-> between ripping out the old code and using the new code as small as
-> possible.
-
-Right.
-
-
-> I see the following possibilities:
->   * I switch avr32 over to use the new code after it has been merged
->     into mainline. This means the new code won't be tested on avr32
->     until near the end of the next merge window -- not good.
-
-Well, "more widely" tested.  We've both observed it to work; basically
-the same code has worked on AT91 for about a year now, too.
-
-And that's why I suggest merging these parts, now that they're known to
-work on both architectures.  The arch-specific bits can follow at their
-own pace, neither one blocking the other.
-
-
->   * I forward the patches that switch avr32 over to Andrew so that they
->     can be included in -mm right after the tclib support. Not a bad
->     option, but I'm planning to do more AVR32 PM work before 2.6.26, so
->     there might be conflicts.
-
-Conflicts there would be the easy part to deal with.  They're all
-specific to AVR32, and you can merge those in any convenient order.
-
-
->   * I take the whole thing through my avr32 git tree.
-
-Doesn't work as smoothly for the AT91 side ... but Andrew Victor has
-very limited time any more for such stuff (these AT91 patches will
-go through him first then Russell) so I'm not sure any added delays
-there could hurt much.
-
-
->   * I (or someone else) set up a new git tree for tclib + AT91 and
->     AVR32 platform support and ask Stephen to pull it into the -next
->     tree. Or, once it's stable, rmk and I can both pull it into our
->     respective trees. But that obviously means no rebasing and funny
->     games from that point on...
->
-> I think the last option is the best one. What do you think?
-
-In effect, I've had that last option as a series of quilt patches,
-and posting these two is the first step in that merge sequence...
-heck, they could merge right now into 2.6.25-rc3 and that would let
-the two arch series merge at their own paces.  (AVR32 direct from
-you, AT91 very indirectly through Andrew then Russell.)
-
-
-My personal priority is to get these patches into the merge queue(s)
-so that they're no longer sitting on my disks and so that when I
-want those platforms to have HRT and/or NO_HZ, it's already there. 
-
-
-> > +#if defined(CONFIG_AVR32)
-> > +/* AVR32 has these divide PBB */
-> > +const u8 atmel_tc_divisors[5] = { 0, 4, 8, 16, 32, };
-> > +EXPORT_SYMBOL(atmel_tc_divisors);
-> > +
-> > +#elif defined(CONFIG_ARCH_AT91)
-> > +/* AT91 has these divide MCK */
-> > +const u8 atmel_tc_divisors[5] = { 2, 8, 32, 128, 0, };
-> > +EXPORT_SYMBOL(atmel_tc_divisors);
-> > +
-> > +#endif
-> > +
-> > +/* we "know" that there will be either one or two TC blocks */
-> > +static struct platform_device *blocks[2];
->
-> You seem to know more about future Atmel chips than I do :-P
-
-I only "know" about currently announced ones.  ;)
-
-
-> I'm not a huge fan of such static limitations.
-
-Me either, but at this point doing more than that seems to me
-to land in that "overengineering" category...
-
-
-> > +/**
-> > + * atmel_tc_alloc - allocate a specified TC block
-> > + * @block: which block to allocate
-> > + * @iomem: used to return its IO memory resource
-> > + *
-> > + * Caller allocates a block.  If it is available, its I/O space is requested
-> > + * and returned through the iomem pointer, and the device node for the block
-> > + * is returned.  When it is not available, NULL is returned.
->
-> Any reason why it can't ioremap() the registers as well? Most drivers
-> probably want that.
-
-An earlier version of the code did that.  If you want to modify the
-patch series to work that way, feel free.  (Right now it'd be only
-these two patches posted to LKML ... nobody's posted a driver for
-e.g. 3-phase motor control, or servos with feedback loops, yet.)
-
-I take it you don't have any real problem with non-support for
-allocating a single TC channel.  These TC blocks are quirky, and
-it's a bit awkward to use just one at at time.  (And that's not
-only because having just sixteen bits for a timer is Not Enough!)
-
-
-> > + * On some platforms, each TC channel has its own clocks and IRQs.  Drivers
-> > + * should clk_get() and clk_enable() "t0_clk", "t1_clk, and "t2_clk".
-> > + * In the same vein, they should platform_get_irq() for irqs 0, 1, and 2.
-> > + * On other platforms, only irq 0 and "t0_clk" will be available; drivers
-> > + * should handle with both configurations.
->
-> Sounds complicated. I think it would be better if tclib did all the
-> clk_get() calls and stored each clock into the atmel_tc struct so that
-> the driver can simply clk_enable() each channel (which may point to the
-> same clock.)
-
-An earlier version of the code did something like that ... ;)
-
-In that case the platform setup code handed a block of data to
-the TC library code.  That was more complicated than I wanted.
-You're suggesting the TC library code does that instead, and
-shift that issue to a mid-layer?
-
-In practice, this version didn't end up being hard to use.  All
-I really noticed was the much-simplified platform support, which
-came from using platform_device resources in the "usual way".
-
-
-> > +struct platform_device *atmel_tc_alloc(unsigned block, struct resource **iomem)
-> > +{
-> > +	struct platform_device	*tc;
-> > +	struct resource		*r;
-> > +
-> > +	if (block >= ARRAY_SIZE(blocks) || !iomem)
-> > +		return NULL;
-> > +
-> > +	tc = blocks[block];
-> > +	if (tc) {
-> > +		r = platform_get_resource(tc, IORESOURCE_MEM, 0);
-> > +		if (r)
-> > +			r = request_mem_region(r->start, 256, NULL);
->
-> Shouldn't you use the real resource size instead of some magic number?
-
-The chip specs say there are only 256 bytes of registers there,
-no matter how the address decoding works.  It could be argued either
-way, but computing the "real resource size' involves avoidable math.
-
-
-> > +static struct platform_driver tc_driver = {
-> > +	.driver.name	= "atmel_tcb",
->
-> Wow, I didn't know that was possible...
-
-Concision is my friend.  ;)
-
-
-> > +#define ATMEL_TC_BMR	0xc4		/* TC Block Mode Register */
-> > +#define     ATMEL_TC_TC0XC0S	(3 << 0)	/* external clock 0 source */
-> > +#define        ATMEL_TC_TC0XC0S_TCLK0	(0 << 0)
->
-> Hmm. Indentation using spaces? I didn't know you were into that sort of
-> thing ;-)
-
-It's way better than indenting off the right margin of the page!
-
-
-> Anyway, my main issue is that I think we should add a data structure
-> with information about each device, similar to struct ssc_device in the
-> atmel-ssc driver. How about something like this?
->
-> struct atmel_tc_block {
-> 	void __iomem		*regs;	/* non-NULL when busy */
-> 	struct platform_device	*pdev;
-> 	struct clk		*clk[3];
-> 	struct list_head	node;
-> };
-
-And per-channel IRQs too...
-
-Well, if you want to take these patches off my hands and then be
-responsible for merging them upstream, I won't object.  :)
-
-- Dave
+diff -ruN ./a/drivers/input/joystick/Kconfig ./b/drivers/input/joystick/Kconfig
+--- ./a/drivers/input/joystick/Kconfig	2008-02-21 20:42:07.000000000 +0000
++++ ./b/drivers/input/joystick/Kconfig	2008-02-24 13:59:04.000000000 +0000
+@@ -282,4 +282,17 @@
+ 	  This option enables support for the LED which surrounds the Big X on
+ 	  XBox 360 controller.
+ 
++config JOYSTICK_MAPLE
++	tristate "Dreamcast control pad"
++	depends on SH_DREAMCAST
++	select MAPLE
++	help
++	  Say Y here if you have a SEGA Dreamcast and want to use your
++	  controller.
++
++	  Most Dreamcast users will say Y.
++
++	  To compile this as a module choose M here: the
++	  module will be called maplecontrol.
++
+ endif
+diff -ruN ./a/drivers/input/joystick/Makefile ./b/drivers/input/joystick/Makefile
+--- ./a/drivers/input/joystick/Makefile	2008-02-21 20:42:07.000000000 +0000
++++ ./b/drivers/input/joystick/Makefile	2008-02-24 13:59:04.000000000 +0000
+@@ -27,5 +27,6 @@
+ obj-$(CONFIG_JOYSTICK_TWIDJOY)		+= twidjoy.o
+ obj-$(CONFIG_JOYSTICK_WARRIOR)		+= warrior.o
+ obj-$(CONFIG_JOYSTICK_XPAD)		+= xpad.o
++obj-$(CONFIG_JOYSTICK_MAPLE)		+= maplecontrol.o
+ 
+ obj-$(CONFIG_JOYSTICK_IFORCE)		+= iforce/
+diff -ruN ./a/drivers/input/joystick/maplecontrol.c ./b/drivers/input/joystick/maplecontrol.c
+--- ./a/drivers/input/joystick/maplecontrol.c	1970-01-01 01:00:00.000000000 +0100
++++ ./b/drivers/input/joystick/maplecontrol.c	2008-02-24 22:56:31.000000000 +0000
+@@ -0,0 +1,222 @@
++/*
++ * 	SEGA Dreamcast controller driver
++ *	Based on drivers/usb/iforce.c
++ *
++ * 	Copyright Yaegashi Takeshi, 2001
++ *	Porting to 2.6 by Adrian McMenamin, copyright 2008
++ */
++
++#include <linux/kernel.h>
++#include <linux/slab.h>
++#include <linux/input.h>
++#include <linux/module.h>
++#include <linux/init.h>
++#include <linux/timer.h>
++#include <linux/maple.h>
++#include <asm/mach/maple.h>
++
++MODULE_AUTHOR("YAEGASHI Takeshi <t@keshi.org>");
++MODULE_DESCRIPTION("SEGA Dreamcast controller driver");
++MODULE_LICENSE("GPL");
++
++struct dc_pad {
++	struct input_dev *dev;
++	struct maple_device *mdev;
++	int open;
++};
++
++static void dc_pad_callback(struct mapleq *mq)
++{
++	unsigned short buttons;
++	struct maple_device *mapledev = mq->dev;
++	struct dc_pad *pad = mapledev->private_data;
++	struct input_dev *dev = pad->dev;
++	unsigned char *res = mq->recvbuf;
++
++	buttons = ~cpu_to_le16(*(unsigned short *)(res + 8));
++
++	input_report_abs(dev, ABS_HAT0Y,
++			 (buttons & 0x0010 ? -1:0) + (buttons & 0x0020 ? 1:0));
++	input_report_abs(dev, ABS_HAT0X,
++			 (buttons & 0x0040 ? -1:0) + (buttons & 0x0080 ? 1:0));
++	input_report_abs(dev, ABS_HAT1Y,
++			 (buttons & 0x1000 ? -1:0) + (buttons & 0x2000 ? 1:0));
++	input_report_abs(dev, ABS_HAT1X,
++			 (buttons & 0x4000 ? -1:0) + (buttons & 0x8000 ? 1:0));
++
++	input_report_key(dev, BTN_C,      buttons & 0x0001);
++	input_report_key(dev, BTN_B,      buttons & 0x0002);
++	input_report_key(dev, BTN_A,      buttons & 0x0004);
++	input_report_key(dev, BTN_START,  buttons & 0x0008);
++	input_report_key(dev, BTN_Z,      buttons & 0x0100);
++	input_report_key(dev, BTN_Y,      buttons & 0x0200);
++	input_report_key(dev, BTN_X,      buttons & 0x0400);
++	input_report_key(dev, BTN_SELECT, buttons & 0x0800);
++
++	input_report_abs(dev, ABS_GAS,   res[10]);
++	input_report_abs(dev, ABS_BRAKE, res[11]);
++	input_report_abs(dev, ABS_X,     res[12]);
++	input_report_abs(dev, ABS_Y,     res[13]);
++	input_report_abs(dev, ABS_RX,    res[14]);
++	input_report_abs(dev, ABS_RY,    res[15]);
++}
++
++static int dc_pad_connect(struct maple_device *mdev)
++{
++	int i, error;
++	unsigned long data = be32_to_cpu(mdev->devinfo.function_data[0]);
++	struct dc_pad *pad;
++	struct input_dev *dev;
++
++	const short btn_bit[32] = {
++		BTN_C, BTN_B, BTN_A, BTN_START, -1, -1, -1, -1,
++		BTN_Z, BTN_Y, BTN_X, BTN_SELECT, -1, -1, -1, -1,
++		-1, -1, -1, -1, -1, -1, -1, -1,
++		-1, -1, -1, -1, -1, -1, -1, -1,
++	};
++
++	const short abs_bit[32] = {
++		-1, -1, -1, -1, ABS_HAT0Y, ABS_HAT0Y, ABS_HAT0X, ABS_HAT0X,
++		-1, -1, -1, -1, ABS_HAT1Y, ABS_HAT1Y, ABS_HAT1X, ABS_HAT1X,
++		ABS_GAS, ABS_BRAKE, ABS_X, ABS_Y, ABS_RX, ABS_RY, -1, -1,
++		-1, -1, -1, -1, -1, -1, -1, -1,
++	};
++
++	pad = kzalloc(sizeof(struct dc_pad), GFP_KERNEL);
++	if (!pad){
++		error = ENOMEM;
++		goto fail_nomem_1;
++	}
++
++	dev = input_allocate_device();
++	if (!dev) {
++		error = ENOMEM;
++		goto fail_nomem_2;
++	}
++
++	pad->dev = dev;
++	pad->mdev = mdev;
++	mdev->private_data = pad;
++
++	for (i = 0; i < 32; i++)
++		if (data & (1<<i) && btn_bit[i] >= 0)
++			pad->dev->keybit[BIT_WORD(BTN_JOYSTICK)] |= BIT_MASK(btn_bit[i]);
++
++	if (pad->dev->keybit[BTN_JOYSTICK/32])
++		pad->dev->evbit[0] |= BIT_MASK(EV_KEY);
++
++	for (i = 0; i < 32; i++)
++		if (data & (1<<i) && abs_bit[i] >= 0)
++			pad->dev->absbit[0] |= BIT_MASK(abs_bit[i]);
++
++	if (pad->dev->absbit[0])
++		pad->dev->evbit[0] |= BIT_MASK(EV_ABS);
++
++	for (i = ABS_X; i <= ABS_BRAKE; i++) {
++		pad->dev->absmax[i] = 255;
++		pad->dev->absmin[i] = 0;
++		pad->dev->absfuzz[i] = 0;
++		pad->dev->absflat[i] = 0;
++	}
++
++	for (i = ABS_HAT0X; i <= ABS_HAT3Y; i++) {
++		pad->dev->absmax[i] = 1;
++		pad->dev->absmin[i] = -1;
++		pad->dev->absfuzz[i] = 0;
++		pad->dev->absflat[i] = 0;
++	}
++
++	pad->dev->private = pad;
++	pad->dev->event = NULL;
++	pad->dev->dev.parent = &mdev->dev;
++	pad->dev->name = mdev->product_name;
++	pad->dev->id.bustype = BUS_HOST;
++	input_set_drvdata(dev, pad);
++
++	error = input_register_device(pad->dev);
++	if (error)
++		goto fail_register;
++
++	maple_getcond_callback(mdev, dc_pad_callback, HZ/50,
++		MAPLE_FUNC_CONTROLLER);
++	
++	return error;
++
++fail_register:
++	input_free_device(pad->dev);
++fail_nomem_2:
++	kfree(pad);
++fail_nomem_1:
++	return -error;
++}
++
++static void dc_pad_disconnect(struct maple_device *mdev)
++{
++	struct dc_pad *pad = mdev->private_data;
++
++	mdev->callback = NULL;
++	input_unregister_device(pad->dev);
++	kfree(pad);
++}
++
++/* allow the controller to be used */
++static int probe_maple_controller(struct device *dev)
++{
++	struct maple_device *mdev = to_maple_dev(dev);
++	struct maple_driver *mdrv = to_maple_driver(dev->driver);
++	int error;
++
++	error = dc_pad_connect(mdev);
++	if (error)
++		return error;
++
++	mdev->driver = mdrv;
++
++	return 0;
++}
++
++static int remove_maple_controller(struct device *dev)
++{
++	struct maple_device *mdev = to_maple_dev(dev);
++
++	dc_pad_disconnect(mdev);
++	return 0;
++}
++
++static struct maple_driver dc_pad_driver = {
++	.function =	MAPLE_FUNC_CONTROLLER,
++	.connect =	dc_pad_connect,
++	.disconnect =	dc_pad_disconnect,
++	.drv = {
++		.name = "Dreamcast_controller",
++		.probe = probe_maple_controller,
++		.remove = remove_maple_controller,
++	},
++};
++
++static int unplug_maple_control(struct device *dev, void *ignored)
++{
++	/* Please DO NOT really unplug your controller */
++	struct maple_device *mdev;
++
++	mdev = to_maple_dev(dev);
++	if ((mdev->function & MAPLE_FUNC_CONTROLLER)
++		&& (mdev->driver == &dc_pad_driver))
++		remove_maple_controller(dev);
++
++	return 0;
++}
++
++static int __init dc_pad_init(void)
++{
++	return 	maple_driver_register(&dc_pad_driver.drv);
++}
++
++static void __exit dc_pad_exit(void)
++{
++	bus_for_each_dev(&maple_bus_type, NULL, NULL, unplug_maple_control);
++	driver_unregister(&dc_pad_driver.drv);
++}
++
++module_init(dc_pad_init);
++module_exit(dc_pad_exit);
 
