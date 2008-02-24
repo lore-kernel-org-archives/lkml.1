@@ -1,57 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754740AbYBXHYS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754657AbYBXHek@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754740AbYBXHYS (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 24 Feb 2008 02:24:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750930AbYBXHYG
+	id S1754657AbYBXHek (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 24 Feb 2008 02:34:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751324AbYBXHeb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 24 Feb 2008 02:24:06 -0500
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:51535 "EHLO amd.ucw.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751315AbYBXHYF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 24 Feb 2008 02:24:05 -0500
-Date: Sun, 24 Feb 2008 08:24:23 +0100
-From: Pavel Machek <pavel@ucw.cz>
-To: David Woodhouse <dwmw2@infradead.org>
-Cc: kernel list <linux-kernel@vger.kernel.org>, linux-mtd@lists.infradead.org
-Subject: Re: jffs2: -ENOSPC when truncating file?!
-Message-ID: <20080224072423.GF2202@elf.ucw.cz>
-References: <20080223235742.GE2202@elf.ucw.cz> <1203813368.5771.174.camel@shinybook.infradead.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1203813368.5771.174.camel@shinybook.infradead.org>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.17 (2007-11-01)
+	Sun, 24 Feb 2008 02:34:31 -0500
+Received: from mail08a.verio.de ([213.198.55.73]:17993 "HELO mail08a.verio.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1751254AbYBXHe3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 24 Feb 2008 02:34:29 -0500
+X-Greylist: delayed 399 seconds by postgrey-1.27 at vger.kernel.org; Sun, 24 Feb 2008 02:34:29 EST
+Message-Id: <6.1.1.1.2.20080224082113.01e51e50@192.168.6.12>
+X-Mailer: QUALCOMM Windows Eudora Version 6.1.1.1
+Date: Sun, 24 Feb 2008 08:27:30 +0100
+To: linux-kernel@vger.kernel.org
+From: Roger While <simrw@sim-basis.de>
+Subject: Re: [patch 1/2] x86,fpu: split FPU state from task struct
+Cc: suresh.b.siddha@intel.com
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"; format=flowed
+X-SIMBasis-MailScanner-Information: Please contact the ISP for more information
+X-SIMBasis-MailScanner: Found to be clean
+X-SIMBasis-MailScanner-SpamCheck: not spam (whitelisted),
+	SpamAssassin (score=-5.899, required 5, autolearn=not spam,
+	ALL_TRUSTED -3.30, BAYES_00 -2.60)
+X-SIMBasis-MailScanner-From: simrw@sim-basis.de
+X-Spam: [F=0.3029429977; heur=0.500(-6600); stat=0.302; spamtraq-heur=0.500(2007101727)]
+X-MAIL-FROM: <simrw@sim-basis.de>
+X-SOURCE-IP: [213.198.55.139]
+X-SF-Loop: 1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun 2008-02-24 09:36:07, David Woodhouse wrote:
-> 
-> On Sun, 2008-02-24 at 00:57 +0100, Pavel Machek wrote:
-> > Hi!
-> > 
-> > I'm trying to free space by truncating big file, and I get:
-> > 
-> > root@fic-gta01:~# ls -al gps.nmea 
-> > -rw-r--r--    1 root     root      2332070 Feb 19 22:13 gps.nmea
-> > root@fic-gta01:~# > gps.nmea 
-> > -sh: cannot create gps.nmea: No space left on device
-> > root@fic-gta01:~# rm gps.nmea
-> > root@fic-gta01:~# > gps.nmea
-> > root@fic-gta01:~# 
-> 
-> You need to write a log entry indicating the new length of the file.
-> There is no space for new log entries.
-> 
-> There is a special case for removal -- 'rm gps.nmea' would work. Perhaps
-> we should add a special case for truncation too, so that it can also use
-> the extra pool of free space.
 
-Yes, that would be nice. I somehow assumed that truncate can't fail
-for -ENOSPC ... I was trying to actually free some space on the
-filesystem...
-								Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+On Sat, Feb 23, 2008 at 06:34:38PM -0800, Suresh Siddha wrote:
+ > Split the FPU save area from the task struct. This allows easy migration
+ > of FPU context, and it's generally cleaner. It also allows the following
+ > two optimizations:
+ >
+ > 1) only allocate when the application actually uses FPU, so in the first
+ > lazy FPU trap. This could save memory for non-fpu using apps. Next patch
+ > does this lazy allocation.
+ >
+ > 2) allocate the right size for the actual cpu rather than 512 bytes always.
+ > Patches enabling xsave/xrstor support (coming shortly) will take advantage
+ > of this.
+
+ >  	if (next_p->fpu_counter>5)
+ > -		prefetch(&next->i387.fxsave);
+ > +		prefetch(FXSAVE(next_p));
+
+Shouldn't that be  prefetch(FXSAVE(next));  ?
+
+Roger
+
+
