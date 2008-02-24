@@ -1,109 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758721AbYBXQTh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755038AbYBXQ1H@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758721AbYBXQTh (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 24 Feb 2008 11:19:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752526AbYBXQT3
+	id S1755038AbYBXQ1H (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 24 Feb 2008 11:27:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752526AbYBXQ04
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 24 Feb 2008 11:19:29 -0500
-Received: from wa-out-1112.google.com ([209.85.146.180]:51963 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752213AbYBXQT2 (ORCPT
+	Sun, 24 Feb 2008 11:26:56 -0500
+Received: from mtiwmhc13.worldnet.att.net ([204.127.131.117]:33938 "EHLO
+	mtiwmhc13.worldnet.att.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751900AbYBXQ0z (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 24 Feb 2008 11:19:28 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=ALqgxRD8PugSQpRCDeaTyzXXHZ023c8YXNgAyHZz477sVcUzt7jblPEgqrxSIdAPi5X9srSXYWRh6dXMJqcTlj2PA6nboJTj0dk6JB0CcYPgVoDtunY7wtbNRpif0CqsQx7ubU2hLhhU9kemDtPXnecDZuho9j4XVCdxBpSEVS8=
-Message-ID: <9e4733910802240819w70b1846ftea776495016567fc@mail.gmail.com>
-Date: Sun, 24 Feb 2008 11:19:28 -0500
-From: "Jon Smirl" <jonsmirl@gmail.com>
-To: "Jean Delvare" <khali@linux-fr.org>
-Subject: Re: [PATCHv4 2.6.25] i2c: adds support for i2c bus on Freescale CPM1/CPM2 controllers
-Cc: "Jochen Friedrich" <jochen@scram.de>, linux-kernel@vger.kernel.org,
-       "linuxppc-dev list" <linuxppc-dev@ozlabs.org>, i2c@lm-sensors.org,
-       "Scott Wood" <scottwood@freescale.com>
-In-Reply-To: <47BEAF00.50106@scram.de>
+	Sun, 24 Feb 2008 11:26:55 -0500
+Message-ID: <47C19ABA.4040904@lwfinger.net>
+Date: Sun, 24 Feb 2008 09:26:34 -0700
+From: Larry Finger <larry.finger@lwfinger.net>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+To: Alexey Zaytsev <alexey.zaytsev@gmail.com>
+CC: Stefano Brivio <stefano.brivio@polimi.it>, Jeff Garzik <jgarzik@pobox.com>,
+       Greg KH <greg@kroah.com>, Pekka Enberg <penberg@cs.helsinki.fi>,
+       Ingo Molnar <mingo@elte.hu>, Michael Buesch <mb@bu3sch.de>,
+       linux-kernel@vger.kernel.org, John Linville <linville@tuxdriver.com>
+Subject: Re: [PATCH] Fix the bcm43xx driver breakage in 2.6.24/25.
+References: <47C01D03.9030601@gmail.com>
+In-Reply-To: <47C01D03.9030601@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <47A1C4E9.4000003@scram.de>
-	 <20080221130520.12b01553@hyperion.delvare> <47BEAF00.50106@scram.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 2/22/08, Jochen Friedrich <jochen@scram.de> wrote:
-> Hi Jean,
->
->
->  >> +/*
->  >> + * Wait for patch from Jon Smirl
->  >> + * #include "powerpc-common.h"
->  >> + */
->  >
->  > It doesn't make sense to merge this comment upstream.
->
->
-> I know you don't like the patch from Jon Smirl and you also explained your reasons.
->  Fortunately, I2c no longer uses numeric device IDs but names. So what are the alternatives?
->
->  1. modify the I2c subsystem to accept OF names additionally to I2c names (proposed by Jon smirl).
+Alexey Zaytsev wrote:
+> 
+> [resent with lkml added to cc, sorry]
+> 
+> Hello, gentlemen.
+> 
+> Theese two patches fix a problem instroduced in Linux 2.6.24, and
+> still present in the current Linus' 2.6.25 tree.
+> 
+> The bcm43xx Wifi driver won't work any more, if the b44 Ethernet
+> driver is enabled. This happens because the b44 driver
+> needlessly enables the b43_pci_bridge code, which claims
+> the same pci ids as the bcm43xx driver. The b43_pci_bridge
+> code is needed for the b43{legacy} drivers, but for the
+> b44, only the "ssb pci core" is needed.
+> 
+> The first patch separates the ssb b43 pci bridge and the ssb pci
+> core config options and enables only the needed ones.
+> 
+> A similar patch was once sent to Michael Buesch, but he rejected
+> it, fearing that changing the config autoselects cold introduce
+> some unexpected bugs.
+> If you are intrested, a rather emotional thread may be found
+> e.g. here:
+> http://thread.gmane.org/gmane.linux.kernel/644266
+> 
+> That said, I believe the patch may introduce no more bugs,
+> but fixes a critical regression, which left some users
+> without a working wifi driver on the 2.6.24 kernel.
+> 
+> If you doubt its correctness, I may write a longer description
+> on the changes introduced, but I hope they should be obvoius.
+> 
+> This patch is againts the current Linus' tree. I'd like it
+> to be added to both 2.6.25 and the 2.6.24-stable trees.
+> 
+> The second patch disables the bcm43xx driver if it can't
+> work due to the b43/b43legacy drivers inclusion, so no
+> users should be confused.
 
-The correct statement is: modify the i2c subsystem to support the
-standard kernel driver aliasing mechanism. Leaving powerpc and OF out
-of the argument for the moment, i2c has a custom aliasing scheme on
-the x86 too.
+I have reviewed the above patches and tested them with what I believe to be most combinations. 
+Everything worked and corrected the unintended consequence of breaking bcm43xx when b44 is included. 
+I agree that these patches belong in 2.6.25 and stable (2.6.24). Of course, the problem goes away in 
+2.6.26.
 
-So as a first step, can we remove the custom i2c aliasing scheme and
-change i2c to use standard module aliases on the x86? Patches for this
-already exist.
+ACKED-by: Larry.Finger@lwfinger.net
 
-On 2/23/08, Jean Delvare <khali@linux-fr.org> wrote:
-> The problem I have with this is that it breaks compatibility. The chip
->  name is not only used for device/driver matching, it is also exported
->  to userspace as a sysfs attribute ("name"). Applications might rely on
->  it. At least libsensors does.
+Larry
 
-I think there is some confusion here. The OF aliases are only used by
-the kernel to load the correct driver. Would doing something like this
-help?
-
-static struct i2c_device_id pcf8563_id[] = {
-	{"pcf8563", 0, "sysfs_legacy_name"},
-	{"rtc8564", 0, "sysfs_legacy_name"},
-	OF_ID("phillips,pcf8563", &pcf8563_id[0], 0)
-	OF_ID("epson,rtc8564", &pcf8563_id[1], 0)
-	{},
-};
-MODULE_DEVICE_TABLE(i2c, pcf8563_id);
-
-Then in the probe function you can use the pointer to find the base id
-entry and i2c never has to be aware that the OF alias exists.
-
->  2. record the I2c name in the dts tree, either as separate tag (like linux,i2c-name="<i2c-name>")
-
-Not really practical for the millions of machines (all PowerPC Macs)
-already shipped.
-
->    or as additional compatible entry (like compatible="...", "linux,<i2c-name>").
->  3. use a glue layer with a translation map.
-
-Audio codecs have exactly the same problem. There are probably other
-devices that also need mapping.
-
-This mapping table will need to contain a map from the OF names to the
-kernel driver names.  It will need to stored permanently in RAM and
-contain all possible mappings. This table will only grow in size.
-
-The kernel has a widely used mechanism for mapping -- aliases in the
-device drivers. Why do we want to build a new, parallel one?
-
-What we are doing now is option 4.
-
-4. Use kconfig to build custom kernels for each target system. Don't
-load drivers automatically based on what the BIOS tells us.
-
--- 
-Jon Smirl
-jonsmirl@gmail.com
