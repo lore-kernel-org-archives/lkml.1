@@ -1,43 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756539AbYBXCui@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757733AbYBXCw6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756539AbYBXCui (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 23 Feb 2008 21:50:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751187AbYBXCub
+	id S1757733AbYBXCw6 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 23 Feb 2008 21:52:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751292AbYBXCwv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 23 Feb 2008 21:50:31 -0500
-Received: from courier.cs.helsinki.fi ([128.214.9.1]:53832 "EHLO
-	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750743AbYBXCua (ORCPT
+	Sat, 23 Feb 2008 21:52:51 -0500
+Received: from E23SMTP04.au.ibm.com ([202.81.18.173]:59481 "EHLO
+	e23smtp04.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751187AbYBXCwu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 23 Feb 2008 21:50:30 -0500
-Message-ID: <47C0DB2E.5000404@cs.helsinki.fi>
-Date: Sun, 24 Feb 2008 04:49:18 +0200
-From: Pekka Enberg <penberg@cs.helsinki.fi>
-User-Agent: Thunderbird 2.0.0.9 (Macintosh/20071031)
+	Sat, 23 Feb 2008 21:52:50 -0500
+Message-ID: <47C0DAD8.8050401@linux.vnet.ibm.com>
+Date: Sun, 24 Feb 2008 08:17:52 +0530
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+Reply-To: balbir@linux.vnet.ibm.com
+Organization: IBM
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
 To: Andrew Morton <akpm@linux-foundation.org>
-CC: Arjan van de Ven <arjan@infradead.org>, linux-kernel@vger.kernel.org,
-       mingo@elte.hu, sandmann@redhat.com, tglx@tglx.de, hpa@zytor.com
-Subject: Re: [PATCH] x86: add the debugfs interface for the sysprof tool
-References: <20080219123756.6261c13c@laptopd505.fenrus.org>	<20080223001130.d8922136.akpm@linux-foundation.org>	<84144f020802230351o24b11282vbb1cecf518d91825@mail.gmail.com> <20080223104611.a3430285.akpm@linux-foundation.org>
-In-Reply-To: <20080223104611.a3430285.akpm@linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+CC: Paul Menage <menage@google.com>, xemul@openvz.org, balbir@in.ibm.com,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org
+Subject: Re: [PATCH 2/2] ResCounter: Use read_uint in memory controller
+References: <20080221203518.544461000@menage.corp.google.com> <20080221205525.349180000@menage.corp.google.com> <47BE4FB5.5040902@linux.vnet.ibm.com> <6599ad830802230633i483c8dd1q5b541be1a92a5795@mail.gmail.com> <20080223105933.e6884808.akpm@linux-foundation.org>
+In-Reply-To: <20080223105933.e6884808.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Andrew,
-
 Andrew Morton wrote:
-> I didn't need to write a new kernel module to enable that
-> thirteen-character shell script, and I don't believe one needs to write a
-> new kernel module to put a nice easy-to-use GUI around oprofile either.
+> On Sat, 23 Feb 2008 06:33:34 -0800 "Paul Menage" <menage@google.com> wrote:
 > 
-> This is one of those i-cant-believe-im-having-this-discussion discussions.
+>> On Thu, Feb 21, 2008 at 8:29 PM, Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
+>>>  Looks good, except for the name uint(), can we make it u64(). Integers are 32
+>>>  bit on both ILP32 and LP64, but we really read/write 64 bit values.
+>> Yes, that's true. But read_uint() is more consistent with all the
+>> other instances in cgroups and subsystems. So if we were to call it
+>> res_counter_read_u64() I'd also want to rename all the other
+>> *read_uint functions/fields to *read_u64 too. Can I do that in a
+>> separate patch?
+>>
+> 
+> Sounds sensible to me.
+> 
 
-Sysprof tracks the full stack frame so it can provide meaningful call 
-tree (who called what) which is invaluable for spotting hot _paths_. I 
-don't see how oprofile can do that as it tracks instruction pointers only.
+Sure, fair enough.
 
-			Pekka
+-- 
+	Warm Regards,
+	Balbir Singh
+	Linux Technology Center
+	IBM, ISTL
