@@ -1,47 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754952AbYBXH4K@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757367AbYBXH6T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754952AbYBXH4K (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 24 Feb 2008 02:56:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751929AbYBXHzk
+	id S1757367AbYBXH6T (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 24 Feb 2008 02:58:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751804AbYBXH6L
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 24 Feb 2008 02:55:40 -0500
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:4543 "EHLO spitz.ucw.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751724AbYBXHzi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 24 Feb 2008 02:55:38 -0500
-Date: Sat, 23 Feb 2008 21:49:01 +0100
-From: Pavel Machek <pavel@ucw.cz>
-To: Mark Lord <liml@rtr.ca>
-Cc: Anders Eriksson <aeriksson@fastmail.fm>, Jeff Garzik <jeff@garzik.org>,
-       linux-kernel@vger.kernel.org,
-       Linux IDE mailing list <linux-ide@vger.kernel.org>,
-       Jens Axboe <jens.axboe@oracle.com>
-Subject: Re: 2.6.25-rc2 + smartd = hang
-Message-ID: <20080223204900.GA4340@ucw.cz>
-References: <20080222165122.8D2BB93C12F@tippex.mynet.homeunix.org> <47BF0DCD.4060400@garzik.org> <20080222185645.9DD9C93C12F@tippex.mynet.homeunix.org> <47BF3DE3.4000100@rtr.ca>
+	Sun, 24 Feb 2008 02:58:11 -0500
+Received: from pasmtpb.tele.dk ([80.160.77.98]:46124 "EHLO pasmtpB.tele.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751723AbYBXH6K (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 24 Feb 2008 02:58:10 -0500
+Date: Sun, 24 Feb 2008 08:58:21 +0100
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: Arnaldo Carvalho de Melo <acme@redhat.com>, Ingo Molnar <mingo@elte.hu>,
+       linux-kernel@vger.kernel.org
+Subject: Re: Reducing debuginfo size by removing unneeded includes
+Message-ID: <20080224075821.GA7781@uranus.ravnborg.org>
+References: <20080207230304.GA4352@ghostprotocols.net> <p73ir0mxvby.fsf@bingen.suse.de>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <47BF3DE3.4000100@rtr.ca>
-User-Agent: Mutt/1.5.9i
+In-Reply-To: <p73ir0mxvby.fsf@bingen.suse.de>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
+Hi Andi.
 
-> So that's using the old IDE drivers.
-> And the network and USB are sharing IRQ#11 with each 
-> other.
+On Mon, Feb 18, 2008 at 02:12:01PM +0100, Andi Kleen wrote:
+> Arnaldo Carvalho de Melo <acme@redhat.com> writes:
+> >
+> > [acme@doppio net-2.6]$ l /tmp/sys_ia32.o.before /tmp/sys_ia32.o.after
+> > -rw-rw-r-- 1 acme acme 185240 2008-02-06 19:19 /tmp/sys_ia32.o.after
+> > -rw-rw-r-- 1 acme acme 248328 2008-02-06 19:00 /tmp/sys_ia32.o.before
+> >
+> > 	Almost 64KB only on this object file!
 > 
-> If you are going to be using newer kernels like this 
-> (2.6.23+),
-> then you might consider shifting those drives over to 
-> libata drivers.
+> Just FYI, newer gcc does this in theory automatically when you specify 
+> 
+> -feliminate-unused-debug-types -feliminate-unused-debug-symbols
+google did not turn up anything useful.
+Do you have a poiter to where these are described?
 
-Yes, that will probably fix it for him, but but... maybe we should fix
-that regression?
-							Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+
+> There is also -feliminate-dwarf2-dups, but it seems to even increase
+> obj dir size. Also -feliminate-dwarf2-dups seems to generate a lot of 
+
+Google only turned up a patch from Mark Mitchell removing this
+in ~2001 timeframe.
+So again a pointer would be nice.
+
+I use FC8:
+gcc --version
+gcc (GCC) 4.1.2 20070925 (Red Hat 4.1.2-33)
+
+So this is far behind trunk that you use - but I have not had any
+real incentive to upgrade.
+
+I would like to have a remote understanding of the options before
+enabling them.
+
+	Sam
