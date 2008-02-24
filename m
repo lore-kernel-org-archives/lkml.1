@@ -1,74 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757330AbYBXLR5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758027AbYBXLTV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757330AbYBXLR5 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 24 Feb 2008 06:17:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752840AbYBXLRs
+	id S1758027AbYBXLTV (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 24 Feb 2008 06:19:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753193AbYBXLTN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 24 Feb 2008 06:17:48 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:52242 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751673AbYBXLRq convert rfc822-to-8bit (ORCPT
+	Sun, 24 Feb 2008 06:19:13 -0500
+Received: from caramon.arm.linux.org.uk ([78.32.30.218]:35534 "EHLO
+	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752928AbYBXLTM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 24 Feb 2008 06:17:46 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Adrian Bunk <bunk@kernel.org>
-Subject: Re: [2.6.25 patch] fix drivers/usb/host/u132-hcd.c compilation
-Date: Sun, 24 Feb 2008 12:15:49 +0100
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: gregkh@suse.de, linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org
-References: <20080224034440.GA1596@cs181133002.pp.htv.fi>
-In-Reply-To: <20080224034440.GA1596@cs181133002.pp.htv.fi>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 8BIT
+	Sun, 24 Feb 2008 06:19:12 -0500
+Date: Sun, 24 Feb 2008 11:18:13 +0000
+From: Russell King - ARM Linux <linux@arm.linux.org.uk>
+To: Andrew Morton <akpm@linux-foundation.org>,
+       Liam Girdwood <lg@opensource.wolfsonmicro.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       linux-arm-kernel <linux-arm-kernel@lists.arm.linux.org.uk>
+Subject: Re: [PATCH 4/6] regulator: regulator core.
+Message-ID: <20080224111813.GA15652@flint.arm.linux.org.uk>
+References: <1203527351.4071.92.camel@localhost.localdomain> <20080223000538.e1f086e1.akpm@linux-foundation.org> <20080223095217.GA28356@flint.arm.linux.org.uk> <20080224102348.GA11156@sirena.org.uk>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200802241215.50224.rjw@sisk.pl>
+In-Reply-To: <20080224102348.GA11156@sirena.org.uk>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday, 24 of February 2008, Adrian Bunk wrote:
-> This patch fixes the following compile error caused by
-> commit 3a2d5b700132f35401f1d9e22fe3c2cab02c2549:
+On Sun, Feb 24, 2008 at 10:23:49AM +0000, Mark Brown wrote:
+> On Sat, Feb 23, 2008 at 09:52:17AM +0000, Russell King - ARM Linux wrote:
+> > On Sat, Feb 23, 2008 at 12:05:38AM -0800, Andrew Morton wrote:
+> 
+> > > > +#undef current
+> 
+> > > err, no ;)  Please rename your stuff.
+> 
+> > Renaming is not an option - "current" is an electronic term for which
+> > there is no alternative.  The real problem is this __ATTR macro crap:
+> 
+> Indeed, and this is already being worked around by
+> drivers/power/power_supply_sysfs.c:
+> 
+> #define POWER_SUPPLY_ATTR(_name)                                        \
+> {                                                                       \
+>         .attr = { .name = #_name, .mode = 0444, .owner = THIS_MODULE }, \
 
-Thanks, it has already been fixed in the mainline.
+My argument is - why bother with stuff like this, why not just pass
+"_name" as the string itself, rather than using the preprocessor to
+turn symbols into strings thereby suffering these nasty interactions.
 
-> <--  snip  -->
-> 
-> ...
->   CC      drivers/usb/host/u132-hcd.o
-> /home/bunk/linux/kernel-2.6/git/linux-2.6/drivers/usb/host/u132-hcd.c: 
-> In function ‘u132_suspend’:
-> /home/bunk/linux/kernel-2.6/git/linux-2.6/drivers/usb/host/u132-hcd.c:3224: error: expected expression before ‘int’
-> /home/bunk/linux/kernel-2.6/git/linux-2.6/drivers/usb/host/u132-hcd.c:3225: error: ‘ports’ undeclared (first use in this function)
-> /home/bunk/linux/kernel-2.6/git/linux-2.6/drivers/usb/host/u132-hcd.c:3225: error: (Each undeclared identifier is reported only once
-> /home/bunk/linux/kernel-2.6/git/linux-2.6/drivers/usb/host/u132-hcd.c:3225: error: for each function it appears in.)
-> make[4]: *** [drivers/usb/host/u132-hcd.o] Error 1
-> 
-> <--  snip  -->
-> 
-> Signed-off-by: Adrian Bunk <bunk@kernel.org>
-> 
-> ---
-> 69cf78da6371ad2aca30844858eeea318b37b3ec diff --git a/drivers/usb/host/u132-hcd.c b/drivers/usb/host/u132-hcd.c
-> index 6fca069..325c6c7 100644
-> --- a/drivers/usb/host/u132-hcd.c
-> +++ b/drivers/usb/host/u132-hcd.c
-> @@ -3221,9 +3221,11 @@ static int u132_suspend(struct platform_device *pdev, pm_message_t state)
->  			break;
->  		case PM_EVENT_SUSPEND:
->  		case PM_EVENT_HIBERNATE:
-> -                        int ports = MAX_U132_PORTS;
-> -                        while (ports-- > 0) {
-> -                                port_power(u132, ports, 0);
-> +			{
-> +				int ports = MAX_U132_PORTS;
-> +				while (ports-- > 0) {
-> +					port_power(u132, ports, 0);
-> +				}
->                          }
->  			break;
->  		}
-> 
-> 
+It's not like "_name" is used for anything other than generating a
+string.
