@@ -1,50 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760156AbYBXVLX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760481AbYBXVLh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760156AbYBXVLX (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 24 Feb 2008 16:11:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754412AbYBXVLG
+	id S1760481AbYBXVLh (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 24 Feb 2008 16:11:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760101AbYBXVLV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 24 Feb 2008 16:11:06 -0500
-Received: from netrider.rowland.org ([192.131.102.5]:2854 "HELO
-	netrider.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1754455AbYBXVLF (ORCPT
+	Sun, 24 Feb 2008 16:11:21 -0500
+Received: from fk-out-0910.google.com ([209.85.128.187]:15460 "EHLO
+	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760022AbYBXVLT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 24 Feb 2008 16:11:05 -0500
-Date: Sun, 24 Feb 2008 16:11:03 -0500 (EST)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@netrider.rowland.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-cc: Pierre Ossman <drzeus-mmc@drzeus.cx>,
-       Zdenek Kabelac <zdenek.kabelac@gmail.com>,
-       Kernel development list <linux-kernel@vger.kernel.org>,
-       pm list <linux-pm@lists.linux-foundation.org>,
-       Pavel Machek <pavel@ucw.cz>
-Subject: Re: [Bug 10030] Suspend doesn't work when SD card is inserted
-In-Reply-To: <200802242156.55948.rjw@sisk.pl>
-Message-ID: <Pine.LNX.4.44L0.0802241605340.17767-100000@netrider.rowland.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Sun, 24 Feb 2008 16:11:19 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:x-mailer:mime-version:content-type:content-transfer-encoding;
+        b=KWLPZRwsLnwHmdWa5UPaNnUBgP6LQYSHas/h6spY1jpreXlhXPZqlIVa72XCw0HLVU9ZwDLn6mfxCPqeeDpBgM4OScDbOv/imV+myrwSNPZrVN6Dn9BceeBlPyml7Oc5O3nBjKf3GqFjbycwmOXztxfYb32H1pG27TKCX5lv2j8=
+Date: Sun, 24 Feb 2008 22:11:13 +0100
+From: Paolo Ciarrocchi <paolo.ciarrocchi@gmail.com>
+To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+Cc: Linux Kernel <linux-kernel@vger.kernel.org>,
+       linux-ide <linux-ide@vger.kernel.org>
+Subject: [PATCH 2/3] IDE: Replace __FUNCTION__ with __func__
+Message-ID: <20080224221113.5ddfe371@paolo-desktop>
+X-Mailer: Sylpheed-Claws 1.0.5 (GTK+ 1.2.10; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 24 Feb 2008, Rafael J. Wysocki wrote:
+Applies on top of the previous patch.
 
-> From: Rafael J. Wysocki <rjw@sisk.pl>
-> 
-> Remove the code that acquires all device semaphores from the suspend
-> code path as it causes multiple problems to appear (most notably,
-> http://bugzilla.kernel.org/show_bug.cgi?id=10030) and revert the
-> change introduced by commit 4145ed6dc597a9bea5f6ae8c574653b2de10620f
-> depending on the code being removed.
-> 
-> Remove pm_sleep_lock()/pm_sleep_unlock() from device_add() to avoid
-> the issue reported at http://bugzilla.kernel.org/show_bug.cgi?id=9874.
 
-This looks okay.
+Signed-off-by: Paolo Ciarrocchi <paolo.ciarrocchi@gmail.com>
+---
+ drivers/ide/ide-cd.c |   14 +++++++-------
+ 1 files changed, 7 insertions(+), 7 deletions(-)
 
-Are you going to submit it just for 2.6.25, leaving the existing code 
-as-is for 2.6.26?
-
-Alan Stern
+diff --git a/drivers/ide/ide-cd.c b/drivers/ide/ide-cd.c
+index 3181e71..76317ab 100644
+--- a/drivers/ide/ide-cd.c
++++ b/drivers/ide/ide-cd.c
+@@ -650,7 +650,7 @@ int ide_cd_check_ireason(ide_drive_t *drive, int len, int ireason, int rw)
+ 
+ 		/* Whoops... */
+ 		printk(KERN_ERR "%s: %s: wrong transfer direction!\n",
+-				drive->name, __FUNCTION__);
++				drive->name, __func__);
+ 
+ 		xf = rw ? hwif->atapi_output_bytes : hwif->atapi_input_bytes;
+ 		ide_cd_pad_transfer(drive, xf, len);
+@@ -663,7 +663,7 @@ int ide_cd_check_ireason(ide_drive_t *drive, int len, int ireason, int rw)
+ 	} else {
+ 		/* Drive wants a command packet, or invalid ireason... */
+ 		printk(KERN_ERR "%s: %s: bad interrupt reason 0x%02x\n",
+-				drive->name, __FUNCTION__, ireason);
++				drive->name, __func__, ireason);
+ 	}
+ 
+ 	cdrom_end_request(drive, 0);
+@@ -682,7 +682,7 @@ static int ide_cd_check_transfer_size(ide_drive_t *drive, int len)
+ 		return 0;
+ 
+ 	printk(KERN_ERR "%s: %s: Bad transfer size %d\n",
+-			drive->name, __FUNCTION__, len);
++			drive->name, __func__, len);
+ 
+ 	if (cd->cd_flags & IDE_CD_FLAG_LIMIT_NFRAMES)
+ 		printk(KERN_ERR "  This drive is not supported by "
+@@ -727,7 +727,7 @@ static ide_startstop_t cdrom_start_rw_cont(ide_drive_t *drive)
+ 			if (rq->current_nr_sectors !=
+ 			    bio_cur_sectors(rq->bio)) {
+ 				printk(KERN_ERR "%s: %s: buffer botch (%u)\n",
+-						drive->name, __FUNCTION__,
++						drive->name, __func__,
+ 						rq->current_nr_sectors);
+ 				cdrom_end_request(drive, 0);
+ 				return ide_stopped;
+@@ -961,7 +961,7 @@ static ide_startstop_t cdrom_newpc_intr(ide_drive_t *drive)
+ 			if (rq->current_nr_sectors > 0) {
+ 				printk(KERN_ERR "%s: %s: data underrun "
+ 						"(%d blocks)\n",
+-						drive->name, __FUNCTION__,
++						drive->name, __func__,
+ 						rq->current_nr_sectors);
+ 				if (!write)
+ 					rq->cmd_flags |= REQ_FAILED;
+@@ -1018,7 +1018,7 @@ static ide_startstop_t cdrom_newpc_intr(ide_drive_t *drive)
+ 		printk(KERN_ERR "%s: %s: The drive "
+ 				"appears confused (ireason = 0x%02x). "
+ 				"Trying to recover by ending request.\n",
+-				drive->name, __FUNCTION__, ireason);
++				drive->name, __func__, ireason);
+ 		goto end_request;
+ 	}
+ 
+@@ -1936,7 +1936,7 @@ static void ide_cd_release(struct kref *kref)
+ 	kfree(info->toc);
+ 	if (devinfo->handle == drive && unregister_cdrom(devinfo))
+ 		printk(KERN_ERR "%s: %s failed to unregister device from the cdrom "
+-				"driver.\n", __FUNCTION__, drive->name);
++				"driver.\n", __func__, drive->name);
+ 	drive->dsc_overlap = 0;
+ 	drive->driver_data = NULL;
+ 	blk_queue_prep_rq(drive->queue, NULL);
+-- 
+1.5.4.2.316.gf7a7
 
