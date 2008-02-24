@@ -1,118 +1,150 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759181AbYBXSFu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754244AbYBXSG6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759181AbYBXSFu (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 24 Feb 2008 13:05:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751512AbYBXSFm
+	id S1754244AbYBXSG6 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 24 Feb 2008 13:06:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752600AbYBXSGr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 24 Feb 2008 13:05:42 -0500
-Received: from x346.tv-sign.ru ([89.108.83.215]:50811 "EHLO mail.screens.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751394AbYBXSFl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 24 Feb 2008 13:05:41 -0500
-Date: Sun, 24 Feb 2008 21:09:31 +0300
-From: Oleg Nesterov <oleg@tv-sign.ru>
-To: "Eric W. Biederman" <ebiederm@xmission.com>,
-       Harald Welte <laforge@gnumonks.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Pavel Emelyanov <xemul@openvz.org>, linux-kernel@vger.kernel.org
-Subject: Re: Fw: [PATCH 1/1] file capabilities: simplify signal check
-Message-ID: <20080224180931.GA74@tv-sign.ru>
-References: <20080223000237.518aace0.akpm@linux-foundation.org> <m17igu6e73.fsf@ebiederm.dsl.xmission.com>
-Mime-Version: 1.0
+	Sun, 24 Feb 2008 13:06:47 -0500
+Received: from pne-smtpout2-sn1.fre.skanova.net ([81.228.11.159]:34012 "EHLO
+	pne-smtpout2-sn1.fre.skanova.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751512AbYBXSGq (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 24 Feb 2008 13:06:46 -0500
+X-Greylist: delayed 4186 seconds by postgrey-1.27 at vger.kernel.org; Sun, 24 Feb 2008 13:06:46 EST
+To: Nix <nix@esperi.org.uk>
+Cc: linux-kernel@vger.kernel.org, dm-devel@redhat.com
+Subject: Re: 2.6.24.2: 4KSTACKS + pcdrw + dm + mount -> stack overflow: ide-cd related? dm-related?
+References: <87wsovkth5.fsf@hades.wkstn.nix> <87skzipcpw.fsf@hades.wkstn.nix>
+From: Peter Osterlund <petero2@telia.com>
+Date: Sun, 24 Feb 2008 17:56:09 +0100
+In-Reply-To: <87skzipcpw.fsf@hades.wkstn.nix> (nix@esperi.org.uk's message of "Sun\, 24 Feb 2008 15\:59\:23 +0000")
+Message-ID: <m363wepa3a.fsf@telia.com>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.1 (gnu/linux)
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <m17igu6e73.fsf@ebiederm.dsl.xmission.com>
-User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 02/23, Eric W. Biederman wrote:
+Nix <nix@esperi.org.uk> writes:
+
+> On 24 Feb 2008, nix@esperi.org.uk outgrape:
 >
-> Andrew Morton <akpm@linux-foundation.org> writes:
-> 
-> > um, is that code namespace-clean?
-> 
-> Choke, gag.
-> 
-> There are uid namespace issues but since no one has finished the
-> uid namespace that I am aware of that is minor.
-> 
-> However the code does not appear clean/maintainable.  The normal linux
-> signal sending policy has already been enforce before we get to this
-> point.
-> 
-> So unless I am totally mistaken the code should read:
-> 
-> int cap_task_kill(struct task_struct *p, struct siginfo *info,
->                                 int sig, u32 secid)
-> {
->         if (info != SEND_SIG_NOINFO && (is_si_special(info) || SI_FROMKERNEL(info)))
->                 return 0;
-> 
->         if (!cap_issubset(p->cap_permitted, current->cap_permitted))
->                 return -EPERM;
-> 
-> 	return 0;
-> }
-> 
-> Although doing it that way violates:
->        /*
->          * Running a setuid root program raises your capabilities.
->          * Killing your own setuid root processes was previously
->          * allowed.
->          * We must preserve legacy signal behavior in this case.
->          */
-> 
-> 
-> Which says to me the code should really read:
-> int cap_task_kill(struct task_struct *p, struct siginfo *info,
->                                 int sig, u32 secid)
-> {
-> 	return 0;
-> }
-> 
-> The entire point of defining cap_task_kill under
-> CONFIG_SECURITY_FILE_CAPABLITIES appears to be deny killing processes
-> with more caps.  Killing processes that we could ordinarily kill 
-> which have more caps appears to be precisely the case we have decided
-> to allow.  So the patched version of cap_task_kill appears to be an
-> expensive way of doing nothing, just waiting for someone to complain
-> about the last couple of cases it denies until it is truly a noop.
+>> A loop mount/umounting a pcdrw or iso9660 (through the pktcdvd device)
+>> sees a stack overflow in four or five tries. Doing the same thing with
+>> the same CD in a normal non-pktcdvd-mounted drive doesn't cause a crash.
+>
+>> (This may or may not be PREEMPT+PREEMPT_BKL-specific: I'll try turning
+>> them off tomorrow and repeating.)
+>
+> It is not preempt-specific, nor dm-specific. Nor it is very easy to
+> capture tracebacks of: even netconsole generally gives up when faced
+> with a string of recursive tracebacks blurring past forever at blinding
+> speed.
+>
+> But while I'd normally blame pktcdvd there's only one pktcdvd function
+> in these tracebacks (pkt_open) and it's not got a significant stack
+> footprint.
 
-(Can't comment, I never understood this security magic, but Eric's
- explanation looks very reasonable to me).
+Did you verify that with "make checkstack" or just by looking at the
+source code? On my system, pkt_open() consumes 584 bytes because the
+compiler decides to inline lots of functions that would not normally
+be part of long call chains. The following patch fixes that problem on
+my system.
+
+> More notable is a great stack of mutual recursion between
+> dm_bio_destructor() and the CDROM code: it seems to burn most of the
+> stack on this sort of thrashing. Here's one of those tracebacks again:
+
+Maybe dm_bio_destructor() is just old cruft left on the stack from
+previous function calls?
 
 
-I just have an almost off-topic (sorry ;) question. Do we really need
-kill_pid_info_as_uid() ? Harald Welte cc'ed.
+From: Peter Osterlund <petero2@telia.com>
 
->From "[PATCH] Fix signal sending in usbdevio on async URB completion"
-commit 46113830a18847cff8da73005e57bc49c2f95a56
+Signed-off-by: Peter Osterlund <petero2@telia.com>
+---
 
-	> If a process issues an URB from userspace and (starts to) terminate
-	> before the URB comes back, we run into the issue described above.  This
-	> is because the urb saves a pointer to "current" when it is posted to the
-	> device, but there's no guarantee that this pointer is still valid
-	> afterwards.
-	>
-	> In fact, there are three separate issues:
-	>
-	> 1) the pointer to "current" can become invalid, since the task could be
-	>    completely gone when the URB completion comes back from the device.
-	>
-	> 2) Even if the saved task pointer is still pointing to a valid task_struct,
-	>    task_struct->sighand could have gone meanwhile.
-	>
-	> 3) Even if the process is perfectly fine, permissions may have changed,
-	>    and we can no longer send it a signal.
+ drivers/block/pktcdvd.c |   16 ++++++++--------
+ 1 files changed, 8 insertions(+), 8 deletions(-)
 
-The problems 1) and 2) are solved by converting to a struct pid. Is 3) a real
-problem? The task which does ioctl(USBDEVFS_SUBMITURB) explicitly asks to send
-the signal to it, should we deny the signal even if it changes its credentials
-in some way?
+diff --git a/drivers/block/pktcdvd.c b/drivers/block/pktcdvd.c
+index 674cd66..f2510e7 100644
+--- a/drivers/block/pktcdvd.c
++++ b/drivers/block/pktcdvd.c
+@@ -849,7 +849,7 @@ static int pkt_flush_cache(struct pktcdvd_device *pd)
+ /*
+  * speed is given as the normal factor, e.g. 4 for 4x
+  */
+-static int pkt_set_speed(struct pktcdvd_device *pd, unsigned write_speed, unsigned read_speed)
++static noinline int pkt_set_speed(struct pktcdvd_device *pd, unsigned write_speed, unsigned read_speed)
+ {
+ 	struct packet_command cgc;
+ 	struct request_sense sense;
+@@ -1776,7 +1776,7 @@ static int pkt_get_track_info(struct pktcdvd_device *pd, __u16 track, __u8 type,
+ 	return pkt_generic_packet(pd, &cgc);
+ }
+ 
+-static int pkt_get_last_written(struct pktcdvd_device *pd, long *last_written)
++static noinline int pkt_get_last_written(struct pktcdvd_device *pd, long *last_written)
+ {
+ 	disc_information di;
+ 	track_information ti;
+@@ -1813,7 +1813,7 @@ static int pkt_get_last_written(struct pktcdvd_device *pd, long *last_written)
+ /*
+  * write mode select package based on pd->settings
+  */
+-static int pkt_set_write_settings(struct pktcdvd_device *pd)
++static noinline int pkt_set_write_settings(struct pktcdvd_device *pd)
+ {
+ 	struct packet_command cgc;
+ 	struct request_sense sense;
+@@ -1972,7 +1972,7 @@ static int pkt_writable_disc(struct pktcdvd_device *pd, disc_information *di)
+ 	return 1;
+ }
+ 
+-static int pkt_probe_settings(struct pktcdvd_device *pd)
++static noinline int pkt_probe_settings(struct pktcdvd_device *pd)
+ {
+ 	struct packet_command cgc;
+ 	unsigned char buf[12];
+@@ -2071,7 +2071,7 @@ static int pkt_probe_settings(struct pktcdvd_device *pd)
+ /*
+  * enable/disable write caching on drive
+  */
+-static int pkt_write_caching(struct pktcdvd_device *pd, int set)
++static noinline int pkt_write_caching(struct pktcdvd_device *pd, int set)
+ {
+ 	struct packet_command cgc;
+ 	struct request_sense sense;
+@@ -2116,7 +2116,7 @@ static int pkt_lock_door(struct pktcdvd_device *pd, int lockflag)
+ /*
+  * Returns drive maximum write speed
+  */
+-static int pkt_get_max_speed(struct pktcdvd_device *pd, unsigned *write_speed)
++static noinline int pkt_get_max_speed(struct pktcdvd_device *pd, unsigned *write_speed)
+ {
+ 	struct packet_command cgc;
+ 	struct request_sense sense;
+@@ -2177,7 +2177,7 @@ static char us_clv_to_speed[16] = {
+ /*
+  * reads the maximum media speed from ATIP
+  */
+-static int pkt_media_speed(struct pktcdvd_device *pd, unsigned *speed)
++static noinline int pkt_media_speed(struct pktcdvd_device *pd, unsigned *speed)
+ {
+ 	struct packet_command cgc;
+ 	struct request_sense sense;
+@@ -2249,7 +2249,7 @@ static int pkt_media_speed(struct pktcdvd_device *pd, unsigned *speed)
+ 	}
+ }
+ 
+-static int pkt_perform_opc(struct pktcdvd_device *pd)
++static noinline int pkt_perform_opc(struct pktcdvd_device *pd)
+ {
+ 	struct packet_command cgc;
+ 	struct request_sense sense;
 
-Just curious. Thanks,
-
-Oleg.
-
+-- 
+Peter Osterlund - petero2@telia.com
+http://web.telia.com/~u89404340
