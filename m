@@ -1,54 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758027AbYBXLTV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758646AbYBXLTg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758027AbYBXLTV (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 24 Feb 2008 06:19:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753193AbYBXLTN
+	id S1758646AbYBXLTg (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 24 Feb 2008 06:19:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753518AbYBXLTO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
+	Sun, 24 Feb 2008 06:19:14 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:52253 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753160AbYBXLTN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Sun, 24 Feb 2008 06:19:13 -0500
-Received: from caramon.arm.linux.org.uk ([78.32.30.218]:35534 "EHLO
-	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752928AbYBXLTM (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 24 Feb 2008 06:19:12 -0500
-Date: Sun, 24 Feb 2008 11:18:13 +0000
-From: Russell King - ARM Linux <linux@arm.linux.org.uk>
-To: Andrew Morton <akpm@linux-foundation.org>,
-       Liam Girdwood <lg@opensource.wolfsonmicro.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       linux-arm-kernel <linux-arm-kernel@lists.arm.linux.org.uk>
-Subject: Re: [PATCH 4/6] regulator: regulator core.
-Message-ID: <20080224111813.GA15652@flint.arm.linux.org.uk>
-References: <1203527351.4071.92.camel@localhost.localdomain> <20080223000538.e1f086e1.akpm@linux-foundation.org> <20080223095217.GA28356@flint.arm.linux.org.uk> <20080224102348.GA11156@sirena.org.uk>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Soeren Sonnenburg <kernel@nn7.de>
+Subject: Re: 2.6.25-current-git hangs on boot
+Date: Sun, 24 Feb 2008 12:18:04 +0100
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: Oliver Pinter <oliver.pntr@gmail.com>,
+       Linux Kernel <linux-kernel@vger.kernel.org>,
+       Venki Pallipadi <venkatesh.pallipadi@intel.com>
+References: <1203789325.4063.9.camel@localhost> <6101e8c40802231100t3af57018r139de0b52cd556b5@mail.gmail.com> <1203833710.4006.3.camel@localhost>
+In-Reply-To: <1203833710.4006.3.camel@localhost>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20080224102348.GA11156@sirena.org.uk>
-User-Agent: Mutt/1.4.2.1i
+Message-Id: <200802241218.04617.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Feb 24, 2008 at 10:23:49AM +0000, Mark Brown wrote:
-> On Sat, Feb 23, 2008 at 09:52:17AM +0000, Russell King - ARM Linux wrote:
-> > On Sat, Feb 23, 2008 at 12:05:38AM -0800, Andrew Morton wrote:
+On Sunday, 24 of February 2008, Soeren Sonnenburg wrote:
+> On Sat, 2008-02-23 at 20:00 +0100, Oliver Pinter wrote:
+> > the pci=nommconf kernel parameter helped it?
 > 
-> > > > +#undef current
+> yes indeed, this switch reliably helps to over come the hang at *this
+> stage* (I tried booting with booth the switch and w/o).
 > 
-> > > err, no ;)  Please rename your stuff.
+> however with 50% chance I still see a hang directly after
 > 
-> > Renaming is not an option - "current" is an electronic term for which
-> > there is no alternative.  The real problem is this __ATTR macro crap:
-> 
-> Indeed, and this is already being worked around by
-> drivers/power/power_supply_sysfs.c:
-> 
-> #define POWER_SUPPLY_ATTR(_name)                                        \
-> {                                                                       \
->         .attr = { .name = #_name, .mode = 0444, .owner = THIS_MODULE }, \
+> cpuidle: using governor ladder
 
-My argument is - why bother with stuff like this, why not just pass
-"_name" as the string itself, rather than using the preprocessor to
-turn symbols into strings thereby suffering these nasty interactions.
+Do you have CONFIG_CPU_IDLE set?  If you have, please try to unset it and
+retest.
 
-It's not like "_name" is used for anything other than generating a
-string.
+Thanks,
+Rafael
