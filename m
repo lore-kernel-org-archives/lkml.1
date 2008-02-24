@@ -1,83 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757003AbYBXGwk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753094AbYBXG7G@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757003AbYBXGwk (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 24 Feb 2008 01:52:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751324AbYBXGwZ
+	id S1753094AbYBXG7G (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 24 Feb 2008 01:59:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750722AbYBXG6x
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 24 Feb 2008 01:52:25 -0500
-Received: from wx-out-0506.google.com ([66.249.82.235]:52910 "EHLO
-	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755433AbYBXGwF (ORCPT
+	Sun, 24 Feb 2008 01:58:53 -0500
+Received: from lazybastard.de ([212.112.238.170]:36372 "EHLO
+	longford.lazybastard.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750704AbYBXG6x (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 24 Feb 2008 01:52:05 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=nyj2AhSTNxWRysCmWbNMlN8Z4mlc1waaJxC1orDajXF6WKyO72efO3eY+fuZAwC8YNW6yVzFwyndNrPKfgGdtNrgGKP/wWn9d1MYkOyUHwLv6ZxuDrcMjd0frEOI7ddLDeHOlpSs/zeZXHgORbE1Mu3OF4aJbikhers1TZlJpbs=
-Message-ID: <170fa0d20802232252x7e52c5ebga726dcd7736261ba@mail.gmail.com>
-Date: Sun, 24 Feb 2008 01:52:02 -0500
-From: "Mike Snitzer" <snitzer@gmail.com>
-To: "Peter Zijlstra" <a.p.zijlstra@chello.nl>
-Subject: Re: [PATCH 15/28] netvm: network reserve infrastructure
-Cc: "Linus Torvalds" <torvalds@linux-foundation.org>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       netdev@vger.kernel.org, trond.myklebust@fys.uio.no
-In-Reply-To: <20080220150307.208040000@chello.nl>
+	Sun, 24 Feb 2008 01:58:53 -0500
+Date: Sun, 24 Feb 2008 07:57:52 +0100
+From: =?utf-8?B?SsO2cm4=?= Engel <joern@logfs.org>
+To: David Woodhouse <dwmw2@infradead.org>
+Cc: Pavel Machek <pavel@ucw.cz>, linux-mtd@lists.infradead.org,
+       kernel list <linux-kernel@vger.kernel.org>
+Subject: Re: jffs2: -ENOSPC when truncating file?!
+Message-ID: <20080224065751.GA31293@lazybastard.org>
+References: <20080223235742.GE2202@elf.ucw.cz> <1203813368.5771.174.camel@shinybook.infradead.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-References: <20080220144610.548202000@chello.nl>
-	 <20080220150307.208040000@chello.nl>
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <1203813368.5771.174.camel@shinybook.infradead.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Feb 20, 2008 at 9:46 AM, Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:
-> Provide the basic infrastructure to reserve and charge/account network memory.
-...
+On Sun, 24 February 2008 09:36:07 +0900, David Woodhouse wrote:
+> On Sun, 2008-02-24 at 00:57 +0100, Pavel Machek wrote:
+> > 
+> > I'm trying to free space by truncating big file, and I get:
+> > 
+> > root@fic-gta01:~# ls -al gps.nmea 
+> > -rw-r--r--    1 root     root      2332070 Feb 19 22:13 gps.nmea
+> > root@fic-gta01:~# > gps.nmea 
+> > -sh: cannot create gps.nmea: No space left on device
+> > root@fic-gta01:~# rm gps.nmea
+> > root@fic-gta01:~# > gps.nmea
+> > root@fic-gta01:~# 
+> 
+> You need to write a log entry indicating the new length of the file.
+> There is no space for new log entries.
+> 
+> There is a special case for removal -- 'rm gps.nmea' would work. Perhaps
+> we should add a special case for truncation too, so that it can also use
+> the extra pool of free space.
 
->  Index: linux-2.6/net/core/sock.c
->  ===================================================================
->  --- linux-2.6.orig/net/core/sock.c
->  +++ linux-2.6/net/core/sock.c
-...
->  +/**
->  + *     sk_adjust_memalloc - adjust the global memalloc reserve for critical RX
->  + *     @socks: number of new %SOCK_MEMALLOC sockets
->  + *     @tx_resserve_pages: number of pages to (un)reserve for TX
->  + *
->  + *     This function adjusts the memalloc reserve based on system demand.
->  + *     The RX reserve is a limit, and only added once, not for each socket.
->  + *
->  + *     NOTE:
->  + *        @tx_reserve_pages is an upper-bound of memory used for TX hence
->  + *        we need not account the pages like we do for RX pages.
->  + */
->  +int sk_adjust_memalloc(int socks, long tx_reserve_pages)
->  +{
->  +       int nr_socks;
->  +       int err;
->  +
->  +       err = mem_reserve_pages_add(&net_tx_pages, tx_reserve_pages);
->  +       if (err)
->  +               return err;
->  +
->  +       nr_socks = atomic_read(&memalloc_socks);
->  +       if (!nr_socks && socks > 0)
->  +               err = mem_reserve_connect(&net_reserve, &mem_reserve_root);
->  +       nr_socks = atomic_add_return(socks, &memalloc_socks);
->  +       if (!nr_socks && socks)
->  +               err = mem_reserve_disconnect(&net_reserve);
->  +
->  +       if (err)
->  +               mem_reserve_pages_add(&net_tx_pages, -tx_reserve_pages);
->  +
->  +       return err;
->  +}
+Could a naïve implementation of this get exploited by doing a large
+number of truncates that just shave single bytes off various files?
 
-EXPORT_SYMBOL_GPL(sk_adjust_memalloc); is needed here to build sunrpc
-as a module.
+Looks like the safe way to do it would be to write out a replacement
+node for the truncated node, if the special case ever triggers.
 
-Mike
+Jörn
+
+-- 
+"[One] doesn't need to know [...] how to cause a headache in order
+to take an aspirin."
+-- Scott Culp, Manager of the Microsoft Security Response Center, 2001
