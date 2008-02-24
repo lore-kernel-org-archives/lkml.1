@@ -1,66 +1,36 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760165AbYBXS16@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760455AbYBXS23@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760165AbYBXS16 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 24 Feb 2008 13:27:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756884AbYBXS1b
+	id S1760455AbYBXS23 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 24 Feb 2008 13:28:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756539AbYBXS2M
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 24 Feb 2008 13:27:31 -0500
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:3387 "EHLO spitz.ucw.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752434AbYBXS1a (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 24 Feb 2008 13:27:30 -0500
-Date: Sun, 24 Feb 2008 19:21:21 +0100
-From: Pavel Machek <pavel@ucw.cz>
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Pierre Ossman <drzeus-mmc@drzeus.cx>,
-       Zdenek Kabelac <zdenek.kabelac@gmail.com>,
-       Kernel development list <linux-kernel@vger.kernel.org>,
-       pm list <linux-pm@lists.linux-foundation.org>
-Subject: Re: [Bug 10030] Suspend doesn't work when SD card is inserted
-Message-ID: <20080224182120.GB3886@ucw.cz>
-References: <200802240119.51935.rjw@sisk.pl> <Pine.LNX.4.44L0.0802232143050.29968-100000@netrider.rowland.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Sun, 24 Feb 2008 13:28:12 -0500
+Received: from wr-out-0506.google.com ([64.233.184.224]:33378 "EHLO
+	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753812AbYBXS2K (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 24 Feb 2008 13:28:10 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
+        b=QetgKFE77Z0QSqatFdLwRAGk2Q9DSP/1th70WQeMq24UV0PuWaNmPee4GchkzJComfRLLBPXSzt147Yic6sC6frXkbRF4c/cuI/B3nVNM0sr1Gx5WDpL5gbJNEgaqRkd/2U6k4KvAvUsH1cWI5OqQW17v4yLkbTo1d7qj6hhdXg=
+Message-ID: <8b67d60802241028n1df2cd28jd98536814128b28f@mail.gmail.com>
+Date: Sun, 24 Feb 2008 18:28:08 +0000
+From: "Adrian McMenamin" <lkmladrian@gmail.com>
+To: LKML <linux-kernel@vger.kernel.org>
+Subject: lkml.org
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.44L0.0802232143050.29968-100000@netrider.rowland.org>
-User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
+At the risk of pointing out the obvious (though I cannot find anyone
+else who has commented), this appears to be broken at the moment...(ie
+not picking up new messages)
 
-> Index: usb-2.6/drivers/base/power/main.c
-> ===================================================================
-> --- usb-2.6.orig/drivers/base/power/main.c
-> +++ usb-2.6/drivers/base/power/main.c
-> @@ -25,6 +25,7 @@
->  #include <linux/pm.h>
->  #include <linux/resume-trace.h>
->  #include <linux/rwsem.h>
-> +#include <linux/sched.h>
->  
->  #include "../base.h"
->  #include "power.h"
-> @@ -59,6 +60,13 @@ static DECLARE_RWSEM(pm_sleep_rwsem);
->  
->  int (*platform_enable_wakeup)(struct device *dev, int is_on);
->  
-> +static struct task_struct *suspending_task;
+...which is a pity as it is a great site
 
-What locking protects this variable? What happens when suspending_task
-exits? (Hmm, that would probably be bug, anyway?)
-
-Or are we running UP when this is accessed? This at least needs a big
-fat comment.
-
-> +bool in_suspend_context(void)
-> +{
-> +	return (suspending_task == current);
-> +}
-
-
-							Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Adrian
