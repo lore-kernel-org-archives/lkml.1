@@ -1,273 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752944AbYBXSBR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759742AbYBXSBi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752944AbYBXSBR (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 24 Feb 2008 13:01:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756237AbYBXSAr
+	id S1759742AbYBXSBi (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 24 Feb 2008 13:01:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759407AbYBXSBJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 24 Feb 2008 13:00:47 -0500
-Received: from einhorn.in-berlin.de ([192.109.42.8]:45598 "EHLO
-	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752955AbYBXSAq (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 24 Feb 2008 13:00:46 -0500
-X-Envelope-From: stefanr@s5r6.in-berlin.de
-Date: Sun, 24 Feb 2008 18:59:11 +0100 (CET)
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-Subject: [PATCH 2/5] firewire: fix crash in automatic module unloading
-To: linux1394-devel@lists.sourceforge.net
-cc: Kristian Hoegsberg <krh@bitplanet.net>, Jarod Wilson <jwilson@redhat.com>,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <tkrat.5dc141579386d159@s5r6.in-berlin.de>
-Message-ID: <tkrat.ce9862ad477be41e@s5r6.in-berlin.de>
-References: <tkrat.5dc141579386d159@s5r6.in-berlin.de>
+	Sun, 24 Feb 2008 13:01:09 -0500
+Received: from cantor.suse.de ([195.135.220.2]:58662 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1759392AbYBXSBI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 24 Feb 2008 13:01:08 -0500
+Date: Sun, 24 Feb 2008 10:00:18 -0800
+From: Greg KH <gregkh@suse.de>
+To: Arnd Bergmann <arnd@arndb.de>
+Cc: Al Viro <viro@zeniv.linux.org.uk>, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org, Christoph Hellwig <hch@lst.de>,
+       David Howells <dhowells@redhat.com>
+Subject: Re: [RFC 01/11] add generic versions of debugfs file operations
+Message-ID: <20080224180018.GA13234@suse.de>
+References: <20080219040435.825494460@arndb.de> <20080219040828.415218298@arndb.de> <20080223122444.GM27894@ZenIV.linux.org.uk> <200802241146.08360.arnd@arndb.de>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; CHARSET=us-ascii
-Content-Disposition: INLINE
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200802241146.08360.arnd@arndb.de>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-"modprobe firewire-ohci; sleep .1; modprobe -r firewire-ohci" used to
-result in crashes like this:
+On Sun, Feb 24, 2008 at 11:46:07AM +0100, Arnd Bergmann wrote:
+> On Saturday 23 February 2008, Al Viro wrote:
+> 
+> > Ewww - caps, \n...  BTW, \0 is pointless here - simple_read_from_buffer() will
+> > not access it with these arguments)...
+> 
+> > ... 
+> 
+> > Please, check the length; sloppy input grammar is a bad idea.  Hell, at the
+> > very least you want -EINVAL if input is not recognized...
+> 
+> Ok, these two come straight from debugfs, but of course I can fix them
+> anyway. Should I do a fix for debugfs in 2.6.25 first, or rather do a
+> patch on top of the libfs rework?
 
-    BUG: unable to handle kernel paging request at ffffffff8807b455
-    IP: [<ffffffff8807b455>]
-    PGD 203067 PUD 207063 PMD 7c170067 PTE 0
-    Oops: 0010 [1] PREEMPT SMP 
-    CPU 0 
-    Modules linked in: i915 drm cpufreq_ondemand acpi_cpufreq freq_table applesmc input_polldev led_class coretemp hwmon eeprom snd_seq_oss snd_seq_midi_event snd_seq snd_seq_device snd_pcm_oss snd_mixer_oss button thermal processor sg snd_hda_intel snd_pcm snd_timer snd snd_page_alloc sky2 i2c_i801 rtc [last unloaded: crc_itu_t]
-    Pid: 9, comm: events/0 Not tainted 2.6.25-rc2 #3
-    RIP: 0010:[<ffffffff8807b455>]  [<ffffffff8807b455>]
-    RSP: 0018:ffff81007dcdde88  EFLAGS: 00010246
-    RAX: ffff81007dc95040 RBX: ffff81007dee5390 RCX: 0000000000005e13
-    RDX: 0000000000008c8b RSI: 0000000000000001 RDI: ffff81007dee5388
-    RBP: ffff81007dc5eb40 R08: 0000000000000002 R09: ffffffff8022d05c
-    R10: ffffffff8023b34c R11: ffffffff8041a353 R12: ffff81007dee5388
-    R13: ffffffff8807b455 R14: ffffffff80593bc0 R15: 0000000000000000
-    FS:  0000000000000000(0000) GS:ffffffff8055a000(0000) knlGS:0000000000000000
-    CS:  0010 DS: 0018 ES: 0018 CR0: 000000008005003b
-    CR2: ffffffff8807b455 CR3: 0000000000201000 CR4: 00000000000006e0
-    DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
-    DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
-    Process events/0 (pid: 9, threadinfo ffff81007dcdc000, task ffff81007dc95040)
-    Stack:  ffffffff8023b396 ffffffff88082524 0000000000000000 ffffffff8807d9ae
-    ffff81007dc5eb40 ffff81007dc9dce0 ffff81007dc5eb40 ffff81007dc5eb80
-    ffff81007dc9dce0 ffffffffffffffff ffffffff8023be87 0000000000000000
-    Call Trace:
-    [<ffffffff8023b396>] ? run_workqueue+0xdf/0x1df
-    [<ffffffff8023be87>] ? worker_thread+0xd8/0xe3
-    [<ffffffff8023e917>] ? autoremove_wake_function+0x0/0x2e
-    [<ffffffff8023bdaf>] ? worker_thread+0x0/0xe3
-    [<ffffffff8023e813>] ? kthread+0x47/0x74
-    [<ffffffff804198e0>] ? trace_hardirqs_on_thunk+0x35/0x3a
-    [<ffffffff8020c008>] ? child_rip+0xa/0x12
-    [<ffffffff8020b6e3>] ? restore_args+0x0/0x3d
-    [<ffffffff8023e68a>] ? kthreadd+0x14c/0x171
-    [<ffffffff8023e68a>] ? kthreadd+0x14c/0x171
-    [<ffffffff8023e7cc>] ? kthread+0x0/0x74
-    [<ffffffff8020bffe>] ? child_rip+0x0/0x12
+I'll gladly take a patch to debugfs for it :)
 
+thanks,
 
-    Code:  Bad RIP value.
-    RIP  [<ffffffff8807b455>]
-    RSP <ffff81007dcdde88>
-    CR2: ffffffff8807b455
-    ---[ end trace c7366c6657fe5bed ]---
-
-Note that this crash happened _after_ firewire-core was unloaded.  The
-shared workqueue tried to run firewire-core's device initialization jobs
-or similar jobs.
-
-The fix makes sure that firewire-ohci and hence firewire-core is not
-unloaded before all device shutdown jobs have been completed.  This is
-determined by the count of device initializations minus device releases.
-
-Also skip useless retries in the node initialization job if the node is
-to be shut down.
-
-Signed-off-by: Stefan Richter <stefanr@s5r6.in-berlin.de>
----
- drivers/firewire/fw-card.c        |   10 +++++++++-
- drivers/firewire/fw-device.c      |   21 ++++++---------------
- drivers/firewire/fw-device.h      |   16 ++++++++++++++--
- drivers/firewire/fw-sbp2.c        |    4 ++++
- drivers/firewire/fw-transaction.h |    2 ++
- 5 files changed, 35 insertions(+), 18 deletions(-)
-
-Index: linux/drivers/firewire/fw-card.c
-===================================================================
---- linux.orig/drivers/firewire/fw-card.c
-+++ linux/drivers/firewire/fw-card.c
-@@ -18,6 +18,7 @@
- 
- #include <linux/module.h>
- #include <linux/errno.h>
-+#include <linux/delay.h>
- #include <linux/device.h>
- #include <linux/mutex.h>
- #include <linux/crc-itu-t.h>
-@@ -398,6 +399,7 @@ fw_card_initialize(struct fw_card *card,
- 	static atomic_t index = ATOMIC_INIT(-1);
- 
- 	kref_init(&card->kref);
-+	atomic_set(&card->device_count, 0);
- 	card->index = atomic_inc_return(&index);
- 	card->driver = driver;
- 	card->device = device;
-@@ -528,8 +530,14 @@ fw_core_remove_card(struct fw_card *card
- 	card->driver = &dummy_driver;
- 
- 	fw_destroy_nodes(card);
--	flush_scheduled_work();
-+	/*
-+	 * Wait for all device workqueue jobs to finish.  Otherwise the
-+	 * firewire-core module could be unloaded before the jobs ran.
-+	 */
-+	while (atomic_read(&card->device_count) > 0)
-+		msleep(100);
- 
-+	cancel_delayed_work_sync(&card->work);
- 	fw_flush_transactions(card);
- 	del_timer_sync(&card->flush_timer);
- 
-Index: linux/drivers/firewire/fw-device.c
-===================================================================
---- linux.orig/drivers/firewire/fw-device.c
-+++ linux/drivers/firewire/fw-device.c
-@@ -150,21 +150,10 @@ struct bus_type fw_bus_type = {
- };
- EXPORT_SYMBOL(fw_bus_type);
- 
--struct fw_device *fw_device_get(struct fw_device *device)
--{
--	get_device(&device->device);
--
--	return device;
--}
--
--void fw_device_put(struct fw_device *device)
--{
--	put_device(&device->device);
--}
--
- static void fw_device_release(struct device *dev)
- {
- 	struct fw_device *device = fw_device(dev);
-+	struct fw_card *card = device->card;
- 	unsigned long flags;
- 
- 	/*
-@@ -176,9 +165,9 @@ static void fw_device_release(struct dev
- 	spin_unlock_irqrestore(&device->card->lock, flags);
- 
- 	fw_node_put(device->node);
--	fw_card_put(device->card);
- 	kfree(device->config_rom);
- 	kfree(device);
-+	atomic_dec(&card->device_count);
- }
- 
- int fw_device_enable_phys_dma(struct fw_device *device)
-@@ -668,7 +657,8 @@ static void fw_device_init(struct work_s
- 	 */
- 
- 	if (read_bus_info_block(device, device->generation) < 0) {
--		if (device->config_rom_retries < MAX_RETRIES) {
-+		if (device->config_rom_retries < MAX_RETRIES &&
-+		    atomic_read(&device->state) == FW_DEVICE_INITIALIZING) {
- 			device->config_rom_retries++;
- 			schedule_delayed_work(&device->work, RETRY_DELAY);
- 		} else {
-@@ -805,7 +795,8 @@ void fw_node_event(struct fw_card *card,
- 		 */
- 		device_initialize(&device->device);
- 		atomic_set(&device->state, FW_DEVICE_INITIALIZING);
--		device->card = fw_card_get(card);
-+		atomic_inc(&card->device_count);
-+		device->card = card;
- 		device->node = fw_node_get(node);
- 		device->node_id = node->node_id;
- 		device->generation = card->generation;
-Index: linux/drivers/firewire/fw-sbp2.c
-===================================================================
---- linux.orig/drivers/firewire/fw-sbp2.c
-+++ linux/drivers/firewire/fw-sbp2.c
-@@ -757,6 +757,7 @@ static void sbp2_release_target(struct k
- 	struct sbp2_logical_unit *lu, *next;
- 	struct Scsi_Host *shost =
- 		container_of((void *)tgt, struct Scsi_Host, hostdata[0]);
-+	struct fw_device *device = fw_device(tgt->unit->device.parent);
- 
- 	/* prevent deadlocks */
- 	sbp2_unblock(tgt);
-@@ -778,6 +779,7 @@ static void sbp2_release_target(struct k
- 
- 	put_device(&tgt->unit->device);
- 	scsi_host_put(shost);
-+	fw_device_put(device);
- }
- 
- static struct workqueue_struct *sbp2_wq;
-@@ -1080,6 +1082,8 @@ static int sbp2_probe(struct device *dev
- 	if (scsi_add_host(shost, &unit->device) < 0)
- 		goto fail_shost_put;
- 
-+	fw_device_get(device);
-+
- 	/* Initialize to values that won't match anything in our table. */
- 	firmware_revision = 0xff000000;
- 	model = 0xff000000;
-Index: linux/drivers/firewire/fw-transaction.h
-===================================================================
---- linux.orig/drivers/firewire/fw-transaction.h
-+++ linux/drivers/firewire/fw-transaction.h
-@@ -26,6 +26,7 @@
- #include <linux/fs.h>
- #include <linux/dma-mapping.h>
- #include <linux/firewire-constants.h>
-+#include <asm/atomic.h>
- 
- #define TCODE_IS_READ_REQUEST(tcode)	(((tcode) & ~1) == 4)
- #define TCODE_IS_BLOCK_PACKET(tcode)	(((tcode) &  1) != 0)
-@@ -219,6 +220,7 @@ extern struct bus_type fw_bus_type;
- struct fw_card {
- 	const struct fw_card_driver *driver;
- 	struct device *device;
-+	atomic_t device_count;
- 	struct kref kref;
- 
- 	int node_id;
-Index: linux/drivers/firewire/fw-device.h
-===================================================================
---- linux.orig/drivers/firewire/fw-device.h
-+++ linux/drivers/firewire/fw-device.h
-@@ -76,9 +76,21 @@ fw_device_is_shutdown(struct fw_device *
- 	return atomic_read(&device->state) == FW_DEVICE_SHUTDOWN;
- }
- 
--struct fw_device *fw_device_get(struct fw_device *device);
-+static inline struct fw_device *
-+fw_device_get(struct fw_device *device)
-+{
-+	get_device(&device->device);
-+
-+	return device;
-+}
-+
-+static inline void
-+fw_device_put(struct fw_device *device)
-+{
-+	put_device(&device->device);
-+}
-+
- struct fw_device *fw_device_get_by_devt(dev_t devt);
--void fw_device_put(struct fw_device *device);
- int fw_device_enable_phys_dma(struct fw_device *device);
- 
- void fw_device_cdev_update(struct fw_device *device);
-
--- 
-Stefan Richter
--=====-==--- --=- ==---
-http://arcgraph.de/sr/
-
+greg k-h
