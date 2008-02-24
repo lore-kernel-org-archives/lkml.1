@@ -1,62 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760207AbYBXEjm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759340AbYBXEoh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760207AbYBXEjm (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 23 Feb 2008 23:39:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758724AbYBXEjX
+	id S1759340AbYBXEoh (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 23 Feb 2008 23:44:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755755AbYBXEoa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 23 Feb 2008 23:39:23 -0500
-Received: from pythia.bakeyournoodle.com ([203.82.209.197]:37636 "EHLO
-	pythia.bakeyournoodle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758674AbYBXEjW (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 23 Feb 2008 23:39:22 -0500
-Date: Sun, 24 Feb 2008 15:36:31 +1100
-To: Jeff Garzik <jeff@garzik.org>
-Cc: Rusty Russell <rusty@rustcorp.com.au>, lguest@ozlabs.org,
+	Sat, 23 Feb 2008 23:44:30 -0500
+Received: from chilli.pcug.org.au ([203.10.76.44]:51769 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755687AbYBXEo3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 23 Feb 2008 23:44:29 -0500
+Date: Sun, 24 Feb 2008 15:44:23 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: James Bottomley <James.Bottomley@HansenPartnership.com>
+Cc: Ke Wei <kewei@marvell.com>, linux-next@vger.kernel.org,
        LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [Lguest] lguest breaks i386 allmodconfig
-Message-ID: <20080224043631.GS6887@bakeyournoodle.com>
-References: <47C0F363.6050509@garzik.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <47C0F363.6050509@garzik.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-From: tony@bakeyournoodle.com (Tony Breeds)
+Subject: Re: [PATCH] scsi/mvsas.c needs to include linux/ctype.h fo isalnum
+Message-Id: <20080224154423.ff8c07e9.sfr@canb.auug.org.au>
+In-Reply-To: <1203827951.3139.15.camel@localhost.localdomain>
+References: <20080224152700.20365867.sfr@canb.auug.org.au>
+	<1203827951.3139.15.camel@localhost.localdomain>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.8; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Sun__24_Feb_2008_15_44_23_+1100_8Z7tJtGo_8iNcDdk"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Feb 23, 2008 at 11:32:35PM -0500, Jeff Garzik wrote:
-> The following
-> 
-> 	make ARCH=i386 allmodconfig && \
-> 	make ARCH=i386 -sj5
-> 
-> on x86-64 produces the following build breakage at the post-build stage:
-> 
-> [...]
-> Root device is (9, 0)
-> Setup is 12504 bytes (padded to 12800 bytes).
-> System is 1883 kB
-> Kernel: arch/x86/boot/bzImage is ready  (#2)
-> ERROR: "LGUEST_PAGES_guest_gdt_desc" [drivers/lguest/lg.ko] undefined!
-> ERROR: "LGUEST_PAGES_host_gdt_desc" [drivers/lguest/lg.ko] undefined!
-> ERROR: "LGUEST_PAGES_host_cr3" [drivers/lguest/lg.ko] undefined!
-> ERROR: "LGUEST_PAGES_regs" [drivers/lguest/lg.ko] undefined!
-> ERROR: "LGUEST_PAGES_host_idt_desc" [drivers/lguest/lg.ko] undefined!
-> ERROR: "LGUEST_PAGES_guest_gdt" [drivers/lguest/lg.ko] undefined!
-> ERROR: "LGUEST_PAGES_host_sp" [drivers/lguest/lg.ko] undefined!
-> ERROR: "LGUEST_PAGES_regs_trapnum" [drivers/lguest/lg.ko] undefined!
-> ERROR: "LGUEST_PAGES_guest_idt_desc" [drivers/lguest/lg.ko] undefined!
-> [...]
+--Signature=_Sun__24_Feb_2008_15_44_23_+1100_8Z7tJtGo_8iNcDdk
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-I suspect that the various patches in this thread
-(http://marc.info/?t=120339302000002) will fix this problem.
-It's a matter of which on Linus takes, and when.
+On Sat, 23 Feb 2008 22:39:11 -0600 James Bottomley <James.Bottomley@HansenP=
+artnership.com> wrote:
+>
+> In future, it would be nice if you could send SCSI patches to the SCSI
+> list: linux-scsi@vger.kernel.org
 
-Yours Tony
+Sure thing.
 
-  linux.conf.au    http://www.marchsouth.org/
-  Jan 19 - 24 2009 The Australian Linux Technical Conference!
+> But actually, a more complete version of this one is already upstream as
+> commit 0a3716eb04ccfdbef6e872a343ba7ce309237e79
 
+Excellent.
+
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+
+--Signature=_Sun__24_Feb_2008_15_44_23_+1100_8Z7tJtGo_8iNcDdk
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQFHwPYsTgG2atn1QN8RAqaOAJ9QUx98X5ZvieXzdjuQFUMXZUlvtgCfQNwQ
+1+ODaGDzX0VfnY4U9SkyoOQ=
+=IGn7
+-----END PGP SIGNATURE-----
+
+--Signature=_Sun__24_Feb_2008_15_44_23_+1100_8Z7tJtGo_8iNcDdk--
