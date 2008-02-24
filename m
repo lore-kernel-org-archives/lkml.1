@@ -1,76 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758822AbYBXSLZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759720AbYBXSMX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758822AbYBXSLZ (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 24 Feb 2008 13:11:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751688AbYBXSLS
+	id S1759720AbYBXSMX (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 24 Feb 2008 13:12:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751750AbYBXSMN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 24 Feb 2008 13:11:18 -0500
-Received: from lixom.net ([66.141.50.11]:38610 "EHLO mail.lixom.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751582AbYBXSLR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 24 Feb 2008 13:11:17 -0500
-Date: Sun, 24 Feb 2008 12:15:10 -0600
-From: Olof Johansson <olof@lixom.net>
-To: Jochen Friedrich <jochen@scram.de>
-Cc: Jean Delvare <khali@linux-fr.org>, linux-kernel@vger.kernel.org,
-       linuxppc-dev list <linuxppc-dev@ozlabs.org>, i2c@lm-sensors.org,
-       Scott Wood <scottwood@freescale.com>
-Subject: Re: [PATCHv4 2.6.25] i2c: adds support for i2c bus on Freescale
-	CPM1/CPM2 controllers
-Message-ID: <20080224181509.GA6745@lixom.net>
-References: <47A1C4E9.4000003@scram.de> <20080221130520.12b01553@hyperion.delvare> <47BEAF00.50106@scram.de> <20080223212823.GA22131@lixom.net> <47C18A4E.5080804@scram.de>
+	Sun, 24 Feb 2008 13:12:13 -0500
+Received: from wf-out-1314.google.com ([209.85.200.168]:64935 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751675AbYBXSMM (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 24 Feb 2008 13:12:12 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=IwwO6SG8v3SyfZkvCvqMVesR82ucTeBUMLrLKlSNoBnMJr2u40MXQ3zv4vXqQDyYPD1tjW20qWDb7z7zQBfnVIXwZhCIqPSY8OEreu4W/K0/Q7p970OOISVuy21a3TYuE9ShWILzCwfCQBLkS54emDzD2QWpvi0klLf3J81swaE=
+Message-ID: <4d8e3fd30802241012k3794882fm7f35a86b9481016f@mail.gmail.com>
+Date: Sun, 24 Feb 2008 19:12:11 +0100
+From: "Paolo Ciarrocchi" <paolo.ciarrocchi@gmail.com>
+To: "Bartlomiej Zolnierkiewicz" <bzolnier@gmail.com>
+Subject: Re: [PATCH 0/6] IDE: new series of Coding Style Fixes
+Cc: "Linux Kernel" <linux-kernel@vger.kernel.org>,
+       linux-ide <linux-ide@vger.kernel.org>
+In-Reply-To: <200802241738.57839.bzolnier@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <47C18A4E.5080804@scram.de>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+References: <20080223183812.5af6d36d@paolo-desktop>
+	 <200802241738.57839.bzolnier@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
-
-On Sun, Feb 24, 2008 at 04:16:30PM +0100, Jochen Friedrich wrote:
-> Hi Olof,
-> 
-> >> 2. record the I2c name in the dts tree, either as seperate tag (like linux,i2c-name="<i2c-name>")
-> >>    or as additional compatible entry (like compatible="...", "linux,<i2c-name>").
-> > 
-> > I have to say no on this one. The device tree is not supposed to know
-> > about how linux uses devices, there are firmwares out there that don't
-> > use DTS for thier device trees, etc.
-> 
-> I still believe this this could be done for embedded devices which are usually booted
-> via wrapper or U-Boot as those devices will most probably use the most exotic I2c devices
-> out there (e.g. home-grown devices used by stbs). However, I'm not an device tree expert.
-
-Sorry, but you're wrong in your assumptions. Not all embedded devices
-use U-boot, and not all use the wrapper. It's just a bad idea to encode
-linux-specific things in the device tree, period.
-
-And even if you DO decide to go that route, guess what? You need a
-translation table just as with (3) anyway!
-
-> >> 3. use a glue layer with a translation map.
-> > 
-> > In my opinion this is an OK solution since the same information has to
-> > be added somewhere already anyway -- eiither to the drivers or to this
-> > translation table. It should of course be an abstacted shared table,
-> > preferrably contained under the i2c source directories since several
-> > platforms and architectures might share them.
-> 
-> I could think of a mixture between 2. and 3.:
-> 
-> Using the compatible attribute with the manufacturer stripped off as I2c name by default
-> and using an exception table. For now, the struct i2c_driver_device would currently only
-> need one entry ("dallas,ds1374", "rtc-ds1374").
-
-You still need the translation table, you're just flattening the
-namespace to one string instead of two, the same information still has
-to be encoded. I can't see what the benefit of this approach compared to
-the other one is. "dallas,ds1374" already only has one translation entry
-in the table?
+On Sun, Feb 24, 2008 at 5:38 PM, Bartlomiej Zolnierkiewicz
+<bzolnier@gmail.com> wrote:
+>
+>  On Saturday 23 February 2008, Paolo Ciarrocchi wrote:
+>  > Bart,
+>  > here is a new series of patches that remove some errors
+>  > and warnings reported by checkpatch.pl from the IDE subsystem.
+>  >
+>  > All the patches have been compile tested and are against this morning (CET time :-)
+>  > linux-next
+>  >
+>  > Paolo Ciarrocchi (6):
+>  >       IDE: Coding Style fixes to drivers/ide/pci/opti621.c
+>  >       IDE: Coding Style fixes to drivers/ide/legacy/hd.c
+>  >       IDE: Coding Style fixes to drivers/ide/legacy/ali14xx.c
+>  >       IDE: Coding Style fixes to drivers/ide/pci/it8213.c
+>
+>  the above change (patch 4/6) seems to be m.i.a. ?
 
 
--Olof
+Yes, sorry about that. I must have forgot to manually send out the patch.
+I'll do that as soon as I access again to the linux box.
 
+I really wish to be able to use git-send-mail with gmail,
+unfortunatelly it's still not working
+even applying all the suggestions I've got from other gmail/git users.
+
+>  >       IDE: Coding Style fixes to drivers/ide/ide-floppy.c
+>  >       IDE: Coding Style fixes to drivers/ide/pci/cmd640.c
+>  >
+>  >  drivers/ide/ide-floppy.c     |    4 +-
+>  >  drivers/ide/legacy/ali14xx.c |   11 +++--
+>  >  drivers/ide/legacy/hd.c      |   79 ++++++++++++++++++------------------
+>  >  drivers/ide/pci/cmd640.c     |   90 +++++++++++++++++++++---------------------
+>  >  drivers/ide/pci/it8213.c     |    9 ++--
+>  >  drivers/ide/pci/opti621.c    |   50 ++++++++++++------------
+>  >  6 files changed, 122 insertions(+), 121 deletions(-)
+>
+>  I applied all the rest (some with minor fixes).
+
+Good. Where can I look to see the end result of our work?
+
+
+Ciao,
+-- 
+Paolo
+http://paolo.ciarrocchi.googlepages.com/
