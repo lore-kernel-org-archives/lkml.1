@@ -1,84 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754964AbYBXPFB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754080AbYBXPKR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754964AbYBXPFB (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 24 Feb 2008 10:05:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751306AbYBXPEv
+	id S1754080AbYBXPKR (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 24 Feb 2008 10:10:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751785AbYBXPKE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 24 Feb 2008 10:04:51 -0500
-Received: from mail.bugwerft.de ([212.112.241.193]:46162 "EHLO
-	mail.bugwerft.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751103AbYBXPEu (ORCPT
+	Sun, 24 Feb 2008 10:10:04 -0500
+Received: from astoria.ccjclearline.com ([64.235.106.9]:46184 "EHLO
+	astoria.ccjclearline.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751705AbYBXPKD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 24 Feb 2008 10:04:50 -0500
-X-Greylist: delayed 540 seconds by postgrey-1.27 at vger.kernel.org; Sun, 24 Feb 2008 10:04:49 EST
-From: Uli Luckas <u.luckas@road.de>
-To: linux-kernel@vger.kernel.org, stable@kernel.org
-Subject: Re: [patch 00/38] 2.6.24-stable review
-Date: Sun, 24 Feb 2008 15:55:37 +0100
-User-Agent: KMail/1.9.7
-Cc: "Russell King - ARM Linux" <linux@arm.linux.org.uk>
-References: <20080223002907.GA7268@suse.de>
-In-Reply-To: <20080223002907.GA7268@suse.de>
+	Sun, 24 Feb 2008 10:10:03 -0500
+Date: Sun, 24 Feb 2008 10:09:55 -0500 (EST)
+From: "Robert P. J. Day" <rpjday@crashcourse.ca>
+X-X-Sender: rpjday@localhost.localdomain
+To: Jiri Slaby <jirislaby@gmail.com>
+cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH][RFC] Remove "obsolete" digiepca content.
+In-Reply-To: <47C13FA9.8000806@gmail.com>
+Message-ID: <alpine.LFD.1.00.0802241008070.7616@localhost.localdomain>
+References: <alpine.LFD.1.00.0802091643030.28397@localhost.localdomain> <47C13FA9.8000806@gmail.com>
+User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200802241555.39230.u.luckas@road.de>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
+X-AntiAbuse: Primary Hostname - astoria.ccjclearline.com
+X-AntiAbuse: Original Domain - vger.kernel.org
+X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
+X-AntiAbuse: Sender Address Domain - crashcourse.ca
+X-Source: 
+X-Source-Args: 
+X-Source-Dir: 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi stable-team,
-Could you please include the attached patch [1] to the next stable release.
-The patch fixes the otherwise unusable bluetooth uart on pxa25x . The patch is 
-written by Russell King [1] who also gave his OK for stable inclusion [2].
-The patch is also available as commit a0dd005d1d9f4c3beab52086f3844ef9342d1e67 
-to Linus' tree.
+On Sun, 24 Feb 2008, Jiri Slaby wrote:
 
-Thanks,
-Uli
+> On 02/09/2008 10:45 PM, Robert P. J. Day wrote:
+> > Remove the Digi Intl. epca driver for Linux, which is marked as
+> > "obsolete."
+> >
+> > Signed-off-by: Robert P. J. Day <rpjday@crashcourse.ca>
+> >
+> > ---
+> >   this is a quick, first pass at a removal.  feel free to suggest
+> > tweaks.
+>
+> Was there any comments on this? I suggest reposting with Cc to akpm.
 
-[1] http://marc.info/?l=linux-arm-kernel&m=120298366510315
-[2] http://marc.info/?l=linux-arm-kernel&m=120384388411097
+ok, i'll give it another shot but, given that this discussion has been
+happening on and off for well over a year:
 
+http://lkml.org/lkml/2006/10/26/231
 
-diff --git a/arch/arm/mach-pxa/clock.c b/arch/arm/mach-pxa/clock.c
-index 83ef5ec..df5ae27 100644
---- a/arch/arm/mach-pxa/clock.c
-+++ b/arch/arm/mach-pxa/clock.c
-@@ -23,18 +23,27 @@ static LIST_HEAD(clocks);
- static DEFINE_MUTEX(clocks_mutex);
- static DEFINE_SPINLOCK(clocks_lock);
+i'm starting to wonder whether this is worth anyone's time anymore.
+certainly, *i'm* losing interest in posting it every couple of months.
 
-+static struct clk *clk_lookup(struct device *dev, const char *id)
-+{
-+       struct clk *p;
-+
-+       list_for_each_entry(p, &clocks, node)
-+               if (strcmp(id, p->name) == 0 && p->dev == dev)
-+                       return p;
-+
-+       return NULL;
-+}
-+
- struct clk *clk_get(struct device *dev, const char *id)
- {
-        struct clk *p, *clk = ERR_PTR(-ENOENT);
+rday
+--
 
-        mutex_lock(&clocks_mutex);
--       list_for_each_entry(p, &clocks, node) {
--               if (strcmp(id, p->name) == 0 &&
--                   (p->dev == NULL || p->dev == dev)) {
--                       clk = p;
--                       break;
--               }
--       }
-+       p = clk_lookup(dev, id);
-+       if (!p)
-+               p = clk_lookup(NULL, id);
-+       if (p)
-+               clk = p;
-        mutex_unlock(&clocks_mutex);
+========================================================================
+Robert P. J. Day
+Linux Consulting, Training and Annoying Kernel Pedantry:
+    Have classroom, will lecture.
 
-        return clk;
+http://crashcourse.ca                          Waterloo, Ontario, CANADA
+========================================================================
