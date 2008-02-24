@@ -1,68 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756775AbYBXRgk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753727AbYBXRqc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756775AbYBXRgk (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 24 Feb 2008 12:36:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752013AbYBXRgc
+	id S1753727AbYBXRqc (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 24 Feb 2008 12:46:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751149AbYBXRqW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 24 Feb 2008 12:36:32 -0500
-Received: from khc.piap.pl ([195.187.100.11]:48524 "EHLO khc.piap.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751934AbYBXRgc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 24 Feb 2008 12:36:32 -0500
-To: Richard Knutsson <ricknu-0@student.ltu.se>
-Cc: Linux kernel mailing list <linux-kernel@vger.kernel.org>
-Subject: Re: Tabs, spaces, indent and 80 character lines
-References: <47C0BEE7.4040409@student.ltu.se>
-	<m3ejb2bdxx.fsf@maximus.localdomain> <47C19001.7010609@student.ltu.se>
-From: Krzysztof Halasa <khc@pm.waw.pl>
-Date: Sun, 24 Feb 2008 18:36:30 +0100
-In-Reply-To: <47C19001.7010609@student.ltu.se> (Richard Knutsson's message of "Sun\, 24 Feb 2008 16\:40\:49 +0100")
-Message-ID: <m3ablqb6jl.fsf@maximus.localdomain>
-MIME-Version: 1.0
+	Sun, 24 Feb 2008 12:46:22 -0500
+Received: from triton.rz.uni-saarland.de ([134.96.7.25]:13867 "EHLO
+	triton.rz.uni-saarland.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750893AbYBXRqV (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 24 Feb 2008 12:46:21 -0500
+Date: Sun, 24 Feb 2008 18:46:05 +0100
+From: Alexander van Heukelum <heukelum@mailshack.com>
+To: Andi Kleen <ak@suse.de>
+Cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Alexander van Heukelum <heukelum@fastmail.fm>
+Subject: [PATCH] Fix alignment of early reservation for EBDA
+Message-ID: <20080224174605.GA21661@mailshack.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.9i
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (triton.rz.uni-saarland.de [134.96.7.25]); Sun, 24 Feb 2008 18:46:10 +0100 (CET)
+X-AntiVirus: checked by AntiVir MailGate (version: 2.1.2-14; AVE: 7.6.0.67; VDF: 7.0.2.180; host: AntiVir3)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Richard Knutsson <ricknu-0@student.ltu.se> writes:
+Hi Andi,
 
->> I guess we could use tabs only at the line start, for indentation
->> only. Rather hard to implement, most text editors can't do that yet.
->>   
-> You mean for split lines?
+My eyes fell on the following table in the boot messages:
 
-Syntactic indentation vs alignment (including comments after
-non-blank, values for struct initialization etc, split lines too).
+early res: 0 [0-fff] BIOS data page
+early res: 1 [6000-7fff] SMP_TRAMPOLINE
+early res: 2 [200000-374557] TEXT DATA BSS
+early res: 3 [9fc00-a0bff] EBDA
+early res: 4 [8000-afff] PGTABLE
 
-> Hopefully there won't be that many, so there
-> is just to delete the tabs it added and replace it with spaces.
+The memory reserved for the EBDA overflows into the area normally
+reserved for the VGA adaptor. It seems that you wanted to force
+the allocation to cover whole pages, like:
 
-Actually tabs "should" be used for indentation at start of the
-line, then spaces. "Ideally" :-)
+early res: 3 [9f000-9ffff] EBDA
 
-I.e., something like
-<TAB>	if (cond && (cond2 ||
-<TAB>	_____________cond3))
-<TAB>	<TAB>	do_something();
+This is what this patch implements.
 
-Underline = space.
+Is it really necessary to force the allocation to a page boundary?
 
-Perhaps some day...
 
-> Exactly! But then we can remove the "we use 8 wide tabs in the kernel"
-> in CodeStyle.
+Signed-off-by: Alexander van Heukelum <heukelum@fastmail.fm>
 
-I'm not sure it's practically possible now.
+ arch/x86/kernel/head64.c |   12 +++++++-----
+ 1 files changed, 7 insertions(+), 5 deletions(-)
 
->> Unpacked sources will be much bigger with not tabs, sure.
->>   
-> Without no tabs at all, you mean?
-
-With spaces in place of all tabs.
-
-All tabs converted to spaces = 20% more?
-"Alignment" tabs converted to spaces? How cares how much more would it
-take if it's the correct thing. Except that it's not very practical at
-this point.
--- 
-Krzysztof Halasa
+diff --git a/arch/x86/kernel/head64.c b/arch/x86/kernel/head64.c
+index ad24408..2c52543 100644
+--- a/arch/x86/kernel/head64.c
++++ b/arch/x86/kernel/head64.c
+@@ -53,7 +53,7 @@ static void __init copy_bootdata(char *real_mode_data)
+ 
+ static __init void reserve_ebda(void)
+ {
+-	unsigned ebda_addr, ebda_size;
++	unsigned int ebda_addr, ebda_size, ebda_end;
+ 
+ 	/*
+ 	 * there is a real-mode segmented pointer pointing to the
+@@ -70,12 +70,14 @@ static __init void reserve_ebda(void)
+ 	/* Round EBDA up to pages */
+ 	if (ebda_size == 0)
+ 		ebda_size = 1;
++	if (ebda_size > 64)
++		ebda_size = 64;
+ 	ebda_size <<= 10;
+-	ebda_size = round_up(ebda_size + (ebda_addr & ~PAGE_MASK), PAGE_SIZE);
+-	if (ebda_size > 64*1024)
+-		ebda_size = 64*1024;
++	
++	ebda_end = ALIGN(ebda_addr + ebda_size, PAGE_SIZE);
++	ebda_addr = ALIGN(ebda_addr - PAGE_SIZE, PAGE_SIZE);
+ 
+-	reserve_early(ebda_addr, ebda_addr + ebda_size, "EBDA");
++	reserve_early(ebda_addr, ebda_end, "EBDA");
+ }
+ 
+ void __init x86_64_start_kernel(char * real_mode_data)
