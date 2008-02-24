@@ -1,47 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755519AbYBXSxE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756198AbYBXSzo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755519AbYBXSxE (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 24 Feb 2008 13:53:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752757AbYBXSwx
+	id S1756198AbYBXSzo (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 24 Feb 2008 13:55:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752757AbYBXSzg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 24 Feb 2008 13:52:53 -0500
-Received: from outbound-va3.frontbridge.com ([216.32.180.16]:53391 "EHLO
-	outbound6-va3-R.bigfish.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752444AbYBXSww (ORCPT
+	Sun, 24 Feb 2008 13:55:36 -0500
+Received: from web36611.mail.mud.yahoo.com ([209.191.85.28]:25004 "HELO
+	web36611.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1752610AbYBXSzg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 24 Feb 2008 13:52:52 -0500
-X-BigFish: VP
-X-MS-Exchange-Organization-Antispam-Report: OrigIP: 160.33.66.75;Service: EHS
-Message-ID: <47C1BC31.9070402@am.sony.com>
-Date: Sun, 24 Feb 2008 10:49:21 -0800
-From: Geoff Levand <geoffrey.levand@am.sony.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+	Sun, 24 Feb 2008 13:55:36 -0500
+X-YMail-OSG: Mgsiw8kVM1katDpHcBT6qfVyBpH.YF7YnQbNofa_Sst1UWbqV0EwPGfAFUP8CnowPaH7ncI9Xw--
+X-RocketYMMF: rancidfat
+Date: Sun, 24 Feb 2008 10:55:34 -0800 (PST)
+From: Casey Schaufler <casey@schaufler-ca.com>
+Reply-To: casey@schaufler-ca.com
+Subject: Re: [2.6 patch] make smackfs.c:smk_unlbl_ambient() static
+To: Adrian Bunk <bunk@kernel.org>, Casey Schaufler <casey@schaufler-ca.com>,
+       Paul Moore <paul.moore@hp.com>
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <20080222195807.GB1409@cs181133002.pp.htv.fi>
 MIME-Version: 1.0
-To: Samuel Tardieu <sam@rfc1149.net>
-CC: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-       cbe-oss-dev@ozlabs.org
-Subject: Re: [PATCH] ps3: Fix "unlikely" incorrect usage
-References: <20080224081037.D492320AFF@arrakis.enst.fr>
-In-Reply-To: <20080224081037.D492320AFF@arrakis.enst.fr>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 24 Feb 2008 18:49:24.0508 (UTC) FILETIME=[F99095C0:01C87715]
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+Message-ID: <305318.15851.qm@web36611.mail.mud.yahoo.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 02/24/2008 12:06 AM, Samuel Tardieu wrote:
-> Fix unlikely(plug) == NO_IRQ into unlikely(plug == NO_IRQ).
+
+--- Adrian Bunk <bunk@kernel.org> wrote:
+
+> This patch makes the needlessly global smk_unlbl_ambient() static.
 > 
-> Signed-off-by: Samuel Tardieu <sam@rfc1149.net>
+> Signed-off-by: Adrian Bunk <bunk@kernel.org>
+Acked-by: Casey Schaufler <casey@schaufler-ca.com>
+
+> 
 > ---
->  arch/powerpc/platforms/ps3/interrupt.c |    2 +-
->  1 files changed, 1 insertions(+), 1 deletions(-)
+> 60c7072cb922cdecdb8a4f08e5710c014e0e8a8c diff --git
+> a/security/smack/smackfs.c b/security/smack/smackfs.c
+> index 358c92c..7c6e671 100644
+> --- a/security/smack/smackfs.c
+> +++ b/security/smack/smackfs.c
+> @@ -371,7 +371,7 @@ void smk_cipso_doi(void)
+>  /**
+>   * smk_unlbl_ambient - initialize the unlabeled domain
+>   */
+> -void smk_unlbl_ambient(char *oldambient)
+> +static void smk_unlbl_ambient(char *oldambient)
+>  {
+>  	int rc;
+>  	struct netlbl_audit audit_info;
+> 
+> 
+> 
 
-Thanks for the submission, but this fix is already in
-ps3-linux.git.  I was waiting to collect a few other bugs
-before sending it to Paul.
 
--Geoff
-
+Casey Schaufler
+casey@schaufler-ca.com
