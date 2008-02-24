@@ -1,55 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759337AbYBXFtN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760179AbYBXFvQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759337AbYBXFtN (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 24 Feb 2008 00:49:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753985AbYBXFs7
+	id S1760179AbYBXFvQ (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 24 Feb 2008 00:51:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754470AbYBXFvE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 24 Feb 2008 00:48:59 -0500
-Received: from srv5.dvmed.net ([207.36.208.214]:43654 "EHLO mail.dvmed.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753641AbYBXFs6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 24 Feb 2008 00:48:58 -0500
-Message-ID: <47C10546.7050508@garzik.org>
-Date: Sun, 24 Feb 2008 00:48:54 -0500
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
-MIME-Version: 1.0
-To: David Miller <davem@davemloft.net>
-CC: romieu@fr.zoreil.com, bfields@fieldses.org, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [git patches] net driver fixes
-References: <20080220212302.GJ30160@fieldses.org>	<20080220.134257.41491836.davem@davemloft.net>	<20080220224053.GA8500@electric-eye.fr.zoreil.com> <20080220.150753.17432290.davem@davemloft.net>
-In-Reply-To: <20080220.150753.17432290.davem@davemloft.net>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.4 (----)
-X-Spam-Report: SpamAssassin version 3.2.3 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.4 points, 5.0 required)
+	Sun, 24 Feb 2008 00:51:04 -0500
+Received: from idcmail-mo1so.shaw.ca ([24.71.223.10]:15234 "EHLO
+	pd2mo3so.prod.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754127AbYBXFvC (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 24 Feb 2008 00:51:02 -0500
+Date: Sat, 23 Feb 2008 22:49:55 -0700
+From: Grant Likely <grant.likely@secretlab.ca>
+Subject: [PATCH] [POWERPC] mpc5200: fix build error on mpc52xx_psc_spi device
+	driver
+To: dbrownell@users.sourceforge.net, dragos.carp@toptica.com,
+       linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+       spi-devel-general@lists.sourceforge.net
+Message-id: <20080224054955.21886.79000.stgit@trillian.secretlab.ca>
+MIME-version: 1.0
+Content-type: text/plain; charset=utf-8
+Content-transfer-encoding: 7bit
+User-Agent: StGIT/0.13
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David Miller wrote:
-> Jeff, I really don't want to pull that tree in.  Please trust me as
-> your upstream to handle merging issues, as needed.
+From: Grant Likely <grant.likely@secretlab.ca>
 
+Commit id 94f389485e27641348c1951ab8d65157122a8939 (Separate MPC52xx PSC
+FIOF regsiters from the rest of PSC) split the PSC fifo registers away
+from the core PSC regs.  Doing so broke the mpc52xx_psc_spi driver.
 
-I trust you...  Otherwise I wouldn't have volunteered to move my 
-upstream from Linus to you :)
+This patch teaches the mpc52xx_psc_spi driver about the new PSC fifo
+register definitions.
 
-My main issues/motivations were:
+Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
 
-* quite simply, just force of habit:  I'm used to basing off of a recent 
-Linus tree, to guarantee build&boot testing against the latest.
+---
+This is a build error bug fix which needs to go into .25
+---
 
-* worry about testing against a too-old tree, where non-networking fixes 
-may have a relevant impact on my to-be-pushed netdrvr fixes.
+ drivers/spi/mpc52xx_psc_spi.c |   11 ++++++++---
+ 1 files changed, 8 insertions(+), 3 deletions(-)
 
-But in this case it's fair to say there are no such issues, and it was 
-mainly just out of habit.
-
-So (as you saw in last email)... rebased and resend.
-
-	Jeff
-
+diff --git a/drivers/spi/mpc52xx_psc_spi.c b/drivers/spi/mpc52xx_psc_spi.c
+index 253ed56..a86315a 100644
+--- a/drivers/spi/mpc52xx_psc_spi.c
++++ b/drivers/spi/mpc52xx_psc_spi.c
+@@ -42,6 +42,7 @@ struct mpc52xx_psc_spi {
+ 
+ 	/* driver internal data */
+ 	struct mpc52xx_psc __iomem *psc;
++	struct mpc52xx_psc_fifo __iomem *fifo;
+ 	unsigned int irq;
+ 	u8 bits_per_word;
+ 	u8 busy;
+@@ -139,6 +140,7 @@ static int mpc52xx_psc_spi_transfer_rxtx(struct spi_device *spi,
+ {
+ 	struct mpc52xx_psc_spi *mps = spi_master_get_devdata(spi->master);
+ 	struct mpc52xx_psc __iomem *psc = mps->psc;
++	struct mpc52xx_psc_fifo __iomem *fifo = mps->fifo;
+ 	unsigned rb = 0;	/* number of bytes receieved */
+ 	unsigned sb = 0;	/* number of bytes sent */
+ 	unsigned char *rx_buf = (unsigned char *)t->rx_buf;
+@@ -190,11 +192,11 @@ static int mpc52xx_psc_spi_transfer_rxtx(struct spi_device *spi,
+ 			out_8(&psc->mode, 0);
+ 		} else {
+ 			out_8(&psc->mode, MPC52xx_PSC_MODE_FFULL);
+-			out_be16(&psc->rfalarm, rfalarm);
++			out_be16(&fifo->rfalarm, rfalarm);
+ 		}
+ 		out_be16(&psc->mpc52xx_psc_imr, MPC52xx_PSC_IMR_RXRDY);
+ 		wait_for_completion(&mps->done);
+-		recv_at_once = in_be16(&psc->rfnum);
++		recv_at_once = in_be16(&fifo->rfnum);
+ 		dev_dbg(&spi->dev, "%d bytes received\n", recv_at_once);
+ 
+ 		send_at_once = recv_at_once;
+@@ -331,6 +333,7 @@ static void mpc52xx_psc_spi_cleanup(struct spi_device *spi)
+ static int mpc52xx_psc_spi_port_config(int psc_id, struct mpc52xx_psc_spi *mps)
+ {
+ 	struct mpc52xx_psc __iomem *psc = mps->psc;
++	struct mpc52xx_psc_fifo __iomem *fifo = mps->fifo;
+ 	u32 mclken_div;
+ 	int ret = 0;
+ 
+@@ -346,7 +349,7 @@ static int mpc52xx_psc_spi_port_config(int psc_id, struct mpc52xx_psc_spi *mps)
+ 	/* Disable interrupts, interrupts are based on alarm level */
+ 	out_be16(&psc->mpc52xx_psc_imr, 0);
+ 	out_8(&psc->command, MPC52xx_PSC_SEL_MODE_REG_1);
+-	out_8(&psc->rfcntl, 0);
++	out_8(&fifo->rfcntl, 0);
+ 	out_8(&psc->mode, MPC52xx_PSC_MODE_FFULL);
+ 
+ 	/* Configure 8bit codec mode as a SPI master and use EOF flags */
+@@ -419,6 +422,8 @@ static int __init mpc52xx_psc_spi_do_probe(struct device *dev, u32 regaddr,
+ 		ret = -EFAULT;
+ 		goto free_master;
+ 	}
++	/* On the 5200, fifo regs are immediately ajacent to the psc regs */
++	mps->fifo = ((void __iomem *)mps->psc) + sizeof(struct mpc52xx_psc);
+ 
+ 	ret = request_irq(mps->irq, mpc52xx_psc_spi_isr, 0, "mpc52xx-psc-spi",
+ 				mps);
 
