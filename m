@@ -1,58 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755918AbYBXDMn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755326AbYBXDSL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755918AbYBXDMn (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 23 Feb 2008 22:12:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751236AbYBXDMg
+	id S1755326AbYBXDSL (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 23 Feb 2008 22:18:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750746AbYBXDR6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 23 Feb 2008 22:12:36 -0500
-Received: from qmta08.westchester.pa.mail.comcast.net ([76.96.62.80]:44090
-	"EHLO QMTA08.westchester.pa.mail.comcast.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751008AbYBXDMf (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 23 Feb 2008 22:12:35 -0500
-X-Authority-Analysis: v=1.0 c=1 a=d2AfEDShp-gA:10 a=V11zJMkrBZ6MfeP-V_gA:9
- a=dmoIiHOOxeDtBW5onrjMaKwPchIA:4 a=si9q_4b84H0A:10 a=WuK_CZDBSqoA:10
-Subject: Re: [PATCH] x86: add the debugfs interface for the sysprof tool
-From: Nicholas Miell <nmiell@comcast.net>
-To: Pekka Enberg <penberg@cs.helsinki.fi>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Arjan van de Ven <arjan@infradead.org>, linux-kernel@vger.kernel.org,
-       mingo@elte.hu, sandmann@redhat.com, tglx@tglx.de, hpa@zytor.com
-In-Reply-To: <47C0DB2E.5000404@cs.helsinki.fi>
-References: <20080219123756.6261c13c@laptopd505.fenrus.org>
-	 <20080223001130.d8922136.akpm@linux-foundation.org>
-	 <84144f020802230351o24b11282vbb1cecf518d91825@mail.gmail.com>
-	 <20080223104611.a3430285.akpm@linux-foundation.org>
-	 <47C0DB2E.5000404@cs.helsinki.fi>
-Content-Type: text/plain
-Date: Sat, 23 Feb 2008 19:12:27 -0800
-Message-Id: <1203822747.2439.1.camel@entropy>
+	Sat, 23 Feb 2008 22:17:58 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:60435 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750709AbYBXDR5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 23 Feb 2008 22:17:57 -0500
+Date: Sat, 23 Feb 2008 22:17:50 -0500
+From: Rik van Riel <riel@redhat.com>
+To: "J.C. Pizarro" <jcpiza@gmail.com>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       "Linus Torvalds" <torvalds@linux-foundation.org>
+Subject: Re: Please, put 64-bit counter per task and incr.by.one each ctxt
+ switch.
+Message-ID: <20080223221750.429cf0d9@bree.surriel.com>
+In-Reply-To: <998d0e4a0802231908h37978d07wa5379d5c01b2c2ee@mail.gmail.com>
+References: <998d0e4a0802231908h37978d07wa5379d5c01b2c2ee@mail.gmail.com>
+Organization: Red Hat, Inc.
+X-Mailer: Claws Mail 3.0.2 (GTK+ 2.10.4; x86_64-redhat-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 (2.12.1-3.fc8.0.njm.3) 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sun, 24 Feb 2008 04:08:38 +0100
+"J.C. Pizarro" <jcpiza@gmail.com> wrote:
 
-On Sun, 2008-02-24 at 04:49 +0200, Pekka Enberg wrote:
-> Hi Andrew,
-> 
-> Andrew Morton wrote:
-> > I didn't need to write a new kernel module to enable that
-> > thirteen-character shell script, and I don't believe one needs to write a
-> > new kernel module to put a nice easy-to-use GUI around oprofile either.
-> > 
-> > This is one of those i-cant-believe-im-having-this-discussion discussions.
-> 
-> Sysprof tracks the full stack frame so it can provide meaningful call 
-> tree (who called what) which is invaluable for spotting hot _paths_. I 
-> don't see how oprofile can do that as it tracks instruction pointers only.
-> 
-> 			Pekka
+> We will need 64 bit counters of the slow context switches,
+>   one counter for each new created task (e.g. u64 ctxt_switch_counts;)
 
-You could try passing the --callgraph option to opcontrol.
+Please send a patch ...
+
+> I will explain your later why of it.
+
+... and explain exactly why the kernel needs this extra code.
+
+Asking somebody else to add functionality (or is it bloat?  we really
+cannot tell) to the kernel for you, and not even explaining why is
+not going to convince anyone.
+
+For more hints on how to get functionality into the Linux kernel,
+please read:
+
+http://kernelnewbies.org/UpstreamMerge
 
 -- 
-Nicholas Miell <nmiell@comcast.net>
-
+All rights reversed.
