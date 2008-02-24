@@ -1,64 +1,195 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757336AbYBXTmx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755867AbYBXUAz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757336AbYBXTmx (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 24 Feb 2008 14:42:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751971AbYBXTmo
+	id S1755867AbYBXUAz (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 24 Feb 2008 15:00:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752330AbYBXUAp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 24 Feb 2008 14:42:44 -0500
-Received: from rv-out-0910.google.com ([209.85.198.189]:53061 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751550AbYBXTmn (ORCPT
+	Sun, 24 Feb 2008 15:00:45 -0500
+Received: from wa-out-1112.google.com ([209.85.146.180]:57550 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752120AbYBXUAo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 24 Feb 2008 14:42:43 -0500
+	Sun, 24 Feb 2008 15:00:44 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=dQwFaowEN7O7MQ6jbYn8td8KksBmCy/gpqYvdBtpJBExdZW6BYpmvBOtfzDXyIBtKxKhW0RRgBBPVrVMTOIKtDYIo07ZE2LnSPhdG37Hno3uARkU56rmLHwX/BihxVrYp0g4CRbWDuLPl163lQKjjIYMUFfxMudwoolHjvK8PfQ=
-Message-ID: <c4e36d110802241142t9cb340dpc42a2d89166beb7b@mail.gmail.com>
-Date: Sun, 24 Feb 2008 20:42:42 +0100
-From: "Zdenek Kabelac" <zdenek.kabelac@gmail.com>
-To: "Alan Stern" <stern@rowland.harvard.edu>
-Subject: Re: [Bug 10030] Suspend doesn't work when SD card is inserted
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, "Pierre Ossman" <drzeus-mmc@drzeus.cx>,
-       "Kernel development list" <linux-kernel@vger.kernel.org>,
-       "pm list" <linux-pm@lists.linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.44L0.0802241409320.11316-100000@netrider.rowland.org>
+        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=l+Tt6PLmVEyZonSY4bFdFpl2hiJbiwq2nYgUA8X8yFc77zALSTQ/1toRW6L9ZFLC3Rd6moEUFjrnReerlR/1wTTXvdSaJ3ohTHMDT8IUrbv0+m6eXMW6XjunC+ON/hOI3jdw2lTc6SV2OLYaVcxr8T7KuVkUkP8o33XT4iuvgWI=
+Message-ID: <e367bd3e0802241200x152a46adw47bfa98c563103c6@mail.gmail.com>
+Date: Sun, 24 Feb 2008 15:00:42 -0500
+From: "Nicholas Marquez" <nicholas.marquez@gatech.edu>
+To: "Nick Andrew" <nick@nick-andrew.net>
+Subject: Re: [PATCH] More accessible usage of custom flags
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <20080224125011.GB18845@tull.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <200802241451.17334.rjw@sisk.pl>
-	 <Pine.LNX.4.44L0.0802241409320.11316-100000@netrider.rowland.org>
+References: <e367bd3e0802161852v1265f101h86326b16362dd860@mail.gmail.com>
+	 <e367bd3e0802231328l1eb928f5pe538264c3a42e3d2@mail.gmail.com>
+	 <20080223220458.GA3496@tull.net>
+	 <e367bd3e0802231428k11a7d8ddgdfafacfba4c4d078@mail.gmail.com>
+	 <20080223233906.GA18845@tull.net>
+	 <e367bd3e0802240136kf9d30b9xfbaa84fa3e05661d@mail.gmail.com>
+	 <20080224125011.GB18845@tull.net>
+X-Google-Sender-Auth: 81616cafc1eff78c
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2008/2/24, Alan Stern <stern@rowland.harvard.edu>:
-> On Sun, 24 Feb 2008, Rafael J. Wysocki wrote:
+On Sun, Feb 24, 2008 at 7:50 AM, Nick Andrew <nick@nick-andrew.net> wrote:
+> On Sun, Feb 24, 2008 at 04:36:24AM -0500, Nicholas Marquez wrote:
+>  > Yes, I would like to expand them.  If possibly, I'd like to take out
+>  > the individual config options for gcc flags and integrate them into
+>  > the help description.  I feel that the redundancy would not only be
+>  > ugly, but possibly confusing.
+>
+>  If you allow CUSTOM_CFLAGS and friends (as an open-ended set of flags for
+>  the compiler) then yes, having config options like CC_OPTIMIZE_FOR_SIZE
+>  is redundant and should be removed.
+>
+>  Alternately, don't have a CUSTOM_CFLAGS and expand on the set of config
+>  options which set individual compiler flags.  They could be in their
+>  own menu, a bunch of checkboxes to tweak GCC's various optimisation
+>  algorithms and/or warnings. That's certainly going to be friendlier
+>  for the not-very-experienced kernel builder, if less flexible than
+>  CUSTOM_CFLAGS.
+
+The problem with this is that it is very static.  As you are well
+aware, options differ between gcc versions.  Some options also differ
+in result depending on the gcc version; for example, -ftree-vectorize
+in gcc 3.x versus gcc 4.x.  I believe that it would be cleaner to have
+the custom flag menu and suggest some flags for specific uses, such as
+-Os,  in the help description. It might look something like:
+
+help
+         You can use this to easily set custom gcc CFLAGS to be used
+         for the entire kernel build process (including modules).
+
+         Examples include:
+         ~"-Os" to optimize for size, i.e. for an embedded system or for
+         more efficient cache usage
+         ~"-s" to strip all symbol table and relocation information
+
+         Other compiler flags can be used for increasing or reducing
+         optimisation, enabling debugging, cross compilation
+         and so on.  Please use "info gcc" or "man gcc" for more
+         reference.
+
+         If unsure, leave blank.
+
+And for LDFLAGS, examples include:
+          ~"-S" to strip all debugging symbols, which are usually unnecessary
+          unless you intend to debug the kernel
+          ~"-s" to strip all symbol information from the kernel
+
+And for MAKEFLAGS, examples could include:
+          ~"-j{n}" where n is the number of jobs you'd like to run for
+          make.  This will make the kernel building process be greatly
+          faster.  A good rule of thumb is for n to be 1 + the number of
+          processor cores that are on the compiling machine.
+          ~"-K" to attempt to continue compilation, even if errors are
+          encountered, running until all other compilation paths (that
+          do not depend on any that have errored) complete.
+
+These are of course, just a few examples, but it serves to show the idea.
+
 >
 >
-> > > You know, with this new patch we probably don't need
->  > > device_pm_schedule_removal() any more.
+>  > >  I'm hoping we don't need any stern warnings in the kernel configuration.
+>  > >  Although I expect configuring bogus gcc flags is going to break the
+>  > >  build far worse than selecting bad options otherwise. If the user
+>  > >  makes a mistake in CUSTOM_CFLAGS is the build going to fail with
+>  > >  a message "error in CUSTOM_CFLAGS" or is it going to spew out pages
+>  > >  of gcc error messages?  It is nice if error messages can point back
+>  > >  to the source of the error, so the user doesn't have to look through
+>  > >  the entire kernel configuration for what they did wrong.
 >  >
->  > No, we don't.  However, because of that dpm_suspend() and device_power_down()
->  > need to be changed not to assume that the removed devices will end up on
->  > dpm_destroy.
+>  > I hadn't thought of that.  It would certainly be more useful than a
+>  > stern warning.  ^^;  Have you any ideas on how to implement such a
+>  > thing?  I would imagine a configure-script-like test on the flags to
+>  > make sure that gcc could take them correctly would be in order.  Then
+>  > one could also capture any warnings or errors that gcc outputs (such
+>  > as redundant flags, improper invocation, etc.), fail the build, and
+>  > output the messages.  As far as capturing dangerous flags for the
+>  > kernel (such as -ffast-math or -fmerge-all-constants), there could be
+>  > a blacklist... but that would depend on the gcc version used... :/
+>
+>  I think that's a very interesting idea. Yes, you can test the flags by
+>  compiling and linking a simple program. If it fails, your flags are
+>  bad. You can stop the build right there and say "fix your flags".
+>
+>  The build could also capture the GCC warning/error output and
+>  post-process it. Certain types of warnings might be suppressed,
+>  or cause the build to fail (based on selected config options). My
+>  kernel builds always show a handful of "may be used uninitialised" or
+>  similar ... I just assume that those warnings are harmless. It is best
+>  of course that these warnings don't occur at all, and I expect kernel
+>  developers to fix them when they get a chance.  The idea in this
+>  paragraph would be desirable to me, independent of how the CFLAGS are
+>  specified.
+
+Glad you agree. ;)
 >
 >
->  with analogous changes to dpm_suspend().
 >
->  Any more suggestions for updates?
+>  > >  > Something else that could be included is a link to the manual for the
+>  > >  > (currently used) gcc's command flags
+>  > >  > (http://gcc.gnu.org/onlinedocs/gcc-4.2.3/gcc/index.html#toc_Invoking-GCC)
+>  > >  > or at least to the online docs, considering that specifying one
+>  > >  > specific gcc version's manual would yield various issues.
+>  > >
+>  > >  "info gcc" will give all that information in far more detail than I
+>  > >  have time to read.
+>  >
+>  > I believe you misunderstand.  I mean to include the link in the help
+>  > message.  Like how the links to the appropriate sites for device
+>  > drivers are included in their help messages.
 >
+>  No, I think I understood correctly. If you tell the user to go to that
+>  long URL then you run the risk of pointing to the documentation for a
+>  different version of GCC. On the other hand, if you tell them to type
+>  "info gcc" then they will see the documentation for the version of GCC
+>  which they have installed. And it's also a lot friendlier to write:
+>  "Type 'info gcc' to see a full list of the compiler options".
+>
+>
+>  > >  > I feel that perhaps it is a bit silly to put in such description, as
+>  > >  > one using the flags should only do so in knowing specifically which
+>  > >  > ones they wish to use and why ahead of time.  However, it cannot hurt
+>  > >  > to put in more help documentation, so it's a fine suggestion.
+>  > >
+>  > >  Well, it can't be both silly and a fine suggestion. Does it dumb down
+>  > >  the kernel configuration process too much?
+>  >
+>  > No, I feel that both adjectives are perfectly reconcilable, at least
+>  > in this case.  Again, more documentation couldn't hurt.  "Dumbing
+>  > down" kernel configuration may be less aesthetically pleasing to
+>  > purists, but that is a tiny price to pay for usability and a widening
+>  > of kernel builders.
+>
+>  I'm looking to find a balance among the competing objectives. Time
+>  will tell with any improvements. I'm also hoping for an aesthetically
+>  pleasing config menu -- perhaps someone else can take on the challenge of
+>  restructuring it to improve the ordering, structure and names of options.
 
-Is there any current patch I should actually test - it looks there is
-ongoing discussion from the time Rafael has proposed his last patch to
-check by me: http://bugzilla.kernel.org/attachment.cgi?id=14961&action=view
-
-But I think it's visible the only suspend update will not resolve my
-problems and the problems is deeper in the mmc.
-
-So should I still test yesterdays' patch ?
-
-Zdenek
-
-Zdenek
+Is anyone else out there reading these messages?  Cleaning and
+"upgrading" the kernel's configuration and build systems is something
+that could both use a lot of input and a lot of helping hands.  ;)  If
+you've any patches for usability, aesthetics, optimization,
+configuration or build robustness, etc., now would be the time to
+share.
+>
+>
+>  > PS to Nick:  Sorry for the double-send. Didn't CC lkml;  a forward
+>  > would be ugly.
+>
+>  No prob.
+>
+>
+>
+>  Nick.
+>  --
+>  PGP Key ID = 0x418487E7                      http://www.nick-andrew.net/
+>  PGP Key fingerprint = B3ED 6894 8E49 1770 C24A  67E3 6266 6EB9 4184 87E7
+>
