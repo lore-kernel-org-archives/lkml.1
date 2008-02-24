@@ -1,61 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756995AbYCAXK4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754782AbYCBKP1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756995AbYCAXK4 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 1 Mar 2008 18:10:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750946AbYCAXKq
+	id S1754782AbYCBKP1 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 2 Mar 2008 05:15:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753203AbYCBKPP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 1 Mar 2008 18:10:46 -0500
-Received: from filer.fsl.cs.sunysb.edu ([130.245.126.2]:33554 "EHLO
-	filer.fsl.cs.sunysb.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750755AbYCAXKn (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 1 Mar 2008 18:10:43 -0500
-From: "Josef 'Jeff' Sipek" <jeffpc@josefsipek.net>
-To: linux-s390@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: "Josef 'Jeff' Sipek" <jeffpc@josefsipek.net>, ubraun@linux.vnet.ibm.com,
-       blaschka@linux.vnet.ibm.com
-Subject: [PATCH 1/1] iucv: Fix compilation with !CONFIG_SMP
-Date: Fri, 29 Feb 2008 17:30:41 -0500
-Message-Id: <1204324241-2276-1-git-send-email-jeffpc@josefsipek.net>
-X-Mailer: git-send-email 1.5.4.2
+	Sun, 2 Mar 2008 05:15:15 -0500
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:2465 "EHLO spitz.ucw.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753025AbYCBKPN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 2 Mar 2008 05:15:13 -0500
+Date: Sun, 24 Feb 2008 19:03:39 +0100
+From: Pavel Machek <pavel@ucw.cz>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: Elias Oltmanns <eo@nebensachen.de>, linux-ide@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Jens Axboe <jens.axboe@oracle.com>
+Subject: Re: [RFC] Disk shock protection (revisited)
+Message-ID: <20080224180339.GA3861@ucw.cz>
+References: <87skzgd1zk.fsf@denkblock.local> <20080226123946.75dbe3d2@core> <87mypl8p49.fsf@denkblock.local> <20080228111349.6831925c@core>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080228111349.6831925c@core>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-CC [M]  net/iucv/iucv.o
-net/iucv/iucv.c: In function `iucv_cleanup_queue':
-net/iucv/iucv.c:657: error: `__iucv_cleanup_queue' undeclared (first use in this function)
+Hi!
 
-With !CONFIG_SMP the smp_call_function call turns into up_smp_call_function
-call which is just a return 0. Unfortunately, since up_smp_call_function is
-a static inline, the __iucv_cleanup_queue symbol is referenced.
+> > > That sounds like a non starter. What if the box is busy, what if the
+> > > daemon or something you touch needs memory and causes paging ?
+> > 
+> > The daemon runs mlock'd anyway, so there won't be any need for paging
+> 
+> mlock does not guarantee anything of that form. A syscall by an mlocked
+> process which causes a memory allocation can cause paging of another
+> process on the system.
 
-Cc: ubraun@linux.vnet.ibm.com
-Cc: blaschka@linux.vnet.ibm.com
-Signed-off-by: Josef 'Jeff' Sipek <jeffpc@josefsipek.net>
----
- net/iucv/iucv.c |    2 --
- 1 files changed, 0 insertions(+), 2 deletions(-)
+Well... but you can be careful about the syscalls, right?
 
-diff --git a/net/iucv/iucv.c b/net/iucv/iucv.c
-index 2753b0c..d764f4c 100644
---- a/net/iucv/iucv.c
-+++ b/net/iucv/iucv.c
-@@ -621,7 +621,6 @@ static int iucv_sever_pathid(u16 pathid, u8 userdata[16])
- 	return iucv_call_b2f0(IUCV_SEVER, parm);
- }
- 
--#ifdef CONFIG_SMP
- /**
-  * __iucv_cleanup_queue
-  * @dummy: unused dummy argument
-@@ -632,7 +631,6 @@ static int iucv_sever_pathid(u16 pathid, u8 userdata[16])
- static void __iucv_cleanup_queue(void *dummy)
- {
- }
--#endif
- 
- /**
-  * iucv_cleanup_queue
+Anyway, active protection is 'best effort' anyway. There's not enough
+time to park heads if you drop the machine without tilting it first...
+and we have been running with no protection for years now...
+
+> > stays in memory all the time, it can go ahead and notify the kernel that
+> > the disk heads should be unloaded. The kernel takes care to insert the
+> > idle immediate command at the head of the queue. Am I missing something?
+> 
+> Yes - the fact we may well have bounced off the floor already.
+
+Well, shit happens. Even notebook with parked harddrive is not
+guaranteed to survive the fall.
+							Pavel
 -- 
-1.5.4.2
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
