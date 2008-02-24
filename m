@@ -1,56 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756775AbYBXTBx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758907AbYBXTCW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756775AbYBXTBx (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 24 Feb 2008 14:01:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753096AbYBXTBp
+	id S1758907AbYBXTCW (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 24 Feb 2008 14:02:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752887AbYBXTCA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 24 Feb 2008 14:01:45 -0500
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:35740 "EHLO amd.ucw.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753095AbYBXTBp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 24 Feb 2008 14:01:45 -0500
-Date: Sun, 24 Feb 2008 20:02:07 +0100
-From: Pavel Machek <pavel@ucw.cz>
-To: David Woodhouse <dwmw2@infradead.org>
-Cc: =?iso-8859-1?Q?J=F6rn?= Engel <joern@logfs.org>,
-       linux-mtd@lists.infradead.org,
-       kernel list <linux-kernel@vger.kernel.org>
-Subject: Re: jffs2: -ENOSPC when truncating file?!
-Message-ID: <20080224190207.GA18908@elf.ucw.cz>
-References: <20080223235742.GE2202@elf.ucw.cz> <1203813368.5771.174.camel@shinybook.infradead.org> <20080224065751.GA31293@lazybastard.org> <1203850653.13749.9.camel@shinybook.infradead.org>
+	Sun, 24 Feb 2008 14:02:00 -0500
+Received: from eazy.amigager.de ([213.239.192.238]:44006 "EHLO
+	eazy.amigager.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757378AbYBXTB5 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 24 Feb 2008 14:01:57 -0500
+Date: Sun, 24 Feb 2008 20:02:26 +0100
+From: Tino Keitel <tino.keitel@gmx.de>
+To: linux-kernel@vger.kernel.org
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: 2.6.25-rc2 hangs after "Suspending console(s)"
+Message-ID: <20080224190226.GA8209@dose.home.local>
+Mail-Followup-To: linux-kernel@vger.kernel.org,
+	"Rafael J. Wysocki" <rjw@sisk.pl>
+References: <20080218002815.GA4612@dose.home.local> <20080219085222.GA5328@dose.home.local> <20080220072917.GB15866@dose.home.local> <200802232243.51190.rjw@sisk.pl>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <1203850653.13749.9.camel@shinybook.infradead.org>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.17 (2007-11-01)
+In-Reply-To: <200802232243.51190.rjw@sisk.pl>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun 2008-02-24 18:57:32, David Woodhouse wrote:
+On Sat, Feb 23, 2008 at 22:43:50 +0100, Rafael J. Wysocki wrote:
+> On Wednesday, 20 of February 2008, Tino Keitel wrote:
+> > On Tue, Feb 19, 2008 at 09:52:22 +0100, Tino Keitel wrote:
+> > > On Mon, Feb 18, 2008 at 20:49:04 +0100, Pavel Machek wrote:
+> > > > On Mon 2008-02-18 01:28:15, Tino Keitel wrote:
+> > > > > Hi folks,
+> > > > > 
+> > > > > with 2.6.25-rc2, my Mac mini Core Duo hangs at suspend. The last
+> > > > > message on the console is "Suspending console(s)". I also tried some
+> > > > > other versions after 2.6.24, all of them fail with this hang.
+> > > > 
+> > > > Try adding 'no_console_suspend' to kernel command line.
+> > > 
+> > > Thanks, that gave a bit insight. The last message is now:
+> > > 
+> > > ACPI: PCI interrupt for device 0000:00:02.0 disabled
+> > > 
+> > > This is my graphics card:
+> > > 
+> > > 00:02.0 VGA compatible controller [0300]: Intel Corporation Mobile
+> > > 945GM/GMS, 943/940GML Express Integrated Graphics Controller
+> > > 
+> > > So it looks like the recent changes that should repair console
+> > > sudpend/resume for Intel graphics broke suspend for me.
+> > 
+> > It looks like I was wrong. It also hangs when the i915 module isn't
+> > loaded.
 > 
-> On Sun, 2008-02-24 at 07:57 +0100, Jörn Engel wrote:
-> > Could a na??ve implementation of this get exploited by doing a large
-> > number of truncates that just shave single bytes off various files?
-> 
-> Yeah, which is why _my_ na??ve implementation would do it for
-> truncate-to-zero instead of just _any_ truncate (which could even be
-> truncate-to-larger).
-> 
-> A more complex version might allow _any_ transaction to eat into the
-> ALLOC_DELETION pool if it is ultimately going to reduce the amount of
-> space taken on the file system -- even overwriting 'real' data with
-> zeroes which compress better. That's going to be hard to calculate in
-> the general case though.
-> 
-> If allowing only truncate-to-zero isn't good enough, perhaps we could
-> allow truncation to use the ALLOC_DELETION pool when it's going to
-> obsolete at least one full data node. That's not so hard to check.
+> Please have a look at: http://bugzilla.kernel.org/show_bug.cgi?id=10065
 
-I believe truncate-to-zero is good enough.
+Thanks. I tested git 1a4c6be4aca5ad6b300932efed1e2729fdc25af9 without
+any patches and I can suspend and resume fine.
 
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Regards,
+Tino
