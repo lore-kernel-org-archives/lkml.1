@@ -1,47 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758110AbYBXA4s@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757469AbYBXBbk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758110AbYBXA4s (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 23 Feb 2008 19:56:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752191AbYBXA4l
+	id S1757469AbYBXBbk (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 23 Feb 2008 20:31:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753970AbYBXBbc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 23 Feb 2008 19:56:41 -0500
-Received: from nat-132.atmel.no ([80.232.32.132]:54370 "EHLO relay.atmel.no"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751739AbYBXA4k (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 23 Feb 2008 19:56:40 -0500
-Date: Sun, 24 Feb 2008 01:56:42 +0100
-From: Haavard Skinnemoen <hskinnemoen@atmel.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Atsushi Nemoto <anemo@mba.ocn.ne.jp>, David Brownell <david-b@pacbell.net>,
-       spi-devel-general@lists.sourceforge.net, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] atmel_spi: Fix clock polarity
-Message-ID: <20080224015642.53348f75@siona>
-In-Reply-To: <20080223000507.3863d71f.akpm@linux-foundation.org>
-References: <20080221.111138.41629131.nemoto@toshiba-tops.co.jp>
-	<20080223000507.3863d71f.akpm@linux-foundation.org>
-Organization: Atmel
-X-Mailer: Claws Mail 3.3.0 (GTK+ 2.12.8; x86_64-pc-linux-gnu)
+	Sat, 23 Feb 2008 20:31:32 -0500
+Received: from verein.lst.de ([213.95.11.210]:57835 "EHLO verein.lst.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753581AbYBXBbb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 23 Feb 2008 20:31:31 -0500
+Date: Sun, 24 Feb 2008 02:31:13 +0100
+From: Christoph Hellwig <hch@lst.de>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: ?ric Piel <Eric.Piel@tremplin-utc.net>, len.brown@intel.com,
+       Christoph Hellwig <hch@lst.de>, dsdt@gaugusch.at,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, trenn@suse.de
+Subject: Re: [PATCH] Use userland-like functions for reading the ACPI table
+Message-ID: <20080224013113.GA12512@lst.de>
+References: <20080210071226.GA23360@lst.de> <20080210071454.GA23428@lst.de> <47AEE6D1.4070402@tremplin-utc.net> <20080212053730.GA15347@lst.de> <47BDC705.6090902@tremplin-utc.net> <47C07536.6040404@tremplin-utc.net> <alpine.LFD.1.00.0802231232280.21332@woody.linux-foundation.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.1.00.0802231232280.21332@woody.linux-foundation.org>
+User-Agent: Mutt/1.3.28i
+X-Spam-Score: 0 () 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 23 Feb 2008 00:05:07 -0800
-Andrew Morton <akpm@linux-foundation.org> wrote:
+On Sat, Feb 23, 2008 at 12:45:38PM -0800, Linus Torvalds wrote:
+> > 
+> > As recommended by Christoph Hellwig, even if we can't rely on the userspace
+> > firmware loader so early at boot, at least use normal syscall (as in
+> > init/do_mounts_*.c). Similarly, use kfree() instead of ACPI_FREE().
+> 
+> So I'm missing a lot of the background here.
+> 
+> I don't think "sys_open()" is in any way preferable to the alternatives, 
+> especially since it depends on thread-global state (the file descriptor 
+> table) rather than much more local state ("struct file" that you've 
+> opened).
+> 
+> I think the calls to sys_open() in init do_dounts etc are very different: 
+> they really are more about a real kernel-level almost-user-mode thread 
+> than a core driver. 
 
-> I had it queued for 2.6.26 which I guess was wrong.  I'll bump it into
-> 2.6.25.
+Well, that's what this code is like aswell.  That's why I recommended
+to Eric to move it to init/ and make it look like that code.  I haven't
+quite caught up with the discussion yet, but Eric think moving it
+there might not be a that good idea.  Having this code in drivers/
+even if it's just called in init time is a bad idea, as people will
+copy it.  Then again using the functions the code was using before
+isn't any better.
 
-Thanks!
-
-> Is it needed in 2.6.24.x?
-
-I think so. The last time that code was changed was before 2.6.23
-AFAICT, so perhaps 2.6.23.x as well.
-
-I'll have a closer look and pass it on to the stable team when it hits
-mainline.
-
-Haavard
