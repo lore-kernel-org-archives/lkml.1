@@ -1,57 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758889AbYBXSOZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755012AbYBXSS7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758889AbYBXSOZ (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 24 Feb 2008 13:14:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751743AbYBXSOR
+	id S1755012AbYBXSS7 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 24 Feb 2008 13:18:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752434AbYBXSSu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 24 Feb 2008 13:14:17 -0500
-Received: from ug-out-1314.google.com ([66.249.92.175]:21375 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752601AbYBXSOQ (ORCPT
+	Sun, 24 Feb 2008 13:18:50 -0500
+Received: from fk-out-0910.google.com ([209.85.128.184]:37275 "EHLO
+	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752296AbYBXSSt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 24 Feb 2008 13:14:16 -0500
+	Sun, 24 Feb 2008 13:18:49 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=QOS5IqrZ0WbpbDitLi20T2N5Zz/AtfQnEkTiD5BWLN81NE9BGCmn2RDNIpLb6S7YfPXdZjpG5TGW6syNNDS86NFANomRcqYjHcRsNpjcJNza1Un5K9Q44il7H5lyBrNaJNPNpQU8oZLuIzID8OMDCLXYvw4BcT+bUe8i/z0qdBE=
-Message-ID: <4d8e3fd30802241014g503c78a2wc08bd1939657802b@mail.gmail.com>
-Date: Sun, 24 Feb 2008 19:14:13 +0100
-From: "Paolo Ciarrocchi" <paolo.ciarrocchi@gmail.com>
-To: "Benny Halevy" <bhalevy@panasas.com>
-Subject: Re: [PATCH] Change a WARN message in checkpatch
-Cc: "Andy Whitcroft" <apw@shadowen.org>,
-       "Linux Kernel" <linux-kernel@vger.kernel.org>
-In-Reply-To: <47C18AAB.7050503@panasas.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+        h=date:from:to:cc:subject:message-id:x-mailer:mime-version:content-type:content-transfer-encoding;
+        b=YxpdiZ69VOLyGwnpQ1noB/nod5FyjZC3an6AIkMAtrRXwy7/2b/cwIjF2D3FA8WpSNpEgwbSpJiNahV56Z0lwDUxYaucYUdld+OL9XkrvZc0aAxYD73cJLwbcQk08Hy5qzJDax5o9mt2t6+yJNKlEZdeSazo6IAGLaQOGWSBYuk=
+Date: Sun, 24 Feb 2008 19:18:42 +0100
+From: Paolo Ciarrocchi <paolo.ciarrocchi@gmail.com>
+To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+Cc: Linux Kernel <linux-kernel@vger.kernel.org>,
+       linux-ide <linux-ide@vger.kernel.org>
+Subject: [PATCH 4/6] IDE: Coding Style fixes to drivers/ide/pci/it8213.c
+Message-ID: <20080224191842.61694afb@paolo-desktop>
+X-Mailer: Sylpheed-Claws 1.0.5 (GTK+ 1.2.10; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20080114232913.2555d392@paolo-desktop>
-	 <20080128145605.GI12910@shadowen.org>
-	 <4d8e3fd30801280713n7139223fj91adca85c76b60ad@mail.gmail.com>
-	 <4d8e3fd30802230538k7be1cc6bja9130e65fc6f5997@mail.gmail.com>
-	 <47C18AAB.7050503@panasas.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Feb 24, 2008 at 4:18 PM, Benny Halevy <bhalevy@panasas.com> wrote:
-[...]
->  How about:
->  -                               WARN("no space between function name and open parenthesis '('\n" . $herecurr);
->  +                               WARN("there should be no space between function name and open parenthesis '('\n" . $herecurr);
+File is now error free, only a few
+WARNING: line over 80 characters
+are left.
 
-I originally suggested:
-+                               WARN("don't put a space between
-function name and open parenthesis '('\n" . $herecurr);
-but I really prefer your version.
+Compile tested.
 
->  The original phrasing can be interpreted like "there is no space between ..." and the correct
->  interpretation should be "there should be no space between ..."
+Signed-off-by: Paolo Ciarrocchi <paolo.ciarrocchi@gmail.com>
+---
+ drivers/ide/pci/it8213.c |    9 ++++-----
+ 1 files changed, 4 insertions(+), 5 deletions(-)
 
-Indeed.
-
-Ciao,
+diff --git a/drivers/ide/pci/it8213.c b/drivers/ide/pci/it8213.c
+index a5ba7e8..5b5b0cc 100644
+--- a/drivers/ide/pci/it8213.c
++++ b/drivers/ide/pci/it8213.c
+@@ -35,7 +35,7 @@ static void it8213_set_pio_mode(ide_drive_t *drive, const u8 pio)
+ 	static DEFINE_SPINLOCK(tune_lock);
+ 	int control = 0;
+ 
+-	static const u8 timings[][2]= {
++	static const u8 timings[][2] = {
+ 					{ 0, 0 },
+ 					{ 0, 0 },
+ 					{ 1, 0 },
+@@ -105,11 +105,10 @@ static void it8213_set_dma_mode(ide_drive_t *drive, const u8 speed)
+ 
+ 		if (!(reg48 & u_flag))
+ 			pci_write_config_byte(dev, 0x48, reg48 | u_flag);
+-		if (speed >= XFER_UDMA_5) {
++		if (speed >= XFER_UDMA_5)
+ 			pci_write_config_byte(dev, 0x55, (u8) reg55|w_flag);
+-		} else {
++		else
+ 			pci_write_config_byte(dev, 0x55, (u8) reg55 & ~w_flag);
+-		}
+ 
+ 		if ((reg4a & a_speed) != u_speed)
+ 			pci_write_config_word(dev, 0x4a, (reg4a & ~a_speed) | u_speed);
+@@ -170,7 +169,7 @@ static void __devinit init_hwif_it8213(ide_hwif_t *hwif)
+ 	{						\
+ 		.name		= name_str,		\
+ 		.init_hwif	= init_hwif_it8213,	\
+-		.enablebits	= {{0x41,0x80,0x80}}, \
++		.enablebits	= { {0x41, 0x80, 0x80} }, \
+ 		.host_flags	= IDE_HFLAG_SINGLE,	\
+ 		.pio_mask	= ATA_PIO4,		\
+ 		.swdma_mask	= ATA_SWDMA2_ONLY,	\
 -- 
-Paolo
-http://paolo.ciarrocchi.googlepages.com/
+1.5.4.2.316.gf7a7
+
