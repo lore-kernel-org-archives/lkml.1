@@ -1,49 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759006AbYBXVTs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755085AbYBXVUa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759006AbYBXVTs (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 24 Feb 2008 16:19:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753872AbYBXVTi
+	id S1755085AbYBXVUa (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 24 Feb 2008 16:20:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752895AbYBXVUT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 24 Feb 2008 16:19:38 -0500
-Received: from nf-out-0910.google.com ([64.233.182.189]:48757 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753771AbYBXVT0 (ORCPT
+	Sun, 24 Feb 2008 16:20:19 -0500
+Received: from orchitis.omgwallhack.org ([66.179.21.205]:57086 "EHLO
+	smtp.omgwallhack.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753872AbYBXVUS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 24 Feb 2008 16:19:26 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=KCb6gOuhhC4J052ZnOKjP53Ar1E3QgIzRdrgALhmdiNjkzx2iEDkKRr23yYzfg/O8AsICab8TBBxrepBKd+Mys4CU2ddxrRJHnTjtCxUjMjRqbpx4evwunyGoxZA0YyJbZZ2mDJ1ZZbgXAE3angfa2cZvPwwH89A2E46l1Ea/mM=
-Message-ID: <4d8e3fd30802241319i3a633f7an6c2b429eb8b55d6b@mail.gmail.com>
-Date: Sun, 24 Feb 2008 22:19:21 +0100
-From: "Paolo Ciarrocchi" <paolo.ciarrocchi@gmail.com>
-To: "Linux Kernel" <linux-kernel@vger.kernel.org>,
-       "Ingo Molnar" <mingo@elte.hu>, "hpa@zytor.com" <hpa@zytor.com>,
-       "tglx@linutronix.de" <tglx@linutronix.de>
-Subject: [PATCH 0/2] x86: 2 Coding Style patches
-In-Reply-To: <20080224115630.45d09aea@paolo-desktop>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20080224115630.45d09aea@paolo-desktop>
+	Sun, 24 Feb 2008 16:20:18 -0500
+From: Julian Blake Kongslie <jblake@omgwallhack.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+In-Reply-To: <200802241223.46930.rjw@sisk.pl>
+References: <1203553943.4422.25.camel@dukephillips.omgwallhack.org>
+	 <200802232143.31903.rjw@sisk.pl>
+	 <1203827444.4202.18.camel@dukephillips.omgwallhack.org>
+	 <200802241223.46930.rjw@sisk.pl>
+Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-9afue8FvMP3jMvRFp6vp"
+Message-Id: <1203887415.4154.4.camel@dukephillips.omgwallhack.org>
+Mime-Version: 1.0
+Subject: Re: Hang on suspend
+Organization: Fists of Righteous Harmony
+Date: Sun, 24 Feb 2008 13:20:06 -0800
+X-Mailer: Evolution 2.12.3 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This email didn't reach lkml...
 
-Hi Ingo,
- two more coding style patches.
- Compile tested, against x86/testing 4a6af5bbbd74dd812224900d3468b008d117da29
+--=-9afue8FvMP3jMvRFp6vp
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
- Paolo Ciarrocchi (2):
-      x86: Coding Style fixes to arch/x86/power/cpu_32.c
-      x86: Coding Style fixes to arch/x86/kernel/cpu/common.c
+On Sun, 2008-02-24 at 12:23 +0100, Rafael J. Wysocki wrote:
+> Can you please check what's at the address platform_suspend_late+0x19?
 
-  arch/x86/kernel/cpu/common.c |  105 ++++++++++++++++++++++-------------------
-  arch/x86/power/cpu_32.c      |   41 +++++++++-------
-  2 files changed, 79 insertions(+), 67 deletions(-)
+0xc0253ca9 is in platform_suspend_late (drivers/base/platform.c:579).
+574	{
+575		struct platform_driver *drv =3D to_platform_driver(dev->driver);
+576		struct platform_device *pdev;
+577		int ret =3D 0;
+578=09
+579		pdev =3D container_of(dev, struct platform_device, dev);
+580		if (dev->driver && drv->suspend_late)
+581			ret =3D drv->suspend_late(pdev, mesg);
+582=09
+583		return ret;
 
- Ciao,
-                Paolo
+> Thanks,
+> Rafael
+
+Thanks,
+
+--=20
+-Julian Blake Kongslie
+<jblake@omgwallhack.org>
+
+If this is a mailing list, please CC me on replies.
+vim: set ft=3Dtext :
+
+--=-9afue8FvMP3jMvRFp6vp
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+Comment: Don't have my public key? Email <jblake@omgwallhack.org> and I'll gladly mail it to you.
+
+iD8DBQBHwd02uU009xtCYDURAvIBAJ4i/W36cNIJzbEdBEyVWlhI+RHxMACgk855
+ipNPEbS6MNLg08WShg4SerY=
+=YxeN
+-----END PGP SIGNATURE-----
+
+--=-9afue8FvMP3jMvRFp6vp--
+
