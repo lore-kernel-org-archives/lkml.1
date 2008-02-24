@@ -1,103 +1,367 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756581AbYBXUyE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757389AbYBXU6f@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756581AbYBXUyE (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 24 Feb 2008 15:54:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752878AbYBXUxw
+	id S1757389AbYBXU6f (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 24 Feb 2008 15:58:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753240AbYBXU61
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 24 Feb 2008 15:53:52 -0500
-Received: from out3.smtp.messagingengine.com ([66.111.4.27]:58519 "EHLO
-	out3.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752825AbYBXUxv convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 24 Feb 2008 15:53:51 -0500
-Message-Id: <1203886430.22409.1238738169@webmail.messagingengine.com>
-X-Sasl-Enc: JgU/meAomgvlOw45pAffM5vfkxIMviohPThWKyzUc+AA 1203886430
-From: "Alexander van Heukelum" <heukelum@fastmail.fm>
-To: "Ingo Molnar" <mingo@elte.hu>
-Cc: "Andi Kleen" <ak@suse.de>, "Thomas Gleixner" <tglx@linutronix.de>,
-       "LKML" <linux-kernel@vger.kernel.org>,
-       "Alexander van Heukelum" <heukelum@mailshack.com>
-Content-Disposition: inline
-Content-Transfer-Encoding: 8BIT
-Content-Type: text/plain; charset="ISO-8859-1"
+	Sun, 24 Feb 2008 15:58:27 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:54412 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753217AbYBXU60 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 24 Feb 2008 15:58:26 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [Bug 10030] Suspend doesn't work when SD card is inserted
+Date: Sun, 24 Feb 2008 21:56:55 +0100
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: Pierre Ossman <drzeus-mmc@drzeus.cx>,
+       Zdenek Kabelac <zdenek.kabelac@gmail.com>,
+       Kernel development list <linux-kernel@vger.kernel.org>,
+       pm list <linux-pm@lists.linux-foundation.org>,
+       Pavel Machek <pavel@ucw.cz>
+References: <Pine.LNX.4.44L0.0802241535130.11316-100000@netrider.rowland.org>
+In-Reply-To: <Pine.LNX.4.44L0.0802241535130.11316-100000@netrider.rowland.org>
 MIME-Version: 1.0
-X-Mailer: MessagingEngine.com Webmail Interface
-References: <20080224174605.GA21661@mailshack.com> <20080224194121.GA26451@elte.hu>
-Subject: Re: [PATCH] Fix alignment of early reservation for EBDA
-In-Reply-To: <20080224194121.GA26451@elte.hu>
-Date: Sun, 24 Feb 2008 21:53:50 +0100
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200802242156.55948.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 24 Feb 2008 20:41:21 +0100, "Ingo Molnar" <mingo@elte.hu> said:
+On Sunday, 24 of February 2008, Alan Stern wrote:
+> On Sun, 24 Feb 2008, Rafael J. Wysocki wrote:
 > 
-> * Alexander van Heukelum <heukelum@mailshack.com> wrote:
+> > From: Rafael J. Wysocki <rjw@sisk.pl>
+> > 
+> > Remove the code that acquires all device semaphores from the suspend
+> > code path as it causes multiple problems to appear (most notably,
+> > http://bugzilla.kernel.org/show_bug.cgi?id=10030) and revert the
+> > change introduced by commit 4145ed6dc597a9bea5f6ae8c574653b2de10620f
+> > depending on the code being removed.
+> > 
+> > Remove pm_sleep_lock()/pm_sleep_unlock() from device add to avoid
+> > the issue reported at http://bugzilla.kernel.org/show_bug.cgi?id=9874.
 > 
-> > Hi Andi,
-> > 
-> > My eyes fell on the following table in the boot messages:
-> > 
-> > early res: 0 [0-fff] BIOS data page
-> > early res: 1 [6000-7fff] SMP_TRAMPOLINE
-> > early res: 2 [200000-374557] TEXT DATA BSS
-> > early res: 3 [9fc00-a0bff] EBDA
-> > early res: 4 [8000-afff] PGTABLE
-> > 
-> > The memory reserved for the EBDA overflows into the area normally 
-> > reserved for the VGA adaptor. It seems that you wanted to force the 
-> > allocation to cover whole pages, like:
-> 
-> well, that's what your EBDA descriptor says - it's set to 9fc00 which is 
-> 512 bytes below the VGA range.
+> Do you actually know whether removing that lock fixes the reported bug?
 
-It's 1024 bytes below, but yes, the EBDA starts there. Then the first
-two
-bytes of the EBDA contain the value 0x0001, which means that its size is
-1kb, so the BIOS is correct.
+In fact I'm waiting for the confirmation, but given the symptoms described by
+Lukas I'm quite confident that the problem shouldn't be reproducible with
+the lock removed.
 
-> This behavior didnt really change over 
-> v2.6.24 (which reserved 'into' the VGA range too), it's just that in 
-> v2.6.25 we also print out these early reservations.
+> I agree, the lock should be removed for now.  But I'd sure like to get 
+> some feedback about what's going wrong.
 
-Correct. I thought it was new code, but looking more closely, the
-behaviour
-has indeed not changed recently (note to self: git log -p somefile.c
-does
-not indicate in any way that code was moved from some other place.)
+No question about that.
 
-> Can you see any 
-> regression? There should be no harm from overlapping into the VGA range 
-> - these "reservations" only make RAM unavailable for normal allocations.
+> It's starting to look as though we'd be a lot better off blocking device
+> registration during sleep instead of failing it.
 
-No regressions, it's just cosmetic.
+Agreed.
 
-> your patch on the other hand rounds the EBDA area down which could in 
-> theory be unsafe on other boxes (where there could be real RAM above the 
-> EBDA area): the safest approach is to round the beginning of it down, 
-> the end of it up (to page boundary).
+> Shouldn't resume_device() and suspend_device() now acquire the device 
+> semaphore before calling the various methods?  That's the way they 
+> used to work.
 
-Not really: ebda_addr is just a local variable. If the system needs to
-find the start of the EBDA, it will just have to look at the 16 bit
-value
-at address 0x40E again.
+Yes, thanks for reminding me about that.
 
-> Your patch _should_ be OK, but in 
-> practice it doesnt hurt to reserve a bit more around the edges than to 
-> accidentally give a page to the OS that the BIOS might rely upon.
+Updated patch follows.
 
-The patch is exactly trying to do that. The code that was there seemed
-to
-imply that the author wanted to allocate whole pages, in such a way that
-the allocation contained the whole EBDA. I think that is what it does
-after this patch.
+Thanks,
+Rafael
 
-Greetings,
-    Alexander
--- 
-  Alexander van Heukelum
-  heukelum@fastmail.fm
 
--- 
-http://www.fastmail.fm - And now for something completely different…
+---
+From: Rafael J. Wysocki <rjw@sisk.pl>
 
+Remove the code that acquires all device semaphores from the suspend
+code path as it causes multiple problems to appear (most notably,
+http://bugzilla.kernel.org/show_bug.cgi?id=10030) and revert the
+change introduced by commit 4145ed6dc597a9bea5f6ae8c574653b2de10620f
+depending on the code being removed.
+
+Remove pm_sleep_lock()/pm_sleep_unlock() from device_add() to avoid
+the issue reported at http://bugzilla.kernel.org/show_bug.cgi?id=9874.
+
+Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+---
+ drivers/base/core.c       |    8 ---
+ drivers/base/power/main.c |  106 ++++++----------------------------------------
+ drivers/usb/core/usb.c    |    2 
+ 3 files changed, 17 insertions(+), 99 deletions(-)
+
+Index: linux-2.6/drivers/base/power/main.c
+===================================================================
+--- linux-2.6.orig/drivers/base/power/main.c
++++ linux-2.6/drivers/base/power/main.c
+@@ -48,7 +48,6 @@
+  */
+ 
+ LIST_HEAD(dpm_active);
+-static LIST_HEAD(dpm_locked);
+ static LIST_HEAD(dpm_off);
+ static LIST_HEAD(dpm_off_irq);
+ static LIST_HEAD(dpm_destroy);
+@@ -81,28 +80,6 @@ void device_pm_add(struct device *dev)
+  */
+ void device_pm_remove(struct device *dev)
+ {
+-	/*
+-	 * If this function is called during a suspend, it will be blocked,
+-	 * because we're holding the device's semaphore at that time, which may
+-	 * lead to a deadlock.  In that case we want to print a warning.
+-	 * However, it may also be called by unregister_dropped_devices() with
+-	 * the device's semaphore released, in which case the warning should
+-	 * not be printed.
+-	 */
+-	if (down_trylock(&dev->sem)) {
+-		if (down_read_trylock(&pm_sleep_rwsem)) {
+-			/* No suspend in progress, wait on dev->sem */
+-			down(&dev->sem);
+-			up_read(&pm_sleep_rwsem);
+-		} else {
+-			/* Suspend in progress, we may deadlock */
+-			dev_warn(dev, "Suspicious %s during suspend\n",
+-				__FUNCTION__);
+-			dump_stack();
+-			/* The user has been warned ... */
+-			down(&dev->sem);
+-		}
+-	}
+ 	pr_debug("PM: Removing info for %s:%s\n",
+ 		 dev->bus ? dev->bus->name : "No Bus",
+ 		 kobject_name(&dev->kobj));
+@@ -110,7 +87,6 @@ void device_pm_remove(struct device *dev
+ 	dpm_sysfs_remove(dev);
+ 	list_del_init(&dev->power.entry);
+ 	mutex_unlock(&dpm_list_mtx);
+-	up(&dev->sem);
+ }
+ 
+ /**
+@@ -230,6 +206,8 @@ static int resume_device(struct device *
+ 	TRACE_DEVICE(dev);
+ 	TRACE_RESUME(0);
+ 
++	down(&dev->sem);
++
+ 	if (dev->bus && dev->bus->resume) {
+ 		dev_dbg(dev,"resuming\n");
+ 		error = dev->bus->resume(dev);
+@@ -245,6 +223,8 @@ static int resume_device(struct device *
+ 		error = dev->class->resume(dev);
+ 	}
+ 
++	up(&dev->sem);
++
+ 	TRACE_RESUME(error);
+ 	return error;
+ }
+@@ -266,7 +246,7 @@ static void dpm_resume(void)
+ 		struct list_head *entry = dpm_off.next;
+ 		struct device *dev = to_device(entry);
+ 
+-		list_move_tail(entry, &dpm_locked);
++		list_move_tail(entry, &dpm_active);
+ 		mutex_unlock(&dpm_list_mtx);
+ 		resume_device(dev);
+ 		mutex_lock(&dpm_list_mtx);
+@@ -275,25 +255,6 @@ static void dpm_resume(void)
+ }
+ 
+ /**
+- *	unlock_all_devices - Release each device's semaphore
+- *
+- *	Go through the dpm_off list.  Put each device on the dpm_active
+- *	list and unlock it.
+- */
+-static void unlock_all_devices(void)
+-{
+-	mutex_lock(&dpm_list_mtx);
+-	while (!list_empty(&dpm_locked)) {
+-		struct list_head *entry = dpm_locked.prev;
+-		struct device *dev = to_device(entry);
+-
+-		list_move(entry, &dpm_active);
+-		up(&dev->sem);
+-	}
+-	mutex_unlock(&dpm_list_mtx);
+-}
+-
+-/**
+  *	unregister_dropped_devices - Unregister devices scheduled for removal
+  *
+  *	Unregister all devices on the dpm_destroy list.
+@@ -305,7 +266,6 @@ static void unregister_dropped_devices(v
+ 		struct list_head *entry = dpm_destroy.next;
+ 		struct device *dev = to_device(entry);
+ 
+-		up(&dev->sem);
+ 		mutex_unlock(&dpm_list_mtx);
+ 		/* This also removes the device from the list */
+ 		device_unregister(dev);
+@@ -324,7 +284,6 @@ void device_resume(void)
+ {
+ 	might_sleep();
+ 	dpm_resume();
+-	unlock_all_devices();
+ 	unregister_dropped_devices();
+ 	up_write(&pm_sleep_rwsem);
+ }
+@@ -388,18 +347,15 @@ int device_power_down(pm_message_t state
+ 		struct list_head *entry = dpm_off.prev;
+ 		struct device *dev = to_device(entry);
+ 
+-		list_del_init(&dev->power.entry);
+ 		error = suspend_device_late(dev, state);
+ 		if (error) {
+ 			printk(KERN_ERR "Could not power down device %s: "
+ 					"error %d\n",
+ 					kobject_name(&dev->kobj), error);
+-			if (list_empty(&dev->power.entry))
+-				list_add(&dev->power.entry, &dpm_off);
+ 			break;
+ 		}
+-		if (list_empty(&dev->power.entry))
+-			list_add(&dev->power.entry, &dpm_off_irq);
++		if (!list_empty(&dev->power.entry))
++			list_move(&dev->power.entry, &dpm_off_irq);
+ 	}
+ 
+ 	if (!error)
+@@ -419,6 +375,8 @@ static int suspend_device(struct device 
+ {
+ 	int error = 0;
+ 
++	down(&dev->sem);
++
+ 	if (dev->power.power_state.event) {
+ 		dev_dbg(dev, "PM: suspend %d-->%d\n",
+ 			dev->power.power_state.event, state.event);
+@@ -441,6 +399,9 @@ static int suspend_device(struct device 
+ 		error = dev->bus->suspend(dev, state);
+ 		suspend_report_result(dev->bus->suspend, error);
+ 	}
++
++	up(&dev->sem);
++
+ 	return error;
+ }
+ 
+@@ -461,11 +422,10 @@ static int dpm_suspend(pm_message_t stat
+ 	int error = 0;
+ 
+ 	mutex_lock(&dpm_list_mtx);
+-	while (!list_empty(&dpm_locked)) {
+-		struct list_head *entry = dpm_locked.prev;
++	while (!list_empty(&dpm_active)) {
++		struct list_head *entry = dpm_active.prev;
+ 		struct device *dev = to_device(entry);
+ 
+-		list_del_init(&dev->power.entry);
+ 		mutex_unlock(&dpm_list_mtx);
+ 		error = suspend_device(dev, state);
+ 		if (error) {
+@@ -476,14 +436,11 @@ static int dpm_suspend(pm_message_t stat
+ 					(error == -EAGAIN ?
+ 					" (please convert to suspend_late)" :
+ 					""));
+-			mutex_lock(&dpm_list_mtx);
+-			if (list_empty(&dev->power.entry))
+-				list_add(&dev->power.entry, &dpm_locked);
+ 			break;
+ 		}
+ 		mutex_lock(&dpm_list_mtx);
+-		if (list_empty(&dev->power.entry))
+-			list_add(&dev->power.entry, &dpm_off);
++		if (!list_empty(&dev->power.entry))
++			list_move(&dev->power.entry, &dpm_off);
+ 	}
+ 	mutex_unlock(&dpm_list_mtx);
+ 
+@@ -491,36 +448,6 @@ static int dpm_suspend(pm_message_t stat
+ }
+ 
+ /**
+- *	lock_all_devices - Acquire every device's semaphore
+- *
+- *	Go through the dpm_active list. Carefully lock each device's
+- *	semaphore and put it in on the dpm_locked list.
+- */
+-static void lock_all_devices(void)
+-{
+-	mutex_lock(&dpm_list_mtx);
+-	while (!list_empty(&dpm_active)) {
+-		struct list_head *entry = dpm_active.next;
+-		struct device *dev = to_device(entry);
+-
+-		/* Required locking order is dev->sem first,
+-		 * then dpm_list_mutex.  Hence this awkward code.
+-		 */
+-		get_device(dev);
+-		mutex_unlock(&dpm_list_mtx);
+-		down(&dev->sem);
+-		mutex_lock(&dpm_list_mtx);
+-
+-		if (list_empty(entry))
+-			up(&dev->sem);		/* Device was removed */
+-		else
+-			list_move_tail(entry, &dpm_locked);
+-		put_device(dev);
+-	}
+-	mutex_unlock(&dpm_list_mtx);
+-}
+-
+-/**
+  *	device_suspend - Save state and stop all devices in system.
+  *	@state: new power management state
+  *
+@@ -533,7 +460,6 @@ int device_suspend(pm_message_t state)
+ 
+ 	might_sleep();
+ 	down_write(&pm_sleep_rwsem);
+-	lock_all_devices();
+ 	error = dpm_suspend(state);
+ 	if (error)
+ 		device_resume();
+Index: linux-2.6/drivers/usb/core/usb.c
+===================================================================
+--- linux-2.6.orig/drivers/usb/core/usb.c
++++ linux-2.6/drivers/usb/core/usb.c
+@@ -234,7 +234,7 @@ static int ksuspend_usb_init(void)
+ 	 * singlethreaded.  Its job doesn't justify running on more
+ 	 * than one CPU.
+ 	 */
+-	ksuspend_usb_wq = create_singlethread_workqueue("ksuspend_usbd");
++	ksuspend_usb_wq = create_freezeable_workqueue("ksuspend_usbd");
+ 	if (!ksuspend_usb_wq)
+ 		return -ENOMEM;
+ 	return 0;
+Index: linux-2.6/drivers/base/core.c
+===================================================================
+--- linux-2.6.orig/drivers/base/core.c
++++ linux-2.6/drivers/base/core.c
+@@ -770,13 +770,6 @@ int device_add(struct device *dev)
+ 	struct class_interface *class_intf;
+ 	int error;
+ 
+-	error = pm_sleep_lock();
+-	if (error) {
+-		dev_warn(dev, "Suspicious %s during suspend\n", __FUNCTION__);
+-		dump_stack();
+-		return error;
+-	}
+-
+ 	dev = get_device(dev);
+ 	if (!dev || !strlen(dev->bus_id)) {
+ 		error = -EINVAL;
+@@ -843,7 +836,6 @@ int device_add(struct device *dev)
+ 	}
+  Done:
+ 	put_device(dev);
+-	pm_sleep_unlock();
+ 	return error;
+  BusError:
+ 	device_pm_remove(dev);
