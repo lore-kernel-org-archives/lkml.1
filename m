@@ -1,39 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754742AbYBXMTt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754172AbYBXMXS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754742AbYBXMTt (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 24 Feb 2008 07:19:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751708AbYBXMTj
+	id S1754172AbYBXMXS (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 24 Feb 2008 07:23:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751708AbYBXMXI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 24 Feb 2008 07:19:39 -0500
-Received: from one.firstfloor.org ([213.235.205.2]:59305 "EHLO
+	Sun, 24 Feb 2008 07:23:08 -0500
+Received: from one.firstfloor.org ([213.235.205.2]:48893 "EHLO
 	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750875AbYBXMTi (ORCPT
+	with ESMTP id S1750875AbYBXMXG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 24 Feb 2008 07:19:38 -0500
-Date: Sun, 24 Feb 2008 13:20:05 +0100
+	Sun, 24 Feb 2008 07:23:06 -0500
+Date: Sun, 24 Feb 2008 13:23:35 +0100
 From: Andi Kleen <andi@firstfloor.org>
-To: Suresh Siddha <suresh.b.siddha@intel.com>
-Cc: mingo@elte.hu, hpa@zytor.com, tglx@linutronix.de, andi@firstfloor.org,
-       linux-kernel@vger.kernel.org, Arjan van de Ven <arjan@linux.intel.com>
-Subject: Re: [patch 2/2] x86,fpu: lazy allocation of FPU area
-Message-ID: <20080224122005.GA13637@one.firstfloor.org>
-References: <20080224023547.264625000@linux-os.sc.intel.com> <20080224023547.412501000@linux-os.sc.intel.com>
+To: Sam Ravnborg <sam@ravnborg.org>
+Cc: Andi Kleen <andi@firstfloor.org>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>, Ingo Molnar <mingo@elte.hu>,
+       linux-kernel@vger.kernel.org
+Subject: Re: Reducing debuginfo size by removing unneeded includes
+Message-ID: <20080224122335.GB13637@one.firstfloor.org>
+References: <20080207230304.GA4352@ghostprotocols.net> <p73ir0mxvby.fsf@bingen.suse.de> <20080224075821.GA7781@uranus.ravnborg.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080224023547.412501000@linux-os.sc.intel.com>
+In-Reply-To: <20080224075821.GA7781@uranus.ravnborg.org>
 User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Feb 23, 2008 at 06:34:39PM -0800, Suresh Siddha wrote:
-> Only allocate the FPU area when the application actually uses FPU, i.e., in the
-> first lazy FPU trap. This could save memory for non-fpu using apps.
+> > Just FYI, newer gcc does this in theory automatically when you specify 
+> > 
+> > -feliminate-unused-debug-types -feliminate-unused-debug-symbols
+> google did not turn up anything useful.
+> Do you have a poiter to where these are described?
 
-Did you measure this making any difference? 
+info gcc
 
-At least at some point glibc always touched the FPU once to initialize
-it.
+> 
+> 
+> > There is also -feliminate-dwarf2-dups, but it seems to even increase
+> > obj dir size. Also -feliminate-dwarf2-dups seems to generate a lot of 
+> 
+> Google only turned up a patch from Mark Mitchell removing this
+> in ~2001 timeframe.
+> So again a pointer would be nice.
+> 
+> I use FC8:
+> gcc --version
+> gcc (GCC) 4.1.2 20070925 (Red Hat 4.1.2-33)
+> 
+> So this is far behind trunk that you use - but I have not had any
+> real incentive to upgrade.
 
--andi
+
+It's in my info pages for SUSE gcc 4.1. I didn't think it was
+a SUSE extension though.
+
+
+I also checked and all options are in gcc head and in gcc 4.3
+
+> 
+> I would like to have a remote understanding of the options before
+> enabling them.
+
+Right now they are not useful to enable because they don't save
+file size and in some cases make it even worse. I checked with some gcc 
+developers and they explained why that is so. gcc would need to be fixed first.
+
+-Andi
+
