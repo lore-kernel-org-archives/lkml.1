@@ -1,78 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755707AbYBXWWi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756656AbYBXWfU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755707AbYBXWWi (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 24 Feb 2008 17:22:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751655AbYBXWWa
+	id S1756656AbYBXWfU (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 24 Feb 2008 17:35:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752298AbYBXWfI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 24 Feb 2008 17:22:30 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:54730 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750951AbYBXWWa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 24 Feb 2008 17:22:30 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [Bug 10030] Suspend doesn't work when SD card is inserted
-Date: Sun, 24 Feb 2008 23:21:21 +0100
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: Alan Stern <stern@rowland.harvard.edu>,
-       Pierre Ossman <drzeus-mmc@drzeus.cx>,
-       Zdenek Kabelac <zdenek.kabelac@gmail.com>,
-       Kernel development list <linux-kernel@vger.kernel.org>,
-       pm list <linux-pm@lists.linux-foundation.org>
-References: <20080224201105.GC18908@elf.ucw.cz> <Pine.LNX.4.44L0.0802241527420.11316-100000@netrider.rowland.org> <20080224214253.GE18908@elf.ucw.cz>
-In-Reply-To: <20080224214253.GE18908@elf.ucw.cz>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Sun, 24 Feb 2008 17:35:08 -0500
+Received: from mk-filter-3-a-1.mail.uk.tiscali.com ([212.74.100.54]:7723 "EHLO
+	mk-filter-3-a-4.mail.uk.tiscali.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1750864AbYBXWfF (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 24 Feb 2008 17:35:05 -0500
+X-Trace: 687583291/mk-filter-3.mail.uk.tiscali.com/B2C/$THROTTLED-DYNAMIC/CUSTOMER-DYNAMIC-IP/81.1.89.66
+X-SBRS: None
+X-RemoteIP: 81.1.89.66
+X-IP-MAIL-FROM: adrian@newgolddream.dyndns.info
+X-IP-BHB: Once
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: Ah4FAKZ/wUdRAVlC/2dsb2JhbACBVagg
+Subject: Re: [PATCH] maple: fix device detection
+From: Adrian McMenamin <adrian@newgolddream.dyndns.info>
+To: Greg KH <greg@kroah.com>
+Cc: Paul Mundt <lethal@linux-sh.org>, LKML <linux-kernel@vger.kernel.org>,
+       linux-sh <linux-sh@vger.kernel.org>
+In-Reply-To: <1203889834.6474.35.camel@localhost.localdomain>
+References: <1203863423.6474.27.camel@localhost.localdomain>
+	 <1203889834.6474.35.camel@localhost.localdomain>
+Content-Type: text/plain
+Date: Sun, 24 Feb 2008 22:32:53 +0000
+Message-Id: <1203892373.6299.2.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.1 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200802242321.22665.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday, 24 of February 2008, Pavel Machek wrote:
-> On Sun 2008-02-24 15:33:01, Alan Stern wrote:
-> > On Sun, 24 Feb 2008, Pavel Machek wrote:
-> > 
-> > > > > What locking protects this variable? What happens when suspending_task
-> > > > > exits? (Hmm, that would probably be bug, anyway?)
-> > > > 
-> > > > It's protected by whatever existing locking scheme allows only one
-> > > > task to start a system sleep at a time.  For example, the suspending 
-> > > > task has to get a write lock on pm_sleep_rwsem.
-> > > 
-> > > And readers of suspending_task are protected by?
-> > 
-> > I added a comment about that too.
-> > 
-> > > At the very least, you'd need rmb() before reading it and wmb() after
-> > > writing to it, but I'm not sure if that's enough on every obscure
-> > > architecture out there.
-> > 
-> > No, neither one is needed because of the way suspending_task is used.  
-> > 
-> > It's not necessary for a reader R to see the variable's actual value;  
-> > all R needs to know is whether or not suspending_task is equal to R.  
-> > Since the only process which can set suspending_task to R is R itself,
-> > and since R will set suspending_task back to NULL before releasing the
-> > write lock on pm_sleep_rwsem, there's never any ambiguity.
-> 
-> Subtle.
-> 
-> Very subtly wrong ;-).
-> 
-> imagine suspending_task == 0xabcdef01. Now task "R" with current ==
-> 0xabcd0000 reads suspending_task while the other cpu is writing to it,
-> and sees 0xabcd0000 (0xef01 was not yet written) -- and mistakenly
-> believes that  "R" == suspending_task.
-> 
-> I agree it is very unlikely, and it will not happen on i386. But what
-> about just using atomic_t suspending_task, and store current->pid into
-> it?
 
-I'd rather use a lock, frankly.  For example, we can require the readers to
-take pm_sleep_rwsem for reading in order to access that.
+On Sun, 2008-02-24 at 21:50 +0000, Adrian McMenamin wrote:
+> On Sun, 2008-02-24 at 14:30 +0000, Adrian McMenamin wrote:
+> > The maple bus driver that went into the kernel mainline in September 2007 contained some bugs which were revealed by the update of the kobj code for the current release series. Unfortunately those bugs also helped ensure maple devices were properly detected. This patch (against the current git) now ensures that devices are properly detected again.
+> > 
+> 
+> Further testing has shown this has introduced another bug, this time
+> limiting the effectiveness of subdevice detection. Please ignore this
+> while I work on a fix.
+> 
+Sorry for the confusion, in fact there is nothing wrong with this code
+(ie it should be applied), the error was in the driver for the Dreamcast
+controller (the device, in general, into which the subdevices are
+plugged in and out).
 
-Thanks,
-Rafael
+I will post a fix for that.
+
+Sorry again.
+
