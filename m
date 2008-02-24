@@ -1,117 +1,128 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754719AbYBXMhv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753743AbYBXMu5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754719AbYBXMhv (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 24 Feb 2008 07:37:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752403AbYBXMhi
+	id S1753743AbYBXMu5 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 24 Feb 2008 07:50:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751314AbYBXMur
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 24 Feb 2008 07:37:38 -0500
-Received: from wa-out-1112.google.com ([209.85.146.179]:59606 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752352AbYBXMhh (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 24 Feb 2008 07:37:37 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=bJf6c8CkK63YOsKjIRHhGZUl6W1fOvAF6hmD/m/uUzGQ6AN7Bjf0Y4f9seCwG6nBOr5Jg44IUUHqxLEgt5+dW5mREtM9wNqmLNgqIGxftmJ55VzrN7J6EGQJyk65EHbQMCtkp6+osmpLXhwfYACrprR6yYw1OUsg+uPkZ5kRsk4=
-Message-ID: <6278d2220802240437o1f730bbof65d366d5506d3e6@mail.gmail.com>
-Date: Sun, 24 Feb 2008 12:37:36 +0000
-From: "Daniel J Blueman" <daniel.blueman@gmail.com>
-To: "Kok, Auke" <auke-jan.h.kok@intel.com>
-Subject: Re: [2.6.25-rc2, 2.6.24-rc8] page allocation failure...
-Cc: "Andrew Morton" <akpm@linux-foundation.org>,
-       "Linux Kernel" <linux-kernel@vger.kernel.org>, netdev@vger.kernel.org
-In-Reply-To: <47BB13DD.1040804@intel.com>
+	Sun, 24 Feb 2008 07:50:47 -0500
+Received: from yoi5.greathalifaxhome.com ([66.180.172.116]:35994 "HELO
+	vps1.tull.net" rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with SMTP
+	id S1750886AbYBXMuq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 24 Feb 2008 07:50:46 -0500
+X-Spam-Check-By: mail.local.tull.net
+Date: Sun, 24 Feb 2008 23:50:11 +1100
+From: Nick Andrew <nick@nick-andrew.net>
+To: Nicholas Marquez <nicholas.marquez@gatech.edu>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] More accessible usage of custom flags
+Message-ID: <20080224125011.GB18845@tull.net>
+References: <e367bd3e0802161852v1265f101h86326b16362dd860@mail.gmail.com> <e367bd3e0802231328l1eb928f5pe538264c3a42e3d2@mail.gmail.com> <20080223220458.GA3496@tull.net> <e367bd3e0802231428k11a7d8ddgdfafacfba4c4d078@mail.gmail.com> <20080223233906.GA18845@tull.net> <e367bd3e0802240136kf9d30b9xfbaa84fa3e05661d@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <6278d2220802141240g6ee2421ew94e57669ef930be6@mail.gmail.com>
-	 <6278d2220802170520k2ddf9072x386e4a9e3062f4da@mail.gmail.com>
-	 <20080218045849.59311851.akpm@linux-foundation.org>
-	 <47BB13DD.1040804@intel.com>
+In-Reply-To: <e367bd3e0802240136kf9d30b9xfbaa84fa3e05661d@mail.gmail.com>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+X-SMTPD: qpsmtpd/0.26, http://develooper.com/code/qpsmtpd/
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Feb 19, 2008 at 5:37 PM, Kok, Auke <auke-jan.h.kok@intel.com> wrote:
-> Andrew Morton wrote:
->  > On Sun, 17 Feb 2008 13:20:59 +0000 "Daniel J Blueman" <daniel.blueman@gmail.com> wrote:
->  >> I'm still hitting this with e1000e on 2.6.25-rc2, 10 times again.
+On Sun, Feb 24, 2008 at 04:36:24AM -0500, Nicholas Marquez wrote:
+> Yes, I would like to expand them.  If possibly, I'd like to take out
+> the individual config options for gcc flags and integrate them into
+> the help description.  I feel that the redundancy would not only be
+> ugly, but possibly confusing.
 
->  are you sure? I don't think that's the case and you're seeing e1000 dumps here...
+If you allow CUSTOM_CFLAGS and friends (as an open-ended set of flags for
+the compiler) then yes, having config options like CC_OPTIMIZE_FOR_SIZE
+is redundant and should be removed.
 
-Indeed so! I thought I moved to e1000e a time ago, but forgot that I
-had moved back due to lack of support for 82566DC, added since.
+Alternately, don't have a CUSTOM_CFLAGS and expand on the set of config
+options which set individual compiler flags.  They could be in their
+own menu, a bunch of checkboxes to tweak GCC's various optimisation
+algorithms and/or warnings. That's certainly going to be friendlier
+for the not-very-experienced kernel builder, if less flexible than
+CUSTOM_CFLAGS.
 
-I'm not seeing any related messages with e1000e after a few days'
-uptime, so all looks well...
+> >  I'm hoping we don't need any stern warnings in the kernel configuration.
+> >  Although I expect configuring bogus gcc flags is going to break the
+> >  build far worse than selecting bad options otherwise. If the user
+> >  makes a mistake in CUSTOM_CFLAGS is the build going to fail with
+> >  a message "error in CUSTOM_CFLAGS" or is it going to spew out pages
+> >  of gcc error messages?  It is nice if error messages can point back
+> >  to the source of the error, so the user doesn't have to look through
+> >  the entire kernel configuration for what they did wrong.
+> 
+> I hadn't thought of that.  It would certainly be more useful than a
+> stern warning.  ^^;  Have you any ideas on how to implement such a
+> thing?  I would imagine a configure-script-like test on the flags to
+> make sure that gcc could take them correctly would be in order.  Then
+> one could also capture any warnings or errors that gcc outputs (such
+> as redundant flags, improper invocation, etc.), fail the build, and
+> output the messages.  As far as capturing dangerous flags for the
+> kernel (such as -ffast-math or -fmerge-all-constants), there could be
+> a blacklist... but that would depend on the gcc version used... :/
 
-Thanks again,
-  Daniel
+I think that's a very interesting idea. Yes, you can test the flags by
+compiling and linking a simple program. If it fails, your flags are
+bad. You can stop the build right there and say "fix your flags".
 
->  >> It's clearly non-fatal, but then do we expect it to occur?
->  >>
->  >> Daniel
->  >>
->  >> --- [dmesg]
->  >>
->  >> [ 1250.822786] swapper: page allocation failure. order:3, mode:0x4020
->  >> [ 1250.822786] Pid: 0, comm: swapper Not tainted 2.6.25-rc2-119 #2
->  >> [ 1250.822786]
->  >> [ 1250.822786] Call Trace:
->  >> [ 1250.822786]  <IRQ>  [<ffffffff8025fe9e>] __alloc_pages+0x34e/0x3a0
->  >> [ 1250.822786]  [<ffffffff8048c6df>] ? __netdev_alloc_skb+0x1f/0x40
->  >> [ 1250.822786]  [<ffffffff8027acc2>] __slab_alloc+0x102/0x3d0
->  >> [ 1250.822786]  [<ffffffff8048c6df>] ? __netdev_alloc_skb+0x1f/0x40
->  >> [ 1250.822786]  [<ffffffff8027b8cb>] __kmalloc_track_caller+0x7b/0xc0
->  >> [ 1250.822786]  [<ffffffff8048b74f>] __alloc_skb+0x6f/0x160
->  >> [ 1250.822786]  [<ffffffff8048c6df>] __netdev_alloc_skb+0x1f/0x40
->  >> [ 1250.822786]  [<ffffffff8042652d>] e1000_alloc_rx_buffers+0x1ed/0x260
->  >> [ 1250.822786]  [<ffffffff80426b5a>] e1000_clean_rx_irq+0x22a/0x330
->  >> [ 1250.822786]  [<ffffffff80422981>] e1000_clean+0x1e1/0x540
->  >> [ 1250.822786]  [<ffffffff8024b7a5>] ? tick_program_event+0x45/0x70
->  >> [ 1250.822786]  [<ffffffff804930ba>] net_rx_action+0x9a/0x150
->  >> [ 1250.822786]  [<ffffffff802336b4>] __do_softirq+0x74/0xf0
->  >> [ 1250.822786]  [<ffffffff8020c5fc>] call_softirq+0x1c/0x30
->  >> [ 1250.822786]  [<ffffffff8020eaad>] do_softirq+0x3d/0x80
->  >> [ 1250.822786]  [<ffffffff80233635>] irq_exit+0x85/0x90
->  >> [ 1250.822786]  [<ffffffff8020eba5>] do_IRQ+0x85/0x100
->  >> [ 1250.822786]  [<ffffffff8020a5b0>] ? mwait_idle+0x0/0x50
->  >> [ 1250.822786]  [<ffffffff8020b981>] ret_from_intr+0x0/0xa
->  >> [ 1250.822786]  <EOI>  [<ffffffff8020a5f5>] ? mwait_idle+0x45/0x50
->  >> [ 1250.822786]  [<ffffffff80209a92>] ? enter_idle+0x22/0x30
->  >> [ 1250.822786]  [<ffffffff8020a534>] ? cpu_idle+0x74/0xa0
->  >> [ 1250.822786]  [<ffffffff80527825>] ? rest_init+0x55/0x60
->  >
->  > They're regularly reported with e1000 too - I don't think aything really
->  > changed.
->  >
->  > e1000 has this crazy problem where because of a cascade of follies (mainly
->  > borked hardware) it has to do a 32kb allocation for a 9kb(?) packet.  It
->  > would be sad if that was carried over into e1000e?
->
->  can't be, I personally removed that code.
->
->  for MTU > 1500 e1000e uses a plain normal sized SKB. for anything bigger e1000e
->  uses pages.
->
->  so I don't see how this bug could still be showing up for e1000e at all. The large
->  skb receive code is all gone (literally, removed).
->
->  *please* rmmod e1000; modprobe e1000e and show the dumps again so we know for sure
->  that we're not looking at e1000 dumps.
->
->  short fix: increase ring size for e1000 with `modprobe e1000 RxDescriptors=4096`
->  (or use ethtool) and `echo -n 8192 > /proc/sys/vm/min_free_kbytes` or something
->  like that.
->
->  what nic hardware is this on? lspci?
->
->  Auke
->
+The build could also capture the GCC warning/error output and
+post-process it. Certain types of warnings might be suppressed,
+or cause the build to fail (based on selected config options). My
+kernel builds always show a handful of "may be used uninitialised" or
+similar ... I just assume that those warnings are harmless. It is best
+of course that these warnings don't occur at all, and I expect kernel
+developers to fix them when they get a chance.  The idea in this
+paragraph would be desirable to me, independent of how the CFLAGS are
+specified.
 
 
+> >  > Something else that could be included is a link to the manual for the
+> >  > (currently used) gcc's command flags
+> >  > (http://gcc.gnu.org/onlinedocs/gcc-4.2.3/gcc/index.html#toc_Invoking-GCC)
+> >  > or at least to the online docs, considering that specifying one
+> >  > specific gcc version's manual would yield various issues.
+> >
+> >  "info gcc" will give all that information in far more detail than I
+> >  have time to read.
+> 
+> I believe you misunderstand.  I mean to include the link in the help
+> message.  Like how the links to the appropriate sites for device
+> drivers are included in their help messages.
 
+No, I think I understood correctly. If you tell the user to go to that
+long URL then you run the risk of pointing to the documentation for a
+different version of GCC. On the other hand, if you tell them to type
+"info gcc" then they will see the documentation for the version of GCC
+which they have installed. And it's also a lot friendlier to write:
+"Type 'info gcc' to see a full list of the compiler options".
+
+> >  > I feel that perhaps it is a bit silly to put in such description, as
+> >  > one using the flags should only do so in knowing specifically which
+> >  > ones they wish to use and why ahead of time.  However, it cannot hurt
+> >  > to put in more help documentation, so it's a fine suggestion.
+> >
+> >  Well, it can't be both silly and a fine suggestion. Does it dumb down
+> >  the kernel configuration process too much?
+> 
+> No, I feel that both adjectives are perfectly reconcilable, at least
+> in this case.  Again, more documentation couldn't hurt.  "Dumbing
+> down" kernel configuration may be less aesthetically pleasing to
+> purists, but that is a tiny price to pay for usability and a widening
+> of kernel builders.
+
+I'm looking to find a balance among the competing objectives. Time
+will tell with any improvements. I'm also hoping for an aesthetically
+pleasing config menu -- perhaps someone else can take on the challenge of
+restructuring it to improve the ordering, structure and names of options.
+
+> PS to Nick:  Sorry for the double-send. Didn't CC lkml;  a forward
+> would be ugly.
+
+No prob.
+
+Nick.
 -- 
-Daniel J Blueman
+PGP Key ID = 0x418487E7                      http://www.nick-andrew.net/
+PGP Key fingerprint = B3ED 6894 8E49 1770 C24A  67E3 6266 6EB9 4184 87E7
