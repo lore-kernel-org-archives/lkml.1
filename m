@@ -1,821 +1,268 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755833AbYBXXfZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758724AbYBXXfw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755833AbYBXXfZ (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 24 Feb 2008 18:35:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751342AbYBXXfK
+	id S1758724AbYBXXfw (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 24 Feb 2008 18:35:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753309AbYBXXfV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 24 Feb 2008 18:35:10 -0500
-Received: from outbound-sin.frontbridge.com ([207.46.51.80]:33307 "EHLO
-	outbound9-sin-R.bigfish.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751345AbYBXXfG (ORCPT
+	Sun, 24 Feb 2008 18:35:21 -0500
+Received: from simmts12-qfe0.srvr.bell.ca ([206.47.199.141]:56466 "EHLO
+	simmts12-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752477AbYBXXfQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 24 Feb 2008 18:35:06 -0500
-X-BigFish: VP
-X-MS-Exchange-Organization-Antispam-Report: OrigIP: 149.199.60.83;Service: EHS
-From: Stephen Neuendorffer <stephen.neuendorffer@xilinx.com>
-To: grant.likely@secretlab.ca, git-dev@xilinx.com, linuxppc-dev@ozlabs.org,
-       linux-kernel@vger.kernel.org, jirislaby@gmail.com
-Cc: Stephen Neuendorffer <stephen.neuendorffer@xilinx.com>
-Subject: [PATCH] [POWERPC] [v2] Xilinx: hwicap: cleanup
-Date: Sun, 24 Feb 2008 15:34:47 -0800
-X-Mailer: git-send-email 1.5.3.4-dirty
-In-Reply-To: <20080224232152.CEC5F12C8057@mail99-dub.bigfish.com>
-References: <20080224232152.CEC5F12C8057@mail99-dub.bigfish.com>
-Message-Id: <20080224233457.C983D78006D@mail33-sin.bigfish.com>
+	Sun, 24 Feb 2008 18:35:16 -0500
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AgAAAPONwUecIvME/2dsb2JhbAAIih+Hf5dY
+Message-ID: <47C1FF2E.4060600@gmail.com>
+Date: Sun, 24 Feb 2008 19:35:10 -0400
+From: Kevin Winchester <kjwinchester@gmail.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20080214)
+MIME-Version: 1.0
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+CC: Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>, len.brown@intel.com, pavel@suse.cz,
+       linux-pm@lists.linux-foundation.org, Ingo Molnar <mingo@elte.hu>,
+       peterz@infradead.org
+Subject: Re: linux-next: Tree for Feb 24
+References: <20080224162309.3e67dd22.sfr@canb.auug.org.au> <47C1B52B.3080104@gmail.com> <200802242100.46474.rjw@sisk.pl>
+In-Reply-To: <200802242100.46474.rjw@sisk.pl>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Fix some missing __user tags and incorrect section tags.
-Convert semaphores to mutexes.
-Make probed_devices re-entrancy and error condition safe.
-Fix some backwards memcpys.
-Some other minor cleanups.
-Use kerneldoc format.
+Rafael J. Wysocki wrote:
+> On Sunday, 24 of February 2008, Kevin Winchester wrote:
+> 
+>> Today was different - I attempted to suspend and resume from the console,
+>> and the machine did not come back up.  I found the following in my log -
+>> any help would be appreciated.
+>>
+>> Feb 24 13:59:56 alekhine kernel: [  456.497875] PM: Syncing filesystems ... done.
+>> Feb 24 14:00:20 alekhine kernel: [  456.507273] Freezing user space processes ... (elapsed 0.00 seconds) done.
+>> Feb 24 14:00:20 alekhine kernel: [  456.510447] Freezing remaining freezable tasks ... (elapsed 0.00 seconds) done.
+>> Feb 24 14:00:20 alekhine kernel: [  456.510754] ACPI: Preparing to enter system sleep state S3
+>> Feb 24 14:00:20 alekhine kernel: [  456.612370] Suspending console(s)
+>> Feb 24 14:00:20 alekhine kernel: [  456.616254] sd 3:0:0:0: [sda] Synchronizing SCSI cache
+>> Feb 24 14:00:20 alekhine kernel: [  456.616521] sd 3:0:0:0: [sda] Stopping disk
+>> Feb 24 14:00:20 alekhine kernel: [  456.618221] ACPI: PCI interrupt for device 0000:00:11.5 disabled
+>> Feb 24 14:00:20 alekhine kernel: [  456.630296] ACPI: PCI interrupt for device 0000:00:10.4 disabled
+>> Feb 24 14:00:20 alekhine kernel: [  456.641085] ACPI: PCI interrupt for device 0000:00:10.3 disabled
+>> Feb 24 14:00:20 alekhine kernel: [  456.651877] ACPI: PCI interrupt for device 0000:00:10.2 disabled
+>> Feb 24 14:00:20 alekhine kernel: [  456.662716] ACPI: PCI interrupt for device 0000:00:10.1 disabled
+>> Feb 24 14:00:20 alekhine kernel: [  456.673550] ACPI: PCI interrupt for device 0000:00:10.0 disabled
+>> Feb 24 14:00:20 alekhine kernel: [  456.684385] ACPI: PCI interrupt for device 0000:00:0f.1 disabled
+>> Feb 24 14:00:20 alekhine kernel: [  456.695056] ACPI: PCI interrupt for device 0000:00:0f.0 disabled
+>> Feb 24 14:00:20 alekhine kernel: [  456.705856] 5 locks held by bash/2929:
+>> Feb 24 14:00:20 alekhine kernel: [  456.705856]  #0:  (&buffer->mutex){--..}, at: [<c018960c>] sysfs_write_file+0x25/0xe3
+>> Feb 24 14:00:20 alekhine kernel: [  456.705856]  #1:  (pm_mutex){--..}, at: [<c0138c54>] enter_state+0xea/0x100
+>> Feb 24 14:00:20 alekhine kernel: [  456.705856]  #2:  (pm_sleep_rwsem){----}, at: [<c023c4b8>] device_suspend+0x25/0x251
+>> Feb 24 14:00:20 alekhine kernel: [  456.705856]  #3:  (&data->update_lock#2){--..}, at: [<c029cb2b>] abituguru_suspend+0x13/0x18
+>> Feb 24 14:00:20 alekhine kernel: [  456.705856]  #4:  (&vptr->lock){++..}, at: [<c0244665>] velocity_suspend+0x37/0x302
+>> Feb 24 14:00:20 alekhine kernel: [  456.705856] irq event stamp: 19374
+>> Feb 24 14:00:20 alekhine kernel: [  456.705856] hardirqs last  enabled at (19373): [<c0326664>] __mutex_unlock_slowpath+0xd5/0xef
+>> Feb 24 14:00:20 alekhine kernel: [  456.705856] hardirqs last disabled at (19374): [<c0327bca>] _spin_lock_irqsave+0xf/0x3c
+>> Feb 24 14:00:20 alekhine kernel: [  456.705856] softirqs last  enabled at (18484): [<c011e6ba>] __do_softirq+0x99/0x9e
+>> Feb 24 14:00:20 alekhine kernel: [  456.705856] softirqs last disabled at (18479): [<c0104f15>] do_softirq+0x58/0xa8
+>> Feb 24 14:00:20 alekhine kernel: [  456.705856] Pid: 2929, comm: bash Not tainted 2.6.25-rc2-next-20080224 #58
+>> Feb 24 14:00:20 alekhine kernel: [  456.705856]  [<c01177c7>] __schedule_bug+0x58/0x5f
+>> Feb 24 14:00:20 alekhine kernel: [  456.705856]  [<c0325b43>] schedule+0x67/0x3b3
+> 
+> Well, could you check what's at schedule+0x67, please?
 
-[v2]
-__user char => char __user
-removed unused hwicap_command_capture
-Fixed a comment that didn't match the function name
-fixed argument with 'register' keyword.
+Is this how I would do this?  I tried schedule+0x67, but it just showed me the beginning of profile_hit.
 
-Signed-off-by: Stephen Neuendorffer <stephen.neuendorffer@xilinx.com>
+(gdb) l *(schedule+0x66)
+0xc0325b42 is in schedule (kernel/sched.c:3836).
+3831		 * Test if we are atomic. Since do_exit() needs to call into
+3832		 * schedule() atomically, we ignore that path for now.
+3833		 * Otherwise, whine if we are scheduling when we should not be.
+3834		 */
+3835		if (unlikely(in_atomic_preempt_off()) && unlikely(!prev->exit_state))
+3836			__schedule_bug(prev);
+3837	
+3838		profile_hit(SCHED_PROFILING, __builtin_return_address(0));
+3839	
+3840		schedstat_inc(this_rq(), sched_count);
 
----
-
-Grant, Since it appears that the driver will stay in as-is, here are
-the updates against mainline, based on Jiri's comments.
----
- drivers/char/xilinx_hwicap/buffer_icap.c   |   80 ++++++++--------
- drivers/char/xilinx_hwicap/fifo_icap.c     |   60 ++++++------
- drivers/char/xilinx_hwicap/xilinx_hwicap.c |  138 +++++++++++++---------------
- drivers/char/xilinx_hwicap/xilinx_hwicap.h |   24 +++---
- 4 files changed, 144 insertions(+), 158 deletions(-)
-
-diff --git a/drivers/char/xilinx_hwicap/buffer_icap.c b/drivers/char/xilinx_hwicap/buffer_icap.c
-index dfea2bd..f577dae 100644
---- a/drivers/char/xilinx_hwicap/buffer_icap.c
-+++ b/drivers/char/xilinx_hwicap/buffer_icap.c
-@@ -73,8 +73,8 @@
- #define XHI_BUFFER_START 0
- 
- /**
-- * buffer_icap_get_status: Get the contents of the status register.
-- * @parameter base_address: is the base address of the device
-+ * buffer_icap_get_status - Get the contents of the status register.
-+ * @base_address: is the base address of the device
-  *
-  * The status register contains the ICAP status and the done bit.
-  *
-@@ -94,9 +94,9 @@ static inline u32 buffer_icap_get_status(void __iomem *base_address)
- }
- 
- /**
-- * buffer_icap_get_bram: Reads data from the storage buffer bram.
-- * @parameter base_address: contains the base address of the component.
-- * @parameter offset: The word offset from which the data should be read.
-+ * buffer_icap_get_bram - Reads data from the storage buffer bram.
-+ * @base_address: contains the base address of the component.
-+ * @offset: The word offset from which the data should be read.
-  *
-  * A bram is used as a configuration memory cache.  One frame of data can
-  * be stored in this "storage buffer".
-@@ -108,8 +108,8 @@ static inline u32 buffer_icap_get_bram(void __iomem *base_address,
- }
- 
- /**
-- * buffer_icap_busy: Return true if the icap device is busy
-- * @parameter base_address: is the base address of the device
-+ * buffer_icap_busy - Return true if the icap device is busy
-+ * @base_address: is the base address of the device
-  *
-  * The queries the low order bit of the status register, which
-  * indicates whether the current configuration or readback operation
-@@ -121,8 +121,8 @@ static inline bool buffer_icap_busy(void __iomem *base_address)
- }
- 
- /**
-- * buffer_icap_busy: Return true if the icap device is not busy
-- * @parameter base_address: is the base address of the device
-+ * buffer_icap_busy - Return true if the icap device is not busy
-+ * @base_address: is the base address of the device
-  *
-  * The queries the low order bit of the status register, which
-  * indicates whether the current configuration or readback operation
-@@ -134,9 +134,9 @@ static inline bool buffer_icap_done(void __iomem *base_address)
- }
- 
- /**
-- * buffer_icap_set_size: Set the size register.
-- * @parameter base_address: is the base address of the device
-- * @parameter data: The size in bytes.
-+ * buffer_icap_set_size - Set the size register.
-+ * @base_address: is the base address of the device
-+ * @data: The size in bytes.
-  *
-  * The size register holds the number of 8 bit bytes to transfer between
-  * bram and the icap (or icap to bram).
-@@ -148,9 +148,9 @@ static inline void buffer_icap_set_size(void __iomem *base_address,
- }
- 
- /**
-- * buffer_icap_mSetoffsetReg: Set the bram offset register.
-- * @parameter base_address: contains the base address of the device.
-- * @parameter data: is the value to be written to the data register.
-+ * buffer_icap_set_offset - Set the bram offset register.
-+ * @base_address: contains the base address of the device.
-+ * @data: is the value to be written to the data register.
-  *
-  * The bram offset register holds the starting bram address to transfer
-  * data from during configuration or write data to during readback.
-@@ -162,9 +162,9 @@ static inline void buffer_icap_set_offset(void __iomem *base_address,
- }
- 
- /**
-- * buffer_icap_set_rnc: Set the RNC (Readback not Configure) register.
-- * @parameter base_address: contains the base address of the device.
-- * @parameter data: is the value to be written to the data register.
-+ * buffer_icap_set_rnc - Set the RNC (Readback not Configure) register.
-+ * @base_address: contains the base address of the device.
-+ * @data: is the value to be written to the data register.
-  *
-  * The RNC register determines the direction of the data transfer.  It
-  * controls whether a configuration or readback take place.  Writing to
-@@ -178,10 +178,10 @@ static inline void buffer_icap_set_rnc(void __iomem *base_address,
- }
- 
- /**
-- * buffer_icap_set_bram: Write data to the storage buffer bram.
-- * @parameter base_address: contains the base address of the component.
-- * @parameter offset: The word offset at which the data should be written.
-- * @parameter data: The value to be written to the bram offset.
-+ * buffer_icap_set_bram - Write data to the storage buffer bram.
-+ * @base_address: contains the base address of the component.
-+ * @offset: The word offset at which the data should be written.
-+ * @data: The value to be written to the bram offset.
-  *
-  * A bram is used as a configuration memory cache.  One frame of data can
-  * be stored in this "storage buffer".
-@@ -193,10 +193,10 @@ static inline void buffer_icap_set_bram(void __iomem *base_address,
- }
- 
- /**
-- * buffer_icap_device_read: Transfer bytes from ICAP to the storage buffer.
-- * @parameter drvdata: a pointer to the drvdata.
-- * @parameter offset: The storage buffer start address.
-- * @parameter count: The number of words (32 bit) to read from the
-+ * buffer_icap_device_read - Transfer bytes from ICAP to the storage buffer.
-+ * @drvdata: a pointer to the drvdata.
-+ * @offset: The storage buffer start address.
-+ * @count: The number of words (32 bit) to read from the
-  *           device (ICAP).
-  **/
- static int buffer_icap_device_read(struct hwicap_drvdata *drvdata,
-@@ -227,10 +227,10 @@ static int buffer_icap_device_read(struct hwicap_drvdata *drvdata,
- };
- 
- /**
-- * buffer_icap_device_write: Transfer bytes from ICAP to the storage buffer.
-- * @parameter drvdata: a pointer to the drvdata.
-- * @parameter offset: The storage buffer start address.
-- * @parameter count: The number of words (32 bit) to read from the
-+ * buffer_icap_device_write - Transfer bytes from ICAP to the storage buffer.
-+ * @drvdata: a pointer to the drvdata.
-+ * @offset: The storage buffer start address.
-+ * @count: The number of words (32 bit) to read from the
-  *           device (ICAP).
-  **/
- static int buffer_icap_device_write(struct hwicap_drvdata *drvdata,
-@@ -261,8 +261,8 @@ static int buffer_icap_device_write(struct hwicap_drvdata *drvdata,
- };
- 
- /**
-- * buffer_icap_reset: Reset the logic of the icap device.
-- * @parameter drvdata: a pointer to the drvdata.
-+ * buffer_icap_reset - Reset the logic of the icap device.
-+ * @drvdata: a pointer to the drvdata.
-  *
-  * Writing to the status register resets the ICAP logic in an internal
-  * version of the core.  For the version of the core published in EDK,
-@@ -274,10 +274,10 @@ void buffer_icap_reset(struct hwicap_drvdata *drvdata)
- }
- 
- /**
-- * buffer_icap_set_configuration: Load a partial bitstream from system memory.
-- * @parameter drvdata: a pointer to the drvdata.
-- * @parameter data: Kernel address of the partial bitstream.
-- * @parameter size: the size of the partial bitstream in 32 bit words.
-+ * buffer_icap_set_configuration - Load a partial bitstream from system memory.
-+ * @drvdata: a pointer to the drvdata.
-+ * @data: Kernel address of the partial bitstream.
-+ * @size: the size of the partial bitstream in 32 bit words.
-  **/
- int buffer_icap_set_configuration(struct hwicap_drvdata *drvdata, u32 *data,
- 			     u32 size)
-@@ -333,10 +333,10 @@ int buffer_icap_set_configuration(struct hwicap_drvdata *drvdata, u32 *data,
- };
- 
- /**
-- * buffer_icap_get_configuration: Read configuration data from the device.
-- * @parameter drvdata: a pointer to the drvdata.
-- * @parameter data: Address of the data representing the partial bitstream
-- * @parameter size: the size of the partial bitstream in 32 bit words.
-+ * buffer_icap_get_configuration - Read configuration data from the device.
-+ * @drvdata: a pointer to the drvdata.
-+ * @data: Address of the data representing the partial bitstream
-+ * @size: the size of the partial bitstream in 32 bit words.
-  **/
- int buffer_icap_get_configuration(struct hwicap_drvdata *drvdata, u32 *data,
- 			     u32 size)
-diff --git a/drivers/char/xilinx_hwicap/fifo_icap.c b/drivers/char/xilinx_hwicap/fifo_icap.c
-index 0988314..6f45dbd 100644
---- a/drivers/char/xilinx_hwicap/fifo_icap.c
-+++ b/drivers/char/xilinx_hwicap/fifo_icap.c
-@@ -94,9 +94,9 @@
- 
- 
- /**
-- * fifo_icap_fifo_write: Write data to the write FIFO.
-- * @parameter drvdata: a pointer to the drvdata.
-- * @parameter data: the 32-bit value to be written to the FIFO.
-+ * fifo_icap_fifo_write - Write data to the write FIFO.
-+ * @drvdata: a pointer to the drvdata.
-+ * @data: the 32-bit value to be written to the FIFO.
-  *
-  * This function will silently fail if the fifo is full.
-  **/
-@@ -108,8 +108,8 @@ static inline void fifo_icap_fifo_write(struct hwicap_drvdata *drvdata,
- }
- 
- /**
-- * fifo_icap_fifo_read: Read data from the Read FIFO.
-- * @parameter drvdata: a pointer to the drvdata.
-+ * fifo_icap_fifo_read - Read data from the Read FIFO.
-+ * @drvdata: a pointer to the drvdata.
-  *
-  * This function will silently fail if the fifo is empty.
-  **/
-@@ -121,9 +121,9 @@ static inline u32 fifo_icap_fifo_read(struct hwicap_drvdata *drvdata)
- }
- 
- /**
-- * fifo_icap_set_read_size: Set the the size register.
-- * @parameter drvdata: a pointer to the drvdata.
-- * @parameter data: the size of the following read transaction, in words.
-+ * fifo_icap_set_read_size - Set the the size register.
-+ * @drvdata: a pointer to the drvdata.
-+ * @data: the size of the following read transaction, in words.
-  **/
- static inline void fifo_icap_set_read_size(struct hwicap_drvdata *drvdata,
- 		u32 data)
-@@ -132,8 +132,8 @@ static inline void fifo_icap_set_read_size(struct hwicap_drvdata *drvdata,
- }
- 
- /**
-- * fifo_icap_start_config: Initiate a configuration (write) to the device.
-- * @parameter drvdata: a pointer to the drvdata.
-+ * fifo_icap_start_config - Initiate a configuration (write) to the device.
-+ * @drvdata: a pointer to the drvdata.
-  **/
- static inline void fifo_icap_start_config(struct hwicap_drvdata *drvdata)
- {
-@@ -142,8 +142,8 @@ static inline void fifo_icap_start_config(struct hwicap_drvdata *drvdata)
- }
- 
- /**
-- * fifo_icap_start_readback: Initiate a readback from the device.
-- * @parameter drvdata: a pointer to the drvdata.
-+ * fifo_icap_start_readback - Initiate a readback from the device.
-+ * @drvdata: a pointer to the drvdata.
-  **/
- static inline void fifo_icap_start_readback(struct hwicap_drvdata *drvdata)
- {
-@@ -152,8 +152,8 @@ static inline void fifo_icap_start_readback(struct hwicap_drvdata *drvdata)
- }
- 
- /**
-- * fifo_icap_busy: Return true if the ICAP is still processing a transaction.
-- * @parameter drvdata: a pointer to the drvdata.
-+ * fifo_icap_busy - Return true if the ICAP is still processing a transaction.
-+ * @drvdata: a pointer to the drvdata.
-  **/
- static inline u32 fifo_icap_busy(struct hwicap_drvdata *drvdata)
- {
-@@ -163,8 +163,8 @@ static inline u32 fifo_icap_busy(struct hwicap_drvdata *drvdata)
- }
- 
- /**
-- * fifo_icap_write_fifo_vacancy: Query the write fifo available space.
-- * @parameter drvdata: a pointer to the drvdata.
-+ * fifo_icap_write_fifo_vacancy - Query the write fifo available space.
-+ * @drvdata: a pointer to the drvdata.
-  *
-  * Return the number of words that can be safely pushed into the write fifo.
-  **/
-@@ -175,8 +175,8 @@ static inline u32 fifo_icap_write_fifo_vacancy(
- }
- 
- /**
-- * fifo_icap_read_fifo_occupancy: Query the read fifo available data.
-- * @parameter drvdata: a pointer to the drvdata.
-+ * fifo_icap_read_fifo_occupancy - Query the read fifo available data.
-+ * @drvdata: a pointer to the drvdata.
-  *
-  * Return the number of words that can be safely read from the read fifo.
-  **/
-@@ -187,11 +187,11 @@ static inline u32 fifo_icap_read_fifo_occupancy(
- }
- 
- /**
-- * fifo_icap_set_configuration: Send configuration data to the ICAP.
-- * @parameter drvdata: a pointer to the drvdata.
-- * @parameter frame_buffer: a pointer to the data to be written to the
-+ * fifo_icap_set_configuration - Send configuration data to the ICAP.
-+ * @drvdata: a pointer to the drvdata.
-+ * @frame_buffer: a pointer to the data to be written to the
-  *		ICAP device.
-- * @parameter num_words: the number of words (32 bit) to write to the ICAP
-+ * @num_words: the number of words (32 bit) to write to the ICAP
-  *		device.
- 
-  * This function writes the given user data to the Write FIFO in
-@@ -266,10 +266,10 @@ int fifo_icap_set_configuration(struct hwicap_drvdata *drvdata,
- }
- 
- /**
-- * fifo_icap_get_configuration: Read configuration data from the device.
-- * @parameter drvdata: a pointer to the drvdata.
-- * @parameter data: Address of the data representing the partial bitstream
-- * @parameter size: the size of the partial bitstream in 32 bit words.
-+ * fifo_icap_get_configuration - Read configuration data from the device.
-+ * @drvdata: a pointer to the drvdata.
-+ * @data: Address of the data representing the partial bitstream
-+ * @size: the size of the partial bitstream in 32 bit words.
-  *
-  * This function reads the specified number of words from the ICAP device in
-  * the polled mode.
-@@ -335,8 +335,8 @@ int fifo_icap_get_configuration(struct hwicap_drvdata *drvdata,
- }
- 
- /**
-- * buffer_icap_reset: Reset the logic of the icap device.
-- * @parameter drvdata: a pointer to the drvdata.
-+ * buffer_icap_reset - Reset the logic of the icap device.
-+ * @drvdata: a pointer to the drvdata.
-  *
-  * This function forces the software reset of the complete HWICAP device.
-  * All the registers will return to the default value and the FIFO is also
-@@ -360,8 +360,8 @@ void fifo_icap_reset(struct hwicap_drvdata *drvdata)
- }
- 
- /**
-- * fifo_icap_flush_fifo: This function flushes the FIFOs in the device.
-- * @parameter drvdata: a pointer to the drvdata.
-+ * fifo_icap_flush_fifo - This function flushes the FIFOs in the device.
-+ * @drvdata: a pointer to the drvdata.
-  */
- void fifo_icap_flush_fifo(struct hwicap_drvdata *drvdata)
- {
-diff --git a/drivers/char/xilinx_hwicap/xilinx_hwicap.c b/drivers/char/xilinx_hwicap/xilinx_hwicap.c
-index 24f6aef..2284fa2 100644
---- a/drivers/char/xilinx_hwicap/xilinx_hwicap.c
-+++ b/drivers/char/xilinx_hwicap/xilinx_hwicap.c
-@@ -84,7 +84,7 @@
- #include <linux/init.h>
- #include <linux/poll.h>
- #include <linux/proc_fs.h>
--#include <asm/semaphore.h>
-+#include <linux/mutex.h>
- #include <linux/sysctl.h>
- #include <linux/version.h>
- #include <linux/fs.h>
-@@ -119,6 +119,7 @@ module_param(xhwicap_minor, int, S_IRUGO);
- 
- /* An array, which is set to true when the device is registered. */
- static bool probed_devices[HWICAP_DEVICES];
-+static struct mutex icap_sem;
- 
- static struct class *icap_class;
- 
-@@ -199,14 +200,14 @@ static const struct config_registers v5_config_registers = {
- };
- 
- /**
-- * hwicap_command_desync: Send a DESYNC command to the ICAP port.
-- * @parameter drvdata: a pointer to the drvdata.
-+ * hwicap_command_desync - Send a DESYNC command to the ICAP port.
-+ * @drvdata: a pointer to the drvdata.
-  *
-  * This command desynchronizes the ICAP After this command, a
-  * bitstream containing a NULL packet, followed by a SYNCH packet is
-  * required before the ICAP will recognize commands.
-  */
--int hwicap_command_desync(struct hwicap_drvdata *drvdata)
-+static int hwicap_command_desync(struct hwicap_drvdata *drvdata)
- {
- 	u32 buffer[4];
- 	u32 index = 0;
-@@ -228,51 +229,18 @@ int hwicap_command_desync(struct hwicap_drvdata *drvdata)
- }
- 
- /**
-- * hwicap_command_capture: Send a CAPTURE command to the ICAP port.
-- * @parameter drvdata: a pointer to the drvdata.
-- *
-- * This command captures all of the flip flop states so they will be
-- * available during readback.  One can use this command instead of
-- * enabling the CAPTURE block in the design.
-- */
--int hwicap_command_capture(struct hwicap_drvdata *drvdata)
--{
--	u32 buffer[7];
--	u32 index = 0;
--
--	/*
--	 * Create the data to be written to the ICAP.
--	 */
--	buffer[index++] = XHI_DUMMY_PACKET;
--	buffer[index++] = XHI_SYNC_PACKET;
--	buffer[index++] = XHI_NOOP_PACKET;
--	buffer[index++] = hwicap_type_1_write(drvdata->config_regs->CMD) | 1;
--	buffer[index++] = XHI_CMD_GCAPTURE;
--	buffer[index++] = XHI_DUMMY_PACKET;
--	buffer[index++] = XHI_DUMMY_PACKET;
--
--	/*
--	 * Write the data to the FIFO and intiate the transfer of data
--	 * present in the FIFO to the ICAP device.
--	 */
--	return drvdata->config->set_configuration(drvdata,
--			&buffer[0], index);
--
--}
--
--/**
-- * hwicap_get_configuration_register: Query a configuration register.
-- * @parameter drvdata: a pointer to the drvdata.
-- * @parameter reg: a constant which represents the configuration
-+ * hwicap_get_configuration_register - Query a configuration register.
-+ * @drvdata: a pointer to the drvdata.
-+ * @reg: a constant which represents the configuration
-  *		register value to be returned.
-  * 		Examples:  XHI_IDCODE, XHI_FLR.
-- * @parameter RegData: returns the value of the register.
-+ * @reg_data: returns the value of the register.
-  *
-  * Sends a query packet to the ICAP and then receives the response.
-  * The icap is left in Synched state.
-  */
--int hwicap_get_configuration_register(struct hwicap_drvdata *drvdata,
--		u32 reg, u32 *RegData)
-+static int hwicap_get_configuration_register(struct hwicap_drvdata *drvdata,
-+		u32 reg, u32 *reg_data)
- {
- 	int status;
- 	u32 buffer[6];
-@@ -300,14 +268,14 @@ int hwicap_get_configuration_register(struct hwicap_drvdata *drvdata,
- 	/*
- 	 * Read the configuration register
- 	 */
--	status = drvdata->config->get_configuration(drvdata, RegData, 1);
-+	status = drvdata->config->get_configuration(drvdata, reg_data, 1);
- 	if (status)
- 		return status;
- 
- 	return 0;
- }
- 
--int hwicap_initialize_hwicap(struct hwicap_drvdata *drvdata)
-+static int hwicap_initialize_hwicap(struct hwicap_drvdata *drvdata)
- {
- 	int status;
- 	u32 idcode;
-@@ -344,7 +312,7 @@ int hwicap_initialize_hwicap(struct hwicap_drvdata *drvdata)
- }
- 
- static ssize_t
--hwicap_read(struct file *file, char *buf, size_t count, loff_t *ppos)
-+hwicap_read(struct file *file, char __user *buf, size_t count, loff_t *ppos)
- {
- 	struct hwicap_drvdata *drvdata = file->private_data;
- 	ssize_t bytes_to_read = 0;
-@@ -353,8 +321,9 @@ hwicap_read(struct file *file, char *buf, size_t count, loff_t *ppos)
- 	u32 bytes_remaining;
- 	int status;
- 
--	if (down_interruptible(&drvdata->sem))
--		return -ERESTARTSYS;
-+	status = mutex_lock_interruptible(&drvdata->sem);
-+	if (status)
-+		return status;
- 
- 	if (drvdata->read_buffer_in_use) {
- 		/* If there are leftover bytes in the buffer, just */
-@@ -370,8 +339,9 @@ hwicap_read(struct file *file, char *buf, size_t count, loff_t *ppos)
- 			goto error;
- 		}
- 		drvdata->read_buffer_in_use -= bytes_to_read;
--		memcpy(drvdata->read_buffer + bytes_to_read,
--				drvdata->read_buffer, 4 - bytes_to_read);
-+		memmove(drvdata->read_buffer,
-+		       drvdata->read_buffer + bytes_to_read,
-+		       4 - bytes_to_read);
- 	} else {
- 		/* Get new data from the ICAP, and return was was requested. */
- 		kbuf = (u32 *) get_zeroed_page(GFP_KERNEL);
-@@ -414,18 +384,20 @@ hwicap_read(struct file *file, char *buf, size_t count, loff_t *ppos)
- 			status = -EFAULT;
- 			goto error;
- 		}
--		memcpy(kbuf, drvdata->read_buffer, bytes_remaining);
-+		memcpy(drvdata->read_buffer,
-+		       kbuf,
-+		       bytes_remaining);
- 		drvdata->read_buffer_in_use = bytes_remaining;
- 		free_page((unsigned long)kbuf);
- 	}
- 	status = bytes_to_read;
-  error:
--	up(&drvdata->sem);
-+	mutex_unlock(&drvdata->sem);
- 	return status;
- }
- 
- static ssize_t
--hwicap_write(struct file *file, const char *buf,
-+hwicap_write(struct file *file, const char __user *buf,
- 		size_t count, loff_t *ppos)
- {
- 	struct hwicap_drvdata *drvdata = file->private_data;
-@@ -435,8 +407,9 @@ hwicap_write(struct file *file, const char *buf,
- 	ssize_t len;
- 	ssize_t status;
- 
--	if (down_interruptible(&drvdata->sem))
--		return -ERESTARTSYS;
-+	status = mutex_lock_interruptible(&drvdata->sem);
-+	if (status)
-+		return status;
- 
- 	left += drvdata->write_buffer_in_use;
- 
-@@ -465,7 +438,7 @@ hwicap_write(struct file *file, const char *buf,
- 			memcpy(kbuf, drvdata->write_buffer,
- 					drvdata->write_buffer_in_use);
- 			if (copy_from_user(
--			    (((char *)kbuf) + (drvdata->write_buffer_in_use)),
-+			    (((char *)kbuf) + drvdata->write_buffer_in_use),
- 			    buf + written,
- 			    len - (drvdata->write_buffer_in_use))) {
- 				free_page((unsigned long)kbuf);
-@@ -508,7 +481,7 @@ hwicap_write(struct file *file, const char *buf,
- 	free_page((unsigned long)kbuf);
- 	status = written;
-  error:
--	up(&drvdata->sem);
-+	mutex_unlock(&drvdata->sem);
- 	return status;
- }
- 
-@@ -519,8 +492,9 @@ static int hwicap_open(struct inode *inode, struct file *file)
- 
- 	drvdata = container_of(inode->i_cdev, struct hwicap_drvdata, cdev);
- 
--	if (down_interruptible(&drvdata->sem))
--		return -ERESTARTSYS;
-+	status = mutex_lock_interruptible(&drvdata->sem);
-+	if (status)
-+		return status;
- 
- 	if (drvdata->is_open) {
- 		status = -EBUSY;
-@@ -539,7 +513,7 @@ static int hwicap_open(struct inode *inode, struct file *file)
- 	drvdata->is_open = 1;
- 
-  error:
--	up(&drvdata->sem);
-+	mutex_unlock(&drvdata->sem);
- 	return status;
- }
- 
-@@ -549,8 +523,7 @@ static int hwicap_release(struct inode *inode, struct file *file)
- 	int i;
- 	int status = 0;
- 
--	if (down_interruptible(&drvdata->sem))
--		return -ERESTARTSYS;
-+	mutex_lock(&drvdata->sem);
- 
- 	if (drvdata->write_buffer_in_use) {
- 		/* Flush write buffer. */
-@@ -569,7 +542,7 @@ static int hwicap_release(struct inode *inode, struct file *file)
- 
-  error:
- 	drvdata->is_open = 0;
--	up(&drvdata->sem);
-+	mutex_unlock(&drvdata->sem);
- 	return status;
- }
- 
-@@ -592,31 +565,36 @@ static int __devinit hwicap_setup(struct device *dev, int id,
- 
- 	dev_info(dev, "Xilinx icap port driver\n");
- 
-+	mutex_lock(&icap_sem);
-+
- 	if (id < 0) {
- 		for (id = 0; id < HWICAP_DEVICES; id++)
- 			if (!probed_devices[id])
- 				break;
- 	}
- 	if (id < 0 || id >= HWICAP_DEVICES) {
-+		mutex_unlock(&icap_sem);
- 		dev_err(dev, "%s%i too large\n", DRIVER_NAME, id);
- 		return -EINVAL;
- 	}
- 	if (probed_devices[id]) {
-+		mutex_unlock(&icap_sem);
- 		dev_err(dev, "cannot assign to %s%i; it is already in use\n",
- 			DRIVER_NAME, id);
- 		return -EBUSY;
- 	}
- 
- 	probed_devices[id] = 1;
-+	mutex_unlock(&icap_sem);
- 
- 	devt = MKDEV(xhwicap_major, xhwicap_minor + id);
- 
--	drvdata = kmalloc(sizeof(struct hwicap_drvdata), GFP_KERNEL);
-+	drvdata = kzalloc(sizeof(struct hwicap_drvdata), GFP_KERNEL);
- 	if (!drvdata) {
- 		dev_err(dev, "Couldn't allocate device private record\n");
--		return -ENOMEM;
-+		retval = -ENOMEM;
-+		goto failed0;
- 	}
--	memset((void *)drvdata, 0, sizeof(struct hwicap_drvdata));
- 	dev_set_drvdata(dev, (void *)drvdata);
- 
- 	if (!regs_res) {
-@@ -648,7 +626,7 @@ static int __devinit hwicap_setup(struct device *dev, int id,
- 	drvdata->config = config;
- 	drvdata->config_regs = config_regs;
- 
--	init_MUTEX(&drvdata->sem);
-+	mutex_init(&drvdata->sem);
- 	drvdata->is_open = 0;
- 
- 	dev_info(dev, "ioremap %lx to %p with size %x\n",
-@@ -663,7 +641,7 @@ static int __devinit hwicap_setup(struct device *dev, int id,
- 		goto failed3;
- 	}
- 	/*  devfs_mk_cdev(devt, S_IFCHR|S_IRUGO|S_IWUGO, DRIVER_NAME); */
--	class_device_create(icap_class, NULL, devt, NULL, DRIVER_NAME);
-+	device_create(icap_class, dev, devt, "%s%d", DRIVER_NAME, id);
- 	return 0;		/* success */
- 
-  failed3:
-@@ -675,6 +653,11 @@ static int __devinit hwicap_setup(struct device *dev, int id,
-  failed1:
- 	kfree(drvdata);
- 
-+ failed0:
-+	mutex_lock(&icap_sem);
-+	probed_devices[id] = 0;
-+	mutex_unlock(&icap_sem);
-+
- 	return retval;
- }
- 
-@@ -699,14 +682,16 @@ static int __devexit hwicap_remove(struct device *dev)
- 	if (!drvdata)
- 		return 0;
- 
--	class_device_destroy(icap_class, drvdata->devt);
-+	device_destroy(icap_class, drvdata->devt);
- 	cdev_del(&drvdata->cdev);
- 	iounmap(drvdata->base_address);
- 	release_mem_region(drvdata->mem_start, drvdata->mem_size);
- 	kfree(drvdata);
- 	dev_set_drvdata(dev, NULL);
--	probed_devices[MINOR(dev->devt)-xhwicap_minor] = 0;
- 
-+	mutex_lock(&icap_sem);
-+	probed_devices[MINOR(dev->devt)-xhwicap_minor] = 0;
-+	mutex_unlock(&icap_sem);
- 	return 0;		/* success */
- }
- 
-@@ -821,28 +806,29 @@ static struct of_platform_driver hwicap_of_driver = {
- };
- 
- /* Registration helpers to keep the number of #ifdefs to a minimum */
--static inline int __devinit hwicap_of_register(void)
-+static inline int __init hwicap_of_register(void)
- {
- 	pr_debug("hwicap: calling of_register_platform_driver()\n");
- 	return of_register_platform_driver(&hwicap_of_driver);
- }
- 
--static inline void __devexit hwicap_of_unregister(void)
-+static inline void __exit hwicap_of_unregister(void)
- {
- 	of_unregister_platform_driver(&hwicap_of_driver);
- }
- #else /* CONFIG_OF */
- /* CONFIG_OF not enabled; do nothing helpers */
--static inline int __devinit hwicap_of_register(void) { return 0; }
--static inline void __devexit hwicap_of_unregister(void) { }
-+static inline int __init hwicap_of_register(void) { return 0; }
-+static inline void __exit hwicap_of_unregister(void) { }
- #endif /* CONFIG_OF */
- 
--static int __devinit hwicap_module_init(void)
-+static int __init hwicap_module_init(void)
- {
- 	dev_t devt;
- 	int retval;
- 
- 	icap_class = class_create(THIS_MODULE, "xilinx_config");
-+	mutex_init(&icap_sem);
- 
- 	if (xhwicap_major) {
- 		devt = MKDEV(xhwicap_major, xhwicap_minor);
-@@ -883,7 +869,7 @@ static int __devinit hwicap_module_init(void)
- 	return retval;
- }
- 
--static void __devexit hwicap_module_cleanup(void)
-+static void __exit hwicap_module_cleanup(void)
- {
- 	dev_t devt = MKDEV(xhwicap_major, xhwicap_minor);
- 
-diff --git a/drivers/char/xilinx_hwicap/xilinx_hwicap.h b/drivers/char/xilinx_hwicap/xilinx_hwicap.h
-index ae771ca..405fee7 100644
---- a/drivers/char/xilinx_hwicap/xilinx_hwicap.h
-+++ b/drivers/char/xilinx_hwicap/xilinx_hwicap.h
-@@ -48,9 +48,9 @@ struct hwicap_drvdata {
- 	u8 write_buffer[4];
- 	u32 read_buffer_in_use;	  /* Always in [0,3] */
- 	u8 read_buffer[4];
--	u32 mem_start;		  /* phys. address of the control registers */
--	u32 mem_end;		  /* phys. address of the control registers */
--	u32 mem_size;
-+	resource_size_t mem_start;/* phys. address of the control registers */
-+	resource_size_t mem_end;  /* phys. address of the control registers */
-+	resource_size_t mem_size;
- 	void __iomem *base_address;/* virt. address of the control registers */
- 
- 	struct device *dev;
-@@ -61,7 +61,7 @@ struct hwicap_drvdata {
- 	const struct config_registers *config_regs;
- 	void *private_data;
- 	bool is_open;
--	struct semaphore sem;
-+	struct mutex sem;
- };
- 
- struct hwicap_driver_config {
-@@ -164,29 +164,29 @@ struct config_registers {
- #define XHI_DISABLED_AUTO_CRC       0x0000DEFCUL
- 
- /**
-- * hwicap_type_1_read: Generates a Type 1 read packet header.
-- * @parameter: Register is the address of the register to be read back.
-+ * hwicap_type_1_read - Generates a Type 1 read packet header.
-+ * @reg: is the address of the register to be read back.
-  *
-  * Generates a Type 1 read packet header, which is used to indirectly
-  * read registers in the configuration logic.  This packet must then
-  * be sent through the icap device, and a return packet received with
-  * the information.
-  **/
--static inline u32 hwicap_type_1_read(u32 Register)
-+static inline u32 hwicap_type_1_read(u32 reg)
- {
- 	return (XHI_TYPE_1 << XHI_TYPE_SHIFT) |
--		(Register << XHI_REGISTER_SHIFT) |
-+		(reg << XHI_REGISTER_SHIFT) |
- 		(XHI_OP_READ << XHI_OP_SHIFT);
- }
- 
- /**
-- * hwicap_type_1_write: Generates a Type 1 write packet header
-- * @parameter: Register is the address of the register to be read back.
-+ * hwicap_type_1_write - Generates a Type 1 write packet header
-+ * @reg: is the address of the register to be read back.
-  **/
--static inline u32 hwicap_type_1_write(u32 Register)
-+static inline u32 hwicap_type_1_write(u32 reg)
- {
- 	return (XHI_TYPE_1 << XHI_TYPE_SHIFT) |
--		(Register << XHI_REGISTER_SHIFT) |
-+		(reg << XHI_REGISTER_SHIFT) |
- 		(XHI_OP_WRITE << XHI_OP_SHIFT);
- }
- 
--- 
-1.5.3.4-dirty
+It appears that we are scheduling when we should not be...
 
 
+> 
+>> Feb 24 14:00:20 alekhine kernel: [  456.705856]  [<c0121c39>] ? __mod_timer+0x8d/0x98
+>> Feb 24 14:00:20 alekhine kernel: [  456.705856]  [<c0326043>] schedule_timeout+0x73/0x91
+>> Feb 24 14:00:20 alekhine kernel: [  456.705856]  [<c012185c>] ? process_timeout+0x0/0xa
+>> Feb 24 14:00:20 alekhine kernel: [  456.705856]  [<c0326075>] schedule_timeout_uninterruptible+0x14/0x16
+>> Feb 24 14:00:20 alekhine kernel: [  456.705856]  [<c0121c54>] msleep+0x10/0x16
+>> Feb 24 14:00:20 alekhine kernel: [  456.705856]  [<c01e0e51>] pci_set_power_state+0x17f/0x200
+>> Feb 24 14:00:20 alekhine kernel: [  456.705856]  [<c0244917>] velocity_suspend+0x2e9/0x302
+> 
+> velocity_suspend() seems to be at fault.
 
+(gdb) l *(velocity_suspend+0x37)
+0xc0244665 is in velocity_suspend (drivers/net/via-velocity.c:3399).
+3394		if(!netif_running(vptr->dev))
+3395			return 0;
+3396	
+3397		netif_device_detach(vptr->dev);
+3398	
+3399		spin_lock_irqsave(&vptr->lock, flags);
+3400		pci_save_state(pdev);
+3401	#ifdef ETHTOOL_GWOL
+3402		if (vptr->flags & VELOCITY_FLAGS_WOL_ENABLED) {
+3403			velocity_get_ip(vptr);
+(gdb) 
+3404			velocity_save_context(vptr, &vptr->context);
+3405			velocity_shutdown(vptr);
+3406			velocity_set_wol(vptr);
+3407			pci_enable_wake(pdev, PCI_D3hot, 1);
+3408			pci_set_power_state(pdev, PCI_D3hot);
+3409		} else {
+3410			velocity_save_context(vptr, &vptr->context);
+3411			velocity_shutdown(vptr);
+3412			pci_disable_device(pdev);
+3413			pci_set_power_state(pdev, pci_choose_state(pdev, state));
+(gdb) 
+3414		}
+3415	#else
+3416		pci_set_power_state(pdev, pci_choose_state(pdev, state));
+3417	#endif
+3418		spin_unlock_irqrestore(&vptr->lock, flags);
+3419		return 0;
+3420	}
+
+So velocity_suspend calls spin_lock_irqsave, and then pci_set_power_state which msleep()s.  Is that the root problem here? (I've added Ingo & Peter to the CC list since they may have some comments on the scheduler/lockdep parts of the trace).
+
+> 
+> At the moment I have to take care of some more urgent things, I'll have a look
+> at it tomorrow.
+> 
+>> Feb 24 14:00:20 alekhine kernel: [  456.705856]  [<c0133854>] ? mark_held_locks+0x4e/0x66
+>> Feb 24 14:00:20 alekhine kernel: [  456.705856]  [<c0326664>] ? __mutex_unlock_slowpath+0xd5/0xef
+>> Feb 24 14:00:20 alekhine kernel: [  456.705856]  [<c01339dd>] ? trace_hardirqs_on+0xe5/0x120
+>> Feb 24 14:00:20 alekhine kernel: [  456.705856]  [<c01e249e>] pci_device_suspend+0x1b/0x4b
+>> Feb 24 14:00:20 alekhine kernel: [  456.705856]  [<c023c625>] device_suspend+0x192/0x251
+>> Feb 24 14:00:20 alekhine kernel: [  456.705856]  [<c0138a7a>] suspend_devices_and_enter+0x3d/0xe0
+>> Feb 24 14:00:20 alekhine kernel: [  456.705856]  [<c0138c1c>] enter_state+0xb2/0x100
+>> Feb 24 14:00:20 alekhine kernel: [  456.705856]  [<c0138cfe>] state_store+0x94/0xac
+>> Feb 24 14:00:20 alekhine kernel: [  456.705856]  [<c0138c6a>] ? state_store+0x0/0xac
+>> Feb 24 14:00:20 alekhine kernel: [  456.705856]  [<c01d50c5>] kobj_attr_store+0x1a/0x22
+>> Feb 24 14:00:20 alekhine kernel: [  456.705856]  [<c018969f>] sysfs_write_file+0xb8/0xe3
+>> Feb 24 14:00:20 alekhine kernel: [  456.705856]  [<c01895e7>] ? sysfs_write_file+0x0/0xe3
+>> Feb 24 14:00:20 alekhine kernel: [  456.705856]  [<c01597d7>] vfs_write+0x88/0xf8
+>> Feb 24 14:00:20 alekhine kernel: [  456.705856]  [<c0159c6e>] sys_write+0x3b/0x60
+>> Feb 24 14:00:20 alekhine kernel: [  456.705856]  [<c0102bfa>] sysenter_past_esp+0x5f/0xa5
+>> Feb 24 14:00:20 alekhine kernel: [  456.705856]  =======================
+>> Feb 24 14:00:20 alekhine kernel: [  456.716732] 
+>> Feb 24 14:00:20 alekhine kernel: [  456.716732] =================================
+>> Feb 24 14:00:20 alekhine kernel: [  456.716732] [ INFO: inconsistent lock state ]
+>> Feb 24 14:00:20 alekhine kernel: [  456.716732] 2.6.25-rc2-next-20080224 #58
+>> Feb 24 14:00:20 alekhine kernel: [  456.716732] ---------------------------------
+>> Feb 24 14:00:20 alekhine kernel: [  456.716732] inconsistent {in-hardirq-W} -> {hardirq-on-W} usage.
+>> Feb 24 14:00:20 alekhine kernel: [  456.716732] bash/2929 [HC0[0]:SC0[0]:HE1:SE1] takes:
+>> Feb 24 14:00:20 alekhine kernel: [  456.716732]  (&vptr->lock){++..}, at: [<c0244665>] velocity_suspend+0x37/0x302
+>> Feb 24 14:00:20 alekhine kernel: [  456.716732] {in-hardirq-W} state was registered at:
+>> Feb 24 14:00:20 alekhine kernel: [  456.716732]   [<c013416b>] __lock_acquire+0x3ac/0xb43
+>> Feb 24 14:00:20 alekhine kernel: [  456.716732]   [<c0134963>] lock_acquire+0x61/0x7d
+>> Feb 24 14:00:20 alekhine kernel: [  456.716732]   [<c0243940>] velocity_intr+0x24/0x579
+>> Feb 24 14:00:20 alekhine kernel: [  456.716732]   [<c03279fb>] _spin_lock+0x23/0x32
+>> Feb 24 14:00:20 alekhine kernel: [  456.716732]   [<c0243940>] velocity_intr+0x24/0x579
+>> Feb 24 14:00:20 alekhine kernel: [  456.716733]   [<c0243940>] velocity_intr+0x24/0x579
+>> Feb 24 14:00:20 alekhine kernel: [  456.716733]   [<c02ca5e1>] snd_via8233_interrupt+0xdc/0xe7
+>> Feb 24 14:00:20 alekhine kernel: [  456.716733]   [<c013a884>] handle_fasteoi_irq+0x95/0xab
+>> Feb 24 14:00:20 alekhine kernel: [  456.716733]   [<c01398b3>] handle_IRQ_event+0x1a/0x46
+>> Feb 24 14:00:20 alekhine kernel: [  456.716733]   [<c013a88d>] handle_fasteoi_irq+0x9e/0xab
+>> Feb 24 14:00:20 alekhine kernel: [  456.716733]   [<c013a7ef>] handle_fasteoi_irq+0x0/0xab
+>> Feb 24 14:00:20 alekhine kernel: [  456.716733]   [<c0105010>] do_IRQ+0xab/0xd4
+>> Feb 24 14:00:20 alekhine kernel: [  456.716733]   [<ffffffff>] 0xffffffff
+>> Feb 24 14:00:20 alekhine kernel: [  456.716733] irq event stamp: 19374
+>> Feb 24 14:00:20 alekhine kernel: [  456.716733] hardirqs last  enabled at (19373): [<c0326664>] __mutex_unlock_slowpath+0xd5/0xef
+>> Feb 24 14:00:20 alekhine kernel: [  456.716733] hardirqs last disabled at (19374): [<c0327bca>] _spin_lock_irqsave+0xf/0x3c
+>> Feb 24 14:00:20 alekhine kernel: [  456.716733] softirqs last  enabled at (18484): [<c011e6ba>] __do_softirq+0x99/0x9e
+>> Feb 24 14:00:20 alekhine kernel: [  456.716733] softirqs last disabled at (18479): [<c0104f15>] do_softirq+0x58/0xa8
+>> Feb 24 14:00:20 alekhine kernel: [  456.716733] 
+>> Feb 24 14:00:20 alekhine kernel: [  456.716733] other info that might help us debug this:
+>> Feb 24 14:00:20 alekhine kernel: [  456.716733] 5 locks held by bash/2929:
+>> Feb 24 14:00:20 alekhine kernel: [  456.716733]  #0:  (&buffer->mutex){--..}, at: [<c018960c>] sysfs_write_file+0x25/0xe3
+>> Feb 24 14:00:20 alekhine kernel: [  456.716733]  #1:  (pm_mutex){--..}, at: [<c0138c54>] enter_state+0xea/0x100
+>> Feb 24 14:00:20 alekhine kernel: [  456.716733]  #2:  (pm_sleep_rwsem){----}, at: [<c023c4b8>] device_suspend+0x25/0x251
+>> Feb 24 14:00:20 alekhine kernel: [  456.716733]  #3:  (&data->update_lock#2){--..}, at: [<c029cb2b>] abituguru_suspend+0x13/0x18
+>> Feb 24 14:00:20 alekhine kernel: [  456.716733]  #4:  (&vptr->lock){++..}, at: [<c0244665>] velocity_suspend+0x37/0x302
+>> Feb 24 14:00:20 alekhine kernel: [  456.716733] 
+>> Feb 24 14:00:20 alekhine kernel: [  456.716733] stack backtrace:
+>> Feb 24 14:00:20 alekhine kernel: [  456.716733] Pid: 2929, comm: bash Not tainted 2.6.25-rc2-next-20080224 #58
+>> Feb 24 14:00:20 alekhine kernel: [  456.716733]  [<c0132d3b>] print_usage_bug+0x10d/0x11a
+>> Feb 24 14:00:20 alekhine kernel: [  456.716733]  [<c013361f>] mark_lock+0x1f1/0x3d8
+>> Feb 24 14:00:20 alekhine kernel: [  456.716733]  [<c0133854>] mark_held_locks+0x4e/0x66
+>> Feb 24 14:00:20 alekhine kernel: [  456.716733]  [<c0327ec3>] ? _spin_unlock_irq+0x22/0x42
+>> Feb 24 14:00:20 alekhine kernel: [  456.716733]  [<c01339c7>] trace_hardirqs_on+0xcf/0x120
+>> Feb 24 14:00:20 alekhine kernel: [  456.716733]  [<c0327ec3>] _spin_unlock_irq+0x22/0x42
+>> Feb 24 14:00:20 alekhine kernel: [  456.716733]  [<c0117322>] finish_task_switch+0x46/0x7d
+>> Feb 24 14:00:20 alekhine kernel: [  456.716733]  [<c01172dc>] ? finish_task_switch+0x0/0x7d
+>> Feb 24 14:00:20 alekhine kernel: [  456.716733]  [<c0325e39>] schedule+0x35d/0x3b3
+>> Feb 24 14:00:20 alekhine kernel: [  456.716733]  [<c0121c39>] ? __mod_timer+0x8d/0x98
+>> Feb 24 14:00:20 alekhine kernel: [  456.716733]  [<c0326043>] schedule_timeout+0x73/0x91
+>> Feb 24 14:00:20 alekhine kernel: [  456.716733]  [<c012185c>] ? process_timeout+0x0/0xa
+>> Feb 24 14:00:20 alekhine kernel: [  456.716733]  [<c0326075>] schedule_timeout_uninterruptible+0x14/0x16
+>> Feb 24 14:00:20 alekhine kernel: [  456.716733]  [<c0121c54>] msleep+0x10/0x16
+>> Feb 24 14:00:20 alekhine kernel: [  456.716733]  [<c01e0e51>] pci_set_power_state+0x17f/0x200
+>> Feb 24 14:00:20 alekhine kernel: [  456.716733]  [<c0244917>] velocity_suspend+0x2e9/0x302
+>> Feb 24 14:00:20 alekhine kernel: [  456.716733]  [<c0133854>] ? mark_held_locks+0x4e/0x66
+>> Feb 24 14:00:20 alekhine kernel: [  456.716733]  [<c0326664>] ? __mutex_unlock_slowpath+0xd5/0xef
+>> Feb 24 14:00:20 alekhine kernel: [  456.716733]  [<c01339dd>] ? trace_hardirqs_on+0xe5/0x120
+>> Feb 24 14:00:20 alekhine kernel: [  456.716733]  [<c01e249e>] pci_device_suspend+0x1b/0x4b
+>> Feb 24 14:00:20 alekhine kernel: [  456.716733]  [<c023c625>] device_suspend+0x192/0x251
+>> Feb 24 14:00:20 alekhine kernel: [  456.716733]  [<c0138a7a>] suspend_devices_and_enter+0x3d/0xe0
+>> Feb 24 14:00:20 alekhine kernel: [  456.716733]  [<c0138c1c>] enter_state+0xb2/0x100
+>> Feb 24 14:00:20 alekhine kernel: [  456.716733]  [<c0138cfe>] state_store+0x94/0xac
+>> Feb 24 14:00:20 alekhine kernel: [  456.716733]  [<c0138c6a>] ? state_store+0x0/0xac
+>> Feb 24 14:00:20 alekhine kernel: [  456.716733]  [<c01d50c5>] kobj_attr_store+0x1a/0x22
+>> Feb 24 14:00:20 alekhine kernel: [  456.716733]  [<c018969f>] sysfs_write_file+0xb8/0xe3
+>> Feb 24 14:00:20 alekhine kernel: [  456.716733]  [<c01895e7>] ? sysfs_write_file+0x0/0xe3
+>> Feb 24 14:00:20 alekhine kernel: [  456.716733]  [<c01597d7>] vfs_write+0x88/0xf8
+>> Feb 24 14:00:20 alekhine kernel: [  456.716733]  [<c0159c6e>] sys_write+0x3b/0x60
+>> Feb 24 14:00:20 alekhine kernel: [  456.716733]  [<c0102bfa>] sysenter_past_esp+0x5f/0xa5
+>> Feb 24 14:00:20 alekhine kernel: [  456.716733]  =======================
+>> Feb 24 14:00:20 alekhine kernel: [  456.729170] Intel machine check architecture supported.
+>> Feb 24 14:00:20 alekhine kernel: [  456.729170] Intel machine check reporting enabled on CPU#0.
+>> Feb 24 14:00:20 alekhine kernel: [  456.733181] Velocity is AUTO mode
+>> Feb 24 14:00:20 alekhine kernel: [  456.733182] ACPI: PCI Interrupt 0000:00:0f.0[B] -> Link [ALKA] -> GSI 20 (level, low) -> IRQ 20
+>> Feb 24 14:00:20 alekhine kernel: [  456.733184] ACPI: PCI Interrupt 0000:00:0f.1[A] -> Link [ALKA] -> GSI 20 (level, low) -> IRQ 20
+>> Feb 24 14:00:20 alekhine kernel: [  456.733185] ACPI: PCI Interrupt 0000:00:10.0[A] -> GSI 21 (level, low) -> IRQ 21
+>> Feb 24 14:00:20 alekhine kernel: [  456.733185] usb usb2: root hub lost power or was reset
+>> Feb 24 14:00:20 alekhine kernel: [  456.744080] ACPI: PCI Interrupt 0000:00:10.1[A] -> GSI 21 (level, low) -> IRQ 21
+>> Feb 24 14:00:20 alekhine kernel: [  456.744080] usb usb3: root hub lost power or was reset
+>> Feb 24 14:00:20 alekhine kernel: [  456.754997] ACPI: PCI Interrupt 0000:00:10.2[B] -> GSI 21 (level, low) -> IRQ 21
+>> Feb 24 14:00:20 alekhine kernel: [  456.754997] usb usb4: root hub lost power or was reset
+>> Feb 24 14:00:20 alekhine kernel: [  456.765914] ACPI: PCI Interrupt 0000:00:10.3[B] -> GSI 21 (level, low) -> IRQ 21
+>> Feb 24 14:00:20 alekhine kernel: [  456.765914] usb usb5: root hub lost power or was reset
+>> Feb 24 14:00:20 alekhine kernel: [  456.776818] ACPI: PCI Interrupt 0000:00:10.4[C] -> GSI 21 (level, low) -> IRQ 21
+>> Feb 24 14:00:20 alekhine kernel: [  456.787745] ACPI: PCI Interrupt 0000:00:11.5[C] -> GSI 22 (level, low) -> IRQ 22
+>> Feb 24 14:00:20 alekhine kernel: [  456.789881] ACPI: PCI Interrupt 0000:01:00.0[A] -> GSI 16 (level, low) -> IRQ 16
+>> Feb 24 14:00:20 alekhine kernel: [  456.789961] sd 3:0:0:0: [sda] Starting disk
+>> Feb 24 14:00:20 alekhine kernel: [  457.031803] ata3.01: ACPI cmd ef/03:0c:00:00:00:b0 filtered out
+>> Feb 24 14:00:20 alekhine kernel: [  457.031803] ata3.01: ACPI cmd ef/03:42:00:00:00:b0 filtered out
+>> Feb 24 14:00:20 alekhine kernel: [  457.185224] ata3.00: ACPI cmd ef/03:0c:00:00:00:a0 filtered out
+>> Feb 24 14:00:20 alekhine kernel: [  457.185224] ata3.00: ACPI cmd ef/03:42:00:00:00:a0 filtered out
+>> Feb 24 14:00:20 alekhine kernel: [  457.340841] ata3.00: configured for UDMA/33
+>> Feb 24 14:00:20 alekhine kernel: [  457.528347] ata3.01: configured for UDMA/33
+>> Feb 24 14:00:20 alekhine kernel: [  460.975795] ata4.00: ACPI cmd ef/03:0c:00:00:00:a0 filtered out
+>> Feb 24 14:00:20 alekhine kernel: [  460.975795] ata4.00: ACPI cmd ef/03:45:00:00:00:a0 filtered out
+>> Feb 24 14:00:20 alekhine kernel: [  460.978040] ata4.00: configured for UDMA/100
+>> Feb 24 14:00:20 alekhine kernel: [  460.981191] sd 3:0:0:0: [sda] 156301488 512-byte hardware sectors (80026 MB)
+>> Feb 24 14:00:20 alekhine kernel: [  460.981191] sd 3:0:0:0: [sda] Write Protect is off
+>> Feb 24 14:00:20 alekhine kernel: [  460.981191] sd 3:0:0:0: [sda] Write cache: enabled, read cache: enabled, doesn't support DPO or FUA
+>> Feb 24 14:00:20 alekhine kernel: [  461.524370] Restarting tasks ... <6>usb 2-1: USB disconnect, address 2
+>> Feb 24 14:00:20 alekhine kernel: [  461.569374] done.
+>> Feb 24 14:00:21 alekhine kernel: [  461.755858] usb 2-1: new low speed USB device using uhci_hcd and address 4
+>> Feb 24 14:00:21 alekhine kernel: [  461.915256] usb 2-1: configuration #1 chosen from 1 choice
+>> Feb 24 14:00:21 alekhine kernel: [  461.955599] input: Logitech USB Mouse as /devices/pci0000:00/0000:00:10.0/usb2/2-1/2-1:1.0/input/input5
+>> Feb 24 14:00:21 alekhine kernel: [  461.979344] input: USB HID v1.10 Mouse [Logitech USB Mouse] on usb-0000:00:10.0-1
+>> Feb 24 14:00:21 alekhine kernel: [  461.979553] usb 2-2: USB disconnect, address 3
+>> Feb 24 14:00:21 alekhine kernel: [  462.236114] usb 2-2: new low speed USB device using uhci_hcd and address 5
+>> Feb 24 14:00:21 alekhine kernel: [  462.405538] usb 2-2: configuration #1 chosen from 1 choice
+>> Feb 24 14:00:21 alekhine kernel: [  462.439929] input: Microsoft Microsoft® Digital Media Pro Keyboard as /devices/pci0000:00/0000:00:10.0/usb2/2-2/2-2:1.0/input/input6
+>> Feb 24 14:00:21 alekhine kernel: [  462.463834] input: USB HID v1.11 Keyboard [Microsoft Microsoft® Digital Media Pro Keyboard] on usb-0000:00:10.0-2
+>> Feb 24 14:00:21 alekhine kernel: [  462.492181] input: Microsoft Microsoft® Digital Media Pro Keyboard as /devices/pci0000:00/0000:00:10.0/usb2/2-2/2-2:1.1/input/input7
+>> Feb 24 14:00:21 alekhine kernel: [  462.517592] input: USB HID v1.11 Device [Microsoft Microsoft® Digital Media Pro Keyboard] on usb-0000:00:10.0-2
