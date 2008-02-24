@@ -1,56 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757888AbYBXAst@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758028AbYBXAup@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757888AbYBXAst (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 23 Feb 2008 19:48:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751681AbYBXAsm
+	id S1758028AbYBXAup (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 23 Feb 2008 19:50:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752262AbYBXAui
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 23 Feb 2008 19:48:42 -0500
-Received: from gepetto.dc.ltu.se ([130.240.42.40]:37633 "EHLO
-	gepetto.dc.ltu.se" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751030AbYBXAsm (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 23 Feb 2008 19:48:42 -0500
-Message-ID: <47C0BEE7.4040409@student.ltu.se>
-Date: Sun, 24 Feb 2008 01:48:39 +0100
-From: Richard Knutsson <ricknu-0@student.ltu.se>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
-MIME-Version: 1.0
-To: Linux kernel mailing list <linux-kernel@vger.kernel.org>
-Subject: Tabs, spaces, indent and 80 character lines
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Sat, 23 Feb 2008 19:50:38 -0500
+Received: from nat-132.atmel.no ([80.232.32.132]:53485 "EHLO relay.atmel.no"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751681AbYBXAuh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 23 Feb 2008 19:50:37 -0500
+Date: Sun, 24 Feb 2008 01:50:38 +0100
+From: Haavard Skinnemoen <hskinnemoen@atmel.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Jeff Garzik <jeff@garzik.org>, linux-kernel@vger.kernel.org,
+       Atsushi Nemoto <anemo@mba.ocn.ne.jp>
+Subject: Re: [PATCH] macb: Fix speed setting
+Message-ID: <20080224015038.3950a0de@siona>
+In-Reply-To: <20080223000323.ac3eafa4.akpm@linux-foundation.org>
+References: <20080221.225054.61509660.anemo@mba.ocn.ne.jp>
+	<1203612065-18192-1-git-send-email-hskinnemoen@atmel.com>
+	<20080223000323.ac3eafa4.akpm@linux-foundation.org>
+Organization: Atmel
+X-Mailer: Claws Mail 3.3.0 (GTK+ 2.12.8; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Good evening
+On Sat, 23 Feb 2008 00:03:23 -0800
+Andrew Morton <akpm@linux-foundation.org> wrote:
 
-In the thread "Merging of completely unreviewed drivers" I got reminded 
-of the "use tabs not spaces"-mentality.
-My question is: why?
+> On Thu, 21 Feb 2008 17:41:05 +0100 Haavard Skinnemoen <hskinnemoen@atmel.com> wrote:
+> 
+> > From: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
+> > 
+> > Fix NCFGR.SPD setting on 10Mbps.  This bug was introduced by
+> > conversion to generic PHY layer in kernel 2.6.23.  
+> 
+> So..  shouldn't we fix it in 2.6.23.x and 2.6.24.x?
 
-The tab-character serves us well as a indent-indicator, but for some 
-reason there has been focus on its relation to spaces. On the question 
-"How long should a line at maximum be?" it is relevant (the question is 
-not [1]). So it is set to be as wide as 8 spaces, but when did it become 
-a replacement for 8 spaces? Why hinder a developer who prefer 2, 4, 6 or 
-any other != 8 width? By only using tabs as indents, and changing the 
-CodeStyle to be something like "maximum 80 characters-wide lines, with a 
-tab-setting of 8 spaces", that is possible + easier to write 
-code-checkers [2].
+Absolutely. I'll send it to the stable team after it hits mainline.
 
-Or are we really that concerned about the disk-space? ;)
-
-2 cents away...
-/Richard Knutsson
-
-[1] As has been pointed out by many, it is the complexity that matters 
-(code-checker). A short line can be overly complicated and still under 
-80 lines and vice versa. Let the editors handle the long lines for the 
-author (even I should be able to write a decent script who can decide 
-where to chop-off the line).
-
-[2] As it is now, it can look like the indentation is ex. ... 2, 2, 5, 
-3, 3... because the second line is split up. (I think it should have 
-been 2, 2, 2, 3, 3 (or even better: 2, 2, 3, 3 ))
-
+Haavard
