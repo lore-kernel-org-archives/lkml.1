@@ -1,61 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758633AbYBXF3e@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759452AbYBXFb1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758633AbYBXF3e (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 24 Feb 2008 00:29:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751394AbYBXF3Y
+	id S1759452AbYBXFb1 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 24 Feb 2008 00:31:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751910AbYBXFbT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 24 Feb 2008 00:29:24 -0500
-Received: from srv5.dvmed.net ([207.36.208.214]:36081 "EHLO mail.dvmed.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751342AbYBXF3X (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 24 Feb 2008 00:29:23 -0500
-Message-ID: <47C100B0.1040408@garzik.org>
-Date: Sun, 24 Feb 2008 00:29:20 -0500
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+	Sun, 24 Feb 2008 00:31:19 -0500
+Received: from bombadil.infradead.org ([18.85.46.34]:57317 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751662AbYBXFbS (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 24 Feb 2008 00:31:18 -0500
+Date: Sun, 24 Feb 2008 00:31:17 -0500
+From: Christoph Hellwig <hch@infradead.org>
+To: Jeff Garzik <jeff@garzik.org>
+Cc: Christoph Hellwig <hch@infradead.org>, linux-scsi@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/1] [SCSI] gdth: misc cleanups, preparation for
+	ISA/EISA hotplug API
+Message-ID: <20080224053117.GA13904@infradead.org>
+References: <017ac0b5a1e36b990eedfb7124c78d58f947f076.1203828195.git.jeff@garzik.org> <20080224045810.GA17051@infradead.org> <47C0FE1F.300@garzik.org>
 MIME-Version: 1.0
-To: Pavel Machek <pavel@ucw.cz>
-CC: kernel list <linux-kernel@vger.kernel.org>,
-       Linux-pm mailing list <linux-pm@lists.osdl.org>,
-       linux-ide@vger.kernel.org
-Subject: Re: power_state: get rid of write-only variable in SATA
-References: <20080221125652.GA23548@elf.ucw.cz>
-In-Reply-To: <20080221125652.GA23548@elf.ucw.cz>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.4 (----)
-X-Spam-Report: SpamAssassin version 3.2.3 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.4 points, 5.0 required)
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <47C0FE1F.300@garzik.org>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Pavel Machek wrote:
-> power_state is scheduled for removal, and libata uses it in write-only
-> mode. Remove it.
-> 
-> Signed-off-by: Pavel Machek <pavel@suse.cz>
-> 
-> diff --git a/drivers/ata/libata-core.c b/drivers/ata/libata-core.c
-> index b4985bc..a31572d 100644
-> --- a/drivers/ata/libata-core.c
-> +++ b/drivers/ata/libata-core.c
-> @@ -6542,8 +6542,6 @@ int ata_host_suspend(struct ata_host *ho
->  	ata_lpm_enable(host);
->  
->  	rc = ata_host_request_pm(host, mesg, 0, ATA_EHI_QUIET, 1);
-> -	if (rc == 0)
-> -		host->dev->power.power_state = mesg;
->  	return rc;
->  }
->  
-> @@ -6562,7 +6560,6 @@ void ata_host_resume(struct ata_host *ho
->  {
->  	ata_host_request_pm(host, PMSG_ON, ATA_EH_SOFTRESET,
->  			    ATA_EHI_NO_AUTOPSY | ATA_EHI_QUIET, 0);
-> -	host->dev->power.power_state = PMSG_ON;
->  
+On Sun, Feb 24, 2008 at 12:18:23AM -0500, Jeff Garzik wrote:
+> hmmmmm.  We'll see how it plays out...  on the remove side, the above is 
+> exact what happens in gdth_remove_one() without my patch, thus 
+> consolidating two cases of the same code into one.  There is a less-strong 
+> argument for doing the allocation that way, but it may turn out to be 
+> useful anyway once the ISA/EISA API conversion is complete.
 
-applied
-
+EISA ->remove has a different prototype from PCI ->remove from ISA
+->remove, so gdth_remove_one will be split up eventually.  Having the
+scsi_host_put duplicated in each shouldn't be too much of a problem :)
 
