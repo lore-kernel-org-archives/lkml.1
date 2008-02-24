@@ -1,49 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756942AbYBXI3j@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757437AbYBXIfj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756942AbYBXI3j (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 24 Feb 2008 03:29:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751826AbYBXI3a
+	id S1757437AbYBXIfj (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 24 Feb 2008 03:35:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751957AbYBXIfb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 24 Feb 2008 03:29:30 -0500
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:2059 "EHLO spitz.ucw.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751573AbYBXI33 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 24 Feb 2008 03:29:29 -0500
-Date: Sun, 24 Feb 2008 09:29:18 +0100
-From: Pavel Machek <pavel@ucw.cz>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Jeff Chua <jeff.chua.linux@gmail.com>,
-       Jesse Barnes <jesse.barnes@intel.com>,
-       Romano Giannetti <romano@dea.icai.upcomillas.es>,
-       Dave Airlie <airlied@linux.ie>, Greg KH <gregkh@suse.de>,
-       lkml <linux-kernel@vger.kernel.org>, linux-acpi@vger.kernel.org,
-       Alexey Starikovskiy <astarikovskiy@suse.de>,
-       pm list <linux-pm@lists.linux-foundation.org>,
-       Len Brown <lenb@kernel.org>, Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH] PM: Introduce PM_EVENT_HIBERNATE (was: Re: i915 hibernation patch (was: Re: 2.6.25-rc2 System no longer ...))
-Message-ID: <20080224082917.GA4784@ucw.cz>
-References: <Pine.LNX.4.64.0802210101050.3576@boston.corp.fedex.com> <alpine.LFD.1.00.0802221805540.21332@woody.linux-foundation.org> <b6a2187b0802222036i33d5bcc2n4e3bafd6d846cc09@mail.gmail.com> <200802231913.27592.rjw@sisk.pl> <alpine.LFD.1.00.0802231041510.21332@woody.linux-foundation.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.1.00.0802231041510.21332@woody.linux-foundation.org>
-User-Agent: Mutt/1.5.9i
+	Sun, 24 Feb 2008 03:35:31 -0500
+Received: from anyanka.rfc1149.net ([81.56.47.149]:38670 "EHLO
+	mail2.rfc1149.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751854AbYBXIfa convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 24 Feb 2008 03:35:30 -0500
+X-Greylist: delayed 608 seconds by postgrey-1.27 at vger.kernel.org; Sun, 24 Feb 2008 03:35:29 EST
+To: Andi Kleen <andi@firstfloor.org>
+Cc: Arnaldo Carvalho de Melo <acme@redhat.com>, Ingo Molnar <mingo@elte.hu>,
+       linux-kernel@vger.kernel.org
+Subject: Re: Reducing debuginfo size by removing unneeded includes
+References: <20080207230304.GA4352@ghostprotocols.net>
+	<p73ir0mxvby.fsf@bingen.suse.de>
+	<20080224075821.GA7781@uranus.ravnborg.org>
+Date: Sun, 24 Feb 2008 09:25:19 +0100
+In-Reply-To: <20080224075821.GA7781@uranus.ravnborg.org> (Sam Ravnborg's message of "Sun\, 24 Feb 2008 08\:58\:21 +0100")
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.1 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8BIT
+From: Samuel Tardieu <sam@rfc1149.net>
+Organization: RFC 1149 (see http://www.rfc1149.net/)
+X-WWW: http://www.rfc1149.net/sam
+X-Jabber: <sam@rfc1149.net> (see http://www.jabber.org/)
+X-OpenPGP-Fingerprint: 79C0 AE3C CEA8 F17B 0EF1  45A5 F133 2241 1B80 ADE6 (see http://www.gnupg.org/)
+Message-Id: <2008-02-24-09-25-19+trackit+sam@rfc1149.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
+Andy> -feliminate-unused-debug-types -feliminate-unused-debug-symbols
+Andy> -feliminate-dwarf2-dups
 
-> Thanks, applied. 
-> 
-> With this, I also find that I dislike the use of suspend/resume for 
-> freezing for STD a lot less. It's still too easy to get confused, but at 
-> least now drivers always have total knowledge about what is really going 
-> on. I'd not like this interface as a driver writer, but now it's not 
-> fundamentally broken any more, just slightly confusing.
+Sam> google did not turn up anything useful.  Do you have a poiter to
+Sam> where these are described?
 
-Heh, thanks :-).
-							Pavel
+>From GCC (svn) man page:
+
+   -feliminate-unused-debug-symbols
+       Produce debugging information in stabs format (if that is sup‐
+       ported), for only symbols that are actually used.
+
+   -feliminate-unused-debug-types
+       Normally, when producing DWARF2 output, GCC will emit debugging
+       information for all types declared in a compilation unit, regard‐
+       less of whether or not they are actually used in that compilation
+       unit.  Sometimes this is useful, such as if, in the debugger, you
+       want to cast a value to a type that is not actually used in your
+       program (but is declared).  More often, however, this results in a
+       significant amount of wasted space.  With this option, GCC will
+       avoid producing debug symbol output for types that are nowhere used
+       in the source file being compiled.
+
+   -feliminate-dwarf2-dups
+       Compress DWARF2 debugging information by eliminating duplicated
+       information about each symbol.  This option only makes sense when
+       generating DWARF2 debugging information with -gdwarf-2.
+
+ Sam
 -- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Samuel Tardieu -- sam@rfc1149.net -- http://www.rfc1149.net/
+
