@@ -1,42 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757894AbYBXTHf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756126AbYBXTYU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757894AbYBXTHf (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 24 Feb 2008 14:07:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753450AbYBXTH2
+	id S1756126AbYBXTYU (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 24 Feb 2008 14:24:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752887AbYBXTYK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 24 Feb 2008 14:07:28 -0500
-Received: from BISCAYNE-ONE-STATION.MIT.EDU ([18.7.7.80]:34791 "EHLO
-	biscayne-one-station.mit.edu" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752965AbYBXTH2 (ORCPT
+	Sun, 24 Feb 2008 14:24:10 -0500
+Received: from smtp-100-sunday.nerim.net ([62.4.16.100]:62295 "EHLO
+	kraid.nerim.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752384AbYBXTYJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 24 Feb 2008 14:07:28 -0500
-To: linux-kernel@vger.kernel.org
-Subject: CONFIG_FAIR_GROUP_SCHED: setting sched_min_bal_int_shares to 2000?
-From: "Theodore Ts'o" <tytso@MIT.EDU>
-Phone: (781) 391-3464
-Message-Id: <E1JTMC3-0004V9-Vk@closure.thunk.org>
-Date: Sun, 24 Feb 2008 14:07:23 -0500
-X-Spam-Flag: NO
-X-Spam-Score: 0.00
+	Sun, 24 Feb 2008 14:24:09 -0500
+Date: Sun, 24 Feb 2008 20:24:01 +0100
+From: Jean Delvare <khali@linux-fr.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Linux I2C <i2c@lm-sensors.org>, LKML <linux-kernel@vger.kernel.org>
+Subject: [GIT PULL] i2c fixes for 2.6.25
+Message-ID: <20080224202401.4dc26735@hyperion.delvare>
+X-Mailer: Sylpheed-Claws 2.5.5 (GTK+ 2.10.6; x86_64-suse-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Linus,
 
-I recently enabled CONFIG_FAIR_GROUP_SCHED just to play with it, and I
-noticed by default it causes a fair number of wakeups when running on
-battery.   A quick read-through of the sources showed that this could
-easily be fixed by doing:
+Please pull the i2c subsystem fixes for Linux 2.6.25 from:
 
-echo 2000 > /proc/sys/kernel/sched_min_bal_int_shares
+git://jdelvare.pck.nerim.net/jdelvare-2.6 i2c-for-linus
 
-Aside from mostly disabling the CPU load balancing, is this likely to
-cause any massive problems?
 
-Any reason why we shouldn't perhaps do this automatically when we run on
-battery (not necessarily as a kernel thing, but as a userspace policy
-measure)?
+ Documentation/i2c/busses/i2c-i801     |    3 ++-
+ arch/arm/mach-omap1/board-sx1.c       |    2 ++
+ drivers/i2c/busses/Kconfig            |    2 ++
+ drivers/i2c/busses/i2c-i801.c         |   10 ++++++++--
+ drivers/i2c/busses/i2c-pca-isa.c      |    7 +++++++
+ drivers/i2c/busses/i2c-pmcmsp.c       |    4 ++--
+ drivers/i2c/busses/i2c-pxa.c          |   25 ++++++++++++++-----------
+ include/asm-mips/mach-db1x00/db1200.h |    1 +
+ include/asm-mips/mach-db1x00/db1x00.h |    1 +
+ include/asm-mips/mach-pb1x00/pb1200.h |    1 +
+ include/asm-mips/mach-pb1x00/pb1550.h |    1 +
+ include/linux/i2c.h                   |   11 +++++++++--
+ 12 files changed, 50 insertions(+), 18 deletions(-)
+
+---------------
+
+Christian Krafft (1):
+      i2c-pca-isa: Add access check to legacy ioports
+
+David Brownell (1):
+      i2c: Make i2c_register_board_info() a NOP when CONFIG_I2C_BOARDINFO=n
+
+Gaston, Jason D (1):
+      i2c-i801: Add support for the ICH10
+
+Jean Delvare (1):
+      ARM: OMAP: Release i2c_adapter after use (Siemens SX1)
+
+Manuel Lauss (1):
+      Alchemy: compile fix
+
+Tobias Klauser (1):
+      i2c: Storage class should be before const qualifier
+
+Wolfram Sang (1):
+      i2c-pxa: Misc fixes
 
 Thanks,
-
-					- Ted
+-- 
+Jean Delvare
