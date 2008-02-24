@@ -1,66 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758980AbYBXULY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755069AbYBXURl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758980AbYBXULY (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 24 Feb 2008 15:11:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757587AbYBXULI
+	id S1755069AbYBXURl (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 24 Feb 2008 15:17:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752594AbYBXURc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 24 Feb 2008 15:11:08 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:54206 "EHLO ogre.sisk.pl"
+	Sun, 24 Feb 2008 15:17:32 -0500
+Received: from smtp5.pp.htv.fi ([213.243.153.39]:52727 "EHLO smtp5.pp.htv.fi"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754628AbYBXULG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 24 Feb 2008 15:11:06 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: "Zdenek Kabelac" <zdenek.kabelac@gmail.com>
-Subject: Re: [Bug 10030] Suspend doesn't work when SD card is inserted
-Date: Sun, 24 Feb 2008 21:09:47 +0100
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: "Alan Stern" <stern@rowland.harvard.edu>,
-       "Pierre Ossman" <drzeus-mmc@drzeus.cx>,
-       "Kernel development list" <linux-kernel@vger.kernel.org>,
-       "pm list" <linux-pm@lists.linux-foundation.org>
-References: <200802241451.17334.rjw@sisk.pl> <Pine.LNX.4.44L0.0802241409320.11316-100000@netrider.rowland.org> <c4e36d110802241142t9cb340dpc42a2d89166beb7b@mail.gmail.com>
-In-Reply-To: <c4e36d110802241142t9cb340dpc42a2d89166beb7b@mail.gmail.com>
+	id S1752570AbYBXURb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 24 Feb 2008 15:17:31 -0500
+Date: Sun, 24 Feb 2008 22:16:34 +0200
+From: Adrian Bunk <bunk@kernel.org>
+To: robert@schwebel.de,
+       James Bottomley <James.Bottomley@hansenpartnership.com>,
+       "Martin J. Bligh" <mbligh@aracnet.com>, pazke@donpac.ru,
+       florian.fainelli@telecomint.eu,
+       Ravikiran Thirumalai <kiran@scalemp.com>,
+       Shai Fultheim <shai@scalemp.com>
+Cc: linux-kernel@vger.kernel.org, linux-visws-devel@lists.sourceforge.net
+Subject: defconfig's for all x86 subarchitectures
+Message-ID: <20080224201634.GD1596@cs181133002.pp.htv.fi>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-Message-Id: <200802242109.48573.rjw@sisk.pl>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday, 24 of February 2008, Zdenek Kabelac wrote:
-> 2008/2/24, Alan Stern <stern@rowland.harvard.edu>:
-> > On Sun, 24 Feb 2008, Rafael J. Wysocki wrote:
-> >
-> >
-> > > > You know, with this new patch we probably don't need
-> >  > > device_pm_schedule_removal() any more.
-> >  >
-> >  > No, we don't.  However, because of that dpm_suspend() and device_power_down()
-> >  > need to be changed not to assume that the removed devices will end up on
-> >  > dpm_destroy.
-> >
-> >
-> >  with analogous changes to dpm_suspend().
-> >
-> >  Any more suggestions for updates?
-> >
-> 
-> Is there any current patch I should actually test - it looks there is
-> ongoing discussion from the time Rafael has proposed his last patch to
-> check by me: http://bugzilla.kernel.org/attachment.cgi?id=14961&action=view
-> 
-> But I think it's visible the only suspend update will not resolve my
-> problems and the problems is deeper in the mmc.
+For compile tests it would be nice it we had at least for each 
+subarchitecture not covered by X86_GENERICARCH a defconfig.
 
-Yes, there are problems in there, but your feedback is needed nevertheless.
- 
-> So should I still test yesterdays' patch ?
+These are the following subarchitectures:
+- X86_ELAN
+- X86_VOYAGER
+- X86_NUMAQ
+- X86_VISWS
+- X86_RDC321X
+- X86_VSMP
 
-Yes please.  It will be valuable information to us whether it fixes the suspend
-issue at least.
+A defconfig is nothing special, it's enough to simply put the .config 
+used for one machine into arch/x86/configs/ .
 
-Thanks,
-Rafael
+Thanks in advance
+Adrian
+
+-- 
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
+
