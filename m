@@ -1,57 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758514AbYBXDHH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758579AbYBXDIu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758514AbYBXDHH (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 23 Feb 2008 22:07:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751161AbYBXDG4
+	id S1758579AbYBXDIu (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 23 Feb 2008 22:08:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751132AbYBXDIm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 23 Feb 2008 22:06:56 -0500
-Received: from smtp-out.google.com ([216.239.33.17]:8201 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751124AbYBXDGz (ORCPT
+	Sat, 23 Feb 2008 22:08:42 -0500
+Received: from an-out-0708.google.com ([209.85.132.244]:19635 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751089AbYBXDIl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 23 Feb 2008 22:06:55 -0500
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=received:message-id:date:from:to:subject:cc:in-reply-to:
-	mime-version:content-type:content-transfer-encoding:
-	content-disposition:references;
-	b=X7XVK3/PDqCR6KCeamUaPne7s4hVtX9oH7BepkHo/ESg8n6M4XIqzrh9nBFb5ei92
-	2l2qmGbGj0t0LdXJwvulg==
-Message-ID: <6599ad830802231906k3ae0e30fvcda453d7afc4d907@mail.gmail.com>
-Date: Sat, 23 Feb 2008 19:06:45 -0800
-From: "Paul Menage" <menage@google.com>
-To: balbir@linux.vnet.ibm.com
-Subject: Re: [PATCH 2/2] ResCounter: Use read_uint in memory controller
-Cc: "Andrew Morton" <akpm@linux-foundation.org>, xemul@openvz.org,
-       balbir@in.ibm.com, linux-kernel@vger.kernel.org, linux-mm@kvack.org
-In-Reply-To: <47C0DAD8.8050401@linux.vnet.ibm.com>
+	Sat, 23 Feb 2008 22:08:41 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
+        b=XfyITC4sRzFvI4PgnRbkyStWfdWR+cZrua/cC14H4m73Lyt3Xfku/aVSPhfnIoaLDREm6BKf5dfrxpjKAXpz5mx0osqmNNK5HgBb6IrRWNZ+LUyZ6mVC7mpUCE9/dkCWa5D7UU/VQs+spKUyRp5n4qE/tC4EOAcloL4Tyrl84PQ=
+Message-ID: <998d0e4a0802231908h37978d07wa5379d5c01b2c2ee@mail.gmail.com>
+Date: Sun, 24 Feb 2008 04:08:38 +0100
+From: "J.C. Pizarro" <jcpiza@gmail.com>
+To: LKML <linux-kernel@vger.kernel.org>,
+       "Linus Torvalds" <torvalds@linux-foundation.org>
+Subject: Please, put 64-bit counter per task and incr.by.one each ctxt switch.
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <20080221203518.544461000@menage.corp.google.com>
-	 <20080221205525.349180000@menage.corp.google.com>
-	 <47BE4FB5.5040902@linux.vnet.ibm.com>
-	 <6599ad830802230633i483c8dd1q5b541be1a92a5795@mail.gmail.com>
-	 <20080223105933.e6884808.akpm@linux-foundation.org>
-	 <47C0DAD8.8050401@linux.vnet.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Feb 23, 2008 at 6:47 PM, Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
->  >> res_counter_read_u64() I'd also want to rename all the other
->  >> *read_uint functions/fields to *read_u64 too. Can I do that in a
->  >> separate patch?
->  >>
->  >
->  > Sounds sensible to me.
->  >
->
->  Sure, fair enough.
->
+Hello,
 
-Actually, since multiple people were asking for this change I did the
-search/replace and sent it out already (as a precursor of the other
-patches in the series that I sent today).
+We will need 64 bit counters of the slow context switches,
+  one counter for each new created task (e.g. u64 ctxt_switch_counts;)
 
-Paul
+We will only need them during the lifetime of the tasks.
+
+To increment by +1 the task's 64 bit counter (it's fast)
+  each one slow context switch.
+
+*kernel/sched.c:
+void context_switch(...) { ... } # incr. +1 here.
+void wake_up_new_task(...) { ... } # ->ctxt_switch_counts = 0ULL;
+
+*include/linux/sched.h:
+struct task_struct { ... } # add 64-bit (u64 ctxt_switch_counts;) here.
+
+Please, do it and we can do it better than CFS fair scheduler.
+
+I will explain your later why of it.
+
+   O:)
