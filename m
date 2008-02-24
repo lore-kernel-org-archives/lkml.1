@@ -1,107 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754418AbYBXNNA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756633AbYBXNNt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754418AbYBXNNA (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 24 Feb 2008 08:13:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752403AbYBXNMu
+	id S1756633AbYBXNNt (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 24 Feb 2008 08:13:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755313AbYBXNNj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 24 Feb 2008 08:12:50 -0500
-Received: from ti-out-0910.google.com ([209.85.142.184]:50319 "EHLO
-	ti-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752376AbYBXNMt (ORCPT
+	Sun, 24 Feb 2008 08:13:39 -0500
+Received: from BISCAYNE-ONE-STATION.MIT.EDU ([18.7.7.80]:44525 "EHLO
+	biscayne-one-station.mit.edu" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755310AbYBXNNi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 24 Feb 2008 08:12:49 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=jUFudEMS8rymelMDXG1bpKPA+c7jd+ZsVJY7FTRIOO0ws7EybpVKxs9HuRnC4r1Sqld9ea1sPE97wu/wCgTA9WElLQUWP6wG5Up8qUUfe60/PcgX1a/eW3jxa3oBg3V52PO/xXXtBgs5qN5Si1CyiYuzwMbZUN7MsaO4DopDPGI=
-Message-ID: <998d0e4a0802240512t859c5a1y3c30bd401530a43@mail.gmail.com>
-Date: Sun, 24 Feb 2008 14:12:47 +0100
-From: "J.C. Pizarro" <jcpiza@gmail.com>
-To: "Rik van Riel" <riel@redhat.com>, "Mike Galbraith" <efault@gmx.de>,
-       LKML <linux-kernel@vger.kernel.org>,
-       "Linus Torvalds" <torvalds@linux-foundation.org>
-Subject: Re: Please, put 64-bit counter per task and incr.by.one each ctxt switch.
-In-Reply-To: <20080223232651.41dffa72@bree.surriel.com>
+	Sun, 24 Feb 2008 08:13:38 -0500
+Date: Sun, 24 Feb 2008 08:10:02 -0500
+From: Theodore Tso <tytso@MIT.EDU>
+To: John Levon <levon@movementarian.org>
+Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
+       Arjan van de Ven <arjan@infradead.org>, linux-kernel@vger.kernel.org,
+       sandmann@redhat.com, tglx@tglx.de, hpa@zytor.com
+Subject: Re: [PATCH] x86: add the debugfs interface for the sysprof tool
+Message-ID: <20080224131001.GA7150@mit.edu>
+Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
+	John Levon <levon@movementarian.org>, Ingo Molnar <mingo@elte.hu>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	Arjan van de Ven <arjan@infradead.org>,
+	linux-kernel@vger.kernel.org, sandmann@redhat.com, tglx@tglx.de,
+	hpa@zytor.com
+References: <20080219123756.6261c13c@laptopd505.fenrus.org> <20080223001130.d8922136.akpm@linux-foundation.org> <20080223113724.GB31304@elte.hu> <20080223135335.GA28464@totally.trollied.org.uk>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <998d0e4a0802231908h37978d07wa5379d5c01b2c2ee@mail.gmail.com>
-	 <20080223221750.429cf0d9@bree.surriel.com>
-	 <998d0e4a0802232008w5c6566f0se15ab749ec6f1ceb@mail.gmail.com>
-	 <20080223232651.41dffa72@bree.surriel.com>
+In-Reply-To: <20080223135335.GA28464@totally.trollied.org.uk>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+X-Spam-Flag: NO
+X-Spam-Score: 0.00
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Good morning :)
+On Sat, Feb 23, 2008 at 01:53:35PM +0000, John Levon wrote:
+> On Sat, Feb 23, 2008 at 12:37:24PM +0100, Ingo Molnar wrote:
+> 
+> > It's 200 lines of pretty well isolated code for something that is 
+> > already much more usable to me than 10 years of oprofile. Really, i'd 
+> > much rather take 200 lines of poor kernel code written by a userspace 
+> > developer for stuff that _already works better_, than to have ~2000 
+> > lines of oprofile code and an unusable (to me) user-space tool written 
+> > by kernel developers.
 
-On 2008/2/24, Rik van Riel <riel@redhat.com> wrote:
-> OK, one last reply on the (overly optimistic?) assumption that you are not a troll.
->  > +++ linux-2.6_git-20080224/include/linux/sched.h        2008-02-24
->  > 04:50:18.000000000 +0100
->  > @@ -1007,6 +1007,12 @@
->  >         struct hlist_head preempt_notifiers;
->  >  #endif
->  >
->  > +       unsigned long long ctxt_switch_counts; /* 64-bit switches' count */
->  > +       /* ToDo:
->  > +        *  To implement a poller/clock for CPU-scheduler that only reads
->  > +        *   these counts of context switches of the runqueue's tasks.
->  > +        *  No problem if this poller/clock is not implemented. */
->
-> So you're introducing a statistic, but have not yet written any code
->  that uses it?
+I think it's fair to say that oth oprofile and sysprof can use some
+improvements.  There are a couple of questions that immediately come
+to mind, including the most obvious one, *if* as you John clams, the
+oprofile kernel had all of the functionality for the GUI, why wasn't
+it used --- could it *perhaps* because the kernel interface for
+oprofile wasn't documented well?  Heck, even if sysprof is 200 lines
+of code versus 2000 lines of kernel code, most people don't write
+extra code unless it's because the 2000 lines of pre-existing code
+isn't well documented enough.
 
-It's statistic, yes, but it's a very important parameter for the CPU-scheduler.
-The CPU-scheduler will know the number of context switches of each task
- before of to take a blind decision into infinitum!.
+> Firstly, the distributions should have set this up automatically. That
+> they don't is a distributor bug. The sheer madness of Linux not leaving
+> a vmlinux file in a stable known location is hardly something oprofile
+> can be blamed for.
 
-Statistically, there are tasks X that have higher context switches and
-tasks Y that have lower context switches in the last sized interval with the
- historical formula "(alpha-1)*prev + alpha*current" 0 < alpha < 1.
-(measure this value V as a velocity of number of ctxt-switches/second too)
+Wrong Answer.  People who write userspace helpers *have* to do the
+work of the distro's.  It's a bad, bad, bad, Bad, BAD idea to leave it
+up to the distributions.  It means that some distributions won't get
+it right; other distributions will do it in different ways, making it
+harder for users to switch between distro's and making it harder for
+people to write distribution-neutral HOWTO's.
 
-      Put more weight to X than to Y for more interactivity that X want.
-      (X will have more higher V and Y more lower V).
-      With an exception for avoid the eternal humble, to do sin(x) behaviour
-       after of a long period of humble (later to modify the weights).
+There are plenty of things that can be done, including using search
+paths to try to find vmlinuz; or maybe even proposing a new standard
+such as say for example /lib/modules/`uname -r`/vmlinux being a
+synlink to the location of vmlinux.  We already have
+/lib/modules/`uname -r`/build and /lib/modules/`uname -r`/source, for
+example.
 
-The missing code has to be implemented between everybodies because
-1. Users wann't lose interactivity in overloaded CPU.
-2. There are much code of CPU-schedulers bad organizated that i wann't
-     touch it.
+The abdication of responsibility and the lack of trying to solve the
+usability issues is one of the things that really worries me about
+*all* of Linux's RAS tools.  We can and should do better!  And it's
+really embarassing that the RAS maintainers seem (I assume you are one
+of the oprofile maintainers), seem to be blaming this on the victims,
+the people who are complaining about using *your* tool.  Yes, it's a
+shame that Ingo didn't try to fix your tool; open source, and scratch
+your own itch and all of that.  To be sure.  But at the *same* *time*
+don't you have enough pride to take a look at a tools which so
+obviously has massive lacks in the usability department, and tried to
+fix it years ago?  There's more than enough blame to go around twenty
+times over, I would think.
 
->  > +       p->ctxt_switch_counts = 0ULL; /* task's 64-bit counter inited 0 */
->
-> Because we can all read C, there is no need to tell people in comments
->  what the code does.  Comments are there to explain why the code does
->  things, if an explanation is needed.
-
-OK.
-
->  > >  > I will explain your later why of it.
->  > >
->  > > ... and explain exactly why the kernel needs this extra code.
->  >
->  > One reason: for the objective of gain interactivity, it's an issue that
->  >  CFS fair scheduler lacks it.
-
-> Your patch does not actually help interactivity, because all it does
->  is add an irq spinlock in a hot path (bad idea) and a counter which
->  nothing reads.
-
-Then remove the lock/unlock of the task that i'd put it,
-i'm not sure if it's secure because i didn't read all the control of the road.
-
-On 2008/2/24, Mike Galbraith <efault@gmx.de> wrote:
->  > One reason: for the objective of gain interactivity, it's an issue that
->  >  CFS fair scheduler lacks it.
->
-> A bug report would be a much better first step toward resolution of any
->  interactivity issues you're seeing than posts which do nothing but
->  suggest that there may be a problem.
->
->  First define the problem, _then_ fix it.
-
-It's blind eternal problem in overloaded CPU scenario in the desktops.
+						- Ted
