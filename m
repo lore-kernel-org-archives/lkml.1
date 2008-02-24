@@ -1,47 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755029AbYBXIVo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756052AbYBXI0R@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755029AbYBXIVo (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 24 Feb 2008 03:21:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751335AbYBXIVf
+	id S1756052AbYBXI0R (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 24 Feb 2008 03:26:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751573AbYBXI0C
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 24 Feb 2008 03:21:35 -0500
-Received: from revol1.enst.fr ([137.194.2.7]:50334 "EHLO smtp2.enst.fr"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751180AbYBXIVe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 24 Feb 2008 03:21:34 -0500
-X-Greylist: delayed 655 seconds by postgrey-1.27 at vger.kernel.org; Sun, 24 Feb 2008 03:21:34 EST
-From: Samuel Tardieu <sam@rfc1149.net>
-Date: Sun, 24 Feb 2008 09:06:01 +0100
-Subject: [PATCH] ps3: Fix "unlikely" incorrect usage
-Organisation: RFC1149 (see http://www.rfc1149.net/)
-To: linux-kernel@vger.kernel.org
-Cc: Geoff Levand <geoffrey.levand@am.sony.com>, linuxppc-dev@ozlabs.org,
-       cbe-oss-dev@ozlabs.org
-Message-Id: <20080224081037.D492320AFF@arrakis.enst.fr>
+	Sun, 24 Feb 2008 03:26:02 -0500
+Received: from ch-smtp02.sth.basefarm.net ([80.76.149.213]:37253 "EHLO
+	ch-smtp02.sth.basefarm.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751226AbYBXI0A (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 24 Feb 2008 03:26:00 -0500
+X-Mailer: exmh version 2.7.2 04/02/2003 (gentoo 2.7.2) with nmh-1.2
+To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+cc: Anders Eriksson <aeriksson@fastmail.fm>, Mark Lord <liml@rtr.ca>,
+       Jeff Garzik <jeff@garzik.org>, linux-kernel@vger.kernel.org,
+       Linux IDE mailing list <linux-ide@vger.kernel.org>,
+       Jens Axboe <jens.axboe@oracle.com>
+Subject: Re: 2.6.25-rc2 + smartd = hang 
+In-reply-to: <200802240012.36571.bzolnier@gmail.com> 
+References: <20080222165122.8D2BB93C12F@tippex.mynet.homeunix.org> <20080222213932.3403F93C12F@tippex.mynet.homeunix.org> <20080223221721.5C8502DC002@tippex.mynet.homeunix.org> <200802240012.36571.bzolnier@gmail.com>
+Comments: In-reply-to Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+   message dated "Sun, 24 Feb 2008 00:12:36 +0100."
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Date: Sun, 24 Feb 2008 09:25:47 +0100
+From: Anders Eriksson <aeriksson@fastmail.fm>
+Message-Id: <20080224082547.84F542DC002@tippex.mynet.homeunix.org>
+X-Originating-IP: 83.252.237.4
+X-Scan-Result: No virus found in message 1JTCBE-0000Qr-6o.
+X-Scan-Signature: ch-smtp02.sth.basefarm.net 1JTCBE-0000Qr-6o fb426345a27f1d6d88caeef7d9f60bff
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Fix unlikely(plug) == NO_IRQ into unlikely(plug == NO_IRQ).
 
-Signed-off-by: Samuel Tardieu <sam@rfc1149.net>
----
- arch/powerpc/platforms/ps3/interrupt.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+bzolnier@gmail.com said:
+> Could you try bisecting it down to the guilty commit using git-bisect?
+> [ the "old" stuff got few hundred commits in 2.6.25 ]
+> Thanks, Bart 
 
-diff --git a/arch/powerpc/platforms/ps3/interrupt.c b/arch/powerpc/platforms/ps3/interrupt.c
-index 3a6db04..a14e5cd 100644
---- a/arch/powerpc/platforms/ps3/interrupt.c
-+++ b/arch/powerpc/platforms/ps3/interrupt.c
-@@ -709,7 +709,7 @@ static unsigned int ps3_get_irq(void)
- 	asm volatile("cntlzd %0,%1" : "=r" (plug) : "r" (x));
- 	plug &= 0x3f;
- 
--	if (unlikely(plug) == NO_IRQ) {
-+	if (unlikely(plug == NO_IRQ)) {
- 		pr_debug("%s:%d: no plug found: thread_id %lu\n", __func__,
- 			__LINE__, pd->thread_id);
- 		dump_bmp(&per_cpu(ps3_private, 0));
--- 
-1.5.4.2.197.g22c43
+Will do. It'll take a while though. Not a fast machine and used by the 
+household...
+
+/A
 
