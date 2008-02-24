@@ -1,58 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759942AbYBXQei@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759535AbYBXQfs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759942AbYBXQei (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 24 Feb 2008 11:34:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758526AbYBXQe1
+	id S1759535AbYBXQfs (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 24 Feb 2008 11:35:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752482AbYBXQfi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 24 Feb 2008 11:34:27 -0500
-Received: from mga11.intel.com ([192.55.52.93]:52221 "EHLO mga11.intel.com"
+	Sun, 24 Feb 2008 11:35:38 -0500
+Received: from ns.store20.com ([212.7.7.16]:37325 "EHLO store20.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754885AbYBXQe0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 24 Feb 2008 11:34:26 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.25,397,1199692800"; 
-   d="scan'208";a="301331955"
-Date: Sun, 24 Feb 2008 08:30:41 -0800
-From: "Siddha, Suresh B" <suresh.b.siddha@intel.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Suresh Siddha <suresh.b.siddha@intel.com>, hpa@zytor.com,
-       tglx@linutronix.de, andi@firstfloor.org, linux-kernel@vger.kernel.org,
-       Arjan van de Ven <arjan@linux.intel.com>, hch@infradead.org
-Subject: Re: [patch 1/2] x86,fpu: split FPU state from task struct
-Message-ID: <20080224163041.GC27194@linux-os.sc.intel.com>
-References: <20080224023547.264625000@linux-os.sc.intel.com> <20080224072202.GB655@elte.hu>
+	id S1752354AbYBXQfh convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 24 Feb 2008 11:35:37 -0500
+Subject: Re: [PATCH] x86: fix build on non-C locales.
+From: Priit Laes <plaes@plaes.org>
+To: Sam Ravnborg <sam@ravnborg.org>
+Cc: linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
+       Ingo Molnar <mingo@elte.hu>
+In-Reply-To: <20080224090324.GA8169@uranus.ravnborg.org>
+References: <1203807950.12128.4.camel@localhost>
+	 <20080224090324.GA8169@uranus.ravnborg.org>
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8BIT
+Date: Sun, 24 Feb 2008 18:36:05 +0200
+Message-Id: <1203870965.17891.16.camel@localhost>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080224072202.GB655@elte.hu>
-User-Agent: Mutt/1.4.1i
+X-Mailer: Evolution 2.21.91 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Feb 24, 2008 at 08:22:02AM +0100, Ingo Molnar wrote:
-> 
-> * Suresh Siddha <suresh.b.siddha@intel.com> wrote:
-> 
-> > Split the FPU save area from the task struct. This allows easy 
-> > migration of FPU context, and it's generally cleaner. It also allows 
-> > the following two optimizations:
-> > 
-> > 1) only allocate when the application actually uses FPU, so in the 
-> > first lazy FPU trap. This could save memory for non-fpu using apps. 
-> > Next patch does this lazy allocation.
-> > 
-> > 2) allocate the right size for the actual cpu rather than 512 bytes 
-> > always. Patches enabling xsave/xrstor support (coming shortly) will 
-> > take advantage of this.
-> 
-> i like the concept. Please clean up the issues found by Christoph and 
-> please also base it against x86.git#testing [this is clear 2.6.26 
-> material and there are already some changes in this area]:
-> 
->    http://people.redhat.com/mingo/x86.git/README
 
-Sure. Will do that in a day.
+Ühel kenal päeval, P, 2008-02-24 kell 10:03, kirjutas Sam Ravnborg:
+> Hi Prit.
+> 
+> Could we just use [[:alnum:]] and drop the setting of LC_ALL?
+Yes, it works. Reverted the previous patch and did this:
 
-thanks,
-suresh
+diff --git a/arch/x86/vdso/Makefile b/arch/x86/vdso/Makefile
+index f385a4b..b8bd0c4 100644
+--- a/arch/x86/vdso/Makefile
++++ b/arch/x86/vdso/Makefile
+@@ -48,7 +48,7 @@ obj-$(VDSO64-y)                       += vdso-syms.lds
+ # Match symbols in the DSO that look like VDSO*; produce a file of
+constants.
+ #
+ sed-vdsosym := -e 's/^00*/0/' \
+-       -e 's/^\([0-9a-fA-F]*\) . \(VDSO[a-zA-Z0-9_]*\)$$/\2 = 0x\1;/p'
++       -e 's/^\([[:xdigit:]]*\) . \(VDSO[[:alnum:]_]*\)$$/\2 = 0x\1;/p'
+ quiet_cmd_vdsosym = VDSOSYM $@
+       cmd_vdsosym = $(NM) $< | sed -n $(sed-vdsosym) | LC_ALL=C sort >
+$@
+
