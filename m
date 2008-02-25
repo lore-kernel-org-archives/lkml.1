@@ -1,47 +1,137 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755393AbYBYPGh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756183AbYBYPG4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755393AbYBYPGh (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 Feb 2008 10:06:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754434AbYBYPG0
+	id S1756183AbYBYPG4 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 Feb 2008 10:06:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754952AbYBYPGd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 Feb 2008 10:06:26 -0500
-Received: from hellhawk.shadowen.org ([80.68.90.175]:1217 "EHLO
-	hellhawk.shadowen.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752696AbYBYPG0 (ORCPT
+	Mon, 25 Feb 2008 10:06:33 -0500
+Received: from g4t0016.houston.hp.com ([15.201.24.19]:22656 "EHLO
+	g4t0016.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754787AbYBYPG3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 Feb 2008 10:06:26 -0500
-Date: Mon, 25 Feb 2008 15:07:24 +0000
-From: Andy Whitcroft <apw@shadowen.org>
-To: =?iso-8859-1?Q?J=F6rn?= Engel <joern@logfs.org>
-Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org
-Subject: Re: Page scan keeps touching kernel text pages
-Message-ID: <20080225150724.GF2604@shadowen.org>
-References: <20080224144710.GD31293@lazybastard.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20080224144710.GD31293@lazybastard.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Mon, 25 Feb 2008 10:06:29 -0500
+Subject: Re: [patch 07/23] cciss: Panic in blk_rq_map_sg() from CCISS driver
+From: Lee Schermerhorn <Lee.Schermerhorn@hp.com>
+To: Greg KH <gregkh@suse.de>
+Cc: linux-kernel@vger.kernel.org, stable@kernel.org,
+       Justin Forbes <jmforbes@linuxtx.org>,
+       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
+       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
+       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
+       Chris Wedgwood <reviews@ml.cw.f00f.org>,
+       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
+       Domenico Andreoli <cavokz@gmail.com>, torvalds@linux-foundation.org,
+       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
+       Oliver Pinter <oliver.pntr@gmail.com>,
+       Jens Axboe <jens.axboe@oracle.com>,
+       "Miller, Mike (OS Dev)" <Mike.Miller@hp.com>
+In-Reply-To: <20080222214021.GH8686@suse.de>
+References: <20080222213114.583282464@mini.kroah.org>
+	 <20080222214021.GH8686@suse.de>
+Content-Type: text/plain
+Organization: HP/OSLO
+Date: Mon, 25 Feb 2008 10:06:33 -0500
+Message-Id: <1203951994.5046.2.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.6.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Feb 24, 2008 at 03:47:11PM +0100, Jörn Engel wrote:
-> While tracking down some unrelated bug I noticed that shrink_page_list()
-> keeps testing very low page numbers (aka kernel text) until deciding
-> that the page lacks a mapping and cannot get freed.  Looks like a waste
-> of cpu and cachelines to me.
+On Fri, 2008-02-22 at 13:40 -0800, Greg KH wrote:
+> plain text document attachment
+> (cciss-panic-in-blk_rq_map_sg-from-cciss-driver.patch)
+> 2.6.22-stable review patch.  If anyone has any objections, please let us
+> know.
+
+Greg, Jens:  Does 2.6.22 contain the scatter/gather chaining that caused
+the problem in 23-rc6-mm1?  If not, I wouldn't think this patch is
+necessary there.
+
+Lee
 > 
-> Is there a better reason for this behaviour than lack of a patch?
+> ------------------
+> 
+> From: Lee Schermerhorn <Lee.Schermerhorn@hp.com>
+> 
+> mainline: a683d652d334a546be9175b894f42dbd8e399536
+> 
+> New scatter/gather list chaining [sg_next()] treats 'page' member of
+> struct scatterlist with low bit set [0x01] as a chain pointer to
+> another struct scatterlist [array].  The CCISS driver request function
+> passes an uninitialized, temporary, on-stack scatterlist array to
+> blk_rq_map_sq().  sg_next() interprets random data on the stack as a
+> chain pointer and eventually tries to de-reference an invalid pointer,
+> resulting in:
+> 
+> [<ffffffff8031dd70>] blk_rq_map_sg+0x70/0x170
+> PGD 6090c3067 PUD 0
+> Oops: 0000 [1] SMP
+> last sysfs file: /block/cciss!c0d0/cciss!c0d0p1/dev
+> CPU 6
+> Modules linked in: ehci_hcd ohci_hcd uhci_hcd
+> Pid: 1, comm: init Not tainted 2.6.23-rc6-mm1 #3
+> RIP: 0010:[<ffffffff8031dd70>] [<ffffffff8031dd70>] blk_rq_map_sg+0x70/0x170
+> RSP: 0018:ffff81060901f768 EFLAGS: 00010206
+> RAX: 000000040b161000 RBX: ffff81060901f7d8 RCX: 000000040b162c00
+> RDX: 0000000000000000 RSI: ffff81060b13a260 RDI: ffff81060b139600
+> RBP: 0000000000001400 R08: 00000000fffffffe R09: 0000000000000400
+> R10: 0000000000000000 R11: 000000040b163000 R12: ffff810102fe0000
+> R13: 0000000000000001 R14: 0000000000000001 R15: 00001e0000000000
+> FS: 00000000026108f0(0063) GS:ffff810409000b80(0000) knlGS:0000000000000000
+> CS: 0010 DS: 0000 ES: 0000 CR0: 000000008005003b
+> CR2: 000000010000001e CR3: 00000006090c6000 CR4: 00000000000006e0
+> DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
+> DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
+> Process init (pid: 1, threadinfo ffff81060901e000, task ffff810409020800)
+> last branch before last exception/interrupt
+> from [<ffffffff8031de0a>] blk_rq_map_sg+0x10a/0x170
+> to [<ffffffff8031dd70>] blk_rq_map_sg+0x70/0x170
+> Stack: 000000018068ea00 ffff810102fe0000 0000000000000000 ffff810011400000
+> 0000000000000002 0000000000000000 ffff81040b172000 ffffffff803acd3d
+> 0000000000003ec1 ffff8106090d5000 ffff8106090d5000 ffff810102fe0000
+> Call Trace:
+> [<ffffffff803acd3d>] do_cciss_request+0x15d/0x4c0
+> [<ffffffff80298968>] new_slab+0x1c8/0x270
+> [<ffffffff80298ffd>] __slab_alloc+0x22d/0x470
+> [<ffffffff8027327b>] mempool_alloc+0x4b/0x130
+> [<ffffffff8032b21e>] cfq_set_request+0xee/0x380
+> [<ffffffff8027327b>] mempool_alloc+0x4b/0x130
+> [<ffffffff8031ff98>] get_request+0x168/0x360
+> [<ffffffff80331b0d>] rb_insert_color+0x8d/0x110
+> [<ffffffff8031cfd8>] elv_rb_add+0x58/0x60
+> [<ffffffff8032a329>] cfq_add_rq_rb+0x69/0xa0
+> [<ffffffff8031c1ab>] elv_merged_request+0x5b/0x60
+> [<ffffffff803224fd>] __make_request+0x23d/0x650
+> [<ffffffff80298ffd>] __slab_alloc+0x22d/0x470
+> [<ffffffff80270000>] generic_write_checks+0x140/0x190
+> [<ffffffff8031f012>] generic_make_request+0x1c2/0x3a0
+> <etc>
+> Kernel panic - not syncing: Attempted to kill init!
+> 
+> This patch initializes the tmp_sg array to zeroes.  Perhaps not the ultimate
+> fix, but an effective work-around.  I can now boot 23-rc6-mm1 on an HP
+> Proliant x86_64 with CCISS boot disk.
+> 
+> Signed-off-by:  Lee Schermerhorn <lee.schermerhorn@hp.com>
+> CC: Oliver Pinter <oliver.pntr@gmail.com>
+> Signed-off-by: Jens Axboe <jens.axboe@oracle.com>
+> Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+> 
+> ---
+>  drivers/block/cciss.c |    1 +
+>  1 file changed, 1 insertion(+)
+> 
+> --- a/drivers/block/cciss.c
+> +++ b/drivers/block/cciss.c
+> @@ -2568,6 +2568,7 @@ static void do_cciss_request(request_que
+>  	       (int)creq->nr_sectors);
+>  #endif				/* CCISS_DEBUG */
+>  
+> +	memset(tmp_sg, 0, sizeof(tmp_sg));
+>  	seg = blk_rq_map_sg(q, creq, tmp_sg);
+>  
+>  	/* get the DMA records for the setup */
+> 
 
-shrink_page_list() would be expected to be passed pages pulled from
-the active or inactive lists via isolate_lru_pages()?  I would not have
-expected to find the kernel text on the LRU and therefore not expect to
-see it passed to shrink_page_list()?
-
-I would expect to find pages below the kernel text as real pages, and
-potentially on the LRU on some architectures.  Which architecture are
-you seeing this?  Which zones do the pages belong?
-
--apw
