@@ -1,87 +1,115 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759778AbYBYV6A@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758826AbYBYWDC@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759778AbYBYV6A (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 Feb 2008 16:58:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756109AbYBYV5w
+	id S1758826AbYBYWDC (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 Feb 2008 17:03:02 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750838AbYBYWCv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 Feb 2008 16:57:52 -0500
-Received: from styx.suse.cz ([82.119.242.94]:38490 "EHLO duck.suse.cz"
+	Mon, 25 Feb 2008 17:02:51 -0500
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:39635 "EHLO amd.ucw.cz"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753521AbYBYV5v (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 Feb 2008 16:57:51 -0500
-Date: Mon, 25 Feb 2008 22:57:49 +0100
-From: Jan Kara <jack@suse.cz>
-To: Greg KH <gregkh@suse.de>
-Cc: linux-kernel@vger.kernel.org, stable@kernel.org,
-       torvalds@linux-foundation.org, Justin Forbes <jmforbes@linuxtx.org>,
-       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
-       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
-       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
-       Chris Wedgwood <reviews@ml.cw.f00f.org>,
-       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
-       Domenico Andreoli <cavokz@gmail.com>, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk
-Subject: Re: [patch 06/38] quota: turn quotas off when remounting read-only
-Message-ID: <20080225215749.GC25449@duck.suse.cz>
-References: <20080223001946.979768610@mini.kroah.org> <20080223002951.GG7268@suse.de>
+	id S1753587AbYBYWCt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 25 Feb 2008 17:02:49 -0500
+Date: Mon, 25 Feb 2008 23:03:13 +0100
+From: Pavel Machek <pavel@ucw.cz>
+To: Gregory Haskins <ghaskins@novell.com>
+Cc: mingo@elte.hu, a.p.zijlstra@chello.nl, tglx@linutronix.de,
+       rostedt@goodmis.org, linux-rt-users@vger.kernel.org,
+       linux-kernel@vger.kernel.org, bill.huey@gmail.com, kevin@hilman.org,
+       cminyard@mvista.com, dsingleton@mvista.com, dwalker@mvista.com,
+       npiggin@suse.de, dsaxena@plexity.net, ak@suse.de, acme@redhat.com,
+       gregkh@suse.de, sdietrich@novell.com, pmorreale@novell.com,
+       mkohari@novell.com
+Subject: Re: [(RT RFC) PATCH v2 5/9] adaptive real-time lock support
+Message-ID: <20080225220313.GG2659@elf.ucw.cz>
+References: <20080225155959.11268.35541.stgit@novell1.haskins.net> <20080225160103.11268.25579.stgit@novell1.haskins.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080223002951.GG7268@suse.de>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+In-Reply-To: <20080225160103.11268.25579.stgit@novell1.haskins.net>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri 22-02-08 16:29:51, Greg KH wrote:
-> 2.6.24-stable review patch.  If anyone has any objections, please let us
-> know.
-  Hmm, this patch is certainly safe from a kernel POV but changes a
-behavior WRT userspace. Previously, user could do:
-  quotaon /
-  mount -o remount,ro /
-  <be lucky>
-  mount -o remount,rw /
-  <have quotas still turned on>
+Hi!
 
-  But with the patch, the quotas will be turned off. So I'm not sure
-whether it's acceptable as a -stable thing...
+> +/*
+> + * Adaptive-rtlocks will busywait when possible, and sleep only if
+> + * necessary. Note that the busyloop looks racy, and it is....but we do
+> + * not care. If we lose any races it simply means that we spin one more
+> + * time before seeing that we need to break-out on the next iteration.
+> + *
+> + * We realize this is a relatively large function to inline, but note that
+> + * it is only instantiated 1 or 2 times max, and it makes a measurable
+> + * performance different to avoid the call.
+> + *
+> + * Returns 1 if we should sleep
+> + *
+> + */
+> +static inline int
+> +adaptive_wait(struct rt_mutex *lock, struct rt_mutex_waiter *waiter,
+> +	      struct adaptive_waiter *adaptive)
+> +{
+> +	int sleep = 0;
+> +
+> +	for (;;) {
+> +		/*
+> +		 * If the task was re-awoken, break out completely so we can
+> +		 * reloop through the lock-acquisition code.
+> +		 */
+> +		if (!waiter->task)
+> +			break;
+> +
+> +		/*
+> +		 * We need to break if the owner changed so we can reloop
+> +		 * and safely acquire the owner-pointer again with the
+> +		 * wait_lock held.
+> +		 */
+> +		if (adaptive->owner != rt_mutex_owner(lock))
+> +			break;
+> +
+> +		/*
+> +		 * If we got here, presumably the lock ownership is still
+> +		 * current.  We will use it to our advantage to be able to
+> +		 * spin without disabling preemption...
+> +		 */
+> +
+> +		/*
+> +		 * .. sleep if the owner is not running..
+> +		 */
+> +		if (!adaptive->owner->se.on_rq) {
+> +			sleep = 1;
+> +			break;
+> +		}
+> +
+> +		/*
+> +		 * .. or is running on our own cpu (to prevent deadlock)
+> +		 */
+> +		if (task_cpu(adaptive->owner) == task_cpu(current)) {
+> +			sleep = 1;
+> +			break;
+> +		}
+> +
+> +		cpu_relax();
+> +	}
+> +
+> +	put_task_struct(adaptive->owner);
+> +
+> +	return sleep;
+> +}
+> +
 
-								Honza
-> 
-> ------------------
->  
-> 
-> From: Jan Kara <jack@suse.cz>
-> 
-> patch 66191dc622f5ff0a541524c4e96fdacfacfda206 in mainline.
-> 
-> Turn off quotas before filesystem is remounted read only.  Otherwise quota
-> will try to write to read-only filesystem which does no good...  We could
-> also just refuse to remount ro when quota is enabled but turning quota off
-> is consistent with what we do on umount.
-> 
-> Signed-off-by: Jan Kara <jack@suse.cz>
-> Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
-> Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
-> Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
-> 
-> ---
->  fs/super.c |    1 +
->  1 file changed, 1 insertion(+)
-> 
-> --- a/fs/super.c
-> +++ b/fs/super.c
-> @@ -603,6 +603,7 @@ int do_remount_sb(struct super_block *sb
->  			mark_files_ro(sb);
->  		else if (!fs_may_remount_ro(sb))
->  			return -EBUSY;
-> +		DQUOT_OFF(sb);
->  	}
->  
->  	if (sb->s_op->remount_fs) {
-> 
-> -- 
+You want to inline this?
+
+> +static inline void
+> +prepare_adaptive_wait(struct rt_mutex *lock, struct adaptive_waiter *adaptive)
+...
+> +#define prepare_adaptive_wait(lock, busy) {}
+
+This is evil. Use empty inline function instead (same for the other
+function, there you can maybe get away with it).
+									Pavel
 -- 
-Jan Kara <jack@suse.cz>
-SUSE Labs, CR
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
