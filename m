@@ -1,64 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758580AbYBYQcO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758701AbYBYQce@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758580AbYBYQcO (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 Feb 2008 11:32:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757010AbYBYQ3u
+	id S1758701AbYBYQce (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 Feb 2008 11:32:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757957AbYBYQbW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 Feb 2008 11:29:50 -0500
-Received: from 75-130-111-13.dhcp.oxfr.ma.charter.com ([75.130.111.13]:53986
-	"EHLO novell1.haskins.net" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1756930AbYBYQ3s (ORCPT
+	Mon, 25 Feb 2008 11:31:22 -0500
+Received: from ug-out-1314.google.com ([66.249.92.174]:8232 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756441AbYBYQbT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 Feb 2008 11:29:48 -0500
-From: Gregory Haskins <ghaskins@novell.com>
-Subject: [(RT RFC) PATCH v2 9/9] remove the extra call to try_to_take_lock
-To: mingo@elte.hu, a.p.zijlstra@chello.nl, tglx@linutronix.de,
-       rostedt@goodmis.org, linux-rt-users@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, bill.huey@gmail.com, kevin@hilman.org,
-       cminyard@mvista.com, dsingleton@mvista.com, dwalker@mvista.com,
-       npiggin@suse.de, dsaxena@plexity.net, ak@suse.de, pavel@ucw.cz,
-       acme@redhat.com, gregkh@suse.de, sdietrich@novell.com,
-       pmorreale@novell.com, mkohari@novell.com, ghaskins@novell.com
-Date: Mon, 25 Feb 2008 11:01:23 -0500
-Message-ID: <20080225160123.11268.6904.stgit@novell1.haskins.net>
-In-Reply-To: <20080225155959.11268.35541.stgit@novell1.haskins.net>
-References: <20080225155959.11268.35541.stgit@novell1.haskins.net>
-User-Agent: StGIT/0.12.1
+	Mon, 25 Feb 2008 11:31:19 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
+        b=mN6EX4a9IxK+VheOavhsntcTAbx2iRW/B33VjaIV1BiBNeAE0d1MRNQk/m0Y2gpTgkrsD9943AJ+j3rseUdfdAFITH6fUYeiycSqk2/yG+29gJhATnGX8DoAtalTh/F8xl4IbiLiHOq3sc0mqQArnvWLK3tAcxR0JaTQF9lG0o0=
+Message-ID: <47C2ED51.4000105@googlemail.com>
+Date: Mon, 25 Feb 2008 17:31:13 +0100
+From: Gabriel C <nix.or.die@googlemail.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071204)
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+To: Arjan van de Ven <arjan@linux.intel.com>
+CC: Laurent Riffard <laurent.riffard@free.fr>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Stuart Bennett <sb476@cam.ac.uk>, Len Brown <lenb@kernel.org>
+Subject: Re: 2.6.25-rc2-mm1: WARNING at arch/x86/mm/ioremap.c:129
+References: <20080216002522.9c4bd0fb.akpm@linux-foundation.org> <47B7553D.5040601@free.fr> <47C0BDE2.4020402@googlemail.com> <47C0DB7D.70407@linux.intel.com>
+In-Reply-To: <47C0DB7D.70407@linux.intel.com>
+Content-Type: text/plain; charset=ISO-8859-15
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Peter W. Morreale <pmorreale@novell.com>
+Arjan van de Ven wrote:
+> Gabriel C wrote:
+>> Laurent Riffard wrote:
+>>> Le 16.02.2008 09:25, Andrew Morton a écrit :
+>>>> ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.25-rc2/2.6.25-rc2-mm1/
+> 
+>> [..]
+>>
+>> I'm getting that in mainline now on one of my older laptops also.
+> 
+> we fixed the cause of the machine you quoted; so I suspect yours is different..
+> Can you get me your stacktrace ? Can you try the patch from this thread to show
+> what memory the offender tries to access ?
 
-Remove the redundant attempt to get the lock.  While it is true that the
-exit path with this patch adds an un-necessary xchg (in the event the
-lock is granted without further traversal in the loop) experimentation
-shows that we almost never encounter this situation. 
+Arjan , sorry for the lag.
 
-Signed-off-by: Peter W. Morreale <pmorreale@novell.com>
----
+With your patch from http://marc.info/?l=linux-kernel&m=120336371506283&w=2 I don't have a warning anymore.
 
- kernel/rtmutex.c |    6 ------
- 1 files changed, 0 insertions(+), 6 deletions(-)
+There are the 2 dmesg's , one from 2.6.25-rc3 and other from 2.6.25-rc3+your patch:
 
-diff --git a/kernel/rtmutex.c b/kernel/rtmutex.c
-index b81bbef..266ae31 100644
---- a/kernel/rtmutex.c
-+++ b/kernel/rtmutex.c
-@@ -756,12 +756,6 @@ rt_spin_lock_slowlock(struct rt_mutex *lock)
- 	spin_lock_irqsave(&lock->wait_lock, flags);
- 	init_lists(lock);
- 
--	/* Try to acquire the lock again: */
--	if (try_to_take_rt_mutex(lock)) {
--		spin_unlock_irqrestore(&lock->wait_lock, flags);
--		return;
--	}
--
- 	BUG_ON(rt_mutex_owner(lock) == current);
- 
- 	/*
+http://frugalware.org/~crazy/dmesg/dmesg
+http://frugalware.org/~crazy/dmesg/dmesg_with_patch
 
+It seems I'm not alone with that :)
+
+Have a look at http://lkml.org/lkml/2008/2/24/265
+
+Regards,
+
+Gabriel
