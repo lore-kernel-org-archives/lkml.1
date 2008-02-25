@@ -1,101 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754832AbYBYHPp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755291AbYBYHRS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754832AbYBYHPp (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 Feb 2008 02:15:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751453AbYBYHPd
+	id S1755291AbYBYHRS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 Feb 2008 02:17:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752217AbYBYHRF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 Feb 2008 02:15:33 -0500
-Received: from colo.lackof.org ([198.49.126.79]:54555 "EHLO colo.lackof.org"
+	Mon, 25 Feb 2008 02:17:05 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:57370 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751758AbYBYHPc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 Feb 2008 02:15:32 -0500
-Date: Mon, 25 Feb 2008 00:15:06 -0700
-From: Grant Grundler <grundler@parisc-linux.org>
-To: Ondrej Zary <linux@rainbow-software.org>
-Cc: Grant Grundler <grundler@parisc-linux.org>, jgarzik@pobox.com,
-       Linux Kernel <linux-kernel@vger.kernel.org>, netdev@vger.kernel.org
-Subject: Re: Compex FreedomLine 32 PnP-PCI2 broken with de2104x
-Message-ID: <20080225071505.GC26674@colo.lackof.org>
-References: <200801262158.12016.linux@rainbow-software.org> <200801302123.07783.linux@rainbow-software.org> <20080218032111.GA7970@colo.lackof.org> <200802181740.44196.linux@rainbow-software.org>
+	id S1751758AbYBYHRD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 25 Feb 2008 02:17:03 -0500
+Date: Mon, 25 Feb 2008 08:16:05 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: =?utf-8?B?Uy7Dh2HEn2xhcg==?= Onur <caglar@pardus.org.tr>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       kmcmartin@redhat.com, lguest@ozlabs.org, rusty@rustcorp.com.au
+Subject: Re: Linux 2.6.25-rc3
+Message-ID: <20080225071605.GA11327@elte.hu>
+References: <alpine.LFD.1.00.0802241354200.14934@woody.linux-foundation.org> <200802250129.17526.caglar@pardus.org.tr>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <200802181740.44196.linux@rainbow-software.org>
-X-Home-Page: http://www.parisc-linux.org/
-User-Agent: Mutt/1.5.16 (2007-06-11)
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <200802250129.17526.caglar@pardus.org.tr>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Feb 18, 2008 at 05:40:42PM +0100, Ondrej Zary wrote:
-> On Monday 18 February 2008 04:21:11 Grant Grundler wrote:
-> > On Wed, Jan 30, 2008 at 09:23:06PM +0100, Ondrej Zary wrote:
-> > > On Saturday 26 January 2008 21:58:10 Ondrej Zary wrote:
-> > > > Hello,
-> > > > I was having problems with these FreedomLine cards with Linux before
-> > > > but tested it thoroughly today. This card uses DEC 21041 chip and has
-> > > > TP and BNC connectors:
-> > > >
-> > > > 00:12.0 Ethernet controller [0200]: Digital Equipment Corporation
-> > > > DECchip 21041 [Tulip Pass 3] [1011:0014] (rev 21)
-> > > >
-> > > >
-> > > > de2104x driver was loaded automatically by udev and card seemed to
-> > > > work. Until I disconnected the TP cable and putting it back after a
-> > > > while. The driver then switched to (non-existing) AUI port and remained
-> > > > there. I tried to set media to TP using ethtool - and the whole kernel
-> > > > crashed because of BUG_ON(de_is_running(de));
-> > > > in de_set_media(). Seems that the driver is unable to stop the DMA in
-> > > > de_stop_rxtx().
-> >
-> > The BUG_ON() is probably fine normally. But the media selection sounds
-> > broken. It's possible to select the wrong media type with 21040 chip but
-> > shouldn't be possible with 21041. For 21040 support, see
-> > de21040_get_media_info(). But de21041_get_srom_info() is expected to
-> > determine which media
-> > types are supported from SEPROM "media blocks".   My guess is that code
-> > is broken since it seems to work with de405 driver. If you care to
-> > work the difference, I'd be happy to make a patch to fix that up.
+
+* S.Çağlar Onur <caglar@pardus.org.tr> wrote:
+
+> 25 Şub 2008 Pts tarihinde, Linus Torvalds şunları yazmıştı: 
+> > 
+> > Ok, it's out there, ready for your enjoyment.
+> [...] 
+> > So give it a good testing, please,
 > 
-> I don't think that BUG_ON() should be there. It should probably printk a 
-> warning but certainly not crash the whole machine.
+> -rc3 still fails for this [1] config
 
-Ah ok - I agree. I'll see if we can fail more gracfully there.
-If you have an idea already, please send me a patch.
+this is lguest breakage. I've got the fixes for it in x86.git, will push 
+them to Linus later today if Rusty doesnt object.
 
-> > > > Then I found that there's de4x5 driver which supports the same cards as
-> > > > de2104x (and some other too) - and this one works fine! I can plug and
-> > > > unplug the cable and even change between TP and BNC ports just by
-> > > > unplugging one and plugging the other cable in. Unfortunately, this
-> > > > driver is blacklisted by default - at least in Slackware and Debian.
-> >
-> > ISTR there was a time when tulip would compete with de4x5 for devices.
-> > tulip is the preferred driver. That's clearly no longer the case
-> > and perhaps both distro's need to revisit this.
-> 
-> de4x5 has no MODULE_DEVICE_TABLE for PCI devices anymore, so no conflicts. 
-> That's probably good for cards that work with tulip driver but bad for mine 
-> card and also probably for some other cards that (should) work with de2104x.
-> 
-> >
-> > > > The question is: why does de2104x exist? Does it work better with some
-> > > > hardware?
-> >
-> > de2104x is a "work in progress".
-> > That's why it's marked "EXPERIMENTAL" in the Kconfig file.
-> 
-> Great, it looks to be 6 years old and it's still experimental. Probably 
-> because it never worked properly.
+> -#ifdef CONFIG_LGUEST
+> +#if defined(CONFIG_LGUEST) || defined(CONFIG_LGUEST_MODULE)
 
-Yeah, probably.
+this fix still fails for some randconfig combinations - the fuller fix 
+is queued up in x86.git#testing.
 
-> I think that de2104x driver should be removed (or at least its 
-> MODULE_DEVICE_TABLE) and MODULE_DEVICE_TABLE with only 21040 and 21041 PCI 
-> IDs added to de4x5.
-> 
-> I can send a patch if this is acceptable.
-
-It's acceptable to me. Jeff? (jgarzik)
-
-thanks,
-grant
+	Ingo
