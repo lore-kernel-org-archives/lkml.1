@@ -1,66 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758054AbYBYVOZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758901AbYBYVPw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758054AbYBYVOZ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 Feb 2008 16:14:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751356AbYBYVOR
+	id S1758901AbYBYVPw (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 Feb 2008 16:15:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752744AbYBYVPp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 Feb 2008 16:14:17 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:46675 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751282AbYBYVOR (ORCPT
+	Mon, 25 Feb 2008 16:15:45 -0500
+Received: from n11.bullet.mail.mud.yahoo.com ([209.191.125.210]:37608 "HELO
+	n11.bullet.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1751174AbYBYVPo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 Feb 2008 16:14:17 -0500
-Date: Mon, 25 Feb 2008 13:14:17 -0800
-From: Greg KH <greg@kroah.com>
-To: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [PCI] duplicate sysfs symbols getting registered in current git
-Message-ID: <20080225211417.GA20505@kroah.com>
-References: <Pine.LNX.4.64.0802182142240.11540@axis700.grange> <20080220063834.GA22708@kroah.com> <Pine.LNX.4.64.0802251341160.4430@axis700.grange> <Pine.LNX.4.64.0802251913380.19416@axis700.grange> <20080225202546.GA8893@kroah.com> <Pine.LNX.4.64.0802252130410.19416@axis700.grange>
+	Mon, 25 Feb 2008 16:15:44 -0500
+X-Yahoo-Newman-Id: 736313.33294.bm@omp402.mail.mud.yahoo.com
+X-YMail-OSG: P99nsugVM1nCqqZg7UFuFw4IuSpSoOaleC17eL4Ug3v6.RKmhZLgS0pMMQPtJ4cI78XhhCP17A--
+X-Yahoo-Newman-Property: ymail-3
+Message-ID: <47C32FFA.2000605@schaufler-ca.com>
+Date: Mon, 25 Feb 2008 13:15:38 -0800
+From: Casey Schaufler <casey@schaufler-ca.com>
+Reply-To: casey@schaufler-ca.com
+User-Agent: Thunderbird 2.0.0.9 (Windows/20071031)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0802252130410.19416@axis700.grange>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+To: torvalds@linux-foundation.org, akpm@linux-foundation.org
+CC: linux-kernel@vger.kernel.org, casey@schaufler-ca.com
+Subject: [PATCH] (02/25/08 linus git) smack functions smk_cipso_doi and smk_unlbl_ambient
+ made static
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Feb 25, 2008 at 09:31:22PM +0100, Guennadi Liakhovetski wrote:
-> On Mon, 25 Feb 2008, Greg KH wrote:
-> 
-> > On Mon, Feb 25, 2008 at 07:15:57PM +0100, Guennadi Liakhovetski wrote:
-> > > On Mon, 25 Feb 2008, Guennadi Liakhovetski wrote:
-> > > 
-> > > > On Tue, 19 Feb 2008, Greg KH wrote:
-> > > > 
-> > > > > On Mon, Feb 18, 2008 at 09:52:25PM +0100, Guennadi Liakhovetski wrote:
-> > > > > > Booting an x86 SMP PC with todays git-snapshot or just with 2.6.25-rc2 
-> > > > > > getting the following warnings (with a bit of context):
-> > > > > 
-> > > > > Can you try enabling CONFIG_DEBUG_KOBJECT and sending the output at boot
-> > > > > time from this?
-> > > > 
-> > > > dmesg output with CONFIG_LOG_BUF_SHIFT=19 sent privately to Greg as 
-> > > > unpacked, as it would have to be sent to the list, is 408K big. Will see 
-> > > > what Greg says.
-> > > 
-> > > Actually, the most annoying problem with post 2.6.24 kernels on this 
-> > > machine is, that the system doesn't power off or reboot any more. And 
-> > > seeing other reports, where the reason for not powering down was unfreed 
-> > > kobjects, maybe this is the problem here too?
-> > 
-> > If you have cpufreq enabled, that should solve this problem after the
-> > 2.6.24-rc3 kernel release.  Have you tried that version?
-> 
-> Did you mean 25-rc3?
+From: Casey Schaufler <casey@schaufler-ca.com>
 
-Sorry, yes :)
+The functions smk_cipso_doi and smk_unlbl_ambient are not used
+outside smackfs.c and should hence be static.
 
-> But no, I do not have cpufreq enabled.
 
-Then I suggest filing a new bug report so it doesn't get lost.
+Signed-off-by: Casey Schaufler <casey@schaufler-ca.com>
 
-thanks,
+---
 
-greg k-h
+ security/smack/smackfs.c |    4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff -uprN -X linux-2.6.25-g0225-base/Documentation/dontdiff linux-2.6.25-g0225-base/security/smack/smackfs.c linux-2.6.25-g0225/security/smack/smackfs.c
+--- linux-2.6.25-g0225-base/security/smack/smackfs.c	2008-02-25 08:19:08.000000000 -0800
++++ linux-2.6.25-g0225/security/smack/smackfs.c	2008-02-25 12:06:21.000000000 -0800
+@@ -338,7 +338,7 @@ static const struct file_operations smk_
+ /**
+  * smk_cipso_doi - initialize the CIPSO domain
+  */
+-void smk_cipso_doi(void)
++static void smk_cipso_doi(void)
+ {
+ 	int rc;
+ 	struct cipso_v4_doi *doip;
+@@ -371,7 +371,7 @@ void smk_cipso_doi(void)
+ /**
+  * smk_unlbl_ambient - initialize the unlabeled domain
+  */
+-void smk_unlbl_ambient(char *oldambient)
++static void smk_unlbl_ambient(char *oldambient)
+ {
+ 	int rc;
+ 	struct netlbl_audit audit_info;
+
+
