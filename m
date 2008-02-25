@@ -1,68 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761159AbYBYXuX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761596AbYBYXuj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761159AbYBYXuX (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 Feb 2008 18:50:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756385AbYBYXuI
+	id S1761596AbYBYXuj (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 Feb 2008 18:50:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757908AbYBYXuL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 Feb 2008 18:50:08 -0500
-Received: from chilli.pcug.org.au ([203.10.76.44]:39924 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754996AbYBYXuF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 Feb 2008 18:50:05 -0500
-Date: Tue, 26 Feb 2008 10:49:56 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
-       Linux/m68k <linux-m68k@vger.kernel.org>
-Subject: Re: linux-next: Tree for Feb 24
-Message-Id: <20080226104956.7d4d9402.sfr@canb.auug.org.au>
-In-Reply-To: <Pine.LNX.4.64.0802252252070.5158@anakin>
-References: <20080224162309.3e67dd22.sfr@canb.auug.org.au>
-	<Pine.LNX.4.64.0802252252070.5158@anakin>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.8; i486-pc-linux-gnu)
+	Mon, 25 Feb 2008 18:50:11 -0500
+Received: from smtp1.linux-foundation.org ([207.189.120.13]:41623 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756822AbYBYXuG (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 25 Feb 2008 18:50:06 -0500
+Date: Mon, 25 Feb 2008 15:48:45 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: "Daniel J Blueman" <daniel.blueman@gmail.com>
+Cc: "Linux Kernel" <linux-kernel@vger.kernel.org>, linux-acpi@vger.kernel.org
+Subject: Re: [2.6.25-rc3] ACPI _PPC limiting processor speed...
+Message-Id: <20080225154845.2b71c200.akpm@linux-foundation.org>
+In-Reply-To: <6278d2220802251329x75b6d4c5lc3fab6fe6e75363f@mail.gmail.com>
+References: <6278d2220802251329x75b6d4c5lc3fab6fe6e75363f@mail.gmail.com>
+X-Mailer: Sylpheed 2.4.7 (GTK+ 2.12.1; x86_64-redhat-linux-gnu)
 Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Tue__26_Feb_2008_10_49_56_+1100_HMi.YfHbNaPAV0F2"
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Tue__26_Feb_2008_10_49_56_+1100_HMi.YfHbNaPAV0F2
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On Mon, 25 Feb 2008 21:29:24 +0000 "Daniel J Blueman" <daniel.blueman@gmail.com> wrote:
 
-Hi Geert,
+> My 2.2GHz [1] Thinkpad T61 is unable to get past 1.2GHz, seemingly
+> because of the _PPC ACPI objects [2].
+> 
+> Given that the _PPC object is different for both cores, is this more
+> of a BIOS bug or an ACPI interpreter problem? The problem was present
+> in 2.6.24-rc, 2.6.24 final and since.
+> 
+> BIOS is 7LETA9WW/2.09, so current - would any further information be
+> useful for debugging this problem, and would dumping the ACPI tables
+> be useful?
+> 
+> Thanks,
+>   Daniel
+> 
+> --- [1]
+> 
+> freq-table: table entry 0: 2201000 kHz, 0 index
+> freq-table: table entry 1: 2200000 kHz, 1 index
+> freq-table: table entry 2: 1600000 kHz, 2 index
+> freq-table: table entry 3: 1200000 kHz, 3 index
+> freq-table: table entry 4: 800000 kHz, 4 index
+> 
+> --- [2]
+> 
+> cpufreq-core: CPU 0: _PPC is 3 - frequency  limited
+> cpufreq-core: CPU 1: _PPC is 0 - frequency not limited
 
-On Mon, 25 Feb 2008 22:56:04 +0100 (CET) Geert Uytterhoeven <geert@linux-m6=
-8k.org> wrote:
->
-> Can you please add
-> http://linux-m68k-cvs.ubb.ca/~geert/linux-m68k-patches-2.6/series?
-> So far there's only one patch in between NEXT_PATCHES_{START,END} yet,
-> though.
+(cc linux-acpi)
 
-Added, thanks.
-
-> Ah, I see the m68k cross-compiler is still missing? ;-)
-
-Please look again :-)  Are there any particular configs we should build?
-
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Tue__26_Feb_2008_10_49_56_+1100_HMi.YfHbNaPAV0F2
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQFHw1QpTgG2atn1QN8RAmT+AJwJgJ9w6NGT+vYJ3r8VqE/9phEwEwCeLdns
-H6ZE8iEYXfu+w+Cxg6noXYI=
-=EPhJ
------END PGP SIGNATURE-----
-
---Signature=_Tue__26_Feb_2008_10_49_56_+1100_HMi.YfHbNaPAV0F2--
+If nothing happens, please raise a report at bugzilla.kernel.org, thanks.
