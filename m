@@ -1,30 +1,29 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755660AbYBYSac@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757971AbYBYScS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755660AbYBYSac (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 Feb 2008 13:30:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754107AbYBYSaP
+	id S1757971AbYBYScS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 Feb 2008 13:32:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754621AbYBYScI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 Feb 2008 13:30:15 -0500
-Received: from smtp1.linux-foundation.org ([207.189.120.13]:38255 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753632AbYBYSaN (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 Feb 2008 13:30:13 -0500
-Date: Mon, 25 Feb 2008 10:28:50 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Greg KH <greg@kroah.com>
-Cc: mark gross <mgross@linux.intel.com>, lkml <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] copyright owner and author clean up for intel iommu and
- related files
-Message-Id: <20080225102850.ad5f0cb6.akpm@linux-foundation.org>
-In-Reply-To: <20080225175402.GB18940@kroah.com>
-References: <20080221181555.GA9593@linux.intel.com>
-	<20080223000443.da075061.akpm@linux-foundation.org>
-	<20080223190649.GA8641@kroah.com>
-	<20080223112022.8e4fdde2.akpm@linux-foundation.org>
-	<20080225155014.GA22018@linux.intel.com>
-	<20080225175402.GB18940@kroah.com>
-X-Mailer: Sylpheed 2.4.7 (GTK+ 2.12.1; x86_64-redhat-linux-gnu)
+	Mon, 25 Feb 2008 13:32:08 -0500
+Received: from gateway.drzeus.cx ([85.8.24.16]:51883 "EHLO smtp.drzeus.cx"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754808AbYBYScH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 25 Feb 2008 13:32:07 -0500
+Date: Mon, 25 Feb 2008 19:31:34 +0100
+From: Pierre Ossman <drzeus-mmc@drzeus.cx>
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
+       pm list <linux-pm@lists.linux-foundation.org>,
+       Zdenek Kabelac <zdenek.kabelac@gmail.com>,
+       David Brownell <david-b@pacbell.net>,
+       Kernel development list <linux-kernel@vger.kernel.org>
+Subject: Re: Bugs in MMC [was: [Bug 10030] Suspend doesn't work when SD card
+ is inserted]
+Message-ID: <20080225193134.104b386d@mjolnir.drzeus.cx>
+In-Reply-To: <Pine.LNX.4.44L0.0802251255000.5039-100000@iolanthe.rowland.org>
+References: <20080225184102.0a2e2bb5@mjolnir.drzeus.cx>
+	<Pine.LNX.4.44L0.0802251255000.5039-100000@iolanthe.rowland.org>
+X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.8; i386-redhat-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
@@ -32,37 +31,28 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 25 Feb 2008 09:54:02 -0800 Greg KH <greg@kroah.com> wrote:
+On Mon, 25 Feb 2008 12:58:30 -0500 (EST)
+Alan Stern <stern@rowland.harvard.edu> wrote:
 
-> On Mon, Feb 25, 2008 at 07:50:14AM -0800, mark gross wrote:
-> > On Sat, Feb 23, 2008 at 11:20:22AM -0800, Andrew Morton wrote:
-> > > On Sat, 23 Feb 2008 11:06:49 -0800 Greg KH <greg@kroah.com> wrote:
-> > > 
-> > > > On Sat, Feb 23, 2008 at 12:04:43AM -0800, Andrew Morton wrote:
-> > > > > On Thu, 21 Feb 2008 10:15:55 -0800 mark gross <mgross@linux.intel.com> wrote:
-> > > > > 
-> > > > > > Index: linux-2.6.24-mm1/drivers/pci/dmar.c
-> > > > > 
-> > > > > I guess this is strictly a greg-pci-tree thing.  Greg, how do you want
-> > > > > to play intel-iommu?
-> > > > 
-> > > > Yes, I'll take those.  I'm pretty sure I even have the hardware here to
-> > > > test that the code doesn't crash :)
-> > > > 
-> > > 
-> > > ok..
-> > > 
-> > > I have another one queued for 2.6.26-via-greg:
-> > > pci-iova-rb-tree-setup-tweak.patch
-> > > 
-> > 
-> > Should I start sending all the intel-iommu related stuff to Greg then?
+> Thanks for the explanations.
 > 
-> Sure, and the linux-pci list so that people can review them.
+> On Mon, 25 Feb 2008, Pierre Ossman wrote:
+> 
+> > Trying to keep up with the PM changes is a full time job. For now I've
+> > mostly ignored it as I don't even have time for the other stuff.
+> > Patches welcome.
+> 
+> What do you think of the patch attached to comment #40 in the Bugzilla 
+> entry?
 > 
 
-And linux-kernel so that a lot more people can review them.
+Looks ok. As long as those two synchronization points are guaranteed,
+then I'm happy.
 
-And me too, please so I'll review them, and because subsystem maintainers
-are leaky buckets (sorry).
+Rgds
+-- 
+     -- Pierre Ossman
 
+  Linux kernel, MMC maintainer        http://www.kernel.org
+  PulseAudio, core developer          http://pulseaudio.org
+  rdesktop, core developer          http://www.rdesktop.org
