@@ -1,66 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761453AbYBYW6O@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761790AbYBYW5i@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761453AbYBYW6O (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 Feb 2008 17:58:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758390AbYBYW5z
+	id S1761790AbYBYW5i (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 Feb 2008 17:57:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761422AbYBYW5W
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 Feb 2008 17:57:55 -0500
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:35446 "EHLO amd.ucw.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1758178AbYBYW5y (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 Feb 2008 17:57:54 -0500
-Date: Mon, 25 Feb 2008 23:58:20 +0100
-From: Pavel Machek <pavel@ucw.cz>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: "Michael S. Tsirkin" <m.s.tsirkin@gmail.com>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, LKML <linux-kernel@vger.kernel.org>,
-       Alexey Starikovskiy <astarikovskiy@suse.de>,
-       Len Brown <len.brown@intel.com>, linux-acpi@vger.kernel.org,
-       Jeff Garzik <jeff@garzik.org>
-Subject: Re: broken suspend in .2.6.25-rc3 on T61p (was Re: new regression
-	in 2.6.25-rc3: no keyboard/lid acpi events on thinkpad T61p)
-Message-ID: <20080225225820.GP2659@elf.ucw.cz>
-References: <200802252157.10412.rjw@sisk.pl> <20080225212615.GA2659@elf.ucw.cz> <8f53421d0802251331n31b37db8gb644dc9aa2d553d4@mail.gmail.com> <20080225215049.GD2659@elf.ucw.cz> <8f53421d0802251415g2033ca6bqd4e6ea9e2d93f097@mail.gmail.com> <20080225222023.GK2659@elf.ucw.cz> <8f53421d0802251436vd98a97h5db6b8af3dc39d0@mail.gmail.com> <20080225143932.6b83b65d.akpm@linux-foundation.org> <8f53421d0802251448v3e0db63j3f222f041e587f69@mail.gmail.com> <20080225145347.a61f6c61.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080225145347.a61f6c61.akpm@linux-foundation.org>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.17 (2007-11-01)
+	Mon, 25 Feb 2008 17:57:22 -0500
+Received: from charybdis-ext.suse.de ([195.135.221.2]:58502 "EHLO
+	emea5-mh.id5.novell.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1761003AbYBYW5V (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 25 Feb 2008 17:57:21 -0500
+Subject: Re: [(RT RFC) PATCH v2 2/9] sysctl for runtime-control of lateral
+	mutex stealing
+From: Sven-Thorsten Dietrich <sdietrich@novell.com>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: Gregory Haskins <ghaskins@novell.com>, mingo@elte.hu,
+       a.p.zijlstra@chello.nl, tglx@linutronix.de, rostedt@goodmis.org,
+       linux-rt-users@vger.kernel.org, linux-kernel@vger.kernel.org,
+       bill.huey@gmail.com, kevin@hilman.org, cminyard@mvista.com,
+       dsingleton@mvista.com, dwalker@mvista.com, npiggin@suse.de,
+       dsaxena@plexity.net, ak@suse.de, acme@redhat.com, gregkh@suse.de,
+       pmorreale@novell.com, mkohari@novell.com
+In-Reply-To: <20080225215335.GE2659@elf.ucw.cz>
+References: <20080225155959.11268.35541.stgit@novell1.haskins.net>
+	 <20080225160048.11268.55059.stgit@novell1.haskins.net>
+	 <20080225215335.GE2659@elf.ucw.cz>
+Content-Type: text/plain
+Date: Mon, 25 Feb 2008 14:57:11 -0800
+Message-Id: <1203980231.16711.115.camel@sven.thebigcorporation.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.0 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
 
-> > >  > Maybe it doesn't. Andrew saw the autoresume on -rc[2,3]
-> > >
-> > >  And earlier - I think 2.6.23 does it as well.
+On Mon, 2008-02-25 at 22:53 +0100, Pavel Machek wrote:
+> Hi!
+> 
+> > From: Sven-Thorsten Dietrich <sdietrich@suse.de>
 > > 
-> > But that one at least resumes fine, does it not?
+> > Add /proc/sys/kernel/lateral_steal, to allow switching on and off
+> > equal-priority mutex stealing between threads.
+> > 
+> > Signed-off-by: Sven-Thorsten Dietrich <sdietrich@suse.de>
+> > ---
+> > 
+> >  
+> >  #include "rtmutex_common.h"
+> >
+
+I'll move it to the header file.
+
+>   
+> > +#ifdef CONFIG_RTLOCK_LATERAL_STEAL
+> > +int rtmutex_lateral_steal __read_mostly = 1;
+> > +#endif
+> > +
 > 
-> Nope, the resume-after-five-seconds and black-screen-after-resume have
-> always been there (I've only had the thing a few months).
+> Ugly..
 > 
-> I thought the restoring of the screen after resume is handled by the X
-> server?  I'm using the nv.o driver.  Perhaps nvidia's driver handles it
-> right, dunno.
 
-Aha, so you do not have s2ram from suspend.sf.net installed, do you?
+> 
+> >  /*
+> >   * lock->owner state tracking:
+> >   *
+> > @@ -321,7 +325,8 @@ static inline int lock_is_stealable(struct task_struct *pendowner, int unfair)
+> >  	if (current->prio > pendowner->prio)
+> >  		return 0;
+> >  
+> > -	if (!unfair && (current->prio == pendowner->prio))
+> > +	if (unlikely(current->prio == pendowner->prio) &&
+> > +	   !(unfair && rtmutex_lateral_steal))
+> >  #endif
+> 
+> But this is even worse, you are creating #ifdef maze here. Can you
+> simply #define rtmutex_lateral_steal 0 in !CONFIG_RTLOCK_LATERAL_STEAL
+> and let the optimizer fix this?
+> 
 
-Restoring the screen is done by either
+Ok - much of this will also disappear into the header then.
 
-a) kernel/bios (acpi_sleep=..., or better s2ram -f -a X )
+> 
+> > index c913d48..c24c53d 100644
+> > --- a/kernel/sysctl.c
+> > +++ b/kernel/sysctl.c
+> > @@ -175,6 +175,10 @@ extern struct ctl_table inotify_table[];
+> >  int sysctl_legacy_va_layout;
+> >  #endif
+> >  
+> > +#ifdef CONFIG_RTLOCK_LATERAL_STEAL
+> > +extern int rtmutex_lateral_steal;
+> > +#endif
+> > +
+> 
+> Try checkpatch.
+> 									Pavel
 
-b) vbetool
+I have that as part of quilt refresh, and it returns:
 
-c) X
+Your patch has no obvious style problems and is ready for submission.
 
-. s2ram should detect your machine, and automatically set acpi_sleep
-and/or perform vbetool magic.
+But Greg may need to enforce it on his git tree that he mails these from
+- are you referring to anything specific in this patch?
 
-Please try s2ram, there's good chance it will just work.
-								Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Sven
+
