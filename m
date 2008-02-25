@@ -1,101 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754947AbYBYKHb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754574AbYBYKLR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754947AbYBYKHb (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 Feb 2008 05:07:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753262AbYBYKHX
+	id S1754574AbYBYKLR (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 Feb 2008 05:11:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753281AbYBYKLD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 Feb 2008 05:07:23 -0500
-Received: from mga03.intel.com ([143.182.124.21]:61667 "EHLO mga03.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753167AbYBYKHV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 Feb 2008 05:07:21 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.25,400,1199692800"; 
-   d="scan'208";a="383144499"
-Subject: [PATCH 2.6.25-rc3] cpuidle: fix cpuidle time and usage overflow
-From: Yi Yang <yi.y.yang@intel.com>
-Reply-To: yi.y.yang@intel.com
-To: akpm@linux-foundation.org
-Cc: venkatesh.pallipadi@intel.com, cpufreq@lists.linux.org.uk,
-       linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
-       linux-acpi@vger.kernel.org
-In-Reply-To: <1203032921.3897.10.camel@yangyi-dev.bj.intel.com>
-References: <1199441414.19185.9.camel@yangyi-dev.bj.intel.com>
-	 <1201043126.3861.5.camel@yangyi-dev.bj.intel.com>
-	 <1203032921.3897.10.camel@yangyi-dev.bj.intel.com>
-Content-Type: text/plain
-Organization: Intel
-Date: Mon, 25 Feb 2008 08:46:12 +0800
-Message-Id: <1203900372.4954.8.camel@yangyi-dev.bj.intel.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 (2.10.1-4.fc7) 
-Content-Transfer-Encoding: 7bit
+	Mon, 25 Feb 2008 05:11:03 -0500
+Received: from wr-out-0506.google.com ([64.233.184.238]:44423 "EHLO
+	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753222AbYBYKLB (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 25 Feb 2008 05:11:01 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:cc:subject:date:message-id:x-mailer;
+        b=AXwdEBHVZsoDaDIT+/KOJmxt3sJ/RUcyrLlBXUtYXa5cwb3siAOQalXsKi71y3sSbkwg3vh3g9U1a1m/bFmrdtmFvAUQKzPg9tpZtFVJEKoP9PK4Vy47TxWXsaFRzk2ZeJPTg5GxGvdk1hNeW2sU5ZYPIYkK0R2fiKUiJ+v0Z28=
+From: tom.leiming@gmail.com
+To: gregkh@suse.de
+Cc: linux-kernel@vger.kernel.org, linux-usb@vger.kernel.org,
+       Lei Ming <tom.leiming@gmail.com>
+Subject: [PATCH] usb: fix comment of struct usb_interface
+Date: Mon, 25 Feb 2008 18:07:28 +0800
+Message-Id: <1203934048-9718-1-git-send-email-tom.leiming@gmail.com>
+X-Mailer: git-send-email 1.5.4.rc4.338.g923d4
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-cpuidle C-state sysfs node time and usage are very easy to overflow because
-they are all of unsigned int type, time will overflow within about two hours,
-usage will take longer time to overflow, but they are increasing for ever.
+From: Lei Ming <tom.leiming@gmail.com>
 
-This patch will convert them to unsigned long long.
+update the comment for the removed "driver" field  and  being
+out-of-order of  @cur_altsetting and @num_altsetting.
 
-
-Signed-off-by: Yi Yang <yi.y.yang@intel.com>
+Signed-off-by: Lei Ming <tom.leiming@gmail.com>
 ---
- drivers/cpuidle/cpuidle.c |    2 +-
- drivers/cpuidle/sysfs.c   |   10 ++++++++--
- include/linux/cpuidle.h   |    4 ++--
+ include/linux/usb.h |    3 +--
+ 1 files changed, 1 insertions(+), 2 deletions(-)
+ mode change 100644 => 100755 include/linux/usb.h
 
---- a/include/linux/cpuidle.h	2008-02-25 02:31:26.000000000 -0500
-+++ b/include/linux/cpuidle.h	2008-02-25 04:30:24.000000000 -0500
-@@ -38,8 +38,8 @@ struct cpuidle_state {
- 	unsigned int	power_usage; /* in mW */
- 	unsigned int	target_residency; /* in US */
- 
--	unsigned int	usage;
--	unsigned int	time; /* in US */
-+	unsigned long long	usage;
-+	unsigned long long	time; /* in US */
- 
- 	int (*enter)	(struct cpuidle_device *dev,
- 			 struct cpuidle_state *state);
---- a/drivers/cpuidle/cpuidle.c	2008-02-25 02:37:14.000000000 -0500
-+++ b/drivers/cpuidle/cpuidle.c	2008-02-25 04:29:19.000000000 -0500
-@@ -67,7 +67,7 @@ static void cpuidle_idle_call(void)
- 	/* enter the state and update stats */
- 	dev->last_residency = target_state->enter(dev, target_state);
- 	dev->last_state = target_state;
--	target_state->time += dev->last_residency;
-+	target_state->time += (unsigned long long)dev->last_residency;
- 	target_state->usage++;
- 
- 	/* give the governor an opportunity to reflect on the outcome */
---- a/drivers/cpuidle/sysfs.c	2008-02-25 02:33:14.000000000 -0500
-+++ b/drivers/cpuidle/sysfs.c	2008-02-25 03:10:50.000000000 -0500
-@@ -218,6 +218,12 @@ static ssize_t show_state_##_name(struct
- 	return sprintf(buf, "%u\n", state->_name);\
- }
- 
-+#define define_show_state_ull_function(_name) \
-+static ssize_t show_state_##_name(struct cpuidle_state *state, char *buf) \
-+{ \
-+	return sprintf(buf, "%llu\n", state->_name);\
-+}
-+
- #define define_show_state_str_function(_name) \
- static ssize_t show_state_##_name(struct cpuidle_state *state, char *buf) \
- { \
-@@ -228,8 +234,8 @@ static ssize_t show_state_##_name(struct
- 
- define_show_state_function(exit_latency)
- define_show_state_function(power_usage)
--define_show_state_function(usage)
--define_show_state_function(time)
-+define_show_state_ull_function(usage)
-+define_show_state_ull_function(time)
- define_show_state_str_function(name)
- define_show_state_str_function(desc)
- 
-
+diff --git a/include/linux/usb.h b/include/linux/usb.h
+old mode 100644
+new mode 100755
+index 2372e2e..8a864f8
+--- a/include/linux/usb.h
++++ b/include/linux/usb.h
+@@ -94,10 +94,9 @@ enum usb_interface_condition {
+  * @altsetting: array of interface structures, one for each alternate
+  * 	setting that may be selected.  Each one includes a set of
+  * 	endpoint configurations.  They will be in no particular order.
+- * @num_altsetting: number of altsettings defined.
+  * @cur_altsetting: the current altsetting.
++ * @num_altsetting: number of altsettings defined.
+  * @intf_assoc: interface association descriptor
+- * @driver: the USB driver that is bound to this interface.
+  * @minor: the minor number assigned to this interface, if this
+  *	interface is bound to a driver that uses the USB major number.
+  *	If this interface does not use the USB major, this field should
+-- 
+1.5.4.rc4.338.g923d4
 
