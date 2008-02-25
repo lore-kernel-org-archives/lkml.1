@@ -1,85 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754079AbYBYHXW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753913AbYBYH2t@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754079AbYBYHXW (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 Feb 2008 02:23:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751631AbYBYHXN
+	id S1753913AbYBYH2t (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 Feb 2008 02:28:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751846AbYBYH2h
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 Feb 2008 02:23:13 -0500
-Received: from wx-out-0506.google.com ([66.249.82.227]:20600 "EHLO
-	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751413AbYBYHXL (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 Feb 2008 02:23:11 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:references;
-        b=JQaTJNn0Id7P3LKOINpAwUUAVlm2skyBNfO704qVA459Xr4bLzdsp4WXyuxE2t63+tBs8PkOYyqM36Oc9fGqPhHiEvXTmc9PzHr0IlpyD/4x5U5CphgtGXLg0pkORSbJIDV2yzVJu0orzhVJ7o+RVxfEZnujwquzYD1TQhgpd8M=
-Message-ID: <86802c440802242323p58d0e234q9b6f33449c8ebaf8@mail.gmail.com>
-Date: Sun, 24 Feb 2008 23:23:09 -0800
-From: "Yinghai Lu" <yhlu.kernel@gmail.com>
-To: "Kamalesh Babulal" <kamalesh@linux.vnet.ibm.com>
-Subject: Re: 2.6.26-git0: IDE oops during boot
-Cc: "Bartlomiej Zolnierkiewicz" <bzolnier@gmail.com>,
-       "Nish Aravamudan" <nish.aravamudan@gmail.com>,
-       "Pavel Machek" <pavel@ucw.cz>,
-       "kernel list" <linux-kernel@vger.kernel.org>, linux-ide@vger.kernel.org,
-       ananth@in.ibm.com, "Andi Kleen" <andi@firstfloor.org>
-In-Reply-To: <86802c440802242305o7cfce4d1h6444aab01304cb21@mail.gmail.com>
+	Mon, 25 Feb 2008 02:28:37 -0500
+Received: from srv5.dvmed.net ([207.36.208.214]:47661 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750909AbYBYH2g (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 25 Feb 2008 02:28:36 -0500
+Message-ID: <47C26E0E.2070109@pobox.com>
+Date: Mon, 25 Feb 2008 02:28:14 -0500
+From: Jeff Garzik <jgarzik@pobox.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
-Content-Type: multipart/mixed; 
-	boundary="----=_Part_6718_18203860.1203924189797"
-References: <20080206105334.GA3664@elf.ucw.cz>
-	 <200802112035.39462.bzolnier@gmail.com>
-	 <47B16113.1060807@linux.vnet.ibm.com>
-	 <200802140000.10639.bzolnier@gmail.com>
-	 <47B40DF2.10009@linux.vnet.ibm.com>
-	 <86802c440802140228q5f6a606cyee01c711fd349571@mail.gmail.com>
-	 <47B57436.5020806@linux.vnet.ibm.com>
-	 <86802c440802242305o7cfce4d1h6444aab01304cb21@mail.gmail.com>
+To: Grant Grundler <grundler@parisc-linux.org>
+CC: Ondrej Zary <linux@rainbow-software.org>,
+       Linux Kernel <linux-kernel@vger.kernel.org>, netdev@vger.kernel.org
+Subject: Re: Compex FreedomLine 32 PnP-PCI2 broken with de2104x
+References: <200801262158.12016.linux@rainbow-software.org> <200801302123.07783.linux@rainbow-software.org> <20080218032111.GA7970@colo.lackof.org>
+In-Reply-To: <20080218032111.GA7970@colo.lackof.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.4 (----)
+X-Spam-Report: SpamAssassin version 3.2.3 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-------=_Part_6718_18203860.1203924189797
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+Grant Grundler wrote:
+> ISTR there was a time when tulip would compete with de4x5 for devices.
+> tulip is the preferred driver. That's clearly no longer the case
+> and perhaps both distro's need to revisit this.
 
-On Sun, Feb 24, 2008 at 11:05 PM, Yinghai Lu <yhlu.kernel@gmail.com> wrote:
-> On Fri, Feb 15, 2008 at 3:15 AM, Kamalesh Babulal
->
-> <kamalesh@linux.vnet.ibm.com> wrote:
->  >
->  >
->
-> >  Thanks for pointing the patch, I do not have the SES config option enabled,
->  >  then too i tried your patch, but that does not solve the panic. The kernel
->  >  panic's with the same panic message as before. I have attached the .config
->  >  file which i am using, please let me know if i am missing out/getting wrong
->  >  any option in the configuration.
->
->  can you try x86.git#testing?
->
->  http://people.redhat.com/mingo/x86.git/README
->
+The only reason why de4x5 still exists is that the /tulip/ driver fails 
+to work on a few chips like the 21142 (43?) shipped in various alpha boxen.
 
-and try attached patch.
+de4x5 needs to go away, it's been unmaintained for ages, doesn't support 
+any of the new hotplug APIs.
 
-YH
 
-------=_Part_6718_18203860.1203924189797
-Content-Type: text/x-patch; name=fix_intel_numa.patch
-Content-Transfer-Encoding: base64
-X-Attachment-Id: f_fd2po0bj0
-Content-Disposition: attachment; filename=fix_intel_numa.patch
+> de2104x is a "work in progress".
+> That's why it's marked "EXPERIMENTAL" in the Kconfig file.
 
-ZGlmZiAtLWdpdCBhL2FyY2gveDg2L2tlcm5lbC9zZXR1cF82NC5jIGIvYXJjaC94ODYva2VybmVs
-L3NldHVwXzY0LmMKaW5kZXggNmZkODA0Zi4uZjBkNmE4MCAxMDA2NDQKLS0tIGEvYXJjaC94ODYv
-a2VybmVsL3NldHVwXzY0LmMKKysrIGIvYXJjaC94ODYva2VybmVsL3NldHVwXzY0LmMKQEAgLTgw
-MSw3ICs4MDEsNyBAQCBzdGF0aWMgdm9pZCBfX2NwdWluaXQgc3JhdF9kZXRlY3Rfbm9kZSh2b2lk
-KQogCS8qIERvbid0IGRvIHRoZSBmdW5reSBmYWxsYmFjayBoZXVyaXN0aWNzIHRoZSBBTUQgdmVy
-c2lvbiBlbXBsb3lzCiAJICAgZm9yIG5vdy4gKi8KIAlub2RlID0gYXBpY2lkX3RvX25vZGVbYXBp
-Y2lkXTsKLQlpZiAobm9kZSA9PSBOVU1BX05PX05PREUpCisJaWYgKG5vZGUgPT0gTlVNQV9OT19O
-T0RFIHx8ICFub2RlX29ubGluZShub2RlKSkKIAkJbm9kZSA9IGZpcnN0X25vZGUobm9kZV9vbmxp
-bmVfbWFwKTsKIAludW1hX3NldF9ub2RlKGNwdSwgbm9kZSk7CiAK
-------=_Part_6718_18203860.1203924189797--
+It's not a work in progress, it works just fine for most people (the few 
+that are left).
+
+Last I heard, there was a problem with non-twisted-pair stuff, but 
+that's about it.
+
+'experimental' is generally a poorly maintained marker.
+
+	Jeff
+
+
