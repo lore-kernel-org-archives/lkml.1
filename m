@@ -1,96 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756159AbYBYTr1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755653AbYBYTru@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756159AbYBYTr1 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 Feb 2008 14:47:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755826AbYBYTqj
+	id S1755653AbYBYTru (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 Feb 2008 14:47:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755826AbYBYTrl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 Feb 2008 14:46:39 -0500
-Received: from out3.smtp.messagingengine.com ([66.111.4.27]:50338 "EHLO
-	out3.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755653AbYBYTqh (ORCPT
+	Mon, 25 Feb 2008 14:47:41 -0500
+Received: from smtp1.linux-foundation.org ([207.189.120.13]:40152 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755351AbYBYTrk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 Feb 2008 14:46:37 -0500
-Message-Id: <1203968796.24935.1239027765@webmail.messagingengine.com>
-X-Sasl-Enc: Vh55WTA4IdovrHQW3FYGtrwcdQkfYaCAsRqbPI9uUhIw 1203968796
-From: "Alexander van Heukelum" <heukelum@fastmail.fm>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: "Ingo Molnar" <mingo@elte.hu>, "Andi Kleen" <ak@suse.de>,
-       "Thomas Gleixner" <tglx@linutronix.de>,
-       "LKML" <linux-kernel@vger.kernel.org>,
-       "Alexander van Heukelum" <heukelum@mailshack.com>
-Content-Disposition: inline
+	Mon, 25 Feb 2008 14:47:40 -0500
+Date: Mon, 25 Feb 2008 11:46:11 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: "Michael S. Tsirkin" <m.s.tsirkin@gmail.com>
+Cc: LKML <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       "Alexey Starikovskiy" <astarikovskiy@suse.de>,
+       "Len Brown" <len.brown@intel.com>, linux-acpi@vger.kernel.org
+Subject: Re: new regression in 2.6.25-rc3: no keyboard/lid acpi events on
+ thinkpad T61p
+Message-Id: <20080225114611.d91791f6.akpm@linux-foundation.org>
+In-Reply-To: <8f53421d0802251119q470a79c1p31048ef136271f84@mail.gmail.com>
+References: <8f53421d0802251119q470a79c1p31048ef136271f84@mail.gmail.com>
+X-Mailer: Sylpheed 2.4.7 (GTK+ 2.12.1; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Type: text/plain; charset="ISO-8859-1"
-MIME-Version: 1.0
-X-Mailer: MessagingEngine.com Webmail Interface
-References: <20080224174605.GA21661@mailshack.com> <47C22568.1010405@zytor.com>
-   <1203958478.20033.1239002461@webmail.messagingengine.com>
-   <20080225170134.GA15839@elte.hu>
-   <20080225180750.GA31054@mailshack.com> <47C3053D.5060504@zytor.com>
-Subject: Re: [PATCH] reserve_early end-of-conventional-memory to 1MB
-In-Reply-To: <47C3053D.5060504@zytor.com>
-Date: Mon, 25 Feb 2008 20:46:36 +0100
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 25 Feb 2008 10:13:17 -0800, "H. Peter Anvin" <hpa@zytor.com>
-said:
-> Alexander van Heukelum wrote:
-> > 
-> >  arch/x86/kernel/head64.c |   45 +++++++++++++++++++++++++++------------------
-> >  1 files changed, 27 insertions(+), 18 deletions(-)
-> > 
-> > diff --git a/arch/x86/kernel/head64.c b/arch/x86/kernel/head64.c
-> > index 38f32e7..b684552 100644
-> > --- a/arch/x86/kernel/head64.c
-> > +++ b/arch/x86/kernel/head64.c
-> > @@ -49,33 +49,42 @@ static void __init copy_bootdata(char *real_mode_data)
-> >  	}
-> >  }
-> >  
-> > -#define EBDA_ADDR_POINTER 0x40E
-> > +#define BIOS_EBDA_SEGMENT 0x40E
-> > +#define BIOS_LOWMEM_KILOBYTES 0x413
-> >  
-> 
-> Linus has specific comments in the 32-bit code that states we do not 
-> want to use address 0x413 for anything - if nothing else because it's 
-> often lowered when there is boottime code involved like CD-ROM booting 
-> or PXE.
+On Mon, 25 Feb 2008 21:19:24 +0200 "Michael S. Tsirkin" <m.s.tsirkin@gmail.com> wrote:
 
-Hello hpa,
+> On my T61p, 2.6.25-rc2 seems to get acpi events from keypresses
+> such as Fn-F4 and lid open/close, prints them in /var/log/acpid
+> and reacts accordingly (my acpi scripts suspend on lid close and Fn-F4).
 
-I failed to find a comment referring to 0x413 or int 0x12 in
-arch/x86/kernel. I do know the comment in Documentation/i386/boot.txt,
-however, suggesting that "INT 12h" _should_ be used, but that it would
-be pointless for zImage and old bzImage kernels, because they _have_
-to be started from 0x90000 anyway. New bzImage kernels do not have
-this limitation, and smart bootloaders simply put them at much
-lower addresses, like 0x40000. (I know: you know.) My point is just
-that the argument not to use 0x413 in the bootloader is not valid
-for this case.
+You mean suspend-to-ram works correctly on your t61p?
 
-That leaves the possibility that code/data is inserted at the top of
-conventional memory by either the BIOS or some kind of bootloader.
-My view on this is that this code/data should be preserved: it
-was specifically asked from us by lowering 0x413. One just loses
-a tiny bit of usable memory, and if the program booting the kernel
-knows better it can unload the driver if it wants to. It's just
-not a kernel problem.
-
-> Either way, the code should be shared between 32 and 64 bits.
-> There is nothing bitsize-specific about it!
-
-Of course. That's also why I already added the old-Dell case ;).
-But one problem at a time, please!
-
-Greetings,
-    Alexander
--- 
-  Alexander van Heukelum
-  heukelum@fastmail.fm
-
--- 
-http://www.fastmail.fm - I mean, what is it about a decent email service?
+Mine suspends, then five seconds later magically resumes itself and the
+screen is all black.
 
