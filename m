@@ -1,63 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758498AbYBYSkl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758785AbYBYSmB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758498AbYBYSkl (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 Feb 2008 13:40:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755214AbYBYSkc
+	id S1758785AbYBYSmB (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 Feb 2008 13:42:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755214AbYBYSly
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 Feb 2008 13:40:32 -0500
-Received: from x346.tv-sign.ru ([89.108.83.215]:38000 "EHLO mail.screens.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754451AbYBYSkc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 Feb 2008 13:40:32 -0500
-Date: Mon, 25 Feb 2008 21:42:02 +0300
-From: Oleg Nesterov <oleg@tv-sign.ru>
-To: "Serge E. Hallyn" <serue@us.ibm.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Casey Schaufler <casey@schaufler-ca.com>,
-       David Quigley <dpquigl@tycho.nsa.gov>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Eric Paris <eparis@redhat.com>, Harald Welte <laforge@gnumonks.org>,
-       Pavel Emelyanov <xemul@openvz.org>, Stephen Smalley <sds@tycho.nsa.gov>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2/3] kill_pid_info_as_uid: don't use security_task_kill()
-Message-ID: <20080225184202.GA22147@tv-sign.ru>
-References: <20080225174228.GA22084@tv-sign.ru> <20080225180020.GA10631@sergelap.austin.ibm.com>
+	Mon, 25 Feb 2008 13:41:54 -0500
+Received: from smtp1.linux-foundation.org ([207.189.120.13]:35220 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755685AbYBYSlx (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 25 Feb 2008 13:41:53 -0500
+Date: Mon, 25 Feb 2008 10:40:24 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: mgross@linux.intel.com
+Cc: lkml <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH]iommu-iotlb-flushing
+Message-Id: <20080225104024.c5b5d719.akpm@linux-foundation.org>
+In-Reply-To: <20080225162851.GC22018@linux.intel.com>
+References: <20080221000623.GA5510@linux.intel.com>
+	<20080223000517.232704f3.akpm@linux-foundation.org>
+	<20080225162851.GC22018@linux.intel.com>
+X-Mailer: Sylpheed 2.4.7 (GTK+ 2.12.1; x86_64-redhat-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080225180020.GA10631@sergelap.austin.ibm.com>
-User-Agent: Mutt/1.5.11
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 02/25, Serge E. Hallyn wrote:
->
-> Quoting Oleg Nesterov (oleg@tv-sign.ru):
-> > kill_pid_info_as_uid() is solely used by drivers/usb/core/. The original
-> > "[PATCH] Fix signal sending in usbdevio on async URB completion" commit
-> > 46113830a18847cff8da73005e57bc49c2f95a56 was right, but nowadays we use
-> > struct pid and this solves most of the addressed problems.
+On Mon, 25 Feb 2008 08:28:51 -0800 mark gross <mgross@linux.intel.com> wrote:
+
+> > > +	/*just flush them all*/
 > > 
-> > It would be nice to use kill_pid_info() instead, but we can't because USB
-> > uses .si_code = SI_ASYNCIO which fools SI_FROMUSER() and thus security checks.
-> > 
-> > I think we should omit the permission checks completely, the task which does
-> > ioctl(USBDEVFS_SUBMITURB) explicitly asks to send the signal to it, we should
-> > not deny the signal even if the task changes its credentials in any way.
-> > 
-> > For now, we can remove security_task_kill(). It is bogus, the signal has come
-> > from kernel.
+> > I'm surprised that checkpatch didn't grump about the odd commenting style.
 > 
-> Ok, could you augment the comment above
-> kernel/signal.c:kill_pid_info_as_uid() to say that it is only called
-> from within the usb subsystem?
+> It didn't.  What's odd about the comment style here?
 
-OK, will do a bit later. I still hope we can kill this helper or at least
-cleanup it further.
-
-What we need in fact is kill_pid_info_skip_check_kill_permission(), and
-only because USB uses SI_ASYNCIO < 0.
-
-Oleg.
-
+We normally put a space after "/*" and before "*/"
