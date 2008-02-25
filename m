@@ -1,115 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756930AbYBYGko@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756020AbYBYGor@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756930AbYBYGko (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 Feb 2008 01:40:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753891AbYBYGkd
+	id S1756020AbYBYGor (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 Feb 2008 01:44:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753891AbYBYGoj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 Feb 2008 01:40:33 -0500
-Received: from shadow.wildlava.net ([67.40.138.81]:58404 "EHLO
-	shadow.wildlava.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753877AbYBYGkd (ORCPT
+	Mon, 25 Feb 2008 01:44:39 -0500
+Received: from wr-out-0506.google.com ([64.233.184.230]:48192 "EHLO
+	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753670AbYBYGoi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 Feb 2008 01:40:33 -0500
-X-Greylist: delayed 690 seconds by postgrey-1.27 at vger.kernel.org; Mon, 25 Feb 2008 01:40:32 EST
-Message-ID: <47C2602B.7010108@skyrush.com>
-Date: Sun, 24 Feb 2008 23:28:59 -0700
-From: Joe Peterson <joe@skyrush.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071127)
+	Mon, 25 Feb 2008 01:44:38 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=wcbQqNvwG5Ihp01SGAGCPrA3klzPfYAea7JnUJHniRw9oEY2443ywgHC5XgKwdD+f3JF8Q6nmUy1GbwG/nGfjrnJBaS83IHB1wNOwAg7gCKal4CyxcGp9ulzq2IU9zDftOgIG2X1zl6tuYLsbb3kaqp8UJraW+a3NrWhn6Oh6o0=
+Message-ID: <4d8e3fd30802242244s54e478acw1e582f7edf870b88@mail.gmail.com>
+Date: Mon, 25 Feb 2008 10:14:36 +0330
+From: "Paolo Ciarrocchi" <paolo.ciarrocchi@gmail.com>
+To: "Joe Perches" <joe@perches.com>
+Subject: Re: [PATCH 2/3] IDE: Replace __FUNCTION__ with __func__
+Cc: "Bartlomiej Zolnierkiewicz" <bzolnier@gmail.com>,
+       "Linux Kernel" <linux-kernel@vger.kernel.org>,
+       linux-ide <linux-ide@vger.kernel.org>
+In-Reply-To: <1203897888.19319.143.camel@localhost>
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       alan@lxorguk.ukuu.org.uk
-Subject: [PATCH] Resume TTY on SUSP and fix CRNL order in N_TTY line discipline
-X-Enigmail-Version: 0.95.6
-Content-Type: multipart/mixed;
- boundary="------------000401050100080307040606"
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20080224221113.5ddfe371@paolo-desktop>
+	 <1203897888.19319.143.camel@localhost>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------000401050100080307040606
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+On 2/25/08, Joe Perches <joe@perches.com> wrote:
+> On Sun, 2008-02-24 at 22:11 +0100, Paolo Ciarrocchi wrote:
+> > -	"driver.\n", __FUNCTION__, drive->name);
+> > +	"driver.\n", __func__, drive->name);
+>
+> Is there consensus on this style conversion?
 
-Here is a small patch to further refine behavior in n_tty.c.  It
-addresses two fine points in how received characters are treated - one
-to handle the signal chars in stopped TTYs more consistently, and the
-other to make the order of cr/nl translations more logical and
-consistent with other Unixes when unusual stty settings are used (e.g.
-if someone were to set intr to ^J).
+I did that in a separate patch because i'm not sure about that.
 
-						-Joe
+> Right now, there's 629 uses of __FUNCTION__ and 439 uses of __func__.
 
---------------000401050100080307040606
-Content-Type: text/plain;
- name="resume-tty-on-susp-and-fix-crnl-order-in-n_tty-line-discipline.patch"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename*0="resume-tty-on-susp-and-fix-crnl-order-in-n_tty-line-discipli";
- filename*1="ne.patch"
+Checkpatch.pl indicate the conversion as a janitorial task.
 
-Refine these behaviors in the N_TTY line discipline:
-
-1) Handle the signal characters consistently when received in
-   a stopped TTY so that SUSP (typically ctrl-Z) behaves like
-   INTR and QUIT in resuming a stopped TTY.
-
-2) Adjust the order in which the IGNCR/ICRNL/INLCR processing
-   is applied to be more logical and consistent with the behavior
-   of other Unix systems.
-
-Signed-off-by: Joe Peterson <joe@skyrush.com>
----
-
-diff -puN drivers/char/n_tty.c~resume-tty-on-susp-and-fix-crnl-order-in-n_tty-line-discipline drivers/char/n_tty.c
---- a/drivers/char/n_tty.c~resume-tty-on-susp-and-fix-crnl-order-in-n_tty-line-discipline	2008-02-24 08:36:24.000000000 -0700
-+++ a/drivers/char/n_tty.c	2008-02-24 21:08:15.000000000 -0700
-@@ -701,7 +701,7 @@ static inline void n_tty_receive_char(st
- 
- 	if (tty->stopped && !tty->flow_stopped && I_IXON(tty) &&
- 	    ((I_IXANY(tty) && c != START_CHAR(tty) && c != STOP_CHAR(tty)) ||
--	     c == INTR_CHAR(tty) || c == QUIT_CHAR(tty)))
-+	     c == INTR_CHAR(tty) || c == QUIT_CHAR(tty) || c == SUSP_CHAR(tty)))
- 		start_tty(tty);
- 
- 	if (tty->closing) {
-@@ -739,13 +739,6 @@ static inline void n_tty_receive_char(st
- 		return;
- 	}
- 
--	if (c == '\r') {
--		if (I_IGNCR(tty))
--			return;
--		if (I_ICRNL(tty))
--			c = '\n';
--	} else if (c == '\n' && I_INLCR(tty))
--		c = '\r';
- 	if (I_IXON(tty)) {
- 		if (c == START_CHAR(tty)) {
- 			start_tty(tty);
-@@ -756,6 +749,7 @@ static inline void n_tty_receive_char(st
- 			return;
- 		}
- 	}
-+
- 	if (L_ISIG(tty)) {
- 		int signal;
- 		signal = SIGINT;
-@@ -785,6 +779,15 @@ send_signal:
- 			return;
- 		}
- 	}
-+
-+	if (c == '\r') {
-+		if (I_IGNCR(tty))
-+			return;
-+		if (I_ICRNL(tty))
-+			c = '\n';
-+	} else if (c == '\n' && I_INLCR(tty))
-+		c = '\r';
-+
- 	if (tty->icanon) {
- 		if (c == ERASE_CHAR(tty) || c == KILL_CHAR(tty) ||
- 		    (c == WERASE_CHAR(tty) && L_IEXTEN(tty))) {
-
---------------000401050100080307040606--
+Ciao,
+--
+Paolo
+http://paolo.ciarrocchi.googlepages.com/
