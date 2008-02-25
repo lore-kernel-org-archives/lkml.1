@@ -1,24 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754436AbYBYGLY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760581AbYBYGLi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754436AbYBYGLY (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 Feb 2008 01:11:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758424AbYBYGLF
+	id S1760581AbYBYGLi (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 Feb 2008 01:11:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758669AbYBYGLH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 Feb 2008 01:11:05 -0500
-Received: from TYO202.gate.nec.co.jp ([202.32.8.206]:50523 "EHLO
+	Mon, 25 Feb 2008 01:11:07 -0500
+Received: from TYO202.gate.nec.co.jp ([202.32.8.206]:50534 "EHLO
 	tyo202.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758376AbYBYGLB (ORCPT
+	with ESMTP id S1752833AbYBYGLC (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 Feb 2008 01:11:01 -0500
-Message-ID: <47C25BE3.9050905@ak.jp.nec.com>
-Date: Mon, 25 Feb 2008 15:10:43 +0900
+	Mon, 25 Feb 2008 01:11:02 -0500
+Message-ID: <47C25BEB.3040405@ak.jp.nec.com>
+Date: Mon, 25 Feb 2008 15:10:51 +0900
 From: Kohei KaiGai <kaigai@ak.jp.nec.com>
 User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
 MIME-Version: 1.0
-To: greg@kroah.com, morgan@kernel.org, serue@us.ibm.com
-CC: Kohei KaiGai <kaigai@ak.jp.nec.com>, linux-security-module@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: [PATCH 2/3] exporting capability name/code pairs (final#2)
+To: Kohei KaiGai <kaigai@ak.jp.nec.com>
+CC: greg@kroah.com, morgan@kernel.org, serue@us.ibm.com,
+       linux-security-module@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: [PATCH 3/3] a new example to use kobject/kobj_attribute (final#2)
 References: <47C25AE9.7080305@ak.jp.nec.com>
 In-Reply-To: <47C25AE9.7080305@ak.jp.nec.com>
 Content-Type: text/plain; charset=ISO-2022-JP
@@ -27,238 +27,68 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[PATCH 2/3] exporting capability name/code pairs
+[PATCH 3/3] a new example to use kobject/kobj_attribute
 
-This patch enables to export code/name pairs of capabilities the running
-kernel supported.
-
-A newer kernel sometimes adds new capabilities, like CAP_MAC_ADMIN
-at 2.6.25. However, we have no interface to disclose what capabilities
-are supported on the running kernel. Thus, we have to maintain libcap
-version in appropriate one synchronously.
-
-This patch enables libcap to collect the list of capabilities at run time,
-and provide them for users. It helps to improve portability of library.
-
-It exports these information as regular files under /sys/kernel/capability.
-The numeric node exports its name, the symbolic node exports its code.
+This patch can provide a new exmple to use kobject and attribute.
+The _show() and _store() method can refer/store the private data field of
+kobj_attribute structure to know what entries are accessed by users.
+It will make easier to share a single _show()/_store() method with several
+entries.
 
 Signed-off-by: KaiGai Kohei <kaigai@ak.jp.nec.com>
 --
- Documentation/ABI/testing/sysfs-kernel-capability |   23 +++++
- scripts/mkcapnames.sh                             |   44 +++++++++
- security/Makefile                                 |    9 ++
- security/commoncap.c                              |   99 +++++++++++++++++++++
- 4 files changed, 175 insertions(+), 0 deletions(-)
+ samples/kobject/kobject-example.c |   32 ++++++++++++++++++++++++++++++++
+ 1 files changed, 32 insertions(+), 0 deletions(-)
 
-diff --git a/Documentation/ABI/testing/sysfs-kernel-capability b/Documentation/ABI/testing/sysfs-kernel-capability
-index e69de29..d4a14e7 100644
---- a/Documentation/ABI/testing/sysfs-kernel-capability
-+++ b/Documentation/ABI/testing/sysfs-kernel-capability
-@@ -0,0 +1,23 @@
-+What:		/sys/kernel/capability
-+Date:		Feb 2008
-+Contact:	KaiGai Kohei <kaigai@ak.jp.nec.com>
-+Description:
-+		The entries under /sys/kernel/capability are used to export
-+		the list of capabilities the running kernel supports.
-+
-+		- /sys/kernel/capability/version
-+		  returns the most preferable version number for the
-+		  running kernel.
-+		  e.g) $ cat /sys/kernel/capability/version
-+		       0x20071026
-+
-+		- /sys/kernel/capability/code/<numerical representation>
-+		  returns its symbolic representation, on reading.
-+		  e.g) $ cat /sys/kernel/capability/codes/30
-+		       cap_audit_control
-+
-+		- /sys/kernel/capability/name/<symbolic representation>
-+		  returns its numerical representation, on reading.
-+		  e.g) $ cat /sys/kernel/capability/names/cap_sys_pacct
-+		       20
-+
-diff --git a/scripts/mkcapnames.sh b/scripts/mkcapnames.sh
-index e69de29..5d36d52 100644
---- a/scripts/mkcapnames.sh
-+++ b/scripts/mkcapnames.sh
-@@ -0,0 +1,44 @@
-+#!/bin/sh
-+
-+#
-+# generate a cap_names.h file from include/linux/capability.h
-+#
-+
-+CAPHEAD="`dirname $0`/../include/linux/capability.h"
-+REGEXP='^#define CAP_[A-Z_]+[ 	]+[0-9]+$'
-+NUMCAP=`cat "$CAPHEAD" | egrep -c "$REGEXP"`
-+
-+echo '#ifndef CAP_NAMES_H'
-+echo '#define CAP_NAMES_H'
-+echo
-+echo '/*'
-+echo ' * Do NOT edit this file directly.'
-+echo ' * This file is generated from include/linux/capability.h automatically'
-+echo ' */'
-+echo
-+echo '#if !defined(SYSFS_CAP_NAME_ENTRY) || !defined(SYSFS_CAP_CODE_ENTRY)'
-+echo '#error cap_names.h should be included from security/capability.c'
-+echo '#else'
-+echo "#if $NUMCAP != CAP_LAST_CAP + 1"
-+echo '#error mkcapnames.sh cannot collect capabilities correctly'
-+echo '#else'
-+cat "$CAPHEAD" | egrep "$REGEXP" \
-+    | awk '{ printf("SYSFS_CAP_NAME_ENTRY(%s,%s);\n", tolower($2), $2); }'
-+echo
-+echo 'static struct attribute *capability_name_attrs[] = {'
-+cat "$CAPHEAD" | egrep "$REGEXP" \
-+    | awk '{ printf("\t&%s_name_attr.attr,\n", tolower($2)); } END { print "\tNULL," }'
-+echo '};'
-+
-+echo
-+cat "$CAPHEAD" | egrep "$REGEXP" \
-+    | awk '{ printf("SYSFS_CAP_CODE_ENTRY(%s,%s);\n", tolower($2), $2); }'
-+echo
-+echo 'static struct attribute *capability_code_attrs[] = {'
-+cat "$CAPHEAD" | egrep "$REGEXP" \
-+    | awk '{ printf("\t&%s_code_attr.attr,\n", tolower($2)); } END { print "\tNULL," }'
-+echo '};'
-+
-+echo '#endif'
-+echo '#endif'
-+echo '#endif'
-diff --git a/security/Makefile b/security/Makefile
-index 9e8b025..4093e3e 100644
---- a/security/Makefile
-+++ b/security/Makefile
-@@ -18,3 +18,12 @@ obj-$(CONFIG_SECURITY_SELINUX)		+= selinux/built-in.o
- obj-$(CONFIG_SECURITY_SMACK)		+= commoncap.o smack/built-in.o
- obj-$(CONFIG_SECURITY_CAPABILITIES)	+= commoncap.o capability.o
- obj-$(CONFIG_SECURITY_ROOTPLUG)		+= commoncap.o root_plug.o
-+
-+# cap_names.h contains the code/name pair of capabilities.
-+# It is generated using include/linux/capability.h automatically.
-+$(obj)/commoncap.o: $(obj)/cap_names.h
-+quiet_cmd_cap_names  = CAPS    $@
-+	cmd_cap_names  = /bin/sh $(srctree)/scripts/mkcapnames.sh > $@
-+targets += cap_names.h
-+$(obj)/cap_names.h: $(srctree)/scripts/mkcapnames.sh $(srctree)/include/linux/capability.h FORCE
-+	$(call if_changed,cap_names)
-diff --git a/security/commoncap.c b/security/commoncap.c
-index 5aba826..9483fa9 100644
---- a/security/commoncap.c
-+++ b/security/commoncap.c
-@@ -24,6 +24,8 @@
- #include <linux/hugetlb.h>
- #include <linux/mount.h>
- #include <linux/sched.h>
-+#include <linux/kobject.h>
-+#include <linux/sysfs.h>
-
- /* Global security state */
-
-@@ -637,3 +639,100 @@ int cap_vm_enough_memory(struct mm_struct *mm, long pages)
- 	return __vm_enough_memory(mm, pages, cap_sys_admin);
- }
+diff --git a/samples/kobject/kobject-example.c b/samples/kobject/kobject-example.c
+index 08d0d3f..5486a14 100644
+--- a/samples/kobject/kobject-example.c
++++ b/samples/kobject/kobject-example.c
+@@ -77,6 +77,35 @@ static struct kobj_attribute baz_attribute =
+ static struct kobj_attribute bar_attribute =
+ 	__ATTR(bar, 0666, b_show, b_store);
 
 +/*
-+ * Export the list of capabilities on /sys/kernel/capability
++ * You can store a private data within 'data' field of kobj_attribute.
++ * It enables to share a single _show() or _store() method with several
++ * entries.
 + */
-+static struct kobject *capability_kobj;
-+
-+static ssize_t capability_name_show(struct kobject *kobj,
-+				    struct kobj_attribute *attr,
-+				    char *buffer)
++static ssize_t integer_show(struct kobject *kobj,
++			    struct kobj_attribute *attr,
++			    char *buf)
 +{
-+	/* It returns numerical representation of capability. */
-+	return scnprintf(buffer, PAGE_SIZE, "%ld\n", (long) attr->data);
++	return scnprintf(buf, PAGE_SIZE, "%ld\n", (long) attr->data);
 +}
 +
-+static ssize_t capability_code_show(struct kobject *kobj,
-+				    struct kobj_attribute *attr,
-+				    char *buffer)
++static ssize_t integer_store(struct kobject *kobj,
++			     struct kobj_attribute *attr,
++			     const char *buf, size_t count)
 +{
-+	/* It returns symbolic representation of capability. */
-+	return scnprintf(buffer, PAGE_SIZE, "%s\n", (char *) attr->data);
++	long code;
++
++	sscanf(buf, "%ld", &code);
++	attr->data = (void *) code;
++	return count;
 +}
 +
-+static ssize_t capability_version_show(struct kobject *kobj,
-+				       struct kobj_attribute *attr,
-+				       char *buffer)
-+{
-+	return scnprintf(buffer, PAGE_SIZE, "0x%08x\n",
-+			 _LINUX_CAPABILITY_VERSION);
-+}
-+
-+#define SYSFS_CAP_NAME_ENTRY(_name,_code)				\
-+	static struct kobj_attribute _name##_name_attr =		\
-+		__ATTR_DATA(_name, 0444, capability_name_show, NULL, (long)(_code))
-+
-+#define SYSFS_CAP_CODE_ENTRY(_name,_code)				\
-+	static struct kobj_attribute _name##_code_attr =		\
-+		__ATTR_DATA(_code, 0444, capability_code_show, NULL, __stringify(_name))
-+
-+/*
-+ * capability_attrs[] is generated automatically by scripts/mkcapnames.sh
-+ * This script parses include/linux/capability.h
-+ */
-+#include "cap_names.h"
-+
-+static struct attribute_group capability_name_attr_group = {
-+	.name = "names",
-+	.attrs = capability_name_attrs,
-+};
-+
-+static struct attribute_group capability_code_attr_group = {
-+	.name = "codes",
-+	.attrs = capability_code_attrs,
-+};
-+
-+static struct kobj_attribute cap_version_attr =
-+	__ATTR(version, 0444, capability_version_show, NULL);
-+
-+static int __init capability_export_names(void)
-+{
-+	int rc = -ENOMEM;
-+
-+	/* make /sys/kernel/capability */
-+	capability_kobj = kobject_create_and_add("capability", kernel_kobj);
-+	if (!capability_kobj)
-+		goto error0;
-+
-+	/* make /sys/kernel/capability/names */
-+	rc = sysfs_create_group(capability_kobj,
-+				&capability_name_attr_group);
-+	if (rc)
-+		goto error1;
-+
-+	/* make /sys/kernel/capability/codes */
-+	rc = sysfs_create_group(capability_kobj,
-+				&capability_code_attr_group);
-+	if (rc)
-+		goto error2;
-+
-+	/* make /sys/kernel/capability/version */
-+	rc = sysfs_create_file(capability_kobj,
-+			       &cap_version_attr.attr);
-+	if (rc)
-+		goto error3;
-+
-+	return 0;
-+
-+error3:
-+	sysfs_remove_group(capability_kobj, &capability_code_attr_group);
-+error2:
-+	sysfs_remove_group(capability_kobj, &capability_name_attr_group);
-+error1:
-+	kobject_put(capability_kobj);
-+error0:
-+	printk(KERN_ERR "Unable to export capabilities\n");
-+
-+	return rc;
-+}
-+__initcall(capability_export_names);
++static struct kobj_attribute hoge_attribute =
++	__ATTR_DATA(hoge, 0666, integer_show, integer_store, (long) 123);
++static struct kobj_attribute piyo_attribute =
++	__ATTR_DATA(piyo, 0666, integer_show, integer_store, (long) 456);
++static struct kobj_attribute fuga_attribute =
++	__ATTR_DATA(fuga, 0444, integer_show, NULL, (long) 789);
+
+ /*
+  * Create a group of attributes so that we can create and destory them all
+@@ -86,6 +115,9 @@ static struct attribute *attrs[] = {
+ 	&foo_attribute.attr,
+ 	&baz_attribute.attr,
+ 	&bar_attribute.attr,
++	&hoge_attribute.attr,
++	&piyo_attribute.attr,
++	&fuga_attribute.attr,
+ 	NULL,	/* need to NULL terminate the list of attributes */
+ };
 
 -- 
 OSS Platform Development Division, NEC
