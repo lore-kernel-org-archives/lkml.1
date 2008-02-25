@@ -1,58 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757821AbYBYSPg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758232AbYBYSPv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757821AbYBYSPg (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 Feb 2008 13:15:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755233AbYBYSP2
+	id S1758232AbYBYSPv (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 Feb 2008 13:15:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756484AbYBYSPk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 Feb 2008 13:15:28 -0500
-Received: from sandeen.net ([209.173.210.139]:27792 "EHLO sandeen.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755194AbYBYSP1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 Feb 2008 13:15:27 -0500
-Message-ID: <47C305BD.1060408@sandeen.net>
-Date: Mon, 25 Feb 2008 12:15:25 -0600
-From: Eric Sandeen <sandeen@sandeen.net>
-User-Agent: Thunderbird 2.0.0.9 (Macintosh/20071031)
+	Mon, 25 Feb 2008 13:15:40 -0500
+Received: from mail.gmx.net ([213.165.64.20]:59052 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1757995AbYBYSPj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 25 Feb 2008 13:15:39 -0500
+X-Authenticated: #20450766
+X-Provags-ID: V01U2FsdGVkX1/OjsMnRx7Obtb47N4YT/15o1CV7IvzQYa7qv+rKN
+	Em+hlnPLJL1+nF
+Date: Mon, 25 Feb 2008 19:15:57 +0100 (CET)
+From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+To: Greg KH <greg@kroah.com>
+cc: linux-kernel@vger.kernel.org
+Subject: Re: [PCI] duplicate sysfs symbols getting registered in current git
+In-Reply-To: <Pine.LNX.4.64.0802251341160.4430@axis700.grange>
+Message-ID: <Pine.LNX.4.64.0802251913380.19416@axis700.grange>
+References: <Pine.LNX.4.64.0802182142240.11540@axis700.grange>
+ <20080220063834.GA22708@kroah.com> <Pine.LNX.4.64.0802251341160.4430@axis700.grange>
 MIME-Version: 1.0
-To: xfs-masters@oss.sgi.com
-CC: xfs@oss.sgi.com, johannes@sipsolutions.net,
-       linux-kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [xfs-masters] filesystem corruption on xfs after 2.6.25-rc1 (bisected,
- powerpc related?)
-References: <20080225112310.GA5516@soziologie.ch>
-In-Reply-To: <20080225112310.GA5516@soziologie.ch>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Y-GMX-Trusted: 0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Gaudenz Steinlin wrote:
-> Hi
-> 
-> Since upgrading to 2.6.25-rc1 I see filesystem corruption on my XFS
-> filesystem. I can reproduce this by doing "git reset --hard v2.6.25-rc1"
-> on a git checkout which is on some other revision. Git outputs strange
-> error messages (like file xxx is a directory when xxx really is a file)
-> and sometimes the filesystem "hangs" (I can no longer do any operations
-> on it even from another shell). If I reboot with a working kernel and
-> check the filesystem xfs_check reports many errors. I also see the
-> problem when doing other (not related to git) operations on the
-> filesystem. Git reset is just the easiest way to reproduce it.
-> 
-> I was able to track this corruption down to commit
-> a69b176df246d59626e6a9c640b44c0921fa4566 ([XFS] Use the generic bitops
-> rather than implementing them ourselves.) using git bisect.
-> 
-> Reverting edd319dc527733e61eec5bdc9ce20c94634b6482 ([XFS] Fix
-> xfs_lowbit64) to avoid merge conflicts and the faulty commit on top of
-> 2.6.25-rc3 fixes the problem.
+On Mon, 25 Feb 2008, Guennadi Liakhovetski wrote:
 
-If you're feeling motivated, maybe you can narrow it down to which of
-the changes - xfs_highbit32, xfs_highbit64, xfs_lowbit32, or
-xfs_lowbit64 - is causing the problem?  (or maybe they all are ...)
+> On Tue, 19 Feb 2008, Greg KH wrote:
+> 
+> > On Mon, Feb 18, 2008 at 09:52:25PM +0100, Guennadi Liakhovetski wrote:
+> > > Booting an x86 SMP PC with todays git-snapshot or just with 2.6.25-rc2 
+> > > getting the following warnings (with a bit of context):
+> > 
+> > Can you try enabling CONFIG_DEBUG_KOBJECT and sending the output at boot
+> > time from this?
+> 
+> dmesg output with CONFIG_LOG_BUF_SHIFT=19 sent privately to Greg as 
+> unpacked, as it would have to be sent to the list, is 408K big. Will see 
+> what Greg says.
 
-Or maybe someone looking at the commit can immediately see the
-problem... but I can't :)
+Actually, the most annoying problem with post 2.6.24 kernels on this 
+machine is, that the system doesn't power off or reboot any more. And 
+seeing other reports, where the reason for not powering down was unfreed 
+kobjects, maybe this is the problem here too?
 
--Eric
+Thanks
+Guennadi
+---
+Guennadi Liakhovetski
