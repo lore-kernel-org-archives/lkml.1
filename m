@@ -1,47 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761296AbYBYW14@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760166AbYBYW3u@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761296AbYBYW14 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 Feb 2008 17:27:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757286AbYBYW1p
+	id S1760166AbYBYW3u (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 Feb 2008 17:29:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756792AbYBYW3k
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 Feb 2008 17:27:45 -0500
-Received: from relay.2ka.mipt.ru ([194.85.82.65]:36220 "EHLO 2ka.mipt.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756302AbYBYW1o (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 Feb 2008 17:27:44 -0500
-Date: Tue, 26 Feb 2008 01:26:17 +0300
-From: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
-To: Anton Vorontsov <cbouatmailru@gmail.com>
-Cc: Matt Reimer <mreimer@vpop.net>, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH 1/2] [W1] ds1wm: should check for IS_ERR(clk) instead of NULL
-Message-ID: <20080225222617.GA11899@2ka.mipt.ru>
-References: <20080225212426.GA29891@zarina>
-Mime-Version: 1.0
+	Mon, 25 Feb 2008 17:29:40 -0500
+Received: from sj-iport-6.cisco.com ([171.71.176.117]:46312 "EHLO
+	sj-iport-6.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755254AbYBYW3i (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 25 Feb 2008 17:29:38 -0500
+To: Steve Wise <swise@opengridcomputing.com>
+Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+       general@lists.openfabrics.org
+Subject: Re: [ofa-general] [PATCH 2.6.25] RDMA/cxgb3: Shift calculation wrong for single sge entries.
+X-Message-Flag: Warning: May contain useful information
+References: <20080220233148.25301.54457.stgit@dell3.ogc.int>
+From: Roland Dreier <rdreier@cisco.com>
+Date: Mon, 25 Feb 2008 14:29:34 -0800
+In-Reply-To: <20080220233148.25301.54457.stgit@dell3.ogc.int> (Steve Wise's message of "Wed, 20 Feb 2008 17:31:48 -0600")
+Message-ID: <ada63wczn3l.fsf@cisco.com>
+User-Agent: Gnus/5.1008 (Gnus v5.10.8) XEmacs/21.4.21 (linux)
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080225212426.GA29891@zarina>
-User-Agent: Mutt/1.5.9i
+X-OriginalArrivalTime: 25 Feb 2008 22:29:37.0462 (UTC) FILETIME=[E7831D60:01C877FD]
+Authentication-Results: sj-dkim-1; header.From=rdreier@cisco.com; dkim=pass (
+	sig from cisco.com/sjdkim1004 verified; ); 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Anton.
+Thanks, applied, although I assume based on the Signed-off-by line
+that you left out a
 
-On Tue, Feb 26, 2008 at 12:24:26AM +0300, Anton Vorontsov (cbouatmailru@gmail.com) wrote:
-> On the error condition clk_get() returns ERR_PTR(..), so checking
-> for NULL doesn't work. ds1wm module causes a kernel oops when ds1wm
-> clock isn't registered.
-> 
-> This patch converts NULL check to IS_ERR(), plus uses PTR_ERR()
-> for the return code.
-> 
-> Signed-off-by: Anton Vorontsov <cbouatmailru@gmail.com>
+  From: Bryan Rosenburg <rosnbrg@us.ibm.com>
 
-Both patches look good, thanks Anton.
+at the top (to get the authorship in git correctly).
 
-Andrew, please merge them and add my ack if needed.
-Thank you.
+ > RDMA/cxgb3: Shift calculation wrong for single sge entries.
 
--- 
-	Evgeniy Polyakov
+BTW, there's no need to duplicate the subject line in the message
+body, but if you are going to do it, please put a "Subject:" before
+it.  Otherwise I just have to edit it out by hand to avoid git putting
+the subject in twice.
+
+ - R.
