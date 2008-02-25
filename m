@@ -1,61 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756878AbYBYTTi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758138AbYBYTUo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756878AbYBYTTi (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 Feb 2008 14:19:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753243AbYBYTT1
+	id S1758138AbYBYTUo (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 Feb 2008 14:20:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754518AbYBYTUg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 Feb 2008 14:19:27 -0500
-Received: from ug-out-1314.google.com ([66.249.92.169]:3204 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753426AbYBYTTZ (ORCPT
+	Mon, 25 Feb 2008 14:20:36 -0500
+Received: from hellhawk.shadowen.org ([80.68.90.175]:4175 "EHLO
+	hellhawk.shadowen.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751552AbYBYTUf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 Feb 2008 14:19:25 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
-        b=dRuBBepiNBqYXDY8Fth3YHu3qRnlRQFbUQ1f7zj88dhkVRWN+3y6YppUsm3il5TfdQXEnEWGRGALZ8g07x0kKAd8tLljYcnERqJ6Va2PVFdtLd3V2oxrFWsvfxJvZCEh8zAZROt/jasuzs/VCO6hxpYvRmHqu7b2t4Z+xSBiWx0=
-Message-ID: <8f53421d0802251119q470a79c1p31048ef136271f84@mail.gmail.com>
-Date: Mon, 25 Feb 2008 21:19:24 +0200
-From: "Michael S. Tsirkin" <m.s.tsirkin@gmail.com>
-To: "Andrew Morton" <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       "Alexey Starikovskiy" <astarikovskiy@suse.de>,
-       "Len Brown" <len.brown@intel.com>, linux-acpi@vger.kernel.org
-Subject: new regression in 2.6.25-rc3: no keyboard/lid acpi events on thinkpad T61p
+	Mon, 25 Feb 2008 14:20:35 -0500
+Date: Mon, 25 Feb 2008 19:21:27 +0000
+From: Andy Whitcroft <apw@shadowen.org>
+To: =?iso-8859-1?Q?J=F6rn?= Engel <joern@logfs.org>
+Cc: Dave Hansen <haveblue@us.ibm.com>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: Page scan keeps touching kernel text pages
+Message-ID: <20080225192127.GA20322@shadowen.org>
+References: <20080224144710.GD31293@lazybastard.org> <20080225150724.GF2604@shadowen.org> <1203961702.6662.35.camel@nimitz.home.sr71.net> <20080225185319.GA14699@lazybastard.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20080225185319.GA14699@lazybastard.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On my T61p, 2.6.25-rc2 seems to get acpi events from keypresses
-such as Fn-F4 and lid open/close, prints them in /var/log/acpid
-and reacts accordingly (my acpi scripts suspend on lid close and Fn-F4).
+On Mon, Feb 25, 2008 at 07:53:20PM +0100, Jörn Engel wrote:
+> On Mon, 25 February 2008 09:48:22 -0800, Dave Hansen wrote:
+> > On Mon, 2008-02-25 at 15:07 +0000, Andy Whitcroft wrote:
+> > > shrink_page_list() would be expected to be passed pages pulled from
+> > > the active or inactive lists via isolate_lru_pages()?  I would not have
+> > > expected to find the kernel text on the LRU and therefore not expect to
+> > > see it passed to shrink_page_list()?
+> > 
+> > It may have been kernel text at one time, but what about __init
+> > functions?  Don't we free that section back to the normal allocator
+> > after init time?  Those can end up on the LRU.
+> 
+> Pages below 0x2ba should be non-init in my test kernel:
+> c02ba000 T __init_begin
+> ...
+> c02d5000 B __init_end
+> 
+> scanning zone DMA
+> page      3fa        3 00000000 628
+> page      2bf        2 00000000 628
+> page       97        3 00000000 628
+> page       98        2 00000000 628
+> 
+> So __init explains one page of this minimal sample, but not the other
+> three.
 
-This no longer happens in 2.6.25-rc3: I see nothing in /var/log/acpid
-after power on:
-[Mon Feb 25 20:47:28 2008] completed event "button/power PWRF 00000080 00000001"
-[Mon Feb 25 20:48:44 2008] starting up
-[Mon Feb 25 20:48:44 2008] 57 rules loaded
-[Mon Feb 25 20:48:48 2008] client connected from 5927[0:0]
-[Mon Feb 25 20:48:48 2008] 1 client rule loaded
+I thought that init sections were deliberatly pushed to the end of the
+kernel when linked, cirtainly on my laptop here that seems to be so.
+That would make the first two "after" the kernel.  The other two appear
+to be before the traditional kernel load address, which is 0x100000, so
+those pages are before not in the kernel?
 
-and pressing buttons or closing lid produces no output in
-/var/log/acpid and seems to have no effect.
-
-git bisect pointed at commit 208c70a45624400fafd7511b96bc426bf01f8f5e :
-ACPI: EC: Use proper handle for boot EC
-
-If I do git revert 208c70a45624400fafd7511b96bc426bf01f8f5e on top
-of 2.6.25-rc3, I start getting keyboard acpi events, again.
-
-
-Thanks,
-MST
-
-PS: I see a different problem on resume, it seems to be unrelated to ACPI
-and I will bisect and report separately.
-
-PPS: Pls Cc me directly, I am not on the list.
+-apw
