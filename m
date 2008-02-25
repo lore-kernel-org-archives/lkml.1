@@ -1,129 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755443AbYBYMXS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755912AbYBYMZs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755443AbYBYMXS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 Feb 2008 07:23:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754316AbYBYMXJ
+	id S1755912AbYBYMZs (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 Feb 2008 07:25:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754517AbYBYMZk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 Feb 2008 07:23:09 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:60640 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754252AbYBYMXH (ORCPT
+	Mon, 25 Feb 2008 07:25:40 -0500
+Received: from courier.cs.helsinki.fi ([128.214.9.1]:52634 "EHLO
+	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754495AbYBYMZj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 Feb 2008 07:23:07 -0500
-Subject: [PATCH] sched: revert load_balance_monitor()
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Srivatsa Vaddagiri <vatsa@in.ibm.com>,
-       Dhaval Giani <dhaval@linux.vnet.ibm.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Content-Type: text/plain
-Date: Mon, 25 Feb 2008 13:22:47 +0100
-Message-Id: <1203942167.6242.142.camel@lappy>
+	Mon, 25 Feb 2008 07:25:39 -0500
+Date: Mon, 25 Feb 2008 14:25:38 +0200 (EET)
+From: Pekka J Enberg <penberg@cs.helsinki.fi>
+To: Michael Buesch <mb@bu3sch.de>
+cc: Greg KH <greg@kroah.com>, Alexey Zaytsev <alexey.zaytsev@gmail.com>,
+       Ingo Molnar <mingo@elte.hu>, Alexey Zaytsev <zaytsev.a@protei.ru>,
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: bcm43xx regression in 2.6.24 (with patch)
+In-Reply-To: <200802251319.03819.mb@bu3sch.de>
+Message-ID: <Pine.LNX.4.64.0802251423190.21696@sbz-30.cs.Helsinki.FI>
+References: <47BEAF3B.3080809@protei.ru> <200802251054.57070.mb@bu3sch.de>
+ <84144f020802250411i7a4a7c51h60ed9f9878c86422@mail.gmail.com>
+ <200802251319.03819.mb@bu3sch.de>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.21.90 
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Subject: sched: revert load_balance_monitor()
+On Mon, 25 Feb 2008, Michael Buesch wrote:
+> > Neither of which seem like acceptable solutions for a 2.6.23 -> 2.6.24
+> > _regression_. Or maybe I am just too naive to believe Linus' statement
+> > on not letting the kernel regress...
+> 
+> So, please sign-off the patch that we have, if you think it's right
+> and doesn't cause more regressions.
 
-The following commit causes a number of serious regressions:
+I did look at the patch and can gladly add a:
 
-  commit 6b2d7700266b9402e12824e11e0099ae6a4a6a79
-  Author: Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>
-  Date:   Fri Jan 25 21:08:00 2008 +0100
-  sched: group scheduler, fix fairness of cpu bandwidth allocation for task groups
+Reviewed-by: Pekka Enberg <penberg@cs.helsinki.fi>
 
-Namely:
- - very frequent wakeups on SMP, reported by PowerTop users.
- - cacheline trashing on (large) SMP
- - some latencies larger than 500ms
+But this seems backwards. It was _your_ commit that broke the setup and 
+the patch touches a driver _you're_ maintaining.
 
-While there is a mergeable patch to fix the latter, the former issues
-are IMHO not fixable in a manner suitable for .25 (we're at -rc3 now).
-Hence I propose to revert this patch and try again for .26.
+So can we just revert commit 753f492093da7a40141bfe083073400f518f4c68 
+("[B44]: port to native ssb support") from 2.6.24 and you can add it back 
+to 2.6.25 if the problem indeed does go away?
 
-( minimal revert - leaves most of the code present, just removes the activation
-  and sysctl interface ).
-
-Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
-CC: Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>
----
- include/linux/sched.h |    4 ----
- kernel/sched.c        |   15 ---------------
- kernel/sysctl.c       |   18 ------------------
- 3 files changed, 37 deletions(-)
-
-Index: linux-2.6/include/linux/sched.h
-===================================================================
---- linux-2.6.orig/include/linux/sched.h
-+++ linux-2.6/include/linux/sched.h
-@@ -1541,10 +1541,6 @@ extern unsigned int sysctl_sched_child_r
- extern unsigned int sysctl_sched_features;
- extern unsigned int sysctl_sched_migration_cost;
- extern unsigned int sysctl_sched_nr_migrate;
--#if defined(CONFIG_FAIR_GROUP_SCHED) && defined(CONFIG_SMP)
--extern unsigned int sysctl_sched_min_bal_int_shares;
--extern unsigned int sysctl_sched_max_bal_int_shares;
--#endif
- 
- int sched_nr_latency_handler(struct ctl_table *table, int write,
- 		struct file *file, void __user *buffer, size_t *length,
-Index: linux-2.6/kernel/sched.c
-===================================================================
---- linux-2.6.orig/kernel/sched.c
-+++ linux-2.6/kernel/sched.c
-@@ -7083,21 +7083,6 @@ void __init sched_init_smp(void)
- 	if (set_cpus_allowed(current, non_isolated_cpus) < 0)
- 		BUG();
- 	sched_init_granularity();
--
--#ifdef CONFIG_FAIR_GROUP_SCHED
--	if (nr_cpu_ids == 1)
--		return;
--
--	lb_monitor_task = kthread_create(load_balance_monitor, NULL,
--					 "group_balance");
--	if (!IS_ERR(lb_monitor_task)) {
--		lb_monitor_task->flags |= PF_NOFREEZE;
--		wake_up_process(lb_monitor_task);
--	} else {
--		printk(KERN_ERR "Could not create load balance monitor thread"
--			"(error = %ld) \n", PTR_ERR(lb_monitor_task));
--	}
--#endif
- }
- #else
- void __init sched_init_smp(void)
-Index: linux-2.6/kernel/sysctl.c
-===================================================================
---- linux-2.6.orig/kernel/sysctl.c
-+++ linux-2.6/kernel/sysctl.c
-@@ -311,24 +311,6 @@ static struct ctl_table kern_table[] = {
- 		.mode		= 0644,
- 		.proc_handler	= &proc_dointvec,
- 	},
--#if defined(CONFIG_FAIR_GROUP_SCHED) && defined(CONFIG_SMP)
--	{
--		.ctl_name       = CTL_UNNUMBERED,
--		.procname       = "sched_min_bal_int_shares",
--		.data           = &sysctl_sched_min_bal_int_shares,
--		.maxlen         = sizeof(unsigned int),
--		.mode           = 0644,
--		.proc_handler   = &proc_dointvec,
--	},
--	{
--		.ctl_name       = CTL_UNNUMBERED,
--		.procname       = "sched_max_bal_int_shares",
--		.data           = &sysctl_sched_max_bal_int_shares,
--		.maxlen         = sizeof(unsigned int),
--		.mode           = 0644,
--		.proc_handler   = &proc_dointvec,
--	},
--#endif
- #endif
- 	{
- 		.ctl_name	= CTL_UNNUMBERED,
-
-
+			Pekka
