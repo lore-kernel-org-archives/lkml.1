@@ -1,80 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760608AbYBYWJz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760466AbYBYWKb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760608AbYBYWJz (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 Feb 2008 17:09:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759979AbYBYWJm
+	id S1760466AbYBYWKb (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 Feb 2008 17:10:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757550AbYBYWKL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 Feb 2008 17:09:42 -0500
-Received: from wf-out-1314.google.com ([209.85.200.175]:5359 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760487AbYBYWJj (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 Feb 2008 17:09:39 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=JuHk8cSG5IUnKoP0qucd2aI/RdKKMEUaAXJrde2Ap8nl68sWXn0E9Glo5Gl48gX8ET4PDnlRrTUwYghDrKkWb88DLK16uufrhlX8Wd4t+TuQpQiVhZtbTOphJXtQnxFgOmkk3eIMAngLpzQnkPKtGgs5ctq9ATCvLg4tq20selc=
-Message-ID: <a32f33a40802251409ofbdab60w4a95c8aaefaad70a@mail.gmail.com>
-Date: Mon, 25 Feb 2008 23:09:39 +0100
-From: "Ivo Van Doorn" <ivdoorn@gmail.com>
-To: chris2553@googlemail.com
-Subject: Re: 2.6.25-rc2 regression in rt61pci wireless driver
-Cc: linux-kernel@vger.kernel.org, linux-wireless@vger.kernel.org
-In-Reply-To: <200802252104.32416.chris2553@googlemail.com>
+	Mon, 25 Feb 2008 17:10:11 -0500
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:41971 "EHLO amd.ucw.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1754357AbYBYWKJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 25 Feb 2008 17:10:09 -0500
+Date: Mon, 25 Feb 2008 23:10:33 +0100
+From: Pavel Machek <pavel@ucw.cz>
+To: Gregory Haskins <ghaskins@novell.com>
+Cc: mingo@elte.hu, a.p.zijlstra@chello.nl, tglx@linutronix.de,
+       rostedt@goodmis.org, linux-rt-users@vger.kernel.org,
+       linux-kernel@vger.kernel.org, bill.huey@gmail.com, kevin@hilman.org,
+       cminyard@mvista.com, dsingleton@mvista.com, dwalker@mvista.com,
+       npiggin@suse.de, dsaxena@plexity.net, ak@suse.de, acme@redhat.com,
+       gregkh@suse.de, sdietrich@novell.com, pmorreale@novell.com,
+       mkohari@novell.com
+Subject: Re: [(RT RFC) PATCH v2 8/9] adjust pi_lock usage in wakeup
+Message-ID: <20080225221033.GJ2659@elf.ucw.cz>
+References: <20080225155959.11268.35541.stgit@novell1.haskins.net> <20080225160118.11268.47575.stgit@novell1.haskins.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <c6b1100b0802160406l24fed9dcje1dbfc8907fd7a16@mail.gmail.com>
-	 <c6b1100b0802220746s3441d28cj92896618bbb57bde@mail.gmail.com>
-	 <200802222047.52312.IvDoorn@gmail.com>
-	 <200802252104.32416.chris2553@googlemail.com>
+In-Reply-To: <20080225160118.11268.47575.stgit@novell1.haskins.net>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Mon 2008-02-25 11:01:18, Gregory Haskins wrote:
+> From: Peter W.Morreale <pmorreale@novell.com>
+> 
+> In wakeup_next_waiter(), we take the pi_lock, and then find out whether
+> we have another waiter to add to the pending owner.  We can reduce
+> contention on the pi_lock for the pending owner if we first obtain the
+> pointer to the next waiter outside of the pi_lock.
+> 
+> This patch adds a measureable increase in throughput.
+> 
+> Signed-off-by: Peter W. Morreale <pmorreale@novell.com>
 
->  > > >  Checking those out is simply a matter of:
->  > > >  git branch 2.0.11 2d68de3efa62655d551092f5c787505735d561ad
->  > > >  git checkout 2.0.11
->  > >
->  > > OK, we seem to be struggling a little, so I've built an installed git
->  > > and cloned Linus' 2.6 tree. My wireless network dies after a few pings
->  > > with rt2x00 2.0.11.
->  > >
->  > > >  No further bisecting is needed, but with above tests I can at least
->  > > >  narrow it down to find the cause of this issue.
->  > >
->  > > If you need me to bisect, just shout. Please be patient though, I'm
->  > > exploring new territory here :-)
->  >
->  > I don't think bisecting this will help a lot, the rt2x00 2.0.11 release
->  > introduced software diversity. And that is already something I suspect
->  > of being broken.
->  >
->   I've bisected anyway and although the results are not absolutely conclusive,
->  as I neared the end of the process, I was amongst a bunch of mac80211
->  patches. This set me on a path that resulted in me discovering that with the
->  rt61pci driver, I can freeze my wireless network connection almost at will if
->  I set mac82011's ieee80211_default_rc_algo parameter to 'pid'. if the
->  parametre is set to 'simple', the network seems to be reliable. I've just let
->  the ping application run on and ping another box on my network almost 1500
->  times whilst repeatedly transferring a kernel source tarball by ftp from
->  another box and the network connection was mantained That's with the
->  parameter set to 'simple', if \I set it to 'pid' the connection rarely
->  survives more than 40 pings even without the ftp activity.
->
->  If I replace my wireless card with one that uses the rtl8180 driver, the
->  network connection seems to be reliable regardless of how I set the
->  parameter, although I admit that i have not tested this extensively yet. I'll
->  do that now and report later.
+Missing sign-off.
 
-I'm about to send 4 patches to this (linux-wireless) list with patches
-for rt2x00,
-most of them you already tested individually, but several people reported
-success after those patches.
-
-Hopefully it will be working for you as well. :)
-
-Ivo
+									Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
