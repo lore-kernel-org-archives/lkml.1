@@ -1,54 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758674AbYBYUET@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757435AbYBYUHU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758674AbYBYUET (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 Feb 2008 15:04:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758117AbYBYUED
+	id S1757435AbYBYUHU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 Feb 2008 15:07:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755775AbYBYUHI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 Feb 2008 15:04:03 -0500
-Received: from out3.smtp.messagingengine.com ([66.111.4.27]:44370 "EHLO
-	out3.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1758122AbYBYUEA (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 Feb 2008 15:04:00 -0500
-X-Sasl-enc: t7dXs5Hi0xccRqzttfHeZK5ZlEaFKfBkkPAEqOA6Cz8H 1203969838
-Date: Mon, 25 Feb 2008 17:03:54 -0300
-From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Lukas Hejtmanek <xhejtman@ics.muni.cz>, linux-kernel@vger.kernel.org,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       Len Brown <lenb@kernel.org>
-Subject: Re: 2.6.25-rc2 Regression Thinkpad acpi
-Message-ID: <20080225200354.GE16513@khazad-dum.debian.net>
-References: <20080225093914.GB4375@ics.muni.cz> <200802251247.30605.rjw@sisk.pl>
-MIME-Version: 1.0
+	Mon, 25 Feb 2008 15:07:08 -0500
+Received: from x346.tv-sign.ru ([89.108.83.215]:54503 "EHLO mail.screens.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755345AbYBYUHG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 25 Feb 2008 15:07:06 -0500
+Date: Mon, 25 Feb 2008 23:03:28 +0300
+From: Oleg Nesterov <oleg@tv-sign.ru>
+To: Stephen Smalley <sds@tycho.nsa.gov>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Casey Schaufler <casey@schaufler-ca.com>,
+       David Quigley <dpquigl@tycho.nsa.gov>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Eric Paris <eparis@redhat.com>, Harald Welte <laforge@gnumonks.org>,
+       Pavel Emelyanov <xemul@openvz.org>,
+       "Serge E. Hallyn" <serue@us.ibm.com>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2/3] kill_pid_info_as_uid: don't use security_task_kill()
+Message-ID: <20080225200328.GA83@tv-sign.ru>
+References: <20080225174228.GA22084@tv-sign.ru> <1203965042.2804.196.camel@moss-spartans.epoch.ncsc.mil>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <200802251247.30605.rjw@sisk.pl>
-X-GPG-Fingerprint: 1024D/1CDB0FE3 5422 5C61 F6B7 06FB 7E04  3738 EE25 DE3F
-	1CDB 0FE3
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+In-Reply-To: <1203965042.2804.196.camel@moss-spartans.epoch.ncsc.mil>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 25 Feb 2008, Rafael J. Wysocki wrote:
-> > 2.6.25-rc2-git7 has regression, thinkpad keys do not work any more.
+On 02/25, Stephen Smalley wrote:
+> 
+> On Mon, 2008-02-25 at 20:42 +0300, Oleg Nesterov wrote:
+> > kill_pid_info_as_uid() is solely used by drivers/usb/core/. The original
+> > "[PATCH] Fix signal sending in usbdevio on async URB completion" commit
+> > 46113830a18847cff8da73005e57bc49c2f95a56 was right, but nowadays we use
+> > struct pid and this solves most of the addressed problems.
 > > 
-> > Probably this commit broke things 6c231bd5eb07ce546517019f334652b9ecfc329a
+> > It would be nice to use kill_pid_info() instead, but we can't because USB
+> > uses .si_code = SI_ASYNCIO which fools SI_FROMUSER() and thus security checks.
+> > 
+> > I think we should omit the permission checks completely, the task which does
+> > ioctl(USBDEVFS_SUBMITURB) explicitly asks to send the signal to it, we should
+> > not deny the signal even if the task changes its credentials in any way.
+> 
+> If we are applying checks based on uid/gid to protect suid/sgid
+> programs, then we ought to also invoke the LSM hook to allow protection
+> of other credential-changing transformations, like SELinux context
+> transitions.  You either remove all checking or none, please.
 
-This commit is indeed broken, and I have a tentative fix for it.  But I'd
-like to have a better description of just "how" the thinkpad keys do not
-work anymore, to make sure I fix the entire breakage in one go.  I will
-stare at the code and the fix a bit more before sending in any patches,
-though.
+Yes, you are right. I'd like to remove all uid/euid checks. This patch doesn't
+do this because
 
-> Also, CCing the author and the relevant list on a report usually is a good
-> idea. :-)
+	- perhaps it will be possible to kill this helper
 
-Make it "mandatory" if you want a fast reply :^)
+	- if we remove these checks, we should do some subsequent cleanups
+	  in drivers/usb/core/, while this series is all about LSM hooks.
 
--- 
-  "One disk to rule them all, One disk to find them. One disk to bring
-  them all and in the darkness grind them. In the Land of Redmond
-  where the shadows lie." -- The Silicon Valley Tarot
-  Henrique Holschuh
+I am going to do this later.
+
+> And if all, what's the rationale?
+
+I think it is not good that LSM has some special (and unneeded!) hacks for USB.
+Please also look at the next patch.
+
+
+Do you agree?
+
+Oleg.
+
