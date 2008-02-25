@@ -1,88 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762038AbYBYANo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760710AbYBYAOF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762038AbYBYANo (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 24 Feb 2008 19:13:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760666AbYBYAKp
+	id S1760710AbYBYAOF (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 24 Feb 2008 19:14:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759568AbYBYALD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 24 Feb 2008 19:10:45 -0500
-Received: from smtp5.pp.htv.fi ([213.243.153.39]:33691 "EHLO smtp5.pp.htv.fi"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759237AbYBYAKo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 24 Feb 2008 19:10:44 -0500
-Date: Mon, 25 Feb 2008 02:09:48 +0200
-From: Adrian Bunk <bunk@kernel.org>
-To: wli@holomorphy.com
-Cc: linux-kernel@vger.kernel.org
-Subject: [2.6 patch] mm/hugetlb.c: fix duplicate variable
-Message-ID: <20080225000948.GP2088@cs181133002.pp.htv.fi>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+	Sun, 24 Feb 2008 19:11:03 -0500
+Received: from smtp1.linux-foundation.org ([207.189.120.13]:35413 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1760801AbYBYAK7 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 24 Feb 2008 19:10:59 -0500
+Date: Sun, 24 Feb 2008 16:10:34 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Nikola Ciprich <extmaillist@linuxbox.cz>
+Cc: linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
+       Nick Cheng <nick.cheng@areca.com.tw>, Erich Chen <erich@areca.com.tw>
+Subject: Re: arcmsr & areca-1660 - strange behaviour under heavy load
+Message-Id: <20080224161034.f494fc7f.akpm@linux-foundation.org>
+In-Reply-To: <alpine.LRH.0.9999.0802231201380.21313@linuxbox.linuxbox.cz>
+References: <alpine.LRH.0.9999.0802231201380.21313@linuxbox.linuxbox.cz>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-It's confusing that set_max_huge_pages() contained two different 
-variables named "ret", and although the code works correctly this should 
-be fixed.
+On Sat, 23 Feb 2008 12:20:12 +0100 (CET) Nikola Ciprich <extmaillist@linuxbox.cz> wrote:
 
-The inner of the two variables can simply be removed.
+> Hi,
+> 
+> I've found strange problem either in arcmsr driver, or maybe in 
+> areca-1660 card...
+> When system on SAS discs RAID connected to areca-1660 card 
+> gets under heavy I/O load, it gets unusable after some time. I can 100% reproduce 
+> this, although it needs quite speciffic conditions:
+> It can be reproduced on 2x quad core machine, RAM has to be limited to 
+> ~192MB to cause heavy paging.
+> Only thing needed to cause the problem is to start loop doing kernel 
+> compilation using make -j 8 - this loads the system heavily, because of 
+> lack of memory. After few correct compile runs the system gets into 
+> state when all programs including the basic ones (ls, cp, ..) start 
+> crashing... dmesg (when it works) doesn't say anything strange...
+> After reboot, the system is OK again.
+> I have tested it on different motherboards, with different CPUs, RAMs(all 
+> were properly tested with memtest), with two different areca cards and 
+> different drives. I can't reproduce the problem on same hardware when 
+> using different RAID card (ie adaptec). All testing systems were properly 
+> cooled..
+> I have tried all available areca firmwares, two different distributions 
+> (oracle linux, and centos), and kernels ranging from distribution ones, to last GIT snapshot.
+> Could somebody please give me some hints on how to hunt this problem?
+> Areca support doesn't seem to be very interested in the problem :-(
 
-Spotted by sparse.
+(cc's added)
 
-Signed-off-by: Adrian Bunk <bunk@kernel.org>
+Please get the machine into this state of memory exhaustion then take
+copies of the output of the following, and send them via reply-to-all to
+this email:
 
----
+- cat /proc/meminfo
 
- mm/hugetlb.c |    1 -
- 1 file changed, 1 deletion(-)
+- cat /proc/slabinfo
 
---- linux-2.6/mm/hugetlb.c.old	2008-02-24 23:17:52.000000000 +0200
-+++ linux-2.6/mm/hugetlb.c	2008-02-24 23:26:07.000000000 +0200
-@@ -518,45 +518,44 @@
- static unsigned long set_max_huge_pages(unsigned long count)
- {
- 	unsigned long min_count, ret;
- 
- 	/*
- 	 * Increase the pool size
- 	 * First take pages out of surplus state.  Then make up the
- 	 * remaining difference by allocating fresh huge pages.
- 	 *
- 	 * We might race with alloc_buddy_huge_page() here and be unable
- 	 * to convert a surplus huge page to a normal huge page. That is
- 	 * not critical, though, it just means the overall size of the
- 	 * pool might be one hugepage larger than it needs to be, but
- 	 * within all the constraints specified by the sysctls.
- 	 */
- 	spin_lock(&hugetlb_lock);
- 	while (surplus_huge_pages && count > persistent_huge_pages) {
- 		if (!adjust_pool_surplus(-1))
- 			break;
- 	}
- 
- 	while (count > persistent_huge_pages) {
--		int ret;
- 		/*
- 		 * If this allocation races such that we no longer need the
- 		 * page, free_huge_page will handle it by freeing the page
- 		 * and reducing the surplus.
- 		 */
- 		spin_unlock(&hugetlb_lock);
- 		ret = alloc_fresh_huge_page();
- 		spin_lock(&hugetlb_lock);
- 		if (!ret)
- 			goto out;
- 
- 	}
- 
- 	/*
- 	 * Decrease the pool size
- 	 * First return free pages to the buddy allocator (being careful
- 	 * to keep enough around to satisfy reservations).  Then place
- 	 * pages into surplus state as needed so the pool will shrink
- 	 * to the desired size as pages become free.
- 	 *
- 	 * By placing pages into the surplus state independent of the
- 	 * overcommit value, we are allowing the surplus pool size to
+- dmesg -c > /dev/null ; echo m > /proc/sysrq-trigger ; dmesg -c
+
+Thanks.
