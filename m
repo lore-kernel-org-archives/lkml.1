@@ -1,100 +1,245 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755300AbYBYK25@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756076AbYBYK30@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755300AbYBYK25 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 Feb 2008 05:28:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753281AbYBYK2t
+	id S1756076AbYBYK30 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 Feb 2008 05:29:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754977AbYBYK3Q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 Feb 2008 05:28:49 -0500
-Received: from smtp4.int-evry.fr ([157.159.10.71]:52348 "EHLO
-	smtp4.int-evry.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752598AbYBYK2s (ORCPT
+	Mon, 25 Feb 2008 05:29:16 -0500
+Received: from fms-01.valinux.co.jp ([210.128.90.1]:58241 "EHLO
+	mail.valinux.co.jp" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754903AbYBYK3P (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 Feb 2008 05:28:48 -0500
-From: Florian Fainelli <florian.fainelli@telecomint.eu>
-To: Ingo Molnar <mingo@elte.hu>
-Subject: Re: [PATCH] Add rdc321x defconfig file
-Date: Mon, 25 Feb 2008 11:24:11 +0100
-User-Agent: KMail/1.9.7
-Cc: linux-kernel@vger.kernel.org, Adrian Bunk <bunk@kernel.org>,
-       Sam Ravnborg <sam@ravnborg.org>, Thomas Gleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>
-References: <200802251058.30188.florian.fainelli@telecomint.eu> <20080225101433.GA30685@elte.hu>
-In-Reply-To: <20080225101433.GA30685@elte.hu>
-MIME-Version: 1.0
-Content-Type: multipart/signed;
-  boundary="nextPart3653560.c3gkKYZHgO";
-  protocol="application/pgp-signature";
-  micalg=pgp-sha1
+	Mon, 25 Feb 2008 05:29:15 -0500
+Date: Mon, 25 Feb 2008 19:29:14 +0900 (JST)
+Message-Id: <20080225.192914.193698917.ryov@valinux.co.jp>
+To: linux-kernel@vger.kernel.org, dm-devel@redhat.com,
+       containers@lists.linux-foundation.org,
+       virtualization@lists.linux-foundation.org,
+       xen-devel@lists.xensource.com
+Subject: The I/O bandwidth controller: dm-ioband Performance Report
+From: Ryo Tsuruta <ryov@valinux.co.jp>
+X-Mailer: Mew version 5.2.52 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Message-Id: <200802251124.17561.florian.fainelli@telecomint.eu>
-X-int-MailScanner-Information: Please contact the ISP for more information
-X-int-MailScanner: Found to be clean
-X-int-MailScanner-SpamCheck: 
-X-int-MailScanner-From: florian.fainelli@telecomint.eu
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---nextPart3653560.c3gkKYZHgO
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+Hi All,
 
-Hi Ingo,
+I report new results of dm-ioband bandwidth control test. The previous
+test results were posted on Jan 25.
+I've got really good results as well as the last report. dm-ioband
+works well with Xen virtual disk.
 
-Le lundi 25 f=E9vrier 2008, Ingo Molnar a =E9crit=A0:
-> hm, i'm not sure. Right now we just have a 32-bit defconfig and a 64-bit
-> defconfig - but there are about 8 subarchitectures in arch/x86. Given
-> the amount of variety in PC hardware, i doubt it makes sense to start
-> collecting defconfigs for hardware variants - we'd end up having
-> hundreds or thousands of them. Even ARM has only 75 defconfigs.
+I also announce that dm-ioband website has launched. The patches,
+the manual, the benchmark results and other related information are
+available through this site. Please check it out:
+    http://people.valinux.co.jp/~ryov/dm-ioband/
 
-I was answering to Adrian Bunk's email about missing defconfigs for the x86=
-=20
-subarchitecture boards.
+Bandwidth control on a per partition basis
+==========================================
 
->
-> what i do is i regularly test whether "make allyesconfig" boots all the
-> way up to general user-space in regular whitebox PC hardware. For
-> example the attached config is such a config, i successfully booted it
-> on 2.6.25-rc3 on a stock PC.
+Test procedure
+--------------
+  o Prepare three partitions sda11, sda12 and sda13.
+  o Create three ioband devices ioband1, ioband2 and ioband3 on each
+    partition respectively.
+  o Give weights of 40, 20 and 10 to each ioband device respectively.
+  o Run 50, 100 and 200 processes issuing random read/write direct I/O
+    with 4KB data on each ioband device at the same time respectively.
+  o Count up the number of I/Os which have done in 60 seconds.
 
-Apart from selecting the 486 instruction subset, everything else should be=
-=20
-allright though I had the habit to have a stripped down kernel for testing.
+  o For comparison, do this test under different conditions. The
+    conditions are:
+    - Direct access to the physical devices without dm-ioband.
+    - Give weights in equal proportion to each ioband devices.
 
->
-> In fact for rdc321x that should be rather easy to do right now: wdt.c
-> could/should become a regular watchdog driver, and do we really need
-> those GPIO specials in include/asm-x86/mach-rdc321x/ ? I believe it
-> should be possible to boot CONFIG_X86_GENERICARCH on a rdc321x. Am i
-> missing any particular complication?
+   Read/Write process   Read/Write process   Read/Write process    
+         x 50                 x 100                x 200
+           |                    |                    |
+  +--------V---------+ +--------V---------+ +--------V---------+
+  |     ioband1      | |     ioband2      | |     ioband3      | ioband devices
+  +------------------+ +------------------+ +------------------+
+  |   default group  | |   default group  | |   default group  | ioband groups
+  |       (40)       | |       (20)       | |       (10)       |   (weight)
+  +--------|---------+ +--------|---------+ +--------|---------+
+  +--------V---------+ +--------V---------+ +--------V---------+
+  |    /dev/sda11    | |    /dev/sda12    | |    /dev/sda13    | physical devs.
+  +------------------+ +------------------+ +------------------+
 
-The GPIO calls will be moving later when I have finished the gpiolib=20
-integration for RDC just like what is currently done for ARM. You are right=
-=20
-for the watchdog driver, I will move it right now.
+Results
+-------
+                      Direct access without dm-ioband
+   -----------------------------------------------------------------------
+  |     device      |      sda11      |      sda12      |      sda13      |
+  |  I/O processes  |    50 (14.3%)   |   100 (28.6%)   |   200 (57.1%)   |
+  |-----------------+-----------------+-----------------+-----------------|
+  |      I/Os       |       1469      |       2486      |       5032      |  
+  |  ratio to total |      16.3%      |      27.7%      |      56.0%      |
+   -----------------------------------------------------------------------
 
->
-> 	Ingo
+              Weights in inverse proportion to the number of processes
+   -----------------------------------------------------------------------
+  |     device      |      sda11      |      sda12      |      sda13      |
+  |     weight      |   40 (57.1%)    |    20 (28.6%)   |    10 (14.3%)   |
+  |-----------------+-----------------+-----------------+-----------------|
+  |      I/Os       |       5023      |       2654      |       1369      |  
+  |  ratio to total |      55.5%      |      29.3%      |      15.1%      |
+   -----------------------------------------------------------------------
+
+                         Weights in equal proportion
+   -----------------------------------------------------------------------
+  |     device      |      sda11      |      sda12      |      sda13      |
+  |     weight      |   10 (33.3%)    |    10 (33.3%)   |    10 (33.3%)   |
+  |-----------------+-----------------+-----------------+-----------------|
+  |      I/Os       |       2954      |       3004      |       2986      |  
+  |  ratio to total |      33.0%      |      33.6%      |      33.4%      |
+   -----------------------------------------------------------------------
 
 
 
-=2D-=20
-Cordialement, Florian Fainelli
-=2D-----------------------------
+Bandwidth control on a per logical volume basis
+===============================================
 
---nextPart3653560.c3gkKYZHgO
-Content-Type: application/pgp-signature; name=signature.asc 
-Content-Description: This is a digitally signed message part.
+Test procedure
+--------------
+  o Prepare two partitions sda11 and sdb11.
+  o Create a volume group with the two partitions.
+  o Create two striped logical volumes on the volume group.
+  o Give weights of 20 and 10 to lv0 and lv1 respectively.
+  o Run 128 processes issuing random read/write direct I/O with 4KB data
+    on each ioband device at the same time respectively.
+  o Count up the number of I/Os which have done in 60 seconds.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.7 (GNU/Linux)
+Block diagram
+-------------
 
-iD8DBQBHwpdRmx9n1G/316sRAsF+AKCUumIbTmjkAjzFy5bRX9CChIvBPwCeI76x
-bws9NbsZ5NJaH9H85H/WRKA=
-=/WDE
------END PGP SIGNATURE-----
+   Read/Write process x 128       Read/Write process x 128
+                |                              |
+  +-------------V------------+   +-------------V------------+ 
+  |   /dev/mapper/ioband1    |   |   /dev/mapper/ioband2    | ioband devices
+  +--------------------------+   +--------------------------+
+  |       default group      |   |       default group      | ioband groups
+  |           (20)           |   |           (10)           |    (weight)
+  +-------------|------------+   +-------------|------------+
+  +-------------V------------+   +-------------V------------+
+  |      /dev/mapper/lv0     |   |     /dev/mapper/lv1      | striped logical
+  |                          |   |                          | volumes
+  +---------------------------------------------------------+
+  |                           vg0                           | volume group
+  +-------------|------------------------------|------------+
+  +-------------V------------+   +-------------V------------+
+  |         /dev/sda11       |   |         /dev/sdb11       | physical devices
+  +--------------------------+   +--------------------------+
 
---nextPart3653560.c3gkKYZHgO--
+Result
+------
+   -----------------------------------------------------
+  |     device      |       lv0       |       lv1       |
+  |     weight      |   20 (66.6%)    |    10 (33.3%)   |
+  |-----------------+-----------------+-----------------|
+  |      I/Os       |      13508      |       6779      |
+  |  ratio to total |      66.6%      |      33.3%      |
+   -----------------------------------------------------
+
+
+
+Bandwidth control on a per Xen virtual block device basis
+=========================================================
+
+Test procedure
+--------------
+  o Prepare two partitions sda11 and sda12.
+  o Create two ioband devices ioband1 and ioband2 on each partition
+    respectively.
+  o Give weight of 20 and 10 to each ioband device respectively.
+  o Create two virtual machines that using the ioband device as Xen
+    virtual machine's disk.
+  o Run 128 processes issuing random read/write direct I/O with 4KB
+    data on each virtual machine at the same time respectively.
+  o Count up the number of I/Os which have done in 60 seconds.
+
+  +--------------------------+   +--------------------------+
+  |     Virtual Machine 1    |   |     Virtual Machine 2    | virtual machines
+  |                          |   |                          |
+  | Read/Write process x 128 |   | Read/Write process x 128 |
+  |             |            |   |             |            |
+  |  +----------V---------+  |   |  +----------V---------+  +
+  |  |     /dev/xvda1     |  |   |  |      /dev/xvda1    |  | virtual block
+  |  +----------|---------+  |   |  +----------|---------+  |    devices
+  +-------------|------------+   +-------------|------------+
+  +-------------V------------+   +-------------V------------+ 
+  |   /dev/mapper/ioband1    |   |   /dev/mapper/ioband2    | ioband devices
+  +--------------------------+   +--------------------------+
+  |       default group      |   |       default group      | ioband groups
+  |           (20)           |   |           (10)           |    (weight)
+  +-------------|------------+   +-------------|------------+
+  +-------------V------------+   +-------------V------------+
+  |        /dev/sda11        |   |        /dev/sda12        | physical device
+  +--------------------------+   +--------------------------+
+
+Result
+------
+   -----------------------------------------------------
+  | virtual machine |       VM1       |       VM2       |
+  |     weight      |   20 (66.6%)    |    10 (33.3%)   |
+  |-----------------+-----------------+-----------------|
+  |      I/Os       |       7140      |       3819      |
+  |  ratio to total |      65.2%      |      34.8%      |
+   -----------------------------------------------------
+
+
+
+Bandwidth control on a per Xen virtual block device basis
+=========================================================
+
+Test procedure
+--------------
+  o Prepare one partition sda11.
+  o Create two files on sda11 to use as virtual machine's disks.
+  o Create an ioband devices on sda11.
+  o Create two virtual machines that using the prepared files as Xen
+    virtual machine's disk.
+  o Create two extra ioband-groups on ioband1, the first is of process
+    tapdisk1 and the second is of process tapdisk2.
+  o Run 128 processes issuing random read/write direct I/O with 4KB
+    data on each virtual machine at the same time respectively.
+  o Count up the number of I/Os which have done in 60 seconds.
+
+  +--------------------------+   +--------------------------+
+  |     Virtual Machine 1    |   |     Virtual Machine 2    | virtual machines
+  |                          |   |                          |
+  | Read/Write process x 128 |   | Read/Write process x 128 |
+  |             |            |   |             |            |
+  |  +----------V---------+  |   |  +----------V---------+  +
+  |  |     /dev/xvda1     |  |   |  |      /dev/xvda1    |  | virtual block
+  |  +----------|---------+  |   |  +----------|---------+  |    devices
+  +-------------|------------+   +-------------|------------+
+  +-------------V------------+   +-------------V------------+
+  |         tapdisk1         |   |         tapdisk2         |    tapdisk
+  +-------------|------------+   +-------------|------------+   processes
+  +-------------V------------------------------V------------+
+  |    pid of tapdisk1         |      pid of tapdisk2       | ioband groups
+  |           (20)             |             (10)           |    (weight)
+  |                   /dev/mapper/ioband1                   | ioband device
+  +-------------|------------------------------|------------+
+  |  +----------V----------+        +----------V---------+  |
+  |  |       vm1.img       |        |       vm2.img      |  | disk image files
+  |  +---------------------+        +--------------------+  |
+  |                        /dev/sda11                        | physical device
+  +---------------------------------------------------------+
+
+Result
+------
+   -----------------------------------------------------
+  | virtual machine |       VM1       |       VM2       |
+  |     weight      |   20 (66.6%)    |    10 (33.3%)   |
+  |-----------------+-----------------+-----------------|
+  |      I/Os       |       7486      |       3895      |
+  |  ratio to total |      65.8%      |      34.2%      |
+   -----------------------------------------------------
+
+Thanks,
+Ryo Tsuruta
