@@ -1,161 +1,178 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759717AbYBYVFw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758054AbYBYVKb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759717AbYBYVFw (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 Feb 2008 16:05:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752144AbYBYVFn
+	id S1758054AbYBYVKb (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 Feb 2008 16:10:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752171AbYBYVKW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 Feb 2008 16:05:43 -0500
-Received: from nf-out-0910.google.com ([64.233.182.190]:14213 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751033AbYBYVFm (ORCPT
+	Mon, 25 Feb 2008 16:10:22 -0500
+Received: from smtp121.sbc.mail.sp1.yahoo.com ([69.147.64.94]:44511 "HELO
+	smtp121.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1752144AbYBYVKV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 Feb 2008 16:05:42 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=from:reply-to:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
-        b=PDJ1Oni6JbbvStGubHSKqcgTrxIr1uylb11Uf95IO+t1lVcg/TJlMqh1R/OxgTXXjSSAqN1D4wnv6+lhs84ENuLzDByjfom+U7c/+OKWKohnT65gscOYxSd/j0rt/ickMT2bi2Xj/cMnO/k9fSGVjW9syisN0Ks3s0HGqI0Yo5g=
-From: Chris Clayton <chris2553@googlemail.com>
-Reply-To: chris2553@googlemail.com
-To: Ivo van Doorn <ivdoorn@gmail.com>
-Subject: Re: 2.6.25-rc2 regression in rt61pci wireless driver
-Date: Mon, 25 Feb 2008 21:04:32 +0000
-User-Agent: KMail/1.9.9
-Cc: linux-kernel@vger.kernel.org, linux-wireless@vger.kernel.org
-References: <c6b1100b0802160406l24fed9dcje1dbfc8907fd7a16@mail.gmail.com> <c6b1100b0802220746s3441d28cj92896618bbb57bde@mail.gmail.com> <200802222047.52312.IvDoorn@gmail.com>
-In-Reply-To: <200802222047.52312.IvDoorn@gmail.com>
+	Mon, 25 Feb 2008 16:10:21 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=pacbell.net;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:Received:Date:From:To:Subject:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-Id;
+  b=poXRCi8ig8xonYHgoxbkf10W/9UfVisspqI0BeSvsJLATapZE99Trcetw+6P1zKEtyw7hYBYLhU1dR956bWceFhjommHBpHi0aB1vt0LxS3EQPKDOax1aCHuIZqNnjHzgu7bkjA020ePkUp+peQB1CjiYXLz601OZvAK8vuRH4A=  ;
+X-YMail-OSG: SKUDkXYVM1mXYsR1LdAwCD_RuLkrVa_HVEavXl7aKYbdSYeOucQmlaByn8UsAAZQdU0ZWcuR2g--
+X-Yahoo-Newman-Property: ymail-3
+Date: Mon, 25 Feb 2008 13:10:18 -0800
+From: David Brownell <david-b@pacbell.net>
+To: peterz@infradead.org
+Subject: Re: [patch 2.6.25-rc3] lockdep:  add spin_lock_irq_nested()
+Cc: mingo@redhat.com, linux-kernel@vger.kernel.org
+References: <200801181429.00485.david-b@pacbell.net>
+ <1200904299.6341.2.camel@lappy>
+ <200801211022.36312.david-b@pacbell.net>
+ <200802242033.52208.david-b@pacbell.net>
+ <1203934828.6242.140.camel@lappy>
+ <20080225112102.3B6E928E368@adsl-69-226-248-13.dsl.pltn13.pacbell.net>
+ <1203945463.6242.162.camel@lappy>
+In-Reply-To: <1203945463.6242.162.camel@lappy>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200802252104.32416.chris2553@googlemail.com>
+Message-Id: <20080225211018.74604235C92@adsl-69-226-248-13.dsl.pltn13.pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+> > I thought the way to use the *_nested() calls was "consistently"!
+>
+> Very much depends on your view of consistent :-)
+>
+> > That is, if one instance of a lock access uses it, they all should,
+> > since that's the only way lockdep learns about equivalence classes.
+> > Also, locks shouldn't move between those equivalence classes... so
+> > the raw lockdep data stays correct.
+>
+> Ah, see, you're missing a detail (see below for the full story). Its the
+> irq state that must be consistent. So if at any one point you take the
+> lock in an irq safe context, you must always take it irq safe.
 
-Firstly apologies for trimming linux-kernel and linux-wireless from my reply 
-to Ivo yesterday. Basically, I replied saying that the patch below didn't fix 
-the problem. But please do read on...
+IRQ state is not a factor; that's already coded correctly.
 
-On Friday 22 February 2008, Ivo van Doorn wrote:
-> On Friday 22 February 2008, Chris Clayton wrote:
-> > Hi Ivo,
-> >
-> > On 18/02/2008, Ivo van Doorn <ivdoorn@gmail.com> wrote:
-> > > Hi,
-> >
-> > [...]
-> >
-> > > Above traces should be enough, but to determine where rt2x00 broke
-> > >  down approximatly I need to have a few test result on specific
-> > > moments. Could you test the kernel with the following versions:
-> > >
-> > >  rt2x00 2.0.11   2d68de3efa62655d551092f5c787505735d561ad
-> > >  rt2x00 2.0.12   a3c7aa58df7df80aa05f166fe3e42482247164cf
-> > >  rt2x00 2.0.13   5a6012e105ae1664cd2841c33bf59fbdd8d4dbcc
-> > >
-> > >  Checking those out is simply a matter of:
-> > >  git branch 2.0.11 2d68de3efa62655d551092f5c787505735d561ad
-> > >  git checkout 2.0.11
-> >
-> > OK, we seem to be struggling a little, so I've built an installed git
-> > and cloned Linus' 2.6 tree. My wireless network dies after a few pings
-> > with rt2x00 2.0.11.
-> >
-> > >  No further bisecting is needed, but with above tests I can at least
-> > >  narrow it down to find the cause of this issue.
-> >
-> > If you need me to bisect, just shout. Please be patient though, I'm
-> > exploring new territory here :-)
->
-> I don't think bisecting this will help a lot, the rt2x00 2.0.11 release
-> introduced software diversity. And that is already something I suspect
-> of being broken.
->
- I've bisected anyway and although the results are not absolutely conclusive, 
-as I neared the end of the process, I was amongst a bunch of mac80211 
-patches. This set me on a path that resulted in me discovering that with the 
-rt61pci driver, I can freeze my wireless network connection almost at will if 
-I set mac82011's ieee80211_default_rc_algo parameter to 'pid'. if the 
-parametre is set to 'simple', the network seems to be reliable. I've just let 
-the ping application run on and ping another box on my network almost 1500 
-times whilst repeatedly transferring a kernel source tarball by ftp from 
-another box and the network connection was mantained That's with the 
-parameter set to 'simple', if \I set it to 'pid' the connection rarely 
-survives more than 40 pings even without the ftp activity.
+The issue here is lockdep falsely reporting recursive locking.
 
-If I replace my wireless card with one that uses the rtl8180 driver, the 
-network connection seems to be reliable regardless of how I set the 
-parameter, although I admit that i have not tested this extensively yet. I'll 
-do that now and report later.
-
-Hope this helps.
-
-Chris
-
-> Unfortunately software diversity was a bugfix and fix in one,
-> the previous setup was broken for some hardware since the
-> lack of software diversity caused problems.
->
-> Could you check if below patch helps in any way?
->
-> Ivo
->
-> ---
->
-> diff --git a/drivers/net/wireless/rt2x00/rt2x00config.c
-> b/drivers/net/wireless/rt2x00/rt2x00config.c index a1d8e33..6995912 100644
-> --- a/drivers/net/wireless/rt2x00/rt2x00config.c
-> +++ b/drivers/net/wireless/rt2x00/rt2x00config.c
-> @@ -122,6 +122,10 @@ void rt2x00lib_config_antenna(struct rt2x00_dev
-> *rt2x00dev, libconf.ant.rx = rx;
->  	libconf.ant.tx = tx;
->
-> +	if (rx == rt2x00dev->link.ant.active.rx &&
-> +	    tx == rt2x00dev->link.ant.active.tx)
-> +		return;
-> +
->  	/*
->  	 * Antenna setup changes require the RX to be disabled,
->  	 * else the changes will be ignored by the device.
-> diff --git a/drivers/net/wireless/rt2x00/rt2x00dev.c
-> b/drivers/net/wireless/rt2x00/rt2x00dev.c index 65a512f..4325c08 100644
-> --- a/drivers/net/wireless/rt2x00/rt2x00dev.c
-> +++ b/drivers/net/wireless/rt2x00/rt2x00dev.c
-> @@ -191,16 +191,16 @@ static void rt2x00lib_evaluate_antenna_sample(struct
-> rt2x00_dev *rt2x00dev) return;
->
->  	if (rt2x00dev->link.ant.flags & ANTENNA_RX_DIVERSITY) {
-> -		if (sample_a > sample_b && rx == ANTENNA_B)
-> +		if (sample_a > sample_b)
->  			rx = ANTENNA_A;
-> -		else if (rx == ANTENNA_A)
-> +		else
->  			rx = ANTENNA_B;
->  	}
->
->  	if (rt2x00dev->link.ant.flags & ANTENNA_TX_DIVERSITY) {
-> -		if (sample_a > sample_b && tx == ANTENNA_B)
-> +		if (sample_a > sample_b)
->  			tx = ANTENNA_A;
-> -		else if (tx == ANTENNA_A)
-> +		else
->  			tx = ANTENNA_B;
->  	}
->
-> @@ -257,7 +257,7 @@ static void rt2x00lib_evaluate_antenna(struct
-> rt2x00_dev *rt2x00dev)
->
->  	if (!(rt2x00dev->link.ant.flags & ANTENNA_RX_DIVERSITY) &&
->  	    !(rt2x00dev->link.ant.flags & ANTENNA_TX_DIVERSITY)) {
-> -		rt2x00dev->link.ant.flags &= ~ANTENNA_MODE_SAMPLE;
-> +		rt2x00dev->link.ant.flags = 0;
->  		return;
->  	}
+Again, the locking is correct; it's lockdep getting confused,
+because it puts all irq_desc[].lock instances in the same bag
+instead of treating parent and child locks differently.  So
+when something holding a child lock makes a call that grabs
+a parent lock, it thinks that could be recursive.
 
 
+> Also, have you looked at explicit lock_class_key usage per chip?
 
--- 
-Beauty is in the eye of the beerholder.
+Never had reason to look at such stuff; you didn't mention the
+option in the earlier chitchat...
+
+
+> That
+> way you can avoid using the _nested annotation. You can set a class on a
+> lock right after spin_lock_init() using lockdep_set_class*().
+
+All this stuff is set up in kernel/irq/handle.c ... spinlocks
+are initialized statically, lock classes are set up even before
+the kernel banner is printed, by early_init_irq_lock_class().
+
+So I'm think that the reason this only _changes_ the false
+recursion notification is that it doesn't support overriding
+such class annotations; it doesn't seem to forget about the
+first one set up.  Note that the code I posted earlier, using
+the _nested annotations, isn't confused like this...
+
+- Dave
+
+
+=================== CUT
+Try to remove some false lockdep warnings about lock recursion,
+by marking putting GPIO irq_desc locks into their own class.
+
+But that doesn't seem to work; all it does is change the fault
+report to be more confusing:
+
+  =============================================
+  [ INFO: possible recursive locking detected ]
+  2.6.25-rc3 #80
+  ---------------------------------------------
+  swapper/1 is trying to acquire lock:
+   (&irq_desc_lock_class){+...}, at: [<c007150c>] set_irq_wake+0x34/0xe8
+
+  but task is already holding lock:
+   (&irq_desc_lock_class){+...}, at: [<c007150c>] set_irq_wake+0x34/0xe8
+
+  other info that might help us debug this:
+  2 locks held by swapper/1:
+   #0:  (&irq_desc_lock_class){+...}, at: [<c007150c>] set_irq_wake+0x34/0xe8
+   #1:  (&bank->lock){....}, at: [<c0038d80>] _set_gpio_wakeup+0x38/0xa4
+
+  stack backtrace:
+  [<c0029d78>] (dump_stack+0x0/0x14) from [<c0064a48>] (print_deadlock_bug+0xa0/0xcc)
+  [<c00649a8>] (print_deadlock_bug+0x0/0xcc) from [<c0064ae0>] (check_deadlock+0x6c/0x84)
+   r6:c1c1834c r5:00000000 r4:00000000
+  [<c0064a74>] (check_deadlock+0x0/0x84) from [<c0066500>] (validate_chain+0x1d8/0x2c4)
+   r7:c1c1834c r6:00000000 r5:01403805 r4:c04c0658
+  [<c0066328>] (validate_chain+0x0/0x2c4) from [<c0066aec>] (__lock_acquire+0x500/0x5bc)
+  [<c00665ec>] (__lock_acquire+0x0/0x5bc) from [<c006705c>] (lock_acquire+0x70/0x88)
+  [<c0066fec>] (lock_acquire+0x0/0x88) from [<c02260d0>] (_spin_lock_irqsave+0x50/0x64)
+   r6:20000093 r5:c007150c r4:c02cf6c8
+  [<c0226080>] (_spin_lock_irqsave+0x0/0x64) from [<c007150c>] (set_irq_wake+0x34/0xe8)
+   r6:00000001 r5:00000025 r4:c02cf698
+  [<c00714d8>] (set_irq_wake+0x0/0xe8) from [<c0038da4>] (_set_gpio_wakeup+0x5c/0xa4)
+  [<c0038d48>] (_set_gpio_wakeup+0x0/0xa4) from [<c0039410>] (gpio_wake_enable+0x48/0x50)
+   r8:c00393c8 r7:c02d5ecc r6:00000001 r5:00000162 r4:000000c2
+  [<c00393c8>] (gpio_wake_enable+0x0/0x50) from [<c0071594>] (set_irq_wake+0xbc/0xe8)
+   r6:00000001 r5:00000162 r4:c02d5e9c
+  [<c00714d8>] (set_irq_wake+0x0/0xe8) from [<c000c8d0>] (osk_mistral_init+0x160/0x1c8)
+  [<c000c770>] (osk_mistral_init+0x0/0x1c8) from [<c000c9e4>] (osk_init+0xac/0xd4)
+   r4:c001f3f8
+  [<c000c938>] (osk_init+0x0/0xd4) from [<c0009db4>] (customize_machine+0x20/0x2c)
+   r4:c001e000
+  [<c0009d94>] (customize_machine+0x0/0x2c) from [<c0008684>] (do_initcalls+0x78/0x200)
+  [<c000860c>] (do_initcalls+0x0/0x200) from [<c000882c>] (do_basic_setup+0x20/0x24)
+  [<c000880c>] (do_basic_setup+0x0/0x24) from [<c0008bd0>] (kernel_init+0x44/0x90)
+  [<c0008b8c>] (kernel_init+0x0/0x90) from [<c004576c>] (do_exit+0x0/0x30c)
+   r4:00000000
+---
+ arch/arm/plat-omap/gpio.c |   23 +++++++++++++++++++++++
+ 1 files changed, 23 insertions(+)
+
+--- a/arch/arm/plat-omap/gpio.c	2008-02-24 19:02:32.000000000 -0800
++++ b/arch/arm/plat-omap/gpio.c	2008-02-25 10:54:29.000000000 -0800
+@@ -1332,6 +1332,28 @@ static struct clk *gpio_fclks[OMAP34XX_N
+ static struct clk *gpio_iclks[OMAP34XX_NR_GPIOS];
+ #endif
+ 
++#ifdef CONFIG_LOCKDEP
++
++/* tell lockdep that this IRQ's locks and its parent's locks are in
++ * different categories, so that it won't detect false recursion.
++ */
++static struct lock_class_key gpio_lock_class;
++
++static inline void mark_gpio_locking(unsigned gpio_irq)
++{
++	lockdep_set_class(&irq_desc[gpio_irq].lock, &gpio_lock_class);
++}
++
++#else
++
++static inline void mark_gpio_locking(unsigned gpio_irq)
++{
++	/* NOP */
++}
++
++#endif
++
++
+ static int __init _omap_gpio_init(void)
+ {
+ 	int i;
+@@ -1532,6 +1554,7 @@ static int __init _omap_gpio_init(void)
+ 				set_irq_chip(j, &gpio_irq_chip);
+ 			set_irq_handler(j, handle_simple_irq);
+ 			set_irq_flags(j, IRQF_VALID);
++			mark_gpio_locking(i);
+ 		}
+ 		set_irq_chained_handler(bank->irq, gpio_irq_handler);
+ 		set_irq_data(bank->irq, bank);
