@@ -1,72 +1,130 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754680AbYBYNcg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755022AbYBYNg2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754680AbYBYNcg (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 Feb 2008 08:32:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751752AbYBYNc1
+	id S1755022AbYBYNg2 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 Feb 2008 08:36:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751754AbYBYNgW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 Feb 2008 08:32:27 -0500
-Received: from mxintern.schlund.de ([212.227.126.201]:60427 "EHLO
-	mxintern.schlund.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750895AbYBYNc0 (ORCPT
+	Mon, 25 Feb 2008 08:36:22 -0500
+Received: from general-networks3.cust.sloane.cz ([88.146.176.14]:35726 "EHLO
+	server.generalnetworks.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752727AbYBYNgW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 Feb 2008 08:32:26 -0500
-X-Greylist: delayed 364 seconds by postgrey-1.27 at vger.kernel.org; Mon, 25 Feb 2008 08:32:26 EST
-Date: Mon, 25 Feb 2008 14:26:15 +0100
-From: Anders Henke <anders.henke@1und1.de>
-To: linux-kernel@vger.kernel.org
-Subject: device mapper not reporting no-barrier-support?
-Message-ID: <20080225132615.GA21990@1und1.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Organization: 1&1 Internet AG
-User-Agent: Mutt/1.5.13 (2006-08-11)
-X-UI-Msg-Verification: a87cc6ff147aa36592120fa94056df16
+	Mon, 25 Feb 2008 08:36:22 -0500
+From: Jiri Slaby <jirislaby@gmail.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: <linux-kernel@vger.kernel.org>, Jiri Slaby <jirislaby@gmail.com>
+Subject: [PATCH 1/2] Misc: phantom, add compat ioctl
+Date: Mon, 25 Feb 2008 14:36:16 +0100
+Message-Id: <1203946577-13984-1-git-send-email-jirislaby@gmail.com>
+X-Mailer: git-send-email 1.5.4.1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+Openhaptics uses pointers in _IOC() macros, implement compat for them. Also
+add _IOC alternatives which are not 32/64 bit dependent (structures
+passed through aren't yet) -- libphantom will use them.
 
-I'm currently stuck between Kernel LVM and DRBD, as I'm using Kernel
-2.6.24.2 with DRBD 8.2.5 on top of an LVM2 device (LV).
+Signed-off-by: Jiri Slaby <jirislaby@gmail.com>
+---
+ drivers/misc/phantom.c  |   24 ++++++++++++++++++++----
+ include/linux/phantom.h |    5 ++++-
+ 2 files changed, 24 insertions(+), 5 deletions(-)
 
--LVM2/device mapper doesn't support write barriers
--DRBD uses blkdev_issue_flush() to flush its metadata to disk.
- On a no-barrier-device, DRBD should receive EOPNOTSUPP, but
- it really does receive an EIO. Promptly, DRBD gives the
- error message "drbd0: local disk flush failed with status -5".
-
-The physical disk (in LVM speak) is a RAID1 on a 3ware 9650SE-2LP
-controller; the driver 3w-9xxx supports barriers and after moving my D
-RBD device from the LV to a single partition on the same RAID1, the 
-error messages from DRBD vanished.
-
-I've posted a lengty summary of my findings to
-
-http://lists.linbit.com/pipermail/drbd-user/2008-February/008665.html
-
-... where Lars Ellenberg from DRBD basically responded in
-
-http://lists.linbit.com/pipermail/drbd-user/2008-February/008666.html
-
-... that DRBD does catch the EOPNOTSUPP for blkdev_issue_flush and
-BIO_RW_BARRIER, but the lvm implementation of blkdev_issue_flush in
-2.6.24.2 aparently does return EIO for blkdev_issue_flush.
-
-So simply the question: how should a top-layer driver check wether a lower
-device does support barriers? md-raid does check this way differently than
-e.g. XFS does, while DRBD also adds a third way to check this.
-Or is this "merely" a bug in drivers/md/dm.c?
-
-
-Anders
+diff --git a/drivers/misc/phantom.c b/drivers/misc/phantom.c
+index 7fa61e9..5447a60 100644
+--- a/drivers/misc/phantom.c
++++ b/drivers/misc/phantom.c
+@@ -12,6 +12,7 @@
+  *  or alternatively, you might use OpenHaptics provided by Sensable.
+  */
+ 
++#include <linux/compat.h>
+ #include <linux/kernel.h>
+ #include <linux/module.h>
+ #include <linux/device.h>
+@@ -91,11 +92,8 @@ static long phantom_ioctl(struct file *file, unsigned int cmd,
+ 	unsigned long flags;
+ 	unsigned int i;
+ 
+-	if (_IOC_TYPE(cmd) != PH_IOC_MAGIC ||
+-			_IOC_NR(cmd) > PH_IOC_MAXNR)
+-		return -ENOTTY;
+-
+ 	switch (cmd) {
++	case PHN_SETREG:
+ 	case PHN_SET_REG:
+ 		if (copy_from_user(&r, argp, sizeof(r)))
+ 			return -EFAULT;
+@@ -126,6 +124,7 @@ static long phantom_ioctl(struct file *file, unsigned int cmd,
+ 			phantom_status(dev, dev->status & ~PHB_RUNNING);
+ 		spin_unlock_irqrestore(&dev->regs_lock, flags);
+ 		break;
++	case PHN_SETREGS:
+ 	case PHN_SET_REGS:
+ 		if (copy_from_user(&rs, argp, sizeof(rs)))
+ 			return -EFAULT;
+@@ -143,6 +142,7 @@ static long phantom_ioctl(struct file *file, unsigned int cmd,
+ 		}
+ 		spin_unlock_irqrestore(&dev->regs_lock, flags);
+ 		break;
++	case PHN_GETREG:
+ 	case PHN_GET_REG:
+ 		if (copy_from_user(&r, argp, sizeof(r)))
+ 			return -EFAULT;
+@@ -155,6 +155,7 @@ static long phantom_ioctl(struct file *file, unsigned int cmd,
+ 		if (copy_to_user(argp, &r, sizeof(r)))
+ 			return -EFAULT;
+ 		break;
++	case PHN_GETREGS:
+ 	case PHN_GET_REGS: {
+ 		u32 m;
+ 
+@@ -191,6 +192,20 @@ static long phantom_ioctl(struct file *file, unsigned int cmd,
+ 	return 0;
+ }
+ 
++#ifdef CONFIG_COMPAT
++static long phantom_compat_ioctl(struct file *filp, unsigned int cmd,
++		unsigned long arg)
++{
++	if (_IOC_NR(cmd) <= 3 && _IOC_SIZE(cmd) == sizeof(compat_uptr_t)) {
++		cmd &= ~(_IOC_SIZEMASK << _IOC_SIZESHIFT);
++		cmd |= sizeof(void *) << _IOC_SIZESHIFT;
++	}
++	return phantom_ioctl(filp, cmd, (unsigned long)compat_ptr(arg));
++}
++#else
++#define phantom_compat_ioctl NULL
++#endif
++
+ static int phantom_open(struct inode *inode, struct file *file)
+ {
+ 	struct phantom_device *dev = container_of(inode->i_cdev,
+@@ -253,6 +268,7 @@ static struct file_operations phantom_file_ops = {
+ 	.open = phantom_open,
+ 	.release = phantom_release,
+ 	.unlocked_ioctl = phantom_ioctl,
++	.compat_ioctl = phantom_compat_ioctl,
+ 	.poll = phantom_poll,
+ };
+ 
+diff --git a/include/linux/phantom.h b/include/linux/phantom.h
+index 96f4048..fc0a505 100644
+--- a/include/linux/phantom.h
++++ b/include/linux/phantom.h
+@@ -34,7 +34,10 @@ struct phm_regs {
+  * use improved registers update (no more phantom switchoffs when using
+  * libphantom) */
+ #define PHN_NOT_OH		_IO  (PH_IOC_MAGIC, 4)
+-#define PH_IOC_MAXNR		4
++#define PHN_GETREG		_IOWR(PH_IOC_MAGIC, 5, struct phm_reg)
++#define PHN_SETREG		_IOW (PH_IOC_MAGIC, 6, struct phm_reg)
++#define PHN_GETREGS		_IOWR(PH_IOC_MAGIC, 7, struct phm_regs)
++#define PHN_SETREGS		_IOW (PH_IOC_MAGIC, 8, struct phm_regs)
+ 
+ #define PHN_CONTROL		0x6     /* control byte in iaddr space */
+ #define PHN_CTL_AMP		0x1     /*   switch after torques change */
 -- 
-1&1 Internet AG              System Architect
-Brauerstrasse 48             v://49.721.91374.50
-D-76135 Karlsruhe            f://49.721.91374.225
+1.5.4.1
 
-Amtsgericht Montabaur HRB 6484
-Vorstand: Henning Ahlert, Ralph Dommermuth, Matthias Ehrlich, Andreas Gauger,
-Thomas Gottschlich, Matthias Greve, Robert Hoffmann, Markus Huhn, Achim Weiss
-Aufsichtsratsvorsitzender: Michael Scheeren
