@@ -1,77 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757393AbYBYSwL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757755AbYBYSyL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757393AbYBYSwL (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 Feb 2008 13:52:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755193AbYBYSv6
+	id S1757755AbYBYSyL (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 Feb 2008 13:54:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755193AbYBYSx6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 Feb 2008 13:51:58 -0500
-Received: from smtp1.linux-foundation.org ([207.189.120.13]:48969 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755145AbYBYSv5 (ORCPT
+	Mon, 25 Feb 2008 13:53:58 -0500
+Received: from lazybastard.de ([212.112.238.170]:60054 "EHLO
+	longford.lazybastard.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754834AbYBYSx6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 Feb 2008 13:51:57 -0500
-Date: Mon, 25 Feb 2008 10:50:20 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Harvey Harrison <harvey.harrison@gmail.com>
-Cc: Antonino Daplas <adaplas@gmail.com>, LKML <linux-kernel@vger.kernel.org>,
-       linux-fbdev-devel@lists.sourceforge.net
-Subject: Re: [PATCH] fbcon: replace mono_col macro with static inline
-Message-Id: <20080225105020.131f3df9.akpm@linux-foundation.org>
-In-Reply-To: <1203963237.5582.4.camel@brick>
-References: <1203963237.5582.4.camel@brick>
-X-Mailer: Sylpheed 2.4.7 (GTK+ 2.12.1; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Mon, 25 Feb 2008 13:53:58 -0500
+Date: Mon, 25 Feb 2008 19:53:20 +0100
+From: =?utf-8?B?SsO2cm4=?= Engel <joern@logfs.org>
+To: Dave Hansen <haveblue@us.ibm.com>
+Cc: Andy Whitcroft <apw@shadowen.org>,
+       =?utf-8?B?SsO2cm4=?= Engel <joern@logfs.org>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: Page scan keeps touching kernel text pages
+Message-ID: <20080225185319.GA14699@lazybastard.org>
+References: <20080224144710.GD31293@lazybastard.org> <20080225150724.GF2604@shadowen.org> <1203961702.6662.35.camel@nimitz.home.sr71.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <1203961702.6662.35.camel@nimitz.home.sr71.net>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 25 Feb 2008 10:13:57 -0800 Harvey Harrison <harvey.harrison@gmail.com> wrote:
-
-> Use __u32 for max_len to match the declaration of length in the
-> struct fb_bitfield.
+On Mon, 25 February 2008 09:48:22 -0800, Dave Hansen wrote:
+> On Mon, 2008-02-25 at 15:07 +0000, Andy Whitcroft wrote:
+> > shrink_page_list() would be expected to be passed pages pulled from
+> > the active or inactive lists via isolate_lru_pages()?  I would not have
+> > expected to find the kernel text on the LRU and therefore not expect to
+> > see it passed to shrink_page_list()?
 > 
-> Suppresses sparse shadowed variable warnings from the nested max()
-> macros:
-> drivers/video/console/fbcon.h:130:8: warning: symbol '_x' shadows an earlier one
-> drivers/video/console/fbcon.h:130:8: originally declared here
-> drivers/video/console/fbcon.h:130:8: warning: symbol '_x' shadows an earlier one
-> drivers/video/console/fbcon.h:130:8: originally declared here
-> drivers/video/console/fbcon.h:130:8: warning: symbol '_y' shadows an earlier one
-> drivers/video/console/fbcon.h:130:8: originally declared here
-> 
-> Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
-> ---
->  drivers/video/console/fbcon.h |   12 ++++++++----
->  1 files changed, 8 insertions(+), 4 deletions(-)
-> 
-> diff --git a/drivers/video/console/fbcon.h b/drivers/video/console/fbcon.h
-> index 3706307..51a6bf4 100644
-> --- a/drivers/video/console/fbcon.h
-> +++ b/drivers/video/console/fbcon.h
-> @@ -104,10 +104,14 @@ struct fbcon_ops {
->  #define attr_blink(s) \
->  	((s) & 0x8000)
->  	
-> -#define mono_col(info)							\
-> -	(~(0xfff << (max((info)->var.green.length,			\
-> -			 max((info)->var.red.length,			\
-> -			     (info)->var.blue.length)))) & 0xff)
-> +
-> +static inline int mono_col(struct fb_info *info)
-> +{
-> +	__u32 max_len;
-> +	max_len = max(info->var.green.length, info->var.red.length);
-> +	max_len = max(info->var.blue.length, max_len);
-> +	return ~(0xfff << (max_len & 0xff));
-> +}
->  
->  static inline int attr_col_ec(int shift, struct vc_data *vc,
->  			      struct fb_info *info, int is_fg)
+> It may have been kernel text at one time, but what about __init
+> functions?  Don't we free that section back to the normal allocator
+> after init time?  Those can end up on the LRU.
 
-Thanks, but please do try to copy a suitable mailing list on the patches. 
-Particularly fbdev - Tony has been out of contact for a while, but there
-are other fbdev developers who can help us to review code, as long as we
-tell them about it.
+Pages below 0x2ba should be non-init in my test kernel:
+c02ba000 T __init_begin
+...
+c02d5000 B __init_end
 
+scanning zone DMA
+page      3fa        3 00000000 628
+page      2bf        2 00000000 628
+page       97        3 00000000 628
+page       98        2 00000000 628
+
+So __init explains one page of this minimal sample, but not the other
+three.
+
+Jörn
+
+-- 
+Never argue with idiots - first they drag you down to their level,
+then they beat you with experience.
+-- unknown
