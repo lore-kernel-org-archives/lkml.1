@@ -1,107 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759513AbYBYXre@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760943AbYBYXsr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759513AbYBYXre (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 Feb 2008 18:47:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752583AbYBYXrX
+	id S1760943AbYBYXsr (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 Feb 2008 18:48:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755025AbYBYXsj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 Feb 2008 18:47:23 -0500
-Received: from smtp1.linux-foundation.org ([207.189.120.13]:46129 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755847AbYBYXrW (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 Feb 2008 18:47:22 -0500
-Date: Mon, 25 Feb 2008 15:45:21 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Steven Hawkes <fsh016@ftw.mot.com>
-Cc: davem@davemloft.net, joe@perches.com, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org
-Subject: Re: printk_ratelimit and net_ratelimit conflict and tunable
- behavior
-Message-Id: <20080225154521.e119cbb6.akpm@linux-foundation.org>
-In-Reply-To: <200802252036.m1PKaeMY012587@ftw.mot.com>
-References: <200802252036.m1PKaeMY012587@ftw.mot.com>
-X-Mailer: Sylpheed 2.4.7 (GTK+ 2.12.1; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Mon, 25 Feb 2008 18:48:39 -0500
+Received: from sandeen.net ([209.173.210.139]:29548 "EHLO sandeen.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752467AbYBYXsj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 25 Feb 2008 18:48:39 -0500
+Message-ID: <47C353D4.1060501@sandeen.net>
+Date: Mon, 25 Feb 2008 15:48:36 -0800
+From: Eric Sandeen <sandeen@sandeen.net>
+User-Agent: Thunderbird 2.0.0.9 (Macintosh/20071031)
+MIME-Version: 1.0
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+CC: xfs-masters@oss.sgi.com, xfs@oss.sgi.com, johannes@sipsolutions.net,
+       linux-kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [xfs-masters] filesystem corruption on xfs after 2.6.25-rc1 (bisected,
+ powerpc related?)
+References: <20080225112310.GA5516@soziologie.ch> <47C305BD.1060408@sandeen.net> <200802260042.35918.rjw@sisk.pl>
+In-Reply-To: <200802260042.35918.rjw@sisk.pl>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 25 Feb 2008 14:36:40 -0600 Steven Hawkes <fsh016@ftw.mot.com> wrote:
+Rafael J. Wysocki wrote:
+> On Monday, 25 of February 2008, Eric Sandeen wrote:
 
-> From: Steve Hawkes <steve.hawkes@motorola.com>
+
+>> If you're feeling motivated, maybe you can narrow it down to which of
+>> the changes - xfs_highbit32, xfs_highbit64, xfs_lowbit32, or
+>> xfs_lowbit64 - is causing the problem?  (or maybe they all are ...)
+>>
+>> Or maybe someone looking at the commit can immediately see the
+>> problem... but I can't :)
 > 
-> The printk_ratelimit() and net_ratelimit() functions each have their own
-> tunable parameters to control their respective rate limiting feature, but
-> they share common state variables, preventing independent tuning of the
-> parameters from working correctly. Also, changes to rate limiting tunable
-> parameters do not always take effect properly since state is not recomputed
-> when changes occur. For example, if ratelimit_burst is increased while rate
-> limiting is occurring, the change won't take full effect until at least
-> enough time between messages occurs so that the toks value reaches
-> ratelimit_burst * ratelimit_jiffies. This can result in messages being
-> suppressed when they should be allowed.
-> 
-> Implement independent state for printk_ratelimit() and net_ratelimit(), and
-> update state when tunables are changed.
-> 
+> Well, IMO a reproducible filesystem corruption is a serious enough issue
+> for reverting all of the commits in question.
 
-This patch causes a large and nasty reject.
+I'm not suggesting a partial revert; I just wonder which part of the
+change is causing the problem, as part of the debugging process.
 
-> ---
-> --- linux-2.6.24/include/linux/kernel.h	2008-01-24 16:58:37.000000000 -0600
-> +++ linux-2.6.24-printk_ratelimit/include/linux/kernel.h	2008-02-21 11:20:41.751197312 -0600
-
-Probably because you patched 2.6.24.  We're developing 2.6.25 now, and the
-difference between the two is very large inded.  Please raise patches
-against Linus's latest tree?
-
-There are other patches pending against printk.c (in -mm and in git-sched)
-but afacit they won't collide.
-
-> @@ -196,8 +196,19 @@ static inline int log_buf_copy(char *des
->  
->  unsigned long int_sqrt(unsigned long);
->  
-> +struct printk_ratelimit_state
-> +{
-
-Please do
-
-struct printk_ratelimit_state {
-
-> +	unsigned long toks;
-> +	unsigned long last_jiffies;
-> +	int missed;
-> +	int limit_jiffies;
-> +	int limit_burst;
-> +	char const *facility;
-> +};
-
-I find that the best-value comments one can add to kernel code are to the
-members of structures.  If the reader understands what all the fields do, the
-code becomes simple to follow.
-
-> --- linux-2.6.24/net/core/utils.c	2008-01-24 16:58:37.000000000 -0600
-> +++ linux-2.6.24-printk_ratelimit/net/core/utils.c	2008-02-21 11:03:44.644337698 -0600
-> @@ -41,7 +41,16 @@ EXPORT_SYMBOL(net_msg_warn);
->   */
->  int net_ratelimit(void)
->  {
-> -	return __printk_ratelimit(net_msg_cost, net_msg_burst);
-> +	static struct printk_ratelimit_state limit_state = {
-> +		.toks          = 10 * 5 * HZ,
-> +		.last_jiffies  = 0,
-> +		.missed        = 0,
-> +		.limit_jiffies = 5 * HZ,
-> +		.limit_burst   = 10,
-> +		.facility      = "net"
-> +	};
-> +
-> +	return __printk_ratelimit(net_msg_cost, net_msg_burst, &limit_state);
-
-I don't get it.  There's one instance of limit_state, kernel-wide, and
-__printk_ratelimit() modifies it.  What prevents one CPU's activities from
-interfering with a second CPU's activities?
-
+-Eric
