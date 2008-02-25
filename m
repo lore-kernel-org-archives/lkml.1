@@ -1,45 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759973AbYBYAZE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760317AbYBYAZn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759973AbYBYAZE (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 24 Feb 2008 19:25:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751868AbYBYAYy
+	id S1760317AbYBYAZn (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 24 Feb 2008 19:25:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753490AbYBYAZc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 24 Feb 2008 19:24:54 -0500
-Received: from mba.ocn.ne.jp ([122.1.235.107]:51777 "EHLO smtp.mba.ocn.ne.jp"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751003AbYBYAYx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 24 Feb 2008 19:24:53 -0500
-Date: Mon, 25 Feb 2008 09:25:15 +0900 (JST)
-Message-Id: <20080225.092515.126141645.anemo@mba.ocn.ne.jp>
-To: nforrester@whoi.edu
-Cc: david-b@pacbell.net, spi-devel-general@lists.sourceforge.net,
-       marc.pignat@hevs.ch, linux-kernel@vger.kernel.org
-Subject: Re: [spi-devel-general] [PATCH] atmel_spi: support zero length
- transfer
-From: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
-In-Reply-To: <47BF2455.8030904@whoi.edu>
-References: <47BED734.5030002@whoi.edu>
-	<20080222190228.2B0CB28E363@adsl-69-226-248-13.dsl.pltn13.pacbell.net>
-	<47BF2455.8030904@whoi.edu>
-X-Fingerprint: 6ACA 1623 39BD 9A94 9B1A  B746 CA77 FE94 2874 D52F
-X-Pgp-Public-Key: http://wwwkeys.pgp.net/pks/lookup?op=get&search=0x2874D52F
-X-Mailer: Mew version 5.2 on Emacs 21.4 / Mule 5.0 (SAKAKI)
+	Sun, 24 Feb 2008 19:25:32 -0500
+Received: from el-out-1112.google.com ([209.85.162.181]:6055 "EHLO
+	el-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753316AbYBYAZb (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 24 Feb 2008 19:25:31 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=subject:from:to:cc:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
+        b=EU7VUD8SggtxrxthVUPyTb5VU/jXAfqBd4HW/7SZ7pijLn8rYOLGIiX+6KV0fuRvURsd+xGPeKdfrjkT5gtxTszUo48l0r6TMsZ1AvPCjDSLH7G9LjU6GRuUAqEY31HKADEypXHsL1ZT78EGHweKTqQjez/bDZLzAAF6DyKSeRw=
+Subject: [PATCH 1/6] markers: make marker_debug static
+From: Harvey Harrison <harvey.harrison@gmail.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>,
+       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Content-Type: text/plain
+Date: Sun, 24 Feb 2008 16:25:34 -0800
+Message-Id: <1203899134.1767.6.camel@brick>
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+X-Mailer: Evolution 2.12.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 22 Feb 2008 14:36:53 -0500, Ned Forrester <nforrester@whoi.edu> wrote:
-> Or are you and Atsushi talking about using spi_transfer.delay_usecs
-> *with* a zero length transfer to effectively put a delay between the
-> assertion of CS and the start of the first clock?  If so, then I guess I
-> missed the original point.  Sorry.
+Introduced between 2.6.25-rc2 and -rc3
+kernel/marker.c:31:11: warning: symbol 'marker_debug' was not declared. Should it be static?
 
-Yes.  I want to use zero length transfer with delay_usecs to achieve
-CS-CLK delay for my funny device.  And I was too lazy to reject true
-nop transfer.
-
+Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
 ---
-Atsushi Nemoto
+ kernel/marker.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+diff --git a/kernel/marker.c b/kernel/marker.c
+index 50effc0..dc2eb12 100644
+--- a/kernel/marker.c
++++ b/kernel/marker.c
+@@ -28,7 +28,7 @@ extern struct marker __start___markers[];
+ extern struct marker __stop___markers[];
+ 
+ /* Set to 1 to enable marker debug output */
+-const int marker_debug;
++static const int marker_debug;
+ 
+ /*
+  * markers_mutex nests inside module_mutex. Markers mutex protects the builtin
+-- 
+1.5.4.2.200.g99e75
+
+
