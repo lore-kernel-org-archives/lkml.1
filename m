@@ -1,48 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756156AbYBYP46@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755341AbYBYQOQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756156AbYBYP46 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 Feb 2008 10:56:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753426AbYBYP4u
+	id S1755341AbYBYQOQ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 Feb 2008 11:14:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753567AbYBYQN7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 Feb 2008 10:56:50 -0500
-Received: from g4t0015.houston.hp.com ([15.201.24.18]:41360 "EHLO
-	g4t0015.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751684AbYBYP4t (ORCPT
+	Mon, 25 Feb 2008 11:13:59 -0500
+Received: from g5t0008.atlanta.hp.com ([15.192.0.45]:9404 "EHLO
+	g5t0008.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753022AbYBYQN6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 Feb 2008 10:56:49 -0500
-Subject: 2.6.25-rc2-mm1 - boot hangs on ia64
-From: Lee Schermerhorn <Lee.Schermerhorn@hp.com>
-To: linux-ia64 <linux-ia64@vger.kernel.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Tony Luck <tony.luck@intel.com>, Ingo Molnar <mingo@redhat.com>
-Cc: Bob Picco <bob.picco@hp.com>, Eric Whitney <eric.whitney@hp.com>
-Content-Type: text/plain
-Organization: HP/OSLO
-Date: Mon, 25 Feb 2008 10:56:57 -0500
-Message-Id: <1203955017.5046.29.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.6.1 
+	Mon, 25 Feb 2008 11:13:58 -0500
+From: Bjorn Helgaas <bjorn.helgaas@hp.com>
+To: linux-serial@vger.kernel.org, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: serial: add PNP ID GVC0303 for Archtek 3334BRV ISA modem
+Date: Mon, 25 Feb 2008 09:15:27 -0700
+User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
+Cc: Thomas Lehmann <thomas.lehmann@alumni.tu-berlin.de>,
+       linux-kernel@vger.kernel.org
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="us-ascii"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200802250915.27783.bjorn.helgaas@hp.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-25-rc2-mm1 is hanging early in boot on my HP ia64 numa platform.  I saw
-the "Strange hang on ia64 with CONFIG_PRINTK_TIME=y" thread on lkml:  
+Thomas Lehmann <thomas.lehmann@alumni.tu-berlin.de> verified that this
+entry works.
 
-	http://marc.info/?t=120288396800001&r=1&w=4
+Signed-off-by: Bjorn Helgaas <bjorn.helgaas@hp.com>
 
-However, my config does not include PRINTK_TIME=y.  In fact, hang occurs
-with ia64 defconfig as well--right after the "Loading...initrd...done"
-message.  2.6.25-rc2 boots OK.
-
-Bisecting the broken-out series appears to indict 'git-sched.patch'.  I
-went ahead and added Ingo's patch, discussed in the "strange hang"
-thread, even tho' I hadn't enabled printk timestamps.  No effect.
-
-Anyone else seeing this?
-
-Regards,
-Lee
-
+Index: work6/drivers/serial/8250_pnp.c
+===================================================================
+--- work6.orig/drivers/serial/8250_pnp.c	2008-02-20 16:55:04.000000000 -0700
++++ work6/drivers/serial/8250_pnp.c	2008-02-25 09:04:41.000000000 -0700
+@@ -91,6 +91,8 @@
+ 	/* Archtek America Corp. */
+ 	/* Archtek SmartLink Modem 3334BT Plug & Play */
+ 	{	"GVC000F",		0	},
++	/* Archtek SmartLink Modem 3334BRV 33.6K Data Fax Voice */
++	{	"GVC0303",		0	},
+ 	/* Hayes */
+ 	/* Hayes Optima 288 V.34-V.FC + FAX + Voice Plug & Play */
+ 	{	"HAY0001",		0	},
