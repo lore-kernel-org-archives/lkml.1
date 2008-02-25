@@ -1,52 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757970AbYBYS1c@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758395AbYBYS2E@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757970AbYBYS1c (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 Feb 2008 13:27:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755249AbYBYS1M
+	id S1758395AbYBYS2E (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 Feb 2008 13:28:04 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754832AbYBYS1u
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 Feb 2008 13:27:12 -0500
-Received: from terminus.zytor.com ([198.137.202.10]:48899 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754843AbYBYS1K (ORCPT
+	Mon, 25 Feb 2008 13:27:50 -0500
+Received: from out3.smtp.messagingengine.com ([66.111.4.27]:39928 "EHLO
+	out3.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754669AbYBYS1t (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 Feb 2008 13:27:10 -0500
-Message-ID: <47C306A1.2040909@zytor.com>
-Date: Mon, 25 Feb 2008 10:19:13 -0800
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+	Mon, 25 Feb 2008 13:27:49 -0500
+X-Sasl-enc: qJRbRKAXrtl54Pl7GSHyq/Pd0XX5GNplSzVYCPi9848C 1203964067
+Date: Mon, 25 Feb 2008 15:27:43 -0300
+From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+To: Zdenek Kabelac <zdenek.kabelac@gmail.com>
+Cc: linux-kernel@vger.kernel.org, len.brown@intel.com
+Subject: Re: latest commit on thinkpad_acpi.c 6c231bd5eb07 shows warning
+Message-ID: <20080225182743.GA16513@khazad-dum.debian.net>
+References: <c4e36d110802241407q4808e3f8n318723a70696fd0d@mail.gmail.com>
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: "Huang, Ying" <ying.huang@intel.com>, Ingo Molnar <mingo@redhat.com>,
-       Thomas Gleixner <tglx@linutronix.de>, Andi Kleen <ak@suse.de>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] x86: EFI_PAGE_SHIFT fix
-References: <1203923917.4707.58.camel@caritas-dev.intel.com> <20080225074059.GI11327@elte.hu>
-In-Reply-To: <20080225074059.GI11327@elte.hu>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <c4e36d110802241407q4808e3f8n318723a70696fd0d@mail.gmail.com>
+X-GPG-Fingerprint: 1024D/1CDB0FE3 5422 5C61 F6B7 06FB 7E04  3738 EE25 DE3F
+	1CDB 0FE3
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
-> * Huang, Ying <ying.huang@intel.com> wrote:
+On Sun, 24 Feb 2008, Zdenek Kabelac wrote:
+> Commit 6c231bd5eb07ce546517019f334652b9ecfc329a
+> generate this warning:
 > 
->> Make x86 EFI code works when EFI_PAGE_SHIFT != PAGE_SHIFT. The 
->> memrage_efi_to_native() provided in this patch can be used on other 
->> EFI platform such as IA64 too.
->>
->> This patch has been tested on Intel x86_64 platform with EFI 64/32 
->> firmware.
+> drivers/misc/thinkpad_acpi.c: In function 'tpacpi_input_send_tabletsw':
+> include/linux/input.h:1290: warning: 'state' is used uninitialized in
+> this function
+> drivers/misc/thinkpad_acpi.c:1191: note: 'state' was declared here
+> drivers/misc/thinkpad_acpi.c: In function 'hotkey_tablet_mode_show':
+> drivers/misc/thinkpad_acpi.c:1723: warning: 's' is used uninitialized
+> in this function
 > 
-> this is mostly cosmetic, isnt it - because currently nobody expects 
-> EFI_PAGE_SHIFT and PAGE_SHIFT to ever change on x86, right? I've queued 
-> up your patch for 2.6.26, ok?
-> 
+> I assume typo  here thinkpad_acpi.c:10724 hotkey_get_tablet_mode
+> where status should be maybe 's' and local 's' shouldn't be defined at
+> all -  just guess?
 
-There keeps being a lot of talk about a larger x86 pagesize, either 
-involving future hardware support or via page clustering in the kernel.
+Erk.  Looks like I tested one branch and did a git-send-email on the other
+or something equally pathetic.  Sorry about that.
 
-Going beyond a 48-bit address space (in long mode) may mean increasing 
-the page size.
+I will check the entire thing over line by line and send a fix.
 
-	-hpa
+-- 
+  "One disk to rule them all, One disk to find them. One disk to bring
+  them all and in the darkness grind them. In the Land of Redmond
+  where the shadows lie." -- The Silicon Valley Tarot
+  Henrique Holschuh
