@@ -1,29 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754638AbYBYIXt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755005AbYBYI0z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754638AbYBYIXt (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 Feb 2008 03:23:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753207AbYBYIXl
+	id S1755005AbYBYI0z (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 Feb 2008 03:26:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753719AbYBYI0r
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 Feb 2008 03:23:41 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:59574 "EHLO mx3.mail.elte.hu"
+	Mon, 25 Feb 2008 03:26:47 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:52716 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753116AbYBYIXk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 Feb 2008 03:23:40 -0500
-Date: Mon, 25 Feb 2008 09:23:14 +0100
+	id S1753692AbYBYI0q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 25 Feb 2008 03:26:46 -0500
+Date: Mon, 25 Feb 2008 09:26:34 +0100
 From: Ingo Molnar <mingo@elte.hu>
-To: James Morris <jmorris@namei.org>
-Cc: Sam Ravnborg <sam@ravnborg.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, Arjan van de Ven <arjan@infradead.org>,
-       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
-       "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: Regression [Was: Boot hang with stack protector on x86_64]
-Message-ID: <20080225082314.GA12715@elte.hu>
-References: <Xine.LNX.4.64.0802221121340.20800@us.intercode.com.au> <20080222075950.GB2660@uranus.ravnborg.org> <20080222093621.GG327@elte.hu> <Xine.LNX.4.64.0802222133150.6937@us.intercode.com.au> <20080222121751.GA17889@elte.hu> <Xine.LNX.4.64.0802230000470.14729@us.intercode.com.au> <20080223061856.GA26185@elte.hu> <20080223073746.GA28310@elte.hu> <Xine.LNX.4.64.0802250952570.846@us.intercode.com.au>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: Mikael Pettersson <mikpe@it.uu.se>, linux-kernel@vger.kernel.org,
+       mingo@redhat.com, tglx@linutronix.de
+Subject: Re: [BUG] 2.6.25-rc2-git8 fails to boot on 486 due to TSC breakage
+Message-ID: <20080225082634.GB12715@elte.hu>
+References: <200802241107.m1OB7bHb022801@harpo.it.uu.se> <20080224135720.GA5323@elte.hu> <18369.35401.678391.183329@harpo.it.uu.se> <18369.43239.964660.62249@harpo.it.uu.se> <47C21284.7040607@zytor.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <Xine.LNX.4.64.0802250952570.846@us.intercode.com.au>
+In-Reply-To: <47C21284.7040607@zytor.com>
 User-Agent: Mutt/1.5.17 (2007-11-01)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -38,18 +35,12 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* James Morris <jmorris@namei.org> wrote:
+* H. Peter Anvin <hpa@zytor.com> wrote:
 
-> > > could you try the fix below ontop of x86.git#testing, does it 
-> > > solve your boot hang?
-> > 
-> > find below another fix that is somewhat better as it does not affect 
-> > the native kernel and !PARAVIRT.
-> 
-> This works.
+> Please fix it in both places.  Using XOR instead of AND-NOT is a bug, 
+> plain and simple.
 
-thanks. We'll delay the stackprotector fixes for v2.6.26 (it's been 
-broken for too long), but if you want to have it you can pick it up from 
-x86.git.
+yes, i already fixed that when i added Mikael's patch and it's all 
+queued up.
 
 	Ingo
