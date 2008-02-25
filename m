@@ -1,47 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760943AbYBYXsr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761159AbYBYXuX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760943AbYBYXsr (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 Feb 2008 18:48:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755025AbYBYXsj
+	id S1761159AbYBYXuX (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 Feb 2008 18:50:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756385AbYBYXuI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 Feb 2008 18:48:39 -0500
-Received: from sandeen.net ([209.173.210.139]:29548 "EHLO sandeen.net"
+	Mon, 25 Feb 2008 18:50:08 -0500
+Received: from chilli.pcug.org.au ([203.10.76.44]:39924 "EHLO smtps.tip.net.au"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752467AbYBYXsj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 Feb 2008 18:48:39 -0500
-Message-ID: <47C353D4.1060501@sandeen.net>
-Date: Mon, 25 Feb 2008 15:48:36 -0800
-From: Eric Sandeen <sandeen@sandeen.net>
-User-Agent: Thunderbird 2.0.0.9 (Macintosh/20071031)
-MIME-Version: 1.0
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-CC: xfs-masters@oss.sgi.com, xfs@oss.sgi.com, johannes@sipsolutions.net,
-       linux-kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [xfs-masters] filesystem corruption on xfs after 2.6.25-rc1 (bisected,
- powerpc related?)
-References: <20080225112310.GA5516@soziologie.ch> <47C305BD.1060408@sandeen.net> <200802260042.35918.rjw@sisk.pl>
-In-Reply-To: <200802260042.35918.rjw@sisk.pl>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	id S1754996AbYBYXuF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 25 Feb 2008 18:50:05 -0500
+Date: Tue, 26 Feb 2008 10:49:56 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
+       Linux/m68k <linux-m68k@vger.kernel.org>
+Subject: Re: linux-next: Tree for Feb 24
+Message-Id: <20080226104956.7d4d9402.sfr@canb.auug.org.au>
+In-Reply-To: <Pine.LNX.4.64.0802252252070.5158@anakin>
+References: <20080224162309.3e67dd22.sfr@canb.auug.org.au>
+	<Pine.LNX.4.64.0802252252070.5158@anakin>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.8; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Tue__26_Feb_2008_10_49_56_+1100_HMi.YfHbNaPAV0F2"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rafael J. Wysocki wrote:
-> On Monday, 25 of February 2008, Eric Sandeen wrote:
+--Signature=_Tue__26_Feb_2008_10_49_56_+1100_HMi.YfHbNaPAV0F2
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
+Hi Geert,
 
->> If you're feeling motivated, maybe you can narrow it down to which of
->> the changes - xfs_highbit32, xfs_highbit64, xfs_lowbit32, or
->> xfs_lowbit64 - is causing the problem?  (or maybe they all are ...)
->>
->> Or maybe someone looking at the commit can immediately see the
->> problem... but I can't :)
-> 
-> Well, IMO a reproducible filesystem corruption is a serious enough issue
-> for reverting all of the commits in question.
+On Mon, 25 Feb 2008 22:56:04 +0100 (CET) Geert Uytterhoeven <geert@linux-m6=
+8k.org> wrote:
+>
+> Can you please add
+> http://linux-m68k-cvs.ubb.ca/~geert/linux-m68k-patches-2.6/series?
+> So far there's only one patch in between NEXT_PATCHES_{START,END} yet,
+> though.
 
-I'm not suggesting a partial revert; I just wonder which part of the
-change is causing the problem, as part of the debugging process.
+Added, thanks.
 
--Eric
+> Ah, I see the m68k cross-compiler is still missing? ;-)
+
+Please look again :-)  Are there any particular configs we should build?
+
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Tue__26_Feb_2008_10_49_56_+1100_HMi.YfHbNaPAV0F2
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQFHw1QpTgG2atn1QN8RAmT+AJwJgJ9w6NGT+vYJ3r8VqE/9phEwEwCeLdns
+H6ZE8iEYXfu+w+Cxg6noXYI=
+=EPhJ
+-----END PGP SIGNATURE-----
+
+--Signature=_Tue__26_Feb_2008_10_49_56_+1100_HMi.YfHbNaPAV0F2--
