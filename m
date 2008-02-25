@@ -1,63 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758685AbYBYUbd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758482AbYBYUdH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758685AbYBYUbd (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 Feb 2008 15:31:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757595AbYBYUbZ
+	id S1758482AbYBYUdH (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 Feb 2008 15:33:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756441AbYBYUcz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 Feb 2008 15:31:25 -0500
-Received: from mail.gmx.net ([213.165.64.20]:38941 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1757296AbYBYUbY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 Feb 2008 15:31:24 -0500
-X-Authenticated: #20450766
-X-Provags-ID: V01U2FsdGVkX1/M54sqwdXMD+ED2hR0NNrVgwosYo9YsbjKaeZXov
-	gf50M2r0ND8wIv
-Date: Mon, 25 Feb 2008 21:31:22 +0100 (CET)
-From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-To: Greg KH <greg@kroah.com>
-cc: linux-kernel@vger.kernel.org
-Subject: Re: [PCI] duplicate sysfs symbols getting registered in current git
-In-Reply-To: <20080225202546.GA8893@kroah.com>
-Message-ID: <Pine.LNX.4.64.0802252130410.19416@axis700.grange>
-References: <Pine.LNX.4.64.0802182142240.11540@axis700.grange>
- <20080220063834.GA22708@kroah.com> <Pine.LNX.4.64.0802251341160.4430@axis700.grange>
- <Pine.LNX.4.64.0802251913380.19416@axis700.grange> <20080225202546.GA8893@kroah.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Y-GMX-Trusted: 0
+	Mon, 25 Feb 2008 15:32:55 -0500
+Received: from pasmtpb.tele.dk ([80.160.77.98]:60460 "EHLO pasmtpB.tele.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756112AbYBYUcz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 25 Feb 2008 15:32:55 -0500
+Date: Mon, 25 Feb 2008 21:33:07 +0100
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Cyrill Gorcunov <gorcunov@gmail.com>
+Cc: LKML <linux-kernel@vger.kernel.org>
+Subject: Re: vmlinux.lds cleanup
+Message-ID: <20080225203307.GB23790@uranus.ravnborg.org>
+References: <20080225095800.GB6744@cvg>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080225095800.GB6744@cvg>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 25 Feb 2008, Greg KH wrote:
-
-> On Mon, Feb 25, 2008 at 07:15:57PM +0100, Guennadi Liakhovetski wrote:
-> > On Mon, 25 Feb 2008, Guennadi Liakhovetski wrote:
-> > 
-> > > On Tue, 19 Feb 2008, Greg KH wrote:
-> > > 
-> > > > On Mon, Feb 18, 2008 at 09:52:25PM +0100, Guennadi Liakhovetski wrote:
-> > > > > Booting an x86 SMP PC with todays git-snapshot or just with 2.6.25-rc2 
-> > > > > getting the following warnings (with a bit of context):
-> > > > 
-> > > > Can you try enabling CONFIG_DEBUG_KOBJECT and sending the output at boot
-> > > > time from this?
-> > > 
-> > > dmesg output with CONFIG_LOG_BUF_SHIFT=19 sent privately to Greg as 
-> > > unpacked, as it would have to be sent to the list, is 408K big. Will see 
-> > > what Greg says.
-> > 
-> > Actually, the most annoying problem with post 2.6.24 kernels on this 
-> > machine is, that the system doesn't power off or reboot any more. And 
-> > seeing other reports, where the reason for not powering down was unfreed 
-> > kobjects, maybe this is the problem here too?
+On Mon, Feb 25, 2008 at 12:58:00PM +0300, Cyrill Gorcunov wrote:
+> Hi Sam,
 > 
-> If you have cpufreq enabled, that should solve this problem after the
-> 2.6.24-rc3 kernel release.  Have you tried that version?
+> you know I've just take a look on different architectures and I suddenly
+> realized that I even can't test my changes I'm bringnin in. For example -
+> xtensa arch, most of lds numeric constants could (and should) be changed
+> to PAGE_SIZE and THREAD_SIZE but this requires to include additional
+> heades in lds script and I'm not even sure if it link without errors...
+> (actually, i'm absolutely sure there would be errors ;)
+> 
+> I'm not sure, but maybe it would be more convenient to ask mainteiners
+> fix their scripts? At least their have access to an appropriate hardware
+> to test.
 
-Did you mean 25-rc3? But no, I do not have cpufreq enabled.
+I have in most cases the relevant toolchains and then I manually inspect
+the generated .lds file.
+In other cases I just do my best to make it correct and tell in my
+submisison that htis is not build tested. (This type of
+info belongs below the three dasches '---').
 
-Thanks
-Guennadi
----
-Guennadi Liakhovetski
+	Sam
