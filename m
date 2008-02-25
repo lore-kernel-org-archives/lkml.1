@@ -1,59 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757729AbYBYR7r@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758721AbYBYSAg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757729AbYBYR7r (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 Feb 2008 12:59:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758275AbYBYR7Y
+	id S1758721AbYBYSAg (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 Feb 2008 13:00:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755368AbYBYSAZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 Feb 2008 12:59:24 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:60997 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758270AbYBYR7X (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 Feb 2008 12:59:23 -0500
-Date: Mon, 25 Feb 2008 09:55:08 -0800
-From: Greg KH <greg@kroah.com>
-To: Jens Axboe <jens.axboe@oracle.com>
-Cc: Lee Schermerhorn <Lee.Schermerhorn@hp.com>,
-       "Theodore Ts'o" <tytso@mit.edu>,
-       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
-       "Miller, Mike (OS Dev)" <Mike.Miller@hp.com>,
-       torvalds@linux-foundation.org, Greg KH <gregkh@suse.de>,
-       Justin Forbes <jmforbes@linuxtx.org>, linux-kernel@vger.kernel.org,
-       Chris Wedgwood <reviews@ml.cw.f00f.org>,
-       Domenico Andreoli <cavokz@gmail.com>,
-       Randy Dunlap <rdunlap@xenotime.net>,
-       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
-       Dave Jones <davej@redhat.com>, akpm@linux-foundation.org,
-       Oliver Pinter <oliver.pntr@gmail.com>,
-       Chuck Wolber <chuckw@quantumlinux.com>, stable@kernel.org,
-       alan@lxorguk.ukuu.org.uk
-Subject: Re: [stable] [patch 07/23] cciss: Panic in blk_rq_map_sg() from
-	CCISS driver
-Message-ID: <20080225175508.GC18940@kroah.com>
-References: <20080222213114.583282464@mini.kroah.org> <20080222214021.GH8686@suse.de> <1203951994.5046.2.camel@localhost> <20080225153958.GJ26812@kernel.dk>
-MIME-Version: 1.0
+	Mon, 25 Feb 2008 13:00:25 -0500
+Received: from turing-police.cc.vt.edu ([128.173.14.107]:42385 "EHLO
+	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755215AbYBYSAY (ORCPT
+	<RFC822;linux-kernel@vger.kernel.org>);
+	Mon, 25 Feb 2008 13:00:24 -0500
+X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
+To: Andrew Morton <akpm@linux-foundation.org>,
+       Steven Rostedt <srostedt@redhat.com>, Ingo Molnar <mingo@elte.hu>,
+       Arnaldo Carvalho de Melo <acme@ghostprotocols.net>
+cc: linux-kernel@vger.kernel.org
+Subject: [PATCH] 2.6.25-rc2-mm1 - fix mcount GPL bogosity.
+From: Valdis.Kletnieks@vt.edu
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080225153958.GJ26812@kernel.dk>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+Date: Mon, 25 Feb 2008 12:59:29 -0500
+Message-ID: <30804.1203962369@turing-police.cc.vt.edu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Feb 25, 2008 at 04:39:58PM +0100, Jens Axboe wrote:
-> On Mon, Feb 25 2008, Lee Schermerhorn wrote:
-> > On Fri, 2008-02-22 at 13:40 -0800, Greg KH wrote:
-> > > plain text document attachment
-> > > (cciss-panic-in-blk_rq_map_sg-from-cciss-driver.patch)
-> > > 2.6.22-stable review patch.  If anyone has any objections, please let us
-> > > know.
-> > 
-> > Greg, Jens:  Does 2.6.22 contain the scatter/gather chaining that caused
-> > the problem in 23-rc6-mm1?  If not, I wouldn't think this patch is
-> > necessary there.
-> 
-> It doesn't, the patch is not needed.
+The symbol 'mcount' has EXPORT_SYMBOL_GPL attached to it.  This is because
+"things that use this symbol are too chummy with kernel internals to not be
+derivative".  However, the symbol may or may not actually be referenced by a
+given module, depending on the setting of CONFIG_FTRACE.  This leads to an
+interesting result:  The module may or may not be too chummy depending on a
+variable outside its control, and the module source code doesn't have any say
+in the matter.  So we have a .c file that *is* a derivative work if the kernel
+is built one way, and is *not* if the kernel is built another.  Worse yet,
+it *also* depends at runtime on the setting of /proc/sys/kernel/ftrace_enabled
 
-Thanks for letting me know, the patch is now dropped.
+But it's the SAME EXACT SOURCE.  And since the source file isn't called
+schrodinger.c, I believe the following patch is in order..
 
-greg k-h
+(As an aside, arch/um/kernel/gprof_syms.c already lists mcount as a
+SYMBOL, not a SYMBOL_GPL - yet another inconsistency.
+
+Signed-off-by: Valdis Kletnieks <valdis.kletnieks@vt.edu>
+---
+--- linux-2.6.25-rc2-mm1/kernel/trace/ftrace.c.dist	2008-02-16 23:34:36.000000000 -0500
++++ linux-2.6.25-rc2-mm1/kernel/trace/ftrace.c	2008-02-25 12:00:57.000000000 -0500
+@@ -44,7 +44,7 @@ static struct ftrace_ops *ftrace_list __
+ ftrace_func_t ftrace_trace_function __read_mostly = ftrace_stub;
+ 
+ /* mcount is defined per arch in assembly */
+-EXPORT_SYMBOL_GPL(mcount);
++EXPORT_SYMBOL(mcount);
+ 
+ notrace void ftrace_list_func(unsigned long ip, unsigned long parent_ip)
+ {
+
