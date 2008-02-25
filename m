@@ -1,111 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755223AbYBYIpc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755022AbYBYIuO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755223AbYBYIpc (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 Feb 2008 03:45:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753981AbYBYIpX
+	id S1755022AbYBYIuO (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 Feb 2008 03:50:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753890AbYBYIt4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 Feb 2008 03:45:23 -0500
-Received: from mx51.mail.ru ([194.67.23.72]:60428 "EHLO mx51.mail.ru"
+	Mon, 25 Feb 2008 03:49:56 -0500
+Received: from mx39.mail.ru ([194.67.23.35]:62033 "EHLO mx39.mail.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753930AbYBYIpT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 Feb 2008 03:45:19 -0500
+	id S1753741AbYBYItw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 25 Feb 2008 03:49:52 -0500
+X-Greylist: delayed 151962 seconds by postgrey-1.27 at vger.kernel.org; Mon, 25 Feb 2008 03:49:50 EST
 From: Andrey Borzenkov <arvidjaar@mail.ru>
-To: linux-pcmcia@lists.infradead.org
-Subject: [2.6.25-rc] pcmcia section mismatches
-Date: Mon, 25 Feb 2008 11:45:12 +0300
+To: linux-pci@atrey.karlin.mff.cuni.cz
+Subject: [2.6.25-rc] pci_scan_child_bus, pci_acpi_scan_root section mismatch
+Date: Mon, 25 Feb 2008 11:49:43 +0300
 User-Agent: KMail/1.9.9
-Cc: linux-kernel@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org
 MIME-Version: 1.0
 Content-Type: multipart/signed;
-  boundary="nextPart1964889.pbvCmFv9Qm";
+  boundary="nextPart6274558.qIcVp1nnte";
   protocol="application/pgp-signature";
   micalg=pgp-sha1
 Content-Transfer-Encoding: 7bit
-Message-Id: <200802251145.13015.arvidjaar@mail.ru>
+Message-Id: <200802251149.44343.arvidjaar@mail.ru>
 X-Spam: Not detected
 X-Mras: OK
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---nextPart1964889.pbvCmFv9Qm
+--nextPart6274558.qIcVp1nnte
 Content-Type: multipart/mixed;
-  boundary="Boundary-01=_YAowHGMc3C24Pmk"
+  boundary="Boundary-01=_oEowHJa01fUufqS"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
 
---Boundary-01=_YAowHGMc3C24Pmk
+--Boundary-01=_oEowHJa01fUufqS
 Content-Type: text/plain;
   charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
 
-During compilation:
+  MODPOST vmlinux.o
+WARNING: vmlinux.o(.text+0xec461): Section mismatch in reference from the function pci_scan_child_bus() to the function .devinit.text:pcibios_fixup_bus()
+The function pci_scan_child_bus() references
+the function __devinit pcibios_fixup_bus().
+This is often because pci_scan_child_bus lacks a __devinit
+annotation or the annotation of pcibios_fixup_bus is wrong.
 
-  LD [M]  drivers/pcmcia/pcmcia_core.o
-WARNING: drivers/pcmcia/pcmcia_core.o(.data+0x1d4): Section mismatch in reference from the variable pccard_sysfs_interface to the function .devinit.text:pccard_sysfs_add_socket()
-The variable pccard_sysfs_interface references
-the function __devinit pccard_sysfs_add_socket()
-If the reference is valid then annotate the
-variable with __init* (see linux/init.h) or name the variable:
-*driver, *_template, *_timer, *_sht, *_ops, *_probe, *_probe_one, *_console,
+WARNING: vmlinux.o(.text+0x12388b): Section mismatch in reference from the function acpi_pci_root_add() to the function .devinit.text:pci_acpi_scan_root()
+The function acpi_pci_root_add() references
+the function __devinit pci_acpi_scan_root().
+This is often because acpi_pci_root_add lacks a __devinit
+annotation or the annotation of pci_acpi_scan_root is wrong.
 
-WARNING: drivers/pcmcia/pcmcia_core.o(.data+0x1d8): Section mismatch in reference from the variable pccard_sysfs_interface to the function .devexit.text:pccard_sysfs_remove_socket()
-The variable pccard_sysfs_interface references
-the function __devexit pccard_sysfs_remove_socket()
-If the reference is valid then annotate the
-variable with __exit* (see linux/init.h) or name the variable:
-*driver, *_template, *_timer, *_sht, *_ops, *_probe, *_probe_one, *_console,
-
-  LD [M]  drivers/pcmcia/pcmcia.o
-WARNING: drivers/pcmcia/pcmcia.o(.data+0x4c): Section mismatch in reference from the variable pcmcia_bus_interface to the function .devinit.text:pcmcia_bus_add_socket()
-The variable pcmcia_bus_interface references
-the function __devinit pcmcia_bus_add_socket()
-If the reference is valid then annotate the
-variable with __init* (see linux/init.h) or name the variable:
-*driver, *_template, *_timer, *_sht, *_ops, *_probe, *_probe_one, *_console,
-
-and later during modpost:
-
-  MODPOST 260 modules
-WARNING: drivers/pcmcia/pcmcia.o(.data+0x4c): Section mismatch in reference from the variable pcmcia_bus_interface to the function .devinit.text:pcmcia_bus_add_socket()
-The variable pcmcia_bus_interface references
-the function __devinit pcmcia_bus_add_socket()
-If the reference is valid then annotate the
-variable with __init* (see linux/init.h) or name the variable:
-*driver, *_template, *_timer, *_sht, *_ops, *_probe, *_probe_one, *_console,
-
-WARNING: drivers/pcmcia/pcmcia_core.o(.data+0x1d4): Section mismatch in reference from the variable pccard_sysfs_interface to the function .devinit.text:pccard_sysfs_add_socket()
-The variable pccard_sysfs_interface references
-the function __devinit pccard_sysfs_add_socket()
-If the reference is valid then annotate the
-variable with __init* (see linux/init.h) or name the variable:
-*driver, *_template, *_timer, *_sht, *_ops, *_probe, *_probe_one, *_console,
-
-WARNING: drivers/pcmcia/pcmcia_core.o(.data+0x1d8): Section mismatch in reference from the variable pccard_sysfs_interface to the function .devexit.text:pccard_sysfs_remove_socket()
-The variable pccard_sysfs_interface references
-the function __devexit pccard_sysfs_remove_socket()
-If the reference is valid then annotate the
-variable with __exit* (see linux/init.h) or name the variable:
-*driver, *_template, *_timer, *_sht, *_ops, *_probe, *_probe_one, *_console,
-
-WARNING: drivers/pcmcia/rsrc_nonstatic.o(.data+0x9c): Section mismatch in reference from the variable pccard_rsrc_interface to the function .devinit.text:pccard_sysfs_add_rsrc()
-The variable pccard_rsrc_interface references
-the function __devinit pccard_sysfs_add_rsrc()
-If the reference is valid then annotate the
-variable with __init* (see linux/init.h) or name the variable:
-*driver, *_template, *_timer, *_sht, *_ops, *_probe, *_probe_one, *_console,
-
-WARNING: drivers/pcmcia/rsrc_nonstatic.o(.data+0xa0): Section mismatch in reference from the variable pccard_rsrc_interface to the function .devexit.text:pccard_sysfs_remove_rsrc()
-The variable pccard_rsrc_interface references
-the function __devexit pccard_sysfs_remove_rsrc()
-If the reference is valid then annotate the
-variable with __exit* (see linux/init.h) or name the variable:
-*driver, *_template, *_timer, *_sht, *_ops, *_probe, *_probe_one, *_console,
 
 config attached.
 
---Boundary-01=_YAowHGMc3C24Pmk
+--Boundary-01=_oEowHJa01fUufqS
 Content-Type: text/plain;
   charset="us-ascii";
   name="config-2.6.25-rc3-1avb"
@@ -2307,18 +2259,18 @@ CONFIG_HAS_IOMEM=y
 CONFIG_HAS_IOPORT=y
 CONFIG_HAS_DMA=y
 
---Boundary-01=_YAowHGMc3C24Pmk--
+--Boundary-01=_oEowHJa01fUufqS--
 
---nextPart1964889.pbvCmFv9Qm
+--nextPart6274558.qIcVp1nnte
 Content-Type: application/pgp-signature; name=signature.asc 
 Content-Description: This is a digitally signed message part.
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1.4.8 (GNU/Linux)
 
-iEYEABECAAYFAkfCgBgACgkQR6LMutpd94wNtgCcCbE72q5Sjc7gEzsMjtXJuxEv
-DdsAoJTmbINiIsGP1ZSRusuQ3hpRa4ry
-=LXgR
+iEYEABECAAYFAkfCgSgACgkQR6LMutpd94yaegCgv7vbx6Dm+aw56baObDkzO+Ns
+ipAAnihLw2GMRIKTnx38HxxIKBCPLJyd
+=Ktfl
 -----END PGP SIGNATURE-----
 
---nextPart1964889.pbvCmFv9Qm--
+--nextPart6274558.qIcVp1nnte--
