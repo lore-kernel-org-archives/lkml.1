@@ -1,60 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761134AbYBYWvv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759476AbYBYWwO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761134AbYBYWvv (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 Feb 2008 17:51:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758184AbYBYWvm
+	id S1759476AbYBYWwO (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 Feb 2008 17:52:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760959AbYBYWvs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 Feb 2008 17:51:42 -0500
-Received: from smtp1.linux-foundation.org ([207.189.120.13]:36496 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1757177AbYBYWvl (ORCPT
+	Mon, 25 Feb 2008 17:51:48 -0500
+Received: from wf-out-1314.google.com ([209.85.200.174]:27452 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760835AbYBYWvq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 Feb 2008 17:51:41 -0500
-Date: Mon, 25 Feb 2008 14:49:22 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Pekka Paalanen <pq@iki.fi>
-Cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
-       Christoph Hellwig <hch@infradead.org>,
-       Arjan van de Ven <arjan@infradead.org>, Pavel Roskin <proski@gnu.org>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Andy Whitcroft <apw@shadowen.org>
-Subject: Re: [RFC] mmiotrace full patch, preview 1
-Message-Id: <20080225144922.ae716e7d.akpm@linux-foundation.org>
-In-Reply-To: <20080224190323.77adf683@daedalus.pq.iki.fi>
-References: <20080224190323.77adf683@daedalus.pq.iki.fi>
-X-Mailer: Sylpheed 2.4.7 (GTK+ 2.12.1; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Mon, 25 Feb 2008 17:51:46 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=s1hiLLsbYdZMeNwTIDbSlEXEaCw9Jxu5EP6Oo7zuYV3m9OiAAtxmqGoyFUj9WgoYkZpi9aVSURkyehnlLNIYHpGNuHDOYjK9lHcn2Toa4zDonDmu3g5J+M9MtXnhiYVXSol0OSYC/11o+QxzXpyWZF/iqpD9PT/oVPqKRfg1cC0=
+Message-ID: <31e679430802251451y3ae370ddj125616ee4e655536@mail.gmail.com>
+Date: Tue, 26 Feb 2008 00:51:43 +0200
+From: "Felipe Balbi" <felipebalbi@users.sourceforge.net>
+To: "Pierre Ossman" <drzeus-mmc@drzeus.cx>, carlos.aguiar@indt.com.br
+Subject: Re: Bugs in MMC [was: [Bug 10030] Suspend doesn't work when SD card is inserted]
+Cc: "Alan Stern" <stern@rowland.harvard.edu>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       "pm list" <linux-pm@lists.linux-foundation.org>,
+       "Zdenek Kabelac" <zdenek.kabelac@gmail.com>,
+       "David Brownell" <david-b@pacbell.net>,
+       "Kernel development list" <linux-kernel@vger.kernel.org>
+In-Reply-To: <20080225184102.0a2e2bb5@mjolnir.drzeus.cx>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <200802241500.41969.rjw@sisk.pl>
+	 <Pine.LNX.4.44L0.0802240941440.29504-100000@netrider.rowland.org>
+	 <20080225184102.0a2e2bb5@mjolnir.drzeus.cx>
+X-Google-Sender-Auth: da238f4b8cc7d136
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 24 Feb 2008 19:03:23 +0200 Pekka Paalanen <pq@iki.fi> wrote:
+<snip>
 
->  arch/x86/Kconfig.debug      |   33 +++
->  arch/x86/mm/Makefile        |    5 +
->  arch/x86/mm/fault.c         |   13 +
->  arch/x86/mm/kmmio.c         |  541 +++++++++++++++++++++++++++++++++++++++++++
->  arch/x86/mm/mmio-mod.c      |  541 +++++++++++++++++++++++++++++++++++++++++++
->  arch/x86/mm/pageattr.c      |    1 +
->  arch/x86/mm/pf_in.c         |  489 ++++++++++++++++++++++++++++++++++++++
->  arch/x86/mm/pf_in.h         |   39 +++
->  arch/x86/mm/testmmiotrace.c |   76 ++++++
->  include/linux/mmiotrace.h   |  104 +++++++++
+> > What's the purpose of the card-counting loop in
+> > host/omap.c:mmc_omap_switch_handler()? It looks like dead code.
+> >
+>
+> I'm not too familiar with that driver, but they've been playing around
+> with multiplexing several cards into one controller. Might be bits and
+> pieces of that.
+>
 
-Please feed the diff through scritps/checkpatch.pl and consider addressing
-the things which it finds.
+AFAIK, that came after mmc multislot support. Omap2 has one mmc
+controller  for several (2 in practice) mm slots (cards).
+It's not really a dead code since it's used in n800 and n810, it's in
+linux-omap archives and git tree.
 
-> +static DECLARE_MUTEX(kmmio_init_mutex);
+Carlos Aguiar, added in the loop, might have some comments about it.
 
-That's not a mutex.
-
-> +	down(&kmmio_init_mutex);
-
-It's a semaphore.  Please do convert it to a mutex.
-
-Andy, I'd say that addition of new semaphores is worth a warning - they're
-rarely legitimate.
-
+--
+Best Regards,
+Felipe Balbi
+felipebalbi@users.sourceforge.net
