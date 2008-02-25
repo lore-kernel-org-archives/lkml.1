@@ -1,46 +1,174 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758936AbYBYUgz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759338AbYBYUhN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758936AbYBYUgz (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 Feb 2008 15:36:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756784AbYBYUgn
+	id S1759338AbYBYUhN (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 Feb 2008 15:37:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758297AbYBYUgu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 Feb 2008 15:36:43 -0500
-Received: from smtp1.linux-foundation.org ([207.189.120.13]:57806 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756390AbYBYUgm (ORCPT
+	Mon, 25 Feb 2008 15:36:50 -0500
+Received: from mail119.messagelabs.com ([216.82.241.179]:37154 "HELO
+	mail119.messagelabs.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1757541AbYBYUgr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 Feb 2008 15:36:42 -0500
-Date: Mon, 25 Feb 2008 12:34:39 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: "J.C. Pizarro" <jcpiza@gmail.com>
-Cc: "Rik van Riel" <riel@redhat.com>, "Mike Galbraith" <efault@gmx.de>,
-       LKML <linux-kernel@vger.kernel.org>,
-       "Linus Torvalds" <torvalds@linux-foundation.org>
-Subject: Re: Please, put 64-bit counter per task and incr.by.one each ctxt
- switch.
-Message-Id: <20080225123439.90645f2f.akpm@linux-foundation.org>
-In-Reply-To: <998d0e4a0802240512t859c5a1y3c30bd401530a43@mail.gmail.com>
-References: <998d0e4a0802231908h37978d07wa5379d5c01b2c2ee@mail.gmail.com>
-	<20080223221750.429cf0d9@bree.surriel.com>
-	<998d0e4a0802232008w5c6566f0se15ab749ec6f1ceb@mail.gmail.com>
-	<20080223232651.41dffa72@bree.surriel.com>
-	<998d0e4a0802240512t859c5a1y3c30bd401530a43@mail.gmail.com>
-X-Mailer: Sylpheed 2.4.7 (GTK+ 2.12.1; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Mon, 25 Feb 2008 15:36:47 -0500
+X-VirusChecked: Checked
+X-Env-Sender: fsh016@ftw.mot.com
+X-Msg-Ref: server-5.tower-119.messagelabs.com!1203971804!24023825!1
+X-StarScan-Version: 5.5.12.14.2; banners=-,-,-
+X-Originating-IP: [144.189.100.102]
+Date: Mon, 25 Feb 2008 14:36:40 -0600
+From: Steven Hawkes <fsh016@ftw.mot.com>
+Message-Id: <200802252036.m1PKaeMY012587@ftw.mot.com>
+To: davem@davemloft.net, joe@perches.com, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org
+Subject: printk_ratelimit and net_ratelimit conflict and tunable behavior
+X-CFilter-Loop: Reflected
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 24 Feb 2008 14:12:47 +0100 "J.C. Pizarro" <jcpiza@gmail.com> wrote:
+From: Steve Hawkes <steve.hawkes@motorola.com>
 
-> It's statistic, yes, but it's a very important parameter for the CPU-scheduler.
-> The CPU-scheduler will know the number of context switches of each task
->  before of to take a blind decision into infinitum!.
+The printk_ratelimit() and net_ratelimit() functions each have their own
+tunable parameters to control their respective rate limiting feature, but
+they share common state variables, preventing independent tuning of the
+parameters from working correctly. Also, changes to rate limiting tunable
+parameters do not always take effect properly since state is not recomputed
+when changes occur. For example, if ratelimit_burst is increased while rate
+limiting is occurring, the change won't take full effect until at least
+enough time between messages occurs so that the toks value reaches
+ratelimit_burst * ratelimit_jiffies. This can result in messages being
+suppressed when they should be allowed.
 
-We already have these:
+Implement independent state for printk_ratelimit() and net_ratelimit(), and
+update state when tunables are changed.
 
-        unsigned long nvcsw, nivcsw; /* context switch counts */
-
-in the task_struct.
+Signed-off-by: Steve Hawkes <steve.hawkes@motorola.com>
+---
+diff -uprN linux-2.6.24/include/linux/kernel.h linux-2.6.24-printk_ratelimit/include/linux/kernel.h
+--- linux-2.6.24/include/linux/kernel.h	2008-01-24 16:58:37.000000000 -0600
++++ linux-2.6.24-printk_ratelimit/include/linux/kernel.h	2008-02-21 11:20:41.751197312 -0600
+@@ -196,8 +196,19 @@ static inline int log_buf_copy(char *des
+ 
+ unsigned long int_sqrt(unsigned long);
+ 
++struct printk_ratelimit_state
++{
++	unsigned long toks;
++	unsigned long last_jiffies;
++	int missed;
++	int limit_jiffies;
++	int limit_burst;
++	char const *facility;
++};
++
+ extern int printk_ratelimit(void);
+-extern int __printk_ratelimit(int ratelimit_jiffies, int ratelimit_burst);
++extern int __printk_ratelimit(int ratelimit_jiffies, int ratelimit_burst,
++				struct printk_ratelimit_state *state);
+ extern bool printk_timed_ratelimit(unsigned long *caller_jiffies,
+ 				unsigned int interval_msec);
+ 
+diff -uprN linux-2.6.24/kernel/printk.c linux-2.6.24-printk_ratelimit/kernel/printk.c
+--- linux-2.6.24/kernel/printk.c	2008-01-24 16:58:37.000000000 -0600
++++ linux-2.6.24-printk_ratelimit/kernel/printk.c	2008-02-21 11:22:27.442319625 -0600
+@@ -1238,35 +1238,41 @@ void tty_write_message(struct tty_struct
+ /*
+  * printk rate limiting, lifted from the networking subsystem.
+  *
+- * This enforces a rate limit: not more than one kernel message
+- * every printk_ratelimit_jiffies to make a denial-of-service
+- * attack impossible.
++ * This enforces a rate limit to mitigate denial-of-service attacks:
++ * not more than ratelimit_burst messages every ratelimit_jiffies.
+  */
+-int __printk_ratelimit(int ratelimit_jiffies, int ratelimit_burst)
++int __printk_ratelimit(int ratelimit_jiffies,
++			int ratelimit_burst,
++			struct printk_ratelimit_state *state)
+ {
+ 	static DEFINE_SPINLOCK(ratelimit_lock);
+-	static unsigned long toks = 10 * 5 * HZ;
+-	static unsigned long last_msg;
+-	static int missed;
+ 	unsigned long flags;
+ 	unsigned long now = jiffies;
+ 
+ 	spin_lock_irqsave(&ratelimit_lock, flags);
+-	toks += now - last_msg;
+-	last_msg = now;
+-	if (toks > (ratelimit_burst * ratelimit_jiffies))
+-		toks = ratelimit_burst * ratelimit_jiffies;
+-	if (toks >= ratelimit_jiffies) {
+-		int lost = missed;
+-
+-		missed = 0;
+-		toks -= ratelimit_jiffies;
++	state->toks += now - state->last_jiffies;
++	/* Reset limiting if tunables changed */
++	if ((state->limit_jiffies != ratelimit_jiffies) ||
++	    (state->limit_burst != ratelimit_burst)) {
++		state->toks = ratelimit_burst * ratelimit_jiffies;
++		state->limit_jiffies = ratelimit_jiffies;
++		state->limit_burst = ratelimit_burst;
++	}
++	state->last_jiffies = now;
++	if (state->toks > (ratelimit_burst * ratelimit_jiffies))
++		state->toks = ratelimit_burst * ratelimit_jiffies;
++	if (state->toks >= ratelimit_jiffies) {
++		int lost = state->missed;
++		state->missed = 0;
++		state->toks -= ratelimit_jiffies;
+ 		spin_unlock_irqrestore(&ratelimit_lock, flags);
+-		if (lost)
+-			printk(KERN_WARNING "printk: %d messages suppressed.\n", lost);
++		if (lost) {
++			pr_warning("%s ratelimit suppressed message count: %d\n",
++				state->facility, lost);
++		}
+ 		return 1;
+ 	}
+-	missed++;
++	state->missed++;
+ 	spin_unlock_irqrestore(&ratelimit_lock, flags);
+ 	return 0;
+ }
+@@ -1280,8 +1286,17 @@ int printk_ratelimit_burst = 10;
+ 
+ int printk_ratelimit(void)
+ {
++	static struct printk_ratelimit_state limit_state = {
++		.toks          = 10 * 5 * HZ,
++		.last_jiffies  = 0,
++		.missed        = 0,
++		.limit_jiffies = 5 * HZ,
++		.limit_burst   = 10,
++		.facility      = "printk"
++	};
++
+ 	return __printk_ratelimit(printk_ratelimit_jiffies,
+-				printk_ratelimit_burst);
++				printk_ratelimit_burst, &limit_state);
+ }
+ EXPORT_SYMBOL(printk_ratelimit);
+ 
+diff -uprN linux-2.6.24/net/core/utils.c linux-2.6.24-printk_ratelimit/net/core/utils.c
+--- linux-2.6.24/net/core/utils.c	2008-01-24 16:58:37.000000000 -0600
++++ linux-2.6.24-printk_ratelimit/net/core/utils.c	2008-02-21 11:03:44.644337698 -0600
+@@ -41,7 +41,16 @@ EXPORT_SYMBOL(net_msg_warn);
+  */
+ int net_ratelimit(void)
+ {
+-	return __printk_ratelimit(net_msg_cost, net_msg_burst);
++	static struct printk_ratelimit_state limit_state = {
++		.toks          = 10 * 5 * HZ,
++		.last_jiffies  = 0,
++		.missed        = 0,
++		.limit_jiffies = 5 * HZ,
++		.limit_burst   = 10,
++		.facility      = "net"
++	};
++
++	return __printk_ratelimit(net_msg_cost, net_msg_burst, &limit_state);
+ }
+ EXPORT_SYMBOL(net_ratelimit);
+ 
