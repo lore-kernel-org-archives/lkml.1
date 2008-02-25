@@ -1,64 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756026AbYBYLLd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754543AbYBYLRg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756026AbYBYLLd (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 Feb 2008 06:11:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754029AbYBYLLZ
+	id S1754543AbYBYLRg (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 Feb 2008 06:17:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751196AbYBYLR0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 Feb 2008 06:11:25 -0500
-Received: from chilli.pcug.org.au ([203.10.76.44]:56688 "EHLO smtps.tip.net.au"
+	Mon, 25 Feb 2008 06:17:26 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:41459 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754042AbYBYLLY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 Feb 2008 06:11:24 -0500
-Date: Mon, 25 Feb 2008 22:11:16 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Frank Seidel <fseidel@suse.de>
-Cc: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: linux-next: Tree for Feb 24
-Message-Id: <20080225221116.9c6bcc5a.sfr@canb.auug.org.au>
-In-Reply-To: <47C2949D.3030903@suse.de>
-References: <20080225173100.b539ac2d.sfr@canb.auug.org.au>
-	<47C2949D.3030903@suse.de>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.8; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Mon__25_Feb_2008_22_11_16_+1100_XNgObI/k8xx+h=gL"
+	id S1750973AbYBYLR0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 25 Feb 2008 06:17:26 -0500
+Date: Mon, 25 Feb 2008 12:17:07 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Adrian Bunk <bunk@kernel.org>
+Cc: Florian Fainelli <florian.fainelli@telecomint.eu>,
+       linux-kernel@vger.kernel.org, Sam Ravnborg <sam@ravnborg.org>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: [PATCH] Add rdc321x defconfig file
+Message-ID: <20080225111707.GA7062@elte.hu>
+References: <200802251058.30188.florian.fainelli@telecomint.eu> <20080225101433.GA30685@elte.hu> <20080225110858.GA32450@cs181133002.pp.htv.fi>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080225110858.GA32450@cs181133002.pp.htv.fi>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Mon__25_Feb_2008_22_11_16_+1100_XNgObI/k8xx+h=gL
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
 
-Hi Frank,
+* Adrian Bunk <bunk@kernel.org> wrote:
 
-On Mon, 25 Feb 2008 11:12:45 +0100 Frank Seidel <fseidel@suse.de> wrote:
->
-> Stephen Rothwell wrote:
-> > I have created today's linux-next tree at
->=20
-> i bet your $SUBJECT was meant for the Tree for Feb 25, wasn't it?=20
-> ;-)
+> What I want is that e.g. after fiddling with kernel headers I want an 
+> easy way of having much compile coverage. And my script that builds 
+> all defconfig's is trivial (although it takes a day to finish).
 
-Damn!  I remembered to reread to body of the mail and forgot to check the
-subject - one more for the TODO list :-)
+no, i think you misunderstood me. I do allyesconfig testing to make sure 
+the kernel is still generic enough on PC hardware - not to catch build 
+breakage.
 
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+What i do against build breakage is randconfig testing. That catches far 
+more build breakage than a few limited number of defconfigs would ever.
 
---Signature=_Mon__25_Feb_2008_22_11_16_+1100_XNgObI/k8xx+h=gL
-Content-Type: application/pgp-signature
+More defconfigs would just be a constant maintenance drag, they are 
+rather pointless on PC hardware anyway (we'd have to have at least a few 
+hundred of them for it to be meaningful as a "default config") and it 
+does not really solve the problem either.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQFHwqJcTgG2atn1QN8RAmsBAJ90zKFoYmbwclyx8RrL5WDq0SxB3gCcDx9w
-wKGfhP3NP5XLtFnx8WCGGSc=
-=Q8rQ
------END PGP SIGNATURE-----
-
---Signature=_Mon__25_Feb_2008_22_11_16_+1100_XNgObI/k8xx+h=gL--
+	Ingo
