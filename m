@@ -1,162 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760593AbYBYF5z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756614AbYBYGHE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760593AbYBYF5z (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 Feb 2008 00:57:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754015AbYBYF5p
+	id S1756614AbYBYGHE (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 Feb 2008 01:07:04 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752833AbYBYGGw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 Feb 2008 00:57:45 -0500
-Received: from E23SMTP03.au.ibm.com ([202.81.18.172]:48634 "EHLO
-	e23smtp03.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753541AbYBYF5n (ORCPT
+	Mon, 25 Feb 2008 01:06:52 -0500
+Received: from TYO202.gate.nec.co.jp ([202.32.8.206]:49014 "EHLO
+	tyo202.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752418AbYBYGGv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 Feb 2008 00:57:43 -0500
-From: srinivasa <srinivasa@in.ibm.com>
-Organization: IBM
-To: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       ananth@in.ibm.com, Jim Keniston <jkenisto@us.ibm.com>,
-       srikar@linux.vnet.ibm.com
-Subject: [RFC] [PATCH] To refuse users from probing preempt_schedule()
-Date: Mon, 25 Feb 2008 11:27:40 +0530
-User-Agent: KMail/1.9.6 (enterprise 0.20071012.724442)
+	Mon, 25 Feb 2008 01:06:51 -0500
+Message-ID: <47C25AE9.7080305@ak.jp.nec.com>
+Date: Mon, 25 Feb 2008 15:06:33 +0900
+From: Kohei KaiGai <kaigai@ak.jp.nec.com>
+User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
+To: greg@kroah.com, morgan@kernel.org, serue@us.ibm.com
+CC: linux-security-module@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: [PATCH 0/3] exporting capability name/code pairs (final#2)
+Content-Type: text/plain; charset=ISO-2022-JP
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200802251127.40579.srinivasa@in.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Srinivasa Ds <srinivasa@in.ibm.com>
+The following three patches enables to export code/name pairs of
+capabilities the running kernel supports, and add a documentation
+and samples to use this feature.
 
-This patch prohibits user from probing preempt_schedule(). One way of
-prohibiting the user from probing functions is by marking such 
-functions with __kprobes. But this method doesn't work for those functions,
-which are already marked to different section like preempt_schedule()
-(belongs to __sched section). So we use blacklist approach to refuse user
-from probing these functions.
+[PATCH 1/3] add a private data field within kobj_attribute structure.
 
-In blacklist approach we populate the blacklisted function's starting
-address and its size in kprobe_blacklist structure. Then we verify the user
-specified address against start and end of the blacklisted function.
-So any attempt to register probe on blacklisted functions will be rejected.
+This patch add a private data field, declared as void *, within kobj_attribute
+structure. The _show() and _store() method in the sysfs attribute entries can
+refer this information to identify what entry is accessed.
+It makes easier to share a single method implementation with several similar
+entries, like ones to export the list of capabilities the running kernel
+supports.
 
-please let me know your comments.
+[PATCH 2/3] exporting capability name/code pairs
 
-Signed-off-by: Srinivasa DS <srinivasa@in.ibm.com> 
-Signed-off-by: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
-Signed-off-by: Jim Keniston <jkenisto@us.ibm.com> 
+This patch enables to export code/name pairs of capabilities the running
+kernel supported.
 
+A newer kernel sometimes adds new capabilities, like CAP_MAC_ADMIN
+at 2.6.25. However, we have no interface to disclose what capabilities
+are supported on the running kernel. Thus, we have to maintain libcap
+version in appropriate one synchronously.
 
----
- include/linux/kprobes.h |    7 ++++++
- kernel/kprobes.c        |   52 
-++++++++++++++++++++++++++++++++++++++++++++++++
- 2 files changed, 59 insertions(+)
+This patch enables libcap to collect the list of capabilities at run time,
+and provide them for users. It helps to improve portability of library.
 
-Index: linux-2.6.25-rc3/include/linux/kprobes.h
-===================================================================
---- linux-2.6.25-rc3.orig/include/linux/kprobes.h
-+++ linux-2.6.25-rc3/include/linux/kprobes.h
-@@ -173,6 +173,13 @@ struct kretprobe_blackpoint {
- 	const char *name;
- 	void *addr;
- };
-+
-+struct kprobe_blackpoint {
-+	const char *name;
-+	unsigned long start_addr;
-+	unsigned long range;
-+};
-+
- extern struct kretprobe_blackpoint kretprobe_blacklist[];
- 
- static inline void kretprobe_assert(struct kretprobe_instance *ri,
-Index: linux-2.6.25-rc3/kernel/kprobes.c
-===================================================================
---- linux-2.6.25-rc3.orig/kernel/kprobes.c
-+++ linux-2.6.25-rc3/kernel/kprobes.c
-@@ -89,6 +89,18 @@ struct kprobe_insn_page {
- 	int ngarbage;
- };
- 
-+/*
-+ * Normally, functions that we'd want to prohibit kprobes in, are marked
-+ * __kprobes. But, there are cases where such functions already belong to
-+ * a different section (__sched for preempt_schedule)
-+ *
-+ * For such cases, we now have a blacklist
-+ */
-+struct kprobe_blackpoint kprobe_blacklist[] = {
-+        {"preempt_schedule",},
-+        {NULL}    /* Terminator */
-+};
-+
- enum kprobe_slot_state {
- 	SLOT_CLEAN = 0,
- 	SLOT_DIRTY = 1,
-@@ -492,9 +504,22 @@ static int __kprobes register_aggr_kprob
- 
- static int __kprobes in_kprobes_functions(unsigned long addr)
- {
-+	struct kprobe_blackpoint *kb;
-+
- 	if (addr >= (unsigned long)__kprobes_text_start &&
- 	    addr < (unsigned long)__kprobes_text_end)
- 		return -EINVAL;
-+	/*
-+	 * If there exists a kprobe_blacklist, verify and
-+	 * fail any probe registration in the prohibited area
-+	 */
-+	for (kb = kprobe_blacklist; kb->name != NULL; kb++) {
-+		if (kb->start_addr) {
-+			if (addr >= kb->start_addr &&
-+			    addr < (kb->start_addr + kb->range))
-+				return -EINVAL;
-+		}
-+	}
- 	return 0;
- }
- 
-@@ -805,6 +830,11 @@ void __kprobes unregister_kretprobe(stru
- static int __init init_kprobes(void)
- {
- 	int i, err = 0;
-+	unsigned long offset = 0, size = 0;
-+	char *modname, namebuf[128];
-+	const char *symbol_name;
-+	void *addr;
-+	struct kprobe_blackpoint *kb;
- 
- 	/* FIXME allocate the probe table, currently defined statically */
- 	/* initialize all list heads */
-@@ -813,6 +843,28 @@ static int __init init_kprobes(void)
- 		INIT_HLIST_HEAD(&kretprobe_inst_table[i]);
- 	}
- 
-+	/*
-+	 * Lookup and populate the kprobe_blacklist.
-+	 *
-+	 * Unlike the kretprobe blacklist, we'll need to determine
-+	 * the range of addresses that belong to the said functions,
-+	 * since a kprobe need not necessarily be at the beginning
-+	 * of a function.
-+	 */
-+	for (kb = kprobe_blacklist; kb->name != NULL; kb++) {
-+		kprobe_lookup_name(kb->name, addr);
-+		if (!addr)
-+			continue;
-+
-+		kb->start_addr = (unsigned long)addr;
-+		symbol_name = kallsyms_lookup(kb->start_addr,
-+				&size, &offset, &modname, namebuf);
-+		if (!symbol_name)
-+			kb->range = 0;
-+		else
-+			kb->range = size;
-+	}
-+
- 	if (kretprobe_blacklist_size) {
- 		/* lookup the function address from its name */
- 		for (i = 0; kretprobe_blacklist[i].name != NULL; i++) {
+It exports these information as regular files under /sys/kernel/capability.
+The numeric node exports its name, the symbolic node exports its code.
+
+[PATCH 3/3] a new example to use kobject/kobj_attribute
+
+This patch can provide a new exmple to use kobject and attribute.
+The _show() and _store() method can refer/store the private data field of
+kobj_attribute structure to know what entries are accessed by users.
+It will make easier to share a single _show()/_store() method with several
+entries.
+
+o changes from the previous version
+ - add a short description at Documentation/kobject.txt, to use private
+   member within kobj_attribute.
+ - "supported" is replaced with "supports" at sysfs-kernel-capability.
+ - "$(src)/../" is replaced with "$(srctree)/" at security/Makefile
+ - The private member is casted to long, when it stores integer value.
+
+Thanks,
+-- 
+OSS Platform Development Division, NEC
+KaiGai Kohei <kaigai@ak.jp.nec.com>
