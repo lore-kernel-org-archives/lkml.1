@@ -1,57 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753913AbYBYH2t@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754755AbYBYHac@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753913AbYBYH2t (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 Feb 2008 02:28:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751846AbYBYH2h
+	id S1754755AbYBYHac (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 Feb 2008 02:30:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752351AbYBYHaV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 Feb 2008 02:28:37 -0500
-Received: from srv5.dvmed.net ([207.36.208.214]:47661 "EHLO mail.dvmed.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750909AbYBYH2g (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 Feb 2008 02:28:36 -0500
-Message-ID: <47C26E0E.2070109@pobox.com>
-Date: Mon, 25 Feb 2008 02:28:14 -0500
-From: Jeff Garzik <jgarzik@pobox.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+	Mon, 25 Feb 2008 02:30:21 -0500
+Received: from el-out-1112.google.com ([209.85.162.178]:53333 "EHLO
+	el-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750905AbYBYHaT (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 25 Feb 2008 02:30:19 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=oNRjVXVH0FAB45Y6GBqEyhXkJt134GV3YN1EcQ28TLGlNvIZD6kEIxdlqoCnfxzJ3+hypt+w/KhX7zHCDgTVqNWzIt4W8mOFoP3KLMItXJdHptyFj9Cg4p+WpoDCp+2oI5/i+RxnnpacSmbeT1eWGVIweo1QvwAl6A2xJSqPGB8=
+Message-ID: <a8e1da0802242330l765b8b1ava62b857baf8a5568@mail.gmail.com>
+Date: Mon, 25 Feb 2008 15:30:18 +0800
+From: "Dave Young" <hidave.darkstar@gmail.com>
+To: linux-bluetooth@vger.kernel.org
+Subject: Re: [Bluez-devel] forcing SCO connection patch
+Cc: louis@mizi.com, "Marcel Holtmann" <marcel@holtmann.org>,
+       "Linux Kernel" <linux-kernel@vger.kernel.org>
+In-Reply-To: <47666E1F.2000902@mizi.com>
 MIME-Version: 1.0
-To: Grant Grundler <grundler@parisc-linux.org>
-CC: Ondrej Zary <linux@rainbow-software.org>,
-       Linux Kernel <linux-kernel@vger.kernel.org>, netdev@vger.kernel.org
-Subject: Re: Compex FreedomLine 32 PnP-PCI2 broken with de2104x
-References: <200801262158.12016.linux@rainbow-software.org> <200801302123.07783.linux@rainbow-software.org> <20080218032111.GA7970@colo.lackof.org>
-In-Reply-To: <20080218032111.GA7970@colo.lackof.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.4 (----)
-X-Spam-Report: SpamAssassin version 3.2.3 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.4 points, 5.0 required)
+Content-Disposition: inline
+References: <47666E1F.2000902@mizi.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Grant Grundler wrote:
-> ISTR there was a time when tulip would compete with de4x5 for devices.
-> tulip is the preferred driver. That's clearly no longer the case
-> and perhaps both distro's need to revisit this.
+Quote mail from louis@mizi.com :
 
-The only reason why de4x5 still exists is that the /tulip/ driver fails 
-to work on a few chips like the 21142 (43?) shipped in various alpha boxen.
+2007/12/17 Louis JANG <louis@mizi.com>:
+> Hello everybody,
+>
+>  I attached two patches. the first one(bluez-kernel-forcesco.patch) is to
+>  force using HCI_OP_ADD_SCO instead of HCI_OP_SETUP_SYNC_CONN, and the
+>  second one is to handle SCO connection complete event but its request
+>  was ESCO.
+>
+>  1.
+>  I'm developing bluetooth functions in my linux phone project, and I'm
+>  using bluez for my job. I've tested lots of headsets, and found that I
+>  coudn't connect SCO channel with HCI_OP_SETUP_SYNC_CONN in some old
+>  headsets. I could connect SCO channel with HCI_OP_ADD_SCO in this case.
+>  however, there is no api to force using SCO instead of ESCO in bluez. so
+>  I added SCO_FORCESCO to handle this old headsets
+>
+>  2.
+>  When I tried to connect SCO channel with
+>  HCI_OP_SETUP_SYNC_CONN(LINK_TYPE_ESCO), some bluetooth headsets responds
+>  with LINK_TYPE_SCO because it did not support ESCO. But bluez couldn't
+>  handle this situation, and patch_hci_event.c is for this.
+>
+>
+>  BRs
+>  Louis JANG
+>
+>
 
-de4x5 needs to go away, it's been unmaintained for ages, doesn't support 
-any of the new hotplug APIs.
+Reply from bmidgley@gmail.com:
+
+On Mon, Feb 25, 2008 at 2:43 PM, Brad Midgley <bmidgley@gmail.com> wrote:
+> Louis
+>
+>
+>  >  When I tried to connect SCO channel with
+>  >  HCI_OP_SETUP_SYNC_CONN(LINK_TYPE_ESCO), some bluetooth headsets responds
+>  >  with LINK_TYPE_SCO because it did not support ESCO. But bluez couldn't
+>  >  handle this situation, and patch_hci_event.c is for this.
+>
+>  Marcel looked at this patch and came back with the comments below. Can
+>  you revisit it? I think some other people are seeing the same issues.
+>  The patch won't go upstream until Marcel likes it.
+>
+>  the patch you sent me is fully broken. First of all the coding style
+>  is wrong. Does nobody have learned this by now? I always look for that
+>  first before even reading the patch. Second the case where an
+>  ESCO_LINK returns NULL is broken and will fall over and crash.
+>
+>  --
+>  Brad
+>
 
 
-> de2104x is a "work in progress".
-> That's why it's marked "EXPERIMENTAL" in the Kconfig file.
+I ever asked marcel about the coding style. please see following thread:
+http://lkml.org/lkml/2008/1/22/91
 
-It's not a work in progress, it works just fine for most people (the few 
-that are left).
+I think the style problem marcel said is
+1. using kernel codeing style
+2. marcel's style
+container_of or get_user_data calls at the top of the variable declaration
+using the empty lines to seperate code blocks
 
-Last I heard, there was a problem with non-twisted-pair stuff, but 
-that's about it.
+Please rework your patch and resend if you fixed them.
 
-'experimental' is generally a poorly maintained marker.
+BTW, please use the new bluetooth mailing list for kerne issue.
+linux-bluetooth@vger.kernel.org
 
-	Jeff
+(Thanks for andrew and davem)
 
+Regards
+dave
 
+Regards
+dave
