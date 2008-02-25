@@ -1,56 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760222AbYBYWlT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760309AbYBYWnT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760222AbYBYWlT (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 Feb 2008 17:41:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754351AbYBYWlH
+	id S1760309AbYBYWnT (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 Feb 2008 17:43:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754452AbYBYWnG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 Feb 2008 17:41:07 -0500
-Received: from smtp1.linux-foundation.org ([207.189.120.13]:56066 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753822AbYBYWlF (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 Feb 2008 17:41:05 -0500
-Date: Mon, 25 Feb 2008 14:39:32 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: "Michael S. Tsirkin" <m.s.tsirkin@gmail.com>
-Cc: "Pavel Machek" <pavel@ucw.cz>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       LKML <linux-kernel@vger.kernel.org>,
-       "Alexey Starikovskiy" <astarikovskiy@suse.de>,
-       "Len Brown" <len.brown@intel.com>, linux-acpi@vger.kernel.org,
-       "Jeff Garzik" <jeff@garzik.org>
-Subject: Re: broken suspend in .2.6.25-rc3 on T61p (was Re: new regression
- in 2.6.25-rc3: no keyboard/lid acpi events on thinkpad T61p)
-Message-Id: <20080225143932.6b83b65d.akpm@linux-foundation.org>
-In-Reply-To: <8f53421d0802251436vd98a97h5db6b8af3dc39d0@mail.gmail.com>
-References: <8f53421d0802251119q470a79c1p31048ef136271f84@mail.gmail.com>
-	<20080225114611.d91791f6.akpm@linux-foundation.org>
-	<8f53421d0802251245j5439b37die840e34bb293f995@mail.gmail.com>
-	<200802252157.10412.rjw@sisk.pl>
-	<20080225212615.GA2659@elf.ucw.cz>
-	<8f53421d0802251331n31b37db8gb644dc9aa2d553d4@mail.gmail.com>
-	<20080225215049.GD2659@elf.ucw.cz>
-	<8f53421d0802251415g2033ca6bqd4e6ea9e2d93f097@mail.gmail.com>
-	<20080225222023.GK2659@elf.ucw.cz>
-	<8f53421d0802251436vd98a97h5db6b8af3dc39d0@mail.gmail.com>
-X-Mailer: Sylpheed 2.4.7 (GTK+ 2.12.1; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Mon, 25 Feb 2008 17:43:06 -0500
+Received: from srv5.dvmed.net ([207.36.208.214]:36324 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753739AbYBYWnF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 25 Feb 2008 17:43:05 -0500
+Message-ID: <47C34472.3090706@garzik.org>
+Date: Mon, 25 Feb 2008 17:42:58 -0500
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+MIME-Version: 1.0
+To: Mark Lord <liml@rtr.ca>
+CC: Pavel Machek <pavel@ucw.cz>, kernel list <linux-kernel@vger.kernel.org>,
+       Linux-pm mailing list <linux-pm@lists.osdl.org>,
+       stern@rowland.harvard.edu, linux-ide@vger.kernel.org
+Subject: Re: [ugly patch] Save .15W-.5W by AHCI powersaving
+References: <20080225134558.GA1611@elf.ucw.cz> <47C34081.5090205@rtr.ca>
+In-Reply-To: <47C34081.5090205@rtr.ca>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.4 (----)
+X-Spam-Report: SpamAssassin version 3.2.3 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 26 Feb 2008 00:36:54 +0200 "Michael S. Tsirkin" <m.s.tsirkin@gmail.com> wrote:
-
-> >  Hmm, mystery partly solved... as you guessed it, this piece of code
-> >  was not in my tree.
-> >
-> >  (still, how can this cause autoresume after 5 seconds is a mystery to
-> >  me).
-> >
-> >
-> >                                                                 Pavel
+Mark Lord wrote:
+> Pavel Machek wrote:
+>> This is a patch (very ugly, assumes you have just one disk) to bring
+>> powersaving to AHCI. You need Alan's SCSI autosuspend (attached) patch
+>> as a base.
+>>
+>> It saves .5W compared to config with disk spinning, and even .15W
+>> compared to hdparm -y... on my thinkpad x60 anyway.
+> ..
 > 
-> Maybe it doesn't. Andrew saw the autoresume on -rc[2,3]
+> There was a discussion of this here today.
+> It makes good use of AHCI-specific features.
+> 
+> Has it been tested with a Port-Multiplier yet?
+> 
+> This is cool enough that we really ought to do a hardware-independent
+> version, so that all SATA interfaces could benefit.  Especially ata_piix,
+> but others too.
 
-And earlier - I think 2.6.23 does it as well.
+BTW we can also save power by allowing the user to choose to disable 
+hotplugging support.  Then we can power down PHYs that are not in use.
+
+That requires the addition of some policy controls, because it is 
+user-specific whether or not to waste power waiting for a plug-in event.
+
+	Jeff
+
+
+
