@@ -1,34 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760895AbYBYXX4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759233AbYBYX1R@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760895AbYBYXX4 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 Feb 2008 18:23:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754544AbYBYXXr
+	id S1759233AbYBYX1R (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 Feb 2008 18:27:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754034AbYBYX1E
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 Feb 2008 18:23:47 -0500
-Received: from viefep18-int.chello.at ([213.46.255.22]:45316 "EHLO
-	viefep12-int.chello.at" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753753AbYBYXXq (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 Feb 2008 18:23:46 -0500
-Message-ID: <2060335.1203981814292.JavaMail.root@viefep31>
-Date: Tue, 26 Feb 2008 0:23:34 +0100
-From: <cristi@dnt.ro>
-To: linux-kernel@vger.kernel.org
-Subject: Contact info
+	Mon, 25 Feb 2008 18:27:04 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:32907 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753243AbYBYX1D (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 25 Feb 2008 18:27:03 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: "Theodore Ts'o" <tytso@mit.edu>
+Subject: Re: REGRESSION: X61s suspend/resume broken sometime between rc2 and rc3
+Date: Tue, 26 Feb 2008 00:25:36 +0100
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: linux-kernel@vger.kernel.org
+References: <E1JTiiw-0002D2-Me@closure.thunk.org>
+In-Reply-To: <E1JTiiw-0002D2-Me@closure.thunk.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain;
+  charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
-X-Priority: 3 (Normal)
-Sensitivity: Normal
-X-Originating-IP: from 193.226.149.251 by web-edge.chello.com; Tue, 26 Feb 2008 0:23:34 +0100
+Content-Disposition: inline
+Message-Id: <200802260025.36966.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+On Monday, 25 of February 2008, Theodore Ts'o wrote:
+> 
+> Userspace is Ubuntu Gutsy, with vbetool post/save/restore disabled;
+> Hardware is a Lenovo X61s with the Intel graphics chipset.
+> 
+> Has anyone managed to get suspend/resume (to RAM) working on an X61s on
+> rc3?  
 
-I would like to know who is in charge with the linux credit list since i will no longer use my current email. I'm using temporary this email to update existing info.
+http://bugzilla.kernel.org/show_bug.cgi?id=10103 , perhaps?
 
-Tia,
-Cristian
-
+Rafael
