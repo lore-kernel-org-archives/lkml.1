@@ -1,24 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760710AbYBYAOF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758959AbYBYARm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760710AbYBYAOF (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 24 Feb 2008 19:14:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759568AbYBYALD
+	id S1758959AbYBYARm (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 24 Feb 2008 19:17:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752347AbYBYARb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 24 Feb 2008 19:11:03 -0500
-Received: from smtp1.linux-foundation.org ([207.189.120.13]:35413 "EHLO
+	Sun, 24 Feb 2008 19:17:31 -0500
+Received: from smtp1.linux-foundation.org ([207.189.120.13]:43175 "EHLO
 	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1760801AbYBYAK7 (ORCPT
+	by vger.kernel.org with ESMTP id S1752172AbYBYARa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 24 Feb 2008 19:10:59 -0500
-Date: Sun, 24 Feb 2008 16:10:34 -0800
+	Sun, 24 Feb 2008 19:17:30 -0500
+Date: Sun, 24 Feb 2008 16:17:17 -0800
 From: Andrew Morton <akpm@linux-foundation.org>
-To: Nikola Ciprich <extmaillist@linuxbox.cz>
-Cc: linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
-       Nick Cheng <nick.cheng@areca.com.tw>, Erich Chen <erich@areca.com.tw>
-Subject: Re: arcmsr & areca-1660 - strange behaviour under heavy load
-Message-Id: <20080224161034.f494fc7f.akpm@linux-foundation.org>
-In-Reply-To: <alpine.LRH.0.9999.0802231201380.21313@linuxbox.linuxbox.cz>
-References: <alpine.LRH.0.9999.0802231201380.21313@linuxbox.linuxbox.cz>
+To: clowncoder <vincent-perrier@club-internet.fr>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       netdev@vger.kernel.org, YOSHIFUJI Hideaki <yoshfuji@wide.ad.jp>
+Subject: Re: Nework Emulation with UML, bug 8895
+Message-Id: <20080224161717.ea1cad47.akpm@linux-foundation.org>
+In-Reply-To: <47C019D2.4060308@club-internet.fr>
+References: <47C019D2.4060308@club-internet.fr>
 X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
@@ -27,43 +27,46 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 23 Feb 2008 12:20:12 +0100 (CET) Nikola Ciprich <extmaillist@linuxbox.cz> wrote:
+On Sat, 23 Feb 2008 14:04:18 +0100 clowncoder <vincent-perrier@club-internet.fr> wrote:
 
-> Hi,
+> Hello,
+> You can have a configured and running network inside a single linux machine,
+> only one script command is enough. After the start of all the machine, a
+> graphical representation of your topology helps your interactions with
+> the network. This virtual network can be downloaded at http://clownix.net,
+> I must warn you, it is a 350mega bz2 file-system that needs 4 giga on 
+> the host.
+> Very usefull for networking development in kernel as proved by bug 8895
+> that has been found with the above tool:
 > 
-> I've found strange problem either in arcmsr driver, or maybe in 
-> areca-1660 card...
-> When system on SAS discs RAID connected to areca-1660 card 
-> gets under heavy I/O load, it gets unusable after some time. I can 100% reproduce 
-> this, although it needs quite speciffic conditions:
-> It can be reproduced on 2x quad core machine, RAM has to be limited to 
-> ~192MB to cause heavy paging.
-> Only thing needed to cause the problem is to start loop doing kernel 
-> compilation using make -j 8 - this loads the system heavily, because of 
-> lack of memory. After few correct compile runs the system gets into 
-> state when all programs including the basic ones (ls, cp, ..) start 
-> crashing... dmesg (when it works) doesn't say anything strange...
-> After reboot, the system is OK again.
-> I have tested it on different motherboards, with different CPUs, RAMs(all 
-> were properly tested with memtest), with two different areca cards and 
-> different drives. I can't reproduce the problem on same hardware when 
-> using different RAID card (ie adaptec). All testing systems were properly 
-> cooled..
-> I have tried all available areca firmwares, two different distributions 
-> (oracle linux, and centos), and kernels ranging from distribution ones, to last GIT snapshot.
-> Could somebody please give me some hints on how to hunt this problem?
-> Areca support doesn't seem to be very interested in the problem :-(
+> The uncorrected bug 8895:
+> 
+> file:  /usr/src/linux-2.6.24.2/net/ipv6/ip6_fib.c  line  796:   
+> "dst_free(&rt->u.dst);"
+> 
+> ------- /Comment From qmiao <mailto:qmiao@centecnetworks.com> 2007-08-29 
+> 23:33:07 /---
+> 
+>         fib6_add
+>                 ...
+> 
+>                 if (fn->leaf == NULL) {
+>                         fn->leaf = rt;    <--**-- rt is assigned to fn->leaf
+>                         atomic_inc(&rt->rt6i_ref);
+>                 }
+>                 ...
+>                 err = fib6_add_rt2node(fn, rt, info); <-**- return -EEXIST
+>                 ...
+> (Here err was not null)
+>                 ...
+>                 if (err) {
+>                         ...
+>                         dst_free(&rt->u.dst); <--**-- Actually rt is still in
+> tree (fn->leaf = rt /* see above */)
+>                         ...
+>                         }
+> 
 
-(cc's added)
+Please cc netdev on net-related bug reports.
 
-Please get the machine into this state of memory exhaustion then take
-copies of the output of the following, and send them via reply-to-all to
-this email:
 
-- cat /proc/meminfo
-
-- cat /proc/slabinfo
-
-- dmesg -c > /dev/null ; echo m > /proc/sysrq-trigger ; dmesg -c
-
-Thanks.
