@@ -1,54 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755700AbYBYGvS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755941AbYBYGyj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755700AbYBYGvS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 Feb 2008 01:51:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753041AbYBYGvH
+	id S1755941AbYBYGyj (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 Feb 2008 01:54:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753502AbYBYGyb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 Feb 2008 01:51:07 -0500
-Received: from wr-out-0506.google.com ([64.233.184.232]:55627 "EHLO
-	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752196AbYBYGvE (ORCPT
+	Mon, 25 Feb 2008 01:54:31 -0500
+Received: from courier.cs.helsinki.fi ([128.214.9.1]:40042 "EHLO
+	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752312AbYBYGya (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 Feb 2008 01:51:04 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=HJ9EwZOPesAd/i/Tb+Phmof60VpM4FPVw54J0D0ANFc/6rLMv9dfoRVGelU4CgNp9LvHARecW3Ip+pZsKiVm7jhq/TZ9SKwvz7Yil7vIo9noFMBYJyEG49E9VFedYP4BlpqAljvHi5TpNadyGJKcz/M4eRB4tcT7MNkhkoyW0PM=
-Message-ID: <4d8e3fd30802242251p7a45482dof23aed1eed0afdc2@mail.gmail.com>
-Date: Mon, 25 Feb 2008 10:21:01 +0330
-From: "Paolo Ciarrocchi" <paolo.ciarrocchi@gmail.com>
-To: "Andy Whitcroft" <apw@shadowen.org>
-Subject: Re: [PATCH] Change a WARN message in checkpatch
-Cc: "Benny Halevy" <bhalevy@panasas.com>,
-       "Linux Kernel" <linux-kernel@vger.kernel.org>
-In-Reply-To: <20080225032944.GA30294@shadowen.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Mon, 25 Feb 2008 01:54:30 -0500
+Date: Mon, 25 Feb 2008 08:54:28 +0200 (EET)
+From: Pekka J Enberg <penberg@cs.helsinki.fi>
+To: Greg KH <greg@kroah.com>
+cc: Michael Buesch <mb@bu3sch.de>, Alexey Zaytsev <alexey.zaytsev@gmail.com>,
+       Ingo Molnar <mingo@elte.hu>, Alexey Zaytsev <zaytsev.a@protei.ru>,
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: bcm43xx regression in 2.6.24 (with patch)
+In-Reply-To: <20080225064935.GA20997@kroah.com>
+Message-ID: <Pine.LNX.4.64.0802250852240.10623@sbz-30.cs.Helsinki.FI>
+References: <47BEAF3B.3080809@protei.ru> <200802241529.50967.mb@bu3sch.de>
+ <f19298770802240839w2c19fd52vb0d170359ba56fc5@mail.gmail.com>
+ <200802241816.01784.mb@bu3sch.de> <Pine.LNX.4.64.0802250814450.10065@sbz-30.cs.Helsinki.FI>
+ <20080225064935.GA20997@kroah.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20080114232913.2555d392@paolo-desktop>
-	 <20080128145605.GI12910@shadowen.org>
-	 <4d8e3fd30801280713n7139223fj91adca85c76b60ad@mail.gmail.com>
-	 <4d8e3fd30802230538k7be1cc6bja9130e65fc6f5997@mail.gmail.com>
-	 <47C18AAB.7050503@panasas.com>
-	 <4d8e3fd30802241014g503c78a2wc08bd1939657802b@mail.gmail.com>
-	 <20080225032944.GA30294@shadowen.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 2/25/08, Andy Whitcroft
-> As we want the messages to be as short as possible, I am leaning towards
-> standardising on:
->
-> spaces prohibited <where>
-> spaces required <where>
->
-in that case i would prefer:
- space not required <where>
- space required <where>
+Hi Greg,
 
-ciao,
---
-Paolo
-http://paolo.ciarrocchi.googlepages.com/
+On Sun, 24 Feb 2008, Greg KH wrote:
+> > Lets make this simple: it used to work before and now it doesn't. 
+> > Therefore it's a regression that must be addressed. Period.
+> 
+> Isn't the resolution Michael is suggesting is, "use the different driver"?
+
+Alexey said it didn't work but even if it did, we don't let old drivers 
+_regress_ as long as they're in the tree. There are plenty of precedents 
+here so I don't see why this particular Broadcom driver is any different.
+
+			Pekka
