@@ -1,178 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756395AbYBYMBm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755000AbYBYMLW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756395AbYBYMBm (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 Feb 2008 07:01:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753774AbYBYMBb
+	id S1755000AbYBYMLW (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 Feb 2008 07:11:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754054AbYBYMLM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 Feb 2008 07:01:31 -0500
-Received: from e2.ny.us.ibm.com ([32.97.182.142]:57850 "EHLO e2.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753649AbYBYMBa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 Feb 2008 07:01:30 -0500
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Hugh Dickins <hugh@veritas.com>, Sudhir Kumar <skumar@linux.vnet.ibm.com>,
-       YAMAMOTO Takashi <yamamoto@valinux.co.jp>,
-       Paul Menage <menage@google.com>, lizf@cn.fujitsu.com,
-       linux-kernel@vger.kernel.org, taka@valinux.co.jp, linux-mm@kvack.org,
-       David Rientjes <rientjes@google.com>,
-       Pavel Emelianov <xemul@openvz.org>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Date: Mon, 25 Feb 2008 17:25:50 +0530
-Message-Id: <20080225115550.23920.43199.sendpatchset@localhost.localdomain>
-In-Reply-To: <20080225115509.23920.66231.sendpatchset@localhost.localdomain>
-References: <20080225115509.23920.66231.sendpatchset@localhost.localdomain>
-Subject: [PATCH] Memory Resource Controller Add Boot Option
+	Mon, 25 Feb 2008 07:11:12 -0500
+Received: from rv-out-0910.google.com ([209.85.198.190]:44764 "EHLO
+	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754051AbYBYMLK (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 25 Feb 2008 07:11:10 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=dyVYREO7TI86eTeWejoWyEnd5hsWAaGAbj7bEoj0AT9UNtoCzOHNc8vQrQWLE83UoWXOhtlUKRlM1Ja71QY/htXLBQasXq8NkZf9HKB0mjS7NZ6kCRx4ESeOgqoJ/fNIRSpPu8ve6mGBgpDebDE+MUCjjEbAoO7E8IiALHqLj8g=
+Message-ID: <84144f020802250411i7a4a7c51h60ed9f9878c86422@mail.gmail.com>
+Date: Mon, 25 Feb 2008 14:11:04 +0200
+From: "Pekka Enberg" <penberg@cs.helsinki.fi>
+To: "Michael Buesch" <mb@bu3sch.de>
+Subject: Re: bcm43xx regression in 2.6.24 (with patch)
+Cc: "Greg KH" <greg@kroah.com>, "Alexey Zaytsev" <alexey.zaytsev@gmail.com>,
+       "Ingo Molnar" <mingo@elte.hu>, "Alexey Zaytsev" <zaytsev.a@protei.ru>,
+       linux-kernel@vger.kernel.org,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "Linus Torvalds" <torvalds@linux-foundation.org>
+In-Reply-To: <200802251054.57070.mb@bu3sch.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <47BEAF3B.3080809@protei.ru>
+	 <Pine.LNX.4.64.0802250814450.10065@sbz-30.cs.Helsinki.FI>
+	 <20080225064935.GA20997@kroah.com> <200802251054.57070.mb@bu3sch.de>
+X-Google-Sender-Auth: 7fdf968cbea22c80
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, Feb 25, 2008 at 11:54 AM, Michael Buesch <mb@bu3sch.de> wrote:
+>  > Isn't the resolution Michael is suggesting is, "use the different driver"?
+>
+>  I have two resolutions. One being:
+>  rmmod b44
+>  rmmod ssb
+>  modprobe bcm43xx
+>  modprobe b44
+>
+>  The other being: Wait for 2.6.25 and use the maintained b43 driver.
 
-
-A boot option for the memory controller was discussed on lkml. It is a good
-idea to add it, since it saves memory for people who want to turn off the
-memory controller.
-
-By default the option is on for the following two reasons
-
-1. It provides compatibility with the current scheme where the memory
-   controller turns on if the config option is enabled
-2. It allows for wider testing of the memory controller, once the config
-   option is enabled
-
-We still allow the create, destroy callbacks to succeed, since they are
-not aware of boot options. We do not populate the directory will
-memory resource controller specific files.
-
-Signed-off-by: Balbir Singh <balbir@linux.vnet.ibm.com>
----
-
- Documentation/kernel-parameters.txt |    2 ++
- mm/memcontrol.c                     |   33 ++++++++++++++++++++++++++++++++-
- 2 files changed, 34 insertions(+), 1 deletion(-)
-
-diff -L mm/memcontrol.h -puN /dev/null /dev/null
-diff -puN include/linux/memcontrol.h~memory-controller-add-boot-option include/linux/memcontrol.h
-diff -puN mm/memcontrol.c~memory-controller-add-boot-option mm/memcontrol.c
---- linux-2.6.25-rc3/mm/memcontrol.c~memory-controller-add-boot-option	2008-02-25 15:55:58.000000000 +0530
-+++ linux-2.6.25-rc3-balbir/mm/memcontrol.c	2008-02-25 17:10:50.000000000 +0530
-@@ -35,6 +35,7 @@
- 
- struct cgroup_subsys mem_cgroup_subsys;
- static const int MEM_CGROUP_RECLAIM_RETRIES = 5;
-+static int mem_cgroup_on __read_mostly = 1;	/* turned on/off */
- 
- /*
-  * Statistics for memory cgroup.
-@@ -578,6 +579,9 @@ static int mem_cgroup_charge_common(stru
- 	unsigned long nr_retries = MEM_CGROUP_RECLAIM_RETRIES;
- 	struct mem_cgroup_per_zone *mz;
- 
-+	if (!mem_cgroup_on)
-+		return 0;
-+
- 	/*
- 	 * Should page_cgroup's go to their own slab?
- 	 * One could optimize the performance of the charging routine
-@@ -729,7 +733,7 @@ void mem_cgroup_uncharge(struct page_cgr
- 	/*
- 	 * Check if our page_cgroup is valid
- 	 */
--	if (!pc)
-+	if (!pc || !mem_cgroup_on)
- 		return;
- 
- 	if (atomic_dec_and_test(&pc->ref_cnt)) {
-@@ -755,6 +759,9 @@ void mem_cgroup_uncharge(struct page_cgr
- 
- void mem_cgroup_uncharge_page(struct page *page)
- {
-+	if (!mem_cgroup_on)
-+		return;
-+
- 	lock_page_cgroup(page);
- 	mem_cgroup_uncharge(page_get_page_cgroup(page));
- 	unlock_page_cgroup(page);
-@@ -769,6 +776,10 @@ int mem_cgroup_prepare_migration(struct 
- {
- 	struct page_cgroup *pc;
- 	int ret = 0;
-+
-+	if (!mem_cgroup_on)
-+		return 0;
-+
- 	lock_page_cgroup(page);
- 	pc = page_get_page_cgroup(page);
- 	if (pc && atomic_inc_not_zero(&pc->ref_cnt))
-@@ -781,6 +792,9 @@ void mem_cgroup_end_migration(struct pag
- {
- 	struct page_cgroup *pc;
- 
-+	if (!mem_cgroup_on)
-+		return;
-+
- 	lock_page_cgroup(page);
- 	pc = page_get_page_cgroup(page);
- 	mem_cgroup_uncharge(pc);
-@@ -881,6 +895,10 @@ int mem_cgroup_force_empty(struct mem_cg
- {
- 	int ret = -EBUSY;
- 	int node, zid;
-+
-+	if (!mem_cgroup_on)
-+		return 0;
-+
- 	css_get(&mem->css);
- 	/*
- 	 * page reclaim code (kswapd etc..) will move pages between
-@@ -1141,6 +1159,9 @@ static void mem_cgroup_destroy(struct cg
- static int mem_cgroup_populate(struct cgroup_subsys *ss,
- 				struct cgroup *cont)
- {
-+	if (!mem_cgroup_on)
-+		return 0;
-+
- 	return cgroup_add_files(cont, ss, mem_cgroup_files,
- 					ARRAY_SIZE(mem_cgroup_files));
- }
-@@ -1153,6 +1174,9 @@ static void mem_cgroup_move_task(struct 
- 	struct mm_struct *mm;
- 	struct mem_cgroup *mem, *old_mem;
- 
-+	if (!mem_cgroup_on)
-+		return;
-+
- 	mm = get_task_mm(p);
- 	if (mm == NULL)
- 		return;
-@@ -1189,3 +1213,10 @@ struct cgroup_subsys mem_cgroup_subsys =
- 	.attach = mem_cgroup_move_task,
- 	.early_init = 0,
- };
-+
-+static int __init mem_cgroup_startup_disable(char *str)
-+{
-+	mem_cgroup_on = 0;
-+	return 1;
-+}
-+__setup("memcgroupoff", mem_cgroup_startup_disable);
-diff -puN Documentation/kernel-parameters.txt~memory-controller-add-boot-option Documentation/kernel-parameters.txt
---- linux-2.6.25-rc3/Documentation/kernel-parameters.txt~memory-controller-add-boot-option	2008-02-25 15:55:58.000000000 +0530
-+++ linux-2.6.25-rc3-balbir/Documentation/kernel-parameters.txt	2008-02-25 15:56:01.000000000 +0530
-@@ -1114,6 +1114,8 @@ and is between 256 and 4096 characters. 
- 	mem=nopentium	[BUGS=X86-32] Disable usage of 4MB pages for kernel
- 			memory.
- 
-+	memcgroupoff	[KNL] Disable memory resource controller
-+
- 	memmap=exactmap	[KNL,X86-32,X86_64] Enable setting of an exact
- 			E820 memory map, as specified by the user.
- 			Such memmap=exactmap lines can be constructed based on
-_
-
--- 
-	Warm Regards,
-	Balbir Singh
-	Linux Technology Center
-	IBM, ISTL
+Neither of which seem like acceptable solutions for a 2.6.23 -> 2.6.24
+_regression_. Or maybe I am just too naive to believe Linus' statement
+on not letting the kernel regress...
