@@ -1,59 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755180AbYBYKU4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755213AbYBYKXR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755180AbYBYKU4 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 Feb 2008 05:20:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752947AbYBYKUt
+	id S1755213AbYBYKXR (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 Feb 2008 05:23:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752598AbYBYKXF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 Feb 2008 05:20:49 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:39917 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752598AbYBYKUs (ORCPT
+	Mon, 25 Feb 2008 05:23:05 -0500
+Received: from el-out-1112.google.com ([209.85.162.181]:43402 "EHLO
+	el-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752185AbYBYKXE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 Feb 2008 05:20:48 -0500
-Subject: Re: [patch 2.6.25-rc3] lockdep:  add spin_lock_irq_nested()
-From: Peter Zijlstra <peterz@infradead.org>
-To: David Brownell <david-b@pacbell.net>
-Cc: Linux Kernel list <linux-kernel@vger.kernel.org>, mingo@redhat.com
-In-Reply-To: <200802242033.52208.david-b@pacbell.net>
-References: <200801181429.00485.david-b@pacbell.net>
-	 <1200904299.6341.2.camel@lappy> <200801211022.36312.david-b@pacbell.net>
-	 <200802242033.52208.david-b@pacbell.net>
-Content-Type: text/plain
-Date: Mon, 25 Feb 2008 11:20:28 +0100
-Message-Id: <1203934828.6242.140.camel@lappy>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.21.90 
+	Mon, 25 Feb 2008 05:23:04 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=jMEjG87rn83tE+e04a319NpIV1xm8C5R2PvK70n1bujOjlOXpGkNdmLz5owAip6r+MJeWyg3NsiG4OLxgezOGcR1zp3hN5Xu1XDdIgkLBupDuEfK8lPZ4EHBsKsWJAjgQDs2NjT8NiB7OiiaJ4WXOjcbwh+MMTKpHasmdhMH8mY=
+Message-ID: <f19298770802250223m29f001f5obb8a5dff48df836a@mail.gmail.com>
+Date: Mon, 25 Feb 2008 13:23:02 +0300
+From: "Alexey Zaytsev" <alexey.zaytsev@gmail.com>
+To: "Greg KH" <greg@kroah.com>
+Subject: Re: bcm43xx regression in 2.6.24 (with patch)
+Cc: "Pekka J Enberg" <penberg@cs.helsinki.fi>, "Michael Buesch" <mb@bu3sch.de>,
+       "Ingo Molnar" <mingo@elte.hu>, "Alexey Zaytsev" <zaytsev.a@protei.ru>,
+       linux-kernel@vger.kernel.org,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "Linus Torvalds" <torvalds@linux-foundation.org>
+In-Reply-To: <20080225064935.GA20997@kroah.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <47BEAF3B.3080809@protei.ru> <200802241529.50967.mb@bu3sch.de>
+	 <f19298770802240839w2c19fd52vb0d170359ba56fc5@mail.gmail.com>
+	 <200802241816.01784.mb@bu3sch.de>
+	 <Pine.LNX.4.64.0802250814450.10065@sbz-30.cs.Helsinki.FI>
+	 <20080225064935.GA20997@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, Feb 25, 2008 at 9:49 AM, Greg KH <greg@kroah.com> wrote:
+>
+> On Mon, Feb 25, 2008 at 08:16:17AM +0200, Pekka J Enberg wrote:
+>  > Hi Michael,
+>  >
+>  > On Sun, 24 Feb 2008, Michael Buesch wrote:
+>  > > > The ony way I see this was possible, you manually changed the
+>  > > > module loading order, so that the b43xx module was loaded prior
+>  > > > to the ssb and b44 modules. Right?
+>  > >
+>  > > Right. So "so I'm left with either no wifi or no ethenet" being wrong.
+>  >
+>  > Lets make this simple: it used to work before and now it doesn't.
+>  > Therefore it's a regression that must be addressed. Period.
+>
+>  Isn't the resolution Michael is suggesting is, "use the different driver"?
+>
 
-On Sun, 2008-02-24 at 20:33 -0800, David Brownell wrote:
-> > > >     ==> LOCKDEP feature is evidently missing:
-> > > >             spin_lock_irq_nested(lock_ptr, lock_class)
-> > > 
-> > > This rant is more lines than adding the API :-/ the reason for it not
-> > > being there is simple, it wasn't needed up until now.
-> > 
-> > I suspected that was the case, but for all I knew there was some
-> > religious objection. 
-> 
-> Does this look about right?  Or, I suppose it could just call
-> the _spin_lock_irqsave_nested() routine and discard the result.
+The b43 driver from 2.6.24 does not work with my hardware. The one from
+2.6.25 seems to work, but 2.6.25 is far from being ready yet.
 
-Before I look at the code, and with a notice that I haven't had my
-morning juice yet...
+The only way you can get the old driver working in 2.6.24 is to
+compile certain (completely unrelated for an outsider) drivers as
+modules and play with the module loading order. I think this is a
+bug, and it should be fixed in -stable.
 
-It seems to me a spin_lock_irq_nested() thing is redundant, because:
+And for 2.6.25, I think the patch should also be included, as the
+bcm43xx driver is still there.
 
-The lock must obviously be held hardirq safe and nested implies one is
-already held. Hence the context is already hardirq safe thus using
-spin_lock_irq/spin_unlock_irq is wrong because it will enable irqs and
-destroy the irqsafe guarantee for the parent lock.
 
-Obviously I'm missing something here.. otherwise you wouldn't need it.
+Btw, what are we discussing? The real bcm43xx maintainer
+(Larry Finger) reviewed the patch and agreet it should go
+into 2.6.24-stable and 2.6.25 . Now we only have to wait for
+John Linville and Jeff Garzik to pick it up, right? If someone
+still thinks the patch should not go in, he should at least
+add them to the CC list. ;)
 
-As I'm very much not familiar with the IRQ code, could you spell it out
-to me?
 
+
+>  thanks,
+>
+>  greg k-h
+>
