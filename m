@@ -1,41 +1,35 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758565AbYBYTQb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758798AbYBYTRE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758565AbYBYTQb (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 Feb 2008 14:16:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754528AbYBYTQU
+	id S1758798AbYBYTRE (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 Feb 2008 14:17:04 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754962AbYBYTQx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 Feb 2008 14:16:20 -0500
-Received: from agminet01.oracle.com ([141.146.126.228]:11570 "EHLO
-	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753123AbYBYTQT (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 Feb 2008 14:16:19 -0500
-Date: Mon, 25 Feb 2008 11:14:33 -0800
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: lkml <linux-kernel@vger.kernel.org>, avi@qumranet.com
-Cc: linux-next@vger.kernel.org, kvm-devel@lists.sourceforge.net
-Subject: voyager/KVM build problem
-Message-Id: <20080225111433.827055bd.randy.dunlap@oracle.com>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.4.7 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+	Mon, 25 Feb 2008 14:16:53 -0500
+Received: from mail.gondor.com ([212.117.64.182]:3910 "EHLO moria.gondor.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1754564AbYBYTQw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 25 Feb 2008 14:16:52 -0500
+X-Greylist: delayed 646 seconds by postgrey-1.27 at vger.kernel.org; Mon, 25 Feb 2008 14:16:52 EST
+Date: Mon, 25 Feb 2008 20:03:23 +0100
+From: Jan Niehusmann <jan@gondor.com>
+To: Herbert Xu <herbert@gondor.apana.org.au>
+Cc: LKML <linux-kernel@vger.kernel.org>
+Subject: Re: 2.6.25-rc[1,2]: failed to setup dm-crypt key mapping
+Message-ID: <20080225190322.GA14941@jannic.reliablesolutions.de>
+References: <8f53421d0802192343v2267cb66ub579d4503e3b7eb1@mail.gmail.com> <47BC0DA9.1030607@redhat.com> <20080220172449.GD27726@gondor.apana.org.au> <47BC67CE.9070407@redhat.com> <20080220175819.GA28246@gondor.apana.org.au> <20080222123423.GA12678@gondor.apana.org.au>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080222123423.GA12678@gondor.apana.org.au>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I could have sworn that we had patches that made KVM
-depend on !VOYAGER and !VISWS, but with 2.6.25-rc3 and linux-next,
-it's possible to select VOYAGER machine type (x86_32) and then
-enable KVM and watch the build fail.
+On Fri, Feb 22, 2008 at 08:34:23PM +0800, Herbert Xu wrote:
+> Does this patch fix the problem?
 
-ERROR: "smp_ops" [arch/x86/kvm/kvm.ko] undefined!
-make[1]: *** [__modpost] Error 1
+It does fix the problem on my system.
 
----
-~Randy
+Jan
+
