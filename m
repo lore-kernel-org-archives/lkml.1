@@ -1,47 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757793AbYBYXGT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760884AbYBYXGd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757793AbYBYXGT (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 Feb 2008 18:06:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750935AbYBYXGG
+	id S1760884AbYBYXGd (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 Feb 2008 18:06:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755509AbYBYXGO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 Feb 2008 18:06:06 -0500
-Received: from sorrow.cyrius.com ([65.19.161.204]:3009 "EHLO sorrow.cyrius.com"
+	Mon, 25 Feb 2008 18:06:14 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:32809 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750921AbYBYXGF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 Feb 2008 18:06:05 -0500
-X-Greylist: delayed 1508 seconds by postgrey-1.27 at vger.kernel.org; Mon, 25 Feb 2008 18:06:05 EST
-Date: Mon, 25 Feb 2008 23:39:17 +0100
-From: Martin Michlmayr <tbm@cyrius.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Byron Bradley <byron.bbradley@gmail.com>,
-       Jean Delvare <khali@linux-fr.org>, David Brownell <david-b@pacbell.net>
-Subject: Re: [GIT PATCH] scsi fixes for 2.6.25-rc2
-Message-ID: <20080225223917.GX17231@deprecation.cyrius.com>
-References: <1203779614.3139.4.camel@localhost.localdomain> <47C08134.2030205@garzik.org> <alpine.LFD.1.00.0802231229320.21332@woody.linux-foundation.org>
+	id S1754787AbYBYXGM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 25 Feb 2008 18:06:12 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+Subject: Re: 2.6.25-rc2 Regression Thinkpad acpi
+Date: Tue, 26 Feb 2008 00:05:01 +0100
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: Lukas Hejtmanek <xhejtman@ics.muni.cz>, linux-kernel@vger.kernel.org,
+       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+       Len Brown <lenb@kernel.org>,
+       Alexey Starikovskiy <astarikovskiy@suse.de>
+References: <20080225093914.GB4375@ics.muni.cz> <20080225220720.GA4523@ics.muni.cz> <20080225230035.GA14503@khazad-dum.debian.net>
+In-Reply-To: <20080225230035.GA14503@khazad-dum.debian.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <alpine.LFD.1.00.0802231229320.21332@woody.linux-foundation.org>
-User-Agent: Mutt/1.5.16 (2007-06-11)
+Message-Id: <200802260005.02613.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Linus Torvalds <torvalds@linux-foundation.org> [2008-02-23 12:31]:
-> I'm personally of the opinion that a new driver that doesn't add
-> anything but itself (ie no infrastructure changes etc) is fine. I'd
-> rather have a new, rough driver that might work, than no driver at
-> all, and it's not like it can cause a regression if you don't enable
-> it.
+On Tuesday, 26 of February 2008, Henrique de Moraes Holschuh wrote:
+> On Mon, 25 Feb 2008, Lukas Hejtmanek wrote:
+> > volume keys work. But anything through acpid does not. Even AC/battery switch
+> > is not signalized. So the bug may be somewhere else?
+> 
+> Yeah, there is an EC-related regression in 2.6.25-rc3 that bites your
+> thinkpad.  I don't have a link to it right now, but if you look for the
+> messages to LKML on the last 48h, you will find it.
 
-Maybe we can still get the new S-35390A RTC driver in then.  It has
-been acked by Jean Delvare and David Brownell.  Byron or Jean, can you
-try to submit it again?
+http://bugzilla.kernel.org/show_bug.cgi?id=10100
 
-It's needed by the QNAP TS-109/TS-209, a NAS device for which support
-has been added in 2.6.25-rc1.
--- 
-Martin Michlmayr
-http://www.cyrius.com/
+(easy to remember ;=))
+
+Thanks,
+Rafael
