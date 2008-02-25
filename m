@@ -1,26 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758251AbYBYU0u@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758727AbYBYU1W@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758251AbYBYU0u (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 Feb 2008 15:26:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756124AbYBYU0n
+	id S1758727AbYBYU1W (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 Feb 2008 15:27:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756124AbYBYU1M
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 Feb 2008 15:26:43 -0500
-Received: from smtp1.linux-foundation.org ([207.189.120.13]:59018 "EHLO
+	Mon, 25 Feb 2008 15:27:12 -0500
+Received: from smtp1.linux-foundation.org ([207.189.120.13]:47532 "EHLO
 	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754222AbYBYU0m (ORCPT
+	by vger.kernel.org with ESMTP id S1756172AbYBYU1K (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 Feb 2008 15:26:42 -0500
-Date: Mon, 25 Feb 2008 12:14:40 -0800
+	Mon, 25 Feb 2008 15:27:10 -0500
+Date: Mon, 25 Feb 2008 12:25:22 -0800
 From: Andrew Morton <akpm@linux-foundation.org>
-To: Gabriel C <nix.or.die@googlemail.com>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Gabriel C <crazy@frugalware.org>, Thomas Gleixner <tglx@linutronix.de>,
-       john stultz <johnstul@us.ibm.com>, "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: Clocksource tsc is always unstable with 2.6.25-* kernels and
- CONFIG_NO_HZ=y on my box
-Message-Id: <20080225121440.32810c91.akpm@linux-foundation.org>
-In-Reply-To: <47C0BAD9.7030908@googlemail.com>
-References: <47C0BAD9.7030908@googlemail.com>
+To: Peter Osterlund <petero2@telia.com>
+Cc: Nix <nix@esperi.org.uk>, linux-kernel@vger.kernel.org, dm-devel@redhat.com
+Subject: Re: 2.6.24.2: 4KSTACKS + pcdrw + dm + mount -> stack overflow:
+ ide-cd related? dm-related?
+Message-Id: <20080225122522.f2a9f073.akpm@linux-foundation.org>
+In-Reply-To: <m363wepa3a.fsf@telia.com>
+References: <87wsovkth5.fsf@hades.wkstn.nix>
+	<87skzipcpw.fsf@hades.wkstn.nix>
+	<m363wepa3a.fsf@telia.com>
 X-Mailer: Sylpheed 2.4.7 (GTK+ 2.12.1; x86_64-redhat-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
@@ -29,33 +29,61 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 24 Feb 2008 01:31:21 +0100 Gabriel C <nix.or.die@googlemail.com> wrote:
+On Sun, 24 Feb 2008 17:56:09 +0100 Peter Osterlund <petero2@telia.com> wrote:
 
-> Hi,
 > 
-> I noticed tsc is always marked unstable on my box with 2.6.25* , 2.6.24 is fine.
+>  drivers/block/pktcdvd.c |   16 ++++++++--------
+>  1 files changed, 8 insertions(+), 8 deletions(-)
 > 
+> diff --git a/drivers/block/pktcdvd.c b/drivers/block/pktcdvd.c
+> index 674cd66..f2510e7 100644
+> --- a/drivers/block/pktcdvd.c
+> +++ b/drivers/block/pktcdvd.c
+> @@ -849,7 +849,7 @@ static int pkt_flush_cache(struct pktcdvd_device *pd)
+>  /*
+>   * speed is given as the normal factor, e.g. 4 for 4x
+>   */
+> -static int pkt_set_speed(struct pktcdvd_device *pd, unsigned write_speed, unsigned read_speed)
+> +static noinline int pkt_set_speed(struct pktcdvd_device *pd, unsigned write_speed, unsigned read_speed)
+>
 > ...
-> 
-> [    0.825760] ACPI: PCI Interrupt 0000:03:0e.0[A] -> GSI 22 (level, low) -> IRQ 22
-> [    0.805755] Switched to high resolution mode on CPU 1
-> [    0.794244] Switched to high resolution mode on CPU 2
-> [    0.766968] Switched to high resolution mode on CPU 3
-> [    1.083944] Switched to high resolution mode on CPU 0
-> [   15.388792] Clocksource tsc unstable (delta = 9373391604 ns)
-> [   15.714648] Time: acpi_pm clocksource has been installed.
-> 
-> ...
-> 
-> Booting nohz=off fixes that.
-> 
-> Another strange thing is when I try to boot that kernel with clocksource=acpi_pm it just hangs.
-> 
-> config is attached.
-> 
-> Please let me know if you need more infos / want me to try patches or anything else.
-> 
-> 
 
-I suppose we should consider this a regression.  If only because acpi_pm is
-slower.  But mainly because (afaik) this change was not intentional.
+yup, I'll grab that.  I'll even write your changelog for you (grr).
+
+But first, let's do this:
+
+
+From: Andrew Morton <akpm@linux-foundation.org>
+
+People are adding `noinline' in various places to prevent excess stack
+consumption due to gcc inlining.  But once this is done, it is quite unobvious
+why the `noinline' is present in the code.  We can comment each and every
+site, or we can use noinline_for_stack.
+
+
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ include/linux/compiler.h |    6 ++++++
+ 1 file changed, 6 insertions(+)
+
+diff -puN include/linux/compiler.h~add-noinline_for_stack include/linux/compiler.h
+--- a/include/linux/compiler.h~add-noinline_for_stack
++++ a/include/linux/compiler.h
+@@ -138,6 +138,12 @@ extern void __chk_io_ptr(const volatile 
+ #define noinline
+ #endif
+ 
++/*
++ * Rather then using noinline to prevent stack consumption, use
++ * noinline_for_stack instead.  For documentaiton reasons.
++ */
++#define noinline_for_stack noinline
++
+ #ifndef __always_inline
+ #define __always_inline inline
+ #endif
+_
+
+(Note that these changes don't let DM off the hook!)
+
