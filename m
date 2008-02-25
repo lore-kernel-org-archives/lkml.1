@@ -1,81 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757967AbYBYAz1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758733AbYBYBCO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757967AbYBYAz1 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 24 Feb 2008 19:55:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755228AbYBYAzN
+	id S1758733AbYBYBCO (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 24 Feb 2008 20:02:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754663AbYBYBB5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 24 Feb 2008 19:55:13 -0500
-Received: from www262.sakura.ne.jp ([202.181.97.72]:65214 "EHLO
-	www262.sakura.ne.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754827AbYBYAzM (ORCPT
+	Sun, 24 Feb 2008 20:01:57 -0500
+Received: from terminus.zytor.com ([198.137.202.10]:51426 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754514AbYBYBB4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 24 Feb 2008 19:55:12 -0500
-Message-Id: <200802250055.m1P0t4MX060531@www262.sakura.ne.jp>
-Subject: [2.6.25-rc2-mm1][2.6.25-rc3] Remove argv_len from struct linux_binprm
-From: Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>
-To: akpm@linux-foundation.org, linux-kernel@vger.kernel.org
+	Sun, 24 Feb 2008 20:01:56 -0500
+Message-ID: <47C21284.7040607@zytor.com>
+Date: Sun, 24 Feb 2008 16:57:40 -0800
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
-Content-Type: text/plain; charset="ISO-2022-JP"
+To: Mikael Pettersson <mikpe@it.uu.se>
+CC: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
+       mingo@redhat.com, tglx@linutronix.de
+Subject: Re: [BUG] 2.6.25-rc2-git8 fails to boot on 486 due to TSC breakage
+References: <200802241107.m1OB7bHb022801@harpo.it.uu.se>	<20080224135720.GA5323@elte.hu>	<18369.35401.678391.183329@harpo.it.uu.se> <18369.43239.964660.62249@harpo.it.uu.se>
+In-Reply-To: <18369.43239.964660.62249@harpo.it.uu.se>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Date: Mon, 25 Feb 2008 09:55:04 +0900
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I noticed that 2.6.24.2 calculates bprm->argv_len at do_execve().
-But it doesn't update bprm->argv_len after
-"remove_arg_zero() + copy_strings_kernel()" at load_script() etc.
+Mikael Pettersson wrote:
+> 
+> Here's how the breakage occurs:
+> 1. arch/x86/kernel/tsc_32.c:tsc_init() sees !cpu_has_tsc,
+>    so bails and calls setup_clear_cpu_cap(X86_FEATURE_TSC).
+> 2. include/asm-x86/cpufeature.h:setup_clear_cpu_cap(bit) clears
+>    the bit in boot_cpu_data and sets it in cleared_cpu_caps
+> 3. arch/x86/kernel/cpu/common.c:identify_cpu() XORs all caps
+>    in with cleared_cpu_caps
+>    HOWEVER, at this point c->x86_capability correctly has TSC
+>    Off, cleared_cpu_caps has TSC On, so the XOR incorrectly
+>    sets TSC to On in c->x86_capability, with disastrous results.
+> 
+> The real bug is that clearing bits with XOR only works if the
+> bits are known to be 1 prior to the XOR, and that's not true here.
+> 
+> A simple fix is to convert the XOR to AND-NOT instead. The following
+> patch does that, and allows my 486 to boot 2.6.25-rc kernels again.
+> 
 
-audit_bprm() is called from search_binary_handler()
-and search_binary_handler() is called from load_script() etc.
-Thus, I think the condition check
+Please fix it in both places.  Using XOR instead of AND-NOT is a bug, 
+plain and simple.
 
-  if (bprm->argv_len > (audit_argv_kb << 10))
-          return -E2BIG;
-
-in audit_bprm() might return wrong result
-when strlen(removed_arg) != strlen(spliced_args).
-Why not update bprm->argv_len at load_script() etc. ?
-
-
-By the way, 2.6.25-rc3 seems to not doing the condition check.
-Is the field bprm->argv_len no longer needed?
-
-Signed-off-by: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
----
- fs/exec.c               |    3 ---
- include/linux/binfmts.h |    1 -
- 2 files changed, 4 deletions(-)
-
---- linux-2.6.25-rc3.orig/fs/exec.c
-+++ linux-2.6.25-rc3/fs/exec.c
-@@ -1274,7 +1274,6 @@ int do_execve(char * filename,
- {
- 	struct linux_binprm *bprm;
- 	struct file *file;
--	unsigned long env_p;
- 	int retval;
- 
- 	retval = -ENOMEM;
-@@ -1322,11 +1321,9 @@ int do_execve(char * filename,
- 	if (retval < 0)
- 		goto out;
- 
--	env_p = bprm->p;
- 	retval = copy_strings(bprm->argc, argv, bprm);
- 	if (retval < 0)
- 		goto out;
--	bprm->argv_len = env_p - bprm->p;
- 
- 	retval = search_binary_handler(bprm,regs);
- 	if (retval >= 0) {
---- linux-2.6.25-rc3.orig/include/linux/binfmts.h
-+++ linux-2.6.25-rc3/include/linux/binfmts.h
-@@ -48,7 +48,6 @@ struct linux_binprm{
- 	unsigned interp_flags;
- 	unsigned interp_data;
- 	unsigned long loader, exec;
--	unsigned long argv_len;
- };
- 
- #define BINPRM_FLAGS_ENFORCE_NONDUMP_BIT 0
+	-hpa
