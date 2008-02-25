@@ -1,56 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757583AbYBYUBD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756304AbYBYUBj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757583AbYBYUBD (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 Feb 2008 15:01:03 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756043AbYBYUAx
+	id S1756304AbYBYUBj (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 Feb 2008 15:01:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756694AbYBYUB2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 Feb 2008 15:00:53 -0500
-Received: from iolanthe.rowland.org ([192.131.102.54]:43016 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1755900AbYBYUAw (ORCPT
+	Mon, 25 Feb 2008 15:01:28 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:57328
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1756518AbYBYUB1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 Feb 2008 15:00:52 -0500
-Date: Mon, 25 Feb 2008 15:00:51 -0500 (EST)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: Pierre Ossman <drzeus-mmc@drzeus.cx>
-cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
-       pm list <linux-pm@lists.linux-foundation.org>,
-       Zdenek Kabelac <zdenek.kabelac@gmail.com>,
-       David Brownell <david-b@pacbell.net>,
-       Kernel development list <linux-kernel@vger.kernel.org>
-Subject: Re: Bugs in MMC [was: [Bug 10030] Suspend doesn't work when SD card
- is inserted]
-In-Reply-To: <20080225193134.104b386d@mjolnir.drzeus.cx>
-Message-ID: <Pine.LNX.4.44L0.0802251451050.5536-100000@iolanthe.rowland.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Mon, 25 Feb 2008 15:01:27 -0500
+Date: Mon, 25 Feb 2008 12:02:10 -0800 (PST)
+Message-Id: <20080225.120210.251366287.davem@davemloft.net>
+To: Steve.Hawkes@motorola.com
+Cc: joe@perches.com, linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+Subject: Re: printk_ratelimit and net_ratelimit conflict and tunable
+ behavior
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <7BFDACCD6948EF4D8FE8F4888A91596A016371FA@tx14exm60.ds.mot.com>
+References: <20080220.223219.165157596.davem@davemloft.net>
+	<1203577246.7181.241.camel@localhost>
+	<7BFDACCD6948EF4D8FE8F4888A91596A016371FA@tx14exm60.ds.mot.com>
+X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 25 Feb 2008, Pierre Ossman wrote:
+From: "Hawkes Steve-FSH016" <Steve.Hawkes@motorola.com>
+Date: Mon, 25 Feb 2008 09:47:11 -0600
 
-> > What do you think of the patch attached to comment #40 in the Bugzilla 
-> > entry?
-> > 
+> > .facility = NULL
 > 
-> Looks ok. As long as those two synchronization points are guaranteed,
-> then I'm happy.
+> How about this?
 
-Maybe a better approach would be to leave the workqueue unfreezable,
-and keep cancel_delayed_work_sync() in mmc_suspend_host().  It would
-then be necessary to add a test to verify, if there is a card attached,
-that the card is indeed suspended.  After all, it's possible that the
-cancel_delayed_work_sync() ended up waiting for a job already running
-on the workqueue to register a new card!  (The same would be true even 
-with flush_scheduled_work.)
-
-Also, as a bit of defensive programming, it might be a good idea to add
-a "suspended" flag to the mmc_host structure.  If mmc_rescan() sees
-that the flag is set then it should return immediately.  This would
-protect against host drivers that aren't careful to disable detect
-IRQs before calling mmc_suspend_host().
-
-Alan Stern
-
+Actually, for compile time initializations, setting
+anything to zero is superfluous and by convention
+is not therefore explicitly done in the sources.
