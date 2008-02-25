@@ -1,53 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757519AbYBYRqX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756743AbYBYRsl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757519AbYBYRqX (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 Feb 2008 12:46:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757183AbYBYRqF
+	id S1756743AbYBYRsl (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 Feb 2008 12:48:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754066AbYBYRse
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 Feb 2008 12:46:05 -0500
-Received: from mail.atlantis.sk ([80.94.52.35]:42875 "EHLO mail.atlantis.sk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757186AbYBYRqE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 Feb 2008 12:46:04 -0500
-From: Ondrej Zary <linux@rainbow-software.org>
-To: Grant Grundler <grundler@parisc-linux.org>
-Subject: [PATCH] de2104x: remove BUG_ON() when changing media type
-Date: Mon, 25 Feb 2008 18:45:46 +0100
-User-Agent: KMail/1.9.9
-Cc: jgarzik@pobox.com, Linux Kernel <linux-kernel@vger.kernel.org>,
-       netdev@vger.kernel.org
-References: <200801262158.12016.linux@rainbow-software.org> <200802181740.44196.linux@rainbow-software.org> <20080225071505.GC26674@colo.lackof.org>
-In-Reply-To: <20080225071505.GC26674@colo.lackof.org>
-MIME-Version: 1.0
-Content-Disposition: inline
-X-Length: 1340
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Mon, 25 Feb 2008 12:48:34 -0500
+Received: from e36.co.us.ibm.com ([32.97.110.154]:34142 "EHLO
+	e36.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753433AbYBYRsd (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 25 Feb 2008 12:48:33 -0500
+Subject: Re: Page scan keeps touching kernel text pages
+From: Dave Hansen <haveblue@us.ibm.com>
+To: Andy Whitcroft <apw@shadowen.org>
+Cc: =?ISO-8859-1?Q?J=F6rn?= Engel <joern@logfs.org>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <20080225150724.GF2604@shadowen.org>
+References: <20080224144710.GD31293@lazybastard.org>
+	 <20080225150724.GF2604@shadowen.org>
+Content-Type: text/plain
+Date: Mon, 25 Feb 2008 09:48:22 -0800
+Message-Id: <1203961702.6662.35.camel@nimitz.home.sr71.net>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.1 
 Content-Transfer-Encoding: 7bit
-Message-Id: <200802251845.51562.linux@rainbow-software.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-When the chip dies (probably because of a bug somewhere in the driver), 
-de_stop_rxtx() fails and changing the media type crashes the whole machine. 
-Replace BUG_ON() in de_set_media() with a warning.
+On Mon, 2008-02-25 at 15:07 +0000, Andy Whitcroft wrote:
+> shrink_page_list() would be expected to be passed pages pulled from
+> the active or inactive lists via isolate_lru_pages()?  I would not have
+> expected to find the kernel text on the LRU and therefore not expect to
+> see it passed to shrink_page_list()?
 
-Signed-off-by: Ondrej Zary <linux@rainbow-software.org>
+It may have been kernel text at one time, but what about __init
+functions?  Don't we free that section back to the normal allocator
+after init time?  Those can end up on the LRU.
 
---- linux-2.6.24-orig/drivers/net/tulip/de2104x.c	2008-02-25 18:27:34.000000000 +0100
-+++ linux-2.6.24-pentium/drivers/net/tulip/de2104x.c	2008-02-25 18:34:56.000000000 +0100
-@@ -910,7 +910,8 @@
- 	unsigned media = de->media_type;
- 	u32 macmode = dr32(MacMode);
- 
--	BUG_ON(de_is_running(de));
-+	if (de_is_running(de))
-+		printk(KERN_WARNING "%s: chip is running while changing media!\n", de->dev->name);
- 
- 	if (de->de21040)
- 		dw32(CSR11, FULL_DUPLEX_MAGIC);
+-- Dave
 
-
--- 
-Ondrej Zary
