@@ -1,78 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757539AbYBYRnu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757032AbYBYRp6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757539AbYBYRnu (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 Feb 2008 12:43:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754528AbYBYRnm
+	id S1757032AbYBYRp6 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 Feb 2008 12:45:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753123AbYBYRpu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 Feb 2008 12:43:42 -0500
-Received: from krynn.se.axis.com ([193.13.178.10]:60644 "EHLO
-	krynn.se.axis.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753709AbYBYRnl (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 Feb 2008 12:43:41 -0500
-Date: Mon, 25 Feb 2008 18:43:21 +0100
-From: Jesper Nilsson <jesper.nilsson@axis.com>
-To: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Mikael Starvik <mikael.starvik@axis.com>,
-       Jesper Nilsson <jesper.nilsson@axis.com>
-Subject: [PATCH] CRIS v10: Include mm.h instead of vmstat.h in kernel/time.c
-Message-ID: <20080225174320.GF24124@axis.com>
+	Mon, 25 Feb 2008 12:45:50 -0500
+Received: from mx-1.enea.se ([192.36.1.70]:14153 "EHLO mx-1.enea.se"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750867AbYBYRpt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 25 Feb 2008 12:45:49 -0500
+X-Greylist: delayed 975 seconds by postgrey-1.27 at vger.kernel.org; Mon, 25 Feb 2008 12:45:49 EST
+Message-ID: <47C2FB39.3080508@enea.com>
+Date: Mon, 25 Feb 2008 18:30:33 +0100
+From: Arvid Brodin <arvid.brodin@enea.com>
+Organization: Enea
+User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.13 (2006-08-11)
+To: linux-kernel@vger.kernel.org
+Subject: Print long messages to console from kernel module
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 25 Feb 2008 17:29:33.0005 (UTC) FILETIME=[FC04FFD0:01C877D3]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit 2f569afd9ced9ebec9a6eb3dbf6f83429be0a7b4
-(CONFIG_HIGHPTE vs. sub-page page tables) introduced use of
-inc_zone_page_state and dec_zone_page_state in include/linux/mm.h.
+I need to write messages > 1023 characters long to the console from a module*. printk() is limited to 1023 characters, and splitting the message over several printk()'s results in a line break and "Month hh:mm:ss host kernel:" being inserted in my text.
 
-Those are defined in include/linux/vmstat.h, but after it includes
-mm.h, making it impossible to include vmstat.h since inc_zone_page_state
-and dec_zone_page_state then would be undefined.
+I tried including <linux/console.h> and using the console_drivers declared there, but get
+"WARNING: "console_drivers" [<path>/log.ko] undefined!" when compiling and
+"insmod: error inserting 'log.ko': -1 Unknown symbol in module" when insmodding.
 
-arch/cris/arch-v10/kernel/time.c does just this, which makes the
-CRIS v10 build break with the following error:
+I guess this is because non EXPORT_SYMBOL'd symbols are only accessible to statically linked code, and not to modules? I see in printk.c that console_drivers is set up there, and I haven't been able to find any other interface to console_drivers.
 
-...
-  CC      arch/cris/arch-v10/kernel/time.o
-In file included from include/linux/vmstat.h:7,
-                 from arch/cris/arch-v10/kernel/time.c:17:
-include/linux/mm.h: In function 'pgtable_page_ctor':
-include/linux/mm.h:902: error: implicit declaration of function 'inc_zone_page_state'
-include/linux/mm.h: In function 'pgtable_page_dtor':
-include/linux/mm.h:908: error: implicit declaration of function 'dec_zone_page_state'
-make[2]: *** [arch/cris/arch-v10/kernel/time.o] Error 1
-make[1]: *** [arch/cris/arch-v10/kernel] Error 2
-make: *** [sub-make] Error 2
-...
+In short: is there any way to print messages to the console from a kernel module, except printk()? Is opening /dev/tty and writing to it the way to go?
 
-By changing kernel/time.c to include linux/mm.h, the build succeeds.
 
-Signed-off-by: Jesper Nilsson <jesper.nilsson@axis.com>
----
- arch/cris/arch-v10/kernel/time.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+* I'm writing an in-memory logger to be included in a module. The log can be several megabytes. The idea is to use SysRq to print the contents of the log to console after a kernel panic or otherwise when writing to disk might not work.
 
-diff --git a/arch/cris/arch-v10/kernel/time.c b/arch/cris/arch-v10/kernel/time.c
-index 9310a7b..525483f 100644
---- a/arch/cris/arch-v10/kernel/time.c
-+++ b/arch/cris/arch-v10/kernel/time.c
-@@ -13,7 +13,7 @@
- #include <linux/swap.h>
- #include <linux/sched.h>
- #include <linux/init.h>
--#include <linux/vmstat.h>
-+#include <linux/mm.h>
- #include <asm/arch/svinto.h>
- #include <asm/types.h>
- #include <asm/signal.h>
 -- 
-1.5.4.2.133.g3d51e
-
-
-/^JN - Jesper Nilsson
---
-               Jesper Nilsson -- jesper.nilsson@axis.com
+Arvid Brodin
+Enea LCC
