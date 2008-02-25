@@ -1,78 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759530AbYBYU6u@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758677AbYBYVBb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759530AbYBYU6u (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 Feb 2008 15:58:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756752AbYBYU6j
+	id S1758677AbYBYVBb (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 Feb 2008 16:01:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752467AbYBYVBU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 Feb 2008 15:58:39 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:60352 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753409AbYBYU6i (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 Feb 2008 15:58:38 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: "Michael S. Tsirkin" <m.s.tsirkin@gmail.com>
-Subject: broken suspend in .2.6.25-rc3 on T61p (was Re: new regression in 2.6.25-rc3: no keyboard/lid acpi events on thinkpad T61p)
-Date: Mon, 25 Feb 2008 21:57:09 +0100
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: "Andrew Morton" <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       "Alexey Starikovskiy" <astarikovskiy@suse.de>,
-       "Len Brown" <len.brown@intel.com>, linux-acpi@vger.kernel.org,
-       Pavel Machek <pavel@ucw.cz>, Jeff Garzik <jeff@garzik.org>
-References: <8f53421d0802251119q470a79c1p31048ef136271f84@mail.gmail.com> <20080225114611.d91791f6.akpm@linux-foundation.org> <8f53421d0802251245j5439b37die840e34bb293f995@mail.gmail.com>
-In-Reply-To: <8f53421d0802251245j5439b37die840e34bb293f995@mail.gmail.com>
+	Mon, 25 Feb 2008 16:01:20 -0500
+Received: from out3.smtp.messagingengine.com ([66.111.4.27]:40190 "EHLO
+	out3.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751052AbYBYVBS (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 25 Feb 2008 16:01:18 -0500
+X-Sasl-enc: nPNhM/3qbHpggn/aqmNj9RnQ75beGFobZYJAzD7/4UU8 1203973277
+Date: Mon, 25 Feb 2008 18:01:13 -0300
+From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+To: Lukas Hejtmanek <xhejtman@ics.muni.cz>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, linux-kernel@vger.kernel.org,
+       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+       Len Brown <lenb@kernel.org>
+Subject: Re: 2.6.25-rc2 Regression Thinkpad acpi
+Message-ID: <20080225210113.GF16513@khazad-dum.debian.net>
+References: <20080225093914.GB4375@ics.muni.cz> <200802251247.30605.rjw@sisk.pl> <20080225200354.GE16513@khazad-dum.debian.net> <20080225204951.GB4432@ics.muni.cz>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200802252157.10412.rjw@sisk.pl>
+In-Reply-To: <20080225204951.GB4432@ics.muni.cz>
+X-GPG-Fingerprint: 1024D/1CDB0FE3 5422 5C61 F6B7 06FB 7E04  3738 EE25 DE3F
+	1CDB 0FE3
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday, 25 of February 2008, Michael S. Tsirkin wrote:
-> On Mon, Feb 25, 2008 at 9:46 PM, Andrew Morton
-> <akpm@linux-foundation.org> wrote:
-> > On Mon, 25 Feb 2008 21:19:24 +0200 "Michael S. Tsirkin" <m.s.tsirkin@gmail.com> wrote:
-> >
-> >  > On my T61p, 2.6.25-rc2 seems to get acpi events from keypresses
-> >  > such as Fn-F4 and lid open/close, prints them in /var/log/acpid
-> >  > and reacts accordingly (my acpi scripts suspend on lid close and Fn-F4).
-> >
-> >  You mean suspend-to-ram works correctly on your t61p?
-> >
-> >  Mine suspends, then five seconds later magically resumes itself and the
-> >  screen is all black.
+On Mon, 25 Feb 2008, Lukas Hejtmanek wrote:
+> On Mon, Feb 25, 2008 at 05:03:54PM -0300, Henrique de Moraes Holschuh wrote:
+> > This commit is indeed broken, and I have a tentative fix for it.  But I'd
+> > like to have a better description of just "how" the thinkpad keys do not
+> > work anymore, to make sure I fix the entire breakage in one go.  I will
+> > stare at the code and the fix a bit more before sending in any patches,
+> > though.
 > 
-> Sorry, have not noticed what you were asking about.
-> Yes, rc2 seems to suspend/resume fine.
-> 
-> And after reverting
-> 
->      revert commit 559bbe6cbd0d8c68d40076a5f7dc98e3bf5864b2.
+> Well, keys generate ACPI interrupt but acpid never receives any event.
 
-commit 559bbe6cbd0d8c68d40076a5f7dc98e3bf5864b2
-Author: Pavel Machek <pavel@ucw.cz>
-Date:   Thu Feb 21 13:56:55 2008 +0100
+Not even over the new netlink socket?  Or the thinkpad-acpi input device?
+Please send me the debug output of thinkpad-acpi loading, just in case.
 
-    power_state: get rid of write-only variable in SATA
+> I would be happy to test fixes to see whether things go well.
 
->      revert commit 208c70a45624400fafd7511b96bc426bf01f8f5e.
+Sure, try this one:
 
-commit 208c70a45624400fafd7511b96bc426bf01f8f5e
-Author: Alexey Starikovskiy <astarikovskiy@suse.de>
-Date:   Thu Feb 14 15:58:47 2008 -0500
+diff --git a/drivers/misc/thinkpad_acpi.c b/drivers/misc/thinkpad_acpi.c
+index 7500c44..0f74351 100644
+--- a/drivers/misc/thinkpad_acpi.c
++++ b/drivers/misc/thinkpad_acpi.c
+@@ -1078,7 +1078,8 @@ static int hotkey_get_tablet_mode(int *status)
+ 	if (!acpi_evalf(hkey_handle, &s, "MHKG", "d"))
+ 		return -EIO;
+ 
+-	return ((s & TP_HOTKEY_TABLET_MASK) != 0);
++	*status = ((s & TP_HOTKEY_TABLET_MASK) != 0);
++	return 0;
+ }
+ 
+ /*
 
-    ACPI: EC: Use proper handle for boot EC
-
-> r3 does, too.
-
-Please, _please_ always add commit subjects to your reports.  Also, please
-include the names of the authors of the commits that turn out to break things
-and send CCs to them.
-
-It won't hurt to send CCs to the people who signed those commits off, too.
-
-Thanks,
-Rafael
+-- 
+  "One disk to rule them all, One disk to find them. One disk to bring
+  them all and in the darkness grind them. In the Land of Redmond
+  where the shadows lie." -- The Silicon Valley Tarot
+  Henrique Holschuh
