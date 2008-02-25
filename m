@@ -1,70 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754767AbYBYDMh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755758AbYBYD2t@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754767AbYBYDMh (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 24 Feb 2008 22:12:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751073AbYBYDM2
+	id S1755758AbYBYD2t (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 24 Feb 2008 22:28:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752653AbYBYD2k
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 24 Feb 2008 22:12:28 -0500
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:55941 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751048AbYBYDM1 (ORCPT
+	Sun, 24 Feb 2008 22:28:40 -0500
+Received: from hellhawk.shadowen.org ([80.68.90.175]:1678 "EHLO
+	hellhawk.shadowen.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752634AbYBYD2j (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 24 Feb 2008 22:12:27 -0500
-Date: Mon, 25 Feb 2008 12:10:43 +0900
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: Paul Jackson <pj@sgi.com>, Pavel Machek <pavel@ucw.cz>
-Subject: Re: Tiny cpusets -- cpusets for small systems?
-Cc: kosaki.motohiro@jp.fujitsu.com, "Max Krasnyanskiy" <maxk@qualcomm.com>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, Andreas Dilger <adilger@sun.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Daniel Spang <daniel.spang@gmail.com>, Ingo Molnar <mingo@elte.hu>,
-       Jon Masters <jonathan@jonmasters.org>,
-       Marcelo Tosatti <marcelo@kvack.org>, Paul Menage <menage@google.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, Rik van Riel <riel@redhat.com>,
-       LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <20080223060911.e1d13cc1.pj@sgi.com>
-References: <20080223060911.e1d13cc1.pj@sgi.com>
-Message-Id: <20080225120050.AE81.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+	Sun, 24 Feb 2008 22:28:39 -0500
+Date: Mon, 25 Feb 2008 03:29:44 +0000
+From: Andy Whitcroft <apw@shadowen.org>
+To: Paolo Ciarrocchi <paolo.ciarrocchi@gmail.com>
+Cc: Benny Halevy <bhalevy@panasas.com>,
+       Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] Change a WARN message in checkpatch
+Message-ID: <20080225032944.GA30294@shadowen.org>
+References: <20080114232913.2555d392@paolo-desktop> <20080128145605.GI12910@shadowen.org> <4d8e3fd30801280713n7139223fj91adca85c76b60ad@mail.gmail.com> <4d8e3fd30802230538k7be1cc6bja9130e65fc6f5997@mail.gmail.com> <47C18AAB.7050503@panasas.com> <4d8e3fd30802241014g503c78a2wc08bd1939657802b@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
-Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.42 [ja]
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4d8e3fd30802241014g503c78a2wc08bd1939657802b@mail.gmail.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Pual
-
-> Looking at some IA64 sn2 config builds I have laying about, I see the
-> following text sizes for a couple of versions, showing the growth of
-> the cpuset/cgroup apparatus over time:
+On Sun, Feb 24, 2008 at 07:14:13PM +0100, Paolo Ciarrocchi wrote:
+> On Sun, Feb 24, 2008 at 4:18 PM, Benny Halevy <bhalevy@panasas.com> wrote:
+> [...]
+> >  How about:
+> >  -                               WARN("no space between function name and open parenthesis '('\n" . $herecurr);
+> >  +                               WARN("there should be no space between function name and open parenthesis '('\n" . $herecurr);
 > 
-> 	25933	2.6.18-rc3-mm1/kernel/cpuset.o (Aug 2006)
-> vs.
-> 	37823	2.6.25-rc2-mm1/kernel/cgroup.o (Feb 2008)
-> 	19558	2.6.25-rc2-mm1/kernel/cpuset.o
+> I originally suggested:
+> +                               WARN("don't put a space between
+> function name and open parenthesis '('\n" . $herecurr);
+> but I really prefer your version.
 > 
-> So the total has grown from 25933 to 57381 text bytes (note that
-> this is IA64 arch; most arch's will have proportionately smaller
-> text sizes.)
+> >  The original phrasing can be interpreted like "there is no space between ..." and the correct
+> >  interpretation should be "there should be no space between ..."
+> 
+> Indeed.
 
-hm, interesting.
-but unfortunately the cpuset have more than depend.(i.e. CONFIG_SMP)
+As we want the messages to be as short as possible, I am leaning towards
+standardising on:
 
-To more bad thing, some embedded cpu have poor or no atomic instruction
-support.
-at that, turn on CONFIG_SMP become large performace regression ;)
+	spaces prohibited <where>
+	spaces required <where>
 
-
-I am not already embedded engineer.
-thus, I might have made a mistake.
-(BTW: I am large server engineer now)
-
-but no thinking dependency is wrong, may be.
-
-
-Pavel, what do you think it?
-
-- kosaki
-
-
+-apw
