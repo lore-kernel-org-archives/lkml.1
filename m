@@ -1,57 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757752AbYBYUOU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757135AbYBYUYJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757752AbYBYUOU (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 Feb 2008 15:14:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756509AbYBYUOD
+	id S1757135AbYBYUYJ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 Feb 2008 15:24:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754132AbYBYUXz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 Feb 2008 15:14:03 -0500
-Received: from 136-022.dsl.labridge.com ([206.117.136.22]:1151 "EHLO
-	mail.perches.com" rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org
-	with ESMTP id S1756366AbYBYUOB (ORCPT
+	Mon, 25 Feb 2008 15:23:55 -0500
+Received: from web36608.mail.mud.yahoo.com ([209.191.85.25]:39879 "HELO
+	web36608.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1751841AbYBYUXz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 Feb 2008 15:14:01 -0500
-Subject: RE: printk_ratelimit and net_ratelimit conflict and tunable
-	behavior
-From: Joe Perches <joe@perches.com>
-To: Hawkes Steve-FSH016 <Steve.Hawkes@motorola.com>
-Cc: David Miller <davem@davemloft.net>, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org
-In-Reply-To: <7BFDACCD6948EF4D8FE8F4888A91596A016371FA@tx14exm60.ds.mot.com>
-References: <7BFDACCD6948EF4D8FE8F4888A91596A016371E8@tx14exm60.ds.mot.com>
-	 <20080220.223219.165157596.davem@davemloft.net>
-	 <1203577246.7181.241.camel@localhost>
-	 <7BFDACCD6948EF4D8FE8F4888A91596A016371FA@tx14exm60.ds.mot.com>
-Content-Type: text/plain
-Date: Mon, 25 Feb 2008 12:13:37 -0800
-Message-Id: <1203970417.19319.287.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.0-2mdv2008.0 
-Content-Transfer-Encoding: 7bit
+	Mon, 25 Feb 2008 15:23:55 -0500
+X-YMail-OSG: zZNWKBcVM1kXpMlMSjw3BLPUIV7mHNhwsIKIo5UKDMXF7S23aFB6BQO7TU7iCAPfbx685icw4Q--
+X-RocketYMMF: rancidfat
+Date: Mon, 25 Feb 2008 12:23:53 -0800 (PST)
+From: Casey Schaufler <casey@schaufler-ca.com>
+Reply-To: casey@schaufler-ca.com
+Subject: Re: [PATCH 2/3] kill_pid_info_as_uid: don't use security_task_kill()
+To: Stephen Smalley <sds@tycho.nsa.gov>, Oleg Nesterov <oleg@tv-sign.ru>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Casey Schaufler <casey@schaufler-ca.com>,
+       David Quigley <dpquigl@tycho.nsa.gov>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Eric Paris <eparis@redhat.com>, Harald Welte <laforge@gnumonks.org>,
+       Pavel Emelyanov <xemul@openvz.org>,
+       "Serge E. Hallyn" <serue@us.ibm.com>, linux-kernel@vger.kernel.org
+In-Reply-To: <1203965042.2804.196.camel@moss-spartans.epoch.ncsc.mil>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+Message-ID: <976891.59157.qm@web36608.mail.mud.yahoo.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2008-02-25 at 09:47 -0600, Hawkes Steve-FSH016 wrote:
-> How about this?
 
-line wrapped, but seems better.
+--- Stephen Smalley <sds@tycho.nsa.gov> wrote:
 
-> Signed-off-by: Steve Hawkes <steve.hawkes@motorola.com> 
 > 
-> diff -uprN linux-2.6.24/include/linux/kernel.h
-> linux-2.6.24-printk_ratelimit/include/linux/kernel.h
-> --- linux-2.6.24/include/linux/kernel.h 2008-01-24 16:58:37.000000000
-> + * This enforces a rate limit to mitigate denial-of-service attacks:
-> + * not more than ratelimit_burst messages every ratelimit_jiffies.
->   */
-> -int __printk_ratelimit(int ratelimit_jiffies, int ratelimit_burst)
-> +int __printk_ratelimit(int ratelimit_jiffies,
-> +                       int ratelimit_burst,
-> +                       struct printk_ratelimit_state *state)
+> ...
+> > 
+> > I think we should omit the permission checks completely, the task which
+> does
+> > ioctl(USBDEVFS_SUBMITURB) explicitly asks to send the signal to it, we
+> should
+> > not deny the signal even if the task changes its credentials in any way.
+> 
+> If we are applying checks based on uid/gid to protect suid/sgid
+> programs, then we ought to also invoke the LSM hook to allow protection
+> of other credential-changing transformations, like SELinux context
+> transitions.  You either remove all checking or none, please.  And if
+> all, what's the rationale?
 
-I think the value of in-place tunables is low.
-I'd remove that bit and use the struct printk_ratelimit_state.
+Perhaps more important to my mind is what lead the developers of
+this code to go to such significant lengths to provide this access
+check in the first place. Why was it considered sufficiently important?
+I concur that it's an ugly bit of hackery, but someone must have felt
+it was necessary or they wouldn't have done it.
 
-David Miller points out that struct initializations to 0 or NULL
-are not necessary.
 
+Casey Schaufler
+casey@schaufler-ca.com
