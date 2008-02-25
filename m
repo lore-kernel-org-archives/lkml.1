@@ -1,88 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754786AbYBYKjS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755146AbYBYKpY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754786AbYBYKjS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 Feb 2008 05:39:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753255AbYBYKjE
+	id S1755146AbYBYKpY (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 Feb 2008 05:45:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753960AbYBYKpM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 Feb 2008 05:39:04 -0500
-Received: from vs166246.vserver.de ([62.75.166.246]:44966 "EHLO
-	vs166246.vserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753121AbYBYKjB (ORCPT
+	Mon, 25 Feb 2008 05:45:12 -0500
+Received: from fxip-0047f.externet.hu ([88.209.222.127]:52130 "EHLO
+	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753762AbYBYKpL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 Feb 2008 05:39:01 -0500
-From: Michael Buesch <mb@bu3sch.de>
-To: "Alexey Zaytsev" <alexey.zaytsev@gmail.com>
-Subject: Re: bcm43xx regression in 2.6.24 (with patch)
-Date: Mon, 25 Feb 2008 11:38:24 +0100
-User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
-Cc: "Greg KH" <greg@kroah.com>, "Pekka J Enberg" <penberg@cs.helsinki.fi>,
-       "Ingo Molnar" <mingo@elte.hu>, "Alexey Zaytsev" <zaytsev.a@protei.ru>,
-       linux-kernel@vger.kernel.org,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "Linus Torvalds" <torvalds@linux-foundation.org>
-References: <47BEAF3B.3080809@protei.ru> <20080225064935.GA20997@kroah.com> <f19298770802250223m29f001f5obb8a5dff48df836a@mail.gmail.com>
-In-Reply-To: <f19298770802250223m29f001f5obb8a5dff48df836a@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200802251138.24930.mb@bu3sch.de>
+	Mon, 25 Feb 2008 05:45:11 -0500
+To: greg@kroah.com
+CC: miklos@szeredi.hu, akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       stable@kernel.org
+In-reply-to: <20080222231934.GA30703@kroah.com> (message from Greg KH on Fri,
+	22 Feb 2008 15:19:34 -0800)
+Subject: Re: [stable] [patch] fuse: fix permission checking
+References: <E1JPxjP-0004sQ-5O@pomaz-ex.szeredi.hu> <20080222231934.GA30703@kroah.com>
+Message-Id: <E1JTapR-00079g-QF@pomaz-ex.szeredi.hu>
+From: Miklos Szeredi <miklos@szeredi.hu>
+Date: Mon, 25 Feb 2008 11:45:01 +0100
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 25 February 2008 11:23:02 Alexey Zaytsev wrote:
-> On Mon, Feb 25, 2008 at 9:49 AM, Greg KH <greg@kroah.com> wrote:
-> >
-> > On Mon, Feb 25, 2008 at 08:16:17AM +0200, Pekka J Enberg wrote:
-> >  > Hi Michael,
-> >  >
-> >  > On Sun, 24 Feb 2008, Michael Buesch wrote:
-> >  > > > The ony way I see this was possible, you manually changed the
-> >  > > > module loading order, so that the b43xx module was loaded prior
-> >  > > > to the ssb and b44 modules. Right?
-> >  > >
-> >  > > Right. So "so I'm left with either no wifi or no ethenet" being wrong.
-> >  >
-> >  > Lets make this simple: it used to work before and now it doesn't.
-> >  > Therefore it's a regression that must be addressed. Period.
-> >
-> >  Isn't the resolution Michael is suggesting is, "use the different driver"?
-> >
+Hi Greg!
+
+> On Fri, Feb 15, 2008 at 11:23:47AM +0100, Miklos Szeredi wrote:
+> > This is for 2.6.25 and 2.6.24.y, but NOT for 2.6.23.y.
+> > 
+> > Thanks,
+> > Miklos
+> > ----
+> > 
+> > From: Miklos Szeredi <mszeredi@suse.cz>
+> > 
+> > I added a nasty local variable shadowing bug to fuse in 2.6.24, with
+> > the result, that the 'default_permissions' mount option is basically
+> > ignored.
 > 
-> The b43 driver from 2.6.24 does not work with my hardware. The one from
-> 2.6.25 seems to work, but 2.6.25 is far from being ready yet.
-> 
-> The only way you can get the old driver working in 2.6.24 is to
-> compile certain (completely unrelated for an outsider) drivers as
-> modules and play with the module loading order. I think this is a
-> bug, and it should be fixed in -stable.
+> When this goes into Linus's tree, can you let us know along with the git
+> commit id?
 
-It must first go into the 2.6.25 tree and then into -stable.
-And the patch must be considered to do The Right Thing (tm).
+It's now in Linus tree:
 
-> And for 2.6.25, I think the patch should also be included, as the
-> bcm43xx driver is still there.
-> 
-> Btw, what are we discussing? The real bcm43xx maintainer
-> (Larry Finger) reviewed the patch and agreet it should go
-> into 2.6.24-stable and 2.6.25 . Now we only have to wait for
-> John Linville and Jeff Garzik to pick it up, right? If someone
-> still thinks the patch should not go in, he should at least
-> add them to the CC list. ;)
+commit 1a823ac9ff09cbdf39201df37b7ede1f9395de83
 
-Heh, wait. Larry is neither the bcm43xx maintainer [1], nor does this
-code touch bcm43xx code. It does touch ssb and b43 code, which I
-am the maintainer of.
-Though, as I said, if somebody else is familiar with the code does really
-understand the patch and does ACK it (which Larry did), I'm probably
-OK with applying it. As long as I'm not bothered with any followup
-regressions caused by this. So if the one signing off the patch will
-handle all this, I'm fine with it.
-
-[1] bcm43xx is unmaintained. Larry used to be the maintainer until
-he dropped it a few months ago.
-
--- 
-Greetings Michael.
+Thanks,
+Miklos
