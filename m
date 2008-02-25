@@ -1,55 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757737AbYBYUZ6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758251AbYBYU0u@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757737AbYBYUZ6 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 Feb 2008 15:25:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754222AbYBYUZt
+	id S1758251AbYBYU0u (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 Feb 2008 15:26:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756124AbYBYU0n
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 Feb 2008 15:25:49 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:43126 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754132AbYBYUZs (ORCPT
+	Mon, 25 Feb 2008 15:26:43 -0500
+Received: from smtp1.linux-foundation.org ([207.189.120.13]:59018 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754222AbYBYU0m (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 Feb 2008 15:25:48 -0500
-Date: Mon, 25 Feb 2008 12:25:46 -0800
-From: Greg KH <greg@kroah.com>
-To: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [PCI] duplicate sysfs symbols getting registered in current git
-Message-ID: <20080225202546.GA8893@kroah.com>
-References: <Pine.LNX.4.64.0802182142240.11540@axis700.grange> <20080220063834.GA22708@kroah.com> <Pine.LNX.4.64.0802251341160.4430@axis700.grange> <Pine.LNX.4.64.0802251913380.19416@axis700.grange>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0802251913380.19416@axis700.grange>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+	Mon, 25 Feb 2008 15:26:42 -0500
+Date: Mon, 25 Feb 2008 12:14:40 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Gabriel C <nix.or.die@googlemail.com>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Gabriel C <crazy@frugalware.org>, Thomas Gleixner <tglx@linutronix.de>,
+       john stultz <johnstul@us.ibm.com>, "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: Clocksource tsc is always unstable with 2.6.25-* kernels and
+ CONFIG_NO_HZ=y on my box
+Message-Id: <20080225121440.32810c91.akpm@linux-foundation.org>
+In-Reply-To: <47C0BAD9.7030908@googlemail.com>
+References: <47C0BAD9.7030908@googlemail.com>
+X-Mailer: Sylpheed 2.4.7 (GTK+ 2.12.1; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Feb 25, 2008 at 07:15:57PM +0100, Guennadi Liakhovetski wrote:
-> On Mon, 25 Feb 2008, Guennadi Liakhovetski wrote:
+On Sun, 24 Feb 2008 01:31:21 +0100 Gabriel C <nix.or.die@googlemail.com> wrote:
+
+> Hi,
 > 
-> > On Tue, 19 Feb 2008, Greg KH wrote:
-> > 
-> > > On Mon, Feb 18, 2008 at 09:52:25PM +0100, Guennadi Liakhovetski wrote:
-> > > > Booting an x86 SMP PC with todays git-snapshot or just with 2.6.25-rc2 
-> > > > getting the following warnings (with a bit of context):
-> > > 
-> > > Can you try enabling CONFIG_DEBUG_KOBJECT and sending the output at boot
-> > > time from this?
-> > 
-> > dmesg output with CONFIG_LOG_BUF_SHIFT=19 sent privately to Greg as 
-> > unpacked, as it would have to be sent to the list, is 408K big. Will see 
-> > what Greg says.
+> I noticed tsc is always marked unstable on my box with 2.6.25* , 2.6.24 is fine.
 > 
-> Actually, the most annoying problem with post 2.6.24 kernels on this 
-> machine is, that the system doesn't power off or reboot any more. And 
-> seeing other reports, where the reason for not powering down was unfreed 
-> kobjects, maybe this is the problem here too?
+> ...
+> 
+> [    0.825760] ACPI: PCI Interrupt 0000:03:0e.0[A] -> GSI 22 (level, low) -> IRQ 22
+> [    0.805755] Switched to high resolution mode on CPU 1
+> [    0.794244] Switched to high resolution mode on CPU 2
+> [    0.766968] Switched to high resolution mode on CPU 3
+> [    1.083944] Switched to high resolution mode on CPU 0
+> [   15.388792] Clocksource tsc unstable (delta = 9373391604 ns)
+> [   15.714648] Time: acpi_pm clocksource has been installed.
+> 
+> ...
+> 
+> Booting nohz=off fixes that.
+> 
+> Another strange thing is when I try to boot that kernel with clocksource=acpi_pm it just hangs.
+> 
+> config is attached.
+> 
+> Please let me know if you need more infos / want me to try patches or anything else.
+> 
+> 
 
-If you have cpufreq enabled, that should solve this problem after the
-2.6.24-rc3 kernel release.  Have you tried that version?
-
-thanks,
-
-greg k-h
+I suppose we should consider this a regression.  If only because acpi_pm is
+slower.  But mainly because (afaik) this change was not intentional.
