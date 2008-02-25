@@ -1,91 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760479AbYBYXIQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757697AbYBYXSo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760479AbYBYXIQ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 Feb 2008 18:08:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753276AbYBYXIA
+	id S1757697AbYBYXSo (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 Feb 2008 18:18:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752064AbYBYXSe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 Feb 2008 18:08:00 -0500
-Received: from rgminet01.oracle.com ([148.87.113.118]:30550 "EHLO
-	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753260AbYBYXH7 (ORCPT
+	Mon, 25 Feb 2008 18:18:34 -0500
+Received: from ug-out-1314.google.com ([66.249.92.174]:14732 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751252AbYBYXSd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 Feb 2008 18:07:59 -0500
-Date: Mon, 25 Feb 2008 15:03:54 -0800
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: Randy Dunlap <randy.dunlap@oracle.com>, tglx <tglx@linutronix.de>,
-       akpm <akpm@linux-foundation.org>
-Cc: Avi Kivity <avi@qumranet.com>, mingo <mingo@redhat.com>,
-       Ingo Molnar <mingo@elte.hu>,
-       Toralf =?ISO-8859-1?Q?F=F6rster?= <toralf.foerster@gmx.de>,
-       kvm-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] [kvm-devel] build #365 issue for
- v2.6.25-rc2-342-g5d9c4a7 in ./arch/x86/kvm/kvm.ko
-Message-Id: <20080225150354.d66d2339.randy.dunlap@oracle.com>
-In-Reply-To: <20080220092008.3f3bd994.randy.dunlap@oracle.com>
-References: <200802201411.18026.toralf.foerster@gmx.de>
-	<47BC3121.8070902@qumranet.com>
-	<47BC3407.20307@qumranet.com>
-	<20080220092008.3f3bd994.randy.dunlap@oracle.com>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.4.7 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Mon, 25 Feb 2008 18:18:33 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=TXk6minLyjO8wthJBnSg7ZPLkMOgcVt5FOe7wRRrtKFLwLUS962KtfZeM64AjL3gceU9lbVcVfh8qBepTIWLwlqAUDgtccYS4XMhmeDlLJqBgLz2xTEsLVHsuBQUEfMhPQ8uu2dnMvtcJTyO0gzeEooO9NPomOXXBt0wNwwH9J8=
+Message-ID: <8f53421d0802251518p5959d820o7a1979cefb96210a@mail.gmail.com>
+Date: Tue, 26 Feb 2008 01:18:30 +0200
+From: "Michael S. Tsirkin" <m.s.tsirkin@gmail.com>
+To: "Alexey Starikovskiy" <astarikovskiy@suse.de>
+Subject: Re: new regression in 2.6.25-rc3: no keyboard/lid acpi events on thinkpad T61p
+Cc: "Andrew Morton" <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       "Len Brown" <len.brown@intel.com>, linux-acpi@vger.kernel.org
+In-Reply-To: <47C34246.2020705@suse.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+Content-Disposition: inline
+References: <8f53421d0802251119q470a79c1p31048ef136271f84@mail.gmail.com>
+	 <47C31A1E.7080305@suse.de>
+	 <8f53421d0802251239h6b872d94w677995789990e31b@mail.gmail.com>
+	 <47C32A1D.8030604@suse.de>
+	 <8f53421d0802251301g247506e9jb341b9012dac71d7@mail.gmail.com>
+	 <47C34246.2020705@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 20 Feb 2008 09:20:08 -0800 Randy Dunlap wrote:
+On Tue, Feb 26, 2008 at 12:33 AM, Alexey Starikovskiy
+<astarikovskiy@suse.de> wrote:
+>  > Attached is the acpidump output run under 2.6.23-rc3 + with reverted
+>  > 37f9b4c7c612fcbeb8fb6faddaef4ccdb5350145
+>  > (IOW - this is a working configuration).
+>  Thanks, you've got round 10100 bug number.
+>
+>  Please check if the following patch on top of Linus git tree helps.
+>
+>  Regards,
+>  Alex
 
-> On Wed, 20 Feb 2008 16:07:03 +0200 Avi Kivity wrote:
-> 
-> > > Looks like KVM conflicts with CONFIG_VOYAGER...
-> > >
-> > 
-> > Attached patch should fix.
-> > 
-> > Subject: x86: disable KVM on Voyager
-> > 
-> > Most classic Pentiums don't have hardware virtualization
-> > extension, and building kvm with voyager generates
-> > spurious failures.
-> > 
-> > Signed-off-by: Avi Kivity <avi@qumranet.com>
-> 
-> Might as well extend it for VISWS & NUMAQ:
+I did some light testing, but yes, this seems to help.
+With this patch applied on top of 2.6.25-rc3, I get keyboard acpi events again,
+so that I can suspend by clicking Fn+F4.
 
-Can we get this merged soon-ish?
-
-> ---
-> From: Avi Kivity <avi@qumranet.com>
-> 
-> Most classic Pentiums don't have hardware virtualization extension,
-> and building kvm with Voyager, Visual Workstation, or NUMAQ
-> generates spurious failures.
-> 
-> Signed-off-by: Avi Kivity <avi@qumranet.com>
-> Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
-> ---
->  arch/x86/Kconfig |    2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
-> 
-> --- linux-2.6.25-rc2-git4.orig/arch/x86/Kconfig
-> +++ linux-2.6.25-rc2-git4/arch/x86/Kconfig
-> @@ -21,7 +21,7 @@ config X86
->  	select HAVE_IDE
->  	select HAVE_OPROFILE
->  	select HAVE_KPROBES
-> -	select HAVE_KVM
-> +	select HAVE_KVM if ((X86_32 && !X86_VOYAGER && !X86_VISWS && !X86_NUMAQ) || X86_64)
->  
->  
->  config GENERIC_LOCKBREAK
-> --
-
-
----
-~Randy
+-- 
+MST
