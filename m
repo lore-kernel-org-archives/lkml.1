@@ -1,76 +1,141 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754829AbYBYNNQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755109AbYBYNSV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754829AbYBYNNQ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 Feb 2008 08:13:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751267AbYBYNNB
+	id S1755109AbYBYNSV (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 Feb 2008 08:18:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753784AbYBYNSM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 Feb 2008 08:13:01 -0500
-Received: from smtp6.pp.htv.fi ([213.243.153.40]:60787 "EHLO smtp6.pp.htv.fi"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751005AbYBYNNA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 Feb 2008 08:13:00 -0500
-Date: Mon, 25 Feb 2008 15:12:02 +0200
-From: Adrian Bunk <bunk@kernel.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Florian Fainelli <florian.fainelli@telecomint.eu>,
-       linux-kernel@vger.kernel.org, Sam Ravnborg <sam@ravnborg.org>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: [PATCH] Add rdc321x defconfig file
-Message-ID: <20080225131202.GF32450@cs181133002.pp.htv.fi>
-References: <200802251058.30188.florian.fainelli@telecomint.eu> <20080225101433.GA30685@elte.hu> <20080225110858.GA32450@cs181133002.pp.htv.fi> <20080225111707.GA7062@elte.hu> <20080225113235.GC32450@cs181133002.pp.htv.fi> <20080225115022.GA16376@elte.hu> <20080225122526.GE32450@cs181133002.pp.htv.fi> <20080225125707.GA27202@elte.hu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <20080225125707.GA27202@elte.hu>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+	Mon, 25 Feb 2008 08:18:12 -0500
+Received: from bombadil.infradead.org ([18.85.46.34]:54855 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753562AbYBYNSL (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 25 Feb 2008 08:18:11 -0500
+Subject: Re: [patch 2.6.25-rc3] lockdep:  add spin_lock_irq_nested()
+From: Peter Zijlstra <peterz@infradead.org>
+To: David Brownell <david-b@pacbell.net>
+Cc: mingo@redhat.com, linux-kernel@vger.kernel.org
+In-Reply-To: <20080225112102.3B6E928E368@adsl-69-226-248-13.dsl.pltn13.pacbell.net>
+References: <200801181429.00485.david-b@pacbell.net>
+	 <1200904299.6341.2.camel@lappy> <200801211022.36312.david-b@pacbell.net>
+	 <200802242033.52208.david-b@pacbell.net> <1203934828.6242.140.camel@lappy>
+	 <20080225112102.3B6E928E368@adsl-69-226-248-13.dsl.pltn13.pacbell.net>
+Content-Type: text/plain
+Date: Mon, 25 Feb 2008 14:17:43 +0100
+Message-Id: <1203945463.6242.162.camel@lappy>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.21.90 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Feb 25, 2008 at 01:57:07PM +0100, Ingo Molnar wrote:
+
+On Mon, 2008-02-25 at 03:21 -0800, David Brownell wrote:
+> > > > > >     ==> LOCKDEP feature is evidently missing:
+> > > > > >             spin_lock_irq_nested(lock_ptr, lock_class)
+> > > > > 
+> > > > > This rant is more lines than adding the API :-/ the reason for it not
+> > > > > being there is simple, it wasn't needed up until now.
+> > > > 
+> > > > I suspected that was the case, but for all I knew there was some
+> > > > religious objection. 
+> > > 
+> > > Does this look about right?  Or, I suppose it could just call
+> > > the _spin_lock_irqsave_nested() routine and discard the result.
+> >
+> > Before I look at the code, and with a notice that I haven't had my
+> > morning juice yet...
+> >
+> > It seems to me a spin_lock_irq_nested() thing is redundant, because:
+> >
+> > The lock must obviously be held hardirq safe and nested implies one is
+> > already held.
 > 
-> * Adrian Bunk <bunk@kernel.org> wrote:
+> I thought the way to use the *_nested() calls was "consistently"!
+
+Very much depends on your view of consistent :-)
+
+> That is, if one instance of a lock access uses it, they all should,
+> since that's the only way lockdep learns about equivalence classes.
+> Also, locks shouldn't move between those equivalence classes... so
+> the raw lockdep data stays correct.
+
+Ah, see, you're missing a detail (see below for the full story). Its the
+irq state that must be consistent. So if at any one point you take the
+lock in an irq safe context, you must always take it irq safe.
+
+> The IRQ framework uses spin_lock_irq() in only one place that I saw:
+> in kernel/irq/autoprobe.c for the probe_irq_{on,off,mask}() calls.
+>
+> Those calls will grab locks at their "top level", and then the
+> irqchip methods they call might need to grab locks for other irqs.
+> Potential example:  chip->startup() and chip->shutdown() could
+> need to ensure a *parent* controller starts/stops, and that should
+> involve mutual exclusion using the parent's irq lock (as well as
+> the child's).  So the chip and its parent should be in different
+> lock classes, else lockdep will wrongly warn of recursion.
+
+Quite, but we must also take note of the irq state.
+
+> >	Hence the context is already hardirq safe thus using
+> > spin_lock_irq/spin_unlock_irq is wrong because it will enable irqs and
+> > destroy the irqsafe guarantee for the parent lock.
 > 
-> > > the existing 32-bit and 64-bit defconfigs should be enough for that. 
-> > > For better/full coverage, randconfig should be used.
-> > 
-> > The two big problems with randconfigs are:
-> > - either you build each .config both with and without your patch or you
-> >   have to manually check which of the failures are caused by your patch
-> > - you require at least an order of magnitude more builds for having the
-> >   same amount of common configurations covered
-> > 
-> > And any solution that only works on x86 (e.g. based on the expectation 
-> > that all randconfig configurations normally build) is of zero value 
-> > for me since x86 is only one out of 23 architectures.
+> That's not how the autoprobe() stuff works.  The other calls in
+> the genirq framework don't use the *_irq() variants though, so
+> your intuition is right there.  (Only the autoprobe paths had
+> the FIXME comments in that patch I sent earlier, related to the
+> lack of the $SUBJECT primitive.)
+
+Right, which is where I gleaned your usage from..
+
+> > Obviously I'm missing something here.. otherwise you wouldn't need it.
+> >
+> > As I'm very much not familiar with the IRQ code, could you spell it out
+> > to me?
 > 
-> so if an arguably sane testing method "only" works on x86 then the right 
-> solution is to fix the other architectures to be sanely testable too. 
+> The probe_irq_*() calls are made from task context, not hardirq
+> context, but they access the same locks involved in IRQ management
+> and processing.  So either they need to pass the same lock class
+> annodations to lockdep, or there's something that's unusually
+> counter-intuitive going on with respect to those annotations in
+> simple tree data structures.
 
-If you want to fix them I won't stop you...
+Ah, you can play tricks here :-) All you need to ensure are consisent
+class uses. So if your normal usage is 0->1->2->3 etc.. all you need to
+ensure is that the reverse never happens.
 
-Until they are fixed I'm staying at using the defconfigs.
+Also, have you looked at explicit lock_class_key usage per chip? That
+way you can avoid using the _nested annotation. You can set a class on a
+lock right after spin_lock_init() using lockdep_set_class*().
 
-But then there's still the other problem that at least I simply don't 
-want to wait two weeks for having the test compiles of a patch finish.
 
-> I've seen architectures that were build-tested for the _first time_ at 
-> around 2.6.24-rc8...
+Look at it this way:
 
-That can't be true.
+ spin_lock_irq()   := local_irq_disable(); spin_lock();
+ spin_unlock_irq() := spin_unlock(); local_irq_enable();
 
-Can you name what architectures you think of and why you think noone 
-tried to compile them before?
+ spin_lock_irq_nested() : local_irq_disable(); spin_lock_nested();
 
-> 	Ingo
 
-cu
-Adrian
+ spin_lock_irq(&parent_desc->lock);	local_irq_disable();
+					spin_lock(&parent_desc->lock);
 
--- 
+ spin_lock_irq_nested(&desc->lock, 1);	local_irq_disable();
+ 					spin_lock_nested(&desc->lock, 1)
 
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
+ spin_unlock_irq(&desc->lock);		spin_unlock(&desc->lock);
+					local_irq_enable(); <--- BUG!
+
+ spin_unlock_irq(&parent_desc->lock);	spin_unlock(&parent_desc->lock);
+					local_irq_enable();
+
+
+At the BUG site lockdep will warn because parent_desc->lock is still
+held as hardirq-safe lock, but the context is hardirq-unsafe.
+
+It will become an actual deadlock if at that point an IRQ happens and
+tries to acquire parent_desc->lock.
+
+The safe approach is using spin_lock_irqsave{,_nested}().
 
