@@ -1,85 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760091AbYBYXVr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760107AbYBYXXT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760091AbYBYXVr (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 Feb 2008 18:21:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754664AbYBYXVj
+	id S1760107AbYBYXXT (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 Feb 2008 18:23:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753753AbYBYXXL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 Feb 2008 18:21:39 -0500
-Received: from 1wt.eu ([62.212.114.60]:2130 "EHLO 1wt.eu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754209AbYBYXVi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 Feb 2008 18:21:38 -0500
-Date: Tue, 26 Feb 2008 00:21:33 +0100
-From: Willy Tarreau <w@1wt.eu>
-To: Oleg Verych <olecom@gmail.com>
-Cc: Steve Brokenshire <sbrokenshire@xestia.co.uk>,
-       linux-kernel@vger.kernel.org, linux-kbuild@vger.kernel.org
-Subject: Re: [PATCH] Compress kernel modules on installation.
-Message-ID: <20080225232133.GZ8953@1wt.eu>
-References: <20080225214209.a3f79327.sbrokenshire@xestia.co.uk> <8499950a0802251417l7a2fff25q7fa57fce57369b1b@mail.gmail.com> <20080225221953.GX8953@1wt.eu> <8499950a0802251432q1e59e542nfa06f66becef63aa@mail.gmail.com>
+	Mon, 25 Feb 2008 18:23:11 -0500
+Received: from smtp1.linux-foundation.org ([207.189.120.13]:56449 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753788AbYBYXXJ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 25 Feb 2008 18:23:09 -0500
+Date: Mon, 25 Feb 2008 15:20:50 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Anders Henke <anders.henke@1und1.de>
+Cc: linux-kernel@vger.kernel.org, dm-devel@redhat.com
+Subject: Re: device mapper not reporting no-barrier-support?
+Message-Id: <20080225152050.94788622.akpm@linux-foundation.org>
+In-Reply-To: <20080225132615.GA21990@1und1.de>
+References: <20080225132615.GA21990@1und1.de>
+X-Mailer: Sylpheed 2.4.7 (GTK+ 2.12.1; x86_64-redhat-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <8499950a0802251432q1e59e542nfa06f66becef63aa@mail.gmail.com>
-User-Agent: Mutt/1.5.11
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Feb 25, 2008 at 11:32:44PM +0100, Oleg Verych wrote:
-> On Mon, Feb 25, 2008 at 11:19 PM, Willy Tarreau:
-> >
-> > On Mon, Feb 25, 2008 at 11:17:23PM +0100, Oleg Verych wrote:
-> >  > On Mon, Feb 25, 2008 at 10:42 PM, Steve Brokenshire:
-> >  > > Hi,
-> >  > >
-> >  > >  (I've sent this to the linux-kbuild and linux-kernel lists as this
-> >  > >  patch modifies the Makefile.modinst file. I also don't subscribe to the
-> >  > >  linux-kbuild and linux-kernel mailing lists so can I have any replies
-> >  > >  CC'ed to me please)
-> >  >
-> >  > And what if i like bzip2 (yea sometimes better) or 7zip (better if !EMBEDDED)
-> >  > or whatever?
-> >  >
-> >  > It's pure user/distro question.
-> >
-> >  not exactly, as only gzip is supported by module-init-tools. However,
-> >  if you come up with a patch to implement lzma or equivalent for
-> >  module-init-tools, it may be useful.
+On Mon, 25 Feb 2008 14:26:15 +0100 Anders Henke <anders.henke@1und1.de> wrote:
+
+> Hi,
 > 
-> Oh, come on! It's userspace,
+> I'm currently stuck between Kernel LVM and DRBD, as I'm using Kernel
+> 2.6.24.2 with DRBD 8.2.5 on top of an LVM2 device (LV).
+> 
+> -LVM2/device mapper doesn't support write barriers
+> -DRBD uses blkdev_issue_flush() to flush its metadata to disk.
+>  On a no-barrier-device, DRBD should receive EOPNOTSUPP, but
+>  it really does receive an EIO. Promptly, DRBD gives the
+>  error message "drbd0: local disk flush failed with status -5".
+> 
+> The physical disk (in LVM speak) is a RAID1 on a 3ware 9650SE-2LP
+> controller; the driver 3w-9xxx supports barriers and after moving my D
+> RBD device from the LV to a single partition on the same RAID1, the 
+> error messages from DRBD vanished.
+> 
+> I've posted a lengty summary of my findings to
+> 
+> http://lists.linbit.com/pipermail/drbd-user/2008-February/008665.html
+> 
+> ... where Lars Ellenberg from DRBD basically responded in
+> 
+> http://lists.linbit.com/pipermail/drbd-user/2008-February/008666.html
+> 
+> ... that DRBD does catch the EOPNOTSUPP for blkdev_issue_flush and
+> BIO_RW_BARRIER, but the lvm implementation of blkdev_issue_flush in
+> 2.6.24.2 aparently does return EIO for blkdev_issue_flush.
+> 
+> So simply the question: how should a top-layer driver check wether a lower
+> device does support barriers? md-raid does check this way differently than
+> e.g. XFS does, while DRBD also adds a third way to check this.
+> Or is this "merely" a bug in drivers/md/dm.c?
+> 
 
-and your point is ... ?
+(cc dm-devel)
 
-> i have scripts managing existence/compression
-> on per-file basis on my comp.
-
-I'm definitely happy for you.
-
-> If most distros just drop thousands of useless
-> (sometimes compressed) stuff to your harddisk, it's not kernel's or
-> modules-init-tools' problem.
-
-who said there was a problem ?
-
-> Also having compressed over compressed stuff, like on initramfs booting image
-> with such modules (if by defaults) may cause bigger file, more CPU overhead.
-
-Already known and obvious, thanks. But that's unrelated to the initial post.
-
-> It is userspace and all that policy stuff, etc., etc.
-
-A makefile is userspace too. I still fail to see your point.
- 
-> Want to make a minidistro on lkml? Well, i see klibc working fine already.
-
-Huh? drinking before posting does no good it seems... :-)
-
-Steve proposed a simple patch to ease modules compression during the
-build process. Obviously it's userspace (as all the build process,
-mind you). And there's nothing dirty nor funny there. Maybe you just
-don't understand what it's useful for, but in this case it simply means
-you don't need this feature :-)
-
-Willy
-
+I'd say it's a DM bug.  Probably a hard-to-fix one though.
