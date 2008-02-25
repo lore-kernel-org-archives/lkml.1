@@ -1,108 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760606AbYBYXUu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760091AbYBYXVr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760606AbYBYXUu (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 Feb 2008 18:20:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754077AbYBYXUg
+	id S1760091AbYBYXVr (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 Feb 2008 18:21:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754664AbYBYXVj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 Feb 2008 18:20:36 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:35420 "EHLO mx1.redhat.com"
+	Mon, 25 Feb 2008 18:21:39 -0500
+Received: from 1wt.eu ([62.212.114.60]:2130 "EHLO 1wt.eu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758700AbYBYXUe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 Feb 2008 18:20:34 -0500
-Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
-	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
-	Kingdom.
-	Registered in England and Wales under Company Registration No. 3798903
-From: David Howells <dhowells@redhat.com>
-In-Reply-To: <200802251401.16413.phillips@phunq.net>
-References: <200802251401.16413.phillips@phunq.net> <28196.1203605703@redhat.com> <20080220160557.4715.66608.stgit@warthog.procyon.org.uk> <17916.1203636833@redhat.com>
-To: Daniel Phillips <phillips@phunq.net>
-Cc: dhowells@redhat.com, Trond.Myklebust@netapp.com, chuck.lever@oracle.com,
-       casey@schaufler-ca.com, nfsv4@linux-nfs.org,
-       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       selinux@tycho.nsa.gov, linux-security-module@vger.kernel.org
-Subject: Re: [PATCH 00/37] Permit filesystem local caching
-X-Mailer: MH-E 8.0.3+cvs; nmh 1.2-20070115cvs; GNU Emacs 23.0.50
-Date: Mon, 25 Feb 2008 23:19:22 +0000
-Message-ID: <22888.1203981562@redhat.com>
+	id S1754209AbYBYXVi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 25 Feb 2008 18:21:38 -0500
+Date: Tue, 26 Feb 2008 00:21:33 +0100
+From: Willy Tarreau <w@1wt.eu>
+To: Oleg Verych <olecom@gmail.com>
+Cc: Steve Brokenshire <sbrokenshire@xestia.co.uk>,
+       linux-kernel@vger.kernel.org, linux-kbuild@vger.kernel.org
+Subject: Re: [PATCH] Compress kernel modules on installation.
+Message-ID: <20080225232133.GZ8953@1wt.eu>
+References: <20080225214209.a3f79327.sbrokenshire@xestia.co.uk> <8499950a0802251417l7a2fff25q7fa57fce57369b1b@mail.gmail.com> <20080225221953.GX8953@1wt.eu> <8499950a0802251432q1e59e542nfa06f66becef63aa@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <8499950a0802251432q1e59e542nfa06f66becef63aa@mail.gmail.com>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, Feb 25, 2008 at 11:32:44PM +0100, Oleg Verych wrote:
+> On Mon, Feb 25, 2008 at 11:19 PM, Willy Tarreau:
+> >
+> > On Mon, Feb 25, 2008 at 11:17:23PM +0100, Oleg Verych wrote:
+> >  > On Mon, Feb 25, 2008 at 10:42 PM, Steve Brokenshire:
+> >  > > Hi,
+> >  > >
+> >  > >  (I've sent this to the linux-kbuild and linux-kernel lists as this
+> >  > >  patch modifies the Makefile.modinst file. I also don't subscribe to the
+> >  > >  linux-kbuild and linux-kernel mailing lists so can I have any replies
+> >  > >  CC'ed to me please)
+> >  >
+> >  > And what if i like bzip2 (yea sometimes better) or 7zip (better if !EMBEDDED)
+> >  > or whatever?
+> >  >
+> >  > It's pure user/distro question.
+> >
+> >  not exactly, as only gzip is supported by module-init-tools. However,
+> >  if you come up with a patch to implement lzma or equivalent for
+> >  module-init-tools, it may be useful.
+> 
+> Oh, come on! It's userspace,
 
-Daniel Phillips <phillips@phunq.net> wrote:
+and your point is ... ?
 
-> This factor of four (even worse on XFS, not quite as bad on Ext3) is
-> worth ruminating upon.  Is all of the difference explained by avoiding
-> seeks on the server, which has the files in memory?
+> i have scripts managing existence/compression
+> on per-file basis on my comp.
 
-Here are some more stats for you to consider:
+I'm definitely happy for you.
 
- (1) Copy the data across the network to a fresh Ext3 fs on the same partition
-     I was using for the cache:
+> If most distros just drop thousands of useless
+> (sometimes compressed) stuff to your harddisk, it's not kernel's or
+> modules-init-tools' problem.
 
-	[root@andromeda ~]# time cp -a /warthog/aaa /var/fscache
-	real    0m39.052s
-	user    0m0.368s
-	sys     0m15.229s
+who said there was a problem ?
 
- (2) Reboot and read back the files just written into Ext3 on the local disk:
+> Also having compressed over compressed stuff, like on initramfs booting image
+> with such modules (if by defaults) may cause bigger file, more CPU overhead.
 
-	[root@andromeda ~]# time tar cf - /var/fscache/aaa >/dev/zero
-	real    0m40.574s
-	user    0m0.164s
-	sys     0m3.512s
+Already known and obvious, thanks. But that's unrelated to the initial post.
 
- (3) Run through the cache population process, and then run a tar directly on
-     cachefiles's cache directly after a reboot:
+> It is userspace and all that policy stuff, etc., etc.
 
-	[root@andromeda ~]# time tar cf - /var/fscache/cache >/dev/zero
-	real    4m53.104s
-	user    0m0.192s
-	sys     0m4.240s
+A makefile is userspace too. I still fail to see your point.
+ 
+> Want to make a minidistro on lkml? Well, i see klibc working fine already.
 
-So I guess there's a problem in cachefiles's efficiency - possibly due to the
-fact that it tries to be fully asynchronous.
+Huh? drinking before posting does no good it seems... :-)
 
-In case (1) this is very similar to the time for a read through a completely
-cold cache (37.497s).
+Steve proposed a simple patch to ease modules compression during the
+build process. Obviously it's userspace (as all the build process,
+mind you). And there's nothing dirty nor funny there. Maybe you just
+don't understand what it's useful for, but in this case it simply means
+you don't need this feature :-)
 
-In case (2) this is comparable to cachefiles with a cache warmed prior to a
-reboot (1m54.350s); in this case, however, cachefiles is doing some extra work:
+Willy
 
- (a) It's doing a lookup on the server for each file, in addition to the
-     lookups on the disk.  However, just doing a tar from plain NFS, the
-     command completes in 22.330s.
-
- (b) It's reading an xattr per object for cache coherency management.
-
- (c) As the cache knows nothing of directories, files, etc., it lays its
-     directory subtree out in a way that suits it.  File lookup keys are
-     turned into filenames.  This may result in a less efficient arrangement
-     in the cache than the original data, especially as directories may become
-     very large, so Ext3 may be doing some extra work.
-
-In case (3), this perhaps suggests that cachefiles's directory layout may be
-part of the problem.  Running the following:
-
-	ls -ldSr `find . -type d`
-
-in /var/fscache/cache shows that the directories are either 4096 bytes in size
-(158 instances) or 12288 bytes in size (105 instances), for a total of 263
-directories.  There are 19255 files.
-
-Running that ls command in /warthog/aaa shows 1185 directories, all but three
-of them 4096 bytes in size; two are 12288 bytes and one is 20480 bytes in size
-(include/linux/ unsurprisingly).  There are 19258 files, three of which are
-hardlinks to other files in the tree.
-
-> This could be easily tested by running a test against a server that is the
-> same as the client, and does not have the files in memory.  If local access
-> is still slower than network then there is a real issue with cache
-> efficiency.
-
-My server is also my desktop machine.  The only way to guarantee that the
-memory is scrubbed is to reboot it:-(  I'll look at setting up one of my other
-machines as an NFS server.
-
-David
