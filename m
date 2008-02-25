@@ -1,91 +1,138 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759123AbYBYWdt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758185AbYBYWeX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759123AbYBYWdt (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 Feb 2008 17:33:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757915AbYBYWdl
+	id S1758185AbYBYWeX (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 Feb 2008 17:34:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759663AbYBYWeB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 Feb 2008 17:33:41 -0500
-Received: from smtp124.sbc.mail.sp1.yahoo.com ([69.147.64.97]:38175 "HELO
-	smtp124.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1757481AbYBYWdk (ORCPT
+	Mon, 25 Feb 2008 17:34:01 -0500
+Received: from charybdis-ext.suse.de ([195.135.221.2]:53922 "EHLO
+	emea5-mh.id5.novell.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1759519AbYBYWeA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 Feb 2008 17:33:40 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:Received:Date:From:To:Subject:Cc:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-Id;
-  b=6AXsOGdkbNxo1byUAleU3Sjrdl87/mCjtH1Hi1VscvQ2cny3QDQ8XrbMBDGaZN2dIkM+sgr/3JthHxJGLYLlW5Tx+1DWPme7odLi6J831EcJYwHCMzs/RoUX8flZM3mTlbkspkayTDlqibiC8XyYuuUcebLLU8K/g4/P2E8ZpHk=  ;
-X-YMail-OSG: KRDt5JcVM1mnjIb8K0JuYS8Zoo_kh1X7a_jjFa6uKeCfCEnpuWCcM5.tv0EyLOYRuszKtfnXNQ--
-X-Yahoo-Newman-Property: ymail-3
-Date: Mon, 25 Feb 2008 14:33:38 -0800
-From: David Brownell <david-b@pacbell.net>
-To: peterz@infradead.org
-Subject: Re: [patch 2.6.25-rc3] lockdep:  add spin_lock_irq_nested()
-Cc: mingo@redhat.com, linux-kernel@vger.kernel.org
+	Mon, 25 Feb 2008 17:34:00 -0500
+Message-ID: <47C34246.2020705@suse.de>
+Date: Tue, 26 Feb 2008 01:33:42 +0300
+From: Alexey Starikovskiy <astarikovskiy@suse.de>
+User-Agent: Thunderbird 2.0.0.6 (X11/20071022)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-Id: <20080225223338.9602E25E979@adsl-69-226-248-13.dsl.pltn13.pacbell.net>
+To: "Michael S. Tsirkin" <m.s.tsirkin@gmail.com>
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Len Brown <len.brown@intel.com>, linux-acpi@vger.kernel.org
+Subject: Re: new regression in 2.6.25-rc3: no keyboard/lid acpi events on
+ thinkpad T61p
+References: <8f53421d0802251119q470a79c1p31048ef136271f84@mail.gmail.com>	 <47C31A1E.7080305@suse.de>	 <8f53421d0802251239h6b872d94w677995789990e31b@mail.gmail.com>	 <47C32A1D.8030604@suse.de> <8f53421d0802251301g247506e9jb341b9012dac71d7@mail.gmail.com>
+In-Reply-To: <8f53421d0802251301g247506e9jb341b9012dac71d7@mail.gmail.com>
+Content-Type: multipart/mixed;
+ boundary="------------030109050904080804010404"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> So I'm think that the reason this only _changes_ the false
-> recursion notification ...
+This is a multi-part message in MIME format.
+--------------030109050904080804010404
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 
-Whoops, it's because of the following typo:
+Michael S. Tsirkin wrote:
+> On Mon, Feb 25, 2008 at 10:50 PM, Alexey Starikovskiy
+> <astarikovskiy@suse.de> wrote:
+>> Michael S. Tsirkin wrote:
+>>  > Did you guys stop accepting reports by mail?
+>>  > I hope not.
+>>  It is easier to track bug information in bugzilla.
+>>  If you for some reason do not wish to create a bug report,
+>>  I can do it for you. You only need to provide acpidump.
+> 
+> Great.
+> 
+>>  >> and attach acpidump?
+>>  >
+>>  > I'll see if I can get acpidump output - in which state do you want it?
+>>  > Right after boot on the broken kernel?
+>>  acpidump output does not change over time, you could get it even with some other kernel.
+>>
+>>
+> 
+> Attached is the acpidump output run under 2.6.23-rc3 + with reverted
+> 37f9b4c7c612fcbeb8fb6faddaef4ccdb5350145
+> (IOW - this is a working configuration).
+Thanks, you've got round 10100 bug number.
 
-> --- a/arch/arm/plat-omap/gpio.c	2008-02-24 19:02:32.000000000 -0800
-> +++ b/arch/arm/plat-omap/gpio.c	2008-02-25 10:54:29.000000000 -0800
-> @@ -1332,6 +1332,28 @@ static struct clk *gpio_fclks[OMAP34XX_N
->  static struct clk *gpio_iclks[OMAP34XX_NR_GPIOS];
->  #endif
->  
-> +#ifdef CONFIG_LOCKDEP
-> +
-> +/* tell lockdep that this IRQ's locks and its parent's locks are in
-> + * different categories, so that it won't detect false recursion.
-> + */
-> +static struct lock_class_key gpio_lock_class;
-> +
-> +static inline void mark_gpio_locking(unsigned gpio_irq)
-> +{
-> +	lockdep_set_class(&irq_desc[gpio_irq].lock, &gpio_lock_class);
-> +}
-> +
-> +#else
-> +
-> +static inline void mark_gpio_locking(unsigned gpio_irq)
-> +{
-> +	/* NOP */
-> +}
-> +
-> +#endif
-> +
-> +
->  static int __init _omap_gpio_init(void)
->  {
->  	int i;
-> @@ -1532,6 +1554,7 @@ static int __init _omap_gpio_init(void)
->  				set_irq_chip(j, &gpio_irq_chip);
->  			set_irq_handler(j, handle_simple_irq);
->  			set_irq_flags(j, IRQF_VALID);
-> +			mark_gpio_locking(i);
+Please check if the following patch on top of Linus git tree helps.
 
-should be		mark_gpio_locking(j).
+Regards,
+Alex 
 
-That's an off-by-one error in ASCII or QWERTY (adjacency), and
-in terms of typefaces it's a few pixels.  Sigh.
-
-Since that seems to behave, I'll send along a couple patches
-like this ... unless you say this isn't really, after all, the
-right way to address this problem.  Note that neither IRQ has
-ever been triggered at this point ... I'll move the marking up
-a bit to ensure the lock has never been taken either.
-
-- Dave
+> 
+> HTH,
+> MST
+> 
 
 
->  		}
->  		set_irq_chained_handler(bank->irq, gpio_irq_handler);
->  		set_irq_data(bank->irq, bank);
->
+--------------030109050904080804010404
+Content-Type: text/x-patch;
+ name="ec-x.patch"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="ec-x.patch"
+
+ACPI: EC: fix regression
+
+From: Alexey Starikovskiy <astarikovskiy@suse.de>
+
+
+---
+
+ drivers/acpi/ec.c |   18 +++++++++++-------
+ 1 files changed, 11 insertions(+), 7 deletions(-)
+
+diff --git a/drivers/acpi/ec.c b/drivers/acpi/ec.c
+index caf873c..d6f9956 100644
+--- a/drivers/acpi/ec.c
++++ b/drivers/acpi/ec.c
+@@ -129,7 +129,8 @@ static struct acpi_ec {
+ 	struct mutex lock;
+ 	wait_queue_head_t wait;
+ 	struct list_head list;
+-	u8 handlers_installed;
++	u8 handlers_installed:1;
++	u8 from_ecdt:1;
+ } *boot_ec, *first_ec;
+ 
+ /* --------------------------------------------------------------------------
+@@ -772,16 +773,18 @@ static int acpi_ec_add(struct acpi_device *device)
+ 
+ 	/* Check for boot EC */
+ 	if (boot_ec) {
+-		if (boot_ec->handle == device->handle) {
+-			/* Pre-loaded EC from DSDT, just move pointer */
+-			ec = boot_ec;
+-			boot_ec = NULL;
+-			goto end;
+-		} else if (boot_ec->handle == ACPI_ROOT_OBJECT) {
++		if (boot_ec->from_ecdt &&
++		    (boot_ec->handle == device->handle ||
++		     boot_ec->handle == ACPI_ROOT_OBJECT)) {
+ 			/* ECDT-based EC, time to shut it down */
+ 			ec_remove_handlers(boot_ec);
+ 			kfree(boot_ec);
+ 			first_ec = boot_ec = NULL;
++		} else if (boot_ec->handle == device->handle) {
++			/* Pre-loaded EC from DSDT, just move pointer */
++			ec = boot_ec;
++			boot_ec = NULL;
++			goto end;
+ 		}
+ 	}
+ 
+@@ -943,6 +946,7 @@ int __init acpi_ec_ecdt_probe(void)
+ 		boot_ec->command_addr = ecdt_ptr->control.address;
+ 		boot_ec->data_addr = ecdt_ptr->data.address;
+ 		boot_ec->gpe = ecdt_ptr->gpe;
++		boot_ec->from_ecdt = 1;
+ 		if (ACPI_FAILURE(acpi_get_handle(NULL, ecdt_ptr->id,
+ 				&boot_ec->handle))) {
+ 			pr_info("Failed to locate handle for boot EC\n");
+
+--------------030109050904080804010404--
