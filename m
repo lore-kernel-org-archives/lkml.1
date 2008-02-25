@@ -1,60 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755046AbYBYLz1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756126AbYBYL4Q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755046AbYBYLz1 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 Feb 2008 06:55:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753308AbYBYLzS
+	id S1756126AbYBYL4Q (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 Feb 2008 06:56:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754088AbYBYL4A
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 Feb 2008 06:55:18 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:54093 "EHLO mx3.mail.elte.hu"
+	Mon, 25 Feb 2008 06:56:00 -0500
+Received: from ping.pong.ch ([212.103.71.101]:42348 "EHLO ping.pong.ch"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753099AbYBYLzQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 Feb 2008 06:55:16 -0500
-Date: Mon, 25 Feb 2008 12:54:48 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Adrian Bunk <bunk@kernel.org>
-Cc: Florian Fainelli <florian.fainelli@telecomint.eu>,
-       linux-kernel@vger.kernel.org, Sam Ravnborg <sam@ravnborg.org>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: [PATCH] Add rdc321x defconfig file
-Message-ID: <20080225115448.GB16376@elte.hu>
-References: <200802251058.30188.florian.fainelli@telecomint.eu> <20080225105110.GA5648@elte.hu> <20080225111733.GB32450@cs181133002.pp.htv.fi> <200802251227.37435.florian.fainelli@telecomint.eu> <20080225114547.GD32450@cs181133002.pp.htv.fi>
+	id S1753308AbYBYLz7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 25 Feb 2008 06:55:59 -0500
+X-Greylist: delayed 1752 seconds by postgrey-1.27 at vger.kernel.org; Mon, 25 Feb 2008 06:55:59 EST
+Date: Mon, 25 Feb 2008 12:23:10 +0100
+From: Gaudenz Steinlin <gaudenz@soziologie.ch>
+To: xfs-masters@oss.sgi.com
+Cc: xfs@oss.sgi.com, johannes@sipsolutions.net, linux-kernel@vger.kernel.org
+Subject: filesystem corruption on xfs after 2.6.25-rc1 (bisected, powerpc
+	related?)
+Message-ID: <20080225112310.GA5516@soziologie.ch>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20080225114547.GD32450@cs181133002.pp.htv.fi>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi
 
-* Adrian Bunk <bunk@kernel.org> wrote:
+Since upgrading to 2.6.25-rc1 I see filesystem corruption on my XFS
+filesystem. I can reproduce this by doing "git reset --hard v2.6.25-rc1"
+on a git checkout which is on some other revision. Git outputs strange
+error messages (like file xxx is a directory when xxx really is a file)
+and sometimes the filesystem "hangs" (I can no longer do any operations
+on it even from another shell). If I reboot with a working kernel and
+check the filesystem xfs_check reports many errors. I also see the
+problem when doing other (not related to git) operations on the
+filesystem. Git reset is just the easiest way to reproduce it.
 
-> On Mon, Feb 25, 2008 at 12:27:34PM +0100, Florian Fainelli wrote:
-> > Le lundi 25 février 2008, Adrian Bunk a écrit :
-> > > Booting it might fine, but CLOCK_TICK_RATE will be wrong...
-> > 
-> > PIT_TICK_RATE is overriden specificaly for R321x in 
-> > include/asm-x86/timex.h, just like for AMD Elan.
-> 
-> Not when you try CONFIG_X86_GENERICARCH=y as Ingo suggested.
+I was able to track this corruption down to commit
+a69b176df246d59626e6a9c640b44c0921fa4566 ([XFS] Use the generic bitops
+rather than implementing them ourselves.) using git bisect.
 
-good point.
+Reverting edd319dc527733e61eec5bdc9ce20c94634b6482 ([XFS] Fix
+xfs_lowbit64) to avoid merge conflicts and the faulty commit on top of
+2.6.25-rc3 fixes the problem.
 
-The clean solution would be to make PIT_TICK_RATE/CLOCK_TICK_RATE a 
-variable that defaults to 1193182 on x86, and which an early quirk would 
-set to 1189200 on AMD Elan and to 1041667 on RDC321X.
+My filesystem is on an LVM2 logical volume and my computer is a
+PowerBook G4 (model 5,8). I'm using GCC 4.2.3.
 
-likewise, other subarch details should be turned into specific drivers 
-or specific quirks as well.
+My problem is similar to the problem Johannes Berg reported in:
+http://oss.sgi.com/archives/xfs/2008-02/msg00244.html
 
-	Ingo
+AFAIK Johannes also uses a PowerBook. Maybe this is an endianness
+issue.
+
+Gaudenz
+
+-- 
+Ever tried. Ever failed. No matter.
+Try again. Fail again. Fail better.
+~ Samuel Beckett ~
