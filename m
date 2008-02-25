@@ -1,69 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754743AbYBYNBQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755459AbYBYNBn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754743AbYBYNBQ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 Feb 2008 08:01:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753614AbYBYNBC
+	id S1755459AbYBYNBn (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 Feb 2008 08:01:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753628AbYBYNBf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 Feb 2008 08:01:02 -0500
-Received: from qb-out-0506.google.com ([72.14.204.225]:21733 "EHLO
-	qb-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753424AbYBYNBA (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 Feb 2008 08:01:00 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=AZKpVQiWVmM8SjAHNoUta17fqbLQqnU6s/3d8Go5cod0qQQgkijgI9Pf+S+ZVHU95/V76/4ZZruIcQRLPR4/YaLIr2xmgeWwOlJ9eHHrYMw1df8J7WhmcprLds+Sq63QmVNl6OPBJ6gidSprUvFC0JC0Ym1zVJYXzuIDb8NS8Ms=
-Message-ID: <f19298770802250500n3cc122cqb21b7ed2428b6b44@mail.gmail.com>
-Date: Mon, 25 Feb 2008 16:00:58 +0300
-From: "Alexey Zaytsev" <alexey.zaytsev@gmail.com>
-To: "Pekka J Enberg" <penberg@cs.helsinki.fi>
-Subject: Re: bcm43xx regression in 2.6.24 (with patch)
-Cc: "Michael Buesch" <mb@bu3sch.de>, "Greg KH" <greg@kroah.com>,
-       "Ingo Molnar" <mingo@elte.hu>, "Alexey Zaytsev" <zaytsev.a@protei.ru>,
-       linux-kernel@vger.kernel.org,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "Linus Torvalds" <torvalds@linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.64.0802251423190.21696@sbz-30.cs.Helsinki.FI>
+	Mon, 25 Feb 2008 08:01:35 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:37669 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754599AbYBYNBe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 25 Feb 2008 08:01:34 -0500
+To: linux-kernel@vger.kernel.org
+Cc: virtualization@lists.osdl.org, xen-devel@lists.xensource.com,
+       linux-fbdev-devel@lists.sourceforge.net, adaplas@pol.net,
+       linux-input@vger.kernel.org, dmitry.torokhov@gmail.com,
+       akpm@linux-foundation.org, jayakumar.lkml@gmail.com
+Subject: [PATCH 0/3] xen pvfb: Para-virtual framebuffer, keyboard and pointer
+From: Markus Armbruster <armbru@redhat.com>
+Date: Mon, 25 Feb 2008 14:00:16 +0100
+Message-ID: <87tzjx6vj3.fsf@pike.pond.sub.org>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.1 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <47BEAF3B.3080809@protei.ru> <200802251054.57070.mb@bu3sch.de>
-	 <84144f020802250411i7a4a7c51h60ed9f9878c86422@mail.gmail.com>
-	 <200802251319.03819.mb@bu3sch.de>
-	 <Pine.LNX.4.64.0802251423190.21696@sbz-30.cs.Helsinki.FI>
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Feb 25, 2008 at 3:25 PM, Pekka J Enberg <penberg@cs.helsinki.fi> wrote:
-> On Mon, 25 Feb 2008, Michael Buesch wrote:
->  > > Neither of which seem like acceptable solutions for a 2.6.23 -> 2.6.24
->  > > _regression_. Or maybe I am just too naive to believe Linus' statement
->  > > on not letting the kernel regress...
->  >
->  > So, please sign-off the patch that we have, if you think it's right
->  > and doesn't cause more regressions.
->
->  I did look at the patch and can gladly add a:
->
->  Reviewed-by: Pekka Enberg <penberg@cs.helsinki.fi>
->
-Thanks for reviewing. Was it the patch I sent to Larry Finger
-with the subject line "[PATCH] Fix the bcm43xx driver breakage in 2.6.24/25"
-or the patch I sent with the first email in this thread? The patches are
-generally the same, but the one sent to Larry was split into two pieces
-and the condition on which the bcm43xx config option was hidden
-changed a bit.
+This is a pair of Xen para-virtual frontend device drivers:
+drivers/video/xen-fbfront.c provides a framebuffer, and
+drivers/input/xen-kbdfront provides keyboard and mouse.
 
->  But this seems backwards. It was _your_ commit that broke the setup and
->  the patch touches a driver _you're_ maintaining.
->
->  So can we just revert commit 753f492093da7a40141bfe083073400f518f4c68
->  ("[B44]: port to native ssb support") from 2.6.24 and you can add it back
->  to 2.6.25 if the problem indeed does go away?
+The backends run in dom0 user space.
 
-I'm quite sure my patch won't cause any problems, but if Greg
-wants to be 100% sure there won't be any regressions introduced
-in -stable, reverting the said commit should be the right thing.
+Differences since last post:
+
+* Required patch fixing 32-on-64 xen-blkfront included.
+
+* Cleanup when xenkbd_probe() fails fixed.
+
+* Don't store event channel in device info.
+
+I started with the Xen version at
+http://xenbits.xensource.com/linux-2.6.18-xen.hg?rev/ca05cf1a9bdc
+
+Differences to that Xen version, for those who care:
+
+* Rewritten on top of fb deferred I/O
+
+* IRQ handler names visible in /proc and /sys match the driver names.
+
+* Use framebuffer helper functions appropriate for framebuffer in
+  system RAM.
+
+* write() refreshes the framebuffer properly.
+
+* off-by-one height of some screen refreshs fixed.
+
+* Crash when register_framebuffer() fails fixed.
+
+* Test for empty ring in input_handler() fixed.
+
+* Deadlock in xen-kbdfront resume fixed.
+
+* Cleanup when xenkbd_probe() fails fixed.
+
+* General clean up.
+
+I have a step-by-step patch series from that Xen version to my
+version, if anybody is interested.  Might be useful for reviewers
+familiar with the Xen version.
+
+The patch consists of three parts:
+
+1. xen: Make xen-blkfront write its protocol ABI to xenstore
+
+   Could do without, but then I'd have to put the same bug in
+   xen-fbfront and xen-kbdfront.
+
+2. fbdev: Make deferred I/O work as advertized
+
+   I need fb deferred I/O, but is utterly broken.  A fix has been
+   floating around on linux-fbdev-devel as part of a larger patch,
+   which as far as I know has not been merged anywhere, yet.  This is
+   just the fix.
+
+2. xen pvfb: Para-virtual framebuffer, keyboard and pointer driver
+
+   The actual drivers.
