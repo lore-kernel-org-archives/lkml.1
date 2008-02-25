@@ -1,134 +1,232 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755515AbYBYPpq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756567AbYBYPqW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755515AbYBYPpq (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 Feb 2008 10:45:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753843AbYBYPpj
+	id S1756567AbYBYPqW (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 Feb 2008 10:46:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754790AbYBYPqM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 Feb 2008 10:45:39 -0500
-Received: from mga06.intel.com ([134.134.136.21]:6580 "EHLO
-	orsmga101.jf.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753660AbYBYPpi (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 Feb 2008 10:45:38 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.25,401,1199692800"; 
-   d="scan'208";a="345289731"
-Date: Mon, 25 Feb 2008 07:50:14 -0800
-From: mark gross <mgross@linux.intel.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Greg KH <greg@kroah.com>, lkml <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] copyright owner and author clean up for intel iommu
-	and related files
-Message-ID: <20080225155014.GA22018@linux.intel.com>
-Reply-To: mgross@linux.intel.com
-References: <20080221181555.GA9593@linux.intel.com> <20080223000443.da075061.akpm@linux-foundation.org> <20080223190649.GA8641@kroah.com> <20080223112022.8e4fdde2.akpm@linux-foundation.org>
+	Mon, 25 Feb 2008 10:46:12 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:35840 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754571AbYBYPqK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 25 Feb 2008 10:46:10 -0500
+Date: Mon, 25 Feb 2008 16:45:57 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: [git pull] scheduler fixes
+Message-ID: <20080225154557.GA24546@elte.hu>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080223112022.8e4fdde2.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Feb 23, 2008 at 11:20:22AM -0800, Andrew Morton wrote:
-> On Sat, 23 Feb 2008 11:06:49 -0800 Greg KH <greg@kroah.com> wrote:
-> 
-> > On Sat, Feb 23, 2008 at 12:04:43AM -0800, Andrew Morton wrote:
-> > > On Thu, 21 Feb 2008 10:15:55 -0800 mark gross <mgross@linux.intel.com> wrote:
-> > > 
-> > > > Index: linux-2.6.24-mm1/drivers/pci/dmar.c
-> > > 
-> > > I guess this is strictly a greg-pci-tree thing.  Greg, how do you want
-> > > to play intel-iommu?
-> > 
-> > Yes, I'll take those.  I'm pretty sure I even have the hardware here to
-> > test that the code doesn't crash :)
-> > 
-> 
-> ok..
-> 
-> I have another one queued for 2.6.26-via-greg:
-> pci-iova-rb-tree-setup-tweak.patch
-> 
 
-Should I start sending all the intel-iommu related stuff to Greg then?
+Linus, please pull the latest scheduler fixes git tree from:
 
---mgross
+   git://git.kernel.org/pub/scm/linux/kernel/git/mingo/linux-2.6-sched.git
 
-> And one queued for 2.6.25: iova-lockdep-false-alarm-fix.patch which
-> according to my current processes will be sent to you after I've tested it
-> a bit with "for 2.6.25?" in its Subject:
-> 
-> My list of for-2.6.25-after-a-bit-of-testing patches is large:
-> 
-> 
-> rtc-cmos-display-hpet-emulation-mode.patch
-> register_memory-unregister_memory-fix-use-after-free-and-refcounting.patch
-> acer-wmi-fail-gracefully-if-acpi-is-disabled.patch
-> tc1100-wmi-fail-gracefully-if-acpi-is-disabled.patch
-> dmi-dont-save-the-same-device-twice-was-smbios-dmi-add-type-41-=-onboard-devices-extended-information.patch
-> uml-remove-unused-sigcontext-accessors.patch
-> uml-fix-helper_wait-calls-in-watchdog.patch
-> uml-fix-fp-register-corruption.patch
-> x86-cast-cmpxchg-and-cmpxchg_local-result-for-386-and-486.patch
-> nbd-make-nbd-default-to-deadline-i-o-scheduler.patch
-> efs-move-headers-out-of-include-linux.patch
-> percpu-fix-debug_preempt-per_cpu-checking.patch
-> proc-add-rlimit_rttime-to-proc-pid-limits.patch
-> drivers-video-uvesafbc-fix-section-mismatch-warning-in-param_set_scroll.patch
-> dmi-prevent-linked-list-corruption-resent.patch
-> x86-fix-clearcopy_user_page-declarations-in-pageh.patch
-> futex-fix-init-order.patch
-> futex-runtime-enable-pi-and-robust-functionality.patch
-> h8300-signalc-typo-fix.patch
-> h8300-uaccessh-update.patch
-> h8300-irq-handling-update.patch
-> h8300-defconfig-update.patch
-> kernel-doc-fix-function-pointer-parameter-parsing.patch
-> mpt-fusion-dont-oops-if-numphys==0.patch
-> bluetooth-hci_core-defer-hci_unregister_sysfs.patch
-> e100-do-suspend-shutdown-like-e1000.patch
-> dm-raid1-bitops-bug.patch
-> alloc_percpu-fails-to-allocate-percpu-data.patch
-> scsi-qla4xxx-ql4_isrc-unchangelogged-patch.patch
-> iova-lockdep-false-alarm-fix.patch
-> cgroup-memory-controller-document-huge-memory-cache-overhead-in-kconfig.patch
-> kprobes-refuse-kprobe-insertion-on-add-sub_preempt_counter.patch
-> sh-revert-dreamcast-pci-change.patch
-> bluetooth-conwise-technology-based-adapters-with-buggy-sco-support-bugzilla-9027.patch
-> pm-remove-unbalanced-mutex_unlock-from-dpm_resume.patch
-> message-fusion-mptbasec-fix-use-after-frees.patch
-> ieee80211-fix-broken-error-handling-in-ieee80211_sta_process_addba_request.patch
-> smack-update-for-file-capabilities.patch
-> fix-typo-in-tick-broadcastc.patch
-> dm-raid1c-fix-null-dereferences.patch
-> usb-queue-usb-usb_cdc_get_encapsulated_response-message.patch
-> i8042-use-sgi_has_i8042-to-select-sgi-i8042-handlinig.patch
-> solve-section-mismatch-for-free_area_init_core.patch
-> #
-> cgroup-fix-and-update-documentation.patch
-> cgroup-fix-comments.patch
-> cgroup-clean-up-cgrouph.patch
-> cgroup-fix-memory-leak-in-cgroup_get_sb.patch
-> cgroup-fix-subsys-bitops.patch
-> cgroup-remove-duplicate-code-in-find_css_set.patch
-> cgroup-remove-dead-code-in-cgroup_get_rootdir.patch
-> #
-> memcgroup-fix-and-update-documentation.patch
-> memcgroup-remove-a-useless-vm_bug_on.patch
-> memcgroup-return-negative-error-code-in-mem_cgroup_create.patch
-> #
-> #kernel-irq-chipc-irq-disable-shutdown-bug.patch: needs acks
-> kernel-irq-chipc-irq-disable-shutdown-bug.patch
-> #
-> #revert-sh-use-ctrl_in-out-for-on-chip-pci-access.patch: being worked on
-> #revert-sh-use-ctrl_in-out-for-on-chip-pci-access.patch
-> #
-> kthread-synchronization-issues.patch
-> #kthread-add-a-missing-memory-barrier-to-kthread_stop.patch: nop, do it in wake_up
-> kthread-add-a-missing-memory-barrier-to-kthread_stop.patch
-> kthread-call-wake_up_process-without-the-lock-being-held.patch
-> fix-b43-driver-build-for-arm.patch
-> vt-notifier-fix-for-vt-switch.patch
-> 
+Two cross-subsystem changes:
+
+ arch/um/kernel/process.c:  scheduler related prototype cleanup
+           fs/proc/base.c:  latencytop fixes
+
+Thanks,
+
+	Ingo
+
+------------------>
+Balbir Singh (1):
+      sched: remove duplicate code from sched_fair.c
+
+Harvey Harrison (2):
+      sched: fix signedness warnings in sched.c
+      sched: add declaration of sched_tail to sched.h
+
+Hiroshi Shimamoto (3):
+      latencytop: fix kernel panic while reading latency proc file
+      latencytop: fix memory leak on latency proc file
+      latencytop: change /proc task_struct access method
+
+Ingo Molnar (2):
+      sched: make early bootup sched_clock() use safer
+      sched: clean up __pick_last_entity() a bit
+
+ arch/um/kernel/process.c |    2 --
+ fs/proc/base.c           |   27 +++++++++++----------------
+ include/linux/sched.h    |    1 +
+ kernel/sched.c           |   16 +++++++++++-----
+ kernel/sched_fair.c      |   13 ++++---------
+ 5 files changed, 27 insertions(+), 32 deletions(-)
+
+diff --git a/arch/um/kernel/process.c b/arch/um/kernel/process.c
+index fc50d2f..e8cb9ff 100644
+--- a/arch/um/kernel/process.c
++++ b/arch/um/kernel/process.c
+@@ -128,8 +128,6 @@ void *get_current(void)
+ 	return current;
+ }
+ 
+-extern void schedule_tail(struct task_struct *prev);
+-
+ /*
+  * This is called magically, by its address being stuffed in a jmp_buf
+  * and being longjmp-d to.
+diff --git a/fs/proc/base.c b/fs/proc/base.c
+index 96ee899..91a1bd6 100644
+--- a/fs/proc/base.c
++++ b/fs/proc/base.c
+@@ -314,9 +314,12 @@ static int proc_pid_schedstat(struct task_struct *task, char *buffer)
+ static int lstats_show_proc(struct seq_file *m, void *v)
+ {
+ 	int i;
+-	struct task_struct *task = m->private;
+-	seq_puts(m, "Latency Top version : v0.1\n");
++	struct inode *inode = m->private;
++	struct task_struct *task = get_proc_task(inode);
+ 
++	if (!task)
++		return -ESRCH;
++	seq_puts(m, "Latency Top version : v0.1\n");
+ 	for (i = 0; i < 32; i++) {
+ 		if (task->latency_record[i].backtrace[0]) {
+ 			int q;
+@@ -341,32 +344,24 @@ static int lstats_show_proc(struct seq_file *m, void *v)
+ 		}
+ 
+ 	}
++	put_task_struct(task);
+ 	return 0;
+ }
+ 
+ static int lstats_open(struct inode *inode, struct file *file)
+ {
+-	int ret;
+-	struct seq_file *m;
+-	struct task_struct *task = get_proc_task(inode);
+-
+-	ret = single_open(file, lstats_show_proc, NULL);
+-	if (!ret) {
+-		m = file->private_data;
+-		m->private = task;
+-	}
+-	return ret;
++	return single_open(file, lstats_show_proc, inode);
+ }
+ 
+ static ssize_t lstats_write(struct file *file, const char __user *buf,
+ 			    size_t count, loff_t *offs)
+ {
+-	struct seq_file *m;
+-	struct task_struct *task;
++	struct task_struct *task = get_proc_task(file->f_dentry->d_inode);
+ 
+-	m = file->private_data;
+-	task = m->private;
++	if (!task)
++		return -ESRCH;
+ 	clear_all_latency_tracing(task);
++	put_task_struct(task);
+ 
+ 	return count;
+ }
+diff --git a/include/linux/sched.h b/include/linux/sched.h
+index e217d18..9c17e82 100644
+--- a/include/linux/sched.h
++++ b/include/linux/sched.h
+@@ -242,6 +242,7 @@ struct task_struct;
+ 
+ extern void sched_init(void);
+ extern void sched_init_smp(void);
++extern asmlinkage void schedule_tail(struct task_struct *prev);
+ extern void init_idle(struct task_struct *idle, int cpu);
+ extern void init_idle_bootup_task(struct task_struct *idle);
+ 
+diff --git a/kernel/sched.c b/kernel/sched.c
+index b387a8d..f06950c 100644
+--- a/kernel/sched.c
++++ b/kernel/sched.c
+@@ -668,6 +668,8 @@ const_debug unsigned int sysctl_sched_nr_migrate = 32;
+  */
+ unsigned int sysctl_sched_rt_period = 1000000;
+ 
++static __read_mostly int scheduler_running;
++
+ /*
+  * part of the period that we allow rt tasks to run in us.
+  * default: 0.95s
+@@ -689,14 +691,16 @@ unsigned long long cpu_clock(int cpu)
+ 	unsigned long flags;
+ 	struct rq *rq;
+ 
+-	local_irq_save(flags);
+-	rq = cpu_rq(cpu);
+ 	/*
+ 	 * Only call sched_clock() if the scheduler has already been
+ 	 * initialized (some code might call cpu_clock() very early):
+ 	 */
+-	if (rq->idle)
+-		update_rq_clock(rq);
++	if (unlikely(!scheduler_running))
++		return 0;
++
++	local_irq_save(flags);
++	rq = cpu_rq(cpu);
++	update_rq_clock(rq);
+ 	now = rq->clock;
+ 	local_irq_restore(flags);
+ 
+@@ -3885,7 +3889,7 @@ pick_next_task(struct rq *rq, struct task_struct *prev)
+ asmlinkage void __sched schedule(void)
+ {
+ 	struct task_struct *prev, *next;
+-	long *switch_count;
++	unsigned long *switch_count;
+ 	struct rq *rq;
+ 	int cpu;
+ 
+@@ -7284,6 +7288,8 @@ void __init sched_init(void)
+ 	 * During early bootup we pretend to be a normal task:
+ 	 */
+ 	current->sched_class = &fair_sched_class;
++
++	scheduler_running = 1;
+ }
+ 
+ #ifdef CONFIG_DEBUG_SPINLOCK_SLEEP
+diff --git a/kernel/sched_fair.c b/kernel/sched_fair.c
+index 6c091d6..c8e6492 100644
+--- a/kernel/sched_fair.c
++++ b/kernel/sched_fair.c
+@@ -202,17 +202,12 @@ static struct sched_entity *__pick_next_entity(struct cfs_rq *cfs_rq)
+ 
+ static inline struct sched_entity *__pick_last_entity(struct cfs_rq *cfs_rq)
+ {
+-	struct rb_node **link = &cfs_rq->tasks_timeline.rb_node;
+-	struct sched_entity *se = NULL;
+-	struct rb_node *parent;
++	struct rb_node *last = rb_last(&cfs_rq->tasks_timeline);
+ 
+-	while (*link) {
+-		parent = *link;
+-		se = rb_entry(parent, struct sched_entity, run_node);
+-		link = &parent->rb_right;
+-	}
++	if (!last)
++		return NULL;
+ 
+-	return se;
++	return rb_entry(last, struct sched_entity, run_node);
+ }
+ 
+ /**************************************************************
