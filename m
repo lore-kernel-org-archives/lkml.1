@@ -1,44 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757491AbYBYTIR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758623AbYBYTIg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757491AbYBYTIR (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 Feb 2008 14:08:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756552AbYBYTH7
+	id S1758623AbYBYTIg (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 Feb 2008 14:08:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755050AbYBYTI0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 Feb 2008 14:07:59 -0500
-Received: from smtp1.linux-foundation.org ([207.189.120.13]:41981 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754124AbYBYTH6 (ORCPT
+	Mon, 25 Feb 2008 14:08:26 -0500
+Received: from server54.tchmachines.com ([72.9.244.106]:54404 "EHLO
+	server54.tchmachines.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755012AbYBYTI0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 Feb 2008 14:07:58 -0500
-Date: Mon, 25 Feb 2008 10:56:06 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Balbir Singh <balbir@linux.vnet.ibm.com>
-Cc: Hugh Dickins <hugh@veritas.com>, Sudhir Kumar <skumar@linux.vnet.ibm.com>,
-       YAMAMOTO Takashi <yamamoto@valinux.co.jp>,
-       Paul Menage <menage@google.com>, lizf@cn.fujitsu.com,
-       linux-kernel@vger.kernel.org, taka@valinux.co.jp, linux-mm@kvack.org,
-       David Rientjes <rientjes@google.com>,
-       Pavel Emelianov <xemul@openvz.org>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Subject: Re: [PATCH] Memory Resource Controller use strstrip while parsing
- arguments
-Message-Id: <20080225105606.bcab215e.akpm@linux-foundation.org>
-In-Reply-To: <20080225182746.9512.21582.sendpatchset@localhost.localdomain>
-References: <20080225182746.9512.21582.sendpatchset@localhost.localdomain>
-X-Mailer: Sylpheed 2.4.7 (GTK+ 2.12.1; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Mon, 25 Feb 2008 14:08:26 -0500
+Date: Mon, 25 Feb 2008 11:08:19 -0800
+From: Ravikiran Thirumalai <kiran@scalemp.com>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: Yinghai Lu <Yinghai.Lu@Sun.COM>, Ingo Molnar <mingo@elte.hu>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       shai@scalemp.com
+Subject: Re: [PATCH] x86_64: make amd quad core 8 socket system not be clustered_box v2
+Message-ID: <20080225190819.GE3143@localdomain>
+References: <200802210258.45011.yinghai.lu@sun.com> <200802221102.31019.yinghai.lu@sun.com> <47BF1BD9.4020808@firstfloor.org> <200802232148.43255.yinghai.lu@sun.com> <20080224122903.GC13637@one.firstfloor.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080224122903.GC13637@one.firstfloor.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
+X-AntiAbuse: Primary Hostname - server54.tchmachines.com
+X-AntiAbuse: Original Domain - vger.kernel.org
+X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
+X-AntiAbuse: Sender Address Domain - scalemp.com
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 25 Feb 2008 23:57:46 +0530 Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
+On Sun, Feb 24, 2008 at 01:29:03PM +0100, Andi Kleen wrote:
+>On Sat, Feb 23, 2008 at 09:48:42PM -0800, Yinghai Lu wrote:
+>> 
+>> quad core 8 socket system will have apic id lifting.the apic id range could
+>> be [4, 0x23]. and apic_is_clustered_box will think that need to three clusters
+>> and that is large than 2. So it is treated as clustered_box.
+>
+>Ok I see you chose the quick hack over doing it properly ...
+>
+>> 
+>> and will get
+>> 
+>> Marking TSC unstable due to TSCs unsynchronized
+>> 
+>> even the CPUs have X86_FEATURE_CONSTANT_TSC set.
+>
+>I doubt that will do the right thing on AMD based vSMP,
+>which also required the cluster check on AMD iirc.
+>
 
-> The memory controller has a requirement that while writing values, we need
-> to use echo -n. This patch fixes the problem and makes the UI more consistent.
+Andi, Yes.  AMD based vSMPowered systems uses clustered APICs, and this
+check base on cpu vendor id is not good :(.
 
-that's a decent improvement ;)
-
-btw, could I ask that you, Paul and others who work on this and cgroups
-have a think about a ./MAINTAINERS update?
+Thanks,
+Kiran
