@@ -1,110 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757927AbYBYSj0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758498AbYBYSkl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757927AbYBYSj0 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 Feb 2008 13:39:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754451AbYBYSjR
+	id S1758498AbYBYSkl (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 Feb 2008 13:40:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755214AbYBYSkc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 Feb 2008 13:39:17 -0500
-Received: from e1.ny.us.ibm.com ([32.97.182.141]:38296 "EHLO e1.ny.us.ibm.com"
+	Mon, 25 Feb 2008 13:40:32 -0500
+Received: from x346.tv-sign.ru ([89.108.83.215]:38000 "EHLO mail.screens.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754808AbYBYSjQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 Feb 2008 13:39:16 -0500
-Subject: Re: [RFC][PATCH] make /proc/pid/pagemap work with huge pages and
-	return page size
-From: Dave Hansen <haveblue@us.ibm.com>
-To: Hans Rosenfeld <hans.rosenfeld@amd.com>
-Cc: Matt Mackall <mpm@selenic.com>, linux-kernel@vger.kernel.org,
-       Adam Litke <aglitke@gmail.com>, nacc <nacc@linux.vnet.ibm.com>,
-       Jon Tollefson <kniht@linux.vnet.ibm.com>
-In-Reply-To: <20080225120951.GA5963@escobedo.amd.com>
-References: <20080220135743.GA10127@escobedo.amd.com>
-	 <1203733096.14838.154.camel@cinder.waste.org>
-	 <1203791461.11305.135.camel@nimitz.home.sr71.net>
-	 <20080225120951.GA5963@escobedo.amd.com>
-Content-Type: text/plain
-Date: Mon, 25 Feb 2008 10:39:10 -0800
-Message-Id: <1203964750.28196.7.camel@nimitz.home.sr71.net>
+	id S1754451AbYBYSkc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 25 Feb 2008 13:40:32 -0500
+Date: Mon, 25 Feb 2008 21:42:02 +0300
+From: Oleg Nesterov <oleg@tv-sign.ru>
+To: "Serge E. Hallyn" <serue@us.ibm.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Casey Schaufler <casey@schaufler-ca.com>,
+       David Quigley <dpquigl@tycho.nsa.gov>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Eric Paris <eparis@redhat.com>, Harald Welte <laforge@gnumonks.org>,
+       Pavel Emelyanov <xemul@openvz.org>, Stephen Smalley <sds@tycho.nsa.gov>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2/3] kill_pid_info_as_uid: don't use security_task_kill()
+Message-ID: <20080225184202.GA22147@tv-sign.ru>
+References: <20080225174228.GA22084@tv-sign.ru> <20080225180020.GA10631@sergelap.austin.ibm.com>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080225180020.GA10631@sergelap.austin.ibm.com>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-On Mon, 2008-02-25 at 13:09 +0100, Hans Rosenfeld wrote:
-> On Sat, Feb 23, 2008 at 10:31:01AM -0800, Dave Hansen wrote:
-> > > > - 4 bits for the page size, with 0 meaning native page size (4k on x86,
-> > > >   8k on alpha, ...) and values 1-15 being specific to the architecture
-> > > >   (I used 1 for 2M, 2 for 4M and 3 for 1G for x86)
+On 02/25, Serge E. Hallyn wrote:
+>
+> Quoting Oleg Nesterov (oleg@tv-sign.ru):
+> > kill_pid_info_as_uid() is solely used by drivers/usb/core/. The original
+> > "[PATCH] Fix signal sending in usbdevio on async URB completion" commit
+> > 46113830a18847cff8da73005e57bc49c2f95a56 was right, but nowadays we use
+> > struct pid and this solves most of the addressed problems.
 > > 
-> > "Native page size" probably a bad idea.  ppc64 can use 64k or 4k for its
-> > "native" page size and has 16MB large pages (as well as some others).
-> > To make it even more confusing, you can have a 64k kernel page size with
-> > 4k mmu mappings!
+> > It would be nice to use kill_pid_info() instead, but we can't because USB
+> > uses .si_code = SI_ASYNCIO which fools SI_FROMUSER() and thus security checks.
 > > 
-> > That said, this is a decent idea as long as we know that nobody will
-> > ever have more than 16 page sizes.  
-> 
-> Then a better way to encode the page size would be returning the page
-> shift. This would need 6 bits instead of 4, but it would probably be
-> enough for any 64 bit architecture.
-
-That's a good point.
-
-> > > This is ok-ish, but I can't say I like it much. Especially the page size
-> > > field.
-> > > 
-> > > But I don't really have many ideas here. Perhaps having a bit saying
-> > > "this entry is really a continuation of the previous one". Then any page
-> > > size can be trivially represented. This might also make the code on both
-> > > sides simpler?
-> 
-> I don't like the idea of parsing thousands of entries just to find out
-> that I'm using a huge page. It would be much better to just get the page
-> size one way or the other in the first entry one reads.
-
-Did you read my suggestion?  We use one bit in the pte to specify that
-its a large page mapping, then specify a mask to apply to the address to
-get the *first* mapping of the large page, where you're find the actual
-physical address.  That keeps us from having to worry about specifying
-*both* the page size and the pfn in the same pte.
-
-> > > > +#ifdef CONFIG_X86
-> > > > +	if (pmd_huge(*pmd)) {
-> > > > +		struct ppte ppte = { 
-> > > > +			.paddr = pmd_pfn(*pmd) << PAGE_SHIFT,
-> > > > +			.psize = (HPAGE_SHIFT == 22 ?
-> > > > +				  PM_PSIZE_4M : PM_PSIZE_2M),
-> > > > +			.swap  = 0,
-> > > > +			.present = 1,
-> > > > +		};
-> > > > +
-> > > > +		for(; addr != end; addr += PAGE_SIZE) {
-> > > > +			err = add_to_pagemap(addr, ppte, pm);
-> > > > +			if (err)
-> > > > +				return err;
-> > > > +		}
-> > > > +	} else
-> > > > +#endif
+> > I think we should omit the permission checks completely, the task which does
+> > ioctl(USBDEVFS_SUBMITURB) explicitly asks to send the signal to it, we should
+> > not deny the signal even if the task changes its credentials in any way.
 > > 
-> > It's great to make this support huge pages, but things like this
-> > probably need their own function.  Putting an #ifdef in the middle of
-> > here makes it a lot harder to read.  Just think of when powerpc, ia64
-> > and x86_64 get their grubby mitts in here. ;)
+> > For now, we can remove security_task_kill(). It is bogus, the signal has come
+> > from kernel.
 > 
-> AFAIK the way huge pages are used on x86 differs much from other
-> architectures. While on x86 the address translation stops at some upper
-> table for a huge page, other architectures encode the page size in the
-> pte (at least the ones I looked at did). So pmd_huge() (and soon
-> pud_huge()) are very x86-specific and return just 0 on other archs,
+> Ok, could you augment the comment above
+> kernel/signal.c:kill_pid_info_as_uid() to say that it is only called
+> from within the usb subsystem?
 
-I'm just asking that you please put this in a nice helper function to
-hide it from the poor powerpc/ia64/mips... guys that don't want to see
-x86 code cluttering up otherwise generic functions.  Yes, the compiler
-optimizes it away, but it still has a cost to my eyeballs. :)
+OK, will do a bit later. I still hope we can kill this helper or at least
+cleanup it further.
 
-I eagerly await your next patch!
+What we need in fact is kill_pid_info_skip_check_kill_permission(), and
+only because USB uses SI_ASYNCIO < 0.
 
--- Dave
+Oleg.
 
