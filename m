@@ -1,107 +1,117 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755897AbYBYOoQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756184AbYBYOpk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755897AbYBYOoQ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 Feb 2008 09:44:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754455AbYBYOoB
+	id S1756184AbYBYOpk (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 Feb 2008 09:45:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754571AbYBYOpc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 Feb 2008 09:44:01 -0500
-Received: from scrub.xs4all.nl ([194.109.195.176]:59419 "EHLO scrub.xs4all.nl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754419AbYBYOoA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 Feb 2008 09:44:00 -0500
-Date: Mon, 25 Feb 2008 15:44:57 +0100 (CET)
-From: Roman Zippel <zippel@linux-m68k.org>
-X-X-Sender: roman@scrub.home
-To: john stultz <johnstul@us.ibm.com>
-cc: lkml <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       Steven Rostedt <rostedt@goodmis.org>
-Subject: Re: [PATCH] correct inconsistent ntp interval/tick_length usage
-In-Reply-To: <1203647951.6150.80.camel@localhost.localdomain>
-Message-ID: <Pine.LNX.4.64.0802251416340.2723@scrub.home>
-References: <1201142334.6383.40.camel@localhost.localdomain> 
- <Pine.LNX.4.64.0801251349120.17507@scrub.home>  <1201573686.6766.13.camel@localhost>
-  <Pine.LNX.4.64.0801290439480.17507@scrub.home>  <1201659263.6766.40.camel@localhost>
-  <Pine.LNX.4.64.0801310251090.17507@scrub.home>  <1201745776.6195.14.camel@localhost.localdomain>
-  <Pine.LNX.4.64.0801310404480.17507@scrub.home>  <1201914175.6216.46.camel@jstultz-laptop>
-  <Pine.LNX.4.64.0802081718040.3378@scrub.home>  <1202523452.6174.45.camel@localhost.localdomain>
-  <Pine.LNX.4.64.0802101917030.3378@scrub.home>  <1202774999.5984.106.camel@localhost>
-  <Pine.LNX.4.64.0802120335170.3378@scrub.home>  <1202963796.6195.141.camel@localhost.localdomain>
-  <Pine.LNX.4.64.0802150436300.1822@scrub.home>  <1203382940.5984.242.camel@localhost>
-  <Pine.LNX.4.64.0802190219360.2723@scrub.home>  <1203472250.6123.98.camel@localhost>
-  <Pine.LNX.4.64.0802200348230.2723@scrub.home> <1203647951.6150.80.camel@localhost.localdomain>
+	Mon, 25 Feb 2008 09:45:32 -0500
+Received: from ti-out-0910.google.com ([209.85.142.189]:44266 "EHLO
+	ti-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754455AbYBYOpb (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 25 Feb 2008 09:45:31 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=date:to:cc:subject:message-id:reply-to:mail-followup-to:references:mime-version:content-type:content-disposition:content-transfer-encoding:in-reply-to:user-agent:from;
+        b=svbDhuZ+zH0F7T6XzGEdoa5/DSDTIJF+LzfShUN/NiXsd5GCSTjf7OvoUnjTL0VajQjuf5VynzgRhDzfaDSGsIjGJ32DxzIIWwZZMc+2qGp4oX+X7npwMIQ93vrVj7rJchowIpPVlUJRs3KrNuL3sorJa1DyoSzqHRR6d8BnSHo=
+Date: Mon, 25 Feb 2008 15:45:19 +0100
+To: Brad Rosser <brad.rosser@gmail.com>
+Cc: bzolnier@gmail.com, linux-ide@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: IDE cdrom problem with PLEXTOR DVDR PX-608AL
+Message-ID: <20080225144519.GB3816@gollum.tnic>
+Reply-To: petkovbb@gmail.com
+Mail-Followup-To: petkovbb@gmail.com, Brad Rosser <brad.rosser@gmail.com>,
+	bzolnier@gmail.com, linux-ide@vger.kernel.org,
+	linux-kernel@vger.kernel.org
+References: <426a98560802232138q41d45d52ta515f1b791e937f4@mail.gmail.com> <20080224173451.GB11998@gollum.tnic> <426a98560802241758j7a9be21m5eecc120ada804e4@mail.gmail.com> <20080225053404.GA3816@gollum.tnic> <426a98560802242157j61294ba6i2aaa9cce4d836a7b@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <426a98560802242157j61294ba6i2aaa9cce4d836a7b@mail.gmail.com>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+From: Borislav Petkov <petkovbb@googlemail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
-
-On Thu, 21 Feb 2008, john stultz wrote:
-
-> > Again, what kind of crappy hardware do you expect? Aren't clocks supposed 
-> > to get better and not worse?
+On Mon, Feb 25, 2008 at 03:57:06PM +1000, Brad Rosser wrote:
+> Hi Boris,
 > 
-> Well, while I've seen much worse, I consider crappy hardware to be 100
-> +ppm error. So if the hardware is perfect and the system results in
-> 153ppm error, I'd consider that pretty crappy, especially if its not the
-> hardware's fault.
-
-Nevertheless this error is real, why are you trying to hide it?
-This is isn't an error we can't handle, it's still perfectly within the 
-limit and except that NTP reports a somewhat larger drift than you'd like 
-to see, everything works fine.
-
-> > Where do you get this idea that the 500ppm are exclusively for hardware 
-> > errors? If you have such bad hardware, there is another simple solution: 
-> > change HZ to 100 and the error is reduced to 15ppm.
+> >  Well, this sounds strange. Are you sure you're entering the boot options
+> >  correctly on the kernel command line? Which is your boot loader? I just booted
+> >  my machine with 'hdc=noprobe'  (hdc is my cdrom drive) and here's what i get:
+> >
+> >  ...
+> >  [    0.304774] Probing IDE interface ide0...
+> >  [    0.569359] hdb: SAMSUNG SP2014N, ATA DISK drive
+> >  [    0.613977] Switched to NOHz mode on CPU #1
+> >  [    0.773368] Switched to NOHz mode on CPU #0
+> >  [    0.874486] hda: QUANTUM FIREBALLlct10 20, ATA DISK drive
+> >  [    0.874506] hda: host max PIO4 wanted PIO255(auto-tune) selected PIO4
+> >  [    0.874506] hda: drive side 80-wire cable detection failed, limiting max speed to UDMA33
+> >  [    0.874506] hda: UDMA/33 mode selected
+> >  [    0.874533] hdb: host max PIO4 wanted PIO255(auto-tune) selected PIO4
+> >  [    0.874620] hdb: UDMA/100 mode selected
+> >  [    0.874744] Probing IDE interface ide1...
 > 
-> True its not exclusively for hardware errors, and if we were talking
-> about only 15ppm I wouldn't really worry about it. But when we're saying
-> the system is adding 30% of the maximum error, that's just not good.
-
-Another 30% is required for normal to crappy hardware clocks and then 
-there is still enough room left.
-
-> > I would see the point if this problem had actually any practically 
-> > relevance, but this error is not a problem for pretty much all existing 
-> > standard hardware. Why are you insisting on redesigning timekeeping for 
-> > broken hardware?
+> >  so it seems you should check whether your kernel is receiving the 'hda=noprobe'
+> >  boot option at all, or something along that path is going wrong...
 > 
-> Remember my earlier data? Where I was talking about the acpi_pm being a
-> multiple of the PIT frequency? By removing CLOCK_TICK_ADJUST we got a
-> 127ppm error when HZ=1000. NO_HZ drops that down to where we don't care,
-> but this _does_ effect current hardware, so I'd call it relevant.
-
-How exactly does it effect current hardware in a way that it breaks them? 
-Despite this error everything still works fine, the hardware doesn't care.
-
-> > There's nothing 'injected', that resolution error is very real and the 
-> > 500ppm limit is more than enough to deal with this. _Nobody_ is hurt by 
-> > this.
+> I'm entering the option 'hda=noprobe' (as one example) right after my boot
+> label in LILO.  The dmesg output I attached last time was a boot of straight
+> 2.6.25-rc2 without any options; I've attached 'dmesg.noprobe.out' which is
+> the result of a boot with 'hda=noprobe'.
 > 
-> Sure, 500ppm is enough for most people with good hardware. But remember
-> the alpha example you brought up earlier? The HZ=1200 case, with the
-> CLOCK_TICK_RATE=32768? If we don't take CLOCK_TICK_ADJUST into account,
-> we end up with a **11230ppm** error from the granularity issue. NTP just
-> won't work on those systems.
+> I must have done something stupid, but I can't see what; if you look at this
+> line from the dmesg output:
 > 
-> Now granted, the three types of alpha systems that actually use that HZ
-> value is probably as close to "nobody" as you're going to get, but I
-> don't think we can just throw the granularity issue aside.
+> Kernel command line: BOOT_IMAGE=linux_2.6.25rc2 ro root=900
+> md=0,/dev/sda5,/dev/sdb5 hda=noprobe
+> 
+> ... it would suggest the option 'hda=noprobe' was entered correctly?
 
-That's actually a good example, why it's irrelevant. First it's using a 
-cycle based clock, thus the rounding error is irrelevant. Second in the 
-common case they already use 1024 as HZ to reduce this error, so something 
-similiar could be done for the HZ=1200 case and I suspect that it was 
-already done and only CLOCK_TICK_RATE is just wrong. This mail 
-http://consortiumlibrary.org/axp-list/archive/2002-11/0101.html suggest 
-that this is the right thing to do.
+ok, let's try something else: change the line "#if 0" to "#if 1" at the
+beginning of kernel/params.c, it looks like:
 
-There is _no_ reason to artificially optimize this error value, there are 
-still enough other ways to improve timekeeping. The granularity error is 
-there no matter what you do and as long as it's within a reasonable limit 
-there is nothing that needs fixing.
+#if 0
+#define DEBUGP printk
+#else
+#define DEBUGP(fmt, a...)
+#endif
 
-bye, Roman
+rebuild your kernel, and reboot with it. Then, please send me that boot log to
+see whether the kernel command line is being received from the boot loader and
+what exactly is getting parsed. Thanks.
+
+> >  > I tried to apply the patch but failed; I probably did something wrong.
+> >  > I deleted everything in your message above 'Index: b/drivers/ide/ide-cd.c'
+> >  > and ran 'patch --dry-run -b -p1 < ../bart_patch'.  This is part of my script
+> >  > log:
+> >
+> >  are you sure you're _really_ using 2.6.25-rc2? Applying the patch against that
+> >  kernel works just fine, no fuzziness or even rejects. Care to try out on a fresh
+> >  kernel source tarball? After all, building a kernel with your quad core cpu won't
+> >  take that long :-) when using make -j8 or something in that order.
+> 
+> Heh.  This is my first new machine in 8 years, and I couldn't wait to start
+> using multiple cores.  I was quick to discover the '-j' option ... but I only
+> do '-j 4'.  Anyway ... I'd downloaded the full baseline linux-2.6.24.tar.bz2,
+> unpacked it, and then ran the patch patch-2.6.25-rc2.bz2 against it.  That
+> patch ran perfectly.  And I was in the right directory when I ran Bart's patch,
+> as I listed in my earlier e-mail!  All indications were that I was running the
+> 2.6.25-rc2 kernel as required, I thought.
+> 
+> Well, I see that rc3 is out; maybe I'll give that a shot.
+
+Please see whether you can apply the patch Bart just sent and if that still gets
+mangled and cannot be applied, consider making those changes to ide-cd.c by hand
+- after all, there are only several lines that need to be changed so it won't
+take that long.
+
+Thanks.
+
+-- 
+Regards/Gruﬂ,
+    Boris.
