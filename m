@@ -1,76 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760554AbYBYWcg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760971AbYBYWdA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760554AbYBYWcg (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 Feb 2008 17:32:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757517AbYBYWc1
+	id S1760971AbYBYWdA (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 Feb 2008 17:33:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757481AbYBYWcs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 Feb 2008 17:32:27 -0500
-Received: from rgminet01.oracle.com ([148.87.113.118]:15339 "EHLO
-	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757075AbYBYWcZ (ORCPT
+	Mon, 25 Feb 2008 17:32:48 -0500
+Received: from nf-out-0910.google.com ([64.233.182.191]:47526 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757128AbYBYWcq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 Feb 2008 17:32:25 -0500
-Date: Mon, 25 Feb 2008 14:30:48 -0800
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>,
-       Linux/m68k <linux-m68k@vger.kernel.org>
-Subject: Re: linux-next: Tree for Feb 24
-Message-Id: <20080225143048.a67c275f.randy.dunlap@oracle.com>
-In-Reply-To: <Pine.LNX.4.64.0802252252070.5158@anakin>
-References: <20080224162309.3e67dd22.sfr@canb.auug.org.au>
-	<Pine.LNX.4.64.0802252252070.5158@anakin>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.4.7 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/mixed;
- boundary="Multipart=_Mon__25_Feb_2008_14_30_48_-0800_mF2R.J4EVkd+Rctz"
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+	Mon, 25 Feb 2008 17:32:46 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=gVs3L4Wq8HcACvCtsY0h5S65qkF2e4r3Zk5x++5u4QP/unvHlJqLx4D8I0ut5pQ35Mhcz1+YQVsYNmnmP4T41IC1o5P7IYXoEGYPQ9662cSvpsrOa7c5ENpmLGECQCzs9XluT00WxAv+XHW0vJKHeRkSDHqMXL/MvwTkT0loUDc=
+Message-ID: <8499950a0802251432q1e59e542nfa06f66becef63aa@mail.gmail.com>
+Date: Mon, 25 Feb 2008 23:32:44 +0100
+From: "Oleg Verych" <olecom@gmail.com>
+To: "Willy Tarreau" <w@1wt.eu>
+Subject: Re: [PATCH] Compress kernel modules on installation.
+Cc: "Steve Brokenshire" <sbrokenshire@xestia.co.uk>,
+       linux-kernel@vger.kernel.org, linux-kbuild@vger.kernel.org
+In-Reply-To: <20080225221953.GX8953@1wt.eu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20080225214209.a3f79327.sbrokenshire@xestia.co.uk>
+	 <8499950a0802251417l7a2fff25q7fa57fce57369b1b@mail.gmail.com>
+	 <20080225221953.GX8953@1wt.eu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
+On Mon, Feb 25, 2008 at 11:19 PM, Willy Tarreau:
+>
+> On Mon, Feb 25, 2008 at 11:17:23PM +0100, Oleg Verych wrote:
+>  > On Mon, Feb 25, 2008 at 10:42 PM, Steve Brokenshire:
+>  > > Hi,
+>  > >
+>  > >  (I've sent this to the linux-kbuild and linux-kernel lists as this
+>  > >  patch modifies the Makefile.modinst file. I also don't subscribe to the
+>  > >  linux-kbuild and linux-kernel mailing lists so can I have any replies
+>  > >  CC'ed to me please)
+>  >
+>  > And what if i like bzip2 (yea sometimes better) or 7zip (better if !EMBEDDED)
+>  > or whatever?
+>  >
+>  > It's pure user/distro question.
+>
+>  not exactly, as only gzip is supported by module-init-tools. However,
+>  if you come up with a patch to implement lzma or equivalent for
+>  module-init-tools, it may be useful.
 
---Multipart=_Mon__25_Feb_2008_14_30_48_-0800_mF2R.J4EVkd+Rctz
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Oh, come on! It's userspace, i have scripts managing existence/compression
+on per-file basis on my comp. If most distros just drop thousands of useless
+(sometimes compressed) stuff to your harddisk, it's not kernel's or
+modules-init-tools'
+problem.
 
-On Mon, 25 Feb 2008 22:56:04 +0100 (CET) Geert Uytterhoeven wrote:
+Also having compressed over compressed stuff, like on initramfs booting image
+with such modules (if by defaults) may cause bigger file, more CPU overhead.
 
-> P.S. For the interested, a script to update the SHA1 in the quilt series file:
+It is userspace and all that policy stuff, etc., etc.
 
-Thanks, anakin.
-Version to update $BASE based on current kernel tree is attached.
-
----
-~Randy
-
---Multipart=_Mon__25_Feb_2008_14_30_48_-0800_mF2R.J4EVkd+Rctz
-Content-Type: application/octet-stream;
- name="quilt-update-tree-base"
-Content-Disposition: attachment;
- filename="quilt-update-tree-base"
-Content-Transfer-Encoding: base64
-
-IyEvYmluL2Jhc2gKc2VyaWVzPXBhdGNoZXMvc2VyaWVzCgpnZXRfa3ZlcnNpb24oKSB7CmhlYWQg
-LTQgTWFrZWZpbGUgfCBzZWQgLWUgJ3MvIC8vZycgPiAvdG1wLy5rdmVyc2lvbi4kJAouIC90bXAv
-Lmt2ZXJzaW9uLiQkCnJtIC90bXAvLmt2ZXJzaW9uLiQkCgpjYXNlICIkRVhUUkFWRVJTSU9OIiBp
-bgoJIiIpCgkJOzsKCSotbW0qKQoJCUVYVFJBVkVSU0lPTj0kKGVjaG8gIiRFWFRSQVZFUlNJT04i
-IHwgc2VkIC1lICdzL1woLipcKS1tbVswLTldKi9cMS8nKQoJCTs7CgkqLWtqKikKCQlFWFRSQVZF
-UlNJT049JChlY2hvICIkRVhUUkFWRVJTSU9OIiB8IHNlZCAtZSAncy9cKC4qXCkta2pbMC05XSov
-XDEvJykKCQk7OwoJLSopCgkJOzsKCSopCgkJRVhUUkFWRVJTSU9OPSItJEVYVFJBVkVSU0lPTiI7
-Owplc2FjCmt2ZXJzaW9uPSRWRVJTSU9OLiRQQVRDSExFVkVMLiRTVUJMRVZFTCRFWFRSQVZFUlNJ
-T04KaWYgWyAiJGt2ZXJzaW9uIiA9ICIuLiIgXQp0aGVuCglrdmVyc2lvbj0kKGJhc2VuYW1lICQo
-L2Jpbi9wd2QpKQpmaQplY2hvICRrdmVyc2lvbgp9CgppZiBbICEgLWYgJHNlcmllcyBdOyB0aGVu
-CiAgICBlY2hvIENhbm5vdCBmaW5kICRzZXJpZXMKICAgIGV4aXQgMQpmaQoKdmVyPWBnZXRfa3Zl
-cnNpb25gCmlmIFsgLW4gIiR2ZXIiIF07IHRoZW4KICAgIGlmIGdyZXAgJ14jIEJBU0UnICRzZXJp
-ZXMgPiAvZGV2L251bGw7IHRoZW4KCXNlZCAtaSAtZSAicy9eIyBCQVNFLiokLyMgQkFTRSAkdmVy
-LyIgJHNlcmllcwoJZWNobyBVcGRhdGVkIEJBU0UgdG8gJHZlcgogICAgZWxzZQoJZWNobyBObyBC
-QVNFIGZvdW5kCiAgICBmaQpmaQo=
-
---Multipart=_Mon__25_Feb_2008_14_30_48_-0800_mF2R.J4EVkd+Rctz--
+Want to make a minidistro on lkml? Well, i see klibc working fine already.
+_______
