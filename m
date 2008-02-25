@@ -1,79 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759632AbYBYGW6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757090AbYBYGb1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759632AbYBYGW6 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 Feb 2008 01:22:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753660AbYBYGWu
+	id S1757090AbYBYGb1 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 Feb 2008 01:31:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753660AbYBYGbS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 Feb 2008 01:22:50 -0500
-Received: from smtp-out.google.com ([216.239.33.17]:36582 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752176AbYBYGWt (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 Feb 2008 01:22:49 -0500
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=received:message-id:date:from:to:subject:cc:in-reply-to:
-	mime-version:content-type:content-transfer-encoding:
-	content-disposition:references;
-	b=rkZkHKABj8NOyY8wYq/Mjtazu6vj64AcndbQSUjPEk9sCPsqD+ddUH+Yn896Mt+Os
-	nE4S1Ac7RhXuqVM7TD7UQ==
-Message-ID: <6599ad830802242222p7d42d2b2ue7c585eae8f3bed@mail.gmail.com>
-Date: Sun, 24 Feb 2008 22:22:44 -0800
-From: "Paul Menage" <menage@google.com>
-To: "Li Zefan" <lizf@cn.fujitsu.com>
-Subject: Re: [PATCH] cgroup: fix default notify_on_release setting
-Cc: "Andrew Morton" <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       containers@lists.linux-foundation.org
-In-Reply-To: <47C257EB.5060600@cn.fujitsu.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <47C257EB.5060600@cn.fujitsu.com>
+	Mon, 25 Feb 2008 01:31:18 -0500
+Received: from chilli.pcug.org.au ([203.10.76.44]:43576 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753069AbYBYGbR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 25 Feb 2008 01:31:17 -0500
+Date: Mon, 25 Feb 2008 17:31:00 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: linux-next@vger.kernel.org
+Cc: LKML <linux-kernel@vger.kernel.org>
+Subject: linux-next: Tree for Feb 24
+Message-Id: <20080225173100.b539ac2d.sfr@canb.auug.org.au>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.8; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Mon__25_Feb_2008_17_31_00_+1100_4uQ05rp/D25iOgSS"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Feb 24, 2008 at 9:53 PM, Li Zefan <lizf@cn.fujitsu.com> wrote:
-> The documentation says the default value of notify_on_release of
->  a child cgroup is inherited from its parent, which is reasonable,
->  but the implementation just sets the flag disabled.
->
->  Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
+--Signature=_Mon__25_Feb_2008_17_31_00_+1100_4uQ05rp/D25iOgSS
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Acked-by: Paul Menage <menage@google.com>
+Hi all,
 
-Yes, I guess it makes sense to follow the original cpusets behaviour.
-I think that got lost when the notify-on-release functionality was
-temporarily removed during cgroups development.
+I have created today's linux-next tree at
+git://git.kernel.org/pub/scm/linux/kernel/git/sfr/linux-next.git.
 
->  ---
->   kernel/cgroup.c |    4 +++-
->   1 files changed, 3 insertions(+), 1 deletions(-)
->
->  diff --git a/kernel/cgroup.c b/kernel/cgroup.c
->  index d8abe99..e9c2fb0 100644
->  --- a/kernel/cgroup.c
->  +++ b/kernel/cgroup.c
->  @@ -2232,7 +2232,6 @@ static long cgroup_create(struct cgroup *parent, struct dentry *dentry,
->
->         mutex_lock(&cgroup_mutex);
->
->  -       cgrp->flags = 0;
->         INIT_LIST_HEAD(&cgrp->sibling);
->         INIT_LIST_HEAD(&cgrp->children);
->         INIT_LIST_HEAD(&cgrp->css_sets);
->  @@ -2242,6 +2241,9 @@ static long cgroup_create(struct cgroup *parent, struct dentry *dentry,
->         cgrp->root = parent->root;
->         cgrp->top_cgroup = parent->top_cgroup;
->
->  +       if (notify_on_release(parent))
->  +               set_bit(CGRP_NOTIFY_ON_RELEASE, &cgrp->flags);
->  +
->         for_each_subsys(root, ss) {
->                 struct cgroup_subsys_state *css = ss->create(ss, cgrp);
->                 if (IS_ERR(css)) {
->  --
->  1.5.4.rc3
->
->
+You can see which trees have been included by looking in the Next/Trees
+file in the source.  There are also quilt-import.log and merge.log files
+in the Next directory.  Between each merge, the tree was built with
+allmodconfig for both powerpc and x86_64.
+
+There were only two minor merge problems.
+
+We are up to 33 trees, more are welcome (even if they are currently
+empty).
+
+Status of my local build tests is at
+http://kisskb.ellerman.id.au/kisskb/branch/9/.
+
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Mon__25_Feb_2008_17_31_00_+1100_4uQ05rp/D25iOgSS
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQFHwmC0TgG2atn1QN8RAkB9AJ4ntOtBmiFWA0eFt1aezx1zSqQ9bQCgkTzf
+sP6ivSBQsEqXq5phzJ+1tY4=
+=nYEj
+-----END PGP SIGNATURE-----
+
+--Signature=_Mon__25_Feb_2008_17_31_00_+1100_4uQ05rp/D25iOgSS--
