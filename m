@@ -1,112 +1,116 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757332AbYBYSGz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757537AbYBYSIh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757332AbYBYSGz (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 Feb 2008 13:06:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754975AbYBYSGr
+	id S1757537AbYBYSIh (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 Feb 2008 13:08:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754893AbYBYSI3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 Feb 2008 13:06:47 -0500
-Received: from smtp120.sbc.mail.sp1.yahoo.com ([69.147.64.93]:45981 "HELO
-	smtp120.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1753927AbYBYSGq (ORCPT
+	Mon, 25 Feb 2008 13:08:29 -0500
+Received: from theia.rz.uni-saarland.de ([134.96.7.31]:28647 "EHLO
+	theia.rz.uni-saarland.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755138AbYBYSI2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 Feb 2008 13:06:46 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:Received:Date:From:To:Subject:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-Id;
-  b=u/UVA54NJxS3Bkh+tkozC08UsVF43sap3RF55jyvrwGudVABUyEeySBNeRjPaeuIArE3HCNjxMGrZIvNoGCSePu+JHcy4rn5s3pBNSO4D1nSbYKkqWDgk39r4U+khmjQALIOkwrnHmHMaoRg98diaCT6nSPj0XYoLyoulRZputg=  ;
-X-YMail-OSG: v3V1zVoVM1nL1b.wtfPipP27HH3CeSbAtf5sJQGp_Qe6g31SEJpsYoZcMmlBl_tJ3KmKlT_4yA--
-X-Yahoo-Newman-Property: ymail-3
-Date: Mon, 25 Feb 2008 10:06:44 -0800
-From: David Brownell <david-b@pacbell.net>
-To: hskinnemoen@atmel.com
-Subject: Re: [patch 2.6.25-rc2-git 1/2] atmel_tc library
-Cc: nicolas.ferre@rfo.atmel.com, linux@maxim.org.za,
-       linux-kernel@vger.kernel.org, akpm@linux-foundation.org
-References: <200802221723.24003.david-b@pacbell.net>
- <20080224184554.2c863f63@siona>
- <20080224225527.62D5D28E1A2@adsl-69-226-248-13.dsl.pltn13.pacbell.net>
- <20080225012637.1535c95b@siona>
- <20080225010310.B59E98E4B8@adsl-69-226-248-13.dsl.pltn13.pacbell.net>
- <20080225124319.4ec8a00b@dhcp-252-066.norway.atmel.com>
-In-Reply-To: <20080225124319.4ec8a00b@dhcp-252-066.norway.atmel.com>
-MIME-Version: 1.0
+	Mon, 25 Feb 2008 13:08:28 -0500
+Date: Mon, 25 Feb 2008 19:07:51 +0100
+From: Alexander van Heukelum <heukelum@mailshack.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Alexander van Heukelum <heukelum@fastmail.fm>,
+       "H. Peter Anvin" <hpa@zytor.com>, Andi Kleen <ak@suse.de>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: [PATCH] reserve_early end-of-conventional-memory to 1MB
+Message-ID: <20080225180750.GA31054@mailshack.com>
+References: <20080224174605.GA21661@mailshack.com> <47C22568.1010405@zytor.com> <1203958478.20033.1239002461@webmail.messagingengine.com> <20080225170134.GA15839@elte.hu>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-Id: <20080225180644.78CA31E564F@adsl-69-226-248-13.dsl.pltn13.pacbell.net>
+Content-Disposition: inline
+In-Reply-To: <20080225170134.GA15839@elte.hu>
+User-Agent: Mutt/1.5.9i
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (theia.rz.uni-saarland.de [134.96.7.31]); Mon, 25 Feb 2008 19:08:01 +0100 (CET)
+X-AntiVirus: checked by AntiVir MailGate (version: 2.1.2-14; AVE: 7.6.0.67; VDF: 7.0.2.189; host: AntiVir1)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > > Which reminds me...you were talking about a patch that adds oneshot
-> > > support for the count/compare clocksource and more cleanups, but I
-> > > don't think I've seen it...?
-> > 
-> > I avoid sending non-working patches, and hadn't made time to
-> > work on that issue recently.
->
-> I was thinking that I could perhaps help you get it working...
+Explicitly reserve_early the whole address range from the end of
+conventional memory as reported by the bios data area up to the
+1Mb mark. Regard the info retrieved from the BIOS data area with
+a bit of paranoia, though, because some biosses forget to register
+the EBDA correctly.
 
-OK, if you want I'll send it.
+Signed-off-by: Alexander van Heukelum <heukelum@fastmail.fm>
 
+--
 
-> > > I've never really seen the point of indenting those defines at all.
-> > 
-> > Without them, it's harder to discern the logical structure of
-> > all the various bitfields and their contents.
->
-> I prefer to separate the registers from the bitfields and the other
-> stuff. That way, no indentation is necessary.
+I think this patch is against -x86.git#testing :-/.
 
-But that way it's no longer clear which symbols apply to which
-registers.  It's not "needed" because that information became
-harder to find ... as in <include/asm-avr32/arch-at32ap/time.h>,
-which ISTR isn't even complete in its bitfield definitions.
+Greetings,
+	Alexander
 
+ arch/x86/kernel/head64.c |   45 +++++++++++++++++++++++++++------------------
+ 1 files changed, 27 insertions(+), 18 deletions(-)
 
-> > > I thought about that, but while the driver can safely call clk_enable()
-> > > on the same clock several times, I'm not sure if it's such a great idea
-> > > to call request_irq() on the same interrupt several times. So the
-> > > driver probably needs to know how many irqs there really are and might
-> > > as well use platform_get_irq() to find out.
-> > 
-> > I thought the whole point of passing the clocks was to avoid needing
-> > to ask for them!!  If trying one or three platform_get_irq() calls is
-> > OK, then surely trying one or three clk_get() calls is also OK...
->
-> If you want to go down that path, surely reserving the iomem resource
-> is fine too? Why don't we just kill the whole tclib layer, the driver
-> can certainly do everything itself?
-
-There's one clear need for tclib:  to hand out timers from the (small)
-pool of hardware entities.  Each one can be used for different purposes
-by different drivers.
-
-The *current* tclib addresses only that minimal need.
-
-You're the one who wants to add more to it; I was just pointing out that
-you were being inconsistent.
-
-
-> Of course the driver should be responsible for calling clk_enable() and
-> clk_disable(). Otherwise, power management will be tricky. And since
-> the driver may need to make a decision about which interrupts to
-> request, it might as well call platform_get_irq() directly.
-
-You're being inconsistent here.  It has to make the same kinds of
-decision about which clocks to enable/disable.  So why should it
-have to platform_get_irq() but not clk_get()?
-
-
-> On the other hand, the driver will _always_ need a reference to each
-> clock,
-
-No; it doesn't need references to clocks for unused TC channels.
-
-
->	and it will always need a pointer through which to access the
-> registers, so the mid-layer might as well do those things.
-
-True about doing the ioremap.
-
-- Dave
-
+diff --git a/arch/x86/kernel/head64.c b/arch/x86/kernel/head64.c
+index 38f32e7..b684552 100644
+--- a/arch/x86/kernel/head64.c
++++ b/arch/x86/kernel/head64.c
+@@ -49,33 +49,42 @@ static void __init copy_bootdata(char *real_mode_data)
+ 	}
+ }
+ 
+-#define EBDA_ADDR_POINTER 0x40E
++#define BIOS_EBDA_SEGMENT 0x40E
++#define BIOS_LOWMEM_KILOBYTES 0x413
+ 
++/*
++ * The BIOS places the EBDA/XBDA at the top of conventional
++ * memory, and usually decreases the reported amount of
++ * conventional memory (int 0x12) too.
++ */
+ static __init void reserve_ebda(void)
+ {
+-	unsigned ebda_addr, ebda_size;
++	unsigned int lowmem, ebda_addr;
+ 
+-	/*
+-	 * there is a real-mode segmented pointer pointing to the
+-	 * 4K EBDA area at 0x40E
+-	 */
+-	ebda_addr = *(unsigned short *)__va(EBDA_ADDR_POINTER);
++	/* end of low (conventional) memory */
++	lowmem = *(unsigned short *)__va(BIOS_LOWMEM_KILOBYTES);
++	lowmem <<= 10;
++
++	/* start of EBDA area */
++	ebda_addr = *(unsigned short *)__va(BIOS_EBDA_SEGMENT);
+ 	ebda_addr <<= 4;
+ 
+-	if (!ebda_addr)
+-		return;
++	/* Fixup: bios puts an EBDA in the top 64K segment */
++	/* of conventional memory, but does not adjust lowmem. */
++	if ((lowmem - ebda_addr) <= 0x10000)
++		lowmem = ebda_addr;
+ 
+-	ebda_size = *(unsigned short *)__va(ebda_addr);
++	/* Fixup: bios does not report an EBDA at all. */
++	/* Some old Dells seem to need 4k anyhow (bugzilla 2990) */
++	if ((ebda_addr == 0) && (lowmem >= 0x9f000))
++		lowmem = 0x9f000;
+ 
+-	/* Round EBDA up to pages */
+-	if (ebda_size == 0)
+-		ebda_size = 1;
+-	ebda_size <<= 10;
+-	ebda_size = round_up(ebda_size + (ebda_addr & ~PAGE_MASK), PAGE_SIZE);
+-	if (ebda_size > 64*1024)
+-		ebda_size = 64*1024;
++	/* Paranoia: should never happen, but... */
++	if (lowmem >= 0x100000)
++		lowmem = 0xa0000;
+ 
+-	reserve_early(ebda_addr, ebda_addr + ebda_size, "EBDA");
++	/* reserve all memory between lowmem and the 1MB mark */
++	reserve_early(lowmem, 0x100000, "BIOS reserved");
+ }
+ 
+ void __init x86_64_start_kernel(char * real_mode_data)
