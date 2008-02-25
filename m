@@ -1,53 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760163AbYBYXfJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759737AbYBYXgj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760163AbYBYXfJ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 Feb 2008 18:35:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756713AbYBYXe4
+	id S1759737AbYBYXgj (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 Feb 2008 18:36:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755270AbYBYXg3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 Feb 2008 18:34:56 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:39584 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756790AbYBYXe4 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 Feb 2008 18:34:56 -0500
-Date: Mon, 25 Feb 2008 18:34:49 -0500
-From: Christoph Hellwig <hch@infradead.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Pekka Paalanen <pq@iki.fi>, linux-kernel@vger.kernel.org,
-       Ingo Molnar <mingo@elte.hu>, Christoph Hellwig <hch@infradead.org>,
-       Arjan van de Ven <arjan@infradead.org>, Pavel Roskin <proski@gnu.org>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Andy Whitcroft <apw@shadowen.org>
-Subject: Re: [RFC] mmiotrace full patch, preview 1
-Message-ID: <20080225233449.GA25448@infradead.org>
-References: <20080224190323.77adf683@daedalus.pq.iki.fi> <20080225144922.ae716e7d.akpm@linux-foundation.org>
+	Mon, 25 Feb 2008 18:36:29 -0500
+Received: from srv5.dvmed.net ([207.36.208.214]:33202 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755178AbYBYXg2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 25 Feb 2008 18:36:28 -0500
+Message-ID: <47C350FA.7060700@garzik.org>
+Date: Mon, 25 Feb 2008 18:36:26 -0500
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080225144922.ae716e7d.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
+To: Marin Mitov <mitov@issp.bas.bg>
+CC: linux-kernel@vger.kernel.org, NetDev <netdev@vger.kernel.org>
+Subject: Re: [git patches] net driver updates
+References: <OF5F5F5698.07AB615F-ON652573F6.00142D8A-652573F6.00147DC9@in.ibm.com> <8A71B368A89016469F72CD08050AD334026D652F@maui.asicdesigners.com> <47C34838.3040502@garzik.org> <200802260134.02075.mitov@issp.bas.bg>
+In-Reply-To: <200802260134.02075.mitov@issp.bas.bg>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.4 (----)
+X-Spam-Report: SpamAssassin version 3.2.3 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Feb 25, 2008 at 02:49:22PM -0800, Andrew Morton wrote:
-> the things which it finds.
+Marin Mitov wrote:
+> On Tuesday 26 February 2008 12:59:04 am you wrote:
+>> Divy Le Ray wrote:
+>>>> From: "Divy Le Ray" <divy@chelsio.com>
+>>>> Date: Wed, 20 Feb 2008 21:57:08 -0800
+>>>>
+>>>>> The driver is cxgb3 here, it uses LLTX.
+>>>> That's extremely unfortunate, hopefully you can update it to
+>>>> use a model like tg3 and others use.  LLTX is a lost cause
+>>>> for hardware device drivers, and in fact we'd like to remove
+>>>> it tree wide eventually.
 > 
-> > +static DECLARE_MUTEX(kmmio_init_mutex);
-> 
-> That's not a mutex.
-> 
-> > +	down(&kmmio_init_mutex);
-> 
-> It's a semaphore.  Please do convert it to a mutex.
-> 
-> Andy, I'd say that addition of new semaphores is worth a warning - they're
-> rarely legitimate.
+> Just for info: loopback.c uses it too :-)
 
-I'm not sure that any semaphore should be a warning, but the initializer
-for semaphore used as binary mutex (DECLARE_MUTEX and init_MUTEX) are
-worth it.
+Yes, we're all aware of this.  Google for "david miller loopback lltx" 
+for a few examples...
+
+Also, please do not strip CC's, that's quite annoying.
+
+	Jeff
+
+
 
