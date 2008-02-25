@@ -1,56 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758205AbYBYT2c@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756366AbYBYTik@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758205AbYBYT2c (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 Feb 2008 14:28:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756689AbYBYT2L
+	id S1756366AbYBYTik (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 Feb 2008 14:38:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754832AbYBYTia
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 Feb 2008 14:28:11 -0500
-Received: from smtp5.pp.htv.fi ([213.243.153.39]:42334 "EHLO smtp5.pp.htv.fi"
+	Mon, 25 Feb 2008 14:38:30 -0500
+Received: from ns1.suse.de ([195.135.220.2]:51410 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756263AbYBYT2J (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 Feb 2008 14:28:09 -0500
-Date: Mon, 25 Feb 2008 21:27:10 +0200
-From: Adrian Bunk <bunk@kernel.org>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: Steven Rostedt <srostedt@redhat.com>, Valdis.Kletnieks@vt.edu,
-       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       Arnaldo Carvalho de Melo <acme@ghostprotocols.net>,
-       linux-kernel@vger.kernel.org, Alan Cox <alan@redhat.com>
-Subject: Re: [PATCH] 2.6.25-rc2-mm1 - fix mcount GPL bogosity.
-Message-ID: <20080225192710.GA13635@cs181133002.pp.htv.fi>
-References: <30804.1203962369@turing-police.cc.vt.edu> <47C3078E.3000008@redhat.com> <20080225181957.4eeed15d@core>
+	id S1753365AbYBYTi3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 25 Feb 2008 14:38:29 -0500
+From: Andreas Schwab <schwab@suse.de>
+To: "Kiyoshi Ueda" <k-ueda@ct.jp.nec.com>
+Cc: <petkovbb@gmail.com>, <bzolnier@gmail.com>, <linux-kernel@vger.kernel.org>,
+       <jens.axboe@oracle.com>, <j-nomura@ce.jp.nec.com>
+Subject: Re: 2.6.25-rc1/2 CD/DVD burning broken
+References: <jelk5k62uy.fsf@sykes.suse.de>
+	<58cb370e0802180759h4d44b9bci86f02919a48c7979@mail.gmail.com>
+	<20080218.135827.74754725.k-ueda@ct.jp.nec.com>
+	<jek5kvisih.fsf@sykes.suse.de> <20080224163244.GA11998@gollum.tnic>
+	<jehcfyffyp.fsf@sykes.suse.de> <002101c87759$0fb4f010$58f80d0a@brian>
+X-Yow: ..  or were you driving the PONTIAC that HONKED at me
+ in MIAMI last Tuesday?
+Date: Mon, 25 Feb 2008 20:38:22 +0100
+In-Reply-To: <002101c87759$0fb4f010$58f80d0a@brian> (Kiyoshi Ueda's message of
+	"Sun\, 24 Feb 2008 21\:49\:31 -0500")
+Message-ID: <jeejb0968h.fsf@sykes.suse.de>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/22.1 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <20080225181957.4eeed15d@core>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Feb 25, 2008 at 06:19:57PM +0000, Alan Cox wrote:
-> > The reason I added GPL is not because of some idea that this is all 
-> > "chummy" with the kernel. But because I derived the mcount code from 
-> > glibc's version of mcount. Now you may argue that glibc is under LGPL 
-> > and a non-GPL export is fine. But I've been advised that if I ever take 
-> > code from someone else, to always export it with GPL.
-> 
-> As I understand it if Vladis wants to submit his own change to the symbol
-> thats up to him, and he'll be liable for any fallout with the FSF, or
-> harm to Linux resulting, so long he's the one who signs it off.
->...
+"Kiyoshi Ueda" <k-ueda@ct.jp.nec.com> writes:
 
-Why isn't anyone distributing it liable if it is not legally correct?
+> I'm looking at this problem, but currently no idea why the conversion
+> to blk_end_request causes it.
 
-> Alan
+cdrom_newpc_intr apparently never sets rq->sense_len.
 
-cu
-Adrian
+Andreas.
 
 -- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
-
+Andreas Schwab, SuSE Labs, schwab@suse.de
+SuSE Linux Products GmbH, Maxfeldstraße 5, 90409 Nürnberg, Germany
+PGP key fingerprint = 58CA 54C7 6D53 942B 1756  01D3 44D5 214B 8276 4ED5
+"And now for something completely different."
