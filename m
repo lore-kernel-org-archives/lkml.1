@@ -1,60 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760959AbYBYWxe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761596AbYBYWyZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760959AbYBYWxe (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 Feb 2008 17:53:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758184AbYBYWx0
+	id S1761596AbYBYWyZ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 Feb 2008 17:54:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758894AbYBYWyP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 Feb 2008 17:53:26 -0500
-Received: from srv5.dvmed.net ([207.36.208.214]:48815 "EHLO mail.dvmed.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755618AbYBYWxZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 Feb 2008 17:53:25 -0500
-Message-ID: <47C346E2.10908@garzik.org>
-Date: Mon, 25 Feb 2008 17:53:22 -0500
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
-MIME-Version: 1.0
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       torvalds@osdl.org, "Cai, Crane" <Crane.Cai@amd.com>
-Subject: Re: GAK!!!! Re: PCI: AMD SATA IDE mode quirk
-References: <200802220059.m1M0xgjZ022717@hera.kernel.org> <20080222094828.2a0124ca@core>
-In-Reply-To: <20080222094828.2a0124ca@core>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Mon, 25 Feb 2008 17:54:15 -0500
+Received: from smtp1.linux-foundation.org ([207.189.120.13]:46616 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1758527AbYBYWyO (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 25 Feb 2008 17:54:14 -0500
+Date: Mon, 25 Feb 2008 14:51:56 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Jan Kara <jack@suse.cz>
+Cc: Nix <nix@esperi.org.uk>, Peter Osterlund <petero2@telia.com>,
+       linux-kernel@vger.kernel.org, dm-devel@redhat.com,
+       Jan Kara <jack@ucw.cz>
+Subject: Re: 2.6.24.2: 4KSTACKS + pcdrw + dm + mount -> stack overflow:
+ ide-cd related? dm-related?
+Message-Id: <20080225145156.4184b509.akpm@linux-foundation.org>
+In-Reply-To: <20080225224807.GA15700@atrey.karlin.mff.cuni.cz>
+References: <87wsovkth5.fsf@hades.wkstn.nix>
+	<87skzipcpw.fsf@hades.wkstn.nix>
+	<m363wepa3a.fsf@telia.com>
+	<87oda6p9st.fsf@hades.wkstn.nix>
+	<20080225123041.401da103.akpm@linux-foundation.org>
+	<20080225224807.GA15700@atrey.karlin.mff.cuni.cz>
+X-Mailer: Sylpheed 2.4.7 (GTK+ 2.12.1; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.4 (----)
-X-Spam-Report: SpamAssassin version 3.2.3 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alan Cox wrote:
->>     Signed-off-by: Crane Cai <crane.cai@amd.com>
->>     Acked-by: Jeff Garzik <jeff@garzik.org>
->>     Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
-> 
-> Vomitted-upon-by: Alan Cox <alan@redhat.com>
-> 
->> -	if ((pdev->class >> 8) == PCI_CLASS_STORAGE_IDE) {
->> -		u8 tmp;
->> +	/* set sb600/sb700/sb800 sata to ahci mode */
->> +	u8 tmp;
->>  
->> +	pci_read_config_byte(pdev, PCI_CLASS_DEVICE, &tmp);
->> +	if (tmp == 0x01) {
-> 
-> CLASS_DEVICE is cached in pdev->class so why not simply do:
-> 
-> 	if (pdev->class & (1 << 8))
+On Mon, 25 Feb 2008 23:48:07 +0100 Jan Kara <jack@suse.cz> wrote:
 
-I agree.  I [obviously] missed this when I ack'd, mainly ack'ing the 
-overall change.
+> > udf_process_sequence() seems to be another victim of gcc inlining.
+>   Hmm, I'll have a look what we can do.
 
-BIOS certainly may modify that PCI config register, but that's before 
-the kernel boots.  So, using pdev->class is fine.
+noinline...
 
-	Jeff
+> > udf_add_entry() defines a couple of 256-byte local arrays.
+>   Yes, exactly two of them. One is  non-trivial to get rid of - it's
+> used for encoding of filename before we write it, but one is used during
+> scanning of the directory whether the entry doesn't already exists (oh,
+> my!) and we can just rip that off..
 
-
-
+kmalloc is quite fast ;)
