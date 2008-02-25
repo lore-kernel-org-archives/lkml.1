@@ -1,59 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758037AbYBYR66@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758217AbYBYR7R@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758037AbYBYR66 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 Feb 2008 12:58:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757866AbYBYR6p
+	id S1758217AbYBYR7R (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 Feb 2008 12:59:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757921AbYBYR6u
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 Feb 2008 12:58:45 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:60981 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757853AbYBYR6o (ORCPT
+	Mon, 25 Feb 2008 12:58:50 -0500
+Received: from einhorn.in-berlin.de ([192.109.42.8]:36962 "EHLO
+	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757894AbYBYR6t (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 Feb 2008 12:58:44 -0500
-Date: Mon, 25 Feb 2008 09:54:02 -0800
-From: Greg KH <greg@kroah.com>
-To: mark gross <mgross@linux.intel.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       lkml <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] copyright owner and author clean up for intel iommu
-	and related files
-Message-ID: <20080225175402.GB18940@kroah.com>
-References: <20080221181555.GA9593@linux.intel.com> <20080223000443.da075061.akpm@linux-foundation.org> <20080223190649.GA8641@kroah.com> <20080223112022.8e4fdde2.akpm@linux-foundation.org> <20080225155014.GA22018@linux.intel.com>
+	Mon, 25 Feb 2008 12:58:49 -0500
+X-Envelope-From: stefanr@s5r6.in-berlin.de
+Date: Mon, 25 Feb 2008 18:58:25 +0100 (CET)
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Subject: [GIT PULL] FireWire updates
+To: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+cc: linux-kernel@vger.kernel.org, linux1394-devel@lists.sourceforge.net
+In-Reply-To: <tkrat.68585c2b7aee00eb@s5r6.in-berlin.de>
+Message-ID: <tkrat.14d846ed63cc91c2@s5r6.in-berlin.de>
+References: <tkrat.459cc31de75e4149@s5r6.in-berlin.de>
+ <tkrat.68585c2b7aee00eb@s5r6.in-berlin.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080225155014.GA22018@linux.intel.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+Content-Type: TEXT/PLAIN; CHARSET=us-ascii
+Content-Disposition: INLINE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Feb 25, 2008 at 07:50:14AM -0800, mark gross wrote:
-> On Sat, Feb 23, 2008 at 11:20:22AM -0800, Andrew Morton wrote:
-> > On Sat, 23 Feb 2008 11:06:49 -0800 Greg KH <greg@kroah.com> wrote:
-> > 
-> > > On Sat, Feb 23, 2008 at 12:04:43AM -0800, Andrew Morton wrote:
-> > > > On Thu, 21 Feb 2008 10:15:55 -0800 mark gross <mgross@linux.intel.com> wrote:
-> > > > 
-> > > > > Index: linux-2.6.24-mm1/drivers/pci/dmar.c
-> > > > 
-> > > > I guess this is strictly a greg-pci-tree thing.  Greg, how do you want
-> > > > to play intel-iommu?
-> > > 
-> > > Yes, I'll take those.  I'm pretty sure I even have the hardware here to
-> > > test that the code doesn't crash :)
-> > > 
-> > 
-> > ok..
-> > 
-> > I have another one queued for 2.6.26-via-greg:
-> > pci-iova-rb-tree-setup-tweak.patch
-> > 
-> 
-> Should I start sending all the intel-iommu related stuff to Greg then?
+Linus, please pull from the for-linus branch at
 
-Sure, and the linux-pci list so that people can review them.
+    git://git.kernel.org/pub/scm/linux/kernel/git/ieee1394/linux1394-2.6.git for-linus
 
-thanks,
+to receive the following updates for the firewire and the ieee1394
+subsystems.  This queue consists of fixes developed between end of
+January and February 20.  Therefore several of these updates were not
+yet visible in -mm.  But all of them showed up in -next (behind planned
+post 2.6.25 stuff), most of them AFAIK also in Fedora test kernels.
 
-greg k-h
+The queue improves the SBP-2 driver's reliability during device
+recognition and during bus topology changes.
+
+All patches have been seen on LKML and linux1394-devel but I will follow
+up with the combined full log and diff.  Diffstat and shortlog:
+
+ Documentation/debugging-via-ohci1394.txt |   17 +-
+ drivers/firewire/fw-cdev.c               |   17 +-
+ drivers/firewire/fw-device.c             |   48 ++-
+ drivers/firewire/fw-device.h             |    2 +-
+ drivers/firewire/fw-sbp2.c               |  358 +++++++++++++++++-----
+ drivers/ieee1394/sbp2.c                  |   15 +
+ drivers/ieee1394/sbp2.h                  |    2 +
+ 7 files changed, 350 insertions(+), 109 deletions(-)
+
+Stefan Richter (19):
+      firewire: fw-sbp2: unsigned int vs. unsigned
+      firewire: fw-sbp2: fix logout before login retry
+      firewire: fix "kobject_add failed for fw* with -EEXIST"
+      firewire: fw-sbp2: don't retry login or reconnect after unplug
+      firewire: log GUID of new devices
+      firewire: fw-sbp2: add INQUIRY delay workaround
+      ieee1394: sbp2: add INQUIRY delay workaround
+      firewire: fw-sbp2: wait for completion of fetch agent reset
+      firewire: fw-sbp2: log bus_id at management request failures
+      firewire: fw-sbp2: don't add scsi_device twice
+      firewire: fw-sbp2: logout and login after failed reconnect
+      firewire: fw-sbp2: sort includes
+      firewire: fw-sbp2: enforce a retry of __scsi_add_device if bus generation changed
+      firewire: fw-sbp2: (try to) avoid I/O errors during reconnect
+      firewire: fw-sbp2: fix NULL pointer deref. in slave_alloc
+      firewire: fw-sbp2: fix NULL pointer deref. in scsi_remove_device
+      ieee1394: sbp2: fix rescan-scsi-bus
+      Documentation: correction to debugging-via-ohci1394
+      firewire: fix NULL pointer deref. and resource leak
+
+Thanks,
+-- 
+Stefan Richter
+-=====-==--- --=- ==--=
+http://arcgraph.de/sr/
+
