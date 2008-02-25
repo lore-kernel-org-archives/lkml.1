@@ -1,57 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757106AbYBYV3f@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758100AbYBYVa5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757106AbYBYV3f (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 Feb 2008 16:29:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751071AbYBYV30
+	id S1758100AbYBYVa5 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 Feb 2008 16:30:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751564AbYBYVar
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 Feb 2008 16:29:26 -0500
-Received: from wa-out-1112.google.com ([209.85.146.182]:57773 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750769AbYBYV30 (ORCPT
+	Mon, 25 Feb 2008 16:30:47 -0500
+Received: from mail0.lsil.com ([147.145.40.20]:36823 "EHLO mail0.lsil.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751119AbYBYVaq convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 Feb 2008 16:29:26 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
-        b=LuCtfFz6oXR3ugKerAlMqp+c+saHqb04fIfpfp/g0ZgrCcYHvDkfwkj4ya28GDhcSOnWCPBPSFKE82hotIHhzMOt6v+AMCRT0ymYZIVGx6uWNPi0CWzfQHMbnAu+okOYEg2ghVQ7kZoQ2FFEeoS+1UFesxsZ+APMRJnRmykSsiE=
-Message-ID: <6278d2220802251329x75b6d4c5lc3fab6fe6e75363f@mail.gmail.com>
-Date: Mon, 25 Feb 2008 21:29:24 +0000
-From: "Daniel J Blueman" <daniel.blueman@gmail.com>
-To: "Linux Kernel" <linux-kernel@vger.kernel.org>
-Subject: [2.6.25-rc3] ACPI _PPC limiting processor speed...
+	Mon, 25 Feb 2008 16:30:46 -0500
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Subject: RE: [PATCH 1/1] scsi: megaraid_sas - Fix random failure of DCDBcmds with sense info
+Date: Mon, 25 Feb 2008 14:30:19 -0700
+Message-ID: <9738BCBE884FDB42801FAD8A7769C26501F69BBB@NAMAIL1.ad.lsil.com>
+In-Reply-To: <1203698131.6206.22.camel@localhost.localdomain>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [PATCH 1/1] scsi: megaraid_sas - Fix random failure of DCDBcmds with sense info
+Thread-Index: Ach1cPOlhX1dqRsRQdORruWeYwc+/wCg44Rg
+From: "Yang, Bo" <Bo.Yang@lsi.com>
+To: "James Bottomley" <James.Bottomley@HansenPartnership.com>
+Cc: "Matthew Wilcox" <matthew@wil.cx>, <linux-scsi@vger.kernel.org>,
+       <akpm@osdl.org>, <linux-kernel@vger.kernel.org>,
+       "Patro, Sumant" <Sumant.Patro@lsi.com>,
+       "Kolli, Neela" <Neela.Kolli@lsi.com>
+X-OriginalArrivalTime: 25 Feb 2008 21:30:22.0502 (UTC) FILETIME=[A0974460:01C877F5]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-My 2.2GHz [1] Thinkpad T61 is unable to get past 1.2GHz, seemingly
-because of the _PPC ACPI objects [2].
+James,
 
-Given that the _PPC object is different for both cores, is this more
-of a BIOS bug or an ACPI interpreter problem? The problem was present
-in 2.6.24-rc, 2.6.24 final and since.
+Thanks for the reply.  We will resubmit the patch to rollback it to our
+original implementation.
 
-BIOS is 7LETA9WW/2.09, so current - would any further information be
-useful for debugging this problem, and would dumping the ACPI tables
-be useful?
+Regards.
 
-Thanks,
-  Daniel
+Bo Yang
 
---- [1]
+-----Original Message-----
+From: James Bottomley [mailto:James.Bottomley@HansenPartnership.com] 
+Sent: Friday, February 22, 2008 11:36 AM
+To: Yang, Bo
+Cc: Matthew Wilcox; linux-scsi@vger.kernel.org; akpm@osdl.org;
+linux-kernel@vger.kernel.org; Patro, Sumant; Kolli, Neela
+Subject: RE: [PATCH 1/1] scsi: megaraid_sas - Fix random failure of
+DCDBcmds with sense info
 
-freq-table: table entry 0: 2201000 kHz, 0 index
-freq-table: table entry 1: 2200000 kHz, 1 index
-freq-table: table entry 2: 1600000 kHz, 2 index
-freq-table: table entry 3: 1200000 kHz, 3 index
-freq-table: table entry 4: 800000 kHz, 4 index
 
---- [2]
+On Fri, 2008-02-22 at 09:17 -0700, Yang, Bo wrote:
+> James,
+> 
+> What is the status for this patch?  We need to submit more patches 
+> based on the acceptance of this patch.
 
-cpufreq-core: CPU 0: _PPC is 3 - frequency  limited
-cpufreq-core: CPU 1: _PPC is 0 - frequency not limited
--- 
-Daniel J Blueman
+OK, read the thread; Matthew is right.  What you propose would pretty
+much destroy compat ioctl handling within the driver.  You need a compat
+handler for MEGASAS_IOC_FW.
+
+With your current patch you'd get a failure both from a 64 bit binary
+running on x86-64 and if someone ran the x86 binary on ia64.
+
+The driver already uses the compat infrastructure, it shouldn't be too
+hard to add this in the correct manner.
+
+James
+
+
