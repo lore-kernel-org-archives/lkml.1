@@ -1,18 +1,17 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757270AbYBYQ36@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757421AbYBYQa2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757270AbYBYQ36 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 Feb 2008 11:29:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755972AbYBYQ3P
+	id S1757421AbYBYQa2 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 Feb 2008 11:30:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756265AbYBYQ3T
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 Feb 2008 11:29:15 -0500
-Received: from 75-130-111-13.dhcp.oxfr.ma.charter.com ([75.130.111.13]:53892
+	Mon, 25 Feb 2008 11:29:19 -0500
+Received: from 75-130-111-13.dhcp.oxfr.ma.charter.com ([75.130.111.13]:53906
 	"EHLO novell1.haskins.net" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1755767AbYBYQ3M (ORCPT
+	by vger.kernel.org with ESMTP id S1756118AbYBYQ3S (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 Feb 2008 11:29:12 -0500
+	Mon, 25 Feb 2008 11:29:18 -0500
 From: Gregory Haskins <ghaskins@novell.com>
-Subject: [(RT RFC) PATCH v2 2/9] sysctl for runtime-control of lateral mutex
-	stealing
+Subject: [(RT RFC) PATCH v2 3/9] rearrange rt_spin_lock sleep
 To: mingo@elte.hu, a.p.zijlstra@chello.nl, tglx@linutronix.de,
        rostedt@goodmis.org, linux-rt-users@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org, bill.huey@gmail.com, kevin@hilman.org,
@@ -20,8 +19,8 @@ Cc: linux-kernel@vger.kernel.org, bill.huey@gmail.com, kevin@hilman.org,
        npiggin@suse.de, dsaxena@plexity.net, ak@suse.de, pavel@ucw.cz,
        acme@redhat.com, gregkh@suse.de, sdietrich@novell.com,
        pmorreale@novell.com, mkohari@novell.com, ghaskins@novell.com
-Date: Mon, 25 Feb 2008 11:00:48 -0500
-Message-ID: <20080225160048.11268.55059.stgit@novell1.haskins.net>
+Date: Mon, 25 Feb 2008 11:00:53 -0500
+Message-ID: <20080225160053.11268.60719.stgit@novell1.haskins.net>
 In-Reply-To: <20080225155959.11268.35541.stgit@novell1.haskins.net>
 References: <20080225155959.11268.35541.stgit@novell1.haskins.net>
 User-Agent: StGIT/0.12.1
@@ -32,73 +31,67 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Sven-Thorsten Dietrich <sdietrich@suse.de>
+The current logic makes rather coarse adjustments to current->state since
+it is planning on sleeping anyway.  We want to eventually move to an
+adaptive (e.g. optional sleep) algorithm, so we tighten the scope of the
+adjustments to bracket the schedule().  This should yield correct behavior
+with or without the adaptive features that are added later in the series.
+We add it here as a separate patch for greater review clarity on smaller
+changes.
 
-Add /proc/sys/kernel/lateral_steal, to allow switching on and off
-equal-priority mutex stealing between threads.
-
-Signed-off-by: Sven-Thorsten Dietrich <sdietrich@suse.de>
+Signed-off-by: Gregory Haskins <ghaskins@novell.com>
 ---
 
- kernel/rtmutex.c |    7 ++++++-
- kernel/sysctl.c  |   14 ++++++++++++++
- 2 files changed, 20 insertions(+), 1 deletions(-)
+ kernel/rtmutex.c |   20 +++++++++++++++-----
+ 1 files changed, 15 insertions(+), 5 deletions(-)
 
 diff --git a/kernel/rtmutex.c b/kernel/rtmutex.c
-index 6624c66..cd39c26 100644
+index cd39c26..ef52db6 100644
 --- a/kernel/rtmutex.c
 +++ b/kernel/rtmutex.c
-@@ -18,6 +18,10 @@
+@@ -681,6 +681,14 @@ rt_spin_lock_fastunlock(struct rt_mutex *lock,
+ 		slowfn(lock);
+ }
  
- #include "rtmutex_common.h"
- 
-+#ifdef CONFIG_RTLOCK_LATERAL_STEAL
-+int rtmutex_lateral_steal __read_mostly = 1;
-+#endif
++static inline void
++update_current(unsigned long new_state, unsigned long *saved_state)
++{
++	unsigned long state = xchg(&current->state, new_state);
++	if (unlikely(state == TASK_RUNNING))
++		*saved_state = TASK_RUNNING;
++}
 +
  /*
-  * lock->owner state tracking:
-  *
-@@ -321,7 +325,8 @@ static inline int lock_is_stealable(struct task_struct *pendowner, int unfair)
- 	if (current->prio > pendowner->prio)
- 		return 0;
+  * Slow path lock function spin_lock style: this variant is very
+  * careful not to miss any non-lock wakeups.
+@@ -720,7 +728,8 @@ rt_spin_lock_slowlock(struct rt_mutex *lock)
+ 	 * saved_state accordingly. If we did not get a real wakeup
+ 	 * then we return with the saved state.
+ 	 */
+-	saved_state = xchg(&current->state, TASK_UNINTERRUPTIBLE);
++	saved_state = current->state;
++	smp_mb();
  
--	if (!unfair && (current->prio == pendowner->prio))
-+	if (unlikely(current->prio == pendowner->prio) &&
-+	   !(unfair && rtmutex_lateral_steal))
- #endif
- 		return 0;
+ 	for (;;) {
+ 		unsigned long saved_flags;
+@@ -752,14 +761,15 @@ rt_spin_lock_slowlock(struct rt_mutex *lock)
  
-diff --git a/kernel/sysctl.c b/kernel/sysctl.c
-index c913d48..c24c53d 100644
---- a/kernel/sysctl.c
-+++ b/kernel/sysctl.c
-@@ -175,6 +175,10 @@ extern struct ctl_table inotify_table[];
- int sysctl_legacy_va_layout;
- #endif
+ 		debug_rt_mutex_print_deadlock(&waiter);
  
-+#ifdef CONFIG_RTLOCK_LATERAL_STEAL
-+extern int rtmutex_lateral_steal;
-+#endif
-+
- extern int prove_locking;
- extern int lock_stat;
+-		schedule_rt_mutex(lock);
++		update_current(TASK_UNINTERRUPTIBLE, &saved_state);
++		if (waiter.task)
++			schedule_rt_mutex(lock);
++		else
++			update_current(TASK_RUNNING_MUTEX, &saved_state);
  
-@@ -836,6 +840,16 @@ static struct ctl_table kern_table[] = {
- 		.proc_handler	= &proc_dointvec,
- 	},
- #endif
-+#ifdef CONFIG_RTLOCK_LATERAL_STEAL
-+	{
-+		.ctl_name       = CTL_UNNUMBERED,
-+		.procname       = "rtmutex_lateral_steal",
-+		.data           = &rtmutex_lateral_steal,
-+		.maxlen         = sizeof(int),
-+		.mode           = 0644,
-+		.proc_handler   = &proc_dointvec,
-+       },
-+#endif
- #ifdef CONFIG_PROC_FS
- 	{
- 		.ctl_name       = CTL_UNNUMBERED,
+ 		spin_lock_irqsave(&lock->wait_lock, flags);
+ 		current->flags |= saved_flags;
+ 		current->lock_depth = saved_lock_depth;
+-		state = xchg(&current->state, TASK_UNINTERRUPTIBLE);
+-		if (unlikely(state == TASK_RUNNING))
+-			saved_state = TASK_RUNNING;
+ 	}
+ 
+ 	state = xchg(&current->state, saved_state);
 
