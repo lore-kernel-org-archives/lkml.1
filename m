@@ -1,52 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756020AbYBYGor@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755317AbYBYGtW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756020AbYBYGor (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 Feb 2008 01:44:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753891AbYBYGoj
+	id S1755317AbYBYGtW (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 Feb 2008 01:49:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753177AbYBYGtO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 Feb 2008 01:44:39 -0500
-Received: from wr-out-0506.google.com ([64.233.184.230]:48192 "EHLO
-	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753670AbYBYGoi (ORCPT
+	Mon, 25 Feb 2008 01:49:14 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:57151 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752239AbYBYGtN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 Feb 2008 01:44:38 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=wcbQqNvwG5Ihp01SGAGCPrA3klzPfYAea7JnUJHniRw9oEY2443ywgHC5XgKwdD+f3JF8Q6nmUy1GbwG/nGfjrnJBaS83IHB1wNOwAg7gCKal4CyxcGp9ulzq2IU9zDftOgIG2X1zl6tuYLsbb3kaqp8UJraW+a3NrWhn6Oh6o0=
-Message-ID: <4d8e3fd30802242244s54e478acw1e582f7edf870b88@mail.gmail.com>
-Date: Mon, 25 Feb 2008 10:14:36 +0330
-From: "Paolo Ciarrocchi" <paolo.ciarrocchi@gmail.com>
-To: "Joe Perches" <joe@perches.com>
-Subject: Re: [PATCH 2/3] IDE: Replace __FUNCTION__ with __func__
-Cc: "Bartlomiej Zolnierkiewicz" <bzolnier@gmail.com>,
-       "Linux Kernel" <linux-kernel@vger.kernel.org>,
-       linux-ide <linux-ide@vger.kernel.org>
-In-Reply-To: <1203897888.19319.143.camel@localhost>
+	Mon, 25 Feb 2008 01:49:13 -0500
+Date: Sun, 24 Feb 2008 22:49:35 -0800
+From: Greg KH <greg@kroah.com>
+To: Pekka J Enberg <penberg@cs.helsinki.fi>
+Cc: Michael Buesch <mb@bu3sch.de>, Alexey Zaytsev <alexey.zaytsev@gmail.com>,
+       Ingo Molnar <mingo@elte.hu>, Alexey Zaytsev <zaytsev.a@protei.ru>,
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: bcm43xx regression in 2.6.24 (with patch)
+Message-ID: <20080225064935.GA20997@kroah.com>
+References: <47BEAF3B.3080809@protei.ru> <200802241529.50967.mb@bu3sch.de> <f19298770802240839w2c19fd52vb0d170359ba56fc5@mail.gmail.com> <200802241816.01784.mb@bu3sch.de> <Pine.LNX.4.64.0802250814450.10065@sbz-30.cs.Helsinki.FI>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <20080224221113.5ddfe371@paolo-desktop>
-	 <1203897888.19319.143.camel@localhost>
+In-Reply-To: <Pine.LNX.4.64.0802250814450.10065@sbz-30.cs.Helsinki.FI>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 2/25/08, Joe Perches <joe@perches.com> wrote:
-> On Sun, 2008-02-24 at 22:11 +0100, Paolo Ciarrocchi wrote:
-> > -	"driver.\n", __FUNCTION__, drive->name);
-> > +	"driver.\n", __func__, drive->name);
->
-> Is there consensus on this style conversion?
+On Mon, Feb 25, 2008 at 08:16:17AM +0200, Pekka J Enberg wrote:
+> Hi Michael,
+> 
+> On Sun, 24 Feb 2008, Michael Buesch wrote:
+> > > The ony way I see this was possible, you manually changed the
+> > > module loading order, so that the b43xx module was loaded prior
+> > > to the ssb and b44 modules. Right?
+> > 
+> > Right. So "so I'm left with either no wifi or no ethenet" being wrong.
+> 
+> Lets make this simple: it used to work before and now it doesn't. 
+> Therefore it's a regression that must be addressed. Period.
 
-I did that in a separate patch because i'm not sure about that.
+Isn't the resolution Michael is suggesting is, "use the different driver"?
 
-> Right now, there's 629 uses of __FUNCTION__ and 439 uses of __func__.
+thanks,
 
-Checkpatch.pl indicate the conversion as a janitorial task.
-
-Ciao,
---
-Paolo
-http://paolo.ciarrocchi.googlepages.com/
+greg k-h
