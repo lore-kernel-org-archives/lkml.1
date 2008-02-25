@@ -1,84 +1,112 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760247AbYBYWJR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760447AbYBYWJh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760247AbYBYWJR (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 Feb 2008 17:09:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756445AbYBYWJA
+	id S1760447AbYBYWJh (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 Feb 2008 17:09:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756118AbYBYWJ1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 Feb 2008 17:09:00 -0500
-Received: from cantor2.suse.de ([195.135.220.15]:56665 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753020AbYBYWJA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 Feb 2008 17:09:00 -0500
-From: Andreas Schwab <schwab@suse.de>
-To: petkovbb@gmail.com
-Cc: Kiyoshi Ueda <k-ueda@ct.jp.nec.com>, bzolnier@gmail.com,
-       linux-kernel@vger.kernel.org, jens.axboe@oracle.com,
-       j-nomura@ce.jp.nec.com
-Subject: Re: 2.6.25-rc1/2 CD/DVD burning broken
-References: <jelk5k62uy.fsf@sykes.suse.de>
-	<58cb370e0802180759h4d44b9bci86f02919a48c7979@mail.gmail.com>
-	<20080218.135827.74754725.k-ueda@ct.jp.nec.com>
-	<jek5kvisih.fsf@sykes.suse.de> <20080224163244.GA11998@gollum.tnic>
-	<jehcfyffyp.fsf@sykes.suse.de> <002101c87759$0fb4f010$58f80d0a@brian>
-	<jeejb0968h.fsf@sykes.suse.de> <20080225204543.GA26788@gollum.tnic>
-X-Yow: Oh, FISH sticks, CHEEZ WHIZ, GIN fizz, SHOW BIZ!!
-Date: Mon, 25 Feb 2008 23:08:55 +0100
-In-Reply-To: <20080225204543.GA26788@gollum.tnic> (Borislav Petkov's message
-	of "Mon\, 25 Feb 2008 21\:45\:43 +0100")
-Message-ID: <jeir0c7kp4.fsf@sykes.suse.de>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/22.1 (gnu/linux)
+	Mon, 25 Feb 2008 17:09:27 -0500
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:41958 "EHLO amd.ucw.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753020AbYBYWJ0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 25 Feb 2008 17:09:26 -0500
+Date: Mon, 25 Feb 2008 23:09:50 +0100
+From: Pavel Machek <pavel@ucw.cz>
+To: Gregory Haskins <ghaskins@novell.com>
+Cc: mingo@elte.hu, a.p.zijlstra@chello.nl, tglx@linutronix.de,
+       rostedt@goodmis.org, linux-rt-users@vger.kernel.org,
+       linux-kernel@vger.kernel.org, bill.huey@gmail.com, kevin@hilman.org,
+       cminyard@mvista.com, dsingleton@mvista.com, dwalker@mvista.com,
+       npiggin@suse.de, dsaxena@plexity.net, ak@suse.de, acme@redhat.com,
+       gregkh@suse.de, sdietrich@novell.com, pmorreale@novell.com,
+       mkohari@novell.com
+Subject: Re: [(RT RFC) PATCH v2 7/9] adaptive mutexes
+Message-ID: <20080225220950.GI2659@elf.ucw.cz>
+References: <20080225155959.11268.35541.stgit@novell1.haskins.net> <20080225160113.11268.538.stgit@novell1.haskins.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080225160113.11268.538.stgit@novell1.haskins.net>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Borislav Petkov <petkovbb@googlemail.com> writes:
+Hi!
 
-> On Mon, Feb 25, 2008 at 08:38:22PM +0100, Andreas Schwab wrote:
->> "Kiyoshi Ueda" <k-ueda@ct.jp.nec.com> writes:
->> 
->> > I'm looking at this problem, but currently no idea why the conversion
->> > to blk_end_request causes it.
->> 
->> cdrom_newpc_intr apparently never sets rq->sense_len.
->> 
->
-> actually it does, see the code chunk around line 1188 in 2.6.25-rc2, for
-> example.
+> From: Peter W.Morreale <pmorreale@novell.com>
+> 
+> This patch adds the adaptive spin lock busywait to rtmutexes.  It adds
+> a new tunable: rtmutex_timeout, which is the companion to the
+> rtlock_timeout tunable.
+> 
+> Signed-off-by: Peter W. Morreale <pmorreale@novell.com>
 
-Yes, it does, but it always adds zero.
+Not signed off by you?
 
-Move counting of sense bytes into the transfer loop.
+> diff --git a/kernel/Kconfig.preempt b/kernel/Kconfig.preempt
+> index ac1cbad..864bf14 100644
+> --- a/kernel/Kconfig.preempt
+> +++ b/kernel/Kconfig.preempt
+> @@ -214,6 +214,43 @@ config RTLOCK_DELAY
+>  	 tunable at runtime via a sysctl.  A setting of 0 (zero) disables
+>  	 the adaptive algorithm entirely.
+>  
+> +config ADAPTIVE_RTMUTEX
+> +        bool "Adaptive real-time mutexes"
+> +        default y
+> +        depends on ADAPTIVE_RTLOCK
+> +        help
+> +         This option adds the adaptive rtlock spin/sleep algorithm to
+> +         rtmutexes.  In rtlocks, a significant gain in throughput
+> +         can be seen by allowing rtlocks to spin for a distinct
+> +         amount of time prior to going to sleep for deadlock avoidence.
+> + 
+> +         Typically, mutexes are used when a critical section may need to
+> +         sleep due to a blocking operation.  In the event the critical 
+> +	 section does not need to sleep, an additional gain in throughput 
+> +	 can be seen by avoiding the extra overhead of sleeping.
 
-Signed-off-by: Andreas Schwab <schwab@suse.de>
+Watch the whitespace. ... and do we need yet another config options?
 
----
- drivers/ide/ide-cd.c |    5 ++---
- 1 file changed, 2 insertions(+), 3 deletions(-)
+> +config RTMUTEX_DELAY
+> +        int "Default delay (in loops) for adaptive mutexes"
+> +        range 0 10000000
+> +        depends on ADAPTIVE_RTMUTEX
+> +        default "3000"
+> +        help
+> +         This allows you to specify the maximum delay a task will use
+> +	 to wait for a rt mutex before going to sleep.  Note that that
+> +	 although the delay is implemented as a preemptable loop, tasks
+> +	 of like priority cannot preempt each other and this setting can
+> +	 result in increased latencies.
+> +	 
+> +         The value is tunable at runtime via a sysctl.  A setting of 0
+> +	 (zero) disables the adaptive algorithm entirely.
 
---- linux-2.6.25-rc3.orig/drivers/ide/ide-cd.c	2008-02-25 01:03:31.000000000 +0100
-+++ linux-2.6.25-rc3/drivers/ide/ide-cd.c	2008-02-25 22:54:42.000000000 +0100
-@@ -1182,11 +1182,10 @@ static ide_startstop_t cdrom_newpc_intr(
- 			else
- 				rq->data += blen;
- 		}
-+		if (!write && blk_sense_request(rq))
-+			rq->sense_len += blen;
- 	}
- 
--	if (write && blk_sense_request(rq))
--		rq->sense_len += thislen;
--
- 	/*
- 	 * pad, if necessary
- 	 */
+Ouch.
 
-Andreas.
+> +#ifdef CONFIG_ADAPTIVE_RTMUTEX
+> +
+> +#define mutex_adaptive_wait         adaptive_wait
+> +#define mutex_prepare_adaptive_wait prepare_adaptive_wait
+> +
+> +extern int rtmutex_timeout;
+> +
+> +#define DECLARE_ADAPTIVE_MUTEX_WAITER(name) \
+> +     struct adaptive_waiter name = { .owner = NULL,               \
+> +                                     .timeout = rtmutex_timeout, }
+> +
+> +#else
+> +
+> +#define DECLARE_ADAPTIVE_MUTEX_WAITER(name)
+> +
+> +#define mutex_adaptive_wait(lock, intr, waiter, busy) 1
+> +#define mutex_prepare_adaptive_wait(lock, busy) {}
 
+More evil macros. Macro does not behave like a function, make it
+inline function if you are replacing a function.
+								Pavel
 -- 
-Andreas Schwab, SuSE Labs, schwab@suse.de
-SuSE Linux Products GmbH, Maxfeldstraße 5, 90409 Nürnberg, Germany
-PGP key fingerprint = 58CA 54C7 6D53 942B 1756  01D3 44D5 214B 8276 4ED5
-"And now for something completely different."
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
