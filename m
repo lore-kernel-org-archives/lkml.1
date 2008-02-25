@@ -1,101 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760748AbYBYWbK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760554AbYBYWcg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760748AbYBYWbK (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 Feb 2008 17:31:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757988AbYBYWa4
+	id S1760554AbYBYWcg (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 Feb 2008 17:32:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757517AbYBYWc1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 Feb 2008 17:30:56 -0500
-Received: from fs1.baycontrols.com ([38.157.74.15]:53846 "EHLO
-	fs1.baycontrols.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757723AbYBYWaz (ORCPT
+	Mon, 25 Feb 2008 17:32:27 -0500
+Received: from rgminet01.oracle.com ([148.87.113.118]:15339 "EHLO
+	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757075AbYBYWcZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 Feb 2008 17:30:55 -0500
-Message-ID: <47C3419C.3030402@bay.ws>
-Date: Mon, 25 Feb 2008 17:30:52 -0500
-From: David Ludlow <dave.ludlow@bay.ws>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
-MIME-Version: 1.0
-To: linux-usb@vger.kernel.org
-CC: linux-kernel@vger.kernel.org
-Subject: [PATCH 001/001] usb: Add support for the mos7820/7840-based B&B USB/RS485
- converter to mos7840.c
+	Mon, 25 Feb 2008 17:32:25 -0500
+Date: Mon, 25 Feb 2008 14:30:48 -0800
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>,
+       Linux/m68k <linux-m68k@vger.kernel.org>
+Subject: Re: linux-next: Tree for Feb 24
+Message-Id: <20080225143048.a67c275f.randy.dunlap@oracle.com>
+In-Reply-To: <Pine.LNX.4.64.0802252252070.5158@anakin>
+References: <20080224162309.3e67dd22.sfr@canb.auug.org.au>
+	<Pine.LNX.4.64.0802252252070.5158@anakin>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.4.7 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
 Content-Type: multipart/mixed;
- boundary="------------020900030803070101060900"
+ boundary="Multipart=_Mon__25_Feb_2008_14_30_48_-0800_mF2R.J4EVkd+Rctz"
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 This is a multi-part message in MIME format.
---------------020900030803070101060900
-Content-Type: text/plain; charset=ISO-8859-1
+
+--Multipart=_Mon__25_Feb_2008_14_30_48_-0800_mF2R.J4EVkd+Rctz
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 
-From: David Ludlow <dave.ludlow@bay.ws>
+On Mon, 25 Feb 2008 22:56:04 +0100 (CET) Geert Uytterhoeven wrote:
 
-Add support for the mos7820/7840-based B&B USOPTL4_2/USOPTL4_4 USB/RS485 converter to mos7840.c
-Signed-off-by: Dave Ludlow <dave.ludlow@bay.ws>
+> P.S. For the interested, a script to update the SHA1 in the quilt series file:
+
+Thanks, anakin.
+Version to update $BASE based on current kernel tree is attached.
+
 ---
-DTR needs to be set/raised to receive and clear/lowered to send, as per the mos7840 datasheet.
+~Randy
 
---- linux-2.6.25-rc2/drivers/usb/serial/mos7840.c.orig	2008-02-25 15:13:42.000000000 -0500
-+++ linux-2.6.25-rc2/drivers/usb/serial/mos7840.c	2008-02-25 15:20:54.000000000 -0500
-@@ -110,11 +110,20 @@
- 
- /* vendor id and device id defines */
- 
-+/* The native mos7840/7820 component */
- #define USB_VENDOR_ID_MOSCHIP           0x9710
- #define MOSCHIP_DEVICE_ID_7840          0x7840
- #define MOSCHIP_DEVICE_ID_7820          0x7820
-+/* The native component can have its vendor/device id's overridden
-+ * in vendor-specific implementations.  Such devices can be handled
-+ * by making a change here, in moschip_port_id_table, and in
-+ * moschip_id_table_combined
-+ */
-+#define USB_VENDOR_ID_BANDB             0x0856
-+#define BANDB_DEVICE_ID_USOPTL4_4       0xAC44
-+#define BANDB_DEVICE_ID_USOPTL4_2       0xAC42
- 
--/* Interrupt Rotinue Defines    */
-+/* Interrupt Routine Defines    */
- 
- #define SERIAL_IIR_RLS      0x06
- #define SERIAL_IIR_MS       0x00
-@@ -159,12 +168,16 @@
- static struct usb_device_id moschip_port_id_table[] = {
- 	{USB_DEVICE(USB_VENDOR_ID_MOSCHIP, MOSCHIP_DEVICE_ID_7840)},
- 	{USB_DEVICE(USB_VENDOR_ID_MOSCHIP, MOSCHIP_DEVICE_ID_7820)},
-+	{USB_DEVICE(USB_VENDOR_ID_BANDB, BANDB_DEVICE_ID_USOPTL4_4)},
-+	{USB_DEVICE(USB_VENDOR_ID_BANDB, BANDB_DEVICE_ID_USOPTL4_2)},
- 	{}			/* terminating entry */
- };
- 
- static __devinitdata struct usb_device_id moschip_id_table_combined[] = {
- 	{USB_DEVICE(USB_VENDOR_ID_MOSCHIP, MOSCHIP_DEVICE_ID_7840)},
- 	{USB_DEVICE(USB_VENDOR_ID_MOSCHIP, MOSCHIP_DEVICE_ID_7820)},
-+	{USB_DEVICE(USB_VENDOR_ID_BANDB, BANDB_DEVICE_ID_USOPTL4_4)},
-+	{USB_DEVICE(USB_VENDOR_ID_BANDB, BANDB_DEVICE_ID_USOPTL4_2)},
- 	{}			/* terminating entry */
- };
-
-
-
---------------020900030803070101060900
-Content-Type: text/x-vcard; charset=utf-8;
- name="dave_ludlow.vcf"
-Content-Transfer-Encoding: 7bit
+--Multipart=_Mon__25_Feb_2008_14_30_48_-0800_mF2R.J4EVkd+Rctz
+Content-Type: application/octet-stream;
+ name="quilt-update-tree-base"
 Content-Disposition: attachment;
- filename="dave_ludlow.vcf"
+ filename="quilt-update-tree-base"
+Content-Transfer-Encoding: base64
 
-begin:vcard
-fn:David Ludlow
-n:Ludlow;David
-org:Bay;Research & Development
-email;internet:dave.ludlow@bay.ws
-title:Software Engineer
-x-mozilla-html:FALSE
-version:2.1
-end:vcard
+IyEvYmluL2Jhc2gKc2VyaWVzPXBhdGNoZXMvc2VyaWVzCgpnZXRfa3ZlcnNpb24oKSB7CmhlYWQg
+LTQgTWFrZWZpbGUgfCBzZWQgLWUgJ3MvIC8vZycgPiAvdG1wLy5rdmVyc2lvbi4kJAouIC90bXAv
+Lmt2ZXJzaW9uLiQkCnJtIC90bXAvLmt2ZXJzaW9uLiQkCgpjYXNlICIkRVhUUkFWRVJTSU9OIiBp
+bgoJIiIpCgkJOzsKCSotbW0qKQoJCUVYVFJBVkVSU0lPTj0kKGVjaG8gIiRFWFRSQVZFUlNJT04i
+IHwgc2VkIC1lICdzL1woLipcKS1tbVswLTldKi9cMS8nKQoJCTs7CgkqLWtqKikKCQlFWFRSQVZF
+UlNJT049JChlY2hvICIkRVhUUkFWRVJTSU9OIiB8IHNlZCAtZSAncy9cKC4qXCkta2pbMC05XSov
+XDEvJykKCQk7OwoJLSopCgkJOzsKCSopCgkJRVhUUkFWRVJTSU9OPSItJEVYVFJBVkVSU0lPTiI7
+Owplc2FjCmt2ZXJzaW9uPSRWRVJTSU9OLiRQQVRDSExFVkVMLiRTVUJMRVZFTCRFWFRSQVZFUlNJ
+T04KaWYgWyAiJGt2ZXJzaW9uIiA9ICIuLiIgXQp0aGVuCglrdmVyc2lvbj0kKGJhc2VuYW1lICQo
+L2Jpbi9wd2QpKQpmaQplY2hvICRrdmVyc2lvbgp9CgppZiBbICEgLWYgJHNlcmllcyBdOyB0aGVu
+CiAgICBlY2hvIENhbm5vdCBmaW5kICRzZXJpZXMKICAgIGV4aXQgMQpmaQoKdmVyPWBnZXRfa3Zl
+cnNpb25gCmlmIFsgLW4gIiR2ZXIiIF07IHRoZW4KICAgIGlmIGdyZXAgJ14jIEJBU0UnICRzZXJp
+ZXMgPiAvZGV2L251bGw7IHRoZW4KCXNlZCAtaSAtZSAicy9eIyBCQVNFLiokLyMgQkFTRSAkdmVy
+LyIgJHNlcmllcwoJZWNobyBVcGRhdGVkIEJBU0UgdG8gJHZlcgogICAgZWxzZQoJZWNobyBObyBC
+QVNFIGZvdW5kCiAgICBmaQpmaQo=
 
-
---------------020900030803070101060900--
+--Multipart=_Mon__25_Feb_2008_14_30_48_-0800_mF2R.J4EVkd+Rctz--
