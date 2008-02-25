@@ -1,114 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755271AbYBYLFo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755579AbYBYLHY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755271AbYBYLFo (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 Feb 2008 06:05:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753793AbYBYLFg
+	id S1755579AbYBYLHY (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 Feb 2008 06:07:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753576AbYBYLHM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 Feb 2008 06:05:36 -0500
-Received: from de01egw02.freescale.net ([192.88.165.103]:58696 "EHLO
-	de01egw02.freescale.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753624AbYBYLFf convert rfc822-to-8bit (ORCPT
+	Mon, 25 Feb 2008 06:07:12 -0500
+Received: from smtp-out02.alice-dsl.net ([88.44.60.12]:19066 "EHLO
+	smtp-out02.alice-dsl.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751490AbYBYLHL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 Feb 2008 06:05:35 -0500
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-Subject: RE: dma engine drivers for 2.6.25?
-Date: Mon, 25 Feb 2008 18:25:08 +0800
-Message-ID: <ABF87B0B6A38C0458E319AC973ED68AEC9304A@zch01exm26.fsl.freescale.net>
-In-Reply-To: <e9c3a7c20802231806u15bbf0dbm7ee68b6620a4b418@mail.gmail.com>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: dma engine drivers for 2.6.25?
-Thread-Index: Ach2idRtJij6zV6ZQBi9FA8dH+oB2AA8OdzA
-References: <BEF96263-F31B-472E-B31F-0751F5ABFBDA@kernel.crashing.org> <e9c3a7c20802141014k6018f6dfvc1a97bf81acb872e@mail.gmail.com> <DC488215-D313-41E0-A98A-1C90D02A465D@kernel.crashing.org> <e9c3a7c20802142129m51acf21amc48eaea5db45840b@mail.gmail.com> <e9c3a7c20802231806u15bbf0dbm7ee68b6620a4b418@mail.gmail.com>
-From: "Zhang Wei" <Wei.Zhang@freescale.com>
-To: "Dan Williams" <dan.j.williams@intel.com>,
-       "Kumar Gala" <galak@kernel.crashing.org>
-Cc: "LKML Kernel" <linux-kernel@vger.kernel.org>
+	Mon, 25 Feb 2008 06:07:11 -0500
+From: Andi Kleen <andi@firstfloor.org>
+Message-Id: <200802251207.906590508@firstfloor.org>
+To: mingo@elte.hu, linux-kernel@vger.kernel.org, tglx@linutronix.de,
+       roland@redhat.com
+Subject: [PATCH] [1/3] Don't set up early exception handlers for external interrupts
+Date: Mon, 25 Feb 2008 12:07:08 +0100 (CET)
+X-OriginalArrivalTime: 25 Feb 2008 11:00:42.0720 (UTC) FILETIME=[AA160600:01C8779D]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
 
-Sorry for missing lots of emails in my long vacation. :)
+All of early setup runs with interrupts disabled, so there is no 
+need to set up early exception handlers for vectors >= 32
 
-> -----Original Message-----
-> From: dan.j.williams@gmail.com 
-> [mailto:dan.j.williams@gmail.com] On Behalf Of Dan Williams
-> Sent: Sunday, February 24, 2008 10:06 AM
-> To: Kumar Gala
-> Cc: LKML Kernel; Zhang Wei
-> Subject: Re: dma engine drivers for 2.6.25?
-> 
-> On Thu, Feb 14, 2008 at 10:29 PM, Dan Williams 
-> <dan.j.williams@intel.com> wrote:
-> > On Thu, Feb 14, 2008 at 8:44 PM, Kumar Gala 
-> <galak@kernel.crashing.org> wrote:
-> >  >
-> >  >  On Feb 14, 2008, at 12:14 PM, Dan Williams wrote:
-> >  >
-> >  >  > On Wed, Feb 13, 2008 at 8:52 PM, Kumar Gala
-> >  >  > <galak@kernel.crashing.org> wrote:
-> >  >  >> Dan,
-> >  >  >>
-> >  >  >> What's going on with the dma engine drivers for 
-> 2.6.25?  We had a
-> >  >  >> Freescale dma driver from Zhang Wei queued up but 
-> seems to have been
-> >  >  >> lost.
-> >  >  >
-> >  >  > I pulled it into my tree and am holding it until Zhang has an
-> >  >  > opportunity to address the pending review comments 
-> [1].  I also did
-> >  >  > not feel comfortable pushing it to Linus without a 
-> PPC maintainer's
-> >  >  > Acked-by/Reviewed-by.
-> >  >  >
-> >  >  > I have attached the version I am carrying.
-> >  >
-> >  >  What issues are still open.  I was under the belief 
-> that Zhang had
-> >  >  resolved all the issues.
-> >  >
-> >
-> >  The high priority review item is that the driver performs operation
-> >  completion callbacks in hardirq context.  Clients of the API assume
-> >  that callbacks will happen in softirq context.  Of lesser 
-> concern is
-> >  the use of GFP_ATOMIC in fsl_dma_alloc_descriptor.  Other drivers
-> >  preallocate a small pool of descriptors.
-> >
-> 
-> Have not received a response, so let's try this the other way.  I took
-> a closer look and found that my concern should be addressed by the
-> following one-liner:
-> 
-> diff --git a/drivers/dma/fsldma.c b/drivers/dma/fsldma.c
-> index 902e852..cc9a681 100644
-> --- a/drivers/dma/fsldma.c
-> +++ b/drivers/dma/fsldma.c
-> @@ -685,7 +685,6 @@ static irqreturn_t fsl_dma_chan_do_interrupt(int
-> irq, void *data)
->                                 "nlndar 0x%016llx\n", 
-> (u64)get_cdar(fsl_chan),
->                                 (u64)get_ndar(fsl_chan));
->                 stat &= ~FSL_DMA_SR_EOSI;
-> -               fsl_chan_ld_cleanup(fsl_chan);
->         }
-> 
->         /* If it current transfer is the end-of-transfer,
-> 
-> With your ack I'll push the driver plus this fixlet for the 
-> current kernel.
+That saves some text size
 
-I agree with you to remove the fsl_chan_ld_cleanup() function calling in
-Interrupt action, which is already called in tasklet. I forgot to remove it.
-Thanks!
+Signed-off-by: Andi Kleen <ak@suse.de>
 
-Cheers!
-Wei.
+---
+ arch/x86/kernel/head64.c  |    2 +-
+ arch/x86/kernel/head_64.S |    6 ++----
+ include/asm-x86/segment.h |    3 ++-
+ 3 files changed, 5 insertions(+), 6 deletions(-)
 
+Index: linux/arch/x86/kernel/head64.c
+===================================================================
+--- linux.orig/arch/x86/kernel/head64.c
++++ linux/arch/x86/kernel/head64.c
+@@ -91,7 +91,7 @@ void __init x86_64_start_kernel(char * r
+ 	/* Cleanup the over mapped high alias */
+ 	cleanup_highmap();
+ 
+-	for (i = 0; i < IDT_ENTRIES; i++) {
++	for (i = 0; i < NUM_EXCEPTION_VECTORS; i++) {
+ #ifdef CONFIG_EARLY_PRINTK
+ 		set_intr_gate(i, &early_idt_handlers[i]);
+ #else
+Index: linux/include/asm-x86/segment.h
+===================================================================
+--- linux.orig/include/asm-x86/segment.h
++++ linux/include/asm-x86/segment.h
+@@ -191,13 +191,14 @@
+ #define SEGMENT_TI_MASK		0x4
+ 
+ #define IDT_ENTRIES 256
++#define NUM_EXCEPTION_VECTORS 32
+ #define GDT_SIZE (GDT_ENTRIES * 8)
+ #define GDT_ENTRY_TLS_ENTRIES 3
+ #define TLS_SIZE (GDT_ENTRY_TLS_ENTRIES * 8)
+ 
+ #ifdef __KERNEL__
+ #ifndef __ASSEMBLY__
+-extern const char early_idt_handlers[IDT_ENTRIES][10];
++extern const char early_idt_handlers[NUM_EXCEPTION_VECTORS][10];
+ #endif
+ #endif
+ 
+Index: linux/arch/x86/kernel/head_64.S
+===================================================================
+--- linux.orig/arch/x86/kernel/head_64.S
++++ linux/arch/x86/kernel/head_64.S
+@@ -278,10 +278,8 @@ bad_address:
+ 
+ 	.globl early_idt_handlers
+ early_idt_handlers:
+-	early_idt_tramp 0, 63
+-	early_idt_tramp 64, 127
+-	early_idt_tramp 128, 191
+-	early_idt_tramp 192, 255
++	.set maxe,NUM_EXCEPTION_VECTORS-1
++	early_idt_tramp 0,maxe
+ #endif
+ 
+ ENTRY(early_idt_handler)
