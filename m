@@ -1,67 +1,34 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760107AbYBYXXT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760895AbYBYXX4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760107AbYBYXXT (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 Feb 2008 18:23:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753753AbYBYXXL
+	id S1760895AbYBYXX4 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 Feb 2008 18:23:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754544AbYBYXXr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 Feb 2008 18:23:11 -0500
-Received: from smtp1.linux-foundation.org ([207.189.120.13]:56449 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753788AbYBYXXJ (ORCPT
+	Mon, 25 Feb 2008 18:23:47 -0500
+Received: from viefep18-int.chello.at ([213.46.255.22]:45316 "EHLO
+	viefep12-int.chello.at" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753753AbYBYXXq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 Feb 2008 18:23:09 -0500
-Date: Mon, 25 Feb 2008 15:20:50 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Anders Henke <anders.henke@1und1.de>
-Cc: linux-kernel@vger.kernel.org, dm-devel@redhat.com
-Subject: Re: device mapper not reporting no-barrier-support?
-Message-Id: <20080225152050.94788622.akpm@linux-foundation.org>
-In-Reply-To: <20080225132615.GA21990@1und1.de>
-References: <20080225132615.GA21990@1und1.de>
-X-Mailer: Sylpheed 2.4.7 (GTK+ 2.12.1; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Mon, 25 Feb 2008 18:23:46 -0500
+Message-ID: <2060335.1203981814292.JavaMail.root@viefep31>
+Date: Tue, 26 Feb 2008 0:23:34 +0100
+From: <cristi@dnt.ro>
+To: linux-kernel@vger.kernel.org
+Subject: Contact info
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
 Content-Transfer-Encoding: 7bit
+X-Priority: 3 (Normal)
+Sensitivity: Normal
+X-Originating-IP: from 193.226.149.251 by web-edge.chello.com; Tue, 26 Feb 2008 0:23:34 +0100
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 25 Feb 2008 14:26:15 +0100 Anders Henke <anders.henke@1und1.de> wrote:
+Hello,
 
-> Hi,
-> 
-> I'm currently stuck between Kernel LVM and DRBD, as I'm using Kernel
-> 2.6.24.2 with DRBD 8.2.5 on top of an LVM2 device (LV).
-> 
-> -LVM2/device mapper doesn't support write barriers
-> -DRBD uses blkdev_issue_flush() to flush its metadata to disk.
->  On a no-barrier-device, DRBD should receive EOPNOTSUPP, but
->  it really does receive an EIO. Promptly, DRBD gives the
->  error message "drbd0: local disk flush failed with status -5".
-> 
-> The physical disk (in LVM speak) is a RAID1 on a 3ware 9650SE-2LP
-> controller; the driver 3w-9xxx supports barriers and after moving my D
-> RBD device from the LV to a single partition on the same RAID1, the 
-> error messages from DRBD vanished.
-> 
-> I've posted a lengty summary of my findings to
-> 
-> http://lists.linbit.com/pipermail/drbd-user/2008-February/008665.html
-> 
-> ... where Lars Ellenberg from DRBD basically responded in
-> 
-> http://lists.linbit.com/pipermail/drbd-user/2008-February/008666.html
-> 
-> ... that DRBD does catch the EOPNOTSUPP for blkdev_issue_flush and
-> BIO_RW_BARRIER, but the lvm implementation of blkdev_issue_flush in
-> 2.6.24.2 aparently does return EIO for blkdev_issue_flush.
-> 
-> So simply the question: how should a top-layer driver check wether a lower
-> device does support barriers? md-raid does check this way differently than
-> e.g. XFS does, while DRBD also adds a third way to check this.
-> Or is this "merely" a bug in drivers/md/dm.c?
-> 
+I would like to know who is in charge with the linux credit list since i will no longer use my current email. I'm using temporary this email to update existing info.
 
-(cc dm-devel)
+Tia,
+Cristian
 
-I'd say it's a DM bug.  Probably a hard-to-fix one though.
