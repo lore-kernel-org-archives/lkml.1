@@ -1,68 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758469AbYBYUsV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758757AbYBYUua@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758469AbYBYUsV (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 Feb 2008 15:48:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750850AbYBYUsN
+	id S1758757AbYBYUua (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 Feb 2008 15:50:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751922AbYBYUuS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 Feb 2008 15:48:13 -0500
-Received: from ug-out-1314.google.com ([66.249.92.170]:12203 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750736AbYBYUsM (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 Feb 2008 15:48:12 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
-        b=mGUguCYTzNZaeiYTkt7DFR/93YSudXYC7lJJnZC3FqTBFJsU3069D04Hkkp1WQv6ikNqCzIUCp7fgiZgdrCeDBLDa9a4Hf60pjJNkDKisvePC6rb8QYID6HWOJXgBgenYCy0sOvtyfF/z5wCoWu9AMdGVmdFVHovcBWwAtvQesk=
-Message-ID: <47C32986.8010206@googlemail.com>
-Date: Mon, 25 Feb 2008 21:48:06 +0100
-From: Gabriel C <nix.or.die@googlemail.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071204)
+	Mon, 25 Feb 2008 15:50:18 -0500
+Received: from minas.ics.muni.cz ([147.251.4.40]:38394 "EHLO minas.ics.muni.cz"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751563AbYBYUuQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 25 Feb 2008 15:50:16 -0500
+Date: Mon, 25 Feb 2008 21:49:51 +0100
+From: Lukas Hejtmanek <xhejtman@ics.muni.cz>
+To: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, linux-kernel@vger.kernel.org,
+       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+       Len Brown <lenb@kernel.org>
+Subject: Re: 2.6.25-rc2 Regression Thinkpad acpi
+Message-ID: <20080225204951.GB4432@ics.muni.cz>
+References: <20080225093914.GB4375@ics.muni.cz> <200802251247.30605.rjw@sisk.pl> <20080225200354.GE16513@khazad-dum.debian.net>
 MIME-Version: 1.0
-To: Thomas Gleixner <tglx@linutronix.de>
-CC: Robert Hancock <hancockr@shaw.ca>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Gabriel C <crazy@frugalware.org>
-Subject: Re: Clocksource tsc is always unstable with 2.6.25-* kernels and
- CONFIG_NO_HZ=y on my box
-References: <fa.FpheN5sIQ5rxoLHYuhxxf6uauVs@ifi.uio.no> <47C24517.7010204@shaw.ca> <alpine.LFD.1.00.0802250839240.7583@apollo.tec.linutronix.de> <47C2F350.1060107@googlemail.com> <alpine.LFD.1.00.0802252031180.7583@apollo.tec.linutronix.de>
-In-Reply-To: <alpine.LFD.1.00.0802252031180.7583@apollo.tec.linutronix.de>
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=iso-8859-2
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20080225200354.GE16513@khazad-dum.debian.net>
+X-echelon: NSA, CIA, CI5, MI5, FBI, KGB, BIS, Plutonium, Bin Laden, bomb
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+X-Muni-Spam-TestIP: 81.31.45.161
+X-Muni-Envelope-From: xhejtman@anubis.fi.muni.cz
+X-Muni-Virus-Test: Clean
+X-Greylist: Sender succeeded SMTP AUTH authentication, not delayed by milter-greylist-3.0 (minas.ics.muni.cz [147.251.4.35]); Mon, 25 Feb 2008 21:49:51 +0100 (CET)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Thomas Gleixner wrote:
-> On Mon, 25 Feb 2008, Gabriel C wrote:
->>>>> Booting nohz=off fixes that.
->>>>>
->>>>> Another strange thing is when I try to boot that kernel with
->>>>> clocksource=acpi_pm it just hangs.
-> 
-> What happens if you add clocksource=acpi_pm and nohz=off to the kernel
-> commandline ?
-> 
+On Mon, Feb 25, 2008 at 05:03:54PM -0300, Henrique de Moraes Holschuh wrote:
+> This commit is indeed broken, and I have a tentative fix for it.  But I'd
+> like to have a better description of just "how" the thinkpad keys do not
+> work anymore, to make sure I fix the entire breakage in one go.  I will
+> stare at the code and the fix a bit more before sending in any patches,
+> though.
 
-Then the kernel boots and it seems to work.
+Well, keys generate ACPI interrupt but acpid never receives any event.
 
-http://frugalware.org/~crazy/dmesg/lara/dmesg2
+I would be happy to test fixes to see whether things go well.
 
->>>> Please post your full dmesg output.
->>> Yes please.
->> dmesg's from 2.6.25-rc3 witch nohz={on,off} , lspci , dmidecode and
->> the used config for this kernel can be found there :
->>
->> http://frugalware.org/~crazy/dmesg/lara/
-> 
-> Hmm. Nothing really obvious.
-
-If you want I can build an debug kernel and boot with initcall_debug or anything else may help to find the problem,
-just let me know.
-
-> 
-> Thanks,
-> 	tglx
-> 
-
-Gabriel
+-- 
+Luká¹ Hejtmánek
