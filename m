@@ -1,44 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757859AbYBYR6o@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758037AbYBYR66@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757859AbYBYR6o (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 Feb 2008 12:58:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757259AbYBYR6d
+	id S1758037AbYBYR66 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 Feb 2008 12:58:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757866AbYBYR6p
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 Feb 2008 12:58:33 -0500
-Received: from iolanthe.rowland.org ([192.131.102.54]:40920 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1753557AbYBYR6c (ORCPT
+	Mon, 25 Feb 2008 12:58:45 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:60981 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757853AbYBYR6o (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 Feb 2008 12:58:32 -0500
-Date: Mon, 25 Feb 2008 12:58:30 -0500 (EST)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: Pierre Ossman <drzeus-mmc@drzeus.cx>
-cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
-       pm list <linux-pm@lists.linux-foundation.org>,
-       Zdenek Kabelac <zdenek.kabelac@gmail.com>,
-       David Brownell <david-b@pacbell.net>,
-       Kernel development list <linux-kernel@vger.kernel.org>
-Subject: Re: Bugs in MMC [was: [Bug 10030] Suspend doesn't work when SD card
- is inserted]
-In-Reply-To: <20080225184102.0a2e2bb5@mjolnir.drzeus.cx>
-Message-ID: <Pine.LNX.4.44L0.0802251255000.5039-100000@iolanthe.rowland.org>
+	Mon, 25 Feb 2008 12:58:44 -0500
+Date: Mon, 25 Feb 2008 09:54:02 -0800
+From: Greg KH <greg@kroah.com>
+To: mark gross <mgross@linux.intel.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       lkml <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] copyright owner and author clean up for intel iommu
+	and related files
+Message-ID: <20080225175402.GB18940@kroah.com>
+References: <20080221181555.GA9593@linux.intel.com> <20080223000443.da075061.akpm@linux-foundation.org> <20080223190649.GA8641@kroah.com> <20080223112022.8e4fdde2.akpm@linux-foundation.org> <20080225155014.GA22018@linux.intel.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080225155014.GA22018@linux.intel.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Thanks for the explanations.
+On Mon, Feb 25, 2008 at 07:50:14AM -0800, mark gross wrote:
+> On Sat, Feb 23, 2008 at 11:20:22AM -0800, Andrew Morton wrote:
+> > On Sat, 23 Feb 2008 11:06:49 -0800 Greg KH <greg@kroah.com> wrote:
+> > 
+> > > On Sat, Feb 23, 2008 at 12:04:43AM -0800, Andrew Morton wrote:
+> > > > On Thu, 21 Feb 2008 10:15:55 -0800 mark gross <mgross@linux.intel.com> wrote:
+> > > > 
+> > > > > Index: linux-2.6.24-mm1/drivers/pci/dmar.c
+> > > > 
+> > > > I guess this is strictly a greg-pci-tree thing.  Greg, how do you want
+> > > > to play intel-iommu?
+> > > 
+> > > Yes, I'll take those.  I'm pretty sure I even have the hardware here to
+> > > test that the code doesn't crash :)
+> > > 
+> > 
+> > ok..
+> > 
+> > I have another one queued for 2.6.26-via-greg:
+> > pci-iova-rb-tree-setup-tweak.patch
+> > 
+> 
+> Should I start sending all the intel-iommu related stuff to Greg then?
 
-On Mon, 25 Feb 2008, Pierre Ossman wrote:
+Sure, and the linux-pci list so that people can review them.
 
-> Trying to keep up with the PM changes is a full time job. For now I've
-> mostly ignored it as I don't even have time for the other stuff.
-> Patches welcome.
+thanks,
 
-What do you think of the patch attached to comment #40 in the Bugzilla 
-entry?
-
-Alan Stern
-
+greg k-h
