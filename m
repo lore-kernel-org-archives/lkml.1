@@ -1,64 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759322AbYBYXAx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760569AbYBYXBP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759322AbYBYXAx (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 Feb 2008 18:00:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759055AbYBYXAm
+	id S1760569AbYBYXBP (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 Feb 2008 18:01:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761987AbYBYXAv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 Feb 2008 18:00:42 -0500
-Received: from out3.smtp.messagingengine.com ([66.111.4.27]:60623 "EHLO
-	out3.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1758931AbYBYXAk (ORCPT
+	Mon, 25 Feb 2008 18:00:51 -0500
+Received: from gv-out-0910.google.com ([216.239.58.188]:65238 "EHLO
+	gv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761925AbYBYXAt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 Feb 2008 18:00:40 -0500
-X-Sasl-enc: WtgKSNS42nZTkw19nDDi2uwpl9ULz7rsQYE7oZN4kCLC 1203980438
-Date: Mon, 25 Feb 2008 20:00:35 -0300
-From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-To: Lukas Hejtmanek <xhejtman@ics.muni.cz>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, linux-kernel@vger.kernel.org,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       Len Brown <lenb@kernel.org>
-Subject: Re: 2.6.25-rc2 Regression Thinkpad acpi
-Message-ID: <20080225230035.GA14503@khazad-dum.debian.net>
-References: <20080225093914.GB4375@ics.muni.cz> <200802251247.30605.rjw@sisk.pl> <20080225200354.GE16513@khazad-dum.debian.net> <20080225204951.GB4432@ics.muni.cz> <20080225210113.GF16513@khazad-dum.debian.net> <20080225220720.GA4523@ics.muni.cz>
+	Mon, 25 Feb 2008 18:00:49 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=tjpefWBJnP178PSMK1z5EBpTueVncMo3vfw0/4WoN8MNUNfWG8F01GF3VEub/2IjRDsLCBE0lJOPvWR854+wGnT+0j1wedmaaEOBeKjhUXd9oe7eGcFVBfIlqLEblUzaca3U2yhPvMaq0SOAm2MGMO94y1ZeTt8Ytth8oVCFQSY=
+Message-ID: <7c86c4470802251500mafec0dl535591971258de69@mail.gmail.com>
+Date: Tue, 26 Feb 2008 00:00:46 +0100
+From: "stephane eranian" <eranian@googlemail.com>
+To: "Pekka Enberg" <penberg@cs.helsinki.fi>
+Subject: Re: 2.6.24 new perfmon kernel code base + libpfm + pfmon finally available!
+Cc: linux-kernel@vger.kernel.org, ia64 <linux-ia64@vger.kernel.org>
+In-Reply-To: <84144f020802251113m2cede5bbx9044ec1fc6d11f0c@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20080225220720.GA4523@ics.muni.cz>
-X-GPG-Fingerprint: 1024D/1CDB0FE3 5422 5C61 F6B7 06FB 7E04  3738 EE25 DE3F
-	1CDB 0FE3
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+References: <7c86c4470802250900g1eea7a26m1900c4d8ed621dfd@mail.gmail.com>
+	 <84144f020802251113m2cede5bbx9044ec1fc6d11f0c@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 25 Feb 2008, Lukas Hejtmanek wrote:
-> volume keys work. But anything through acpid does not. Even AC/battery switch
-> is not signalized. So the bug may be somewhere else?
+Pekka,
 
-Yeah, there is an EC-related regression in 2.6.25-rc3 that bites your
-thinkpad.  I don't have a link to it right now, but if you look for the
-messages to LKML on the last 48h, you will find it.
-
-> [  418.816087] thinkpad_acpi: requested hot key mask 0xffffffff, but firmware forced it to 0x00ffffff
-
-Don't do this.  Just let the driver select the default mask, unless you
-*really* know better.
-
-> > Sure, try this one:
-> 
-> not better.
-
-It wouldn't fix any EC issues.  If you just revert the
-6c231bd5eb07ce546517019f334652b9ecfc329a commit entirely (note, I don't mean
-revert TO THE COMMIT), by doing something like this:
-
-git checkout v2.6.25-rc3
-git show 6c231bd5eb07ce546517019f334652b9ecfc329a | patch -p1 -R
-
-Does it fix anything ?
-
--- 
-  "One disk to rule them all, One disk to find them. One disk to bring
-  them all and in the darkness grind them. In the Land of Redmond
-  where the shadows lie." -- The Silicon Valley Tarot
-  Henrique Holschuh
+On Mon, Feb 25, 2008 at 8:13 PM, Pekka Enberg <penberg@cs.helsinki.fi> wrote:
+> Hi Stephane,
+>
+>
+>  On Mon, Feb 25, 2008 at 7:00 PM, stephane eranian
+>  <eranian@googlemail.com> wrote:
+>  >  I have finally released the perfmon2 kernel patch for kernel v2.6.24. It
+>  >  took longer than expected to due my job change and several technical issues
+>  >  related to perfmon kernel bugs.
+>
+>  [snip]
+>
+>
+>  >  As usual all files and more detailed change logs can be downloaded
+>  >  from our website at:
+>  >
+>  >        http://perfmon.sourceforge.net
+>
+>  Why not post the patches on LKML for review?
+>
+I have done that in the past. I will do this again. But if you look at
+the patch as it is released, you will
+see that it is very large. Not that easy to split for LKML review.
+With now with GIT that may be easier.
+I intend to start posting small bits and pieces from now on.
