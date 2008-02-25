@@ -1,127 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755271AbYBYRW0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756602AbYBYRYO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755271AbYBYRW0 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 Feb 2008 12:22:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752245AbYBYRWQ
+	id S1756602AbYBYRYO (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 Feb 2008 12:24:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752904AbYBYRX7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 Feb 2008 12:22:16 -0500
-Received: from wx-out-0506.google.com ([66.249.82.234]:47850 "EHLO
-	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752042AbYBYRWP (ORCPT
+	Mon, 25 Feb 2008 12:23:59 -0500
+Received: from E23SMTP05.au.ibm.com ([202.81.18.174]:49554 "EHLO
+	e23smtp05.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752245AbYBYRX6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 Feb 2008 12:22:15 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=FNXW5YgeuT6U7wjgXGuCJdjCmAChcL8sWbtm6XnnsPXc7c9XR6yKQsy2BbYtks+5RQdgoNOrdCbDSISgpNkta0Xc26Q8S5ulNkSrvCn6zwgATL/5JPUsc4YAsJtqSu38srJFm/xrGcdpNDOFAJS7MQxxZ+Be9zYx9zZYnVRvCUU=
-Message-ID: <998d0e4a0802250922p518ec043m1abae3a3a407be0f@mail.gmail.com>
-Date: Mon, 25 Feb 2008 18:22:13 +0100
-From: "J.C. Pizarro" <jcpiza@gmail.com>
-To: "Ady Wicaksono" <ady.wicaksono@gmail.com>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: Patch kernel: I have 8 Gbytes RAM, but why I can only allocate 2.8 Gbytes RAM for a single process?
-In-Reply-To: <2743ae110802242344s4406cd5eq3c5e8d0a6e69101b@mail.gmail.com>
+	Mon, 25 Feb 2008 12:23:58 -0500
+Message-ID: <47C2F86A.9010709@linux.vnet.ibm.com>
+Date: Mon, 25 Feb 2008 22:48:34 +0530
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+Reply-To: balbir@linux.vnet.ibm.com
+Organization: IBM
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
+To: Paul Menage <menage@google.com>
+CC: Andrew Morton <akpm@linux-foundation.org>, Hugh Dickins <hugh@veritas.com>,
+       Sudhir Kumar <skumar@linux.vnet.ibm.com>,
+       YAMAMOTO Takashi <yamamoto@valinux.co.jp>, lizf@cn.fujitsu.com,
+       linux-kernel@vger.kernel.org, taka@valinux.co.jp, linux-mm@kvack.org,
+       David Rientjes <rientjes@google.com>,
+       Pavel Emelianov <xemul@openvz.org>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Subject: Re: [PATCH] Memory Resource Controller Add Boot Option
+References: <20080225115509.23920.66231.sendpatchset@localhost.localdomain> <20080225115550.23920.43199.sendpatchset@localhost.localdomain> <6599ad830802250816m1f83dbeekbe919a60d4b51157@mail.gmail.com>
+In-Reply-To: <6599ad830802250816m1f83dbeekbe919a60d4b51157@mail.gmail.com>
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <2743ae110802242344s4406cd5eq3c5e8d0a6e69101b@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2008/2/25, Ady Wicaksono <ady.wicaksono@gmail.com>:
-> I have 8 Gbytes RAM, but why I can allocate 2.8 Gbytes RAM for a single process?
->  How to patch kernel so I have more than 2.8 Gbytes limitation?
->
->  Kernel:
->  ---------------------------
->  Linux xxx.com 2.6.9-023stab046.2-enterprise #1 SMP Mon Dec 10 15:22:33
->  MSK 2007 i686 i686 i386 GNU/Linux
->
->  Mem:
->  ---------------------------
->  # cat /proc/meminfo
->  MemTotal:      8296484 kB
->  MemFree:         50416 kB
->  Buffers:         64412 kB
->  Cached:        4927328 kB
->  SwapCached:          0 kB
->  Active:        6710828 kB
->  Inactive:      1065384 kB
->  HighTotal:     4980736 kB
->  HighFree:         1024 kB
->  LowTotal:      3315748 kB
->  LowFree:         49392 kB
->  SwapTotal:    10256376 kB
->  SwapFree:     10255732 kB
->  Dirty:              64 kB
->  Writeback:           0 kB
->  Mapped:        3054960 kB
->  Slab:           393224 kB
->  CommitLimit:  14404616 kB
->  Committed_AS:  6318152 kB
->  PageTables:      34892 kB
->  VmallocTotal:   303096 kB
->  VmallocUsed:     22360 kB
->  VmallocChunk:   280496 kB
->
->
->  CPU (8 processor id from 0-7), one of them is:
->  ---------------------------
->  processor       : 0
->  vendor_id       : GenuineIntel
->  cpu family      : 15
->  model           : 6
->  model name      : Intel(R) Xeon(TM) CPU 3.00GHz
->  stepping        : 4
->  cpu MHz         : 2993.054
->  cache size      : 2048 KB
->  physical id     : 0
->  siblings        : 4
->  core id         : 0
->  cpu cores       : 2
->  fdiv_bug        : no
->  hlt_bug         : no
->  f00f_bug        : no
->  coma_bug        : no
->  fpu             : yes
->  fpu_exception   : yes
->  cpuid level     : 6
->  wp              : yes
->  flags           : fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge
->  mca cmov pat pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe nx
->  lm constant_tsc pni monitor ds_cpl est cid xtpr
->  bogomips        : 5989.55
->
->  App to test memory limit:
->  ---------------------------
->  #include <stdio.h>
->  #include <stdlib.h>
->
->  int main(){
->         size_t siz = 100 * 1024 * 1024 ;
->         size_t idx = 1 ;
->         void *ptr;
->
->         for (;;){
->                 ptr = malloc ( siz * idx );
->                 if(!ptr)
->                         break ;
->                 free(ptr);
->                 idx++;
->         }
->         printf ("Max malloc %d * 100 MB \n", idx - 1 );
->         return (0);
->  }
->
->  App result: Max malloc 28 * 100 MB ==> 2.8 Gbytes
+Paul Menage wrote:
+> On Mon, Feb 25, 2008 at 3:55 AM, Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
+>>
+>>  A boot option for the memory controller was discussed on lkml. It is a good
+>>  idea to add it, since it saves memory for people who want to turn off the
+>>  memory controller.
+>>
+>>  By default the option is on for the following two reasons
+>>
+>>  1. It provides compatibility with the current scheme where the memory
+>>    controller turns on if the config option is enabled
+>>  2. It allows for wider testing of the memory controller, once the config
+>>    option is enabled
+>>
+>>  We still allow the create, destroy callbacks to succeed, since they are
+>>  not aware of boot options. We do not populate the directory will
+>>  memory resource controller specific files.
+> 
+> Would it make more sense to have a generic cgroups boot option for this?
+> 
+> Something like cgroup_disable=xxx, which would be parsed by cgroups
+> and would cause:
+> 
+> - a "disabled" flag to be set to true in the subsys object (you could
+> use this in place of the mem_cgroup_on flag)
+> 
 
-1. It's a 32-bit processor Xeon with 8 GiB of RAM. OK?
-2. The 32-bit userspace's process is always limited to <3.0 GiB ( < 0xC0000000 )
-3. Enable PAE (64 GB option in the kernel) to address the 8 GiB of RAM
-using PAE,
-    also you can have many processes of ~3 GiB per process.
-    I'm not sure if the PAE's three-level paging works efficient in linux.
+I thought about it, but it did not work out all that well. The reason being,
+that the memory controller is called in from places besides cgroup.
+mem_cgroup_charge_common() for example is called from several places in mm.
+Calling into cgroups to check, enabled/disabled did not seem right.
 
-   ;)
+Hence I put the boot option in mm/memcontrol.c
+
+> - prevent the disabled cgroup from being bound to any mounted
+> hierarchy (so it would be ignored in a mount with no subsystem
+> options, and a mount with options that specifically pick that
+> subsystem would give an error)
+> 
+
+The controller can be bound, but I just don't populate the files associated with
+the controller
+
+> Paul
+
+
+-- 
+	Warm Regards,
+	Balbir Singh
+	Linux Technology Center
+	IBM, ISTL
