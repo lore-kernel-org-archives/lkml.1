@@ -1,73 +1,125 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757435AbYBYUHU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758208AbYBYUIv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757435AbYBYUHU (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 Feb 2008 15:07:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755775AbYBYUHI
+	id S1758208AbYBYUIv (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 Feb 2008 15:08:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756395AbYBYUIn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 Feb 2008 15:07:08 -0500
-Received: from x346.tv-sign.ru ([89.108.83.215]:54503 "EHLO mail.screens.ru"
+	Mon, 25 Feb 2008 15:08:43 -0500
+Received: from srv5.dvmed.net ([207.36.208.214]:59312 "EHLO mail.dvmed.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755345AbYBYUHG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 Feb 2008 15:07:06 -0500
-Date: Mon, 25 Feb 2008 23:03:28 +0300
-From: Oleg Nesterov <oleg@tv-sign.ru>
-To: Stephen Smalley <sds@tycho.nsa.gov>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Casey Schaufler <casey@schaufler-ca.com>,
-       David Quigley <dpquigl@tycho.nsa.gov>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Eric Paris <eparis@redhat.com>, Harald Welte <laforge@gnumonks.org>,
-       Pavel Emelyanov <xemul@openvz.org>,
-       "Serge E. Hallyn" <serue@us.ibm.com>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2/3] kill_pid_info_as_uid: don't use security_task_kill()
-Message-ID: <20080225200328.GA83@tv-sign.ru>
-References: <20080225174228.GA22084@tv-sign.ru> <1203965042.2804.196.camel@moss-spartans.epoch.ncsc.mil>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1203965042.2804.196.camel@moss-spartans.epoch.ncsc.mil>
-User-Agent: Mutt/1.5.11
+	id S1756304AbYBYUIm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 25 Feb 2008 15:08:42 -0500
+Message-ID: <47C32043.6090809@pobox.com>
+Date: Mon, 25 Feb 2008 15:08:35 -0500
+From: Jeff Garzik <jgarzik@pobox.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+MIME-Version: 1.0
+To: =?ISO-8859-1?Q?Bj=F6rn_Steinbrink?= <B.Steinbrink@gmx.de>
+CC: Thomas Gleixner <tglx@linutronix.de>, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: 2.6.24-git: kmap_atomic() WARN_ON()
+References: <alpine.LFD.1.00.0802070054220.9204@apollo.tec.linutronix.de> <20080225195924.GA23176@atjola.homenet>
+In-Reply-To: <20080225195924.GA23176@atjola.homenet>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 8bit
+X-Spam-Score: -4.4 (----)
+X-Spam-Report: SpamAssassin version 3.2.3 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 02/25, Stephen Smalley wrote:
+Björn Steinbrink wrote:
+> On 2008.02.07 00:58:42 +0100, Thomas Gleixner wrote:
+>> current mainline triggers:
+>>
+>> WARNING: at /home/tglx/work/kernel/x86/linux-2.6/arch/x86/mm/highmem_32.c:52 kmap_atomic_prot+0xe5/0x19b()
+>> Modules linked in: ahci(+) sata_sil libata sd_mod scsi_mod raid1 ext3 jbd ehci_hcd ohci_hcd uhci_hcd
+>> Pid: 0, comm: swapper Not tainted 2.6.24 #173
+>>  [<c0126b60>] warn_on_slowpath+0x41/0x51
+>>  [<c011c5eb>] ? __enqueue_entity+0x9c/0xa4
+>>  [<c011c717>] ? enqueue_entity+0x124/0x13b
+>>  [<c011cedb>] ? enqueue_task_fair+0x41/0x4c
+>>  [<c032ce88>] ? _spin_lock_irqsave+0x14/0x2e
+>>  [<c012e885>] ? lock_timer_base+0x1f/0x3e
+>>  [<c011ad6d>] kmap_atomic_prot+0xe5/0x19b
+>>  [<c011ae37>] kmap_atomic+0x14/0x16
+>>  [<f88ea218>] ata_scsi_rbuf_get+0x1e/0x2c [libata]
+>>  [<f88ea821>] atapi_qc_complete+0x23f/0x289 [libata]
+>>  [<f88e3d00>] __ata_qc_complete+0x8e/0x93 [libata]
+>>  [<f88e3fc7>] ata_qc_complete+0x115/0x128 [libata]
+>>  [<f88e8d47>] ata_qc_complete_multiple+0x86/0xa0 [libata]
+>>  [<f8841a5d>] ahci_interrupt+0x370/0x40d [ahci]
+>>  [<c01512c6>] handle_IRQ_event+0x21/0x48
+>>  [<c01521ca>] handle_edge_irq+0xc9/0x10a
+>>  [<c0152101>] ? handle_edge_irq+0x0/0x10a
+>>  [<c0107518>] do_IRQ+0x8b/0xb7
+>>  [<c01055db>] common_interrupt+0x23/0x28
+>>  [<c032007b>] ? init_chipset_cmd64x+0xb/0x93
+>>  [<c010316e>] ? mwait_idle_with_hints+0x39/0x3d
+>>  [<c0103172>] ? mwait_idle+0x0/0xf
+>>  [<c010317f>] mwait_idle+0xd/0xf
+>>  [<c0103761>] cpu_idle+0xb0/0xe4
+>>  [<c031b509>] rest_init+0x5d/0x5f
+>>
+>> This is not a new problem. It was pointed out some time ago already,
+>> but now the WARN_ON() finally made it into mainline :)
+>>
+>> The fix is not obvious, as this code seems to be called from various
+>> call sites.
 > 
-> On Mon, 2008-02-25 at 20:42 +0300, Oleg Nesterov wrote:
-> > kill_pid_info_as_uid() is solely used by drivers/usb/core/. The original
-> > "[PATCH] Fix signal sending in usbdevio on async URB completion" commit
-> > 46113830a18847cff8da73005e57bc49c2f95a56 was right, but nowadays we use
-> > struct pid and this solves most of the addressed problems.
-> > 
-> > It would be nice to use kill_pid_info() instead, but we can't because USB
-> > uses .si_code = SI_ASYNCIO which fools SI_FROMUSER() and thus security checks.
-> > 
-> > I think we should omit the permission checks completely, the task which does
-> > ioctl(USBDEVFS_SUBMITURB) explicitly asks to send the signal to it, we should
-> > not deny the signal even if the task changes its credentials in any way.
+> Hm, do you have lockdep enabled? If not, does lockdep make this go away?
+> Because lockdep will set IRQF_DISABLED for all interrupt handlers, and
+> unless that flag is set, handle_IRQ_event will reenable interrupts while
+> the handler is running. And ahci_interrupt only uses a plain spin_lock,
+> so interrupts keep being enabled. The patch below should help with that.
 > 
-> If we are applying checks based on uid/gid to protect suid/sgid
-> programs, then we ought to also invoke the LSM hook to allow protection
-> of other credential-changing transformations, like SELinux context
-> transitions.  You either remove all checking or none, please.
+> Hmhm, maybe that also solves the deadlock you saw? Dunno...
+> 
+> I can't come up with an useful commit message right now, but I'll resend
+> in suitable form for submission if that thing actually works.
+> 
+> Björn
+> 
+> 
+> diff --git a/drivers/ata/ahci.c b/drivers/ata/ahci.c
+> index 1db93b6..ae3dbc8 100644
+> --- a/drivers/ata/ahci.c
+> +++ b/drivers/ata/ahci.c
+> @@ -1739,6 +1739,7 @@ static irqreturn_t ahci_interrupt(int irq, void *dev_instance)
+>  	unsigned int i, handled = 0;
+>  	void __iomem *mmio;
+>  	u32 irq_stat, irq_ack = 0;
+> +	unsigned long flags;
+>  
+>  	VPRINTK("ENTER\n");
+>  
+> @@ -1751,7 +1752,7 @@ static irqreturn_t ahci_interrupt(int irq, void *dev_instance)
+>  	if (!irq_stat)
+>  		return IRQ_NONE;
+>  
+> -	spin_lock(&host->lock);
+> +	spin_lock_irqsave(&host->lock, flags);
+>  
+>  	for (i = 0; i < host->n_ports; i++) {
+>  		struct ata_port *ap;
+> @@ -1778,7 +1779,7 @@ static irqreturn_t ahci_interrupt(int irq, void *dev_instance)
+>  		handled = 1;
+>  	}
+>  
+> -	spin_unlock(&host->lock);
+> +	spin_unlock_irqrestore(&host->lock, flags);
 
-Yes, you are right. I'd like to remove all uid/euid checks. This patch doesn't
-do this because
+If this truly fixes the problem, then lockdep is definitely the problem 
+source.
 
-	- perhaps it will be possible to kill this helper
+There are plenty of drivers that do the same thing that ahci does, in 
+terms of interrupt handler locking...  and I will definitely push back 
+on efforts to convert otherwise-100%-safe spin_lock() into 
+spin_lock_irqsave() just to quiet lockdep.
 
-	- if we remove these checks, we should do some subsequent cleanups
-	  in drivers/usb/core/, while this series is all about LSM hooks.
+Very interesting email, thanks...
 
-I am going to do this later.
-
-> And if all, what's the rationale?
-
-I think it is not good that LSM has some special (and unneeded!) hacks for USB.
-Please also look at the next patch.
+	Jeff
 
 
-Do you agree?
-
-Oleg.
 
