@@ -1,88 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758685AbYBYEt2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754414AbYBYFFV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758685AbYBYEt2 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 24 Feb 2008 23:49:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754152AbYBYEtU
+	id S1754414AbYBYFFV (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 Feb 2008 00:05:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751080AbYBYFFG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 24 Feb 2008 23:49:20 -0500
-Received: from wa-out-1112.google.com ([209.85.146.177]:15549 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753779AbYBYEtT (ORCPT
+	Mon, 25 Feb 2008 00:05:06 -0500
+Received: from bombadil.infradead.org ([18.85.46.34]:49066 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751067AbYBYFFE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 24 Feb 2008 23:49:19 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:to:cc:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=Pk7WiXQyCwfuyn6cxBRv1VrvFiEDwbGiSOzQUVQUMcPDcxdNyJF8zN9Xoj8voP6yVmeaDQgpAWBS5/2thfIFPfYUWB23895KIlOlFETsFgoViVoCGgu8B9oMnz92llGXWrqSZrqUhXL6TqBM3I/z2ZNfOY4mHCGOb3IjdiBOP7I=
-Subject: [PATCH] radeon: fix integer as NULL pointer warnings in
-	radeon_mem.c
-From: Harvey Harrison <harvey.harrison@gmail.com>
-To: Keith Whitwell <keith@tungstengraphics.com>,
-       Andrew Morton <akpm@linux-foundation.org>
-Cc: LKML <linux-kernel@vger.kernel.org>
-Content-Type: text/plain
-Date: Sun, 24 Feb 2008 20:49:24 -0800
-Message-Id: <1203914964.1767.28.camel@brick>
+	Mon, 25 Feb 2008 00:05:04 -0500
+Date: Mon, 25 Feb 2008 02:04:12 -0300
+From: Mauro Carvalho Chehab <mchehab@infradead.org>
+To: Harvey Harrison <harvey.harrison@gmail.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] video: add a clamp() macro to kernel.h and replace two
+ existing defs
+Message-ID: <20080225020412.09dc474c@areia>
+In-Reply-To: <1203914603.1767.25.camel@brick>
+References: <1203914603.1767.25.camel@brick>
+X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.1; i586-mandriva-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <mchehab@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-drivers/char/drm/radeon_mem.c:91:23: warning: Using plain integer as NULL pointer
-drivers/char/drm/radeon_mem.c:116:28: warning: Using plain integer as NULL pointer
-drivers/char/drm/radeon_mem.c:124:28: warning: Using plain integer as NULL pointer
-drivers/char/drm/radeon_mem.c:177:26: warning: Using plain integer as NULL pointer
-drivers/char/drm/radeon_mem.c:177:53: warning: Using plain integer as NULL pointer
+On Sun, 24 Feb 2008 20:43:23 -0800
+Harvey Harrison <harvey.harrison@gmail.com> wrote:
 
-Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
----
- drivers/char/drm/radeon_mem.c |    8 ++++----
- 1 files changed, 4 insertions(+), 4 deletions(-)
+> Clamps a value to be within a given range with strict typechecking.
+> 
+> Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
 
-diff --git a/drivers/char/drm/radeon_mem.c b/drivers/char/drm/radeon_mem.c
-index 78b34fa..4af5286 100644
---- a/drivers/char/drm/radeon_mem.c
-+++ b/drivers/char/drm/radeon_mem.c
-@@ -88,7 +88,7 @@ static struct mem_block *alloc_block(struct mem_block *heap, int size,
- 
- 	list_for_each(p, heap) {
- 		int start = (p->start + mask) & ~mask;
--		if (p->file_priv == 0 && start + size <= p->start + p->size)
-+		if (p->file_priv == NULL && start + size <= p->start + p->size)
- 			return split_block(p, start, size, file_priv);
- 	}
- 
-@@ -113,7 +113,7 @@ static void free_block(struct mem_block *p)
- 	/* Assumes a single contiguous range.  Needs a special file_priv in
- 	 * 'heap' to stop it being subsumed.
- 	 */
--	if (p->next->file_priv == 0) {
-+	if (p->next->file_priv == NULL) {
- 		struct mem_block *q = p->next;
- 		p->size += q->size;
- 		p->next = q->next;
-@@ -121,7 +121,7 @@ static void free_block(struct mem_block *p)
- 		drm_free(q, sizeof(*q), DRM_MEM_BUFS);
- 	}
- 
--	if (p->prev->file_priv == 0) {
-+	if (p->prev->file_priv == NULL) {
- 		struct mem_block *q = p->prev;
- 		q->size += p->size;
- 		q->next = p->next;
-@@ -174,7 +174,7 @@ void radeon_mem_release(struct drm_file *file_priv, struct mem_block *heap)
- 	 * 'heap' to stop it being subsumed.
- 	 */
- 	list_for_each(p, heap) {
--		while (p->file_priv == 0 && p->next->file_priv == 0) {
-+		while (p->file_priv == NULL && p->next->file_priv == NULL) {
- 			struct mem_block *q = p->next;
- 			p->size += q->size;
- 			p->next = q->next;
--- 
-1.5.4.2.200.g99e75
-
-
-
+Acked-by: Mauro Carvalho Chehab <mchehab@infradead.org>
