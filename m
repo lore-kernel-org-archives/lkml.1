@@ -1,48 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760849AbYBYWUb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760939AbYBYWUv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760849AbYBYWUb (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 Feb 2008 17:20:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760715AbYBYWUA
+	id S1760939AbYBYWUv (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 Feb 2008 17:20:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760729AbYBYWUD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
+	Mon, 25 Feb 2008 17:20:03 -0500
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:57551 "EHLO amd.ucw.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1760705AbYBYWUA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Mon, 25 Feb 2008 17:20:00 -0500
-Received: from 1wt.eu ([62.212.114.60]:2125 "EHLO 1wt.eu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760528AbYBYWT6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 Feb 2008 17:19:58 -0500
-Date: Mon, 25 Feb 2008 23:19:54 +0100
-From: Willy Tarreau <w@1wt.eu>
-To: Oleg Verych <olecom@gmail.com>
-Cc: Steve Brokenshire <sbrokenshire@xestia.co.uk>,
-       linux-kernel@vger.kernel.org, linux-kbuild@vger.kernel.org
-Subject: Re: [PATCH] Compress kernel modules on installation.
-Message-ID: <20080225221953.GX8953@1wt.eu>
-References: <20080225214209.a3f79327.sbrokenshire@xestia.co.uk> <8499950a0802251417l7a2fff25q7fa57fce57369b1b@mail.gmail.com>
-Mime-Version: 1.0
+Date: Mon, 25 Feb 2008 23:20:23 +0100
+From: Pavel Machek <pavel@ucw.cz>
+To: "Michael S. Tsirkin" <m.s.tsirkin@gmail.com>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Alexey Starikovskiy <astarikovskiy@suse.de>,
+       Len Brown <len.brown@intel.com>, linux-acpi@vger.kernel.org,
+       Jeff Garzik <jeff@garzik.org>
+Subject: Re: broken suspend in .2.6.25-rc3 on T61p (was Re: new regression
+	in 2.6.25-rc3: no keyboard/lid acpi events on thinkpad T61p)
+Message-ID: <20080225222023.GK2659@elf.ucw.cz>
+References: <8f53421d0802251119q470a79c1p31048ef136271f84@mail.gmail.com> <20080225114611.d91791f6.akpm@linux-foundation.org> <8f53421d0802251245j5439b37die840e34bb293f995@mail.gmail.com> <200802252157.10412.rjw@sisk.pl> <20080225212615.GA2659@elf.ucw.cz> <8f53421d0802251331n31b37db8gb644dc9aa2d553d4@mail.gmail.com> <20080225215049.GD2659@elf.ucw.cz> <8f53421d0802251415g2033ca6bqd4e6ea9e2d93f097@mail.gmail.com>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <8499950a0802251417l7a2fff25q7fa57fce57369b1b@mail.gmail.com>
-User-Agent: Mutt/1.5.11
+In-Reply-To: <8f53421d0802251415g2033ca6bqd4e6ea9e2d93f097@mail.gmail.com>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Feb 25, 2008 at 11:17:23PM +0100, Oleg Verych wrote:
-> On Mon, Feb 25, 2008 at 10:42 PM, Steve Brokenshire:
-> > Hi,
+Hi!
+
+> >  > >  > commit 559bbe6cbd0d8c68d40076a5f7dc98e3bf5864b2
+> >  > >  > Author: Pavel Machek <pavel@ucw.cz>
+> >  > >  > Date:   Thu Feb 21 13:56:55 2008 +0100
+> >  > >  >
+> >  > >  >     power_state: get rid of write-only variable in SATA
+> >  > >
+> >  > >  This is pretty unlikely to be it. Can you double check that this patch
+> >  > >  really breaks something?
+> >  >
+> >  > I did and it seems to: just reverting
+> >  > 559bbe6cbd0d8c68d40076a5f7dc98e3bf5864b2 fixes resume for me.
+> >  > 635adc28087ced0c843d2ecb6d4ae474d0e611cd which is
+> >  > 559bbe6cbd0d8c68d40076a5f7dc98e3bf5864b2~1
+> >  > also resumes fine.
 > >
-> >  (I've sent this to the linux-kbuild and linux-kernel lists as this
-> >  patch modifies the Makefile.modinst file. I also don't subscribe to the
-> >  linux-kbuild and linux-kernel mailing lists so can I have any replies
-> >  CC'ed to me please)
+> >  Hmm, I guess that should teach me about "simple cleanups".
+> >
+> >  Do you use any of:
+> >
+> >  ata/sata_inic162x.c
+> >  ata/sata_nv.c
+> >  ata/sata_sil24.c
+> >
+> >  by chance?
 > 
-> And what if i like bzip2 (yea sometimes better) or 7zip (better if !EMBEDDED)
-> or whatever?
+> I don't think so.
+> Here are the only 3 ata modules I have built:
+> drivers/ata/ahci.ko
+> drivers/ata/ata_piix.ko
+> drivers/ata/libata.ko
 > 
-> It's pure user/distro question.
+> 
+> ahci.c seems to look at power_state.
+> 
+> static int ahci_pci_device_resume(struct pci_dev *pdev)
+> {
+>         struct ata_host *host = dev_get_drvdata(&pdev->dev);
+>         int rc;
+> 
+>         rc = ata_pci_device_do_resume(pdev);
+>         if (rc)
+>                 return rc;
+> 
+>         if (pdev->dev.power.power_state.event == PM_EVENT_SUSPEND) {
+>                 rc = ahci_reset_controller(host);
+>                 if (rc)
+>                         return rc;
+> 
+>                 ahci_init_controller(host);
+>         }
 
-not exactly, as only gzip is supported by module-init-tools. However,
-if you come up with a patch to implement lzma or equivalent for
-module-init-tools, it may be useful.
+> Right?
 
-Willy
+Hmm, mystery partly solved... as you guessed it, this piece of code
+was not in my tree.
 
+(still, how can this cause autoresume after 5 seconds is a mystery to
+me).
+								Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
