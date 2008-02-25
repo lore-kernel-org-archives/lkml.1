@@ -1,69 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759942AbYBYWD2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760154AbYBYWDu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759942AbYBYWD2 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 Feb 2008 17:03:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755730AbYBYWDR
+	id S1760154AbYBYWDu (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 Feb 2008 17:03:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756695AbYBYWDk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 Feb 2008 17:03:17 -0500
-Received: from www.tglx.de ([62.245.132.106]:56513 "EHLO www.tglx.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750838AbYBYWDR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 Feb 2008 17:03:17 -0500
-Date: Mon, 25 Feb 2008 23:01:59 +0100 (CET)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Andrew Morton <akpm@linux-foundation.org>
-cc: Jeff Garzik <jgarzik@pobox.com>,
-       =?ISO-8859-15?Q?Bj=F6rn_Steinbrink?= <B.Steinbrink@gmx.de>,
-       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>
-Subject: Re: 2.6.24-git: kmap_atomic() WARN_ON()
-In-Reply-To: <20080225124054.9b69e9f0.akpm@linux-foundation.org>
-Message-ID: <alpine.LFD.1.00.0802252242290.7583@apollo.tec.linutronix.de>
-References: <alpine.LFD.1.00.0802070054220.9204@apollo.tec.linutronix.de> <20080225195924.GA23176@atjola.homenet> <47C32043.6090809@pobox.com> <20080225124054.9b69e9f0.akpm@linux-foundation.org>
-User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
+	Mon, 25 Feb 2008 17:03:40 -0500
+Received: from mail.gmx.net ([213.165.64.20]:59289 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1750838AbYBYWDj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 25 Feb 2008 17:03:39 -0500
+X-Authenticated: #20450766
+X-Provags-ID: V01U2FsdGVkX19fhhIULONfLskygXHPSrOHSNhIvyd2euOgWt2q5u
+	k8wfJgf0bDMGAA
+Date: Mon, 25 Feb 2008 23:03:38 +0100 (CET)
+From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+To: Greg KH <greg@kroah.com>
+cc: linux-kernel@vger.kernel.org
+Subject: Re: [PCI] duplicate sysfs symbols getting registered in current git
+In-Reply-To: <20080225211417.GA20505@kroah.com>
+Message-ID: <Pine.LNX.4.64.0802252300250.19416@axis700.grange>
+References: <Pine.LNX.4.64.0802182142240.11540@axis700.grange>
+ <20080220063834.GA22708@kroah.com> <Pine.LNX.4.64.0802251341160.4430@axis700.grange>
+ <Pine.LNX.4.64.0802251913380.19416@axis700.grange> <20080225202546.GA8893@kroah.com>
+ <Pine.LNX.4.64.0802252130410.19416@axis700.grange> <20080225211417.GA20505@kroah.com>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Y-GMX-Trusted: 0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 25 Feb 2008, Andrew Morton wrote:
-> On Mon, 25 Feb 2008 15:08:35 -0500 Jeff Garzik <jgarzik@pobox.com> wrote:
-> > There are plenty of drivers that do the same thing that ahci does, in 
-> > terms of interrupt handler locking...  and I will definitely push back 
-> > on efforts to convert otherwise-100%-safe spin_lock() into 
-> > spin_lock_irqsave() just to quiet lockdep.
+On Mon, 25 Feb 2008, Greg KH wrote:
+
+> On Mon, Feb 25, 2008 at 09:31:22PM +0100, Guennadi Liakhovetski wrote:
+> > On Mon, 25 Feb 2008, Greg KH wrote:
 > > 
-> > Very interesting email, thanks...
-> > 
-> 
-> I suspect this is a bug in my old kmap_atomic debugging patch.  It doesn't
-> know about the implicit irq-disablememnt which interrupt handlers enjoy.  I
-> don't think...
+> > > On Mon, Feb 25, 2008 at 07:15:57PM +0100, Guennadi Liakhovetski wrote:
+> > > > On Mon, 25 Feb 2008, Guennadi Liakhovetski wrote:
+> > > > 
+> > > > > On Tue, 19 Feb 2008, Greg KH wrote:
+> > > > > 
+> > > > > > On Mon, Feb 18, 2008 at 09:52:25PM +0100, Guennadi Liakhovetski wrote:
+> > > > > > > Booting an x86 SMP PC with todays git-snapshot or just with 2.6.25-rc2 
+> > > > > > > getting the following warnings (with a bit of context):
+> > > > > > 
+> > > > > > Can you try enabling CONFIG_DEBUG_KOBJECT and sending the output at boot
+> > > > > > time from this?
+> > > > > 
+> > > > > dmesg output with CONFIG_LOG_BUF_SHIFT=19 sent privately to Greg as 
+> > > > > unpacked, as it would have to be sent to the list, is 408K big. Will see 
+> > > > > what Greg says.
+> > > > 
+> > > > Actually, the most annoying problem with post 2.6.24 kernels on this 
+> > > > machine is, that the system doesn't power off or reboot any more. And 
+> > > > seeing other reports, where the reason for not powering down was unfreed 
+> > > > kobjects, maybe this is the problem here too?
 
-I suspect here is confusion. The implicit irq-disablement of lockdep
-is actually hiding the warning.
+[snip]
 
-The code which emits the warning is:
+> Then I suggest filing a new bug report so it doesn't get lost.
 
-        if (type == KM_IRQ0 || type == KM_IRQ1 || type == KM_BOUNCE_READ ||
-                        type == KM_BIO_SRC_IRQ || type == KM_BIO_DST_IRQ) {
-                if (!irqs_disabled()) {
-                        WARN_ON(1);
-                        warn_count--;
-                }
+Have you found anything interesting in the kobj debugging output? Do you 
+think these are two related problems (kobj and failing power-off) or 
+separate? So should I file two bug-reports or just one? You mean on 
+bugzilla?
 
-It checks for _NOT_ irqs_disabled. The calling code is
-ata_scsi_rbuf_get() which calls with:
-
-     buf = kmap_atomic(sg_page(sg), KM_IRQ0) + sg->offset;
-
-This happens with interrupts enabled. So the warning is according to
-the well documented km_type enum and the equally well documented
-highmem debug code correct.
-
-Bjoern decoded it very well, just Jeff jumped to very interesting
-conclusions.
-
-Thanks,
-
-	tglx
+Thanks
+Guennadi
+---
+Guennadi Liakhovetski
