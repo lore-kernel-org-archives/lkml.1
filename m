@@ -1,58 +1,127 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756924AbYBYRM6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755271AbYBYRW0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756924AbYBYRM6 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 Feb 2008 12:12:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750961AbYBYRMt
+	id S1755271AbYBYRW0 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 Feb 2008 12:22:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752245AbYBYRWQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 Feb 2008 12:12:49 -0500
-Received: from gateway.drzeus.cx ([85.8.24.16]:55302 "EHLO smtp.drzeus.cx"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751129AbYBYRMs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 Feb 2008 12:12:48 -0500
-Date: Mon, 25 Feb 2008 18:12:14 +0100
-From: Pierre Ossman <drzeus-list@drzeus.cx>
-To: Haavard Skinnemoen <hskinnemoen@atmel.com>
-Cc: Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: MMC core debugfs support (was Re: [RFC v2 5/5] Atmel MCI:
- Driver for Atmel on-chip MMC controllers)
-Message-ID: <20080225181214.0860f622@mjolnir.drzeus.cx>
-In-Reply-To: <20080214150005.2c46a991@dhcp-252-066.norway.atmel.com>
-References: <1201630213-31900-1-git-send-email-hskinnemoen@atmel.com>
-	<1201630213-31900-2-git-send-email-hskinnemoen@atmel.com>
-	<1201630213-31900-3-git-send-email-hskinnemoen@atmel.com>
-	<1201630213-31900-4-git-send-email-hskinnemoen@atmel.com>
-	<1201630213-31900-5-git-send-email-hskinnemoen@atmel.com>
-	<1201630213-31900-6-git-send-email-hskinnemoen@atmel.com>
-	<20080213193051.1a7e3b29@poseidon.drzeus.cx>
-	<20080214150005.2c46a991@dhcp-252-066.norway.atmel.com>
-X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.8; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Mon, 25 Feb 2008 12:22:16 -0500
+Received: from wx-out-0506.google.com ([66.249.82.234]:47850 "EHLO
+	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752042AbYBYRWP (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 25 Feb 2008 12:22:15 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=FNXW5YgeuT6U7wjgXGuCJdjCmAChcL8sWbtm6XnnsPXc7c9XR6yKQsy2BbYtks+5RQdgoNOrdCbDSISgpNkta0Xc26Q8S5ulNkSrvCn6zwgATL/5JPUsc4YAsJtqSu38srJFm/xrGcdpNDOFAJS7MQxxZ+Be9zYx9zZYnVRvCUU=
+Message-ID: <998d0e4a0802250922p518ec043m1abae3a3a407be0f@mail.gmail.com>
+Date: Mon, 25 Feb 2008 18:22:13 +0100
+From: "J.C. Pizarro" <jcpiza@gmail.com>
+To: "Ady Wicaksono" <ady.wicaksono@gmail.com>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: Patch kernel: I have 8 Gbytes RAM, but why I can only allocate 2.8 Gbytes RAM for a single process?
+In-Reply-To: <2743ae110802242344s4406cd5eq3c5e8d0a6e69101b@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <2743ae110802242344s4406cd5eq3c5e8d0a6e69101b@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 14 Feb 2008 15:00:05 +0100
-Haavard Skinnemoen <hskinnemoen@atmel.com> wrote:
+2008/2/25, Ady Wicaksono <ady.wicaksono@gmail.com>:
+> I have 8 Gbytes RAM, but why I can allocate 2.8 Gbytes RAM for a single process?
+>  How to patch kernel so I have more than 2.8 Gbytes limitation?
+>
+>  Kernel:
+>  ---------------------------
+>  Linux xxx.com 2.6.9-023stab046.2-enterprise #1 SMP Mon Dec 10 15:22:33
+>  MSK 2007 i686 i686 i386 GNU/Linux
+>
+>  Mem:
+>  ---------------------------
+>  # cat /proc/meminfo
+>  MemTotal:      8296484 kB
+>  MemFree:         50416 kB
+>  Buffers:         64412 kB
+>  Cached:        4927328 kB
+>  SwapCached:          0 kB
+>  Active:        6710828 kB
+>  Inactive:      1065384 kB
+>  HighTotal:     4980736 kB
+>  HighFree:         1024 kB
+>  LowTotal:      3315748 kB
+>  LowFree:         49392 kB
+>  SwapTotal:    10256376 kB
+>  SwapFree:     10255732 kB
+>  Dirty:              64 kB
+>  Writeback:           0 kB
+>  Mapped:        3054960 kB
+>  Slab:           393224 kB
+>  CommitLimit:  14404616 kB
+>  Committed_AS:  6318152 kB
+>  PageTables:      34892 kB
+>  VmallocTotal:   303096 kB
+>  VmallocUsed:     22360 kB
+>  VmallocChunk:   280496 kB
+>
+>
+>  CPU (8 processor id from 0-7), one of them is:
+>  ---------------------------
+>  processor       : 0
+>  vendor_id       : GenuineIntel
+>  cpu family      : 15
+>  model           : 6
+>  model name      : Intel(R) Xeon(TM) CPU 3.00GHz
+>  stepping        : 4
+>  cpu MHz         : 2993.054
+>  cache size      : 2048 KB
+>  physical id     : 0
+>  siblings        : 4
+>  core id         : 0
+>  cpu cores       : 2
+>  fdiv_bug        : no
+>  hlt_bug         : no
+>  f00f_bug        : no
+>  coma_bug        : no
+>  fpu             : yes
+>  fpu_exception   : yes
+>  cpuid level     : 6
+>  wp              : yes
+>  flags           : fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge
+>  mca cmov pat pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe nx
+>  lm constant_tsc pni monitor ds_cpl est cid xtpr
+>  bogomips        : 5989.55
+>
+>  App to test memory limit:
+>  ---------------------------
+>  #include <stdio.h>
+>  #include <stdlib.h>
+>
+>  int main(){
+>         size_t siz = 100 * 1024 * 1024 ;
+>         size_t idx = 1 ;
+>         void *ptr;
+>
+>         for (;;){
+>                 ptr = malloc ( siz * idx );
+>                 if(!ptr)
+>                         break ;
+>                 free(ptr);
+>                 idx++;
+>         }
+>         printf ("Max malloc %d * 100 MB \n", idx - 1 );
+>         return (0);
+>  }
+>
+>  App result: Max malloc 28 * 100 MB ==> 2.8 Gbytes
 
-> 
-> I've started working on this, but I've run into a problem: The mmc core
-> structures don't seem to keep any references to the current request. So
-> I don't really have any information to put into the 'req' file after
-> moving it into the core.
-> 
-> Any ideas on how to solve this?
-> 
+1. It's a 32-bit processor Xeon with 8 GiB of RAM. OK?
+2. The 32-bit userspace's process is always limited to <3.0 GiB ( < 0xC0000000 )
+3. Enable PAE (64 GB option in the kernel) to address the 8 GiB of RAM
+using PAE,
+    also you can have many processes of ~3 GiB per process.
+    I'm not sure if the PAE's three-level paging works efficient in linux.
 
-The simple solution is just to add it. :)
-
-But is it needed though? Shouldn't a read block until there is an event, at which point you'll have access to the data structures long enough to output data.
-
-Rgds
--- 
-     -- Pierre Ossman
-
-  Linux kernel, MMC maintainer        http://www.kernel.org
-  PulseAudio, core developer          http://pulseaudio.org
-  rdesktop, core developer          http://www.rdesktop.org
+   ;)
