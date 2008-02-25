@@ -1,85 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757714AbYBYCus@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754767AbYBYDMh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757714AbYBYCus (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 24 Feb 2008 21:50:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753501AbYBYCuk
+	id S1754767AbYBYDMh (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 24 Feb 2008 22:12:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751073AbYBYDM2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 24 Feb 2008 21:50:40 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:45606 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753261AbYBYCuj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 24 Feb 2008 21:50:39 -0500
-Message-ID: <002101c87759$0fb4f010$58f80d0a@brian>
-From: "Kiyoshi Ueda" <k-ueda@ct.jp.nec.com>
-To: "Andreas Schwab" <schwab@suse.de>, <petkovbb@gmail.com>
-Cc: <bzolnier@gmail.com>, <linux-kernel@vger.kernel.org>,
-       <jens.axboe@oracle.com>, <j-nomura@ce.jp.nec.com>,
-       "Kiyoshi Ueda" <k-ueda@ct.jp.nec.com>
-References: <jelk5k62uy.fsf@sykes.suse.de><58cb370e0802180759h4d44b9bci86f02919a48c7979@mail.gmail.com><20080218.135827.74754725.k-ueda@ct.jp.nec.com><jek5kvisih.fsf@sykes.suse.de> <20080224163244.GA11998@gollum.tnic> <jehcfyffyp.fsf@sykes.suse.de>
-Subject: Re: 2.6.25-rc1/2 CD/DVD burning broken
-Date: Sun, 24 Feb 2008 21:49:31 -0500
+	Sun, 24 Feb 2008 22:12:28 -0500
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:55941 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751048AbYBYDM1 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 24 Feb 2008 22:12:27 -0500
+Date: Mon, 25 Feb 2008 12:10:43 +0900
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: Paul Jackson <pj@sgi.com>, Pavel Machek <pavel@ucw.cz>
+Subject: Re: Tiny cpusets -- cpusets for small systems?
+Cc: kosaki.motohiro@jp.fujitsu.com, "Max Krasnyanskiy" <maxk@qualcomm.com>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, Andreas Dilger <adilger@sun.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Daniel Spang <daniel.spang@gmail.com>, Ingo Molnar <mingo@elte.hu>,
+       Jon Masters <jonathan@jonmasters.org>,
+       Marcelo Tosatti <marcelo@kvack.org>, Paul Menage <menage@google.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, Rik van Riel <riel@redhat.com>,
+       LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <20080223060911.e1d13cc1.pj@sgi.com>
+References: <20080223060911.e1d13cc1.pj@sgi.com>
+Message-Id: <20080225120050.AE81.KOSAKI.MOTOHIRO@jp.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	format=flowed;
-	charset="iso-8859-1";
-	reply-type=original
+Content-Type: text/plain; charset="US-ASCII"
 Content-Transfer-Encoding: 7bit
-X-Priority: 3
-X-MSMail-Priority: Normal
-X-Mailer: Microsoft Outlook Express 6.00.2900.3138
-X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.3198
+X-Mailer: Becky! ver. 2.42 [ja]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Andreas,
+Hi Pual
 
-On Sat, 23 Feb 2008 16:47:50 +0100, Andreas Schwab wrote:
-> Kiyoshi Ueda <k-ueda@ct.jp.nec.com> writes:
->
-> > Could you try this patch?
-> > I've only done a compile test, so this patch may not work.
->
-> Unfortunately, that is not enough to get DVD burning working again.
-> This is the error that growisofs is getting:
->
-> ioctl(6, SG_IO, {'S', SG_DXFER_TO_DEV, cmd[10]=[2a, 00, 00, 00, 03, 10, 
-> 00, 00, 10, 00], mx_sb_len=64, iovec_count=0, dxfer_len=32768, 
-> timeout=60000, flags=0x3, 
-> data[32768]=["\360R\360\314Wt\277\241\36.\347\356L$\201]\210\372_~]I\213\366\253SV\2\372\356\312\257"...], 
-> status=02, masked_status=01, sb[0]=[], host_status=0, driver_status=0, 
-> resid=32768, duration=0, info=0x1}) = 0
-> write(2, ":-( unable to WRITE@LBA=310h: ", 30) = 30
->
-> It looks like the sense buffer is not filled in.  In a successfully run
-> of growisfs under 2.6.24.2 the sense code is "LONG WRITE IN PROGRESS".
->
-> I also see that resid always equals dxfer_len even when the transfer was
-> successful, although growisofs does not seem to care.  With 2.6.24.2
-> resid is only non-zero when a sense error occurred.
+> Looking at some IA64 sn2 config builds I have laying about, I see the
+> following text sizes for a couple of versions, showing the growth of
+> the cpuset/cgroup apparatus over time:
+> 
+> 	25933	2.6.18-rc3-mm1/kernel/cpuset.o (Aug 2006)
+> vs.
+> 	37823	2.6.25-rc2-mm1/kernel/cgroup.o (Feb 2008)
+> 	19558	2.6.25-rc2-mm1/kernel/cpuset.o
+> 
+> So the total has grown from 25933 to 57381 text bytes (note that
+> this is IA64 arch; most arch's will have proportionately smaller
+> text sizes.)
 
-I'm looking at this problem, but currently no idea why the conversion
-to blk_end_request causes it.
+hm, interesting.
+but unfortunately the cpuset have more than depend.(i.e. CONFIG_SMP)
 
-growisofs (in dvd+rw-tools-7.0) seems to care only the sense buffer
-of the sg_io_hdr, as you said.
-(growisofs_mmc.cpp:poor_mans_pwrite64() and transport.hxx:transport())
-So if the driver sets the sense code correctly, growisofs should work
-correctly I think.
-However, I can't find why the blk_end_request patch affects the sense
-code setting.
+To more bad thing, some embedded cpu have poor or no atomic instruction
+support.
+at that, turn on CONFIG_SMP become large performace regression ;)
 
-Could you give me some more information below to help investigation?
-  o Have you tried bisecting the kernel changes to find suspicious
-    commit?  If so, that information will be much appreciated.
-  o Is this problem 100% reproducible on your Pioneer drive?
-  o What is your dvd+rw-tools version?
-  o Do you get some messages from kernel like "DMA error" when
-    the problem happens?
 
-And I'm sorry but I can't make enough time for this problem
-until late this week.
+I am not already embedded engineer.
+thus, I might have made a mistake.
+(BTW: I am large server engineer now)
 
-Thanks,
-Kiyoshi Ueda
+but no thinking dependency is wrong, may be.
+
+
+Pavel, what do you think it?
+
+- kosaki
+
 
