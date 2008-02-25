@@ -1,51 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754559AbYBYJcU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754035AbYBYJj2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754559AbYBYJcU (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 Feb 2008 04:32:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751019AbYBYJcK
+	id S1754035AbYBYJj2 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 Feb 2008 04:39:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750887AbYBYJjS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 Feb 2008 04:32:10 -0500
-Received: from out3.smtp.messagingengine.com ([66.111.4.27]:36169 "EHLO
-	out3.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750776AbYBYJcI (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 Feb 2008 04:32:08 -0500
-X-Sasl-enc: Tf6sUiglBi3kYdhTHwwcdCO+ZKIAbObBM1SHZivSdt8s 1203931927
-Subject: Re: [PATCH 0/4] autofs4 - implement a miscelaneous device for
-	ioctl control
-From: Ian Kent <raven@themaw.net>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, autofs@linux.kernel.org,
-       linux-fsdevel@vger.kernel.org
-In-Reply-To: <20080225001752.d154e88b.akpm@linux-foundation.org>
-References: <1203925954.3087.64.camel@raven.themaw.net>
-	 <20080225001752.d154e88b.akpm@linux-foundation.org>
-Content-Type: text/plain
-Date: Mon, 25 Feb 2008 18:29:39 +0900
-Message-Id: <1203931779.3087.78.camel@raven.themaw.net>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 (2.12.3-1.fc8) 
-Content-Transfer-Encoding: 7bit
+	Mon, 25 Feb 2008 04:39:18 -0500
+Received: from minas.ics.muni.cz ([147.251.4.40]:34713 "EHLO minas.ics.muni.cz"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750763AbYBYJjR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 25 Feb 2008 04:39:17 -0500
+Date: Mon, 25 Feb 2008 10:39:14 +0100
+From: Lukas Hejtmanek <xhejtman@ics.muni.cz>
+To: linux-kernel@vger.kernel.org
+Subject: 2.6.25-rc2 Regression Thinkpad acpi
+Message-ID: <20080225093914.GB4375@ics.muni.cz>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-2
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+X-echelon: NSA, CIA, CI5, MI5, FBI, KGB, BIS, Plutonium, Bin Laden, bomb
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+X-Muni-Spam-TestIP: 147.251.54.96
+X-Muni-Envelope-From: xhejtman@anubis.fi.muni.cz
+X-Muni-Virus-Test: Clean
+X-Greylist: Sender succeeded SMTP AUTH authentication, not delayed by milter-greylist-3.0 (minas.ics.muni.cz [147.251.4.35]); Mon, 25 Feb 2008 10:39:15 +0100 (CET)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hello, 
 
-On Mon, 2008-02-25 at 00:17 -0800, Andrew Morton wrote:
-> We have four patches, all with the same title - please avoid doing this.
-> 
-> I could invent titles for them (as I often have to do), but I think it
-> would be best if you were to do so.  That way, we avoid confusion and
-> people who later google for the patch's title to understand the patch's
-> background will get better coverage.
-> 
-> So... resend, please?
+2.6.25-rc2-git7 has regression, thinkpad keys do not work any more.
 
-OK, sorry.
-I was waiting to hear from you anyway as, for some reason, at least one
-of the posts had HTML and so was bounced form lkml and fsdevel. I'll
-just re-send'em all.
+Probably this commit broke things 6c231bd5eb07ce546517019f334652b9ecfc329a
 
-Ian
-
-
+-- 
+Luká¹ Hejtmánek
