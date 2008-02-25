@@ -1,24 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755165AbYBYNDS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754497AbYBYNES@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755165AbYBYNDS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 Feb 2008 08:03:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753570AbYBYNDJ
+	id S1754497AbYBYNES (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 Feb 2008 08:04:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753570AbYBYNEF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 Feb 2008 08:03:09 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:40086 "EHLO mx1.redhat.com"
+	Mon, 25 Feb 2008 08:04:05 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:40104 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753546AbYBYNDH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 Feb 2008 08:03:07 -0500
+	id S1753938AbYBYNED (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 25 Feb 2008 08:04:03 -0500
 To: linux-kernel@vger.kernel.org
 Cc: virtualization@lists.osdl.org, xen-devel@lists.xensource.com,
        linux-fbdev-devel@lists.sourceforge.net, adaplas@pol.net,
        linux-input@vger.kernel.org, dmitry.torokhov@gmail.com,
        akpm@linux-foundation.org, jayakumar.lkml@gmail.com
-Subject: [PATCH 1/3] xen: Make xen-blkfront write its protocol ABI to xenstore
+Subject: [PATCH 2/3] fbdev: Make deferred I/O work as advertized
 References: <87tzjx6vj3.fsf@pike.pond.sub.org>
 From: Markus Armbruster <armbru@redhat.com>
-Date: Mon, 25 Feb 2008 14:02:24 +0100
-Message-ID: <87mypp6vfj.fsf@pike.pond.sub.org>
+Date: Mon, 25 Feb 2008 14:03:52 +0100
+Message-ID: <87k5kt6vd3.fsf@pike.pond.sub.org>
 User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.1 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -26,77 +26,84 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Frontends are expected to write their protocol ABI to xenstore.  Since
-the protocol ABI defaults to the backend's native ABI, things work
-fine without that as long as the frontend's native ABI is identical to
-the backend's native ABI.  This is not the case for xen-blkfront
-running 32-on-64, because its ABI differs between 32 and 64 bit, and
-thus needs this fix.
+Deferred I/O was utterly broken.  Reading the mmap()ed framebuffer
+worked, but writing it made the VM endlessly invoke
+vm_ops.page_mkwrite().  That happened because we failed to set
+page->mapping and page->index.
 
-Based on http://xenbits.xensource.com/xen-unstable.hg?rev/c545932a18f3
-and http://xenbits.xensource.com/xen-unstable.hg?rev/ffe52263b430 by
-Gerd Hoffmann <kraxel@suse.de>
+The fix is to set them, and clean up properly before the framebuffer
+gets released.
 
+Fix extracted from this linux-fbdev-devel message:
+
+    Subject: [PATCH 1/1 2.6.24] fbdev: defio and Metronomefb
+    From: Jaya Kumar <jayakumar.lkml@gmail.com>
+    Date: 2008-02-18 13:41:26
+
+Signed-off-by: Jaya Kumar <jayakumar.lkml@gmail.com>
 Signed-off-by: Markus Armbruster <armbru@redhat.com>
 
 ---
- drivers/block/xen-blkfront.c         |    7 +++++++
- include/xen/interface/io/protocols.h |   21 +++++++++++++++++++++
- 2 files changed, 28 insertions(+), 0 deletions(-)
- create mode 100644 include/xen/interface/io/protocols.h
 
-diff --git a/drivers/block/xen-blkfront.c b/drivers/block/xen-blkfront.c
-index 8afce67..e69164a 100644
---- a/drivers/block/xen-blkfront.c
-+++ b/drivers/block/xen-blkfront.c
-@@ -46,6 +46,7 @@
+ drivers/video/fb_defio.c |   22 ++++++++++++++++++++--
+ 1 file changed, 20 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/video/fb_defio.c b/drivers/video/fb_defio.c
+index 0f8cfb9..24843fd 100644
+--- a/drivers/video/fb_defio.c
++++ b/drivers/video/fb_defio.c
+@@ -4,7 +4,7 @@
+  *  Copyright (C) 2006 Jaya Kumar
+  *
+  * This file is subject to the terms and conditions of the GNU General Public
+- * License.  See the file COPYING in the main directory of this archive
++ * License. See the file COPYING in the main directory of this archive
+  * for more details.
+  */
  
- #include <xen/interface/grant_table.h>
- #include <xen/interface/io/blkif.h>
-+#include <xen/interface/io/protocols.h>
+@@ -31,7 +31,7 @@ static int fb_deferred_io_fault(struct vm_area_struct *vma,
+ 	unsigned long offset;
+ 	struct page *page;
+ 	struct fb_info *info = vma->vm_private_data;
+-	/* info->screen_base is in System RAM */
++	/* info->screen_base is virtual memory */
+ 	void *screen_base = (void __force *) info->screen_base;
  
- #include <asm/xen/hypervisor.h>
+ 	offset = vmf->pgoff << PAGE_SHIFT;
+@@ -43,6 +43,15 @@ static int fb_deferred_io_fault(struct vm_area_struct *vma,
+ 		return VM_FAULT_SIGBUS;
  
-@@ -597,6 +598,12 @@ again:
- 		message = "writing event-channel";
- 		goto abort_transaction;
- 	}
-+	err = xenbus_printf(xbt, dev->nodename, "protocol", "%s",
-+			    XEN_IO_PROTO_ABI_NATIVE);
-+	if (err) {
-+		message = "writing protocol";
-+		goto abort_transaction;
+ 	get_page(page);
++
++	if (vma->vm_file)
++		page->mapping = vma->vm_file->f_mapping;
++	else
++		printk(KERN_ERR "no mapping available\n");
++
++	BUG_ON(!page->mapping);
++	page->index = vmf->pgoff;
++
+ 	vmf->page = page;
+ 	return 0;
+ }
+@@ -138,11 +147,20 @@ EXPORT_SYMBOL_GPL(fb_deferred_io_init);
+ 
+ void fb_deferred_io_cleanup(struct fb_info *info)
+ {
++	void *screen_base = (void __force *) info->screen_base;
+ 	struct fb_deferred_io *fbdefio = info->fbdefio;
++	struct page *page;
++	int i;
+ 
+ 	BUG_ON(!fbdefio);
+ 	cancel_delayed_work(&info->deferred_work);
+ 	flush_scheduled_work();
++
++	/* clear out the mapping that we setup */
++	for (i = 0 ; i < info->fix.smem_len; i += PAGE_SIZE) {
++		page = vmalloc_to_page(screen_base + i);
++		page->mapping = NULL;
 +	}
+ }
+ EXPORT_SYMBOL_GPL(fb_deferred_io_cleanup);
  
- 	err = xenbus_transaction_end(xbt, 0);
- 	if (err) {
-diff --git a/include/xen/interface/io/protocols.h b/include/xen/interface/io/protocols.h
-new file mode 100644
-index 0000000..01fc8ae
---- /dev/null
-+++ b/include/xen/interface/io/protocols.h
-@@ -0,0 +1,21 @@
-+#ifndef __XEN_PROTOCOLS_H__
-+#define __XEN_PROTOCOLS_H__
-+
-+#define XEN_IO_PROTO_ABI_X86_32     "x86_32-abi"
-+#define XEN_IO_PROTO_ABI_X86_64     "x86_64-abi"
-+#define XEN_IO_PROTO_ABI_IA64       "ia64-abi"
-+#define XEN_IO_PROTO_ABI_POWERPC64  "powerpc64-abi"
-+
-+#if defined(__i386__)
-+# define XEN_IO_PROTO_ABI_NATIVE XEN_IO_PROTO_ABI_X86_32
-+#elif defined(__x86_64__)
-+# define XEN_IO_PROTO_ABI_NATIVE XEN_IO_PROTO_ABI_X86_64
-+#elif defined(__ia64__)
-+# define XEN_IO_PROTO_ABI_NATIVE XEN_IO_PROTO_ABI_IA64
-+#elif defined(__powerpc64__)
-+# define XEN_IO_PROTO_ABI_NATIVE XEN_IO_PROTO_ABI_POWERPC64
-+#else
-+# error arch fixup needed here
-+#endif
-+
-+#endif
--- 
-1.5.3.3
-
