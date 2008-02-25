@@ -1,95 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759487AbYBYUwV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759920AbYBYUxS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759487AbYBYUwV (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 Feb 2008 15:52:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756882AbYBYUwM
+	id S1759920AbYBYUxS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 Feb 2008 15:53:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751278AbYBYUxG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 Feb 2008 15:52:12 -0500
-Received: from fg-out-1718.google.com ([72.14.220.153]:51517 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756824AbYBYUwK (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 Feb 2008 15:52:10 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:mime-version:content-type:content-disposition:user-agent;
-        b=s+5vO0466GoXSSS4j5FL8OTCqUqZW482phdiMzZCfBnxS8zEW/i25HjFLbBWgn/MkVP0aE6c0jEeAcvnzAsLWiMlMNi8UdXCOzf0cdaPGtSUt6YcJz5MJZ70d26Q72Kv6OJMMGKnWhJ0g+hJJso8H8gFPVp49jtIKIJfGA0QQnM=
-Date: Mon, 25 Feb 2008 21:51:00 +0100
-From: Marcin Slusarz <marcin.slusarz@gmail.com>
-To: LKML <linux-kernel@vger.kernel.org>
-Cc: Mauro Carvalho Chehab <mchehab@infradead.org>,
-       Jean Delvare <khali@linux-fr.org>, i2c@lm-sensors.org,
-       video4linux-list@redhat.com
-Subject: [PATCH] video: limit stack usage of ir-kbd-i2c.c
-Message-ID: <20080225205055.GA27455@joi>
+	Mon, 25 Feb 2008 15:53:06 -0500
+Received: from srv5.dvmed.net ([207.36.208.214]:52954 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751921AbYBYUxF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 25 Feb 2008 15:53:05 -0500
+Message-ID: <47C32AAD.8040000@garzik.org>
+Date: Mon, 25 Feb 2008 15:53:01 -0500
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.16 (2007-06-09)
+To: Marin Mitov <mitov@issp.bas.bg>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: net: tx timeouts with skge, 8139too, dmfe drivers/NICs
+References: <200802252237.12326.mitov@issp.bas.bg>
+In-Reply-To: <200802252237.12326.mitov@issp.bas.bg>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.4 (----)
+X-Spam-Report: SpamAssassin version 3.2.3 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-ir_probe allocated struct i2c_client on stack;
-it's pretty big structure, so allocate it with kzalloc
+Marin Mitov wrote:
+> Hi all,
+> 
+> I experience very rare freezes at heavy outbound traffic 
+> (sending ~4GB DVD image to another host(s) on the same LAN) 
+> using skge driver (NIC on the mobo) as well as (recently tested)
+> using rtl8139 or dmfe NICs on the PCI bus. There is a single 
+> switch between them (tested with another one just to exclude
+> a faulty switch).
+> 
+> skge <--> Marvell 88E8001 chip
+> 8139too <--> Realtek 8136B chip
+> dmfe <--> Davicom DM9102 chip
+> 
+> Symptoms are similar: tx timeouts and no more net activity.
+> KDE desktop works, computational programs - work, the machine 
+> is usable, but cannot ping, nor can be ping-ed anymore.
+> rmmod && modprobe the respective modules repairs the problem.
+> Simple surfing/e-mailing from it do not trigger the problem.
+> 
+> The machine is used as LTSP server for old PCs (as X terminals)
+> (mostly outbound traffic) and is not usable as such due to this
+> problem.
+> 
+> The kernel is 2.6.24.2-SMP/x86_32 (PREEMPT or not - NO difference).
+> 
+> As far as this happens with 3 different NICs/drivers could it be
+> a problem in the (common for all of them) networking subsystem?
 
-make checkstack output without this patch:
-x059d ir_probe [ir-kbd-i2c]:                           1000
+A TX timeout (like hardware timeouts, in general) is a very generic 
+behavior, with many causes.
 
-compile tested only
+In general, when you see timeouts with varied hardware and drivers, 
+you're almost always dealing with a problem with interrupt delivery, or 
+a generic system problem, rather than bugs in the network stack or all 
+three drivers.
 
-Signed-off-by: Marcin Slusarz <marcin.slusarz@gmail.com>
-Cc: Mauro Carvalho Chehab <mchehab@infradead.org>
-Cc: Jean Delvare <khali@linux-fr.org>
----
- drivers/media/video/ir-kbd-i2c.c |   18 +++++++++++-------
- 1 files changed, 11 insertions(+), 7 deletions(-)
+	Jeff
 
-diff --git a/drivers/media/video/ir-kbd-i2c.c b/drivers/media/video/ir-kbd-i2c.c
-index 9851987..aec122f 100644
---- a/drivers/media/video/ir-kbd-i2c.c
-+++ b/drivers/media/video/ir-kbd-i2c.c
-@@ -510,9 +510,9 @@ static int ir_probe(struct i2c_adapter *adap)
- 	static const int probe_cx88[] = { 0x18, 0x6b, 0x71, -1 };
- 	static const int probe_cx23885[] = { 0x6b, -1 };
- 	const int *probe = NULL;
--	struct i2c_client c;
-+	struct i2c_client *c;
- 	unsigned char buf;
--	int i,rc;
-+	int i, rc;
- 
- 	switch (adap->id) {
- 	case I2C_HW_B_BT848:
-@@ -537,19 +537,23 @@ static int ir_probe(struct i2c_adapter *adap)
- 	if (NULL == probe)
- 		return 0;
- 
--	memset(&c,0,sizeof(c));
--	c.adapter = adap;
-+	c = kzalloc(sizeof(*c), GFP_KERNEL);
-+	if (!c)
-+		return -ENOMEM;
-+
-+	c->adapter = adap;
- 	for (i = 0; -1 != probe[i]; i++) {
--		c.addr = probe[i];
--		rc = i2c_master_recv(&c,&buf,0);
-+		c->addr = probe[i];
-+		rc = i2c_master_recv(c, &buf, 0);
- 		dprintk(1,"probe 0x%02x @ %s: %s\n",
- 			probe[i], adap->name,
- 			(0 == rc) ? "yes" : "no");
- 		if (0 == rc) {
--			ir_attach(adap,probe[i],0,0);
-+			ir_attach(adap, probe[i], 0, 0);
- 			break;
- 		}
- 	}
-+	kfree(c);
- 	return 0;
- }
- 
--- 
-1.5.3.7
+
 
