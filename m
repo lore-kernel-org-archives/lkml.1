@@ -1,49 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757375AbYBYSXn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758116AbYBYSYX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757375AbYBYSXn (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 Feb 2008 13:23:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754816AbYBYSXf
+	id S1758116AbYBYSYX (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 Feb 2008 13:24:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755705AbYBYSYK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 Feb 2008 13:23:35 -0500
-Received: from www17.your-server.de ([213.133.104.17]:33217 "EHLO
-	www17.your-server.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754959AbYBYSXf (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 Feb 2008 13:23:35 -0500
-Message-ID: <47C3079E.9080309@m3y3r.de>
-Date: Mon, 25 Feb 2008 19:23:26 +0100
-From: Thomas Meyer <thomas@m3y3r.de>
-User-Agent: Thunderbird 2.0.0.9 (X11/20080211)
+	Mon, 25 Feb 2008 13:24:10 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:56779 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754816AbYBYSYJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 25 Feb 2008 13:24:09 -0500
+Message-ID: <47C3078E.3000008@redhat.com>
+Date: Mon, 25 Feb 2008 13:23:10 -0500
+From: Steven Rostedt <srostedt@redhat.com>
+User-Agent: Thunderbird 1.5.0.12 (X11/20071019)
 MIME-Version: 1.0
-To: Stefan Richter <stefanr@s5r6.in-berlin.de>
-CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux1394-devel@lists.sourceforge.net
-Subject: Re: 2.6.25-rc2: ohci1394 problem
-References: <47BBDB07.80409@m3y3r.de> <47BBF771.40203@s5r6.in-berlin.de> <47BC6918.4000203@m3y3r.de> <47BC6E42.10409@s5r6.in-berlin.de> <47BC6EEC.4020000@s5r6.in-berlin.de> <47C04F99.6030704@m3y3r.de> <47C05A51.7000209@s5r6.in-berlin.de>
-In-Reply-To: <47C05A51.7000209@s5r6.in-berlin.de>
+To: Valdis.Kletnieks@vt.edu
+CC: Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
+       Arnaldo Carvalho de Melo <acme@ghostprotocols.net>,
+       linux-kernel@vger.kernel.org, Alan Cox <alan@redhat.com>
+Subject: Re: [PATCH] 2.6.25-rc2-mm1 - fix mcount GPL bogosity.
+References: <30804.1203962369@turing-police.cc.vt.edu>
+In-Reply-To: <30804.1203962369@turing-police.cc.vt.edu>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-X-Authenticated-Sender: thomas@m3y3r.de
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Stefan Richter schrieb:
->
-> My conclusion so far:  There is something wrong with your system which 
-> is below/ before the control of the ieee1394 or firewire stack.
-Yes. I agree with you. So i did a "make clean" and a "make" (not a make 
--j3 as i use to do) and recompiled 2.6.25-rc3 and now it works again. 
-Case closed under strange error. Thanks for your support.
->
-> BTW, there was a single change to ohci1394 after v2.6.24 and that does 
-> not affect the initialization code of ohci1394.  (Patch name is 
-> "ieee1394: ohci1394: don't schedule IT tasklets on IR events".)  Did 
-> you ever use kernels before 2.6.25-rc2 and had both of ohci1394 and 
-> firewire-ohci inserted?
-Yes. 2.6.24 works with the same config, i.e. both drivers are build as 
-modules.
+[ added Alan to CC ]
 
-mfg
-thomas
+Valdis.Kletnieks@vt.edu wrote:
+> The symbol 'mcount' has EXPORT_SYMBOL_GPL attached to it.  This is because
+> "things that use this symbol are too chummy with kernel internals to not be
+> derivative".  However, the symbol may or may not actually be referenced by a
+> given module, depending on the setting of CONFIG_FTRACE.  This leads to an
+> interesting result:  The module may or may not be too chummy depending on a
+> variable outside its control, and the module source code doesn't have any say
+> in the matter.  So we have a .c file that *is* a derivative work if the kernel
+> is built one way, and is *not* if the kernel is built another.  Worse yet,
+> it *also* depends at runtime on the setting of /proc/sys/kernel/ftrace_enabled
+> 
+> But it's the SAME EXACT SOURCE.  And since the source file isn't called
+> schrodinger.c, I believe the following patch is in order..
+> 
+> (As an aside, arch/um/kernel/gprof_syms.c already lists mcount as a
+> SYMBOL, not a SYMBOL_GPL - yet another inconsistency.
+> 
+
+The reason I added GPL is not because of some idea that this is all 
+"chummy" with the kernel. But because I derived the mcount code from 
+glibc's version of mcount. Now you may argue that glibc is under LGPL 
+and a non-GPL export is fine. But I've been advised that if I ever take 
+code from someone else, to always export it with GPL.
+
+-- Steve
 
