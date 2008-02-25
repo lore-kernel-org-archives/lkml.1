@@ -1,59 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754713AbYBYIlX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755461AbYBYImS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754713AbYBYIlX (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 Feb 2008 03:41:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753159AbYBYIlD
+	id S1755461AbYBYImS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 Feb 2008 03:42:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753159AbYBYImE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 Feb 2008 03:41:03 -0500
-Received: from wf-out-1314.google.com ([209.85.200.171]:64826 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753564AbYBYIlA (ORCPT
+	Mon, 25 Feb 2008 03:42:04 -0500
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:46604 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752825AbYBYImB convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 Feb 2008 03:41:00 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=Wk3K7jtzEt3rmjP1MTEBb/PnGZGOtIeZdIZozs+YJXiw8Y+wT3TmwtaTOigCAAR4x2OBbEm7LqGqFaA15AizDe2zaGhHENliHaFsNS/MzKvHx3sR1X3i6JmVf8b9pkOZtLMu+I7m019wPJxCozN1aUQGd7ZUsPHHUPAOPylpkaU=
-Message-ID: <4d8e3fd30802250040ie77dbecw6cc396a0f2a9285e@mail.gmail.com>
-Date: Mon, 25 Feb 2008 09:40:59 +0100
-From: "Paolo Ciarrocchi" <paolo.ciarrocchi@gmail.com>
-To: "Ingo Molnar" <mingo@elte.hu>
-Subject: Re: [PATCH 3/3] IDE: Coding Style fixes to drivers/ide/pci/cy82c693.c
-Cc: "Bartlomiej Zolnierkiewicz" <bzolnier@gmail.com>,
-       "Linux Kernel" <linux-kernel@vger.kernel.org>,
-       linux-ide <linux-ide@vger.kernel.org>
-In-Reply-To: <20080225073122.GE11327@elte.hu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20080224221144.1e9e7449@paolo-desktop>
-	 <20080225073122.GE11327@elte.hu>
+	Mon, 25 Feb 2008 03:42:01 -0500
+Date: Mon, 25 Feb 2008 08:32:01 +0000
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Eliot Blennerhassett <linux@audioscience.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: Q: volatile vs barriers to access memory data changed by device
+ DMA
+Message-ID: <20080225083201.51067611@core>
+In-Reply-To: <200802251404.01874.linux@audioscience.com>
+References: <200802251404.01874.linux@audioscience.com>
+X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Feb 25, 2008 at 8:31 AM, Ingo Molnar <mingo@elte.hu> wrote:
->
->  * Paolo Ciarrocchi <paolo.ciarrocchi@gmail.com> wrote:
->
->  > Before:
->  > total: 34 errors, 14 warnings, 456 lines checked
->  >
->  > After:
->  > total: 0 errors, 8 warnings, 456 lines checked
->
->  sidenote: please also indicate to maintainers that the cleanup causes no
->  change in generated code. Find below of how one of your cleanup patches
->  looks like in its final form in x86.git. (i auto-generated all of the
->  commit log)
->
->  info like that makes it easier for maintainers to see the intended zero
->  impact of your changes.
+> === after conversion
+> struct bus_master_interface *interface;
+> while (interface->ack != OK) { 
+>         delay(a short while);
+>         rmb(); 
+>         [ after X loops device changes interface->ack by dma ]
+> };
+> 
+> All I need is for the read of interface->ack in the loop not to be optimised 
+> away - is rmb() the appropriate incantation to achieve this?
 
-Sure, I'll script that.
+Yes - ish.  You want the equivalent of 
 
-Ciao,
--- 
-Paolo
-http://paolo.ciarrocchi.googlepages.com/
+	do {
+		rmb();
+		if (interface->ack == OK)
+			break;
+	} while(1);
+
+(eg putting another rmb before the while in your case)
+
+You want a barrier before the *first* read in case the
+compiler has managed to cache the value before you enter the loop.
+
+
+> struct bus_master_interface *interface;
+> interface->cmd = command;
+> wmb();
+> iowrite(device_interrupt, 1);
+
+Yes.
+
