@@ -1,27 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755728AbYBYLuy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755046AbYBYLz1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755728AbYBYLuy (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 Feb 2008 06:50:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754029AbYBYLur
+	id S1755046AbYBYLz1 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 Feb 2008 06:55:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753308AbYBYLzS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 Feb 2008 06:50:47 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:45479 "EHLO mx2.mail.elte.hu"
+	Mon, 25 Feb 2008 06:55:18 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:54093 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753919AbYBYLuq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 Feb 2008 06:50:46 -0500
-Date: Mon, 25 Feb 2008 12:50:22 +0100
+	id S1753099AbYBYLzQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 25 Feb 2008 06:55:16 -0500
+Date: Mon, 25 Feb 2008 12:54:48 +0100
 From: Ingo Molnar <mingo@elte.hu>
 To: Adrian Bunk <bunk@kernel.org>
 Cc: Florian Fainelli <florian.fainelli@telecomint.eu>,
        linux-kernel@vger.kernel.org, Sam Ravnborg <sam@ravnborg.org>,
        Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>
 Subject: Re: [PATCH] Add rdc321x defconfig file
-Message-ID: <20080225115022.GA16376@elte.hu>
-References: <200802251058.30188.florian.fainelli@telecomint.eu> <20080225101433.GA30685@elte.hu> <20080225110858.GA32450@cs181133002.pp.htv.fi> <20080225111707.GA7062@elte.hu> <20080225113235.GC32450@cs181133002.pp.htv.fi>
+Message-ID: <20080225115448.GB16376@elte.hu>
+References: <200802251058.30188.florian.fainelli@telecomint.eu> <20080225105110.GA5648@elte.hu> <20080225111733.GB32450@cs181133002.pp.htv.fi> <200802251227.37435.florian.fainelli@telecomint.eu> <20080225114547.GD32450@cs181133002.pp.htv.fi>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-In-Reply-To: <20080225113235.GC32450@cs181133002.pp.htv.fi>
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20080225114547.GD32450@cs181133002.pp.htv.fi>
 User-Agent: Mutt/1.5.17 (2007-11-01)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -38,34 +39,22 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 * Adrian Bunk <bunk@kernel.org> wrote:
 
-> > What i do against build breakage is randconfig testing. That catches 
-> > far more build breakage than a few limited number of defconfigs 
-> > would ever.
+> On Mon, Feb 25, 2008 at 12:27:34PM +0100, Florian Fainelli wrote:
+> > Le lundi 25 février 2008, Adrian Bunk a écrit :
+> > > Booting it might fine, but CLOCK_TICK_RATE will be wrong...
+> > 
+> > PIT_TICK_RATE is overriden specificaly for R321x in 
+> > include/asm-x86/timex.h, just like for AMD Elan.
 > 
-> How do you test whether a x86 merge might break the compilation of 
-> e.g. some ARM platform without using any defconfig?
+> Not when you try CONFIG_X86_GENERICARCH=y as Ingo suggested.
 
-yes, we do test that too. (we added this recently)
+good point.
 
-> And building all defconfigs is the trivial way of having most 
-> reasonable configurations covered with only one day of compile time.
+The clean solution would be to make PIT_TICK_RATE/CLOCK_TICK_RATE a 
+variable that defaults to 1193182 on x86, and which an early quirk would 
+set to 1189200 on AMD Elan and to 1041667 on RDC321X.
 
-the existing 32-bit and 64-bit defconfigs should be enough for that. For 
-better/full coverage, randconfig should be used.
-
-> > More defconfigs would just be a constant maintenance drag, they are 
-> > rather pointless on PC hardware anyway (we'd have to have at least a 
-> > few hundred of them for it to be meaningful as a "default config") 
-> > and it does not really solve the problem either.
-> 
-> My goal was "one per subarchitecture" which is not such a big number.
-
-at least on x86 subarchitectures are not at all that important (they are 
-a rather inflexible build-time concept), and as you have seen it in this 
-thread, we are working on reducing their count. 99% of the real hardware 
-is covered under the generic subarchitecture.
-
-they are more important on other (mostly embedded) platforms, with ARM 
-having 75 defconfigs.
+likewise, other subarch details should be turned into specific drivers 
+or specific quirks as well.
 
 	Ingo
