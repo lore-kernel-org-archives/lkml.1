@@ -1,67 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758901AbYBYVPw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757012AbYBYVST@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758901AbYBYVPw (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 Feb 2008 16:15:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752744AbYBYVPp
+	id S1757012AbYBYVST (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 Feb 2008 16:18:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750778AbYBYVSL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 Feb 2008 16:15:45 -0500
-Received: from n11.bullet.mail.mud.yahoo.com ([209.191.125.210]:37608 "HELO
-	n11.bullet.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751174AbYBYVPo (ORCPT
+	Mon, 25 Feb 2008 16:18:11 -0500
+Received: from terminus.zytor.com ([198.137.202.10]:35254 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750743AbYBYVSK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 Feb 2008 16:15:44 -0500
-X-Yahoo-Newman-Id: 736313.33294.bm@omp402.mail.mud.yahoo.com
-X-YMail-OSG: P99nsugVM1nCqqZg7UFuFw4IuSpSoOaleC17eL4Ug3v6.RKmhZLgS0pMMQPtJ4cI78XhhCP17A--
-X-Yahoo-Newman-Property: ymail-3
-Message-ID: <47C32FFA.2000605@schaufler-ca.com>
-Date: Mon, 25 Feb 2008 13:15:38 -0800
-From: Casey Schaufler <casey@schaufler-ca.com>
-Reply-To: casey@schaufler-ca.com
-User-Agent: Thunderbird 2.0.0.9 (Windows/20071031)
+	Mon, 25 Feb 2008 16:18:10 -0500
+Message-ID: <47C3306E.8060401@zytor.com>
+Date: Mon, 25 Feb 2008 13:17:34 -0800
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
-To: torvalds@linux-foundation.org, akpm@linux-foundation.org
-CC: linux-kernel@vger.kernel.org, casey@schaufler-ca.com
-Subject: [PATCH] (02/25/08 linus git) smack functions smk_cipso_doi and smk_unlbl_ambient
- made static
+To: Alexander van Heukelum <heukelum@fastmail.fm>
+CC: Ingo Molnar <mingo@elte.hu>, Andi Kleen <ak@suse.de>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Alexander van Heukelum <heukelum@mailshack.com>
+Subject: Re: [PATCH] reserve_early end-of-conventional-memory to 1MB
+References: <20080224174605.GA21661@mailshack.com> <47C22568.1010405@zytor.com>   <1203958478.20033.1239002461@webmail.messagingengine.com>   <20080225170134.GA15839@elte.hu>   <20080225180750.GA31054@mailshack.com> <47C3053D.5060504@zytor.com> <1203968796.24935.1239027765@webmail.messagingengine.com>
+In-Reply-To: <1203968796.24935.1239027765@webmail.messagingengine.com>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Casey Schaufler <casey@schaufler-ca.com>
+Alexander van Heukelum wrote:
+> 
+> Hello hpa,
+> 
+> I failed to find a comment referring to 0x413 or int 0x12 in
+> arch/x86/kernel. I do know the comment in Documentation/i386/boot.txt,
+> however, suggesting that "INT 12h" _should_ be used, but that it would
+> be pointless for zImage and old bzImage kernels, because they _have_
+> to be started from 0x90000 anyway. New bzImage kernels do not have
+> this limitation, and smart bootloaders simply put them at much
+> lower addresses, like 0x40000. (I know: you know.) My point is just
+> that the argument not to use 0x413 in the bootloader is not valid
+> for this case.
+> 
 
-The functions smk_cipso_doi and smk_unlbl_ambient are not used
-outside smackfs.c and should hence be static.
+OK, let me see if I can dig up the comment I thought I found at one 
+point, and maybe found out the history behind it.  Either that, or find 
+out that my memory is faulty ;)
 
-
-Signed-off-by: Casey Schaufler <casey@schaufler-ca.com>
-
----
-
- security/smack/smackfs.c |    4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
-
-diff -uprN -X linux-2.6.25-g0225-base/Documentation/dontdiff linux-2.6.25-g0225-base/security/smack/smackfs.c linux-2.6.25-g0225/security/smack/smackfs.c
---- linux-2.6.25-g0225-base/security/smack/smackfs.c	2008-02-25 08:19:08.000000000 -0800
-+++ linux-2.6.25-g0225/security/smack/smackfs.c	2008-02-25 12:06:21.000000000 -0800
-@@ -338,7 +338,7 @@ static const struct file_operations smk_
- /**
-  * smk_cipso_doi - initialize the CIPSO domain
-  */
--void smk_cipso_doi(void)
-+static void smk_cipso_doi(void)
- {
- 	int rc;
- 	struct cipso_v4_doi *doip;
-@@ -371,7 +371,7 @@ void smk_cipso_doi(void)
- /**
-  * smk_unlbl_ambient - initialize the unlabeled domain
-  */
--void smk_unlbl_ambient(char *oldambient)
-+static void smk_unlbl_ambient(char *oldambient)
- {
- 	int rc;
- 	struct netlbl_audit audit_info;
-
-
+	-hpa
