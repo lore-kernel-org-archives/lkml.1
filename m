@@ -1,150 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755275AbYBYLfy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755215AbYBYLlz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755275AbYBYLfy (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 Feb 2008 06:35:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753243AbYBYLfq
+	id S1755215AbYBYLlz (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 Feb 2008 06:41:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751863AbYBYLlr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 Feb 2008 06:35:46 -0500
-Received: from mail.mizi.com ([61.107.31.33]:39492 "EHLO mail.mizi.com"
+	Mon, 25 Feb 2008 06:41:47 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:57946 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752947AbYBYLfp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 Feb 2008 06:35:45 -0500
-Message-ID: <47C2A7FA.2060902@mizi.com>
-Date: Mon, 25 Feb 2008 20:35:22 +0900
-From: Louis JANG <louis@mizi.com>
-Organization: MIZI Research, Inc.
-User-Agent: Thunderbird 1.5.0.14pre (X11/20071023)
+	id S1752469AbYBYLlr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 25 Feb 2008 06:41:47 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [Bug 10030] Suspend doesn't work when SD card is inserted
+Date: Mon, 25 Feb 2008 12:40:23 +0100
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: Pavel Machek <pavel@ucw.cz>, Pierre Ossman <drzeus-mmc@drzeus.cx>,
+       Zdenek Kabelac <zdenek.kabelac@gmail.com>,
+       Kernel development list <linux-kernel@vger.kernel.org>,
+       pm list <linux-pm@lists.linux-foundation.org>
+References: <Pine.LNX.4.44L0.0802242109130.31164-100000@netrider.rowland.org>
+In-Reply-To: <Pine.LNX.4.44L0.0802242109130.31164-100000@netrider.rowland.org>
 MIME-Version: 1.0
-To: Dave Young <hidave.darkstar@gmail.com>
-CC: linux-bluetooth@vger.kernel.org, Marcel Holtmann <marcel@holtmann.org>,
-       Linux Kernel <linux-kernel@vger.kernel.org>, bmidgley@gmail.com,
-       David Miller <davem@davemloft.net>, Netdev <netdev@vger.kernel.org>
-Subject: Re: [Bluez-devel] forcing SCO connection patch
-References: <47666E1F.2000902@mizi.com>	 <a8e1da0802242330l765b8b1ava62b857baf8a5568@mail.gmail.com>	 <47C28A33.4070102@mizi.com> <a8e1da0802250155u1b7af481va203849f68d9106b@mail.gmail.com>
-In-Reply-To: <a8e1da0802250155u1b7af481va203849f68d9106b@mail.gmail.com>
-Content-Type: multipart/mixed;
- boundary="------------010407000406090200060007"
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200802251240.24386.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------010407000406090200060007
-Content-Type: text/plain; charset=EUC-KR
-Content-Transfer-Encoding: 8bit
+On Monday, 25 of February 2008, Alan Stern wrote:
+> On Sun, 24 Feb 2008, Pavel Machek wrote:
+> 
+> > > > At the very least, you'd need rmb() before reading it and wmb() after
+> > > > writing to it, but I'm not sure if that's enough on every obscure
+> > > > architecture out there.
+> > > 
+> > > No, neither one is needed because of the way suspending_task is used.  
+> > > 
+> > > It's not necessary for a reader R to see the variable's actual value;  
+> > > all R needs to know is whether or not suspending_task is equal to R.  
+> > > Since the only process which can set suspending_task to R is R itself,
+> > > and since R will set suspending_task back to NULL before releasing the
+> > > write lock on pm_sleep_rwsem, there's never any ambiguity.
+> > 
+> > Subtle.
+> > 
+> > Very subtly wrong ;-).
+> > 
+> > imagine suspending_task == 0xabcdef01. Now task "R" with current ==
+> > 0xabcd0000 reads suspending_task while the other cpu is writing to it,
+> > and sees 0xabcd0000 (0xef01 was not yet written) -- and mistakenly
+> > believes that  "R" == suspending_task.
+> 
+> I always thought that reads and writes of pointers are atomic, just 
+> like reads and writes of longs.  Is that wrong?
 
-Dave Young ¾´ ±Û:
-> On Mon, Feb 25, 2008 at 5:28 PM, Louis JANG <louis@mizi.com> wrote:
->   
->>  > I ever asked marcel about the coding style. please see following thread:
->>  > http://lkml.org/lkml/2008/1/22/91
->>  >
->>  > I think the style problem marcel said is
->>  > 1. using kernel codeing style
->>  > 2. marcel's style
->>  > container_of or get_user_data calls at the top of the variable declaration
->>  > using the empty lines to seperate code blocks
->>  >
->>  > Please rework your patch and resend if you fixed them.
->>  >
->>  > BTW, please use the new bluetooth mailing list for kerne issue.
->>  > linux-bluetooth@vger.kernel.org
->>  >
->>  > (Thanks for andrew and davem)
->>  >
->>  > Regards
->>  > dave
->>  >
->>  > Regards
->>  > dave
->>  >
->>  >
->>
->>  Hi all,
->>
->>  I adjusted indentation of the patches
->>     
->
-> Not enough.
->
-> Please first read Documentation/CodingStyle, fix them, and
-> then use scripts/checkpatch.pl to check your patch.
->   
-I fixed all of errors except 80 characters warning.
-Thanks
+That depends on the architecture.  It may be wrong on alpha, IIRC.
 
-Louis JANG
+> Now if pointers were the same size as long long then I would agree with 
+> you.
 
+That certainly is true on x86-64.  On alpha probably too.
 
---------------010407000406090200060007
-Content-Type: text/plain;
- name="patch_hci_event.c3"
-Content-Transfer-Encoding: base64
-Content-Disposition: inline;
- filename="patch_hci_event.c3"
+> > I agree it is very unlikely, and it will not happen on i386. But what
+> > about just using atomic_t suspending_task, and store current->pid into
+> > it?
+> 
+> That would work just as well.  Except that it wouldn't need to be
+> atomic_t, because current->pid is always an integer (not guaranteed, I
+> suppose, but that's what it is on all current architectures) and
+> reads/writes of ints _are_ atomic.
 
-U2lnbmVkLW9mZi1ieTogTG91aXMgSkFORyA8bG91aXNAbWl6aS5jb20+CgotLS0gbGludXgt
-Mi42LjIzL25ldC9ibHVldG9vdGgvaGNpX2V2ZW50LmMub3JpZwkyMDA4LTAyLTI1IDE3OjE3
-OjExLjAwMDAwMDAwMCArMDkwMAorKysgbGludXgtMi42LjIzL25ldC9ibHVldG9vdGgvaGNp
-X2V2ZW50LmMJMjAwOC0wMi0yNSAxNzozMDoyMy4wMDAwMDAwMDAgKzA5MDAKQEAgLTEzMTMs
-OCArMTMxMywxNyBAQAogCWhjaV9kZXZfbG9jayhoZGV2KTsKIAogCWNvbm4gPSBoY2lfY29u
-bl9oYXNoX2xvb2t1cF9iYShoZGV2LCBldi0+bGlua190eXBlLCAmZXYtPmJkYWRkcik7Ci0J
-aWYgKCFjb25uKQotCQlnb3RvIHVubG9jazsKKwlpZiAoIWNvbm4pIHsKKwkJaWYgKGV2LT5s
-aW5rX3R5cGUgIT0gQUNMX0xJTkspIHsKKwkJCV9fdTggbGlua190eXBlID0gKGV2LT5saW5r
-X3R5cGUgPT0gRVNDT19MSU5LKSA/IFNDT19MSU5LIDogRVNDT19MSU5LOworCisJCQljb25u
-ID0gaGNpX2Nvbm5faGFzaF9sb29rdXBfYmEoaGRldiwgbGlua190eXBlLCAmZXYtPmJkYWRk
-cik7CisJCQlpZiAoY29ubikKKwkJCQljb25uLT50eXBlID0gZXYtPmxpbmtfdHlwZTsKKwkJ
-fQorCQlpZiAoIWNvbm4pCisJCQlnb3RvIHVubG9jazsKKwl9CiAKIAlpZiAoIWV2LT5zdGF0
-dXMpIHsKIAkJY29ubi0+aGFuZGxlID0gX19sZTE2X3RvX2NwdShldi0+aGFuZGxlKTsK
---------------010407000406090200060007
-Content-Type: text/plain;
- name="bluez-kernel-forcesco.patch3"
-Content-Transfer-Encoding: base64
-Content-Disposition: inline;
- filename="bluez-kernel-forcesco.patch3"
+That also depends on the arch, I'm afraid, and in general if we assume
+something to be atomic, it's better to make the code reflect that assumption.
 
-U2lnbmVkLW9mZi1ieTogTG91aXMgSkFORyA8bG91aXNAbWl6aS5jb20+CgpkaWZmIC11TnIg
-bGludXgtMi42LjIzL2luY2x1ZGUvbmV0L2JsdWV0b290aC1vcmlnL3Njby5oIGxpbnV4LTIu
-Ni4yMy9pbmNsdWRlL25ldC9ibHVldG9vdGgvc2NvLmgKLS0tIGxpbnV4LTIuNi4yMy9pbmNs
-dWRlL25ldC9ibHVldG9vdGgtb3JpZy9zY28uaAkyMDA3LTEwLTEwIDA1OjMxOjM4LjAwMDAw
-MDAwMCArMDkwMAorKysgbGludXgtMi42LjIzL2luY2x1ZGUvbmV0L2JsdWV0b290aC9zY28u
-aAkyMDA4LTAyLTI1IDE4OjA0OjIwLjAwMDAwMDAwMCArMDkwMApAQCAtNTEsNiArNTEsOCBA
-QAogCV9fdTggIGRldl9jbGFzc1szXTsKIH07CiAKKyNkZWZpbmUgU0NPX0ZPUkNFU0NPCTB4
-MDMKKwogLyogLS0tLSBTQ08gY29ubmVjdGlvbnMgLS0tLSAqLwogc3RydWN0IHNjb19jb25u
-IHsKIAlzdHJ1Y3QgaGNpX2Nvbm4JKmhjb247CkBAIC03NCw2ICs3Niw3IEBACiAJc3RydWN0
-IGJ0X3NvY2sJYnQ7CiAJX191MzIJCWZsYWdzOwogCXN0cnVjdCBzY29fY29ubgkqY29ubjsK
-Kwl1bnNpZ25lZCBpbnQJZm9yY2Vfc2NvIDoxOwogfTsKIAogI2VuZGlmIC8qIF9fU0NPX0gg
-Ki8KZGlmZiAtdU5yIGxpbnV4LTIuNi4yMy9uZXQvYmx1ZXRvb3RoLW9yaWcvaGNpX2Nvbm4u
-YyBsaW51eC0yLjYuMjMvbmV0L2JsdWV0b290aC9oY2lfY29ubi5jCi0tLSBsaW51eC0yLjYu
-MjMvbmV0L2JsdWV0b290aC1vcmlnL2hjaV9jb25uLmMJMjAwOC0wMi0yNSAxNzo1ODoyNy4w
-MDAwMDAwMDAgKzA5MDAKKysrIGxpbnV4LTIuNi4yMy9uZXQvYmx1ZXRvb3RoL2hjaV9jb25u
-LmMJMjAwOC0wMi0yNSAxODowMjowNC4wMDAwMDAwMDAgKzA5MDAKQEAgLTM1NCw3ICszNTQs
-NyBAQAogCiAJaWYgKGFjbC0+c3RhdGUgPT0gQlRfQ09OTkVDVEVEICYmCiAJCQkoc2NvLT5z
-dGF0ZSA9PSBCVF9PUEVOIHx8IHNjby0+c3RhdGUgPT0gQlRfQ0xPU0VEKSkgewotCQlpZiAo
-bG1wX2VzY29fY2FwYWJsZShoZGV2KSkKKwkJaWYgKHR5cGUgPT0gRVNDT19MSU5LKQogCQkJ
-aGNpX3NldHVwX3N5bmMoc2NvLCBhY2wtPmhhbmRsZSk7CiAJCWVsc2UKIAkJCWhjaV9hZGRf
-c2NvKHNjbywgYWNsLT5oYW5kbGUpOwpkaWZmIC11TnIgbGludXgtMi42LjIzL25ldC9ibHVl
-dG9vdGgtb3JpZy9zY28uYyBsaW51eC0yLjYuMjMvbmV0L2JsdWV0b290aC9zY28uYwotLS0g
-bGludXgtMi42LjIzL25ldC9ibHVldG9vdGgtb3JpZy9zY28uYwkyMDA4LTAyLTI1IDE3OjU4
-OjI3LjAwMDAwMDAwMCArMDkwMAorKysgbGludXgtMi42LjIzL25ldC9ibHVldG9vdGgvc2Nv
-LmMJMjAwOC0wMi0yNSAxODowODo1MS4wMDAwMDAwMDAgKzA5MDAKQEAgLTIwMCw3ICsyMDAs
-MTAgQEAKIAogCWVyciA9IC1FTk9NRU07CiAKLQl0eXBlID0gbG1wX2VzY29fY2FwYWJsZSho
-ZGV2KSA/IEVTQ09fTElOSyA6IFNDT19MSU5LOworCWlmIChzY29fcGkoc2spLT5mb3JjZV9z
-Y28pCisJCXR5cGUgPSBTQ09fTElOSzsKKwllbHNlCisJCXR5cGUgPSBsbXBfZXNjb19jYXBh
-YmxlKGhkZXYpID8gRVNDT19MSU5LIDogU0NPX0xJTks7CiAKIAloY29uID0gaGNpX2Nvbm5l
-Y3QoaGRldiwgdHlwZSwgZHN0KTsKIAlpZiAoIWhjb24pCkBAIC02NjAsMTIgKzY2MywyMSBA
-QAogewogCXN0cnVjdCBzb2NrICpzayA9IHNvY2stPnNrOwogCWludCBlcnIgPSAwOworCWlu
-dCBmb3JjZV9zY287CiAKIAlCVF9EQkcoInNrICVwIiwgc2spOwogCiAJbG9ja19zb2NrKHNr
-KTsKIAogCXN3aXRjaCAob3B0bmFtZSkgeworCWNhc2UgU0NPX0ZPUkNFU0NPOgorCQlpZiAo
-Y29weV9mcm9tX3VzZXIoJmZvcmNlX3Njbywgb3B0dmFsLCBzaXplb2YoaW50KSkpIHsKKwkJ
-CWVyciA9IC1FRkFVTFQ7CisJCQlicmVhazsKKwkJfQorCQlzY29fcGkoc2spLT5mb3JjZV9z
-Y28gPSAoZm9yY2Vfc2NvICE9IDApOworCQlicmVhazsKKwogCWRlZmF1bHQ6CiAJCWVyciA9
-IC1FTk9QUk9UT09QVDsKIAkJYnJlYWs7CkBAIC02ODEsNiArNjkzLDcgQEAKIAlzdHJ1Y3Qg
-c2NvX29wdGlvbnMgb3B0czsKIAlzdHJ1Y3Qgc2NvX2Nvbm5pbmZvIGNpbmZvOwogCWludCBs
-ZW4sIGVyciA9IDA7CisJaW50IGZvcmNlX3NjbzsKIAogCUJUX0RCRygic2sgJXAiLCBzayk7
-CiAKQEAgLTcyMSw2ICs3MzQsMTMgQEAKIAogCQlicmVhazsKIAorCWNhc2UgU0NPX0ZPUkNF
-U0NPOgorCQlmb3JjZV9zY28gPSBzY29fcGkoc29jayktPmZvcmNlX3NjbzsKKwkJaWYgKGNv
-cHlfdG9fdXNlcihvcHR2YWwsICZmb3JjZV9zY28sIHNpemVvZihpbnQpKSkKKwkJCWVyciA9
-IC1FRkFVTFQ7CisKKwkJYnJlYWs7CisKIAlkZWZhdWx0OgogCQllcnIgPSAtRU5PUFJPVE9P
-UFQ7CiAJCWJyZWFrOwo=
---------------010407000406090200060007--
+Thanks,
+Rafael
