@@ -1,48 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758757AbYBYUua@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759593AbYBYUvA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758757AbYBYUua (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 Feb 2008 15:50:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751922AbYBYUuS
+	id S1759593AbYBYUvA (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 Feb 2008 15:51:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758956AbYBYUus
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 Feb 2008 15:50:18 -0500
-Received: from minas.ics.muni.cz ([147.251.4.40]:38394 "EHLO minas.ics.muni.cz"
+	Mon, 25 Feb 2008 15:50:48 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:36697 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751563AbYBYUuQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 Feb 2008 15:50:16 -0500
-Date: Mon, 25 Feb 2008 21:49:51 +0100
-From: Lukas Hejtmanek <xhejtman@ics.muni.cz>
-To: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, linux-kernel@vger.kernel.org,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       Len Brown <lenb@kernel.org>
-Subject: Re: 2.6.25-rc2 Regression Thinkpad acpi
-Message-ID: <20080225204951.GB4432@ics.muni.cz>
-References: <20080225093914.GB4375@ics.muni.cz> <200802251247.30605.rjw@sisk.pl> <20080225200354.GE16513@khazad-dum.debian.net>
+	id S1758845AbYBYUuq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 25 Feb 2008 15:50:46 -0500
+Date: Mon, 25 Feb 2008 21:50:35 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Vegard Nossum <vegard.nossum@gmail.com>
+Cc: Jeremy Fitzhardinge <jeremy@goop.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: compile problem in current x86.git
+Message-ID: <20080225205035.GA3435@elte.hu>
+References: <47C315CC.5020001@goop.org> <19f34abd0802251237q2aa5db03s522c77340cdc96a@mail.gmail.com> <20080225204438.GA1213@elte.hu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-2
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20080225200354.GE16513@khazad-dum.debian.net>
-X-echelon: NSA, CIA, CI5, MI5, FBI, KGB, BIS, Plutonium, Bin Laden, bomb
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
-X-Muni-Spam-TestIP: 81.31.45.161
-X-Muni-Envelope-From: xhejtman@anubis.fi.muni.cz
-X-Muni-Virus-Test: Clean
-X-Greylist: Sender succeeded SMTP AUTH authentication, not delayed by milter-greylist-3.0 (minas.ics.muni.cz [147.251.4.35]); Mon, 25 Feb 2008 21:49:51 +0100 (CET)
+In-Reply-To: <20080225204438.GA1213@elte.hu>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Feb 25, 2008 at 05:03:54PM -0300, Henrique de Moraes Holschuh wrote:
-> This commit is indeed broken, and I have a tentative fix for it.  But I'd
-> like to have a better description of just "how" the thinkpad keys do not
-> work anymore, to make sure I fix the entire breakage in one go.  I will
-> stare at the code and the fix a bit more before sending in any patches,
-> though.
 
-Well, keys generate ACPI interrupt but acpid never receives any event.
+> > Hm. This is x86#testing, no? I don't think there's any kmemcheck 
+> > code whatsoever in other branches.
 
-I would be happy to test fixes to see whether things go well.
+ah. that was x86.git#mm i think - a kmemcheck commit indeed prematurely 
+got into that branch.
 
--- 
-Luká¹ Hejtmánek
+I've updated x86.git and it should all have the correct ordering now. 
+(as of HEAD c9d2f5489cec70f814bf6)
+
+Jeremy, you might want to start tracking x86.git#testing:
+
+  http://people.redhat.com/mingo/x86.git/README
+
+if you want to follow the latest & greatest x86.git code.
+
+	Ingo
