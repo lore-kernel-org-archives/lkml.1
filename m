@@ -1,19 +1,19 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761682AbYBYANA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759106AbYBYAN1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761682AbYBYANA (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 24 Feb 2008 19:13:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757282AbYBYAKM
+	id S1759106AbYBYAN1 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 24 Feb 2008 19:13:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759017AbYBYAK0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 24 Feb 2008 19:10:12 -0500
-Received: from smtp6.pp.htv.fi ([213.243.153.40]:46713 "EHLO smtp6.pp.htv.fi"
+	Sun, 24 Feb 2008 19:10:26 -0500
+Received: from smtp6.pp.htv.fi ([213.243.153.40]:46722 "EHLO smtp6.pp.htv.fi"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758907AbYBYAKJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 24 Feb 2008 19:10:09 -0500
-Date: Mon, 25 Feb 2008 02:09:13 +0200
+	id S1760503AbYBYAKW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 24 Feb 2008 19:10:22 -0500
+Date: Mon, 25 Feb 2008 02:09:27 +0200
 From: Adrian Bunk <bunk@kernel.org>
 To: linux-kernel@vger.kernel.org
-Subject: [2.6 patch] mm/page_alloc.c: cleanups
-Message-ID: <20080225000913.GN2088@cs181133002.pp.htv.fi>
+Subject: [2.6 patch] mm/vmstat.c: proper externs
+Message-ID: <20080225000927.GO2088@cs181133002.pp.htv.fi>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
@@ -22,148 +22,102 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch contains the following cleanups:
-- make the following needlessly global variables static:
-  - required_kernelcore
-  - zone_movable_pfn[]
-- make the following needlessly global functions static:
-  - move_freepages()
-  - move_freepages_block()
-  - setup_pageset()
-  - find_usable_zone_for_movable()
-  - adjust_zone_range_for_zone_movable()
-  - __absent_pages_in_range()
-  - find_min_pfn_for_node()
-  - find_zone_movable_pfns_for_nodes()
-- #if 0 the following no longer used global function:
-  - free_cold_page()
+This patch adds proper extern declarations for five variables in 
+include/linux/vmstat.h
 
 Signed-off-by: Adrian Bunk <bunk@kernel.org>
 
 ---
 
- include/linux/gfp.h |    1 -
- mm/page_alloc.c     |   29 ++++++++++++++++-------------
- 2 files changed, 16 insertions(+), 14 deletions(-)
+ fs/proc/proc_misc.c    |    4 ----
+ include/linux/vmstat.h |    6 ++++++
+ kernel/sysctl.c        |    2 +-
+ mm/vmstat.c            |    1 +
+ 4 files changed, 8 insertions(+), 5 deletions(-)
 
-cf9b9e8ae11df98bf68e5fd2f95fd8f8a429cea3 diff --git a/include/linux/gfp.h b/include/linux/gfp.h
-index 164be9d..2b8148c 100644
---- a/include/linux/gfp.h
-+++ b/include/linux/gfp.h
-@@ -220,7 +220,6 @@ extern unsigned long get_zeroed_page(gfp_t gfp_mask);
- extern void __free_pages(struct page *page, unsigned int order);
- extern void free_pages(unsigned long addr, unsigned int order);
- extern void free_hot_page(struct page *page);
--extern void free_cold_page(struct page *page);
- 
- #define __free_page(page) __free_pages((page), 0)
- #define free_page(addr) free_pages((addr),0)
-diff --git a/mm/page_alloc.c b/mm/page_alloc.c
-index 75b9793..6710b45 100644
---- a/mm/page_alloc.c
-+++ b/mm/page_alloc.c
-@@ -151,9 +151,9 @@ static unsigned long __meminitdata dma_reserve;
-   static unsigned long __meminitdata node_boundary_start_pfn[MAX_NUMNODES];
-   static unsigned long __meminitdata node_boundary_end_pfn[MAX_NUMNODES];
- #endif /* CONFIG_MEMORY_HOTPLUG_RESERVE */
--  unsigned long __initdata required_kernelcore;
-+  static unsigned long __initdata required_kernelcore;
-   static unsigned long __initdata required_movablecore;
--  unsigned long __meminitdata zone_movable_pfn[MAX_NUMNODES];
-+  static unsigned long __meminitdata zone_movable_pfn[MAX_NUMNODES];
- 
-   /* movable_zone is the "real" zone pages in ZONE_MOVABLE are taken from */
-   int movable_zone;
-@@ -688,9 +688,9 @@ static int fallbacks[MIGRATE_TYPES][MIGRATE_TYPES-1] = {
-  * Note that start_page and end_pages are not aligned on a pageblock
-  * boundary. If alignment is required, use move_freepages_block()
-  */
--int move_freepages(struct zone *zone,
--			struct page *start_page, struct page *end_page,
--			int migratetype)
-+static int move_freepages(struct zone *zone,
-+			  struct page *start_page, struct page *end_page,
-+			  int migratetype)
- {
- 	struct page *page;
- 	unsigned long order;
-@@ -729,7 +729,8 @@ int move_freepages(struct zone *zone,
- 	return pages_moved;
+b2c1dc15728c7470d3ea5aad9c1227131eb5fc3f diff --git a/fs/proc/proc_misc.c b/fs/proc/proc_misc.c
+index 468805d..622d35b 100644
+--- a/fs/proc/proc_misc.c
++++ b/fs/proc/proc_misc.c
+@@ -222,7 +222,6 @@ static int meminfo_read_proc(char *page, char **start, off_t off,
+ #undef K
  }
  
--int move_freepages_block(struct zone *zone, struct page *page, int migratetype)
-+static int move_freepages_block(struct zone *zone, struct page *page,
-+				int migratetype)
+-extern const struct seq_operations fragmentation_op;
+ static int fragmentation_open(struct inode *inode, struct file *file)
  {
- 	unsigned long start_pfn, end_pfn;
- 	struct page *start_page, *end_page;
-@@ -1013,11 +1014,13 @@ void free_hot_page(struct page *page)
+ 	(void)inode;
+@@ -236,7 +235,6 @@ static const struct file_operations fragmentation_file_operations = {
+ 	.release	= seq_release,
+ };
+ 
+-extern const struct seq_operations pagetypeinfo_op;
+ static int pagetypeinfo_open(struct inode *inode, struct file *file)
  {
- 	free_hot_cold_page(page, 0);
- }
--	
+ 	return seq_open(file, &pagetypeinfo_op);
+@@ -249,7 +247,6 @@ static const struct file_operations pagetypeinfo_file_ops = {
+ 	.release	= seq_release,
+ };
+ 
+-extern const struct seq_operations zoneinfo_op;
+ static int zoneinfo_open(struct inode *inode, struct file *file)
+ {
+ 	return seq_open(file, &zoneinfo_op);
+@@ -346,7 +343,6 @@ static const struct file_operations proc_devinfo_operations = {
+ 	.release	= seq_release,
+ };
+ 
+-extern const struct seq_operations vmstat_op;
+ static int vmstat_open(struct inode *inode, struct file *file)
+ {
+ 	return seq_open(file, &vmstat_op);
+diff --git a/include/linux/vmstat.h b/include/linux/vmstat.h
+index 75370ec..0970628 100644
+--- a/include/linux/vmstat.h
++++ b/include/linux/vmstat.h
+@@ -40,6 +40,12 @@ enum vm_event_item { PGPGIN, PGPGOUT, PSWPIN, PSWPOUT,
+ 		NR_VM_EVENT_ITEMS
+ };
+ 
++extern const struct seq_operations fragmentation_op;
++extern const struct seq_operations pagetypeinfo_op;
++extern const struct seq_operations zoneinfo_op;
++extern const struct seq_operations vmstat_op;
++extern int sysctl_stat_interval;
 +
-+#if 0
- void free_cold_page(struct page *page)
- {
- 	free_hot_cold_page(page, 1);
- }
-+#endif  /*  0  */
- 
+ #ifdef CONFIG_VM_EVENT_COUNTERS
  /*
-  * split_page takes a non-compound higher-order page, and splits it into
-@@ -2597,7 +2600,7 @@ static int zone_batchsize(struct zone *zone)
- 	return batch;
- }
+  * Light weight per cpu counter implementation.
+diff --git a/kernel/sysctl.c b/kernel/sysctl.c
+index ffb687c..d78773d 100644
+--- a/kernel/sysctl.c
++++ b/kernel/sysctl.c
+@@ -42,6 +42,7 @@
+ #include <linux/limits.h>
+ #include <linux/dcache.h>
+ #include <linux/syscalls.h>
++#include <linux/vmstat.h>
+ #include <linux/nfs_fs.h>
+ #include <linux/acpi.h>
+ #include <linux/reboot.h>
+@@ -76,7 +77,6 @@ extern int sysctl_drop_caches;
+ extern int percpu_pagelist_fraction;
+ extern int compat_log;
+ extern int maps_protect;
+-extern int sysctl_stat_interval;
+ extern int latencytop_enabled;
  
--inline void setup_pageset(struct per_cpu_pageset *p, unsigned long batch)
-+static void setup_pageset(struct per_cpu_pageset *p, unsigned long batch)
- {
- 	struct per_cpu_pages *pcp;
+ /* Constants used for minimum and  maximum */
+diff --git a/mm/vmstat.c b/mm/vmstat.c
+index 422d960..81a6d5f 100644
+--- a/mm/vmstat.c
++++ b/mm/vmstat.c
+@@ -14,6 +14,7 @@
+ #include <linux/module.h>
+ #include <linux/cpu.h>
+ #include <linux/sched.h>
++#include <linux/vmstat.h>
  
-@@ -3026,7 +3029,7 @@ void __meminit get_pfn_range_for_nid(unsigned int nid,
-  * assumption is made that zones within a node are ordered in monotonic
-  * increasing memory addresses so that the "highest" populated zone is used
-  */
--void __init find_usable_zone_for_movable(void)
-+static void __init find_usable_zone_for_movable(void)
- {
- 	int zone_index;
- 	for (zone_index = MAX_NR_ZONES - 1; zone_index >= 0; zone_index--) {
-@@ -3052,7 +3055,7 @@ void __init find_usable_zone_for_movable(void)
-  * highest usable zone for ZONE_MOVABLE. This preserves the assumption that
-  * zones within a node are in order of monotonic increases memory addresses
-  */
--void __meminit adjust_zone_range_for_zone_movable(int nid,
-+static void __meminit adjust_zone_range_for_zone_movable(int nid,
- 					unsigned long zone_type,
- 					unsigned long node_start_pfn,
- 					unsigned long node_end_pfn,
-@@ -3113,7 +3116,7 @@ static unsigned long __meminit zone_spanned_pages_in_node(int nid,
-  * Return the number of holes in a range on a node. If nid is MAX_NUMNODES,
-  * then all holes in the requested range will be accounted for.
-  */
--unsigned long __meminit __absent_pages_in_range(int nid,
-+static unsigned long __meminit __absent_pages_in_range(int nid,
- 				unsigned long range_start_pfn,
- 				unsigned long range_end_pfn)
- {
-@@ -3597,7 +3600,7 @@ static void __init sort_node_map(void)
- }
- 
- /* Find the lowest pfn for a node */
--unsigned long __init find_min_pfn_for_node(unsigned long nid)
-+static unsigned long __init find_min_pfn_for_node(unsigned long nid)
- {
- 	int i;
- 	unsigned long min_pfn = ULONG_MAX;
-@@ -3669,7 +3672,7 @@ static unsigned long __init early_calculate_totalpages(void)
-  * memory. When they don't, some nodes will have more kernelcore than
-  * others
-  */
--void __init find_zone_movable_pfns_for_nodes(unsigned long *movable_pfn)
-+static void __init find_zone_movable_pfns_for_nodes(unsigned long *movable_pfn)
- {
- 	int i, nid;
- 	unsigned long usable_startpfn;
+ #ifdef CONFIG_VM_EVENT_COUNTERS
+ DEFINE_PER_CPU(struct vm_event_state, vm_event_states) = {{0}};
 
