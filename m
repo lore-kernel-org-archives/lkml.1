@@ -1,129 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753883AbYBYI1Z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755437AbYBYIaI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753883AbYBYI1Z (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 Feb 2008 03:27:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755350AbYBYI1D
+	id S1755437AbYBYIaI (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 Feb 2008 03:30:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753774AbYBYI34
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 Feb 2008 03:27:03 -0500
-Received: from nf-out-0910.google.com ([64.233.182.188]:51263 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752825AbYBYI07 (ORCPT
+	Mon, 25 Feb 2008 03:29:56 -0500
+Received: from mail.free-electrons.com ([88.191.46.45]:3647 "EHLO
+	mail.free-electrons.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753559AbYBYI3z (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 Feb 2008 03:26:59 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=H6Q0U8mrOsojt9fOb48OcfCj0w1mK0TWqmxp9LfQgU2q6aRvcTPaYlasM80lGkiYKaOsGzxyCaaf/KC7tUCCRNyHT+SdqPT7g4MorhPr49ylsD+FLQBlyfMiW7jXWS3B4V1BpsUre9KGjtGsdVRZGK2dbB7cvTx7FGIkNqLPZEg=
-Message-ID: <a8e1da0802250026u6220957as9ecf96ff5aa17303@mail.gmail.com>
-Date: Mon, 25 Feb 2008 16:26:57 +0800
-From: "Dave Young" <hidave.darkstar@gmail.com>
-To: linux-bluetooth@vger.kernel.org
-Subject: Re: [Bluez-devel] forcing SCO connection patch
-Cc: louis@mizi.com, "Marcel Holtmann" <marcel@holtmann.org>,
-       "Linux Kernel" <linux-kernel@vger.kernel.org>,
-       "David Miller" <davem@davemloft.net>, Netdev <netdev@vger.kernel.org>,
-       bmidgley@gmail.com
-In-Reply-To: <a8e1da0802242334v23a60cb4q1953b5caf5eb9947@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <47666E1F.2000902@mizi.com>
-	 <a8e1da0802242330l765b8b1ava62b857baf8a5568@mail.gmail.com>
-	 <a8e1da0802242334v23a60cb4q1953b5caf5eb9947@mail.gmail.com>
+	Mon, 25 Feb 2008 03:29:55 -0500
+Date: Mon, 25 Feb 2008 09:29:33 +0100
+From: Thomas Petazzoni <thomas.petazzoni@free-electrons.com>
+To: Matt Mackall <mpm@selenic.com>
+Cc: "H. Peter Anvin" <hpa@zytor.com>, Linux-tiny@selenic.com,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       michael@free-electrons.com
+Subject: Re: [RFC] [PATCH] x86: Use ELF section to list CPU vendor specific
+ code (Linux Tiny)
+Message-ID: <20080225092933.6a8dbc36@crazy>
+In-Reply-To: <1203734617.14838.169.camel@cinder.waste.org>
+References: <200802082347.25364.michael-lists@free-electrons.com>
+	<20080208231130.GA10511@elte.hu>
+	<200802112342.23493.michael-lists@free-electrons.com>
+	<1202770566.12383.59.camel@cinder.waste.org>
+	<47B0D3B7.6070308@zytor.com>
+	<1202772532.12383.67.camel@cinder.waste.org>
+	<47B0EE46.6050208@zytor.com>
+	<20080215120023.252647bd@crazy>
+	<1203734617.14838.169.camel@cinder.waste.org>
+X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.5; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; boundary="Sig_/mW.of8IkwiAtBxwcwxRIt7G";
+ protocol="application/pgp-signature"; micalg=PGP-SHA1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Sorry, bmidgley@gmail.com was missed in cc
+--Sig_/mW.of8IkwiAtBxwcwxRIt7G
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
 
-On Mon, Feb 25, 2008 at 3:34 PM, Dave Young <hidave.darkstar@gmail.com> wrote:
->
-> On Mon, Feb 25, 2008 at 3:30 PM, Dave Young <hidave.darkstar@gmail.com> wrote:
->  > Quote mail from louis@mizi.com :
->  >
->  >  2007/12/17 Louis JANG <louis@mizi.com>:
->  >
->  >
->  > > Hello everybody,
->  >  >
->  >  >  I attached two patches. the first one(bluez-kernel-forcesco.patch) is to
->  >  >  force using HCI_OP_ADD_SCO instead of HCI_OP_SETUP_SYNC_CONN, and the
->  >  >  second one is to handle SCO connection complete event but its request
->  >  >  was ESCO.
->  >  >
->  >  >  1.
->  >  >  I'm developing bluetooth functions in my linux phone project, and I'm
->  >  >  using bluez for my job. I've tested lots of headsets, and found that I
->  >  >  coudn't connect SCO channel with HCI_OP_SETUP_SYNC_CONN in some old
->  >  >  headsets. I could connect SCO channel with HCI_OP_ADD_SCO in this case.
->  >  >  however, there is no api to force using SCO instead of ESCO in bluez. so
->  >  >  I added SCO_FORCESCO to handle this old headsets
->  >  >
->  >  >  2.
->  >  >  When I tried to connect SCO channel with
->  >  >  HCI_OP_SETUP_SYNC_CONN(LINK_TYPE_ESCO), some bluetooth headsets responds
->  >  >  with LINK_TYPE_SCO because it did not support ESCO. But bluez couldn't
->  >  >  handle this situation, and patch_hci_event.c is for this.
->  >  >
->  >  >
->  >  >  BRs
->  >  >  Louis JANG
->  >  >
->  >  >
->  >
->  >  Reply from bmidgley@gmail.com:
->  >
->  >  On Mon, Feb 25, 2008 at 2:43 PM, Brad Midgley <bmidgley@gmail.com> wrote:
->  >  > Louis
->  >
->  > >
->  >  >
->  >  >  >  When I tried to connect SCO channel with
->  >  >  >  HCI_OP_SETUP_SYNC_CONN(LINK_TYPE_ESCO), some bluetooth headsets responds
->  >  >  >  with LINK_TYPE_SCO because it did not support ESCO. But bluez couldn't
->  >  >  >  handle this situation, and patch_hci_event.c is for this.
->  >  >
->  >
->  > >  Marcel looked at this patch and came back with the comments below. Can
->  >  >  you revisit it? I think some other people are seeing the same issues.
->  >  >  The patch won't go upstream until Marcel likes it.
->  >  >
->  >  >  the patch you sent me is fully broken. First of all the coding style
->  >  >  is wrong. Does nobody have learned this by now? I always look for that
->  >  >  first before even reading the patch. Second the case where an
->  >  >  ESCO_LINK returns NULL is broken and will fall over and crash.
->  >  >
->  >  >  --
->  >  >  Brad
->  >  >
->  >
->  >
->  >  I ever asked marcel about the coding style. please see following thread:
->  >  http://lkml.org/lkml/2008/1/22/91
->  >
->  >  I think the style problem marcel said is
->  >  1. using kernel codeing style
->  >  2. marcel's style
->  >  container_of or get_user_data calls at the top of the variable declaration
->  >  using the empty lines to seperate code blocks
->  >
->  >  Please rework your patch and resend if you fixed them.
->  >
->  >  BTW, please use the new bluetooth mailing list for kerne issue.
->  >  linux-bluetooth@vger.kernel.org
->  >
->  >  (Thanks for andrew and davem)
->
->  On bugzilla, bug 9871 are same problem as yours.
->
->  add davem and netdev in cc-list
->
->  >
->  >  Regards
->  >  dave
->  >
->  >  Regards
->  >  dave
->  >
->
+Le Sat, 23 Feb 2008 10:43:37 +0800,
+Matt Mackall <mpm@selenic.com> a =C3=A9crit :
+
+> This is not quite what Peter and I were thinking of, I think. It's not
+> at all generic. How about a section that simply contains a set of
+> function pointers, a macro to add things to that section, and a
+> function that calls all the pointers in that section. Eg:
+>=20
+> CALLBACK_SECTION(init_cpu_amd, "cpuvendor.init");
+> invoke_callback_section("cpuvendor.init");
+>=20
+> ..which would give us a generic facility we could use in various
+> places.
+
+I see. Probably doable. How would it work in the LD script file ? Your
+mechanism allows to specify any section name, but AFAIK, the sections
+must be explicitly listed in the kernel LD script in order to be
+included in the final kernel image. Am I missing something ?
+
+Sincerly,
+
+Thomas
+--=20
+Thomas Petazzoni, Free Electrons
+Free Embedded Linux Training Materials
+on http://free-electrons.com/training
+(More than 1500 pages!)
+
+--Sig_/mW.of8IkwiAtBxwcwxRIt7G
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Disposition: attachment; filename=signature.asc
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQFHwnxt9lPLMJjT96cRArueAKCgS1Q/arLDMzoRv/3q+TMJsrL06ACfQVro
+NKAWx9ccApmkFhb2fIYiUvw=
+=+5zb
+-----END PGP SIGNATURE-----
+
+--Sig_/mW.of8IkwiAtBxwcwxRIt7G--
