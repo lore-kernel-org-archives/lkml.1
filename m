@@ -1,73 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756071AbYBYLdm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756186AbYBYLep@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756071AbYBYLdm (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 Feb 2008 06:33:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753303AbYBYLde
+	id S1756186AbYBYLep (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 Feb 2008 06:34:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752947AbYBYLeh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 Feb 2008 06:33:34 -0500
-Received: from smtp6.pp.htv.fi ([213.243.153.40]:53416 "EHLO smtp6.pp.htv.fi"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753344AbYBYLdd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 Feb 2008 06:33:33 -0500
-Date: Mon, 25 Feb 2008 13:32:35 +0200
-From: Adrian Bunk <bunk@kernel.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Florian Fainelli <florian.fainelli@telecomint.eu>,
-       linux-kernel@vger.kernel.org, Sam Ravnborg <sam@ravnborg.org>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: [PATCH] Add rdc321x defconfig file
-Message-ID: <20080225113235.GC32450@cs181133002.pp.htv.fi>
-References: <200802251058.30188.florian.fainelli@telecomint.eu> <20080225101433.GA30685@elte.hu> <20080225110858.GA32450@cs181133002.pp.htv.fi> <20080225111707.GA7062@elte.hu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <20080225111707.GA7062@elte.hu>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+	Mon, 25 Feb 2008 06:34:37 -0500
+Received: from crystal.sipsolutions.net ([195.210.38.204]:58468 "EHLO
+	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752426AbYBYLeg (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 25 Feb 2008 06:34:36 -0500
+Subject: Re: filesystem corruption on xfs after 2.6.25-rc1 (bisected,
+	powerpc related?)
+From: Johannes Berg <johannes@sipsolutions.net>
+To: Gaudenz Steinlin <gaudenz@soziologie.ch>
+Cc: xfs-masters@oss.sgi.com, xfs@oss.sgi.com, linux-kernel@vger.kernel.org
+In-Reply-To: <20080225112310.GA5516@soziologie.ch>
+References: <20080225112310.GA5516@soziologie.ch>
+Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-o+13gtM1ze3OhpwPt/fg"
+Date: Mon, 25 Feb 2008 12:34:27 +0100
+Message-Id: <1203939267.13162.93.camel@johannes.berg>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.3 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Feb 25, 2008 at 12:17:07PM +0100, Ingo Molnar wrote:
-> 
-> * Adrian Bunk <bunk@kernel.org> wrote:
-> 
-> > What I want is that e.g. after fiddling with kernel headers I want an 
-> > easy way of having much compile coverage. And my script that builds 
-> > all defconfig's is trivial (although it takes a day to finish).
-> 
-> no, i think you misunderstood me. I do allyesconfig testing to make sure 
-> the kernel is still generic enough on PC hardware - not to catch build 
-> breakage.
-> 
-> What i do against build breakage is randconfig testing. That catches far 
-> more build breakage than a few limited number of defconfigs would ever.
 
-How do you test whether a x86 merge might break the compilation of 
-e.g. some ARM platform without using any defconfig?
+--=-o+13gtM1ze3OhpwPt/fg
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-And building all defconfigs is the trivial way of having most reasonable 
-configurations covered with only one day of compile time.
+Hi,
 
-> More defconfigs would just be a constant maintenance drag, they are 
-> rather pointless on PC hardware anyway (we'd have to have at least a few 
-> hundred of them for it to be meaningful as a "default config") and it 
-> does not really solve the problem either.
+> Git reset is just the easiest way to reproduce it.
 
-My goal was "one per subarchitecture" which is not such a big number.
+Interesting :)
 
-At least for the patches I'm sending more defconfigs reduce the 
-probability of me introducing bugs (and I might e.g. again work
-a bit on improving our headers mess in the future).
+> I was able to track this corruption down to commit
+> a69b176df246d59626e6a9c640b44c0921fa4566 ([XFS] Use the generic bitops
+> rather than implementing them ourselves.) using git bisect.
+>=20
+> Reverting edd319dc527733e61eec5bdc9ce20c94634b6482 ([XFS] Fix
+> xfs_lowbit64) to avoid merge conflicts and the faulty commit on top of
+> 2.6.25-rc3 fixes the problem.
 
-> 	Ingo
+Odd. The replaced code doesn't look like it has any sort of endianness
+assumptions.
 
-cu
-Adrian
+> My filesystem is on an LVM2 logical volume and my computer is a
+> PowerBook G4 (model 5,8). I'm using GCC 4.2.3.
+>=20
+> My problem is similar to the problem Johannes Berg reported in:
+> http://oss.sgi.com/archives/xfs/2008-02/msg00244.html
+>=20
+> AFAIK Johannes also uses a PowerBook.
 
--- 
+Indeed, I do, forgot to mention that, thanks for copying me.
 
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
+johannes
+
+--=-o+13gtM1ze3OhpwPt/fg
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Comment: Johannes Berg (powerbook)
+
+iQIVAwUAR8KnwqVg1VMiehFYAQJcvw//ePAx/m2dCWUYptVRrufyOCNwIRcpzb8q
+9KNNuooErqBihVp3XfXx7TWoPOEadj0dTuvaYTIsj8TLK6CijcgV+YT7mM7elvQB
+HbsLctwUBLz/Sg//Q6L5WWAUaA4RaYtKvyKox9aUe9noHNQvLdntRQwvk3TbHTpj
+Waejx4u+j+jPwNIna/QxWoBBhMvRp4zoHK2U+hY0zlDT0Tli+O0KNM+xjfeS1Bav
+IF9uCymJudbHwdWucvcd4DWR8I1PLSHsEqp97XtYY8wrz9h735vsuFooHY1IWZL4
+uK4XnoOuMHVqUaF/9S1DA3aGfnqKwEVT9A0FnjteDsEkyZPoF18LQl5pslmZBoBR
+cq/cLD1J+OUWEtCUKEjk2CE9f7cVYDq5bhjUBUo+075Pa5xpnZAoaJt4ikLdpXZX
+VLAYrtaNrHKQ7UuHjJlQMTy0xrBey8lt1eplzK/Pkx0qziiJyTp+T5K9eEtSMC5R
+RjdyqQVwVW/VQEuzEQMCftqg+NC9TuO5i4T+iZmjIBe1sWsWnIoZiIUHP5Pzh2Bj
+g0IXqhNvKIYWzB+LUZjtTrYtXjTDwAQV6qdvKc+sWwalN4vd2b0sjWc4v+EBEg78
+5F8Z5NZteuP1n5ApOxCGASTU1eELwRbvOnvt2lSbgWTs9RErn7vAGlDozqhFbZ99
+JrIzSUvu1OE=
+=OX4E
+-----END PGP SIGNATURE-----
+
+--=-o+13gtM1ze3OhpwPt/fg--
 
