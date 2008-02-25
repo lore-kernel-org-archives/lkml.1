@@ -1,62 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757135AbYBYUYJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757737AbYBYUZ6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757135AbYBYUYJ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 Feb 2008 15:24:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754132AbYBYUXz
+	id S1757737AbYBYUZ6 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 Feb 2008 15:25:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754222AbYBYUZt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 Feb 2008 15:23:55 -0500
-Received: from web36608.mail.mud.yahoo.com ([209.191.85.25]:39879 "HELO
-	web36608.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751841AbYBYUXz (ORCPT
+	Mon, 25 Feb 2008 15:25:49 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:43126 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754132AbYBYUZs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 Feb 2008 15:23:55 -0500
-X-YMail-OSG: zZNWKBcVM1kXpMlMSjw3BLPUIV7mHNhwsIKIo5UKDMXF7S23aFB6BQO7TU7iCAPfbx685icw4Q--
-X-RocketYMMF: rancidfat
-Date: Mon, 25 Feb 2008 12:23:53 -0800 (PST)
-From: Casey Schaufler <casey@schaufler-ca.com>
-Reply-To: casey@schaufler-ca.com
-Subject: Re: [PATCH 2/3] kill_pid_info_as_uid: don't use security_task_kill()
-To: Stephen Smalley <sds@tycho.nsa.gov>, Oleg Nesterov <oleg@tv-sign.ru>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Casey Schaufler <casey@schaufler-ca.com>,
-       David Quigley <dpquigl@tycho.nsa.gov>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Eric Paris <eparis@redhat.com>, Harald Welte <laforge@gnumonks.org>,
-       Pavel Emelyanov <xemul@openvz.org>,
-       "Serge E. Hallyn" <serue@us.ibm.com>, linux-kernel@vger.kernel.org
-In-Reply-To: <1203965042.2804.196.camel@moss-spartans.epoch.ncsc.mil>
+	Mon, 25 Feb 2008 15:25:48 -0500
+Date: Mon, 25 Feb 2008 12:25:46 -0800
+From: Greg KH <greg@kroah.com>
+To: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [PCI] duplicate sysfs symbols getting registered in current git
+Message-ID: <20080225202546.GA8893@kroah.com>
+References: <Pine.LNX.4.64.0802182142240.11540@axis700.grange> <20080220063834.GA22708@kroah.com> <Pine.LNX.4.64.0802251341160.4430@axis700.grange> <Pine.LNX.4.64.0802251913380.19416@axis700.grange>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-Message-ID: <976891.59157.qm@web36608.mail.mud.yahoo.com>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0802251913380.19416@axis700.grange>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
---- Stephen Smalley <sds@tycho.nsa.gov> wrote:
-
+On Mon, Feb 25, 2008 at 07:15:57PM +0100, Guennadi Liakhovetski wrote:
+> On Mon, 25 Feb 2008, Guennadi Liakhovetski wrote:
 > 
-> ...
+> > On Tue, 19 Feb 2008, Greg KH wrote:
 > > 
-> > I think we should omit the permission checks completely, the task which
-> does
-> > ioctl(USBDEVFS_SUBMITURB) explicitly asks to send the signal to it, we
-> should
-> > not deny the signal even if the task changes its credentials in any way.
+> > > On Mon, Feb 18, 2008 at 09:52:25PM +0100, Guennadi Liakhovetski wrote:
+> > > > Booting an x86 SMP PC with todays git-snapshot or just with 2.6.25-rc2 
+> > > > getting the following warnings (with a bit of context):
+> > > 
+> > > Can you try enabling CONFIG_DEBUG_KOBJECT and sending the output at boot
+> > > time from this?
+> > 
+> > dmesg output with CONFIG_LOG_BUF_SHIFT=19 sent privately to Greg as 
+> > unpacked, as it would have to be sent to the list, is 408K big. Will see 
+> > what Greg says.
 > 
-> If we are applying checks based on uid/gid to protect suid/sgid
-> programs, then we ought to also invoke the LSM hook to allow protection
-> of other credential-changing transformations, like SELinux context
-> transitions.  You either remove all checking or none, please.  And if
-> all, what's the rationale?
+> Actually, the most annoying problem with post 2.6.24 kernels on this 
+> machine is, that the system doesn't power off or reboot any more. And 
+> seeing other reports, where the reason for not powering down was unfreed 
+> kobjects, maybe this is the problem here too?
 
-Perhaps more important to my mind is what lead the developers of
-this code to go to such significant lengths to provide this access
-check in the first place. Why was it considered sufficiently important?
-I concur that it's an ugly bit of hackery, but someone must have felt
-it was necessary or they wouldn't have done it.
+If you have cpufreq enabled, that should solve this problem after the
+2.6.24-rc3 kernel release.  Have you tried that version?
 
+thanks,
 
-Casey Schaufler
-casey@schaufler-ca.com
+greg k-h
