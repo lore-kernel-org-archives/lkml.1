@@ -1,132 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756067AbYBYRj6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756515AbYBYRln@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756067AbYBYRj6 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 Feb 2008 12:39:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751257AbYBYRju
+	id S1756515AbYBYRln (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 Feb 2008 12:41:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753335AbYBYRlf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 Feb 2008 12:39:50 -0500
-Received: from x346.tv-sign.ru ([89.108.83.215]:35081 "EHLO mail.screens.ru"
+	Mon, 25 Feb 2008 12:41:35 -0500
+Received: from gateway.drzeus.cx ([85.8.24.16]:33291 "EHLO smtp.drzeus.cx"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750806AbYBYRju (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 Feb 2008 12:39:50 -0500
-Date: Mon, 25 Feb 2008 20:42:25 +0300
-From: Oleg Nesterov <oleg@tv-sign.ru>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Casey Schaufler <casey@schaufler-ca.com>,
-       David Quigley <dpquigl@tycho.nsa.gov>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Eric Paris <eparis@redhat.com>, Harald Welte <laforge@gnumonks.org>,
-       Pavel Emelyanov <xemul@openvz.org>,
-       "Serge E. Hallyn" <serue@us.ibm.com>,
-       Stephen Smalley <sds@tycho.nsa.gov>, linux-kernel@vger.kernel.org
-Subject: [PATCH 1/3] signals: cleanup security_task_kill() usage/implementation
-Message-ID: <20080225174225.GA22081@tv-sign.ru>
+	id S1752855AbYBYRle (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 25 Feb 2008 12:41:34 -0500
+Date: Mon, 25 Feb 2008 18:41:02 +0100
+From: Pierre Ossman <drzeus-mmc@drzeus.cx>
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
+       pm list <linux-pm@lists.linux-foundation.org>,
+       Zdenek Kabelac <zdenek.kabelac@gmail.com>,
+       David Brownell <david-b@pacbell.net>,
+       Kernel development list <linux-kernel@vger.kernel.org>
+Subject: Re: Bugs in MMC [was: [Bug 10030] Suspend doesn't work when SD card
+ is inserted]
+Message-ID: <20080225184102.0a2e2bb5@mjolnir.drzeus.cx>
+In-Reply-To: <Pine.LNX.4.44L0.0802240941440.29504-100000@netrider.rowland.org>
+References: <200802241500.41969.rjw@sisk.pl>
+	<Pine.LNX.4.44L0.0802240941440.29504-100000@netrider.rowland.org>
+X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.8; i386-redhat-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.11
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Every implementation of ->task_kill() does nothing when the signal comes from
-the kernel. This is correct, but means that check_kill_permission() should call
-security_task_kill() only for SI_FROMUSER() case, and we can remove the same
-check from ->task_kill() implementations.
+On Sun, 24 Feb 2008 10:33:34 -0500 (EST)
+Alan Stern <stern@rowland.harvard.edu> wrote:
 
-(sadly, check_kill_permission() is the last user of signal->session/__session
- but we can't s/task_session_nr/task_session/ here).
+> 
+> Well, the patch itself isn't really adequate; it was just a first pass 
+> intended to illustrate the nature of the problem.
+> 
+> The problems in the MMC subsystem go deeper.
+> 
+> The first is the way it uses flush_workqueue().  This is almost always 
+> a bad function to call, because it introduces unnecessary dependencies.  
+> cancel_delayed_work_sync() is much better.
+> 
+> But even changing that won't solve the second issue, which is a genuine
+> bug.  There is a race between detect events and suspend events.  The
+> mmc_suspend_host() routine starts out by flushing the kmmcd workqueue
+> before calling the host's suspend routine.  So what happens if another
+> detect event occurs in between?
+> 
 
-NOTE: Eric W. Biederman pointed out cap_task_kill() should die, and I think he
-is very right.
+The idea is that host drivers shouldn't do that. Once they've called
+mmc_suspend_host(), then they shouldn't be poking the MMC core in any
+other way. None of this is of course properly documented. :/
 
-Signed-off-by: Oleg Nesterov <oleg@tv-sign.ru>
+> This whole area of synchronization between card insertion, card
+> removal, suspend, and resume needs to be thought out better.  
+> Especially keeping in mind that device registration or unregistration
+> during a system sleep is likely to block until the sleep is over.
 
- kernel/signal.c            |   27 ++++++++++++++-------------
- security/commoncap.c       |    3 ---
- security/selinux/hooks.c   |    3 ---
- security/smack/smack_lsm.c |    9 ---------
- 4 files changed, 14 insertions(+), 28 deletions(-)
+Trying to keep up with the PM changes is a full time job. For now I've
+mostly ignored it as I don't even have time for the other stuff.
+Patches welcome.
 
---- 25/kernel/signal.c~1_LSM_KILL	2008-02-25 18:12:57.000000000 +0300
-+++ 25/kernel/signal.c	2008-02-25 18:15:38.000000000 +0300
-@@ -526,22 +526,23 @@ static int rm_from_queue(unsigned long m
- static int check_kill_permission(int sig, struct siginfo *info,
- 				 struct task_struct *t)
- {
--	int error = -EINVAL;
-+	int error;
-+
- 	if (!valid_signal(sig))
--		return error;
-+		return -EINVAL;
- 
--	if (info == SEND_SIG_NOINFO || (!is_si_special(info) && SI_FROMUSER(info))) {
--		error = audit_signal_info(sig, t); /* Let audit system see the signal */
--		if (error)
--			return error;
--		error = -EPERM;
--		if (((sig != SIGCONT) ||
--			(task_session_nr(current) != task_session_nr(t)))
--		    && (current->euid ^ t->suid) && (current->euid ^ t->uid)
--		    && (current->uid ^ t->suid) && (current->uid ^ t->uid)
--		    && !capable(CAP_KILL))
-+	if (info != SEND_SIG_NOINFO && (is_si_special(info) || SI_FROMKERNEL(info)))
-+		return 0;
-+
-+	error = audit_signal_info(sig, t); /* Let audit system see the signal */
-+	if (error)
- 		return error;
--	}
-+
-+	if (((sig != SIGCONT) || (task_session_nr(current) != task_session_nr(t)))
-+	    && (current->euid ^ t->suid) && (current->euid ^ t->uid)
-+	    && (current->uid ^ t->suid) && (current->uid ^ t->uid)
-+	    && !capable(CAP_KILL))
-+		return -EPERM;
- 
- 	return security_task_kill(t, info, sig, 0);
- }
---- 25/security/commoncap.c~1_LSM_KILL	2008-02-25 18:07:54.000000000 +0300
-+++ 25/security/commoncap.c	2008-02-25 18:52:16.000000000 +0300
-@@ -543,9 +543,6 @@ int cap_task_setnice (struct task_struct
- int cap_task_kill(struct task_struct *p, struct siginfo *info,
- 				int sig, u32 secid)
- {
--	if (info != SEND_SIG_NOINFO && (is_si_special(info) || SI_FROMKERNEL(info)))
--		return 0;
--
- 	/*
- 	 * Running a setuid root program raises your capabilities.
- 	 * Killing your own setuid root processes was previously
---- 25/security/smack/smack_lsm.c~1_LSM_KILL	2008-02-15 16:59:20.000000000 +0300
-+++ 25/security/smack/smack_lsm.c	2008-02-25 18:54:01.000000000 +0300
-@@ -1094,15 +1094,6 @@ static int smack_task_kill(struct task_s
- 			   int sig, u32 secid)
- {
- 	/*
--	 * Special cases where signals really ought to go through
--	 * in spite of policy. Stephen Smalley suggests it may
--	 * make sense to change the caller so that it doesn't
--	 * bother with the LSM hook in these cases.
--	 */
--	if (info != SEND_SIG_NOINFO &&
--	    (is_si_special(info) || SI_FROMKERNEL(info)))
--		return 0;
--	/*
- 	 * Sending a signal requires that the sender
- 	 * can write the receiver.
- 	 */
---- 25/security/selinux/hooks.c~1_LSM_KILL	2008-02-15 16:59:20.000000000 +0300
-+++ 25/security/selinux/hooks.c	2008-02-25 18:57:23.000000000 +0300
-@@ -3194,9 +3194,6 @@ static int selinux_task_kill(struct task
- 	if (rc)
- 		return rc;
- 
--	if (info != SEND_SIG_NOINFO && (is_si_special(info) || SI_FROMKERNEL(info)))
--		return 0;
--
- 	if (!sig)
- 		perm = PROCESS__SIGNULL; /* null signal; existence test */
- 	else
+> 
+> Lastly, there are some other questions about confusing aspects of the
+> subsystem.  What's the story with __mmc_claim_host()?  Is it really
+> nothing more than an abortable mutex_lock()?  Why does it ever need to
+> be aborted?  Why is its second argument an atomic_t instead of a normal
+> int?
+> 
 
+It got that way when SDIO got in. It was needed to make it abortable to
+solve a rather nasty deadlock situation. I don't remember the details
+right now, but it should be in the LKML archives.
+
+> Why are mmc_detect() and related routines described in comments as
+> "Card detection callback from host"?  They don't handle card
+> _detection_ -- they handle card _removal_.
+
+They handle both.
+
+> 
+> What's the purpose of the card-counting loop in 
+> host/omap.c:mmc_omap_switch_handler()?  It looks like dead code.
+> 
+
+I'm not too familiar with that driver, but they've been playing around
+with multiplexing several cards into one controller. Might be bits and
+pieces of that.
+
+Rgds
+-- 
+     -- Pierre Ossman
+
+  Linux kernel, MMC maintainer        http://www.kernel.org
+  PulseAudio, core developer          http://pulseaudio.org
+  rdesktop, core developer          http://www.rdesktop.org
