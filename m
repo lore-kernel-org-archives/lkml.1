@@ -1,57 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758116AbYBYSYX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756130AbYBYS1S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758116AbYBYSYX (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 Feb 2008 13:24:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755705AbYBYSYK
+	id S1756130AbYBYS1S (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 Feb 2008 13:27:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754204AbYBYS1H
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 Feb 2008 13:24:10 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:56779 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754816AbYBYSYJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 Feb 2008 13:24:09 -0500
-Message-ID: <47C3078E.3000008@redhat.com>
-Date: Mon, 25 Feb 2008 13:23:10 -0500
-From: Steven Rostedt <srostedt@redhat.com>
-User-Agent: Thunderbird 1.5.0.12 (X11/20071019)
+	Mon, 25 Feb 2008 13:27:07 -0500
+Received: from ug-out-1314.google.com ([66.249.92.174]:36101 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753856AbYBYS1G (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 25 Feb 2008 13:27:06 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:content-transfer-encoding:in-reply-to:user-agent:from;
+        b=NJBfZ/tbc1ajBtqRn94jx2LiVt07y0FVN0yH2bUuTHMkjurQX5Pd1g3QxL3FGf6QxGt9NyPZKB/AKF25667aZtTHrfnQxnWBfaK0IvAs4VXfjdfSv9qMQj8+miozNYBMfPxFI5O4dBxPn8khdEsXaSY2DoZDat08ZvKF3aM9P6k=
+Date: Mon, 25 Feb 2008 20:24:18 +0200
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Adrian Bunk <bunk@kernel.org>, Ingo Molnar <mingo@elte.hu>
+Subject: Re: 2.6.25-rc3: Reported regressions from 2.6.24
+Message-ID: <20080225182418.GA3140@ubuntu>
+References: <200802250241.40832.rjw@sisk.pl>
 MIME-Version: 1.0
-To: Valdis.Kletnieks@vt.edu
-CC: Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       Arnaldo Carvalho de Melo <acme@ghostprotocols.net>,
-       linux-kernel@vger.kernel.org, Alan Cox <alan@redhat.com>
-Subject: Re: [PATCH] 2.6.25-rc2-mm1 - fix mcount GPL bogosity.
-References: <30804.1203962369@turing-police.cc.vt.edu>
-In-Reply-To: <30804.1203962369@turing-police.cc.vt.edu>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <200802250241.40832.rjw@sisk.pl>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+From: "Ahmed S. Darwish" <darwish.07@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[ added Alan to CC ]
-
-Valdis.Kletnieks@vt.edu wrote:
-> The symbol 'mcount' has EXPORT_SYMBOL_GPL attached to it.  This is because
-> "things that use this symbol are too chummy with kernel internals to not be
-> derivative".  However, the symbol may or may not actually be referenced by a
-> given module, depending on the setting of CONFIG_FTRACE.  This leads to an
-> interesting result:  The module may or may not be too chummy depending on a
-> variable outside its control, and the module source code doesn't have any say
-> in the matter.  So we have a .c file that *is* a derivative work if the kernel
-> is built one way, and is *not* if the kernel is built another.  Worse yet,
-> it *also* depends at runtime on the setting of /proc/sys/kernel/ftrace_enabled
+On Mon, Feb 25, 2008 at 02:41:40AM +0100, Rafael J. Wysocki wrote:
+> This message contains a list of some regressions from 2.6.24 reported since
+> 2.6.25-rc1 was released, for which there are no fixes in the mainline I know
+> of.  If any of them have been fixed already, please let me know.
 > 
-> But it's the SAME EXACT SOURCE.  And since the source file isn't called
-> schrodinger.c, I believe the following patch is in order..
-> 
-> (As an aside, arch/um/kernel/gprof_syms.c already lists mcount as a
-> SYMBOL, not a SYMBOL_GPL - yet another inconsistency.
+> If you know of any other unresolved regressions from 2.6.24, please let me know
+> either and I'll add them to the list.  Also, please let me know if any of the
+> entries below are invalid.
 > 
 
-The reason I added GPL is not because of some idea that this is all 
-"chummy" with the kernel. But because I derived the mcount code from 
-glibc's version of mcount. Now you may argue that glibc is under LGPL 
-and a non-GPL export is fine. But I've been advised that if I ever take 
-code from someone else, to always export it with GPL.
+There's an lguest Oops reported here:
 
--- Steve
+http://lkml.org/lkml/2008/2/24/136
+
+and a patch in the same report. It's not yet approved by Rusty, but
+Ingo thinks it's fine.
+
+Regards,
+
+-- 
+
+"Better to light a candle, than curse the darkness"
+
+Ahmed S. Darwish
+Homepage: http://darwish.07.googlepages.com
+Blog: http://darwish-07.blogspot.com
 
