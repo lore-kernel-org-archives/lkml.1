@@ -1,45 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759699AbYBYWRh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760580AbYBYWRt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759699AbYBYWRh (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 Feb 2008 17:17:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757593AbYBYWR2
+	id S1760580AbYBYWRt (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 Feb 2008 17:17:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758235AbYBYWRc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 Feb 2008 17:17:28 -0500
-Received: from nf-out-0910.google.com ([64.233.182.189]:18768 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757212AbYBYWR0 (ORCPT
+	Mon, 25 Feb 2008 17:17:32 -0500
+Received: from bombadil.infradead.org ([18.85.46.34]:46045 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758059AbYBYWRb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 Feb 2008 17:17:26 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=eZDw7sL2rr4CPNDwg5wfpiiukcECl+B7qW2NkohJQB7dYcdJWLFyS86/uaec1KTBv4ZHfOUu5GHSi/989D+p/Kat3nwT+F3iiNCwRHN23vboTb0KeJVvr9UDueBq+Vbq/low91nXhX+cLO6Pno9F6vbF6GcHWwMyX0i5yHw26oQ=
-Message-ID: <8499950a0802251417l7a2fff25q7fa57fce57369b1b@mail.gmail.com>
-Date: Mon, 25 Feb 2008 23:17:23 +0100
-From: "Oleg Verych" <olecom@gmail.com>
-To: "Steve Brokenshire" <sbrokenshire@xestia.co.uk>
-Subject: Re: [PATCH] Compress kernel modules on installation.
-Cc: linux-kernel@vger.kernel.org, linux-kbuild@vger.kernel.org
-In-Reply-To: <20080225214209.a3f79327.sbrokenshire@xestia.co.uk>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Mon, 25 Feb 2008 17:17:31 -0500
+Subject: [GIT PULL] lockdep updates
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>
+Content-Type: text/plain
+Date: Mon, 25 Feb 2008 23:17:08 +0100
+Message-Id: <1203977828.6242.220.camel@lappy>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.21.90 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20080225214209.a3f79327.sbrokenshire@xestia.co.uk>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Feb 25, 2008 at 10:42 PM, Steve Brokenshire:
-> Hi,
->
->  (I've sent this to the linux-kbuild and linux-kernel lists as this
->  patch modifies the Makefile.modinst file. I also don't subscribe to the
->  linux-kbuild and linux-kernel mailing lists so can I have any replies
->  CC'ed to me please)
+Linus, please pull a few lockdep patches from:
 
-And what if i like bzip2 (yea sometimes better) or 7zip (better if !EMBEDDED)
-or whatever?
+  git://git.kernel.org/pub/scm/linux/kernel/git/peterz/linux-2.6-lockdep.git v2.6.25-rc3-lockdep
 
-It's pure user/distro question.
-_______
+---
+Dale Farnsworth (1):
+      Subject: lockdep: include all lock classes in all_lock_classes
+
+Peter Zijlstra (1):
+      lockdep: increase MAX_LOCK_DEPTH
+
+ include/linux/sched.h |    2 +-
+ kernel/lockdep.c      |    8 ++++----
+ 2 files changed, 5 insertions(+), 5 deletions(-)
+
+
