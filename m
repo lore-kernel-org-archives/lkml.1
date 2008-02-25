@@ -1,94 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756183AbYBYQyu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756005AbYBYQ5I@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756183AbYBYQyu (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 Feb 2008 11:54:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754985AbYBYQyk
+	id S1756005AbYBYQ5I (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 Feb 2008 11:57:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750748AbYBYQ44
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 Feb 2008 11:54:40 -0500
-Received: from out3.smtp.messagingengine.com ([66.111.4.27]:32933 "EHLO
-	out3.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754963AbYBYQyk (ORCPT
+	Mon, 25 Feb 2008 11:56:56 -0500
+Received: from ug-out-1314.google.com ([66.249.92.175]:22974 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750706AbYBYQ4z (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 Feb 2008 11:54:40 -0500
-Message-Id: <1203958478.20033.1239002461@webmail.messagingengine.com>
-X-Sasl-Enc: hNpsP5i+VVs4Al4peHc+iAlDcbGswtZ25hlAI1TIoz+S 1203958478
-From: "Alexander van Heukelum" <heukelum@fastmail.fm>
-To: "H. Peter Anvin" <hpa@zytor.com>, "Andi Kleen" <ak@suse.de>
-Cc: "Ingo Molnar" <mingo@elte.hu>, "Thomas Gleixner" <tglx@linutronix.de>,
-       "LKML" <linux-kernel@vger.kernel.org>,
-       "Alexander van Heukelum" <heukelum@mailshack.com>
-Content-Disposition: inline
-Content-Transfer-Encoding: 7bit
-Content-Type: text/plain; charset="ISO-8859-1"
+	Mon, 25 Feb 2008 11:56:55 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
+        b=TNXWR3iIrcmuT/7sQnERslWOAY90DMQUzWzoBVpY37/k4ovrGpw78TjbO5lkiRFCMaCCVKFz2mFTzg7JcOfhbnRGK9VXMa6AQtWYAxo+WR1+wtNRQC3+AZvvXiLn/wwn4tfs8TWpscdbBaY3nOgpYfB0Innh3GtSkDJZSyF9Vu4=
+Message-ID: <47C2F350.1060107@googlemail.com>
+Date: Mon, 25 Feb 2008 17:56:48 +0100
+From: Gabriel C <nix.or.die@googlemail.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071204)
 MIME-Version: 1.0
-X-Mailer: MessagingEngine.com Webmail Interface
-References: <20080224174605.GA21661@mailshack.com> <47C22568.1010405@zytor.com>
-Subject: Re: [PATCH] Fix alignment of early reservation for EBDA
-In-Reply-To: <47C22568.1010405@zytor.com>
-Date: Mon, 25 Feb 2008 17:54:38 +0100
+To: Thomas Gleixner <tglx@linutronix.de>
+CC: Robert Hancock <hancockr@shaw.ca>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Gabriel C <crazy@frugalware.org>
+Subject: Re: Clocksource tsc is always unstable with 2.6.25-* kernels and
+ CONFIG_NO_HZ=y on my box
+References: <fa.FpheN5sIQ5rxoLHYuhxxf6uauVs@ifi.uio.no> <47C24517.7010204@shaw.ca> <alpine.LFD.1.00.0802250839240.7583@apollo.tec.linutronix.de>
+In-Reply-To: <alpine.LFD.1.00.0802250839240.7583@apollo.tec.linutronix.de>
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 24 Feb 2008 18:18:16 -0800, "H. Peter Anvin" <hpa@zytor.com>
-said:
-> Alexander van Heukelum wrote:
-> > early res: 3 [9f000-9ffff] EBDA
-> > 
-> > Is it really necessary to force the allocation to a page boundary?
+Thomas Gleixner wrote:
+> On Sun, 24 Feb 2008, Robert Hancock wrote:
+>> Gabriel C wrote:
+>>> Hi,
+>>>
+>>> I noticed tsc is always marked unstable on my box with 2.6.25* , 2.6.24 is
+>>> fine.
+>>>
+>>> ..
+>>>
+>>> [    0.825760] ACPI: PCI Interrupt 0000:03:0e.0[A] -> GSI 22 (level, low) ->
+>>> IRQ 22
+>>> [    0.805755] Switched to high resolution mode on CPU 1
+>>> [    0.794244] Switched to high resolution mode on CPU 2
+>>> [    0.766968] Switched to high resolution mode on CPU 3
+>>> [    1.083944] Switched to high resolution mode on CPU 0
+>>> [   15.388792] Clocksource tsc unstable (delta = 9373391604 ns)
 > 
-> It is, but that rounding gets done in reserve_bootmem() anyway, so there 
-> is no need for the arch-specific code to do it.
+> Doh, this looks like the acpi_pm timer is not working at all.
 > 
-> The 32-bit EBDA code hard-codes a size of 4K, which is probably equally 
-> wrong; my gut feel is that the right thing to do is to reserve from the 
-> EBDA up to the 640K mark (some BIOSes use an area like that for SMM 
-> stuff), possibly with some sanity checking.
+>>> [   15.714648] Time: acpi_pm clocksource has been installed.
+>>> ..
+>>>
+>>> Booting nohz=off fixes that.
+>>>
+>>> Another strange thing is when I try to boot that kernel with
+>>> clocksource=acpi_pm it just hangs.
+> 
+> Which confirms the above.
+>  
+>>> config is attached.
+>>>
+>>> Please let me know if you need more infos / want me to try patches or
+>>> anything else.
+>> Please post your full dmesg output.
+> 
+> Yes please.
 
-Then, how about reserving everything from the end of conventional memory
-up to the 1Mb mark? Like this:
+dmesg's from 2.6.25-rc3 witch nohz={on,off} , lspci , dmidecode and the used config for this kernel can be found there :
 
-/*
- * The BIOS places the EBDA/XBDA at the top of conventional
- * memory, and usually decreases the reported amount of
- * conventional memory (int 0x12) too.
- */
-static __init void reserve_ebda(void)
-{
-        unsigned int lowmem, ebda_addr;
+http://frugalware.org/~crazy/dmesg/lara/
 
-        /* end of low (conventional) memory */
-        lowmem = *(unsigned short *)__va(BIOS_LOWMEM_KILOBYTES);
-        lowmem <<= 10;
+> 
+> Thanks,
+> 	tglx
+> 
 
-        /* start of EBDA area */
-        ebda_addr = *(unsigned short *)__va(BIOS_EBDA_SEGMENT);
-        ebda_addr <<= 4;
 
-        /* Fixup: bios puts an EBDA in the top 64K segment */
-        /* of conventional memory, but does not adjust lowmem. */
-        if ((lowmem - ebda_addr) <= 0x10000)
-                lowmem = ebda_addr;
+Regards,
 
-        /* Fixup: bios does not report an EBDA at all. */
-        /* Some old Dells seem to need 4k anyhow (bugzilla 2990) */
-        if ((ebda_addr == 0) && (lowmem >= 0x9f000))
-                lowmem = 0x9f000;
-
-        /* Paranoia: should never happen, but... */
-        if (lowmem >= 0x100000)
-                lowmem = 0xa0000;
-
-        /* reserve all memory between lowmem and the 1MB mark */
-        reserve_early(lowmem, 0x100000, "BIOS reserved");
-}
-
-Greetings,
-    Alexander
--- 
-  Alexander van Heukelum
-  heukelum@fastmail.fm
-
--- 
-http://www.fastmail.fm - Choose from over 50 domains or use your own
-
+Gabriel
