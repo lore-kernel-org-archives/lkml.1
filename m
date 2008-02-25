@@ -1,71 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760154AbYBYWDu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759190AbYBYWFp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760154AbYBYWDu (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 Feb 2008 17:03:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756695AbYBYWDk
+	id S1759190AbYBYWFp (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 Feb 2008 17:05:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753061AbYBYWFh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 Feb 2008 17:03:40 -0500
-Received: from mail.gmx.net ([213.165.64.20]:59289 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1750838AbYBYWDj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 Feb 2008 17:03:39 -0500
-X-Authenticated: #20450766
-X-Provags-ID: V01U2FsdGVkX19fhhIULONfLskygXHPSrOHSNhIvyd2euOgWt2q5u
-	k8wfJgf0bDMGAA
-Date: Mon, 25 Feb 2008 23:03:38 +0100 (CET)
-From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-To: Greg KH <greg@kroah.com>
-cc: linux-kernel@vger.kernel.org
-Subject: Re: [PCI] duplicate sysfs symbols getting registered in current git
-In-Reply-To: <20080225211417.GA20505@kroah.com>
-Message-ID: <Pine.LNX.4.64.0802252300250.19416@axis700.grange>
-References: <Pine.LNX.4.64.0802182142240.11540@axis700.grange>
- <20080220063834.GA22708@kroah.com> <Pine.LNX.4.64.0802251341160.4430@axis700.grange>
- <Pine.LNX.4.64.0802251913380.19416@axis700.grange> <20080225202546.GA8893@kroah.com>
- <Pine.LNX.4.64.0802252130410.19416@axis700.grange> <20080225211417.GA20505@kroah.com>
+	Mon, 25 Feb 2008 17:05:37 -0500
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:39645 "EHLO amd.ucw.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752772AbYBYWFg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 25 Feb 2008 17:05:36 -0500
+Date: Mon, 25 Feb 2008 23:06:01 +0100
+From: Pavel Machek <pavel@ucw.cz>
+To: Gregory Haskins <ghaskins@novell.com>
+Cc: mingo@elte.hu, a.p.zijlstra@chello.nl, tglx@linutronix.de,
+       rostedt@goodmis.org, linux-rt-users@vger.kernel.org,
+       linux-kernel@vger.kernel.org, bill.huey@gmail.com, kevin@hilman.org,
+       cminyard@mvista.com, dsingleton@mvista.com, dwalker@mvista.com,
+       npiggin@suse.de, dsaxena@plexity.net, ak@suse.de, acme@redhat.com,
+       gregkh@suse.de, sdietrich@novell.com, pmorreale@novell.com,
+       mkohari@novell.com
+Subject: Re: [(RT RFC) PATCH v2 6/9] add a loop counter based timeout
+	mechanism
+Message-ID: <20080225220601.GH2659@elf.ucw.cz>
+References: <20080225155959.11268.35541.stgit@novell1.haskins.net> <20080225160108.11268.1451.stgit@novell1.haskins.net>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Y-GMX-Trusted: 0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080225160108.11268.1451.stgit@novell1.haskins.net>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 25 Feb 2008, Greg KH wrote:
+On Mon 2008-02-25 11:01:08, Gregory Haskins wrote:
+> From: Sven Dietrich <sdietrich@novell.com>
 
-> On Mon, Feb 25, 2008 at 09:31:22PM +0100, Guennadi Liakhovetski wrote:
-> > On Mon, 25 Feb 2008, Greg KH wrote:
-> > 
-> > > On Mon, Feb 25, 2008 at 07:15:57PM +0100, Guennadi Liakhovetski wrote:
-> > > > On Mon, 25 Feb 2008, Guennadi Liakhovetski wrote:
-> > > > 
-> > > > > On Tue, 19 Feb 2008, Greg KH wrote:
-> > > > > 
-> > > > > > On Mon, Feb 18, 2008 at 09:52:25PM +0100, Guennadi Liakhovetski wrote:
-> > > > > > > Booting an x86 SMP PC with todays git-snapshot or just with 2.6.25-rc2 
-> > > > > > > getting the following warnings (with a bit of context):
-> > > > > > 
-> > > > > > Can you try enabling CONFIG_DEBUG_KOBJECT and sending the output at boot
-> > > > > > time from this?
-> > > > > 
-> > > > > dmesg output with CONFIG_LOG_BUF_SHIFT=19 sent privately to Greg as 
-> > > > > unpacked, as it would have to be sent to the list, is 408K big. Will see 
-> > > > > what Greg says.
-> > > > 
-> > > > Actually, the most annoying problem with post 2.6.24 kernels on this 
-> > > > machine is, that the system doesn't power off or reboot any more. And 
-> > > > seeing other reports, where the reason for not powering down was unfreed 
-> > > > kobjects, maybe this is the problem here too?
+Why is this good idea?
 
-[snip]
+> Signed-off-by: Sven Dietrich <sdietrich@novell.com>
+> ---
 
-> Then I suggest filing a new bug report so it doesn't get lost.
+>  
+> +config RTLOCK_DELAY
+> +	int "Default delay (in loops) for adaptive rtlocks"
+> +	range 0 1000000000
+> +	depends on ADAPTIVE_RTLOCK
+> +	default "10000"
+> +        help
+> +         This allows you to specify the maximum attempts a task will spin
+> +	 attempting to acquire an rtlock before sleeping.  The value is
+> +	 tunable at runtime via a sysctl.  A setting of 0 (zero) disables
+> +	 the adaptive algorithm entirely.
+> +
 
-Have you found anything interesting in the kobj debugging output? Do you 
-think these are two related problems (kobj and failing power-off) or 
-separate? So should I file two bug-reports or just one? You mean on 
-bugzilla?
+I believe you have _way_ too many config variables. If this can be set
+at runtime, does it need a config option, too?
 
-Thanks
-Guennadi
----
-Guennadi Liakhovetski
+									Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
