@@ -1,61 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755357AbYBYRcU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755509AbYBYRgm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755357AbYBYRcU (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 Feb 2008 12:32:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751161AbYBYRcG
+	id S1755509AbYBYRgm (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 Feb 2008 12:36:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751681AbYBYRgf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 Feb 2008 12:32:06 -0500
-Received: from smtp-out.google.com ([216.239.33.17]:4669 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750735AbYBYRcF (ORCPT
+	Mon, 25 Feb 2008 12:36:35 -0500
+Received: from lazybastard.de ([212.112.238.170]:53655 "EHLO
+	longford.lazybastard.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750806AbYBYRgf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 Feb 2008 12:32:05 -0500
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=received:message-id:date:from:to:subject:cc:in-reply-to:
-	mime-version:content-type:content-transfer-encoding:
-	content-disposition:references;
-	b=tg64XJ3glFUQfpygZkbZyOUGkjIjrLmzH0IlMXAIrpJYX/KjOMM+h8YI7Nq9sjE7v
-	HEmVuaGHn05Nk+u3g2zwA==
-Message-ID: <6599ad830802250932s5eaa3bcchbfc49fe0e76d3f7d@mail.gmail.com>
-Date: Mon, 25 Feb 2008 09:32:00 -0800
-From: "Paul Menage" <menage@google.com>
-To: balbir@linux.vnet.ibm.com
-Subject: Re: [PATCH] Memory Resource Controller Add Boot Option
-Cc: "Andrew Morton" <akpm@linux-foundation.org>,
-       "Hugh Dickins" <hugh@veritas.com>,
-       "Sudhir Kumar" <skumar@linux.vnet.ibm.com>,
-       "YAMAMOTO Takashi" <yamamoto@valinux.co.jp>, lizf@cn.fujitsu.com,
-       linux-kernel@vger.kernel.org, taka@valinux.co.jp, linux-mm@kvack.org,
-       "David Rientjes" <rientjes@google.com>,
-       "Pavel Emelianov" <xemul@openvz.org>,
-       "KAMEZAWA Hiroyuki" <kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <47C2F86A.9010709@linux.vnet.ibm.com>
+	Mon, 25 Feb 2008 12:36:35 -0500
+Date: Mon, 25 Feb 2008 18:35:52 +0100
+From: =?utf-8?B?SsO2cm4=?= Engel <joern@logfs.org>
+To: =?utf-8?B?SsO2cm4=?= Engel <joern@logfs.org>
+Cc: Andy Whitcroft <apw@shadowen.org>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: Page scan keeps touching kernel text pages
+Message-ID: <20080225173551.GA13911@lazybastard.org>
+References: <20080224144710.GD31293@lazybastard.org> <20080225150724.GF2604@shadowen.org> <20080225151536.GA13358@lazybastard.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-References: <20080225115509.23920.66231.sendpatchset@localhost.localdomain>
-	 <20080225115550.23920.43199.sendpatchset@localhost.localdomain>
-	 <6599ad830802250816m1f83dbeekbe919a60d4b51157@mail.gmail.com>
-	 <47C2F86A.9010709@linux.vnet.ibm.com>
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20080225151536.GA13358@lazybastard.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Feb 25, 2008 at 9:18 AM, Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
->
->  I thought about it, but it did not work out all that well. The reason being,
->  that the memory controller is called in from places besides cgroup.
->  mem_cgroup_charge_common() for example is called from several places in mm.
->  Calling into cgroups to check, enabled/disabled did not seem right.
+On Mon, 25 February 2008 16:15:36 +0100, Jörn Engel wrote:
+> On Mon, 25 February 2008 15:07:24 +0000, Andy Whitcroft wrote:
+> 
+> > I would expect to find pages below the kernel text as real pages, and
+> > potentially on the LRU on some architectures.  Which architecture are
+> > you seeing this?  Which zones do the pages belong?
+> 
+> 32bit x86 (run in qemu, shouldn't make a difference).
+> 
+> Not sure about the zones.  Let me rerun to check that.
 
-You wouldn't need to call into cgroups - if it's a flag in the subsys
-object (which is defined in memcontrol.c) you'd just say
+Example output:
+scanning zone DMA
+page      3fa        3 00000000 628
+page      2bf        2 00000000 628
+page       97        3 00000000 628
+page       98        2 00000000 628
+scanning zone DMA
+page      2c0        3 00000000 628
+page      2c3        2 00000000 628
+page       44        3 00000000 628
+page       46        2 00000000 628
+scanning zone DMA
+page       37        3 00000000 628
+page       35        2 00000000 628
+page       32        3 00000000 628
+page       38        2 00000000 628
 
-if (mem_cgroup_subsys.disabled) {
-...
-}
+Looks like all kernel text is in zone DMA.  Second column holds the page
+number, third is refcount, fourth is the flags, fifth is the line, which
+corresponds to this one after my debugging changes:
+		if (!mapping || !remove_mapping(mapping, page))
+			goto keep_locked;
 
-I'll send out a prototype for comment.
+Jörn
 
-Paul
+-- 
+Joern's library part 4:
+http://www.paulgraham.com/spam.html
