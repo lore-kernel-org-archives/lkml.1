@@ -1,49 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756366AbYBYTik@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757016AbYBYTkf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756366AbYBYTik (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 Feb 2008 14:38:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754832AbYBYTia
+	id S1757016AbYBYTkf (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 Feb 2008 14:40:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755350AbYBYTkV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 Feb 2008 14:38:30 -0500
-Received: from ns1.suse.de ([195.135.220.2]:51410 "EHLO mx1.suse.de"
+	Mon, 25 Feb 2008 14:40:21 -0500
+Received: from www.tglx.de ([62.245.132.106]:47794 "EHLO www.tglx.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753365AbYBYTi3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 Feb 2008 14:38:29 -0500
-From: Andreas Schwab <schwab@suse.de>
-To: "Kiyoshi Ueda" <k-ueda@ct.jp.nec.com>
-Cc: <petkovbb@gmail.com>, <bzolnier@gmail.com>, <linux-kernel@vger.kernel.org>,
-       <jens.axboe@oracle.com>, <j-nomura@ce.jp.nec.com>
-Subject: Re: 2.6.25-rc1/2 CD/DVD burning broken
-References: <jelk5k62uy.fsf@sykes.suse.de>
-	<58cb370e0802180759h4d44b9bci86f02919a48c7979@mail.gmail.com>
-	<20080218.135827.74754725.k-ueda@ct.jp.nec.com>
-	<jek5kvisih.fsf@sykes.suse.de> <20080224163244.GA11998@gollum.tnic>
-	<jehcfyffyp.fsf@sykes.suse.de> <002101c87759$0fb4f010$58f80d0a@brian>
-X-Yow: ..  or were you driving the PONTIAC that HONKED at me
- in MIAMI last Tuesday?
-Date: Mon, 25 Feb 2008 20:38:22 +0100
-In-Reply-To: <002101c87759$0fb4f010$58f80d0a@brian> (Kiyoshi Ueda's message of
-	"Sun\, 24 Feb 2008 21\:49\:31 -0500")
-Message-ID: <jeejb0968h.fsf@sykes.suse.de>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/22.1 (gnu/linux)
+	id S1754983AbYBYTkT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 25 Feb 2008 14:40:19 -0500
+Date: Mon, 25 Feb 2008 20:39:30 +0100 (CET)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Gabriel C <nix.or.die@googlemail.com>
+cc: Robert Hancock <hancockr@shaw.ca>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Gabriel C <crazy@frugalware.org>
+Subject: Re: Clocksource tsc is always unstable with 2.6.25-* kernels and
+ CONFIG_NO_HZ=y on my box
+In-Reply-To: <47C2F350.1060107@googlemail.com>
+Message-ID: <alpine.LFD.1.00.0802252031180.7583@apollo.tec.linutronix.de>
+References: <fa.FpheN5sIQ5rxoLHYuhxxf6uauVs@ifi.uio.no> <47C24517.7010204@shaw.ca> <alpine.LFD.1.00.0802250839240.7583@apollo.tec.linutronix.de> <47C2F350.1060107@googlemail.com>
+User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: 8bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-"Kiyoshi Ueda" <k-ueda@ct.jp.nec.com> writes:
+On Mon, 25 Feb 2008, Gabriel C wrote:
+> >>> Booting nohz=off fixes that.
+> >>>
+> >>> Another strange thing is when I try to boot that kernel with
+> >>> clocksource=acpi_pm it just hangs.
 
-> I'm looking at this problem, but currently no idea why the conversion
-> to blk_end_request causes it.
+What happens if you add clocksource=acpi_pm and nohz=off to the kernel
+commandline ?
 
-cdrom_newpc_intr apparently never sets rq->sense_len.
+> >> Please post your full dmesg output.
+> > 
+> > Yes please.
+>
+> dmesg's from 2.6.25-rc3 witch nohz={on,off} , lspci , dmidecode and
+> the used config for this kernel can be found there :
+>
+> http://frugalware.org/~crazy/dmesg/lara/
 
-Andreas.
+Hmm. Nothing really obvious.
 
--- 
-Andreas Schwab, SuSE Labs, schwab@suse.de
-SuSE Linux Products GmbH, Maxfeldstraße 5, 90409 Nürnberg, Germany
-PGP key fingerprint = 58CA 54C7 6D53 942B 1756  01D3 44D5 214B 8276 4ED5
-"And now for something completely different."
+Thanks,
+	tglx
