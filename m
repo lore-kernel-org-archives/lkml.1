@@ -1,57 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756821AbYBYS3x@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755660AbYBYSac@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756821AbYBYS3x (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 Feb 2008 13:29:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753632AbYBYS3p
+	id S1755660AbYBYSac (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 Feb 2008 13:30:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754107AbYBYSaP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 Feb 2008 13:29:45 -0500
-Received: from server54.tchmachines.com ([72.9.244.106]:50828 "EHLO
-	server54.tchmachines.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754107AbYBYS3o (ORCPT
+	Mon, 25 Feb 2008 13:30:15 -0500
+Received: from smtp1.linux-foundation.org ([207.189.120.13]:38255 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753632AbYBYSaN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 Feb 2008 13:29:44 -0500
-Date: Mon, 25 Feb 2008 10:29:37 -0800
-From: Ravikiran Thirumalai <kiran@scalemp.com>
-To: Sam Ravnborg <sam@ravnborg.org>
-Cc: Adrian Bunk <bunk@kernel.org>, robert@schwebel.de,
-       James Bottomley <James.Bottomley@hansenpartnership.com>,
-       "Martin J. Bligh" <mbligh@aracnet.com>, pazke@donpac.ru,
-       florian.fainelli@telecomint.eu, Shai Fultheim <shai@scalemp.com>,
-       linux-kernel@vger.kernel.org, linux-visws-devel@lists.sourceforge.net
-Subject: Re: defconfig's for all x86 subarchitectures
-Message-ID: <20080225182937.GD3143@localdomain>
-References: <20080224201634.GD1596@cs181133002.pp.htv.fi> <20080224204039.GA11894@uranus.ravnborg.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080224204039.GA11894@uranus.ravnborg.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
-X-AntiAbuse: Primary Hostname - server54.tchmachines.com
-X-AntiAbuse: Original Domain - vger.kernel.org
-X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
-X-AntiAbuse: Sender Address Domain - scalemp.com
+	Mon, 25 Feb 2008 13:30:13 -0500
+Date: Mon, 25 Feb 2008 10:28:50 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Greg KH <greg@kroah.com>
+Cc: mark gross <mgross@linux.intel.com>, lkml <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] copyright owner and author clean up for intel iommu and
+ related files
+Message-Id: <20080225102850.ad5f0cb6.akpm@linux-foundation.org>
+In-Reply-To: <20080225175402.GB18940@kroah.com>
+References: <20080221181555.GA9593@linux.intel.com>
+	<20080223000443.da075061.akpm@linux-foundation.org>
+	<20080223190649.GA8641@kroah.com>
+	<20080223112022.8e4fdde2.akpm@linux-foundation.org>
+	<20080225155014.GA22018@linux.intel.com>
+	<20080225175402.GB18940@kroah.com>
+X-Mailer: Sylpheed 2.4.7 (GTK+ 2.12.1; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Feb 24, 2008 at 09:40:39PM +0100, Sam Ravnborg wrote:
->On Sun, Feb 24, 2008 at 10:16:34PM +0200, Adrian Bunk wrote:
->> For compile tests it would be nice it we had at least for each 
->> subarchitecture not covered by X86_GENERICARCH a defconfig.
->> 
->> These are the following subarchitectures:
->> - X86_ELAN
->> - X86_VOYAGER
->> - X86_NUMAQ
->> - X86_VISWS
->> - X86_RDC321X
->> - X86_VSMP
->
->Seconded!
->
+On Mon, 25 Feb 2008 09:54:02 -0800 Greg KH <greg@kroah.com> wrote:
 
-Thirded :).  A very good idea indeed.  Will post a X86_VSMP defconfig soon.
+> On Mon, Feb 25, 2008 at 07:50:14AM -0800, mark gross wrote:
+> > On Sat, Feb 23, 2008 at 11:20:22AM -0800, Andrew Morton wrote:
+> > > On Sat, 23 Feb 2008 11:06:49 -0800 Greg KH <greg@kroah.com> wrote:
+> > > 
+> > > > On Sat, Feb 23, 2008 at 12:04:43AM -0800, Andrew Morton wrote:
+> > > > > On Thu, 21 Feb 2008 10:15:55 -0800 mark gross <mgross@linux.intel.com> wrote:
+> > > > > 
+> > > > > > Index: linux-2.6.24-mm1/drivers/pci/dmar.c
+> > > > > 
+> > > > > I guess this is strictly a greg-pci-tree thing.  Greg, how do you want
+> > > > > to play intel-iommu?
+> > > > 
+> > > > Yes, I'll take those.  I'm pretty sure I even have the hardware here to
+> > > > test that the code doesn't crash :)
+> > > > 
+> > > 
+> > > ok..
+> > > 
+> > > I have another one queued for 2.6.26-via-greg:
+> > > pci-iova-rb-tree-setup-tweak.patch
+> > > 
+> > 
+> > Should I start sending all the intel-iommu related stuff to Greg then?
+> 
+> Sure, and the linux-pci list so that people can review them.
+> 
 
-Thanks,
-Kiran
+And linux-kernel so that a lot more people can review them.
+
+And me too, please so I'll review them, and because subsystem maintainers
+are leaky buckets (sorry).
+
