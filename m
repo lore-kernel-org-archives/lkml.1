@@ -1,60 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755604AbYBYLnS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756463AbYBYLnm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755604AbYBYLnS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 Feb 2008 06:43:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753865AbYBYLnG
+	id S1756463AbYBYLnm (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 Feb 2008 06:43:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754497AbYBYLnc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 Feb 2008 06:43:06 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:57968 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753502AbYBYLnD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 Feb 2008 06:43:03 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [Bug 10030] Suspend doesn't work when SD card is inserted
-Date: Mon, 25 Feb 2008 12:41:25 +0100
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: Pavel Machek <pavel@ucw.cz>, Pierre Ossman <drzeus-mmc@drzeus.cx>,
-       Zdenek Kabelac <zdenek.kabelac@gmail.com>,
-       Kernel development list <linux-kernel@vger.kernel.org>,
-       pm list <linux-pm@lists.linux-foundation.org>
-References: <Pine.LNX.4.44L0.0802242119500.31164-100000@netrider.rowland.org>
-In-Reply-To: <Pine.LNX.4.44L0.0802242119500.31164-100000@netrider.rowland.org>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Mon, 25 Feb 2008 06:43:32 -0500
+Received: from nat-132.atmel.no ([80.232.32.132]:50110 "EHLO relay.atmel.no"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753865AbYBYLnb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 25 Feb 2008 06:43:31 -0500
+Date: Mon, 25 Feb 2008 12:43:19 +0100
+From: Haavard Skinnemoen <hskinnemoen@atmel.com>
+To: David Brownell <david-b@pacbell.net>
+Cc: nicolas.ferre@rfo.atmel.com, linux@maxim.org.za,
+       linux-kernel@vger.kernel.org, akpm@linux-foundation.org
+Subject: Re: [patch 2.6.25-rc2-git 1/2] atmel_tc library
+Message-ID: <20080225124319.4ec8a00b@dhcp-252-066.norway.atmel.com>
+In-Reply-To: <20080225010310.B59E98E4B8@adsl-69-226-248-13.dsl.pltn13.pacbell.net>
+References: <200802221723.24003.david-b@pacbell.net>
+	<20080224184554.2c863f63@siona>
+	<20080224225527.62D5D28E1A2@adsl-69-226-248-13.dsl.pltn13.pacbell.net>
+	<20080225012637.1535c95b@siona>
+	<20080225010310.B59E98E4B8@adsl-69-226-248-13.dsl.pltn13.pacbell.net>
+Organization: Atmel Norway
+X-Mailer: Claws Mail 3.3.0 (GTK+ 2.12.5; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200802251241.26216.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday, 25 of February 2008, Alan Stern wrote:
-> On Sun, 24 Feb 2008, Rafael J. Wysocki wrote:
+On Sun, 24 Feb 2008 17:03:10 -0800
+David Brownell <david-b@pacbell.net> wrote:
+
+> > Which reminds me...you were talking about a patch that adds oneshot
+> > support for the count/compare clocksource and more cleanups, but I
+> > don't think I've seen it...?
 > 
-> > > Very subtly wrong ;-).
-> > > 
-> > > imagine suspending_task == 0xabcdef01. Now task "R" with current ==
-> > > 0xabcd0000 reads suspending_task while the other cpu is writing to it,
-> > > and sees 0xabcd0000 (0xef01 was not yet written) -- and mistakenly
-> > > believes that  "R" == suspending_task.
-> > > 
-> > > I agree it is very unlikely, and it will not happen on i386. But what
-> > > about just using atomic_t suspending_task, and store current->pid into
-> > > it?
-> > 
-> > I'd rather use a lock, frankly.  For example, we can require the readers to
-> > take pm_sleep_rwsem for reading in order to access that.
+> I avoid sending non-working patches, and hadn't made time to
+> work on that issue recently.
+
+I was thinking that I could perhaps help you get it working...
+
+> > But I was thinking about Linus' suggestions that we exploit the
+> > distributed nature of git and do cross-tree merges to synchronize
+> > changes to common code.
+> >
+> > Setting up a separate git tree would allow the changes to go into the
+> > arm tree without littering it with possibly unstable avr32 changes as
+> > well, and it would allow me to merge them and put more stuff on top.
 > 
-> That certainly won't work.  Imagine what would happen when the reader 
-> _was_ the suspending task.
+> Doing that with ARM patches is Russell's call; he hasn't been too
+> keen on merging from non-Linus GIT trees when that came up before.
 
-Yeah, I've already realized it was a stupid idea. :-)
+Fine with me either way.
 
-> But if you really twist my arm, I'll go along with Pavel's suggestion.
+> > I've never really seen the point of indenting those defines at all.
+> 
+> Without them, it's harder to discern the logical structure of
+> all the various bitfields and their contents.
 
-So can you do that, pretty please?
+I prefer to separate the registers from the bitfields and the other
+stuff. That way, no indentation is necessary.
 
-Thanks,
-Rafael
+> > I thought about that, but while the driver can safely call clk_enable()
+> > on the same clock several times, I'm not sure if it's such a great idea
+> > to call request_irq() on the same interrupt several times. So the
+> > driver probably needs to know how many irqs there really are and might
+> > as well use platform_get_irq() to find out.
+> 
+> I thought the whole point of passing the clocks was to avoid needing
+> to ask for them!!  If trying one or three platform_get_irq() calls is
+> OK, then surely trying one or three clk_get() calls is also OK...
+
+If you want to go down that path, surely reserving the iomem resource
+is fine too? Why don't we just kill the whole tclib layer, the driver
+can certainly do everything itself?
+
+Of course the driver should be responsible for calling clk_enable() and
+clk_disable(). Otherwise, power management will be tricky. And since
+the driver may need to make a decision about which interrupts to
+request, it might as well call platform_get_irq() directly.
+
+On the other hand, the driver will _always_ need a reference to each
+clock, and it will always need a pointer through which to access the
+registers, so the mid-layer might as well do those things.
+
+Haavard
