@@ -1,651 +1,648 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759624AbYBYF4u@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760217AbYBYF5Z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759624AbYBYF4u (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 Feb 2008 00:56:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753541AbYBYF4k
+	id S1760217AbYBYF5Z (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 Feb 2008 00:57:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753541AbYBYF5L
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 Feb 2008 00:56:40 -0500
-Received: from e31.co.us.ibm.com ([32.97.110.149]:48431 "EHLO
-	e31.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752618AbYBYF4i (ORCPT
+	Mon, 25 Feb 2008 00:57:11 -0500
+Received: from el-out-1112.google.com ([209.85.162.182]:60121 "EHLO
+	el-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754404AbYBYF5J (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 Feb 2008 00:56:38 -0500
-Date: Mon, 25 Feb 2008 11:27:13 +0530
-From: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: lkml <linux-kernel@vger.kernel.org>, David Miller <davem@davemloft.net>,
-       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>, hskinnemoen@atmel.com,
-       Ingo Molnar <mingo@elte.hu>, Masami Hiramatsu <mhiramat@redhat.com>,
-       sam@ravnborg.org, sagar.abhishek@gmail.com, randy.dunlap@oracle.com
-Subject: [PATCH 2/2] Kprobes: Move kprobe examples to samples/
-Message-ID: <20080225055713.GF7148@in.ibm.com>
-Reply-To: ananth@in.ibm.com
-References: <20080225055541.GE7148@in.ibm.com>
+	Mon, 25 Feb 2008 00:57:09 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:in-reply-to:mime-version:content-type:references;
+        b=I3UR9bXkEPchXXHe86Fw+byRlfGWQVQdxxmXnNJtsDJ1MT65VmPS+AqhCWlYuIqxORlz7vVMgrlB+i/EAoj6+4W4ZZ5AvdzafJ1Kp9IKmNjfDXlH3tqoDdnM+DMuDVzUN+lTA1JB9fEjgE6RmYkfLuuCb0dM54hX4YQLbD8lGpQ=
+Message-ID: <426a98560802242157j61294ba6i2aaa9cce4d836a7b@mail.gmail.com>
+Date: Mon, 25 Feb 2008 15:57:06 +1000
+From: "Brad Rosser" <brad.rosser@gmail.com>
+To: petkovbb@gmail.com, "Brad Rosser" <brad.rosser@gmail.com>,
+       bzolnier@gmail.com, linux-ide@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: IDE cdrom problem with PLEXTOR DVDR PX-608AL
+In-Reply-To: <20080225053404.GA3816@gollum.tnic>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080225055541.GE7148@in.ibm.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+Content-Type: multipart/mixed; 
+	boundary="----=_Part_6413_7451160.1203919026616"
+References: <426a98560802232138q41d45d52ta515f1b791e937f4@mail.gmail.com>
+	 <20080224173451.GB11998@gollum.tnic>
+	 <426a98560802241758j7a9be21m5eecc120ada804e4@mail.gmail.com>
+	 <20080225053404.GA3816@gollum.tnic>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
+------=_Part_6413_7451160.1203919026616
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-Move kprobes examples from Documentation/kprobes.txt to under samples/.
-Patch originally by Randy Dunlap.
+Hi Boris,
 
-o Updated the patch to apply on 2.6.25-rc3
-o Modified examples code to build on multiple architectures. Currently,
-  the kprobe and jprobe examples code works for x86 and powerpc
-o Cleaned up unneeded #includes
-o Cleaned up Kconfig per Sam Ravnborg's suggestions to fix build break
-  on archs that don't have kretprobes
-o Implemented suggestions by Mathieu Desnoyers on CONFIG_KRETPROBES
-o Included Andrew Morton's cleanup based on x86-git
-o Modified kretprobe_example to act as a arch-agnostic module to
-  determine routine execution times:
-	Use 'modprobe kretprobe_example func=<func_name>' to determine
-	execution time of func_name in nanoseconds.
+>  Well, this sounds strange. Are you sure you're entering the boot options
+>  correctly on the kernel command line? Which is your boot loader? I just booted
+>  my machine with 'hdc=noprobe'  (hdc is my cdrom drive) and here's what i get:
+>
+>  ...
+>  [    0.304774] Probing IDE interface ide0...
+>  [    0.569359] hdb: SAMSUNG SP2014N, ATA DISK drive
+>  [    0.613977] Switched to NOHz mode on CPU #1
+>  [    0.773368] Switched to NOHz mode on CPU #0
+>  [    0.874486] hda: QUANTUM FIREBALLlct10 20, ATA DISK drive
+>  [    0.874506] hda: host max PIO4 wanted PIO255(auto-tune) selected PIO4
+>  [    0.874506] hda: drive side 80-wire cable detection failed, limiting max speed to UDMA33
+>  [    0.874506] hda: UDMA/33 mode selected
+>  [    0.874533] hdb: host max PIO4 wanted PIO255(auto-tune) selected PIO4
+>  [    0.874620] hdb: UDMA/100 mode selected
+>  [    0.874744] Probing IDE interface ide1...
 
-Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
-Signed-off-by: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
-Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
-Acked-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
----
- Documentation/kprobes.txt           |  243 ------------------------------------
- samples/Kconfig                     |   11 +
- samples/Makefile                    |    2 
- samples/kprobes/Makefile            |    5 
- samples/kprobes/jprobe_example.c    |   68 ++++++++++
- samples/kprobes/kprobe_example.c    |   91 +++++++++++++
- samples/kprobes/kretprobe_example.c |  106 +++++++++++++++
- 7 files changed, 287 insertions(+), 239 deletions(-)
+>  so it seems you should check whether your kernel is receiving the 'hda=noprobe'
+>  boot option at all, or something along that path is going wrong...
 
-Index: linux-2.6.25-rc2/Documentation/kprobes.txt
-===================================================================
---- linux-2.6.25-rc2.orig/Documentation/kprobes.txt
-+++ linux-2.6.25-rc2/Documentation/kprobes.txt
-@@ -192,7 +192,8 @@ code mapping.
- The Kprobes API includes a "register" function and an "unregister"
- function for each type of probe.  Here are terse, mini-man-page
- specifications for these functions and the associated probe handlers
--that you'll write.  See the latter half of this document for examples.
-+that you'll write.  See the files in the samples/kprobes/ sub-directory
-+for examples.
- 
- 4.1 register_kprobe
- 
-@@ -420,249 +421,15 @@ e. Watchpoint probes (which fire on data
- 
- 8. Kprobes Example
- 
--Here's a sample kernel module showing the use of kprobes to dump a
--stack trace and selected i386 registers when do_fork() is called.
------- cut here -----
--/*kprobe_example.c*/
--#include <linux/kernel.h>
--#include <linux/module.h>
--#include <linux/kprobes.h>
--#include <linux/sched.h>
--
--/*For each probe you need to allocate a kprobe structure*/
--static struct kprobe kp;
--
--/*kprobe pre_handler: called just before the probed instruction is executed*/
--int handler_pre(struct kprobe *p, struct pt_regs *regs)
--{
--	printk("pre_handler: p->addr=0x%p, eip=%lx, eflags=0x%lx\n",
--		p->addr, regs->eip, regs->eflags);
--	dump_stack();
--	return 0;
--}
--
--/*kprobe post_handler: called after the probed instruction is executed*/
--void handler_post(struct kprobe *p, struct pt_regs *regs, unsigned long flags)
--{
--	printk("post_handler: p->addr=0x%p, eflags=0x%lx\n",
--		p->addr, regs->eflags);
--}
--
--/* fault_handler: this is called if an exception is generated for any
-- * instruction within the pre- or post-handler, or when Kprobes
-- * single-steps the probed instruction.
-- */
--int handler_fault(struct kprobe *p, struct pt_regs *regs, int trapnr)
--{
--	printk("fault_handler: p->addr=0x%p, trap #%dn",
--		p->addr, trapnr);
--	/* Return 0 because we don't handle the fault. */
--	return 0;
--}
--
--static int __init kprobe_init(void)
--{
--	int ret;
--	kp.pre_handler = handler_pre;
--	kp.post_handler = handler_post;
--	kp.fault_handler = handler_fault;
--	kp.symbol_name = "do_fork";
--
--	ret = register_kprobe(&kp);
--	if (ret < 0) {
--		printk("register_kprobe failed, returned %d\n", ret);
--		return ret;
--	}
--	printk("kprobe registered\n");
--	return 0;
--}
--
--static void __exit kprobe_exit(void)
--{
--	unregister_kprobe(&kp);
--	printk("kprobe unregistered\n");
--}
--
--module_init(kprobe_init)
--module_exit(kprobe_exit)
--MODULE_LICENSE("GPL");
------- cut here -----
--
--You can build the kernel module, kprobe-example.ko, using the following
--Makefile:
------- cut here -----
--obj-m := kprobe-example.o
--KDIR := /lib/modules/$(shell uname -r)/build
--PWD := $(shell pwd)
--default:
--	$(MAKE) -C $(KDIR) SUBDIRS=$(PWD) modules
--clean:
--	rm -f *.mod.c *.ko *.o
------- cut here -----
--
--$ make
--$ su -
--...
--# insmod kprobe-example.ko
--
--You will see the trace data in /var/log/messages and on the console
--whenever do_fork() is invoked to create a new process.
-+See samples/kprobes/kprobe_example.c
- 
- 9. Jprobes Example
- 
--Here's a sample kernel module showing the use of jprobes to dump
--the arguments of do_fork().
------- cut here -----
--/*jprobe-example.c */
--#include <linux/kernel.h>
--#include <linux/module.h>
--#include <linux/fs.h>
--#include <linux/uio.h>
--#include <linux/kprobes.h>
--
--/*
-- * Jumper probe for do_fork.
-- * Mirror principle enables access to arguments of the probed routine
-- * from the probe handler.
-- */
--
--/* Proxy routine having the same arguments as actual do_fork() routine */
--long jdo_fork(unsigned long clone_flags, unsigned long stack_start,
--	      struct pt_regs *regs, unsigned long stack_size,
--	      int __user * parent_tidptr, int __user * child_tidptr)
--{
--	printk("jprobe: clone_flags=0x%lx, stack_size=0x%lx, regs=0x%p\n",
--	       clone_flags, stack_size, regs);
--	/* Always end with a call to jprobe_return(). */
--	jprobe_return();
--	/*NOTREACHED*/
--	return 0;
--}
--
--static struct jprobe my_jprobe = {
--	.entry = jdo_fork
--};
--
--static int __init jprobe_init(void)
--{
--	int ret;
--	my_jprobe.kp.symbol_name = "do_fork";
--
--	if ((ret = register_jprobe(&my_jprobe)) <0) {
--		printk("register_jprobe failed, returned %d\n", ret);
--		return -1;
--	}
--	printk("Planted jprobe at %p, handler addr %p\n",
--	       my_jprobe.kp.addr, my_jprobe.entry);
--	return 0;
--}
--
--static void __exit jprobe_exit(void)
--{
--	unregister_jprobe(&my_jprobe);
--	printk("jprobe unregistered\n");
--}
--
--module_init(jprobe_init)
--module_exit(jprobe_exit)
--MODULE_LICENSE("GPL");
------- cut here -----
--
--Build and insert the kernel module as shown in the above kprobe
--example.  You will see the trace data in /var/log/messages and on
--the console whenever do_fork() is invoked to create a new process.
--(Some messages may be suppressed if syslogd is configured to
--eliminate duplicate messages.)
-+See samples/kprobes/jprobe_example.c
- 
- 10. Kretprobes Example
- 
--Here's a sample kernel module showing the use of return probes to
--report failed calls to sys_open().
------- cut here -----
--/*kretprobe-example.c*/
--#include <linux/kernel.h>
--#include <linux/module.h>
--#include <linux/kprobes.h>
--#include <linux/ktime.h>
--
--/* per-instance private data */
--struct my_data {
--	ktime_t entry_stamp;
--};
--
--static const char *probed_func = "sys_open";
--
--/* Timestamp function entry. */
--static int entry_handler(struct kretprobe_instance *ri, struct pt_regs *regs)
--{
--	struct my_data *data;
--
--	if(!current->mm)
--		return 1; /* skip kernel threads */
--
--	data = (struct my_data *)ri->data;
--	data->entry_stamp = ktime_get();
--	return 0;
--}
--
--/* If the probed function failed, log the return value and duration.
-- * Duration may turn out to be zero consistently, depending upon the
-- * granularity of time accounting on the platform. */
--static int return_handler(struct kretprobe_instance *ri, struct pt_regs *regs)
--{
--	int retval = regs_return_value(regs);
--	struct my_data *data = (struct my_data *)ri->data;
--	s64 delta;
--	ktime_t now;
--
--	if (retval < 0) {
--		now = ktime_get();
--		delta = ktime_to_ns(ktime_sub(now, data->entry_stamp));
--		printk("%s: return val = %d (duration = %lld ns)\n",
--		       probed_func, retval, delta);
--	}
--	return 0;
--}
--
--static struct kretprobe my_kretprobe = {
--	.handler = return_handler,
--	.entry_handler = entry_handler,
--	.data_size = sizeof(struct my_data),
--	.maxactive = 20, /* probe up to 20 instances concurrently */
--};
--
--static int __init kretprobe_init(void)
--{
--	int ret;
--	my_kretprobe.kp.symbol_name = (char *)probed_func;
--
--	if ((ret = register_kretprobe(&my_kretprobe)) < 0) {
--		printk("register_kretprobe failed, returned %d\n", ret);
--		return -1;
--	}
--	printk("Kretprobe active on %s\n", my_kretprobe.kp.symbol_name);
--	return 0;
--}
--
--static void __exit kretprobe_exit(void)
--{
--	unregister_kretprobe(&my_kretprobe);
--	printk("kretprobe unregistered\n");
--	/* nmissed > 0 suggests that maxactive was set too low. */
--	printk("Missed probing %d instances of %s\n",
--	       my_kretprobe.nmissed, probed_func);
--}
--
--module_init(kretprobe_init)
--module_exit(kretprobe_exit)
--MODULE_LICENSE("GPL");
------- cut here -----
--
--Build and insert the kernel module as shown in the above kprobe
--example.  You will see the trace data in /var/log/messages and on the
--console whenever sys_open() returns a negative value.  (Some messages
--may be suppressed if syslogd is configured to eliminate duplicate
--messages.)
-+See samples/kprobes/kretprobe_example.c
- 
- For additional information on Kprobes, refer to the following URLs:
- http://www-106.ibm.com/developerworks/library/l-kprobes.html?ca=dgr-lnxw42Kprobe
-Index: linux-2.6.25-rc2/samples/Kconfig
-===================================================================
---- linux-2.6.25-rc2.orig/samples/Kconfig
-+++ linux-2.6.25-rc2/samples/Kconfig
-@@ -22,5 +22,16 @@ config SAMPLE_KOBJECT
- 
- 	  If in doubt, say "N" here.
- 
-+config SAMPLE_KPROBES
-+	tristate "Build kprobes examples -- loadable modules only"
-+	depends on KPROBES && m
-+	help
-+	  This build several kprobes example modules.
-+
-+config SAMPLE_KRETPROBES
-+	tristate "Build kretprobes example -- loadable modules only"
-+	default m
-+	depends on SAMPLE_KPROBES && KRETPROBES
-+
- endif # SAMPLES
- 
-Index: linux-2.6.25-rc2/samples/Makefile
-===================================================================
---- linux-2.6.25-rc2.orig/samples/Makefile
-+++ linux-2.6.25-rc2/samples/Makefile
-@@ -1,3 +1,3 @@
- # Makefile for Linux samples code
- 
--obj-$(CONFIG_SAMPLES)	+= markers/ kobject/
-+obj-$(CONFIG_SAMPLES)	+= markers/ kobject/ kprobes/
-Index: linux-2.6.25-rc2/samples/kprobes/Makefile
-===================================================================
---- /dev/null
-+++ linux-2.6.25-rc2/samples/kprobes/Makefile
-@@ -0,0 +1,5 @@
-+# builds the kprobes example kernel modules;
-+# then to use one (as root):  insmod <module_name.ko>
-+
-+obj-$(CONFIG_SAMPLE_KPROBES) += kprobe_example.o jprobe_example.o
-+obj-$(CONFIG_SAMPLE_KRETPROBES) += kretprobe_example.o
-Index: linux-2.6.25-rc2/samples/kprobes/jprobe_example.c
-===================================================================
---- /dev/null
-+++ linux-2.6.25-rc2/samples/kprobes/jprobe_example.c
-@@ -0,0 +1,68 @@
-+/*
-+ * Here's a sample kernel module showing the use of jprobes to dump
-+ * the arguments of do_fork().
-+ *
-+ * For more information on theory of operation of jprobes, see
-+ * Documentation/kprobes.txt
-+ *
-+ * Build and insert the kernel module as done in the kprobe example.
-+ * You will see the trace data in /var/log/messages and on the
-+ * console whenever do_fork() is invoked to create a new process.
-+ * (Some messages may be suppressed if syslogd is configured to
-+ * eliminate duplicate messages.)
-+ */
-+
-+#include <linux/kernel.h>
-+#include <linux/module.h>
-+#include <linux/kprobes.h>
-+
-+/*
-+ * Jumper probe for do_fork.
-+ * Mirror principle enables access to arguments of the probed routine
-+ * from the probe handler.
-+ */
-+
-+/* Proxy routine having the same arguments as actual do_fork() routine */
-+static long jdo_fork(unsigned long clone_flags, unsigned long stack_start,
-+	      struct pt_regs *regs, unsigned long stack_size,
-+	      int __user *parent_tidptr, int __user *child_tidptr)
-+{
-+	printk(KERN_INFO "jprobe: clone_flags = 0x%lx, stack_size = 0x%lx,"
-+			" regs = 0x%p\n",
-+	       clone_flags, stack_size, regs);
-+
-+	/* Always end with a call to jprobe_return(). */
-+	jprobe_return();
-+	return 0;
-+}
-+
-+static struct jprobe my_jprobe = {
-+	.entry			= jdo_fork,
-+	.kp = {
-+		.symbol_name	= "do_fork",
-+	},
-+};
-+
-+static int __init jprobe_init(void)
-+{
-+	int ret;
-+
-+	ret = register_jprobe(&my_jprobe);
-+	if (ret < 0) {
-+		printk(KERN_INFO "register_jprobe failed, returned %d\n", ret);
-+		return -1;
-+	}
-+	printk(KERN_INFO "Planted jprobe at %p, handler addr %p\n",
-+	       my_jprobe.kp.addr, my_jprobe.entry);
-+	return 0;
-+}
-+
-+static void __exit jprobe_exit(void)
-+{
-+	unregister_jprobe(&my_jprobe);
-+	printk(KERN_INFO "jprobe at %p unregistered\n", my_jprobe.kp.addr);
-+}
-+
-+module_init(jprobe_init)
-+module_exit(jprobe_exit)
-+MODULE_LICENSE("GPL");
-Index: linux-2.6.25-rc2/samples/kprobes/kprobe_example.c
-===================================================================
---- /dev/null
-+++ linux-2.6.25-rc2/samples/kprobes/kprobe_example.c
-@@ -0,0 +1,91 @@
-+/*
-+ * NOTE: This example is works on x86 and powerpc.
-+ * Here's a sample kernel module showing the use of kprobes to dump a
-+ * stack trace and selected registers when do_fork() is called.
-+ *
-+ * For more information on theory of operation of kprobes, see
-+ * Documentation/kprobes.txt
-+ *
-+ * You will see the trace data in /var/log/messages and on the console
-+ * whenever do_fork() is invoked to create a new process.
-+ */
-+
-+#include <linux/kernel.h>
-+#include <linux/module.h>
-+#include <linux/kprobes.h>
-+
-+/* For each probe you need to allocate a kprobe structure */
-+static struct kprobe kp = {
-+	.symbol_name	= "do_fork",
-+};
-+
-+/* kprobe pre_handler: called just before the probed instruction is executed */
-+static int handler_pre(struct kprobe *p, struct pt_regs *regs)
-+{
-+#ifdef CONFIG_X86
-+	printk(KERN_INFO "pre_handler: p->addr = 0x%p, ip = %lx,"
-+			" flags = 0x%lx\n",
-+		p->addr, regs->ip, regs->flags);
-+#endif
-+#ifdef CONFIG_PPC
-+	printk(KERN_INFO "pre_handler: p->addr = 0x%p, nip = 0x%lx,"
-+			" msr = 0x%lx\n",
-+		p->addr, regs->nip, regs->msr);
-+#endif
-+
-+	/* A dump_stack() here will give a stack backtrace */
-+	return 0;
-+}
-+
-+/* kprobe post_handler: called after the probed instruction is executed */
-+static void handler_post(struct kprobe *p, struct pt_regs *regs,
-+				unsigned long flags)
-+{
-+#ifdef CONFIG_X86
-+	printk(KERN_INFO "post_handler: p->addr = 0x%p, flags = 0x%lx\n",
-+		p->addr, regs->flags);
-+#endif
-+#ifdef CONFIG_PPC
-+	printk(KERN_INFO "post_handler: p->addr = 0x%p, msr = 0x%lx\n",
-+		p->addr, regs->msr);
-+#endif
-+}
-+
-+/*
-+ * fault_handler: this is called if an exception is generated for any
-+ * instruction within the pre- or post-handler, or when Kprobes
-+ * single-steps the probed instruction.
-+ */
-+static int handler_fault(struct kprobe *p, struct pt_regs *regs, int trapnr)
-+{
-+	printk(KERN_INFO "fault_handler: p->addr = 0x%p, trap #%dn",
-+		p->addr, trapnr);
-+	/* Return 0 because we don't handle the fault. */
-+	return 0;
-+}
-+
-+static int __init kprobe_init(void)
-+{
-+	int ret;
-+	kp.pre_handler = handler_pre;
-+	kp.post_handler = handler_post;
-+	kp.fault_handler = handler_fault;
-+
-+	ret = register_kprobe(&kp);
-+	if (ret < 0) {
-+		printk(KERN_INFO "register_kprobe failed, returned %d\n", ret);
-+		return ret;
-+	}
-+	printk(KERN_INFO "Planted kprobe at %p\n", kp.addr);
-+	return 0;
-+}
-+
-+static void __exit kprobe_exit(void)
-+{
-+	unregister_kprobe(&kp);
-+	printk(KERN_INFO "kprobe at %p unregistered\n", kp.addr);
-+}
-+
-+module_init(kprobe_init)
-+module_exit(kprobe_exit)
-+MODULE_LICENSE("GPL");
-Index: linux-2.6.25-rc2/samples/kprobes/kretprobe_example.c
-===================================================================
---- /dev/null
-+++ linux-2.6.25-rc2/samples/kprobes/kretprobe_example.c
-@@ -0,0 +1,106 @@
-+/*
-+ * kretprobe_example.c
-+ *
-+ * Here's a sample kernel module showing the use of return probes to
-+ * report the return value and total time taken for probed function
-+ * to run.
-+ *
-+ * usage: insmod kretprobe_example.ko func=<func_name>
-+ *
-+ * If no func_name is specified, do_fork is instrumented
-+ *
-+ * For more information on theory of operation of kretprobes, see
-+ * Documentation/kprobes.txt
-+ *
-+ * Build and insert the kernel module as done in the kprobe example.
-+ * You will see the trace data in /var/log/messages and on the console
-+ * whenever the probed function returns. (Some messages may be suppressed
-+ * if syslogd is configured to eliminate duplicate messages.)
-+ */
-+
-+#include <linux/kernel.h>
-+#include <linux/module.h>
-+#include <linux/kprobes.h>
-+#include <linux/ktime.h>
-+#include <linux/limits.h>
-+
-+static char func_name[NAME_MAX] = "do_fork";
-+module_param_string(func, func_name, NAME_MAX, S_IRUGO);
-+MODULE_PARM_DESC(func, "Function to kretprobe; this module will report the"
-+			" function's execution time");
-+
-+/* per-instance private data */
-+struct my_data {
-+	ktime_t entry_stamp;
-+};
-+
-+/* Here we use the entry_hanlder to timestamp function entry */
-+static int entry_handler(struct kretprobe_instance *ri, struct pt_regs *regs)
-+{
-+	struct my_data *data;
-+
-+	if (!current->mm)
-+		return 1;	/* Skip kernel threads */
-+
-+	data = (struct my_data *)ri->data;
-+	data->entry_stamp = ktime_get();
-+	return 0;
-+}
-+
-+/*
-+ * Return-probe handler: Log the return value and duration. Duration may turn
-+ * out to be zero consistently, depending upon the granularity of time
-+ * accounting on the platform.
-+ */
-+static int ret_handler(struct kretprobe_instance *ri, struct pt_regs *regs)
-+{
-+	int retval = regs_return_value(regs);
-+	struct my_data *data = (struct my_data *)ri->data;
-+	s64 delta;
-+	ktime_t now;
-+
-+	now = ktime_get();
-+	delta = ktime_to_ns(ktime_sub(now, data->entry_stamp));
-+	printk(KERN_INFO "%s returned %d and took %lld ns to execute\n",
-+			func_name, retval, (long long)delta);
-+	return 0;
-+}
-+
-+static struct kretprobe my_kretprobe = {
-+	.handler		= ret_handler,
-+	.entry_handler		= entry_handler,
-+	.data_size		= sizeof(struct my_data),
-+	/* Probe up to 20 instances concurrently. */
-+	.maxactive		= 20,
-+};
-+
-+static int __init kretprobe_init(void)
-+{
-+	int ret;
-+
-+	my_kretprobe.kp.symbol_name = func_name;
-+	ret = register_kretprobe(&my_kretprobe);
-+	if (ret < 0) {
-+		printk(KERN_INFO "register_kretprobe failed, returned %d\n",
-+				ret);
-+		return -1;
-+	}
-+	printk(KERN_INFO "Planted return probe at %s: %p\n",
-+			my_kretprobe.kp.symbol_name, my_kretprobe.kp.addr);
-+	return 0;
-+}
-+
-+static void __exit kretprobe_exit(void)
-+{
-+	unregister_kretprobe(&my_kretprobe);
-+	printk(KERN_INFO "kretprobe at %p unregistered\n",
-+			my_kretprobe.kp.addr);
-+
-+	/* nmissed > 0 suggests that maxactive was set too low. */
-+	printk(KERN_INFO "Missed probing %d instances of %s\n",
-+		my_kretprobe.nmissed, my_kretprobe.kp.symbol_name);
-+}
-+
-+module_init(kretprobe_init)
-+module_exit(kretprobe_exit)
-+MODULE_LICENSE("GPL");
+I'm entering the option 'hda=noprobe' (as one example) right after my boot
+label in LILO.  The dmesg output I attached last time was a boot of straight
+2.6.25-rc2 without any options; I've attached 'dmesg.noprobe.out' which is
+the result of a boot with 'hda=noprobe'.
+
+I must have done something stupid, but I can't see what; if you look at this
+line from the dmesg output:
+
+Kernel command line: BOOT_IMAGE=linux_2.6.25rc2 ro root=900
+md=0,/dev/sda5,/dev/sdb5 hda=noprobe
+
+... it would suggest the option 'hda=noprobe' was entered correctly?
+
+>  > I tried to apply the patch but failed; I probably did something wrong.
+>  > I deleted everything in your message above 'Index: b/drivers/ide/ide-cd.c'
+>  > and ran 'patch --dry-run -b -p1 < ../bart_patch'.  This is part of my script
+>  > log:
+>
+>  are you sure you're _really_ using 2.6.25-rc2? Applying the patch against that
+>  kernel works just fine, no fuzziness or even rejects. Care to try out on a fresh
+>  kernel source tarball? After all, building a kernel with your quad core cpu won't
+>  take that long :-) when using make -j8 or something in that order.
+
+Heh.  This is my first new machine in 8 years, and I couldn't wait to start
+using multiple cores.  I was quick to discover the '-j' option ... but I only
+do '-j 4'.  Anyway ... I'd downloaded the full baseline linux-2.6.24.tar.bz2,
+unpacked it, and then ran the patch patch-2.6.25-rc2.bz2 against it.  That
+patch ran perfectly.  And I was in the right directory when I ran Bart's patch,
+as I listed in my earlier e-mail!  All indications were that I was running the
+2.6.25-rc2 kernel as required, I thought.
+
+Well, I see that rc3 is out; maybe I'll give that a shot.
+
+
+Brad
+
+------=_Part_6413_7451160.1203919026616
+Content-Type: application/octet-stream; name=dmesg.noprobe.out
+Content-Transfer-Encoding: base64
+X-Attachment-Id: f_fd2lxg8m0
+Content-Disposition: attachment; filename=dmesg.noprobe.out
+
+TGludXggdmVyc2lvbiAyLjYuMjUtcmMyIChyb290QGtyeXB0b24pIChnY2MgdmVyc2lvbiA0LjEu
+MikgIzEgU01QIE1vbiBGZWIgMjUgMDg6NDk6NDQgRVNUIDIwMDgKQklPUy1wcm92aWRlZCBwaHlz
+aWNhbCBSQU0gbWFwOgogQklPUy1lODIwOiAwMDAwMDAwMDAwMDAwMDAwIC0gMDAwMDAwMDAwMDA5
+ZTgwMCAodXNhYmxlKQogQklPUy1lODIwOiAwMDAwMDAwMDAwMDlmODAwIC0gMDAwMDAwMDAwMDBh
+MDAwMCAocmVzZXJ2ZWQpCiBCSU9TLWU4MjA6IDAwMDAwMDAwMDAwZjAwMDAgLSAwMDAwMDAwMDAw
+MTAwMDAwIChyZXNlcnZlZCkKIEJJT1MtZTgyMDogMDAwMDAwMDAwMDEwMDAwMCAtIDAwMDAwMDAw
+YmZlZTAwMDAgKHVzYWJsZSkKIEJJT1MtZTgyMDogMDAwMDAwMDBiZmVlMDAwMCAtIDAwMDAwMDAw
+YmZlZTMwMDAgKEFDUEkgTlZTKQogQklPUy1lODIwOiAwMDAwMDAwMGJmZWUzMDAwIC0gMDAwMDAw
+MDBiZmVmMDAwMCAoQUNQSSBkYXRhKQogQklPUy1lODIwOiAwMDAwMDAwMGJmZWYwMDAwIC0gMDAw
+MDAwMDBiZmYwMDAwMCAocmVzZXJ2ZWQpCiBCSU9TLWU4MjA6IDAwMDAwMDAwZTAwMDAwMDAgLSAw
+MDAwMDAwMGU0MDAwMDAwIChyZXNlcnZlZCkKIEJJT1MtZTgyMDogMDAwMDAwMDBmZWMwMDAwMCAt
+IDAwMDAwMDAxMDAwMDAwMDAgKHJlc2VydmVkKQogQklPUy1lODIwOiAwMDAwMDAwMTAwMDAwMDAw
+IC0gMDAwMDAwMDE0MDAwMDAwMCAodXNhYmxlKQo0MjI0TUIgSElHSE1FTSBhdmFpbGFibGUuCjg5
+Nk1CIExPV01FTSBhdmFpbGFibGUuClNjYW4gU01QIGZyb20gYzAwMDAwMDAgZm9yIDEwMjQgYnl0
+ZXMuClNjYW4gU01QIGZyb20gYzAwOWZjMDAgZm9yIDEwMjQgYnl0ZXMuClNjYW4gU01QIGZyb20g
+YzAwZjAwMDAgZm9yIDY1NTM2IGJ5dGVzLgpmb3VuZCBTTVAgTVAtdGFibGUgYXQgW2MwMGY1M2Iw
+XSAwMDBmNTNiMApOWCAoRXhlY3V0ZSBEaXNhYmxlKSBwcm90ZWN0aW9uOiBhY3RpdmUKRW50ZXJp
+bmcgYWRkX2FjdGl2ZV9yYW5nZSgwLCAwLCAxMzEwNzIwKSAwIGVudHJpZXMgb2YgMjU2IHVzZWQK
+Wm9uZSBQRk4gcmFuZ2VzOgogIERNQSAgICAgICAgICAgICAwIC0+ICAgICA0MDk2CiAgTm9ybWFs
+ICAgICAgIDQwOTYgLT4gICAyMjkzNzYKICBIaWdoTWVtICAgIDIyOTM3NiAtPiAgMTMxMDcyMApN
+b3ZhYmxlIHpvbmUgc3RhcnQgUEZOIGZvciBlYWNoIG5vZGUKZWFybHlfbm9kZV9tYXBbMV0gYWN0
+aXZlIFBGTiByYW5nZXMKICAgIDA6ICAgICAgICAwIC0+ICAxMzEwNzIwCk9uIG5vZGUgMCB0b3Rh
+bHBhZ2VzOiAxMzEwNzIwCiAgRE1BIHpvbmU6IDMyIHBhZ2VzIHVzZWQgZm9yIG1lbW1hcAogIERN
+QSB6b25lOiAwIHBhZ2VzIHJlc2VydmVkCiAgRE1BIHpvbmU6IDQwNjQgcGFnZXMsIExJRk8gYmF0
+Y2g6MAogIE5vcm1hbCB6b25lOiAxNzYwIHBhZ2VzIHVzZWQgZm9yIG1lbW1hcAogIE5vcm1hbCB6
+b25lOiAyMjM1MjAgcGFnZXMsIExJRk8gYmF0Y2g6MzEKICBIaWdoTWVtIHpvbmU6IDg0NDggcGFn
+ZXMgdXNlZCBmb3IgbWVtbWFwCiAgSGlnaE1lbSB6b25lOiAxMDcyODk2IHBhZ2VzLCBMSUZPIGJh
+dGNoOjMxCiAgTW92YWJsZSB6b25lOiAwIHBhZ2VzIHVzZWQgZm9yIG1lbW1hcApETUkgMi40IHBy
+ZXNlbnQuCkFDUEk6IFJTRFAgMDAwRjZEOTAsIDAwMTQgKHIwIEdCVCAgICkKQUNQSTogUlNEVCBC
+RkVFMzA0MCwgMDAzQyAocjEgR0JUICAgIEdCVFVBQ1BJIDQyMzAyRTMxIEdCVFUgIDEwMTAxMDEp
+CkFDUEk6IEZBQ1AgQkZFRTMwQzAsIDAwNzQgKHIxIEdCVCAgICBHQlRVQUNQSSA0MjMwMkUzMSBH
+QlRVICAxMDEwMTAxKQpBQ1BJOiBEU0RUIEJGRUUzMTgwLCA0QTg4IChyMSBHQlQgICAgR0JUVUFD
+UEkgICAgIDEwMDAgTVNGVCAgMTAwMDAwQykKQUNQSTogRkFDUyBCRkVFMDAwMCwgMDA0MApBQ1BJ
+OiBIUEVUIEJGRUU3RDgwLCAwMDM4IChyMSBHQlQgICAgR0JUVUFDUEkgNDIzMDJFMzEgR0JUVSAg
+ICAgICA5OCkKQUNQSTogTUNGRyBCRkVFN0UwMCwgMDAzQyAocjEgR0JUICAgIEdCVFVBQ1BJIDQy
+MzAyRTMxIEdCVFUgIDEwMTAxMDEpCkFDUEk6IEFQSUMgQkZFRTdDODAsIDAwODQgKHIxIEdCVCAg
+ICBHQlRVQUNQSSA0MjMwMkUzMSBHQlRVICAxMDEwMTAxKQpBQ1BJOiBTU0RUIEJGRUU3RTgwLCAw
+MTVDIChyMSAgUG1SZWYgIENwdTBJc3QgICAgIDMwMDAgSU5UTCAyMDA0MDMxMSkKQUNQSTogU1NE
+VCBCRkVFODQzMCwgMDI3NSAocjEgIFBtUmVmICAgIENwdVBtICAgICAzMDAwIElOVEwgMjAwNDAz
+MTEpCkFDUEk6IFBNLVRpbWVyIElPIFBvcnQ6IDB4NDA4CkFDUEk6IExvY2FsIEFQSUMgYWRkcmVz
+cyAweGZlZTAwMDAwCkFDUEk6IExBUElDIChhY3BpX2lkWzB4MDBdIGxhcGljX2lkWzB4MDBdIGVu
+YWJsZWQpClByb2Nlc3NvciAjMCA2OjE1IEFQSUMgdmVyc2lvbiAyMApBQ1BJOiBMQVBJQyAoYWNw
+aV9pZFsweDAxXSBsYXBpY19pZFsweDAxXSBlbmFibGVkKQpQcm9jZXNzb3IgIzEgNjoxNSBBUElD
+IHZlcnNpb24gMjAKQUNQSTogTEFQSUMgKGFjcGlfaWRbMHgwMl0gbGFwaWNfaWRbMHgwM10gZW5h
+YmxlZCkKUHJvY2Vzc29yICMzIDY6MTUgQVBJQyB2ZXJzaW9uIDIwCkFDUEk6IExBUElDIChhY3Bp
+X2lkWzB4MDNdIGxhcGljX2lkWzB4MDJdIGVuYWJsZWQpClByb2Nlc3NvciAjMiA2OjE1IEFQSUMg
+dmVyc2lvbiAyMApBQ1BJOiBMQVBJQ19OTUkgKGFjcGlfaWRbMHgwMF0gZGZsIGRmbCBsaW50WzB4
+MV0pCkFDUEk6IExBUElDX05NSSAoYWNwaV9pZFsweDAxXSBkZmwgZGZsIGxpbnRbMHgxXSkKQUNQ
+STogTEFQSUNfTk1JIChhY3BpX2lkWzB4MDJdIGRmbCBkZmwgbGludFsweDFdKQpBQ1BJOiBMQVBJ
+Q19OTUkgKGFjcGlfaWRbMHgwM10gZGZsIGRmbCBsaW50WzB4MV0pCkFDUEk6IElPQVBJQyAoaWRb
+MHgwMl0gYWRkcmVzc1sweGZlYzAwMDAwXSBnc2lfYmFzZVswXSkKSU9BUElDWzBdOiBhcGljX2lk
+IDIsIHZlcnNpb24gMzIsIGFkZHJlc3MgMHhmZWMwMDAwMCwgR1NJIDAtMjMKQUNQSTogSU5UX1NS
+Q19PVlIgKGJ1cyAwIGJ1c19pcnEgMCBnbG9iYWxfaXJxIDIgZGZsIGRmbCkKQUNQSTogSU5UX1NS
+Q19PVlIgKGJ1cyAwIGJ1c19pcnEgOSBnbG9iYWxfaXJxIDkgaGlnaCBsZXZlbCkKQUNQSTogSVJR
+MCB1c2VkIGJ5IG92ZXJyaWRlLgpBQ1BJOiBJUlEyIHVzZWQgYnkgb3ZlcnJpZGUuCkFDUEk6IElS
+UTkgdXNlZCBieSBvdmVycmlkZS4KRW5hYmxpbmcgQVBJQyBtb2RlOiAgRmxhdC4gIFVzaW5nIDEg
+SS9PIEFQSUNzCkFDUEk6IEhQRVQgaWQ6IDB4ODA4NmEyMDEgYmFzZTogMHhmZWQwMDAwMApVc2lu
+ZyBBQ1BJIChNQURUKSBmb3IgU01QIGNvbmZpZ3VyYXRpb24gaW5mb3JtYXRpb24KQWxsb2NhdGlu
+ZyBQQ0kgcmVzb3VyY2VzIHN0YXJ0aW5nIGF0IGMwMDAwMDAwIChnYXA6IGJmZjAwMDAwOjIwMTAw
+MDAwKQpCdWlsdCAxIHpvbmVsaXN0cyBpbiBab25lIG9yZGVyLCBtb2JpbGl0eSBncm91cGluZyBv
+bi4gIFRvdGFsIHBhZ2VzOiAxMzAwNDgwCktlcm5lbCBjb21tYW5kIGxpbmU6IEJPT1RfSU1BR0U9
+bGludXhfMi42LjI1cmMyIHJvIHJvb3Q9OTAwIG1kPTAsL2Rldi9zZGE1LC9kZXYvc2RiNSBoZGE9
+bm9wcm9iZQptZDogV2lsbCBjb25maWd1cmUgbWQwIChzdXBlci1ibG9jaykgZnJvbSAvZGV2L3Nk
+YTUsL2Rldi9zZGI1LCBiZWxvdy4KbWFwcGVkIEFQSUMgdG8gZmZmZmIwMDAgKGZlZTAwMDAwKQpt
+YXBwZWQgSU9BUElDIHRvIGZmZmZhMDAwIChmZWMwMDAwMCkKRW5hYmxpbmcgZmFzdCBGUFUgc2F2
+ZSBhbmQgcmVzdG9yZS4uLiBkb25lLgpFbmFibGluZyB1bm1hc2tlZCBTSU1EIEZQVSBleGNlcHRp
+b24gc3VwcG9ydC4uLiBkb25lLgpJbml0aWFsaXppbmcgQ1BVIzAKUElEIGhhc2ggdGFibGUgZW50
+cmllczogNDA5NiAob3JkZXI6IDEyLCAxNjM4NCBieXRlcykKRGV0ZWN0ZWQgMjQwMC4wNTMgTUh6
+IHByb2Nlc3Nvci4KQ29uc29sZTogY29sb3VyIGR1bW15IGRldmljZSA4MHgyNQpjb25zb2xlIFt0
+dHkwXSBlbmFibGVkCkRlbnRyeSBjYWNoZSBoYXNoIHRhYmxlIGVudHJpZXM6IDEzMTA3MiAob3Jk
+ZXI6IDcsIDUyNDI4OCBieXRlcykKSW5vZGUtY2FjaGUgaGFzaCB0YWJsZSBlbnRyaWVzOiA2NTUz
+NiAob3JkZXI6IDYsIDI2MjE0NCBieXRlcykKTWVtb3J5OiA0MTQ3MTY4ay81MjQyODgwayBhdmFp
+bGFibGUgKDE3MjFrIGtlcm5lbCBjb2RlLCA0NDg2OGsgcmVzZXJ2ZWQsIDcxOGsgZGF0YSwgMjIw
+ayBpbml0LCAzMjc1NjQ4ayBoaWdobWVtKQp2aXJ0dWFsIGtlcm5lbCBtZW1vcnkgbGF5b3V0Ogog
+ICAgZml4bWFwICA6IDB4ZmZmODEwMDAgLSAweGZmZmZmMDAwICAgKCA1MDQga0IpCiAgICBwa21h
+cCAgIDogMHhmZmEwMDAwMCAtIDB4ZmZjMDAwMDAgICAoMjA0OCBrQikKICAgIHZtYWxsb2MgOiAw
+eGY4ODAwMDAwIC0gMHhmZjlmZTAwMCAgICggMTEzIE1CKQogICAgbG93bWVtICA6IDB4YzAwMDAw
+MDAgLSAweGY4MDAwMDAwICAgKCA4OTYgTUIpCiAgICAgIC5pbml0IDogMHhjMDM2NzAwMCAtIDB4
+YzAzOWUwMDAgICAoIDIyMCBrQikKICAgICAgLmRhdGEgOiAweGMwMmFlNDJjIC0gMHhjMDM2MWU2
+MCAgICggNzE4IGtCKQogICAgICAudGV4dCA6IDB4YzAxMDAwMDAgLSAweGMwMmFlNDJjICAgKDE3
+MjEga0IpCkNoZWNraW5nIGlmIHRoaXMgcHJvY2Vzc29yIGhvbm91cnMgdGhlIFdQIGJpdCBldmVu
+IGluIHN1cGVydmlzb3IgbW9kZS4uLk9rLgpDUEE6IHBhZ2UgcG9vbCBpbml0aWFsaXplZCA2NCBv
+ZiA2NCBwYWdlcyBwcmVhbGxvY2F0ZWQKaHBldCBjbG9ja2V2ZW50IHJlZ2lzdGVyZWQKQ2FsaWJy
+YXRpbmcgZGVsYXkgdXNpbmcgdGltZXIgc3BlY2lmaWMgcm91dGluZS4uIDQ4MDIuNjQgQm9nb01J
+UFMgKGxwaj0yNDAxMzIyKQpNb3VudC1jYWNoZSBoYXNoIHRhYmxlIGVudHJpZXM6IDUxMgpDUFU6
+IEwxIEkgY2FjaGU6IDMySywgTDEgRCBjYWNoZTogMzJLCkNQVTogTDIgY2FjaGU6IDQwOTZLCkNQ
+VTogUGh5c2ljYWwgUHJvY2Vzc29yIElEOiAwCkNQVTogUHJvY2Vzc29yIENvcmUgSUQ6IDAKSW50
+ZWwgbWFjaGluZSBjaGVjayBhcmNoaXRlY3R1cmUgc3VwcG9ydGVkLgpJbnRlbCBtYWNoaW5lIGNo
+ZWNrIHJlcG9ydGluZyBlbmFibGVkIG9uIENQVSMwLgp1c2luZyBtd2FpdCBpbiBpZGxlIHRocmVh
+ZHMuCkNvbXBhdCB2RFNPIG1hcHBlZCB0byBmZmZmZTAwMC4KQ2hlY2tpbmcgJ2hsdCcgaW5zdHJ1
+Y3Rpb24uLi4gT0suCkFDUEk6IENvcmUgcmV2aXNpb24gMjAwNzAxMjYKQ1BVMDogSW50ZWwoUikg
+Q29yZShUTSkyIFF1YWQgQ1BVICAgIFE2NjAwICBAIDIuNDBHSHogc3RlcHBpbmcgMGIKQm9vdGlu
+ZyBwcm9jZXNzb3IgMS8xIGlwIDQwMDAKSW5pdGlhbGl6aW5nIENQVSMxCkNhbGlicmF0aW5nIGRl
+bGF5IHVzaW5nIHRpbWVyIHNwZWNpZmljIHJvdXRpbmUuLiA0Nzk5Ljk5IEJvZ29NSVBTIChscGo9
+MjM5OTk5NSkKQ1BVOiBMMSBJIGNhY2hlOiAzMkssIEwxIEQgY2FjaGU6IDMySwpDUFU6IEwyIGNh
+Y2hlOiA0MDk2SwpDUFU6IFBoeXNpY2FsIFByb2Nlc3NvciBJRDogMApDUFU6IFByb2Nlc3NvciBD
+b3JlIElEOiAxCkludGVsIG1hY2hpbmUgY2hlY2sgYXJjaGl0ZWN0dXJlIHN1cHBvcnRlZC4KSW50
+ZWwgbWFjaGluZSBjaGVjayByZXBvcnRpbmcgZW5hYmxlZCBvbiBDUFUjMS4KQ1BVMTogSW50ZWwo
+UikgQ29yZShUTSkyIFF1YWQgQ1BVICAgIFE2NjAwICBAIDIuNDBHSHogc3RlcHBpbmcgMGIKQm9v
+dGluZyBwcm9jZXNzb3IgMi8yIGlwIDQwMDAKSW5pdGlhbGl6aW5nIENQVSMyCkNhbGlicmF0aW5n
+IGRlbGF5IHVzaW5nIHRpbWVyIHNwZWNpZmljIHJvdXRpbmUuLiA0ODAwLjAxIEJvZ29NSVBTIChs
+cGo9MjQwMDAwOSkKQ1BVOiBMMSBJIGNhY2hlOiAzMkssIEwxIEQgY2FjaGU6IDMySwpDUFU6IEwy
+IGNhY2hlOiA0MDk2SwpDUFU6IFBoeXNpY2FsIFByb2Nlc3NvciBJRDogMApDUFU6IFByb2Nlc3Nv
+ciBDb3JlIElEOiAyCkludGVsIG1hY2hpbmUgY2hlY2sgYXJjaGl0ZWN0dXJlIHN1cHBvcnRlZC4K
+SW50ZWwgbWFjaGluZSBjaGVjayByZXBvcnRpbmcgZW5hYmxlZCBvbiBDUFUjMi4KQ1BVMjogSW50
+ZWwoUikgQ29yZShUTSkyIFF1YWQgQ1BVICAgIFE2NjAwICBAIDIuNDBHSHogc3RlcHBpbmcgMGIK
+Qm9vdGluZyBwcm9jZXNzb3IgMy8zIGlwIDQwMDAKSW5pdGlhbGl6aW5nIENQVSMzCkNhbGlicmF0
+aW5nIGRlbGF5IHVzaW5nIHRpbWVyIHNwZWNpZmljIHJvdXRpbmUuLiA0ODAwLjAwIEJvZ29NSVBT
+IChscGo9MjQwMDAwNCkKQ1BVOiBMMSBJIGNhY2hlOiAzMkssIEwxIEQgY2FjaGU6IDMySwpDUFU6
+IEwyIGNhY2hlOiA0MDk2SwpDUFU6IFBoeXNpY2FsIFByb2Nlc3NvciBJRDogMApDUFU6IFByb2Nl
+c3NvciBDb3JlIElEOiAzCkludGVsIG1hY2hpbmUgY2hlY2sgYXJjaGl0ZWN0dXJlIHN1cHBvcnRl
+ZC4KSW50ZWwgbWFjaGluZSBjaGVjayByZXBvcnRpbmcgZW5hYmxlZCBvbiBDUFUjMy4KQ1BVMzog
+SW50ZWwoUikgQ29yZShUTSkyIFF1YWQgQ1BVICAgIFE2NjAwICBAIDIuNDBHSHogc3RlcHBpbmcg
+MGIKVG90YWwgb2YgNCBwcm9jZXNzb3JzIGFjdGl2YXRlZCAoMTkyMDIuNjYgQm9nb01JUFMpLgpF
+TkFCTElORyBJTy1BUElDIElSUXMKLi5USU1FUjogdmVjdG9yPTB4MzEgYXBpYzE9MCBwaW4xPTIg
+YXBpYzI9LTEgcGluMj0tMQpjaGVja2luZyBUU0Mgc3luY2hyb25pemF0aW9uIFtDUFUjMCAtPiBD
+UFUjMV06IHBhc3NlZC4KY2hlY2tpbmcgVFNDIHN5bmNocm9uaXphdGlvbiBbQ1BVIzAgLT4gQ1BV
+IzJdOiBwYXNzZWQuCmNoZWNraW5nIFRTQyBzeW5jaHJvbml6YXRpb24gW0NQVSMwIC0+IENQVSMz
+XTogcGFzc2VkLgpCcm91Z2h0IHVwIDQgQ1BVcwpuZXRfbmFtZXNwYWNlOiA1NDggYnl0ZXMKTkVU
+OiBSZWdpc3RlcmVkIHByb3RvY29sIGZhbWlseSAxNgpBQ1BJOiBidXMgdHlwZSBwY2kgcmVnaXN0
+ZXJlZApQQ0k6IFVzaW5nIE1NQ09ORklHIGZvciBleHRlbmRlZCBjb25maWcgc3BhY2UKUENJOiBV
+c2luZyBjb25maWd1cmF0aW9uIHR5cGUgMQpTZXR0aW5nIHVwIHN0YW5kYXJkIFBDSSByZXNvdXJj
+ZXMKQUNQSTogRUM6IExvb2sgdXAgRUMgaW4gRFNEVApBQ1BJOiBJbnRlcnByZXRlciBlbmFibGVk
+CkFDUEk6IChzdXBwb3J0cyBTMCBTMyBTNSkKQUNQSTogVXNpbmcgSU9BUElDIGZvciBpbnRlcnJ1
+cHQgcm91dGluZwpBQ1BJOiBQQ0kgUm9vdCBCcmlkZ2UgW1BDSTBdICgwMDAwOjAwKQpwY2kgMDAw
+MDowMDoxZi4wOiBxdWlyazogcmVnaW9uIDA0MDAtMDQ3ZiBjbGFpbWVkIGJ5IElDSDYgQUNQSS9H
+UElPL1RDTwpwY2kgMDAwMDowMDoxZi4wOiBxdWlyazogcmVnaW9uIDA0ODAtMDRiZiBjbGFpbWVk
+IGJ5IElDSDYgR1BJTwpQQ0k6IFRyYW5zcGFyZW50IGJyaWRnZSAtIDAwMDA6MDA6MWUuMApBQ1BJ
+OiBQQ0kgSW50ZXJydXB0IFJvdXRpbmcgVGFibGUgW1xfU0JfLlBDSTAuX1BSVF0KQUNQSTogUENJ
+IEludGVycnVwdCBSb3V0aW5nIFRhYmxlIFtcX1NCXy5QQ0kwLlBFWDAuX1BSVF0KQUNQSTogUENJ
+IEludGVycnVwdCBSb3V0aW5nIFRhYmxlIFtcX1NCXy5QQ0kwLlBFWDQuX1BSVF0KQUNQSTogUENJ
+IEludGVycnVwdCBSb3V0aW5nIFRhYmxlIFtcX1NCXy5QQ0kwLlBFWDUuX1BSVF0KQUNQSTogUENJ
+IEludGVycnVwdCBSb3V0aW5nIFRhYmxlIFtcX1NCXy5QQ0kwLkhVQjAuX1BSVF0KQUNQSTogUENJ
+IEludGVycnVwdCBMaW5rIFtMTktBXSAoSVJRcyAzIDQgNSA2IDcgOSAxMCAqMTEgMTIgMTQgMTUp
+CkFDUEk6IFBDSSBJbnRlcnJ1cHQgTGluayBbTE5LQl0gKElSUXMgMyA0IDUgNiA3IDkgMTAgMTEg
+MTIgMTQgKjE1KQpBQ1BJOiBQQ0kgSW50ZXJydXB0IExpbmsgW0xOS0NdIChJUlFzIDMgNCAqNSA2
+IDcgOSAxMCAxMSAxMiAxNCAxNSkKQUNQSTogUENJIEludGVycnVwdCBMaW5rIFtMTktEXSAoSVJR
+cyAzIDQgNSA2IDcgOSAqMTAgMTEgMTIgMTQgMTUpCkFDUEk6IFBDSSBJbnRlcnJ1cHQgTGluayBb
+TE5LRV0gKElSUXMgMyA0IDUgNiA3IDkgMTAgMTEgMTIgMTQgMTUpICowLCBkaXNhYmxlZC4KQUNQ
+STogUENJIEludGVycnVwdCBMaW5rIFtMTktGXSAoSVJRcyAzIDQgNSA2IDcgKjkgMTAgMTEgMTIg
+MTQgMTUpCkFDUEk6IFBDSSBJbnRlcnJ1cHQgTGluayBbTE5LMF0gKElSUXMgMyA0IDUgNiA3IDkg
+MTAgMTEgMTIgKjE0IDE1KQpBQ1BJOiBQQ0kgSW50ZXJydXB0IExpbmsgW0xOSzFdIChJUlFzICoz
+IDQgNSA2IDcgOSAxMCAxMSAxMiAxNCAxNSkKTGludXggUGx1ZyBhbmQgUGxheSBTdXBwb3J0IHYw
+Ljk3IChjKSBBZGFtIEJlbGF5CnBucDogUG5QIEFDUEkgaW5pdApBQ1BJOiBidXMgdHlwZSBwbnAg
+cmVnaXN0ZXJlZApwbnBhY3BpOiBleGNlZWRlZCB0aGUgbWF4IG51bWJlciBvZiBtZW0gcmVzb3Vy
+Y2VzOiAxMgpwbnA6IFBuUCBBQ1BJOiBmb3VuZCAxNSBkZXZpY2VzCkFDUEk6IEFDUEkgYnVzIHR5
+cGUgcG5wIHVucmVnaXN0ZXJlZApTQ1NJIHN1YnN5c3RlbSBpbml0aWFsaXplZApsaWJhdGEgdmVy
+c2lvbiAzLjAwIGxvYWRlZC4KUENJOiBVc2luZyBBQ1BJIGZvciBJUlEgcm91dGluZwpQQ0k6IElm
+IGEgZGV2aWNlIGRvZXNuJ3Qgd29yaywgdHJ5ICJwY2k9cm91dGVpcnEiLiAgSWYgaXQgaGVscHMs
+IHBvc3QgYSByZXBvcnQKVGltZTogdHNjIGNsb2Nrc291cmNlIGhhcyBiZWVuIGluc3RhbGxlZC4K
+c3lzdGVtIDAwOjAxOiBpb3BvcnQgcmFuZ2UgMHg0ZDAtMHg0ZDEgaGFzIGJlZW4gcmVzZXJ2ZWQK
+c3lzdGVtIDAwOjAxOiBpb3BvcnQgcmFuZ2UgMHgyOTAtMHgyOWYgaGFzIGJlZW4gcmVzZXJ2ZWQK
+c3lzdGVtIDAwOjAxOiBpb3BvcnQgcmFuZ2UgMHg4MDAtMHg4N2YgaGFzIGJlZW4gcmVzZXJ2ZWQK
+c3lzdGVtIDAwOjAxOiBpb3BvcnQgcmFuZ2UgMHgyOTAtMHgyOTQgaGFzIGJlZW4gcmVzZXJ2ZWQK
+c3lzdGVtIDAwOjAxOiBpb3BvcnQgcmFuZ2UgMHg4ODAtMHg4OGYgaGFzIGJlZW4gcmVzZXJ2ZWQK
+c3lzdGVtIDAwOjBiOiBpb3BvcnQgcmFuZ2UgMHg0MDAtMHg0YmYgY291bGQgbm90IGJlIHJlc2Vy
+dmVkCnN5c3RlbSAwMDowYzogaW9tZW0gcmFuZ2UgMHhlMDAwMDAwMC0weGUzZmZmZmZmIGNvdWxk
+IG5vdCBiZSByZXNlcnZlZApzeXN0ZW0gMDA6MGQ6IGlvbWVtIHJhbmdlIDB4ZDUwMDAtMHhkN2Zm
+ZiBoYXMgYmVlbiByZXNlcnZlZApzeXN0ZW0gMDA6MGQ6IGlvbWVtIHJhbmdlIDB4ZjAwMDAtMHhm
+N2ZmZiBjb3VsZCBub3QgYmUgcmVzZXJ2ZWQKc3lzdGVtIDAwOjBkOiBpb21lbSByYW5nZSAweGY4
+MDAwLTB4ZmJmZmYgY291bGQgbm90IGJlIHJlc2VydmVkCnN5c3RlbSAwMDowZDogaW9tZW0gcmFu
+Z2UgMHhmYzAwMC0weGZmZmZmIGNvdWxkIG5vdCBiZSByZXNlcnZlZApzeXN0ZW0gMDA6MGQ6IGlv
+bWVtIHJhbmdlIDB4YmZlZTAwMDAtMHhiZmVmZmZmZiBjb3VsZCBub3QgYmUgcmVzZXJ2ZWQKc3lz
+dGVtIDAwOjBkOiBpb21lbSByYW5nZSAweDAtMHg5ZmZmZiBjb3VsZCBub3QgYmUgcmVzZXJ2ZWQK
+c3lzdGVtIDAwOjBkOiBpb21lbSByYW5nZSAweDEwMDAwMC0weGJmZWRmZmZmIGNvdWxkIG5vdCBi
+ZSByZXNlcnZlZApzeXN0ZW0gMDA6MGQ6IGlvbWVtIHJhbmdlIDB4ZmVjMDAwMDAtMHhmZWMwMGZm
+ZiBjb3VsZCBub3QgYmUgcmVzZXJ2ZWQKc3lzdGVtIDAwOjBkOiBpb21lbSByYW5nZSAweGZlZDEw
+MDAwLTB4ZmVkMWRmZmYgY291bGQgbm90IGJlIHJlc2VydmVkCnN5c3RlbSAwMDowZDogaW9tZW0g
+cmFuZ2UgMHhmZWQyMDAwMC0weGZlZDhmZmZmIGNvdWxkIG5vdCBiZSByZXNlcnZlZApzeXN0ZW0g
+MDA6MGQ6IGlvbWVtIHJhbmdlIDB4ZmVlMDAwMDAtMHhmZWUwMGZmZiBjb3VsZCBub3QgYmUgcmVz
+ZXJ2ZWQKc3lzdGVtIDAwOjBkOiBpb21lbSByYW5nZSAweGZmYjAwMDAwLTB4ZmZiN2ZmZmYgY291
+bGQgbm90IGJlIHJlc2VydmVkClBDSTogQnJpZGdlOiAwMDAwOjAwOjAxLjAKICBJTyB3aW5kb3c6
+IGIwMDAtYmZmZgogIE1FTSB3aW5kb3c6IDB4ZTQwMDAwMDAtMHhlN2ZmZmZmZgogIFBSRUZFVENI
+IHdpbmRvdzogMHgwMDAwMDAwMGMwMDAwMDAwLTB4MDAwMDAwMDBkZmZmZmZmZgpQQ0k6IEJyaWRn
+ZTogMDAwMDowMDoxYy4wCiAgSU8gd2luZG93OiBhMDAwLWFmZmYKICBNRU0gd2luZG93OiBkaXNh
+YmxlZC4KICBQUkVGRVRDSCB3aW5kb3c6IGRpc2FibGVkLgpQQ0k6IEJyaWRnZTogMDAwMDowMDox
+Yy40CiAgSU8gd2luZG93OiBjMDAwLWNmZmYKICBNRU0gd2luZG93OiAweGVhMDAwMDAwLTB4ZWEw
+ZmZmZmYKICBQUkVGRVRDSCB3aW5kb3c6IGRpc2FibGVkLgpQQ0k6IEJyaWRnZTogMDAwMDowMDox
+Yy41CiAgSU8gd2luZG93OiBkMDAwLWRmZmYKICBNRU0gd2luZG93OiAweGU4MDAwMDAwLTB4ZTlm
+ZmZmZmYKICBQUkVGRVRDSCB3aW5kb3c6IGRpc2FibGVkLgpQQ0k6IEJyaWRnZTogMDAwMDowMDox
+ZS4wCiAgSU8gd2luZG93OiBkaXNhYmxlZC4KICBNRU0gd2luZG93OiAweGVhMTAwMDAwLTB4ZWEx
+ZmZmZmYKICBQUkVGRVRDSCB3aW5kb3c6IGRpc2FibGVkLgpBQ1BJOiBQQ0kgSW50ZXJydXB0IDAw
+MDA6MDA6MDEuMFtBXSAtPiBHU0kgMTYgKGxldmVsLCBsb3cpIC0+IElSUSAxNgpQQ0k6IFNldHRp
+bmcgbGF0ZW5jeSB0aW1lciBvZiBkZXZpY2UgMDAwMDowMDowMS4wIHRvIDY0CkFDUEk6IFBDSSBJ
+bnRlcnJ1cHQgMDAwMDowMDoxYy4wW0FdIC0+IEdTSSAxNiAobGV2ZWwsIGxvdykgLT4gSVJRIDE2
+ClBDSTogU2V0dGluZyBsYXRlbmN5IHRpbWVyIG9mIGRldmljZSAwMDAwOjAwOjFjLjAgdG8gNjQK
+QUNQSTogUENJIEludGVycnVwdCAwMDAwOjAwOjFjLjRbQV0gLT4gR1NJIDE2IChsZXZlbCwgbG93
+KSAtPiBJUlEgMTYKUENJOiBTZXR0aW5nIGxhdGVuY3kgdGltZXIgb2YgZGV2aWNlIDAwMDA6MDA6
+MWMuNCB0byA2NApBQ1BJOiBQQ0kgSW50ZXJydXB0IDAwMDA6MDA6MWMuNVtCXSAtPiBHU0kgMTcg
+KGxldmVsLCBsb3cpIC0+IElSUSAxNwpQQ0k6IFNldHRpbmcgbGF0ZW5jeSB0aW1lciBvZiBkZXZp
+Y2UgMDAwMDowMDoxYy41IHRvIDY0ClBDSTogU2V0dGluZyBsYXRlbmN5IHRpbWVyIG9mIGRldmlj
+ZSAwMDAwOjAwOjFlLjAgdG8gNjQKTkVUOiBSZWdpc3RlcmVkIHByb3RvY29sIGZhbWlseSAyCklQ
+IHJvdXRlIGNhY2hlIGhhc2ggdGFibGUgZW50cmllczogMzI3NjggKG9yZGVyOiA1LCAxMzEwNzIg
+Ynl0ZXMpClRDUCBlc3RhYmxpc2hlZCBoYXNoIHRhYmxlIGVudHJpZXM6IDEzMTA3MiAob3JkZXI6
+IDgsIDEwNDg1NzYgYnl0ZXMpClRDUCBiaW5kIGhhc2ggdGFibGUgZW50cmllczogNjU1MzYgKG9y
+ZGVyOiA3LCA1MjQyODggYnl0ZXMpClRDUDogSGFzaCB0YWJsZXMgY29uZmlndXJlZCAoZXN0YWJs
+aXNoZWQgMTMxMDcyIGJpbmQgNjU1MzYpClRDUCByZW5vIHJlZ2lzdGVyZWQKaGlnaG1lbSBib3Vu
+Y2UgcG9vbCBzaXplOiA2NCBwYWdlcwppbyBzY2hlZHVsZXIgbm9vcCByZWdpc3RlcmVkCmlvIHNj
+aGVkdWxlciBhbnRpY2lwYXRvcnkgcmVnaXN0ZXJlZAppbyBzY2hlZHVsZXIgZGVhZGxpbmUgcmVn
+aXN0ZXJlZAppbyBzY2hlZHVsZXIgY2ZxIHJlZ2lzdGVyZWQgKGRlZmF1bHQpCnBjaSAwMDAwOjAx
+OjAwLjA6IEJvb3QgdmlkZW8gZGV2aWNlClBDSTogU2V0dGluZyBsYXRlbmN5IHRpbWVyIG9mIGRl
+dmljZSAwMDAwOjAwOjAxLjAgdG8gNjQKYXNzaWduX2ludGVycnVwdF9tb2RlIEZvdW5kIE1TSSBj
+YXBhYmlsaXR5CkFsbG9jYXRlIFBvcnQgU2VydmljZVswMDAwOjAwOjAxLjA6cGNpZTAwXQpBbGxv
+Y2F0ZSBQb3J0IFNlcnZpY2VbMDAwMDowMDowMS4wOnBjaWUwM10KUENJOiBTZXR0aW5nIGxhdGVu
+Y3kgdGltZXIgb2YgZGV2aWNlIDAwMDA6MDA6MWMuMCB0byA2NAphc3NpZ25faW50ZXJydXB0X21v
+ZGUgRm91bmQgTVNJIGNhcGFiaWxpdHkKQWxsb2NhdGUgUG9ydCBTZXJ2aWNlWzAwMDA6MDA6MWMu
+MDpwY2llMDBdCkFsbG9jYXRlIFBvcnQgU2VydmljZVswMDAwOjAwOjFjLjA6cGNpZTAyXQpBbGxv
+Y2F0ZSBQb3J0IFNlcnZpY2VbMDAwMDowMDoxYy4wOnBjaWUwM10KUENJOiBTZXR0aW5nIGxhdGVu
+Y3kgdGltZXIgb2YgZGV2aWNlIDAwMDA6MDA6MWMuNCB0byA2NAphc3NpZ25faW50ZXJydXB0X21v
+ZGUgRm91bmQgTVNJIGNhcGFiaWxpdHkKQWxsb2NhdGUgUG9ydCBTZXJ2aWNlWzAwMDA6MDA6MWMu
+NDpwY2llMDBdCkFsbG9jYXRlIFBvcnQgU2VydmljZVswMDAwOjAwOjFjLjQ6cGNpZTAyXQpBbGxv
+Y2F0ZSBQb3J0IFNlcnZpY2VbMDAwMDowMDoxYy40OnBjaWUwM10KUENJOiBTZXR0aW5nIGxhdGVu
+Y3kgdGltZXIgb2YgZGV2aWNlIDAwMDA6MDA6MWMuNSB0byA2NAphc3NpZ25faW50ZXJydXB0X21v
+ZGUgRm91bmQgTVNJIGNhcGFiaWxpdHkKQWxsb2NhdGUgUG9ydCBTZXJ2aWNlWzAwMDA6MDA6MWMu
+NTpwY2llMDBdCkFsbG9jYXRlIFBvcnQgU2VydmljZVswMDAwOjAwOjFjLjU6cGNpZTAyXQpBbGxv
+Y2F0ZSBQb3J0IFNlcnZpY2VbMDAwMDowMDoxYy41OnBjaWUwM10KdmVzYWZiOiBmcmFtZWJ1ZmZl
+ciBhdCAweGU1MDAwMDAwLCBtYXBwZWQgdG8gMHhmODg4MDAwMCwgdXNpbmcgMzA3MmssIHRvdGFs
+IDE0MzM2awp2ZXNhZmI6IG1vZGUgaXMgMTAyNHg3Njh4MTYsIGxpbmVsZW5ndGg9MjA0OCwgcGFn
+ZXM9MQp2ZXNhZmI6IHByb3RlY3RlZCBtb2RlIGludGVyZmFjZSBpbmZvIGF0IGMwMDA6YjVjMAp2
+ZXNhZmI6IHBtaTogc2V0IGRpc3BsYXkgc3RhcnQgPSBjMDBjYjYyMywgc2V0IHBhbGV0dGUgPSBj
+MDBjYjY3ZQp2ZXNhZmI6IHBtaTogcG9ydHMgPSAzYjQgM2I1IDNiYSAzYzAgM2MxIDNjNCAzYzUg
+M2M2IDNjNyAzYzggM2M5IDNjYyAzY2UgM2NmIDNkMCAzZDEgM2QyIDNkMyAzZDQgM2Q1IDNkYSAK
+dmVzYWZiOiBzY3JvbGxpbmc6IHJlZHJhdwp2ZXNhZmI6IFRydWVjb2xvcjogc2l6ZT0wOjU6Njo1
+LCBzaGlmdD0wOjExOjU6MApDb25zb2xlOiBzd2l0Y2hpbmcgdG8gY29sb3VyIGZyYW1lIGJ1ZmZl
+ciBkZXZpY2UgMTI4eDQ4CmZiMDogVkVTQSBWR0EgZnJhbWUgYnVmZmVyIGRldmljZQpSZWFsIFRp
+bWUgQ2xvY2sgRHJpdmVyIHYxLjEyYWMKYnJkOiBtb2R1bGUgbG9hZGVkCkxvYWRpbmcgaVNDU0kg
+dHJhbnNwb3J0IGNsYXNzIHYyLjAtODY4LgpEcml2ZXIgJ3NkJyBuZWVkcyB1cGRhdGluZyAtIHBs
+ZWFzZSB1c2UgYnVzX3R5cGUgbWV0aG9kcwphaGNpIDAwMDA6MDA6MWYuMjogdmVyc2lvbiAzLjAK
+QUNQSTogUENJIEludGVycnVwdCAwMDAwOjAwOjFmLjJbQl0gLT4gR1NJIDE5IChsZXZlbCwgbG93
+KSAtPiBJUlEgMTkKU3dpdGNoZWQgdG8gaGlnaCByZXNvbHV0aW9uIG1vZGUgb24gQ1BVIDEKU3dp
+dGNoZWQgdG8gaGlnaCByZXNvbHV0aW9uIG1vZGUgb24gQ1BVIDIKU3dpdGNoZWQgdG8gaGlnaCBy
+ZXNvbHV0aW9uIG1vZGUgb24gQ1BVIDMKU3dpdGNoZWQgdG8gaGlnaCByZXNvbHV0aW9uIG1vZGUg
+b24gQ1BVIDAKYWhjaSAwMDAwOjAwOjFmLjI6IEFIQ0kgMDAwMS4wMjAwIDMyIHNsb3RzIDYgcG9y
+dHMgMyBHYnBzIDB4M2YgaW1wbCBTQVRBIG1vZGUKYWhjaSAwMDAwOjAwOjFmLjI6IGZsYWdzOiA2
+NGJpdCBuY3Egc250ZiBzdGFnIHBtIGxlZCBjbG8gcG1wIHBpbyBzbHVtIHBhcnQgClBDSTogU2V0
+dGluZyBsYXRlbmN5IHRpbWVyIG9mIGRldmljZSAwMDAwOjAwOjFmLjIgdG8gNjQKc2NzaTAgOiBh
+aGNpCnNjc2kxIDogYWhjaQpzY3NpMiA6IGFoY2kKc2NzaTMgOiBhaGNpCnNjc2k0IDogYWhjaQpz
+Y3NpNSA6IGFoY2kKYXRhMTogU0FUQSBtYXggVURNQS8xMzMgYWJhciBtMjA0OEAweGVhMjA2MDAw
+IHBvcnQgMHhlYTIwNjEwMCBpcnEgMTkKYXRhMjogU0FUQSBtYXggVURNQS8xMzMgYWJhciBtMjA0
+OEAweGVhMjA2MDAwIHBvcnQgMHhlYTIwNjE4MCBpcnEgMTkKYXRhMzogU0FUQSBtYXggVURNQS8x
+MzMgYWJhciBtMjA0OEAweGVhMjA2MDAwIHBvcnQgMHhlYTIwNjIwMCBpcnEgMTkKYXRhNDogU0FU
+QSBtYXggVURNQS8xMzMgYWJhciBtMjA0OEAweGVhMjA2MDAwIHBvcnQgMHhlYTIwNjI4MCBpcnEg
+MTkKYXRhNTogU0FUQSBtYXggVURNQS8xMzMgYWJhciBtMjA0OEAweGVhMjA2MDAwIHBvcnQgMHhl
+YTIwNjMwMCBpcnEgMTkKYXRhNjogU0FUQSBtYXggVURNQS8xMzMgYWJhciBtMjA0OEAweGVhMjA2
+MDAwIHBvcnQgMHhlYTIwNjM4MCBpcnEgMTkKYXRhMTogU0FUQSBsaW5rIHVwIDMuMCBHYnBzIChT
+U3RhdHVzIDEyMyBTQ29udHJvbCAzMDApCmF0YTEuMDA6IEhQQSBkZXRlY3RlZDogY3VycmVudCA5
+NzY3NzEwNTUsIG5hdGl2ZSA5NzY3NzMxNjgKYXRhMS4wMDogQVRBLTg6IFdEQyBXRDUwMDBBQUtT
+LTAwWUdBMCwgMTIuMDFDMDIsIG1heCBVRE1BLzEzMwphdGExLjAwOiA5NzY3NzEwNTUgc2VjdG9y
+cywgbXVsdGkgMDogTEJBNDggTkNRIChkZXB0aCAzMS8zMikKYXRhMS4wMDogY29uZmlndXJlZCBm
+b3IgVURNQS8xMzMKYXRhMjogU0FUQSBsaW5rIGRvd24gKFNTdGF0dXMgMCBTQ29udHJvbCAzMDAp
+CmF0YTM6IFNBVEEgbGluayBkb3duIChTU3RhdHVzIDAgU0NvbnRyb2wgMzAwKQphdGE0OiBTQVRB
+IGxpbmsgZG93biAoU1N0YXR1cyAwIFNDb250cm9sIDMwMCkKYXRhNTogU0FUQSBsaW5rIGRvd24g
+KFNTdGF0dXMgMCBTQ29udHJvbCAzMDApCmF0YTY6IFNBVEEgbGluayBkb3duIChTU3RhdHVzIDAg
+U0NvbnRyb2wgMzAwKQpzY3NpIDA6MDowOjA6IERpcmVjdC1BY2Nlc3MgICAgIEFUQSAgICAgIFdE
+QyBXRDUwMDBBQUtTLTAgMTIuMCBQUTogMCBBTlNJOiA1CnNkIDA6MDowOjA6IFtzZGFdIDk3Njc3
+MTA1NSA1MTItYnl0ZSBoYXJkd2FyZSBzZWN0b3JzICg1MDAxMDcgTUIpCnNkIDA6MDowOjA6IFtz
+ZGFdIFdyaXRlIFByb3RlY3QgaXMgb2ZmCnNkIDA6MDowOjA6IFtzZGFdIE1vZGUgU2Vuc2U6IDAw
+IDNhIDAwIDAwCnNkIDA6MDowOjA6IFtzZGFdIFdyaXRlIGNhY2hlOiBlbmFibGVkLCByZWFkIGNh
+Y2hlOiBlbmFibGVkLCBkb2Vzbid0IHN1cHBvcnQgRFBPIG9yIEZVQQpzZCAwOjA6MDowOiBbc2Rh
+XSA5NzY3NzEwNTUgNTEyLWJ5dGUgaGFyZHdhcmUgc2VjdG9ycyAoNTAwMTA3IE1CKQpzZCAwOjA6
+MDowOiBbc2RhXSBXcml0ZSBQcm90ZWN0IGlzIG9mZgpzZCAwOjA6MDowOiBbc2RhXSBNb2RlIFNl
+bnNlOiAwMCAzYSAwMCAwMApzZCAwOjA6MDowOiBbc2RhXSBXcml0ZSBjYWNoZTogZW5hYmxlZCwg
+cmVhZCBjYWNoZTogZW5hYmxlZCwgZG9lc24ndCBzdXBwb3J0IERQTyBvciBGVUEKIHNkYTogc2Rh
+MSBzZGEyIHNkYTQgPCBzZGE1IHNkYTYgc2RhNyA+CnNkIDA6MDowOjA6IFtzZGFdIEF0dGFjaGVk
+IFNDU0kgZGlzawpBQ1BJOiBQQ0kgSW50ZXJydXB0IDAwMDA6MDM6MDAuMFtBXSAtPiBHU0kgMTYg
+KGxldmVsLCBsb3cpIC0+IElSUSAxNgphaGNpIDAwMDA6MDM6MDAuMDogQUhDSSAwMDAxLjAwMDAg
+MzIgc2xvdHMgMiBwb3J0cyAzIEdicHMgMHgzIGltcGwgU0FUQSBtb2RlCmFoY2kgMDAwMDowMzow
+MC4wOiBmbGFnczogNjRiaXQgbmNxIHBtIGxlZCBjbG8gcG1wIHBpbyBzbHVtIHBhcnQgClBDSTog
+U2V0dGluZyBsYXRlbmN5IHRpbWVyIG9mIGRldmljZSAwMDAwOjAzOjAwLjAgdG8gNjQKc2NzaTYg
+OiBhaGNpCnNjc2k3IDogYWhjaQphdGE3OiBTQVRBIG1heCBVRE1BLzEzMyBhYmFyIG04MTkyQDB4
+ZWEwMDAwMDAgcG9ydCAweGVhMDAwMTAwIGlycSAxNgphdGE4OiBTQVRBIG1heCBVRE1BLzEzMyBh
+YmFyIG04MTkyQDB4ZWEwMDAwMDAgcG9ydCAweGVhMDAwMTgwIGlycSAxNgphdGE3OiBTQVRBIGxp
+bmsgdXAgMy4wIEdicHMgKFNTdGF0dXMgMTIzIFNDb250cm9sIDMwMCkKYXRhNy4wMDogQVRBLTg6
+IFdEQyBXRDUwMDBBQUtTLTAwWUdBMCwgMTIuMDFDMDIsIG1heCBVRE1BLzEzMwphdGE3LjAwOiA5
+NzY3NzMxNjggc2VjdG9ycywgbXVsdGkgMDogTEJBNDggTkNRIChkZXB0aCAzMS8zMikKYXRhNy4w
+MDogY29uZmlndXJlZCBmb3IgVURNQS8xMzMKYXRhODogU0FUQSBsaW5rIGRvd24gKFNTdGF0dXMg
+MCBTQ29udHJvbCAzMDApCnNjc2kgNjowOjA6MDogRGlyZWN0LUFjY2VzcyAgICAgQVRBICAgICAg
+V0RDIFdENTAwMEFBS1MtMCAxMi4wIFBROiAwIEFOU0k6IDUKc2QgNjowOjA6MDogW3NkYl0gOTc2
+NzczMTY4IDUxMi1ieXRlIGhhcmR3YXJlIHNlY3RvcnMgKDUwMDEwOCBNQikKc2QgNjowOjA6MDog
+W3NkYl0gV3JpdGUgUHJvdGVjdCBpcyBvZmYKc2QgNjowOjA6MDogW3NkYl0gTW9kZSBTZW5zZTog
+MDAgM2EgMDAgMDAKc2QgNjowOjA6MDogW3NkYl0gV3JpdGUgY2FjaGU6IGVuYWJsZWQsIHJlYWQg
+Y2FjaGU6IGVuYWJsZWQsIGRvZXNuJ3Qgc3VwcG9ydCBEUE8gb3IgRlVBCnNkIDY6MDowOjA6IFtz
+ZGJdIDk3Njc3MzE2OCA1MTItYnl0ZSBoYXJkd2FyZSBzZWN0b3JzICg1MDAxMDggTUIpCnNkIDY6
+MDowOjA6IFtzZGJdIFdyaXRlIFByb3RlY3QgaXMgb2ZmCnNkIDY6MDowOjA6IFtzZGJdIE1vZGUg
+U2Vuc2U6IDAwIDNhIDAwIDAwCnNkIDY6MDowOjA6IFtzZGJdIFdyaXRlIGNhY2hlOiBlbmFibGVk
+LCByZWFkIGNhY2hlOiBlbmFibGVkLCBkb2Vzbid0IHN1cHBvcnQgRFBPIG9yIEZVQQogc2RiOiBz
+ZGIxIHNkYjIgc2RiNCA8IHNkYjUgc2RiNiBzZGI3ID4Kc2QgNjowOjA6MDogW3NkYl0gQXR0YWNo
+ZWQgU0NTSSBkaXNrClBOUDogUFMvMiBDb250cm9sbGVyIFtQTlAwMzAzOlBTMkssUE5QMGYxMzpQ
+UzJNXSBhdCAweDYwLDB4NjQgaXJxIDEsMTIKc2VyaW86IGk4MDQyIEtCRCBwb3J0IGF0IDB4NjAs
+MHg2NCBpcnEgMQpzZXJpbzogaTgwNDIgQVVYIHBvcnQgYXQgMHg2MCwweDY0IGlycSAxMgptaWNl
+OiBQUy8yIG1vdXNlIGRldmljZSBjb21tb24gZm9yIGFsbCBtaWNlCm1kOiByYWlkMSBwZXJzb25h
+bGl0eSByZWdpc3RlcmVkIGZvciBsZXZlbCAxCmRldmljZS1tYXBwZXI6IGlvY3RsOiA0LjEzLjAt
+aW9jdGwgKDIwMDctMTAtMTgpIGluaXRpYWxpc2VkOiBkbS1kZXZlbEByZWRoYXQuY29tCmNwdWlk
+bGU6IHVzaW5nIGdvdmVybm9yIGxhZGRlcgpjcHVpZGxlOiB1c2luZyBnb3Zlcm5vciBtZW51ClRD
+UCBjdWJpYyByZWdpc3RlcmVkClN0YXJ0aW5nIGJhbGFuY2VkX2lycQppbnB1dDogQVQgVHJhbnNs
+YXRlZCBTZXQgMiBrZXlib2FyZCBhcyAvZGV2aWNlcy9wbGF0Zm9ybS9pODA0Mi9zZXJpbzAvaW5w
+dXQvaW5wdXQwClVzaW5nIElQSSBOby1TaG9ydGN1dCBtb2RlCm1kOiBBdXRvZGV0ZWN0aW5nIFJB
+SUQgYXJyYXlzLgptZDogU2Nhbm5lZCAwIGFuZCBhZGRlZCAwIGRldmljZXMuCm1kOiBhdXRvcnVu
+IC4uLgptZDogLi4uIGF1dG9ydW4gRE9ORS4KbWQ6IExvYWRpbmcgbWQwOiAvZGV2L3NkYTUKbWQ6
+IGJpbmQ8c2RhNT4KbWQ6IGJpbmQ8c2RiNT4KcmFpZDE6IHJhaWQgc2V0IG1kMCBhY3RpdmUgd2l0
+aCAyIG91dCBvZiAyIG1pcnJvcnMKa2pvdXJuYWxkIHN0YXJ0aW5nLiAgQ29tbWl0IGludGVydmFs
+IDUgc2Vjb25kcwpFWFQzLWZzOiBtb3VudGVkIGZpbGVzeXN0ZW0gd2l0aCBvcmRlcmVkIGRhdGEg
+bW9kZS4KVkZTOiBNb3VudGVkIHJvb3QgKGV4dDMgZmlsZXN5c3RlbSkgcmVhZG9ubHkuCkZyZWVp
+bmcgdW51c2VkIGtlcm5lbCBtZW1vcnk6IDIyMGsgZnJlZWQKTkVUOiBSZWdpc3RlcmVkIHByb3Rv
+Y29sIGZhbWlseSAxCnNkIDA6MDowOjA6IEF0dGFjaGVkIHNjc2kgZ2VuZXJpYyBzZzAgdHlwZSAw
+CnNkIDY6MDowOjA6IEF0dGFjaGVkIHNjc2kgZ2VuZXJpYyBzZzEgdHlwZSAwCkxpbnV4IGFncGdh
+cnQgaW50ZXJmYWNlIHYwLjEwMwp1c2Jjb3JlOiByZWdpc3RlcmVkIG5ldyBpbnRlcmZhY2UgZHJp
+dmVyIHVzYmZzCnVzYmNvcmU6IHJlZ2lzdGVyZWQgbmV3IGludGVyZmFjZSBkcml2ZXIgaHViCkFD
+UEk6IEFDUEkwMDA3OjAwIGlzIHJlZ2lzdGVyZWQgYXMgY29vbGluZ19kZXZpY2UwCkFDUEk6IFBy
+b2Nlc3NvciBbQ1BVMF0gKHN1cHBvcnRzIDggdGhyb3R0bGluZyBzdGF0ZXMpCkFDUEk6IFNTRFQg
+QkZFRTgyODAsIDAwODcgKHIxICBQbVJlZiAgQ3B1MUlzdCAgICAgMzAwMCBJTlRMIDIwMDQwMzEx
+KQpBQ1BJOiBBQ1BJMDAwNzowMSBpcyByZWdpc3RlcmVkIGFzIGNvb2xpbmdfZGV2aWNlMQpBQ1BJ
+OiBQcm9jZXNzb3IgW0NQVTFdIChzdXBwb3J0cyA4IHRocm90dGxpbmcgc3RhdGVzKQpBQ1BJOiBT
+U0RUIEJGRUU4MzEwLCAwMDg3IChyMSAgUG1SZWYgIENwdTJJc3QgICAgIDMwMDAgSU5UTCAyMDA0
+MDMxMSkKQUNQSTogQUNQSTAwMDc6MDIgaXMgcmVnaXN0ZXJlZCBhcyBjb29saW5nX2RldmljZTIK
+QUNQSTogUHJvY2Vzc29yIFtDUFUyXSAoc3VwcG9ydHMgOCB0aHJvdHRsaW5nIHN0YXRlcykKQUNQ
+STogU1NEVCBCRkVFODNBMCwgMDA4NyAocjEgIFBtUmVmICBDcHUzSXN0ICAgICAzMDAwIElOVEwg
+MjAwNDAzMTEpCnVzYmNvcmU6IHJlZ2lzdGVyZWQgbmV3IGRldmljZSBkcml2ZXIgdXNiCkFDUEk6
+IEFDUEkwMDA3OjAzIGlzIHJlZ2lzdGVyZWQgYXMgY29vbGluZ19kZXZpY2UzCkFDUEk6IFByb2Nl
+c3NvciBbQ1BVM10gKHN1cHBvcnRzIDggdGhyb3R0bGluZyBzdGF0ZXMpCmlucHV0OiBQb3dlciBC
+dXR0b24gKEZGKSBhcyAvZGV2aWNlcy92aXJ0dWFsL2lucHV0L2lucHV0MQpBQ1BJOiBQb3dlciBC
+dXR0b24gKEZGKSBbUFdSRl0KaW5wdXQ6IFBvd2VyIEJ1dHRvbiAoQ00pIGFzIC9kZXZpY2VzL3Zp
+cnR1YWwvaW5wdXQvaW5wdXQyCkFDUEk6IFBvd2VyIEJ1dHRvbiAoQ00pIFtQV1JCXQpVU0IgVW5p
+dmVyc2FsIEhvc3QgQ29udHJvbGxlciBJbnRlcmZhY2UgZHJpdmVyIHYzLjAKQUNQSTogUENJIElu
+dGVycnVwdCAwMDAwOjAwOjFhLjBbQV0gLT4gR1NJIDE2IChsZXZlbCwgbG93KSAtPiBJUlEgMTYK
+UENJOiBTZXR0aW5nIGxhdGVuY3kgdGltZXIgb2YgZGV2aWNlIDAwMDA6MDA6MWEuMCB0byA2NAp1
+aGNpX2hjZCAwMDAwOjAwOjFhLjA6IFVIQ0kgSG9zdCBDb250cm9sbGVyCnVoY2lfaGNkIDAwMDA6
+MDA6MWEuMDogbmV3IFVTQiBidXMgcmVnaXN0ZXJlZCwgYXNzaWduZWQgYnVzIG51bWJlciAxCnVo
+Y2lfaGNkIDAwMDA6MDA6MWEuMDogaXJxIDE2LCBpbyBiYXNlIDB4MDAwMGUxMDAKVW5pZm9ybSBN
+dWx0aS1QbGF0Zm9ybSBFLUlERSBkcml2ZXIKdXNiIHVzYjE6IGNvbmZpZ3VyYXRpb24gIzEgY2hv
+c2VuIGZyb20gMSBjaG9pY2UKaHViIDEtMDoxLjA6IFVTQiBodWIgZm91bmQKaHViIDEtMDoxLjA6
+IDIgcG9ydHMgZGV0ZWN0ZWQKaWRlOiBBc3N1bWluZyAzM01IeiBzeXN0ZW0gYnVzIHNwZWVkIGZv
+ciBQSU8gbW9kZXM7IG92ZXJyaWRlIHdpdGggaWRlYnVzPXh4CkFDUEk6IFBDSSBJbnRlcnJ1cHQg
+MDAwMDowMDoxYS4xW0JdIC0+IEdTSSAyMSAobGV2ZWwsIGxvdykgLT4gSVJRIDIxClBDSTogU2V0
+dGluZyBsYXRlbmN5IHRpbWVyIG9mIGRldmljZSAwMDAwOjAwOjFhLjEgdG8gNjQKdWhjaV9oY2Qg
+MDAwMDowMDoxYS4xOiBVSENJIEhvc3QgQ29udHJvbGxlcgp1aGNpX2hjZCAwMDAwOjAwOjFhLjE6
+IG5ldyBVU0IgYnVzIHJlZ2lzdGVyZWQsIGFzc2lnbmVkIGJ1cyBudW1iZXIgMgp1aGNpX2hjZCAw
+MDAwOjAwOjFhLjE6IGlycSAyMSwgaW8gYmFzZSAweDAwMDBlMjAwCnVzYiB1c2IyOiBjb25maWd1
+cmF0aW9uICMxIGNob3NlbiBmcm9tIDEgY2hvaWNlCmh1YiAyLTA6MS4wOiBVU0IgaHViIGZvdW5k
+Cmh1YiAyLTA6MS4wOiAyIHBvcnRzIGRldGVjdGVkCkFDUEk6IFBDSSBJbnRlcnJ1cHQgMDAwMDow
+MDoxYS4yW0NdIC0+IEdTSSAxOCAobGV2ZWwsIGxvdykgLT4gSVJRIDE4ClBDSTogU2V0dGluZyBs
+YXRlbmN5IHRpbWVyIG9mIGRldmljZSAwMDAwOjAwOjFhLjIgdG8gNjQKdWhjaV9oY2QgMDAwMDow
+MDoxYS4yOiBVSENJIEhvc3QgQ29udHJvbGxlcgp1aGNpX2hjZCAwMDAwOjAwOjFhLjI6IG5ldyBV
+U0IgYnVzIHJlZ2lzdGVyZWQsIGFzc2lnbmVkIGJ1cyBudW1iZXIgMwp1aGNpX2hjZCAwMDAwOjAw
+OjFhLjI6IGlycSAxOCwgaW8gYmFzZSAweDAwMDBlMDAwCnVzYiB1c2IzOiBjb25maWd1cmF0aW9u
+ICMxIGNob3NlbiBmcm9tIDEgY2hvaWNlCmh1YiAzLTA6MS4wOiBVU0IgaHViIGZvdW5kCmh1YiAz
+LTA6MS4wOiAyIHBvcnRzIGRldGVjdGVkCkFDUEk6IFBDSSBJbnRlcnJ1cHQgMDAwMDowMDoxZC4w
+W0FdIC0+IEdTSSAyMyAobGV2ZWwsIGxvdykgLT4gSVJRIDIzClBDSTogU2V0dGluZyBsYXRlbmN5
+IHRpbWVyIG9mIGRldmljZSAwMDAwOjAwOjFkLjAgdG8gNjQKdWhjaV9oY2QgMDAwMDowMDoxZC4w
+OiBVSENJIEhvc3QgQ29udHJvbGxlcgp1aGNpX2hjZCAwMDAwOjAwOjFkLjA6IG5ldyBVU0IgYnVz
+IHJlZ2lzdGVyZWQsIGFzc2lnbmVkIGJ1cyBudW1iZXIgNAp1aGNpX2hjZCAwMDAwOjAwOjFkLjA6
+IGlycSAyMywgaW8gYmFzZSAweDAwMDBlMzAwCnVzYiB1c2I0OiBjb25maWd1cmF0aW9uICMxIGNo
+b3NlbiBmcm9tIDEgY2hvaWNlCmh1YiA0LTA6MS4wOiBVU0IgaHViIGZvdW5kCmh1YiA0LTA6MS4w
+OiAyIHBvcnRzIGRldGVjdGVkCkFDUEk6IFBDSSBJbnRlcnJ1cHQgMDAwMDowMDoxZC4xW0JdIC0+
+IEdTSSAxOSAobGV2ZWwsIGxvdykgLT4gSVJRIDE5ClBDSTogU2V0dGluZyBsYXRlbmN5IHRpbWVy
+IG9mIGRldmljZSAwMDAwOjAwOjFkLjEgdG8gNjQKdWhjaV9oY2QgMDAwMDowMDoxZC4xOiBVSENJ
+IEhvc3QgQ29udHJvbGxlcgp1aGNpX2hjZCAwMDAwOjAwOjFkLjE6IG5ldyBVU0IgYnVzIHJlZ2lz
+dGVyZWQsIGFzc2lnbmVkIGJ1cyBudW1iZXIgNQp1aGNpX2hjZCAwMDAwOjAwOjFkLjE6IGlycSAx
+OSwgaW8gYmFzZSAweDAwMDBlNDAwCnVzYiB1c2I1OiBjb25maWd1cmF0aW9uICMxIGNob3NlbiBm
+cm9tIDEgY2hvaWNlCmh1YiA1LTA6MS4wOiBVU0IgaHViIGZvdW5kCmh1YiA1LTA6MS4wOiAyIHBv
+cnRzIGRldGVjdGVkCkFDUEk6IFBDSSBJbnRlcnJ1cHQgMDAwMDowMDoxZC4yW0NdIC0+IEdTSSAx
+OCAobGV2ZWwsIGxvdykgLT4gSVJRIDE4ClBDSTogU2V0dGluZyBsYXRlbmN5IHRpbWVyIG9mIGRl
+dmljZSAwMDAwOjAwOjFkLjIgdG8gNjQKdWhjaV9oY2QgMDAwMDowMDoxZC4yOiBVSENJIEhvc3Qg
+Q29udHJvbGxlcgp1aGNpX2hjZCAwMDAwOjAwOjFkLjI6IG5ldyBVU0IgYnVzIHJlZ2lzdGVyZWQs
+IGFzc2lnbmVkIGJ1cyBudW1iZXIgNgp1aGNpX2hjZCAwMDAwOjAwOjFkLjI6IGlycSAxOCwgaW8g
+YmFzZSAweDAwMDBlNTAwCnVzYiB1c2I2OiBjb25maWd1cmF0aW9uICMxIGNob3NlbiBmcm9tIDEg
+Y2hvaWNlCmh1YiA2LTA6MS4wOiBVU0IgaHViIGZvdW5kCmh1YiA2LTA6MS4wOiAyIHBvcnRzIGRl
+dGVjdGVkCnI4MTY5IEdpZ2FiaXQgRXRoZXJuZXQgZHJpdmVyIDIuMkxLIGxvYWRlZApBQ1BJOiBQ
+Q0kgSW50ZXJydXB0IDAwMDA6MDA6MWEuN1tDXSAtPiBHU0kgMTggKGxldmVsLCBsb3cpIC0+IElS
+USAxOApQQ0k6IFNldHRpbmcgbGF0ZW5jeSB0aW1lciBvZiBkZXZpY2UgMDAwMDowMDoxYS43IHRv
+IDY0CmVoY2lfaGNkIDAwMDA6MDA6MWEuNzogRUhDSSBIb3N0IENvbnRyb2xsZXIKZWhjaV9oY2Qg
+MDAwMDowMDoxYS43OiBuZXcgVVNCIGJ1cyByZWdpc3RlcmVkLCBhc3NpZ25lZCBidXMgbnVtYmVy
+IDcKUENJOiBjYWNoZSBsaW5lIHNpemUgb2YgMzIgaXMgbm90IHN1cHBvcnRlZCBieSBkZXZpY2Ug
+MDAwMDowMDoxYS43CmVoY2lfaGNkIDAwMDA6MDA6MWEuNzogaXJxIDE4LCBpbyBtZW0gMHhlYTIw
+NTAwMAplaGNpX2hjZCAwMDAwOjAwOjFhLjc6IFVTQiAyLjAgc3RhcnRlZCwgRUhDSSAxLjAwLCBk
+cml2ZXIgMTAgRGVjIDIwMDQKdXNiIHVzYjc6IGNvbmZpZ3VyYXRpb24gIzEgY2hvc2VuIGZyb20g
+MSBjaG9pY2UKaHViIDctMDoxLjA6IFVTQiBodWIgZm91bmQKaHViIDctMDoxLjA6IDYgcG9ydHMg
+ZGV0ZWN0ZWQKQUNQSTogUENJIEludGVycnVwdCAwMDAwOjA0OjAwLjBbQV0gLT4gR1NJIDE3IChs
+ZXZlbCwgbG93KSAtPiBJUlEgMTcKUENJOiBTZXR0aW5nIGxhdGVuY3kgdGltZXIgb2YgZGV2aWNl
+IDAwMDA6MDQ6MDAuMCB0byA2NApyODE2OSAwMDAwOjA0OjAwLjA6IG5vIE1TSS4gQmFjayB0byBJ
+TlR4LgpldGgwOiBSVEw4MTY4Yi84MTExYiBhdCAweGY4YmY0MDAwLCAwMDoxYTo0ZDo1ODphMzo1
+NCwgWElEIDM4MDAwMDAwIElSUSAxNwpBQ1BJOiBQQ0kgSW50ZXJydXB0IDAwMDA6MDA6MWQuN1tB
+XSAtPiBHU0kgMjMgKGxldmVsLCBsb3cpIC0+IElSUSAyMwpQQ0k6IFNldHRpbmcgbGF0ZW5jeSB0
+aW1lciBvZiBkZXZpY2UgMDAwMDowMDoxZC43IHRvIDY0CmVoY2lfaGNkIDAwMDA6MDA6MWQuNzog
+RUhDSSBIb3N0IENvbnRyb2xsZXIKZWhjaV9oY2QgMDAwMDowMDoxZC43OiBuZXcgVVNCIGJ1cyBy
+ZWdpc3RlcmVkLCBhc3NpZ25lZCBidXMgbnVtYmVyIDgKUENJOiBjYWNoZSBsaW5lIHNpemUgb2Yg
+MzIgaXMgbm90IHN1cHBvcnRlZCBieSBkZXZpY2UgMDAwMDowMDoxZC43CmVoY2lfaGNkIDAwMDA6
+MDA6MWQuNzogaXJxIDIzLCBpbyBtZW0gMHhlYTIwNDAwMAplaGNpX2hjZCAwMDAwOjAwOjFkLjc6
+IFVTQiAyLjAgc3RhcnRlZCwgRUhDSSAxLjAwLCBkcml2ZXIgMTAgRGVjIDIwMDQKdXNiIHVzYjg6
+IGNvbmZpZ3VyYXRpb24gIzEgY2hvc2VuIGZyb20gMSBjaG9pY2UKaHViIDgtMDoxLjA6IFVTQiBo
+dWIgZm91bmQKaHViIDgtMDoxLjA6IDYgcG9ydHMgZGV0ZWN0ZWQKQUNQSTogUENJIEludGVycnVw
+dCAwMDAwOjAwOjFiLjBbQV0gLT4gR1NJIDIyIChsZXZlbCwgbG93KSAtPiBJUlEgMjIKUENJOiBT
+ZXR0aW5nIGxhdGVuY3kgdGltZXIgb2YgZGV2aWNlIDAwMDA6MDA6MWIuMCB0byA2NApoZGFfY29k
+ZWM6IFVua25vd24gbW9kZWwgZm9yIEFMQzg4MiwgdHJ5aW5nIGF1dG8tcHJvYmUgZnJvbSBCSU9T
+Li4uCkFDUEk6IFBDSSBJbnRlcnJ1cHQgMDAwMDowNTowNi4wW0FdIC0+IEdTSSAxOCAobGV2ZWws
+IGxvdykgLT4gSVJRIDE4Cm9oY2kxMzk0OiBmdy1ob3N0MDogT0hDSS0xMzk0IDEuMSAoUENJKTog
+SVJRPVsxOF0gIE1NSU89W2VhMTA0MDAwLWVhMTA0N2ZmXSAgTWF4IFBhY2tldD1bMjA0OF0gIElS
+L0lUIGNvbnRleHRzPVs0LzhdCkFDUEk6IFBDSSBJbnRlcnJ1cHQgMDAwMDowMDoxZi4zW0NdIC0+
+IEdTSSAxOCAobGV2ZWwsIGxvdykgLT4gSVJRIDE4CkpNQjogSURFIGNvbnRyb2xsZXIgKDB4MTk3
+YjoweDIzNjMgcmV2IDB4MDIpIGF0ICBQQ0kgc2xvdCAwMDAwOjAzOjAwLjEKQUNQSTogUENJIElu
+dGVycnVwdCAwMDAwOjAzOjAwLjFbQl0gLT4gR1NJIDE3IChsZXZlbCwgbG93KSAtPiBJUlEgMTcK
+Sk1COiAxMDAlIG5hdGl2ZSBtb2RlIG9uIGlycSAxNwogICAgaWRlMDogQk0tRE1BIGF0IDB4YzQw
+MC0weGM0MDcsIEJJT1Mgc2V0dGluZ3M6IGhkYTpQSU8sIGhkYjpQSU8KICAgIGlkZTE6IEJNLURN
+QSBhdCAweGM0MDgtMHhjNDBmLCBCSU9TIHNldHRpbmdzOiBoZGM6RE1BLCBoZGQ6RE1BClByb2Jp
+bmcgSURFIGludGVyZmFjZSBpZGUwLi4uCmhkYTogUElPTkVFUiBEVkQtUlcgRFZSLTExNUQsIEFU
+QVBJIENEL0RWRC1ST00gZHJpdmUKaGRhOiBob3N0IG1heCBQSU81IHdhbnRlZCBQSU8yNTUoYXV0
+by10dW5lKSBzZWxlY3RlZCBQSU80CmhkYTogVURNQS82NiBtb2RlIHNlbGVjdGVkClByb2Jpbmcg
+SURFIGludGVyZmFjZSBpZGUxLi4uCmllZWUxMzk0OiBIb3N0IGFkZGVkOiBJRDpCVVNbMC0wMDox
+MDIzXSAgR1VJRFswMGNhY2U3NDAwMDAxYTRkXQppZGUwIGF0IDB4YzAwMC0weGMwMDcsMHhjMTAy
+IG9uIGlycSAxNwpoZGE6IEFUQVBJIDEyNlggRFZELVJPTSBEVkQtUiBDRC1SL1JXIGRyaXZlLCAy
+MDAwa0IgQ2FjaGUKVW5pZm9ybSBDRC1ST00gZHJpdmVyIFJldmlzaW9uOiAzLjIwCkVYVDMgRlMg
+b24gbWQwLCBpbnRlcm5hbCBqb3VybmFsCmlucHV0OiBQQyBTcGVha2VyIGFzIC9kZXZpY2VzL3Bs
+YXRmb3JtL3Bjc3Brci9pbnB1dC9pbnB1dDMKaW5wdXQ6IEltUFMvMiBHZW5lcmljIFdoZWVsIE1v
+dXNlIGFzIC9kZXZpY2VzL3BsYXRmb3JtL2k4MDQyL3NlcmlvMS9pbnB1dC9pbnB1dDQKcGFycG9y
+dF9wYyAwMDowODogcmVwb3J0ZWQgYnkgUGx1ZyBhbmQgUGxheSBBQ1BJCnBhcnBvcnQwOiBQQy1z
+dHlsZSBhdCAweDM3OCAoMHg3NzgpLCBpcnEgNyBbUENTUFAsVFJJU1RBVEVdCmxwMDogdXNpbmcg
+cGFycG9ydDAgKGludGVycnVwdC1kcml2ZW4pLgpscDA6IGNvbnNvbGUgcmVhZHkKTkVUOiBSZWdp
+c3RlcmVkIHByb3RvY29sIGZhbWlseSAxMApsbzogRGlzYWJsZWQgUHJpdmFjeSBFeHRlbnNpb25z
+Cml0ODc6IEZvdW5kIElUODcxOEYgY2hpcCBhdCAweDI5MCwgcmV2aXNpb24gNAppdDg3OiBpbjMg
+aXMgVkNDICgrNVYpCmNvcmV0ZW1wIGNvcmV0ZW1wLjA6IFVzaW5nIHVuZG9jdW1lbnRlZCBmZWF0
+dXJlcywgYWJzb2x1dGUgdGVtcGVyYXR1cmUgbWlnaHQgYmUgd3JvbmchCmNvcmV0ZW1wIGNvcmV0
+ZW1wLjE6IFVzaW5nIHVuZG9jdW1lbnRlZCBmZWF0dXJlcywgYWJzb2x1dGUgdGVtcGVyYXR1cmUg
+bWlnaHQgYmUgd3JvbmchCmNvcmV0ZW1wIGNvcmV0ZW1wLjI6IFVzaW5nIHVuZG9jdW1lbnRlZCBm
+ZWF0dXJlcywgYWJzb2x1dGUgdGVtcGVyYXR1cmUgbWlnaHQgYmUgd3JvbmchCmNvcmV0ZW1wIGNv
+cmV0ZW1wLjM6IFVzaW5nIHVuZG9jdW1lbnRlZCBmZWF0dXJlcywgYWJzb2x1dGUgdGVtcGVyYXR1
+cmUgbWlnaHQgYmUgd3JvbmchCmxvb3A6IGxvYWRlZCAobWF4IDggZGV2aWNlcykKQWRkaW5nIDQw
+MDgxNzJrIHN3YXAgb24gL2Rldi9sb29wNy4gIFByaW9yaXR5OjEwIGV4dGVudHM6MSBhY3Jvc3M6
+NDAwODE3MmsKQWRkaW5nIDQwMDgxNzJrIHN3YXAgb24gL2Rldi9sb29wNi4gIFByaW9yaXR5OjEw
+IGV4dGVudHM6MSBhY3Jvc3M6NDAwODE3MmsKbWQ6IG1kMSBzdG9wcGVkLgptZDogYmluZDxzZGI3
+PgptZDogYmluZDxzZGE3PgpyYWlkMTogcmFpZCBzZXQgbWQxIGFjdGl2ZSB3aXRoIDIgb3V0IG9m
+IDIgbWlycm9ycwpyODE2OTogZXRoMDogbGluayB1cApyODE2OTogZXRoMDogbGluayB1cApldGgw
+OiBubyBJUHY2IHJvdXRlcnMgcHJlc2VudApoZGE6IGNkcm9tX25ld3BjX2ludHI6IFRoZSBkcml2
+ZSBhcHBlYXJzIGNvbmZ1c2VkIChpcmVhc29uID0gMHgwMSkuIFRyeWluZyB0byByZWNvdmVyIGJ5
+IGVuZGluZyByZXF1ZXN0LgpoZGE6IGNkcm9tX25ld3BjX2ludHI6IFRoZSBkcml2ZSBhcHBlYXJz
+IGNvbmZ1c2VkIChpcmVhc29uID0gMHgwMSkuIFRyeWluZyB0byByZWNvdmVyIGJ5IGVuZGluZyBy
+ZXF1ZXN0LgpoZGE6IHN0YXR1cyBlcnJvcjogc3RhdHVzPTB4NTggeyBEcml2ZVJlYWR5IFNlZWtD
+b21wbGV0ZSBEYXRhUmVxdWVzdCB9CmlkZTogZmFpbGVkIG9wY29kZSB3YXM6IHVua25vd24KaGRh
+OiBkcml2ZSBub3QgcmVhZHkgZm9yIGNvbW1hbmQKaGRhOiBzdGF0dXMgZXJyb3I6IHN0YXR1cz0w
+eDU4IHsgRHJpdmVSZWFkeSBTZWVrQ29tcGxldGUgRGF0YVJlcXVlc3QgfQppZGU6IGZhaWxlZCBv
+cGNvZGUgd2FzOiB1bmtub3duCmhkYTogZHJpdmUgbm90IHJlYWR5IGZvciBjb21tYW5kCmhkYTog
+c3RhdHVzIGVycm9yOiBzdGF0dXM9MHg1OCB7IERyaXZlUmVhZHkgU2Vla0NvbXBsZXRlIERhdGFS
+ZXF1ZXN0IH0KaWRlOiBmYWlsZWQgb3Bjb2RlIHdhczogdW5rbm93bgpoZGE6IGRyaXZlIG5vdCBy
+ZWFkeSBmb3IgY29tbWFuZApoZGE6IHN0YXR1cyBlcnJvcjogc3RhdHVzPTB4NTggeyBEcml2ZVJl
+YWR5IFNlZWtDb21wbGV0ZSBEYXRhUmVxdWVzdCB9CmlkZTogZmFpbGVkIG9wY29kZSB3YXM6IHVu
+a25vd24KaGRhOiBkcml2ZSBub3QgcmVhZHkgZm9yIGNvbW1hbmQKaGRhOiBzdGF0dXMgdGltZW91
+dDogc3RhdHVzPTB4ZDAgeyBCdXN5IH0KaWRlOiBmYWlsZWQgb3Bjb2RlIHdhczogdW5rbm93bgpo
+ZGE6IERNQSBkaXNhYmxlZApoZGE6IEFUQVBJIHJlc2V0IGNvbXBsZXRlCmhkYTogY2Ryb21fZGVj
+b2RlX3N0YXR1czogc3RhdHVzPTB4YzAgeyBCdXN5IH0KaWRlOiBmYWlsZWQgb3Bjb2RlIHdhczog
+dW5rbm93bgpoZGE6IGlkZV9pbnRyOiBodWg/IGV4cGVjdGVkIE5VTEwgaGFuZGxlciBvbiBleGl0
+CmhkYTogQVRBUEkgcmVzZXQgY29tcGxldGUKaGRhOiBjZHJvbV9kZWNvZGVfc3RhdHVzOiBzdGF0
+dXM9MHhjMCB7IEJ1c3kgfQppZGU6IGZhaWxlZCBvcGNvZGUgd2FzOiB1bmtub3duCmhkYTogaWRl
+X2ludHI6IGh1aD8gZXhwZWN0ZWQgTlVMTCBoYW5kbGVyIG9uIGV4aXQKaGRhOiBBVEFQSSByZXNl
+dCBjb21wbGV0ZQpoZGE6IGNkcm9tX2RlY29kZV9zdGF0dXM6IHN0YXR1cz0weGMwIHsgQnVzeSB9
+CmlkZTogZmFpbGVkIG9wY29kZSB3YXM6IHVua25vd24KaGRhOiBpZGVfaW50cjogaHVoPyBleHBl
+Y3RlZCBOVUxMIGhhbmRsZXIgb24gZXhpdApoZGE6IEFUQVBJIHJlc2V0IGNvbXBsZXRlCmhkYTog
+Y2Ryb21fZGVjb2RlX3N0YXR1czogc3RhdHVzPTB4YzAgeyBCdXN5IH0KaWRlOiBmYWlsZWQgb3Bj
+b2RlIHdhczogdW5rbm93bgpoZGE6IGlkZV9pbnRyOiBodWg/IGV4cGVjdGVkIE5VTEwgaGFuZGxl
+ciBvbiBleGl0CmhkYTogQVRBUEkgcmVzZXQgY29tcGxldGUKaGRhOiBjZHJvbV9kZWNvZGVfc3Rh
+dHVzOiBzdGF0dXM9MHhjMCB7IEJ1c3kgfQppZGU6IGZhaWxlZCBvcGNvZGUgd2FzOiB1bmtub3du
+CmhkYTogaWRlX2ludHI6IGh1aD8gZXhwZWN0ZWQgTlVMTCBoYW5kbGVyIG9uIGV4aXQKaGRhOiBB
+VEFQSSByZXNldCBjb21wbGV0ZQpoZGE6IGNkcm9tX2RlY29kZV9zdGF0dXM6IHN0YXR1cz0weGMw
+IHsgQnVzeSB9CmlkZTogZmFpbGVkIG9wY29kZSB3YXM6IHVua25vd24KZW5kX3JlcXVlc3Q6IEkv
+TyBlcnJvciwgZGV2IGhkYSwgc2VjdG9yIDEyOApCdWZmZXIgSS9PIGVycm9yIG9uIGRldmljZSBo
+ZGEsIGxvZ2ljYWwgYmxvY2sgMTYKaGRhOiBjZHJvbV9kZWNvZGVfc3RhdHVzOiBzdGF0dXM9MHhk
+MCB7IEJ1c3kgfQppZGU6IGZhaWxlZCBvcGNvZGUgd2FzOiB1bmtub3duCmhkYTogaWRlX2ludHI6
+IGh1aD8gZXhwZWN0ZWQgTlVMTCBoYW5kbGVyIG9uIGV4aXQKaGRhOiBBVEFQSSByZXNldCBjb21w
+bGV0ZQplbmRfcmVxdWVzdDogSS9PIGVycm9yLCBkZXYgaGRhLCBzZWN0b3IgMTM2CkJ1ZmZlciBJ
+L08gZXJyb3Igb24gZGV2aWNlIGhkYSwgbG9naWNhbCBibG9jayAxNwpoZGE6IGNkcm9tX2RlY29k
+ZV9zdGF0dXM6IHN0YXR1cz0weGQwIHsgQnVzeSB9CmlkZTogZmFpbGVkIG9wY29kZSB3YXM6IHVu
+a25vd24KaGRhOiBpZGVfaW50cjogaHVoPyBleHBlY3RlZCBOVUxMIGhhbmRsZXIgb24gZXhpdApo
+ZGE6IEFUQVBJIHJlc2V0IGNvbXBsZXRlCmhkYTogY2Ryb21fZGVjb2RlX3N0YXR1czogc3RhdHVz
+PTB4YzAgeyBCdXN5IH0KaWRlOiBmYWlsZWQgb3Bjb2RlIHdhczogdW5rbm93bgpoZGE6IGlkZV9p
+bnRyOiBodWg/IGV4cGVjdGVkIE5VTEwgaGFuZGxlciBvbiBleGl0CmhkYTogQVRBUEkgcmVzZXQg
+Y29tcGxldGUKaGRhOiBjZHJvbV9kZWNvZGVfc3RhdHVzOiBzdGF0dXM9MHhjMCB7IEJ1c3kgfQpp
+ZGU6IGZhaWxlZCBvcGNvZGUgd2FzOiB1bmtub3duCmVuZF9yZXF1ZXN0OiBJL08gZXJyb3IsIGRl
+diBoZGEsIHNlY3RvciAxNDQKQnVmZmVyIEkvTyBlcnJvciBvbiBkZXZpY2UgaGRhLCBsb2dpY2Fs
+IGJsb2NrIDE4CmhkYTogY2Ryb21fZGVjb2RlX3N0YXR1czogc3RhdHVzPTB4ZDAgeyBCdXN5IH0K
+aWRlOiBmYWlsZWQgb3Bjb2RlIHdhczogdW5rbm93bgpoZGE6IGlkZV9pbnRyOiBodWg/IGV4cGVj
+dGVkIE5VTEwgaGFuZGxlciBvbiBleGl0CmhkYTogQVRBUEkgcmVzZXQgY29tcGxldGUKaGRhOiBj
+ZHJvbV9kZWNvZGVfc3RhdHVzOiBzdGF0dXM9MHhjMCB7IEJ1c3kgfQppZGU6IGZhaWxlZCBvcGNv
+ZGUgd2FzOiB1bmtub3duCmhkYTogaWRlX2ludHI6IGh1aD8gZXhwZWN0ZWQgTlVMTCBoYW5kbGVy
+IG9uIGV4aXQKaGRhOiBBVEFQSSByZXNldCBjb21wbGV0ZQpoZGE6IGNkcm9tX2RlY29kZV9zdGF0
+dXM6IHN0YXR1cz0weGMwIHsgQnVzeSB9CmlkZTogZmFpbGVkIG9wY29kZSB3YXM6IHVua25vd24K
+ZW5kX3JlcXVlc3Q6IEkvTyBlcnJvciwgZGV2IGhkYSwgc2VjdG9yIDE1MgpCdWZmZXIgSS9PIGVy
+cm9yIG9uIGRldmljZSBoZGEsIGxvZ2ljYWwgYmxvY2sgMTkKaGRhOiBjZHJvbV9kZWNvZGVfc3Rh
+dHVzOiBzdGF0dXM9MHhkMCB7IEJ1c3kgfQppZGU6IGZhaWxlZCBvcGNvZGUgd2FzOiB1bmtub3du
+CmhkYTogaWRlX2ludHI6IGh1aD8gZXhwZWN0ZWQgTlVMTCBoYW5kbGVyIG9uIGV4aXQKaGRhOiBB
+VEFQSSByZXNldCBjb21wbGV0ZQpoZGE6IGNkcm9tX2RlY29kZV9zdGF0dXM6IHN0YXR1cz0weGMw
+IHsgQnVzeSB9CmlkZTogZmFpbGVkIG9wY29kZSB3YXM6IHVua25vd24KaGRhOiBpZGVfaW50cjog
+aHVoPyBleHBlY3RlZCBOVUxMIGhhbmRsZXIgb24gZXhpdApoZGE6IEFUQVBJIHJlc2V0IGNvbXBs
+ZXRlCmhkYTogY2Ryb21fZGVjb2RlX3N0YXR1czogc3RhdHVzPTB4YzAgeyBCdXN5IH0KaWRlOiBm
+YWlsZWQgb3Bjb2RlIHdhczogdW5rbm93bgplbmRfcmVxdWVzdDogSS9PIGVycm9yLCBkZXYgaGRh
+LCBzZWN0b3IgMTYwCkJ1ZmZlciBJL08gZXJyb3Igb24gZGV2aWNlIGhkYSwgbG9naWNhbCBibG9j
+ayAyMApoZGE6IGNkcm9tX2RlY29kZV9zdGF0dXM6IHN0YXR1cz0weGQwIHsgQnVzeSB9CmlkZTog
+ZmFpbGVkIG9wY29kZSB3YXM6IHVua25vd24KaGRhOiBpZGVfaW50cjogaHVoPyBleHBlY3RlZCBO
+VUxMIGhhbmRsZXIgb24gZXhpdApoZGE6IEFUQVBJIHJlc2V0IGNvbXBsZXRlCmhkYTogY2Ryb21f
+ZGVjb2RlX3N0YXR1czogc3RhdHVzPTB4YzAgeyBCdXN5IH0KaWRlOiBmYWlsZWQgb3Bjb2RlIHdh
+czogdW5rbm93bgpoZGE6IGlkZV9pbnRyOiBodWg/IGV4cGVjdGVkIE5VTEwgaGFuZGxlciBvbiBl
+eGl0CmhkYTogQVRBUEkgcmVzZXQgY29tcGxldGUKZW5kX3JlcXVlc3Q6IEkvTyBlcnJvciwgZGV2
+IGhkYSwgc2VjdG9yIDE2OApCdWZmZXIgSS9PIGVycm9yIG9uIGRldmljZSBoZGEsIGxvZ2ljYWwg
+YmxvY2sgMjEKaGRhOiBjZHJvbV9kZWNvZGVfc3RhdHVzOiBzdGF0dXM9MHhkMCB7IEJ1c3kgfQpp
+ZGU6IGZhaWxlZCBvcGNvZGUgd2FzOiB1bmtub3duCmhkYTogaWRlX2ludHI6IGh1aD8gZXhwZWN0
+ZWQgTlVMTCBoYW5kbGVyIG9uIGV4aXQKaGRhOiBBVEFQSSByZXNldCBjb21wbGV0ZQplbmRfcmVx
+dWVzdDogSS9PIGVycm9yLCBkZXYgaGRhLCBzZWN0b3IgMTc2CkJ1ZmZlciBJL08gZXJyb3Igb24g
+ZGV2aWNlIGhkYSwgbG9naWNhbCBibG9jayAyMgpoZGE6IGNkcm9tX2RlY29kZV9zdGF0dXM6IHN0
+YXR1cz0weGQwIHsgQnVzeSB9CmlkZTogZmFpbGVkIG9wY29kZSB3YXM6IHVua25vd24KaGRhOiBp
+ZGVfaW50cjogaHVoPyBleHBlY3RlZCBOVUxMIGhhbmRsZXIgb24gZXhpdApoZGE6IEFUQVBJIHJl
+c2V0IGNvbXBsZXRlCmhkYTogY2Ryb21fZGVjb2RlX3N0YXR1czogc3RhdHVzPTB4YzAgeyBCdXN5
+IH0KaWRlOiBmYWlsZWQgb3Bjb2RlIHdhczogdW5rbm93bgpoZGE6IGlkZV9pbnRyOiBodWg/IGV4
+cGVjdGVkIE5VTEwgaGFuZGxlciBvbiBleGl0CmhkYTogQVRBUEkgcmVzZXQgY29tcGxldGUKaGRh
+OiBjZHJvbV9kZWNvZGVfc3RhdHVzOiBzdGF0dXM9MHhjMCB7IEJ1c3kgfQppZGU6IGZhaWxlZCBv
+cGNvZGUgd2FzOiB1bmtub3duCmVuZF9yZXF1ZXN0OiBJL08gZXJyb3IsIGRldiBoZGEsIHNlY3Rv
+ciAxODQKQnVmZmVyIEkvTyBlcnJvciBvbiBkZXZpY2UgaGRhLCBsb2dpY2FsIGJsb2NrIDIzCmhk
+YTogY2Ryb21fZGVjb2RlX3N0YXR1czogc3RhdHVzPTB4ZDAgeyBCdXN5IH0KaWRlOiBmYWlsZWQg
+b3Bjb2RlIHdhczogdW5rbm93bgpoZGE6IGlkZV9pbnRyOiBodWg/IGV4cGVjdGVkIE5VTEwgaGFu
+ZGxlciBvbiBleGl0CmhkYTogQVRBUEkgcmVzZXQgY29tcGxldGUKZW5kX3JlcXVlc3Q6IEkvTyBl
+cnJvciwgZGV2IGhkYSwgc2VjdG9yIDE5MgpCdWZmZXIgSS9PIGVycm9yIG9uIGRldmljZSBoZGEs
+IGxvZ2ljYWwgYmxvY2sgMjQKaGRhOiBjZHJvbV9kZWNvZGVfc3RhdHVzOiBzdGF0dXM9MHhkMCB7
+IEJ1c3kgfQppZGU6IGZhaWxlZCBvcGNvZGUgd2FzOiB1bmtub3duCmhkYTogaWRlX2ludHI6IGh1
+aD8gZXhwZWN0ZWQgTlVMTCBoYW5kbGVyIG9uIGV4aXQKaGRhOiBBVEFQSSByZXNldCBjb21wbGV0
+ZQplbmRfcmVxdWVzdDogSS9PIGVycm9yLCBkZXYgaGRhLCBzZWN0b3IgMjAwCkJ1ZmZlciBJL08g
+ZXJyb3Igb24gZGV2aWNlIGhkYSwgbG9naWNhbCBibG9jayAyNQpoZGE6IGNkcm9tX2RlY29kZV9z
+dGF0dXM6IHN0YXR1cz0weGQwIHsgQnVzeSB9CmlkZTogZmFpbGVkIG9wY29kZSB3YXM6IHVua25v
+d24KaGRhOiBpZGVfaW50cjogaHVoPyBleHBlY3RlZCBOVUxMIGhhbmRsZXIgb24gZXhpdApoZGE6
+IEFUQVBJIHJlc2V0IGNvbXBsZXRlCmVuZF9yZXF1ZXN0OiBJL08gZXJyb3IsIGRldiBoZGEsIHNl
+Y3RvciAyMDgKaGRhOiBjZHJvbV9kZWNvZGVfc3RhdHVzOiBzdGF0dXM9MHhkMCB7IEJ1c3kgfQpp
+ZGU6IGZhaWxlZCBvcGNvZGUgd2FzOiB1bmtub3duCmhkYTogaWRlX2ludHI6IGh1aD8gZXhwZWN0
+ZWQgTlVMTCBoYW5kbGVyIG9uIGV4aXQKaGRhOiBBVEFQSSByZXNldCBjb21wbGV0ZQplbmRfcmVx
+dWVzdDogSS9PIGVycm9yLCBkZXYgaGRhLCBzZWN0b3IgMjE2CmhkYTogY2Ryb21fZGVjb2RlX3N0
+YXR1czogc3RhdHVzPTB4ZDAgeyBCdXN5IH0KaWRlOiBmYWlsZWQgb3Bjb2RlIHdhczogdW5rbm93
+bgpoZGE6IGlkZV9pbnRyOiBodWg/IGV4cGVjdGVkIE5VTEwgaGFuZGxlciBvbiBleGl0CmhkYTog
+QVRBUEkgcmVzZXQgY29tcGxldGUKZW5kX3JlcXVlc3Q6IEkvTyBlcnJvciwgZGV2IGhkYSwgc2Vj
+dG9yIDIyNApoZGE6IGNkcm9tX2RlY29kZV9zdGF0dXM6IHN0YXR1cz0weGQwIHsgQnVzeSB9Cmlk
+ZTogZmFpbGVkIG9wY29kZSB3YXM6IHVua25vd24KaGRhOiBpZGVfaW50cjogaHVoPyBleHBlY3Rl
+ZCBOVUxMIGhhbmRsZXIgb24gZXhpdApoZGE6IEFUQVBJIHJlc2V0IGNvbXBsZXRlCmhkYTogY2Ry
+b21fZGVjb2RlX3N0YXR1czogc3RhdHVzPTB4YzAgeyBCdXN5IH0KaWRlOiBmYWlsZWQgb3Bjb2Rl
+IHdhczogdW5rbm93bgpoZGE6IGlkZV9pbnRyOiBodWg/IGV4cGVjdGVkIE5VTEwgaGFuZGxlciBv
+biBleGl0CmhkYTogQVRBUEkgcmVzZXQgY29tcGxldGUKaGRhOiBjZHJvbV9kZWNvZGVfc3RhdHVz
+OiBzdGF0dXM9MHhjMCB7IEJ1c3kgfQppZGU6IGZhaWxlZCBvcGNvZGUgd2FzOiB1bmtub3duCmVu
+ZF9yZXF1ZXN0OiBJL08gZXJyb3IsIGRldiBoZGEsIHNlY3RvciAyMzIKaGRhOiBjZHJvbV9kZWNv
+ZGVfc3RhdHVzOiBzdGF0dXM9MHhkMCB7IEJ1c3kgfQppZGU6IGZhaWxlZCBvcGNvZGUgd2FzOiB1
+bmtub3duCmhkYTogaWRlX2ludHI6IGh1aD8gZXhwZWN0ZWQgTlVMTCBoYW5kbGVyIG9uIGV4aXQK
+aGRhOiBBVEFQSSByZXNldCBjb21wbGV0ZQo=
+------=_Part_6413_7451160.1203919026616--
