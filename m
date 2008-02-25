@@ -1,30 +1,29 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755391AbYBYA1D@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755752AbYBYA1f@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755391AbYBYA1D (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 24 Feb 2008 19:27:03 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754103AbYBYAZh
+	id S1755752AbYBYA1f (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 24 Feb 2008 19:27:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759791AbYBYAZi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 24 Feb 2008 19:25:37 -0500
-Received: from wa-out-1112.google.com ([209.85.146.181]:9622 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755752AbYBYAZf (ORCPT
+	Sun, 24 Feb 2008 19:25:38 -0500
+Received: from nf-out-0910.google.com ([64.233.182.185]:3419 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756341AbYBYAZg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 24 Feb 2008 19:25:35 -0500
+	Sun, 24 Feb 2008 19:25:36 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=subject:from:to:cc:in-reply-to:references:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=VzQdEZTZKjMSZ+GFDWcqela67iF/XyWEbVbz0jlEWjAt6Ot2C2netVJ6fIzOSNmvhfmxzSdTuo/AngNzIxYp3V+hcIbOUvlNjwSIcze/eygT2kQpetKaTyQdFHmF0c8PuDTaENU4pCLbZsbYyNZ7iW5ZCEDY2HeDDl3M0QruTJY=
-Subject: [PATCH 6/6] block: fix shadowed variable warning in blk-map.c
+        b=I8xRflDXoTRzL5jqyO0GupioqT+YHSBIRsi0rVZn5SJazXNTWoeuytrWDtp9DPcgE6C9GeEcZ2jvV0pYR8V4hMxFTnUX6alpJc3ilwPdZjmV0lEkKen7IBvVDGRc2rFIGL04AFVnMmd7CXNNq6I5HI1Bz7juhCg4SNTe5RTtqYY=
+Subject: [PATCH 4/6] smack: make functions static
 From: Harvey Harrison <harvey.harrison@gmail.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>,
-       Jens Axboe <jens.axboe@oracle.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
 Cc: Andrew Morton <akpm@linux-foundation.org>,
        LKML <linux-kernel@vger.kernel.org>
 In-Reply-To: <5ce117613299590dd08d11d24d3a33d9077fe2b0.1203898924.git.harvey.harrison@gmail.com>
 References: <5ce117613299590dd08d11d24d3a33d9077fe2b0.1203898924.git.harvey.harrison@gmail.com>
 Content-Type: text/plain
-Date: Sun, 24 Feb 2008 16:25:37 -0800
-Message-Id: <1203899137.1767.11.camel@brick>
+Date: Sun, 24 Feb 2008 16:25:36 -0800
+Message-Id: <1203899136.1767.9.camel@brick>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.12.1 
 Content-Transfer-Encoding: 7bit
@@ -33,32 +32,39 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 Introduced between 2.6.25-rc2 and -rc3
-block/blk-map.c:154:14: warning: symbol 'bio' shadows an earlier one
-block/blk-map.c:110:13: originally declared here
+security/smack/smackfs.c:374:6: warning: symbol 'smk_unlbl_ambient' was not declared. Should it be static?
+
+While here, take care of this one too.
+security/smack/smackfs.c:341:6: warning: symbol 'smk_cipso_doi' was not declared. Should it be static?
 
 Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
 ---
- block/blk-map.c |    6 +++---
- 1 files changed, 3 insertions(+), 3 deletions(-)
+ security/smack/smackfs.c |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/block/blk-map.c b/block/blk-map.c
-index 09f7fd0..f443c21 100644
---- a/block/blk-map.c
-+++ b/block/blk-map.c
-@@ -151,10 +151,10 @@ int blk_rq_map_user(struct request_queue *q, struct request *rq,
- 	 */
- 	if (len & queue_dma_alignment(q)) {
- 		unsigned int pad_len = (queue_dma_alignment(q) & ~len) + 1;
--		struct bio *bio = rq->biotail;
-+		struct bio *tail = rq->biotail;
- 
--		bio->bi_io_vec[bio->bi_vcnt - 1].bv_len += pad_len;
--		bio->bi_size += pad_len;
-+		tail->bi_io_vec[tail->bi_vcnt - 1].bv_len += pad_len;
-+		tail->bi_size += pad_len;
- 		rq->data_len += pad_len;
- 	}
- 
+diff --git a/security/smack/smackfs.c b/security/smack/smackfs.c
+index 358c92c..cb26951 100644
+--- a/security/smack/smackfs.c
++++ b/security/smack/smackfs.c
+@@ -338,7 +338,7 @@ static const struct file_operations smk_load_ops = {
+ /**
+  * smk_cipso_doi - initialize the CIPSO domain
+  */
+-void smk_cipso_doi(void)
++static void smk_cipso_doi(void)
+ {
+ 	int rc;
+ 	struct cipso_v4_doi *doip;
+@@ -371,7 +371,7 @@ void smk_cipso_doi(void)
+ /**
+  * smk_unlbl_ambient - initialize the unlabeled domain
+  */
+-void smk_unlbl_ambient(char *oldambient)
++static void smk_unlbl_ambient(char *oldambient)
+ {
+ 	int rc;
+ 	struct netlbl_audit audit_info;
 -- 
 1.5.4.2.200.g99e75
+
 
