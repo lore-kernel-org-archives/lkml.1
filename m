@@ -1,95 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761712AbYBYX6P@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761126AbYBYX7n@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761712AbYBYX6P (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 Feb 2008 18:58:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761500AbYBYX55
+	id S1761126AbYBYX7n (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 Feb 2008 18:59:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757545AbYBYX7f
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 Feb 2008 18:57:57 -0500
-Received: from charybdis-ext.suse.de ([195.135.221.2]:42878 "EHLO
-	emea5-mh.id5.novell.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1759130AbYBYX5z (ORCPT
+	Mon, 25 Feb 2008 18:59:35 -0500
+Received: from fk-out-0910.google.com ([209.85.128.188]:52105 "EHLO
+	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756344AbYBYX7e (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 Feb 2008 18:57:55 -0500
-Subject: Re: [PATCH [RT] 08/14] add a loop counter based timeout mechanism
-From: Sven-Thorsten Dietrich <sdietrich@novell.com>
-To: Andi Kleen <ak@suse.de>
-Cc: gregory.haskins@gmail.com, paulmck@linux.vnet.ibm.com,
-       "Bill Huey (hui)" <bill.huey@gmail.com>,
-       Gregory Haskins <ghaskins@novell.com>, mingo@elte.hu,
-       a.p.zijlstra@chello.nl, tglx@linutronix.de, rostedt@goodmis.org,
-       linux-rt-users@vger.kernel.org, linux-kernel@vger.kernel.org,
-       kevin@hilman.org, cminyard@mvista.com, dsingleton@mvista.com,
-       dwalker@mvista.com, npiggin@suse.de, dsaxena@plexity.net,
-       gregkh@suse.de, pmorreale@novell.com, mkohari@novell.com
-In-Reply-To: 20080223123100.GB9021@bingen.suse.de
-References: <20080221152504.4804.8724.stgit@novell1.haskins.net>
-	 <20080221152707.4804.59177.stgit@novell1.haskins.net>
-	 <200802211741.10299.ak@suse.de> <20080222190814.GD11213@linux.vnet.ibm.com>
-	 <9810cff90802221119j23818e74g2721512a693a0a01@mail.gmail.com>
-	 <9810cff90802221121s216f69f4k4a5f39eaaf11dd7f@mail.gmail.com>
-	 <20080222194341.GE11213@linux.vnet.ibm.com>
-	 <1203710145.4772.107.camel@sven.thebigcorporation.com>
-	 <20080222202316.GF11213@linux.vnet.ibm.com> <47BF46AF.7010200@gmail.com>
-	 20080223123100.GB9021@bingen.suse.de
-Content-Type: text/plain
-Date: Mon, 25 Feb 2008 15:52:06 -0800
-Message-Id: <1203983526.16711.171.camel@sven.thebigcorporation.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.0 
-Content-Transfer-Encoding: 7bit
+	Mon, 25 Feb 2008 18:59:34 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
+        b=m8TxtVqmt3eYYWdMHr+AxTv2HMAXknMTHvQigDqgPTgTl41RjI0HKnNJbXZAz9Tk7Usoi9rnyo3gWrOe8RLpcSk+OmmTkcUeIteiuK4gANDyBgKg7K0qH2lTtiF2PFbOmF1MofrLPymf7iNrxG6hI6qIPV3tj4eR6Td+QW+rFF0=
+Message-ID: <47C35661.80109@googlemail.com>
+Date: Tue, 26 Feb 2008 00:59:29 +0100
+From: Gabriel C <nix.or.die@googlemail.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071204)
+MIME-Version: 1.0
+To: Arjan van de Ven <arjan@linux.intel.com>
+CC: Laurent Riffard <laurent.riffard@free.fr>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Stuart Bennett <sb476@cam.ac.uk>, Len Brown <lenb@kernel.org>
+Subject: Re: 2.6.25-rc2-mm1: WARNING at arch/x86/mm/ioremap.c:129
+References: <20080216002522.9c4bd0fb.akpm@linux-foundation.org> <47B7553D.5040601@free.fr> <47C0BDE2.4020402@googlemail.com> <47C0DB7D.70407@linux.intel.com> <47C2ED51.4000105@googlemail.com> <47C344E5.5050205@linux.intel.com> <47C35046.8020007@googlemail.com>
+In-Reply-To: <47C35046.8020007@googlemail.com>
+Content-Type: text/plain; charset=ISO-8859-15
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-On Sat, 2008-02-23 at 13:31 +0100, Andi Kleen wrote:
-> > *) compute the context-switch pair time average for the system.  This is 
-> > your time threshold (CSt).
+Gabriel C wrote:
+> Arjan van de Ven wrote:
+>> Gabriel C wrote:
+>>> Arjan van de Ven wrote:
+>>>> Gabriel C wrote:
+>>>>> Laurent Riffard wrote:
+>>>>>> Le 16.02.2008 09:25, Andrew Morton a écrit :
+>>>>>>> ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.25-rc2/2.6.25-rc2-mm1/
+>>>>> [..]
+>>>>>
+>>>>> I'm getting that in mainline now on one of my older laptops also.
+>>>> we fixed the cause of the machine you quoted; so I suspect yours is different..
+>>>> Can you get me your stacktrace ? Can you try the patch from this thread to show
+>>>> what memory the offender tries to access ?
+>>> Arjan , sorry for the lag.
+>>>
+>>> With your patch from http://marc.info/?l=linux-kernel&m=120336371506283&w=2 I don't have a warning anymore.
+>>>
+>> that is ... odd since it's the same in theory, just with some added printk's ;-(
+>>
+> 
+> hmm but in theory only that part of your patch only should do the same , no ?
+> 
+> 	if (page_is_ram(pfn)) {
+> 		printk(..)
+> 	}
+> 
+> I'm going to try that.
+> 
 > 
 
-Hi Andi,
+With only that part I get the waring again. 
 
-> This is not a uniform time. Consider the difference between
-> context switch on the same hyperthread, context switch between cores
-> on a die, context switch between sockets, context switch between
-> distant numa nodes. You could have several orders of magnitude
-> between all those.
-> 
-> >
-> > *) For each lock, maintain an average hold-time (AHt) statistic (I am 
-> > assuming this can be done cheaply...perhaps not).
-> 
-> That would assume that the hold times are very uniform. But what happens
-> when you e.g. have a workload where 50% of the lock aquisitions are short 
-> and 30% are long? 
-> 
-> I'm a little sceptical of such "too clever" algorithms.
-> 
+But I see the printk() twice so I guess this should be in general an WARN_ON() ?
 
-I agree, this does not make any sense until you get to very large SMP
-systems - and only iff it can be demonstrated, that the overhead
-associated with lock statistics and including some notion of the context
-switch overhead still comes out with a net gain.
+http://frugalware.org/~crazy/dmesg/dmesg_with_patch_2
 
-There is some notion of task-routing in the RT scheduler already, and
-this is quite a clever little algorithm. 
-
-I see no reason, why the scheduler should not eventually take directly
-into account (when balancing), the quantifiable context-switch and CPU
-overhead of moving a task to a distant processor.
-
-In fact, for a deadline-based scheduler working on high-frequency tasks,
-given that the times can switch so radically, this is would be
-requiredOnve context-switch-overhead data is available to the scheduler,
-there is no particular reason why adaptive locking could not also
-utilize that data.
-
-Sven
-
-> -Andi
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
-
+ 
