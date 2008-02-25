@@ -1,138 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759160AbYBYU4T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759481AbYBYU5h@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759160AbYBYU4T (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 Feb 2008 15:56:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756752AbYBYU4K
+	id S1759481AbYBYU5h (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 Feb 2008 15:57:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756752AbYBYU53
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 Feb 2008 15:56:10 -0500
-Received: from gv-out-0910.google.com ([216.239.58.187]:56805 "EHLO
-	gv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756693AbYBYU4J (ORCPT
+	Mon, 25 Feb 2008 15:57:29 -0500
+Received: from ug-out-1314.google.com ([66.249.92.171]:38730 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752846AbYBYU52 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 Feb 2008 15:56:09 -0500
-Message-ID: <1a9da18c0802251256u64636505y9f04af8a121ab766@mail.gmail.com>
-Date: Mon, 25 Feb 2008 12:56:01 -0800
-From: "=?UTF-8?Q?Masoud_Sharbiani?=
-	=?UTF-8?Q?_\"=D9=85=D8=B3=D8=B9=D9=88=D8=AF_?=
-	=?UTF-8?Q?=D8=B4=D8=B1=D8=A8=DB=8C=D8=A7=D9=86=DB=8C\"?=" 
-	<masouds@masoud.ir>
-To: "Ady Wicaksono" <ady.wicaksono@gmail.com>
-Subject: Re: Patch kernel: I have 8 Gbytes RAM, but why I can only allocate 2.8 Gbytes RAM for a single process?
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <2743ae110802242344s4406cd5eq3c5e8d0a6e69101b@mail.gmail.com>
+	Mon, 25 Feb 2008 15:57:28 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
+        b=R/ul9eb61or4vaXMqZHranEzshbA7lCxXukI1uMSTvh9AW2Y/CDsFJAXBxcZHM/By9T0SsOMiel3bFf1TjEj0o+4A4gBOOHQd2s5i8jkFrqstG+cVR4hCTTKg6l4DwuiSWmb4vfXda/M6TYLhmcH0B/Yvi0NpYsb+XRRhVGLy3g=
+Message-ID: <8f53421d0802251257o75d2975dldcfb99a2dc5e3539@mail.gmail.com>
+Date: Mon, 25 Feb 2008 22:57:24 +0200
+From: "Michael S. Tsirkin" <m.s.tsirkin@gmail.com>
+To: "Andrew Morton" <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       "Pavel Machek" <pavel@suse.cz>, "Jeff Garzik" <jeff@garzik.org>,
+       jgarzik@pobox.com, linux-ide@vger.kernel.org
+Subject: new regression in 2.6.25-rc3: can't resume from suspend to ram, ata1 errors
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <2743ae110802242344s4406cd5eq3c5e8d0a6e69101b@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 2/24/08, Ady Wicaksono <ady.wicaksono@gmail.com> wrote:
-> I have 8 Gbytes RAM, but why I can allocate 2.8 Gbytes RAM for a single process?
->  How to patch kernel so I have more than 2.8 Gbytes limitation?
->
->  Kernel:
->  ---------------------------
->  Linux xxx.com 2.6.9-023stab046.2-enterprise #1 SMP Mon Dec 10 15:22:33
->  MSK 2007 i686 i686 i386 GNU/Linux
+On my T61p, 2.6.25-rc2 seems to wake up fine from suspend to ram.
+Not so 2.6.25-rc3: it hangs on suspend to ram, with a blank screen.
 
-You really need to use 64 bit kernel AND 64 bit userspace to use more
-than 3gigs per process.
+At one point I got lucky and got this on console (wrote down by hand,
+there could be typos):
+ata1: COMRESET failed (errno=-16)
+ata1: COMRESET failed (errno=-16)
+end_request: I/O error, dev sda sector 200554
+Buffer I/O error on device dm-0, logical block 256
+Buffer I/O error on device dm-0, logical block 15695875
+Buffer I/O error on device dm-0, logical block 15695878
+Buffer I/O error on device dm-0, logical block 15695887
+Buffer I/O error on device dm-0, logical block 15695896
+Buffer I/O error on device dm-0, logical block 15695914
+Buffer I/O error on device dm-0, logical block 15958028
+Buffer I/O error on device dm-0, logical block 22118530
+Buffer I/O error on device dm-0, logical block 22315068
+Buffer I/O error on device dm-0, logical block 22347824
 
-Masoud
+git bisect points at this commit:
+commit 559bbe6cbd0d8c68d40076a5f7dc98e3bf5864b2.
+power_state: get rid of write-only variable in SATA
 
->  Mem:
->  ---------------------------
->  # cat /proc/meminfo
->  MemTotal:      8296484 kB
->  MemFree:         50416 kB
->  Buffers:         64412 kB
->  Cached:        4927328 kB
->  SwapCached:          0 kB
->  Active:        6710828 kB
->  Inactive:      1065384 kB
->  HighTotal:     4980736 kB
->  HighFree:         1024 kB
->  LowTotal:      3315748 kB
->  LowFree:         49392 kB
->  SwapTotal:    10256376 kB
->  SwapFree:     10255732 kB
->  Dirty:              64 kB
->  Writeback:           0 kB
->  Mapped:        3054960 kB
->  Slab:           393224 kB
->  CommitLimit:  14404616 kB
->  Committed_AS:  6318152 kB
->  PageTables:      34892 kB
->  VmallocTotal:   303096 kB
->  VmallocUsed:     22360 kB
->  VmallocChunk:   280496 kB
->
->
->  CPU (8 processor id from 0-7), one of them is:
->  ---------------------------
->  processor       : 0
->  vendor_id       : GenuineIntel
->  cpu family      : 15
->  model           : 6
->  model name      : Intel(R) Xeon(TM) CPU 3.00GHz
->  stepping        : 4
->  cpu MHz         : 2993.054
->  cache size      : 2048 KB
->  physical id     : 0
->  siblings        : 4
->  core id         : 0
->  cpu cores       : 2
->  fdiv_bug        : no
->  hlt_bug         : no
->  f00f_bug        : no
->  coma_bug        : no
->  fpu             : yes
->  fpu_exception   : yes
->  cpuid level     : 6
->  wp              : yes
->  flags           : fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge
->  mca cmov pat pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe nx
->  lm constant_tsc pni monitor ds_cpl est cid xtpr
->  bogomips        : 5989.55
->
->  App to test memory limit:
->  ---------------------------
->  #include <stdio.h>
->  #include <stdlib.h>
->
->  int main(){
->         size_t siz = 100 * 1024 * 1024 ;
->         size_t idx = 1 ;
->         void *ptr;
->
->         for (;;){
->                 ptr = malloc ( siz * idx );
->                 if(!ptr)
->                         break ;
->                 free(ptr);
->                 idx++;
->         }
->         printf ("Max malloc %d * 100 MB \n", idx - 1 );
->         return (0);
->  }
->
->  App result: Max malloc 28 * 100 MB ==> 2.8 Gbytes
->
->
->  --
->  Regards,
->
->  Ady Wicaksono
->  Email:
->  ady.wicaksono at gmail.com
->  http://adywicaksono.wordpress.com/
->
-> --
->  To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
->  the body of a message to majordomo@vger.kernel.org
->  More majordomo info at  http://vger.kernel.org/majordomo-info.html
->  Please read the FAQ at  http://www.tux.org/lkml/
->
+After reverting 559bbe6cbd0d8c68d40076a5f7dc98e3bf5864b2
+on top of 2.6.25-rc3 the kernel again resumes from suspend to ram.
