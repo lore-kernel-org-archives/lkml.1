@@ -1,49 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759502AbYBYUjn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759662AbYBYUj4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759502AbYBYUjn (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 Feb 2008 15:39:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757697AbYBYUjd
+	id S1759662AbYBYUj4 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 Feb 2008 15:39:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759441AbYBYUji
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 Feb 2008 15:39:33 -0500
-Received: from lazybastard.de ([212.112.238.170]:54566 "EHLO
-	longford.lazybastard.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756389AbYBYUjc (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 Feb 2008 15:39:32 -0500
-Date: Mon, 25 Feb 2008 21:38:53 +0100
-From: =?utf-8?B?SsO2cm4=?= Engel <joern@logfs.org>
-To: Dave McCracken <dave.mccracken@oracle.com>
-Cc: Andy Whitcroft <apw@shadowen.org>, linux-mm@kvack.org,
+	Mon, 25 Feb 2008 15:39:38 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:36126 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1759426AbYBYUjh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 25 Feb 2008 15:39:37 -0500
+Date: Mon, 25 Feb 2008 15:38:24 -0500
+From: Alan Cox <alan@redhat.com>
+To: Adrian Bunk <bunk@kernel.org>
+Cc: Alan Cox <alan@redhat.com>, Steven Rostedt <srostedt@redhat.com>,
+       Valdis.Kletnieks@vt.edu, Andrew Morton <akpm@linux-foundation.org>,
+       Ingo Molnar <mingo@elte.hu>,
+       Arnaldo Carvalho de Melo <acme@ghostprotocols.net>,
        linux-kernel@vger.kernel.org
-Subject: Re: Page scan keeps touching kernel text pages
-Message-ID: <20080225203852.GA15904@lazybastard.org>
-References: <20080224144710.GD31293@lazybastard.org> <20080225185319.GA14699@lazybastard.org> <20080225192127.GA20322@shadowen.org> <200802251346.32289.dave.mccracken@oracle.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Subject: Re: [PATCH] 2.6.25-rc2-mm1 - fix mcount GPL bogosity.
+Message-ID: <20080225203824.GA31946@devserv.devel.redhat.com>
+References: <30804.1203962369@turing-police.cc.vt.edu> <47C3078E.3000008@redhat.com> <20080225181957.4eeed15d@core> <20080225192710.GA13635@cs181133002.pp.htv.fi> <20080225194835.GA28042@devserv.devel.redhat.com> <20080225200903.GB13635@cs181133002.pp.htv.fi>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <200802251346.32289.dave.mccracken@oracle.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <20080225200903.GB13635@cs181133002.pp.htv.fi>
+User-Agent: Mutt/1.4.1i
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street, Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a Lloegr o'r rhif cofrestru 3798903
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 25 February 2008 13:46:32 -0600, Dave McCracken wrote:
-> On Monday 25 February 2008, Andy Whitcroft wrote:
-> > I thought that init sections were deliberatly pushed to the end of the
-> > kernel when linked, cirtainly on my laptop here that seems to be so.
-> > That would make the first two "after" the kernel.  The other two appear
-> > to be before the traditional kernel load address, which is 0x100000, so
-> > those pages are before not in the kernel?
-> 
-> I believe the memory below the kernel load address on x86 is returned to the 
-> free memory pool at some point during boot, which would explain those 
-> addresses.
+On Mon, Feb 25, 2008 at 10:09:03PM +0200, Adrian Bunk wrote:
+> Being able to sue someone who has so many lawsuits that there's anyway 
+> no money left for me sounds like a bad compensation for serving a few 
+> years in jail... [1]
 
-It does explain all pages.  Sorry about the noise from an mm-newbie.
-
-Jörn
-
--- 
-Joern's library part 14:
-http://www.sandpile.org/
+If the FSF wrote the code then he should ask the FSF, that seems simple
+enough to me.
