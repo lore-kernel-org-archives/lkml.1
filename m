@@ -1,86 +1,150 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756186AbYBYLep@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755275AbYBYLfy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756186AbYBYLep (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 Feb 2008 06:34:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752947AbYBYLeh
+	id S1755275AbYBYLfy (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 Feb 2008 06:35:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753243AbYBYLfq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 Feb 2008 06:34:37 -0500
-Received: from crystal.sipsolutions.net ([195.210.38.204]:58468 "EHLO
-	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752426AbYBYLeg (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 Feb 2008 06:34:36 -0500
-Subject: Re: filesystem corruption on xfs after 2.6.25-rc1 (bisected,
-	powerpc related?)
-From: Johannes Berg <johannes@sipsolutions.net>
-To: Gaudenz Steinlin <gaudenz@soziologie.ch>
-Cc: xfs-masters@oss.sgi.com, xfs@oss.sgi.com, linux-kernel@vger.kernel.org
-In-Reply-To: <20080225112310.GA5516@soziologie.ch>
-References: <20080225112310.GA5516@soziologie.ch>
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-o+13gtM1ze3OhpwPt/fg"
-Date: Mon, 25 Feb 2008 12:34:27 +0100
-Message-Id: <1203939267.13162.93.camel@johannes.berg>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 
+	Mon, 25 Feb 2008 06:35:46 -0500
+Received: from mail.mizi.com ([61.107.31.33]:39492 "EHLO mail.mizi.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752947AbYBYLfp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 25 Feb 2008 06:35:45 -0500
+Message-ID: <47C2A7FA.2060902@mizi.com>
+Date: Mon, 25 Feb 2008 20:35:22 +0900
+From: Louis JANG <louis@mizi.com>
+Organization: MIZI Research, Inc.
+User-Agent: Thunderbird 1.5.0.14pre (X11/20071023)
+MIME-Version: 1.0
+To: Dave Young <hidave.darkstar@gmail.com>
+CC: linux-bluetooth@vger.kernel.org, Marcel Holtmann <marcel@holtmann.org>,
+       Linux Kernel <linux-kernel@vger.kernel.org>, bmidgley@gmail.com,
+       David Miller <davem@davemloft.net>, Netdev <netdev@vger.kernel.org>
+Subject: Re: [Bluez-devel] forcing SCO connection patch
+References: <47666E1F.2000902@mizi.com>	 <a8e1da0802242330l765b8b1ava62b857baf8a5568@mail.gmail.com>	 <47C28A33.4070102@mizi.com> <a8e1da0802250155u1b7af481va203849f68d9106b@mail.gmail.com>
+In-Reply-To: <a8e1da0802250155u1b7af481va203849f68d9106b@mail.gmail.com>
+Content-Type: multipart/mixed;
+ boundary="------------010407000406090200060007"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+This is a multi-part message in MIME format.
+--------------010407000406090200060007
+Content-Type: text/plain; charset=EUC-KR
+Content-Transfer-Encoding: 8bit
 
---=-o+13gtM1ze3OhpwPt/fg
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+Dave Young ¾´ ±Û:
+> On Mon, Feb 25, 2008 at 5:28 PM, Louis JANG <louis@mizi.com> wrote:
+>   
+>>  > I ever asked marcel about the coding style. please see following thread:
+>>  > http://lkml.org/lkml/2008/1/22/91
+>>  >
+>>  > I think the style problem marcel said is
+>>  > 1. using kernel codeing style
+>>  > 2. marcel's style
+>>  > container_of or get_user_data calls at the top of the variable declaration
+>>  > using the empty lines to seperate code blocks
+>>  >
+>>  > Please rework your patch and resend if you fixed them.
+>>  >
+>>  > BTW, please use the new bluetooth mailing list for kerne issue.
+>>  > linux-bluetooth@vger.kernel.org
+>>  >
+>>  > (Thanks for andrew and davem)
+>>  >
+>>  > Regards
+>>  > dave
+>>  >
+>>  > Regards
+>>  > dave
+>>  >
+>>  >
+>>
+>>  Hi all,
+>>
+>>  I adjusted indentation of the patches
+>>     
+>
+> Not enough.
+>
+> Please first read Documentation/CodingStyle, fix them, and
+> then use scripts/checkpatch.pl to check your patch.
+>   
+I fixed all of errors except 80 characters warning.
+Thanks
 
-Hi,
+Louis JANG
 
-> Git reset is just the easiest way to reproduce it.
 
-Interesting :)
+--------------010407000406090200060007
+Content-Type: text/plain;
+ name="patch_hci_event.c3"
+Content-Transfer-Encoding: base64
+Content-Disposition: inline;
+ filename="patch_hci_event.c3"
 
-> I was able to track this corruption down to commit
-> a69b176df246d59626e6a9c640b44c0921fa4566 ([XFS] Use the generic bitops
-> rather than implementing them ourselves.) using git bisect.
->=20
-> Reverting edd319dc527733e61eec5bdc9ce20c94634b6482 ([XFS] Fix
-> xfs_lowbit64) to avoid merge conflicts and the faulty commit on top of
-> 2.6.25-rc3 fixes the problem.
+U2lnbmVkLW9mZi1ieTogTG91aXMgSkFORyA8bG91aXNAbWl6aS5jb20+CgotLS0gbGludXgt
+Mi42LjIzL25ldC9ibHVldG9vdGgvaGNpX2V2ZW50LmMub3JpZwkyMDA4LTAyLTI1IDE3OjE3
+OjExLjAwMDAwMDAwMCArMDkwMAorKysgbGludXgtMi42LjIzL25ldC9ibHVldG9vdGgvaGNp
+X2V2ZW50LmMJMjAwOC0wMi0yNSAxNzozMDoyMy4wMDAwMDAwMDAgKzA5MDAKQEAgLTEzMTMs
+OCArMTMxMywxNyBAQAogCWhjaV9kZXZfbG9jayhoZGV2KTsKIAogCWNvbm4gPSBoY2lfY29u
+bl9oYXNoX2xvb2t1cF9iYShoZGV2LCBldi0+bGlua190eXBlLCAmZXYtPmJkYWRkcik7Ci0J
+aWYgKCFjb25uKQotCQlnb3RvIHVubG9jazsKKwlpZiAoIWNvbm4pIHsKKwkJaWYgKGV2LT5s
+aW5rX3R5cGUgIT0gQUNMX0xJTkspIHsKKwkJCV9fdTggbGlua190eXBlID0gKGV2LT5saW5r
+X3R5cGUgPT0gRVNDT19MSU5LKSA/IFNDT19MSU5LIDogRVNDT19MSU5LOworCisJCQljb25u
+ID0gaGNpX2Nvbm5faGFzaF9sb29rdXBfYmEoaGRldiwgbGlua190eXBlLCAmZXYtPmJkYWRk
+cik7CisJCQlpZiAoY29ubikKKwkJCQljb25uLT50eXBlID0gZXYtPmxpbmtfdHlwZTsKKwkJ
+fQorCQlpZiAoIWNvbm4pCisJCQlnb3RvIHVubG9jazsKKwl9CiAKIAlpZiAoIWV2LT5zdGF0
+dXMpIHsKIAkJY29ubi0+aGFuZGxlID0gX19sZTE2X3RvX2NwdShldi0+aGFuZGxlKTsK
+--------------010407000406090200060007
+Content-Type: text/plain;
+ name="bluez-kernel-forcesco.patch3"
+Content-Transfer-Encoding: base64
+Content-Disposition: inline;
+ filename="bluez-kernel-forcesco.patch3"
 
-Odd. The replaced code doesn't look like it has any sort of endianness
-assumptions.
-
-> My filesystem is on an LVM2 logical volume and my computer is a
-> PowerBook G4 (model 5,8). I'm using GCC 4.2.3.
->=20
-> My problem is similar to the problem Johannes Berg reported in:
-> http://oss.sgi.com/archives/xfs/2008-02/msg00244.html
->=20
-> AFAIK Johannes also uses a PowerBook.
-
-Indeed, I do, forgot to mention that, thanks for copying me.
-
-johannes
-
---=-o+13gtM1ze3OhpwPt/fg
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Comment: Johannes Berg (powerbook)
-
-iQIVAwUAR8KnwqVg1VMiehFYAQJcvw//ePAx/m2dCWUYptVRrufyOCNwIRcpzb8q
-9KNNuooErqBihVp3XfXx7TWoPOEadj0dTuvaYTIsj8TLK6CijcgV+YT7mM7elvQB
-HbsLctwUBLz/Sg//Q6L5WWAUaA4RaYtKvyKox9aUe9noHNQvLdntRQwvk3TbHTpj
-Waejx4u+j+jPwNIna/QxWoBBhMvRp4zoHK2U+hY0zlDT0Tli+O0KNM+xjfeS1Bav
-IF9uCymJudbHwdWucvcd4DWR8I1PLSHsEqp97XtYY8wrz9h735vsuFooHY1IWZL4
-uK4XnoOuMHVqUaF/9S1DA3aGfnqKwEVT9A0FnjteDsEkyZPoF18LQl5pslmZBoBR
-cq/cLD1J+OUWEtCUKEjk2CE9f7cVYDq5bhjUBUo+075Pa5xpnZAoaJt4ikLdpXZX
-VLAYrtaNrHKQ7UuHjJlQMTy0xrBey8lt1eplzK/Pkx0qziiJyTp+T5K9eEtSMC5R
-RjdyqQVwVW/VQEuzEQMCftqg+NC9TuO5i4T+iZmjIBe1sWsWnIoZiIUHP5Pzh2Bj
-g0IXqhNvKIYWzB+LUZjtTrYtXjTDwAQV6qdvKc+sWwalN4vd2b0sjWc4v+EBEg78
-5F8Z5NZteuP1n5ApOxCGASTU1eELwRbvOnvt2lSbgWTs9RErn7vAGlDozqhFbZ99
-JrIzSUvu1OE=
-=OX4E
------END PGP SIGNATURE-----
-
---=-o+13gtM1ze3OhpwPt/fg--
-
+U2lnbmVkLW9mZi1ieTogTG91aXMgSkFORyA8bG91aXNAbWl6aS5jb20+CgpkaWZmIC11TnIg
+bGludXgtMi42LjIzL2luY2x1ZGUvbmV0L2JsdWV0b290aC1vcmlnL3Njby5oIGxpbnV4LTIu
+Ni4yMy9pbmNsdWRlL25ldC9ibHVldG9vdGgvc2NvLmgKLS0tIGxpbnV4LTIuNi4yMy9pbmNs
+dWRlL25ldC9ibHVldG9vdGgtb3JpZy9zY28uaAkyMDA3LTEwLTEwIDA1OjMxOjM4LjAwMDAw
+MDAwMCArMDkwMAorKysgbGludXgtMi42LjIzL2luY2x1ZGUvbmV0L2JsdWV0b290aC9zY28u
+aAkyMDA4LTAyLTI1IDE4OjA0OjIwLjAwMDAwMDAwMCArMDkwMApAQCAtNTEsNiArNTEsOCBA
+QAogCV9fdTggIGRldl9jbGFzc1szXTsKIH07CiAKKyNkZWZpbmUgU0NPX0ZPUkNFU0NPCTB4
+MDMKKwogLyogLS0tLSBTQ08gY29ubmVjdGlvbnMgLS0tLSAqLwogc3RydWN0IHNjb19jb25u
+IHsKIAlzdHJ1Y3QgaGNpX2Nvbm4JKmhjb247CkBAIC03NCw2ICs3Niw3IEBACiAJc3RydWN0
+IGJ0X3NvY2sJYnQ7CiAJX191MzIJCWZsYWdzOwogCXN0cnVjdCBzY29fY29ubgkqY29ubjsK
+Kwl1bnNpZ25lZCBpbnQJZm9yY2Vfc2NvIDoxOwogfTsKIAogI2VuZGlmIC8qIF9fU0NPX0gg
+Ki8KZGlmZiAtdU5yIGxpbnV4LTIuNi4yMy9uZXQvYmx1ZXRvb3RoLW9yaWcvaGNpX2Nvbm4u
+YyBsaW51eC0yLjYuMjMvbmV0L2JsdWV0b290aC9oY2lfY29ubi5jCi0tLSBsaW51eC0yLjYu
+MjMvbmV0L2JsdWV0b290aC1vcmlnL2hjaV9jb25uLmMJMjAwOC0wMi0yNSAxNzo1ODoyNy4w
+MDAwMDAwMDAgKzA5MDAKKysrIGxpbnV4LTIuNi4yMy9uZXQvYmx1ZXRvb3RoL2hjaV9jb25u
+LmMJMjAwOC0wMi0yNSAxODowMjowNC4wMDAwMDAwMDAgKzA5MDAKQEAgLTM1NCw3ICszNTQs
+NyBAQAogCiAJaWYgKGFjbC0+c3RhdGUgPT0gQlRfQ09OTkVDVEVEICYmCiAJCQkoc2NvLT5z
+dGF0ZSA9PSBCVF9PUEVOIHx8IHNjby0+c3RhdGUgPT0gQlRfQ0xPU0VEKSkgewotCQlpZiAo
+bG1wX2VzY29fY2FwYWJsZShoZGV2KSkKKwkJaWYgKHR5cGUgPT0gRVNDT19MSU5LKQogCQkJ
+aGNpX3NldHVwX3N5bmMoc2NvLCBhY2wtPmhhbmRsZSk7CiAJCWVsc2UKIAkJCWhjaV9hZGRf
+c2NvKHNjbywgYWNsLT5oYW5kbGUpOwpkaWZmIC11TnIgbGludXgtMi42LjIzL25ldC9ibHVl
+dG9vdGgtb3JpZy9zY28uYyBsaW51eC0yLjYuMjMvbmV0L2JsdWV0b290aC9zY28uYwotLS0g
+bGludXgtMi42LjIzL25ldC9ibHVldG9vdGgtb3JpZy9zY28uYwkyMDA4LTAyLTI1IDE3OjU4
+OjI3LjAwMDAwMDAwMCArMDkwMAorKysgbGludXgtMi42LjIzL25ldC9ibHVldG9vdGgvc2Nv
+LmMJMjAwOC0wMi0yNSAxODowODo1MS4wMDAwMDAwMDAgKzA5MDAKQEAgLTIwMCw3ICsyMDAs
+MTAgQEAKIAogCWVyciA9IC1FTk9NRU07CiAKLQl0eXBlID0gbG1wX2VzY29fY2FwYWJsZSho
+ZGV2KSA/IEVTQ09fTElOSyA6IFNDT19MSU5LOworCWlmIChzY29fcGkoc2spLT5mb3JjZV9z
+Y28pCisJCXR5cGUgPSBTQ09fTElOSzsKKwllbHNlCisJCXR5cGUgPSBsbXBfZXNjb19jYXBh
+YmxlKGhkZXYpID8gRVNDT19MSU5LIDogU0NPX0xJTks7CiAKIAloY29uID0gaGNpX2Nvbm5l
+Y3QoaGRldiwgdHlwZSwgZHN0KTsKIAlpZiAoIWhjb24pCkBAIC02NjAsMTIgKzY2MywyMSBA
+QAogewogCXN0cnVjdCBzb2NrICpzayA9IHNvY2stPnNrOwogCWludCBlcnIgPSAwOworCWlu
+dCBmb3JjZV9zY287CiAKIAlCVF9EQkcoInNrICVwIiwgc2spOwogCiAJbG9ja19zb2NrKHNr
+KTsKIAogCXN3aXRjaCAob3B0bmFtZSkgeworCWNhc2UgU0NPX0ZPUkNFU0NPOgorCQlpZiAo
+Y29weV9mcm9tX3VzZXIoJmZvcmNlX3Njbywgb3B0dmFsLCBzaXplb2YoaW50KSkpIHsKKwkJ
+CWVyciA9IC1FRkFVTFQ7CisJCQlicmVhazsKKwkJfQorCQlzY29fcGkoc2spLT5mb3JjZV9z
+Y28gPSAoZm9yY2Vfc2NvICE9IDApOworCQlicmVhazsKKwogCWRlZmF1bHQ6CiAJCWVyciA9
+IC1FTk9QUk9UT09QVDsKIAkJYnJlYWs7CkBAIC02ODEsNiArNjkzLDcgQEAKIAlzdHJ1Y3Qg
+c2NvX29wdGlvbnMgb3B0czsKIAlzdHJ1Y3Qgc2NvX2Nvbm5pbmZvIGNpbmZvOwogCWludCBs
+ZW4sIGVyciA9IDA7CisJaW50IGZvcmNlX3NjbzsKIAogCUJUX0RCRygic2sgJXAiLCBzayk7
+CiAKQEAgLTcyMSw2ICs3MzQsMTMgQEAKIAogCQlicmVhazsKIAorCWNhc2UgU0NPX0ZPUkNF
+U0NPOgorCQlmb3JjZV9zY28gPSBzY29fcGkoc29jayktPmZvcmNlX3NjbzsKKwkJaWYgKGNv
+cHlfdG9fdXNlcihvcHR2YWwsICZmb3JjZV9zY28sIHNpemVvZihpbnQpKSkKKwkJCWVyciA9
+IC1FRkFVTFQ7CisKKwkJYnJlYWs7CisKIAlkZWZhdWx0OgogCQllcnIgPSAtRU5PUFJPVE9P
+UFQ7CiAJCWJyZWFrOwo=
+--------------010407000406090200060007--
