@@ -1,48 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755341AbYBYQOQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756366AbYBYQOp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755341AbYBYQOQ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 Feb 2008 11:14:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753567AbYBYQN7
+	id S1756366AbYBYQOp (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 Feb 2008 11:14:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755530AbYBYQOe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 Feb 2008 11:13:59 -0500
-Received: from g5t0008.atlanta.hp.com ([15.192.0.45]:9404 "EHLO
-	g5t0008.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753022AbYBYQN6 (ORCPT
+	Mon, 25 Feb 2008 11:14:34 -0500
+Received: from saraswathi.solana.com ([198.99.130.12]:44415 "EHLO
+	saraswathi.solana.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753567AbYBYQOe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 Feb 2008 11:13:58 -0500
-From: Bjorn Helgaas <bjorn.helgaas@hp.com>
-To: linux-serial@vger.kernel.org, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: serial: add PNP ID GVC0303 for Archtek 3334BRV ISA modem
-Date: Mon, 25 Feb 2008 09:15:27 -0700
-User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
-Cc: Thomas Lehmann <thomas.lehmann@alumni.tu-berlin.de>,
-       linux-kernel@vger.kernel.org
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+	Mon, 25 Feb 2008 11:14:34 -0500
+Date: Mon, 25 Feb 2008 11:14:08 -0500
+From: Jeff Dike <jdike@addtoit.com>
+To: "Theodore Ts'o" <tytso@mit.edu>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: Should a x86 gdb work under an x86_64 kernel?
+Message-ID: <20080225161408.GA7295@c2.user-mode-linux.org>
+References: <E1JTeeF-0005dk-Nv@closure.thunk.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200802250915.27783.bjorn.helgaas@hp.com>
+In-Reply-To: <E1JTeeF-0005dk-Nv@closure.thunk.org>
+User-Agent: Mutt/1.4.2.3i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Thomas Lehmann <thomas.lehmann@alumni.tu-berlin.de> verified that this
-entry works.
+On Mon, Feb 25, 2008 at 09:49:43AM -0500, Theodore Ts'o wrote:
+> 	I've noticed that if I try to use a 32-bit x86 gdb to debug a
+> 32-bit program under a 64-bit x86_64 kernel, gdb (version 6.6-debian,
+> from Ubuntu Gutsy) immediately core dumps as soon as I run the test
+> program under the debugger.  Is this normal/expected/known bug?
 
-Signed-off-by: Bjorn Helgaas <bjorn.helgaas@hp.com>
+Probably - UML broke too.
 
-Index: work6/drivers/serial/8250_pnp.c
-===================================================================
---- work6.orig/drivers/serial/8250_pnp.c	2008-02-20 16:55:04.000000000 -0700
-+++ work6/drivers/serial/8250_pnp.c	2008-02-25 09:04:41.000000000 -0700
-@@ -91,6 +91,8 @@
- 	/* Archtek America Corp. */
- 	/* Archtek SmartLink Modem 3334BT Plug & Play */
- 	{	"GVC000F",		0	},
-+	/* Archtek SmartLink Modem 3334BRV 33.6K Data Fax Voice */
-+	{	"GVC0303",		0	},
- 	/* Hayes */
- 	/* Hayes Optima 288 V.34-V.FC + FAX + Voice Plug & Play */
- 	{	"HAY0001",		0	},
+Roland found the bug and posted a patch fairly quickly -
+	http://marc.info/?l=linux-kernel&m=120365510230307&q=raw
+
+				Jeff
+
+-- 
+Work email - jdike at linux dot intel dot com
