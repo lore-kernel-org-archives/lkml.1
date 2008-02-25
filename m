@@ -1,245 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756076AbYBYK30@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754786AbYBYKjS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756076AbYBYK30 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 Feb 2008 05:29:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754977AbYBYK3Q
+	id S1754786AbYBYKjS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 Feb 2008 05:39:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753255AbYBYKjE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 Feb 2008 05:29:16 -0500
-Received: from fms-01.valinux.co.jp ([210.128.90.1]:58241 "EHLO
-	mail.valinux.co.jp" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754903AbYBYK3P (ORCPT
+	Mon, 25 Feb 2008 05:39:04 -0500
+Received: from vs166246.vserver.de ([62.75.166.246]:44966 "EHLO
+	vs166246.vserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753121AbYBYKjB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 Feb 2008 05:29:15 -0500
-Date: Mon, 25 Feb 2008 19:29:14 +0900 (JST)
-Message-Id: <20080225.192914.193698917.ryov@valinux.co.jp>
-To: linux-kernel@vger.kernel.org, dm-devel@redhat.com,
-       containers@lists.linux-foundation.org,
-       virtualization@lists.linux-foundation.org,
-       xen-devel@lists.xensource.com
-Subject: The I/O bandwidth controller: dm-ioband Performance Report
-From: Ryo Tsuruta <ryov@valinux.co.jp>
-X-Mailer: Mew version 5.2.52 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Mon, 25 Feb 2008 05:39:01 -0500
+From: Michael Buesch <mb@bu3sch.de>
+To: "Alexey Zaytsev" <alexey.zaytsev@gmail.com>
+Subject: Re: bcm43xx regression in 2.6.24 (with patch)
+Date: Mon, 25 Feb 2008 11:38:24 +0100
+User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
+Cc: "Greg KH" <greg@kroah.com>, "Pekka J Enberg" <penberg@cs.helsinki.fi>,
+       "Ingo Molnar" <mingo@elte.hu>, "Alexey Zaytsev" <zaytsev.a@protei.ru>,
+       linux-kernel@vger.kernel.org,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "Linus Torvalds" <torvalds@linux-foundation.org>
+References: <47BEAF3B.3080809@protei.ru> <20080225064935.GA20997@kroah.com> <f19298770802250223m29f001f5obb8a5dff48df836a@mail.gmail.com>
+In-Reply-To: <f19298770802250223m29f001f5obb8a5dff48df836a@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200802251138.24930.mb@bu3sch.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi All,
+On Monday 25 February 2008 11:23:02 Alexey Zaytsev wrote:
+> On Mon, Feb 25, 2008 at 9:49 AM, Greg KH <greg@kroah.com> wrote:
+> >
+> > On Mon, Feb 25, 2008 at 08:16:17AM +0200, Pekka J Enberg wrote:
+> >  > Hi Michael,
+> >  >
+> >  > On Sun, 24 Feb 2008, Michael Buesch wrote:
+> >  > > > The ony way I see this was possible, you manually changed the
+> >  > > > module loading order, so that the b43xx module was loaded prior
+> >  > > > to the ssb and b44 modules. Right?
+> >  > >
+> >  > > Right. So "so I'm left with either no wifi or no ethenet" being wrong.
+> >  >
+> >  > Lets make this simple: it used to work before and now it doesn't.
+> >  > Therefore it's a regression that must be addressed. Period.
+> >
+> >  Isn't the resolution Michael is suggesting is, "use the different driver"?
+> >
+> 
+> The b43 driver from 2.6.24 does not work with my hardware. The one from
+> 2.6.25 seems to work, but 2.6.25 is far from being ready yet.
+> 
+> The only way you can get the old driver working in 2.6.24 is to
+> compile certain (completely unrelated for an outsider) drivers as
+> modules and play with the module loading order. I think this is a
+> bug, and it should be fixed in -stable.
 
-I report new results of dm-ioband bandwidth control test. The previous
-test results were posted on Jan 25.
-I've got really good results as well as the last report. dm-ioband
-works well with Xen virtual disk.
+It must first go into the 2.6.25 tree and then into -stable.
+And the patch must be considered to do The Right Thing (tm).
 
-I also announce that dm-ioband website has launched. The patches,
-the manual, the benchmark results and other related information are
-available through this site. Please check it out:
-    http://people.valinux.co.jp/~ryov/dm-ioband/
+> And for 2.6.25, I think the patch should also be included, as the
+> bcm43xx driver is still there.
+> 
+> Btw, what are we discussing? The real bcm43xx maintainer
+> (Larry Finger) reviewed the patch and agreet it should go
+> into 2.6.24-stable and 2.6.25 . Now we only have to wait for
+> John Linville and Jeff Garzik to pick it up, right? If someone
+> still thinks the patch should not go in, he should at least
+> add them to the CC list. ;)
 
-Bandwidth control on a per partition basis
-==========================================
+Heh, wait. Larry is neither the bcm43xx maintainer [1], nor does this
+code touch bcm43xx code. It does touch ssb and b43 code, which I
+am the maintainer of.
+Though, as I said, if somebody else is familiar with the code does really
+understand the patch and does ACK it (which Larry did), I'm probably
+OK with applying it. As long as I'm not bothered with any followup
+regressions caused by this. So if the one signing off the patch will
+handle all this, I'm fine with it.
 
-Test procedure
---------------
-  o Prepare three partitions sda11, sda12 and sda13.
-  o Create three ioband devices ioband1, ioband2 and ioband3 on each
-    partition respectively.
-  o Give weights of 40, 20 and 10 to each ioband device respectively.
-  o Run 50, 100 and 200 processes issuing random read/write direct I/O
-    with 4KB data on each ioband device at the same time respectively.
-  o Count up the number of I/Os which have done in 60 seconds.
+[1] bcm43xx is unmaintained. Larry used to be the maintainer until
+he dropped it a few months ago.
 
-  o For comparison, do this test under different conditions. The
-    conditions are:
-    - Direct access to the physical devices without dm-ioband.
-    - Give weights in equal proportion to each ioband devices.
-
-   Read/Write process   Read/Write process   Read/Write process    
-         x 50                 x 100                x 200
-           |                    |                    |
-  +--------V---------+ +--------V---------+ +--------V---------+
-  |     ioband1      | |     ioband2      | |     ioband3      | ioband devices
-  +------------------+ +------------------+ +------------------+
-  |   default group  | |   default group  | |   default group  | ioband groups
-  |       (40)       | |       (20)       | |       (10)       |   (weight)
-  +--------|---------+ +--------|---------+ +--------|---------+
-  +--------V---------+ +--------V---------+ +--------V---------+
-  |    /dev/sda11    | |    /dev/sda12    | |    /dev/sda13    | physical devs.
-  +------------------+ +------------------+ +------------------+
-
-Results
--------
-                      Direct access without dm-ioband
-   -----------------------------------------------------------------------
-  |     device      |      sda11      |      sda12      |      sda13      |
-  |  I/O processes  |    50 (14.3%)   |   100 (28.6%)   |   200 (57.1%)   |
-  |-----------------+-----------------+-----------------+-----------------|
-  |      I/Os       |       1469      |       2486      |       5032      |  
-  |  ratio to total |      16.3%      |      27.7%      |      56.0%      |
-   -----------------------------------------------------------------------
-
-              Weights in inverse proportion to the number of processes
-   -----------------------------------------------------------------------
-  |     device      |      sda11      |      sda12      |      sda13      |
-  |     weight      |   40 (57.1%)    |    20 (28.6%)   |    10 (14.3%)   |
-  |-----------------+-----------------+-----------------+-----------------|
-  |      I/Os       |       5023      |       2654      |       1369      |  
-  |  ratio to total |      55.5%      |      29.3%      |      15.1%      |
-   -----------------------------------------------------------------------
-
-                         Weights in equal proportion
-   -----------------------------------------------------------------------
-  |     device      |      sda11      |      sda12      |      sda13      |
-  |     weight      |   10 (33.3%)    |    10 (33.3%)   |    10 (33.3%)   |
-  |-----------------+-----------------+-----------------+-----------------|
-  |      I/Os       |       2954      |       3004      |       2986      |  
-  |  ratio to total |      33.0%      |      33.6%      |      33.4%      |
-   -----------------------------------------------------------------------
-
-
-
-Bandwidth control on a per logical volume basis
-===============================================
-
-Test procedure
---------------
-  o Prepare two partitions sda11 and sdb11.
-  o Create a volume group with the two partitions.
-  o Create two striped logical volumes on the volume group.
-  o Give weights of 20 and 10 to lv0 and lv1 respectively.
-  o Run 128 processes issuing random read/write direct I/O with 4KB data
-    on each ioband device at the same time respectively.
-  o Count up the number of I/Os which have done in 60 seconds.
-
-Block diagram
--------------
-
-   Read/Write process x 128       Read/Write process x 128
-                |                              |
-  +-------------V------------+   +-------------V------------+ 
-  |   /dev/mapper/ioband1    |   |   /dev/mapper/ioband2    | ioband devices
-  +--------------------------+   +--------------------------+
-  |       default group      |   |       default group      | ioband groups
-  |           (20)           |   |           (10)           |    (weight)
-  +-------------|------------+   +-------------|------------+
-  +-------------V------------+   +-------------V------------+
-  |      /dev/mapper/lv0     |   |     /dev/mapper/lv1      | striped logical
-  |                          |   |                          | volumes
-  +---------------------------------------------------------+
-  |                           vg0                           | volume group
-  +-------------|------------------------------|------------+
-  +-------------V------------+   +-------------V------------+
-  |         /dev/sda11       |   |         /dev/sdb11       | physical devices
-  +--------------------------+   +--------------------------+
-
-Result
-------
-   -----------------------------------------------------
-  |     device      |       lv0       |       lv1       |
-  |     weight      |   20 (66.6%)    |    10 (33.3%)   |
-  |-----------------+-----------------+-----------------|
-  |      I/Os       |      13508      |       6779      |
-  |  ratio to total |      66.6%      |      33.3%      |
-   -----------------------------------------------------
-
-
-
-Bandwidth control on a per Xen virtual block device basis
-=========================================================
-
-Test procedure
---------------
-  o Prepare two partitions sda11 and sda12.
-  o Create two ioband devices ioband1 and ioband2 on each partition
-    respectively.
-  o Give weight of 20 and 10 to each ioband device respectively.
-  o Create two virtual machines that using the ioband device as Xen
-    virtual machine's disk.
-  o Run 128 processes issuing random read/write direct I/O with 4KB
-    data on each virtual machine at the same time respectively.
-  o Count up the number of I/Os which have done in 60 seconds.
-
-  +--------------------------+   +--------------------------+
-  |     Virtual Machine 1    |   |     Virtual Machine 2    | virtual machines
-  |                          |   |                          |
-  | Read/Write process x 128 |   | Read/Write process x 128 |
-  |             |            |   |             |            |
-  |  +----------V---------+  |   |  +----------V---------+  +
-  |  |     /dev/xvda1     |  |   |  |      /dev/xvda1    |  | virtual block
-  |  +----------|---------+  |   |  +----------|---------+  |    devices
-  +-------------|------------+   +-------------|------------+
-  +-------------V------------+   +-------------V------------+ 
-  |   /dev/mapper/ioband1    |   |   /dev/mapper/ioband2    | ioband devices
-  +--------------------------+   +--------------------------+
-  |       default group      |   |       default group      | ioband groups
-  |           (20)           |   |           (10)           |    (weight)
-  +-------------|------------+   +-------------|------------+
-  +-------------V------------+   +-------------V------------+
-  |        /dev/sda11        |   |        /dev/sda12        | physical device
-  +--------------------------+   +--------------------------+
-
-Result
-------
-   -----------------------------------------------------
-  | virtual machine |       VM1       |       VM2       |
-  |     weight      |   20 (66.6%)    |    10 (33.3%)   |
-  |-----------------+-----------------+-----------------|
-  |      I/Os       |       7140      |       3819      |
-  |  ratio to total |      65.2%      |      34.8%      |
-   -----------------------------------------------------
-
-
-
-Bandwidth control on a per Xen virtual block device basis
-=========================================================
-
-Test procedure
---------------
-  o Prepare one partition sda11.
-  o Create two files on sda11 to use as virtual machine's disks.
-  o Create an ioband devices on sda11.
-  o Create two virtual machines that using the prepared files as Xen
-    virtual machine's disk.
-  o Create two extra ioband-groups on ioband1, the first is of process
-    tapdisk1 and the second is of process tapdisk2.
-  o Run 128 processes issuing random read/write direct I/O with 4KB
-    data on each virtual machine at the same time respectively.
-  o Count up the number of I/Os which have done in 60 seconds.
-
-  +--------------------------+   +--------------------------+
-  |     Virtual Machine 1    |   |     Virtual Machine 2    | virtual machines
-  |                          |   |                          |
-  | Read/Write process x 128 |   | Read/Write process x 128 |
-  |             |            |   |             |            |
-  |  +----------V---------+  |   |  +----------V---------+  +
-  |  |     /dev/xvda1     |  |   |  |      /dev/xvda1    |  | virtual block
-  |  +----------|---------+  |   |  +----------|---------+  |    devices
-  +-------------|------------+   +-------------|------------+
-  +-------------V------------+   +-------------V------------+
-  |         tapdisk1         |   |         tapdisk2         |    tapdisk
-  +-------------|------------+   +-------------|------------+   processes
-  +-------------V------------------------------V------------+
-  |    pid of tapdisk1         |      pid of tapdisk2       | ioband groups
-  |           (20)             |             (10)           |    (weight)
-  |                   /dev/mapper/ioband1                   | ioband device
-  +-------------|------------------------------|------------+
-  |  +----------V----------+        +----------V---------+  |
-  |  |       vm1.img       |        |       vm2.img      |  | disk image files
-  |  +---------------------+        +--------------------+  |
-  |                        /dev/sda11                        | physical device
-  +---------------------------------------------------------+
-
-Result
-------
-   -----------------------------------------------------
-  | virtual machine |       VM1       |       VM2       |
-  |     weight      |   20 (66.6%)    |    10 (33.3%)   |
-  |-----------------+-----------------+-----------------|
-  |      I/Os       |       7486      |       3895      |
-  |  ratio to total |      65.8%      |      34.2%      |
-   -----------------------------------------------------
-
-Thanks,
-Ryo Tsuruta
+-- 
+Greetings Michael.
