@@ -1,70 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758677AbYBYVBb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760085AbYBYVCc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758677AbYBYVBb (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 Feb 2008 16:01:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752467AbYBYVBU
+	id S1760085AbYBYVCc (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 Feb 2008 16:02:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759034AbYBYVBt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 Feb 2008 16:01:20 -0500
-Received: from out3.smtp.messagingengine.com ([66.111.4.27]:40190 "EHLO
-	out3.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751052AbYBYVBS (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 Feb 2008 16:01:18 -0500
-X-Sasl-enc: nPNhM/3qbHpggn/aqmNj9RnQ75beGFobZYJAzD7/4UU8 1203973277
-Date: Mon, 25 Feb 2008 18:01:13 -0300
-From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-To: Lukas Hejtmanek <xhejtman@ics.muni.cz>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, linux-kernel@vger.kernel.org,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       Len Brown <lenb@kernel.org>
-Subject: Re: 2.6.25-rc2 Regression Thinkpad acpi
-Message-ID: <20080225210113.GF16513@khazad-dum.debian.net>
-References: <20080225093914.GB4375@ics.muni.cz> <200802251247.30605.rjw@sisk.pl> <20080225200354.GE16513@khazad-dum.debian.net> <20080225204951.GB4432@ics.muni.cz>
+	Mon, 25 Feb 2008 16:01:49 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:60382 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758291AbYBYVBp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 25 Feb 2008 16:01:45 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: "Michael S. Tsirkin" <m.s.tsirkin@gmail.com>
+Subject: Re: new regression in 2.6.25-rc3: can't resume from suspend to ram, ata1 errors
+Date: Mon, 25 Feb 2008 22:00:22 +0100
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: "Andrew Morton" <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, "Pavel Machek" <pavel@suse.cz>,
+       "Jeff Garzik" <jeff@garzik.org>, jgarzik@pobox.com,
+       linux-ide@vger.kernel.org
+References: <8f53421d0802251257o75d2975dldcfb99a2dc5e3539@mail.gmail.com>
+In-Reply-To: <8f53421d0802251257o75d2975dldcfb99a2dc5e3539@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20080225204951.GB4432@ics.muni.cz>
-X-GPG-Fingerprint: 1024D/1CDB0FE3 5422 5C61 F6B7 06FB 7E04  3738 EE25 DE3F
-	1CDB 0FE3
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+Message-Id: <200802252200.23495.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 25 Feb 2008, Lukas Hejtmanek wrote:
-> On Mon, Feb 25, 2008 at 05:03:54PM -0300, Henrique de Moraes Holschuh wrote:
-> > This commit is indeed broken, and I have a tentative fix for it.  But I'd
-> > like to have a better description of just "how" the thinkpad keys do not
-> > work anymore, to make sure I fix the entire breakage in one go.  I will
-> > stare at the code and the fix a bit more before sending in any patches,
-> > though.
+On Monday, 25 of February 2008, Michael S. Tsirkin wrote:
+> On my T61p, 2.6.25-rc2 seems to wake up fine from suspend to ram.
+> Not so 2.6.25-rc3: it hangs on suspend to ram, with a blank screen.
+
+Thanks for the report.
+
+> At one point I got lucky and got this on console (wrote down by hand,
+> there could be typos):
+> ata1: COMRESET failed (errno=-16)
+> ata1: COMRESET failed (errno=-16)
+> end_request: I/O error, dev sda sector 200554
+> Buffer I/O error on device dm-0, logical block 256
+> Buffer I/O error on device dm-0, logical block 15695875
+> Buffer I/O error on device dm-0, logical block 15695878
+> Buffer I/O error on device dm-0, logical block 15695887
+> Buffer I/O error on device dm-0, logical block 15695896
+> Buffer I/O error on device dm-0, logical block 15695914
+> Buffer I/O error on device dm-0, logical block 15958028
+> Buffer I/O error on device dm-0, logical block 22118530
+> Buffer I/O error on device dm-0, logical block 22315068
+> Buffer I/O error on device dm-0, logical block 22347824
 > 
-> Well, keys generate ACPI interrupt but acpid never receives any event.
+> git bisect points at this commit:
+> commit 559bbe6cbd0d8c68d40076a5f7dc98e3bf5864b2.
+> power_state: get rid of write-only variable in SATA
 
-Not even over the new netlink socket?  Or the thinkpad-acpi input device?
-Please send me the debug output of thinkpad-acpi loading, just in case.
+Jeff, could you revert it, please?
 
-> I would be happy to test fixes to see whether things go well.
-
-Sure, try this one:
-
-diff --git a/drivers/misc/thinkpad_acpi.c b/drivers/misc/thinkpad_acpi.c
-index 7500c44..0f74351 100644
---- a/drivers/misc/thinkpad_acpi.c
-+++ b/drivers/misc/thinkpad_acpi.c
-@@ -1078,7 +1078,8 @@ static int hotkey_get_tablet_mode(int *status)
- 	if (!acpi_evalf(hkey_handle, &s, "MHKG", "d"))
- 		return -EIO;
- 
--	return ((s & TP_HOTKEY_TABLET_MASK) != 0);
-+	*status = ((s & TP_HOTKEY_TABLET_MASK) != 0);
-+	return 0;
- }
- 
- /*
-
--- 
-  "One disk to rule them all, One disk to find them. One disk to bring
-  them all and in the darkness grind them. In the Land of Redmond
-  where the shadows lie." -- The Silicon Valley Tarot
-  Henrique Holschuh
+Thanks,
+Rafael
