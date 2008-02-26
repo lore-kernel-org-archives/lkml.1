@@ -1,88 +1,200 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763575AbYBZTM6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763397AbYBZTPL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763575AbYBZTM6 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Feb 2008 14:12:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760342AbYBZTMt
+	id S1763397AbYBZTPL (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Feb 2008 14:15:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758779AbYBZTO7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Feb 2008 14:12:49 -0500
-Received: from gv-out-0910.google.com ([216.239.58.191]:44685 "EHLO
-	gv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757276AbYBZTMs (ORCPT
+	Tue, 26 Feb 2008 14:14:59 -0500
+Received: from ug-out-1314.google.com ([66.249.92.173]:61613 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755839AbYBZTO6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Feb 2008 14:12:48 -0500
+	Tue, 26 Feb 2008 14:14:58 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=googlemail.com; s=gamma;
-        h=from:reply-to:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
-        b=VQatngyi2JvtKtl+QDhw9VHUI9Ap4tfbr5o5fE9Ui3m27lGX6FdnYPFx2OSF6nsqPdp6vzi1v+niJe9O9Ct3q/ZxMMPTHtrcm0c0FpPSDlpBpm57gRJE9zmE8NybxZAT9zckNOWGzlklr6DWElPjCh0ztlV+35AmvTrPh9j3rTU=
-From: Chris Clayton <chris2553@googlemail.com>
-Reply-To: chris2553@googlemail.com
-To: "Ivo Van Doorn" <ivdoorn@gmail.com>
-Subject: Re: 2.6.25-rc2 regression in rt61pci wireless driver
-Date: Tue, 26 Feb 2008 19:11:39 +0000
-User-Agent: KMail/1.9.9
-Cc: linux-kernel@vger.kernel.org, linux-wireless@vger.kernel.org
-References: <c6b1100b0802160406l24fed9dcje1dbfc8907fd7a16@mail.gmail.com> <200802252104.32416.chris2553@googlemail.com> <a32f33a40802251409ofbdab60w4a95c8aaefaad70a@mail.gmail.com>
-In-Reply-To: <a32f33a40802251409ofbdab60w4a95c8aaefaad70a@mail.gmail.com>
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=k64pUNW28DCNk9AxMqFT6p3Gs7By6OaNhenuwLlHd5OWoPxevkAzcOQAEKaw+tjmBK/AmP/+EhMKUHcqkfWoLAUS+AnsHDbDrukibXMMfooBVu3T+YyuzM6MyxBptflelzSdXBWpdCWrrv+7FkBDk7zf1ohyoG5ejY7EZ+3Ckyg=
+Message-ID: <cfd18e0f0802261114v4d4891bcy107bba2a181c1146@mail.gmail.com>
+Date: Tue, 26 Feb 2008 20:14:52 +0100
+From: "Michael Kerrisk" <mtk.manpages@googlemail.com>
+To: "Davide Libenzi" <davidel@xmailserver.org>
+Subject: Re: epoll and shared fd's
+Cc: "Pierre Habouzit" <madcoder@debian.org>,
+       lkml <linux-kernel@vger.kernel.org>,
+       "Eric Dumazet" <dada1@cosmosbay.com>,
+       "Marc Lehmann" <schmorp@schmorp.de>,
+       "David Schwartz" <davids@webmaster.com>
+In-Reply-To: <Pine.LNX.4.64.0802261054041.27243@alien.or.mcafeemobile.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200802261911.39577.chris2553@googlemail.com>
+References: <20080118134318.GD9607@artemis.madism.org>
+	 <Pine.LNX.4.64.0801181257240.24685@alien.or.mcafeemobile.com>
+	 <20080124084001.GB7356@artemis.madism.org>
+	 <Pine.LNX.4.64.0801241556130.29058@alien.or.mcafeemobile.com>
+	 <517f3f820801252337lcd4b0a0hde7359dc46a947dd@mail.gmail.com>
+	 <Pine.LNX.4.64.0801261308270.10472@alien.or.mcafeemobile.com>
+	 <47C42CB3.8040500@gmail.com>
+	 <Pine.LNX.4.64.0802261054041.27243@alien.or.mcafeemobile.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
-
-> >   I've bisected anyway and although the results are not absolutely
-> > conclusive, as I neared the end of the process, I was amongst a bunch of
-> > mac80211 patches. This set me on a path that resulted in me discovering
-> > that with the rt61pci driver, I can freeze my wireless network connection
-> > almost at will if I set mac82011's ieee80211_default_rc_algo parameter to
-> > 'pid'. if the parametre is set to 'simple', the network seems to be
-> > reliable. I've just let the ping application run on and ping another box
-> > on my network almost 1500 times whilst repeatedly transferring a kernel
-> > source tarball by ftp from another box and the network connection was
-> > mantained That's with the parameter set to 'simple', if \I set it to
-> > 'pid' the connection rarely survives more than 40 pings even without the
-> > ftp activity.
+On Tue, Feb 26, 2008 at 8:04 PM, Davide Libenzi <davidel@xmailserver.org> wrote:
+>
+> On Tue, 26 Feb 2008, Michael Kerrisk wrote:
+>
+> > Following up after quite some time:
 > >
-> >  If I replace my wireless card with one that uses the rtl8180 driver, the
-> >  network connection seems to be reliable regardless of how I set the
-> >  parameter, although I admit that i have not tested this extensively yet.
-> > I'll do that now and report later.
+> > Davide Libenzi wrote:
+> > > On Sat, 26 Jan 2008, Michael Kerrisk wrote:
+> > >
+> > >> On Jan 25, 2008 12:57 AM, Davide Libenzi <davidel@xmailserver.org> wrote:
+> > >>> On Thu, 24 Jan 2008, Pierre Habouzit wrote:
+> > >>>
+> > >>>> On Fri, Jan 18, 2008 at 09:10:18PM +0000, Davide Libenzi wrote:
+> > >>>>> On Fri, 18 Jan 2008, Pierre Habouzit wrote:
+> > >>>>>
+> > >>>>>>   Hi,
+> > >>>>>>
+> > >>>>>>   I just came across a strange behavior of epoll that seems to
+> > >>>>>> contradict the documentation. Here is what happens:
+> > >>>>>>
+> > >>>>>> * I have two processes P1 and P2, P1 accept()s connections, and send the
+> > >>>>>>   resulting file descriptors to P2 through a unix socket.
+> > >>>>>>
+> > >>>>>> * P2 registers the received socket in his epollfd.
+> > >>>>>>
+> > >>>>>>   [time passes]
+> > >>>>>>
+> > >>>>>> * P2 is done with the socket and closes it
+> > >>>>>>
+> > >>>>>> * P2 gets events for the socket again !
+> > >>>>>>
+> > >>>>>>
+> > >>>>>>   Though the documentation says that if a process closes a file
+> > >>>>>> descriptor, it gets unregistered. And yes I'm sure that P2 doens't dup()
+> > >>>>>> the file descriptor. Though (because of a bug) it was still open in
+> > >>>>>> P1[0], hence the referenced socket still live at the kernel level.
+> > >>>>>>
+> > >>>>>>   Of course the userland workaround is to force the EPOLL_CTL_DEL before
+> > >>>>>> the close, which I now do, but costs me a syscall where I wanted to
+> > >>>>>> spare one :|
+> > >>>>> For epoll, a close is when the kernel file* is released (that is, when all
+> > >>>>> its instances are gone).
+> > >>>>> We could put a special handling in filp_close(), but I don't think is a
+> > >>>>> good idea, and we're better live with the current behaviour.
+> > >>>>   Okay, maybe updating the linux manpages to be more clear about that is
+> > >>>> the way to go then. Thanks
+> > >>> Sure. I'll send Michael Kerrisk and updated statement for the A6 answer in
+> > >>> the epoll man page.
+> > >> Thanks Davide -- yes please send me a patch.
+> > >> --
+> > >> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> > >> the body of a message to majordomo@vger.kernel.org
+> > >> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> > >> Please read the FAQ at  http://www.tux.org/lkml/
+> > >>
+> > >
+> > > Something like the one below ...
+> > >
+> > >
+> > > - Davide
+> > >
+> > >
+> > >
+> > > --- epoll.4 2008-01-26 12:58:21.000000000 -0800
+> > > +++ epoll.4.new     2008-01-26 13:06:36.000000000 -0800
+> > > @@ -285,7 +285,19 @@
+> > >  sets automatically?
+> > >  .TP
+> > >  .B A6
+> > > -Yes.
+> > > +A file descriptor is the userspace counterpart of an internal kernel handle.
+> > > +Every time a process calls functions liks
+> > > +.BR dup (2),
+> > > +.BR dup2 (2)
+> > > +or
+> > > +.BR fork (2),
+> > > +a new file descriptor referring to the same internal kernel handle is
+> > > +created. The internal kernel handle remains alive until all the userspace
+> > > +file descriptors have been closed.
+> > > +The
+> > > +.BR epoll (4)
+> > > +interface automatically removes the internal kernel handle from the set,
+> > > +once all the file descriptor instances have been closed.
+> > >  .TP
+> > >  .B Q7
+> > >  If more than one event occurs between
+> >
+> > Davide,
+> >
+> > Two points.
+> >
+> > a) I did a
+> >
+> > s/internal kernel handle/open file description/
+> >
+> > since that is the POSIX term for the internal handle.
+> >
+> > b) It seems to me that you text doesn't quite make the point explicit
+> > enough.  I've tried to rewrite it; could you please check:
+> >
+> >        A6     Yes, but be aware of the following point.  A  file
+> >               descriptor is a reference to an open file descrip-
+> >               tion (see  open(2)).   Whenever  a  descriptor  is
+> >               duplicated  via dup(2), dup2(2), fcntl(2) F_DUPFD,
+> >               or fork(2), a new file descriptor referring to the
+> >               same  open  file  description is created.  An open
+> >               file description continues to exist until all file
+> >               descriptors referring to it have been closed.  The
+> >               epoll  interface  automatically  removes  a   file
+> >               descriptor  from  an  epoll set only after all the
+> >               file descriptors referring to the underlying  open
+> >               file  handle  have  been  closed.  This means that
+> >               even after a file descriptor that is  part  of  an
+> >               epoll  set has been closed, events may be reported
+> >               for that file descriptor if other file descriptors
+> >               referring  to the same underlying file description
+> >               remain open.
+> >
+> > Does that seem okay?  I plan to include the text in man-pages-2.79.
 >
+> I agree with Bodo, it is kinda confusing. The name "open file description",
+> even though POSIX, looks very similar to "file descriptor".
+> I honestly don't know how more easily such concept could be expressed.
+> IMHO at least "internal kernel handle" does not play look-alike games with
+> "file descriptor".
 
-I've rerun my tests with the rtl8180 driver and found the network to be 
-reliable with the mac82011 module's ieee80211_default_rc_algo parameter set 
-to either 'simple' or 'pid'. 
+Okay -- I'll look at it some more.  I am however loathe to drop the
+term open file description, because POSIX uses, as well as a number of
+other Linux man pages by now.
 
-> I'm about to send 4 patches to this (linux-wireless) list with patches
-> for rt2x00,
-> most of them you already tested individually, but several people reported
-> success after those patches.
+> > Was there some reason why removing a file descriptor couldn't have been
+> > made to do the "expected" thing (i.e., remove notifications for that file
+> > descriptor, regardless of whether the underlying file description remains
+> > open)?
 >
-> Hopefully it will be working for you as well. :)
->
+> That'd mean placing an eventpoll custom hook into sys_close(). Looks very
+> bad to me, and probably will look even worse to other kernel folks.
+> Is not much a performance issue (a check to see if a file* is an eventpoll
+> file is as easy as comparing the f_op pointer), but a design/style issue.
+> On top of that, the interface is already out by many years, so changing it
+> will like going to cause problems.
 
-Sorry, but that's not the case. I find the same results as without the 
-patches. With the parameter set to 'pid', the network connection fails very 
-quickly, but with it set to 'simple' I can ping and ftp files to and from my 
-laptop as much as I like and the connection stays up. In fact, if anything 
-the patches seem to have made the network even more fragile, in that it fails 
-almost instantly once I start some network activity ( < 10 pings).
+Oh -- I wasn't suggesting we could make the change now -- it would
+break the ABI and all that.  I was just wondering why the decision
+wasn't made to do it the other way to begin with.  The existing
+semantics are somewhat couterintuitive, and potentially interact
+libraries that do private manipulations with file descriptors.
 
-I'm sure this is not the hardware - it works perfectly with Windows XP, with 
-2.6.23.14 plus the out-of-tree rt61 driver from serialmonkey, with the 
-in-tree driver from 2.6.24.x and with 2.6.25-rc3 with the mac82011's 
-ieee80211_default_rc_algo parameter set to 'simple'.
+Cheers,
 
-Like I say above, sorry!
-
-Chris
-
-> Ivo
-
+Michael
 -- 
-Beauty is in the eye of the beerholder.
+Michael Kerrisk
+Maintainer of the Linux man-pages project
+http://www.kernel.org/doc/man-pages/
+Want to report a man-pages bug?  Look here:
+http://www.kernel.org/doc/man-pages/reporting_bugs.html
