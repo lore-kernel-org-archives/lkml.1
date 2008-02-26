@@ -1,99 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762123AbYBZQ2i@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762721AbYBZQ2z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762123AbYBZQ2i (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Feb 2008 11:28:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752529AbYBZQ22
+	id S1762721AbYBZQ2z (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Feb 2008 11:28:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762137AbYBZQ2i
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Feb 2008 11:28:28 -0500
-Received: from srv5.dvmed.net ([207.36.208.214]:47268 "EHLO mail.dvmed.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752271AbYBZQ22 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Feb 2008 11:28:28 -0500
-Message-ID: <47C43E27.5070700@garzik.org>
-Date: Tue, 26 Feb 2008 11:28:23 -0500
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
-MIME-Version: 1.0
-To: Robert Hancock <hancockr@shaw.ca>, Kuan Luo <kluo@nvidia.com>
-CC: linux-kernel <linux-kernel@vger.kernel.org>, Tejun Heo <htejun@gmail.com>,
-       Peer Chen <pchen@nvidia.com>
-Subject: Re: [PATCH] sata_nv: fix nmi intr or system hanging in rhel4u6 adma.
-References: <15F501D1A78BD343BE8F4D8DB854566B1BFE2AE5@hkemmail01.nvidia.com> <47C42534.1090107@shaw.ca>
-In-Reply-To: <47C42534.1090107@shaw.ca>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Tue, 26 Feb 2008 11:28:38 -0500
+Received: from smtp1.linux-foundation.org ([207.189.120.13]:52129 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1759903AbYBZQ2g (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 Feb 2008 11:28:36 -0500
+Date: Tue, 26 Feb 2008 08:27:25 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Jamie Lokier <jamie@shareable.org>
+Cc: =?ISO-8859-1?B?SvZybg==?= Engel <joern@logfs.org>,
+       Nick Piggin <nickpiggin@yahoo.com.au>, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org, Chris Wedgwood <cw@f00f.org>
+Subject: Re: Proposal for "proper" durable fsync() and fdatasync()
+Message-Id: <20080226082725.b65365f0.akpm@linux-foundation.org>
+In-Reply-To: <20080226150745.GA18118@shareable.org>
+References: <20080226072649.GB30238@shareable.org>
+	<20080225234319.f4589ae4.akpm@linux-foundation.org>
+	<20080226075921.GG30238@shareable.org>
+	<200802262016.11297.nickpiggin@yahoo.com.au>
+	<20080226140925.GB20428@lazybastard.org>
+	<20080226150745.GA18118@shareable.org>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.4 (----)
-X-Spam-Report: SpamAssassin version 3.2.3 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Robert Hancock wrote:
+On Tue, 26 Feb 2008 15:07:45 +0000 Jamie Lokier <jamie@shareable.org> wrote:
+
+> SYNC_FILE_RANGE_WRITE scans all pages in the range, looking for dirty
+> pages which aren't already queued for write-out.  It marks those with
+> a "write-out" flag, and starts write I/Os at some unspecified time in
+> the near future; it can be assumed writes for all the pages will
+> complete eventually if there's no errors.  When I/O completes on a
+> page, it cleans the page and also clears the write-out flag.
 > 
+> SYNC_FILE_RANGE_WAIT_AFTER waits until all pages in the range don't
+> have the "write-out" flag set.
 > 
-> Kuan Luo wrote:
->> Hi, robert
->> One customer reported that their system received a nmi interrupt after
->> issuing "dd if=/dev/sdb of=/dev/null" on a defective disk in rhel4u6.
->> I tested it and found  that my system hung both in rhel4u6(2.6.9-67) and
->> 2.6.24-rc7.
->> The patch can work well,  but I am not sure if the patch has other
->> potential effect on adma.
->> I attached a  file in case of lines breaked.
->>
->> The below info comes from Gunther Mayer to reproduce the issue.
->> "
->> used a Seagate ST3500841NS 3.AE for my test; probably other seagate 
->> drives are also capable of creating media errors with the new hdparm-8.1:
->> - compile hdparm-8.1 - hdparm -- yes-i-know-what-i-am-doing 
->> --make-bad-sector 60000 /dev/sdb
->> Unfortunately this does not succeed for nvidia sata controller (timeouts
->> et al.), but it worked fine on AHCI machine (e.g. FSC R640).
->> When I insert this newly created defective disk in Ultra 20, it 
->> reboots within seconds after issueing "dd if=/dev/sdb of=/dev/null". "
->>
->> Signed-off-by: kluo@nvidia.com
->>
->> ---
->>  
->> drivers/ata/sata_nv.c |    5 +++--
->>  1 file changed, 3 insertions(+), 2 deletions(-)
->>
->> diff --git a/drivers/ata/sata_nv.c b/drivers/ata/sata_nv.c
->> index ed5473b..e824260 100644
->> --- a/drivers/ata/sata_nv.c
->> +++ b/drivers/ata/sata_nv.c
->> @@ -837,9 +837,10 @@ static void nv_adma_tf_read(struct ata_port *ap,
->> struct ata_taskfile *tf)
->>         all shortly be aborted anyway. We assume that NCQ commands
->> are not
->>         issued via passthrough, which is the only way that switching
->> into
->>         ADMA mode could abort outstanding commands. */
->> -    nv_adma_register_mode(ap);
->> +    struct nv_adma_port_priv *pp = ap->private_data;
->>  
->> -    ata_tf_read(ap, tf);
->> +    if (pp->flags & NV_ADMA_PORT_REGISTER_MODE)
->> +        ata_tf_read(ap, tf);
->>  }
->>  
->>  static unsigned int nv_adma_tf_to_cpb(struct ata_taskfile *tf, __le16
->> *cpb)
-> 
-> This is basically avoiding switching into register mode, right? I don't 
-> think this is a very good solution as the point of the tf_read function 
-> is that it's supposed to read the taskfile provided by the drive to 
-> diagnose the error, so not doing this isn't a good thing.
+> SYNC_FILE_RANGE_WAIT_BEFORE does the same wait, but before marking
+> pages for write-out.  I don't actually see the point in this.  Isn't a
+> preceding call with SYNC_FILE_RANGE_WAIT_AFTER equivalent, making
+> BEFORE a redundant flag?
 
-Agree with this analysis -- if ->tf_read() is being called, then 
-obviously the core wants a current copy of the device's ATA registers.
+Consider the case of pages which are dirty but are already under writeout. 
+ie: someone redirtied the page after someone started writing the page out. 
+For these pages the kernel needs to
 
-It is not a good solution to simply avoiding returning meaningful data, 
-because -- as Robert notes -- we need tf_read for analysis.
+a) wait for the current writeout to complete
 
-	Jeff
+b) start new writeout
 
+c) wait for that writeout to complete.
 
+those are the three stages of sync_file_range().  They are independently
+selectable and various combinations provide various results.
 
+The reason for providing b) only (SYNC_FILE_RANGE_WRITE) is so that
+userspace can get as much data into the queue as possible, to permit the
+kernel to optimise IO scheduling better.
+
+If you perform a) and b) together
+(SYNC_FILE_RANGE_WAIT_BEFORE|SYNC_FILE_RANGE_WRITE) then you are guaranteed
+that all data which was dirty when sync_file_range() executed will be sent
+into the queue, but you won't get as much data into the queue if the kernel
+encounters dirty, under-writeout pages.  This is especially hurtful if
+you're trying to feed a lot of little segments into the queue.  In that
+case perhaps userspace should do an asynchrnous pass
+(SYNC_FILE_RANGE_WRITE) to stuff as much data as poss into the queue, then
+a SYNC_FILE_RANGE_WAIT_AFTER pass then a
+SYNC_FILE_RANGE_WAIT_BEFORE|SYNC_FILE_RANGE_WRITE|SYNC_FILE_RANGE_WAIT_AFTER
+pass to clean up any stragglers.  WHich mode is best very much depends on
+the application's file dirtying patterns.  One would have to experiment
+with it, and tuning of sync_file_range() usage would occur alongside tuning
+of the application's write() design.
+
+It's an interesting problem, with potentially high payback.
