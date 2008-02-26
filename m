@@ -1,55 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763457AbYBZRo1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763953AbYBZRol@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763457AbYBZRo1 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Feb 2008 12:44:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758310AbYBZRoU
+	id S1763953AbYBZRol (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Feb 2008 12:44:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762359AbYBZRoU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
 	Tue, 26 Feb 2008 12:44:20 -0500
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:51809 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1757478AbYBZRoT (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
+Received: from khc.piap.pl ([195.187.100.11]:45225 "EHLO khc.piap.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1761113AbYBZRoT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 26 Feb 2008 12:44:19 -0500
-Date: Tue, 26 Feb 2008 11:44:17 -0600
-From: Paul Jackson <pj@sgi.com>
-To: David Rientjes <rientjes@google.com>
-Cc: akpm@linux-foundation.org, clameter@sgi.com, Lee.Schermerhorn@hp.com,
-       ak@suse.de, linux-kernel@vger.kernel.org
-Subject: Re: [patch 5/6] mempolicy: add MPOL_F_RELATIVE_NODES flag
-Message-Id: <20080226114417.c8948b61.pj@sgi.com>
-In-Reply-To: <alpine.DEB.1.00.0802250016120.12368@chino.kir.corp.google.com>
-References: <alpine.DEB.1.00.0802250012420.12368@chino.kir.corp.google.com>
-	<alpine.DEB.1.00.0802250013580.12368@chino.kir.corp.google.com>
-	<alpine.DEB.1.00.0802250014170.12368@chino.kir.corp.google.com>
-	<alpine.DEB.1.00.0802250014410.12368@chino.kir.corp.google.com>
-	<alpine.DEB.1.00.0802250016120.12368@chino.kir.corp.google.com>
-Organization: SGI
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.12.0; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+To: Alan Cox <alan@redhat.com>
+Cc: davids@webmaster.com, Valdis.Kletnieks@vt.edu,
+       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
+       Arnaldo Carvalho de Melo <acme@ghostprotocols.net>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] 2.6.25-rc2-mm1 - fix mcount GPL bogosity.
+References: <MDEHLPKNGKAHNMBLJOLKGEKDKKAC.davids@webmaster.com>
+	<m3d4qj90zm.fsf@maximus.localdomain>
+	<m34pbv8x8s.fsf@maximus.localdomain>
+	<20080226172143.GA5445@devserv.devel.redhat.com>
+From: Krzysztof Halasa <khc@pm.waw.pl>
+Date: Tue, 26 Feb 2008 18:44:18 +0100
+In-Reply-To: <20080226172143.GA5445@devserv.devel.redhat.com> (Alan Cox's message of "Tue\, 26 Feb 2008 12\:21\:43 -0500")
+Message-ID: <m34pbvsjd9.fsf@maximus.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David,
+Alan Cox <alan@redhat.com> writes:
 
-Perhaps I missed it, but could you elaborate on what sort of testing
-these patches for MPOL_F_RELATIVE_NODES and MPOL_F_STATIC_NODES have
-received?
+>> Actually I think the _GPL exports are really harmful - somebody
+>> distributing a binary module may claim he/she doesn't violate the GPL
+>> because the module uses only non-GPL exports. OTOH GPL symbols give
+>
+> They can claim that anyway. The can claim to be alien life forms too. Claim
+> is not the same as legal decision.
 
-The main reason I didn't push my version of these patches in December
-was I figured it would take a week or three of obsessive-compulsive
-testing to verify that we didn't break various corner cases of the
-mbind/mempolicy system call interface.
+Sure but it may be now easier to convince the judge they are right. Of
+course if they aren't using GPL exports - if they are, perhaps harder.
 
-In particular, do we know that Oracle works with this?  At least in
-years past, when Andi was the primary developer here, he had some
-good and detailed awareness of what it took to keep Oracle happy
-with this NUMA memory policy apparatus.  I don't know if we still
-have that awareness.
+> From what I've seen its helped make binary
+> module abusers more cautious.
 
+Those not using _GPL exports?
 -- 
-                  I won't rest till it's the best ...
-                  Programmer, Linux Scalability
-                  Paul Jackson <pj@sgi.com> 1.940.382.4214
+Krzysztof Halasa
