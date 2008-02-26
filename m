@@ -1,59 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760522AbYBZQc4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762408AbYBZQfG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760522AbYBZQc4 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Feb 2008 11:32:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752590AbYBZQct
+	id S1762408AbYBZQfG (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Feb 2008 11:35:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753048AbYBZQe4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Feb 2008 11:32:49 -0500
-Received: from srv5.dvmed.net ([207.36.208.214]:47307 "EHLO mail.dvmed.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752634AbYBZQcs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Feb 2008 11:32:48 -0500
-Message-ID: <47C43F18.6060207@pobox.com>
-Date: Tue, 26 Feb 2008 11:32:24 -0500
-From: Jeff Garzik <jgarzik@pobox.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
-MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Thomas Gleixner <tglx@linutronix.de>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       =?ISO-8859-1?Q?Bj=F6rn_Steinbrink?= <B.Steinbrink@gmx.de>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: 2.6.24-git: kmap_atomic() WARN_ON()
-References: <alpine.LFD.1.00.0802070054220.9204@apollo.tec.linutronix.de> <20080225195924.GA23176@atjola.homenet> <47C32043.6090809@pobox.com> <20080225124054.9b69e9f0.akpm@linux-foundation.org> <alpine.LFD.1.00.0802252242290.7583@apollo.tec.linutronix.de> <47C34CEA.7060307@pobox.com> <20080226083904.GC9857@elte.hu>
-In-Reply-To: <20080226083904.GC9857@elte.hu>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Tue, 26 Feb 2008 11:34:56 -0500
+Received: from smtp1.linux-foundation.org ([207.189.120.13]:55449 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752793AbYBZQez (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 Feb 2008 11:34:55 -0500
+Date: Tue, 26 Feb 2008 08:33:54 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Dave Young <hidave.darkstar@gmail.com>
+Cc: linux-kernel@vger.kernel.org, "Paul E. McKenney" <paulmck@us.ibm.com>,
+       Ingo Molnar <mingo@elte.hu>
+Subject: Re: [BUG] using smp_processor_id() in preemptible as suspending
+Message-Id: <20080226083354.be0a7351.akpm@linux-foundation.org>
+In-Reply-To: <20080226082411.GA2853@darkstar.te-china.tietoenator.com>
+References: <20080226082411.GA2853@darkstar.te-china.tietoenator.com>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.4 (----)
-X-Spam-Report: SpamAssassin version 3.2.3 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
-> * Jeff Garzik <jgarzik@pobox.com> wrote:
+On Tue, 26 Feb 2008 16:24:11 +0800 Dave Young <hidave.darkstar@gmail.com> wrote:
+
+> I don't know whom I should mail to, could you cc the proper guy? Thanks.
 > 
->> +	unsigned long flags;
->> +
->> +	local_irq_save(flags);
-> 
-> hm, couldnt we attach the irq disabling to some spinlock, in a natural 
-> way? Explicit flags fiddling is a PITA once we do things like threaded 
-> irq handlers, -rt, etc.
+> [  118.331674] acpi LNXSYSTM:00: suspend
+> [  118.331674] Disabling non-boot CPUs ...
+> [  118.331674] CPU0 attaching NULL sched-domain.
+> [  118.331674] CPU1 attaching NULL sched-domain.
+> [  118.438750] CPU 1 is now offline
+> [  118.438750] lockdep: fixing up alternatives.
+> [  118.438750] SMP alternatives: switching to UP code
+> [  118.438750] BUG: using smp_processor_id() in preemptible [00000000] code: s2ram/2818
+> [  118.438750] caller is rcu_offline_cpu+0x15a/0x1c0
+> [  118.438750] Pid: 2818, comm: s2ram Not tainted 2.6.25-rc3-test #2
+> [  118.438750]  [<c0129738>] ? printk+0x18/0x20
+> [  118.438750]  [<c025c551>] debug_smp_processor_id+0xb1/0xc0
+> [  118.438750]  [<c0161f8a>] rcu_offline_cpu+0x15a/0x1c0
+> [  118.438750]  [<c03d408f>] rcu_cpu_notify+0x3f/0x60
+> [  118.438750]  [<c0141b0d>] notifier_call_chain+0x3d/0x80
+> [  118.438750]  [<c0141db9>] __raw_notifier_call_chain+0x19/0x20
+> [  118.438750]  [<c0141dda>] raw_notifier_call_chain+0x1a/0x20
+> [  118.438750]  [<c015262b>] _cpu_down+0x13b/0x230
+> [  118.438750]  [<c01527c9>] disable_nonboot_cpus+0x49/0xd0
+> [  118.438750]  [<c0157492>] suspend_devices_and_enter+0x72/0x130
+> [  118.438750]  [<c0129738>] ? printk+0x18/0x20
+> [  118.438750]  [<c0157623>] enter_state+0xb3/0xe0
+> [  118.438750]  [<c015777d>] state_store+0x7d/0xc0
+> [  118.438750]  [<c0157700>] ? state_store+0x0/0xc0
+> [  118.438750]  [<c0249e4e>] kobj_attr_store+0x2e/0x40
+> [  118.438750]  [<c01ca957>] flush_write_buffer+0x47/0x70
+> [  118.438750]  [<c01ca9c9>] sysfs_write_file+0x49/0x70
+> [  118.438750]  [<c0188d41>] vfs_write+0x91/0x140
+> [  118.438750]  [<c0188e9d>] sys_write+0x3d/0x70
+> [  118.438750]  [<c0104fca>] syscall_call+0x7/0xb
+> [  118.438750]  =======================
+> [  118.438750] CPU0 attaching NULL sched-domain.
+> [  118.440335] CPU1 is down
 
-Attaching the irq disabling to some spinlock is what would be 
-artificial...  See the ahci.c patch earlier in this thread.  It is taken 
-without spin_lock_irqsave() in the interrupt handler, and there is no 
-reason to disable interrupts for the entirety of the interrupt handler 
-run -- only the part where we call kmap.
+Paul & Ingo I guess
 
-This is only being done to satisfy kmap_atomic's requirements, not libata's.
+> My .config 
 
-I could add a "kmap lock" but that just seems silly.
+Doesn't tell us whether you'r eusing CONFIG_CLASSIC_RCU or
+CONFIG_PREEMPT_RCU.  I assume CONFIG_CLASSIC_RCU, if you ran `make
+oldconfig'.
 
-	Jeff
-
-
-
-
+Which kernel are you running here?
