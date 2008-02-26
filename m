@@ -1,90 +1,142 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932871AbYBZW24@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932657AbYBZW3a@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932871AbYBZW24 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Feb 2008 17:28:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765429AbYBZWX6
+	id S932657AbYBZW3a (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Feb 2008 17:29:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932547AbYBZW0E
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Feb 2008 17:23:58 -0500
-Received: from testure.choralone.org ([194.9.77.134]:56768 "EHLO
-	testure.choralone.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1765173AbYBZWXq (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Feb 2008 17:23:46 -0500
-Date: Tue, 26 Feb 2008 17:23:37 -0500
-From: Dave Jones <davej@codemonkey.org.uk>
-To: Pavel Machek <pavel@ucw.cz>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       kernel list <linux-kernel@vger.kernel.org>
-Subject: Re: broken suspend in .2.6.25-rc3 on T61p (was Re: new regression
-	in 2.6.25-rc3: no keyboard/lid acpi events on thinkpad T61p)
-Message-ID: <20080226222337.GA22172@codemonkey.org.uk>
-Mail-Followup-To: Dave Jones <davej@codemonkey.org.uk>,
-	Pavel Machek <pavel@ucw.cz>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	"Rafael J. Wysocki" <rjw@sisk.pl>,
-	kernel list <linux-kernel@vger.kernel.org>
-References: <20080225225820.GP2659@elf.ucw.cz> <20080225155550.4a020dfb.akpm@linux-foundation.org> <20080226000007.GB22102@atrey.karlin.mff.cuni.cz> <20080226101117.GA26671@atrey.karlin.mff.cuni.cz> <20080226174613.GA26259@codemonkey.org.uk> <20080226175954.GA5707@elf.ucw.cz> <20080226181001.GA7714@codemonkey.org.uk> <20080226181611.GB6030@elf.ucw.cz> <20080226182241.GB7714@codemonkey.org.uk> <20080226215641.GE10280@elf.ucw.cz>
+	Tue, 26 Feb 2008 17:26:04 -0500
+Received: from brick.kernel.dk ([87.55.233.238]:20879 "EHLO kernel.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1765779AbYBZW0B (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 Feb 2008 17:26:01 -0500
+Date: Tue, 26 Feb 2008 23:25:56 +0100
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Anders Henke <anders.henke@1und1.de>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       device-mapper development <dm-devel@redhat.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [dm-devel] Re: device mapper not reporting no-barrier-support?
+Message-ID: <20080226222556.GU6704@kernel.dk>
+References: <20080225132615.GA21990@1und1.de> <20080225152050.94788622.akpm@linux-foundation.org> <20080226013656.GE1788@agk.fab.redhat.com> <20080226161741.GN6704@kernel.dk> <20080226193349.GQ13026@1und1.de> <20080226194122.GQ6704@kernel.dk> <20080226202030.GR13026@1und1.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080226215641.GE10280@elf.ucw.cz>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+In-Reply-To: <20080226202030.GR13026@1und1.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Feb 26, 2008 at 10:56:41PM +0100, Pavel Machek wrote:
+On Tue, Feb 26 2008, Anders Henke wrote:
+> On Tue, Feb 26 2008 schrieb Jens Axboe:
+> > On Tue, Feb 26 2008, Anders Henke wrote:
+> > > On Tue, Feb 26 2008 Jens Axboe wrote:
+> > > > On Tue, Feb 26 2008, Alasdair G Kergon wrote:
+> > > > > On Mon, Feb 25, 2008 at 03:20:50PM -0800, Andrew Morton wrote:
+> > > > > > On Mon, 25 Feb 2008 14:26:15 +0100 Anders Henke <anders.henke@1und1.de> wrote:
+> > > > > > > I'm currently stuck between Kernel LVM and DRBD, as I'm using Kernel
+> > > > > > > 2.6.24.2 with DRBD 8.2.5 on top of an LVM2 device (LV).
+> > > > > > > -LVM2/device mapper doesn't support write barriers
+> > > > > 
+> > > > > That's right.
+> > > > > 
+> > > > > > > -DRBD uses blkdev_issue_flush() to flush its metadata to disk.
+> > > > > 
+> > > > > Which won't work if device-mapper is underneath.
+> > > > > 
+> > > > > > >  On a no-barrier-device, DRBD should receive EOPNOTSUPP, but
+> > > > > > >  it really does receive an EIO. Promptly, DRBD gives the
+> > > > > > >  error message "drbd0: local disk flush failed with status -5".
+> > > > > > > I've posted a lengty summary of my findings to
+> > > > > > > http://lists.linbit.com/pipermail/drbd-user/2008-February/008665.html
+> > > > > > > ... that DRBD does catch the EOPNOTSUPP for blkdev_issue_flush and
+> > > > > > > BIO_RW_BARRIER, but the lvm implementation of blkdev_issue_flush in
+> > > > > > > 2.6.24.2 aparently does return EIO for blkdev_issue_flush.
+> > > > > > I'd say it's a DM bug.
+> > > > > 
+> > > > > The dm code is unchanged, but look at the limited endio handling in
+> > > > > ll_rw_blk.c:
+> > > > > 
+> > > > > static void bio_end_empty_barrier(struct bio *bio, int err)
+> > > > > {
+> > > > >         if (err)
+> > > > >                 clear_bit(BIO_UPTODATE, &bio->bi_flags);
+> > > > > 
+> > > > >         complete(bio->bi_private);
+> > > > > }
+> > > > > 
+> > > > > int blkdev_issue_flush(struct block_device *bdev, sector_t *error_sector)
+> > > > > {
+> > > > > ...
+> > > > >         wait_for_completion(&wait);
+> > > > >         if (error_sector)
+> > > > >                 *error_sector = bio->bi_sector;
+> > > > >         ret = 0;
+> > > > >         if (!bio_flagged(bio, BIO_UPTODATE))
+> > > > >                 ret = -EIO;
+> > > > 
+> > > > You are right, the return value got broken there. Does this make it
+> > > > return -EOPNOTSUPP properly for you?
+> > > 
+> > > 
+> > > No, it doesn't.
+> > > 
+> > > 
+> > > 
+> > > I've applied your patch manually, as 2.6.24.2. doesn't have a "blk-barrier.c":
+> > > 
+> > > ---cut
+> > > --- linux-2.6.24.2/block/ll_rw_blk.c.prepatch   2008-02-11
+> > > 06:51:11.000000000 +0100
+> > > +++ linux-2.6.24.2/block/ll_rw_blk.c    2008-02-26 20:02:28.514641620
+> > > +0100
+> > > @@ -2667,8 +2667,11 @@
+> > >  
+> > >  static void bio_end_empty_barrier(struct bio *bio, int err)
+> > >  {
+> > > -       if (err)
+> > > +       if (err) {
+> > > +               if (err == -EOPNOTSUPP)
+> > > +                       set_bit(BIO_EOPNOTSUPP, &bio->bi_flags);
+> > >                 clear_bit(BIO_UPTODATE, &bio->bi_flags);
+> > > +       }
+> > >  
+> > >         complete(bio->bi_private);
+> > >  }
+> > > ---cut
+> > > 
+> > > ... and the resulting kernel shows exactly the same behaviour than before:
+> > 
+> > Not surprising, as you missed half of the patch:
+> 
+> Ouch. Thank you for pointing this out.
+> 
+> I've been spending too much time of the day with things who have a negative 
+> impact on my concentration and I shouldn't manually patch kernels at
+> this time of the day.
+> 
+> Yes, it's useless to set a bit, but never check it (like in my version of
+> your patch).
+> 
+> After adding the second part of your patch, the resulting kernel works as
+> intended:
+> 
+> [  234.946192] drbd0: conn( WFSyncUUID -> SyncTarget ) 
+> [  234.956176] drbd0: Began resync as SyncTarget (will sync 19542404 KB
+> [4885601
+>  bits set]).
+> [  234.972567] drbd0: Writing meta data super block now.
+> [  235.018203] drbd0: local disk flush failed with status -95
+> 
+> DRBD sees the EOPNOTSUPP, logs this message only once and doesn't try
+> any further barrier requests (as intended).
 
- > Seems like pm-utils is just a thin wrapper around s2ram, at least in
- > version debian ships. It does not seem to have its own whitelist.
+OK good, that's what I expected :-)
 
-The actual whitelists still live in hal (or specifically hal-data),
-rather than pm-utils.  /usr/share/hal/fdi/information/10freedesktop/20-video-quirk-pm-*
-for example.  This gets passed down to pm-utils by hal.
+I'll queue the patch for 2.6.25, the 2.6.24 should go to stable. Send me
+a properly formatted patch and I'll make sure it goes that way.
 
- > /usr/lib/pm-utils/functions
- > 
- > ... 
- > 
- >         if [ -x /usr/sbin/s2ram ]; then
- >                 if [ -n "$S2RAM_OPTS" ]; then
- >                         # Trust HAL or the user to pass the correct
- > options
- >                         /usr/sbin/s2ram $S2RAM_OPTS
- >                 elif /usr/sbin/s2ram --test > /dev/null ; then
- >                         # Trust s2ram's internal whitelist
- >                         /usr/sbin/s2ram
- >                 else
- >                         # Unknown machine
- >                         echo "This machine is unkown, please try to
- > find out how to suspend this machine. See s2ram(8)."
- >                 fi
- >         else
- >                 echo -n "mem" > /sys/power/state
- >         fi
-
-Seems to be a debian specific change, the variant in Fedora, nor upstream
-pm-utils doesn't have any of that.  Possibly because it's a dumb idea
-to have two separate sources of the same information.
-
- > ...so it is ready to use s2ram, but will fall back to
- > echo. Unfortunately, that will mean no video resume on _many_
- > machines.
- > 
- > To give some numbers: according to s2ram whitelist, we can restore
- > video on 410 machines. On 74 of them, s2ram is not needed. So
- > approximately 80% of machines need s2ram (at least in configuration
- > without X running)....
- > 
- > Pretty please, can we get s2ram for Fedora, so that video is restored
- > there?
- 
-I'm not the gatekeeper of what goes into Fedora userspace, but I'm pretty
-certain the path forward has already been decided.  Running a modern
-Fedora desktop installation without hal just isn't feasible.
-
-	Dave
+Thanks for testing!
 
 -- 
-http://www.codemonkey.org.uk
+Jens Axboe
+
