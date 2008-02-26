@@ -1,293 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759766AbYBZOza@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761661AbYBZO6m@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759766AbYBZOza (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Feb 2008 09:55:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753563AbYBZOzU
+	id S1761661AbYBZO6m (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Feb 2008 09:58:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753993AbYBZO6e
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Feb 2008 09:55:20 -0500
-Received: from twinlark.arctic.org ([208.69.40.136]:49477 "EHLO
-	twinlark.arctic.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751522AbYBZOzS (ORCPT
+	Tue, 26 Feb 2008 09:58:34 -0500
+Received: from caffeine.csclub.uwaterloo.ca ([129.97.134.17]:59299 "EHLO
+	caffeine.csclub.uwaterloo.ca" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753563AbYBZO6d (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Feb 2008 09:55:18 -0500
-Message-ID: <47C42854.8030000@kernel.org>
-Date: Tue, 26 Feb 2008 06:55:16 -0800
-From: "Andrew G. Morgan" <morgan@kernel.org>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
+	Tue, 26 Feb 2008 09:58:33 -0500
+Date: Tue, 26 Feb 2008 09:58:32 -0500
+To: Chris Holvenstot <cholvenstot@comcast.net>
+Cc: Jiri Kosina <jkosina@suse.cz>, elendil@planet.nl,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, Ingo Molnar <mingo@elte.hu>,
+       Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [2.6.25-rc1] jerky mouse cursor and randoooom key repeats
+Message-ID: <20080226145832.GA1289@csclub.uwaterloo.ca>
+References: <1203123219.6176.36.camel@popeye> <Pine.LNX.4.64.0802161202430.7699@twin.jikos.cz> <1203163503.6124.5.camel@popeye> <Pine.LNX.4.64.0802161907200.30955@jikos.suse.cz> <1203221372.6124.29.camel@popeye> <Pine.LNX.4.64.0802211036580.30955@jikos.suse.cz> <1203587101.27355.4.camel@popeye>
 MIME-Version: 1.0
-To: Kohei KaiGai <kaigai@ak.jp.nec.com>
-CC: greg@kroah.com, serue@us.ibm.com, linux-security-module@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2/3] exporting capability name/code pairs (final#2)
-References: <47C25AE9.7080305@ak.jp.nec.com> <47C25BE3.9050905@ak.jp.nec.com>
-In-Reply-To: <47C25BE3.9050905@ak.jp.nec.com>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1203587101.27355.4.camel@popeye>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+From: lsorense@csclub.uwaterloo.ca (Lennart Sorensen)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
------BEGIN PGP SIGNED MESSAGE-----
-Hash: SHA1
+On Thu, Feb 21, 2008 at 03:45:00AM -0600, Chris Holvenstot wrote:
+> Jiri - 
+> 
+> I am tempted to lie to you and say it was in both modes, or when running
+> under X only, but to tell you the truth while I have not seen it while
+> running in console mode, I have not spent enough time there to make a
+> solid statement one way or the other.
 
-Acked-by: Andrew G. Morgan <morgan@kernel.org>
-Tested-by: Andrew G. Morgan <morgan@kernel.org>
+Hmm, I have been seeing repeated keys a lot under X on my athlon 700,
+but mainly when I have firefox running (which is of course quite a load
+on the poor old thing).  This has been going on for probably the last
+year or so.  I thought it was just the machine getting weird, although
+whenever it wasn't running firefox or other memory/cpu heavy loads it
+seemed fine.
 
-Cheers
+The USB bus also keeps detecting and loosing a USB hub again and again,
+so perhaps that is also a software problem and not actually the hardware
+failing.
 
-Andrew
+For example I continuously get this:
 
-Kohei KaiGai wrote:
-| [PATCH 2/3] exporting capability name/code pairs
-|
-| This patch enables to export code/name pairs of capabilities the running
-| kernel supported.
-|
-| A newer kernel sometimes adds new capabilities, like CAP_MAC_ADMIN
-| at 2.6.25. However, we have no interface to disclose what capabilities
-| are supported on the running kernel. Thus, we have to maintain libcap
-| version in appropriate one synchronously.
-|
-| This patch enables libcap to collect the list of capabilities at run time,
-| and provide them for users. It helps to improve portability of library.
-|
-| It exports these information as regular files under
-/sys/kernel/capability.
-| The numeric node exports its name, the symbolic node exports its code.
-|
-| Signed-off-by: KaiGai Kohei <kaigai@ak.jp.nec.com>
-| --
-|  Documentation/ABI/testing/sysfs-kernel-capability |   23 +++++
-|  scripts/mkcapnames.sh                             |   44 +++++++++
-|  security/Makefile                                 |    9 ++
-|  security/commoncap.c                              |   99
-+++++++++++++++++++++
-|  4 files changed, 175 insertions(+), 0 deletions(-)
-|
-| diff --git a/Documentation/ABI/testing/sysfs-kernel-capability
-b/Documentation/ABI/testing/sysfs-kernel-capability
-| index e69de29..d4a14e7 100644
-| --- a/Documentation/ABI/testing/sysfs-kernel-capability
-| +++ b/Documentation/ABI/testing/sysfs-kernel-capability
-| @@ -0,0 +1,23 @@
-| +What:		/sys/kernel/capability
-| +Date:		Feb 2008
-| +Contact:	KaiGai Kohei <kaigai@ak.jp.nec.com>
-| +Description:
-| +		The entries under /sys/kernel/capability are used to export
-| +		the list of capabilities the running kernel supports.
-| +
-| +		- /sys/kernel/capability/version
-| +		  returns the most preferable version number for the
-| +		  running kernel.
-| +		  e.g) $ cat /sys/kernel/capability/version
-| +		       0x20071026
-| +
-| +		- /sys/kernel/capability/code/<numerical representation>
-| +		  returns its symbolic representation, on reading.
-| +		  e.g) $ cat /sys/kernel/capability/codes/30
-| +		       cap_audit_control
-| +
-| +		- /sys/kernel/capability/name/<symbolic representation>
-| +		  returns its numerical representation, on reading.
-| +		  e.g) $ cat /sys/kernel/capability/names/cap_sys_pacct
-| +		       20
-| +
-| diff --git a/scripts/mkcapnames.sh b/scripts/mkcapnames.sh
-| index e69de29..5d36d52 100644
-| --- a/scripts/mkcapnames.sh
-| +++ b/scripts/mkcapnames.sh
-| @@ -0,0 +1,44 @@
-| +#!/bin/sh
-| +
-| +#
-| +# generate a cap_names.h file from include/linux/capability.h
-| +#
-| +
-| +CAPHEAD="`dirname $0`/../include/linux/capability.h"
-| +REGEXP='^#define CAP_[A-Z_]+[ 	]+[0-9]+$'
-| +NUMCAP=`cat "$CAPHEAD" | egrep -c "$REGEXP"`
-| +
-| +echo '#ifndef CAP_NAMES_H'
-| +echo '#define CAP_NAMES_H'
-| +echo
-| +echo '/*'
-| +echo ' * Do NOT edit this file directly.'
-| +echo ' * This file is generated from include/linux/capability.h
-automatically'
-| +echo ' */'
-| +echo
-| +echo '#if !defined(SYSFS_CAP_NAME_ENTRY) ||
-!defined(SYSFS_CAP_CODE_ENTRY)'
-| +echo '#error cap_names.h should be included from security/capability.c'
-| +echo '#else'
-| +echo "#if $NUMCAP != CAP_LAST_CAP + 1"
-| +echo '#error mkcapnames.sh cannot collect capabilities correctly'
-| +echo '#else'
-| +cat "$CAPHEAD" | egrep "$REGEXP" \
-| +    | awk '{ printf("SYSFS_CAP_NAME_ENTRY(%s,%s);\n", tolower($2),
-$2); }'
-| +echo
-| +echo 'static struct attribute *capability_name_attrs[] = {'
-| +cat "$CAPHEAD" | egrep "$REGEXP" \
-| +    | awk '{ printf("\t&%s_name_attr.attr,\n", tolower($2)); } END {
-print "\tNULL," }'
-| +echo '};'
-| +
-| +echo
-| +cat "$CAPHEAD" | egrep "$REGEXP" \
-| +    | awk '{ printf("SYSFS_CAP_CODE_ENTRY(%s,%s);\n", tolower($2),
-$2); }'
-| +echo
-| +echo 'static struct attribute *capability_code_attrs[] = {'
-| +cat "$CAPHEAD" | egrep "$REGEXP" \
-| +    | awk '{ printf("\t&%s_code_attr.attr,\n", tolower($2)); } END {
-print "\tNULL," }'
-| +echo '};'
-| +
-| +echo '#endif'
-| +echo '#endif'
-| +echo '#endif'
-| diff --git a/security/Makefile b/security/Makefile
-| index 9e8b025..4093e3e 100644
-| --- a/security/Makefile
-| +++ b/security/Makefile
-| @@ -18,3 +18,12 @@ obj-$(CONFIG_SECURITY_SELINUX)		+= selinux/built-in.o
-|  obj-$(CONFIG_SECURITY_SMACK)		+= commoncap.o smack/built-in.o
-|  obj-$(CONFIG_SECURITY_CAPABILITIES)	+= commoncap.o capability.o
-|  obj-$(CONFIG_SECURITY_ROOTPLUG)		+= commoncap.o root_plug.o
-| +
-| +# cap_names.h contains the code/name pair of capabilities.
-| +# It is generated using include/linux/capability.h automatically.
-| +$(obj)/commoncap.o: $(obj)/cap_names.h
-| +quiet_cmd_cap_names  = CAPS    $@
-| +	cmd_cap_names  = /bin/sh $(srctree)/scripts/mkcapnames.sh > $@
-| +targets += cap_names.h
-| +$(obj)/cap_names.h: $(srctree)/scripts/mkcapnames.sh
-$(srctree)/include/linux/capability.h FORCE
-| +	$(call if_changed,cap_names)
-| diff --git a/security/commoncap.c b/security/commoncap.c
-| index 5aba826..9483fa9 100644
-| --- a/security/commoncap.c
-| +++ b/security/commoncap.c
-| @@ -24,6 +24,8 @@
-|  #include <linux/hugetlb.h>
-|  #include <linux/mount.h>
-|  #include <linux/sched.h>
-| +#include <linux/kobject.h>
-| +#include <linux/sysfs.h>
-|
-|  /* Global security state */
-|
-| @@ -637,3 +639,100 @@ int cap_vm_enough_memory(struct mm_struct *mm,
-long pages)
-|  	return __vm_enough_memory(mm, pages, cap_sys_admin);
-|  }
-|
-| +/*
-| + * Export the list of capabilities on /sys/kernel/capability
-| + */
-| +static struct kobject *capability_kobj;
-| +
-| +static ssize_t capability_name_show(struct kobject *kobj,
-| +				    struct kobj_attribute *attr,
-| +				    char *buffer)
-| +{
-| +	/* It returns numerical representation of capability. */
-| +	return scnprintf(buffer, PAGE_SIZE, "%ld\n", (long) attr->data);
-| +}
-| +
-| +static ssize_t capability_code_show(struct kobject *kobj,
-| +				    struct kobj_attribute *attr,
-| +				    char *buffer)
-| +{
-| +	/* It returns symbolic representation of capability. */
-| +	return scnprintf(buffer, PAGE_SIZE, "%s\n", (char *) attr->data);
-| +}
-| +
-| +static ssize_t capability_version_show(struct kobject *kobj,
-| +				       struct kobj_attribute *attr,
-| +				       char *buffer)
-| +{
-| +	return scnprintf(buffer, PAGE_SIZE, "0x%08x\n",
-| +			 _LINUX_CAPABILITY_VERSION);
-| +}
-| +
-| +#define SYSFS_CAP_NAME_ENTRY(_name,_code)				\
-| +	static struct kobj_attribute _name##_name_attr =		\
-| +		__ATTR_DATA(_name, 0444, capability_name_show, NULL, (long)(_code))
-| +
-| +#define SYSFS_CAP_CODE_ENTRY(_name,_code)				\
-| +	static struct kobj_attribute _name##_code_attr =		\
-| +		__ATTR_DATA(_code, 0444, capability_code_show, NULL,
-__stringify(_name))
-| +
-| +/*
-| + * capability_attrs[] is generated automatically by scripts/mkcapnames.sh
-| + * This script parses include/linux/capability.h
-| + */
-| +#include "cap_names.h"
-| +
-| +static struct attribute_group capability_name_attr_group = {
-| +	.name = "names",
-| +	.attrs = capability_name_attrs,
-| +};
-| +
-| +static struct attribute_group capability_code_attr_group = {
-| +	.name = "codes",
-| +	.attrs = capability_code_attrs,
-| +};
-| +
-| +static struct kobj_attribute cap_version_attr =
-| +	__ATTR(version, 0444, capability_version_show, NULL);
-| +
-| +static int __init capability_export_names(void)
-| +{
-| +	int rc = -ENOMEM;
-| +
-| +	/* make /sys/kernel/capability */
-| +	capability_kobj = kobject_create_and_add("capability", kernel_kobj);
-| +	if (!capability_kobj)
-| +		goto error0;
-| +
-| +	/* make /sys/kernel/capability/names */
-| +	rc = sysfs_create_group(capability_kobj,
-| +				&capability_name_attr_group);
-| +	if (rc)
-| +		goto error1;
-| +
-| +	/* make /sys/kernel/capability/codes */
-| +	rc = sysfs_create_group(capability_kobj,
-| +				&capability_code_attr_group);
-| +	if (rc)
-| +		goto error2;
-| +
-| +	/* make /sys/kernel/capability/version */
-| +	rc = sysfs_create_file(capability_kobj,
-| +			       &cap_version_attr.attr);
-| +	if (rc)
-| +		goto error3;
-| +
-| +	return 0;
-| +
-| +error3:
-| +	sysfs_remove_group(capability_kobj, &capability_code_attr_group);
-| +error2:
-| +	sysfs_remove_group(capability_kobj, &capability_name_attr_group);
-| +error1:
-| +	kobject_put(capability_kobj);
-| +error0:
-| +	printk(KERN_ERR "Unable to export capabilities\n");
-| +
-| +	return rc;
-| +}
-| +__initcall(capability_export_names);
-|
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.2.6 (GNU/Linux)
+usb-storage: device found at 84
+usb-storage: waiting for device to settle before scanning
+usb-storage: device scan complete
+usb 1-1: USB disconnect, address 82
+usb 1-1.1: USB disconnect, address 83
+usb 1-1.1.1: USB disconnect, address 84
+usb 2-2: USB disconnect, address 44
+usb 2-2: new full speed USB device using uhci_hcd and address 45
+usb 2-2: configuration #1 chosen from 1 choice
+hub 2-2:1.0: USB hub found
+usb 1-1: new full speed USB device using uhci_hcd and address 85
+usb 1-1: configuration #1 chosen from 1 choice
+hub 1-1:1.0: USB hub found
+usb 1-1.1: new full speed USB device using uhci_hcd and address 86
+usb 1-1.1: configuration #1 chosen from 1 choice
+hub 1-1.1:1.0: USB hub found
+usb 1-1.1.1: new full speed USB device using uhci_hcd and address 87
+usb 1-1.1.1: configuration #1 chosen from 1 choice
+scsi20 : SCSI emulation for USB Mass Storage devices
+usb-storage: device found at 87
+usb-storage: waiting for device to settle before scanning
+usb-storage: device scan complete
+usb 1-1: USB disconnect, address 85
+usb 1-1.1: USB disconnect, address 86
+usb 1-1.1.1: USB disconnect, address 87
+usb 1-1: new full speed USB device using uhci_hcd and address 88
+usb 1-1: configuration #1 chosen from 1 choice
+hub 1-1:1.0: USB hub found
+usb 1-1.1: new full speed USB device using uhci_hcd and address 89
+usb 1-1.1: configuration #1 chosen from 1 choice
+hub 1-1.1:1.0: USB hub found
+usb 1-1.1.1: new full speed USB device using uhci_hcd and address 90
+usb 1-1.1.1: configuration #1 chosen from 1 choice
+scsi21 : SCSI emulation for USB Mass Storage devices
+usb-storage: device found at 90
+usb-storage: waiting for device to settle before scanning
+usb-storage: device scan complete
+usb 1-1: USB disconnect, address 88
+usb 1-1.1: USB disconnect, address 89
+usb 1-1.1.1: USB disconnect, address 90
+usb 2-2: USB disconnect, address 45
+usb 2-2: new full speed USB device using uhci_hcd and address 46
+usb 2-2: configuration #1 chosen from 1 choice
+hub 2-2:1.0: USB hub found
 
-iD8DBQFHxChT+bHCR3gb8jsRAtnIAJ9EZKZ8Uw1WZE0GdGc2SRuuEdqm5QCcCUm2
-Dp+6/phU4jLCDo6jsNKJd9A=
-=6DqN
------END PGP SIGNATURE-----
+I have never checked if it stops doing that when firefox and such
+isn't running and the keyboard isn't repeating characters.
+
+I wonder if my keyboard problems started around 2.6.18 or earlier than
+that or later.  I should try booting an older kernel again if I can make
+it and see if it changes.
+
+--
+Len Sorensen
