@@ -1,98 +1,418 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761051AbYBZNkf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758853AbYBZNlP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761051AbYBZNkf (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Feb 2008 08:40:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753199AbYBZNkT
+	id S1758853AbYBZNlP (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Feb 2008 08:41:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754186AbYBZNke
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Feb 2008 08:40:19 -0500
-Received: from n20.bullet.mail.ukl.yahoo.com ([87.248.110.137]:33248 "HELO
-	n20.bullet.mail.ukl.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1753030AbYBZNkQ (ORCPT
+	Tue, 26 Feb 2008 08:40:34 -0500
+Received: from opensource.wolfsonmicro.com ([80.75.67.52]:60058 "EHLO
+	opensource2.wolfsonmicro.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1761051AbYBZNkY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Feb 2008 08:40:16 -0500
-X-Greylist: delayed 390 seconds by postgrey-1.27 at vger.kernel.org; Tue, 26 Feb 2008 08:40:16 EST
-X-Yahoo-Newman-Id: 920904.43033.bm@omp413.mail.mud.yahoo.com
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=nGWl4Gzdtg0F8jJ09pEwsic3j0fMqcbRprC+vuetFuKEuYqAh415rSNzjCUiYJni58EdoXCDtgfn6+9rm2VxyzcZ/EISRtW/xg5nTmYP7M2YtiMrtNdVJEbKReP/vMhLGW4yH0k3GvYJ/6vWjW4qKpi9EeroAceCIW+ohvDMBPI=  ;
-X-YMail-OSG: DzDXG.gVM1mJQ1mfhYb_nb_wqwCPSVeG3gK9ipyH7_kX.2ipvqgX1qPiQ0Xp4mLHTol4hIinvQ--
-X-Yahoo-Newman-Property: ymail-3
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-To: Otavio Salvador <otavio@debian.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: oops when using git gc --auto
-Date: Wed, 27 Feb 2008 00:33:31 +1100
-User-Agent: KMail/1.9.5
-Cc: linux-kernel@vger.kernel.org
-References: <87tzjvhmy7.fsf@ossystems.com.br>
-In-Reply-To: <87tzjvhmy7.fsf@ossystems.com.br>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200802270033.31297.nickpiggin@yahoo.com.au>
+	Tue, 26 Feb 2008 08:40:24 -0500
+From: Mark Brown <broonie@opensource.wolfsonmicro.com>
+To: Dmitry Torokhov <dtor@mail.ru>, Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-input@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Mark Brown <broonie@opensource.wolfsonmicro.com>,
+       Liam Girdwood <liam.girdwood@wolfsonmicro.com>,
+       Graeme Gregory <gg@opensource.wolfsonmicro.com>,
+       Mike Arthur <mike.arthur@wolfsonmicro.com>,
+       Dmitry Baryshkov <dbaryshkov@gmail.com>,
+       Stanley Cai <stanley.cai@intel.com>,
+       Rodolfo Giometti <giometti@enneenne.com>,
+       Russell King <rmk@arm.linux.org.uk>,
+       Marc Kleine-Budde <mkl@pengutronix.de>,
+       Pete MacKay <linux01@architechnical.net>, Ian Molton <spyro@f2s.com>,
+       Vince Sanders <vince@kyllikki.org>, Andrew Zabolotny <zap@homelink.ru>
+Subject: [PATCH 2/6] Add chip driver for WM9705 touchscreen
+Date: Tue, 26 Feb 2008 13:40:14 +0000
+Message-Id: <12040332181161-git-send-email-broonie@opensource.wolfsonmicro.com>
+X-Mailer: git-send-email 1.5.2.5
+In-Reply-To: <12040332183316-git-send-email-broonie@opensource.wolfsonmicro.com>
+References: <12040332183316-git-send-email-broonie@opensource.wolfsonmicro.com>
+Message-Id: <ca8e67a96dfec6847d7f0af41344898c7ad9a863.1204032930.git.broonie@opensource.wolfsonmicro.com>
+In-Reply-To: <c815fe5525d01cea7be830ca51af962d3aec360d.1204032930.git.broonie@opensource.wolfsonmicro.com>
+References: <c815fe5525d01cea7be830ca51af962d3aec360d.1204032930.git.broonie@opensource.wolfsonmicro.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 27 February 2008 00:22, Otavio Salvador wrote:
-> Hello,
->
-> Today I got this oops, someone has an idea of what's going wrong?
->
-> Unable to handle kernel paging request at 0000020000000000 RIP:
->  [<ffffffff802735c3>] find_get_pages+0x3c/0x69
+Signed-off-by: Liam Girdwood <liam.girdwood@wolfsonmicro.com>
+Signed-off-by: Graeme Gregory <gg@opensource.wolfsonmicro.com>
+Signed-off-by: Mike Arthur <mike.arthur@wolfsonmicro.com>
+Signed-off-by: Mark Brown <broonie@opensource.wolfsonmicro.com>
+Cc: Dmitry Baryshkov <dbaryshkov@gmail.com>
+Cc: Stanley Cai <stanley.cai@intel.com>
+Cc: Rodolfo Giometti <giometti@enneenne.com>
+Cc: Russell King <rmk@arm.linux.org.uk>
+Cc: Marc Kleine-Budde <mkl@pengutronix.de>
+Cc: Pete MacKay <linux01@architechnical.net>
+Cc: Ian Molton <spyro@f2s.com>
+Cc: Vince Sanders <vince@kyllikki.org>
+Cc: Andrew Zabolotny <zap@homelink.ru>
+---
+ drivers/input/touchscreen/wm9705.c |  352 ++++++++++++++++++++++++++++++++++++
+ 1 files changed, 352 insertions(+), 0 deletions(-)
+ create mode 100644 drivers/input/touchscreen/wm9705.c
 
-At this point, the most likely candidate is a memory corruption
-error, probably hardware. Can you run memtest86 for a few hours
-to get a bit more confidence in the hw (preferably overnight)?
-
-I did recently see another quite similar corruption in the
-pagecache radix-tree, though. Coincidence maybe?
-
-> PGD 0
-> Oops: 0000 [1] SMP
-> CPU 3
-> Modules linked in: sha256_generic aes_generic aes_x86_64 cbc blkcipher
-> nvidia(P) rfcomm l2cap bluetooth ac battery ipv6 nfs lockd nfs_acl sunrpc
-> bridge ext2 mbcache dm_crypt tun kvm_intel kvm loop snd_usb_audio
-> snd_usb_lib snd_rawmidi snd_hda_intel e1000e i2c_i801 serio_raw
-> snd_seq_device snd_pcm intel_agp button snd_timer pcspkr psmouse snd_hwdep
-> snd snd_page_alloc soundcore evdev i2c_core xfs dm_mirror dm_snapshot
-> dm_mod raid0 md_mod sg sr_mod cdrom sd_mod usbhid hid usb_storage
-> pata_marvell floppy ahci ata_generic libata scsi_mod ehci_hcd uhci_hcd
-> thermal processor fan Pid: 15684, comm: git Tainted: P       
-> 2.6.24-1-amd64 #1
-> RIP: 0010:[<ffffffff802735c3>]  [<ffffffff802735c3>]
-> find_get_pages+0x3c/0x69 RSP: 0018:ffff8100394dfd98  EFLAGS: 00010097
-> RAX: 0000000000000009 RBX: 000000000000000e RCX: 0000000000000009
-> RDX: 0000020000000000 RSI: 000000000000000a RDI: 0000000000000040
-> RBP: ffff810042964350 R08: 0000000000000040 R09: 000000000000000a
-> R10: ffff8100425a06c8 R11: 000000000000000a R12: 000000000000000e
-> R13: ffff8100394dfdf8 R14: ffff810042964350 R15: 0000000000000000
-> FS:  00002ae326df2190(0000) GS:ffff81007d7aeb40(0000)
-> knlGS:0000000000000000 CS:  0010 DS: 0000 ES: 0000 CR0: 000000008005003b
-> CR2: 0000020000000000 CR3: 00000000358f9000 CR4: 00000000000026e0
-> DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
-> DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
-> Process git (pid: 15684, threadinfo ffff8100394de000, task
-> ffff8100359cd800) Stack:  000000000000000d ffff8100394dfde8
-> 000000000000000d 000000000000000e 000000000000000e ffffffff802794d6
-> ffff8100014a7768 ffffffff80279b04 0000000000000000 ffffffffffffffff
-> 0000000000000000 0000000000000000 Call Trace:
->  [<ffffffff802794d6>] pagevec_lookup+0x17/0x1e
->  [<ffffffff80279b04>] truncate_inode_pages_range+0x108/0x2bd
->  [<ffffffff802a9e3a>] generic_delete_inode+0xbf/0x127
->  [<ffffffff802a1a4d>] do_unlinkat+0xd5/0x144
->  [<ffffffff802989e2>] sys_write+0x45/0x6e
->  [<ffffffff8020be2e>] system_call+0x7e/0x83
->
->
-> Code: 48 8b 02 25 00 40 02 00 48 3d 00 40 02 00 75 04 48 8b 52 10
-> RIP  [<ffffffff802735c3>] find_get_pages+0x3c/0x69
->  RSP <ffff8100394dfd98>
-> CR2: 0000020000000000
-> ---[ end trace cb43a9f4488b815a ]---
+diff --git a/drivers/input/touchscreen/wm9705.c b/drivers/input/touchscreen/wm9705.c
+new file mode 100644
+index 0000000..f185104
+--- /dev/null
++++ b/drivers/input/touchscreen/wm9705.c
+@@ -0,0 +1,352 @@
++/*
++ * wm9705.c  --  Codec driver for Wolfson WM9705 AC97 Codec.
++ *
++ * Copyright 2003, 2004, 2005, 2006, 2007 Wolfson Microelectronics PLC.
++ * Author: Liam Girdwood
++ *         liam.girdwood@wolfsonmicro.com or linux@wolfsonmicro.com
++ * Parts Copyright : Ian Molton <spyro@f2s.com>
++ *                   Andrew Zabolotny <zap@homelink.ru>
++ *                   Russell King <rmk@arm.linux.org.uk>
++ *
++ *  This program is free software; you can redistribute  it and/or modify it
++ *  under  the terms of  the GNU General  Public License as published by the
++ *  Free Software Foundation;  either version 2 of the  License, or (at your
++ *  option) any later version.
++ *
++ */
++
++#include <linux/module.h>
++#include <linux/moduleparam.h>
++#include <linux/version.h>
++#include <linux/kernel.h>
++#include <linux/input.h>
++#include <linux/delay.h>
++#include <linux/bitops.h>
++#include <linux/wm97xx.h>
++
++#define TS_NAME			"wm97xx"
++#define WM9705_VERSION		"0.62"
++#define DEFAULT_PRESSURE	0xb0c0
++
++/*
++ * Module parameters
++ */
++
++/*
++ * Set current used for pressure measurement.
++ *
++ * Set pil = 2 to use 400uA
++ *     pil = 1 to use 200uA and
++ *     pil = 0 to disable pressure measurement.
++ *
++ * This is used to increase the range of values returned by the adc
++ * when measureing touchpanel pressure.
++ */
++static int pil;
++module_param(pil, int, 0);
++MODULE_PARM_DESC(pil, "Set current used for pressure measurement.");
++
++/*
++ * Set threshold for pressure measurement.
++ *
++ * Pen down pressure below threshold is ignored.
++ */
++static int pressure = DEFAULT_PRESSURE & 0xfff;
++module_param(pressure, int, 0);
++MODULE_PARM_DESC(pressure, "Set threshold for pressure measurement.");
++
++/*
++ * Set adc sample delay.
++ *
++ * For accurate touchpanel measurements, some settling time may be
++ * required between the switch matrix applying a voltage across the
++ * touchpanel plate and the ADC sampling the signal.
++ *
++ * This delay can be set by setting delay = n, where n is the array
++ * position of the delay in the array delay_table below.
++ * Long delays > 1ms are supported for completeness, but are not
++ * recommended.
++ */
++static int delay = 4;
++module_param(delay, int, 0);
++MODULE_PARM_DESC(delay, "Set adc sample delay.");
++
++/*
++ * Pen detect comparator threshold.
++ *
++ * 0 to Vmid in 15 steps, 0 = use zero power comparator with Vmid threshold
++ * i.e. 1 =  Vmid/15 threshold
++ *      15 =  Vmid/1 threshold
++ *
++ * Adjust this value if you are having problems with pen detect not
++ * detecting any down events.
++ */
++static int pdd = 8;
++module_param(pdd, int, 0);
++MODULE_PARM_DESC(pdd, "Set pen detect comparator threshold");
++
++/*
++ * Set adc mask function.
++ *
++ * Sources of glitch noise, such as signals driving an LCD display, may feed
++ * through to the touch screen plates and affect measurement accuracy. In
++ * order to minimise this, a signal may be applied to the MASK pin to delay or
++ * synchronise the sampling.
++ *
++ * 0 = No delay or sync
++ * 1 = High on pin stops conversions
++ * 2 = Edge triggered, edge on pin delays conversion by delay param (above)
++ * 3 = Edge triggered, edge on pin starts conversion after delay param
++ */
++static int mask;
++module_param(mask, int, 0);
++MODULE_PARM_DESC(mask, "Set adc mask function.");
++
++/*
++ * ADC sample delay times in uS
++ */
++static const int delay_table[] = {
++	21,    /* 1 AC97 Link frames */
++	42,    /* 2                  */
++	84,    /* 4                  */
++	167,   /* 8                  */
++	333,   /* 16                 */
++	667,   /* 32                 */
++	1000,  /* 48                 */
++	1333,  /* 64                 */
++	2000,  /* 96                 */
++	2667,  /* 128                */
++	3333,  /* 160                */
++	4000,  /* 192                */
++	4667,  /* 224                */
++	5333,  /* 256                */
++	6000,  /* 288                */
++	0      /* No delay, switch matrix always on */
++};
++
++/*
++ * Delay after issuing a POLL command.
++ *
++ * The delay is 3 AC97 link frames + the touchpanel settling delay
++ */
++static inline void poll_delay(int d)
++{
++	udelay(3 * AC97_LINK_FRAME + delay_table[d]);
++}
++
++/*
++ * set up the physical settings of the WM9705
++ */
++static void wm9705_phy_init(struct wm97xx *wm)
++{
++	u16 dig1 = 0, dig2 = WM97XX_RPR;
++
++	/*
++	* mute VIDEO and AUX as they share X and Y touchscreen
++	* inputs on the WM9705
++	*/
++	wm97xx_reg_write(wm, AC97_AUX, 0x8000);
++	wm97xx_reg_write(wm, AC97_VIDEO, 0x8000);
++
++	/* touchpanel pressure current*/
++	if (pil == 2) {
++		dig2 |= WM9705_PIL;
++		dev_dbg(wm->dev,
++			"setting pressure measurement current to 400uA.");
++	} else if (pil)
++		dev_dbg(wm->dev,
++			"setting pressure measurement current to 200uA.");
++	if (!pil)
++		pressure = 0;
++
++	/* polling mode sample settling delay */
++	if (delay != 4) {
++		if (delay < 0 || delay > 15) {
++			dev_dbg(wm->dev, "supplied delay out of range.");
++			delay = 4;
++		}
++	}
++	dig1 &= 0xff0f;
++	dig1 |= WM97XX_DELAY(delay);
++	dev_dbg(wm->dev, "setting adc sample delay to %d u Secs.",
++		delay_table[delay]);
++
++	/* WM9705 pdd */
++	dig2 |= (pdd & 0x000f);
++	dev_dbg(wm->dev, "setting pdd to Vmid/%d", 1 - (pdd & 0x000f));
++
++	/* mask */
++	dig2 |= ((mask & 0x3) << 4);
++
++	wm97xx_reg_write(wm, AC97_WM97XX_DIGITISER1, dig1);
++	wm97xx_reg_write(wm, AC97_WM97XX_DIGITISER2, dig2);
++}
++
++static void wm9705_dig_enable(struct wm97xx *wm, int enable)
++{
++	if (enable) {
++		wm97xx_reg_write(wm, AC97_WM97XX_DIGITISER2,
++				 wm->dig[2] | WM97XX_PRP_DET_DIG);
++		wm97xx_reg_read(wm, AC97_WM97XX_DIGITISER_RD); /* dummy read */
++	} else
++		wm97xx_reg_write(wm, AC97_WM97XX_DIGITISER2,
++				 wm->dig[2] & ~WM97XX_PRP_DET_DIG);
++}
++
++static void wm9705_aux_prepare(struct wm97xx *wm)
++{
++	memcpy(wm->dig_save, wm->dig, sizeof(wm->dig));
++	wm97xx_reg_write(wm, AC97_WM97XX_DIGITISER1, 0);
++	wm97xx_reg_write(wm, AC97_WM97XX_DIGITISER2, WM97XX_PRP_DET_DIG);
++}
++
++static void wm9705_dig_restore(struct wm97xx *wm)
++{
++	wm97xx_reg_write(wm, AC97_WM97XX_DIGITISER1, wm->dig_save[1]);
++	wm97xx_reg_write(wm, AC97_WM97XX_DIGITISER2, wm->dig_save[2]);
++}
++
++static inline int is_pden(struct wm97xx *wm)
++{
++	return wm->dig[2] & WM9705_PDEN;
++}
++
++/*
++ * Read a sample from the WM9705 adc in polling mode.
++ */
++static int wm9705_poll_sample(struct wm97xx *wm, int adcsel, int *sample)
++{
++	int timeout = 5 * delay;
++
++	if (!wm->pen_probably_down) {
++		u16 data = wm97xx_reg_read(wm, AC97_WM97XX_DIGITISER_RD);
++		if (!(data & WM97XX_PEN_DOWN))
++			return RC_PENUP;
++		wm->pen_probably_down = 1;
++	}
++
++	/* set up digitiser */
++	if (adcsel & 0x8000)
++		adcsel = ((adcsel & 0x7fff) + 3) << 12;
++
++	if (wm->mach_ops && wm->mach_ops->pre_sample)
++		wm->mach_ops->pre_sample(adcsel);
++	wm97xx_reg_write(wm, AC97_WM97XX_DIGITISER1,
++			 adcsel | WM97XX_POLL | WM97XX_DELAY(delay));
++
++	/* wait 3 AC97 time slots + delay for conversion */
++	poll_delay(delay);
++
++	/* wait for POLL to go low */
++	while ((wm97xx_reg_read(wm, AC97_WM97XX_DIGITISER1) & WM97XX_POLL)
++	       && timeout) {
++		udelay(AC97_LINK_FRAME);
++		timeout--;
++	}
++
++	if (timeout <= 0) {
++		/* If PDEN is set, we can get a timeout when pen goes up */
++		if (is_pden(wm))
++			wm->pen_probably_down = 0;
++		else
++			dev_dbg(wm->dev, "adc sample timeout");
++		return RC_PENUP;
++	}
++
++	*sample = wm97xx_reg_read(wm, AC97_WM97XX_DIGITISER_RD);
++	if (wm->mach_ops && wm->mach_ops->post_sample)
++		wm->mach_ops->post_sample(adcsel);
++
++	/* check we have correct sample */
++	if ((*sample & WM97XX_ADCSEL_MASK) != adcsel) {
++		dev_dbg(wm->dev, "adc wrong sample, read %x got %x", adcsel,
++		*sample & WM97XX_ADCSEL_MASK);
++		return RC_PENUP;
++	}
++
++	if (!(*sample & WM97XX_PEN_DOWN)) {
++		wm->pen_probably_down = 0;
++		return RC_PENUP;
++	}
++
++	return RC_VALID;
++}
++
++/*
++ * Sample the WM9705 touchscreen in polling mode
++ */
++static int wm9705_poll_touch(struct wm97xx *wm, struct wm97xx_data *data)
++{
++	int rc;
++
++	rc = wm9705_poll_sample(wm, WM97XX_ADCSEL_X, &data->x);
++	if (rc != RC_VALID)
++		return rc;
++	rc = wm9705_poll_sample(wm, WM97XX_ADCSEL_Y, &data->y);
++	if (rc != RC_VALID)
++		return rc;
++	if (pil) {
++		rc = wm9705_poll_sample(wm, WM97XX_ADCSEL_PRES, &data->p);
++		if (rc != RC_VALID)
++			return rc;
++	} else
++		data->p = DEFAULT_PRESSURE;
++
++	return RC_VALID;
++}
++
++/*
++ * Enable WM9705 continuous mode, i.e. touch data is streamed across
++ * an AC97 slot
++ */
++static int wm9705_acc_enable(struct wm97xx *wm, int enable)
++{
++	u16 dig1, dig2;
++	int ret = 0;
++
++	dig1 = wm->dig[1];
++	dig2 = wm->dig[2];
++
++	if (enable) {
++		/* continous mode */
++		if (wm->mach_ops->acc_startup &&
++		    (ret = wm->mach_ops->acc_startup(wm)) < 0)
++			return ret;
++		dig1 &= ~(WM97XX_CM_RATE_MASK | WM97XX_ADCSEL_MASK |
++			  WM97XX_DELAY_MASK | WM97XX_SLT_MASK);
++		dig1 |= WM97XX_CTC | WM97XX_COO | WM97XX_SLEN |
++			WM97XX_DELAY(delay) |
++			WM97XX_SLT(wm->acc_slot) |
++			WM97XX_RATE(wm->acc_rate);
++		if (pil)
++			dig1 |= WM97XX_ADCSEL_PRES;
++		dig2 |= WM9705_PDEN;
++	} else {
++		dig1 &= ~(WM97XX_CTC | WM97XX_COO | WM97XX_SLEN);
++		dig2 &= ~WM9705_PDEN;
++		if (wm->mach_ops->acc_shutdown)
++			wm->mach_ops->acc_shutdown(wm);
++	}
++
++	wm97xx_reg_write(wm, AC97_WM97XX_DIGITISER1, dig1);
++	wm97xx_reg_write(wm, AC97_WM97XX_DIGITISER2, dig2);
++	return ret;
++}
++
++struct wm97xx_codec_drv wm9705_codec = {
++	.id = 	WM9705_ID2,
++	.name = "wm9705",
++	.poll_sample = wm9705_poll_sample,
++	.poll_touch = wm9705_poll_touch,
++	.acc_enable = wm9705_acc_enable,
++	.phy_init = wm9705_phy_init,
++	.dig_enable = wm9705_dig_enable,
++	.dig_restore = wm9705_dig_restore,
++	.aux_prepare = wm9705_aux_prepare,
++};
++EXPORT_SYMBOL_GPL(wm9705_codec);
++
++/* Module information */
++MODULE_AUTHOR("Liam Girdwood <liam.girdwood@wolfsonmicro.com>");
++MODULE_DESCRIPTION("WM9705 Touch Screen Driver");
++MODULE_LICENSE("GPL");
+-- 
+1.5.2.5
 
