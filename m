@@ -1,60 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760569AbYBZMlQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758271AbYBZMn3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760569AbYBZMlQ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Feb 2008 07:41:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757640AbYBZMkf
+	id S1758271AbYBZMn3 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Feb 2008 07:43:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751266AbYBZMnV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Feb 2008 07:40:35 -0500
-Received: from zombie.ncsc.mil ([144.51.88.131]:43879 "EHLO zombie.ncsc.mil"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752867AbYBZMkY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Feb 2008 07:40:24 -0500
-Subject: Re: SMACK or SELinux, but not both
-From: Stephen Smalley <sds@tycho.nsa.gov>
-To: James Morris <jmorris@namei.org>
-Cc: Alexey Dobriyan <adobriyan@sw.ru>, linux-kernel@vger.kernel.org,
-       eparis@parisplace.org, casey@schaufler-ca.com
-In-Reply-To: <Xine.LNX.4.64.0802262020001.527@us.intercode.com.au>
-References: <20080226090953.GA7469@localhost.sw.ru>
-	 <Xine.LNX.4.64.0802262020001.527@us.intercode.com.au>
-Content-Type: text/plain
-Organization: National Security Agency
-Date: Tue, 26 Feb 2008 07:39:36 -0500
-Message-Id: <1204029576.2804.260.camel@moss-spartans.epoch.ncsc.mil>
+	Tue, 26 Feb 2008 07:43:21 -0500
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:49290 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751330AbYBZMnU (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 Feb 2008 07:43:20 -0500
+Date: Tue, 26 Feb 2008 12:29:32 +0000
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: davids@webmaster.com
+Cc: <Valdis.Kletnieks@vt.edu>, "Andrew Morton" <akpm@linux-foundation.org>,
+       "Ingo Molnar" <mingo@elte.hu>,
+       "Arnaldo Carvalho de Melo" <acme@ghostprotocols.net>,
+       <linux-kernel@vger.kernel.org>, "Alan Cox" <alan@redhat.com>
+Subject: Re: [PATCH] 2.6.25-rc2-mm1 - fix mcount GPL bogosity.
+Message-ID: <20080226122932.5f83d6d4@core>
+In-Reply-To: <MDEHLPKNGKAHNMBLJOLKGEKDKKAC.davids@webmaster.com>
+References: <47C3078E.3000008@redhat.com>
+	<MDEHLPKNGKAHNMBLJOLKGEKDKKAC.davids@webmaster.com>
+X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
 Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 (2.12.3-1.fc8) 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-On Tue, 2008-02-26 at 20:28 +1100, James Morris wrote:
-> On Tue, 26 Feb 2008, Alexey Dobriyan wrote:
+> I don't know who told you that or why, but it's obvious nonsense, as this
+> issue shows. Exports should be marked GPL if and only if they cannot be used
+> except in a derivative work. If it is possible to use them without taking
+> sufficient protectable expression, they should not be marked GPL.
 > 
-> > If SELinux is registered before SMACK, SMACK panics after
-> > register_security() call.
-> > 
-> > If SMACK is registered before SELinux, SELinux panics after
-> > register_security() call.
-> > 
-> > Consequently allmodconfig kernel doesn't boot. It would be nice if
-> > some Kconfig magic to exclude each other will be in place.
-> 
-> People want to be able to select the security model at boot time, so the 
-> option to build both LSMs is required.
-> 
-> You can stop SELinux from attempting to register as an LSM via selinux=0, 
-> which should allow you to boot with just Smack enabled.
+> This was what everyone agreed to when GPL exports were created.
 
-Ideally, one could just boot with security=<module> to select the
-desired primary security module.  security=smack, security=selinux, or
-security=capability.
+No it wasn't.
 
-Having to specify selinux=0 smack=0 foo=0 just to get bar wouldn't be
-pretty.  Not that anyone would want to do that, of course...
-
--- 
-Stephen Smalley
-National Security Agency
-
+Alan
