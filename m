@@ -1,54 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932781AbYBZW1z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932587AbYBZW23@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932781AbYBZW1z (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Feb 2008 17:27:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765381AbYBZWXx
+	id S932587AbYBZW23 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Feb 2008 17:28:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765419AbYBZWX4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Feb 2008 17:23:53 -0500
-Received: from ug-out-1314.google.com ([66.249.92.169]:27382 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1764926AbYBZWXm (ORCPT
+	Tue, 26 Feb 2008 17:23:56 -0500
+Received: from nf-out-0910.google.com ([64.233.182.191]:24008 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1764946AbYBZWXm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 26 Feb 2008 17:23:42 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-disposition:message-id:content-type:content-transfer-encoding;
-        b=jDFLzDWTDEkSlbf+tWnzk1uXtO00zNvO78QXbFGPkfsaOAWU/oBlw1J0zp4m1DEgkujEFZXy8JZm2UpBfb9/neLeg0+IVHAOvX9Tr9vuSxVBJjS+yaVWfP8GZO3y0pEKR7sFGVcdr+gJi+UiPwxoRd+KF8d+xz0z18JvC4trsyo=
+        b=SjKqnqbNv6Lz4+kSS5hTSVqKuRhXgNhzpG+oQysdjgQfwB7tqBciDD6uUpqVzyXo6aRALrg0bWXqrLikn86hw4jRSXJY25N1Bsn7OZ+qISmFQWRNJ6YEI6s6EXJfl6yLnF7SFwqDOtuPNW7oGLFYenbXEU7hjSBIO0kDvVfU6/4=
 From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: Paolo Ciarrocchi <paolo.ciarrocchi@gmail.com>
-Subject: Re: [PATCH 0/3] Various IDE coding style fixes
-Date: Tue, 26 Feb 2008 23:25:06 +0100
+To: Borislav Petkov <petkovbb@googlemail.com>
+Subject: Re: [PATCH] ide-cd: fix some codestyle and most of the checkpatch.pl issues
+Date: Tue, 26 Feb 2008 23:37:29 +0100
 User-Agent: KMail/1.9.6 (enterprise 0.20071204.744707)
-Cc: Linux Kernel <linux-kernel@vger.kernel.org>,
-       linux-ide <linux-ide@vger.kernel.org>,
-       Borislav Petkov <petkovbb@gmail.com>
-References: <20080224220932.4098443e@paolo-desktop>
-In-Reply-To: <20080224220932.4098443e@paolo-desktop>
+Cc: linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org,
+       Borislav Petkov <petkovbb@gmail.com>,
+       Paolo Ciarrocchi <paolo.ciarrocchi@gmail.com>
+References: <1204012194-4208-1-git-send-email-petkovbb@gmail.com> <1204012194-4208-3-git-send-email-petkovbb@gmail.com>
+In-Reply-To: <1204012194-4208-3-git-send-email-petkovbb@gmail.com>
 MIME-Version: 1.0
 Content-Disposition: inline
-Message-Id: <200802262325.06886.bzolnier@gmail.com>
+Message-Id: <200802262337.29873.bzolnier@gmail.com>
 Content-Type: text/plain;
-  charset="iso-8859-1"
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday 24 February 2008, Paolo Ciarrocchi wrote:
-> Hi Bart,
-> three more patches, all are compile tested and against yesterday linux-next
-> 
-> "IDE: Replace __FUNCTION__ with __func__" depends 
-> on "IDE: Coding Style fixes to drivers/ide/ide-cd.c"
-> 
-> 
-> Paolo Ciarrocchi (3):
->       IDE: Coding Style fixes to drivers/ide/ide-cd.c
->       IDE: Replace __FUNCTION__ with __func__
->       IDE: Coding Style fixes to drivers/ide/pci/cy82c693.c
-> 
->  drivers/ide/ide-cd.c       |  259 +++++++++++++++++++++++---------------------
->  drivers/ide/pci/cy82c693.c |   74 +++++++-------
->  2 files changed, 171 insertions(+), 162 deletions(-)
 
-all patches applied (+md5sum checked)
+On Tuesday 26 February 2008, Borislav Petkov wrote:
+> Signed-off-by: Borislav Petkov <petkovbb@gmail.com>
+> ---
+>  drivers/ide/ide-cd.c |  634 +++++++++++++++++++++++++------------------------
+>  1 files changed, 323 insertions(+), 311 deletions(-)
+
+With 300 lines changed this is not trivial to review/apply anymore
+(yeah, I sound like a broken record ;-) and since I've already applied
+Paolo's patch from two days ago this one heavily rejects...
+
+Moreover md5sum is different before/after the patch - I tried really hard
+to figure out why (by reverting some changes) but finally I gave up.
+
+Please:
+- resync
+- factor out changes which affect resulting binary
+- resubmit
+
+Thanks,
+Bart
