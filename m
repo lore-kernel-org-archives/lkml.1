@@ -1,55 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761543AbYBZJxq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760108AbYBZJyO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761543AbYBZJxq (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Feb 2008 04:53:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757476AbYBZJxj
+	id S1760108AbYBZJyO (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Feb 2008 04:54:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754687AbYBZJx6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Feb 2008 04:53:39 -0500
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:40503 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755412AbYBZJxi (ORCPT
+	Tue, 26 Feb 2008 04:53:58 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:57940 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754283AbYBZJx5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Feb 2008 04:53:38 -0500
-Date: Tue, 26 Feb 2008 18:52:00 +0900
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: glebn@voltaire.com (Gleb Natapov)
-Subject: Re: [ofa-general] Re: [patch 5/6] mmu_notifier: Support for drivers with revers maps (f.e. for XPmem)
-Cc: kosaki.motohiro@jp.fujitsu.com, Nick Piggin <nickpiggin@yahoo.com.au>,
-       Robin Holt <holt@sgi.com>, steiner@sgi.com,
-       Andrea Arcangeli <andrea@qumranet.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-mm@kvack.org,
-       Izik Eidus <izike@qumranet.com>, Kanoj Sarcar <kanojsarcar@yahoo.com>,
-       Roland Dreier <rdreier@cisco.com>, linux-kernel@vger.kernel.org,
-       Avi Kivity <avi@qumranet.com>, kvm-devel@lists.sourceforge.net,
-       daniel.blueman@quadrics.com, general@lists.openfabrics.org,
-       akpm@linux-foundation.org, Christoph Lameter <clameter@sgi.com>
-In-Reply-To: <20080226093809.GF26611@minantech.com>
-References: <200802261952.42567.nickpiggin@yahoo.com.au> <20080226093809.GF26611@minantech.com>
-Message-Id: <20080226184914.FF3A.KOSAKI.MOTOHIRO@jp.fujitsu.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
+	Tue, 26 Feb 2008 04:53:57 -0500
+Subject: Re: [patch 2.6.25-rc3] lockdep:  add spin_lock_irq_nested()
+From: Peter Zijlstra <peterz@infradead.org>
+To: David Brownell <david-b@pacbell.net>
+Cc: mingo@redhat.com, linux-kernel@vger.kernel.org
+In-Reply-To: <20080225223338.9602E25E979@adsl-69-226-248-13.dsl.pltn13.pacbell.net>
+References: <20080225223338.9602E25E979@adsl-69-226-248-13.dsl.pltn13.pacbell.net>
+Content-Type: text/plain
+Date: Tue, 26 Feb 2008 10:53:46 +0100
+Message-Id: <1204019626.6242.225.camel@lappy>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.21.90 
 Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.42 [ja]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > > > Can you change the spec?
-> > >
-> > > Not really. It will break all existing codes.
-> > 
-> > I meant as in eg. submit changes to MPI-3
->
-> MPI spec tries to be backward compatible. And MPI-2 spec is 10 years
-> old, but MPI-1 is still in a wider use. HPC is moving fast in terms of HW
-> technology, but slow in terms of SW. Fortran is still hot there :)
 
-Agreed.
-many many people dislike incompatible specification change.
+On Mon, 2008-02-25 at 14:33 -0800, David Brownell wrote:
 
-We should accept real world spec.
+> > +#ifdef CONFIG_LOCKDEP
+> > +
+> > +/* tell lockdep that this IRQ's locks and its parent's locks are in
+> > + * different categories, so that it won't detect false recursion.
+> > + */
+> > +static struct lock_class_key gpio_lock_class;
+> > +
+> > +static inline void mark_gpio_locking(unsigned gpio_irq)
+> > +{
+> > +	lockdep_set_class(&irq_desc[gpio_irq].lock, &gpio_lock_class);
+> > +}
+> > +
+> > +#else
+> > +
+> > +static inline void mark_gpio_locking(unsigned gpio_irq)
+> > +{
+> > +	/* NOP */
+> > +}
+> > +
+> > +#endif
 
+Glad to hear this works out for you.
 
-- kosaki
+Just one note, you don't need the #ifdef mess here. struct
+lock_class_key is 0 bytes on !LOCKDEP and lockdep_set_class*() is
+defined away as well.
 
 
