@@ -1,58 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762890AbYBZQ4b@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763017AbYBZRAm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762890AbYBZQ4b (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Feb 2008 11:56:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754080AbYBZQ4X
+	id S1763017AbYBZRAm (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Feb 2008 12:00:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762577AbYBZRAc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Feb 2008 11:56:23 -0500
-Received: from ms-smtp-03.nyroc.rr.com ([24.24.2.57]:43898 "EHLO
-	ms-smtp-03.nyroc.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753895AbYBZQ4W (ORCPT
+	Tue, 26 Feb 2008 12:00:32 -0500
+Received: from mail2.shareable.org ([80.68.89.115]:42610 "EHLO
+	mail2.shareable.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1762558AbYBZRAc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Feb 2008 11:56:22 -0500
-Date: Tue, 26 Feb 2008 11:55:58 -0500 (EST)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Jan Kiszka <jan.kiszka@siemens.com>
-cc: LKML <linux-kernel@vger.kernel.org>, RT <linux-rt-users@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: 2.6.24.2-rt2
-In-Reply-To: <47C43289.80506@siemens.com>
-Message-ID: <Pine.LNX.4.58.0802261155330.10116@gandalf.stny.rr.com>
-References: <1203639849.7551.4.camel@localhost.localdomain> <47C3EA1F.3030203@siemens.com>
- <47C3FF82.6060900@siemens.com> <Pine.LNX.4.58.0802261013001.6116@gandalf.stny.rr.com>
- <47C43289.80506@siemens.com>
+	Tue, 26 Feb 2008 12:00:32 -0500
+Date: Tue, 26 Feb 2008 17:00:11 +0000
+From: Jamie Lokier <jamie@shareable.org>
+To: Jeff Garzik <jeff@garzik.org>
+Cc: Nick Piggin <nickpiggin@yahoo.com.au>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org, Chris Wedgwood <cw@f00f.org>
+Subject: Re: Proposal for "proper" durable fsync() and fdatasync()
+Message-ID: <20080226170011.GB21203@shareable.org>
+References: <20080226072649.GB30238@shareable.org> <20080225234319.f4589ae4.akpm@linux-foundation.org> <20080226075921.GG30238@shareable.org> <200802262016.11297.nickpiggin@yahoo.com.au> <47C441C1.5060305@garzik.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <47C441C1.5060305@garzik.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Jeff Garzik wrote:
+> Nick Piggin wrote:
+> >Anyway, the idea of making fsync/fdatasync etc. safe by default is
+> >a good idea IMO, and is a bad bug that we don't do that :(
+> 
+> Agreed...  it's also disappointing that [unless I'm mistaken] you have 
+> to hack each filesystem to support barriers.
+> 
+> It seems far easier to make sync_blkdev() Do The Right Thing, and 
+> magically make all filesystems data-safe.
 
+Well, you need ordered metadata writes, barriers _and_ flushes with
+some filesystems.
 
-On Tue, 26 Feb 2008, Jan Kiszka wrote:
-> >>
-> >
-> > What's the NUMA topology?
->
-> 4 nodes. I'm not sure if it is really NUMA related, but the same kernel
-> runs that test as expected on a non-NUMA 2x2 box.
->
-> > What tasks are running, and at what priorities?
->
-> 40 pthreads, created with default parameters from a main thread which
-> runs with default parameters as well. The threads simply run endless loops.
->
-> >
-> > Those three idle CPUS, should they have tasks running on them?
->
-> For sure, given the overload situation of the system (40x full load vs.
-> 16 cores). Neither did we fiddle with any parameter of the system
-> (knowingly, its a standard openSUSE 10.3 underneath) nor did we set
-> thread affinities.
->
+Merely writing all the data pages than issuing a drive cache flush
+won't Do The Right Thing with those filesystems - someone already
+mentioned Btrfs, where it won't.
 
-Do you get different behaviour with 2.6.24.2?
+But I agree that your suggestion would make a superb default, for
+filesystems which don't provide their own function.
 
--- Steve
+It's not optimal even then.
 
+  Devices: On a software RAID, you ideally don't want to issue flushes
+  to all drives if your database did a 1 block commit entry.  (But they
+  probably use O_DIRECT anyway, changing the rules again).  But all that
+  can be optimised in generic VFS code eventually.  It doesn't need
+  filesystem assistance in most cases.
+
+  Apps: don't always want a full flush; sometimes a barrier would do.
+
+-- Jamie
