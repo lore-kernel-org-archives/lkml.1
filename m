@@ -1,59 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761607AbYBZN6V@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760316AbYBZOHx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761607AbYBZN6V (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Feb 2008 08:58:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753773AbYBZN6O
+	id S1760316AbYBZOHx (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Feb 2008 09:07:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753872AbYBZOHo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Feb 2008 08:58:14 -0500
-Received: from main.gmane.org ([80.91.229.2]:45956 "EHLO ciao.gmane.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753444AbYBZN6N (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Feb 2008 08:58:13 -0500
-X-Injected-Via-Gmane: http://gmane.org/
-To: linux-kernel@vger.kernel.org
-From: =?ISO-8859-1?Q?Sven_K=F6hler?= <skoehler@upb.de>
-Subject: Re: Linux 2.6.24.3
-Date: Tue, 26 Feb 2008 14:57:54 +0100
-Message-ID: <fq15t5$aqj$1@ger.gmane.org>
-References: <20080226010024.GA26889@suse.de> <20080226075035.GA20311@dose.home.local>
-Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="------------enigF57E8AADBD793B47587034E8"
-X-Complaints-To: usenet@ger.gmane.org
-X-Gmane-NNTP-Posting-Host: dslb-084-061-173-126.pools.arcor-ip.net
-User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
-In-Reply-To: <20080226075035.GA20311@dose.home.local>
-X-Enigmail-Version: 0.95.6
+	Tue, 26 Feb 2008 09:07:44 -0500
+Received: from rv-out-0910.google.com ([209.85.198.187]:58411 "EHLO
+	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753742AbYBZOHn (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 Feb 2008 09:07:43 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=GUUu4TWQmxMAqylsEMhPKkgM3YWFmAOx3zt+I2MzLJpIY6/ppCJB7xclGkY3PyNRKv0pPX8qUSstVa+FBjytnpdXBuhmvMoVbw52rGHlabkw7VRKMSUV0C6euc/lhCjR6YsF5uYdqpmFMNpAn7A3VuzgIGt5mkpdvF1yh2qp77g=
+Message-ID: <84144f020802260607h3c8a5b50w9f005b76b1ff8087@mail.gmail.com>
+Date: Tue, 26 Feb 2008 16:07:42 +0200
+From: "Pekka Enberg" <penberg@cs.helsinki.fi>
+To: ohyama_sec@ariel-networks.com
+Subject: Re: [PATCH] I found a type miss in fs/ext2/ext2
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <20080226102415.DA893948006@ns.ariel-networks.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20080226102415.DA893948006@ns.ariel-networks.com>
+X-Google-Sender-Auth: 0927b59207cdfc84
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enigF57E8AADBD793B47587034E8
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: quoted-printable
+On Tue, Feb 26, 2008 at 12:24 PM,  <ohyama_sec@ariel-networks.com> wrote:
+>  Maybe I found a type miss in fs/ext2/ext2.h which is in linux-2.6.24.3, and write difference below.
 
-> no incremental patch in
-> http://www.kernel.org/pub/linux/kernel/v2.6/incr/. Is this due to some
-> delay, or was is just not uploaded?
+You probably want to read Documentation/SubmittingPatches first and
+re-send the patch in the proper format.
 
-Would be really nice to have indeed.
-
-
---------------enigF57E8AADBD793B47587034E8
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.7 (GNU/Linux)
-Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
-
-iD8DBQFHxBri7Ww7FjRBE4ARAonPAKCd8steydll+GwmMmv3DlVfGz+brwCgv1ag
-g7mv4ogg7yb3zVPKYoQzfC0=
-=Y2wu
------END PGP SIGNATURE-----
-
---------------enigF57E8AADBD793B47587034E8--
-
+                     Pekka
