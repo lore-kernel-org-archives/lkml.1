@@ -1,55 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761991AbYBZASZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761134AbYBZATu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761991AbYBZASZ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 Feb 2008 19:18:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758653AbYBZASA
+	id S1761134AbYBZATu (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 Feb 2008 19:19:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756870AbYBZATn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 Feb 2008 19:18:00 -0500
-Received: from ns1.suse.de ([195.135.220.2]:40984 "EHLO mx1.suse.de"
+	Mon, 25 Feb 2008 19:19:43 -0500
+Received: from gw.goop.org ([64.81.55.164]:42190 "EHLO mail.goop.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761791AbYBZAR6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 Feb 2008 19:17:58 -0500
-Date: Mon, 25 Feb 2008 15:56:55 -0800
-From: Greg KH <gregkh@suse.de>
-To: Jan Kara <jack@suse.cz>
-Cc: linux-kernel@vger.kernel.org, stable@kernel.org,
-       torvalds@linux-foundation.org, Justin Forbes <jmforbes@linuxtx.org>,
-       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
-       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
-       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
-       Chris Wedgwood <reviews@ml.cw.f00f.org>,
-       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
-       Domenico Andreoli <cavokz@gmail.com>, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk
-Subject: Re: [patch 06/38] quota: turn quotas off when remounting read-only
-Message-ID: <20080225235655.GA29077@suse.de>
-References: <20080223001946.979768610@mini.kroah.org> <20080223002951.GG7268@suse.de> <20080225215749.GC25449@duck.suse.cz>
+	id S1756071AbYBZATm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 25 Feb 2008 19:19:42 -0500
+Message-ID: <47C35A56.8080509@goop.org>
+Date: Mon, 25 Feb 2008 16:16:22 -0800
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080225215749.GC25449@duck.suse.cz>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+To: Ingo Molnar <mingo@elte.hu>
+CC: Vegard Nossum <vegard.nossum@gmail.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: compile problem in current x86.git
+References: <47C315CC.5020001@goop.org> <19f34abd0802251237q2aa5db03s522c77340cdc96a@mail.gmail.com> <20080225204438.GA1213@elte.hu>
+In-Reply-To: <20080225204438.GA1213@elte.hu>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Feb 25, 2008 at 10:57:49PM +0100, Jan Kara wrote:
-> On Fri 22-02-08 16:29:51, Greg KH wrote:
-> > 2.6.24-stable review patch.  If anyone has any objections, please let us
-> > know.
->   Hmm, this patch is certainly safe from a kernel POV but changes a
-> behavior WRT userspace. Previously, user could do:
->   quotaon /
->   mount -o remount,ro /
->   <be lucky>
->   mount -o remount,rw /
->   <have quotas still turned on>
-> 
->   But with the patch, the quotas will be turned off. So I'm not sure
-> whether it's acceptable as a -stable thing...
+Ingo Molnar wrote:
+> * Vegard Nossum <vegard.nossum@gmail.com> wrote:
+>
+>   
+>>>  asm-x86/kmemcheck.h does seem to be completely missing.  Looks like 
+>>>  8db0acefb3025795abe3f37669354677a03de680 "x86: add hooks for 
+>>>  kmemcheck" should have added the file.
+>>>       
+>> Hm. This is x86#testing, no? I don't think there's any kmemcheck code 
+>> whatsoever in other branches.
+>>
+>> The file should be added with this commit:
+>>
+>> kmemcheck: add the kmemcheck core 
+>> http://git.kernel.org/?p=linux/kernel/git/x86/linux-2.6-x86.git;a=commit;h=c83d05d69382945c92a2e7a2b168c1cc2aa77c29
+>>     
+>
+> yes, x86.git looks fine here too:
+>
+>  ~/linux.trees.git> git-checkout -b tmp x86/testing
+>  Branch tmp set up to track remote branch refs/remotes/x86/testing.
+>  Switched to a new branch "tmp"
+>  ~/linux.trees.git> cd include/asm-x86/
+>  ~/linux.trees.git/include/asm-x86> ls -l kmemcheck.h
+>  -rw-rw-r-- 1 mingo mingo 55 2008-02-25 21:41 kmemcheck.h
+>  ~/linux.trees.git/include/asm-x86> cd ..
+>  ~/linux.trees.git/include> cd ..
+>  ~/linux.trees.git> ls -ldt include/asm-x86/kmemcheck.h
+>  -rw-rw-r-- 1 mingo mingo 55 2008-02-25 21:41 include/asm-x86/kmemcheck.h
+>  ~/linux.trees.git> git-log | head -1
+>  commit c9d2f5489cec70f814bf64033290e5f05b4d7f33
 
-Ok, I'll drop it.
+I'm using #mm.  Should I be using #testing?
 
-thanks,
-
-greg k-h
+    J
