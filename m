@@ -1,51 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762119AbYBZOLz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759711AbYBZOSI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762119AbYBZOLz (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Feb 2008 09:11:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754266AbYBZOLr
+	id S1759711AbYBZOSI (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Feb 2008 09:18:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752589AbYBZOR4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Feb 2008 09:11:47 -0500
-Received: from wf-out-1314.google.com ([209.85.200.175]:40940 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754679AbYBZOLq (ORCPT
+	Tue, 26 Feb 2008 09:17:56 -0500
+Received: from smtp-102-tuesday.nerim.net ([62.4.16.102]:53523 "EHLO
+	kraid.nerim.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751145AbYBZOR4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Feb 2008 09:11:46 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=khETza5bpX5PJp7AP0VmYCsqEBsMj7zK26gtapT7hwyuHKwCc4mFkUOcBoio+K+ljhMi/4pUL14wU9khfMORD1JzZqH/OGv2WoeusL7dbUyuLEVjLUewd77BvmVbXI7oYqJyg5sD+IuCA7VQFkxLmjltDP+YcKZJaXvKIreIlSo=
-Message-ID: <45a44e480802260611l5a8d0bc9k9cc967bc73b88fac@mail.gmail.com>
-Date: Tue, 26 Feb 2008 09:11:45 -0500
-From: "Jaya Kumar" <jayakumar.lkml@gmail.com>
-To: "Markus Armbruster" <armbru@redhat.com>
-Subject: Re: [PATCH 2/3] fbdev: Make deferred I/O work as advertized
-Cc: linux-kernel@vger.kernel.org, virtualization@lists.osdl.org,
-       xen-devel@lists.xensource.com, linux-fbdev-devel@lists.sourceforge.net,
-       adaplas@pol.net, linux-input@vger.kernel.org, dmitry.torokhov@gmail.com,
-       akpm@linux-foundation.org
-In-Reply-To: <87k5kt6vd3.fsf@pike.pond.sub.org>
+	Tue, 26 Feb 2008 09:17:56 -0500
+X-Greylist: delayed 158748 seconds by postgrey-1.27 at vger.kernel.org; Tue, 26 Feb 2008 09:17:55 EST
+Message-ID: <47C41F92.5070006@plouf.fr.eu.org>
+Date: Tue, 26 Feb 2008 15:17:54 +0100
+From: Pascal Hambourg <pascal.mail@plouf.fr.eu.org>
+Organization: Plouf !
+User-Agent: Mozilla Thunderbird 1.0.6 (Windows/20050716)
+X-Accept-Language: fr,en
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <87tzjx6vj3.fsf@pike.pond.sub.org>
-	 <87k5kt6vd3.fsf@pike.pond.sub.org>
+To: Tino Keitel <tino.keitel@gmx.de>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: Linux 2.6.24.3
+References: <20080226010024.GA26889@suse.de> <20080226075035.GA20311@dose.home.local>
+In-Reply-To: <20080226075035.GA20311@dose.home.local>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Feb 25, 2008 at 8:03 AM, Markus Armbruster <armbru@redhat.com> wrote:
->
->     Subject: [PATCH 1/1 2.6.24] fbdev: defio and Metronomefb
->     From: Jaya Kumar <jayakumar.lkml@gmail.com>
->     Date: 2008-02-18 13:41:26
+Hello,
 
-Hi Markus,
+Tino Keitel a écrit :
+> 
+> I can see the patch in http://www.kernel.org/pub/linux/kernel/v2.6/,
+> but no incremental patch in
+> http://www.kernel.org/pub/linux/kernel/v2.6/incr/. Is this due to some
+> delay, or was is just not uploaded?
 
-Andrew pointed out that there may be race conditions associated with
-this patch. [ http://marc.info/?l=linux-fbdev-devel&m=120376473020396&w=2
-] So I would not encourage anyone to merge it. I'll try to figure
-things out this weekend.
-
-Thanks,
-jaya
+It seems that the 2->3 incremental patch was uploaded in 
+/pub/linux/kernel/v2.6/ too.
