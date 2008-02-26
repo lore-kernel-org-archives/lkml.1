@@ -1,123 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764348AbYBZTls@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764006AbYBZTns@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764348AbYBZTls (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Feb 2008 14:41:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762283AbYBZTl3
+	id S1764006AbYBZTns (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Feb 2008 14:43:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760677AbYBZTni
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Feb 2008 14:41:29 -0500
-Received: from brick.kernel.dk ([87.55.233.238]:17984 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761192AbYBZTl2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Feb 2008 14:41:28 -0500
-Date: Tue, 26 Feb 2008 20:41:22 +0100
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Anders Henke <anders.henke@1und1.de>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       device-mapper development <dm-devel@redhat.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [dm-devel] Re: device mapper not reporting no-barrier-support?
-Message-ID: <20080226194122.GQ6704@kernel.dk>
-References: <20080225132615.GA21990@1und1.de> <20080225152050.94788622.akpm@linux-foundation.org> <20080226013656.GE1788@agk.fab.redhat.com> <20080226161741.GN6704@kernel.dk> <20080226193349.GQ13026@1und1.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080226193349.GQ13026@1und1.de>
+	Tue, 26 Feb 2008 14:43:38 -0500
+Received: from senator.holtmann.net ([87.106.208.187]:58622 "EHLO
+	mail.holtmann.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753822AbYBZTnh (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 Feb 2008 14:43:37 -0500
+Cc: Dave Young <hidave.darkstar@gmail.com>, linux-bluetooth@vger.kernel.org,
+       Linux Kernel <linux-kernel@vger.kernel.org>, bmidgley@gmail.com,
+       David Miller <davem@davemloft.net>, Netdev <netdev@vger.kernel.org>
+Message-Id: <B96BD3FE-F490-4AD5-9315-ECD42CE9C728@holtmann.org>
+From: Marcel Holtmann <marcel@holtmann.org>
+To: Louis JANG <louis@mizi.com>
+In-Reply-To: <47C38D40.3040809@mizi.com>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+Content-Transfer-Encoding: 7bit
+Mime-Version: 1.0 (Apple Message framework v919.2)
+Subject: Re: [Bluez-devel] forcing SCO connection patch
+Date: Tue, 26 Feb 2008 20:43:30 +0100
+References: <47666E1F.2000902@mizi.com>	 <a8e1da0802242330l765b8b1ava62b857baf8a5568@mail.gmail.com>	 <47C28A33.4070102@mizi.com> <a8e1da0802250155u1b7af481va203849f68d9106b@mail.gmail.com> <47C2A7FA.2060902@mizi.com> <70692DDF-93B7-447E-ABEE-3CDBD94F15F1@holtmann.org> <47C38D40.3040809@mizi.com>
+X-Mailer: Apple Mail (2.919.2)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Feb 26 2008, Anders Henke wrote:
-> On Tue, Feb 26 2008 Jens Axboe wrote:
-> > On Tue, Feb 26 2008, Alasdair G Kergon wrote:
-> > > On Mon, Feb 25, 2008 at 03:20:50PM -0800, Andrew Morton wrote:
-> > > > On Mon, 25 Feb 2008 14:26:15 +0100 Anders Henke <anders.henke@1und1.de> wrote:
-> > > > > I'm currently stuck between Kernel LVM and DRBD, as I'm using Kernel
-> > > > > 2.6.24.2 with DRBD 8.2.5 on top of an LVM2 device (LV).
-> > > > > -LVM2/device mapper doesn't support write barriers
-> > > 
-> > > That's right.
-> > > 
-> > > > > -DRBD uses blkdev_issue_flush() to flush its metadata to disk.
-> > > 
-> > > Which won't work if device-mapper is underneath.
-> > > 
-> > > > >  On a no-barrier-device, DRBD should receive EOPNOTSUPP, but
-> > > > >  it really does receive an EIO. Promptly, DRBD gives the
-> > > > >  error message "drbd0: local disk flush failed with status -5".
-> > > > > I've posted a lengty summary of my findings to
-> > > > > http://lists.linbit.com/pipermail/drbd-user/2008-February/008665.html
-> > > > > ... that DRBD does catch the EOPNOTSUPP for blkdev_issue_flush and
-> > > > > BIO_RW_BARRIER, but the lvm implementation of blkdev_issue_flush in
-> > > > > 2.6.24.2 aparently does return EIO for blkdev_issue_flush.
-> > > > I'd say it's a DM bug.
-> > > 
-> > > The dm code is unchanged, but look at the limited endio handling in
-> > > ll_rw_blk.c:
-> > > 
-> > > static void bio_end_empty_barrier(struct bio *bio, int err)
-> > > {
-> > >         if (err)
-> > >                 clear_bit(BIO_UPTODATE, &bio->bi_flags);
-> > > 
-> > >         complete(bio->bi_private);
-> > > }
-> > > 
-> > > int blkdev_issue_flush(struct block_device *bdev, sector_t *error_sector)
-> > > {
-> > > ...
-> > >         wait_for_completion(&wait);
-> > >         if (error_sector)
-> > >                 *error_sector = bio->bi_sector;
-> > >         ret = 0;
-> > >         if (!bio_flagged(bio, BIO_UPTODATE))
-> > >                 ret = -EIO;
-> > 
-> > You are right, the return value got broken there. Does this make it
-> > return -EOPNOTSUPP properly for you?
-> 
-> 
-> No, it doesn't.
-> 
-> 
-> 
-> I've applied your patch manually, as 2.6.24.2. doesn't have a "blk-barrier.c":
-> 
-> ---cut
-> --- linux-2.6.24.2/block/ll_rw_blk.c.prepatch   2008-02-11
-> 06:51:11.000000000 +0100
-> +++ linux-2.6.24.2/block/ll_rw_blk.c    2008-02-26 20:02:28.514641620
-> +0100
-> @@ -2667,8 +2667,11 @@
->  
->  static void bio_end_empty_barrier(struct bio *bio, int err)
->  {
-> -       if (err)
-> +       if (err) {
-> +               if (err == -EOPNOTSUPP)
-> +                       set_bit(BIO_EOPNOTSUPP, &bio->bi_flags);
->                 clear_bit(BIO_UPTODATE, &bio->bi_flags);
-> +       }
->  
->         complete(bio->bi_private);
->  }
-> ---cut
-> 
-> ... and the resulting kernel shows exactly the same behaviour than before:
+Hi Loius,
 
-Not surprising, as you missed half of the patch:
+>>> --- linux-2.6.23/net/bluetooth/hci_event.c.orig 2008-02-25
+>>> 17:17:11.000000000 +0900
+>>> +++ linux-2.6.23/net/bluetooth/hci_event.c 2008-02-25
+>>> 17:30:23.000000000 +0900
+>>> @@ -1313,8 +1313,17 @@
+>>> hci_dev_lock(hdev);
+>>>
+>>> conn = hci_conn_hash_lookup_ba(hdev, ev->link_type, &ev->bdaddr);
+>>> - if (!conn)
+>>> - goto unlock;
+>>> + if (!conn) {
+>>> + if (ev->link_type != ACL_LINK) {
+>>> + __u8 link_type = (ev->link_type == ESCO_LINK) ? SCO_LINK :  
+>>> ESCO_LINK;
+>>> +
+>>> + conn = hci_conn_hash_lookup_ba(hdev, link_type, &ev->bdaddr);
+>>> + if (conn)
+>>> + conn->type = ev->link_type;
+>>> + }
+>>> + if (!conn)
+>>> + goto unlock;
+>>> + }
+>>
+>> NAK. There is no need to check for ACL_LINK. The sync_complete will
+>> only be called for SCO or eSCO connections.
+> I see. I removed this check line in the patch.
+>
+> Thanks.
+> Louis JANG
+> Signed-off-by: Louis JANG <louis@mizi.com>
+> --- linux-2.6.23/net/bluetooth/hci_event.c.orig	2008-02-26  
+> 12:46:36.000000000 +0900
+> +++ linux-2.6.23/net/bluetooth/hci_event.c	2008-02-26  
+> 12:47:23.000000000 +0900
+> @@ -1313,8 +1313,15 @@
+> 	hci_dev_lock(hdev);
+>
+> 	conn = hci_conn_hash_lookup_ba(hdev, ev->link_type, &ev->bdaddr);
+> -	if (!conn)
+> -		goto unlock;
+> +	if (!conn) {
+> +		__u8 link_type = (ev->link_type == ESCO_LINK) ? SCO_LINK :  
+> ESCO_LINK;
+> +
+> +		conn = hci_conn_hash_lookup_ba(hdev, link_type, &ev->bdaddr);
+> +		if (conn)
+> +			conn->type = ev->link_type;
+> +		else
+> +			goto unlock;
+> +	}
+>
+> 	if (!ev->status) {
+> 		conn->handle = __le16_to_cpu(ev->handle);
 
-> > @@ -309,7 +312,9 @@ int blkdev_issue_flush(struct block_device *bdev, sector_t *error_sector)
-> >  		*error_sector = bio->bi_sector;
-> >  
-> >  	ret = 0;
-> > -	if (!bio_flagged(bio, BIO_UPTODATE))
-> > +	if (bio_flagged(bio, BIO_EOPNOTSUPP))
-> > +		ret = -EOPNOTSUPP;
-> > +	else if (!bio_flagged(bio, BIO_UPTODATE))
-> >  		ret = -EIO;
-> >  
-> >  	bio_put(bio);
+do something like this:
 
--- 
-Jens Axboe
+if (!conn) {
+	....
+
+	conn = ....
+	if (!conn)
+		goto unlock;
+
+	conn->type = ev->link_type;
+}
+
+And include a description when submitting a patch.
+
+Regards
+
+Marcel
 
