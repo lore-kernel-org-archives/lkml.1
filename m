@@ -1,49 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763935AbYBZSbw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761694AbYBZScg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763935AbYBZSbw (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Feb 2008 13:31:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751856AbYBZSbp
+	id S1761694AbYBZScg (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Feb 2008 13:32:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754476AbYBZSc1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Feb 2008 13:31:45 -0500
-Received: from nf-out-0910.google.com ([64.233.182.186]:52063 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751717AbYBZSbo (ORCPT
+	Tue, 26 Feb 2008 13:32:27 -0500
+Received: from smtp120.sbc.mail.sp1.yahoo.com ([69.147.64.93]:27460 "HELO
+	smtp120.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1756658AbYBZSc1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Feb 2008 13:31:44 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
-        b=IwXPnvb3K/bdQ7chmj07u7ql6/3eczkEHQBH4cm5IK5cAGvDoDk9ZNo8Koxsh8YV2uI2blrtfN4k7Alunnv6wSDlAPhUWpNiHKK1GblOJ37mb1eF76bgDWI5+NQJxvkgiFES2i6ozTULsm2BbjaK0BMR7nCvHxdb67lZG/jFlIk=
-Message-ID: <47C45AF6.5000805@gmail.com>
-Date: Tue, 26 Feb 2008 19:31:18 +0100
-From: Franck Bui-Huu <vagabon.xyz@gmail.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+	Tue, 26 Feb 2008 13:32:27 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=pacbell.net;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:Received:Date:From:To:Subject:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-Id;
+  b=xIW5HvGCACmUq1fLtqAc9a9+6HrvzWo7tddQL/bBoT8MhVooOw4jSh0rIx8CzPZRpvHZMn2Km3Nm3ooY4QusDRS+vkNlFamDOk6vbL1AvPwt4BdVLXnduVYptvsu+kG3AdLimmgzoctG9DRgsW83uq1CdKmOL8fg5wTXAHjqLO8=  ;
+X-YMail-OSG: OWoTyA8VM1kiFJH_6uC7kx0X2DegFVkTXjEUN3hXu269tsymZ.OqKHXz2fm42uzEAdZp6q36Ow--
+X-Yahoo-Newman-Property: ymail-3
+Date: Tue, 26 Feb 2008 10:32:24 -0800
+From: David Brownell <david-b@pacbell.net>
+To: linux-kernel@vger.kernel.org
+Subject: (regression) kernel/timeconst.h bugs with HZ=128
 MIME-Version: 1.0
-To: Josh Triplett <josh@kernel.org>
-CC: akpm@linux-foundation.org, paulmck@linux.vnet.ibm.com,
-       linux-kernel@vger.kernel.org
-Subject: Re: + rcu-split-listh-and-move-rcu-protected-lists-into-rculisth.patch
- added to -mm tree
-References: <200802230734.m1N7Ymrp018304@imap1.linux-foundation.org> <47C3F8F1.4010100@kernel.org>
-In-Reply-To: <47C3F8F1.4010100@kernel.org>
-X-Enigmail-Version: 0.95.2
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+Message-Id: <20080226183224.DE5BB8DE50@adsl-69-226-248-13.dsl.pltn13.pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+I see these warnings on 32 bit ARM systems:
 
-Josh Triplett wrote:
-> [I did not see this patch go by on any mailing list, so I replied to
-> the -mm mail and CCed LKML.]
-> 
+  CC      kernel/time.o
+kernel/time.c: In function 'msecs_to_jiffies':
+kernel/time.c:472: warning: integer constant is too large for 'long' type
+kernel/time.c: In function 'usecs_to_jiffies':
+kernel/time.c:487: warning: integer constant is too large for 'long' type
 
-Well I'm pretty sure to have always CC'ed LKML, see for example:
+Line 472: 
+	return ((u64)MSEC_TO_HZ_MUL32 * m + MSEC_TO_HZ_ADJ32)
+line 487:
+	return ((u64)USEC_TO_HZ_MUL32 * u + USEC_TO_HZ_ADJ32)
 
-    http://lkml.org/lkml/2008/2/19/150
-    http://lkml.org/lkml/2008/2/19/151
-    
-Thanks,
-		Franck
+The problem seems to be that these constants from kernel/timeconst.h
+have too many digits:
+
+#define ONLY_THIRTYTWO_BITS	0x01234567
+
+#define MSEC_TO_HZ_ADJ32        0x3f7ced916
+#define USEC_TO_HZ_ADJ32        0xfffbce4217d
+
+Those *_ADJ32 constants should have "ULL" suffixes, yes?
+Adding that by hand resolves the problem, but only until
+the next time that header file gets regenerated.
+
+Someone with observable Perl-fu should fix this ...
+
+- Dave
+
