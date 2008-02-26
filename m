@@ -1,62 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764712AbYBZWNI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765088AbYBZWNm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764712AbYBZWNI (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Feb 2008 17:13:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755595AbYBZWMl
+	id S1765088AbYBZWNm (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Feb 2008 17:13:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752678AbYBZWNa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Feb 2008 17:12:41 -0500
-Received: from out3.smtp.messagingengine.com ([66.111.4.27]:59784 "EHLO
-	out3.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754184AbYBZWMj (ORCPT
+	Tue, 26 Feb 2008 17:13:30 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:59660
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1752618AbYBZWN3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Feb 2008 17:12:39 -0500
-X-Sasl-enc: qnOa6tzX1wqSQP3VWDG13M0bihIcupxa0NCIjLdJl30t 1204063957
-From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-To: lenb@kernel.org
-Cc: ibm-acpi-devel@lists.sourceforge.net, linux-acpi@vger.kernel.org,
-       linux-kernel@vger.kernel.org,
-       Henrique de Moraes Holschuh <hmh@hmh.eng.br>,
-       Zdenek Kabelac <zdenek.kabelac@gmail.com>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Lukas Hejtmanek <xhejtman@ics.muni.cz>
-Subject: ACPI: thinkpad-acpi: fix hotkey_get_tablet_mode
-Date: Tue, 26 Feb 2008 19:12:35 -0300
-Message-Id: <1204063955-5739-1-git-send-email-hmh@hmh.eng.br>
-X-Mailer: git-send-email 1.5.4.1
-In-Reply-To: <20080225200354.GE16513@khazad-dum.debian.net>
-References: <20080225200354.GE16513@khazad-dum.debian.net>
+	Tue, 26 Feb 2008 17:13:29 -0500
+Date: Tue, 26 Feb 2008 14:14:13 -0800 (PST)
+Message-Id: <20080226.141413.223249736.davem@davemloft.net>
+To: shemminger@vyatta.com
+Cc: dsd@gentoo.org, randy.dunlap@oracle.com, gregkh@suse.de,
+       linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
+       torvalds@linux-foundation.org, stable@kernel.org,
+       stephen.hemminger@vyatta.com
+Subject: Re: Linux 2.6.24.3 (if_addrlabel.h HEADERS_CHECK failure)
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20080226072943.083c3809@extreme>
+References: <20080225195229.11ec1f12.randy.dunlap@oracle.com>
+	<47C42477.5090900@gentoo.org>
+	<20080226072943.083c3809@extreme>
+X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I used the wrong return convention on hotkey_get_tablet_mode(), breaking a
-lot of stuff.  Bad Henrique!
+From: Stephen Hemminger <shemminger@vyatta.com>
+Date: Tue, 26 Feb 2008 07:29:43 -0800
 
-Fix it to return the status in the parameter-by-reference, and IO status on
-the function return value. Duh.
+> On Tue, 26 Feb 2008 14:38:47 +0000
+> Daniel Drake <dsd@gentoo.org> wrote:
+> 
+> > Randy Dunlap wrote:
+> > This appears to have been caused by the patch titled:
+> > 
+> > 	NET: Add if_addrlabel.h to sanitized headers.
+> > 
+> > The patch only adds the unifdef-y entry for this header file, however 
+> > that header was only added after 2.6.24.
+> > 
+> > It seems that this patch was submitted to -stable in error. Stephen, can 
+> > you confirm?
+> 
+> The patch was meant for 2.6.25 only. 
 
-Signed-off-by: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-Cc: Zdenek Kabelac <zdenek.kabelac@gmail.com>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Lukas Hejtmanek <xhejtman@ics.muni.cz>
----
- drivers/misc/thinkpad_acpi.c |    3 ++-
- 1 files changed, 2 insertions(+), 1 deletions(-)
-
-diff --git a/drivers/misc/thinkpad_acpi.c b/drivers/misc/thinkpad_acpi.c
-index bb269d0..6cb7812 100644
---- a/drivers/misc/thinkpad_acpi.c
-+++ b/drivers/misc/thinkpad_acpi.c
-@@ -1078,7 +1078,8 @@ static int hotkey_get_tablet_mode(int *status)
- 	if (!acpi_evalf(hkey_handle, &s, "MHKG", "d"))
- 		return -EIO;
- 
--	return ((s & TP_HOTKEY_TABLET_MASK) != 0);
-+	*status = ((s & TP_HOTKEY_TABLET_MASK) != 0);
-+	return 0;
- }
- 
- /*
--- 
-1.5.4.2
-
+My bad, please revert :(
