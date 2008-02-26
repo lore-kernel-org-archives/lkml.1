@@ -1,152 +1,209 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759720AbYBZMcf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754531AbYBZMk3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759720AbYBZMcf (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Feb 2008 07:32:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751576AbYBZMc0
+	id S1754531AbYBZMk3 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Feb 2008 07:40:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751366AbYBZMkU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Feb 2008 07:32:26 -0500
-Received: from smtp-102-tuesday.noc.nerim.net ([62.4.17.102]:4956 "EHLO
-	mallaury.nerim.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751512AbYBZMcZ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Feb 2008 07:32:25 -0500
-Date: Tue, 26 Feb 2008 13:32:22 +0100
-From: Jean Delvare <khali@linux-fr.org>
-To: Marcin Slusarz <marcin.slusarz@gmail.com>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       Mauro Carvalho Chehab <mchehab@infradead.org>, i2c@lm-sensors.org,
-       video4linux-list@redhat.com
-Subject: Re: [PATCH] video: limit stack usage of ir-kbd-i2c.c
-Message-ID: <20080226133222.7af260b2@hyperion.delvare>
-In-Reply-To: <20080225205055.GA27455@joi>
-References: <20080225205055.GA27455@joi>
-X-Mailer: Sylpheed-Claws 2.5.5 (GTK+ 2.10.6; x86_64-suse-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 26 Feb 2008 07:40:20 -0500
+Received: from yoi5.greathalifaxhome.com ([66.180.172.116]:51890 "HELO
+	vps1.tull.net" rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with SMTP
+	id S1751409AbYBZMkT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 Feb 2008 07:40:19 -0500
+X-Spam-Check-By: mail.local.tull.net
+From: Nick Andrew <nick@nick-andrew.net>
+Subject: [PATCH try #1] Kconfig: cleanup block/Kconfig.iosched help	descriptions
+To: trivial@kernel.org
+Cc: linux-kernel@vger.kernel.org, jens.axboe@oracle.com,
+       nickpiggin@yahoo.com.au, akpm@linux-foundation.org
+Date: Tue, 26 Feb 2008 23:39:46 +1100
+Message-ID: <20080226122234.17726.93705.stgit@marcab.local.tull.net>
+User-Agent: StGIT/0.14.1
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
+X-SMTPD: qpsmtpd/0.26, http://develooper.com/code/qpsmtpd/
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Marcin,
+Modify the help descriptions of block/Kconfig.iosched for clarity, accuracy and consistency.
 
-On Mon, 25 Feb 2008 21:51:00 +0100, Marcin Slusarz wrote:
-> ir_probe allocated struct i2c_client on stack;
-> it's pretty big structure, so allocate it with kzalloc
-> 
-> make checkstack output without this patch:
-> x059d ir_probe [ir-kbd-i2c]:                           1000
-> 
-> compile tested only
-> 
-> Signed-off-by: Marcin Slusarz <marcin.slusarz@gmail.com>
-> Cc: Mauro Carvalho Chehab <mchehab@infradead.org>
-> Cc: Jean Delvare <khali@linux-fr.org>
-> ---
->  drivers/media/video/ir-kbd-i2c.c |   18 +++++++++++-------
->  1 files changed, 11 insertions(+), 7 deletions(-)
-> 
-> diff --git a/drivers/media/video/ir-kbd-i2c.c b/drivers/media/video/ir-kbd-i2c.c
-> index 9851987..aec122f 100644
-> --- a/drivers/media/video/ir-kbd-i2c.c
-> +++ b/drivers/media/video/ir-kbd-i2c.c
-> @@ -510,9 +510,9 @@ static int ir_probe(struct i2c_adapter *adap)
->  	static const int probe_cx88[] = { 0x18, 0x6b, 0x71, -1 };
->  	static const int probe_cx23885[] = { 0x6b, -1 };
->  	const int *probe = NULL;
-> -	struct i2c_client c;
-> +	struct i2c_client *c;
->  	unsigned char buf;
-> -	int i,rc;
-> +	int i, rc;
->  
->  	switch (adap->id) {
->  	case I2C_HW_B_BT848:
-> @@ -537,19 +537,23 @@ static int ir_probe(struct i2c_adapter *adap)
->  	if (NULL == probe)
->  		return 0;
->  
-> -	memset(&c,0,sizeof(c));
-> -	c.adapter = adap;
-> +	c = kzalloc(sizeof(*c), GFP_KERNEL);
-> +	if (!c)
-> +		return -ENOMEM;
-> +
-> +	c->adapter = adap;
->  	for (i = 0; -1 != probe[i]; i++) {
-> -		c.addr = probe[i];
-> -		rc = i2c_master_recv(&c,&buf,0);
-> +		c->addr = probe[i];
-> +		rc = i2c_master_recv(c, &buf, 0);
->  		dprintk(1,"probe 0x%02x @ %s: %s\n",
->  			probe[i], adap->name,
->  			(0 == rc) ? "yes" : "no");
->  		if (0 == rc) {
-> -			ir_attach(adap,probe[i],0,0);
-> +			ir_attach(adap, probe[i], 0, 0);
->  			break;
->  		}
->  	}
-> +	kfree(c);
->  	return 0;
->  }
->  
+More information is added to each of the I/O scheduler choices and they
+are also reordered to improve the flow of information to the user.
 
-While this works, I'd rather change the code to call i2c_transfer()
-instead of i2c_master_recv(). i2c_transfer() is meant exactly for this
-case (no i2c_client at hand.) This solves the stack usage problem
-without requiring a temporary memory allocation:
+IOSCHED_CFQ is the default because it distributes the bandwidth fairly.
+It's also the place I decided to add the most help text, because it seems
+not possible to add help text to the menu "IO Schedulers" itself.
 
-* * * * *
+So IOSCHED_CFQ is annotated with two things. Firstly a hint about how
+to use the prioritisation at runtime, i.e. through the ionice(1) command.
+Secondly, a reference to Documentation/block/switching-sched.txt to
+show how to switch the scheduler for block devices at runtime, and/or
+choose a new scheduler via the 'elevator=' kernel parameter.
 
-Limit stack usage in ir_probe by calling i2c_transfer, which doesn't
-require a struct i2c_client, instead of i2c_master_recv which does.
+These schedulers can be compiled as modules (except for noop-iosched)
+so this is mentioned in each case. However the Kconfig won't allow a
+scheduler which is built as a module to be chosen as the default
+scheduler, and I noted that.
 
-Signed-off-by: Jean Delvare <khali@linux-fr.org>
+The boilerplate "If unsure, say Y" was added to IOSCHED_CFQ, IOSCHED_AS
+and IOSCHED_DEADLINE.
+
+A 1-line help description was added to each of the 4 choices under
+"Default I/O scheduler". It won't explain anything, but it's friendlier
+than saying nothing at all.
+
+
+Signed-off-by: Nick Andrew <nick@nick-andrew.net>
 ---
- drivers/media/video/ir-kbd-i2c.c |   17 +++++++++--------
- 1 file changed, 9 insertions(+), 8 deletions(-)
+Questions: Why can't a module be chosen as the default scheduler? The
+elevator_get() function in block/elevator.c seems to support it. Is
+it that the kernel won't be able to load the module off disk before
+it has a scheduler loaded?
 
---- linux-2.6.25-rc3.orig/drivers/media/video/ir-kbd-i2c.c	2008-02-26 11:35:51.000000000 +0100
-+++ linux-2.6.25-rc3/drivers/media/video/ir-kbd-i2c.c	2008-02-26 11:44:54.000000000 +0100
-@@ -510,8 +510,11 @@ static int ir_probe(struct i2c_adapter *
- 	static const int probe_cx88[] = { 0x18, 0x6b, 0x71, -1 };
- 	static const int probe_cx23885[] = { 0x6b, -1 };
- 	const int *probe = NULL;
--	struct i2c_client c;
--	unsigned char buf;
-+	struct i2c_msg msg = {
-+		.flags = I2C_M_RD,
-+		.len = 0,
-+		.buf = NULL,
-+	};
- 	int i,rc;
+Also for people who want to compile only the bare minimum in a kernel
+it would seem reasonable to allow IOSCHED_NOOP to be turned off. Is
+the lack of a setting here another safety feature? elevator.c certainly
+assumes that 'noop' is available:
+
+        if (!e) {
+                e = elevator_get(CONFIG_DEFAULT_IOSCHED);
+                if (!e) {
+                        printk(KERN_ERR
+                                "Default I/O scheduler not found. " \
+                                "Using noop.\n");
+                        e = elevator_get("noop");
+                }
+        }
+
+(note lack of a further test for !e)
+
+Finally my understanding is that USB storage devices, for example,
+have constant access time, and so use of an elevator algorithm won't
+benefit anything. For these devices why can't the kernel choose "noop"
+instead of the default and save the time/space used by the default?
+
+
+ block/Kconfig.iosched |   74 ++++++++++++++++++++++++++++++++++++++-----------
+ 1 files changed, 58 insertions(+), 16 deletions(-)
+
+
+diff --git a/block/Kconfig.iosched b/block/Kconfig.iosched
+index 7e803fc..96a01b3 100644
+--- a/block/Kconfig.iosched
++++ b/block/Kconfig.iosched
+@@ -2,15 +2,28 @@ if BLOCK
  
- 	switch (adap->id) {
-@@ -537,15 +540,13 @@ static int ir_probe(struct i2c_adapter *
- 	if (NULL == probe)
- 		return 0;
+ menu "IO Schedulers"
  
--	memset(&c,0,sizeof(c));
--	c.adapter = adap;
- 	for (i = 0; -1 != probe[i]; i++) {
--		c.addr = probe[i];
--		rc = i2c_master_recv(&c,&buf,0);
-+		msg.addr = probe[i];
-+		rc = i2c_transfer(adap, &msg, 1);
- 		dprintk(1,"probe 0x%02x @ %s: %s\n",
- 			probe[i], adap->name,
--			(0 == rc) ? "yes" : "no");
--		if (0 == rc) {
-+			(1 == rc) ? "yes" : "no");
-+		if (1 == rc) {
- 			ir_attach(adap,probe[i],0,0);
- 			break;
- 		}
+-config IOSCHED_NOOP
+-	bool
++config IOSCHED_CFQ
++	tristate "CFQ I/O scheduler"
+ 	default y
+ 	---help---
+-	  The no-op I/O scheduler is a minimal scheduler that does basic merging
+-	  and sorting. Its main uses include non-disk based block devices like
+-	  memory devices, and specialised software or hardware environments
+-	  that do their own scheduling and require only minimal assistance from
+-	  the kernel.
++	  The CFQ I/O scheduler tries to distribute bandwidth equally
++	  among all processes in the system. It should provide a fair
++	  working environment, suitable for desktop systems.
++
++	  This is the default I/O scheduler.
++
++	  The CFQ I/O scheduler supports prioritisation for individual
++	  processes; see ionice(1) for details.
++
++	  See <file:Documentation/block/switching-sched.txt> for details
++	  on how to choose a default I/O scheduler at boot time and also
++	  on a per-device basis at run time.
++
++	  To compile this scheduler as a module, choose M here; the module
++	  will be called cfq-iosched. A scheduler built as a module cannot
++	  be chosen as default.
++
++	  If unsure, say Y.
+ 
+ config IOSCHED_AS
+ 	tristate "Anticipatory I/O scheduler"
+@@ -21,6 +34,15 @@ config IOSCHED_AS
+ 	  deadline I/O scheduler, it can also be slower in some cases
+ 	  especially some database loads.
+ 
++	  See <file:Documentation/block/as-iosched.txt> for detailed
++	  information on this scheduler.
++
++	  To compile this scheduler as a module, choose M here; the module
++	  will be called as-iosched. A scheduler built as a module cannot
++	  be chosen as default.
++
++	  If unsure, say Y.
++
+ config IOSCHED_DEADLINE
+ 	tristate "Deadline I/O scheduler"
+ 	default y
+@@ -31,14 +53,26 @@ config IOSCHED_DEADLINE
+ 	  a disk at any one time, its behaviour is almost identical to the
+ 	  anticipatory I/O scheduler and so is a good choice.
+ 
+-config IOSCHED_CFQ
+-	tristate "CFQ I/O scheduler"
++	  See <file:Documentation/block/deadline-iosched.txt> for detailed
++	  information on this scheduler.
++
++	  To compile this scheduler as a module, choose M here; the module
++	  will be called deadline-iosched. A scheduler built as a module cannot
++	  be chosen as default.
++
++	  If unsure, say Y.
++
++config IOSCHED_NOOP
++	bool
+ 	default y
+ 	---help---
+-	  The CFQ I/O scheduler tries to distribute bandwidth equally
+-	  among all processes in the system. It should provide a fair
+-	  working environment, suitable for desktop systems.
+-	  This is the default I/O scheduler.
++	  The no-op I/O scheduler is a minimal scheduler that does basic merging
++	  and sorting. Its main uses include non-disk based block devices like
++	  memory devices, and specialised software or hardware environments
++	  that do their own scheduling and require only minimal assistance from
++	  the kernel.
++
++	  If unsure, say Y.
+ 
+ choice
+ 	prompt "Default I/O scheduler"
+@@ -47,17 +81,25 @@ choice
+ 	  Select the I/O scheduler which will be used by default for all
+ 	  block devices.
+ 
++	config DEFAULT_CFQ
++		bool "CFQ" if IOSCHED_CFQ=y
++		help
++		  Choose the CFQ I/O scheduler as default.
++
+ 	config DEFAULT_AS
+ 		bool "Anticipatory" if IOSCHED_AS=y
++		help
++		  Choose the Anticipatory I/O scheduler as default.
+ 
+ 	config DEFAULT_DEADLINE
+ 		bool "Deadline" if IOSCHED_DEADLINE=y
+-
+-	config DEFAULT_CFQ
+-		bool "CFQ" if IOSCHED_CFQ=y
++		help
++		  Choose the Deadline I/O scheduler as default.
+ 
+ 	config DEFAULT_NOOP
+ 		bool "No-op"
++		help
++		  Choose the No-op I/O scheduler as default.
+ 
+ endchoice
+ 
 
-
-Built-tested, I've also tested loading the ir-kbd-i2c driver on an
-unsupported cx88 adapter. Review and more testing welcome.
-
--- 
-Jean Delvare
