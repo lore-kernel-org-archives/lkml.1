@@ -1,70 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762171AbYBZKXv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762298AbYBZKYZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762171AbYBZKXv (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Feb 2008 05:23:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757009AbYBZKXn
+	id S1762298AbYBZKYZ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Feb 2008 05:24:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757692AbYBZKYR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Feb 2008 05:23:43 -0500
-Received: from mailhub.sw.ru ([195.214.232.25]:41745 "EHLO relay.sw.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754687AbYBZKXm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Feb 2008 05:23:42 -0500
-Date: Tue, 26 Feb 2008 13:23:32 +0300
-From: Alexey Dobriyan <adobriyan@sw.ru>
-To: mingo@elte.hu
-Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH] arch/x86/: switch to proc_create()
-Message-ID: <20080226102332.GC7469@localhost.sw.ru>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.11
+	Tue, 26 Feb 2008 05:24:17 -0500
+Received: from ns.ariel-networks.com ([124.39.57.10]:45784 "EHLO
+	ns.ariel-networks.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757009AbYBZKYQ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 Feb 2008 05:24:16 -0500
+To: linux-kernel@vger.kernel.org
+Subject: [PATCH] I found a type miss in fs/ext2/ext2
+Message-Id: <20080226102415.DA893948006@ns.ariel-networks.com>
+Date: Tue, 26 Feb 2008 19:24:15 +0900 (JST)
+From: ohyama_sec@ariel-networks.com
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Signed-off-by: Alexey Dobriyan <adobriyan@sw.ru>
+Hiroyasu Ohyama
+==================
+
+Maybe I found a type miss in fs/ext2/ext2.h which is in linux-2.6.24.3, and write difference below.
+
 ---
 
- arch/x86/kernel/apm_32.c      |    5 +----
- arch/x86/kernel/cpu/mtrr/if.c |    6 ++----
- 2 files changed, 3 insertions(+), 8 deletions(-)
-
---- a/arch/x86/kernel/apm_32.c
-+++ b/arch/x86/kernel/apm_32.c
-@@ -2217,7 +2217,6 @@ static struct dmi_system_id __initdata apm_dmi_table[] = {
-  */
- static int __init apm_init(void)
- {
--	struct proc_dir_entry *apm_proc;
- 	struct desc_struct *gdt;
- 	int err;
- 
-@@ -2322,9 +2321,7 @@ static int __init apm_init(void)
- 	set_base(gdt[APM_DS >> 3],
- 		 __va((unsigned long)apm_info.bios.dseg << 4));
- 
--	apm_proc = create_proc_entry("apm", 0, NULL);
--	if (apm_proc)
--		apm_proc->proc_fops = &apm_file_ops;
-+	proc_create("apm", 0, NULL, &apm_file_ops);
- 
- 	kapmd_task = kthread_create(apm, NULL, "kapmd");
- 	if (IS_ERR(kapmd_task)) {
---- a/arch/x86/kernel/cpu/mtrr/if.c
-+++ b/arch/x86/kernel/cpu/mtrr/if.c
-@@ -424,11 +424,9 @@ static int __init mtrr_if_init(void)
- 		return -ENODEV;
- 
- 	proc_root_mtrr =
--	    create_proc_entry("mtrr", S_IWUSR | S_IRUGO, &proc_root);
--	if (proc_root_mtrr) {
-+	    proc_create("mtrr", S_IWUSR | S_IRUGO, &proc_root, &mtrr_fops);
-+	if (proc_root_mtrr)
- 		proc_root_mtrr->owner = THIS_MODULE;
--		proc_root_mtrr->proc_fops = &mtrr_fops;
--	}
- 	return 0;
- }
- 
-
+*** fs/ext2/ext2.h	2008-02-26 09:20:20.000000000 +0900
+--- fs/ext2/ext2_correct.h	2008-02-26 19:12:55.000000000 +0900
+***************
+*** 27,33 ****
+  	/*
+  	 * i_block_group is the number of the block group which contains
+  	 * this file's inode.  Constant across the lifetime of the inode,
+! 	 * it is ued for making block allocation decisions - we try to
+  	 * place a file's data blocks near its inode block, and new inodes
+  	 * near to their parent directory's inode.
+  	 */
+--- 27,33 ----
+  	/*
+  	 * i_block_group is the number of the block group which contains
+  	 * this file's inode.  Constant across the lifetime of the inode,
+! 	 * it is used for making block allocation decisions - we try to
+  	 * place a file's data blocks near its inode block, and new inodes
+  	 * near to their parent directory's inode.
+  	 */
