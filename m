@@ -1,184 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764112AbYBZUUo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764156AbYBZUZT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764112AbYBZUUo (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Feb 2008 15:20:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754456AbYBZUUf
+	id S1764156AbYBZUZT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Feb 2008 15:25:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759287AbYBZUZH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Feb 2008 15:20:35 -0500
-Received: from mxintern.schlund.de ([212.227.126.201]:59432 "EHLO
-	mxintern.schlund.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753762AbYBZUUf (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Feb 2008 15:20:35 -0500
-Date: Tue, 26 Feb 2008 21:20:30 +0100
-From: Anders Henke <anders.henke@1und1.de>
-To: Jens Axboe <jens.axboe@oracle.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       device-mapper development <dm-devel@redhat.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [dm-devel] Re: device mapper not reporting no-barrier-support?
-Message-ID: <20080226202030.GR13026@1und1.de>
-Mail-Followup-To: Anders Henke <anders.henke@1und1.de>,
-	Jens Axboe <jens.axboe@oracle.com>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	device-mapper development <dm-devel@redhat.com>,
-	linux-kernel@vger.kernel.org
-References: <20080225132615.GA21990@1und1.de> <20080225152050.94788622.akpm@linux-foundation.org> <20080226013656.GE1788@agk.fab.redhat.com> <20080226161741.GN6704@kernel.dk> <20080226193349.GQ13026@1und1.de> <20080226194122.GQ6704@kernel.dk>
+	Tue, 26 Feb 2008 15:25:07 -0500
+Received: from smtp5.pp.htv.fi ([213.243.153.39]:38772 "EHLO smtp5.pp.htv.fi"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753745AbYBZUZF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 Feb 2008 15:25:05 -0500
+Date: Tue, 26 Feb 2008 22:24:00 +0200
+From: Adrian Bunk <bunk@kernel.org>
+To: Greg KH <gregkh@suse.de>
+Cc: Daniel Drake <dsd@gentoo.org>,
+       linux kernel list <linux-kernel@vger.kernel.org>, stable@kernel.org
+Subject: Re: Linux 2.6.24.3 (incr patch missing)
+Message-ID: <20080226202400.GH4898@cs181133002.pp.htv.fi>
+References: <20080226010024.GA26889@suse.de> <47C421B0.6040001@gentoo.org> <20080226200249.GA10280@suse.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <20080226194122.GQ6704@kernel.dk>
-Organization: 1&1 Internet AG
-User-Agent: Mutt/1.5.13 (2006-08-11)
-X-UI-Msg-Verification: 1e4fa12aeb6a2ec109e60d78608b2def
+In-Reply-To: <20080226200249.GA10280@suse.de>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Feb 26 2008 schrieb Jens Axboe:
-> On Tue, Feb 26 2008, Anders Henke wrote:
-> > On Tue, Feb 26 2008 Jens Axboe wrote:
-> > > On Tue, Feb 26 2008, Alasdair G Kergon wrote:
-> > > > On Mon, Feb 25, 2008 at 03:20:50PM -0800, Andrew Morton wrote:
-> > > > > On Mon, 25 Feb 2008 14:26:15 +0100 Anders Henke <anders.henke@1und1.de> wrote:
-> > > > > > I'm currently stuck between Kernel LVM and DRBD, as I'm using Kernel
-> > > > > > 2.6.24.2 with DRBD 8.2.5 on top of an LVM2 device (LV).
-> > > > > > -LVM2/device mapper doesn't support write barriers
-> > > > 
-> > > > That's right.
-> > > > 
-> > > > > > -DRBD uses blkdev_issue_flush() to flush its metadata to disk.
-> > > > 
-> > > > Which won't work if device-mapper is underneath.
-> > > > 
-> > > > > >  On a no-barrier-device, DRBD should receive EOPNOTSUPP, but
-> > > > > >  it really does receive an EIO. Promptly, DRBD gives the
-> > > > > >  error message "drbd0: local disk flush failed with status -5".
-> > > > > > I've posted a lengty summary of my findings to
-> > > > > > http://lists.linbit.com/pipermail/drbd-user/2008-February/008665.html
-> > > > > > ... that DRBD does catch the EOPNOTSUPP for blkdev_issue_flush and
-> > > > > > BIO_RW_BARRIER, but the lvm implementation of blkdev_issue_flush in
-> > > > > > 2.6.24.2 aparently does return EIO for blkdev_issue_flush.
-> > > > > I'd say it's a DM bug.
-> > > > 
-> > > > The dm code is unchanged, but look at the limited endio handling in
-> > > > ll_rw_blk.c:
-> > > > 
-> > > > static void bio_end_empty_barrier(struct bio *bio, int err)
-> > > > {
-> > > >         if (err)
-> > > >                 clear_bit(BIO_UPTODATE, &bio->bi_flags);
-> > > > 
-> > > >         complete(bio->bi_private);
-> > > > }
-> > > > 
-> > > > int blkdev_issue_flush(struct block_device *bdev, sector_t *error_sector)
-> > > > {
-> > > > ...
-> > > >         wait_for_completion(&wait);
-> > > >         if (error_sector)
-> > > >                 *error_sector = bio->bi_sector;
-> > > >         ret = 0;
-> > > >         if (!bio_flagged(bio, BIO_UPTODATE))
-> > > >                 ret = -EIO;
-> > > 
-> > > You are right, the return value got broken there. Does this make it
-> > > return -EOPNOTSUPP properly for you?
-> > 
-> > 
-> > No, it doesn't.
-> > 
-> > 
-> > 
-> > I've applied your patch manually, as 2.6.24.2. doesn't have a "blk-barrier.c":
-> > 
-> > ---cut
-> > --- linux-2.6.24.2/block/ll_rw_blk.c.prepatch   2008-02-11
-> > 06:51:11.000000000 +0100
-> > +++ linux-2.6.24.2/block/ll_rw_blk.c    2008-02-26 20:02:28.514641620
-> > +0100
-> > @@ -2667,8 +2667,11 @@
-> >  
-> >  static void bio_end_empty_barrier(struct bio *bio, int err)
-> >  {
-> > -       if (err)
-> > +       if (err) {
-> > +               if (err == -EOPNOTSUPP)
-> > +                       set_bit(BIO_EOPNOTSUPP, &bio->bi_flags);
-> >                 clear_bit(BIO_UPTODATE, &bio->bi_flags);
-> > +       }
-> >  
-> >         complete(bio->bi_private);
-> >  }
-> > ---cut
-> > 
-> > ... and the resulting kernel shows exactly the same behaviour than before:
+On Tue, Feb 26, 2008 at 12:02:49PM -0800, Greg KH wrote:
+> On Tue, Feb 26, 2008 at 02:26:56PM +0000, Daniel Drake wrote:
+> > Greg Kroah-Hartman wrote:
+> >> We (the -stable team) are announcing the release of the 2.6.24.3
+> >> kernel.
+> >
+> > patch-2.6.24.2-3.* files are missing from 
+> > http://www.kernel.org/pub/linux/kernel/v2.6/incr/
+> >
+> > The 2.6.23.17 patches which were released at the same time are there, so it 
+> > doesn't seem to be a case of kernel.org being behind.
 > 
-> Not surprising, as you missed half of the patch:
+> Sorry, for some reason I forgot to copy them there.  I just did it and
+> should show up in the mirrors in an hour or so.  Please let me know if
+> they don't.
 
-Ouch. Thank you for pointing this out.
+They were copied, but to /pub/linux/kernel/v2.6/ (where the older copy 
+still is).
 
-I've been spending too much time of the day with things who have a negative 
-impact on my concentration and I shouldn't manually patch kernels at
-this time of the day.
+> thanks,
+> 
+> greg k-h
 
-Yes, it's useless to set a bit, but never check it (like in my version of
-your patch).
+cu
+Adrian
 
-After adding the second part of your patch, the resulting kernel works as
-intended:
-
-[  234.946192] drbd0: conn( WFSyncUUID -> SyncTarget ) 
-[  234.956176] drbd0: Began resync as SyncTarget (will sync 19542404 KB
-[4885601
- bits set]).
-[  234.972567] drbd0: Writing meta data super block now.
-[  235.018203] drbd0: local disk flush failed with status -95
-
-DRBD sees the EOPNOTSUPP, logs this message only once and doesn't try
-any further barrier requests (as intended).
-
-Just for the records, the 2.6.24.2-ready version of your patch:
-
----cut
---- linux-2.6.24.2/block/ll_rw_blk.c.prepatch   2008-02-11 06:51:11.000000000 +0
-100
-+++ linux-2.6.24.2/block/ll_rw_blk.c    2008-02-26 20:58:05.552467940 +0100
-@@ -2667,8 +2667,11 @@
- 
- static void bio_end_empty_barrier(struct bio *bio, int err)
- {
--       if (err)
-+       if (err) {
-+               if (err == -EOPNOTSUPP)
-+                       set_bit(BIO_EOPNOTSUPP, &bio->bi_flags);
-                clear_bit(BIO_UPTODATE, &bio->bi_flags);
-+       }
- 
-        complete(bio->bi_private);
- }
-@@ -2717,7 +2720,9 @@
-                *error_sector = bio->bi_sector;
- 
-        ret = 0;
--       if (!bio_flagged(bio, BIO_UPTODATE))
-+       if (bio_flagged(bio, BIO_EOPNOTSUPP))
-+               ret = -EOPNOTSUPP;
-+       else if (!bio_flagged(bio, BIO_UPTODATE))
-                ret = -EIO;
- 
-        bio_put(bio);
----cut
-
-
-
-Anders
 -- 
-1&1 Internet AG              better sleep(28800)
-Brauerstrasse 48             v://49.721.91374.50
-D-76135 Karlsruhe            f://49.721.91374.225
 
-Amtsgericht Montabaur HRB 6484
-Vorstand: Henning Ahlert, Ralph Dommermuth, Matthias Ehrlich, Andreas Gauger,
-Thomas Gottschlich, Matthias Greve, Robert Hoffmann, Markus Huhn, Achim Weiss
-Aufsichtsratsvorsitzender: Michael Scheeren
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
+
