@@ -1,110 +1,123 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763911AbYBZTlg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764348AbYBZTls@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763911AbYBZTlg (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Feb 2008 14:41:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761243AbYBZTl2
+	id S1764348AbYBZTls (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Feb 2008 14:41:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762283AbYBZTl3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Feb 2008 14:41:28 -0500
-Received: from pasmtpb.tele.dk ([80.160.77.98]:51108 "EHLO pasmtpB.tele.dk"
+	Tue, 26 Feb 2008 14:41:29 -0500
+Received: from brick.kernel.dk ([87.55.233.238]:17984 "EHLO kernel.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761092AbYBZTl0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Feb 2008 14:41:26 -0500
-Date: Tue, 26 Feb 2008 20:40:58 +0100
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Roman Zippel <zippel@linux-m68k.org>
-Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       kiran@scalemp.com, shai@scalemp.com, Glauber Costa <gcosta@redhat.com>,
-       linux-kbuild <linux-kbuild@vger.kernel.org>,
-       Yinghai Lu <Yinghai.Lu@Sun.COM>
-Subject: Kconfig configuration restore bug [Was: x86: vSMP selection in config]
-Message-ID: <20080226194058.GA31438@uranus.ravnborg.org>
-References: <200802210258.45011.yinghai.lu@sun.com> <200802241832.37850.yinghai.lu@sun.com> <200802242136.28744.yinghai.lu@sun.com> <200802242243.49576.yinghai.lu@sun.com>
-Mime-Version: 1.0
+	id S1761192AbYBZTl2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 Feb 2008 14:41:28 -0500
+Date: Tue, 26 Feb 2008 20:41:22 +0100
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Anders Henke <anders.henke@1und1.de>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       device-mapper development <dm-devel@redhat.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [dm-devel] Re: device mapper not reporting no-barrier-support?
+Message-ID: <20080226194122.GQ6704@kernel.dk>
+References: <20080225132615.GA21990@1und1.de> <20080225152050.94788622.akpm@linux-foundation.org> <20080226013656.GE1788@agk.fab.redhat.com> <20080226161741.GN6704@kernel.dk> <20080226193349.GQ13026@1und1.de>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <200802242243.49576.yinghai.lu@sun.com>
-User-Agent: Mutt/1.4.2.1i
+In-Reply-To: <20080226193349.GQ13026@1und1.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Roman.
+On Tue, Feb 26 2008, Anders Henke wrote:
+> On Tue, Feb 26 2008 Jens Axboe wrote:
+> > On Tue, Feb 26 2008, Alasdair G Kergon wrote:
+> > > On Mon, Feb 25, 2008 at 03:20:50PM -0800, Andrew Morton wrote:
+> > > > On Mon, 25 Feb 2008 14:26:15 +0100 Anders Henke <anders.henke@1und1.de> wrote:
+> > > > > I'm currently stuck between Kernel LVM and DRBD, as I'm using Kernel
+> > > > > 2.6.24.2 with DRBD 8.2.5 on top of an LVM2 device (LV).
+> > > > > -LVM2/device mapper doesn't support write barriers
+> > > 
+> > > That's right.
+> > > 
+> > > > > -DRBD uses blkdev_issue_flush() to flush its metadata to disk.
+> > > 
+> > > Which won't work if device-mapper is underneath.
+> > > 
+> > > > >  On a no-barrier-device, DRBD should receive EOPNOTSUPP, but
+> > > > >  it really does receive an EIO. Promptly, DRBD gives the
+> > > > >  error message "drbd0: local disk flush failed with status -5".
+> > > > > I've posted a lengty summary of my findings to
+> > > > > http://lists.linbit.com/pipermail/drbd-user/2008-February/008665.html
+> > > > > ... that DRBD does catch the EOPNOTSUPP for blkdev_issue_flush and
+> > > > > BIO_RW_BARRIER, but the lvm implementation of blkdev_issue_flush in
+> > > > > 2.6.24.2 aparently does return EIO for blkdev_issue_flush.
+> > > > I'd say it's a DM bug.
+> > > 
+> > > The dm code is unchanged, but look at the limited endio handling in
+> > > ll_rw_blk.c:
+> > > 
+> > > static void bio_end_empty_barrier(struct bio *bio, int err)
+> > > {
+> > >         if (err)
+> > >                 clear_bit(BIO_UPTODATE, &bio->bi_flags);
+> > > 
+> > >         complete(bio->bi_private);
+> > > }
+> > > 
+> > > int blkdev_issue_flush(struct block_device *bdev, sector_t *error_sector)
+> > > {
+> > > ...
+> > >         wait_for_completion(&wait);
+> > >         if (error_sector)
+> > >                 *error_sector = bio->bi_sector;
+> > >         ret = 0;
+> > >         if (!bio_flagged(bio, BIO_UPTODATE))
+> > >                 ret = -EIO;
+> > 
+> > You are right, the return value got broken there. Does this make it
+> > return -EOPNOTSUPP properly for you?
+> 
+> 
+> No, it doesn't.
+> 
+> 
+> 
+> I've applied your patch manually, as 2.6.24.2. doesn't have a "blk-barrier.c":
+> 
+> ---cut
+> --- linux-2.6.24.2/block/ll_rw_blk.c.prepatch   2008-02-11
+> 06:51:11.000000000 +0100
+> +++ linux-2.6.24.2/block/ll_rw_blk.c    2008-02-26 20:02:28.514641620
+> +0100
+> @@ -2667,8 +2667,11 @@
+>  
+>  static void bio_end_empty_barrier(struct bio *bio, int err)
+>  {
+> -       if (err)
+> +       if (err) {
+> +               if (err == -EOPNOTSUPP)
+> +                       set_bit(BIO_EOPNOTSUPP, &bio->bi_flags);
+>                 clear_bit(BIO_UPTODATE, &bio->bi_flags);
+> +       }
+>  
+>         complete(bio->bi_private);
+>  }
+> ---cut
+> 
+> ... and the resulting kernel shows exactly the same behaviour than before:
 
-We discovered a situation where we could set a
-choice value in menuconfig but later when we either was
-running menuconfig or oldconfig the value were changed.
+Not surprising, as you missed half of the patch:
 
-I have created a minimal config that exhibit the error.
-It was created in a pure mechanical trial-and-error fashion.
+> > @@ -309,7 +312,9 @@ int blkdev_issue_flush(struct block_device *bdev, sector_t *error_sector)
+> >  		*error_sector = bio->bi_sector;
+> >  
+> >  	ret = 0;
+> > -	if (!bio_flagged(bio, BIO_UPTODATE))
+> > +	if (bio_flagged(bio, BIO_EOPNOTSUPP))
+> > +		ret = -EOPNOTSUPP;
+> > +	else if (!bio_flagged(bio, BIO_UPTODATE))
+> >  		ret = -EIO;
+> >  
+> >  	bio_put(bio);
 
-First the minimal Kconfig file:
-# x86 configuration
+-- 
+Jens Axboe
 
-choice
-	prompt "Subarchitecture Type"
-
-config X86_PC
-	bool "PC-compatible"
-
-config X86_VOYAGER
-	bool "Voyager (NCR)"
-
-config X86_VSMP
-	bool "Support for ScaleMP vSMP"
-	depends on PCI
-
-endchoice
-
-config PCI
-	bool "PCI support" if !X86_VISWS
-	depends on !X86_VOYAGER
-	default y
-	
-
-config USB_ARCH_HAS_HCD
-	bool
-	default PCI
-
-config USB
-	bool "Support for Host-side USB"
-	depends on USB_ARCH_HAS_HCD
-
-config USB_PHIDGET
-	bool "USB Phidgets drivers"
-	depends on USB
-
-config USB_PHIDGETMOTORCONTROL
-	bool "USB PhidgetMotorControl support"
-	depends on USB_PHIDGET
-
-
-
-Next the saved .config that is used:
-#
-# Automatically generated make config: don't edit
-# Linux kernel version: KERNELVERSION
-# Tue Feb 26 20:27:09 2008
-#
-# CONFIG_X86_PC is not set
-# CONFIG_X86_VOYAGER is not set
-CONFIG_X86_VSMP=y
-CONFIG_PCI=y
-CONFIG_USB_ARCH_HAS_HCD=y
-CONFIG_USB=y
-# CONFIG_USB_PHIDGET is not set
-
-When we enter menuconfig or are running oldconfig then we can see
-that CONFIG_X86_PC is set to 'y' and CONFIG_X86_VSMP is set to 'n'.
-
-If I in menuconfig select VSMP this setting is saved but then
-oldconfig kicks in and we loose the setting again.
-
-If I delete any of the config variables in the sample above then
-we no longer change the values and we keep the VSMP equals 'y'.
-
-
-Can you please take a look at this.
-
-Thanks,
-	Sam
