@@ -1,61 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762894AbYBZQlf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762646AbYBZQoE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762894AbYBZQlf (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Feb 2008 11:41:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753509AbYBZQlZ
+	id S1762646AbYBZQoE (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Feb 2008 11:44:04 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753577AbYBZQny
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Feb 2008 11:41:25 -0500
-Received: from styx.suse.cz ([82.119.242.94]:51360 "EHLO duck.suse.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753255AbYBZQlY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Feb 2008 11:41:24 -0500
-Date: Tue, 26 Feb 2008 17:41:23 +0100
-From: Jan Kara <jack@suse.cz>
-To: Jiri Kosina <jkosina@suse.cz>
-Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
-       Nix <nix@esperi.org.uk>, Peter Osterlund <petero2@telia.com>,
-       linux-kernel@vger.kernel.org, dm-devel@redhat.com,
-       Jan Kara <jack@ucw.cz>
-Subject: Re: 2.6.24.2: 4KSTACKS + pcdrw + dm + mount -> stack overflow:
-	ide-cd related? dm-related?
-Message-ID: <20080226164123.GB28101@duck.suse.cz>
-References: <87wsovkth5.fsf@hades.wkstn.nix> <87skzipcpw.fsf@hades.wkstn.nix> <m363wepa3a.fsf@telia.com> <87oda6p9st.fsf@hades.wkstn.nix> <20080225123041.401da103.akpm@linux-foundation.org> <20080225224807.GA15700@atrey.karlin.mff.cuni.cz> <Pine.LNX.4.64.0802261207140.30955@jikos.suse.cz> <20080226112932.GB10996@elte.hu> <Pine.LNX.4.64.0802261230510.30955@jikos.suse.cz>
+	Tue, 26 Feb 2008 11:43:54 -0500
+Received: from srv5.dvmed.net ([207.36.208.214]:49186 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753509AbYBZQnx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 Feb 2008 11:43:53 -0500
+Message-ID: <47C441C1.5060305@garzik.org>
+Date: Tue, 26 Feb 2008 11:43:45 -0500
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0802261230510.30955@jikos.suse.cz>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+To: Nick Piggin <nickpiggin@yahoo.com.au>
+CC: Jamie Lokier <jamie@shareable.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org, Chris Wedgwood <cw@f00f.org>
+Subject: Re: Proposal for "proper" durable fsync() and fdatasync()
+References: <20080226072649.GB30238@shareable.org> <20080225234319.f4589ae4.akpm@linux-foundation.org> <20080226075921.GG30238@shareable.org> <200802262016.11297.nickpiggin@yahoo.com.au>
+In-Reply-To: <200802262016.11297.nickpiggin@yahoo.com.au>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.4 (----)
+X-Spam-Report: SpamAssassin version 3.2.3 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue 26-02-08 12:37:17, Jiri Kosina wrote:
-> On Tue, 26 Feb 2008, Ingo Molnar wrote:
-> 
-> > > +	name = kmalloc(sizeof(char) * UDF_NAME_LEN, GFP_KERNEL);
-> > > +	fname = kmalloc(sizeof(char) * UDF_NAME_LEN, GFP_KERNEL);
-> > > +
-> > > +	if (!name || !fname) {
-> > > +		*err = -ENOMEM;
-> > > +		return NULL;
-> > > +	}
-> > > +
-> > >  	if (dentry) {
-> > >  		if (!dentry->d_name.len) {
-> > >  			*err = -EINVAL;
-> > this bit is missing i think:
-> > 	if (name)
-> > 		kfree(name);
-> > 	if (fname)
-> > 		kfree(fname);
-> 
-> Ergh, of course, stupid me, sorry, it should be freed on all exit paths. I 
-> am not sending updated patch, as Jan is probably working on complete 
-> removal of one of those fields ... ?
-  Yes, I'll convert one variable to kmalloc and the other one remove
-completely. Stay tuned ;).
+Nick Piggin wrote:
+> Anyway, the idea of making fsync/fdatasync etc. safe by default is
+> a good idea IMO, and is a bad bug that we don't do that :(
 
-								Honza
--- 
-Jan Kara <jack@suse.cz>
-SUSE Labs, CR
+Agreed...  it's also disappointing that [unless I'm mistaken] you have 
+to hack each filesystem to support barriers.
+
+It seems far easier to make sync_blkdev() Do The Right Thing, and 
+magically make all filesystems data-safe.
+
+	Jeff
+
+
