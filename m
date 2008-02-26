@@ -1,511 +1,208 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763897AbYBZSzi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764438AbYBZSzv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763897AbYBZSzi (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Feb 2008 13:55:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759154AbYBZSz3
+	id S1764438AbYBZSzv (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Feb 2008 13:55:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758788AbYBZSzn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Feb 2008 13:55:29 -0500
-Received: from sca-es-mail-1.Sun.COM ([192.18.43.132]:62490 "EHLO
-	sca-es-mail-1.sun.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758788AbYBZSz2 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Feb 2008 13:55:28 -0500
-Date: Tue, 26 Feb 2008 11:04:17 -0800
-From: Yinghai Lu <Yinghai.Lu@Sun.COM>
-Subject: [PATCH] x86_64: Seperate mmconf for fam10h out from setup_64.c
-In-reply-to: <20080226072451.GD24820@elte.hu>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Greg KH <greg@kroah.com>, Thomas Gleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>
-Message-id: <200802261104.18341.yinghai.lu@sun.com>
-Organization: Sun
-MIME-version: 1.0
-Content-type: text/plain; charset=iso-8859-1
-Content-transfer-encoding: 7BIT
-Content-disposition: inline
-References: <200802251841.36135.yinghai.lu@sun.com>
- <20080226072451.GD24820@elte.hu>
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+	Tue, 26 Feb 2008 13:55:43 -0500
+Received: from mx20.lb01.inode.at ([62.99.145.22]:39418 "EHLO mx.inode.at"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1764163AbYBZSzm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 Feb 2008 13:55:42 -0500
+X-Greylist: delayed 85957 seconds by postgrey-1.27 at vger.kernel.org; Tue, 26 Feb 2008 13:55:41 EST
+From: Gerold Jury <gml@inode.at>
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: extra bytes written to SATA DVD drive on kernel 2.6.23 till 2.6.24.2
+Date: Tue, 26 Feb 2008 19:57:57 +0100
+User-Agent: KMail/1.9.7
+Cc: linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org
+References: <200802252005.22663.gml@inode.at> <20080225153249.5a5d555c.akpm@linux-foundation.org>
+In-Reply-To: <20080225153249.5a5d555c.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200802261957.57278.gml@inode.at>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Seperate mmconf for fam10h out from setup_64.c
+It does happen with 2.6.22 too.
 
-Signed-off-by: Yinghai Lu <yinghai.lu@sun.com>
+Do you see any known pattern in these extra bytes ?
 
-diff --git a/arch/x86/kernel/Makefile b/arch/x86/kernel/Makefile
-index 199f8b5..4f2b9ed 100644
---- a/arch/x86/kernel/Makefile
-+++ b/arch/x86/kernel/Makefile
-@@ -101,4 +101,6 @@ ifeq ($(CONFIG_X86_64),y)
-         obj-$(CONFIG_GART_IOMMU)	+= pci-gart_64.o aperture_64.o
-         obj-$(CONFIG_CALGARY_IOMMU)	+= pci-calgary_64.o tce_64.o
-         obj-$(CONFIG_SWIOTLB)		+= pci-swiotlb_64.o
-+
-+        obj-$(CONFIG_PCI_MMCONFIG)	+= mmconf-fam10h_64.o
- endif
-diff --git a/arch/x86/kernel/mmconf-fam10h_64.c b/arch/x86/kernel/mmconf-fam10h_64.c
-new file mode 100644
-index 0000000..3789792
---- /dev/null
-+++ b/arch/x86/kernel/mmconf-fam10h_64.c
-@@ -0,0 +1,215 @@
-+/*
-+ * AMD Family 10h mmconfig enablement
-+ */
-+
-+#include <linux/types.h>
-+#include <linux/mm.h>
-+#include <linux/string.h>
-+#include <linux/pci.h>
-+#include <asm/pci-direct.h>
-+#include <linux/sort.h>
-+#include <asm/io.h>
-+#include <asm/msr.h>
-+#include <asm/acpi.h>
-+
-+struct pci_hostbridge_probe {
-+	u32 bus;
-+	u32 slot;
-+	u32 vendor;
-+	u32 device;
-+};
-+
-+static u64 __cpuinitdata fam10h_pci_mmconf_base;
-+static int __cpuinitdata fam10h_pci_mmconf_base_status;
-+
-+static struct pci_hostbridge_probe pci_probes[] __cpuinitdata = {
-+	{ 0, 0x18, PCI_VENDOR_ID_AMD, 0x1200 },
-+	{ 0xff, 0, PCI_VENDOR_ID_AMD, 0x1200 },
-+};
-+
-+struct range {
-+	u64 start;
-+	u64 end;
-+};
-+
-+static int __cpuinit cmp_range(const void *x1, const void *x2)
-+{
-+	const struct range *r1 = x1;
-+	const struct range *r2 = x2;
-+	int start1, start2;
-+
-+	start1 = r1->start >> 32;
-+	start2 = r2->start >> 32;
-+
-+	return start1 - start2;
-+}
-+
-+/*[47:0] */
-+/* need to avoid (0xfd<<32) and (0xfe<<32), ht used space */
-+#define FAM10H_PCI_MMCONF_BASE (0xfcULL<<32)
-+#define BASE_VALID(b) ((b != (0xfdULL << 32)) && (b != (0xfeULL << 32)))
-+static void __cpuinit get_fam10h_pci_mmconf_base(void)
-+{
-+	int i;
-+	unsigned bus;
-+	unsigned slot;
-+	int found;
-+
-+	u64 val;
-+	u32 address;
-+	u64 tom2;
-+	u64 base = FAM10H_PCI_MMCONF_BASE;
-+
-+	int hi_mmio_num;
-+	struct range range[8];
-+
-+	/* only try to get setting from BSP */
-+	/* -1 or 1 */
-+	if (fam10h_pci_mmconf_base_status)
-+		return;
-+
-+	if (!early_pci_allowed())
-+		goto fail;
-+
-+	found = 0;
-+	for (i = 0; i < ARRAY_SIZE(pci_probes); i++) {
-+		u32 id;
-+		u16 device;
-+		u16 vendor;
-+
-+		bus = pci_probes[i].bus;
-+		slot = pci_probes[i].slot;
-+		id = read_pci_config(bus, slot, 0, PCI_VENDOR_ID);
-+
-+		vendor = id & 0xffff;
-+		device = (id>>16) & 0xffff;
-+		if (pci_probes[i].vendor == vendor &&
-+		    pci_probes[i].device == device) {
-+			found = 1;
-+			break;
-+		}
-+	}
-+
-+	if (!found)
-+		goto fail;
-+
-+	/* SYS_CFG */
-+	address = MSR_K8_SYSCFG;
-+	rdmsrl(address, val);
-+
-+	/* TOP_MEM2 is not enabled? */
-+	if (!(val & (1<<21))) {
-+		tom2 = 0;
-+	} else {
-+		/* TOP_MEM2 */
-+		address = MSR_K8_TOP_MEM2;
-+		rdmsrl(address, val);
-+		tom2 = val & (0xffffULL<<32);
-+	}
-+
-+	if (base <= tom2)
-+		base = tom2 + (1ULL<<32);
-+
-+	/*
-+	 * need to check if the range is in the high mmio range that is
-+	 * above 4G
-+	 */
-+	hi_mmio_num = 0;
-+	for (i = 0; i < 8; i++) {
-+		u32 reg;
-+		u64 start;
-+		u64 end;
-+		reg = read_pci_config(bus, slot, 1, 0x80 + (i << 3));
-+		if (!(reg & 3))
-+			continue;
-+
-+		start = (((u64)reg) << 8) & (0xffULL << 32); /* 39:16 on 31:8*/
-+		reg = read_pci_config(bus, slot, 1, 0x84 + (i << 3));
-+		end = (((u64)reg) << 8) & (0xffULL << 32); /* 39:16 on 31:8*/
-+
-+		if (!end)
-+			continue;
-+
-+		range[hi_mmio_num].start = start;
-+		range[hi_mmio_num].end = end;
-+		hi_mmio_num++;
-+	}
-+
-+	if (!hi_mmio_num)
-+		goto out;
-+
-+	/* sort the range */
-+	sort(range, hi_mmio_num, sizeof(struct range), cmp_range, NULL);
-+
-+	if (range[hi_mmio_num - 1].end < base)
-+		goto out;
-+	if (range[0].start > base)
-+		goto out;
-+
-+	/* need to find one window */
-+	base = range[0].start - (1ULL << 32);
-+	if ((base > tom2) && BASE_VALID(base))
-+		goto out;
-+	base = range[hi_mmio_num - 1].end + (1ULL << 32);
-+	if ((base > tom2) && BASE_VALID(base))
-+		goto out;
-+	/* need to find window between ranges */
-+	if (hi_mmio_num > 1)
-+	for (i = 0; i < hi_mmio_num - 1; i++) {
-+		if (range[i + 1].start > (range[i].end + (1ULL << 32))) {
-+			base = range[i].end + (1ULL << 32);
-+			if ((base > tom2) && BASE_VALID(base))
-+				goto out;
-+		}
-+	}
-+
-+fail:
-+	fam10h_pci_mmconf_base_status = -1;
-+	return;
-+out:
-+	fam10h_pci_mmconf_base = base;
-+	fam10h_pci_mmconf_base_status = 1;
-+}
-+
-+void __cpuinit fam10h_check_enable_mmcfg(void)
-+{
-+	u64 val;
-+	u32 address;
-+
-+	address = MSR_FAM10H_MMIO_CONF_BASE;
-+	rdmsrl(address, val);
-+
-+	/* try to make sure that AP's setting is identical to BSP setting */
-+	if (val & FAM10H_MMIO_CONF_ENABLE) {
-+		unsigned busnbits;
-+		busnbits = (val >> FAM10H_MMIO_CONF_BUSRANGE_SHIFT) &
-+			FAM10H_MMIO_CONF_BUSRANGE_MASK;
-+
-+		/* only trust the one handle 256 buses, if acpi=off */
-+		if (!acpi_pci_disabled || busnbits >= 8) {
-+			u64 base;
-+			base = val & (0xffffULL << 32);
-+			if (fam10h_pci_mmconf_base_status <= 0) {
-+				fam10h_pci_mmconf_base = base;
-+				fam10h_pci_mmconf_base_status = 1;
-+				return;
-+			} else if (fam10h_pci_mmconf_base ==  base)
-+				return;
-+		}
-+	}
-+
-+	/*
-+	 * if it is not enabled, try to enable it and assume only one segment
-+	 * with 256 buses
-+	 */
-+	get_fam10h_pci_mmconf_base();
-+	if (fam10h_pci_mmconf_base_status <= 0)
-+		return;
-+
-+	printk(KERN_INFO "Enable MMCONFIG on AMD Family 10h\n");
-+	val &= ~((FAM10H_MMIO_CONF_BASE_MASK<<FAM10H_MMIO_CONF_BASE_SHIFT) |
-+	     (FAM10H_MMIO_CONF_BUSRANGE_MASK<<FAM10H_MMIO_CONF_BUSRANGE_SHIFT));
-+	val |= fam10h_pci_mmconf_base | (8 << FAM10H_MMIO_CONF_BUSRANGE_SHIFT) |
-+	       FAM10H_MMIO_CONF_ENABLE;
-+	wrmsrl(address, val);
-+}
-diff --git a/arch/x86/kernel/setup_64.c b/arch/x86/kernel/setup_64.c
-index d327155..d71463e 100644
---- a/arch/x86/kernel/setup_64.c
-+++ b/arch/x86/kernel/setup_64.c
-@@ -548,212 +548,6 @@ static int __cpuinit nearby_node(int apicid)
- }
- #endif
- 
--#ifdef CONFIG_PCI_MMCONFIG
--struct pci_hostbridge_probe {
--	u32 bus;
--	u32 slot;
--	u32 vendor;
--	u32 device;
--};
--
--static u64 __cpuinitdata fam10h_pci_mmconf_base;
--static int __cpuinitdata fam10h_pci_mmconf_base_status;
--
--static struct pci_hostbridge_probe pci_probes[] __cpuinitdata = {
--	{ 0, 0x18, PCI_VENDOR_ID_AMD, 0x1200 },
--	{ 0xff, 0, PCI_VENDOR_ID_AMD, 0x1200 },
--};
--
--struct range {
--	u64 start;
--	u64 end;
--};
--
--static int __cpuinit cmp_range(const void *x1, const void *x2)
--{
--	const struct range *r1 = x1;
--	const struct range *r2 = x2;
--	int start1, start2;
--
--	start1 = r1->start >> 32;
--	start2 = r2->start >> 32;
--
--	return start1 - start2;
--}
--
--/*[47:0] */
--/* need to avoid (0xfd<<32) and (0xfe<<32), ht used space */
--#define FAM10H_PCI_MMCONF_BASE (0xfcULL<<32)
--#define BASE_VALID(b) ((b != (0xfdULL << 32)) && (b != (0xfeULL << 32)))
--static void __cpuinit get_fam10h_pci_mmconf_base(void)
--{
--	int i;
--	unsigned bus;
--	unsigned slot;
--	int found;
--
--	u64 val;
--	u32 address;
--	u64 tom2;
--	u64 base = FAM10H_PCI_MMCONF_BASE;
--
--	int hi_mmio_num;
--	struct range range[8];
--
--	/* only try to get setting from BSP */
--	/* -1 or 1 */
--	if (fam10h_pci_mmconf_base_status)
--		return;
--
--	if (!early_pci_allowed())
--		goto fail;
--
--	found = 0;
--	for (i = 0; i < ARRAY_SIZE(pci_probes); i++) {
--		u32 id;
--		u16 device;
--		u16 vendor;
--
--		bus = pci_probes[i].bus;
--		slot = pci_probes[i].slot;
--		id = read_pci_config(bus, slot, 0, PCI_VENDOR_ID);
--
--		vendor = id & 0xffff;
--		device = (id>>16) & 0xffff;
--		if (pci_probes[i].vendor == vendor &&
--		    pci_probes[i].device == device) {
--			found = 1;
--			break;
--		}
--	}
--
--	if (!found)
--		goto fail;
--
--	/* SYS_CFG */
--	address = MSR_K8_SYSCFG;
--	rdmsrl(address, val);
--
--	/* TOP_MEM2 is not enabled? */
--	if (!(val & (1<<21))) {
--		tom2 = 0;
--	} else {
--		/* TOP_MEM2 */
--		address = MSR_K8_TOP_MEM2;
--		rdmsrl(address, val);
--		tom2 = val & (0xffffULL<<32);
--	}
--
--	if (base <= tom2)
--		base = tom2 + (1ULL<<32);
--
--	/*
--	 * need to check if the range is in the high mmio range that is
--	 * above 4G
--	 */
--	hi_mmio_num = 0;
--	for (i = 0; i < 8; i++) {
--		u32 reg;
--		u64 start;
--		u64 end;
--		reg = read_pci_config(bus, slot, 1, 0x80 + (i << 3));
--		if (!(reg & 3))
--			continue;
--
--		start = (((u64)reg) << 8) & (0xffULL << 32); /* 39:16 on 31:8*/
--		reg = read_pci_config(bus, slot, 1, 0x84 + (i << 3));
--		end = (((u64)reg) << 8) & (0xffULL << 32); /* 39:16 on 31:8*/
--
--		if (!end)
--			continue;
--
--		range[hi_mmio_num].start = start;
--		range[hi_mmio_num].end = end;
--		hi_mmio_num++;
--	}
--
--	if (!hi_mmio_num)
--		goto out;
--
--	/* sort the range */
--	sort(range, hi_mmio_num, sizeof(struct range), cmp_range, NULL);
--
--	if (range[hi_mmio_num - 1].end < base)
--		goto out;
--	if (range[0].start > base)
--		goto out;
--
--	/* need to find one window */
--	base = range[0].start - (1ULL << 32);
--	if ((base > tom2) && BASE_VALID(base))
--		goto out;
--	base = range[hi_mmio_num - 1].end + (1ULL << 32);
--	if ((base > tom2) && BASE_VALID(base))
--		goto out;
--	/* need to find window between ranges */
--	if (hi_mmio_num > 1)
--	for (i = 0; i < hi_mmio_num - 1; i++) {
--		if (range[i + 1].start > (range[i].end + (1ULL << 32))) {
--			base = range[i].end + (1ULL << 32);
--			if ((base > tom2) && BASE_VALID(base))
--				goto out;
--		}
--	}
--
--fail:
--	fam10h_pci_mmconf_base_status = -1;
--	return;
--out:
--	fam10h_pci_mmconf_base = base;
--	fam10h_pci_mmconf_base_status = 1;
--}
--#endif
--
--static void __cpuinit fam10h_check_enable_mmcfg(struct cpuinfo_x86 *c)
--{
--#ifdef CONFIG_PCI_MMCONFIG
--	u64 val;
--	u32 address;
--
--	address = MSR_FAM10H_MMIO_CONF_BASE;
--	rdmsrl(address, val);
--
--	/* try to make sure that AP's setting is identical to BSP setting */
--	if (val & FAM10H_MMIO_CONF_ENABLE) {
--		unsigned busnbits;
--		busnbits = (val >> FAM10H_MMIO_CONF_BUSRANGE_SHIFT) &
--			FAM10H_MMIO_CONF_BUSRANGE_MASK;
--
--		/* only trust the one handle 256 buses, if acpi=off */
--		if (!acpi_pci_disabled || busnbits >= 8) {
--			u64 base;
--			base = val & (0xffffULL << 32);
--			if (fam10h_pci_mmconf_base_status <= 0) {
--				fam10h_pci_mmconf_base = base;
--				fam10h_pci_mmconf_base_status = 1;
--				return;
--			} else if (fam10h_pci_mmconf_base ==  base)
--				return;
--		}
--	}
--
--	/*
--	 * if it is not enabled, try to enable it and assume only one segment
--	 * with 256 buses
--	 */
--	get_fam10h_pci_mmconf_base();
--	if (fam10h_pci_mmconf_base_status <= 0)
--		return;
--
--	printk(KERN_INFO "Enable MMCONFIG on AMD Family 10h\n");
--	val &= ~((FAM10H_MMIO_CONF_BASE_MASK<<FAM10H_MMIO_CONF_BASE_SHIFT) |
--	     (FAM10H_MMIO_CONF_BUSRANGE_MASK<<FAM10H_MMIO_CONF_BUSRANGE_SHIFT));
--	val |= fam10h_pci_mmconf_base | (8 << FAM10H_MMIO_CONF_BUSRANGE_SHIFT) |
--	       FAM10H_MMIO_CONF_ENABLE;
--	wrmsrl(address, val);
--#endif
--}
--
- /*
-  * On a AMD dual core setup the lower bits of the APIC id distingush the cores.
-  * Assumes number of cores is a power of two.
-@@ -872,6 +666,14 @@ static void __cpuinit early_init_amd(struct cpuinfo_x86 *c)
- 		set_cpu_cap(c, X86_FEATURE_CONSTANT_TSC);
- }
- 
-+#ifdef CONFIG_PCI_MMCONFIG
-+extern void __cpuinit fam10h_check_enable_mmcfg(void);
-+#else
-+void __cpuinit fam10h_check_enable_mmcfg(void)
-+{
-+}
-+#endif
-+
- static void __cpuinit init_amd(struct cpuinfo_x86 *c)
- {
- 	unsigned level;
-@@ -938,7 +740,7 @@ static void __cpuinit init_amd(struct cpuinfo_x86 *c)
- 	set_cpu_cap(c, X86_FEATURE_MFENCE_RDTSC);
- 
- 	if (c->x86 == 0x10)
--		fam10h_check_enable_mmcfg(c);
-+		fam10h_check_enable_mmcfg();
- 
- 	if (amd_apic_timer_broken())
- 		disable_apic_timer = 1;
+Best Regards
+Gerold
+
+
+00000000  2a 00 00 00 00 00 00 00  40 00 00 00 00 00 00 00  |*.......@.......|
+00000010  00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00  |................|
+*
+00020000  2a 00 00 00 00 40 00 00  40 00 00 00 00 40 00 00  |*....@..@....@..|
+00020010  00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00  |................|
+*
+00040000  2a 00 00 00 00 80 00 00  40 00 00 00 00 80 00 00  |*.......@.......|
+00040010  00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00  |................|
+*
+00060000  2a 00 00 00 00 c0 00 00  02 00 00 00 00 c0 00 00  |*...............|
+00060010  00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00  |................|
+*
+00061010  00 00 00 00 00 00 00 00  2a 00 00 00 00 c2 00 00  |........*.......|
+00061020  40 00 00 00 00 c2 00 00  00 00 00 00 00 00 00 00  |@...............|
+00061030  00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00  |................|
+*
+00081010  00 00 00 00 00 00 00 00  2a 00 00 00 01 02 00 00  |........*.......|
+00081020  40 00 00 00 01 02 00 00  00 00 00 00 00 00 00 00  |@...............|
+00081030  00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00  |................|
+*
+000a1010  00 00 00 00 00 00 00 00  2a 00 00 00 01 42 00 00  |........*....B..|
+000a1020  40 00 00 00 01 42 00 00  00 00 00 00 00 00 00 00  |@....B..........|
+000a1030  00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00  |................|
+*
+000c1010  00 00 00 00 00 00 00 00  2a 00 00 00 01 82 00 00  |........*.......|
+000c1020  40 00 00 00 01 82 00 00  00 00 00 00 00 00 00 00  |@...............|
+000c1030  00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00  |................|
+*
+
+
+
+On Tuesday 26 February 2008 00:32:49 Andrew Morton wrote:
+>On Mon, 25 Feb 2008 20:05:22 +0100 Gerold Jury <gml@inode.at> wrote:
+>> Hello,
+>>
+>> I have two DVD drives, one connected to the SATA port (LG) the other to
+>> the IDE port (PHILIPS) of a via chipset.
+>> They are driven by VIA SATA support (SATA_VIA) and VIA PATA support
+>> (PATA_VIA).
+>>
+>> When I write an iso image to the drive on the SATA port /dev/sr0 it has
+>> some extra bytes on disk which make the disk unreadable.
+>> Writing to the IDE drive /dev/sr1 works well.
+>>
+>> A simple test with a DVD RAM and dd instead of growisofs
+>>
+>> dd if=/dev/zero of=/dev/srX bs=1024k count=10
+>>
+>> and a readback afterwards
+>>
+>> dd if=/dev/srX of=imageX.bin bs=1024k count=10
+>>
+>> gives me an all zero file from the IDE drive but a file
+>> full of probably scsi commands for the SATA drive and looks like
+>>
+>> 00000000  00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00 
+>> |................| *
+>> 00020000  2a 00 00 00 00 40 00 00  40 00 00 00 00 40 00 00 
+>> |*....@..@....@..| 00020010  00 00 00 00 00 00 00 00  00 00 00 00 00 00 00
+>> 00  |................| *
+>> 00040000  2a 00 00 00 00 80 00 00  40 00 00 00 00 80 00 00 
+>> |*.......@.......| 00040010  00 00 00 00 00 00 00 00  00 00 00 00 00 00 00
+>> 00  |................| *
+>> 00060000  2a 00 00 00 00 c0 00 00  02 00 00 00 00 c0 00 00 
+>> |*...............| 00060010  00 00 00 00 00 00 00 00  00 00 00 00 00 00 00
+>> 00  |................| *
+>> 00061010  00 00 00 00 00 00 00 00  2a 00 00 00 00 c2 00 00 
+>> |........*.......| 00061020  40 00 00 00 00 c2 00 00  00 00 00 00 00 00 00
+>> 00  |@...............| 00061030  00 00 00 00 00 00 00 00  00 00 00 00 00
+>> 00 00 00  |................| *
+>> 00081010  00 00 00 00 00 00 00 00  2a 00 00 00 01 02 00 00 
+>> |........*.......| 00081020  40 00 00 00 01 02 00 00  00 00 00 00 00 00 00
+>> 00  |@...............| 00081030  00 00 00 00 00 00 00 00  00 00 00 00 00
+>> 00 00 00  |................| *
+>> 000a1010  00 00 00 00 00 00 00 00  2a 00 00 00 01 42 00 00 
+>> |........*....B..| 000a1020  40 00 00 00 01 42 00 00  00 00 00 00 00 00 00
+>> 00  |@....B..........| 000a1030  00 00 00 00 00 00 00 00  00 00 00 00 00
+>> 00 00 00  |................| *
+>> 000c1010  00 00 00 00 00 00 00 00  2a 00 00 00 01 82 00 00 
+>> |........*.......| 000c1020  40 00 00 00 01 82 00 00  00 00 00 00 00 00 00
+>> 00  |@...............| 000c1030  00 00 00 00 00 00 00 00  00 00 00 00 00
+>> 00 00 00  |................|
+>>
+>> I really need some hints to make the SATA drive usable, please.
+>
+>(added linux-ide)
+>
+>Did any earlier kernel work OK?  2.6.22?
+>
+>Thanks.
+>
+>> uname -a
+>> Linux blaubaer 2.6.24.2 #4 Sun Feb 24 21:50:21 CET 2008 x86_64 AMD
+>> Athlon(tm) 64 Processor 3400+ AuthenticAMD GNU/Linux
+>>
+>> lspvi -v
+>>
+>> 00:0f.0 RAID bus controller: VIA Technologies, Inc. VIA VT6420 SATA RAID
+>> Controller (rev 80)
+>>         Subsystem: ASUSTeK Computer Inc. A7V600/K8V Deluxe/K8V-X/A8V
+>> Deluxe motherboard
+>>         Flags: bus master, medium devsel, latency 64, IRQ 20
+>>         I/O ports at e800 [size=8]
+>>         I/O ports at e400 [size=4]
+>>         I/O ports at e000 [size=8]
+>>         I/O ports at d800 [size=4]
+>>         I/O ports at d400 [size=16]
+>>         I/O ports at d000 [size=256]
+>>         Capabilities: [c0] Power Management version 2
+>>         Kernel driver in use: sata_via
+>>
+>> 00:0f.1 IDE interface: VIA Technologies, Inc.
+>> VT82C586A/B/VT82C686/A/B/VT823x/A/C PIPC Bus Master IDE (rev 06) (prog-if
+>> 8a [Master SecP PriP])
+>>         Subsystem: ASUSTeK Computer Inc. A7V600/K8V-X/A8V Deluxe
+>> motherboard Flags: bus master, medium devsel, latency 32, IRQ 20
+>>         [virtual] Memory at 000001f0 (32-bit, non-prefetchable) [size=8]
+>>         [virtual] Memory at 000003f0 (type 3, non-prefetchable) [size=1]
+>>         [virtual] Memory at 00000170 (32-bit, non-prefetchable) [size=8]
+>>         [virtual] Memory at 00000370 (type 3, non-prefetchable) [size=1]
+>>         I/O ports at fc00 [size=16]
+>>         Capabilities: [c0] Power Management version 2
+>>         Kernel driver in use: pata_via
+>>
+>> cat /var/log/messages
+>>
+>> Feb 25 18:20:57 blaubaer sata_via 0000:00:0f.0: version 2.3
+>> Feb 25 18:20:57 blaubaer ACPI: PCI Interrupt 0000:00:0f.0[B] -> GSI 20
+>> (level, low) -> IRQ 20
+>> Feb 25 18:20:57 blaubaer sata_via 0000:00:0f.0: routed to hard irq line 10
+>> Feb 25 18:20:57 blaubaer scsi3 : sata_via
+>> Feb 25 18:20:57 blaubaer scsi4 : sata_via
+>> Feb 25 18:20:57 blaubaer ata4: SATA max UDMA/133 cmd 0xe800 ctl 0xe400
+>> bmdma 0xd400 irq 20
+>> Feb 25 18:20:57 blaubaer ata5: SATA max UDMA/133 cmd 0xe000 ctl 0xd800
+>> bmdma 0xd408 irq 20
+>> Feb 25 18:20:57 blaubaer ata4: SATA link down 1.5 Gbps (SStatus 0 SControl
+>> 300)
+>> Feb 25 18:20:57 blaubaer ata5: SATA link up 1.5 Gbps (SStatus 113 SControl
+>> 300)
+>> Feb 25 18:20:57 blaubaer ata5.00: ATAPI: HL-DT-ST DVDRAM GH20NS10, EL00,
+>> max UDMA/100
+>> Feb 25 18:20:57 blaubaer ata5.00: configured for UDMA/100
+>> Feb 25 18:20:57 blaubaer scsi 4:0:0:0: CD-ROM            HL-DT-ST DVDRAM
+>> GH20NS10  EL00 PQ: 0 ANSI: 5
+>> Feb 25 18:20:57 blaubaer sr0: scsi3-mmc drive: 48x/48x writer dvd-ram
+>> cd/rw xa/form2 cdda tray
+>> Feb 25 18:20:57 blaubaer Uniform CD-ROM driver Revision: 3.20
+>> Feb 25 18:20:57 blaubaer sr 4:0:0:0: Attached scsi CD-ROM sr0
+>> Feb 25 18:20:57 blaubaer sr 4:0:0:0: Attached scsi generic sg2 type 5
+>> Feb 25 18:20:57 blaubaer pata_via 0000:00:0f.1: version 0.3.3
+>> Feb 25 18:20:57 blaubaer ACPI: PCI Interrupt 0000:00:0f.1[A] -> GSI 20
+>> (level, low) -> IRQ 20
+>> Feb 25 18:20:57 blaubaer scsi5 : pata_via
+>> Feb 25 18:20:57 blaubaer scsi6 : pata_via
+>> Feb 25 18:20:57 blaubaer ata6: PATA max UDMA/133 cmd 0x1f0 ctl 0x3f6 bmdma
+>> 0xfc00 irq 14
+>> Feb 25 18:20:57 blaubaer ata7: PATA max UDMA/133 cmd 0x170 ctl 0x376 bmdma
+>> 0xfc08 irq 15
+>> Feb 25 18:20:57 blaubaer ata6.00: ATAPI: PHILIPS SPD2411P, BP01, max
+>> UDMA/66 Feb 25 18:20:57 blaubaer ata6.00: limited to UDMA/33 due to
+>> 40-wire cable Feb 25 18:20:57 blaubaer ata6.00: configured for UDMA/33
+>> Feb 25 18:20:57 blaubaer scsi 5:0:0:0: CD-ROM            PHILIPS  SPD2411P
+>> BP01 PQ: 0 ANSI: 5
+>> Feb 25 18:20:57 blaubaer sr1: scsi3-mmc drive: 48x/48x writer dvd-ram
+>> cd/rw xa/form2 cdda tray
+>> Feb 25 18:20:57 blaubaer sr 5:0:0:0: Attached scsi CD-ROM sr1
+>> Feb 25 18:20:57 blaubaer sr 5:0:0:0: Attached scsi generic sg3 type 5
+
+
