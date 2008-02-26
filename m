@@ -1,75 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932101AbYBZSI7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763485AbYBZSK1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932101AbYBZSI7 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Feb 2008 13:08:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761549AbYBZSIu
+	id S1763485AbYBZSK1 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Feb 2008 13:10:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755613AbYBZSKP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Feb 2008 13:08:50 -0500
-Received: from sinclair.provo.novell.com ([137.65.248.137]:34288 "EHLO
-	sinclair.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752317AbYBZSIt convert rfc822-to-8bit (ORCPT
+	Tue, 26 Feb 2008 13:10:15 -0500
+Received: from testure.choralone.org ([194.9.77.134]:35610 "EHLO
+	testure.choralone.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754761AbYBZSKN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Feb 2008 13:08:49 -0500
-Message-Id: <47C40DBD.BA47.005A.0@novell.com>
-X-Mailer: Novell GroupWise Internet Agent 7.0.2 HP
-Date: Tue, 26 Feb 2008 11:01:49 -0700
-From: "Gregory Haskins" <ghaskins@novell.com>
-To: "Pavel Machek" <pavel@ucw.cz>
-Cc: <a.p.zijlstra@chello.nl>, <mingo@elte.hu>, <bill.huey@gmail.com>,
-       <rostedt@goodmis.org>, <kevin@hilman.org>, <tglx@linutronix.de>,
-       <cminyard@mvista.com>, <dsingleton@mvista.com>, <dwalker@mvista.com>,
-       "Moiz Kohari" <MKohari@novell.com>,
-       "Peter Morreale" <PMorreale@novell.com>,
-       "Sven Dietrich" <SDietrich@novell.com>, <dsaxena@plexity.net>,
-       <acme@redhat.com>, <ak@suse.de>, <gregkh@suse.de>, <npiggin@suse.de>,
-       <linux-kernel@vger.kernel.org>, <linux-rt-users@vger.kernel.org>
-Subject: Re: [(RT RFC) PATCH v2 5/9] adaptive real-time lock support
-References: <20080225155959.11268.35541.stgit@novell1.haskins.net>
- <20080225160103.11268.25579.stgit@novell1.haskins.net>
- <20080225220313.GG2659@elf.ucw.cz> <47C3E3FF.BA47.005A.0@novell.com>
- <20080226180643.GA6030@elf.ucw.cz>
-In-Reply-To: <20080226180643.GA6030@elf.ucw.cz>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 8BIT
+	Tue, 26 Feb 2008 13:10:13 -0500
+Date: Tue, 26 Feb 2008 13:10:01 -0500
+From: Dave Jones <davej@codemonkey.org.uk>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       kernel list <linux-kernel@vger.kernel.org>
+Subject: Re: broken suspend in .2.6.25-rc3 on T61p (was Re: new regression
+	in 2.6.25-rc3: no keyboard/lid acpi events on thinkpad T61p)
+Message-ID: <20080226181001.GA7714@codemonkey.org.uk>
+Mail-Followup-To: Dave Jones <davej@codemonkey.org.uk>,
+	Pavel Machek <pavel@ucw.cz>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	"Rafael J. Wysocki" <rjw@sisk.pl>,
+	kernel list <linux-kernel@vger.kernel.org>
+References: <8f53421d0802251436vd98a97h5db6b8af3dc39d0@mail.gmail.com> <20080225143932.6b83b65d.akpm@linux-foundation.org> <8f53421d0802251448v3e0db63j3f222f041e587f69@mail.gmail.com> <20080225145347.a61f6c61.akpm@linux-foundation.org> <20080225225820.GP2659@elf.ucw.cz> <20080225155550.4a020dfb.akpm@linux-foundation.org> <20080226000007.GB22102@atrey.karlin.mff.cuni.cz> <20080226101117.GA26671@atrey.karlin.mff.cuni.cz> <20080226174613.GA26259@codemonkey.org.uk> <20080226175954.GA5707@elf.ucw.cz>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
+In-Reply-To: <20080226175954.GA5707@elf.ucw.cz>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->>> On Tue, Feb 26, 2008 at  1:06 PM, in message
-<20080226180643.GA6030@elf.ucw.cz>, Pavel Machek <pavel@ucw.cz> wrote: 
-> On Tue 2008-02-26 08:03:43, Gregory Haskins wrote:
->> >>> On Mon, Feb 25, 2008 at  5:03 PM, in message
->> <20080225220313.GG2659@elf.ucw.cz>, Pavel Machek <pavel@ucw.cz> wrote: 
->> 
->> >> +static inline void
->> >> +prepare_adaptive_wait(struct rt_mutex *lock, struct adaptive_waiter 
->> > *adaptive)
->> > ...
->> >> +#define prepare_adaptive_wait(lock, busy) {}
->> > 
->> > This is evil. Use empty inline function instead (same for the other
->> > function, there you can maybe get away with it).
->> > 
->> 
->> I went to implement your suggested change and I remembered why I did it this 
-> way:  I wanted a macro so that the "struct adaptive_waiter" local variable 
-> will fall away without an #ifdef in the main body of code.  So I have left 
-> this logic alone for now.
-> 
-> Hmm, but inline function will allow dead code elimination,  too, no?
+On Tue, Feb 26, 2008 at 06:59:54PM +0100, Pavel Machek wrote:
+ 
+ > > if by 'custom' you mean the solution everyone agreed to work
+ > > toward at the power management summit several years ago
+ > > (hal/pm-utils) then, yes.
+ > 
+ > I must have been on different summit... I believe it is bad to tie
+ > s2ram to hal, because it makes testing on minimal system hard.
+ > 
+ > Anyway, what is the "default" way to trigger s2ram for Andrew? Perhaps
+ > Fedora already has his machine whitelisted...
 
-I was getting compile errors.  Might be operator-error ;)
+There is no s2ram. pm-suspend uses the white/black-lists in pm-utils.
+Remember that? The cross-distro package everyone agreed was a good idea
+so that every distro didn't have their own magic utility ?
 
-> 
-> Anyway non-evil way to do it with macro is 
-> 
-> #define prepare_adaptive_wait(lock, busy) do {} while (0)
-> 
-> ...that behaves properly in complex statements.
+sigh, I give up.
 
-Ah, I was wondering why people use that.  Will do.  Thanks!
+	Dave
 
--Greg
-
+-- 
+http://www.codemonkey.org.uk
