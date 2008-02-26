@@ -1,60 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763277AbYBZPog@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762799AbYBZPr7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763277AbYBZPog (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Feb 2008 10:44:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763102AbYBZPoN
+	id S1762799AbYBZPr7 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Feb 2008 10:47:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758790AbYBZPrt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Feb 2008 10:44:13 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:51408 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1763079AbYBZPoL (ORCPT
+	Tue, 26 Feb 2008 10:47:49 -0500
+Received: from fxip-0047f.externet.hu ([88.209.222.127]:46274 "EHLO
+	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755595AbYBZPrs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Feb 2008 10:44:11 -0500
+	Tue, 26 Feb 2008 10:47:48 -0500
+To: a.p.zijlstra@chello.nl
+CC: miklos@szeredi.hu, neilb@suse.de, akpm@linux-foundation.org,
+       torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, netdev@vger.kernel.org, trond.myklebust@fys.uio.no
+In-reply-to: <1204040629.6242.326.camel@lappy> (message from Peter Zijlstra on
+	Tue, 26 Feb 2008 16:43:49 +0100)
 Subject: Re: [PATCH 00/28] Swap over NFS -v16
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Miklos Szeredi <miklos@szeredi.hu>
-Cc: neilb@suse.de, akpm@linux-foundation.org, torvalds@linux-foundation.org,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       netdev@vger.kernel.org, trond.myklebust@fys.uio.no
-In-Reply-To: <E1JU1kk-0001t9-25@pomaz-ex.szeredi.hu>
 References: <20080220144610.548202000@chello.nl>
 	 <20080223000620.7fee8ff8.akpm@linux-foundation.org>
 	 <18371.43950.150842.429997@notabene.brown>
-	 <1204023042.6242.271.camel@lappy>  <E1JU1kk-0001t9-25@pomaz-ex.szeredi.hu>
-Content-Type: text/plain
-Date: Tue, 26 Feb 2008 16:43:49 +0100
-Message-Id: <1204040629.6242.326.camel@lappy>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.21.90 
-Content-Transfer-Encoding: 7bit
+	 <1204023042.6242.271.camel@lappy>  <E1JU1kk-0001t9-25@pomaz-ex.szeredi.hu> <1204040629.6242.326.camel@lappy>
+Message-Id: <E1JU21m-0001wp-ET@pomaz-ex.szeredi.hu>
+From: Miklos Szeredi <miklos@szeredi.hu>
+Date: Tue, 26 Feb 2008 16:47:34 +0100
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-On Tue, 2008-02-26 at 16:29 +0100, Miklos Szeredi wrote:
-> > > mm-page_file_methods.patch
+> > > > mm-page_file_methods.patch
+> > > > 
+> > > >     This makes page_offset and others more expensive by adding a
+> > > >     conditional jump to a function call that is not usually made.
+> > > > 
+> > > >     Why do swap pages have a different index to everyone else?
 > > > 
-> > >     This makes page_offset and others more expensive by adding a
-> > >     conditional jump to a function call that is not usually made.
+> > > Because the page->index of an anonymous page is related to its (anon)vma
+> > > so that it satisfies the constraints for vm_normal_page().
 > > > 
-> > >     Why do swap pages have a different index to everyone else?
+> > > The index in the swap file it totally unrelated and quite random. Hence
+> > > the swap-cache uses page->private to store it in.
 > > 
-> > Because the page->index of an anonymous page is related to its (anon)vma
-> > so that it satisfies the constraints for vm_normal_page().
+> > Yeah, and putting the condition into page_offset() will confuse code
+> > which uses it for finding the offset in the VMA or in a tmpfs file.
 > > 
-> > The index in the swap file it totally unrelated and quite random. Hence
-> > the swap-cache uses page->private to store it in.
+> > So why not just have a separate page_swap_offset() function, used
+> > exclusively by swap_in/out()?
 > 
-> Yeah, and putting the condition into page_offset() will confuse code
-> which uses it for finding the offset in the VMA or in a tmpfs file.
+> Ah, we can do the page_file_offset() to match page_file_index() and
+> page_file_mapping(). And convert NFS to use page_file_offset() where
+> appropriate, as I already did for these others.
 > 
-> So why not just have a separate page_swap_offset() function, used
-> exclusively by swap_in/out()?
+> That would sort out the mess, right?
 
-Ah, we can do the page_file_offset() to match page_file_index() and
-page_file_mapping(). And convert NFS to use page_file_offset() where
-appropriate, as I already did for these others.
+Yes, that sounds perfect.
 
-That would sort out the mess, right?
-
+Miklos
