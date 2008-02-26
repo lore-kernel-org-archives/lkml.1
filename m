@@ -1,53 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760755AbYBZOgc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761467AbYBZOiZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760755AbYBZOgc (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Feb 2008 09:36:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751778AbYBZOgZ
+	id S1761467AbYBZOiZ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Feb 2008 09:38:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752366AbYBZOiQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Feb 2008 09:36:25 -0500
-Received: from serenity.mcc.ac.uk ([130.88.200.93]:61732 "EHLO
-	serenity.mcc.ac.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751307AbYBZOgZ (ORCPT
+	Tue, 26 Feb 2008 09:38:16 -0500
+Received: from 87-194-8-8.bethere.co.uk ([87.194.8.8]:51754 "EHLO
+	kira.home.fluff.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751952AbYBZOiP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Feb 2008 09:36:25 -0500
-Message-ID: <47C42477.5090900@gentoo.org>
-Date: Tue, 26 Feb 2008 14:38:47 +0000
-From: Daniel Drake <dsd@gentoo.org>
-User-Agent: Thunderbird 2.0.0.9 (X11/20080212)
+	Tue, 26 Feb 2008 09:38:15 -0500
+Date: Tue, 26 Feb 2008 14:37:45 +0000
+From: Ben Dooks <ben-linux@fluff.org>
+To: Sam Ravnborg <sam@ravnborg.org>
+Cc: Michael Buesch <mb@bu3sch.de>,
+       Gordon Farquharson <gordonfarquharson@gmail.com>,
+       Russell King <rmk+lkml@arm.linux.org.uk>, linux-kernel@vger.kernel.org,
+       linville@tuxdriver.com, stefano.brivio@polimi.it,
+       Linus Torvalds <torvalds@osdl.org>, Andrew Morton <akpm@osdl.org>,
+       viro@ftp.linux.org.uk
+Subject: Re: [RFC] [PATCH] Fix b43 driver build for arm
+Message-ID: <20080226143744.GA24332@fluff.org.uk>
+References: <97a0a9ac0802181403ja79c32v864b093414b2755@mail.gmail.com> <200802191141.26952.mb@bu3sch.de> <97a0a9ac0802191644x693cd34cq6b167756df9c65f4@mail.gmail.com> <200802201544.05192.mb@bu3sch.de> <20080220193709.GD21139@uranus.ravnborg.org>
 MIME-Version: 1.0
-To: Randy Dunlap <randy.dunlap@oracle.com>
-CC: Greg Kroah-Hartman <gregkh@suse.de>, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       torvalds@linux-foundation.org, stable@kernel.org,
-       stephen.hemminger@vyatta.com, David Miller <davem@davemloft.net>
-Subject: Re: Linux 2.6.24.3 (if_addrlabel.h HEADERS_CHECK failure)
-References: <20080226010024.GA26889@suse.de> <20080225195229.11ec1f12.randy.dunlap@oracle.com>
-In-Reply-To: <20080225195229.11ec1f12.randy.dunlap@oracle.com>
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Content-Transfer-Encoding: 7bit
-X-UoM: Scanned by the University Mail System. See http://www.itservices.manchester.ac.uk/email/filtering/information/ for details.
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080220193709.GD21139@uranus.ravnborg.org>
+X-Disclaimer: These are my own opinions, so there!
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Randy Dunlap wrote:
->> We (the -stable team) are announcing the release of the 2.6.24.3
->> kernel.
-> 
-> When HEADERS_CHECK=y:
-> 
-> make[3]: *** No rule to make target `/local/linsrc/linux-2.6.24.3/include/linux/if_addrlabel.h', needed by `/local/linsrc/linux-2.6.24.3/usr/include/linux/if_addrlabel.h'.  Stop.
-> make[2]: *** [linux] Error 2
+On Wed, Feb 20, 2008 at 08:37:09PM +0100, Sam Ravnborg wrote:
+> On Wed, Feb 20, 2008 at 03:44:04PM +0100, Michael Buesch wrote:
+> > On Wednesday 20 February 2008 01:44:38 Gordon Farquharson wrote:
+> > > Hi Michael
+> > > 
+> > > On Feb 19, 2008 3:41 AM, Michael Buesch <mb@bu3sch.de> wrote:
+> > > 
+> > > > > [2] http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commitdiff;h=7492d4a416d68ab4bd254b36ffcc4e0138daa8ff
+> > > > >
+> > > >
+> > > > That doesn't cause me to magically sign off this sort of patches, too.
+> > > > The sanity check is clearly broken in file2alias.c, as it checks something
+> > > > from the target kernel against the host environment it is compiled on.
+> > > > That doesn't make any sense at all.
+> > > 
+> > > I think that you make some good points, but I'm at a loss as to how to
+> > > fix the problem. Do you have any suggestions?
+> > 
+> > Remove the broken sanity check, if it's not possible the check there.
+> The check is valid for > 99% of the kernel builds as
+> cross compile builds are not that typical.
+> And the check is there for the sake of modutils.
 
-This appears to have been caused by the patch titled:
+I build all of my ARM kernels on an x86 box, it is much faster
+and I don't have to ensure I have a read/write capable filesystem
+for any of my ARM boards.
 
-	NET: Add if_addrlabel.h to sanitized headers.
+-- 
+Ben (ben@fluff.org, http://www.fluff.org/)
 
-The patch only adds the unifdef-y entry for this header file, however 
-that header was only added after 2.6.24.
-
-It seems that this patch was submitted to -stable in error. Stephen, can 
-you confirm?
-
-Thanks,
-Daniel
+  'a smiley only costs 4 bytes'
