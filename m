@@ -1,31 +1,30 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762507AbYBZPPB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762659AbYBZPP3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762507AbYBZPPB (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Feb 2008 10:15:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761977AbYBZPOv
+	id S1762659AbYBZPP3 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Feb 2008 10:15:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762526AbYBZPPG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Feb 2008 10:14:51 -0500
-Received: from ug-out-1314.google.com ([66.249.92.175]:51180 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753646AbYBZPOt (ORCPT
+	Tue, 26 Feb 2008 10:15:06 -0500
+Received: from nf-out-0910.google.com ([64.233.182.184]:30693 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1762490AbYBZPPB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Feb 2008 10:14:49 -0500
+	Tue, 26 Feb 2008 10:15:01 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=googlemail.com; s=gamma;
         h=message-id:date:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding:from;
-        b=HMH+mx3N6LIh1ZohIDdzohmm1CaNmqbsOkdqTOCyUlcJTeKUS/sJgzqWWVM7b98/xYaT3x5Q5dRVpCjKCeF67vWF5vOunwchu2UzvWzylD0QmHpoaortNtArteF22Y2Cbf3f77lfrCHJ9UiQU32jL7aZ4HNeWJok2c1f7mixS14=
-Message-ID: <47C42CA7.4030607@gmail.com>
-Date: Tue, 26 Feb 2008 16:13:43 +0100
+        b=DK1wkzk87Ry7IwPfYAC10KpRQk3xkhexxEkeaeYWiCcaXrBfw1QlJwKN2M3Luco3LBBu6U//8+PKH9hEBw1B6Jn69YXsGpFyKKlyAqY6AIfzjp7Limh9U4LY8edutrkIoVqbPiugxBjPLnsoBtjkuYiHk2cPrjtvN6o73xTWtTU=
+Message-ID: <47C42CB3.8040500@gmail.com>
+Date: Tue, 26 Feb 2008 16:13:55 +0100
 User-Agent: Thunderbird 1.5.0.8 (X11/20060911)
 MIME-Version: 1.0
 To: Davide Libenzi <davidel@xmailserver.org>
-CC: David Schwartz <davids@webmaster.com>, dada1@cosmosbay.com,
-       "Chris \"?\" Heath" <chris@heathens.co.nz>,
-       "Linux-Kernel@Vger. Kernel. Org" <linux-kernel@vger.kernel.org>,
-       linux-man@vger.kernel.org
-Subject: Re: epoll design problems with common fork/exec patterns
-References: <MDEHLPKNGKAHNMBLJOLKAEHCHNAC.davids@webmaster.com> <Pine.LNX.4.64.0710291147180.3387@alien.or.mcafeemobile.com>
-In-Reply-To: <Pine.LNX.4.64.0710291147180.3387@alien.or.mcafeemobile.com>
+CC: Pierre Habouzit <madcoder@debian.org>, lkml <linux-kernel@vger.kernel.org>,
+       Eric Dumazet <dada1@cosmosbay.com>, Marc Lehmann <schmorp@schmorp.de>,
+       David Schwartz <davids@webmaster.com>
+Subject: Re: epoll and shared fd's
+References: <20080118134318.GD9607@artemis.madism.org>  <Pine.LNX.4.64.0801181257240.24685@alien.or.mcafeemobile.com>  <20080124084001.GB7356@artemis.madism.org>  <Pine.LNX.4.64.0801241556130.29058@alien.or.mcafeemobile.com> <517f3f820801252337lcd4b0a0hde7359dc46a947dd@mail.gmail.com> <Pine.LNX.4.64.0801261308270.10472@alien.or.mcafeemobile.com>
+In-Reply-To: <Pine.LNX.4.64.0801261308270.10472@alien.or.mcafeemobile.com>
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 From: Michael Kerrisk <mtk.manpages@googlemail.com>
@@ -33,78 +32,130 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
+Following up after quite some time:
 
 Davide Libenzi wrote:
-> On Sun, 28 Oct 2007, David Schwartz wrote:
+> On Sat, 26 Jan 2008, Michael Kerrisk wrote:
 > 
->> Eric Dumazet wrote:
->>
->>> Events are not necessarly reported "by descriptors". epoll uses an opaque
->>> field provided by the user.
+>> On Jan 25, 2008 12:57 AM, Davide Libenzi <davidel@xmailserver.org> wrote:
+>>> On Thu, 24 Jan 2008, Pierre Habouzit wrote:
 >>>
->>> It's up to the user to properly chose a tag that will makes sense
->>> if the user
->>> app is playing dup()/close() games for example.
->> Great. So the only issue then is that the documentation is confusing. It
->> frequently uses the term "fd" where it means file. For example, it says:
+>>>> On Fri, Jan 18, 2008 at 09:10:18PM +0000, Davide Libenzi wrote:
+>>>>> On Fri, 18 Jan 2008, Pierre Habouzit wrote:
+>>>>>
+>>>>>>   Hi,
+>>>>>>
+>>>>>>   I just came across a strange behavior of epoll that seems to
+>>>>>> contradict the documentation. Here is what happens:
+>>>>>>
+>>>>>> * I have two processes P1 and P2, P1 accept()s connections, and send the
+>>>>>>   resulting file descriptors to P2 through a unix socket.
+>>>>>>
+>>>>>> * P2 registers the received socket in his epollfd.
+>>>>>>
+>>>>>>   [time passes]
+>>>>>>
+>>>>>> * P2 is done with the socket and closes it
+>>>>>>
+>>>>>> * P2 gets events for the socket again !
+>>>>>>
+>>>>>>
+>>>>>>   Though the documentation says that if a process closes a file
+>>>>>> descriptor, it gets unregistered. And yes I'm sure that P2 doens't dup()
+>>>>>> the file descriptor. Though (because of a bug) it was still open in
+>>>>>> P1[0], hence the referenced socket still live at the kernel level.
+>>>>>>
+>>>>>>   Of course the userland workaround is to force the EPOLL_CTL_DEL before
+>>>>>> the close, which I now do, but costs me a syscall where I wanted to
+>>>>>> spare one :|
+>>>>> For epoll, a close is when the kernel file* is released (that is, when all
+>>>>> its instances are gone).
+>>>>> We could put a special handling in filp_close(), but I don't think is a
+>>>>> good idea, and we're better live with the current behaviour.
+>>>>   Okay, maybe updating the linux manpages to be more clear about that is
+>>>> the way to go then. Thanks
+>>> Sure. I'll send Michael Kerrisk and updated statement for the A6 answer in
+>>> the epoll man page.
+>> Thanks Davide -- yes please send me a patch.
+>> --
+>> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+>> the body of a message to majordomo@vger.kernel.org
+>> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+>> Please read the FAQ at  http://www.tux.org/lkml/
 >>
->>               Q1     What  happens  if  you  add  the  same fd to an
->> epoll_set
->>                      twice?
->>
->>               A1     You will probably get EEXIST.  However,  it  is
->> possible
->>                      that  two  threads  may  add the same fd twice. This is
->> a
->>                      harmless condition.
->>
->> This gives no reason to think there's anything wrong with adding the same
->> file twice so long as you do so through different descriptors. (One can
->> imagine an application that does this to segregate read and write operations
->> to avoid a race where the descriptor is closed from under a writer due to
->> handling a fatal read error.) Obviously, that won't work.
 > 
-> I agree, that is confusing. However, you can safely add two different file 
-> descriptors pointing to the same file*, with different event masks, and 
-> that will work as expected.
+> Something like the one below ...
+> 
+> 
+> - Davide
+> 
+> 
+> 
+> --- epoll.4	2008-01-26 12:58:21.000000000 -0800
+> +++ epoll.4.new	2008-01-26 13:06:36.000000000 -0800
+> @@ -285,7 +285,19 @@
+>  sets automatically?
+>  .TP
+>  .B A6
+> -Yes.
+> +A file descriptor is the userspace counterpart of an internal kernel handle.
+> +Every time a process calls functions liks
+> +.BR dup (2),
+> +.BR dup2 (2)
+> +or
+> +.BR fork (2),
+> +a new file descriptor referring to the same internal kernel handle is
+> +created. The internal kernel handle remains alive until all the userspace
+> +file descriptors have been closed.
+> +The
+> +.BR epoll (4)
+> +interface automatically removes the internal kernel handle from the set,
+> +once all the file descriptor instances have been closed.
+>  .TP
+>  .B Q7
+>  If more than one event occurs between
 
-So can I summarize what I understand:
+Davide,
 
-a) Adding the same file descriptor twice to an epoll set will cause an
-error (EEXIST).
+Two points.
 
-b) In a separate message to linux-man, Chris Heath says that two threads
-*can't* add the same fd twice to an epoll set, despite what the existing
-man page text says.  I haven't tested that, but it sounds to me as though
-it is likely to be true.  Can you comment please Davide?
+a) I did a
 
-c) It is possible to add duplicated file descriptors referring to the same
-underlying open file description ("file *").  As you note, this can be a
-useful filtering technique, if the two file descriptors specify different
-masks.
+s/internal kernel handle/open file description/
 
-Assuming that is all correct, for man-pages-2.79, I've reworked the text
-for Q1/A1 as follows:
+since that is the POSIX term for the internal handle.
 
-       Q1     What  happens  if you add the same file descriptor
-              to an epoll set twice?
+b) It seems to me that you text doesn't quite make the point explicit
+enough.  I've tried to rewrite it; could you please check:
 
-       A1     You will probably get EEXIST.  However, it is pos-
-              sible   to   add  a  duplicate  (dup(2),  dup2(2),
-              fcntl(2) F_DUPFD, fork(2)) descriptor to the  same
-              epoll  set.   This  can  be a useful technique for
-              filtering events, if the duplicate  file  descrip-
-              tors are registered with different events masks.
+       A6     Yes, but be aware of the following point.  A  file
+              descriptor is a reference to an open file descrip-
+              tion (see  open(2)).   Whenever  a  descriptor  is
+              duplicated  via dup(2), dup2(2), fcntl(2) F_DUPFD,
+              or fork(2), a new file descriptor referring to the
+              same  open  file  description is created.  An open
+              file description continues to exist until all file
+              descriptors referring to it have been closed.  The
+              epoll  interface  automatically  removes  a   file
+              descriptor  from  an  epoll set only after all the
+              file descriptors referring to the underlying  open
+              file  handle  have  been  closed.  This means that
+              even after a file descriptor that is  part  of  an
+              epoll  set has been closed, events may be reported
+              for that file descriptor if other file descriptors
+              referring  to the same underlying file description
+              remain open.
 
-Seem okay Davide?
+Does that seem okay?  I plan to include the text in man-pages-2.79.
+
+Was there some reason why removing a file descriptor couldn't have been
+made to do the "expected" thing (i.e., remove notifications for that file
+descriptor, regardless of whether the underlying file description remains
+open)?
 
 Cheers,
 
 Michael
-
-PS I've trimmed the part of this thread about Q6/A6, since I dealt with
-that in another thread ("epoll and shared fd's").
 
 -- 
 Michael Kerrisk
@@ -112,4 +163,5 @@ Maintainer of the Linux man-pages project
 http://www.kernel.org/doc/man-pages/
 Want to report a man-pages bug?  Look here:
 http://www.kernel.org/doc/man-pages/reporting_bugs.html
+
 
