@@ -1,68 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752734AbYBZXbi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764519AbYBZXcR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752734AbYBZXbi (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Feb 2008 18:31:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765527AbYBZXbT
+	id S1764519AbYBZXcR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Feb 2008 18:32:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751005AbYBZXbz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Feb 2008 18:31:19 -0500
-Received: from server54.tchmachines.com ([72.9.244.106]:53462 "EHLO
-	server54.tchmachines.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1765464AbYBZXbR (ORCPT
+	Tue, 26 Feb 2008 18:31:55 -0500
+Received: from ug-out-1314.google.com ([66.249.92.174]:35042 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750895AbYBZXbx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Feb 2008 18:31:17 -0500
-Date: Tue, 26 Feb 2008 15:31:11 -0800
-From: Ravikiran Thirumalai <kiran@scalemp.com>
-To: Yinghai Lu <yhlu.kernel@gmail.com>
-Cc: Andi Kleen <andi@firstfloor.org>, Ingo Molnar <mingo@elte.hu>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       shai@scalemp.com
-Subject: Re: [PATCH] x86_64: make amd quad core 8 socket system not be clustered_box v2
-Message-ID: <20080226233111.GA9734@localdomain>
-References: <20080226033945.GJ3143@localdomain> <20080226034625.GE21577@one.firstfloor.org> <20080226040541.GK3143@localdomain> <86802c440802252127i36fcd164xe6671aada160766a@mail.gmail.com> <20080226184235.GA5914@localdomain> <86802c440802261100j322ee6a6yef9108dc175de459@mail.gmail.com> <20080226203235.GH5914@localdomain> <86802c440802261310y176cdfel38843e264bc71f82@mail.gmail.com> <20080226212418.GJ5914@localdomain> <86802c440802261516n1ca8ef6eh5e6abdd0c3f959dd@mail.gmail.com>
+	Tue, 26 Feb 2008 18:31:53 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=JpA+JV6eBK+lz39K6bPlX+GtY9CZtMZIVZIDnhLoFjJKX0af7CxXhrVu9msJRahV9vo0UDXzoZyQowB32MF64rVe2PL9wuxCkPQxcIoFCrEQ4TKL3DJQBKd7DBMK8rQ92fGYx86Tg9cvG7ODigBwiVJrrCpQKJR9o/7DuMBZEws=
+Message-ID: <2c0942db0802261531s140aaa82w1daa1829b5a36a4a@mail.gmail.com>
+Date: Tue, 26 Feb 2008 15:31:51 -0800
+From: "Ray Lee" <ray-lk@madrabbit.org>
+To: "Andrew Morton" <akpm@linux-foundation.org>
+Subject: Re: broken suspend in .2.6.25-rc3 on T61p (was Re: new regression in 2.6.25-rc3: no keyboard/lid acpi events on thinkpad T61p)
+Cc: "Pavel Machek" <pavel@ucw.cz>, "Dave Jones" <davej@codemonkey.org.uk>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       "kernel list" <linux-kernel@vger.kernel.org>
+In-Reply-To: <20080226105606.e56e4ec6.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <86802c440802261516n1ca8ef6eh5e6abdd0c3f959dd@mail.gmail.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
-X-AntiAbuse: Primary Hostname - server54.tchmachines.com
-X-AntiAbuse: Original Domain - vger.kernel.org
-X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
-X-AntiAbuse: Sender Address Domain - scalemp.com
+References: <20080225143932.6b83b65d.akpm@linux-foundation.org>
+	 <20080225225820.GP2659@elf.ucw.cz>
+	 <20080225155550.4a020dfb.akpm@linux-foundation.org>
+	 <20080226000007.GB22102@atrey.karlin.mff.cuni.cz>
+	 <20080226101117.GA26671@atrey.karlin.mff.cuni.cz>
+	 <20080226174613.GA26259@codemonkey.org.uk>
+	 <20080226175954.GA5707@elf.ucw.cz>
+	 <20080226181001.GA7714@codemonkey.org.uk>
+	 <20080226181611.GB6030@elf.ucw.cz>
+	 <20080226105606.e56e4ec6.akpm@linux-foundation.org>
+X-Google-Sender-Auth: 4487abd05fbcfe5a
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Feb 26, 2008 at 03:16:16PM -0800, Yinghai Lu wrote:
->On Tue, Feb 26, 2008 at 1:24 PM, Ravikiran Thirumalai <kiran@scalemp.com> wrote:
->>
->> On Tue, Feb 26, 2008 at 01:10:57PM -0800, Yinghai Lu wrote:
->>  >On Tue, Feb 26, 2008 at 12:32 PM, Ravikiran Thirumalai
->>  ><kiran@scalemp.com> wrote:
->>  >> On Tue, Feb 26, 2008 at 11:00:58AM -0800, Yinghai Lu wrote:
->>  >>  >
->>  >>  >1. if acpi=off ?
->>  >>
->>  >>  Well that is not a realistic scenario for any multi chassi NUMA machine,
->>  >>  since the proximity information is very important and turning acpi off
->>  >>  deprives the OS of this information.
->>  >
->>  >actually OS should detect the distance instead of rely on SLIT.
->>
->>  How does it do that?  ACPI SRAT is needed to determine this, and it wouldn't
->>  work if acpi=off.
->
->srat only have apicid to node mapping, and ram to node mapping.
+On Tue, Feb 26, 2008 at 10:56 AM, Andrew Morton
+<akpm@linux-foundation.org> wrote:
+>  First thing we need to do is to work out why it won't stay suspended?
 
-Which is very important for performance.
+Forgive me the stupid question, but you don't happen to have Wake On
+LAN or somesuch enabled in your BIOS, do you? (Given yours stays down
+for five seconds then resumes, and other T61 owners aren't seeing that
+behavior... <shrug>)
 
->
->for amd64 system, when acpi=off
->ram to node mapping can be retrieved from pci conf space
-
-I was referring to all types of numa systems, not just AMD.  The pci config
-space is amd specific.  Multi chassi systems in particular would be
-acpi SRAT based.  Anyways.
-
-Kiran
+For Pavel and Rafael: Is there some sort of event that gets handed
+back on resume to let the kernel know why the system woke up? One
+would think that the Wake On LAN (keyboard, timer, etc.) would hand a
+notification over to the OS. One is often wrong though.
