@@ -1,165 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763550AbYBZReR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763745AbYBZRey@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763550AbYBZReR (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Feb 2008 12:34:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757778AbYBZReF
+	id S1763745AbYBZRey (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Feb 2008 12:34:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760196AbYBZReq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Feb 2008 12:34:05 -0500
-Received: from agminet01.oracle.com ([141.146.126.228]:51409 "EHLO
-	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1762135AbYBZReD (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Feb 2008 12:34:03 -0500
-Date: Tue, 26 Feb 2008 09:33:23 -0800
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: Dave Young <hidave.darkstar@gmail.com>
-Cc: akpm <akpm@linux-foundation.org>, Dave Jones <davej@codemonkey.org.uk>,
-       Linux Kernel <linux-kernel@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: boot_delay broken ?
-Message-Id: <20080226093323.71ae516b.randy.dunlap@oracle.com>
-In-Reply-To: <20080226090948.GA2794@darkstar.te-china.tietoenator.com>
-References: <20080224004615.GA31012@codemonkey.org.uk>
-	<a8e1da0802241814x48e169f2v82823c55412fc534@mail.gmail.com>
-	<20080225212251.18c4659e.randy.dunlap@oracle.com>
-	<a8e1da0802252148p43d7b899t25ed0a9f994fae35@mail.gmail.com>
-	<a8e1da0802252159u2dc21fc3vbd8a4e0f7e31b471@mail.gmail.com>
-	<20080226090948.GA2794@darkstar.te-china.tietoenator.com>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.4.7 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+	Tue, 26 Feb 2008 12:34:46 -0500
+Received: from relay1.sgi.com ([192.48.171.29]:59311 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1759631AbYBZRep (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 Feb 2008 12:34:45 -0500
+Date: Tue, 26 Feb 2008 11:34:41 -0600
+From: Paul Jackson <pj@sgi.com>
+To: David Rientjes <rientjes@google.com>
+Cc: akpm@linux-foundation.org, clameter@sgi.com, Lee.Schermerhorn@hp.com,
+       ak@suse.de, randy.dunlap@oracle.com, linux-kernel@vger.kernel.org
+Subject: Re: [patch 6/6] mempolicy: update NUMA memory policy documentation
+Message-Id: <20080226113441.934c8c90.pj@sgi.com>
+In-Reply-To: <alpine.DEB.1.00.0802250016380.12368@chino.kir.corp.google.com>
+References: <alpine.DEB.1.00.0802250012420.12368@chino.kir.corp.google.com>
+	<alpine.DEB.1.00.0802250013580.12368@chino.kir.corp.google.com>
+	<alpine.DEB.1.00.0802250014170.12368@chino.kir.corp.google.com>
+	<alpine.DEB.1.00.0802250014410.12368@chino.kir.corp.google.com>
+	<alpine.DEB.1.00.0802250016120.12368@chino.kir.corp.google.com>
+	<alpine.DEB.1.00.0802250016380.12368@chino.kir.corp.google.com>
+Organization: SGI
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.12.0; i686-pc-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 26 Feb 2008 17:09:48 +0800 Dave Young wrote:
++	MPOL_F_RELATIVE_NODES:  This flag specifies that the nodemask passed
++	by the user should remain in the same context as it is for the
++	current task or VMA's set of accessible nodes after the memory
++	policy has been defined.
++
++	    Without this flag (and without MPOL_F_STATIC_NODES), anytime a
++	    mempolicy is rebound because of a change in the set of
++	    accessible nodes, the node (Preferred) or nodemask (Bind,
++	    Interleave) is remapped to the new set of accessible nodes.
++	    With this flag, the remap is done to ensure the context of the
++	    previous nodemask with its set of allowed mems is preserved.
 
-> On Tue, Feb 26, 2008 at 01:59:31PM +0800, Dave Young wrote:
-> > On Tue, Feb 26, 2008 at 1:48 PM, Dave Young <hidave.darkstar@gmail.com> wrote:
-> > > On Tue, Feb 26, 2008 at 1:22 PM, Randy Dunlap <randy.dunlap@oracle.com> wrote:
-> > >  > On Mon, 25 Feb 2008 10:14:36 +0800 Dave Young wrote:
-> > >  >
-> > >  >  > On Sun, Feb 24, 2008 at 8:46 AM, Dave Jones <davej@codemonkey.org.uk> wrote:
-> > >  >  > > The boot_delay switch seems to be behaving strangely in the
-> > >  >  > >  current -git.  Setting it to =10 makes the output 'bursty'
-> > >  >  > >  it becomes slow for some printk's whilst others scroll by
-> > >  >  > >  at regular speed.
-> > >  >  > >  Setting it any higher than that seems to make it pause for
-> > >  >  > >  a really long time before it outputs any text at all.
-> > >  >  >
-> > >  >  > On my side there's this issue for a long time
-> > >  >  > http://lkml.org/lkml/2007/8/8/79
-> > >  >
-> > >  >  [http://marc.info/?l=linux-kernel&m=118655896515049&w=2]
-> > >  >
-> > >  >  You asked questions and they were answered.  Perhaps you didn't like
-> > >  >  the answers.
-> > >
-> > >  No, I like it.  Thanks.
-> > >
-> > >  But I still want to know why mdelay can not be used.
-> > >  is it not available for all archs or something else?
-> > >
-> > >
-> > >  >
-> > >  >  Here's a question for you.  What kernel boot options did you use?
-> > >  >  Specifically, for lpj= and boot_delay= ?
-> > >
-> > >  I tried boot_delay=100 and boot_delay=200 without lpj set, The result
-> > >  was really slow. It was better with lpj copied from dmesg, but was
-> > >  still slower then mdelay.
-> > 
-> > Especially at the very beginning after the message "Booting the kernel",
-> > I need to wait several minutes to see the afterwards messages
-> > 
-> > >
-> > >  I think we can firstly use preset lpj, after delay calibrating just
-> > >  use the system lpj
-> > >
-> > >
-> > >
-> > >  >
-> > >  >  > >
-> > >  >  > >  x86 timer changes perhaps ?
-> > >  >
-> > >  >
-> > >  >  ---
-> > >  >  ~Randy
-> > >  >
-> > >
-> 
-> How about use loops_per_jiffy as following? With this patch at least
-> for me the very long delay at the very begining does not occur.
-> 
-> kernel/printk.c |   15 ++++-----------
-> 1 file changed, 4 insertions(+), 11 deletions(-)
-> 
-> diff -upr linux/kernel/printk.c linux.new/kernel/printk.c
-> --- linux/kernel/printk.c	2008-02-26 16:54:23.000000000 +0800
-> +++ linux.new/kernel/printk.c	2008-02-26 16:59:02.000000000 +0800
-> @@ -173,24 +173,14 @@ __setup("log_buf_len=", log_buf_len_setu
->  #ifdef CONFIG_BOOT_PRINTK_DELAY
->  
->  static unsigned int boot_delay; /* msecs delay after each printk during bootup */
-> -static unsigned long long printk_delay_msec; /* per msec, based on boot_delay */
->  
->  static int __init boot_delay_setup(char *str)
->  {
-> -	unsigned long lpj;
-> -	unsigned long long loops_per_msec;
-> -
-> -	lpj = preset_lpj ? preset_lpj : 1000000;	/* some guess */
-> -	loops_per_msec = (unsigned long long)lpj / 1000 * HZ;
-> -
->  	get_option(&str, &boot_delay);
->  	if (boot_delay > 10 * 1000)
->  		boot_delay = 0;
->  
-> -	printk_delay_msec = loops_per_msec;
-> -	printk(KERN_DEBUG "boot_delay: %u, preset_lpj: %ld, lpj: %lu, "
-> -		"HZ: %d, printk_delay_msec: %llu\n",
-> -		boot_delay, preset_lpj, lpj, HZ, printk_delay_msec);
-> +	printk(KERN_DEBUG "boot_delay: %u\n", boot_delay);
->  	return 1;
->  }
->  __setup("boot_delay=", boot_delay_setup);
-> @@ -199,6 +189,9 @@ static void boot_delay_msec(void)
->  {
->  	unsigned long long k;
->  	unsigned long timeout;
-> +	unsigned long long printk_delay_msec;
-> +
-> +	printk_delay_msec = (unsigned long long)loops_per_jiffy / 1000 * HZ;
->  
->  	if (boot_delay == 0 || system_state != SYSTEM_BOOTING)
->  		return;
-> --
+Hmmm ... I've read this several times now ... still can't figure out
+what it's saying ;).  And it doesn't really explain key aspects of
+MPOL_F_RELATIVE_NODES, such as that it provides cpuset relative
+numbering (use nodes 0..N-1, regardless of your current cpuset, to
+refer to the first N nodes in whatever is your current cpuset.)
 
-Hi Dave,
+Perhaps we'd be further ahead of the game if you started with the
+documentation changes to Documentation/vm/numa_memory_policy.txt,
+in my patch:
+	Date: Sun, 23 Dec 2007 22:24:02 -0600
+	From: Paul Jackson <pj@sgi.com>
+	To: David Rientjes <rientjes@google.com>
+	Cc: Lee.Schermerhorn@hp.com, clameter@sgi.com
+	Subject: Re: [RFC] cpuset relative memory policies - second choice
+	Message-Id: <20071223222402.5486bf0a.pj@sgi.com>
 
-That might work, but IMO it requires someone to audit all
-architectures to make sure that loops_per_jiffy has been calibrated
-at that point in time (as I mentioned in http://lkml.org/lkml/2007/8/11/153).
+Change MPOL_MASK_REL to MPOL_F_RELATIVE_NODES and similar changes.
 
-I didn't do that and you said that you tested i386 only.
-
-Maybe you can get Andrew to merge it into -mm for testing...
-
-However, setting boot_delay=N without setting lpj=M is just not
-advisable.  The Kconfig help text for BOOT_PRINTK_DELAY tries to
-say that.  Maybe it needs to be stronger?
-
-	  It is likely that you would also need to use "lpj=M" to preset
-	  the "loops per jiffie" value.
-	  See a previous boot log for the "lpj" value to use for your
-	  system, and then set "lpj=M" before setting "boot_delay=N".
-
-
----
-~Randy
+-- 
+                  I won't rest till it's the best ...
+                  Programmer, Linux Scalability
+                  Paul Jackson <pj@sgi.com> 1.940.382.4214
