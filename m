@@ -1,60 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757157AbYBZNgT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760511AbYBZNg4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757157AbYBZNgT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Feb 2008 08:36:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752756AbYBZNgE
+	id S1760511AbYBZNg4 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Feb 2008 08:36:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752867AbYBZNgr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Feb 2008 08:36:04 -0500
-Received: from hawking.rebel.net.au ([203.20.69.83]:56768 "EHLO
-	hawking.rebel.net.au" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752723AbYBZNgB (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Feb 2008 08:36:01 -0500
-Message-ID: <47C415F2.2060905@davidnewall.com>
-Date: Wed, 27 Feb 2008 00:06:50 +1030
-From: David Newall <davidn@davidnewall.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20071022)
-MIME-Version: 1.0
-To: David Brownell <david-b@pacbell.net>
-CC: "Rafael J. Wysocki" <rjw@sisk.pl>, Alan Stern <stern@rowland.harvard.edu>,
-       linux-pm@lists.linux-foundation.org,
-       Kernel development list <linux-kernel@vger.kernel.org>
-Subject: Re: [linux-pm] Fundamental flaw in system suspend, exposed by freezer
- removal
-References: <Pine.LNX.4.44L0.0802251439030.5536-100000@iolanthe.rowland.org> <200802252313.23399.david-b@pacbell.net> <47C3CD15.1060908@davidnewall.com> <200802260116.18142.david-b@pacbell.net>
-In-Reply-To: <200802260116.18142.david-b@pacbell.net>
-Content-Type: text/plain; charset=ISO-8859-1
+	Tue, 26 Feb 2008 08:36:47 -0500
+Received: from mail.gmx.net ([213.165.64.20]:56276 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1752756AbYBZNgq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 Feb 2008 08:36:46 -0500
+X-Authenticated: #14349625
+X-Provags-ID: V01U2FsdGVkX1/8RD9bu/f8GPLCHSdYoCglxgvGQ/vnvqAmQalE1J
+	M24jMyx4xQqcIY
+Subject: Re: regression: CD burning (k3b) went broke
+From: Mike Galbraith <efault@gmx.de>
+To: Jens Axboe <jens.axboe@oracle.com>
+Cc: LKML <linux-kernel@vger.kernel.org>, Tejun Heo <htejun@gmail.com>
+In-Reply-To: <1204019283.8731.11.camel@homer.simson.net>
+References: <1203583379.6244.27.camel@homer.simson.net>
+	 <20080222073228.GZ23197@kernel.dk>
+	 <1203752563.5225.4.camel@homer.simson.net>
+	 <1203839683.17463.9.camel@homer.simson.net>
+	 <1204019283.8731.11.camel@homer.simson.net>
+Content-Type: text/plain
+Date: Tue, 26 Feb 2008 14:36:43 +0100
+Message-Id: <1204033003.11828.22.camel@homer.simson.net>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.0 
 Content-Transfer-Encoding: 7bit
+X-Y-GMX-Trusted: 0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David Brownell wrote:
-> On Tuesday 26 February 2008, David Newall wrote:
->   
->> Hardware can be inserted and removed while we're in a suspend state; and
->> there's nothing that we can do about it until we resume.  Is it fair to
->> say, then, that having started suspend, we could reasonably ignore any
->> device insertion and removal, and handle it on resume?
->>     
->
-> "Ignore" seems a bit strong; those events may be wakeup triggers,
-> which would cause the hardware to make it a very short suspend state.
->
-> "Defer handling" is more to the point, be it by hardware or software.
->
->   
 
-Of course, "defer".  The insertion has to be handled eventually.  What
-I'm wondering is if we can ignore it, and catch it on the resume.
+On Tue, 2008-02-26 at 10:48 +0100, Mike Galbraith wrote:
+> Greetings,
+> 
+> I straced both a good and a bad kernel (good being .git with attached
+> revert patch applied) and filtered/diffed/merged the output.  Scroll
+> down to "HERE" to see the problem (resid).
+> 
+> I'm poking around, but not having much luck.
 
+Seems the problem is data_len changes, but raw_data_len doesn't.  I've
+not the foggiest IO-land clue, but k3b works again, so the below may
+have some diagnostic value.
 
->> Presumably we need to scan for hardware changes on resume.
->>     
->
-> Not on most busses I work with; the hardware issues notifications
-> whenever the devices are removable.
->   
+diff --git a/drivers/scsi/scsi_lib.c b/drivers/scsi/scsi_lib.c
+index ba21d97..7a6f784 100644
+--- a/drivers/scsi/scsi_lib.c
++++ b/drivers/scsi/scsi_lib.c
+@@ -871,7 +871,7 @@ void scsi_io_completion(struct scsi_cmnd *cmd, unsigned int good_bytes)
+ 			scsi_end_bidi_request(cmd);
+ 			return;
+ 		}
+-		req->data_len = scsi_get_resid(cmd);
++		req->data_len = req->raw_data_len = scsi_get_resid(cmd);
+ 	}
+ 
+ 	BUG_ON(blk_bidi_rq(req)); /* bidi not support for !blk_pc_request yet */
 
-There's no notification while we're suspended.  Isn't it necessary to
-scan all busses on resume, just to know what's on them?
+	-Mike
+
