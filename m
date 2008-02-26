@@ -1,59 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760820AbYBZHzY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761534AbYBZHzq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760820AbYBZHzY (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Feb 2008 02:55:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756060AbYBZHzL
+	id S1761534AbYBZHzq (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Feb 2008 02:55:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761145AbYBZHze
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Feb 2008 02:55:11 -0500
-Received: from edna.telenet-ops.be ([195.130.132.58]:60930 "EHLO
-	edna.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753362AbYBZHzJ (ORCPT
+	Tue, 26 Feb 2008 02:55:34 -0500
+Received: from mail2.shareable.org ([80.68.89.115]:54435 "EHLO
+	mail2.shareable.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761132AbYBZHzd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Feb 2008 02:55:09 -0500
-Date: Tue, 26 Feb 2008 08:55:07 +0100 (CET)
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-cc: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
-       Linux/m68k <linux-m68k@vger.kernel.org>
-Subject: Re: linux-next: Tree for Feb 24
-In-Reply-To: <20080226104956.7d4d9402.sfr@canb.auug.org.au>
-Message-ID: <Pine.LNX.4.64.0802260853080.5158@anakin>
-References: <20080224162309.3e67dd22.sfr@canb.auug.org.au>
- <Pine.LNX.4.64.0802252252070.5158@anakin> <20080226104956.7d4d9402.sfr@canb.auug.org.au>
+	Tue, 26 Feb 2008 02:55:33 -0500
+Date: Tue, 26 Feb 2008 07:55:26 +0000
+From: Jamie Lokier <jamie@shareable.org>
+To: Jeff Garzik <jeff@garzik.org>
+Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       Chris Wedgwood <cw@f00f.org>
+Subject: Re: Proposal for "proper" durable fsync() and fdatasync()
+Message-ID: <20080226075526.GF30238@shareable.org>
+References: <20080226072649.GB30238@shareable.org> <47C3C33F.1070908@garzik.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <47C3C33F.1070908@garzik.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 26 Feb 2008, Stephen Rothwell wrote:
-> On Mon, 25 Feb 2008 22:56:04 +0100 (CET) Geert Uytterhoeven <geert@linux-m68k.org> wrote:
+Jeff Garzik wrote:
+> Jamie Lokier wrote:
+> >By durable, I mean that fsync() should actually commit writes to
+> >physical stable storage,
+> 
+> Yes, it should.
+
+Glad we agree :-)
+
+> >I was surprised that fsync() doesn't do this already.  There was a lot
+> >of effort put into block I/O write barriers during 2.5, so that
+> >journalling filesystems can force correct write ordering, using disk
+> >flush cache commands.
 > >
-> > Can you please add
-> > http://linux-m68k-cvs.ubb.ca/~geert/linux-m68k-patches-2.6/series?
-> > So far there's only one patch in between NEXT_PATCHES_{START,END} yet,
-> > though.
+> >After all that effort, I was very surprised to notice that Linux 2.6.x
+> >doesn't use that capability to ensure fsync() flushes the disk cache
+> >onto stable storage.
 > 
-> Added, thanks.
+> It's surprising you are surprised, given that this [lame] fsync behavior 
+> has remaining consistently lame throughout Linux's history.
+
+I was surprised because of the effort put into IDE write barriers to
+get it right for in-kernel filesystems, and the messages in 2004
+telling concerned users that fsync would use barriers in 2.6, which it
+does sometimes but not always.
+
+> [snip huge long proposal]
 > 
-> > Ah, I see the m68k cross-compiler is still missing? ;-)
+> Rather than invent new APIs, we should fix the existing ones to _really_ 
+> flush data to physical media.
+>
+> Linux should default to SAFE data storage, and permit users to retain 
+> the older unsafe behavior via an option.  It's completely ridiculous 
+> that we default to an unsafe fsync.
+
+Well, I agree with you.  Which is why the "new API" I suggested, being
+really just an extension of an existing one, allows fsync() to be SAFE
+if that's what people want.
+
+To be fair, fsync() is rather overkill for some apps.
+sync_file_range() is obviously the right place for fine tuning "less
+safe" variations.
+
+> And [anticipating a common response from others] it is completely 
+> irrelevant that POSIX fsync(2) permits Linux's current behavior.  The 
+> current behavior is unsafe.
 > 
-> Please look again :-)  Are there any particular configs we should build?
+> Safety before performance -- ESPECIALLY when it comes to storing user data.
 
-Great!
+Especially now that people work a lot in guest VMs, where the IDE
+barrier stuff doesn't work if the host fdatasync() doesn't work.
 
-I really should update the defconfigs, and add a `defconfig_all' which
-builds a kernel for all platforms (except Sun-3).
+Since it happened with Mac OS X, I wouldn't be surprised if changing
+fsync() and just that wasn't popular.  Heck, you already get people
+asking "how to turn off fsync in PostGreSQL"...  (Haven't those people
+heard of transactions...?)
 
-For now defconfig is OK, I think.
+But with changes to sync_file_range() [or whatever... I don't care] to
+support database's finely tuned commit needs, and then adoption of
+that by database vendors, perhaps nobody will mind fsync() becoming
+safe then.
 
-Gr{oetje,eeting}s,
+Nobody seems bothered by it's performance for other things.
 
-						Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
+-- Jamie
