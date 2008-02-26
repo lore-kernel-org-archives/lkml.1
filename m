@@ -1,213 +1,199 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765201AbYBZX1U@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765752AbYBZX2O@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765201AbYBZX1U (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Feb 2008 18:27:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760762AbYBZX1K
+	id S1765752AbYBZX2O (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Feb 2008 18:28:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760762AbYBZX17
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Feb 2008 18:27:10 -0500
-Received: from ug-out-1314.google.com ([66.249.92.175]:22376 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754675AbYBZX1J (ORCPT
+	Tue, 26 Feb 2008 18:27:59 -0500
+Received: from mail-04.jhb.wbs.co.za ([196.2.97.3]:38392 "EHLO
+	mail-04.jhb.wbs.co.za" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755305AbYBZX16 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Feb 2008 18:27:09 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent:from;
-        b=GUNcBdgpQvslXtr7fesTu+CQWMdT4A8UFSMrkhmk+HIYAS22KgYVTQvKOcqpttw46wZTi2M3VHm1WJ3jr5mNGUz50QkXAGXGsr3B6fqORNYGl7P0WYPvIM4Ge3CnH4ezJGmCji2/efu7XyS5A5RcllEJGDQsDXm5qN29QDOwFbM=
-Date: Wed, 27 Feb 2008 01:24:11 +0200
-To: Chris Wright <chrisw@sous-sol.org>, Stephen Smalley <sds@tycho.nsa.gov>,
-       James Morris <jmorris@namei.org>, Eric Paris <eparis@parisplace.org>,
-       Casey Schaufler <casey@schaufler-ca.com>,
-       David Woodhouse <dwmw2@infradead.org>
-Cc: linux-security-module@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
-       akpm <akpm@linux-foundation.org>
-Subject: [PATCH -mm 1/4] LSM: Introduce inode_getsecid and ipc_getsecid
-	hooks
-Message-ID: <20080226232411.GB12059@ubuntu>
-References: <20080226232229.GA12059@ubuntu>
+	Tue, 26 Feb 2008 18:27:58 -0500
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AgAAABIvxEfEAmHGn2dsb2JhbACQaAEBAQEBBgQGCQgYnHGBdw
+From: Bongani Hlope <bonganilinux@mweb.co.za>
+To: Ingo Molnar <mingo@elte.hu>
+Subject: [BUG] 2.6.25-rcX NULL Pointer when adding a mutex_waiter
+Date: Wed, 27 Feb 2008 01:27:36 +0200
+User-Agent: KMail/1.9.9
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Mauro Carvalho Chehab <mchehab@infradead.org>,
+       linux-kernel@vger.kernel.org
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20080226232229.GA12059@ubuntu>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
-From: "Ahmed S. Darwish" <darwish.07@gmail.com>
+Message-Id: <200802270127.37130.bonganilinux@mweb.co.za>
+X-Original-Subject: [BUG] 2.6.25-rcX NULL Pointer when adding a mutex_waiter
+X-Scan-Signature: c870bcb1dca054ae0483d14ce6ef3512
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Introduce inode_getsecid(inode, secid) and ipc_getsecid(ipcp, secid)
-LSM hooks.
+Hi
 
-This hooks will be used instead of similar exported SELinux 
-interfaces.
+I've been trying to figure out what causes [BUG 10027] on bugzilla , and I'm 
+stuck. The 2.6.24 kernel works fine, the bttv drivers have been ported to V4L 
+version 2 API, so bisecting doesn't work that well. 
 
-Signed-off-by: Casey Schaufler <casey@schaufler-ca.com>
-Signed-off-by: Ahmed S. Darwish <darwish.07@gmail.com>
----
+My analysis of the bug is as follows:
 
- include/linux/security.h |   18 ++++++++++++++++++
- security/dummy.c         |   12 ++++++++++++
- security/security.c      |   12 ++++++++++++
- 3 files changed, 42 insertions(+)
+linux/driver/media/video/bt8x/bttv-driver.c:4284
+  mutex_init(&btv->lock); in __devinit bttv_probe()
+  The printk's before and after this statement are printed, which implies that
+  the mutex_init was successfull. This driver uses locks and unlocks this
+  mutex in a lot of places and driving the TV part of the card works fine.
 
-diff --git a/include/linux/security.h b/include/linux/security.h
-index a33fd03..a7fb136 100644
---- a/include/linux/security.h
-+++ b/include/linux/security.h
-@@ -449,6 +449,10 @@ struct request_sock;
-  *	@dentry is the dentry being changed.
-  *	Return 0 on success.  If error is returned, then the operation
-  *	causing setuid bit removal is failed.
-+ * @inode_getsecid:
-+ *      Get the secid associated with the node
-+ *      @inode contains a pointer to the inode
-+ *      @secid contains a pointer to the location to store the result
-  *
-  * Security hooks for file operations
-  *
-@@ -989,6 +993,10 @@ struct request_sock;
-  *	@ipcp contains the kernel IPC permission structure
-  *	@flag contains the desired (requested) permission set
-  *	Return 0 if permission is granted.
-+ * @ipc_getsecid:
-+ *      Get the secid associated with the ipc object
-+ *      @ipcp contains the kernel IPC permission structure
-+ *      @secid contains a pointer to the location where result will be saved
-  *
-  * Security hooks for individual messages held in System V IPC message queues
-  * @msg_msg_alloc_security:
-@@ -1310,6 +1318,7 @@ struct security_operations {
- 	int (*inode_getsecurity)(const struct inode *inode, const char *name, void **buffer, bool alloc);
-   	int (*inode_setsecurity)(struct inode *inode, const char *name, const void *value, size_t size, int flags);
-   	int (*inode_listsecurity)(struct inode *inode, char *buffer, size_t buffer_size);
-+	void (*inode_getsecid)(const struct inode *inode, u32 *secid);
- 
- 	int (*file_permission) (struct file * file, int mask);
- 	int (*file_alloc_security) (struct file * file);
-@@ -1362,6 +1371,7 @@ struct security_operations {
- 	void (*task_to_inode)(struct task_struct *p, struct inode *inode);
- 
- 	int (*ipc_permission) (struct kern_ipc_perm * ipcp, short flag);
-+	void (*ipc_getsecid) (struct kern_ipc_perm *ipcp, u32 *secid);
- 
- 	int (*msg_msg_alloc_security) (struct msg_msg * msg);
- 	void (*msg_msg_free_security) (struct msg_msg * msg);
-@@ -1571,6 +1581,7 @@ int security_inode_killpriv(struct dentry *dentry);
- int security_inode_getsecurity(const struct inode *inode, const char *name, void **buffer, bool alloc);
- int security_inode_setsecurity(struct inode *inode, const char *name, const void *value, size_t size, int flags);
- int security_inode_listsecurity(struct inode *inode, char *buffer, size_t buffer_size);
-+void security_inode_getsecid(const struct inode *inode, u32 *secid);
- int security_file_permission(struct file *file, int mask);
- int security_file_alloc(struct file *file);
- void security_file_free(struct file *file);
-@@ -1615,6 +1626,7 @@ int security_task_prctl(int option, unsigned long arg2, unsigned long arg3,
- void security_task_reparent_to_init(struct task_struct *p);
- void security_task_to_inode(struct task_struct *p, struct inode *inode);
- int security_ipc_permission(struct kern_ipc_perm *ipcp, short flag);
-+void security_ipc_getsecid(struct kern_ipc_perm *ipcp, u32 *secid);
- int security_msg_msg_alloc(struct msg_msg *msg);
- void security_msg_msg_free(struct msg_msg *msg);
- int security_msg_queue_alloc(struct msg_queue *msq);
-@@ -1985,6 +1997,9 @@ static inline int security_inode_listsecurity(struct inode *inode, char *buffer,
- 	return 0;
- }
- 
-+static inline void security_inode_getsecid(const struct inode *inode, u32 *secid)
-+{ }
-+
- static inline int security_file_permission (struct file *file, int mask)
- {
- 	return 0;
-@@ -2179,6 +2194,9 @@ static inline int security_ipc_permission (struct kern_ipc_perm *ipcp,
- 	return 0;
- }
- 
-+static inline void security_ipc_getsecid(struct kern_ipc_perm *ipcp, u32 *secid)
-+{ }
-+
- static inline int security_msg_msg_alloc (struct msg_msg * msg)
- {
- 	return 0;
-diff --git a/security/dummy.c b/security/dummy.c
-index 6a0056b..c2f4c52 100644
---- a/security/dummy.c
-+++ b/security/dummy.c
-@@ -422,6 +422,11 @@ static int dummy_inode_listsecurity(struct inode *inode, char *buffer, size_t bu
- 	return 0;
- }
- 
-+static void dummy_inode_getsecid(const struct inode *inode, u32 *secid)
-+{
-+	return;
-+}
-+
- static int dummy_file_permission (struct file *file, int mask)
- {
- 	return 0;
-@@ -614,6 +619,11 @@ static int dummy_ipc_permission (struct kern_ipc_perm *ipcp, short flag)
- 	return 0;
- }
- 
-+static void dummy_ipc_getsecid(struct kern_ipc_perm *ipcp, u32 *secid)
-+{
-+	return;
-+}
-+
- static int dummy_msg_msg_alloc_security (struct msg_msg *msg)
- {
- 	return 0;
-@@ -1062,6 +1072,7 @@ void security_fixup_ops (struct security_operations *ops)
- 	set_to_dummy_if_null(ops, inode_getsecurity);
- 	set_to_dummy_if_null(ops, inode_setsecurity);
- 	set_to_dummy_if_null(ops, inode_listsecurity);
-+	set_to_dummy_if_null(ops, inode_getsecid);
- 	set_to_dummy_if_null(ops, file_permission);
- 	set_to_dummy_if_null(ops, file_alloc_security);
- 	set_to_dummy_if_null(ops, file_free_security);
-@@ -1098,6 +1109,7 @@ void security_fixup_ops (struct security_operations *ops)
- 	set_to_dummy_if_null(ops, task_reparent_to_init);
-  	set_to_dummy_if_null(ops, task_to_inode);
- 	set_to_dummy_if_null(ops, ipc_permission);
-+	set_to_dummy_if_null(ops, ipc_getsecid);
- 	set_to_dummy_if_null(ops, msg_msg_alloc_security);
- 	set_to_dummy_if_null(ops, msg_msg_free_security);
- 	set_to_dummy_if_null(ops, msg_queue_alloc_security);
-diff --git a/security/security.c b/security/security.c
-index 3e75b90..fcf2be3 100644
---- a/security/security.c
-+++ b/security/security.c
-@@ -516,6 +516,12 @@ int security_inode_listsecurity(struct inode *inode, char *buffer, size_t buffer
- 	return security_ops->inode_listsecurity(inode, buffer, buffer_size);
- }
- 
-+void security_inode_getsecid(const struct inode *inode, u32 *secid)
-+{
-+	security_ops->inode_getsecid(inode, secid);
-+}
-+EXPORT_SYMBOL(security_inode_getsecid);
-+
- int security_file_permission(struct file *file, int mask)
- {
- 	return security_ops->file_permission(file, mask);
-@@ -705,6 +711,12 @@ int security_ipc_permission(struct kern_ipc_perm *ipcp, short flag)
- 	return security_ops->ipc_permission(ipcp, flag);
- }
- 
-+void security_ipc_getsecid(struct kern_ipc_perm *ipcp, u32 *secid)
-+{
-+	security_ops->ipc_getsecid(ipcp, secid);
-+}
-+EXPORT_SYMBOL(security_ipc_getsecid);
-+
- int security_msg_msg_alloc(struct msg_msg *msg)
- {
- 	return security_ops->msg_msg_alloc_security(msg);
+linux/kernel/mutex.c:47
+ INIT_LIST_HEAD(&lock->wait_list); in __mutex_init, which is called by 
+ mutex_init. This initializes the list of waiters for this mutex
 
--- 
+the radio_g_tuner causes the following call chain:
+mutex_lock -> __mutex_lock_slowpath -> __mutex_lock_common,
+which does this:
 
-"Better to light a candle, than curse the darkness"
+/* add waiting tasks to the end of the waitqueue (FIFO): */
+list_add_tail(&waiter.list, &lock->wait_list);
+waiter.task = task;
 
-Ahmed S. Darwish
-Homepage: http://darwish.07.googlepages.com
-Blog: http://darwish-07.blogspot.com
+which causes __list_add to fail:
 
+Code disassembled:
+
+0x4005c0 <array>:       mov    %edi,%ebx
+0x4005c2 <array+2>:     mov    %r12,%rdi
+0x4005c5 <array+5>:     sub    $0x20,%rsp
+0x4005c9 <array+9>:     mov    %gs:0x0,%r14
+0x4005d2 <array+18>:    callq  0x4017f0
+0x4005d7 <array+23>:    lea    0x8(%rbx),%rax
+0x4005db <array+27>:    lea    0xffffffffffffffc0(%rbp),%rdx
+0x4005df <array+31>:    mov    0x8(%rax),%rcx
+0x4005e3 <array+35>:    mov    %rax,0xffffffffffffffc0(%rbp)
+0x4005e7 <array+39>:    mov    %rdx,0x8(%rax)
+0x4005eb <array+43>:    mov    %rdx,(%rcx)      <============= Here
+0x4005ee <array+46>:    or     $0xffffffffffffffff,%rdx
+0x4005f2 <array+50>:    mov    %rcx,0xffffffffffffffc8(%rbp)
+0x4005f6 <array+54>:    mov    %r14,0xffffffffffffffd0(%rbp)
+0x4005fa <array+58>:    mov    %rdx,%rax
+0x4005fd <array+61>:    xchg   %eax,(%rbx)
+0x4005ff <array+63>:    incl   (%rax)
+0x400601:       and    $0xa70,%eax
+0x400606:       add    %al,(%rax)
+0x400608:       add    %ebx,(%rbx)
+
+kernel/mutext.c dissamble:
+
+__mutex_lock_slowpath:
+        pushq   %rbp    #
+        movq    %rsp, %rbp      #,
+        pushq   %r14    #
+        pushq   %r13    #
+        pushq   %r12    #
+        leaq    4(%rdi), %r12   #, D.13845
+        pushq   %rbx    #
+        movq    %rdi, %rbx      # lock_count, lock
+        movq    %r12, %rdi      # D.13845, D.13845
+        subq    $32, %rsp       #,
+#APP
+        movq %gs:0,%r14 #, tsk
+#NO_APP
+        call    _spin_lock      #
+        leaq    8(%rbx), %rax   #, next
+        leaq    -64(%rbp), %rdx #, tmp81
+        movq    8(%rax), %rcx   # <variable>.prev, prev
+        movq    %rax, -64(%rbp) # next, waiter.list.next
+        movq    %rdx, 8(%rax)   # tmp81, <variable>.prev
+        movq    %rdx, (%rcx)    # tmp81, <variable>.next <========= Here
+        orq     $-1, %rdx       #, tmp83
+        movq    %rcx, -56(%rbp) # prev, waiter.list.prev
+        movq    %r14, -48(%rbp) # tsk, waiter.task
+        movq    %rdx, %rax      # tmp83, x
+
+the oops
+BUG: unable to handle kernel NULL pointer dereference at 0000000000000000
+IP: [<ffffffff8045723d>] __mutex_lock_slowpath+0x3b/0xb2
+PGD 67671067 PUD 63f47067 PMD 0
+Oops: 0002 [1] PREEMPT SMP
+CPU 0
+Modules linked in: snd_seq_dummy snd_seq_oss snd_seq_midi_event snd_seq 
+binfmt_misc loop nls_cp437 vfat fat nls_iso8859_1 ntfs dm_mod thermal 
+processor fan container button pcspkr snd_pcm_oss snd_mixer_oss tuner tea5767 
+tda8290 tuner_xc2028 tda9887 tuner_simple mt20xx tea5761 snd_emu10k1 
+snd_rawmidi bttv snd_ac97_codec videodev ac97_bus v4l1_compat snd_pcm 
+ir_common firewire_ohci firewire_core snd_seq_device compat_ioctl32 snd_timer 
+uhci_hcd ehci_hcd v4l2_common ide_cd_mod crc_itu_t snd_page_alloc usbcore 
+videobuf_dma_sg snd_util_mem videobuf_core ohci1394 btcx_risc i2c_viapro 
+sr_mod snd_hwdep ieee1394 emu10k1_gp snd tg3 cdrom tveeprom gameport sg evdev 
+soundcore
+Pid: 7197, comm: radio Tainted: G   M     2.6.25-rc1 #20
+RIP: 0010:[<ffffffff8045723d>]  [<ffffffff8045723d>] 
+__mutex_lock_slowpath+0x3b/0xb2
+RSP: 0018:ffff81007df515e8  EFLAGS: 00010246
+RAX: ffff81007f13ef10 RBX: ffff81007f13ef08 RCX: 0000000000000000
+RDX: ffff81007df515e8 RSI: ffffffff88184050 RDI: ffff81007f13ef0c
+RBP: ffff81007df51628 R08: 0000000000000004 R09: ffff81007df51aa8
+R10: ffff81007e680a40 R11: 0000000000000202 R12: ffff81007f13ef0c
+R13: ffff81007f13ef08 R14: ffff810063cfc040 R15: ffffffff88184050
+FS:  00007fa8d92ba6f0(0000) GS:ffffffff805b2000(0000) knlGS:00000000f61fb980
+CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
+CR2: 0000000000000000 CR3: 00000000676dc000 CR4: 00000000000006e0
+DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
+DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
+Process radio (pid: 7197, threadinfo ffff81007df50000, task ffff810063cfc040)
+Stack:  ffff81007f13ef10 0005049900000000 018060f7018060fa 0000000000000024
+ ffff81007df51aa8 ffff81007f13e800 ffff81007f13ef08 ffff81007e0e5800
+ ffff81007df51638 ffffffff80457083 ffff81007df51668 ffffffff88162f2f
+Call Trace:
+ [<ffffffff80457083>] 
+ [<ffffffff88162f2f>] :bttv:radio_g_tuner+0x40/0xa6
+ [<ffffffff8813df7d>] :videodev:__video_do_ioctl+0x2a6e/0x2e25
+ [<ffffffff8813503c>] :v4l1_compat:v4l_compat_translate_ioctl+0xea9/0x1af5
+ [<ffffffff8813b50f>] ? :videodev:__video_do_ioctl+0x0/0x2e25
+ [<ffffffff80301f4b>] ? blk_recount_segments+0x3e/0x62
+ [<ffffffff80260f7b>] ? mempool_alloc_slab+0x11/0x13
+ [<ffffffff80261085>] ? mempool_alloc+0x48/0xf9
+ [<ffffffff802e3369>] ? ext3_get_acl+0x87/0x332
+ [<ffffffff80296c65>] ? __d_lookup+0x125/0x137
+ [<ffffffff8028d54f>] ? do_lookup+0x63/0x1b1
+ [<ffffffff802961c3>] ? dput+0x22/0x120
+ [<ffffffff8028f6a6>] ? __link_path_walk+0xbbd/0xd1b
+ [<ffffffff802e3369>] ? ext3_get_acl+0x87/0x332
+ [<ffffffff802115d1>] ? native_read_tsc+0x11/0x22
+ [<ffffffff80310e1b>] ? __delay+0x27/0x59
+last message repeated 2 times
+ [<ffffffff80310ecf>] ? __udelay+0x40/0x42
+ [<ffffffff803c0950>] ? i2c_stop+0x47/0x4b
+ [<ffffffff803c1117>] ? bit_xfer+0x412/0x423
+ [<ffffffff803bef99>] ? i2c_transfer+0x79/0x85
+ [<ffffffff881cc31c>] ? :tuner_simple:simple_set_params+0x2bd/0xc1c
+ [<ffffffff80284607>] ? get_unused_fd_flags+0x10d/0x11c
+ [<ffffffff8029965b>] ? touch_atime+0xe3/0xec
+ [<ffffffff8029b113>] ? mntput_no_expire+0x20/0x8f
+ [<ffffffff881e3447>] ? :tuner:fe_set_params+0x46/0x48
+ [<ffffffff881e285c>] ? :tuner:set_radio_freq+0x159/0x162
+ [<ffffffff80449dfb>] ? klist_dec_and_del+0x14/0x16
+ [<ffffffff80449e68>] ? klist_next+0x6b/0x8a
+ [<ffffffff803c075a>] ? i2c_cmd+0x0/0x3e
+ [<ffffffff8037c62f>] ? device_for_each_child+0x4c/0x5c
+ [<ffffffff8813b648>] :videodev:__video_do_ioctl+0x139/0x2e25
+ [<ffffffff88168b56>] ? :bttv:bttv_call_i2c_clients+0x16/0x18
+ [<ffffffff88161ed2>] ? :bttv:audio_mux+0x105/0x1b5
+ [<ffffffff80260d39>] ? filemap_fault+0x1fe/0x371
+ [<ffffffff8813e6d4>] :videodev:video_ioctl2+0x1b8/0x259
+ [<ffffffff8026dc63>] ? handle_mm_fault+0x341/0x697
+ [<ffffffff80291c36>] vfs_ioctl+0x5e/0x77
+ [<ffffffff80291e9c>] do_vfs_ioctl+0x24d/0x262
+ [<ffffffff8045a9d7>] ? do_page_fault+0x434/0x7aa
+ [<ffffffff80291ef3>] sys_ioctl+0x42/0x67
+ [<ffffffff8020b36b>] system_call_after_swapgs+0x7b/0x80
+Feb 15 08:42:03 bongani64 kernel:
+Feb 15 08:42:03 bongani64 kernel:
+Code: 89 fb 4c 89 e7 48 83 ec 20 65 4c 8b 34 25 00 00 00 00 e8 19 12 00 00 48 
+8d 43 08 48 8d 55 c0 48 8b 48 08 48 89 45 c0 48 89 50 08 <48> 89 11 48 83 ca 
+ff 48 89 4d c8 4c 89 75 d0 48 89 d0 87 03 ff
+RIP  [<ffffffff8045723d>] __mutex_lock_slowpath+0x3b/0xb2
+ RSP <ffff81007df515e8>
+CR2: 0000000000000000
+---[ end trace fdf145f4fc51dccd ]---
