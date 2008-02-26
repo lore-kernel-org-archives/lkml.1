@@ -1,61 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759078AbYBZGtY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757574AbYBZGyU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759078AbYBZGtY (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Feb 2008 01:49:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751557AbYBZGtQ
+	id S1757574AbYBZGyU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Feb 2008 01:54:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752455AbYBZGyM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Feb 2008 01:49:16 -0500
-Received: from relay2.sgi.com ([192.48.171.30]:48476 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1750907AbYBZGtP (ORCPT
-	<rfc822;@relay.sgi.com:linux-kernel@vger.kernel.org>);
-	Tue, 26 Feb 2008 01:49:15 -0500
-Date: Tue, 26 Feb 2008 17:49:09 +1100
-To: torvalds@linux-foundation.org
-Cc: linux-kernel@vger.kernel.org, xfs@oss.sgi.com, akpm@linux-foundation.org
-Subject: [GIT PULL] XFS update for 2.6.25-rc4
-User-Agent: nail 11.25 7/29/05
+	Tue, 26 Feb 2008 01:54:12 -0500
+Received: from smtp-out.google.com ([216.239.45.13]:26515 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751673AbYBZGyL (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 Feb 2008 01:54:11 -0500
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=received:date:from:x-x-sender:to:cc:subject:in-reply-to:
+	message-id:references:user-agent:mime-version:content-type;
+	b=qrI9B/M/g4cq+8FBtn+/HMVw0vsf3kz9EsdS7mH0HDeELQgqpNDqs+GtbjvWRWm1V
+	gmMd2urbXxfhZoE6GcW0g==
+Date: Mon, 25 Feb 2008 22:53:41 -0800 (PST)
+From: David Rientjes <rientjes@google.com>
+X-X-Sender: rientjes@chino.kir.corp.google.com
+To: Paul Jackson <pj@sgi.com>
+cc: akpm@linux-foundation.org, clameter@sgi.com, Lee.Schermerhorn@hp.com,
+       ak@suse.de, linux-kernel@vger.kernel.org
+Subject: Re: [patch 3/6] mempolicy: add MPOL_F_STATIC_NODES flag
+In-Reply-To: <20080225234616.777d534c.pj@sgi.com>
+Message-ID: <alpine.DEB.1.00.0802252248400.9390@chino.kir.corp.google.com>
+References: <alpine.DEB.1.00.0802250012420.12368@chino.kir.corp.google.com> <alpine.DEB.1.00.0802250013580.12368@chino.kir.corp.google.com> <alpine.DEB.1.00.0802250014170.12368@chino.kir.corp.google.com> <20080225234616.777d534c.pj@sgi.com>
+User-Agent: Alpine 1.00 (DEB 882 2007-12-20)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-Id: <20080226064909.5457F58C4C0F@chook.melbourne.sgi.com>
-From: lachlan@sgi.com (Lachlan McIlroy)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Please pull from the for-linus branch:
-    git pull git://oss.sgi.com:8090/xfs/xfs-2.6.git for-linus
+On Mon, 25 Feb 2008, Paul Jackson wrote:
 
-This will update the following files:
+>     $ grep mpol_store_user_nodemask mm/mempolicy.c
+>     static inline int mpol_store_user_nodemask(const struct mempolicy *pol)
+>         if (mpol_store_user_nodemask(policy))
+>         if (!mpol_store_user_nodemask(a))
+>         if (!mpol_store_user_nodemask(pol) &&
+> 
+> So I see no need to waste the instructions needed (in the three copies
+> of this code, since it's static inline) to convert a non-zero value to
+> exactly the value 1.
+> 
 
- fs/xfs/xfs_bit.c     |  103 ++++++++++++++++++++++++++++++++++++++++++++++++++
- fs/xfs/xfs_bit.h     |   27 ++-----------
- fs/xfs/xfs_rtalloc.c |   19 ++++++---
- 3 files changed, 120 insertions(+), 29 deletions(-)
+Done, thanks.
 
-through these commits:
+> Hmmm ... speaking of static inline ... I can knock 600 bytes (that's
+> IA64 bytes, so equivalent to about 300 x86 bytes) off the kernel text
+> size by not inlining the mm/mempolicy.c routines check_pgd_range() and
+> interleave_nid().  I wonder if that would be worth doing.  Perhaps
+> those two routines are in sufficiently tight corners that the duplicate
+> copies of them is needed.
+> 
 
-commit ef8ece55d9b6825c28a5c1a4bd89b94040cb7b32
-Author: Lachlan McIlroy <lachlan@sgi.com>
-Date:   Tue Feb 26 17:00:22 2008 +1100
+It seems like a worthwhile change to me even though gcc will pass the 
+actuals to check_pgd_range() on the stack.  The callers to check_range() 
+shouldn't be in any fast paths: migrate_to_node() can take a long time 
+depending on the length of the page list and do_mbind() sleeps on 
+mmap_sem.
 
-    [XFS] Undo bit ops cleanup mod due to regression on 32-bit powermac
-    platform.
-    
-    SGI-PV: 971186
-    SGI-Modid: xfs-linux-melb:xfs-kern:30559a
-    
-    Signed-off-by: Lachlan McIlroy <lachlan@sgi.com>
-
-commit db69c915e67705daac25cad06d816c09be634de0
-Author: Lachlan McIlroy <lachlan@sgi.com>
-Date:   Tue Feb 26 17:00:14 2008 +1100
-
-    [XFS] Undo bit ops cleanup mod due to regression on 32-bit powermac
-    platform.
-    
-    SGI-PV: 974005
-    SGI-Modid: xfs-linux-melb:xfs-kern:30558a
-    
-    Signed-off-by: Lachlan McIlroy <lachlan@sgi.com>
+   text	   data	    bss	    dec	    hex	filename
+  11695	     24	     24	  11743	   2ddf	mm/mempolicy.o.before
+  11215	     24	     24	  11263	   2bff	mm/mempolicy.o.after
