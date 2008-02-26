@@ -1,51 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764192AbYBZR52@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764084AbYBZR7h@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764192AbYBZR52 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Feb 2008 12:57:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761756AbYBZR5Q
+	id S1764084AbYBZR7h (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Feb 2008 12:59:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762189AbYBZR73
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Feb 2008 12:57:16 -0500
-Received: from smtp1.linux-foundation.org ([207.189.120.13]:58341 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1757942AbYBZR5P (ORCPT
+	Tue, 26 Feb 2008 12:59:29 -0500
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:34222 "EHLO
+	gprs189-60.eurotel.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761756AbYBZR73 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Feb 2008 12:57:15 -0500
-Date: Tue, 26 Feb 2008 09:56:05 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Neil Brown <neilb@suse.de>, Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       netdev@vger.kernel.org, trond.myklebust@fys.uio.no
-Subject: Re: [PATCH 00/28] Swap over NFS -v16
-Message-Id: <20080226095605.62edc0f3.akpm@linux-foundation.org>
-In-Reply-To: <1204023042.6242.271.camel@lappy>
-References: <20080220144610.548202000@chello.nl>
-	<20080223000620.7fee8ff8.akpm@linux-foundation.org>
-	<18371.43950.150842.429997@notabene.brown>
-	<1204023042.6242.271.camel@lappy>
-X-Mailer: Sylpheed 2.4.7 (GTK+ 2.12.1; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 26 Feb 2008 12:59:29 -0500
+Date: Tue, 26 Feb 2008 18:59:54 +0100
+From: Pavel Machek <pavel@ucw.cz>
+To: Dave Jones <davej@codemonkey.org.uk>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       kernel list <linux-kernel@vger.kernel.org>
+Subject: Re: broken suspend in .2.6.25-rc3 on T61p (was Re: new regression
+	in 2.6.25-rc3: no keyboard/lid acpi events on thinkpad T61p)
+Message-ID: <20080226175954.GA5707@elf.ucw.cz>
+References: <20080225222023.GK2659@elf.ucw.cz> <8f53421d0802251436vd98a97h5db6b8af3dc39d0@mail.gmail.com> <20080225143932.6b83b65d.akpm@linux-foundation.org> <8f53421d0802251448v3e0db63j3f222f041e587f69@mail.gmail.com> <20080225145347.a61f6c61.akpm@linux-foundation.org> <20080225225820.GP2659@elf.ucw.cz> <20080225155550.4a020dfb.akpm@linux-foundation.org> <20080226000007.GB22102@atrey.karlin.mff.cuni.cz> <20080226101117.GA26671@atrey.karlin.mff.cuni.cz> <20080226174613.GA26259@codemonkey.org.uk>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080226174613.GA26259@codemonkey.org.uk>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 26 Feb 2008 11:50:42 +0100 Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:
-
-> On Tue, 2008-02-26 at 17:03 +1100, Neil Brown wrote:
-> > On Saturday February 23, akpm@linux-foundation.org wrote:
->  
-> > > What is the NFS and net people's take on all of this?
-> > 
-> > Well I'm only vaguely an NFS person, barely a net person, sporadically
-> > an mm person, but I've had a look and it seems to mostly make sense.
+On Tue 2008-02-26 12:46:13, Dave Jones wrote:
+> On Tue, Feb 26, 2008 at 11:11:17AM +0100, Pavel Machek wrote:
+>  > Hi!
+>  > 
+>  > Andrew is trying to get s2ram to work on Fedora:
+>  > 
+>  > > > > Please try s2ram, there's good chance it will just work.
+>  > > > 
+>  > > > configure: error: Required libx86 was not found
+>  > > 
+>  > > apt-get install libx86-dev?
+>  > > 
+>  > > Alternatively, can you post dmidecode? Thinkpads usually work with
+>  > > acpi_sleep=s3_bios,s3_mode ; and I can look up whitelist manually.
+>  > 
+>  > ...unfortunately, it does not ship s2ram by default, and does not even
+>  > carry its dependencies.
+>  > 
+>  > Is there some custom mechanism to get suspend-to-ram to work on
+>  > Fedora? 
 > 
-> Thanks for taking a look, and giving such elaborate feedback. I'll try
-> and address these issues asap, but first let me reply to a few points
-> here.
+> if by 'custom' you mean the solution everyone agreed to work
+> toward at the power management summit several years ago
+> (hal/pm-utils) then, yes.
 
-Neil's overview of what-all-this-is and how-it-all-works is really good. 
-I'd suggest that you take it over, flesh it out and attach it firmly to the
-patchset.  It really helps.
+I must have been on different summit... I believe it is bad to tie
+s2ram to hal, because it makes testing on minimal system hard.
 
+Anyway, what is the "default" way to trigger s2ram for Andrew? Perhaps
+Fedora already has his machine whitelisted...
+									Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
