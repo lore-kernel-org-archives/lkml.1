@@ -1,117 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759188AbYBZGaY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758673AbYBZGjW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759188AbYBZGaY (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Feb 2008 01:30:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752486AbYBZGaM
+	id S1758673AbYBZGjW (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Feb 2008 01:39:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752282AbYBZGjI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Feb 2008 01:30:12 -0500
-Received: from koto.vergenet.net ([210.128.90.7]:40686 "EHLO koto.vergenet.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752902AbYBZGaK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Feb 2008 01:30:10 -0500
-Subject: [PATCH] update efi region debugging to use MB, GB and TB as well as KB
-To: linux-kernel@vger.kernel.org
-Cc: Tony Luck <tony.luck@intel.com>, trivial@kernel.org
-From: Simon Horman <horms@verge.net.au>
-Date: Tue, 26 Feb 2008 15:24:04 +0900
-Message-Id: <20080226063004.F1E744F937@tabatha.lab.ultramonkey.org>
+	Tue, 26 Feb 2008 01:39:08 -0500
+Received: from smtp1.linux-foundation.org ([207.189.120.13]:53475 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752251AbYBZGjG (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 Feb 2008 01:39:06 -0500
+Date: Mon, 25 Feb 2008 22:38:23 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Tim Connors <tconnors@astro.swin.edu.au>
+Cc: kernel list <linux-kernel@vger.kernel.org>, linux-wireless@vger.kernel.org
+Subject: Re: iwl4965 dropping packets and __dev_addr_discard: address
+ leakage! da_users=1
+Message-Id: <20080225223823.db13a7fe.akpm@linux-foundation.org>
+In-Reply-To: <slrn-0.9.7.4-5027-27940-200802261551-tc@hexane.ssi.swin.edu.au>
+References: <slrn-0.9.7.4-5027-27940-200802261551-tc@hexane.ssi.swin.edu.au>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-When EFI_DEBUG is defined to a non-zero value in arch/ia64/kernel/efi.c,
-the efi memory regions are displayed. This patch enhances the
-display code in a few ways:
+On Tue, 26 Feb 2008 16:22:43 +1100 Tim Connors <tconnors@astro.swin.edu.au> wrote:
 
-1. Use TB, GB and MB as well as KB as units.
-   Although this introduces rounding errors (KB doesn't as
-   size is always a multiple of 4Kb), it does make
-   things a lot more readable.
+> Possibly because of the frequent renegotiating my iwl4965 card has
+> been making, it has now decided it's not going to pass packets
+> reliably until presumably next time I reboot.
+> 
+> I've noticed messages in syslog that I hadn't seen when things were
+> working fine.  The problem possibly has only surfaced after rmmodding
+> the iwl4965 module, then remodding it.  It stays with me through being
+> removed and modprobed again.  It is being bonded in conjunction with a
+> physical ethernet, if that is relevant, although I think I reproduced
+> it when it was on its lonesome.
+> 
+> 
+> Fresh after reboot:
+> 
+> Feb 22 09:49:31 dirac kernel: iwl4965: Intel(R) Wireless WiFi Link 4965AGN driver for Linux, 1.1.17kds
+> Feb 22 09:49:31 dirac kernel: iwl4965: Copyright(c) 2003-2007 Intel Corporation
+> Feb 22 09:49:31 dirac kernel: ACPI: PCI Interrupt 0000:0c:00.0[A] -> GSI 17 (level, low) -> IRQ 17
+> Feb 22 09:49:31 dirac kernel: PCI: Setting latency timer of device 0000:0c:00.0 to 64
+> Feb 22 09:49:31 dirac kernel: iwl4965: Detected Intel Wireless WiFi Link 4965AGN
+> Feb 22 09:49:31 dirac kernel: ACPI: PCI Interrupt 0000:00:1b.0[A] -> GSI 21 (level, low) -> IRQ 21
+> Feb 22 09:49:31 dirac kernel: PCI: Setting latency timer of device 0000:00:1b.0 to 64
+> Feb 22 09:49:31 dirac kernel: iwl4965: Tunable channels: 11 802.11bg, 13 802.11a channels
+> Feb 22 09:49:31 dirac kernel: phy0: Selected rate control algorithm 'iwl-4965-rs'
+> 
+> now finished with it, will be deconfigured and rmmodded:
+> 
+> Feb 23 03:05:23 dirac kernel: __dev_addr_discard: address leakage! da_users=1
+> Feb 23 03:05:23 dirac kernel: ACPI: PCI interrupt for device 0000:0c:00.0 disabled
+> 
+> The modprobed again:
+> 
+> Feb 23 03:05:35 dirac kernel: iwl4965: Intel(R) Wireless WiFi Link 4965AGN driver for Linux, 1.1.17kds
+> Feb 23 03:05:35 dirac kernel: iwl4965: Copyright(c) 2003-2007 Intel Corporation
+> Feb 23 03:05:35 dirac kernel: ACPI: PCI Interrupt 0000:0c:00.0[A] -> GSI 17 (level, low) -> IRQ 17
+> Feb 23 03:05:35 dirac kernel: PCI: Setting latency timer of device 0000:0c:00.0 to 64
+> Feb 23 03:05:35 dirac kernel: iwl4965: Detected Intel Wireless WiFi Link 4965AGN
+> Feb 23 03:05:35 dirac kernel: iwl4965: Tunable channels: 11 802.11bg, 13 802.11a channels
+> Feb 23 03:05:35 dirac kernel: phy9: Selected rate control algorithm 'iwl-4965-rs'
+> 
+> according to lspci -vvv, 0c:00.0 is:
+> 
+> 0c:00.0 Network controller: Intel Corporation PRO/Wireless 4965 AG or AGN Network Connection (rev 61)
+>         Subsystem: Intel Corporation Unknown device 1120
+>         Control: I/O- Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr- Stepping- SERR+ FastB2B- DisINTx+
+>         Status: Cap+ 66MHz- UDF- FastB2B- ParErr- DEVSEL=fast >TAbort- <TAbort- <MAbort- >SERR- <PERR- INTx-
+>         Latency: 0, Cache Line Size: 64 bytes
+>         Interrupt: pin A routed to IRQ 379
+>         Region 0: Memory at f9ffe000 (64-bit, non-prefetchable) [size=8K]
+>         Capabilities: [c8] Power Management version 3
+>                 Flags: PMEClk- DSI+ D1- D2- AuxCurrent=0mA PME(D0+,D1-,D2-,D3hot+,D3cold+)
+>                 Status: D0 PME-Enable- DSel=0 DScale=0 PME-
+>         Capabilities: [d0] Message Signalled Interrupts: Mask- 64bit+ Queue=0/0 Enable+
+>                 Address: 00000000fee0300c  Data: 4194
+>         Capabilities: [e0] Express (v1) Endpoint, MSI 00
+>                 DevCap: MaxPayload 128 bytes, PhantFunc 0, Latency L0s <512ns, L1 unlimited
+>                         ExtTag- AttnBtn- AttnInd- PwrInd- RBE+ FLReset-
+>                 DevCtl: Report errors: Correctable- Non-Fatal- Fatal- Unsupported-
+>                         RlxdOrd+ ExtTag- PhantFunc- AuxPwr- NoSnoop+
+>                         MaxPayload 128 bytes, MaxReadReq 128 bytes
+>                 DevSta: CorrErr+ UncorrErr- FatalErr- UnsuppReq+ AuxPwr+ TransPend-
+>                 LnkCap: Port #0, Speed 2.5GT/s, Width x1, ASPM L0s L1, Latency L0 <128ns, L1 <64us
+>                         ClockPM+ Suprise- LLActRep- BwNot-
+>                 LnkCtl: ASPM L0s Enabled; RCB 64 bytes Disabled- Retrain- CommClk+
+>                         ExtSynch- ClockPM- AutWidDis- BWInt- AutBWInt-
+>                 LnkSta: Speed 2.5GT/s, Width x1, TrErr- Train- SlotClk+ DLActive- BWMgmt- ABWMgmt-
+>         Capabilities: [100] Advanced Error Reporting <?>
+>         Capabilities: [140] Device Serial Number d7-36-9b-ff-ff-e8-13-00
+>         Kernel driver in use: iwl4965
+>         Kernel modules: iwl4965
 
-   Also as the range is also shown, it is possible to note the exact size
-   if it is important. In my experience, the size field is mostly useful
-   for getting a general idea of the size of a region.
+(cc linux-wireless)
 
-   On the rx2620 that I use, there actually is an 8TB region (though not
-   backed by physical memory, and 8TB really is a lot more readable than
-   8589934592KB.
+What kernel version is this?
 
-2. pad the size field with leading spaces to further improve readability
-
-   ...
-   ... (   8MB)
-   ... ( 928MB)
-   ... (   3MB)
-   ...
-
-   vs
-
-   ...
-   ... (8MB)
-   ... (928MB)
-   ... (3MB)
-   ...
-
-
-3. Pad the attr field out to 64bits using leading zeros,
-   to further improve readability.
-
-   ...
-   mem05: type= 2, attr=0x0000000000000008, range=[0x0000000004000000-0x000000000481f000) (   8MB)
-   mem06: type= 7, attr=0x0000000000000008, range=[0x000000000481f000-0x000000003e876000) ( 928MB)
-   mem07: type= 5, attr=0x8000000000000008, range=[0x000000003e876000-0x000000003eb8e000) (   3MB)
-   mem08: type= 4, attr=0x0000000000000008, range=[0x000000003eb8e000-0x000000003ee7a000) (   2MB)
-   ...
-
-   ...
-   mem05: type= 2, attr=0x8, range=[0x0000000004000000-0x000000000481f000) (   8MB)
-   mem06: type= 7, attr=0x8, range=[0x000000000481f000-0x000000003e876000) ( 928MB)
-   mem07: type= 5, attr=0x8000000000000008, range=[0x000000003e876000-0x000000003eb8e000) (   3MB)
-   mem08: type= 4, attr=0x8, range=[0x000000003eb8e000-0x000000003ee7a000) (   2MB)
-   ...
-
-4. Use %d instead of %u for the index field, as i is a signed int.
-
-N.B: This code is not compiled unless EFI_DEBUG is non 0.
-
-Signed-off-by: Simon Horman <horms@verge.net.au>
-
-Index: linux-2.6/arch/ia64/kernel/efi.c
-===================================================================
---- linux-2.6.orig/arch/ia64/kernel/efi.c	2008-02-26 15:07:57.000000000 +0900
-+++ linux-2.6/arch/ia64/kernel/efi.c	2008-02-26 15:25:33.000000000 +0900
-@@ -543,12 +543,30 @@ efi_init (void)
- 		for (i = 0, p = efi_map_start; p < efi_map_end;
- 		     ++i, p += efi_desc_size)
- 		{
-+			const char *unit;
-+			unsigned long size;
-+
- 			md = p;
--			printk("mem%02u: type=%u, attr=0x%lx, "
--			       "range=[0x%016lx-0x%016lx) (%luMB)\n",
-+			size = md->num_pages << EFI_PAGE_SHIFT;
-+
-+			if ((size >> 40) > 0) {
-+				size >>= 40;
-+				unit = "TB";
-+			} else if ((size >> 30) > 0) {
-+				size >>= 30;
-+				unit = "GB";
-+			} else if ((size >> 20) > 0) {
-+				size >>= 20;
-+				unit = "MB";
-+			} else {
-+				size >>= 10;
-+				unit = "KB";
-+			}
-+
-+			printk("mem%02d: type=%2u, attr=0x%016lx, "
-+			       "range=[0x%016lx-0x%016lx) (%4lu%s)\n",
- 			       i, md->type, md->attribute, md->phys_addr,
--			       md->phys_addr + efi_md_size(md),
--			       md->num_pages >> (20 - EFI_PAGE_SHIFT));
-+			       md->phys_addr + efi_md_size(md), size, unit);
- 		}
- 	}
- #endif
+Is this a regression from an earlier kenrel version?  If so, which?
