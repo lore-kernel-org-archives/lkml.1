@@ -1,20 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764170AbYBZUmc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764754AbYBZUm5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764170AbYBZUmc (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Feb 2008 15:42:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754616AbYBZUmW
+	id S1764754AbYBZUm5 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Feb 2008 15:42:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763641AbYBZUmm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Feb 2008 15:42:22 -0500
-Received: from mgw1.diku.dk ([130.225.96.91]:49005 "EHLO mgw1.diku.dk"
+	Tue, 26 Feb 2008 15:42:42 -0500
+Received: from mgw2.diku.dk ([130.225.96.92]:56966 "EHLO mgw2.diku.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751027AbYBZUmV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Feb 2008 15:42:21 -0500
-Date: Tue, 26 Feb 2008 21:42:11 +0100 (CET)
+	id S1754616AbYBZUml (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 Feb 2008 15:42:41 -0500
+Date: Tue, 26 Feb 2008 21:42:37 +0100 (CET)
 From: Julia Lawall <julia@diku.dk>
-To: lethal@linux-sh.org, linux-sh@vger.kernel.org,
-       linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
-Subject: [PATCH 1/9] arch/sh/drivers/dma/dma-sh.c: Correct use of ! and &
-Message-ID: <Pine.LNX.4.64.0802262141450.18200@ask.diku.dk>
+To: corentincj@iksaif.net, sziwan@users.sourceforge.net,
+       acpi4asus-user@lists.sourceforge.net, linux-kernel@vger.kernel.org,
+       kernel-janitors@vger.kernel.org
+Subject: [PATCH 2/9] drivers/acpi/asus_acpi.c: Correct use of ! and &
+Message-ID: <Pine.LNX.4.64.0802262142120.18200@ask.diku.dk>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
@@ -47,15 +48,15 @@ Signed-off-by: Julia Lawall <julia@diku.dk>
 
 ---
 
-diff -u -p a/arch/sh/drivers/dma/dma-sh.c b/arch/sh/drivers/dma/dma-sh.c
---- a/arch/sh/drivers/dma/dma-sh.c 2008-02-02 16:08:46.000000000 +0100
-+++ b/arch/sh/drivers/dma/dma-sh.c 2008-02-26 08:00:00.000000000 +0100
-@@ -90,7 +90,7 @@ static irqreturn_t dma_tei(int irq, void
+diff -u -p a/drivers/acpi/asus_acpi.c b/drivers/acpi/asus_acpi.c
+--- a/drivers/acpi/asus_acpi.c 2008-02-10 22:34:05.000000000 +0100
++++ b/drivers/acpi/asus_acpi.c 2008-02-26 08:00:42.000000000 +0100
+@@ -610,7 +610,7 @@ write_led(const char __user * buffer, un
+ 	    (led_out) ? (hotk->status | ledmask) : (hotk->status & ~ledmask);
  
- static int sh_dmac_request_dma(struct dma_channel *chan)
- {
--	if (unlikely(!chan->flags & DMA_TEI_CAPABLE))
-+	if (unlikely(!(chan->flags & DMA_TEI_CAPABLE)))
- 		return 0;
+ 	if (invert)		/* invert target value */
+-		led_out = !led_out & 0x1;
++		led_out = !(led_out & 0x1);
  
- 	return request_irq(get_dmte_irq(chan->chan), dma_tei,
+ 	if (!write_acpi_int(hotk->handle, ledname, led_out, NULL))
+ 		printk(KERN_WARNING "Asus ACPI: LED (%s) write failed\n",
