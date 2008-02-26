@@ -1,37 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760851AbYBZIz1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761236AbYBZI4R@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760851AbYBZIz1 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Feb 2008 03:55:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752644AbYBZIzT
+	id S1761236AbYBZI4R (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Feb 2008 03:56:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754747AbYBZI4B
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Feb 2008 03:55:19 -0500
-Received: from www.tglx.de ([62.245.132.106]:53733 "EHLO www.tglx.de"
+	Tue, 26 Feb 2008 03:56:01 -0500
+Received: from aun.it.uu.se ([130.238.12.36]:58956 "EHLO aun.it.uu.se"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751583AbYBZIzS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Feb 2008 03:55:18 -0500
-Date: Tue, 26 Feb 2008 09:50:31 +0100 (CET)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Jeff Garzik <jgarzik@pobox.com>
-cc: Andrew Morton <akpm@linux-foundation.org>,
-       =?ISO-8859-15?Q?Bj=F6rn_Steinbrink?= <B.Steinbrink@gmx.de>,
-       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>
-Subject: Re: 2.6.24-git: kmap_atomic() WARN_ON()
-In-Reply-To: <47C34CEA.7060307@pobox.com>
-Message-ID: <alpine.LFD.1.00.0802260949200.7583@apollo.tec.linutronix.de>
-References: <alpine.LFD.1.00.0802070054220.9204@apollo.tec.linutronix.de> <20080225195924.GA23176@atjola.homenet> <47C32043.6090809@pobox.com> <20080225124054.9b69e9f0.akpm@linux-foundation.org> <alpine.LFD.1.00.0802252242290.7583@apollo.tec.linutronix.de>
- <47C34CEA.7060307@pobox.com>
-User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
+	id S1752644AbYBZI4A (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 Feb 2008 03:56:00 -0500
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Message-ID: <18371.54294.748777.976300@harpo.it.uu.se>
+Date: Tue, 26 Feb 2008 09:55:50 +0100
+From: Mikael Pettersson <mikpe@it.uu.se>
+To: Mikael Pettersson <mikpe@it.uu.se>
+Cc: davem@davemloft.net, sparclinux@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [BUG] 2.6.25-rc3 hangs in early boot on Sun Ultra5
+In-Reply-To: <18371.10207.58819.188510@alkaid.it.uu.se>
+References: <18371.10207.58819.188510@alkaid.it.uu.se>
+X-Mailer: VM 7.17 under Emacs 20.7.1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 25 Feb 2008, Jeff Garzik wrote:
+Mikael Pettersson writes:
+ > Booting 2.6.25-rc3 on my Ultra5 causes a hang before or as
+ > the console is switched over to the framebuffer. The console
+ > output is (extrapolated from dmesg in -rc2 and handwritten
+ > notes, as I don't have a serial cable to my U5):
+ > 
+ > PROMLIB: Sun IEEE Boot Prom 'OBP 3.25.3 2000/06/29 14:12'
+ > PROMLIB: Root node compatible: 
+ > *** the following line can't be seen in dmesg after rc2 has booted
+ > console [earlyprom0] enabled
+ > Linux version 2.6.25-rc3 (mikpe@sparge) (gcc version 4.2.3) #1 Mon Feb 25 18:49:41 CET 2008
+ > ARCH: SUN4U
+ > Ethernet address: 08:00:20:fd:ec:1f
+ > [0000000200000000-fffff80000400000] page_structs=262144 node=0 entry=0/0
+ > [0000000200000000-fffff80000800000] page_structs=262144 node=0 entry=1/0
+ > [0000000200000000-fffff80000c00000] page_structs=262144 node=0 entry=2/0
+ > [0000000200000000-fffff80001000000] page_structs=262144 node=0 entry=3/0
+ > OF stdout device is: /pci@1f,0/pci@1,1/SUNW,m64B@2
+ > PROM: Built device tree with 46617 bytes of memory.
+ > On node 0 totalpages: 32299
+ >   Normal zone: 335 pages used for memmap
+ >   Normal zone: 0 pages reserved
+ >   Normal zone: 31964 pages, LIFO batch:7
+ >   Movable zone: 0 pages used for memmap
+ > Built 1 zonelists in Zone order, mobility grouping on.  Total pages: 31964
+ > Kernel command line: ro root=/dev/sda5
+ > PID hash table entries: 1024 (order: 10, 8192 bytes)
+ > clocksource: mult[28000] shift[16]
+ > clockevent: mult[66666666] shift[32]
+ > Console: colour dummy device 80x25
+ > *** the following line can't be seen in dmesg after rc2 has booted
+ > console handover: boot [earlyprom0] -> real [tty0]
+ > 
+ > At this point rc3 hangs hard and won't even respond to sysrq.
+ > 
+ > Another difference is that with rc2 the first few lines of kernel
+ > output while the console is still in OF mode either aren't shown
+ > or disappear quickly since the switch to the framebuffer occurs
+ > within a fraction of a second after the kernel has been loaded.
+ > With rc3 the kernel output (the text shown above) in the OF-mode
+ > console is very very slow.
+ > 
+ > (I should have quoted my .config here but I forgot to bring it.
+ > It's exactly the same in rc2 and rc3, however.)
+ > 
+ > I'll try some rc2->rc3 bisecting later.
 
-> Welcome to test this... (attached, not tested nor even compiled, really)
+Minor update: rc2-git7 has the slow initial console behaviour,
+but successfully switches to the framebuffer. rc2-git8 however
+hangs in the console handover. So I'll bisect git7->git8 next.
 
-Works, but I agree with Ingo vs. the stand alone irq_en/disable.
-
-Thanks,
-	tglx
+/Mikael
