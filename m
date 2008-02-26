@@ -1,65 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753951AbYBZErD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752736AbYBZFFf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753951AbYBZErD (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 Feb 2008 23:47:03 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750738AbYBZEqw
+	id S1752736AbYBZFFf (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Feb 2008 00:05:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751000AbYBZFF0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 Feb 2008 23:46:52 -0500
-Received: from relay1.sgi.com ([192.48.171.29]:39549 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1750708AbYBZEqw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 Feb 2008 23:46:52 -0500
-Date: Mon, 25 Feb 2008 22:46:48 -0600
-From: Paul Jackson <pj@sgi.com>
-To: David Rientjes <rientjes@google.com>
-Cc: akpm@linux-foundation.org, clameter@sgi.com, Lee.Schermerhorn@hp.com,
-       ak@suse.de, linux-kernel@vger.kernel.org
-Subject: Re: [patch 1/6] mempolicy: convert MPOL constants to enum
-Message-Id: <20080225224648.9f1c6b6f.pj@sgi.com>
-In-Reply-To: <alpine.DEB.1.00.0802252017310.14627@chino.kir.corp.google.com>
-References: <alpine.DEB.1.00.0802250012420.12368@chino.kir.corp.google.com>
-	<20080225212056.ca388983.pj@sgi.com>
-	<alpine.DEB.1.00.0802251931030.6021@chino.kir.corp.google.com>
-	<20080225220242.82aedaec.pj@sgi.com>
-	<alpine.DEB.1.00.0802252017310.14627@chino.kir.corp.google.com>
-Organization: SGI
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.12.0; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 26 Feb 2008 00:05:26 -0500
+Received: from ozlabs.org ([203.10.76.45]:41634 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750956AbYBZFF0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 Feb 2008 00:05:26 -0500
+Date: Mon, 25 Feb 2008 23:03:58 -0600
+From: Anton Blanchard <anton@samba.org>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Arjan van de Ven <arjan@infradead.org>, linux-kernel@vger.kernel.org,
+       mingo@elte.hu, sandmann@redhat.com, tglx@tglx.de, hpa@zytor.com
+Subject: Re: [PATCH] x86: add the debugfs interface for the sysprof tool
+Message-ID: <20080226050358.GB17772@kryten>
+References: <20080219123756.6261c13c@laptopd505.fenrus.org> <1203531375.6243.52.camel@lappy> <20080220103940.0a0b5ce0@laptopd505.fenrus.org> <1203533622.6243.55.camel@lappy> <1203533885.6243.60.camel@lappy>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1203533885.6243.60.camel@lappy>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David wrote:
-+	/* add additional MPOL_* modes here */
 
-That doesn't explicitly say what I was most worried about saying, which
-is that those MPOL_* terms have values visible in the kernel's public
-API, and it does say more than might be true, and it doesn't explain
-why it says what it says.
+Hi Peter,
+ 
+> Usable for me is a cli interface. Also, I absolutely love opannotate.
 
-It kinda looks like an ugly "maybe this will shut Paul up patch
-<grin>".  I'd rather leave the code the way it was than add that
-comment ... sorry.
+I definitely agree there.
 
->  I'd like to avoid respinning this set
+It's interesting to note that sysprof requires you to run the GUI as
+root in order to work. Maybe Ingo and Arjan are confident there are no
+bugs in all the libraries that sysprof links to:
 
-Ah - now we get to the real issue ?;).
+# ldd `which sysprof` | wc -l
+39
 
-There would be no need to respin; one could do just as you proposed
-doing with the above change, queue a little add-on patch to the
-existing set.
+I'm not.
 
-Really ... look around the kernel.  I believe you'll see many instances
-of enum values being spelled out, even ones that count 0, 1, 2, ...,
-in situations where the values are constrained by outside forces.
-People really do avoid relying on the default enum behaviour having any
-particular numbering.
+Actually before someone converted it to debugfs, it was even worse, the
+sysprof kernel module exported all profiling information to the world:
 
-Whatever ... do as you will.
+-r--r--r-- 1 root root 2060 2008-02-25 23:00 /proc/sysprof-trace
 
--- 
-                  I won't rest till it's the best ...
-                  Programmer, Linux Scalability
-                  Paul Jackson <pj@sgi.com> 1.940.382.4214
+Anton
