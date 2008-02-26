@@ -1,179 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758673AbYBZKsf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760232AbYBZKuZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758673AbYBZKsf (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Feb 2008 05:48:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751176AbYBZKs0
+	id S1760232AbYBZKuZ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Feb 2008 05:50:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751243AbYBZKuN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Feb 2008 05:48:26 -0500
-Received: from mailhub.sw.ru ([195.214.232.25]:31281 "EHLO relay.sw.ru"
+	Tue, 26 Feb 2008 05:50:13 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:46955 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751084AbYBZKsZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Feb 2008 05:48:25 -0500
-Date: Tue, 26 Feb 2008 13:47:59 +0300
-From: Alexey Dobriyan <adobriyan@sw.ru>
-To: akpm@osdl.org
-Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH] proc: switch to proc_create()
-Message-ID: <20080226104759.GG7469@localhost.sw.ru>
-Mime-Version: 1.0
+	id S1751176AbYBZKuL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 Feb 2008 05:50:11 -0500
+Date: Tue, 26 Feb 2008 11:49:48 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Andy Whitcroft <apw@shadowen.org>
+Cc: Christoph Hellwig <hch@infradead.org>,
+       Andrew Morton <akpm@linux-foundation.org>, Pekka Paalanen <pq@iki.fi>,
+       linux-kernel@vger.kernel.org, Arjan van de Ven <arjan@infradead.org>,
+       Pavel Roskin <proski@gnu.org>, Steven Rostedt <rostedt@goodmis.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>
+Subject: Re: [RFC] mmiotrace full patch, preview 1
+Message-ID: <20080226104948.GA32659@elte.hu>
+References: <20080224190323.77adf683@daedalus.pq.iki.fi> <20080225144922.ae716e7d.akpm@linux-foundation.org> <20080225233449.GA25448@infradead.org> <20080226102149.GE20322@shadowen.org>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-User-Agent: Mutt/1.5.11
+In-Reply-To: <20080226102149.GE20322@shadowen.org>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Signed-off-by: Alexey Dobriyan <adobriyan@sw.ru>
----
 
- fs/proc/internal.h  |    2 -
- fs/proc/nommu.c     |    2 -
- fs/proc/proc_misc.c |   66 +++++++++++++++++-----------------------------------
- fs/proc/proc_tty.c  |    5 ---
- 4 files changed, 24 insertions(+), 51 deletions(-)
+* Andy Whitcroft <apw@shadowen.org> wrote:
 
---- a/fs/proc/internal.h
-+++ b/fs/proc/internal.h
-@@ -46,8 +46,6 @@ extern int nommu_vma_show(struct seq_file *, struct vm_area_struct *);
- 
- extern int maps_protect;
- 
--extern void create_seq_entry(char *name, mode_t mode,
--				const struct file_operations *f);
- extern int proc_exe_link(struct inode *, struct path *);
- extern int proc_tid_stat(struct seq_file *m, struct pid_namespace *ns,
- 				struct pid *pid, struct task_struct *task);
---- a/fs/proc/nommu.c
-+++ b/fs/proc/nommu.c
-@@ -137,7 +137,7 @@ static const struct file_operations proc_nommu_vma_list_operations = {
- 
- static int __init proc_nommu_init(void)
- {
--	create_seq_entry("maps", S_IRUGO, &proc_nommu_vma_list_operations);
-+	proc_create("maps", S_IRUGO, NULL, &proc_nommu_vma_list_operations);
- 	return 0;
- }
- 
---- a/fs/proc/proc_misc.c
-+++ b/fs/proc/proc_misc.c
-@@ -813,14 +813,6 @@ static struct file_operations proc_kpageflags_operations = {
- 
- struct proc_dir_entry *proc_root_kcore;
- 
--void create_seq_entry(char *name, mode_t mode, const struct file_operations *f)
--{
--	struct proc_dir_entry *entry;
--	entry = create_proc_entry(name, mode, NULL);
--	if (entry)
--		entry->proc_fops = f;
--}
--
- void __init proc_misc_init(void)
- {
- 	static struct {
-@@ -849,63 +841,49 @@ void __init proc_misc_init(void)
- 
- 	/* And now for trickier ones */
- #ifdef CONFIG_PRINTK
--	{
--		struct proc_dir_entry *entry;
--		entry = create_proc_entry("kmsg", S_IRUSR, &proc_root);
--		if (entry)
--			entry->proc_fops = &proc_kmsg_operations;
--	}
-+	proc_create("kmsg", S_IRUSR, &proc_root, &proc_kmsg_operations);
- #endif
--	create_seq_entry("locks", 0, &proc_locks_operations);
--	create_seq_entry("devices", 0, &proc_devinfo_operations);
--	create_seq_entry("cpuinfo", 0, &proc_cpuinfo_operations);
-+	proc_create("locks", 0, NULL, &proc_locks_operations);
-+	proc_create("devices", 0, NULL, &proc_devinfo_operations);
-+	proc_create("cpuinfo", 0, NULL, &proc_cpuinfo_operations);
- #ifdef CONFIG_BLOCK
--	create_seq_entry("partitions", 0, &proc_partitions_operations);
-+	proc_create("partitions", 0, NULL, &proc_partitions_operations);
- #endif
--	create_seq_entry("stat", 0, &proc_stat_operations);
--	create_seq_entry("interrupts", 0, &proc_interrupts_operations);
-+	proc_create("stat", 0, NULL, &proc_stat_operations);
-+	proc_create("interrupts", 0, NULL, &proc_interrupts_operations);
- #ifdef CONFIG_SLABINFO
--	create_seq_entry("slabinfo",S_IWUSR|S_IRUGO,&proc_slabinfo_operations);
-+	proc_create("slabinfo",S_IWUSR|S_IRUGO,NULL,&proc_slabinfo_operations);
- #ifdef CONFIG_DEBUG_SLAB_LEAK
--	create_seq_entry("slab_allocators", 0 ,&proc_slabstats_operations);
-+	proc_create("slab_allocators", 0, NULL, &proc_slabstats_operations);
- #endif
- #endif
--	create_seq_entry("buddyinfo",S_IRUGO, &fragmentation_file_operations);
--	create_seq_entry("pagetypeinfo", S_IRUGO, &pagetypeinfo_file_ops);
--	create_seq_entry("vmstat",S_IRUGO, &proc_vmstat_file_operations);
--	create_seq_entry("zoneinfo",S_IRUGO, &proc_zoneinfo_file_operations);
-+	proc_create("buddyinfo", S_IRUGO, NULL, &fragmentation_file_operations);
-+	proc_create("pagetypeinfo", S_IRUGO, NULL, &pagetypeinfo_file_ops);
-+	proc_create("vmstat", S_IRUGO, NULL, &proc_vmstat_file_operations);
-+	proc_create("zoneinfo", S_IRUGO, NULL, &proc_zoneinfo_file_operations);
- #ifdef CONFIG_BLOCK
--	create_seq_entry("diskstats", 0, &proc_diskstats_operations);
-+	proc_create("diskstats", 0, NULL, &proc_diskstats_operations);
- #endif
- #ifdef CONFIG_MODULES
--	create_seq_entry("modules", 0, &proc_modules_operations);
-+	proc_create("modules", 0, NULL, &proc_modules_operations);
- #endif
- #ifdef CONFIG_SCHEDSTATS
--	create_seq_entry("schedstat", 0, &proc_schedstat_operations);
-+	proc_create("schedstat", 0, NULL, &proc_schedstat_operations);
- #endif
- #ifdef CONFIG_PROC_KCORE
--	proc_root_kcore = create_proc_entry("kcore", S_IRUSR, NULL);
--	if (proc_root_kcore) {
--		proc_root_kcore->proc_fops = &proc_kcore_operations;
-+	proc_root_kcore = proc_create("kcore", S_IRUSR, NULL, &proc_kcore_operations);
-+	if (proc_root_kcore)
- 		proc_root_kcore->size =
- 				(size_t)high_memory - PAGE_OFFSET + PAGE_SIZE;
--	}
- #endif
- #ifdef CONFIG_PROC_PAGE_MONITOR
--	create_seq_entry("kpagecount", S_IRUSR, &proc_kpagecount_operations);
--	create_seq_entry("kpageflags", S_IRUSR, &proc_kpageflags_operations);
-+	proc_create("kpagecount", S_IRUSR, NULL, &proc_kpagecount_operations);
-+	proc_create("kpageflags", S_IRUSR, NULL, &proc_kpageflags_operations);
- #endif
- #ifdef CONFIG_PROC_VMCORE
--	proc_vmcore = create_proc_entry("vmcore", S_IRUSR, NULL);
--	if (proc_vmcore)
--		proc_vmcore->proc_fops = &proc_vmcore_operations;
-+	proc_vmcore = proc_create("vmcore", S_IRUSR, NULL, &proc_vmcore_operations);
- #endif
- #ifdef CONFIG_MAGIC_SYSRQ
--	{
--		struct proc_dir_entry *entry;
--		entry = create_proc_entry("sysrq-trigger", S_IWUSR, NULL);
--		if (entry)
--			entry->proc_fops = &proc_sysrq_trigger_operations;
--	}
-+	proc_create("sysrq-trigger", S_IWUSR, NULL, &proc_sysrq_trigger_operations);
- #endif
- }
---- a/fs/proc/proc_tty.c
-+++ b/fs/proc/proc_tty.c
-@@ -214,7 +214,6 @@ void proc_tty_unregister_driver(struct tty_driver *driver)
-  */
- void __init proc_tty_init(void)
- {
--	struct proc_dir_entry *entry;
- 	if (!proc_mkdir("tty", NULL))
- 		return;
- 	proc_tty_ldisc = proc_mkdir("tty/ldisc", NULL);
-@@ -227,7 +226,5 @@ void __init proc_tty_init(void)
- 	proc_tty_driver = proc_mkdir_mode("tty/driver", S_IRUSR | S_IXUSR, NULL);
- 
- 	create_proc_read_entry("tty/ldiscs", 0, NULL, tty_ldiscs_read_proc, NULL);
--	entry = create_proc_entry("tty/drivers", 0, NULL);
--	if (entry)
--		entry->proc_fops = &proc_tty_drivers_operations;
-+	proc_create("tty/drivers", 0, NULL, &proc_tty_drivers_operations);
- }
+> Ok, so that would be the following, work for everyone?
+> 
+> WARNING: mutexes are preferred for single holder semaphores
+> #1: FILE: Z95.c:1:
+> +       DECLARE_MUTEX(&foo);
+> 
+> WARNING: mutexes are preferred for single holder semaphores
+> #3: FILE: Z95.c:3:
+> +       init_MUTEX(&foo);
 
+yeah.
+
+  Acked-by: Ingo Molnar <mingo@elte.hu>
+
+also i guess init_MUTEX_LOCKED() should emit a "this should be a 
+completion" warning.
+
+i guess non-DEFINE_SPINLOCK old-style spinlock definition:
+
+  spinlock_t lock = SPIN_LOCK_UNLOCKED;
+
+should emit a 'use DEFINE_SPINLOCK' warning as well?
+
+	Ingo
