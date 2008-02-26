@@ -1,56 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765039AbYBZUsU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765026AbYBZUnZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765039AbYBZUsU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Feb 2008 15:48:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752503AbYBZUsJ
+	id S1765026AbYBZUnZ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Feb 2008 15:43:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762283AbYBZUnJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Feb 2008 15:48:09 -0500
-Received: from 1wt.eu ([62.212.114.60]:2154 "EHLO 1wt.eu"
+	Tue, 26 Feb 2008 15:43:09 -0500
+Received: from mgw1.diku.dk ([130.225.96.91]:59155 "EHLO mgw1.diku.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752121AbYBZUsH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Feb 2008 15:48:07 -0500
-Date: Tue, 26 Feb 2008 21:47:07 +0100
-From: Willy Tarreau <w@1wt.eu>
-To: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Jens Axboe <jens.axboe@oracle.com>
-Subject: Re: [RFC] Disk shock protection (revisited)
-Message-ID: <20080226204707.GB8953@1wt.eu>
-References: <87skzgd1zk.fsf@denkblock.local>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <87skzgd1zk.fsf@denkblock.local>
-User-Agent: Mutt/1.5.11
+	id S1752980AbYBZUnH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 Feb 2008 15:43:07 -0500
+Date: Tue, 26 Feb 2008 21:43:03 +0100 (CET)
+From: Julia Lawall <julia@diku.dk>
+To: jirislaby@gmail.com, linux-kernel@vger.kernel.org,
+       kernel-janitors@vger.kernel.org
+Subject: [PATCH 3/9] drivers/char/isicom.c: Correct use of ! and &
+Message-ID: <Pine.LNX.4.64.0802262142390.18200@ask.diku.dk>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Elias,
+From: Julia Lawall <julia@diku.dk>
 
-On Tue, Feb 26, 2008 at 12:56:31AM +0100, Elias Oltmanns wrote:
+In commit e6bafba5b4765a5a252f1b8d31cbf6d2459da337, a bug was fixed that
+involved converting !x & y to !(x & y).  The code below shows the same
+pattern, and thus should perhaps be fixed in the same way.
 
-[ very interesting project ]
+This is not tested and clearly changes the semantics, so it is only
+something to consider.
 
-> Probably, the major problem is that I don't really know what kind of
-> applications (apart from shock protection) I should be thinking of that
-> might want to have a queue freezing facility at hand.
+The semantic patch that makes this change is as follows:
+(http://www.emn.fr/x-info/coccinelle/)
 
-In terms of applications, depending on the sensitivity of the accelerometer,
-we can imagine that a laptop would immediately force unmount crypted
-filesystems if it believes it's being stolen, for instance. It's just a
-random idea that comes to my mind, in the hope it may help you imagine
-some crazy usages. But generally you should not fool your mind with too
-many hypothetical cases, ideas will come once you provide a smart interface
-and this interface will evolve with future needs.
+// <smpl>
+@@ expression E1,E2; @@
+(
+  !E1 & !E2
+|
+- !E1 & E2
++ !(E1 & E2)
+)
+// </smpl>
 
-Concerning your daemon, I think that every millisecond counts when a
-laptop falls on the floor. So I think that running it in the kernel
-should help you gain those precious milliseconds. I doubt your daemon
-could trigger fast enough while X is starting or during some activities
-which require a lot of CPU or uninterruptible I/O. If (I don't know)
-the driver can be woken up by an interrupt from the controller, it
-might react faster.
+Signed-off-by: Julia Lawall <julia@diku.dk>
 
-Good luck, and I sincerely wish you success on this project!
-Willy
+---
 
+diff -u -p a/drivers/char/isicom.c b/drivers/char/isicom.c
+--- a/drivers/char/isicom.c 2007-10-22 11:25:05.000000000 +0200
++++ b/drivers/char/isicom.c 2008-02-26 08:01:56.000000000 +0100
+@@ -1527,7 +1527,7 @@ static int __devinit reset_card(struct p
+ 	msleep(10);
+ 
+ 	portcount = inw(base + 0x2);
+-	if (!inw(base + 0xe) & 0x1 || (portcount != 0 && portcount != 4 &&
++	if (!(inw(base + 0xe) & 0x1) || (portcount != 0 && portcount != 4 &&
+ 				portcount != 8 && portcount != 16)) {
+ 		dev_err(&pdev->dev, "ISILoad:PCI Card%d reset failure.\n",
+ 			card + 1);
