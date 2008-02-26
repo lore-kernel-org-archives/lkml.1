@@ -1,76 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762408AbYBZQfG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762147AbYBZQjV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762408AbYBZQfG (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Feb 2008 11:35:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753048AbYBZQe4
+	id S1762147AbYBZQjV (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Feb 2008 11:39:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751611AbYBZQjH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Feb 2008 11:34:56 -0500
-Received: from smtp1.linux-foundation.org ([207.189.120.13]:55449 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752793AbYBZQez (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Feb 2008 11:34:55 -0500
-Date: Tue, 26 Feb 2008 08:33:54 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Dave Young <hidave.darkstar@gmail.com>
-Cc: linux-kernel@vger.kernel.org, "Paul E. McKenney" <paulmck@us.ibm.com>,
-       Ingo Molnar <mingo@elte.hu>
-Subject: Re: [BUG] using smp_processor_id() in preemptible as suspending
-Message-Id: <20080226083354.be0a7351.akpm@linux-foundation.org>
-In-Reply-To: <20080226082411.GA2853@darkstar.te-china.tietoenator.com>
-References: <20080226082411.GA2853@darkstar.te-china.tietoenator.com>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 26 Feb 2008 11:39:07 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:59167 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751118AbYBZQjF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 Feb 2008 11:39:05 -0500
+Message-ID: <47C440A6.6080202@redhat.com>
+Date: Tue, 26 Feb 2008 08:39:02 -0800
+From: Eric Sandeen <sandeen@redhat.com>
+User-Agent: Thunderbird 2.0.0.9 (Macintosh/20071031)
+MIME-Version: 1.0
+To: Takashi Sato <t-sato@yk.jp.nec.com>
+CC: linux-ext4@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [RFC] ext3 freeze feature ver 0.2
+References: <20080219202706t-sato@mail.jp.nec.com> <20080226172014t-sato@mail.jp.nec.com>
+In-Reply-To: <20080226172014t-sato@mail.jp.nec.com>
+Content-Type: text/plain; charset=ISO-2022-JP
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 26 Feb 2008 16:24:11 +0800 Dave Young <hidave.darkstar@gmail.com> wrote:
+Takashi Sato wrote:
 
-> I don't know whom I should mail to, could you cc the proper guy? Thanks.
-> 
-> [  118.331674] acpi LNXSYSTM:00: suspend
-> [  118.331674] Disabling non-boot CPUs ...
-> [  118.331674] CPU0 attaching NULL sched-domain.
-> [  118.331674] CPU1 attaching NULL sched-domain.
-> [  118.438750] CPU 1 is now offline
-> [  118.438750] lockdep: fixing up alternatives.
-> [  118.438750] SMP alternatives: switching to UP code
-> [  118.438750] BUG: using smp_processor_id() in preemptible [00000000] code: s2ram/2818
-> [  118.438750] caller is rcu_offline_cpu+0x15a/0x1c0
-> [  118.438750] Pid: 2818, comm: s2ram Not tainted 2.6.25-rc3-test #2
-> [  118.438750]  [<c0129738>] ? printk+0x18/0x20
-> [  118.438750]  [<c025c551>] debug_smp_processor_id+0xb1/0xc0
-> [  118.438750]  [<c0161f8a>] rcu_offline_cpu+0x15a/0x1c0
-> [  118.438750]  [<c03d408f>] rcu_cpu_notify+0x3f/0x60
-> [  118.438750]  [<c0141b0d>] notifier_call_chain+0x3d/0x80
-> [  118.438750]  [<c0141db9>] __raw_notifier_call_chain+0x19/0x20
-> [  118.438750]  [<c0141dda>] raw_notifier_call_chain+0x1a/0x20
-> [  118.438750]  [<c015262b>] _cpu_down+0x13b/0x230
-> [  118.438750]  [<c01527c9>] disable_nonboot_cpus+0x49/0xd0
-> [  118.438750]  [<c0157492>] suspend_devices_and_enter+0x72/0x130
-> [  118.438750]  [<c0129738>] ? printk+0x18/0x20
-> [  118.438750]  [<c0157623>] enter_state+0xb3/0xe0
-> [  118.438750]  [<c015777d>] state_store+0x7d/0xc0
-> [  118.438750]  [<c0157700>] ? state_store+0x0/0xc0
-> [  118.438750]  [<c0249e4e>] kobj_attr_store+0x2e/0x40
-> [  118.438750]  [<c01ca957>] flush_write_buffer+0x47/0x70
-> [  118.438750]  [<c01ca9c9>] sysfs_write_file+0x49/0x70
-> [  118.438750]  [<c0188d41>] vfs_write+0x91/0x140
-> [  118.438750]  [<c0188e9d>] sys_write+0x3d/0x70
-> [  118.438750]  [<c0104fca>] syscall_call+0x7/0xb
-> [  118.438750]  =======================
-> [  118.438750] CPU0 attaching NULL sched-domain.
-> [  118.440335] CPU1 is down
+> o Elevate XFS ioctl numbers (XFS_IOC_FREEZE and XFS_IOC_THAW) to the VFS
+>   As Andreas Dilger and Christoph Hellwig advised me, I have elevated
+>   them to include/linux/fs.h as below.
+>     #define FIFREEZE        _IOWR('X', 119, int)
+> 　  #define FITHAW          _IOWR('X', 120, int)
+>   The ioctl numbers used by XFS applications don't need to be changed.
+>   But my following ioctl for the freeze needs the parameter
+>   as the timeout period.  So if XFS applications don't want the timeout
+>   feature as the current implementation, the parameter needs to be
+>   changed 1 (level?) into 0.
 
-Paul & Ingo I guess
+So, existing xfs applications calling the xfs ioctl now will behave
+differently, right?  We can only keep the same ioctl number if the
+calling semantics are the same.  Keeping the same number but changing
+the semantics is harmful, IMHO....
 
-> My .config 
-
-Doesn't tell us whether you'r eusing CONFIG_CLASSIC_RCU or
-CONFIG_PREEMPT_RCU.  I assume CONFIG_CLASSIC_RCU, if you ran `make
-oldconfig'.
-
-Which kernel are you running here?
+-Eric
