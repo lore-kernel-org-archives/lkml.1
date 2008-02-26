@@ -1,98 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765056AbYBZV1R@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764842AbYBZVbK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765056AbYBZV1R (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Feb 2008 16:27:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761540AbYBZV1G
+	id S1764842AbYBZVbK (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Feb 2008 16:31:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762442AbYBZVa5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Feb 2008 16:27:06 -0500
-Received: from g4t0017.houston.hp.com ([15.201.24.20]:4166 "EHLO
-	g4t0017.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752808AbYBZV1E (ORCPT
+	Tue, 26 Feb 2008 16:30:57 -0500
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:40895 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1762312AbYBZVa4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Feb 2008 16:27:04 -0500
+	Tue, 26 Feb 2008 16:30:56 -0500
+Date: Tue, 26 Feb 2008 15:30:54 -0600
+From: Paul Jackson <pj@sgi.com>
+To: David Rientjes <rientjes@google.com>
+Cc: akpm@linux-foundation.org, clameter@sgi.com, Lee.Schermerhorn@hp.com,
+       ak@suse.de, linux-kernel@vger.kernel.org
 Subject: Re: [patch 5/6] mempolicy: add MPOL_F_RELATIVE_NODES flag
-From: Lee Schermerhorn <Lee.Schermerhorn@hp.com>
-To: Paul Jackson <pj@sgi.com>, David Rientjes <rientjes@google.com>
-Cc: akpm@linux-foundation.org, clameter@sgi.com, ak@suse.de,
-       linux-kernel@vger.kernel.org, Mel Gorman <mel@csn.ul.ie>
-In-Reply-To: <20080226114417.c8948b61.pj@sgi.com>
+Message-Id: <20080226153054.48c329cf.pj@sgi.com>
+In-Reply-To: <alpine.DEB.1.00.0802261306110.10790@chino.kir.corp.google.com>
 References: <alpine.DEB.1.00.0802250012420.12368@chino.kir.corp.google.com>
-	 <alpine.DEB.1.00.0802250013580.12368@chino.kir.corp.google.com>
-	 <alpine.DEB.1.00.0802250014170.12368@chino.kir.corp.google.com>
-	 <alpine.DEB.1.00.0802250014410.12368@chino.kir.corp.google.com>
-	 <alpine.DEB.1.00.0802250016120.12368@chino.kir.corp.google.com>
-	 <20080226114417.c8948b61.pj@sgi.com>
-Content-Type: text/plain
-Organization: HP/OSLO
-Date: Tue, 26 Feb 2008 16:27:09 -0500
-Message-Id: <1204061229.5309.36.camel@localhost>
+	<alpine.DEB.1.00.0802250013580.12368@chino.kir.corp.google.com>
+	<alpine.DEB.1.00.0802250014170.12368@chino.kir.corp.google.com>
+	<alpine.DEB.1.00.0802250014410.12368@chino.kir.corp.google.com>
+	<alpine.DEB.1.00.0802250016120.12368@chino.kir.corp.google.com>
+	<20080226114417.c8948b61.pj@sgi.com>
+	<alpine.DEB.1.00.0802261306110.10790@chino.kir.corp.google.com>
+Organization: SGI
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.12.0; i686-pc-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.6.1 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2008-02-26 at 11:44 -0600, Paul Jackson wrote:
-> David,
-> 
-> Perhaps I missed it, but could you elaborate on what sort of testing
-> these patches for MPOL_F_RELATIVE_NODES and MPOL_F_STATIC_NODES have
-> received?
-> 
-> The main reason I didn't push my version of these patches in December
-> was I figured it would take a week or three of obsessive-compulsive
-> testing to verify that we didn't break various corner cases of the
-> mbind/mempolicy system call interface.
-> 
-> In particular, do we know that Oracle works with this?  At least in
-> years past, when Andi was the primary developer here, he had some
-> good and detailed awareness of what it took to keep Oracle happy
-> with this NUMA memory policy apparatus.  I don't know if we still
-> have that awareness.
-> 
+David wrote:
+> I don't understand what Oracle has to do with anything here ...
 
-I've recently been "playing with" Andi's numactl/libnuma/mempolicy
-regression tests on 25-rc2-mm1.  I found a couple of problems caused by
-changes in behavior on newer kernels--not in the mempolicy area, but in
-a couple of the tests themselves and in numastat, used by the primary
-mempolicy regression test.  I haven't seen any discussion of these
-issues on the mailing lists, or I missed it.  So, I've attempted my own
-fixes.
+I'm figuring that the risk is high that we broke the existing calls,
+when the new MPOL_F_*_NODES flags are not used.
 
-I have placed a tarball containing patches against numactl-1.0.2 sources
-at:
-http://free.linux.hp.com/~lts/Patches/Numactl/numactl-1.0.2-patches-080226.tar.gz
+> If you have any examples of unexpected behavior after applying my 
+> patchset, please post it and I'll fix it rather quickly.
 
-See the patch descriptions for more info.  The individual patches and
-series live in the same Numactl directory for easy browsing.
+That won't cut it for Oracle, or other such major applications
+using NUMA mempolicy calls.  If we wait for them to report breakage,
+it will be a year or two down the road from now, and it would be
+another year or two before they could presume the fix was in the
+kernel version they were supporting.
 
-The numactl-1.0.2 sources are located in Andi's repository at:
-
-	ftp://ftp.suse.com/pub/people/ak/numa/numactl-1.0.2.tar.gz
-
-With [3(1) of] these patches, the regression tests pass on my x86_64
-NUMA test platform [4 socket/node, dual core, 32GB] on 2.6.25-rc2-mm1
-with and without Mel Gorman's "two zonelist" patch series.  I haven't
-gotten around to checking out David's latest series yet, nor have I
-tried Andi's tests with cpusets.  I don't know whether the tests will
-pass in arbitrary cpusets--I expect not.  It's on my list.  In any case,
-you can grab the patches if you want to regression test your own
-patches.
-
-Regards,
-Lee
-
-(1) patches required for regression tests:
-
-numastat-01-fix-report-order-for-new-kernels.patch
-regress2-01-fix-checkaffinity-numnodes-calc.patch
-regress2-02-checktopology-numnodes-calc.patch
-
-regress-01-reorg-and-annotate.patch is just a "beautification" [in the
-eye of the beholder, of course] patch so that I could figure out what
-was going on.
-
-
-	
-
+-- 
+                  I won't rest till it's the best ...
+                  Programmer, Linux Scalability
+                  Paul Jackson <pj@sgi.com> 1.940.382.4214
