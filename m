@@ -1,49 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763953AbYBZRol@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764034AbYBZRpT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763953AbYBZRol (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Feb 2008 12:44:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762359AbYBZRoU
+	id S1764034AbYBZRpT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Feb 2008 12:45:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763983AbYBZRow
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Feb 2008 12:44:20 -0500
-Received: from khc.piap.pl ([195.187.100.11]:45225 "EHLO khc.piap.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761113AbYBZRoT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Feb 2008 12:44:19 -0500
-To: Alan Cox <alan@redhat.com>
-Cc: davids@webmaster.com, Valdis.Kletnieks@vt.edu,
-       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       Arnaldo Carvalho de Melo <acme@ghostprotocols.net>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] 2.6.25-rc2-mm1 - fix mcount GPL bogosity.
-References: <MDEHLPKNGKAHNMBLJOLKGEKDKKAC.davids@webmaster.com>
-	<m3d4qj90zm.fsf@maximus.localdomain>
-	<m34pbv8x8s.fsf@maximus.localdomain>
-	<20080226172143.GA5445@devserv.devel.redhat.com>
-From: Krzysztof Halasa <khc@pm.waw.pl>
-Date: Tue, 26 Feb 2008 18:44:18 +0100
-In-Reply-To: <20080226172143.GA5445@devserv.devel.redhat.com> (Alan Cox's message of "Tue\, 26 Feb 2008 12\:21\:43 -0500")
-Message-ID: <m34pbvsjd9.fsf@maximus.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Tue, 26 Feb 2008 12:44:52 -0500
+Received: from smtp1.linux-foundation.org ([207.189.120.13]:38175 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1762393AbYBZRos (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 Feb 2008 12:44:48 -0500
+Date: Tue, 26 Feb 2008 09:43:08 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Nikola Ciprich <extmaillist@linuxbox.cz>
+Cc: linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
+       Nick Cheng <nick.cheng@areca.com.tw>, Erich Chen <erich@areca.com.tw>,
+       kopi@linuxbox.cz
+Subject: Re: arcmsr & areca-1660 - strange behaviour under heavy load
+Message-Id: <20080226094308.35db8f3f.akpm@linux-foundation.org>
+In-Reply-To: <alpine.LRH.0.9999.0802261032440.31781@linuxbox.linuxbox.cz>
+References: <alpine.LRH.0.9999.0802231201380.21313@linuxbox.linuxbox.cz>
+	<20080224161034.f494fc7f.akpm@linux-foundation.org>
+	<alpine.LRH.0.9999.0802261032440.31781@linuxbox.linuxbox.cz>
+X-Mailer: Sylpheed 2.4.7 (GTK+ 2.12.1; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alan Cox <alan@redhat.com> writes:
+On Tue, 26 Feb 2008 10:35:31 +0100 (CET) Nikola Ciprich <extmaillist@linuxbox.cz> wrote:
 
->> Actually I think the _GPL exports are really harmful - somebody
->> distributing a binary module may claim he/she doesn't violate the GPL
->> because the module uses only non-GPL exports. OTOH GPL symbols give
->
-> They can claim that anyway. The can claim to be alien life forms too. Claim
-> is not the same as legal decision.
+> Hi
+> 
+> On Sun, 24 Feb 2008, Andrew Morton wrote:
+> 
+> Hi Andrew,
+> thanks a lot for reply, I'm attaching requested information.
+> please let me know if You need more information/testing, whatever.
+> I'll be glad to help.
+> BR
+> nik
+> 
+> >> Areca support doesn't seem to be very interested in the problem :-(
+> >
+> > (cc's added)
+> >
+> > Please get the machine into this state of memory exhaustion then take
+> > copies of the output of the following, and send them via reply-to-all to
+> > this email:
+> >
+> > - cat /proc/meminfo
+> >
+> > - cat /proc/slabinfo
+> >
+> > - dmesg -c > /dev/null ; echo m > /proc/sysrq-trigger ; dmesg -c
+> >
+> > Thanks.
 
-Sure but it may be now easier to convince the judge they are right. Of
-course if they aren't using GPL exports - if they are, perhaps harder.
+Alas, that all looks OK to me.
 
-> From what I've seen its helped make binary
-> module abusers more cautious.
+You never get any out-of-memory messages, and no oom-killing messages?
 
-Those not using _GPL exports?
--- 
-Krzysztof Halasa
+Possibly what is happening here is that in this low-memory condition, some
+of the driver's internal memory-allocation attempts are failing, and the
+driver isn't correctly handling this.  This is a rare situation which may
+well not have been hit in anyone else's testing.
+
+I expect that the Areca engineers will be able to reproduce this with a
+suitably small "mem=" kernel boot option.  If not, they could perhaps
+investigate the kernel's fault-injection framework, which permits
+simulation of page allocation failures.
