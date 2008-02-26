@@ -1,167 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762659AbYBZPP3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762577AbYBZPQZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762659AbYBZPP3 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Feb 2008 10:15:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762526AbYBZPPG
+	id S1762577AbYBZPQZ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Feb 2008 10:16:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752683AbYBZPQQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Feb 2008 10:15:06 -0500
-Received: from nf-out-0910.google.com ([64.233.182.184]:30693 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1762490AbYBZPPB (ORCPT
+	Tue, 26 Feb 2008 10:16:16 -0500
+Received: from sinclair.provo.novell.com ([137.65.248.137]:25892 "EHLO
+	sinclair.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756200AbYBZPQP convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Feb 2008 10:15:01 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=message-id:date:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding:from;
-        b=DK1wkzk87Ry7IwPfYAC10KpRQk3xkhexxEkeaeYWiCcaXrBfw1QlJwKN2M3Luco3LBBu6U//8+PKH9hEBw1B6Jn69YXsGpFyKKlyAqY6AIfzjp7Limh9U4LY8edutrkIoVqbPiugxBjPLnsoBtjkuYiHk2cPrjtvN6o73xTWtTU=
-Message-ID: <47C42CB3.8040500@gmail.com>
-Date: Tue, 26 Feb 2008 16:13:55 +0100
-User-Agent: Thunderbird 1.5.0.8 (X11/20060911)
-MIME-Version: 1.0
-To: Davide Libenzi <davidel@xmailserver.org>
-CC: Pierre Habouzit <madcoder@debian.org>, lkml <linux-kernel@vger.kernel.org>,
-       Eric Dumazet <dada1@cosmosbay.com>, Marc Lehmann <schmorp@schmorp.de>,
-       David Schwartz <davids@webmaster.com>
-Subject: Re: epoll and shared fd's
-References: <20080118134318.GD9607@artemis.madism.org>  <Pine.LNX.4.64.0801181257240.24685@alien.or.mcafeemobile.com>  <20080124084001.GB7356@artemis.madism.org>  <Pine.LNX.4.64.0801241556130.29058@alien.or.mcafeemobile.com> <517f3f820801252337lcd4b0a0hde7359dc46a947dd@mail.gmail.com> <Pine.LNX.4.64.0801261308270.10472@alien.or.mcafeemobile.com>
-In-Reply-To: <Pine.LNX.4.64.0801261308270.10472@alien.or.mcafeemobile.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-From: Michael Kerrisk <mtk.manpages@googlemail.com>
+	Tue, 26 Feb 2008 10:16:15 -0500
+Message-Id: <47C3E558.BA47.005A.0@novell.com>
+X-Mailer: Novell GroupWise Internet Agent 7.0.2 HP
+Date: Tue, 26 Feb 2008 08:09:28 -0700
+From: "Gregory Haskins" <ghaskins@novell.com>
+To: "Pavel Machek" <pavel@ucw.cz>
+Cc: <a.p.zijlstra@chello.nl>, <mingo@elte.hu>, <bill.huey@gmail.com>,
+       <rostedt@goodmis.org>, <kevin@hilman.org>, <tglx@linutronix.de>,
+       <cminyard@mvista.com>, <dsingleton@mvista.com>, <dwalker@mvista.com>,
+       "Moiz Kohari" <MKohari@novell.com>,
+       "Peter Morreale" <PMorreale@novell.com>,
+       "Sven Dietrich" <SDietrich@novell.com>, <dsaxena@plexity.net>,
+       <acme@redhat.com>, <ak@suse.de>, <gregkh@suse.de>, <npiggin@suse.de>,
+       <linux-kernel@vger.kernel.org>, <linux-rt-users@vger.kernel.org>
+Subject: Re: [(RT RFC) PATCH v2 6/9] add a loop counter based timeout
+	mechanism
+References: <20080225155959.11268.35541.stgit@novell1.haskins.net>
+ <20080225160108.11268.1451.stgit@novell1.haskins.net>
+ <20080225220601.GH2659@elf.ucw.cz>
+In-Reply-To: <20080225220601.GH2659@elf.ucw.cz>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Following up after quite some time:
-
-Davide Libenzi wrote:
-> On Sat, 26 Jan 2008, Michael Kerrisk wrote:
+>>> On Mon, Feb 25, 2008 at  5:06 PM, in message
+<20080225220601.GH2659@elf.ucw.cz>, Pavel Machek <pavel@ucw.cz> wrote: 
 > 
->> On Jan 25, 2008 12:57 AM, Davide Libenzi <davidel@xmailserver.org> wrote:
->>> On Thu, 24 Jan 2008, Pierre Habouzit wrote:
->>>
->>>> On Fri, Jan 18, 2008 at 09:10:18PM +0000, Davide Libenzi wrote:
->>>>> On Fri, 18 Jan 2008, Pierre Habouzit wrote:
->>>>>
->>>>>>   Hi,
->>>>>>
->>>>>>   I just came across a strange behavior of epoll that seems to
->>>>>> contradict the documentation. Here is what happens:
->>>>>>
->>>>>> * I have two processes P1 and P2, P1 accept()s connections, and send the
->>>>>>   resulting file descriptors to P2 through a unix socket.
->>>>>>
->>>>>> * P2 registers the received socket in his epollfd.
->>>>>>
->>>>>>   [time passes]
->>>>>>
->>>>>> * P2 is done with the socket and closes it
->>>>>>
->>>>>> * P2 gets events for the socket again !
->>>>>>
->>>>>>
->>>>>>   Though the documentation says that if a process closes a file
->>>>>> descriptor, it gets unregistered. And yes I'm sure that P2 doens't dup()
->>>>>> the file descriptor. Though (because of a bug) it was still open in
->>>>>> P1[0], hence the referenced socket still live at the kernel level.
->>>>>>
->>>>>>   Of course the userland workaround is to force the EPOLL_CTL_DEL before
->>>>>> the close, which I now do, but costs me a syscall where I wanted to
->>>>>> spare one :|
->>>>> For epoll, a close is when the kernel file* is released (that is, when all
->>>>> its instances are gone).
->>>>> We could put a special handling in filp_close(), but I don't think is a
->>>>> good idea, and we're better live with the current behaviour.
->>>>   Okay, maybe updating the linux manpages to be more clear about that is
->>>> the way to go then. Thanks
->>> Sure. I'll send Michael Kerrisk and updated statement for the A6 answer in
->>> the epoll man page.
->> Thanks Davide -- yes please send me a patch.
->> --
->> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
->> the body of a message to majordomo@vger.kernel.org
->> More majordomo info at  http://vger.kernel.org/majordomo-info.html
->> Please read the FAQ at  http://www.tux.org/lkml/
->>
-> 
-> Something like the one below ...
-> 
-> 
-> - Davide
-> 
-> 
-> 
-> --- epoll.4	2008-01-26 12:58:21.000000000 -0800
-> +++ epoll.4.new	2008-01-26 13:06:36.000000000 -0800
-> @@ -285,7 +285,19 @@
->  sets automatically?
->  .TP
->  .B A6
-> -Yes.
-> +A file descriptor is the userspace counterpart of an internal kernel handle.
-> +Every time a process calls functions liks
-> +.BR dup (2),
-> +.BR dup2 (2)
-> +or
-> +.BR fork (2),
-> +a new file descriptor referring to the same internal kernel handle is
-> +created. The internal kernel handle remains alive until all the userspace
-> +file descriptors have been closed.
-> +The
-> +.BR epoll (4)
-> +interface automatically removes the internal kernel handle from the set,
-> +once all the file descriptor instances have been closed.
->  .TP
->  .B Q7
->  If more than one event occurs between
+> I believe you have _way_ too many config variables. If this can be set
+> at runtime, does it need a config option, too?
 
-Davide,
+Generally speaking, I think until this algorithm has an adaptive-timeout in addition to an adaptive-spin/sleep, these .config based defaults are a good idea.  Sometimes setting these things at runtime are a PITA when you are talking about embedded systems that might not have/want a nice userspace sysctl-config infrastructure.  And changing the defaults in the code is unattractive for some users.  I don't think its a big deal either way, so if people hate the config options, they should go.  But I thought I would throw this use-case out there to ponder.
 
-Two points.
-
-a) I did a
-
-s/internal kernel handle/open file description/
-
-since that is the POSIX term for the internal handle.
-
-b) It seems to me that you text doesn't quite make the point explicit
-enough.  I've tried to rewrite it; could you please check:
-
-       A6     Yes, but be aware of the following point.  A  file
-              descriptor is a reference to an open file descrip-
-              tion (see  open(2)).   Whenever  a  descriptor  is
-              duplicated  via dup(2), dup2(2), fcntl(2) F_DUPFD,
-              or fork(2), a new file descriptor referring to the
-              same  open  file  description is created.  An open
-              file description continues to exist until all file
-              descriptors referring to it have been closed.  The
-              epoll  interface  automatically  removes  a   file
-              descriptor  from  an  epoll set only after all the
-              file descriptors referring to the underlying  open
-              file  handle  have  been  closed.  This means that
-              even after a file descriptor that is  part  of  an
-              epoll  set has been closed, events may be reported
-              for that file descriptor if other file descriptors
-              referring  to the same underlying file description
-              remain open.
-
-Does that seem okay?  I plan to include the text in man-pages-2.79.
-
-Was there some reason why removing a file descriptor couldn't have been
-made to do the "expected" thing (i.e., remove notifications for that file
-descriptor, regardless of whether the underlying file description remains
-open)?
-
-Cheers,
-
-Michael
-
--- 
-Michael Kerrisk
-Maintainer of the Linux man-pages project
-http://www.kernel.org/doc/man-pages/
-Want to report a man-pages bug?  Look here:
-http://www.kernel.org/doc/man-pages/reporting_bugs.html
-
+Regards,
+-Greg
 
