@@ -1,55 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762494AbYBZJ2v@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762613AbYBZJ31@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762494AbYBZJ2v (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Feb 2008 04:28:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759918AbYBZJ2n
+	id S1762613AbYBZJ31 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Feb 2008 04:29:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759918AbYBZJ3T
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Feb 2008 04:28:43 -0500
-Received: from smtp-102-tuesday.noc.nerim.net ([62.4.17.102]:3194 "EHLO
-	mallaury.nerim.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1759373AbYBZJ2m (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Feb 2008 04:28:42 -0500
-Date: Tue, 26 Feb 2008 10:28:35 +0100
-From: Jean Delvare <khali@linux-fr.org>
-To: Martin Michlmayr <tbm@cyrius.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Byron Bradley <byron.bbradley@gmail.com>,
-       David Brownell <david-b@pacbell.net>
-Subject: Re: [GIT PATCH] scsi fixes for 2.6.25-rc2
-Message-ID: <20080226102835.5bbab3d1@hyperion.delvare>
-In-Reply-To: <20080225223917.GX17231@deprecation.cyrius.com>
-References: <1203779614.3139.4.camel@localhost.localdomain>
-	<47C08134.2030205@garzik.org>
-	<alpine.LFD.1.00.0802231229320.21332@woody.linux-foundation.org>
-	<20080225223917.GX17231@deprecation.cyrius.com>
-X-Mailer: Sylpheed-Claws 2.5.5 (GTK+ 2.10.6; x86_64-suse-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 26 Feb 2008 04:29:19 -0500
+Received: from namei.org ([69.55.235.186]:35053 "EHLO us.intercode.com.au"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1758646AbYBZJ3S (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 Feb 2008 04:29:18 -0500
+Date: Tue, 26 Feb 2008 20:28:43 +1100 (EST)
+From: James Morris <jmorris@namei.org>
+X-X-Sender: jmorris@us.intercode.com.au
+To: Alexey Dobriyan <adobriyan@sw.ru>
+cc: linux-kernel@vger.kernel.org, sds@tycho.nsa.gov, eparis@parisplace.org,
+       casey@schaufler-ca.com
+Subject: Re: SMACK or SELinux, but not both
+In-Reply-To: <20080226090953.GA7469@localhost.sw.ru>
+Message-ID: <Xine.LNX.4.64.0802262020001.527@us.intercode.com.au>
+References: <20080226090953.GA7469@localhost.sw.ru>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 25 Feb 2008 23:39:17 +0100, Martin Michlmayr wrote:
-> * Linus Torvalds <torvalds@linux-foundation.org> [2008-02-23 12:31]:
-> > I'm personally of the opinion that a new driver that doesn't add
-> > anything but itself (ie no infrastructure changes etc) is fine. I'd
-> > rather have a new, rough driver that might work, than no driver at
-> > all, and it's not like it can cause a regression if you don't enable
-> > it.
+On Tue, 26 Feb 2008, Alexey Dobriyan wrote:
+
+> If SELinux is registered before SMACK, SMACK panics after
+> register_security() call.
 > 
-> Maybe we can still get the new S-35390A RTC driver in then.  It has
-> been acked by Jean Delvare and David Brownell.  Byron or Jean, can you
-> try to submit it again?
+> If SMACK is registered before SELinux, SELinux panics after
+> register_security() call.
+> 
+> Consequently allmodconfig kernel doesn't boot. It would be nice if
+> some Kconfig magic to exclude each other will be in place.
 
-I'm not the driver author and RTC drivers aren't under my
-responsibility. Ask Alessandro Zummo instead.
+People want to be able to select the security model at boot time, so the 
+option to build both LSMs is required.
 
-> It's needed by the QNAP TS-109/TS-209, a NAS device for which support
-> has been added in 2.6.25-rc1.
+You can stop SELinux from attempting to register as an LSM via selinux=0, 
+which should allow you to boot with just Smack enabled.
 
+
+- James
 -- 
-Jean Delvare
+James Morris
+<jmorris@namei.org>
