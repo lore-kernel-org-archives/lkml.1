@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765590AbYBZUp5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765627AbYBZUqe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765590AbYBZUp5 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Feb 2008 15:45:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765095AbYBZUpk
+	id S1765627AbYBZUqe (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Feb 2008 15:46:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754078AbYBZUqR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Feb 2008 15:45:40 -0500
-Received: from mgw1.diku.dk ([130.225.96.91]:59255 "EHLO mgw1.diku.dk"
+	Tue, 26 Feb 2008 15:46:17 -0500
+Received: from mgw2.diku.dk ([130.225.96.92]:35148 "EHLO mgw2.diku.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1764946AbYBZUpi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Feb 2008 15:45:38 -0500
-Date: Tue, 26 Feb 2008 21:45:31 +0100 (CET)
+	id S1753719AbYBZUqQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 Feb 2008 15:46:16 -0500
+Date: Tue, 26 Feb 2008 21:45:56 +0100 (CET)
 From: Julia Lawall <julia@diku.dk>
-To: takata@linux-m32r.org, linux-m32r@ml.linux-m32r.org,
+To: mark.fasheh@oracle.com, kurt.hackel@oracle.com, ocfs2-devel@oss.oracle.com,
        linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
-Subject: [PATCH 7/9] drivers/serial/m32r_sio.c: Correct use of ! and &
-Message-ID: <Pine.LNX.4.64.0802262144320.18200@ask.diku.dk>
+Subject: [PATCH 8/9] fs/ocfs2/aops.c: Correct use of ! and &
+Message-ID: <Pine.LNX.4.64.0802262145321.18200@ask.diku.dk>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
@@ -47,15 +47,15 @@ Signed-off-by: Julia Lawall <julia@diku.dk>
 
 ---
 
-diff -u -p a/drivers/serial/m32r_sio.c b/drivers/serial/m32r_sio.c
---- a/drivers/serial/m32r_sio.c 2007-10-22 11:25:24.000000000 +0200
-+++ b/drivers/serial/m32r_sio.c 2008-02-26 08:12:18.000000000 +0100
-@@ -421,7 +421,7 @@ static void transmit_chars(struct uart_s
- 		up->port.icount.tx++;
- 		if (uart_circ_empty(xmit))
- 			break;
--		while (!serial_in(up, UART_LSR) & UART_LSR_THRE);
-+		while (!(serial_in(up, UART_LSR) & UART_LSR_THRE));
+diff -u -p a/fs/ocfs2/aops.c b/fs/ocfs2/aops.c
+--- a/fs/ocfs2/aops.c 2008-02-05 20:56:02.000000000 +0100
++++ b/fs/ocfs2/aops.c 2008-02-26 08:16:47.000000000 +0100
+@@ -257,7 +257,7 @@ static int ocfs2_readpage_inline(struct 
+ 	struct ocfs2_super *osb = OCFS2_SB(inode->i_sb);
  
- 	} while (--count > 0);
+ 	BUG_ON(!PageLocked(page));
+-	BUG_ON(!OCFS2_I(inode)->ip_dyn_features & OCFS2_INLINE_DATA_FL);
++	BUG_ON(!(OCFS2_I(inode)->ip_dyn_features & OCFS2_INLINE_DATA_FL));
  
+ 	ret = ocfs2_read_block(osb, OCFS2_I(inode)->ip_blkno, &di_bh,
+ 			       OCFS2_BH_CACHED, inode);
