@@ -1,57 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764519AbYBZXcR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764654AbYBZXex@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764519AbYBZXcR (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Feb 2008 18:32:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751005AbYBZXbz
+	id S1764654AbYBZXex (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Feb 2008 18:34:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752198AbYBZXen
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Feb 2008 18:31:55 -0500
-Received: from ug-out-1314.google.com ([66.249.92.174]:35042 "EHLO
+	Tue, 26 Feb 2008 18:34:43 -0500
+Received: from ug-out-1314.google.com ([66.249.92.168]:44033 "EHLO
 	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750895AbYBZXbx (ORCPT
+	with ESMTP id S1751890AbYBZXem (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Feb 2008 18:31:53 -0500
+	Tue, 26 Feb 2008 18:34:42 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=JpA+JV6eBK+lz39K6bPlX+GtY9CZtMZIVZIDnhLoFjJKX0af7CxXhrVu9msJRahV9vo0UDXzoZyQowB32MF64rVe2PL9wuxCkPQxcIoFCrEQ4TKL3DJQBKd7DBMK8rQ92fGYx86Tg9cvG7ODigBwiVJrrCpQKJR9o/7DuMBZEws=
-Message-ID: <2c0942db0802261531s140aaa82w1daa1829b5a36a4a@mail.gmail.com>
-Date: Tue, 26 Feb 2008 15:31:51 -0800
-From: "Ray Lee" <ray-lk@madrabbit.org>
-To: "Andrew Morton" <akpm@linux-foundation.org>
-Subject: Re: broken suspend in .2.6.25-rc3 on T61p (was Re: new regression in 2.6.25-rc3: no keyboard/lid acpi events on thinkpad T61p)
-Cc: "Pavel Machek" <pavel@ucw.cz>, "Dave Jones" <davej@codemonkey.org.uk>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       "kernel list" <linux-kernel@vger.kernel.org>
-In-Reply-To: <20080226105606.e56e4ec6.akpm@linux-foundation.org>
+        h=date:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent:from;
+        b=J/ZMVLF1y+RCruZF/q91Z3vxiLmn11WUUv1YauhWxKbMKzaAdw3QoA339gVmNx39MFDbKk17kK5x/tneCEGNwlFUU8eB2E8vRylsDLFNhgJD3TAK1FaEyvDGtkohiIF3lkM++8dWBjXZiZJa6VbruWyn3FCGw6nhZIj3lX+u4a8=
+Date: Wed, 27 Feb 2008 01:31:48 +0200
+To: Chris Wright <chrisw@sous-sol.org>, Stephen Smalley <sds@tycho.nsa.gov>,
+       James Morris <jmorris@namei.org>, Eric Paris <eparis@parisplace.org>,
+       Casey Schaufler <casey@schaufler-ca.com>,
+       David Woodhouse <dwmw2@infradead.org>
+Cc: linux-security-module@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
+       akpm <akpm@linux-foundation.org>
+Subject: [PATCH -mm 4/4] Netlink: Use LSM interface instead of SELinux one
+Message-ID: <20080226233148.GE12059@ubuntu>
+References: <20080226232229.GA12059@ubuntu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <20080225143932.6b83b65d.akpm@linux-foundation.org>
-	 <20080225225820.GP2659@elf.ucw.cz>
-	 <20080225155550.4a020dfb.akpm@linux-foundation.org>
-	 <20080226000007.GB22102@atrey.karlin.mff.cuni.cz>
-	 <20080226101117.GA26671@atrey.karlin.mff.cuni.cz>
-	 <20080226174613.GA26259@codemonkey.org.uk>
-	 <20080226175954.GA5707@elf.ucw.cz>
-	 <20080226181001.GA7714@codemonkey.org.uk>
-	 <20080226181611.GB6030@elf.ucw.cz>
-	 <20080226105606.e56e4ec6.akpm@linux-foundation.org>
-X-Google-Sender-Auth: 4487abd05fbcfe5a
+In-Reply-To: <20080226232229.GA12059@ubuntu>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+From: "Ahmed S. Darwish" <darwish.07@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Feb 26, 2008 at 10:56 AM, Andrew Morton
-<akpm@linux-foundation.org> wrote:
->  First thing we need to do is to work out why it won't stay suspended?
+Don't use SELinux exported selinux_get_task_sid symbol. 
+Use the generic LSM equivalent instead.
 
-Forgive me the stupid question, but you don't happen to have Wake On
-LAN or somesuch enabled in your BIOS, do you? (Given yours stays down
-for five seconds then resumes, and other T61 owners aren't seeing that
-behavior... <shrug>)
+Signed-off-by: Casey Schaufler <casey@schaufler-ca.com>
+Signed-off-by: Ahmed S. Darwish <darwish.07@gmail.com>
+---
 
-For Pavel and Rafael: Is there some sort of event that gets handed
-back on resume to let the kernel know why the system woke up? One
-would think that the Wake On LAN (keyboard, timer, etc.) would hand a
-notification over to the OS. One is often wrong though.
+diff --git a/net/netlink/af_netlink.c b/net/netlink/af_netlink.c
+index 1ab0da2..61fd277 100644
+--- a/net/netlink/af_netlink.c
++++ b/net/netlink/af_netlink.c
+@@ -54,7 +54,6 @@
+ #include <linux/mm.h>
+ #include <linux/types.h>
+ #include <linux/audit.h>
+-#include <linux/selinux.h>
+ #include <linux/mutex.h>
+ 
+ #include <net/net_namespace.h>
+@@ -1239,7 +1238,7 @@ static int netlink_sendmsg(struct kiocb *kiocb, struct socket *sock,
+ 	NETLINK_CB(skb).pid	= nlk->pid;
+ 	NETLINK_CB(skb).dst_group = dst_group;
+ 	NETLINK_CB(skb).loginuid = audit_get_loginuid(current);
+-	selinux_get_task_sid(current, &(NETLINK_CB(skb).sid));
++	security_task_getsecid(current, &(NETLINK_CB(skb).sid));
+ 	memcpy(NETLINK_CREDS(skb), &siocb->scm->creds, sizeof(struct ucred));
+ 
+ 	/* What can I do? Netlink is asynchronous, so that
+
+-- 
+
+"Better to light a candle, than curse the darkness"
+
+Ahmed S. Darwish
+Homepage: http://darwish.07.googlepages.com
+Blog: http://darwish-07.blogspot.com
+
