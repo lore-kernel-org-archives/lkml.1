@@ -1,42 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759711AbYBZOSI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761754AbYBZOTU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759711AbYBZOSI (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Feb 2008 09:18:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752589AbYBZOR4
+	id S1761754AbYBZOTU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Feb 2008 09:19:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752977AbYBZOTL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Feb 2008 09:17:56 -0500
-Received: from smtp-102-tuesday.nerim.net ([62.4.16.102]:53523 "EHLO
-	kraid.nerim.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751145AbYBZOR4 (ORCPT
+	Tue, 26 Feb 2008 09:19:11 -0500
+Received: from spiffy.freedom.ind.br ([201.35.65.91]:44483 "EHLO
+	freedom.ind.br" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752589AbYBZOTK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Feb 2008 09:17:56 -0500
-X-Greylist: delayed 158748 seconds by postgrey-1.27 at vger.kernel.org; Tue, 26 Feb 2008 09:17:55 EST
-Message-ID: <47C41F92.5070006@plouf.fr.eu.org>
-Date: Tue, 26 Feb 2008 15:17:54 +0100
-From: Pascal Hambourg <pascal.mail@plouf.fr.eu.org>
-Organization: Plouf !
-User-Agent: Mozilla Thunderbird 1.0.6 (Windows/20050716)
-X-Accept-Language: fr,en
+	Tue, 26 Feb 2008 09:19:10 -0500
+To: Nick Piggin <nickpiggin@yahoo.com.au>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: oops when using git gc --auto
+References: <87tzjvhmy7.fsf@ossystems.com.br>
+	<200802270033.31297.nickpiggin@yahoo.com.au>
+From: Otavio Salvador <otavio@debian.org>
+Organization: O.S. Systems Ltda.
+X-URL: http://www.debian.org/~otavio/
+X-Attribution: O.S.
+Date: Tue, 26 Feb 2008 11:21:39 -0300
+In-Reply-To: <200802270033.31297.nickpiggin@yahoo.com.au> (Nick Piggin's message of "Wed\, 27 Feb 2008 00\:33\:31 +1100")
+Message-ID: <87lk57yf0s.fsf@ossystems.com.br>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.1 (gnu/linux)
 MIME-Version: 1.0
-To: Tino Keitel <tino.keitel@gmx.de>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: Linux 2.6.24.3
-References: <20080226010024.GA26889@suse.de> <20080226075035.GA20311@dose.home.local>
-In-Reply-To: <20080226075035.GA20311@dose.home.local>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+Nick Piggin <nickpiggin@yahoo.com.au> writes:
 
-Tino Keitel a écrit :
-> 
-> I can see the patch in http://www.kernel.org/pub/linux/kernel/v2.6/,
-> but no incremental patch in
-> http://www.kernel.org/pub/linux/kernel/v2.6/incr/. Is this due to some
-> delay, or was is just not uploaded?
+> On Wednesday 27 February 2008 00:22, Otavio Salvador wrote:
+>> Hello,
+>>
+>> Today I got this oops, someone has an idea of what's going wrong?
+>>
+>> Unable to handle kernel paging request at 0000020000000000 RIP:
+>>  [<ffffffff802735c3>] find_get_pages+0x3c/0x69
+>
+> At this point, the most likely candidate is a memory corruption
+> error, probably hardware. Can you run memtest86 for a few hours
+> to get a bit more confidence in the hw (preferably overnight)?
 
-It seems that the 2->3 incremental patch was uploaded in 
-/pub/linux/kernel/v2.6/ too.
+Those memories are new, but I can try. No problem. Will get back to
+you by tomorrow.
+
+> I did recently see another quite similar corruption in the
+> pagecache radix-tree, though. Coincidence maybe?
+
+I hope not.
+
+-- 
+        O T A V I O    S A L V A D O R
+---------------------------------------------
+ E-mail: otavio@debian.org      UIN: 5906116
+ GNU/Linux User: 239058     GPG ID: 49A5F855
+ Home Page: http://otavio.ossystems.com.br
+---------------------------------------------
+"Microsoft sells you Windows ... Linux gives
+ you the whole house."
