@@ -1,84 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763428AbYBZUa7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764263AbYBZUb0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763428AbYBZUa7 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Feb 2008 15:30:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763265AbYBZUaq
+	id S1764263AbYBZUb0 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Feb 2008 15:31:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762449AbYBZUbK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Feb 2008 15:30:46 -0500
-Received: from gv-out-0910.google.com ([216.239.58.186]:57454 "EHLO
-	gv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752665AbYBZUao (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Feb 2008 15:30:44 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=KBN2kYbd01Z6i/4KHg3LcC+zxGz5NyOTWfy0mnhQzrBCJeV8K3M/+ThQYNjoOtCd8n3sCEKlSyxrjOOKM2kK4CMy+JeJYDt1xCcqTEpIu3KN+GfYW6R10QYRMgSlIEiE8EmDOwcz/DWBtFwLg3JQrOjlu17dA8ay82duS/j5Fmk=
-Message-ID: <a32f33a40802261230o1743773dle38684609d702959@mail.gmail.com>
-Date: Tue, 26 Feb 2008 21:30:38 +0100
-From: "Ivo Van Doorn" <ivdoorn@gmail.com>
-To: "John W. Linville" <linville@tuxdriver.com>
-Subject: Re: 2.6.25-rc2 regression in rt61pci wireless driver
-Cc: "Chris Clayton" <chris2553@googlemail.com>, linux-kernel@vger.kernel.org,
-       linux-wireless@vger.kernel.org, stefano.brivio@polimi.it,
-       johannes@sipsolutions.net
-In-Reply-To: <20080226194838.GD3013@tuxdriver.com>
+	Tue, 26 Feb 2008 15:31:10 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:45940 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1762394AbYBZUbI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 Feb 2008 15:31:08 -0500
+Date: Tue, 26 Feb 2008 21:30:53 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Sam Ravnborg <sam@ravnborg.org>
+Cc: Adrian Bunk <bunk@kernel.org>,
+       Florian Fainelli <florian.fainelli@telecomint.eu>,
+       linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: [PATCH] Add rdc321x defconfig file
+Message-ID: <20080226203053.GB14350@elte.hu>
+References: <200802251058.30188.florian.fainelli@telecomint.eu> <20080225101433.GA30685@elte.hu> <20080225110858.GA32450@cs181133002.pp.htv.fi> <20080225111707.GA7062@elte.hu> <20080225190241.GA23161@uranus.ravnborg.org> <20080226094451.GL9857@elte.hu> <20080226201442.GB32685@uranus.ravnborg.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <c6b1100b0802160406l24fed9dcje1dbfc8907fd7a16@mail.gmail.com>
-	 <200802252104.32416.chris2553@googlemail.com>
-	 <a32f33a40802251409ofbdab60w4a95c8aaefaad70a@mail.gmail.com>
-	 <200802261911.39577.chris2553@googlemail.com>
-	 <20080226194838.GD3013@tuxdriver.com>
+In-Reply-To: <20080226201442.GB32685@uranus.ravnborg.org>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->  > Sorry, but that's not the case. I find the same results as without the
->  > patches. With the parameter set to 'pid', the network connection fails very
->  > quickly, but with it set to 'simple' I can ping and ftp files to and from my
->  > laptop as much as I like and the connection stays up. In fact, if anything
->  > the patches seem to have made the network even more fragile, in that it fails
->  > almost instantly once I start some network activity ( < 10 pings).
->  >
->  > I'm sure this is not the hardware - it works perfectly with Windows XP, with
->  > 2.6.23.14 plus the out-of-tree rt61 driver from serialmonkey, with the
->  > in-tree driver from 2.6.24.x and with 2.6.25-rc3 with the mac82011's
->  > ieee80211_default_rc_algo parameter set to 'simple'.
+
+* Sam Ravnborg <sam@ravnborg.org> wrote:
+
+> > Subarchitectures on x86 are just a shortcut for the "0.1% of systems 
+> > that were lazy to be properly abstracted into the general PC code". We 
+> > are discouraging additional subarches and the one that got added 
+> > recently will go away soon. The rest is legacy.
 >
->  At last!  Vindication for insisting that we keep 'simple' around!
->  Bwahahaha! :-)
->
->  So, am I to understand that 'pid' works find for you with rtl8180?
->  If so, then I wonder if Stefano and Ivo can help us figure-out
->  what kind of problem is sensitive to both driver _and_ rate control
->  algorithm?
+> So you say we would waste our time doing build test of the legacy 
+> sub-archs. OK.
 
-rt2x00 is known to be less sensitive then the legacy drivers, scanning
-produces less and more inconsistent results (Not all AP's are reported,
-even when that AP has a high rssi), and the reported RSSI is often
-much lower then expected with the distance to the AP.
-I have compared many register dumps, but have never managed to
-find a real register setting that might cause this. So what might be
-the problem is that rt2x00 is not reporting the RSSI correctly to mac80211.
+definitely if what you want to do is to use your compilation resources 
+to increase the quality of a patch as efficiently as possible. Testing 
+UP/SMP 32bit/64bit defconfig and allnoconfig catches most of the 
+immediate problems - allmodconfig will catch most of the rest. If you 
+want to catch _all_ bugs that are possible the .config space, then 20 
+randconfig builds give a higher than 99.9% confidence factor already, in 
+my experience.
 
-With the big difference between how mac80211 handles TX rates and
-how the legacy drivers handle them, it is hard to make a comparison
-where exactly things are going wrong. But in the end, I think it all
-comes down to rt2x00 reporting invalid RSSI values to mac80211,
-and/or the rate control mechanism being too dependent on some
-statistics which are not provided by the driver.
+Sometimes, very rarely, deep down the chain of some really quirky 
+Kconfig dependencies, there can be up to 1:512 chance build bugs hiding, 
+which statistically need a 1000 randconfig builds to trigger. I saw a 
+few in the past, but they are really rare. No amount of pre-cooked 
+defconfigs would cover them - they are usually in drivers, not in 
+subarch support.
 
-I have to admit that I haven't looked into the 'pid' algorithm closely,
-but could it be that some fields in the tx status report upon txdone
-are being treated as "very important" while the driver doesn't report it
-(For example ack signal strength)?
+what would be really useful is an automatic Kconfig tree analysis, with 
+the printing out of too deep dependencies perhaps? Which might result in 
+the breaking down of too deep dependencies - to increase the coverage of 
+randconfig testing. Sometimes the number of "depends on" conditions are 
+mind-blowing.
 
-Other then that I have to say that rt2x00 never has reached a particular
-state where link quality issues can be traced back to mac80211 or
-the rate control mechanism. It usually was caused by a bug in the driver
-itself. (rt2x00 cannot be considered stable yet for a very good reason. ;) )
-
-Ivo
+	Ingo
