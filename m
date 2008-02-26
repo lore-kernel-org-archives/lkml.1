@@ -1,75 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760367AbYBZEWt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760837AbYBZEYa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760367AbYBZEWt (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 Feb 2008 23:22:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756058AbYBZEWl
+	id S1760837AbYBZEYa (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 Feb 2008 23:24:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756058AbYBZEYW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 Feb 2008 23:22:41 -0500
-Received: from smtp-out.google.com ([216.239.45.13]:21269 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754899AbYBZEWk (ORCPT
+	Mon, 25 Feb 2008 23:24:22 -0500
+Received: from nf-out-0910.google.com ([64.233.182.185]:12007 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756222AbYBZEYV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 Feb 2008 23:22:40 -0500
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=received:date:from:x-x-sender:to:cc:subject:in-reply-to:
-	message-id:references:user-agent:mime-version:content-type;
-	b=J157QlDoNhTbdzA/zYt99htUmcvRInVXQiz3bwZEfWDpsBod4A1OIWwA0SHAnLZm4
-	oNRfDreSUc78NOqCXiCwg==
-Date: Mon, 25 Feb 2008 20:21:50 -0800 (PST)
-From: David Rientjes <rientjes@google.com>
-X-X-Sender: rientjes@chino.kir.corp.google.com
-To: Paul Jackson <pj@sgi.com>
-cc: akpm@linux-foundation.org, clameter@sgi.com, Lee.Schermerhorn@hp.com,
-       ak@suse.de, linux-kernel@vger.kernel.org
-Subject: Re: [patch 1/6] mempolicy: convert MPOL constants to enum
-In-Reply-To: <20080225220242.82aedaec.pj@sgi.com>
-Message-ID: <alpine.DEB.1.00.0802252017310.14627@chino.kir.corp.google.com>
-References: <alpine.DEB.1.00.0802250012420.12368@chino.kir.corp.google.com> <20080225212056.ca388983.pj@sgi.com> <alpine.DEB.1.00.0802251931030.6021@chino.kir.corp.google.com> <20080225220242.82aedaec.pj@sgi.com>
-User-Agent: Alpine 1.00 (DEB 882 2007-12-20)
+	Mon, 25 Feb 2008 23:24:21 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=date:to:cc:subject:message-id:reply-to:mail-followup-to:references:mime-version:content-type:content-disposition:content-transfer-encoding:in-reply-to:user-agent:from;
+        b=T6u8oi2un3d5QdXDd3uXaYrp0r5XJChTAf6B/2lwvO0lwVjKBijoVnxBHmoSv5cS1CuChRzESuVtFdgPw3wp4oInZ8/NiJeMeiT9xLoQ16OHA1/XpSZ9yAsFcqxPQz2zFM3D8x3PfwcaYpceUjoOuP3JIoAuqf0QITFUbsZcSf0=
+Date: Tue, 26 Feb 2008 05:24:14 +0100
+To: Andreas Schwab <schwab@suse.de>
+Cc: Kiyoshi Ueda <k-ueda@ct.jp.nec.com>, bzolnier@gmail.com,
+       linux-kernel@vger.kernel.org, jens.axboe@oracle.com,
+       j-nomura@ce.jp.nec.com
+Subject: Re: 2.6.25-rc1/2 CD/DVD burning broken
+Message-ID: <20080226042414.GB26788@gollum.tnic>
+Reply-To: petkovbb@gmail.com
+Mail-Followup-To: petkovbb@gmail.com, Andreas Schwab <schwab@suse.de>,
+	Kiyoshi Ueda <k-ueda@ct.jp.nec.com>, bzolnier@gmail.com,
+	linux-kernel@vger.kernel.org, jens.axboe@oracle.com,
+	j-nomura@ce.jp.nec.com
+References: <jelk5k62uy.fsf@sykes.suse.de> <58cb370e0802180759h4d44b9bci86f02919a48c7979@mail.gmail.com> <20080218.135827.74754725.k-ueda@ct.jp.nec.com> <jek5kvisih.fsf@sykes.suse.de> <20080224163244.GA11998@gollum.tnic> <jehcfyffyp.fsf@sykes.suse.de> <002101c87759$0fb4f010$58f80d0a@brian> <jeejb0968h.fsf@sykes.suse.de> <20080225204543.GA26788@gollum.tnic> <jeir0c7kp4.fsf@sykes.suse.de>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <jeir0c7kp4.fsf@sykes.suse.de>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+From: Borislav Petkov <petkovbb@googlemail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 25 Feb 2008, Paul Jackson wrote:
-
-> Eh ... each bit of added clarity to the code reduces
-> errors.
+On Mon, Feb 25, 2008 at 11:08:55PM +0100, Andreas Schwab wrote:
+> Borislav Petkov <petkovbb@googlemail.com> writes:
 > 
-> Looking around the kernel, it really seems to me to be
-> a common coding to explicitly spell out enum values
-> when for some reason they actually matter.
+> > On Mon, Feb 25, 2008 at 08:38:22PM +0100, Andreas Schwab wrote:
+> >> "Kiyoshi Ueda" <k-ueda@ct.jp.nec.com> writes:
+> >> 
+> >> > I'm looking at this problem, but currently no idea why the conversion
+> >> > to blk_end_request causes it.
+> >> 
+> >> cdrom_newpc_intr apparently never sets rq->sense_len.
+> >> 
+> >
+> > actually it does, see the code chunk around line 1188 in 2.6.25-rc2, for
+> > example.
 > 
-> Like most coding mechanisms, nothing guarantees anything.
+> Yes, it does, but it always adds zero.
+
+yep, true. Does that fix your dvd burning problem?
+
+> Move counting of sense bytes into the transfer loop.
 > 
-> It just nicely represents one particular detail, that
-> the values of these MPOL_* terms are not arbitrary.
+> Signed-off-by: Andreas Schwab <schwab@suse.de>
 > 
+> ---
+>  drivers/ide/ide-cd.c |    5 ++---
+>  1 file changed, 2 insertions(+), 3 deletions(-)
+> 
+> --- linux-2.6.25-rc3.orig/drivers/ide/ide-cd.c	2008-02-25 01:03:31.000000000 +0100
+> +++ linux-2.6.25-rc3/drivers/ide/ide-cd.c	2008-02-25 22:54:42.000000000 +0100
+> @@ -1182,11 +1182,10 @@ static ide_startstop_t cdrom_newpc_intr(
+>  			else
+>  				rq->data += blen;
+>  		}
+> +		if (!write && blk_sense_request(rq))
+> +			rq->sense_len += blen;
+>  	}
+>  
+> -	if (write && blk_sense_request(rq))
+> -		rq->sense_len += thislen;
+> -
+>  	/*
+>  	 * pad, if necessary
+>  	 */
+> 
+> Andreas.
+> 
+> -- 
+> Andreas Schwab, SuSE Labs, schwab@suse.de
+> SuSE Linux Products GmbH, Maxfeldstraﬂe 5, 90409 N¸rnberg, Germany
+> PGP key fingerprint = 58CA 54C7 6D53 942B 1756  01D3 44D5 214B 8276 4ED5
+> "And now for something completely different."
 
-Of course the MPOL_* modes aren't arbitrary; they are defined in an enum 
-that has a well-defined and explicit behavior for how they are mapped to 
-int values based on a standard.
-
-I have more mempolicy patches that add additional behavior and cleanups so 
-I can queue the following for a later posting.  I'd like to avoid 
-respinning this set unless there are actual design or implementation 
-concerns that are raised. 
----
- include/linux/mempolicy.h |    4 +++-
- 1 files changed, 3 insertions(+), 1 deletions(-)
-
-diff --git a/include/linux/mempolicy.h b/include/linux/mempolicy.h
---- a/include/linux/mempolicy.h
-+++ b/include/linux/mempolicy.h
-@@ -20,7 +20,9 @@ enum {
- 	MPOL_PREFERRED,
- 	MPOL_BIND,
- 	MPOL_INTERLEAVE,
--	MPOL_MAX,	/* always last member of enum */
-+	/* add additional MPOL_* modes here */
-+
-+	MPOL_MAX,
- };
- 
- /* Flags for set_mempolicy */
+-- 
+Regards/Gruﬂ,
+    Boris.
