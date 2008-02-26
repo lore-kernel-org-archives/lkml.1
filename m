@@ -1,21 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765008AbYBZUoX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765255AbYBZUny@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765008AbYBZUoX (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Feb 2008 15:44:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764510AbYBZUoB
+	id S1765255AbYBZUny (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Feb 2008 15:43:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762065AbYBZUnm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Feb 2008 15:44:01 -0500
-Received: from mgw1.diku.dk ([130.225.96.91]:59190 "EHLO mgw1.diku.dk"
+	Tue, 26 Feb 2008 15:43:42 -0500
+Received: from mgw2.diku.dk ([130.225.96.92]:57018 "EHLO mgw2.diku.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758505AbYBZUn7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Feb 2008 15:43:59 -0500
-Date: Tue, 26 Feb 2008 21:43:56 +0100 (CET)
+	id S1758598AbYBZUnk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 Feb 2008 15:43:40 -0500
+Date: Tue, 26 Feb 2008 21:43:29 +0100 (CET)
 From: Julia Lawall <julia@diku.dk>
-To: mchehab@infradead.org, v4l-dvb-maintainer@linuxtv.org,
-       video4linux-list@redhat.com, linux-kernel@vger.kernel.org,
-       kernel-janitors@vger.kernel.org
-Subject: [PATCH 5/9] drivers/media/video/em28xx: Correct use of ! and &
-Message-ID: <Pine.LNX.4.64.0802262143320.18200@ask.diku.dk>
+To: kkeil@suse.de, isdn4linux@listserv.isdn4linux.de,
+       linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
+Subject: [PATCH 4/9] drivers/isdn: Correct use of ! and &
+Message-ID: <Pine.LNX.4.64.0802262143050.18200@ask.diku.dk>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
@@ -47,16 +46,51 @@ The semantic patch that makes this change is as follows:
 Signed-off-by: Julia Lawall <julia@diku.dk>
 
 ---
-
-diff -u -p a/drivers/media/video/em28xx/em28xx-core.c b/drivers/media/video/em28xx/em28xx-core.c
---- a/drivers/media/video/em28xx/em28xx-core.c 2008-02-20 22:09:26.000000000 +0100
-+++ b/drivers/media/video/em28xx/em28xx-core.c 2008-02-26 08:05:10.000000000 +0100
-@@ -267,7 +267,7 @@ static int em28xx_write_ac97(struct em28
- 	for (i = 0; i < 10; i++) {
- 		if ((ret = em28xx_read_reg(dev, AC97BUSY_REG)) < 0)
- 			return ret;
--		if (!((u8) ret) & 0x01)
-+		if (!(((u8)ret) & 0x01))
- 			return 0;
- 		msleep(5);
+ drivers/isdn/i4l/isdn_ttyfax.c   |    3 ++-
+ drivers/isdn/isdnloop/isdnloop.c |    6 +++---
+ 2 files changed, 5 insertions(+), 4 deletions(-)
+ 2 files changed, 4 insertions(+), 4 deletions(-)
+=================================================
+diff -u -p a/drivers/isdn/i4l/isdn_ttyfax.c b/drivers/isdn/i4l/isdn_ttyfax.c
+--- a/drivers/isdn/i4l/isdn_ttyfax.c 2008-02-10 22:34:07.000000000 +0100
++++ b/drivers/isdn/i4l/isdn_ttyfax.c 2008-02-26 08:04:25.000000000 +0100
+@@ -906,7 +906,8 @@ isdn_tty_cmd_FCLASS2(char **p, modem_inf
+ 			sprintf(rs, "\r\n0-2");
+ 			isdn_tty_at_cout(rs, info);
+ 		} else {
+-			if ((f->phase != ISDN_FAX_PHASE_D) || (!info->faxonline & 1))
++			if ((f->phase != ISDN_FAX_PHASE_D) ||
++			    (!(info->faxonline & 1)))
+ 				PARSE_ERROR1;
+ 			par = isdn_getnum(p);
+ 			if ((par < 0) || (par > 2))
+diff -u -p a/drivers/isdn/isdnloop/isdnloop.c b/drivers/isdn/isdnloop/isdnloop.c
+--- a/drivers/isdn/isdnloop/isdnloop.c 2008-02-10 22:34:07.000000000 +0100
++++ b/drivers/isdn/isdnloop/isdnloop.c 2008-02-26 08:04:26.000000000 +0100
+@@ -1289,7 +1289,7 @@ isdnloop_command(isdn_ctrl * c, isdnloop
+ 				}
+ 				break;
+ 		case ISDN_CMD_CLREAZ:
+-				if (!card->flags & ISDNLOOP_FLAGS_RUNNING)
++				if (!(card->flags & ISDNLOOP_FLAGS_RUNNING))
+ 					return -ENODEV;
+ 				if (card->leased)
+ 					break;
+@@ -1333,7 +1333,7 @@ isdnloop_command(isdn_ctrl * c, isdnloop
+ 				}
+ 				break;
+ 		case ISDN_CMD_SETL3:
+-				if (!card->flags & ISDNLOOP_FLAGS_RUNNING)
++				if (!(card->flags & ISDNLOOP_FLAGS_RUNNING))
+ 					return -ENODEV;
+ 				return 0;
+ 		default:
+@@ -1380,7 +1380,7 @@ if_writecmd(const u_char __user *buf, in
+ 	isdnloop_card *card = isdnloop_findcard(id);
+ 
+ 	if (card) {
+-		if (!card->flags & ISDNLOOP_FLAGS_RUNNING)
++		if (!(card->flags & ISDNLOOP_FLAGS_RUNNING))
+ 			return -ENODEV;
+ 		return (isdnloop_writecmd(buf, len, 1, card));
  	}
