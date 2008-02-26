@@ -1,62 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764746AbYBZUcr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765154AbYBZUdM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764746AbYBZUcr (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Feb 2008 15:32:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756444AbYBZUch
+	id S1765154AbYBZUdM (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Feb 2008 15:33:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764869AbYBZUco
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Feb 2008 15:32:37 -0500
-Received: from ra.tuxdriver.com ([70.61.120.52]:4948 "EHLO ra.tuxdriver.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754218AbYBZUcg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Feb 2008 15:32:36 -0500
-Date: Tue, 26 Feb 2008 15:20:44 -0500
-From: "John W. Linville" <linville@tuxdriver.com>
-To: Michael Buesch <mb@bu3sch.de>
-Cc: Alexey Zaytsev <alexey.zaytsev@gmail.com>, Ingo Molnar <mingo@elte.hu>,
-       Alexey Zaytsev <zaytsev.a@protei.ru>, Greg KH <greg@kroah.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: bcm43xx regression in 2.6.24 (with patch)
-Message-ID: <20080226202044.GE3013@tuxdriver.com>
-References: <47BEAF3B.3080809@protei.ru> <200802231727.54351.mb@bu3sch.de> <f19298770802231332x79c0395fl5519e79ae75da0aa@mail.gmail.com> <200802232320.58562.mb@bu3sch.de>
+	Tue, 26 Feb 2008 15:32:44 -0500
+Received: from server54.tchmachines.com ([72.9.244.106]:39496 "EHLO
+	server54.tchmachines.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1762099AbYBZUcn (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 Feb 2008 15:32:43 -0500
+Date: Tue, 26 Feb 2008 12:32:35 -0800
+From: Ravikiran Thirumalai <kiran@scalemp.com>
+To: Yinghai Lu <yhlu.kernel@gmail.com>
+Cc: Andi Kleen <andi@firstfloor.org>, Ingo Molnar <mingo@elte.hu>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       shai@scalemp.com
+Subject: Re: [PATCH] x86_64: make amd quad core 8 socket system not be clustered_box v2
+Message-ID: <20080226203235.GH5914@localdomain>
+References: <200802232148.43255.yinghai.lu@sun.com> <20080224122903.GC13637@one.firstfloor.org> <20080225190819.GE3143@localdomain> <86802c440802251405w7025a8b2na5fde4dcbf56067e@mail.gmail.com> <20080226033945.GJ3143@localdomain> <20080226034625.GE21577@one.firstfloor.org> <20080226040541.GK3143@localdomain> <86802c440802252127i36fcd164xe6671aada160766a@mail.gmail.com> <20080226184235.GA5914@localdomain> <86802c440802261100j322ee6a6yef9108dc175de459@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <200802232320.58562.mb@bu3sch.de>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+In-Reply-To: <86802c440802261100j322ee6a6yef9108dc175de459@mail.gmail.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
+X-AntiAbuse: Primary Hostname - server54.tchmachines.com
+X-AntiAbuse: Original Domain - vger.kernel.org
+X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
+X-AntiAbuse: Sender Address Domain - scalemp.com
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Feb 23, 2008 at 11:20:58PM +0100, Michael Buesch wrote:
-> On Saturday 23 February 2008 22:32:46 Alexey Zaytsev wrote:
+On Tue, Feb 26, 2008 at 11:00:58AM -0800, Yinghai Lu wrote:
+>
+>1. if acpi=off ?
 
-> > And you knew that the new driver did no work with the bcm4311
-> > chips, which is the sad thing.
-> 
-> That is not true. It doesn't work with exactly _one_ revision
-> of the bcm4311 card. And that is already fixed in 2.6.25.
-> I'd like to have that in .24-stable, too, but I guess it's too big.
-> It changes some parts of the DMA engine code.
+Well that is not a realistic scenario for any multi chassi NUMA machine,
+since the proximity information is very important and turning acpi off
+deprives the OS of this information.
 
-Which patch is it?  Is it this one?  Or is there another one that touches 4311?
+>2. some system will be treated wrong.
+>my four sockets system
+>ACPI: SLIT: nodes = 4
+> 10 13 13 16
+> 13 10 16 13
+> 13 16 10 13
+> 16 13 13 10
+>my eight sockets system
 
-commit 013978b688d2a27af3ab55ca739e8c8ac7254870
-Author: Larry Finger <Larry.Finger@lwfinger.net>
-Date:   Mon Nov 26 10:29:47 2007 -0600
+This makes it difficult to use SLIT for multi chassi detection then :(.
+Did not know such SLIT tables existed on single board machines.
 
-    b43: Changes to enable BCM4311 rev 02 with wireless core revision 13
-
-    The BCM94311MCG rev 02 chip has an 802.11 core with revision 13 and
-    has not been supported until now. The changes include the following:
-
-<snip>
-
-If so, perhaps we should just consider applying this to -stable?
-
-I really do wish everyone would tone down their rhetoric on this
-issue...
-
-John
--- 
-John W. Linville
-linville@tuxdriver.com
+Thanks,
+Kiran
