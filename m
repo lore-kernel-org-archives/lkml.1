@@ -1,66 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761818AbYBZJZm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762269AbYBZJ0H@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761818AbYBZJZm (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Feb 2008 04:25:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759350AbYBZJZW
+	id S1762269AbYBZJ0H (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Feb 2008 04:26:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759539AbYBZJZn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Feb 2008 04:25:22 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:34674 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756839AbYBZJZT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Feb 2008 04:25:19 -0500
-Date: Tue, 26 Feb 2008 10:24:54 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: David Miller <davem@davemloft.net>
-Cc: akpm@linux-foundation.org, dada1@cosmosbay.com,
-       herbert@gondor.apana.org.au, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: include/linux/pcounter.h
-Message-ID: <20080226092454.GA10987@elte.hu>
-References: <20080216025051.751b4a86.akpm@linux-foundation.org> <47B6D12A.3090401@cosmosbay.com> <20080216112618.ec450f9b.akpm@linux-foundation.org> <20080216.215401.20463603.davem@davemloft.net>
+	Tue, 26 Feb 2008 04:25:43 -0500
+Received: from smtp122.sbc.mail.sp1.yahoo.com ([69.147.64.95]:43520 "HELO
+	smtp122.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1761595AbYBZJZj (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 Feb 2008 04:25:39 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=pacbell.net;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=h2H3qU4UA7++h6ED0BzDNBg0/3XGcNja6HJ0gNkbFhlh3rlnK6v7b+BOp4PrpsedU5ZaWb8V0iLgBu+ndjsBBqRKm08gMPXKEA6X6x1qMb7ecV2ABNy6lJFOG5NiuVbSA73Af2XwTeGzAZaqdvxiVPnw//p+gwep7z4vWObQTaA=  ;
+X-YMail-OSG: zeKLBEIVM1mwzZEjbFUfyP4htVOU9rsoGhXOV2IUjn_W2o4520FM3ZOL4ZSeg2vosWz3_gBOww--
+X-Yahoo-Newman-Property: ymail-3
+From: David Brownell <david-b@pacbell.net>
+To: Haavard Skinnemoen <hskinnemoen@atmel.com>
+Subject: Re: [patch 2.6.25-rc2-git 2/2] atmel_tc clocksource/clockevent code
+Date: Tue, 26 Feb 2008 01:25:33 -0800
+User-Agent: KMail/1.9.6
+Cc: nicolas.ferre@rfo.atmel.com, linux@maxim.org.za,
+       linux-kernel@vger.kernel.org, akpm@linux-foundation.org
+References: <200802221728.37910.david-b@pacbell.net> <20080225175116.A2C071E564F@adsl-69-226-248-13.dsl.pltn13.pacbell.net> <20080226101625.31f6954d@hskinnemoen.norway.atmel.com>
+In-Reply-To: <20080226101625.31f6954d@hskinnemoen.norway.atmel.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8bit
 Content-Disposition: inline
-In-Reply-To: <20080216.215401.20463603.davem@davemloft.net>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Message-Id: <200802260125.33713.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* David Miller <davem@davemloft.net> wrote:
-
-> From: Andrew Morton <akpm@linux-foundation.org>
-> Date: Sat, 16 Feb 2008 11:26:18 -0800
-> 
-> > On Sat, 16 Feb 2008 13:03:54 +0100 Eric Dumazet <dada1@cosmosbay.com> wrote:
+On Tuesday 26 February 2008, Haavard Skinnemoen wrote:
+> > Another way to address that rm9200 issue would be to just rate
+> > the TC clockevent source lower than the one based on the system
+> > timer, so it's set up but never enabled ... and remember "t2_clk",
+> > calling clk_enable() only when that clockevent device is active.
 > > 
-> > > Yes, per connection basis. Some workloads want to open/close more 
-> > > than 1000 sockets per second.
-> > 
-> > ie: slowpath
+> > That would address one half of the suspend/resume equation too,
+> > ensuring that clock is disabled during suspend...
 > 
-> Definitely not slow path in the networking.
+> Yes, we could probably do that. Which means we can just remove all the
+> ifdeffery?
+
+There'd still be the #ifdef for CONFIG_GENERIC_CLOCKEVENTS,
+unless all the platforms get updated to support that.  Right
+now it's a "patches available but not merged" situation.
+
+
+> > The other half being:  how to clk_disable(t0_clk) during system
+> > suspend?  (And t1_clk on some systems.)  There's currently no
+> > clocksource.set_mode() call; evidently there's an assumption that
+> > such counters cost no power, so they can always be left running.
 > 
-> Connection rates are definitely as, or more, important than packet 
-> rates for certain workloads.
+> Yes...that would be a clocksource core issue I guess. Better leave that
+> for later...
 
-but the main and fundamental question still remains unanswered (more 
-than 3 weeks after Andrew asked that question): why was this piece of 
-general infrastructure merged via net.git and not submitted to lkml 
-ever? The code touching -mm does _not_ count as "review".
+My thoughts exactly.  ;)
 
-Now that there was review of it and there is clearly controversy, the 
-code should be reverted/undone and resubmitted after all review 
-observations have been addressed. Just sitting around and ignoring 
-objections, hoping for the code to hit v2.6.25 is rather un-nice ...
+Plus a bit of puzzlement why that didn't trigger at least a
+warning during AT91 suspend testing.  There used to be warnings
+there about clocks which were wrongly left enabled...
 
-	Ingo
+- Dave
