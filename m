@@ -1,71 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932418AbYBZV72@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932506AbYBZV7o@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932418AbYBZV72 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Feb 2008 16:59:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763253AbYBZV7J
+	id S932506AbYBZV7o (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Feb 2008 16:59:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932265AbYBZV7P
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Feb 2008 16:59:09 -0500
-Received: from styx.suse.cz ([82.119.242.94]:52153 "EHLO mail.suse.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1764096AbYBZV7I (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Feb 2008 16:59:08 -0500
-Date: Tue, 26 Feb 2008 22:59:07 +0100 (CET)
-From: Jiri Kosina <jkosina@suse.cz>
-To: =?UTF-8?Q?Szekeres_Istv=C3=A1n?= <szekeres@iii.hu>
-cc: linux-kernel@vger.kernel.org
-Subject: Re: kernel losing printk messages?
-In-Reply-To: <f4fe1c2a0802261344xdbee78j730c9011b8b63aa7@mail.gmail.com>
-Message-ID: <Pine.LNX.4.64.0802262256480.30955@jikos.suse.cz>
-References: <f4fe1c2a0802261309s17aaf082w14525c1e2f3af2f@mail.gmail.com> 
- <f4fe1c2a0802261314i5c4c5738y2a3f0e1c8748ee60@mail.gmail.com> 
- <Pine.LNX.4.64.0802262233290.30955@jikos.suse.cz>
- <f4fe1c2a0802261344xdbee78j730c9011b8b63aa7@mail.gmail.com>
+	Tue, 26 Feb 2008 16:59:15 -0500
+Received: from agminet01.oracle.com ([141.146.126.228]:57309 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1764580AbYBZV7N (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 Feb 2008 16:59:13 -0500
+From: Olaf Kirch <olaf.kirch@oracle.com>
+Organization: Oracle
+To: general@lists.openfabrics.org
+Subject: Re: [ofa-general] [PATCH 2/2] ib fmr pool: flush used clean entries
+Date: Tue, 26 Feb 2008 22:58:25 +0100
+User-Agent: KMail/1.9.1
+Cc: Roland Dreier <rdreier@cisco.com>, Pete Wyckoff <pw@osc.edu>,
+       linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org
+References: <20080225225330.GA3316@osc.edu> <20080226182753.GF7033@osc.edu> <adazltnwkbz.fsf@cisco.com>
+In-Reply-To: <adazltnwkbz.fsf@cisco.com>
 MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED; BOUNDARY="336216065-621930440-1204063147=:30955"
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200802262258.26536.olaf.kirch@oracle.com>
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
+On Tuesday 26 February 2008 21:09, Roland Dreier wrote:
+> This looks like a really nice approach to me.  Olaf?
 
---336216065-621930440-1204063147=:30955
-Content-Type: TEXT/PLAIN; charset=ISO-8859-2
-Content-Transfer-Encoding: QUOTED-PRINTABLE
+Yes, this looks good. I haven't had a chance to test it,
+but it looks like the right approach.
 
-On Tue, 26 Feb 2008, Szekeres Istv=E1n wrote:
-
-> >  I guess in dmesg the output is also corrupted, right?
-> Interesting. Even after a dmesg -c -s 1000000 it contains only the end
-> of the story. This is the beginning of the dmesg output:
-
-Probably your kernel ring buffer is too small (log_buf_len boot=20
-parameter).
-
-> rusalka:~% dmesg | head
-> input.c: Mapping: Consumer.0230 ---> IGNORED
-> [85080.775297] drivers/hid/hid-input.c: Mapping: Consumer.0231 ---> IGNOR=
-ED
-> [85080.775302] drivers/hid/hid-input.c: Mapping: Consumer.0232 ---> IGNOR=
-ED
-> [85080.775308] drivers/hid/hid-input.c: Mapping: Consumer.0233 ---> Key.S=
-crollUp
-> [85080.775314] drivers/hid/hid-input.c: Mapping: Consumer.0234 --->
-> Key.ScrollDown
-> So the first line is corrupted.=20
-
-It is very probably just because it didn't fit into the ring buffer.
-
-> In the remaining of the output (total=3D220 lines) I cannot see the=20
-> evidence of corruption.
-
-So the corruption you see in your /var/log is probably just userspace=20
-issue (syslogd/klogd not grabbing lines coming too fast for too long?).=20
-Still, it seems to work for me here.
-
-Thanks,
-
---=20
-Jiri Kosina
-SUSE Labs
---336216065-621930440-1204063147=:30955--
+Olaf
+-- 
+Olaf Kirch  |  --- o --- Nous sommes du soleil we love when we play
+okir@lst.de |    / | \   sol.dhoop.naytheet.ah kin.ir.samse.qurax
