@@ -1,36 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763862AbYBZWVP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764813AbYBZWXj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763862AbYBZWVP (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Feb 2008 17:21:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753284AbYBZWVA
+	id S1764813AbYBZWXj (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Feb 2008 17:23:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754205AbYBZWX0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Feb 2008 17:21:00 -0500
-Received: from pip23.gyao.ne.jp ([125.63.38.249]:25741 "EHLO mx.gate01.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752282AbYBZWU7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Feb 2008 17:20:59 -0500
-Date: Wed, 27 Feb 2008 07:20:52 +0900
-From: Paul Mundt <lethal@linux-sh.org>
-To: Adrian Bunk <bunk@kernel.org>
-Cc: ysato@users.sourceforge.jp, linux-kernel@vger.kernel.org
-Subject: Re: h8300 drivers/serial/sh-sci.c compile error
-Message-ID: <20080226222052.GA10606@linux-sh.org>
-Mail-Followup-To: Paul Mundt <lethal@linux-sh.org>,
-	Adrian Bunk <bunk@kernel.org>, ysato@users.sourceforge.jp,
-	linux-kernel@vger.kernel.org
-References: <20080226173536.GC8287@cs181133002.pp.htv.fi>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080226173536.GC8287@cs181133002.pp.htv.fi>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Tue, 26 Feb 2008 17:23:26 -0500
+Received: from smtp-102-tuesday.noc.nerim.net ([62.4.17.102]:2812 "EHLO
+	mallaury.nerim.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753284AbYBZWXZ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 Feb 2008 17:23:25 -0500
+Date: Tue, 26 Feb 2008 23:23:20 +0100
+From: Jean Delvare <khali@linux-fr.org>
+To: Marcin Slusarz <marcin.slusarz@gmail.com>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       Mauro Carvalho Chehab <mchehab@infradead.org>, i2c@lm-sensors.org,
+       video4linux-list@redhat.com
+Subject: Re: [PATCH] video: limit stack usage of ir-kbd-i2c.c
+Message-ID: <20080226232320.2df756d6@hyperion.delvare>
+In-Reply-To: <20080226210307.GA6085@joi>
+References: <20080225205055.GA27455@joi>
+	<20080226133222.7af260b2@hyperion.delvare>
+	<20080226210307.GA6085@joi>
+X-Mailer: Sylpheed-Claws 2.5.5 (GTK+ 2.10.6; x86_64-suse-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Feb 26, 2008 at 07:35:36PM +0200, Adrian Bunk wrote:
-> Commit e108b2ca2349f510ce7d7f910eda89f71d710d84 broke the compilation of 
-> drivers/serial/sh-sci.c on h8300:
-> 
-I have a fix for this in my current queue, it will be batched with the
--rc4 updates.
+Hi Marcin,
+
+On Tue, 26 Feb 2008 22:03:16 +0100, Marcin Slusarz wrote:
+> Do you have an idea (or patch :D) how to solve this:
+> 0x00000234 v4l_compat_translate_ioctl [v4l1-compat]:    1376
+> ? That's on top of my make checkstack output
+
+Random ideas (but I am in no way a specialist of this exercise):
+
+* You could try moving the structures to the blocks where they are used,
+in the case a given structure is used for only one ioctl. I'm not too
+sure how gcc handles local variables declared inside blocks with
+regards to stack reservation though. I thought it would work but my
+experiments today seem to suggest it doesn't.
+
+* You can move the handling of some ioctls to dedicated functions, just
+like I did in i2c-dev:
+http://lists.lm-sensors.org/pipermail/i2c/2008-February/003010.html
+However there is a risk that gcc will inline these functions (that's
+what happened to me...) Not sure how to prevent gcc from inlining.
+
+* You can allocate the structures dynamically, as you originally wanted
+to do for ir-kbd-i2c. However this has a performance penalty and will
+fragment the memory, so it's not ideal.
+
+* If each ioctl uses only one of the structures, you may define a union
+of all the structures. The size of the union will be the size of the
+biggest structure, so you save a lot of space on the stack.
+
+-- 
+Jean Delvare
