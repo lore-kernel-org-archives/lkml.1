@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764807AbYBZWiy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932082AbYBZWjZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764807AbYBZWiy (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Feb 2008 17:38:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750813AbYBZWin
+	id S932082AbYBZWjZ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Feb 2008 17:39:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764339AbYBZWiu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Feb 2008 17:38:43 -0500
-Received: from e1.ny.us.ibm.com ([32.97.182.141]:39480 "EHLO e1.ny.us.ibm.com"
+	Tue, 26 Feb 2008 17:38:50 -0500
+Received: from e5.ny.us.ibm.com ([32.97.182.145]:35592 "EHLO e5.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754694AbYBZWim (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Feb 2008 17:38:42 -0500
-Subject: [PATCH 0/3] A kernel tracing interface
+	id S1764275AbYBZWit (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 Feb 2008 17:38:49 -0500
+Subject: [patch 1/3]  Relay Reset Consumed
 From: "David J. Wilder" <dwilder@us.ibm.com>
 To: linux-kernel@vger.kernel.org, akpm@linux-foundation.org
 Cc: systemtap@sourceware.org, prasadav@us.ibm.com, hch@infradead.org
 Content-Type: text/plain
-Date: Tue, 26 Feb 2008 14:38:37 -0800
-Message-Id: <1204065517.26964.14.camel@lc4eb748232119.ibm.com>
+Date: Tue, 26 Feb 2008 14:38:44 -0800
+Message-Id: <1204065524.26964.16.camel@lc4eb748232119.ibm.com>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.0.2 (2.0.2-35.0.4.el4) 
 Content-Transfer-Encoding: 7bit
@@ -23,36 +23,133 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-These patches provide a kernel tracing interface called "trace".
+This patch allows relay channels to be reset i.e. unconsumed.
+Basically allows a 'rewind' function for flight-recorder tracing.
 
-ChangeLog:
--Updated to 2.6.25-rc2-mm1
--Removed sem_watch example, to hard to maintain.
--Added a new example that demonstrates per-cpu continuous tracing
- of data generated using marker probes.
--Removed inline from relay patch.
--Moved examples into /sample directory.
-
-The motivation for "trace" is to:
-- Provide a simple set of tracing primitives that will utilize the high-
-  performance and low-overhead of relayfs for passing traces data from
-  kernel to user space.
-- Provide a common user interface for managing kernel traces.
-- Allow for binary as well as ascii trace data.
-- Incorporate features from the systemtap runtime that are
-  useful to others.
-
-Patches are built against 2.6.25-rc2-mm1.
-Tested on: 2.6.25-rc3
-
-Summary of patches:
-[patch 1/3]  Relay Reset Consumed
-[patch 2/3]  Trace code and documentation
-[patch 3/3]  Trace sample
-
-Note: Patch 1/3 provides a service used by patch 2/3
-thus must be applied first or at the same time.
-
+Signed-off-by: Tom Zanussi <zanussi@us.ibm.com>
 Signed-off-by: David Wilder <dwilder@us.ibm.com>
+---
+ Documentation/filesystems/relay.txt |   11 ++++++
+ include/linux/relay.h               |    1 +
+ kernel/relay.c                      |   58 ++++++++++++++++++++++++++++++++---
+ 3 files changed, 65 insertions(+), 5 deletions(-)
+
+diff --git a/Documentation/filesystems/relay.txt b/Documentation/filesystems/relay.txt
+index 094f2d2..1af6d4b 100644
+--- a/Documentation/filesystems/relay.txt
++++ b/Documentation/filesystems/relay.txt
+@@ -161,6 +161,7 @@ TBD(curr. line MT:/API/)
+     relay_close(chan)
+     relay_flush(chan)
+     relay_reset(chan)
++    relay_reset_consumed(chan)
+ 
+   channel management typically called on instigation of userspace:
+ 
+@@ -452,6 +453,16 @@ state without reallocating channel buffer memory or destroying
+ existing mappings.  It should however only be called when it's safe to
+ do so, i.e. when the channel isn't currently being written to.
+ 
++The read(2) implementation always 'consumes' the bytes read,
++i.e. those bytes won't be available again to subsequent reads.
++Certain applications may nonetheless wish to allow the 'consumed' data
++to be re-read; relay_reset_consumed() is provided for that purpose -
++it resets the internal consumed counters for all buffers in the
++channel.  For example, if a first set of reads 'drains' the channel,
++and then relay_reset_consumed() is called, a second set of reads will
++get the exact same data (assuming no new data was written between the
++first set of reads and the second).
++
+ Finally, there are a couple of utility callbacks that can be used for
+ different purposes.  buf_mapped() is called whenever a channel buffer
+ is mmapped from user space and buf_unmapped() is called when it's
+diff --git a/include/linux/relay.h b/include/linux/relay.h
+index 6cd8c44..aca45fa 100644
+--- a/include/linux/relay.h
++++ b/include/linux/relay.h
+@@ -175,6 +175,7 @@ extern void relay_subbufs_consumed(struct rchan *chan,
+ 				   unsigned int cpu,
+ 				   size_t consumed);
+ extern void relay_reset(struct rchan *chan);
++extern void relay_reset_consumed(struct rchan *chan);
+ extern int relay_buf_full(struct rchan_buf *buf);
+ 
+ extern size_t relay_switch_subbuf(struct rchan_buf *buf,
+diff --git a/kernel/relay.c b/kernel/relay.c
+index d080b9d..f9dc539 100644
+--- a/kernel/relay.c
++++ b/kernel/relay.c
+@@ -378,6 +378,57 @@ void relay_reset(struct rchan *chan)
+ }
+ EXPORT_SYMBOL_GPL(relay_reset);
+ 
++/**
++ *	__relay_reset_consumed - reset a channel buffer's consumed count
++ *	@buf: the channel buffer
++ *
++ *	See relay_reset_consumed for description of effect.
++ */
++static void __relay_reset_consumed(struct rchan_buf *buf)
++{
++	size_t n_subbufs = buf->chan->n_subbufs;
++	size_t produced = buf->subbufs_produced;
++	size_t consumed = buf->subbufs_consumed;
++
++	if (produced < n_subbufs)
++		buf->subbufs_consumed = 0;
++	else {
++		consumed = produced - n_subbufs;
++		if (buf->offset)
++			consumed++;
++		buf->subbufs_consumed = consumed;
++	}
++	buf->bytes_consumed = 0;
++}
++
++/**
++ *	relay_reset_consumed - reset the channel's consumed counts
++ *	@chan: the channel
++ *
++ *	This has the effect of making all data previously read (and
++ *	not overwritten by subsequent writes) from a channel available
++ *	for reading again.
++ *
++ *	NOTE: Care should be taken that the channel isn't actually
++ *	being used by anything when this call is made.
++ */
++void relay_reset_consumed(struct rchan *chan)
++{
++	unsigned int i;
++	struct rchan_buf *prev = NULL;
++
++	if (!chan)
++		return;
++
++	for (i = 0; i < NR_CPUS; i++) {
++		if (!chan->buf[i] || chan->buf[i] == prev)
++			break;
++		__relay_reset_consumed(chan->buf[i]);
++		prev = chan->buf[i];
++	}
++}
++EXPORT_SYMBOL_GPL(relay_reset_consumed);
++
+ /*
+  *	relay_open_buf - create a new relay channel buffer
+  *
+@@ -840,11 +891,8 @@ static int relay_file_read_avail(struct rchan_buf *buf, size_t read_pos)
+ 		return 1;
+ 	}
+ 
+-	if (unlikely(produced - consumed >= n_subbufs)) {
+-		consumed = produced - n_subbufs + 1;
+-		buf->subbufs_consumed = consumed;
+-		buf->bytes_consumed = 0;
+-	}
++	if (unlikely(produced - consumed >= n_subbufs))
++		__relay_reset_consumed(buf);
+ 
+ 	produced = (produced % n_subbufs) * subbuf_size + buf->offset;
+ 	consumed = (consumed % n_subbufs) * subbuf_size + buf->bytes_consumed;
 
 
