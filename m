@@ -1,177 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932293AbYBZWcM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932692AbYBZWcz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932293AbYBZWcM (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Feb 2008 17:32:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755018AbYBZWbz
+	id S932692AbYBZWcz (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Feb 2008 17:32:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932148AbYBZWcq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Feb 2008 17:31:55 -0500
-Received: from einhorn.in-berlin.de ([192.109.42.8]:46123 "EHLO
-	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754679AbYBZWbx (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Feb 2008 17:31:53 -0500
-X-Envelope-From: stefanr@s5r6.in-berlin.de
-Date: Tue, 26 Feb 2008 23:30:02 +0100 (CET)
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-Subject: [PATCH] firewire: fw-sbp2: better fix for NULL pointer dereference in
- scsi_remove_device
-To: Jarod Wilson <jwilson@redhat.com>
-cc: linux1394-devel@lists.sourceforge.net, linux-scsi@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Message-ID: <tkrat.43f73e8c841b3161@s5r6.in-berlin.de>
+	Tue, 26 Feb 2008 17:32:46 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:39334 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755018AbYBZWcp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 Feb 2008 17:32:45 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Dave Jones <davej@codemonkey.org.uk>
+Subject: Re: broken suspend in .2.6.25-rc3 on T61p (was Re: new regression in 2.6.25-rc3: no keyboard/lid acpi events on thinkpad T61p)
+Date: Tue, 26 Feb 2008 23:31:19 +0100
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: Pavel Machek <pavel@ucw.cz>, Andrew Morton <akpm@linux-foundation.org>,
+       kernel list <linux-kernel@vger.kernel.org>, Len Brown <lenb@kernel.org>
+References: <20080225225820.GP2659@elf.ucw.cz> <20080226215641.GE10280@elf.ucw.cz> <20080226222337.GA22172@codemonkey.org.uk>
+In-Reply-To: <20080226222337.GA22172@codemonkey.org.uk>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; CHARSET=us-ascii
-Content-Disposition: INLINE
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200802262331.20651.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Patch "firewire: fw-sbp2: fix NULL pointer deref. in scsi_remove_device"
-had the unintended effect that firewire-sbp2 could not be unloaded
-anymore until all SBP-2 devices were unplugged.
+On Tuesday, 26 of February 2008, Dave Jones wrote:
+> On Tue, Feb 26, 2008 at 10:56:41PM +0100, Pavel Machek wrote:
+> 
+>  > Seems like pm-utils is just a thin wrapper around s2ram, at least in
+>  > version debian ships. It does not seem to have its own whitelist.
+> 
+> The actual whitelists still live in hal (or specifically hal-data),
+> rather than pm-utils.  /usr/share/hal/fdi/information/10freedesktop/20-video-quirk-pm-*
+> for example.  This gets passed down to pm-utils by hal.
+> 
+>  > /usr/lib/pm-utils/functions
+>  > 
+>  > ... 
+>  > 
+>  >         if [ -x /usr/sbin/s2ram ]; then
+>  >                 if [ -n "$S2RAM_OPTS" ]; then
+>  >                         # Trust HAL or the user to pass the correct
+>  > options
+>  >                         /usr/sbin/s2ram $S2RAM_OPTS
+>  >                 elif /usr/sbin/s2ram --test > /dev/null ; then
+>  >                         # Trust s2ram's internal whitelist
+>  >                         /usr/sbin/s2ram
+>  >                 else
+>  >                         # Unknown machine
+>  >                         echo "This machine is unkown, please try to
+>  > find out how to suspend this machine. See s2ram(8)."
+>  >                 fi
+>  >         else
+>  >                 echo -n "mem" > /sys/power/state
+>  >         fi
+> 
+> Seems to be a debian specific change, the variant in Fedora, nor upstream
+> pm-utils doesn't have any of that.  Possibly because it's a dumb idea
+> to have two separate sources of the same information.
+> 
+>  > ...so it is ready to use s2ram, but will fall back to
+>  > echo. Unfortunately, that will mean no video resume on _many_
+>  > machines.
+>  > 
+>  > To give some numbers: according to s2ram whitelist, we can restore
+>  > video on 410 machines. On 74 of them, s2ram is not needed. So
+>  > approximately 80% of machines need s2ram (at least in configuration
+>  > without X running)....
+>  > 
+>  > Pretty please, can we get s2ram for Fedora, so that video is restored
+>  > there?
+>  
+> I'm not the gatekeeper of what goes into Fedora userspace, but I'm pretty
+> certain the path forward has already been decided.  Running a modern
+> Fedora desktop installation without hal just isn't feasible.
 
-We now fix the NULL pointer bug by reacquiring a reference to the sdev
-instead of holding a reference to the sdev (and to the module) all the
-time.
+Well, pm-utils seems to be a bunch of shell scripts that run some addtional
+utilities, such as vbetool, to actually do the quirks.  In s2ram we have all
+these additional utilities put together in one package and you need not
+use the whiltelist it contains.  You can just very well make pm-utils use
+s2ram for doing the low-level work, just build the appropriate command line
+for it on the basis of the HAL whitelist.
 
-Signed-off-by: Stefan Richter <stefanr@s5r6.in-berlin.de>
----
+Frankly, I don't see any conflict between pm-utils and s2ram at a technical
+level.
 
-This applies on top of current linux-2.6.git master as well as on top of
-linux1394-2.6.git master.
-
-
- drivers/firewire/fw-sbp2.c |   46 +++++++++++++++++++++----------------
- 1 file changed, 27 insertions(+), 19 deletions(-)
-
-Index: linux/drivers/firewire/fw-sbp2.c
-===================================================================
---- linux.orig/drivers/firewire/fw-sbp2.c
-+++ linux/drivers/firewire/fw-sbp2.c
-@@ -122,7 +122,6 @@ static const char sbp2_driver_name[] = "
- struct sbp2_logical_unit {
- 	struct sbp2_target *tgt;
- 	struct list_head link;
--	struct scsi_device *sdev;
- 	struct fw_address_handler address_handler;
- 	struct list_head orb_list;
- 
-@@ -139,6 +138,7 @@ struct sbp2_logical_unit {
- 	int generation;
- 	int retries;
- 	struct delayed_work work;
-+	bool has_sdev;
- 	bool blocked;
- };
- 
-@@ -751,20 +751,33 @@ static void sbp2_unblock(struct sbp2_tar
- 	scsi_unblock_requests(shost);
- }
- 
-+static int sbp2_lun2int(u16 lun)
-+{
-+	struct scsi_lun eight_bytes_lun;
-+
-+	memset(&eight_bytes_lun, 0, sizeof(eight_bytes_lun));
-+	eight_bytes_lun.scsi_lun[0] = (lun >> 8) & 0xff;
-+	eight_bytes_lun.scsi_lun[1] = lun & 0xff;
-+
-+	return scsilun_to_int(&eight_bytes_lun);
-+}
-+
- static void sbp2_release_target(struct kref *kref)
- {
- 	struct sbp2_target *tgt = container_of(kref, struct sbp2_target, kref);
- 	struct sbp2_logical_unit *lu, *next;
- 	struct Scsi_Host *shost =
- 		container_of((void *)tgt, struct Scsi_Host, hostdata[0]);
-+	struct scsi_device *sdev;
- 
- 	/* prevent deadlocks */
- 	sbp2_unblock(tgt);
- 
- 	list_for_each_entry_safe(lu, next, &tgt->lu_list, link) {
--		if (lu->sdev) {
--			scsi_remove_device(lu->sdev);
--			scsi_device_put(lu->sdev);
-+		sdev = scsi_device_lookup(shost, 0, 0, sbp2_lun2int(lu->lun));
-+		if (sdev) {
-+			scsi_remove_device(sdev);
-+			scsi_device_put(sdev);
- 		}
- 		sbp2_send_management_orb(lu, tgt->node_id, lu->generation,
- 				SBP2_LOGOUT_REQUEST, lu->login_id, NULL);
-@@ -807,7 +820,6 @@ static void sbp2_login(struct work_struc
- 	struct fw_device *device = fw_device(tgt->unit->device.parent);
- 	struct Scsi_Host *shost;
- 	struct scsi_device *sdev;
--	struct scsi_lun eight_bytes_lun;
- 	struct sbp2_login_response response;
- 	int generation, node_id, local_node_id;
- 
-@@ -820,7 +832,7 @@ static void sbp2_login(struct work_struc
- 	local_node_id = device->card->node_id;
- 
- 	/* If this is a re-login attempt, log out, or we might be rejected. */
--	if (lu->sdev)
-+	if (lu->has_sdev)
- 		sbp2_send_management_orb(lu, device->node_id, generation,
- 				SBP2_LOGOUT_REQUEST, lu->login_id, NULL);
- 
-@@ -859,7 +871,7 @@ static void sbp2_login(struct work_struc
- 	sbp2_agent_reset(lu);
- 
- 	/* This was a re-login. */
--	if (lu->sdev) {
-+	if (lu->has_sdev) {
- 		sbp2_cancel_orbs(lu);
- 		sbp2_conditionally_unblock(lu);
- 		goto out;
-@@ -868,13 +880,8 @@ static void sbp2_login(struct work_struc
- 	if (lu->tgt->workarounds & SBP2_WORKAROUND_DELAY_INQUIRY)
- 		ssleep(SBP2_INQUIRY_DELAY);
- 
--	memset(&eight_bytes_lun, 0, sizeof(eight_bytes_lun));
--	eight_bytes_lun.scsi_lun[0] = (lu->lun >> 8) & 0xff;
--	eight_bytes_lun.scsi_lun[1] = lu->lun & 0xff;
- 	shost = container_of((void *)tgt, struct Scsi_Host, hostdata[0]);
--
--	sdev = __scsi_add_device(shost, 0, 0,
--				 scsilun_to_int(&eight_bytes_lun), lu);
-+	sdev = __scsi_add_device(shost, 0, 0, sbp2_lun2int(lu->lun), lu);
- 	/*
- 	 * FIXME:  We are unable to perform reconnects while in sbp2_login().
- 	 * Therefore __scsi_add_device() will get into trouble if a bus reset
-@@ -896,7 +903,8 @@ static void sbp2_login(struct work_struc
- 	}
- 
- 	/* No error during __scsi_add_device() */
--	lu->sdev = sdev;
-+	lu->has_sdev = true;
-+	scsi_device_put(sdev);
- 	sbp2_allow_block(lu);
- 	goto out;
- 
-@@ -934,11 +942,11 @@ static int sbp2_add_logical_unit(struct 
- 		return -ENOMEM;
- 	}
- 
--	lu->tgt  = tgt;
--	lu->sdev = NULL;
--	lu->lun  = lun_entry & 0xffff;
--	lu->retries = 0;
--	lu->blocked = false;
-+	lu->tgt      = tgt;
-+	lu->lun      = lun_entry & 0xffff;
-+	lu->retries  = 0;
-+	lu->has_sdev = false;
-+	lu->blocked  = false;
- 	++tgt->dont_block;
- 	INIT_LIST_HEAD(&lu->orb_list);
- 	INIT_DELAYED_WORK(&lu->work, sbp2_login);
-
--- 
-Stefan Richter
--=====-==--- --=- ==-=-
-http://arcgraph.de/sr/
-
+Thanks,
+Rafael
