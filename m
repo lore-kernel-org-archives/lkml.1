@@ -1,200 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759766AbYBZMp6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756952AbYBZMuj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759766AbYBZMp6 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Feb 2008 07:45:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752232AbYBZMpt
+	id S1756952AbYBZMuj (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Feb 2008 07:50:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751550AbYBZMu3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Feb 2008 07:45:49 -0500
-Received: from fxip-0047f.externet.hu ([88.209.222.127]:46299 "EHLO
-	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751994AbYBZMpr (ORCPT
+	Tue, 26 Feb 2008 07:50:29 -0500
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:35344 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751473AbYBZMu2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Feb 2008 07:45:47 -0500
-To: a.p.zijlstra@chello.nl
-CC: torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       netdev@vger.kernel.org, trond.myklebust@fys.uio.no,
-       a.p.zijlstra@chello.nl, linux-fsdevel@vger.kernel.org
-In-reply-to: <20080220150308.142619000@chello.nl> (message from Peter Zijlstra
-	on Wed, 20 Feb 2008 15:46:32 +0100)
-Subject: Re: [PATCH 22/28] mm: add support for non block device backed swap files
-References: <20080220144610.548202000@chello.nl> <20080220150308.142619000@chello.nl>
-Message-Id: <E1JTzBV-0001aO-R3@pomaz-ex.szeredi.hu>
-From: Miklos Szeredi <miklos@szeredi.hu>
-Date: Tue, 26 Feb 2008 13:45:25 +0100
+	Tue, 26 Feb 2008 07:50:28 -0500
+Date: Tue, 26 Feb 2008 12:39:46 +0000
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Elias Oltmanns <eo@nebensachen.de>
+Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Jens Axboe <jens.axboe@oracle.com>
+Subject: Re: [RFC] Disk shock protection (revisited)
+Message-ID: <20080226123946.75dbe3d2@core>
+In-Reply-To: <87skzgd1zk.fsf@denkblock.local>
+References: <87skzgd1zk.fsf@denkblock.local>
+X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Starting review in the middle, because this is the part I'm most
-familiar with.
+> The general idea: A daemon running in user space monitors input data
+> from an accelerometer. When the daemon detects a critical condition,
 
-> New addres_space_operations methods are added:
->   int swapfile(struct address_space *, int);
+That sounds like a non starter. What if the box is busy, what if the
+daemon or something you touch needs memory and causes paging ?
 
-Separate ->swapon() and ->swapoff() methods would be so much cleaner IMO.
+Given the accelerometer data should be very simple doesn't it actually
+make sense in this specific case to put the logic (not thresholds) in
+kernel space.
 
-Also is there a reason why 'struct file *' cannot be supplied to these
-functions?
+> state. To this end, the kernel has to issue an idle immediate command
+> with unload feature and stop the block layer queue afterwards. Once the
 
-[snip]
+Yep. Pity the worst case completion time for an IDE I/O is 60 seconds or
+so.
 
-> +int swap_set_page_dirty(struct page *page)
-> +{
-> +	struct swap_info_struct *sis = page_swap_info(page);
-> +
-> +	if (sis->flags & SWP_FILE) {
-> +		const struct address_space_operations *a_ops =
-> +			sis->swap_file->f_mapping->a_ops;
-> +		int (*spd)(struct page *) = a_ops->set_page_dirty;
-> +#ifdef CONFIG_BLOCK
-> +		if (!spd)
-> +			spd = __set_page_dirty_buffers;
-> +#endif
+> 1. Who is to be in charge for the shock protection application? Should
+>    userspace speak to libata / ide directly (through sysfs) and the low
 
-This ifdef is not really needed.  Just require ->set_page_dirty() be
-filled in by filesystems which want swapfiles (and others too, in the
-longer term, the fallback is just historical crud).
+I think it has to be kernel side for speed, and because you will need to
+issue idle immediate while a command sequence is active which is
+*extremely* hairy as you have to recover from the mess and restart the
+relevant I/O. Plus you may need controller specific knowledge on issuing
+it (and changes to libata).
 
-Here's an incremental patch addressing these issues and beautifying
-the new code.
+> 2. Depending on the answer to the previous question, by what mechanism
+>    should block layer and lld interact? Special requests, queue hooks or
+>    something in some way similar to power management functions (once
+>    suggested by James Bottomley)?
 
-Signed-off-by: Miklos Szeredi <mszeredi@suse.cz>
+Idle immediate seem to simply fit the queue model, it happens in
+*parallel* to I/O events and is special in all sorts of ways.
 
-Index: linux/mm/page_io.c
-===================================================================
---- linux.orig/mm/page_io.c	2008-02-26 11:15:58.000000000 +0100
-+++ linux/mm/page_io.c	2008-02-26 13:40:55.000000000 +0100
-@@ -106,8 +106,10 @@ int swap_writepage(struct page *page, st
- 	}
- 
- 	if (sis->flags & SWP_FILE) {
--		ret = sis->swap_file->f_mapping->
--			a_ops->swap_out(sis->swap_file, page, wbc);
-+		struct file *swap_file = sis->swap_file;
-+		struct address_space *mapping = swap_file->f_mapping;
-+
-+		ret = mapping->a_ops->swap_out(swap_file, page, wbc);
- 		if (!ret)
- 			count_vm_event(PSWPOUT);
- 		return ret;
-@@ -136,12 +138,13 @@ void swap_sync_page(struct page *page)
- 	struct swap_info_struct *sis = page_swap_info(page);
- 
- 	if (sis->flags & SWP_FILE) {
--		const struct address_space_operations *a_ops =
--			sis->swap_file->f_mapping->a_ops;
--		if (a_ops->sync_page)
--			a_ops->sync_page(page);
--	} else
-+		struct address_space *mapping = sis->swap_file->f_mapping;
-+
-+		if (mapping->a_ops->sync_page)
-+			mapping->a_ops->sync_page(page);
-+	} else {
- 		block_sync_page(page);
-+	}
- }
- 
- int swap_set_page_dirty(struct page *page)
-@@ -149,17 +152,12 @@ int swap_set_page_dirty(struct page *pag
- 	struct swap_info_struct *sis = page_swap_info(page);
- 
- 	if (sis->flags & SWP_FILE) {
--		const struct address_space_operations *a_ops =
--			sis->swap_file->f_mapping->a_ops;
--		int (*spd)(struct page *) = a_ops->set_page_dirty;
--#ifdef CONFIG_BLOCK
--		if (!spd)
--			spd = __set_page_dirty_buffers;
--#endif
--		return (*spd)(page);
--	}
-+		struct address_space *mapping = sis->swap_file->f_mapping;
- 
--	return __set_page_dirty_nobuffers(page);
-+		return mapping->a_ops->set_page_dirty(page);
-+	} else {
-+		return __set_page_dirty_nobuffers(page);
-+	}
- }
- 
- int swap_readpage(struct file *file, struct page *page)
-@@ -172,8 +170,10 @@ int swap_readpage(struct file *file, str
- 	BUG_ON(PageUptodate(page));
- 
- 	if (sis->flags & SWP_FILE) {
--		ret = sis->swap_file->f_mapping->
--			a_ops->swap_in(sis->swap_file, page);
-+		struct file *swap_file = sis->swap_file;
-+		struct address_space *mapping = swap_file->f_mapping;
-+
-+		ret = mapping->a_ops->swap_in(swap_file, page);
- 		if (!ret)
- 			count_vm_event(PSWPIN);
- 		return ret;
-Index: linux/include/linux/fs.h
-===================================================================
---- linux.orig/include/linux/fs.h	2008-02-26 11:15:58.000000000 +0100
-+++ linux/include/linux/fs.h	2008-02-26 13:29:40.000000000 +0100
-@@ -485,7 +485,8 @@ struct address_space_operations {
- 	/*
- 	 * swapfile support
- 	 */
--	int (*swapfile)(struct address_space *, int);
-+	int (*swapon)(struct file *file);
-+	int (*swapoff)(struct file *file);
- 	int (*swap_out)(struct file *file, struct page *page,
- 			struct writeback_control *wbc);
- 	int (*swap_in)(struct file *file, struct page *page);
-Index: linux/mm/swapfile.c
-===================================================================
---- linux.orig/mm/swapfile.c	2008-02-26 12:43:57.000000000 +0100
-+++ linux/mm/swapfile.c	2008-02-26 13:34:57.000000000 +0100
-@@ -1014,9 +1014,11 @@ static void destroy_swap_extents(struct 
- 	}
- 
- 	if (sis->flags & SWP_FILE) {
-+		struct file *swap_file = sis->swap_file;
-+		struct address_space *mapping = swap_file->f_mapping;
-+
- 		sis->flags &= ~SWP_FILE;
--		sis->swap_file->f_mapping->a_ops->
--			swapfile(sis->swap_file->f_mapping, 0);
-+		mapping->a_ops->swapoff(swap_file);
- 	}
- }
- 
-@@ -1092,7 +1094,9 @@ add_swap_extent(struct swap_info_struct 
-  */
- static int setup_swap_extents(struct swap_info_struct *sis, sector_t *span)
- {
--	struct inode *inode;
-+	struct file *swap_file = sis->swap_file;
-+	struct address_space *mapping = swap_file->f_mapping;
-+	struct inode *inode = mapping->host;
- 	unsigned blocks_per_page;
- 	unsigned long page_no;
- 	unsigned blkbits;
-@@ -1103,16 +1107,14 @@ static int setup_swap_extents(struct swa
- 	int nr_extents = 0;
- 	int ret;
- 
--	inode = sis->swap_file->f_mapping->host;
- 	if (S_ISBLK(inode->i_mode)) {
- 		ret = add_swap_extent(sis, 0, sis->max, 0);
- 		*span = sis->pages;
- 		goto done;
- 	}
- 
--	if (sis->swap_file->f_mapping->a_ops->swapfile) {
--		ret = sis->swap_file->f_mapping->a_ops->
--			swapfile(sis->swap_file->f_mapping, 1);
-+	if (mapping->a_ops->swapon) {
-+		ret = mapping->a_ops->swapon(swap_file);
- 		if (!ret) {
- 			sis->flags |= SWP_FILE;
- 			ret = add_swap_extent(sis, 0, sis->max, 0);
+> 3. What is the preferred way to pass device specific configuration
+>    options to libata (preferrably at runtime, i.e., after module
+>    loading)?
 
-
-
+sysfs
