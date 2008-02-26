@@ -1,57 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932446AbYBZXgi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765109AbYBZXkw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932446AbYBZXgi (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Feb 2008 18:36:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754226AbYBZXgZ
+	id S1765109AbYBZXkw (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Feb 2008 18:40:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752734AbYBZXkn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Feb 2008 18:36:25 -0500
-Received: from einhorn.in-berlin.de ([192.109.42.8]:49761 "EHLO
-	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753653AbYBZXgX (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Feb 2008 18:36:23 -0500
-X-Envelope-From: stefanr@s5r6.in-berlin.de
-Message-ID: <47C4A26D.1030109@s5r6.in-berlin.de>
-Date: Wed, 27 Feb 2008 00:36:13 +0100
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.12) Gecko/20080219 SeaMonkey/1.1.8
+	Tue, 26 Feb 2008 18:40:43 -0500
+Received: from mail.gmx.net ([213.165.64.20]:51417 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1752691AbYBZXkm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 Feb 2008 18:40:42 -0500
+X-Authenticated: #20450766
+X-Provags-ID: V01U2FsdGVkX1+vJo91t9uvngrxJ0Q9XjGxHYaYYGQlQHsXzNECOi
+	iWNLzA31WMYg2v
+Date: Wed, 27 Feb 2008 00:40:43 +0100 (CET)
+From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+To: Jan Engelhardt <jengelh@computergmbh.de>
+cc: Randy Dunlap <randy.dunlap@oracle.com>, ricknu-0@student.ltu.se,
+       khc@pm.waw.pl, bhalevy.lists@gmail.com,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] CodingStyle: multiple updates
+In-Reply-To: <Pine.LNX.4.64.0802262310050.15321@fbirervta.pbzchgretzou.qr>
+Message-ID: <Pine.LNX.4.64.0802270033310.5714@axis700.grange>
+References: <1204062430.47c488def40a4@portal.student.luth.se>
+ <20080226135444.f83a0536.randy.dunlap@oracle.com>
+ <Pine.LNX.4.64.0802262310050.15321@fbirervta.pbzchgretzou.qr>
 MIME-Version: 1.0
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-CC: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: -next build logs
-References: <47C45749.3010001@s5r6.in-berlin.de> <20080227101338.5089d72d.sfr@canb.auug.org.au>
-In-Reply-To: <20080227101338.5089d72d.sfr@canb.auug.org.au>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Y-GMX-Trusted: 0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Stephen Rothwell wrote:
-> On Tue, 26 Feb 2008 19:15:37 +0100 Stefan Richter <stefanr@s5r6.in-berlin.de> wrote:
->> the allmodconfig builds at http://kisskb.ellerman.id.au/kisskb/branch/9/ 
->> seem to lack a few drivers even though they are properly enabled in the 
->> respective config.  Is it simply because everything is rebuilt on top of 
->> a previous build?
-> 
-> That's interesting.  I thought they were built from a clean tree each
-> time but I will discuss this with Michael Ellerman who created this build
-> system.
+On Tue, 26 Feb 2008, Jan Engelhardt wrote:
 
-I noticed it while looking how well drivers/firewire/ (CONFIG_FIREWIRE*) 
-and drivers/ieee1394/ (CONFIG_IEEE1394*) are compiled in -next; i.e. you 
-can just check for the firewire ones as one example of potentially 
-missing compiles.  On the other hand, I also saw some LDs without 
-corresponding preceding CCs, so it rather looks like there was already 
-something compiled.
+> +Continuation lines are always shorter than the initial one and are
+> +(1) indented as much as the initial line, plus (2) alignment spaces.
+> +Spaces are used so as to not cause odd aligning for users wishing to
+> +display tabs at sizes other than 8. In the example below, the
+> +continuation line of the printk call therefore has two tabs of logical
+> +indent, followed by a number of spaces to align it up.
 
->> Do you mail only errors to maintainers or also compiler warnings?
-> 
-> Currently I am only concerned with actual failures.
+Now, I think, I am not the only one using emacs. Until now the "linux" 
+C-style fitted perfectly with the CodingStyle, now it no longer will. 
+Namely, emacs puts as many tabs to indent the continuation line as fit 
+(i.e., at tab width = 8 spaces it's just (extra indent / 8) tabs plus 
+(extra indent % 8) spaces. Is there a way to make emacs behave compatibly 
+to this proposal? If not, I would not like to have to re-indent every such 
+line manually or have my patches rejected because of this.
 
-OK, I will just look myself into the logs then.  Thanks,
--- 
-Stefan Richter
--=====-==--- --=- ==-==
-http://arcgraph.de/sr/
+Thanks
+Guennadi
+---
+Guennadi Liakhovetski
