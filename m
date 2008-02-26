@@ -1,274 +1,206 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932366AbYBZX2v@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932622AbYBZX3i@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932366AbYBZX2v (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Feb 2008 18:28:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764050AbYBZX2k
+	id S932622AbYBZX3i (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Feb 2008 18:29:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763945AbYBZX33
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Feb 2008 18:28:40 -0500
-Received: from ug-out-1314.google.com ([66.249.92.173]:25810 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1763413AbYBZX2h (ORCPT
+	Tue, 26 Feb 2008 18:29:29 -0500
+Received: from wr-out-0506.google.com ([64.233.184.230]:24416 "EHLO
+	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1763781AbYBZX31 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Feb 2008 18:28:37 -0500
+	Tue, 26 Feb 2008 18:29:27 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=date:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent:from;
-        b=ZapGAsK+d7kgePGXaR6rTi9DOn9WAwqx+98P5dJ+sWtp+Lu4aBhBXmQQIhsnY07gFqm/Y175OQ+GluVSgbRS6OQhPbJ8g3Jl7RQozBfcNurg8IhEiVTW3LahBvNiysiGgTmdWLQPKQKLR37gYdHpL+4vW4cgkCoJy/ksCZ4lwRE=
-Date: Wed, 27 Feb 2008 01:25:41 +0200
-To: Chris Wright <chrisw@sous-sol.org>, Stephen Smalley <sds@tycho.nsa.gov>,
-       James Morris <jmorris@namei.org>, Eric Paris <eparis@parisplace.org>,
-       Casey Schaufler <casey@schaufler-ca.com>,
-       David Woodhouse <dwmw2@infradead.org>
-Cc: linux-security-module@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
-       akpm <akpm@linux-foundation.org>
-Subject: [PATCH -mm 2/4] SELinux: Remove various exported symbols
-Message-ID: <20080226232541.GC12059@ubuntu>
-References: <20080226232229.GA12059@ubuntu>
+        h=message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
+        b=CPCbD+K2U/oK0Karfo7tJ4/MxUutStSSj5EuMec5zlCCjjK+55Br9u7bn6tXE+lT66l/ZzrpGdrwglVUelfSsI9hL7xKvGLNJ8Rp5BQJJvXe+7fTgfPm+x7pX6AO00aIiyxzwcqQ9iDZzPDrRHOjrnH+W0/uEBQu8EaE6duuk5Q=
+Message-ID: <c4e36d110802261529o76514be0ob1b538177796dca3@mail.gmail.com>
+Date: Wed, 27 Feb 2008 00:29:21 +0100
+From: "Zdenek Kabelac" <zdenek.kabelac@gmail.com>
+To: "Kernel development list" <linux-kernel@vger.kernel.org>
+Subject: INFO: possible circular locking in the resume
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20080226232229.GA12059@ubuntu>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
-From: "Ahmed S. Darwish" <darwish.07@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Remove the following exported SELinux interfaces:
-selinux_get_inode_sid(inode, sid)
-selinux_get_ipc_sid(ipcp, sid) 
-selinux_get_task_sid(tsk, sid)
-selinux_sid_to_string(sid, ctx, len)
+Hi
 
-and substitue them with following equivalents respectively:
-new LSM hook, inode_getsecid(inode, secid)
-new LSM hook, ipc_getsecid*(ipcp, secid)
-LSM hook, task_getsecid(tsk, secid)
-LSM hook, sid_to_secctx(sid, ctx, len)
+I'm getting this INFO: from suspend/resume process.
+(Kernel uses patches from this bugzilla to survive suspend
+http://bugzilla.kernel.org/show_bug.cgi?id=10030)
+(Config is available in the bugzilla)
 
-This is done to remove SELinux dependency from some
-of the kernel subsystems (audit).
 
-Signed-off-by: Casey Schaufler <casey@schaufler-ca.com>
-Signed-off-by: Ahmed S. Darwish <darwish.07@gmail.com>
----
-
- include/linux/selinux.h    |   62 ---------------------------------------------
- security/selinux/exports.c |   42 ------------------------------
- security/selinux/hooks.c   |   19 ++++++++++++-
- 3 files changed, 17 insertions(+), 106 deletions(-)
-
-diff --git a/include/linux/selinux.h b/include/linux/selinux.h
-index 8c2cc4c..24b0af1 100644
---- a/include/linux/selinux.h
-+++ b/include/linux/selinux.h
-@@ -16,7 +16,6 @@
- 
- struct selinux_audit_rule;
- struct audit_context;
--struct inode;
- struct kern_ipc_perm;
- 
- #ifdef CONFIG_SECURITY_SELINUX
-@@ -70,45 +69,6 @@ int selinux_audit_rule_match(u32 sid, u32 field, u32 op,
- void selinux_audit_set_callback(int (*callback)(void));
- 
- /**
-- *     selinux_sid_to_string - map a security context ID to a string
-- *     @sid: security context ID to be converted.
-- *     @ctx: address of context string to be returned
-- *     @ctxlen: length of returned context string.
-- *
-- *     Returns 0 if successful, -errno if not.  On success, the context
-- *     string will be allocated internally, and the caller must call
-- *     kfree() on it after use.
-- */
--int selinux_sid_to_string(u32 sid, char **ctx, u32 *ctxlen);
--
--/**
-- *     selinux_get_inode_sid - get the inode's security context ID
-- *     @inode: inode structure to get the sid from.
-- *     @sid: pointer to security context ID to be filled in.
-- *
-- *     Returns nothing
-- */
--void selinux_get_inode_sid(const struct inode *inode, u32 *sid);
--
--/**
-- *     selinux_get_ipc_sid - get the ipc security context ID
-- *     @ipcp: ipc structure to get the sid from.
-- *     @sid: pointer to security context ID to be filled in.
-- *
-- *     Returns nothing
-- */
--void selinux_get_ipc_sid(const struct kern_ipc_perm *ipcp, u32 *sid);
--
--/**
-- *     selinux_get_task_sid - return the SID of task
-- *     @tsk: the task whose SID will be returned
-- *     @sid: pointer to security context ID to be filled in.
-- *
-- *     Returns nothing
-- */
--void selinux_get_task_sid(struct task_struct *tsk, u32 *sid);
--
--/**
-  *     selinux_string_to_sid - map a security context string to a security ID
-  *     @str: the security context string to be mapped
-  *     @sid: ID value returned via this.
-@@ -175,28 +135,6 @@ static inline void selinux_audit_set_callback(int (*callback)(void))
- 	return;
- }
- 
--static inline int selinux_sid_to_string(u32 sid, char **ctx, u32 *ctxlen)
--{
--       *ctx = NULL;
--       *ctxlen = 0;
--       return 0;
--}
--
--static inline void selinux_get_inode_sid(const struct inode *inode, u32 *sid)
--{
--	*sid = 0;
--}
--
--static inline void selinux_get_ipc_sid(const struct kern_ipc_perm *ipcp, u32 *sid)
--{
--	*sid = 0;
--}
--
--static inline void selinux_get_task_sid(struct task_struct *tsk, u32 *sid)
--{
--	*sid = 0;
--}
--
- static inline int selinux_string_to_sid(const char *str, u32 *sid)
- {
-        *sid = 0;
-diff --git a/security/selinux/exports.c b/security/selinux/exports.c
-index 87d2bb3..64af2d3 100644
---- a/security/selinux/exports.c
-+++ b/security/selinux/exports.c
-@@ -25,48 +25,6 @@
- /* SECMARK reference count */
- extern atomic_t selinux_secmark_refcount;
- 
--int selinux_sid_to_string(u32 sid, char **ctx, u32 *ctxlen)
--{
--	if (selinux_enabled)
--		return security_sid_to_context(sid, ctx, ctxlen);
--	else {
--		*ctx = NULL;
--		*ctxlen = 0;
--	}
--
--	return 0;
--}
--
--void selinux_get_inode_sid(const struct inode *inode, u32 *sid)
--{
--	if (selinux_enabled) {
--		struct inode_security_struct *isec = inode->i_security;
--		*sid = isec->sid;
--		return;
--	}
--	*sid = 0;
--}
--
--void selinux_get_ipc_sid(const struct kern_ipc_perm *ipcp, u32 *sid)
--{
--	if (selinux_enabled) {
--		struct ipc_security_struct *isec = ipcp->security;
--		*sid = isec->sid;
--		return;
--	}
--	*sid = 0;
--}
--
--void selinux_get_task_sid(struct task_struct *tsk, u32 *sid)
--{
--	if (selinux_enabled) {
--		struct task_security_struct *tsec = tsk->security;
--		*sid = tsec->sid;
--		return;
--	}
--	*sid = 0;
--}
--
- int selinux_string_to_sid(char *str, u32 *sid)
- {
- 	if (selinux_enabled)
-diff --git a/security/selinux/hooks.c b/security/selinux/hooks.c
-index f42ebfc..62a0f26 100644
---- a/security/selinux/hooks.c
-+++ b/security/selinux/hooks.c
-@@ -2724,6 +2724,12 @@ static int selinux_inode_killpriv(struct dentry *dentry)
- 	return secondary_ops->inode_killpriv(dentry);
- }
- 
-+static void selinux_inode_getsecid(const struct inode *inode, u32 *secid)
-+{
-+	struct inode_security_struct *isec = inode->i_security;
-+	*secid = isec->sid;
-+}
-+
- /* file security operations */
- 
- static int selinux_revalidate_file_permission(struct file *file, int mask)
-@@ -3120,7 +3126,8 @@ static int selinux_task_getsid(struct task_struct *p)
- 
- static void selinux_task_getsecid(struct task_struct *p, u32 *secid)
- {
--	selinux_get_task_sid(p, secid);
-+	struct task_security_struct *tsec = p->security;
-+	*secid = tsec->sid;
- }
- 
- static int selinux_task_setgroups(struct group_info *group_info)
-@@ -4090,7 +4097,7 @@ static int selinux_socket_getpeersec_dgram(struct socket *sock, struct sk_buff *
- 		goto out;
- 
- 	if (sock && family == PF_UNIX)
--		selinux_get_inode_sid(SOCK_INODE(sock), &peer_secid);
-+		selinux_inode_getsecid(SOCK_INODE(sock), &peer_secid);
- 	else if (skb)
- 		selinux_skb_peerlbl_sid(skb, family, &peer_secid);
- 
-@@ -4970,6 +4977,12 @@ static int selinux_ipc_permission(struct kern_ipc_perm *ipcp, short flag)
- 	return ipc_has_perm(ipcp, av);
- }
- 
-+static void selinux_ipc_getsecid(struct kern_ipc_perm *ipcp, u32 *secid)
-+{
-+	struct ipc_security_struct *isec = ipcp->security;
-+	*secid = isec->sid;
-+}
-+
- /* module stacking operations */
- static int selinux_register_security (const char *name, struct security_operations *ops)
- {
-@@ -5292,6 +5305,7 @@ static struct security_operations selinux_ops = {
- 	.inode_listsecurity =           selinux_inode_listsecurity,
- 	.inode_need_killpriv =		selinux_inode_need_killpriv,
- 	.inode_killpriv =		selinux_inode_killpriv,
-+	.inode_getsecid =               selinux_inode_getsecid,
- 
- 	.file_permission =		selinux_file_permission,
- 	.file_alloc_security =		selinux_file_alloc_security,
-@@ -5332,6 +5346,7 @@ static struct security_operations selinux_ops = {
- 	.task_to_inode =                selinux_task_to_inode,
- 
- 	.ipc_permission =		selinux_ipc_permission,
-+	.ipc_getsecid =                 selinux_ipc_getsecid,
- 
- 	.msg_msg_alloc_security =	selinux_msg_msg_alloc_security,
- 	.msg_msg_free_security =	selinux_msg_msg_free_security,
-
--- 
-
-"Better to light a candle, than curse the darkness"
-
-Ahmed S. Darwish
-Homepage: http://darwish.07.googlepages.com
-Blog: http://darwish-07.blogspot.com
-
+[   42.097522] MMC: killing requests for dead queue
+[   42.098738] PM: Finishing wakeup.
+[   42.098740] Restarting tasks ... <6>usb 3-2: USB disconnect, address 2
+[   42.129810] done.
+[   42.258523]
+[   42.258524] =======================================================
+[   42.258626] [ INFO: possible circular locking dependency detected ]
+[   42.258681] 2.6.25-rc3 #81
+[   42.258736] -------------------------------------------------------
+[   42.258787] sh/1973 is trying to acquire lock:
+[   42.258839]  (&cpu_hotplug.lock){--..}, at: [<ffffffff8106d7a5>]
+get_online_cpus+0x35/0x50
+[   42.259068]
+[   42.259068] but task is already holding lock:
+[   42.259166]  (&sp->mutex){--..}, at: [<ffffffff8105adb0>]
+synchronize_srcu+0x20/0x90
+[   42.259376]
+[   42.259377] which lock already depends on the new lock.
+[   42.259377]
+[   42.259501]
+[   42.259501] the existing dependency chain (in reverse order) is:
+[   42.259501]
+[   42.259501] -> #3 (&sp->mutex){--..}:
+[   42.259501]        [<ffffffff81066d30>] __lock_acquire+0xfb0/0x1040
+[   42.259501]        [<ffffffff81066e68>] lock_acquire+0xa8/0xf0
+[   42.259501]        [<ffffffff812ef5ac>] mutex_lock_nested+0xcc/0x370
+[   42.259501]        [<ffffffff8105adb0>] synchronize_srcu+0x20/0x90
+[   42.259501]        [<ffffffff8105b2b4>]
+srcu_notifier_chain_unregister+0x74/0xe0
+[   42.259501]        [<ffffffff8125a337>] cpufreq_unregister_notifier+0x17/0x40
+[   42.259501]        [<ffffffff8829e296>]
+cpufreq_governor_userspace+0x1b6/0x1f4 [cpufreq_userspace]
+[   42.259501]        [<ffffffff81259923>] __cpufreq_governor+0xd3/0x150
+[   42.259501]        [<ffffffff8125a0b5>] __cpufreq_set_policy+0x115/0x170
+[   42.259501]        [<ffffffff8125a819>] store_scaling_governor+0xc9/0x260
+[   42.259501]        [<ffffffff8125b527>] store+0x87/0xa0
+[   42.259501]        [<ffffffff811101fa>] sysfs_write_file+0xca/0x140
+[   42.259501]        [<ffffffff810bb82b>] vfs_write+0xcb/0x170
+[   42.259501]        [<ffffffff810bb9c0>] sys_write+0x50/0x90
+[   42.259501]        [<ffffffff8100c70a>] system_call_after_swapgs+0x8a/0x8f
+[   42.259501]        [<ffffffffffffffff>] 0xffffffffffffffff
+[   42.259501]
+[   42.259501] -> #2 (userspace_mutex){--..}:
+[   42.259501]        [<ffffffff81066d30>] __lock_acquire+0xfb0/0x1040
+[   42.259501]        [<ffffffff81066e68>] lock_acquire+0xa8/0xf0
+[   42.259501]        [<ffffffff812ef5ac>] mutex_lock_nested+0xcc/0x370
+[   42.259501]        [<ffffffff8829e13c>]
+cpufreq_governor_userspace+0x5c/0x1f4 [cpufreq_userspace]
+[   42.259501]        [<ffffffff81259923>] __cpufreq_governor+0xd3/0x150
+[   42.259501]        [<ffffffff8125a0cb>] __cpufreq_set_policy+0x12b/0x170
+[   42.259501]        [<ffffffff8125a819>] store_scaling_governor+0xc9/0x260
+[   42.259501]        [<ffffffff8125b527>] store+0x87/0xa0
+[   42.259501]        [<ffffffff811101fa>] sysfs_write_file+0xca/0x140
+[   42.259501]        [<ffffffff810bb82b>] vfs_write+0xcb/0x170
+[   42.259501]        [<ffffffff810bb9c0>] sys_write+0x50/0x90
+[   42.259501]        [<ffffffff8100c70a>] system_call_after_swapgs+0x8a/0x8f
+[   42.259501]        [<ffffffffffffffff>] 0xffffffffffffffff
+[   42.259501]
+[   42.259501] -> #1 (&per_cpu(cpu_policy_rwsem, cpu)){----}:
+[   42.259501]        [<ffffffff81066d30>] __lock_acquire+0xfb0/0x1040
+[   42.259501]        [<ffffffff81066e68>] lock_acquire+0xa8/0xf0
+[   42.259501]        [<ffffffff812effc8>] down_write+0x38/0x70
+[   42.259501]        [<ffffffff8125ae7c>] lock_policy_rwsem_write+0x4c/0x90
+[   42.259501]        [<ffffffff812edbed>] cpufreq_cpu_callback+0x6d/0x90
+[   42.259501]        [<ffffffff812f578f>] notifier_call_chain+0x3f/0x80
+[   42.259501]        [<ffffffff8105b059>] __raw_notifier_call_chain+0x9/0x10
+[   42.259501]        [<ffffffff8106d368>] _cpu_down+0xa8/0x290
+[   42.259501]        [<ffffffff8106d621>] disable_nonboot_cpus+0x71/0x110
+[   42.259501]        [<ffffffff810730d5>] suspend_devices_and_enter+0xe5/0x1a0
+[   42.259501]        [<ffffffff81073306>] enter_state+0x146/0x1d0
+[   42.259501]        [<ffffffff8107344a>] state_store+0xba/0x100
+[   42.259501]        [<ffffffff811757f7>] kobj_attr_store+0x17/0x20
+[   42.259501]        [<ffffffff811101fa>] sysfs_write_file+0xca/0x140
+[   42.259501]        [<ffffffff810bb82b>] vfs_write+0xcb/0x170
+[   42.259501]        [<ffffffff810bb9c0>] sys_write+0x50/0x90
+[   42.259501]        [<ffffffff8100c70a>] system_call_after_swapgs+0x8a/0x8f
+[   42.259501]        [<ffffffffffffffff>] 0xffffffffffffffff
+[   42.259501]
+[   42.259501] -> #0 (&cpu_hotplug.lock){--..}:
+[   42.259501]        [<ffffffff81066c3d>] __lock_acquire+0xebd/0x1040
+[   42.259501]        [<ffffffff81066e68>] lock_acquire+0xa8/0xf0
+[   42.259501]        [<ffffffff812ef5ac>] mutex_lock_nested+0xcc/0x370
+[   42.259501]        [<ffffffff8106d7a5>] get_online_cpus+0x35/0x50
+[   42.259501]        [<ffffffff8103837e>] sched_getaffinity+0x1e/0xa0
+[   42.259501]        [<ffffffff8108b386>] __synchronize_sched+0x16/0x90
+[   42.259501]        [<ffffffff8105add5>] synchronize_srcu+0x45/0x90
+[   42.259501]        [<ffffffff8105b2b4>]
+srcu_notifier_chain_unregister+0x74/0xe0
+[   42.259501]        [<ffffffff8125a337>] cpufreq_unregister_notifier+0x17/0x40
+[   42.259501]        [<ffffffff8829e296>]
+cpufreq_governor_userspace+0x1b6/0x1f4 [cpufreq_userspace]
+[   42.259501]        [<ffffffff81259923>] __cpufreq_governor+0xd3/0x150
+[   42.259501]        [<ffffffff8125a0b5>] __cpufreq_set_policy+0x115/0x170
+[   42.259501]        [<ffffffff8125a819>] store_scaling_governor+0xc9/0x260
+[   42.259501]        [<ffffffff8125b527>] store+0x87/0xa0
+[   42.259501]        [<ffffffff811101fa>] sysfs_write_file+0xca/0x140
+[   42.259501]        [<ffffffff810bb82b>] vfs_write+0xcb/0x170
+[   42.259501]        [<ffffffff810bb9c0>] sys_write+0x50/0x90
+[   42.259501]        [<ffffffff8100c70a>] system_call_after_swapgs+0x8a/0x8f
+[   42.259501]        [<ffffffffffffffff>] 0xffffffffffffffff
+[   42.259501]
+[   42.259501] other info that might help us debug this:
+[   42.259501]
+[   42.259501] 4 locks held by sh/1973:
+[   42.259501]  #0:  (&buffer->mutex){--..}, at: [<ffffffff81110173>]
+sysfs_write_file+0x43/0x140
+[   42.259501]  #1:  (&per_cpu(cpu_policy_rwsem, cpu)){----}, at:
+[<ffffffff8125ae7c>] lock_policy_rwsem_write+0x4c/0x90
+[   42.259501]  #2:  (userspace_mutex){--..}, at: [<ffffffff8829e22e>]
+cpufreq_governor_userspace+0x14e/0x1f4 [cpufreq_userspace]
+[   42.259501]  #3:  (&sp->mutex){--..}, at: [<ffffffff8105adb0>]
+synchronize_srcu+0x20/0x90
+[   42.259501]
+[   42.259501] stack backtrace:
+[   42.259501] Pid: 1973, comm: sh Not tainted 2.6.25-rc3 #81
+[   42.259501]
+[   42.259501] Call Trace:
+[   42.259501]  [<ffffffff81065ac4>] print_circular_bug_tail+0x84/0x90
+[   42.259501]  [<ffffffff81065872>] ? print_circular_bug_entry+0x52/0x60
+[   42.259501]  [<ffffffff81066c3d>] __lock_acquire+0xebd/0x1040
+[   42.259501]  [<ffffffff8106353b>] ? find_usage_backwards+0xcb/0x110
+[   42.259502]  [<ffffffff8106353b>] ? find_usage_backwards+0xcb/0x110
+[   42.259502]  [<ffffffff8106d7a5>] ? get_online_cpus+0x35/0x50
+[   42.259502]  [<ffffffff81066e68>] lock_acquire+0xa8/0xf0
+[   42.259502]  [<ffffffff8106d7a5>] ? get_online_cpus+0x35/0x50
+[   42.259502]  [<ffffffff812ef5ac>] mutex_lock_nested+0xcc/0x370
+[   42.259502]  [<ffffffff8106d7a5>] ? get_online_cpus+0x35/0x50
+[   42.259502]  [<ffffffff81065649>] ? trace_hardirqs_on+0x139/0x1a0
+[   42.259502]  [<ffffffff8106d7a5>] get_online_cpus+0x35/0x50
+[   42.259502]  [<ffffffff8103837e>] sched_getaffinity+0x1e/0xa0
+[   42.259502]  [<ffffffff8108b386>] __synchronize_sched+0x16/0x90
+[   42.259502]  [<ffffffff8105add5>] synchronize_srcu+0x45/0x90
+[   42.259502]  [<ffffffff8105b2b4>] srcu_notifier_chain_unregister+0x74/0xe0
+[   42.259502]  [<ffffffff8125a337>] cpufreq_unregister_notifier+0x17/0x40
+[   42.259502]  [<ffffffff8829e296>]
+:cpufreq_userspace:cpufreq_governor_userspace+0x1b6/0x1f4
+[   42.259502]  [<ffffffff81259923>] __cpufreq_governor+0xd3/0x150
+[   42.259502]  [<ffffffff8125a0b5>] __cpufreq_set_policy+0x115/0x170
+[   42.259502]  [<ffffffff8125a819>] store_scaling_governor+0xc9/0x260
+[   42.259502]  [<ffffffff8125b650>] ? handle_update+0x0/0x10
+[   42.259502]  [<ffffffff812efff0>] ? down_write+0x60/0x70
+[   42.259502]  [<ffffffff8125b527>] store+0x87/0xa0
+[   42.259502]  [<ffffffff811101fa>] sysfs_write_file+0xca/0x140
+[   42.259502]  [<ffffffff810bb82b>] vfs_write+0xcb/0x170
+[   42.259502]  [<ffffffff810bb9c0>] sys_write+0x50/0x90
+[   42.259502]  [<ffffffff8100c70a>] system_call_after_swapgs+0x8a/0x8f
+[   42.259502]
+[   41.439840] mmc0: new SD card at address 5a61
+[   41.440027] mmcblk0: mmc0:5a61 S016B 14560KiB
+[   41.440123]  mmcblk0: p1
+[   41.916006] usb 3-2: new full speed USB device using uhci_hcd and address 3
+[   42.900716] usb 3-2: configuration #1 chosen from 1 choice
+[   42.080814] usb 3-2: New USB device found, idVendor=0483, idProduct=2016
+[   42.080939] usb 3-2: New USB device strings: Mfr=1, Product=2, SerialNumber=0
+[   42.081094] usb 3-2: Product: Biometric Coprocessor
+[   42.081212] usb 3-2: Manufacturer: STMicroelectronics
+[   47.925651] PM: Syncing filesystems ... done.
+[   47.925845] PM: Preparing system for mem sleep
+[   47.925925] Freezing user space processes ... (elapsed 0.00 seconds) done.
+[   47.926302] Freezing remaining freezable tasks ... (elapsed 0.00
+seconds) done.
+[   47.926596] PM: Entering mem sleep
+[   47.929993] ACPI: Preparing to enter system sleep state S3
+[   49.169572] sd 0:0:0:0: [sda] Synchronizing SCSI cache
+[   49.169771] sd 0:0:0:0: [sda] Stopping disk
+[   51.204365] mmc0: card 5a61 removed
+[   51.204365] ACPI handle has no context!
+[   51.204365] ACPI: PCI interrupt for device 0000:15:00.2 disabled
+[   51.204365] ACPI handle has no context!
