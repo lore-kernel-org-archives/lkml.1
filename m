@@ -1,48 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765770AbYBZWCQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932140AbYBZWDh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765770AbYBZWCQ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Feb 2008 17:02:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763288AbYBZWB5
+	id S932140AbYBZWDh (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Feb 2008 17:03:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761208AbYBZWD2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Feb 2008 17:01:57 -0500
-Received: from styx.suse.cz ([82.119.242.94]:52199 "EHLO mail.suse.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1763275AbYBZWB4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Feb 2008 17:01:56 -0500
-Date: Tue, 26 Feb 2008 23:01:55 +0100 (CET)
-From: Jiri Kosina <jkosina@suse.cz>
-To: Lennart Sorensen <lsorense@csclub.uwaterloo.ca>
-cc: Chris Holvenstot <cholvenstot@comcast.net>, elendil@planet.nl,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, Ingo Molnar <mingo@elte.hu>,
-       Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [2.6.25-rc1] jerky mouse cursor and randoooom key repeats
-In-Reply-To: <20080226215812.GX1287@csclub.uwaterloo.ca>
-Message-ID: <Pine.LNX.4.64.0802262300000.30955@jikos.suse.cz>
-References: <1203123219.6176.36.camel@popeye> <Pine.LNX.4.64.0802161202430.7699@twin.jikos.cz>
- <1203163503.6124.5.camel@popeye> <Pine.LNX.4.64.0802161907200.30955@jikos.suse.cz>
- <1203221372.6124.29.camel@popeye> <Pine.LNX.4.64.0802211036580.30955@jikos.suse.cz>
- <1203587101.27355.4.camel@popeye> <20080226145832.GA1289@csclub.uwaterloo.ca>
- <Pine.LNX.4.64.0802261602030.30955@jikos.suse.cz> <20080226215812.GX1287@csclub.uwaterloo.ca>
+	Tue, 26 Feb 2008 17:03:28 -0500
+Received: from gepetto.dc.ltu.se ([130.240.42.40]:36435 "EHLO
+	gepetto.dc.ltu.se" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754616AbYBZWD1 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 Feb 2008 17:03:27 -0500
+Message-ID: <47C48CA8.8090107@student.ltu.se>
+Date: Tue, 26 Feb 2008 23:03:20 +0100
+From: Richard Knutsson <ricknu-0@student.ltu.se>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Jan Engelhardt <jengelh@computergmbh.de>
+CC: Miles Bader <miles@gnu.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Krzysztof Halasa <khc@pm.waw.pl>
+Subject: Re: Tabs, spaces, indent and 80 character lines
+References: <47C0BEE7.4040409@student.ltu.se> <m3ejb2bdxx.fsf@maximus.localdomain> <87zltqcsa2.fsf@catnip.gol.com> <47C33D74.4010700@student.ltu.se> <Pine.LNX.4.64.0802260242320.15321@fbirervta.pbzchgretzou.qr>
+In-Reply-To: <Pine.LNX.4.64.0802260242320.15321@fbirervta.pbzchgretzou.qr>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 26 Feb 2008, Lennart Sorensen wrote:
+Jan Engelhardt wrote:
+> On Feb 25 2008 23:13, Richard Knutsson wrote:
+>   
+>> Miles Bader wrote:
+>>     
+>>> Why do people even respond to these trolls...?
+>>>   
+>>>       
+>> Obviously, this must to have been discussed before, with a clear conclusion.
+>>     
+>
+> It has been discussed before, at http://lkml.org/lkml/2007/11/12/19 .
+>
+> What is really frustrating is that some of the people which _do_ 
+> enforce one style of the two (tabs-only or tabs-spaces) have only
+> indirectly voiced their preferred style, as in
+> http://lkml.org/lkml/2008/1/19/67 .
+>
+> Often it was just (1)"checkpatch flagged your spaces, hence they are 
+> wrong" instead of (2)"in my tree, I only take tabs-only patches".
+>
+>
+> Now back to coding, oh and don't forget send a patch for CodingStyle 
+> since a mail without one is often taken even less seriously.
+>   
+What can I say? Doh! Am a bit surprised I had totally missed it during 
+the mailbox-cleanups (to prevent lock-down).
 
-> > This could be caused by the fact that as far as I know, X are not using 
-> > kernel-autorepeat, but they are handling it themselves, right? So if their 
-> > sense of time (probably due to some change of kernel timekeeping) gets 
-> > wrong, the autorepeat in X might also get wrong.
-> > It would be nice to know if when you hit the situation when autorepeat 
-> > goes strange in X, if it is still OK in console.
-> Yes console is always fine.
+Thank you! for the heads-up.
+Richard Knutsson
 
-OK, so what very probably happened is that CONFIG_GROUP_SCHED somehow 
-schedules X server in a way which confuses its sense of time, and 
-therefore makes autorepeat buggy ... ?
-
--- 
-Jiri Kosina
-SUSE Labs
