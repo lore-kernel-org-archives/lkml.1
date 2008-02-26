@@ -1,63 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765497AbYBZUoq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765090AbYBZUpl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765497AbYBZUoq (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Feb 2008 15:44:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765418AbYBZUo3
+	id S1765090AbYBZUpl (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Feb 2008 15:45:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757977AbYBZUp2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Feb 2008 15:44:29 -0500
-Received: from mgw1.diku.dk ([130.225.96.91]:59205 "EHLO mgw1.diku.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1765399AbYBZUo0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Feb 2008 15:44:26 -0500
-Date: Tue, 26 Feb 2008 21:44:23 +0100 (CET)
-From: Julia Lawall <julia@diku.dk>
-To: yi.zhu@intel.com, linux-wireless@vger.kernel.org,
-       ipw3945-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org,
-       kernel-janitors@vger.kernel.org
-Subject: [PATCH 6/9] drivers/net/wireless/iwlwifi/iwl-4965.c: Correct use of
- ! and &
-Message-ID: <Pine.LNX.4.64.0802262143570.18200@ask.diku.dk>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Tue, 26 Feb 2008 15:45:28 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:52628
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1755980AbYBZUp0 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 Feb 2008 15:45:26 -0500
+Date: Tue, 26 Feb 2008 12:46:11 -0800 (PST)
+Message-Id: <20080226.124611.206089131.davem@davemloft.net>
+To: mikpe@it.uu.se
+Cc: sparclinux@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [BUG] 2.6.25-rc3 hangs in early boot on Sun Ultra5
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <18371.10207.58819.188510@alkaid.it.uu.se>
+References: <18371.10207.58819.188510@alkaid.it.uu.se>
+X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Julia Lawall <julia@diku.dk>
+From: Mikael Pettersson <mikpe@it.uu.se>
+Date: Mon, 25 Feb 2008 21:41:03 +0100
 
-In commit e6bafba5b4765a5a252f1b8d31cbf6d2459da337, a bug was fixed that
-involved converting !x & y to !(x & y).  The code below shows the same
-pattern, and thus should perhaps be fixed in the same way.
+> Another difference is that with rc2 the first few lines of kernel
+> output while the console is still in OF mode either aren't shown
+> or disappear quickly since the switch to the framebuffer occurs
+> within a fraction of a second after the kernel has been loaded.
+> With rc3 the kernel output (the text shown above) in the OF-mode
+> console is very very slow.
 
-This is not tested and clearly changes the semantics, so it is only
-something to consider.
+Yes that's a new feature.  Until we switch over to the "real"
+console we print the log messages using the firmware console
+routines.
 
-The semantic patch that makes this change is as follows:
-(http://www.emn.fr/x-info/coccinelle/)
+This way if an early crash or similar happens, you'll see it
+and be able to report it instead of having to report with
+"-p" on the command line.
 
-// <smpl>
-@@ expression E1,E2; @@
-(
-  !E1 & !E2
-|
-- !E1 & E2
-+ !(E1 & E2)
-)
-// </smpl>
-
-Signed-off-by: Julia Lawall <julia@diku.dk>
-
----
-
-diff -u -p a/drivers/net/wireless/iwlwifi/iwl-4965.c b/drivers/net/wireless/iwlwifi/iwl-4965.c
---- a/drivers/net/wireless/iwlwifi/iwl-4965.c 2008-02-05 20:56:01.000000000 +0100
-+++ b/drivers/net/wireless/iwlwifi/iwl-4965.c 2008-02-26 08:09:12.000000000 +0100
-@@ -4589,7 +4589,7 @@ static u8 iwl4965_is_fat_tx_allowed(stru
- 
- 	if (sta_ht_inf) {
- 		if ((!sta_ht_inf->ht_supported) ||
--		   (!sta_ht_inf->cap & IEEE80211_HT_CAP_SUP_WIDTH))
-+		   (!(sta_ht_inf->cap & IEEE80211_HT_CAP_SUP_WIDTH)))
- 			return 0;
- 	}
- 
+I'll fire up my ultra5 and try to figure out what's wrong
+with the atyfb framebuffer driver, that's where it's dying.
