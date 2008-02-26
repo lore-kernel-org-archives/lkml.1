@@ -1,54 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765109AbYBZXkw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932451AbYBZXlo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765109AbYBZXkw (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Feb 2008 18:40:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752734AbYBZXkn
+	id S932451AbYBZXlo (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Feb 2008 18:41:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754176AbYBZXle
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Feb 2008 18:40:43 -0500
-Received: from mail.gmx.net ([213.165.64.20]:51417 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1752691AbYBZXkm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Feb 2008 18:40:42 -0500
-X-Authenticated: #20450766
-X-Provags-ID: V01U2FsdGVkX1+vJo91t9uvngrxJ0Q9XjGxHYaYYGQlQHsXzNECOi
-	iWNLzA31WMYg2v
-Date: Wed, 27 Feb 2008 00:40:43 +0100 (CET)
-From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-To: Jan Engelhardt <jengelh@computergmbh.de>
-cc: Randy Dunlap <randy.dunlap@oracle.com>, ricknu-0@student.ltu.se,
-       khc@pm.waw.pl, bhalevy.lists@gmail.com,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] CodingStyle: multiple updates
-In-Reply-To: <Pine.LNX.4.64.0802262310050.15321@fbirervta.pbzchgretzou.qr>
-Message-ID: <Pine.LNX.4.64.0802270033310.5714@axis700.grange>
-References: <1204062430.47c488def40a4@portal.student.luth.se>
- <20080226135444.f83a0536.randy.dunlap@oracle.com>
- <Pine.LNX.4.64.0802262310050.15321@fbirervta.pbzchgretzou.qr>
+	Tue, 26 Feb 2008 18:41:34 -0500
+Received: from wr-out-0506.google.com ([64.233.184.236]:37502 "EHLO
+	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753546AbYBZXld (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 Feb 2008 18:41:33 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=blmAP1NXMGk9GSKNi4FBz9WIsTR1EONrMlEYRa2RVaEVSLUYdTmJMcF/7PPAr/YGEu1wJDT1zezyk1qVgGijp4bDi3LpXvLWAShJwAQkK3kUDULFM1Y7c3fB7jWMEZD/fqI/UfUA/V3N/Xb945R1v+GTCZNCNoDTMURYzF4nj1s=
+Message-ID: <86802c440802261541s67810687pb7079200288c1e20@mail.gmail.com>
+Date: Tue, 26 Feb 2008 15:41:27 -0800
+From: "Yinghai Lu" <yhlu.kernel@gmail.com>
+To: "Ravikiran Thirumalai" <kiran@scalemp.com>
+Subject: Re: [PATCH] x86_64: make amd quad core 8 socket system not be clustered_box v2
+Cc: "Andi Kleen" <andi@firstfloor.org>, "Ingo Molnar" <mingo@elte.hu>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       shai@scalemp.com
+In-Reply-To: <20080226233111.GA9734@localdomain>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Y-GMX-Trusted: 0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20080226033945.GJ3143@localdomain>
+	 <20080226040541.GK3143@localdomain>
+	 <86802c440802252127i36fcd164xe6671aada160766a@mail.gmail.com>
+	 <20080226184235.GA5914@localdomain>
+	 <86802c440802261100j322ee6a6yef9108dc175de459@mail.gmail.com>
+	 <20080226203235.GH5914@localdomain>
+	 <86802c440802261310y176cdfel38843e264bc71f82@mail.gmail.com>
+	 <20080226212418.GJ5914@localdomain>
+	 <86802c440802261516n1ca8ef6eh5e6abdd0c3f959dd@mail.gmail.com>
+	 <20080226233111.GA9734@localdomain>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 26 Feb 2008, Jan Engelhardt wrote:
+On Tue, Feb 26, 2008 at 3:31 PM, Ravikiran Thirumalai <kiran@scalemp.com> wrote:
+> On Tue, Feb 26, 2008 at 03:16:16PM -0800, Yinghai Lu wrote:
+>  >On Tue, Feb 26, 2008 at 1:24 PM, Ravikiran Thirumalai <kiran@scalemp.com> wrote:
+>  >>
+>  >> On Tue, Feb 26, 2008 at 01:10:57PM -0800, Yinghai Lu wrote:
+>  >>  >On Tue, Feb 26, 2008 at 12:32 PM, Ravikiran Thirumalai
+>  >>  ><kiran@scalemp.com> wrote:
+>  >>  >> On Tue, Feb 26, 2008 at 11:00:58AM -0800, Yinghai Lu wrote:
+>  >>  >>  >
+>  >>  >>  >1. if acpi=off ?
+>  >>  >>
+>  >>  >>  Well that is not a realistic scenario for any multi chassi NUMA machine,
+>  >>  >>  since the proximity information is very important and turning acpi off
+>  >>  >>  deprives the OS of this information.
+>  >>  >
+>  >>  >actually OS should detect the distance instead of rely on SLIT.
+>  >>
+>  >>  How does it do that?  ACPI SRAT is needed to determine this, and it wouldn't
+>  >>  work if acpi=off.
+>  >
+>  >srat only have apicid to node mapping, and ram to node mapping.
+>
+>  Which is very important for performance.
+>
+>
+>  >
+>  >for amd64 system, when acpi=off
+>  >ram to node mapping can be retrieved from pci conf space
+>
+>  I was referring to all types of numa systems, not just AMD.  The pci config
+>  space is amd specific.  Multi chassi systems in particular would be
+>  acpi SRAT based.  Anyways.
 
-> +Continuation lines are always shorter than the initial one and are
-> +(1) indented as much as the initial line, plus (2) alignment spaces.
-> +Spaces are used so as to not cause odd aligning for users wishing to
-> +display tabs at sizes other than 8. In the example below, the
-> +continuation line of the printk call therefore has two tabs of logical
-> +indent, followed by a number of spaces to align it up.
+can you try x86.git#testing your vsmp to see if is_vsmp_box is working?
 
-Now, I think, I am not the only one using emacs. Until now the "linux" 
-C-style fitted perfectly with the CodingStyle, now it no longer will. 
-Namely, emacs puts as many tabs to indent the continuation line as fit 
-(i.e., at tab width = 8 spaces it's just (extra indent / 8) tabs plus 
-(extra indent % 8) spaces. Is there a way to make emacs behave compatibly 
-to this proposal? If not, I would not like to have to re-indent every such 
-line manually or have my patches rejected because of this.
+http://people.redhat.com/mingo/x86.git/README
 
-Thanks
-Guennadi
----
-Guennadi Liakhovetski
+YH
