@@ -1,84 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932100AbYBZUDS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759150AbYBZUD6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932100AbYBZUDS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Feb 2008 15:03:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752598AbYBZUDF
+	id S1759150AbYBZUD6 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Feb 2008 15:03:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753262AbYBZUDt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Feb 2008 15:03:05 -0500
-Received: from pne-smtpout3-sn2.hy.skanova.net ([81.228.8.111]:54373 "EHLO
-	pne-smtpout3-sn2.hy.skanova.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751682AbYBZUDE (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Feb 2008 15:03:04 -0500
-Date: Tue, 26 Feb 2008 22:02:17 +0200
-From: Pekka Paalanen <pq@iki.fi>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
-       Christoph Hellwig <hch@infradead.org>,
-       Arjan van de Ven <arjan@infradead.org>, Pavel Roskin <proski@gnu.org>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Andy Whitcroft <apw@shadowen.org>
-Subject: Re: [RFC] mmiotrace full patch, preview 1
-Message-ID: <20080226220217.747d47a5@daedalus.pq.iki.fi>
-In-Reply-To: <20080225144922.ae716e7d.akpm@linux-foundation.org>
-References: <20080224190323.77adf683@daedalus.pq.iki.fi>
-	<20080225144922.ae716e7d.akpm@linux-foundation.org>
-X-Mailer: Claws Mail 3.0.2 (GTK+ 2.12.5; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 26 Feb 2008 15:03:49 -0500
+Received: from ra.tuxdriver.com ([70.61.120.52]:4348 "EHLO ra.tuxdriver.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750877AbYBZUDr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 Feb 2008 15:03:47 -0500
+Date: Tue, 26 Feb 2008 14:48:38 -0500
+From: "John W. Linville" <linville@tuxdriver.com>
+To: Chris Clayton <chris2553@googlemail.com>
+Cc: Ivo Van Doorn <ivdoorn@gmail.com>, linux-kernel@vger.kernel.org,
+       linux-wireless@vger.kernel.org, stefano.brivio@polimi.it,
+       johannes@sipsolutions.net
+Subject: Re: 2.6.25-rc2 regression in rt61pci wireless driver
+Message-ID: <20080226194838.GD3013@tuxdriver.com>
+References: <c6b1100b0802160406l24fed9dcje1dbfc8907fd7a16@mail.gmail.com> <200802252104.32416.chris2553@googlemail.com> <a32f33a40802251409ofbdab60w4a95c8aaefaad70a@mail.gmail.com> <200802261911.39577.chris2553@googlemail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200802261911.39577.chris2553@googlemail.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 25 Feb 2008 14:49:22 -0800
-Andrew Morton <akpm@linux-foundation.org> wrote:
+On Tue, Feb 26, 2008 at 07:11:39PM +0000, Chris Clayton wrote:
 
-> Please feed the diff through scritps/checkpatch.pl and consider addressing
-> the things which it finds.
-
-I checked that, but I didn't think any of them were worth fixing. And
-since this is a work in progress and a in a state which I do not want
-committed yet, I did not sign this patch. mmio-mod.c is still a mess.
-
-> WARNING: Use of volatile is usually wrong: see Documentation/volatile-considered-harmful.txt
-> #1097: FILE: arch/x86/mm/mmio-mod.c:437:
-> +void iounmap_trace(volatile void __iomem *addr)
-
-I believe the 'volatile' belongs here, it is also in the declaration of
-iounmap() in arch/x86/mm/ioremap.c.
-
-> WARNING: externs should be avoided in .c files
-> #1766: FILE: arch/x86/mm/testmmiotrace.c:7:
-> +extern void __iomem *ioremap_nocache_trace(unsigned long offset,
+> Sorry, but that's not the case. I find the same results as without the 
+> patches. With the parameter set to 'pid', the network connection fails very 
+> quickly, but with it set to 'simple' I can ping and ftp files to and from my 
+> laptop as much as I like and the connection stays up. In fact, if anything 
+> the patches seem to have made the network even more fragile, in that it fails 
+> almost instantly once I start some network activity ( < 10 pings).
 > 
-> WARNING: Use of volatile is usually wrong: see Documentation/volatile-considered-harmful.txt
-> #1768: FILE: arch/x86/mm/testmmiotrace.c:9:
-> +extern void iounmap_trace(volatile void __iomem *addr);
-> 
-> WARNING: externs should be avoided in .c files
-> #1768: FILE: arch/x86/mm/testmmiotrace.c:9:
-> +extern void iounmap_trace(volatile void __iomem *addr);
+> I'm sure this is not the hardware - it works perfectly with Windows XP, with 
+> 2.6.23.14 plus the out-of-tree rt61 driver from serialmonkey, with the 
+> in-tree driver from 2.6.24.x and with 2.6.25-rc3 with the mac82011's 
+> ieee80211_default_rc_algo parameter set to 'simple'.
 
-These are all in testmmiotrace.c which calls the traced ioremap
-functions directly. These direct calls will go away and it will
-call the normal ioremap functions.
+At last!  Vindication for insisting that we keep 'simple' around!
+Bwahahaha! :-)
 
-> WARNING: Use of volatile is usually wrong: see Documentation/volatile-considered-harmful.txt
-> #1790: FILE: arch/x86/mm/testmmiotrace.c:31:
-> +       volatile unsigned int v;
+So, am I to understand that 'pid' works find for you with rtl8180?
+If so, then I wonder if Stefano and Ivo can help us figure-out
+what kind of problem is sensitive to both driver _and_ rate control
+algorithm?
 
-Since testmmiotrace does not use v for anything other than return value
-of ioread8/16/32(), I wanted to prevent the compiler from optimizing
-it away. Now thinking it again, ioread*() must guarantee that the read
-is always executed. I'll remove v altogether.
+Thanks,
 
-Patch for the other issues you mentioned is brewing.
-
-
-Thanks.
-
+John
 -- 
-Pekka Paalanen
-http://www.iki.fi/pq/
+John W. Linville
+linville@tuxdriver.com
