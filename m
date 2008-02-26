@@ -1,76 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765029AbYBZVy5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765589AbYBZV4X@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765029AbYBZVy5 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Feb 2008 16:54:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762354AbYBZVyt
+	id S1765589AbYBZV4X (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Feb 2008 16:56:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762312AbYBZV4Q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Feb 2008 16:54:49 -0500
-Received: from smtp-out.google.com ([216.239.45.13]:16576 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1762767AbYBZVys (ORCPT
+	Tue, 26 Feb 2008 16:56:16 -0500
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:45532 "EHLO
+	gprs189-60.eurotel.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761540AbYBZV4P (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Feb 2008 16:54:48 -0500
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=received:date:from:x-x-sender:to:cc:subject:in-reply-to:
-	message-id:references:user-agent:mime-version:content-type;
-	b=um8iR2++pErYI1AcZNrUvdOrSths3kPpu9M4qlEa8j8hTHydL7sCuyVf8fzSTdNDa
-	F8Xtwf22GGkJ64C+v3Y1g==
-Date: Tue, 26 Feb 2008 13:54:02 -0800 (PST)
-From: David Rientjes <rientjes@google.com>
-X-X-Sender: rientjes@chino.kir.corp.google.com
-To: Lee Schermerhorn <Lee.Schermerhorn@hp.com>
-cc: Paul Jackson <pj@sgi.com>, akpm@linux-foundation.org, clameter@sgi.com,
-       ak@suse.de, linux-kernel@vger.kernel.org
-Subject: Re: [patch 3/6] mempolicy: add MPOL_F_STATIC_NODES flag
-In-Reply-To: <1204061567.5309.42.camel@localhost>
-Message-ID: <alpine.DEB.1.00.0802261345060.10790@chino.kir.corp.google.com>
-References: <alpine.DEB.1.00.0802250012420.12368@chino.kir.corp.google.com>  <alpine.DEB.1.00.0802250013580.12368@chino.kir.corp.google.com>  <alpine.DEB.1.00.0802250014170.12368@chino.kir.corp.google.com>  <20080226115627.681dafb9.pj@sgi.com> 
- <alpine.DEB.1.00.0802261253510.10790@chino.kir.corp.google.com> <1204061567.5309.42.camel@localhost>
-User-Agent: Alpine 1.00 (DEB 882 2007-12-20)
+	Tue, 26 Feb 2008 16:56:15 -0500
+Date: Tue, 26 Feb 2008 22:56:41 +0100
+From: Pavel Machek <pavel@ucw.cz>
+To: Dave Jones <davej@codemonkey.org.uk>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       kernel list <linux-kernel@vger.kernel.org>
+Subject: Re: broken suspend in .2.6.25-rc3 on T61p (was Re: new regression
+	in 2.6.25-rc3: no keyboard/lid acpi events on thinkpad T61p)
+Message-ID: <20080226215641.GE10280@elf.ucw.cz>
+References: <20080225145347.a61f6c61.akpm@linux-foundation.org> <20080225225820.GP2659@elf.ucw.cz> <20080225155550.4a020dfb.akpm@linux-foundation.org> <20080226000007.GB22102@atrey.karlin.mff.cuni.cz> <20080226101117.GA26671@atrey.karlin.mff.cuni.cz> <20080226174613.GA26259@codemonkey.org.uk> <20080226175954.GA5707@elf.ucw.cz> <20080226181001.GA7714@codemonkey.org.uk> <20080226181611.GB6030@elf.ucw.cz> <20080226182241.GB7714@codemonkey.org.uk>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080226182241.GB7714@codemonkey.org.uk>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 26 Feb 2008, Lee Schermerhorn wrote:
-
-> > This is a natural implementation detail to accomodate your insistance that 
-> > the mode and flags be passed as separate actuals throughout many of the 
-> > mm/mempolicy.c functions.
+On Tue 2008-02-26 13:22:41, Dave Jones wrote:
+> On Tue, Feb 26, 2008 at 07:16:11PM +0100, Pavel Machek wrote:
+>  > On Tue 2008-02-26 13:10:01, Dave Jones wrote:
+>  > > On Tue, Feb 26, 2008 at 06:59:54PM +0100, Pavel Machek wrote:
+>  > >  
+>  > >  > > if by 'custom' you mean the solution everyone agreed to work
+>  > >  > > toward at the power management summit several years ago
+>  > >  > > (hal/pm-utils) then, yes.
+>  > >  > 
+>  > >  > I must have been on different summit... I believe it is bad to tie
+>  > >  > s2ram to hal, because it makes testing on minimal system hard.
+>  > >  > 
+>  > >  > Anyway, what is the "default" way to trigger s2ram for Andrew? Perhaps
+>  > >  > Fedora already has his machine whitelisted...
+>  > > 
+>  > > There is no s2ram. pm-suspend uses the white/black-lists in pm-utils.
+>  > > Remember that? The cross-distro package everyone agreed was a good idea
+>  > > so that every distro didn't have their own magic utility ?
+>  > 
+>  > Well, we have cross-distro package, it is at suspend.sf.net , and it
+>  > can bring up video - which is kind of important. (It is single binary,
+>  > so it can be pagelocked -- which is important for s2disk).
+>  > 
+>  > Plus it does not depend on HAL.
 > 
-> [:-(]
+> Neither does pm-utils.  Once again for the hard of thinking..
 > 
+> The mechanism belongs in pm-utils.  HAL is just a fancy wrapper around that.
+> Don't want/like hal? fine, a smaller wrapper around pm-suspend and friends
+> is trivial (or even unnecessary if you're happy with running pm-suspend by hand)
 
-I know, I know :)
+Seems like pm-utils is just a thin wrapper around s2ram, at least in
+version debian ships. It does not seem to have its own whitelist.
 
-It became such an elaborate discussion here that I really didn't want the 
-entire patchset, which adds a lot of power for cpuset-constrained 
-applications using mempolicies, to stall on it.
+Now, take a look at 
 
-I'm not opposed to adding comments in certain places or changing the name 
-of an automatic variable, but that's been the degree of review that these 
-patches have had.
+/usr/lib/pm-utils/functions
 
-> > It becomes rather obvious what they represent when you read the entire 
-> > sys_mbind() implementation, which is serving a syscall that provides its 
-> > own formal for passing flags.  The name 'mode_flags' is exactly what it 
-> > is: flags for the mempolicy mode.
-> 
-> Not to be confused with the MPOL_MF_* flags which are MemPOLicy Mbind
-> Flags passed via the flags parameter.  Nor the other MPOL_F_* flags
-> which are get_mempolicy() flags, also passed via the flags arg.
-> 
+... 
 
-Notice in patch 2 of the series where I add the flags member to struct 
-mempolicy:
+        if [ -x /usr/sbin/s2ram ]; then
+                if [ -n "$S2RAM_OPTS" ]; then
+                        # Trust HAL or the user to pass the correct
+options
+                        /usr/sbin/s2ram $S2RAM_OPTS
+                elif /usr/sbin/s2ram --test > /dev/null ; then
+                        # Trust s2ram's internal whitelist
+                        /usr/sbin/s2ram
+                else
+                        # Unknown machine
+                        echo "This machine is unkown, please try to
+find out how to suspend this machine. See s2ram(8)."
+                fi
+        else
+                echo -n "mem" > /sys/power/state
+        fi
 
-	+	unsigned short flags;	/* See set_mempolicy() MPOL_F_* above */
+...so it is ready to use s2ram, but will fall back to
+echo. Unfortunately, that will mean no video resume on _many_
+machines.
 
-I had to explicitly say they were for "set_mempolicy() MPOL_F_*" flags in 
-an attempt to separate them from the various get_mempolicy() MPOL_F_* 
-flags that already exist.  Instead of simply choosing a different format, 
-I felt that MPOL_F_STATIC_NODES, for example, is exactly what userspace 
-should use and corresponds well with the existing get_mempolicy() flags.
+To give some numbers: according to s2ram whitelist, we can restore
+video on 410 machines. On 74 of them, s2ram is not needed. So
+approximately 80% of machines need s2ram (at least in configuration
+without X running)....
 
-		David
+Pretty please, can we get s2ram for Fedora, so that video is restored
+there?
+
+								Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
