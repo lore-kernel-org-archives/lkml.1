@@ -1,62 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765467AbYBZVjz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764317AbYBZVlT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765467AbYBZVjz (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Feb 2008 16:39:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759282AbYBZVjr
+	id S1764317AbYBZVlT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Feb 2008 16:41:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762767AbYBZVlG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Feb 2008 16:39:47 -0500
-Received: from relay2.sgi.com ([192.48.171.30]:40489 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1758188AbYBZVjq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Feb 2008 16:39:46 -0500
-Date: Tue, 26 Feb 2008 15:39:44 -0600
-From: Paul Jackson <pj@sgi.com>
-To: David Rientjes <rientjes@google.com>
-Cc: akpm@linux-foundation.org, clameter@sgi.com, Lee.Schermerhorn@hp.com,
-       ak@suse.de, linux-kernel@vger.kernel.org
-Subject: Re: [patch 3/6] mempolicy: add MPOL_F_STATIC_NODES flag
-Message-Id: <20080226153944.025bf1cb.pj@sgi.com>
-In-Reply-To: <alpine.DEB.1.00.0802261253510.10790@chino.kir.corp.google.com>
-References: <alpine.DEB.1.00.0802250012420.12368@chino.kir.corp.google.com>
-	<alpine.DEB.1.00.0802250013580.12368@chino.kir.corp.google.com>
-	<alpine.DEB.1.00.0802250014170.12368@chino.kir.corp.google.com>
-	<20080226115627.681dafb9.pj@sgi.com>
-	<alpine.DEB.1.00.0802261253510.10790@chino.kir.corp.google.com>
-Organization: SGI
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.12.0; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 26 Feb 2008 16:41:06 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:39033 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1759117AbYBZVlF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 Feb 2008 16:41:05 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: "Michael S. Tsirkin" <m.s.tsirkin@gmail.com>
+Subject: Re: 2.6.25-rc3: Reported regressions from 2.6.24
+Date: Tue, 26 Feb 2008 22:39:41 +0100
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "Linus Torvalds" <torvalds@linux-foundation.org>,
+       "Adrian Bunk" <bunk@kernel.org>, "Ingo Molnar" <mingo@elte.hu>
+References: <200802250241.40832.rjw@sisk.pl> <8f53421d0802252224o5977cbf0uf45df672de64a5f6@mail.gmail.com>
+In-Reply-To: <8f53421d0802252224o5977cbf0uf45df672de64a5f6@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200802262239.42172.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David wrote:
-> No reader is going to understand immediately what 'mode', 'mode_flags', 
-> and 'flags' are if you only provide a single line of the code like that. 
+On Tuesday, 26 of February 2008, Michael S. Tsirkin wrote:
+> 2008/2/25 Rafael J. Wysocki <rjw@sisk.pl>:
+> > This message contains a list of some regressions from 2.6.24 reported since
+> >  2.6.25-rc1 was released, for which there are no fixes in the mainline I know
+> >  of.  If any of them have been fixed already, please let me know.
+> 
+> If you want that, I think Cc-ing reporters might be a good idea.
+> 
+> >  If you know of any other unresolved regressions from 2.6.24, please let me know
+> >  either and I'll add them to the list.  Also, please let me know if any of the
+> >  entries below are invalid.
+> 
+> Two other issues, both with tested patches which do not seem to be in
+> mainline yet:
+> 
+> http://lkml.org/lkml/2008/2/22/127
+> 2.6.25-rc[1,2]: failed to setup dm-crypt key mapping
 
-Duh - of course not.  I only presented that line to demonstrate that all
-three words 'mode', 'mode_flags', and 'flags' appeared in the same context.
+http://bugzilla.kernel.org/show_bug.cgi?id=10079
 
-> It becomes rather obvious what they represent when you read the entire 
-> sys_mbind() implementation,
+> http://lkml.org/lkml/2008/2/25/400
+> new regression in 2.6.25-rc3: no keyboard/lid acpi events on thinkpad T61p
+> I think this last one is bug 10100
 
-How about picking less vacuous names than variations of mode and flag,
-so that it's easier for the reader to distinguish without having to
-read and understand an entire chunk of code first.
+Yes, it is.
 
-> This is a natural implementation detail to accomodate your insistance
-
-My patch for this had explicit bit fields, which made the names clearer:
-
-+       int mask_opts_rel:1;    /* c.original_mask is relative */
-+       int mask_opts_abs:1;    /* c.original_mask is absolute */
-+       /* if neither rel nor abs, then use c.latest_cpuset_mask */
-
-You chose not to do that, which obfuscates what's going on.
-Don't blame me that the result is obfuscated.
-
--- 
-                  I won't rest till it's the best ...
-                  Programmer, Linux Scalability
-                  Paul Jackson <pj@sgi.com> 1.940.382.4214
+Thanks,
+Rafael
