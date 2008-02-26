@@ -1,92 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763154AbYBZRIT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763373AbYBZRIg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763154AbYBZRIT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Feb 2008 12:08:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752885AbYBZRIJ
+	id S1763373AbYBZRIg (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Feb 2008 12:08:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763212AbYBZRIW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Feb 2008 12:08:09 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:49797 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752833AbYBZRII (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Feb 2008 12:08:08 -0500
-Subject: Re: 2.6.25-rc1 xen pvops regression
-From: Mark McLoughlin <markmc@redhat.com>
-Reply-To: Mark McLoughlin <markmc@redhat.com>
-To: Ian Campbell <ijc@hellion.org.uk>
-Cc: "H. Peter Anvin" <hpa@zytor.com>, Jeremy Fitzhardinge <jeremy@goop.org>,
-       Joel Becker <Joel.Becker@oracle.com>, Jody Belka <lists-lkml@pimb.org>,
-       linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Andi Kleen <andi@firstfloor.org>,
-       Mika Penttila <mika.penttila@kolumbus.fi>
-In-Reply-To: <1203665106.28436.19.camel@cthulhu.hellion.org.uk>
-References: <20080212235404.GY7980@pimb.org> <47B2DBA5.6030001@goop.org>
-	 <20080214022744.GA4160@mail.oracle.com> <47B3F2DC.8080707@goop.org>
-	 <20080215202336.GE26034@mail.oracle.com>
-	 <1203274161.27987.6.camel@localhost.localdomain>
-	 <20080218104025.GA15899@ca-server1.us.oracle.com>
-	 <1203458366.26910.15.camel@cthulhu.hellion.org.uk>
-	 <47BBDA20.8030105@zytor.com>
-	 <1203497511.26910.39.camel@cthulhu.hellion.org.uk>
-	 <47BCA275.7000504@goop.org>
-	 <1203546597.26910.74.camel@cthulhu.hellion.org.uk>
-	 <47BDEA11.6010302@goop.org> <47BDEB57.5040203@zytor.com>
-	 <47BDEF36.8000903@goop.org>
-	 <1203631956.28436.4.camel@cthulhu.hellion.org.uk>
-	 <47BDF9C7.6040400@zytor.com> <47BE0017.1020205@goop.org>
-	 <47BE0228.7020204@zytor.com>
-	 <1203665106.28436.19.camel@cthulhu.hellion.org.uk>
-Content-Type: text/plain
-Date: Tue, 26 Feb 2008 17:06:32 +0000
-Message-Id: <1204045592.12238.6.camel@muff>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 (2.12.3-1.fc8) 
-Content-Transfer-Encoding: 7bit
+	Tue, 26 Feb 2008 12:08:22 -0500
+Received: from sca-es-mail-2.Sun.COM ([192.18.43.133]:45921 "EHLO
+	sca-es-mail-2.sun.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1762994AbYBZRIT (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 Feb 2008 12:08:19 -0500
+Date: Tue, 26 Feb 2008 09:08:07 -0800
+From: Andreas Dilger <adilger@sun.com>
+Subject: Re: [RFC] ext3 freeze feature ver 0.2
+In-reply-to: <47C440A6.6080202@redhat.com>
+To: Eric Sandeen <sandeen@redhat.com>
+Cc: Takashi Sato <t-sato@yk.jp.nec.com>, linux-ext4@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
+Message-id: <20080226170807.GE3172@webber.adilger.int>
+MIME-version: 1.0
+Content-type: text/plain; charset=utf-8
+Content-transfer-encoding: 8BIT
+Content-disposition: inline
+X-GPG-Key: 1024D/0D35BED6
+X-GPG-Fingerprint: 7A37 5D79 BF1B CECA D44F  8A29 A488 39F5 0D35 BED6
+References: <20080219202706t-sato@mail.jp.nec.com>
+ <20080226172014t-sato@mail.jp.nec.com> <47C440A6.6080202@redhat.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2008-02-22 at 07:25 +0000, Ian Campbell wrote:
-> On Thu, 2008-02-21 at 14:58 -0800, H. Peter Anvin wrote:
-> > 
-> > Which it is on real hardware, because although it's not *reserved*
-> > (type 2), it is certainly not made available as *normal memory* (type
-> > 1).  If Xen maps this as type 1 then I definitely see the problem.
-> > 
-> > We can exclude type 1 memory from DMI scan, certainly.
+On Feb 26, 2008  08:39 -0800, Eric Sandeen wrote:
+> Takashi Sato wrote:
 > 
-> I'd been meaning to ask this. So the machines you have which don't
-> describe 0xf0000 as reserved also don't describe it as RAM? (I guess
-> it's either a hole in the table or one of the other e820 types).
-> Ian.
-
-...
-
-> >From 13bdb4ee9d80b83a81c3dbefa52464e511d1b4df Mon Sep 17 00:00:00 2001
-> From: Ian Campbell <ijc@hellion.org.uk>
-> Date: Fri, 22 Feb 2008 07:17:14 +0000
-> Subject: [PATCH] x86: Do not scan for DMI if the DMI region is marked as RAM by e820.
+> > o Elevate XFS ioctl numbers (XFS_IOC_FREEZE and XFS_IOC_THAW) to the VFS
+> >   As Andreas Dilger and Christoph Hellwig advised me, I have elevated
+> >   them to include/linux/fs.h as below.
+> >     #define FIFREEZE        _IOWR('X', 119, int)
+> > 　  #define FITHAW          _IOWR('X', 120, int)
+> >   The ioctl numbers used by XFS applications don't need to be changed.
+> >   But my following ioctl for the freeze needs the parameter
+> >   as the timeout period.  So if XFS applications don't want the timeout
+> >   feature as the current implementation, the parameter needs to be
+> >   changed 1 (level?) into 0.
 > 
-> Under Xen the memory at 0xf0000 is regular RAM and so can potentially contain a
-> page table and hence cannot be mapped. The e820 map given to guest reflects
-> this.
-> 
-> Signed-off-by: Ian Campbell <ijc@hellion.org.uk>
+> So, existing xfs applications calling the xfs ioctl now will behave
+> differently, right?  We can only keep the same ioctl number if the
+> calling semantics are the same.  Keeping the same number but changing
+> the semantics is harmful, IMHO....
 
-...
+Do we know what this parameter was supposed to mean?
 
-> @@ -371,6 +372,9 @@ void __init dmi_scan_machine(void)
->  		}
->  	}
->  	else {
-> +		if (e820_all_mapped(0xF0000, 0xF0000+0x10000, E820_RAM))
-> +			goto out;
+We could special case "1" if needed to keep compatibility (documenting
+this clearly), either making it == 0, or some very long timeout (1h
+or whatever).  A relatively minor wart I think.
 
-	One issue with using the e820 map for this is that a Xen Dom0 will also
-have this region marked as RAM in the e820 map, but will set up a fixmap
-for it, allowing dmi_scan_machine() to map the region.
-
-Cheers,
-Mark.
+Cheers, Andreas
+--
+Andreas Dilger
+Sr. Staff Engineer, Lustre Group
+Sun Microsystems of Canada, Inc.
 
