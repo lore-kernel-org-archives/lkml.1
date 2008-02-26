@@ -1,198 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932091AbYBZTuY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762892AbYBZTyR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932091AbYBZTuY (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Feb 2008 14:50:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752564AbYBZTuI
+	id S1762892AbYBZTyR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Feb 2008 14:54:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751339AbYBZTyE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Feb 2008 14:50:08 -0500
-Received: from courier.cs.helsinki.fi ([128.214.9.1]:48076 "EHLO
-	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752239AbYBZTuG (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Feb 2008 14:50:06 -0500
-Date: Tue, 26 Feb 2008 21:49:58 +0200 (EET)
-From: Pekka J Enberg <penberg@cs.helsinki.fi>
-To: romieu@fr.zoreil.com, sorbica@icplus.com.tw, jesse@icplus.com.tw
-cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Subject: [RFC/PATCH] ipg: add jumbo frame support kconfig option
-Message-ID: <Pine.LNX.4.64.0802262148270.12999@sbz-30.cs.Helsinki.FI>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Tue, 26 Feb 2008 14:54:04 -0500
+Received: from smtp5.pp.htv.fi ([213.243.153.39]:36516 "EHLO smtp5.pp.htv.fi"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751217AbYBZTyD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 Feb 2008 14:54:03 -0500
+Date: Tue, 26 Feb 2008 21:52:57 +0200
+From: Adrian Bunk <bunk@kernel.org>
+To: Sam Ravnborg <sam@ravnborg.org>
+Cc: Jesper Nilsson <jesper.nilsson@axis.com>, mikael.starvik@axis.com,
+       dev-etrax@axis.com, linux-kernel@vger.kernel.org
+Subject: Re: [2.6 patch v2] cris: proper defconfig setup
+Message-ID: <20080226195257.GA4898@cs181133002.pp.htv.fi>
+References: <20080226172847.GB8287@cs181133002.pp.htv.fi> <20080226174703.GD8287@cs181133002.pp.htv.fi> <20080226180402.GH24124@axis.com> <20080226194453.GB31438@uranus.ravnborg.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <20080226194453.GB31438@uranus.ravnborg.org>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[ Sorry for the duplicate. I typoed Francois' email address. ]
+On Tue, Feb 26, 2008 at 08:44:53PM +0100, Sam Ravnborg wrote:
+> On Tue, Feb 26, 2008 at 07:04:02PM +0100, Jesper Nilsson wrote:
+> > On Tue, Feb 26, 2008 at 07:47:03PM +0200, Adrian Bunk wrote:
+> > > This patch moves the cris defconfigs to arch/cris/configs/ where they 
+> > > belong.
+> > > 
+> > > As a side effect they can now be used directly through e.g.
+> > >   make ARCH=cris artpec_3_defconfig
+> > > 
+> > > The default defconfig is set through KBUILD_DEFCONFIG.
+> > > 
+> > > Signed-off-by: Adrian Bunk <adrian.bunk@movial.fi>
+> > 
+> > > Patch updated after I discovered an additional defconfig in 
+> > > arch/cris/arch-v10/defconfig
+> > 
+> > That could probably have been nuked, it's ancient.
+> > 
+> > I'll put this in my queue. Thanks!
+> If you blindly apply this patch then make sure you do not end
+> up with zero size files. They are disliked by the kerne and
+> make distclean will delete them - and git becomes unhappy.
 
-From: Pekka Enberg <penberg@cs.helsinki.fi>
+At least GNU patch will correctly remove the files with my patch.
 
-Convert the internal JUMBO_FRAME #ifdef to CONFIG_IP1000_JUMBO_FRAME proper and
-fix compilation errors.
+Please name the tools that are that broken that they wouldn't apply this 
+patch correctly and don't claim my patch was broken (or shut up).
 
-Cc: Francois Romieu <romieu@fr.zoreil.com>
-Cc: Sorbica Shieh <sorbica@icplus.com.tw>
-Cc: Jesse Huang <jesse@icplus.com.tw>
-Signed-off-by: Pekka Enberg <penberg@cs.helsinki.fi>
----
- drivers/net/Kconfig |    8 ++++++++
- drivers/net/ipg.c   |   21 ++++++++++-----------
- drivers/net/ipg.h   |   11 ++++++-----
- 3 files changed, 24 insertions(+), 16 deletions(-)
+> 	Sam
 
-Index: linux-2.6/drivers/net/Kconfig
-===================================================================
---- linux-2.6.orig/drivers/net/Kconfig
-+++ linux-2.6/drivers/net/Kconfig
-@@ -2029,6 +2029,14 @@ config IP1000
- 	  To compile this driver as a module, choose M here: the module
- 	  will be called ipg.  This is recommended.
- 
-+config IP1000_JUMBO_FRAME
-+	bool "Support for jumbo frames (EXPERIMENTAL)"
-+	depends on IP1000 && EXPERIMENTAL
-+	help
-+	  This option enables jumbo frame support for the IP1000 driver.
-+
-+	  If in doubt, say N.
-+
- config IGB
-        tristate "Intel(R) 82575 PCI-Express Gigabit Ethernet support"
-        depends on PCI
-Index: linux-2.6/drivers/net/ipg.c
-===================================================================
---- linux-2.6.orig/drivers/net/ipg.c
-+++ linux-2.6/drivers/net/ipg.c
-@@ -42,7 +42,6 @@
- #define ipg_r16(reg)		ioread16(ioaddr + (reg))
- #define ipg_r8(reg)		ioread8(ioaddr + (reg))
- 
--#define JUMBO_FRAME_4k_ONLY
- enum {
- 	netdev_io_size = 128
- };
-@@ -1079,7 +1078,7 @@ static int ipg_nic_rxrestore(struct net_
- 	return 0;
- }
- 
--#ifdef JUMBO_FRAME
-+#ifdef CONFIG_IP1000_JUMBO_FRAME
- 
- /* use jumboindex and jumbosize to control jumbo frame status
-  * initial status is jumboindex=-1 and jumbosize=0
-@@ -1274,7 +1273,7 @@ static void ipg_nic_rx_with_end(struct n
- 
- 			framelen = le64_to_cpu(rxfd->rfs) & IPG_RFS_RXFRAMELEN;
- 
--			endframeLen = framelen - jumbo->current_size;
-+			endframelen = framelen - jumbo->current_size;
- 			/*
- 			if (framelen > IPG_RXFRAG_SIZE)
- 				framelen=IPG_RXFRAG_SIZE;
-@@ -1282,8 +1281,8 @@ static void ipg_nic_rx_with_end(struct n
- 			if (framelen > IPG_RXSUPPORT_SIZE)
- 				dev_kfree_skb_irq(jumbo->skb);
- 			else {
--				memcpy(skb_put(jumbo->skb, endframeLen),
--				       skb->data, endframeLen);
-+				memcpy(skb_put(jumbo->skb, endframelen),
-+				       skb->data, endframelen);
- 
- 				jumbo->skb->protocol =
- 				    eth_type_trans(jumbo->skb, dev);
-@@ -1355,16 +1354,16 @@ static int ipg_nic_rx(struct net_device 
- 
- 		switch (ipg_nic_rx_check_frame_type(dev)) {
- 		case FRAME_WITH_START_WITH_END:
--			ipg_nic_rx_with_start_and_end(dev, tp, rxfd, entry);
-+			ipg_nic_rx_with_start_and_end(dev, sp, rxfd, entry);
- 			break;
- 		case FRAME_WITH_START:
--			ipg_nic_rx_with_start(dev, tp, rxfd, entry);
-+			ipg_nic_rx_with_start(dev, sp, rxfd, entry);
- 			break;
- 		case FRAME_WITH_END:
--			ipg_nic_rx_with_end(dev, tp, rxfd, entry);
-+			ipg_nic_rx_with_end(dev, sp, rxfd, entry);
- 			break;
- 		case FRAME_NO_START_NO_END:
--			ipg_nic_rx_no_start_no_end(dev, tp, rxfd, entry);
-+			ipg_nic_rx_no_start_no_end(dev, sp, rxfd, entry);
- 			break;
- 		}
- 	}
-@@ -1595,7 +1594,7 @@ static irqreturn_t ipg_interrupt_handler
- 
- 	IPG_DEBUG_MSG("_interrupt_handler\n");
- 
--#ifdef JUMBO_FRAME
-+#ifdef CONFIG_IP1000_JUMBO_FRAME
- 	ipg_nic_rxrestore(dev);
- #endif
- 	spin_lock(&sp->lock);
-@@ -1807,7 +1806,7 @@ static int ipg_nic_open(struct net_devic
- 	if (ipg_config_autoneg(dev) < 0)
- 		printk(KERN_INFO "%s: Auto-negotiation error.\n", dev->name);
- 
--#ifdef JUMBO_FRAME
-+#ifdef CONFIG_IP1000_JUMBO_FRAME
- 	/* initialize JUMBO Frame control variable */
- 	sp->jumbo.found_start = 0;
- 	sp->jumbo.current_size = 0;
-Index: linux-2.6/drivers/net/ipg.h
-===================================================================
---- linux-2.6.orig/drivers/net/ipg.h
-+++ linux-2.6/drivers/net/ipg.h
-@@ -536,7 +536,7 @@ enum ipg_regs {
-  */
- #define		IPG_FRAMESBETWEENTXDMACOMPLETES 0x1
- 
--#ifdef JUMBO_FRAME
-+#ifdef CONFIG_IP1000_JUMBO_FRAME
- 
- # ifdef JUMBO_FRAME_SIZE_2K
- # define JUMBO_FRAME_SIZE 2048
-@@ -575,6 +575,7 @@ enum ipg_regs {
- #         define __IPG_RXFRAG_SIZE 4088
- #         else
- #         define JUMBO_FRAME_SIZE 4096
-+#         define __IPG_RXFRAG_SIZE 4088
- #         endif
- #        endif
- #       endif
-@@ -589,7 +590,7 @@ enum ipg_regs {
- /* Size of allocated received buffers. Nominally 0x0600.
-  * Define larger if expecting jumbo frames.
-  */
--#ifdef JUMBO_FRAME
-+#ifdef CONFIG_IP1000_JUMBO_FRAME
- /* IPG_TXFRAG_SIZE must <= 0x2b00, or TX will crash */
- #define		IPG_TXFRAG_SIZE		JUMBO_FRAME_SIZE
- #endif
-@@ -597,7 +598,7 @@ enum ipg_regs {
- /* Size of allocated received buffers. Nominally 0x0600.
-  * Define larger if expecting jumbo frames.
-  */
--#ifdef JUMBO_FRAME
-+#ifdef CONFIG_IP1000_JUMBO_FRAME
- /* 4088 = 4096 - 8 */
- #define		IPG_RXFRAG_SIZE		__IPG_RXFRAG_SIZE
- #define     IPG_RXSUPPORT_SIZE   IPG_MAX_RXFRAME_SIZE
-@@ -607,7 +608,7 @@ enum ipg_regs {
- #endif
- 
- /* IPG_MAX_RXFRAME_SIZE <= IPG_RXFRAG_SIZE */
--#ifdef JUMBO_FRAME
-+#ifdef CONFIG_IP1000_JUMBO_FRAME
- #define		IPG_MAX_RXFRAME_SIZE		JUMBO_FRAME_SIZE
- #else
- #define		IPG_MAX_RXFRAME_SIZE		0x0600
-@@ -786,7 +787,7 @@ struct ipg_nic_private {
- 	unsigned int tx_dirty;
- 	unsigned int rx_current;
- 	unsigned int rx_dirty;
--#ifdef JUMBO_FRAME
-+#ifdef CONFIG_IP1000_JUMBO_FRAME
- 	struct ipg_jumbo jumbo;
- #endif
- 	unsigned int rx_buf_sz;
+cu
+Adrian
+
+-- 
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
+
