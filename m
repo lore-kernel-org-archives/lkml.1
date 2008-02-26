@@ -1,51 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760701AbYBZACj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761552AbYBZADl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760701AbYBZACj (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 Feb 2008 19:02:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757582AbYBZACb
+	id S1761552AbYBZADl (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 Feb 2008 19:03:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757690AbYBZADd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 Feb 2008 19:02:31 -0500
-Received: from srv5.dvmed.net ([207.36.208.214]:46761 "EHLO mail.dvmed.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757531AbYBZACa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 Feb 2008 19:02:30 -0500
-Message-ID: <47C35714.4090604@garzik.org>
-Date: Mon, 25 Feb 2008 19:02:28 -0500
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
-MIME-Version: 1.0
-To: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Jens Axboe <jens.axboe@oracle.com>
-Subject: Re: [RFC] Disk shock protection (revisited)
-References: <87skzgd1zk.fsf@denkblock.local>
-In-Reply-To: <87skzgd1zk.fsf@denkblock.local>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.4 (----)
-X-Spam-Report: SpamAssassin version 3.2.3 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.4 points, 5.0 required)
+	Mon, 25 Feb 2008 19:03:33 -0500
+Received: from qmta04.emeryville.ca.mail.comcast.net ([76.96.30.40]:39789 "EHLO
+	QMTA04.emeryville.ca.mail.comcast.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1757582AbYBZADc (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 25 Feb 2008 19:03:32 -0500
+X-Authority-Analysis: v=1.0 c=1 a=bojhYoMd2USPMMK5XVEeMQ==:17
+ a=I32hiVmxfGwGof6X2SAA:9 a=C5d9wZs2RrfI6Fr3wDU-BdSAQT0A:4 a=8t_6ZPhla3UA:10
+From: kelk1@comcast.net (Quel Qun)
+To: Thomas Gleixner <tglx@linutronix.de>,
+       David Woodhouse <dwmw2@infradead.org>
+Cc: Dave Young <hidave.darkstar@gmail.com>,
+       Marcel Holtmann <marcel@holtmann.org>,
+       LKML <linux-kernel@vger.kernel.org>, Jiri Kosina <jkosina@suse.cz>,
+       Ingo Molnar <mingo@elte.hu>
+Subject: Re: Kernel oops with bluetooth usb dongle
+Date: Tue, 26 Feb 2008 00:03:28 +0000
+Message-Id: <022620080003.1247.47C35750000085C8000004DF2207300793CE05040A05@comcast.net>
+X-Mailer: AT&T Message Center Version 1 (Oct 30 2007)
+X-Authenticated-Sender: a2VsazFAY29tY2FzdC5uZXQ=
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Elias Oltmanns wrote:
-> The general idea: A daemon running in user space monitors input data
-> from an accelerometer. When the daemon detects a critical condition,
-> i.e., a sudden acceleration (for instance, laptop slides off the desk),
-> it signals the kernel so the hard disk may be put into a (more) safe
-> state. To this end, the kernel has to issue an idle immediate command
-> with unload feature and stop the block layer queue afterwards. Once the
-> daemon tells us that the imminent danger is over, the most important
-> task for the kernel is to restart the block layer queue. See below for
-> more details.
+ -------------- Original message ----------------------
+From: Thomas Gleixner <tglx@linutronix.de>
+> On Fri, 22 Feb 2008, David Woodhouse wrote:
+>  
+> > On Fri, 2008-02-22 at 08:23 +0100, Thomas Gleixner wrote:
+> > > 
+> > > +       del_timer(&conn->info_timer);
+> > > +
+> > >         hcon->l2cap_data = NULL;
+> > >         kfree(conn);
+> > 
+> > Shouldn't that be del_timer_sync() ?
+> 
+> Hmm, probably yes.
+> 
+Hi,
 
-Speaking specifically to that problem, it seems to me that you either 
-want an mlock'd daemon, or just simply to keep everything in the kernel, 
-for this specific solution.
+Great news: only adding adding del_timer_sync() to 2.6.25-rc3 does prevent the crash.
 
-You don't want, for example, to swap out other apps, swap in the daemon, 
-in order to handle a sudden acceleration.
+Bad news: I still cannot use the device.
 
-	Jeff
+hcitool inq, hcitool scan, hcitool name <btaddr> and hcitool info <btaddr> 
+commands work.
 
+hcitool cc <btaddr>, sdptool <btaddr>, rfcomm connect command fail, most of them 
+with a 'Connection reset by peer' error.
 
+# rpm -q bluez-utils
+bluez-utils-3.27-1mdv2008.1
+
+Thank you,
+--
+Eric
