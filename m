@@ -1,172 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764112AbYBZTe2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762712AbYBZTik@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764112AbYBZTe2 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Feb 2008 14:34:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762431AbYBZTeA
+	id S1762712AbYBZTik (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Feb 2008 14:38:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753822AbYBZTic
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Feb 2008 14:34:00 -0500
-Received: from mxintern.schlund.de ([212.227.126.205]:62911 "EHLO
-	mxintern.schlund.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1762271AbYBZTd6 (ORCPT
+	Tue, 26 Feb 2008 14:38:32 -0500
+Received: from senator.holtmann.net ([87.106.208.187]:33932 "EHLO
+	mail.holtmann.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752326AbYBZTib (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Feb 2008 14:33:58 -0500
-Date: Tue, 26 Feb 2008 20:33:50 +0100
-From: Anders Henke <anders.henke@1und1.de>
-To: Jens Axboe <jens.axboe@oracle.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       device-mapper development <dm-devel@redhat.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [dm-devel] Re: device mapper not reporting no-barrier-support?
-Message-ID: <20080226193349.GQ13026@1und1.de>
-Mail-Followup-To: Anders Henke <anders.henke@1und1.de>,
-	Jens Axboe <jens.axboe@oracle.com>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	device-mapper development <dm-devel@redhat.com>,
-	linux-kernel@vger.kernel.org
-References: <20080225132615.GA21990@1und1.de> <20080225152050.94788622.akpm@linux-foundation.org> <20080226013656.GE1788@agk.fab.redhat.com> <20080226161741.GN6704@kernel.dk>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080226161741.GN6704@kernel.dk>
-Organization: 1&1 Internet AG
-User-Agent: Mutt/1.5.13 (2006-08-11)
-X-UI-Msg-Verification: 40863be9bbbf9f37a7655f7ed805413c
+	Tue, 26 Feb 2008 14:38:31 -0500
+Cc: Quel Qun <kelk1@comcast.net>, David Woodhouse <dwmw2@infradead.org>,
+       Dave Young <hidave.darkstar@gmail.com>,
+       LKML <linux-kernel@vger.kernel.org>, Jiri Kosina <jkosina@suse.cz>,
+       Ingo Molnar <mingo@elte.hu>
+Message-Id: <88042B50-9057-4589-ADF0-E37A2096BD54@holtmann.org>
+From: Marcel Holtmann <marcel@holtmann.org>
+To: Thomas Gleixner <tglx@linutronix.de>
+In-Reply-To: <alpine.LFD.1.00.0802260926550.7583@apollo.tec.linutronix.de>
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Content-Transfer-Encoding: 7bit
+Mime-Version: 1.0 (Apple Message framework v919.2)
+Subject: Re: [PATCH] bluetooth: delete timer in l2cap_conn_del()
+Date: Tue, 26 Feb 2008 20:38:25 +0100
+References: <022620080003.1247.47C35750000085C8000004DF2207300793CE05040A05@comcast.net> <alpine.LFD.1.00.0802260926550.7583@apollo.tec.linutronix.de>
+X-Mailer: Apple Mail (2.919.2)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Feb 26 2008 Jens Axboe wrote:
-> On Tue, Feb 26 2008, Alasdair G Kergon wrote:
-> > On Mon, Feb 25, 2008 at 03:20:50PM -0800, Andrew Morton wrote:
-> > > On Mon, 25 Feb 2008 14:26:15 +0100 Anders Henke <anders.henke@1und1.de> wrote:
-> > > > I'm currently stuck between Kernel LVM and DRBD, as I'm using Kernel
-> > > > 2.6.24.2 with DRBD 8.2.5 on top of an LVM2 device (LV).
-> > > > -LVM2/device mapper doesn't support write barriers
-> > 
-> > That's right.
-> > 
-> > > > -DRBD uses blkdev_issue_flush() to flush its metadata to disk.
-> > 
-> > Which won't work if device-mapper is underneath.
-> > 
-> > > >  On a no-barrier-device, DRBD should receive EOPNOTSUPP, but
-> > > >  it really does receive an EIO. Promptly, DRBD gives the
-> > > >  error message "drbd0: local disk flush failed with status -5".
-> > > > I've posted a lengty summary of my findings to
-> > > > http://lists.linbit.com/pipermail/drbd-user/2008-February/008665.html
-> > > > ... that DRBD does catch the EOPNOTSUPP for blkdev_issue_flush and
-> > > > BIO_RW_BARRIER, but the lvm implementation of blkdev_issue_flush in
-> > > > 2.6.24.2 aparently does return EIO for blkdev_issue_flush.
-> > > I'd say it's a DM bug.
-> > 
-> > The dm code is unchanged, but look at the limited endio handling in
-> > ll_rw_blk.c:
-> > 
-> > static void bio_end_empty_barrier(struct bio *bio, int err)
-> > {
-> >         if (err)
-> >                 clear_bit(BIO_UPTODATE, &bio->bi_flags);
-> > 
-> >         complete(bio->bi_private);
-> > }
-> > 
-> > int blkdev_issue_flush(struct block_device *bdev, sector_t *error_sector)
-> > {
-> > ...
-> >         wait_for_completion(&wait);
-> >         if (error_sector)
-> >                 *error_sector = bio->bi_sector;
-> >         ret = 0;
-> >         if (!bio_flagged(bio, BIO_UPTODATE))
-> >                 ret = -EIO;
-> 
-> You are right, the return value got broken there. Does this make it
-> return -EOPNOTSUPP properly for you?
+Hi Quel,
 
+> Delete a possibly armed timer before kfree'ing the connection object.
+>
+> Solves: http://lkml.org/lkml/2008/2/15/514
+>
+> Reported-by:Quel Qun <kelk1@comcast.net>
+> Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
+>
+> ---
+> net/bluetooth/l2cap.c |    2 ++
+> 1 file changed, 2 insertions(+)
+>
+> Index: linux-2.6/net/bluetooth/l2cap.c
+> ===================================================================
+> --- linux-2.6.orig/net/bluetooth/l2cap.c
+> +++ linux-2.6/net/bluetooth/l2cap.c
+> @@ -417,6 +417,8 @@ static void l2cap_conn_del(struct hci_co
+> 		l2cap_sock_kill(sk);
+> 	}
+>
+> +	del_timer_sync(&conn->info_timer);
+> +
+> 	hcon->l2cap_data = NULL;
+> 	kfree(conn);
+> }
 
-No, it doesn't.
+can you confirm that this actually fixes the issue.
 
+Thomas, if confirmed, this is Acked-by me.
 
+Regards
 
-I've applied your patch manually, as 2.6.24.2. doesn't have a "blk-barrier.c":
+Marcel
 
----cut
---- linux-2.6.24.2/block/ll_rw_blk.c.prepatch   2008-02-11
-06:51:11.000000000 +0100
-+++ linux-2.6.24.2/block/ll_rw_blk.c    2008-02-26 20:02:28.514641620
-+0100
-@@ -2667,8 +2667,11 @@
- 
- static void bio_end_empty_barrier(struct bio *bio, int err)
- {
--       if (err)
-+       if (err) {
-+               if (err == -EOPNOTSUPP)
-+                       set_bit(BIO_EOPNOTSUPP, &bio->bi_flags);
-                clear_bit(BIO_UPTODATE, &bio->bi_flags);
-+       }
- 
-        complete(bio->bi_private);
- }
----cut
-
-... and the resulting kernel shows exactly the same behaviour than before:
-
-[  752.301388] drbd0: Writing meta data super block now.
-[  752.349713] drbd0: local disk flush failed with status -5
-[  752.416256] drbd0: local disk flush failed with status -5
-[  753.419254] drbd0: local disk flush failed with status -5
-[  753.925726] drbd0: local disk flush failed with status -5
-[  754.551176] drbd0: local disk flush failed with status -5
-[  754.806052] drbd0: local disk flush failed with status -5
-[  755.327988] drbd0: local disk flush failed with status -5
-[  755.781863] drbd0: local disk flush failed with status -5
-[  756.266694] drbd0: local disk flush failed with status -5
-
-
-
-
-
-Anders
-
-> diff --git a/block/blk-barrier.c b/block/blk-barrier.c
-> index 6901eed..55c5f1f 100644
-> --- a/block/blk-barrier.c
-> +++ b/block/blk-barrier.c
-> @@ -259,8 +259,11 @@ int blk_do_ordered(struct request_queue *q, struct request **rqp)
->  
->  static void bio_end_empty_barrier(struct bio *bio, int err)
->  {
-> -	if (err)
-> +	if (err) {
-> +		if (err == -EOPNOTSUPP)
-> +			set_bit(BIO_EOPNOTSUPP, &bio->bi_flags);
->  		clear_bit(BIO_UPTODATE, &bio->bi_flags);
-> +	}
->  
->  	complete(bio->bi_private);
->  }
-> @@ -309,7 +312,9 @@ int blkdev_issue_flush(struct block_device *bdev, sector_t *error_sector)
->  		*error_sector = bio->bi_sector;
->  
->  	ret = 0;
-> -	if (!bio_flagged(bio, BIO_UPTODATE))
-> +	if (bio_flagged(bio, BIO_EOPNOTSUPP))
-> +		ret = -EOPNOTSUPP;
-> +	else if (!bio_flagged(bio, BIO_UPTODATE))
->  		ret = -EIO;
->  
->  	bio_put(bio);
-> 
-> -- 
-> Jens Axboe
-> 
--- 
-1&1 Internet AG              "Use the --force, Luke"
-Brauerstrasse 48             v://49.721.91374.50
-D-76135 Karlsruhe            f://49.721.91374.225
-
-Amtsgericht Montabaur HRB 6484
-Vorstand: Henning Ahlert, Ralph Dommermuth, Matthias Ehrlich, Andreas Gauger,
-Thomas Gottschlich, Matthias Greve, Robert Hoffmann, Markus Huhn, Achim Weiss
-Aufsichtsratsvorsitzender: Michael Scheeren
