@@ -1,56 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762843AbYBZPmJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762983AbYBZPmc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762843AbYBZPmJ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Feb 2008 10:42:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760554AbYBZPl4
+	id S1762983AbYBZPmc (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Feb 2008 10:42:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760554AbYBZPmQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Feb 2008 10:41:56 -0500
-Received: from qb-out-0506.google.com ([72.14.204.229]:34905 "EHLO
-	qb-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760867AbYBZPl4 (ORCPT
+	Tue, 26 Feb 2008 10:42:16 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:47626 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1762862AbYBZPmM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Feb 2008 10:41:56 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:mime-version:content-type:content-transfer-encoding:content-disposition;
-        b=QTb1Ur92uK4gt/ekn6M52jhuJoJJNA/8cXbBql77aSXg9ul6hIyxG7VZ2Fvk9t9PWLnJ8XUKhDne8jVqFPm8amYecfxWSbUnkNvz0FyA/tYR/qrRQOthJJSTOYksAgLcRx36aMLY/9I7QQqm8Cv+UKIftW4fCqCkdDc/JkL8eu8=
-Message-ID: <412e6f7f0802260741r7ad475c7pfda3f5f8859b673d@mail.gmail.com>
-Date: Tue, 26 Feb 2008 23:41:50 +0800
-From: "Changli Gao" <xiaosuo@gmail.com>
-To: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
-Subject: [BUG] Potential data corruption when splice data spliced from socket to another socket
-Cc: "Changli Gao" <xiaosuo@gmail.com>, jens.axboe@oracle.com,
-       davem@davemloft.net
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-2022-JP
+	Tue, 26 Feb 2008 10:42:12 -0500
+Subject: Re: [PATCH 00/28] Swap over NFS -v16
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Miklos Szeredi <miklos@szeredi.hu>
+Cc: neilb@suse.de, akpm@linux-foundation.org, torvalds@linux-foundation.org,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       netdev@vger.kernel.org, trond.myklebust@fys.uio.no
+In-Reply-To: <E1JU1kk-0001t9-25@pomaz-ex.szeredi.hu>
+References: <20080220144610.548202000@chello.nl>
+	 <20080223000620.7fee8ff8.akpm@linux-foundation.org>
+	 <18371.43950.150842.429997@notabene.brown>
+	 <1204023042.6242.271.camel@lappy>  <E1JU1kk-0001t9-25@pomaz-ex.szeredi.hu>
+Content-Type: text/plain
+Date: Tue, 26 Feb 2008 16:41:57 +0100
+Message-Id: <1204040517.6242.324.camel@lappy>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.21.90 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-After reviewing the tcp splice receive code, I found that instead of
-increasing the page reference counter, pipe buffer holds the socket
-buffer by calling skb_get(skb). When you splice this pipe buffer to
-another socket, such as a TCP socket, though the function sendpage
-returns, the page buffer will be still in use, then you drop the
-reference to the skb, so the buffer is free to another process. At
-this time, the buffer is shared between socket and another part of
-Linux kernel silently. It is possible that the data sent out is
-corrupted.
 
-The reason is splice send process knows nothing but page, so before
-submitting the buffer to sendpage, we must ensure that the page is an
-actual page not a fake one. A solution is adding a member function
-get_page, which is used to get a actual page, to structure
-pipe_buffer_operations. It the page in structure pipe_buffer isn't an
-actual page, a page will be allocated, filled with the corresponding
-data and returned. Before calling sendpage, get_page should be called
-to get the actual page, and after calling sendpage, the page will be
-freed by calling put_page.
+On Tue, 2008-02-26 at 16:29 +0100, Miklos Szeredi wrote:
+> > > mm-page_file_methods.patch
+> > > 
+> > >     This makes page_offset and others more expensive by adding a
+> > >     conditional jump to a function call that is not usually made.
+> > > 
+> > >     Why do swap pages have a different index to everyone else?
+> > 
+> > Because the page->index of an anonymous page is related to its (anon)vma
+> > so that it satisfies the constraints for vm_normal_page().
+> > 
+> > The index in the swap file it totally unrelated and quite random. Hence
+> > the swap-cache uses page->private to store it in.
+> 
+> Yeah, and putting the condition into page_offset() will confuse code
+> which uses it for finding the offset in the VMA 
 
-Beside splice send process, other code paths maybe have the same problem.
+Right, do we do that anywhere?
 
--- 
-Regards，
-Changli Gao(xiaosuo@gmail.com)
+> or in a tmpfs file.
+
+Good point. I really should go read tmpfs some day, its really a blind
+spot for me.
+
+> So why not just have a separate page_swap_offset() function, used
+> exclusively by swap_in/out()?
+
+That would require duplicating quite a lot of NFS code from what I can
+see.
+
