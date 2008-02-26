@@ -1,62 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765659AbYBZVc0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765756AbYBZVcx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765659AbYBZVc0 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Feb 2008 16:32:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765540AbYBZVcF
+	id S1765756AbYBZVcx (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Feb 2008 16:32:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762945AbYBZVck
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Feb 2008 16:32:05 -0500
-Received: from xspect.dk ([212.97.129.87]:59175 "EHLO xspect.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1765473AbYBZVcD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Feb 2008 16:32:03 -0500
-Date: Tue, 26 Feb 2008 22:32:00 +0100
-From: "Klaus S. Madsen" <ksm@hjernemadsen.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: "Michael S. Tsirkin" <m.s.tsirkin@gmail.com>,
-       LKML <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Alexey Starikovskiy <astarikovskiy@suse.de>,
-       Len Brown <len.brown@intel.com>, linux-acpi@vger.kernel.org
-Subject: Re: new regression in 2.6.25-rc3: no keyboard/lid acpi events on thinkpad T61p
-Message-ID: <20080226213200.GL17932@hjernemadsen.org>
-References: <8f53421d0802251119q470a79c1p31048ef136271f84@mail.gmail.com> <20080225114611.d91791f6.akpm@linux-foundation.org> <20080226085403.GI17932@hjernemadsen.org>
+	Tue, 26 Feb 2008 16:32:40 -0500
+Received: from g4t0015.houston.hp.com ([15.201.24.18]:3172 "EHLO
+	g4t0015.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1762499AbYBZVcj (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 Feb 2008 16:32:39 -0500
+Subject: Re: [patch 3/6] mempolicy: add MPOL_F_STATIC_NODES flag
+From: Lee Schermerhorn <Lee.Schermerhorn@hp.com>
+To: David Rientjes <rientjes@google.com>
+Cc: Paul Jackson <pj@sgi.com>, akpm@linux-foundation.org, clameter@sgi.com,
+       ak@suse.de, linux-kernel@vger.kernel.org
+In-Reply-To: <alpine.DEB.1.00.0802261253510.10790@chino.kir.corp.google.com>
+References: <alpine.DEB.1.00.0802250012420.12368@chino.kir.corp.google.com>
+	 <alpine.DEB.1.00.0802250013580.12368@chino.kir.corp.google.com>
+	 <alpine.DEB.1.00.0802250014170.12368@chino.kir.corp.google.com>
+	 <20080226115627.681dafb9.pj@sgi.com>
+	 <alpine.DEB.1.00.0802261253510.10790@chino.kir.corp.google.com>
+Content-Type: text/plain
+Organization: HP/OSLO
+Date: Tue, 26 Feb 2008 16:32:46 -0500
+Message-Id: <1204061567.5309.42.camel@localhost>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080226085403.GI17932@hjernemadsen.org>
-User-Agent: Mutt/1.5.9i
+X-Mailer: Evolution 2.6.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> I also have a T61p, on which STR works. I haven't tried 2.6.25, but it
-> works with 2.6.24. Both using the suspend scripts included in Ubuntu
-> 7.10, and with s2ram 0.8 (although I need to use --acpi_sleep 2
-> (s3_mode) as an option, instead of 1 (s3_bios), which is used by default
-> on my model).
+On Tue, 2008-02-26 at 13:02 -0800, David Rientjes wrote:
+> On Tue, 26 Feb 2008, Paul Jackson wrote:
 > 
-> But I'm using the NVidia module, so that most likely changes a lot of
-> things.  I'll see if I can find time tonight to test 2.6.25-rc3 + nv,
-> and report back.
-Ok. I've spent some time testing this. The good news is that with the nv
-driver, s2ram as available from suspend.sf.net works, when run without
-parameters on a 32-bit 2.6.24.3.
+> > >         return do_mbind(start, len, mode, mode_flags, &nodes, flags);
+> > 
+> > The intermingling of 'flags', 'mode' and 'mode_flags' to refer to the
+> > low bits, the high bits or all the bits of the flags field is handled
+> > fairly carefully in your patch, but can still be a bit difficult to
+> > keep track of which is which when reading.
+> > 
+> > I'll wager not many readers can immediately say what the 'mode',
+> > 'mode_flags' and 'flags' refer to, in the above code snippet, for
+> > example.
+> > 
+> > Do you have any suggestions on how to further improve the clarity of
+> > this code?
+> > 
+> 
+> This is a natural implementation detail to accomodate your insistance that 
+> the mode and flags be passed as separate actuals throughout many of the 
+> mm/mempolicy.c functions.
 
-The bad news, however, is that it segfaults reliably after "Calling
-get_mode" when I run it on 2.6.25-rc3. GDB shows that the segmentation
-fault happens in the libx86 library, but as the version I use doesn't
-have debug symbols, I don't have a complete backtrace. I'll try to
-compile a version of libx86 tomorrow evening with debug symbols, and
-return with a proper backtrace.
+[:-(]
 
-I have also tried to bisect the problem (its somewhere between 2.6.24
-and 2.6.25rc1, quite a large span). However reverting the resulting
-commit didn't solve the problem, I suspect I took a wrong turn
-somewhere. I'll try to redo the bisection also tomorrow evening.
+> 
+> No reader is going to understand immediately what 'mode', 'mode_flags', 
+> and 'flags' are if you only provide a single line of the code like that. 
+> 
+> It becomes rather obvious what they represent when you read the entire 
+> sys_mbind() implementation, which is serving a syscall that provides its 
+> own formal for passing flags.  The name 'mode_flags' is exactly what it 
+> is: flags for the mempolicy mode.
 
-So I'll return with a proper bug report tomorrow (in its own thread). I
-just wanted to give a heads up, if the above makes sense to anyone ;-)
+Not to be confused with the MPOL_MF_* flags which are MemPOLicy Mbind
+Flags passed via the flags parameter.  Nor the other MPOL_F_* flags
+which are get_mempolicy() flags, also passed via the flags arg.
 
---
-Kind regards
- 	Klaus S. Madsen
+:-)
+
+Later,
+Lee
+> 
+> 		David
 
