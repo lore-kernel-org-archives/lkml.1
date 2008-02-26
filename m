@@ -1,200 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763397AbYBZTPL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763426AbYBZTXV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763397AbYBZTPL (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Feb 2008 14:15:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758779AbYBZTO7
+	id S1763426AbYBZTXV (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Feb 2008 14:23:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761562AbYBZTXH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Feb 2008 14:14:59 -0500
-Received: from ug-out-1314.google.com ([66.249.92.173]:61613 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755839AbYBZTO6 (ORCPT
+	Tue, 26 Feb 2008 14:23:07 -0500
+Received: from rv-out-0910.google.com ([209.85.198.184]:33840 "EHLO
+	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758376AbYBZTXF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Feb 2008 14:14:58 -0500
+	Tue, 26 Feb 2008 14:23:05 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=k64pUNW28DCNk9AxMqFT6p3Gs7By6OaNhenuwLlHd5OWoPxevkAzcOQAEKaw+tjmBK/AmP/+EhMKUHcqkfWoLAUS+AnsHDbDrukibXMMfooBVu3T+YyuzM6MyxBptflelzSdXBWpdCWrrv+7FkBDk7zf1ohyoG5ejY7EZ+3Ckyg=
-Message-ID: <cfd18e0f0802261114v4d4891bcy107bba2a181c1146@mail.gmail.com>
-Date: Tue, 26 Feb 2008 20:14:52 +0100
-From: "Michael Kerrisk" <mtk.manpages@googlemail.com>
-To: "Davide Libenzi" <davidel@xmailserver.org>
-Subject: Re: epoll and shared fd's
-Cc: "Pierre Habouzit" <madcoder@debian.org>,
-       lkml <linux-kernel@vger.kernel.org>,
-       "Eric Dumazet" <dada1@cosmosbay.com>,
-       "Marc Lehmann" <schmorp@schmorp.de>,
-       "David Schwartz" <davids@webmaster.com>
-In-Reply-To: <Pine.LNX.4.64.0802261054041.27243@alien.or.mcafeemobile.com>
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding:sender;
+        b=Y5+2V9uoSvggHemMPr3RdIXD4gY7/gO/+LAb9gKJRxj3YhMDeabVlLcWlxiR6JNT59yRXIKUfeSEOyAf7xshq5++aU7c1pzm7TDyuHAM42QjmFr90Nn80m2S1T5CIJd75VFUzZdiOt4HSuoioMgi9GnaCyCV3Ku5WvUcFQ8pYHw=
+Message-ID: <47C46715.2090603@panasas.com>
+Date: Tue, 26 Feb 2008 11:23:01 -0800
+From: Benny Halevy <bhalevy@panasas.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
+To: Pete Wyckoff <pw@osc.edu>
+CC: Roland Dreier <rdreier@cisco.com>, Olaf Kirch <olaf.kirch@oracle.com>,
+       general@lists.openfabrics.org, linux-scsi@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/2] Revert "IB/fmr_pool: ib_fmr_pool_flush() should flush
+ all dirty FMRs"
+References: <20080225225330.GA3316@osc.edu> <ada1w70zlkf.fsf@cisco.com> <20080226182655.GD7033@osc.edu> <20080226182731.GE7033@osc.edu>
+In-Reply-To: <20080226182731.GE7033@osc.edu>
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20080118134318.GD9607@artemis.madism.org>
-	 <Pine.LNX.4.64.0801181257240.24685@alien.or.mcafeemobile.com>
-	 <20080124084001.GB7356@artemis.madism.org>
-	 <Pine.LNX.4.64.0801241556130.29058@alien.or.mcafeemobile.com>
-	 <517f3f820801252337lcd4b0a0hde7359dc46a947dd@mail.gmail.com>
-	 <Pine.LNX.4.64.0801261308270.10472@alien.or.mcafeemobile.com>
-	 <47C42CB3.8040500@gmail.com>
-	 <Pine.LNX.4.64.0802261054041.27243@alien.or.mcafeemobile.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Feb 26, 2008 at 8:04 PM, Davide Libenzi <davidel@xmailserver.org> wrote:
->
-> On Tue, 26 Feb 2008, Michael Kerrisk wrote:
->
-> > Following up after quite some time:
-> >
-> > Davide Libenzi wrote:
-> > > On Sat, 26 Jan 2008, Michael Kerrisk wrote:
-> > >
-> > >> On Jan 25, 2008 12:57 AM, Davide Libenzi <davidel@xmailserver.org> wrote:
-> > >>> On Thu, 24 Jan 2008, Pierre Habouzit wrote:
-> > >>>
-> > >>>> On Fri, Jan 18, 2008 at 09:10:18PM +0000, Davide Libenzi wrote:
-> > >>>>> On Fri, 18 Jan 2008, Pierre Habouzit wrote:
-> > >>>>>
-> > >>>>>>   Hi,
-> > >>>>>>
-> > >>>>>>   I just came across a strange behavior of epoll that seems to
-> > >>>>>> contradict the documentation. Here is what happens:
-> > >>>>>>
-> > >>>>>> * I have two processes P1 and P2, P1 accept()s connections, and send the
-> > >>>>>>   resulting file descriptors to P2 through a unix socket.
-> > >>>>>>
-> > >>>>>> * P2 registers the received socket in his epollfd.
-> > >>>>>>
-> > >>>>>>   [time passes]
-> > >>>>>>
-> > >>>>>> * P2 is done with the socket and closes it
-> > >>>>>>
-> > >>>>>> * P2 gets events for the socket again !
-> > >>>>>>
-> > >>>>>>
-> > >>>>>>   Though the documentation says that if a process closes a file
-> > >>>>>> descriptor, it gets unregistered. And yes I'm sure that P2 doens't dup()
-> > >>>>>> the file descriptor. Though (because of a bug) it was still open in
-> > >>>>>> P1[0], hence the referenced socket still live at the kernel level.
-> > >>>>>>
-> > >>>>>>   Of course the userland workaround is to force the EPOLL_CTL_DEL before
-> > >>>>>> the close, which I now do, but costs me a syscall where I wanted to
-> > >>>>>> spare one :|
-> > >>>>> For epoll, a close is when the kernel file* is released (that is, when all
-> > >>>>> its instances are gone).
-> > >>>>> We could put a special handling in filp_close(), but I don't think is a
-> > >>>>> good idea, and we're better live with the current behaviour.
-> > >>>>   Okay, maybe updating the linux manpages to be more clear about that is
-> > >>>> the way to go then. Thanks
-> > >>> Sure. I'll send Michael Kerrisk and updated statement for the A6 answer in
-> > >>> the epoll man page.
-> > >> Thanks Davide -- yes please send me a patch.
-> > >> --
-> > >> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> > >> the body of a message to majordomo@vger.kernel.org
-> > >> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> > >> Please read the FAQ at  http://www.tux.org/lkml/
-> > >>
-> > >
-> > > Something like the one below ...
-> > >
-> > >
-> > > - Davide
-> > >
-> > >
-> > >
-> > > --- epoll.4 2008-01-26 12:58:21.000000000 -0800
-> > > +++ epoll.4.new     2008-01-26 13:06:36.000000000 -0800
-> > > @@ -285,7 +285,19 @@
-> > >  sets automatically?
-> > >  .TP
-> > >  .B A6
-> > > -Yes.
-> > > +A file descriptor is the userspace counterpart of an internal kernel handle.
-> > > +Every time a process calls functions liks
-> > > +.BR dup (2),
-> > > +.BR dup2 (2)
-> > > +or
-> > > +.BR fork (2),
-> > > +a new file descriptor referring to the same internal kernel handle is
-> > > +created. The internal kernel handle remains alive until all the userspace
-> > > +file descriptors have been closed.
-> > > +The
-> > > +.BR epoll (4)
-> > > +interface automatically removes the internal kernel handle from the set,
-> > > +once all the file descriptor instances have been closed.
-> > >  .TP
-> > >  .B Q7
-> > >  If more than one event occurs between
-> >
-> > Davide,
-> >
-> > Two points.
-> >
-> > a) I did a
-> >
-> > s/internal kernel handle/open file description/
-> >
-> > since that is the POSIX term for the internal handle.
-> >
-> > b) It seems to me that you text doesn't quite make the point explicit
-> > enough.  I've tried to rewrite it; could you please check:
-> >
-> >        A6     Yes, but be aware of the following point.  A  file
-> >               descriptor is a reference to an open file descrip-
-> >               tion (see  open(2)).   Whenever  a  descriptor  is
-> >               duplicated  via dup(2), dup2(2), fcntl(2) F_DUPFD,
-> >               or fork(2), a new file descriptor referring to the
-> >               same  open  file  description is created.  An open
-> >               file description continues to exist until all file
-> >               descriptors referring to it have been closed.  The
-> >               epoll  interface  automatically  removes  a   file
-> >               descriptor  from  an  epoll set only after all the
-> >               file descriptors referring to the underlying  open
-> >               file  handle  have  been  closed.  This means that
-> >               even after a file descriptor that is  part  of  an
-> >               epoll  set has been closed, events may be reported
-> >               for that file descriptor if other file descriptors
-> >               referring  to the same underlying file description
-> >               remain open.
-> >
-> > Does that seem okay?  I plan to include the text in man-pages-2.79.
->
-> I agree with Bodo, it is kinda confusing. The name "open file description",
-> even though POSIX, looks very similar to "file descriptor".
-> I honestly don't know how more easily such concept could be expressed.
-> IMHO at least "internal kernel handle" does not play look-alike games with
-> "file descriptor".
+Pete, the subject says "PATCH 1/2" but I didn't see any follow-up message
+for PATCH 2/2. Just wondering :)
 
-Okay -- I'll look at it some more.  I am however loathe to drop the
-term open file description, because POSIX uses, as well as a number of
-other Linux man pages by now.
+Benny
 
-> > Was there some reason why removing a file descriptor couldn't have been
-> > made to do the "expected" thing (i.e., remove notifications for that file
-> > descriptor, regardless of whether the underlying file description remains
-> > open)?
->
-> That'd mean placing an eventpoll custom hook into sys_close(). Looks very
-> bad to me, and probably will look even worse to other kernel folks.
-> Is not much a performance issue (a check to see if a file* is an eventpoll
-> file is as easy as comparing the f_op pointer), but a design/style issue.
-> On top of that, the interface is already out by many years, so changing it
-> will like going to cause problems.
+On Feb. 26, 2008, 10:27 -0800, Pete Wyckoff <pw@osc.edu> wrote:
+> This reverts commit a3cd7d9070be417a21905c997ee32d756d999b38.
+> 
+> The original commit breaks iSER reliably, making it complain:
+> 
+>     iser: iser_reg_page_vec:ib_fmr_pool_map_phys failed: -11
+> 
+> The FMR cleanup thread runs ib_fmr_batch_release() as dirty
+> entries build up.  This commit causes clean but used FMR
+> entries also to be purged.  During that process, another thread
+> can see that there are no free FMRs and fail, even though
+> there should always have been enough available.
+> 
+> Signed-off-by: Pete Wyckoff <pw@osc.edu>
+> ---
+>  drivers/infiniband/core/fmr_pool.c |   21 ++++++---------------
+>  1 files changed, 6 insertions(+), 15 deletions(-)
+> 
+> diff --git a/drivers/infiniband/core/fmr_pool.c b/drivers/infiniband/core/fmr_pool.c
+> index 7f00347..4044fdf 100644
+> --- a/drivers/infiniband/core/fmr_pool.c
+> +++ b/drivers/infiniband/core/fmr_pool.c
+> @@ -139,7 +139,7 @@ static inline struct ib_pool_fmr *ib_fmr_cache_lookup(struct ib_fmr_pool *pool,
+>  static void ib_fmr_batch_release(struct ib_fmr_pool *pool)
+>  {
+>  	int                 ret;
+> -	struct ib_pool_fmr *fmr, *next;
+> +	struct ib_pool_fmr *fmr;
+>  	LIST_HEAD(unmap_list);
+>  	LIST_HEAD(fmr_list);
+>  
+> @@ -158,20 +158,6 @@ static void ib_fmr_batch_release(struct ib_fmr_pool *pool)
+>  #endif
+>  	}
+>  
+> -	/*
+> -	 * The free_list may hold FMRs that have been put there
+> -	 * because they haven't reached the max_remap count.
+> -	 * Invalidate their mapping as well.
+> -	 */
+> -	list_for_each_entry_safe(fmr, next, &pool->free_list, list) {
+> -		if (fmr->remap_count == 0)
+> -			continue;
+> -		hlist_del_init(&fmr->cache_node);
+> -		fmr->remap_count = 0;
+> -		list_add_tail(&fmr->fmr->list, &fmr_list);
+> -		list_move(&fmr->list, &unmap_list);
+> -	}
+> -
+>  	list_splice(&pool->dirty_list, &unmap_list);
+>  	INIT_LIST_HEAD(&pool->dirty_list);
+>  	pool->dirty_len = 0;
+> @@ -384,6 +370,11 @@ void ib_destroy_fmr_pool(struct ib_fmr_pool *pool)
+>  
+>  	i = 0;
+>  	list_for_each_entry_safe(fmr, tmp, &pool->free_list, list) {
+> +		if (fmr->remap_count) {
+> +			INIT_LIST_HEAD(&fmr_list);
+> +			list_add_tail(&fmr->fmr->list, &fmr_list);
+> +			ib_unmap_fmr(&fmr_list);
+> +		}
+>  		ib_dealloc_fmr(fmr->fmr);
+>  		list_del(&fmr->list);
+>  		kfree(fmr);
 
-Oh -- I wasn't suggesting we could make the change now -- it would
-break the ABI and all that.  I was just wondering why the decision
-wasn't made to do it the other way to begin with.  The existing
-semantics are somewhat couterintuitive, and potentially interact
-libraries that do private manipulations with file descriptors.
-
-Cheers,
-
-Michael
--- 
-Michael Kerrisk
-Maintainer of the Linux man-pages project
-http://www.kernel.org/doc/man-pages/
-Want to report a man-pages bug?  Look here:
-http://www.kernel.org/doc/man-pages/reporting_bugs.html
