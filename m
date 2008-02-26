@@ -1,60 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760962AbYBZHsn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760787AbYBZHuS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760962AbYBZHsn (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Feb 2008 02:48:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756305AbYBZHsc
+	id S1760787AbYBZHuS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Feb 2008 02:50:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757036AbYBZHuG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Feb 2008 02:48:32 -0500
-Received: from colo.lackof.org ([198.49.126.79]:48296 "EHLO colo.lackof.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756157AbYBZHsb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Feb 2008 02:48:31 -0500
-Date: Tue, 26 Feb 2008 00:48:19 -0700
-From: Grant Grundler <grundler@parisc-linux.org>
-To: Jeff Garzik <jgarzik@pobox.com>
-Cc: Grant Grundler <grundler@parisc-linux.org>,
-       Ondrej Zary <linux@rainbow-software.org>,
-       Linux Kernel <linux-kernel@vger.kernel.org>, netdev@vger.kernel.org
-Subject: Re: Compex FreedomLine 32 PnP-PCI2 broken with de2104x
-Message-ID: <20080226074819.GA27484@colo.lackof.org>
-References: <200801262158.12016.linux@rainbow-software.org> <200801302123.07783.linux@rainbow-software.org> <20080218032111.GA7970@colo.lackof.org> <200802181740.44196.linux@rainbow-software.org> <20080225071505.GC26674@colo.lackof.org> <47C26E78.1040103@pobox.com>
+	Tue, 26 Feb 2008 02:50:06 -0500
+Received: from eazy.amigager.de ([213.239.192.238]:43245 "EHLO
+	eazy.amigager.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756876AbYBZHuE (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 Feb 2008 02:50:04 -0500
+Date: Tue, 26 Feb 2008 08:50:35 +0100
+From: Tino Keitel <tino.keitel@gmx.de>
+To: linux-kernel@vger.kernel.org
+Subject: Re: Linux 2.6.24.3
+Message-ID: <20080226075035.GA20311@dose.home.local>
+Mail-Followup-To: linux-kernel@vger.kernel.org
+References: <20080226010024.GA26889@suse.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <47C26E78.1040103@pobox.com>
-X-Home-Page: http://www.parisc-linux.org/
-User-Agent: Mutt/1.5.16 (2007-06-11)
+In-Reply-To: <20080226010024.GA26889@suse.de>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Feb 25, 2008 at 02:30:00AM -0500, Jeff Garzik wrote:
-> Grant Grundler wrote:
->> On Mon, Feb 18, 2008 at 05:40:42PM +0100, Ondrej Zary wrote:
->>> I think that de2104x driver should be removed (or at least its 
->>> MODULE_DEVICE_TABLE) and MODULE_DEVICE_TABLE with only 21040 and 21041 
->>> PCI IDs added to de4x5.
->>>
->>> I can send a patch if this is acceptable.
->> It's acceptable to me. Jeff? (jgarzik)
->
-> NAK, sorry, for two reasons:
->
-> 1) we don't delete otherwise clean, working drivers
+On Mon, Feb 25, 2008 at 17:00:24 -0800, Greg Kroah-Hartman wrote:
+> We (the -stable team) are announcing the release of the 2.6.24.3
+> kernel.
 
-Just to be clear - he's not trying to remove the driver.
-He's just interested in making de4x5 the "default" for this set of boards
-by doctoring with the pci device ids each driver will claim.
+Hi,
 
->     simply because of a bug triggered by unplugging a cable.
+I can see the patch in http://www.kernel.org/pub/linux/kernel/v2.6/,
+but no incremental patch in
+http://www.kernel.org/pub/linux/kernel/v2.6/incr/. Is this due to some
+delay, or was is just not uploaded?
 
-Ondrej would be happy to test any patches sent. Tracking this sort
-of bug down usually isn't trivial as the statement above implies.
-
-> 2) de4x5 needs to go away.
-
-Ok. I'd prefer to wait until someone demonstrates de2104x driver is a fully
-functional alternative for all the PCI Ids it claims.
-
-thanks,
-grant
+Regards,
+Tino
