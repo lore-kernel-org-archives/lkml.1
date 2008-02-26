@@ -1,87 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756930AbYBZDyB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761204AbYBZDyk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756930AbYBZDyB (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 Feb 2008 22:54:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756549AbYBZDxv
+	id S1761204AbYBZDyk (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 Feb 2008 22:54:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758660AbYBZDy1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 Feb 2008 22:53:51 -0500
-Received: from mail.mizi.com ([61.107.31.33]:41303 "EHLO mail.mizi.com"
+	Mon, 25 Feb 2008 22:54:27 -0500
+Received: from chilli.pcug.org.au ([203.10.76.44]:54932 "EHLO smtps.tip.net.au"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754009AbYBZDxt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 Feb 2008 22:53:49 -0500
-Message-ID: <47C38D40.3040809@mizi.com>
-Date: Tue, 26 Feb 2008 12:53:36 +0900
-From: Louis JANG <louis@mizi.com>
-Organization: MIZI Research, Inc.
-User-Agent: Thunderbird 1.5.0.14pre (X11/20071023)
-MIME-Version: 1.0
-To: Marcel Holtmann <marcel@holtmann.org>
-CC: Dave Young <hidave.darkstar@gmail.com>, linux-bluetooth@vger.kernel.org,
-       Linux Kernel <linux-kernel@vger.kernel.org>, bmidgley@gmail.com,
-       David Miller <davem@davemloft.net>, Netdev <netdev@vger.kernel.org>
-Subject: Re: [Bluez-devel] forcing SCO connection patch
-References: <47666E1F.2000902@mizi.com>	 <a8e1da0802242330l765b8b1ava62b857baf8a5568@mail.gmail.com>	 <47C28A33.4070102@mizi.com> <a8e1da0802250155u1b7af481va203849f68d9106b@mail.gmail.com> <47C2A7FA.2060902@mizi.com> <70692DDF-93B7-447E-ABEE-3CDBD94F15F1@holtmann.org>
-In-Reply-To: <70692DDF-93B7-447E-ABEE-3CDBD94F15F1@holtmann.org>
-Content-Type: multipart/mixed;
- boundary="------------030006020202090909070106"
+	id S1758325AbYBZDyZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 25 Feb 2008 22:54:25 -0500
+Date: Tue, 26 Feb 2008 14:54:18 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Russell King <rmk+lkml@arm.linux.org.uk>
+Cc: LKML <linux-kernel@vger.kernel.org>, linux-next@vger.kernel.org,
+       linux-arch@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Linus <torvalds@linux-foundation.org>
+Subject: Re: Announce: Linux-next (Or Andrew's dream  :-))
+Message-Id: <20080226145418.59f6f35f.sfr@canb.auug.org.au>
+In-Reply-To: <20080216000943.GD31474@flint.arm.linux.org.uk>
+References: <20080212120208.f7168a91.sfr@canb.auug.org.au>
+	<20080216000943.GD31474@flint.arm.linux.org.uk>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.8; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Tue__26_Feb_2008_14_54_18_+1100_P4.bJaZUzzVusBqf"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------030006020202090909070106
-Content-Type: text/plain; charset=EUC-KR
-Content-Transfer-Encoding: 7bit
+--Signature=_Tue__26_Feb_2008_14_54_18_+1100_P4.bJaZUzzVusBqf
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Hi Marcel
+Hi Russell,
 
-
->> --- linux-2.6.23/net/bluetooth/hci_event.c.orig 2008-02-25
->> 17:17:11.000000000 +0900
->> +++ linux-2.6.23/net/bluetooth/hci_event.c 2008-02-25
->> 17:30:23.000000000 +0900
->> @@ -1313,8 +1313,17 @@
->> hci_dev_lock(hdev);
->>
->> conn = hci_conn_hash_lookup_ba(hdev, ev->link_type, &ev->bdaddr);
->> - if (!conn)
->> - goto unlock;
->> + if (!conn) {
->> + if (ev->link_type != ACL_LINK) {
->> + __u8 link_type = (ev->link_type == ESCO_LINK) ? SCO_LINK : ESCO_LINK;
->> +
->> + conn = hci_conn_hash_lookup_ba(hdev, link_type, &ev->bdaddr);
->> + if (conn)
->> + conn->type = ev->link_type;
->> + }
->> + if (!conn)
->> + goto unlock;
->> + }
+On Sat, 16 Feb 2008 00:09:43 +0000 Russell King <rmk+lkml@arm.linux.org.uk>=
+ wrote:
 >
-> NAK. There is no need to check for ACL_LINK. The sync_complete will
-> only be called for SCO or eSCO connections.
-I see. I removed this check line in the patch.
+> On Tue, Feb 12, 2008 at 12:02:08PM +1100, Stephen Rothwell wrote:
+> > I will attempt to build the tree between each merge (and a failed build
+> > will again cause the offending tree to be dropped).  These builds will =
+be
+> > necessarily restricted to probably one architecture/config.  I will bui=
+ld
+> > the entire tree on as many architectures/configs as seem sensible and
+> > the results of that will be available on a web page (to be announced).
+>=20
+> This restriction means that the value for the ARM architecture is soo
+> limited it's probably not worth the hastle participating in this project.
+>=20
+> We already know that -mm picks up on very few ARM conflicts because
+> Andrew doesn't run through the entire set of configurations; unfortunately
+> ARM is one of those architectures which is very diverse [*], and because
+> of that, ideas like "allyconfig" are just completely irrelevant to it.
+>=20
+> As mentioned elsewhere, what we need for ARM is to extend the kautobuild
+> infrastructure (see armlinux.simtec.co.uk) so that we can have more trees
+> at least compile tested regularly - but that requires the folk there to
+> have additional compute power (which isn't going to happen unless folk
+> stamp up some machines _or_ funding).
 
-Thanks.
-Louis JANG
+I now have an arm cross compiler (gcc-4.0.2-glibc-2.3.6
+arm-unknown-linux-gnu).  (See the results page at
+http://kisskb.ellerman.id.au/kisskb/branch/9/ - I must get a better
+name/place :-(.)  Is this sufficient to help you out?  What configs would
+be useful to build (as Andrew said, they don't take very long each).
 
---------------030006020202090909070106
-Content-Type: text/plain;
- name="patch_hci_event.c4"
-Content-Transfer-Encoding: base64
-Content-Disposition: inline;
- filename="patch_hci_event.c4"
+I really want as many subsystems as possible in the linux-next tree in an
+attempt to avoid some of the merge/conflict problems we have had in the
+past.  What can we do to help?
 
-U2lnbmVkLW9mZi1ieTogTG91aXMgSkFORyA8bG91aXNAbWl6aS5jb20+Ci0tLSBsaW51eC0y
-LjYuMjMvbmV0L2JsdWV0b290aC9oY2lfZXZlbnQuYy5vcmlnCTIwMDgtMDItMjYgMTI6NDY6
-MzYuMDAwMDAwMDAwICswOTAwCisrKyBsaW51eC0yLjYuMjMvbmV0L2JsdWV0b290aC9oY2lf
-ZXZlbnQuYwkyMDA4LTAyLTI2IDEyOjQ3OjIzLjAwMDAwMDAwMCArMDkwMApAQCAtMTMxMyw4
-ICsxMzEzLDE1IEBACiAJaGNpX2Rldl9sb2NrKGhkZXYpOwogCiAJY29ubiA9IGhjaV9jb25u
-X2hhc2hfbG9va3VwX2JhKGhkZXYsIGV2LT5saW5rX3R5cGUsICZldi0+YmRhZGRyKTsKLQlp
-ZiAoIWNvbm4pCi0JCWdvdG8gdW5sb2NrOworCWlmICghY29ubikgeworCQlfX3U4IGxpbmtf
-dHlwZSA9IChldi0+bGlua190eXBlID09IEVTQ09fTElOSykgPyBTQ09fTElOSyA6IEVTQ09f
-TElOSzsKKworCQljb25uID0gaGNpX2Nvbm5faGFzaF9sb29rdXBfYmEoaGRldiwgbGlua190
-eXBlLCAmZXYtPmJkYWRkcik7CisJCWlmIChjb25uKQorCQkJY29ubi0+dHlwZSA9IGV2LT5s
-aW5rX3R5cGU7CisJCWVsc2UKKwkJCWdvdG8gdW5sb2NrOworCX0KIAogCWlmICghZXYtPnN0
-YXR1cykgewogCQljb25uLT5oYW5kbGUgPSBfX2xlMTZfdG9fY3B1KGV2LT5oYW5kbGUpOwo=
---------------030006020202090909070106--
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Tue__26_Feb_2008_14_54_18_+1100_P4.bJaZUzzVusBqf
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQFHw41uTgG2atn1QN8RArnCAJ9C5NEof7XPsPca6AbTZTLMFtlt3ACeJ3oT
+XxM2GDdIFPvh4I3uE3gLxRI=
+=ee6M
+-----END PGP SIGNATURE-----
+
+--Signature=_Tue__26_Feb_2008_14_54_18_+1100_P4.bJaZUzzVusBqf--
