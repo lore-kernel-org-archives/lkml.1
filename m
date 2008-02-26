@@ -1,92 +1,162 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757439AbYBZC7S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758792AbYBZDDv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757439AbYBZC7S (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 Feb 2008 21:59:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750935AbYBZC7H
+	id S1758792AbYBZDDv (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 Feb 2008 22:03:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751294AbYBZDDn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 Feb 2008 21:59:07 -0500
-Received: from tomts20-srv.bellnexxia.net ([209.226.175.74]:60056 "EHLO
-	tomts20-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750797AbYBZC7F (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 Feb 2008 21:59:05 -0500
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: Ah4FAMoOw0dMQWRV/2dsb2JhbACBVapl
-Date: Mon, 25 Feb 2008 21:59:02 -0500
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: Jesper Juhl <jesper.juhl@gmail.com>
-Cc: LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] Don't risk NULL deref in marker
-Message-ID: <20080226025902.GA13199@Krystal>
-References: <200802260014.24253.jesper.juhl@gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Mon, 25 Feb 2008 22:03:43 -0500
+Received: from cn.fujitsu.com ([222.73.24.84]:49158 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1750994AbYBZDDm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 25 Feb 2008 22:03:42 -0500
+Message-ID: <47C38127.2000109@cn.fujitsu.com>
+Date: Tue, 26 Feb 2008 11:01:59 +0800
+From: Li Zefan <lizf@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+MIME-Version: 1.0
+To: Paul Menage <menage@google.com>
+CC: balbir@linux.vnet.ibm.com, Andrew Morton <akpm@linux-foundation.org>,
+       Hugh Dickins <hugh@veritas.com>,
+       Sudhir Kumar <skumar@linux.vnet.ibm.com>,
+       YAMAMOTO Takashi <yamamoto@valinux.co.jp>, linux-kernel@vger.kernel.org,
+       taka@valinux.co.jp, linux-mm@kvack.org,
+       David Rientjes <rientjes@google.com>,
+       Pavel Emelianov <xemul@openvz.org>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Subject: Re: [PATCH] Memory Resource Controller Add Boot Option
+References: <20080225115509.23920.66231.sendpatchset@localhost.localdomain> <20080225115550.23920.43199.sendpatchset@localhost.localdomain> <6599ad830802250816m1f83dbeekbe919a60d4b51157@mail.gmail.com> <47C2F86A.9010709@linux.vnet.ibm.com> <6599ad830802250932s5eaa3bcchbfc49fe0e76d3f7d@mail.gmail.com> <47C2FCC1.7090203@linux.vnet.ibm.com> <47C30EDC.4060005@google.com>
+In-Reply-To: <47C30EDC.4060005@google.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-In-Reply-To: <200802260014.24253.jesper.juhl@gmail.com>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 21:57:28 up 14 days, 22:57,  3 users,  load average: 0.19, 0.37,
-	0.41
-User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Jesper Juhl (jesper.juhl@gmail.com) wrote:
+Paul Menage wrote:
+>>> I'll send out a prototype for comment.
 > 
-> get_marker() may return NULL, so test for it.
+> Something like the patch below. The effects of cgroup_disable=foo are:
+> 
+> - foo doesn't show up in /proc/cgroups
+
+Or we can print out the disable flag, maybe this will be better?
+Because we can distinguish from disabled and not compiled in from
+/proc/cgroups.
+
+> - foo isn't auto-mounted if you mount all cgroups in a single hierarchy
+> - foo isn't visible as an individually mountable subsystem
+
+You mentioned in a previous mail if we mount a disabled subsystem we
+will get an error. Here we just ignore the mount option. Which makes
+more sense ?
+
+> 
+> As a result there will only ever be one call to foo->create(), at init
+> time; all processes will stay in this group, and the group will never be
+> mounted on a visible hierarchy. Any additional effects (e.g. not
+> allocating metadata) are up to the foo subsystem.
+> 
+> This doesn't handle early_init subsystems (their "disabled" bit isn't
+> set be, but it could easily be extended to do so if any of the
+> early_init systems wanted it - I think it would just involve some
+> nastier parameter processing since it would occur before the
+> command-line argument parser had been run.
+> 
+> include/linux/cgroup.h |    1 +
+> kernel/cgroup.c        |   29 +++++++++++++++++++++++++++--
+> 2 files changed, 28 insertions(+), 2 deletions(-)
+> 
+> Index: cgroup_disable-2.6.25-rc2-mm1/include/linux/cgroup.h
+> ===================================================================
+> --- cgroup_disable-2.6.25-rc2-mm1.orig/include/linux/cgroup.h
+> +++ cgroup_disable-2.6.25-rc2-mm1/include/linux/cgroup.h
+> @@ -256,6 +256,7 @@ struct cgroup_subsys {
+>     void (*bind)(struct cgroup_subsys *ss, struct cgroup *root);
+>     int subsys_id;
+>     int active;
+> +    int disabled;
+>     int early_init;
+> #define MAX_CGROUP_TYPE_NAMELEN 32
+>     const char *name;
+> Index: cgroup_disable-2.6.25-rc2-mm1/kernel/cgroup.c
+> ===================================================================
+> --- cgroup_disable-2.6.25-rc2-mm1.orig/kernel/cgroup.c
+> +++ cgroup_disable-2.6.25-rc2-mm1/kernel/cgroup.c
+> @@ -790,7 +790,14 @@ static int parse_cgroupfs_options(char *
+>         if (!*token)
+>             return -EINVAL;
+>         if (!strcmp(token, "all")) {
+> -            opts->subsys_bits = (1 << CGROUP_SUBSYS_COUNT) - 1;
+> +            /* Add all non-disabled subsystems */
+> +            int i;
+> +            opts->subsys_bits = 0;
+> +            for (i = 0; i < CGROUP_SUBSYS_COUNT; i++) {
+> +                struct cgroup_subsys *ss = subsys[i];
+> +                if (!ss->disabled)
+> +                    opts->subsys_bits |= 1ul << i;
+> +            }
+>         } else if (!strcmp(token, "noprefix")) {
+>             set_bit(ROOT_NOPREFIX, &opts->flags);
+>         } else if (!strncmp(token, "release_agent=", 14)) {
+> @@ -808,7 +815,8 @@ static int parse_cgroupfs_options(char *
+>             for (i = 0; i < CGROUP_SUBSYS_COUNT; i++) {
+>                 ss = subsys[i];
+>                 if (!strcmp(token, ss->name)) {
+> -                    set_bit(i, &opts->subsys_bits);
+> +                    if (!ss->disabled)
+> +                        set_bit(i, &opts->subsys_bits);
+>                     break;
+>                 }
+>             }
+> @@ -2596,6 +2606,8 @@ static int proc_cgroupstats_show(struct
+>     mutex_lock(&cgroup_mutex);
+>     for (i = 0; i < CGROUP_SUBSYS_COUNT; i++) {
+>         struct cgroup_subsys *ss = subsys[i];
+> +        if (ss->disabled)
+> +            continue;
+>         seq_printf(m, "%s\t%lu\t%d\n",
+>                ss->name, ss->root->subsys_bits,
+>                ss->root->number_of_cgroups);
+> @@ -2991,3 +3003,16 @@ static void cgroup_release_agent(struct
+>     spin_unlock(&release_list_lock);
+>     mutex_unlock(&cgroup_mutex);
+> }
+> +
+> +static int __init cgroup_disable(char *str)
+> +{
+> +    int i;
+> +    for (i = 0; i < CGROUP_SUBSYS_COUNT; i++) {
+> +        struct cgroup_subsys *ss = subsys[i];
+> +        if (!strcmp(str, ss->name)) {
+> +            ss->disabled = 1;
+> +            break;
+> +        }
+> +    }
+> +}
+> +__setup("cgroup_disable=", cgroup_disable);
+> 
+> 
+>>
+>> Sure thing, if css has the flag, then it would nice. Could you wrap it
+>> up to say
+>> something like css_disabled(&mem_cgroup_subsys)
+>>
+>>
+> 
+> It's the subsys object rather than the css (cgroup_subsys_state).
+> 
+>  We could have something like:
+> 
+> #define cgroup_subsys_disabled(_ss) ((ss_)->disabled)
+> 
+> but I don't see that
+>  cgroup_subsys_disabled(&mem_cgroup_subsys)
+> is better than just putting
+> 
+>  mem_cgroup_subsys.disabled
+> 
+> Paul
+> 
 > 
 
-Hrm, yes, if we have two marker_probe_unregister callers calling it for
-the same marker, one expecting it to fail and they race, yes, it can
-happen. Although this is not expected to happen often if the caller acts
-sanely, it's a good thing to fix it. Thanks!
 
-Acked-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-
-> 
-> Signed-off-by: Jesper Juhl <jesper.juhl@gmail.com>
-> ---
-> 
-> diff --git a/kernel/marker.c b/kernel/marker.c
-> index 50effc0..f211f08 100644
-> --- a/kernel/marker.c
-> +++ b/kernel/marker.c
-> @@ -698,12 +698,11 @@ int marker_probe_unregister(const char *name,
->  {
->  	struct marker_entry *entry;
->  	struct marker_probe_closure *old;
-> -	int ret = 0;
-> +	int ret = -ENOENT;
->  
->  	mutex_lock(&markers_mutex);
->  	entry = get_marker(name);
->  	if (!entry) {
-> -		ret = -ENOENT;
->  		goto end;
->  	}
->  	if (entry->rcu_pending)
-> @@ -713,12 +712,16 @@ int marker_probe_unregister(const char *name,
->  	marker_update_probes();		/* may update entry */
->  	mutex_lock(&markers_mutex);
->  	entry = get_marker(name);
-> +	if (!entry) {
-> +		goto end;
-> +	}
->  	entry->oldptr = old;
->  	entry->rcu_pending = 1;
->  	/* write rcu_pending before calling the RCU callback */
->  	smp_wmb();
->  	call_rcu(&entry->rcu, free_old_closure);
->  	remove_marker(name);	/* Ignore busy error message */
-> +	ret = 0;
->  end:
->  	mutex_unlock(&markers_mutex);
->  	return ret;
-
--- 
-Mathieu Desnoyers
-Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
