@@ -1,528 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762788AbYBZNm0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762864AbYBZNmn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762788AbYBZNm0 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Feb 2008 08:42:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761840AbYBZNko
+	id S1762864AbYBZNmn (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Feb 2008 08:42:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762357AbYBZNlc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Feb 2008 08:40:44 -0500
-Received: from opensource.wolfsonmicro.com ([80.75.67.52]:60100 "EHLO
-	opensource2.wolfsonmicro.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1761352AbYBZNk3 (ORCPT
+	Tue, 26 Feb 2008 08:41:32 -0500
+Received: from ug-out-1314.google.com ([66.249.92.173]:27012 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1762311AbYBZNla (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Feb 2008 08:40:29 -0500
-From: Mark Brown <broonie@opensource.wolfsonmicro.com>
-To: Dmitry Torokhov <dtor@mail.ru>, Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-input@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Mark Brown <broonie@opensource.wolfsonmicro.com>,
-       Liam Girdwood <liam.girdwood@wolfsonmicro.com>,
-       Graeme Gregory <gg@opensource.wolfsonmicro.com>,
-       Mike Arthur <mike.arthur@wolfsonmicro.com>,
-       Dmitry Baryshkov <dbaryshkov@gmail.com>,
-       Stanley Cai <stanley.cai@intel.com>,
-       Rodolfo Giometti <giometti@enneenne.com>,
-       Russell King <rmk@arm.linux.org.uk>,
-       Marc Kleine-Budde <mkl@pengutronix.de>,
-       Pete MacKay <linux01@architechnical.net>, Ian Molton <spyro@f2s.com>,
-       Vince Sanders <vince@kyllikki.org>, Andrew Zabolotny <zap@homelink.ru>
-Subject: [PATCH 3/6] Add chip driver for WM9712 touchscreen
-Date: Tue, 26 Feb 2008 13:40:15 +0000
-Message-Id: <12040332181394-git-send-email-broonie@opensource.wolfsonmicro.com>
-X-Mailer: git-send-email 1.5.2.5
-In-Reply-To: <12040332181161-git-send-email-broonie@opensource.wolfsonmicro.com>
-References: <12040332183316-git-send-email-broonie@opensource.wolfsonmicro.com>
- <12040332181161-git-send-email-broonie@opensource.wolfsonmicro.com>
-Message-Id: <d45dbc09dbd92475ebf37863b5411ecc59d115a6.1204032930.git.broonie@opensource.wolfsonmicro.com>
-In-Reply-To: <c815fe5525d01cea7be830ca51af962d3aec360d.1204032930.git.broonie@opensource.wolfsonmicro.com>
-References: <c815fe5525d01cea7be830ca51af962d3aec360d.1204032930.git.broonie@opensource.wolfsonmicro.com>
+	Tue, 26 Feb 2008 08:41:30 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=nk5r9eSN5xo/R2i8Tn/gfx2EKTyIcaO98W8ezZeOSFjMtNI1UN80JDFVKX84vLb2G9Tc197nEaqay/5TMsiVSYP90GMUeSJfyYvICMl6XiIYNlvhvqZvWKnjYsZmOmhmD0qaM1MMA8RJxzLvzMHNVT1fwvzfJyxa8DATFPw1MDE=
+Message-ID: <b6fcc0a0802260541l1035b0fcx9aeb166cf81a7ff6@mail.gmail.com>
+Date: Tue, 26 Feb 2008 16:41:28 +0300
+From: "Alexey Dobriyan" <adobriyan@gmail.com>
+To: "J.C. Pizarro" <jcpiza@gmail.com>
+Subject: Re: Please, put 64-bit counter per task and incr.by.one each ctxt switch.
+Cc: "Andrew Morton" <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <998d0e4a0802260520x77fdea2dr32bc30a5448f32b3@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <998d0e4a0802231908h37978d07wa5379d5c01b2c2ee@mail.gmail.com>
+	 <20080223221750.429cf0d9@bree.surriel.com>
+	 <998d0e4a0802232008w5c6566f0se15ab749ec6f1ceb@mail.gmail.com>
+	 <20080223232651.41dffa72@bree.surriel.com>
+	 <998d0e4a0802240512t859c5a1y3c30bd401530a43@mail.gmail.com>
+	 <20080225123439.90645f2f.akpm@linux-foundation.org>
+	 <998d0e4a0802260520x77fdea2dr32bc30a5448f32b3@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Signed-off-by: Liam Girdwood <liam.girdwood@wolfsonmicro.com>
-Signed-off-by: Graeme Gregory <gg@opensource.wolfsonmicro.com>
-Signed-off-by: Mike Arthur <mike.arthur@wolfsonmicro.com>
-Signed-off-by: Mark Brown <broonie@opensource.wolfsonmicro.com>
-Cc: Dmitry Baryshkov <dbaryshkov@gmail.com>
-Cc: Stanley Cai <stanley.cai@intel.com>
-Cc: Rodolfo Giometti <giometti@enneenne.com>
-Cc: Russell King <rmk@arm.linux.org.uk>
-Cc: Marc Kleine-Budde <mkl@pengutronix.de>
-Cc: Pete MacKay <linux01@architechnical.net>
-Cc: Ian Molton <spyro@f2s.com>
-Cc: Vince Sanders <vince@kyllikki.org>
-Cc: Andrew Zabolotny <zap@homelink.ru>
----
- drivers/input/touchscreen/wm9712.c |  461 ++++++++++++++++++++++++++++++++++++
- 1 files changed, 461 insertions(+), 0 deletions(-)
- create mode 100644 drivers/input/touchscreen/wm9712.c
+On 2/26/08, J.C. Pizarro <jcpiza@gmail.com> wrote:
+> On 2008/2/25, Andrew Morton <akpm@linux-foundation.org> wrote:
+> > On Sun, 24 Feb 2008 14:12:47 +0100 "J.C. Pizarro" <jcpiza@gmail.com>
+> wrote:
+> >
+> > > It's statistic, yes, but it's a very important parameter for the
+> CPU-scheduler.
+> > > The CPU-scheduler will know the number of context switches of each task
+> > > before of to take a blind decision into infinitum!.
+> >
+> >
+> > We already have these:
+> >
+> > unsigned long nvcsw, nivcsw; /* context switch counts */
+> >
+> > in the task_struct.
+>
+> 1. They use "unsigned long" instead "unsigned long long".
+> 2. They use "= 0;" instead of "= 0ULL";
 
-diff --git a/drivers/input/touchscreen/wm9712.c b/drivers/input/touchscreen/wm9712.c
-new file mode 100644
-index 0000000..eaab326
---- /dev/null
-+++ b/drivers/input/touchscreen/wm9712.c
-@@ -0,0 +1,461 @@
-+/*
-+ * wm9712.c  --  Codec driver for Wolfson WM9712 AC97 Codecs.
-+ *
-+ * Copyright 2003, 2004, 2005, 2006, 2007 Wolfson Microelectronics PLC.
-+ * Author: Liam Girdwood
-+ *         liam.girdwood@wolfsonmicro.com or linux@wolfsonmicro.com
-+ * Parts Copyright : Ian Molton <spyro@f2s.com>
-+ *                   Andrew Zabolotny <zap@homelink.ru>
-+ *                   Russell King <rmk@arm.linux.org.uk>
-+ *
-+ *  This program is free software; you can redistribute  it and/or modify it
-+ *  under  the terms of  the GNU General  Public License as published by the
-+ *  Free Software Foundation;  either version 2 of the  License, or (at your
-+ *  option) any later version.
-+ *
-+ */
-+
-+#include <linux/module.h>
-+#include <linux/moduleparam.h>
-+#include <linux/version.h>
-+#include <linux/kernel.h>
-+#include <linux/input.h>
-+#include <linux/delay.h>
-+#include <linux/bitops.h>
-+#include <linux/wm97xx.h>
-+
-+#define TS_NAME			"wm97xx"
-+#define WM9712_VERSION		"0.61"
-+#define DEFAULT_PRESSURE	0xb0c0
-+
-+/*
-+ * Module parameters
-+ */
-+
-+/*
-+ * Set internal pull up for pen detect.
-+ *
-+ * Pull up is in the range 1.02k (least sensitive) to 64k (most sensitive)
-+ * i.e. pull up resistance = 64k Ohms / rpu.
-+ *
-+ * Adjust this value if you are having problems with pen detect not
-+ * detecting any down event.
-+ */
-+static int rpu = 8;
-+module_param(rpu, int, 0);
-+MODULE_PARM_DESC(rpu, "Set internal pull up resitor for pen detect.");
-+
-+/*
-+ * Set current used for pressure measurement.
-+ *
-+ * Set pil = 2 to use 400uA
-+ *     pil = 1 to use 200uA and
-+ *     pil = 0 to disable pressure measurement.
-+ *
-+ * This is used to increase the range of values returned by the adc
-+ * when measureing touchpanel pressure.
-+ */
-+static int pil;
-+module_param(pil, int, 0);
-+MODULE_PARM_DESC(pil, "Set current used for pressure measurement.");
-+
-+/*
-+ * Set threshold for pressure measurement.
-+ *
-+ * Pen down pressure below threshold is ignored.
-+ */
-+static int pressure = DEFAULT_PRESSURE & 0xfff;
-+module_param(pressure, int, 0);
-+MODULE_PARM_DESC(pressure, "Set threshold for pressure measurement.");
-+
-+/*
-+ * Set adc sample delay.
-+ *
-+ * For accurate touchpanel measurements, some settling time may be
-+ * required between the switch matrix applying a voltage across the
-+ * touchpanel plate and the ADC sampling the signal.
-+ *
-+ * This delay can be set by setting delay = n, where n is the array
-+ * position of the delay in the array delay_table below.
-+ * Long delays > 1ms are supported for completeness, but are not
-+ * recommended.
-+ */
-+static int delay = 3;
-+module_param(delay, int, 0);
-+MODULE_PARM_DESC(delay, "Set adc sample delay.");
-+
-+/*
-+ * Set five_wire = 1 to use a 5 wire touchscreen.
-+ *
-+ * NOTE: Five wire mode does not allow for readback of pressure.
-+ */
-+static int five_wire;
-+module_param(five_wire, int, 0);
-+MODULE_PARM_DESC(five_wire, "Set to '1' to use 5-wire touchscreen.");
-+
-+/*
-+ * Set adc mask function.
-+ *
-+ * Sources of glitch noise, such as signals driving an LCD display, may feed
-+ * through to the touch screen plates and affect measurement accuracy. In
-+ * order to minimise this, a signal may be applied to the MASK pin to delay or
-+ * synchronise the sampling.
-+ *
-+ * 0 = No delay or sync
-+ * 1 = High on pin stops conversions
-+ * 2 = Edge triggered, edge on pin delays conversion by delay param (above)
-+ * 3 = Edge triggered, edge on pin starts conversion after delay param
-+ */
-+static int mask;
-+module_param(mask, int, 0);
-+MODULE_PARM_DESC(mask, "Set adc mask function.");
-+
-+/*
-+ * Coordinate Polling Enable.
-+ *
-+ * Set to 1 to enable coordinate polling. e.g. x,y[,p] is sampled together
-+ * for every poll.
-+ */
-+static int coord;
-+module_param(coord, int, 0);
-+MODULE_PARM_DESC(coord, "Polling coordinate mode");
-+
-+/*
-+ * ADC sample delay times in uS
-+ */
-+static const int delay_table[] = {
-+	21,    /* 1 AC97 Link frames */
-+	42,    /* 2 */
-+	84,    /* 4 */
-+	167,   /* 8 */
-+	333,   /* 16 */
-+	667,   /* 32 */
-+	1000,  /* 48 */
-+	1333,  /* 64 */
-+	2000,  /* 96 */
-+	2667,  /* 128 */
-+	3333,  /* 160 */
-+	4000,  /* 192 */
-+	4667,  /* 224 */
-+	5333,  /* 256 */
-+	6000,  /* 288 */
-+	0      /* No delay, switch matrix always on */
-+};
-+
-+/*
-+ * Delay after issuing a POLL command.
-+ *
-+ * The delay is 3 AC97 link frames + the touchpanel settling delay
-+ */
-+static inline void poll_delay(int d)
-+{
-+	udelay(3 * AC97_LINK_FRAME + delay_table[d]);
-+}
-+
-+/*
-+ * set up the physical settings of the WM9712
-+ */
-+static void wm9712_phy_init(struct wm97xx *wm)
-+{
-+	u16 dig1 = 0;
-+	u16 dig2 = WM97XX_RPR | WM9712_RPU(1);
-+
-+	/* WM9712 rpu */
-+	if (rpu) {
-+		dig2 &= 0xffc0;
-+		dig2 |= WM9712_RPU(rpu);
-+		dev_dbg(wm->dev, "setting pen detect pull-up to %d Ohms",
-+			64000 / rpu);
-+	}
-+
-+	/* touchpanel pressure current*/
-+	if (pil == 2) {
-+		dig2 |= WM9712_PIL;
-+		dev_dbg(wm->dev,
-+			"setting pressure measurement current to 400uA.");
-+	} else if (pil)
-+		dev_dbg(wm->dev,
-+			"setting pressure measurement current to 200uA.");
-+	if (!pil)
-+		pressure = 0;
-+
-+	/* WM9712 five wire */
-+	if (five_wire) {
-+		dig2 |= WM9712_45W;
-+		dev_dbg(wm->dev, "setting 5-wire touchscreen mode.");
-+	}
-+
-+	/* polling mode sample settling delay */
-+	if (delay < 0 || delay > 15) {
-+		dev_dbg(wm->dev, "supplied delay out of range.");
-+		delay = 4;
-+	}
-+	dig1 &= 0xff0f;
-+	dig1 |= WM97XX_DELAY(delay);
-+	dev_dbg(wm->dev, "setting adc sample delay to %d u Secs.",
-+		delay_table[delay]);
-+
-+	/* mask */
-+	dig2 |= ((mask & 0x3) << 6);
-+	if (mask) {
-+		u16 reg;
-+		/* Set GPIO4 as Mask Pin*/
-+		reg = wm97xx_reg_read(wm, AC97_MISC_AFE);
-+		wm97xx_reg_write(wm, AC97_MISC_AFE, reg | WM97XX_GPIO_4);
-+		reg = wm97xx_reg_read(wm, AC97_GPIO_CFG);
-+		wm97xx_reg_write(wm, AC97_GPIO_CFG, reg | WM97XX_GPIO_4);
-+	}
-+
-+	/* wait - coord mode */
-+	if (coord)
-+		dig2 |= WM9712_WAIT;
-+
-+	wm97xx_reg_write(wm, AC97_WM97XX_DIGITISER1, dig1);
-+	wm97xx_reg_write(wm, AC97_WM97XX_DIGITISER2, dig2);
-+}
-+
-+static void wm9712_dig_enable(struct wm97xx *wm, int enable)
-+{
-+	u16 dig2 = wm->dig[2];
-+
-+	if (enable) {
-+		wm97xx_reg_write(wm, AC97_WM97XX_DIGITISER2,
-+				 dig2 | WM97XX_PRP_DET_DIG);
-+		wm97xx_reg_read(wm, AC97_WM97XX_DIGITISER_RD); /* dummy read */
-+	} else
-+		wm97xx_reg_write(wm, AC97_WM97XX_DIGITISER2,
-+				 dig2 & ~WM97XX_PRP_DET_DIG);
-+}
-+
-+static void wm9712_aux_prepare(struct wm97xx *wm)
-+{
-+	memcpy(wm->dig_save, wm->dig, sizeof(wm->dig));
-+	wm97xx_reg_write(wm, AC97_WM97XX_DIGITISER1, 0);
-+	wm97xx_reg_write(wm, AC97_WM97XX_DIGITISER2, WM97XX_PRP_DET_DIG);
-+}
-+
-+static void wm9712_dig_restore(struct wm97xx *wm)
-+{
-+	wm97xx_reg_write(wm, AC97_WM97XX_DIGITISER1, wm->dig_save[1]);
-+	wm97xx_reg_write(wm, AC97_WM97XX_DIGITISER2, wm->dig_save[2]);
-+}
-+
-+static inline int is_pden(struct wm97xx *wm)
-+{
-+	return wm->dig[2] & WM9712_PDEN;
-+}
-+
-+/*
-+ * Read a sample from the WM9712 adc in polling mode.
-+ */
-+static int wm9712_poll_sample(struct wm97xx *wm, int adcsel, int *sample)
-+{
-+	int timeout = 5 * delay;
-+
-+	if (!wm->pen_probably_down) {
-+		u16 data = wm97xx_reg_read(wm, AC97_WM97XX_DIGITISER_RD);
-+		if (!(data & WM97XX_PEN_DOWN))
-+			return RC_PENUP;
-+		wm->pen_probably_down = 1;
-+	}
-+
-+	/* set up digitiser */
-+	if (adcsel & 0x8000)
-+		adcsel = ((adcsel & 0x7fff) + 3) << 12;
-+
-+	if (wm->mach_ops && wm->mach_ops->pre_sample)
-+		wm->mach_ops->pre_sample(adcsel);
-+	wm97xx_reg_write(wm, AC97_WM97XX_DIGITISER1,
-+			 adcsel | WM97XX_POLL | WM97XX_DELAY(delay));
-+
-+	/* wait 3 AC97 time slots + delay for conversion */
-+	poll_delay(delay);
-+
-+	/* wait for POLL to go low */
-+	while ((wm97xx_reg_read(wm, AC97_WM97XX_DIGITISER1) & WM97XX_POLL)
-+	       && timeout) {
-+		udelay(AC97_LINK_FRAME);
-+		timeout--;
-+	}
-+
-+	if (timeout <= 0) {
-+		/* If PDEN is set, we can get a timeout when pen goes up */
-+		if (is_pden(wm))
-+			wm->pen_probably_down = 0;
-+		else
-+			dev_dbg(wm->dev, "adc sample timeout");
-+		return RC_PENUP;
-+	}
-+
-+	*sample = wm97xx_reg_read(wm, AC97_WM97XX_DIGITISER_RD);
-+	if (wm->mach_ops && wm->mach_ops->post_sample)
-+		wm->mach_ops->post_sample(adcsel);
-+
-+	/* check we have correct sample */
-+	if ((*sample & WM97XX_ADCSEL_MASK) != adcsel) {
-+		dev_dbg(wm->dev, "adc wrong sample, read %x got %x", adcsel,
-+		*sample & WM97XX_ADCSEL_MASK);
-+		return RC_PENUP;
-+	}
-+
-+	if (!(*sample & WM97XX_PEN_DOWN)) {
-+		wm->pen_probably_down = 0;
-+		return RC_PENUP;
-+	}
-+
-+	return RC_VALID;
-+}
-+
-+/*
-+ * Read a coord from the WM9712 adc in polling mode.
-+ */
-+static int wm9712_poll_coord(struct wm97xx *wm, struct wm97xx_data *data)
-+{
-+	int timeout = 5 * delay;
-+
-+	if (!wm->pen_probably_down) {
-+		u16 data_rd = wm97xx_reg_read(wm, AC97_WM97XX_DIGITISER_RD);
-+		if (!(data_rd & WM97XX_PEN_DOWN))
-+			return RC_PENUP;
-+		wm->pen_probably_down = 1;
-+	}
-+
-+	/* set up digitiser */
-+	if (wm->mach_ops && wm->mach_ops->pre_sample)
-+		wm->mach_ops->pre_sample(WM97XX_ADCSEL_X | WM97XX_ADCSEL_Y);
-+
-+	wm97xx_reg_write(wm, AC97_WM97XX_DIGITISER1,
-+		WM97XX_COO | WM97XX_POLL | WM97XX_DELAY(delay));
-+
-+	/* wait 3 AC97 time slots + delay for conversion and read x */
-+	poll_delay(delay);
-+	data->x = wm97xx_reg_read(wm, AC97_WM97XX_DIGITISER_RD);
-+	/* wait for POLL to go low */
-+	while ((wm97xx_reg_read(wm, AC97_WM97XX_DIGITISER1) & WM97XX_POLL)
-+	       && timeout) {
-+		udelay(AC97_LINK_FRAME);
-+		timeout--;
-+	}
-+
-+	if (timeout <= 0) {
-+		/* If PDEN is set, we can get a timeout when pen goes up */
-+		if (is_pden(wm))
-+			wm->pen_probably_down = 0;
-+		else
-+			dev_dbg(wm->dev, "adc sample timeout");
-+		return RC_PENUP;
-+	}
-+
-+	/* read back y data */
-+	data->y = wm97xx_reg_read(wm, AC97_WM97XX_DIGITISER_RD);
-+	if (pil)
-+		data->p = wm97xx_reg_read(wm, AC97_WM97XX_DIGITISER_RD);
-+	else
-+		data->p = DEFAULT_PRESSURE;
-+
-+	if (wm->mach_ops && wm->mach_ops->post_sample)
-+		wm->mach_ops->post_sample(WM97XX_ADCSEL_X | WM97XX_ADCSEL_Y);
-+
-+	/* check we have correct sample */
-+	if (!(data->x & WM97XX_ADCSEL_X) || !(data->y & WM97XX_ADCSEL_Y))
-+		goto err;
-+	if (pil && !(data->p & WM97XX_ADCSEL_PRES))
-+		goto err;
-+
-+	if (!(data->x & WM97XX_PEN_DOWN)) {
-+		wm->pen_probably_down = 0;
-+		return RC_PENUP;
-+	}
-+	return RC_VALID;
-+err:
-+	return RC_PENUP;
-+}
-+
-+/*
-+ * Sample the WM9712 touchscreen in polling mode
-+ */
-+static int wm9712_poll_touch(struct wm97xx *wm, struct wm97xx_data *data)
-+{
-+	int rc;
-+
-+	if (coord) {
-+		rc = wm9712_poll_coord(wm, data);
-+		if (rc != RC_VALID)
-+			return rc;
-+	} else {
-+		rc = wm9712_poll_sample(wm, WM97XX_ADCSEL_X, &data->x);
-+		if (rc != RC_VALID)
-+			return rc;
-+
-+		rc = wm9712_poll_sample(wm, WM97XX_ADCSEL_Y, &data->y);
-+		if (rc != RC_VALID)
-+			return rc;
-+
-+		if (pil && !five_wire) {
-+			rc = wm9712_poll_sample(wm, WM97XX_ADCSEL_PRES,
-+						&data->p);
-+			if (rc != RC_VALID)
-+				return rc;
-+		} else
-+			data->p = DEFAULT_PRESSURE;
-+	}
-+	return RC_VALID;
-+}
-+
-+/*
-+ * Enable WM9712 continuous mode, i.e. touch data is streamed across
-+ * an AC97 slot
-+ */
-+static int wm9712_acc_enable(struct wm97xx *wm, int enable)
-+{
-+	u16 dig1, dig2;
-+	int ret = 0;
-+
-+	dig1 = wm->dig[1];
-+	dig2 = wm->dig[2];
-+
-+	if (enable) {
-+		/* continous mode */
-+		if (wm->mach_ops->acc_startup) {
-+			ret = wm->mach_ops->acc_startup(wm);
-+			if (ret < 0)
-+				return ret;
-+		}
-+		dig1 &= ~(WM97XX_CM_RATE_MASK | WM97XX_ADCSEL_MASK |
-+			WM97XX_DELAY_MASK | WM97XX_SLT_MASK);
-+		dig1 |= WM97XX_CTC | WM97XX_COO | WM97XX_SLEN |
-+			WM97XX_DELAY(delay) |
-+			WM97XX_SLT(wm->acc_slot) |
-+			WM97XX_RATE(wm->acc_rate);
-+		if (pil)
-+			dig1 |= WM97XX_ADCSEL_PRES;
-+		dig2 |= WM9712_PDEN;
-+	} else {
-+		dig1 &= ~(WM97XX_CTC | WM97XX_COO | WM97XX_SLEN);
-+		dig2 &= ~WM9712_PDEN;
-+		if (wm->mach_ops->acc_shutdown)
-+			wm->mach_ops->acc_shutdown(wm);
-+	}
-+
-+	wm97xx_reg_write(wm, AC97_WM97XX_DIGITISER1, dig1);
-+	wm97xx_reg_write(wm, AC97_WM97XX_DIGITISER2, dig2);
-+	return 0;
-+}
-+
-+struct wm97xx_codec_drv wm9712_codec = {
-+	.id = 	WM9712_ID2,
-+	.name = "wm9712",
-+	.poll_sample = wm9712_poll_sample,
-+	.poll_touch = wm9712_poll_touch,
-+	.acc_enable = wm9712_acc_enable,
-+	.phy_init = wm9712_phy_init,
-+	.dig_enable = wm9712_dig_enable,
-+	.dig_restore = wm9712_dig_restore,
-+	.aux_prepare = wm9712_aux_prepare,
-+};
-+EXPORT_SYMBOL_GPL(wm9712_codec);
-+
-+/* Module information */
-+MODULE_AUTHOR("Liam Girdwood <liam.girdwood@wolfsonmicro.com>");
-+MODULE_DESCRIPTION("WM9712 Touch Screen Driver");
-+MODULE_LICENSE("GPL");
--- 
-1.5.2.5
+Very funny.
 
+> 3. They don't use ++ (incr. by one per ctxt-switch).
+
+No they do, read schedule() already.
+
+> 4. I don't like the separation of voluntary and involuntary ctxt-switches,
+> and i don't understand the utility of this separation.
+
+Ah, that's why you don't like it.
+
+> The tsk->nvcsw & tsk->nivcsw mean different to i had proposed.
+>
+> It's simple, when calling to function kernel/sched.c:context_switch(..)
+> to do ++, but they don't do it.
+>
+> I propose you
+> 1. unsigned long long tsk->ncsw = 0ULL; and tsk->ncsw++;
+> 2. unsigned long long tsk->last_registered_ncsw = tsk->ncsw; when it's
+> polling.
+> 3. long tsk->vcsw = ( tsk->ncsw - tsk->last_registered_ncsw ) / ( t2 - t1 )
+> /* velocity of task (ctxt-switches per second), (t1 != t2 in seconds
+> for no zerodiv)
+> 4. long tsk->last_registered_vcsw = tsk->vcsw;
+> 5. long tsk->normalized_vcsw =
+> (1 - alpha)*tsk->last_registered_vcsw + alpha*tsk->vcsw; /* 0<alpha<1
+> */
+
+   6. Profit.
+
+As I understood the idea of CFS, all interactivity heuristics were bitbucketed,
+so you'll add them back (you won't, of course, because you can't be arsed
+to send a patch)
+
+So best course of action it to describe workload and setup (distro, relevant
+.config items and so on.) on which CFS behaves poorly.
