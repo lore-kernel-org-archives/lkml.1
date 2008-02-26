@@ -1,68 +1,121 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763992AbYBZS5Z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764609AbYBZS5h@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763992AbYBZS5Z (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Feb 2008 13:57:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759656AbYBZS5R
+	id S1764609AbYBZS5h (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Feb 2008 13:57:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763473AbYBZS5W
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Feb 2008 13:57:17 -0500
-Received: from smtp1.linux-foundation.org ([207.189.120.13]:40857 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1759139AbYBZS5Q (ORCPT
+	Tue, 26 Feb 2008 13:57:22 -0500
+Received: from wa-out-1112.google.com ([209.85.146.179]:2849 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1763033AbYBZS5V (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Feb 2008 13:57:16 -0500
-Date: Tue, 26 Feb 2008 10:56:06 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Pavel Machek <pavel@ucw.cz>
-Cc: Dave Jones <davej@codemonkey.org.uk>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       kernel list <linux-kernel@vger.kernel.org>
-Subject: Re: broken suspend in .2.6.25-rc3 on T61p (was Re: new regression
- in 2.6.25-rc3: no keyboard/lid acpi events on thinkpad T61p)
-Message-Id: <20080226105606.e56e4ec6.akpm@linux-foundation.org>
-In-Reply-To: <20080226181611.GB6030@elf.ucw.cz>
-References: <20080225143932.6b83b65d.akpm@linux-foundation.org>
-	<8f53421d0802251448v3e0db63j3f222f041e587f69@mail.gmail.com>
-	<20080225145347.a61f6c61.akpm@linux-foundation.org>
-	<20080225225820.GP2659@elf.ucw.cz>
-	<20080225155550.4a020dfb.akpm@linux-foundation.org>
-	<20080226000007.GB22102@atrey.karlin.mff.cuni.cz>
-	<20080226101117.GA26671@atrey.karlin.mff.cuni.cz>
-	<20080226174613.GA26259@codemonkey.org.uk>
-	<20080226175954.GA5707@elf.ucw.cz>
-	<20080226181001.GA7714@codemonkey.org.uk>
-	<20080226181611.GB6030@elf.ucw.cz>
-X-Mailer: Sylpheed 2.4.7 (GTK+ 2.12.1; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 26 Feb 2008 13:57:21 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
+        b=SzUipVJ2M41hz1Ollqv1br8sCiC5RIKOYYBdSl6j0cvHMUmsNTdGq0xCycrxzozVtsOQIS4bUUM3v36a1PR1YIY4fSwsy1wR6x6GG3QE50WV3I0c+3HeVGCBCd4Z/xMDRnxdnvYfrnRQYttZ2dQNzqKkbJNNLCCn3s4lsxHVH0Q=
+Message-ID: <9f5edc120802261057p318c55c4xb4269d48fa7b37b6@mail.gmail.com>
+Date: Tue, 26 Feb 2008 13:57:19 -0500
+From: "Joe Landman" <joe.landman@gmail.com>
+To: linux-kernel@vger.kernel.org
+Subject: Odd performance observation for RAID0
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 26 Feb 2008 19:16:11 +0100 Pavel Machek <pavel@ucw.cz> wrote:
+Hi folks:
 
-> On Tue 2008-02-26 13:10:01, Dave Jones wrote:
-> > On Tue, Feb 26, 2008 at 06:59:54PM +0100, Pavel Machek wrote:
-> >  
-> >  > > if by 'custom' you mean the solution everyone agreed to work
-> >  > > toward at the power management summit several years ago
-> >  > > (hal/pm-utils) then, yes.
-> >  > 
-> >  > I must have been on different summit... I believe it is bad to tie
-> >  > s2ram to hal, because it makes testing on minimal system hard.
-> >  > 
-> >  > Anyway, what is the "default" way to trigger s2ram for Andrew? Perhaps
-> >  > Fedora already has his machine whitelisted...
-> > 
-> > There is no s2ram. pm-suspend uses the white/black-lists in pm-utils.
-> > Remember that? The cross-distro package everyone agreed was a good idea
-> > so that every distro didn't have their own magic utility ?
-> 
-> Well, we have cross-distro package, it is at suspend.sf.net , and it
-> can bring up video - which is kind of important. (It is single binary,
-> so it can be pagelocked -- which is important for s2disk).
-> 
-> Plus it does not depend on HAL.
+  I posted this in linux-raid, though I thought it might interest the
+kernel folks due to the subsystems in question.  No responses there.
 
-Meanwhile, my computer continues to not work.
+  Executive summary version:  building a RAID0 across 2 large hardware
+RAIDed disks results in buffered I/O performance that is similar to a
+single one of these controllers.  Additional tests, breaking the raid
+apart into 2 separate drives, yields the expected I/O performance when
+using buffered IO, and 2 simultaneous IO operations, one to each disk.
+ Direct IO doesn't show this performance anomaly and is fast in either
+case.  Observed with kernel 2.6.23.14.
 
-First thing we need to do is to work out why it won't stay suspended?
+  A curious thing happens with 2.6.24.2, in that now direct IO
+performance is as bad as buffered IO performance.
+
+  The problem as stated, leads me to think that I might be running
+into a point of serialization of the buffer cache.
+
+  Details:
+
+  I built a RAID0 stripe across two large hardware RAID cards
+(identical cards/driver).  What I am finding is that direct IO is
+about the performance I expect (2x the single RAID card) while
+buffered IO is about the same as the performance of a single RAID
+card.  This is true across chunk sizes of 64 through 4096k, with an
+xfs file system.
+
+ This is a 2.6.23.14 kernel.  I tried 2.6.24.2, and there the direct
+IO on two RAID cards was the same speed as the direct and buffered IO
+on one RAID card, even though the RAID0 striped across 2 RAID cards.
+
+  There appears to be some issue with this combination of RAID0,
+buffer cache, and the driver. Breaking the raid in 2, and performing
+the same tests on each RAID card results in the expected performance
+during buffered io and direct IO.
+
+  Tests were simple reads and writes:
+
+   dd if=/dev/zero of=/big/local.file bs=8388608 count=10000
+
+and
+
+   dd if=/big/local.file of=/dev/null bs=8388608
+
+added oflag=direct and iflag=direct for the direct io versions.  I
+tried changing the default IO scheduler (cfq to deadline) though this
+particular workload shouldn't make much of a difference (all reads or
+all writes).  I tried altering queue depth, and a number of other
+parameters. All told, they had limited impact.
+
+  The end user of this system indicated that they will be using
+fadvise mechanisms to handle cache hinting, and they will be doing
+large block sequential streaming, so direct IO like performance should
+be fine.  That said, I am concerned that the buffered IO case appears
+serialized.  Of course we are not re-using the buffer for these tests,
+so this could have an impact.  Along those lines, I tried adjusting
+the "dirty" parameters to see what I could do
+
+/proc/sys/vm/dirty_expire_centisecs
+/proc/sys/vm/dirty_writeback_centisecs
+/proc/sys/vm/dirty_ratio
+/proc/sys/vm/dirty_background_ratio
+
+I tried various changes that I thought might work (increasing the
+dirty_ratio while decreasing the dirty_expire_centisecs).  I did get
+some impact, though it was mostly in the direction of lower
+performance.
+
+The questions I have are, could the raid0 device be effectively
+serializing access to the buffer cache?  The hardware RAID devices I
+am using are quite fast, so this might represent a different area of
+testing than raid0 normally gets.
+
+Other possibilities I have thought of include oddities in xfs (I tried
+ext3 as well, though I ran into an 8TB limit) and how it interacts
+with the buffer cache.  Driver oddities (seen on several versions of
+this driver).  To try to eliminate these other effects, I broke the
+unit up into 2 separate devices (1 per RAID card), and built two file
+systems.  Simultaneous IO to each file system gave expected
+performance.  My take on that is that the driver (handling both RAIDs)
+has no trouble interacting with the OS and the buffer cache under
+heavy IO situations.  I used xfs on each file system, so it further
+suggests that xfs is not likely the problem.
+
+With all this said, does anyone have any suggestions on this?  Or even
+where to look in the raid0.c code (or elsewhere) to see what is going
+on?
+
+Thanks!
+
+Joe
