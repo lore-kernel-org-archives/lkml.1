@@ -1,52 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764513AbYBZUJM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764946AbYBZUJc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764513AbYBZUJM (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Feb 2008 15:09:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753202AbYBZUI6
+	id S1764946AbYBZUJc (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Feb 2008 15:09:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764637AbYBZUJW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Feb 2008 15:08:58 -0500
-Received: from gw.goop.org ([64.81.55.164]:52500 "EHLO mail.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752703AbYBZUI5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Feb 2008 15:08:57 -0500
-Message-ID: <47C47107.2020608@goop.org>
-Date: Tue, 26 Feb 2008 12:05:27 -0800
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
-MIME-Version: 1.0
-To: Mark McLoughlin <markmc@redhat.com>
-CC: Ian Campbell <ijc@hellion.org.uk>, "H. Peter Anvin" <hpa@zytor.com>,
-       Joel Becker <Joel.Becker@oracle.com>, Jody Belka <lists-lkml@pimb.org>,
-       linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Andi Kleen <andi@firstfloor.org>,
-       Mika Penttila <mika.penttila@kolumbus.fi>
-Subject: Re: 2.6.25-rc1 xen pvops regression
-References: <20080212235404.GY7980@pimb.org> <47B2DBA5.6030001@goop.org>	 <20080214022744.GA4160@mail.oracle.com> <47B3F2DC.8080707@goop.org>	 <20080215202336.GE26034@mail.oracle.com>	 <1203274161.27987.6.camel@localhost.localdomain>	 <20080218104025.GA15899@ca-server1.us.oracle.com>	 <1203458366.26910.15.camel@cthulhu.hellion.org.uk>	 <47BBDA20.8030105@zytor.com>	 <1203497511.26910.39.camel@cthulhu.hellion.org.uk>	 <47BCA275.7000504@goop.org>	 <1203546597.26910.74.camel@cthulhu.hellion.org.uk>	 <47BDEA11.6010302@goop.org> <47BDEB57.5040203@zytor.com>	 <47BDEF36.8000903@goop.org>	 <1203631956.28436.4.camel@cthulhu.hellion.org.uk>	 <47BDF9C7.6040400@zytor.com> <47BE0017.1020205@goop.org>	 <47BE0228.7020204@zytor.com>	 <1203665106.28436.19.camel@cthulhu.hellion.org.uk> <1204045592.12238.6.camel@muff>
-In-Reply-To: <1204045592.12238.6.camel@muff>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
-Content-Transfer-Encoding: 7bit
+	Tue, 26 Feb 2008 15:09:22 -0500
+Received: from antispam.upcomillas.es ([130.206.70.245]:55031 "EHLO
+	antispam.upcomillas.es" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1762611AbYBZUJV (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 Feb 2008 15:09:21 -0500
+Subject: Intel 945GM: 2.6.25-rc3 report (with a possible regression)
+From: Romano Giannetti <romanol@upcomillas.es>
+To: linux-kernel <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Date: Tue, 26 Feb 2008 21:09:16 +0100
+Message-Id: <1204056556.7745.22.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.1 
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mark McLoughlin wrote:
->> @@ -371,6 +372,9 @@ void __init dmi_scan_machine(void)
->>  		}
->>  	}
->>  	else {
->> +		if (e820_all_mapped(0xF0000, 0xF0000+0x10000, E820_RAM))
->> +			goto out;
->>     
->
-> 	One issue with using the e820 map for this is that a Xen Dom0 will also
-> have this region marked as RAM in the e820 map, but will set up a fixmap
-> for it, allowing dmi_scan_machine() to map the region.
->   
 
-Would it be easier to just fake up a mapping so that window points to 
-the real dmi area, and mark E820 accordingly?
+Hi,
 
-    J
+this mail is to give feedback about the 2.6.25-rc3 kernel, on an Ubuntu
+7.10 system, running on a Toshiba Satellite U305. Video is a Intel
+845GM, and I run 915resolution at start to make X happy with the correct
+widescreen resolution. 
+
+A lot of data is collected here (if more is needed, tell me):
+http://www.dea.icai.upcomillas.es/romano/linux/info/
+
+1) The minor regression is that I cannot have any more a correct
+console. I tried a lot of combinations, but without a framebuffer,
+console is garbled by ubuntu splash and/or X. With the .config copied in
+the site above, I do not have console (a random pattern appears as I
+switch consoles). With intelfb framebuffer, sometime it works, sometime
+it doesn't work, and everytime break resume from STR. (I mean, the
+laptop seems to resume, but the screen is blank).
+
+I have a doubt about this: is it possible that some state is maintained
+across reboots? Because sometime two reboots in a row led to different
+results; for example, after following 
+https://bugs.launchpad.net/ubuntu/+source/initramfs-tools/+bug/147606
+
+I had a nice console, but after the failed resume and a sysrq-b reboot,
+no console again. 
+
+2) LCD/CRT switch. It's the first time I tried it, so no idea if it ever
+worked. Without a CRT connected, nothing happens pressing the key
+combination (fn-F5), correctly. When I connected a overhead proyector
+(CRT), pressed fn-F5, and the LCD went off and the CRT on (ok); after
+that the LCD never came on again. pressing again fn-f5 two times lead to
+a all-off, a third time made the CRT switch on, and again. The laptop is
+working but the LCD stay black till the next reboot. (It is very similar
+to what seems to happen after resume).
+
+3) on the nice side of things, it seems that now echo mem
+> /sys/power/state works (at least in X, I do not have a console to test
+it...).
+
+Thank you very much, 
+		Romano 
+
+-- 
+Sorry for the disclaimer --- ¡I cannot stop it!
+
+
+
+--
+La presente comunicación tiene carácter confidencial y es para el exclusivo uso del destinatario indicado en la misma. Si Ud. no es el destinatario indicado, le informamos que cualquier forma de distribución, reproducción o uso de esta comunicación y/o de la información contenida en la misma están estrictamente prohibidos por la ley. Si Ud. ha recibido esta comunicación por error, por favor, notifíquelo inmediatamente al remitente contestando a este mensaje y proceda a continuación a destruirlo. Gracias por su colaboración.
+
+This communication contains confidential information. It is for the exclusive use of the intended addressee. If you are not the intended addressee, please note that any form of distribution, copying or use of this communication or the information in it is strictly prohibited by law. If you have received this communication in error, please immediately notify the sender by reply e-mail and destroy this message. Thank you for your cooperation. 
