@@ -1,108 +1,179 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759964AbYBZKW1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762094AbYBZKXB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759964AbYBZKW1 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Feb 2008 05:22:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756063AbYBZKWT
+	id S1762094AbYBZKXB (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Feb 2008 05:23:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761242AbYBZKWv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Feb 2008 05:22:19 -0500
-Received: from 1wt.eu ([62.212.114.60]:2144 "EHLO 1wt.eu"
+	Tue, 26 Feb 2008 05:22:51 -0500
+Received: from mailhub.sw.ru ([195.214.232.25]:16786 "EHLO relay.sw.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754687AbYBZKWS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Feb 2008 05:22:18 -0500
-Date: Tue, 26 Feb 2008 11:22:03 +0100
-From: Willy Tarreau <w@1wt.eu>
-To: Adrian Bunk <bunk@kernel.org>
-Cc: Steve Brokenshire <sbrokenshire@xestia.co.uk>,
-       linux-kernel@vger.kernel.org, linux-kbuild@vger.kernel.org
-Subject: Re: [PATCH] Compress kernel modules on installation.
-Message-ID: <20080226102203.GA21257@1wt.eu>
-References: <20080225214209.a3f79327.sbrokenshire@xestia.co.uk> <20080225222137.GY8953@1wt.eu> <20080226091455.GA3498@cs181133002.pp.htv.fi>
+	id S1760621AbYBZKWu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 Feb 2008 05:22:50 -0500
+Date: Tue, 26 Feb 2008 13:22:39 +0300
+From: Alexey Dobriyan <adobriyan@sw.ru>
+To: akmp@osdl.org
+Cc: linux-kernel@vger.kernel.org
+Subject: [PATCH] proc: switch to proc_create()
+Message-ID: <20080226102239.GB7469@localhost.sw.ru>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20080226091455.GA3498@cs181133002.pp.htv.fi>
 User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Feb 26, 2008 at 11:14:55AM +0200, Adrian Bunk wrote:
-> On Mon, Feb 25, 2008 at 11:21:38PM +0100, Willy Tarreau wrote:
-> > On Mon, Feb 25, 2008 at 09:42:09PM +0000, Steve Brokenshire wrote:
-> > > Hi,
-> > > 
-> > > (I've sent this to the linux-kbuild and linux-kernel lists as this
-> > > patch modifies the Makefile.modinst file. I also don't subscribe to the 
-> > > linux-kbuild and linux-kernel mailing lists so can I have any replies
-> > > CC'ed to me please)
-> > > 
-> > > This patch allows kernel modules to be compressed when 'make
-> > > modules_install' is run after being copied to
-> > > the /lib/module/<version>/<...> directory which is useful if you have
-> > > module-init-tools installed with --enable-zlib. This patch adds an
-> > > option (MODULE_COMPRESS) to the kernel configuration file (specifically
-> > > init/Kconfig) so that the kernel modules will compressed if
-> > > MODULE_COMPRESS is set.
-> > > 
-> > > When MODULE_COMPRESS is set the output of 'make modules_install' will
-> > > go as the following:
-> > > 
-> > > INSTALL  drivers/fs/xfs/xfs.ko
-> > > COMPRESS drivers/fs/xfs/xfs.ko
-> > > INSTALL  drivers/fs/fat/fat.ko
-> > > COMPRESS drivers/fs/fat/fat.ko
-> > > ...
-> > > 
-> > > I've tested my patch on kernel versions 2.6.24.2, 2.6.24-git12, 2.6.23.14 and
-> > > 2.6.19 and they compile, install and compress into the respective
-> > > module directories without any errors.
-> > > 
-> > > I've also tested this with the uvcvideo (linux-uvc) kernel module (from
-> > > the SVN branch and with kernel versions 2.6.24.2, 2.6.24-git12, 2.6.23.14 and
-> > > 2.6.19) as that uses Kbuild properly when installing the module and
-> > > after installing the uvcvideo the module is then compressed.
-> > > Unfortunately, I couldn't find any other kernel modules which used the
-> > > Kbuild system for installing their kernel modules. :(
-> > > 
-> > > I've included include/config/auto.conf in Makefile.modinst so that it
-> > > can check if MODULE_COMPRESS is set when installing the kernel modules.
-> > > 
-> > > Unfortunately when I ran mkinitrd (CentOS version) to create the initrd
-> > > image to go with the kernel, I get errors saying that certain kernel
-> > > modules don't exist despite the fact they do actually exist. When I
-> > > pass --allow-missing to mkinitrd, it seems to go fine but when booting
-> > > up with the system with the new initrd image I get error messages
-> > > saying that the modules don't exist.
-> > > 
-> > > A workaround is to compile the modules, don't have MODULE_COMPRESS set 
-> > > in .config, install the modules, run mkinitrd and copy it to /boot, set 
-> > > MODULE_COMPRESS in .config and then install the modules again but
-> > > compressed.
-> > > 
-> > > That's about it really. The only showstopper I feel is mkinitrd not
-> > > working properly with the compressed kernel modules.
-> > 
-> > Have you tried keeping the module names intact (.ko, not .ko.gz) ?
-> > It's what I was doing with modutils in 2.4 and what I'm still doing
-> > with module-init-tools in 2.6. While I don't particularly use mkinitrd,
-> > I think that keeping the name intact is preferable and should help.
-> 
-> How would you see if, and if yes with what program, a module was 
-> compressed if the name is kept intact?
+Signed-off-by: Alexey Dobriyan <adobriyan@sw.ru>
+---
 
-depmod/modinfo/insmod/modprobe already know it. And quite honnestly,
-I don't know about any other program which really needs to process
-those files once installed. Well, maybe ksymoops, but I'd have to
-check, as I don't recall having ever been annoyed with this.
+ fs/proc/internal.h  |    2 -
+ fs/proc/nommu.c     |    2 -
+ fs/proc/proc_misc.c |   66 +++++++++++++++++-----------------------------------
+ fs/proc/proc_tty.c  |    5 ---
+ 4 files changed, 24 insertions(+), 51 deletions(-)
 
-> I'd assume stuff like mkinitrd simply also needs to gain knowledge about 
-> compressed modules.
-
-I'm not that sure. At most it might want to uncompress them to gain some
-space, but someone who uses compressed modules for later use in an initrd
-is probably missing something.
-
-Regards,
-Willy
+--- a/fs/proc/internal.h
++++ b/fs/proc/internal.h
+@@ -46,8 +46,6 @@ extern int nommu_vma_show(struct seq_file *, struct vm_area_struct *);
+ 
+ extern int maps_protect;
+ 
+-extern void create_seq_entry(char *name, mode_t mode,
+-				const struct file_operations *f);
+ extern int proc_exe_link(struct inode *, struct path *);
+ extern int proc_tid_stat(struct seq_file *m, struct pid_namespace *ns,
+ 				struct pid *pid, struct task_struct *task);
+--- a/fs/proc/nommu.c
++++ b/fs/proc/nommu.c
+@@ -137,7 +137,7 @@ static const struct file_operations proc_nommu_vma_list_operations = {
+ 
+ static int __init proc_nommu_init(void)
+ {
+-	create_seq_entry("maps", S_IRUGO, &proc_nommu_vma_list_operations);
++	proc_create("maps", S_IRUGO, NULL, &proc_nommu_vma_list_operations);
+ 	return 0;
+ }
+ 
+--- a/fs/proc/proc_misc.c
++++ b/fs/proc/proc_misc.c
+@@ -813,14 +813,6 @@ static struct file_operations proc_kpageflags_operations = {
+ 
+ struct proc_dir_entry *proc_root_kcore;
+ 
+-void create_seq_entry(char *name, mode_t mode, const struct file_operations *f)
+-{
+-	struct proc_dir_entry *entry;
+-	entry = create_proc_entry(name, mode, NULL);
+-	if (entry)
+-		entry->proc_fops = f;
+-}
+-
+ void __init proc_misc_init(void)
+ {
+ 	static struct {
+@@ -849,63 +841,49 @@ void __init proc_misc_init(void)
+ 
+ 	/* And now for trickier ones */
+ #ifdef CONFIG_PRINTK
+-	{
+-		struct proc_dir_entry *entry;
+-		entry = create_proc_entry("kmsg", S_IRUSR, &proc_root);
+-		if (entry)
+-			entry->proc_fops = &proc_kmsg_operations;
+-	}
++	proc_create("kmsg", S_IRUSR, &proc_root, &proc_kmsg_operations);
+ #endif
+-	create_seq_entry("locks", 0, &proc_locks_operations);
+-	create_seq_entry("devices", 0, &proc_devinfo_operations);
+-	create_seq_entry("cpuinfo", 0, &proc_cpuinfo_operations);
++	proc_create("locks", 0, NULL, &proc_locks_operations);
++	proc_create("devices", 0, NULL, &proc_devinfo_operations);
++	proc_create("cpuinfo", 0, NULL, &proc_cpuinfo_operations);
+ #ifdef CONFIG_BLOCK
+-	create_seq_entry("partitions", 0, &proc_partitions_operations);
++	proc_create("partitions", 0, NULL, &proc_partitions_operations);
+ #endif
+-	create_seq_entry("stat", 0, &proc_stat_operations);
+-	create_seq_entry("interrupts", 0, &proc_interrupts_operations);
++	proc_create("stat", 0, NULL, &proc_stat_operations);
++	proc_create("interrupts", 0, NULL, &proc_interrupts_operations);
+ #ifdef CONFIG_SLABINFO
+-	create_seq_entry("slabinfo",S_IWUSR|S_IRUGO,&proc_slabinfo_operations);
++	proc_create("slabinfo",S_IWUSR|S_IRUGO,NULL,&proc_slabinfo_operations);
+ #ifdef CONFIG_DEBUG_SLAB_LEAK
+-	create_seq_entry("slab_allocators", 0 ,&proc_slabstats_operations);
++	proc_create("slab_allocators", 0, NULL, &proc_slabstats_operations);
+ #endif
+ #endif
+-	create_seq_entry("buddyinfo",S_IRUGO, &fragmentation_file_operations);
+-	create_seq_entry("pagetypeinfo", S_IRUGO, &pagetypeinfo_file_ops);
+-	create_seq_entry("vmstat",S_IRUGO, &proc_vmstat_file_operations);
+-	create_seq_entry("zoneinfo",S_IRUGO, &proc_zoneinfo_file_operations);
++	proc_create("buddyinfo", S_IRUGO, NULL, &fragmentation_file_operations);
++	proc_create("pagetypeinfo", S_IRUGO, NULL, &pagetypeinfo_file_ops);
++	proc_create("vmstat", S_IRUGO, NULL, &proc_vmstat_file_operations);
++	proc_create("zoneinfo", S_IRUGO, NULL, &proc_zoneinfo_file_operations);
+ #ifdef CONFIG_BLOCK
+-	create_seq_entry("diskstats", 0, &proc_diskstats_operations);
++	proc_create("diskstats", 0, NULL, &proc_diskstats_operations);
+ #endif
+ #ifdef CONFIG_MODULES
+-	create_seq_entry("modules", 0, &proc_modules_operations);
++	proc_create("modules", 0, NULL, &proc_modules_operations);
+ #endif
+ #ifdef CONFIG_SCHEDSTATS
+-	create_seq_entry("schedstat", 0, &proc_schedstat_operations);
++	proc_create("schedstat", 0, NULL, &proc_schedstat_operations);
+ #endif
+ #ifdef CONFIG_PROC_KCORE
+-	proc_root_kcore = create_proc_entry("kcore", S_IRUSR, NULL);
+-	if (proc_root_kcore) {
+-		proc_root_kcore->proc_fops = &proc_kcore_operations;
++	proc_root_kcore = proc_create("kcore", S_IRUSR, NULL, &proc_kcore_operations);
++	if (proc_root_kcore)
+ 		proc_root_kcore->size =
+ 				(size_t)high_memory - PAGE_OFFSET + PAGE_SIZE;
+-	}
+ #endif
+ #ifdef CONFIG_PROC_PAGE_MONITOR
+-	create_seq_entry("kpagecount", S_IRUSR, &proc_kpagecount_operations);
+-	create_seq_entry("kpageflags", S_IRUSR, &proc_kpageflags_operations);
++	proc_create("kpagecount", S_IRUSR, NULL, &proc_kpagecount_operations);
++	proc_create("kpageflags", S_IRUSR, NULL, &proc_kpageflags_operations);
+ #endif
+ #ifdef CONFIG_PROC_VMCORE
+-	proc_vmcore = create_proc_entry("vmcore", S_IRUSR, NULL);
+-	if (proc_vmcore)
+-		proc_vmcore->proc_fops = &proc_vmcore_operations;
++	proc_vmcore = proc_create("vmcore", S_IRUSR, NULL, &proc_vmcore_operations);
+ #endif
+ #ifdef CONFIG_MAGIC_SYSRQ
+-	{
+-		struct proc_dir_entry *entry;
+-		entry = create_proc_entry("sysrq-trigger", S_IWUSR, NULL);
+-		if (entry)
+-			entry->proc_fops = &proc_sysrq_trigger_operations;
+-	}
++	proc_create("sysrq-trigger", S_IWUSR, NULL, &proc_sysrq_trigger_operations);
+ #endif
+ }
+--- a/fs/proc/proc_tty.c
++++ b/fs/proc/proc_tty.c
+@@ -214,7 +214,6 @@ void proc_tty_unregister_driver(struct tty_driver *driver)
+  */
+ void __init proc_tty_init(void)
+ {
+-	struct proc_dir_entry *entry;
+ 	if (!proc_mkdir("tty", NULL))
+ 		return;
+ 	proc_tty_ldisc = proc_mkdir("tty/ldisc", NULL);
+@@ -227,7 +226,5 @@ void __init proc_tty_init(void)
+ 	proc_tty_driver = proc_mkdir_mode("tty/driver", S_IRUSR | S_IXUSR, NULL);
+ 
+ 	create_proc_read_entry("tty/ldiscs", 0, NULL, tty_ldiscs_read_proc, NULL);
+-	entry = create_proc_entry("tty/drivers", 0, NULL);
+-	if (entry)
+-		entry->proc_fops = &proc_tty_drivers_operations;
++	proc_create("tty/drivers", 0, NULL, &proc_tty_drivers_operations);
+ }
 
