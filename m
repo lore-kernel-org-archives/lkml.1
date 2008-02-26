@@ -1,81 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764732AbYBZVSd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765127AbYBZVTj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764732AbYBZVSd (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Feb 2008 16:18:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753579AbYBZVSY
+	id S1765127AbYBZVTj (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Feb 2008 16:19:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753579AbYBZVTb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Feb 2008 16:18:24 -0500
-Received: from smtp-out.google.com ([216.239.33.17]:30485 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750820AbYBZVSX (ORCPT
+	Tue, 26 Feb 2008 16:19:31 -0500
+Received: from bombadil.infradead.org ([18.85.46.34]:52887 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750820AbYBZVTa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Feb 2008 16:18:23 -0500
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=received:date:from:x-x-sender:to:cc:subject:in-reply-to:
-	message-id:references:user-agent:mime-version:content-type;
-	b=m9w8mWvz92iR/zVdkXcRwAafLWpyXToiAqtuxQAQ9nJ6W+tAPcVEo/iZZz9V58Trf
-	DaLyL/gNYf+bduBB4ymMg==
-Date: Tue, 26 Feb 2008 13:17:55 -0800 (PST)
-From: David Rientjes <rientjes@google.com>
-X-X-Sender: rientjes@chino.kir.corp.google.com
-To: Paul Jackson <pj@sgi.com>
-cc: akpm@linux-foundation.org, clameter@sgi.com, Lee.Schermerhorn@hp.com,
-       ak@suse.de, linux-kernel@vger.kernel.org
-Subject: Re: [patch 5/6] mempolicy: add MPOL_F_RELATIVE_NODES flag
-In-Reply-To: <20080226114417.c8948b61.pj@sgi.com>
-Message-ID: <alpine.DEB.1.00.0802261306110.10790@chino.kir.corp.google.com>
-References: <alpine.DEB.1.00.0802250012420.12368@chino.kir.corp.google.com> <alpine.DEB.1.00.0802250013580.12368@chino.kir.corp.google.com> <alpine.DEB.1.00.0802250014170.12368@chino.kir.corp.google.com> <alpine.DEB.1.00.0802250014410.12368@chino.kir.corp.google.com>
- <alpine.DEB.1.00.0802250016120.12368@chino.kir.corp.google.com> <20080226114417.c8948b61.pj@sgi.com>
-User-Agent: Alpine 1.00 (DEB 882 2007-12-20)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Tue, 26 Feb 2008 16:19:30 -0500
+Subject: Re: [RFC][PATCH] page reclaim throttle take2
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>,
+       Rik van Riel <riel@redhat.com>,
+       Lee Schermerhorn <Lee.Schermerhorn@hp.com>,
+       Nick Piggin <npiggin@suse.de>
+In-Reply-To: <20080226104647.FF26.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+References: <20080226104647.FF26.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+Content-Type: text/plain
+Date: Tue, 26 Feb 2008 22:18:38 +0100
+Message-Id: <1204060718.6242.333.camel@lappy>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.21.90 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 26 Feb 2008, Paul Jackson wrote:
 
-> Perhaps I missed it, but could you elaborate on what sort of testing
-> these patches for MPOL_F_RELATIVE_NODES and MPOL_F_STATIC_NODES have
-> received?
-> 
+On Tue, 2008-02-26 at 11:32 +0900, KOSAKI Motohiro wrote:
 
-Both MPOL_F_STATIC_NODES and MPOL_F_RELATIVE_NODES only really change the 
-implementation when a new mempolicy is created and on rebind.
+> Index: b/include/linux/mmzone.h
+> ===================================================================
+> --- a/include/linux/mmzone.h	2008-02-25 21:37:49.000000000 +0900
+> +++ b/include/linux/mmzone.h	2008-02-26 10:12:12.000000000 +0900
+> @@ -335,6 +335,9 @@ struct zone {
+>  	unsigned long		spanned_pages;	/* total size, including holes */
+>  	unsigned long		present_pages;	/* amount of memory (excluding holes) */
+>  
+> +
+> +	atomic_t		nr_reclaimers;
+> +	wait_queue_head_t	reclaim_throttle_waitq;
+>  	/*
+>  	 * rarely used fields:
+>  	 */
 
-So it's possible to test both of these areas by booting with numa=fake=8, 
-setting up a cpuset, hacking numactl to allow |static or |relative options 
-to be passed, changing the cpuset's mems, and checking the result.  Then 
-you can repeat that process with a different set of initial cpuset mems 
-and a different syscall nodemask.
+Small nit, that extra blank line seems at the wrong end of the text
+block :-)
 
-	# mount -t cpuset none /dev/cpuset
-	# mkdir /dev/cpuset/test
-	# cd /dev/cpuset/test
-	# echo 0-3 > cpus
-	# echo 1-3 > mems
-	# echo $$ > tasks
-	# numactl --interleave|static=2-4 bash
-	# numactl --show
-	[should be interleave over 2-3]
-	# echo 4-6 > mems
-	[should be "interleave" over 4]
-	# numactl --show
+> Index: b/mm/vmscan.c
+> ===================================================================
+> --- a/mm/vmscan.c	2008-02-25 21:37:49.000000000 +0900
+> +++ b/mm/vmscan.c	2008-02-26 10:59:38.000000000 +0900
+> @@ -1252,6 +1252,55 @@ static unsigned long shrink_zone(int pri
+>  	return nr_reclaimed;
+>  }
+>  
+> +
+> +#define RECLAIM_LIMIT (3)
+> +
+> +static int do_shrink_zone_throttled(int priority, struct zone *zone,
+> +				    struct scan_control *sc,
+> +				    unsigned long *ret_reclaimed)
+> +{
+> +	u64 start_time;
+> +	int ret = 0;
+> +
+> +	start_time = jiffies_64;
+> +
+> +	wait_event(zone->reclaim_throttle_waitq,
+> +		   atomic_add_unless(&zone->nr_reclaimers, 1, RECLAIM_LIMIT));
+> +
+> +	/* more reclaim until needed? */
+> +	if (scan_global_lru(sc) &&
+> +	    !(current->flags & PF_KSWAPD) &&
+> +	    time_after64(jiffies, start_time + HZ/10)) {
+> +		if (zone_watermark_ok(zone, sc->order, 4*zone->pages_high,
+> +				      MAX_NR_ZONES-1, 0)) {
+> +			ret = -EAGAIN;
+> +			goto out;
+> +		}
+> +	}
+> +
+> +	*ret_reclaimed += shrink_zone(priority, zone, sc);
+> +
+> +out:
+> +	atomic_dec(&zone->nr_reclaimers);
+> +	wake_up_all(&zone->reclaim_throttle_waitq);
+> +
+> +	return ret;
+> +}
 
-> In particular, do we know that Oracle works with this?  At least in
-> years past, when Andi was the primary developer here, he had some
-> good and detailed awareness of what it took to keep Oracle happy
-> with this NUMA memory policy apparatus.  I don't know if we still
-> have that awareness.
-> 
+Would it be possible - and worthwhile - to make this FIFO fair?
 
-I don't understand what Oracle has to do with anything here, it is up to 
-the programmer to determine whether he wants to use MPOL_F_STATIC_NODES or 
-MPOL_F_RELATIVE_NODES for the benefit of his or her application.  There's 
-now a method for doing that, specifically with optional mempolicy mode 
-flags.
-
-If you have any examples of unexpected behavior after applying my 
-patchset, please post it and I'll fix it rather quickly.
-
-		David
