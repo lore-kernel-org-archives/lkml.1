@@ -1,74 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765315AbYBZVrh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765690AbYBZVsw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765315AbYBZVrh (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Feb 2008 16:47:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762868AbYBZVr2
+	id S1765690AbYBZVsw (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Feb 2008 16:48:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763145AbYBZVsn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Feb 2008 16:47:28 -0500
-Received: from gepetto.dc.ltu.se ([130.240.42.40]:35844 "EHLO
-	gepetto.dc.ltu.se" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761817AbYBZVr1 (ORCPT
+	Tue, 26 Feb 2008 16:48:43 -0500
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:33904 "EHLO
+	gprs189-60.eurotel.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1762868AbYBZVsm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Feb 2008 16:47:27 -0500
-Message-ID: <1204062430.47c488def40a4@portal.student.luth.se>
-Date: Tue, 26 Feb 2008 22:47:10 +0100
-From: ricknu-0@student.ltu.se
-To: khc@pm.waw.pl, bhalevy.lists@gmail.com, jengelh@computergmbh.de
-Cc: linux-kernel@vger.kernel.org
-Subject: [RFC] CodeStyle: Use spaces when aligning/decorating
+	Tue, 26 Feb 2008 16:48:42 -0500
+Date: Tue, 26 Feb 2008 22:49:08 +0100
+From: Pavel Machek <pavel@ucw.cz>
+To: Mark Lord <lkml@rtr.ca>
+Cc: Mark Lord <liml@rtr.ca>, kernel list <linux-kernel@vger.kernel.org>,
+       Linux-pm mailing list <linux-pm@lists.osdl.org>,
+       stern@rowland.harvard.edu, linux-ide@vger.kernel.org
+Subject: Re: [ugly patch] Save .15W-.5W by AHCI powersaving
+Message-ID: <20080226214908.GC10280@elf.ucw.cz>
+References: <20080225134558.GA1611@elf.ucw.cz> <47C34081.5090205@rtr.ca> <20080225223432.GN2659@elf.ucw.cz> <47C435C4.9000402@rtr.ca>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-User-Agent: Internet Messaging Program (IMP) 3.1
-X-Originating-IP: 130.240.42.170
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <47C435C4.9000402@rtr.ca>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Relaxing the 'tab = 8 character', which leads to 'don't tab the alignment'.
-By only using tabs for indentation, we solidify it as a 'logical indentation'.
+On Tue 2008-02-26 10:52:36, Mark Lord wrote:
+> Pavel Machek wrote:
+>> Hi!
+>>
+>>>> This is a patch (very ugly, assumes you have just one disk) to bring
+>>>> powersaving to AHCI. You need Alan's SCSI autosuspend (attached) patch
+>>>> as a base.
+>>>>
+>>>> It saves .5W compared to config with disk spinning, and even .15W
+>>>> compared to hdparm -y... on my thinkpad x60 anyway.
+>>> ..
+>>>
+>>> There was a discussion of this here today.
+>>
+>> Real-life discussion, or something I could read? :-).
+>>
+>>> It makes good use of AHCI-specific features.
+>>>
+>>> Has it been tested with a Port-Multiplier yet?
+>>
+>> I do not know what port-multiplier is, sorry. But it was not really
+>> tested. It is not expected to work on any other config than notebook
+>> very similar to mine.
+>>
+>>> This is cool enough that we really ought to do a hardware-independent
+>>> version, so that all SATA interfaces could benefit.  Especially ata_piix,
+>>> but others too.
+>>
+>> Well, it seems like it is 10 lines per driver once Alan's SCSI
+>> autosuspend patches are in...
+> ..
+>
+> Cool (literally)!
+>
+> I think I might have gotten your patch confused in my mind
+> with another AHCI patch, which uses features of the chip itself
+> to automatically negotiate/change link power status on the fly
+> (no s/w needed, other than to turn it on).
+>
+> That one is very ACPI specific, though.
 
-Signed-off-by: Richard Knutsson <ricknu-0@student.ltu.se>
----
-To'ed the people who showed interest in the (apparently not so new)
-question/suggestion of not using tabs when aligning.
-If this looks ok, then checkpatch.pl is next...
-
-
-diff --git a/Documentation/CodingStyle b/Documentation/CodingStyle
-index 6caa146..1b3f448 100644
---- a/Documentation/CodingStyle
-+++ b/Documentation/CodingStyle
-@@ -15,10 +15,8 @@ Anyway, here goes:
- 
- 	 	Chapter 1: Indentation
- 
--Tabs are 8 characters, and thus indentations are also 8 characters.
--There are heretic movements that try to make indentations 4 (or even 2!)
--characters deep, and that is akin to trying to define the value of PI to
--be 3.
-+This project is recommended to be viewed with a tab-width of 8 characters
-+(and other code).
- 
- Rationale: The whole idea behind indentation is to clearly define where
- a block of control starts and ends.  Especially when you've been looking
-@@ -86,13 +84,15 @@ substantially to the right. The same applies to function
-headers with a long
- argument list. Long strings are as well broken into shorter strings. The
- only exception to this is where exceeding 80 columns significantly increases
- readability and does not hide information.
-+As this falls under alignments, only use tabs to indent it to the parents
-+level and then space in the rest.
- 
- void fun(int a, int b, int c)
- {
- 	if (condition)
- 		printk(KERN_WARNING "Warning this is a long printk with "
--						"3 parameters a: %u b: %u "
--						"c: %u \n", a, b, c);
-+		                    "3 parameters a: %u b: %u "
-+		                    "c: %u \n", a, b, c);
- 	else
- 		next_statement;
- }
-
+Yep, I seen that, too. I'm just afraid to check, maybe AHCI powerdown
+does not save that much power when links in powersave already...
+									Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
