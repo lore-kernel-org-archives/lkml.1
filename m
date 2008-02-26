@@ -1,78 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756767AbYBZNUU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760213AbYBZNU4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756767AbYBZNUU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Feb 2008 08:20:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752381AbYBZNUG
+	id S1760213AbYBZNU4 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Feb 2008 08:20:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752723AbYBZNUq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Feb 2008 08:20:06 -0500
-Received: from spiffy.freedom.ind.br ([201.35.65.91]:56480 "EHLO
-	freedom.ind.br" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751708AbYBZNUE (ORCPT
+	Tue, 26 Feb 2008 08:20:46 -0500
+Received: from ti-out-0910.google.com ([209.85.142.188]:16893 "EHLO
+	ti-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752381AbYBZNUp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Feb 2008 08:20:04 -0500
-To: linux-kernel@vger.kernel.org
-Subject: oops when using git gc --auto
-From: Otavio Salvador <otavio@debian.org>
-Organization: O.S. Systems Ltda.
-X-URL: http://www.debian.org/~otavio/
-X-Attribution: O.S.
-Date: Tue, 26 Feb 2008 10:22:24 -0300
-Message-ID: <87tzjvhmy7.fsf@ossystems.com.br>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.1 (gnu/linux)
+	Tue, 26 Feb 2008 08:20:45 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=pYJm/7RbCEyhVf4p/2K7Lc/zf02mElXW+fuf4FUmmHOoiRQ2iDGfEG885MzS2G7gIT/fSsDY9aPxvLMUz/BKz+M7/MUkdFYYTB5tBhVaewys6gDLpJ/wb89FTQdrx/jvhbC2dJ/AjHslfIci/N54NDjAIYICwus0eGQgX/RbJj4=
+Message-ID: <998d0e4a0802260520x77fdea2dr32bc30a5448f32b3@mail.gmail.com>
+Date: Tue, 26 Feb 2008 14:20:44 +0100
+From: "J.C. Pizarro" <jcpiza@gmail.com>
+To: "Andrew Morton" <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: Please, put 64-bit counter per task and incr.by.one each ctxt switch.
+In-Reply-To: <20080225123439.90645f2f.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <998d0e4a0802231908h37978d07wa5379d5c01b2c2ee@mail.gmail.com>
+	 <20080223221750.429cf0d9@bree.surriel.com>
+	 <998d0e4a0802232008w5c6566f0se15ab749ec6f1ceb@mail.gmail.com>
+	 <20080223232651.41dffa72@bree.surriel.com>
+	 <998d0e4a0802240512t859c5a1y3c30bd401530a43@mail.gmail.com>
+	 <20080225123439.90645f2f.akpm@linux-foundation.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+On 2008/2/25, Andrew Morton <akpm@linux-foundation.org> wrote:
+> On Sun, 24 Feb 2008 14:12:47 +0100 "J.C. Pizarro" <jcpiza@gmail.com> wrote:
+>
+>  > It's statistic, yes, but it's a very important parameter for the CPU-scheduler.
+>  > The CPU-scheduler will know the number of context switches of each task
+>  >  before of to take a blind decision into infinitum!.
+>
+>
+> We already have these:
+>
+>         unsigned long nvcsw, nivcsw; /* context switch counts */
+>
+>  in the task_struct.
 
-Today I got this oops, someone has an idea of what's going wrong?
+1. They use "unsigned long" instead "unsigned long long".
+2. They use "= 0;" instead of "= 0ULL";
+3. They don't use ++ (incr. by one per ctxt-switch).
+4. I don't like the separation of voluntary and involuntary ctxt-switches,
+    and i don't understand the utility of this separation.
 
-Unable to handle kernel paging request at 0000020000000000 RIP: 
- [<ffffffff802735c3>] find_get_pages+0x3c/0x69
-PGD 0 
-Oops: 0000 [1] SMP 
-CPU 3 
-Modules linked in: sha256_generic aes_generic aes_x86_64 cbc blkcipher nvidia(P) rfcomm l2cap bluetooth ac battery ipv6 nfs lockd nfs_acl sunrpc bridge ext2 mbcache dm_crypt tun kvm_intel kvm loop snd_usb_audio snd_usb_lib snd_rawmidi snd_hda_intel e1000e i2c_i801 serio_raw snd_seq_device snd_pcm intel_agp button snd_timer pcspkr psmouse snd_hwdep snd snd_page_alloc soundcore evdev i2c_core xfs dm_mirror dm_snapshot dm_mod raid0 md_mod sg sr_mod cdrom sd_mod usbhid hid usb_storage pata_marvell floppy ahci ata_generic libata scsi_mod ehci_hcd uhci_hcd thermal processor fan
-Pid: 15684, comm: git Tainted: P        2.6.24-1-amd64 #1
-RIP: 0010:[<ffffffff802735c3>]  [<ffffffff802735c3>] find_get_pages+0x3c/0x69
-RSP: 0018:ffff8100394dfd98  EFLAGS: 00010097
-RAX: 0000000000000009 RBX: 000000000000000e RCX: 0000000000000009
-RDX: 0000020000000000 RSI: 000000000000000a RDI: 0000000000000040
-RBP: ffff810042964350 R08: 0000000000000040 R09: 000000000000000a
-R10: ffff8100425a06c8 R11: 000000000000000a R12: 000000000000000e
-R13: ffff8100394dfdf8 R14: ffff810042964350 R15: 0000000000000000
-FS:  00002ae326df2190(0000) GS:ffff81007d7aeb40(0000) knlGS:0000000000000000
-CS:  0010 DS: 0000 ES: 0000 CR0: 000000008005003b
-CR2: 0000020000000000 CR3: 00000000358f9000 CR4: 00000000000026e0
-DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
-DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
-Process git (pid: 15684, threadinfo ffff8100394de000, task ffff8100359cd800)
-Stack:  000000000000000d ffff8100394dfde8 000000000000000d 000000000000000e
- 000000000000000e ffffffff802794d6 ffff8100014a7768 ffffffff80279b04
- 0000000000000000 ffffffffffffffff 0000000000000000 0000000000000000
-Call Trace:
- [<ffffffff802794d6>] pagevec_lookup+0x17/0x1e
- [<ffffffff80279b04>] truncate_inode_pages_range+0x108/0x2bd
- [<ffffffff802a9e3a>] generic_delete_inode+0xbf/0x127
- [<ffffffff802a1a4d>] do_unlinkat+0xd5/0x144
- [<ffffffff802989e2>] sys_write+0x45/0x6e
- [<ffffffff8020be2e>] system_call+0x7e/0x83
+The tsk->nvcsw & tsk->nivcsw mean different to i had proposed.
 
+It's simple, when calling to function kernel/sched.c:context_switch(..)
+to do ++, but they don't do it.
 
-Code: 48 8b 02 25 00 40 02 00 48 3d 00 40 02 00 75 04 48 8b 52 10 
-RIP  [<ffffffff802735c3>] find_get_pages+0x3c/0x69
- RSP <ffff8100394dfd98>
-CR2: 0000020000000000
----[ end trace cb43a9f4488b815a ]---
+I propose you
+1. unsigned long long tsk->ncsw = 0ULL;  and  tsk->ncsw++;
+2. unsigned long long tsk->last_registered_ncsw = tsk->ncsw; when it's polling.
+3. long tsk->vcsw =  ( tsk->ncsw - tsk->last_registered_ncsw ) / ( t2 - t1 )
+/* velocity of task (ctxt-switches per second), (t1 != t2 in seconds
+for no zerodiv)
+4. long tsk->last_registered_vcsw = tsk->vcsw;
+5. long tsk->normalized_vcsw =
+       (1 - alpha)*tsk->last_registered_vcsw + alpha*tsk->vcsw; /* 0<alpha<1 */
 
--- 
-        O T A V I O    S A L V A D O R
----------------------------------------------
- E-mail: otavio@debian.org      UIN: 5906116
- GNU/Linux User: 239058     GPG ID: 49A5F855
- Home Page: http://otavio.ossystems.com.br
----------------------------------------------
-"Microsoft sells you Windows ... Linux gives
- you the whole house."
+    Sincerely yours ;)
