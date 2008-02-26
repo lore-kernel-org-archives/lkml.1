@@ -1,59 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762264AbYBZP36@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762764AbYBZPaa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762264AbYBZP36 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Feb 2008 10:29:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755932AbYBZP3u
+	id S1762764AbYBZPaa (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Feb 2008 10:30:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755932AbYBZPaQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Feb 2008 10:29:50 -0500
-Received: from mail.vyatta.com ([216.93.170.194]:56431 "EHLO mail.vyatta.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753388AbYBZP3t (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Feb 2008 10:29:49 -0500
-X-Spam-Flag: NO
-X-Spam-Score: -1.891
-Date: Tue, 26 Feb 2008 07:29:43 -0800
-From: Stephen Hemminger <shemminger@vyatta.com>
-To: Daniel Drake <dsd@gentoo.org>
-Cc: Randy Dunlap <randy.dunlap@oracle.com>,
-       Greg Kroah-Hartman <gregkh@suse.de>, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       torvalds@linux-foundation.org, stable@kernel.org,
-       stephen.hemminger@vyatta.com, David Miller <davem@davemloft.net>
-Subject: Re: Linux 2.6.24.3 (if_addrlabel.h HEADERS_CHECK failure)
-Message-ID: <20080226072943.083c3809@extreme>
-In-Reply-To: <47C42477.5090900@gentoo.org>
-References: <20080226010024.GA26889@suse.de>
-	<20080225195229.11ec1f12.randy.dunlap@oracle.com>
-	<47C42477.5090900@gentoo.org>
-Organization: Vyatta
-X-Mailer: Claws Mail 3.3.0 (GTK+ 2.12.8; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 26 Feb 2008 10:30:16 -0500
+Received: from fxip-0047f.externet.hu ([88.209.222.127]:41203 "EHLO
+	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752678AbYBZPaO (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 Feb 2008 10:30:14 -0500
+To: a.p.zijlstra@chello.nl
+CC: neilb@suse.de, akpm@linux-foundation.org, torvalds@linux-foundation.org,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       netdev@vger.kernel.org, trond.myklebust@fys.uio.no
+In-reply-to: <1204023042.6242.271.camel@lappy> (message from Peter Zijlstra on
+	Tue, 26 Feb 2008 11:50:42 +0100)
+Subject: Re: [PATCH 00/28] Swap over NFS -v16
+References: <20080220144610.548202000@chello.nl>
+	 <20080223000620.7fee8ff8.akpm@linux-foundation.org>
+	 <18371.43950.150842.429997@notabene.brown> <1204023042.6242.271.camel@lappy>
+Message-Id: <E1JU1kk-0001t9-25@pomaz-ex.szeredi.hu>
+From: Miklos Szeredi <miklos@szeredi.hu>
+Date: Tue, 26 Feb 2008 16:29:58 +0100
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 26 Feb 2008 14:38:47 +0000
-Daniel Drake <dsd@gentoo.org> wrote:
-
-> Randy Dunlap wrote:
-> >> We (the -stable team) are announcing the release of the 2.6.24.3
-> >> kernel.
+> > mm-page_file_methods.patch
 > > 
-> > When HEADERS_CHECK=y:
+> >     This makes page_offset and others more expensive by adding a
+> >     conditional jump to a function call that is not usually made.
 > > 
-> > make[3]: *** No rule to make target `/local/linsrc/linux-2.6.24.3/include/linux/if_addrlabel.h', needed by `/local/linsrc/linux-2.6.24.3/usr/include/linux/if_addrlabel.h'.  Stop.
-> > make[2]: *** [linux] Error 2
+> >     Why do swap pages have a different index to everyone else?
 > 
-> This appears to have been caused by the patch titled:
+> Because the page->index of an anonymous page is related to its (anon)vma
+> so that it satisfies the constraints for vm_normal_page().
 > 
-> 	NET: Add if_addrlabel.h to sanitized headers.
-> 
-> The patch only adds the unifdef-y entry for this header file, however 
-> that header was only added after 2.6.24.
-> 
-> It seems that this patch was submitted to -stable in error. Stephen, can 
-> you confirm?
+> The index in the swap file it totally unrelated and quite random. Hence
+> the swap-cache uses page->private to store it in.
 
-The patch was meant for 2.6.25 only. 
+Yeah, and putting the condition into page_offset() will confuse code
+which uses it for finding the offset in the VMA or in a tmpfs file.
+
+So why not just have a separate page_swap_offset() function, used
+exclusively by swap_in/out()?
+
+Miklos
