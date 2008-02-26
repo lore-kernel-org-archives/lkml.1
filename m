@@ -1,57 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762848AbYBZTHu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763132AbYBZTLN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762848AbYBZTHu (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Feb 2008 14:07:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752656AbYBZTHn
+	id S1763132AbYBZTLN (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Feb 2008 14:11:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757005AbYBZTK6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Feb 2008 14:07:43 -0500
-Received: from turing-police.cc.vt.edu ([128.173.14.107]:34649 "EHLO
-	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752633AbYBZTHm (ORCPT
-	<RFC822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Feb 2008 14:07:42 -0500
-X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
-To: rzryyvzy <rzryyvzy@trashmail.net>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: Is there a memory block device?
-In-Reply-To: Your message of "Tue, 26 Feb 2008 19:53:36 +0100."
-             <20080226185336.9771B58477AE1@trashmail.net>
-From: Valdis.Kletnieks@vt.edu
-References: <20080226185336.9771B58477AE1@trashmail.net>
-Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="==_Exmh_1204052858_3303P";
-	 micalg=pgp-sha1; protocol="application/pgp-signature"
+	Tue, 26 Feb 2008 14:10:58 -0500
+Received: from mail3.sea5.speakeasy.net ([69.17.117.5]:47598 "EHLO
+	mail3.sea5.speakeasy.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753706AbYBZTK6 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 Feb 2008 14:10:58 -0500
+Message-ID: <47C46452.1080605@kernel.org>
+Date: Tue, 26 Feb 2008 11:11:14 -0800
+From: Josh Triplett <josh@kernel.org>
+User-Agent: Mozilla-Thunderbird 2.0.0.9 (X11/20080110)
+MIME-Version: 1.0
+To: Franck Bui-Huu <vagabon.xyz@gmail.com>
+CC: akpm@linux-foundation.org, paulmck@linux.vnet.ibm.com,
+       linux-kernel@vger.kernel.org
+Subject: Re: + rcu-split-listh-and-move-rcu-protected-lists-into-rculisth.patch
+ added to -mm tree
+References: <200802230734.m1N7Ymrp018304@imap1.linux-foundation.org> <47C3F8F1.4010100@kernel.org> <47C45AF6.5000805@gmail.com>
+In-Reply-To: <47C45AF6.5000805@gmail.com>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Date: Tue, 26 Feb 2008 14:07:38 -0500
-Message-ID: <4790.1204052858@turing-police.cc.vt.edu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---==_Exmh_1204052858_3303P
-Content-Type: text/plain; charset=us-ascii
+Franck Bui-Huu wrote:
+> Josh Triplett wrote:
+>> [I did not see this patch go by on any mailing list, so I replied to
+>> the -mm mail and CCed LKML.]
+>>
+> 
+> Well I'm pretty sure to have always CC'ed LKML, see for example:
+> 
+>     http://lkml.org/lkml/2008/2/19/150
+>     http://lkml.org/lkml/2008/2/19/151
 
-On Tue, 26 Feb 2008 19:53:36 +0100, rzryyvzy said:
-> I know that tmpfs is a memmory filesystem. Is there a possibility to create also a memory block device?
-> Is there a possibility to create for example a 1 GB memory block device (from the RAM)?
+I must have missed it when I dug through the archive.  Thanks.
 
-A better question would be:
+- Josh Triplett
 
-What problem are you trying to solve by ysing a "memory block device"?  There
-may well be other approaches that would work better, but it's hard to say.
-Are you trying to avoid the buffer cache pool?  Ensure pages are in physical
-memory? Or some other problem?
-
---==_Exmh_1204052858_3303P
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.8 (GNU/Linux)
-Comment: Exmh version 2.5 07/13/2001
-
-iD8DBQFHxGN6cC3lWbTT17ARAldFAJ44Z9B0wfPEzfqkQDb/ozwEv5kxQgCg8ov9
-Rdfgn91if6OD1yklRV5IXM8=
-=Dn8O
------END PGP SIGNATURE-----
-
---==_Exmh_1204052858_3303P--
