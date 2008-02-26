@@ -1,57 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761781AbYBZJUy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762020AbYBZJXJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761781AbYBZJUy (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Feb 2008 04:20:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758278AbYBZJUj
+	id S1762020AbYBZJXJ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Feb 2008 04:23:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759188AbYBZJWx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Feb 2008 04:20:39 -0500
-Received: from smtp5.pp.htv.fi ([213.243.153.39]:52007 "EHLO smtp5.pp.htv.fi"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757363AbYBZJUi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Feb 2008 04:20:38 -0500
-Date: Tue, 26 Feb 2008 11:19:35 +0200
-From: Adrian Bunk <bunk@kernel.org>
-To: "Robert P. J. Day" <rpjday@crashcourse.ca>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: is "pci_find_subsys" safe to remove?
-Message-ID: <20080226091935.GB3498@cs181133002.pp.htv.fi>
-References: <alpine.LFD.1.00.0802251713050.24343@localhost.localdomain>
+	Tue, 26 Feb 2008 04:22:53 -0500
+Received: from n3b.bullet.mail.ac4.yahoo.com ([76.13.13.73]:38745 "HELO
+	n3b.bullet.mail.ac4.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1756063AbYBZJWv (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 Feb 2008 04:22:51 -0500
+X-Greylist: delayed 380 seconds by postgrey-1.27 at vger.kernel.org; Tue, 26 Feb 2008 04:22:51 EST
+X-Yahoo-Newman-Id: 85842.2815.bm@omp410.mail.mud.yahoo.com
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com.au;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=rFjLpzcz2KfRqnH6OAC0en2dAGKxugCnwuJrx1Lxsld0firkydvZSpJioAovJwU61ZLjc8Oyncnv8AKqKSJqvmcggPWHwuUaUzokfGwOHyZ2qh6Y3kPvaiocezgZsRw1rUAgN/v8qXiIpGX6zBPcyaI1xdDQBf5g1ZKs+McYZos=  ;
+X-YMail-OSG: Z8.vT.EVM1n.4elfamAlgeqec0hkzGI5o_V13b1K1ZgNsSHAAjf7cvEj1OmyXamEzm3jcUwlTA--
+X-Yahoo-Newman-Property: ymail-3
+From: Nick Piggin <nickpiggin@yahoo.com.au>
+To: Gleb Natapov <glebn@voltaire.com>
+Subject: Re: [ofa-general] Re: [patch 5/6] mmu_notifier: Support for drivers with revers maps (f.e. for XPmem)
+Date: Tue, 26 Feb 2008 19:52:41 +1100
+User-Agent: KMail/1.9.5
+Cc: Robin Holt <holt@sgi.com>, steiner@sgi.com,
+       Andrea Arcangeli <andrea@qumranet.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-mm@kvack.org,
+       Izik Eidus <izike@qumranet.com>, Kanoj Sarcar <kanojsarcar@yahoo.com>,
+       Roland Dreier <rdreier@cisco.com>, linux-kernel@vger.kernel.org,
+       Avi Kivity <avi@qumranet.com>, kvm-devel@lists.sourceforge.net,
+       daniel.blueman@quadrics.com, general@lists.openfabrics.org,
+       akpm@linux-foundation.org, Christoph Lameter <clameter@sgi.com>
+References: <20080215064859.384203497@sgi.com> <200802261711.33213.nickpiggin@yahoo.com.au> <20080226072137.GD26611@minantech.com>
+In-Reply-To: <20080226072137.GD26611@minantech.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <alpine.LFD.1.00.0802251713050.24343@localhost.localdomain>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+Message-Id: <200802261952.42567.nickpiggin@yahoo.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Feb 25, 2008 at 05:15:25PM -0500, Robert P. J. Day wrote:
-> 
->   it's not just that it falls under the category of PCI "legacy" but,
-> if you look in drivers/pci/search.c near the bottom:
-> 
-> ...
-> #ifdef CONFIG_PCI_LEGACY
-> EXPORT_SYMBOL(pci_find_device);
-> EXPORT_SYMBOL(pci_find_slot);
-> #endif /* CONFIG_PCI_LEGACY */
-> ...
-> 
-> that symbol is not being exported even *if* you select PCI_LEGACY.
-> i'm guessing that's an oversight but it would certainly suggest that
-> no one can possibly be using it, no?
+On Tuesday 26 February 2008 18:21, Gleb Natapov wrote:
+> On Tue, Feb 26, 2008 at 05:11:32PM +1100, Nick Piggin wrote:
+> > > You are missing one point here.  The MPI specifications that have
+> > > been out there for decades do not require the process use a library
+> > > for allocating the buffer.  I realize that is a horrible shortcoming,
+> > > but that is the world we live in.  Even if we could change that spec,
+> >
+> > Can you change the spec?
+>
+> Not really. It will break all existing codes.
 
-It's used by pci_find_device().
+I meant as in eg. submit changes to MPI-3
 
-> rday
 
-cu
-Adrian
+> MPI-2 provides a call for 
+> memory allocation (and it's beneficial to use this call for some
+> interconnects), but many (most?) applications are still written for MPI-1
+> and those that are written for MPI-2 mostly uses the old habit of
+> allocating memory by malloc(), or even use stack or BSS memory for
+> communication buffer purposes.
 
--- 
+OK, so MPI-2 already has some way to do that... I'm not saying that we
+can now completely dismiss the idea of using notifiers for this, but it
+is just a good data point to know.
 
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
+Thanks,
+Nick
 
