@@ -1,38 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763425AbYBZPvO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763451AbYBZPwT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763425AbYBZPvO (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Feb 2008 10:51:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761061AbYBZPu7
+	id S1763451AbYBZPwT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Feb 2008 10:52:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761061AbYBZPwH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Feb 2008 10:50:59 -0500
-Received: from khc.piap.pl ([195.187.100.11]:47067 "EHLO khc.piap.pl"
+	Tue, 26 Feb 2008 10:52:07 -0500
+Received: from rtr.ca ([76.10.145.34]:3485 "EHLO mail.rtr.ca"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754027AbYBZPu6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Feb 2008 10:50:58 -0500
-To: Jan Engelhardt <jengelh@computergmbh.de>
-Cc: Richard Knutsson <ricknu-0@student.ltu.se>, Miles Bader <miles@gnu.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: Tabs, spaces, indent and 80 character lines
-References: <47C0BEE7.4040409@student.ltu.se>
-	<m3ejb2bdxx.fsf@maximus.localdomain> <87zltqcsa2.fsf@catnip.gol.com>
-	<47C33D74.4010700@student.ltu.se>
-	<Pine.LNX.4.64.0802260242320.15321@fbirervta.pbzchgretzou.qr>
-From: Krzysztof Halasa <khc@pm.waw.pl>
-Date: Tue, 26 Feb 2008 16:50:56 +0100
-In-Reply-To: <Pine.LNX.4.64.0802260242320.15321@fbirervta.pbzchgretzou.qr> (Jan Engelhardt's message of "Tue\, 26 Feb 2008 03\:00\:57 +0100 \(CET\)")
-Message-ID: <m38x1790nz.fsf@maximus.localdomain>
+	id S1754027AbYBZPwF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 Feb 2008 10:52:05 -0500
+Message-ID: <47C43655.1050907@rtr.ca>
+Date: Tue, 26 Feb 2008 10:55:01 -0500
+From: Mark Lord <liml@rtr.ca>
+Organization: Real-Time Remedies Inc.
+User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+To: saeed <saeed@marvell.com>
+Cc: Jeff Garzik <jeff@garzik.org>, linux-ide@vger.kernel.org, jon@ngndg.com,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: Sata-MV, Intergated Sata Device Support
+References: <1176673884.5109.30.camel@Desktop> <47C35203.20402@garzik.org> <47C3585D.8070701@rtr.ca> <47C35A85.3020307@garzik.org> <alpine.DEB.0.99.0802260024400.22022@ubuntu-saeed.il.marvell.com>
+In-Reply-To: <alpine.DEB.0.99.0802260024400.22022@ubuntu-saeed.il.marvell.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jan Engelhardt <jengelh@computergmbh.de> writes:
+saeed wrote:
+> 
+> On Mon, 25 Feb 2008, Jeff Garzik wrote:
+> 
+>>> ...
+>>>
+>>> Saeed:  isn't this what your SOC patches already implemented for us?
+>>> As near as I can tell, sata_mv now already has support for the 60x1C0.
+>> Saeed's stuff didn't support PCI though, and Jon Li is definitely talking
+>> about PCI...
+> yes, my patch added support for the SoC sata like in the 5182, and this 
+> is what Jon Li was concerned about. he mentioneded the 60x1C0 pci device 
+> just to suggest to use it's code for the SoC sata as it is very similar.
+..
 
-> Now back to coding, oh and don't forget send a patch for CodingStyle 
-> since a mail without one is often taken even less seriously.
+I don't think I understand your english there.
 
-Someone with a patch to Emacs to use tabs for ident + spaces for
-alignment maybe? :-)
--- 
-Krzysztof Halasa
+Does the current sata_mv driver work as-is with the chipset this person wants?
+If not, then exactly what has to change to make it work?
+
+Thanks
