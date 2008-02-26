@@ -1,64 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763373AbYBZRIg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763306AbYBZRKf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763373AbYBZRIg (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Feb 2008 12:08:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763212AbYBZRIW
+	id S1763306AbYBZRKf (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Feb 2008 12:10:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760375AbYBZRK2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Feb 2008 12:08:22 -0500
-Received: from sca-es-mail-2.Sun.COM ([192.18.43.133]:45921 "EHLO
-	sca-es-mail-2.sun.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1762994AbYBZRIT (ORCPT
+	Tue, 26 Feb 2008 12:10:28 -0500
+Received: from bombadil.infradead.org ([18.85.46.34]:44689 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759397AbYBZRK1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Feb 2008 12:08:19 -0500
-Date: Tue, 26 Feb 2008 09:08:07 -0800
-From: Andreas Dilger <adilger@sun.com>
-Subject: Re: [RFC] ext3 freeze feature ver 0.2
-In-reply-to: <47C440A6.6080202@redhat.com>
-To: Eric Sandeen <sandeen@redhat.com>
-Cc: Takashi Sato <t-sato@yk.jp.nec.com>, linux-ext4@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
-Message-id: <20080226170807.GE3172@webber.adilger.int>
-MIME-version: 1.0
-Content-type: text/plain; charset=utf-8
-Content-transfer-encoding: 8BIT
-Content-disposition: inline
-X-GPG-Key: 1024D/0D35BED6
-X-GPG-Fingerprint: 7A37 5D79 BF1B CECA D44F  8A29 A488 39F5 0D35 BED6
-References: <20080219202706t-sato@mail.jp.nec.com>
- <20080226172014t-sato@mail.jp.nec.com> <47C440A6.6080202@redhat.com>
+	Tue, 26 Feb 2008 12:10:27 -0500
+Date: Tue, 26 Feb 2008 12:10:15 -0500
+From: Christoph Hellwig <hch@infradead.org>
+To: Pavel Roskin <proski@gnu.org>
+Cc: Christoph Hellwig <hch@infradead.org>,
+       Andrew Morton <akpm@linux-foundation.org>, Pekka Paalanen <pq@iki.fi>,
+       linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Andy Whitcroft <apw@shadowen.org>
+Subject: Re: [RFC] mmiotrace full patch, preview 1
+Message-ID: <20080226171015.GB6634@infradead.org>
+References: <20080224190323.77adf683@daedalus.pq.iki.fi> <20080225144922.ae716e7d.akpm@linux-foundation.org> <20080225233449.GA25448@infradead.org> <20080225214200.yge03wi7ksoccw0k@webmail.spamcop.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080225214200.yge03wi7ksoccw0k@webmail.spamcop.net>
 User-Agent: Mutt/1.5.17 (2007-11-01)
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Feb 26, 2008  08:39 -0800, Eric Sandeen wrote:
-> Takashi Sato wrote:
-> 
-> > o Elevate XFS ioctl numbers (XFS_IOC_FREEZE and XFS_IOC_THAW) to the VFS
-> >   As Andreas Dilger and Christoph Hellwig advised me, I have elevated
-> >   them to include/linux/fs.h as below.
-> >     #define FIFREEZE        _IOWR('X', 119, int)
-> > 　  #define FITHAW          _IOWR('X', 120, int)
-> >   The ioctl numbers used by XFS applications don't need to be changed.
-> >   But my following ioctl for the freeze needs the parameter
-> >   as the timeout period.  So if XFS applications don't want the timeout
-> >   feature as the current implementation, the parameter needs to be
-> >   changed 1 (level?) into 0.
-> 
-> So, existing xfs applications calling the xfs ioctl now will behave
-> differently, right?  We can only keep the same ioctl number if the
-> calling semantics are the same.  Keeping the same number but changing
-> the semantics is harmful, IMHO....
+On Mon, Feb 25, 2008 at 09:42:00PM -0500, Pavel Roskin wrote:
+> It looks like a mutex, it acts like a mutex, but it isn't a mutex, it's a 
+> trap for the unwary.  Weird.  I was annoyed by it before; now I see a 
+> fellow developer actually getting into that trap.
+>
+> I'd say, rename DECLARE_MUTEX to DECLARE_SEMAPHORE and let external code be 
+> fixed one way or another (i.e. stick with the "mutex" name or stick with 
+> the semaphore functionality if it's really needed).
 
-Do we know what this parameter was supposed to mean?
-
-We could special case "1" if needed to keep compatibility (documenting
-this clearly), either making it == 0, or some very long timeout (1h
-or whatever).  A relatively minor wart I think.
-
-Cheers, Andreas
---
-Andreas Dilger
-Sr. Staff Engineer, Lustre Group
-Sun Microsystems of Canada, Inc.
+It's a semaphore used as mutex.  Until we got struct mutex this was
+perfectly fine and now we're phasing it out and will hopefully get rid
+of it soon.  It just takes some time to convert all users.
 
