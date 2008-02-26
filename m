@@ -1,66 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763319AbYBZPtr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763416AbYBZPuG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763319AbYBZPtr (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Feb 2008 10:49:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763088AbYBZPtg
+	id S1763416AbYBZPuG (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Feb 2008 10:50:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763256AbYBZPtn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Feb 2008 10:49:36 -0500
-Received: from qmta04.emeryville.ca.mail.comcast.net ([76.96.30.40]:42406 "EHLO
-	QMTA04.emeryville.ca.mail.comcast.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1763089AbYBZPtf (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Feb 2008 10:49:35 -0500
-X-Authority-Analysis: v=1.0 c=1 a=bojhYoMd2USPMMK5XVEeMQ==:17
- a=ggR3LWzlu2gNnT3dWcIA:9 a=4QVpO8ECN7xhnQDhuLBVV4sBsEEA:4 a=ZaGerQNKEe0A:10
- a=8t_6ZPhla3UA:10
-From: kelk1@comcast.net (Quel Qun)
-To: Marcel Holtmann <marcel@holtmann.org>
-Cc: Thomas Gleixner <tglx@linutronix.de>,
-       David Woodhouse <dwmw2@infradead.org>,
-       Dave Young <hidave.darkstar@gmail.com>,
-       LKML <linux-kernel@vger.kernel.org>, Jiri Kosina <jkosina@suse.cz>,
-       Ingo Molnar <mingo@elte.hu>
-Subject: Re: Kernel oops with bluetooth usb dongle
-Date: Tue, 26 Feb 2008 15:49:31 +0000
-Message-Id: <022620081549.2196.47C4350B0007A955000008942200761438CE05040A05@comcast.net>
-X-Mailer: AT&T Message Center Version 1 (Oct 30 2007)
-X-Authenticated-Sender: a2VsazFAY29tY2FzdC5uZXQ=
+	Tue, 26 Feb 2008 10:49:43 -0500
+Received: from rtr.ca ([76.10.145.34]:3478 "EHLO mail.rtr.ca"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1763248AbYBZPtl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 Feb 2008 10:49:41 -0500
+Message-ID: <47C435C4.9000402@rtr.ca>
+Date: Tue, 26 Feb 2008 10:52:36 -0500
+From: Mark Lord <lkml@rtr.ca>
+Organization: Real-Time Remedies Inc.
+User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
+MIME-Version: 1.0
+To: Pavel Machek <pavel@ucw.cz>
+Cc: Mark Lord <liml@rtr.ca>, kernel list <linux-kernel@vger.kernel.org>,
+       Linux-pm mailing list <linux-pm@lists.osdl.org>,
+       stern@rowland.harvard.edu, linux-ide@vger.kernel.org
+Subject: Re: [ugly patch] Save .15W-.5W by AHCI powersaving
+References: <20080225134558.GA1611@elf.ucw.cz> <47C34081.5090205@rtr.ca> <20080225223432.GN2659@elf.ucw.cz>
+In-Reply-To: <20080225223432.GN2659@elf.ucw.cz>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
- -------------- Original message ----------------------
-From: Marcel Holtmann <marcel@holtmann.org>
-> Hi Quel,
+Pavel Machek wrote:
+> Hi!
 > 
-> > Bad news: I still cannot use the device.
-> >
-> > hcitool inq, hcitool scan, hcitool name <btaddr> and hcitool info  
-> > <btaddr>
-> > commands work.
-> >
-> > hcitool cc <btaddr>, sdptool <btaddr>, rfcomm connect command fail,  
-> > most of them
-> > with a 'Connection reset by peer' error.
+>>> This is a patch (very ugly, assumes you have just one disk) to bring
+>>> powersaving to AHCI. You need Alan's SCSI autosuspend (attached) patch
+>>> as a base.
+>>>
+>>> It saves .5W compared to config with disk spinning, and even .15W
+>>> compared to hdparm -y... on my thinkpad x60 anyway.
+>> ..
+>>
+>> There was a discussion of this here today.
 > 
-> what does "hciconfig hci0 version" tell you about your device? Some of  
-> the none major based Bluetooth chips are broken and might need an  
-> extra tweak within the USB driver.
+> Real-life discussion, or something I could read? :-).
 > 
+>> It makes good use of AHCI-specific features.
+>>
+>> Has it been tested with a Port-Multiplier yet?
+> 
+> I do not know what port-multiplier is, sorry. But it was not really
+> tested. It is not expected to work on any other config than notebook
+> very similar to mine.
+> 
+>> This is cool enough that we really ought to do a hardware-independent
+>> version, so that all SATA interfaces could benefit.  Especially ata_piix,
+>> but others too.
+> 
+> Well, it seems like it is 10 lines per driver once Alan's SCSI
+> autosuspend patches are in...
+..
 
-Marcel,
+Cool (literally)!
 
-# hciconfig hci0 version
-hci0:	Type: USB
-	BD Address: 00:03:0D:00:15:47 ACL MTU: 192:8 SCO MTU: 64:8
-	HCI Ver: 1.1 (0x1) HCI Rev: 0xbc LMP Ver: 1.1 (0x1) LMP Subver: 0xbc
-	Manufacturer: Cambridge Silicon Radio (10)
+I think I might have gotten your patch confused in my mind
+with another AHCI patch, which uses features of the chip itself
+to automatically negotiate/change link power status on the fly
+(no s/w needed, other than to turn it on).
 
-# lsusb | grep Cambridge
-Bus 003 Device 002: ID 0a12:0001 Cambridge Silicon Radio, Ltd Bluetooth Dongle (HCI mode)
+That one is very ACPI specific, though.
 
-This device works fine in 2.6.23.1 and got broken circa 2.6.24 rcs.
 
-Thank you,
---
-kk1
