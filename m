@@ -1,46 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763614AbYBZRl1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763457AbYBZRo1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763614AbYBZRl1 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Feb 2008 12:41:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761672AbYBZRlT
+	id S1763457AbYBZRo1 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Feb 2008 12:44:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758310AbYBZRoU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Feb 2008 12:41:19 -0500
-Received: from rgminet01.oracle.com ([148.87.113.118]:38491 "EHLO
-	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761113AbYBZRlT (ORCPT
+	Tue, 26 Feb 2008 12:44:20 -0500
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:51809 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1757478AbYBZRoT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Feb 2008 12:41:19 -0500
-Date: Tue, 26 Feb 2008 09:39:31 -0800
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: "Oliver Pinter" <oliver.pntr@gmail.com>
-Cc: "Greg KH" <gregkh@suse.de>, linux-kernel@vger.kernel.org,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       torvalds@linux-foundation.org, stable@kernel.org
-Subject: Re: Linux 2.6.22.19
-Message-Id: <20080226093931.e7bd1afa.randy.dunlap@oracle.com>
-In-Reply-To: <6101e8c40802260926p122c18f0k2615933e6abe911@mail.gmail.com>
-References: <20080226010549.GD26912@suse.de>
-	<20080226010559.GE26912@suse.de>
-	<6101e8c40802260926p122c18f0k2615933e6abe911@mail.gmail.com>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.4.7 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+	Tue, 26 Feb 2008 12:44:19 -0500
+Date: Tue, 26 Feb 2008 11:44:17 -0600
+From: Paul Jackson <pj@sgi.com>
+To: David Rientjes <rientjes@google.com>
+Cc: akpm@linux-foundation.org, clameter@sgi.com, Lee.Schermerhorn@hp.com,
+       ak@suse.de, linux-kernel@vger.kernel.org
+Subject: Re: [patch 5/6] mempolicy: add MPOL_F_RELATIVE_NODES flag
+Message-Id: <20080226114417.c8948b61.pj@sgi.com>
+In-Reply-To: <alpine.DEB.1.00.0802250016120.12368@chino.kir.corp.google.com>
+References: <alpine.DEB.1.00.0802250012420.12368@chino.kir.corp.google.com>
+	<alpine.DEB.1.00.0802250013580.12368@chino.kir.corp.google.com>
+	<alpine.DEB.1.00.0802250014170.12368@chino.kir.corp.google.com>
+	<alpine.DEB.1.00.0802250014410.12368@chino.kir.corp.google.com>
+	<alpine.DEB.1.00.0802250016120.12368@chino.kir.corp.google.com>
+Organization: SGI
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.12.0; i686-pc-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 26 Feb 2008 18:26:05 +0100 Oliver Pinter wrote:
+David,
 
-> Thank for your work in this serie or tree.
+Perhaps I missed it, but could you elaborate on what sort of testing
+these patches for MPOL_F_RELATIVE_NODES and MPOL_F_STATIC_NODES have
+received?
 
-Please edit your replies so that you don't send a 40 KB message
-that is actually only one line.
+The main reason I didn't push my version of these patches in December
+was I figured it would take a week or three of obsessive-compulsive
+testing to verify that we didn't break various corner cases of the
+mbind/mempolicy system call interface.
 
----
-~Randy
+In particular, do we know that Oracle works with this?  At least in
+years past, when Andi was the primary developer here, he had some
+good and detailed awareness of what it took to keep Oracle happy
+with this NUMA memory policy apparatus.  I don't know if we still
+have that awareness.
+
+-- 
+                  I won't rest till it's the best ...
+                  Programmer, Linux Scalability
+                  Paul Jackson <pj@sgi.com> 1.940.382.4214
