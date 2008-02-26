@@ -1,51 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765465AbYBZVYl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765348AbYBZVZV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765465AbYBZVYl (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Feb 2008 16:24:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764920AbYBZVYa
+	id S1765348AbYBZVZV (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Feb 2008 16:25:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762367AbYBZVZB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Feb 2008 16:24:30 -0500
-Received: from server54.tchmachines.com ([72.9.244.106]:44087 "EHLO
-	server54.tchmachines.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753977AbYBZVY2 (ORCPT
+	Tue, 26 Feb 2008 16:25:01 -0500
+Received: from smtp-out.google.com ([216.239.45.13]:14505 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751097AbYBZVZA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Feb 2008 16:24:28 -0500
-Date: Tue, 26 Feb 2008 13:24:18 -0800
-From: Ravikiran Thirumalai <kiran@scalemp.com>
-To: Yinghai Lu <yhlu.kernel@gmail.com>
-Cc: Andi Kleen <andi@firstfloor.org>, Ingo Molnar <mingo@elte.hu>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       shai@scalemp.com
-Subject: Re: [PATCH] x86_64: make amd quad core 8 socket system not be clustered_box v2
-Message-ID: <20080226212418.GJ5914@localdomain>
-References: <20080225190819.GE3143@localdomain> <86802c440802251405w7025a8b2na5fde4dcbf56067e@mail.gmail.com> <20080226033945.GJ3143@localdomain> <20080226034625.GE21577@one.firstfloor.org> <20080226040541.GK3143@localdomain> <86802c440802252127i36fcd164xe6671aada160766a@mail.gmail.com> <20080226184235.GA5914@localdomain> <86802c440802261100j322ee6a6yef9108dc175de459@mail.gmail.com> <20080226203235.GH5914@localdomain> <86802c440802261310y176cdfel38843e264bc71f82@mail.gmail.com>
+	Tue, 26 Feb 2008 16:25:00 -0500
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=received:date:from:x-x-sender:to:cc:subject:in-reply-to:
+	message-id:references:user-agent:mime-version:content-type;
+	b=TElL7xEa8N66XwqRtDyWWCJD98Uc7xnYzXkh+gfjkSgt2C6v53Ie+fW3TxkHgmX08
+	QZkvapxMZIAjFDAEoiqWg==
+Date: Tue, 26 Feb 2008 13:23:43 -0800 (PST)
+From: David Rientjes <rientjes@google.com>
+X-X-Sender: rientjes@chino.kir.corp.google.com
+To: Paul Jackson <pj@sgi.com>
+cc: akpm@linux-foundation.org, clameter@sgi.com, Lee.Schermerhorn@hp.com,
+       ak@suse.de, randy.dunlap@oracle.com, linux-kernel@vger.kernel.org
+Subject: Re: [patch 6/6] mempolicy: update NUMA memory policy documentation
+In-Reply-To: <20080226113441.934c8c90.pj@sgi.com>
+Message-ID: <alpine.DEB.1.00.0802261322170.10790@chino.kir.corp.google.com>
+References: <alpine.DEB.1.00.0802250012420.12368@chino.kir.corp.google.com> <alpine.DEB.1.00.0802250013580.12368@chino.kir.corp.google.com> <alpine.DEB.1.00.0802250014170.12368@chino.kir.corp.google.com> <alpine.DEB.1.00.0802250014410.12368@chino.kir.corp.google.com>
+ <alpine.DEB.1.00.0802250016120.12368@chino.kir.corp.google.com> <alpine.DEB.1.00.0802250016380.12368@chino.kir.corp.google.com> <20080226113441.934c8c90.pj@sgi.com>
+User-Agent: Alpine 1.00 (DEB 882 2007-12-20)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <86802c440802261310y176cdfel38843e264bc71f82@mail.gmail.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
-X-AntiAbuse: Primary Hostname - server54.tchmachines.com
-X-AntiAbuse: Original Domain - vger.kernel.org
-X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
-X-AntiAbuse: Sender Address Domain - scalemp.com
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Feb 26, 2008 at 01:10:57PM -0800, Yinghai Lu wrote:
->On Tue, Feb 26, 2008 at 12:32 PM, Ravikiran Thirumalai
-><kiran@scalemp.com> wrote:
->> On Tue, Feb 26, 2008 at 11:00:58AM -0800, Yinghai Lu wrote:
->>  >
->>  >1. if acpi=off ?
->>
->>  Well that is not a realistic scenario for any multi chassi NUMA machine,
->>  since the proximity information is very important and turning acpi off
->>  deprives the OS of this information.
->
->actually OS should detect the distance instead of rely on SLIT.
+On Tue, 26 Feb 2008, Paul Jackson wrote:
 
-How does it do that?  ACPI SRAT	is needed to determine this, and it wouldn't
-work if acpi=off.
+> Hmmm ... I've read this several times now ... still can't figure out
+> what it's saying ;).  And it doesn't really explain key aspects of
+> MPOL_F_RELATIVE_NODES, such as that it provides cpuset relative
+> numbering (use nodes 0..N-1, regardless of your current cpuset, to
+> refer to the first N nodes in whatever is your current cpuset.)
+> 
+
+I'll elaborate more on the MPOL_F_RELATIVE_NODES effect.
