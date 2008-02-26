@@ -1,78 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760880AbYBZKON@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761640AbYBZKOx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760880AbYBZKON (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Feb 2008 05:14:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756026AbYBZKN7
+	id S1761640AbYBZKOx (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Feb 2008 05:14:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757476AbYBZKOn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Feb 2008 05:13:59 -0500
-Received: from colo.lackof.org ([198.49.126.79]:51803 "EHLO colo.lackof.org"
+	Tue, 26 Feb 2008 05:14:43 -0500
+Received: from mx2.suse.de ([195.135.220.15]:57443 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754885AbYBZKN6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Feb 2008 05:13:58 -0500
-Date: Tue, 26 Feb 2008 03:13:46 -0700
-From: dann frazier <dannf@dannf.org>
-To: Willy Tarreau <w@1wt.eu>
-Cc: Glen Nakamura <glen@imodulo.com>, linux-kernel@vger.kernel.org
-Subject: Re: PROBLEM: 2.4.36.1 hangs.
-Message-ID: <20080226101346.GB20166@colo.lackof.org>
-References: <20080223083044.GA24136@1wt.eu> <20080226073612.GA29747@modulo.internal> <20080226081624.GA20022@1wt.eu>
+	id S1755634AbYBZKOm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 Feb 2008 05:14:42 -0500
+Date: Tue, 26 Feb 2008 11:15:51 +0100
+From: Holger Macht <hmacht@suse.de>
+To: Tejun Heo <htejun@gmail.com>
+Cc: Jeff Garzik <jeff@garzik.org>, linux-kernel@vger.kernel.org,
+       linux-ide@vger.kernel.org,
+       Kristen Carlson Accardi <kristen.c.accardi@intel.com>
+Subject: Re: [PATCH] libata: Register for dock events when the drive is
+	inside a dock station
+Message-ID: <20080226101551.GB10721@homac.suse.de>
+Mail-Followup-To: Tejun Heo <htejun@gmail.com>,
+	Jeff Garzik <jeff@garzik.org>, linux-kernel@vger.kernel.org,
+	linux-ide@vger.kernel.org,
+	Kristen Carlson Accardi <kristen.c.accardi@intel.com>
+References: <20080214124048.GB9708@homac.suse.de> <20080214125615.GD9708@homac.suse.de> <47BC5F44.605@garzik.org> <20080221115305.GB5032@homac.suse.de> <47BE26A0.2040708@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080226081624.GA20022@1wt.eu>
-User-Agent: Mutt/1.5.16 (2007-06-11)
+In-Reply-To: <47BE26A0.2040708@gmail.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Feb 26, 2008 at 09:16:25AM +0100, Willy Tarreau wrote:
-> On Mon, Feb 25, 2008 at 09:36:12PM -1000, Glen Nakamura wrote:
-> > Aloha,
+On Fri 22. Feb - 10:34:24, Tejun Heo wrote:
+> > If a device/bay is inside a docking station, we need to register for dock
+> > events additionally to bay events. If a dock event occurs, the dock driver
+> > will call the appropriate handler (ata_acpi_ap_notify() or
+> > ata_acpi_dev_notify()) for us.
 > > 
-> > The "ext2_readdir() filp->f_pos fix" patch looks weird...
-> > Perhaps the "filp->f_pos += le16_to_cpu(de->rec_len);" line should be
-> > outside of the if statement like the indentation implies?
-> 
-> good catch! At least it's what is done in 2.6.
-
-Yes, that certainly looks like a bug.
-
-> > As it is, filp->f_pos gets corrupted if de->inode is ever zero...
-> > This could possibly explain why I had a few strange directory
-> > entries until I checked the filesystem with:
-> > e2fsck -D -F -f /dev/{ext2 partition}
+> > Signed-off-by: Holger Macht <hmacht@suse.de>
+> > ---
 > > 
-> > - glen
-> > 
-> > Here is an updated (untested) patch:
+> > diff --git a/drivers/ata/libata-acpi.c b/drivers/ata/libata-acpi.c
+> > index 9e8ec19..563ad72 100644
+> > --- a/drivers/ata/libata-acpi.c
+> > +++ b/drivers/ata/libata-acpi.c
+> > @@ -191,20 +191,33 @@ void ata_acpi_associate(struct ata_host *host)
+> >  		else
+> >  			ata_acpi_associate_ide_port(ap);
+> >  
+> > -		if (ap->acpi_handle)
+> > +		if (ap->acpi_handle) {
+> >  			acpi_install_notify_handler (ap->acpi_handle,
+> >  						     ACPI_SYSTEM_NOTIFY,
+> >  						     ata_acpi_ap_notify,
+> >  						     ap);
+> > +#ifdef CONFIG_ACPI_DOCK_MODULE
 > 
-> unfortunately, neither Dann nor me could reproduce the issue, so
-> we'll wait for some victims^Wvolunteers to give it a try.
-
-I'm now able to reliably reproduce it by creating/removing a chroot
-(pbuilder create on a Debian system, though I'm sure a simpler test
-exists). Correcting the le16_to_cpu placement as Glen described
-fixes the issue for me.
-
-> BTW, I notice that 2.6 also has one extra chunk that 2.4 does not
-> have :
+> Heh, you need
 > 
->                 if (unlikely(need_revalidate)) {
-> +                       if (offset) {
->                                 offset = ext2_validate_entry(kaddr, offset, chunk_mask);
-> +                               filp->f_pos = (n<<PAGE_CACHE_SHIFT) + offset;
-> +                       }
-> +                       filp->f_version = inode->i_version;
->                         need_revalidate = 0;
->                 }
+>   #if defined(CONFIG_ACPI_DOCK) || defined(CONFIG_ACPI_DOCK_MODULE)
 > 
-> I have no idea whether this part is needed, we'd better ask Theo or Al
-> for some advices, as I'm not tempted by merging an uncertain patch when
-> it comes to filesystems.
+> Also, another question.  Is there a way to tell whether the device or
+> port is connected behind a dock or not?  Just notifying hotplug signal
+> is fine for hotplugging but to make hot unplug safe for PATA, libata
+> should be able to tell whether the device is actually gonna go away and
+> kill it explicitly.
 
-Looks like a test case may be available:
-  http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commitdiff;h=2d7f2ea9c989853310c7f6e8be52cc090cc8e66b
+The hotplug handler is only called if the device is actually inside the
+dock station. If it is not, nothing will happen. I hope that I got your
+question right?
 
--- 
-dann frazier
+However, if this would be helpful, it would be easy to add something like
+a am_I_on_dock_station?(...) function to the dock driver.
 
+Regards,
+	Holger
