@@ -1,54 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765140AbYBZXIe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765450AbYBZXKs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765140AbYBZXIe (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Feb 2008 18:08:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762820AbYBZXIY
+	id S1765450AbYBZXKs (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Feb 2008 18:10:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763370AbYBZXKi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Feb 2008 18:08:24 -0500
-Received: from srv5.dvmed.net ([207.36.208.214]:37217 "EHLO mail.dvmed.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754773AbYBZXIX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Feb 2008 18:08:23 -0500
-Message-ID: <47C49BDD.50205@garzik.org>
-Date: Tue, 26 Feb 2008 18:08:13 -0500
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
-MIME-Version: 1.0
-To: Stephen Hemminger <shemminger@vyatta.com>
-CC: Pekka J Enberg <penberg@cs.helsinki.fi>, romieu@fr.zoreil.com,
-       sorbica@icplus.com.tw, jesse@icplus.com.tw,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Subject: Re: [RFC/PATCH] ipg: add jumbo frame support kconfig option
-References: <Pine.LNX.4.64.0802262148270.12999@sbz-30.cs.Helsinki.FI> <20080226123247.2b63bbf0@extreme>
-In-Reply-To: <20080226123247.2b63bbf0@extreme>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Tue, 26 Feb 2008 18:10:38 -0500
+Received: from smtp1.linux-foundation.org ([207.189.120.13]:34031 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751722AbYBZXKg (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 Feb 2008 18:10:36 -0500
+Date: Tue, 26 Feb 2008 15:08:45 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Mike Galbraith <efault@gmx.de>
+Cc: Jens Axboe <jens.axboe@oracle.com>, LKML <linux-kernel@vger.kernel.org>,
+       Tejun Heo <htejun@gmail.com>, linux-ide@vger.kernel.org,
+       linux-scsi@vger.kernel.org
+Subject: Re: regression: CD burning (k3b) went broke
+Message-Id: <20080226150845.2196bc1a.akpm@linux-foundation.org>
+In-Reply-To: <1204033003.11828.22.camel@homer.simson.net>
+References: <1203583379.6244.27.camel@homer.simson.net>
+	<20080222073228.GZ23197@kernel.dk>
+	<1203752563.5225.4.camel@homer.simson.net>
+	<1203839683.17463.9.camel@homer.simson.net>
+	<1204019283.8731.11.camel@homer.simson.net>
+	<1204033003.11828.22.camel@homer.simson.net>
+X-Mailer: Sylpheed 2.4.7 (GTK+ 2.12.1; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.4 (----)
-X-Spam-Report: SpamAssassin version 3.2.3 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Stephen Hemminger wrote:
->> From: Pekka Enberg <penberg@cs.helsinki.fi>
->>
->> Convert the internal JUMBO_FRAME #ifdef to CONFIG_IP1000_JUMBO_FRAME proper and
->> fix compilation errors.
->>
->> Cc: Francois Romieu <romieu@fr.zoreil.com>
->> Cc: Sorbica Shieh <sorbica@icplus.com.tw>
->> Cc: Jesse Huang <jesse@icplus.com.tw>
->> Signed-off-by: Pekka Enberg <penberg@cs.helsinki.fi>
+On Tue, 26 Feb 2008 14:36:43 +0100 Mike Galbraith <efault@gmx.de> wrote:
+
 > 
-> Please don't do this as a config option. Config options seem like a good idea
-> to developers but are difficult for distributions.  Either support jumbo
-> frames by default or not at all.
+> On Tue, 2008-02-26 at 10:48 +0100, Mike Galbraith wrote:
+> > Greetings,
+> > 
+> > I straced both a good and a bad kernel (good being .git with attached
+> > revert patch applied) and filtered/diffed/merged the output.  Scroll
+> > down to "HERE" to see the problem (resid).
+> > 
+> > I'm poking around, but not having much luck.
 
-Agreed, but to be more specific...    always compile in jumbo frame 
-support.  You don't have to enable it at runtime by default, though.
+cc's added.
 
-	Jeff
+I'm told this is part of "Tejun's DMA drain handling".
 
+> Seems the problem is data_len changes, but raw_data_len doesn't.  I've
+> not the foggiest IO-land clue, but k3b works again, so the below may
+> have some diagnostic value.
 
+So this change fixes a bug?  Can we have a recap of how it does this?
 
+> diff --git a/drivers/scsi/scsi_lib.c b/drivers/scsi/scsi_lib.c
+> index ba21d97..7a6f784 100644
+> --- a/drivers/scsi/scsi_lib.c
+> +++ b/drivers/scsi/scsi_lib.c
+> @@ -871,7 +871,7 @@ void scsi_io_completion(struct scsi_cmnd *cmd, unsigned int good_bytes)
+>  			scsi_end_bidi_request(cmd);
+>  			return;
+>  		}
+> -		req->data_len = scsi_get_resid(cmd);
+> +		req->data_len = req->raw_data_len = scsi_get_resid(cmd);
+>  	}
+>  
+>  	BUG_ON(blk_bidi_rq(req)); /* bidi not support for !blk_pc_request yet */
+> 
+
+Thanks.
