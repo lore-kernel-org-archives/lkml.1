@@ -1,66 +1,166 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757574AbYBZGyU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758150AbYBZG77@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757574AbYBZGyU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Feb 2008 01:54:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752455AbYBZGyM
+	id S1758150AbYBZG77 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Feb 2008 01:59:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752455AbYBZG7v
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Feb 2008 01:54:12 -0500
-Received: from smtp-out.google.com ([216.239.45.13]:26515 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751673AbYBZGyL (ORCPT
+	Tue, 26 Feb 2008 01:59:51 -0500
+Received: from fms-01.valinux.co.jp ([210.128.90.1]:55870 "EHLO
+	mail.valinux.co.jp" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752123AbYBZG7u (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Feb 2008 01:54:11 -0500
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=received:date:from:x-x-sender:to:cc:subject:in-reply-to:
-	message-id:references:user-agent:mime-version:content-type;
-	b=qrI9B/M/g4cq+8FBtn+/HMVw0vsf3kz9EsdS7mH0HDeELQgqpNDqs+GtbjvWRWm1V
-	gmMd2urbXxfhZoE6GcW0g==
-Date: Mon, 25 Feb 2008 22:53:41 -0800 (PST)
-From: David Rientjes <rientjes@google.com>
-X-X-Sender: rientjes@chino.kir.corp.google.com
-To: Paul Jackson <pj@sgi.com>
-cc: akpm@linux-foundation.org, clameter@sgi.com, Lee.Schermerhorn@hp.com,
-       ak@suse.de, linux-kernel@vger.kernel.org
-Subject: Re: [patch 3/6] mempolicy: add MPOL_F_STATIC_NODES flag
-In-Reply-To: <20080225234616.777d534c.pj@sgi.com>
-Message-ID: <alpine.DEB.1.00.0802252248400.9390@chino.kir.corp.google.com>
-References: <alpine.DEB.1.00.0802250012420.12368@chino.kir.corp.google.com> <alpine.DEB.1.00.0802250013580.12368@chino.kir.corp.google.com> <alpine.DEB.1.00.0802250014170.12368@chino.kir.corp.google.com> <20080225234616.777d534c.pj@sgi.com>
-User-Agent: Alpine 1.00 (DEB 882 2007-12-20)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Tue, 26 Feb 2008 01:59:50 -0500
+Date: Tue, 26 Feb 2008 15:59:44 +0900 (JST)
+Message-Id: <20080226.155944.54609943.taka@valinux.co.jp>
+To: lizf@cn.fujitsu.com
+Cc: menage@google.com, balbir@linux.vnet.ibm.com, akpm@linux-foundation.org,
+       hugh@veritas.com, skumar@linux.vnet.ibm.com, yamamoto@valinux.co.jp,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org, rientjes@google.com,
+       xemul@openvz.org, kamezawa.hiroyu@jp.fujitsu.com
+Subject: Re: [PATCH] Memory Resource Controller Add Boot Option
+From: Hirokazu Takahashi <taka@valinux.co.jp>
+In-Reply-To: <47C38127.2000109@cn.fujitsu.com>
+References: <47C2FCC1.7090203@linux.vnet.ibm.com>
+	<47C30EDC.4060005@google.com>
+	<47C38127.2000109@cn.fujitsu.com>
+X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 25 Feb 2008, Paul Jackson wrote:
+Hi,
 
->     $ grep mpol_store_user_nodemask mm/mempolicy.c
->     static inline int mpol_store_user_nodemask(const struct mempolicy *pol)
->         if (mpol_store_user_nodemask(policy))
->         if (!mpol_store_user_nodemask(a))
->         if (!mpol_store_user_nodemask(pol) &&
+> >>> I'll send out a prototype for comment.
+> > 
+> > Something like the patch below. The effects of cgroup_disable=foo are:
+> > 
+> > - foo doesn't show up in /proc/cgroups
 > 
-> So I see no need to waste the instructions needed (in the three copies
-> of this code, since it's static inline) to convert a non-zero value to
-> exactly the value 1.
+> Or we can print out the disable flag, maybe this will be better?
+> Because we can distinguish from disabled and not compiled in from
+> /proc/cgroups.
+
+It would be neat if the disable flag /proc/cgroups can be cleared/set
+on demand. It will depend on the implementation of each controller
+whether it works or not.
+
+> > - foo isn't auto-mounted if you mount all cgroups in a single hierarchy
+> > - foo isn't visible as an individually mountable subsystem
 > 
-
-Done, thanks.
-
-> Hmmm ... speaking of static inline ... I can knock 600 bytes (that's
-> IA64 bytes, so equivalent to about 300 x86 bytes) off the kernel text
-> size by not inlining the mm/mempolicy.c routines check_pgd_range() and
-> interleave_nid().  I wonder if that would be worth doing.  Perhaps
-> those two routines are in sufficiently tight corners that the duplicate
-> copies of them is needed.
+> You mentioned in a previous mail if we mount a disabled subsystem we
+> will get an error. Here we just ignore the mount option. Which makes
+> more sense ?
 > 
-
-It seems like a worthwhile change to me even though gcc will pass the 
-actuals to check_pgd_range() on the stack.  The callers to check_range() 
-shouldn't be in any fast paths: migrate_to_node() can take a long time 
-depending on the length of the page list and do_mbind() sleeps on 
-mmap_sem.
-
-   text	   data	    bss	    dec	    hex	filename
-  11695	     24	     24	  11743	   2ddf	mm/mempolicy.o.before
-  11215	     24	     24	  11263	   2bff	mm/mempolicy.o.after
+> > 
+> > As a result there will only ever be one call to foo->create(), at init
+> > time; all processes will stay in this group, and the group will never be
+> > mounted on a visible hierarchy. Any additional effects (e.g. not
+> > allocating metadata) are up to the foo subsystem.
+> > 
+> > This doesn't handle early_init subsystems (their "disabled" bit isn't
+> > set be, but it could easily be extended to do so if any of the
+> > early_init systems wanted it - I think it would just involve some
+> > nastier parameter processing since it would occur before the
+> > command-line argument parser had been run.
+> > 
+> > include/linux/cgroup.h |    1 +
+> > kernel/cgroup.c        |   29 +++++++++++++++++++++++++++--
+> > 2 files changed, 28 insertions(+), 2 deletions(-)
+> > 
+> > Index: cgroup_disable-2.6.25-rc2-mm1/include/linux/cgroup.h
+> > ===================================================================
+> > --- cgroup_disable-2.6.25-rc2-mm1.orig/include/linux/cgroup.h
+> > +++ cgroup_disable-2.6.25-rc2-mm1/include/linux/cgroup.h
+> > @@ -256,6 +256,7 @@ struct cgroup_subsys {
+> >     void (*bind)(struct cgroup_subsys *ss, struct cgroup *root);
+> >     int subsys_id;
+> >     int active;
+> > +    int disabled;
+> >     int early_init;
+> > #define MAX_CGROUP_TYPE_NAMELEN 32
+> >     const char *name;
+> > Index: cgroup_disable-2.6.25-rc2-mm1/kernel/cgroup.c
+> > ===================================================================
+> > --- cgroup_disable-2.6.25-rc2-mm1.orig/kernel/cgroup.c
+> > +++ cgroup_disable-2.6.25-rc2-mm1/kernel/cgroup.c
+> > @@ -790,7 +790,14 @@ static int parse_cgroupfs_options(char *
+> >         if (!*token)
+> >             return -EINVAL;
+> >         if (!strcmp(token, "all")) {
+> > -            opts->subsys_bits = (1 << CGROUP_SUBSYS_COUNT) - 1;
+> > +            /* Add all non-disabled subsystems */
+> > +            int i;
+> > +            opts->subsys_bits = 0;
+> > +            for (i = 0; i < CGROUP_SUBSYS_COUNT; i++) {
+> > +                struct cgroup_subsys *ss = subsys[i];
+> > +                if (!ss->disabled)
+> > +                    opts->subsys_bits |= 1ul << i;
+> > +            }
+> >         } else if (!strcmp(token, "noprefix")) {
+> >             set_bit(ROOT_NOPREFIX, &opts->flags);
+> >         } else if (!strncmp(token, "release_agent=", 14)) {
+> > @@ -808,7 +815,8 @@ static int parse_cgroupfs_options(char *
+> >             for (i = 0; i < CGROUP_SUBSYS_COUNT; i++) {
+> >                 ss = subsys[i];
+> >                 if (!strcmp(token, ss->name)) {
+> > -                    set_bit(i, &opts->subsys_bits);
+> > +                    if (!ss->disabled)
+> > +                        set_bit(i, &opts->subsys_bits);
+> >                     break;
+> >                 }
+> >             }
+> > @@ -2596,6 +2606,8 @@ static int proc_cgroupstats_show(struct
+> >     mutex_lock(&cgroup_mutex);
+> >     for (i = 0; i < CGROUP_SUBSYS_COUNT; i++) {
+> >         struct cgroup_subsys *ss = subsys[i];
+> > +        if (ss->disabled)
+> > +            continue;
+> >         seq_printf(m, "%s\t%lu\t%d\n",
+> >                ss->name, ss->root->subsys_bits,
+> >                ss->root->number_of_cgroups);
+> > @@ -2991,3 +3003,16 @@ static void cgroup_release_agent(struct
+> >     spin_unlock(&release_list_lock);
+> >     mutex_unlock(&cgroup_mutex);
+> > }
+> > +
+> > +static int __init cgroup_disable(char *str)
+> > +{
+> > +    int i;
+> > +    for (i = 0; i < CGROUP_SUBSYS_COUNT; i++) {
+> > +        struct cgroup_subsys *ss = subsys[i];
+> > +        if (!strcmp(str, ss->name)) {
+> > +            ss->disabled = 1;
+> > +            break;
+> > +        }
+> > +    }
+> > +}
+> > +__setup("cgroup_disable=", cgroup_disable);
+> > 
+> > 
+> >>
+> >> Sure thing, if css has the flag, then it would nice. Could you wrap it
+> >> up to say
+> >> something like css_disabled(&mem_cgroup_subsys)
+> >>
+> >>
+> > 
+> > It's the subsys object rather than the css (cgroup_subsys_state).
+> > 
+> >  We could have something like:
+> > 
+> > #define cgroup_subsys_disabled(_ss) ((ss_)->disabled)
+> > 
+> > but I don't see that
+> >  cgroup_subsys_disabled(&mem_cgroup_subsys)
+> > is better than just putting
+> > 
+> >  mem_cgroup_subsys.disabled
+> > 
+> > Paul
+> > 
+> > 
+> 
+> 
