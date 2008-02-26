@@ -1,73 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760028AbYBZAmH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759282AbYBZAoK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760028AbYBZAmH (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 Feb 2008 19:42:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755530AbYBZAl4
+	id S1759282AbYBZAoK (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 Feb 2008 19:44:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750907AbYBZAny
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 Feb 2008 19:41:56 -0500
-Received: from mga10.intel.com ([192.55.52.92]:54650 "EHLO
-	fmsmga102.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755469AbYBZAlz (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 Feb 2008 19:41:55 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.25,404,1199692800"; 
-   d="scan'208";a="524349214"
-Date: Mon, 25 Feb 2008 16:45:21 -0800
-From: mark gross <mgross@linux.intel.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Greg KH <greg@kroah.com>, lkml <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] copyright owner and author clean up for intel iommu
-	and related files
-Message-ID: <20080226004521.GA24065@linux.intel.com>
-Reply-To: mgross@linux.intel.com
-References: <20080221181555.GA9593@linux.intel.com> <20080223000443.da075061.akpm@linux-foundation.org> <20080223190649.GA8641@kroah.com> <20080223112022.8e4fdde2.akpm@linux-foundation.org> <20080225155014.GA22018@linux.intel.com> <20080225175402.GB18940@kroah.com> <20080225102850.ad5f0cb6.akpm@linux-foundation.org>
+	Mon, 25 Feb 2008 19:43:54 -0500
+Received: from phunq.net ([64.81.85.152]:59055 "EHLO moonbase.phunq.net"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1750779AbYBZAnx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 25 Feb 2008 19:43:53 -0500
+From: Daniel Phillips <phillips@phunq.net>
+To: David Howells <dhowells@redhat.com>
+Subject: Re: [PATCH 00/37] Permit filesystem local caching
+Date: Mon, 25 Feb 2008 16:43:14 -0800
+User-Agent: KMail/1.9.5
+Cc: Trond.Myklebust@netapp.com, chuck.lever@oracle.com, casey@schaufler-ca.com,
+       nfsv4@linux-nfs.org, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org, selinux@tycho.nsa.gov,
+       linux-security-module@vger.kernel.org
+References: <200802251401.16413.phillips@phunq.net> <17916.1203636833@redhat.com> <22888.1203981562@redhat.com>
+In-Reply-To: <22888.1203981562@redhat.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20080225102850.ad5f0cb6.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+Message-Id: <200802251643.16631.phillips@phunq.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Feb 25, 2008 at 10:28:50AM -0800, Andrew Morton wrote:
-> On Mon, 25 Feb 2008 09:54:02 -0800 Greg KH <greg@kroah.com> wrote:
-> 
-> > On Mon, Feb 25, 2008 at 07:50:14AM -0800, mark gross wrote:
-> > > On Sat, Feb 23, 2008 at 11:20:22AM -0800, Andrew Morton wrote:
-> > > > On Sat, 23 Feb 2008 11:06:49 -0800 Greg KH <greg@kroah.com> wrote:
-> > > > 
-> > > > > On Sat, Feb 23, 2008 at 12:04:43AM -0800, Andrew Morton wrote:
-> > > > > > On Thu, 21 Feb 2008 10:15:55 -0800 mark gross <mgross@linux.intel.com> wrote:
-> > > > > > 
-> > > > > > > Index: linux-2.6.24-mm1/drivers/pci/dmar.c
-> > > > > > 
-> > > > > > I guess this is strictly a greg-pci-tree thing.  Greg, how do you want
-> > > > > > to play intel-iommu?
-> > > > > 
-> > > > > Yes, I'll take those.  I'm pretty sure I even have the hardware here to
-> > > > > test that the code doesn't crash :)
-> > > > > 
-> > > > 
-> > > > ok..
-> > > > 
-> > > > I have another one queued for 2.6.26-via-greg:
-> > > > pci-iova-rb-tree-setup-tweak.patch
-> > > > 
-> > > 
-> > > Should I start sending all the intel-iommu related stuff to Greg then?
-> > 
-> > Sure, and the linux-pci list so that people can review them.
-> > 
-> 
-> And linux-kernel so that a lot more people can review them.
-> 
-> And me too, please so I'll review them, and because subsystem maintainers
-> are leaky buckets (sorry).
->
+On Monday 25 February 2008 15:19, David Howells wrote:
+> So I guess there's a problem in cachefiles's efficiency - possibly due
+> to the fact that it tries to be fully asynchronous.
 
-oky-doky
+OK, not just my imagination, and it makes me feel better about the patch 
+set because efficiency bugs are fixable while fundamental limitations 
+are not.
 
---mgross
- 
+How much of a hurry are you in to merge this feature?  You have bits 
+like this:
+
+"Add a function to install a monitor on the page lock waitqueue for a 
+particular page, thus allowing the page being unlocked to be detected.
+This is used by CacheFiles to detect read completion on a page in the 
+backing filesystem so that it can then copy the data to the waiting 
+netfs page."
+
+We already have that hook, it is called bio_endio.  My strong intuition 
+is that your whole mechanism should sit directly on the block device, 
+no matter how attractive it seems to be able to piggyback on the 
+namespace and layout management code of existing filesystems.  I see 
+your current effort as the moral equivalent of FUSE: you are able to 
+demonstrate certain desirable behavioral properties, but you are unable 
+to reach full theoretical efficiency because there are layers and 
+layers of interface gunk interposed between the netfs user and the 
+cache device.
+
+That said, I also see you have put a huge amount of work into this over 
+the years, it is nicely broken out, you are responsive and easy to work 
+with, all arguments for an early merge.  Against that, you invade core 
+kernel for reasons that are not necessarily justified:
+
+  * two new page flags
+  * a new fileops method
+  * many changes to LSM including new object class and new hooks
+  * separate fs*id from task struct
+  * new page-private destructor hook
+  * probably other bits I missed
+
+Would it be correct to say that some of these changes are to support 
+disconnected operation?  If so, you really have two patch sets:
+
+  1) Persistent netfs cache
+  2) Disconnected netfs operation
+
+You have some short snappers that look generally useful:
+
+  * add_wait_queue_tail (cool)
+  * write to a file without a struct file (includes ->mapping cleanup,
+    probably good)
+  * export fsync_super
+
+Why not hunt around for existing in-kernel users that would benefit so 
+these can be submitted as standalone patches, shortening the remaining 
+patch set and partially overcoming objections due to core kernel 
+changes?
+
+One thing I don't see is users coming on to lkml and saying "please 
+merge this, it works great for me".  Since you probably have such 
+users, why not give them a poke? 
+
+Your cachefilesd is going to need anti-deadlock medicine like ddsnap 
+has.  Since you don't seem at all worried about that right now, I 
+suspect you have not hammered this code really heavily, correct?  
+Without preventative measures, any memory-using daemon sitting in the 
+block IO path will deadlock if you hit it hard enough.
+
+A couple of years ago you explained the purpose of the new page flags to 
+me and there is no way I can find that email again.  Could you explain 
+it again please?  Meanwhile I am doing my duty and reading your OLS 
+slides etc.
+
+Regards,
+
+Daniel
