@@ -1,57 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761959AbYBZAU3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762059AbYBZAVa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761959AbYBZAU3 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 Feb 2008 19:20:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755946AbYBZAUT
+	id S1762059AbYBZAVa (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 Feb 2008 19:21:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758188AbYBZAVW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 Feb 2008 19:20:19 -0500
-Received: from sca-es-mail-1.Sun.COM ([192.18.43.132]:36703 "EHLO
-	sca-es-mail-1.sun.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756870AbYBZAUR (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 Feb 2008 19:20:17 -0500
-Date: Mon, 25 Feb 2008 16:28:45 -0800
-From: Yinghai Lu <Yinghai.Lu@Sun.COM>
-Subject: [PATCH] x86: PARAVIRT needed by PARAVIRT_GUEST or X86_VSMP
+	Mon, 25 Feb 2008 19:21:22 -0500
+Received: from gw.goop.org ([64.81.55.164]:42207 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758107AbYBZAVV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 25 Feb 2008 19:21:21 -0500
+Message-ID: <47C35AB5.1040407@goop.org>
+Date: Mon, 25 Feb 2008 16:17:57 -0800
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+MIME-Version: 1.0
 To: Ingo Molnar <mingo@elte.hu>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Sam Ravnborg <sam@ravnborg.org>
-Message-id: <200802251628.46111.yinghai.lu@sun.com>
-Organization: Sun
-MIME-version: 1.0
-Content-type: text/plain; charset=us-ascii
-Content-transfer-encoding: 7BIT
-Content-disposition: inline
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+CC: Vegard Nossum <vegard.nossum@gmail.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: compile problem in current x86.git
+References: <47C315CC.5020001@goop.org> <19f34abd0802251237q2aa5db03s522c77340cdc96a@mail.gmail.com> <20080225204438.GA1213@elte.hu> <20080225205035.GA3435@elte.hu>
+In-Reply-To: <20080225205035.GA3435@elte.hu>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Ingo Molnar wrote:
+> Jeremy, you might want to start tracking x86.git#testing:
+>
+>   http://people.redhat.com/mingo/x86.git/README
+>
+> if you want to follow the latest & greatest x86.git code.
+>   
 
-so it could be off automatically when PARAVIRT_GUEST or X86_VSMP is not there
+Right, will do.
 
-Signed-off-by: Yinghai Lu <yinghai.lu@sun.com>
-
-diff --git a/arch/x86/Kconfig b/arch/x86/Kconfig
-index 92b53ec..5bbb385 100644
---- a/arch/x86/Kconfig
-+++ b/arch/x86/Kconfig
-@@ -379,6 +379,8 @@ source "arch/x86/lguest/Kconfig"
- 
- endif
- 
-+if PARAVIRT_GUEST || X86_VSMP
-+
- config PARAVIRT
- 	bool "Enable paravirtualization code"
- 	depends on !(X86_VISWS || X86_VOYAGER)
-@@ -388,6 +390,8 @@ config PARAVIRT
- 	  over full virtualization.  However, when run without a hypervisor
- 	  the kernel is theoretically slower and slightly larger.
- 
-+endif
-+
- config ACPI_SRAT
- 	def_bool y
- 	depends on X86_32 && ACPI && NUMA && (X86_SUMMIT || X86_GENERICARCH)
+    J
