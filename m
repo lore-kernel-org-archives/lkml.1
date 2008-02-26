@@ -1,57 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764700AbYBZXC4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764656AbYBZXGe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764700AbYBZXC4 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Feb 2008 18:02:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755860AbYBZXCr
+	id S1764656AbYBZXGe (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Feb 2008 18:06:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756249AbYBZXG0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Feb 2008 18:02:47 -0500
-Received: from ra.tuxdriver.com ([70.61.120.52]:4369 "EHLO ra.tuxdriver.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754697AbYBZXCq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Feb 2008 18:02:46 -0500
-Date: Tue, 26 Feb 2008 17:47:57 -0500
-From: "John W. Linville" <linville@tuxdriver.com>
-To: Alexey Zaytsev <alexey.zaytsev@gmail.com>
-Cc: Michael Buesch <mb@bu3sch.de>, Ingo Molnar <mingo@elte.hu>,
-       Alexey Zaytsev <zaytsev.a@protei.ru>, Greg KH <greg@kroah.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: bcm43xx regression in 2.6.24 (with patch)
-Message-ID: <20080226224757.GB3100@tuxdriver.com>
-References: <47BEAF3B.3080809@protei.ru> <20080226202044.GE3013@tuxdriver.com> <f19298770802261338r40e3f252j2249c1325b725614@mail.gmail.com> <200802262304.39882.mb@bu3sch.de> <f19298770802261412j7a3fec4bv1754db8123796d54@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <f19298770802261412j7a3fec4bv1754db8123796d54@mail.gmail.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+	Tue, 26 Feb 2008 18:06:26 -0500
+Received: from mta-2.ms.rz.RWTH-Aachen.DE ([134.130.7.73]:36942 "EHLO
+	mta-2.ms.rz.rwth-aachen.de" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755924AbYBZXGZ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 Feb 2008 18:06:25 -0500
+Date: Wed, 27 Feb 2008 00:07:05 +0100
+From: Arnd Hannemann <hannemann@nets.rwth-aachen.de>
+Subject: Re: Performance problems with 3ware 9500S-4LP and 2.6.25-rc3
+In-reply-to: <20080226174314.GA30767@skl-net.de>
+To: Andre Noll <maan@systemlinux.org>
+Cc: adam radford <aradford@gmail.com>, Tony Battersby <tonyb@cybernetics.com>,
+       =?ISO-8859-15?Q?Johannes_W=F6rner?= 
+	<johannes.woerner@tuebingen.mpg.de>,
+       James Bottomley <James.Bottomley@HansenPartnership.com>,
+       linux-scsi <linux-scsi@vger.kernel.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Message-id: <47C49B99.1060707@nets.rwth-aachen.de>
+MIME-version: 1.0
+Content-type: text/plain; charset=ISO-8859-15
+Content-transfer-encoding: 7BIT
+X-IronPort-AV: E=Sophos;i="4.25,409,1199660400";   d="scan'208";a="52346124"
+References: <20080226174314.GA30767@skl-net.de>
+User-Agent: Thunderbird 2.0.0.6 (X11/20071022)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Feb 27, 2008 at 01:12:32AM +0300, Alexey Zaytsev wrote:
-> On Wed, Feb 27, 2008 at 1:04 AM, Michael Buesch <mb@bu3sch.de> wrote:
+Andre Noll schrieb:
+> Hi
+> 
+> we are experiencing massive performance problems with two of our
+> Linux servers that contain 3ware controllers on a Tyan mainboard and
+> a couple of 1T disks.
+> 
+> During the daily cron job that uses rsync to sync a 500G file system
+> from another machine to the raid on the 3ware controller the load
+> jumps up, and the machine becomes sluggish as hell. For example, an
+> ssh login to that machine takes minutes to complete and ldap becomes
+> unreliable while the rsync job is running. Even Nagios complains
+> about the machine being down while rsync is running.
 
-> >  Besides that the bcm43xx driver is not broken. That's the whole reason
-> >  this damn thread started at all. So it can't be broken.
-> >
-> Can't agree here. The bcm43xx driver used to work with 2.6.23 without requiring
-> any module magic.
+Could you give some numbers, please?
 
-At the risk of prolonging things... :-(
+However there are some known issues:
 
-Isn't the fundamental problem here that the ssb driver claims the same
-PCI IDs as the bcm43xx driver?  He have hit this same issue a number
-of times: 8139too vs.  8139cp, eepro vs. e100, sk98lin vs. skge,
-and I'm sure there are more.  I admit that this situation is a bit
-more confusing, since the user is less likely to predict a conflict
-between bcm43xx and the ssb driver.  This is especially true since
-the user isn't even selecting ssb directly, but is instead selecting
-the apparently unrelated b44.
+http://forums.storagereview.net/index.php?showtopic=25923
+http://tumbleweed.org.za/2007/02/16/horrific-performance-with-3ware-raid
 
-Still, the bcm43xx driver is not fundamentally damaged.  This is
-fundamentally a "two drivers claiming the same PCI ID" issue, not a
-"you broke my driver" one.
+Symptons are reasonable performance with large block ops, but really bad performance with small block ops.
+time (cp -a linux-2.6.24.2 linux-2.6.24.2b; sync)
+Gives me with some tuning 50 seconds here with a 9650SE in a 4 disk raid5 setup. (very bad, single disk will do it in <30s!!!)
+But reading and writing large files with large block sizes is usually beyond > 100 MB/s
 
-John
--- 
-John W. Linville
-linville@tuxdriver.com
+[snipped a lot]
+
+> Andre
+
+Best regards,
+Arnd
