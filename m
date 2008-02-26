@@ -1,69 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764302AbYBZVm5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764414AbYBZVon@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764302AbYBZVm5 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Feb 2008 16:42:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754590AbYBZVmt
+	id S1764414AbYBZVon (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Feb 2008 16:44:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762752AbYBZVof
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Feb 2008 16:42:49 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:39048 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753293AbYBZVms (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Feb 2008 16:42:48 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Karsten Wiese <fzu@wemgehoertderstaat.de>
-Subject: Re: 2.6.25-rc2 rcupreempt WARN after suspend to ram
-Date: Tue, 26 Feb 2008 22:41:36 +0100
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: paulmck@linux.vnet.ibm.com, linux-kernel@vger.kernel.org,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Steven Rostedt <rostedt@goodmis.org>
-References: <200802231341.02597.fzu@wemgehoertderstaat.de> <20080224182800.GA10194@linux.vnet.ibm.com> <200802260309.36360.fzu@wemgehoertderstaat.de>
-In-Reply-To: <200802260309.36360.fzu@wemgehoertderstaat.de>
+	Tue, 26 Feb 2008 16:44:35 -0500
+Received: from wx-out-0506.google.com ([66.249.82.237]:23000 "EHLO
+	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753857AbYBZVoe (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 Feb 2008 16:44:34 -0500
+Message-ID: <f4fe1c2a0802261344xdbee78j730c9011b8b63aa7@mail.gmail.com>
+Date: Tue, 26 Feb 2008 22:44:32 +0100
+From: "=?UTF-8?Q?Szekeres_Istv=C3=A1n?=" <szekeres@iii.hu>
+To: "Jiri Kosina" <jkosina@suse.cz>
+Subject: Re: kernel losing printk messages?
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <Pine.LNX.4.64.0802262233290.30955@jikos.suse.cz>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200802262241.37038.rjw@sisk.pl>
+References: <f4fe1c2a0802261309s17aaf082w14525c1e2f3af2f@mail.gmail.com>
+	 <f4fe1c2a0802261314i5c4c5738y2a3f0e1c8748ee60@mail.gmail.com>
+	 <Pine.LNX.4.64.0802262233290.30955@jikos.suse.cz>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday, 26 of February 2008, Karsten Wiese wrote:
-> Am Sonntag, 24. Februar 2008 schrieb Paul E. McKenney:
-> > On Sun, Feb 24, 2008 at 04:38:15PM +0100, Karsten Wiese wrote:
-> > > Am Samstag, 23. Februar 2008 schrieb Karsten Wiese:
-> > > > Am Samstag, 23. Februar 2008 schrieb Paul E. McKenney:
-> > > > > On Sat, Feb 23, 2008 at 01:41:02PM +0100, Karsten Wiese wrote:
-> > > > > > Hi,
-> > > > > > 
-> > > > > > This appeared in dmesg after
-> > > > > > 	$ echo core > /sys/power/pm_test
-> > > > > > followed by 3 cycles of
-> > > > > > 	$ echo mem > /sys/power/state
-> > > > > > . .config attached.
-> > > > > > 
-> > > > > > dmesg excerpt (, full ~1MByte available):
-> > > > > 
-> > > > > Does this tree have http://lkml.org/lkml/2008/1/29/208 applied?
-> > > > 
-> > > > Yes. This tree was linus' git head as of yesterday or the day before.
-> > > 
-> > > Updated to git-head of today, same test and .config, different symptoms
-> > > like in this thread: http://lkml.org/lkml/2008/2/23/260
-> > > Later in this thread, Alan Cox said it looked like irq problems.
-> > > Maybe also the rcupreemt related WARN_ON I saw are caused by irq problems.
-> > 
-> > Might be, but am taking a closer look at the interaction between irq,
-> > dynticks, and rcupreempt in any case.
-> 
-> [Added Rafael, Thomas and Steven to CC]
-> 
-> The "different symptoms" above are indeed unrelated and solved by reverting
-> 	"commit 559bbe6cbd0d8c68d40076a5f7dc98e3bf5864b2
->     	 power_state: get rid of write-only variable in SATA"
+Hi,
 
-This commit has been reverted from the mainline.
+>  I don't see this on 2.6.25-rc3. Does this happen only on boot? What if you
+>  do
+>
+>         rmmod usbhid
+>         rmmod hid
+>         modprobe hid debug=1
+>         modprobe usbhid
+>
+>  on already booted system?
 
-Thanks,
-Rafael
+Actually I did it the same way. I have no info about the output on boot.
+
+>  I guess in dmesg the output is also corrupted, right?
+
+Interesting. Even after a dmesg -c -s 1000000 it contains only the end
+of the story. This is the beginning of the dmesg output:
+
+rusalka:~% dmesg | head
+input.c: Mapping: Consumer.0230 ---> IGNORED
+[85080.775297] drivers/hid/hid-input.c: Mapping: Consumer.0231 ---> IGNORED
+[85080.775302] drivers/hid/hid-input.c: Mapping: Consumer.0232 ---> IGNORED
+[85080.775308] drivers/hid/hid-input.c: Mapping: Consumer.0233 ---> Key.ScrollUp
+[85080.775314] drivers/hid/hid-input.c: Mapping: Consumer.0234 --->
+Key.ScrollDown
+
+So the first line is corrupted. In the remaining of the output
+(total=220 lines) I cannot see the evidence of corruption.
+
+Regards,
+Istvan
