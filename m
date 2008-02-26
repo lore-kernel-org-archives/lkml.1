@@ -1,48 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760227AbYBZFWn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758759AbYBZFZd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760227AbYBZFWn (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Feb 2008 00:22:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759105AbYBZFW1
+	id S1758759AbYBZFZd (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Feb 2008 00:25:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751802AbYBZFZZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Feb 2008 00:22:27 -0500
-Received: from pip23.gyao.ne.jp ([125.63.38.249]:14004 "EHLO mx.gate01.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1758951AbYBZFWZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Feb 2008 00:22:25 -0500
-Date: Tue, 26 Feb 2008 14:22:23 +0900
-From: Paul Mundt <lethal@linux-sh.org>
-To: Adrian McMenamin <adrian@newgolddream.dyndns.info>
-Cc: linux-sh <linux-sh@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] maple: remove unused variable
-Message-ID: <20080226052223.GE19814@linux-sh.org>
-Mail-Followup-To: Paul Mundt <lethal@linux-sh.org>,
-	Adrian McMenamin <adrian@newgolddream.dyndns.info>,
-	linux-sh <linux-sh@vger.kernel.org>,
-	LKML <linux-kernel@vger.kernel.org>
-References: <1203205053.6737.17.camel@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1203205053.6737.17.camel@localhost.localdomain>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Tue, 26 Feb 2008 00:25:25 -0500
+Received: from agminet01.oracle.com ([141.146.126.228]:43590 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751768AbYBZFZY (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 Feb 2008 00:25:24 -0500
+Date: Mon, 25 Feb 2008 21:22:51 -0800
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: "Dave Young" <hidave.darkstar@gmail.com>, akpm <akpm@linux-foundation.org>
+Cc: "Dave Jones" <davej@codemonkey.org.uk>,
+       "Linux Kernel" <linux-kernel@vger.kernel.org>,
+       "Thomas Gleixner" <tglx@linutronix.de>
+Subject: Re: boot_delay broken ?
+Message-Id: <20080225212251.18c4659e.randy.dunlap@oracle.com>
+In-Reply-To: <a8e1da0802241814x48e169f2v82823c55412fc534@mail.gmail.com>
+References: <20080224004615.GA31012@codemonkey.org.uk>
+	<a8e1da0802241814x48e169f2v82823c55412fc534@mail.gmail.com>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.4.7 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Feb 16, 2008 at 11:37:33PM +0000, Adrian McMenamin wrote:
-> Remove an unused variable from the definition of struct maple_device
+On Mon, 25 Feb 2008 10:14:36 +0800 Dave Young wrote:
+
+> On Sun, Feb 24, 2008 at 8:46 AM, Dave Jones <davej@codemonkey.org.uk> wrote:
+> > The boot_delay switch seems to be behaving strangely in the
+> >  current -git.  Setting it to =10 makes the output 'bursty'
+> >  it becomes slow for some printk's whilst others scroll by
+> >  at regular speed.
+> >  Setting it any higher than that seems to make it pause for
+> >  a really long time before it outputs any text at all.
 > 
-> Signed-off-by: Adrian McMenamin <adrian@mcmen.demon.co.uk>
-> ---
-> 
-> diff -ruN a/include/linux/maple.h b/include/linux/maple.h
-> --- a/include/linux/maple.h	2008-02-16 20:52:09.000000000 +0000
-> +++ b/include/linux/maple.h	2008-02-16 21:42:06.000000000 +0000
-> @@ -64,7 +64,6 @@
->  	int (*connect) (struct maple_device * dev);
->  	void (*disconnect) (struct maple_device * dev);
->  	struct device_driver drv;
-> -	int registered;
->  };
->  
-Applied, thanks.
+> On my side there's this issue for a long time
+> http://lkml.org/lkml/2007/8/8/79
+
+[http://marc.info/?l=linux-kernel&m=118655896515049&w=2]
+
+You asked questions and they were answered.  Perhaps you didn't like
+the answers.
+
+Here's a question for you.  What kernel boot options did you use?
+Specifically, for lpj= and boot_delay= ?
+
+> >
+> >  x86 timer changes perhaps ?
+
+
+---
+~Randy
