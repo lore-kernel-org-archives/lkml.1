@@ -1,75 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764374AbYBZS2N@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763935AbYBZSbw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764374AbYBZS2N (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Feb 2008 13:28:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756848AbYBZS14
+	id S1763935AbYBZSbw (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Feb 2008 13:31:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751856AbYBZSbp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Feb 2008 13:27:56 -0500
-Received: from quasar.osc.edu ([192.148.249.15]:50043 "EHLO quasar.osc.edu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756593AbYBZS1y (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Feb 2008 13:27:54 -0500
-Date: Tue, 26 Feb 2008 13:27:53 -0500
-From: Pete Wyckoff <pw@osc.edu>
-To: Roland Dreier <rdreier@cisco.com>
-Cc: Olaf Kirch <olaf.kirch@oracle.com>, general@lists.openfabrics.org,
-       linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [PATCH 2/2] ib fmr pool: flush used clean entries
-Message-ID: <20080226182753.GF7033@osc.edu>
-References: <20080225225330.GA3316@osc.edu> <ada1w70zlkf.fsf@cisco.com> <20080226182655.GD7033@osc.edu>
+	Tue, 26 Feb 2008 13:31:45 -0500
+Received: from nf-out-0910.google.com ([64.233.182.186]:52063 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751717AbYBZSbo (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 Feb 2008 13:31:44 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
+        b=IwXPnvb3K/bdQ7chmj07u7ql6/3eczkEHQBH4cm5IK5cAGvDoDk9ZNo8Koxsh8YV2uI2blrtfN4k7Alunnv6wSDlAPhUWpNiHKK1GblOJ37mb1eF76bgDWI5+NQJxvkgiFES2i6ozTULsm2BbjaK0BMR7nCvHxdb67lZG/jFlIk=
+Message-ID: <47C45AF6.5000805@gmail.com>
+Date: Tue, 26 Feb 2008 19:31:18 +0100
+From: Franck Bui-Huu <vagabon.xyz@gmail.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080226182655.GD7033@osc.edu>
+To: Josh Triplett <josh@kernel.org>
+CC: akpm@linux-foundation.org, paulmck@linux.vnet.ibm.com,
+       linux-kernel@vger.kernel.org
+Subject: Re: + rcu-split-listh-and-move-rcu-protected-lists-into-rculisth.patch
+ added to -mm tree
+References: <200802230734.m1N7Ymrp018304@imap1.linux-foundation.org> <47C3F8F1.4010100@kernel.org>
+In-Reply-To: <47C3F8F1.4010100@kernel.org>
+X-Enigmail-Version: 0.95.2
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit a3cd7d9070be417a21905c997ee32d756d999b38 (IB/fmr_pool:
-ib_fmr_pool_flush() should flush all dirty FMRs) caused a
-regression for iSER and was reverted in
-e5507736c6449b3253347eed6f8ea77a28cf688e.
+Hi,
 
-This change attempts to redo the original patch so that all used
-FMR entries are flushed when ib_flush_fmr_pool() is called,
-and other FMR users are not affected.  Simply move used entries
-from the clean list onto the dirty list before letting the
-cleanup thread do its job.
+Josh Triplett wrote:
+> [I did not see this patch go by on any mailing list, so I replied to
+> the -mm mail and CCed LKML.]
+> 
 
-Signed-off-by: Pete Wyckoff <pw@osc.edu>
----
- drivers/infiniband/core/fmr_pool.c |   17 ++++++++++++++++-
- 1 files changed, 16 insertions(+), 1 deletions(-)
+Well I'm pretty sure to have always CC'ed LKML, see for example:
 
-diff --git a/drivers/infiniband/core/fmr_pool.c b/drivers/infiniband/core/fmr_pool.c
-index 4044fdf..06d502c 100644
---- a/drivers/infiniband/core/fmr_pool.c
-+++ b/drivers/infiniband/core/fmr_pool.c
-@@ -398,8 +398,23 @@ EXPORT_SYMBOL(ib_destroy_fmr_pool);
-  */
- int ib_flush_fmr_pool(struct ib_fmr_pool *pool)
- {
--	int serial = atomic_inc_return(&pool->req_ser);
-+	int serial;
-+	struct ib_pool_fmr *fmr, *next;
-+
-+	/*
-+	 * The free_list holds FMRs that may have been used
-+	 * but have not been remapped enough times to be dirty.
-+	 * Put them on the dirty list now so that the cleanup
-+	 * thread will reap them too.
-+	 */
-+	spin_lock_irq(&pool->pool_lock);
-+	list_for_each_entry_safe(fmr, next, &pool->free_list, list) {
-+		if (fmr->remap_count > 0)
-+			list_move(&fmr->list, &pool->dirty_list);
-+	}
-+	spin_unlock_irq(&pool->pool_lock);
- 
-+	serial = atomic_inc_return(&pool->req_ser);
- 	wake_up_process(pool->thread);
- 
- 	if (wait_event_interruptible(pool->force_wait,
--- 
-1.5.4.1
-
+    http://lkml.org/lkml/2008/2/19/150
+    http://lkml.org/lkml/2008/2/19/151
+    
+Thanks,
+		Franck
