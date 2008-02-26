@@ -1,93 +1,270 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932692AbYBZWcz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932631AbYBZWde@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932692AbYBZWcz (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Feb 2008 17:32:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932148AbYBZWcq
+	id S932631AbYBZWde (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Feb 2008 17:33:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757571AbYBZWdV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Feb 2008 17:32:46 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:39334 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755018AbYBZWcp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Feb 2008 17:32:45 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Dave Jones <davej@codemonkey.org.uk>
-Subject: Re: broken suspend in .2.6.25-rc3 on T61p (was Re: new regression in 2.6.25-rc3: no keyboard/lid acpi events on thinkpad T61p)
-Date: Tue, 26 Feb 2008 23:31:19 +0100
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: Pavel Machek <pavel@ucw.cz>, Andrew Morton <akpm@linux-foundation.org>,
-       kernel list <linux-kernel@vger.kernel.org>, Len Brown <lenb@kernel.org>
-References: <20080225225820.GP2659@elf.ucw.cz> <20080226215641.GE10280@elf.ucw.cz> <20080226222337.GA22172@codemonkey.org.uk>
-In-Reply-To: <20080226222337.GA22172@codemonkey.org.uk>
+	Tue, 26 Feb 2008 17:33:21 -0500
+Received: from einhorn.in-berlin.de ([192.109.42.8]:46218 "EHLO
+	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756997AbYBZWdS (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 Feb 2008 17:33:18 -0500
+X-Envelope-From: stefanr@s5r6.in-berlin.de
+Date: Tue, 26 Feb 2008 23:30:57 +0100 (CET)
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Subject: [PATCH update] firewire: fix crash in automatic module unloading
+To: Jarod Wilson <jwilson@redhat.com>
+cc: linux1394-devel@lists.sourceforge.net, linux-scsi@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <tkrat.43f73e8c841b3161@s5r6.in-berlin.de>
+Message-ID: <tkrat.6515bdc94ebad712@s5r6.in-berlin.de>
+References: <tkrat.43f73e8c841b3161@s5r6.in-berlin.de>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200802262331.20651.rjw@sisk.pl>
+Content-Type: TEXT/PLAIN; CHARSET=us-ascii
+Content-Disposition: INLINE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday, 26 of February 2008, Dave Jones wrote:
-> On Tue, Feb 26, 2008 at 10:56:41PM +0100, Pavel Machek wrote:
-> 
->  > Seems like pm-utils is just a thin wrapper around s2ram, at least in
->  > version debian ships. It does not seem to have its own whitelist.
-> 
-> The actual whitelists still live in hal (or specifically hal-data),
-> rather than pm-utils.  /usr/share/hal/fdi/information/10freedesktop/20-video-quirk-pm-*
-> for example.  This gets passed down to pm-utils by hal.
-> 
->  > /usr/lib/pm-utils/functions
->  > 
->  > ... 
->  > 
->  >         if [ -x /usr/sbin/s2ram ]; then
->  >                 if [ -n "$S2RAM_OPTS" ]; then
->  >                         # Trust HAL or the user to pass the correct
->  > options
->  >                         /usr/sbin/s2ram $S2RAM_OPTS
->  >                 elif /usr/sbin/s2ram --test > /dev/null ; then
->  >                         # Trust s2ram's internal whitelist
->  >                         /usr/sbin/s2ram
->  >                 else
->  >                         # Unknown machine
->  >                         echo "This machine is unkown, please try to
->  > find out how to suspend this machine. See s2ram(8)."
->  >                 fi
->  >         else
->  >                 echo -n "mem" > /sys/power/state
->  >         fi
-> 
-> Seems to be a debian specific change, the variant in Fedora, nor upstream
-> pm-utils doesn't have any of that.  Possibly because it's a dumb idea
-> to have two separate sources of the same information.
-> 
->  > ...so it is ready to use s2ram, but will fall back to
->  > echo. Unfortunately, that will mean no video resume on _many_
->  > machines.
->  > 
->  > To give some numbers: according to s2ram whitelist, we can restore
->  > video on 410 machines. On 74 of them, s2ram is not needed. So
->  > approximately 80% of machines need s2ram (at least in configuration
->  > without X running)....
->  > 
->  > Pretty please, can we get s2ram for Fedora, so that video is restored
->  > there?
->  
-> I'm not the gatekeeper of what goes into Fedora userspace, but I'm pretty
-> certain the path forward has already been decided.  Running a modern
-> Fedora desktop installation without hal just isn't feasible.
+"modprobe firewire-ohci; sleep .1; modprobe -r firewire-ohci" used to
+result in crashes like this:
 
-Well, pm-utils seems to be a bunch of shell scripts that run some addtional
-utilities, such as vbetool, to actually do the quirks.  In s2ram we have all
-these additional utilities put together in one package and you need not
-use the whiltelist it contains.  You can just very well make pm-utils use
-s2ram for doing the low-level work, just build the appropriate command line
-for it on the basis of the HAL whitelist.
+    BUG: unable to handle kernel paging request at ffffffff8807b455
+    IP: [<ffffffff8807b455>]
+    PGD 203067 PUD 207063 PMD 7c170067 PTE 0
+    Oops: 0010 [1] PREEMPT SMP 
+    CPU 0 
+    Modules linked in: i915 drm cpufreq_ondemand acpi_cpufreq freq_table applesmc input_polldev led_class coretemp hwmon eeprom snd_seq_oss snd_seq_midi_event snd_seq snd_seq_device snd_pcm_oss snd_mixer_oss button thermal processor sg snd_hda_intel snd_pcm snd_timer snd snd_page_alloc sky2 i2c_i801 rtc [last unloaded: crc_itu_t]
+    Pid: 9, comm: events/0 Not tainted 2.6.25-rc2 #3
+    RIP: 0010:[<ffffffff8807b455>]  [<ffffffff8807b455>]
+    RSP: 0018:ffff81007dcdde88  EFLAGS: 00010246
+    RAX: ffff81007dc95040 RBX: ffff81007dee5390 RCX: 0000000000005e13
+    RDX: 0000000000008c8b RSI: 0000000000000001 RDI: ffff81007dee5388
+    RBP: ffff81007dc5eb40 R08: 0000000000000002 R09: ffffffff8022d05c
+    R10: ffffffff8023b34c R11: ffffffff8041a353 R12: ffff81007dee5388
+    R13: ffffffff8807b455 R14: ffffffff80593bc0 R15: 0000000000000000
+    FS:  0000000000000000(0000) GS:ffffffff8055a000(0000) knlGS:0000000000000000
+    CS:  0010 DS: 0018 ES: 0018 CR0: 000000008005003b
+    CR2: ffffffff8807b455 CR3: 0000000000201000 CR4: 00000000000006e0
+    DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
+    DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
+    Process events/0 (pid: 9, threadinfo ffff81007dcdc000, task ffff81007dc95040)
+    Stack:  ffffffff8023b396 ffffffff88082524 0000000000000000 ffffffff8807d9ae
+    ffff81007dc5eb40 ffff81007dc9dce0 ffff81007dc5eb40 ffff81007dc5eb80
+    ffff81007dc9dce0 ffffffffffffffff ffffffff8023be87 0000000000000000
+    Call Trace:
+    [<ffffffff8023b396>] ? run_workqueue+0xdf/0x1df
+    [<ffffffff8023be87>] ? worker_thread+0xd8/0xe3
+    [<ffffffff8023e917>] ? autoremove_wake_function+0x0/0x2e
+    [<ffffffff8023bdaf>] ? worker_thread+0x0/0xe3
+    [<ffffffff8023e813>] ? kthread+0x47/0x74
+    [<ffffffff804198e0>] ? trace_hardirqs_on_thunk+0x35/0x3a
+    [<ffffffff8020c008>] ? child_rip+0xa/0x12
+    [<ffffffff8020b6e3>] ? restore_args+0x0/0x3d
+    [<ffffffff8023e68a>] ? kthreadd+0x14c/0x171
+    [<ffffffff8023e68a>] ? kthreadd+0x14c/0x171
+    [<ffffffff8023e7cc>] ? kthread+0x0/0x74
+    [<ffffffff8020bffe>] ? child_rip+0x0/0x12
 
-Frankly, I don't see any conflict between pm-utils and s2ram at a technical
-level.
 
-Thanks,
-Rafael
+    Code:  Bad RIP value.
+    RIP  [<ffffffff8807b455>]
+    RSP <ffff81007dcdde88>
+    CR2: ffffffff8807b455
+    ---[ end trace c7366c6657fe5bed ]---
+
+Note that this crash happened _after_ firewire-core was unloaded.  The
+shared workqueue tried to run firewire-core's device initialization jobs
+or similar jobs.
+
+The fix makes sure that firewire-ohci and hence firewire-core is not
+unloaded before all device shutdown jobs have been completed.  This is
+determined by the count of device initializations minus device releases.
+
+Also skip useless retries in the node initialization job if the node is
+to be shut down.
+
+Signed-off-by: Stefan Richter <stefanr@s5r6.in-berlin.de>
+---
+
+Update:  Refreshed to be applicable after patch "firewire: fw-sbp2:
+better fix for NULL pointer dereference in scsi_remove_device".
+
+
+ drivers/firewire/fw-card.c        |   10 +++++++++-
+ drivers/firewire/fw-device.c      |   21 ++++++---------------
+ drivers/firewire/fw-device.h      |   16 ++++++++++++++--
+ drivers/firewire/fw-sbp2.c        |    3 +++
+ drivers/firewire/fw-transaction.h |    2 ++
+ 5 files changed, 34 insertions(+), 18 deletions(-)
+
+Index: linux/drivers/firewire/fw-card.c
+===================================================================
+--- linux.orig/drivers/firewire/fw-card.c
++++ linux/drivers/firewire/fw-card.c
+@@ -18,6 +18,7 @@
+ 
+ #include <linux/module.h>
+ #include <linux/errno.h>
++#include <linux/delay.h>
+ #include <linux/device.h>
+ #include <linux/mutex.h>
+ #include <linux/crc-itu-t.h>
+@@ -398,6 +399,7 @@ fw_card_initialize(struct fw_card *card,
+ 	static atomic_t index = ATOMIC_INIT(-1);
+ 
+ 	kref_init(&card->kref);
++	atomic_set(&card->device_count, 0);
+ 	card->index = atomic_inc_return(&index);
+ 	card->driver = driver;
+ 	card->device = device;
+@@ -528,8 +530,14 @@ fw_core_remove_card(struct fw_card *card
+ 	card->driver = &dummy_driver;
+ 
+ 	fw_destroy_nodes(card);
+-	flush_scheduled_work();
++	/*
++	 * Wait for all device workqueue jobs to finish.  Otherwise the
++	 * firewire-core module could be unloaded before the jobs ran.
++	 */
++	while (atomic_read(&card->device_count) > 0)
++		msleep(100);
+ 
++	cancel_delayed_work_sync(&card->work);
+ 	fw_flush_transactions(card);
+ 	del_timer_sync(&card->flush_timer);
+ 
+Index: linux/drivers/firewire/fw-device.c
+===================================================================
+--- linux.orig/drivers/firewire/fw-device.c
++++ linux/drivers/firewire/fw-device.c
+@@ -150,21 +150,10 @@ struct bus_type fw_bus_type = {
+ };
+ EXPORT_SYMBOL(fw_bus_type);
+ 
+-struct fw_device *fw_device_get(struct fw_device *device)
+-{
+-	get_device(&device->device);
+-
+-	return device;
+-}
+-
+-void fw_device_put(struct fw_device *device)
+-{
+-	put_device(&device->device);
+-}
+-
+ static void fw_device_release(struct device *dev)
+ {
+ 	struct fw_device *device = fw_device(dev);
++	struct fw_card *card = device->card;
+ 	unsigned long flags;
+ 
+ 	/*
+@@ -176,9 +165,9 @@ static void fw_device_release(struct dev
+ 	spin_unlock_irqrestore(&device->card->lock, flags);
+ 
+ 	fw_node_put(device->node);
+-	fw_card_put(device->card);
+ 	kfree(device->config_rom);
+ 	kfree(device);
++	atomic_dec(&card->device_count);
+ }
+ 
+ int fw_device_enable_phys_dma(struct fw_device *device)
+@@ -668,7 +657,8 @@ static void fw_device_init(struct work_s
+ 	 */
+ 
+ 	if (read_bus_info_block(device, device->generation) < 0) {
+-		if (device->config_rom_retries < MAX_RETRIES) {
++		if (device->config_rom_retries < MAX_RETRIES &&
++		    atomic_read(&device->state) == FW_DEVICE_INITIALIZING) {
+ 			device->config_rom_retries++;
+ 			schedule_delayed_work(&device->work, RETRY_DELAY);
+ 		} else {
+@@ -805,7 +795,8 @@ void fw_node_event(struct fw_card *card,
+ 		 */
+ 		device_initialize(&device->device);
+ 		atomic_set(&device->state, FW_DEVICE_INITIALIZING);
+-		device->card = fw_card_get(card);
++		atomic_inc(&card->device_count);
++		device->card = card;
+ 		device->node = fw_node_get(node);
+ 		device->node_id = node->node_id;
+ 		device->generation = card->generation;
+Index: linux/drivers/firewire/fw-sbp2.c
+===================================================================
+--- linux.orig/drivers/firewire/fw-sbp2.c
++++ linux/drivers/firewire/fw-sbp2.c
+@@ -791,6 +791,7 @@ static void sbp2_release_target(struct k
+ 
+ 	put_device(&tgt->unit->device);
+ 	scsi_host_put(shost);
++	fw_device_put(fw_device(tgt->unit->device.parent));
+ }
+ 
+ static struct workqueue_struct *sbp2_wq;
+@@ -1088,6 +1089,8 @@ static int sbp2_probe(struct device *dev
+ 	if (scsi_add_host(shost, &unit->device) < 0)
+ 		goto fail_shost_put;
+ 
++	fw_device_get(device);
++
+ 	/* Initialize to values that won't match anything in our table. */
+ 	firmware_revision = 0xff000000;
+ 	model = 0xff000000;
+Index: linux/drivers/firewire/fw-transaction.h
+===================================================================
+--- linux.orig/drivers/firewire/fw-transaction.h
++++ linux/drivers/firewire/fw-transaction.h
+@@ -26,6 +26,7 @@
+ #include <linux/fs.h>
+ #include <linux/dma-mapping.h>
+ #include <linux/firewire-constants.h>
++#include <asm/atomic.h>
+ 
+ #define TCODE_IS_READ_REQUEST(tcode)	(((tcode) & ~1) == 4)
+ #define TCODE_IS_BLOCK_PACKET(tcode)	(((tcode) &  1) != 0)
+@@ -219,6 +220,7 @@ extern struct bus_type fw_bus_type;
+ struct fw_card {
+ 	const struct fw_card_driver *driver;
+ 	struct device *device;
++	atomic_t device_count;
+ 	struct kref kref;
+ 
+ 	int node_id;
+Index: linux/drivers/firewire/fw-device.h
+===================================================================
+--- linux.orig/drivers/firewire/fw-device.h
++++ linux/drivers/firewire/fw-device.h
+@@ -76,9 +76,21 @@ fw_device_is_shutdown(struct fw_device *
+ 	return atomic_read(&device->state) == FW_DEVICE_SHUTDOWN;
+ }
+ 
+-struct fw_device *fw_device_get(struct fw_device *device);
++static inline struct fw_device *
++fw_device_get(struct fw_device *device)
++{
++	get_device(&device->device);
++
++	return device;
++}
++
++static inline void
++fw_device_put(struct fw_device *device)
++{
++	put_device(&device->device);
++}
++
+ struct fw_device *fw_device_get_by_devt(dev_t devt);
+-void fw_device_put(struct fw_device *device);
+ int fw_device_enable_phys_dma(struct fw_device *device);
+ 
+ void fw_device_cdev_update(struct fw_device *device);
+
+-- 
+Stefan Richter
+-=====-==--- --=- ==-=-
+http://arcgraph.de/sr/
+
