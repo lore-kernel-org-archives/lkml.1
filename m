@@ -1,50 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763451AbYBZPwT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760916AbYBZP6l@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763451AbYBZPwT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Feb 2008 10:52:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761061AbYBZPwH
+	id S1760916AbYBZP6l (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Feb 2008 10:58:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751003AbYBZP6d
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Feb 2008 10:52:07 -0500
-Received: from rtr.ca ([76.10.145.34]:3485 "EHLO mail.rtr.ca"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754027AbYBZPwF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Feb 2008 10:52:05 -0500
-Message-ID: <47C43655.1050907@rtr.ca>
-Date: Tue, 26 Feb 2008 10:55:01 -0500
-From: Mark Lord <liml@rtr.ca>
-Organization: Real-Time Remedies Inc.
-User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
+	Tue, 26 Feb 2008 10:58:33 -0500
+Received: from iolanthe.rowland.org ([192.131.102.54]:41835 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1750728AbYBZP6c (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 Feb 2008 10:58:32 -0500
+Date: Tue, 26 Feb 2008 10:58:31 -0500 (EST)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: David Newall <davidn@davidnewall.com>
+cc: David Brownell <david-b@pacbell.net>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       <linux-pm@lists.linux-foundation.org>,
+       Kernel development list <linux-kernel@vger.kernel.org>
+Subject: Re: [linux-pm] Fundamental flaw in system suspend, exposed by freezer
+ removal
+In-Reply-To: <47C415F2.2060905@davidnewall.com>
+Message-ID: <Pine.LNX.4.44L0.0802261055230.4176-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
-To: saeed <saeed@marvell.com>
-Cc: Jeff Garzik <jeff@garzik.org>, linux-ide@vger.kernel.org, jon@ngndg.com,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: Sata-MV, Intergated Sata Device Support
-References: <1176673884.5109.30.camel@Desktop> <47C35203.20402@garzik.org> <47C3585D.8070701@rtr.ca> <47C35A85.3020307@garzik.org> <alpine.DEB.0.99.0802260024400.22022@ubuntu-saeed.il.marvell.com>
-In-Reply-To: <alpine.DEB.0.99.0802260024400.22022@ubuntu-saeed.il.marvell.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-saeed wrote:
+On Wed, 27 Feb 2008, David Newall wrote:
+
+> David Brownell wrote:
+> > On Tuesday 26 February 2008, David Newall wrote:
+> >   
+> >> Hardware can be inserted and removed while we're in a suspend state; and
+> >> there's nothing that we can do about it until we resume.  Is it fair to
+> >> say, then, that having started suspend, we could reasonably ignore any
+> >> device insertion and removal, and handle it on resume?
+> >>     
+> >
+> > "Ignore" seems a bit strong; those events may be wakeup triggers,
+> > which would cause the hardware to make it a very short suspend state.
+> >
+> > "Defer handling" is more to the point, be it by hardware or software.
+> >
+> >   
 > 
-> On Mon, 25 Feb 2008, Jeff Garzik wrote:
+> Of course, "defer".  The insertion has to be handled eventually.  What
+> I'm wondering is if we can ignore it, and catch it on the resume.
+
+Certainly.  If hardware-change events can get lost because of the
+system sleep, the resume method should make every effort to verify that 
+what it remembers of the hardware state matches the current reality.
+
+> >> Presumably we need to scan for hardware changes on resume.
+> >>     
+> >
+> > Not on most busses I work with; the hardware issues notifications
+> > whenever the devices are removable.
+> >   
 > 
->>> ...
->>>
->>> Saeed:  isn't this what your SOC patches already implemented for us?
->>> As near as I can tell, sata_mv now already has support for the 60x1C0.
->> Saeed's stuff didn't support PCI though, and Jon Li is definitely talking
->> about PCI...
-> yes, my patch added support for the SoC sata like in the 5182, and this 
-> is what Jon Li was concerned about. he mentioneded the 60x1C0 pci device 
-> just to suggest to use it's code for the SoC sata as it is very similar.
-..
+> There's no notification while we're suspended.  Isn't it necessary to
+> scan all busses on resume, just to know what's on them?
 
-I don't think I understand your english there.
+It depends on the bus.  If the bus doesn't support hotplugging then 
+scanning isn't necessary.  If the bus does support hotplugging then 
+scanning after suspend may or may not be necessary, depending on 
+whether or not the bus controller remained powered during the suspend.  
+For hotpluggable buses, scanning after hibernation is always necessary.
 
-Does the current sata_mv driver work as-is with the chipset this person wants?
-If not, then exactly what has to change to make it work?
+Alan Stern
 
-Thanks
