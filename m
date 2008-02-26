@@ -1,49 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762764AbYBZPaa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761940AbYBZPff@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762764AbYBZPaa (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Feb 2008 10:30:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755932AbYBZPaQ
+	id S1761940AbYBZPff (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Feb 2008 10:35:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756527AbYBZPf0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Feb 2008 10:30:16 -0500
-Received: from fxip-0047f.externet.hu ([88.209.222.127]:41203 "EHLO
-	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752678AbYBZPaO (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Feb 2008 10:30:14 -0500
-To: a.p.zijlstra@chello.nl
-CC: neilb@suse.de, akpm@linux-foundation.org, torvalds@linux-foundation.org,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       netdev@vger.kernel.org, trond.myklebust@fys.uio.no
-In-reply-to: <1204023042.6242.271.camel@lappy> (message from Peter Zijlstra on
-	Tue, 26 Feb 2008 11:50:42 +0100)
-Subject: Re: [PATCH 00/28] Swap over NFS -v16
-References: <20080220144610.548202000@chello.nl>
-	 <20080223000620.7fee8ff8.akpm@linux-foundation.org>
-	 <18371.43950.150842.429997@notabene.brown> <1204023042.6242.271.camel@lappy>
-Message-Id: <E1JU1kk-0001t9-25@pomaz-ex.szeredi.hu>
-From: Miklos Szeredi <miklos@szeredi.hu>
-Date: Tue, 26 Feb 2008 16:29:58 +0100
+	Tue, 26 Feb 2008 10:35:26 -0500
+Received: from smtp5.pp.htv.fi ([213.243.153.39]:48406 "EHLO smtp5.pp.htv.fi"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753808AbYBZPfZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 Feb 2008 10:35:25 -0500
+Date: Tue, 26 Feb 2008 17:34:21 +0200
+From: Adrian Bunk <bunk@kernel.org>
+To: Martin Michlmayr <tbm@cyrius.com>
+Cc: linux-kernel@vger.kernel.org, Evgeniy Polyakov <johnpol@2ka.mipt.ru>,
+       Herbert Xu <herbert@gondor.apana.org.au>,
+       Ralf Baechle <ralf@linux-mips.org>, linux-crypto@vger.kernel.org
+Subject: [2.6.25 patch] drivers/crypto/hifn_795x.c: fix 64bit division
+Message-ID: <20080226153421.GB10717@cs181133002.pp.htv.fi>
+References: <20080226122100.GB22699@deprecation.cyrius.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <20080226122100.GB22699@deprecation.cyrius.com>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > mm-page_file_methods.patch
-> > 
-> >     This makes page_offset and others more expensive by adding a
-> >     conditional jump to a function call that is not usually made.
-> > 
-> >     Why do swap pages have a different index to everyone else?
+On Tue, Feb 26, 2008 at 01:21:00PM +0100, Martin Michlmayr wrote:
+> With 2.6.25-rc3 and a config file with
 > 
-> Because the page->index of an anonymous page is related to its (anon)vma
-> so that it satisfies the constraints for vm_normal_page().
+> CONFIG_CRYPTO_DEV_HIFN_795X=m
+> CONFIG_CRYPTO_DEV_HIFN_795X_RNG=y
 > 
-> The index in the swap file it totally unrelated and quite random. Hence
-> the swap-cache uses page->private to store it in.
+> I get the following build error on at least ARM and MIPS:
+> 
+>   Building modules, stage 2.
+>   MODPOST 759 modules
+> ERROR: "__divdi3" [drivers/crypto/hifn_795x.ko] undefined!
 
-Yeah, and putting the condition into page_offset() will confuse code
-which uses it for finding the offset in the VMA or in a tmpfs file.
+Fix below.
 
-So why not just have a separate page_swap_offset() function, used
-exclusively by swap_in/out()?
+> Martin Michlmayr
 
-Miklos
+cu
+Adrian
+
+
+<--  snip  -->
+
+
+Using ndelay() with a 64bit variable as parameter can result in build 
+errors like the following on some 32bit systems when it results in a 
+64bit division:
+
+<--  snip  -->
+
+ ...
+  MODPOST 759 modules
+ERROR: "__divdi3" [drivers/crypto/hifn_795x.ko] undefined!
+
+<--  snip  -->
+
+Reported by Martin Michlmayr.
+
+Signed-off-by: Adrian Bunk <bunk@kernel.org>
+
+---
+
+40b45041ddc587c20b872a86a6a36952c28b02c7 diff --git a/drivers/crypto/hifn_795x.c b/drivers/crypto/hifn_795x.c
+index 3110bf7..b1541c6 100644
+--- a/drivers/crypto/hifn_795x.c
++++ b/drivers/crypto/hifn_795x.c
+@@ -807,7 +807,7 @@ static int hifn_rng_data_present(struct hwrng *rng, int wait)
+ 		return 1;
+ 	if (!wait)
+ 		return 0;
+-	ndelay(nsec);
++	ndelay((u32)nsec);
+ 	return 1;
+ }
+ 
+
