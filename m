@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765627AbYBZUqe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932154AbYBZUqu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765627AbYBZUqe (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Feb 2008 15:46:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754078AbYBZUqR
+	id S932154AbYBZUqu (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Feb 2008 15:46:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765610AbYBZUqZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Feb 2008 15:46:17 -0500
-Received: from mgw2.diku.dk ([130.225.96.92]:35148 "EHLO mgw2.diku.dk"
+	Tue, 26 Feb 2008 15:46:25 -0500
+Received: from mgw2.diku.dk ([130.225.96.92]:35161 "EHLO mgw2.diku.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753719AbYBZUqQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Feb 2008 15:46:16 -0500
-Date: Tue, 26 Feb 2008 21:45:56 +0100 (CET)
+	id S1765119AbYBZUqW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 Feb 2008 15:46:22 -0500
+Date: Tue, 26 Feb 2008 21:46:19 +0100 (CET)
 From: Julia Lawall <julia@diku.dk>
-To: mark.fasheh@oracle.com, kurt.hackel@oracle.com, ocfs2-devel@oss.oracle.com,
+To: reiserfs-dev@namesys.com, reiserfs-devel@vger.kernel.org,
        linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
-Subject: [PATCH 8/9] fs/ocfs2/aops.c: Correct use of ! and &
-Message-ID: <Pine.LNX.4.64.0802262145321.18200@ask.diku.dk>
+Subject: [PATCH 9/9] fs/reiserfs/super.c: Correct use of ! and &
+Message-ID: <Pine.LNX.4.64.0802262145580.18200@ask.diku.dk>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
@@ -47,15 +47,15 @@ Signed-off-by: Julia Lawall <julia@diku.dk>
 
 ---
 
-diff -u -p a/fs/ocfs2/aops.c b/fs/ocfs2/aops.c
---- a/fs/ocfs2/aops.c 2008-02-05 20:56:02.000000000 +0100
-+++ b/fs/ocfs2/aops.c 2008-02-26 08:16:47.000000000 +0100
-@@ -257,7 +257,7 @@ static int ocfs2_readpage_inline(struct 
- 	struct ocfs2_super *osb = OCFS2_SB(inode->i_sb);
- 
- 	BUG_ON(!PageLocked(page));
--	BUG_ON(!OCFS2_I(inode)->ip_dyn_features & OCFS2_INLINE_DATA_FL);
-+	BUG_ON(!(OCFS2_I(inode)->ip_dyn_features & OCFS2_INLINE_DATA_FL));
- 
- 	ret = ocfs2_read_block(osb, OCFS2_I(inode)->ip_blkno, &di_bh,
- 			       OCFS2_BH_CACHED, inode);
+diff -u -p a/fs/reiserfs/super.c b/fs/reiserfs/super.c
+--- a/fs/reiserfs/super.c 2008-02-16 18:06:38.000000000 +0100
++++ b/fs/reiserfs/super.c 2008-02-26 08:17:07.000000000 +0100
+@@ -2031,7 +2031,7 @@ static int reiserfs_quota_on(struct supe
+ 		return -EXDEV;
+ 	}
+ 	/* We must not pack tails for quota files on reiserfs for quota IO to work */
+-	if (!REISERFS_I(nd.path.dentry->d_inode)->i_flags & i_nopack_mask) {
++	if (!(REISERFS_I(nd.path.dentry->d_inode)->i_flags & i_nopack_mask)) {
+ 		reiserfs_warning(sb,
+ 				 "reiserfs: Quota file must have tail packing disabled.");
+ 		path_put(&nd.path);
