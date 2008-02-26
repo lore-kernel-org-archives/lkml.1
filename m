@@ -1,44 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759514AbYBZDp5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760576AbYBZDrU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759514AbYBZDp5 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 Feb 2008 22:45:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754567AbYBZDpu
+	id S1760576AbYBZDrU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 Feb 2008 22:47:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755256AbYBZDrL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 Feb 2008 22:45:50 -0500
-Received: from one.firstfloor.org ([213.235.205.2]:45444 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754547AbYBZDpt (ORCPT
+	Mon, 25 Feb 2008 22:47:11 -0500
+Received: from n16.bullet.mail.mud.yahoo.com ([68.142.201.239]:20721 "HELO
+	n16.bullet.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1754567AbYBZDrK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 Feb 2008 22:45:49 -0500
-Date: Tue, 26 Feb 2008 04:46:25 +0100
-From: Andi Kleen <andi@firstfloor.org>
-To: Ravikiran Thirumalai <kiran@scalemp.com>
-Cc: Yinghai Lu <yhlu.kernel@gmail.com>, Andi Kleen <andi@firstfloor.org>,
-       Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       shai@scalemp.com
-Subject: Re: [PATCH] x86_64: make amd quad core 8 socket system not be clustered_box v2
-Message-ID: <20080226034625.GE21577@one.firstfloor.org>
-References: <200802210258.45011.yinghai.lu@sun.com> <200802221102.31019.yinghai.lu@sun.com> <47BF1BD9.4020808@firstfloor.org> <200802232148.43255.yinghai.lu@sun.com> <20080224122903.GC13637@one.firstfloor.org> <20080225190819.GE3143@localdomain> <86802c440802251405w7025a8b2na5fde4dcbf56067e@mail.gmail.com> <20080226033945.GJ3143@localdomain>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Mon, 25 Feb 2008 22:47:10 -0500
+X-Yahoo-Newman-Id: 95151.50459.bm@omp406.mail.mud.yahoo.com
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com.au;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Disposition:Message-Id:Content-Type;
+  b=02ggrToWgvo7HOyt4++08x5/SFbJI1LQrmAf3YcfzgzXMvBGw9pwaYaP2hVP7DWobF1v4KwofVYtp2lPaXz1oiMztz3rGvN6P9oTVvbQro2dYXAZ2D9B8znXhy8C4f1BgfI3C3cAEdPo8NbY1WInBdM5BqTdTdm5/D86YCAyvLg=  ;
+X-YMail-OSG: 70V6ZVUVM1mUrjc.C0IrCLESKh9qgDhcyhDYt1dnlTR782oYo83UCGYe_mbmT6k0Bf0s.0byrQ--
+X-Yahoo-Newman-Property: ymail-3
+From: Nick Piggin <nickpiggin@yahoo.com.au>
+To: Alexey Dobriyan <adobriyan@gmail.com>,
+       "Kevin Coffman" <kwc@citi.umich.edu>
+Subject: Re: 2.6.24-sha1: RIP  [<ffffffff802596c8>] iov_iter_advance+0x38/0x70
+Date: Tue, 26 Feb 2008 14:46:56 +1100
+User-Agent: KMail/1.9.5
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+References: <20080210140031.GA1754@martell.zuzino.mipt.ru> <20080219204711.GA1756@martell.zuzino.mipt.ru> <20080219220106.GB1756@martell.zuzino.mipt.ru>
+In-Reply-To: <20080219220106.GB1756@martell.zuzino.mipt.ru>
+MIME-Version: 1.0
 Content-Disposition: inline
-In-Reply-To: <20080226033945.GJ3143@localdomain>
-User-Agent: Mutt/1.4.2.1i
+Message-Id: <200802261446.57109.nickpiggin@yahoo.com.au>
+Content-Type: Multipart/Mixed;
+  boundary="Boundary-00=_xu4wHcO/cK2WXbS"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> I don't quite understand the purpose of the patch to begin with.  Looking at
-> the current x86 git tree, apic_is_clustered_box is used only to determine if
-> tsc is synchronized on the platform.  The AMD docs  imply that TSC's are not
-> guaranteed to be synced across cores between nodes -- Opteron BKDG for
-> family 10h, Section 2.9.4:
+--Boundary-00=_xu4wHcO/cK2WXbS
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-After long discussions with AMD they determined the CPUID flag
-for sync RDTSC will imply synchronization between nodes.
+On Wednesday 20 February 2008 09:01, Alexey Dobriyan wrote:
+> On Tue, Feb 19, 2008 at 11:47:11PM +0300,  wrote:
 
-If you can't support that in your hardware you're supposed
-to clear it.
+> > > Are you reproducing it simply by running the
+> > > ftest03 binary directly from the shell? How many times between oopses?
+> > > It is multi-process but no threads, so races should be minimal down
+> > > this path -- can you get an strace of the failing process?
+>
+> Speaking of multi-proceseness, changing MAXCHILD to 1, nchild to 1,
+> AFAICS, generates one child which oopses the very same way (in parallel
+> with generic LTP) But, lowering MAXIOVCNT to 8 generates no oops.
 
--Andi
+Thanks, I was able to reproduce quite easily with these settings.
+I think I have the correct patch now (at least it isn't triggerable
+any more here).
+
+Thanks,
+Nick
+
+--Boundary-00=_xu4wHcO/cK2WXbS
+Content-Type: text/x-diff;
+  charset="iso-8859-1";
+  name="iov-iter-fix.patch"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: attachment;
+	filename="iov-iter-fix.patch"
+
+diff --git a/mm/filemap.c b/mm/filemap.c
+index 5c74b68..2650073 100644
+--- a/mm/filemap.c
++++ b/mm/filemap.c
+@@ -1750,14 +1750,18 @@ static void __iov_iter_advance_iov(struct iov_iter *i, size_t bytes)
+ 	} else {
+ 		const struct iovec *iov = i->iov;
+ 		size_t base = i->iov_offset;
++		size_t copied = 0;
+ 
+ 		/*
+ 		 * The !iov->iov_len check ensures we skip over unlikely
+-		 * zero-length segments.
++		 * zero-length segments (without overruning the iovec).
+ 		 */
+-		while (bytes || !iov->iov_len) {
+-			int copy = min(bytes, iov->iov_len - base);
++		while (copied < bytes ||
++				unlikely(!iov->iov_len && copied < i->count)) {
++			int copy;
+ 
++			copy = min(bytes, iov->iov_len - base);
++			copied += copy;
+ 			bytes -= copy;
+ 			base += copy;
+ 			if (iov->iov_len == base) {
+
+--Boundary-00=_xu4wHcO/cK2WXbS--
+
