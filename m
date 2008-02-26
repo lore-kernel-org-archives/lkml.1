@@ -1,142 +1,177 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932657AbYBZW3a@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932293AbYBZWcM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932657AbYBZW3a (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Feb 2008 17:29:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932547AbYBZW0E
+	id S932293AbYBZWcM (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Feb 2008 17:32:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755018AbYBZWbz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Feb 2008 17:26:04 -0500
-Received: from brick.kernel.dk ([87.55.233.238]:20879 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1765779AbYBZW0B (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Feb 2008 17:26:01 -0500
-Date: Tue, 26 Feb 2008 23:25:56 +0100
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Anders Henke <anders.henke@1und1.de>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       device-mapper development <dm-devel@redhat.com>,
+	Tue, 26 Feb 2008 17:31:55 -0500
+Received: from einhorn.in-berlin.de ([192.109.42.8]:46123 "EHLO
+	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754679AbYBZWbx (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 Feb 2008 17:31:53 -0500
+X-Envelope-From: stefanr@s5r6.in-berlin.de
+Date: Tue, 26 Feb 2008 23:30:02 +0100 (CET)
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Subject: [PATCH] firewire: fw-sbp2: better fix for NULL pointer dereference in
+ scsi_remove_device
+To: Jarod Wilson <jwilson@redhat.com>
+cc: linux1394-devel@lists.sourceforge.net, linux-scsi@vger.kernel.org,
        linux-kernel@vger.kernel.org
-Subject: Re: [dm-devel] Re: device mapper not reporting no-barrier-support?
-Message-ID: <20080226222556.GU6704@kernel.dk>
-References: <20080225132615.GA21990@1und1.de> <20080225152050.94788622.akpm@linux-foundation.org> <20080226013656.GE1788@agk.fab.redhat.com> <20080226161741.GN6704@kernel.dk> <20080226193349.GQ13026@1und1.de> <20080226194122.GQ6704@kernel.dk> <20080226202030.GR13026@1und1.de>
+Message-ID: <tkrat.43f73e8c841b3161@s5r6.in-berlin.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080226202030.GR13026@1und1.de>
+Content-Type: TEXT/PLAIN; CHARSET=us-ascii
+Content-Disposition: INLINE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Feb 26 2008, Anders Henke wrote:
-> On Tue, Feb 26 2008 schrieb Jens Axboe:
-> > On Tue, Feb 26 2008, Anders Henke wrote:
-> > > On Tue, Feb 26 2008 Jens Axboe wrote:
-> > > > On Tue, Feb 26 2008, Alasdair G Kergon wrote:
-> > > > > On Mon, Feb 25, 2008 at 03:20:50PM -0800, Andrew Morton wrote:
-> > > > > > On Mon, 25 Feb 2008 14:26:15 +0100 Anders Henke <anders.henke@1und1.de> wrote:
-> > > > > > > I'm currently stuck between Kernel LVM and DRBD, as I'm using Kernel
-> > > > > > > 2.6.24.2 with DRBD 8.2.5 on top of an LVM2 device (LV).
-> > > > > > > -LVM2/device mapper doesn't support write barriers
-> > > > > 
-> > > > > That's right.
-> > > > > 
-> > > > > > > -DRBD uses blkdev_issue_flush() to flush its metadata to disk.
-> > > > > 
-> > > > > Which won't work if device-mapper is underneath.
-> > > > > 
-> > > > > > >  On a no-barrier-device, DRBD should receive EOPNOTSUPP, but
-> > > > > > >  it really does receive an EIO. Promptly, DRBD gives the
-> > > > > > >  error message "drbd0: local disk flush failed with status -5".
-> > > > > > > I've posted a lengty summary of my findings to
-> > > > > > > http://lists.linbit.com/pipermail/drbd-user/2008-February/008665.html
-> > > > > > > ... that DRBD does catch the EOPNOTSUPP for blkdev_issue_flush and
-> > > > > > > BIO_RW_BARRIER, but the lvm implementation of blkdev_issue_flush in
-> > > > > > > 2.6.24.2 aparently does return EIO for blkdev_issue_flush.
-> > > > > > I'd say it's a DM bug.
-> > > > > 
-> > > > > The dm code is unchanged, but look at the limited endio handling in
-> > > > > ll_rw_blk.c:
-> > > > > 
-> > > > > static void bio_end_empty_barrier(struct bio *bio, int err)
-> > > > > {
-> > > > >         if (err)
-> > > > >                 clear_bit(BIO_UPTODATE, &bio->bi_flags);
-> > > > > 
-> > > > >         complete(bio->bi_private);
-> > > > > }
-> > > > > 
-> > > > > int blkdev_issue_flush(struct block_device *bdev, sector_t *error_sector)
-> > > > > {
-> > > > > ...
-> > > > >         wait_for_completion(&wait);
-> > > > >         if (error_sector)
-> > > > >                 *error_sector = bio->bi_sector;
-> > > > >         ret = 0;
-> > > > >         if (!bio_flagged(bio, BIO_UPTODATE))
-> > > > >                 ret = -EIO;
-> > > > 
-> > > > You are right, the return value got broken there. Does this make it
-> > > > return -EOPNOTSUPP properly for you?
-> > > 
-> > > 
-> > > No, it doesn't.
-> > > 
-> > > 
-> > > 
-> > > I've applied your patch manually, as 2.6.24.2. doesn't have a "blk-barrier.c":
-> > > 
-> > > ---cut
-> > > --- linux-2.6.24.2/block/ll_rw_blk.c.prepatch   2008-02-11
-> > > 06:51:11.000000000 +0100
-> > > +++ linux-2.6.24.2/block/ll_rw_blk.c    2008-02-26 20:02:28.514641620
-> > > +0100
-> > > @@ -2667,8 +2667,11 @@
-> > >  
-> > >  static void bio_end_empty_barrier(struct bio *bio, int err)
-> > >  {
-> > > -       if (err)
-> > > +       if (err) {
-> > > +               if (err == -EOPNOTSUPP)
-> > > +                       set_bit(BIO_EOPNOTSUPP, &bio->bi_flags);
-> > >                 clear_bit(BIO_UPTODATE, &bio->bi_flags);
-> > > +       }
-> > >  
-> > >         complete(bio->bi_private);
-> > >  }
-> > > ---cut
-> > > 
-> > > ... and the resulting kernel shows exactly the same behaviour than before:
-> > 
-> > Not surprising, as you missed half of the patch:
-> 
-> Ouch. Thank you for pointing this out.
-> 
-> I've been spending too much time of the day with things who have a negative 
-> impact on my concentration and I shouldn't manually patch kernels at
-> this time of the day.
-> 
-> Yes, it's useless to set a bit, but never check it (like in my version of
-> your patch).
-> 
-> After adding the second part of your patch, the resulting kernel works as
-> intended:
-> 
-> [  234.946192] drbd0: conn( WFSyncUUID -> SyncTarget ) 
-> [  234.956176] drbd0: Began resync as SyncTarget (will sync 19542404 KB
-> [4885601
->  bits set]).
-> [  234.972567] drbd0: Writing meta data super block now.
-> [  235.018203] drbd0: local disk flush failed with status -95
-> 
-> DRBD sees the EOPNOTSUPP, logs this message only once and doesn't try
-> any further barrier requests (as intended).
+Patch "firewire: fw-sbp2: fix NULL pointer deref. in scsi_remove_device"
+had the unintended effect that firewire-sbp2 could not be unloaded
+anymore until all SBP-2 devices were unplugged.
 
-OK good, that's what I expected :-)
+We now fix the NULL pointer bug by reacquiring a reference to the sdev
+instead of holding a reference to the sdev (and to the module) all the
+time.
 
-I'll queue the patch for 2.6.25, the 2.6.24 should go to stable. Send me
-a properly formatted patch and I'll make sure it goes that way.
+Signed-off-by: Stefan Richter <stefanr@s5r6.in-berlin.de>
+---
 
-Thanks for testing!
+This applies on top of current linux-2.6.git master as well as on top of
+linux1394-2.6.git master.
+
+
+ drivers/firewire/fw-sbp2.c |   46 +++++++++++++++++++++----------------
+ 1 file changed, 27 insertions(+), 19 deletions(-)
+
+Index: linux/drivers/firewire/fw-sbp2.c
+===================================================================
+--- linux.orig/drivers/firewire/fw-sbp2.c
++++ linux/drivers/firewire/fw-sbp2.c
+@@ -122,7 +122,6 @@ static const char sbp2_driver_name[] = "
+ struct sbp2_logical_unit {
+ 	struct sbp2_target *tgt;
+ 	struct list_head link;
+-	struct scsi_device *sdev;
+ 	struct fw_address_handler address_handler;
+ 	struct list_head orb_list;
+ 
+@@ -139,6 +138,7 @@ struct sbp2_logical_unit {
+ 	int generation;
+ 	int retries;
+ 	struct delayed_work work;
++	bool has_sdev;
+ 	bool blocked;
+ };
+ 
+@@ -751,20 +751,33 @@ static void sbp2_unblock(struct sbp2_tar
+ 	scsi_unblock_requests(shost);
+ }
+ 
++static int sbp2_lun2int(u16 lun)
++{
++	struct scsi_lun eight_bytes_lun;
++
++	memset(&eight_bytes_lun, 0, sizeof(eight_bytes_lun));
++	eight_bytes_lun.scsi_lun[0] = (lun >> 8) & 0xff;
++	eight_bytes_lun.scsi_lun[1] = lun & 0xff;
++
++	return scsilun_to_int(&eight_bytes_lun);
++}
++
+ static void sbp2_release_target(struct kref *kref)
+ {
+ 	struct sbp2_target *tgt = container_of(kref, struct sbp2_target, kref);
+ 	struct sbp2_logical_unit *lu, *next;
+ 	struct Scsi_Host *shost =
+ 		container_of((void *)tgt, struct Scsi_Host, hostdata[0]);
++	struct scsi_device *sdev;
+ 
+ 	/* prevent deadlocks */
+ 	sbp2_unblock(tgt);
+ 
+ 	list_for_each_entry_safe(lu, next, &tgt->lu_list, link) {
+-		if (lu->sdev) {
+-			scsi_remove_device(lu->sdev);
+-			scsi_device_put(lu->sdev);
++		sdev = scsi_device_lookup(shost, 0, 0, sbp2_lun2int(lu->lun));
++		if (sdev) {
++			scsi_remove_device(sdev);
++			scsi_device_put(sdev);
+ 		}
+ 		sbp2_send_management_orb(lu, tgt->node_id, lu->generation,
+ 				SBP2_LOGOUT_REQUEST, lu->login_id, NULL);
+@@ -807,7 +820,6 @@ static void sbp2_login(struct work_struc
+ 	struct fw_device *device = fw_device(tgt->unit->device.parent);
+ 	struct Scsi_Host *shost;
+ 	struct scsi_device *sdev;
+-	struct scsi_lun eight_bytes_lun;
+ 	struct sbp2_login_response response;
+ 	int generation, node_id, local_node_id;
+ 
+@@ -820,7 +832,7 @@ static void sbp2_login(struct work_struc
+ 	local_node_id = device->card->node_id;
+ 
+ 	/* If this is a re-login attempt, log out, or we might be rejected. */
+-	if (lu->sdev)
++	if (lu->has_sdev)
+ 		sbp2_send_management_orb(lu, device->node_id, generation,
+ 				SBP2_LOGOUT_REQUEST, lu->login_id, NULL);
+ 
+@@ -859,7 +871,7 @@ static void sbp2_login(struct work_struc
+ 	sbp2_agent_reset(lu);
+ 
+ 	/* This was a re-login. */
+-	if (lu->sdev) {
++	if (lu->has_sdev) {
+ 		sbp2_cancel_orbs(lu);
+ 		sbp2_conditionally_unblock(lu);
+ 		goto out;
+@@ -868,13 +880,8 @@ static void sbp2_login(struct work_struc
+ 	if (lu->tgt->workarounds & SBP2_WORKAROUND_DELAY_INQUIRY)
+ 		ssleep(SBP2_INQUIRY_DELAY);
+ 
+-	memset(&eight_bytes_lun, 0, sizeof(eight_bytes_lun));
+-	eight_bytes_lun.scsi_lun[0] = (lu->lun >> 8) & 0xff;
+-	eight_bytes_lun.scsi_lun[1] = lu->lun & 0xff;
+ 	shost = container_of((void *)tgt, struct Scsi_Host, hostdata[0]);
+-
+-	sdev = __scsi_add_device(shost, 0, 0,
+-				 scsilun_to_int(&eight_bytes_lun), lu);
++	sdev = __scsi_add_device(shost, 0, 0, sbp2_lun2int(lu->lun), lu);
+ 	/*
+ 	 * FIXME:  We are unable to perform reconnects while in sbp2_login().
+ 	 * Therefore __scsi_add_device() will get into trouble if a bus reset
+@@ -896,7 +903,8 @@ static void sbp2_login(struct work_struc
+ 	}
+ 
+ 	/* No error during __scsi_add_device() */
+-	lu->sdev = sdev;
++	lu->has_sdev = true;
++	scsi_device_put(sdev);
+ 	sbp2_allow_block(lu);
+ 	goto out;
+ 
+@@ -934,11 +942,11 @@ static int sbp2_add_logical_unit(struct 
+ 		return -ENOMEM;
+ 	}
+ 
+-	lu->tgt  = tgt;
+-	lu->sdev = NULL;
+-	lu->lun  = lun_entry & 0xffff;
+-	lu->retries = 0;
+-	lu->blocked = false;
++	lu->tgt      = tgt;
++	lu->lun      = lun_entry & 0xffff;
++	lu->retries  = 0;
++	lu->has_sdev = false;
++	lu->blocked  = false;
+ 	++tgt->dont_block;
+ 	INIT_LIST_HEAD(&lu->orb_list);
+ 	INIT_DELAYED_WORK(&lu->work, sbp2_login);
 
 -- 
-Jens Axboe
+Stefan Richter
+-=====-==--- --=- ==-=-
+http://arcgraph.de/sr/
 
