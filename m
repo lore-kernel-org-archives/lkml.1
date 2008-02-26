@@ -1,88 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932320AbYBZWFq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932535AbYBZWGB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932320AbYBZWFq (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Feb 2008 17:05:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764046AbYBZWFg
+	id S932535AbYBZWGB (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Feb 2008 17:06:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764598AbYBZWFi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Feb 2008 17:05:36 -0500
-Received: from vs166246.vserver.de ([62.75.166.246]:33006 "EHLO
-	vs166246.vserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1762845AbYBZWFf (ORCPT
+	Tue, 26 Feb 2008 17:05:38 -0500
+Received: from smtp-102-tuesday.nerim.net ([62.4.16.102]:52777 "EHLO
+	kraid.nerim.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1764154AbYBZWFg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Feb 2008 17:05:35 -0500
-From: Michael Buesch <mb@bu3sch.de>
-To: "Alexey Zaytsev" <alexey.zaytsev@gmail.com>
-Subject: Re: bcm43xx regression in 2.6.24 (with patch)
-Date: Tue, 26 Feb 2008 23:04:39 +0100
-User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
-Cc: "John W. Linville" <linville@tuxdriver.com>, "Ingo Molnar" <mingo@elte.hu>,
-       "Alexey Zaytsev" <zaytsev.a@protei.ru>, "Greg KH" <greg@kroah.com>,
-       linux-kernel@vger.kernel.org
-References: <47BEAF3B.3080809@protei.ru> <20080226202044.GE3013@tuxdriver.com> <f19298770802261338r40e3f252j2249c1325b725614@mail.gmail.com>
-In-Reply-To: <f19298770802261338r40e3f252j2249c1325b725614@mail.gmail.com>
-MIME-Version: 1.0
-Content-Disposition: inline
-Message-Id: <200802262304.39882.mb@bu3sch.de>
-Content-Type: text/plain;
-  charset="utf-8"
+	Tue, 26 Feb 2008 17:05:36 -0500
+X-Greylist: delayed 36159 seconds by postgrey-1.27 at vger.kernel.org; Tue, 26 Feb 2008 17:05:36 EST
+Date: Tue, 26 Feb 2008 23:05:32 +0100
+From: Jean Delvare <khali@linux-fr.org>
+To: Mariusz Kozlowski <m.kozlowski@tuxland.pl>
+Cc: gregkh@suse.de, linux-kernel@vger.kernel.org, linux-usb@vger.kernel.org
+Subject: Re: problem with starting 2.6.25-rc1 and latest git
+Message-ID: <20080226230532.76f63db3@hyperion.delvare>
+In-Reply-To: <200802261704.46848.m.kozlowski@tuxland.pl>
+References: <200802132316.03155.m.kozlowski@tuxland.pl>
+	<20080218142832.3a092dd5@hyperion.delvare>
+	<20080226130254.5668d330@hyperion.delvare>
+	<200802261704.46848.m.kozlowski@tuxland.pl>
+X-Mailer: Sylpheed-Claws 2.5.5 (GTK+ 2.10.6; x86_64-suse-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 26 February 2008 22:38:56 Alexey Zaytsev wrote:
-> On Tue, Feb 26, 2008 at 11:20 PM, John W. Linville
-> <linville@tuxdriver.com> wrote:
-> > On Sat, Feb 23, 2008 at 11:20:58PM +0100, Michael Buesch wrote:
-> >  > On Saturday 23 February 2008 22:32:46 Alexey Zaytsev wrote:
-> >
-> >
-> > > > And you knew that the new driver did no work with the bcm4311
-> >  > > chips, which is the sad thing.
-> >  >
-> >  > That is not true. It doesn't work with exactly _one_ revision
-> >  > of the bcm4311 card. And that is already fixed in 2.6.25.
-> >  > I'd like to have that in .24-stable, too, but I guess it's too big.
-> >  > It changes some parts of the DMA engine code.
-> >
-> >  Which patch is it?  Is it this one?  Or is there another one that touches 4311?
+Hi Mariusz,
 
-Yeah, I think that's it.
+On Tue, 26 Feb 2008 17:04:46 +0100, Mariusz Kozlowski wrote:
+> I can reproduce this here on rc3 as well. Weird - on git tree before
+> rc3 was released this didn't happen. rc2 and rc1 are broken. I also
+> don't know why nobody else see this but us :) And not sure how
+> to debug it some more or provide more accurate information.
 
-> >  commit 013978b688d2a27af3ab55ca739e8c8ac7254870
-> >  Author: Larry Finger <Larry.Finger@lwfinger.net>
-> >  Date:   Mon Nov 26 10:29:47 2007 -0600
-> >
-> >     b43: Changes to enable BCM4311 rev 02 with wireless core revision 13
-> >
-> >     The BCM94311MCG rev 02 chip has an 802.11 core with revision 13 and
-> >     has not been supported until now. The changes include the following:
-> >
-> >  <snip>
-> >
-> >  If so, perhaps we should just consider applying this to -stable?
-> >
-> 
-> I see a few problems here:
-> 
-> This commit seems to depend on some commits prior to it, as it touches
-> drivers/net/wireless/b43/wa.c which is absent in 2.6.24.3. When I get home,
-> I'll test if it still works if you ignore wa.c
+Here's a quick and dirty debugging patch I wrote in an attempt to find
+out what was going on. Unfortunately, the problem never happened to me
+when this debug patch was applied. Maybe you'll have more "luck"?
 
-Yeah, seems so. But if you are willing to test an adjusted version, I can
-probably do a backported version of this patch.
-This patch is well tested and does the right thing, so I'm willing to sign
-off a backported version of this.
-First need to find the place in the old phy.c code that matches the new wa.c code.
+ kernel/module.c |    4 ++++
+ 1 file changed, 4 insertions(+)
 
-> The patch may be too complex for -stable. I think there was a hard line
-> count limit, like no more than 100 lines. I'm not sure if this still stands.
-> 
-> This  does not fix the bcm43xx driver.
+--- linux-2.6.25-rc1.orig/kernel/module.c	2008-02-14 09:16:15.000000000 +0100
++++ linux-2.6.25-rc1/kernel/module.c	2008-02-14 23:20:22.000000000 +0100
+@@ -2153,8 +2153,10 @@ sys_init_module(void __user *umod,
+ 		return PTR_ERR(mod);
+ 	}
+ 
++	printk(KERN_WARNING "loading module %s, checkpoint 1\n", mod->name);
+ 	/* Drop lock so they can recurse */
+ 	mutex_unlock(&module_mutex);
++	printk(KERN_WARNING "loading module %s, checkpoint 2\n", mod->name);
+ 
+ 	blocking_notifier_call_chain(&module_notify_list,
+ 			MODULE_STATE_COMING, mod);
+@@ -2177,6 +2179,7 @@ sys_init_module(void __user *umod,
+ 
+ 	/* Now it's a first class citizen! */
+ 	mutex_lock(&module_mutex);
++	printk(KERN_WARNING "loading module %s, checkpoint 3\n", mod->name);
+ 	mod->state = MODULE_STATE_LIVE;
+ 	/* Drop initial reference. */
+ 	module_put(mod);
+@@ -2186,6 +2189,7 @@ sys_init_module(void __user *umod,
+ 	mod->init_size = 0;
+ 	mod->init_text_size = 0;
+ 	mutex_unlock(&module_mutex);
++	printk(KERN_WARNING "loading module %s, checkpoint 4\n", mod->name);
+ 	wake_up(&module_wq);
+ 
+ 	return 0;
 
-It does not even touch the bcm43xx driver.
-Besides that the bcm43xx driver is not broken. That's the whole reason
-this damn thread started at all. So it can't be broken.
 
 -- 
-Greetings Michael.
+Jean Delvare
