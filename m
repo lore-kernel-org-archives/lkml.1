@@ -1,49 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763956AbYBZUFS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764811AbYBZUGR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763956AbYBZUFS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Feb 2008 15:05:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753479AbYBZUFB
+	id S1764811AbYBZUGR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Feb 2008 15:06:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754327AbYBZUGF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Feb 2008 15:05:01 -0500
-Received: from pasmtpa.tele.dk ([80.160.77.114]:50411 "EHLO pasmtpA.tele.dk"
+	Tue, 26 Feb 2008 15:06:05 -0500
+Received: from sandeen.net ([209.173.210.139]:12300 "EHLO sandeen.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753239AbYBZUFA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Feb 2008 15:05:00 -0500
-Date: Tue, 26 Feb 2008 21:05:12 +0100
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Yinghai Lu <Yinghai.Lu@Sun.COM>
-Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       kiran@scalemp.com, shai@scalemp.com, Glauber Costa <gcosta@redhat.com>
-Subject: Re: [PATCH] x86: vSMP selection in config
-Message-ID: <20080226200512.GA32685@uranus.ravnborg.org>
-References: <200802210258.45011.yinghai.lu@sun.com> <200802241832.37850.yinghai.lu@sun.com> <200802242136.28744.yinghai.lu@sun.com> <200802242243.49576.yinghai.lu@sun.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200802242243.49576.yinghai.lu@sun.com>
-User-Agent: Mutt/1.4.2.1i
+	id S1753479AbYBZUGD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 Feb 2008 15:06:03 -0500
+Message-ID: <47C47127.7040700@sandeen.net>
+Date: Tue, 26 Feb 2008 12:05:59 -0800
+From: Eric Sandeen <sandeen@sandeen.net>
+User-Agent: Thunderbird 2.0.0.9 (Macintosh/20071031)
+MIME-Version: 1.0
+To: xfs-masters@oss.sgi.com
+CC: "Rafael J. Wysocki" <rjw@sisk.pl>, Christoph Hellwig <hch@lst.de>,
+       xfs@oss.sgi.com, johannes@sipsolutions.net,
+       linux-kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [xfs-masters] Re: filesystem corruption on xfs after	2.6.25-rc1
+ (bisected, powerpc related?)
+References: <20080225112310.GA5516@soziologie.ch> <200802260052.57875.rjw@sisk.pl> <20080225235703.GA17530@lst.de> <200802260113.57875.rjw@sisk.pl> <20080226114419.GA5353@soziologie.ch>
+In-Reply-To: <20080226114419.GA5353@soziologie.ch>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Feb 24, 2008 at 10:43:49PM -0800, Yinghai Lu wrote:
+Gaudenz Steinlin wrote:
+> On Tue, Feb 26, 2008 at 01:13:56AM +0100, Rafael J. Wysocki wrote:
+>> On Tuesday, 26 of February 2008, Christoph Hellwig wrote:
+>>> On Tue, Feb 26, 2008 at 12:52:56AM +0100, Rafael J. Wysocki wrote:
+>>>>> I'm not suggesting a partial revert; I just wonder which part of the
+>>>>> change is causing the problem, as part of the debugging process.
 > 
-> find out vSMP setting is going away in config after make oldconfig
-> 
-> vSMP need to PARAVIRT and PCI.
-> so move PARAVIRT out of if PARAVIRT_GUEST, and make vSMP select PCI instead of
-> depends on PCI
-> 
-> after patch vSMP could stick there.
+> I debuged this a bit further by testing the 4 changed functions
+> individually. The problem only occurs with the new version of
+> xfs_lowbit64. 
 
-I'm certain that we have hit a Kconfig bug / limitation here and
-the patch below is just a workaround for that issue.
+FWIW, Dave & I did some testing/debugging on 32-bit powerpc, and it is
+indeed only xfs_lowbit64 which is doing the wrong thing on that arch,
+because generic find_next_bit is doing the wrong thing on big-endian
+32-bit systems, for sizes > 32 bits, near as I can tell.
 
-I tracked it down to a minimal case and hope Roman can provide
-either an explanation or a fix.
+Rather than reverting it all, I think just changing xfs_lowbit64 back to:
 
-IMO VSMP can wait until this is resolved properly and we should not
-apply this patch.
+int
+xfs_lowbit64(
+       __uint64_t      v)
+{
+       __uint32_t      w = (__uint32_t)v;
+       int             n = 0;
 
-	Sam
+       if (w) {        /* lower bits */
+               n = ffs(w);
+       } else {        /* upper bits */
+               w = (__uint32_t)(v >> 32);
+               if (w && (n = ffs(w)))
+                       n += 32;
+       }
+       return n - 1;
+}
+
+for now should fix it (this is essentially just ffs64())
+
+-Eric
