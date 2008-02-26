@@ -1,65 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761467AbYBZOiZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761845AbYBZOlR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761467AbYBZOiZ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Feb 2008 09:38:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752366AbYBZOiQ
+	id S1761845AbYBZOlR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Feb 2008 09:41:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751615AbYBZOlE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Feb 2008 09:38:16 -0500
-Received: from 87-194-8-8.bethere.co.uk ([87.194.8.8]:51754 "EHLO
-	kira.home.fluff.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751952AbYBZOiP (ORCPT
+	Tue, 26 Feb 2008 09:41:04 -0500
+Received: from idcmail-mo1so.shaw.ca ([24.71.223.10]:40692 "EHLO
+	pd2mo1so.prod.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751545AbYBZOlC (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Feb 2008 09:38:15 -0500
-Date: Tue, 26 Feb 2008 14:37:45 +0000
-From: Ben Dooks <ben-linux@fluff.org>
-To: Sam Ravnborg <sam@ravnborg.org>
-Cc: Michael Buesch <mb@bu3sch.de>,
-       Gordon Farquharson <gordonfarquharson@gmail.com>,
-       Russell King <rmk+lkml@arm.linux.org.uk>, linux-kernel@vger.kernel.org,
-       linville@tuxdriver.com, stefano.brivio@polimi.it,
-       Linus Torvalds <torvalds@osdl.org>, Andrew Morton <akpm@osdl.org>,
-       viro@ftp.linux.org.uk
-Subject: Re: [RFC] [PATCH] Fix b43 driver build for arm
-Message-ID: <20080226143744.GA24332@fluff.org.uk>
-References: <97a0a9ac0802181403ja79c32v864b093414b2755@mail.gmail.com> <200802191141.26952.mb@bu3sch.de> <97a0a9ac0802191644x693cd34cq6b167756df9c65f4@mail.gmail.com> <200802201544.05192.mb@bu3sch.de> <20080220193709.GD21139@uranus.ravnborg.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080220193709.GD21139@uranus.ravnborg.org>
-X-Disclaimer: These are my own opinions, so there!
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+	Tue, 26 Feb 2008 09:41:02 -0500
+Date: Tue, 26 Feb 2008 08:41:56 -0600
+From: Robert Hancock <hancockr@shaw.ca>
+Subject: Re: [PATCH] sata_nv: fix nmi intr or system hanging in rhel4u6 adma.
+In-reply-to: <15F501D1A78BD343BE8F4D8DB854566B1BFE2AE5@hkemmail01.nvidia.com>
+To: Kuan Luo <kluo@nvidia.com>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>, Tejun Heo <htejun@gmail.com>,
+       Jeff Garzik <jeff@garzik.org>, Peer Chen <pchen@nvidia.com>
+Message-id: <47C42534.1090107@shaw.ca>
+MIME-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1; format=flowed
+Content-transfer-encoding: 7bit
+References: <15F501D1A78BD343BE8F4D8DB854566B1BFE2AE5@hkemmail01.nvidia.com>
+User-Agent: Thunderbird 2.0.0.9 (Windows/20071031)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Feb 20, 2008 at 08:37:09PM +0100, Sam Ravnborg wrote:
-> On Wed, Feb 20, 2008 at 03:44:04PM +0100, Michael Buesch wrote:
-> > On Wednesday 20 February 2008 01:44:38 Gordon Farquharson wrote:
-> > > Hi Michael
-> > > 
-> > > On Feb 19, 2008 3:41 AM, Michael Buesch <mb@bu3sch.de> wrote:
-> > > 
-> > > > > [2] http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commitdiff;h=7492d4a416d68ab4bd254b36ffcc4e0138daa8ff
-> > > > >
-> > > >
-> > > > That doesn't cause me to magically sign off this sort of patches, too.
-> > > > The sanity check is clearly broken in file2alias.c, as it checks something
-> > > > from the target kernel against the host environment it is compiled on.
-> > > > That doesn't make any sense at all.
-> > > 
-> > > I think that you make some good points, but I'm at a loss as to how to
-> > > fix the problem. Do you have any suggestions?
-> > 
-> > Remove the broken sanity check, if it's not possible the check there.
-> The check is valid for > 99% of the kernel builds as
-> cross compile builds are not that typical.
-> And the check is there for the sake of modutils.
 
-I build all of my ARM kernels on an x86 box, it is much faster
-and I don't have to ensure I have a read/write capable filesystem
-for any of my ARM boards.
 
--- 
-Ben (ben@fluff.org, http://www.fluff.org/)
+Kuan Luo wrote:
+> Hi, robert 
+> 
+> One customer reported that their system received a nmi interrupt after
+> issuing "dd if=/dev/sdb of=/dev/null" on a defective disk in rhel4u6.
+> I tested it and found  that my system hung both in rhel4u6(2.6.9-67) and
+> 2.6.24-rc7.
+> The patch can work well,  but I am not sure if the patch has other
+> potential effect on adma.
+> I attached a  file in case of lines breaked.
+> 
+> The below info comes from Gunther Mayer to reproduce the issue.
+> "
+> used a Seagate ST3500841NS 3.AE for my test; probably other 
+> seagate drives are also capable of creating media errors with 
+> the new hdparm-8.1: 
+> 
+> - compile hdparm-8.1 
+> - hdparm -- yes-i-know-what-i-am-doing --make-bad-sector 60000 /dev/sdb 
+> 
+> Unfortunately this does not succeed for nvidia sata controller (timeouts
+> et al.), but it worked fine on AHCI machine (e.g. FSC R640). 
+> 
+> When I insert this newly created defective disk in Ultra 20, 
+> it reboots within seconds after issueing "dd if=/dev/sdb of=/dev/null". 
+> "
+> 
+> Signed-off-by: kluo@nvidia.com
+> 
+> ---
+>  
+> drivers/ata/sata_nv.c |    5 +++--
+>  1 file changed, 3 insertions(+), 2 deletions(-)
+> 
+> diff --git a/drivers/ata/sata_nv.c b/drivers/ata/sata_nv.c
+> index ed5473b..e824260 100644
+> --- a/drivers/ata/sata_nv.c
+> +++ b/drivers/ata/sata_nv.c
+> @@ -837,9 +837,10 @@ static void nv_adma_tf_read(struct ata_port *ap,
+> struct ata_taskfile *tf)
+>  	   all shortly be aborted anyway. We assume that NCQ commands
+> are not
+>  	   issued via passthrough, which is the only way that switching
+> into
+>  	   ADMA mode could abort outstanding commands. */
+> -	nv_adma_register_mode(ap);
+> +	struct nv_adma_port_priv *pp = ap->private_data;
+>  
+> -	ata_tf_read(ap, tf);
+> +	if (pp->flags & NV_ADMA_PORT_REGISTER_MODE)
+> +		ata_tf_read(ap, tf);
+>  }
+>  
+>  static unsigned int nv_adma_tf_to_cpb(struct ata_taskfile *tf, __le16
+> *cpb)
 
-  'a smiley only costs 4 bytes'
+This is basically avoiding switching into register mode, right? I don't 
+think this is a very good solution as the point of the tf_read function 
+is that it's supposed to read the taskfile provided by the drive to 
+diagnose the error, so not doing this isn't a good thing.
+
+Is there a reason why going into register mode should cause a lockup in 
+this case?
