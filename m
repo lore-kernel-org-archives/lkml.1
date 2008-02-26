@@ -1,41 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755403AbYB0OcW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755230AbYB0OgR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755403AbYB0OcW (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Feb 2008 09:32:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753412AbYB0OcN
+	id S1755230AbYB0OgR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Feb 2008 09:36:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751595AbYB0OgE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Feb 2008 09:32:13 -0500
-Received: from caffeine.csclub.uwaterloo.ca ([129.97.134.17]:46229 "EHLO
-	caffeine.csclub.uwaterloo.ca" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753341AbYB0OcN (ORCPT
+	Wed, 27 Feb 2008 09:36:04 -0500
+Received: from fg-out-1718.google.com ([72.14.220.157]:47511 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751766AbYB0OgD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Feb 2008 09:32:13 -0500
-Date: Wed, 27 Feb 2008 09:32:12 -0500
-To: Nuno Tavares <nuno.tavares@dri.pt>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: Dell OptiPlex 320 - Core 2 Duo
-Message-ID: <20080227143212.GB1289@csclub.uwaterloo.ca>
-References: <20080225093914.GB4375@ics.muni.cz> <20080225220720.GA4523@ics.muni.cz> <20080225230035.GA14503@khazad-dum.debian.net> <200802260005.02613.rjw@sisk.pl> <1204113265.6167.13.camel@localhost.localdomain>
+	Wed, 27 Feb 2008 09:36:03 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:mime-version:content-type:content-disposition:user-agent;
+        b=gLboT+po/LuO2z4yZ8WFgX/K8HYm2g7H5Qs/jG+6PEdgjII5ykLL/gkNLXExa+etd/kh4ccUINOV1FRCPzrr21Y75c2CEqBKJpQL9sso2p14qEZzJbnkJMXcHteo2lQj2rKj6TACB3LPoAgPZQYBz696B/J4mJWuWmGEr1B2Cc8=
+Date: Tue, 26 Feb 2008 22:51:59 +0300
+From: Cyrill Gorcunov <gorcunov@gmail.com>
+To: Richard Henderson <rth@twiddle.net>
+Cc: Sam Ravnborg <sam@ravnborg.org>, LKML <linux-kernel@vger.kernel.org>
+Subject: [RFC] alpha: vmlinux.lds cleanup - use THREAD_SIZE macro
+Message-ID: <20080226195159.GC6748@cvg>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1204113265.6167.13.camel@localhost.localdomain>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-From: lsorense@csclub.uwaterloo.ca (Lennart Sorensen)
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Feb 27, 2008 at 11:54:25AM +0000, Nuno Tavares wrote:
-> Kernel command line:
-> root=/dev/disk/by-id/scsi-SATA_WDC_WD800JD-75M_WD-WMAM9TA95509-part2
-> apm=off acpi=off mce=off barrier=off ide=nodma idewait=50 i8042.nomux
+This patch modifies thread_info.h header to be able to include it
+into linker script and then we're able to use THREAD_SIZE in
+vmlinux.lds
 
-Multi processor requires acpi, so your acpi=off will disable all but the
-first CPU.
+Signed-off-by: Cyrill Gorcunov <gorcunov@gmail.com>
 
-Is the system really so broken that you have to tell the kernel to
-disable everything?
+---
 
---
-Len Sorensen
+COMPLETELY UNTESTED
+Any comments are welcome!
+
+
+Index: linux-2.6.git/arch/alpha/kernel/vmlinux.lds.S
+===================================================================
+--- linux-2.6.git.orig/arch/alpha/kernel/vmlinux.lds.S	2008-01-29 18:03:45.000000000 +0300
++++ linux-2.6.git/arch/alpha/kernel/vmlinux.lds.S	2008-02-26 21:49:59.000000000 +0300
+@@ -1,5 +1,6 @@
+ #include <asm-generic/vmlinux.lds.h>
+ #include <asm/page.h>
++#include <asm/thread_info.h>
+ 
+ OUTPUT_FORMAT("elf64-alpha")
+ OUTPUT_ARCH(alpha)
+@@ -88,7 +89,7 @@ SECTIONS
+ 
+ 	PERCPU(PAGE_SIZE)
+ 
+-	. = ALIGN(2 * PAGE_SIZE);
++	. = ALIGN(THREAD_SIZE);
+ 	__init_end = .;
+ 	/* Freed after init ends here */
+ 
+Index: linux-2.6.git/include/asm-alpha/thread_info.h
+===================================================================
+--- linux-2.6.git.orig/include/asm-alpha/thread_info.h	2008-01-21 19:35:26.000000000 +0300
++++ linux-2.6.git/include/asm-alpha/thread_info.h	2008-02-26 22:00:42.000000000 +0300
+@@ -7,9 +7,7 @@
+ #include <asm/processor.h>
+ #include <asm/types.h>
+ #include <asm/hwrpb.h>
+-#endif
+ 
+-#ifndef __ASSEMBLY__
+ struct thread_info {
+ 	struct pcb_struct	pcb;		/* palcode state */
+ 
+@@ -50,13 +48,14 @@ register struct thread_info *__current_t
+ #define current_thread_info()  __current_thread_info
+ 
+ /* Thread information allocation.  */
+-#define THREAD_SIZE (2*PAGE_SIZE)
+ #define alloc_thread_info(tsk) \
+   ((struct thread_info *) __get_free_pages(GFP_KERNEL,1))
+ #define free_thread_info(ti) free_pages((unsigned long) (ti), 1)
+ 
+ #endif /* __ASSEMBLY__ */
+ 
++#define THREAD_SIZE (2 * PAGE_SIZE)
++
+ #define PREEMPT_ACTIVE		0x40000000
+ 
+ /*
+@@ -94,6 +93,8 @@ register struct thread_info *__current_t
+ #define ALPHA_UAC_MASK		(1 << TIF_UAC_NOPRINT | 1 << TIF_UAC_NOFIX | \
+ 				 1 << TIF_UAC_SIGBUS)
+ 
++#ifndef __ASSEMBLY__
++
+ #define SET_UNALIGN_CTL(task,value)	({				     \
+ 	task_thread_info(task)->flags = ((task_thread_info(task)->flags &    \
+ 		~ALPHA_UAC_MASK)					     \
+@@ -112,5 +113,7 @@ register struct thread_info *__current_t
+ 		 (int __user *)(value));				\
+ 	})
+ 
++#endif /* __ASSEMBLY__ */
++
+ #endif /* __KERNEL__ */
+ #endif /* _ALPHA_THREAD_INFO_H */
