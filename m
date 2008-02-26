@@ -1,56 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759520AbYBZL0t@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760779AbYBZL2i@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759520AbYBZL0t (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Feb 2008 06:26:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752736AbYBZL0j
+	id S1760779AbYBZL2i (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Feb 2008 06:28:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753527AbYBZL23
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Feb 2008 06:26:39 -0500
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:44258 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751940AbYBZL0h (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Feb 2008 06:26:37 -0500
-Date: Tue, 26 Feb 2008 20:25:13 +0900
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: Lee Schermerhorn <Lee.Schermerhorn@hp.com>
-Subject: Re: 2.6.25-rc2-mm1 - boot hangs on ia64
-Cc: kosaki.motohiro@jp.fujitsu.com, linux-ia64 <linux-ia64@vger.kernel.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Tony Luck <tony.luck@intel.com>, Ingo Molnar <mingo@redhat.com>,
-       Bob Picco <bob.picco@hp.com>, Eric Whitney <eric.whitney@hp.com>
-In-Reply-To: <1203955017.5046.29.camel@localhost>
-References: <1203955017.5046.29.camel@localhost>
-Message-Id: <20080226202308.FF40.KOSAKI.MOTOHIRO@jp.fujitsu.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
-Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.42 [ja]
+	Tue, 26 Feb 2008 06:28:29 -0500
+Received: from pasmtpa.tele.dk ([80.160.77.114]:59499 "EHLO pasmtpA.tele.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753463AbYBZL22 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 Feb 2008 06:28:28 -0500
+Date: Tue, 26 Feb 2008 12:28:40 +0100
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Steve Brokenshire <sbrokenshire@xestia.co.uk>
+Cc: linux-kernel@vger.kernel.org, linux-kbuild@vger.kernel.org
+Subject: Re: [PATCH] Compress kernel modules on installation.
+Message-ID: <20080226112840.GA29465@uranus.ravnborg.org>
+References: <20080225214209.a3f79327.sbrokenshire@xestia.co.uk>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20080225214209.a3f79327.sbrokenshire@xestia.co.uk>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi
-
-Fujitsu machine can't boot too.
-my bisect indicate git-sched.patch cause regression too.
-
-Thanks.
-
-> 25-rc2-mm1 is hanging early in boot on my HP ia64 numa platform.  I saw
-> the "Strange hang on ia64 with CONFIG_PRINTK_TIME=y" thread on lkml:  
+On Mon, Feb 25, 2008 at 09:42:09PM +0000, Steve Brokenshire wrote:
+> Hi,
 > 
-> 	http://marc.info/?t=120288396800001&r=1&w=4
+> (I've sent this to the linux-kbuild and linux-kernel lists as this
+> patch modifies the Makefile.modinst file. I also don't subscribe to the 
+> linux-kbuild and linux-kernel mailing lists so can I have any replies
+> CC'ed to me please)
 > 
-> However, my config does not include PRINTK_TIME=y.  In fact, hang occurs
-> with ia64 defconfig as well--right after the "Loading...initrd...done"
-> message.  2.6.25-rc2 boots OK.
+> This patch allows kernel modules to be compressed when 'make
+> modules_install' is run after being copied to
+> the /lib/module/<version>/<...> directory which is useful if you have
+> module-init-tools installed with --enable-zlib. This patch adds an
+> option (MODULE_COMPRESS) to the kernel configuration file (specifically
+> init/Kconfig) so that the kernel modules will compressed if
+> MODULE_COMPRESS is set.
 > 
-> Bisecting the broken-out series appears to indict 'git-sched.patch'.  I
-> went ahead and added Ingo's patch, discussed in the "strange hang"
-> thread, even tho' I hadn't enabled printk timestamps.  No effect.
+> When MODULE_COMPRESS is set the output of 'make modules_install' will
+> go as the following:
 > 
-> Anyone else seeing this?
+> INSTALL  drivers/fs/xfs/xfs.ko
+> COMPRESS drivers/fs/xfs/xfs.ko
+> INSTALL  drivers/fs/fat/fat.ko
+> COMPRESS drivers/fs/fat/fat.ko
+> ...
+> 
+> I've tested my patch on kernel versions 2.6.24.2, 2.6.24-git12, 2.6.23.14 and
+> 2.6.19 and they compile, install and compress into the respective
+> module directories without any errors.
+> 
+> I've also tested this with the uvcvideo (linux-uvc) kernel module (from
+> the SVN branch and with kernel versions 2.6.24.2, 2.6.24-git12, 2.6.23.14 and
+> 2.6.19) as that uses Kbuild properly when installing the module and
+> after installing the uvcvideo the module is then compressed.
+> Unfortunately, I couldn't find any other kernel modules which used the
+> Kbuild system for installing their kernel modules. :(
+> 
+> I've included include/config/auto.conf in Makefile.modinst so that it
+> can check if MODULE_COMPRESS is set when installing the kernel modules.
 
+Should we mention this possibility in Documentation/kbuild/modules.txt also?
 
+Otherwise from a quick scan it looks OK.
+As module-init-tols are our userspae counterpart we should align the
+functionality with that tool.
+I assume this gives us a simple choice of compression method and naming.
 
+	Sam
