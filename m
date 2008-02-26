@@ -1,72 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760916AbYBZP6l@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758320AbYBZQFA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760916AbYBZP6l (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Feb 2008 10:58:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751003AbYBZP6d
+	id S1758320AbYBZQFA (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Feb 2008 11:05:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751611AbYBZQEv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Feb 2008 10:58:33 -0500
-Received: from iolanthe.rowland.org ([192.131.102.54]:41835 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1750728AbYBZP6c (ORCPT
+	Tue, 26 Feb 2008 11:04:51 -0500
+Received: from orion.ambsoft.pl ([212.109.144.130]:38266 "EHLO
+	orion.ambsoft.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751253AbYBZQEu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Feb 2008 10:58:32 -0500
-Date: Tue, 26 Feb 2008 10:58:31 -0500 (EST)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: David Newall <davidn@davidnewall.com>
-cc: David Brownell <david-b@pacbell.net>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       <linux-pm@lists.linux-foundation.org>,
-       Kernel development list <linux-kernel@vger.kernel.org>
-Subject: Re: [linux-pm] Fundamental flaw in system suspend, exposed by freezer
- removal
-In-Reply-To: <47C415F2.2060905@davidnewall.com>
-Message-ID: <Pine.LNX.4.44L0.0802261055230.4176-100000@iolanthe.rowland.org>
+	Tue, 26 Feb 2008 11:04:50 -0500
+From: Mariusz Kozlowski <m.kozlowski@tuxland.pl>
+To: Jean Delvare <khali@linux-fr.org>
+Subject: Re: problem with starting 2.6.25-rc1 and latest git
+Date: Tue, 26 Feb 2008 17:04:46 +0100
+User-Agent: KMail/1.9.7
+Cc: gregkh@suse.de, linux-kernel@vger.kernel.org, linux-usb@vger.kernel.org
+References: <200802132316.03155.m.kozlowski@tuxland.pl> <20080218142832.3a092dd5@hyperion.delvare> <20080226130254.5668d330@hyperion.delvare>
+In-Reply-To: <20080226130254.5668d330@hyperion.delvare>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200802261704.46848.m.kozlowski@tuxland.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 27 Feb 2008, David Newall wrote:
+Hello,
 
-> David Brownell wrote:
-> > On Tuesday 26 February 2008, David Newall wrote:
-> >   
-> >> Hardware can be inserted and removed while we're in a suspend state; and
-> >> there's nothing that we can do about it until we resume.  Is it fair to
-> >> say, then, that having started suspend, we could reasonably ignore any
-> >> device insertion and removal, and handle it on resume?
-> >>     
-> >
-> > "Ignore" seems a bit strong; those events may be wakeup triggers,
-> > which would cause the hardware to make it a very short suspend state.
-> >
-> > "Defer handling" is more to the point, be it by hardware or software.
-> >
-> >   
+> On Mon, 18 Feb 2008 14:28:32 +0100, Jean Delvare wrote:
+> > On Thu, 14 Feb 2008 00:27:34 +0100, Mariusz Kozlowski wrote:
+> > > Of course there is a typo in the subject :)
+> > > 
+> > > 2.5.25-rc1 -> 2.6.25-rc1
+> > > 
+> > > > Hello,
+> > > > 
+> > > > 	I tried 2.6.25-rc1 and latest git on my laptop (x86 32bit) and have a problem.
+> > > > Linux boots but with huge delay due to some issue with loading usb modules.
+> > > > Udev complains:
+> > > > 
+> > > > 'Could not lock modprobe uhci_hcd'
+> > > > 'Could not lock modprobe yenta_socket'
+> > > > 'Unknown symbol usb_*'
+> > > > 'Gave up waiting for init of module usbcore'
+> > > > (...)
+> > 
+> > Have you tried upgrading to rc2? I used to have the same problem you
+> > reported, but I was unable to reproduce it since I upgraded to rc2.
 > 
-> Of course, "defer".  The insertion has to be handled eventually.  What
-> I'm wondering is if we can ignore it, and catch it on the resume.
+> I take this back. It happened to me again today, while I am now running
+> rc3.
 
-Certainly.  If hardware-change events can get lost because of the
-system sleep, the resume method should make every effort to verify that 
-what it remembers of the hardware state matches the current reality.
+I can reproduce this here on rc3 as well. Weird - on git tree before
+rc3 was released this didn't happen. rc2 and rc1 are broken. I also
+don't know why nobody else see this but us :) And not sure how
+to debug it some more or provide more accurate information.
 
-> >> Presumably we need to scan for hardware changes on resume.
-> >>     
-> >
-> > Not on most busses I work with; the hardware issues notifications
-> > whenever the devices are removable.
-> >   
-> 
-> There's no notification while we're suspended.  Isn't it necessary to
-> scan all busses on resume, just to know what's on them?
-
-It depends on the bus.  If the bus doesn't support hotplugging then 
-scanning isn't necessary.  If the bus does support hotplugging then 
-scanning after suspend may or may not be necessary, depending on 
-whether or not the bus controller remained powered during the suspend.  
-For hotpluggable buses, scanning after hibernation is always necessary.
-
-Alan Stern
-
+	Mariusz
