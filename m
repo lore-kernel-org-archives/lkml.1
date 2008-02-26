@@ -1,48 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765537AbYBZUvx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765561AbYBZUwt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765537AbYBZUvx (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Feb 2008 15:51:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761876AbYBZUvk
+	id S1765561AbYBZUwt (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Feb 2008 15:52:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761876AbYBZUwk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Feb 2008 15:51:40 -0500
-Received: from wr-out-0506.google.com ([64.233.184.231]:44275 "EHLO
-	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752035AbYBZUvj (ORCPT
+	Tue, 26 Feb 2008 15:52:40 -0500
+Received: from nelson.telenet-ops.be ([195.130.133.66]:49326 "EHLO
+	nelson.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751267AbYBZUwj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Feb 2008 15:51:39 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:to:cc:in-reply-to:references:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=cNKm2Eepjlkp8FUl+mrk2LnQB6/eiQvbyJBXa1A3RgpCu6ne/Jmos1ZzylAEbf9r5qCYZYlOm0wCuB4UVfb8oGXLNAYGE87+mUAUdbydCn9gspzJdewFcUKjl+TJcqRnPZJ+vFbjCEqaFz+Q73nBPAKJOLvAMf/unLyNPA0MCkc=
-Subject: Re: [PATCH] fbcon: replace mono_col macro with static inline
-From: Harvey Harrison <harvey.harrison@gmail.com>
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: Antonino Daplas <adaplas@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Linux Frame Buffer Device Development 
-	<linux-fbdev-devel@lists.sourceforge.net>
-In-Reply-To: <Pine.LNX.4.64.0802260917410.5158@anakin>
-References: <1203963237.5582.4.camel@brick>
-	 <Pine.LNX.4.64.0802260917410.5158@anakin>
-Content-Type: text/plain
-Date: Tue, 26 Feb 2008 12:51:14 -0800
-Message-Id: <1204059074.5582.35.camel@brick>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
-Content-Transfer-Encoding: 7bit
+	Tue, 26 Feb 2008 15:52:39 -0500
+Date: Tue, 26 Feb 2008 21:52:36 +0100 (CET)
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: Adrian Bunk <adrian.bunk@movial.fi>
+cc: zippel@linux-m68k.org, linux-m68k@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [2.6 patch] m68k: use KBUILD_DEFCONFIG
+In-Reply-To: <20080226195500.GD4898@cs181133002.pp.htv.fi>
+Message-ID: <Pine.LNX.4.64.0802262152140.22486@anakin>
+References: <20080226195500.GD4898@cs181133002.pp.htv.fi>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2008-02-26 at 09:18 +0100, Geert Uytterhoeven wrote:
-> On Mon, 25 Feb 2008, Harvey Harrison wrote:
-> > +static inline int mono_col(struct fb_info *info)
->                               ^^^^^^^^^^^^^^^^^^^^
-> const struct fb_info *info?
+On Tue, 26 Feb 2008, Adrian Bunk wrote:
+> The default defconfig should be one from arch/m68k/configs/
 > 
+> arch/m68k/defconfig was not exactly identical to amiga_defconfig but 
+> also considering how long they have been without any update that doesn't 
+> seem to have been on purpose.
+> 
+> Signed-off-by: Adrian Bunk <adrian.bunk@movial.fi>
 
-I suppose, but seeing as it's an inline, does it really matter?
+Acked-by: Geert Uytterhoeven <geert@linux-m68k.org>
 
-Harvey
+Gr{oetje,eeting}s,
 
+						Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
