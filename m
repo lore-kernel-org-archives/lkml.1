@@ -1,47 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762147AbYBZQjV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762782AbYBZQkc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762147AbYBZQjV (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Feb 2008 11:39:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751611AbYBZQjH
+	id S1762782AbYBZQkc (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Feb 2008 11:40:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753255AbYBZQkZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Feb 2008 11:39:07 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:59167 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751118AbYBZQjF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Feb 2008 11:39:05 -0500
-Message-ID: <47C440A6.6080202@redhat.com>
-Date: Tue, 26 Feb 2008 08:39:02 -0800
-From: Eric Sandeen <sandeen@redhat.com>
-User-Agent: Thunderbird 2.0.0.9 (Macintosh/20071031)
+	Tue, 26 Feb 2008 11:40:25 -0500
+Received: from nf-out-0910.google.com ([64.233.182.189]:15302 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752200AbYBZQkY (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 Feb 2008 11:40:24 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
+        b=j7QyJyhv0V7GmxIZntO7TdVIzH7RD/ChqAhum2cAsKR+4/P/Fz6n483JwM0eAVSrDOlX4SOrqRD6MPn9xIhxN+KaMAxPGoDriqk0UGE0QZl1f6KC2/Km2oY7z+wrwqXGdzOzaJHaX8fNJZMNxclk0u4Ijq7wEeVkiAHltMKj5NI=
+Date: Tue, 26 Feb 2008 19:39:51 +0300
+From: Cyrill Gorcunov <gorcunov@gmail.com>
+To: Sam Ravnborg <sam@ravnborg.org>
+Cc: LKML <linux-kernel@vger.kernel.org>
+Subject: Re: vmlinux.lds cleanup
+Message-ID: <20080226163951.GA6748@cvg>
+References: <20080225095800.GB6744@cvg> <20080225203307.GB23790@uranus.ravnborg.org>
 MIME-Version: 1.0
-To: Takashi Sato <t-sato@yk.jp.nec.com>
-CC: linux-ext4@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [RFC] ext3 freeze feature ver 0.2
-References: <20080219202706t-sato@mail.jp.nec.com> <20080226172014t-sato@mail.jp.nec.com>
-In-Reply-To: <20080226172014t-sato@mail.jp.nec.com>
-Content-Type: text/plain; charset=ISO-2022-JP
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080225203307.GB23790@uranus.ravnborg.org>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Takashi Sato wrote:
+[Sam Ravnborg - Mon, Feb 25, 2008 at 09:33:07PM +0100]
+| On Mon, Feb 25, 2008 at 12:58:00PM +0300, Cyrill Gorcunov wrote:
+| > Hi Sam,
+| > 
+| > you know I've just take a look on different architectures and I suddenly
+| > realized that I even can't test my changes I'm bringnin in. For example -
+| > xtensa arch, most of lds numeric constants could (and should) be changed
+| > to PAGE_SIZE and THREAD_SIZE but this requires to include additional
+| > heades in lds script and I'm not even sure if it link without errors...
+| > (actually, i'm absolutely sure there would be errors ;)
+| > 
+| > I'm not sure, but maybe it would be more convenient to ask mainteiners
+| > fix their scripts? At least their have access to an appropriate hardware
+| > to test.
+| 
+| I have in most cases the relevant toolchains and then I manually inspect
+| the generated .lds file.
+| In other cases I just do my best to make it correct and tell in my
+| submisison that htis is not build tested. (This type of
+| info belongs below the three dasches '---').
+| 
+| 	Sam
+| 
 
-> o Elevate XFS ioctl numbers (XFS_IOC_FREEZE and XFS_IOC_THAW) to the VFS
->   As Andreas Dilger and Christoph Hellwig advised me, I have elevated
->   them to include/linux/fs.h as below.
->     #define FIFREEZE        _IOWR('X', 119, int)
-> 　  #define FITHAW          _IOWR('X', 120, int)
->   The ioctl numbers used by XFS applications don't need to be changed.
->   But my following ioctl for the freeze needs the parameter
->   as the timeout period.  So if XFS applications don't want the timeout
->   feature as the current implementation, the parameter needs to be
->   changed 1 (level?) into 0.
+got it, thanks ;)
 
-So, existing xfs applications calling the xfs ioctl now will behave
-differently, right?  We can only keep the same ioctl number if the
-calling semantics are the same.  Keeping the same number but changing
-the semantics is harmful, IMHO....
-
--Eric
+		- Cyrill -
