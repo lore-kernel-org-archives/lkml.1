@@ -1,44 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760455AbYBZHnq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756466AbYBZHoV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760455AbYBZHnq (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Feb 2008 02:43:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755675AbYBZHng
+	id S1756466AbYBZHoV (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Feb 2008 02:44:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756026AbYBZHoH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Feb 2008 02:43:36 -0500
-Received: from smtp1.linux-foundation.org ([207.189.120.13]:38765 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755621AbYBZHnf (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Feb 2008 02:43:35 -0500
-Date: Mon, 25 Feb 2008 23:43:19 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
+	Tue, 26 Feb 2008 02:44:07 -0500
+Received: from srv5.dvmed.net ([207.36.208.214]:38171 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753044AbYBZHoF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 Feb 2008 02:44:05 -0500
+Message-ID: <47C3C33F.1070908@garzik.org>
+Date: Tue, 26 Feb 2008 02:43:59 -0500
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+MIME-Version: 1.0
 To: Jamie Lokier <jamie@shareable.org>
-Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+CC: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
        Chris Wedgwood <cw@f00f.org>
 Subject: Re: Proposal for "proper" durable fsync() and fdatasync()
-Message-Id: <20080225234319.f4589ae4.akpm@linux-foundation.org>
-In-Reply-To: <20080226072649.GB30238@shareable.org>
 References: <20080226072649.GB30238@shareable.org>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+In-Reply-To: <20080226072649.GB30238@shareable.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.4 (----)
+X-Spam-Report: SpamAssassin version 3.2.3 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 26 Feb 2008 07:26:50 +0000 Jamie Lokier <jamie@shareable.org> wrote:
+Jamie Lokier wrote:
+> By durable, I mean that fsync() should actually commit writes to
+> physical stable storage,
 
-> (It would be nicer if sync_file_range()
-> took a vector of ranges for better elevator scheduling, but let's
-> ignore that :-)
+Yes, it should.
 
-Two passes:
 
-Pass 1: shove each of the segments into the queue with
-        SYNC_FILE_RANGE_WAIT_BEFORE|SYNC_FILE_RANGE_WRITE
+> I was surprised that fsync() doesn't do this already.  There was a lot
+> of effort put into block I/O write barriers during 2.5, so that
+> journalling filesystems can force correct write ordering, using disk
+> flush cache commands.
+> 
+> After all that effort, I was very surprised to notice that Linux 2.6.x
+> doesn't use that capability to ensure fsync() flushes the disk cache
+> onto stable storage.
 
-Pass 2: wait for them all to complete and return accumulated result
-        with SYNC_FILE_RANGE_WAIT_AFTER
+It's surprising you are surprised, given that this [lame] fsync behavior 
+has remaining consistently lame throughout Linux's history.
+
+[snip huge long proposal]
+
+Rather than invent new APIs, we should fix the existing ones to _really_ 
+flush data to physical media.
+
+Linux should default to SAFE data storage, and permit users to retain 
+the older unsafe behavior via an option.  It's completely ridiculous 
+that we default to an unsafe fsync.
+
+And [anticipating a common response from others] it is completely 
+irrelevant that POSIX fsync(2) permits Linux's current behavior.  The 
+current behavior is unsafe.
+
+Safety before performance -- ESPECIALLY when it comes to storing user data.
+
+Regards,
+
+	Jeff (Linux ATA driver dude)
 
 
