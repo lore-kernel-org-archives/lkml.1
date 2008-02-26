@@ -1,50 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759854AbYBZHVt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759056AbYBZHZO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759854AbYBZHVt (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Feb 2008 02:21:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754367AbYBZHVm
+	id S1759056AbYBZHZO (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Feb 2008 02:25:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753040AbYBZHZA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Feb 2008 02:21:42 -0500
-Received: from fwil.voltaire.com ([193.47.165.2]:28889 "EHLO exil.voltaire.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753362AbYBZHVl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Feb 2008 02:21:41 -0500
-Date: Tue, 26 Feb 2008 09:21:37 +0200
-To: Nick Piggin <nickpiggin@yahoo.com.au>
-Cc: Robin Holt <holt@sgi.com>, steiner@sgi.com,
-       Andrea Arcangeli <andrea@qumranet.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-mm@kvack.org,
-       Izik Eidus <izike@qumranet.com>, Kanoj Sarcar <kanojsarcar@yahoo.com>,
-       Roland Dreier <rdreier@cisco.com>, linux-kernel@vger.kernel.org,
-       Avi Kivity <avi@qumranet.com>, kvm-devel@lists.sourceforge.net,
-       daniel.blueman@quadrics.com, general@lists.openfabrics.org,
-       akpm@linux-foundation.org, Christoph Lameter <clameter@sgi.com>
-Subject: Re: [ofa-general] Re: [patch 5/6] mmu_notifier: Support for
-	drivers with revers maps (f.e. for XPmem)
-Message-ID: <20080226072137.GD26611@minantech.com>
-References: <20080215064859.384203497@sgi.com> <200802211520.03529.nickpiggin@yahoo.com.au> <20080221105838.GJ11391@sgi.com> <200802261711.33213.nickpiggin@yahoo.com.au>
+	Tue, 26 Feb 2008 02:25:00 -0500
+Received: from wx-out-0506.google.com ([66.249.82.238]:53774 "EHLO
+	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751369AbYBZHZA (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 Feb 2008 02:25:00 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=GyK5C2kNWDDWB8+XSi0hTyfHya7JYk9jFywVKTF43boYXfpPzk7QDLxGIOTGuYqVtdPnK6Q7wvpXzHt5FN5x+kHE2FJk0mKmK435cVSy31AU5lywuRQtzp+5LpjolYJ9yYeXuNpfDiqjDfMiUbp8ZOokbdzBY8dEl/gXQrVd8+s=
+Message-ID: <86802c440802252324u769f087fw83caa26c1960354e@mail.gmail.com>
+Date: Mon, 25 Feb 2008 23:24:56 -0800
+From: "Yinghai Lu" <yhlu.kernel@gmail.com>
+To: "Ingo Molnar" <mingo@elte.hu>
+Subject: Re: [PATCH] x86_64: remove wrong setting about CONSTANT_TSC for intel cpu
+Cc: "Andrew Morton" <akpm@linux-foundation.org>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       "Thomas Gleixner" <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>
+In-Reply-To: <20080226072035.GB24820@elte.hu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <200802261711.33213.nickpiggin@yahoo.com.au>
-From: glebn@voltaire.com (Gleb Natapov)
-X-OriginalArrivalTime: 26 Feb 2008 07:21:37.0648 (UTC) FILETIME=[396CF700:01C87848]
+References: <200802252320.01534.yinghai.lu@sun.com>
+	 <20080226072035.GB24820@elte.hu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Feb 26, 2008 at 05:11:32PM +1100, Nick Piggin wrote:
-> > You are missing one point here.  The MPI specifications that have
-> > been out there for decades do not require the process use a library
-> > for allocating the buffer.  I realize that is a horrible shortcoming,
-> > but that is the world we live in.  Even if we could change that spec,
-> 
-> Can you change the spec?
-Not really. It will break all existing codes. MPI-2 provides a call for
-memory allocation (and it's beneficial to use this call for some interconnects),
-but many (most?) applications are still written for MPI-1 and those that
-are written for MPI-2 mostly uses the old habit of allocating memory by malloc(),
-or even use stack or BSS memory for communication buffer purposes.
+On Mon, Feb 25, 2008 at 11:20 PM, Ingo Molnar <mingo@elte.hu> wrote:
+>
+>  * Yinghai Lu <Yinghai.Lu@Sun.COM> wrote:
+>
+>
+> > also fix error in early_init_intel and reference about x86_capality,
+>  > because it is array already.., prevent possible data corruption...
+>
+>  hm, why should there be data corruption:
+>
+>
+>  > -             set_bit(X86_FEATURE_CONSTANT_TSC, &c->x86_capability);
+>  > +             set_cpu_cap(c, X86_FEATURE_CONSTANT_TSC);
+>
+>  cpu_cpu_cap() is currently defined as:
+>
+>   #define set_cpu_cap(c, bit)     set_bit(bit, (unsigned long *)((c)->x86_capability)
+>
+>  which is the same. set_cpu_cap() is indeed the cleaner form to do this
+>  so your patch is correct as a cleanup.
+set_cpu_cap is right
+==
+set_bit(X86_FEATURE_CONSTANT_TSC, &c->x86_capability); ===> is wrong
+should be
+set_bit(X86_FEATURE_CONSTANT_TSC, c->x86_capability);
 
---
-			Gleb.
+x86_capability is a array ...
+
+so this could prevent some data corruption.
+
+YH
