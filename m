@@ -1,42 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764031AbYBZSQN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763893AbYBZSRN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764031AbYBZSQN (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Feb 2008 13:16:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763134AbYBZSPw
+	id S1763893AbYBZSRN (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Feb 2008 13:17:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756341AbYBZSQ6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Feb 2008 13:15:52 -0500
-Received: from einhorn.in-berlin.de ([192.109.42.8]:58487 "EHLO
-	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1762984AbYBZSPu (ORCPT
+	Tue, 26 Feb 2008 13:16:58 -0500
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:41704 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754324AbYBZSQ5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Feb 2008 13:15:50 -0500
-X-Envelope-From: stefanr@s5r6.in-berlin.de
-Message-ID: <47C45749.3010001@s5r6.in-berlin.de>
-Date: Tue, 26 Feb 2008 19:15:37 +0100
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.12) Gecko/20080219 SeaMonkey/1.1.8
-MIME-Version: 1.0
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-CC: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: -next build logs
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Tue, 26 Feb 2008 13:16:57 -0500
+Date: Tue, 26 Feb 2008 18:04:52 +0000
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Krzysztof Halasa <khc@pm.waw.pl>
+Cc: Alan Cox <alan@redhat.com>, davids@webmaster.com, Valdis.Kletnieks@vt.edu,
+       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
+       Arnaldo Carvalho de Melo <acme@ghostprotocols.net>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] 2.6.25-rc2-mm1 - fix mcount GPL bogosity.
+Message-ID: <20080226180452.266615da@core>
+In-Reply-To: <m34pbvsjd9.fsf@maximus.localdomain>
+References: <MDEHLPKNGKAHNMBLJOLKGEKDKKAC.davids@webmaster.com>
+	<m3d4qj90zm.fsf@maximus.localdomain>
+	<m34pbv8x8s.fsf@maximus.localdomain>
+	<20080226172143.GA5445@devserv.devel.redhat.com>
+	<m34pbvsjd9.fsf@maximus.localdomain>
+X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Stephen,
+> > From what I've seen its helped make binary
+> > module abusers more cautious.
+> 
+> Those not using _GPL exports?
 
-the allmodconfig builds at http://kisskb.ellerman.id.au/kisskb/branch/9/ 
-seem to lack a few drivers even though they are properly enabled in the 
-respective config.  Is it simply because everything is rebuilt on top of 
-a previous build?
-
-Do you mail only errors to maintainers or also compiler warnings?
-
-Thanks,
--- 
-Stefan Richter
--=====-==--- --=- ==-=-
-http://arcgraph.de/sr/
+In general. To be honest there is very little binary only stuff left now
