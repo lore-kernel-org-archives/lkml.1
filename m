@@ -1,57 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760081AbYBZEFx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759936AbYBZENa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760081AbYBZEFx (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 Feb 2008 23:05:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754743AbYBZEFq
+	id S1759936AbYBZENa (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 Feb 2008 23:13:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755730AbYBZENU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 Feb 2008 23:05:46 -0500
-Received: from server54.tchmachines.com ([72.9.244.106]:36592 "EHLO
-	server54.tchmachines.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754009AbYBZEFp (ORCPT
+	Mon, 25 Feb 2008 23:13:20 -0500
+Received: from wf-out-1314.google.com ([209.85.200.175]:9102 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755411AbYBZENT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 Feb 2008 23:05:45 -0500
-Date: Mon, 25 Feb 2008 20:05:41 -0800
-From: Ravikiran Thirumalai <kiran@scalemp.com>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: Yinghai Lu <yhlu.kernel@gmail.com>, Ingo Molnar <mingo@elte.hu>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       shai@scalemp.com
-Subject: Re: [PATCH] x86_64: make amd quad core 8 socket system not be clustered_box v2
-Message-ID: <20080226040541.GK3143@localdomain>
-References: <200802210258.45011.yinghai.lu@sun.com> <200802221102.31019.yinghai.lu@sun.com> <47BF1BD9.4020808@firstfloor.org> <200802232148.43255.yinghai.lu@sun.com> <20080224122903.GC13637@one.firstfloor.org> <20080225190819.GE3143@localdomain> <86802c440802251405w7025a8b2na5fde4dcbf56067e@mail.gmail.com> <20080226033945.GJ3143@localdomain> <20080226034625.GE21577@one.firstfloor.org>
+	Mon, 25 Feb 2008 23:13:19 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:x-x-sender:to:cc:subject:message-id:mime-version:content-type;
+        b=BPC4eZmoU5UsgF7def/h6qnSA4EQP6262RmUWEEU0PbNGoZEzJbVZ9eQXDIN2Mmadr9P62Uj2DcvSP8ZNrsikvC3mRohCxJ1flQnNrePTIwzVNM0qMCBQcajwq7Lwp65l7XT4A5OWgpvBrRfnRYJc/RW8cBaMLgv+9pz1m0Esg8=
+Date: Tue, 26 Feb 2008 12:13:19 +0800 (SGT)
+From: Jeff Chua <jeff.chua.linux@gmail.com>
+X-X-Sender: root@boston.corp.fedex.com
+To: "Michael S. Tsirkin" <m.s.tsirkin@gmail.com>
+cc: Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Alexey Starikovskiy <astarikovskiy@suse.de>,
+       Len Brown <len.brown@intel.com>, linux-acpi@vger.kernel.org,
+       "Jesse B, arnes"@localhost.corp.fedex.com, jesse.barnes@intel.com,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Pavel Machek <pavel@ucw.cz>, Jeff Garzik <jeff@garzik.org>
+Subject: Re: new regression in 2.6.25-rc3: no keyboard/lid acpi events on
+ thinkpad T61p - resume hang
+Message-ID: <Pine.LNX.4.64.0802261210080.3332@boston.corp.fedex.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080226034625.GE21577@one.firstfloor.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
-X-AntiAbuse: Primary Hostname - server54.tchmachines.com
-X-AntiAbuse: Original Domain - vger.kernel.org
-X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
-X-AntiAbuse: Sender Address Domain - scalemp.com
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Feb 26, 2008 at 04:46:25AM +0100, Andi Kleen wrote:
->> I don't quite understand the purpose of the patch to begin with.  Looking at
->> the current x86 git tree, apic_is_clustered_box is used only to determine if
->> tsc is synchronized on the platform.  The AMD docs  imply that TSC's are not
->> guaranteed to be synced across cores between nodes -- Opteron BKDG for
->> family 10h, Section 2.9.4:
->
->After long discussions with AMD they determined the CPUID flag
->for sync RDTSC will imply synchronization between nodes.
 
-Ah!
+On Tue, Feb 26, 2008 at 4:45 AM, Michael S. Tsirkin 
+<m.s.tsirkin@gmail.com> wrote:
+> On Mon, Feb 25, 2008 at 9:46 PM, Andrew Morton 
+<akpm@linux-foundation.org> wrote:
+> > On Mon, 25 Feb 2008 21:19:24 +0200 "Michael S. Tsirkin" 
+<m.s.tsirkin@gmail.com> wrote:
+>  >  You mean suspend-to-ram works correctly on your t61p?
+>  >  Mine suspends, then five seconds later magically resumes itself and 
+the
+>  >  screen is all black.
+>  Sorry, have not noticed what you were asking about.
+>  Yes, rc2 seems to suspend/resume fine.
+>  And after reverting
+>      revert commit 559bbe6cbd0d8c68d40076a5f7dc98e3bf5864b2.
 
->
->If you can't support that in your hardware you're supposed
->to clear it.
+commit 559bbe6cbd0d8c68d40076a5f7dc98e3bf5864b2
+Author: Pavel Machek <pavel@ucw.cz>
+Date:   Thu Feb 21 13:56:55 2008 +0100
 
-Hmm! How would a hardware vendor do that? That doesn't seem to be clear in
-the BKDG. (Well, this is the problem with undocumented features :()
+     power_state: get rid of write-only variable in SATA
+
+     power_state is scheduled for removal, and libata uses it in write-only
+     mode. Remove it.
+
+     Signed-off-by: Pavel Machek <pavel@suse.cz>
+     Signed-off-by: Jeff Garzik <jeff@garzik.org>
+
+
+I'm experiencing hang after resume from STR with the latest Linus's git 
+tree. Reverting the above patch solved the problem.
+
 
 Thanks,
-Kiran
+Jeff
+
+
+Here's the patch for reference ...
+
+
+diff --git a/drivers/ata/libata-core.c b/drivers/ata/libata-core.c
+index 4cf8662..9812bbf 100644
+--- a/drivers/ata/libata-core.c
++++ b/drivers/ata/libata-core.c
+@@ -6560,8 +6560,6 @@ int ata_host_suspend(struct ata_host *host, pm_message_t mesg)
+  	ata_lpm_enable(host);
+
+  	rc = ata_host_request_pm(host, mesg, 0, ATA_EHI_QUIET, 1);
+-	if (rc == 0)
+-		host->dev->power.power_state = mesg;
+  	return rc;
+  }
+
+@@ -6580,7 +6578,6 @@ void ata_host_resume(struct ata_host *host)
+  {
+  	ata_host_request_pm(host, PMSG_ON, ATA_EH_SOFTRESET,
+  			    ATA_EHI_NO_AUTOPSY | ATA_EHI_QUIET, 0);
+-	host->dev->power.power_state = PMSG_ON;
+
+  	/* reenable link pm */
+  	ata_lpm_disable(host);
