@@ -1,162 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758792AbYBZDDv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759005AbYBZDHp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758792AbYBZDDv (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 Feb 2008 22:03:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751294AbYBZDDn
+	id S1759005AbYBZDHp (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 Feb 2008 22:07:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751401AbYBZDHe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 Feb 2008 22:03:43 -0500
-Received: from cn.fujitsu.com ([222.73.24.84]:49158 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1750994AbYBZDDm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 Feb 2008 22:03:42 -0500
-Message-ID: <47C38127.2000109@cn.fujitsu.com>
-Date: Tue, 26 Feb 2008 11:01:59 +0800
-From: Li Zefan <lizf@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
-MIME-Version: 1.0
-To: Paul Menage <menage@google.com>
-CC: balbir@linux.vnet.ibm.com, Andrew Morton <akpm@linux-foundation.org>,
-       Hugh Dickins <hugh@veritas.com>,
-       Sudhir Kumar <skumar@linux.vnet.ibm.com>,
-       YAMAMOTO Takashi <yamamoto@valinux.co.jp>, linux-kernel@vger.kernel.org,
-       taka@valinux.co.jp, linux-mm@kvack.org,
-       David Rientjes <rientjes@google.com>,
-       Pavel Emelianov <xemul@openvz.org>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Subject: Re: [PATCH] Memory Resource Controller Add Boot Option
-References: <20080225115509.23920.66231.sendpatchset@localhost.localdomain> <20080225115550.23920.43199.sendpatchset@localhost.localdomain> <6599ad830802250816m1f83dbeekbe919a60d4b51157@mail.gmail.com> <47C2F86A.9010709@linux.vnet.ibm.com> <6599ad830802250932s5eaa3bcchbfc49fe0e76d3f7d@mail.gmail.com> <47C2FCC1.7090203@linux.vnet.ibm.com> <47C30EDC.4060005@google.com>
-In-Reply-To: <47C30EDC.4060005@google.com>
-Content-Type: text/plain; charset=ISO-8859-1
+	Mon, 25 Feb 2008 22:07:34 -0500
+Received: from senator.holtmann.net ([87.106.208.187]:44562 "EHLO
+	mail.holtmann.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751087AbYBZDHd (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 25 Feb 2008 22:07:33 -0500
+Cc: Dave Young <hidave.darkstar@gmail.com>, linux-bluetooth@vger.kernel.org,
+       Linux Kernel <linux-kernel@vger.kernel.org>, bmidgley@gmail.com,
+       David Miller <davem@davemloft.net>, Netdev <netdev@vger.kernel.org>
+Message-Id: <70692DDF-93B7-447E-ABEE-3CDBD94F15F1@holtmann.org>
+From: Marcel Holtmann <marcel@holtmann.org>
+To: Louis JANG <louis@mizi.com>
+In-Reply-To: <47C2A7FA.2060902@mizi.com>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
 Content-Transfer-Encoding: 7bit
+Mime-Version: 1.0 (Apple Message framework v919.2)
+Subject: Re: [Bluez-devel] forcing SCO connection patch
+Date: Tue, 26 Feb 2008 04:07:27 +0100
+References: <47666E1F.2000902@mizi.com>	 <a8e1da0802242330l765b8b1ava62b857baf8a5568@mail.gmail.com>	 <47C28A33.4070102@mizi.com> <a8e1da0802250155u1b7af481va203849f68d9106b@mail.gmail.com> <47C2A7FA.2060902@mizi.com>
+X-Mailer: Apple Mail (2.919.2)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Paul Menage wrote:
->>> I'll send out a prototype for comment.
-> 
-> Something like the patch below. The effects of cgroup_disable=foo are:
-> 
-> - foo doesn't show up in /proc/cgroups
+Hi Louis,
 
-Or we can print out the disable flag, maybe this will be better?
-Because we can distinguish from disabled and not compiled in from
-/proc/cgroups.
-
-> - foo isn't auto-mounted if you mount all cgroups in a single hierarchy
-> - foo isn't visible as an individually mountable subsystem
-
-You mentioned in a previous mail if we mount a disabled subsystem we
-will get an error. Here we just ignore the mount option. Which makes
-more sense ?
-
-> 
-> As a result there will only ever be one call to foo->create(), at init
-> time; all processes will stay in this group, and the group will never be
-> mounted on a visible hierarchy. Any additional effects (e.g. not
-> allocating metadata) are up to the foo subsystem.
-> 
-> This doesn't handle early_init subsystems (their "disabled" bit isn't
-> set be, but it could easily be extended to do so if any of the
-> early_init systems wanted it - I think it would just involve some
-> nastier parameter processing since it would occur before the
-> command-line argument parser had been run.
-> 
-> include/linux/cgroup.h |    1 +
-> kernel/cgroup.c        |   29 +++++++++++++++++++++++++++--
-> 2 files changed, 28 insertions(+), 2 deletions(-)
-> 
-> Index: cgroup_disable-2.6.25-rc2-mm1/include/linux/cgroup.h
-> ===================================================================
-> --- cgroup_disable-2.6.25-rc2-mm1.orig/include/linux/cgroup.h
-> +++ cgroup_disable-2.6.25-rc2-mm1/include/linux/cgroup.h
-> @@ -256,6 +256,7 @@ struct cgroup_subsys {
->     void (*bind)(struct cgroup_subsys *ss, struct cgroup *root);
->     int subsys_id;
->     int active;
-> +    int disabled;
->     int early_init;
-> #define MAX_CGROUP_TYPE_NAMELEN 32
->     const char *name;
-> Index: cgroup_disable-2.6.25-rc2-mm1/kernel/cgroup.c
-> ===================================================================
-> --- cgroup_disable-2.6.25-rc2-mm1.orig/kernel/cgroup.c
-> +++ cgroup_disable-2.6.25-rc2-mm1/kernel/cgroup.c
-> @@ -790,7 +790,14 @@ static int parse_cgroupfs_options(char *
->         if (!*token)
->             return -EINVAL;
->         if (!strcmp(token, "all")) {
-> -            opts->subsys_bits = (1 << CGROUP_SUBSYS_COUNT) - 1;
-> +            /* Add all non-disabled subsystems */
-> +            int i;
-> +            opts->subsys_bits = 0;
-> +            for (i = 0; i < CGROUP_SUBSYS_COUNT; i++) {
-> +                struct cgroup_subsys *ss = subsys[i];
-> +                if (!ss->disabled)
-> +                    opts->subsys_bits |= 1ul << i;
-> +            }
->         } else if (!strcmp(token, "noprefix")) {
->             set_bit(ROOT_NOPREFIX, &opts->flags);
->         } else if (!strncmp(token, "release_agent=", 14)) {
-> @@ -808,7 +815,8 @@ static int parse_cgroupfs_options(char *
->             for (i = 0; i < CGROUP_SUBSYS_COUNT; i++) {
->                 ss = subsys[i];
->                 if (!strcmp(token, ss->name)) {
-> -                    set_bit(i, &opts->subsys_bits);
-> +                    if (!ss->disabled)
-> +                        set_bit(i, &opts->subsys_bits);
->                     break;
->                 }
->             }
-> @@ -2596,6 +2606,8 @@ static int proc_cgroupstats_show(struct
->     mutex_lock(&cgroup_mutex);
->     for (i = 0; i < CGROUP_SUBSYS_COUNT; i++) {
->         struct cgroup_subsys *ss = subsys[i];
-> +        if (ss->disabled)
-> +            continue;
->         seq_printf(m, "%s\t%lu\t%d\n",
->                ss->name, ss->root->subsys_bits,
->                ss->root->number_of_cgroups);
-> @@ -2991,3 +3003,16 @@ static void cgroup_release_agent(struct
->     spin_unlock(&release_list_lock);
->     mutex_unlock(&cgroup_mutex);
-> }
+> I fixed all of errors except 80 characters warning.
+> Thanks
+>
+> Louis JANG
+>
+> Signed-off-by: Louis JANG <louis@mizi.com>
+>
+> --- linux-2.6.23/net/bluetooth/hci_event.c.orig	2008-02-25  
+> 17:17:11.000000000 +0900
+> +++ linux-2.6.23/net/bluetooth/hci_event.c	2008-02-25  
+> 17:30:23.000000000 +0900
+> @@ -1313,8 +1313,17 @@
+> 	hci_dev_lock(hdev);
+>
+> 	conn = hci_conn_hash_lookup_ba(hdev, ev->link_type, &ev->bdaddr);
+> -	if (!conn)
+> -		goto unlock;
+> +	if (!conn) {
+> +		if (ev->link_type != ACL_LINK) {
+> +			__u8 link_type = (ev->link_type == ESCO_LINK) ? SCO_LINK :  
+> ESCO_LINK;
 > +
-> +static int __init cgroup_disable(char *str)
-> +{
-> +    int i;
-> +    for (i = 0; i < CGROUP_SUBSYS_COUNT; i++) {
-> +        struct cgroup_subsys *ss = subsys[i];
-> +        if (!strcmp(str, ss->name)) {
-> +            ss->disabled = 1;
-> +            break;
-> +        }
-> +    }
-> +}
-> +__setup("cgroup_disable=", cgroup_disable);
-> 
-> 
->>
->> Sure thing, if css has the flag, then it would nice. Could you wrap it
->> up to say
->> something like css_disabled(&mem_cgroup_subsys)
->>
->>
-> 
-> It's the subsys object rather than the css (cgroup_subsys_state).
-> 
->  We could have something like:
-> 
-> #define cgroup_subsys_disabled(_ss) ((ss_)->disabled)
-> 
-> but I don't see that
->  cgroup_subsys_disabled(&mem_cgroup_subsys)
-> is better than just putting
-> 
->  mem_cgroup_subsys.disabled
-> 
-> Paul
-> 
-> 
+> +			conn = hci_conn_hash_lookup_ba(hdev, link_type, &ev->bdaddr);
+> +			if (conn)
+> +				conn->type = ev->link_type;
+> +		}
+> +		if (!conn)
+> +			goto unlock;
+> +	}
 
+NAK. There is no need to check for ACL_LINK. The sync_complete will  
+only be called for SCO or eSCO connections.
+
+> diff -uNr linux-2.6.23/include/net/bluetooth-orig/sco.h linux-2.6.23/ 
+> include/net/bluetooth/sco.h
+> --- linux-2.6.23/include/net/bluetooth-orig/sco.h	2007-10-10  
+> 05:31:38.000000000 +0900
+> +++ linux-2.6.23/include/net/bluetooth/sco.h	2008-02-25  
+> 18:04:20.000000000 +0900
+> @@ -51,6 +51,8 @@
+> 	__u8  dev_class[3];
+> };
+>
+> +#define SCO_FORCESCO	0x03
+> +
+
+NAK. We don't need this. And even if we really would want this, we  
+would do it via extra parameters inside sockaddr_sco. In that case we  
+would do it right and exposing eSCO settings and not some boolean  
+parameter.
+
+Regards
+
+Marcel
 
