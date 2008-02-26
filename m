@@ -1,84 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761940AbYBZPff@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762375AbYBZPhb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761940AbYBZPff (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Feb 2008 10:35:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756527AbYBZPf0
+	id S1762375AbYBZPhb (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Feb 2008 10:37:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756260AbYBZPhX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Feb 2008 10:35:26 -0500
-Received: from smtp5.pp.htv.fi ([213.243.153.39]:48406 "EHLO smtp5.pp.htv.fi"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753808AbYBZPfZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Feb 2008 10:35:25 -0500
-Date: Tue, 26 Feb 2008 17:34:21 +0200
-From: Adrian Bunk <bunk@kernel.org>
-To: Martin Michlmayr <tbm@cyrius.com>
-Cc: linux-kernel@vger.kernel.org, Evgeniy Polyakov <johnpol@2ka.mipt.ru>,
-       Herbert Xu <herbert@gondor.apana.org.au>,
-       Ralf Baechle <ralf@linux-mips.org>, linux-crypto@vger.kernel.org
-Subject: [2.6.25 patch] drivers/crypto/hifn_795x.c: fix 64bit division
-Message-ID: <20080226153421.GB10717@cs181133002.pp.htv.fi>
-References: <20080226122100.GB22699@deprecation.cyrius.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <20080226122100.GB22699@deprecation.cyrius.com>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+	Tue, 26 Feb 2008 10:37:23 -0500
+Received: from qmta05.westchester.pa.mail.comcast.net ([76.96.62.48]:55092
+	"EHLO QMTA05.westchester.pa.mail.comcast.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755726AbYBZPhW (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 Feb 2008 10:37:22 -0500
+X-Authority-Analysis: v=1.0 c=1 a=TEGKNp2qDdgA:10 a=_K75SHx9ETXD_wMSpTAA:9
+ a=ICtLINas2gqvPAC8MuBJSXgkC0AA:4 a=uv1ck3d6JtEA:10
+Subject: Re: [2.6.25-rc1] jerky mouse cursor and randoooom key repeats
+From: Chris Holvenstot <cholvenstot@comcast.net>
+To: Jiri Kosina <jkosina@suse.cz>
+Cc: Lennart Sorensen <lsorense@csclub.uwaterloo.ca>, elendil@planet.nl,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, Ingo Molnar <mingo@elte.hu>,
+       Kernel <linux-kernel@vger.kernel.org>
+In-Reply-To: <Pine.LNX.4.64.0802261602030.30955@jikos.suse.cz>
+References: <1203123219.6176.36.camel@popeye>
+	 <Pine.LNX.4.64.0802161202430.7699@twin.jikos.cz>
+	 <1203163503.6124.5.camel@popeye>
+	 <Pine.LNX.4.64.0802161907200.30955@jikos.suse.cz>
+	 <1203221372.6124.29.camel@popeye>
+	 <Pine.LNX.4.64.0802211036580.30955@jikos.suse.cz>
+	 <1203587101.27355.4.camel@popeye>
+	 <20080226145832.GA1289@csclub.uwaterloo.ca>
+	 <Pine.LNX.4.64.0802261602030.30955@jikos.suse.cz>
+Content-Type: text/plain
+Date: Tue, 26 Feb 2008 09:37:36 -0600
+Message-Id: <1204040256.12792.58.camel@popeye>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Feb 26, 2008 at 01:21:00PM +0100, Martin Michlmayr wrote:
-> With 2.6.25-rc3 and a config file with
+Jiri - 
+
+For what it is worth, and understand that it is hard to prove a
+negitive, on slack moments over the weekend I repeatedly booted my
+system into single user (console) mode using a kernel with
+CONFIG_GROUP_SCHED set to yes.
+
+To date I have NOT been able to recreate the repeating key issue outside
+of X.
+
+Chris
+
+
+On Tue, 2008-02-26 at 16:05 +0100, Jiri Kosina wrote:
+> On Tue, 26 Feb 2008, Lennart Sorensen wrote:
 > 
-> CONFIG_CRYPTO_DEV_HIFN_795X=m
-> CONFIG_CRYPTO_DEV_HIFN_795X_RNG=y
+> > Hmm, I have been seeing repeated keys a lot under X on my athlon 700, 
+> > but mainly when I have firefox running (which is of course quite a load 
+> > on the poor old thing).  This has been going on for probably the last 
+> > year or so.  I thought it was just the machine getting weird, although 
+> > whenever it wasn't running firefox or other memory/cpu heavy loads it 
+> > seemed fine.
 > 
-> I get the following build error on at least ARM and MIPS:
+> This could be caused by the fact that as far as I know, X are not using 
+> kernel-autorepeat, but they are handling it themselves, right? So if their 
+> sense of time (probably due to some change of kernel timekeeping) gets 
+> wrong, the autorepeat in X might also get wrong.
 > 
->   Building modules, stage 2.
->   MODPOST 759 modules
-> ERROR: "__divdi3" [drivers/crypto/hifn_795x.ko] undefined!
-
-Fix below.
-
-> Martin Michlmayr
-
-cu
-Adrian
-
-
-<--  snip  -->
-
-
-Using ndelay() with a 64bit variable as parameter can result in build 
-errors like the following on some 32bit systems when it results in a 
-64bit division:
-
-<--  snip  -->
-
- ...
-  MODPOST 759 modules
-ERROR: "__divdi3" [drivers/crypto/hifn_795x.ko] undefined!
-
-<--  snip  -->
-
-Reported by Martin Michlmayr.
-
-Signed-off-by: Adrian Bunk <bunk@kernel.org>
-
----
-
-40b45041ddc587c20b872a86a6a36952c28b02c7 diff --git a/drivers/crypto/hifn_795x.c b/drivers/crypto/hifn_795x.c
-index 3110bf7..b1541c6 100644
---- a/drivers/crypto/hifn_795x.c
-+++ b/drivers/crypto/hifn_795x.c
-@@ -807,7 +807,7 @@ static int hifn_rng_data_present(struct hwrng *rng, int wait)
- 		return 1;
- 	if (!wait)
- 		return 0;
--	ndelay(nsec);
-+	ndelay((u32)nsec);
- 	return 1;
- }
- 
+> It would be nice to know if when you hit the situation when autorepeat 
+> goes strange in X, if it is still OK in console.
+> 
 
