@@ -1,93 +1,525 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761299AbYBZBEA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762111AbYBZBEV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761299AbYBZBEA (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 Feb 2008 20:04:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753539AbYBZBDv
+	id S1762111AbYBZBEV (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 Feb 2008 20:04:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759780AbYBZBD6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 Feb 2008 20:03:51 -0500
-Received: from ns1.suse.de ([195.135.220.2]:47707 "EHLO mx1.suse.de"
+	Mon, 25 Feb 2008 20:03:58 -0500
+Received: from mail.suse.de ([195.135.220.2]:47712 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751242AbYBZBDv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 Feb 2008 20:03:51 -0500
-Date: Mon, 25 Feb 2008 17:03:41 -0800
-From: Greg Kroah-Hartman <gregkh@suse.de>
+	id S1758612AbYBZBD4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 25 Feb 2008 20:03:56 -0500
+Date: Mon, 25 Feb 2008 17:03:52 -0800
+From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
        torvalds@linux-foundation.org, stable@kernel.org
-Subject: Linux 2.6.23.17
-Message-ID: <20080226010341.GB26912@suse.de>
+Subject: Re: Linux 2.6.23.17
+Message-ID: <20080226010352.GC26912@suse.de>
+References: <20080226010341.GB26912@suse.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
+In-Reply-To: <20080226010341.GB26912@suse.de>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-We (the -stable team) are announcing the release of the 2.6.23.17
-kernel.
-
-It fixes a number of different bugs and all users of the 2.6.23 series
-are encouraged to upgrade.
-
-This should be the last release of the .23 kernel series, all users are
-encouraged to move to the .24 kernel series at this time.
-
-I'll also be replying to this message with a copy of the patch between
-2.6.23.16 and 2.6.23.17
-
-The updated 2.6.23.y git tree can be found at:
-        git://git.kernel.org/pub/scm/linux/kernel/git/stable/linux-2.6.23.y.git
-and can be browsed at the normal kernel.org git web browser:
-        http://git.kernel.org/?p=linux/kernel/git/stable/linux-2.6.23.y.git;a=summary
-
-thanks,
-
-greg k-h
-
---------
-
- Makefile                                  |    2 -
- arch/powerpc/platforms/powermac/feature.c |   11 +++++++-
- arch/x86_64/mm/pageattr.c                 |    2 -
- drivers/macintosh/smu.c                   |   25 ++++++++++++++++++-
- drivers/scsi/sd.c                         |   34 ++++++++++++--------------
- fs/nfs/write.c                            |   20 +++++++++++++--
- include/asm-powerpc/pmac_feature.h        |    8 ++++++
- include/linux/ktime.h                     |    2 +
- kernel/futex.c                            |    2 -
- kernel/futex_compat.c                     |    2 -
- kernel/hrtimer.c                          |   38 ++++++++++++++++--------------
- kernel/irq/chip.c                         |   20 +++++++++++++++
- kernel/posix-timers.c                     |    8 +++---
- mm/memory.c                               |    2 +
- net/netfilter/nf_conntrack_proto_tcp.c    |   33 ++++++++++++++++++++------
- 15 files changed, 154 insertions(+), 55 deletions(-)
-
-Summary of changes from v2.6.23.16 to v2.6.23.17
-================================================
-
-Benjamin Herrenschmidt (1):
-      Disable G5 NAP mode during SMU commands on U3
-
-Greg Kroah-Hartman (1):
-      Linux 2.6.23.17
-
-Ingo Molnar (1):
-      x86_64: CPA, fix cache attribute inconsistency bug
-
-James Bottomley (1):
-      SCSI: sd: handle bad lba in sense information
-
-Jonathan Corbet (1):
-      Be more robust about bad arguments in get_user_pages()
-
-Jozsef Kadlecsik (1):
-      NETFILTER: nf_conntrack_tcp: conntrack reopening fix
-
-Thomas Gleixner (2):
-      hrtimer: check relative timeouts for overflow
-      genirq: do not leave interupts enabled on free_irq
-
-Trond Myklebust (1):
-      NFS: Fix a potential file corruption issue when writing
-
+diff --git a/Makefile b/Makefile
+index 3a932c7..0fe28d1 100644
+--- a/Makefile
++++ b/Makefile
+@@ -1,7 +1,7 @@
+ VERSION = 2
+ PATCHLEVEL = 6
+ SUBLEVEL = 23
+-EXTRAVERSION = .16
++EXTRAVERSION = .17
+ NAME = Arr Matey! A Hairy Bilge Rat!
+ 
+ # *DOCUMENTATION*
+diff --git a/arch/powerpc/platforms/powermac/feature.c b/arch/powerpc/platforms/powermac/feature.c
+index ba931be..5169ecc 100644
+--- a/arch/powerpc/platforms/powermac/feature.c
++++ b/arch/powerpc/platforms/powermac/feature.c
+@@ -2565,6 +2565,8 @@ static void __init probe_uninorth(void)
+ 
+ 	/* Locate core99 Uni-N */
+ 	uninorth_node = of_find_node_by_name(NULL, "uni-n");
++	uninorth_maj = 1;
++
+ 	/* Locate G5 u3 */
+ 	if (uninorth_node == NULL) {
+ 		uninorth_node = of_find_node_by_name(NULL, "u3");
+@@ -2575,8 +2577,10 @@ static void __init probe_uninorth(void)
+ 		uninorth_node = of_find_node_by_name(NULL, "u4");
+ 		uninorth_maj = 4;
+ 	}
+-	if (uninorth_node == NULL)
++	if (uninorth_node == NULL) {
++		uninorth_maj = 0;
+ 		return;
++	}
+ 
+ 	addrp = of_get_property(uninorth_node, "reg", NULL);
+ 	if (addrp == NULL)
+@@ -3029,3 +3033,8 @@ void pmac_resume_agp_for_card(struct pci_dev *dev)
+ 	pmac_agp_resume(pmac_agp_bridge);
+ }
+ EXPORT_SYMBOL(pmac_resume_agp_for_card);
++
++int pmac_get_uninorth_variant(void)
++{
++	return uninorth_maj;
++}
+diff --git a/arch/x86_64/mm/pageattr.c b/arch/x86_64/mm/pageattr.c
+index eff3b22..7770e10 100644
+--- a/arch/x86_64/mm/pageattr.c
++++ b/arch/x86_64/mm/pageattr.c
+@@ -207,7 +207,7 @@ int change_page_attr_addr(unsigned long address, int numpages, pgprot_t prot)
+ 		if (__pa(address) < KERNEL_TEXT_SIZE) {
+ 			unsigned long addr2;
+ 			pgprot_t prot2;
+-			addr2 = __START_KERNEL_map + __pa(address);
++			addr2 = __START_KERNEL_map + __pa(address) - phys_base;
+ 			/* Make sure the kernel mappings stay executable */
+ 			prot2 = pte_pgprot(pte_mkexec(pfn_pte(0, prot)));
+ 			err = __change_page_attr(addr2, pfn, prot2,
+diff --git a/drivers/macintosh/smu.c b/drivers/macintosh/smu.c
+index d409f67..1ebe7a3 100644
+--- a/drivers/macintosh/smu.c
++++ b/drivers/macintosh/smu.c
+@@ -85,6 +85,7 @@ struct smu_device {
+ 	u32			cmd_buf_abs;	/* command buffer absolute */
+ 	struct list_head	cmd_list;
+ 	struct smu_cmd		*cmd_cur;	/* pending command */
++	int			broken_nap;
+ 	struct list_head	cmd_i2c_list;
+ 	struct smu_i2c_cmd	*cmd_i2c_cur;	/* pending i2c command */
+ 	struct timer_list	i2c_timer;
+@@ -135,6 +136,19 @@ static void smu_start_cmd(void)
+ 	fend = faddr + smu->cmd_buf->length + 2;
+ 	flush_inval_dcache_range(faddr, fend);
+ 
++
++	/* We also disable NAP mode for the duration of the command
++	 * on U3 based machines.
++	 * This is slightly racy as it can be written back to 1 by a sysctl
++	 * but that never happens in practice. There seem to be an issue with
++	 * U3 based machines such as the iMac G5 where napping for the
++	 * whole duration of the command prevents the SMU from fetching it
++	 * from memory. This might be related to the strange i2c based
++	 * mechanism the SMU uses to access memory.
++	 */
++	if (smu->broken_nap)
++		powersave_nap = 0;
++
+ 	/* This isn't exactly a DMA mapping here, I suspect
+ 	 * the SMU is actually communicating with us via i2c to the
+ 	 * northbridge or the CPU to access RAM.
+@@ -211,6 +225,10 @@ static irqreturn_t smu_db_intr(int irq, void *arg)
+ 	misc = cmd->misc;
+ 	mb();
+ 	cmd->status = rc;
++
++	/* Re-enable NAP mode */
++	if (smu->broken_nap)
++		powersave_nap = 1;
+  bail:
+ 	/* Start next command if any */
+ 	smu_start_cmd();
+@@ -461,7 +479,7 @@ int __init smu_init (void)
+         if (np == NULL)
+ 		return -ENODEV;
+ 
+-	printk(KERN_INFO "SMU driver %s %s\n", VERSION, AUTHOR);
++	printk(KERN_INFO "SMU: Driver %s %s\n", VERSION, AUTHOR);
+ 
+ 	if (smu_cmdbuf_abs == 0) {
+ 		printk(KERN_ERR "SMU: Command buffer not allocated !\n");
+@@ -533,6 +551,11 @@ int __init smu_init (void)
+ 		goto fail;
+ 	}
+ 
++	/* U3 has an issue with NAP mode when issuing SMU commands */
++	smu->broken_nap = pmac_get_uninorth_variant() < 4;
++	if (smu->broken_nap)
++		printk(KERN_INFO "SMU: using NAP mode workaround\n");
++
+ 	sys_ctrler = SYS_CTRLER_SMU;
+ 	return 0;
+ 
+diff --git a/drivers/scsi/sd.c b/drivers/scsi/sd.c
+index 2c6116f..2b28a24 100644
+--- a/drivers/scsi/sd.c
++++ b/drivers/scsi/sd.c
+@@ -901,6 +901,7 @@ static void sd_rw_intr(struct scsi_cmnd * SCpnt)
+  	unsigned int xfer_size = SCpnt->request_bufflen;
+  	unsigned int good_bytes = result ? 0 : xfer_size;
+  	u64 start_lba = SCpnt->request->sector;
++	u64 end_lba = SCpnt->request->sector + (xfer_size / 512);
+  	u64 bad_lba;
+ 	struct scsi_sense_hdr sshdr;
+ 	int sense_valid = 0;
+@@ -939,26 +940,23 @@ static void sd_rw_intr(struct scsi_cmnd * SCpnt)
+ 			goto out;
+ 		if (xfer_size <= SCpnt->device->sector_size)
+ 			goto out;
+-		switch (SCpnt->device->sector_size) {
+-		case 256:
++		if (SCpnt->device->sector_size < 512) {
++			/* only legitimate sector_size here is 256 */
+ 			start_lba <<= 1;
+-			break;
+-		case 512:
+-			break;
+-		case 1024:
+-			start_lba >>= 1;
+-			break;
+-		case 2048:
+-			start_lba >>= 2;
+-			break;
+-		case 4096:
+-			start_lba >>= 3;
+-			break;
+-		default:
+-			/* Print something here with limiting frequency. */
+-			goto out;
+-			break;
++			end_lba <<= 1;
++		} else {
++			/* be careful ... don't want any overflows */
++			u64 factor = SCpnt->device->sector_size / 512;
++			do_div(start_lba, factor);
++			do_div(end_lba, factor);
+ 		}
++
++		if (bad_lba < start_lba  || bad_lba >= end_lba)
++			/* the bad lba was reported incorrectly, we have
++			 * no idea where the error is
++			 */
++			goto out;
++
+ 		/* This computation should always be done in terms of
+ 		 * the resolution of the device's medium.
+ 		 */
+diff --git a/fs/nfs/write.c b/fs/nfs/write.c
+index a2a4865..331a5bb 100644
+--- a/fs/nfs/write.c
++++ b/fs/nfs/write.c
+@@ -717,6 +717,17 @@ int nfs_flush_incompatible(struct file *file, struct page *page)
+ }
+ 
+ /*
++ * If the page cache is marked as unsafe or invalid, then we can't rely on
++ * the PageUptodate() flag. In this case, we will need to turn off
++ * write optimisations that depend on the page contents being correct.
++ */
++static int nfs_write_pageuptodate(struct page *page, struct inode *inode)
++{
++	return PageUptodate(page) &&
++		!(NFS_I(inode)->cache_validity & (NFS_INO_REVAL_PAGECACHE|NFS_INO_INVALID_DATA));
++}
++
++/*
+  * Update and possibly write a cached page of an NFS file.
+  *
+  * XXX: Keep an eye on generic_file_read to make sure it doesn't do bad
+@@ -737,10 +748,13 @@ int nfs_updatepage(struct file *file, struct page *page,
+ 		(long long)(page_offset(page) +offset));
+ 
+ 	/* If we're not using byte range locks, and we know the page
+-	 * is entirely in cache, it may be more efficient to avoid
+-	 * fragmenting write requests.
++	 * is up to date, it may be more efficient to extend the write
++	 * to cover the entire page in order to avoid fragmentation
++	 * inefficiencies.
+ 	 */
+-	if (PageUptodate(page) && inode->i_flock == NULL && !(file->f_mode & O_SYNC)) {
++	if (nfs_write_pageuptodate(page, inode) &&
++			inode->i_flock == NULL &&
++			!(file->f_mode & O_SYNC)) {
+ 		count = max(count + offset, nfs_page_length(page));
+ 		offset = 0;
+ 	}
+diff --git a/include/asm-powerpc/pmac_feature.h b/include/asm-powerpc/pmac_feature.h
+index 26bcb0a..877c35a 100644
+--- a/include/asm-powerpc/pmac_feature.h
++++ b/include/asm-powerpc/pmac_feature.h
+@@ -392,6 +392,14 @@ extern u32 __iomem *uninorth_base;
+ #define UN_BIS(r,v)	(UN_OUT((r), UN_IN(r) | (v)))
+ #define UN_BIC(r,v)	(UN_OUT((r), UN_IN(r) & ~(v)))
+ 
++/* Uninorth variant:
++ *
++ * 0 = not uninorth
++ * 1 = U1.x or U2.x
++ * 3 = U3
++ * 4 = U4
++ */
++extern int pmac_get_uninorth_variant(void);
+ 
+ #endif /* __ASM_POWERPC_PMAC_FEATURE_H */
+ #endif /* __KERNEL__ */
+diff --git a/include/linux/ktime.h b/include/linux/ktime.h
+index dae7143..15a0229 100644
+--- a/include/linux/ktime.h
++++ b/include/linux/ktime.h
+@@ -289,6 +289,8 @@ static inline ktime_t ktime_add_us(const ktime_t kt, const u64 usec)
+ 	return ktime_add_ns(kt, usec * 1000);
+ }
+ 
++extern ktime_t ktime_add_safe(const ktime_t lhs, const ktime_t rhs);
++
+ /*
+  * The resolution of the clocks. The resolution value is returned in
+  * the clock_getres() system call to give application programmers an
+diff --git a/kernel/futex.c b/kernel/futex.c
+index b658a9a..0c55a58 100644
+--- a/kernel/futex.c
++++ b/kernel/futex.c
+@@ -2063,7 +2063,7 @@ asmlinkage long sys_futex(u32 __user *uaddr, int op, u32 val,
+ 
+ 		t = timespec_to_ktime(ts);
+ 		if (cmd == FUTEX_WAIT)
+-			t = ktime_add(ktime_get(), t);
++			t = ktime_add_safe(ktime_get(), t);
+ 		tp = &t;
+ 	}
+ 	/*
+diff --git a/kernel/futex_compat.c b/kernel/futex_compat.c
+index f938c23..bba74b6 100644
+--- a/kernel/futex_compat.c
++++ b/kernel/futex_compat.c
+@@ -175,7 +175,7 @@ asmlinkage long compat_sys_futex(u32 __user *uaddr, int op, u32 val,
+ 
+ 		t = timespec_to_ktime(ts);
+ 		if (cmd == FUTEX_WAIT)
+-			t = ktime_add(ktime_get(), t);
++			t = ktime_add_safe(ktime_get(), t);
+ 		tp = &t;
+ 	}
+ 	if (cmd == FUTEX_REQUEUE || cmd == FUTEX_CMP_REQUEUE)
+diff --git a/kernel/hrtimer.c b/kernel/hrtimer.c
+index ee8d0ac..2ee0497 100644
+--- a/kernel/hrtimer.c
++++ b/kernel/hrtimer.c
+@@ -301,6 +301,24 @@ unsigned long ktime_divns(const ktime_t kt, s64 div)
+ }
+ #endif /* BITS_PER_LONG >= 64 */
+ 
++/*
++ * Add two ktime values and do a safety check for overflow:
++ */
++
++ktime_t ktime_add_safe(const ktime_t lhs, const ktime_t rhs)
++{
++	ktime_t res = ktime_add(lhs, rhs);
++
++	/*
++	 * We use KTIME_SEC_MAX here, the maximum timeout which we can
++	 * return to user space in a timespec:
++	 */
++	if (res.tv64 < 0 || res.tv64 < lhs.tv64 || res.tv64 < rhs.tv64)
++		res = ktime_set(KTIME_SEC_MAX, 0);
++
++	return res;
++}
++
+ /* High resolution timer related functions */
+ #ifdef CONFIG_HIGH_RES_TIMERS
+ 
+@@ -658,13 +676,7 @@ hrtimer_forward(struct hrtimer *timer, ktime_t now, ktime_t interval)
+ 		 */
+ 		orun++;
+ 	}
+-	timer->expires = ktime_add(timer->expires, interval);
+-	/*
+-	 * Make sure, that the result did not wrap with a very large
+-	 * interval.
+-	 */
+-	if (timer->expires.tv64 < 0)
+-		timer->expires = ktime_set(KTIME_SEC_MAX, 0);
++	timer->expires = ktime_add_safe(timer->expires, interval);
+ 
+ 	return orun;
+ }
+@@ -815,7 +827,7 @@ hrtimer_start(struct hrtimer *timer, ktime_t tim, const enum hrtimer_mode mode)
+ 	new_base = switch_hrtimer_base(timer, base);
+ 
+ 	if (mode == HRTIMER_MODE_REL) {
+-		tim = ktime_add(tim, new_base->get_time());
++		tim = ktime_add_safe(tim, new_base->get_time());
+ 		/*
+ 		 * CONFIG_TIME_LOW_RES is a temporary way for architectures
+ 		 * to signal that they simply return xtime in
+@@ -824,16 +836,8 @@ hrtimer_start(struct hrtimer *timer, ktime_t tim, const enum hrtimer_mode mode)
+ 		 * timeouts. This will go away with the GTOD framework.
+ 		 */
+ #ifdef CONFIG_TIME_LOW_RES
+-		tim = ktime_add(tim, base->resolution);
++		tim = ktime_add_safe(tim, base->resolution);
+ #endif
+-		/*
+-		 * Careful here: User space might have asked for a
+-		 * very long sleep, so the add above might result in a
+-		 * negative number, which enqueues the timer in front
+-		 * of the queue.
+-		 */
+-		if (tim.tv64 < 0)
+-			tim.tv64 = KTIME_MAX;
+ 	}
+ 	timer->expires = tim;
+ 
+diff --git a/kernel/irq/chip.c b/kernel/irq/chip.c
+index f1a73f0..7279484 100644
+--- a/kernel/irq/chip.c
++++ b/kernel/irq/chip.c
+@@ -246,6 +246,17 @@ static unsigned int default_startup(unsigned int irq)
+ }
+ 
+ /*
++ * default shutdown function
++ */
++static void default_shutdown(unsigned int irq)
++{
++	struct irq_desc *desc = irq_desc + irq;
++
++	desc->chip->mask(irq);
++	desc->status |= IRQ_MASKED;
++}
++
++/*
+  * Fixup enable/disable function pointers
+  */
+ void irq_chip_set_defaults(struct irq_chip *chip)
+@@ -256,8 +267,15 @@ void irq_chip_set_defaults(struct irq_chip *chip)
+ 		chip->disable = default_disable;
+ 	if (!chip->startup)
+ 		chip->startup = default_startup;
++	/*
++	 * We use chip->disable, when the user provided its own. When
++	 * we have default_disable set for chip->disable, then we need
++	 * to use default_shutdown, otherwise the irq line is not
++	 * disabled on free_irq():
++	 */
+ 	if (!chip->shutdown)
+-		chip->shutdown = chip->disable;
++		chip->shutdown = chip->disable != default_disable ?
++			chip->disable : default_shutdown;
+ 	if (!chip->name)
+ 		chip->name = chip->typename;
+ 	if (!chip->end)
+diff --git a/kernel/posix-timers.c b/kernel/posix-timers.c
+index 7a15afb..00c9e25 100644
+--- a/kernel/posix-timers.c
++++ b/kernel/posix-timers.c
+@@ -765,9 +765,11 @@ common_timer_set(struct k_itimer *timr, int flags,
+ 	/* SIGEV_NONE timers are not queued ! See common_timer_get */
+ 	if (((timr->it_sigev_notify & ~SIGEV_THREAD_ID) == SIGEV_NONE)) {
+ 		/* Setup correct expiry time for relative timers */
+-		if (mode == HRTIMER_MODE_REL)
+-			timer->expires = ktime_add(timer->expires,
+-						   timer->base->get_time());
++		if (mode == HRTIMER_MODE_REL) {
++			timer->expires =
++				ktime_add_safe(timer->expires,
++					       timer->base->get_time());
++		}
+ 		return 0;
+ 	}
+ 
+diff --git a/mm/memory.c b/mm/memory.c
+index f82b359..51a8691 100644
+--- a/mm/memory.c
++++ b/mm/memory.c
+@@ -981,6 +981,8 @@ int get_user_pages(struct task_struct *tsk, struct mm_struct *mm,
+ 	int i;
+ 	unsigned int vm_flags;
+ 
++	if (len <= 0)
++		return 0;
+ 	/* 
+ 	 * Require read or write permissions.
+ 	 * If 'force' is set, we only require the "MAY" flags.
+diff --git a/net/netfilter/nf_conntrack_proto_tcp.c b/net/netfilter/nf_conntrack_proto_tcp.c
+index 70c5b7d..09b902d 100644
+--- a/net/netfilter/nf_conntrack_proto_tcp.c
++++ b/net/netfilter/nf_conntrack_proto_tcp.c
+@@ -135,7 +135,7 @@ enum tcp_bit_set {
+  * CLOSE_WAIT:	ACK seen (after FIN)
+  * LAST_ACK:	FIN seen (after FIN)
+  * TIME_WAIT:	last ACK seen
+- * CLOSE:	closed connection
++ * CLOSE:	closed connection (RST)
+  *
+  * LISTEN state is not used.
+  *
+@@ -834,8 +834,21 @@ static int tcp_packet(struct nf_conn *conntrack,
+ 	case TCP_CONNTRACK_SYN_SENT:
+ 		if (old_state < TCP_CONNTRACK_TIME_WAIT)
+ 			break;
+-		if ((conntrack->proto.tcp.seen[!dir].flags &
+-			IP_CT_TCP_FLAG_CLOSE_INIT)
++		/* RFC 1122: "When a connection is closed actively,
++		 * it MUST linger in TIME-WAIT state for a time 2xMSL
++		 * (Maximum Segment Lifetime). However, it MAY accept
++		 * a new SYN from the remote TCP to reopen the connection
++		 * directly from TIME-WAIT state, if..."
++		 * We ignore the conditions because we are in the
++		 * TIME-WAIT state anyway.
++		 *
++		 * Handle aborted connections: we and the server
++		 * think there is an existing connection but the client
++		 * aborts it and starts a new one.
++		 */
++		if (((conntrack->proto.tcp.seen[dir].flags
++		      | conntrack->proto.tcp.seen[!dir].flags)
++		     & IP_CT_TCP_FLAG_CLOSE_INIT)
+ 		    || (conntrack->proto.tcp.last_dir == dir
+ 		        && conntrack->proto.tcp.last_index == TCP_RST_SET)) {
+ 			/* Attempt to reopen a closed/aborted connection.
+@@ -850,16 +863,23 @@ static int tcp_packet(struct nf_conn *conntrack,
+ 	case TCP_CONNTRACK_IGNORE:
+ 		/* Ignored packets:
+ 		 *
++		 * Our connection entry may be out of sync, so ignore
++		 * packets which may signal the real connection between
++		 * the client and the server.
++		 *
+ 		 * a) SYN in ORIGINAL
+ 		 * b) SYN/ACK in REPLY
+ 		 * c) ACK in reply direction after initial SYN in original.
++		 *
++		 * If the ignored packet is invalid, the receiver will send
++		 * a RST we'll catch below.
+ 		 */
+ 		if (index == TCP_SYNACK_SET
+ 		    && conntrack->proto.tcp.last_index == TCP_SYN_SET
+ 		    && conntrack->proto.tcp.last_dir != dir
+ 		    && ntohl(th->ack_seq) ==
+ 			     conntrack->proto.tcp.last_end) {
+-			/* This SYN/ACK acknowledges a SYN that we earlier
++			/* b) This SYN/ACK acknowledges a SYN that we earlier
+ 			 * ignored as invalid. This means that the client and
+ 			 * the server are both in sync, while the firewall is
+ 			 * not. We kill this session and block the SYN/ACK so
+@@ -884,7 +904,7 @@ static int tcp_packet(struct nf_conn *conntrack,
+ 		write_unlock_bh(&tcp_lock);
+ 		if (LOG_INVALID(IPPROTO_TCP))
+ 			nf_log_packet(pf, 0, skb, NULL, NULL, NULL,
+-				  "nf_ct_tcp: invalid packed ignored ");
++				  "nf_ct_tcp: invalid packet ignored ");
+ 		return NF_ACCEPT;
+ 	case TCP_CONNTRACK_MAX:
+ 		/* Invalid packet */
+@@ -938,8 +958,7 @@ static int tcp_packet(struct nf_conn *conntrack,
+ 
+ 	conntrack->proto.tcp.state = new_state;
+ 	if (old_state != new_state
+-	    && (new_state == TCP_CONNTRACK_FIN_WAIT
+-		|| new_state == TCP_CONNTRACK_CLOSE))
++	    && new_state == TCP_CONNTRACK_FIN_WAIT)
+ 		conntrack->proto.tcp.seen[dir].flags |= IP_CT_TCP_FLAG_CLOSE_INIT;
+ 	timeout = conntrack->proto.tcp.retrans >= nf_ct_tcp_max_retrans
+ 		  && *tcp_timeouts[new_state] > nf_ct_tcp_timeout_max_retrans
