@@ -1,89 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764922AbYBZXAi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764700AbYBZXC4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764922AbYBZXAi (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Feb 2008 18:00:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764050AbYBZXAA
+	id S1764700AbYBZXC4 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Feb 2008 18:02:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755860AbYBZXCr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Feb 2008 18:00:00 -0500
-Received: from srv5.dvmed.net ([207.36.208.214]:58502 "EHLO mail.dvmed.net"
+	Tue, 26 Feb 2008 18:02:47 -0500
+Received: from ra.tuxdriver.com ([70.61.120.52]:4369 "EHLO ra.tuxdriver.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1763883AbYBZW77 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Feb 2008 17:59:59 -0500
-Message-ID: <47C499CF.2000605@pobox.com>
-Date: Tue, 26 Feb 2008 17:59:27 -0500
-From: Jeff Garzik <jgarzik@pobox.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+	id S1754697AbYBZXCq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 Feb 2008 18:02:46 -0500
+Date: Tue, 26 Feb 2008 17:47:57 -0500
+From: "John W. Linville" <linville@tuxdriver.com>
+To: Alexey Zaytsev <alexey.zaytsev@gmail.com>
+Cc: Michael Buesch <mb@bu3sch.de>, Ingo Molnar <mingo@elte.hu>,
+       Alexey Zaytsev <zaytsev.a@protei.ru>, Greg KH <greg@kroah.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: bcm43xx regression in 2.6.24 (with patch)
+Message-ID: <20080226224757.GB3100@tuxdriver.com>
+References: <47BEAF3B.3080809@protei.ru> <20080226202044.GE3013@tuxdriver.com> <f19298770802261338r40e3f252j2249c1325b725614@mail.gmail.com> <200802262304.39882.mb@bu3sch.de> <f19298770802261412j7a3fec4bv1754db8123796d54@mail.gmail.com>
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       =?ISO-8859-1?Q?Bj=F6rn_Steinbrink?= <B.Steinbrink@gmx.de>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: 2.6.24-git: kmap_atomic() WARN_ON()
-References: <alpine.LFD.1.00.0802070054220.9204@apollo.tec.linutronix.de> <20080225195924.GA23176@atjola.homenet> <47C32043.6090809@pobox.com> <20080225124054.9b69e9f0.akpm@linux-foundation.org> <alpine.LFD.1.00.0802252242290.7583@apollo.tec.linutronix.de> <47C34CEA.7060307@pobox.com> <20080226083904.GC9857@elte.hu> <47C43F18.6060207@pobox.com> <20080226101928.f6c16c66.akpm@linux-foundation.org> <20080226204943.GD14350@elte.hu> <20080226133715.d9cd32e7.akpm@linux-foundation.org>
-In-Reply-To: <20080226133715.d9cd32e7.akpm@linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.4 (----)
-X-Spam-Report: SpamAssassin version 3.2.3 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.4 points, 5.0 required)
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <f19298770802261412j7a3fec4bv1754db8123796d54@mail.gmail.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton wrote:
-> On Tue, 26 Feb 2008 21:49:43 +0100 Ingo Molnar <mingo@elte.hu> wrote:
->> i.e. to introduce a kmap_atomic_irqsave(...,flags) and 
->> kunmap_atomic_irqrestore() API variant. _That_ then could be mapped by 
->> -rt to a non-irq disabling thing.
+On Wed, Feb 27, 2008 at 01:12:32AM +0300, Alexey Zaytsev wrote:
+> On Wed, Feb 27, 2008 at 1:04 AM, Michael Buesch <mb@bu3sch.de> wrote:
 
-> Sure.  But iirc we haven't had a need for this before.  Which is a bit odd.
+> >  Besides that the bcm43xx driver is not broken. That's the whole reason
+> >  this damn thread started at all. So it can't be broken.
+> >
+> Can't agree here. The bcm43xx driver used to work with 2.6.23 without requiring
+> any module magic.
 
-We have such a need -- we just always paper over it with 
-spin_lock_irqsave() or local_irq_save() because those are "the rules." 
-grep around :)
+At the risk of prolonging things... :-(
 
-See ata_pio_sector() in libata-core.c, where we do:
+Isn't the fundamental problem here that the ssb driver claims the same
+PCI IDs as the bcm43xx driver?  He have hit this same issue a number
+of times: 8139too vs.  8139cp, eepro vs. e100, sk98lin vs. skge,
+and I'm sure there are more.  I admit that this situation is a bit
+more confusing, since the user is less likely to predict a conflict
+between bcm43xx and the ssb driver.  This is especially true since
+the user isn't even selecting ssb directly, but is instead selecting
+the apparently unrelated b44.
 
->         if (PageHighMem(page)) {
->                 unsigned long flags;
-> 
->                 /* FIXME: use a bounce buffer */
->                 local_irq_save(flags);
->                 buf = kmap_atomic(page, KM_IRQ0);
-> 
->                 /* do the actual data transfer */
->                 ap->ops->data_xfer(qc->dev, buf + offset, qc->sect_size, do_write);
-> 
->                 kunmap_atomic(buf, KM_IRQ0);
->                 local_irq_restore(flags);
->         } else {
->                 buf = page_address(page);
->                 ap->ops->data_xfer(qc->dev, buf + offset, qc->sect_size, do_write);
->         }
+Still, the bcm43xx driver is not fundamentally damaged.  This is
+fundamentally a "two drivers claiming the same PCI ID" issue, not a
+"you broke my driver" one.
 
-This is a core non-DMA data transfer routine.  Given the high cost of 
-disabling interrupts during the relatively-slow PIO data transfer, we 
-added extra logic to only disable interrupts for the highmem case.
-
-The code in libata-scsi generally only deals with a single buffer, on 
-average less than 128 bytes in length.  So the memcpy() isn't really 
-that expensive in the case being discussed -- unlike the 
-ata_pio_sector() case, where the cost is very, very high.
-
-Aside: The "FIXME: use bounce buffer" comment above indicates the more 
-optimal PIO data xfer approach of
-
-	local_irq_save()
-	kmap_atomic()
-	memcpy into bounce buffer
-	kunmap_atomic()
-	local_irq_restore()
-
-	/* do slow PIO bitbanging data transfer */
-	ap->ops->data_xfer(...)
-
-Regards,
-
-	Jeff
-
-
+John
+-- 
+John W. Linville
+linville@tuxdriver.com
