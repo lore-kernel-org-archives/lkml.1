@@ -1,208 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764438AbYBZSzv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763992AbYBZS5Z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764438AbYBZSzv (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Feb 2008 13:55:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758788AbYBZSzn
+	id S1763992AbYBZS5Z (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Feb 2008 13:57:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759656AbYBZS5R
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Feb 2008 13:55:43 -0500
-Received: from mx20.lb01.inode.at ([62.99.145.22]:39418 "EHLO mx.inode.at"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1764163AbYBZSzm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Feb 2008 13:55:42 -0500
-X-Greylist: delayed 85957 seconds by postgrey-1.27 at vger.kernel.org; Tue, 26 Feb 2008 13:55:41 EST
-From: Gerold Jury <gml@inode.at>
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: extra bytes written to SATA DVD drive on kernel 2.6.23 till 2.6.24.2
-Date: Tue, 26 Feb 2008 19:57:57 +0100
-User-Agent: KMail/1.9.7
-Cc: linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org
-References: <200802252005.22663.gml@inode.at> <20080225153249.5a5d555c.akpm@linux-foundation.org>
-In-Reply-To: <20080225153249.5a5d555c.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Tue, 26 Feb 2008 13:57:17 -0500
+Received: from smtp1.linux-foundation.org ([207.189.120.13]:40857 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1759139AbYBZS5Q (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 Feb 2008 13:57:16 -0500
+Date: Tue, 26 Feb 2008 10:56:06 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: Dave Jones <davej@codemonkey.org.uk>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       kernel list <linux-kernel@vger.kernel.org>
+Subject: Re: broken suspend in .2.6.25-rc3 on T61p (was Re: new regression
+ in 2.6.25-rc3: no keyboard/lid acpi events on thinkpad T61p)
+Message-Id: <20080226105606.e56e4ec6.akpm@linux-foundation.org>
+In-Reply-To: <20080226181611.GB6030@elf.ucw.cz>
+References: <20080225143932.6b83b65d.akpm@linux-foundation.org>
+	<8f53421d0802251448v3e0db63j3f222f041e587f69@mail.gmail.com>
+	<20080225145347.a61f6c61.akpm@linux-foundation.org>
+	<20080225225820.GP2659@elf.ucw.cz>
+	<20080225155550.4a020dfb.akpm@linux-foundation.org>
+	<20080226000007.GB22102@atrey.karlin.mff.cuni.cz>
+	<20080226101117.GA26671@atrey.karlin.mff.cuni.cz>
+	<20080226174613.GA26259@codemonkey.org.uk>
+	<20080226175954.GA5707@elf.ucw.cz>
+	<20080226181001.GA7714@codemonkey.org.uk>
+	<20080226181611.GB6030@elf.ucw.cz>
+X-Mailer: Sylpheed 2.4.7 (GTK+ 2.12.1; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200802261957.57278.gml@inode.at>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-It does happen with 2.6.22 too.
+On Tue, 26 Feb 2008 19:16:11 +0100 Pavel Machek <pavel@ucw.cz> wrote:
 
-Do you see any known pattern in these extra bytes ?
+> On Tue 2008-02-26 13:10:01, Dave Jones wrote:
+> > On Tue, Feb 26, 2008 at 06:59:54PM +0100, Pavel Machek wrote:
+> >  
+> >  > > if by 'custom' you mean the solution everyone agreed to work
+> >  > > toward at the power management summit several years ago
+> >  > > (hal/pm-utils) then, yes.
+> >  > 
+> >  > I must have been on different summit... I believe it is bad to tie
+> >  > s2ram to hal, because it makes testing on minimal system hard.
+> >  > 
+> >  > Anyway, what is the "default" way to trigger s2ram for Andrew? Perhaps
+> >  > Fedora already has his machine whitelisted...
+> > 
+> > There is no s2ram. pm-suspend uses the white/black-lists in pm-utils.
+> > Remember that? The cross-distro package everyone agreed was a good idea
+> > so that every distro didn't have their own magic utility ?
+> 
+> Well, we have cross-distro package, it is at suspend.sf.net , and it
+> can bring up video - which is kind of important. (It is single binary,
+> so it can be pagelocked -- which is important for s2disk).
+> 
+> Plus it does not depend on HAL.
 
-Best Regards
-Gerold
+Meanwhile, my computer continues to not work.
 
-
-00000000  2a 00 00 00 00 00 00 00  40 00 00 00 00 00 00 00  |*.......@.......|
-00000010  00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00  |................|
-*
-00020000  2a 00 00 00 00 40 00 00  40 00 00 00 00 40 00 00  |*....@..@....@..|
-00020010  00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00  |................|
-*
-00040000  2a 00 00 00 00 80 00 00  40 00 00 00 00 80 00 00  |*.......@.......|
-00040010  00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00  |................|
-*
-00060000  2a 00 00 00 00 c0 00 00  02 00 00 00 00 c0 00 00  |*...............|
-00060010  00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00  |................|
-*
-00061010  00 00 00 00 00 00 00 00  2a 00 00 00 00 c2 00 00  |........*.......|
-00061020  40 00 00 00 00 c2 00 00  00 00 00 00 00 00 00 00  |@...............|
-00061030  00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00  |................|
-*
-00081010  00 00 00 00 00 00 00 00  2a 00 00 00 01 02 00 00  |........*.......|
-00081020  40 00 00 00 01 02 00 00  00 00 00 00 00 00 00 00  |@...............|
-00081030  00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00  |................|
-*
-000a1010  00 00 00 00 00 00 00 00  2a 00 00 00 01 42 00 00  |........*....B..|
-000a1020  40 00 00 00 01 42 00 00  00 00 00 00 00 00 00 00  |@....B..........|
-000a1030  00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00  |................|
-*
-000c1010  00 00 00 00 00 00 00 00  2a 00 00 00 01 82 00 00  |........*.......|
-000c1020  40 00 00 00 01 82 00 00  00 00 00 00 00 00 00 00  |@...............|
-000c1030  00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00  |................|
-*
-
-
-
-On Tuesday 26 February 2008 00:32:49 Andrew Morton wrote:
->On Mon, 25 Feb 2008 20:05:22 +0100 Gerold Jury <gml@inode.at> wrote:
->> Hello,
->>
->> I have two DVD drives, one connected to the SATA port (LG) the other to
->> the IDE port (PHILIPS) of a via chipset.
->> They are driven by VIA SATA support (SATA_VIA) and VIA PATA support
->> (PATA_VIA).
->>
->> When I write an iso image to the drive on the SATA port /dev/sr0 it has
->> some extra bytes on disk which make the disk unreadable.
->> Writing to the IDE drive /dev/sr1 works well.
->>
->> A simple test with a DVD RAM and dd instead of growisofs
->>
->> dd if=/dev/zero of=/dev/srX bs=1024k count=10
->>
->> and a readback afterwards
->>
->> dd if=/dev/srX of=imageX.bin bs=1024k count=10
->>
->> gives me an all zero file from the IDE drive but a file
->> full of probably scsi commands for the SATA drive and looks like
->>
->> 00000000  00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00 
->> |................| *
->> 00020000  2a 00 00 00 00 40 00 00  40 00 00 00 00 40 00 00 
->> |*....@..@....@..| 00020010  00 00 00 00 00 00 00 00  00 00 00 00 00 00 00
->> 00  |................| *
->> 00040000  2a 00 00 00 00 80 00 00  40 00 00 00 00 80 00 00 
->> |*.......@.......| 00040010  00 00 00 00 00 00 00 00  00 00 00 00 00 00 00
->> 00  |................| *
->> 00060000  2a 00 00 00 00 c0 00 00  02 00 00 00 00 c0 00 00 
->> |*...............| 00060010  00 00 00 00 00 00 00 00  00 00 00 00 00 00 00
->> 00  |................| *
->> 00061010  00 00 00 00 00 00 00 00  2a 00 00 00 00 c2 00 00 
->> |........*.......| 00061020  40 00 00 00 00 c2 00 00  00 00 00 00 00 00 00
->> 00  |@...............| 00061030  00 00 00 00 00 00 00 00  00 00 00 00 00
->> 00 00 00  |................| *
->> 00081010  00 00 00 00 00 00 00 00  2a 00 00 00 01 02 00 00 
->> |........*.......| 00081020  40 00 00 00 01 02 00 00  00 00 00 00 00 00 00
->> 00  |@...............| 00081030  00 00 00 00 00 00 00 00  00 00 00 00 00
->> 00 00 00  |................| *
->> 000a1010  00 00 00 00 00 00 00 00  2a 00 00 00 01 42 00 00 
->> |........*....B..| 000a1020  40 00 00 00 01 42 00 00  00 00 00 00 00 00 00
->> 00  |@....B..........| 000a1030  00 00 00 00 00 00 00 00  00 00 00 00 00
->> 00 00 00  |................| *
->> 000c1010  00 00 00 00 00 00 00 00  2a 00 00 00 01 82 00 00 
->> |........*.......| 000c1020  40 00 00 00 01 82 00 00  00 00 00 00 00 00 00
->> 00  |@...............| 000c1030  00 00 00 00 00 00 00 00  00 00 00 00 00
->> 00 00 00  |................|
->>
->> I really need some hints to make the SATA drive usable, please.
->
->(added linux-ide)
->
->Did any earlier kernel work OK?  2.6.22?
->
->Thanks.
->
->> uname -a
->> Linux blaubaer 2.6.24.2 #4 Sun Feb 24 21:50:21 CET 2008 x86_64 AMD
->> Athlon(tm) 64 Processor 3400+ AuthenticAMD GNU/Linux
->>
->> lspvi -v
->>
->> 00:0f.0 RAID bus controller: VIA Technologies, Inc. VIA VT6420 SATA RAID
->> Controller (rev 80)
->>         Subsystem: ASUSTeK Computer Inc. A7V600/K8V Deluxe/K8V-X/A8V
->> Deluxe motherboard
->>         Flags: bus master, medium devsel, latency 64, IRQ 20
->>         I/O ports at e800 [size=8]
->>         I/O ports at e400 [size=4]
->>         I/O ports at e000 [size=8]
->>         I/O ports at d800 [size=4]
->>         I/O ports at d400 [size=16]
->>         I/O ports at d000 [size=256]
->>         Capabilities: [c0] Power Management version 2
->>         Kernel driver in use: sata_via
->>
->> 00:0f.1 IDE interface: VIA Technologies, Inc.
->> VT82C586A/B/VT82C686/A/B/VT823x/A/C PIPC Bus Master IDE (rev 06) (prog-if
->> 8a [Master SecP PriP])
->>         Subsystem: ASUSTeK Computer Inc. A7V600/K8V-X/A8V Deluxe
->> motherboard Flags: bus master, medium devsel, latency 32, IRQ 20
->>         [virtual] Memory at 000001f0 (32-bit, non-prefetchable) [size=8]
->>         [virtual] Memory at 000003f0 (type 3, non-prefetchable) [size=1]
->>         [virtual] Memory at 00000170 (32-bit, non-prefetchable) [size=8]
->>         [virtual] Memory at 00000370 (type 3, non-prefetchable) [size=1]
->>         I/O ports at fc00 [size=16]
->>         Capabilities: [c0] Power Management version 2
->>         Kernel driver in use: pata_via
->>
->> cat /var/log/messages
->>
->> Feb 25 18:20:57 blaubaer sata_via 0000:00:0f.0: version 2.3
->> Feb 25 18:20:57 blaubaer ACPI: PCI Interrupt 0000:00:0f.0[B] -> GSI 20
->> (level, low) -> IRQ 20
->> Feb 25 18:20:57 blaubaer sata_via 0000:00:0f.0: routed to hard irq line 10
->> Feb 25 18:20:57 blaubaer scsi3 : sata_via
->> Feb 25 18:20:57 blaubaer scsi4 : sata_via
->> Feb 25 18:20:57 blaubaer ata4: SATA max UDMA/133 cmd 0xe800 ctl 0xe400
->> bmdma 0xd400 irq 20
->> Feb 25 18:20:57 blaubaer ata5: SATA max UDMA/133 cmd 0xe000 ctl 0xd800
->> bmdma 0xd408 irq 20
->> Feb 25 18:20:57 blaubaer ata4: SATA link down 1.5 Gbps (SStatus 0 SControl
->> 300)
->> Feb 25 18:20:57 blaubaer ata5: SATA link up 1.5 Gbps (SStatus 113 SControl
->> 300)
->> Feb 25 18:20:57 blaubaer ata5.00: ATAPI: HL-DT-ST DVDRAM GH20NS10, EL00,
->> max UDMA/100
->> Feb 25 18:20:57 blaubaer ata5.00: configured for UDMA/100
->> Feb 25 18:20:57 blaubaer scsi 4:0:0:0: CD-ROM            HL-DT-ST DVDRAM
->> GH20NS10  EL00 PQ: 0 ANSI: 5
->> Feb 25 18:20:57 blaubaer sr0: scsi3-mmc drive: 48x/48x writer dvd-ram
->> cd/rw xa/form2 cdda tray
->> Feb 25 18:20:57 blaubaer Uniform CD-ROM driver Revision: 3.20
->> Feb 25 18:20:57 blaubaer sr 4:0:0:0: Attached scsi CD-ROM sr0
->> Feb 25 18:20:57 blaubaer sr 4:0:0:0: Attached scsi generic sg2 type 5
->> Feb 25 18:20:57 blaubaer pata_via 0000:00:0f.1: version 0.3.3
->> Feb 25 18:20:57 blaubaer ACPI: PCI Interrupt 0000:00:0f.1[A] -> GSI 20
->> (level, low) -> IRQ 20
->> Feb 25 18:20:57 blaubaer scsi5 : pata_via
->> Feb 25 18:20:57 blaubaer scsi6 : pata_via
->> Feb 25 18:20:57 blaubaer ata6: PATA max UDMA/133 cmd 0x1f0 ctl 0x3f6 bmdma
->> 0xfc00 irq 14
->> Feb 25 18:20:57 blaubaer ata7: PATA max UDMA/133 cmd 0x170 ctl 0x376 bmdma
->> 0xfc08 irq 15
->> Feb 25 18:20:57 blaubaer ata6.00: ATAPI: PHILIPS SPD2411P, BP01, max
->> UDMA/66 Feb 25 18:20:57 blaubaer ata6.00: limited to UDMA/33 due to
->> 40-wire cable Feb 25 18:20:57 blaubaer ata6.00: configured for UDMA/33
->> Feb 25 18:20:57 blaubaer scsi 5:0:0:0: CD-ROM            PHILIPS  SPD2411P
->> BP01 PQ: 0 ANSI: 5
->> Feb 25 18:20:57 blaubaer sr1: scsi3-mmc drive: 48x/48x writer dvd-ram
->> cd/rw xa/form2 cdda tray
->> Feb 25 18:20:57 blaubaer sr 5:0:0:0: Attached scsi CD-ROM sr1
->> Feb 25 18:20:57 blaubaer sr 5:0:0:0: Attached scsi generic sg3 type 5
-
-
+First thing we need to do is to work out why it won't stay suspended?
