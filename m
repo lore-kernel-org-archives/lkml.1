@@ -1,20 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765026AbYBZUnZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765008AbYBZUoX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765026AbYBZUnZ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Feb 2008 15:43:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762283AbYBZUnJ
+	id S1765008AbYBZUoX (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Feb 2008 15:44:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764510AbYBZUoB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Feb 2008 15:43:09 -0500
-Received: from mgw1.diku.dk ([130.225.96.91]:59155 "EHLO mgw1.diku.dk"
+	Tue, 26 Feb 2008 15:44:01 -0500
+Received: from mgw1.diku.dk ([130.225.96.91]:59190 "EHLO mgw1.diku.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752980AbYBZUnH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Feb 2008 15:43:07 -0500
-Date: Tue, 26 Feb 2008 21:43:03 +0100 (CET)
+	id S1758505AbYBZUn7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 Feb 2008 15:43:59 -0500
+Date: Tue, 26 Feb 2008 21:43:56 +0100 (CET)
 From: Julia Lawall <julia@diku.dk>
-To: jirislaby@gmail.com, linux-kernel@vger.kernel.org,
+To: mchehab@infradead.org, v4l-dvb-maintainer@linuxtv.org,
+       video4linux-list@redhat.com, linux-kernel@vger.kernel.org,
        kernel-janitors@vger.kernel.org
-Subject: [PATCH 3/9] drivers/char/isicom.c: Correct use of ! and &
-Message-ID: <Pine.LNX.4.64.0802262142390.18200@ask.diku.dk>
+Subject: [PATCH 5/9] drivers/media/video/em28xx: Correct use of ! and &
+Message-ID: <Pine.LNX.4.64.0802262143320.18200@ask.diku.dk>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
@@ -47,15 +48,15 @@ Signed-off-by: Julia Lawall <julia@diku.dk>
 
 ---
 
-diff -u -p a/drivers/char/isicom.c b/drivers/char/isicom.c
---- a/drivers/char/isicom.c 2007-10-22 11:25:05.000000000 +0200
-+++ b/drivers/char/isicom.c 2008-02-26 08:01:56.000000000 +0100
-@@ -1527,7 +1527,7 @@ static int __devinit reset_card(struct p
- 	msleep(10);
- 
- 	portcount = inw(base + 0x2);
--	if (!inw(base + 0xe) & 0x1 || (portcount != 0 && portcount != 4 &&
-+	if (!(inw(base + 0xe) & 0x1) || (portcount != 0 && portcount != 4 &&
- 				portcount != 8 && portcount != 16)) {
- 		dev_err(&pdev->dev, "ISILoad:PCI Card%d reset failure.\n",
- 			card + 1);
+diff -u -p a/drivers/media/video/em28xx/em28xx-core.c b/drivers/media/video/em28xx/em28xx-core.c
+--- a/drivers/media/video/em28xx/em28xx-core.c 2008-02-20 22:09:26.000000000 +0100
++++ b/drivers/media/video/em28xx/em28xx-core.c 2008-02-26 08:05:10.000000000 +0100
+@@ -267,7 +267,7 @@ static int em28xx_write_ac97(struct em28
+ 	for (i = 0; i < 10; i++) {
+ 		if ((ret = em28xx_read_reg(dev, AC97BUSY_REG)) < 0)
+ 			return ret;
+-		if (!((u8) ret) & 0x01)
++		if (!(((u8)ret) & 0x01))
+ 			return 0;
+ 		msleep(5);
+ 	}
