@@ -1,86 +1,139 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765301AbYBZWsT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932461AbYBZWsl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765301AbYBZWsT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Feb 2008 17:48:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759776AbYBZWr7
+	id S932461AbYBZWsl (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Feb 2008 17:48:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764875AbYBZWsQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Feb 2008 17:47:59 -0500
-Received: from wa-out-1112.google.com ([209.85.146.182]:4683 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758696AbYBZWr6 (ORCPT
+	Tue, 26 Feb 2008 17:48:16 -0500
+Received: from gateway-1237.mvista.com ([63.81.120.158]:51840 "EHLO
+	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1764737AbYBZWsN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Feb 2008 17:47:58 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=sr4lU7CBjRrXTm6YoWrod6rm0d5SCAl0KVDDUS7zn0KL8TlP7UkUxwSZ/59KFzl9aaYcH5KxUmXA+8YJagMUEW+Z3e2JSce6DH7xB/z9baRfHSFeGBuTGBEJHUOye+UhTNVcmb/60sh9U3D7aNaAp1s7TRR9gnM3U5csWWO7P58=
-Message-ID: <1ba2fa240802261447udd3ff92t20aba416362d5e33@mail.gmail.com>
-Date: Wed, 27 Feb 2008 00:47:56 +0200
-From: "Tomas Winkler" <tomasw@gmail.com>
-To: "Julia Lawall" <julia@diku.dk>
-Subject: Re: [PATCH 6/9] drivers/net/wireless/iwlwifi/iwl-4965.c: Correct use of ! and &
-Cc: yi.zhu@intel.com, linux-wireless@vger.kernel.org,
-       ipw3945-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org,
-       kernel-janitors@vger.kernel.org
-In-Reply-To: <Pine.LNX.4.64.0802262143570.18200@ask.diku.dk>
+	Tue, 26 Feb 2008 17:48:13 -0500
+Message-ID: <47C4972A.9040704@ct.jp.nec.com>
+Date: Tue, 26 Feb 2008 14:48:10 -0800
+From: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
+User-Agent: Thunderbird 2.0.0.9 (Windows/20071031)
 MIME-Version: 1.0
+To: Ingo Molnar <mingo@elte.hu>
+Cc: linux-kernel@vger.kernel.org, linux-rt-users@vger.kernel.org
+Subject: 2.6.24.2(-rt2?) sched_fair issue
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <Pine.LNX.4.64.0802262143570.18200@ask.diku.dk>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Feb 26, 2008 at 10:44 PM, Julia Lawall <julia@diku.dk> wrote:
-> From: Julia Lawall <julia@diku.dk>
->
->  In commit e6bafba5b4765a5a252f1b8d31cbf6d2459da337, a bug was fixed that
->  involved converting !x & y to !(x & y).  The code below shows the same
->  pattern, and thus should perhaps be fixed in the same way.
->
->  This is not tested and clearly changes the semantics, so it is only
->  something to consider.
->
->  The semantic patch that makes this change is as follows:
->  (http://www.emn.fr/x-info/coccinelle/)
->
->  // <smpl>
->  @@ expression E1,E2; @@
->  (
->   !E1 & !E2
->  |
->  - !E1 & E2
->  + !(E1 & E2)
->  )
->  // </smpl>
->
->  Signed-off-by: Julia Lawall <julia@diku.dk>
->
->  ---
->
->  diff -u -p a/drivers/net/wireless/iwlwifi/iwl-4965.c b/drivers/net/wireless/iwlwifi/iwl-4965.c
->  --- a/drivers/net/wireless/iwlwifi/iwl-4965.c 2008-02-05 20:56:01.000000000 +0100
->  +++ b/drivers/net/wireless/iwlwifi/iwl-4965.c 2008-02-26 08:09:12.000000000 +0100
->  @@ -4589,7 +4589,7 @@ static u8 iwl4965_is_fat_tx_allowed(stru
->
->         if (sta_ht_inf) {
->                 if ((!sta_ht_inf->ht_supported) ||
->  -                  (!sta_ht_inf->cap & IEEE80211_HT_CAP_SUP_WIDTH))
->  +                  (!(sta_ht_inf->cap & IEEE80211_HT_CAP_SUP_WIDTH)))
->                         return 0;
->         }
+Hi Ingo,
 
-The patch was already submitted by Roel Kluin '[PATCH]
-[wireless/iwlwifi/iwl-4965.c] add parentheses' I've acked it.
-Didn't track it if it's actually committed into tree... John, Reinette ?
+I got the following message and the kernel crashed when testing 2.6.24.2-rt2.
 
-Thanks
-Tomas
+Unable to handle kernel NULL pointer dereference at 0000000000000128 RIP:
+ [<ffffffff80229805>] pick_next_task_fair+0x2d/0x42
+PGD 211db1067 PUD 211c1d067 PMD 0
+Oops: 0000 [1] PREEMPT SMP
+CPU 2
+Modules linked in:
+Pid: 898, comm: stress Not tainted 2.6.24.2-rt2 #1
+RIP: 0010:[<ffffffff80229805>]  [<ffffffff80229805>] pick_next_task_fair+0x2d/0x42
+RSP: 0018:ffff8101ac423948  EFLAGS: 00010046
+RAX: 0000000000000000 RBX: 0000000000000000 RCX: ffff81022e562300
+RDX: ffff8101ac4239b0 RSI: ffff81022e562300 RDI: ffff8100050196e0
+RBP: ffff8101ac423958 R08: ffff810005015680 R09: ffff810005015800
+R10: 0000000000000000 R11: 0000000000000001 R12: ffff810005011680
+R13: 0000000000000001 R14: ffff810005019680 R15: 00000001002f7a43
+FS:  00002ada5c132b00(0000) GS:ffff81022fc057c0(0000) knlGS:0000000000000000
+CS:  0010 DS: 0000 ES: 0000 CR0: 000000008005003b
+CR2: 0000000000000128 CR3: 0000000211dfc000 CR4: 00000000000006e0
+DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
+DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
+Process stress (pid: 898, threadinfo ffff8101ac422000, task ffff81022e562300)
+Stack:  ffffffff802292e4 ffff810005015ac0 ffff8101ac4239e8 ffffffff804d9685
+ ffff8101ac4239b0 ffffffff8022f2bd 00000002ac423998 ffff81022e562300
+ ffff8101ac4239a8 ffff81022e562640 00000000000000ff ffffffff804db527
+Call Trace:
+ [<ffffffff802292e4>] put_prev_task_rt+0xd/0x18
+ [<ffffffff804d9685>] __schedule+0x414/0x771
+ [<ffffffff8022f2bd>] add_preempt_count+0x18/0xb2
+ [<ffffffff804db527>] __spin_unlock+0x14/0x2e
+ [<ffffffff804d9cdc>] schedule+0xdf/0xff
+ [<ffffffff804da557>] rt_spin_lock_slowlock+0xf9/0x19e
+ [<ffffffff804daed8>] __rt_spin_lock+0x6b/0x70
+ [<ffffffff804daee6>] rt_spin_lock+0x9/0xb
+ [<ffffffff8027b57f>] page_lock_anon_vma+0x2b/0x3b
+ [<ffffffff8027c38c>] page_referenced+0x49/0xf5
+ [<ffffffff8026f40b>] shrink_active_list+0x222/0x563
+ [<ffffffff8022f2bd>] add_preempt_count+0x18/0xb2
+ [<ffffffff802705d5>] shrink_zone+0xcc/0x10f
+ [<ffffffff80271139>] try_to_free_pages+0x183/0x27a
+ [<ffffffff8026b0da>] __alloc_pages+0x1fb/0x344
+ [<ffffffff8027c5ca>] anon_vma_prepare+0x29/0xf9
+ [<ffffffff80274fc8>] handle_mm_fault+0x251/0x700
+ [<ffffffff8020c7e6>] retint_kernel+0x26/0x30
+ [<ffffffff8021f522>] do_page_fault+0x315/0x6bf
+ [<ffffffff804db527>] __spin_unlock+0x14/0x2e
+ [<ffffffff8022f1af>] finish_task_switch+0x2b/0x90
+ [<ffffffff804db7c9>] error_exit+0x0/0x51
+Code: 48 8b bb 28 01 00 00 48 85 ff 75 dd 48 8d 43 b8 41 58 5b 5d
 
+I've gotten a kernel dump at this time.
+The backtrace says;
+(gdb) bt
+#0  pick_next_task_fair (rq=<value optimized out>) at kernel/sched_fair.c:680
+#1  0xffffffff804d9685 in __schedule () at kernel/sched.c:3783
+#2  0xffffffff804d9cdc in schedule () at kernel/sched.c:3914
+#3  0xffffffff804da557 in rt_spin_lock_slowlock (lock=0xffff81022e8ca618) at kernel/rtmutex.c:735
+#4  0xffffffff804daed8 in __rt_spin_lock (lock=0xffff81022e8ca618) at kernel/rtmutex.c:646
+#5  0xffffffff804daee6 in rt_spin_lock (lock=0xffff8100050196e0) at kernel/rtmutex.c:799
+#6  0xffffffff8027b57f in page_lock_anon_vma (page=<value optimized out>) at mm/rmap.c:172
+#7  0xffffffff8027c38c in page_referenced (page=0xffff8100050196e0, is_locked=777396992) at mm/rmap.c:309
+(snip)
 
->  -
->  To unsubscribe from this list: send the line "unsubscribe linux-wireless" in
->  the body of a message to majordomo@vger.kernel.org
->  More majordomo info at  http://vger.kernel.org/majordomo-info.html
->
+and here is the kernel/sched_fair.c:680
+static inline struct cfs_rq *group_cfs_rq(struct sched_entity *grp)
+{
+        return grp->my_q;
+}
+
+It seems that grp is NULL, so I think pick_next_entity() returns NULL.
+I think pick_next_entity() could return NULL when first_fair(cfs_rq) is false.
+
+static struct sched_entity *pick_next_entity(struct cfs_rq *cfs_rq)
+{
+        struct sched_entity *se = NULL;
+
+        if (first_fair(cfs_rq)) {
+                se = __pick_next_entity(cfs_rq);
+                set_next_entity(cfs_rq, se);
+        }
+
+        return se;
+}
+
+static struct task_struct *pick_next_task_fair(struct rq *rq)
+{
+        struct cfs_rq *cfs_rq = &rq->cfs;
+        struct sched_entity *se;
+
+        if (unlikely(!cfs_rq->nr_running))
+                return NULL;
+
+        do {
+                se = pick_next_entity(cfs_rq);
+                cfs_rq = group_cfs_rq(se);
+        } while (cfs_rq);
+
+        return task_of(se);
+}
+
+I'm not sure the actual scenario to cause this panic.
+I also don't know how to reproduce it, I was running some benchmarks at
+the week end and found it the Monday morning.
+I've encountered it on 2.6.24.2-rt2, but 2.6.24.2 and 2.6.25-rc3 also have
+the same code pick_next_task_fair().
+However latest sched-devel git tree has a modified code.
+
+I'm not so familiar the CFS, is this investigation correct?
+
+Thanks,
+Hiroshi Shimamoto
