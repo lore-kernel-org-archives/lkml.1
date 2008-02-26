@@ -1,74 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932512AbYBZXNt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932673AbYBZXOO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932512AbYBZXNt (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Feb 2008 18:13:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932324AbYBZXNe
+	id S932673AbYBZXOO (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Feb 2008 18:14:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932443AbYBZXNn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Feb 2008 18:13:34 -0500
-Received: from khc.piap.pl ([195.187.100.11]:54139 "EHLO khc.piap.pl"
+	Tue, 26 Feb 2008 18:13:43 -0500
+Received: from chilli.pcug.org.au ([203.10.76.44]:53462 "EHLO smtps.tip.net.au"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932313AbYBZXNd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Feb 2008 18:13:33 -0500
-To: davids@webmaster.com
-Cc: <Valdis.Kletnieks@vt.edu>, "Andrew Morton" <akpm@linux-foundation.org>,
-       "Ingo Molnar" <mingo@elte.hu>,
-       "Arnaldo Carvalho de Melo" <acme@ghostprotocols.net>,
-       <linux-kernel@vger.kernel.org>, "Alan Cox" <alan@redhat.com>
-Subject: Re: [PATCH] 2.6.25-rc2-mm1 - fix mcount GPL bogosity.
-References: <MDEHLPKNGKAHNMBLJOLKKEONKKAC.davids@webmaster.com>
-From: Krzysztof Halasa <khc@pm.waw.pl>
-Date: Wed, 27 Feb 2008 00:13:31 +0100
-In-Reply-To: <MDEHLPKNGKAHNMBLJOLKKEONKKAC.davids@webmaster.com> (David Schwartz's message of "Tue\, 26 Feb 2008 10\:19\:42 -0800")
-Message-ID: <m3ir0bcnvo.fsf@maximus.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	id S932415AbYBZXNm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 Feb 2008 18:13:42 -0500
+Date: Wed, 27 Feb 2008 10:13:38 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: -next build logs
+Message-Id: <20080227101338.5089d72d.sfr@canb.auug.org.au>
+In-Reply-To: <47C45749.3010001@s5r6.in-berlin.de>
+References: <47C45749.3010001@s5r6.in-berlin.de>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.8; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Wed__27_Feb_2008_10_13_38_+1100_p/s_4UlnAobZ110s"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-"David Schwartz" <davids@webmaster.com> writes:
+--Signature=_Wed__27_Feb_2008_10_13_38_+1100_p/s_4UlnAobZ110s
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-> The agreement made when the feature was added was that EXPORT_GPL was not a
-> license enforcement mechanism but was an indication that someone believed
-> that any use of the symbol was possible only a derivative work that would
-> need to be distributed under the GPL.
+Hi Stefan,
 
-But the above gives us nothing.
-*If* any use of non-GPL symbols only by a binary module was ok then it
-would make sense.
-
->> Actually I think the _GPL exports are really harmful - somebody
->> distributing a binary module may claim he/she doesn't violate the GPL
->> because the module uses only non-GPL exports.
+On Tue, 26 Feb 2008 19:15:37 +0100 Stefan Richter <stefanr@s5r6.in-berlin.d=
+e> wrote:
 >
-> Anyone can argue anything. That would be an obviously stupid argument.
-> Perhaps clearer documentation might be helpful, but the GPL speaks for
-> itself.
+> the allmodconfig builds at http://kisskb.ellerman.id.au/kisskb/branch/9/=
+=20
+> seem to lack a few drivers even though they are properly enabled in the=20
+> respective config.  Is it simply because everything is rebuilt on top of=
+=20
+> a previous build?
 
-Not sure if the court would share this opinion.
-Defendant: my module doesn't use any GPL-only export!
-Plaintiff: but using XXX normal symbol is a violation too!
-D: so why have you created that _GPL thing exactly?
+That's interesting.  I thought they were built from a clean tree each
+time but I will discuss this with Michael Ellerman who created this build
+system.
 
-Additionally:
-D: top of the COPYING file explicity states binary modules are ok.
+> Do you mail only errors to maintainers or also compiler warnings?
 
+Currently I am only concerned with actual failures.
 
-This is of course fine if we consider normal use of non-GPL-only
-symbols ok.
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
 
-> They serve as a warning and, as a practical matter, may make it a bit more
-> difficult to violate the license.
+--Signature=_Wed__27_Feb_2008_10_13_38_+1100_p/s_4UlnAobZ110s
+Content-Type: application/pgp-signature
 
-Technically only.
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
 
+iD8DBQFHxJ0mTgG2atn1QN8RAmZDAJoDIyh4OBnVKvAvgXsN1ddJh7jyTgCdE4PO
+ukEDSn3G1sp66qhLQq1xZMs=
+=qE47
+-----END PGP SIGNATURE-----
 
-I have to agree with Alan that the list of non-GPL modules only is
-quite tiny nowadays. Madwifi is in terminal state, ATI is opening the
-docs and working on GPL driver, modem drivers are mostly thing of
-the past, NVidias will probably be supported by the open source driver
-soon even if they don't open their code.
-
-Embedded devices have full Linux, not just modules.
--- 
-Krzysztof Halasa
+--Signature=_Wed__27_Feb_2008_10_13_38_+1100_p/s_4UlnAobZ110s--
