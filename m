@@ -1,59 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761289AbYBZLcS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760631AbYBZLh2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761289AbYBZLcS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Feb 2008 06:32:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753592AbYBZLcE
+	id S1760631AbYBZLh2 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Feb 2008 06:37:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754198AbYBZLhU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Feb 2008 06:32:04 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:52795 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753244AbYBZLcD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Feb 2008 06:32:03 -0500
-Date: Tue, 26 Feb 2008 12:31:38 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Cc: Lee Schermerhorn <Lee.Schermerhorn@hp.com>,
-       linux-ia64 <linux-ia64@vger.kernel.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Tony Luck <tony.luck@intel.com>, Ingo Molnar <mingo@redhat.com>,
-       Bob Picco <bob.picco@hp.com>, Eric Whitney <eric.whitney@hp.com>
-Subject: Re: 2.6.25-rc2-mm1 - boot hangs on ia64
-Message-ID: <20080226113138.GC10996@elte.hu>
-References: <1203955017.5046.29.camel@localhost> <20080226202308.FF40.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+	Tue, 26 Feb 2008 06:37:20 -0500
+Received: from styx.suse.cz ([82.119.242.94]:60209 "EHLO mail.suse.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753696AbYBZLhS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 Feb 2008 06:37:18 -0500
+Date: Tue, 26 Feb 2008 12:37:17 +0100 (CET)
+From: Jiri Kosina <jkosina@suse.cz>
+To: Ingo Molnar <mingo@elte.hu>
+cc: Jan Kara <jack@suse.cz>, Andrew Morton <akpm@linux-foundation.org>,
+       Nix <nix@esperi.org.uk>, Peter Osterlund <petero2@telia.com>,
+       linux-kernel@vger.kernel.org, dm-devel@redhat.com,
+       Jan Kara <jack@ucw.cz>
+Subject: Re: 2.6.24.2: 4KSTACKS + pcdrw + dm + mount -> stack overflow:	ide-cd
+ related? dm-related?
+In-Reply-To: <20080226112932.GB10996@elte.hu>
+Message-ID: <Pine.LNX.4.64.0802261230510.30955@jikos.suse.cz>
+References: <87wsovkth5.fsf@hades.wkstn.nix> <87skzipcpw.fsf@hades.wkstn.nix>
+ <m363wepa3a.fsf@telia.com> <87oda6p9st.fsf@hades.wkstn.nix>
+ <20080225123041.401da103.akpm@linux-foundation.org>
+ <20080225224807.GA15700@atrey.karlin.mff.cuni.cz>
+ <Pine.LNX.4.64.0802261207140.30955@jikos.suse.cz> <20080226112932.GB10996@elte.hu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080226202308.FF40.KOSAKI.MOTOHIRO@jp.fujitsu.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, 26 Feb 2008, Ingo Molnar wrote:
 
-* KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com> wrote:
+> > +	name = kmalloc(sizeof(char) * UDF_NAME_LEN, GFP_KERNEL);
+> > +	fname = kmalloc(sizeof(char) * UDF_NAME_LEN, GFP_KERNEL);
+> > +
+> > +	if (!name || !fname) {
+> > +		*err = -ENOMEM;
+> > +		return NULL;
+> > +	}
+> > +
+> >  	if (dentry) {
+> >  		if (!dentry->d_name.len) {
+> >  			*err = -EINVAL;
+> this bit is missing i think:
+> 	if (name)
+> 		kfree(name);
+> 	if (fname)
+> 		kfree(fname);
 
-> Fujitsu machine can't boot too. my bisect indicate git-sched.patch 
-> cause regression too.
+Ergh, of course, stupid me, sorry, it should be freed on all exit paths. I 
+am not sending updated patch, as Jan is probably working on complete 
+removal of one of those fields ... ?
 
-hm, that's a bit weird - nothing really should have broken it. Could you 
-try to do a specific bisection of sched-devel.git:
+Thanks,
 
-   http://people.redhat.com/mingo/sched-devel.git/README
-
-it's just a handful of commits so it should be relatively quick to 
-figure out. My only guess would be:
-
-  Subject: sched: make early bootup sched_clock() use safer
-
-but i think this has been ruled out before ...
-
-	Ingo
+-- 
+Jiri Kosina
