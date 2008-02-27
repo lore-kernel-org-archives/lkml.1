@@ -1,59 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755641AbYB0PJI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756137AbYB0PJ3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755641AbYB0PJI (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Feb 2008 10:09:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751201AbYB0PI5
+	id S1756137AbYB0PJ3 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Feb 2008 10:09:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755438AbYB0PJH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Feb 2008 10:08:57 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:58685 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751124AbYB0PI4 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Feb 2008 10:08:56 -0500
-Subject: Re: [PATCH] sched: don't allow rt_runtime_us to be zero for groups
-	having rt tasks
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Dhaval Giani <dhaval@linux.vnet.ibm.com>,
-       Sudhir Kumar <skumar@linux.vnet.ibm.com>,
-       Balbir Singh <balbir@in.ibm.com>,
-       Aneesh Kumar KV <aneesh.kumar@linux.vnet.ibm.com>,
-       Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>,
-       lkml <linux-kernel@vger.kernel.org>
-In-Reply-To: <20080227150350.GB21610@elte.hu>
-References: <20080227110829.GA15731@linux.vnet.ibm.com>
-	 <1204116417.6242.383.camel@lappy>
-	 <20080227132459.GE15731@linux.vnet.ibm.com>
-	 <1204121510.6242.406.camel@lappy>  <20080227150350.GB21610@elte.hu>
-Content-Type: text/plain
-Date: Wed, 27 Feb 2008 16:08:39 +0100
-Message-Id: <1204124919.6242.408.camel@lappy>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.21.90 
-Content-Transfer-Encoding: 7bit
+	Wed, 27 Feb 2008 10:09:07 -0500
+Received: from smtp5.pp.htv.fi ([213.243.153.39]:39099 "EHLO smtp5.pp.htv.fi"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754845AbYB0PJF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 Feb 2008 10:09:05 -0500
+Date: Wed, 27 Feb 2008 17:07:54 +0200
+From: Adrian Bunk <adrian.bunk@movial.fi>
+To: Olaf Hering <olaf@aepfle.de>, Anton Vorontsov <avorontsov@ru.mvista.com>,
+       Vitaly Bordug <vitb@kernel.crashing.org>, Jeff Garzik <jeff@garzik.org>,
+       Kumar Gala <galak@kernel.crashing.org>
+Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+Subject: [2.6.25 patch] FIXED_PHY must depend on PHYLIB=y
+Message-ID: <20080227150754.GA29269@cs181133002.pp.htv.fi>
+References: <200802271158.00453.olaf@aepfle.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <200802271158.00453.olaf@aepfle.de>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+This patch fixes the following build error introduced by commit 
+a79d8e93d300adb84cccc38ac396cfb118c238ad and reported by Olaf Hering:
 
-On Wed, 2008-02-27 at 16:03 +0100, Ingo Molnar wrote:
-> * Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:
-> 
-> > 
-> > On Wed, 2008-02-27 at 18:54 +0530, Dhaval Giani wrote:
-> > 
-> > > This patch checks if we can set the rt_runtime_us to 0. If there is a
-> > > realtime task in the group, we don't want to set the rt_runtime_us as 0
-> > > or bad things will happen.
-> > > 
-> > > Signed-off-by: Dhaval Giani <dhaval@linux.vnet.ibm.com>
-> > 
-> > Acked-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
-> 
-> doesnt apply to sched-devel.git - what's the plan here?
+<--  snip  -->
 
-stick in front, drop the other two sched-rt-group patches for which I'll
-send you an update somewhere today.
+...
+  LD      .tmp_vmlinux1
+arch/powerpc/sysdev/built-in.o: In function `of_add_fixed_phys':
+fsl_soc.c:(.init.text+0xd34): undefined reference to `fixed_phy_add'
+make: *** [.tmp_vmlinux1] Error 1
 
-These two patches would be candidates to push to linus..
+<--   snip  -->
+
+Signed-off-by: Adrian Bunk <adrian.bunk@movial.fi>
+
+---
+47a94f1d74e448d39f34f0ad37f8b4f69412ee13 diff --git a/drivers/net/phy/Kconfig b/drivers/net/phy/Kconfig
+index f4ca059..3ac8529 100644
+--- a/drivers/net/phy/Kconfig
++++ b/drivers/net/phy/Kconfig
+@@ -67,6 +67,7 @@ config REALTEK_PHY
+ 
+ config FIXED_PHY
+ 	bool "Driver for MDIO Bus/PHY emulation with fixed speed/link PHYs"
++	depends on PHYLIB=y
+ 	---help---
+ 	  Adds the platform "fixed" MDIO Bus to cover the boards that use
+ 	  PHYs that are not connected to the real MDIO bus.
 
