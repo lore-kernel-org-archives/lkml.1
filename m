@@ -1,117 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755726AbYB0Lj0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756663AbYB0Llh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755726AbYB0Lj0 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Feb 2008 06:39:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753061AbYB0LjQ
+	id S1756663AbYB0Llh (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Feb 2008 06:41:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753788AbYB0Ll3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Feb 2008 06:39:16 -0500
-Received: from mail.gmx.net ([213.165.64.20]:57198 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1752789AbYB0LjP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Feb 2008 06:39:15 -0500
-X-Authenticated: #20450766
-X-Provags-ID: V01U2FsdGVkX18ZPmdS9AkZ1nac+cvfFXmV6H2Bn68W9+pOsIxMOb
-	Rb95JZL5sKsLG4
-Date: Wed, 27 Feb 2008 12:39:25 +0100 (CET)
-From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-To: Greg KH <greg@kroah.com>
-cc: linux-kernel@vger.kernel.org
-Subject: Re: [PCI] duplicate sysfs symbols getting registered in current git
-In-Reply-To: <20080226201619.GA10343@kroah.com>
-Message-ID: <Pine.LNX.4.64.0802271237360.5059@axis700.grange>
-References: <Pine.LNX.4.64.0802182142240.11540@axis700.grange>
- <20080220063834.GA22708@kroah.com> <Pine.LNX.4.64.0802251341160.4430@axis700.grange>
- <20080226201619.GA10343@kroah.com>
+	Wed, 27 Feb 2008 06:41:29 -0500
+Received: from E23SMTP02.au.ibm.com ([202.81.18.163]:38845 "EHLO
+	e23smtp02.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752453AbYB0Ll1 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 Feb 2008 06:41:27 -0500
+From: Sripathi Kodi <sripathik@in.ibm.com>
+To: Michael Kerrisk <mtk.manpages@googlemail.com>
+Subject: Re: [PATCH] RUSAGE_THREAD
+Date: Wed, 27 Feb 2008 17:11:55 +0530
+User-Agent: KMail/1.9.4
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Roland McGrath <roland@redhat.com>, linux-kernel@vger.kernel.org,
+       torvalds@linux-foundation.org, vinay@linux.vnet.ibm.com,
+       drepper@redhat.com
+References: <200802051125.50423.sripathik@in.ibm.com> <47BF09DD.7090301@gmail.com>
+In-Reply-To: <47BF09DD.7090301@gmail.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Y-GMX-Trusted: 0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200802271711.55530.sripathik@in.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 26 Feb 2008, Greg KH wrote:
+On Friday 22 February 2008 23:13, Michael Kerrisk wrote:
+> Sripathi Kodi wrote:
+> > Hi Andrew,
+> >
+> > This adds the RUSAGE_THREAD option for the getrusage system call.
+> > This is essentially Roland's patch from
+> > http://lkml.org/lkml/2008/1/18/589, but the line about RUSAGE_LWP
+> > line has been removed, as suggested by Ulrich and Christoph.
+> >
+> > Thanks,
+> > Sripathi.
+> >
+> > This adds the RUSAGE_THREAD option for the getrusage system call.
+>
+> Sripathi,
+>
+> Could you write some small piece of text for the getrusage.2 man page
+> that describes the intended behavior of RUSAGE_THREAD?
 
-> We did just find a problem in the kobject core that might be causing
-> this to happen, can you try the patch below to see if this causes it to
-> go away as well?
+Michael,
 
-No, didn't help, same 3 stack dumps, only offsets / addresses a bit 
-different (CONFIG_SYSFS_DEPRECATED enabled):
+Please take a look at the following patch to getrusage.2. This is the first
+time I have edited a manpage, so I hope I have done it correctly!
 
-kobject (c7c35900): tried to init an initialized object, something is 
-seriously wrong.
-Pid: 1, comm: swapper Not tainted 2.6.25-rc2-testpm-dirty #37
- [<c01ea0c5>] kobject_init+0x75/0x80
- [<c025072e>] device_initialize+0x1e/0x90
- [<c0250f7b>] device_register+0xb/0x20
- [<c01f3db8>] pci_bus_add_devices+0x98/0x140
- [<c030add7>] ? pcibios_scan_root+0x27/0xa0
- [<c03f69d0>] pci_legacy_init+0x50/0xf0
- [<c03db5c2>] kernel_init+0x132/0x310
- [<c010303a>] ? ret_from_fork+0x6/0x1c
- [<c03db490>] ? kernel_init+0x0/0x310
- [<c03db490>] ? kernel_init+0x0/0x310
- [<c0103d3f>] kernel_thread_helper+0x7/0x18
- =======================
-sysfs: duplicate filename '0000:01' can not be created
-------------[ cut here ]------------
-WARNING: at fs/sysfs/dir.c:424 sysfs_add_one+0x80/0xa0()
-Modules linked in:
-Pid: 1, comm: swapper Not tainted 2.6.25-rc2-testpm-dirty #37
- [<c01209f4>] warn_on_slowpath+0x54/0x70
- [<c01210bc>] ? __call_console_drivers+0x5c/0x70
- [<c0313e81>] ? _spin_unlock_irqrestore+0x11/0x30
- [<c0121379>] ? release_console_sem+0x1d9/0x1f0
- [<c01217fd>] ? vprintk+0x2ad/0x3b0
- [<c01e9749>] ? ida_get_new_above+0x89/0x180
- [<c01aa410>] ? sysfs_ilookup_test+0x0/0x20
- [<c0313ddf>] ? _spin_unlock+0xf/0x30
- [<c01807aa>] ? ifind+0x8a/0x90
- [<c012191b>] ? printk+0x1b/0x20
- [<c01aa7a0>] sysfs_add_one+0x80/0xa0
- [<c01aacd9>] create_dir+0x49/0x90
- [<c01aad4b>] sysfs_create_dir+0x2b/0x50
- [<c01ea38e>] kobject_add_internal+0xae/0x190
- [<c01ea4ed>] ? kobject_set_name_vargs+0x2d/0x40
- [<c01ea4ed>] ? kobject_set_name_vargs+0x2d/0x40
- [<c01ea54f>] kobject_add_varg+0x4f/0x60
- [<c01ea83f>] kobject_add+0x2f/0x60
- [<c01ea252>] ? kobject_get+0x12/0x20
- [<c0250b0c>] device_add+0x8c/0x4f0
- [<c01ea07a>] ? kobject_init+0x2a/0x80
- [<c0250f82>] device_register+0x12/0x20
- [<c01f3db8>] pci_bus_add_devices+0x98/0x140
- [<c030add7>] ? pcibios_scan_root+0x27/0xa0
- [<c03f69d0>] pci_legacy_init+0x50/0xf0
- [<c03db5c2>] kernel_init+0x132/0x310
- [<c010303a>] ? ret_from_fork+0x6/0x1c
- [<c03db490>] ? kernel_init+0x0/0x310
- [<c03db490>] ? kernel_init+0x0/0x310
- [<c0103d3f>] kernel_thread_helper+0x7/0x18
- =======================
----[ end trace ca143223eefdc828 ]---
-kobject_add_internal failed for 0000:01 with -EEXIST, don't try to 
-register things with the same name in the same directory.
-Pid: 1, comm: swapper Not tainted 2.6.25-rc2-testpm-dirty #37
- [<c01ea419>] kobject_add_internal+0x139/0x190
- [<c01ea4ed>] ? kobject_set_name_vargs+0x2d/0x40
- [<c01ea54f>] kobject_add_varg+0x4f/0x60
- [<c01ea83f>] kobject_add+0x2f/0x60
- [<c01ea252>] ? kobject_get+0x12/0x20
- [<c0250b0c>] device_add+0x8c/0x4f0
- [<c01ea07a>] ? kobject_init+0x2a/0x80
- [<c0250f82>] device_register+0x12/0x20
- [<c01f3db8>] pci_bus_add_devices+0x98/0x140
- [<c030add7>] ? pcibios_scan_root+0x27/0xa0
- [<c03f69d0>] pci_legacy_init+0x50/0xf0
- [<c03db5c2>] kernel_init+0x132/0x310
- [<c010303a>] ? ret_from_fork+0x6/0x1c
- [<c03db490>] ? kernel_init+0x0/0x310
- [<c03db490>] ? kernel_init+0x0/0x310
- [<c0103d3f>] kernel_thread_helper+0x7/0x18
- =======================
+Also, the RUSAGE_THREAD patch is currently in -mm, but not in mainline
+yet. Hoping that it will make it, I have put a line in the patch that it is 
+supported from 2.6.25 onwards.
 
-Thanks
-Guennadi
----
-Guennadi Liakhovetski
+Thanks,
+Sripathi.
+
+PS: I fixed spelling error in Ulrich's mail id in the CC list.
+
+Signed-off-by: Sripathi Kodi <sripathik@in.ibm.com>
+
+--- getrusage.2.org	2008-02-27 17:00:57.000000000 +0530
++++ getrusage.2	2008-02-27 17:01:28.000000000 +0530
+@@ -44,12 +44,22 @@ getrusage \- get resource usage
+ .PP
+ .BR getrusage ()
+ returns current resource usages, for a \fIwho\fP
+-of either 
++of 
++.B RUSAGE_THREAD, 
+ .B RUSAGE_SELF
+ or 
+ .BR RUSAGE_CHILDREN .
+-The former asks for resources used by the current process,
+-the latter for resources used by those of its children
++.PP
++.B RUSAGE_THREAD 
++asks for resources used by the calling thread.
++.PP
++.B RUSAGE_SELF 
++asks for resources used by the current process, 
++which is the sum of resources used by all threads
++in the process.
++.PP
++.B RUSAGE_CHILDREN 
++asks for resources used by those of its children
+ that have terminated and have been waited for.
+ .PP 
+ .in +0.5i
+@@ -130,6 +140,9 @@ Since Linux 2.6, 
+ and
+ .I ru_nivcsw
+ are also maintained.
++.PP
++.B RUSAGE_THREAD
++is supported only in Linux kernel versions 2.6.25 and above.
+ .SH "SEE ALSO"
+ .BR getrlimit (2),
+ .BR times (2),
