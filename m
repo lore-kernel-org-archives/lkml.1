@@ -1,62 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760691AbYB0WIW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760916AbYB0WIr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760691AbYB0WIW (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Feb 2008 17:08:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756321AbYB0WII
+	id S1760916AbYB0WIr (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Feb 2008 17:08:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759298AbYB0WIR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Feb 2008 17:08:08 -0500
-Received: from g1t0027.austin.hp.com ([15.216.28.34]:25310 "EHLO
-	g1t0027.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756202AbYB0WIG (ORCPT
+	Wed, 27 Feb 2008 17:08:17 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:52173
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1758509AbYB0WIP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Feb 2008 17:08:06 -0500
-From: Paul Moore <paul.moore@hp.com>
-Organization: Hewlett-Packard
-To: Adrian Bunk <bunk@kernel.org>
-Subject: Re: [2.6 patch] selinux/netlabel.c should #include "netlabel.h"
-Date: Wed, 27 Feb 2008 17:08:04 -0500
-User-Agent: KMail/1.9.7
-Cc: sds@tycho.nsa.gov, jmorris@namei.org, eparis@parisplace.org,
-       netdev@vger.kernel.org, linux-kernel@vger.kernel.org
-References: <20080227212042.GK29269@cs181133002.pp.htv.fi> <200802271642.57556.paul.moore@hp.com> <20080227215543.GW29269@cs181133002.pp.htv.fi>
-In-Reply-To: <20080227215543.GW29269@cs181133002.pp.htv.fi>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
+	Wed, 27 Feb 2008 17:08:15 -0500
+Date: Wed, 27 Feb 2008 14:08:14 -0800 (PST)
+Message-Id: <20080227.140814.72134999.davem@davemloft.net>
+To: marcel@holtmann.org
+Cc: tglx@linutronix.de, kelk1@comcast.net, dwmw2@infradead.org,
+       hidave.darkstar@gmail.com, linux-kernel@vger.kernel.org,
+       jkosina@suse.cz, mingo@elte.hu
+Subject: Re: [PATCH] bluetooth: delete timer in l2cap_conn_del()
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20080227.110749.136686913.davem@davemloft.net>
+References: <20080226.174315.112638342.davem@davemloft.net>
+	<C1D6688B-49F8-4ED1-B4F6-07F21243237F@holtmann.org>
+	<20080227.110749.136686913.davem@davemloft.net>
+X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200802271708.04766.paul.moore@hp.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 27 February 2008 4:55:43 pm Adrian Bunk wrote:
-> On Wed, Feb 27, 2008 at 04:42:57PM -0500, Paul Moore wrote:
-> > On Wednesday 27 February 2008 4:20:42 pm Adrian Bunk wrote:
-> > > Every file should include the headers containing the externs for
-> > > its global code.
-> > >
-> > > Signed-off-by: Adrian Bunk <bunk@kernel.org>
-> >
-> > It doesn't _need_ the file in the strictest sense, the header file
-> > is just there for the core SELinux code to call into the
-> > NetLabel/SELinux glue code (what is in
-> > security/selinux/netlabel.c).  However, if this is to conform
-> > better to kernel coding policy (I assume that is the case here?)
-> > then that is fine with me.
->
-> I'm not claiming it needs it.
->
-> But with this #include gcc can check that the prototypes in
-> netlabel.h match the functions in netlabel.c
->
-> The bugs this catches are rare, but when you have such a bug it can
-> be nasty to debug.
 
-Good point, hadn't thought of that - thanks.  
+Marcel/Dave, can you or someone else followup with
+the bug reportor to get their dongle working now that
+the OOPS problem is fixed?
 
-> > Acked-by: Paul Moore <paul.moore@hp.com>
-
--- 
-paul moore
-linux security @ hp
+Let's not lose track of this bug, thanks.
