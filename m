@@ -1,32 +1,34 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755217AbYB0Fpd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754830AbYB0FtO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755217AbYB0Fpd (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Feb 2008 00:45:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751465AbYB0FpW
+	id S1754830AbYB0FtO (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Feb 2008 00:49:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750974AbYB0Fs7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Feb 2008 00:45:22 -0500
-Received: from smtp-out.google.com ([216.239.45.13]:38739 "EHLO
+	Wed, 27 Feb 2008 00:48:59 -0500
+Received: from smtp-out.google.com ([216.239.45.13]:38854 "EHLO
 	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750736AbYB0FpV (ORCPT
+	with ESMTP id S1750805AbYB0Fs6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Feb 2008 00:45:21 -0500
+	Wed, 27 Feb 2008 00:48:58 -0500
 DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
 	h=received:date:from:x-x-sender:to:cc:subject:in-reply-to:
 	message-id:references:user-agent:mime-version:content-type;
-	b=RMkh7lh3eVzkLYiuZVQ2cg/ktgdKpPGeGDoRf5DDE0wGZA+uV3s6p1/itAmKukADm
-	NfNl0wb3qCTc0ParbxknA==
-Date: Tue, 26 Feb 2008 21:44:50 -0800 (PST)
+	b=rBnEhB6BIDp+5nek30IWk16QeVQV1DxYpBHae5ZzO1x7Vxjq2fRoIaDatx0VPnjpz
+	qSVbR99lAJO9RMGtYMxvA==
+Date: Tue, 26 Feb 2008 21:47:58 -0800 (PST)
 From: David Rientjes <rientjes@google.com>
 X-X-Sender: rientjes@chino.kir.corp.google.com
-To: Matthew Wilcox <matthew@wil.cx>
-cc: Joe Perches <joe@perches.com>, LKML <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-fsdevel@vger.kernel.org, gcc@gcc.gnu.org
-Subject: Re: [PATCH] linux/fs.h - Convert debug functions declared inline
- __attribute__((format (printf,x,y) to statement expression macros
-In-Reply-To: <20080227041316.GA23188@parisc-linux.org>
-Message-ID: <alpine.DEB.1.00.0802262140160.23764@chino.kir.corp.google.com>
-References: <1204081722.19319.405.camel@localhost> <1204084947.19319.411.camel@localhost> <20080227041316.GA23188@parisc-linux.org>
+To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+cc: Balbir Singh <balbir@linux.vnet.ibm.com>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, Rik van Riel <riel@redhat.com>,
+       Lee Schermerhorn <Lee.Schermerhorn@hp.com>,
+       Nick Piggin <npiggin@suse.de>
+Subject: Re: [RFC][PATCH] page reclaim throttle take2
+In-Reply-To: <20080227143301.4252.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+Message-ID: <alpine.DEB.1.00.0802262145410.31356@chino.kir.corp.google.com>
+References: <47C4EF2D.90508@linux.vnet.ibm.com> <alpine.DEB.1.00.0802262115270.1799@chino.kir.corp.google.com> <20080227143301.4252.KOSAKI.MOTOHIRO@jp.fujitsu.com>
 User-Agent: Alpine 1.00 (DEB 882 2007-12-20)
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
@@ -34,43 +36,25 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 26 Feb 2008, Matthew Wilcox wrote:
+On Wed, 27 Feb 2008, KOSAKI Motohiro wrote:
 
-> On Tue, Feb 26, 2008 at 08:02:27PM -0800, Joe Perches wrote:
-> > Converting inline __attribute__((format (printf,x,y) functions
-> > to macros or statement expressions produces smaller objects
-> > 
-> > before:
-> > $ size vmlinux
-> >    text    data     bss     dec     hex filename
-> > 4716770  474560  618496 5809826  58a6a2 vmlinux
-> > after:
-> > $ size vmlinux
-> >    text    data     bss     dec     hex filename
-> > 4716706  474560  618496 5809762  58a662 vmlinux
+> > I disagree, the config option is indeed static but so is the NUMA topology 
+> > of the machine.  It represents the maximum number of page reclaim threads 
+> > that should be allowed for that specific topology; a maximum should not 
+> > need to be redefined with yet another sysctl and should remain independent 
+> > of various workloads.
 > 
-> > -static inline void __attribute__((format(printf, 1, 2)))
-> > -__simple_attr_check_format(const char *fmt, ...)
-> > -{
-> > -	/* don't do anything, just let the compiler check the arguments; */
-> > -}
-> > +/* don't do anything, just let the compiler check the arguments; */
-> > +
-> > +#define __simple_attr_check_format(fmt, args...) \
-> > +	do { if (0) printk(fmt, ##args); } while (0)
+> ok.
 > 
-> That's very interesting.  It's only 64 bytes, but still, it's not
-> supposed to have any different effect.  Could you distill a test case
-> for the GCC folks and file it in their bugzilla?
+> > However, I would recommend adding the word "MAX" to the config option.
+> 
+> MAX_PARALLEL_RECLAIM_TASK is good word?
 > 
 
-I'm not seeing any change in text size with allyesconfig after applying 
-this patch with latest git:
-
-   text	   data	    bss	    dec	    hex	filename
-32696210	5021759	6735572	44453541	2a64ea5	vmlinux.before
-32696210	5021759	6735572	44453541	2a64ea5	vmlinux.after
-
-Joe, what version of gcc are you using?
+I'd use _THREAD instead of _TASK, but I'd also wait for Balbir's input 
+because perhaps I missed something in my original analysis that this 
+config option represents only the maximum number of concurrent reclaim 
+threads and other heuristics are used in addition to this that determine 
+the exact number of threads depending on VM strain.
 
 		David
