@@ -1,45 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762813AbYB0JKz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756783AbYB0J1h@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762813AbYB0JKz (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Feb 2008 04:10:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755618AbYB0JKk
+	id S1756783AbYB0J1h (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Feb 2008 04:27:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754495AbYB0J11
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Feb 2008 04:10:40 -0500
-Received: from wf-out-1314.google.com ([209.85.200.170]:44695 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755499AbYB0JKj (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Feb 2008 04:10:39 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=bnbWFEn2HHsHgmioKIfo2qcrczDS9fM98aFTDvbJtiRATUIkGMC9Q3DMVRpJaU5He2g1EYNRU4SBCDdWZAKLxAS9do2T4L8Bo7pBqTzqf0Y/VHa3a0CfDUEeFfuYzXzKdWIDpf8fETO+83smGiR4OM/SsL70/MxNpfUijVXR6eY=
-Message-ID: <21d7e9970802270110i1affc67p9fed5696deaef70e@mail.gmail.com>
-Date: Wed, 27 Feb 2008 19:10:39 +1000
-From: "Dave Airlie" <airlied@gmail.com>
-To: drago01 <drago01@gmail.com>
-Subject: Re: Reexport init_mm ?
-Cc: "kernel list" <linux-kernel@vger.kernel.org>
-In-Reply-To: <f6ca9fed0802270029l231c6050sefd90ec2997eda37@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Wed, 27 Feb 2008 04:27:27 -0500
+Received: from ns.firmix.at ([62.141.48.66]:1561 "EHLO ns.firmix.at"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753101AbYB0J1Z (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 Feb 2008 04:27:25 -0500
+Subject: Re: [PATCH] CodingStyle: multiple updates
+From: Bernd Petrovitsch <bernd@firmix.at>
+To: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+Cc: Jan Engelhardt <jengelh@computergmbh.de>,
+       Randy Dunlap <randy.dunlap@oracle.com>, ricknu-0@student.ltu.se,
+       khc@pm.waw.pl, bhalevy.lists@gmail.com,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+In-Reply-To: <Pine.LNX.4.64.0802270033310.5714@axis700.grange>
+References: <1204062430.47c488def40a4@portal.student.luth.se>
+	 <20080226135444.f83a0536.randy.dunlap@oracle.com>
+	 <Pine.LNX.4.64.0802262310050.15321@fbirervta.pbzchgretzou.qr>
+	 <Pine.LNX.4.64.0802270033310.5714@axis700.grange>
+Content-Type: text/plain
+Organization: Firmix Software GmbH
+Date: Wed, 27 Feb 2008 10:27:00 +0100
+Message-Id: <1204104420.17396.2.camel@tara.firmix.at>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.3 (2.8.3-2.fc6) 
 Content-Transfer-Encoding: 7bit
+X-Firmix-Scanned-By: MIMEDefang 2.56 on ns.firmix.at
+X-Firmix-Spam-Score: -2.33 () AWL,BAYES_00,FORGED_RCVD_HELO,SPF_HELO_PASS,SPF_PASS
+X-Firmix-Spam-Status: No, hits=-2.33 required=5
+X-Spam-Score: -2.33 () AWL,BAYES_00,FORGED_RCVD_HELO,SPF_HELO_PASS,SPF_PASS
+X-Firmix-Envelope-From: <bernd@firmix.at>
+X-Firmix-Envelope-To: <linux-kernel@vger.kernel.org>
 Content-Disposition: inline
-References: <f6ca9fed0802270029l231c6050sefd90ec2997eda37@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Feb 27, 2008 at 6:29 PM, drago01 <drago01@gmail.com> wrote:
-> Hi,
->  init_mm is no longer exported in 2.6.25, because there are no in tree
->  modules that use it.
->  But the closed sources nvidia drivers are using it.
->  Is it possible to reexport this symbol to let the driver work with this kernel?
->
+On Mit, 2008-02-27 at 00:40 +0100, Guennadi Liakhovetski wrote:
+> On Tue, 26 Feb 2008, Jan Engelhardt wrote:
+> 
+> > +Continuation lines are always shorter than the initial one and are
+> > +(1) indented as much as the initial line, plus (2) alignment spaces.
+> > +Spaces are used so as to not cause odd aligning for users wishing to
+> > +display tabs at sizes other than 8. In the example below, the
+> > +continuation line of the printk call therefore has two tabs of logical
+> > +indent, followed by a number of spaces to align it up.
+> 
+> Now, I think, I am not the only one using emacs. Until now the "linux" 
+> C-style fitted perfectly with the CodingStyle, now it no longer will. 
+> Namely, emacs puts as many tabs to indent the continuation line as fit 
+> (i.e., at tab width = 8 spaces it's just (extra indent / 8) tabs plus 
+> (extra indent % 8) spaces. Is there a way to make emacs behave compatibly 
+> to this proposal? If not, I would not like to have to re-indent every such 
 
-Yes we'll get to it right away...
+Unless I'm misunderstanding something completely: Add "indent-tabs-mode:
+nil" in a "Local Variables:" section.
+But since Linux-style has that since ages (if not ever), that should be
+set for am emacs'ens linux-mode anyway.
 
-Oh wait...
+	Bernd
+-- 
+Firmix Software GmbH                   http://www.firmix.at/
+mobil: +43 664 4416156                 fax: +43 1 7890849-55
+          Embedded Linux Development and Services
 
-Dave.
+
