@@ -1,62 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755208AbYB0QaG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755206AbYB0Qhj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755208AbYB0QaG (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Feb 2008 11:30:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754096AbYB0Q3y
+	id S1755206AbYB0Qhj (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Feb 2008 11:37:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754189AbYB0Qh0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Feb 2008 11:29:54 -0500
-Received: from miranda.se.axis.com ([193.13.178.8]:51319 "EHLO
-	miranda.se.axis.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753589AbYB0Q3x (ORCPT
+	Wed, 27 Feb 2008 11:37:26 -0500
+Received: from out3.smtp.messagingengine.com ([66.111.4.27]:51777 "EHLO
+	out3.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753444AbYB0QhZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Feb 2008 11:29:53 -0500
-Date: Wed, 27 Feb 2008 17:29:10 +0100
-From: Jesper Nilsson <jesper.nilsson@axis.com>
-To: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       mikael.starvik@axis.com, jesper.nilsson@axis.se
-Subject: [PATCH] CRIS: Correct syscall numbers in unistd.h for timerfd_settime and timerfd_gettime
-Message-ID: <20080227162910.GC1644@axis.com>
+	Wed, 27 Feb 2008 11:37:25 -0500
+X-Sasl-enc: 9b/nBwu7/2mzdEhX2W4EdjEs0IwxJKMSI+7PjSRLkm/m 1204130244
+Message-ID: <47C591B4.7090302@imap.cc>
+Date: Wed, 27 Feb 2008 17:37:08 +0100
+From: Tilman Schmidt <tilman@imap.cc>
+Organization: me - organized??
+User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.0; de-AT; rv:1.8.1.12) Gecko/20080201 SeaMonkey/1.1.8 Mnenhy/0.7.5.666
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.13 (2006-08-11)
+To: Patrick McHardy <kaber@trash.net>
+CC: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org, netfilter-devel@vger.kernel.org
+Subject: nf_conntrack fix smp_processor_id() in preemptible code (was: 2.6.25-rc2-mm1
+ - several bugs and a crash)
+References: <20080216002522.9c4bd0fb.akpm@linux-foundation.org> <47BC982C.7050402@imap.cc> <47BD6072.4000407@trash.net>
+In-Reply-To: <47BD6072.4000407@trash.net>
+X-Enigmail-Version: 0.95.6
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature";
+ boundary="------------enig54E544DF1BAECDDE8F3BACEA"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Last commit for unistd was not correct, it only had a partial update
-of syscall numbers for __NR_timerfd_settime and __NR_timerfd_gettime.
-Also, NR_syscalls was not incremented for the new syscalls.
+This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
+--------------enig54E544DF1BAECDDE8F3BACEA
+Content-Type: text/plain; charset=ISO-8859-15
+Content-Transfer-Encoding: quoted-printable
 
-Signed-off-by: Jesper Nilsson <jesper.nilsson@axis.com>
----
- include/asm-cris/unistd.h |    6 +++---
- 1 files changed, 3 insertions(+), 3 deletions(-)
+Am 21.02.2008 12:28 schrieb Patrick McHardy:
+>>
+>> Feb 20 17:22:40 xenon kernel: [   48.180297] BUG: using smp_processor_=
+id() in preemptible [00000000] code: ntpdate/3562
+>> Feb 20 17:22:40 xenon kernel: [   48.180297] caller is __nf_conntrack_=
+find+0x9b/0xeb [nf_conntrack]
+>> Feb 20 17:22:40 xenon kernel: [   48.180297] Pid: 3562, comm: ntpdate =
+Not tainted 2.6.25-rc2-mm1-testing #1
+>> Feb 20 17:22:40 xenon kernel: [   48.180297]  [<c02015b9>] debug_smp_p=
+rocessor_id+0x99/0xb0
+>=20
+> Could you test whether this patch fixes the netfilter
+> warnings please?
 
-diff --git a/include/asm-cris/unistd.h b/include/asm-cris/unistd.h
-index 007cb16..76398ef 100644
---- a/include/asm-cris/unistd.h
-+++ b/include/asm-cris/unistd.h
-@@ -329,12 +329,12 @@
- #define __NR_timerfd_create	322
- #define __NR_eventfd		323
- #define __NR_fallocate		324
--#define __NR_timerfd_settime    315
--#define __NR_timerfd_gettime    316
-+#define __NR_timerfd_settime	325
-+#define __NR_timerfd_gettime	326
- 
- #ifdef __KERNEL__
- 
--#define NR_syscalls 325
-+#define NR_syscalls 327
- 
- #include <asm/arch/unistd.h>
- 
--- 
-1.5.3.6.970.gd25430
+Bad news: With 2.6.25-rc3, that bug has made it into mainline.
+Good news: Your patch fixes it there, too.
+
+So I suggest you forward it there as soon as possible.
+
+Thanks,
+Tilman
+
+--=20
+Tilman Schmidt                          E-Mail: tilman@imap.cc
+Bonn, Germany
+Diese Nachricht besteht zu 100% aus wiederverwerteten Bits.
+Unge=F6ffnet mindestens haltbar bis: (siehe R=FCckseite)
 
 
-/^JN - Jesper Nilsson
---
-               Jesper Nilsson -- jesper.nilsson@axis.com
+--------------enig54E544DF1BAECDDE8F3BACEA
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.3rc1 (MingW32)
+Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
+
+iD8DBQFHxZG+MdB4Whm86/kRAmQ4AJ0SkuP5Rt7VuMAca3i4GB8FXIfqDgCbBwEV
+Vj880Vu32Sg9FSKCWzNQvkM=
+=XFi+
+-----END PGP SIGNATURE-----
+
+--------------enig54E544DF1BAECDDE8F3BACEA--
