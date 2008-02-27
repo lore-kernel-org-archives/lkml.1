@@ -1,92 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932941AbYB0APs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932870AbYB0AQz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932941AbYB0APs (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Feb 2008 19:15:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932840AbYB0APf
+	id S932870AbYB0AQz (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Feb 2008 19:16:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756234AbYB0AQq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Feb 2008 19:15:35 -0500
-Received: from mail.crca.org.au ([67.207.131.56]:60120 "EHLO crca.org.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932818AbYB0APd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Feb 2008 19:15:33 -0500
-X-Greylist: delayed 442 seconds by postgrey-1.27 at vger.kernel.org; Tue, 26 Feb 2008 19:15:33 EST
-X-Bogosity: Ham, spamicity=0.000000
-Subject: Re: [2.6.25-rc1] jerky mouse cursor and randoooom key repeats
-From: Nigel Cunningham <ncunningham@crca.org.au>
-Reply-To: ncunningham@crca.org.au
-To: Lennart Sorensen <lsorense@csclub.uwaterloo.ca>
-Cc: Jiri Kosina <jkosina@suse.cz>, Chris Holvenstot <cholvenstot@comcast.net>,
-       elendil@planet.nl, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Ingo Molnar <mingo@elte.hu>, Kernel <linux-kernel@vger.kernel.org>
-In-Reply-To: <20080226220407.GY1287@csclub.uwaterloo.ca>
-References: <Pine.LNX.4.64.0802161202430.7699@twin.jikos.cz>
-	 <1203163503.6124.5.camel@popeye>
-	 <Pine.LNX.4.64.0802161907200.30955@jikos.suse.cz>
-	 <1203221372.6124.29.camel@popeye>
-	 <Pine.LNX.4.64.0802211036580.30955@jikos.suse.cz>
-	 <1203587101.27355.4.camel@popeye>
-	 <20080226145832.GA1289@csclub.uwaterloo.ca>
-	 <Pine.LNX.4.64.0802261602030.30955@jikos.suse.cz>
-	 <20080226215812.GX1287@csclub.uwaterloo.ca>
-	 <Pine.LNX.4.64.0802262300000.30955@jikos.suse.cz>
-	 <20080226220407.GY1287@csclub.uwaterloo.ca>
-Content-Type: text/plain
-Organization: Christian Reformed Churches of Australia
-Date: Wed, 27 Feb 2008 11:08:05 +1100
-Message-Id: <1204070885.30875.37.camel@laptop.nigel.suspend2.net>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 (2.12.3-1.fc8) 
-Content-Transfer-Encoding: 7bit
+	Tue, 26 Feb 2008 19:16:46 -0500
+Received: from mail.gmx.net ([213.165.64.20]:59789 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1756192AbYB0AQq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 Feb 2008 19:16:46 -0500
+X-Authenticated: #20450766
+X-Provags-ID: V01U2FsdGVkX1+PKXl6uwWPxRPjjZfArdQNmyXKNswVDZW2KCGs7p
+	drUYMMkdnJlyma
+Date: Wed, 27 Feb 2008 01:16:48 +0100 (CET)
+From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+To: Jan Engelhardt <jengelh@computergmbh.de>
+cc: Krzysztof Halasa <khc@pm.waw.pl>, Randy Dunlap <randy.dunlap@oracle.com>,
+       ricknu-0@student.ltu.se, bhalevy.lists@gmail.com,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] CodingStyle: multiple updates
+In-Reply-To: <Pine.LNX.4.64.0802270057310.15321@fbirervta.pbzchgretzou.qr>
+Message-ID: <Pine.LNX.4.64.0802270109440.5714@axis700.grange>
+References: <1204062430.47c488def40a4@portal.student.luth.se>
+ <20080226135444.f83a0536.randy.dunlap@oracle.com>
+ <Pine.LNX.4.64.0802262310050.15321@fbirervta.pbzchgretzou.qr>
+ <Pine.LNX.4.64.0802270033310.5714@axis700.grange> <m31w6zcm4l.fsf@maximus.localdomain>
+ <Pine.LNX.4.64.0802270057310.15321@fbirervta.pbzchgretzou.qr>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Y-GMX-Trusted: 0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi.
+On Wed, 27 Feb 2008, Jan Engelhardt wrote:
 
-On Tue, 2008-02-26 at 17:04 -0500, Lennart Sorensen wrote:
-> On Tue, Feb 26, 2008 at 11:01:55PM +0100, Jiri Kosina wrote:
-> > OK, so what very probably happened is that CONFIG_GROUP_SCHED somehow 
-> > schedules X server in a way which confuses its sense of time, and 
-> > therefore makes autorepeat buggy ... ?
 > 
-> Well in my case this has been happening quite a long time, and I am
-> currently running 2.6.22 from Debian and I don't see any such config
-> option in the config.
+> On Feb 27 2008 00:51, Krzysztof Halasa wrote:
+> >Guennadi Liakhovetski <g.liakhovetski@gmx.de> writes:
+> >
+> >> Now, I think, I am not the only one using emacs. Until now the "linux" 
+> >> C-style fitted perfectly with the CodingStyle, now it no longer will. 
+> >> Namely, emacs puts as many tabs to indent the continuation line as fit 
+> >> (i.e., at tab width = 8 spaces it's just (extra indent / 8) tabs plus 
+> >> (extra indent % 8) spaces. Is there a way to make emacs behave compatibly 
+> >> to this proposal? If not, I would not like to have to re-indent every such 
+> >> line manually or have my patches rejected because of this.
+> >
+> >Oh, I'm sure nobody will reject patches because of this now. It would
+> >mean no patches are accepted.
 > 
-> $ grep SCHED /boot/config-2.6.22-3-k7
-> CONFIG_IOSCHED_NOOP=y
-> CONFIG_IOSCHED_AS=y
-> CONFIG_IOSCHED_DEADLINE=y
-> CONFIG_IOSCHED_CFQ=y
-> CONFIG_DEFAULT_IOSCHED="cfq"
-> CONFIG_SCHED_SMT=y
-> CONFIG_SCHED_MC=y
-> CONFIG_NET_SCHED=y
-> # CONFIG_USB_EHCI_TT_NEWSCHED is not set
-> # CONFIG_SCHEDSTATS is not set
-> 
-> So no idea what could have started the problem originally.  I guess I
-> have to start booting some older kernels and seeing if that helps.
+> Correct. Just did not want to even encourage any newcomers to use
+> tabs when spacing is needed. Though, some editors unfortunately do
+> just that - replacing 8 spaces by tabs on a new line when autoindent
+> is on, like mcedit :-(
 
-I saw it this morning with 2.6.23.14. It was find for ages, and seems to
-be okay again now. Not sure what triggered it though.
+Then why do we define rules that we know that nobody will (be reasonably 
+able to) adhere to?
 
-nigel@laptop:/usr/src/redhat/BUILD/kernel-2.6.23/build-2.6.23.x86_64$
-grep SCHED .config
-CONFIG_IOSCHED_NOOP=y
-CONFIG_IOSCHED_AS=y
-CONFIG_IOSCHED_DEADLINE=y
-CONFIG_IOSCHED_CFQ=y
-CONFIG_DEFAULT_IOSCHED="cfq"
-CONFIG_SCHED_SMT=y
-CONFIG_SCHED_MC=y
-# CONFIG_NET_SCHED is not set
-CONFIG_USB_EHCI_TT_NEWSCHED=y
-CONFIG_SCHED_DEBUG=y
-CONFIG_SCHEDSTATS=y
+I can see the reasoning behind using spaces instead of tabs in 
+continuation lines and in in-line indentation like
 
-(Old Redhat tree with TuxOnIce applied; I'm running F8 with all current
-updates applied).
+	int x   = 1;
+	void *c = NULL;
 
-Nigel
+or
 
+#define X  1
+#define XY 2
+
+although I personally perfer TABs there too. But as long as we do not want 
+to actually impose that, I don't think we should define that.
+
+Whereas an explicit rule requesting to use TABs and not spaces for 
+different indentation levels seems good.
+
+Thanks
+Guennadi
+---
+Guennadi Liakhovetski
