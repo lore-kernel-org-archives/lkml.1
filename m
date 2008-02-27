@@ -1,64 +1,464 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757561AbYB0IOp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758204AbYB0IX4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757561AbYB0IOp (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Feb 2008 03:14:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753909AbYB0IOe
+	id S1758204AbYB0IX4 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Feb 2008 03:23:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754808AbYB0IXq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Feb 2008 03:14:34 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:45496 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752309AbYB0IOd (ORCPT
+	Wed, 27 Feb 2008 03:23:46 -0500
+Received: from py-out-1112.google.com ([64.233.166.180]:56855 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754379AbYB0IXp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Feb 2008 03:14:33 -0500
-Subject: Re: [PATCH 00/28] Swap over NFS -v16
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Pekka Enberg <penberg@cs.helsinki.fi>
-Cc: Neil Brown <neilb@suse.de>, Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       netdev@vger.kernel.org, trond.myklebust@fys.uio.no
-In-Reply-To: <84144f020802270005p3bfbd04ar9da2875218ef98c4@mail.gmail.com>
-References: <20080220144610.548202000@chello.nl>
-	 <20080223000620.7fee8ff8.akpm@linux-foundation.org>
-	 <18371.43950.150842.429997@notabene.brown>
-	 <1204023042.6242.271.camel@lappy>
-	 <18372.64081.995262.986841@notabene.brown>
-	 <1204099113.6242.353.camel@lappy>
-	 <84144f020802270005p3bfbd04ar9da2875218ef98c4@mail.gmail.com>
-Content-Type: text/plain
-Date: Wed, 27 Feb 2008 09:14:19 +0100
-Message-Id: <1204100059.6242.360.camel@lappy>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.21.90 
+	Wed, 27 Feb 2008 03:23:45 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:subject:content-type:content-transfer-encoding;
+        b=wpETOwNtDvSyzBG1gFre/uxDvFzPV26uNLsC1WB67LPwtIE46kbkcIUl4S6onuueuaZlJwq7VKcY08hzpTqJj4IVAQSq2DZEGRFNR9TULVaKIxXGiHv9vhxcpwbfTJfztwpFxgfDfjQtzcWTybWZxNru0zyfTLYg5IrGyXfjibo=
+Message-ID: <47C51DFB.4040605@gmail.com>
+Date: Wed, 27 Feb 2008 02:23:23 -0600
+From: Jon Schindler <jkschind@gmail.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20071022)
+MIME-Version: 1.0
+To: linux-janitors@vger.kernel.org, linux-kernel@vger.kernel.org,
+       philb@gnu.org, bzolnier@gmail.com, airlied@linux.ie,
+       paul@paulbristow.net, James.Bottomley@HansenPartnership.com
+Subject: [PATCH 1/1]  Removed deprecated init_module and cleanup_module functions
+ and updated to use module_init and module_exit.
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+From: Jon Schindler <jkschind@gmail.com>
+As part of the kernel janitor projected listed at http://kernelnewbies.org/KernelJanitors/Todo/ApiChanges 
+I have removed some deprecated api calls.
+The deprecated init_module and cleanup_module functions have been removed from
+the following files:
 
-On Wed, 2008-02-27 at 10:05 +0200, Pekka Enberg wrote:
-> Hi Peter,
-> 
-> On Wed, Feb 27, 2008 at 9:58 AM, Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:
-> >  > 1/ I note there is no way to tell if memory returned by kmalloc is
-> >  >   from the emergency reserve - which contrasts with alloc_page
-> >  >   which does make that information available through page->reserve.
-> >  >   This seems a slightly unfortunate aspect of the interface.
-> >
-> >  Yes, but alas there is no room to store such information in kmalloc().
-> >  That is, in a sane way. I think it was Daniel Phillips who suggested
-> >  encoding it in the return pointer by flipping the low bit - but that is
-> >  just too ugly and breaks all current kmalloc sites to boot.
-> 
-> Why can't you add a kmem_is_emergency() to SLUB that looks up the
-> cache/slab/page (whatever is the smallest unit of the emergency pool
-> here) for the object and use that?
+drivers/block/floppy.c
+drivers/block/ps2esdi.c
+drivers/char/drm/drm_drv.c
+drivers/char/ip2/ip2main.c
+drivers/ide/ide.c
+drivers/net/3c501.c
+drivers/net/3c505.c
+drivers/net/3c507.c
+drivers/net/3c515.c
+drivers/net/3c523.c
+drivers/net/3c527.c
+drivers/net/82596.c
 
-There is an idea.. :-) It would mean preserving page->reserved, but SLUB
-has plenty of page flags to pick from. Or maybe I should move the thing
-to a page flag anyway. If we do that SLAB would allow something similar,
-just look up the page for whatever address you get and look at PG_emerg
-or something.
+-prototypes for init_module were replaced with static function definitions
+that are exported using module_init()
+-prototypes exported using cleanup_module(void) were replaced with a
+static internal function that is exported through module_exit().
 
-Having this would clean things up. I'll go work on this.
-
+Signed-off-by: Jon Schindler <jkschind@gmail.com>
+--- 
+diff --git a/drivers/block/floppy.c b/drivers/block/floppy.c
+index 32c79a5..9a3d509 100644
+--- a/drivers/block/floppy.c
++++ b/drivers/block/floppy.c
+@@ -4528,14 +4528,15 @@ static void __init parse_floppy_cfg_string(char *cfg)
+ 	}
+ }
+ 
+-int __init init_module(void)
++static int __init floppy_module_init(void)
+ {
+ 	if (floppy)
+ 		parse_floppy_cfg_string(floppy);
+ 	return floppy_init();
+ }
++module_init(floppy_module_init);
+ 
+-void cleanup_module(void)
++static void __exit floppy_module_exit(void)
+ {
+ 	int drive;
+ 
+@@ -4567,6 +4568,7 @@ void cleanup_module(void)
+ 
+ 	wait_for_completion(&device_release);
+ }
++module_exit(floppy_module_exit);
+ 
+ module_param(floppy, charp, 0);
+ module_param(FLOPPY_IRQ, int, 0);
+diff --git a/drivers/block/ps2esdi.c b/drivers/block/ps2esdi.c
+index 3c796e2..edcd150 100644
+--- a/drivers/block/ps2esdi.c
++++ b/drivers/block/ps2esdi.c
+@@ -135,7 +135,7 @@ static struct block_device_operations ps2esdi_fops =
+ 
+ static struct gendisk *ps2esdi_gendisk[2];
+ 
+-/* initialization routine called by ll_rw_blk.c   */
++/* initialization routine used when compiled into kernel   */
+ static int __init ps2esdi_init(void)
+ {
+ 
+@@ -180,7 +180,10 @@ module_param_array(head, int, NULL, 0);
+ module_param_array(sect, int, NULL, 0);
+ MODULE_LICENSE("GPL");
+ 
+-int init_module(void) {
++/* extra work needs to be done in addition to ps2esdi_init
++ * when compiled as a module */
++static int __init ps2esdi_init_module(void)
++{
+ 	int drive;
+ 
+ 	for(drive = 0; drive < MAX_HD; drive++) {
+@@ -198,9 +201,10 @@ int init_module(void) {
+ 	}
+ 	return ps2esdi_init();
+ }
++module_init(ps2esdi_init_module);
+ 
+-void
+-cleanup_module(void) {
++static void __exit ps2esdi_cleanup_module(void)
++{
+ 	int i;
+ 	if(ps2esdi_slot) {
+ 		mca_mark_as_unused(ps2esdi_slot);
+@@ -216,6 +220,8 @@ cleanup_module(void) {
+ 		put_disk(ps2esdi_gendisk[i]);
+ 	}
+ }
++module_exit(ps2esdi_cleanup_module);
++
+ #endif /* MODULE */
+ 
+ /* handles boot time command line parameters */
+diff --git a/drivers/char/ip2/ip2main.c b/drivers/char/ip2/ip2main.c
+index b1d6cad..048e7c8 100644
+--- a/drivers/char/ip2/ip2main.c
++++ b/drivers/char/ip2/ip2main.c
+@@ -354,14 +354,15 @@ have_requested_irq( char irq )
+ /* the driver initialisation function and returns what it returns.            */
+ /******************************************************************************/
+ #ifdef MODULE
+-int
+-init_module(void)
++static int __init
++ip2_init_module(void)
+ {
+ #ifdef IP2DEBUG_INIT
+ 	printk (KERN_DEBUG "Loading module ...\n" );
+ #endif
+     return 0;
+ }
++module_init(ip2_init_module);
+ #endif /* MODULE */
+ 
+ /******************************************************************************/
+@@ -380,8 +381,8 @@ init_module(void)
+ /* driver should be returned since it may be unloaded from memory.            */
+ /******************************************************************************/
+ #ifdef MODULE
+-void
+-cleanup_module(void)
++void __exit
++ip2_cleanup_module(void)
+ {
+ 	int err;
+ 	int i;
+@@ -451,6 +452,7 @@ cleanup_module(void)
+ 	printk (KERN_DEBUG "IP2 Unloaded\n" );
+ #endif
+ }
++module_exit(ip2_cleanup_module);
+ #endif /* MODULE */
+ 
+ static const struct tty_operations ip2_ops = {
+diff --git a/drivers/ide/ide.c b/drivers/ide/ide.c
+index 477833f..cff8da2 100644
+--- a/drivers/ide/ide.c
++++ b/drivers/ide/ide.c
+@@ -1641,7 +1641,7 @@ static char *options = NULL;
+ module_param(options, charp, 0);
+ MODULE_LICENSE("GPL");
+ 
+-static void __init parse_options (char *line)
++static void __init parse_options(char *line)
+ {
+ 	char *next = line;
+ 
+@@ -1655,13 +1655,14 @@ static void __init parse_options (char *line)
+ 	}
+ }
+ 
+-int __init init_module (void)
++static int __init ide_module_init(void)
+ {
+ 	parse_options(options);
+ 	return ide_init();
+ }
++module_init(ide_module_init);
+ 
+-void __exit cleanup_module (void)
++static void __exit ide_module_exit(void)
+ {
+ 	int index;
+ 
+@@ -1672,6 +1673,7 @@ void __exit cleanup_module (void)
+ 
+ 	bus_unregister(&ide_bus_type);
+ }
++module_exit(ide_module_exit);
+ 
+ #else /* !MODULE */
+ 
+diff --git a/drivers/net/3c501.c b/drivers/net/3c501.c
+index 7d25368..537b4e7 100644
+--- a/drivers/net/3c501.c
++++ b/drivers/net/3c501.c
+@@ -867,13 +867,14 @@ MODULE_PARM_DESC(irq, "EtherLink IRQ number");
+  * here also causes the module to be unloaded
+  */
+ 
+-int __init init_module(void)
++static int __init tc501_module_init(void)
+ {
+ 	dev_3c501 = el1_probe(-1);
+ 	if (IS_ERR(dev_3c501))
+ 		return PTR_ERR(dev_3c501);
+ 	return 0;
+ }
++module_init(tc501_module_init);
+ 
+ /**
+  * cleanup_module:
+@@ -882,13 +883,14 @@ int __init init_module(void)
+  * and then free up the resources we took when the card was found.
+  */
+ 
+-void __exit cleanup_module(void)
++static void __exit tc501_module_exit(void)
+ {
+ 	struct net_device *dev = dev_3c501;
+ 	unregister_netdev(dev);
+ 	release_region(dev->base_addr, EL1_IO_EXTENT);
+ 	free_netdev(dev);
+ }
++module_exit(tc501_module_exit);
+ 
+ #endif /* MODULE */
+ 
+diff --git a/drivers/net/3c505.c b/drivers/net/3c505.c
+index 9c65734..7eed97f 100644
+--- a/drivers/net/3c505.c
++++ b/drivers/net/3c505.c
+@@ -1615,7 +1615,7 @@ MODULE_PARM_DESC(io, "EtherLink Plus I/O base address(es)");
+ MODULE_PARM_DESC(irq, "EtherLink Plus IRQ number(s) (assigned)");
+ MODULE_PARM_DESC(dma, "EtherLink Plus DMA channel(s)");
+ 
+-int __init init_module(void)http://kernelnewbies.org/KernelJanitors/Todo/ApiChanges
++static int __init tc505_module_init(void)
+ {
+ 	int this_dev, found = 0;
+ 
+@@ -1651,8 +1651,9 @@ int __init init_module(void)
+ 		return -ENODEV;
+ 	return 0;
+ }
++module_init(tc505_module_init);
+ 
+-void __exit cleanup_module(void)
++static void __exit tc505_module_exit(void)
+ {
+ 	int this_dev;
+ 
+@@ -1665,6 +1666,7 @@ void __exit cleanup_module(void)
+ 		}
+ 	}
+ }
++module_exit(tc505_module_exit);
+ 
+ #endif				/* MODULE */
+ MODULE_LICENSE("GPL");
+diff --git a/drivers/net/3c507.c b/drivers/net/3c507.c
+index 030c147..07b6d7d 100644
+--- a/drivers/net/3c507.c
++++ b/drivers/net/3c507.c
+@@ -918,16 +918,16 @@ module_param(irq, int, 0);
+ MODULE_PARM_DESC(io, "EtherLink16 I/O base address");
+ MODULE_PARM_DESC(irq, "(ignored)");
+ 
+-int __init init_module(void)
++static int __init tc507_module_init(void)
+ {
+ 	if (io == 0)
+ 		printk("3c507: You should not use auto-probing with insmod!\n");
+ 	dev_3c507 = el16_probe(-1);
+ 	return IS_ERR(dev_3c507) ? PTR_ERR(dev_3c507) : 0;
+ }
++module_init(tc507_module_init);
+ 
+-void __exit
+-cleanup_module(void)
++static void __exit tc507_module_exit(void)
+ {
+ 	struct net_device *dev = dev_3c507;
+ 	unregister_netdev(dev);
+@@ -936,6 +936,8 @@ cleanup_module(void)
+ 	release_region(dev->base_addr, EL16_IO_EXTENT);
+ 	free_netdev(dev);
+ }
++module_exit(tc507_module_exit);
++
+ #endif /* MODULE */
+ MODULE_LICENSE("GPL");
+ 
+diff --git a/drivers/net/3c515.c b/drivers/net/3c515.c
+index 6ab84b6..107d1ff 100644
+--- a/drivers/net/3c515.c
++++ b/drivers/net/3c515.c
+@@ -415,7 +415,7 @@ MODULE_PARM_DESC(max_interrupt_work, "3c515 maximum events handled per interrupt
+ /* we will need locking (and refcounting) if we ever use it for more */
+ static LIST_HEAD(root_corkscrew_dev);
+ 
+-int init_module(void)
++static int __init tc515_module_init(void)
+ {
+ 	int found = 0;
+ 	if (debug >= 0)
+@@ -426,6 +426,7 @@ int init_module(void)
+ 		found++;
+ 	return found ? 0 : -ENODEV;
+ }
++module_init(tc515_module_init);
+ 
+ #else
+ struct net_device *tc515_probe(int unit)
+@@ -1565,7 +1566,7 @@ static const struct ethtool_ops netdev_ethtool_ops = {
+ 
+ 
+ #ifdef MODULE
+-void cleanup_module(void)
++static void __exit tc515_module_exit(void)
+ {
+ 	while (!list_empty(&root_corkscrew_dev)) {
+ 		struct net_device *dev;
+@@ -1579,6 +1580,8 @@ void cleanup_module(void)
+ 		free_netdev(dev);
+ 	}
+ }
++module_exit(tc515_module_exit);
++
+ #endif				/* MODULE */
+ 
+ /*
+diff --git a/drivers/net/3c523.c b/drivers/net/3c523.c
+index 239fc42..cb4beba 100644
+--- a/drivers/net/3c523.c
++++ b/drivers/net/3c523.c
+@@ -1268,7 +1268,7 @@ MODULE_PARM_DESC(io, "EtherLink/MC I/O base address(es)");
+ MODULE_PARM_DESC(irq, "EtherLink/MC IRQ number(s)");
+ MODULE_LICENSE("GPL");
+ 
+-int __init init_module(void)
++static int __init tc523_module_init(void)
+ {
+ 	int this_dev,found = 0;
+ 
+@@ -1295,8 +1295,9 @@ int __init init_module(void)
+ 		return -ENXIO;
+ 	} else return 0;
+ }
++module_init(tc523_module_init);
+ 
+-void __exit cleanup_module(void)
++static void __exit tc523_module_exit(void)
+ {
+ 	int this_dev;
+ 	for (this_dev=0; this_dev<MAX_3C523_CARDS; this_dev++) {
+@@ -1308,5 +1309,6 @@ void __exit cleanup_module(void)
+ 		}
+ 	}
+ }
++module_exit(tc523_module_exit);
+ 
+ #endif				/* MODULE */
+diff --git a/drivers/net/3c527.c b/drivers/net/3c527.c
+index b72b89d..4740a80 100644
+--- a/drivers/net/3c527.c
++++ b/drivers/net/3c527.c
+@@ -1631,23 +1631,24 @@ static const struct ethtool_ops netdev_ethtool_ops = {
+ static struct net_device *this_device;
+ 
+ /**
+- *	init_module		-	entry point
++ *	tc527_module_init	-	entry point
+  *
+  *	Probe and locate a 3c527 card. This really should probe and locate
+  *	all the 3c527 cards in the machine not just one of them. Yes you can
+  *	insmod multiple modules for now but it's a hack.
+  */
+ 
+-int __init init_module(void)
++static int __init tc527_module_init(void)
+ {
+ 	this_device = mc32_probe(-1);
+ 	if (IS_ERR(this_device))
+ 		return PTR_ERR(this_device);
+ 	return 0;
+ }
++module_init(tc527_module_init);
+ 
+ /**
+- *	cleanup_module	-	free resources for an unload
++ *	tc527_module_exit	-	free resources for an unload
+  *
+  *	Unloading time. We release the MCA bus resources and the interrupt
+  *	at which point everything is ready to unload. The card must be stopped
+@@ -1657,11 +1658,12 @@ int __init init_module(void)
+  *	transmit operations are allowed to start scribbling into memory.
+  */
+ 
+-void __exit cleanup_module(void)
++static void __exit tc527_module_exit(void)
+ {
+ 	unregister_netdev(this_device);
+ 	cleanup_card(this_device);
+ 	free_netdev(this_device);
+ }
++module_exit(tc527_module_exit);
+ 
+ #endif /* MODULE */
+diff --git a/drivers/net/82596.c b/drivers/net/82596.c
+index 2797da7..344308a 100644
+--- a/drivers/net/82596.c
++++ b/drivers/net/82596.c
+@@ -1567,7 +1567,7 @@ static int debug = -1;
+ module_param(debug, int, 0);
+ MODULE_PARM_DESC(debug, "i82596 debug mask");
+ 
+-int __init init_module(void)
++static int __init i82596_module_init(void)
+ {
+ 	if (debug >= 0)
+ 		i596_debug = debug;
+@@ -1576,8 +1576,9 @@ int __init init_module(void)
+ 		return PTR_ERR(dev_82596);
+ 	return 0;
+ }
++module_init(i82596_module_init);
+ 
+-void __exit cleanup_module(void)
++static void __exit i82596_module_exit(void)
+ {
+ 	unregister_netdev(dev_82596);
+ #ifdef __mc68000__
+@@ -1595,7 +1596,7 @@ void __exit cleanup_module(void)
+ #endif
+ 	free_netdev(dev_82596);
+ }
+-
++module_exit(i82596_module_exit);
+ #endif				/* MODULE */
+ 
+ /*
