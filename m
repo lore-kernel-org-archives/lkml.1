@@ -1,59 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755389AbYB0OoI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755351AbYB0Ox1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755389AbYB0OoI (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Feb 2008 09:44:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753606AbYB0On4
+	id S1755351AbYB0Ox1 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Feb 2008 09:53:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754159AbYB0OxR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Feb 2008 09:43:56 -0500
-Received: from g5t0007.atlanta.hp.com ([15.192.0.44]:22594 "EHLO
-	g5t0007.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752829AbYB0Onz (ORCPT
+	Wed, 27 Feb 2008 09:53:17 -0500
+Received: from ftp.linux-mips.org ([194.74.144.162]:43881 "EHLO
+	ftp.linux-mips.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754134AbYB0OxQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Feb 2008 09:43:55 -0500
-From: Paul Moore <paul.moore@hp.com>
-Organization: Hewlett-Packard
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Subject: Re: linux-next: Tree for Feb 27
-Date: Wed, 27 Feb 2008 09:43:52 -0500
-User-Agent: KMail/1.9.7
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-next@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>, James Morris <jmorris@namei.org>
-References: <20080227170300.25c50fe3.sfr@canb.auug.org.au> <20080226230059.58cf3cfa.akpm@linux-foundation.org> <20080228010626.fd4e00d2.sfr@canb.auug.org.au>
-In-Reply-To: <20080228010626.fd4e00d2.sfr@canb.auug.org.au>
+	Wed, 27 Feb 2008 09:53:16 -0500
+Date: Wed, 27 Feb 2008 14:53:08 +0000
+From: Ralf Baechle <ralf@linux-mips.org>
+To: Martin Michlmayr <tbm@cyrius.com>
+Cc: linux-kernel@vger.kernel.org, Evgeniy Polyakov <johnpol@2ka.mipt.ru>,
+       Herbert Xu <herbert@gondor.apana.org.au>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-mips@linux-mips.org
+Subject: Re: 2.6.25-rc3: "__divdi3" [drivers/crypto/hifn_795x.ko] undefined!
+Message-ID: <20080227145308.GC20629@linux-mips.org>
+References: <20080226122100.GB22699@deprecation.cyrius.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200802270943.53025.paul.moore@hp.com>
+In-Reply-To: <20080226122100.GB22699@deprecation.cyrius.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 27 February 2008 9:06:26 am Stephen Rothwell wrote:
-> On Tue, 26 Feb 2008 23:00:59 -0800 Andrew Morton 
-<akpm@linux-foundation.org> wrote:
-> > So who's missing now?
-> >
-> > I have:
->
-> Of this list, I *don't* have:
+On Tue, Feb 26, 2008 at 01:21:00PM +0100, Martin Michlmayr wrote:
 
-...
+References to __divdi3 / __udivdi3 are becoming a somewhat regular bug.
+I've created a patch to add these to the kernel but I'd rather not push
+it unless I have to.  64-bit operations but especially divisions are slow
+on 32-bit hardware so undefined references serve as an important detector.
 
-> > git-lblnet
-
-I keep the labeled networking patches for the upcoming (in this case 
-2.6.26) kernel here:
-
- * git://git.infradead.org/users/pcmoore/lblnet-2.6_testing
-
-Patches for the current kernel (in this case 2.6.25) live here:
-
- * git://git.infradead.org/users/pcmoore/lblnet-2.6
-
-Both are currently empty.
-
--- 
-paul moore
-linux security @ hp
+  Ralf
