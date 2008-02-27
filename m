@@ -1,120 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932644AbYB0Bru@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765916AbYB0Bxq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932644AbYB0Bru (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Feb 2008 20:47:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756842AbYB0Brm
+	id S1765916AbYB0Bxq (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Feb 2008 20:53:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757579AbYB0Bxg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Feb 2008 20:47:42 -0500
-Received: from igraine.blacknight.ie ([81.17.252.25]:55792 "EHLO
-	igraine.blacknight.ie" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753158AbYB0Brl (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Feb 2008 20:47:41 -0500
-Date: Wed, 27 Feb 2008 01:47:29 +0000
-From: Robert Fitzsimons <robfitz@273k.net>
-To: Mauro Carvalho Chehab <mchehab@infradead.org>
-Cc: Bongani Hlope <bonganilinux@mweb.co.za>, video4linux-list@redhat.com,
-       linux-kernel@vger.kernel.org
-Subject: [PATCH] bttv: Re-enabling radio support requires the use of struct
-	bttv_fh.
-Message-ID: <20080227014729.GC2685@localhost>
-References: <200802171036.19619.bonganilinux@mweb.co.za> <20080218131125.2857f7c7@gaivota> <200802182320.40732.bonganilinux@mweb.co.za> <200802190121.36280.bonganilinux@mweb.co.za> <20080219111640.409870a9@gaivota> <20080226154102.GD30463@localhost> <20080227014238.GA2685@localhost>
+	Tue, 26 Feb 2008 20:53:36 -0500
+Received: from mail.areca.com.tw ([220.130.178.143]:60381 "EHLO areca.com.tw"
+	rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1757483AbYB0Bxf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 Feb 2008 20:53:35 -0500
+Reply-To: <nick.cheng@areca.com.tw>
+From: "nickcheng" <nick.cheng@areca.com.tw>
+To: "'Nikola Ciprich'" <extmaillist@linuxbox.cz>
+Cc: "'Andrew Morton'" <akpm@linux-foundation.org>,
+       <linux-kernel@vger.kernel.org>, <linux-scsi@vger.kernel.org>,
+       "'Erich Chen'" <erich@areca.com.tw>, <kopi@linuxbox.cz>,
+       <support@areca.com.tw>, "'Zan Lynx'" <zlynx@acm.org>
+Subject: RE: arcmsr & areca-1660 - strange behaviour under heavy load
+Date: Wed, 27 Feb 2008 09:53:28 +0800
+Organization: areca
+Message-ID: <000c01c878e3$8c561460$8800a8c0@Nick>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080227014238.GA2685@localhost>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
-X-blacknight-igraine-MailScanner-Information: Please contact the ISP for more information
-X-MailScanner-ID: 1JUBOB-0007XB-TH
-X-blacknight-igraine-MailScanner: Found to be clean
-X-blacknight-igraine-MailScanner-SpamCheck: not spam,
-	SpamAssassin (not cached, score=1.608, required 7,
-	autolearn=disabled, HELO_LOCALHOST 4.50, RCVD_IN_NERDS_IE -3.50,
-	RCVD_IN_PBL 0.51, RDNS_NONE 0.10)
-X-blacknight-igraine-MailScanner-SpamScore: s
-X-MailScanner-From: robfitz@273k.net
+Content-Type: text/plain;
+	charset="US-ASCII"
+Content-Transfer-Encoding: 7bit
+X-Mailer: Microsoft Office Outlook 11
+In-Reply-To: <1204059852.665822.13.camel@localhost>
+X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.3198
+Thread-Index: Ach42DGS9keG7GC8TPWvkR6F98zrjgACGEEw
+X-OriginalArrivalTime: 27 Feb 2008 01:47:57.0359 (UTC) FILETIME=[C6D10BF0:01C878E2]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-A number of the radio tuner ioctl functions are shared with the TV
-tuner, these functions require a struct bttv_fh data structure to be
-allocated and initialized.
+Hi Nikola,
+Please put support@areca.com.tw in the loop.
+I am sure Areca support, Kevin, has taken over your case.
+If you like, please let him know your configuration and operations to
+synchronize both sides.
+Thank you for your patience and sorry for your inconvenience,
 
-Signed-off-by: Robert Fitzsimons <robfitz@273k.net>
----
- drivers/media/video/bt8xx/bttv-driver.c |   21 ++++++++++++++++-----
- 1 files changed, 16 insertions(+), 5 deletions(-)
+-----Original Message-----
+From: Zan Lynx [mailto:zlynx@acm.org] 
+Sent: Wednesday, February 27, 2008 5:04 AM
+To: Nikola Ciprich
+Cc: Andrew Morton; linux-kernel@vger.kernel.org; linux-scsi@vger.kernel.org;
+Nick Cheng; Erich Chen; kopi@linuxbox.cz
+Subject: Re: arcmsr & areca-1660 - strange behaviour under heavy load
 
 
-Mauro, the radio_open function may want to do more initialisation then
-the amount I copied from bttv_open.
+On Tue, 2008-02-26 at 20:29 +0100, Nikola Ciprich wrote:
+> Hi Andrew,
+> no, right now I have the machine in the weird state, swap is empty (3GB), 
+> and so is bigger part of RAM (~100MB free), and the gcc crashes even when 
+> trying to compile c program with empty main function. so it doesn't seem 
+> to be problem with memory exhaustion.
 
+Maybe memory fragmentation?  Perhaps the driver tries to allocate a
+large block of memory and cannot find a continuous block of the right
+size.
 
-diff --git a/drivers/media/video/bt8xx/bttv-driver.c b/drivers/media/video/bt8xx/bttv-driver.c
-index 817a961..04a8263 100644
---- a/drivers/media/video/bt8xx/bttv-driver.c
-+++ b/drivers/media/video/bt8xx/bttv-driver.c
-@@ -3417,6 +3417,7 @@ static int radio_open(struct inode *inode, struct file *file)
- {
- 	int minor = iminor(inode);
- 	struct bttv *btv = NULL;
-+	struct bttv_fh *fh;
- 	unsigned int i;
- 
- 	dprintk("bttv: open minor=%d\n",minor);
-@@ -3431,12 +3432,19 @@ static int radio_open(struct inode *inode, struct file *file)
- 		return -ENODEV;
- 
- 	dprintk("bttv%d: open called (radio)\n",btv->c.nr);
-+
-+	/* allocate per filehandle data */
-+	fh = kmalloc(sizeof(*fh),GFP_KERNEL);
-+	if (NULL == fh)
-+		return -ENOMEM;
-+	file->private_data = fh;
-+	*fh = btv->init;
-+	v4l2_prio_open(&btv->prio,&fh->prio);
-+
- 	mutex_lock(&btv->lock);
- 
- 	btv->radio_user++;
- 
--	file->private_data = btv;
--
- 	bttv_call_i2c_clients(btv,AUDC_SET_RADIO,NULL);
- 	audio_input(btv,TVAUDIO_INPUT_RADIO);
- 
-@@ -3446,7 +3454,8 @@ static int radio_open(struct inode *inode, struct file *file)
- 
- static int radio_release(struct inode *inode, struct file *file)
- {
--	struct bttv *btv = file->private_data;
-+	struct bttv_fh *fh = file->private_data;
-+	struct bttv *btv = fh->btv;
- 	struct rds_command cmd;
- 
- 	btv->radio_user--;
-@@ -3571,7 +3580,8 @@ static int radio_g_input(struct file *filp, void *priv, unsigned int *i)
- static ssize_t radio_read(struct file *file, char __user *data,
- 			 size_t count, loff_t *ppos)
- {
--	struct bttv    *btv = file->private_data;
-+	struct bttv_fh *fh = file->private_data;
-+	struct bttv *btv = fh->btv;
- 	struct rds_command cmd;
- 	cmd.block_count = count/3;
- 	cmd.buffer = data;
-@@ -3585,7 +3595,8 @@ static ssize_t radio_read(struct file *file, char __user *data,
- 
- static unsigned int radio_poll(struct file *file, poll_table *wait)
- {
--	struct bttv    *btv = file->private_data;
-+	struct bttv_fh *fh = file->private_data;
-+	struct bttv *btv = fh->btv;
- 	struct rds_command cmd;
- 	cmd.instance = file;
- 	cmd.event_list = wait;
+Maybe the driver developers used different kernel .config options than
+you are using.  
+
+Try increasing the value in /proc/sys/vm/min_free_kbytes.
+
+Try switching some things like SLAB or SLUB, try booting with
+kernelcore=512M to enable the Movable memory zone, or try 64-bit vs
+32-bit kernels. 
 -- 
-1.5.4.34.g053d9
+Zan Lynx <zlynx@acm.org>
 
