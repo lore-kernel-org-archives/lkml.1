@@ -1,147 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763679AbYB0H7K@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762995AbYB0IC4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763679AbYB0H7K (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Feb 2008 02:59:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753116AbYB0H6z
+	id S1762995AbYB0IC4 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Feb 2008 03:02:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753435AbYB0ICs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Feb 2008 02:58:55 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:44204 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752543AbYB0H6y (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Feb 2008 02:58:54 -0500
-Subject: Re: [PATCH 00/28] Swap over NFS -v16
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Neil Brown <neilb@suse.de>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       netdev@vger.kernel.org, trond.myklebust@fys.uio.no
-In-Reply-To: <18372.64081.995262.986841@notabene.brown>
-References: <20080220144610.548202000@chello.nl>
-	 <20080223000620.7fee8ff8.akpm@linux-foundation.org>
-	 <18371.43950.150842.429997@notabene.brown>
-	 <1204023042.6242.271.camel@lappy>
-	 <18372.64081.995262.986841@notabene.brown>
-Content-Type: text/plain
-Date: Wed, 27 Feb 2008 08:58:32 +0100
-Message-Id: <1204099113.6242.353.camel@lappy>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.21.90 
-Content-Transfer-Encoding: 7bit
+	Wed, 27 Feb 2008 03:02:48 -0500
+Received: from www.tglx.de ([62.245.132.106]:56591 "EHLO www.tglx.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753116AbYB0ICr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 Feb 2008 03:02:47 -0500
+Date: Wed, 27 Feb 2008 09:02:22 +0100 (CET)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: David Miller <davem@davemloft.net>
+cc: mikpe@it.uu.se, sparclinux@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [BUG] 2.6.25-rc3 hangs in early boot on Sun Ultra5
+In-Reply-To: <20080226.170613.107688605.davem@davemloft.net>
+Message-ID: <alpine.LFD.1.00.0802270858450.7583@apollo.tec.linutronix.de>
+References: <18371.10207.58819.188510@alkaid.it.uu.se> <18371.54294.748777.976300@harpo.it.uu.se> <20080226.164900.193701385.davem@davemloft.net> <20080226.170613.107688605.davem@davemloft.net>
+User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-On Wed, 2008-02-27 at 16:51 +1100, Neil Brown wrote:
-> Hi Peter,
+On Tue, 26 Feb 2008, David Miller wrote:
+> What the FUTEX checking code is doing now is doing a "user" access
+> with set_fs(KERNEL_DS) since it runs from the kernel bootup early init
+> sequence.  And this is illegal according to the existing checks.
 > 
-> On Tuesday February 26, a.p.zijlstra@chello.nl wrote:
-> > Hi Neil,
-> > 
-> > Thanks for taking a look, and giving such elaborate feedback. I'll try
-> > and address these issues asap, but first let me reply to a few points
-> > here.
-> 
-> Thanks... the tree thing is starting to make sense, and I'm not
-> confused my __mem_reserve_add any more :-)
-> 
-> I've been having a closer read of some of the code that I skimmed over
-> before and I have some more questions.
-> 
-> 1/ I note there is no way to tell if memory returned by kmalloc is
->   from the emergency reserve - which contrasts with alloc_page
->   which does make that information available through page->reserve.
->   This seems a slightly unfortunate aspect of the interface.
+> When we do set_fs(KERNEL_DS) then pass a "user" pointer down
+> into a system call or something like that, we give it a pointer
+> that "cannot fault".  So if we get into the fault handling
+> path here for a case like that we really do want to scream and
+> print out an OOPS message in my opinion.
 
-Yes, but alas there is no room to store such information in kmalloc().
-That is, in a sane way. I think it was Daniel Phillips who suggested
-encoding it in the return pointer by flipping the low bit - but that is
-just too ugly and breaks all current kmalloc sites to boot.
+So it would be correct to set_fs(USER_DS) then do the check and switch
+back to KERNEL_DS ?
+ 
+> I realize that not many platforms other than sparc64 can check
+> for things this precisely, but it's something to consider.
 
->   It seems to me that __alloc_skb could be simpler if this
->   information was available.  It currently tries the allocation
->   normally, then if that fails it retries with __GFP_MEMALLOC set and
->   if that works it assume it was from the emergency pool ... which it
->   might not be, though the assumption is safe enough.
-> 
->   It would seem to be nicer if you could just make the one alloc call,
->   setting GFP_MEMALLOC if that might be appropriate.  Then if the
->   memory came from the emergency reserve, flag it as an emergency skb.
-> 
->   However doing that would have issues with reservations.... the
->   mem_reserve would need to be passed to kmalloc :-(
+Hmm, I missed that.
+ 
+> Did this FUTEX change go into -stable too?
 
-Yes, it would require a massive overhaul of quite a few things. I agree,
-it would all be nicer, but I think you see why I didn't do it.
+It's queued, AFAIK
 
-> 2/ It doesn't appear to be possible to wait on a reservation. i.e. if
->    mem_reserve_*_charge fails, we might sometimes want to wait until
->    it will succeed.  This feature is an integral part of how mempools
->    work and are used.  If you want reservations to (be able to)
->    replace mempools, then waiting really is needed.
-> 
->    It seems that waiting would work best if it was done quite low down
->    inside kmalloc.  That would require kmalloc to know which
->    'mem_reserve' you are using which it currently doesn't.
-> 
->    If it did, then it could choose to use emergency pages if the
->    mem_reserve allowed it more space, otherwise require a regular page.
->    And if __GFP_WAIT is set then each time around the loop it could
->    revise whether to use an emergency page or not, based on whether it
->    can successfully charge the reservation.
-
-Like mempools, we could add a wrapper with a mem_reserve and waitqueue
-inside, strip __GFP_WAIT, try, see if the reservation allows, and wait
-if not.
-
-I haven't yet done such a wrapper because it wasn't needed. But it could
-be done.
-
->    Of course, having a mem_reserve available for PF_MEMALLOC
->    allocations would require changing every kmalloc call in the
->    protected region, which might not be ideal, but might not be a
->    major hassle, and would ensure that you find all kmalloc calls that
->    might be made while in PF_MALLOC state.
-
-I assumed the current PF_MEMALLOC usage was good enough for the current
-reserves - not quite true as its potentially unlimited, but it seems to
-work in practise.
-
-I did try to find all allocation sites in the paths I enabled
-PF_MEMALLOC over.
-
-> 3/ Thinking about the tree structure a bit more:  Your motivation
->    seems to be that it allows you to make two separate reservations,
->    and then charge some memory usage again either-one-of-the-other.
->    This seems to go against a key attribute of reservations.  I would
->    have thought that an important rule about reservations is that
->    no-one else can use memory reserved for a particular purpose.
->    So if IPv6 reserves some memory, and the IPv4 uses it, that doesn't
->    seem like something we want to encourage...
-
-Well, we only have one kind of skb, a network packet doesn't know if it
-belongs to IPv4 or IPv6 (or yet a whole different address familiy) when
-it comes in. So we grow the skb pool to overflow both defragment caches.
-
-But yeah, its something where you need to know what you're doing - as
-with so many other things in the kernel, hence I didn't worry too much.
-
-> 4/ __netdev_alloc_page is bothering me a bit.
->    This is used to allocate memory for incoming fragments in a
->    (potentially multi-fragment) packet.  But we only rx_emergency_get
->    for each page as it arrives rather than all at once at the start.
->    So you could have a situation where two very large packets are
->    arriving at the same time and there is enough reserve to hold
->    either of them but not both.  The current code will hand out that
->    reservation a little (well, one page) at a time to each packet and
->    will run out before either packet has been fully received.  This
->    seems like a bad thing.  Is it?
-> 
->    Is it possible to do the rx_emergency_get just once of the whole
->    packet I wonder?
-
-I honestly don't know enough about network cards and drivers to answer
-this. It was a great feat I managed this much :-)
-
+Thanks,
+	tglx
