@@ -1,50 +1,128 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756428AbYB0SPV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756073AbYB0STP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756428AbYB0SPV (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Feb 2008 13:15:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754161AbYB0SPJ
+	id S1756073AbYB0STP (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Feb 2008 13:19:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754551AbYB0STA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Feb 2008 13:15:09 -0500
-Received: from www.tglx.de ([62.245.132.106]:52742 "EHLO www.tglx.de"
+	Wed, 27 Feb 2008 13:19:00 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:59156 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751843AbYB0SPI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Feb 2008 13:15:08 -0500
-Date: Wed, 27 Feb 2008 19:14:40 +0100 (CET)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Roland Dreier <rdreier@cisco.com>
-cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
-       Thomas Mingarelli <thomas.mingarelli@hp.com>
-Subject: Re: hpwdt oops in clflush_cache_range
-In-Reply-To: <adad4qiwcmz.fsf@cisco.com>
-Message-ID: <alpine.LFD.1.00.0802271913050.7583@apollo.tec.linutronix.de>
-References: <adad4qiwcmz.fsf@cisco.com>
-User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
+	id S1753536AbYB0STA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 Feb 2008 13:19:00 -0500
+Date: Wed, 27 Feb 2008 13:18:57 -0500
+From: Bill Nottingham <notting@redhat.com>
+To: linux-kernel@vger.kernel.org
+Subject: [PATCH, RFC, BAD IDEA] /proc/tty/console
+Message-ID: <20080227181857.GA3137@nostromo.devel.redhat.com>
+Mail-Followup-To: linux-kernel@vger.kernel.org
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 27 Feb 2008, Roland Dreier wrote:
-> With an up-to-date git tree (head 7704a8b6) I'm seeing the oops below
-> when the hpwdt driver gets loaded during boot on an HP DL380 system.
-> I don't think I've seen any previous reports of this, and I guess it
-> doesn't really count as a regression since the hpwdt driver was only
-> added after 2.6.25-rc2.
-> 
-> I haven't tried to debug this at all yet but any guidance about what
-> information is useful for what looks to be an issue with c_p_a would
-> be appreciated.
-> 
->  BUG: unable to handle kernel paging request at ffffc20001a08000
->  IP: [<ffffffff8021dacc>] clflush_cache_range+0xc/0x25
->  PGD 1bf80e067 PUD 1bf80f067 PMD 1bb1ab067 PTE 80000047000ee17b
+I'm not seriously proposing this. But, as far as I can tell, this
+information isn't exposed to userspace anywhere, and it's a useful
+thing to know. I'm certainly open for better ideas on how to expose
+this (sysfs attributes? other?)
 
--------------------------------------------------^^^^^^^^^^^^^^^^
+....
 
-The physical address looks strange: 0x47000EE000
+The attached patch adds /proc/tty/console. The contents of it are
+simply a description of the current drivers attached to /dev/console.
+For example, a boot with 'console=ttyS3,115200n1 console=tty0' would
+yield:
 
-Can you provide a full boot log please ?
+# cat /proc/tty/console
+unknown             /dev/tty0
+serial              /dev/ttyS3
 
-Thanks,
-	tglx
+Bill
+
+---
+diff -ru linux-2.6.24.noarch/fs/proc/proc_tty.c linux/fs/proc/proc_tty.c
+--- linux-2.6.24.noarch/fs/proc/proc_tty.c	2008-02-27 12:50:59.000000000 -0500
++++ linux/fs/proc/proc_tty.c	2008-02-27 12:25:54.000000000 -0500
+@@ -6,6 +6,7 @@
+ 
+ #include <asm/uaccess.h>
+ 
++#include <linux/console.h>
+ #include <linux/init.h>
+ #include <linux/errno.h>
+ #include <linux/time.h>
+@@ -129,6 +130,38 @@
+ 	return seq_open(file, &tty_drivers_op);
+ }
+ 
++static int show_tty_console(struct seq_file *m, void *v)
++{
++	int index;
++	struct console *c;
++
++	for (c = console_drivers; c ; c = c->next) {
++		struct tty_driver *t = NULL;
++		if (!c->device)
++			continue;
++		t = c->device(c, &index);
++		seq_printf(m, "%-20s", t->driver_name ? t->driver_name : "unknown");
++		seq_printf(m, "/dev/%s%d", t->name, c->index);
++		seq_printf(m, "\n");
++	}
++	return 0;
++}
++
++static void *c_start(struct seq_file *m, loff_t *pos)
++{
++	return *pos == 0 ? &c_start : NULL;
++}
++
++static void *c_next(struct seq_file *m, void *v, loff_t *pos)
++{
++	++*pos;
++	return c_start(m, pos);
++}
++
++static void c_stop(struct seq_file *m, void *v)
++{
++}
++
+ static const struct file_operations proc_tty_drivers_operations = {
+ 	.open		= tty_drivers_open,
+ 	.read		= seq_read,
+@@ -136,6 +169,25 @@
+ 	.release	= seq_release,
+ };
+ 
++static const struct seq_operations tty_console_op = {
++	.start		= c_start,
++	.next		= c_next,
++	.stop		= c_stop,
++	.show		= show_tty_console
++};
++
++static int tty_console_open(struct inode *inode, struct file *file)
++{
++	return seq_open(file, &tty_console_op);
++}
++
++static const struct file_operations proc_tty_console_operations = {
++	.open		= tty_console_open,
++	.read		= seq_read,
++	.llseek		= seq_lseek,
++	.release	= seq_release
++};
++
+ /*
+  * This is the handler for /proc/tty/ldiscs
+  */
+@@ -230,4 +282,7 @@
+ 	entry = create_proc_entry("tty/drivers", 0, NULL);
+ 	if (entry)
+ 		entry->proc_fops = &proc_tty_drivers_operations;
++	entry = create_proc_entry("tty/console", 0, NULL);
++	if (entry)
++		entry->proc_fops = &proc_tty_console_operations;
+ }
