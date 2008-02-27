@@ -1,43 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761613AbYB0Wvi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761732AbYB0WwE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761613AbYB0Wvi (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Feb 2008 17:51:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758417AbYB0Wux
+	id S1761732AbYB0WwE (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Feb 2008 17:52:04 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757906AbYB0Wvw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Feb 2008 17:50:53 -0500
-Received: from relay2.sgi.com ([192.48.171.30]:48605 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1761466AbYB0Wuw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Feb 2008 17:50:52 -0500
-Date: Wed, 27 Feb 2008 14:50:50 -0800 (PST)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Jack Steiner <steiner@sgi.com>
-cc: Andrea Arcangeli <andrea@qumranet.com>, Nick Piggin <npiggin@suse.de>,
-       akpm@linux-foundation.org, Robin Holt <holt@sgi.com>,
-       Avi Kivity <avi@qumranet.com>, Izik Eidus <izike@qumranet.com>,
-       kvm-devel@lists.sourceforge.net,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, general@lists.openfabrics.org,
-       Steve Wise <swise@opengridcomputing.com>,
-       Roland Dreier <rdreier@cisco.com>, Kanoj Sarcar <kanojsarcar@yahoo.com>,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       daniel.blueman@quadrics.com
-Subject: Re: [patch] my mmu notifiers
-In-Reply-To: <20080219142725.GA23200@sgi.com>
-Message-ID: <Pine.LNX.4.64.0802271450030.13186@schroedinger.engr.sgi.com>
-References: <20080219084357.GA22249@wotan.suse.de> <20080219135851.GI7128@v2.random>
- <20080219142725.GA23200@sgi.com>
+	Wed, 27 Feb 2008 17:51:52 -0500
+Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:58884 "EHLO
+	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757572AbYB0Wvv (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 Feb 2008 17:51:51 -0500
+Message-ID: <47C5E977.2010401@jp.fujitsu.com>
+Date: Wed, 27 Feb 2008 17:51:35 -0500
+From: Kei Tokunaga <tokunaga.keiich@jp.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: mingo@elte.hu
+CC: Kei Tokunaga <tokunaga.keiich@jp.fujitsu.com>,
+       linux-kernel@vger.kernel.org
+Subject: A strange behavior of sched_fair
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 19 Feb 2008, Jack Steiner wrote:
+Hi Ingo,
 
-> In general, though, I agree. Most users of mmu_notifiers would likely
-> required a mutex or something equivalent.
+I am playing around with sched_fair and cgroup, and it seems like
+I hit a possible bug.  Could you also check if that is a bug?
 
-The skeletons shows how to do most of it using a spinlock and a 
-counter.
+Description of behavior:
+   Start a cpu-bound task (t1), attach it to a cgroup (cgA), and let the
+   task to run for a while (e.g. several tens of seconds or a couple of
+   minutes would be adequate.)  Then, start another cpu-bound task (t2)
+   and attach it to cgA in the way described in "Steps to Reproduce" section.
+   You will see t1 does not get run for a while.
+   (The tasks may not have to be cpu-bound, but it is easier to see the
+    behavior using cpu-bound tasks.)
 
+How reproducible:
+   Always.
+
+Environments where I saw the behavior:
+   2.6.25-rc3 with resource management functions enabled on ia64 box.
+
+Steps to Reproduce:
+   # mkdir /dev/cgroup
+   # mount -t cgroup -ocpuset,cpu cpu /dev/cgroup
+   # mkdir /dev/cgroup/{a,b}
+   # echo 0 > /dev/cgroup/a/cpuset.cpus
+   # echo 0 > /dev/cgroup/b/cpuset.cpus
+   # echo 1 > /dev/cgroup/a/cpuset.mems
+   # echo 1 > /dev/cgroup/b/cpuset.mems
+   # echo $$ > /dev/cgroup/b/tasks
+   # ./a.out & echo $! > /dev/cgroup/a/tasks (a.out is just a for-loop program)
+     [Wait for several tens of seconds or a couple of minutes.]
+   # ./a.out2 & echo $! > /dev/cgroup/a/tasks (a.out2 is just a for-loop program)
+     [You will see a.out does not get run for a while by running top command.]
+
+Additional Info:
+   a.out2 needs to be started from the shell of cgroup-b in order to
+   reproduce the problem (, unless the system is UP.)  Starting a.out2
+   in the manner, se->vruntime (or something to create the se->vruntime)
+   of a.out2 seems to be initialized to a small value, compared to the
+   value of a.out.  And the fair scheduler only runs a.out2 until the
+   se->vruntime catches up with the se->vruntime of a.out.
+
+Thanks,
+Kei
+--
+Kei Tokunaga
+Fujitsu (Red Hat On-site Partner)
