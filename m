@@ -1,52 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761239AbYB0V13@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760757AbYB0V2V@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761239AbYB0V13 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Feb 2008 16:27:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754700AbYB0V1T
+	id S1760757AbYB0V2V (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Feb 2008 16:28:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756249AbYB0V2K
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Feb 2008 16:27:19 -0500
-Received: from agminet01.oracle.com ([141.146.126.228]:13396 "EHLO
-	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753315AbYB0V1S (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Feb 2008 16:27:18 -0500
-Date: Wed, 27 Feb 2008 13:26:45 -0800
-From: Mark Fasheh <mark.fasheh@oracle.com>
-To: Julia Lawall <julia@diku.dk>
-Cc: kurt.hackel@oracle.com, ocfs2-devel@oss.oracle.com,
-       linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
-Subject: Re: [PATCH 8/9] fs/ocfs2/aops.c: Correct use of ! and &
-Message-ID: <20080227212645.GP27865@ca-server1.us.oracle.com>
-Reply-To: Mark Fasheh <mark.fasheh@oracle.com>
-References: <Pine.LNX.4.64.0802262145321.18200@ask.diku.dk>
+	Wed, 27 Feb 2008 16:28:10 -0500
+Received: from smtp6.pp.htv.fi ([213.243.153.40]:49434 "EHLO smtp6.pp.htv.fi"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754828AbYB0V2J (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 Feb 2008 16:28:09 -0500
+Date: Wed, 27 Feb 2008 23:26:58 +0200
+From: Adrian Bunk <bunk@kernel.org>
+To: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>, Sam Ravnborg <sam@ravnborg.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] x86: X86_HT always enable on X86_64 SMP
+Message-ID: <20080227212658.GU29269@cs181133002.pp.htv.fi>
+References: <47C5D32E.8070308@ct.jp.nec.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0802262145321.18200@ask.diku.dk>
-Organization: Oracle Corporation
-User-Agent: Mutt/1.5.16 (2007-06-11)
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+In-Reply-To: <47C5D32E.8070308@ct.jp.nec.com>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Feb 26, 2008 at 09:45:56PM +0100, Julia Lawall wrote:
-> From: Julia Lawall <julia@diku.dk>
+On Wed, Feb 27, 2008 at 01:16:30PM -0800, Hiroshi Shimamoto wrote:
+> From: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
 > 
-> In commit e6bafba5b4765a5a252f1b8d31cbf6d2459da337, a bug was fixed that
-> involved converting !x & y to !(x & y).  The code below shows the same
-> pattern, and thus should perhaps be fixed in the same way.
+> X86_HT is used for hyperthreading or multicore on 32-bit.
+> The X86_HT on 64-bit is different from 32-bit, it means hyperthreading only.
+> And X86_HT is not used on 64-bit except from cpu/initel_cacheinfo.c.
 > 
-> This is not tested and clearly changes the semantics, so it is only
-> something to consider.
+> Unify X86_HT for hyperthreading or multicore.
+> Turn X86_HT on when X86_64 and SMP are enabled.
 
-That looks fine - it's in Ocfs2.git now, thanks.
-	--Mark
+Please fix it properly instead - fiddling around with it the way you do
+only asks for trouble in the future.
 
---
-Mark Fasheh
-Principal Software Developer, Oracle
-mark.fasheh@oracle.com
+What we need are two different variables for:
+- hyperthreading and
+- multicore
+
+> Signed-off-by: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
+> ---
+>  arch/x86/Kconfig |    6 +++---
+>  1 files changed, 3 insertions(+), 3 deletions(-)
+> 
+> diff --git a/arch/x86/Kconfig b/arch/x86/Kconfig
+> index 5bbb385..7168437 100644
+> --- a/arch/x86/Kconfig
+> +++ b/arch/x86/Kconfig
+> @@ -174,7 +174,7 @@ config X86_64_SMP
+>  config X86_HT
+>  	bool
+>  	depends on SMP
+> -	depends on (X86_32 && !(X86_VISWS || X86_VOYAGER)) || (X86_64 && !MK8)
+> +	depends on (X86_32 && !(X86_VISWS || X86_VOYAGER)) || X86_64
+>  	default y
+>  
+>  config X86_BIOS_REBOOT
+> @@ -516,7 +516,7 @@ config NR_CPUS
+>  
+>  config SCHED_SMT
+>  	bool "SMT (Hyperthreading) scheduler support"
+> -	depends on (X86_64 && SMP) || (X86_32 && X86_HT)
+> +	depends on X86_HT
+>  	help
+>  	  SMT scheduler support improves the CPU scheduler's decision making
+>  	  when dealing with Intel Pentium 4 chips with HyperThreading at a
+> @@ -526,7 +526,7 @@ config SCHED_SMT
+>  config SCHED_MC
+>  	def_bool y
+>  	prompt "Multi-core scheduler support"
+> -	depends on (X86_64 && SMP) || (X86_32 && X86_HT)
+> +	depends on X86_HT
+>  	help
+>  	  Multi-core scheduler support improves the CPU scheduler's decision
+>  	  making when dealing with multi-core CPU chips at a cost of slightly
+
+And any proper fix should result in SCHED_SMT and SCHED_MC getting 
+different dependencies.
+
+cu
+Adrian
+
+-- 
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
+
