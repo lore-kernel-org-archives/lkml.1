@@ -1,58 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758380AbYB0TnC@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758503AbYB0Toy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758380AbYB0TnC (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Feb 2008 14:43:02 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755206AbYB0Tmx
+	id S1758503AbYB0Toy (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Feb 2008 14:44:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755206AbYB0Too
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Feb 2008 14:42:53 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:57350 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754977AbYB0Tmw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Feb 2008 14:42:52 -0500
-From: Roland McGrath <roland@redhat.com>
-To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org
-Cc: Priit Laes <plaes@plaes.org>
-Subject: [PATCH] x86 vdso: fix build locale dependency
-X-Fcc: ~/Mail/linus
-Emacs: it's all fun and games, until somebody tries to edit a file.
-Message-Id: <20080227194215.0B5A32700FD@magilla.localdomain>
-Date: Wed, 27 Feb 2008 11:42:15 -0800 (PST)
+	Wed, 27 Feb 2008 14:44:44 -0500
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:44233 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1756746AbYB0Ton (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 Feb 2008 14:44:43 -0500
+Date: Wed, 27 Feb 2008 11:44:42 -0800 (PST)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Nick Piggin <nickpiggin@yahoo.com.au>
+cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Eric Dumazet <dada1@cosmosbay.com>,
+       "David S. Miller" <davem@davemloft.net>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       linux kernel <linux-kernel@vger.kernel.org>, netdev@vger.kernel.org,
+       "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
+Subject: Re: [PATCH] alloc_percpu() fails to allocate percpu data
+In-Reply-To: <200802232023.52352.nickpiggin@yahoo.com.au>
+Message-ID: <Pine.LNX.4.64.0802271140470.1790@schroedinger.engr.sgi.com>
+References: <47BDBC23.10605@cosmosbay.com> <1203632765.6112.20.camel@lappy>
+ <200802232023.52352.nickpiggin@yahoo.com.au>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sat, 23 Feb 2008, Nick Piggin wrote:
 
-Priit Laes discovered that the sed command processing nm output was
-sensitive to locale settings.  This was addressed in commit
-03994f01e8b72b3d01fd3d09d1cc7c9f421a727c by using [:alnum:] in place of
-[a-zA-Z0-9].  But that too is locale-dependent and may not always match
-the identifiers it needs to.  The better fix is just to run sed et al
-with a fixed locale setting in all builds.
+> What I don't understand is why the slab allocators have something like
+> this in it:
+> 
+>         if ((flags & SLAB_HWCACHE_ALIGN) &&
+>                         size > cache_line_size() / 2)
+>                 return max_t(unsigned long, align, cache_line_size());
+> 
+> If you ask for HWCACHE_ALIGN, then you should get it. I don't
+> understand, why do they think they knows better than the caller?
 
-Signed-off-by: Roland McGrath <roland@redhat.com>
-CC: Priit Laes <plaes@plaes.org>
----
- arch/x86/vdso/Makefile |    6 ++++--
- 1 files changed, 4 insertions(+), 2 deletions(-)
+Tradition.... Its irks me as well.
 
-diff --git a/arch/x86/vdso/Makefile b/arch/x86/vdso/Makefile
-index b8bd0c4..0a8f474 100644
---- a/arch/x86/vdso/Makefile
-+++ b/arch/x86/vdso/Makefile
-@@ -48,9 +48,11 @@ obj-$(VDSO64-y)			+= vdso-syms.lds
- # Match symbols in the DSO that look like VDSO*; produce a file of constants.
- #
- sed-vdsosym := -e 's/^00*/0/' \
--	-e 's/^\([[:xdigit:]]*\) . \(VDSO[[:alnum:]_]*\)$$/\2 = 0x\1;/p'
-+	-e 's/^\([0-9a-fA-F]*\) . \(VDSO[a-zA-Z0-9_]*\)$$/\2 = 0x\1;/p'
- quiet_cmd_vdsosym = VDSOSYM $@
--      cmd_vdsosym = $(NM) $< | sed -n $(sed-vdsosym) | LC_ALL=C sort > $@
-+define cmd_vdsosym
-+	$(NM) $< | LC_ALL=C sed -n $(sed-vdsosym) | LC_ALL=C sort > $@
-+endef
- 
- $(obj)/%-syms.lds: $(obj)/%.so.dbg FORCE
- 	$(call if_changed,vdsosym)
+> Things like this are just going to lead to very difficult to track
+> performance problems. Possibly correctness problems in rare cases.
+> 
+> There could be another flag for "maybe align".
+
+SLAB_HWCACHE_ALIGN *is* effectively a maybe align flag given the above 
+code. 
+
+If we all agree then we could change this to have must have semantics? It 
+has the potential of enlarging objects for small caches. 
+
+SLAB_HWCACHE_ALIGN has an effect that varies according to the alignment 
+requirements of the architecture that the kernel is build on. We may be in 
+for some surprises if we change this.
+
