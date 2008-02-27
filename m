@@ -1,58 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759114AbYB0Wrm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759596AbYB0WsV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759114AbYB0Wrm (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Feb 2008 17:47:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755506AbYB0WrO
+	id S1759596AbYB0WsV (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Feb 2008 17:48:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752468AbYB0WsM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Feb 2008 17:47:14 -0500
-Received: from ug-out-1314.google.com ([66.249.92.175]:44339 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750857AbYB0WrM (ORCPT
+	Wed, 27 Feb 2008 17:48:12 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:46797 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751922AbYB0WsL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Feb 2008 17:47:12 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-disposition:content-type:content-transfer-encoding:message-id;
-        b=fSxFrWCkQrNndeJKzAvg0FumLvjXfTg5kzEx+H75c7a2cJpCfah8sCVYf+eloNcQbYQDxE1ff/pmUsqpOC4IyqA2n3S710VxxPIau0EI0NOcq1Dirayc8Q5dWT5z4UVykf6RVUgG5qhVrPT88aU8j7Hin9W7vo+EXeLzCxw5Tv0=
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: petkovbb@gmail.com
-Subject: Re: [PATCH 0/5] ide-cd: trivial fixes
-Date: Wed, 27 Feb 2008 23:48:34 +0100
-User-Agent: KMail/1.9.6 (enterprise 0.20071204.744707)
-Cc: linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org
-References: <1204136449-9490-1-git-send-email-petkovbb@gmail.com> <200802272218.40312.bzolnier@gmail.com> <20080227221814.GC9545@gollum.tnic>
-In-Reply-To: <20080227221814.GC9545@gollum.tnic>
+	Wed, 27 Feb 2008 17:48:11 -0500
+Date: Wed, 27 Feb 2008 14:47:08 -0800
+From: Greg KH <greg@kroah.com>
+To: Randy Dunlap <randy.dunlap@oracle.com>
+Cc: Greg KH <gregkh@suse.de>, Andrew Morton <akpm@linux-foundation.org>,
+       torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
+       stable@kernel.org
+Subject: Re: [stable] Linux 2.6.24.3
+Message-ID: <20080227224708.GB6833@kroah.com>
+References: <20080226010024.GA26889@suse.de> <20080225195229.11ec1f12.randy.dunlap@oracle.com> <20080226041545.GA30567@suse.de> <20080227134945.c1430710.randy.dunlap@oracle.com>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Message-Id: <200802272348.35011.bzolnier@gmail.com>
+In-Reply-To: <20080227134945.c1430710.randy.dunlap@oracle.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 27 February 2008, Borislav Petkov wrote:
-> On Wed, Feb 27, 2008 at 10:18:40PM +0100, Bartlomiej Zolnierkiewicz wrote:
-> > 
-> > Hi,
-> > 
-> > On Wednesday 27 February 2008, Borislav Petkov wrote:
-> > > Hi Bart,
-> > > 
-> > > here are the ide-cd trivial fixes split in an easier to digest format. I
-> > > cannot do the md5sum check here since all of the patches change at least one
-> > > char but i hope that this'll be redundant here since they're trivially easy
-> > > to review :) now.
-> > > 
-> > >  drivers/ide/ide-cd.c |  591 +++++++++++++++++++++++++-------------------------
-> > >  1 files changed, 298 insertions(+), 293 deletions(-)
-> > 
-> > applied everything
-> > 
-> > BTW patch #3/5 which accounts for 2/3 of the diffstat passes md5sum check here
+On Wed, Feb 27, 2008 at 01:49:45PM -0800, Randy Dunlap wrote:
+> On Mon, 25 Feb 2008 20:15:45 -0800 Greg KH wrote:
 > 
-> huh, are you sure? The fixup-comments patch adds at least one char to the source
-> file so the md5sums cannot be the same.
+> > On Mon, Feb 25, 2008 at 07:52:29PM -0800, Randy Dunlap wrote:
+> > > On Mon, 25 Feb 2008 17:00:24 -0800 Greg Kroah-Hartman wrote:
+> > > 
+> > > > We (the -stable team) are announcing the release of the 2.6.24.3
+> > > > kernel.
+> > > > 
+> > > > It fixes a number of different bugs and all users of the 2.6.24 series
+> > > > are encouraged to upgrade.
+> > > > 
+> > > > I'll also be replying to this message with a copy of the patch between
+> > > > 2.6.24.2 and 2.6.24.3
+> > > > 
+> > > > The updated 2.6.24.y git tree can be found at:
+> > > >         git://git.kernel.org/pub/scm/linux/kernel/git/stable/linux-2.6.24.y.git
+> > > > and can be browsed at the normal kernel.org git web browser:
+> > > >         http://git.kernel.org/?p=linux/kernel/git/stable/linux-2.6.24.y.git;a=summary
+> > > 
+> > > When HEADERS_CHECK=y:
+> > > 
+> > > make[3]: *** No rule to make target `/local/linsrc/linux-2.6.24.3/include/linux/if_addrlabel.h', needed by `/local/linsrc/linux-2.6.24.3/usr/include/linux/if_addrlabel.h'.  Stop.
+> > > make[2]: *** [linux] Error 2
+> > 
+> > Is this a regression from 2.6.24.2?
+> 
+> Yes.
+> 
+> > If so, any ideas which patch caused it?
+> 
+> No, but I thought that we had already been thru this...
 
-OTOH md5sums of the resulting _binary_ files matches... ;-) 
+Ugh, sorry, too many trees/bugs/patches right now.  I'll take care of
+this on friday when I get back home...
+
+greg k-h
