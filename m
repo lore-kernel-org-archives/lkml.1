@@ -1,62 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759250AbYB0T4K@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758881AbYB0T51@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759250AbYB0T4K (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Feb 2008 14:56:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758835AbYB0Tzq
+	id S1758881AbYB0T51 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Feb 2008 14:57:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756995AbYB0T5R
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Feb 2008 14:55:46 -0500
-Received: from BISCAYNE-ONE-STATION.MIT.EDU ([18.7.7.80]:52661 "EHLO
-	biscayne-one-station.mit.edu" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1758767AbYB0Tzo (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Feb 2008 14:55:44 -0500
-Date: Wed, 27 Feb 2008 14:55:25 -0500
-From: Theodore Tso <tytso@MIT.EDU>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-next@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: linux-next: Tree for Feb 27
-Message-ID: <20080227195525.GC8840@mit.edu>
-Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
-	Stephen Rothwell <sfr@canb.auug.org.au>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
-References: <20080227170300.25c50fe3.sfr@canb.auug.org.au> <20080226230059.58cf3cfa.akpm@linux-foundation.org> <20080228010626.fd4e00d2.sfr@canb.auug.org.au>
+	Wed, 27 Feb 2008 14:57:17 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:56965 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751814AbYB0T5Q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 Feb 2008 14:57:16 -0500
+Message-ID: <47C5C048.9080704@redhat.com>
+Date: Wed, 27 Feb 2008 14:55:52 -0500
+From: Chris Snook <csnook@redhat.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080228010626.fd4e00d2.sfr@canb.auug.org.au>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
-X-Spam-Flag: NO
-X-Spam-Score: 0.00
+To: Andre Noll <maan@systemlinux.org>
+CC: adam radford <aradford@gmail.com>, Tony Battersby <tonyb@cybernetics.com>,
+       =?ISO-8859-1?Q?Johannes_W=F6rner?= 
+	<johannes.woerner@tuebingen.mpg.de>,
+       James Bottomley <James.Bottomley@HansenPartnership.com>,
+       linux-scsi <linux-scsi@vger.kernel.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: Performance problems with 3ware 9500S-4LP and 2.6.25-rc3
+References: <20080226174314.GA30767@skl-net.de> <47C45B80.6090907@redhat.com> <20080227101143.GC30767@skl-net.de>
+In-Reply-To: <20080227101143.GC30767@skl-net.de>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Feb 28, 2008 at 01:06:26AM +1100, Stephen Rothwell wrote:
-> On Tue, 26 Feb 2008 23:00:59 -0800 Andrew Morton <akpm@linux-foundation.org> wrote:
-> >
-> > So who's missing now?
+Andre Noll wrote:
+> On 13:33, Chris Snook wrote:
+> 
+>>> During the daily cron job that uses rsync to sync a 500G file system
+>> >from another machine to the raid on the 3ware controller the load
+>>> jumps up, and the machine becomes sluggish as hell. For example, an
+>>> ssh login to that machine takes minutes to complete and ldap becomes
+>>> unreliable while the rsync job is running. Even Nagios complains
+>>> about the machine being down while rsync is running.
+>> You're putting your box under astronomical load.  This is generally 
+>> regarded as a bad idea, regardless of how well your storage controller 
+>> is performing.
+> 
+> The machine becomes sluggish also when I write directly to the raid
+> array. A simple
+> 
+> 	dd if=/dev/zero of=tmpfile
+> 
+> shouldn't push the load up to 4, right?
 
-> > ftp://ftp.kernel.org/pub/linux/kernel/people/tytso/ext4-patches/LATEST/broken-out/
+Actually, it's normal for pdflush to spawn up to 8 threads when you're 
+dirtying memory faster than it can be written to disk.  Load going to 4 
+is not abnormal.  ssh logins taking minutes is very abnormal.
 
-Hi Stephen,
+>> Can you measure the single-threaded throughput (say, 
+>> coping one huge file, and then syncing) to give us a baseline 
+>> performance figure?
+> 
+> Single threaded throughput seems to be ok (140M/s). The problem is
+> that the machine becomes unresponsive.
 
-please add:
+Does the machine become unresponsive during the single-threaded test, or 
+only when doing the rsync?
 
-   git://git.kernel.org/pub/scm/linux/kernel/git/tytso/ext4.git  next
-
-This contains a subset of the patches in the ext4 patch set which we
-are explicitly planning on pushing to Linus at the next merge window.
-
-It actually probably wouldn't hurt to pull the entire quilt series
-into linux-next, since we don't export any interfaces that are used by
-other linux trees, and that would give us better heads up for
-conflicts in patches still in development conflicting with upcoming
-core changes.  But it conflicts with the initial premise of
-linux-next, so that's why I set up the next branch of the above git
-tree.
-
-Regards,
-
-						- Ted
+	-- Chris
