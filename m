@@ -1,76 +1,148 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932135AbYB0Xkm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762359AbYB0XlX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932135AbYB0Xkm (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Feb 2008 18:40:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759820AbYB0XkF
+	id S1762359AbYB0XlX (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Feb 2008 18:41:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758924AbYB0XlA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Feb 2008 18:40:05 -0500
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:58048 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754801AbYB0XkE (ORCPT
+	Wed, 27 Feb 2008 18:41:00 -0500
+Received: from agminet01.oracle.com ([141.146.126.228]:63541 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758387AbYB0Xk7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Feb 2008 18:40:04 -0500
-Date: Wed, 27 Feb 2008 17:39:58 -0600
-From: Paul Jackson <pj@sgi.com>
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: mingo@elte.hu, tglx@linutronix.de, oleg@tv-sign.ru, rostedt@goodmis.org,
-       maxk@qualcomm.com, linux-kernel@vger.kernel.org, a.p.zijlstra@chello.nl
-Subject: Re: [RFC/PATCH 2/4] cpuset: system sets
-Message-Id: <20080227173958.c6ffb32a.pj@sgi.com>
-In-Reply-To: <20080227222542.311184000@chello.nl>
-References: <20080227222103.673194000@chello.nl>
-	<20080227222542.311184000@chello.nl>
-Organization: SGI
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.12.0; i686-pc-linux-gnu)
+	Wed, 27 Feb 2008 18:40:59 -0500
+Date: Wed, 27 Feb 2008 15:40:34 -0800
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: linux-kernel@vger.kernel.org
+Cc: akpm@linux-foundation.org, tim.gardner@canonical.com, Matt_Domsch@dell.com,
+       hpa@zytor.com, rdunlap@xenotime.net,
+       lkml <linux-kernel@vger.kernel.org>
+Subject: Re: +
+ edd-add-default-mode-config_edd_off=n-override-with-edd=onoff.patch added
+ to -mm tree
+Message-Id: <20080227154034.ecc603cf.randy.dunlap@oracle.com>
+In-Reply-To: <200802272321.m1RNLDrb003699@imap1.linux-foundation.org>
+References: <200802272321.m1RNLDrb003699@imap1.linux-foundation.org>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.4.7 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Peter wrote:
-> A system set will be one that caters the
-> general purpose OS. This patch provides the infrastructure, but doesn't
-> actually provide any new functionality.
+On Wed, 27 Feb 2008 15:21:13 -0800 akpm@linux-foundation.org wrote:
+
 > 
-> Typical functionality would be setting the IRQ affinity of unbound IRQs to
-> within the system set. And setting the affinity of unbounded kernel threads to
-> within the system set.
+> The patch titled
+>      edd: add default mode CONFIG_EDD_OFF=n, override with edd={on,off}
+> has been added to the -mm tree.  Its filename is
+>      edd-add-default-mode-config_edd_off=n-override-with-edd=onoff.patch
+> 
+> Before you just go and hit "reply", please:
+>    a) Consider who else should be cc'ed
+>    b) Prefer to cc a suitable mailing list as well
+>    c) Ideally: find the original patch on the mailing list and do a
+>       reply-to-all to that, adding suitable additional cc's
+> 
+> *** Remember to use Documentation/SubmitChecklist when testing your code ***
+> 
+> See http://www.zip.com.au/~akpm/linux/patches/stuff/added-to-mm.txt to find
+> out what to do about this
+> 
+> The current -mm tree may be found at http://userweb.kernel.org/~akpm/mmotm/
+> 
+> ------------------------------------------------------
+> Subject: edd: add default mode CONFIG_EDD_OFF=n, override with edd={on,off}
+> From: Tim Gardner <tim.gardner@canonical.com>
+> 
+> Add a kernel parameter option to 'edd' to enable/disable BIOS Enhanced Disk
+> Drive Services.  CONFIG_EDD_OFF disables EDD while still compiling EDD into
+> the kernel.  Default behavior can be forced using 'edd=on' or 'edd=off' as
+> a kernel parameter.
+> 
+> Signed-off-by: Tim Gardner <tim.gardner@canonical.com>
+> Signed-off-by: Matt Domsch <Matt_Domsch@dell.com>
+> Cc: "H. Peter Anvin" <hpa@zytor.com>
+> Cc: "Randy.Dunlap" <rdunlap@xenotime.net>
+> Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+> ---
+> 
+>  Documentation/kernel-parameters.txt |    3 +--
+>  arch/x86/boot/edd.c                 |   10 +++++++++-
+>  drivers/firmware/Kconfig            |    9 +++++++++
+>  3 files changed, 19 insertions(+), 3 deletions(-)
+> 
+> diff -puN Documentation/kernel-parameters.txt~edd-add-default-mode-config_edd_off=n-override-with-edd=onoff Documentation/kernel-parameters.txt
+> --- a/Documentation/kernel-parameters.txt~edd-add-default-mode-config_edd_off=n-override-with-edd=onoff
+> +++ a/Documentation/kernel-parameters.txt
+> @@ -625,8 +625,7 @@ and is between 256 and 4096 characters. 
+>  	eata=		[HW,SCSI]
+>  
+>  	edd=		[EDD]
+> -			Format: {"of[f]" | "sk[ipmbr]"}
+> -			See comment in arch/i386/boot/edd.S
+> +			Format: {"off" | "on" | "sk[ipmbr]"}
 
-"one that caters the general purpose OS" ... a tad terse on the
-documentation ;).
+I think that should be "skip[mbr]"...
 
-I guess what you have is a new cpumask_t cpu_system_map, which is the
-union of the CPUs of all the cpusets marked 'system', where to a rough
-approximation the CPUs -not- in that cpumask are what we would have
-called the isolated CPUs by the old code?
+>  
+>  	eisa_irq_edge=	[PARISC,HW]
+>  			See header of drivers/parisc/eisa.c.
+> diff -puN arch/x86/boot/edd.c~edd-add-default-mode-config_edd_off=n-override-with-edd=onoff arch/x86/boot/edd.c
+> --- a/arch/x86/boot/edd.c~edd-add-default-mode-config_edd_off=n-override-with-edd=onoff
+> +++ a/arch/x86/boot/edd.c
+> @@ -128,17 +128,25 @@ void query_edd(void)
+>  {
+>  	char eddarg[8];
+>  	int do_mbr = 1;
+> +#ifdef CONFIG_EDD_OFF
+> +	int do_edd = 0;
+> +#else
+>  	int do_edd = 1;
+> +#endif
+>  	int be_quiet;
+>  	int devno;
+>  	struct edd_info ei, *edp;
+>  	u32 *mbrptr;
+>  
+>  	if (cmdline_find_option("edd", eddarg, sizeof eddarg) > 0) {
+> -		if (!strcmp(eddarg, "skipmbr") || !strcmp(eddarg, "skip"))
+> +		if (!strcmp(eddarg, "skipmbr") || !strcmp(eddarg, "skip")) {
+> +			do_edd = 1;
+>  			do_mbr = 0;
+> +		}
+>  		else if (!strcmp(eddarg, "off"))
+>  			do_edd = 0;
+> +		else if (!strcmp(eddarg, "on"))
+> +			do_edd = 1;
+>  	}
+>  
+>  	be_quiet = cmdline_find_option_bool("quiet");
+> diff -puN drivers/firmware/Kconfig~edd-add-default-mode-config_edd_off=n-override-with-edd=onoff drivers/firmware/Kconfig
+> --- a/drivers/firmware/Kconfig~edd-add-default-mode-config_edd_off=n-override-with-edd=onoff
+> +++ a/drivers/firmware/Kconfig
+> @@ -17,6 +17,15 @@ config EDD
+>            obscure configurations. Most disk controller BIOS vendors do
+>            not yet implement this feature.
+>  
+> +config EDD_OFF
+> +	bool "Sets default behavior for EDD detection to off"
+> +	depends on EDD
+> +	default n
+> +	help
+> +	  Say Y if you want EDD disabled by default, even though it is compiled into the
+> +	  kernel. Say N if you want EDD enabled by default. EDD can be dynamically set
+> +	  using the kernel parameter 'edd={on|skipmbr|off}'.
+> +
+>  config EFI_VARS
+>  	tristate "EFI Variable Support via sysfs"
+>  	depends on EFI
+> _
 
-In any case, if this patch survives its birth, it will need an added
-change for some file in the Documentation directory.
-
-Could we get the term 'cpu' in the name 'system' somehow?  Perhaps call
-this new cpuset flag 'cpus_system' or some such.  Cpusets handles both
-CPU and memory configuration, and I make some effort to mark per-cpuset
-specific attributes that apply to only one of these with a prefix
-indicating to which they apply.  The per-cpuset flag name 'system', by
-itself, would mean little to someone just listing the files in a cpuset
-directory.
-
-In the rebuild_system_map() code, you have:
-+	if (cpus_empty(*new_system_map))
-+		BUG();
-
-... what's to prevent simply turning off the 'system' (aka cpus_system)
-in the top cpuset, on a system with only that one cpuset, and hitting
-this BUG()?
-
-Overall I like this approach.  I suspect you made a good choice in
-marking the non-isolated (aka system) CPUs, rather than the isolated
-CPUs.  It seems clearer that way, in understanding the affects of
-overlapping cpusets with various markings.
-
--- 
-                  I won't rest till it's the best ...
-                  Programmer, Linux Scalability
-                  Paul Jackson <pj@sgi.com> 1.940.382.4214
+---
+~Randy
