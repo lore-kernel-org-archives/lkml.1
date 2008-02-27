@@ -1,120 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765647AbYB0Axq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932715AbYB0Azw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765647AbYB0Axq (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Feb 2008 19:53:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751261AbYB0Axh
+	id S932715AbYB0Azw (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Feb 2008 19:55:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756877AbYB0Azl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Feb 2008 19:53:37 -0500
-Received: from wa-out-1112.google.com ([209.85.146.182]:40810 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751143AbYB0Axh (ORCPT
+	Tue, 26 Feb 2008 19:55:41 -0500
+Received: from web52909.mail.re2.yahoo.com ([206.190.49.19]:31918 "HELO
+	web52909.mail.re2.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1756695AbYB0Azk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Feb 2008 19:53:37 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=eBMb3GXyxZVfF038UcGYId0RayG7QHWu7KGcuZn+ATsvH+1WyOyH7qUFlZApDC8MHgbjqFDEakvvuOmHUDCnaHibbiVWCgUEnTOesCbqDIRBzcJWRa9JqkDDP24ca601MQv6EA/iVMqRSnnL2atPHSI/0SgKHcryYrCSKGAsAX8=
-Message-ID: <f19298770802261653u62a966d3ud445292a2846d131@mail.gmail.com>
-Date: Wed, 27 Feb 2008 03:53:36 +0300
-From: "Alexey Zaytsev" <alexey.zaytsev@gmail.com>
-To: "Michael Buesch" <mb@bu3sch.de>
-Subject: Re: bcm43xx regression in 2.6.24 (with patch)
-Cc: "John W. Linville" <linville@tuxdriver.com>, "Ingo Molnar" <mingo@elte.hu>,
-       "Alexey Zaytsev" <zaytsev.a@protei.ru>, "Greg KH" <greg@kroah.com>,
+	Tue, 26 Feb 2008 19:55:40 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com;
+  h=X-YMail-OSG:Received:Date:From:Subject:To:Cc:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-ID;
+  b=47yD/wRv8ARYpil3lNiXbtKnGaiIE2tu6Eys20+Y7yvZmbtLIEAu1eRD6mqwV48q5WLrqJjfAgf6gnoh/zTZOLS5RMKhHlFUy/lR5GrLIC/mOMuR+faRjtD2NqkpWzbJ5W+wwVQSQ9kKuf+3v/zdWsOO+l7dNl9aVEHtwV/fdIE=;
+X-YMail-OSG: iubazHAVM1kU3O4bNYZIyEgSUWZITXhbMamuGqSMaXC3b6nNYJAcG73QrxGUx9CRLg--
+Date: Wed, 27 Feb 2008 00:55:38 +0000 (GMT)
+From: Chris Rankin <rankincj@yahoo.com>
+Subject: Re: Linux 2.6.24.1  - kernel does not boot; IRQ trouble?
+To: Greg KH <greg@kroah.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-acpi@vger.kernel.org,
        linux-kernel@vger.kernel.org
-In-Reply-To: <200802270143.17484.mb@bu3sch.de>
+In-Reply-To: <20080226234025.GC14117@kroah.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <47BEAF3B.3080809@protei.ru> <200802270127.22159.mb@bu3sch.de>
-	 <f19298770802261632y4406efc5p1c678c6ef6504c2f@mail.gmail.com>
-	 <200802270143.17484.mb@bu3sch.de>
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+Message-ID: <91946.43854.qm@web52909.mail.re2.yahoo.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Feb 27, 2008 at 3:43 AM, Michael Buesch <mb@bu3sch.de> wrote:
->
-> On Wednesday 27 February 2008 01:32:21 Alexey Zaytsev wrote:
->  > On Wed, Feb 27, 2008 at 3:27 AM, Michael Buesch <mb@bu3sch.de> wrote:
->  > >
->  > > On Wednesday 27 February 2008 01:23:17 Alexey Zaytsev wrote:
->  > >  > On Wed, Feb 27, 2008 at 1:47 AM, John W. Linville
->  > >  > <linville@tuxdriver.com> wrote:
->  > >  > > On Wed, Feb 27, 2008 at 01:12:32AM +0300, Alexey Zaytsev wrote:
->  > >  > >  > On Wed, Feb 27, 2008 at 1:04 AM, Michael Buesch <mb@bu3sch.de> wrote:
->  > >  > >
->  > >  > >
->  > >  > > > >  Besides that the bcm43xx driver is not broken. That's the whole reason
->  > >  > >  > >  this damn thread started at all. So it can't be broken.
->  > >  > >  > >
->  > >  > >  > Can't agree here. The bcm43xx driver used to work with 2.6.23 without requiring
->  > >  > >  > any module magic.
->  > >  > >
->  > >  > >  At the risk of prolonging things... :-(
->  > >  > >
->  > >  > >  Isn't the fundamental problem here that the ssb driver claims the same
->  > >  > >  PCI IDs as the bcm43xx driver?  He have hit this same issue a number
->  > >  > >  of times: 8139too vs.  8139cp, eepro vs. e100, sk98lin vs. skge,
->  > >  > >  and I'm sure there are more.  I admit that this situation is a bit
->  > >  > >  more confusing, since the user is less likely to predict a conflict
->  > >  > >  between bcm43xx and the ssb driver.  This is especially true since
->  > >  > >  the user isn't even selecting ssb directly, but is instead selecting
->  > >  > >  the apparently unrelated b44.
->  > >  > >
->  > >  > >  Still, the bcm43xx driver is not fundamentally damaged.  This is
->  > >  > >  fundamentally a "two drivers claiming the same PCI ID" issue, not a
->  > >  > >  "you broke my driver" one.
->  > >  >
->  > >  > Is there any reason the ssb driver should claim the bcm43xx pci ids in
->  > >  > the first place? I have very little understanding what the Sonic Silicon
->  > >  > Backplane really is, but I see that the b44 driver claims its PCI ids
->  > >  > directly. I also think I understand why the b43/b43legacy drivers can't
->  > >  > claim the ids directly: because the driver-device matching is done not
->  > >  > with the pci bus methods, but with the ssb bus methods, and it would
->  > >  > be impossible to automatically choose the right driver for the right
->  > >  > device (with same ssb ids), as the first of the two drivers loaded would
->  > >  > succeed in probe()'ing the pci "ssb bridge" device, and not letting the
->  > >  > other to take control, even after moments later the ssb probe for the
->  > >  > non-supported ssb device would fail. (Or am I completely wrong?)
->  > >  >
->  > >  > That said, I still think that the ssb driver claims the wrong pci ids,
->  > >  > which is especially wrong if the the b43/b43legacy drivers are not
->  > >  > even built. And my patch fixes exactly this problem - the ssb driver
->  > >  > no more claims the broadcom pci ids, when the b43/b43legacy drivers
->  > >  > are not built.
->  > >  >
->  > >  > One better solution I think might be to move the b43_pci_bridge.c
->  > >  > code to a separate module, and let the b43/b43legacy drivers
->  > >  > depend on it, but as I said, I have little knowledge in the
->  > >  > ssb stuff, so I did it the easy way.
->  > >
->  > >  See the comment in b43_pci_bridge.c
->  > >
->  > Yes, I've seen it. And this design, kind of, causes me some trouble.
->
->  There are several reasons to not do a seperate module.
->
->  First one being: People won't load it and complain about a regression.
->  Yeah, stupid stuff like that happens all the time. That's the reason we
->  SELECT the ssb code instead of using DEPENDS ON. People will otherwise not
->  enable it and report regressions.
->  And please don't say this won't happen. It _did_ happen when b44-PCI was
->  a seperate kconfig option. People reported regressions, although there were none.
->
-I mean, not to make it a separate config option, of course it should
-be hidden and
-autoselected, but a separate module with maybe a symbol both b43/b43legacy
-could depend on.
+--- Greg KH <greg@kroah.com> wrote:
+> On Tue, Feb 26, 2008 at 10:36:00PM +0000, Chris Rankin wrote:
+> > FYI, this hang still exists in 2.6.24.3 and so I am still needing to boot with the acpi=noirq
+> > parameter.
+> 
+> You're going to have to refresh my memory.  Was this a problem caused by
+> the .1 .2 or .3 kernel releases?  Did 2.6.24 have this problem as well,
+> or was it ok?
 
->  Second one being: It's overkill to have a seperate module for two lines of code
->  and a PCI ID table.
->
->  Third one being: We want the code to be as small as possible, as it must
->  all run on embedded machines. In general being as small as possible should
->  be the way to go.
->
+It's a bug introduced in 2.6.24; that ACPI fails to allocate IRQs correctly for PCI devices, which
+makes the kernel hang at boot-time:
 
-If compiled statically, which I think is the right thing for embedded systems,
-it should not take much additional space when separated from the ssb code.
+PCI: Using ACPI for IRQ routing
+PCI: If a device doesn't work, try "pci=routeirq".  If it helps, post a report
+BUG: NMI Watchdog detected LOCKUP on CPU0, eip c0102b07, registers:
+Modules linked in:
+
+Pid: 0, comm: swapper Not tainted (2.6.24.1 #1)
+EIP: 0060:[<c0102b07>] EFLAGS: 00000246 CPU: 0
+EIP is at default_idle+0x2f/0x43
+EAX: 00000000 EBX: c0102ad8 ECX: 010b2000 EDX: fffedb3c
+ESI: 00000000 EDI: c1409284 EBP: c0323fb4 ESP: c0323fb4
+ DS: 007b ES: 007b FS: 00d8 GS: 0000 SS: 0068
+Process swapper (pid: 0, ti=c0323000 task=c02fc320 task.ti=c0323000)
+Stack: c0323fc4 c01025af c140c000 c0357284 c0323fcc c02873a9 c0323ff8 c032792f 
+       00000037 c0327108 00000000 00000004 00009000 c0343b00 00000002 00099800 
+       c0319000 007ab007 00000000 
+Call Trace:
+ [<c0105020>] show_trace_log_lvl+0x1a/0x2f
+ [<c01050d2>] show_stack_log_lvl+0x9d/0xa5
+ [<c010517d>] show_registers+0xa3/0x1df
+ [<c0105ba7>] die_nmi+0x81/0xd2
+ [<c0115d72>] nmi_watchdog_tick+0xd5/0x12a
+ [<c0105f19>] do_nmi+0x93/0x24b
+ [<c0289b83>] nmi_stack_correct+0x26/0x2b
+ [<c01025af>] cpu_idle+0x9a/0xcf
+ [<c02873a9>] rest_init+0x5d/0x5f
+ [<c032792f>] start_kernel+0x2e2/0x2ea
+ [<00000000>] _stext+0x3feff000/0x19
+ =======================
+Code: 36 c0 00 55 89 e5 75 33 80 3d e5 17 32 c0 00 74 2a 89 e0 25 00 f0 ff ff 83 60 0c fd f0 83 04
+24 00 fa 8b 40 08 a8 04 75 04 fb f4 <eb> 01 fb 89 e0 25 00 f0 ff ff 83 48 0c 02 eb 02 f3 90 5d c3
+55 
+
+(This trace is from 2.6.24.1, but it hasn't changed in 2.6.24.3.) I currently avoid this problem
+by booting with acpi=noirq, which puts all the PCI devices on IRQ 9 instead of sharing them
+between IRQs 16, 17, 18 and 19.
+
+Cheers,
+Chris
+
+
+
+      __________________________________________________________
+Sent from Yahoo! Mail.
+A Smarter Inbox. http://uk.docs.yahoo.com/nowyoucan.html
