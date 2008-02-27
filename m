@@ -1,19 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759681AbYB0VYa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761748AbYB0VYp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759681AbYB0VYa (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Feb 2008 16:24:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759731AbYB0VWM
+	id S1761748AbYB0VYp (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Feb 2008 16:24:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758239AbYB0VWQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Feb 2008 16:22:12 -0500
-Received: from smtp6.pp.htv.fi ([213.243.153.40]:49162 "EHLO smtp6.pp.htv.fi"
+	Wed, 27 Feb 2008 16:22:16 -0500
+Received: from smtp4.pp.htv.fi ([213.243.153.38]:41787 "EHLO smtp4.pp.htv.fi"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759732AbYB0VWL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Feb 2008 16:22:11 -0500
-Date: Wed, 27 Feb 2008 23:21:00 +0200
+	id S1759858AbYB0VWO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 Feb 2008 16:22:14 -0500
+Date: Wed, 27 Feb 2008 23:21:03 +0200
 From: Adrian Bunk <bunk@kernel.org>
-To: linux-kernel@vger.kernel.org
-Subject: [RFC: 2.6 patch] minix: remove !NO_TRUNCATE code
-Message-ID: <20080227212100.GP29269@cs181133002.pp.htv.fi>
+To: herbert@gondor.apana.org.au, davem@davemloft.net
+Cc: linux-crypto@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: [2.6 patch] crypto/digest.c should #include "internal.h"
+Message-ID: <20080227212103.GQ29269@cs181133002.pp.htv.fi>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
@@ -22,92 +23,24 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch removes the !NO_TRUNCATE code that anyway required a manual 
-editing of the code for being used.
+Every file should include the headers containing the externs for its 
+global code (in this case for struct crypto_{init,exit}_digest_ops()).
 
 Signed-off-by: Adrian Bunk <bunk@kernel.org>
 
 ---
-
-This patch has been sent on:
-- 17 Feb 2008
-
- fs/minix/inode.c |    3 ---
- fs/minix/minix.h |    6 ------
- fs/minix/namei.c |   24 ------------------------
- 3 files changed, 33 deletions(-)
-
-baff7307cff10a969567e2c7b81af14259170906 diff --git a/fs/minix/inode.c b/fs/minix/inode.c
-index 84f6242..523d737 100644
---- a/fs/minix/inode.c
-+++ b/fs/minix/inode.c
-@@ -256,9 +256,6 @@ static int minix_fill_super(struct super_block *s, void *data, int silent)
- 	if (!s->s_root)
- 		goto out_iput;
+8680cc7b83fdcef7fbb84f9eac3f26f3d3e16b45 foobar
+diff --git a/crypto/digest.c b/crypto/digest.c
+index 6fd43bd..b526cc3 100644
+--- a/crypto/digest.c
++++ b/crypto/digest.c
+@@ -21,6 +21,8 @@
+ #include <linux/module.h>
+ #include <linux/scatterlist.h>
  
--	if (!NO_TRUNCATE)
--		s->s_root->d_op = &minix_dentry_operations;
--
- 	if (!(s->s_flags & MS_RDONLY)) {
- 		if (sbi->s_version != MINIX_V3) /* s_state is now out from V3 sb */
- 			ms->s_state &= ~MINIX_VALID_FS;
-diff --git a/fs/minix/minix.h b/fs/minix/minix.h
-index 326edfe..e6a0b19 100644
---- a/fs/minix/minix.h
-+++ b/fs/minix/minix.h
-@@ -2,11 +2,6 @@
- #include <linux/pagemap.h>
- #include <linux/minix_fs.h>
- 
--/*
-- * change the define below to 0 if you want names > info->s_namelen chars to be
-- * truncated. Else they will be disallowed (ENAMETOOLONG).
-- */
--#define NO_TRUNCATE 1
- #define INODE_VERSION(inode)	minix_sb(inode->i_sb)->s_version
- #define MINIX_V1		0x0001		/* original minix fs */
- #define MINIX_V2		0x0002		/* minix V2 fs */
-@@ -83,7 +78,6 @@ extern const struct inode_operations minix_file_inode_operations;
- extern const struct inode_operations minix_dir_inode_operations;
- extern const struct file_operations minix_file_operations;
- extern const struct file_operations minix_dir_operations;
--extern struct dentry_operations minix_dentry_operations;
- 
- static inline struct minix_sb_info *minix_sb(struct super_block *sb)
++#include "internal.h"
++
+ static int init(struct hash_desc *desc)
  {
-diff --git a/fs/minix/namei.c b/fs/minix/namei.c
-index 102241b..32b131c 100644
---- a/fs/minix/namei.c
-+++ b/fs/minix/namei.c
-@@ -18,30 +18,6 @@ static int add_nondir(struct dentry *dentry, struct inode *inode)
- 	return err;
- }
- 
--static int minix_hash(struct dentry *dentry, struct qstr *qstr)
--{
--	unsigned long hash;
--	int i;
--	const unsigned char *name;
--
--	i = minix_sb(dentry->d_inode->i_sb)->s_namelen;
--	if (i >= qstr->len)
--		return 0;
--	/* Truncate the name in place, avoids having to define a compare
--	   function. */
--	qstr->len = i;
--	name = qstr->name;
--	hash = init_name_hash();
--	while (i--)
--		hash = partial_name_hash(*name++, hash);
--	qstr->hash = end_name_hash(hash);
--	return 0;
--}
--
--struct dentry_operations minix_dentry_operations = {
--	.d_hash		= minix_hash,
--};
--
- static struct dentry *minix_lookup(struct inode * dir, struct dentry *dentry, struct nameidata *nd)
- {
- 	struct inode * inode = NULL;
+ 	struct crypto_tfm *tfm = crypto_hash_tfm(desc->tfm);
 
