@@ -1,70 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757584AbYB0N1e@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758437AbYB0N2l@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757584AbYB0N1e (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Feb 2008 08:27:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751509AbYB0N10
+	id S1758437AbYB0N2l (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Feb 2008 08:28:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752143AbYB0N2d
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Feb 2008 08:27:26 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:45198 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751295AbYB0N1Z (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Feb 2008 08:27:25 -0500
-Date: Wed, 27 Feb 2008 14:27:13 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Nick Piggin <npiggin@suse.de>
-Cc: Andi Kleen <ak@suse.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-arch@vger.kernel.org
-Subject: Re: [rfc][patch] x86-64 new smp_call_function design
-Message-ID: <20080227132713.GA13681@elte.hu>
-References: <20080227124217.GA1340@wotan.suse.de>
+	Wed, 27 Feb 2008 08:28:33 -0500
+Received: from dgate2.fujitsu-siemens.com ([217.115.66.36]:40102 "EHLO
+	dgate2.fujitsu-siemens.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751509AbYB0N2d (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 Feb 2008 08:28:33 -0500
+X-Greylist: delayed 594 seconds by postgrey-1.27 at vger.kernel.org; Wed, 27 Feb 2008 08:28:32 EST
+DomainKey-Signature: s=s768; d=fujitsu-siemens.com; c=nofws; q=dns;
+  h=X-SBRSScore:X-IronPort-AV:Received:Received:Received:
+   Message-ID:Date:From:Organization:User-Agent:MIME-Version:
+   To:Subject:X-Enigmail-Version:Content-Type:
+   Content-Transfer-Encoding;
+  b=bo2xDoZdno+iyAbi3CKkoJ7A9rMKYlUXlKHogg83AOuHDzT6xxyAoDPT
+   q0dTTH/z6Au4QRmZWmZDPnFZETUAEIuvud6Pr6LqfSrRqJP9zcQeE+9JD
+   4dzxCTHylW8igZy;
+X-SBRSScore: None
+X-IronPort-AV: E=Sophos;i="4.25,412,1199660400"; 
+   d="scan'208";a="29884502"
+Message-ID: <47C5632B.7030402@fujitsu-siemens.com>
+Date: Wed, 27 Feb 2008 14:18:35 +0100
+From: Martin Wilck <martin.wilck@fujitsu-siemens.com>
+Organization: Fujitsu Siemens Computers
+User-Agent: Thunderbird 2.0.0.9 (X11/20070801)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080227124217.GA1340@wotan.suse.de>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+To: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>
+Subject: idle_notifier_unregister()
+X-Enigmail-Version: 0.95.5
+Content-Type: text/plain; charset=ISO-8859-15
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hello Thomas, hello Ingo,
 
-* Nick Piggin <npiggin@suse.de> wrote:
+Your commit a72368dd37f6ae333fbab03598e46a995d91decc "x86: remove dead
+code and exports" removes the function idle_notifier_unregister().
+Please restore this function. I have a driver here which wouldn't unload
+cleanly if this function is unavailable.
 
-> This isn't finished yet, however I'd just like to ask for comments.
+What's the point in removing the idle_notifier_unregister() function
+while keeping idle_notifier_register()? Is the idle_notifier API a
+one-way API by design?
 
-looks really interesting!
+Martin
 
-only one fundamental observation:
+-- 
+Martin Wilck
+PRIMERGY System Software Engineer
+FSC IP ESP DE6
 
-> +struct call_data {
-> +	spinlock_t lock;
-> +	struct list_head list;
->  	void (*func) (void *info);
->  	void *info;
-> +	unsigned int flags;
-> +	unsigned int refs;
-> +	cpumask_t cpumask;
-> +	struct rcu_head rcu_head;
->  };
+Fujitsu Siemens Computers GmbH
+Heinz-Nixdorf-Ring 1
+33106 Paderborn
+Germany
 
-> +struct call_single_data {
-> +	struct list_head list;
-> +	void (*func) (void *info);
-> +	void *info;
-> +	unsigned int flags;
-> +};
-
-the two structures are quite similar in size and role - why not have a 
-type field and handle them largely together? I think we should try to 
-preserve a single queue and a single vector - that would remove a number 
-of ugly special-cases from the patch.
-
-	Ingo
+Tel:			++49 5251 8 15113
+Fax:			++49 5251 8 20209
+Email:			mailto:martin.wilck@fujitsu-siemens.com
+Internet:		http://www.fujitsu-siemens.com
+Company Details:	http://www.fujitsu-siemens.com/imprint.html
