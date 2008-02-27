@@ -1,55 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755972AbYB0Qkr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755533AbYB0Qp2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755972AbYB0Qkr (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Feb 2008 11:40:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754614AbYB0Qkh
+	id S1755533AbYB0Qp2 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Feb 2008 11:45:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753150AbYB0QpR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Feb 2008 11:40:37 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:33868 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754359AbYB0Qkg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Feb 2008 11:40:36 -0500
-Date: Wed, 27 Feb 2008 11:39:55 -0500
-From: Kyle McMartin <kmcmartin@redhat.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Kyle McMartin <kmcmartin@redhat.com>,
-       =?iso-8859-1?B?Uy7HYT8/bGFy?= Onur <caglar@pardus.org.tr>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       lguest@ozlabs.org, rusty@rustcorp.com.au
-Subject: Re: Linux 2.6.25-rc3
-Message-ID: <20080227163955.GL12908@kibblesnbits.boston.devel.redhat.com>
-References: <alpine.LFD.1.00.0802241354200.14934@woody.linux-foundation.org> <200802250129.17526.caglar@pardus.org.tr> <20080225071605.GA11327@elte.hu> <20080227161207.GJ12908@kibblesnbits.boston.devel.redhat.com> <20080227161649.GA799@elte.hu>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080227161649.GA799@elte.hu>
-User-Agent: Mutt/1.4.2.2i
+	Wed, 27 Feb 2008 11:45:17 -0500
+Received: from terminus.zytor.com ([198.137.202.10]:59143 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753796AbYB0QpQ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 Feb 2008 11:45:16 -0500
+Message-ID: <47C59378.6020608@zytor.com>
+Date: Wed, 27 Feb 2008 08:44:40 -0800
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+MIME-Version: 1.0
+To: Andi Kleen <ak@suse.de>
+CC: Ingo Molnar <mingo@elte.hu>, Alexander van Heukelum <heukelum@fastmail.fm>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Alexander van Heukelum <heukelum@mailshack.com>
+Subject: Re: [PATCH] reserve_early end-of-conventional-memory to 1MB II -
+ some numbers to put it into perspective
+References: <20080224174605.GA21661@mailshack.com> <47C22568.1010405@zytor.com> <1203958478.20033.1239002461@webmail.messagingengine.com> <20080225170134.GA15839@elte.hu> <20080225180750.GA31054@mailshack.com> <47C3053D.5060504@zytor.com> <1203968796.24935.1239027765@webmail.messagingengine.com> <20080226093046.GK9857@elte.hu> <47C575E4.7050206@suse.de>
+In-Reply-To: <47C575E4.7050206@suse.de>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Feb 27, 2008 at 05:16:50PM +0100, Ingo Molnar wrote:
+Andi Kleen wrote:
 > 
-> * Kyle McMartin <kmcmartin@redhat.com> wrote:
+> Just to give some perspective of this:
 > 
-> > On Mon, Feb 25, 2008 at 08:16:05AM +0100, Ingo Molnar wrote:
-> > > this fix still fails for some randconfig combinations - the fuller fix 
-> > > is queued up in x86.git#testing.
-> > 
-> > great. I really just added it to fix Fedora's configs. I'll drop it 
-> > from there once it hits -git snapshots.
+> On my laptop here
 > 
-> the commits are upstream already:
+>  BIOS-e820: 000000000009dc00 - 00000000000a0000 (reserved)
+>  BIOS-e820: 00000000000d2000 - 0000000000100000 (reserved)
 > 
->  commit 1ce70c4fac3c3954bd48c035f448793867592bc0
->  commit db342d216ba9e060d8c5501eefc1d0a789c9e711
->  commit cbc34973709eb41b369c304c075cf2069f847012
+> This means it reserves only ~193KB in the 640k-1MB area
 > 
-> so they should be in the latest git snapshots.
+> With this patch it will reserve 384KB instead. This means 191KB
+> are lost. While that doesn't sound too much it worth as much as
+> 382 patches that reduce kernel code size by 512bytes or
+> worth 3820 patches that reduce kernel code by 100 bytes in terms
+> of memory consumption.
+> 
+> Now such kernel code size patches are always popular, but why undo that
+> work by throwing away perfectly good memory elsewhere?
+> 
+> Or also the laptop kernel does
+> 
+> Freeing unused kernel memory: 340k freed
+> 
+> This means the 193KB now lost are worth 56% of the complete
+> memory that is freed by __initdata/__init. Just maintaining
+> these annotations is a lot of work, but why do all that if we
+> then throw away than half as much memory as they save so easily?
 > 
 
-Ah, davej has already updated to -git1. Excellent.
+It doesn't waste any memory at all.
 
-Thanks!
-	Kyle
+It arguably wastes some *address space*, but that's an entirely 
+different thing.
+
+Unless you have chipset-specific drivers to enable memory in the 
+640-1024K memory area, there is nothing there.
+
+	-hpa
