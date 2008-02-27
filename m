@@ -1,67 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759022AbYB0Tzx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759250AbYB0T4K@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759022AbYB0Tzx (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Feb 2008 14:55:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758277AbYB0Tzm
+	id S1759250AbYB0T4K (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Feb 2008 14:56:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758835AbYB0Tzq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Feb 2008 14:55:42 -0500
-Received: from www.tglx.de ([62.245.132.106]:43804 "EHLO www.tglx.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758173AbYB0Tzm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Feb 2008 14:55:42 -0500
-Date: Wed, 27 Feb 2008 20:55:28 +0100 (CET)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: David Miller <davem@davemloft.net>
-cc: mikpe@it.uu.se, sparclinux@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [BUG] 2.6.25-rc3 hangs in early boot on Sun Ultra5
-In-Reply-To: <20080227.110538.160750982.davem@davemloft.net>
-Message-ID: <alpine.LFD.1.00.0802272049580.7583@apollo.tec.linutronix.de>
-References: <20080226.164900.193701385.davem@davemloft.net> <20080226.170613.107688605.davem@davemloft.net> <alpine.LFD.1.00.0802270858450.7583@apollo.tec.linutronix.de> <20080227.110538.160750982.davem@davemloft.net>
-User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
+	Wed, 27 Feb 2008 14:55:46 -0500
+Received: from BISCAYNE-ONE-STATION.MIT.EDU ([18.7.7.80]:52661 "EHLO
+	biscayne-one-station.mit.edu" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1758767AbYB0Tzo (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 Feb 2008 14:55:44 -0500
+Date: Wed, 27 Feb 2008 14:55:25 -0500
+From: Theodore Tso <tytso@MIT.EDU>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-next@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: linux-next: Tree for Feb 27
+Message-ID: <20080227195525.GC8840@mit.edu>
+Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
+	Stephen Rothwell <sfr@canb.auug.org.au>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
+References: <20080227170300.25c50fe3.sfr@canb.auug.org.au> <20080226230059.58cf3cfa.akpm@linux-foundation.org> <20080228010626.fd4e00d2.sfr@canb.auug.org.au>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080228010626.fd4e00d2.sfr@canb.auug.org.au>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+X-Spam-Flag: NO
+X-Spam-Score: 0.00
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 27 Feb 2008, David Miller wrote:
+On Thu, Feb 28, 2008 at 01:06:26AM +1100, Stephen Rothwell wrote:
+> On Tue, 26 Feb 2008 23:00:59 -0800 Andrew Morton <akpm@linux-foundation.org> wrote:
+> >
+> > So who's missing now?
 
-> From: Thomas Gleixner <tglx@linutronix.de>
-> Date: Wed, 27 Feb 2008 09:02:22 +0100 (CET)
-> 
-> > On Tue, 26 Feb 2008, David Miller wrote:
-> > > What the FUTEX checking code is doing now is doing a "user" access
-> > > with set_fs(KERNEL_DS) since it runs from the kernel bootup early init
-> > > sequence.  And this is illegal according to the existing checks.
-> > > 
-> > > When we do set_fs(KERNEL_DS) then pass a "user" pointer down
-> > > into a system call or something like that, we give it a pointer
-> > > that "cannot fault".  So if we get into the fault handling
-> > > path here for a case like that we really do want to scream and
-> > > print out an OOPS message in my opinion.
-> > 
-> > So it would be correct to set_fs(USER_DS) then do the check and switch
-> > back to KERNEL_DS ?
-> 
-> No, I'm saying it would be better not to take faults purposefully in
-> the kernel address space.
+> > ftp://ftp.kernel.org/pub/linux/kernel/people/tytso/ext4-patches/LATEST/broken-out/
 
-I would have preferred not to. The hassle is that we need to figure
-out, whether it works or not _before_ any user space program can use
-the interfaces. We could omit the check for archs where the
-in_atomic_cmpxchg is guaranteed to be functional.
+Hi Stephen,
 
-> We don't have a usable user address space
-> setup at this point in the boot, so using USER_DS would be even worse.
+please add:
 
-Ouch, yes. Stupid me.
+   git://git.kernel.org/pub/scm/linux/kernel/git/tytso/ext4.git  next
 
-> I think I'll just add a different version of the sanity check to this
-> sparc64 code later on, one that will take into consideration this
-> KERNEL_DS case because I can see how it could be useful in other
-> circumstances.
+This contains a subset of the patches in the ext4 patch set which we
+are explicitly planning on pushing to Linus at the next merge window.
 
-Ok.
- 
-Thanks,
-	tglx
+It actually probably wouldn't hurt to pull the entire quilt series
+into linux-next, since we don't export any interfaces that are used by
+other linux trees, and that would give us better heads up for
+conflicts in patches still in development conflicting with upcoming
+core changes.  But it conflicts with the initial premise of
+linux-next, so that's why I set up the next branch of the above git
+tree.
+
+Regards,
+
+						- Ted
