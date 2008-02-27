@@ -1,49 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933053AbYB0A57@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933298AbYB0A60@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933053AbYB0A57 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Feb 2008 19:57:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758122AbYB0A5u
+	id S933298AbYB0A60 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Feb 2008 19:58:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933128AbYB0A6F
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Feb 2008 19:57:50 -0500
-Received: from ug-out-1314.google.com ([66.249.92.170]:20640 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757306AbYB0A5t (ORCPT
+	Tue, 26 Feb 2008 19:58:05 -0500
+Received: from andromeda.dapyr.net ([206.212.254.10]:41066 "EHLO
+	andromeda.dapyr.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933103AbYB0A6C (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Feb 2008 19:57:49 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=pBED80XMJsUdeSX0sqi7TAtxAszFBafYGx3m/XLZMhVBBtiCA9y2SmI4O5fucbLrheqhr9H3HIis+K50fuz/xqyZc2A2yDOlomA5XdVutEL7b58G5hh01qxUciod8JWQO3STcr1eqCDnSC0FDxQ9elUtYsRa6kanKLhfVKG1po8=
-Message-ID: <ed10ee420802261657w3830e1a1rf0cc9601cdacb142@mail.gmail.com>
-Date: Tue, 26 Feb 2008 16:57:47 -0800
-From: "SL Baur" <steve@xemacs.org>
-To: "Krzysztof Halasa" <khc@pm.waw.pl>
-Subject: Re: [PATCH] CodingStyle: multiple updates
-Cc: "Guennadi Liakhovetski" <g.liakhovetski@gmx.de>,
-       "Jan Engelhardt" <jengelh@computergmbh.de>,
-       "Randy Dunlap" <randy.dunlap@oracle.com>, ricknu-0@student.ltu.se,
-       bhalevy.lists@gmail.com,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
-In-Reply-To: <m31w6zcm4l.fsf@maximus.localdomain>
+	Tue, 26 Feb 2008 19:58:02 -0500
+From: Konrad Rzeszutek <konrad@darnok.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATH] Add iSCSI iBFT support (v0.4.8)
+Date: Tue, 26 Feb 2008 19:55:14 -0500
+User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
+Cc: linux-kernel@vger.kernel.org, Greg KH <greg@kroah.com>,
+       michaelc@cs.wisc.edu,
+       James Bottomley <James.Bottomley@hansenpartnership.com>,
+       dwm@enoyolf.org, darnok@68k.org, pjones@redhat.com, konradr@redhat.com,
+       konradr@linux.vnet.ibm.com, randy.dunlap@oracle.com, hpa@zytor.com,
+       lenb@kernel.org, mike.anderson@us.ibm.com, dwm@austin.ibm.com,
+       arjan@infradead.org, Andy Whitcroft <apw@shadowen.org>
+References: <20080212221311.GA20304@andromeda.dapyr.net>
+In-Reply-To: <20080212221311.GA20304@andromeda.dapyr.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <1204062430.47c488def40a4@portal.student.luth.se>
-	 <20080226135444.f83a0536.randy.dunlap@oracle.com>
-	 <Pine.LNX.4.64.0802262310050.15321@fbirervta.pbzchgretzou.qr>
-	 <Pine.LNX.4.64.0802270033310.5714@axis700.grange>
-	 <m31w6zcm4l.fsf@maximus.localdomain>
-X-Google-Sender-Auth: 46fa802af865e9e0
+Message-Id: <200802261955.19017.konrad@darnok.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 2/26/08, Krzysztof Halasa <khc@pm.waw.pl> wrote:
+On Tuesday 12 February 2008 17:13:11 Konrad Rzeszutek wrote:
+> This patch (v0.4.8) adds /sysfs/firmware/ibft/[initiator|targetX|ethernetX]
+> directories along with text properties which export the the iSCSI
+> Boot Firmware Table (iBFT) structure.
 
->  Hopefully an elisp expert will implement it. Vim people probably need
->  something like that as well, and the list of editors is a bit longer...
+James,
 
-The proposed two space change is ugly.  Can someone NAK it?
+This patch has the fixes you mentioned in the earlier code review (0.4.7). 
+Could you take a look at this patch and see if it meets your expectations, 
+please?
 
--sb (The elisp guy who added the linux c-style)
+Thanks.
