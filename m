@@ -1,70 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756017AbYB0Ogr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755607AbYB0OiI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756017AbYB0Ogr (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Feb 2008 09:36:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754655AbYB0Ogh
+	id S1755607AbYB0OiI (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Feb 2008 09:38:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753299AbYB0Oh4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Feb 2008 09:36:37 -0500
-Received: from ns2.suse.de ([195.135.220.15]:51621 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754647AbYB0Ogh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Feb 2008 09:36:37 -0500
-Message-ID: <47C575E4.7050206@suse.de>
-Date: Wed, 27 Feb 2008 15:38:28 +0100
-From: Andi Kleen <ak@suse.de>
+	Wed, 27 Feb 2008 09:37:56 -0500
+Received: from relay2.sgi.com ([192.48.171.30]:56100 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752752AbYB0Ohz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 Feb 2008 09:37:55 -0500
+Message-ID: <47C575BE.3090603@sgi.com>
+Date: Wed, 27 Feb 2008 06:37:50 -0800
+From: Mike Travis <travis@sgi.com>
 User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Alexander van Heukelum <heukelum@fastmail.fm>,
-       "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Alexander van Heukelum <heukelum@mailshack.com>
-Subject: Re: [PATCH] reserve_early end-of-conventional-memory to 1MB II -
- some numbers to put it into perspective
-References: <20080224174605.GA21661@mailshack.com> <47C22568.1010405@zytor.com> <1203958478.20033.1239002461@webmail.messagingengine.com> <20080225170134.GA15839@elte.hu> <20080225180750.GA31054@mailshack.com> <47C3053D.5060504@zytor.com> <1203968796.24935.1239027765@webmail.messagingengine.com> <20080226093046.GK9857@elte.hu>
-In-Reply-To: <20080226093046.GK9857@elte.hu>
+To: Yinghai Lu <yhlu.kernel@gmail.com>
+CC: Mel Gorman <mel@csn.ul.ie>, Andrew Morton <akpm@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, mingo@elte.hu, tglx@linutronix.de,
+       Christoph Lameter <clameter@sgi.com>, Jack Steiner <steiner@sgi.com>
+Subject: Re: 2.6.24 git2/mm1: cpu_to_node mapping to non-existant nodes causing
+ boot failure
+References: <20080203171634.58ab668b.akpm@linux-foundation.org>	 <20080213175241.GA327@csn.ul.ie> <47B33ACF.5030700@sgi.com>	 <20080214201727.GC30841@csn.ul.ie> <47B4A774.7050509@sgi.com>	 <20080215020208.GA6500@csn.ul.ie> <47B77E90.5050809@sgi.com>	 <47BAFFD3.1070606@sgi.com> <20080219192319.GE12386@csn.ul.ie> <86802c440802262229t37c61c98y45607ba34d7c6417@mail.gmail.com>
+In-Reply-To: <86802c440802262229t37c61c98y45607ba34d7c6417@mail.gmail.com>
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
-> * Alexander van Heukelum <heukelum@fastmail.fm> wrote:
+Yinghai Lu wrote:
+> On Tue, Feb 19, 2008 at 11:23 AM, Mel Gorman <mel@csn.ul.ie> wrote:
+>> On (19/02/08 08:12), Mike Travis didst pronounce:
+>>
+>>> Mike Travis wrote:
+>>  > > Mel Gorman wrote:
+>>  > >
+>>  > >> If you send me patches to apply on top of 2.6.25-rc1, I'll give them a spin
+>>  > >> on the machine in question. Reverting didn't work out very well as there are
+>>  > >> too many collisions with patches that were applied later. I eventually got
+>>  > >> the machine booting but it only succeeds because it only brings up one core
+>>  > >> on each processor.  The patch, which is pretty brain damaged is below in case
+>>  > >> it helps you guess what the real problem is. dmesg logs are attached of the
+>>  > >> vanilla failure with acpi=debug and the log with the patch applied showing
+>>  > >> "__cpu_up: bad cpu 1" and "__cpu_up: bad cpu3" (i.e. the second cores of
+>>  > >> each machine).
+>>  > >>
+>>  > >
+>>  > > This should completely undo the change to 16 bit apic ids until we can figure
+>>  > > out the problem with the memory-less nodes.  I checked it on both the numa
+>>  > > and non-numa x86_64 box.
+>>  > >
+>>  > > Thanks,
+>>  > > Mike
+>>  > >
+>>  >
+>>  > Hi Mel,
+>>  >
+>>  > Did you get a chance to try out this patch to see if it cleared up the problem
+>>  > booting on your x86_64 numa box?
 > 
->>> Either way, the code should be shared between 32 and 64 bits. There 
->>> is nothing bitsize-specific about it!
->> Of course. That's also why I already added the old-Dell case ;). But 
->> one problem at a time, please!
+> did it fail with x86.git#testing?
 > 
-> i've applied your patch to x86.git#testing. Feel free to send a 
-> code-unification patch too :-)
+> YH
 
-Just to give some perspective of this:
+Hi,
 
-On my laptop here
+My problem is that I haven't been able to set up a NUMA box where some of the nodes
+have no memory.  The one box we have, the serial port doesn't work and it's in a lab
+far, far away.  Everything else, it works fine.
 
- BIOS-e820: 000000000009dc00 - 00000000000a0000 (reserved)
- BIOS-e820: 00000000000d2000 - 0000000000100000 (reserved)
-
-This means it reserves only ~193KB in the 640k-1MB area
-
-With this patch it will reserve 384KB instead. This means 191KB
-are lost. While that doesn't sound too much it worth as much as
-382 patches that reduce kernel code size by 512bytes or
-worth 3820 patches that reduce kernel code by 100 bytes in terms
-of memory consumption.
-
-Now such kernel code size patches are always popular, but why undo that
-work by throwing away perfectly good memory elsewhere?
-
-Or also the laptop kernel does
-
-Freeing unused kernel memory: 340k freed
-
-This means the 193KB now lost are worth 56% of the complete
-memory that is freed by __initdata/__init. Just maintaining
-these annotations is a lot of work, but why do all that if we
-then throw away than half as much memory as they save so easily?
-
--Andi
+Mike
