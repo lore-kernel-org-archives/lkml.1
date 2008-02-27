@@ -1,85 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754983AbYB0Dsl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755279AbYB0EDB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754983AbYB0Dsl (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Feb 2008 22:48:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750867AbYB0Dsb
+	id S1755279AbYB0EDB (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Feb 2008 23:03:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753163AbYB0ECt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Feb 2008 22:48:31 -0500
-Received: from smtp-out.google.com ([216.239.33.17]:49945 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750735AbYB0Dsa (ORCPT
+	Tue, 26 Feb 2008 23:02:49 -0500
+Received: from 136-022.dsl.labridge.com ([206.117.136.22]:2895 "EHLO
+	mail.perches.com" rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org
+	with ESMTP id S1753054AbYB0ECt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Feb 2008 22:48:30 -0500
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=received:date:from:x-x-sender:to:cc:subject:in-reply-to:
-	message-id:references:user-agent:mime-version:content-type;
-	b=B5mq1/KGrxkFDl5WJT8LQxXqhk2mlY0v4e+XpGPUA1wjm5EgUhxEZhbaMJRBtv1e3
-	uViVd1MVmaUNGhw5aL/mQ==
-Date: Tue, 26 Feb 2008 19:46:35 -0800 (PST)
-From: David Rientjes <rientjes@google.com>
-X-X-Sender: rientjes@chino.kir.corp.google.com
-To: Martin Michlmayr <tbm@cyrius.com>
-cc: linux-kernel@vger.kernel.org, Evgeniy Polyakov <johnpol@2ka.mipt.ru>,
-       Herbert Xu <herbert@gondor.apana.org.au>,
-       Ralf Baechle <ralf@linux-mips.org>, Patrick McHardy <kaber@trash.net>
-Subject: Re: 2.6.25-rc3: "__divdi3" [drivers/crypto/hifn_795x.ko]
- undefined!
-In-Reply-To: <20080226122100.GB22699@deprecation.cyrius.com>
-Message-ID: <alpine.DEB.1.00.0802261945370.22324@chino.kir.corp.google.com>
-References: <20080226122100.GB22699@deprecation.cyrius.com>
-User-Agent: Alpine 1.00 (DEB 882 2007-12-20)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Tue, 26 Feb 2008 23:02:49 -0500
+Subject: [PATCH] linux/fs.h - Convert debug functions declared inline
+	__attribute__((format (printf,x,y) to statement expression macros
+From: Joe Perches <joe@perches.com>
+To: LKML <linux-kernel@vger.kernel.org>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Matthew Wilcox <matthew@wil.cx>, linux-fsdevel@vger.kernel.org
+In-Reply-To: <1204081722.19319.405.camel@localhost>
+References: <1204081722.19319.405.camel@localhost>
+Content-Type: text/plain
+Date: Tue, 26 Feb 2008 20:02:27 -0800
+Message-Id: <1204084947.19319.411.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.0-2mdv2008.0 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 26 Feb 2008, Martin Michlmayr wrote:
+Converting inline __attribute__((format (printf,x,y) functions
+to macros or statement expressions produces smaller objects
 
-> With 2.6.25-rc3 and a config file with
-> 
-> CONFIG_CRYPTO_DEV_HIFN_795X=m
-> CONFIG_CRYPTO_DEV_HIFN_795X_RNG=y
-> 
-> I get the following build error on at least ARM and MIPS:
-> 
->   Building modules, stage 2.
->   MODPOST 759 modules
-> ERROR: "__divdi3" [drivers/crypto/hifn_795x.ko] undefined!
-> 
+before:
+$ size vmlinux
+   text    data     bss     dec     hex filename
+4716770  474560  618496 5809826  58a6a2 vmlinux
+after:
+$ size vmlinux
+   text    data     bss     dec     hex filename
+4716706  474560  618496 5809762  58a662 vmlinux
 
-crypto: use do_div() when registering the rng
+Signed-off-by: Joe Perches <joe@perches.com>
 
-Use do_div() instead of the divide operator.
+ include/linux/fs.h |    9 ++++-----
+ 1 files changed, 4 insertions(+), 5 deletions(-)
 
-Cc: Patrick McHardy <kaber@trash.net>
-Cc: Herbert Xu <herbert@gondor.apana.org.au>
-Signed-off-by: David Rientjes <rientjes@google.com>
----
- Looks like this was triggered by f881d829, which causes this code to be
- compiled for CONFIG_CRYPTO_DEV_HIFN_795X_RNG.
-
- drivers/crypto/hifn_795x.c |    8 +++++---
- 1 files changed, 5 insertions(+), 3 deletions(-)
-
-diff --git a/drivers/crypto/hifn_795x.c b/drivers/crypto/hifn_795x.c
---- a/drivers/crypto/hifn_795x.c
-+++ b/drivers/crypto/hifn_795x.c
-@@ -822,12 +822,14 @@ static int hifn_rng_data_read(struct hwrng *rng, u32 *data)
+diff --git a/include/linux/fs.h b/include/linux/fs.h
+index b84b848..a0ba590 100644
+--- a/include/linux/fs.h
++++ b/include/linux/fs.h
+@@ -2055,11 +2055,10 @@ static struct file_operations __fops = {				\
+ 	.write	 = simple_attr_write,					\
+ };
  
- static int hifn_register_rng(struct hifn_device *dev)
- {
-+	unsigned int tmp;
+-static inline void __attribute__((format(printf, 1, 2)))
+-__simple_attr_check_format(const char *fmt, ...)
+-{
+-	/* don't do anything, just let the compiler check the arguments; */
+-}
++/* don't do anything, just let the compiler check the arguments; */
 +
- 	/*
- 	 * We must wait at least 256 Pk_clk cycles between two reads of the rng.
- 	 */
--	dev->rng_wait_time	= DIV_ROUND_UP(NSEC_PER_SEC, dev->pk_clk_freq) *
--				  256;
--
-+	tmp = NSEC_PER_SEC + dev->pk_clk_freq - 1;
-+	do_div(tmp, dev->pk_clk_freq);
-+	dev->rng_wait_time	= tmp * 256;
- 	dev->rng.name		= dev->name;
- 	dev->rng.data_present	= hifn_rng_data_present,
- 	dev->rng.data_read	= hifn_rng_data_read,
++#define __simple_attr_check_format(fmt, args...) \
++	do { if (0) printk(fmt, ##args); } while (0)
+ 
+ int simple_attr_open(struct inode *inode, struct file *file,
+ 		     int (*get)(void *, u64 *), int (*set)(void *, u64),
+
+
