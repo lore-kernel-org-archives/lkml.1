@@ -1,75 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759511AbYB0VQn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759238AbYB0VSP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759511AbYB0VQn (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Feb 2008 16:16:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754069AbYB0VQc
+	id S1759238AbYB0VSP (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Feb 2008 16:18:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754068AbYB0VR7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Feb 2008 16:16:32 -0500
-Received: from gateway-1237.mvista.com ([63.81.120.158]:28047 "EHLO
-	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753372AbYB0VQc (ORCPT
+	Wed, 27 Feb 2008 16:17:59 -0500
+Received: from sj-iport-2.cisco.com ([171.71.176.71]:38647 "EHLO
+	sj-iport-2.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753041AbYB0VR6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Feb 2008 16:16:32 -0500
-Message-ID: <47C5D32E.8070308@ct.jp.nec.com>
-Date: Wed, 27 Feb 2008 13:16:30 -0800
-From: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
-User-Agent: Thunderbird 2.0.0.12 (Windows/20080213)
+	Wed, 27 Feb 2008 16:17:58 -0500
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
+       Thomas Mingarelli <thomas.mingarelli@hp.com>
+Subject: Re: hpwdt oops in clflush_cache_range
+X-Message-Flag: Warning: May contain useful information
+References: <adad4qiwcmz.fsf@cisco.com>
+	<alpine.LFD.1.00.0802271913050.7583@apollo.tec.linutronix.de>
+	<ada1w6y1bzk.fsf@cisco.com>
+	<alpine.LFD.1.00.0802272011130.7583@apollo.tec.linutronix.de>
+	<20080227203655.GA30054@elte.hu>
+	<alpine.LFD.1.00.0802272140050.7583@apollo.tec.linutronix.de>
+	<alpine.LFD.1.00.0802272155190.7583@apollo.tec.linutronix.de>
+From: Roland Dreier <rdreier@cisco.com>
+Date: Wed, 27 Feb 2008 13:17:54 -0800
+In-Reply-To: <alpine.LFD.1.00.0802272155190.7583@apollo.tec.linutronix.de> (Thomas Gleixner's message of "Wed, 27 Feb 2008 21:59:26 +0100 (CET)")
+Message-ID: <ada3areyu7x.fsf@cisco.com>
+User-Agent: Gnus/5.1008 (Gnus v5.10.8) XEmacs/21.4.21 (linux)
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>, Sam Ravnborg <sam@ravnborg.org>
-Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH] x86: X86_HT always enable on X86_64 SMP
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+X-OriginalArrivalTime: 27 Feb 2008 21:17:54.0839 (UTC) FILETIME=[37C67270:01C87986]
+Authentication-Results: sj-dkim-2; header.From=rdreier@cisco.com; dkim=pass (
+	sig from cisco.com/sjdkim2002 verified; ); 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
+ > Where is my brown paperbag ? I know that GCC _is_ stupid, but I never
+ > remember.
 
-X86_HT is used for hyperthreading or multicore on 32-bit.
-The X86_HT on 64-bit is different from 32-bit, it means hyperthreading only.
-And X86_HT is not used on 64-bit except from cpu/initel_cacheinfo.c.
+Original patch actually worked fine and trapped the problem.
 
-Unify X86_HT for hyperthreading or multicore.
-Turn X86_HT on when X86_64 and SMP are enabled.
+I also instrumented the driver, and the problem is coming from the code:
 
-Signed-off-by: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
----
- arch/x86/Kconfig |    6 +++---
- 1 files changed, 3 insertions(+), 3 deletions(-)
+		/*
+		 * Now we will check:
+		 * - SMBIOS checksum must be 0
+		 * - intermediate anchor should be _DMI_
+		 * - intermediate checksum should be 0
+		 */
+		if ((bios_checksum(p, length)) &&
+		    (strncmp((char *)eps->intermediate_anchor, "_DMI_",
+		             sizeof(eps->intermediate_anchor)) == 0) &&
+		    (bios_checksum(p+0x10, 15))) {
+			buf = ioremap(eps->table_address, eps->table_length);
+			if (buf == NULL)
+				return -ENODEV;
 
-diff --git a/arch/x86/Kconfig b/arch/x86/Kconfig
-index 5bbb385..7168437 100644
---- a/arch/x86/Kconfig
-+++ b/arch/x86/Kconfig
-@@ -174,7 +174,7 @@ config X86_64_SMP
- config X86_HT
- 	bool
- 	depends on SMP
--	depends on (X86_32 && !(X86_VISWS || X86_VOYAGER)) || (X86_64 && !MK8)
-+	depends on (X86_32 && !(X86_VISWS || X86_VOYAGER)) || X86_64
- 	default y
- 
- config X86_BIOS_REBOOT
-@@ -516,7 +516,7 @@ config NR_CPUS
- 
- config SCHED_SMT
- 	bool "SMT (Hyperthreading) scheduler support"
--	depends on (X86_64 && SMP) || (X86_32 && X86_HT)
-+	depends on X86_HT
- 	help
- 	  SMT scheduler support improves the CPU scheduler's decision making
- 	  when dealing with Intel Pentium 4 chips with HyperThreading at a
-@@ -526,7 +526,7 @@ config SCHED_SMT
- config SCHED_MC
- 	def_bool y
- 	prompt "Multi-core scheduler support"
--	depends on (X86_64 && SMP) || (X86_32 && X86_HT)
-+	depends on X86_HT
- 	help
- 	  Multi-core scheduler support improves the CPU scheduler's decision
- 	  making when dealing with multi-core CPU chips at a cost of slightly
--- 
-1.5.3.8
+the ioremap there is trying to remap 0x7b6 bytes at an address of
+0x240047000ee000 -- either the BIOS data is bogus or the driver is
+getting at it the wrong way.
 
+Thomas (Mingarelli) -- this is on an HPDL380 G5 with pretty up-to-date
+firmware (if it's not the latest, I'm only missing an update that came
+out in the last month).  Should hpwdt work on this system?  Any debug
+info that would be helpful?
+
+ - R.
