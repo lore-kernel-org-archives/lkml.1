@@ -1,49 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756302AbYB0MdS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757435AbYB0Mdc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756302AbYB0MdS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Feb 2008 07:33:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754130AbYB0MdF
+	id S1757435AbYB0Mdc (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Feb 2008 07:33:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754834AbYB0MdG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Feb 2008 07:33:05 -0500
-Received: from hpsmtp-eml18.KPNXCHANGE.COM ([213.75.38.118]:39747 "EHLO
-	hpsmtp-eml18.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753151AbYB0MdE (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 Feb 2008 07:33:06 -0500
+Received: from mail.gmx.net ([213.165.64.20]:46922 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1753606AbYB0MdE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 27 Feb 2008 07:33:04 -0500
-To: Stefan Richter <stefanr@s5r6.in-berlin.de>
-Subject: Re: Intel 945GM: 2.6.25-rc3 report (with a possible regression)
-Cc: linux-kernel@vger.kernel.org, romanol@upcomillas.es
-In-reply-To: <47C4AEDC.80600@s5r6.in-berlin.de>
-References: <1204056556.7745.22.camel@localhost> <1204056556.7745.22.camel@localhost> <47C4AEDC.80600@s5r6.in-berlin.de>
-Message-Id: <E1JULSV-0001qy-7N@faramir.fjphome.nl>
-From: Frans Pop <elendil@planet.nl>
-Date: Wed, 27 Feb 2008 13:32:27 +0100
-X-OriginalArrivalTime: 27 Feb 2008 12:32:27.0492 (UTC) FILETIME=[D0031240:01C8793C]
+X-Authenticated: #20450766
+X-Provags-ID: V01U2FsdGVkX1+Qi6BaQISQByVxRqpR7GimieTn4oZuQQckehtvRI
+	YMu6dUREabhUrW
+Date: Wed, 27 Feb 2008 13:33:13 +0100 (CET)
+From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+To: Cornelia Huck <cornelia.huck@de.ibm.com>
+cc: Greg KH <greg@kroah.com>, linux-kernel@vger.kernel.org
+Subject: Re: [PCI] duplicate sysfs symbols getting registered in current git
+In-Reply-To: <20080227124748.2e89e628@gondolin.boeblingen.de.ibm.com>
+Message-ID: <Pine.LNX.4.64.0802271328300.5059@axis700.grange>
+References: <Pine.LNX.4.64.0802182142240.11540@axis700.grange>
+ <20080220063834.GA22708@kroah.com> <Pine.LNX.4.64.0802251341160.4430@axis700.grange>
+ <20080226201619.GA10343@kroah.com> <Pine.LNX.4.64.0802271222530.5059@axis700.grange>
+ <20080227124748.2e89e628@gondolin.boeblingen.de.ibm.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Y-GMX-Trusted: 0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Stefan Richter wrote:
-> Romano Giannetti wrote:
->> 1) The minor regression is that I cannot have any more a correct
->> console. I tried a lot of combinations, but without a framebuffer,
->> console is garbled by ubuntu splash and/or X.
+On Wed, 27 Feb 2008, Cornelia Huck wrote:
+
+> On Wed, 27 Feb 2008 12:24:54 +0100 (CET),
+> Guennadi Liakhovetski <g.liakhovetski@gmx.de> wrote:
 > 
-> Are you sure that this is a kernel regression, not a xf86-video-i810
-> regression?
+> > Ok, result #1: kernel panic 
+> > http://home.arcor.de/g.liakhovetski/ap400/imga0045.jpg. If necessary, can 
+> > try a serial console, but that would be more difficult.
+> 
+> Looking at device_add(): Does the following patch make the oops go away?
 
-Yes, the X.Org developers are making major changes ATM and there have
-definitely been regressions because of them.
+You mean the kernel panic without CONFIG_SYSFS_DEPRECATED? No, 
+unfortunately is doesn't.
 
-Best way to find out is to check whether booting with an earlier kernel
-solves the problem. If it does, it's most likely a kernel issue. If it
-does not, it's most likely an X.Org issue.
- 
-> (On Gentoo, switching from X to console works with xf86-video-i810-2.1.1
-> but results in a black screen with xf86-video-i810-2.2.0.90.)
+Thanks
+Guennadi
 
-This sounds like that could be a bug I filed recently and which was solved
-in 2.2.1: http://bugs.freedesktop.org/show_bug.cgi?id=14481.
+> 
+> ---
+>  drivers/base/core.c |    2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+> 
+> --- linux-2.6.orig/drivers/base/core.c
+> +++ linux-2.6/drivers/base/core.c
+> @@ -780,7 +780,7 @@ int device_add(struct device *dev)
+>  	dev = get_device(dev);
+>  	if (!dev || !strlen(dev->bus_id)) {
+>  		error = -EINVAL;
+> -		goto Error;
+> +		goto Done;
+>  	}
+>  
+>  	pr_debug("device: '%s': %s\n", dev->bus_id, __FUNCTION__);
+> 
 
-Cheers,
-FJP
+---
+Guennadi Liakhovetski
