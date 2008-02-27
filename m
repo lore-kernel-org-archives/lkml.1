@@ -1,78 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932908AbYB0Ahw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933045AbYB0AjG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932908AbYB0Ahw (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Feb 2008 19:37:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757421AbYB0Ahm
+	id S933045AbYB0AjG (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Feb 2008 19:39:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758133AbYB0Aiy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Feb 2008 19:37:42 -0500
-Received: from threatwall.zlynx.org ([199.45.143.218]:33292 "EHLO zlynx.org"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1754138AbYB0Ahl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Feb 2008 19:37:41 -0500
-Subject: Re: arcmsr & areca-1660 - strange behaviour under heavy load
-From: Zan Lynx <zlynx@acm.org>
-To: Nikola Ciprich <extmaillist@linuxbox.cz>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-scsi@vger.kernel.org, Nick Cheng <nick.cheng@areca.com.tw>,
-       Erich Chen <erich@areca.com.tw>, kopi@linuxbox.cz
-In-Reply-To: <alpine.LRH.0.9999.0802262018230.14724@linuxbox.linuxbox.cz>
-References: <alpine.LRH.0.9999.0802231201380.21313@linuxbox.linuxbox.cz>
-	 <20080224161034.f494fc7f.akpm@linux-foundation.org>
-	 <alpine.LRH.0.9999.0802261032440.31781@linuxbox.linuxbox.cz>
-	 <20080226094308.35db8f3f.akpm@linux-foundation.org>
-	 <alpine.LRH.0.9999.0802262018230.14724@linuxbox.linuxbox.cz>
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-EoiYypk6TXvLZqh5JTYk"
-Date: Tue, 26 Feb 2008 14:04:12 -0700
-Message-Id: <1204059852.665822.13.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 
-X-Envelope-From: zlynx@acm.org
-X-Spam-Id: 20080226/1JUAIb-00009l-Th-linux-kernel@vger.kernel.org:zlynx@acm.org:199.45.143.218
+	Tue, 26 Feb 2008 19:38:54 -0500
+Received: from terminus.zytor.com ([198.137.202.10]:52859 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757564AbYB0Aix (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 Feb 2008 19:38:53 -0500
+Message-ID: <47C4AFFC.7090500@zytor.com>
+Date: Tue, 26 Feb 2008 16:34:04 -0800
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+MIME-Version: 1.0
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: David Brownell <david-b@pacbell.net>, linux-kernel@vger.kernel.org,
+       linux-arm-kernel@lists.arm.linux.org.uk
+Subject: Re: (regression) kernel/timeconst.h bugs with HZ=128
+References: <20080226183224.DE5BB8DE50@adsl-69-226-248-13.dsl.pltn13.pacbell.net> <20080226160958.3f58a5c1.akpm@linux-foundation.org>
+In-Reply-To: <20080226160958.3f58a5c1.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Andrew Morton wrote:
+> On Tue, 26 Feb 2008 10:32:24 -0800 David Brownell <david-b@pacbell.net> wrote:
+> 
+>> I see these warnings on 32 bit ARM systems:
+>>
+>>   CC      kernel/time.o
+>> kernel/time.c: In function 'msecs_to_jiffies':
+>> kernel/time.c:472: warning: integer constant is too large for 'long' type
+>> kernel/time.c: In function 'usecs_to_jiffies':
+>> kernel/time.c:487: warning: integer constant is too large for 'long' type
+>>
+>> Line 472: 
+>> 	return ((u64)MSEC_TO_HZ_MUL32 * m + MSEC_TO_HZ_ADJ32)
+>> line 487:
+>> 	return ((u64)USEC_TO_HZ_MUL32 * u + USEC_TO_HZ_ADJ32)
+>>
+>> The problem seems to be that these constants from kernel/timeconst.h
+>> have too many digits:
+>>
+>> #define ONLY_THIRTYTWO_BITS	0x01234567
+>>
+>> #define MSEC_TO_HZ_ADJ32        0x3f7ced916
+>> #define USEC_TO_HZ_ADJ32        0xfffbce4217d
+>>
+>> Those *_ADJ32 constants should have "ULL" suffixes, yes?
+>> Adding that by hand resolves the problem, but only until
+>> the next time that header file gets regenerated.
+>>
+>> Someone with observable Perl-fu should fix this ...
+>>
+> 
 
---=-EoiYypk6TXvLZqh5JTYk
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+<barf>
 
+The real issue is that we don't have any equivalent to the UINTxx_C() 
+creation macros in Linux, and even though we're using a cast -- which is 
+totally correct -- makes gcc issue a (spurious) warning.
 
-On Tue, 2008-02-26 at 20:29 +0100, Nikola Ciprich wrote:
-> Hi Andrew,
-> no, right now I have the machine in the weird state, swap is empty (3GB),=
-=20
-> and so is bigger part of RAM (~100MB free), and the gcc crashes even when=
-=20
-> trying to compile c program with empty main function. so it doesn't seem=20
-> to be problem with memory exhaustion.
+The right thing would be to create _C() macros and use those in the C 
+code, i.e. UINT64_C(MSEC_TO_HZ_MUL32).
 
-Maybe memory fragmentation?  Perhaps the driver tries to allocate a
-large block of memory and cannot find a continuous block of the right
-size.
+I'll write up a patch, but probably not today.
 
-Maybe the driver developers used different kernel .config options than
-you are using. =20
-
-Try increasing the value in /proc/sys/vm/min_free_kbytes.
-
-Try switching some things like SLAB or SLUB, try booting with
-kernelcore=3D512M to enable the Movable memory zone, or try 64-bit vs
-32-bit kernels.=20
---=20
-Zan Lynx <zlynx@acm.org>
-
---=-EoiYypk6TXvLZqh5JTYk
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.7 (GNU/Linux)
-
-iD8DBQBHxH7MG8fHaOLTWwgRAlMnAJ9ib1TYBP/raSIIQp2WIz1jSaIBuwCfZIGZ
-An3ApUucleETaoCZSBzarWM=
-=G2fr
------END PGP SIGNATURE-----
-
---=-EoiYypk6TXvLZqh5JTYk--
-
+	-hpa
