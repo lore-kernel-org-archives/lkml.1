@@ -1,23 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761292AbYB0WJq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761593AbYB0WKP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761292AbYB0WJq (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Feb 2008 17:09:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758938AbYB0WIf
+	id S1761593AbYB0WKP (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Feb 2008 17:10:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759024AbYB0WIh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Feb 2008 17:08:35 -0500
-Received: from ug-out-1314.google.com ([66.249.92.168]:48933 "EHLO
+	Wed, 27 Feb 2008 17:08:37 -0500
+Received: from ug-out-1314.google.com ([66.249.92.171]:48912 "EHLO
 	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760758AbYB0WI0 (ORCPT
+	with ESMTP id S1758161AbYB0WI3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Feb 2008 17:08:26 -0500
+	Wed, 27 Feb 2008 17:08:29 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=from:to:subject:date:user-agent:cc:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
-        b=HQza5rvnertWFWM69rt9VIMJZDptd9ixnjW6Ryep5OTTzWVyTsiwQWhmJY2xYdmnWM0m3mrK+0X/IK5oLjcXn899xnZ1svjQMEzPps6UVjP4PtcMJ5DvhFcX4+wTgx5aM/Nn2CmKajzqY37+l6HtsbocCCWkcl09SaWPwgZ+vuY=
+        b=BLInnPSjBRqUS9vOP6HUb0xlSh0xsY3/fOXM1LM7eAwTtnJ1n/sC2fz5HsNsr4+PhHyt5BszDwWGOO5gfSJWIFMDOBOAkSpwx0MIX1x2o6f1tEhZU6xv74YYX9kN+emSLJpfB+CCBkpnRvDSrw5D5OGB72AtZEcVM8lXCUf0d1M=
 From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
 To: linux-ide@vger.kernel.org
-Subject: [PATCH 3/4] ide: use ide_legacy_device_add() for qd65xx
-Date: Wed, 27 Feb 2008 23:21:17 +0100
+Subject: [PATCH 2/4] ide: add ide_legacy_device_add() helper
+Date: Wed, 27 Feb 2008 23:20:34 +0100
 User-Agent: KMail/1.9.6 (enterprise 0.20071204.744707)
 Cc: linux-kernel@vger.kernel.org
 MIME-Version: 1.0
@@ -25,92 +25,84 @@ Content-Type: text/plain;
   charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200802272321.17474.bzolnier@gmail.com>
+Message-Id: <200802272320.34982.bzolnier@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Add 'unsigned long config' argument to ide_legacy_device_add()
-  for setting hwif->config_data.
-
-* Use ide_find_port_slot() instead of ide_find_port() in
-  ide_legacy_device_add().
-
-* Handle IDE_HFLAG_QD_2ND_PORT and IDE_HFLAG_SINGLE host flags in
-  ide_legacy_device_add().
-
-* Convert qd65xx host driver to use ide_legacy_device_add().
+Add ide_legacy_device_add() helper for use by legacy VLB host drivers
+(+ convert them to use it).
 
 There should be no functional changes caused by this patch.
 
 Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
 ---
- drivers/ide/ide-probe.c     |   19 ++++++++++----
- drivers/ide/legacy/qd65xx.c |   58 +++++---------------------------------------
- include/linux/ide.h         |    2 -
- 3 files changed, 22 insertions(+), 57 deletions(-)
+ drivers/ide/ide-probe.c      |   32 ++++++++++++++++++++++++++++++++
+ drivers/ide/legacy/ali14xx.c |   28 +---------------------------
+ drivers/ide/legacy/dtc2278.c |   27 +--------------------------
+ drivers/ide/legacy/ht6560b.c |   28 +---------------------------
+ drivers/ide/legacy/umc8672.c |   27 +--------------------------
+ include/linux/ide.h          |    1 +
+ 6 files changed, 37 insertions(+), 106 deletions(-)
 
 Index: b/drivers/ide/ide-probe.c
 ===================================================================
 --- a/drivers/ide/ide-probe.c
 +++ b/drivers/ide/ide-probe.c
-@@ -1630,7 +1630,7 @@ void ide_port_scan(ide_hwif_t *hwif)
+@@ -1629,3 +1629,35 @@ void ide_port_scan(ide_hwif_t *hwif)
+ 	ide_proc_port_register_devices(hwif);
  }
  EXPORT_SYMBOL_GPL(ide_port_scan);
- 
--int ide_legacy_device_add(const struct ide_port_info *d)
-+int ide_legacy_device_add(const struct ide_port_info *d, unsigned long config)
- {
- 	ide_hwif_t *hwif, *mate;
- 	u8 idx[4] = { 0xff, 0xff, 0xff, 0xff };
-@@ -1644,15 +1644,24 @@ int ide_legacy_device_add(const struct i
- 	ide_std_init_ports(&hw[1], 0x170, 0x376);
- 	hw[1].irq = 15;
- 
--	hwif = ide_find_port();
-+	hwif = ide_find_port_slot(d);
- 	if (hwif) {
--		ide_init_port_hw(hwif, &hw[0]);
--		idx[0] = hwif->index;
-+		u8 j = (d->host_flags & IDE_HFLAG_QD_2ND_PORT) ? 1 : 0;
 +
-+		ide_init_port_hw(hwif, &hw[j]);
-+		if (config)
-+			hwif->config_data = config;
-+		idx[j] = hwif->index;
- 	}
- 
--	mate = ide_find_port();
-+	if (hwif == NULL && (d->host_flags & IDE_HFLAG_SINGLE))
-+		return -ENOENT;
++int ide_legacy_device_add(const struct ide_port_info *d)
++{
++	ide_hwif_t *hwif, *mate;
++	u8 idx[4] = { 0xff, 0xff, 0xff, 0xff };
++	hw_regs_t hw[2];
 +
-+	mate = ide_find_port_slot(d);
- 	if (mate) {
- 		ide_init_port_hw(mate, &hw[1]);
-+		if (config)
-+			mate->config_data = config;
- 		idx[1] = mate->index;
- 	}
- 
-Index: b/drivers/ide/legacy/qd65xx.c
++	memset(&hw, 0, sizeof(hw));
++
++	ide_std_init_ports(&hw[0], 0x1f0, 0x3f6);
++	hw[0].irq = 14;
++
++	ide_std_init_ports(&hw[1], 0x170, 0x376);
++	hw[1].irq = 15;
++
++	hwif = ide_find_port();
++	if (hwif) {
++		ide_init_port_hw(hwif, &hw[0]);
++		idx[0] = hwif->index;
++	}
++
++	mate = ide_find_port();
++	if (mate) {
++		ide_init_port_hw(mate, &hw[1]);
++		idx[1] = mate->index;
++	}
++
++	ide_device_add(idx, d);
++
++	return 0;
++}
++EXPORT_SYMBOL_GPL(ide_legacy_device_add);
+Index: b/drivers/ide/legacy/ali14xx.c
 ===================================================================
---- a/drivers/ide/legacy/qd65xx.c
-+++ b/drivers/ide/legacy/qd65xx.c
-@@ -333,10 +333,8 @@ static const struct ide_port_info qd65xx
+--- a/drivers/ide/legacy/ali14xx.c
++++ b/drivers/ide/legacy/ali14xx.c
+@@ -205,10 +205,6 @@ static const struct ide_port_info ali14x
  
- static int __init qd_probe(int base)
+ static int __init ali14xx_probe(void)
  {
--	ide_hwif_t *hwif;
-+	int rc;
- 	u8 config, unit;
--	u8 idx[4] = { 0xff, 0xff, 0xff, 0xff };
+-	ide_hwif_t *hwif, *mate;
+-	static u8 idx[4] = { 0xff, 0xff, 0xff, 0xff };
 -	hw_regs_t hw[2];
- 	struct ide_port_info d = qd65xx_port_info;
+-
+ 	printk(KERN_DEBUG "ali14xx: base=0x%03x, regOn=0x%02x.\n",
+ 			  basePort, regOn);
  
- 	config = inb(QD_CONFIG_PORT);
-@@ -349,14 +347,6 @@ static int __init qd_probe(int base)
- 	if (unit)
- 		d.host_flags |= IDE_HFLAG_QD_2ND_PORT;
+@@ -218,29 +214,7 @@ static int __init ali14xx_probe(void)
+ 		return 1;
+ 	}
  
 -	memset(&hw, 0, sizeof(hw));
 -
@@ -120,86 +112,171 @@ Index: b/drivers/ide/legacy/qd65xx.c
 -	ide_std_init_ports(&hw[1], 0x170, 0x376);
 -	hw[1].irq = 15;
 -
- 	if ((config & 0xf0) == QD_CONFIG_QD6500) {
+-	hwif = ide_find_port();
+-	if (hwif) {
+-		ide_init_port_hw(hwif, &hw[0]);
+-		idx[0] = hwif->index;
+-	}
+-
+-	mate = ide_find_port();
+-	if (mate) {
+-		ide_init_port_hw(mate, &hw[1]);
+-		idx[1] = mate->index;
+-	}
+-
+-	ide_device_add(idx, &ali14xx_port_info);
+-
+-	return 0;
++	return ide_legacy_device_add(&ali14xx_port_info);
+ }
  
- 		if (qd_testreg(base))
-@@ -376,19 +366,9 @@ static int __init qd_probe(int base)
- 		d.port_ops = &qd6500_port_ops;
- 		d.host_flags |= IDE_HFLAG_SINGLE;
+ int probe_ali14xx;
+Index: b/drivers/ide/legacy/dtc2278.c
+===================================================================
+--- a/drivers/ide/legacy/dtc2278.c
++++ b/drivers/ide/legacy/dtc2278.c
+@@ -106,9 +106,6 @@ static const struct ide_port_info dtc227
+ static int __init dtc2278_probe(void)
+ {
+ 	unsigned long flags;
+-	ide_hwif_t *hwif, *mate;
+-	static u8 idx[4] = { 0xff, 0xff, 0xff, 0xff };
+-	hw_regs_t hw[2];
  
--		hwif = ide_find_port_slot(&d);
--		if (hwif == NULL)
--			return -ENOENT;
--
--		ide_init_port_hw(hwif, &hw[unit]);
--
--		hwif->config_data = (base << 8) | config;
--
--		idx[unit] = hwif->index;
--
--		ide_device_add(idx, &d);
-+		rc = ide_legacy_device_add(&d, (base << 8) | config);
+ 	local_irq_save(flags);
+ 	/*
+@@ -128,29 +125,7 @@ static int __init dtc2278_probe(void)
+ #endif
+ 	local_irq_restore(flags);
  
--		return 1;
-+		return (rc == 0) ? 1 : rc;
+-	memset(&hw, 0, sizeof(hw));
+-
+-	ide_std_init_ports(&hw[0], 0x1f0, 0x3f6);
+-	hw[0].irq = 14;
+-
+-	ide_std_init_ports(&hw[1], 0x170, 0x376);
+-	hw[1].irq = 15;
+-
+-	hwif = ide_find_port();
+-	if (hwif) {
+-		ide_init_port_hw(hwif, &hw[0]);
+-		idx[0] = hwif->index;
+-	}
+-
+-	mate = ide_find_port();
+-	if (mate) {
+-		ide_init_port_hw(mate, &hw[1]);
+-		idx[1] = mate->index;
+-	}
+-
+-	ide_device_add(idx, &dtc2278_port_info);
+-
+-	return 0;
++	return ide_legacy_device_add(&dtc2278_port_info);
+ }
+ 
+ int probe_dtc2278 = 0;
+Index: b/drivers/ide/legacy/ht6560b.c
+===================================================================
+--- a/drivers/ide/legacy/ht6560b.c
++++ b/drivers/ide/legacy/ht6560b.c
+@@ -346,10 +346,6 @@ static const struct ide_port_info ht6560
+ 
+ static int __init ht6560b_init(void)
+ {
+-	ide_hwif_t *hwif, *mate;
+-	static u8 idx[4] = { 0xff, 0xff, 0xff, 0xff };
+-	hw_regs_t hw[2];
+-
+ 	if (probe_ht6560b == 0)
+ 		return -ENODEV;
+ 
+@@ -364,29 +360,7 @@ static int __init ht6560b_init(void)
+ 		goto release_region;
  	}
  
- 	if (((config & 0xf0) == QD_CONFIG_QD6580_A) ||
-@@ -418,40 +398,16 @@ static int __init qd_probe(int base)
+-	memset(&hw, 0, sizeof(hw));
+-
+-	ide_std_init_ports(&hw[0], 0x1f0, 0x3f6);
+-	hw[0].irq = 14;
+-
+-	ide_std_init_ports(&hw[1], 0x170, 0x376);
+-	hw[1].irq = 15;
+-
+-	hwif = ide_find_port();
+-	if (hwif) {
+-		ide_init_port_hw(hwif, &hw[0]);
+-		idx[0] = hwif->index;
+-	}
+-
+-	mate = ide_find_port();
+-	if (mate) {
+-		ide_init_port_hw(mate, &hw[1]);
+-		idx[1] = mate->index;
+-	}
+-
+-	ide_device_add(idx, &ht6560b_port_info);
+-
+-	return 0;
++	return ide_legacy_device_add(&ht6560b_port_info);
  
- 			d.host_flags |= IDE_HFLAG_SINGLE;
+ release_region:
+ 	release_region(HT_CONFIG_PORT, 1);
+Index: b/drivers/ide/legacy/umc8672.c
+===================================================================
+--- a/drivers/ide/legacy/umc8672.c
++++ b/drivers/ide/legacy/umc8672.c
+@@ -133,10 +133,7 @@ static const struct ide_port_info umc867
  
--			hwif = ide_find_port_slot(&d);
--			if (hwif == NULL)
--				return -ENOENT;
-+			rc = ide_legacy_device_add(&d, (base << 8) | config);
+ static int __init umc8672_probe(void)
+ {
+-	ide_hwif_t *hwif, *mate;
+ 	unsigned long flags;
+-	static u8 idx[4] = { 0xff, 0xff, 0xff, 0xff };
+-	hw_regs_t hw[2];
  
--			ide_init_port_hw(hwif, &hw[unit]);
--
--			hwif->config_data = (base << 8) | config;
--
--			idx[unit] = hwif->index;
--
--			ide_device_add(idx, &d);
--
--			return 1;
-+			return (rc == 0) ? 1 : rc;
- 		} else {
--			ide_hwif_t *mate;
--
- 			/* secondary enabled */
- 			printk(KERN_INFO "qd6580: dual IDE board\n");
+ 	if (!request_region(0x108, 2, "umc8672")) {
+ 		printk(KERN_ERR "umc8672: ports 0x108-0x109 already in use.\n");
+@@ -155,29 +152,7 @@ static int __init umc8672_probe(void)
+ 	umc_set_speeds(current_speeds);
+ 	local_irq_restore(flags);
  
--			hwif = ide_find_port();
--			if (hwif) {
--				ide_init_port_hw(hwif, &hw[0]);
--				idx[0] = hwif->index;
--			}
+-	memset(&hw, 0, sizeof(hw));
 -
--			mate = ide_find_port();
--			if (mate) {
--				ide_init_port_hw(mate, &hw[1]);
--				idx[1] = mate->index;
--			}
+-	ide_std_init_ports(&hw[0], 0x1f0, 0x3f6);
+-	hw[0].irq = 14;
 -
--			ide_device_add(idx, &d);
-+			rc = ide_legacy_device_add(&d, (base << 8) | config);
+-	ide_std_init_ports(&hw[1], 0x170, 0x376);
+-	hw[1].irq = 15;
+-
+-	hwif = ide_find_port();
+-	if (hwif) {
+-		ide_init_port_hw(hwif, &hw[0]);
+-		idx[0] = hwif->index;
+-	}
+-
+-	mate = ide_find_port();
+-	if (mate) {
+-		ide_init_port_hw(mate, &hw[1]);
+-		idx[1] = mate->index;
+-	}
+-
+-	ide_device_add(idx, &umc8672_port_info);
+-
+-	return 0;
++	return ide_legacy_device_add(&umc8672_port_info);
+ }
  
--			return 0; /* no other qd65xx possible */
-+			return rc; /* no other qd65xx possible */
- 		}
- 	}
- 	/* no qd65xx found */
+ int probe_umc8672;
 Index: b/include/linux/ide.h
 ===================================================================
 --- a/include/linux/ide.h
 +++ b/include/linux/ide.h
-@@ -1215,7 +1215,7 @@ void ide_undecoded_slave(ide_drive_t *);
+@@ -1215,6 +1215,7 @@ void ide_undecoded_slave(ide_drive_t *);
  
  int ide_device_add_all(u8 *idx, const struct ide_port_info *);
  int ide_device_add(u8 idx[4], const struct ide_port_info *);
--int ide_legacy_device_add(const struct ide_port_info *);
-+int ide_legacy_device_add(const struct ide_port_info *, unsigned long);
++int ide_legacy_device_add(const struct ide_port_info *);
  void ide_port_unregister_devices(ide_hwif_t *);
  void ide_port_scan(ide_hwif_t *);
  
