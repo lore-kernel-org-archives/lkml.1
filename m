@@ -1,65 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755477AbYB0JyP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756514AbYB0Jz0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755477AbYB0JyP (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Feb 2008 04:54:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750842AbYB0Jx6
+	id S1756514AbYB0Jz0 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Feb 2008 04:55:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750842AbYB0JzO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Feb 2008 04:53:58 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:45619 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750841AbYB0Jx5 (ORCPT
+	Wed, 27 Feb 2008 04:55:14 -0500
+Received: from senator.holtmann.net ([87.106.208.187]:49761 "EHLO
+	mail.holtmann.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750709AbYB0JzN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Feb 2008 04:53:57 -0500
-Date: Wed, 27 Feb 2008 06:52:51 -0300
-From: Mauro Carvalho Chehab <mchehab@infradead.org>
-To: Robert Fitzsimons <robfitz@273k.net>
-Cc: Bongani Hlope <bonganilinux@mweb.co.za>, video4linux-list@redhat.com,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] bttv: Re-enabling radio support requires the use of
- struct bttv_fh.
-Message-ID: <20080227065251.3b2e4516@areia>
-In-Reply-To: <20080227014729.GC2685@localhost>
-References: <200802171036.19619.bonganilinux@mweb.co.za>
-	<20080218131125.2857f7c7@gaivota>
-	<200802182320.40732.bonganilinux@mweb.co.za>
-	<200802190121.36280.bonganilinux@mweb.co.za>
-	<20080219111640.409870a9@gaivota>
-	<20080226154102.GD30463@localhost>
-	<20080227014238.GA2685@localhost>
-	<20080227014729.GC2685@localhost>
-X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.1; i586-mandriva-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 27 Feb 2008 04:55:13 -0500
+Cc: tglx@linutronix.de, kelk1@comcast.net, dwmw2@infradead.org,
+       hidave.darkstar@gmail.com, linux-kernel@vger.kernel.org,
+       jkosina@suse.cz, mingo@elte.hu
+Message-Id: <C1D6688B-49F8-4ED1-B4F6-07F21243237F@holtmann.org>
+From: Marcel Holtmann <marcel@holtmann.org>
+To: David Miller <davem@davemloft.net>
+In-Reply-To: <20080226.174315.112638342.davem@davemloft.net>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <mchehab@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
+Mime-Version: 1.0 (Apple Message framework v919.2)
+Subject: Re: [PATCH] bluetooth: delete timer in l2cap_conn_del()
+Date: Wed, 27 Feb 2008 10:55:07 +0100
+References: <022620080003.1247.47C35750000085C8000004DF2207300793CE05040A05@comcast.net> <alpine.LFD.1.00.0802260926550.7583@apollo.tec.linutronix.de> <20080226.174315.112638342.davem@davemloft.net>
+X-Mailer: Apple Mail (2.919.2)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 27 Feb 2008 01:47:29 +0000
-Robert Fitzsimons <robfitz@273k.net> wrote:
+Hi Dave,
 
-> A number of the radio tuner ioctl functions are shared with the TV
-> tuner, these functions require a struct bttv_fh data structure to be
-> allocated and initialized.
-> 
-> Signed-off-by: Robert Fitzsimons <robfitz@273k.net>
-> ---
->  drivers/media/video/bt8xx/bttv-driver.c |   21 ++++++++++++++++-----
->  1 files changed, 16 insertions(+), 5 deletions(-)
-> 
-> 
-> Mauro, the radio_open function may want to do more initialisation then
-> the amount I copied from bttv_open.
+> From: Thomas Gleixner <tglx@linutronix.de>
+> Date: Tue, 26 Feb 2008 09:28:13 +0100 (CET)
+>
+>> Delete a possibly armed timer before kfree'ing the connection object.
+>>
+>> Solves: http://lkml.org/lkml/2008/2/15/514
+>>
+>> Reported-by:Quel Qun <kelk1@comcast.net>
+>> Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
+>
+> I'll apply this, thanks Thomas.
 
-Maybe, but the proper way would be to use just one open for both radio and
-video, like cx88. This driver violates V4L2 API, since the spec says that
-opening /dev/radio will select radio, by default, but it is possible to listen
-video also on that interface (the opposite is valid also for /dev/video).
+can you please wait for a confirmation from Quel that this fixes it.  
+My ACK is based on that he confirms that it fixes it for sure.
 
-I'll apply the fixes, for now. The better would be if you could try to use the
-same approach present on cx88.
+Regards
 
-Cheers,
-Mauro
+Marcel
+
