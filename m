@@ -1,88 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932503AbYB0XqR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762698AbYB0Xtz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932503AbYB0XqR (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Feb 2008 18:46:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755648AbYB0XqD
+	id S1762698AbYB0Xtz (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Feb 2008 18:49:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755648AbYB0Xts
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Feb 2008 18:46:03 -0500
-Received: from g5t0006.atlanta.hp.com ([15.192.0.43]:34373 "EHLO
-	g5t0006.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755127AbYB0XqB convert rfc822-to-8bit (ORCPT
+	Wed, 27 Feb 2008 18:49:48 -0500
+Received: from smtp1.linux-foundation.org ([207.189.120.13]:55487 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755337AbYB0Xtr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Feb 2008 18:46:01 -0500
-From: "Mingarelli, Thomas" <Thomas.Mingarelli@hp.com>
-To: Roland Dreier <rdreier@cisco.com>, Thomas Gleixner <tglx@linutronix.de>
-CC: Ingo Molnar <mingo@elte.hu>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Date: Wed, 27 Feb 2008 23:44:57 +0000
-Subject: RE: hpwdt oops in clflush_cache_range
-Thread-Topic: hpwdt oops in clflush_cache_range
-Thread-Index: Ach5hjq76AneOrgPSzebcsSJ3XcvOgAFCy4A
-Message-ID: <E14D1C2A44812C4F9C3ED321127EDF6505829D59DF@G3W0854.americas.hpqcorp.net>
-References: <adad4qiwcmz.fsf@cisco.com>
-	<alpine.LFD.1.00.0802271913050.7583@apollo.tec.linutronix.de>
-	<ada1w6y1bzk.fsf@cisco.com>
-	<alpine.LFD.1.00.0802272011130.7583@apollo.tec.linutronix.de>
-	<20080227203655.GA30054@elte.hu>
-	<alpine.LFD.1.00.0802272140050.7583@apollo.tec.linutronix.de>
-	<alpine.LFD.1.00.0802272155190.7583@apollo.tec.linutronix.de>
- <ada3areyu7x.fsf@cisco.com>
-In-Reply-To: <ada3areyu7x.fsf@cisco.com>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-MIME-Version: 1.0
+	Wed, 27 Feb 2008 18:49:47 -0500
+Date: Wed, 27 Feb 2008 15:48:54 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: David Brownell <david-b@pacbell.net>
+Cc: linux-kernel@vger.kernel.org, cbouatmailru@gmail.com,
+       avorontsov@ru.mvista.com, florian.fainelli@telecomint.eu
+Subject: Re: [patch 2.6.25-rc2-git] gpio:  <linux/gpio.h> and "no GPIO
+ support here" stubs
+Message-Id: <20080227154854.6ee9432c.akpm@linux-foundation.org>
+In-Reply-To: <200802221712.17815.david-b@pacbell.net>
+References: <200802221712.17815.david-b@pacbell.net>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Did I read correctly that this was on a Debian OS? Looks like I need to jump in and see what is different about Debian because I haven't seen such an issue on RedHat 5.
+On Fri, 22 Feb 2008 17:12:17 -0800
+David Brownell <david-b@pacbell.net> wrote:
 
-Yes, the driver was made specifically for G5 (and newer) systems. I will set a system up here and figure out what's wrong as soon as I am sure it is Debian.
+> Add a <linux/gpio.h> defining fail/warn stubs for GPIO calls on platforms
+> that don't support the GPIO programming interface.  That includes the
+> arch-specific implementation glue otherwise.
+> 
+> This facilitates a new model for GPIO usage:  drivers that can use GPIOs
+> if they're available, but don't require them.  One example of such a
+> driver is NAND driver for various FreeScale chips.  On platforms update
+> with GPIO support, they can be used instead of a worst-case delay to
+> verify that the BUSY signal is off.
+> 
+> (Also includes a couple minor unrelated doc updates.)
+> 
 
+Looks sane.
 
-Thanks,
-Tom
+> Please include before 2.6.25-final ...
 
------Original Message-----
-From: Roland Dreier [mailto:rdreier@cisco.com]
-Sent: Wednesday, February 27, 2008 3:18 PM
-To: Thomas Gleixner
-Cc: Ingo Molnar; linux-kernel@vger.kernel.org; Mingarelli, Thomas
-Subject: Re: hpwdt oops in clflush_cache_range
-
- > Where is my brown paperbag ? I know that GCC _is_ stupid, but I never
- > remember.
-
-Original patch actually worked fine and trapped the problem.
-
-I also instrumented the driver, and the problem is coming from the code:
-
-                /*
-                 * Now we will check:
-                 * - SMBIOS checksum must be 0
-                 * - intermediate anchor should be _DMI_
-                 * - intermediate checksum should be 0
-                 */
-                if ((bios_checksum(p, length)) &&
-                    (strncmp((char *)eps->intermediate_anchor, "_DMI_",
-                             sizeof(eps->intermediate_anchor)) == 0) &&
-                    (bios_checksum(p+0x10, 15))) {
-                        buf = ioremap(eps->table_address, eps->table_length);
-                        if (buf == NULL)
-                                return -ENODEV;
-
-the ioremap there is trying to remap 0x7b6 bytes at an address of
-0x240047000ee000 -- either the BIOS data is bogus or the driver is
-getting at it the wrong way.
-
-Thomas (Mingarelli) -- this is on an HPDL380 G5 with pretty up-to-date
-firmware (if it's not the latest, I'm only missing an update that came
-out in the last month).  Should hpwdt work on this system?  Any debug
-info that would be helpful?
-
- - R.
+For what reason?
