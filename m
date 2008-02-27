@@ -1,67 +1,177 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760187AbYB0Uhl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758916AbYB0Uly@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760187AbYB0Uhl (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Feb 2008 15:37:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758412AbYB0UhR
+	id S1758916AbYB0Uly (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Feb 2008 15:41:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754822AbYB0Ulr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Feb 2008 15:37:17 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:50603 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758094AbYB0UhQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Feb 2008 15:37:16 -0500
-Date: Wed, 27 Feb 2008 21:36:55 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: Roland Dreier <rdreier@cisco.com>, linux-kernel@vger.kernel.org,
-       Thomas Mingarelli <thomas.mingarelli@hp.com>
-Subject: Re: hpwdt oops in clflush_cache_range
-Message-ID: <20080227203655.GA30054@elte.hu>
-References: <adad4qiwcmz.fsf@cisco.com> <alpine.LFD.1.00.0802271913050.7583@apollo.tec.linutronix.de> <ada1w6y1bzk.fsf@cisco.com> <alpine.LFD.1.00.0802272011130.7583@apollo.tec.linutronix.de>
+	Wed, 27 Feb 2008 15:41:47 -0500
+Received: from wolverine01.qualcomm.com ([199.106.114.254]:22639 "EHLO
+	wolverine01.qualcomm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756116AbYB0Ulq (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 Feb 2008 15:41:46 -0500
+X-IronPort-AV: E=McAfee;i="5200,2160,5239"; a="948545"
+Message-ID: <47C5CAFD.9030803@qualcomm.com>
+Date: Wed, 27 Feb 2008 12:41:33 -0800
+From: Max Krasnyanskiy <maxk@qualcomm.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.1.00.0802272011130.7583@apollo.tec.linutronix.de>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+To: Thomas Gleixner <tglx@linutronix.de>
+CC: LKML <linux-kernel@vger.kernel.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>
+Subject: Re: [RFC] Genirq and CPU isolation
+References: <47BFBAE6.3040606@qualcomm.com>
+In-Reply-To: <47BFBAE6.3040606@qualcomm.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Thomas,
+Any chance I can get your feed back on this ?
+Max
 
-* Thomas Gleixner <tglx@linutronix.de> wrote:
+Max Krasnyansky wrote:
+> Hi Thomas,
+> 
+> While reviewing CPU isolation patches Peter pointed out that instead of
+> changing arch specific irq handling I should be extending genirq code.
+> Which makes perfect sense. Why didn't I think of that before :)
+> Basically the idea is that by default isolated CPUs must not get HW
+> irqs routed to them (besides IPIs and stuff of course). 
+> Does the patch included below look like the right approach ?
+> 
+> btw select_smp_affinity() which is currently used only by alpha seemed
+> out of place. It's called multiple times for shared irqs. ie Every time
+> new handler is registered irq is moved to a different CPU.
+> So I moved it under "if (!shared)" check inside setup_irq().
+> 
+> The patch introduces generic version of the select_smp_affinity() that
+> sets the affinity mask to "online_cpus - isolated_cpus", and updates 
+> x86_32 and alpha load balancers to ignore isolated cpus.
+> Booted on Core2 laptop and dual Opteron boxes with and w/o isolcpus=
+> options and everything seems to work as expected.
+> 
+> I wanted to run this by you before I include it in my patch series.
+> Thanx
+> Max
+> 
+> 
+> diff --git a/arch/alpha/kernel/irq.c b/arch/alpha/kernel/irq.c
+> index facf82a..6b01702 100644
+> --- a/arch/alpha/kernel/irq.c
+> +++ b/arch/alpha/kernel/irq.c
+> @@ -51,7 +51,7 @@ select_smp_affinity(unsigned int irq)
+>  	if (!irq_desc[irq].chip->set_affinity || irq_user_affinity[irq])
+>  		return 1;
+>  
+> -	while (!cpu_possible(cpu))
+> +	while (!cpu_possible(cpu) || cpu_isolated(cpu))
+>  		cpu = (cpu < (NR_CPUS-1) ? cpu + 1 : 0);
+>  	last_cpu = cpu;
+>  
+> diff --git a/arch/x86/kernel/genapic_flat_64.c b/arch/x86/kernel/genapic_flat_64.c
+> index e02e58c..07352b7 100644
+> --- a/arch/x86/kernel/genapic_flat_64.c
+> +++ b/arch/x86/kernel/genapic_flat_64.c
+> @@ -21,9 +21,7 @@
+>  
+>  static cpumask_t flat_target_cpus(void)
+>  {
+> -	cpumask_t target;
+> -	cpus_andnot(target, cpu_online_map, cpu_isolated_map);
+> -	return target;
+> +	return cpu_online_map;
+>  }
+>  
+>  static cpumask_t flat_vector_allocation_domain(int cpu)
+> diff --git a/arch/x86/kernel/io_apic_32.c b/arch/x86/kernel/io_apic_32.c
+> index 4ca5486..9c8816f 100644
+> --- a/arch/x86/kernel/io_apic_32.c
+> +++ b/arch/x86/kernel/io_apic_32.c
+> @@ -468,7 +468,7 @@ static void do_irq_balance(void)
+>  	for_each_possible_cpu(i) {
+>  		int package_index;
+>  		CPU_IRQ(i) = 0;
+> -		if (!cpu_online(i))
+> +		if (!cpu_online(i) || cpu_isolated(i))
+>  			continue;
+>  		package_index = CPU_TO_PACKAGEINDEX(i);
+>  		for (j = 0; j < NR_IRQS; j++) {
+> diff --git a/include/linux/irq.h b/include/linux/irq.h
+> index 176e5e7..287bc64 100644
+> --- a/include/linux/irq.h
+> +++ b/include/linux/irq.h
+> @@ -253,14 +253,7 @@ static inline void set_balance_irq_affinity(unsigned int irq, cpumask_t mask)
+>  }
+>  #endif
+>  
+> -#ifdef CONFIG_AUTO_IRQ_AFFINITY
+>  extern int select_smp_affinity(unsigned int irq);
+> -#else
+> -static inline int select_smp_affinity(unsigned int irq)
+> -{
+> -	return 1;
+> -}
+> -#endif
+>  
+>  extern int no_irq_affinity;
+>  
+> diff --git a/kernel/irq/manage.c b/kernel/irq/manage.c
+> index 438a014..e74db94 100644
+> --- a/kernel/irq/manage.c
+> +++ b/kernel/irq/manage.c
+> @@ -376,6 +376,9 @@ int setup_irq(unsigned int irq, struct irqaction *new)
+>  		} else
+>  			/* Undo nested disables: */
+>  			desc->depth = 1;
+> +
+> +		/* Set default affinity mask once everything is setup */
+> +		select_smp_affinity(irq);
+>  	}
+>  	/* Reset broken irq detection when installing new handler */
+>  	desc->irq_count = 0;
+> @@ -488,6 +491,26 @@ void free_irq(unsigned int irq, void *dev_id)
+>  }
+>  EXPORT_SYMBOL(free_irq);
+>  
+> +#ifndef CONFIG_AUTO_IRQ_AFFINITY
+> +/**
+> + * Generic version of the affinity autoselector.
+> + * Called under desc->lock from setup_irq().
+> + * btw Should we rename this to select_irq_affinity() ?
+> + */
+> +int select_smp_affinity(unsigned int irq)
+> +{
+> +	cpumask_t usable_cpus;
+> +
+> +	if (!irq_can_set_affinity(irq))
+> +		return 0;
+> +
+> +	cpus_andnot(usable_cpus, cpu_online_map, cpu_isolated_map);
+> +	irq_desc[irq].affinity = usable_cpus;
+> +	irq_desc[irq].chip->set_affinity(irq, usable_cpus);
+> +	return 0;
+> +}
+> +#endif
+> +
+>  /**
+>   *	request_irq - allocate an interrupt line
+>   *	@irq: Interrupt line to allocate
+> @@ -555,8 +578,6 @@ int request_irq(unsigned int irq, irq_handler_t handler,
+>  	action->next = NULL;
+>  	action->dev_id = dev_id;
+>  
+> -	select_smp_affinity(irq);
+> -
+>  #ifdef CONFIG_DEBUG_SHIRQ
+>  	if (irqflags & IRQF_SHARED) {
+>  		/*
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+> 
 
-> > [    0.004000] Intel(R) Xeon(R) CPU            5160  @ 3.00GHz stepping 06
-> 
-> This one has 36bit physical address space. You can verify that via
-> /proc/cpuinfo
-> 
-> > [ 8425.910898] ACPI: PCI Interrupt 0000:01:04.0[A] -> GSI 21 (level, low) -> IRQ 21
-> > [ 8425.915097] hpwdt: New timer passed in is 30 seconds.
-> > [ 8425.915139] BUG: unable to handle kernel paging request at ffffc20001a0a000
-> > [ 8425.919087] IP: [<ffffffff8021dacc>] clflush_cache_range+0xc/0x25
-> > [ 8425.919087] PGD 1bf80e067 PUD 1bf80f067 PMD 1bb497067 PTE 80000047000ee17b
-> 
-> While the physical address of your ioremap is 47000ee000.
-> 
-> 2^ 36 == 1000000000
-> ---->    47000ee000
-> 
-> So the fault is not very surprising. Unfortunately we do not check, 
-> whether physaddr is inside the valid physical address space. I whip up 
-> a patch to do that.
-
-also note that the driver would have faulted in a similar same way 
-anyway, the first time it tried to access that ioremap range. It's just 
-that due to the clflush we took the fault first in ioremap().
-
-via the physical range check we'll do a more graceful exit and the 
-driver wont crash either. (it will just not work)
-
-	Ingo
