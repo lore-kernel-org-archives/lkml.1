@@ -1,49 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932978AbYB0BnF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933106AbYB0Bno@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932978AbYB0BnF (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Feb 2008 20:43:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764961AbYB0Bmv
+	id S933106AbYB0Bno (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Feb 2008 20:43:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760285AbYB0Bnd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Feb 2008 20:42:51 -0500
-Received: from igraine.blacknight.ie ([81.17.252.25]:55596 "EHLO
-	igraine.blacknight.ie" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752884AbYB0Bmv (ORCPT
+	Tue, 26 Feb 2008 20:43:33 -0500
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:39632 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757143AbYB0Bnc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Feb 2008 20:42:51 -0500
-Date: Wed, 27 Feb 2008 01:42:38 +0000
-From: Robert Fitzsimons <robfitz@273k.net>
-To: Mauro Carvalho Chehab <mchehab@infradead.org>
-Cc: Bongani Hlope <bonganilinux@mweb.co.za>, video4linux-list@redhat.com,
-       linux-kernel@vger.kernel.org
-Subject: Re: 2.6.25-rc[12] Video4Linux Bttv Regression
-Message-ID: <20080227014238.GA2685@localhost>
-References: <200802171036.19619.bonganilinux@mweb.co.za> <20080218131125.2857f7c7@gaivota> <200802182320.40732.bonganilinux@mweb.co.za> <200802190121.36280.bonganilinux@mweb.co.za> <20080219111640.409870a9@gaivota> <20080226154102.GD30463@localhost>
+	Tue, 26 Feb 2008 20:43:32 -0500
+Date: Wed, 27 Feb 2008 10:42:22 +0900
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: Ingo Molnar <mingo@elte.hu>
+Subject: Re: 2.6.25-rc2-mm1 - boot hangs on ia64
+Cc: kosaki.motohiro@jp.fujitsu.com, Lee Schermerhorn <Lee.Schermerhorn@hp.com>,
+       linux-ia64 <linux-ia64@vger.kernel.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Tony Luck <tony.luck@intel.com>, Ingo Molnar <mingo@redhat.com>,
+       Bob Picco <bob.picco@hp.com>, Eric Whitney <eric.whitney@hp.com>
+In-Reply-To: <20080226113138.GC10996@elte.hu>
+References: <20080226202308.FF40.KOSAKI.MOTOHIRO@jp.fujitsu.com> <20080226113138.GC10996@elte.hu>
+Message-Id: <20080227103831.423F.KOSAKI.MOTOHIRO@jp.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080226154102.GD30463@localhost>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
-X-blacknight-igraine-MailScanner-Information: Please contact the ISP for more information
-X-MailScanner-ID: 1JUBJU-0007A4-H3
-X-blacknight-igraine-MailScanner: Found to be clean
-X-blacknight-igraine-MailScanner-SpamCheck: not spam,
-	SpamAssassin (not cached, score=1.608, required 7,
-	autolearn=disabled, HELO_LOCALHOST 4.50, RCVD_IN_NERDS_IE -3.50,
-	RCVD_IN_PBL 0.51, RDNS_NONE 0.10)
-X-blacknight-igraine-MailScanner-SpamScore: s
-X-MailScanner-From: robfitz@273k.net
+Content-Type: text/plain; charset="US-ASCII"
+Content-Transfer-Encoding: 7bit
+X-Mailer: Becky! ver. 2.42 [ja]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> I think I might have seen this problem but it didn't cause a oops for
-> me,
+Hi Ingo
 
-Ok, I found the cause of the oops.  Some of radio tuner code was
-expecting a struct bttv_fh to be allocated but this wasn't done in
-radio_open.  So it would dereference an invalid data structure, causing
-a hang for me and an oops for Bongani.  I also had to add support for
-the radio tuner to some shared functions.  Patches to follow.
+> > Fujitsu machine can't boot too. my bisect indicate git-sched.patch 
+> > cause regression too.
+> 
+> hm, that's a bit weird - nothing really should have broken it. Could you 
+> try to do a specific bisection of sched-devel.git:
+> 
+>    http://people.redhat.com/mingo/sched-devel.git/README
 
-Robert
+How do I know revision of git-sched.patch of 2.6.25-rc2-mm1?
+Should I do bisect from HEAD of sched-devel.git?
+
+> it's just a handful of commits so it should be relatively quick to 
+> figure out. My only guess would be:
+> 
+>   Subject: sched: make early bootup sched_clock() use safer
+> 
+> but i think this has been ruled out before ...
+
+rc2-mm1 + that patch doesn't boot too.
+stop at the same point ;)
+
+
 
