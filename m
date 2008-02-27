@@ -1,46 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755858AbYB0P6n@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756129AbYB0QAW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755858AbYB0P6n (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Feb 2008 10:58:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753368AbYB0P6f
+	id S1756129AbYB0QAW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Feb 2008 11:00:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753695AbYB0QAJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Feb 2008 10:58:35 -0500
-Received: from hpsmtp-eml13.kpnxchange.com ([213.75.38.113]:25352 "EHLO
-	hpsmtp-eml13.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751490AbYB0P6f (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Feb 2008 10:58:35 -0500
-From: Frans Pop <elendil@planet.nl>
-To: Ingo Molnar <mingo@elte.hu>
-Subject: Re: [2.6.25-rc3 regression] sysctl table check failed: /kernel/vsyscall64
-Date: Wed, 27 Feb 2008 16:57:43 +0100
-User-Agent: KMail/1.9.7
-Cc: linux-kernel@vger.kernel.org
-References: <200802271609.48450.elendil@planet.nl> <20080227151818.GA23138@elte.hu>
-In-Reply-To: <20080227151818.GA23138@elte.hu>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+	Wed, 27 Feb 2008 11:00:09 -0500
+Received: from relay.2ka.mipt.ru ([194.85.82.65]:37191 "EHLO 2ka.mipt.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753368AbYB0QAH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 Feb 2008 11:00:07 -0500
+Date: Wed, 27 Feb 2008 18:59:03 +0300
+From: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Adrian Bunk <bunk@kernel.org>, Martin Michlmayr <tbm@cyrius.com>,
+       linux-kernel@vger.kernel.org, Herbert Xu <herbert@gondor.apana.org.au>,
+       Ralf Baechle <ralf@linux-mips.org>, linux-crypto@vger.kernel.org
+Subject: Re: [2.6.25 patch] drivers/crypto/hifn_795x.c: fix 64bit division
+Message-ID: <20080227155901.GA30642@2ka.mipt.ru>
+References: <20080226122100.GB22699@deprecation.cyrius.com> <20080226153421.GB10717@cs181133002.pp.htv.fi> <20080226185240.GA2521@2ka.mipt.ru> <20080226160439.5941cc31.akpm@linux-foundation.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200802271657.43704.elendil@planet.nl>
-X-OriginalArrivalTime: 27 Feb 2008 15:57:44.0314 (UTC) FILETIME=[7D68F5A0:01C87959]
+In-Reply-To: <20080226160439.5941cc31.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 27 February 2008, Ingo Molnar wrote:
-> * Frans Pop <elendil@planet.nl> wrote:
-> > Just tried 2.6.25-rc3 and got the error below. Boot continued
-> > normally. Error was not present in rc2.
->
-> fix is already in x86.git#testing:
->   http://people.redhat.com/mingo/x86.git/README
+On Tue, Feb 26, 2008 at 04:04:39PM -0800, Andrew Morton (akpm@linux-foundation.org) wrote:
+> udelay() might be exposed to the same problem.  It would be better to fix
+> ndelay() and udelay() rather than callers.  It is reasonable to pass a u64
+> into ndelay() and to expect the build to not explode.
 
-Thanks. Can confirm that cherry-pick of this fix from that tree fixed it:
+Well, if you think it is resonable to pass u64 into function, which is 
+supposed to sleep no more than several cpu cycles. I do not want to
+start any kind of flame about it, but this looks like an overkill.
 
-commit ed19f1cd69aa82619e2def4e11dfece8f9fe7e31
-Author: Thomas Gleixner <tglx@linutronix.de>
-Date:   Wed Feb 27 09:39:52 2008 +0100
+> (Geeze macros suck)
 
-    x86: restore vsyscall64 prochandler
+Absolutely.
+
+-- 
+	Evgeniy Polyakov
