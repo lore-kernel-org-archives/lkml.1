@@ -1,23 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751891AbYB0VCa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759155AbYB0VCp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751891AbYB0VCa (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Feb 2008 16:02:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758552AbYB0VAr
+	id S1759155AbYB0VCp (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Feb 2008 16:02:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758593AbYB0VAt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Feb 2008 16:00:47 -0500
-Received: from ug-out-1314.google.com ([66.249.92.168]:11750 "EHLO
+	Wed, 27 Feb 2008 16:00:49 -0500
+Received: from ug-out-1314.google.com ([66.249.92.169]:11691 "EHLO
 	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758063AbYB0VAm (ORCPT
+	with ESMTP id S1758191AbYB0VAm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 27 Feb 2008 16:00:42 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=message-id:references:user-agent:date:from:to:cc:subject:content-disposition;
-        b=kp0/BUb9pO9KsiSIEdHJ1KLfMHtGy7lm9myW4KxcksubiCy30/7WMoQTDIjigkNoNfQOu08mAKvdvNXIE0gaUr8zBh6GJX3XJe0HvUcbV5M8isk0tly3NrYAUZa73qoVvMeYhp12DmkQ/Ff4aWVUhqgvFrqzC97Yw6Y6iHxfcbQ=
-Message-Id: <20080227210003.484325295@gmail.com>
+        b=H4LogMCyiM8/ZtS9bMRE/Hh5S2Q5sZeut+13VaWKnS/76yjnJaJF9VhLZNh91Yg9LNytQ9vToKToBwatKWfL1MUbPVxDvT0xfGftP63qmb0PyQ/Mf4GLJux9lsa5mGq0WuEGmcaBDZ6JrgSaceSLI7Eo+MbGXWMZLXEgNugeEc8=
+Message-Id: <20080227210003.957010343@gmail.com>
 References: <20080227205831.150784453@gmail.com>
 User-Agent: quilt/0.46-1
-Date: Wed, 27 Feb 2008 23:58:36 +0300
+Date: Wed, 27 Feb 2008 23:58:38 +0300
 From: gorcunov@gmail.com
 To: rth@twiddle.net, chris@zankel.net, jdike@addtoit.com,
        linuxppc-dev@ozlabs.org, paulus@samba.org, dhowells@redhat.com,
@@ -25,8 +25,8 @@ To: rth@twiddle.net, chris@zankel.net, jdike@addtoit.com,
        takata@linux-m32r.org, linux-m32r@ml.linux-m32r.org,
        linux-kernel@vger.kernel.org
 Cc: gorcunov@gmail.com, sam@ravnborg.org
-Subject: [RFC 05/10] mn10300: vmlinux.lds.S cleanup - use PAGE_SIZE, PERCPU macroses
-Content-Disposition: inline; filename=mn10300-vmlinux
+Subject: [RFC 07/10] ppc: vmlinux.lds.S cleanup - use PAGE_SIZE macro
+Content-Disposition: inline; filename=ppc-vmlinux
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
@@ -34,31 +34,69 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 This patch includes page.h header into liker script that
 allow us to use PAGE_SIZE macro instead of numeric constant
 
-Also PERCPU macro is used instead of explicit section definition
+Also a few tabs deleted to align braces
 
 Signed-off-by: Cyrill Gorcunov <gorcunov@gmail.com>
 ---
 
 WARNING: COMPLETELY UNTESTED !!!
 
- vmlinux.lds.S |   22 ++++++++++------------
- 1 file changed, 10 insertions(+), 12 deletions(-)
+ vmlinux.lds.S |   33 +++++++++++++++++----------------
+ 1 file changed, 17 insertions(+), 16 deletions(-)
 
-Index: linux-2.6.git/arch/mn10300/kernel/vmlinux.lds.S
+Index: linux-2.6.git/arch/ppc/kernel/vmlinux.lds.S
 ===================================================================
---- linux-2.6.git.orig/arch/mn10300/kernel/vmlinux.lds.S	2008-02-21 22:26:02.000000000 +0300
-+++ linux-2.6.git/arch/mn10300/kernel/vmlinux.lds.S	2008-02-27 21:30:34.000000000 +0300
-@@ -11,6 +11,7 @@
- #define __VMLINUX_LDS__
+--- linux-2.6.git.orig/arch/ppc/kernel/vmlinux.lds.S	2008-02-07 17:22:25.000000000 +0300
++++ linux-2.6.git/arch/ppc/kernel/vmlinux.lds.S	2008-02-27 21:36:35.000000000 +0300
+@@ -1,4 +1,5 @@
  #include <asm-generic/vmlinux.lds.h>
- #include <asm/thread_info.h>
 +#include <asm/page.h>
  
- OUTPUT_FORMAT("elf32-am33lin", "elf32-am33lin", "elf32-am33lin")
- OUTPUT_ARCH(mn10300)
-@@ -55,13 +56,13 @@ SECTIONS
- 	CONSTRUCTORS
+ OUTPUT_ARCH(powerpc:common)
+ jiffies = jiffies_64 + 4;
+@@ -11,22 +12,22 @@ SECTIONS
+   .gnu.hash      : { *(.gnu.hash)	}
+   .dynsym        : { *(.dynsym)		}
+   .dynstr        : { *(.dynstr)		}
+-  .rel.text      : { *(.rel.text)		}
++  .rel.text      : { *(.rel.text)	}
+   .rela.text     : { *(.rela.text) 	}
+-  .rel.data      : { *(.rel.data)		}
++  .rel.data      : { *(.rel.data)	}
+   .rela.data     : { *(.rela.data) 	}
+   .rel.rodata    : { *(.rel.rodata) 	}
+   .rela.rodata   : { *(.rela.rodata) 	}
+-  .rel.got       : { *(.rel.got)		}
+-  .rela.got      : { *(.rela.got)		}
++  .rel.got       : { *(.rel.got)	}
++  .rela.got      : { *(.rela.got)	}
+   .rel.ctors     : { *(.rel.ctors)	}
+   .rela.ctors    : { *(.rela.ctors)	}
+   .rel.dtors     : { *(.rel.dtors)	}
+   .rela.dtors    : { *(.rela.dtors)	}
+-  .rel.bss       : { *(.rel.bss)		}
+-  .rela.bss      : { *(.rela.bss)		}
+-  .rel.plt       : { *(.rel.plt)		}
+-  .rela.plt      : { *(.rela.plt)		}
++  .rel.bss       : { *(.rel.bss)	}
++  .rela.bss      : { *(.rela.bss)	}
++  .rel.plt       : { *(.rel.plt)	}
++  .rela.plt      : { *(.rela.plt)	}
+ /*  .init          : { *(.init)	} =0*/
+   .plt : { *(.plt) }
+   .text      :
+@@ -64,7 +65,7 @@ SECTIONS
  	}
+ 
+   /* Read-write section, merged into data segment: */
+-  . = ALIGN(4096);
++  . = ALIGN(PAGE_SIZE);
+   .data    :
+   {
+     DATA_DATA
+@@ -76,10 +77,10 @@ SECTIONS
+     CONSTRUCTORS
+   }
  
 -  . = ALIGN(4096);
 +  . = ALIGN(PAGE_SIZE);
@@ -68,31 +106,28 @@ Index: linux-2.6.git/arch/mn10300/kernel/vmlinux.lds.S
 +  . = ALIGN(PAGE_SIZE);
    __nosave_end = .;
  
--  . = ALIGN(4096);
-+  . = ALIGN(PAGE_SIZE);
-   .data.page_aligned : { *(.data.idt) }
- 
    . = ALIGN(32);
-@@ -78,7 +79,7 @@ SECTIONS
+@@ -88,12 +89,12 @@ SECTIONS
+   _edata  =  .;
+   PROVIDE (edata = .);
+ 
+-  . = ALIGN(8192);
++  . = ALIGN(2 * PAGE_SIZE);
    .data.init_task : { *(.data.init_task) }
  
-   /* might get freed after init */
+   NOTES
+ 
 -  . = ALIGN(4096);
 +  . = ALIGN(PAGE_SIZE);
-   .smp_locks : AT(ADDR(.smp_locks) - LOAD_OFFSET) {
-   	__smp_locks = .;
- 	*(.smp_locks)
-@@ -86,7 +87,7 @@ SECTIONS
-   }
- 
-   /* will be freed after init */
--  . = ALIGN(4096);		/* Init code and data */
-+  . = ALIGN(PAGE_SIZE);		/* Init code and data */
    __init_begin = .;
    .init.text : {
  	_sinittext = .;
-@@ -120,17 +121,14 @@ SECTIONS
-   .exit.data : { *(.exit.data) }
+@@ -132,16 +133,16 @@ SECTIONS
+   __ftr_fixup : { *(__ftr_fixup) }
+   __stop___ftr_fixup = .;
+ 
+-  PERCPU(4096)
++  PERCPU(PAGE_SIZE)
  
  #ifdef CONFIG_BLK_DEV_INITRD
 -  . = ALIGN(4096);
@@ -102,24 +137,10 @@ Index: linux-2.6.git/arch/mn10300/kernel/vmlinux.lds.S
    __initramfs_end = .;
  #endif
  
--  . = ALIGN(32);
--  __per_cpu_start = .;
--  .data.percpu  : { *(.data.percpu) }
--  __per_cpu_end = .;
 -  . = ALIGN(4096);
-+  PERCPU(32)
 +  . = ALIGN(PAGE_SIZE);
    __init_end = .;
-   /* freed after init ends here */
- 
-@@ -145,7 +143,7 @@ SECTIONS
-   _end = . ;
- 
-   /* This is where the kernel creates the early boot page tables */
--  . = ALIGN(4096);
-+  . = ALIGN(PAGE_SIZE);
-   pg0 = .;
- 
-   /* Sections to be discarded */
+   __bss_start = .;
+   .bss       :
 
 -- 
