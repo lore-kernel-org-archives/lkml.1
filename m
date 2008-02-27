@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761126AbYB0VXM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761327AbYB0VXa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761126AbYB0VXM (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Feb 2008 16:23:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758029AbYB0VV5
+	id S1761327AbYB0VXa (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Feb 2008 16:23:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759539AbYB0VWA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Feb 2008 16:21:57 -0500
-Received: from smtp4.pp.htv.fi ([213.243.153.38]:41762 "EHLO smtp4.pp.htv.fi"
+	Wed, 27 Feb 2008 16:22:00 -0500
+Received: from smtp5.pp.htv.fi ([213.243.153.39]:33279 "EHLO smtp5.pp.htv.fi"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760200AbYB0VVz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Feb 2008 16:21:55 -0500
-Date: Wed, 27 Feb 2008 23:20:45 +0200
+	id S1760281AbYB0VV7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 Feb 2008 16:21:59 -0500
+Date: Wed, 27 Feb 2008 23:20:48 +0200
 From: Adrian Bunk <bunk@kernel.org>
-To: sds@tycho.nsa.gov, jmorris@namei.org, eparis@parisplace.org
+To: joel.becker@oracle.com
 Cc: linux-kernel@vger.kernel.org
-Subject: [2.6 patch] selinux/ss/services.c should #include <linux/selinux.h>
-Message-ID: <20080227212045.GL29269@cs181133002.pp.htv.fi>
+Subject: [RFC: 2.6 patch] fs/configfs/ cleanups
+Message-ID: <20080227212048.GM29269@cs181133002.pp.htv.fi>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
@@ -23,23 +23,68 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Every file should include the headers containing the externs for its 
-global code.
+This patch contains the following cleanups:
+- make the needlessly global file.c:configfs_add_file() static
+- #if 0 the unused inode.c:configfs_hash_and_remove()
 
 Signed-off-by: Adrian Bunk <bunk@kernel.org>
 
 ---
-eaeb567e2ce03ef3a7c5ed33e35def212ce2899a foobar
-diff --git a/security/selinux/ss/services.c b/security/selinux/ss/services.c
-index f374186..29fb216 100644
---- a/security/selinux/ss/services.c
-+++ b/security/selinux/ss/services.c
-@@ -40,6 +40,7 @@
- #include <linux/sched.h>
- #include <linux/audit.h>
- #include <linux/mutex.h>
-+#include <linux/selinux.h>
- #include <net/netlabel.h>
+
+This patch has been sent on:
+- 17 Feb 2008
+
+ fs/configfs/configfs_internal.h |    3 ---
+ fs/configfs/file.c              |    3 ++-
+ fs/configfs/inode.c             |    2 ++
+ 3 files changed, 4 insertions(+), 4 deletions(-)
+
+651b7a33c0dce1790230fe8ba9b7445cd69c8bde diff --git a/fs/configfs/configfs_internal.h b/fs/configfs/configfs_internal.h
+index cca9860..378fa36 100644
+--- a/fs/configfs/configfs_internal.h
++++ b/fs/configfs/configfs_internal.h
+@@ -63,9 +63,6 @@ extern int configfs_create_file(struct config_item *, const struct configfs_attr
+ extern int configfs_make_dirent(struct configfs_dirent *,
+ 				struct dentry *, void *, umode_t, int);
  
- #include "flask.h"
+-extern int configfs_add_file(struct dentry *, const struct configfs_attribute *, int);
+-extern void configfs_hash_and_remove(struct dentry * dir, const char * name);
+-
+ extern const unsigned char * configfs_get_name(struct configfs_dirent *sd);
+ extern void configfs_drop_dentry(struct configfs_dirent *sd, struct dentry *parent);
+ extern int configfs_setattr(struct dentry *dentry, struct iattr *iattr);
+diff --git a/fs/configfs/file.c b/fs/configfs/file.c
+index 397cb50..f331a40 100644
+--- a/fs/configfs/file.c
++++ b/fs/configfs/file.c
+@@ -314,7 +314,8 @@ const struct file_operations configfs_file_operations = {
+ };
+ 
+ 
+-int configfs_add_file(struct dentry * dir, const struct configfs_attribute * attr, int type)
++static int configfs_add_file(struct dentry * dir,
++			     const struct configfs_attribute * attr, int type)
+ {
+ 	struct configfs_dirent * parent_sd = dir->d_fsdata;
+ 	umode_t mode = (attr->ca_mode & S_IALLUGO) | S_IFREG;
+diff --git a/fs/configfs/inode.c b/fs/configfs/inode.c
+index 4c1ebff..dccff59 100644
+--- a/fs/configfs/inode.c
++++ b/fs/configfs/inode.c
+@@ -233,6 +233,7 @@ void configfs_drop_dentry(struct configfs_dirent * sd, struct dentry * parent)
+ 	}
+ }
+ 
++#if 0
+ void configfs_hash_and_remove(struct dentry * dir, const char * name)
+ {
+ 	struct configfs_dirent * sd;
+@@ -255,6 +256,7 @@ void configfs_hash_and_remove(struct dentry * dir, const char * name)
+ 	}
+ 	mutex_unlock(&dir->d_inode->i_mutex);
+ }
++#endif  /*  0  */
+ 
+ int __init configfs_inode_init(void)
+ {
 
