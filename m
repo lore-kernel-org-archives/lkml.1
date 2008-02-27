@@ -1,54 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761437AbYB0X5s@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760985AbYB0X6s@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761437AbYB0X5s (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Feb 2008 18:57:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759008AbYB0X5b
+	id S1760985AbYB0X6s (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Feb 2008 18:58:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755423AbYB0X6h
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Feb 2008 18:57:31 -0500
-Received: from host36-195-149-62.serverdedicati.aruba.it ([62.149.195.36]:51055
-	"EHLO mx.cpushare.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758650AbYB0X5a (ORCPT
+	Wed, 27 Feb 2008 18:58:37 -0500
+Received: from atrey.karlin.mff.cuni.cz ([195.113.31.123]:59291 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754711AbYB0X6g (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Feb 2008 18:57:30 -0500
-Date: Thu, 28 Feb 2008 00:57:24 +0100
-From: Andrea Arcangeli <andrea@qumranet.com>
-To: Christoph Lameter <clameter@sgi.com>
-Cc: Nick Piggin <nickpiggin@yahoo.com.au>, akpm@linux-foundation.org,
-       Robin Holt <holt@sgi.com>, Avi Kivity <avi@qumranet.com>,
-       Izik Eidus <izike@qumranet.com>, kvm-devel@lists.sourceforge.net,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, general@lists.openfabrics.org,
-       Steve Wise <swise@opengridcomputing.com>,
-       Roland Dreier <rdreier@cisco.com>, Kanoj Sarcar <kanojsarcar@yahoo.com>,
-       steiner@sgi.com, linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       daniel.blueman@quadrics.com
-Subject: Re: [patch 2/6] mmu_notifier: Callbacks to invalidate address
-	ranges
-Message-ID: <20080227235724.GA8091@v2.random>
-References: <20080215064859.384203497@sgi.com> <20080215064932.620773824@sgi.com> <200802191954.14874.nickpiggin@yahoo.com.au> <20080219133405.GH7128@v2.random> <Pine.LNX.4.64.0802271421480.13186@schroedinger.engr.sgi.com>
+	Wed, 27 Feb 2008 18:58:36 -0500
+Date: Thu, 28 Feb 2008 00:58:35 +0100
+From: Jan Hubicka <hubicka@ucw.cz>
+To: David Rientjes <rientjes@google.com>
+Cc: Joe Perches <joe@perches.com>, Matthew Wilcox <matthew@wil.cx>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-fsdevel@vger.kernel.org, gcc@gcc.gnu.org,
+       zadeck@naturalbridge.com
+Subject: Re: [PATCH] linux/fs.h - Convert debug functions declared inline  __attribute__((format (printf,x,y) to statement expression macros
+Message-ID: <20080227235835.GA31048@atrey.karlin.mff.cuni.cz>
+References: <1204081722.19319.405.camel@localhost> <1204084947.19319.411.camel@localhost> <20080227041316.GA23188@parisc-linux.org> <alpine.DEB.1.00.0802262140160.23764@chino.kir.corp.google.com> <1204095249.19319.444.camel@localhost> <alpine.DEB.1.00.0802271454430.3836@chino.kir.corp.google.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0802271421480.13186@schroedinger.engr.sgi.com>
+In-Reply-To: <alpine.DEB.1.00.0802271454430.3836@chino.kir.corp.google.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Feb 27, 2008 at 02:23:29PM -0800, Christoph Lameter wrote:
-> How would that work? You rely on the pte locking. Thus calls are all in an 
+>  
+> -static inline void __attribute__((format(printf, 1, 2)))
+> -__simple_attr_check_format(const char *fmt, ...)
 
-I don't rely on the pte locking in #v7, exactly to satisfy GRU
-(so far purely theoretical) performance complains.
+It would be nice to have a testcase, but I guess it is because GCC can't
+inline variadic functions.  The function gets identified as const and
+removed as unused by DCE, but this happens later (that is after early
+inlining and before real inlining).  GCC 4.0.3 didn't have early inliner
+so it is probably where the difference is comming from.
 
-> atomic context. I think we need a general scheme that allows sleeping when 
+One possibility to handle this side case would be to mark const
+functions early during early optimization and only refine it using
+Kenny's existing IPA pass that should turn this issue into no-op.
 
-Calls are still in atomic context until we change the i_mmap_lock to a
-mutex under a CONFIG_XPMEM, or unless we boost mm_users, drop the lock
-and restart the loop at every different mm. In any case those changes
-should be under CONFIG_XPMEM IMHO given desktop users definitely don't
-need this (regular non-blocking mmu notifiers in my patch are all what
-a desktop user need as far as I can tell).
+We probably also can simply allow inlining variadic functions not
+calling va_start.  I must say that this option appeared to me but I was
+unable to think of any sane use case.  This probably is one ;)
 
-> references are invalidates. Even the GRU has performance issues when using 
-> the KVM patch.
-
-GRU will perform the same with #v7 or V8.
+Honza
+> -{
+> -	/* don't do anything, just let the compiler check the arguments; */
+> -}
+> -
+>  int simple_attr_open(struct inode *inode, struct file *file,
+>  		     int (*get)(void *, u64 *), int (*set)(void *, u64),
+>  		     const char *fmt);
+> 
+> The text size does become smaller:
+> 
+>    text    data     bss     dec     hex filename
+> 5386111  846328  719560 6951999  6a143f vmlinux.before
+> 5386047  846328  719560 6951935  6a13ff vmlinux.after
+> 
+> gcc 4.0.3 maintains the same text size for both cases, while it appears 
+> gcc 4.1.3 and your version, 4.2.2, have this different behavior.
+> 
+> 		David
