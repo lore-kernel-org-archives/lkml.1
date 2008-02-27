@@ -1,44 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759287AbYB0UKZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759832AbYB0UL3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759287AbYB0UKZ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Feb 2008 15:10:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757458AbYB0UKL
+	id S1759832AbYB0UL3 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Feb 2008 15:11:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757339AbYB0ULV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Feb 2008 15:10:11 -0500
-Received: from einhorn.in-berlin.de ([192.109.42.8]:39917 "EHLO
-	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756309AbYB0UKK (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Feb 2008 15:10:10 -0500
-X-Envelope-From: stefanr@s5r6.in-berlin.de
-Message-ID: <47C5C340.7080302@s5r6.in-berlin.de>
-Date: Wed, 27 Feb 2008 21:08:32 +0100
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.12) Gecko/20080219 SeaMonkey/1.1.8
-MIME-Version: 1.0
-To: Jarod Wilson <jwilson@redhat.com>
-CC: linux1394-devel@lists.sourceforge.net,
-       Harvey Harrison <harvey.harrison@gmail.com>,
-       Sam Ravnborg <sam@ravnborg.org>, linux-kernel@vger.kernel.org,
-       sparclinux@vger.kernel.org, linuxppc-dev@ozlabs.org,
-       Kristian Hoegsberg <krh@bitplanet.net>
-Subject: Re: [PATCH 1/2] firewire: endianess fix
-References: <20080220220326.GA22328@uranus.ravnborg.org> <tkrat.e2bfb30f2c0ae70a@s5r6.in-berlin.de> <tkrat.9e19fa31951506af@s5r6.in-berlin.de> <200802271458.28401.jwilson@redhat.com>
-In-Reply-To: <200802271458.28401.jwilson@redhat.com>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Wed, 27 Feb 2008 15:11:21 -0500
+Received: from xenotime.net ([66.160.160.81]:60062 "HELO xenotime.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1757102AbYB0ULV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 Feb 2008 15:11:21 -0500
+Date: Wed, 27 Feb 2008 12:11:16 -0800
+From: Randy Dunlap <rdunlap@xenotime.net>
+To: kernel@wantstofly.org, nico@cam.org, rmk@arm.linux.org.uk
+Cc: lkml <linux-kernel@vger.kernel.org>
+Subject: [PATCH] arm: eliminate MODULE_PARM() usage
+Message-Id: <20080227121116.bd9ee5aa.rdunlap@xenotime.net>
+Organization: YPO4
+X-Mailer: Sylpheed 2.4.7 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jarod Wilson wrote:
-> Works just fine with the Apple UniNorth controller in my powerbook in cursory 
-> testing.
+From: Randy Dunlap <randy.dunlap@oracle.com>
 
-Could you remove the OHCI1394_HCControl_postedWriteEnable flag from 
-fw-ohci.c::ohci_enable() and test without and with the endianess patch?
--- 
-Stefan Richter
--=====-==--- --=- ==-==
-http://arcgraph.de/sr/
+Convert debug-only (and removed) MODULE_PARM() to module_param().
+Compiles cleanly (with DEBUG=1).
+
+Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
+---
+ arch/arm/mach-pxa/cpu-pxa.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+--- next-20080227.orig/arch/arm/mach-pxa/cpu-pxa.c
++++ next-20080227/arch/arm/mach-pxa/cpu-pxa.c
+@@ -43,7 +43,7 @@
+ 
+ #ifdef DEBUG
+ static unsigned int freq_debug;
+-MODULE_PARM(freq_debug, "i");
++module_param(freq_debug, uint, 0);
+ MODULE_PARM_DESC(freq_debug, "Set the debug messages to on=1/off=0");
+ #else
+ #define freq_debug  0
