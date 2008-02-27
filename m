@@ -1,84 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755244AbYB0RIP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756235AbYB0RIt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755244AbYB0RIP (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Feb 2008 12:08:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751187AbYB0RIF
+	id S1756235AbYB0RIt (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Feb 2008 12:08:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750988AbYB0RIj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Feb 2008 12:08:05 -0500
-Received: from systemlinux.org ([83.151.29.59]:43282 "EHLO m18s25.vlinux.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750743AbYB0RIE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Feb 2008 12:08:04 -0500
-Date: Wed, 27 Feb 2008 18:05:28 +0100
-From: Andre Noll <maan@systemlinux.org>
-To: Tony Battersby <tonyb@cybernetics.com>
-Cc: Arnd Hannemann <hannemann@nets.rwth-aachen.de>,
-       adam radford <aradford@gmail.com>,
-       Johannes =?iso-8859-1?Q?W=F6rner?= 
-	<johannes.woerner@tuebingen.mpg.de>,
-       James Bottomley <James.Bottomley@HansenPartnership.com>,
-       linux-scsi <linux-scsi@vger.kernel.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: Performance problems with 3ware 9500S-4LP and 2.6.25-rc3
-Message-ID: <20080227170528.GB29468@skl-net.de>
-References: <20080226174314.GA30767@skl-net.de> <47C49B99.1060707@nets.rwth-aachen.de> <20080227101154.GD30767@skl-net.de> <47C57327.6070901@cybernetics.com>
-Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="ZoaI/ZTpAVc4A5k6"
-Content-Disposition: inline
-In-Reply-To: <47C57327.6070901@cybernetics.com>
-User-Agent: Mutt/1.5.9i
+	Wed, 27 Feb 2008 12:08:39 -0500
+Received: from sj-iport-1.cisco.com ([171.71.176.70]:11416 "EHLO
+	sj-iport-1.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751187AbYB0RIh (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 Feb 2008 12:08:37 -0500
+To: linux-kernel@vger.kernel.org
+Cc: Ingo Molnar <mingo@elte.hu>, Thomas Mingarelli <thomas.mingarelli@hp.com>
+Subject: hpwdt oops in clflush_cache_range
+X-Message-Flag: Warning: May contain useful information
+From: Roland Dreier <rdreier@cisco.com>
+Date: Wed, 27 Feb 2008 09:08:20 -0800
+Message-ID: <adad4qiwcmz.fsf@cisco.com>
+User-Agent: Gnus/5.1008 (Gnus v5.10.8) XEmacs/21.4.21 (linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+X-OriginalArrivalTime: 27 Feb 2008 17:08:20.0600 (UTC) FILETIME=[5A6EE780:01C87963]
+Authentication-Results: sj-dkim-4; header.From=rdreier@cisco.com; dkim=pass (
+	sig from cisco.com/sjdkim4002 verified; ); 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+With an up-to-date git tree (head 7704a8b6) I'm seeing the oops below
+when the hpwdt driver gets loaded during boot on an HP DL380 system.
+I don't think I've seen any previous reports of this, and I guess it
+doesn't really count as a regression since the hpwdt driver was only
+added after 2.6.25-rc2.
 
---ZoaI/ZTpAVc4A5k6
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+I haven't tried to debug this at all yet but any guidance about what
+information is useful for what looks to be an issue with c_p_a would
+be appreciated.
 
-On 09:26, Tony Battersby wrote:
-> > Thanks, this helped a lot. However, there does not seem to be a way
-> > to make the system more responsive, which is really the problem we
-> > are experiencing.
-> >
-> > Andre
-> >  =20
-> This is not 3ware-specific, but kernel 2.6.24 has new per-device write
-> throttling that might help with the responsiveness issue:
->=20
-> http://kernelnewbies.org/LinuxChanges#head-92340ffcec39e7c2a09fd933243fb1=
-8eda57f1b4
-> http://lwn.net/Articles/245600/
+ - R.
 
-Yes, but we tried both 2.6.24 and 2.6.25-rc, so Peter's new
-write-throttling code doesn't seem to help much in our situtation. I'll
-play a bit with the various /proc/sys/vm/* knobs to see if that makes
-the system more responsive.
 
-> Also, check to see if the 3ware controller has a background initialize
-> or verify in progress, since that will obviously slow things down until
-> it is complete.
+ BUG: unable to handle kernel paging request at ffffc20001a08000
+ IP: [<ffffffff8021dacc>] clflush_cache_range+0xc/0x25
+ PGD 1bf80e067 PUD 1bf80f067 PMD 1bb1ab067 PTE 80000047000ee17b
+ Oops: 0009 [1] SMP
+ CPU 2
+ Modules linked in: ide_pci_generic(+) ipmi_si ib_mthca container piix thermal ib_mad serio_raw ipmi_msghandler bnx2 evdev hpwdt(+) ib_core zlib_inflate ehci_hcd uhci_hcd button processor pcspkr psmouse ide_core
+ Pid: 1291, comm: modprobe Not tainted 2.6.25-rc3 #51
+ RIP: 0010:[<ffffffff8021dacc>]  [<ffffffff8021dacc>] clflush_cache_range+0xc/0x25
+ RSP: 0018:ffff8101bd421bc0  EFLAGS: 00010293
+ RAX: ffff8101bb1ab040 RBX: 0000000000000000 RCX: 00000001bb1ab001
+ RDX: ffffc20001a08fff RSI: 0000000000001000 RDI: ffffc20001a08000
+ RBP: ffffc20001a08000 R08: ffff810000000000 R09: 00003ffffffff000
+ R10: ffffc20001a08000 R11: 000000008807c350 R12: ffff8101bd421bf4
+ R13: 0000000000000000 R14: 0000000000000001 R15: 800000000000017b
+ FS:  00007f62818166e0(0000) GS:ffff8101bf802c00(0000) knlGS:0000000000000000
+ CS:  0010 DS: 0000 ES: 0000 CR0: 000000008005003b
+ CR2: ffffc20001a08000 CR3: 00000001bbdc6000 CR4: 00000000000006e0
+ DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
+ DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
+ Process modprobe (pid: 1291, threadinfo ffff8101bd420000, task ffff8101bbd34000)
+ Stack:  ffffffff8021e60b ffffc20001a09000 0000000000000018 0000000000000000
+  0000000100000001 00000000047000ee 0000000100001000 0000000000001000
+  ffffc20001a08000 00240047000ee000 ffff8101bbcd5f00 00240047000ee000
+ Call Trace:
+  [<ffffffff8021e60b>] ? change_page_attr_set_clr+0x140/0x18b
+  [<ffffffff8021d94c>] ? __ioremap+0x197/0x1cd
+  [<ffffffff8807a566>] ? :hpwdt:hpwdt_init_one+0x1c3/0x386
+  [<ffffffff803351fe>] ? pci_device_probe+0xb3/0xfb
+  [<ffffffff80393ffe>] ? driver_probe_device+0xb5/0x132
+  [<ffffffff8039411d>] ? __driver_attach+0x0/0x93
+  [<ffffffff80394177>] ? __driver_attach+0x5a/0x93
+  [<ffffffff803933fa>] ? bus_for_each_dev+0x47/0x72
+  [<ffffffff80393c1e>] ? bus_add_driver+0xb1/0x1fb
+  [<ffffffff80394391>] ? driver_register+0x59/0xce
+  [<ffffffff80335487>] ? __pci_register_driver+0x5a/0x8b
+  [<ffffffff802526a1>] ? sys_init_module+0x18ff/0x1a08
+  [<ffffffff8023ea31>] ? param_get_int+0x0/0x14
+  [<ffffffff8024a6be>] ? trace_hardirqs_on+0xef/0x113
+  [<ffffffff8041e1fa>] ? trace_hardirqs_on_thunk+0x35/0x3a
+  [<ffffffff8020be5b>] ? system_call_after_swapgs+0x7b/0x80
 
-That's certainly not the case.
 
-Thanks
-Andre
---=20
-The only person who always got his work done by Friday was Robinson Crusoe
-
---ZoaI/ZTpAVc4A5k6
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.1 (GNU/Linux)
-
-iD8DBQFHxZhYWto1QDEAkw8RAnlzAKCmNHfQ9RaCVFs7nUbEgVOFSDhWfQCcDRjt
-3CZfYIebsu+qQmjf/GCkSDg=
-=wI2G
------END PGP SIGNATURE-----
-
---ZoaI/ZTpAVc4A5k6--
+ Code: 00 e8 de 09 02 00 31 d2 48 85 c0 74 0d 48 8b 40 08 b2 01 48 89 83 80 00 00 00 5b 89 d0 c3 90 89 f6 48 8d 54 37 ff 0f ae f0 eb 0d <0f> ae 3f 0f b7 05 4e ce 36 00 48 01 c7 48 39 d7 72 ee 0f ae 3a
+ RIP  [<ffffffff8021dacc>] clflush_cache_range+0xc/0x25
+  RSP <ffff8101bd421bc0>
+ CR2: ffffc20001a08000
+ ---[ end trace 5e3e8191157a34b6 ]---
