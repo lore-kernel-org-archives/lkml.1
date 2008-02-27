@@ -1,117 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754655AbYB0OGw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754883AbYB0OJp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754655AbYB0OGw (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Feb 2008 09:06:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751121AbYB0OGm
+	id S1754883AbYB0OJp (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Feb 2008 09:09:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751121AbYB0OJh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Feb 2008 09:06:42 -0500
-Received: from chilli.pcug.org.au ([203.10.76.44]:38944 "EHLO smtps.tip.net.au"
+	Wed, 27 Feb 2008 09:09:37 -0500
+Received: from ozlabs.org ([203.10.76.45]:59403 "EHLO ozlabs.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750751AbYB0OGl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Feb 2008 09:06:41 -0500
-Date: Thu, 28 Feb 2008 01:06:26 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: linux-next: Tree for Feb 27
-Message-Id: <20080228010626.fd4e00d2.sfr@canb.auug.org.au>
-In-Reply-To: <20080226230059.58cf3cfa.akpm@linux-foundation.org>
-References: <20080227170300.25c50fe3.sfr@canb.auug.org.au>
-	<20080226230059.58cf3cfa.akpm@linux-foundation.org>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.8; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Thu__28_Feb_2008_01_06_26_+1100_.73ZjRrhS.KLaddM"
+	id S1751007AbYB0OJh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 Feb 2008 09:09:37 -0500
+Date: Wed, 27 Feb 2008 08:05:04 -0600
+From: Anton Blanchard <anton@samba.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Soeren Sandmann <sandmann@daimi.au.dk>,
+       John Levon <levon@movementarian.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Arjan van de Ven <arjan@infradead.org>, linux-kernel@vger.kernel.org,
+       tglx@tglx.de, hpa@zytor.com
+Subject: Re: [PATCH] x86: add the debugfs interface for the sysprof tool
+Message-ID: <20080227140504.GA1435@kryten>
+References: <20080219123756.6261c13c@laptopd505.fenrus.org> <20080223001130.d8922136.akpm@linux-foundation.org> <20080223113724.GB31304@elte.hu> <20080223135335.GA28464@totally.trollied.org.uk> <ye8ejb3e8ef.fsf@camel10.daimi.au.dk> <20080226051307.GC17772@kryten> <20080226090223.GG9857@elte.hu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080226090223.GG9857@elte.hu>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Thu__28_Feb_2008_01_06_26_+1100_.73ZjRrhS.KLaddM
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+ 
+Hi Ingo,
 
-On Tue, 26 Feb 2008 23:00:59 -0800 Andrew Morton <akpm@linux-foundation.org=
-> wrote:
+> > Anton - who has used oprofile to analyse and tune databases, JVMs,
+> > 	compilers and operating systems. Maybe I've been missing out on
+> > 	the killer app for all this time!!!
+> 
+> it's OK if you use it full time and if you are amongst the 0.001% of the 
+> developer population we call "the best kernel hackers on the planet" ;-) 
+
+I dream of being a card carrying member of the club but apparently
+owning the t-shirt doesn't count :)
+
+> It sucks badly if you use it occasionally and have to re-learn its 
+> non-trivial usage and its quirks every time. As it happens, most 
+> userspace developers are in this second category.
 >
-> So who's missing now?
->=20
-> I have:
+> (and i'm not worried about the first category at all - if needed they 
+> can write their own OS from scratch ;-)
 
-Of this list, I *don't* have:
+Or their own profiling infrastructure!
 
-> git-agpgart
-> git-alsa
-> git-arm
-> git-arm-master
-> git-audit-master
-> git-backlight
-> git-battery
-> git-block
-> git-bluetooth
-> git-cifs
-> git-cpufreq
-> git-cryptodev
-> git-drm
-> git-gfs2-nmw
-> git-input
-> git-intelfb
-> git-jg-misc
-> git-lblnet
-> git-leds
-> git-libata-all
-> git-m32r
-> git-md-accel
-> git-mips
-> git-mmc
-> git-mtd
-> git-net
-> git-ntfs
-> git-parisc
-> git-pcmcia		(dead)
-> git-perfmon		(i don't actually include this)
-> git-sas			(might be dead)
-> git-sched
-> git-scsi-target
-> git-slub
-> git-sparc64
-> git-unionfs
-> git-v9fs
-> git-watchdog
-> git-x86
-> git-xtensa
->=20
->=20
-> Plus quilt trees:
->=20
-> http://www.kernel.org/pub/linux/kernel/people/kristen/pci-hotplug (seems =
-to be dead)
-> ftp://ftp.kernel.org/pub/linux/kernel/people/tytso/ext4-patches/LATEST/br=
-oken-out/
+OK I'm done being a pain, time to be constructive. It's becoming clear
+we have some work to do in order to make oprofile easier to use. I've
+been involved with the project from the early days, and it's hard to be
+objective when it comes to usability issues.
 
-But on the plus side I also have:
+Off the top of my head, there are a number of reasons I think it makes
+sense to use the existing oprofile kernel code instead of adding the
+sysprof kernel module:
 
-blackfin
-dlm
-libata-dev (same as git-libata-all?)
-m68k
-tests
+- Wide architecture support. A quick look shows 9 architectures with
+  oprofile kernel module code.
 
+- biarch support. You can mix 32 or 64bit userspace and the same oprofile
+  userspace works with 32 or 64bit kernels. I'm not sure where sysprof
+  sits wrt this.
 
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
+- Java and Mono support. Oprofile has work underway to communicate with
+  a running JVM and produce symbolic debugging information:
 
---Signature=_Thu__28_Feb_2008_01_06_26_+1100_.73ZjRrhS.KLaddM
-Content-Type: application/pgp-signature
+http://primates.ximian.com/~massi/blog/archive/2007/Nov-19.html
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
+- Robust sample to binary mapping. It appears that sysprof has a race
+  where processes can exit before the user process has a chance to do
+  the PID to binary mapping.
 
-iD8DBQFHxW5wTgG2atn1QN8RAj4WAJsGGmhBQWi8JIc8MZ6KRmzFs9ZrdQCfR2FL
-U6sU3Rsyn67/FuPC4mNSkfg=
-=QWWg
------END PGP SIGNATURE-----
+- Support for the full set of performance monitor events. A 100 or 250Hz
+  timer is useful for simple profiling, but eventually you will want
+  either faster sampling or different event sampling (eg cache misses).
 
---Signature=_Thu__28_Feb_2008_01_06_26_+1100_.73ZjRrhS.KLaddM--
+Oprofile now has a mode to output XML and it shouldn't take much effort
+for sysprof to parse this instead of the binary debugfs file.
+
+Anton
