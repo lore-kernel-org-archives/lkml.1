@@ -1,23 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760444AbYB0VDF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760813AbYB0VD3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760444AbYB0VDF (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Feb 2008 16:03:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758690AbYB0VAv
+	id S1760813AbYB0VD3 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Feb 2008 16:03:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758769AbYB0VAx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Feb 2008 16:00:51 -0500
-Received: from ug-out-1314.google.com ([66.249.92.170]:12780 "EHLO
+	Wed, 27 Feb 2008 16:00:53 -0500
+Received: from ug-out-1314.google.com ([66.249.92.168]:11803 "EHLO
 	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758212AbYB0VAo (ORCPT
+	with ESMTP id S1758346AbYB0VAo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 27 Feb 2008 16:00:44 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=message-id:references:user-agent:date:from:to:cc:subject:content-disposition;
-        b=VgQKOsBaGlx3els4TAx+ulcUIPqG8rmyXVBolGuXqZ8NcH9B6UTa/ZHMJhSQE9+Vaabmb2a+uVB4hJi+2jzqFnpMtGEIN00PR48xx0O5CAqV2BLrOlKY+4NswNkpLiGtD11hTCBPWhWAR6g1HUdvb4LtqSXDw4cC2mRYNP7VzQQ=
-Message-Id: <20080227210004.611037191@gmail.com>
+        b=jf1rt4C1Sqb05Ao8ZjSafytOE2XtyhNGCE8ptMerPgH3qtNCMeAuAVSC+Hl/u4M4f+M2ZbkeOQP+3KnuD3T2wp8nn19yCzWPxJDwRBefza2/pS9+CWF6wqJlD7svLNimENA6vZhQXnBAw0n1nDZXPQJ/kfBBHtnMGJCCi8J7hTw=
+Message-Id: <20080227210004.407632127@gmail.com>
 References: <20080227205831.150784453@gmail.com>
 User-Agent: quilt/0.46-1
-Date: Wed, 27 Feb 2008 23:58:41 +0300
+Date: Wed, 27 Feb 2008 23:58:40 +0300
 From: gorcunov@gmail.com
 To: rth@twiddle.net, chris@zankel.net, jdike@addtoit.com,
        linuxppc-dev@ozlabs.org, paulus@samba.org, dhowells@redhat.com,
@@ -25,102 +25,90 @@ To: rth@twiddle.net, chris@zankel.net, jdike@addtoit.com,
        takata@linux-m32r.org, linux-m32r@ml.linux-m32r.org,
        linux-kernel@vger.kernel.org
 Cc: gorcunov@gmail.com, sam@ravnborg.org
-Subject: [RFC 10/10] xtensa: vmlinux.lds.S - use PAGE_SIZE, THREAD_SIZE macroses
-Content-Disposition: inline; filename=xtensa-vmlinux
+Subject: [RFC 09/10] alpha: vmlinux.lds cleanup - use THREAD_SIZE macro
+Content-Disposition: inline; filename=alpha-vmlinux
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch includes page.h and thread_info.h headers into the linker
-script that allow us to use PAGE_SIZE and THREAD_SIZE macroses
-instead of numeric constants
-
-Also a few spaces removed
+This patch modifies thread_info.h header to be able to include it
+into linker script and then we're able to use THREAD_SIZE in
+vmlinux.lds
 
 Signed-off-by: Cyrill Gorcunov <gorcunov@gmail.com>
+Reviewed-by: Sam Ravnborg <sam@ravnborg.org>
 ---
 
-WARNING: COMPLETELY UNTESTED !!!
+ arch/alpha/kernel/vmlinux.lds.S |    3 ++-
+ include/asm-alpha/thread_info.h |    9 ++++++---
+ 2 files changed, 8 insertions(+), 4 deletions(-)
 
- vmlinux.lds.S |   19 ++++++++++---------
- 1 file changed, 10 insertions(+), 9 deletions(-)
-
-Index: linux-2.6.git/arch/xtensa/kernel/vmlinux.lds.S
+Index: linux-2.6.git/arch/alpha/kernel/vmlinux.lds.S
 ===================================================================
---- linux-2.6.git.orig/arch/xtensa/kernel/vmlinux.lds.S	2008-02-26 21:45:46.000000000 +0300
-+++ linux-2.6.git/arch/xtensa/kernel/vmlinux.lds.S	2008-02-27 22:15:04.000000000 +0300
-@@ -15,6 +15,8 @@
-  */
- 
+--- linux-2.6.git.orig/arch/alpha/kernel/vmlinux.lds.S	2008-02-27 21:48:19.000000000 +0300
++++ linux-2.6.git/arch/alpha/kernel/vmlinux.lds.S	2008-02-27 22:05:37.000000000 +0300
+@@ -1,5 +1,6 @@
  #include <asm-generic/vmlinux.lds.h>
-+#include <asm/page.h>
+ #include <asm/page.h>
 +#include <asm/thread_info.h>
  
- #include <asm/variant/core.h>
- OUTPUT_ARCH(xtensa)
-@@ -127,16 +129,16 @@ SECTIONS
-   _edata = .;
+ OUTPUT_FORMAT("elf64-alpha")
+ OUTPUT_ARCH(alpha)
+@@ -88,7 +89,7 @@ SECTIONS
  
-   /* The initial task */
--  . = ALIGN(8192);
-+  . = ALIGN(THREAD_SIZE);
-   .data.init_task : { *(.data.init_task) }
+ 	PERCPU(PAGE_SIZE)
  
-   /* Initialization code and data: */
+-	. = ALIGN(2 * PAGE_SIZE);
++	. = ALIGN(THREAD_SIZE);
+ 	__init_end = .;
+ 	/* Freed after init ends here */
  
--  . = ALIGN(1 << 12);
-+  . = ALIGN(PAGE_SIZE);
-   __init_begin = .;
-   .init.text : {
-   	_sinittext = .;
--	*(.init.literal) *(.cpuinit.literal) 
-+	*(.init.literal) *(.cpuinit.literal)
- 	*(.devinit.literal) *(.meminit.literal)
- 	INIT_TEXT
- 	_einittext = .;
-@@ -165,7 +167,7 @@ SECTIONS
- 		   .DoubleExceptionVector.text);
-     RELOCATE_ENTRY(_DebugInterruptVector_text,
- 		   .DebugInterruptVector.text);
--  
+Index: linux-2.6.git/include/asm-alpha/thread_info.h
+===================================================================
+--- linux-2.6.git.orig/include/asm-alpha/thread_info.h	2008-02-27 21:48:28.000000000 +0300
++++ linux-2.6.git/include/asm-alpha/thread_info.h	2008-02-27 22:05:37.000000000 +0300
+@@ -7,9 +7,7 @@
+ #include <asm/processor.h>
+ #include <asm/types.h>
+ #include <asm/hwrpb.h>
+-#endif
+ 
+-#ifndef __ASSEMBLY__
+ struct thread_info {
+ 	struct pcb_struct	pcb;		/* palcode state */
+ 
+@@ -50,13 +48,14 @@ register struct thread_info *__current_t
+ #define current_thread_info()  __current_thread_info
+ 
+ /* Thread information allocation.  */
+-#define THREAD_SIZE (2*PAGE_SIZE)
+ #define alloc_thread_info(tsk) \
+   ((struct thread_info *) __get_free_pages(GFP_KERNEL,1))
+ #define free_thread_info(ti) free_pages((unsigned long) (ti), 1)
+ 
+ #endif /* __ASSEMBLY__ */
+ 
++#define THREAD_SIZE (2 * PAGE_SIZE)
 +
-     __boot_reloc_table_end = ABSOLUTE(.) ;
-   }
+ #define PREEMPT_ACTIVE		0x40000000
  
-@@ -189,14 +191,13 @@ SECTIONS
+ /*
+@@ -94,6 +93,8 @@ register struct thread_info *__current_t
+ #define ALPHA_UAC_MASK		(1 << TIF_UAC_NOPRINT | 1 << TIF_UAC_NOFIX | \
+ 				 1 << TIF_UAC_SIGBUS)
  
++#ifndef __ASSEMBLY__
++
+ #define SET_UNALIGN_CTL(task,value)	({				     \
+ 	task_thread_info(task)->flags = ((task_thread_info(task)->flags &    \
+ 		~ALPHA_UAC_MASK)					     \
+@@ -112,5 +113,7 @@ register struct thread_info *__current_t
+ 		 (int __user *)(value));				\
+ 	})
  
- #ifdef CONFIG_BLK_DEV_INITRD
--  . = ALIGN(4096);
-+  . = ALIGN(PAGE_SIZE);
-   __initramfs_start =.;
-   .init.ramfs : { *(.init.ramfs) }
-   __initramfs_end = .;
- #endif
- 
--  PERCPU(4096)
--
-+  PERCPU(PAGE_SIZE)
- 
-   /* We need this dummy segment here */
- 
-@@ -251,7 +252,7 @@ SECTIONS
- 		  .DoubleExceptionVector.literal)
- 
-   . = (LOADADDR( .DoubleExceptionVector.text ) + SIZEOF( .DoubleExceptionVector.text ) + 3) & ~ 3;
--  . = ALIGN(1 << 12);
-+  . = ALIGN(PAGE_SIZE);
- 
-   __init_end = .;
- 
-@@ -269,7 +270,7 @@ SECTIONS
-   . = ALIGN(0x10);
-   .bootstrap : { *(.bootstrap.literal .bootstrap.text .bootstrap.data) }
- 
--  . = ALIGN(0x1000);
-+  . = ALIGN(PAGE_SIZE);
-   __initrd_start = .;
-   .initrd : { *(.initrd) }
-   __initrd_end = .;
++#endif /* __ASSEMBLY__ */
++
+ #endif /* __KERNEL__ */
+ #endif /* _ALPHA_THREAD_INFO_H */
 
 -- 
