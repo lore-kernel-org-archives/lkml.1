@@ -1,87 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754696AbYB0MWh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757239AbYB0MYE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754696AbYB0MWh (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Feb 2008 07:22:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754202AbYB0MW0
+	id S1757239AbYB0MYE (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Feb 2008 07:24:04 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754367AbYB0MXy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Feb 2008 07:22:26 -0500
-Received: from mail.mizi.com ([61.107.31.33]:45396 "EHLO mail.mizi.com"
+	Wed, 27 Feb 2008 07:23:54 -0500
+Received: from mx.bridgeco.net ([213.173.191.47]:1994 "EHLO mx.bridgeco.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754069AbYB0MWZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Feb 2008 07:22:25 -0500
-Message-ID: <47C555E5.2000903@mizi.com>
-Date: Wed, 27 Feb 2008 21:21:57 +0900
-From: Louis JANG <louis@mizi.com>
-Organization: MIZI Research, Inc.
-User-Agent: Thunderbird 1.5.0.14pre (X11/20071023)
+	id S1754255AbYB0MXx convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 Feb 2008 07:23:53 -0500
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-To: Marcel Holtmann <marcel@holtmann.org>
-CC: Dave Young <hidave.darkstar@gmail.com>, linux-bluetooth@vger.kernel.org,
-       Linux Kernel <linux-kernel@vger.kernel.org>, bmidgley@gmail.com,
-       David Miller <davem@davemloft.net>, Netdev <netdev@vger.kernel.org>
-Subject: Re: [Bluez-devel] forcing SCO connection patch
-References: <47666E1F.2000902@mizi.com>	 <a8e1da0802242330l765b8b1ava62b857baf8a5568@mail.gmail.com>	 <47C28A33.4070102@mizi.com> <a8e1da0802250155u1b7af481va203849f68d9106b@mail.gmail.com> <47C2A7FA.2060902@mizi.com> <70692DDF-93B7-447E-ABEE-3CDBD94F15F1@holtmann.org> <47C38D40.3040809@mizi.com> <B96BD3FE-F490-4AD5-9315-ECD42CE9C728@holtmann.org> <47C4C3D4.8010902@mizi.com> <2A7EF87C-1340-45D7-B457-F81799674B1E@holtmann.org>
-In-Reply-To: <2A7EF87C-1340-45D7-B457-F81799674B1E@holtmann.org>
-Content-Type: multipart/mixed;
- boundary="------------080202030206090505010301"
+Content-Type: text/plain;
+	charset="iso-8859-1"
+Content-Transfer-Encoding: 8BIT
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Subject: [PATCH] [resend]The kernel gets no IP from some DHCP servers, 2.6.24
+Date: Wed, 27 Feb 2008 13:23:48 +0100
+Message-ID: <83116F0A4FF67A4F97BA0B6E408C48E301C5CDEF@zuerich.BC-Int.NET>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [PATCH] [resend]The kernel gets no IP from some DHCP servers, 2.6.24
+Thread-Index: Ach0m4cSiApNdLdFScC3DSTHVH8H7w==
+From: "Wappler Marcel" <Marcel.Wappler@bridgeco.net>
+To: <linux-kernel@vger.kernel.org>
+Cc: <netdev@vger.kernel.org>, <davem@davemloft.net>, <ebiederman@lnxi.com>
+X-OriginalArrivalTime: 27 Feb 2008 12:23:52.0932 (UTC) FILETIME=[9D4F7240:01C8793B]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------080202030206090505010301
-Content-Type: text/plain; charset=EUC-KR
-Content-Transfer-Encoding: 8bit
+I wonder why there is no feedback to the sugested DHCP patch to
+linux/net/ipv4/ipconfig.c Am I wrong with the interpretation of
+RFC2131 section about the contents of a clients DHCPDISCOVER
+packet? If not I would assume that the behaviour of the kernels
+DHCP should be changed.
 
-Marcel Holtmann ¾´ ±Û:
->
-> so the patch is fine, but the description of what this patch is doing,
-> why it is doing it this way and what it fixes is fully missing. Please
-> update it with a proper description.
-I added more information. please check it, and please let me know if
-there are any missings.
+Thanks,
+Marcel
 
-Thanks
-Louis JANG
+the original mail:
+http://lkml.org/lkml/2008/2/21/171
 
->
-> Regards
->
-> Marcel
+====== original patch =========
+This patch fixes a DHCP issue of the kernel: some DHCP servers
+(i.e. in the Linksys WRT54Gv5) are very strict about the contents 
+of the DHCPDISCOVER packet they receive from clients. Table 5 in RFC2131
+page 36 requests the fields 'ciaddr' and 'siaddr' MUST be set to '0'.
+These DHCP servers ignore Linux kernel's DHCP discovery packets with these two
+fields set to '255.255.255.255' (in contrast to popular DHCP clients, such as
+'dhclient' or 'udhcpc'). This leads to a not booting system.
+I tested this on a ARM embedded device mounting rootfs over NFS obtaining
+its IP from a Linksys WRT54Gv5 Router running VxWorks and a PC based Server
+running a Linux. Changing the two fields to '0.0.0.0' worked.
 
+Please CC me personaly when answering this message.
 
---------------080202030206090505010301
-Content-Type: text/plain;
- name="patch_hci_event.c6"
-Content-Transfer-Encoding: base64
-Content-Disposition: inline;
- filename="patch_hci_event.c6"
+Thanks,
+Marcel
 
-V2hlbiBibHVleiB0cmllZCB0byBjb25uZWN0IFNDTyBjaGFubmVsIHdpdGggSENJX09QX1NF
-VFVQX1NZTkNfQ09OTihFU0NPX0xJTkspLCAKYSByZWFsIGNvbm5lY3Rpb24gbWF5IGJlIGNv
-bm5lY3RlZCB3aXRoIFNDT19MSU5LIGluc3RlYWQgb2YgRVNDT19MSU5LIHdoZW4gCnBlZXIg
-ZGV2aWNlIGRvZXNuJ3Qgc3VwcG9ydCBlU0NPLiAgaG93ZXZlciBibHVleiB0cnkgdG8gZmlu
-ZCBjb25uZWN0aW9uIGhhbmRsZSAKYnkgZXZlbnQncyBsaW5rIHR5cGUoU0NPX0xJTksgaW4g
-YWJvdmUgY2FzZSkgYW5kIHRoZSB2YWxpZCBjb25uZWN0aW9uIGhhbmRsZSAKZm9yIHRoaXMg
-ZXZlbnQgaXMgd2FpdGluZyBmb3IgRVNDT19MSU5LLiBzbyBibHVleiBjYW4ndCBmaW5kIGNv
-bm5lY3Rpb24gaGFuZGxlIAphbmQgZGlzY2FyZGVkIHRoZSBldmVudC4gCgpUaGlzIHBhdGNo
-IGlzIHRvIGhhbmRsZSBkaWZmZXJlbnQgdHlwZSBvZiBzeW5jaHJvbm91cyBsaW5rIGlzIGVz
-dGFiaWxpc2hlZCAKd2l0aCBpdHMgcmVxdWVzdC4gCgpJZiBibHVleiBjYW4ndCBmaW5kIGNv
-bm5lY3Rpb24gaGFuZGxlLCBpdCB0cnkgdG8gZmluZCB3aXRoIGRpZmZlcmVudCAKbGluayB0
-eXBlIGFnYWluLiAoRm9yIHRoZSBhYm92ZSBjYXNlLCBpZiBibHVleiBjYW4ndCBmaW5kIGNv
-bm5lY3Rpb24gCmhhbmRsZSB3aXRoIFNDT19MSU5LLCBpdCB0cnkgdG8gZmluZCBjb25uZWN0
-aW9uIGhhbmRsZSB3aXRoIEVTQ09fTElOSyBhZ2Fpbi4pCmFuZCB1cGRhdGUgbGluayB0eXBl
-IG9mIHRoaXMgY29ubmVjdGlvbiBoYW5kbGUgd2l0aCBldmVudCdzIGxpbmsgdHlwZS4KClNp
-Z25lZC1vZmYtYnk6IExvdWlzIEpBTkcgPGxvdWlzQG1pemkuY29tPgotLS0gbGludXgtMi42
-LjIzL25ldC9ibHVldG9vdGgvaGNpX2V2ZW50LmMub3JpZwkyMDA4LTAyLTI2IDEyOjQ2OjM2
-LjAwMDAwMDAwMCArMDkwMAorKysgbGludXgtMi42LjIzL25ldC9ibHVldG9vdGgvaGNpX2V2
-ZW50LmMJMjAwOC0wMi0yNyAxMDo0ODoyOS4wMDAwMDAwMDAgKzA5MDAKQEAgLTEzMTMsOCAr
-MTMxMywxNSBAQAogCWhjaV9kZXZfbG9jayhoZGV2KTsKIAogCWNvbm4gPSBoY2lfY29ubl9o
-YXNoX2xvb2t1cF9iYShoZGV2LCBldi0+bGlua190eXBlLCAmZXYtPmJkYWRkcik7Ci0JaWYg
-KCFjb25uKQotCQlnb3RvIHVubG9jazsKKwlpZiAoIWNvbm4pIHsKKwkJX191OCBsaW5rX3R5
-cGUgPSAoZXYtPmxpbmtfdHlwZSA9PSBFU0NPX0xJTkspID8gU0NPX0xJTksgOiBFU0NPX0xJ
-Tks7CisKKwkJY29ubiA9IGhjaV9jb25uX2hhc2hfbG9va3VwX2JhKGhkZXYsIGxpbmtfdHlw
-ZSwgJmV2LT5iZGFkZHIpOworCQlpZiAoIWNvbm4pCisJCQlnb3RvIHVubG9jazsKKworCQlj
-b25uLT50eXBlID0gZXYtPmxpbmtfdHlwZTsKKwl9CiAKIAlpZiAoIWV2LT5zdGF0dXMpIHsK
-IAkJY29ubi0+aGFuZGxlID0gX19sZTE2X3RvX2NwdShldi0+aGFuZGxlKTsK
---------------080202030206090505010301--
+--- linux-2.6.24.2/net/ipv4/ipconfig.c	2008-02-21 15:27:47.250890963 +0100
++++ linux/net/ipv4/ipconfig.c	2008-02-21 15:36:12.686735925 +0100
+@@ -29,6 +29,10 @@
+  *
+  *  Multiple Nameservers in /proc/net/pnp
+  *              --  Josef Siemes <jsiemes@web.de>, Aug 2002
++ *
++ *  Bugfix: Not getting an IP from some DHCP servers: RFC2131 page 36
++ *  Table 5 requests DHCPDISCOVER fields ciaddr and siaddr MUST be '0'.
++ *              -- marcel.wappler@bridgeco.net
+  */
+ 
+ #include <linux/types.h>
+@@ -103,6 +107,7 @@
+ 					   - '3' from resolv.h */
+ 
+ #define NONE __constant_htonl(INADDR_NONE)
++#define ZERO __constant_htonl(((unsigned long int) 0x00000000))
+ 
+ /*
+  * Public IP configuration
+@@ -740,8 +745,8 @@
+ 		b->htype = dev->type; /* can cause undefined behavior */
+ 	}
+ 	b->hlen = dev->addr_len;
+-	b->your_ip = NONE;
+-	b->server_ip = NONE;
++	b->your_ip = ZERO;
++	b->server_ip = ZERO;
+ 	memcpy(b->hw_addr, dev->dev_addr, dev->addr_len);
+ 	b->secs = htons(jiffies_diff / HZ);
+ 	b->xid = d->xid;
+
+--
+Marcel Wappler
+Bridgeco AG
+CH-8600 Dübendorf
+Switzerland
