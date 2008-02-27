@@ -1,60 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754830AbYB0FfZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756228AbYB0Fgr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754830AbYB0FfZ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Feb 2008 00:35:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750850AbYB0FfO
+	id S1756228AbYB0Fgr (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Feb 2008 00:36:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751797AbYB0Fgj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Feb 2008 00:35:14 -0500
-Received: from rgminet01.oracle.com ([148.87.113.118]:12655 "EHLO
-	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750816AbYB0FfM (ORCPT
+	Wed, 27 Feb 2008 00:36:39 -0500
+Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:52378 "EHLO
+	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751036AbYB0Fgj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Feb 2008 00:35:12 -0500
-Date: Tue, 26 Feb 2008 21:34:32 -0800
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: "SL Baur" <steve@xemacs.org>
-Cc: "Krzysztof Halasa" <khc@pm.waw.pl>,
-       "Guennadi Liakhovetski" <g.liakhovetski@gmx.de>,
-       "Jan Engelhardt" <jengelh@computergmbh.de>, ricknu-0@student.ltu.se,
-       bhalevy.lists@gmail.com,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] CodingStyle: multiple updates
-Message-Id: <20080226213432.1388717b.randy.dunlap@oracle.com>
-In-Reply-To: <ed10ee420802261657w3830e1a1rf0cc9601cdacb142@mail.gmail.com>
-References: <1204062430.47c488def40a4@portal.student.luth.se>
-	<20080226135444.f83a0536.randy.dunlap@oracle.com>
-	<Pine.LNX.4.64.0802262310050.15321@fbirervta.pbzchgretzou.qr>
-	<Pine.LNX.4.64.0802270033310.5714@axis700.grange>
-	<m31w6zcm4l.fsf@maximus.localdomain>
-	<ed10ee420802261657w3830e1a1rf0cc9601cdacb142@mail.gmail.com>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.4.7 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 27 Feb 2008 00:36:39 -0500
+Date: Wed, 27 Feb 2008 14:33:57 +0900
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: David Rientjes <rientjes@google.com>
+Subject: Re: [RFC][PATCH] page reclaim throttle take2
+Cc: kosaki.motohiro@jp.fujitsu.com, Balbir Singh <balbir@linux.vnet.ibm.com>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, Rik van Riel <riel@redhat.com>,
+       Lee Schermerhorn <Lee.Schermerhorn@hp.com>,
+       Nick Piggin <npiggin@suse.de>
+In-Reply-To: <alpine.DEB.1.00.0802262115270.1799@chino.kir.corp.google.com>
+References: <47C4EF2D.90508@linux.vnet.ibm.com> <alpine.DEB.1.00.0802262115270.1799@chino.kir.corp.google.com>
+Message-Id: <20080227143301.4252.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="US-ASCII"
 Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+X-Mailer: Becky! ver. 2.42 [ja]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 26 Feb 2008 16:57:47 -0800 SL Baur wrote:
+Hi David,
 
-> On 2/26/08, Krzysztof Halasa <khc@pm.waw.pl> wrote:
-> 
-> >  Hopefully an elisp expert will implement it. Vim people probably need
-> >  something like that as well, and the list of editors is a bit longer...
-> 
-> The proposed two space change is ugly.  Can someone NAK it?
-> 
-> -sb (The elisp guy who added the linux c-style)
+> I disagree, the config option is indeed static but so is the NUMA topology 
+> of the machine.  It represents the maximum number of page reclaim threads 
+> that should be allowed for that specific topology; a maximum should not 
+> need to be redefined with yet another sysctl and should remain independent 
+> of various workloads.
 
-I would gladly NAK it, but most recent email from Linus about
-coding style is that we are getting too detailed about it,
-so unless there is some overwhelming need to change anything in
-CodingStyle, I'm for no changes (or maybe even some removals).
+ok.
 
----
-~Randy
+> However, I would recommend adding the word "MAX" to the config option.
+
+MAX_PARALLEL_RECLAIM_TASK is good word?
+
+- kosaki
+
