@@ -1,52 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755781AbYB0MVV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754696AbYB0MWh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755781AbYB0MVV (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Feb 2008 07:21:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754069AbYB0MVK
+	id S1754696AbYB0MWh (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Feb 2008 07:22:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754202AbYB0MW0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Feb 2008 07:21:10 -0500
-Received: from www.tglx.de ([62.245.132.106]:42315 "EHLO www.tglx.de"
+	Wed, 27 Feb 2008 07:22:26 -0500
+Received: from mail.mizi.com ([61.107.31.33]:45396 "EHLO mail.mizi.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754065AbYB0MVJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Feb 2008 07:21:09 -0500
-Date: Wed, 27 Feb 2008 13:20:17 +0100 (CET)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Marcel Holtmann <marcel@holtmann.org>
-cc: David Miller <davem@davemloft.net>, kelk1@comcast.net, dwmw2@infradead.org,
-       hidave.darkstar@gmail.com, linux-kernel@vger.kernel.org,
-       jkosina@suse.cz, mingo@elte.hu
-Subject: Re: [PATCH] bluetooth: delete timer in l2cap_conn_del()
-In-Reply-To: <C1D6688B-49F8-4ED1-B4F6-07F21243237F@holtmann.org>
-Message-ID: <alpine.LFD.1.00.0802271319590.7583@apollo.tec.linutronix.de>
-References: <022620080003.1247.47C35750000085C8000004DF2207300793CE05040A05@comcast.net> <alpine.LFD.1.00.0802260926550.7583@apollo.tec.linutronix.de> <20080226.174315.112638342.davem@davemloft.net> <C1D6688B-49F8-4ED1-B4F6-07F21243237F@holtmann.org>
-User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
+	id S1754069AbYB0MWZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 Feb 2008 07:22:25 -0500
+Message-ID: <47C555E5.2000903@mizi.com>
+Date: Wed, 27 Feb 2008 21:21:57 +0900
+From: Louis JANG <louis@mizi.com>
+Organization: MIZI Research, Inc.
+User-Agent: Thunderbird 1.5.0.14pre (X11/20071023)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Marcel Holtmann <marcel@holtmann.org>
+CC: Dave Young <hidave.darkstar@gmail.com>, linux-bluetooth@vger.kernel.org,
+       Linux Kernel <linux-kernel@vger.kernel.org>, bmidgley@gmail.com,
+       David Miller <davem@davemloft.net>, Netdev <netdev@vger.kernel.org>
+Subject: Re: [Bluez-devel] forcing SCO connection patch
+References: <47666E1F.2000902@mizi.com>	 <a8e1da0802242330l765b8b1ava62b857baf8a5568@mail.gmail.com>	 <47C28A33.4070102@mizi.com> <a8e1da0802250155u1b7af481va203849f68d9106b@mail.gmail.com> <47C2A7FA.2060902@mizi.com> <70692DDF-93B7-447E-ABEE-3CDBD94F15F1@holtmann.org> <47C38D40.3040809@mizi.com> <B96BD3FE-F490-4AD5-9315-ECD42CE9C728@holtmann.org> <47C4C3D4.8010902@mizi.com> <2A7EF87C-1340-45D7-B457-F81799674B1E@holtmann.org>
+In-Reply-To: <2A7EF87C-1340-45D7-B457-F81799674B1E@holtmann.org>
+Content-Type: multipart/mixed;
+ boundary="------------080202030206090505010301"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 27 Feb 2008, Marcel Holtmann wrote:
+This is a multi-part message in MIME format.
+--------------080202030206090505010301
+Content-Type: text/plain; charset=EUC-KR
+Content-Transfer-Encoding: 8bit
 
-> Hi Dave,
-> 
-> > From: Thomas Gleixner <tglx@linutronix.de>
-> > Date: Tue, 26 Feb 2008 09:28:13 +0100 (CET)
-> > 
-> > > Delete a possibly armed timer before kfree'ing the connection object.
-> > > 
-> > > Solves: http://lkml.org/lkml/2008/2/15/514
-> > > 
-> > > Reported-by:Quel Qun <kelk1@comcast.net>
-> > > Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
-> > 
-> > I'll apply this, thanks Thomas.
-> 
-> can you please wait for a confirmation from Quel that this fixes it. My ACK is
-> based on that he confirms that it fixes it for sure.
+Marcel Holtmann ¾´ ±Û:
+>
+> so the patch is fine, but the description of what this patch is doing,
+> why it is doing it this way and what it fixes is fully missing. Please
+> update it with a proper description.
+I added more information. please check it, and please let me know if
+there are any missings.
 
-http://lkml.org/lkml/2008/2/25/463
+Thanks
+Louis JANG
 
-Thanks,
+>
+> Regards
+>
+> Marcel
 
-	tglx
+
+--------------080202030206090505010301
+Content-Type: text/plain;
+ name="patch_hci_event.c6"
+Content-Transfer-Encoding: base64
+Content-Disposition: inline;
+ filename="patch_hci_event.c6"
+
+V2hlbiBibHVleiB0cmllZCB0byBjb25uZWN0IFNDTyBjaGFubmVsIHdpdGggSENJX09QX1NF
+VFVQX1NZTkNfQ09OTihFU0NPX0xJTkspLCAKYSByZWFsIGNvbm5lY3Rpb24gbWF5IGJlIGNv
+bm5lY3RlZCB3aXRoIFNDT19MSU5LIGluc3RlYWQgb2YgRVNDT19MSU5LIHdoZW4gCnBlZXIg
+ZGV2aWNlIGRvZXNuJ3Qgc3VwcG9ydCBlU0NPLiAgaG93ZXZlciBibHVleiB0cnkgdG8gZmlu
+ZCBjb25uZWN0aW9uIGhhbmRsZSAKYnkgZXZlbnQncyBsaW5rIHR5cGUoU0NPX0xJTksgaW4g
+YWJvdmUgY2FzZSkgYW5kIHRoZSB2YWxpZCBjb25uZWN0aW9uIGhhbmRsZSAKZm9yIHRoaXMg
+ZXZlbnQgaXMgd2FpdGluZyBmb3IgRVNDT19MSU5LLiBzbyBibHVleiBjYW4ndCBmaW5kIGNv
+bm5lY3Rpb24gaGFuZGxlIAphbmQgZGlzY2FyZGVkIHRoZSBldmVudC4gCgpUaGlzIHBhdGNo
+IGlzIHRvIGhhbmRsZSBkaWZmZXJlbnQgdHlwZSBvZiBzeW5jaHJvbm91cyBsaW5rIGlzIGVz
+dGFiaWxpc2hlZCAKd2l0aCBpdHMgcmVxdWVzdC4gCgpJZiBibHVleiBjYW4ndCBmaW5kIGNv
+bm5lY3Rpb24gaGFuZGxlLCBpdCB0cnkgdG8gZmluZCB3aXRoIGRpZmZlcmVudCAKbGluayB0
+eXBlIGFnYWluLiAoRm9yIHRoZSBhYm92ZSBjYXNlLCBpZiBibHVleiBjYW4ndCBmaW5kIGNv
+bm5lY3Rpb24gCmhhbmRsZSB3aXRoIFNDT19MSU5LLCBpdCB0cnkgdG8gZmluZCBjb25uZWN0
+aW9uIGhhbmRsZSB3aXRoIEVTQ09fTElOSyBhZ2Fpbi4pCmFuZCB1cGRhdGUgbGluayB0eXBl
+IG9mIHRoaXMgY29ubmVjdGlvbiBoYW5kbGUgd2l0aCBldmVudCdzIGxpbmsgdHlwZS4KClNp
+Z25lZC1vZmYtYnk6IExvdWlzIEpBTkcgPGxvdWlzQG1pemkuY29tPgotLS0gbGludXgtMi42
+LjIzL25ldC9ibHVldG9vdGgvaGNpX2V2ZW50LmMub3JpZwkyMDA4LTAyLTI2IDEyOjQ2OjM2
+LjAwMDAwMDAwMCArMDkwMAorKysgbGludXgtMi42LjIzL25ldC9ibHVldG9vdGgvaGNpX2V2
+ZW50LmMJMjAwOC0wMi0yNyAxMDo0ODoyOS4wMDAwMDAwMDAgKzA5MDAKQEAgLTEzMTMsOCAr
+MTMxMywxNSBAQAogCWhjaV9kZXZfbG9jayhoZGV2KTsKIAogCWNvbm4gPSBoY2lfY29ubl9o
+YXNoX2xvb2t1cF9iYShoZGV2LCBldi0+bGlua190eXBlLCAmZXYtPmJkYWRkcik7Ci0JaWYg
+KCFjb25uKQotCQlnb3RvIHVubG9jazsKKwlpZiAoIWNvbm4pIHsKKwkJX191OCBsaW5rX3R5
+cGUgPSAoZXYtPmxpbmtfdHlwZSA9PSBFU0NPX0xJTkspID8gU0NPX0xJTksgOiBFU0NPX0xJ
+Tks7CisKKwkJY29ubiA9IGhjaV9jb25uX2hhc2hfbG9va3VwX2JhKGhkZXYsIGxpbmtfdHlw
+ZSwgJmV2LT5iZGFkZHIpOworCQlpZiAoIWNvbm4pCisJCQlnb3RvIHVubG9jazsKKworCQlj
+b25uLT50eXBlID0gZXYtPmxpbmtfdHlwZTsKKwl9CiAKIAlpZiAoIWV2LT5zdGF0dXMpIHsK
+IAkJY29ubi0+aGFuZGxlID0gX19sZTE2X3RvX2NwdShldi0+aGFuZGxlKTsK
+--------------080202030206090505010301--
