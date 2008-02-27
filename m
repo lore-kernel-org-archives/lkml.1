@@ -1,64 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762967AbYB0XxL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763019AbYB0Xxb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762967AbYB0XxL (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Feb 2008 18:53:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758811AbYB0Xw6
+	id S1763019AbYB0Xxb (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Feb 2008 18:53:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763095AbYB0XxQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Feb 2008 18:52:58 -0500
-Received: from wolverine02.qualcomm.com ([199.106.114.251]:8900 "EHLO
-	wolverine02.qualcomm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756772AbYB0Xw5 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Feb 2008 18:52:57 -0500
-X-IronPort-AV: E=McAfee;i="5200,2160,5239"; a="857436"
-Message-ID: <47C5F7D6.2000203@qualcomm.com>
-Date: Wed, 27 Feb 2008 15:52:54 -0800
-From: Max Krasnyanskiy <maxk@qualcomm.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+	Wed, 27 Feb 2008 18:53:16 -0500
+Received: from khc.piap.pl ([195.187.100.11]:51137 "EHLO khc.piap.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1763058AbYB0XxP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 Feb 2008 18:53:15 -0500
+To: Richard Knutsson <ricknu-0@student.ltu.se>
+Cc: Randy Dunlap <randy.dunlap@oracle.com>, SL Baur <steve@xemacs.org>,
+       Guennadi Liakhovetski <g.liakhovetski@gmx.de>,
+       Jan Engelhardt <jengelh@computergmbh.de>, bhalevy.lists@gmail.com,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] CodingStyle: multiple updates
+References: <1204062430.47c488def40a4@portal.student.luth.se>
+	<20080226135444.f83a0536.randy.dunlap@oracle.com>
+	<Pine.LNX.4.64.0802262310050.15321@fbirervta.pbzchgretzou.qr>
+	<Pine.LNX.4.64.0802270033310.5714@axis700.grange>
+	<m31w6zcm4l.fsf@maximus.localdomain>
+	<ed10ee420802261657w3830e1a1rf0cc9601cdacb142@mail.gmail.com>
+	<20080226213432.1388717b.randy.dunlap@oracle.com>
+	<47C5DDE0.3040403@student.ltu.se>
+From: Krzysztof Halasa <khc@pm.waw.pl>
+Date: Thu, 28 Feb 2008 00:53:13 +0100
+In-Reply-To: <47C5DDE0.3040403@student.ltu.se> (Richard Knutsson's message of "Wed\, 27 Feb 2008 23\:02\:08 +0100")
+Message-ID: <m3oda2klcm.fsf@maximus.localdomain>
 MIME-Version: 1.0
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-CC: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       Oleg Nesterov <oleg@tv-sign.ru>, Steven Rostedt <rostedt@goodmis.org>,
-       Paul Jackson <pj@sgi.com>, linux-kernel@vger.kernel.org
-Subject: Re: [RFC/PATCH 2/4] cpuset: system sets
-References: <20080227222103.673194000@chello.nl> <20080227222542.311184000@chello.nl>
-In-Reply-To: <20080227222542.311184000@chello.nl>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hmm, shouldn't patches be sent inline ?
-Otherwise I need to cut&paste in order to reply.
+Richard Knutsson <ricknu-0@student.ltu.se> writes:
 
-Anyway. cpu_system_map looks fine. It's identical in functionality (minus the 
-notifier) to the ~cpu_isolated_map. Different name works for me.
+> Actually, I see this as an quite simple question: is tab _the
+> indention-marker_?
 
-As I explained in the prev reply I suggest we use CPU hotplug instead of the 
-brand new notifier mechanism that requires changes to a bunch of things, and 
-at the end of the day ends up doing the same exact thing. ie Moving things out 
-of the CPU that is being isolated.
-
-> --- linux-2.6.orig/kernel/sched.c
-> +++ linux-2.6/kernel/sched.c
-> @@ -4854,6 +4854,9 @@ asmlinkage long sys_sched_setaffinity(pi
->  cpumask_t cpu_present_map __read_mostly;
->  EXPORT_SYMBOL(cpu_present_map);
->  
-> +cpumask_t cpu_system_map __read_mostly = CPU_MASK_ALL;
-> +EXPORT_SYMBOL(cpu_system_map);
-> +
->  #ifndef CONFIG_SMP
->  cpumask_t cpu_online_map __read_mostly = CPU_MASK_ALL;
->  EXPORT_SYMBOL(cpu_online_map);
-
-I beleive those masks belong in kernel/cpu.c instead of kernel/sched.c.
-It can be done with a separate patch of course.
-
-Max
-
-
-
-
-
+I hope so.
+-- 
+Krzysztof Halasa
