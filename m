@@ -1,42 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760334AbYB0WVA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760225AbYB0WXj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760334AbYB0WVA (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Feb 2008 17:21:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758298AbYB0WUw
+	id S1760225AbYB0WXj (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Feb 2008 17:23:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753020AbYB0WXb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Feb 2008 17:20:52 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:46790 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753905AbYB0WUv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Feb 2008 17:20:51 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: "Klaus S. Madsen" <ksm@hjernemadsen.org>
-Subject: Re: Regression in 2.6.25-rc3: s2ram segfaults before suspending
-Date: Wed, 27 Feb 2008 23:19:11 +0100
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       Pavel Machek <pavel@ucw.cz>
-References: <20080227221033.GR17932@hjernemadsen.org>
-In-Reply-To: <20080227221033.GR17932@hjernemadsen.org>
+	Wed, 27 Feb 2008 17:23:31 -0500
+Received: from relay2.sgi.com ([192.48.171.30]:46980 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752628AbYB0WXa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 Feb 2008 17:23:30 -0500
+Date: Wed, 27 Feb 2008 14:23:29 -0800 (PST)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Andrea Arcangeli <andrea@qumranet.com>
+cc: Nick Piggin <nickpiggin@yahoo.com.au>, akpm@linux-foundation.org,
+       Robin Holt <holt@sgi.com>, Avi Kivity <avi@qumranet.com>,
+       Izik Eidus <izike@qumranet.com>, kvm-devel@lists.sourceforge.net,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, general@lists.openfabrics.org,
+       Steve Wise <swise@opengridcomputing.com>,
+       Roland Dreier <rdreier@cisco.com>, Kanoj Sarcar <kanojsarcar@yahoo.com>,
+       steiner@sgi.com, linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       daniel.blueman@quadrics.com
+Subject: Re: [patch 2/6] mmu_notifier: Callbacks to invalidate address ranges
+In-Reply-To: <20080219133405.GH7128@v2.random>
+Message-ID: <Pine.LNX.4.64.0802271421480.13186@schroedinger.engr.sgi.com>
+References: <20080215064859.384203497@sgi.com> <20080215064932.620773824@sgi.com>
+ <200802191954.14874.nickpiggin@yahoo.com.au> <20080219133405.GH7128@v2.random>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200802272319.12246.rjw@sisk.pl>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday, 27 of February 2008, Klaus S. Madsen wrote:
-> Hi all,
-> 
-> 	I have a Thinkpad T61p, which I'm able to suspend with s2ram on
-> Linux 2.6.24.3. However when I try to suspend it on 2.6.25-rc3, s2ram
-> dies after changing to vt1, with a segfault. I'm using s2ram from cvs,
-> and libx86 version 0.99 from http://www.codon.org.uk/~mjg59/libx86/.
+On Tue, 19 Feb 2008, Andrea Arcangeli wrote:
 
-There's a known suspend problem with 2.6.25-rc3 that has been fixed already
-in the Linus' tree.  Can you test the current head of the Linus' tree, please?
+> Yes, that's why I kept maintaining my patch and I posted the last
+> revision to Andrew. I use pte/tlb locking of the core VM, it's
+> unintrusive and obviously safe. Furthermore it can be extended with
+> Christoph's stuff in a 100% backwards compatible fashion later if needed.
 
-Rafael
+How would that work? You rely on the pte locking. Thus calls are all in an 
+atomic context. I think we need a general scheme that allows sleeping when 
+references are invalidates. Even the GRU has performance issues when using 
+the KVM patch.
+
+
+ 
