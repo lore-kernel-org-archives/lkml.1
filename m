@@ -1,54 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758845AbYB0Inp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758573AbYB0IuI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758845AbYB0Inp (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Feb 2008 03:43:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752778AbYB0Inf
+	id S1758573AbYB0IuI (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Feb 2008 03:50:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754881AbYB0Ity
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Feb 2008 03:43:35 -0500
-Received: from courier.cs.helsinki.fi ([128.214.9.1]:52643 "EHLO
-	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753127AbYB0Ine (ORCPT
+	Wed, 27 Feb 2008 03:49:54 -0500
+Received: from mx.logic.tuwien.ac.at ([128.130.175.19]:49931 "EHLO
+	mx.logic.tuwien.ac.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754291AbYB0Itx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Feb 2008 03:43:34 -0500
-Date: Wed, 27 Feb 2008 10:43:32 +0200 (EET)
-From: Pekka J Enberg <penberg@cs.helsinki.fi>
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-cc: Neil Brown <neilb@suse.de>, Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       netdev@vger.kernel.org, trond.myklebust@fys.uio.no
-Subject: Re: [PATCH 00/28] Swap over NFS -v16
-In-Reply-To: <1204101239.6242.372.camel@lappy>
-Message-ID: <Pine.LNX.4.64.0802271041140.20599@sbz-30.cs.Helsinki.FI>
-References: <20080220144610.548202000@chello.nl> 
- <20080223000620.7fee8ff8.akpm@linux-foundation.org>  <18371.43950.150842.429997@notabene.brown>
-  <1204023042.6242.271.camel@lappy>  <18372.64081.995262.986841@notabene.brown>
-  <1204099113.6242.353.camel@lappy>  <84144f020802270005p3bfbd04ar9da2875218ef98c4@mail.gmail.com>
-  <1204100059.6242.360.camel@lappy> <1204101239.6242.372.camel@lappy>
-Mime-Version: 1.0
+	Wed, 27 Feb 2008 03:49:53 -0500
+Date: Wed, 27 Feb 2008 09:49:50 +0100
+To: Pete Zaitcev <zaitcev@redhat.com>
+Cc: Chuck Ebbert <cebbert@redhat.com>,
+       Kristoffer Ericson <kristoffer.ericson@gmail.com>,
+       linux-kernel@vger.kernel.org,
+       USB development list <linux-usb@vger.kernel.org>
+Subject: Re: Huawei E220 and usb storage
+Message-ID: <20080227084950.GC19069@gamma.logic.tuwien.ac.at>
+References: <20071030211729.6a80a93a.Kristoffer.ericson@gmail.com> <20071030204720.GI8479@gamma.logic.tuwien.ac.at> <47279EF7.3040406@redhat.com> <20071030212213.GA13410@gamma.logic.tuwien.ac.at> <20071030152816.f2e8dd7c.zaitcev@redhat.com> <20071031061552.GH11722@gamma.logic.tuwien.ac.at> <20071116132256.GA19251@gamma.logic.tuwien.ac.at> <20080214110501.ec400e10.zaitcev@redhat.com> <20080220065723.GY25079@gamma.logic.tuwien.ac.at> <20080225105057.5ea66596.zaitcev@redhat.com>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+In-Reply-To: <20080225105057.5ea66596.zaitcev@redhat.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+From: Norbert Preining <preining@logic.at>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 27 Feb 2008, Peter Zijlstra wrote:
-> Humm, and here I sit staring at the screen. Perhaps I should go get my
-> morning juice, but...
-> 
->   if (mem_reserve_kmalloc_charge(my_res, sizeof(*foo), 0)) {
->     foo = kmalloc(sizeof(*foo), gfp|__GFP_MEMALLOC)
->     if (!kmem_is_emergency(foo))
->       mem_reserve_kmalloc_charge(my_res, -sizeof(*foo), 0)
->   } else
->     foo = kmalloc(sizeof(*foo), gfp);
-> 
-> Just doesn't look too pretty..
-> 
-> And needing to always account the allocation seems wrong.. but I'll take
-> poison and see if that wakes up my mind.
+On Mo, 25 Feb 2008, Pete Zaitcev wrote:
+> Someone reported on the bug that a firmware update exists to resolve
+> the issue (version 11.117.07.00.67). Probably they started to comply
 
-Hmm, perhaps this is just hand-waving but why don't you have a 
-kmalloc_reserve() function in SLUB that does the accounting properly?
+But where do I get this firmware update? I searched the huawei web site,
+registered, bid couldn't find anything... any hints?
 
-			Pekka
+Best wishes
+
+Norbert
+
+-------------------------------------------------------------------------------
+Dr. Norbert Preining <preining@logic.at>        Vienna University of Technology
+Debian Developer <preining@debian.org>                         Debian TeX Group
+gpg DSA: 0x09C5B094      fp: 14DF 2E6C 0307 BE6D AD76  A9C0 D2BF 4AA3 09C5 B094
+-------------------------------------------------------------------------------
+GRIMMET (n.)
+A small bush from which cartoon characters dangle over the edge of a
+cliff.
+			--- Douglas Adams, The Meaning of Liff
