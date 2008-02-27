@@ -1,62 +1,118 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754742AbYB0QE3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757006AbYB0QFR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754742AbYB0QE3 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Feb 2008 11:04:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756712AbYB0QEP
+	id S1757006AbYB0QFR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Feb 2008 11:05:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754560AbYB0QFA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Feb 2008 11:04:15 -0500
-Received: from ra.tuxdriver.com ([70.61.120.52]:3247 "EHLO ra.tuxdriver.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754475AbYB0QEN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Feb 2008 11:04:13 -0500
-Date: Wed, 27 Feb 2008 10:51:11 -0500
-From: "John W. Linville" <linville@tuxdriver.com>
-To: Stefano Brivio <stefano.brivio@polimi.it>
-Cc: Chris Clayton <chris2553@googlemail.com>, ivdoorn@gmail.com,
-       linux-kernel@vger.kernel.org, linux-wireless@vger.kernel.org,
-       johannes@sipsolutions.net
-Subject: Re: 2.6.25-rc2 regression in rt61pci wireless driver
-Message-ID: <20080227155111.GB3078@tuxdriver.com>
-References: <c6b1100b0802160406l24fed9dcje1dbfc8907fd7a16@mail.gmail.com> <200802252104.32416.chris2553@googlemail.com> <a32f33a40802251409ofbdab60w4a95c8aaefaad70a@mail.gmail.com> <200802261911.39577.chris2553@googlemail.com> <20080226194838.GD3013@tuxdriver.com> <c6b1100b0802261313v12fb9cd5j6501e80f6d071019@mail.gmail.com> <20080226223814.4ef2b435@morte> <c6b1100b0802261436i7c5a4136j753501933037187@mail.gmail.com> <20080227082642.218b8014@morte>
+	Wed, 27 Feb 2008 11:05:00 -0500
+Received: from g1t0028.austin.hp.com ([15.216.28.35]:43294 "EHLO
+	g1t0028.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754259AbYB0QE7 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 Feb 2008 11:04:59 -0500
+From: Paul Moore <paul.moore@hp.com>
+Organization: Hewlett-Packard
+To: "Ahmed S. Darwish" <darwish.07@gmail.com>
+Subject: Re: [PATCH -mm 1/4] LSM: Introduce inode_getsecid and ipc_getsecid hooks
+Date: Wed, 27 Feb 2008 11:04:57 -0500
+User-Agent: KMail/1.9.7
+Cc: Chris Wright <chrisw@sous-sol.org>, Stephen Smalley <sds@tycho.nsa.gov>,
+       James Morris <jmorris@namei.org>, Eric Paris <eparis@parisplace.org>,
+       Casey Schaufler <casey@schaufler-ca.com>,
+       David Woodhouse <dwmw2@infradead.org>,
+       linux-security-module@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>, akpm <akpm@linux-foundation.org>
+References: <20080226232229.GA12059@ubuntu> <20080226232411.GB12059@ubuntu>
+In-Reply-To: <20080226232411.GB12059@ubuntu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20080227082642.218b8014@morte>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+Message-Id: <200802271104.57815.paul.moore@hp.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Feb 27, 2008 at 08:26:42AM +0100, Stefano Brivio wrote:
-> On Tue, 26 Feb 2008 22:36:19 +0000
-> "Chris Clayton" <chris2553@googlemail.com> wrote:
-> 
-> > 27 135466 rate_change 2 55
-> > 28 135717 tx_rate 2 55
-> > 29 135717 tx_status 0 0
-> > 30 135717 pf_sample 0 3584 1965 0
-> > 31 135717 rate_change 129 -541505508
-> > 32 135968 tx_rate 11 540
-> 
-> Known and fixed. The fix isn't in 2.6.25-rc3 yet, though.
-> 
-> Fix:
-> commit 32720eae675d08990e97bffbf71a31382599cc8a
-> Author: Stefano Brivio <stefano.brivio@polimi.it>
-> Date:   Tue Jan 29 20:29:16 2008 +0100
-> 
->     rc80211-pid: fix rate adjustment
+On Tuesday 26 February 2008 6:24:11 pm Ahmed S. Darwish wrote:
+> Introduce inode_getsecid(inode, secid) and ipc_getsecid(ipcp, secid)
+> LSM hooks.
+>
+> This hooks will be used instead of similar exported SELinux
+> interfaces.
+>
+> Signed-off-by: Casey Schaufler <casey@schaufler-ca.com>
+> Signed-off-by: Ahmed S. Darwish <darwish.07@gmail.com>
+> ---
+>
+>  include/linux/security.h |   18 ++++++++++++++++++
+>  security/dummy.c         |   12 ++++++++++++
+>  security/security.c      |   12 ++++++++++++
+>  3 files changed, 42 insertions(+)
+>
+> diff --git a/include/linux/security.h b/include/linux/security.h
+> index a33fd03..a7fb136 100644
+> --- a/include/linux/security.h
+> +++ b/include/linux/security.h
+> @@ -449,6 +449,10 @@ struct request_sock;
+>   *	@dentry is the dentry being changed.
+>   *	Return 0 on success.  If error is returned, then the operation
+>   *	causing setuid bit removal is failed.
+> + * @inode_getsecid:
+> + *      Get the secid associated with the node
+> + *      @inode contains a pointer to the inode
+> + *      @secid contains a pointer to the location to store the
+> result *
+>   * Security hooks for file operations
+>   *
+> @@ -989,6 +993,10 @@ struct request_sock;
+>   *	@ipcp contains the kernel IPC permission structure
+>   *	@flag contains the desired (requested) permission set
+>   *	Return 0 if permission is granted.
+> + * @ipc_getsecid:
+> + *      Get the secid associated with the ipc object
+> + *      @ipcp contains the kernel IPC permission structure
+> + *      @secid contains a pointer to the location where result will
+> be saved
 
-And it currently isn't queued for 2.6.25 at all.
+See my other comments about tabs not spaces.
 
-Chris, can you cherry-pick this from the wireless-2.6.26 tree and
-give it a test on your 2.6.25-rc3 tree?  If it resolves a problem
-then I'll queue it to Dave for 2.6.25 (which will probably provoke
-a net-2.6.26 and wireless-2.6.26 rebase).
+> +static inline void security_inode_getsecid(const struct inode
+> *inode, u32 *secid)
+> +{ } 
 
-Let me know...
+...
 
-John
+> +static inline void security_ipc_getsecid(struct kern_ipc_perm *ipcp,
+> u32 *secid)
+> +{ } 
+
+Should these both do a  "*secid = 0;"?
+
+> diff --git a/security/dummy.c b/security/dummy.c
+> index 6a0056b..c2f4c52 100644
+> --- a/security/dummy.c
+> +++ b/security/dummy.c
+> @@ -422,6 +422,11 @@ static int dummy_inode_listsecurity(struct inode
+> *inode, char *buffer, size_t bu return 0;
+>  }
+>
+> +static void dummy_inode_getsecid(const struct inode *inode, u32
+> *secid)
+> +{ 
+> +	return;
+> +}
+
+...
+
+> +static void dummy_ipc_getsecid(struct kern_ipc_perm *ipcp, u32
+> *secid)
+> +{ 
+> +	return;
+> +}
+
+Same question.
+
 -- 
-John W. Linville
-linville@tuxdriver.com
+paul moore
+linux security @ hp
