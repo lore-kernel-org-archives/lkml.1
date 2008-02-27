@@ -1,93 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754845AbYB0OMZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754815AbYB0ORR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754845AbYB0OMZ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Feb 2008 09:12:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751960AbYB0OMR
+	id S1754815AbYB0ORR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Feb 2008 09:17:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752457AbYB0ORD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Feb 2008 09:12:17 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:40503 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751732AbYB0OMQ (ORCPT
+	Wed, 27 Feb 2008 09:17:03 -0500
+Received: from mail2.shareable.org ([80.68.89.115]:50867 "EHLO
+	mail2.shareable.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752245AbYB0ORA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Feb 2008 09:12:16 -0500
-Subject: Re: [PATCH] sched: don't allow rt_runtime_us to be zero for groups
-	having rt tasks
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Dhaval Giani <dhaval@linux.vnet.ibm.com>
-Cc: Ingo Molnar <mingo@elte.hu>, Sudhir Kumar <skumar@linux.vnet.ibm.com>,
-       Balbir Singh <balbir@in.ibm.com>,
-       Aneesh Kumar KV <aneesh.kumar@linux.vnet.ibm.com>,
-       Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>,
-       lkml <linux-kernel@vger.kernel.org>
-In-Reply-To: <20080227132459.GE15731@linux.vnet.ibm.com>
-References: <20080227110829.GA15731@linux.vnet.ibm.com>
-	 <1204116417.6242.383.camel@lappy>
-	 <20080227132459.GE15731@linux.vnet.ibm.com>
-Content-Type: text/plain
-Date: Wed, 27 Feb 2008 15:11:50 +0100
-Message-Id: <1204121510.6242.406.camel@lappy>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.21.90 
-Content-Transfer-Encoding: 7bit
+	Wed, 27 Feb 2008 09:17:00 -0500
+Date: Wed, 27 Feb 2008 14:16:46 +0000
+From: Jamie Lokier <jamie@shareable.org>
+To: Jeff Garzik <jeff@garzik.org>
+Cc: Nick Piggin <nickpiggin@yahoo.com.au>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org, Chris Wedgwood <cw@f00f.org>
+Subject: Re: Proposal for "proper" durable fsync() and fdatasync()
+Message-ID: <20080227141646.GA22850@shareable.org>
+References: <20080226072649.GB30238@shareable.org> <20080225234319.f4589ae4.akpm@linux-foundation.org> <20080226075921.GG30238@shareable.org> <200802262016.11297.nickpiggin@yahoo.com.au> <47C441C1.5060305@garzik.org> <20080226170011.GB21203@shareable.org> <47C45267.4090105@garzik.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <47C45267.4090105@garzik.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-On Wed, 2008-02-27 at 18:54 +0530, Dhaval Giani wrote:
-
-> This patch checks if we can set the rt_runtime_us to 0. If there is a
-> realtime task in the group, we don't want to set the rt_runtime_us as 0
-> or bad things will happen.
+Jeff Garzik wrote:
+> >It's not optimal even then.
+> >
+> >  Devices: On a software RAID, you ideally don't want to issue flushes
+> >  to all drives if your database did a 1 block commit entry.  (But they
+> >  probably use O_DIRECT anyway, changing the rules again).  But all that
+> >  can be optimised in generic VFS code eventually.  It doesn't need
+> >  filesystem assistance in most cases.
 > 
-> Signed-off-by: Dhaval Giani <dhaval@linux.vnet.ibm.com>
+> My own idea is that we create a FLUSH command for blkdev request queues, 
+> to exist alongside READ, WRITE, and the current barrier implementation. 
+>  Then FLUSH could be passed down through MD or DM.
 
-Acked-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+I like your thought, and it has the benefit of being simple.
 
-> ---
->  kernel/sched.c |   17 +++++++++++++++++
->  1 files changed, 17 insertions(+)
-> 
-> Index: linux-2.6.25-rc3/kernel/sched.c
-> ===================================================================
-> --- linux-2.6.25-rc3.orig/kernel/sched.c
-> +++ linux-2.6.25-rc3/kernel/sched.c
-> @@ -7960,6 +7960,17 @@ static int __rt_schedulable(struct task_
->  	return total + to_ratio(period, runtime) < global_ratio;
->  }
->  
-> +/* Must be called with tasklist_lock held */
-> +static inline int tg_has_rt_tasks(struct task_group *tg)
-> +{
-> +	struct task_struct *p;
-> +	for_each_process(p) {
-> +		if (rt_task(p) && rt_rq_of_se(&p->rt)->tg == tg)
-> +			return 1;
-> +	}
-> +	return 0;
-> +}
-> +
->  int sched_group_set_rt_runtime(struct task_group *tg, long rt_runtime_us)
->  {
->  	u64 rt_runtime, rt_period;
-> @@ -7971,6 +7982,11 @@ int sched_group_set_rt_runtime(struct ta
->  		rt_runtime = rt_period;
->  
->  	mutex_lock(&rt_constraints_mutex);
-> +	read_lock(&tasklist_lock);
-> +	if (rt_runtime_us == 0 && tg_has_rt_tasks(tg)) {
-> +		err = -EINVAL;
-> +		goto unlock;
-> +	}
->  	if (!__rt_schedulable(tg, rt_period, rt_runtime)) {
->  		err = -EINVAL;
->  		goto unlock;
-> @@ -7979,6 +7995,7 @@ int sched_group_set_rt_runtime(struct ta
->  		rt_runtime = RUNTIME_INF;
->  	tg->rt_runtime = rt_runtime;
->   unlock:
-> +	read_unlock(&tasklist_lock);
->  	mutex_unlock(&rt_constraints_mutex);
->  
->  	return err;
+My thought is very similar, but with (hopefully not premature...)
+optimisations:
 
+  - I would merge FLUSH with a preceding write in some cases,
+    converting to an FUA-write command.  Probably the generic request
+    queue is the best place to detect and merge.  This is so that
+    userspace filesystems (including guest VMs) and databases can do
+    journal commits with the same I/O sequence as in kernel
+    filesystems.
+
+  - I would create BARRIER too, so that a userspace API can ask for
+    this weaker form of fsync, which may improve throughput of
+    userspace journalling.  
+
+  - I would include a sector range in FLUSH and BARRIER, for MD and DM
+    to flush _only_ relevant sub-devices.  This may improve performance
+    for journalling both kernel and userspace filesystems, as journal
+    commits are often very small and hit one or two sub-devices in RAID.
+
+  - I would ask the nice MD and DM people to take tag-barriers rather
+    than flush-barriers on the input queue, converting to
+    tag-barriers, flush-barriers and independent FLUSH on the
+    sub-device queues according to sector ranges and subsequent
+    writes.  It's not obvious, but my barrier proposal which started
+    this thread is designed to support an efficient inter-sub-device
+    flush-barrier when necessary, and single-sub-device tag-barrier
+    when possible.
+
+-- Jamie
