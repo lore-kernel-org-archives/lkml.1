@@ -1,124 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764145AbYB0BF0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933308AbYB0BFq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764145AbYB0BF0 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Feb 2008 20:05:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932639AbYB0BFA
+	id S933308AbYB0BFq (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Feb 2008 20:05:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764389AbYB0BFa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Feb 2008 20:05:00 -0500
-Received: from gv-out-0910.google.com ([216.239.58.184]:26254 "EHLO
-	gv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760347AbYB0BE6 (ORCPT
+	Tue, 26 Feb 2008 20:05:30 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:54598
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1764382AbYB0BF2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Feb 2008 20:04:58 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=vIxtnZLDHXF8N6RvxguhKfXEW6muFANH7d85cOWZfEb63g/8b0UQmECWr6Sl5fPa3EZv+SuUfsVzG9Ocz4gNY138j5hzL0/J5KljLiN9G+e3t2Ldrn2o32rrGljsd/Dk7ddY2zZrkj+NlTswE4xZzZ+HhO49nysFWX9dHUqoHP0=
-Message-ID: <a8e1da0802261704t34eae4b9q758d22ee88fff3a9@mail.gmail.com>
-Date: Wed, 27 Feb 2008 09:04:55 +0800
-From: "Dave Young" <hidave.darkstar@gmail.com>
-To: paulmck@linux.vnet.ibm.com
-Subject: Re: [BUG] using smp_processor_id() in preemptible as suspending
-Cc: "Andrew Morton" <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       "Ingo Molnar" <mingo@elte.hu>
-In-Reply-To: <20080226194504.GC8395@linux.vnet.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Tue, 26 Feb 2008 20:05:28 -0500
+Date: Tue, 26 Feb 2008 17:06:13 -0800 (PST)
+Message-Id: <20080226.170613.107688605.davem@davemloft.net>
+To: mikpe@it.uu.se
+Cc: sparclinux@vger.kernel.org, linux-kernel@vger.kernel.org,
+       tglx@linutronix.de
+Subject: Re: [BUG] 2.6.25-rc3 hangs in early boot on Sun Ultra5
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20080226.164900.193701385.davem@davemloft.net>
+References: <18371.10207.58819.188510@alkaid.it.uu.se>
+	<18371.54294.748777.976300@harpo.it.uu.se>
+	<20080226.164900.193701385.davem@davemloft.net>
+X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20080226082411.GA2853@darkstar.te-china.tietoenator.com>
-	 <20080226083354.be0a7351.akpm@linux-foundation.org>
-	 <20080226194504.GC8395@linux.vnet.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Feb 27, 2008 at 3:45 AM, Paul E. McKenney
-<paulmck@linux.vnet.ibm.com> wrote:
-> On Tue, Feb 26, 2008 at 08:33:54AM -0800, Andrew Morton wrote:
->  > On Tue, 26 Feb 2008 16:24:11 +0800 Dave Young <hidave.darkstar@gmail.com> wrote:
->  >
->  > > I don't know whom I should mail to, could you cc the proper guy? Thanks.
->
->  Hello, Dave,
->
->  Would you be willing to try out the following (untested, might not even
->  compile) patch show at the very end of this message?  This assumes that
->  you were running with CONFIG_PREEMPT_RCU, which seems most likely based
->  on looking at your oops.
+From: David Miller <davem@davemloft.net>
+Date: Tue, 26 Feb 2008 16:49:00 -0800 (PST)
 
-Built ok, but can't even resume now. (dark screen with cursor blinking
-on top-left of minitor)
+[ Thomas, forgot to CC: you earlier, changeset
+  a0c1e9073ef7428a14309cba010633a6cd6719ea ("futex: runtime enable pi
+  and robust functionality") broke sparc64. ]
 
-Forgot to tell, I saw this bug as enable PM_DEBUG, maybe it's related
-to PM issue?
+> From: Mikael Pettersson <mikpe@it.uu.se>
+> Date: Tue, 26 Feb 2008 09:55:50 +0100
+> 
+> > Minor update: rc2-git7 has the slow initial console behaviour,
+> > but successfully switches to the framebuffer. rc2-git8 however
+> > hangs in the console handover. So I'll bisect git7->git8 next.
+> 
+> Between the VT layer registering it's console and the atyfb
+> driver initializing we get a crash, and it happens on all
+> sparc64 systems.  It is caused by this commit and I am working
+> on a fix:
 
->
->                                                         Thanx, Paul
->
->
->
->  > > [  118.331674] acpi LNXSYSTM:00: suspend
->  > > [  118.331674] Disabling non-boot CPUs ...
->  > > [  118.331674] CPU0 attaching NULL sched-domain.
->  > > [  118.331674] CPU1 attaching NULL sched-domain.
->  > > [  118.438750] CPU 1 is now offline
->  > > [  118.438750] lockdep: fixing up alternatives.
->  > > [  118.438750] SMP alternatives: switching to UP code
->  > > [  118.438750] BUG: using smp_processor_id() in preemptible [00000000] code: s2ram/2818
->  > > [  118.438750] caller is rcu_offline_cpu+0x15a/0x1c0
->  > > [  118.438750] Pid: 2818, comm: s2ram Not tainted 2.6.25-rc3-test #2
->  > > [  118.438750]  [<c0129738>] ? printk+0x18/0x20
->  > > [  118.438750]  [<c025c551>] debug_smp_processor_id+0xb1/0xc0
->  > > [  118.438750]  [<c0161f8a>] rcu_offline_cpu+0x15a/0x1c0
->  > > [  118.438750]  [<c03d408f>] rcu_cpu_notify+0x3f/0x60
->  > > [  118.438750]  [<c0141b0d>] notifier_call_chain+0x3d/0x80
->  > > [  118.438750]  [<c0141db9>] __raw_notifier_call_chain+0x19/0x20
->  > > [  118.438750]  [<c0141dda>] raw_notifier_call_chain+0x1a/0x20
->  > > [  118.438750]  [<c015262b>] _cpu_down+0x13b/0x230
->  > > [  118.438750]  [<c01527c9>] disable_nonboot_cpus+0x49/0xd0
->  > > [  118.438750]  [<c0157492>] suspend_devices_and_enter+0x72/0x130
->  > > [  118.438750]  [<c0129738>] ? printk+0x18/0x20
->  > > [  118.438750]  [<c0157623>] enter_state+0xb3/0xe0
->  > > [  118.438750]  [<c015777d>] state_store+0x7d/0xc0
->  > > [  118.438750]  [<c0157700>] ? state_store+0x0/0xc0
->  > > [  118.438750]  [<c0249e4e>] kobj_attr_store+0x2e/0x40
->  > > [  118.438750]  [<c01ca957>] flush_write_buffer+0x47/0x70
->  > > [  118.438750]  [<c01ca9c9>] sysfs_write_file+0x49/0x70
->  > > [  118.438750]  [<c0188d41>] vfs_write+0x91/0x140
->  > > [  118.438750]  [<c0188e9d>] sys_write+0x3d/0x70
->  > > [  118.438750]  [<c0104fca>] syscall_call+0x7/0xb
->  > > [  118.438750]  =======================
->  > > [  118.438750] CPU0 attaching NULL sched-domain.
->  > > [  118.440335] CPU1 is down
->  >
->  > Paul & Ingo I guess
->  >
->  > > My .config
->  >
->  > Doesn't tell us whether you'r eusing CONFIG_CLASSIC_RCU or
->  > CONFIG_PREEMPT_RCU.  I assume CONFIG_CLASSIC_RCU, if you ran `make
->  > oldconfig'.
->  >
->  > Which kernel are you running here?
->
->  Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
->  ---
->
->   rcupreempt.c |    2 +-
->   1 file changed, 1 insertion(+), 1 deletion(-)
->
->  diff -urpNa -X dontdiff linux-2.6.25-rc2/kernel/rcupreempt.c linux-2.6.25-rc2-rcuoffline/kernel/rcupreempt.c
->  --- linux-2.6.25-rc2/kernel/rcupreempt.c        2008-02-24 10:30:44.000000000 -0800
->  +++ linux-2.6.25-rc2-rcuoffline/kernel/rcupreempt.c     2008-02-26 11:39:33.000000000 -0800
->  @@ -702,8 +702,8 @@ void rcu_offline_cpu(int cpu)
->          * fix.
->          */
->
->  -       rdp = RCU_DATA_ME();
->         spin_lock_irqsave(&rdp->lock, flags);
->  +       rdp = RCU_DATA_ME();
->         *rdp->nexttail = list;
->         if (list)
->                 rdp->nexttail = tail;
->
+The following patch will let things "work" but the trick being used
+here by the FUTEX layer is borderline valid in my opinion.
+
+Basically for 10+ years on sparc64 we've had this check here in the
+fault path, which makes sure that if we're processing an exception
+table entry we really, truly, are doing an access to userspace from
+the kernel.  Otherwise we OOPS.
+
+What the FUTEX checking code is doing now is doing a "user" access
+with set_fs(KERNEL_DS) since it runs from the kernel bootup early init
+sequence.  And this is illegal according to the existing checks.
+
+When we do set_fs(KERNEL_DS) then pass a "user" pointer down
+into a system call or something like that, we give it a pointer
+that "cannot fault".  So if we get into the fault handling
+path here for a case like that we really do want to scream and
+print out an OOPS message in my opinion.
+
+I realize that not many platforms other than sparc64 can check
+for things this precisely, but it's something to consider.
+
+Did this FUTEX change go into -stable too?
+
+diff --git a/arch/sparc64/mm/fault.c b/arch/sparc64/mm/fault.c
+index e2027f2..9183633 100644
+--- a/arch/sparc64/mm/fault.c
++++ b/arch/sparc64/mm/fault.c
+@@ -244,16 +244,8 @@ static void do_kernel_fault(struct pt_regs *regs, int si_code, int fault_code,
+ 	if (regs->tstate & TSTATE_PRIV) {
+ 		const struct exception_table_entry *entry;
+ 
+-		if (asi == ASI_P && (insn & 0xc0800000) == 0xc0800000) {
+-			if (insn & 0x2000)
+-				asi = (regs->tstate >> 24);
+-			else
+-				asi = (insn >> 5);
+-		}
+-	
+-		/* Look in asi.h: All _S asis have LS bit set */
+-		if ((asi & 0x1) &&
+-		    (entry = search_exception_tables(regs->tpc))) {
++		entry = search_exception_tables(regs->tpc);
++		if (entry) {
+ 			regs->tpc = entry->fixup;
+ 			regs->tnpc = regs->tpc + 4;
+ 			return;
