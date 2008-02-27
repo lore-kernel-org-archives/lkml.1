@@ -1,127 +1,120 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933250AbYB0AtB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765647AbYB0Axq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933250AbYB0AtB (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Feb 2008 19:49:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755549AbYB0Asu
+	id S1765647AbYB0Axq (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Feb 2008 19:53:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751261AbYB0Axh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Feb 2008 19:48:50 -0500
-Received: from simmts7-srv.bellnexxia.net ([206.47.199.165]:42860 "EHLO
-	simmts7-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755431AbYB0Ast (ORCPT
+	Tue, 26 Feb 2008 19:53:37 -0500
+Received: from wa-out-1112.google.com ([209.85.146.182]:40810 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751143AbYB0Axh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Feb 2008 19:48:49 -0500
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: Ao8CALpBxEecIsR1/2dsb2JhbAAIgxmHDIgGnBU
-Message-ID: <47C4B36E.40807@gmail.com>
-Date: Tue, 26 Feb 2008 20:48:46 -0400
-From: Kevin Winchester <kjwinchester@gmail.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20080214)
+	Tue, 26 Feb 2008 19:53:37 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=eBMb3GXyxZVfF038UcGYId0RayG7QHWu7KGcuZn+ATsvH+1WyOyH7qUFlZApDC8MHgbjqFDEakvvuOmHUDCnaHibbiVWCgUEnTOesCbqDIRBzcJWRa9JqkDDP24ca601MQv6EA/iVMqRSnnL2atPHSI/0SgKHcryYrCSKGAsAX8=
+Message-ID: <f19298770802261653u62a966d3ud445292a2846d131@mail.gmail.com>
+Date: Wed, 27 Feb 2008 03:53:36 +0300
+From: "Alexey Zaytsev" <alexey.zaytsev@gmail.com>
+To: "Michael Buesch" <mb@bu3sch.de>
+Subject: Re: bcm43xx regression in 2.6.24 (with patch)
+Cc: "John W. Linville" <linville@tuxdriver.com>, "Ingo Molnar" <mingo@elte.hu>,
+       "Alexey Zaytsev" <zaytsev.a@protei.ru>, "Greg KH" <greg@kroah.com>,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <200802270143.17484.mb@bu3sch.de>
 MIME-Version: 1.0
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-CC: Pavel Machek <pavel@ucw.cz>, LKML <linux-kernel@vger.kernel.org>,
-       len.brown@intel.com, linux-pm@lists.linux-foundation.org
-Subject: Re: broken suspend to ram with velocity driver
-References: <20080224162309.3e67dd22.sfr@canb.auug.org.au> <20080225092628.GA493@elf.ucw.cz> <47C35C53.5010609@gmail.com> <200802260149.40659.rjw@sisk.pl>
-In-Reply-To: <200802260149.40659.rjw@sisk.pl>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <47BEAF3B.3080809@protei.ru> <200802270127.22159.mb@bu3sch.de>
+	 <f19298770802261632y4406efc5p1c678c6ef6504c2f@mail.gmail.com>
+	 <200802270143.17484.mb@bu3sch.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rafael J. Wysocki wrote:
-> On Tuesday, 26 of February 2008, Kevin Winchester wrote:
->> Pavel Machek wrote:
-> [--snip--]
->> (Trimmed cc, since this is really just more of a PM discussion)
->>
->> No modules here...
->>
->> I recompiled the kernel without the velocity driver, and got behaviour more
->> comparable to the other failures I've experienced in the past: 
->>
+On Wed, Feb 27, 2008 at 3:43 AM, Michael Buesch <mb@bu3sch.de> wrote:
+>
+> On Wednesday 27 February 2008 01:32:21 Alexey Zaytsev wrote:
+>  > On Wed, Feb 27, 2008 at 3:27 AM, Michael Buesch <mb@bu3sch.de> wrote:
+>  > >
+>  > > On Wednesday 27 February 2008 01:23:17 Alexey Zaytsev wrote:
+>  > >  > On Wed, Feb 27, 2008 at 1:47 AM, John W. Linville
+>  > >  > <linville@tuxdriver.com> wrote:
+>  > >  > > On Wed, Feb 27, 2008 at 01:12:32AM +0300, Alexey Zaytsev wrote:
+>  > >  > >  > On Wed, Feb 27, 2008 at 1:04 AM, Michael Buesch <mb@bu3sch.de> wrote:
+>  > >  > >
+>  > >  > >
+>  > >  > > > >  Besides that the bcm43xx driver is not broken. That's the whole reason
+>  > >  > >  > >  this damn thread started at all. So it can't be broken.
+>  > >  > >  > >
+>  > >  > >  > Can't agree here. The bcm43xx driver used to work with 2.6.23 without requiring
+>  > >  > >  > any module magic.
+>  > >  > >
+>  > >  > >  At the risk of prolonging things... :-(
+>  > >  > >
+>  > >  > >  Isn't the fundamental problem here that the ssb driver claims the same
+>  > >  > >  PCI IDs as the bcm43xx driver?  He have hit this same issue a number
+>  > >  > >  of times: 8139too vs.  8139cp, eepro vs. e100, sk98lin vs. skge,
+>  > >  > >  and I'm sure there are more.  I admit that this situation is a bit
+>  > >  > >  more confusing, since the user is less likely to predict a conflict
+>  > >  > >  between bcm43xx and the ssb driver.  This is especially true since
+>  > >  > >  the user isn't even selecting ssb directly, but is instead selecting
+>  > >  > >  the apparently unrelated b44.
+>  > >  > >
+>  > >  > >  Still, the bcm43xx driver is not fundamentally damaged.  This is
+>  > >  > >  fundamentally a "two drivers claiming the same PCI ID" issue, not a
+>  > >  > >  "you broke my driver" one.
+>  > >  >
+>  > >  > Is there any reason the ssb driver should claim the bcm43xx pci ids in
+>  > >  > the first place? I have very little understanding what the Sonic Silicon
+>  > >  > Backplane really is, but I see that the b44 driver claims its PCI ids
+>  > >  > directly. I also think I understand why the b43/b43legacy drivers can't
+>  > >  > claim the ids directly: because the driver-device matching is done not
+>  > >  > with the pci bus methods, but with the ssb bus methods, and it would
+>  > >  > be impossible to automatically choose the right driver for the right
+>  > >  > device (with same ssb ids), as the first of the two drivers loaded would
+>  > >  > succeed in probe()'ing the pci "ssb bridge" device, and not letting the
+>  > >  > other to take control, even after moments later the ssb probe for the
+>  > >  > non-supported ssb device would fail. (Or am I completely wrong?)
+>  > >  >
+>  > >  > That said, I still think that the ssb driver claims the wrong pci ids,
+>  > >  > which is especially wrong if the the b43/b43legacy drivers are not
+>  > >  > even built. And my patch fixes exactly this problem - the ssb driver
+>  > >  > no more claims the broadcom pci ids, when the b43/b43legacy drivers
+>  > >  > are not built.
+>  > >  >
+>  > >  > One better solution I think might be to move the b43_pci_bridge.c
+>  > >  > code to a separate module, and let the b43/b43legacy drivers
+>  > >  > depend on it, but as I said, I have little knowledge in the
+>  > >  > ssb stuff, so I did it the easy way.
+>  > >
+>  > >  See the comment in b43_pci_bridge.c
+>  > >
+>  > Yes, I've seen it. And this design, kind of, causes me some trouble.
+>
+>  There are several reasons to not do a seperate module.
+>
+>  First one being: People won't load it and complain about a regression.
+>  Yeah, stupid stuff like that happens all the time. That's the reason we
+>  SELECT the ssb code instead of using DEPENDS ON. People will otherwise not
+>  enable it and report regressions.
+>  And please don't say this won't happen. It _did_ happen when b44-PCI was
+>  a seperate kconfig option. People reported regressions, although there were none.
+>
+I mean, not to make it a separate config option, of course it should
+be hidden and
+autoselected, but a separate module with maybe a symbol both b43/b43legacy
+could depend on.
 
-<snip old trace>
+>  Second one being: It's overkill to have a seperate module for two lines of code
+>  and a PCI ID table.
+>
+>  Third one being: We want the code to be as small as possible, as it must
+>  all run on embedded machines. In general being as small as possible should
+>  be the way to go.
+>
 
->>
->>
->> I don't see anything there that would explain the failure, but the console
->> never comes back, and I am forced to hard reset the box.  Anything else I can
->> try?  
-> 
-> First, let's try to remove some noise.
-> 
-> Please test 2.6.25-rc3 with commit 559bbe6cbd0d8c68d40076a5f7dc98e3bf5864b2
-> "power_state: get rid of write-only variable in SATA" reverted and with the
-> patch from http://marc.info/?l=linux-acpi&m=120389632114090&w=2 applied.
-> 
-> Second, what exactly do you do to suspend to RAM?
-> 
-
-And here is the trace from the kernel with the revert and patch:
-
-Feb 26 20:42:14 alekhine kernel: [  278.487844] PM: Syncing filesystems ... done.
-Feb 26 20:42:40 alekhine kernel: [  278.523599] Freezing user space processes ... (elapsed 0.00 seconds) done.
-Feb 26 20:42:40 alekhine kernel: [  278.525885] Freezing remaining freezable tasks ... (elapsed 0.00 seconds) done.
-Feb 26 20:42:40 alekhine kernel: [  278.526196] ACPI: Preparing to enter system sleep state S3
-Feb 26 20:42:40 alekhine kernel: [  278.627907] Suspending console(s)
-Feb 26 20:42:40 alekhine kernel: [  278.631643] sd 3:0:0:0: [sda] Synchronizing SCSI cache
-Feb 26 20:42:40 alekhine kernel: [  278.738062] sd 3:0:0:0: [sda] Stopping disk
-Feb 26 20:42:40 alekhine kernel: [  278.739041] ACPI: PCI interrupt for device 0000:00:11.5 disabled
-Feb 26 20:42:40 alekhine kernel: [  278.749597] ACPI: PCI interrupt for device 0000:00:10.4 disabled
-Feb 26 20:42:40 alekhine kernel: [  278.760383] ACPI: PCI interrupt for device 0000:00:10.3 disabled
-Feb 26 20:42:40 alekhine kernel: [  278.771183] ACPI: PCI interrupt for device 0000:00:10.2 disabled
-Feb 26 20:42:40 alekhine kernel: [  278.782017] ACPI: PCI interrupt for device 0000:00:10.1 disabled
-Feb 26 20:42:40 alekhine kernel: [  278.792851] ACPI: PCI interrupt for device 0000:00:10.0 disabled
-Feb 26 20:42:40 alekhine kernel: [  278.803686] ACPI: PCI interrupt for device 0000:00:0f.1 disabled
-Feb 26 20:42:40 alekhine kernel: [  278.814329] ACPI: PCI interrupt for device 0000:00:0f.0 disabled
-Feb 26 20:42:40 alekhine kernel: [  278.837854] Intel machine check architecture supported.
-Feb 26 20:42:40 alekhine kernel: [  278.837854] Intel machine check reporting enabled on CPU#0.
-Feb 26 20:42:40 alekhine kernel: [  278.840865] ACPI: PCI Interrupt 0000:00:0f.0[B] -> Link [ALKA] -> GSI 20 (level, low) -> IRQ 20
-Feb 26 20:42:40 alekhine kernel: [  278.840866] ACPI: PCI Interrupt 0000:00:0f.1[A] -> Link [ALKA] -> GSI 20 (level, low) -> IRQ 20
-Feb 26 20:42:40 alekhine kernel: [  278.846866] ACPI: PCI Interrupt 0000:00:10.0[A] -> GSI 21 (level, low) -> IRQ 21
-Feb 26 20:42:40 alekhine kernel: [  278.846866] usb usb2: root hub lost power or was reset
-Feb 26 20:42:40 alekhine kernel: [  278.857689] ACPI: PCI Interrupt 0000:00:10.1[A] -> GSI 21 (level, low) -> IRQ 21
-Feb 26 20:42:40 alekhine kernel: [  278.857689] usb usb3: root hub lost power or was reset
-Feb 26 20:42:40 alekhine kernel: [  278.868560] ACPI: PCI Interrupt 0000:00:10.2[B] -> GSI 21 (level, low) -> IRQ 21
-Feb 26 20:42:40 alekhine kernel: [  278.868560] usb usb4: root hub lost power or was reset
-Feb 26 20:42:40 alekhine kernel: [  278.879436] ACPI: PCI Interrupt 0000:00:10.3[B] -> GSI 21 (level, low) -> IRQ 21
-Feb 26 20:42:40 alekhine kernel: [  278.879436] usb usb5: root hub lost power or was reset
-Feb 26 20:42:40 alekhine kernel: [  278.890311] ACPI: PCI Interrupt 0000:00:10.4[C] -> GSI 21 (level, low) -> IRQ 21
-Feb 26 20:42:40 alekhine kernel: [  278.901173] ACPI: PCI Interrupt 0000:00:11.5[C] -> GSI 22 (level, low) -> IRQ 22
-Feb 26 20:42:40 alekhine kernel: [  278.903446] ACPI: PCI Interrupt 0000:01:00.0[A] -> GSI 16 (level, low) -> IRQ 16
-Feb 26 20:42:40 alekhine kernel: [  278.903642] sd 3:0:0:0: [sda] Starting disk
-Feb 26 20:42:40 alekhine kernel: [  279.144623] ata3.01: ACPI cmd ef/03:0c:00:00:00:b0 filtered out
-Feb 26 20:42:40 alekhine kernel: [  279.144623] ata3.01: ACPI cmd ef/03:42:00:00:00:b0 filtered out
-Feb 26 20:42:40 alekhine kernel: [  279.297860] ata3.00: ACPI cmd ef/03:0c:00:00:00:a0 filtered out
-Feb 26 20:42:40 alekhine kernel: [  279.297860] ata3.00: ACPI cmd ef/03:42:00:00:00:a0 filtered out
-Feb 26 20:42:40 alekhine kernel: [  279.453232] ata3.00: configured for UDMA/33
-Feb 26 20:42:40 alekhine kernel: [  279.640338] ata3.01: configured for UDMA/33
-Feb 26 20:42:40 alekhine kernel: [  283.485517] ata4.00: ACPI cmd ef/03:0c:00:00:00:a0 filtered out
-Feb 26 20:42:40 alekhine kernel: [  283.485517] ata4.00: ACPI cmd ef/03:45:00:00:00:a0 filtered out
-Feb 26 20:42:40 alekhine kernel: [  283.487637] ata4.00: configured for UDMA/100
-Feb 26 20:42:40 alekhine kernel: [  283.490010] sd 3:0:0:0: [sda] 156301488 512-byte hardware sectors (80026 MB)
-Feb 26 20:42:40 alekhine kernel: [  283.490030] sd 3:0:0:0: [sda] Write Protect is off
-Feb 26 20:42:40 alekhine kernel: [  283.490137] sd 3:0:0:0: [sda] Write cache: enabled, read cache: enabled, doesn't support DPO or FUA
-Feb 26 20:42:40 alekhine kernel: [  284.034036] Restarting tasks ... <6>usb 2-1: USB disconnect, address 2
-Feb 26 20:42:40 alekhine kernel: [  284.061980] done.
-Feb 26 20:42:40 alekhine kernel: [  284.265037] usb 2-1: new low speed USB device using uhci_hcd and address 4
-Feb 26 20:42:40 alekhine kernel: [  284.428562] usb 2-1: configuration #1 chosen from 1 choice
-Feb 26 20:42:40 alekhine kernel: [  284.452701] input: Logitech USB Mouse as /devices/pci0000:00/0000:00:10.0/usb2/2-1/2-1:1.0/input/input5
-Feb 26 20:42:40 alekhine kernel: [  284.495532] input: USB HID v1.10 Mouse [Logitech USB Mouse] on usb-0000:00:10.0-1
-Feb 26 20:42:40 alekhine kernel: [  284.495724] usb 2-2: USB disconnect, address 3
-Feb 26 20:42:40 alekhine kernel: [  284.751242] usb 2-2: new low speed USB device using uhci_hcd and address 5
-Feb 26 20:42:41 alekhine kernel: [  284.920833] usb 2-2: configuration #1 chosen from 1 choice
-Feb 26 20:42:41 alekhine kernel: [  284.938005] input: Microsoft Microsoft<AE> Digital Media Pro Keyboard as /devices/pci0000:00/0000:00:10.0/usb2/2-2/2-2:1.0/input/input6
-Feb 26 20:42:41 alekhine kernel: [  284.977818] input: USB HID v1.11 Keyboard [Microsoft Microsoft<AE> Digital Media Pro Keyboard] on usb-0000:00:10.0-2
-Feb 26 20:42:41 alekhine kernel: [  285.012253] input: Microsoft Microsoft<AE> Digital Media Pro Keyboard as /devices/pci0000:00/0000:00:10.0/usb2/2-2/2-2:1.1/input/input7
-Feb 26 20:42:41 alekhine kernel: [  285.033838] input: USB HID v1.11 Device [Microsoft Microsoft<AE> Digital Media Pro Keyboard] on usb-0000:00:10.0-2
-
-It looks basically identical to me, but I haven't diff'ed them or
-anything.  Do you have any other options, or am I out of luck for\
-the moment?
-
-Thanks for the help,
--- 
-Kevin Winchester
+If compiled statically, which I think is the right thing for embedded systems,
+it should not take much additional space when separated from the ssb code.
