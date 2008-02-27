@@ -1,109 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755230AbYB0OgR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756017AbYB0Ogr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755230AbYB0OgR (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Feb 2008 09:36:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751595AbYB0OgE
+	id S1756017AbYB0Ogr (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Feb 2008 09:36:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754655AbYB0Ogh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Feb 2008 09:36:04 -0500
-Received: from fg-out-1718.google.com ([72.14.220.157]:47511 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751766AbYB0OgD (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Feb 2008 09:36:03 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:mime-version:content-type:content-disposition:user-agent;
-        b=gLboT+po/LuO2z4yZ8WFgX/K8HYm2g7H5Qs/jG+6PEdgjII5ykLL/gkNLXExa+etd/kh4ccUINOV1FRCPzrr21Y75c2CEqBKJpQL9sso2p14qEZzJbnkJMXcHteo2lQj2rKj6TACB3LPoAgPZQYBz696B/J4mJWuWmGEr1B2Cc8=
-Date: Tue, 26 Feb 2008 22:51:59 +0300
-From: Cyrill Gorcunov <gorcunov@gmail.com>
-To: Richard Henderson <rth@twiddle.net>
-Cc: Sam Ravnborg <sam@ravnborg.org>, LKML <linux-kernel@vger.kernel.org>
-Subject: [RFC] alpha: vmlinux.lds cleanup - use THREAD_SIZE macro
-Message-ID: <20080226195159.GC6748@cvg>
+	Wed, 27 Feb 2008 09:36:37 -0500
+Received: from ns2.suse.de ([195.135.220.15]:51621 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754647AbYB0Ogh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 Feb 2008 09:36:37 -0500
+Message-ID: <47C575E4.7050206@suse.de>
+Date: Wed, 27 Feb 2008 15:38:28 +0100
+From: Andi Kleen <ak@suse.de>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.16 (2007-06-09)
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Alexander van Heukelum <heukelum@fastmail.fm>,
+       "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Alexander van Heukelum <heukelum@mailshack.com>
+Subject: Re: [PATCH] reserve_early end-of-conventional-memory to 1MB II -
+ some numbers to put it into perspective
+References: <20080224174605.GA21661@mailshack.com> <47C22568.1010405@zytor.com> <1203958478.20033.1239002461@webmail.messagingengine.com> <20080225170134.GA15839@elte.hu> <20080225180750.GA31054@mailshack.com> <47C3053D.5060504@zytor.com> <1203968796.24935.1239027765@webmail.messagingengine.com> <20080226093046.GK9857@elte.hu>
+In-Reply-To: <20080226093046.GK9857@elte.hu>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch modifies thread_info.h header to be able to include it
-into linker script and then we're able to use THREAD_SIZE in
-vmlinux.lds
+Ingo Molnar wrote:
+> * Alexander van Heukelum <heukelum@fastmail.fm> wrote:
+> 
+>>> Either way, the code should be shared between 32 and 64 bits. There 
+>>> is nothing bitsize-specific about it!
+>> Of course. That's also why I already added the old-Dell case ;). But 
+>> one problem at a time, please!
+> 
+> i've applied your patch to x86.git#testing. Feel free to send a 
+> code-unification patch too :-)
 
-Signed-off-by: Cyrill Gorcunov <gorcunov@gmail.com>
+Just to give some perspective of this:
 
----
+On my laptop here
 
-COMPLETELY UNTESTED
-Any comments are welcome!
+ BIOS-e820: 000000000009dc00 - 00000000000a0000 (reserved)
+ BIOS-e820: 00000000000d2000 - 0000000000100000 (reserved)
 
+This means it reserves only ~193KB in the 640k-1MB area
 
-Index: linux-2.6.git/arch/alpha/kernel/vmlinux.lds.S
-===================================================================
---- linux-2.6.git.orig/arch/alpha/kernel/vmlinux.lds.S	2008-01-29 18:03:45.000000000 +0300
-+++ linux-2.6.git/arch/alpha/kernel/vmlinux.lds.S	2008-02-26 21:49:59.000000000 +0300
-@@ -1,5 +1,6 @@
- #include <asm-generic/vmlinux.lds.h>
- #include <asm/page.h>
-+#include <asm/thread_info.h>
- 
- OUTPUT_FORMAT("elf64-alpha")
- OUTPUT_ARCH(alpha)
-@@ -88,7 +89,7 @@ SECTIONS
- 
- 	PERCPU(PAGE_SIZE)
- 
--	. = ALIGN(2 * PAGE_SIZE);
-+	. = ALIGN(THREAD_SIZE);
- 	__init_end = .;
- 	/* Freed after init ends here */
- 
-Index: linux-2.6.git/include/asm-alpha/thread_info.h
-===================================================================
---- linux-2.6.git.orig/include/asm-alpha/thread_info.h	2008-01-21 19:35:26.000000000 +0300
-+++ linux-2.6.git/include/asm-alpha/thread_info.h	2008-02-26 22:00:42.000000000 +0300
-@@ -7,9 +7,7 @@
- #include <asm/processor.h>
- #include <asm/types.h>
- #include <asm/hwrpb.h>
--#endif
- 
--#ifndef __ASSEMBLY__
- struct thread_info {
- 	struct pcb_struct	pcb;		/* palcode state */
- 
-@@ -50,13 +48,14 @@ register struct thread_info *__current_t
- #define current_thread_info()  __current_thread_info
- 
- /* Thread information allocation.  */
--#define THREAD_SIZE (2*PAGE_SIZE)
- #define alloc_thread_info(tsk) \
-   ((struct thread_info *) __get_free_pages(GFP_KERNEL,1))
- #define free_thread_info(ti) free_pages((unsigned long) (ti), 1)
- 
- #endif /* __ASSEMBLY__ */
- 
-+#define THREAD_SIZE (2 * PAGE_SIZE)
-+
- #define PREEMPT_ACTIVE		0x40000000
- 
- /*
-@@ -94,6 +93,8 @@ register struct thread_info *__current_t
- #define ALPHA_UAC_MASK		(1 << TIF_UAC_NOPRINT | 1 << TIF_UAC_NOFIX | \
- 				 1 << TIF_UAC_SIGBUS)
- 
-+#ifndef __ASSEMBLY__
-+
- #define SET_UNALIGN_CTL(task,value)	({				     \
- 	task_thread_info(task)->flags = ((task_thread_info(task)->flags &    \
- 		~ALPHA_UAC_MASK)					     \
-@@ -112,5 +113,7 @@ register struct thread_info *__current_t
- 		 (int __user *)(value));				\
- 	})
- 
-+#endif /* __ASSEMBLY__ */
-+
- #endif /* __KERNEL__ */
- #endif /* _ALPHA_THREAD_INFO_H */
+With this patch it will reserve 384KB instead. This means 191KB
+are lost. While that doesn't sound too much it worth as much as
+382 patches that reduce kernel code size by 512bytes or
+worth 3820 patches that reduce kernel code by 100 bytes in terms
+of memory consumption.
+
+Now such kernel code size patches are always popular, but why undo that
+work by throwing away perfectly good memory elsewhere?
+
+Or also the laptop kernel does
+
+Freeing unused kernel memory: 340k freed
+
+This means the 193KB now lost are worth 56% of the complete
+memory that is freed by __initdata/__init. Just maintaining
+these annotations is a lot of work, but why do all that if we
+then throw away than half as much memory as they save so easily?
+
+-Andi
