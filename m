@@ -1,79 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759420AbYB0XGV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761230AbYB0XGj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759420AbYB0XGV (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Feb 2008 18:06:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751846AbYB0XGN
+	id S1761230AbYB0XGj (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Feb 2008 18:06:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760077AbYB0XGX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Feb 2008 18:06:13 -0500
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:53445 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751779AbYB0XGL (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Feb 2008 18:06:11 -0500
-Date: Wed, 27 Feb 2008 15:06:10 -0800 (PST)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Andrea Arcangeli <andrea@qumranet.com>
-cc: Jack Steiner <steiner@sgi.com>, Nick Piggin <npiggin@suse.de>,
-       akpm@linux-foundation.org, Robin Holt <holt@sgi.com>,
-       Avi Kivity <avi@qumranet.com>, Izik Eidus <izike@qumranet.com>,
-       kvm-devel@lists.sourceforge.net,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, general@lists.openfabrics.org,
-       Steve Wise <swise@opengridcomputing.com>,
-       Roland Dreier <rdreier@cisco.com>, Kanoj Sarcar <kanojsarcar@yahoo.com>,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       daniel.blueman@quadrics.com
-Subject: Re: [PATCH] mmu notifiers #v7
-In-Reply-To: <20080227192610.GF28483@v2.random>
-Message-ID: <Pine.LNX.4.64.0802271503050.13186@schroedinger.engr.sgi.com>
-References: <20080219084357.GA22249@wotan.suse.de> <20080219135851.GI7128@v2.random>
- <20080219231157.GC18912@wotan.suse.de> <20080220010941.GR7128@v2.random>
- <20080220103942.GU7128@v2.random> <20080221045430.GC15215@wotan.suse.de>
- <20080221144023.GC9427@v2.random> <20080221161028.GA14220@sgi.com>
- <20080227192610.GF28483@v2.random>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Wed, 27 Feb 2008 18:06:23 -0500
+Received: from chilli.pcug.org.au ([203.10.76.44]:38075 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1759646AbYB0XGV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 Feb 2008 18:06:21 -0500
+Date: Thu, 28 Feb 2008 10:06:18 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Theodore Tso <tytso@MIT.EDU>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-next@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: linux-next: Tree for Feb 27
+Message-Id: <20080228100618.3eb58692.sfr@canb.auug.org.au>
+In-Reply-To: <20080227195525.GC8840@mit.edu>
+References: <20080227170300.25c50fe3.sfr@canb.auug.org.au>
+	<20080226230059.58cf3cfa.akpm@linux-foundation.org>
+	<20080228010626.fd4e00d2.sfr@canb.auug.org.au>
+	<20080227195525.GC8840@mit.edu>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.8; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Thu__28_Feb_2008_10_06_18_+1100_WMHV4psAVYVbLm7="
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 27 Feb 2008, Andrea Arcangeli wrote:
+--Signature=_Thu__28_Feb_2008_10_06_18_+1100_WMHV4psAVYVbLm7=
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-> I hope this will can be considered final for .25 and be merged. Risk
-> is zero, the only discussion here is to make an API that will last
-> forever, functionality-wise all these patches provides zero risk and
-> zero overhead when MMU_NOTIFIER=n. This last patch covers KVM and GRU
-> and hopefully all other non-blocking users optimally, and the below
+Hi Ted,
 
-Ok so it somehow works slowly with GRU and you are happy with it. What 
-about the RDMA folks etc etc?
+On Wed, 27 Feb 2008 14:55:25 -0500 Theodore Tso <tytso@MIT.EDU> wrote:
+>
+> please add:
+>=20
+>    git://git.kernel.org/pub/scm/linux/kernel/git/tytso/ext4.git  next
 
-> API will hopefully last forever (but even if it lasts just for .25 and
-> .26 is changed that's fine with us, it's a kernel _internal_ API
-> anyway, there's absolutely nothing visible to userland).
+Added, thanks.
 
-Would it not be better to have a solution that fits all instead of hacking 
-something in now and then having to modify it later?
+> This contains a subset of the patches in the ext4 patch set which we
+> are explicitly planning on pushing to Linus at the next merge window.
 
- > What Christoph need to do when he's back from vacations to support
-> sleepable mmu notifiers is to add a CONFIG_XPMEM config option that
-> will switch the i_mmap_lock from a semaphore to a mutex (any other
-> change to this patch will be minor compared to that) so XPMEM hardware
-> will have kernels compiled that way. I don't see other sane ways to
-> remove the "atomic" parameter from the API (apparently required by
-> Andrew for merging something not restricted to the xpmem current usage
-> with only anonymous memory) and I don't want to have such a
-> locking-change intrusive dependency for all other non-blocking users
-> that are fine without having to alter how the VM works (for example
-> KVM and GRU). Very minor changes will be required to this patch to
-> make it work after the VM locking will be altered (for example the
-> CONFIG_XPMEM should also switch the mmu_register/unregister locking
-> from RCU to mutex as well). XPMEM then will only compile if
-> CONFIG_XPMEM=y and in turn the invalidate_range_* will support
-> scheduling inside.
+That's what we want.
 
-Hmmm.. There were earlier discussions of changing the anon vma lock to a 
-rw lock because of contention issues in large systems. Maybe we can just 
-generally switch the locks taken while walking rmaps to semaphores? That 
-would still require to put the invalidate outside of the pte lock.
+> It actually probably wouldn't hurt to pull the entire quilt series
+> into linux-next, since we don't export any interfaces that are used by
+> other linux trees, and that would give us better heads up for
+> conflicts in patches still in development conflicting with upcoming
+> core changes.  But it conflicts with the initial premise of
+> linux-next, so that's why I set up the next branch of the above git
+> tree.
 
+Thanks, the less conflicts I have to fix the better.  :-)  I guess over
+time patches will migrate into your next branch or they will appear there
+after the next Linus release.
+
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+
+--Signature=_Thu__28_Feb_2008_10_06_18_+1100_WMHV4psAVYVbLm7=
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQFHxezuTgG2atn1QN8RAszvAJ4xVYJ3clgTHuTVTh9SPdElm/GCqgCdEEAR
+JLxrPjXWYnO3pR0toq47fMk=
+=XVxl
+-----END PGP SIGNATURE-----
+
+--Signature=_Thu__28_Feb_2008_10_06_18_+1100_WMHV4psAVYVbLm7=--
