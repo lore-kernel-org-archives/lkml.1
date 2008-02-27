@@ -1,96 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755453AbYB0SJi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755939AbYB0SOe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755453AbYB0SJi (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Feb 2008 13:09:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753468AbYB0SJ2
+	id S1755939AbYB0SOe (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Feb 2008 13:14:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751843AbYB0SOZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Feb 2008 13:09:28 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:34468 "EHLO mx1.redhat.com"
+	Wed, 27 Feb 2008 13:14:25 -0500
+Received: from smtp5.pp.htv.fi ([213.243.153.39]:50233 "EHLO smtp5.pp.htv.fi"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753460AbYB0SJ1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Feb 2008 13:09:27 -0500
-Subject: Re: [PATCH 1/2] [GFS2] remove gfs2_dev_iops
-From: Steven Whitehouse <swhiteho@redhat.com>
-To: Denis Cheng <crquan@gmail.com>
-Cc: cluster-devel@redhat.com, linux-kernel@vger.kernel.org
-In-Reply-To: <1204010704-11842-1-git-send-email-crquan@gmail.com>
-References: <1204010704-11842-1-git-send-email-crquan@gmail.com>
-Content-Type: text/plain
-Organization: Red Hat UK Ltd
-Date: Wed, 27 Feb 2008 18:08:33 +0000
-Message-Id: <1204135713.3323.1.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 (2.12.3-1.fc8) 
-Content-Transfer-Encoding: 7bit
+	id S1751412AbYB0SOZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 Feb 2008 13:14:25 -0500
+Date: Wed, 27 Feb 2008 20:13:03 +0200
+From: Adrian Bunk <bunk@kernel.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Dominik Brodowski <linux@brodo.de>, linux-pcmcia@lists.infradead.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [2.6 patch] the long overdue pcmcia_ioctl.c removal
+Message-ID: <20080227181303.GB29269@cs181133002.pp.htv.fi>
+References: <20080213213115.GW3383@cs181133002.pp.htv.fi> <20080218050133.23454db1.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <20080218050133.23454db1.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
-
-Both patches are now in the -nmw git tree. Sorry for the delay. I've
-changed the comment on the second one since that commit ID didn't appear
-to match up with the right patch.
-
-Steve.
-
-On Tue, 2008-02-26 at 15:25 +0800, Denis Cheng wrote:
-> struct inode_operations gfs2_dev_iops is always the same as gfs2_file_iops,
-> since Jan 2006, when GFS2 merged into mainstream kernel.
+On Mon, Feb 18, 2008 at 05:01:33AM -0800, Andrew Morton wrote:
+> On Wed, 13 Feb 2008 23:31:15 +0200 Adrian Bunk <bunk@kernel.org> wrote:
 > 
-> So one of them could be removed.
+> > pcmcia_ioctl.c was scheduled for removal in 2005, and it has a 
+> > deprecation printk() since 2005 (sic).
+> > 
+> > This patch contains the long overdue removal and the cleanups that are 
+> > now possible.
 > 
-> Signed-off-by: Denis Cheng <crquan@gmail.com>
-> ---
->  fs/gfs2/inode.c     |    2 +-
->  fs/gfs2/ops_inode.c |   10 ----------
->  fs/gfs2/ops_inode.h |    1 -
->  3 files changed, 1 insertions(+), 12 deletions(-)
-> 
-> diff --git a/fs/gfs2/inode.c b/fs/gfs2/inode.c
-> index 37725ad..1069ceb 100644
-> --- a/fs/gfs2/inode.c
-> +++ b/fs/gfs2/inode.c
-> @@ -149,7 +149,7 @@ void gfs2_set_iop(struct inode *inode)
->  	} else if (S_ISLNK(mode)) {
->  		inode->i_op = &gfs2_symlink_iops;
->  	} else {
-> -		inode->i_op = &gfs2_dev_iops;
-> +		inode->i_op = &gfs2_file_iops;
->  	}
->  
->  	unlock_new_inode(inode);
-> diff --git a/fs/gfs2/ops_inode.c b/fs/gfs2/ops_inode.c
-> index e874129..ab9a073 100644
-> --- a/fs/gfs2/ops_inode.c
-> +++ b/fs/gfs2/ops_inode.c
-> @@ -1148,16 +1148,6 @@ const struct inode_operations gfs2_file_iops = {
->  	.removexattr = gfs2_removexattr,
->  };
->  
-> -const struct inode_operations gfs2_dev_iops = {
-> -	.permission = gfs2_permission,
-> -	.setattr = gfs2_setattr,
-> -	.getattr = gfs2_getattr,
-> -	.setxattr = gfs2_setxattr,
-> -	.getxattr = gfs2_getxattr,
-> -	.listxattr = gfs2_listxattr,
-> -	.removexattr = gfs2_removexattr,
-> -};
-> -
->  const struct inode_operations gfs2_dir_iops = {
->  	.create = gfs2_create,
->  	.lookup = gfs2_lookup,
-> diff --git a/fs/gfs2/ops_inode.h b/fs/gfs2/ops_inode.h
-> index fd8cee2..14b4b79 100644
-> --- a/fs/gfs2/ops_inode.h
-> +++ b/fs/gfs2/ops_inode.h
-> @@ -15,7 +15,6 @@
->  extern const struct inode_operations gfs2_file_iops;
->  extern const struct inode_operations gfs2_dir_iops;
->  extern const struct inode_operations gfs2_symlink_iops;
-> -extern const struct inode_operations gfs2_dev_iops;
->  extern const struct file_operations gfs2_file_fops;
->  extern const struct file_operations gfs2_dir_fops;
->  extern const struct file_operations gfs2_file_fops_nolock;
+> I've had this in -mm for ages, with a note that Dominik had a problem with
+> it.  Maybe there are subtleties here, dunno.
+
+This removal has bells and whistles and printk() since 2005...
+
+Dominik, what exactly is the problem why we can't remove it now?
+
+cu
+Adrian
+
+-- 
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
 
