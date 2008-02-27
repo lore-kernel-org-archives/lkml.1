@@ -1,66 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757902AbYB0WAh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760478AbYB0WAz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757902AbYB0WAh (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Feb 2008 17:00:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757663AbYB0WAE
+	id S1760478AbYB0WAz (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Feb 2008 17:00:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757771AbYB0WAo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Feb 2008 17:00:04 -0500
-Received: from rv-out-0910.google.com ([209.85.198.184]:46403 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757459AbYB0WAC (ORCPT
+	Wed, 27 Feb 2008 17:00:44 -0500
+Received: from vs166246.vserver.de ([62.75.166.246]:57710 "EHLO
+	vs166246.vserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757043AbYB0WAn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Feb 2008 17:00:02 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=fQOiRHwTByLNDwBVQYfHIs5vtEX13XrAuE9uJHswY+cDlgF/NeP0sRkLy0oK/NypoQBSEcCi7VnLdsMPbLUmXaQFj5quA8qLRq4EUjh0MfQl6MfbM8sk7/886tYK7/Q/cJHtThJtpfhqqkpjRPtPoyRbF1kmIsWv+X7rWxGactM=
-Message-ID: <86802c440802271400k5e981d40vfd278c07c6bf04f5@mail.gmail.com>
-Date: Wed, 27 Feb 2008 14:00:01 -0800
-From: "Yinghai Lu" <yhlu.kernel@gmail.com>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: [PATCH] x86: X86_HT always enable on X86_64 SMP
-Cc: "Adrian Bunk" <bunk@kernel.org>,
-       "Hiroshi Shimamoto" <h-shimamoto@ct.jp.nec.com>,
-       "Ingo Molnar" <mingo@elte.hu>, "Thomas Gleixner" <tglx@linutronix.de>,
-       "Sam Ravnborg" <sam@ravnborg.org>, linux-kernel@vger.kernel.org
-In-Reply-To: <47C5D693.3030207@zytor.com>
+	Wed, 27 Feb 2008 17:00:43 -0500
+From: Michael Buesch <mb@bu3sch.de>
+To: "John W. Linville" <linville@tuxdriver.com>
+Subject: Re: [PATCH] Fix the bcm43xx driver breakage in 2.6.24/25.
+Date: Wed, 27 Feb 2008 22:58:33 +0100
+User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
+Cc: Larry Finger <larry.finger@lwfinger.net>,
+       Alexey Zaytsev <alexey.zaytsev@gmail.com>,
+       Stefano Brivio <stefano.brivio@polimi.it>,
+       Jeff Garzik <jgarzik@pobox.com>, Greg KH <greg@kroah.com>,
+       Pekka Enberg <penberg@cs.helsinki.fi>, Ingo Molnar <mingo@elte.hu>,
+       linux-kernel@vger.kernel.org
+References: <47C01D03.9030601@gmail.com> <47C19ABA.4040904@lwfinger.net> <20080227201550.GG3078@tuxdriver.com>
+In-Reply-To: <20080227201550.GG3078@tuxdriver.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <47C5D32E.8070308@ct.jp.nec.com>
-	 <20080227212658.GU29269@cs181133002.pp.htv.fi>
-	 <47C5D693.3030207@zytor.com>
+Message-Id: <200802272258.33888.mb@bu3sch.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Feb 27, 2008 at 1:30 PM, H. Peter Anvin <hpa@zytor.com> wrote:
-> Adrian Bunk wrote:
->  > On Wed, Feb 27, 2008 at 01:16:30PM -0800, Hiroshi Shimamoto wrote:
->  >> From: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
->  >>
->  >> X86_HT is used for hyperthreading or multicore on 32-bit.
->  >> The X86_HT on 64-bit is different from 32-bit, it means hyperthreading only.
->  >> And X86_HT is not used on 64-bit except from cpu/initel_cacheinfo.c.
->  >>
->  >> Unify X86_HT for hyperthreading or multicore.
->  >> Turn X86_HT on when X86_64 and SMP are enabled.
->  >
->  > Please fix it properly instead - fiddling around with it the way you do
->  > only asks for trouble in the future.
->  >
->  > What we need are two different variables for:
->  > - hyperthreading and
->  > - multicore
->  >
->
->  He does, and calls them SCHED_SMT and SCHED_MC respectively.
->
->  It's not particularly clear to me what X86_HT is meant to be used for
->  anymore at all.
+On Wednesday 27 February 2008 21:15:50 John W. Linville wrote:
+> On Sun, Feb 24, 2008 at 09:26:34AM -0700, Larry Finger wrote:
+> 
+> > I have reviewed the above patches and tested them with what I believe to be 
+> > most combinations. Everything worked and corrected the unintended 
+> > consequence of breaking bcm43xx when b44 is included. I agree that these 
+> > patches belong in 2.6.25 and stable (2.6.24). Of course, the problem goes 
+> > away in 2.6.26.
+> 
+> I can't say I really like Alexey's patches, but I guess they are OK.
+> I think I like the "b43_pci_bridge as a module" option a little better,
+> but as Michael illustrated there are problems with that approach too.
 
-he made X86_HT can be enabled when only Opteron supported is enabled.
+Well, I do like  "b43_pci_bridge as a module" more than this inter-dependency
+crap. Yeah, I don't like "b43_pci_bridge as a module" a lot, but certainly
+more than Alexey's patch.
 
-it should be stated in the comments.
-YH
+-- 
+Greetings Michael.
