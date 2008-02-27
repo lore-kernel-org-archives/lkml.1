@@ -1,121 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760214AbYB0WhT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760112AbYB0WjA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760214AbYB0WhT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Feb 2008 17:37:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751547AbYB0WhI
+	id S1760112AbYB0WjA (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Feb 2008 17:39:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751626AbYB0Wiv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Feb 2008 17:37:08 -0500
-Received: from agminet01.oracle.com ([141.146.126.228]:43584 "EHLO
-	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751008AbYB0WhG (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Feb 2008 17:37:06 -0500
-Date: Wed, 27 Feb 2008 14:36:30 -0800
-From: Joel Becker <Joel.Becker@oracle.com>
-To: Adrian Bunk <bunk@kernel.org>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [RFC: 2.6 patch] fs/configfs/ cleanups
-Message-ID: <20080227223629.GA19656@mail.oracle.com>
-Mail-Followup-To: Adrian Bunk <bunk@kernel.org>,
-	linux-kernel@vger.kernel.org
-References: <20080227212048.GM29269@cs181133002.pp.htv.fi>
+	Wed, 27 Feb 2008 17:38:51 -0500
+Received: from smtp5.pp.htv.fi ([213.243.153.39]:36556 "EHLO smtp5.pp.htv.fi"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750877AbYB0Wiv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 Feb 2008 17:38:51 -0500
+Date: Thu, 28 Feb 2008 00:37:40 +0200
+From: Adrian Bunk <bunk@kernel.org>
+To: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
+Cc: "H. Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>, Sam Ravnborg <sam@ravnborg.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] x86: X86_HT always enable on X86_64 SMP
+Message-ID: <20080227223740.GZ29269@cs181133002.pp.htv.fi>
+References: <47C5D32E.8070308@ct.jp.nec.com> <20080227212658.GU29269@cs181133002.pp.htv.fi> <47C5D693.3030207@zytor.com> <20080227215816.GX29269@cs181133002.pp.htv.fi> <47C5E158.5080900@ct.jp.nec.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <20080227212048.GM29269@cs181133002.pp.htv.fi>
-X-Burt-Line: Trees are cool.
-X-Red-Smith: Ninety feet between bases is perhaps as close as man has ever
-	come to perfection.
+In-Reply-To: <47C5E158.5080900@ct.jp.nec.com>
 User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Feb 27, 2008 at 11:20:48PM +0200, Adrian Bunk wrote:
-> This patch contains the following cleanups:
-> - make the needlessly global file.c:configfs_add_file() static
-> - #if 0 the unused inode.c:configfs_hash_and_remove()
+On Wed, Feb 27, 2008 at 02:16:56PM -0800, Hiroshi Shimamoto wrote:
+> Adrian Bunk wrote:
+> > On Wed, Feb 27, 2008 at 01:30:59PM -0800, H. Peter Anvin wrote:
+> >> Adrian Bunk wrote:
+> >>> On Wed, Feb 27, 2008 at 01:16:30PM -0800, Hiroshi Shimamoto wrote:
+> >>>> From: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
+> >>>>
+> >>>> X86_HT is used for hyperthreading or multicore on 32-bit.
+> >>>> The X86_HT on 64-bit is different from 32-bit, it means hyperthreading only.
+> >>>> And X86_HT is not used on 64-bit except from cpu/initel_cacheinfo.c.
+> >>>>
+> >>>> Unify X86_HT for hyperthreading or multicore.
+> >>>> Turn X86_HT on when X86_64 and SMP are enabled.
+> >>> Please fix it properly instead - fiddling around with it the way you do
+> >>> only asks for trouble in the future.
+> >>>
+> >>> What we need are two different variables for:
+> >>> - hyperthreading and
+> >>> - multicore
+> >> He does, and calls them SCHED_SMT and SCHED_MC respectively.
+> > 
+> > These are the already existing scheduler related variables that are 
+> > only a part of the X86_HT usages.
+> > 
+> >> It's not particularly clear to me what X86_HT is meant to be used for  
+> >> anymore at all.
+> > 
+> > grep through the source code and you find it is sometimes used for 
+> > hyperthreading and sometimes for multicore.
+> > 
+> > I don't care whether X86_HT gets splitted or perhaps even removed, but 
+> > any change to it should remove the status quo of it having two different 
+> > semantics.
 > 
-> Signed-off-by: Adrian Bunk <bunk@kernel.org>
-Acked-by: Joel Becker <joel.becker@oracle.com>
+> OK, you say "Don't mix two different semantics into one variable X86_HT", right?
 
-I'd also take a patch to remove configfs_hash_and_remove().
+Exactly.
 
-Joel
+This mixing is not your fault since it's an older problem, but instead 
+of your suggested patch we should fix it properly.
 
-> 
-> ---
-> 
-> This patch has been sent on:
-> - 17 Feb 2008
-> 
->  fs/configfs/configfs_internal.h |    3 ---
->  fs/configfs/file.c              |    3 ++-
->  fs/configfs/inode.c             |    2 ++
->  3 files changed, 4 insertions(+), 4 deletions(-)
-> 
-> 651b7a33c0dce1790230fe8ba9b7445cd69c8bde diff --git a/fs/configfs/configfs_internal.h b/fs/configfs/configfs_internal.h
-> index cca9860..378fa36 100644
-> --- a/fs/configfs/configfs_internal.h
-> +++ b/fs/configfs/configfs_internal.h
-> @@ -63,9 +63,6 @@ extern int configfs_create_file(struct config_item *, const struct configfs_attr
->  extern int configfs_make_dirent(struct configfs_dirent *,
->  				struct dentry *, void *, umode_t, int);
->  
-> -extern int configfs_add_file(struct dentry *, const struct configfs_attribute *, int);
-> -extern void configfs_hash_and_remove(struct dentry * dir, const char * name);
-> -
->  extern const unsigned char * configfs_get_name(struct configfs_dirent *sd);
->  extern void configfs_drop_dentry(struct configfs_dirent *sd, struct dentry *parent);
->  extern int configfs_setattr(struct dentry *dentry, struct iattr *iattr);
-> diff --git a/fs/configfs/file.c b/fs/configfs/file.c
-> index 397cb50..f331a40 100644
-> --- a/fs/configfs/file.c
-> +++ b/fs/configfs/file.c
-> @@ -314,7 +314,8 @@ const struct file_operations configfs_file_operations = {
->  };
->  
->  
-> -int configfs_add_file(struct dentry * dir, const struct configfs_attribute * attr, int type)
-> +static int configfs_add_file(struct dentry * dir,
-> +			     const struct configfs_attribute * attr, int type)
->  {
->  	struct configfs_dirent * parent_sd = dir->d_fsdata;
->  	umode_t mode = (attr->ca_mode & S_IALLUGO) | S_IFREG;
-> diff --git a/fs/configfs/inode.c b/fs/configfs/inode.c
-> index 4c1ebff..dccff59 100644
-> --- a/fs/configfs/inode.c
-> +++ b/fs/configfs/inode.c
-> @@ -233,6 +233,7 @@ void configfs_drop_dentry(struct configfs_dirent * sd, struct dentry * parent)
->  	}
->  }
->  
-> +#if 0
->  void configfs_hash_and_remove(struct dentry * dir, const char * name)
->  {
->  	struct configfs_dirent * sd;
-> @@ -255,6 +256,7 @@ void configfs_hash_and_remove(struct dentry * dir, const char * name)
->  	}
->  	mutex_unlock(&dir->d_inode->i_mutex);
->  }
-> +#endif  /*  0  */
->  
->  int __init configfs_inode_init(void)
->  {
-> 
+> Thanks,
+> Hiroshi Shimamoto
+
+cu
+Adrian
 
 -- 
 
-"Every day I get up and look through the Forbes list of the richest
- people in America. If I'm not there, I go to work."
-        - Robert Orben
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
 
-Joel Becker
-Principal Software Developer
-Oracle
-E-mail: joel.becker@oracle.com
-Phone: (650) 506-8127
