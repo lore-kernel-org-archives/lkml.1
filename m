@@ -1,72 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763988AbYB0HH0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764383AbYB0HLy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763988AbYB0HH0 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Feb 2008 02:07:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754524AbYB0HHK
+	id S1764383AbYB0HLy (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Feb 2008 02:11:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754711AbYB0HLq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Feb 2008 02:07:10 -0500
-Received: from mail.gmx.net ([213.165.64.20]:35456 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1754414AbYB0HHI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Feb 2008 02:07:08 -0500
-X-Authenticated: #14349625
-X-Provags-ID: V01U2FsdGVkX19tHrtOjBFtgvR55IhYwWwRrlZUIp58TxqZjgYwM5
-	GmDTcOyjmhXYHL
-Subject: Re: regression: CD burning (k3b) went broke
-From: Mike Galbraith <efault@gmx.de>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Jens Axboe <jens.axboe@oracle.com>, LKML <linux-kernel@vger.kernel.org>,
-       Tejun Heo <htejun@gmail.com>, linux-ide@vger.kernel.org,
-       linux-scsi@vger.kernel.org
-In-Reply-To: <1204092010.9934.31.camel@homer.simson.net>
-References: <1203583379.6244.27.camel@homer.simson.net>
-	 <20080222073228.GZ23197@kernel.dk>
-	 <1203752563.5225.4.camel@homer.simson.net>
-	 <1203839683.17463.9.camel@homer.simson.net>
-	 <1204019283.8731.11.camel@homer.simson.net>
-	 <1204033003.11828.22.camel@homer.simson.net>
-	 <20080226150845.2196bc1a.akpm@linux-foundation.org>
-	 <1204079075.26640.8.camel@homer.simson.net>
-	 <1204092010.9934.31.camel@homer.simson.net>
-Content-Type: text/plain
-Date: Wed, 27 Feb 2008 08:07:04 +0100
-Message-Id: <1204096025.1623.9.camel@homer.simson.net>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.0 
-Content-Transfer-Encoding: 7bit
-X-Y-GMX-Trusted: 0
+	Wed, 27 Feb 2008 02:11:46 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:35581 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754520AbYB0HLp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 Feb 2008 02:11:45 -0500
+Date: Wed, 27 Feb 2008 08:11:19 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Cc: Lee Schermerhorn <Lee.Schermerhorn@hp.com>,
+       linux-ia64 <linux-ia64@vger.kernel.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Tony Luck <tony.luck@intel.com>, Ingo Molnar <mingo@redhat.com>,
+       Bob Picco <bob.picco@hp.com>, Eric Whitney <eric.whitney@hp.com>
+Subject: Re: 2.6.25-rc2-mm1 - boot hangs on ia64
+Message-ID: <20080227071118.GA4638@elte.hu>
+References: <20080226202308.FF40.KOSAKI.MOTOHIRO@jp.fujitsu.com> <20080226113138.GC10996@elte.hu> <20080227103831.423F.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080227103831.423F.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-On Wed, 2008-02-27 at 07:00 +0100, Mike Galbraith wrote:
+* KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com> wrote:
 
-> (patchlet takes wing, and... goes splat?)
+> > hm, that's a bit weird - nothing really should have broken it. Could you 
+> > try to do a specific bisection of sched-devel.git:
+> > 
+> >    http://people.redhat.com/mingo/sched-devel.git/README
+> 
+> How do I know revision of git-sched.patch of 2.6.25-rc2-mm1? Should I 
+> do bisect from HEAD of sched-devel.git?
 
-Bugger, went splat... forgot preformat for patchlet insert.  <quiltuple
-checks>
- 
-Fix CD burning regression introduced by
-6b00769fe1502b4ad97bb327ef7ac971b208bfb5.  raw_data_len must be updated
-to reflect residual data upon IO completion because it is used by
-blk_complete_sghdr_rq() to set hdr->resid which eventually becomes
-visible to userland.
+yeah, please. If it's caused by sched-devel.git then you should see the 
+hang there too.
 
-Signed-off-by: Mike Galbraith <efault@gmx.de>
-
-diff --git a/drivers/scsi/scsi_lib.c b/drivers/scsi/scsi_lib.c
-index ba21d97..7a6f784 100644
---- a/drivers/scsi/scsi_lib.c
-+++ b/drivers/scsi/scsi_lib.c
-@@ -871,7 +871,7 @@ void scsi_io_completion(struct scsi_cmnd *cmd, unsigned int good_bytes)
- 			scsi_end_bidi_request(cmd);
- 			return;
- 		}
--		req->data_len = scsi_get_resid(cmd);
-+		req->data_len = req->raw_data_len = scsi_get_resid(cmd);
- 	}
- 
- 	BUG_ON(blk_bidi_rq(req)); /* bidi not support for !blk_pc_request yet */
-
-
+	Ingo
