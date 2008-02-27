@@ -1,32 +1,35 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758126AbYB0T3U@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757549AbYB0Tf2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758126AbYB0T3U (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Feb 2008 14:29:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756315AbYB0T3N
+	id S1757549AbYB0Tf2 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Feb 2008 14:35:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755144AbYB0TfS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Feb 2008 14:29:13 -0500
-Received: from courier.cs.helsinki.fi ([128.214.9.1]:51329 "EHLO
-	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756756AbYB0T3M (ORCPT
+	Wed, 27 Feb 2008 14:35:18 -0500
+Received: from x35.xmailserver.org ([64.71.152.41]:37299 "EHLO
+	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755079AbYB0TfR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Feb 2008 14:29:12 -0500
-Date: Wed, 27 Feb 2008 21:29:08 +0200 (EET)
-From: "=?ISO-8859-1?Q?Ilpo_J=E4rvinen?=" <ilpo.jarvinen@helsinki.fi>
-X-X-Sender: ijjarvin@kivilampi-30.cs.helsinki.fi
-To: Guillaume Chazarain <guichaz@gmail.com>
-cc: Giangiacomo Mariotti <giangiacomo_mariotti@yahoo.com>,
-       LKML <linux-kernel@vger.kernel.org>, Netdev <netdev@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: WARNING: at net/ipv4/tcp_input.c:2054 tcp_mark_head_lost()
-In-Reply-To: <3d8471ca0802271056l320a7ee2m5227e114a968d483@mail.gmail.com>
-Message-ID: <Pine.LNX.4.64.0802272120430.1741@kivilampi-30.cs.helsinki.fi>
-References: <858077.97160.qm@web39709.mail.mud.yahoo.com> 
- <20080223000310.4630daa8.akpm@linux-foundation.org> 
- <Pine.LNX.4.64.0802271108290.13029@kivilampi-30.cs.helsinki.fi>
- <3d8471ca0802271056l320a7ee2m5227e114a968d483@mail.gmail.com>
+	Wed, 27 Feb 2008 14:35:17 -0500
+X-AuthUser: davidel@xmailserver.org
+Date: Wed, 27 Feb 2008 11:35:11 -0800 (PST)
+From: Davide Libenzi <davidel@xmailserver.org>
+X-X-Sender: davide@alien.or.mcafeemobile.com
+To: Chris =?UTF-8?Q?=22=E3=82=AF=22?= Heath <chris@heathens.co.nz>
+cc: Michael Kerrisk <mtk.manpages@googlemail.com>,
+       David Schwartz <davids@webmaster.com>, dada1@cosmosbay.com,
+       "Linux-Kernel@Vger. Kernel. Org" <linux-kernel@vger.kernel.org>,
+       linux-man@vger.kernel.org
+Subject: Re: epoll design problems with common fork/exec patterns
+In-Reply-To: <1204075804.5238.7.camel@linux.heathens.co.nz>
+Message-ID: <Pine.LNX.4.64.0802271131180.377@alien.or.mcafeemobile.com>
+References: <MDEHLPKNGKAHNMBLJOLKAEHCHNAC.davids@webmaster.com> 
+ <Pine.LNX.4.64.0710291147180.3387@alien.or.mcafeemobile.com> 
+ <47C42CA7.4030607@gmail.com>  <Pine.LNX.4.64.0802261049040.27243@alien.or.mcafeemobile.com>
+ <1204075804.5238.7.camel@linux.heathens.co.nz>
+X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
+X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
 MIME-Version: 1.0
-Content-Type: MULTIPART/Mixed; boundary="=_courier-8386-1204138613-0001-2"
-Content-ID: <Pine.LNX.4.64.0802272120431.1741@kivilampi-30.cs.helsinki.fi>
+Content-Type: MULTIPART/MIXED; BOUNDARY="1795850513-65606325-1204140911=:377"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
@@ -34,43 +37,61 @@ X-Mailing-List: linux-kernel@vger.kernel.org
   This message is in MIME format.  The first part should be readable text,
   while the remaining parts are likely unreadable without MIME-aware tools.
 
---=_courier-8386-1204138613-0001-2
-Content-Type: TEXT/PLAIN; charset=utf-8
-Content-Transfer-Encoding: 8BIT
-Content-ID: <Pine.LNX.4.64.0802272120432.1741@kivilampi-30.cs.helsinki.fi>
-Content-Disposition: inline
+--1795850513-65606325-1204140911=:377
+Content-Type: TEXT/PLAIN; charset=X-UNKNOWN
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 
-On Wed, 27 Feb 2008, Guillaume Chazarain wrote:
+On Tue, 26 Feb 2008, Chris "=E3~B=AF" Heath wrote:
 
-> On Wed, Feb 27, 2008 at 10:29 AM, Ilpo Järvinen 
-> <ilpo.jarvinen@helsinki.fi> wrote:
-> > I did in the past a debug patch
-> >  that verifies TCP's write queue state by the hard way, ie., by 
-> >  bruteforce
-> >  walking often enough to catch inconsistencies early enough to find 
-> >  out
-> >  the root cause.
-> 
-> Are you talking about this one:
-> http://marc.info/?l=linux-netdev&m=119482084511178 ?
-> I attached a forward port to current git.
+> On Tue, 2008-02-26 at 10:51 -0800, Davide Libenzi wrote:
+> >=20
+> > Yes, you can't add the same fd twice. Think about a DB where "file*,fd"=
+ is=20
+> > the key.
+>=20
+> To clarify, the key appears to be file* plus the user-space integer that
+> represents the fd.
 
-No, I'd much more complete set of tests than in that one.
-
-> I am using this patch, and caught this maybe related error while 
-> Bittorrenting:
->
-> KERNEL: assertion (packets <= tp->packets_out) failed at
-> /home/g/linux-2.6/net/ipv4/tcp_input.c (2145)
-> KERNEL: assertion (packets <= tp->packets_out) failed at
-> /home/g/linux-2.6/net/ipv4/tcp_input.c (2145)
-> ------------[ cut here ]------------
-> WARNING: at /home/g/linux-2.6/net/ipv4/tcp_input.c:2515
-> tcp_fastretrans_alert+0xa5/0xa4f()
-
-You seem to be good in catching these... :-)
+Yes, that's what I said.
 
 
--- 
- i.
---=_courier-8386-1204138613-0001-2--
+
+> > > c) It is possible to add duplicated file descriptors referring to the=
+ same
+> > > underlying open file description ("file *").  As you note, this can b=
+e a
+> > > useful filtering technique, if the two file descriptors specify diffe=
+rent
+> > > masks.
+> > >=20
+> > > Assuming that is all correct, for man-pages-2.79, I've reworked the t=
+ext
+> > > for Q1/A1 as follows:
+> > >=20
+> > >        Q1     What  happens  if you add the same file descriptor
+> > >               to an epoll set twice?
+> > >=20
+> > >        A1     You will probably get EEXIST.  However, it is pos-
+> > >               sible   to   add  a  duplicate  (dup(2),  dup2(2),
+> > >               fcntl(2) F_DUPFD, fork(2)) descriptor to the  same
+> > >               epoll  set.   This  can  be a useful technique for
+> > >               filtering events, if the duplicate  file  descrip-
+> > >               tors are registered with different events masks.
+> > >=20
+> > > Seem okay Davide?
+> >=20
+> > Looks sane to me.
+>=20
+> I think fork(2) should not be in the above list.  fork(2) duplicates the
+> kernel's fd, but the user-space integer that represents the fd remains
+> the same, so you will get EEXIST if you try to add the fd that was
+> duplicated by fork.
+
+Good catch, fork(2) should not be there.
+
+
+
+- Davide
+
+
+--1795850513-65606325-1204140911=:377--
