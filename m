@@ -1,108 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933038AbYB0AoT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755325AbYB0Aqc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933038AbYB0AoT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Feb 2008 19:44:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754826AbYB0AoJ
+	id S1755325AbYB0Aqc (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Feb 2008 19:46:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753298AbYB0AqV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Feb 2008 19:44:09 -0500
-Received: from vs166246.vserver.de ([62.75.166.246]:46156 "EHLO
-	vs166246.vserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759595AbYB0AoJ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Feb 2008 19:44:09 -0500
-From: Michael Buesch <mb@bu3sch.de>
-To: "Alexey Zaytsev" <alexey.zaytsev@gmail.com>
-Subject: Re: bcm43xx regression in 2.6.24 (with patch)
-Date: Wed, 27 Feb 2008 01:43:17 +0100
-User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
-Cc: "John W. Linville" <linville@tuxdriver.com>, "Ingo Molnar" <mingo@elte.hu>,
-       "Alexey Zaytsev" <zaytsev.a@protei.ru>, "Greg KH" <greg@kroah.com>,
-       linux-kernel@vger.kernel.org
-References: <47BEAF3B.3080809@protei.ru> <200802270127.22159.mb@bu3sch.de> <f19298770802261632y4406efc5p1c678c6ef6504c2f@mail.gmail.com>
-In-Reply-To: <f19298770802261632y4406efc5p1c678c6ef6504c2f@mail.gmail.com>
+	Tue, 26 Feb 2008 19:46:21 -0500
+Received: from srv5.dvmed.net ([207.36.208.214]:46756 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753860AbYB0AqU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 Feb 2008 19:46:20 -0500
+Message-ID: <47C4B2D4.109@garzik.org>
+Date: Tue, 26 Feb 2008 19:46:12 -0500
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
-Content-Disposition: inline
-Message-Id: <200802270143.17484.mb@bu3sch.de>
-Content-Type: text/plain;
-  charset="utf-8"
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: Mike Galbraith <efault@gmx.de>, Jens Axboe <jens.axboe@oracle.com>,
+       LKML <linux-kernel@vger.kernel.org>, Tejun Heo <htejun@gmail.com>,
+       linux-ide@vger.kernel.org, linux-scsi@vger.kernel.org
+Subject: Re: regression: CD burning (k3b) went broke
+References: <1203583379.6244.27.camel@homer.simson.net>	<20080222073228.GZ23197@kernel.dk>	<1203752563.5225.4.camel@homer.simson.net>	<1203839683.17463.9.camel@homer.simson.net>	<1204019283.8731.11.camel@homer.simson.net>	<1204033003.11828.22.camel@homer.simson.net> <20080226150845.2196bc1a.akpm@linux-foundation.org>
+In-Reply-To: <20080226150845.2196bc1a.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.4 (----)
+X-Spam-Report: SpamAssassin version 3.2.3 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 27 February 2008 01:32:21 Alexey Zaytsev wrote:
-> On Wed, Feb 27, 2008 at 3:27 AM, Michael Buesch <mb@bu3sch.de> wrote:
-> >
-> > On Wednesday 27 February 2008 01:23:17 Alexey Zaytsev wrote:
-> >  > On Wed, Feb 27, 2008 at 1:47 AM, John W. Linville
-> >  > <linville@tuxdriver.com> wrote:
-> >  > > On Wed, Feb 27, 2008 at 01:12:32AM +0300, Alexey Zaytsev wrote:
-> >  > >  > On Wed, Feb 27, 2008 at 1:04 AM, Michael Buesch <mb@bu3sch.de> wrote:
-> >  > >
-> >  > >
-> >  > > > >  Besides that the bcm43xx driver is not broken. That's the whole reason
-> >  > >  > >  this damn thread started at all. So it can't be broken.
-> >  > >  > >
-> >  > >  > Can't agree here. The bcm43xx driver used to work with 2.6.23 without requiring
-> >  > >  > any module magic.
-> >  > >
-> >  > >  At the risk of prolonging things... :-(
-> >  > >
-> >  > >  Isn't the fundamental problem here that the ssb driver claims the same
-> >  > >  PCI IDs as the bcm43xx driver?  He have hit this same issue a number
-> >  > >  of times: 8139too vs.  8139cp, eepro vs. e100, sk98lin vs. skge,
-> >  > >  and I'm sure there are more.  I admit that this situation is a bit
-> >  > >  more confusing, since the user is less likely to predict a conflict
-> >  > >  between bcm43xx and the ssb driver.  This is especially true since
-> >  > >  the user isn't even selecting ssb directly, but is instead selecting
-> >  > >  the apparently unrelated b44.
-> >  > >
-> >  > >  Still, the bcm43xx driver is not fundamentally damaged.  This is
-> >  > >  fundamentally a "two drivers claiming the same PCI ID" issue, not a
-> >  > >  "you broke my driver" one.
-> >  >
-> >  > Is there any reason the ssb driver should claim the bcm43xx pci ids in
-> >  > the first place? I have very little understanding what the Sonic Silicon
-> >  > Backplane really is, but I see that the b44 driver claims its PCI ids
-> >  > directly. I also think I understand why the b43/b43legacy drivers can't
-> >  > claim the ids directly: because the driver-device matching is done not
-> >  > with the pci bus methods, but with the ssb bus methods, and it would
-> >  > be impossible to automatically choose the right driver for the right
-> >  > device (with same ssb ids), as the first of the two drivers loaded would
-> >  > succeed in probe()'ing the pci "ssb bridge" device, and not letting the
-> >  > other to take control, even after moments later the ssb probe for the
-> >  > non-supported ssb device would fail. (Or am I completely wrong?)
-> >  >
-> >  > That said, I still think that the ssb driver claims the wrong pci ids,
-> >  > which is especially wrong if the the b43/b43legacy drivers are not
-> >  > even built. And my patch fixes exactly this problem - the ssb driver
-> >  > no more claims the broadcom pci ids, when the b43/b43legacy drivers
-> >  > are not built.
-> >  >
-> >  > One better solution I think might be to move the b43_pci_bridge.c
-> >  > code to a separate module, and let the b43/b43legacy drivers
-> >  > depend on it, but as I said, I have little knowledge in the
-> >  > ssb stuff, so I did it the easy way.
-> >
-> >  See the comment in b43_pci_bridge.c
-> >
-> Yes, I've seen it. And this design, kind of, causes me some trouble.
+Andrew Morton wrote:
+> On Tue, 26 Feb 2008 14:36:43 +0100 Mike Galbraith <efault@gmx.de> wrote:
+> 
+>> On Tue, 2008-02-26 at 10:48 +0100, Mike Galbraith wrote:
+>>> Greetings,
+>>>
+>>> I straced both a good and a bad kernel (good being .git with attached
+>>> revert patch applied) and filtered/diffed/merged the output.  Scroll
+>>> down to "HERE" to see the problem (resid).
+>>>
+>>> I'm poking around, but not having much luck.
+> 
+> cc's added.
+> 
+> I'm told this is part of "Tejun's DMA drain handling".
 
-There are several reasons to not do a seperate module.
+Correct.
 
-First one being: People won't load it and complain about a regression.
-Yeah, stupid stuff like that happens all the time. That's the reason we
-SELECT the ssb code instead of using DEPENDS ON. People will otherwise not
-enable it and report regressions.
-And please don't say this won't happen. It _did_ happen when b44-PCI was
-a seperate kconfig option. People reported regressions, although there were none.
 
-Second one being: It's overkill to have a seperate module for two lines of code
-and a PCI ID table.
+>> Seems the problem is data_len changes, but raw_data_len doesn't.  I've
+>> not the foggiest IO-land clue, but k3b works again, so the below may
+>> have some diagnostic value.
+> 
+> So this change fixes a bug?  Can we have a recap of how it does this?
+> 
+>> diff --git a/drivers/scsi/scsi_lib.c b/drivers/scsi/scsi_lib.c
+>> index ba21d97..7a6f784 100644
+>> --- a/drivers/scsi/scsi_lib.c
+>> +++ b/drivers/scsi/scsi_lib.c
+>> @@ -871,7 +871,7 @@ void scsi_io_completion(struct scsi_cmnd *cmd, unsigned int good_bytes)
+>>  			scsi_end_bidi_request(cmd);
+>>  			return;
+>>  		}
+>> -		req->data_len = scsi_get_resid(cmd);
+>> +		req->data_len = req->raw_data_len = scsi_get_resid(cmd);
+>>  	}
 
-Third one being: We want the code to be as small as possible, as it must
-all run on embedded machines. In general being as small as possible should
-be the way to go.
+I would love to get an answer as to what data_len (and of course 
+raw_data_len) should be set to AFTER the command completes, which is 
+what is going on here.
 
--- 
-Greetings Michael.
+I can see the above being correct -- scsi_get_resid() returns the length 
+of the left-over data after the command is processed -- but I am mainly 
+curious why setting [raw_]data_len matters after I/O completion.
+
+	Jeff
+
+
