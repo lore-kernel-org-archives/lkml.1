@@ -1,51 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763827AbYB0Cwb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764375AbYB0C7F@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763827AbYB0Cwb (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Feb 2008 21:52:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755038AbYB0CwT
+	id S1764375AbYB0C7F (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Feb 2008 21:59:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755038AbYB0C6x
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Feb 2008 21:52:19 -0500
-Received: from smtp1.linux-foundation.org ([207.189.120.13]:56584 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753730AbYB0CwT (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Feb 2008 21:52:19 -0500
-Date: Tue, 26 Feb 2008 18:52:16 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Chris Rankin <rankincj@yahoo.com>
-Cc: Greg KH <greg@kroah.com>, linux-acpi@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: Linux 2.6.24.1  - kernel does not boot; IRQ trouble?
-Message-Id: <20080226185216.f298784d.akpm@linux-foundation.org>
-In-Reply-To: <91946.43854.qm@web52909.mail.re2.yahoo.com>
-References: <20080226234025.GC14117@kroah.com>
-	<91946.43854.qm@web52909.mail.re2.yahoo.com>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+	Tue, 26 Feb 2008 21:58:53 -0500
+Received: from mail.gmx.net ([213.165.64.20]:33107 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1754674AbYB0C6w (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 Feb 2008 21:58:52 -0500
+X-Authenticated: #14349625
+X-Provags-ID: V01U2FsdGVkX1+Wwu87UWqWbmwEwesX7WtjdOagfYOKm0D7xtvNB6
+	W79r7qMMS+ESN6
+Subject: Re: regression: CD burning (k3b) went broke
+From: Mike Galbraith <efault@gmx.de>
+To: Jeff Garzik <jeff@garzik.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Jens Axboe <jens.axboe@oracle.com>, LKML <linux-kernel@vger.kernel.org>,
+       Tejun Heo <htejun@gmail.com>, linux-ide@vger.kernel.org,
+       linux-scsi@vger.kernel.org
+In-Reply-To: <47C4B2D4.109@garzik.org>
+References: <1203583379.6244.27.camel@homer.simson.net>
+	 <20080222073228.GZ23197@kernel.dk>
+	 <1203752563.5225.4.camel@homer.simson.net>
+	 <1203839683.17463.9.camel@homer.simson.net>
+	 <1204019283.8731.11.camel@homer.simson.net>
+	 <1204033003.11828.22.camel@homer.simson.net>
+	 <20080226150845.2196bc1a.akpm@linux-foundation.org>
+	 <47C4B2D4.109@garzik.org>
+Content-Type: text/plain
+Date: Wed, 27 Feb 2008 03:58:48 +0100
+Message-Id: <1204081128.26640.20.camel@homer.simson.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.12.0 
 Content-Transfer-Encoding: 7bit
+X-Y-GMX-Trusted: 0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 27 Feb 2008 00:55:38 +0000 (GMT) Chris Rankin <rankincj@yahoo.com> wrote:
 
-> --- Greg KH <greg@kroah.com> wrote:
-> > On Tue, Feb 26, 2008 at 10:36:00PM +0000, Chris Rankin wrote:
-> > > FYI, this hang still exists in 2.6.24.3 and so I am still needing to boot with the acpi=noirq
-> > > parameter.
-> > 
-> > You're going to have to refresh my memory.  Was this a problem caused by
-> > the .1 .2 or .3 kernel releases?  Did 2.6.24 have this problem as well,
-> > or was it ok?
-> 
-> It's a bug introduced in 2.6.24; that ACPI fails to allocate IRQs correctly for PCI devices, which
-> makes the kernel hang at boot-time:
+On Tue, 2008-02-26 at 19:46 -0500, Jeff Garzik wrote:
 
-You reported this regression nearly a month ago and apart from me flailing
-around nobody has bothered to do the slightest thing about it.
+> I would love to get an answer as to what data_len (and of course 
+> raw_data_len) should be set to AFTER the command completes, which is 
+> what is going on here.
 
-If you can identify the offending commit (see
-http://www.kernel.org/doc/local/git-quick.html) we'll get it working again
-and I really don't care how many commits we have to revert to do it.
+Yeah, blk_complete_sghdr_rq() used to do hdr->resid = irq->data_len,
+which is modified down lower.  How/where that hdr->resid percolates back
+up, and turns into a retry/nogo, I don't know.
+
+	-Mike
 
