@@ -1,40 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756309AbYB0Kjy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756003AbYB0Kx3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756309AbYB0Kjy (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Feb 2008 05:39:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752570AbYB0Kjr
+	id S1756003AbYB0Kx3 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Feb 2008 05:53:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752113AbYB0KxU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Feb 2008 05:39:47 -0500
-Received: from relay.2ka.mipt.ru ([194.85.82.65]:48815 "EHLO 2ka.mipt.ru"
+	Wed, 27 Feb 2008 05:53:20 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:51464 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751681AbYB0Kjq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Feb 2008 05:39:46 -0500
-Date: Wed, 27 Feb 2008 13:38:37 +0300
-From: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
-To: David Miller <davem@davemloft.net>
-Cc: lizf@cn.fujitsu.com, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] CONNECTOR: make cn_already_initialized static
-Message-ID: <20080227103837.GA6237@2ka.mipt.ru>
-References: <47C4C954.1090006@cn.fujitsu.com> <20080226.182545.55675767.davem@davemloft.net>
-Mime-Version: 1.0
+	id S1751705AbYB0KxT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 Feb 2008 05:53:19 -0500
+Date: Wed, 27 Feb 2008 11:53:07 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Florian Fainelli <florian.fainelli@telecomint.eu>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] [x86] rdc321x: Kconfig options fixes for rdc321x
+Message-ID: <20080227105307.GA21050@elte.hu>
+References: <200802271136.42763.florian.fainelli@telecomint.eu>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080226.182545.55675767.davem@davemloft.net>
-User-Agent: Mutt/1.5.9i
+In-Reply-To: <200802271136.42763.florian.fainelli@telecomint.eu>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0001]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi.
 
-On Tue, Feb 26, 2008 at 06:25:45PM -0800, David Miller (davem@davemloft.net) wrote:
-> > It is used in connector.c only, so make it static.
-> > 
-> > Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
-> 
-> Applied, thanks.
+* Florian Fainelli <florian.fainelli@telecomint.eu> wrote:
 
-Thanks for resolving this guys.
+>  config ARCH_HIBERNATION_POSSIBLE
+>  	def_bool y
+> -	depends on !SMP || !X86_VOYAGER
+> +	depends on !SMP || !(X86_VOYAGER || X86_RDC321X)
 
--- 
-	Evgeniy Polyakov
+these many special conditions in the Kconfig space are way too ugly. 
+(Also, i can see no reason why for example hibernation wouldnt be 
+possible on rdc321x, it's a pure software concept ...)
+
+	Ingo
