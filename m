@@ -1,69 +1,160 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756903AbYB0GNT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762431AbYB0GOh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756903AbYB0GNT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Feb 2008 01:13:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751360AbYB0GNK
+	id S1762431AbYB0GOh (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Feb 2008 01:14:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753384AbYB0GO2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Feb 2008 01:13:10 -0500
-Received: from smtp-out.google.com ([216.239.45.13]:39792 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751095AbYB0GNJ (ORCPT
+	Wed, 27 Feb 2008 01:14:28 -0500
+Received: from mga02.intel.com ([134.134.136.20]:11156 "EHLO mga02.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753331AbYB0GO1 convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Feb 2008 01:13:09 -0500
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=received:date:from:x-x-sender:to:cc:subject:in-reply-to:
-	message-id:references:user-agent:mime-version:content-type;
-	b=Wicao4qN5V3vJOe0kDdLYBGQysoMieRl7G9AUQS1JnZ83sJvyE7B12sT8vlo0kB3r
-	R++GhAIccTKzGxqmBWwhg==
-Date: Tue, 26 Feb 2008 22:09:46 -0800 (PST)
-From: David Rientjes <rientjes@google.com>
-X-X-Sender: rientjes@chino.kir.corp.google.com
-To: Balbir Singh <balbir@linux.vnet.ibm.com>
-cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, Rik van Riel <riel@redhat.com>,
-       Lee Schermerhorn <Lee.Schermerhorn@hp.com>,
-       Nick Piggin <npiggin@suse.de>
-Subject: Re: [RFC][PATCH] page reclaim throttle take2
-In-Reply-To: <47C4F9C0.5010607@linux.vnet.ibm.com>
-Message-ID: <alpine.DEB.1.00.0802262201390.1613@chino.kir.corp.google.com>
-References: <47C4EF2D.90508@linux.vnet.ibm.com> <alpine.DEB.1.00.0802262115270.1799@chino.kir.corp.google.com> <20080227143301.4252.KOSAKI.MOTOHIRO@jp.fujitsu.com> <alpine.DEB.1.00.0802262145410.31356@chino.kir.corp.google.com>
- <47C4F9C0.5010607@linux.vnet.ibm.com>
-User-Agent: Alpine 1.00 (DEB 882 2007-12-20)
+	Wed, 27 Feb 2008 01:14:27 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.25,411,1199692800"; 
+   d="scan'208";a="346291564"
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Subject: RE: iwl4965 dropping packets and __dev_addr_discard: address leakage! da_users=1
+Date: Tue, 26 Feb 2008 22:14:17 -0800
+Message-ID: <D936D925018D154694D8A362EEB0892003C36C42@orsmsx416.amr.corp.intel.com>
+In-Reply-To: <Pine.LNX.4.61.0802261740090.21163@pentane.ssi.swin.edu.au>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: iwl4965 dropping packets and __dev_addr_discard: address leakage! da_users=1
+thread-index: Ach4R5gsisjGp/4uRru3c+grCyxW+wAv91Rg
+References: <slrn-0.9.7.4-5027-27940-200802261551-tc@hexane.ssi.swin.edu.au> <20080225223823.db13a7fe.akpm@linux-foundation.org> <Pine.LNX.4.61.0802261740090.21163@pentane.ssi.swin.edu.au>
+From: "Chatre, Reinette" <reinette.chatre@intel.com>
+To: "Tim Connors" <tconnors@astro.swin.edu.au>,
+       "Andrew Morton" <akpm@linux-foundation.org>
+Cc: "kernel list" <linux-kernel@vger.kernel.org>,
+       <linux-wireless@vger.kernel.org>
+X-OriginalArrivalTime: 27 Feb 2008 06:14:26.0147 (UTC) FILETIME=[00E07B30:01C87908]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 27 Feb 2008, Balbir Singh wrote:
+On Monday, February 25, 2008 10:48 PM, Tim Connors  wrote:
 
-> Since we're talking of parallel reclaims, I think it's a function of CPUs and
-> Nodes. I'd rather keep it as a sysctl with a good default value based on the
-> topology. If we end up getting it wrong, the system administrator has a choice.
-> That is better than expecting him/her to recompile the kernel and boot that. A
-> sysctl does not create problems either w.r.t changing the number of threads, no
-> hard to solve race-conditions - it is fairly straight forward
+> On Mon, 25 Feb 2008, Andrew Morton wrote:
+> 
+>> On Tue, 26 Feb 2008 16:22:43 +1100 Tim Connors
+> <tconnors@astro.swin.edu.au> wrote:
+>> 
+>>> Possibly because of the frequent renegotiating my iwl4965 card has
+>>> been making, it has now decided it's not going to pass packets
+>>> reliably until presumably next time I reboot.
+>>> 
+>>> I've noticed messages in syslog that I hadn't seen when things were
+>>> working fine.  The problem possibly has only surfaced after
+>>> rmmodding the iwl4965 module, then remodding it.  It stays with me
+>>> through being removed and modprobed again.  It is being bonded in
+>>> conjunction with a physical ethernet, if that is relevant, although
+>>> I think I reproduced it when it was on its lonesome.
+>>> 
+>>> 
+>>> Fresh after reboot:
+>>> 
+>>> Feb 22 09:49:31 dirac kernel: iwl4965: Intel(R) Wireless
+> WiFi Link 4965AGN driver for Linux, 1.1.17kds
+>>> Feb 22 09:49:31 dirac kernel: iwl4965: Copyright(c) 2003-2007 Intel
+>>> Corporation Feb 22 09:49:31 dirac kernel: ACPI: PCI Interrupt
+> 0000:0c:00.0[A] -> GSI 17 (level, low) -> IRQ 17
+>>> Feb 22 09:49:31 dirac kernel: PCI: Setting latency timer of device
+>>> 0000:0c:00.0 to 64 Feb 22 09:49:31 dirac kernel: iwl4965: Detected
+>>> Intel Wireless WiFi Link 4965AGN Feb 22 09:49:31 dirac kernel:
+>>> ACPI: PCI Interrupt 
+> 0000:00:1b.0[A] -> GSI 21 (level, low) -> IRQ 21
+>>> Feb 22 09:49:31 dirac kernel: PCI: Setting latency timer of device
+>>> 0000:00:1b.0 to 64 Feb 22 09:49:31 dirac kernel: iwl4965: Tunable
+>>> channels: 
+> 11 802.11bg, 13 802.11a channels
+>>> Feb 22 09:49:31 dirac kernel: phy0: Selected rate control algorithm
+>>> 'iwl-4965-rs' 
+>>> 
+>>> now finished with it, will be deconfigured and rmmodded:
+>>> 
+>>> Feb 23 03:05:23 dirac kernel: __dev_addr_discard: address leakage!
+>>> da_users=1 Feb 23 03:05:23 dirac kernel: ACPI: PCI interrupt for
+>>> device 0000:0c:00.0 disabled 
+>>> 
+>>> The modprobed again:
+>>> 
+>>> Feb 23 03:05:35 dirac kernel: iwl4965: Intel(R) Wireless
+> WiFi Link 4965AGN driver for Linux, 1.1.17kds
+>>> Feb 23 03:05:35 dirac kernel: iwl4965: Copyright(c) 2003-2007 Intel
+>>> Corporation Feb 23 03:05:35 dirac kernel: ACPI: PCI Interrupt
+> 0000:0c:00.0[A] -> GSI 17 (level, low) -> IRQ 17
+>>> Feb 23 03:05:35 dirac kernel: PCI: Setting latency timer of device
+>>> 0000:0c:00.0 to 64 Feb 23 03:05:35 dirac kernel: iwl4965: Detected
+>>> Intel Wireless WiFi Link 4965AGN Feb 23 03:05:35 dirac kernel:
+>>> iwl4965: Tunable channels: 
+> 11 802.11bg, 13 802.11a channels
+>>> Feb 23 03:05:35 dirac kernel: phy9: Selected rate control algorithm
+>>> 'iwl-4965-rs' 
+>>> 
+>>> according to lspci -vvv, 0c:00.0 is:
+>>> 
+>>> 0c:00.0 Network controller: Intel Corporation PRO/Wireless
+> 4965 AG or AGN Network Connection (rev 61)
+>>>         Subsystem: Intel Corporation Unknown device 1120
+>>>         Control: I/O- Mem+ BusMaster+ SpecCycle- MemWINV-
+> VGASnoop- ParErr- Stepping- SERR+ FastB2B- DisINTx+
+>>>         Status: Cap+ 66MHz- UDF- FastB2B- ParErr-
+> DEVSEL=fast >TAbort- <TAbort- <MAbort- >SERR- <PERR- INTx-
+>>>         Latency: 0, Cache Line Size: 64 bytes
+>>>         Interrupt: pin A routed to IRQ 379
+>>>         Region 0: Memory at f9ffe000 (64-bit, non-prefetchable)
+>>>         [size=8K] Capabilities: [c8] Power Management version 3
+>>>                 Flags: PMEClk- DSI+ D1- D2- AuxCurrent=0mA
+> PME(D0+,D1-,D2-,D3hot+,D3cold+)
+>>>                 Status: D0 PME-Enable- DSel=0 DScale=0 PME-
+>>>         Capabilities: [d0] Message Signalled Interrupts: Mask-
+>>>                 64bit+ Queue=0/0 Enable+ Address: 00000000fee0300c 
+>>>         Data: 4194 Capabilities: [e0] Express (v1) Endpoint, MSI 00
+>>>                 DevCap: MaxPayload 128 bytes, PhantFunc 0,
+> Latency L0s <512ns, L1 unlimited
+>>>                         ExtTag- AttnBtn- AttnInd- PwrInd- RBE+
+>>>                 FLReset- DevCtl: Report errors: Correctable-
+>>>                         Non-Fatal- Fatal- Unsupported- RlxdOrd+
+>>>                         ExtTag- PhantFunc- AuxPwr- NoSnoop+
+>>>                 MaxPayload 128 bytes, MaxReadReq 128 bytes DevSta:
+>>>                 CorrErr+ UncorrErr- FatalErr- UnsuppReq+ AuxPwr+
+>>> TransPend- LnkCap: Port #0, Speed 2.5GT/s, Width x1, 
+> ASPM L0s L1, Latency L0 <128ns, L1 <64us
+>>>                         ClockPM+ Suprise- LLActRep- BwNot-
+>>>                 LnkCtl: ASPM L0s Enabled; RCB 64 bytes Disabled-
+>>>                         Retrain- CommClk+ ExtSynch- ClockPM-
+>>>                 AutWidDis- BWInt- AutBWInt- LnkSta: Speed 2.5GT/s,
+>>> Width x1, TrErr- 
+> Train- SlotClk+ DLActive- BWMgmt- ABWMgmt-
+>>>         Capabilities: [100] Advanced Error Reporting <?>
+>>>         Capabilities: [140] Device Serial Number
+>>>         d7-36-9b-ff-ff-e8-13-00 Kernel driver in use: iwl4965
+>>>         Kernel modules: iwl4965
+>> 
+>> (cc linux-wireless)
+>> 
+>> What kernel version is this?
+>> 
+>> Is this a regression from an earlier kenrel version?  If so, which?
+> 
+> kernel 2.6.24
+> version 4.44.1.20 of the firmware.
+> 
+> The iwl4965 version is fairly ancient in mainline kernel: 1.1.17kds
+> Last time I looked, 1.2.24 was the latest version, but I never
+> succeeded in getting it to work (or compile?) in 2.6.24.
 > 
 
-We lack node hotplug, so the dependence on the number of system nodes in 
-the equation is static and can easily be defined at compile-time.
+You can use the latest iwlwifi driver with kernel 2.6.24 when using the
+compat-wireless project (http://linuxwireless.org/en/users/Download).
 
-I agree that the maximum number of parallel reclaim threads should be a 
-function of cpus, so you can easily make it that by adding callback 
-functions for cpu hotplug events.
+You can also load the driver with debugging (modprobe iwl4965
+debug=0x43fff) to get more info about what happens during module unload.
 
-Perhaps a better alternative than creating a set of heuristics and setting 
-a user-defined maximum on the number of concurrent reclaim threads is to 
-configure the number of threads to be used for each online cpu called 
-CONFIG_NUM_RECLAIM_THREADS_PER_CPU.  This solves the lock contention 
-problem if configured properly that was mentioned earlier.
-
-Adding yet another sysctl for this functionality seems unnecessary, unless 
-it is attempting to address other VM problems where page reclaim needs to 
-be throttled when it is being stressed.  Those issues need to be addressed 
-directly, in my opinion, instead of attempting to workaround it by 
-limiting the number of concurrent reclaim threads.
-
-		David
+Reinette
