@@ -1,39 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756107AbYB0QTs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755208AbYB0QaG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756107AbYB0QTs (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Feb 2008 11:19:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754793AbYB0QTi
+	id S1755208AbYB0QaG (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Feb 2008 11:30:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754096AbYB0Q3y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Feb 2008 11:19:38 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:54077 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755301AbYB0QTZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Feb 2008 11:19:25 -0500
-Date: Wed, 27 Feb 2008 11:12:07 -0500
-From: Kyle McMartin <kmcmartin@redhat.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: =?iso-8859-1?B?Uy7HYT8/bGFy?= Onur <caglar@pardus.org.tr>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       kmcmartin@redhat.com, lguest@ozlabs.org, rusty@rustcorp.com.au
-Subject: Re: Linux 2.6.25-rc3
-Message-ID: <20080227161207.GJ12908@kibblesnbits.boston.devel.redhat.com>
-References: <alpine.LFD.1.00.0802241354200.14934@woody.linux-foundation.org> <200802250129.17526.caglar@pardus.org.tr> <20080225071605.GA11327@elte.hu>
-Mime-Version: 1.0
+	Wed, 27 Feb 2008 11:29:54 -0500
+Received: from miranda.se.axis.com ([193.13.178.8]:51319 "EHLO
+	miranda.se.axis.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753589AbYB0Q3x (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 Feb 2008 11:29:53 -0500
+Date: Wed, 27 Feb 2008 17:29:10 +0100
+From: Jesper Nilsson <jesper.nilsson@axis.com>
+To: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       mikael.starvik@axis.com, jesper.nilsson@axis.se
+Subject: [PATCH] CRIS: Correct syscall numbers in unistd.h for timerfd_settime and timerfd_gettime
+Message-ID: <20080227162910.GC1644@axis.com>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080225071605.GA11327@elte.hu>
-User-Agent: Mutt/1.4.2.2i
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Feb 25, 2008 at 08:16:05AM +0100, Ingo Molnar wrote:
-> this fix still fails for some randconfig combinations - the fuller fix 
-> is queued up in x86.git#testing.
-> 
+Last commit for unistd was not correct, it only had a partial update
+of syscall numbers for __NR_timerfd_settime and __NR_timerfd_gettime.
+Also, NR_syscalls was not incremented for the new syscalls.
 
-great. I really just added it to fix Fedora's configs. I'll drop it from
-there once it hits -git snapshots.
+Signed-off-by: Jesper Nilsson <jesper.nilsson@axis.com>
+---
+ include/asm-cris/unistd.h |    6 +++---
+ 1 files changed, 3 insertions(+), 3 deletions(-)
 
-cheers, Kyle
+diff --git a/include/asm-cris/unistd.h b/include/asm-cris/unistd.h
+index 007cb16..76398ef 100644
+--- a/include/asm-cris/unistd.h
++++ b/include/asm-cris/unistd.h
+@@ -329,12 +329,12 @@
+ #define __NR_timerfd_create	322
+ #define __NR_eventfd		323
+ #define __NR_fallocate		324
+-#define __NR_timerfd_settime    315
+-#define __NR_timerfd_gettime    316
++#define __NR_timerfd_settime	325
++#define __NR_timerfd_gettime	326
+ 
+ #ifdef __KERNEL__
+ 
+-#define NR_syscalls 325
++#define NR_syscalls 327
+ 
+ #include <asm/arch/unistd.h>
+ 
+-- 
+1.5.3.6.970.gd25430
+
+
+/^JN - Jesper Nilsson
+--
+               Jesper Nilsson -- jesper.nilsson@axis.com
