@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760877AbYB0XPD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763233AbYB0XPc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760877AbYB0XPD (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Feb 2008 18:15:03 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760531AbYB0XOt
+	id S1763233AbYB0XPc (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Feb 2008 18:15:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763099AbYB0XPI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Feb 2008 18:14:49 -0500
-Received: from mummy.ncsc.mil ([144.51.88.129]:49706 "EHLO mummy.ncsc.mil"
+	Wed, 27 Feb 2008 18:15:08 -0500
+Received: from mummy.ncsc.mil ([144.51.88.129]:49817 "EHLO mummy.ncsc.mil"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756332AbYB0XOs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Feb 2008 18:14:48 -0500
+	id S1763064AbYB0XPH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 Feb 2008 18:15:07 -0500
 From: "David P. Quigley" <dpquigl@tycho.nsa.gov>
 To: hch@infradead.org, viro@ftp.linux.org.uk, trond.myklebust@fys.uio.no,
        bfields@fieldses.org
 Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
        "David P. Quigley" <dpquigl@tycho.nsa.gov>
-Subject: [PATCH 10/11] NFS: Extend nfs xattr handlers to accept the security namespace
-Date: Wed, 27 Feb 2008 15:39:45 -0500
-Message-Id: <1204144786-3502-11-git-send-email-dpquigl@tycho.nsa.gov>
+Subject: [PATCH 06/11] SELinux: Add new labeling type native labels
+Date: Wed, 27 Feb 2008 15:39:41 -0500
+Message-Id: <1204144786-3502-7-git-send-email-dpquigl@tycho.nsa.gov>
 X-Mailer: git-send-email 1.5.3.8
 In-Reply-To: <1204144786-3502-1-git-send-email-dpquigl@tycho.nsa.gov>
 References: <1204144786-3502-1-git-send-email-dpquigl@tycho.nsa.gov>
@@ -24,95 +24,101 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The existing nfs4 xattr handlers do not accept xattr calls to the security
-namespace. This patch extends these handlers to accept xattrs from the security
-namespace in addition to the default nfsv4 acl namespace.
+There currently doesn't exist a labeling type that is adequate for use with
+labeled nfs. Since NFS doesn't really support xattrs we can't use the use xattr
+labeling behavior. For this we developed a new labeling type. The native
+labeling type is used solely by NFS to ensure nfs inodes are labeled at runtime
+by the NFS code instead of relying on the SELinux security server on the client
+end.
 
 Signed-off-by: David P. Quigley <dpquigl@tycho.nsa.gov>
 ---
- fs/nfs/nfs4proc.c |   54 +++++++++++++++++++++++++++++++++++++++++-----------
- 1 files changed, 42 insertions(+), 12 deletions(-)
+ security/selinux/hooks.c            |   20 ++++++++++++--------
+ security/selinux/include/security.h |    2 ++
+ security/selinux/ss/policydb.c      |    5 ++++-
+ 3 files changed, 18 insertions(+), 9 deletions(-)
 
-diff --git a/fs/nfs/nfs4proc.c b/fs/nfs/nfs4proc.c
-index a1a4051..d7193df 100644
---- a/fs/nfs/nfs4proc.c
-+++ b/fs/nfs/nfs4proc.c
-@@ -3910,10 +3910,13 @@ int nfs4_setxattr(struct dentry *dentry, const char *key, const void *buf,
- {
- 	struct inode *inode = dentry->d_inode;
+diff --git a/security/selinux/hooks.c b/security/selinux/hooks.c
+index a56b21a..ebe4e18 100644
+--- a/security/selinux/hooks.c
++++ b/security/selinux/hooks.c
+@@ -300,13 +300,14 @@ extern int ss_initialized;
  
--	if (strcmp(key, XATTR_NAME_NFSV4_ACL) != 0)
--		return -EOPNOTSUPP;
+ /* The file system's label must be initialized prior to use. */
+ 
+-static char *labeling_behaviors[6] = {
++static char *labeling_behaviors[7] = {
+ 	"uses xattr",
+ 	"uses transition SIDs",
+ 	"uses task SIDs",
+ 	"uses genfs_contexts",
+ 	"not configured for labeling",
+ 	"uses mountpoint labeling",
++	"uses native labels",
+ };
+ 
+ static int inode_doinit_with_dentry(struct inode *inode, struct dentry *opt_dentry);
+@@ -660,14 +661,15 @@ static int selinux_set_mnt_opts(struct super_block *sb, char **mount_options,
+ 	if (strcmp(sb->s_type->name, "proc") == 0)
+ 		sbsec->proc = 1;
+ 
+-	/* Determine the labeling behavior to use for this filesystem type. */
+-	rc = security_fs_use(sb->s_type->name, &sbsec->behavior, &sbsec->sid);
+-	if (rc) {
+-		printk(KERN_WARNING "%s: security_fs_use(%s) returned %d\n",
+-		       __FUNCTION__, sb->s_type->name, rc);
+-		goto out;
++	if (!sbsec->behavior) {
++		/* Determine the labeling behavior to use for this filesystem type. */
++		rc = security_fs_use(sb->s_type->name, &sbsec->behavior, &sbsec->sid);
++		if (rc) {
++			printk(KERN_WARNING "%s: security_fs_use(%s) returned %d\n",
++			       __FUNCTION__, sb->s_type->name, rc);
++			goto out;
++		}
+ 	}
 -
--	return nfs4_proc_set_acl(inode, buf, buflen);
-+	if (strcmp(key, XATTR_NAME_NFSV4_ACL) == 0)
-+		return nfs4_proc_set_acl(inode, buf, buflen);
-+#ifdef CONFIG_NFS_V4_SECURITY_LABEL
-+	if (strcmp(key, security_maclabel_getname()) == 0)
-+		return nfs4_set_security_label(dentry, buf, buflen);
-+#endif
-+	return -EOPNOTSUPP;
- }
+ 	/* sets the context of the superblock for the fs being mounted. */
+ 	if (fscontext_sid) {
  
- /* The getxattr man page suggests returning -ENODATA for unknown attributes,
-@@ -3925,22 +3928,49 @@ ssize_t nfs4_getxattr(struct dentry *dentry, const char *key, void *buf,
- {
- 	struct inode *inode = dentry->d_inode;
+@@ -1103,6 +1105,8 @@ static int inode_doinit_with_dentry(struct inode *inode, struct dentry *opt_dent
+ 	}
  
--	if (strcmp(key, XATTR_NAME_NFSV4_ACL) != 0)
--		return -EOPNOTSUPP;
--
--	return nfs4_proc_get_acl(inode, buf, buflen);
-+	if (strcmp(key, XATTR_NAME_NFSV4_ACL) == 0)
-+		return nfs4_proc_get_acl(inode, buf, buflen);
-+#ifdef CONFIG_NFS_V4_SECURITY_LABEL
-+	if (strcmp(key, security_maclabel_getname()) == 0)
-+		return nfs4_get_security_label(inode, buf, buflen);
-+#endif
-+	return -EOPNOTSUPP;
- }
+ 	switch (sbsec->behavior) {
++	case SECURITY_FS_USE_NATIVE:
++		break;
+ 	case SECURITY_FS_USE_XATTR:
+ 		if (!inode->i_op->getxattr) {
+ 			isec->sid = sbsec->def_sid;
+diff --git a/security/selinux/include/security.h b/security/selinux/include/security.h
+index 837ce42..e788c7a 100644
+--- a/security/selinux/include/security.h
++++ b/security/selinux/include/security.h
+@@ -114,6 +114,8 @@ int security_get_allow_unknown(void);
+ #define SECURITY_FS_USE_GENFS		4 /* use the genfs support */
+ #define SECURITY_FS_USE_NONE		5 /* no labeling support */
+ #define SECURITY_FS_USE_MNTPOINT	6 /* use mountpoint labeling */
++#define SECURITY_FS_USE_NATIVE		7 /* use native label support */
++#define SECURITY_FS_USE_MAX		7 /* Highest SECURITY_FS_USE_XXX */
  
- ssize_t nfs4_listxattr(struct dentry *dentry, char *buf, size_t buflen)
- {
--	size_t len = strlen(XATTR_NAME_NFSV4_ACL) + 1;
-+	size_t len = 0, l;
-+#ifdef CONFIG_NFS_V4_SECURITY_LABEL
-+	const char *key = security_maclabel_getname();
-+#endif
-+	char *p;
- 
--	if (!nfs4_server_supports_acls(NFS_SERVER(dentry->d_inode)))
-+	if (nfs4_server_supports_acls(NFS_SERVER(dentry->d_inode)))
-+		len += strlen(XATTR_NAME_NFSV4_ACL) + 1;
-+#ifdef CONFIG_NFS_V4_SECURITY_LABEL
-+	if (nfs_server_capable(dentry->d_inode, NFS_CAP_SECURITY_LABEL))
-+		len += strlen(key) + 1;
-+#endif
-+	if (!len)
- 		return 0;
- 	if (buf && buflen < len)
- 		return -ERANGE;
--	if (buf)
--		memcpy(buf, XATTR_NAME_NFSV4_ACL, len);
-+	if (!buf)
-+		return len;
-+
-+	p = buf;
-+	if (nfs4_server_supports_acls(NFS_SERVER(dentry->d_inode))) {
-+		l = strlen(XATTR_NAME_NFSV4_ACL) + 1;
-+		memcpy(p, XATTR_NAME_NFSV4_ACL, l);
-+		p += l;
-+	}
-+#ifdef CONFIG_NFS_V4_SECURITY_LABEL
-+	if (nfs_server_capable(dentry->d_inode, NFS_CAP_SECURITY_LABEL)) {
-+		l = strlen(key) + 1;
-+		memcpy(p, key, l);
-+		p += l;
-+	}
-+#endif
- 	return len;
- }
- 
+ int security_fs_use(const char *fstype, unsigned int *behavior,
+ 	u32 *sid);
+diff --git a/security/selinux/ss/policydb.c b/security/selinux/ss/policydb.c
+index bd7d6a0..3d9e30e 100644
+--- a/security/selinux/ss/policydb.c
++++ b/security/selinux/ss/policydb.c
+@@ -1756,7 +1756,10 @@ int policydb_read(struct policydb *p, void *fp)
+ 				if (rc < 0)
+ 					goto bad;
+ 				c->v.behavior = le32_to_cpu(buf[0]);
+-				if (c->v.behavior > SECURITY_FS_USE_NONE)
++				/* Determined at runtime, not in policy DB. */
++				if (c->v.behavior == SECURITY_FS_USE_MNTPOINT)
++					goto bad;
++				if (c->v.behavior > SECURITY_FS_USE_MAX)
+ 					goto bad;
+ 				len = le32_to_cpu(buf[1]);
+ 				c->u.name = kmalloc(len + 1,GFP_KERNEL);
 -- 
 1.5.3.8
 
