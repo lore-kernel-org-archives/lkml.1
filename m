@@ -1,88 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932770AbYB0AOl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932825AbYB0APd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932770AbYB0AOl (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Feb 2008 19:14:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932434AbYB0AO1
+	id S932825AbYB0APd (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Feb 2008 19:15:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755472AbYB0APZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Feb 2008 19:14:27 -0500
-Received: from wr-out-0506.google.com ([64.233.184.234]:8276 "EHLO
-	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932318AbYB0AO0 (ORCPT
+	Tue, 26 Feb 2008 19:15:25 -0500
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:50709 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754823AbYB0APY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Feb 2008 19:14:26 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding:sender;
-        b=YEVYzN8vW9OOSHZfXiMUUpPCpS9zyr+XsFPLcbfiStuEyfuXrP/Fs45eUAnKKrM6aWP4sZlEWBjTE1ZJkD0IX+fH/8ZTPe56uv1eywz0PRR5wHbRulSWRvXjCP4shCY8M5SUm500UJFnHLAmQJtItDVgTTsvT2oc5FLzfqiTtXI=
-Message-ID: <47C4AB5D.3000900@panasas.com>
-Date: Tue, 26 Feb 2008 16:14:21 -0800
-From: Benny Halevy <bhalevy@panasas.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
-MIME-Version: 1.0
-To: Richard Knutsson <ricknu-0@student.ltu.se>,
-       Randy Dunlap <randy.dunlap@oracle.com>
-CC: khc@pm.waw.pl, bhalevy.lists@gmail.com, jengelh@computergmbh.de,
-       linux-kernel@vger.kernel.org
-Subject: Re: [RFC] CodeStyle: Use spaces when aligning/decorating
-References: <1204062430.47c488def40a4@portal.student.luth.se> <20080226135444.f83a0536.randy.dunlap@oracle.com> <47C48FD8.5040205@student.ltu.se>
-In-Reply-To: <47C48FD8.5040205@student.ltu.se>
-Content-Type: text/plain; charset=ISO-8859-1
+	Tue, 26 Feb 2008 19:15:24 -0500
+Date: Wed, 27 Feb 2008 00:02:22 +0000
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Jeff Garzik <jgarzik@pobox.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       =?UTF-8?B?QmrDtnJu?= Steinbrink <B.Steinbrink@gmx.de>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: 2.6.24-git: kmap_atomic() WARN_ON()
+Message-ID: <20080227000222.158f9220@core>
+In-Reply-To: <47C499CF.2000605@pobox.com>
+References: <alpine.LFD.1.00.0802070054220.9204@apollo.tec.linutronix.de>
+	<20080225195924.GA23176@atjola.homenet>
+	<47C32043.6090809@pobox.com>
+	<20080225124054.9b69e9f0.akpm@linux-foundation.org>
+	<alpine.LFD.1.00.0802252242290.7583@apollo.tec.linutronix.de>
+	<47C34CEA.7060307@pobox.com>
+	<20080226083904.GC9857@elte.hu>
+	<47C43F18.6060207@pobox.com>
+	<20080226101928.f6c16c66.akpm@linux-foundation.org>
+	<20080226204943.GD14350@elte.hu>
+	<20080226133715.d9cd32e7.akpm@linux-foundation.org>
+	<47C499CF.2000605@pobox.com>
+X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Feb. 26, 2008, 14:16 -0800, Richard Knutsson <ricknu-0@student.ltu.se> wrote:
-> Randy Dunlap wrote:
->> On Tue, 26 Feb 2008 22:47:10 +0100 ricknu-0@student.ltu.se wrote:
->>
->>   
->>> Relaxing the 'tab = 8 character', which leads to 'don't tab the alignment'.
->>> By only using tabs for indentation, we solidify it as a 'logical indentation'.
->>>
->>> Signed-off-by: Richard Knutsson <ricknu-0@student.ltu.se>
->>> ---
->>> To'ed the people who showed interest in the (apparently not so new)
->>> question/suggestion of not using tabs when aligning.
->>> If this looks ok, then checkpatch.pl is next...
->>>
->>>
->>> diff --git a/Documentation/CodingStyle b/Documentation/CodingStyle
->>> index 6caa146..1b3f448 100644
->>> --- a/Documentation/CodingStyle
->>> +++ b/Documentation/CodingStyle
->>> @@ -15,10 +15,8 @@ Anyway, here goes:
->>>  
->>>  	 	Chapter 1: Indentation
->>>  
->>> -Tabs are 8 characters, and thus indentations are also 8 characters.
->>> -There are heretic movements that try to make indentations 4 (or even 2!)
->>> -characters deep, and that is akin to trying to define the value of PI to
->>> -be 3.
->>> +This project is recommended to be viewed with a tab-width of 8 characters
->>> +(and other code).
->>>     
->> FWIW I prefer the {deleted} language.  // PI = 3;
->>   
-> Well, actually I like it too. But I think it should be up to the 
-> programmer which setting to use + it seems some people have really taken 
-> this to heart, going from 'tab => 8 characters wide' to '8 spaces => 
-> tab', obscuring tab's position as a 'logical indention'.
+> Aside: The "FIXME: use bounce buffer" comment above indicates the more 
+> optimal PIO data xfer approach of
 > 
-> Richard Knutsson
+> 	local_irq_save()
+> 	kmap_atomic()
+> 	memcpy into bounce buffer
+> 	kunmap_atomic()
+> 	local_irq_restore()
 > 
+> 	/* do slow PIO bitbanging data transfer */
+> 	ap->ops->data_xfer(...)
 
-How about this:
+Definitely - older PATA controllers are unbuffered. A PIO_0 transfer is
+running at ISA speed with IRQs off. Guaranteed to give Ingo's RT a blip.
 
--Tabs are 8 characters, and thus indentations are also 8 characters.
--There are heretic movements that try to make indentations 4 (or even 2!)
--characters deep, and that is akin to trying to define the value of PI to
--be 3.
-+Tabs are used for logical indentation, e.g., code is indented with
-+a number of tabs equal to its nesting level.  From there on,
-+use space characters for decorative indentation.  This method
-+is agnostic to the editor's tab-expansion settings.
-+That said, expanding tabs to a small number of spaces (4, or even 2!) encourages
-+excessive nesting and resulting over-complexity; that is akin to trying to define
-+the value of PI to be 3.  Therefore, tabs are always assumed to be 8 characters-wide.
-
+Alan
