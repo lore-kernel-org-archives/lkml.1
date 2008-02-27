@@ -1,167 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757526AbYB0S5b@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757888AbYB0S56@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757526AbYB0S5b (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Feb 2008 13:57:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757241AbYB0S5P
+	id S1757888AbYB0S56 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Feb 2008 13:57:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757593AbYB0S5r
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Feb 2008 13:57:15 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:43133 "EHLO mx1.redhat.com"
+	Wed, 27 Feb 2008 13:57:47 -0500
+Received: from pasmtpa.tele.dk ([80.160.77.114]:34703 "EHLO pasmtpA.tele.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757220AbYB0S5N (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Feb 2008 13:57:13 -0500
-From: Josef Bacik <jbacik@redhat.com>
-To: linux-kernel@vger.kernel.org
-Subject: [PATCH 1/2] fix the way jbd/jbd2 clears the b_modified flag
-Date: Wed, 27 Feb 2008 13:46:09 -0500
-User-Agent: KMail/1.9.6 (enterprise 0.20071204.744707)
-Cc: linux-ext4@vger.kernel.org, Jan Kara <jack@suse.cz>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+	id S1757587AbYB0S5q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 Feb 2008 13:57:46 -0500
+Date: Wed, 27 Feb 2008 19:57:56 +0100
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Cyrill Gorcunov <gorcunov@gmail.com>
+Cc: Richard Henderson <rth@twiddle.net>, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [RFC] alpha: vmlinux.lds cleanup - use THREAD_SIZE macro
+Message-ID: <20080227185756.GA12569@uranus.ravnborg.org>
+References: <20080226195159.GC6748@cvg>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200802271346.10298.jbacik@redhat.com>
+In-Reply-To: <20080226195159.GC6748@cvg>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+On Tue, Feb 26, 2008 at 10:51:59PM +0300, Cyrill Gorcunov wrote:
+> This patch modifies thread_info.h header to be able to include it
+> into linker script and then we're able to use THREAD_SIZE in
+> vmlinux.lds
+> 
+> Signed-off-by: Cyrill Gorcunov <gorcunov@gmail.com>
+Reviewed-by: Sam Ravnborg <sam@ravnborg.org>
 
-Currently at the start of a journal commit we loop through all of the buffers on 
-the committing transaction and clear the b_modified flag (the flag that is set 
-when a transaction modifies the buffer) under the j_list_lock.  The problem is 
-that everywhere else this flag is modified only under the jbd lock buffer flag, 
-so it will race with a running transaction who could potentially set it, and 
-have it unset by the committing transaction.  This is also a big waste, you can 
-have several thousands of buffers that you are clearing the modified flag on 
-when you may not need to.  This patch removes this code and instead clears the 
-b_modified flag upon entering do_get_write_access/journal_get_create_access, so 
-if that transaction does indeed use the buffer then it will be accounted for 
-properly, and if it does not then we know we didn't use it.  That will be 
-important for the next patch in this series.  Tested thoroughly by myself using 
-postmark/iozone/bonnie++.  Thank you,
+And I also build tested the patch and checked the
+resulting .lds files.
+And they were semantically equal.
 
-Signed-off-by: Josef Bacik <jbacik@redhat.com>
-
-Index: linux-2.6/fs/jbd/commit.c
-===================================================================
---- linux-2.6.orig/fs/jbd/commit.c
-+++ linux-2.6/fs/jbd/commit.c
-@@ -407,22 +407,6 @@ void journal_commit_transaction(journal_
- 	jbd_debug (3, "JBD: commit phase 2\n");
- 
- 	/*
--	 * First, drop modified flag: all accesses to the buffers
--	 * will be tracked for a new trasaction only -bzzz
--	 */
--	spin_lock(&journal->j_list_lock);
--	if (commit_transaction->t_buffers) {
--		new_jh = jh = commit_transaction->t_buffers->b_tnext;
--		do {
--			J_ASSERT_JH(new_jh, new_jh->b_modified == 1 ||
--					new_jh->b_modified == 0);
--			new_jh->b_modified = 0;
--			new_jh = new_jh->b_tnext;
--		} while (new_jh != jh);
--	}
--	spin_unlock(&journal->j_list_lock);
--
--	/*
- 	 * Now start flushing things to disk, in the order they appear
- 	 * on the transaction lists.  Data blocks go first.
- 	 */
-Index: linux-2.6/fs/jbd/transaction.c
-===================================================================
---- linux-2.6.orig/fs/jbd/transaction.c
-+++ linux-2.6/fs/jbd/transaction.c
-@@ -609,6 +609,12 @@ repeat:
- 		goto done;
- 
- 	/*
-+	 * this is the first time this transaction is touching this buffer,
-+	 * reset the modified flag
-+	 */
-+	jh->b_modified = 0;
-+
-+	/*
- 	 * If there is already a copy-out version of this buffer, then we don't
- 	 * need to make another one
- 	 */
-@@ -820,9 +826,16 @@ int journal_get_create_access(handle_t *
- 
- 	if (jh->b_transaction == NULL) {
- 		jh->b_transaction = transaction;
-+
-+		/* first access by this transaction */
-+		jh->b_modified = 0;
-+
- 		JBUFFER_TRACE(jh, "file as BJ_Reserved");
- 		__journal_file_buffer(jh, transaction, BJ_Reserved);
- 	} else if (jh->b_transaction == journal->j_committing_transaction) {
-+		/* first access by this transaction */
-+		jh->b_modified = 0;
-+
- 		JBUFFER_TRACE(jh, "set next transaction");
- 		jh->b_next_transaction = transaction;
- 	}
-Index: linux-2.6/fs/jbd2/commit.c
-===================================================================
---- linux-2.6.orig/fs/jbd2/commit.c
-+++ linux-2.6/fs/jbd2/commit.c
-@@ -520,22 +520,6 @@ void jbd2_journal_commit_transaction(jou
- 	jbd_debug (3, "JBD: commit phase 2\n");
- 
- 	/*
--	 * First, drop modified flag: all accesses to the buffers
--	 * will be tracked for a new trasaction only -bzzz
--	 */
--	spin_lock(&journal->j_list_lock);
--	if (commit_transaction->t_buffers) {
--		new_jh = jh = commit_transaction->t_buffers->b_tnext;
--		do {
--			J_ASSERT_JH(new_jh, new_jh->b_modified == 1 ||
--					new_jh->b_modified == 0);
--			new_jh->b_modified = 0;
--			new_jh = new_jh->b_tnext;
--		} while (new_jh != jh);
--	}
--	spin_unlock(&journal->j_list_lock);
--
--	/*
- 	 * Now start flushing things to disk, in the order they appear
- 	 * on the transaction lists.  Data blocks go first.
- 	 */
-Index: linux-2.6/fs/jbd2/transaction.c
-===================================================================
---- linux-2.6.orig/fs/jbd2/transaction.c
-+++ linux-2.6/fs/jbd2/transaction.c
-@@ -618,6 +618,12 @@ repeat:
- 		goto done;
- 
- 	/*
-+	 * this is the first time this transaction is touching this buffer,
-+	 * reset the modified flag
-+	 */
-+       jh->b_modified = 0;
-+
-+	/*
- 	 * If there is already a copy-out version of this buffer, then we don't
- 	 * need to make another one
- 	 */
-@@ -829,9 +835,16 @@ int jbd2_journal_get_create_access(handl
- 
- 	if (jh->b_transaction == NULL) {
- 		jh->b_transaction = transaction;
-+
-+		/* first access by this transaction */
-+		jh->b_modified = 0;
-+
- 		JBUFFER_TRACE(jh, "file as BJ_Reserved");
- 		__jbd2_journal_file_buffer(jh, transaction, BJ_Reserved);
- 	} else if (jh->b_transaction == journal->j_committing_transaction) {
-+		/* first access by this transaction */
-+		jh->b_modified = 0;
-+
- 		JBUFFER_TRACE(jh, "set next transaction");
- 		jh->b_next_transaction = transaction;
- 	}
+	Sam
