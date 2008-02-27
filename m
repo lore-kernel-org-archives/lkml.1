@@ -1,53 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759603AbYB0UGX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759774AbYB0UHb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759603AbYB0UGX (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Feb 2008 15:06:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757801AbYB0UGM
+	id S1759774AbYB0UHb (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Feb 2008 15:07:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757532AbYB0UHV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Feb 2008 15:06:12 -0500
-Received: from wr-out-0506.google.com ([64.233.184.228]:11098 "EHLO
-	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757178AbYB0UGK (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Feb 2008 15:06:10 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=b/luF4AFzREk/EeXWxBhXvlV7BdbCe1yS2bpsWB74taaI4JbIRhmRmBVyc4j8I+FcQRyUt5TMnvtdP/Z840z7LhRps3awgwImF0HhIyBFVHXhG0Unei5pp+Bzy/7oKMPSiiCHC1bDUKTvF2+sdojW+oBuJ9YtJJS2/PGTGaJoLk=
-Message-ID: <b1bc6a000802271206l3e99afedt64d5f7cc238365d6@mail.gmail.com>
-Date: Wed, 27 Feb 2008 12:06:08 -0800
-From: "adam radford" <aradford@gmail.com>
-To: "Andre Noll" <maan@systemlinux.org>
-Subject: Re: Performance problems with 3ware 9500S-4LP and 2.6.25-rc3
-Cc: "Tony Battersby" <tonyb@cybernetics.com>,
-       "Arnd Hannemann" <hannemann@nets.rwth-aachen.de>,
-       "=?ISO-8859-1?Q?Johannes_W=F6rner?=" 
-	<johannes.woerner@tuebingen.mpg.de>,
-       "James Bottomley" <James.Bottomley@hansenpartnership.com>,
-       linux-scsi <linux-scsi@vger.kernel.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-In-Reply-To: <20080227170528.GB29468@skl-net.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20080226174314.GA30767@skl-net.de>
-	 <47C49B99.1060707@nets.rwth-aachen.de>
-	 <20080227101154.GD30767@skl-net.de> <47C57327.6070901@cybernetics.com>
-	 <20080227170528.GB29468@skl-net.de>
+	Wed, 27 Feb 2008 15:07:21 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:44592 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757519AbYB0UHU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 Feb 2008 15:07:20 -0500
+From: Roland McGrath <roland@redhat.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org
+Cc: Shaohua Li <shaohua.li@intel.com>, linux-ia64@vger.kernel.org
+Subject: [PATCH] core dump: user_regset writeback
+X-Fcc: ~/Mail/linus
+X-Windows: graphics hacking :: Roman numerals : sqrt (pi)
+Message-Id: <20080227200638.15D092700FD@magilla.localdomain>
+Date: Wed, 27 Feb 2008 12:06:38 -0800 (PST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Feb 27, 2008 at 9:05 AM, Andre Noll <maan@systemlinux.org> wrote:
-> On 09:26, Tony Battersby wrote:
->  > > Thanks, this helped a lot. However, there does not seem to be a way
->  > > to make the system more responsive, which is really the problem we
->  > > are experiencing.
 
-Andre,
+This makes the user_regset-based core dump code call user_regset
+writeback hooks when available.  This is necessary groundwork to
+allow IA64 to set CORE_DUMP_USE_REGSET.
 
-Can you try turning down /sys/block/sdX/device/queue_depth to 16 and
-see if that improves your responsiveness?
+CC: Shaohua Li <shaohua.li@intel.com>
+Signed-off-by: Roland McGrath <roland@redhat.com>
+---
+ fs/binfmt_elf.c |   15 +++++++++++++++
+ 1 files changed, 15 insertions(+), 0 deletions(-)
 
--Adam
+diff --git a/fs/binfmt_elf.c b/fs/binfmt_elf.c
+index 41a958a..eb7cca3 100644
+--- a/fs/binfmt_elf.c
++++ b/fs/binfmt_elf.c
+@@ -1424,6 +1424,18 @@ struct elf_note_info {
+ 	int thread_notes;
+ };
+ 
++/*
++ * When a regset has a writeback hook, we call it on each thread before
++ * dumping user memory.  On register window machines, this makes sure the
++ * user memory backing the register data is up to date before we read it.
++ */
++static void do_thread_regset_writeback(struct task_struct *task,
++				       const struct user_regset *regset)
++{
++	if (regset->writeback)
++		regset->writeback(task, regset, 1);
++}
++
+ static int fill_thread_core_info(struct elf_thread_core_info *t,
+ 				 const struct user_regset_view *view,
+ 				 long signr, size_t *total)
+@@ -1445,6 +1457,8 @@ static int fill_thread_core_info(struct elf_thread_core_info *t,
+ 		  sizeof(t->prstatus), &t->prstatus);
+ 	*total += notesize(&t->notes[0]);
+ 
++	do_thread_regset_writeback(t->task, &view->regsets[0]);
++
+ 	/*
+ 	 * Each other regset might generate a note too.  For each regset
+ 	 * that has no core_note_type or is inactive, we leave t->notes[i]
+@@ -1452,6 +1466,7 @@ static int fill_thread_core_info(struct elf_thread_core_info *t,
+ 	 */
+ 	for (i = 1; i < view->n; ++i) {
+ 		const struct user_regset *regset = &view->regsets[i];
++		do_thread_regset_writeback(t->task, regset);
+ 		if (regset->core_note_type &&
+ 		    (!regset->active || regset->active(t->task, regset))) {
+ 			int ret;
