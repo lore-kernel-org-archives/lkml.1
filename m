@@ -1,80 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761230AbYB0XGj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758173AbYB0XIp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761230AbYB0XGj (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Feb 2008 18:06:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760077AbYB0XGX
+	id S1758173AbYB0XIp (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Feb 2008 18:08:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753352AbYB0XIX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Feb 2008 18:06:23 -0500
-Received: from chilli.pcug.org.au ([203.10.76.44]:38075 "EHLO smtps.tip.net.au"
+	Wed, 27 Feb 2008 18:08:23 -0500
+Received: from mummy.ncsc.mil ([144.51.88.129]:48304 "EHLO mummy.ncsc.mil"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759646AbYB0XGV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Feb 2008 18:06:21 -0500
-Date: Thu, 28 Feb 2008 10:06:18 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Theodore Tso <tytso@MIT.EDU>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-next@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: linux-next: Tree for Feb 27
-Message-Id: <20080228100618.3eb58692.sfr@canb.auug.org.au>
-In-Reply-To: <20080227195525.GC8840@mit.edu>
-References: <20080227170300.25c50fe3.sfr@canb.auug.org.au>
-	<20080226230059.58cf3cfa.akpm@linux-foundation.org>
-	<20080228010626.fd4e00d2.sfr@canb.auug.org.au>
-	<20080227195525.GC8840@mit.edu>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.8; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Thu__28_Feb_2008_10_06_18_+1100_WMHV4psAVYVbLm7="
+	id S1751027AbYB0XIW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 Feb 2008 18:08:22 -0500
+X-Greylist: delayed 1141 seconds by postgrey-1.27 at vger.kernel.org; Wed, 27 Feb 2008 18:08:22 EST
+From: "David P. Quigley" <dpquigl@tycho.nsa.gov>
+To: hch@infradead.org, viro@ftp.linux.org.uk, trond.myklebust@fys.uio.no,
+       bfields@fieldses.org
+Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       "David P. Quigley" <dpquigl@tycho.nsa.gov>
+Subject: [PATCH 04/11] KConfig: Add KConfig entries for SELinux labeled NFS
+Date: Wed, 27 Feb 2008 17:11:27 -0500
+Message-Id: <1204150294-4678-5-git-send-email-dpquigl@tycho.nsa.gov>
+X-Mailer: git-send-email 1.5.3.8
+In-Reply-To: <1204150294-4678-1-git-send-email-dpquigl@tycho.nsa.gov>
+References: <1204150294-4678-1-git-send-email-dpquigl@tycho.nsa.gov>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Thu__28_Feb_2008_10_06_18_+1100_WMHV4psAVYVbLm7=
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+This patch adds two entries into the fs/KConfig file. The first entry
+NFS_V4_SECURITY_LABEL enables security label support for the NFSv4 client while
+the second entry NFSD_V4_SECURITY_LABEL enables security labeling support on
+the server side. These entries are currently marked as EXPERIMENTAL to indicate
+that at the moment they are only suitable for testing purposes and that the
+functionality they provide may change before it is removed from experimental
+status.
 
-Hi Ted,
+Signed-off-by: David P. Quigley <dpquigl@tycho.nsa.gov>
+---
+ fs/Kconfig |   17 +++++++++++++++++
+ 1 files changed, 17 insertions(+), 0 deletions(-)
 
-On Wed, 27 Feb 2008 14:55:25 -0500 Theodore Tso <tytso@MIT.EDU> wrote:
->
-> please add:
->=20
->    git://git.kernel.org/pub/scm/linux/kernel/git/tytso/ext4.git  next
+diff --git a/fs/Kconfig b/fs/Kconfig
+index d731282..d762375 100644
+--- a/fs/Kconfig
++++ b/fs/Kconfig
+@@ -1637,6 +1637,14 @@ config NFS_V4
+ 
+ 	  If unsure, say N.
+ 
++config NFS_V4_SECURITY_LABEL
++	bool "Provide Security Label support for NFSv4 client"
++	depends on NFS_V4 && SECURITY && EXPERIMENTAL
++	help
++	  Say Y here if you want label attribute support for NFS version 4.
++
++	  If unsure, say N.
++
+ config NFS_DIRECTIO
+ 	bool "Allow direct I/O on NFS files"
+ 	depends on NFS_FS
+@@ -1728,6 +1736,15 @@ config NFSD_V4
+ 	  should only be used if you are interested in helping to test NFSv4.
+ 	  If unsure, say N.
+ 
++config NFSD_V4_SECURITY_LABEL
++	bool "Provide Security Label support for NFSv4 server"
++	depends on NFSD_V4 && SECURITY && EXPERIMENTAL
++	help
++	  If you would like to include support for label file attributes
++	  over NFSv4, say Y here.
++
++	  If unsure, say N.
++
+ config NFSD_TCP
+ 	bool "Provide NFS server over TCP support"
+ 	depends on NFSD
+-- 
+1.5.3.8
 
-Added, thanks.
-
-> This contains a subset of the patches in the ext4 patch set which we
-> are explicitly planning on pushing to Linus at the next merge window.
-
-That's what we want.
-
-> It actually probably wouldn't hurt to pull the entire quilt series
-> into linux-next, since we don't export any interfaces that are used by
-> other linux trees, and that would give us better heads up for
-> conflicts in patches still in development conflicting with upcoming
-> core changes.  But it conflicts with the initial premise of
-> linux-next, so that's why I set up the next branch of the above git
-> tree.
-
-Thanks, the less conflicts I have to fix the better.  :-)  I guess over
-time patches will migrate into your next branch or they will appear there
-after the next Linus release.
-
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-
---Signature=_Thu__28_Feb_2008_10_06_18_+1100_WMHV4psAVYVbLm7=
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQFHxezuTgG2atn1QN8RAszvAJ4xVYJ3clgTHuTVTh9SPdElm/GCqgCdEEAR
-JLxrPjXWYnO3pR0toq47fMk=
-=XVxl
------END PGP SIGNATURE-----
-
---Signature=_Thu__28_Feb_2008_10_06_18_+1100_WMHV4psAVYVbLm7=--
