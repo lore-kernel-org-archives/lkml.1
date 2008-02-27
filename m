@@ -1,89 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756235AbYB0RIt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756557AbYB0RJ0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756235AbYB0RIt (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Feb 2008 12:08:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750988AbYB0RIj
+	id S1756557AbYB0RJ0 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Feb 2008 12:09:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751412AbYB0RJQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Feb 2008 12:08:39 -0500
-Received: from sj-iport-1.cisco.com ([171.71.176.70]:11416 "EHLO
-	sj-iport-1.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751187AbYB0RIh (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Feb 2008 12:08:37 -0500
-To: linux-kernel@vger.kernel.org
-Cc: Ingo Molnar <mingo@elte.hu>, Thomas Mingarelli <thomas.mingarelli@hp.com>
-Subject: hpwdt oops in clflush_cache_range
-X-Message-Flag: Warning: May contain useful information
-From: Roland Dreier <rdreier@cisco.com>
-Date: Wed, 27 Feb 2008 09:08:20 -0800
-Message-ID: <adad4qiwcmz.fsf@cisco.com>
-User-Agent: Gnus/5.1008 (Gnus v5.10.8) XEmacs/21.4.21 (linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-OriginalArrivalTime: 27 Feb 2008 17:08:20.0600 (UTC) FILETIME=[5A6EE780:01C87963]
-Authentication-Results: sj-dkim-4; header.From=rdreier@cisco.com; dkim=pass (
-	sig from cisco.com/sjdkim4002 verified; ); 
+	Wed, 27 Feb 2008 12:09:16 -0500
+Received: from relay1.sgi.com ([192.48.171.29]:47102 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751061AbYB0RJP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 Feb 2008 12:09:15 -0500
+Date: Wed, 27 Feb 2008 11:09:12 -0600
+From: Paul Jackson <pj@sgi.com>
+To: Lee Schermerhorn <Lee.Schermerhorn@hp.com>
+Cc: rientjes@google.com, clameter@sgi.com, ak@suse.de,
+       linux-kernel@vger.kernel.org, mtk-manpages@gmx.net
+Subject: Re: [patch 5/6] mempolicy: add MPOL_F_RELATIVE_NODES flag
+Message-Id: <20080227110912.75d82710.pj@sgi.com>
+In-Reply-To: <1204126666.5029.26.camel@localhost>
+References: <alpine.DEB.1.00.0802250012420.12368@chino.kir.corp.google.com>
+	<alpine.DEB.1.00.0802250013580.12368@chino.kir.corp.google.com>
+	<alpine.DEB.1.00.0802250014170.12368@chino.kir.corp.google.com>
+	<alpine.DEB.1.00.0802250014410.12368@chino.kir.corp.google.com>
+	<alpine.DEB.1.00.0802250016120.12368@chino.kir.corp.google.com>
+	<alpine.DEB.1.00.0802261704310.25919@chino.kir.corp.google.com>
+	<1204126666.5029.26.camel@localhost>
+Organization: SGI
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.12.0; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-With an up-to-date git tree (head 7704a8b6) I'm seeing the oops below
-when the hpwdt driver gets loaded during boot on an HP DL380 system.
-I don't think I've seen any previous reports of this, and I guess it
-doesn't really count as a regression since the hpwdt driver was only
-added after 2.6.25-rc2.
+Lee wrote:
+> 1) this IS a change in behavior, right?  My first inclination is to shy
+> away from this.  However, ...
+> 
+> 2) the current interaction of mempolicies with cpusets is not well
+> documented--until Paul's cpuset.4 man page hits the streets, anyway.
+> That doc does say that mempolicy is not allowed to use a node outside
+> the cpuset.  It does NOT say how this is enforced--reject vs masking vs
 
-I haven't tried to debug this at all yet but any guidance about what
-information is useful for what looks to be an issue with c_p_a would
-be appreciated.
+We should strive to minimize change in existing behaviour, especially
+on points where either way could be arguably a reasonable choice in
+some situations, and neither way is a clearly inescapable bug in other
+situations.
 
- - R.
+One almost always breaks someone, somewhere with such changes.  You
+need a compelling reason to do that, not just a "on this hand, on that
+hand" design choice.
 
-
- BUG: unable to handle kernel paging request at ffffc20001a08000
- IP: [<ffffffff8021dacc>] clflush_cache_range+0xc/0x25
- PGD 1bf80e067 PUD 1bf80f067 PMD 1bb1ab067 PTE 80000047000ee17b
- Oops: 0009 [1] SMP
- CPU 2
- Modules linked in: ide_pci_generic(+) ipmi_si ib_mthca container piix thermal ib_mad serio_raw ipmi_msghandler bnx2 evdev hpwdt(+) ib_core zlib_inflate ehci_hcd uhci_hcd button processor pcspkr psmouse ide_core
- Pid: 1291, comm: modprobe Not tainted 2.6.25-rc3 #51
- RIP: 0010:[<ffffffff8021dacc>]  [<ffffffff8021dacc>] clflush_cache_range+0xc/0x25
- RSP: 0018:ffff8101bd421bc0  EFLAGS: 00010293
- RAX: ffff8101bb1ab040 RBX: 0000000000000000 RCX: 00000001bb1ab001
- RDX: ffffc20001a08fff RSI: 0000000000001000 RDI: ffffc20001a08000
- RBP: ffffc20001a08000 R08: ffff810000000000 R09: 00003ffffffff000
- R10: ffffc20001a08000 R11: 000000008807c350 R12: ffff8101bd421bf4
- R13: 0000000000000000 R14: 0000000000000001 R15: 800000000000017b
- FS:  00007f62818166e0(0000) GS:ffff8101bf802c00(0000) knlGS:0000000000000000
- CS:  0010 DS: 0000 ES: 0000 CR0: 000000008005003b
- CR2: ffffc20001a08000 CR3: 00000001bbdc6000 CR4: 00000000000006e0
- DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
- DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
- Process modprobe (pid: 1291, threadinfo ffff8101bd420000, task ffff8101bbd34000)
- Stack:  ffffffff8021e60b ffffc20001a09000 0000000000000018 0000000000000000
-  0000000100000001 00000000047000ee 0000000100001000 0000000000001000
-  ffffc20001a08000 00240047000ee000 ffff8101bbcd5f00 00240047000ee000
- Call Trace:
-  [<ffffffff8021e60b>] ? change_page_attr_set_clr+0x140/0x18b
-  [<ffffffff8021d94c>] ? __ioremap+0x197/0x1cd
-  [<ffffffff8807a566>] ? :hpwdt:hpwdt_init_one+0x1c3/0x386
-  [<ffffffff803351fe>] ? pci_device_probe+0xb3/0xfb
-  [<ffffffff80393ffe>] ? driver_probe_device+0xb5/0x132
-  [<ffffffff8039411d>] ? __driver_attach+0x0/0x93
-  [<ffffffff80394177>] ? __driver_attach+0x5a/0x93
-  [<ffffffff803933fa>] ? bus_for_each_dev+0x47/0x72
-  [<ffffffff80393c1e>] ? bus_add_driver+0xb1/0x1fb
-  [<ffffffff80394391>] ? driver_register+0x59/0xce
-  [<ffffffff80335487>] ? __pci_register_driver+0x5a/0x8b
-  [<ffffffff802526a1>] ? sys_init_module+0x18ff/0x1a08
-  [<ffffffff8023ea31>] ? param_get_int+0x0/0x14
-  [<ffffffff8024a6be>] ? trace_hardirqs_on+0xef/0x113
-  [<ffffffff8041e1fa>] ? trace_hardirqs_on_thunk+0x35/0x3a
-  [<ffffffff8020be5b>] ? system_call_after_swapgs+0x7b/0x80
-
-
- Code: 00 e8 de 09 02 00 31 d2 48 85 c0 74 0d 48 8b 40 08 b2 01 48 89 83 80 00 00 00 5b 89 d0 c3 90 89 f6 48 8d 54 37 ff 0f ae f0 eb 0d <0f> ae 3f 0f b7 05 4e ce 36 00 48 01 c7 48 39 d7 72 ee 0f ae 3a
- RIP  [<ffffffff8021dacc>] clflush_cache_range+0xc/0x25
-  RSP <ffff8101bd421bc0>
- CR2: ffffc20001a08000
- ---[ end trace 5e3e8191157a34b6 ]---
+-- 
+                  I won't rest till it's the best ...
+                  Programmer, Linux Scalability
+                  Paul Jackson <pj@sgi.com> 1.940.382.4214
