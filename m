@@ -1,70 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758951AbYB0Vvn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758146AbYB0V5N@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758951AbYB0Vvn (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Feb 2008 16:51:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753660AbYB0Vvg
+	id S1758146AbYB0V5N (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Feb 2008 16:57:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755140AbYB0V4z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Feb 2008 16:51:36 -0500
-Received: from agminet01.oracle.com ([141.146.126.228]:25875 "EHLO
-	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754068AbYB0Vvf (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Feb 2008 16:51:35 -0500
-Date: Wed, 27 Feb 2008 13:49:45 -0800
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: Greg KH <gregkh@suse.de>
-Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       torvalds@linux-foundation.org, stable@kernel.org
-Subject: Re: Linux 2.6.24.3
-Message-Id: <20080227134945.c1430710.randy.dunlap@oracle.com>
-In-Reply-To: <20080226041545.GA30567@suse.de>
-References: <20080226010024.GA26889@suse.de>
-	<20080225195229.11ec1f12.randy.dunlap@oracle.com>
-	<20080226041545.GA30567@suse.de>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.4.7 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+	Wed, 27 Feb 2008 16:56:55 -0500
+Received: from smtp5.pp.htv.fi ([213.243.153.39]:34824 "EHLO smtp5.pp.htv.fi"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751691AbYB0V4y (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 Feb 2008 16:56:54 -0500
+Date: Wed, 27 Feb 2008 23:55:43 +0200
+From: Adrian Bunk <bunk@kernel.org>
+To: Paul Moore <paul.moore@hp.com>
+Cc: sds@tycho.nsa.gov, jmorris@namei.org, eparis@parisplace.org,
+       netdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [2.6 patch] selinux/netlabel.c should #include "netlabel.h"
+Message-ID: <20080227215543.GW29269@cs181133002.pp.htv.fi>
+References: <20080227212042.GK29269@cs181133002.pp.htv.fi> <200802271642.57556.paul.moore@hp.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <200802271642.57556.paul.moore@hp.com>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 25 Feb 2008 20:15:45 -0800 Greg KH wrote:
-
-> On Mon, Feb 25, 2008 at 07:52:29PM -0800, Randy Dunlap wrote:
-> > On Mon, 25 Feb 2008 17:00:24 -0800 Greg Kroah-Hartman wrote:
-> > 
-> > > We (the -stable team) are announcing the release of the 2.6.24.3
-> > > kernel.
-> > > 
-> > > It fixes a number of different bugs and all users of the 2.6.24 series
-> > > are encouraged to upgrade.
-> > > 
-> > > I'll also be replying to this message with a copy of the patch between
-> > > 2.6.24.2 and 2.6.24.3
-> > > 
-> > > The updated 2.6.24.y git tree can be found at:
-> > >         git://git.kernel.org/pub/scm/linux/kernel/git/stable/linux-2.6.24.y.git
-> > > and can be browsed at the normal kernel.org git web browser:
-> > >         http://git.kernel.org/?p=linux/kernel/git/stable/linux-2.6.24.y.git;a=summary
-> > 
-> > When HEADERS_CHECK=y:
-> > 
-> > make[3]: *** No rule to make target `/local/linsrc/linux-2.6.24.3/include/linux/if_addrlabel.h', needed by `/local/linsrc/linux-2.6.24.3/usr/include/linux/if_addrlabel.h'.  Stop.
-> > make[2]: *** [linux] Error 2
+On Wed, Feb 27, 2008 at 04:42:57PM -0500, Paul Moore wrote:
+> On Wednesday 27 February 2008 4:20:42 pm Adrian Bunk wrote:
+> > Every file should include the headers containing the externs for its
+> > global code.
+> >
+> > Signed-off-by: Adrian Bunk <bunk@kernel.org>
 > 
-> Is this a regression from 2.6.24.2?
+> It doesn't _need_ the file in the strictest sense, the header file is 
+> just there for the core SELinux code to call into the NetLabel/SELinux 
+> glue code (what is in security/selinux/netlabel.c).  However, if this 
+> is to conform better to kernel coding policy (I assume that is the case 
+> here?) then that is fine with me.
 
-Yes.
+I'm not claiming it needs it.
 
-> If so, any ideas which patch caused it?
+But with this #include gcc can check that the prototypes in netlabel.h 
+match the functions in netlabel.c
 
-No, but I thought that we had already been thru this...
+The bugs this catches are rare, but when you have such a bug it can be 
+nasty to debug.
 
----
-~Randy
+> Acked-by: Paul Moore <paul.moore@hp.com>
+> 
+> > ---
+> > 1f65757bac3e82514b447822ab30ee10d33a59a2 foobar
+> > diff --git a/security/selinux/netlabel.c
+> > b/security/selinux/netlabel.c index 0fa2be4..6d22d76 100644
+> > --- a/security/selinux/netlabel.c
+> > +++ b/security/selinux/netlabel.c
+> > @@ -34,6 +34,7 @@
+> >
+> >  #include "objsec.h"
+> >  #include "security.h"
+> > +#include "netlabel.h"
+> >
+> >  /**
+> >   * selinux_netlbl_sidlookup_cached - Cache a SID lookup
+> 
+> paul moore
+
+cu
+Adrian
+
+-- 
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
+
