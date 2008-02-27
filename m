@@ -1,43 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932785AbYB0AnJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933038AbYB0AoT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932785AbYB0AnJ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Feb 2008 19:43:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763559AbYB0Am4
+	id S933038AbYB0AoT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Feb 2008 19:44:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754826AbYB0AoJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Feb 2008 19:42:56 -0500
-Received: from einhorn.in-berlin.de ([192.109.42.8]:53336 "EHLO
-	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760156AbYB0Amz (ORCPT
+	Tue, 26 Feb 2008 19:44:09 -0500
+Received: from vs166246.vserver.de ([62.75.166.246]:46156 "EHLO
+	vs166246.vserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759595AbYB0AoJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Feb 2008 19:42:55 -0500
-X-Envelope-From: stefanr@s5r6.in-berlin.de
-Message-ID: <47C4B1FC.6020407@s5r6.in-berlin.de>
-Date: Wed, 27 Feb 2008 01:42:36 +0100
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.12) Gecko/20080219 SeaMonkey/1.1.8
+	Tue, 26 Feb 2008 19:44:09 -0500
+From: Michael Buesch <mb@bu3sch.de>
+To: "Alexey Zaytsev" <alexey.zaytsev@gmail.com>
+Subject: Re: bcm43xx regression in 2.6.24 (with patch)
+Date: Wed, 27 Feb 2008 01:43:17 +0100
+User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
+Cc: "John W. Linville" <linville@tuxdriver.com>, "Ingo Molnar" <mingo@elte.hu>,
+       "Alexey Zaytsev" <zaytsev.a@protei.ru>, "Greg KH" <greg@kroah.com>,
+       linux-kernel@vger.kernel.org
+References: <47BEAF3B.3080809@protei.ru> <200802270127.22159.mb@bu3sch.de> <f19298770802261632y4406efc5p1c678c6ef6504c2f@mail.gmail.com>
+In-Reply-To: <f19298770802261632y4406efc5p1c678c6ef6504c2f@mail.gmail.com>
 MIME-Version: 1.0
-To: Jan Engelhardt <jengelh@computergmbh.de>
-CC: Krzysztof Halasa <khc@pm.waw.pl>,
-       Guennadi Liakhovetski <g.liakhovetski@gmx.de>,
-       Randy Dunlap <randy.dunlap@oracle.com>, ricknu-0@student.ltu.se,
-       bhalevy.lists@gmail.com,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] CodingStyle: multiple updates
-References: <1204062430.47c488def40a4@portal.student.luth.se> <20080226135444.f83a0536.randy.dunlap@oracle.com> <Pine.LNX.4.64.0802262310050.15321@fbirervta.pbzchgretzou.qr> <Pine.LNX.4.64.0802270033310.5714@axis700.grange> <m31w6zcm4l.fsf@maximus.localdomain> <Pine.LNX.4.64.0802270057310.15321@fbirervta.pbzchgretzou.qr>
-In-Reply-To: <Pine.LNX.4.64.0802270057310.15321@fbirervta.pbzchgretzou.qr>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Disposition: inline
+Message-Id: <200802270143.17484.mb@bu3sch.de>
+Content-Type: text/plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jan Engelhardt wrote:
-> Just did not want to even encourage any newcomers to [...]
+On Wednesday 27 February 2008 01:32:21 Alexey Zaytsev wrote:
+> On Wed, Feb 27, 2008 at 3:27 AM, Michael Buesch <mb@bu3sch.de> wrote:
+> >
+> > On Wednesday 27 February 2008 01:23:17 Alexey Zaytsev wrote:
+> >  > On Wed, Feb 27, 2008 at 1:47 AM, John W. Linville
+> >  > <linville@tuxdriver.com> wrote:
+> >  > > On Wed, Feb 27, 2008 at 01:12:32AM +0300, Alexey Zaytsev wrote:
+> >  > >  > On Wed, Feb 27, 2008 at 1:04 AM, Michael Buesch <mb@bu3sch.de> wrote:
+> >  > >
+> >  > >
+> >  > > > >  Besides that the bcm43xx driver is not broken. That's the whole reason
+> >  > >  > >  this damn thread started at all. So it can't be broken.
+> >  > >  > >
+> >  > >  > Can't agree here. The bcm43xx driver used to work with 2.6.23 without requiring
+> >  > >  > any module magic.
+> >  > >
+> >  > >  At the risk of prolonging things... :-(
+> >  > >
+> >  > >  Isn't the fundamental problem here that the ssb driver claims the same
+> >  > >  PCI IDs as the bcm43xx driver?  He have hit this same issue a number
+> >  > >  of times: 8139too vs.  8139cp, eepro vs. e100, sk98lin vs. skge,
+> >  > >  and I'm sure there are more.  I admit that this situation is a bit
+> >  > >  more confusing, since the user is less likely to predict a conflict
+> >  > >  between bcm43xx and the ssb driver.  This is especially true since
+> >  > >  the user isn't even selecting ssb directly, but is instead selecting
+> >  > >  the apparently unrelated b44.
+> >  > >
+> >  > >  Still, the bcm43xx driver is not fundamentally damaged.  This is
+> >  > >  fundamentally a "two drivers claiming the same PCI ID" issue, not a
+> >  > >  "you broke my driver" one.
+> >  >
+> >  > Is there any reason the ssb driver should claim the bcm43xx pci ids in
+> >  > the first place? I have very little understanding what the Sonic Silicon
+> >  > Backplane really is, but I see that the b44 driver claims its PCI ids
+> >  > directly. I also think I understand why the b43/b43legacy drivers can't
+> >  > claim the ids directly: because the driver-device matching is done not
+> >  > with the pci bus methods, but with the ssb bus methods, and it would
+> >  > be impossible to automatically choose the right driver for the right
+> >  > device (with same ssb ids), as the first of the two drivers loaded would
+> >  > succeed in probe()'ing the pci "ssb bridge" device, and not letting the
+> >  > other to take control, even after moments later the ssb probe for the
+> >  > non-supported ssb device would fail. (Or am I completely wrong?)
+> >  >
+> >  > That said, I still think that the ssb driver claims the wrong pci ids,
+> >  > which is especially wrong if the the b43/b43legacy drivers are not
+> >  > even built. And my patch fixes exactly this problem - the ssb driver
+> >  > no more claims the broadcom pci ids, when the b43/b43legacy drivers
+> >  > are not built.
+> >  >
+> >  > One better solution I think might be to move the b43_pci_bridge.c
+> >  > code to a separate module, and let the b43/b43legacy drivers
+> >  > depend on it, but as I said, I have little knowledge in the
+> >  > ssb stuff, so I did it the easy way.
+> >
+> >  See the comment in b43_pci_bridge.c
+> >
+> Yes, I've seen it. And this design, kind of, causes me some trouble.
 
-Instead, start to encourage newcomers to help us fix bugs.
-Thanks.
+There are several reasons to not do a seperate module.
+
+First one being: People won't load it and complain about a regression.
+Yeah, stupid stuff like that happens all the time. That's the reason we
+SELECT the ssb code instead of using DEPENDS ON. People will otherwise not
+enable it and report regressions.
+And please don't say this won't happen. It _did_ happen when b44-PCI was
+a seperate kconfig option. People reported regressions, although there were none.
+
+Second one being: It's overkill to have a seperate module for two lines of code
+and a PCI ID table.
+
+Third one being: We want the code to be as small as possible, as it must
+all run on embedded machines. In general being as small as possible should
+be the way to go.
+
 -- 
-Stefan Richter
--=====-==--- --=- ==-==
-http://arcgraph.de/sr/
+Greetings Michael.
