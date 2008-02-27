@@ -1,44 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755445AbYB0RbT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755827AbYB0Rdt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755445AbYB0RbT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Feb 2008 12:31:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751616AbYB0RbH
+	id S1755827AbYB0Rdt (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Feb 2008 12:33:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752803AbYB0Rdk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Feb 2008 12:31:07 -0500
-Received: from srv5.dvmed.net ([207.36.208.214]:54792 "EHLO mail.dvmed.net"
+	Wed, 27 Feb 2008 12:33:40 -0500
+Received: from ra.tuxdriver.com ([70.61.120.52]:2991 "EHLO ra.tuxdriver.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751360AbYB0RbH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Feb 2008 12:31:07 -0500
-Message-ID: <47C59E53.4080701@garzik.org>
-Date: Wed, 27 Feb 2008 12:30:59 -0500
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+	id S1752005AbYB0Rdj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 Feb 2008 12:33:39 -0500
+Date: Wed, 27 Feb 2008 12:25:46 -0500
+From: "John W. Linville" <linville@tuxdriver.com>
+To: Stefano Brivio <stefano.brivio@polimi.it>
+Cc: Chris Clayton <chris2553@googlemail.com>, ivdoorn@gmail.com,
+       linux-kernel@vger.kernel.org, linux-wireless@vger.kernel.org,
+       johannes@sipsolutions.net
+Subject: Re: 2.6.25-rc2 regression in rt61pci wireless driver
+Message-ID: <20080227172546.GD3078@tuxdriver.com>
+References: <c6b1100b0802160406l24fed9dcje1dbfc8907fd7a16@mail.gmail.com> <200802252104.32416.chris2553@googlemail.com> <a32f33a40802251409ofbdab60w4a95c8aaefaad70a@mail.gmail.com> <200802261911.39577.chris2553@googlemail.com> <20080226194838.GD3013@tuxdriver.com> <c6b1100b0802261313v12fb9cd5j6501e80f6d071019@mail.gmail.com> <20080226223814.4ef2b435@morte> <c6b1100b0802261436i7c5a4136j753501933037187@mail.gmail.com> <20080227082642.218b8014@morte> <20080227155111.GB3078@tuxdriver.com>
 MIME-Version: 1.0
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-CC: Andrew Morton <akpm@linux-foundation.org>, linux-next@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: linux-next: Tree for Feb 27
-References: <20080227170300.25c50fe3.sfr@canb.auug.org.au>	<20080226230059.58cf3cfa.akpm@linux-foundation.org> <20080228010626.fd4e00d2.sfr@canb.auug.org.au>
-In-Reply-To: <20080228010626.fd4e00d2.sfr@canb.auug.org.au>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.4 (----)
-X-Spam-Report: SpamAssassin version 3.2.3 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.4 points, 5.0 required)
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080227155111.GB3078@tuxdriver.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Stephen Rothwell wrote:
-> But on the plus side I also have:
+On Wed, Feb 27, 2008 at 10:51:11AM -0500, John W. Linville wrote:
+> On Wed, Feb 27, 2008 at 08:26:42AM +0100, Stefano Brivio wrote:
+> > On Tue, 26 Feb 2008 22:36:19 +0000
+> > "Chris Clayton" <chris2553@googlemail.com> wrote:
+> > 
+> > > 27 135466 rate_change 2 55
+> > > 28 135717 tx_rate 2 55
+> > > 29 135717 tx_status 0 0
+> > > 30 135717 pf_sample 0 3584 1965 0
+> > > 31 135717 rate_change 129 -541505508
+> > > 32 135968 tx_rate 11 540
+> > 
+> > Known and fixed. The fix isn't in 2.6.25-rc3 yet, though.
+> > 
+> > Fix:
+> > commit 32720eae675d08990e97bffbf71a31382599cc8a
+> > Author: Stefano Brivio <stefano.brivio@polimi.it>
+> > Date:   Tue Jan 29 20:29:16 2008 +0100
+> > 
+> >     rc80211-pid: fix rate adjustment
 > 
+> And it currently isn't queued for 2.6.25 at all.
+> 
+> Chris, can you cherry-pick this from the wireless-2.6.26 tree and
+> give it a test on your 2.6.25-rc3 tree?  If it resolves a problem
+> then I'll queue it to Dave for 2.6.25 (which will probably provoke
+> a net-2.6.26 and wireless-2.6.26 rebase).
 
-> libata-dev (same as git-libata-all?)
+That might be easier said than done.  It looks like that patch depends
+on the big cfg80211 API change queued for 2.6.26.
 
+Stefano offered to rebase that on 2.6.25.  Stefano, could you post
+that as part of this thread?
 
-Intentionally different.  libata-dev.git#NEXT is for linux-next, and 
-libata-dev.git#ALL is for -mm.
+Thanks,
 
-	Jeff
-
-
+John
+-- 
+John W. Linville
+linville@tuxdriver.com
