@@ -1,90 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758271AbYB0KST@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756113AbYB0KYt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758271AbYB0KST (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Feb 2008 05:18:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753329AbYB0KSI
+	id S1756113AbYB0KYt (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Feb 2008 05:24:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753236AbYB0KYi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Feb 2008 05:18:08 -0500
-Received: from ns.firmix.at ([62.141.48.66]:1710 "EHLO ns.firmix.at"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754174AbYB0KSH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Feb 2008 05:18:07 -0500
-Subject: Re: [PATCH] CodingStyle: multiple updates
-From: Bernd Petrovitsch <bernd@firmix.at>
-To: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-Cc: Jan Engelhardt <jengelh@computergmbh.de>,
-       Randy Dunlap <randy.dunlap@oracle.com>, ricknu-0@student.ltu.se,
-       khc@pm.waw.pl, bhalevy.lists@gmail.com,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-In-Reply-To: <Pine.LNX.4.64.0802271059490.5059@axis700.grange>
-References: <1204062430.47c488def40a4@portal.student.luth.se>
-	 <20080226135444.f83a0536.randy.dunlap@oracle.com>
-	 <Pine.LNX.4.64.0802262310050.15321@fbirervta.pbzchgretzou.qr>
-	 <Pine.LNX.4.64.0802270033310.5714@axis700.grange>
-	 <1204104420.17396.2.camel@tara.firmix.at>
-	 <Pine.LNX.4.64.0802271059490.5059@axis700.grange>
-Content-Type: text/plain
-Organization: Firmix Software GmbH
-Date: Wed, 27 Feb 2008 11:17:44 +0100
-Message-Id: <1204107464.17396.20.camel@tara.firmix.at>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.3 (2.8.3-2.fc6) 
-Content-Transfer-Encoding: 7bit
-X-Firmix-Scanned-By: MIMEDefang 2.56 on ns.firmix.at
-X-Firmix-Spam-Score: -2.331 () AWL,BAYES_00,FORGED_RCVD_HELO,SPF_HELO_PASS,SPF_PASS
-X-Firmix-Spam-Status: No, hits=-2.331 required=5
-X-Spam-Score: -2.331 () AWL,BAYES_00,FORGED_RCVD_HELO,SPF_HELO_PASS,SPF_PASS
-X-Firmix-Envelope-From: <bernd@firmix.at>
-X-Firmix-Envelope-To: <linux-kernel@vger.kernel.org>
+	Wed, 27 Feb 2008 05:24:38 -0500
+Received: from gv-out-0910.google.com ([216.239.58.187]:55012 "EHLO
+	gv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752251AbYB0KYh (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 Feb 2008 05:24:37 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
+        b=FEle4mkRHYG5PVG3jOE2RyyUHJAC2o26V7b6lbhd53MXjEBiZ8hBvCKYDXBTNYxNQF6DPYOU5VyV2tz75lZfkQfYnoKVxhT+qQpOXxOCJuBa55dEDA7V7ZWM2DwTA8KuCX/ehthPM2aFCTbxLtywPKQhCaSAsHxtXhAS/iHZXGw=
+Date: Wed, 27 Feb 2008 11:23:26 +0100
+From: Marcin Slusarz <marcin.slusarz@gmail.com>
+To: Jean Delvare <khali@linux-fr.org>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       Mauro Carvalho Chehab <mchehab@infradead.org>, i2c@lm-sensors.org,
+       video4linux-list@redhat.com
+Subject: Re: [PATCH] video: limit stack usage of ir-kbd-i2c.c
+Message-ID: <20080227102309.GA6698@joi>
+References: <20080225205055.GA27455@joi> <20080226133222.7af260b2@hyperion.delvare> <20080226210307.GA6085@joi> <20080226232320.2df756d6@hyperion.delvare>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
+In-Reply-To: <20080226232320.2df756d6@hyperion.delvare>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mit, 2008-02-27 at 11:02 +0100, Guennadi Liakhovetski wrote:
-> On Wed, 27 Feb 2008, Bernd Petrovitsch wrote:
+On Tue, Feb 26, 2008 at 11:23:20PM +0100, Jean Delvare wrote:
+> Hi Marcin,
+Hi
+ 
+> On Tue, 26 Feb 2008 22:03:16 +0100, Marcin Slusarz wrote:
+> > Do you have an idea (or patch :D) how to solve this:
+> > 0x00000234 v4l_compat_translate_ioctl [v4l1-compat]:    1376
+> > ? That's on top of my make checkstack output
 > 
-> > On Mit, 2008-02-27 at 00:40 +0100, Guennadi Liakhovetski wrote:
-> > > On Tue, 26 Feb 2008, Jan Engelhardt wrote:
-> > > 
-> > > > +Continuation lines are always shorter than the initial one and are
-> > > > +(1) indented as much as the initial line, plus (2) alignment spaces.
-> > > > +Spaces are used so as to not cause odd aligning for users wishing to
-> > > > +display tabs at sizes other than 8. In the example below, the
-> > > > +continuation line of the printk call therefore has two tabs of logical
-> > > > +indent, followed by a number of spaces to align it up.
-> > > 
-> > > Now, I think, I am not the only one using emacs. Until now the "linux" 
-> > > C-style fitted perfectly with the CodingStyle, now it no longer will. 
-> > > Namely, emacs puts as many tabs to indent the continuation line as fit 
-> > > (i.e., at tab width = 8 spaces it's just (extra indent / 8) tabs plus 
-> > > (extra indent % 8) spaces. Is there a way to make emacs behave compatibly 
-> > > to this proposal? If not, I would not like to have to re-indent every such 
-> > 
-> > Unless I'm misunderstanding something completely: Add "indent-tabs-mode:
-> > nil" in a "Local Variables:" section.
-> > But since Linux-style has that since ages (if not ever), that should be
-> > set for am emacs'ens linux-mode anyway.
+> Random ideas (but I am in no way a specialist of this exercise):
 > 
-> I think you do misunderstand something. The "linux" emacs mode as I know 
+> * You could try moving the structures to the blocks where they are used,
+> in the case a given structure is used for only one ioctl. I'm not too
+> sure how gcc handles local variables declared inside blocks with
+> regards to stack reservation though. I thought it would work but my
+> experiments today seem to suggest it doesn't.
+That won't work. Variables at beginning of function take only ~600 bytes,
+so the rest must be from inner blocks and inlines (probably).
 
-Yes, I`m silly - -ENOCOFFEE;-) CodingStyle/"linux-mode" *does* use TABs
-since ever.
-
-> it does for the following example
+> * You can move the handling of some ioctls to dedicated functions, just
+> like I did in i2c-dev:
+> http://lists.lm-sensors.org/pipermail/i2c/2008-February/003010.html
+> However there is a risk that gcc will inline these functions (that's
+> what happened to me...) Not sure how to prevent gcc from inlining.
+There's "noinline" attribute in linux/compiler.h (compiler-gcc.h actually)
+for these situations.
+ 
+> * You can allocate the structures dynamically, as you originally wanted
+> to do for ir-kbd-i2c. However this has a performance penalty and will
+> fragment the memory, so it's not ideal.
 > 
-> 1:	function(arg1,
-> 2:		 arg2);
-> 
-> in line 2 two TABs and one space. Whereas the proposal in discussion wants 
-> to have there one TAB and nine spaces.
+> * If each ioctl uses only one of the structures, you may define a union
+> of all the structures. The size of the union will be the size of the
+> biggest structure, so you save a lot of space on the stack.
+Nice idea.
 
-I stand corrected, you are right.
+I'll try 2nd and 4th approaches.
 
-	Bernd
--- 
-Firmix Software GmbH                   http://www.firmix.at/
-mobil: +43 664 4416156                 fax: +43 1 7890849-55
-          Embedded Linux Development and Services
-
-
+Marcin Slusarz
