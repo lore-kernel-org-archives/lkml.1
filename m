@@ -1,115 +1,281 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758425AbYB0VOq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758808AbYB0VQT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758425AbYB0VOq (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Feb 2008 16:14:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752010AbYB0VOh
+	id S1758808AbYB0VQT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Feb 2008 16:16:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753372AbYB0VQD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Feb 2008 16:14:37 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:57316 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751498AbYB0VOg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Feb 2008 16:14:36 -0500
-Date: Wed, 27 Feb 2008 22:14:14 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: Roland Dreier <rdreier@cisco.com>, linux-kernel@vger.kernel.org,
-       Thomas Mingarelli <thomas.mingarelli@hp.com>
-Subject: Re: hpwdt oops in clflush_cache_range
-Message-ID: <20080227211414.GA12199@elte.hu>
-References: <adad4qiwcmz.fsf@cisco.com> <alpine.LFD.1.00.0802271913050.7583@apollo.tec.linutronix.de> <ada1w6y1bzk.fsf@cisco.com> <alpine.LFD.1.00.0802272011130.7583@apollo.tec.linutronix.de> <20080227203655.GA30054@elte.hu> <alpine.LFD.1.00.0802272140050.7583@apollo.tec.linutronix.de> <alpine.LFD.1.00.0802272155190.7583@apollo.tec.linutronix.de>
+	Wed, 27 Feb 2008 16:16:03 -0500
+Received: from einhorn.in-berlin.de ([192.109.42.8]:44226 "EHLO
+	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752010AbYB0VQA (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 Feb 2008 16:16:00 -0500
+X-Envelope-From: stefanr@s5r6.in-berlin.de
+Date: Wed, 27 Feb 2008 22:14:27 +0100 (CET)
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Subject: [PATCH update 2] firewire: fix crash in automatic module unloading
+To: Jarod Wilson <jwilson@redhat.com>
+cc: linux1394-devel@lists.sourceforge.net, linux-scsi@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <tkrat.6515bdc94ebad712@s5r6.in-berlin.de>
+Message-ID: <tkrat.47eb30c18d98ad28@s5r6.in-berlin.de>
+References: <tkrat.43f73e8c841b3161@s5r6.in-berlin.de>
+ <tkrat.6515bdc94ebad712@s5r6.in-berlin.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.1.00.0802272155190.7583@apollo.tec.linutronix.de>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Content-Type: TEXT/PLAIN; CHARSET=us-ascii
+Content-Disposition: INLINE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+"modprobe firewire-ohci; sleep .1; modprobe -r firewire-ohci" used to
+result in crashes like this:
 
-* Thomas Gleixner <tglx@linutronix.de> wrote:
+    BUG: unable to handle kernel paging request at ffffffff8807b455
+    IP: [<ffffffff8807b455>]
+    PGD 203067 PUD 207063 PMD 7c170067 PTE 0
+    Oops: 0010 [1] PREEMPT SMP 
+    CPU 0 
+    Modules linked in: i915 drm cpufreq_ondemand acpi_cpufreq freq_table applesmc input_polldev led_class coretemp hwmon eeprom snd_seq_oss snd_seq_midi_event snd_seq snd_seq_device snd_pcm_oss snd_mixer_oss button thermal processor sg snd_hda_intel snd_pcm snd_timer snd snd_page_alloc sky2 i2c_i801 rtc [last unloaded: crc_itu_t]
+    Pid: 9, comm: events/0 Not tainted 2.6.25-rc2 #3
+    RIP: 0010:[<ffffffff8807b455>]  [<ffffffff8807b455>]
+    RSP: 0018:ffff81007dcdde88  EFLAGS: 00010246
+    RAX: ffff81007dc95040 RBX: ffff81007dee5390 RCX: 0000000000005e13
+    RDX: 0000000000008c8b RSI: 0000000000000001 RDI: ffff81007dee5388
+    RBP: ffff81007dc5eb40 R08: 0000000000000002 R09: ffffffff8022d05c
+    R10: ffffffff8023b34c R11: ffffffff8041a353 R12: ffff81007dee5388
+    R13: ffffffff8807b455 R14: ffffffff80593bc0 R15: 0000000000000000
+    FS:  0000000000000000(0000) GS:ffffffff8055a000(0000) knlGS:0000000000000000
+    CS:  0010 DS: 0018 ES: 0018 CR0: 000000008005003b
+    CR2: ffffffff8807b455 CR3: 0000000000201000 CR4: 00000000000006e0
+    DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
+    DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
+    Process events/0 (pid: 9, threadinfo ffff81007dcdc000, task ffff81007dc95040)
+    Stack:  ffffffff8023b396 ffffffff88082524 0000000000000000 ffffffff8807d9ae
+    ffff81007dc5eb40 ffff81007dc9dce0 ffff81007dc5eb40 ffff81007dc5eb80
+    ffff81007dc9dce0 ffffffffffffffff ffffffff8023be87 0000000000000000
+    Call Trace:
+    [<ffffffff8023b396>] ? run_workqueue+0xdf/0x1df
+    [<ffffffff8023be87>] ? worker_thread+0xd8/0xe3
+    [<ffffffff8023e917>] ? autoremove_wake_function+0x0/0x2e
+    [<ffffffff8023bdaf>] ? worker_thread+0x0/0xe3
+    [<ffffffff8023e813>] ? kthread+0x47/0x74
+    [<ffffffff804198e0>] ? trace_hardirqs_on_thunk+0x35/0x3a
+    [<ffffffff8020c008>] ? child_rip+0xa/0x12
+    [<ffffffff8020b6e3>] ? restore_args+0x0/0x3d
+    [<ffffffff8023e68a>] ? kthreadd+0x14c/0x171
+    [<ffffffff8023e68a>] ? kthreadd+0x14c/0x171
+    [<ffffffff8023e7cc>] ? kthread+0x0/0x74
+    [<ffffffff8020bffe>] ? child_rip+0x0/0x12
 
-> On Wed, 27 Feb 2008, Thomas Gleixner wrote:
-> > +static inline int phys_addr_valid(unsigned long addr)
-> > +{
-> > +	return addr < (1 << boot_cpu_data.x86_phys_bits);
-> 
-> That needs to be:
-> 
-> +     return addr < (1UL << boot_cpu_data.x86_phys_bits);
-> 
-> Where is my brown paperbag ? I know that GCC _is_ stupid, but I never 
-> remember.
 
-here's the updated patch.
+    Code:  Bad RIP value.
+    RIP  [<ffffffff8807b455>]
+    RSP <ffff81007dcdde88>
+    CR2: ffffffff8807b455
+    ---[ end trace c7366c6657fe5bed ]---
 
-	Ingo
+Note that this crash happened _after_ firewire-core was unloaded.  The
+shared workqueue tried to run firewire-core's device initialization jobs
+or similar jobs.
 
--------------->
-Subject: x86: check physical address range in ioremap
-From: Thomas Gleixner <tglx@linutronix.de>
-Date: Wed, 27 Feb 2008 20:57:40 +0100
+The fix makes sure that firewire-ohci and hence firewire-core is not
+unloaded before all device shutdown jobs have been completed.  This is
+determined by the count of device initializations minus device releases.
 
-Roland Dreier reported in http://lkml.org/lkml/2008/2/27/194
+Also skip useless retries in the node initialization job if the node is
+to be shut down.
 
-[ 8425.915139] BUG: unable to handle kernel paging request at ffffc20001a0a000
-[ 8425.919087] IP: [<ffffffff8021dacc>] clflush_cache_range+0xc/0x25
-[ 8425.919087] PGD 1bf80e067 PUD 1bf80f067 PMD 1bb497067 PTE 80000047000ee17b
-
-This is on a Intel machine with 36bit physical address space. The PTE
-entry references 47000ee000, which is outside of it.
-
-Add a check for the physical address space and warn/printk about the
-stupid caller.
-
-Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
+Signed-off-by: Stefan Richter <stefanr@s5r6.in-berlin.de>
 ---
- arch/x86/mm/ioremap.c |   19 +++++++++++++++++++
- 1 file changed, 19 insertions(+)
 
-Index: linux-x86.q/arch/x86/mm/ioremap.c
+Update:  Refreshed to be applicable after patch "firewire: fw-sbp2:
+better fix for NULL pointer dereference in scsi_remove_device".
+
+Update 2:  Update 1 had a use-after-free bug. #-|
+
+
+ drivers/firewire/fw-card.c        |   10 +++++++++-
+ drivers/firewire/fw-device.c      |   21 ++++++---------------
+ drivers/firewire/fw-device.h      |   16 ++++++++++++++--
+ drivers/firewire/fw-sbp2.c        |    4 ++++
+ drivers/firewire/fw-transaction.h |    2 ++
+ 5 files changed, 35 insertions(+), 18 deletions(-)
+
+Index: linux/drivers/firewire/fw-card.c
 ===================================================================
---- linux-x86.q.orig/arch/x86/mm/ioremap.c
-+++ linux-x86.q/arch/x86/mm/ioremap.c
-@@ -35,6 +35,18 @@ unsigned long __phys_addr(unsigned long 
- }
- EXPORT_SYMBOL(__phys_addr);
+--- linux.orig/drivers/firewire/fw-card.c
++++ linux/drivers/firewire/fw-card.c
+@@ -18,6 +18,7 @@
  
-+static inline int phys_addr_valid(unsigned long addr)
-+{
-+	return addr < (1UL << boot_cpu_data.x86_phys_bits);
-+}
-+
-+#else
-+
-+static inline int phys_addr_valid(unsigned long addr)
-+{
-+	return 1;
-+}
-+
- #endif
+ #include <linux/module.h>
+ #include <linux/errno.h>
++#include <linux/delay.h>
+ #include <linux/device.h>
+ #include <linux/mutex.h>
+ #include <linux/crc-itu-t.h>
+@@ -398,6 +399,7 @@ fw_card_initialize(struct fw_card *card,
+ 	static atomic_t index = ATOMIC_INIT(-1);
  
- int page_is_ram(unsigned long pagenr)
-@@ -118,6 +130,13 @@ static void __iomem *__ioremap(unsigned 
- 	if (!size || last_addr < phys_addr)
- 		return NULL;
+ 	kref_init(&card->kref);
++	atomic_set(&card->device_count, 0);
+ 	card->index = atomic_inc_return(&index);
+ 	card->driver = driver;
+ 	card->device = device;
+@@ -528,8 +530,14 @@ fw_core_remove_card(struct fw_card *card
+ 	card->driver = &dummy_driver;
  
-+	if (!phys_addr_valid(phys_addr)) {
-+		printk(KERN_WARNING "ioremap: invalid physical address %lx\n",
-+		       phys_addr);
-+		WARN_ON_ONCE(1);
-+		return NULL;
-+	}
-+
+ 	fw_destroy_nodes(card);
+-	flush_scheduled_work();
++	/*
++	 * Wait for all device workqueue jobs to finish.  Otherwise the
++	 * firewire-core module could be unloaded before the jobs ran.
++	 */
++	while (atomic_read(&card->device_count) > 0)
++		msleep(100);
+ 
++	cancel_delayed_work_sync(&card->work);
+ 	fw_flush_transactions(card);
+ 	del_timer_sync(&card->flush_timer);
+ 
+Index: linux/drivers/firewire/fw-device.c
+===================================================================
+--- linux.orig/drivers/firewire/fw-device.c
++++ linux/drivers/firewire/fw-device.c
+@@ -150,21 +150,10 @@ struct bus_type fw_bus_type = {
+ };
+ EXPORT_SYMBOL(fw_bus_type);
+ 
+-struct fw_device *fw_device_get(struct fw_device *device)
+-{
+-	get_device(&device->device);
+-
+-	return device;
+-}
+-
+-void fw_device_put(struct fw_device *device)
+-{
+-	put_device(&device->device);
+-}
+-
+ static void fw_device_release(struct device *dev)
+ {
+ 	struct fw_device *device = fw_device(dev);
++	struct fw_card *card = device->card;
+ 	unsigned long flags;
+ 
  	/*
- 	 * Don't remap the low PCI/ISA area, it's always mapped..
+@@ -176,9 +165,9 @@ static void fw_device_release(struct dev
+ 	spin_unlock_irqrestore(&device->card->lock, flags);
+ 
+ 	fw_node_put(device->node);
+-	fw_card_put(device->card);
+ 	kfree(device->config_rom);
+ 	kfree(device);
++	atomic_dec(&card->device_count);
+ }
+ 
+ int fw_device_enable_phys_dma(struct fw_device *device)
+@@ -668,7 +657,8 @@ static void fw_device_init(struct work_s
  	 */
+ 
+ 	if (read_bus_info_block(device, device->generation) < 0) {
+-		if (device->config_rom_retries < MAX_RETRIES) {
++		if (device->config_rom_retries < MAX_RETRIES &&
++		    atomic_read(&device->state) == FW_DEVICE_INITIALIZING) {
+ 			device->config_rom_retries++;
+ 			schedule_delayed_work(&device->work, RETRY_DELAY);
+ 		} else {
+@@ -805,7 +795,8 @@ void fw_node_event(struct fw_card *card,
+ 		 */
+ 		device_initialize(&device->device);
+ 		atomic_set(&device->state, FW_DEVICE_INITIALIZING);
+-		device->card = fw_card_get(card);
++		atomic_inc(&card->device_count);
++		device->card = card;
+ 		device->node = fw_node_get(node);
+ 		device->node_id = node->node_id;
+ 		device->generation = card->generation;
+Index: linux/drivers/firewire/fw-sbp2.c
+===================================================================
+--- linux.orig/drivers/firewire/fw-sbp2.c
++++ linux/drivers/firewire/fw-sbp2.c
+@@ -769,6 +769,7 @@ static void sbp2_release_target(struct k
+ 	struct Scsi_Host *shost =
+ 		container_of((void *)tgt, struct Scsi_Host, hostdata[0]);
+ 	struct scsi_device *sdev;
++	struct fw_device *device = fw_device(tgt->unit->device.parent);
+ 
+ 	/* prevent deadlocks */
+ 	sbp2_unblock(tgt);
+@@ -791,6 +792,7 @@ static void sbp2_release_target(struct k
+ 
+ 	put_device(&tgt->unit->device);
+ 	scsi_host_put(shost);
++	fw_device_put(device);
+ }
+ 
+ static struct workqueue_struct *sbp2_wq;
+@@ -1088,6 +1090,8 @@ static int sbp2_probe(struct device *dev
+ 	if (scsi_add_host(shost, &unit->device) < 0)
+ 		goto fail_shost_put;
+ 
++	fw_device_get(device);
++
+ 	/* Initialize to values that won't match anything in our table. */
+ 	firmware_revision = 0xff000000;
+ 	model = 0xff000000;
+Index: linux/drivers/firewire/fw-transaction.h
+===================================================================
+--- linux.orig/drivers/firewire/fw-transaction.h
++++ linux/drivers/firewire/fw-transaction.h
+@@ -26,6 +26,7 @@
+ #include <linux/fs.h>
+ #include <linux/dma-mapping.h>
+ #include <linux/firewire-constants.h>
++#include <asm/atomic.h>
+ 
+ #define TCODE_IS_READ_REQUEST(tcode)	(((tcode) & ~1) == 4)
+ #define TCODE_IS_BLOCK_PACKET(tcode)	(((tcode) &  1) != 0)
+@@ -219,6 +220,7 @@ extern struct bus_type fw_bus_type;
+ struct fw_card {
+ 	const struct fw_card_driver *driver;
+ 	struct device *device;
++	atomic_t device_count;
+ 	struct kref kref;
+ 
+ 	int node_id;
+Index: linux/drivers/firewire/fw-device.h
+===================================================================
+--- linux.orig/drivers/firewire/fw-device.h
++++ linux/drivers/firewire/fw-device.h
+@@ -76,9 +76,21 @@ fw_device_is_shutdown(struct fw_device *
+ 	return atomic_read(&device->state) == FW_DEVICE_SHUTDOWN;
+ }
+ 
+-struct fw_device *fw_device_get(struct fw_device *device);
++static inline struct fw_device *
++fw_device_get(struct fw_device *device)
++{
++	get_device(&device->device);
++
++	return device;
++}
++
++static inline void
++fw_device_put(struct fw_device *device)
++{
++	put_device(&device->device);
++}
++
+ struct fw_device *fw_device_get_by_devt(dev_t devt);
+-void fw_device_put(struct fw_device *device);
+ int fw_device_enable_phys_dma(struct fw_device *device);
+ 
+ void fw_device_cdev_update(struct fw_device *device);
+
+-- 
+Stefan Richter
+-=====-==--- --=- ==-==
+http://arcgraph.de/sr/
+
