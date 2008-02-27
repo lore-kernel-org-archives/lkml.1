@@ -1,48 +1,217 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756073AbYB0Pd3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755327AbYB0Phr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756073AbYB0Pd3 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Feb 2008 10:33:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750929AbYB0PdV
+	id S1755327AbYB0Phr (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Feb 2008 10:37:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751611AbYB0Phj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Feb 2008 10:33:21 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:40268 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751098AbYB0PdU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Feb 2008 10:33:20 -0500
-Date: Wed, 27 Feb 2008 10:30:55 -0500
-From: Rik van Riel <riel@redhat.com>
+	Wed, 27 Feb 2008 10:37:39 -0500
+Received: from g4t0014.houston.hp.com ([15.201.24.17]:18730 "EHLO
+	g4t0014.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751077AbYB0Phi (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 Feb 2008 10:37:38 -0500
+Subject: Re: [patch 5/6] mempolicy: add MPOL_F_RELATIVE_NODES flag
+From: Lee Schermerhorn <Lee.Schermerhorn@hp.com>
 To: David Rientjes <rientjes@google.com>
-Cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, Lee Schermerhorn <Lee.Schermerhorn@hp.com>,
-       Nick Piggin <npiggin@suse.de>
-Subject: Re: [RFC][PATCH] page reclaim throttle take2
-Message-ID: <20080227103055.2267b50c@bree.surriel.com>
-In-Reply-To: <alpine.DEB.1.00.0802262315030.11433@chino.kir.corp.google.com>
-References: <47C4F9C0.5010607@linux.vnet.ibm.com>
-	<alpine.DEB.1.00.0802262201390.1613@chino.kir.corp.google.com>
-	<20080227160746.425E.KOSAKI.MOTOHIRO@jp.fujitsu.com>
-	<alpine.DEB.1.00.0802262315030.11433@chino.kir.corp.google.com>
-Organization: Red Hat, Inc.
-X-Mailer: Claws Mail 3.0.2 (GTK+ 2.10.4; x86_64-redhat-linux-gnu)
+Cc: Paul Jackson <pj@sgi.com>, Christoph Lameter <clameter@sgi.com>,
+       Andi Kleen <ak@suse.de>, linux-kernel@vger.kernel.org,
+       Michael Kerrisk <mtk-manpages@gmx.net>
+In-Reply-To: <alpine.DEB.1.00.0802261704310.25919@chino.kir.corp.google.com>
+References: <alpine.DEB.1.00.0802250012420.12368@chino.kir.corp.google.com>
+	 <alpine.DEB.1.00.0802250013580.12368@chino.kir.corp.google.com>
+	 <alpine.DEB.1.00.0802250014170.12368@chino.kir.corp.google.com>
+	 <alpine.DEB.1.00.0802250014410.12368@chino.kir.corp.google.com>
+	 <alpine.DEB.1.00.0802250016120.12368@chino.kir.corp.google.com>
+	 <alpine.DEB.1.00.0802261704310.25919@chino.kir.corp.google.com>
+Content-Type: text/plain
+Organization: HP/OSLO
+Date: Wed, 27 Feb 2008 10:37:45 -0500
+Message-Id: <1204126666.5029.26.camel@localhost>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.6.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 26 Feb 2008 23:19:08 -0800 (PST)
-David Rientjes <rientjes@google.com> wrote:
+On Tue, 2008-02-26 at 17:17 -0800, David Rientjes wrote:
+> On Mon, 25 Feb 2008, David Rientjes wrote:
+> 
+> > Adds another optional mode flag, MPOL_F_RELATIVE_NODES, that specifies
+> > nodemasks passed via set_mempolicy() or mbind() should be considered
+> > relative to the current task's mems_allowed.
+> > 
+> 
+> Here's some examples of the functional changes between the default 
+> actions of the various mempolicy modes and the new behavior with 
+> MPOL_F_STATIC_NODES or MPOL_F_RELATIVE_NODES.
 
-> My suggestion is merely to make the number of concurrent page reclaim 
-> threads be a function of how many online cpus there are.
+Nice work.  Would you consider adding this [with the corrections you
+note below] to the memory policy doc under the "interaction with
+cpusets" section?
 
-The more CPUs there are, the more lock contention you want?
+> 
+> To read this, the logical order follows from the left-most column to the 
+> right-most:
+> 
+>  - "mems" is the task's mems_allowed as constrained by its attached
+>    cpuset,
+> 
+>  - "nodemask" is the mask passed with the set_mempolicy() or mbind() call 
+>    for that particular policy,
+> 
+>  - the first "result" is the nodemask that the policy is effected over,
+> 
+>  - "rebind" is the nodemask of a subsequent change to the cpuset's mems,
+>    and
+> 
+>  - the second "result" is the nodemask that the policy is now effected 
+>    over.
+> 
+> 			MPOL_INTERLEAVE
+> 			---------------
+> 	mems	nodemask	result		rebind		result
+> 	1-3	0-2		1-2[*]		4-6		4-5
+> 	1-3	1-2		1-2		0-2		0-1
+> 	1-3	1-3		1-3		4-7		4-6
+> 	1-3	2-4		2-3		0-2		1-2
+> 	1-3	2-6		2-3		4-7		5-6
+> 	1-3	4-7		EINVAL
+> 	1-3	0-7		1-3		4-7		4-6
+> 
+> 			MPOL_PREFERRED
+> 			--------------
+> 	mems	nodemask	result		rebind		result
+> 	1-3	0		EINVAL
+> 	1-3	2		2		4-7		5
+> 	1-3	5		EINVAL
+> 
+> 			MPOL_BIND
+> 			---------
+> 	mems	nodemask	result		rebind		result
+> 	1-3	0-2		1-2		0-2		0-1
+> 	1-3	1-2		1-2		2-7		2-3
+> 	1-3	1-3		1-3		0-1		0-1
+> 	1-3	2-4		2-3		3-6		4-5
+> 	1-3	2-6		2-3		5		5
+> 	1-3	4-7		EINVAL
+> 	1-3	0-7		1-3		1-3		1-3
 
-Somehow that seems backwards :)
+Just a note here:  If you had used the same set of "rebind targets" for
+_BIND as you did for _INTERLEAVE, I would expect the same results,
+because were just remapping bit masks in both cases.  Do you agree?
+ 
+> 
+>  [*] Notice how the resulting nodemask for all of these examples when
+>      creating the mempolicy is intersected with mems_allowed.  This is
+>      the current behavior, with contextualize_policy(), and is identical
+>      to the initial result of the MPOL_F_STATIC_NODES case.
+> 
+>      Perhaps it would make more sense to remap the nodemask when it is
+>      created, as well, in the ~MPOL_F_STATIC_NODES case.  For example, in
+>      this case, the "result" would be 1-3 instead.
+> 
+>      That is a departure from what is currently implemented in HEAD (and,
+>      thus, can be used as ample justification for the above behavior) but
+>      makes more sense.  Thoughts?
 
--- 
-All rights reversed.
+Thoughts:
+
+1) this IS a change in behavior, right?  My first inclination is to shy
+away from this.  However, ...
+
+2) the current interaction of mempolicies with cpusets is not well
+documented--until Paul's cpuset.4 man page hits the streets, anyway.
+That doc does say that mempolicy is not allowed to use a node outside
+the cpuset.  It does NOT say how this is enforced--reject vs masking vs
+remap.  The set_mempolicy(2) and mbind(2) man pages [in at least 2.70
+man pages] says that you get EINVAL if you specify a node outside the
+current cpuset constraints.  This was relaxed by the recent patch to
+"silently restrict" the nodes to mems allowed.
+
+Since we update the man pages anyway, we COULD change it to say that we
+remap policy to allowed nodes.  However, the application may have chosen
+the nodes based on some knowledge of hardware topology, such as IO
+attachement, interrupt handling cpus, ...  In this case, remapping
+doesn't make so much sense to me.  
+
+If you need/want a mode that remaps policy to mems allowed on
+installation--e.g., to provide the maximum number of interleave
+nodes--how about yet another flag, such as '_REMAP, to effect this
+behavior?
+
+Just a thought...
+
+> 
+> 			MPOL_INTERLEAVE | MPOL_F_STATIC_NODES
+> 			-------------------------------------
+> 	mems	nodemask	result		rebind		result
+> 	1-3	0-2		1-2		4-6		nil
+> 	1-3	1-2		1-2		0-2		1-2
+> 	1-3	1-3		1-3		4-7		nil
+> 	1-3	2-4		2-3		0-2		2
+> 	1-3	2-6		2-3		4-7		4-6
+> 	1-3	4-7		EINVAL
+> 	1-3	0-7		1-3		4-7		4-7
+
+'nil' falls back to local allocation, right?
+
+> 
+> 			MPOL_PREFERRED | MPOL_F_STATIC_NODES
+> 			------------------------------------
+> 	mems	nodemask	result		rebind		result
+> 	1-3	0		EINVAL
+> 	1-3	2		2		4-7		-1[**]
+> 	1-3	5		EINVAL
+> 
+>  [**] Upon further rebind with a nodemask of 2, the preferred node would
+>       again be 2.
+
+Here, '-1' means 'local allocation'.  [Note for documentation...]
+
+> 
+> 			MPOL_BIND | MPOL_F_STATIC_NODES
+> 			-------------------------------
+> 	mems	nodemask	result		rebind		result
+> 	1-3	0-2		1-2		0-2		0-2
+> 	1-3	1-2		1-2		2-7		2
+> 	1-3	1-3		1-3		0-1		1
+> 	1-3	2-4		2-3		3-6		3-4
+> 	1-3	2-6		2-3		5		5
+> 	1-3	4-7		EINVAL
+> 	1-3	0-7		1-3		1-3		1-3
+> 
+> 			MPOL_INTERLEAVE | MPOL_F_RELATIVE_NODES
+> 			---------------------------------------
+> 	mems	nodemask	result		rebind		result
+> 	1-3	0-2		1-3		4-6		4-6
+> 	1-3	1-2		2-3		0-2		1-2
+> 	1-3	1-3		1-3		4-7		5-7
+> 	1-3	2-4		1-3		0-2		0-2
+> 	1-3	2-6		1-3		4-7		4-7
+> 	1-3	4-7		1-3		0-1,5		0-1,5
+> 	1-3	0-7		1-3		4-7		4-7
+> 
+> 			MPOL_PREFERRED | MPOL_F_RELATIVE_NODES
+> 			--------------------------------------
+> 	mems	nodemask	result		rebind		result[***]
+> 	1-3	0		1		0		1
+> 	1-3	2		3		4-7		3
+> 	1-3	5		3		0-7		3
+> 
+>  [***] All of these results are wrong and will be corrected in the next
+>        posting of the patchset.  They change the preferred node in some
+>        cases to be a node that is expressly excluded from being accessed
+>        by the cpuset mems change.
+> 
+> 			MPOL_BIND | MPOL_F_RELATIVE_NODES
+> 			---------------------------------
+> 	mems	nodemask	result		rebind		result
+> 	1-3	0-2		1-3		0-2		0-2
+> 	1-3	1-2		2-3		2-7		3-4
+> 	1-3	1-3		1-3		0-1		0-1
+> 	1-3	2-4		1-3		3-6		3,5-6
+> 	1-3	2-6		1-3		5		5
+> 	1-3	4-7		1-3		0-3,6		0-2,6
+> 	1-3	0-7		1-3		1-3		1-3
+
