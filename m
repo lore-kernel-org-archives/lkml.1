@@ -1,80 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758277AbYB0TzY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759022AbYB0Tzx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758277AbYB0TzY (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Feb 2008 14:55:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751299AbYB0TzM
+	id S1759022AbYB0Tzx (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Feb 2008 14:55:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758277AbYB0Tzm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Feb 2008 14:55:12 -0500
-Received: from relay2.sgi.com ([192.48.171.30]:41016 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751141AbYB0TzK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Feb 2008 14:55:10 -0500
-Date: Wed, 27 Feb 2008 11:55:09 -0800 (PST)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Adrian Bunk <bunk@kernel.org>
-cc: Pekka Enberg <penberg@cs.helsinki.fi>, mpm@selenic.com,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: [2.6 patch] mm/slub.c: remove unneeded NULL check
-In-Reply-To: <20080222195905.GM1409@cs181133002.pp.htv.fi>
-Message-ID: <Pine.LNX.4.64.0802271150130.1790@schroedinger.engr.sgi.com>
-References: <20080219224922.GO31955@cs181133002.pp.htv.fi>
- <6f8gTuy3.1203515564.2078250.penberg@cs.helsinki.fi>
- <20080222195905.GM1409@cs181133002.pp.htv.fi>
+	Wed, 27 Feb 2008 14:55:42 -0500
+Received: from www.tglx.de ([62.245.132.106]:43804 "EHLO www.tglx.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758173AbYB0Tzm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 Feb 2008 14:55:42 -0500
+Date: Wed, 27 Feb 2008 20:55:28 +0100 (CET)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: David Miller <davem@davemloft.net>
+cc: mikpe@it.uu.se, sparclinux@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [BUG] 2.6.25-rc3 hangs in early boot on Sun Ultra5
+In-Reply-To: <20080227.110538.160750982.davem@davemloft.net>
+Message-ID: <alpine.LFD.1.00.0802272049580.7583@apollo.tec.linutronix.de>
+References: <20080226.164900.193701385.davem@davemloft.net> <20080226.170613.107688605.davem@davemloft.net> <alpine.LFD.1.00.0802270858450.7583@apollo.tec.linutronix.de> <20080227.110538.160750982.davem@davemloft.net>
+User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 22 Feb 2008, Adrian Bunk wrote:
+On Wed, 27 Feb 2008, David Miller wrote:
 
-> There's no reason for checking c->freelist for being NULL here (and we'd 
-> anyway Oops below if it was).
+> From: Thomas Gleixner <tglx@linutronix.de>
+> Date: Wed, 27 Feb 2008 09:02:22 +0100 (CET)
+> 
+> > On Tue, 26 Feb 2008, David Miller wrote:
+> > > What the FUTEX checking code is doing now is doing a "user" access
+> > > with set_fs(KERNEL_DS) since it runs from the kernel bootup early init
+> > > sequence.  And this is illegal according to the existing checks.
+> > > 
+> > > When we do set_fs(KERNEL_DS) then pass a "user" pointer down
+> > > into a system call or something like that, we give it a pointer
+> > > that "cannot fault".  So if we get into the fault handling
+> > > path here for a case like that we really do want to scream and
+> > > print out an OOPS message in my opinion.
+> > 
+> > So it would be correct to set_fs(USER_DS) then do the check and switch
+> > back to KERNEL_DS ?
+> 
+> No, I'm saying it would be better not to take faults purposefully in
+> the kernel address space.
 
-Well we still need to check for the freelist being empty otherwise the 
-counter for remote frees does not work as intended. The check was 
-introduced at the time when page->end did not yet exist. At that time the 
-NULL check made sense.
+I would have preferred not to. The hassle is that we need to figure
+out, whether it works or not _before_ any user space program can use
+the interfaces. We could omit the check for archs where the
+in_atomic_cmpxchg is guaranteed to be functional.
 
+> We don't have a usable user address space
+> setup at this point in the boot, so using USER_DS would be even worse.
 
-From: Christoph Lameter <clameter@sgi.com>
-Subject: Fix check for remote frees
+Ouch, yes. Stupid me.
 
-The check for remote frees must check is_end() instead of != NULL.
+> I think I'll just add a different version of the sanity check to this
+> sparc64 code later on, one that will take into consideration this
+> KERNEL_DS case because I can see how it could be useful in other
+> circumstances.
 
-We execute the !is_end() section rarely so move the check in there. Just do it
-once by relying on tail being 1 only the first time we enter the loop.
-
-Signed-off-by: Christoph Lameter <clameter@sgi.com>
-
----
-dae2a3c60f258f3ad2522b85d79b735a89d702f0 diff --git a/mm/slub.c b/mm/slub.c
-index 74c65af..072e0a6 100644
----
- mm/slub.c |    4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
-
-Index: linux-2.6/mm/slub.c
-===================================================================
---- linux-2.6.orig/mm/slub.c	2008-02-27 11:48:11.000000000 -0800
-+++ linux-2.6/mm/slub.c	2008-02-27 11:51:07.000000000 -0800
-@@ -1404,8 +1404,6 @@ static void deactivate_slab(struct kmem_
- 	struct page *page = c->page;
- 	int tail = 1;
+Ok.
  
--	if (c->freelist)
--		stat(c, DEACTIVATE_REMOTE_FREES);
- 	/*
- 	 * Merge cpu freelist into freelist. Typically we get here
- 	 * because both freelists are empty. So this is unlikely
-@@ -1418,6 +1416,8 @@ static void deactivate_slab(struct kmem_
- 	while (unlikely(!is_end(c->freelist))) {
- 		void **object;
- 
-+		if (unlikely(tail))
-+			stat(c, DEACTIVATE_REMOTE_FREES);
- 		tail = 0;	/* Hot objects. Put the slab first */
- 
- 		/* Retrieve object from cpu_freelist */
+Thanks,
+	tglx
