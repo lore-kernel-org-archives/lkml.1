@@ -1,55 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759469AbYB0V5b@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758868AbYB0V7f@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759469AbYB0V5b (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Feb 2008 16:57:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757313AbYB0V5A
+	id S1758868AbYB0V7f (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Feb 2008 16:59:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756572AbYB0V71
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Feb 2008 16:57:00 -0500
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:49526 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1756897AbYB0V47 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Feb 2008 16:56:59 -0500
-Date: Wed, 27 Feb 2008 13:56:55 -0800 (PST)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Andrew Morton <akpm@linux-foundation.org>
-cc: dada1@cosmosbay.com, davem@davemloft.net, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org, yanmin_zhang@linux.intel.com, travis@sgi.com
-Subject: Re: [PATCH] alloc_percpu() fails to allocate percpu data
-In-Reply-To: <20080227122451.6a3b5565.akpm@linux-foundation.org>
-Message-ID: <Pine.LNX.4.64.0802271353520.12963@schroedinger.engr.sgi.com>
-References: <47BDBC23.10605@cosmosbay.com> <Pine.LNX.4.64.0802271158100.1790@schroedinger.engr.sgi.com>
- <20080227122451.6a3b5565.akpm@linux-foundation.org>
+	Wed, 27 Feb 2008 16:59:27 -0500
+Received: from smtp4.pp.htv.fi ([213.243.153.38]:43715 "EHLO smtp4.pp.htv.fi"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754835AbYB0V71 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 Feb 2008 16:59:27 -0500
+Date: Wed, 27 Feb 2008 23:58:16 +0200
+From: Adrian Bunk <bunk@kernel.org>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>, Sam Ravnborg <sam@ravnborg.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] x86: X86_HT always enable on X86_64 SMP
+Message-ID: <20080227215816.GX29269@cs181133002.pp.htv.fi>
+References: <47C5D32E.8070308@ct.jp.nec.com> <20080227212658.GU29269@cs181133002.pp.htv.fi> <47C5D693.3030207@zytor.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <47C5D693.3030207@zytor.com>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 27 Feb 2008, Andrew Morton wrote:
+On Wed, Feb 27, 2008 at 01:30:59PM -0800, H. Peter Anvin wrote:
+> Adrian Bunk wrote:
+>> On Wed, Feb 27, 2008 at 01:16:30PM -0800, Hiroshi Shimamoto wrote:
+>>> From: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
+>>>
+>>> X86_HT is used for hyperthreading or multicore on 32-bit.
+>>> The X86_HT on 64-bit is different from 32-bit, it means hyperthreading only.
+>>> And X86_HT is not used on 64-bit except from cpu/initel_cacheinfo.c.
+>>>
+>>> Unify X86_HT for hyperthreading or multicore.
+>>> Turn X86_HT on when X86_64 and SMP are enabled.
+>>
+>> Please fix it properly instead - fiddling around with it the way you do
+>> only asks for trouble in the future.
+>>
+>> What we need are two different variables for:
+>> - hyperthreading and
+>> - multicore
+>
+> He does, and calls them SCHED_SMT and SCHED_MC respectively.
 
-> On Wed, 27 Feb 2008 11:59:32 -0800 (PST)
-> Christoph Lameter <clameter@sgi.com> wrote:
-> 
-> > Any decision made on what to do about this one? Mike or I can 
-> > repost the per cpu allocator against mm? The fix by Eric could be used 
-> > in the interim for 2.6.24?
-> > 
-> 
-> I suppose I'll merge Eric's patch when I've tested it fully (well, as fully
-> as I test stuff).
+These are the already existing scheduler related variables that are 
+only a part of the X86_HT usages.
 
-Urgh. You too?
- 
-> It'd be nice to get that cache_line_size()/L1_CACHE_BYTES/L1_CACHE_ALIGN()
-> mess sorted out.  If it's a mess - I _think_ it is?
+> It's not particularly clear to me what X86_HT is meant to be used for  
+> anymore at all.
 
-Well I tried it when slub went first in and it did not go well. The issue 
-is that x86 detects the cache line size on bootup. Thus cache_line_size(). 
-Most of the other arch have compile time cache line sizes. Thus 
-L1_CACHE_BYTES. So L1_CACHE_BYTES is the maximum value that 
-cache_line_size() can take.
+grep through the source code and you find it is sometimes used for 
+hyperthreading and sometimes for multicore.
 
-What I was attempting to do is to make x86 have one compile time cache 
-line size L1_CACHE_BYTES. That raised objections because space was wasted.
+I don't care whether X86_HT gets splitted or perhaps even removed, but 
+any change to it should remove the status quo of it having two different 
+semantics.
+
+> 	-hpa
+
+cu
+Adrian
+
+-- 
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
+
