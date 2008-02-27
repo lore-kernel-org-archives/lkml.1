@@ -1,135 +1,185 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763631AbYB0B7W@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764784AbYB0CB5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763631AbYB0B7W (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Feb 2008 20:59:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751843AbYB0B7I
+	id S1764784AbYB0CB5 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Feb 2008 21:01:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752464AbYB0CBt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Feb 2008 20:59:08 -0500
-Received: from mail.mizi.com ([61.107.31.33]:43999 "EHLO mail.mizi.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751196AbYB0B7F (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Feb 2008 20:59:05 -0500
-Message-ID: <47C4C3D4.8010902@mizi.com>
-Date: Wed, 27 Feb 2008 10:58:44 +0900
-From: Louis JANG <louis@mizi.com>
-Organization: MIZI Research, Inc.
-User-Agent: Thunderbird 1.5.0.14pre (X11/20071023)
+	Tue, 26 Feb 2008 21:01:49 -0500
+Received: from ti-out-0910.google.com ([209.85.142.190]:18509 "EHLO
+	ti-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751971AbYB0CBs (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 Feb 2008 21:01:48 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=gnymTuNDX11XeOfXbzjZuF51IOl9FUhpHLS2uRUvyTuNzIq/kwHXD1mpzoHvDJjLmpuaKVpgz/5bKSHQGNHSvtW2vf+NrQ7PqSV2bPC5z6BQ01w0MvQG6cMJYbe+A6c2kbzZnMAsiZA2dis7UBe6hfaJEwWvk/Tw/COuApYGYVk=
+Message-ID: <a8e1da0802261801m4bd05b32rc8e97bc0f83773ff@mail.gmail.com>
+Date: Wed, 27 Feb 2008 10:01:43 +0800
+From: "Dave Young" <hidave.darkstar@gmail.com>
+To: "Randy Dunlap" <randy.dunlap@oracle.com>
+Subject: Re: boot_delay broken ?
+Cc: akpm <akpm@linux-foundation.org>, "Dave Jones" <davej@codemonkey.org.uk>,
+       "Linux Kernel" <linux-kernel@vger.kernel.org>,
+       "Thomas Gleixner" <tglx@linutronix.de>
+In-Reply-To: <20080226093323.71ae516b.randy.dunlap@oracle.com>
 MIME-Version: 1.0
-To: Marcel Holtmann <marcel@holtmann.org>
-CC: Dave Young <hidave.darkstar@gmail.com>, linux-bluetooth@vger.kernel.org,
-       Linux Kernel <linux-kernel@vger.kernel.org>, bmidgley@gmail.com,
-       David Miller <davem@davemloft.net>, Netdev <netdev@vger.kernel.org>
-Subject: Re: [Bluez-devel] forcing SCO connection patch
-References: <47666E1F.2000902@mizi.com>	 <a8e1da0802242330l765b8b1ava62b857baf8a5568@mail.gmail.com>	 <47C28A33.4070102@mizi.com> <a8e1da0802250155u1b7af481va203849f68d9106b@mail.gmail.com> <47C2A7FA.2060902@mizi.com> <70692DDF-93B7-447E-ABEE-3CDBD94F15F1@holtmann.org> <47C38D40.3040809@mizi.com> <B96BD3FE-F490-4AD5-9315-ECD42CE9C728@holtmann.org>
-In-Reply-To: <B96BD3FE-F490-4AD5-9315-ECD42CE9C728@holtmann.org>
-Content-Type: multipart/mixed;
- boundary="------------040708040207060503030706"
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20080224004615.GA31012@codemonkey.org.uk>
+	 <a8e1da0802241814x48e169f2v82823c55412fc534@mail.gmail.com>
+	 <20080225212251.18c4659e.randy.dunlap@oracle.com>
+	 <a8e1da0802252148p43d7b899t25ed0a9f994fae35@mail.gmail.com>
+	 <a8e1da0802252159u2dc21fc3vbd8a4e0f7e31b471@mail.gmail.com>
+	 <20080226090948.GA2794@darkstar.te-china.tietoenator.com>
+	 <20080226093323.71ae516b.randy.dunlap@oracle.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------040708040207060503030706
-Content-Type: text/plain; charset=EUC-KR
-Content-Transfer-Encoding: 8bit
+On Wed, Feb 27, 2008 at 1:33 AM, Randy Dunlap <randy.dunlap@oracle.com> wrote:
+>
+> On Tue, 26 Feb 2008 17:09:48 +0800 Dave Young wrote:
+>
+>  > On Tue, Feb 26, 2008 at 01:59:31PM +0800, Dave Young wrote:
+>  > > On Tue, Feb 26, 2008 at 1:48 PM, Dave Young <hidave.darkstar@gmail.com> wrote:
+>  > > > On Tue, Feb 26, 2008 at 1:22 PM, Randy Dunlap <randy.dunlap@oracle.com> wrote:
+>  > > >  > On Mon, 25 Feb 2008 10:14:36 +0800 Dave Young wrote:
+>  > > >  >
+>  > > >  >  > On Sun, Feb 24, 2008 at 8:46 AM, Dave Jones <davej@codemonkey.org.uk> wrote:
+>  > > >  >  > > The boot_delay switch seems to be behaving strangely in the
+>  > > >  >  > >  current -git.  Setting it to =10 makes the output 'bursty'
+>  > > >  >  > >  it becomes slow for some printk's whilst others scroll by
+>  > > >  >  > >  at regular speed.
+>  > > >  >  > >  Setting it any higher than that seems to make it pause for
+>  > > >  >  > >  a really long time before it outputs any text at all.
+>  > > >  >  >
+>  > > >  >  > On my side there's this issue for a long time
+>  > > >  >  > http://lkml.org/lkml/2007/8/8/79
+>  > > >  >
+>  > > >  >  [http://marc.info/?l=linux-kernel&m=118655896515049&w=2]
+>  > > >  >
+>  > > >  >  You asked questions and they were answered.  Perhaps you didn't like
+>  > > >  >  the answers.
+>  > > >
+>  > > >  No, I like it.  Thanks.
+>  > > >
+>  > > >  But I still want to know why mdelay can not be used.
+>  > > >  is it not available for all archs or something else?
+>  > > >
+>  > > >
+>  > > >  >
+>  > > >  >  Here's a question for you.  What kernel boot options did you use?
+>  > > >  >  Specifically, for lpj= and boot_delay= ?
+>  > > >
+>  > > >  I tried boot_delay=100 and boot_delay=200 without lpj set, The result
+>  > > >  was really slow. It was better with lpj copied from dmesg, but was
+>  > > >  still slower then mdelay.
+>  > >
+>  > > Especially at the very beginning after the message "Booting the kernel",
+>  > > I need to wait several minutes to see the afterwards messages
+>  > >
+>  > > >
+>  > > >  I think we can firstly use preset lpj, after delay calibrating just
+>  > > >  use the system lpj
+>  > > >
+>  > > >
+>  > > >
+>  > > >  >
+>  > > >  >  > >
+>  > > >  >  > >  x86 timer changes perhaps ?
+>  > > >  >
+>  > > >  >
+>  > > >  >  ---
+>  > > >  >  ~Randy
+>  > > >  >
+>  > > >
+>  >
+>  > How about use loops_per_jiffy as following? With this patch at least
+>  > for me the very long delay at the very begining does not occur.
+>  >
+>  > kernel/printk.c |   15 ++++-----------
+>  > 1 file changed, 4 insertions(+), 11 deletions(-)
+>  >
+>  > diff -upr linux/kernel/printk.c linux.new/kernel/printk.c
+>  > --- linux/kernel/printk.c     2008-02-26 16:54:23.000000000 +0800
+>  > +++ linux.new/kernel/printk.c 2008-02-26 16:59:02.000000000 +0800
+>  > @@ -173,24 +173,14 @@ __setup("log_buf_len=", log_buf_len_setu
+>  >  #ifdef CONFIG_BOOT_PRINTK_DELAY
+>  >
+>  >  static unsigned int boot_delay; /* msecs delay after each printk during bootup */
+>  > -static unsigned long long printk_delay_msec; /* per msec, based on boot_delay */
+>  >
+>  >  static int __init boot_delay_setup(char *str)
+>  >  {
+>  > -     unsigned long lpj;
+>  > -     unsigned long long loops_per_msec;
+>  > -
+>  > -     lpj = preset_lpj ? preset_lpj : 1000000;        /* some guess */
+>  > -     loops_per_msec = (unsigned long long)lpj / 1000 * HZ;
+>  > -
+>  >       get_option(&str, &boot_delay);
+>  >       if (boot_delay > 10 * 1000)
+>  >               boot_delay = 0;
+>  >
+>  > -     printk_delay_msec = loops_per_msec;
+>  > -     printk(KERN_DEBUG "boot_delay: %u, preset_lpj: %ld, lpj: %lu, "
+>  > -             "HZ: %d, printk_delay_msec: %llu\n",
+>  > -             boot_delay, preset_lpj, lpj, HZ, printk_delay_msec);
+>  > +     printk(KERN_DEBUG "boot_delay: %u\n", boot_delay);
+>  >       return 1;
+>  >  }
+>  >  __setup("boot_delay=", boot_delay_setup);
+>  > @@ -199,6 +189,9 @@ static void boot_delay_msec(void)
+>  >  {
+>  >       unsigned long long k;
+>  >       unsigned long timeout;
+>  > +     unsigned long long printk_delay_msec;
+>  > +
+>  > +     printk_delay_msec = (unsigned long long)loops_per_jiffy / 1000 * HZ;
+>  >
+>  >       if (boot_delay == 0 || system_state != SYSTEM_BOOTING)
+>  >               return;
+>  > --
+>
+>  Hi Dave,
+>
+>  That might work, but IMO it requires someone to audit all
+>  architectures to make sure that loops_per_jiffy has been calibrated
+>  at that point in time
+>(as I mentioned in http://lkml.org/lkml/2007/8/11/153).
 
-Marcel Holtmann ¾´ ±Û:
-> Hi Loius,
->
->>>> --- linux-2.6.23/net/bluetooth/hci_event.c.orig 2008-02-25
->>>> 17:17:11.000000000 +0900
->>>> +++ linux-2.6.23/net/bluetooth/hci_event.c 2008-02-25
->>>> 17:30:23.000000000 +0900
->>>> @@ -1313,8 +1313,17 @@
->>>> hci_dev_lock(hdev);
->>>>
->>>> conn = hci_conn_hash_lookup_ba(hdev, ev->link_type, &ev->bdaddr);
->>>> - if (!conn)
->>>> - goto unlock;
->>>> + if (!conn) {
->>>> + if (ev->link_type != ACL_LINK) {
->>>> + __u8 link_type = (ev->link_type == ESCO_LINK) ? SCO_LINK :
->>>> ESCO_LINK;
->>>> +
->>>> + conn = hci_conn_hash_lookup_ba(hdev, link_type, &ev->bdaddr);
->>>> + if (conn)
->>>> + conn->type = ev->link_type;
->>>> + }
->>>> + if (!conn)
->>>> + goto unlock;
->>>> + }
->>>
->>> NAK. There is no need to check for ACL_LINK. The sync_complete will
->>> only be called for SCO or eSCO connections.
->> I see. I removed this check line in the patch.
->>
->> Thanks.
->> Louis JANG
->> Signed-off-by: Louis JANG <louis@mizi.com>
->> --- linux-2.6.23/net/bluetooth/hci_event.c.orig 2008-02-26
->> 12:46:36.000000000 +0900
->> +++ linux-2.6.23/net/bluetooth/hci_event.c 2008-02-26
->> 12:47:23.000000000 +0900
->> @@ -1313,8 +1313,15 @@
->> hci_dev_lock(hdev);
->>
->> conn = hci_conn_hash_lookup_ba(hdev, ev->link_type, &ev->bdaddr);
->> - if (!conn)
->> - goto unlock;
->> + if (!conn) {
->> + __u8 link_type = (ev->link_type == ESCO_LINK) ? SCO_LINK : ESCO_LINK;
->> +
->> + conn = hci_conn_hash_lookup_ba(hdev, link_type, &ev->bdaddr);
->> + if (conn)
->> + conn->type = ev->link_type;
->> + else
->> + goto unlock;
->> + }
->>
->> if (!ev->status) {
->> conn->handle = __le16_to_cpu(ev->handle);
->
-> do something like this:
->
-> if (!conn) {
-> ....
->
-> conn = ....
-> if (!conn)
-> goto unlock;
->
-> conn->type = ev->link_type;
-> }
->
-> And include a description when submitting a patch.
->
-> Regards
->
-> Marcel
-I changed code with this style and included patch description.
-Thanks
+Sorry for missing your words about this.
 
-Louis JANG
+>
+>  I didn't do that and you said that you tested i386 only.
+>
+>  Maybe you can get Andrew to merge it into -mm for testing...
 
---------------040708040207060503030706
-Content-Type: text/plain;
- name="patch_hci_event.c5"
-Content-Transfer-Encoding: base64
-Content-Disposition: inline;
- filename="patch_hci_event.c5"
+Andrew, what's your opinon?
 
-VGhpcyBwYXRjaCBpcyB0byBoYW5kbGUgZGlmZmVyZW50IHR5cGUgb2Ygc3luY2hyb25vdXMg
-bGluayBpcyAKZXN0YWJpbGlzaGVkIHdpdGggaXRzIHJlcXVlc3QuCgpTaWduZWQtb2ZmLWJ5
-OiBMb3VpcyBKQU5HIDxsb3Vpc0BtaXppLmNvbT4KLS0tIGxpbnV4LTIuNi4yMy9uZXQvYmx1
-ZXRvb3RoL2hjaV9ldmVudC5jLm9yaWcJMjAwOC0wMi0yNiAxMjo0NjozNi4wMDAwMDAwMDAg
-KzA5MDAKKysrIGxpbnV4LTIuNi4yMy9uZXQvYmx1ZXRvb3RoL2hjaV9ldmVudC5jCTIwMDgt
-MDItMjcgMTA6NDg6MjkuMDAwMDAwMDAwICswOTAwCkBAIC0xMzEzLDggKzEzMTMsMTUgQEAK
-IAloY2lfZGV2X2xvY2soaGRldik7CiAKIAljb25uID0gaGNpX2Nvbm5faGFzaF9sb29rdXBf
-YmEoaGRldiwgZXYtPmxpbmtfdHlwZSwgJmV2LT5iZGFkZHIpOwotCWlmICghY29ubikKLQkJ
-Z290byB1bmxvY2s7CisJaWYgKCFjb25uKSB7CisJCV9fdTggbGlua190eXBlID0gKGV2LT5s
-aW5rX3R5cGUgPT0gRVNDT19MSU5LKSA/IFNDT19MSU5LIDogRVNDT19MSU5LOworCisJCWNv
-bm4gPSBoY2lfY29ubl9oYXNoX2xvb2t1cF9iYShoZGV2LCBsaW5rX3R5cGUsICZldi0+YmRh
-ZGRyKTsKKwkJaWYgKCFjb25uKQorCQkJZ290byB1bmxvY2s7CisKKwkJY29ubi0+dHlwZSA9
-IGV2LT5saW5rX3R5cGU7CisJfQogCiAJaWYgKCFldi0+c3RhdHVzKSB7CiAJCWNvbm4tPmhh
-bmRsZSA9IF9fbGUxNl90b19jcHUoZXYtPmhhbmRsZSk7Cg==
---------------040708040207060503030706--
+>
+>  However, setting boot_delay=N without setting lpj=M is just not
+>  advisable.  The Kconfig help text for BOOT_PRINTK_DELAY tries to
+>  say that.  Maybe it needs to be stronger?
+
+I think it's enough now.
+
+I tested boot_delay yestoday, and found the result is different with
+before version.
+Even with lpj preset the delay is very slow, 5-10 seconds for every printk.
+Maybe this is what davej said.
+
+I will do some more test and hack about this today.
+
+>
+>           It is likely that you would also need to use "lpj=M" to preset
+>           the "loops per jiffie" value.
+>           See a previous boot log for the "lpj" value to use for your
+>           system, and then set "lpj=M" before setting "boot_delay=N".
+>
+>
+>  ---
+>  ~Randy
+>
