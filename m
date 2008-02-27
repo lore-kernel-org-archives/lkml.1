@@ -1,83 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760112AbYB0WjA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760479AbYB0Wj4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760112AbYB0WjA (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Feb 2008 17:39:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751626AbYB0Wiv
+	id S1760479AbYB0Wj4 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Feb 2008 17:39:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754998AbYB0Wjs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Feb 2008 17:38:51 -0500
-Received: from smtp5.pp.htv.fi ([213.243.153.39]:36556 "EHLO smtp5.pp.htv.fi"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750877AbYB0Wiv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Feb 2008 17:38:51 -0500
-Date: Thu, 28 Feb 2008 00:37:40 +0200
-From: Adrian Bunk <bunk@kernel.org>
-To: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
-Cc: "H. Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>, Sam Ravnborg <sam@ravnborg.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] x86: X86_HT always enable on X86_64 SMP
-Message-ID: <20080227223740.GZ29269@cs181133002.pp.htv.fi>
-References: <47C5D32E.8070308@ct.jp.nec.com> <20080227212658.GU29269@cs181133002.pp.htv.fi> <47C5D693.3030207@zytor.com> <20080227215816.GX29269@cs181133002.pp.htv.fi> <47C5E158.5080900@ct.jp.nec.com>
+	Wed, 27 Feb 2008 17:39:48 -0500
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:50968 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753226AbYB0Wjr (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 Feb 2008 17:39:47 -0500
+Date: Wed, 27 Feb 2008 14:39:46 -0800 (PST)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Andrea Arcangeli <andrea@qumranet.com>
+cc: Nick Piggin <nickpiggin@yahoo.com.au>, akpm@linux-foundation.org,
+       Robin Holt <holt@sgi.com>, Avi Kivity <avi@qumranet.com>,
+       Izik Eidus <izike@qumranet.com>, kvm-devel@lists.sourceforge.net,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, general@lists.openfabrics.org,
+       Steve Wise <swise@opengridcomputing.com>,
+       Roland Dreier <rdreier@cisco.com>, Kanoj Sarcar <kanojsarcar@yahoo.com>,
+       steiner@sgi.com, linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       daniel.blueman@quadrics.com
+Subject: Re: [patch 2/6] mmu_notifier: Callbacks to invalidate address ranges
+In-Reply-To: <20080220010038.GQ7128@v2.random>
+Message-ID: <Pine.LNX.4.64.0802271436260.13186@schroedinger.engr.sgi.com>
+References: <20080215064859.384203497@sgi.com> <20080215064932.620773824@sgi.com>
+ <200802201008.49933.nickpiggin@yahoo.com.au> <20080220010038.GQ7128@v2.random>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <47C5E158.5080900@ct.jp.nec.com>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Feb 27, 2008 at 02:16:56PM -0800, Hiroshi Shimamoto wrote:
-> Adrian Bunk wrote:
-> > On Wed, Feb 27, 2008 at 01:30:59PM -0800, H. Peter Anvin wrote:
-> >> Adrian Bunk wrote:
-> >>> On Wed, Feb 27, 2008 at 01:16:30PM -0800, Hiroshi Shimamoto wrote:
-> >>>> From: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
-> >>>>
-> >>>> X86_HT is used for hyperthreading or multicore on 32-bit.
-> >>>> The X86_HT on 64-bit is different from 32-bit, it means hyperthreading only.
-> >>>> And X86_HT is not used on 64-bit except from cpu/initel_cacheinfo.c.
-> >>>>
-> >>>> Unify X86_HT for hyperthreading or multicore.
-> >>>> Turn X86_HT on when X86_64 and SMP are enabled.
-> >>> Please fix it properly instead - fiddling around with it the way you do
-> >>> only asks for trouble in the future.
-> >>>
-> >>> What we need are two different variables for:
-> >>> - hyperthreading and
-> >>> - multicore
-> >> He does, and calls them SCHED_SMT and SCHED_MC respectively.
-> > 
-> > These are the already existing scheduler related variables that are 
-> > only a part of the X86_HT usages.
-> > 
-> >> It's not particularly clear to me what X86_HT is meant to be used for  
-> >> anymore at all.
-> > 
-> > grep through the source code and you find it is sometimes used for 
-> > hyperthreading and sometimes for multicore.
-> > 
-> > I don't care whether X86_HT gets splitted or perhaps even removed, but 
-> > any change to it should remove the status quo of it having two different 
-> > semantics.
+On Wed, 20 Feb 2008, Andrea Arcangeli wrote:
+
+> Well, xpmem requirements are complex. As as side effect of the
+> simplicity of my approach, my patch is 100% safe since #v1. Now it
+> also works for GRU and it cluster invalidates.
+
+The patch has to satisfy RDMA, XPMEM, GRU and KVM. I keep hearing that we 
+have a KVM only solution that works 100% (which makes me just switch 
+ignore the rest of the argument because 100% solutions usually do not 
+exist).
+
+
+> rcu_read_lock), no "atomic" parameters, and it doesn't open a window
+> where sptes have a view on older pages and linux pte has view on newer
+> pages (this can happen with remap_file_pages with my KVM swapping
+> patch to use V8 Christoph's patch).
+
+Ok so you are now getting away from keeping the refcount elevated? That 
+was your design decision....
+
+
+> > Also, how to you resolve the case where you are not allowed to sleep?
+> > I would have thought either you have to handle it, in which case nobody
+> > needs to sleep; or you can't handle it, in which case the code is
+> > broken.
 > 
-> OK, you say "Don't mix two different semantics into one variable X86_HT", right?
+> I also asked exactly this, glad you reasked this too.
 
-Exactly.
-
-This mixing is not your fault since it's an older problem, but instead 
-of your suggested patch we should fix it properly.
-
-> Thanks,
-> Hiroshi Shimamoto
-
-cu
-Adrian
-
--- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
+It would have helped if you would have repeated my answers that you had 
+already gotten before. You knew I was on vacation....
 
