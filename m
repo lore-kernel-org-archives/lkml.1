@@ -1,99 +1,121 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759270AbYB0WgO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760214AbYB0WhT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759270AbYB0WgO (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Feb 2008 17:36:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750877AbYB0WgB
+	id S1760214AbYB0WhT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Feb 2008 17:37:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751547AbYB0WhI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Feb 2008 17:36:01 -0500
-Received: from relay1.sgi.com ([192.48.171.29]:39649 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751593AbYB0WgA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Feb 2008 17:36:00 -0500
-Date: Wed, 27 Feb 2008 14:35:59 -0800 (PST)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Nick Piggin <nickpiggin@yahoo.com.au>
-cc: akpm@linux-foundation.org, Andrea Arcangeli <andrea@qumranet.com>,
-       Robin Holt <holt@sgi.com>, Avi Kivity <avi@qumranet.com>,
-       Izik Eidus <izike@qumranet.com>, kvm-devel@lists.sourceforge.net,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, general@lists.openfabrics.org,
-       Steve Wise <swise@opengridcomputing.com>,
-       Roland Dreier <rdreier@cisco.com>, Kanoj Sarcar <kanojsarcar@yahoo.com>,
-       steiner@sgi.com, linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       daniel.blueman@quadrics.com
-Subject: Re: [patch 2/6] mmu_notifier: Callbacks to invalidate address ranges
-In-Reply-To: <200802201008.49933.nickpiggin@yahoo.com.au>
-Message-ID: <Pine.LNX.4.64.0802271424390.13186@schroedinger.engr.sgi.com>
-References: <20080215064859.384203497@sgi.com> <20080215064932.620773824@sgi.com>
- <200802201008.49933.nickpiggin@yahoo.com.au>
+	Wed, 27 Feb 2008 17:37:08 -0500
+Received: from agminet01.oracle.com ([141.146.126.228]:43584 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751008AbYB0WhG (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 Feb 2008 17:37:06 -0500
+Date: Wed, 27 Feb 2008 14:36:30 -0800
+From: Joel Becker <Joel.Becker@oracle.com>
+To: Adrian Bunk <bunk@kernel.org>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [RFC: 2.6 patch] fs/configfs/ cleanups
+Message-ID: <20080227223629.GA19656@mail.oracle.com>
+Mail-Followup-To: Adrian Bunk <bunk@kernel.org>,
+	linux-kernel@vger.kernel.org
+References: <20080227212048.GM29269@cs181133002.pp.htv.fi>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080227212048.GM29269@cs181133002.pp.htv.fi>
+X-Burt-Line: Trees are cool.
+X-Red-Smith: Ninety feet between bases is perhaps as close as man has ever
+	come to perfection.
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 20 Feb 2008, Nick Piggin wrote:
-
-> On Friday 15 February 2008 17:49, Christoph Lameter wrote:
-> > The invalidation of address ranges in a mm_struct needs to be
-> > performed when pages are removed or permissions etc change.
-> >
-> > If invalidate_range_begin() is called with locks held then we
-> > pass a flag into invalidate_range() to indicate that no sleeping is
-> > possible. Locks are only held for truncate and huge pages.
+On Wed, Feb 27, 2008 at 11:20:48PM +0200, Adrian Bunk wrote:
+> This patch contains the following cleanups:
+> - make the needlessly global file.c:configfs_add_file() static
+> - #if 0 the unused inode.c:configfs_hash_and_remove()
 > 
-> You can't sleep inside rcu_read_lock()!
+> Signed-off-by: Adrian Bunk <bunk@kernel.org>
+Acked-by: Joel Becker <joel.becker@oracle.com>
 
-Could you be specific? This refers to page migration? Hmmm... Guess we 
-would need to inc the refcount there instead?
+I'd also take a patch to remove configfs_hash_and_remove().
 
-> I must say that for a patch that is up to v8 or whatever and is
-> posted twice a week to such a big cc list, it is kind of slack to
-> not even test it and expect other people to review it.
+Joel
 
-It was tested with the GRU and XPmem. Andrea also reported success.
- 
-> Also, what we are going to need here are not skeleton drivers
-> that just do all the *easy* bits (of registering their callbacks),
-> but actual fully working examples that do everything that any
-> real driver will need to do. If not for the sanity of the driver
-> writer, then for the sanity of the VM developers (I don't want
-> to have to understand xpmem or infiniband in order to understand
-> how the VM works).
-
-There are 3 different drivers that can already use it but the code is 
-complex and not easy to review. Skeletons are easy to allow people to get 
-started with it.
-
-> >  	lru_add_drain();
-> >  	tlb = tlb_gather_mmu(mm, 0);
-> >  	update_hiwater_rss(mm);
-> > +	mmu_notifier(invalidate_range_begin, mm, address, end, atomic);
-> >  	end = unmap_vmas(&tlb, vma, address, end, &nr_accounted, details);
-> >  	if (tlb)
-> >  		tlb_finish_mmu(tlb, address, end);
-> > +	mmu_notifier(invalidate_range_end, mm, address, end, atomic);
-> >  	return end;
-> >  }
-> >
 > 
-> Where do you invalidate for munmap()?
+> ---
+> 
+> This patch has been sent on:
+> - 17 Feb 2008
+> 
+>  fs/configfs/configfs_internal.h |    3 ---
+>  fs/configfs/file.c              |    3 ++-
+>  fs/configfs/inode.c             |    2 ++
+>  3 files changed, 4 insertions(+), 4 deletions(-)
+> 
+> 651b7a33c0dce1790230fe8ba9b7445cd69c8bde diff --git a/fs/configfs/configfs_internal.h b/fs/configfs/configfs_internal.h
+> index cca9860..378fa36 100644
+> --- a/fs/configfs/configfs_internal.h
+> +++ b/fs/configfs/configfs_internal.h
+> @@ -63,9 +63,6 @@ extern int configfs_create_file(struct config_item *, const struct configfs_attr
+>  extern int configfs_make_dirent(struct configfs_dirent *,
+>  				struct dentry *, void *, umode_t, int);
+>  
+> -extern int configfs_add_file(struct dentry *, const struct configfs_attribute *, int);
+> -extern void configfs_hash_and_remove(struct dentry * dir, const char * name);
+> -
+>  extern const unsigned char * configfs_get_name(struct configfs_dirent *sd);
+>  extern void configfs_drop_dentry(struct configfs_dirent *sd, struct dentry *parent);
+>  extern int configfs_setattr(struct dentry *dentry, struct iattr *iattr);
+> diff --git a/fs/configfs/file.c b/fs/configfs/file.c
+> index 397cb50..f331a40 100644
+> --- a/fs/configfs/file.c
+> +++ b/fs/configfs/file.c
+> @@ -314,7 +314,8 @@ const struct file_operations configfs_file_operations = {
+>  };
+>  
+>  
+> -int configfs_add_file(struct dentry * dir, const struct configfs_attribute * attr, int type)
+> +static int configfs_add_file(struct dentry * dir,
+> +			     const struct configfs_attribute * attr, int type)
+>  {
+>  	struct configfs_dirent * parent_sd = dir->d_fsdata;
+>  	umode_t mode = (attr->ca_mode & S_IALLUGO) | S_IFREG;
+> diff --git a/fs/configfs/inode.c b/fs/configfs/inode.c
+> index 4c1ebff..dccff59 100644
+> --- a/fs/configfs/inode.c
+> +++ b/fs/configfs/inode.c
+> @@ -233,6 +233,7 @@ void configfs_drop_dentry(struct configfs_dirent * sd, struct dentry * parent)
+>  	}
+>  }
+>  
+> +#if 0
+>  void configfs_hash_and_remove(struct dentry * dir, const char * name)
+>  {
+>  	struct configfs_dirent * sd;
+> @@ -255,6 +256,7 @@ void configfs_hash_and_remove(struct dentry * dir, const char * name)
+>  	}
+>  	mutex_unlock(&dir->d_inode->i_mutex);
+>  }
+> +#endif  /*  0  */
+>  
+>  int __init configfs_inode_init(void)
+>  {
+> 
 
-zap_page_range() called from unmap_vmas().
+-- 
 
-> Also, how to you resolve the case where you are not allowed to sleep?
-> I would have thought either you have to handle it, in which case nobody
-> needs to sleep; or you can't handle it, in which case the code is
-> broken.
+"Every day I get up and look through the Forbes list of the richest
+ people in America. If I'm not there, I go to work."
+        - Robert Orben
 
-That can be done in a variety of ways:
-
-1. Change VM locking
-
-2. Not handle file backed mappings (XPmem could work mostly in such a 
-config)
-
-3. Keep the refcount elevated until pages are freed in another execution 
-context.
-
-
+Joel Becker
+Principal Software Developer
+Oracle
+E-mail: joel.becker@oracle.com
+Phone: (650) 506-8127
