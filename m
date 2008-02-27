@@ -1,72 +1,124 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932190AbYB0Bbb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765305AbYB0BkK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932190AbYB0Bbb (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Feb 2008 20:31:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757019AbYB0BbX
+	id S1765305AbYB0BkK (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Feb 2008 20:40:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752884AbYB0Bj4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Feb 2008 20:31:23 -0500
-Received: from smtp-out.google.com ([216.239.45.13]:28917 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755080AbYB0BbW (ORCPT
+	Tue, 26 Feb 2008 20:39:56 -0500
+Received: from smtp105.sbc.mail.re2.yahoo.com ([68.142.229.100]:29393 "HELO
+	smtp105.sbc.mail.re2.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1752807AbYB0Bj4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Feb 2008 20:31:22 -0500
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=received:date:from:x-x-sender:to:cc:subject:in-reply-to:
-	message-id:references:user-agent:mime-version:content-type;
-	b=UHk1zttBhg6ZO7Ib9sav/0lwzqCpG9gdtLeVsNcpE2ogFk6/4PXfQJE7PQHNVnoRO
-	i0V8kuOVs1cDMy3Bb2ECw==
-Date: Tue, 26 Feb 2008 17:31:05 -0800 (PST)
-From: David Rientjes <rientjes@google.com>
-X-X-Sender: rientjes@chino.kir.corp.google.com
-To: Paul Jackson <pj@sgi.com>
-cc: Christoph Lameter <clameter@sgi.com>,
-       Lee Schermerhorn <Lee.Schermerhorn@hp.com>, Andi Kleen <ak@suse.de>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [patch 5/6] mempolicy: add MPOL_F_RELATIVE_NODES flag
-In-Reply-To: <alpine.DEB.1.00.0802261704310.25919@chino.kir.corp.google.com>
-Message-ID: <alpine.DEB.1.00.0802261727440.30676@chino.kir.corp.google.com>
-References: <alpine.DEB.1.00.0802250012420.12368@chino.kir.corp.google.com> <alpine.DEB.1.00.0802250013580.12368@chino.kir.corp.google.com> <alpine.DEB.1.00.0802250014170.12368@chino.kir.corp.google.com> <alpine.DEB.1.00.0802250014410.12368@chino.kir.corp.google.com>
- <alpine.DEB.1.00.0802250016120.12368@chino.kir.corp.google.com> <alpine.DEB.1.00.0802261704310.25919@chino.kir.corp.google.com>
-User-Agent: Alpine 1.00 (DEB 882 2007-12-20)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Tue, 26 Feb 2008 20:39:56 -0500
+X-Greylist: delayed 399 seconds by postgrey-1.27 at vger.kernel.org; Tue, 26 Feb 2008 20:39:55 EST
+X-YMail-OSG: FhUYDRcVM1kDvX2Cj3Ou3KAwe.kKoif8.bL8RI73Ozjq8iT30ZtFnen1UPUZmRLbu6.nMtsDsiFkKgjtIJdMtlroK09eUtv.DdyAme7fSh0mLAer854A
+X-Yahoo-Newman-Property: ymail-3
+Subject: Re: epoll design problems with common fork/exec patterns
+From: Chris =?UTF-8?Q?=22=E3=82=AF=22?= Heath <chris@heathens.co.nz>
+To: Davide Libenzi <davidel@xmailserver.org>
+Cc: Michael Kerrisk <mtk.manpages@googlemail.com>,
+       David Schwartz <davids@webmaster.com>, dada1@cosmosbay.com,
+       "Linux-Kernel@Vger. Kernel. Org" <linux-kernel@vger.kernel.org>,
+       linux-man@vger.kernel.org
+In-Reply-To: <Pine.LNX.4.64.0802261049040.27243@alien.or.mcafeemobile.com>
+References: <MDEHLPKNGKAHNMBLJOLKAEHCHNAC.davids@webmaster.com>
+	 <Pine.LNX.4.64.0710291147180.3387@alien.or.mcafeemobile.com>
+	 <47C42CA7.4030607@gmail.com>
+	 <Pine.LNX.4.64.0802261049040.27243@alien.or.mcafeemobile.com>
+Content-Type: text/plain
+Date: Tue, 26 Feb 2008 20:30:04 -0500
+Message-Id: <1204075804.5238.7.camel@linux.heathens.co.nz>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.3 (2.10.3-7.fc7) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 26 Feb 2008, David Rientjes wrote:
-
-> 			MPOL_PREFERRED | MPOL_F_RELATIVE_NODES
-> 			--------------------------------------
-> 	mems	nodemask	result		rebind		result[***]
-> 	1-3	0		1		0		1
-> 	1-3	2		3		4-7		3
-> 	1-3	5		3		0-7		3
+On Tue, 2008-02-26 at 10:51 -0800, Davide Libenzi wrote:
+> On Tue, 26 Feb 2008, Michael Kerrisk wrote:
 > 
+> > Davide Libenzi wrote:
+> > > On Sun, 28 Oct 2007, David Schwartz wrote:
+> > > 
+> > >> Eric Dumazet wrote:
+> > >>
+> > >>> Events are not necessarly reported "by descriptors". epoll uses an opaque
+> > >>> field provided by the user.
+> > >>>
+> > >>> It's up to the user to properly chose a tag that will makes sense
+> > >>> if the user
+> > >>> app is playing dup()/close() games for example.
+> > >> Great. So the only issue then is that the documentation is confusing. It
+> > >> frequently uses the term "fd" where it means file. For example, it says:
+> > >>
+> > >>               Q1     What  happens  if  you  add  the  same fd to an
+> > >> epoll_set
+> > >>                      twice?
+> > >>
+> > >>               A1     You will probably get EEXIST.  However,  it  is
+> > >> possible
+> > >>                      that  two  threads  may  add the same fd twice. This is
+> > >> a
+> > >>                      harmless condition.
+> > >>
+> > >> This gives no reason to think there's anything wrong with adding the same
+> > >> file twice so long as you do so through different descriptors. (One can
+> > >> imagine an application that does this to segregate read and write operations
+> > >> to avoid a race where the descriptor is closed from under a writer due to
+> > >> handling a fatal read error.) Obviously, that won't work.
+> > > 
+> > > I agree, that is confusing. However, you can safely add two different file 
+> > > descriptors pointing to the same file*, with different event masks, and 
+> > > that will work as expected.
+> > 
+> > So can I summarize what I understand:
+> > 
+> > a) Adding the same file descriptor twice to an epoll set will cause an
+> > error (EEXIST).
+> 
+> Yes.
+> 
+> 
+> 
+> > b) In a separate message to linux-man, Chris Heath says that two threads
+> > *can't* add the same fd twice to an epoll set, despite what the existing
+> > man page text says.  I haven't tested that, but it sounds to me as though
+> > it is likely to be true.  Can you comment please Davide?
+> 
+> Yes, you can't add the same fd twice. Think about a DB where "file*,fd" is 
+> the key.
 
-I'll fold the following patch into my next posting that corrects this 
-error as follows:
+To clarify, the key appears to be file* plus the user-space integer that
+represents the fd.
 
-			MPOL_PREFERRED | MPOL_F_RELATIVE_NODES
-			--------------------------------------
-	mems	nodemask	result		rebind		result
-	1-3	0		1		0		0
-	1-3	2		3		4-7		6
-	1-3	5		3		0-7		5
----
- mm/mempolicy.c |    3 +--
- 1 files changed, 1 insertions(+), 2 deletions(-)
 
-diff --git a/mm/mempolicy.c b/mm/mempolicy.c
---- a/mm/mempolicy.c
-+++ b/mm/mempolicy.c
-@@ -1809,8 +1809,7 @@ static void mpol_rebind_policy(struct mempolicy *pol,
- 		} else if (relative_nodes) {
- 			mpol_relative_nodemask(&tmp, &pol->w.user_nodemask,
- 					       newmask);
--			pol->v.preferred_node = node_remap(pol->v.preferred_node,
--					pol->w.cpuset_mems_allowed, tmp);
-+			pol->v.preferred_node = first_node(tmp);
- 		} else {
- 			pol->v.preferred_node = node_remap(pol->v.preferred_node,
- 					pol->w.cpuset_mems_allowed, *newmask);
+> > c) It is possible to add duplicated file descriptors referring to the same
+> > underlying open file description ("file *").  As you note, this can be a
+> > useful filtering technique, if the two file descriptors specify different
+> > masks.
+> > 
+> > Assuming that is all correct, for man-pages-2.79, I've reworked the text
+> > for Q1/A1 as follows:
+> > 
+> >        Q1     What  happens  if you add the same file descriptor
+> >               to an epoll set twice?
+> > 
+> >        A1     You will probably get EEXIST.  However, it is pos-
+> >               sible   to   add  a  duplicate  (dup(2),  dup2(2),
+> >               fcntl(2) F_DUPFD, fork(2)) descriptor to the  same
+> >               epoll  set.   This  can  be a useful technique for
+> >               filtering events, if the duplicate  file  descrip-
+> >               tors are registered with different events masks.
+> > 
+> > Seem okay Davide?
+> 
+> Looks sane to me.
+
+I think fork(2) should not be in the above list.  fork(2) duplicates the
+kernel's fd, but the user-space integer that represents the fd remains
+the same, so you will get EEXIST if you try to add the fd that was
+duplicated by fork.
+
+Chris
+
