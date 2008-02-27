@@ -1,79 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753986AbYB0LBB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754753AbYB0LGz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753986AbYB0LBB (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Feb 2008 06:01:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752165AbYB0LAx
+	id S1754753AbYB0LGz (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Feb 2008 06:06:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751691AbYB0LGp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Feb 2008 06:00:53 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:43154 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751739AbYB0LAw (ORCPT
+	Wed, 27 Feb 2008 06:06:45 -0500
+Received: from smtp4.int-evry.fr ([157.159.10.71]:55612 "EHLO
+	smtp4.int-evry.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750888AbYB0LGo convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Feb 2008 06:00:52 -0500
-Subject: [PATCH] sched: rt-group: fixup schedulability constraints
-	calculation
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+	Wed, 27 Feb 2008 06:06:44 -0500
+From: Florian Fainelli <florian.fainelli@telecomint.eu>
 To: Ingo Molnar <mingo@elte.hu>
-Cc: Dhaval Giani <dhaval@linux.vnet.ibm.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Content-Type: text/plain
-Date: Wed, 27 Feb 2008 12:00:46 +0100
-Message-Id: <1204110046.6242.379.camel@lappy>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.21.90 
-Content-Transfer-Encoding: 7bit
+Subject: Re: [PATCH] [x86] rdc321x: Kconfig options fixes for rdc321x
+Date: Wed, 27 Feb 2008 12:06:43 +0100
+User-Agent: KMail/1.9.7
+Cc: linux-kernel@vger.kernel.org
+References: <200802271136.42763.florian.fainelli@telecomint.eu> <20080227105307.GA21050@elte.hu>
+In-Reply-To: <20080227105307.GA21050@elte.hu>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+Message-Id: <200802271206.44493.florian.fainelli@telecomint.eu>
+X-int-MailScanner-Information: Please contact the ISP for more information
+X-int-MailScanner: Found to be clean
+X-int-MailScanner-SpamCheck: 
+X-int-MailScanner-From: florian.fainelli@telecomint.eu
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Subject: sched: rt-group: fixup schedulability constraints calculation
+Hi Ingo,
 
-div64_64() has a different calling convention than do_div() :/
+Le mercredi 27 février 2008, Ingo Molnar a écrit :
+> these many special conditions in the Kconfig space are way too ugly.
+> (Also, i can see no reason why for example hibernation wouldnt be
+> possible on rdc321x, it's a pure software concept ...)
 
-fix a few untidies while were here; sysctl_sched_rt_period may overflow
-due to that multiplication, so cast to u64 first. Also that RUNTIME_INF
-juggling makes little sense although its an effective NOP.
+I would have thought an embedded device with only flash memory as rom storage 
+could not hibertnate.
 
-Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
----
- kernel/sched.c |   10 +++-------
- 1 file changed, 3 insertions(+), 7 deletions(-)
-
-Index: linux-2.6/kernel/sched.c
-===================================================================
---- linux-2.6.orig/kernel/sched.c
-+++ linux-2.6/kernel/sched.c
-@@ -7934,9 +7934,7 @@ static unsigned long to_ratio(u64 period
- 	if (runtime == RUNTIME_INF)
- 		return 1ULL << 16;
- 
--	runtime *= (1ULL << 16);
--	div64_64(runtime, period);
--	return runtime;
-+	return div64_64(runtime << 16, period);
- }
- 
- static int __rt_schedulable(struct task_group *tg, u64 period, u64 runtime)
-@@ -7965,18 +7963,16 @@ int sched_group_set_rt_runtime(struct ta
- 	u64 rt_runtime, rt_period;
- 	int err = 0;
- 
--	rt_period = sysctl_sched_rt_period * NSEC_PER_USEC;
-+	rt_period = (u64)sysctl_sched_rt_period * NSEC_PER_USEC;
- 	rt_runtime = (u64)rt_runtime_us * NSEC_PER_USEC;
- 	if (rt_runtime_us == -1)
--		rt_runtime = rt_period;
-+		rt_runtime = RUNTIME_INF;
- 
- 	mutex_lock(&rt_constraints_mutex);
- 	if (!__rt_schedulable(tg, rt_period, rt_runtime)) {
- 		err = -EINVAL;
- 		goto unlock;
- 	}
--	if (rt_runtime_us == -1)
--		rt_runtime = RUNTIME_INF;
- 	tg->rt_runtime = rt_runtime;
-  unlock:
- 	mutex_unlock(&rt_constraints_mutex);
-
-
+Maybe we should turn all those special conditions into HAVE_FOO/BAR instead ?
