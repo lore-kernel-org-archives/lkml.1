@@ -1,54 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764375AbYB0C7F@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765317AbYB0DAu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764375AbYB0C7F (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Feb 2008 21:59:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755038AbYB0C6x
+	id S1765317AbYB0DAu (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Feb 2008 22:00:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755192AbYB0DAm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Feb 2008 21:58:53 -0500
-Received: from mail.gmx.net ([213.165.64.20]:33107 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1754674AbYB0C6w (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Feb 2008 21:58:52 -0500
-X-Authenticated: #14349625
-X-Provags-ID: V01U2FsdGVkX1+Wwu87UWqWbmwEwesX7WtjdOagfYOKm0D7xtvNB6
-	W79r7qMMS+ESN6
-Subject: Re: regression: CD burning (k3b) went broke
-From: Mike Galbraith <efault@gmx.de>
-To: Jeff Garzik <jeff@garzik.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Jens Axboe <jens.axboe@oracle.com>, LKML <linux-kernel@vger.kernel.org>,
-       Tejun Heo <htejun@gmail.com>, linux-ide@vger.kernel.org,
-       linux-scsi@vger.kernel.org
-In-Reply-To: <47C4B2D4.109@garzik.org>
-References: <1203583379.6244.27.camel@homer.simson.net>
-	 <20080222073228.GZ23197@kernel.dk>
-	 <1203752563.5225.4.camel@homer.simson.net>
-	 <1203839683.17463.9.camel@homer.simson.net>
-	 <1204019283.8731.11.camel@homer.simson.net>
-	 <1204033003.11828.22.camel@homer.simson.net>
-	 <20080226150845.2196bc1a.akpm@linux-foundation.org>
-	 <47C4B2D4.109@garzik.org>
-Content-Type: text/plain
-Date: Wed, 27 Feb 2008 03:58:48 +0100
-Message-Id: <1204081128.26640.20.camel@homer.simson.net>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.0 
-Content-Transfer-Encoding: 7bit
-X-Y-GMX-Trusted: 0
+	Tue, 26 Feb 2008 22:00:42 -0500
+Received: from scrub.xs4all.nl ([194.109.195.176]:59179 "EHLO scrub.xs4all.nl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752632AbYB0DAl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 Feb 2008 22:00:41 -0500
+Date: Wed, 27 Feb 2008 03:59:45 +0100 (CET)
+From: Roman Zippel <zippel@linux-m68k.org>
+X-X-Sender: roman@scrub.home
+To: Sam Ravnborg <sam@ravnborg.org>
+cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       kiran@scalemp.com, shai@scalemp.com, Glauber Costa <gcosta@redhat.com>,
+       linux-kbuild <linux-kbuild@vger.kernel.org>,
+       Yinghai Lu <Yinghai.Lu@Sun.COM>
+Subject: Re: Kconfig configuration restore bug [Was: x86: vSMP selection in
+ config]
+In-Reply-To: <20080226194058.GA31438@uranus.ravnborg.org>
+Message-ID: <Pine.LNX.4.64.0802270353480.2723@scrub.home>
+References: <200802210258.45011.yinghai.lu@sun.com> <200802241832.37850.yinghai.lu@sun.com>
+ <200802242136.28744.yinghai.lu@sun.com> <200802242243.49576.yinghai.lu@sun.com>
+ <20080226194058.GA31438@uranus.ravnborg.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi,
 
-On Tue, 2008-02-26 at 19:46 -0500, Jeff Garzik wrote:
+On Tue, 26 Feb 2008, Sam Ravnborg wrote:
 
-> I would love to get an answer as to what data_len (and of course 
-> raw_data_len) should be set to AFTER the command completes, which is 
-> what is going on here.
+> choice
+> 	prompt "Subarchitecture Type"
+> 
+> config X86_PC
+> 	bool "PC-compatible"
+> 
+> config X86_VOYAGER
+> 	bool "Voyager (NCR)"
+> 
+> config X86_VSMP
+> 	bool "Support for ScaleMP vSMP"
+> 	depends on PCI
+> 
+> endchoice
+> 
+> config PCI
+> 	bool "PCI support" if !X86_VISWS
+> 	depends on !X86_VOYAGER
+> 	default y
 
-Yeah, blk_complete_sghdr_rq() used to do hdr->resid = irq->data_len,
-which is modified down lower.  How/where that hdr->resid percolates back
-up, and turns into a retry/nogo, I don't know.
+The basic problem is that this is a recursive dependency - PCI depends on 
+the choice and the choice depends on PCI. IMO X86_VSMP cannot depend on 
+PCI.
+I'm looking into why this hasn't been picked up by the dependency check...
 
-	-Mike
-
+bye, Roman
