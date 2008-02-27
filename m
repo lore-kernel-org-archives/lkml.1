@@ -1,75 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753544AbYB0FW1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754830AbYB0FfZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753544AbYB0FW1 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Feb 2008 00:22:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751654AbYB0FWT
+	id S1754830AbYB0FfZ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Feb 2008 00:35:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750850AbYB0FfO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Feb 2008 00:22:19 -0500
-Received: from idcmail-mo1so.shaw.ca ([24.71.223.10]:23644 "EHLO
-	pd3mo3so.prod.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751598AbYB0FWS (ORCPT
+	Wed, 27 Feb 2008 00:35:14 -0500
+Received: from rgminet01.oracle.com ([148.87.113.118]:12655 "EHLO
+	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750816AbYB0FfM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Feb 2008 00:22:18 -0500
-Date: Tue, 26 Feb 2008 23:24:17 -0600
-From: Robert Hancock <hancockr@shaw.ca>
-Subject: Re: [PATCH] sata_nv: fix nmi intr or system hanging in rhel4u6 adma.
-In-reply-to: <15F501D1A78BD343BE8F4D8DB854566B1BFE2AE7@hkemmail01.nvidia.com>
-To: Kuan Luo <kluo@nvidia.com>
-Cc: Jeff Garzik <jeff@garzik.org>, linux-kernel <linux-kernel@vger.kernel.org>,
-       Tejun Heo <htejun@gmail.com>, Peer Chen <pchen@nvidia.com>,
-       Allen Martin <AMartin@nvidia.com>
-Message-id: <47C4F401.8000607@shaw.ca>
-MIME-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1; format=flowed
-Content-transfer-encoding: 7bit
-References: <15F501D1A78BD343BE8F4D8DB854566B1BFE2AE5@hkemmail01.nvidia.com>
- <47C42534.1090107@shaw.ca> <47C43E27.5070700@garzik.org>
- <15F501D1A78BD343BE8F4D8DB854566B1BFE2AE7@hkemmail01.nvidia.com>
-User-Agent: Thunderbird 2.0.0.9 (Windows/20071031)
+	Wed, 27 Feb 2008 00:35:12 -0500
+Date: Tue, 26 Feb 2008 21:34:32 -0800
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: "SL Baur" <steve@xemacs.org>
+Cc: "Krzysztof Halasa" <khc@pm.waw.pl>,
+       "Guennadi Liakhovetski" <g.liakhovetski@gmx.de>,
+       "Jan Engelhardt" <jengelh@computergmbh.de>, ricknu-0@student.ltu.se,
+       bhalevy.lists@gmail.com,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] CodingStyle: multiple updates
+Message-Id: <20080226213432.1388717b.randy.dunlap@oracle.com>
+In-Reply-To: <ed10ee420802261657w3830e1a1rf0cc9601cdacb142@mail.gmail.com>
+References: <1204062430.47c488def40a4@portal.student.luth.se>
+	<20080226135444.f83a0536.randy.dunlap@oracle.com>
+	<Pine.LNX.4.64.0802262310050.15321@fbirervta.pbzchgretzou.qr>
+	<Pine.LNX.4.64.0802270033310.5714@axis700.grange>
+	<m31w6zcm4l.fsf@maximus.localdomain>
+	<ed10ee420802261657w3830e1a1rf0cc9601cdacb142@mail.gmail.com>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.4.7 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Kuan Luo wrote:
-> Jeff wrote:
->> robert worte:
->>> This is basically avoiding switching into register mode, 
->> right? I don't 
->>> think this is a very good solution as the point of the 
->> tf_read function 
->>> is that it's supposed to read the taskfile provided by the drive to 
->>> diagnose the error, so not doing this isn't a good thing.
->> Agree with this analysis -- if ->tf_read() is being called, then 
->> obviously the core wants a current copy of the device's ATA registers.
->>
->> It is not a good solution to simply avoiding returning 
->> meaningful data, 
->> because -- as Robert notes -- we need tf_read for analysis.
->>
->> 	Jeff
->>
-> 
-> The driver got one error : "nv_adma_check_cpb: CPB 0, flags=0x11". The
-> code entered ata_port_abort -> ata_qc_complete
-> -> fill_result_tf->nv_adma_tf_read.
-> 
-> Firstly, nv_adma_register_mode failed, showing the below messages:
-> timeout waiting for ADMA IDLE, stat=0x440
-> timeout waiting for ADMA LEGACY, stat=0x440
-> 
-> Then enter ata_tf_read function. 
-> I found the system hung at tf->hob_nsect = ioread8(ioaddr->nsect_addr);
-> Sometimes the screen showed "
-> CPU0: Machin check Exception 0000000000000004
-> Bank 4:b200000000070f0f
-> kernel panic -not syncing: CPU Context corrupt.
-> "
-> If nv_adma_register_mode failed, the reg result should be not
-> meaningful. 
-> I don't know why the systm hung.
+On Tue, 26 Feb 2008 16:57:47 -0800 SL Baur wrote:
 
-I suspect nv_adma_register_mode failing may be the key. I don't know why 
-this happens. It could be the timeout needs to be longer but I've tried 
-increasing it significantly without apparent effect. (Essentially it's 
-waiting for the status to go to the IDLE state, and then clears the GO 
-bit and waits for LEGACY to be set. In this case both waits timed out.)
+> On 2/26/08, Krzysztof Halasa <khc@pm.waw.pl> wrote:
+> 
+> >  Hopefully an elisp expert will implement it. Vim people probably need
+> >  something like that as well, and the list of editors is a bit longer...
+> 
+> The proposed two space change is ugly.  Can someone NAK it?
+> 
+> -sb (The elisp guy who added the linux c-style)
+
+I would gladly NAK it, but most recent email from Linus about
+coding style is that we are getting too detailed about it,
+so unless there is some overwhelming need to change anything in
+CodingStyle, I'm for no changes (or maybe even some removals).
+
+---
+~Randy
