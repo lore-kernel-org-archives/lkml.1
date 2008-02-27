@@ -1,45 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759888AbYB0WAO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757902AbYB0WAh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759888AbYB0WAO (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Feb 2008 17:00:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756954AbYB0WAA
+	id S1757902AbYB0WAh (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Feb 2008 17:00:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757663AbYB0WAE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Feb 2008 17:00:00 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:60797
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1756995AbYB0WAA (ORCPT
+	Wed, 27 Feb 2008 17:00:04 -0500
+Received: from rv-out-0910.google.com ([209.85.198.184]:46403 "EHLO
+	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757459AbYB0WAC (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Feb 2008 17:00:00 -0500
-Date: Wed, 27 Feb 2008 13:59:59 -0800 (PST)
-Message-Id: <20080227.135959.166225042.davem@davemloft.net>
-To: gregkh@suse.de
-Cc: randy.dunlap@oracle.com, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org, torvalds@linux-foundation.org,
-       stable@kernel.org
-Subject: Re: Linux 2.6.24.3
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20080226041545.GA30567@suse.de>
-References: <20080226010024.GA26889@suse.de>
-	<20080225195229.11ec1f12.randy.dunlap@oracle.com>
-	<20080226041545.GA30567@suse.de>
-X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Wed, 27 Feb 2008 17:00:02 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=fQOiRHwTByLNDwBVQYfHIs5vtEX13XrAuE9uJHswY+cDlgF/NeP0sRkLy0oK/NypoQBSEcCi7VnLdsMPbLUmXaQFj5quA8qLRq4EUjh0MfQl6MfbM8sk7/886tYK7/Q/cJHtThJtpfhqqkpjRPtPoyRbF1kmIsWv+X7rWxGactM=
+Message-ID: <86802c440802271400k5e981d40vfd278c07c6bf04f5@mail.gmail.com>
+Date: Wed, 27 Feb 2008 14:00:01 -0800
+From: "Yinghai Lu" <yhlu.kernel@gmail.com>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: [PATCH] x86: X86_HT always enable on X86_64 SMP
+Cc: "Adrian Bunk" <bunk@kernel.org>,
+       "Hiroshi Shimamoto" <h-shimamoto@ct.jp.nec.com>,
+       "Ingo Molnar" <mingo@elte.hu>, "Thomas Gleixner" <tglx@linutronix.de>,
+       "Sam Ravnborg" <sam@ravnborg.org>, linux-kernel@vger.kernel.org
+In-Reply-To: <47C5D693.3030207@zytor.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <47C5D32E.8070308@ct.jp.nec.com>
+	 <20080227212658.GU29269@cs181133002.pp.htv.fi>
+	 <47C5D693.3030207@zytor.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Greg KH <gregkh@suse.de>
-Date: Mon, 25 Feb 2008 20:15:45 -0800
+On Wed, Feb 27, 2008 at 1:30 PM, H. Peter Anvin <hpa@zytor.com> wrote:
+> Adrian Bunk wrote:
+>  > On Wed, Feb 27, 2008 at 01:16:30PM -0800, Hiroshi Shimamoto wrote:
+>  >> From: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
+>  >>
+>  >> X86_HT is used for hyperthreading or multicore on 32-bit.
+>  >> The X86_HT on 64-bit is different from 32-bit, it means hyperthreading only.
+>  >> And X86_HT is not used on 64-bit except from cpu/initel_cacheinfo.c.
+>  >>
+>  >> Unify X86_HT for hyperthreading or multicore.
+>  >> Turn X86_HT on when X86_64 and SMP are enabled.
+>  >
+>  > Please fix it properly instead - fiddling around with it the way you do
+>  > only asks for trouble in the future.
+>  >
+>  > What we need are two different variables for:
+>  > - hyperthreading and
+>  > - multicore
+>  >
+>
+>  He does, and calls them SCHED_SMT and SCHED_MC respectively.
+>
+>  It's not particularly clear to me what X86_HT is meant to be used for
+>  anymore at all.
 
-> > When HEADERS_CHECK=y:
-> > 
-> > make[3]: *** No rule to make target `/local/linsrc/linux-2.6.24.3/include/linux/if_addrlabel.h', needed by `/local/linsrc/linux-2.6.24.3/usr/include/linux/if_addrlabel.h'.  Stop.
-> > make[2]: *** [linux] Error 2
-> 
-> Is this a regression from 2.6.24.2?  If so, any ideas which patch caused
-> it?
+he made X86_HT can be enabled when only Opteron supported is enabled.
 
-Greg, look more carefully, it's because of the patch us networking
-folks asked you yesterday to revert.
+it should be stated in the comments.
+YH
