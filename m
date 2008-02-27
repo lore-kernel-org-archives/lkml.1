@@ -1,40 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755679AbYB0RCT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755244AbYB0RIP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755679AbYB0RCT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Feb 2008 12:02:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753496AbYB0RCG
+	id S1755244AbYB0RIP (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Feb 2008 12:08:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751187AbYB0RIF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Feb 2008 12:02:06 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:46564 "EHLO mx1.redhat.com"
+	Wed, 27 Feb 2008 12:08:05 -0500
+Received: from systemlinux.org ([83.151.29.59]:43282 "EHLO m18s25.vlinux.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752547AbYB0RCG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Feb 2008 12:02:06 -0500
-Date: Wed, 27 Feb 2008 12:01:40 -0500
-From: Jason Baron <jbaron@redhat.com>
-To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Cc: akpm@linux-foundation.org, Ingo Molnar <mingo@elte.hu>,
-       linux-kernel@vger.kernel.org, Rusty Russell <rusty@rustcorp.com.au>,
-       Jan Kiszka <jan.kiszka@siemens.com>
-Subject: Re: [patch 1/7] Immediate Values - Architecture Independent Code
-Message-ID: <20080227170132.GA7678@redhat.com>
-References: <20080202210828.840735763@polymtl.ca> <20080202211204.268876860@polymtl.ca> <20080226225242.GA15926@redhat.com> <20080226231248.GA32455@Krystal>
+	id S1750743AbYB0RIE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 Feb 2008 12:08:04 -0500
+Date: Wed, 27 Feb 2008 18:05:28 +0100
+From: Andre Noll <maan@systemlinux.org>
+To: Tony Battersby <tonyb@cybernetics.com>
+Cc: Arnd Hannemann <hannemann@nets.rwth-aachen.de>,
+       adam radford <aradford@gmail.com>,
+       Johannes =?iso-8859-1?Q?W=F6rner?= 
+	<johannes.woerner@tuebingen.mpg.de>,
+       James Bottomley <James.Bottomley@HansenPartnership.com>,
+       linux-scsi <linux-scsi@vger.kernel.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: Performance problems with 3ware 9500S-4LP and 2.6.25-rc3
+Message-ID: <20080227170528.GB29468@skl-net.de>
+References: <20080226174314.GA30767@skl-net.de> <47C49B99.1060707@nets.rwth-aachen.de> <20080227101154.GD30767@skl-net.de> <47C57327.6070901@cybernetics.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="ZoaI/ZTpAVc4A5k6"
 Content-Disposition: inline
-In-Reply-To: <20080226231248.GA32455@Krystal>
-User-Agent: Mutt/1.4.1i
+In-Reply-To: <47C57327.6070901@cybernetics.com>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Feb 26, 2008 at 06:12:48PM -0500, Mathieu Desnoyers wrote:
-> Hrm, does your stop machine implementation disable interrupts while the
-> CPUs busy loop ?
-> 
 
-yes. this is how stop_machine is implemented...and I believe is consistent with
-the way in which your algorithm disables irqs. The logic to me, is we don't
-want any cpus to see the kernel text in an inconsistent state via an irq.
+--ZoaI/ZTpAVc4A5k6
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
--Jason
+On 09:26, Tony Battersby wrote:
+> > Thanks, this helped a lot. However, there does not seem to be a way
+> > to make the system more responsive, which is really the problem we
+> > are experiencing.
+> >
+> > Andre
+> >  =20
+> This is not 3ware-specific, but kernel 2.6.24 has new per-device write
+> throttling that might help with the responsiveness issue:
+>=20
+> http://kernelnewbies.org/LinuxChanges#head-92340ffcec39e7c2a09fd933243fb1=
+8eda57f1b4
+> http://lwn.net/Articles/245600/
 
+Yes, but we tried both 2.6.24 and 2.6.25-rc, so Peter's new
+write-throttling code doesn't seem to help much in our situtation. I'll
+play a bit with the various /proc/sys/vm/* knobs to see if that makes
+the system more responsive.
+
+> Also, check to see if the 3ware controller has a background initialize
+> or verify in progress, since that will obviously slow things down until
+> it is complete.
+
+That's certainly not the case.
+
+Thanks
+Andre
+--=20
+The only person who always got his work done by Friday was Robinson Crusoe
+
+--ZoaI/ZTpAVc4A5k6
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.1 (GNU/Linux)
+
+iD8DBQFHxZhYWto1QDEAkw8RAnlzAKCmNHfQ9RaCVFs7nUbEgVOFSDhWfQCcDRjt
+3CZfYIebsu+qQmjf/GCkSDg=
+=wI2G
+-----END PGP SIGNATURE-----
+
+--ZoaI/ZTpAVc4A5k6--
