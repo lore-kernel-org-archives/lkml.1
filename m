@@ -1,72 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755607AbYB0OiI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756362AbYB0Oig@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755607AbYB0OiI (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Feb 2008 09:38:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753299AbYB0Oh4
+	id S1756362AbYB0Oig (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Feb 2008 09:38:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755678AbYB0Oi1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Feb 2008 09:37:56 -0500
-Received: from relay2.sgi.com ([192.48.171.30]:56100 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752752AbYB0Ohz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Feb 2008 09:37:55 -0500
-Message-ID: <47C575BE.3090603@sgi.com>
-Date: Wed, 27 Feb 2008 06:37:50 -0800
-From: Mike Travis <travis@sgi.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
-MIME-Version: 1.0
-To: Yinghai Lu <yhlu.kernel@gmail.com>
-CC: Mel Gorman <mel@csn.ul.ie>, Andrew Morton <akpm@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, mingo@elte.hu, tglx@linutronix.de,
-       Christoph Lameter <clameter@sgi.com>, Jack Steiner <steiner@sgi.com>
-Subject: Re: 2.6.24 git2/mm1: cpu_to_node mapping to non-existant nodes causing
- boot failure
-References: <20080203171634.58ab668b.akpm@linux-foundation.org>	 <20080213175241.GA327@csn.ul.ie> <47B33ACF.5030700@sgi.com>	 <20080214201727.GC30841@csn.ul.ie> <47B4A774.7050509@sgi.com>	 <20080215020208.GA6500@csn.ul.ie> <47B77E90.5050809@sgi.com>	 <47BAFFD3.1070606@sgi.com> <20080219192319.GE12386@csn.ul.ie> <86802c440802262229t37c61c98y45607ba34d7c6417@mail.gmail.com>
-In-Reply-To: <86802c440802262229t37c61c98y45607ba34d7c6417@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
+	Wed, 27 Feb 2008 09:38:27 -0500
+Received: from mtagate6.uk.ibm.com ([195.212.29.139]:12756 "EHLO
+	mtagate6.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753299AbYB0Oi0 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 Feb 2008 09:38:26 -0500
+Date: Wed, 27 Feb 2008 15:38:23 +0100
+From: Cornelia Huck <cornelia.huck@de.ibm.com>
+To: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+Cc: Greg KH <greg@kroah.com>, linux-kernel@vger.kernel.org
+Subject: Re: [PCI] duplicate sysfs symbols getting registered in current git
+Message-ID: <20080227153823.3f93510c@gondolin.boeblingen.de.ibm.com>
+In-Reply-To: <Pine.LNX.4.64.0802271438170.5059@axis700.grange>
+References: <Pine.LNX.4.64.0802182142240.11540@axis700.grange>
+	<20080220063834.GA22708@kroah.com>
+	<Pine.LNX.4.64.0802251341160.4430@axis700.grange>
+	<20080226201619.GA10343@kroah.com>
+	<Pine.LNX.4.64.0802271222530.5059@axis700.grange>
+	<20080227124748.2e89e628@gondolin.boeblingen.de.ibm.com>
+	<Pine.LNX.4.64.0802271328300.5059@axis700.grange>
+	<20080227142103.1dd42f8f@gondolin.boeblingen.de.ibm.com>
+	<Pine.LNX.4.64.0802271438170.5059@axis700.grange>
+Organization: IBM Deutschland Entwicklung GmbH Vorsitzender des
+ Aufsichtsrats: Martin Jetter =?ISO-8859-15?Q?Gesch=E4ftsf=FChrung:?=
+ Herbert Kircher Sitz der Gesellschaft: =?ISO-8859-15?Q?B=F6blingen?=
+ Registergericht: Amtsgericht Stuttgart, HRB 243294
+X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.8; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Yinghai Lu wrote:
-> On Tue, Feb 19, 2008 at 11:23 AM, Mel Gorman <mel@csn.ul.ie> wrote:
->> On (19/02/08 08:12), Mike Travis didst pronounce:
->>
->>> Mike Travis wrote:
->>  > > Mel Gorman wrote:
->>  > >
->>  > >> If you send me patches to apply on top of 2.6.25-rc1, I'll give them a spin
->>  > >> on the machine in question. Reverting didn't work out very well as there are
->>  > >> too many collisions with patches that were applied later. I eventually got
->>  > >> the machine booting but it only succeeds because it only brings up one core
->>  > >> on each processor.  The patch, which is pretty brain damaged is below in case
->>  > >> it helps you guess what the real problem is. dmesg logs are attached of the
->>  > >> vanilla failure with acpi=debug and the log with the patch applied showing
->>  > >> "__cpu_up: bad cpu 1" and "__cpu_up: bad cpu3" (i.e. the second cores of
->>  > >> each machine).
->>  > >>
->>  > >
->>  > > This should completely undo the change to 16 bit apic ids until we can figure
->>  > > out the problem with the memory-less nodes.  I checked it on both the numa
->>  > > and non-numa x86_64 box.
->>  > >
->>  > > Thanks,
->>  > > Mike
->>  > >
->>  >
->>  > Hi Mel,
->>  >
->>  > Did you get a chance to try out this patch to see if it cleared up the problem
->>  > booting on your x86_64 numa box?
+On Wed, 27 Feb 2008 14:46:05 +0100 (CET),
+Guennadi Liakhovetski <g.liakhovetski@gmx.de> wrote:
+
+> On Wed, 27 Feb 2008, Cornelia Huck wrote:
 > 
-> did it fail with x86.git#testing?
+> > On Wed, 27 Feb 2008 13:33:13 +0100 (CET),
+> > Guennadi Liakhovetski <g.liakhovetski@gmx.de> wrote:
+> > 
+> > > You mean the kernel panic without CONFIG_SYSFS_DEPRECATED? No, 
+> > > unfortunately is doesn't.
+> > 
+> > Hm, dev->kobj.parent may be NULL in cleanup_device_parent(). Does this
+> > one help?
 > 
-> YH
+> Yes, this one does. 
 
-Hi,
+Great, thanks for testing!
 
-My problem is that I haven't been able to set up a NUMA box where some of the nodes
-have no memory.  The one box we have, the serial port doesn't work and it's in a lab
-far, far away.  Everything else, it works fine.
+> But Greg's original idea, that disabling 
+> CONFIG_SYSFS_DEPRECATED would eliminate one of the warnings doesn't hold, 
+> all three of them are still there (after your patches):
 
-Mike
+I'm afraid I can't help there, as this looks PCI-related...
+
+Greg: Attached are the fixes against your tree with proper description
+and s-o-b.
+
+
+Driver core: Fix cleanup when failing device_add().
+
+-Don't call cleanup_device_parent() if we didn't call setup_parent().
+-dev->kobj.parent may be NULL when cleanup_device_parent() is called,
+ so we need to handle glue_dir == NULL in cleanup_glue_dir().
+
+Signed-off-by: Cornelia Huck <cornelia.huck@de.ibm.com>
+
+---
+ drivers/base/core.c |    5 +++--
+ 1 file changed, 3 insertions(+), 2 deletions(-)
+
+--- linux-2.6.orig/drivers/base/core.c
++++ linux-2.6/drivers/base/core.c
+@@ -622,7 +622,8 @@ static struct kobject *get_device_parent
+ static void cleanup_glue_dir(struct device *dev, struct kobject *glue_dir)
+ {
+ 	/* see if we live in a "glue" directory */
+-	if (!dev->class || glue_dir->kset != &dev->class->class_dirs)
++	if (!glue_dir || !dev->class ||
++	    glue_dir->kset != &dev->class->class_dirs)
+ 		return;
+ 
+ 	kobject_put(glue_dir);
+@@ -781,7 +782,7 @@ int device_add(struct device *dev)
+ 	dev = get_device(dev);
+ 	if (!dev || !strlen(dev->bus_id)) {
+ 		error = -EINVAL;
+-		goto Error;
++		goto Done;
+ 	}
+ 
+ 	pr_debug("device: '%s': %s\n", dev->bus_id, __FUNCTION__);
