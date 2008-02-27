@@ -1,61 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764594AbYB0Hiz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752507AbYB0HjY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764594AbYB0Hiz (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Feb 2008 02:38:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755620AbYB0Hig
+	id S1752507AbYB0HjY (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Feb 2008 02:39:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755620AbYB0Hi7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Feb 2008 02:38:36 -0500
-Received: from smtp5.pp.htv.fi ([213.243.153.39]:37699 "EHLO smtp5.pp.htv.fi"
+	Wed, 27 Feb 2008 02:38:59 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:45842 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752746AbYB0Hig (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Feb 2008 02:38:36 -0500
-Date: Wed, 27 Feb 2008 09:37:28 +0200
-From: Adrian Bunk <bunk@kernel.org>
-To: khali@linux-fr.org
-Cc: i2c@lm-sensors.org, linux-kernel@vger.kernel.org
-Subject: [2.6 patch] I2C_ELEKTOR must depend on HAS_IOPORT
-Message-ID: <20080227073728.GD10603@cs181133002.pp.htv.fi>
+	id S1755279AbYB0Hi6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 Feb 2008 02:38:58 -0500
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+From: Roland McGrath <roland@redhat.com>
+To: Ingo Molnar <mingo@elte.hu>
+X-Fcc: ~/Mail/linus
+Cc: Thomas Gleixner <tglx@linutronix.de>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org,
+       Tomasz Grobelny <tomasz@grobelny.oswiecenia.net>
+Subject: Re: [PATCH] x86 tls prevent_tail_call
+In-Reply-To: Ingo Molnar's message of  Wednesday, 27 February 2008 08:26:17 +0100 <20080227072617.GB4638@elte.hu>
+References: <20080226210018.A031B26F9A4@magilla.localdomain>
+	<20080227072617.GB4638@elte.hu>
+X-Windows: more than enough rope.
+Message-Id: <20080227073821.0C34C2700FD@magilla.localdomain>
+Date: Tue, 26 Feb 2008 23:38:21 -0800 (PST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch fixes the following compile error on m32r:
+> i'm wondering, have you seen this happen in practice? We use 
+> sys_set_thread_area() for every new task started up. I guess we havent 
+> seen problems in the field yet because this early during startup tasks 
+> do not normally receive signals? (or if they do they are fatal and no 
+> user signal context is used.)
 
-<--  snip  -->
+Tomasz saw it.  I don't know what compiler or exact options to it he used.
 
-...
-  CC [M]  drivers/i2c/busses/i2c-elektor.o
-/home/bunk/linux/kernel-2.6/git/linux-2.6/drivers/i2c/busses/i2c-elektor.c: In function 'pcf_isa_setbyte':
-/home/bunk/linux/kernel-2.6/git/linux-2.6/drivers/i2c/busses/i2c-elektor.c:80: error: implicit declaration of function 'iowrite8'
-/home/bunk/linux/kernel-2.6/git/linux-2.6/drivers/i2c/busses/i2c-elektor.c: In function 'pcf_isa_getbyte':
-/home/bunk/linux/kernel-2.6/git/linux-2.6/drivers/i2c/busses/i2c-elektor.c:90: error: implicit declaration of function 'ioread8'
-/home/bunk/linux/kernel-2.6/git/linux-2.6/drivers/i2c/busses/i2c-elektor.c: In function 'pcf_isa_init':
-/home/bunk/linux/kernel-2.6/git/linux-2.6/drivers/i2c/busses/i2c-elektor.c:153: error: implicit declaration of function 'ioport_map'
-/home/bunk/linux/kernel-2.6/git/linux-2.6/drivers/i2c/busses/i2c-elektor.c:153: warning: assignment makes pointer from integer without a cast
-/home/bunk/linux/kernel-2.6/git/linux-2.6/drivers/i2c/busses/i2c-elektor.c: In function 'elektor_probe':
-/home/bunk/linux/kernel-2.6/git/linux-2.6/drivers/i2c/busses/i2c-elektor.c:290: error: implicit declaration of function 'ioport_unmap'
-make[4]: *** [drivers/i2c/busses/i2c-elektor.o] Error 1
+> btw., this whole thing of us having to notice such tail-optimization 
+> incidents is totally fragile and unreliable. Shouldnt there be a "dont 
+> tail-optimize me" attribute which we could stick into asmlinkage? 
 
-<--  snip  -->
+I agree.  It's come up before.  I'll talk to compiler folks about it again.
 
-Signed-off-by: Adrian Bunk <adrian.bunk@movial.fi>
+> Perhaps sparse could detect asmlinkage functions that do not do 
+> prevent_tail_call()s?
 
----
-c8a75f0dd2390ae8c8f91c451ff6b0e113d0ebd0 diff --git a/drivers/i2c/busses/Kconfig b/drivers/i2c/busses/Kconfig
-index 476b0bb..3bed6b9 100644
---- a/drivers/i2c/busses/Kconfig
-+++ b/drivers/i2c/busses/Kconfig
-@@ -129,7 +129,7 @@ config I2C_DAVINCI
- 
- config I2C_ELEKTOR
- 	tristate "Elektor ISA card"
--	depends on ISA && BROKEN_ON_SMP
-+	depends on ISA && HAS_IOPORT && BROKEN_ON_SMP
- 	select I2C_ALGOPCF
- 	help
- 	  This supports the PCF8584 ISA bus I2C adapter.  Say Y if you own
+That sounds like a good idea to me.
+
+
+Thanks,
+Roland
 
