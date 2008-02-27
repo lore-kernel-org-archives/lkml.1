@@ -1,56 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760757AbYB0Wmw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761239AbYB0Wnu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760757AbYB0Wmw (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Feb 2008 17:42:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755187AbYB0Wmp
+	id S1761239AbYB0Wnu (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Feb 2008 17:43:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756333AbYB0Wnm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Feb 2008 17:42:45 -0500
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:51274 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754240AbYB0Wmo (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Feb 2008 17:42:44 -0500
-Date: Wed, 27 Feb 2008 16:42:32 -0600
-From: Jack Steiner <steiner@sgi.com>
-To: Christoph Lameter <clameter@sgi.com>
-Cc: Nick Piggin <nickpiggin@yahoo.com.au>, akpm@linux-foundation.org,
-       Andrea Arcangeli <andrea@qumranet.com>, Robin Holt <holt@sgi.com>,
-       Avi Kivity <avi@qumranet.com>, Izik Eidus <izike@qumranet.com>,
-       kvm-devel@lists.sourceforge.net,
+	Wed, 27 Feb 2008 17:43:42 -0500
+Received: from relay2.sgi.com ([192.48.171.30]:43241 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1755506AbYB0Wnl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 Feb 2008 17:43:41 -0500
+Date: Wed, 27 Feb 2008 14:43:41 -0800 (PST)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Nick Piggin <nickpiggin@yahoo.com.au>
+cc: akpm@linux-foundation.org, Andrea Arcangeli <andrea@qumranet.com>,
+       Robin Holt <holt@sgi.com>, Avi Kivity <avi@qumranet.com>,
+       Izik Eidus <izike@qumranet.com>, kvm-devel@lists.sourceforge.net,
        Peter Zijlstra <a.p.zijlstra@chello.nl>, general@lists.openfabrics.org,
        Steve Wise <swise@opengridcomputing.com>,
        Roland Dreier <rdreier@cisco.com>, Kanoj Sarcar <kanojsarcar@yahoo.com>,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       steiner@sgi.com, linux-kernel@vger.kernel.org, linux-mm@kvack.org,
        daniel.blueman@quadrics.com
-Subject: Re: [patch 2/6] mmu_notifier: Callbacks to invalidate address ranges
-Message-ID: <20080227224232.GA18581@sgi.com>
-References: <20080215064859.384203497@sgi.com> <20080215064932.620773824@sgi.com> <200802201008.49933.nickpiggin@yahoo.com.au> <Pine.LNX.4.64.0802271424390.13186@schroedinger.engr.sgi.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0802271424390.13186@schroedinger.engr.sgi.com>
-User-Agent: Mutt/1.4.2.1i
+Subject: Re: [patch 5/6] mmu_notifier: Support for drivers with revers maps
+ (f.e. for XPmem)
+In-Reply-To: <200802201055.21343.nickpiggin@yahoo.com.au>
+Message-ID: <Pine.LNX.4.64.0802271440530.13186@schroedinger.engr.sgi.com>
+References: <20080215064859.384203497@sgi.com> <20080215064933.376635032@sgi.com>
+ <200802201055.21343.nickpiggin@yahoo.com.au>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->  
-> > Also, what we are going to need here are not skeleton drivers
-> > that just do all the *easy* bits (of registering their callbacks),
-> > but actual fully working examples that do everything that any
-> > real driver will need to do. If not for the sanity of the driver
-> > writer, then for the sanity of the VM developers (I don't want
-> > to have to understand xpmem or infiniband in order to understand
-> > how the VM works).
+On Wed, 20 Feb 2008, Nick Piggin wrote:
+
+> I don't know how this is supposed to solve anything. The sleeping
+> problem happens I guess mostly in truncate. And all you are doing
+> is putting these rmap callbacks in page_mkclean and try_to_unmap.
+
+truncate is handled by the range invalidates. This is special code to deal 
+with the unnap/clean of an individual page.
+
+> That doesn't seem right. To start with, the new callbacks aren't
+> even called in the places where invalidate_page isn't allowed to
+> sleep.
 > 
-> There are 3 different drivers that can already use it but the code is 
-> complex and not easy to review. Skeletons are easy to allow people to get 
-> started with it.
+> The problem is unmap_mapping_range, right? And unmap_mapping_range
+> must walk the rmaps with the mmap lock held, which is why it can't
+> sleep. And it can't hold any mmap_sem so it cannot prevent address
 
+Nope. unmap_mapping_range is already handled by the range callbacks.
 
-I posted the full GRU driver late last week. It is a lot of
-code & somewhat difficult to understand w/o access to full chip
-specs (sorry). The code is fairly well commented &  the
-parts related to TLB management should be understandable.
+> So in the meantime, you could have eg. a fault come in and set up a
+> new page for one of the processes, and that page might even get
+> exported via the same external driver. And now you have a totally
+> inconsistent view.
 
-
+The situation that you are imagining has already been dealt with by the 
+earlier patches. This is only to allow sleeping while unmapping individual 
+pages.
