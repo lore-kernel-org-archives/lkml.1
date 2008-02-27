@@ -1,69 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755827AbYB0Rdt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753626AbYB0RfW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755827AbYB0Rdt (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Feb 2008 12:33:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752803AbYB0Rdk
+	id S1753626AbYB0RfW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Feb 2008 12:35:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753179AbYB0RfK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Feb 2008 12:33:40 -0500
-Received: from ra.tuxdriver.com ([70.61.120.52]:2991 "EHLO ra.tuxdriver.com"
+	Wed, 27 Feb 2008 12:35:10 -0500
+Received: from hell.org.pl ([193.0.71.61]:1595 "EHLO hell.org.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752005AbYB0Rdj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Feb 2008 12:33:39 -0500
-Date: Wed, 27 Feb 2008 12:25:46 -0500
-From: "John W. Linville" <linville@tuxdriver.com>
-To: Stefano Brivio <stefano.brivio@polimi.it>
-Cc: Chris Clayton <chris2553@googlemail.com>, ivdoorn@gmail.com,
-       linux-kernel@vger.kernel.org, linux-wireless@vger.kernel.org,
-       johannes@sipsolutions.net
-Subject: Re: 2.6.25-rc2 regression in rt61pci wireless driver
-Message-ID: <20080227172546.GD3078@tuxdriver.com>
-References: <c6b1100b0802160406l24fed9dcje1dbfc8907fd7a16@mail.gmail.com> <200802252104.32416.chris2553@googlemail.com> <a32f33a40802251409ofbdab60w4a95c8aaefaad70a@mail.gmail.com> <200802261911.39577.chris2553@googlemail.com> <20080226194838.GD3013@tuxdriver.com> <c6b1100b0802261313v12fb9cd5j6501e80f6d071019@mail.gmail.com> <20080226223814.4ef2b435@morte> <c6b1100b0802261436i7c5a4136j753501933037187@mail.gmail.com> <20080227082642.218b8014@morte> <20080227155111.GB3078@tuxdriver.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080227155111.GB3078@tuxdriver.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+	id S1752803AbYB0RfJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 Feb 2008 12:35:09 -0500
+X-Greylist: delayed 1908 seconds by postgrey-1.27 at vger.kernel.org; Wed, 27 Feb 2008 12:35:09 EST
+In-Reply-To: <Pine.LNX.4.64.0802262142120.18200@ask.diku.dk>
+References: <Pine.LNX.4.64.0802262142120.18200@ask.diku.dk>
+Mime-Version: 1.0 (Apple Message framework v753)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <7C626792-02A6-4BE6-B5F2-D75899F3990C@hell.org.pl>
+Cc: corentincj@iksaif.net, sziwan@users.sourceforge.net,
+       acpi4asus-user@lists.sourceforge.net, linux-kernel@vger.kernel.org,
+       kernel-janitors@vger.kernel.org
+Content-Transfer-Encoding: 7bit
+From: Karol Kozimor <sziwan@hell.org.pl>
+Subject: Re: [PATCH 2/9] drivers/acpi/asus_acpi.c: Correct use of ! and &
+Date: Wed, 27 Feb 2008 18:03:16 +0100
+To: Julia Lawall <julia@diku.dk>
+X-Mailer: Apple Mail (2.753)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Feb 27, 2008 at 10:51:11AM -0500, John W. Linville wrote:
-> On Wed, Feb 27, 2008 at 08:26:42AM +0100, Stefano Brivio wrote:
-> > On Tue, 26 Feb 2008 22:36:19 +0000
-> > "Chris Clayton" <chris2553@googlemail.com> wrote:
-> > 
-> > > 27 135466 rate_change 2 55
-> > > 28 135717 tx_rate 2 55
-> > > 29 135717 tx_status 0 0
-> > > 30 135717 pf_sample 0 3584 1965 0
-> > > 31 135717 rate_change 129 -541505508
-> > > 32 135968 tx_rate 11 540
-> > 
-> > Known and fixed. The fix isn't in 2.6.25-rc3 yet, though.
-> > 
-> > Fix:
-> > commit 32720eae675d08990e97bffbf71a31382599cc8a
-> > Author: Stefano Brivio <stefano.brivio@polimi.it>
-> > Date:   Tue Jan 29 20:29:16 2008 +0100
-> > 
-> >     rc80211-pid: fix rate adjustment
-> 
-> And it currently isn't queued for 2.6.25 at all.
-> 
-> Chris, can you cherry-pick this from the wireless-2.6.26 tree and
-> give it a test on your 2.6.25-rc3 tree?  If it resolves a problem
-> then I'll queue it to Dave for 2.6.25 (which will probably provoke
-> a net-2.6.26 and wireless-2.6.26 rebase).
+On 26-02-2008, at 21:42, Julia Lawall wrote:
+>  	if (invert)		/* invert target value */
+> -		led_out = !led_out & 0x1;
+> +		led_out = !(led_out & 0x1);
+>
+>  	if (!write_acpi_int(hotk->handle, ledname, led_out, NULL))
+>  		printk(KERN_WARNING "Asus ACPI: LED (%s) write failed\n",
 
-That might be easier said than done.  It looks like that patch depends
-on the big cfg80211 API change queued for 2.6.26.
 
-Stefano offered to rebase that on 2.6.25.  Stefano, could you post
-that as part of this thread?
+IIRC we're just supposed to flip the last bit here, so the original  
+code is correct.
+Best regards,
 
-Thanks,
-
-John
 -- 
-John W. Linville
-linville@tuxdriver.com
+Karol Kozimor
+sziwan@hell.org.pl
+
+
