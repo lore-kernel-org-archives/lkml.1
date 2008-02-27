@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761601AbYB0VZq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761278AbYB0V0L@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761601AbYB0VZq (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Feb 2008 16:25:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760439AbYB0VW1
+	id S1761278AbYB0V0L (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Feb 2008 16:26:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759720AbYB0VWf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Feb 2008 16:22:27 -0500
-Received: from smtp4.pp.htv.fi ([213.243.153.38]:41803 "EHLO smtp4.pp.htv.fi"
+	Wed, 27 Feb 2008 16:22:35 -0500
+Received: from smtp6.pp.htv.fi ([213.243.153.40]:49185 "EHLO smtp6.pp.htv.fi"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759781AbYB0VWZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Feb 2008 16:22:25 -0500
-Date: Wed, 27 Feb 2008 23:21:15 +0200
+	id S1760574AbYB0VWe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 Feb 2008 16:22:34 -0500
+Date: Wed, 27 Feb 2008 23:21:24 +0200
 From: Adrian Bunk <bunk@kernel.org>
-To: Marco Gittler <g.marco@freenet.de>,
+To: Michael Krufky <mkrufky@linuxtv.org>, Hans Verkuil <hverkuil@xs4all.nl>,
        Mauro Carvalho Chehab <mchehab@infradead.org>
 Cc: v4l-dvb-maintainer@linuxtv.org, linux-kernel@vger.kernel.org
-Subject: [2.6 patch] dvb-usb/opera1.c: fix a memory leak
-Message-ID: <20080227212115.GS29269@cs181133002.pp.htv.fi>
+Subject: video/tda8290.c: possibly uninitialized variables used
+Message-ID: <20080227212124.GT29269@cs181133002.pp.htv.fi>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
@@ -24,83 +24,76 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch fixes a memory leak in the "testval == 0x67" case spotted by 
-the Coverity checker.
+drivers/media/video/tda8290.c contains the following code:
 
-Signed-off-by: Adrian Bunk <bunk@kernel.org>
+<--  snip  -->
 
----
+...
+static void tda8290_set_params(struct dvb_frontend *fe,
+                               struct analog_parameters *params)
+{
+...
+        unsigned char adc_sat, agc_stat,
+                      pll_stat;
+        int i;
 
- drivers/media/dvb/dvb-usb/opera1.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+        set_audio(fe, params);
 
---- linux-2.6/drivers/media/dvb/dvb-usb/opera1.c.old	2008-02-27 22:27:03.000000000 +0200
-+++ linux-2.6/drivers/media/dvb/dvb-usb/opera1.c	2008-02-27 22:27:23.000000000 +0200
-@@ -450,65 +450,65 @@ static int opera1_xilinx_load_firmware(s
- 		p = kmalloc(fw->size, GFP_KERNEL);
- 		opera1_xilinx_rw(dev, 0xbc, 0x00, &testval, 1, OPERA_READ_MSG);
- 		if (p != NULL && testval != 0x67) {
- 
- 			u8 reset = 0, fpga_command = 0;
- 			memcpy(p, fw->data, fw->size);
- 			/* clear fpga ? */
- 			opera1_xilinx_rw(dev, 0xbc, 0xaa, &fpga_command, 1,
- 					 OPERA_WRITE_MSG);
- 			for (i = 0; i < fw->size;) {
- 				if ( (fw->size - i) <fpgasize){
- 				    fpgasize=fw->size-i;
- 				}
- 				b = (u8 *) p + i;
- 				if (opera1_xilinx_rw
- 					(dev, OPERA_WRITE_FX2, 0x0, b , fpgasize,
- 						OPERA_WRITE_MSG) != fpgasize
- 					) {
- 					err("error while transferring firmware");
- 					ret = -EINVAL;
- 					break;
- 				}
- 				i = i + fpgasize;
- 			}
- 			/* restart the CPU */
- 			if (ret || opera1_xilinx_rw
- 					(dev, 0xa0, 0xe600, &reset, 1,
- 					OPERA_WRITE_MSG) != 1) {
- 				err("could not restart the USB controller CPU.");
- 				ret = -EINVAL;
- 			}
--			kfree(p);
- 		}
- 	}
-+	kfree(p);
- 	if (fw) {
- 		release_firmware(fw);
- 	}
- 	return ret;
- }
- 
- static struct dvb_usb_device_properties opera1_properties = {
- 	.caps = DVB_USB_IS_AN_I2C_ADAPTER,
- 	.usb_ctrl = CYPRESS_FX2,
- 	.firmware = "dvb-usb-opera-01.fw",
- 	.size_of_priv = sizeof(struct opera1_state),
- 
- 	.power_ctrl = opera1_power_ctrl,
- 	.i2c_algo = &opera1_i2c_algo,
- 
- 	.rc_key_map = opera1_rc_keys,
- 	.rc_key_map_size = ARRAY_SIZE(opera1_rc_keys),
- 	.rc_interval = 200,
- 	.rc_query = opera1_rc_query,
- 	.read_mac_address = opera1_read_mac_address,
- 	.generic_bulk_ctrl_endpoint = 0x00,
- 	/* parameter for the MPEG2-data transfer */
- 	.num_adapters = 1,
- 	.adapter = {
- 		{
- 			.frontend_attach = opera1_frontend_attach,
- 			.streaming_ctrl = opera1_streaming_ctrl,
- 			.tuner_attach = opera1_tuner_attach,
- 			.caps =
- 				DVB_USB_ADAP_HAS_PID_FILTER |
- 				DVB_USB_ADAP_PID_FILTER_CAN_BE_TURNED_OFF,
+        if (priv->cfg.config)
+                tuner_dbg("tda827xa config is 0x%02x\n", *priv->cfg.config);
+        tuner_i2c_xfer_send(&priv->i2c_props, easy_mode, 2);
+        tuner_i2c_xfer_send(&priv->i2c_props, agc_out_on, 2);
+        tuner_i2c_xfer_send(&priv->i2c_props, soft_reset, 2);
+        msleep(1);
+
+        expert_mode[1] = priv->tda8290_easy_mode + 0x80;
+        tuner_i2c_xfer_send(&priv->i2c_props, expert_mode, 2);
+        tuner_i2c_xfer_send(&priv->i2c_props, gainset_off, 2);
+        tuner_i2c_xfer_send(&priv->i2c_props, if_agc_spd, 2);
+        if (priv->tda8290_easy_mode & 0x60)
+                tuner_i2c_xfer_send(&priv->i2c_props, adc_head_9, 2);
+        else
+                tuner_i2c_xfer_send(&priv->i2c_props, adc_head_6, 2);
+        tuner_i2c_xfer_send(&priv->i2c_props, pll_bw_nom, 2);
+
+        tda8290_i2c_bridge(fe, 1);
+
+        if (fe->ops.tuner_ops.set_analog_params)
+                fe->ops.tuner_ops.set_analog_params(fe, params);
+
+        for (i = 0; i < 3; i++) {
+                tuner_i2c_xfer_send(&priv->i2c_props, &addr_pll_stat, 1);
+                tuner_i2c_xfer_recv(&priv->i2c_props, &pll_stat, 1);
+                if (pll_stat & 0x80) {
+                        tuner_i2c_xfer_send(&priv->i2c_props, &addr_adc_sat, 1);
+                        tuner_i2c_xfer_recv(&priv->i2c_props, &adc_sat, 1);
+                        tuner_i2c_xfer_send(&priv->i2c_props, &addr_agc_stat, 1);
+                        tuner_i2c_xfer_recv(&priv->i2c_props, &agc_stat, 1);
+                        tuner_dbg("tda8290 is locked, AGC: %d\n", agc_stat);
+                        break;
+                } else {
+                        tuner_dbg("tda8290 not locked, no signal?\n");
+                        msleep(100);
+                }
+        }
+        /* adjust headroom resp. gain */
+        if ((agc_stat > 115) || (!(pll_stat & 0x80) && (adc_sat < 20))) 
+...
+
+<--  snip  -->
+
+When we got four times "tda8290 not locked, no signal?" the variables 
+agc_stat and adc_sat are used uninitialized here.
+
+Spotted by the Coverity checker.
+
+cu
+Adrian
+
+-- 
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
 
