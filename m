@@ -1,53 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758225AbYB0Hik@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764594AbYB0Hiz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758225AbYB0Hik (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Feb 2008 02:38:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751000AbYB0Hic
+	id S1764594AbYB0Hiz (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Feb 2008 02:38:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755620AbYB0Hig
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Feb 2008 02:38:32 -0500
-Received: from cn.fujitsu.com ([222.73.24.84]:58082 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1750775AbYB0Hib (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Feb 2008 02:38:31 -0500
-Message-ID: <47C5131A.80508@cn.fujitsu.com>
-Date: Wed, 27 Feb 2008 15:36:58 +0800
-From: Li Zefan <lizf@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+	Wed, 27 Feb 2008 02:38:36 -0500
+Received: from smtp5.pp.htv.fi ([213.243.153.39]:37699 "EHLO smtp5.pp.htv.fi"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752746AbYB0Hig (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 Feb 2008 02:38:36 -0500
+Date: Wed, 27 Feb 2008 09:37:28 +0200
+From: Adrian Bunk <bunk@kernel.org>
+To: khali@linux-fr.org
+Cc: i2c@lm-sensors.org, linux-kernel@vger.kernel.org
+Subject: [2.6 patch] I2C_ELEKTOR must depend on HAS_IOPORT
+Message-ID: <20080227073728.GD10603@cs181133002.pp.htv.fi>
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: Paul Jackson <pj@sgi.com>, LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH] cpuset: fix return value of cpuset_populate()
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-- no need to check err == 0
-- the last return value of cgroup_add_file() is ignored
+This patch fixes the following compile error on m32r:
 
-Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
+<--  snip  -->
+
+...
+  CC [M]  drivers/i2c/busses/i2c-elektor.o
+/home/bunk/linux/kernel-2.6/git/linux-2.6/drivers/i2c/busses/i2c-elektor.c: In function 'pcf_isa_setbyte':
+/home/bunk/linux/kernel-2.6/git/linux-2.6/drivers/i2c/busses/i2c-elektor.c:80: error: implicit declaration of function 'iowrite8'
+/home/bunk/linux/kernel-2.6/git/linux-2.6/drivers/i2c/busses/i2c-elektor.c: In function 'pcf_isa_getbyte':
+/home/bunk/linux/kernel-2.6/git/linux-2.6/drivers/i2c/busses/i2c-elektor.c:90: error: implicit declaration of function 'ioread8'
+/home/bunk/linux/kernel-2.6/git/linux-2.6/drivers/i2c/busses/i2c-elektor.c: In function 'pcf_isa_init':
+/home/bunk/linux/kernel-2.6/git/linux-2.6/drivers/i2c/busses/i2c-elektor.c:153: error: implicit declaration of function 'ioport_map'
+/home/bunk/linux/kernel-2.6/git/linux-2.6/drivers/i2c/busses/i2c-elektor.c:153: warning: assignment makes pointer from integer without a cast
+/home/bunk/linux/kernel-2.6/git/linux-2.6/drivers/i2c/busses/i2c-elektor.c: In function 'elektor_probe':
+/home/bunk/linux/kernel-2.6/git/linux-2.6/drivers/i2c/busses/i2c-elektor.c:290: error: implicit declaration of function 'ioport_unmap'
+make[4]: *** [drivers/i2c/busses/i2c-elektor.o] Error 1
+
+<--  snip  -->
+
+Signed-off-by: Adrian Bunk <adrian.bunk@movial.fi>
+
 ---
- kernel/cpuset.c |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
-
-diff --git a/kernel/cpuset.c b/kernel/cpuset.c
-index 3e296ed..1c5b2d2 100644
---- a/kernel/cpuset.c
-+++ b/kernel/cpuset.c
-@@ -1482,10 +1482,10 @@ static int cpuset_populate(struct cgroup_subsys *ss, struct cgroup *cont)
- 	if ((err = cgroup_add_file(cont, ss, &cft_spread_slab)) < 0)
- 		return err;
- 	/* memory_pressure_enabled is in root cpuset only */
--	if (err == 0 && !cont->parent)
-+	if (!cont->parent)
- 		err = cgroup_add_file(cont, ss,
- 					 &cft_memory_pressure_enabled);
--	return 0;
-+	return err;
- }
+c8a75f0dd2390ae8c8f91c451ff6b0e113d0ebd0 diff --git a/drivers/i2c/busses/Kconfig b/drivers/i2c/busses/Kconfig
+index 476b0bb..3bed6b9 100644
+--- a/drivers/i2c/busses/Kconfig
++++ b/drivers/i2c/busses/Kconfig
+@@ -129,7 +129,7 @@ config I2C_DAVINCI
  
- /*
--- 
-1.5.4.rc3
+ config I2C_ELEKTOR
+ 	tristate "Elektor ISA card"
+-	depends on ISA && BROKEN_ON_SMP
++	depends on ISA && HAS_IOPORT && BROKEN_ON_SMP
+ 	select I2C_ALGOPCF
+ 	help
+ 	  This supports the PCF8584 ISA bus I2C adapter.  Say Y if you own
 
