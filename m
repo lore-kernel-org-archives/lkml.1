@@ -1,52 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765721AbYB0AOV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932770AbYB0AOl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765721AbYB0AOV (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Feb 2008 19:14:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754823AbYB0AOM
+	id S932770AbYB0AOl (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Feb 2008 19:14:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932434AbYB0AO1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Feb 2008 19:14:12 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:39763 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753358AbYB0AOL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Feb 2008 19:14:11 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: "Ray Lee" <ray-lk@madrabbit.org>
-Subject: Re: broken suspend in .2.6.25-rc3 on T61p (was Re: new regression in 2.6.25-rc3: no keyboard/lid acpi events on thinkpad T61p)
-Date: Wed, 27 Feb 2008 01:12:51 +0100
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: "Andrew Morton" <akpm@linux-foundation.org>, "Pavel Machek" <pavel@ucw.cz>,
-       "Dave Jones" <davej@codemonkey.org.uk>,
-       "kernel list" <linux-kernel@vger.kernel.org>,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>
-References: <20080225143932.6b83b65d.akpm@linux-foundation.org> <20080226105606.e56e4ec6.akpm@linux-foundation.org> <2c0942db0802261531s140aaa82w1daa1829b5a36a4a@mail.gmail.com>
-In-Reply-To: <2c0942db0802261531s140aaa82w1daa1829b5a36a4a@mail.gmail.com>
+	Tue, 26 Feb 2008 19:14:27 -0500
+Received: from wr-out-0506.google.com ([64.233.184.234]:8276 "EHLO
+	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932318AbYB0AO0 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 Feb 2008 19:14:26 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding:sender;
+        b=YEVYzN8vW9OOSHZfXiMUUpPCpS9zyr+XsFPLcbfiStuEyfuXrP/Fs45eUAnKKrM6aWP4sZlEWBjTE1ZJkD0IX+fH/8ZTPe56uv1eywz0PRR5wHbRulSWRvXjCP4shCY8M5SUm500UJFnHLAmQJtItDVgTTsvT2oc5FLzfqiTtXI=
+Message-ID: <47C4AB5D.3000900@panasas.com>
+Date: Tue, 26 Feb 2008 16:14:21 -0800
+From: Benny Halevy <bhalevy@panasas.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
+To: Richard Knutsson <ricknu-0@student.ltu.se>,
+       Randy Dunlap <randy.dunlap@oracle.com>
+CC: khc@pm.waw.pl, bhalevy.lists@gmail.com, jengelh@computergmbh.de,
+       linux-kernel@vger.kernel.org
+Subject: Re: [RFC] CodeStyle: Use spaces when aligning/decorating
+References: <1204062430.47c488def40a4@portal.student.luth.se> <20080226135444.f83a0536.randy.dunlap@oracle.com> <47C48FD8.5040205@student.ltu.se>
+In-Reply-To: <47C48FD8.5040205@student.ltu.se>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200802270112.52652.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday, 27 of February 2008, Ray Lee wrote:
-> On Tue, Feb 26, 2008 at 10:56 AM, Andrew Morton
-> <akpm@linux-foundation.org> wrote:
-> >  First thing we need to do is to work out why it won't stay suspended?
+On Feb. 26, 2008, 14:16 -0800, Richard Knutsson <ricknu-0@student.ltu.se> wrote:
+> Randy Dunlap wrote:
+>> On Tue, 26 Feb 2008 22:47:10 +0100 ricknu-0@student.ltu.se wrote:
+>>
+>>   
+>>> Relaxing the 'tab = 8 character', which leads to 'don't tab the alignment'.
+>>> By only using tabs for indentation, we solidify it as a 'logical indentation'.
+>>>
+>>> Signed-off-by: Richard Knutsson <ricknu-0@student.ltu.se>
+>>> ---
+>>> To'ed the people who showed interest in the (apparently not so new)
+>>> question/suggestion of not using tabs when aligning.
+>>> If this looks ok, then checkpatch.pl is next...
+>>>
+>>>
+>>> diff --git a/Documentation/CodingStyle b/Documentation/CodingStyle
+>>> index 6caa146..1b3f448 100644
+>>> --- a/Documentation/CodingStyle
+>>> +++ b/Documentation/CodingStyle
+>>> @@ -15,10 +15,8 @@ Anyway, here goes:
+>>>  
+>>>  	 	Chapter 1: Indentation
+>>>  
+>>> -Tabs are 8 characters, and thus indentations are also 8 characters.
+>>> -There are heretic movements that try to make indentations 4 (or even 2!)
+>>> -characters deep, and that is akin to trying to define the value of PI to
+>>> -be 3.
+>>> +This project is recommended to be viewed with a tab-width of 8 characters
+>>> +(and other code).
+>>>     
+>> FWIW I prefer the {deleted} language.  // PI = 3;
+>>   
+> Well, actually I like it too. But I think it should be up to the 
+> programmer which setting to use + it seems some people have really taken 
+> this to heart, going from 'tab => 8 characters wide' to '8 spaces => 
+> tab', obscuring tab's position as a 'logical indention'.
 > 
-> Forgive me the stupid question, but you don't happen to have Wake On
-> LAN or somesuch enabled in your BIOS, do you? (Given yours stays down
-> for five seconds then resumes, and other T61 owners aren't seeing that
-> behavior... <shrug>)
+> Richard Knutsson
 > 
-> For Pavel and Rafael: Is there some sort of event that gets handed
-> back on resume to let the kernel know why the system woke up? One
-> would think that the Wake On LAN (keyboard, timer, etc.) would hand a
-> notification over to the OS. One is often wrong though.
 
-In theory we should be able to get this kind of information from ACPI, but I've
-never seriously looked at that.  I'm not sure if anyone has ...
+How about this:
 
-Thanks,
-Rafael
+-Tabs are 8 characters, and thus indentations are also 8 characters.
+-There are heretic movements that try to make indentations 4 (or even 2!)
+-characters deep, and that is akin to trying to define the value of PI to
+-be 3.
++Tabs are used for logical indentation, e.g., code is indented with
++a number of tabs equal to its nesting level.  From there on,
++use space characters for decorative indentation.  This method
++is agnostic to the editor's tab-expansion settings.
++That said, expanding tabs to a small number of spaces (4, or even 2!) encourages
++excessive nesting and resulting over-complexity; that is akin to trying to define
++the value of PI to be 3.  Therefore, tabs are always assumed to be 8 characters-wide.
+
