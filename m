@@ -1,65 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755746AbYB0Hhl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758225AbYB0Hik@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755746AbYB0Hhl (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Feb 2008 02:37:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751785AbYB0Hh2
+	id S1758225AbYB0Hik (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Feb 2008 02:38:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751000AbYB0Hic
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Feb 2008 02:37:28 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:49026 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750921AbYB0Hh1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Feb 2008 02:37:27 -0500
-Date: Wed, 27 Feb 2008 08:36:50 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: David Miller <davem@davemloft.net>
-Cc: akpm@linux-foundation.org, dada1@cosmosbay.com,
-       herbert@gondor.apana.org.au, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: include/linux/pcounter.h
-Message-ID: <20080227073650.GC4638@elte.hu>
-References: <20080216112618.ec450f9b.akpm@linux-foundation.org> <20080216.215401.20463603.davem@davemloft.net> <20080226092454.GA10987@elte.hu> <20080226.133531.69481052.davem@davemloft.net>
+	Wed, 27 Feb 2008 02:38:32 -0500
+Received: from cn.fujitsu.com ([222.73.24.84]:58082 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1750775AbYB0Hib (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 Feb 2008 02:38:31 -0500
+Message-ID: <47C5131A.80508@cn.fujitsu.com>
+Date: Wed, 27 Feb 2008 15:36:58 +0800
+From: Li Zefan <lizf@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080226.133531.69481052.davem@davemloft.net>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: Paul Jackson <pj@sgi.com>, LKML <linux-kernel@vger.kernel.org>
+Subject: [PATCH] cpuset: fix return value of cpuset_populate()
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+- no need to check err == 0
+- the last return value of cgroup_add_file() is ignored
 
-* David Miller <davem@davemloft.net> wrote:
+Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
+---
+ kernel/cpuset.c |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
 
-> > but the main and fundamental question still remains unanswered (more 
-> > than 3 weeks after Andrew asked that question): why was this piece 
-> > of general infrastructure merged via net.git and not submitted to 
-> > lkml ever? The code touching -mm does _not_ count as "review".
-> 
-> I already stated this was a mistake and it won't happen again in the 
-> future.
+diff --git a/kernel/cpuset.c b/kernel/cpuset.c
+index 3e296ed..1c5b2d2 100644
+--- a/kernel/cpuset.c
++++ b/kernel/cpuset.c
+@@ -1482,10 +1482,10 @@ static int cpuset_populate(struct cgroup_subsys *ss, struct cgroup *cont)
+ 	if ((err = cgroup_add_file(cont, ss, &cft_spread_slab)) < 0)
+ 		return err;
+ 	/* memory_pressure_enabled is in root cpuset only */
+-	if (err == 0 && !cont->parent)
++	if (!cont->parent)
+ 		err = cgroup_add_file(cont, ss,
+ 					 &cft_memory_pressure_enabled);
+-	return 0;
++	return err;
+ }
+ 
+ /*
+-- 
+1.5.4.rc3
 
-sorry - that bit of the thread didnt seem to make it to lkml. I just saw 
-this incomplete discussion with a denial and with no resolution.
-
-And you did the right thing anyway by thinking in terms of a generic 
-piece of infrastructure instead of hiding it away into say 
-include/net/pcounter.h (which nobody could have objected against).
-
-I sometimes think that the forced isolation of subsystems (rather 
-strongly enforced both by -mm and by linux-next) and their hiding away 
-on non-lkml lists will eventually hurt the core kernel because less and 
-less people will be willing to go the trouble of doing proper 
-cross-subsystem development. That results in duplicated or specialistic 
-infrastructure, increased code size and longer term, ultimately less 
-performance. (by the time we notice _that_ it will probably be too late 
-to do anything about it)
-
-	Ingo
