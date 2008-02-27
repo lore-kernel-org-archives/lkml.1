@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763170AbYB0XVI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762383AbYB0XV1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763170AbYB0XVI (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Feb 2008 18:21:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754992AbYB0XUw
+	id S1762383AbYB0XV1 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Feb 2008 18:21:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763293AbYB0XVN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Feb 2008 18:20:52 -0500
-Received: from mummy.ncsc.mil ([144.51.88.129]:50956 "EHLO mummy.ncsc.mil"
+	Wed, 27 Feb 2008 18:21:13 -0500
+Received: from mummy.ncsc.mil ([144.51.88.129]:51010 "EHLO mummy.ncsc.mil"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750800AbYB0XUv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Feb 2008 18:20:51 -0500
+	id S1761036AbYB0XVL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 Feb 2008 18:21:11 -0500
 From: "David P. Quigley" <dpquigl@tycho.nsa.gov>
 To: hch@infradead.org, viro@ftp.linux.org.uk, trond.myklebust@fys.uio.no,
        bfields@fieldses.org
 Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
        "David P. Quigley" <dpquigl@tycho.nsa.gov>
-Subject: [PATCH 01/11] Security: Add hook to get full maclabel xattr name
-Date: Wed, 27 Feb 2008 15:39:36 -0500
-Message-Id: <1204144786-3502-2-git-send-email-dpquigl@tycho.nsa.gov>
+Subject: [PATCH 07/11] NFS/SELinux: Add security_label text mount option to nfs and add handling code to the security server.
+Date: Wed, 27 Feb 2008 15:39:42 -0500
+Message-Id: <1204144786-3502-8-git-send-email-dpquigl@tycho.nsa.gov>
 X-Mailer: git-send-email 1.5.3.8
 In-Reply-To: <1204144786-3502-1-git-send-email-dpquigl@tycho.nsa.gov>
 References: <1204144786-3502-1-git-send-email-dpquigl@tycho.nsa.gov>
@@ -24,125 +24,143 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Before the inode_xattr_getsecurity call was removed the caller would
-concatenate the security namespace prefix and the suffix provided by the lsm to
-obtain the security xattr. This hook provides the functionality to obtain the full
-LSM xattr name. The patch also provides implementations for the dummy security
-module and SELinux. This method is used instead of restoring the old method
-since it only requires an offset into the returned pointer to obtain the
-suffix. This approach is more efficient than concatenating the security xattr
-namespace string with the suffix to get a usable string.
+The new method for pulling argument for NFS from mount is through a text
+parsing system. This patch adds two new entries to the argument parsing code
+"securlty_label" and "nosecurity_label". Even though we use text across the
+user/kernel boundary internally we still pack a binary structure for mount info
+to be passed around. We add a flag for use in the nfs{4,}_mount_data struct to
+indicate that are using security labels. Finally we add the SELinux support to
+mark the labeling method as native.
 
 Signed-off-by: David P. Quigley <dpquigl@tycho.nsa.gov>
 ---
- include/linux/security.h |    8 ++++++++
- security/dummy.c         |    6 ++++++
- security/security.c      |    6 ++++++
- security/selinux/hooks.c |   10 ++++++++--
- 4 files changed, 28 insertions(+), 2 deletions(-)
+ fs/nfs/super.c             |   10 +++++++++-
+ fs/nfsd/export.c           |    3 +++
+ include/linux/nfs4_mount.h |    3 ++-
+ include/linux/nfs_mount.h  |    3 ++-
+ security/selinux/hooks.c   |   13 ++++++++++++-
+ 5 files changed, 28 insertions(+), 4 deletions(-)
 
-diff --git a/include/linux/security.h b/include/linux/security.h
-index fe52cde..c80bee4 100644
---- a/include/linux/security.h
-+++ b/include/linux/security.h
-@@ -1394,6 +1394,7 @@ struct security_operations {
- 	int (*secid_to_secctx)(u32 secid, char **secdata, u32 *seclen);
- 	int (*secctx_to_secid)(char *secdata, u32 seclen, u32 *secid);
- 	void (*release_secctx)(char *secdata, u32 seclen);
-+	const char *(*maclabel_getname) (void);
+diff --git a/fs/nfs/super.c b/fs/nfs/super.c
+index 1fb3818..f3e327e 100644
+--- a/fs/nfs/super.c
++++ b/fs/nfs/super.c
+@@ -75,6 +75,7 @@ enum {
+ 	Opt_acl, Opt_noacl,
+ 	Opt_rdirplus, Opt_nordirplus,
+ 	Opt_sharecache, Opt_nosharecache,
++	Opt_seclabel, Opt_noseclabel,
  
- #ifdef CONFIG_SECURITY_NETWORK
- 	int (*unix_stream_connect) (struct socket * sock,
-@@ -1633,6 +1634,7 @@ int security_netlink_recv(struct sk_buff *skb, int cap);
- int security_secid_to_secctx(u32 secid, char **secdata, u32 *seclen);
- int security_secctx_to_secid(char *secdata, u32 seclen, u32 *secid);
- void security_release_secctx(char *secdata, u32 seclen);
-+const char *security_maclabel_getname(void);
+ 	/* Mount options that take integer arguments */
+ 	Opt_port,
+@@ -124,6 +125,8 @@ static match_table_t nfs_mount_option_tokens = {
+ 	{ Opt_nordirplus, "nordirplus" },
+ 	{ Opt_sharecache, "sharecache" },
+ 	{ Opt_nosharecache, "nosharecache" },
++	{ Opt_seclabel, "security_label" },
++	{ Opt_noseclabel, "nosecurity_label" },
  
- #else /* CONFIG_SECURITY */
+ 	{ Opt_port, "port=%u" },
+ 	{ Opt_rsize, "rsize=%u" },
+@@ -779,7 +782,12 @@ static int nfs_parse_mount_options(char *raw,
+ 		case Opt_nosharecache:
+ 			mnt->flags |= NFS_MOUNT_UNSHARED;
+ 			break;
+-
++		case Opt_seclabel:
++			mnt->flags |= NFS_MOUNT_SECURITY_LABEL;
++			break;
++		case Opt_noseclabel:
++			mnt->flags &= ~NFS_MOUNT_SECURITY_LABEL;
++			break;
+ 		case Opt_port:
+ 			if (match_int(args, &option))
+ 				return 0;
+diff --git a/fs/nfsd/export.c b/fs/nfsd/export.c
+index 8a6f7c9..d32ae56 100644
+--- a/fs/nfsd/export.c
++++ b/fs/nfsd/export.c
+@@ -1435,6 +1435,9 @@ static struct flags {
+ 	{ NFSEXP_ALLSQUASH, {"all_squash", ""}},
+ 	{ NFSEXP_ASYNC, {"async", "sync"}},
+ 	{ NFSEXP_GATHERED_WRITES, {"wdelay", "no_wdelay"}},
++#ifdef CONFIG_NFSD_V4_SECURITY_LABEL
++	{ NFSEXP_SECURITY_LABEL, {"security_label", ""}},
++#endif
+ 	{ NFSEXP_NOHIDE, {"nohide", ""}},
+ 	{ NFSEXP_CROSSMOUNT, {"crossmnt", ""}},
+ 	{ NFSEXP_NOSUBTREECHECK, {"no_subtree_check", ""}},
+diff --git a/include/linux/nfs4_mount.h b/include/linux/nfs4_mount.h
+index a0dcf66..d7abc3b 100644
+--- a/include/linux/nfs4_mount.h
++++ b/include/linux/nfs4_mount.h
+@@ -66,6 +66,7 @@ struct nfs4_mount_data {
+ #define NFS4_MOUNT_NOAC		0x0020	/* 1 */
+ #define NFS4_MOUNT_STRICTLOCK	0x1000	/* 1 */
+ #define NFS4_MOUNT_UNSHARED	0x8000	/* 1 */
+-#define NFS4_MOUNT_FLAGMASK	0x9033
++#define NFS4_MOUNT_SECURITY_LABEL 0x10000 /* Text Only */
++#define NFS4_MOUNT_FLAGMASK	0x19033
  
-@@ -2316,6 +2318,12 @@ static inline int security_secctx_to_secid(char *secdata,
- static inline void security_release_secctx(char *secdata, u32 seclen)
- {
- }
-+
-+static inline const char *security_maclabel_getname(void)
-+{
-+	return NULL;
-+}
-+
- #endif	/* CONFIG_SECURITY */
+ #endif
+diff --git a/include/linux/nfs_mount.h b/include/linux/nfs_mount.h
+index df7c6b7..1ca5260 100644
+--- a/include/linux/nfs_mount.h
++++ b/include/linux/nfs_mount.h
+@@ -63,6 +63,7 @@ struct nfs_mount_data {
+ #define NFS_MOUNT_SECFLAVOUR	0x2000	/* 5 */
+ #define NFS_MOUNT_NORDIRPLUS	0x4000	/* 5 */
+ #define NFS_MOUNT_UNSHARED	0x8000	/* 5 */
+-#define NFS_MOUNT_FLAGMASK	0xFFFF
++#define NFS_MOUNT_SECURITY_LABEL 0x10000 /* reserved for NFSv4 */
++#define NFS_MOUNT_FLAGMASK	0x1FFFF
  
- #ifdef CONFIG_SECURITY_NETWORK
-diff --git a/security/dummy.c b/security/dummy.c
-index 649326b..928ef41 100644
---- a/security/dummy.c
-+++ b/security/dummy.c
-@@ -960,6 +960,11 @@ static void dummy_release_secctx(char *secdata, u32 seclen)
- {
- }
- 
-+static const char *dummy_maclabel_getname(void)
-+{
-+	return NULL;
-+}
-+
- #ifdef CONFIG_KEYS
- static inline int dummy_key_alloc(struct key *key, struct task_struct *ctx,
- 				  unsigned long flags)
-@@ -1118,6 +1123,7 @@ void security_fixup_ops (struct security_operations *ops)
-  	set_to_dummy_if_null(ops, secid_to_secctx);
- 	set_to_dummy_if_null(ops, secctx_to_secid);
-  	set_to_dummy_if_null(ops, release_secctx);
-+	set_to_dummy_if_null(ops, maclabel_getname);
- #ifdef CONFIG_SECURITY_NETWORK
- 	set_to_dummy_if_null(ops, unix_stream_connect);
- 	set_to_dummy_if_null(ops, unix_may_send);
-diff --git a/security/security.c b/security/security.c
-index d15e56c..1a84eb1 100644
---- a/security/security.c
-+++ b/security/security.c
-@@ -845,6 +845,12 @@ void security_release_secctx(char *secdata, u32 seclen)
- }
- EXPORT_SYMBOL(security_release_secctx);
- 
-+const char *security_maclabel_getname(void)
-+{
-+	return security_ops->maclabel_getname();
-+}
-+EXPORT_SYMBOL(security_maclabel_getname);
-+
- #ifdef CONFIG_SECURITY_NETWORK
- 
- int security_unix_stream_connect(struct socket *sock, struct socket *other,
+ #endif
 diff --git a/security/selinux/hooks.c b/security/selinux/hooks.c
-index 75c2e99..e7fc9c9 100644
+index ebe4e18..e3ed7c3 100644
 --- a/security/selinux/hooks.c
 +++ b/security/selinux/hooks.c
-@@ -5163,6 +5163,11 @@ static void selinux_release_secctx(char *secdata, u32 seclen)
- 	kfree(secdata);
- }
+@@ -68,6 +68,7 @@
+ #include <net/af_unix.h>	/* for Unix socket types */
+ #include <linux/parser.h>
+ #include <linux/nfs_mount.h>
++#include <linux/nfs4_mount.h>
+ #include <net/ipv6.h>
+ #include <linux/hugetlb.h>
+ #include <linux/personality.h>
+@@ -807,6 +808,7 @@ static int superblock_doinit(struct super_block *sb, void *data)
+ 	/* selinux only know about a fixed number of mount options */
+ 	char *mnt_opts[NUM_SEL_MNT_OPTS];
+ 	int mnt_opts_flags[NUM_SEL_MNT_OPTS], num_mnt_opts = 0;
++	struct superblock_security_struct *sbsec = sb->s_security;
  
-+static const char *selinux_maclabel_getname(void)
-+{
-+      return XATTR_NAME_SELINUX;
-+}
+ 	if (!data)
+ 		goto out;
+@@ -829,6 +831,15 @@ static int superblock_doinit(struct super_block *sb, void *data)
+ 				}
+ 			}
+ 			goto build_flags;
++		} else if (!strcmp(name, "nfs4")) {
++			struct nfs4_mount_data *d = data;
 +
- #ifdef CONFIG_KEYS
++			if (d->version !=  NFS4_MOUNT_VERSION)
++				goto out;
++
++			if (d->flags & NFS4_MOUNT_SECURITY_LABEL)
++				sbsec->behavior = SECURITY_FS_USE_NATIVE;
++			goto build_flags;
+ 		} else
+ 			goto out;
+ 	}
+@@ -898,7 +909,7 @@ static int superblock_doinit(struct super_block *sb, void *data)
  
- static int selinux_key_alloc(struct key *k, struct task_struct *tsk,
-@@ -5351,8 +5356,9 @@ static struct security_operations selinux_ops = {
- 	.secid_to_secctx =		selinux_secid_to_secctx,
- 	.secctx_to_secid =		selinux_secctx_to_secid,
- 	.release_secctx =		selinux_release_secctx,
--
--        .unix_stream_connect =		selinux_socket_unix_stream_connect,
-+	.maclabel_getname =  		selinux_maclabel_getname,
-+        
-+	.unix_stream_connect =		selinux_socket_unix_stream_connect,
- 	.unix_may_send =		selinux_socket_unix_may_send,
+ 		default:
+ 			rc = -EINVAL;
+-			printk(KERN_WARNING "SELinux:  unknown mount option\n");
++			printk(KERN_WARNING "SELinux:  unknown mount option \"%s\"\n", p);
+ 			goto out_err;
  
- 	.socket_create =		selinux_socket_create,
+ 		}
 -- 
 1.5.3.8
 
