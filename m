@@ -1,49 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757935AbYB0Ubp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759481AbYB0Ugg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757935AbYB0Ubp (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Feb 2008 15:31:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757297AbYB0Ubg
+	id S1759481AbYB0Ugg (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Feb 2008 15:36:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757436AbYB0Ug2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Feb 2008 15:31:36 -0500
-Received: from www.tglx.de ([62.245.132.106]:35361 "EHLO www.tglx.de"
+	Wed, 27 Feb 2008 15:36:28 -0500
+Received: from ra.tuxdriver.com ([70.61.120.52]:4237 "EHLO ra.tuxdriver.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757616AbYB0Ubf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Feb 2008 15:31:35 -0500
-Date: Wed, 27 Feb 2008 21:31:07 +0100 (CET)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Quel Qun <kelk1@comcast.net>
-cc: David Miller <davem@davemloft.net>, marcel@holtmann.org,
-       dwmw2@infradead.org, hidave.darkstar@gmail.com,
-       linux-kernel@vger.kernel.org, jkosina@suse.cz, mingo@elte.hu
-Subject: Re: [PATCH] bluetooth: delete timer in l2cap_conn_del()
-In-Reply-To: <022720082021.26121.47C5C66700041AAD000066092200751090CE05040A05@comcast.net>
-Message-ID: <alpine.LFD.1.00.0802272125470.7583@apollo.tec.linutronix.de>
-References: <022720082021.26121.47C5C66700041AAD000066092200751090CE05040A05@comcast.net>
-User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
+	id S1757432AbYB0Ug2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 Feb 2008 15:36:28 -0500
+Date: Wed, 27 Feb 2008 15:15:50 -0500
+From: "John W. Linville" <linville@tuxdriver.com>
+To: Larry Finger <larry.finger@lwfinger.net>
+Cc: Alexey Zaytsev <alexey.zaytsev@gmail.com>,
+       Stefano Brivio <stefano.brivio@polimi.it>,
+       Jeff Garzik <jgarzik@pobox.com>, Greg KH <greg@kroah.com>,
+       Pekka Enberg <penberg@cs.helsinki.fi>, Ingo Molnar <mingo@elte.hu>,
+       Michael Buesch <mb@bu3sch.de>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Fix the bcm43xx driver breakage in 2.6.24/25.
+Message-ID: <20080227201550.GG3078@tuxdriver.com>
+References: <47C01D03.9030601@gmail.com> <47C19ABA.4040904@lwfinger.net>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <47C19ABA.4040904@lwfinger.net>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 27 Feb 2008, Quel Qun wrote:
-> > > > I'll apply this, thanks Thomas.
-> > > 
-> > > can you please wait for a confirmation from Quel that this fixes it.  
-> > > My ACK is based on that he confirms that it fixes it for sure.
-> > 
-> > It doesn't hurt to toss this to Linus now, if it's bogus we
-> > have tons of time to revert it.
->
-> As I said, it prevents the crash, but does not 'fix' my problem, in
-> that I still cannot use the dongle.
+On Sun, Feb 24, 2008 at 09:26:34AM -0700, Larry Finger wrote:
 
-The disfunctionality of your dongle is a separate problem and I hope
-that the bluetooth wizards will help you to get this sucker running.
+> I have reviewed the above patches and tested them with what I believe to be 
+> most combinations. Everything worked and corrected the unintended 
+> consequence of breaking bcm43xx when b44 is included. I agree that these 
+> patches belong in 2.6.25 and stable (2.6.24). Of course, the problem goes 
+> away in 2.6.26.
 
-The timer which is not deactivated before the data structure
-containing it is a simple bug, which needs to be addressed ASAP.
+I can't say I really like Alexey's patches, but I guess they are OK.
+I think I like the "b43_pci_bridge as a module" option a little better,
+but as Michael illustrated there are problems with that approach too.
 
-Thanks again for your patience in tracking this down,
+I'll apply the patches.
 
-	tglx
+John
+-- 
+John W. Linville
+linville@tuxdriver.com
