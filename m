@@ -1,74 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761732AbYB0WwE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761145AbYB0WxH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761732AbYB0WwE (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Feb 2008 17:52:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757906AbYB0Wvw
+	id S1761145AbYB0WxH (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Feb 2008 17:53:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757906AbYB0Wwz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Feb 2008 17:51:52 -0500
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:58884 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757572AbYB0Wvv (ORCPT
+	Wed, 27 Feb 2008 17:52:55 -0500
+Received: from spiffy.freedom.ind.br ([201.35.65.91]:49730 "EHLO
+	freedom.ind.br" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752867AbYB0Wwy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Feb 2008 17:51:51 -0500
-Message-ID: <47C5E977.2010401@jp.fujitsu.com>
-Date: Wed, 27 Feb 2008 17:51:35 -0500
-From: Kei Tokunaga <tokunaga.keiich@jp.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
+	Wed, 27 Feb 2008 17:52:54 -0500
+To: Nick Piggin <nickpiggin@yahoo.com.au>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: oops when using git gc --auto
+References: <87tzjvhmy7.fsf@ossystems.com.br>
+	<200802270033.31297.nickpiggin@yahoo.com.au>
+	<87zltnjys1.fsf@ossystems.com.br>
+From: Otavio Salvador <otavio@debian.org>
+Organization: O.S. Systems Ltda.
+X-URL: http://www.debian.org/~otavio/
+X-Attribution: O.S.
+Date: Wed, 27 Feb 2008 17:01:17 -0300
+In-Reply-To: <87zltnjys1.fsf@ossystems.com.br> (Otavio Salvador's message of "Tue\, 26 Feb 2008 16\:36\:14 -0300")
+Message-ID: <877igqdv8y.fsf@ossystems.com.br>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.1 (gnu/linux)
 MIME-Version: 1.0
-To: mingo@elte.hu
-CC: Kei Tokunaga <tokunaga.keiich@jp.fujitsu.com>,
-       linux-kernel@vger.kernel.org
-Subject: A strange behavior of sched_fair
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Ingo,
+Otavio Salvador <otavio@debian.org> writes:
 
-I am playing around with sched_fair and cgroup, and it seems like
-I hit a possible bug.  Could you also check if that is a bug?
+> Nick Piggin <nickpiggin@yahoo.com.au> writes:
+>
+>> On Wednesday 27 February 2008 00:22, Otavio Salvador wrote:
+>>> Hello,
+>>>
+>>> Today I got this oops, someone has an idea of what's going wrong?
+>>>
+>>> Unable to handle kernel paging request at 0000020000000000 RIP:
+>>>  [<ffffffff802735c3>] find_get_pages+0x3c/0x69
+>>
+>> At this point, the most likely candidate is a memory corruption
+>> error, probably hardware. Can you run memtest86 for a few hours
+>> to get a bit more confidence in the hw (preferably overnight)?
+>>
+>> I did recently see another quite similar corruption in the
+>> pagecache radix-tree, though. Coincidence maybe?
+>
+> I let it running at lunch time and all went OK. I've also let burnP6
+> running later and nothing happened. Looks like hw is OK.
+>
+> I've just got another oops, with same kernel.
+>
+> Unable to handle kernel paging request at ffff83006d922370 RIP: 
+>  [<ffffffff8027a79b>] shrink_page_list+0x16f/0x570
 
-Description of behavior:
-   Start a cpu-bound task (t1), attach it to a cgroup (cgA), and let the
-   task to run for a while (e.g. several tens of seconds or a couple of
-   minutes would be adequate.)  Then, start another cpu-bound task (t2)
-   and attach it to cgA in the way described in "Steps to Reproduce" section.
-   You will see t1 does not get run for a while.
-   (The tasks may not have to be cpu-bound, but it is easier to see the
-    behavior using cpu-bound tasks.)
+In the end, it was a motherboard issue.
 
-How reproducible:
-   Always.
+Thanks for the help!
 
-Environments where I saw the behavior:
-   2.6.25-rc3 with resource management functions enabled on ia64 box.
-
-Steps to Reproduce:
-   # mkdir /dev/cgroup
-   # mount -t cgroup -ocpuset,cpu cpu /dev/cgroup
-   # mkdir /dev/cgroup/{a,b}
-   # echo 0 > /dev/cgroup/a/cpuset.cpus
-   # echo 0 > /dev/cgroup/b/cpuset.cpus
-   # echo 1 > /dev/cgroup/a/cpuset.mems
-   # echo 1 > /dev/cgroup/b/cpuset.mems
-   # echo $$ > /dev/cgroup/b/tasks
-   # ./a.out & echo $! > /dev/cgroup/a/tasks (a.out is just a for-loop program)
-     [Wait for several tens of seconds or a couple of minutes.]
-   # ./a.out2 & echo $! > /dev/cgroup/a/tasks (a.out2 is just a for-loop program)
-     [You will see a.out does not get run for a while by running top command.]
-
-Additional Info:
-   a.out2 needs to be started from the shell of cgroup-b in order to
-   reproduce the problem (, unless the system is UP.)  Starting a.out2
-   in the manner, se->vruntime (or something to create the se->vruntime)
-   of a.out2 seems to be initialized to a small value, compared to the
-   value of a.out.  And the fair scheduler only runs a.out2 until the
-   se->vruntime catches up with the se->vruntime of a.out.
-
-Thanks,
-Kei
---
-Kei Tokunaga
-Fujitsu (Red Hat On-site Partner)
+-- 
+        O T A V I O    S A L V A D O R
+---------------------------------------------
+ E-mail: otavio@debian.org      UIN: 5906116
+ GNU/Linux User: 239058     GPG ID: 49A5F855
+ Home Page: http://otavio.ossystems.com.br
+---------------------------------------------
+"Microsoft sells you Windows ... Linux gives
+ you the whole house."
