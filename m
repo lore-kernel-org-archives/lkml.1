@@ -1,83 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764484AbYB0IHT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757561AbYB0IOp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764484AbYB0IHT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Feb 2008 03:07:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753436AbYB0IHF
+	id S1757561AbYB0IOp (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Feb 2008 03:14:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753909AbYB0IOe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Feb 2008 03:07:05 -0500
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:59796 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752928AbYB0IHD (ORCPT
+	Wed, 27 Feb 2008 03:14:34 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:45496 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752309AbYB0IOd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Feb 2008 03:07:03 -0500
-Date: Wed, 27 Feb 2008 17:09:45 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: David Rientjes <rientjes@google.com>
-Cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, Rik van Riel <riel@redhat.com>,
-       Lee Schermerhorn <Lee.Schermerhorn@hp.com>,
-       Nick Piggin <npiggin@suse.de>
-Subject: Re: [RFC][PATCH] page reclaim throttle take2
-Message-Id: <20080227170945.e3bd9a87.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <alpine.DEB.1.00.0802262349090.21857@chino.kir.corp.google.com>
-References: <47C4F9C0.5010607@linux.vnet.ibm.com>
-	<alpine.DEB.1.00.0802262201390.1613@chino.kir.corp.google.com>
-	<20080227160746.425E.KOSAKI.MOTOHIRO@jp.fujitsu.com>
-	<alpine.DEB.1.00.0802262315030.11433@chino.kir.corp.google.com>
-	<20080227165139.18e5933e.kamezawa.hiroyu@jp.fujitsu.com>
-	<alpine.DEB.1.00.0802262349090.21857@chino.kir.corp.google.com>
-Organization: Fujitsu
-X-Mailer: Sylpheed 2.4.2 (GTK+ 2.10.11; i686-pc-mingw32)
+	Wed, 27 Feb 2008 03:14:33 -0500
+Subject: Re: [PATCH 00/28] Swap over NFS -v16
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Pekka Enberg <penberg@cs.helsinki.fi>
+Cc: Neil Brown <neilb@suse.de>, Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       netdev@vger.kernel.org, trond.myklebust@fys.uio.no
+In-Reply-To: <84144f020802270005p3bfbd04ar9da2875218ef98c4@mail.gmail.com>
+References: <20080220144610.548202000@chello.nl>
+	 <20080223000620.7fee8ff8.akpm@linux-foundation.org>
+	 <18371.43950.150842.429997@notabene.brown>
+	 <1204023042.6242.271.camel@lappy>
+	 <18372.64081.995262.986841@notabene.brown>
+	 <1204099113.6242.353.camel@lappy>
+	 <84144f020802270005p3bfbd04ar9da2875218ef98c4@mail.gmail.com>
+Content-Type: text/plain
+Date: Wed, 27 Feb 2008 09:14:19 +0100
+Message-Id: <1204100059.6242.360.camel@lappy>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.21.90 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 26 Feb 2008 23:56:39 -0800 (PST)
-David Rientjes <rientjes@google.com> wrote:
 
-> On Wed, 27 Feb 2008, KAMEZAWA Hiroyuki wrote:
+On Wed, 2008-02-27 at 10:05 +0200, Pekka Enberg wrote:
+> Hi Peter,
 > 
-> > Hmm, but kswapd, which is main worker of page reclaiming, is per-node.
-> > And reclaim is done based on zone.
-> > per-zone/per-node throttling seems to make sense.
-> > 
+> On Wed, Feb 27, 2008 at 9:58 AM, Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:
+> >  > 1/ I note there is no way to tell if memory returned by kmalloc is
+> >  >   from the emergency reserve - which contrasts with alloc_page
+> >  >   which does make that information available through page->reserve.
+> >  >   This seems a slightly unfortunate aspect of the interface.
+> >
+> >  Yes, but alas there is no room to store such information in kmalloc().
+> >  That is, in a sane way. I think it was Daniel Phillips who suggested
+> >  encoding it in the return pointer by flipping the low bit - but that is
+> >  just too ugly and breaks all current kmalloc sites to boot.
 > 
-> That's another argument for not introducing the sysctl; the number of 
-> nodes and zones are a static property of the machine that cannot change 
-> without a reboot (numa=fake, mem=, introducing movable zones, etc).  We 
-> don't have node hotplug that can suddenly introduce additional zones from 
-> which to reclaim.
+> Why can't you add a kmem_is_emergency() to SLUB that looks up the
+> cache/slab/page (whatever is the smallest unit of the emergency pool
+> here) for the object and use that?
 
-Hmm, do you know there is already zone-hotplug ? ;)
-(Means, onlining new memory in new zone increase the # of zones.
- Now, in our system, possible-node turns to be online nodes.)
+There is an idea.. :-) It would mean preserving page->reserved, but SLUB
+has plenty of page flags to pick from. Or maybe I should move the thing
+to a page flag anyway. If we do that SLAB would allow something similar,
+just look up the page for whatever address you get and look at PG_emerg
+or something.
 
-> My point was that there doesn't appear to be any use case for tuning this 
-> via a sysctl that isn't simply attempting to workaround some other reclaim 
-> problem when the VM is stressed.  If that's agreed upon, then deciding 
-> between a config option that is either per-cpu or per-node should be based 
-> on the benchmarks that you've run.  At this time, it appears that per-node 
-> is the more advantageous.
->
-I agree that what is the best is based on benchmark.
-I like per-node, now.
-I believe there will be some change when RvR's spilit-LRU patches are applied.
- 
-> > I know his environment has 4cpus per node but throttle to 3 was the best
-> > number in his measurement. Then it seems num-per-cpu is excessive.
-> > (At least, ratio(%) is better.)
-> 
-> That seems to indicate that the NUMA topology is more important than lock 
-> contention for the reclaim throttle.
-> 
-I hear that there is also I/O bottle-neck for page reclaiming, at last.
-
-
-Thanks,
--Kame
+Having this would clean things up. I'll go work on this.
 
