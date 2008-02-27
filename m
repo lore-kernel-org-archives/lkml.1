@@ -1,23 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758173AbYB0XIp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761702AbYB0XJL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758173AbYB0XIp (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Feb 2008 18:08:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753352AbYB0XIX
+	id S1761702AbYB0XJL (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Feb 2008 18:09:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755650AbYB0XIZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Feb 2008 18:08:23 -0500
-Received: from mummy.ncsc.mil ([144.51.88.129]:48304 "EHLO mummy.ncsc.mil"
+	Wed, 27 Feb 2008 18:08:25 -0500
+Received: from mummy.ncsc.mil ([144.51.88.129]:48310 "EHLO mummy.ncsc.mil"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751027AbYB0XIW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1751130AbYB0XIW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 27 Feb 2008 18:08:22 -0500
-X-Greylist: delayed 1141 seconds by postgrey-1.27 at vger.kernel.org; Wed, 27 Feb 2008 18:08:22 EST
 From: "David P. Quigley" <dpquigl@tycho.nsa.gov>
 To: hch@infradead.org, viro@ftp.linux.org.uk, trond.myklebust@fys.uio.no,
        bfields@fieldses.org
 Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
        "David P. Quigley" <dpquigl@tycho.nsa.gov>
-Subject: [PATCH 04/11] KConfig: Add KConfig entries for SELinux labeled NFS
-Date: Wed, 27 Feb 2008 17:11:27 -0500
-Message-Id: <1204150294-4678-5-git-send-email-dpquigl@tycho.nsa.gov>
+Subject: [PATCH 07/11] NFS/SELinux: Add security_label text mount option to nfs and add handling code to the security server.
+Date: Wed, 27 Feb 2008 17:11:30 -0500
+Message-Id: <1204150294-4678-8-git-send-email-dpquigl@tycho.nsa.gov>
 X-Mailer: git-send-email 1.5.3.8
 In-Reply-To: <1204150294-4678-1-git-send-email-dpquigl@tycho.nsa.gov>
 References: <1204150294-4678-1-git-send-email-dpquigl@tycho.nsa.gov>
@@ -25,54 +24,143 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch adds two entries into the fs/KConfig file. The first entry
-NFS_V4_SECURITY_LABEL enables security label support for the NFSv4 client while
-the second entry NFSD_V4_SECURITY_LABEL enables security labeling support on
-the server side. These entries are currently marked as EXPERIMENTAL to indicate
-that at the moment they are only suitable for testing purposes and that the
-functionality they provide may change before it is removed from experimental
-status.
+The new method for pulling argument for NFS from mount is through a text
+parsing system. This patch adds two new entries to the argument parsing code
+"securlty_label" and "nosecurity_label". Even though we use text across the
+user/kernel boundary internally we still pack a binary structure for mount info
+to be passed around. We add a flag for use in the nfs{4,}_mount_data struct to
+indicate that are using security labels. Finally we add the SELinux support to
+mark the labeling method as native.
 
 Signed-off-by: David P. Quigley <dpquigl@tycho.nsa.gov>
 ---
- fs/Kconfig |   17 +++++++++++++++++
- 1 files changed, 17 insertions(+), 0 deletions(-)
+ fs/nfs/super.c             |   10 +++++++++-
+ fs/nfsd/export.c           |    3 +++
+ include/linux/nfs4_mount.h |    3 ++-
+ include/linux/nfs_mount.h  |    3 ++-
+ security/selinux/hooks.c   |   13 ++++++++++++-
+ 5 files changed, 28 insertions(+), 4 deletions(-)
 
-diff --git a/fs/Kconfig b/fs/Kconfig
-index d731282..d762375 100644
---- a/fs/Kconfig
-+++ b/fs/Kconfig
-@@ -1637,6 +1637,14 @@ config NFS_V4
+diff --git a/fs/nfs/super.c b/fs/nfs/super.c
+index 1fb3818..f3e327e 100644
+--- a/fs/nfs/super.c
++++ b/fs/nfs/super.c
+@@ -75,6 +75,7 @@ enum {
+ 	Opt_acl, Opt_noacl,
+ 	Opt_rdirplus, Opt_nordirplus,
+ 	Opt_sharecache, Opt_nosharecache,
++	Opt_seclabel, Opt_noseclabel,
  
- 	  If unsure, say N.
+ 	/* Mount options that take integer arguments */
+ 	Opt_port,
+@@ -124,6 +125,8 @@ static match_table_t nfs_mount_option_tokens = {
+ 	{ Opt_nordirplus, "nordirplus" },
+ 	{ Opt_sharecache, "sharecache" },
+ 	{ Opt_nosharecache, "nosharecache" },
++	{ Opt_seclabel, "security_label" },
++	{ Opt_noseclabel, "nosecurity_label" },
  
-+config NFS_V4_SECURITY_LABEL
-+	bool "Provide Security Label support for NFSv4 client"
-+	depends on NFS_V4 && SECURITY && EXPERIMENTAL
-+	help
-+	  Say Y here if you want label attribute support for NFS version 4.
-+
-+	  If unsure, say N.
-+
- config NFS_DIRECTIO
- 	bool "Allow direct I/O on NFS files"
- 	depends on NFS_FS
-@@ -1728,6 +1736,15 @@ config NFSD_V4
- 	  should only be used if you are interested in helping to test NFSv4.
- 	  If unsure, say N.
+ 	{ Opt_port, "port=%u" },
+ 	{ Opt_rsize, "rsize=%u" },
+@@ -779,7 +782,12 @@ static int nfs_parse_mount_options(char *raw,
+ 		case Opt_nosharecache:
+ 			mnt->flags |= NFS_MOUNT_UNSHARED;
+ 			break;
+-
++		case Opt_seclabel:
++			mnt->flags |= NFS_MOUNT_SECURITY_LABEL;
++			break;
++		case Opt_noseclabel:
++			mnt->flags &= ~NFS_MOUNT_SECURITY_LABEL;
++			break;
+ 		case Opt_port:
+ 			if (match_int(args, &option))
+ 				return 0;
+diff --git a/fs/nfsd/export.c b/fs/nfsd/export.c
+index 8a6f7c9..d32ae56 100644
+--- a/fs/nfsd/export.c
++++ b/fs/nfsd/export.c
+@@ -1435,6 +1435,9 @@ static struct flags {
+ 	{ NFSEXP_ALLSQUASH, {"all_squash", ""}},
+ 	{ NFSEXP_ASYNC, {"async", "sync"}},
+ 	{ NFSEXP_GATHERED_WRITES, {"wdelay", "no_wdelay"}},
++#ifdef CONFIG_NFSD_V4_SECURITY_LABEL
++	{ NFSEXP_SECURITY_LABEL, {"security_label", ""}},
++#endif
+ 	{ NFSEXP_NOHIDE, {"nohide", ""}},
+ 	{ NFSEXP_CROSSMOUNT, {"crossmnt", ""}},
+ 	{ NFSEXP_NOSUBTREECHECK, {"no_subtree_check", ""}},
+diff --git a/include/linux/nfs4_mount.h b/include/linux/nfs4_mount.h
+index a0dcf66..d7abc3b 100644
+--- a/include/linux/nfs4_mount.h
++++ b/include/linux/nfs4_mount.h
+@@ -66,6 +66,7 @@ struct nfs4_mount_data {
+ #define NFS4_MOUNT_NOAC		0x0020	/* 1 */
+ #define NFS4_MOUNT_STRICTLOCK	0x1000	/* 1 */
+ #define NFS4_MOUNT_UNSHARED	0x8000	/* 1 */
+-#define NFS4_MOUNT_FLAGMASK	0x9033
++#define NFS4_MOUNT_SECURITY_LABEL 0x10000 /* Text Only */
++#define NFS4_MOUNT_FLAGMASK	0x19033
  
-+config NFSD_V4_SECURITY_LABEL
-+	bool "Provide Security Label support for NFSv4 server"
-+	depends on NFSD_V4 && SECURITY && EXPERIMENTAL
-+	help
-+	  If you would like to include support for label file attributes
-+	  over NFSv4, say Y here.
+ #endif
+diff --git a/include/linux/nfs_mount.h b/include/linux/nfs_mount.h
+index df7c6b7..1ca5260 100644
+--- a/include/linux/nfs_mount.h
++++ b/include/linux/nfs_mount.h
+@@ -63,6 +63,7 @@ struct nfs_mount_data {
+ #define NFS_MOUNT_SECFLAVOUR	0x2000	/* 5 */
+ #define NFS_MOUNT_NORDIRPLUS	0x4000	/* 5 */
+ #define NFS_MOUNT_UNSHARED	0x8000	/* 5 */
+-#define NFS_MOUNT_FLAGMASK	0xFFFF
++#define NFS_MOUNT_SECURITY_LABEL 0x10000 /* reserved for NFSv4 */
++#define NFS_MOUNT_FLAGMASK	0x1FFFF
+ 
+ #endif
+diff --git a/security/selinux/hooks.c b/security/selinux/hooks.c
+index ebe4e18..e3ed7c3 100644
+--- a/security/selinux/hooks.c
++++ b/security/selinux/hooks.c
+@@ -68,6 +68,7 @@
+ #include <net/af_unix.h>	/* for Unix socket types */
+ #include <linux/parser.h>
+ #include <linux/nfs_mount.h>
++#include <linux/nfs4_mount.h>
+ #include <net/ipv6.h>
+ #include <linux/hugetlb.h>
+ #include <linux/personality.h>
+@@ -807,6 +808,7 @@ static int superblock_doinit(struct super_block *sb, void *data)
+ 	/* selinux only know about a fixed number of mount options */
+ 	char *mnt_opts[NUM_SEL_MNT_OPTS];
+ 	int mnt_opts_flags[NUM_SEL_MNT_OPTS], num_mnt_opts = 0;
++	struct superblock_security_struct *sbsec = sb->s_security;
+ 
+ 	if (!data)
+ 		goto out;
+@@ -829,6 +831,15 @@ static int superblock_doinit(struct super_block *sb, void *data)
+ 				}
+ 			}
+ 			goto build_flags;
++		} else if (!strcmp(name, "nfs4")) {
++			struct nfs4_mount_data *d = data;
 +
-+	  If unsure, say N.
++			if (d->version !=  NFS4_MOUNT_VERSION)
++				goto out;
 +
- config NFSD_TCP
- 	bool "Provide NFS server over TCP support"
- 	depends on NFSD
++			if (d->flags & NFS4_MOUNT_SECURITY_LABEL)
++				sbsec->behavior = SECURITY_FS_USE_NATIVE;
++			goto build_flags;
+ 		} else
+ 			goto out;
+ 	}
+@@ -898,7 +909,7 @@ static int superblock_doinit(struct super_block *sb, void *data)
+ 
+ 		default:
+ 			rc = -EINVAL;
+-			printk(KERN_WARNING "SELinux:  unknown mount option\n");
++			printk(KERN_WARNING "SELinux:  unknown mount option \"%s\"\n", p);
+ 			goto out_err;
+ 
+ 		}
 -- 
 1.5.3.8
 
