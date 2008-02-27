@@ -1,42 +1,28 @@
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756054AbYB0R6F (ORCPT <rfc822;ralf@linux-mips.org>);
-	Wed, 27 Feb 2008 12:58:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754437AbYB0R5v
+	id S1758559AbYB0TQ6 (ORCPT <rfc822;ralf@linux-mips.org>);
+	Wed, 27 Feb 2008 14:16:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757203AbYB0TQp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Feb 2008 12:57:51 -0500
-Received: from mailfilter3.ihug.co.nz ([203.109.136.3]:45371 "EHLO
-	mailfilter3.ihug.co.nz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754327AbYB0R5u (ORCPT
+	Wed, 27 Feb 2008 14:16:45 -0500
+Received: from hu-out-0506.google.com ([72.14.214.225]:26979 "EHLO
+	hu-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757355AbYB0TQo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Feb 2008 12:57:50 -0500
-X-Greylist: delayed 599 seconds by postgrey-1.27 at vger.kernel.org; Wed, 27 Feb 2008 12:57:50 EST
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AszMAMowxUfLbYkV/2dsb2JhbACCGYgggVSDKoILcJt/
-Ironport-Suspected-Spam: Yes
-X-IronPort-AV: E=Sophos;i="4.25,414,1199617200"; 
-   d="scan'208";a="72674149"
-Ironport-Content-Filter: send-to-smtp
-Ironport-OCF: send-to-smtp
+	Wed, 27 Feb 2008 14:16:44 -0500
+Message-ID: <43190cae0802271116k6db1eab1y62f100af9053a227@mail.gmail.com>
+Date: Thu, 28 Feb 2008 03:16:36 +0800
+From: "=?BIG5?B?sWmqWb7s?=" <pv6753a65esf@gmail.com>
+To: lindiso@mail.com
+Subject: =?BIG5?B?b20gofggusaoZ6RqqfGwZbZSqOKuTbBlo7iuTSAzNTE2?=
 MIME-Version: 1.0
-Date: Thu, 28 Feb 2008 06:44:22 +1300
-From: SENATE PRESIDENT <info@atm.com>
-To: info@atm.com
-Subject: NOTIFICATION OF PAYMENT VIA ATM CARD
-Organization: swift atm card
-Reply-To: wallaceatmdesk@hotmail.com
-Message-ID: <be067899f321335308394509dd3fda2e@ihug.co.nz>
-User-Agent: ihug Webmail/0.1b
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=BIG5
+Content-Transfer-Encoding: base64
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
-Return-Path: <linux-kernel-owner+ralf=40linux-mips.org-S1756054AbYB0R6F@vger.kernel.org>
+Return-Path: <linux-kernel-owner+ralf=40linux-mips.org-S1758559AbYB0TQ6@vger.kernel.org>
 
-
--- 
-This is to officially inform you that(ATM Card Number;4278763100030014) has
-been accredited in your favour.Your Personal Identification Number is 2900.
-The ATM Card Value is $6.8MILLION USD Only.
-Contact:wallaceatmdesk@hotmail.com With the following,Your Name:Phone
-no:Address:Country
-
+MjAwOC0yLTI4CqG/CgqrerbrISEhIaRApPk1MAoKaHR0cDovL3NhbS55YWhvby1raXNzLmNvbS8K
+CqX+pn61TKXwqEOk6aRVpMg1wkmrZaRVs+YtuWqk0adZpWmmdrB0qOyzZgoKusaoZ6RqqfGwZbZS
+qOKuTbBlo7iuTQoKaHR0cDovL3NhbS55b3lvLWR2ZC5jb20vCgozOjE2OjM0CgrS5go=
