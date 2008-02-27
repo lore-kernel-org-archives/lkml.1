@@ -1,218 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755196AbYB0LUp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755592AbYB0LYy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755196AbYB0LUp (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Feb 2008 06:20:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752453AbYB0LUe
+	id S1755592AbYB0LYy (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Feb 2008 06:24:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753151AbYB0LYr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Feb 2008 06:20:34 -0500
-Received: from mail.syneticon.net ([213.239.212.131]:60931 "EHLO
-	mail2.syneticon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752095AbYB0LUd (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Feb 2008 06:20:33 -0500
-Message-ID: <47C54773.4040402@wpkg.org>
-Date: Wed, 27 Feb 2008 12:20:19 +0100
-From: Tomasz Chmielewski <mangoo@wpkg.org>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.8) Gecko/20061110 Mandriva/1.5.0.8-1mdv2007.1 (2007.1) Thunderbird/1.5.0.8 Mnenhy/0.7.4.666
+	Wed, 27 Feb 2008 06:24:47 -0500
+Received: from mail.gmx.net ([213.165.64.20]:54389 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1752102AbYB0LYq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 Feb 2008 06:24:46 -0500
+X-Authenticated: #20450766
+X-Provags-ID: V01U2FsdGVkX19HZ99vi3dHq7JpQ2nQ0/liN4tmkEo8WD0dWFrD8e
+	IjZhHcBxVTfvcg
+Date: Wed, 27 Feb 2008 12:24:54 +0100 (CET)
+From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+To: Greg KH <greg@kroah.com>
+cc: linux-kernel@vger.kernel.org
+Subject: Re: [PCI] duplicate sysfs symbols getting registered in current git
+In-Reply-To: <20080226201619.GA10343@kroah.com>
+Message-ID: <Pine.LNX.4.64.0802271222530.5059@axis700.grange>
+References: <Pine.LNX.4.64.0802182142240.11540@axis700.grange>
+ <20080220063834.GA22708@kroah.com> <Pine.LNX.4.64.0802251341160.4430@axis700.grange>
+ <20080226201619.GA10343@kroah.com>
 MIME-Version: 1.0
-To: Theodore Tso <tytso@mit.edu>, Andi Kleen <andi@firstfloor.org>,
-       LKML <linux-fsdevel@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: very poor ext3 write performance on big filesystems?
-References: <47B980AC.2080806@wpkg.org> <p7363wmxsxr.fsf@bingen.suse.de> <20080218141640.GC12568@mit.edu>
-In-Reply-To: <20080218141640.GC12568@mit.edu>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Y-GMX-Trusted: 0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Theodore Tso schrieb:
-> On Mon, Feb 18, 2008 at 03:03:44PM +0100, Andi Kleen wrote:
->> Tomasz Chmielewski <mangoo@wpkg.org> writes:
->>> Is it normal to expect the write speed go down to only few dozens of
->>> kilobytes/s? Is it because of that many seeks? Can it be somehow
->>> optimized? 
->> I have similar problems on my linux source partition which also
->> has a lot of hard linked files (although probably not quite
->> as many as you do). It seems like hard linking prevents
->> some of the heuristics ext* uses to generate non fragmented
->> disk layouts and the resulting seeking makes things slow.
-
-A follow-up to this thread.
-Using small optimizations like playing with /proc/sys/vm/* didn't help 
-much, increasing "commit=" ext3 mount option helped only a tiny bit.
-
-What *did* help a lot was... disabling the internal bitmap of the RAID-5 
-array. "rm -rf" doesn't "pause" for several seconds any more.
-
-If md and dm supported barriers, it would be even better I guess (I 
-could enable write cache with some degree of confidence).
-
-
-This is "iostat sda -d 10" output without the internal bitmap.
-The system mostly tries to read (Blk_read/s), and once in a while it
-does a big commit (Blk_wrtn/s):
-
-Device:            tps   Blk_read/s   Blk_wrtn/s   Blk_read   Blk_wrtn
-sda             164,67      2088,62         0,00      20928          0
-
-Device:            tps   Blk_read/s   Blk_wrtn/s   Blk_read   Blk_wrtn
-sda             180,12      1999,60         0,00      20016          0
-
-Device:            tps   Blk_read/s   Blk_wrtn/s   Blk_read   Blk_wrtn
-sda             172,63      2587,01         0,00      25896          0
-
-Device:            tps   Blk_read/s   Blk_wrtn/s   Blk_read   Blk_wrtn
-sda             156,53      2054,64         0,00      20608          0
-
-Device:            tps   Blk_read/s   Blk_wrtn/s   Blk_read   Blk_wrtn
-sda             170,20      3013,60         0,00      30136          0
-
-Device:            tps   Blk_read/s   Blk_wrtn/s   Blk_read   Blk_wrtn
-sda             119,46      1377,25      5264,67      13800      52752
-
-Device:            tps   Blk_read/s   Blk_wrtn/s   Blk_read   Blk_wrtn
-sda             154,05      1897,10         0,00      18952          0
-
-Device:            tps   Blk_read/s   Blk_wrtn/s   Blk_read   Blk_wrtn
-sda             197,70      2177,02         0,00      21792          0
-
-Device:            tps   Blk_read/s   Blk_wrtn/s   Blk_read   Blk_wrtn
-sda             166,47      1805,19         0,00      18088          0
-
-Device:            tps   Blk_read/s   Blk_wrtn/s   Blk_read   Blk_wrtn
-sda             150,95      1552,05         0,00      15536          0
-
-Device:            tps   Blk_read/s   Blk_wrtn/s   Blk_read   Blk_wrtn
-sda             158,44      1792,61         0,00      17944          0
-
-Device:            tps   Blk_read/s   Blk_wrtn/s   Blk_read   Blk_wrtn
-sda             132,47      1399,40      3781,82      14008      37856
-
-
-
-With the bitmap enabled, it sometimes behave similarly, but mostly, I
-can see as reads compete with writes, and both have very low numbers then:
-
-Device:            tps   Blk_read/s   Blk_wrtn/s   Blk_read   Blk_wrtn
-sda             112,57       946,11      5837,13       9480      58488
-
-Device:            tps   Blk_read/s   Blk_wrtn/s   Blk_read   Blk_wrtn
-sda             157,24      1858,94         0,00      18608          0
-
-Device:            tps   Blk_read/s   Blk_wrtn/s   Blk_read   Blk_wrtn
-sda             116,90      1173,60        44,00      11736        440
-
-Device:            tps   Blk_read/s   Blk_wrtn/s   Blk_read   Blk_wrtn
-sda              24,05        85,43       172,46        856       1728
-
-Device:            tps   Blk_read/s   Blk_wrtn/s   Blk_read   Blk_wrtn
-sda              25,60        90,40       165,60        904       1656
-
-Device:            tps   Blk_read/s   Blk_wrtn/s   Blk_read   Blk_wrtn
-sda              25,05       276,25       180,44       2768       1808
-
-Device:            tps   Blk_read/s   Blk_wrtn/s   Blk_read   Blk_wrtn
-sda              22,70        65,60       229,60        656       2296
-
-Device:            tps   Blk_read/s   Blk_wrtn/s   Blk_read   Blk_wrtn
-sda              21,66       202,79       786,43       2032       7880
-
-Device:            tps   Blk_read/s   Blk_wrtn/s   Blk_read   Blk_wrtn
-sda              20,90        83,20      1800,00        832      18000
-
-Device:            tps   Blk_read/s   Blk_wrtn/s   Blk_read   Blk_wrtn
-sda              51,75       237,36       479,52       2376       4800
-
-Device:            tps   Blk_read/s   Blk_wrtn/s   Blk_read   Blk_wrtn
-sda              35,43       129,34       245,91       1296       2464
-
-Device:            tps   Blk_read/s   Blk_wrtn/s   Blk_read   Blk_wrtn
-sda              34,50        88,00       270,40        880       2704
-
-
-Now, let's disable the bitmap in the RAID-5 array:
-
-Device:            tps   Blk_read/s   Blk_wrtn/s   Blk_read   Blk_wrtn
-sda             110,59       536,26       973,43       5368       9744
-
-Device:            tps   Blk_read/s   Blk_wrtn/s   Blk_read   Blk_wrtn
-sda             119,68       533,07      1574,43       5336      15760
-
-Device:            tps   Blk_read/s   Blk_wrtn/s   Blk_read   Blk_wrtn
-sda             123,78       368,43      2335,26       3688      23376
-
-Device:            tps   Blk_read/s   Blk_wrtn/s   Blk_read   Blk_wrtn
-sda             122,48       315,68      1990,01       3160      19920
-
-Device:            tps   Blk_read/s   Blk_wrtn/s   Blk_read   Blk_wrtn
-sda             117,08       580,22      1009,39       5808      10104
-
-Device:            tps   Blk_read/s   Blk_wrtn/s   Blk_read   Blk_wrtn
-sda             119,50       324,00      1080,80       3240      10808
-
-Device:            tps   Blk_read/s   Blk_wrtn/s   Blk_read   Blk_wrtn
-sda             118,36       353,69      1926,55       3544      19304
-
-
-And let's enable it again - after a while, it degrades again, and I can
-see "rm -rf" stops for longer periods:
-
-Device:            tps   Blk_read/s   Blk_wrtn/s   Blk_read   Blk_wrtn
-sda             162,70      2213,60         0,00      22136          0
-
-Device:            tps   Blk_read/s   Blk_wrtn/s   Blk_read   Blk_wrtn
-sda             165,73      1639,16         0,00      16408          0
-
-Device:            tps   Blk_read/s   Blk_wrtn/s   Blk_read   Blk_wrtn
-sda             119,76      1192,81      3722,16      11952      37296
-
-Device:            tps   Blk_read/s   Blk_wrtn/s   Blk_read   Blk_wrtn
-sda             178,70      1855,20         0,00      18552          0
-
-Device:            tps   Blk_read/s   Blk_wrtn/s   Blk_read   Blk_wrtn
-sda             162,64      1528,07         0,80      15296          8
-
-Device:            tps   Blk_read/s   Blk_wrtn/s   Blk_read   Blk_wrtn
-sda             182,87      2082,07         0,00      20904          0
-
-Device:            tps   Blk_read/s   Blk_wrtn/s   Blk_read   Blk_wrtn
-sda             168,93      1692,71         0,00      16944          0
-
-Device:            tps   Blk_read/s   Blk_wrtn/s   Blk_read   Blk_wrtn
-sda             177,45      1572,06         0,00      15752          0
-
-Device:            tps   Blk_read/s   Blk_wrtn/s   Blk_read   Blk_wrtn
-sda             123,10      1436,00      4941,60      14360      49416
-
-Device:            tps   Blk_read/s   Blk_wrtn/s   Blk_read   Blk_wrtn
-sda             201,30      1984,03         0,00      19880          0
-
-Device:            tps   Blk_read/s   Blk_wrtn/s   Blk_read   Blk_wrtn
-sda             165,50      1555,20        22,40      15552        224
-
-Device:            tps   Blk_read/s   Blk_wrtn/s   Blk_read   Blk_wrtn
-sda              25,35       273,05       189,22       2736       1896
-
-Device:            tps   Blk_read/s   Blk_wrtn/s   Blk_read   Blk_wrtn
-sda              22,58        63,94       165,43        640       1656
-
-Device:            tps   Blk_read/s   Blk_wrtn/s   Blk_read   Blk_wrtn
-sda              69,40       435,20       262,40       4352       2624
-
-
-
-There is a related thread (although not much kernel-related) on a 
-BackupPC mailing list:
-
-http://thread.gmane.org/gmane.comp.sysutils.backup.backuppc.general/14009
-
-As it's BackupPC software which makes this amount of hardlinks (but hey, 
-I can keep ~14 TB of data on a 1.2 TB filesystem which is not even 65% 
-full).
-
-
--- 
-Tomasz Chmielewski
-http://wpkg.org
+On Tue, 26 Feb 2008, Greg KH wrote:
+
+> On Mon, Feb 25, 2008 at 01:43:29PM +0100, Guennadi Liakhovetski wrote:
+> > On Tue, 19 Feb 2008, Greg KH wrote:
+> > 
+> > > On Mon, Feb 18, 2008 at 09:52:25PM +0100, Guennadi Liakhovetski wrote:
+> > > > Booting an x86 SMP PC with todays git-snapshot or just with 2.6.25-rc2 
+> > > > getting the following warnings (with a bit of context):
+> > > 
+> > > Can you try enabling CONFIG_DEBUG_KOBJECT and sending the output at boot
+> > > time from this?
+> > 
+> > dmesg output with CONFIG_LOG_BUF_SHIFT=19 sent privately to Greg as 
+> > unpacked, as it would have to be sent to the list, is 408K big. Will see 
+> > what Greg says.
+> 
+> Thanks for the log, it helped out a lot.  I'm thinking that you have
+> CONFIG_SYSFS_DEPRECATED set to Y, right?  If so, can you set it to N
+> (hopefully you have a new userspace to handle that)?
+
+Ok, result #1: kernel panic 
+http://home.arcor.de/g.liakhovetski/ap400/imga0045.jpg. If necessary, can 
+try a serial console, but that would be more difficult.
+
+Testing further.
+
+Thanks
+Guennadi
+---
+Guennadi Liakhovetski
