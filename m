@@ -1,449 +1,166 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757820AbYB0WJE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761373AbYB0WJa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757820AbYB0WJE (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Feb 2008 17:09:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760785AbYB0WI1
+	id S1761373AbYB0WJa (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Feb 2008 17:09:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760793AbYB0WI3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Feb 2008 17:08:27 -0500
-Received: from ug-out-1314.google.com ([66.249.92.175]:48281 "EHLO
+	Wed, 27 Feb 2008 17:08:29 -0500
+Received: from ug-out-1314.google.com ([66.249.92.174]:47795 "EHLO
 	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760711AbYB0WIY (ORCPT
+	with ESMTP id S1760719AbYB0WIY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 27 Feb 2008 17:08:24 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
-        b=vOFQBUtzXARyjMNED3Tp2aRf9MIXF6s3Tp95p3lYkQLJa2NmfX+zOOcne/qPvu5/TC1WF6AnT0IhcHiMRGWZAjBBmP8ONxQOzC/W2JOxxedrcetrfswazJLEZ+yw9GiFGEzROhj3J0xUhumJILCQxT4kKTTP+6i42jz79wuqe5M=
+        h=from:to:subject:date:user-agent:cc:mime-version:content-disposition:message-id:content-type:content-transfer-encoding;
+        b=iCt6KC80ATXd9doiUiEdVBpnDgctn8IYnRKPzCMbBxW3gYa7fY5o022UUF6RvlOWrnmOBQe8rIjcWlO8eB0OV/5lGXgUnPZUvZVxnV4XOKzyUk4sMuNxGGP26lfbe/YK73vkYsb8YLqQ4+NHVxWih7KWS89OZ7I5qGJ1PzysFcY=
 From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
 To: linux-ide@vger.kernel.org
-Subject: [PATCH] ide: use ide_find_port() in legacy VLB host drivers (take 2)
-Date: Wed, 27 Feb 2008 23:18:18 +0100
+Subject: [PATCH 1/4] ide: remove ->noprobe field from ide_hwif_t
+Date: Wed, 27 Feb 2008 23:19:47 +0100
 User-Agent: KMail/1.9.6 (enterprise 0.20071204.744707)
-Cc: linux-kernel@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>
 MIME-Version: 1.0
+Content-Disposition: inline
+Message-Id: <200802272319.48121.bzolnier@gmail.com>
 Content-Type: text/plain;
   charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200802272318.18841.bzolnier@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Add IDE_HFLAG_QD_2ND_PORT host flag to indicate the need of skipping
-  first ide_hwifs[] slot for the second port of QD65xx controller.
+Update IDE PMAC host driver to use drive->noprobe instead of hwif->noprobe
+and remove hwif->noprobe completely (it is always set to zero now).
 
-* Handle this new host flag in ide_find_port_slot().
+There should be no functional changes caused by this patch.
 
-* Convert legacy VLB host drivers to use ide_find_port().
-
-While at it:
-
-* Fix couple of printk()-s in qd65xx host driver to not use hwif->name.
-
-v2:
-* Fix qd65xx.
-
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
 ---
-replacement patch
+ drivers/ide/arm/icside.c |    1 -
+ drivers/ide/ide-probe.c  |    3 +--
+ drivers/ide/ide.c        |    4 ----
+ drivers/ide/mips/swarm.c |    1 -
+ drivers/ide/ppc/pmac.c   |   15 ++++++++++-----
+ include/linux/ide.h      |    1 -
+ 6 files changed, 11 insertions(+), 14 deletions(-)
 
- drivers/ide/ide-probe.c          |    4 +-
- drivers/ide/legacy/ali14xx.c     |   19 +++++++---
- drivers/ide/legacy/dtc2278.c     |   22 ++++++------
- drivers/ide/legacy/ht6560b.c     |   31 +++++++++--------
- drivers/ide/legacy/ide-4drives.c |   34 +++++++++++-------
- drivers/ide/legacy/qd65xx.c      |   70 +++++++++++++++++++++------------------
- drivers/ide/legacy/umc8672.c     |   19 +++++++---
- include/linux/ide.h              |    2 +
- 8 files changed, 121 insertions(+), 80 deletions(-)
-
+Index: b/drivers/ide/arm/icside.c
+===================================================================
+--- a/drivers/ide/arm/icside.c
++++ b/drivers/ide/arm/icside.c
+@@ -424,7 +424,6 @@ icside_setup(void __iomem *base, struct 
+ 		}
+ 		hwif->io_ports[IDE_CONTROL_OFFSET] = (unsigned long)base + info->ctrloffset;
+ 		hwif->irq     = ec->irq;
+-		hwif->noprobe = 0;
+ 		hwif->chipset = ide_acorn;
+ 		hwif->gendev.parent = &ec->dev;
+ 		hwif->dev = &ec->dev;
 Index: b/drivers/ide/ide-probe.c
 ===================================================================
 --- a/drivers/ide/ide-probe.c
 +++ b/drivers/ide/ide-probe.c
-@@ -1464,7 +1464,9 @@ ide_hwif_t *ide_find_port_slot(const str
- 	 * ports 0x1f0/0x170 (the ide0/ide1 defaults).
- 	 */
- 	if (bootable) {
--		for (i = 0; i < MAX_HWIFS; i++) {
-+		i = (d && (d->host_flags & IDE_HFLAG_QD_2ND_PORT)) ? 1 : 0;
-+
-+		for (; i < MAX_HWIFS; i++) {
- 			hwif = &ide_hwifs[i];
- 			if (hwif->chipset == ide_unknown)
- 				return hwif;
-Index: b/drivers/ide/legacy/ali14xx.c
-===================================================================
---- a/drivers/ide/legacy/ali14xx.c
-+++ b/drivers/ide/legacy/ali14xx.c
-@@ -199,7 +199,8 @@ static const struct ide_port_info ali14x
+@@ -773,8 +773,7 @@ static int ide_probe_port(ide_hwif_t *hw
  
- static int __init ali14xx_probe(void)
- {
--	static u8 idx[4] = { 0, 1, 0xff, 0xff };
-+	ide_hwif_t *hwif, *mate;
-+	static u8 idx[4] = { 0xff, 0xff, 0xff, 0xff };
- 	hw_regs_t hw[2];
+ 	BUG_ON(hwif->present);
  
- 	printk(KERN_DEBUG "ali14xx: base=0x%03x, regOn=0x%02x.\n",
-@@ -219,11 +220,19 @@ static int __init ali14xx_probe(void)
- 	ide_std_init_ports(&hw[1], 0x170, 0x376);
- 	hw[1].irq = 15;
+-	if (hwif->noprobe ||
+-	    (hwif->drives[0].noprobe && hwif->drives[1].noprobe))
++	if (hwif->drives[0].noprobe && hwif->drives[1].noprobe)
+ 		return -EACCES;
  
--	ide_init_port_hw(&ide_hwifs[0], &hw[0]);
--	ide_init_port_hw(&ide_hwifs[1], &hw[1]);
-+	hwif = ide_find_port();
-+	if (hwif) {
-+		ide_init_port_hw(hwif, &hw[0]);
-+		hwif->set_pio_mode = &ali14xx_set_pio_mode;
-+		idx[0] = hwif->index;
-+	}
- 
--	ide_hwifs[0].set_pio_mode = &ali14xx_set_pio_mode;
--	ide_hwifs[1].set_pio_mode = &ali14xx_set_pio_mode;
-+	mate = ide_find_port();
-+	if (mate) {
-+		ide_init_port_hw(mate, &hw[1]);
-+		mate->set_pio_mode = &ali14xx_set_pio_mode;
-+		idx[1] = mate->index;
-+	}
- 
- 	ide_device_add(idx, &ali14xx_port_info);
- 
-Index: b/drivers/ide/legacy/dtc2278.c
-===================================================================
---- a/drivers/ide/legacy/dtc2278.c
-+++ b/drivers/ide/legacy/dtc2278.c
-@@ -102,15 +102,9 @@ static int __init dtc2278_probe(void)
- {
- 	unsigned long flags;
- 	ide_hwif_t *hwif, *mate;
--	static u8 idx[4] = { 0, 1, 0xff, 0xff };
-+	static u8 idx[4] = { 0xff, 0xff, 0xff, 0xff };
- 	hw_regs_t hw[2];
- 
--	hwif = &ide_hwifs[0];
--	mate = &ide_hwifs[1];
--
--	if (hwif->chipset != ide_unknown || mate->chipset != ide_unknown)
--		return 1;
--
- 	local_irq_save(flags);
  	/*
- 	 * This enables the second interface
-@@ -137,10 +131,18 @@ static int __init dtc2278_probe(void)
- 	ide_std_init_ports(&hw[1], 0x170, 0x376);
- 	hw[1].irq = 15;
- 
--	ide_init_port_hw(hwif, &hw[0]);
--	ide_init_port_hw(mate, &hw[1]);
-+	hwif = ide_find_port();
-+	if (hwif) {
-+		ide_init_port_hw(hwif, &hw[0]);
-+		hwif->set_pio_mode = dtc2278_set_pio_mode;
-+		idx[0] = hwif->index;
-+	}
- 
--	hwif->set_pio_mode = &dtc2278_set_pio_mode;
-+	mate = ide_find_port();
-+	if (mate) {
-+		ide_init_port_hw(mate, &hw[1]);
-+		idx[1] = mate->index;
-+	}
- 
- 	ide_device_add(idx, &dtc2278_port_info);
- 
-Index: b/drivers/ide/legacy/ht6560b.c
+Index: b/drivers/ide/ide.c
 ===================================================================
---- a/drivers/ide/legacy/ht6560b.c
-+++ b/drivers/ide/legacy/ht6560b.c
-@@ -340,15 +340,12 @@ static const struct ide_port_info ht6560
- static int __init ht6560b_init(void)
+--- a/drivers/ide/ide.c
++++ b/drivers/ide/ide.c
+@@ -456,7 +456,6 @@ void ide_init_port_hw(ide_hwif_t *hwif, 
  {
- 	ide_hwif_t *hwif, *mate;
--	static u8 idx[4] = { 0, 1, 0xff, 0xff };
-+	static u8 idx[4] = { 0xff, 0xff, 0xff, 0xff };
- 	hw_regs_t hw[2];
- 
- 	if (probe_ht6560b == 0)
- 		return -ENODEV;
- 
--	hwif = &ide_hwifs[0];
--	mate = &ide_hwifs[1];
--
- 	if (!request_region(HT_CONFIG_PORT, 1, DRV_NAME)) {
- 		printk(KERN_NOTICE "%s: HT_CONFIG_PORT not found\n",
- 			__FUNCTION__);
-@@ -368,17 +365,23 @@ static int __init ht6560b_init(void)
- 	ide_std_init_ports(&hw[1], 0x170, 0x376);
- 	hw[1].irq = 15;
- 
--	ide_init_port_hw(hwif, &hw[0]);
--	ide_init_port_hw(mate, &hw[1]);
--
--	hwif->selectproc = &ht6560b_selectproc;
--	hwif->set_pio_mode = &ht6560b_set_pio_mode;
--
--	mate->selectproc = &ht6560b_selectproc;
--	mate->set_pio_mode = &ht6560b_set_pio_mode;
-+	hwif = ide_find_port();
-+	if (hwif) {
-+		ide_init_port_hw(hwif, &hw[0]);
-+		hwif->selectproc     = ht6560b_selectproc;
-+		hwif->set_pio_mode   = ht6560b_set_pio_mode;
-+		hwif->port_init_devs = ht6560b_port_init_devs;
-+		idx[0] = hwif->index;
-+	}
- 
--	hwif->port_init_devs = ht6560b_port_init_devs;
--	mate->port_init_devs = ht6560b_port_init_devs;
-+	mate = ide_find_port();
-+	if (mate) {
-+		ide_init_port_hw(mate, &hw[1]);
-+		mate->selectproc     = ht6560b_selectproc;
-+		mate->set_pio_mode   = ht6560b_set_pio_mode;
-+		mate->port_init_devs = ht6560b_port_init_devs;
-+		idx[1] = mate->index;
-+	}
- 
- 	ide_device_add(idx, &ht6560b_port_info);
- 
-Index: b/drivers/ide/legacy/ide-4drives.c
+ 	memcpy(hwif->io_ports, hw->io_ports, sizeof(hwif->io_ports));
+ 	hwif->irq = hw->irq;
+-	hwif->noprobe = 0;
+ 	hwif->chipset = hw->chipset;
+ 	hwif->gendev.parent = hw->dev;
+ 	hwif->ack_intr = hw->ack_intr;
+@@ -1016,14 +1015,12 @@ static int __init ide_setup(char *s)
+ 				goto done;
+ 			case -3: /* "nowerr" */
+ 				drive->bad_wstat = BAD_R_STAT;
+-				hwif->noprobe = 0;
+ 				goto done;
+ 			case -4: /* "cdrom" */
+ 				drive->present = 1;
+ 				drive->media = ide_cdrom;
+ 				/* an ATAPI device ignores DRDY */
+ 				drive->ready_stat = 0;
+-				hwif->noprobe = 0;
+ 				goto done;
+ 			case -5: /* nodma */
+ 				drive->nodma = 1;
+@@ -1054,7 +1051,6 @@ static int __init ide_setup(char *s)
+ 				drive->sect	= drive->bios_sect = vals[2];
+ 				drive->present	= 1;
+ 				drive->forced_geom = 1;
+-				hwif->noprobe = 0;
+ 				goto done;
+ 			default:
+ 				goto bad_option;
+Index: b/drivers/ide/mips/swarm.c
 ===================================================================
---- a/drivers/ide/legacy/ide-4drives.c
-+++ b/drivers/ide/legacy/ide-4drives.c
-@@ -12,31 +12,37 @@ MODULE_PARM_DESC(probe, "probe for gener
- static int __init ide_4drives_init(void)
- {
- 	ide_hwif_t *hwif, *mate;
--	u8 idx[4] = { 0, 1, 0xff, 0xff };
-+	u8 idx[4] = { 0xff, 0xff, 0xff, 0xff };
- 	hw_regs_t hw;
+--- a/drivers/ide/mips/swarm.c
++++ b/drivers/ide/mips/swarm.c
+@@ -113,7 +113,6 @@ static int __devinit swarm_ide_probe(str
+ 	/* Prevent resource map manipulation.  */
+ 	hwif->mmio = 1;
+ 	hwif->chipset = ide_generic;
+-	hwif->noprobe = 0;
  
- 	if (probe_4drives == 0)
- 		return -ENODEV;
+ 	for (i = IDE_DATA_OFFSET; i <= IDE_STATUS_OFFSET; i++)
+ 		hwif->io_ports[i] =
+Index: b/drivers/ide/ppc/pmac.c
+===================================================================
+--- a/drivers/ide/ppc/pmac.c
++++ b/drivers/ide/ppc/pmac.c
+@@ -1049,17 +1049,22 @@ pmac_ide_setup_device(pmac_ide_hwif_t *p
+ 	hwif->mmio = 1;
+ 	hwif->hwif_data = pmif;
+ 	ide_init_port_hw(hwif, hw);
+-	hwif->noprobe = pmif->mediabay;
+ 	hwif->cbl = pmif->cable_80 ? ATA_CBL_PATA80 : ATA_CBL_PATA40;
  
--	hwif = &ide_hwifs[0];
--	mate = &ide_hwifs[1];
--
- 	memset(&hw, 0, sizeof(hw));
- 
- 	ide_std_init_ports(&hw, 0x1f0, 0x3f6);
- 	hw.irq = 14;
- 	hw.chipset = ide_4drives;
- 
--	ide_init_port_hw(hwif, &hw);
--	ide_init_port_hw(mate, &hw);
--
--	mate->drives[0].select.all ^= 0x20;
--	mate->drives[1].select.all ^= 0x20;
--
--	hwif->mate = mate;
--	mate->mate = hwif;
--
--	hwif->serialized = mate->serialized = 1;
-+	hwif = ide_find_port();
-+	if (hwif) {
-+		ide_init_port_hw(hwif, &hw);
-+		idx[0] = hwif->index;
-+	}
+ 	printk(KERN_INFO "ide%d: Found Apple %s controller, bus ID %d%s, irq %d\n",
+ 	       hwif->index, model_name[pmif->kind], pmif->aapl_bus_id,
+ 	       pmif->mediabay ? " (mediabay)" : "", hwif->irq);
+-			
 +
-+	mate = ide_find_port();
-+	if (mate) {
-+		ide_init_port_hw(mate, &hw);
-+		mate->drives[0].select.all ^= 0x20;
-+		mate->drives[1].select.all ^= 0x20;
-+		idx[1] = mate->index;
-+
-+		if (hwif) {
-+			hwif->mate = mate;
-+			mate->mate = hwif;
-+			hwif->serialized = mate->serialized = 1;
++	if (pmif->mediabay) {
+ #ifdef CONFIG_PMAC_MEDIABAY
+-	if (pmif->mediabay && check_media_bay_by_base(pmif->regbase, MB_CD) == 0)
+-		hwif->noprobe = 0;
+-#endif /* CONFIG_PMAC_MEDIABAY */
++		if (check_media_bay_by_base(pmif->regbase, MB_CD)) {
++#else
++		if (1) {
++#endif
++			hwif->drives[0].noprobe = 1;
++			hwif->drives[1].noprobe = 1;
 +		}
 +	}
  
- 	ide_device_add(idx, NULL);
- 
-Index: b/drivers/ide/legacy/qd65xx.c
-===================================================================
---- a/drivers/ide/legacy/qd65xx.c
-+++ b/drivers/ide/legacy/qd65xx.c
-@@ -355,6 +355,7 @@ static int __init qd_probe(int base)
- 	u8 config, unit;
- 	u8 idx[4] = { 0xff, 0xff, 0xff, 0xff };
- 	hw_regs_t hw[2];
-+	struct ide_port_info d = qd65xx_port_info;
- 
- 	config = inb(QD_CONFIG_PORT);
- 
-@@ -363,6 +364,9 @@ static int __init qd_probe(int base)
- 
- 	unit = ! (config & QD_CONFIG_IDE_BASEPORT);
- 
-+	if (unit)
-+		d.host_flags |= IDE_HFLAG_QD_2ND_PORT;
-+
- 	memset(&hw, 0, sizeof(hw));
- 
- 	ide_std_init_ports(&hw[0], 0x1f0, 0x3f6);
-@@ -378,16 +382,19 @@ static int __init qd_probe(int base)
- 
- 		/* qd6500 found */
- 
--		hwif = &ide_hwifs[unit];
--		printk(KERN_NOTICE "%s: qd6500 at %#x\n", hwif->name, base);
--		printk(KERN_DEBUG "qd6500: config=%#x, ID3=%u\n",
--			config, QD_ID3);
--		
- 		if (config & QD_CONFIG_DISABLED) {
- 			printk(KERN_WARNING "qd6500 is disabled !\n");
- 			return -ENODEV;
- 		}
- 
-+		printk(KERN_NOTICE "qd6500 at %#x\n", base);
-+		printk(KERN_DEBUG "qd6500: config=%#x, ID3=%u\n",
-+			config, QD_ID3);
-+
-+		hwif = ide_find_port_slot(&d);
-+		if (hwif == NULL)
-+			return -ENOENT;
-+
- 		ide_init_port_hw(hwif, &hw[unit]);
- 
- 		qd_setup(hwif, base, config);
-@@ -395,9 +402,9 @@ static int __init qd_probe(int base)
- 		hwif->port_init_devs = qd6500_port_init_devs;
- 		hwif->set_pio_mode = &qd6500_set_pio_mode;
- 
--		idx[unit] = unit;
-+		idx[unit] = hwif->index;
- 
--		ide_device_add(idx, &qd65xx_port_info);
-+		ide_device_add(idx, &d);
- 
- 		return 1;
- 	}
-@@ -423,9 +430,11 @@ static int __init qd_probe(int base)
- 		if (control & QD_CONTR_SEC_DISABLED) {
- 			/* secondary disabled */
- 
--			hwif = &ide_hwifs[unit];
--			printk(KERN_INFO "%s: qd6580: single IDE board\n",
--					 hwif->name);
-+			printk(KERN_INFO "qd6580: single IDE board\n");
-+
-+			hwif = ide_find_port_slot(&d);
-+			if (hwif == NULL)
-+				return -ENOENT;
- 
- 			ide_init_port_hw(hwif, &hw[unit]);
- 
-@@ -434,35 +443,34 @@ static int __init qd_probe(int base)
- 			hwif->port_init_devs = qd6580_port_init_devs;
- 			hwif->set_pio_mode = &qd6580_set_pio_mode;
- 
--			idx[unit] = unit;
-+			idx[unit] = hwif->index;
- 
--			ide_device_add(idx, &qd65xx_port_info);
-+			ide_device_add(idx, &d);
- 
- 			return 1;
- 		} else {
- 			ide_hwif_t *mate;
- 
--			hwif = &ide_hwifs[0];
--			mate = &ide_hwifs[1];
- 			/* secondary enabled */
--			printk(KERN_INFO "%s&%s: qd6580: dual IDE board\n",
--					hwif->name, mate->name);
--
--			ide_init_port_hw(hwif, &hw[0]);
--			ide_init_port_hw(mate, &hw[1]);
--
--			qd_setup(hwif, base, config | (control << 8));
--
--			hwif->port_init_devs = qd6580_port_init_devs;
--			hwif->set_pio_mode = &qd6580_set_pio_mode;
--
--			qd_setup(mate, base, config | (control << 8));
--
--			mate->port_init_devs = qd6580_port_init_devs;
--			mate->set_pio_mode = &qd6580_set_pio_mode;
-+			printk(KERN_INFO "qd6580: dual IDE board\n");
- 
--			idx[0] = 0;
--			idx[1] = 1;
-+			hwif = ide_find_port();
-+			if (hwif) {
-+				ide_init_port_hw(hwif, &hw[0]);
-+				qd_setup(hwif, base, config | (control << 8));
-+				hwif->port_init_devs = qd6580_port_init_devs;
-+				hwif->set_pio_mode   = qd6580_set_pio_mode;
-+				idx[0] = hwif->index;
-+			}
-+
-+			mate = ide_find_port();
-+			if (mate) {
-+				ide_init_port_hw(mate, &hw[1]);
-+				qd_setup(mate, base, config | (control << 8));
-+				mate->port_init_devs = qd6580_port_init_devs;
-+				mate->set_pio_mode   = qd6580_set_pio_mode;
-+				idx[1] = mate->index;
-+			}
- 
- 			ide_device_add(idx, &qd65xx_port_info);
- 
-Index: b/drivers/ide/legacy/umc8672.c
-===================================================================
---- a/drivers/ide/legacy/umc8672.c
-+++ b/drivers/ide/legacy/umc8672.c
-@@ -128,8 +128,9 @@ static const struct ide_port_info umc867
- 
- static int __init umc8672_probe(void)
- {
-+	ide_hwif_t *hwif, *mate;
- 	unsigned long flags;
--	static u8 idx[4] = { 0, 1, 0xff, 0xff };
-+	static u8 idx[4] = { 0xff, 0xff, 0xff, 0xff };
- 	hw_regs_t hw[2];
- 
- 	if (!request_region(0x108, 2, "umc8672")) {
-@@ -157,11 +158,19 @@ static int __init umc8672_probe(void)
- 	ide_std_init_ports(&hw[1], 0x170, 0x376);
- 	hw[1].irq = 15;
- 
--	ide_init_port_hw(&ide_hwifs[0], &hw[0]);
--	ide_init_port_hw(&ide_hwifs[1], &hw[1]);
-+	hwif = ide_find_port();
-+	if (hwif) {
-+		ide_init_port_hw(hwif, &hw[0]);
-+		hwif->set_pio_mode = umc_set_pio_mode;
-+		idx[0] = hwif->index;
-+	}
- 
--	ide_hwifs[0].set_pio_mode = &umc_set_pio_mode;
--	ide_hwifs[1].set_pio_mode = &umc_set_pio_mode;
-+	mate = ide_find_port();
-+	if (mate) {
-+		ide_init_port_hw(mate, &hw[1]);
-+		mate->set_pio_mode = umc_set_pio_mode;
-+		idx[1] = mate->index;
-+	}
- 
- 	ide_device_add(idx, &umc8672_port_info);
- 
+ #ifdef CONFIG_BLK_DEV_IDEDMA_PMAC
+ 	if (pmif->cable_80 == 0)
 Index: b/include/linux/ide.h
 ===================================================================
 --- a/include/linux/ide.h
 +++ b/include/linux/ide.h
-@@ -1035,6 +1035,8 @@ enum {
- 	IDE_HFLAG_SINGLE		= (1 << 1),
- 	/* don't use legacy PIO blacklist */
- 	IDE_HFLAG_PIO_NO_BLACKLIST	= (1 << 2),
-+	/* set for the second port of QD65xx */
-+	IDE_HFLAG_QD_2ND_PORT		= (1 << 3),
- 	/* use PIO8/9 for prefetch off/on */
- 	IDE_HFLAG_ABUSE_PREFETCH	= (1 << 4),
- 	/* use PIO6/7 for fast-devsel off/on */
+@@ -516,7 +516,6 @@ typedef struct hwif_s {
+ 	unsigned long	extra_base;	/* extra addr for dma ports */
+ 	unsigned	extra_ports;	/* number of extra dma ports */
+ 
+-	unsigned	noprobe    : 1;	/* don't probe for this interface */
+ 	unsigned	present    : 1;	/* this interface exists */
+ 	unsigned	serialized : 1;	/* serialized all channel operation */
+ 	unsigned	sharing_irq: 1;	/* 1 = sharing irq with another hwif */
