@@ -1,56 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760475AbYB0WQF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762014AbYB0WRN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760475AbYB0WQF (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Feb 2008 17:16:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761098AbYB0WPs
+	id S1762014AbYB0WRN (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Feb 2008 17:17:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758416AbYB0WQ6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Feb 2008 17:15:48 -0500
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:50263 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1760842AbYB0WPr (ORCPT
+	Wed, 27 Feb 2008 17:16:58 -0500
+Received: from gateway-1237.mvista.com ([63.81.120.158]:56616 "EHLO
+	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755567AbYB0WQ5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Feb 2008 17:15:47 -0500
-Date: Wed, 27 Feb 2008 14:15:45 -0800 (PST)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Pekka Enberg <penberg@cs.helsinki.fi>
-cc: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>,
-       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Torsten Kaiser <just.for.lkml@googlemail.com>
-Subject: Re: NULL pointer in kmem_cache_alloc with 2.6.25-rc1
-In-Reply-To: <84144f020802182338p68d412f6sa9e0f8975344a9c0@mail.gmail.com>
-Message-ID: <Pine.LNX.4.64.0802271412420.13186@schroedinger.engr.sgi.com>
-References: <1203058021.3027.143.camel@ymzhang> 
- <Pine.LNX.4.64.0802150839180.12023@schroedinger.engr.sgi.com> 
- <1203404594.3248.32.camel@ymzhang> <84144f020802182338p68d412f6sa9e0f8975344a9c0@mail.gmail.com>
+	Wed, 27 Feb 2008 17:16:57 -0500
+Message-ID: <47C5E158.5080900@ct.jp.nec.com>
+Date: Wed, 27 Feb 2008 14:16:56 -0800
+From: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
+User-Agent: Thunderbird 2.0.0.12 (Windows/20080213)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Adrian Bunk <bunk@kernel.org>
+Cc: "H. Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>, Sam Ravnborg <sam@ravnborg.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] x86: X86_HT always enable on X86_64 SMP
+References: <47C5D32E.8070308@ct.jp.nec.com> <20080227212658.GU29269@cs181133002.pp.htv.fi> <47C5D693.3030207@zytor.com> <20080227215816.GX29269@cs181133002.pp.htv.fi>
+In-Reply-To: <20080227215816.GX29269@cs181133002.pp.htv.fi>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 19 Feb 2008, Pekka Enberg wrote:
-
-> > I will do more testing and investigation, as the bug also exists in 2.6.25-rc2.
+Adrian Bunk wrote:
+> On Wed, Feb 27, 2008 at 01:30:59PM -0800, H. Peter Anvin wrote:
+>> Adrian Bunk wrote:
+>>> On Wed, Feb 27, 2008 at 01:16:30PM -0800, Hiroshi Shimamoto wrote:
+>>>> From: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
+>>>>
+>>>> X86_HT is used for hyperthreading or multicore on 32-bit.
+>>>> The X86_HT on 64-bit is different from 32-bit, it means hyperthreading only.
+>>>> And X86_HT is not used on 64-bit except from cpu/initel_cacheinfo.c.
+>>>>
+>>>> Unify X86_HT for hyperthreading or multicore.
+>>>> Turn X86_HT on when X86_64 and SMP are enabled.
+>>> Please fix it properly instead - fiddling around with it the way you do
+>>> only asks for trouble in the future.
+>>>
+>>> What we need are two different variables for:
+>>> - hyperthreading and
+>>> - multicore
+>> He does, and calls them SCHED_SMT and SCHED_MC respectively.
 > 
-> Could you please try Ingo's patch: http://lkml.org/lkml/2008/2/19/13
+> These are the already existing scheduler related variables that are 
+> only a part of the X86_HT usages.
 > 
-> Looks like there are some problems with SLUB_FASTPATH.
+>> It's not particularly clear to me what X86_HT is meant to be used for  
+>> anymore at all.
+> 
+> grep through the source code and you find it is sometimes used for 
+> hyperthreading and sometimes for multicore.
+> 
+> I don't care whether X86_HT gets splitted or perhaps even removed, but 
+> any change to it should remove the status quo of it having two different 
+> semantics.
 
-Yeah that would determine if its the fastpath code. Note that the new 
-fastpath code may expose bugs that so far have been tolerated by the slab 
-allocators. If a store of a NULL to the first word of an object occurs 
-then this will be tolerated in 2.6.24 because slub will take it as the end 
-of the object list and just forget about the remaining objects. The 
-fastpath code will terminate with a NULL pointer deref.
+OK, you say "Don't mix two different semantics into one variable X86_HT", right?
 
-Enabling full debugging may get rid of the race due to the slowdown. It 
-could help to just enable minimal debugging for the slab cache in which we 
-see the issue.
-
-So do
-
-slub_debug=F,<affected cache>
-
+Thanks,
+Hiroshi Shimamoto
