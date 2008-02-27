@@ -1,69 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759238AbYB0VSP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758900AbYB0VVa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759238AbYB0VSP (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Feb 2008 16:18:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754068AbYB0VR7
+	id S1758900AbYB0VVa (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Feb 2008 16:21:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752848AbYB0VVU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Feb 2008 16:17:59 -0500
-Received: from sj-iport-2.cisco.com ([171.71.176.71]:38647 "EHLO
-	sj-iport-2.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753041AbYB0VR6 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Feb 2008 16:17:58 -0500
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-       Thomas Mingarelli <thomas.mingarelli@hp.com>
-Subject: Re: hpwdt oops in clflush_cache_range
-X-Message-Flag: Warning: May contain useful information
-References: <adad4qiwcmz.fsf@cisco.com>
-	<alpine.LFD.1.00.0802271913050.7583@apollo.tec.linutronix.de>
-	<ada1w6y1bzk.fsf@cisco.com>
-	<alpine.LFD.1.00.0802272011130.7583@apollo.tec.linutronix.de>
-	<20080227203655.GA30054@elte.hu>
-	<alpine.LFD.1.00.0802272140050.7583@apollo.tec.linutronix.de>
-	<alpine.LFD.1.00.0802272155190.7583@apollo.tec.linutronix.de>
-From: Roland Dreier <rdreier@cisco.com>
-Date: Wed, 27 Feb 2008 13:17:54 -0800
-In-Reply-To: <alpine.LFD.1.00.0802272155190.7583@apollo.tec.linutronix.de> (Thomas Gleixner's message of "Wed, 27 Feb 2008 21:59:26 +0100 (CET)")
-Message-ID: <ada3areyu7x.fsf@cisco.com>
-User-Agent: Gnus/5.1008 (Gnus v5.10.8) XEmacs/21.4.21 (linux)
+	Wed, 27 Feb 2008 16:21:20 -0500
+Received: from smtp6.pp.htv.fi ([213.243.153.40]:49128 "EHLO smtp6.pp.htv.fi"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752363AbYB0VVU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 Feb 2008 16:21:20 -0500
+Date: Wed, 27 Feb 2008 23:20:09 +0200
+From: Adrian Bunk <bunk@kernel.org>
+To: Bernhard Walle <bwalle@suse.de>, p_gortmaker@yahoo.com
+Cc: linux-kernel@vger.kernel.org
+Subject: [2.6 patch] drivers/char/rtc.c: make 2 functions static
+Message-ID: <20080227212009.GF29269@cs181133002.pp.htv.fi>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-OriginalArrivalTime: 27 Feb 2008 21:17:54.0839 (UTC) FILETIME=[37C67270:01C87986]
-Authentication-Results: sj-dkim-2; header.From=rdreier@cisco.com; dkim=pass (
-	sig from cisco.com/sjdkim2002 verified; ); 
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
- > Where is my brown paperbag ? I know that GCC _is_ stupid, but I never
- > remember.
+The following functions can now become static:
+- rtc_interrupt()
+- rtc_get_rtc_time()
 
-Original patch actually worked fine and trapped the problem.
+Signed-off-by: Adrian Bunk <bunk@kernel.org>
 
-I also instrumented the driver, and the problem is coming from the code:
+---
 
-		/*
-		 * Now we will check:
-		 * - SMBIOS checksum must be 0
-		 * - intermediate anchor should be _DMI_
-		 * - intermediate checksum should be 0
-		 */
-		if ((bios_checksum(p, length)) &&
-		    (strncmp((char *)eps->intermediate_anchor, "_DMI_",
-		             sizeof(eps->intermediate_anchor)) == 0) &&
-		    (bios_checksum(p+0x10, 15))) {
-			buf = ioremap(eps->table_address, eps->table_length);
-			if (buf == NULL)
-				return -ENODEV;
+This patch has been sent on:
+- 13 Feb 2008
 
-the ioremap there is trying to remap 0x7b6 bytes at an address of
-0x240047000ee000 -- either the BIOS data is bogus or the driver is
-getting at it the wrong way.
+ drivers/char/rtc.c  |    5 +++--
+ include/linux/rtc.h |    2 --
+ 2 files changed, 3 insertions(+), 4 deletions(-)
 
-Thomas (Mingarelli) -- this is on an HPDL380 G5 with pretty up-to-date
-firmware (if it's not the latest, I'm only missing an update that came
-out in the last month).  Should hpwdt work on this system?  Any debug
-info that would be helpful?
+e642155f0065ec03a83ed95eef2a78f272e73e01 
+diff --git a/drivers/char/rtc.c b/drivers/char/rtc.c
+index 78b151c..39aba90 100644
+--- a/drivers/char/rtc.c
++++ b/drivers/char/rtc.c
+@@ -144,6 +144,7 @@ static ssize_t rtc_read(struct file *file, char __user *buf,
+ 
+ static int rtc_ioctl(struct inode *inode, struct file *file,
+ 		     unsigned int cmd, unsigned long arg);
++static void rtc_get_rtc_time(struct rtc_time *rtc_tm);
+ 
+ #ifdef RTC_IRQ
+ static unsigned int rtc_poll(struct file *file, poll_table *wait);
+@@ -235,7 +236,7 @@ static inline unsigned char rtc_is_updating(void)
+  *	(See ./arch/XXXX/kernel/time.c for the set_rtc_mmss() function.)
+  */
+ 
+-irqreturn_t rtc_interrupt(int irq, void *dev_id)
++static irqreturn_t rtc_interrupt(int irq, void *dev_id)
+ {
+ 	/*
+ 	 *	Can be an alarm interrupt, update complete interrupt,
+@@ -1298,7 +1299,7 @@ static int rtc_proc_open(struct inode *inode, struct file *file)
+ }
+ #endif
+ 
+-void rtc_get_rtc_time(struct rtc_time *rtc_tm)
++static void rtc_get_rtc_time(struct rtc_time *rtc_tm)
+ {
+ 	unsigned long uip_watchdog = jiffies, flags;
+ 	unsigned char ctrl;
+diff --git a/include/linux/rtc.h b/include/linux/rtc.h
+index f2d0d15..1fc4f60 100644
+--- a/include/linux/rtc.h
++++ b/include/linux/rtc.h
+@@ -208,8 +208,6 @@ typedef struct rtc_task {
+ int rtc_register(rtc_task_t *task);
+ int rtc_unregister(rtc_task_t *task);
+ int rtc_control(rtc_task_t *t, unsigned int cmd, unsigned long arg);
+-void rtc_get_rtc_time(struct rtc_time *rtc_tm);
+-irqreturn_t rtc_interrupt(int irq, void *dev_id);
+ 
+ #endif /* __KERNEL__ */
+ 
 
- - R.
