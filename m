@@ -1,60 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758230AbYB0UPV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758281AbYB0UWQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758230AbYB0UPV (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Feb 2008 15:15:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757409AbYB0UPJ
+	id S1758281AbYB0UWQ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Feb 2008 15:22:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756267AbYB0UWF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Feb 2008 15:15:09 -0500
-Received: from iolanthe.rowland.org ([192.131.102.54]:41379 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1756270AbYB0UPI (ORCPT
+	Wed, 27 Feb 2008 15:22:05 -0500
+Received: from qmta07.emeryville.ca.mail.comcast.net ([76.96.30.64]:48211 "EHLO
+	QMTA07.emeryville.ca.mail.comcast.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754879AbYB0UWE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Feb 2008 15:15:08 -0500
-Date: Wed, 27 Feb 2008 15:15:07 -0500 (EST)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-cc: Linux-pm mailing list <linux-pm@lists.linux-foundation.org>,
-       Kernel development list <linux-kernel@vger.kernel.org>
-Subject: Re: [linux-pm] Fundamental flaw in system suspend, exposed by freezer
- removal
-In-Reply-To: <200802272050.39769.rjw@sisk.pl>
-Message-ID: <Pine.LNX.4.44L0.0802271509230.9523-100000@iolanthe.rowland.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Wed, 27 Feb 2008 15:22:04 -0500
+X-Authority-Analysis: v=1.0 c=1 a=Siy3sSQzJz4A:10
+ a=bojhYoMd2USPMMK5XVEeMQ==:17 a=D19gQVrFAAAA:8 a=F4He0BBwVSj-kWfn_LQA:9
+ a=OMd058dYc6qL45SubqX4F5oVYLgA:4 a=4N9Db7Z2_RYA:10 a=ZaGerQNKEe0A:10
+ a=si9q_4b84H0A:10 a=KUJAPYlYduUA:10
+From: kelk1@comcast.net (Quel Qun)
+To: David Miller <davem@davemloft.net>, marcel@holtmann.org
+Cc: tglx@linutronix.de, dwmw2@infradead.org, hidave.darkstar@gmail.com,
+       linux-kernel@vger.kernel.org, jkosina@suse.cz, mingo@elte.hu
+Subject: Re: [PATCH] bluetooth: delete timer in l2cap_conn_del()
+Date: Wed, 27 Feb 2008 20:21:59 +0000
+Message-Id: <022720082021.26121.47C5C66700041AAD000066092200751090CE05040A05@comcast.net>
+X-Mailer: AT&T Message Center Version 1 (Oct 30 2007)
+X-Authenticated-Sender: a2VsazFAY29tY2FzdC5uZXQ=
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 27 Feb 2008, Rafael J. Wysocki wrote:
 
-> > All right, we can set it to RESUME_RUNNING before calling the resume
-> > method and then set it to 0 afterwards.  The point is that the value
-> > shouldn't remain SUSPEND_DONE while resume runs, because it should be
-> > legal for resume to register new children.
+ -------------- Original message ----------------------
+From: David Miller <davem@davemloft.net>
+> From: Marcel Holtmann <marcel@holtmann.org>
+> Date: Wed, 27 Feb 2008 10:55:07 +0100
 > 
-> I'm not sure.  The core moves the device to dpm_active only after ->resume()
-> has run.
-
-Actually the move is done before the method is called.  So this isn't a
-problem.
-
-...
-> > > > The one tricky thing to watch out for is when a suspend or resume 
-> > > > method wants to unregister the device being suspended or resumed.
-> > > 
-> > > That can't happen, because dev->sem is taken by suspend_device() and
-> > > device_del() would lock up attempting to acquire it once again.
+> > Hi Dave,
 > > 
-> > We'll have to fix device_del() to prevent that from happening.  Your 
-> > in_sleep_context() approach should work.
+> > > From: Thomas Gleixner <tglx@linutronix.de>
+> > > Date: Tue, 26 Feb 2008 09:28:13 +0100 (CET)
+> > >
+> > >> Delete a possibly armed timer before kfree'ing the connection object.
+> > >>
+> > >> Solves: http://lkml.org/lkml/2008/2/15/514
+> > >>
+> > >> Reported-by:Quel Qun <kelk1@comcast.net>
+> > >> Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
+> > >
+> > > I'll apply this, thanks Thomas.
+> > 
+> > can you please wait for a confirmation from Quel that this fixes it.  
+> > My ACK is based on that he confirms that it fixes it for sure.
 > 
-> I'm not sure if we need to do it.  It's always been like this, so the current
-> drivers' ->suspend() and ->resume() don't unregister the device they're called
-> for.  I don't see any advantage from doing that for future drivers.
+> It doesn't hurt to toss this to Linus now, if it's bogus we
+> have tons of time to revert it.
 
-All right, if it doesn't happen now then we don't need to allow for it.  
-That makes life a little simpler.
-
-Alan Stern
-
+As I said, it prevents the crash, but does not 'fix' my problem, in that I still cannot use the dongle.
+--
+kk1
