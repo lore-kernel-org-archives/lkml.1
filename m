@@ -1,86 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761925AbYB0WK4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761760AbYB0WLi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761925AbYB0WK4 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Feb 2008 17:10:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761482AbYB0WKh
+	id S1761760AbYB0WLi (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Feb 2008 17:11:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757771AbYB0WL0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Feb 2008 17:10:37 -0500
-Received: from xspect.dk ([212.97.129.87]:52081 "EHLO xspect.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758358AbYB0WKg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Feb 2008 17:10:36 -0500
-Date: Wed, 27 Feb 2008 23:10:33 +0100
-From: "Klaus S. Madsen" <ksm@hjernemadsen.org>
-To: LKML <linux-kernel@vger.kernel.org>
-Cc: Ingo Molnar <mingo@elte.hu>, Pavel Machek <pavel@ucw.cz>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Regression in 2.6.25-rc3: s2ram segfaults before suspending
-Message-ID: <20080227221033.GR17932@hjernemadsen.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.9i
+	Wed, 27 Feb 2008 17:11:26 -0500
+Received: from relay2.sgi.com ([192.48.171.30]:46983 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1758061AbYB0WLZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 Feb 2008 17:11:25 -0500
+Date: Wed, 27 Feb 2008 14:11:19 -0800 (PST)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Jason Gunthorpe <jgunthorpe@obsidianresearch.com>
+cc: Pete Wyckoff <pw@osc.edu>, Rik van Riel <riel@redhat.com>,
+       Andrea Arcangeli <andrea@qumranet.com>, a.p.zijlstra@chello.nl,
+       izike@qumranet.com, Roland Dreier <rdreier@cisco.com>, steiner@sgi.com,
+       linux-kernel@vger.kernel.org, avi@qumranet.com, linux-mm@kvack.org,
+       daniel.blueman@quadrics.com, Robin Holt <holt@sgi.com>,
+       general@lists.openfabrics.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       kvm-devel@lists.sourceforge.net
+Subject: Re: [ofa-general] Re: Demand paging for memory regions
+In-Reply-To: <20080214000103.GG31435@obsidianresearch.com>
+Message-ID: <Pine.LNX.4.64.0802271409480.13186@schroedinger.engr.sgi.com>
+References: <ada3arzxgkz.fsf_-_@cisco.com> <47B2174E.5000708@opengridcomputing.com>
+ <Pine.LNX.4.64.0802121408150.9591@schroedinger.engr.sgi.com>
+ <adazlu5vlub.fsf@cisco.com> <20080212232329.GC31435@obsidianresearch.com>
+ <Pine.LNX.4.64.0802121657430.11628@schroedinger.engr.sgi.com>
+ <20080213012638.GD31435@obsidianresearch.com>
+ <Pine.LNX.4.64.0802121819530.12328@schroedinger.engr.sgi.com>
+ <20080213040905.GQ29340@mv.qlogic.com> <20080213232308.GB7597@osc.edu>
+ <20080214000103.GG31435@obsidianresearch.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi all,
+On Wed, 13 Feb 2008, Jason Gunthorpe wrote:
 
-	I have a Thinkpad T61p, which I'm able to suspend with s2ram on
-Linux 2.6.24.3. However when I try to suspend it on 2.6.25-rc3, s2ram
-dies after changing to vt1, with a segfault. I'm using s2ram from cvs,
-and libx86 version 0.99 from http://www.codon.org.uk/~mjg59/libx86/.
+> Christoph: It seemed to me you were first talking about
+> freeing/swapping/faulting RDMA'able pages - but would pure migration
+> as a special hardware supported case be useful like Catilan suggested?
 
-Some details about the segfault:
+That is a special case of the proposed solution. You could mlock the 
+regions of interest. Those can then only be migrated but not swapped out.
 
-$ sudo gdb ./s2ram
-(gdb) run
-Starting program: /home/ksm/downloads/suspend/s2ram 
-Switching from vt7 to vt1
-Calling get_mode
+However, I think we need some limit on the number of pages one can mlock. 
+Otherwise the VM can get into a situation where reclaim is not possible 
+because the majority of memory is either mlocked or pinned by I/O etc.
 
-Program received signal SIGSEGV, Segmentation fault.
-0xb7facf4a in run_vm86 () at lrmi.c:526
-526             asm volatile (
-(gdb) list
-521     static int
-522     lrmi_vm86(struct vm86_struct *vm)
-523     {
-524             int r;
-525     #ifdef __PIC__
-526             asm volatile (
-527              "pushl %%ebx\n\t"
-528              "movl %2, %%ebx\n\t"
-529              "int $0x80\n\t"
-530              "popl %%ebx"
-(gdb) bt 
-#0  0xb7facf4a in run_vm86 () at lrmi.c:526
-#1  0xb7fad61b in LRMI_int (i=16, r=0xbffca670) at lrmi.c:844
-#2  0x0804acfc in do_vbe_service (AX=20227, BX=0, regs=0xbffca670)
-    at vbetool/vbetool.c:158
-#3  0x0804af7e in __get_mode () at vbetool/vbetool.c:453
-#4  0x0804a30f in s2ram_hacks () at s2ram-x86.c:268
-#5  0x0804954f in main (argc=1, argv=0x0) at s2ram-main.c:92
-
-I have tried to bisect the problem, and it fingered the following
-commit:
-
-commit 82bc03fc158e28c90d7ed9919410776039cb4e14
-Author: Ingo Molnar <mingo@elte.hu>
-
-    x86: add PWT to NOCACHE flags
-
-Reverting this commit in the bisected tree (by executing git show
-82bc03fc158e28c90d7ed9919410776039cb4e14 | patch -R -p1), makes the
-segfault go away. I've run make clean between each kernel compile, to be
-sure the tree was correctly compiled.
-
-I have attached the .config I'm using for 2.6.25-rc3 (when bisecting, I
-just choose the default on every question). If necessary, I can try to
-reconstruct the one I ended up with after the bisection.
-
-Hope this makes sense to someone, and thanks in advance.
-
--- 
-Kind regards
-	Klaus S. Madsen
