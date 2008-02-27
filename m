@@ -1,49 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755888AbYB0IF7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764484AbYB0IHT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755888AbYB0IF7 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Feb 2008 03:05:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764274AbYB0IFW
+	id S1764484AbYB0IHT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Feb 2008 03:07:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753436AbYB0IHF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Feb 2008 03:05:22 -0500
-Received: from srv5.dvmed.net ([207.36.208.214]:36063 "EHLO mail.dvmed.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1764197AbYB0IFU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Feb 2008 03:05:20 -0500
-Message-ID: <47C519B3.7050200@garzik.org>
-Date: Wed, 27 Feb 2008 03:05:07 -0500
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
-MIME-Version: 1.0
-To: Pekka J Enberg <penberg@cs.helsinki.fi>
-CC: Stephen Hemminger <shemminger@vyatta.com>, romieu@fr.zoreil.com,
-       sorbica@icplus.com.tw, jesse@icplus.com.tw,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Subject: Re: [RFC/PATCH] ipg: add jumbo frame support kconfig option
-References: <Pine.LNX.4.64.0802262148270.12999@sbz-30.cs.Helsinki.FI> <20080226123247.2b63bbf0@extreme> <47C49BDD.50205@garzik.org> <Pine.LNX.4.64.0802270942070.19136@sbz-30.cs.Helsinki.FI> <Pine.LNX.4.64.0802270952050.19294@sbz-30.cs.Helsinki.FI>
-In-Reply-To: <Pine.LNX.4.64.0802270952050.19294@sbz-30.cs.Helsinki.FI>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Wed, 27 Feb 2008 03:07:05 -0500
+Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:59796 "EHLO
+	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752928AbYB0IHD (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 Feb 2008 03:07:03 -0500
+Date: Wed, 27 Feb 2008 17:09:45 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: David Rientjes <rientjes@google.com>
+Cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, Rik van Riel <riel@redhat.com>,
+       Lee Schermerhorn <Lee.Schermerhorn@hp.com>,
+       Nick Piggin <npiggin@suse.de>
+Subject: Re: [RFC][PATCH] page reclaim throttle take2
+Message-Id: <20080227170945.e3bd9a87.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <alpine.DEB.1.00.0802262349090.21857@chino.kir.corp.google.com>
+References: <47C4F9C0.5010607@linux.vnet.ibm.com>
+	<alpine.DEB.1.00.0802262201390.1613@chino.kir.corp.google.com>
+	<20080227160746.425E.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+	<alpine.DEB.1.00.0802262315030.11433@chino.kir.corp.google.com>
+	<20080227165139.18e5933e.kamezawa.hiroyu@jp.fujitsu.com>
+	<alpine.DEB.1.00.0802262349090.21857@chino.kir.corp.google.com>
+Organization: Fujitsu
+X-Mailer: Sylpheed 2.4.2 (GTK+ 2.10.11; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.4 (----)
-X-Spam-Report: SpamAssassin version 3.2.3 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Pekka J Enberg wrote:
-> On Wed, 27 Feb 2008, Pekka J Enberg wrote:
->> Ok, so a sysfs attribute would be sufficient, I suppose?
+On Tue, 26 Feb 2008 23:56:39 -0800 (PST)
+David Rientjes <rientjes@google.com> wrote:
+
+> On Wed, 27 Feb 2008, KAMEZAWA Hiroyuki wrote:
 > 
-> s/sysfs attribute/module parameter/
+> > Hmm, but kswapd, which is main worker of page reclaiming, is per-node.
+> > And reclaim is done based on zone.
+> > per-zone/per-node throttling seems to make sense.
+> > 
+> 
+> That's another argument for not introducing the sysctl; the number of 
+> nodes and zones are a static property of the machine that cannot change 
+> without a reboot (numa=fake, mem=, introducing movable zones, etc).  We 
+> don't have node hotplug that can suddenly introduce additional zones from 
+> which to reclaim.
 
-You could do it that way, but really, a non-jumbo default MTU should be 
-sufficient.
+Hmm, do you know there is already zone-hotplug ? ;)
+(Means, onlining new memory in new zone increase the # of zones.
+ Now, in our system, possible-node turns to be online nodes.)
 
-The user must take proactive action to change the MTU to jumbo at that 
-point...  that way its far more likely to get tested, while being 
-non-default, too.
+> My point was that there doesn't appear to be any use case for tuning this 
+> via a sysctl that isn't simply attempting to workaround some other reclaim 
+> problem when the VM is stressed.  If that's agreed upon, then deciding 
+> between a config option that is either per-cpu or per-node should be based 
+> on the benchmarks that you've run.  At this time, it appears that per-node 
+> is the more advantageous.
+>
+I agree that what is the best is based on benchmark.
+I like per-node, now.
+I believe there will be some change when RvR's spilit-LRU patches are applied.
+ 
+> > I know his environment has 4cpus per node but throttle to 3 was the best
+> > number in his measurement. Then it seems num-per-cpu is excessive.
+> > (At least, ratio(%) is better.)
+> 
+> That seems to indicate that the NUMA topology is more important than lock 
+> contention for the reclaim throttle.
+> 
+I hear that there is also I/O bottle-neck for page reclaiming, at last.
 
-	Jeff
 
-
+Thanks,
+-Kame
 
