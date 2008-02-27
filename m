@@ -1,44 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756693AbYB0JjO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756228AbYB0Jp2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756693AbYB0JjO (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Feb 2008 04:39:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752035AbYB0Ji4
+	id S1756228AbYB0Jp2 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Feb 2008 04:45:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752035AbYB0JpT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Feb 2008 04:38:56 -0500
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:4340 "EHLO spitz.ucw.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751107AbYB0Jin (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Feb 2008 04:38:43 -0500
-Date: Wed, 27 Feb 2008 10:19:50 +0100
-From: Pavel Machek <pavel@ucw.cz>
-To: Dave Jones <davej@codemonkey.org.uk>,
-       Linux Kernel <linux-kernel@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: boot_delay broken ?
-Message-ID: <20080227091950.GA4615@ucw.cz>
-References: <20080224004615.GA31012@codemonkey.org.uk>
+	Wed, 27 Feb 2008 04:45:19 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:40254 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751429AbYB0JpR (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 Feb 2008 04:45:17 -0500
+Subject: Re: [RFC][PATCH] page reclaim throttle take2
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: balbir@linux.vnet.ibm.com
+Cc: David Rientjes <rientjes@google.com>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       Rik van Riel <riel@redhat.com>,
+       Lee Schermerhorn <Lee.Schermerhorn@hp.com>,
+       Nick Piggin <npiggin@suse.de>
+In-Reply-To: <47C526F8.8010807@linux.vnet.ibm.com>
+References: <47C4EF2D.90508@linux.vnet.ibm.com>
+	 <alpine.DEB.1.00.0802262115270.1799@chino.kir.corp.google.com>
+	 <20080227143301.4252.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+	 <alpine.DEB.1.00.0802262145410.31356@chino.kir.corp.google.com>
+	 <47C4F9C0.5010607@linux.vnet.ibm.com>
+	 <alpine.DEB.1.00.0802262201390.1613@chino.kir.corp.google.com>
+	 <47C51856.7060408@linux.vnet.ibm.com>
+	 <alpine.DEB.1.00.0802270045400.31372@chino.kir.corp.google.com>
+	 <47C526F8.8010807@linux.vnet.ibm.com>
+Content-Type: text/plain
+Date: Wed, 27 Feb 2008 10:44:58 +0100
+Message-Id: <1204105498.6242.374.camel@lappy>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080224004615.GA31012@codemonkey.org.uk>
-User-Agent: Mutt/1.5.9i
+X-Mailer: Evolution 2.21.90 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat 2008-02-23 19:46:15, Dave Jones wrote:
-> The boot_delay switch seems to be behaving strangely in the
-> current -git.  Setting it to =10 makes the output 'bursty'
-> it becomes slow for some printk's whilst others scroll by
-> at regular speed.
-> Setting it any higher than that seems to make it pause for
-> a really long time before it outputs any text at all.
-> 
-> x86 timer changes perhaps ?
 
-If nohz=off highres=off notsc fixes it, it is probably timers :-).
+On Wed, 2008-02-27 at 14:31 +0530, Balbir Singh wrote:
 
+> You mentioned CONFIG_NUM_RECLAIM_THREADS_PER_CPU and not
+> CONFIG_NUM_RECLAIM_THREADS_PER_NODE. The advantage with syscalls is that even if
+> we get the thing wrong, the system administrator has an alternative. Please look
+> through the existing sysctl's and you'll see what I mean. What is wrong with
+> providing the flexibility that comes with sysctl? We cannot possibly think of
+> all situations and come up with the right answer for a heuristic. Why not come
+> up with a default and let everyone use what works for them?
 
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+I agree with Balbir, just turn it into a sysctl, its easy enough to do,
+and those who need it will thank you for it instead of curse you for
+hard coding it.
+
