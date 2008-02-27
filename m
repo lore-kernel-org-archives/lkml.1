@@ -1,214 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759097AbYB0Ef4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763635AbYB0Eho@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759097AbYB0Ef4 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Feb 2008 23:35:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753720AbYB0Efs
+	id S1763635AbYB0Eho (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Feb 2008 23:37:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753720AbYB0Ehd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Feb 2008 23:35:48 -0500
-Received: from smtp106.sbc.mail.re2.yahoo.com ([68.142.229.99]:40077 "HELO
-	smtp106.sbc.mail.re2.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1753404AbYB0Efr (ORCPT
+	Tue, 26 Feb 2008 23:37:33 -0500
+Received: from nf-out-0910.google.com ([64.233.182.188]:27105 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753404AbYB0Ehc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Feb 2008 23:35:47 -0500
-X-YMail-OSG: jUKhwmYVM1mC5qmaRGz3CEtfpWRfmwDO_7UVsrApIN_OixdnBChXATC4bwCPxoOeh2Bn2Z7nryjUZZ7jeHrSxOgzVFER5Ey1Y3mqwrrDQsisDZ9iPnVNGOdySQzPMBakwo9fEK6amxPJjcXBZ6H4sk_1z6L0Vbfa.kE-
-X-Yahoo-Newman-Property: ymail-3
-Date: Tue, 26 Feb 2008 22:33:06 -0600
-From: serge@hallyn.com
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Pavel Emelyanov <xemul@openvz.org>, Oleg Nesterov <oleg@tv-sign.ru>,
-       linux-kernel@vger.kernel.org, Andrew Morgan <morgan@kernel.org>
-Subject: Re: Fw: [PATCH 1/1] file capabilities: simplify signal check
-Message-ID: <20080227043306.GA9293@vino.hallyn.com>
-References: <20080223000237.518aace0.akpm@linux-foundation.org> <m17igu6e73.fsf@ebiederm.dsl.xmission.com>
+	Tue, 26 Feb 2008 23:37:32 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:mime-version:content-type:content-disposition:user-agent;
+        b=r7OpFIBQpfE0jrDNLMbxz7XxPGSo2R6IXYhCbkSWXU5TqNyDNeGYayXZ1/3xhEzZ34FbgYsboxpIAKEfuS5V+ufsw9hVlZEQX0Xlr35Efv1Ooy8j3cg9D/X1wsS4c8rlp0pH2dqyGxfo69DL3jrfxghbbCNTVDrWfGVNRSJE7Q4=
+Date: Wed, 27 Feb 2008 12:43:27 +0800
+From: Dave Young <hidave.darkstar@gmail.com>
+To: akpm@linux-foundation.org
+Cc: randy.dunlap@oracle.com, davej@codemonkey.org.uk, tglx@linutronix.de,
+       linux-kernel@vger.kernel.org
+Subject: [PATCH] make boot_delay use loops_per_jiffy directly
+Message-ID: <20080227044327.GB2883@darkstar.te-china.tietoenator.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <m17igu6e73.fsf@ebiederm.dsl.xmission.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Quoting Eric W. Biederman (ebiederm@xmission.com):
-> Andrew Morton <akpm@linux-foundation.org> writes:
-> 
-> > um, is that code namespace-clean?
-> 
-> Choke, gag.
+Make printk boot_delay use loops_per_jiffy directly,
+declare preset_lpj as static, and set lpj value to loops_per_jiffy in lpj_setup. 
 
-Oh, sorry, I got lost in the set of patches in the message.  To be
-clear, my little 4-patch uid-ns-signal patchset can simply be updated
-to make the cap_task_kill() uid check into if (task_user_equiv(current, p)
+Signed-off-by: Dave Young <hidave.darkstar@gmail.com>
 
-But Eric if you simply drop cap_task_kill() (don't make it return 0,
-just drop the function and go back to not setting task_kill in the
-capability_security_ops) I'll ack that.  Else I'll write the patch
-thursday.  At this point the only thing that will be denied by
-cap_task_kill() but not by check_kill_permission() is funky euid cases.
-That's wrong.  (cc'ing amorgan in the event I'm forgetting something
-useful the fn is doing)
+---
+init/calibrate.c |    6 +++---
+kernel/printk.c  |   15 ++++-----------
+2 files changed, 7 insertions(+), 14 deletions(-)
 
--serge
-
-> There are uid namespace issues but since no one has finished the
-> uid namespace that I am aware of that is minor.
-> 
-> However the code does not appear clean/maintainable.  The normal linux
-> signal sending policy has already been enforce before we get to this
-> point.
-> 
-> So unless I am totally mistaken the code should read:
-> 
-> int cap_task_kill(struct task_struct *p, struct siginfo *info,
->                                 int sig, u32 secid)
-> {
->         if (info != SEND_SIG_NOINFO && (is_si_special(info) || SI_FROMKERNEL(info)))
->                 return 0;
-> 
->         if (!cap_issubset(p->cap_permitted, current->cap_permitted))
->                 return -EPERM;
-> 
-> 	return 0;
-> }
-> 
-> Although doing it that way violates:
->        /*
->          * Running a setuid root program raises your capabilities.
->          * Killing your own setuid root processes was previously
->          * allowed.
->          * We must preserve legacy signal behavior in this case.
->          */
-> 
-> 
-> Which says to me the code should really read:
-> int cap_task_kill(struct task_struct *p, struct siginfo *info,
->                                 int sig, u32 secid)
-> {
-> 	return 0;
-> }
-> 
-> The entire point of defining cap_task_kill under
-> CONFIG_SECURITY_FILE_CAPABLITIES appears to be deny killing processes
-> with more caps.  Killing processes that we could ordinarily kill 
-> which have more caps appears to be precisely the case we have decided
-> to allow.  So the patched version of cap_task_kill appears to be an
-> expensive way of doing nothing, just waiting for someone to complain
-> about the last couple of cases it denies until it is truly a noop.
-> 
-> 
-> 
-> > Thanks.
-> >
-> > Begin forwarded message:
-> >
-> > Date: Wed, 20 Feb 2008 10:15:50 -0600
-> > From: "Serge E. Hallyn" <serue@us.ibm.com>
-> > To: lkml <linux-kernel@vger.kernel.org>
-> > Subject: [PATCH 1/1] file capabilities: simplify signal check
-> >
-> >
-> >>From bd076c7245d02be0cc01b7c09bd7170ec5946492 Mon Sep 17 00:00:00 2001
-> > From: Serge E. Hallyn <serue@us.ibm.com>
-> > Date: Sun, 17 Feb 2008 20:28:07 -0500
-> > Subject: [PATCH 1/1] file capabilities: simplify signal check
-> >
-> > Simplify the uid equivalence check in cap_task_kill().  Anyone
-> > can kill a process owned by the same uid.
-> >
-> > Without this patch wireshark is reported to fail.
-> >
-> > Signed-off-by: Serge E. Hallyn <serue@us.ibm.com>
-> > Signed-off-by: Andrew G. Morgan <morgan@kernel.org>
-> > ---
-> >  security/commoncap.c |    2 +-
-> >  1 files changed, 1 insertions(+), 1 deletions(-)
-> >
-> > diff --git a/security/commoncap.c b/security/commoncap.c
-> > index 5aba826..bb0c095 100644
-> > --- a/security/commoncap.c
-> > +++ b/security/commoncap.c
-> > @@ -552,7 +552,7 @@ int cap_task_kill(struct task_struct *p, struct siginfo
-> > *info,
-> >  	 * allowed.
-> >  	 * We must preserve legacy signal behavior in this case.
-> >  	 */
-> > -	if (p->euid == 0 && p->uid == current->uid)
-> > +	if (p->uid == current->uid)
-> >  		return 0;
-> >  
-> >  	/* sigcont is permitted within same session */
-> > -- 
-> > 1.5.1.1.GIT
-> 
-> So it looks to me like we should just give up trying to deny a few
-> cases now.
-> 
-> diff --git a/security/commoncap.c b/security/commoncap.c
-> index 5aba826..c1d1fd7 100644
-> --- a/security/commoncap.c
-> +++ b/security/commoncap.c
-> @@ -540,41 +540,6 @@ int cap_task_setnice (struct task_struct *p, int nice)
->  	return cap_safe_nice(p);
->  }
->  
-> -int cap_task_kill(struct task_struct *p, struct siginfo *info,
-> -				int sig, u32 secid)
-> -{
-> -	if (info != SEND_SIG_NOINFO && (is_si_special(info) || SI_FROMKERNEL(info)))
-> -		return 0;
-> -
-> -	/*
-> -	 * Running a setuid root program raises your capabilities.
-> -	 * Killing your own setuid root processes was previously
-> -	 * allowed.
-> -	 * We must preserve legacy signal behavior in this case.
-> -	 */
-> -	if (p->euid == 0 && p->uid == current->uid)
-> -		return 0;
-> -
-> -	/* sigcont is permitted within same session */
-> -	if (sig == SIGCONT && (task_session_nr(current) == task_session_nr(p)))
-> -		return 0;
-> -
-> -	if (secid)
-> -		/*
-> -		 * Signal sent as a particular user.
-> -		 * Capabilities are ignored.  May be wrong, but it's the
-> -		 * only thing we can do at the moment.
-> -		 * Used only by usb drivers?
-> -		 */
-> -		return 0;
-> -	if (cap_issubset(p->cap_permitted, current->cap_permitted))
-> -		return 0;
-> -	if (capable(CAP_KILL))
-> -		return 0;
-> -
-> -	return -EPERM;
-> -}
-> -
->  /*
->   * called from kernel/sys.c for prctl(PR_CABSET_DROP)
->   * done without task_capability_lock() because it introduces
-> @@ -605,13 +570,13 @@ int cap_task_setnice (struct task_struct *p, int nice)
->  {
->  	return 0;
->  }
-> +#endif
-> +
->  int cap_task_kill(struct task_struct *p, struct siginfo *info,
->  				int sig, u32 secid)
->  {
->  	return 0;
->  }
-> -#endif
-> -
->  void cap_task_reparent_to_init (struct task_struct *p)
->  {
->  	cap_set_init_eff(p->cap_effective);
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+diff -upr linux/init/calibrate.c linux.new/init/calibrate.c
+--- linux/init/calibrate.c	2008-02-27 10:54:15.000000000 +0800
++++ linux.new/init/calibrate.c	2008-02-27 12:32:11.000000000 +0800
+@@ -9,10 +9,11 @@
+ #include <linux/init.h>
+ #include <linux/timex.h>
+ 
+-unsigned long preset_lpj;
++static unsigned long preset_lpj;
+ static int __init lpj_setup(char *str)
+ {
+-	preset_lpj = simple_strtoul(str,NULL,0);
++	loops_per_jiffy = simple_strtoul(str, NULL, 0);
++	preset_lpj = 1;
+ 	return 1;
+ }
+ 
+@@ -117,7 +118,6 @@ void __cpuinit calibrate_delay(void)
+ 	int lps_precision = LPS_PREC;
+ 
+ 	if (preset_lpj) {
+-		loops_per_jiffy = preset_lpj;
+ 		printk("Calibrating delay loop (skipped)... "
+ 			"%lu.%02lu BogoMIPS preset\n",
+ 			loops_per_jiffy/(500000/HZ),
+diff -upr linux/kernel/printk.c linux.new/kernel/printk.c
+--- linux/kernel/printk.c	2008-02-27 12:30:43.000000000 +0800
++++ linux.new/kernel/printk.c	2008-02-27 12:32:22.000000000 +0800
+@@ -173,24 +173,14 @@ __setup("log_buf_len=", log_buf_len_setu
+ #ifdef CONFIG_BOOT_PRINTK_DELAY
+ 
+ static unsigned int boot_delay; /* msecs delay after each printk during bootup */
+-static unsigned long long printk_delay_msec; /* per msec, based on boot_delay */
+ 
+ static int __init boot_delay_setup(char *str)
+ {
+-	unsigned long lpj;
+-	unsigned long long loops_per_msec;
+-
+-	lpj = preset_lpj ? preset_lpj : 1000000;	/* some guess */
+-	loops_per_msec = (unsigned long long)lpj / 1000 * HZ;
+-
+ 	get_option(&str, &boot_delay);
+ 	if (boot_delay > 10 * 1000)
+ 		boot_delay = 0;
+ 
+-	printk_delay_msec = loops_per_msec;
+-	printk(KERN_DEBUG "boot_delay: %u, preset_lpj: %ld, lpj: %lu, "
+-		"HZ: %d, printk_delay_msec: %llu\n",
+-		boot_delay, preset_lpj, lpj, HZ, printk_delay_msec);
++	printk(KERN_DEBUG "boot_delay: %u\n", boot_delay);
+ 	return 1;
+ }
+ __setup("boot_delay=", boot_delay_setup);
+@@ -199,6 +189,9 @@ static void boot_delay_msec(void)
+ {
+ 	unsigned long long k;
+ 	unsigned long timeout;
++	unsigned long long printk_delay_msec;
++
++	printk_delay_msec = (unsigned long long)loops_per_jiffy / 1000 * HZ;
+ 
+ 	if (boot_delay == 0 || system_state != SYSTEM_BOOTING)
+ 		return;
