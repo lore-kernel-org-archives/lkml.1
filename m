@@ -1,74 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754815AbYB0ORR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755249AbYB0OXf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754815AbYB0ORR (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Feb 2008 09:17:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752457AbYB0ORD
+	id S1755249AbYB0OXf (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Feb 2008 09:23:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753225AbYB0OX1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Feb 2008 09:17:03 -0500
-Received: from mail2.shareable.org ([80.68.89.115]:50867 "EHLO
-	mail2.shareable.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752245AbYB0ORA (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Feb 2008 09:17:00 -0500
-Date: Wed, 27 Feb 2008 14:16:46 +0000
-From: Jamie Lokier <jamie@shareable.org>
-To: Jeff Garzik <jeff@garzik.org>
-Cc: Nick Piggin <nickpiggin@yahoo.com.au>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org, Chris Wedgwood <cw@f00f.org>
-Subject: Re: Proposal for "proper" durable fsync() and fdatasync()
-Message-ID: <20080227141646.GA22850@shareable.org>
-References: <20080226072649.GB30238@shareable.org> <20080225234319.f4589ae4.akpm@linux-foundation.org> <20080226075921.GG30238@shareable.org> <200802262016.11297.nickpiggin@yahoo.com.au> <47C441C1.5060305@garzik.org> <20080226170011.GB21203@shareable.org> <47C45267.4090105@garzik.org>
+	Wed, 27 Feb 2008 09:23:27 -0500
+Received: from mail.suse.de ([195.135.220.2]:48805 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752957AbYB0OX0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 Feb 2008 09:23:26 -0500
+Message-ID: <47C572CA.2010604@suse.de>
+Date: Wed, 27 Feb 2008 15:25:14 +0100
+From: Andi Kleen <ak@suse.de>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <47C45267.4090105@garzik.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+To: Alexander van Heukelum <heukelum@fastmail.fm>
+Cc: "H. Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Alexander van Heukelum <heukelum@mailshack.com>
+Subject: Re: [PATCH] Fix alignment of early reservation for EBDA
+References: <20080224174605.GA21661@mailshack.com> <47C22568.1010405@zytor.com> <1203958478.20033.1239002461@webmail.messagingengine.com>
+In-Reply-To: <1203958478.20033.1239002461@webmail.messagingengine.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jeff Garzik wrote:
-> >It's not optimal even then.
-> >
-> >  Devices: On a software RAID, you ideally don't want to issue flushes
-> >  to all drives if your database did a 1 block commit entry.  (But they
-> >  probably use O_DIRECT anyway, changing the rules again).  But all that
-> >  can be optimised in generic VFS code eventually.  It doesn't need
-> >  filesystem assistance in most cases.
+Alexander van Heukelum wrote:
+> On Sun, 24 Feb 2008 18:18:16 -0800, "H. Peter Anvin" <hpa@zytor.com>
+> said:
+>> Alexander van Heukelum wrote:
+>>> early res: 3 [9f000-9ffff] EBDA
+>>>
+>>> Is it really necessary to force the allocation to a page boundary?
+>> It is, but that rounding gets done in reserve_bootmem() anyway, so there 
+>> is no need for the arch-specific code to do it.
+>>
+>> The 32-bit EBDA code hard-codes a size of 4K, which is probably equally 
+>> wrong; my gut feel is that the right thing to do is to reserve from the 
+>> EBDA up to the 640K mark (some BIOSes use an area like that for SMM 
+>> stuff), possibly with some sanity checking.
+
+It's not needed, the e820 maps are always correct for modern systems in
+this case as far  as I know.
+
+
 > 
-> My own idea is that we create a FLUSH command for blkdev request queues, 
-> to exist alongside READ, WRITE, and the current barrier implementation. 
->  Then FLUSH could be passed down through MD or DM.
+>         /* reserve all memory between lowmem and the 1MB mark */
+>         reserve_early(lowmem, 0x100000, "BIOS reserved");
 
-I like your thought, and it has the benefit of being simple.
+The i386 kernel did this always, but I intentionally removed it from the
+64bit kernel because all the modern BIOS seem to correctly report holes
+in this area. Only didn't do it on i386 because there were some concerns
+of very old systems not doing this correctly.
 
-My thought is very similar, but with (hopefully not premature...)
-optimisations:
+My suspicion is that modern Windows systems rely on this, that is why
+BIOSes typically get it correct now.
 
-  - I would merge FLUSH with a preceding write in some cases,
-    converting to an FUA-write command.  Probably the generic request
-    queue is the best place to detect and merge.  This is so that
-    userspace filesystems (including guest VMs) and databases can do
-    journal commits with the same I/O sequence as in kernel
-    filesystems.
+I think it should be only undone if you have a concrete case where it
+breaks not just based on someone's gut feel. Sure it's not a lot of
+memory, but why waste memory unnecessarily?
 
-  - I would create BARRIER too, so that a userspace API can ask for
-    this weaker form of fsync, which may improve throughput of
-    userspace journalling.  
+-Andi
 
-  - I would include a sector range in FLUSH and BARRIER, for MD and DM
-    to flush _only_ relevant sub-devices.  This may improve performance
-    for journalling both kernel and userspace filesystems, as journal
-    commits are often very small and hit one or two sub-devices in RAID.
-
-  - I would ask the nice MD and DM people to take tag-barriers rather
-    than flush-barriers on the input queue, converting to
-    tag-barriers, flush-barriers and independent FLUSH on the
-    sub-device queues according to sector ranges and subsequent
-    writes.  It's not obvious, but my barrier proposal which started
-    this thread is designed to support an efficient inter-sub-device
-    flush-barrier when necessary, and single-sub-device tag-barrier
-    when possible.
-
--- Jamie
