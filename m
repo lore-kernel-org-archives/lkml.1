@@ -1,80 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755325AbYB0Aqc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751143AbYB0AsP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755325AbYB0Aqc (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Feb 2008 19:46:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753298AbYB0AqV
+	id S1751143AbYB0AsP (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Feb 2008 19:48:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754534AbYB0AsA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Feb 2008 19:46:21 -0500
-Received: from srv5.dvmed.net ([207.36.208.214]:46756 "EHLO mail.dvmed.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753860AbYB0AqU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Feb 2008 19:46:20 -0500
-Message-ID: <47C4B2D4.109@garzik.org>
-Date: Tue, 26 Feb 2008 19:46:12 -0500
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
-MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: Mike Galbraith <efault@gmx.de>, Jens Axboe <jens.axboe@oracle.com>,
-       LKML <linux-kernel@vger.kernel.org>, Tejun Heo <htejun@gmail.com>,
-       linux-ide@vger.kernel.org, linux-scsi@vger.kernel.org
-Subject: Re: regression: CD burning (k3b) went broke
-References: <1203583379.6244.27.camel@homer.simson.net>	<20080222073228.GZ23197@kernel.dk>	<1203752563.5225.4.camel@homer.simson.net>	<1203839683.17463.9.camel@homer.simson.net>	<1204019283.8731.11.camel@homer.simson.net>	<1204033003.11828.22.camel@homer.simson.net> <20080226150845.2196bc1a.akpm@linux-foundation.org>
-In-Reply-To: <20080226150845.2196bc1a.akpm@linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Tue, 26 Feb 2008 19:48:00 -0500
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:36981 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751819AbYB0Ar7 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 Feb 2008 19:47:59 -0500
+Date: Wed, 27 Feb 2008 09:50:05 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       Balbir Singh <balbir@linux.vnet.ibm.com>,
+       Rik van Riel <riel@redhat.com>,
+       Lee Schermerhorn <Lee.Schermerhorn@hp.com>,
+       Nick Piggin <npiggin@suse.de>
+Subject: Re: [RFC][PATCH] page reclaim throttle take2
+Message-Id: <20080227095005.4058e109.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <1204060718.6242.333.camel@lappy>
+References: <20080226104647.FF26.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+	<1204060718.6242.333.camel@lappy>
+Organization: Fujitsu
+X-Mailer: Sylpheed 2.4.2 (GTK+ 2.10.11; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.4 (----)
-X-Spam-Report: SpamAssassin version 3.2.3 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton wrote:
-> On Tue, 26 Feb 2008 14:36:43 +0100 Mike Galbraith <efault@gmx.de> wrote:
+On Tue, 26 Feb 2008 22:18:38 +0100
+Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:
+
+> > +out:
+> > +	atomic_dec(&zone->nr_reclaimers);
+> > +	wake_up_all(&zone->reclaim_throttle_waitq);
+> > +
+> > +	return ret;
+> > +}
 > 
->> On Tue, 2008-02-26 at 10:48 +0100, Mike Galbraith wrote:
->>> Greetings,
->>>
->>> I straced both a good and a bad kernel (good being .git with attached
->>> revert patch applied) and filtered/diffed/merged the output.  Scroll
->>> down to "HERE" to see the problem (resid).
->>>
->>> I'm poking around, but not having much luck.
+> Would it be possible - and worthwhile - to make this FIFO fair?
 > 
-> cc's added.
-> 
-> I'm told this is part of "Tejun's DMA drain handling".
+I think it doesn't make sense for fairness.
 
-Correct.
+IMHO, this functionality is an unfair one in nature. While someone is
+reclaiming pages, other processes can get a newly reclaimed page without
+calling try_to_free_page.
 
+For high-priority processes, 
 
->> Seems the problem is data_len changes, but raw_data_len doesn't.  I've
->> not the foggiest IO-land clue, but k3b works again, so the below may
->> have some diagnostic value.
-> 
-> So this change fixes a bug?  Can we have a recap of how it does this?
-> 
->> diff --git a/drivers/scsi/scsi_lib.c b/drivers/scsi/scsi_lib.c
->> index ba21d97..7a6f784 100644
->> --- a/drivers/scsi/scsi_lib.c
->> +++ b/drivers/scsi/scsi_lib.c
->> @@ -871,7 +871,7 @@ void scsi_io_completion(struct scsi_cmnd *cmd, unsigned int good_bytes)
->>  			scsi_end_bidi_request(cmd);
->>  			return;
->>  		}
->> -		req->data_len = scsi_get_resid(cmd);
->> +		req->data_len = req->raw_data_len = scsi_get_resid(cmd);
->>  	}
+1. avoiding diving into try_to_free_pages if it's congested.
+2. just waiting for that someone relcaim pages and grab it ASAP
 
-I would love to get an answer as to what data_len (and of course 
-raw_data_len) should be set to AFTER the command completes, which is 
-what is going on here.
+maybe good for quick work. 
 
-I can see the above being correct -- scsi_get_resid() returns the length 
-of the left-over data after the command is processed -- but I am mainly 
-curious why setting [raw_]data_len matters after I/O completion.
-
-	Jeff
-
+Thanks,
+-Kame
 
