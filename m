@@ -1,58 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758281AbYB0UWQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758759AbYB0UXT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758281AbYB0UWQ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Feb 2008 15:22:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756267AbYB0UWF
+	id S1758759AbYB0UXT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Feb 2008 15:23:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756339AbYB0UXJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Feb 2008 15:22:05 -0500
-Received: from qmta07.emeryville.ca.mail.comcast.net ([76.96.30.64]:48211 "EHLO
-	QMTA07.emeryville.ca.mail.comcast.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754879AbYB0UWE (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Feb 2008 15:22:04 -0500
-X-Authority-Analysis: v=1.0 c=1 a=Siy3sSQzJz4A:10
- a=bojhYoMd2USPMMK5XVEeMQ==:17 a=D19gQVrFAAAA:8 a=F4He0BBwVSj-kWfn_LQA:9
- a=OMd058dYc6qL45SubqX4F5oVYLgA:4 a=4N9Db7Z2_RYA:10 a=ZaGerQNKEe0A:10
- a=si9q_4b84H0A:10 a=KUJAPYlYduUA:10
-From: kelk1@comcast.net (Quel Qun)
-To: David Miller <davem@davemloft.net>, marcel@holtmann.org
-Cc: tglx@linutronix.de, dwmw2@infradead.org, hidave.darkstar@gmail.com,
-       linux-kernel@vger.kernel.org, jkosina@suse.cz, mingo@elte.hu
-Subject: Re: [PATCH] bluetooth: delete timer in l2cap_conn_del()
-Date: Wed, 27 Feb 2008 20:21:59 +0000
-Message-Id: <022720082021.26121.47C5C66700041AAD000066092200751090CE05040A05@comcast.net>
-X-Mailer: AT&T Message Center Version 1 (Oct 30 2007)
-X-Authenticated-Sender: a2VsazFAY29tY2FzdC5uZXQ=
+	Wed, 27 Feb 2008 15:23:09 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:39930 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756267AbYB0UXI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 Feb 2008 15:23:08 -0500
+From: Jarod Wilson <jwilson@redhat.com>
+Organization: Red Hat, Inc.
+To: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Subject: Re: [PATCH 1/2] firewire: endianess fix
+Date: Wed, 27 Feb 2008 15:21:04 -0500
+User-Agent: KMail/1.9.6 (enterprise 0.20071204.744707)
+Cc: linux1394-devel@lists.sourceforge.net,
+       Harvey Harrison <harvey.harrison@gmail.com>,
+       Sam Ravnborg <sam@ravnborg.org>, linux-kernel@vger.kernel.org,
+       sparclinux@vger.kernel.org, linuxppc-dev@ozlabs.org,
+       Kristian Hoegsberg <krh@bitplanet.net>
+References: <20080220220326.GA22328@uranus.ravnborg.org> <200802271458.28401.jwilson@redhat.com> <47C5C340.7080302@s5r6.in-berlin.de>
+In-Reply-To: <47C5C340.7080302@s5r6.in-berlin.de>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200802271521.05099.jwilson@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wednesday 27 February 2008 03:08:32 pm Stefan Richter wrote:
+> Jarod Wilson wrote:
+> > Works just fine with the Apple UniNorth controller in my powerbook in
+> > cursory testing.
+>
+> Could you remove the OHCI1394_HCControl_postedWriteEnable flag from
+> fw-ohci.c::ohci_enable() and test without and with the endianess patch?
 
- -------------- Original message ----------------------
-From: David Miller <davem@davemloft.net>
-> From: Marcel Holtmann <marcel@holtmann.org>
-> Date: Wed, 27 Feb 2008 10:55:07 +0100
-> 
-> > Hi Dave,
-> > 
-> > > From: Thomas Gleixner <tglx@linutronix.de>
-> > > Date: Tue, 26 Feb 2008 09:28:13 +0100 (CET)
-> > >
-> > >> Delete a possibly armed timer before kfree'ing the connection object.
-> > >>
-> > >> Solves: http://lkml.org/lkml/2008/2/15/514
-> > >>
-> > >> Reported-by:Quel Qun <kelk1@comcast.net>
-> > >> Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
-> > >
-> > > I'll apply this, thanks Thomas.
-> > 
-> > can you please wait for a confirmation from Quel that this fixes it.  
-> > My ACK is based on that he confirms that it fixes it for sure.
-> 
-> It doesn't hurt to toss this to Linus now, if it's bogus we
-> have tons of time to revert it.
+Sure, added to the todo list along with making sure things survive bus resets.
 
-As I said, it prevents the crash, but does not 'fix' my problem, in that I still cannot use the dongle.
---
-kk1
+-- 
+Jarod Wilson
+jwilson@redhat.com
