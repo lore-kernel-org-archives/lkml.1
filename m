@@ -1,23 +1,29 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757627AbYB0HBW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763132AbYB0HFI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757627AbYB0HBW (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Feb 2008 02:01:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754156AbYB0HBO
+	id S1763132AbYB0HFI (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Feb 2008 02:05:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754237AbYB0HEz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Feb 2008 02:01:14 -0500
-Received: from smtp1.linux-foundation.org ([207.189.120.13]:38385 "EHLO
+	Wed, 27 Feb 2008 02:04:55 -0500
+Received: from smtp1.linux-foundation.org ([207.189.120.13]:58069 "EHLO
 	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753949AbYB0HBN (ORCPT
+	by vger.kernel.org with ESMTP id S1754130AbYB0HEy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Feb 2008 02:01:13 -0500
-Date: Tue, 26 Feb 2008 23:00:59 -0800
+	Wed, 27 Feb 2008 02:04:54 -0500
+Date: Tue, 26 Feb 2008 22:47:19 -0800
 From: Andrew Morton <akpm@linux-foundation.org>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Cc: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: linux-next: Tree for Feb 27
-Message-Id: <20080226230059.58cf3cfa.akpm@linux-foundation.org>
-In-Reply-To: <20080227170300.25c50fe3.sfr@canb.auug.org.au>
-References: <20080227170300.25c50fe3.sfr@canb.auug.org.au>
+To: Adrian Bunk <bunk@kernel.org>
+Cc: Evgeniy Polyakov <johnpol@2ka.mipt.ru>, Martin Michlmayr <tbm@cyrius.com>,
+       linux-kernel@vger.kernel.org, Herbert Xu <herbert@gondor.apana.org.au>,
+       Ralf Baechle <ralf@linux-mips.org>, linux-crypto@vger.kernel.org
+Subject: Re: [2.6.25 patch] drivers/crypto/hifn_795x.c: fix 64bit division
+Message-Id: <20080226224719.6994a3bf.akpm@linux-foundation.org>
+In-Reply-To: <20080227062207.GB10603@cs181133002.pp.htv.fi>
+References: <20080226122100.GB22699@deprecation.cyrius.com>
+	<20080226153421.GB10717@cs181133002.pp.htv.fi>
+	<20080226185240.GA2521@2ka.mipt.ru>
+	<20080226160439.5941cc31.akpm@linux-foundation.org>
+	<20080227062207.GB10603@cs181133002.pp.htv.fi>
 X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
@@ -26,87 +32,72 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 27 Feb 2008 17:03:00 +1100 Stephen Rothwell <sfr@canb.auug.org.au> wrote:
+On Wed, 27 Feb 2008 08:22:07 +0200 Adrian Bunk <bunk@kernel.org> wrote:
 
-> We are up to 35 trees, more are welcome (even if they are currently
-> empty).
+> On Tue, Feb 26, 2008 at 04:04:39PM -0800, Andrew Morton wrote:
+> > On Tue, 26 Feb 2008 21:52:40 +0300 Evgeniy Polyakov <johnpol@2ka.mipt.ru> wrote:
+> > 
+> > > Hi Adrian.
+> > > 
+> > > On Tue, Feb 26, 2008 at 05:34:21PM +0200, Adrian Bunk (bunk@kernel.org) wrote:
+> > > > Using ndelay() with a 64bit variable as parameter can result in build 
+> > > > errors like the following on some 32bit systems when it results in a 
+> > > > 64bit division:
+> > > > 
+> > > > <--  snip  -->
+> > > > 
+> > > >  ...
+> > > >   MODPOST 759 modules
+> > > > ERROR: "__divdi3" [drivers/crypto/hifn_795x.ko] undefined!
+> > > > 
+> > > > <--  snip  -->
+> > > > 
+> > > > Reported by Martin Michlmayr.
+> > > > 
+> > > > Signed-off-by: Adrian Bunk <bunk@kernel.org>
+> > > 
+> > > Yep, ndelay() uses division, thanks a lot Adrian for spotting this.
+> > 
+> > hm.  Where?
+> >...
+> 
+> include/linux/delay.h:35
+> 
 
-So who's missing now?
+well found.
 
-I have:
-
-git-acpi
-git-agpgart
-git-alsa
-git-arm
-git-arm-master
-git-audit-master
-git-avr32
-git-backlight
-git-battery
-git-block
-git-bluetooth
-git-cifs
-git-cpufreq
-git-cryptodev
-git-drm
-git-dvb
-git-gfs2-nmw
-git-hid
-git-hrt
-git-hwmon
-git-ia64
-git-ieee1394
-git-infiniband
-git-input
-git-intelfb
-git-jfs
-git-jg-misc
-git-kbuild
-git-kvm
-git-lblnet
-git-leds
-git-libata-all
-git-m32r
-git-md-accel
-git-mips
-git-mmc
-git-mtd
-git-net
-git-nfs
-git-nfsd
-git-ntfs
-git-ocfs2
-git-parisc
-git-pcmcia		(dead)
-git-perfmon		(i don't actually include this)
-git-powerpc
-git-s390
-git-sas			(might be dead)
-git-sched
-git-scsi-misc
-git-scsi-rc-fixes
-git-scsi-target
-git-selinux
-git-sh
-git-slub
-git-sparc64
-git-ubi
-git-unionfs
-git-v9fs
-git-watchdog
-git-x86
-git-xfs
-git-xtensa
+Something like this:
 
 
-Plus quilt trees:
+--- a/include/linux/delay.h~a
++++ a/include/linux/delay.h
+@@ -7,10 +7,12 @@
+  * Delay routines, using a pre-computed "loops_per_jiffy" value.
+  */
+ 
+-extern unsigned long loops_per_jiffy;
++#include <linux/kernel.h>
+ 
+ #include <asm/delay.h>
+ 
++extern unsigned long loops_per_jiffy;
++
+ /*
+  * Using udelay() for intervals greater than a few milliseconds can
+  * risk overflow for high loops_per_jiffy (high bogomips) machines. The
+@@ -32,7 +34,11 @@ extern unsigned long loops_per_jiffy;
+ #endif
+ 
+ #ifndef ndelay
+-#define ndelay(x)	udelay(((x)+999)/1000)
++static inline void ndelay(unsigned long x)
++{
++	udelay(DIV_ROUND_UP(x, 1000));
++}
++#define ndelay(x) ndelay(x)
+ #endif
+ 
+ void calibrate_delay(void);
+_
 
-http://www.kernel.org/pub/linux/kernel/people/kristen/pci-hotplug (seems to be dead)
-ftp://ftp.kernel.org/pub/linux/kernel/people/tytso/ext4-patches/LATEST/broken-out/
-http://www.kernel.org/pub/linux/kernel/people/gregkh/gregkh-2.6/gregkh-01-driver-core
-http://www.kernel.org/pub/linux/kernel/people/gregkh/gregkh-2.6/gregkh-03-usb
-http://www.kernel.org/pub/linux/kernel/people/gregkh/gregkh-2.6/gregkh-02-pci
-http://khali.linux-fr.org/devel/linux-2.6/jdelvare-i2c/
-http://kernel.org/pub/linux/kernel/people/bart/pata-2.6/patches/
-ftp://ftp.kernel.org/pub/linux/kernel/people/agk/patches/2.6/editing/
+
