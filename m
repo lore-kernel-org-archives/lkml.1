@@ -1,65 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756237AbYB0L1U@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756113AbYB0La1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756237AbYB0L1U (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Feb 2008 06:27:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753061AbYB0L1J
+	id S1756113AbYB0La1 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Feb 2008 06:30:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751856AbYB0LaR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Feb 2008 06:27:09 -0500
-Received: from mail.gmx.net ([213.165.64.20]:45460 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1753431AbYB0L1I (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Feb 2008 06:27:08 -0500
-X-Authenticated: #20450766
-X-Provags-ID: V01U2FsdGVkX1+DtTJMpuCDcREhYlqm5h8bx0NjUEVhSNnPE3gErV
-	DvvZXvYUXLsJPe
-Date: Wed, 27 Feb 2008 12:27:18 +0100 (CET)
-From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-To: Greg KH <greg@kroah.com>
-cc: linux-kernel@vger.kernel.org
-Subject: Re: [PCI] duplicate sysfs symbols getting registered in current git
-In-Reply-To: <Pine.LNX.4.64.0802271222530.5059@axis700.grange>
-Message-ID: <Pine.LNX.4.64.0802271226300.5059@axis700.grange>
-References: <Pine.LNX.4.64.0802182142240.11540@axis700.grange>
- <20080220063834.GA22708@kroah.com> <Pine.LNX.4.64.0802251341160.4430@axis700.grange>
- <20080226201619.GA10343@kroah.com> <Pine.LNX.4.64.0802271222530.5059@axis700.grange>
+	Wed, 27 Feb 2008 06:30:17 -0500
+Received: from stinky.trash.net ([213.144.137.162]:50257 "EHLO
+	stinky.trash.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752432AbYB0LaQ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 Feb 2008 06:30:16 -0500
+Message-ID: <47C549B0.4020000@trash.net>
+Date: Wed, 27 Feb 2008 12:29:52 +0100
+From: Patrick McHardy <kaber@trash.net>
+User-Agent: Mozilla-Thunderbird 2.0.0.9 (X11/20080110)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Y-GMX-Trusted: 0
+To: David Rientjes <rientjes@google.com>
+CC: Martin Michlmayr <tbm@cyrius.com>, linux-kernel@vger.kernel.org,
+       Evgeniy Polyakov <johnpol@2ka.mipt.ru>,
+       Herbert Xu <herbert@gondor.apana.org.au>,
+       Ralf Baechle <ralf@linux-mips.org>
+Subject: Re: 2.6.25-rc3: "__divdi3" [drivers/crypto/hifn_795x.ko] undefined!
+References: <20080226122100.GB22699@deprecation.cyrius.com> <alpine.DEB.1.00.0802261945370.22324@chino.kir.corp.google.com>
+In-Reply-To: <alpine.DEB.1.00.0802261945370.22324@chino.kir.corp.google.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 27 Feb 2008, Guennadi Liakhovetski wrote:
+David Rientjes wrote:
+> On Tue, 26 Feb 2008, Martin Michlmayr wrote:
+>
+>   
+>> ERROR: "__divdi3" [drivers/crypto/hifn_795x.ko] undefined!
+>>     
+>
+> crypto: use do_div() when registering the rng
+>
+> Use do_div() instead of the divide operator.
+>
+>   
 
-> On Tue, 26 Feb 2008, Greg KH wrote:
-> 
-> > On Mon, Feb 25, 2008 at 01:43:29PM +0100, Guennadi Liakhovetski wrote:
-> > > On Tue, 19 Feb 2008, Greg KH wrote:
-> > > 
-> > > > On Mon, Feb 18, 2008 at 09:52:25PM +0100, Guennadi Liakhovetski wrote:
-> > > > > Booting an x86 SMP PC with todays git-snapshot or just with 2.6.25-rc2 
-> > > > > getting the following warnings (with a bit of context):
-> > > > 
-> > > > Can you try enabling CONFIG_DEBUG_KOBJECT and sending the output at boot
-> > > > time from this?
-> > > 
-> > > dmesg output with CONFIG_LOG_BUF_SHIFT=19 sent privately to Greg as 
-> > > unpacked, as it would have to be sent to the list, is 408K big. Will see 
-> > > what Greg says.
-> > 
-> > Thanks for the log, it helped out a lot.  I'm thinking that you have
-> > CONFIG_SYSFS_DEPRECATED set to Y, right?  If so, can you set it to N
-> > (hopefully you have a new userspace to handle that)?
-> 
-> Ok, result #1: kernel panic 
-> http://home.arcor.de/g.liakhovetski/ap400/imga0045.jpg. If necessary, can 
-> try a serial console, but that would be more difficult.
+This is similar to my patch, which didn't fix the problem. Adrian
+already fixed it.
 
-I also put the config at 
-http://home.arcor.de/g.liakhovetski/ap400/config-2.6.25-gregkh-0, the 
-panic is produced by just disabling CONFIG_SYSFS_DEPRECATED.
-
-Thanks
-Guennadi
----
-Guennadi Liakhovetski
