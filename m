@@ -1,58 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759550AbYB0X5d@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761437AbYB0X5s@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759550AbYB0X5d (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Feb 2008 18:57:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752646AbYB0X5X
+	id S1761437AbYB0X5s (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Feb 2008 18:57:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759008AbYB0X5b
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Feb 2008 18:57:23 -0500
-Received: from wolverine02.qualcomm.com ([199.106.114.251]:37443 "EHLO
-	wolverine02.qualcomm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751755AbYB0X5W (ORCPT
+	Wed, 27 Feb 2008 18:57:31 -0500
+Received: from host36-195-149-62.serverdedicati.aruba.it ([62.149.195.36]:51055
+	"EHLO mx.cpushare.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758650AbYB0X5a (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Feb 2008 18:57:22 -0500
-X-IronPort-AV: E=McAfee;i="5200,2160,5239"; a="857650"
-Message-ID: <47C5F8E0.3060708@qualcomm.com>
-Date: Wed, 27 Feb 2008 15:57:20 -0800
-From: Max Krasnyanskiy <maxk@qualcomm.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+	Wed, 27 Feb 2008 18:57:30 -0500
+Date: Thu, 28 Feb 2008 00:57:24 +0100
+From: Andrea Arcangeli <andrea@qumranet.com>
+To: Christoph Lameter <clameter@sgi.com>
+Cc: Nick Piggin <nickpiggin@yahoo.com.au>, akpm@linux-foundation.org,
+       Robin Holt <holt@sgi.com>, Avi Kivity <avi@qumranet.com>,
+       Izik Eidus <izike@qumranet.com>, kvm-devel@lists.sourceforge.net,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, general@lists.openfabrics.org,
+       Steve Wise <swise@opengridcomputing.com>,
+       Roland Dreier <rdreier@cisco.com>, Kanoj Sarcar <kanojsarcar@yahoo.com>,
+       steiner@sgi.com, linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       daniel.blueman@quadrics.com
+Subject: Re: [patch 2/6] mmu_notifier: Callbacks to invalidate address
+	ranges
+Message-ID: <20080227235724.GA8091@v2.random>
+References: <20080215064859.384203497@sgi.com> <20080215064932.620773824@sgi.com> <200802191954.14874.nickpiggin@yahoo.com.au> <20080219133405.GH7128@v2.random> <Pine.LNX.4.64.0802271421480.13186@schroedinger.engr.sgi.com>
 MIME-Version: 1.0
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-CC: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       Oleg Nesterov <oleg@tv-sign.ru>, Steven Rostedt <rostedt@goodmis.org>,
-       Paul Jackson <pj@sgi.com>, linux-kernel@vger.kernel.org
-Subject: Re: [RFC/PATCH 1/4] sched: remove isolcpus
-References: <20080227222103.673194000@chello.nl> <20080227222542.056473000@chello.nl>
-In-Reply-To: <20080227222542.056473000@chello.nl>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0802271421480.13186@schroedinger.engr.sgi.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Peter Zijlstra wrote:
+On Wed, Feb 27, 2008 at 02:23:29PM -0800, Christoph Lameter wrote:
+> How would that work? You rely on the pte locking. Thus calls are all in an 
 
-> cpu isolation doesn't offer anything over cpusets, hence remove it.
+I don't rely on the pte locking in #v7, exactly to satisfy GRU
+(so far purely theoretical) performance complains.
 
-Works for me. That's what I suggested in my reply to your comments.
-Here is the quote from the previous thread:
+> atomic context. I think we need a general scheme that allows sleeping when 
 
->>>> This also allows for isolated groups, there are good reasons to isolate groups,
->>>> esp. now that we have a stronger RT balancer. SMP and hard RT are not
->>>> exclusive. A design that does not take that into account is too rigid.
->> 
->>> You're thinking scheduling only. Paul had the same confusion ;-)
->> 
->> I'm not, I'm thinking it ought to allow for it.
-> One way I can think of how to support groups and allow for RT balancer is 
-> this: Make scheduler ignore cpu_isolated_map and give cpusets full control of 
-> the scheduler domains. Use cpu_isolated_map to only for hw irq and other 
-> kernel sub-systems. That way cpusets could mark cpus in the group as isolated 
-> to get rid of the  kernel activity and build sched domain such that tasks get 
-> balanced in it.
-> The thing I do not like about it is that there is no way to boot the system 
-> with CPU N isolated from the beginning. Also dynamic isolation currently 
-> relies on the cpu hotplug to clear pending irqs, softirqs, kernel timers and 
-> threads. So cpusets would have to simulate the cpu hotplug event I guess.
+Calls are still in atomic context until we change the i_mmap_lock to a
+mutex under a CONFIG_XPMEM, or unless we boost mm_users, drop the lock
+and restart the loop at every different mm. In any case those changes
+should be under CONFIG_XPMEM IMHO given desktop users definitely don't
+need this (regular non-blocking mmu notifiers in my patch are all what
+a desktop user need as far as I can tell).
 
-Max
+> references are invalidates. Even the GRU has performance issues when using 
+> the KVM patch.
 
+GRU will perform the same with #v7 or V8.
