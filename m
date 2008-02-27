@@ -1,48 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756003AbYB0Kx3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756886AbYB0Kzi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756003AbYB0Kx3 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Feb 2008 05:53:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752113AbYB0KxU
+	id S1756886AbYB0Kzi (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Feb 2008 05:55:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753875AbYB0Kzb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Feb 2008 05:53:20 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:51464 "EHLO mx3.mail.elte.hu"
+	Wed, 27 Feb 2008 05:55:31 -0500
+Received: from khc.piap.pl ([195.187.100.11]:42369 "EHLO khc.piap.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751705AbYB0KxT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Feb 2008 05:53:19 -0500
-Date: Wed, 27 Feb 2008 11:53:07 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Florian Fainelli <florian.fainelli@telecomint.eu>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] [x86] rdc321x: Kconfig options fixes for rdc321x
-Message-ID: <20080227105307.GA21050@elte.hu>
-References: <200802271136.42763.florian.fainelli@telecomint.eu>
+	id S1752113AbYB0Kza (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 Feb 2008 05:55:30 -0500
+To: Alan Cox <alan@redhat.com>
+Cc: davids@webmaster.com, Valdis.Kletnieks@vt.edu,
+       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
+       Arnaldo Carvalho de Melo <acme@ghostprotocols.net>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] 2.6.25-rc2-mm1 - fix mcount GPL bogosity.
+References: <MDEHLPKNGKAHNMBLJOLKKEONKKAC.davids@webmaster.com>
+	<m3ir0bcnvo.fsf@maximus.localdomain>
+	<20080227103120.GA1577@devserv.devel.redhat.com>
+From: Krzysztof Halasa <khc@pm.waw.pl>
+Date: Wed, 27 Feb 2008 11:55:28 +0100
+In-Reply-To: <20080227103120.GA1577@devserv.devel.redhat.com> (Alan Cox's message of "Wed\, 27 Feb 2008 05\:31\:20 -0500")
+Message-ID: <m3mypmy8gv.fsf@maximus.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200802271136.42763.florian.fainelli@telecomint.eu>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0001]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Alan Cox <alan@redhat.com> writes:
 
-* Florian Fainelli <florian.fainelli@telecomint.eu> wrote:
+>> D: top of the COPYING file explicity states binary modules are ok.
+>
+> Nope.
 
->  config ARCH_HIBERNATION_POSSIBLE
->  	def_bool y
-> -	depends on !SMP || !X86_VOYAGER
-> +	depends on !SMP || !(X86_VOYAGER || X86_RDC321X)
-
-these many special conditions in the Kconfig space are way too ugly. 
-(Also, i can see no reason why for example hibernation wouldnt be 
-possible on rdc321x, it's a pure software concept ...)
-
-	Ingo
+Right. Must have been somewhere else.
+-- 
+Krzysztof Halasa
