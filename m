@@ -1,58 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755836AbYB0Qig@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755972AbYB0Qkr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755836AbYB0Qig (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Feb 2008 11:38:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754569AbYB0QiZ
+	id S1755972AbYB0Qkr (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Feb 2008 11:40:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754614AbYB0Qkh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Feb 2008 11:38:25 -0500
-Received: from mail.vyatta.com ([216.93.170.194]:58982 "EHLO mail.vyatta.com"
+	Wed, 27 Feb 2008 11:40:37 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:33868 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754576AbYB0QiY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Feb 2008 11:38:24 -0500
-X-Spam-Flag: NO
-X-Spam-Score: -1.879
-Date: Wed, 27 Feb 2008 08:38:19 -0800
-From: Stephen Hemminger <shemminger@vyatta.com>
-To: "Wappler Marcel" <Marcel.Wappler@bridgeco.net>
-Cc: "Patrick McHardy" <kaber@trash.net>, <linux-kernel@vger.kernel.org>,
-       <netdev@vger.kernel.org>, <davem@davemloft.net>, <ebiederman@lnxi.com>
-Subject: Re: [PATCH] [resend]The kernel gets no IP from some DHCP servers,
- 2.6.24
-Message-ID: <20080227083819.70ddb374@extreme>
-In-Reply-To: <83116F0A4FF67A4F97BA0B6E408C48E301C5CE08@zuerich.BC-Int.NET>
-References: <83116F0A4FF67A4F97BA0B6E408C48E301C5CDEF@zuerich.BC-Int.NET>
-	<47C55BBF.7080501@trash.net>
-	<83116F0A4FF67A4F97BA0B6E408C48E301C5CE08@zuerich.BC-Int.NET>
-Organization: Vyatta
-X-Mailer: Claws Mail 3.3.0 (GTK+ 2.12.8; x86_64-pc-linux-gnu)
+	id S1754359AbYB0Qkg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 Feb 2008 11:40:36 -0500
+Date: Wed, 27 Feb 2008 11:39:55 -0500
+From: Kyle McMartin <kmcmartin@redhat.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Kyle McMartin <kmcmartin@redhat.com>,
+       =?iso-8859-1?B?Uy7HYT8/bGFy?= Onur <caglar@pardus.org.tr>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       lguest@ozlabs.org, rusty@rustcorp.com.au
+Subject: Re: Linux 2.6.25-rc3
+Message-ID: <20080227163955.GL12908@kibblesnbits.boston.devel.redhat.com>
+References: <alpine.LFD.1.00.0802241354200.14934@woody.linux-foundation.org> <200802250129.17526.caglar@pardus.org.tr> <20080225071605.GA11327@elte.hu> <20080227161207.GJ12908@kibblesnbits.boston.devel.redhat.com> <20080227161649.GA799@elte.hu>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080227161649.GA799@elte.hu>
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 27 Feb 2008 14:11:55 +0100
-"Wappler Marcel" <Marcel.Wappler@bridgeco.net> wrote:
-
-> -----Original Message-----
-> >>  #include <linux/types.h>
-> >> @@ -103,6 +107,7 @@
-> >>  					   - '3' from resolv.h */
-> >>  
-> >>  #define NONE __constant_htonl(INADDR_NONE)
-> >> +#define ZERO __constant_htonl(((unsigned long int) 0x00000000))
-> >This should probably use INADDR_ANY.
-> My first try went in this direction. But at a second look I thought
-> that the names ANY (255.255.255.255) and NONE (0.0.0.0) are indirect
-> leading to confusion. The interpretation of the zero addresses in
-> the DHCPDISCOVER packet is in the kind of 'no address' and not of
-> 'any addressee'. So the meaning and usage of INADDR_ANY and ZERO
-> may be totally different in this file.
-> In my opinion it is necessary to distinguish between INADDR_ANY
-> and the ZERO address which ist requested to be in the DHCPDISCOVER
-> packet.
+On Wed, Feb 27, 2008 at 05:16:50PM +0100, Ingo Molnar wrote:
+> 
+> * Kyle McMartin <kmcmartin@redhat.com> wrote:
+> 
+> > On Mon, Feb 25, 2008 at 08:16:05AM +0100, Ingo Molnar wrote:
+> > > this fix still fails for some randconfig combinations - the fuller fix 
+> > > is queued up in x86.git#testing.
+> > 
+> > great. I really just added it to fix Fedora's configs. I'll drop it 
+> > from there once it hits -git snapshots.
+> 
+> the commits are upstream already:
+> 
+>  commit 1ce70c4fac3c3954bd48c035f448793867592bc0
+>  commit db342d216ba9e060d8c5501eefc1d0a789c9e711
+>  commit cbc34973709eb41b369c304c075cf2069f847012
+> 
+> so they should be in the latest git snapshots.
 > 
 
-Just delete the lines and the address will be zero because of
-earlier memset().
+Ah, davej has already updated to -git1. Excellent.
+
+Thanks!
+	Kyle
