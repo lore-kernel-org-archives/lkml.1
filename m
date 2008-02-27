@@ -1,27 +1,31 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755342AbYB0PCa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754854AbYB0PET@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755342AbYB0PCa (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Feb 2008 10:02:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754142AbYB0PCU
+	id S1754854AbYB0PET (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Feb 2008 10:04:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750708AbYB0PEL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Feb 2008 10:02:20 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:41976 "EHLO mx3.mail.elte.hu"
+	Wed, 27 Feb 2008 10:04:11 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:58916 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753518AbYB0PCT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Feb 2008 10:02:19 -0500
-Date: Wed, 27 Feb 2008 16:02:10 +0100
+	id S1750785AbYB0PEK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 Feb 2008 10:04:10 -0500
+Date: Wed, 27 Feb 2008 16:03:50 +0100
 From: Ingo Molnar <mingo@elte.hu>
-To: Nick Piggin <npiggin@suse.de>
-Cc: Andi Kleen <ak@suse.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-arch@vger.kernel.org
-Subject: Re: [rfc][patch] x86-64 new smp_call_function design
-Message-ID: <20080227150210.GA21610@elte.hu>
-References: <20080227124217.GA1340@wotan.suse.de> <20080227132713.GA13681@elte.hu> <20080227135041.GC1340@wotan.suse.de>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Dhaval Giani <dhaval@linux.vnet.ibm.com>,
+       Sudhir Kumar <skumar@linux.vnet.ibm.com>,
+       Balbir Singh <balbir@in.ibm.com>,
+       Aneesh Kumar KV <aneesh.kumar@linux.vnet.ibm.com>,
+       Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>,
+       lkml <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] sched: don't allow rt_runtime_us to be zero for groups
+	having rt tasks
+Message-ID: <20080227150350.GB21610@elte.hu>
+References: <20080227110829.GA15731@linux.vnet.ibm.com> <1204116417.6242.383.camel@lappy> <20080227132459.GE15731@linux.vnet.ibm.com> <1204121510.6242.406.camel@lappy>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080227135041.GC1340@wotan.suse.de>
+In-Reply-To: <1204121510.6242.406.camel@lappy>
 User-Agent: Mutt/1.5.17 (2007-11-01)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -36,19 +40,19 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Nick Piggin <npiggin@suse.de> wrote:
+* Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:
 
-> > the two structures are quite similar in size and role - why not have 
-> > a type field and handle them largely together? I think we should try 
-> > to preserve a single queue and a single vector - that would remove a 
-> > number of ugly special-cases from the patch.
 > 
-> A single queue will kill one of the big fundamental scalability 
-> improvements of the call_single. That's the problem.
+> On Wed, 2008-02-27 at 18:54 +0530, Dhaval Giani wrote:
+> 
+> > This patch checks if we can set the rt_runtime_us to 0. If there is a
+> > realtime task in the group, we don't want to set the rt_runtime_us as 0
+> > or bad things will happen.
+> > 
+> > Signed-off-by: Dhaval Giani <dhaval@linux.vnet.ibm.com>
+> 
+> Acked-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
 
-hm, indeed. Then how about the other way around: couldnt the normal 
-all-cpus SMP function call be implemented transparently via using 
-smp_call_single() calls? The vector duplication is really ugly and feels 
-wrong.
+doesnt apply to sched-devel.git - what's the plan here?
 
 	Ingo
