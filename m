@@ -1,49 +1,141 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756514AbYB0Jz0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756151AbYB0J5k@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756514AbYB0Jz0 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Feb 2008 04:55:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750842AbYB0JzO
+	id S1756151AbYB0J5k (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Feb 2008 04:57:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751457AbYB0J52
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Feb 2008 04:55:14 -0500
-Received: from senator.holtmann.net ([87.106.208.187]:49761 "EHLO
+	Wed, 27 Feb 2008 04:57:28 -0500
+Received: from senator.holtmann.net ([87.106.208.187]:49767 "EHLO
 	mail.holtmann.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750709AbYB0JzN (ORCPT
+	with ESMTP id S1750842AbYB0J51 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Feb 2008 04:55:13 -0500
-Cc: tglx@linutronix.de, kelk1@comcast.net, dwmw2@infradead.org,
-       hidave.darkstar@gmail.com, linux-kernel@vger.kernel.org,
-       jkosina@suse.cz, mingo@elte.hu
-Message-Id: <C1D6688B-49F8-4ED1-B4F6-07F21243237F@holtmann.org>
+	Wed, 27 Feb 2008 04:57:27 -0500
+Cc: Dave Young <hidave.darkstar@gmail.com>, linux-bluetooth@vger.kernel.org,
+       Linux Kernel <linux-kernel@vger.kernel.org>, bmidgley@gmail.com,
+       David Miller <davem@davemloft.net>, Netdev <netdev@vger.kernel.org>
+Message-Id: <2A7EF87C-1340-45D7-B457-F81799674B1E@holtmann.org>
 From: Marcel Holtmann <marcel@holtmann.org>
-To: David Miller <davem@davemloft.net>
-In-Reply-To: <20080226.174315.112638342.davem@davemloft.net>
+To: Louis JANG <louis@mizi.com>
+In-Reply-To: <47C4C3D4.8010902@mizi.com>
 Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
 Content-Transfer-Encoding: 7bit
 Mime-Version: 1.0 (Apple Message framework v919.2)
-Subject: Re: [PATCH] bluetooth: delete timer in l2cap_conn_del()
-Date: Wed, 27 Feb 2008 10:55:07 +0100
-References: <022620080003.1247.47C35750000085C8000004DF2207300793CE05040A05@comcast.net> <alpine.LFD.1.00.0802260926550.7583@apollo.tec.linutronix.de> <20080226.174315.112638342.davem@davemloft.net>
+Subject: Re: [Bluez-devel] forcing SCO connection patch
+Date: Wed, 27 Feb 2008 10:57:23 +0100
+References: <47666E1F.2000902@mizi.com>	 <a8e1da0802242330l765b8b1ava62b857baf8a5568@mail.gmail.com>	 <47C28A33.4070102@mizi.com> <a8e1da0802250155u1b7af481va203849f68d9106b@mail.gmail.com> <47C2A7FA.2060902@mizi.com> <70692DDF-93B7-447E-ABEE-3CDBD94F15F1@holtmann.org> <47C38D40.3040809@mizi.com> <B96BD3FE-F490-4AD5-9315-ECD42CE9C728@holtmann.org> <47C4C3D4.8010902@mizi.com>
 X-Mailer: Apple Mail (2.919.2)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Dave,
+Hi Louis,
 
-> From: Thomas Gleixner <tglx@linutronix.de>
-> Date: Tue, 26 Feb 2008 09:28:13 +0100 (CET)
->
->> Delete a possibly armed timer before kfree'ing the connection object.
+>>>>> --- linux-2.6.23/net/bluetooth/hci_event.c.orig 2008-02-25
+>>>>> 17:17:11.000000000 +0900
+>>>>> +++ linux-2.6.23/net/bluetooth/hci_event.c 2008-02-25
+>>>>> 17:30:23.000000000 +0900
+>>>>> @@ -1313,8 +1313,17 @@
+>>>>> hci_dev_lock(hdev);
+>>>>>
+>>>>> conn = hci_conn_hash_lookup_ba(hdev, ev->link_type, &ev->bdaddr);
+>>>>> - if (!conn)
+>>>>> - goto unlock;
+>>>>> + if (!conn) {
+>>>>> + if (ev->link_type != ACL_LINK) {
+>>>>> + __u8 link_type = (ev->link_type == ESCO_LINK) ? SCO_LINK :
+>>>>> ESCO_LINK;
+>>>>> +
+>>>>> + conn = hci_conn_hash_lookup_ba(hdev, link_type, &ev->bdaddr);
+>>>>> + if (conn)
+>>>>> + conn->type = ev->link_type;
+>>>>> + }
+>>>>> + if (!conn)
+>>>>> + goto unlock;
+>>>>> + }
+>>>>
+>>>> NAK. There is no need to check for ACL_LINK. The sync_complete will
+>>>> only be called for SCO or eSCO connections.
+>>> I see. I removed this check line in the patch.
+>>>
+>>> Thanks.
+>>> Louis JANG
+>>> Signed-off-by: Louis JANG <louis@mizi.com>
+>>> --- linux-2.6.23/net/bluetooth/hci_event.c.orig 2008-02-26
+>>> 12:46:36.000000000 +0900
+>>> +++ linux-2.6.23/net/bluetooth/hci_event.c 2008-02-26
+>>> 12:47:23.000000000 +0900
+>>> @@ -1313,8 +1313,15 @@
+>>> hci_dev_lock(hdev);
+>>>
+>>> conn = hci_conn_hash_lookup_ba(hdev, ev->link_type, &ev->bdaddr);
+>>> - if (!conn)
+>>> - goto unlock;
+>>> + if (!conn) {
+>>> + __u8 link_type = (ev->link_type == ESCO_LINK) ? SCO_LINK :  
+>>> ESCO_LINK;
+>>> +
+>>> + conn = hci_conn_hash_lookup_ba(hdev, link_type, &ev->bdaddr);
+>>> + if (conn)
+>>> + conn->type = ev->link_type;
+>>> + else
+>>> + goto unlock;
+>>> + }
+>>>
+>>> if (!ev->status) {
+>>> conn->handle = __le16_to_cpu(ev->handle);
 >>
->> Solves: http://lkml.org/lkml/2008/2/15/514
+>> do something like this:
 >>
->> Reported-by:Quel Qun <kelk1@comcast.net>
->> Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
+>> if (!conn) {
+>> ....
+>>
+>> conn = ....
+>> if (!conn)
+>> goto unlock;
+>>
+>> conn->type = ev->link_type;
+>> }
+>>
+>> And include a description when submitting a patch.
+>>
+>> Regards
+>>
+>> Marcel
+> I changed code with this style and included patch description.
+> Thanks
 >
-> I'll apply this, thanks Thomas.
+> Louis JANG
+> This patch is to handle different type of synchronous link is
+> estabilished with its request.
+>
+> Signed-off-by: Louis JANG <louis@mizi.com>
+> --- linux-2.6.23/net/bluetooth/hci_event.c.orig	2008-02-26  
+> 12:46:36.000000000 +0900
+> +++ linux-2.6.23/net/bluetooth/hci_event.c	2008-02-27  
+> 10:48:29.000000000 +0900
+> @@ -1313,8 +1313,15 @@
+> 	hci_dev_lock(hdev);
+>
+> 	conn = hci_conn_hash_lookup_ba(hdev, ev->link_type, &ev->bdaddr);
+> -	if (!conn)
+> -		goto unlock;
+> +	if (!conn) {
+> +		__u8 link_type = (ev->link_type == ESCO_LINK) ? SCO_LINK :  
+> ESCO_LINK;
+> +
+> +		conn = hci_conn_hash_lookup_ba(hdev, link_type, &ev->bdaddr);
+> +		if (!conn)
+> +			goto unlock;
+> +
+> +		conn->type = ev->link_type;
+> +	}
+>
+> 	if (!ev->status) {
+> 		conn->handle = __le16_to_cpu(ev->handle);
 
-can you please wait for a confirmation from Quel that this fixes it.  
-My ACK is based on that he confirms that it fixes it for sure.
+so the patch is fine, but the description of what this patch is doing,  
+why it is doing it this way and what it fixes is fully missing. Please  
+update it with a proper description.
 
 Regards
 
