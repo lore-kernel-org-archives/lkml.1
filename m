@@ -1,65 +1,156 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755720AbYB0PVf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756423AbYB0PWT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755720AbYB0PVf (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Feb 2008 10:21:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750766AbYB0PVZ
+	id S1756423AbYB0PWT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Feb 2008 10:22:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751895AbYB0PWJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Feb 2008 10:21:25 -0500
-Received: from senator.holtmann.net ([87.106.208.187]:40850 "EHLO
-	mail.holtmann.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750763AbYB0PVY (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Feb 2008 10:21:24 -0500
-Cc: Dave Young <hidave.darkstar@gmail.com>, linux-bluetooth@vger.kernel.org,
-       Linux Kernel <linux-kernel@vger.kernel.org>, bmidgley@gmail.com,
-       David Miller <davem@davemloft.net>, Netdev <netdev@vger.kernel.org>
-Message-Id: <5D9353FF-6A69-4039-9033-C0EBD1CDA756@holtmann.org>
-From: Marcel Holtmann <marcel@holtmann.org>
-To: Louis JANG <louis@mizi.com>
-In-Reply-To: <47C555E5.2000903@mizi.com>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Content-Transfer-Encoding: 7bit
-Mime-Version: 1.0 (Apple Message framework v919.2)
-Subject: Re: [Bluez-devel] forcing SCO connection patch
-Date: Wed, 27 Feb 2008 16:21:14 +0100
-References: <47666E1F.2000902@mizi.com>	 <a8e1da0802242330l765b8b1ava62b857baf8a5568@mail.gmail.com>	 <47C28A33.4070102@mizi.com> <a8e1da0802250155u1b7af481va203849f68d9106b@mail.gmail.com> <47C2A7FA.2060902@mizi.com> <70692DDF-93B7-447E-ABEE-3CDBD94F15F1@holtmann.org> <47C38D40.3040809@mizi.com> <B96BD3FE-F490-4AD5-9315-ECD42CE9C728@holtmann.org> <47C4C3D4.8010902@mizi.com> <2A7EF87C-1340-45D7-B457-F81799674B1E@holtmann.org> <47C555E5.2000903@mizi.com>
-X-Mailer: Apple Mail (2.919.2)
+	Wed, 27 Feb 2008 10:22:09 -0500
+Received: from styx.suse.cz ([82.119.242.94]:48305 "EHLO mail.suse.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1750766AbYB0PWI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 Feb 2008 10:22:08 -0500
+Date: Wed, 27 Feb 2008 16:22:06 +0100 (CET)
+From: Jiri Kosina <jkosina@suse.cz>
+To: Oleg Nesterov <oleg@tv-sign.ru>, Davide Libenzi <davidel@xmailserver.org>,
+       Roland McGrath <roland@redhat.com>
+cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: [PATCH] [RFC] fix missed SIGCONT cases
+Message-ID: <Pine.LNX.4.64.0802271610330.3391@jikos.suse.cz>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Louis,
+The SIGCONT-handling related comment in handle_stop_signal() states:
 
-> When bluez tried to connect SCO channel with  
-> HCI_OP_SETUP_SYNC_CONN(ESCO_LINK),
-> a real connection may be connected with SCO_LINK instead of  
-> ESCO_LINK when
-> peer device doesn't support eSCO.  however bluez try to find  
-> connection handle
-> by event's link type(SCO_LINK in above case) and the valid  
-> connection handle
-> for this event is waiting for ESCO_LINK. so bluez can't find  
-> connection handle
-> and discarded the event.
+                         * If there is a handler for SIGCONT, we must make
+                         * sure that no thread returns to user mode before
+                         * we post the signal, in case it was the only
+                         * thread eligible to run the signal handler--then
+                         * it must not do anything between resuming and
+                         * running the handler.  With the TIF_SIGPENDING
+                         * flag set, the thread will pause and acquire the
+                         * siglock that we hold now and until we've queued
+                         * the pending signal.
+                         *
+                         * Wake up the stopped thread _after_ setting
+                         * TIF_SIGPENDING
 
-using HCI_OP_SETUP_SYNC_CONN doesn't mean eSCO. It is perfectly fine  
-to request SCO links via that command. The difference here is  
-Bluetooth 1.1 or 1.2 and later.
+Unfortunately, just a few lines below, the siglock is unlocked for a short 
+time, in order to call 
 
-> This patch is to handle different type of synchronous link is  
-> estabilished
-> with its request.
->
-> If bluez can't find connection handle, it try to find with different
-> link type again. (For the above case, if bluez can't find connection
-> handle with SCO_LINK, it try to find connection handle with  
-> ESCO_LINK again.)
-> and update link type of this connection handle with event's link type.
+	do_notify_parent_cldstop(p, CLD_CONTINUED);
 
-Inside the kernel it is not called BlueZ :) It simply is the Bluetooth  
-subsystem and in case the HCI core.
+Therefore the synchronization on siglock doesn't work properly. If the 
+task is waiting on siglock and gets scheduled when the siglock is 
+unlocked, but before SIGCONT is queued (this is done later, after 
+handle_stop_signal() finishes), the process misses the SIGCONT signal (as 
+it has already run, but SIGCONT has not been queued yet).
 
-Regards
+This patch solves it by postponing the do_notify_parent_cldstop() call 
+(and therefore also unlocking of siglock) until the SIGCONT is properly 
+queued on the shared-pending queue, and therefore it is not missed by the 
+process' SIGCONT handler. Also updates the callsites.
 
-Marcel
+Signed-off-by: Jiri Kosina <jkosina@suse.cz>
 
+diff --git a/kernel/signal.c b/kernel/signal.c
+index 84917fe..24786ba 100644
+--- a/kernel/signal.c
++++ b/kernel/signal.c
+@@ -556,6 +556,7 @@ static void do_notify_parent_cldstop(struct task_struct *tsk, int why);
+  * actual continuing for SIGCONT, but not the actual stopping for stop
+  * signals.  The process stop is done as a signal action for SIG_DFL.
+  */
++
+ static void handle_stop_signal(int sig, struct task_struct *p)
+ {
+ 	struct task_struct *t;
+@@ -630,24 +631,6 @@ static void handle_stop_signal(int sig, struct task_struct *p)
+ 			t = next_thread(t);
+ 		} while (t != p);
+ 
+-		if (p->signal->flags & SIGNAL_STOP_STOPPED) {
+-			/*
+-			 * We were in fact stopped, and are now continued.
+-			 * Notify the parent with CLD_CONTINUED.
+-			 */
+-			p->signal->flags = SIGNAL_STOP_CONTINUED;
+-			p->signal->group_exit_code = 0;
+-			spin_unlock(&p->sighand->siglock);
+-			do_notify_parent_cldstop(p, CLD_CONTINUED);
+-			spin_lock(&p->sighand->siglock);
+-		} else {
+-			/*
+-			 * We are not stopped, but there could be a stop
+-			 * signal in the middle of being processed after
+-			 * being removed from the queue.  Clear that too.
+-			 */
+-			p->signal->flags = 0;
+-		}
+ 	} else if (sig == SIGKILL) {
+ 		/*
+ 		 * Make sure that any pending stop signal already dequeued
+@@ -657,6 +640,43 @@ static void handle_stop_signal(int sig, struct task_struct *p)
+ 	}
+ }
+ 
++/* This must not be called before the SIGCONT has been queued, otherwise
++ * the userspace task (waiting on siglock) might run too soon and miss
++ * the SIGCONT.
++ */
++static void handle_stop_signal_finish(int sig, struct task_struct *p)
++{
++
++	if (p->signal->flags & SIGNAL_GROUP_EXIT)
++		/*
++		 * The process is in the middle of dying already.
++		 */
++		return;
++
++	if (sig != SIGCONT)
++		return;
++
++	if (p->signal->flags & SIGNAL_STOP_STOPPED) {
++		/*
++		 * We were in fact stopped, and are now continued.
++		 * Notify the parent with CLD_CONTINUED.
++		 */
++		p->signal->flags = SIGNAL_STOP_CONTINUED;
++		p->signal->group_exit_code = 0;
++		spin_unlock(&p->sighand->siglock);
++		do_notify_parent_cldstop(p, CLD_CONTINUED);
++		spin_lock(&p->sighand->siglock);
++	} else {
++		/*
++		 * We are not stopped, but there could be a stop
++		 * signal in the middle of being processed after
++		 * being removed from the queue.  Clear that too.
++		 */
++		p->signal->flags = 0;
++	}
++}
++
++
+ static int send_signal(int sig, struct siginfo *info, struct task_struct *t,
+ 			struct sigpending *signals)
+ {
+@@ -946,6 +966,8 @@ __group_send_sig_info(int sig, struct siginfo *info, struct task_struct *p)
+ 	if (unlikely(ret))
+ 		return ret;
+ 
++	handle_stop_signal_finish(sig, p);
++
+ 	__group_complete_signal(sig, p);
+ 	return 0;
+ }
+@@ -1389,6 +1411,8 @@ send_group_sigqueue(int sig, struct sigqueue *q, struct task_struct *p)
+ 	list_add_tail(&q->list, &p->signal->shared_pending.list);
+ 	sigaddset(&p->signal->shared_pending.signal, sig);
+ 
++	handle_stop_signal_finish(sig, p);
++
+ 	__group_complete_signal(sig, p);
+ out:
+ 	spin_unlock_irqrestore(&p->sighand->siglock, flags);
