@@ -1,88 +1,169 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755784AbYB0KeT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755310AbYB0KhQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755784AbYB0KeT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Feb 2008 05:34:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751457AbYB0KeL
+	id S1755310AbYB0KhQ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Feb 2008 05:37:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751457AbYB0KhE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Feb 2008 05:34:11 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:60308 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751086AbYB0KeK (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Feb 2008 05:34:10 -0500
-Date: Wed, 27 Feb 2008 07:33:07 -0300
-From: Mauro Carvalho Chehab <mchehab@infradead.org>
-To: Marcin Slusarz <marcin.slusarz@gmail.com>
-Cc: Jean Delvare <khali@linux-fr.org>, LKML <linux-kernel@vger.kernel.org>,
-       i2c@lm-sensors.org, video4linux-list@redhat.com
-Subject: Re: [PATCH] video: limit stack usage of ir-kbd-i2c.c
-Message-ID: <20080227073307.2ed6dc3d@areia>
-In-Reply-To: <20080227102309.GA6698@joi>
-References: <20080225205055.GA27455@joi>
-	<20080226133222.7af260b2@hyperion.delvare>
-	<20080226210307.GA6085@joi>
-	<20080226232320.2df756d6@hyperion.delvare>
-	<20080227102309.GA6698@joi>
-X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.1; i586-mandriva-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 27 Feb 2008 05:37:04 -0500
+Received: from mx1.minet.net ([157.159.40.25]:59406 "EHLO mx1.minet.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752438AbYB0KhB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 Feb 2008 05:37:01 -0500
+From: Florian Fainelli <florian.fainelli@telecomint.eu>
+Date: Wed, 27 Feb 2008 11:36:41 +0100
+Subject: [PATCH] [x86] rdc321x: Kconfig options fixes for rdc321x
+MIME-Version: 1.0
+X-Length: 5683
+To: Ingo Molnar <mingo@elte.hu>
+Cc: linux-kernel@vger.kernel.org
+Content-Type: text/plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <mchehab@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
+Content-Disposition: inline
+Message-Id: <200802271136.42763.florian.fainelli@telecomint.eu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 27 Feb 2008 11:23:26 +0100
-Marcin Slusarz <marcin.slusarz@gmail.com> wrote:
+This patch fixes the various Kconfig option selections
+which are unavailable for the RDC321x sub architecture.
 
-> On Tue, Feb 26, 2008 at 11:23:20PM +0100, Jean Delvare wrote:
-> > Hi Marcin,
-> Hi
->  
-> > On Tue, 26 Feb 2008 22:03:16 +0100, Marcin Slusarz wrote:
-> > > Do you have an idea (or patch :D) how to solve this:
-> > > 0x00000234 v4l_compat_translate_ioctl [v4l1-compat]:    1376
-> > > ? That's on top of my make checkstack output
-> > 
-> > Random ideas (but I am in no way a specialist of this exercise):
-> > 
-> > * You could try moving the structures to the blocks where they are used,
-> > in the case a given structure is used for only one ioctl. I'm not too
-> > sure how gcc handles local variables declared inside blocks with
-> > regards to stack reservation though. I thought it would work but my
-> > experiments today seem to suggest it doesn't.
-> That won't work. Variables at beginning of function take only ~600 bytes,
-> so the rest must be from inner blocks and inlines (probably).
-> 
-> > * You can move the handling of some ioctls to dedicated functions, just
-> > like I did in i2c-dev:
-> > http://lists.lm-sensors.org/pipermail/i2c/2008-February/003010.html
-> > However there is a risk that gcc will inline these functions (that's
-> > what happened to me...) Not sure how to prevent gcc from inlining.
-> There's "noinline" attribute in linux/compiler.h (compiler-gcc.h actually)
-> for these situations.
->  
-> > * You can allocate the structures dynamically, as you originally wanted
-> > to do for ir-kbd-i2c. However this has a performance penalty and will
-> > fragment the memory, so it's not ideal.
-> > 
-> > * If each ioctl uses only one of the structures, you may define a union
-> > of all the structures. The size of the union will be the size of the
-> > biggest structure, so you save a lot of space on the stack.
-> Nice idea.
-> 
-> I'll try 2nd and 4th approaches.
-
-The union will probably solve. This function is very complex, since it needs to
-deal with almost all v4l1 v4l2 ioctls (about 80-90). Splitting into small
-functions might help, but probably, gcc will create the functions as inline.
-
-
-> 
-> Marcin Slusarz
-
-
-
-Cheers,
-Mauro
+Signed-off-by: Florian Fainelli <florian.fainelli@telecomint.eu>
+---
+ diff --git a/arch/x86/Kconfig b/arch/x86/Kconfig
+index 4a88cf7..31d0fc9 100644
+--- a/arch/x86/Kconfig
++++ b/arch/x86/Kconfig
+@@ -123,11 +123,11 @@ config HAVE_SETUP_PER_CPU_AREA
+ 
+ config ARCH_HIBERNATION_POSSIBLE
+ 	def_bool y
+-	depends on !SMP || !X86_VOYAGER
++	depends on !SMP || !(X86_VOYAGER || X86_RDC321X)
+ 
+ config ARCH_SUSPEND_POSSIBLE
+ 	def_bool y
+-	depends on !X86_VOYAGER
++	depends on !(X86_VOYAGER || X86_RDC321X)
+ 
+ config ZONE_DMA32
+ 	bool
+@@ -159,7 +159,7 @@ config GENERIC_PENDING_IRQ
+ 
+ config X86_SMP
+ 	bool
+-	depends on SMP && ((X86_32 && !X86_VOYAGER) || X86_64)
++	depends on SMP && ((X86_32 && !(X86_VOYAGER || X86_RDC321X)) || X86_64)
+ 	default y
+ 
+ config X86_32_SMP
+@@ -173,12 +173,12 @@ config X86_64_SMP
+ config X86_HT
+ 	bool
+ 	depends on SMP
+-	depends on (X86_32 && !(X86_VISWS || X86_VOYAGER)) || (X86_64 && !MK8)
++	depends on (X86_32 && !(X86_VISWS || X86_VOYAGER || X86_RDC321X)) || (X86_64 && !MK8)
+ 	default y
+ 
+ config X86_BIOS_REBOOT
+ 	bool
+-	depends on X86_32 && !(X86_VISWS || X86_VOYAGER)
++	depends on X86_32 && !(X86_VISWS || X86_VOYAGER || X86_RDC321X)
+ 	default y
+ 
+ config X86_TRAMPOLINE
+@@ -365,7 +365,7 @@ config VMI
+ 	bool "VMI Guest support"
+ 	select PARAVIRT
+ 	depends on X86_32
+-	depends on !(X86_VISWS || X86_VOYAGER)
++	depends on !(X86_VISWS || X86_VOYAGER || X86_RDC321X)
+ 	help
+ 	  VMI provides a paravirtualized interface to the VMware ESX server
+ 	  (it could be used by other hypervisors in theory too, but is not
+@@ -376,7 +376,7 @@ source "arch/x86/lguest/Kconfig"
+ 
+ config PARAVIRT
+ 	bool "Enable paravirtualization code"
+-	depends on !(X86_VISWS || X86_VOYAGER)
++	depends on !(X86_VISWS || X86_VOYAGER || X86_RDC321X)
+ 	help
+ 	  This changes the kernel so it can modify itself when it is run
+ 	  under a hypervisor, potentially improving performance significantly
+@@ -554,11 +554,11 @@ config X86_UP_IOAPIC
+ 
+ config X86_LOCAL_APIC
+ 	def_bool y
+-	depends on X86_64 || (X86_32 && (X86_UP_APIC || ((X86_VISWS || SMP) && !X86_VOYAGER) || X86_GENERICARCH))
++	depends on X86_64 || (X86_32 && (X86_UP_APIC || ((X86_VISWS || SMP) && !(X86_VOYAGER || X86_RDC321X)) || X86_GENERICARCH))
+ 
+ config X86_IO_APIC
+ 	def_bool y
+-	depends on X86_64 || (X86_32 && (X86_UP_IOAPIC || (SMP && !(X86_VISWS || X86_VOYAGER)) || X86_GENERICARCH))
++	depends on X86_64 || (X86_32 && (X86_UP_IOAPIC || (SMP && !(X86_VISWS || X86_VOYAGER || X86_RDC321X)) || X86_GENERICARCH))
+ 
+ config X86_VISWS_APIC
+ 	def_bool y
+@@ -566,7 +566,7 @@ config X86_VISWS_APIC
+ 
+ config X86_MCE
+ 	bool "Machine Check Exception"
+-	depends on !X86_VOYAGER
++	depends on !(X86_VOYAGER || X86_RDC321X)
+ 	---help---
+ 	  Machine Check Exception support allows the processor to notify the
+ 	  kernel if it detects a problem (e.g. overheating, component failure).
+@@ -1196,7 +1196,7 @@ config PHYSICAL_ALIGN
+ 
+ config HOTPLUG_CPU
+ 	bool "Support for suspend on SMP and hot-pluggable CPUs (EXPERIMENTAL)"
+-	depends on SMP && HOTPLUG && EXPERIMENTAL && !X86_VOYAGER
++	depends on SMP && HOTPLUG && EXPERIMENTAL && !(X86_VOYAGER || X86_RDC321X)
+ 	---help---
+ 	  Say Y here to experiment with turning CPUs off and on, and to
+ 	  enable suspend on SMP systems. CPUs can be controlled through
+@@ -1228,7 +1228,7 @@ config HAVE_ARCH_EARLY_PFN_TO_NID
+ 	depends on NUMA
+ 
+ menu "Power management options"
+-	depends on !X86_VOYAGER
++	depends on !(X86_VOYAGER || X86_RDC321X)
+ 
+ config ARCH_HIBERNATION_HEADER
+ 	def_bool y
+@@ -1382,7 +1382,7 @@ menu "Bus options (PCI etc.)"
+ 
+ config PCI
+ 	bool "PCI support" if !X86_VISWS
+-	depends on !X86_VOYAGER
++	depends on !(X86_VOYAGER || X86_RDC321X)
+ 	default y
+ 	select ARCH_SUPPORTS_MSI if (X86_LOCAL_APIC && X86_IO_APIC)
+ 	help
+@@ -1487,7 +1487,7 @@ if X86_32
+ 
+ config ISA
+ 	bool "ISA support"
+-	depends on !(X86_VOYAGER || X86_VISWS)
++	depends on !(X86_VOYAGER || X86_VISWS || X86_RDC321X)
+ 	help
+ 	  Find out whether you have ISA slots on your motherboard.  ISA is the
+ 	  name of a bus system, i.e. the way the CPU talks to the other stuff
+@@ -1514,7 +1514,7 @@ config EISA
+ source "drivers/eisa/Kconfig"
+ 
+ config MCA
+-	bool "MCA support" if !(X86_VISWS || X86_VOYAGER)
++	bool "MCA support" if !(X86_VISWS || X86_VOYAGER || X86_RDC321X)
+ 	default y if X86_VOYAGER
+ 	help
+ 	  MicroChannel Architecture is found in some IBM PS/2 machines and
+@@ -1526,7 +1526,7 @@ source "drivers/mca/Kconfig"
+ 
+ config SCx200
+ 	tristate "NatSemi SCx200 support"
+-	depends on !X86_VOYAGER
++	depends on !(X86_VOYAGER || X86_RDC321X)
+ 	help
+ 	  This provides basic support for National Semiconductor's
+ 	  (now AMD's) Geode processors.  The driver probes for the
