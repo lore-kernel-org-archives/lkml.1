@@ -1,195 +1,201 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757183AbYB0Rme@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756633AbYB0RoX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757183AbYB0Rme (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Feb 2008 12:42:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756611AbYB0RmM
+	id S1756633AbYB0RoX (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Feb 2008 12:44:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754345AbYB0RoP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Feb 2008 12:42:12 -0500
-Received: from g5t0007.atlanta.hp.com ([15.192.0.44]:44590 "EHLO
-	g5t0007.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755808AbYB0RmJ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Feb 2008 12:42:09 -0500
-From: Bjorn Helgaas <bjorn.helgaas@hp.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: a7839e96 (PNP: increase max resources) breaks my ALSA intel8x0 sound card
-Date: Wed, 27 Feb 2008 10:43:47 -0700
-User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
-Cc: Robert Hancock <hancockr@shaw.ca>,
-       Andrew Morton <akpm@linux-foundation.org>, avuton@gmail.com,
-       yakui.zhao@intel.com, shaohua.li@intel.com, trenn@suse.de,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       alsa-devel@alsa-project.org
-References: <fa.Kmpf0B4W44W1VefIME7+BnfUouY@ifi.uio.no> <200802141713.23461.bjorn.helgaas@hp.com> <alpine.LFD.1.00.0802141620380.6110@woody.linux-foundation.org>
-In-Reply-To: <alpine.LFD.1.00.0802141620380.6110@woody.linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Wed, 27 Feb 2008 12:44:15 -0500
+Received: from e2.ny.us.ibm.com ([32.97.182.142]:55889 "EHLO e2.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754194AbYB0RoO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 Feb 2008 12:44:14 -0500
+Subject: Re: [RFC][PATCH] make /proc/pid/pagemap work with huge pages and
+	return page size
+From: Dave Hansen <haveblue@us.ibm.com>
+To: Hans Rosenfeld <hans.rosenfeld@amd.com>
+Cc: Matt Mackall <mpm@selenic.com>, linux-kernel@vger.kernel.org,
+       Adam Litke <aglitke@gmail.com>, nacc <nacc@linux.vnet.ibm.com>,
+       Jon Tollefson <kniht@linux.vnet.ibm.com>
+In-Reply-To: <20080226202533.GD5963@escobedo.amd.com>
+References: <20080220135743.GA10127@escobedo.amd.com>
+	 <1203733096.14838.154.camel@cinder.waste.org>
+	 <1203791461.11305.135.camel@nimitz.home.sr71.net>
+	 <20080225120951.GA5963@escobedo.amd.com>
+	 <1203964750.28196.7.camel@nimitz.home.sr71.net>
+	 <20080226202533.GD5963@escobedo.amd.com>
+Content-Type: text/plain
+Date: Wed, 27 Feb 2008 09:44:04 -0800
+Message-Id: <1204134244.5207.28.camel@nimitz.home.sr71.net>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.1 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200802271043.47763.bjorn.helgaas@hp.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 14 February 2008 05:40:36 pm Linus Torvalds wrote:
+On Tue, 2008-02-26 at 21:25 +0100, Hans Rosenfeld wrote:
+> On Mon, Feb 25, 2008 at 10:39:10AM -0800, Dave Hansen wrote:
+> > Did you read my suggestion?  We use one bit in the pte to specify that
+> > its a large page mapping, then specify a mask to apply to the address to
+> > get the *first* mapping of the large page, where you're find the actual
+> > physical address.  That keeps us from having to worry about specifying
+> > *both* the page size and the pfn in the same pte.
 > 
-> That said, if we really want to handle this, we could certainly add a 
-> whole new ioresource flag bit that says "allow inserting resources into 
-> this", and we could set that bit not just for the PnP reservations 
-> themselves, but in PCI bus resources too.
+> I did read it, but I don't see the point. I think we have enough bits in
+> that pseudo pte to include both the page size and the address/pfn.
+
+I'm just worried that once we establish the format, we can't really
+change it.  We have enough room in the pseudo-pte now, but what happens
+when the next group of people pop up that want something else from this
+interface.  Right now we have normal memory, swap, and hugetlb pages.
+
+What if people want migration ptes marked next?  I'm not sure those fit
+into what you have here.
+
+It all fits today, I'm just worried about tomorrow. :(
+
+> +static int add_huge_to_pagemap(unsigned long addr, unsigned long end,
+> +			       struct pagemap_ppte ppte, struct pagemapread *pm)
+> +{
+> +	int err;
+> +
+> +	for (; addr != end; addr += PAGE_SIZE) {
+> +		err = add_to_pagemap(addr, ppte, pm);
+> +		if (err)
+> +			return err;
+> +	}
+> +}
+> +	
+>  static int pagemap_pte_hole(unsigned long start, unsigned long end,
+>  				void *private)
+>  {
+> @@ -574,7 +581,7 @@ static int pagemap_pte_hole(unsigned long start, unsigned long end,
+>  u64 swap_pte_to_pagemap_entry(pte_t pte)
+>  {
+>  	swp_entry_t e = pte_to_swp_entry(pte);
+> -	return PM_SWAP | swp_type(e) | (swp_offset(e) << MAX_SWAPFILES_SHIFT);
+> +	return swp_type(e) | (swp_offset(e) << MAX_SWAPFILES_SHIFT);
+>  }
+
+Is there any way to do unions of bitfields?  It seems a bit silly that
+we have this bitfield, and then subdivide the bitfield for the swap
+entries.  
+
+>  static int pagemap_pte_range(pmd_t *pmd, unsigned long addr, unsigned long end,
+> @@ -584,16 +591,23 @@ static int pagemap_pte_range(pmd_t *pmd, unsigned long addr, unsigned long end,
+>  	pte_t *pte;
+>  	int err = 0;
 > 
-> Basically, there are two different ways of inserting a resource:
+> -	for (; addr != end; addr += PAGE_SIZE) {
+> -		u64 pfn = PM_NOT_PRESENT;
+> +	if (pmd_huge(*pmd))
+> +		add_huge_to_pagemap(addr, end, pmd_to_ppte(pmd), pm);
+
+Could you make this work with other architectures' large pages as well?
+I'd hate to leave ia64, MIPS and powerpc out in the cold.  powerpc at
+least has large pmds, it just doesn't really expose them to generic
+code.  
+
+> +	else	for (; addr != end; addr += PAGE_SIZE) {
+> +		struct pagemap_ppte ppte = { 0, 0, 0, 0};
+
+Didn't you define a macro for this above?  Can you re-use it?
+
+>  		pte = pte_offset_map(pmd, addr);
+> -		if (is_swap_pte(*pte))
+> -			pfn = swap_pte_to_pagemap_entry(*pte);
+> -		else if (pte_present(*pte))
+> -			pfn = pte_pfn(*pte);
+> +		if (is_swap_pte(*pte)) {
+> +			ppte.swap = 1;
+> +			ppte.paddr = swap_pte_to_pagemap_entry(*pte);
+> +		} else if (pte_present(*pte)) {
+> +			ppte.present = 1;
+> +			ppte.pshift = PAGE_SHIFT;
+> +			ppte.paddr = pte_pfn(*pte) << PAGE_SHIFT;
+> +		}
+
+Why do we bother wasting space in paddr by shifting up the physical
+address?  We know the bottom PAGE_SHIFT bits are empty, so doesn't this
+just waste them?
+
+The bitfields are nice, and I do see they've spread to generic code.
+So, I won't object to them, but please do double-check that they don't
+cause any problems, especially with compilers that you might not be
+using.
+
+>  		/* unmap so we're not in atomic when we copy to userspace */
+>  		pte_unmap(pte);
+> -		err = add_to_pagemap(addr, pfn, pm);
+> +		err = add_to_pagemap(addr, ppte, pm);
+>  		if (err)
+>  			return err;
+>  	}
+> diff --git a/include/asm-generic/pgtable.h b/include/asm-generic/pgtable.h
+> index 44ef329..d7df89d 100644
+> --- a/include/asm-generic/pgtable.h
+> +++ b/include/asm-generic/pgtable.h
+> @@ -195,6 +195,12 @@ static inline int pmd_none_or_clear_bad(pmd_t *pmd)
+>  	}
+>  	return 0;
+>  }
+> +
+> +/* dummy for !x86 */
+> +#ifndef pmd_to_ppte
+> +#define pmd_to_ppte(x) ((struct pagemap_ppte) {0, 0, 0, 0})
+> +#endif
+
+I'm really not a fan of the #ifndef style for these headers.  I think it
+makes it really hard to figure out where definitions come from.  
+
+I do think it would be best to keep al the ppte stuff isolated to the
+pagemap files as much as humanly possible.  There's not much of a reason
+to pollute these generic (and already full) headers with our /proc
+crap. :)
+
+>  #endif /* CONFIG_MMU */
 > 
->  - the "register this subresource" thing that "request_resource()" does, 
->    which just works on the one given resource and honors the BUSY bit.
+>  /*
+> diff --git a/include/asm-x86/pgtable.h b/include/asm-x86/pgtable.h
+> index 174b877..7a446e0 100644
+> --- a/include/asm-x86/pgtable.h
+> +++ b/include/asm-x86/pgtable.h
+> @@ -181,6 +181,8 @@ static inline pmd_t pfn_pmd(unsigned long page_nr, pgprot_t pgprot)
+>  		      pgprot_val(pgprot)) & __supported_pte_mask);
+>  }
 > 
->  - the "insert this resource into the tree" (insert_resource()) that 
->    starts from the root and tries to find the right location. It honors 
->    the BUSY bit too, but we could extend it to _only_ extend into 
->    resources that allow it.
+> +#define pmd_pfn(x)  ((pmd_val(x) & __PHYSICAL_MASK) >> PAGE_SHIFT)
+> +
+>  static inline pte_t pte_modify(pte_t pte, pgprot_t newprot)
+>  {
+>  	pteval_t val = pte_val(pte);
+> @@ -242,6 +244,20 @@ static inline pte_t pte_modify(pte_t pte, pgprot_t newprot)
+> 
+>  #ifndef __ASSEMBLY__
+> 
+> +#include <linux/pagemap_ppte.h>
+> +
+> +static inline struct pagemap_ppte pmd_to_ppte(pmd_t *pmd)
+> +{
+> +	struct pagemap_ppte ppte = {
+> +		.paddr   = pmd_pfn(*pmd) << PAGE_SHIFT,
+> +		.pshift  = HPAGE_SHIFT,
+> +		.swap    = 0,
+> +		.present = 1,
+> +	};
+> +
+> +	return ppte;
+> +}
 
-I guess it's time to get back to this problem.
+Could you investigate this a bit on the other architectures and perhaps
+code up something that will at least compile on the others and not just
+punt?  I just want to make sure that this approach can be extended to
+them easily and we don't have to rewrite it. :)
 
-I don't want to make PNP insert resources only at the root.  That
-would avoid the ALSA problem because the enclosing PCI resource is
-allocated first, but it also precludes us from dealing with lots of
-valid ACPI information.  ACPI can describe layers of bridges and
-devices behind them.  It don't think we should throw away that
-information just to solve this problem.
+My only other concern is that we're still wobbling on this interface and
+it's about to get mainline-released.  Should we turn it off in mainline
+so that we don't establish an ABI that we know we're going to change
+shortly anyway?
 
-And I don't really want to add IORESOURCE_INSERT.  It's probably a
-useful idea, but I don't think it helps solve *this* problem.  We'd
-have to mark both the PCI and the PNP regions as "insert", and I
-think we'd end up with the exact same situation we have today:
+-- Dave
 
-  febf8000-febfbfff : 0000:00:1b.0 -- from pcibios_resource_survey (!busy)
-  febfa000-febfac00 : pnp 00:08    -- from PNP system driver (!busy)
-  febf8000-febfbfff : ICH HD audio -- fails; spans part of PNP region
-
-I'm back to the quirk idea, which is still ugly but seems the most
-straightforward to me.  Here's my current patch (this won't apply
-directly because we'd have to revert the Supermicro-specific quirk
-first).
-
-Excuse me a minute while I put on my asbestos underwear.
-
-Bjorn
-
-
-PNP: disable PNP motherboard resources that overlap PCI BARs
-
-Some BIOSes have PNP motherboard devices with resources that
-partially overlap PCI BARs.  The PNP system driver claims these
-motherboard resources, which prevents the normal PCI driver from
-requesting them later.
-
-This patch disables the PNP resources that conflict with PCI BARs
-so they won't be claimed by the PNP system driver.
-
-Of course, this only works if PCI devices have already been enumerated.
-Currently, PCI devices are discovered before any PNP init via this path:
-
-    acpi_pci_root_init() -> acpi_pci_root_add() -> pci_acpi_scan_root() ->
-	pci_scan_bus_parented() -> pci_scan_child_bus() -> ...
-
-References:
-    https://bugzilla.redhat.com/show_bug.cgi?id=280641
-    https://bugzilla.redhat.com/show_bug.cgi?id=313491
-    http://lkml.org/lkml/2008/1/9/449
-    http://thread.gmane.org/gmane.linux.acpi.devel/27312
-    http://lkml.org/lkml/2008/1/27/168
-
-Signed-off-by: Bjorn Helgaas <bjorn.helgaas@hp.com>
-
-Index: work7/drivers/pnp/quirks.c
-===================================================================
---- work7.orig/drivers/pnp/quirks.c	2008-02-27 10:17:40.000000000 -0700
-+++ work7/drivers/pnp/quirks.c	2008-02-27 10:19:35.000000000 -0700
-@@ -108,6 +108,77 @@
- 		       "pnp: SB audio device quirk - increasing port range\n");
- }
- 
-+
-+#include <linux/pci.h>
-+
-+static void quirk_system_pci_resources(struct pnp_dev *dev)
-+{
-+	struct pci_dev *pdev = NULL;
-+	resource_size_t pnp_start, pnp_end, pci_start, pci_end;
-+	int i, j;
-+
-+	/*
-+	 * Some BIOSes have PNP motherboard devices with resources that
-+	 * partially overlap PCI BARs.  The PNP system driver claims these
-+	 * motherboard resources, which prevents the normal PCI driver from
-+	 * requesting them later.
-+	 *
-+	 * This patch disables the PNP resources that conflict with PCI BARs
-+	 * so they won't be claimed by the PNP system driver.
-+	 */
-+	for_each_pci_dev(pdev) {
-+		for (i = 0; i < DEVICE_COUNT_RESOURCE; i++) {
-+			if (!(pci_resource_flags(pdev, i) & IORESOURCE_MEM) ||
-+			    pci_resource_len(pdev, i) == 0)
-+				continue;
-+
-+			pci_start = pci_resource_start(pdev, i);
-+			pci_end = pci_resource_end(pdev, i);
-+			for (j = 0; j < PNP_MAX_MEM; j++) {
-+				if (!pnp_mem_valid(dev, j) ||
-+				    pnp_mem_len(dev, j) == 0)
-+					continue;
-+
-+				pnp_start = pnp_mem_start(dev, j);
-+				pnp_end = pnp_mem_end(dev, j);
-+
-+				/*
-+				 * If the PNP region doesn't overlap the PCI
-+				 * region at all, there's no problem.
-+				 */
-+				if (pnp_end < pci_start || pnp_start > pci_end)
-+					continue;
-+
-+				/*
-+				 * If the PNP region completely encloses (or is
-+				 * at least as large as) the PCI region, that's
-+				 * also OK.  For example, this happens when the
-+				 * PNP device describes a bridge with PCI
-+				 * behind it.
-+				 */
-+				if (pnp_start <= pci_start &&
-+				    pnp_end >= pci_end)
-+					continue;
-+
-+				/*
-+				 * Otherwise, the PNP region overlaps *part* of
-+				 * the PCI region, and that might prevent a PCI
-+				 * driver from requesting its resources.
-+				 */
-+				dev_warn(&dev->dev, "mem resource "
-+					"(0x%llx-0x%llx) overlaps %s BAR %d "
-+					"(0x%llx-0x%llx), disabling\n",
-+					(unsigned long long) pnp_start,
-+					(unsigned long long) pnp_end,
-+					pci_name(pdev), i,
-+					(unsigned long long) pci_start,
-+					(unsigned long long) pci_end);
-+				pnp_mem_flags(dev, j) = 0;
-+			}
-+		}
-+	}
-+}
-+
- /*
-  *  PnP Quirks
-  *  Cards or devices that need some tweaking due to incomplete resource info
-@@ -128,6 +199,8 @@
- 	{"CTL0043", quirk_sb16audio_resources},
- 	{"CTL0044", quirk_sb16audio_resources},
- 	{"CTL0045", quirk_sb16audio_resources},
-+	{"PNP0c01", quirk_system_pci_resources},
-+	{"PNP0c02", quirk_system_pci_resources},
- 	{""}
- };
- 
