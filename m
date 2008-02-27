@@ -1,64 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758908AbYB0VnR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759174AbYB0VoW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758908AbYB0VnR (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Feb 2008 16:43:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752605AbYB0VnA
+	id S1759174AbYB0VoW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Feb 2008 16:44:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753875AbYB0VoN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Feb 2008 16:43:00 -0500
-Received: from g1t0026.austin.hp.com ([15.216.28.33]:47370 "EHLO
-	g1t0026.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751288AbYB0Vm7 (ORCPT
+	Wed, 27 Feb 2008 16:44:13 -0500
+Received: from terminus.zytor.com ([198.137.202.10]:40943 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753029AbYB0VoN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Feb 2008 16:42:59 -0500
-From: Paul Moore <paul.moore@hp.com>
-Organization: Hewlett-Packard
-To: Adrian Bunk <bunk@kernel.org>
-Subject: Re: [2.6 patch] selinux/netlabel.c should #include "netlabel.h"
-Date: Wed, 27 Feb 2008 16:42:57 -0500
-User-Agent: KMail/1.9.7
-Cc: sds@tycho.nsa.gov, jmorris@namei.org, eparis@parisplace.org,
-       netdev@vger.kernel.org, linux-kernel@vger.kernel.org
-References: <20080227212042.GK29269@cs181133002.pp.htv.fi>
-In-Reply-To: <20080227212042.GK29269@cs181133002.pp.htv.fi>
+	Wed, 27 Feb 2008 16:44:13 -0500
+Message-ID: <47C5D693.3030207@zytor.com>
+Date: Wed, 27 Feb 2008 13:30:59 -0800
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
-Content-Disposition: inline
-Message-Id: <200802271642.57556.paul.moore@hp.com>
-Content-Type: text/plain;
-  charset="utf-8"
+To: Adrian Bunk <bunk@kernel.org>
+CC: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>, Sam Ravnborg <sam@ravnborg.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] x86: X86_HT always enable on X86_64 SMP
+References: <47C5D32E.8070308@ct.jp.nec.com> <20080227212658.GU29269@cs181133002.pp.htv.fi>
+In-Reply-To: <20080227212658.GU29269@cs181133002.pp.htv.fi>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 27 February 2008 4:20:42 pm Adrian Bunk wrote:
-> Every file should include the headers containing the externs for its
-> global code.
->
-> Signed-off-by: Adrian Bunk <bunk@kernel.org>
+Adrian Bunk wrote:
+> On Wed, Feb 27, 2008 at 01:16:30PM -0800, Hiroshi Shimamoto wrote:
+>> From: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
+>>
+>> X86_HT is used for hyperthreading or multicore on 32-bit.
+>> The X86_HT on 64-bit is different from 32-bit, it means hyperthreading only.
+>> And X86_HT is not used on 64-bit except from cpu/initel_cacheinfo.c.
+>>
+>> Unify X86_HT for hyperthreading or multicore.
+>> Turn X86_HT on when X86_64 and SMP are enabled.
+> 
+> Please fix it properly instead - fiddling around with it the way you do
+> only asks for trouble in the future.
+> 
+> What we need are two different variables for:
+> - hyperthreading and
+> - multicore
+> 
 
-It doesn't _need_ the file in the strictest sense, the header file is 
-just there for the core SELinux code to call into the NetLabel/SELinux 
-glue code (what is in security/selinux/netlabel.c).  However, if this 
-is to conform better to kernel coding policy (I assume that is the case 
-here?) then that is fine with me.
+He does, and calls them SCHED_SMT and SCHED_MC respectively.
 
-Acked-by: Paul Moore <paul.moore@hp.com>
+It's not particularly clear to me what X86_HT is meant to be used for 
+anymore at all.
 
-> ---
-> 1f65757bac3e82514b447822ab30ee10d33a59a2 foobar
-> diff --git a/security/selinux/netlabel.c
-> b/security/selinux/netlabel.c index 0fa2be4..6d22d76 100644
-> --- a/security/selinux/netlabel.c
-> +++ b/security/selinux/netlabel.c
-> @@ -34,6 +34,7 @@
->
->  #include "objsec.h"
->  #include "security.h"
-> +#include "netlabel.h"
->
->  /**
->   * selinux_netlbl_sidlookup_cached - Cache a SID lookup
-
--- 
-paul moore
-linux security @ hp
+	-hpa
