@@ -1,85 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760582AbYB1Rik@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760448AbYB1Rk0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760582AbYB1Rik (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Feb 2008 12:38:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753462AbYB1Ri3
+	id S1760448AbYB1Rk0 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Feb 2008 12:40:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752083AbYB1RkN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Feb 2008 12:38:29 -0500
-Received: from rv-out-0910.google.com ([209.85.198.188]:28939 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752789AbYB1Ri2 (ORCPT
+	Thu, 28 Feb 2008 12:40:13 -0500
+Received: from sj-iport-6.cisco.com ([171.71.176.117]:30898 "EHLO
+	sj-iport-6.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751994AbYB1RkM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Feb 2008 12:38:28 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=m5XK+KI5aX1EKLPNwYYdYv85/Pv5ux9Fbc6VBUQbr9uxI19R9HJozhrGAsr87lnCV8sv+9GkFiVdwoae+UPurbKwRJw+p6ZPv91q1ILwOlQc58P0hSQZmnlzguFIS6LhZay6GFlDucxqMDyIAm1V6tjKFs6mL2TocZ+aKa00M+U=
-Message-ID: <86802c440802280938j75ebc92eu4104fe76d05e704e@mail.gmail.com>
-Date: Thu, 28 Feb 2008 09:38:27 -0800
-From: "Yinghai Lu" <yhlu.kernel@gmail.com>
-To: "Andrew Morton" <akpm@linux-foundation.org>,
-       "Alex Riesen" <raa.lkml@gmail.com>, trivial@kernel.org,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       "Yinghai Lu" <yinghai.lu@sun.com>
-Subject: Re: [PATCH] Fix "Malformed early option 'loglevel'"
-Cc: "Andi Kleen" <ak@suse.de>
-In-Reply-To: <20080228154412.GA4784@steel.home>
+	Thu, 28 Feb 2008 12:40:12 -0500
+To: "Mingarelli, Thomas" <Thomas.Mingarelli@hp.com>,
+       Wim Van Sebroeck <wim@iguana.be>
+Cc: linux-kernel@vger.kernel.org
+Subject: [PATCH] [WATCHDOG] Fix declaration of struct smbios_entry_point in hpwdt
+X-Message-Flag: Warning: May contain useful information
+References: <adad4qiwcmz.fsf@cisco.com>
+	<alpine.LFD.1.00.0802271913050.7583@apollo.tec.linutronix.de>
+	<ada1w6y1bzk.fsf@cisco.com>
+	<alpine.LFD.1.00.0802272011130.7583@apollo.tec.linutronix.de>
+	<20080227203655.GA30054@elte.hu>
+	<alpine.LFD.1.00.0802272140050.7583@apollo.tec.linutronix.de>
+	<alpine.LFD.1.00.0802272155190.7583@apollo.tec.linutronix.de>
+	<ada3areyu7x.fsf@cisco.com>
+	<E14D1C2A44812C4F9C3ED321127EDF6505829D59DF@G3W0854.americas.hpqcorp.net>
+	<adamypmx7k1.fsf@cisco.com>
+	<E14D1C2A44812C4F9C3ED321127EDF6505829D5D6C@G3W0854.americas.hpqcorp.net>
+From: Roland Dreier <rdreier@cisco.com>
+Date: Thu, 28 Feb 2008 09:38:44 -0800
+In-Reply-To: <E14D1C2A44812C4F9C3ED321127EDF6505829D5D6C@G3W0854.americas.hpqcorp.net> (Thomas Mingarelli's message of "Thu, 28 Feb 2008 15:02:36 +0000")
+Message-ID: <adaejaxx9p7.fsf_-_@cisco.com>
+User-Agent: Gnus/5.1008 (Gnus v5.10.8) XEmacs/21.4.21 (linux)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20080228154412.GA4784@steel.home>
+Content-Type: text/plain; charset=us-ascii
+X-OriginalArrivalTime: 28 Feb 2008 17:38:49.0831 (UTC) FILETIME=[C7272770:01C87A30]
+Authentication-Results: sj-dkim-3; header.From=rdreier@cisco.com; dkim=pass (
+	sig from cisco.com/sjdkim3002 verified; ); 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Feb 28, 2008 at 7:44 AM, Alex Riesen <raa.lkml@gmail.com> wrote:
-> According to Rusty Russell in <1155086871.26428.5.camel@localhost.localdomain>:
->
->     On Tue, 2006-08-08 at 17:10 -0700, Keith Mannthey wrote:
->     > The parameter hotadd_percent is setup right but there is a
->     > "Malformed early option 'numa'" message.
->
->     For the record: this happens when the function registered with
->     early_param() returns non-zero.  __setup() functions return 1 if OK,
->     module_param() and early_param() return 0 or a -ve error code.
->  ---
->
->  For instance:
->
->  Linux version 2.6.25-rc3-t (raa@steel) (gcc version 4.1.3 20070929 (prerelease) (Ubuntu 4.1.2-16ubuntu2)) #22 SMP PREEMPT Tue Feb 26
->  BIOS-provided physical RAM map:
->   BIOS-e820: 0000000000000000 - 00000000000a0000 (usable)
->   BIOS-e820: 00000000000f0000 - 0000000000100000 (reserved)
->   BIOS-e820: 0000000000100000 - 000000003fff0000 (usable)
->   BIOS-e820: 000000003fff0000 - 000000003fff3000 (ACPI NVS)
->   BIOS-e820: 000000003fff3000 - 0000000040000000 (ACPI data)
->   BIOS-e820: 00000000fec00000 - 0000000100000000 (reserved)
->  Malformed early option 'loglevel'
->  127MB HIGHMEM available.
->  896MB LOWMEM available.
->
->  Command line:
->
->  BOOT_IMAGE=2.6.25-t ro root=809 ro console=ttyS0,57600n8 console=tty0 loglevel=5
->
->   init/main.c |    2 +-
->   1 files changed, 1 insertions(+), 1 deletions(-)
->
->  diff --git a/init/main.c b/init/main.c
->  index 8b19820..fbb0167 100644
->  --- a/init/main.c
->  +++ b/init/main.c
->  @@ -254,7 +254,7 @@ early_param("quiet", quiet_kernel);
->   static int __init loglevel(char *str)
->   {
->         get_option(&str, &console_loglevel);
->  -       return 1;
->  +       return 0;
->   }
->
->   early_param("loglevel", loglevel);
->  --
->  1.5.4.3.253.g9f1d5
+On my HP DL380 G5 system running a 64-bit kernel, loading the hpwdt
+driver causes a crash because the driver attempts to ioremap an
+invalid physical address.  This is because the driver has an incorrect
+definition of the SMBIOS table entry point structure: the table
+address is only a 32-bit quantity, and making it a u64 means that the
+high-order 32 bits end up containing garbage.
 
-Acked-by: Yinghai Lu <yhlu.kernel@gmai.com>
+Correcting the structure definition fixes the driver so that it loads
+without any problems on my system.
+
+Signed-off-by: Roland Dreier <rolandd@cisco.com>
+---
+diff --git a/drivers/watchdog/hpwdt.c b/drivers/watchdog/hpwdt.c
+index a2e174b..cd1cc2d 100644
+--- a/drivers/watchdog/hpwdt.c
++++ b/drivers/watchdog/hpwdt.c
+@@ -88,7 +88,7 @@ struct smbios_entry_point {
+ 	u8 intermediate_anchor[5];
+ 	u8 intermediate_checksum;
+ 	u16 table_length;
+-	u64 table_address;
++	u32 table_address;
+ 	u16 table_num_structs;
+ 	u8 bcd_revision;
+ };
