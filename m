@@ -1,53 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932672AbYB1XR5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760850AbYB1XWy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932672AbYB1XR5 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Feb 2008 18:17:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758803AbYB1XRr
+	id S1760850AbYB1XWy (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Feb 2008 18:22:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751958AbYB1XWp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Feb 2008 18:17:47 -0500
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:40020 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1759302AbYB1XRq (ORCPT
+	Thu, 28 Feb 2008 18:22:45 -0500
+Received: from electric-eye.fr.zoreil.com ([213.41.134.224]:56566 "EHLO
+	electric-eye.fr.zoreil.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751714AbYB1XWp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Feb 2008 18:17:46 -0500
-Date: Thu, 28 Feb 2008 17:17:33 -0600
-From: Jack Steiner <steiner@sgi.com>
-To: Andrea Arcangeli <andrea@qumranet.com>
-Cc: Christoph Lameter <clameter@sgi.com>, Nick Piggin <npiggin@suse.de>,
-       akpm@linux-foundation.org, Robin Holt <holt@sgi.com>,
-       Avi Kivity <avi@qumranet.com>, Izik Eidus <izike@qumranet.com>,
-       kvm-devel@lists.sourceforge.net,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, general@lists.openfabrics.org,
-       Steve Wise <swise@opengridcomputing.com>,
-       Roland Dreier <rdreier@cisco.com>, Kanoj Sarcar <kanojsarcar@yahoo.com>,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       daniel.blueman@quadrics.com
-Subject: Re: [PATCH] mmu notifiers #v7
-Message-ID: <20080228231732.GA21604@sgi.com>
-References: <20080219135851.GI7128@v2.random> <20080219231157.GC18912@wotan.suse.de> <20080220010941.GR7128@v2.random> <20080220103942.GU7128@v2.random> <20080221045430.GC15215@wotan.suse.de> <20080221144023.GC9427@v2.random> <20080221161028.GA14220@sgi.com> <20080227192610.GF28483@v2.random> <Pine.LNX.4.64.0802281139250.30865@schroedinger.engr.sgi.com> <20080228215257.GJ8091@v2.random>
-Mime-Version: 1.0
+	Thu, 28 Feb 2008 18:22:45 -0500
+Date: Fri, 29 Feb 2008 00:04:25 +0100
+From: Francois Romieu <romieu@fr.zoreil.com>
+To: Switact - Thomas Roes <info@switact.nl>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: Realtek link issue with SLED10SP1
+Message-ID: <20080228230425.GB13100@electric-eye.fr.zoreil.com>
+References: <47BEB94B.8070306@switact.nl> <20080222224924.GA19397@electric-eye.fr.zoreil.com> <47C2D3BA.9010904@switact.nl>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080228215257.GJ8091@v2.random>
-User-Agent: Mutt/1.4.2.2i
+In-Reply-To: <47C2D3BA.9010904@switact.nl>
+X-Organisation: Land of Sunshine Inc.
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > The release should be called much earlier to allow the driver to release 
-> > all resources in one go. This way each vma must be processed individually. 
-> > For our gobs of memory this method may create a scaling problem on exit().
-> 
-> Good point, it has to be called earlier for GRU, but it's not a
-> performance issue. GRU doesn't pin the pages so it should make the
-> global invalidate in ->release _before_ unmap_vmas. Linux can't fault
-> in the ptes anymore because mm_users is zero so there's no need of a
-> ->release_begin/end, the _begin is enough.
-> 
+Switact - Thomas Roes <info@switact.nl> :
+[...]
+> I need a working solution for a kernel 2.6.16.46 (SLED10SP1)
+> All drivers I tested work on kernel 2.6.18-6 (and up)
 
-I disagree. The location of the callout IS a performance issue. In simple
-comparisons of the 2 patches (Christoph's vs. Andrea's), Andrea's has a 7X
-increase in the number of TLB purges being issued to the GRU. TLB flushing
-is slow and can impact the performance of of tasks using the GRU.
+Try http://userweb.kernel.org/~romieu/r8169/2.6.16/stable-46/to-2.6.24/
 
---- jack
+It contains a patch for the r8169 driver which should apply to your
+2.6.16.46 based kernel and turn its r8169 driver into something closer
+to 2.6.24. The kit contains a stack of incremental patches too if you
+are curious.
+
+I have fixed some rejects, checked that everything compiles at each
+step but the patch is otherwise untested. Use at your own risk.
+
+-- 
+Ueimor
