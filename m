@@ -1,106 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758864AbYB1RdV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760180AbYB1Rhj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758864AbYB1RdV (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Feb 2008 12:33:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751197AbYB1RdO
+	id S1760180AbYB1Rhj (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Feb 2008 12:37:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752453AbYB1Rhc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Feb 2008 12:33:14 -0500
-Received: from wolverine01.qualcomm.com ([199.106.114.254]:33626 "EHLO
-	wolverine01.qualcomm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751086AbYB1RdM (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Feb 2008 12:33:12 -0500
-X-IronPort-AV: E=McAfee;i="5200,2160,5240"; a="978317"
-Message-ID: <47C6F056.10503@qualcomm.com>
-Date: Thu, 28 Feb 2008 09:33:10 -0800
-From: Max Krasnyanskiy <maxk@qualcomm.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
-MIME-Version: 1.0
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-CC: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       Oleg Nesterov <oleg@tv-sign.ru>, Steven Rostedt <rostedt@goodmis.org>,
-       Paul Jackson <pj@sgi.com>, linux-kernel@vger.kernel.org
+	Thu, 28 Feb 2008 12:37:32 -0500
+Received: from relay1.sgi.com ([192.48.171.29]:50012 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752355AbYB1Rhb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 28 Feb 2008 12:37:31 -0500
+Date: Thu, 28 Feb 2008 11:37:28 -0600
+From: Paul Jackson <pj@sgi.com>
+To: David Rientjes <rientjes@google.com>
+Cc: mingo@elte.hu, a.p.zijlstra@chello.nl, tglx@linutronix.de, oleg@tv-sign.ru,
+       rostedt@goodmis.org, maxk@qualcomm.com, linux-kernel@vger.kernel.org
 Subject: Re: [RFC/PATCH 0/4] CPUSET driven CPU isolation
-References: <20080227222103.673194000@chello.nl>	 <47C5F470.7000802@qualcomm.com> <1204193987.6243.29.camel@lappy>
-In-Reply-To: <1204193987.6243.29.camel@lappy>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Message-Id: <20080228113728.7b8e5811.pj@sgi.com>
+In-Reply-To: <alpine.DEB.1.00.0802280212070.23040@chino.kir.corp.google.com>
+References: <20080227222103.673194000@chello.nl>
+	<20080228075010.GA28781@elte.hu>
+	<20080228020808.3fd22f77.pj@sgi.com>
+	<20080228090847.GA1133@elte.hu>
+	<20080228031710.3405e405.pj@sgi.com>
+	<alpine.DEB.1.00.0802280129580.15900@chino.kir.corp.google.com>
+	<alpine.DEB.1.00.0802280212070.23040@chino.kir.corp.google.com>
+Organization: SGI
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.12.0; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Peter Zijlstra wrote:
-> On Wed, 2008-02-27 at 15:38 -0800, Max Krasnyanskiy wrote:
->> Peter Zijlstra wrote:
->>> My vision on the direction we should take wrt cpu isolation.
->> General impressions:
->> - "cpu_system_map" is %100 identical to the "~cpu_isolated_map" as in my 
->> patches. It's updated from different place but functionally wise it's very 
->> much the same. I guess you did not like the 'isolated' name ;-). As I 
->> mentioned before I'm not hung up on the name so it's cool :).
-> 
-> Ah, but you miss that cpu_system_map doesn't do the one thing the
-> cpu_isolated_map ever did, prevent sched_domains from forming on those
-> cpus.
-> 
-> Which is a major point.
-Did you see my reply on how to support "RT balancer" with cpu_isolated_map ?
-Anyway, my point was that you could've just told me something like:
-    "lets rename cpu_isolated_map and invert it"
-That's is it. The gist of the idea is exactly the same. There is a bitmap that 
-tells various subsystems what cpus can be used for the kernel activities.
+I don't have strong opinions either way on this patch; it adds an error
+check that makes sense.  I haven't seen much problem not having this check,
+nor do I know of any code that depends on doing what this check prohibits.
 
->> - Updating cpu_system_map from cpusets
->> There are a couple of things that I do not like about this approach:
->> 1. We lost the ability to isolate CPUs at boot. Which means slower boot times 
->> for me (ie before I can start my apps I need to create cpuset, etc). Not a big 
->> deal, I can live with it.
-> 
-> I'm sure those few lines in rc.local won't grow your boot time by a
-> significant amount of time.
-> 
-> That said, we should look into a replacement for the boot time parameter
-> (if only to decide not to do it) because of backward compatibility.
-As I said I can live with it.
+Except for three details:
 
->> 2. We now need another notification mechanism to propagate the updates to the 
->> cpu_system_map. That by itself is not a big deal. The big deal is that now we 
->> need to basically audit the kernel and make sure that everything affected must
->> have proper notifier and react to the mask changes.
->> For example your current patch does not move the timers and I do not think it 
->> makes sense to go and add notifier for the timers. I think the better approach 
->> is to use CPU hotplug here. ie Enforce the rule that cpu_system_map is updated 
->>   only when CPU is off-line.
->> By bringing CPU down first we get a lot of features for free. All the kernel 
->> threads, timers, softirqs, HW irqs, workqueues, etc are properly 
->> terminated/moved/canceled/etc. This gives us a very clean state when we bring 
->> the CPU back online with "system" bit cleared (or "isolated" bit set like in 
->> my patches). I do not see a good reason for reimplementing that functionality 
->> via system_map notifiers.
-> 
-> I'm not convinced cpu hotplug notifiers are the right thing here. Sure
-> we could easily iterate the old and new system map and call the matching
-> cpu hotplug notifiers, but they seem overly complex to me.
-> 
-> The audit would be a good idea anyway. If we do indeed end up with a 1:1
-> mapping of whatever cpu hotplug does, then well, perhaps you're right.
-I was not talking about calling notifiers directly. We can literally bring the 
-CPU down. Just like echo 0 > /sys/devices/system/cpu/cpuN/online does.
+ 1) +	if (unlikely((p->flags & PF_CPU_BOUND) && p != current &&
+    +	    	     !cpus_equal(p->cpus_allowed, new_mask))) {
+    +		ret = -EINVAL;
 
->> I'll comment more on the individual patches.
->>
->>> Next on the list would be figuring out a nice solution to the workqueue
->>> flush issue.
->> Do not forget the "stop machine", or more specifically module loading/unloading.
-> 
-> No, the full stop machine thing, there are more interesting users than
-> module loading. But I'm not too interested in solving this particular
-> problem atm, I have too much on my plate as it is.
-I was not suggesting that it's up to you to solve it. You made it sounds like 
-your patches provide complete solution, just need to fix the workqueues. I was 
-merely pointing out that there is also stop machine that needs fixing.
+    The check for equal cpus allowed seems too strong.  Shouldn't you be
+    checking that all of task p's cpus_allowed would still be allowed in
+    the new mask:
 
-btw You did not comment about the fact that your patch does not move timers.
-I was trying it out last night. It's definitely not ready yet.
+    +	if (unlikely((p->flags & PF_CPU_BOUND) && p != current &&
+    +	    	     !cpus_subset(p->cpus_allowed, new_mask))) {
+    +		ret = -EINVAL;
 
-Max
+ 2) Doesn't this leave out a check for the flip side -- shrinking
+    the cpus allowed by a cpuset so that it no longer contains those
+    required by any PF_CPU_BOUND tasks in that cpuset?  I'm not sure
+    if this second check is a good idea or not.
+
+ 3) Could we call this PF_CPU_PINNED instead?  I tend to use "cpu
+    bound" to refer to tasks that consume alot of CPU cycles (which
+    these pinned tasks rarely do), and "pinned" to refer to what is
+    done to confine a task to a particular subset of all possible CPUs.
+    It looks to me like some code in kernel/sched.c already uses the
+    word pinned in this same way, so PF_CPU_PINNED would be more
+    consistent terminology.
+
+-- 
+                  I won't rest till it's the best ...
+                  Programmer, Linux Scalability
+                  Paul Jackson <pj@sgi.com> 1.940.382.4214
