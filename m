@@ -1,48 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759250AbYB1OgT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759636AbYB1Oje@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759250AbYB1OgT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Feb 2008 09:36:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753101AbYB1OgG
+	id S1759636AbYB1Oje (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Feb 2008 09:39:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752928AbYB1OjZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Feb 2008 09:36:06 -0500
-Received: from an-out-0708.google.com ([209.85.132.241]:35391 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752752AbYB1OgF (ORCPT
+	Thu, 28 Feb 2008 09:39:25 -0500
+Received: from ch-smtp02.sth.basefarm.net ([80.76.149.213]:56663 "EHLO
+	ch-smtp02.sth.basefarm.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751879AbYB1OjY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Feb 2008 09:36:05 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:subject:content-type:content-transfer-encoding;
-        b=nsNw9gTwmX9fNiwsUZZQB22AxY7JTSUsObA63w+H564GfpXV4jrP2V8oPaD2xRR91xPPffhSoaH8m+84bILdxhDLv0keJASrjPPiHBEbTCKPi/VkmEqiQR4TU4Atf09UKn8bpvZUxDT8BBMJOOqadckSag7gtudB7t80kf3pTWw=
-Message-ID: <47C6C828.5040601@gmail.com>
-Date: Thu, 28 Feb 2008 08:41:44 -0600
-From: YM Yen <yminyen@gmail.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20071022)
-MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-Subject: Walking User mode pages
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Thu, 28 Feb 2008 09:39:24 -0500
+X-Mailer: exmh version 2.7.2 04/02/2003 (gentoo 2.7.2) with nmh-1.2
+To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
+       Jeff Garzik <jeff@garzik.org>, linux-kernel@vger.kernel.org,
+       Linux IDE mailing list <linux-ide@vger.kernel.org>,
+       Jens Axboe <jens.axboe@oracle.com>
+Subject: -rc3 regression (was Re: 2.6.25-rc2 + smartd = hang )
+In-reply-to: <20080227075346.9D55D93C5CF@tippex.mynet.homeunix.org> 
+References: <20080222165122.8D2BB93C12F@tippex.mynet.homeunix.org> <200802241654.49150.bzolnier@gmail.com> <20080226082056.7519C93C195@tippex.mynet.homeunix.org> <200802262054.12806.bzolnier@gmail.com> <20080227075346.9D55D93C5CF@tippex.mynet.homeunix.org>
+Comments: In-reply-to Anders Eriksson <aeriksson@fastmail.fm>
+   message dated "Wed, 27 Feb 2008 08:53:46 +0100."
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Date: Thu, 28 Feb 2008 15:38:54 +0100
+From: Anders Eriksson <aeriksson@fastmail.fm>
+Message-Id: <20080228143854.6350093C855@tippex.mynet.homeunix.org>
+X-Originating-IP: 83.252.237.4
+X-Scan-Result: No virus found in message 1JUjuq-0005Dw-7j.
+X-Scan-Signature: ch-smtp02.sth.basefarm.net 1JUjuq-0005Dw-7j b422934559b874074ec1120c5c687827
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-hi,
 
-I am a newbie to Linux kernel, so please forgive me if the question is
-stupid.
 
-To understand the swapping system, I decided to write a module to scan 
-every task_struct using for_each_process() checking whether or not the 
-page pointed by the pte is swapped out. To get the linear address 
-address of the pte, I did something similar to "pgd_offset << 
-PGDIR_SHIFT + pud_offset << PUD_SHIFT + pmd_offset << PMDSHIFT + 
-pte_offset << PAGE_SHIFT". The offset for each level is simply the 
-iteration of the walking of the table ranging from 0 to PTRS_PER_(PGD, 
-PUD, PMD, PTE) depending on the table. However, the result of the 
-calculation doesn't match anything in the /proc/<pid>/maps.
+aeriksson@fastmail.fm said:
+> bzolnier@gmail.com said:
+>> Thanks.
+>> Unfortunately nothing seems wrong with the patch... :(
+>> I'll take a closer look when I have some more time...
+>> Bart 
 
-Is this to be expected? If that's the case, how can I find out what's in 
-the swap file. Thanks in advance.
+> Just to make sure I didn't goofed up the bisection...
 
-YM
+> I bisected between v2.6.24 and v2.6.25-rc2. In the midst of the bisection,
+> make install decided to call the new version 2.6.24-rc7-gXXXX. Is that ok? I
+> figured rc7+delta was before 24-final, hence outside the bisection? After
+> that event I got the normal series of good god bad good... So I figured we
+> were on the right track anyway...
+
+> /A  
+
+I can testify this regression is still present in 2.6.25-rc3
+
+/Anders
+
+
+
