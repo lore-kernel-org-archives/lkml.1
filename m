@@ -1,16 +1,16 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758417AbYB1DZ1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758867AbYB1D0Y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758417AbYB1DZ1 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Feb 2008 22:25:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753518AbYB1DZT
+	id S1758867AbYB1D0Y (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Feb 2008 22:26:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753712AbYB1D0P
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Feb 2008 22:25:19 -0500
-Received: from relay2.sgi.com ([192.48.171.30]:45419 "EHLO relay.sgi.com"
+	Wed, 27 Feb 2008 22:26:15 -0500
+Received: from relay2.sgi.com ([192.48.171.30]:45458 "EHLO relay.sgi.com"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753271AbYB1DZT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Feb 2008 22:25:19 -0500
+	id S1753592AbYB1D0P (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 Feb 2008 22:26:15 -0500
 From: akepner@sgi.com
-Date: Wed, 27 Feb 2008 19:23:51 -0800
+Date: Wed, 27 Feb 2008 19:24:48 -0800
 To: Tony Luck <tony.luck@intel.com>, Jesse Barnes <jbarnes@virtuousgeek.org>,
        Jes Sorensen <jes@sgi.com>, Randy Dunlap <randy.dunlap@oracle.com>,
        Roland Dreier <rdreier@cisco.com>,
@@ -19,8 +19,8 @@ To: Tony Luck <tony.luck@intel.com>, Jesse Barnes <jbarnes@virtuousgeek.org>,
        Benjamin Herrenschmidt <benh@kernel.crashing.org>,
        Grant Grundler <grundler@parisc-linux.org>
 Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH 0/3 v3] dma: dma_{un}map_{single|sg}_attrs() interface
-Message-ID: <20080228032351.GR11012@sgi.com>
+Subject: [PATCH 1/3 v3] dma: document dma_{un}map_{single|sg}_attrs() interface
+Message-ID: <20080228032448.GS11012@sgi.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
@@ -30,70 +30,124 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-v2->v3 changes:
-mainly cosmetic changes to make checkpatch a little happier - 
-trailing whitespace, long lines.... Also made dma_set_attr() a 
-no-op inline func when ARCH_USES_DMA_ATTRS is not defined instead 
-of a macro.
-
-I'd like to get this one queued up for 2.6.26.
-
---- 
-
-Introduce a new interface for passing architecture-specific
-attributes when memory is mapped and unmapped for DMA. Give
-the interface a default implementation which ignores
-attributes.
+Document the new dma_{un}map_{single|sg}_attrs() functions.
 
 Signed-off-by: Arthur Kepner <akepner@sgi.com>
+Acked-by: Grant Grundler <grundler@parisc-linux.org>
 
 ---
 
- dma-mapping.h |   35 +++++++++++++++++++++++++++++++++++
- 1 files changed, 35 insertions(+)
+ DMA-API.txt        |   65 +++++++++++++++++++++++++++++++++++++++++++++++++++++
+ DMA-attributes.txt |   29 +++++++++++++++++++++++
+ 2 files changed, 94 insertions(+)
 
-
-diff --git a/include/linux/dma-mapping.h b/include/linux/dma-mapping.h
-index 3320307..5a0e924 100644
---- a/include/linux/dma-mapping.h
-+++ b/include/linux/dma-mapping.h
-@@ -146,4 +146,39 @@ static inline void dmam_release_declared_memory(struct device *dev)
- }
- #endif /* ARCH_HAS_DMA_DECLARE_COHERENT_MEMORY */
+diff --git a/Documentation/DMA-API.txt b/Documentation/DMA-API.txt
+index b939ebb..fdb82b0 100644
+--- a/Documentation/DMA-API.txt
++++ b/Documentation/DMA-API.txt
+@@ -395,6 +395,71 @@ Notes:  You must do this:
  
-+#ifndef ARCH_USES_DMA_ATTRS
-+struct dma_attrs;
+ See also dma_map_single().
+ 
++dma_addr_t 
++dma_map_single_attrs(struct device *dev, void *cpu_addr, size_t size, 
++		     enum dma_data_direction dir, 
++		     struct dma_attrs *attrs)
 +
-+static inline dma_addr_t dma_map_single_attrs(struct device *dev,
-+					      void *cpu_addr, size_t size,
-+					      enum dma_data_direction dir,
-+					      struct dma_attrs *attrs)
++void 
++dma_unmap_single_attrs(struct device *dev, dma_addr_t dma_addr,
++		       size_t size, enum dma_data_direction dir,
++		       struct dma_attrs *attrs)
++
++int 
++dma_map_sg_attrs(struct device *dev, struct scatterlist *sgl,
++		 int nents, enum dma_data_direction dir, 
++		 struct dma_attrs *attrs)
++
++void 
++dma_unmap_sg_attrs(struct device *dev, struct scatterlist *sgl, 
++		   int nents, enum dma_data_direction dir,
++		   struct dma_attrs *attrs)
++
++The four functions above are just like the counterpart functions 
++without the _attrs suffixes, except that they pass an optional 
++struct dma_attrs*. 
++
++struct dma_attrs encapsulates a set of "dma attributes". For the 
++definition of struct dma_attrs see linux/dma-attrs.h. 
++
++The interpretation of dma attributes is architecture-specific, and 
++each attribute should be documented in Documentation/DMA-attributes.txt. 
++
++If struct dma_attrs* is NULL, the semantics of each of these 
++functions is identical to those of the corresponding function 
++without the _attrs suffix. As a result dma_map_single_attrs() 
++can generally replace dma_map_single(), etc.
++
++As an example of the use of the *_attrs functions, here's how 
++you could pass an attribute DMA_ATTR_FOO when mapping memory 
++for DMA:
++
++#include <linux/dma-attrs.h>
++/* DMA_ATTR_FOO should be defined in linux/dma-attrs.h and 
++ * documented in Documentation/DMA-attributes.txt */
++...
++
++	DECLARE_DMA_ATTRS(attrs);
++	dma_set_attr(&attrs, DMA_ATTR_FOO);
++	....
++	n = dma_map_sg_attrs(dev, sg, nents, DMA_TO_DEVICE, &attr);
++	....
++
++Architectures that care about DMA_ATTR_FOO would check for its 
++presence in their implementations of the mapping and unmapping 
++routines, e.g.:
++
++void whizco_dma_map_sg_attrs(struct device *dev, dma_addr_t dma_addr, 
++			     size_t size, enum dma_data_direction dir, 
++			     struct dma_attrs *attrs)
 +{
-+	return dma_map_single(dev, cpu_addr, size, dir);
-+}
++	....
++	int foo =  dma_get_attr(attrs, DMA_ATTR_FOO);
++	....
++	if (foo) 
++		/* twizzle the frobnozzle */
++	....
 +
-+static inline void dma_unmap_single_attrs(struct device *dev,
-+					  dma_addr_t dma_addr, size_t size,
-+					  enum dma_data_direction dir,
-+					  struct dma_attrs *attrs)
-+{
-+	return dma_unmap_single(dev, dma_addr, size, dir);
-+}
+ 
+ Part II - Advanced dma_ usage
+ -----------------------------
+diff --git a/Documentation/DMA-attributes.txt b/Documentation/DMA-attributes.txt
+index e69de29..36baea5 100644
+--- a/Documentation/DMA-attributes.txt
++++ b/Documentation/DMA-attributes.txt
+@@ -0,0 +1,29 @@
++			DMA attributes
++			==============
 +
-+static inline int dma_map_sg_attrs(struct device *dev, struct scatterlist *sgl,
-+				   int nents, enum dma_data_direction dir,
-+				   struct dma_attrs *attrs)
-+{
-+	return dma_map_sg(dev, sgl, nents, dir);
-+}
++This document describes the semantics of the DMA attributes that are 
++defined in linux/dma-attrs.h. 
 +
-+static inline void dma_unmap_sg_attrs(struct device *dev,
-+				      struct scatterlist *sgl, int nents,
-+				      enum dma_data_direction dir,
-+				      struct dma_attrs *attrs)
-+{
-+	return dma_unmap_sg(dev, sgl, nents, dir);
-+}
-+#endif /* ARCH_USES_DMA_ATTRS */
 +
- #endif
++DMA_ATTR_SYNC_ON_WRITE
++----------------------
++
++DMA_ATTR_SYNC_ON_WRITE is used on the IA64_SGI_SN2 architecture.
++It provides a mechanism for devices to explicitly order their DMA 
++writes.
++
++On IA64_SGI_SN2 machines, DMA may be reordered within the NUMA 
++interconnect. Allowing reordering improves performance, but in some 
++situations it may be necessary to ensure that one DMA write is 
++complete before another is visible. For example, if the device does 
++a DMA write to indicate that data is available in memory, DMA of the 
++"completion indication" can race with DMA of data.
++
++When a memory region is mapped with the DMA_ATTR_SYNC_ON_WRITE attribute, 
++a write to that region causes all in-flight DMA to be flushed to memory. 
++Any pending DMA will complete and be visible in memory before the write 
++to the region with the DMA_ATTR_SYNC_ON_WRITE attribute becomes visible. 
++
++(For more information, see the document titled "SGI Altix Architecture 
++Considerations for Linux Device Drivers" at http://techpubs.sgi.com/.)
++
