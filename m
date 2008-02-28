@@ -1,60 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760906AbYB1WAl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758830AbYB1WA7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760906AbYB1WAl (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Feb 2008 17:00:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753103AbYB1WAb
+	id S1758830AbYB1WA7 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Feb 2008 17:00:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759551AbYB1WAh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Feb 2008 17:00:31 -0500
-Received: from relay1.sgi.com ([192.48.171.29]:55674 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752807AbYB1WAa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Feb 2008 17:00:30 -0500
-Date: Thu, 28 Feb 2008 14:00:24 -0800 (PST)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Andrea Arcangeli <andrea@qumranet.com>
-cc: Jack Steiner <steiner@sgi.com>, Nick Piggin <npiggin@suse.de>,
-       akpm@linux-foundation.org, Robin Holt <holt@sgi.com>,
-       Avi Kivity <avi@qumranet.com>, Izik Eidus <izike@qumranet.com>,
-       kvm-devel@lists.sourceforge.net,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, general@lists.openfabrics.org,
-       Steve Wise <swise@opengridcomputing.com>,
-       Roland Dreier <rdreier@cisco.com>, Kanoj Sarcar <kanojsarcar@yahoo.com>,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       daniel.blueman@quadrics.com
-Subject: Re: [PATCH] mmu notifiers #v7
-In-Reply-To: <20080228215257.GJ8091@v2.random>
-Message-ID: <Pine.LNX.4.64.0802281354200.436@schroedinger.engr.sgi.com>
-References: <20080219084357.GA22249@wotan.suse.de> <20080219135851.GI7128@v2.random>
- <20080219231157.GC18912@wotan.suse.de> <20080220010941.GR7128@v2.random>
- <20080220103942.GU7128@v2.random> <20080221045430.GC15215@wotan.suse.de>
- <20080221144023.GC9427@v2.random> <20080221161028.GA14220@sgi.com>
- <20080227192610.GF28483@v2.random> <Pine.LNX.4.64.0802281139250.30865@schroedinger.engr.sgi.com>
- <20080228215257.GJ8091@v2.random>
+	Thu, 28 Feb 2008 17:00:37 -0500
+Received: from www.tglx.de ([62.245.132.106]:40648 "EHLO www.tglx.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1759140AbYB1WAg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 28 Feb 2008 17:00:36 -0500
+Date: Thu, 28 Feb 2008 22:58:49 +0100 (CET)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Andrew Morton <akpm@linux-foundation.org>
+cc: Segher Boessenkool <segher@kernel.crashing.org>,
+       linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
+       john stultz <johnstul@us.ibm.com>
+Subject: Re: [PATCH] Prevent the loop in timespec_add_ns() to be optimised
+ away
+In-Reply-To: <20080227154341.824efe3c.akpm@linux-foundation.org>
+Message-ID: <alpine.LFD.1.00.0802282257490.3111@apollo.tec.linutronix.de>
+References: <6a95d77ad55b29ff2d856c9e1f7dd79682370300.1203715782.git.segher@kernel.crashing.org> <20080227154341.824efe3c.akpm@linux-foundation.org>
+User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 28 Feb 2008, Andrea Arcangeli wrote:
+On Wed, 27 Feb 2008, Andrew Morton wrote:
 
-> > This is not going to work even if the mutex would work as easily as you 
-> > think since the patch here still does an rcu_lock/unlock around a callback.
+> On Fri, 22 Feb 2008 22:40:45 +0100
+> Segher Boessenkool <segher@kernel.crashing.org> wrote:
 > 
-> See underlined.
+> > ...since some architectures don't support __udivdi3() (and
+> > we don't want to use that, anyway).
+> > 
+> > Signed-off-by: Segher Boessenkool <segher@kernel.crashing.org>
+> > ---
+> >  include/linux/time.h |    4 ++++
+> >  1 files changed, 4 insertions(+), 0 deletions(-)
+> > 
+> > diff --git a/include/linux/time.h b/include/linux/time.h
+> > index 2091a19..d32ef0a 100644
+> > --- a/include/linux/time.h
+> > +++ b/include/linux/time.h
+> > @@ -174,6 +174,10 @@ static inline void timespec_add_ns(struct timespec *a, u64 ns)
+> >  {
+> >  	ns += a->tv_nsec;
+> >  	while(unlikely(ns >= NSEC_PER_SEC)) {
+> > +		/* The following asm() prevents the compiler from
+> > +		 * optimising this loop into a modulo operation.  */
+> > +		asm("" : "+r"(ns));
+> > +
+> >  		ns -= NSEC_PER_SEC;
+> >  		a->tv_sec++;
+> >  	}
+> 
+> It's pretty sad that we need to turn this into a loop just because of the
+> __udivdi3() thing.
+> 
+> otoh, it's rarely occurring, and it could be that the number of times it
+> loops is usually 1 (if it wasn't zero), so perhaps a loop is faster than a
+> divide anyway.
+> 
+> This code is probably too large to be inlined.
+> 
+> I queued this patch as needed-in-2.6.25, to-be-merged-via-Thomas.
 
-Mutex is not acceptable for performance reasons. I think we can just drop 
-the RCU lock if we simply unregister the mmu notifier in release and 
-forbid the drivers from removing themselves from the notification 
-chain. They can simply do nothing until release. At that time there is no 
-concurrency and thus its safe to remove even without rcu locking.
+Are you going to send it or should I grab it from the mailing list
+myself ?
 
-> Good point, it has to be called earlier for GRU, but it's not a
-> performance issue. GRU doesn't pin the pages so it should make the
-> global invalidate in ->release _before_ unmap_vmas. Linux can't fault
-> in the ptes anymore because mm_users is zero so there's no need of a
-> ->release_begin/end, the _begin is enough.
-
-I do not follow you about the _begin without end but the following fix 
-seems okay.
+Thanks,
+	tglx
