@@ -1,67 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762567AbYB1AcJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759997AbYB1Aio@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762567AbYB1AcJ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Feb 2008 19:32:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754141AbYB1Ab5
+	id S1759997AbYB1Aio (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Feb 2008 19:38:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754872AbYB1Aie
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Feb 2008 19:31:57 -0500
-Received: from smtp1.linux-foundation.org ([207.189.120.13]:40461 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1757408AbYB1Ab4 (ORCPT
+	Wed, 27 Feb 2008 19:38:34 -0500
+Received: from host36-195-149-62.serverdedicati.aruba.it ([62.149.195.36]:53953
+	"EHLO mx.cpushare.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752457AbYB1Aid (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Feb 2008 19:31:56 -0500
-Date: Wed, 27 Feb 2008 16:31:05 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Andres Salomon <dilinger@queued.net>
-Cc: adaplas@gmail.com, linux-kernel@vger.kernel.org,
-       linux-fbdev-devel@lists.sourceforge.net, info-linux@geode.amd.com,
-       jordan.crouse@amd.com, dwmw2@infradead.org
-Subject: Re: [PATCH 1/4] gxfb: Replace FBSIZE config option with a kernel
- argument
-Message-Id: <20080227163105.e1b96023.akpm@linux-foundation.org>
-In-Reply-To: <20080223011045.48e6cb8e@ephemeral>
-References: <20080223011045.48e6cb8e@ephemeral>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 27 Feb 2008 19:38:33 -0500
+Date: Thu, 28 Feb 2008 01:38:17 +0100
+From: Andrea Arcangeli <andrea@qumranet.com>
+To: Christoph Lameter <clameter@sgi.com>
+Cc: Nick Piggin <nickpiggin@yahoo.com.au>, akpm@linux-foundation.org,
+       Robin Holt <holt@sgi.com>, Avi Kivity <avi@qumranet.com>,
+       Izik Eidus <izike@qumranet.com>, kvm-devel@lists.sourceforge.net,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, general@lists.openfabrics.org,
+       Steve Wise <swise@opengridcomputing.com>,
+       Roland Dreier <rdreier@cisco.com>, Kanoj Sarcar <kanojsarcar@yahoo.com>,
+       steiner@sgi.com, linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       daniel.blueman@quadrics.com
+Subject: Re: [patch 2/6] mmu_notifier: Callbacks to invalidate address
+	ranges
+Message-ID: <20080228003817.GD8091@v2.random>
+References: <20080215064859.384203497@sgi.com> <20080215064932.620773824@sgi.com> <200802201008.49933.nickpiggin@yahoo.com.au> <20080220010038.GQ7128@v2.random> <Pine.LNX.4.64.0802271436260.13186@schroedinger.engr.sgi.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0802271436260.13186@schroedinger.engr.sgi.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 23 Feb 2008 01:10:45 -0500
-Andres Salomon <dilinger@queued.net> wrote:
+On Wed, Feb 27, 2008 at 02:39:46PM -0800, Christoph Lameter wrote:
+> On Wed, 20 Feb 2008, Andrea Arcangeli wrote:
+> 
+> > Well, xpmem requirements are complex. As as side effect of the
+> > simplicity of my approach, my patch is 100% safe since #v1. Now it
+> > also works for GRU and it cluster invalidates.
+> 
+> The patch has to satisfy RDMA, XPMEM, GRU and KVM. I keep hearing that we 
+> have a KVM only solution that works 100% (which makes me just switch 
+> ignore the rest of the argument because 100% solutions usually do not 
+> exist).
 
-> @@ -425,7 +424,10 @@ static int __init gxfb_setup(char *options)
->  		if (!*opt)
->  			continue;
->  
-> -		mode_option = opt;
-> +		if (!strncmp(opt, "fbsize:", 7))
-> +			fbsize = simple_strtoul(opt+7, NULL, 0);
-> +		else
-> +			mode_option = opt;
->  	}
+I only said 100% safe, I didn't imply anything other than it won't
+crash the kernel ;).
 
-The above shouldn't be necessary.
+#v6 and #v7 only leaves XPMEM out AFIK, and that can be supported
+later with a CONFIG_XPMEM that purely changes some VM locking. #v7
+also provides maximum performance to GRU.
 
-And it should have been documented in Documentation/kernel-parameters.txt.
+> > rcu_read_lock), no "atomic" parameters, and it doesn't open a window
+> > where sptes have a view on older pages and linux pte has view on newer
+> > pages (this can happen with remap_file_pages with my KVM swapping
+> > patch to use V8 Christoph's patch).
+> 
+> Ok so you are now getting away from keeping the refcount elevated? That 
+> was your design decision....
 
-And "fbsize=N" would be a lot more conventional than "fbsize:N"
+No, I'm not getting away from it. If I would get away from it, I would
+be forced to implement invalidate_range_begin. However even if I don't
+get away from it, the fact I only implement invalidate_range_end, and
+that's called after the PT lock is dropped, opens a little window with
+lost coherency (which may not be detectable by userland anyway). But this
+little window is fine for KVM and it doesn't impose any security
+risk. But clearly proving the locking safe becomes a bit more complex
+in #v7 than in #v6.
 
-I suspect that the formulation you have here will not permit "fbsize:128k",
-whereas "fbsize=128k" or "gxfb.fbsize=128k" should work.  Needs checking.
+> It would have helped if you would have repeated my answers that you had 
+> already gotten before. You knew I was on vacation....
 
->  	return 0;
-> @@ -456,5 +458,8 @@ module_exit(gxfb_cleanup);
->  module_param(mode_option, charp, 0);
->  MODULE_PARM_DESC(mode_option, "video mode (<x>x<y>[-<bpp>][@<refr>])");
->  
-> +module_param(fbsize, int, 0);
-> +MODULE_PARM_DESC(fbsize, "video memory size");
-> +
-
-Because the module_param() already makes fbsize available on the kernel
-boot command line via gxfb.fbsize=42 (or something similar).
-
-
+I didn't remember the BUG_ON crystal clear sorry, but not sure why you
+think it was your call, this was a lowlevel XPMEM question and Robin
+promptly answered/reminded about it infact.
