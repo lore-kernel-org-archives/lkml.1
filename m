@@ -1,91 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762316AbYB1TlR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763004AbYB1Tls@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762316AbYB1TlR (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Feb 2008 14:41:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751301AbYB1Tk7
+	id S1763004AbYB1Tls (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Feb 2008 14:41:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759493AbYB1Tli
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Feb 2008 14:40:59 -0500
-Received: from e5.ny.us.ibm.com ([32.97.182.145]:43740 "EHLO e5.ny.us.ibm.com"
+	Thu, 28 Feb 2008 14:41:38 -0500
+Received: from mail.tmr.com ([64.65.253.246]:52545 "EHLO gaimboi.tmr.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755573AbYB1Tk6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Feb 2008 14:40:58 -0500
-Message-ID: <47C70E25.5020708@us.ibm.com>
-Date: Thu, 28 Feb 2008 11:40:21 -0800
-From: David Wilder <dwilder@us.ibm.com>
-User-Agent: Thunderbird 1.5.0.12 (X11/20071129)
+	id S1751301AbYB1Tlh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 28 Feb 2008 14:41:37 -0500
+Message-ID: <47C70F41.4020406@tmr.com>
+Date: Thu, 28 Feb 2008 14:45:05 -0500
+From: Bill Davidsen <davidsen@tmr.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.8) Gecko/20061105 SeaMonkey/1.0.6
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: linux-kernel@vger.kernel.org, systemtap@sourceware.org,
-       prasadav@us.ibm.com, hch@infradead.org
-Subject: Re: [PATCH 0/3] A kernel tracing interface
-References: <1204065517.26964.14.camel@lc4eb748232119.ibm.com> <20080228020437.8f99f646.akpm@linux-foundation.org>
-In-Reply-To: <20080228020437.8f99f646.akpm@linux-foundation.org>
-Content-Type: text/plain; charset=US-ASCII; format=flowed
+To: Nicholas Marquez <nicholas.marquez@gatech.edu>
+CC: linux-kernel@vger.kernel.org, akpm@osdl.org
+Subject: Re: [PATCH] More accessible usage of custom flags
+References: <e367bd3e0802161852v1265f101h86326b16362dd860@mail.gmail.com>
+In-Reply-To: <e367bd3e0802161852v1265f101h86326b16362dd860@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton wrote:
-> On Tue, 26 Feb 2008 14:38:37 -0800 "David J. Wilder" <dwilder@us.ibm.com> wrote:
+Nicholas Marquez wrote:
+> I submitted this patch to the zen-sources Gentoo community and got
+> much praise and has promptly been included.  This kind of thing have
+> very likely already been done in other patchsets, but I haven't seen
+> it around, so I've gone ahead and made one.  The idea is that one can
+> enable -Os and various other options transparently through standard
+> kernel configuration, so why bar the builder from any other options to
+> pass on to gcc (et al)?  One can indeed add one's own flags in the
+> Makefile, but this method is a good deal friendlier.  Granted, this
+> could be misused by ricers and idiots, but they'll get themselves into
+> that mess all of their own fault and we'll all go on our merry ways.
+> It just seems that much use could be made out of this, both in terms
+> of (sane) optimizations and easier access to enhanced debugging
+> opportunities.
 > 
->> These patches provide a kernel tracing interface called "trace".
->>
->> ChangeLog:
->> -Updated to 2.6.25-rc2-mm1
->> -Removed sem_watch example, to hard to maintain.
->> -Added a new example that demonstrates per-cpu continuous tracing
->>  of data generated using marker probes.
->> -Removed inline from relay patch.
->> -Moved examples into /sample directory.
->>
->> The motivation for "trace" is to:
->> - Provide a simple set of tracing primitives that will utilize the high-
->>   performance and low-overhead of relayfs for passing traces data from
->>   kernel to user space.
->> - Provide a common user interface for managing kernel traces.
->> - Allow for binary as well as ascii trace data.
->> - Incorporate features from the systemtap runtime that are
->>   useful to others.
+> I see that people who build a Linux kernel are largely of two types:
+> ~the ones that understand and know enough that they could, with some
+> nudging and learning, become bonafide kernel devs and
+> ~the ones that understand it to some very basic degree and can get
+> through configuring it without too much trouble (though with limited
+> understanding)
+> I believe one of the very simple things that can be addressed is to
+> make the kernel more "accessible" without harming its integrity or
+> functionality.  This involves trying to fill the gap between those two
+> types of people, allowing there to be more understanding,
+> configuration, and (down the line) development opportunities within
+> the kernel to better ease these people into learning enough to begin
+> contributing back.  More developers can only be a Good Thing (tm).
+> Though a haughty and abstract opinion/goal/thought of mine, this patch
+> conforms to it and I think that with minimal effort such a vision
+> could be implemented.  Whilst all other kernel devs are hacking away
+> at the rough and tumultuous innards of the kernel, a few people of
+> less confidence and experience (people like me) could polish the
+> outside to make it more appealing to more people. So that eventually
+> they too will sink below the surface and join the party.
 > 
-> So... what's the story on this versus lttng?
-
-Trace is simpler to use and a smaller bit of code than lttng.
-It may not have all the features of lttng but it is good starting point 
-that can be expanded upon.  I have several users of trace that just 
-wanted a simple way to get data out of the kernel without the overhead 
-of lttng trace is working well for them.  Trace also works well with 
-markers and kprobes.  For example systemtap is is using the basic trace 
-code to gather data from kprobes and markers.
+> Anyway, I'm not quite sure that my implementation is as clean as it
+> could be and any feedback is certainly welcome.  This is my first time
+> posting to LKML, so I fully expect to be shot down anyway.
 > 
-> Is there some userspace code available for people to test this?  Maybe it's
-> mentioned and I missed it.
+It seems to make access to these features easier, and I really don't see 
+that it is going to create a higher number of posts here, the "I did X 
+and..." posts might go up, and the "How do I..." post might go down, and 
+I doubt either will change enough to notice.
 
-I purposely designed trace so no special user code is required to gather 
-trace data. Standard user utilities like cat, grep, sort and more is all 
-that is needed.  I show an example in /samples/trace/fork_trace.c.
-
-However since trace uses relay as its transport any user interfaces 
-provided by relay can be used to read trace data. (documented in 
-/Documentation/relay.txt)
-
-> 
-> It'd be interesting to see a writeup of the proposed kernel<->userspace
-> interfaces.  I see a description of kernel-internal interfaces, but how do
-> users use it?
-
-I will add some text in the documentation.
-> 
-> I see it uses things from blktrace.  Can blktrace be switched over to being
-> a client of this code?
-
-yep.
-
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
-> 
-
+-- 
+Bill Davidsen <davidsen@tmr.com>
+   "We have more to fear from the bungling of the incompetent than from
+the machinations of the wicked."  - from Slashdot
