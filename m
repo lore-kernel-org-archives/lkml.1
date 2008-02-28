@@ -1,42 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760936AbYB1Plc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760886AbYB1Pm7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760936AbYB1Plc (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Feb 2008 10:41:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758362AbYB1PlY
+	id S1760886AbYB1Pm7 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Feb 2008 10:42:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758536AbYB1Pmv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Feb 2008 10:41:24 -0500
-Received: from gate.crashing.org ([63.228.1.57]:41938 "EHLO gate.crashing.org"
+	Thu, 28 Feb 2008 10:42:51 -0500
+Received: from gir.skynet.ie ([193.1.99.77]:53459 "EHLO gir.skynet.ie"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758254AbYB1PlX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Feb 2008 10:41:23 -0500
-In-Reply-To: <20080228133718.GA8383@aepfle.de>
-References: <20080228133718.GA8383@aepfle.de>
-Mime-Version: 1.0 (Apple Message framework v623)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <39a171fd2cc7fec9813c5b3070b193ee@kernel.crashing.org>
-Content-Transfer-Encoding: 7bit
-Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
-From: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: undefined references to __udivdi3 on powerpc
-Date: Thu, 28 Feb 2008 16:40:19 +0100
-To: Olaf Hering <olaf@aepfle.de>
-X-Mailer: Apple Mail (2.623)
+	id S1758362AbYB1Pmu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 28 Feb 2008 10:42:50 -0500
+Date: Thu, 28 Feb 2008 15:42:46 +0000
+From: Mel Gorman <mel@csn.ul.ie>
+To: Yinghai Lu <yhlu.kernel@gmail.com>
+Cc: Mike Travis <travis@sgi.com>, Andrew Morton <akpm@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, mingo@elte.hu, tglx@linutronix.de,
+       Christoph Lameter <clameter@sgi.com>, Jack Steiner <steiner@sgi.com>
+Subject: Re: 2.6.24 git2/mm1: cpu_to_node mapping to non-existant nodes causing boot failure
+Message-ID: <20080228154244.GA4038@csn.ul.ie>
+References: <20080203171634.58ab668b.akpm@linux-foundation.org> <20080213175241.GA327@csn.ul.ie> <47B33ACF.5030700@sgi.com> <20080214201727.GC30841@csn.ul.ie> <47B4A774.7050509@sgi.com> <20080215020208.GA6500@csn.ul.ie> <47B77E90.5050809@sgi.com> <47BAFFD3.1070606@sgi.com> <20080219192319.GE12386@csn.ul.ie> <86802c440802262229t37c61c98y45607ba34d7c6417@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-15
+Content-Disposition: inline
+In-Reply-To: <86802c440802262229t37c61c98y45607ba34d7c6417@mail.gmail.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> While debugging __divdi3 calls in drivers/crypto/hifn_795x.c (due to 
-> the
-> ndelay() delay call with a s64), I found even more breakage of that
-> sort. This is after a allnoconfig with ARCH=powerpc in 2.6.25-rc3,
-> plus CONFIG_MODULES=y and CONFIG_CRYPTO_DEV_HIFN_795X=y:
+On (26/02/08 22:29), Yinghai Lu didst pronounce:
+> >  >
+> >  > Did you get a chance to try out this patch to see if it cleared up the problem
+> >  > booting on your x86_64 numa box?
+> 
+> did it fail with x86.git#testing?
+> 
 
-I cannot reproduce this, but my tree has
+No, it boots successfully with that git branch. Somewhere in there is a fix.
 
-	time: prevent the loop in timespec_add_ns() from being optimised away
-
-which is in -mm now.  Could you try that patch?
-
-
-Segher
-
+-- 
+Mel Gorman
+Part-time Phd Student                          Linux Technology Center
+University of Limerick                         IBM Dublin Software Lab
