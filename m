@@ -1,48 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932368AbYB1ANA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932386AbYB1AOV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932368AbYB1ANA (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Feb 2008 19:13:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757838AbYB1AMv
+	id S932386AbYB1AOV (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Feb 2008 19:14:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757490AbYB1AOK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Feb 2008 19:12:51 -0500
-Received: from sj-iport-6.cisco.com ([171.71.176.117]:60771 "EHLO
-	sj-iport-6.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756974AbYB1AMu (ORCPT
+	Wed, 27 Feb 2008 19:14:10 -0500
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:34617 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1756450AbYB1AOJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Feb 2008 19:12:50 -0500
-To: "Mingarelli, Thomas" <Thomas.Mingarelli@hp.com>
-Cc: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: hpwdt oops in clflush_cache_range
-X-Message-Flag: Warning: May contain useful information
-References: <adad4qiwcmz.fsf@cisco.com>
-	<alpine.LFD.1.00.0802271913050.7583@apollo.tec.linutronix.de>
-	<ada1w6y1bzk.fsf@cisco.com>
-	<alpine.LFD.1.00.0802272011130.7583@apollo.tec.linutronix.de>
-	<20080227203655.GA30054@elte.hu>
-	<alpine.LFD.1.00.0802272140050.7583@apollo.tec.linutronix.de>
-	<alpine.LFD.1.00.0802272155190.7583@apollo.tec.linutronix.de>
-	<ada3areyu7x.fsf@cisco.com>
-	<E14D1C2A44812C4F9C3ED321127EDF6505829D59DF@G3W0854.americas.hpqcorp.net>
-From: Roland Dreier <rdreier@cisco.com>
-Date: Wed, 27 Feb 2008 16:12:46 -0800
-In-Reply-To: <E14D1C2A44812C4F9C3ED321127EDF6505829D59DF@G3W0854.americas.hpqcorp.net> (Thomas Mingarelli's message of "Wed, 27 Feb 2008 23:44:57 +0000")
-Message-ID: <adamypmx7k1.fsf@cisco.com>
-User-Agent: Gnus/5.1008 (Gnus v5.10.8) XEmacs/21.4.21 (linux)
+	Wed, 27 Feb 2008 19:14:09 -0500
+Date: Wed, 27 Feb 2008 16:14:08 -0800 (PST)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Andrea Arcangeli <andrea@qumranet.com>
+cc: Nick Piggin <nickpiggin@yahoo.com.au>, akpm@linux-foundation.org,
+       Robin Holt <holt@sgi.com>, Avi Kivity <avi@qumranet.com>,
+       Izik Eidus <izike@qumranet.com>, kvm-devel@lists.sourceforge.net,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, general@lists.openfabrics.org,
+       Steve Wise <swise@opengridcomputing.com>,
+       Roland Dreier <rdreier@cisco.com>, Kanoj Sarcar <kanojsarcar@yahoo.com>,
+       steiner@sgi.com, linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       daniel.blueman@quadrics.com
+Subject: Re: [patch 2/6] mmu_notifier: Callbacks to invalidate address ranges
+In-Reply-To: <20080228001104.GB8091@v2.random>
+Message-ID: <Pine.LNX.4.64.0802271613080.15791@schroedinger.engr.sgi.com>
+References: <20080215064859.384203497@sgi.com> <20080215064932.620773824@sgi.com>
+ <200802201008.49933.nickpiggin@yahoo.com.au>
+ <Pine.LNX.4.64.0802271424390.13186@schroedinger.engr.sgi.com>
+ <20080228001104.GB8091@v2.random>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-OriginalArrivalTime: 28 Feb 2008 00:12:48.0793 (UTC) FILETIME=[A6A8C090:01C8799E]
-Authentication-Results: sj-dkim-1; header.From=rdreier@cisco.com; dkim=pass (
-	sig from cisco.com/sjdkim1004 verified; ); 
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
- > Did I read correctly that this was on a Debian OS? Looks like I need to jump in and see what is different about Debian because I haven't seen such an issue on RedHat 5.
- > 
- > Yes, the driver was made specifically for G5 (and newer) systems. I will set a system up here and figure out what's wrong as soon as I am sure it is Debian.
+On Thu, 28 Feb 2008, Andrea Arcangeli wrote:
 
-I can't imagine that the fact that it's Debian has anything to do with
-it -- this is purely in the kernel.
+> > 3. Keep the refcount elevated until pages are freed in another execution 
+> > context.
+> 
+> Page refcount is not enough (the mmu_notifier_release will run in
+> another cpu the moment after i_mmap_lock is unlocked) but mm_users may
+> prevent us to change the i_mmap_lock to a mutex, but it'll slowdown
+> truncate as it'll have to drop the lock and restart the radix tree
+> walk every time so a change like this better fits as a separate
+> CONFIG_XPMEM IMHO.
 
- - R.
+Erm. This would also be needed by RDMA etc.
+
+ 
