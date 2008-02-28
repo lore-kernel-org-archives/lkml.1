@@ -1,94 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762713AbYB1Tc1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763061AbYB1Tcn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762713AbYB1Tc1 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Feb 2008 14:32:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760842AbYB1TcK
+	id S1763061AbYB1Tcn (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Feb 2008 14:32:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761284AbYB1TcM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
+	Thu, 28 Feb 2008 14:32:12 -0500
+Received: from terminus.zytor.com ([198.137.202.10]:43095 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760702AbYB1TcK (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
 	Thu, 28 Feb 2008 14:32:10 -0500
-Received: from zombie.ncsc.mil ([144.51.88.131]:57659 "EHLO zombie.ncsc.mil"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760698AbYB1TcI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Feb 2008 14:32:08 -0500
-Subject: Re: [PATCH 01/11] Security: Add hook to get full maclabel xattr
-	name
-From: Stephen Smalley <sds@tycho.nsa.gov>
-To: casey@schaufler-ca.com
-Cc: Dave Quigley <dpquigl@tycho.nsa.gov>, hch@infradead.org,
-       viro@ftp.linux.org.uk, trond.myklebust@fys.uio.no, bfields@fieldses.org,
-       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       LSM List <linux-security-module@vger.kernel.org>
-In-Reply-To: <746385.69480.qm@web36611.mail.mud.yahoo.com>
-References: <746385.69480.qm@web36611.mail.mud.yahoo.com>
-Content-Type: text/plain
-Organization: National Security Agency
-Date: Thu, 28 Feb 2008 14:30:35 -0500
-Message-Id: <1204227035.31790.207.camel@moss-spartans.epoch.ncsc.mil>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 (2.12.3-1.fc8) 
+Message-ID: <47C70C01.4020605@zytor.com>
+Date: Thu, 28 Feb 2008 11:31:13 -0800
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+MIME-Version: 1.0
+To: "Klaus S. Madsen" <ksm@hjernemadsen.org>
+CC: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
+       Pavel Machek <pavel@ucw.cz>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: Regression in 2.6.25-rc3: s2ram segfaults before suspending
+References: <20080227221033.GR17932@hjernemadsen.org> <20080228091639.GB1133@elte.hu> <20080228092846.GC17932@hjernemadsen.org> <20080228094000.GA2987@elte.hu> <20080228150444.GG17932@hjernemadsen.org> <47C6F4F9.90700@zytor.com> <20080228192404.GH17932@hjernemadsen.org>
+In-Reply-To: <20080228192404.GH17932@hjernemadsen.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-On Thu, 2008-02-28 at 11:23 -0800, Casey Schaufler wrote:
-> --- Stephen Smalley <sds@tycho.nsa.gov> wrote:
+Klaus S. Madsen wrote:
+>>
+>> Typically, when the kernel reflects an error in VM86 mode it will update 
+>> the structure in memory (in your case, the vm86plus_struct) to reflect 
+>> the context.  Would it be possible for you to read it out?
+> Hmm. As far as I can tell, its actually using the vm86old system call?
+> That's at least what the comment in libx86 states.
 > 
-> > 
-> > ...
-> > > The paradigm is* a security "blob" which is meaningfull only to the
-> > > security module proper. This is what allows SELinux to use secids and
-> > > Smack to toss around text strings. It's not MAC data and it's not
-> > > an NFS label, it's private to the LSM. It makes a lot of sense to use
-> > > an xattr to store a blob but, as the AppArmor people have been known
-> > > espouse, it's not the only way. The blob could be referenced from a
-> > > table using the inode number (it has been done on other systems and
-> > > works fine) rather than an xattr, in which case the whole "name" may
-> > > be meaningless.
-> > 
-> > I think it might help for you to look at how the hook is actually used.
-> > It is specific to MAC labeling, and we do not want some random other
-> > security attribute name returned here that is for some purpose other
-> > than MAC labeling, like security.capability.
+> However the contents of struct vm86_struct after the segfault is:
 > 
-> I can see how it's being used just fine, thank you.
-> If you only want this interface for SELinux put it in
-> SELinux. Don't clutter up the LSM with it. If it's an
-> LSM interface it should be potentially useful for any
-> and all LSMs, be they label based or not, MAC or DAC.
-> Even within a label based MAC scheme it may not be
-> sensible, given that a MAC scheme could use multiple
-> xattrs (e.g. a B&L sensitivity label and a Biba integrity
-> label) to store its blob.
+> (gdb) print context.vm
+> $2 = {regs = {ebx = 0, ecx = 0, edx = 0, esi = 0, edi = 0, ebp = 0, 
+>     eax = 20227, __null_ds = 0, __null_es = 0, __null_fs = -1071579136, 
+>     __null_gs = 0, orig_eax = -1, eip = 6326, cs = 49152, __csh = 0, 
+>     eflags = 209410, esp = 4090, ss = 256, __ssh = 0, es = 0, __esh = 0, 
+>     ds = 64, __dsh = 0, fs = 0, __fsh = 0, gs = 0, __gsh = 0}, flags = 0, 
+>   screen_bitmap = 0, cpu_type = 0, int_revectored = {__map = {0, 0, 0,0, 0, 
+>       0, 0, 2147483648}}, int21_revectored = {__map = {0, 0, 0, 0, 0, 0, 0, 
+>       0}}}
 > 
-> If what you want in LSM terms is a name to give the blob
-> make your interface be security_blob_name(). The LSM can
-> deal with this as it sees fit, and NFS can determine if
-> it's a blob that it wants to deal with independently.
-> Such an interface could even support stacking should
-> that ever come about.
+> My version of glibc does not seem to have vm86old declared, so I haven't
+> tried to remove the assembly code.
 > 
-> LSM is not supposed to be only for MAC and it's not supposed
-> to be only for label based schemes. It's supposed to be
-> for additional security restrictions. Providing an interface
-> that should be generally applicable with a name that
-> constrains it to a specific subset of those schemes is wrong.
+> Should I try to change it to use vm86, instead of vm86old?
+> 
 
-Casey, you aren't listening (why am I surprised?).
+Yes, that would probably be a good idea.  To some degree, I guess it 
+really has nothing to do with the more fundamental issue, but it's 
+somewhat odd.
 
-This is an interface to be used by NFS to get information from the
-security module.  The information desired is specific to the MAC
-labeling functionality in NFSv4 that is being proposed.  That
-functionality is MAC specific (necessarily so, just like the ACL
-functionality is ACL specific).  We are hiding the SELinux-specific bits
-behind the LSM interface, and non-MAC LSMs are free to return NULL in
-order to indicate that they don't support MAC labeling.  We do NOT want
-the capability module to return its security blob here, or any other
-non-MAC LSM - it will yield the wrong semantics for the NFS MAC support.
+I'll pick apart the state above looking for fishiness as soon as I get 
+back from lunch.
 
-In any event, I don't think we need your permission.
-
--- 
-Stephen Smalley
-National Security Agency
-
+	-hpa
