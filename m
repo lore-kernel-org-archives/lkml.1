@@ -1,70 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760180AbYB1Rhj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760582AbYB1Rik@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760180AbYB1Rhj (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Feb 2008 12:37:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752453AbYB1Rhc
+	id S1760582AbYB1Rik (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Feb 2008 12:38:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753462AbYB1Ri3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Feb 2008 12:37:32 -0500
-Received: from relay1.sgi.com ([192.48.171.29]:50012 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752355AbYB1Rhb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Feb 2008 12:37:31 -0500
-Date: Thu, 28 Feb 2008 11:37:28 -0600
-From: Paul Jackson <pj@sgi.com>
-To: David Rientjes <rientjes@google.com>
-Cc: mingo@elte.hu, a.p.zijlstra@chello.nl, tglx@linutronix.de, oleg@tv-sign.ru,
-       rostedt@goodmis.org, maxk@qualcomm.com, linux-kernel@vger.kernel.org
-Subject: Re: [RFC/PATCH 0/4] CPUSET driven CPU isolation
-Message-Id: <20080228113728.7b8e5811.pj@sgi.com>
-In-Reply-To: <alpine.DEB.1.00.0802280212070.23040@chino.kir.corp.google.com>
-References: <20080227222103.673194000@chello.nl>
-	<20080228075010.GA28781@elte.hu>
-	<20080228020808.3fd22f77.pj@sgi.com>
-	<20080228090847.GA1133@elte.hu>
-	<20080228031710.3405e405.pj@sgi.com>
-	<alpine.DEB.1.00.0802280129580.15900@chino.kir.corp.google.com>
-	<alpine.DEB.1.00.0802280212070.23040@chino.kir.corp.google.com>
-Organization: SGI
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.12.0; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Thu, 28 Feb 2008 12:38:29 -0500
+Received: from rv-out-0910.google.com ([209.85.198.188]:28939 "EHLO
+	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752789AbYB1Ri2 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 28 Feb 2008 12:38:28 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=m5XK+KI5aX1EKLPNwYYdYv85/Pv5ux9Fbc6VBUQbr9uxI19R9HJozhrGAsr87lnCV8sv+9GkFiVdwoae+UPurbKwRJw+p6ZPv91q1ILwOlQc58P0hSQZmnlzguFIS6LhZay6GFlDucxqMDyIAm1V6tjKFs6mL2TocZ+aKa00M+U=
+Message-ID: <86802c440802280938j75ebc92eu4104fe76d05e704e@mail.gmail.com>
+Date: Thu, 28 Feb 2008 09:38:27 -0800
+From: "Yinghai Lu" <yhlu.kernel@gmail.com>
+To: "Andrew Morton" <akpm@linux-foundation.org>,
+       "Alex Riesen" <raa.lkml@gmail.com>, trivial@kernel.org,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       "Yinghai Lu" <yinghai.lu@sun.com>
+Subject: Re: [PATCH] Fix "Malformed early option 'loglevel'"
+Cc: "Andi Kleen" <ak@suse.de>
+In-Reply-To: <20080228154412.GA4784@steel.home>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20080228154412.GA4784@steel.home>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I don't have strong opinions either way on this patch; it adds an error
-check that makes sense.  I haven't seen much problem not having this check,
-nor do I know of any code that depends on doing what this check prohibits.
+On Thu, Feb 28, 2008 at 7:44 AM, Alex Riesen <raa.lkml@gmail.com> wrote:
+> According to Rusty Russell in <1155086871.26428.5.camel@localhost.localdomain>:
+>
+>     On Tue, 2006-08-08 at 17:10 -0700, Keith Mannthey wrote:
+>     > The parameter hotadd_percent is setup right but there is a
+>     > "Malformed early option 'numa'" message.
+>
+>     For the record: this happens when the function registered with
+>     early_param() returns non-zero.  __setup() functions return 1 if OK,
+>     module_param() and early_param() return 0 or a -ve error code.
+>  ---
+>
+>  For instance:
+>
+>  Linux version 2.6.25-rc3-t (raa@steel) (gcc version 4.1.3 20070929 (prerelease) (Ubuntu 4.1.2-16ubuntu2)) #22 SMP PREEMPT Tue Feb 26
+>  BIOS-provided physical RAM map:
+>   BIOS-e820: 0000000000000000 - 00000000000a0000 (usable)
+>   BIOS-e820: 00000000000f0000 - 0000000000100000 (reserved)
+>   BIOS-e820: 0000000000100000 - 000000003fff0000 (usable)
+>   BIOS-e820: 000000003fff0000 - 000000003fff3000 (ACPI NVS)
+>   BIOS-e820: 000000003fff3000 - 0000000040000000 (ACPI data)
+>   BIOS-e820: 00000000fec00000 - 0000000100000000 (reserved)
+>  Malformed early option 'loglevel'
+>  127MB HIGHMEM available.
+>  896MB LOWMEM available.
+>
+>  Command line:
+>
+>  BOOT_IMAGE=2.6.25-t ro root=809 ro console=ttyS0,57600n8 console=tty0 loglevel=5
+>
+>   init/main.c |    2 +-
+>   1 files changed, 1 insertions(+), 1 deletions(-)
+>
+>  diff --git a/init/main.c b/init/main.c
+>  index 8b19820..fbb0167 100644
+>  --- a/init/main.c
+>  +++ b/init/main.c
+>  @@ -254,7 +254,7 @@ early_param("quiet", quiet_kernel);
+>   static int __init loglevel(char *str)
+>   {
+>         get_option(&str, &console_loglevel);
+>  -       return 1;
+>  +       return 0;
+>   }
+>
+>   early_param("loglevel", loglevel);
+>  --
+>  1.5.4.3.253.g9f1d5
 
-Except for three details:
-
- 1) +	if (unlikely((p->flags & PF_CPU_BOUND) && p != current &&
-    +	    	     !cpus_equal(p->cpus_allowed, new_mask))) {
-    +		ret = -EINVAL;
-
-    The check for equal cpus allowed seems too strong.  Shouldn't you be
-    checking that all of task p's cpus_allowed would still be allowed in
-    the new mask:
-
-    +	if (unlikely((p->flags & PF_CPU_BOUND) && p != current &&
-    +	    	     !cpus_subset(p->cpus_allowed, new_mask))) {
-    +		ret = -EINVAL;
-
- 2) Doesn't this leave out a check for the flip side -- shrinking
-    the cpus allowed by a cpuset so that it no longer contains those
-    required by any PF_CPU_BOUND tasks in that cpuset?  I'm not sure
-    if this second check is a good idea or not.
-
- 3) Could we call this PF_CPU_PINNED instead?  I tend to use "cpu
-    bound" to refer to tasks that consume alot of CPU cycles (which
-    these pinned tasks rarely do), and "pinned" to refer to what is
-    done to confine a task to a particular subset of all possible CPUs.
-    It looks to me like some code in kernel/sched.c already uses the
-    word pinned in this same way, so PF_CPU_PINNED would be more
-    consistent terminology.
-
--- 
-                  I won't rest till it's the best ...
-                  Programmer, Linux Scalability
-                  Paul Jackson <pj@sgi.com> 1.940.382.4214
+Acked-by: Yinghai Lu <yhlu.kernel@gmai.com>
