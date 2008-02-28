@@ -1,59 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762130AbYB1ALl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932146AbYB1ALz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762130AbYB1ALl (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Feb 2008 19:11:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932068AbYB1ALP
+	id S932146AbYB1ALz (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Feb 2008 19:11:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761973AbYB1ALd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Feb 2008 19:11:15 -0500
-Received: from host36-195-149-62.serverdedicati.aruba.it ([62.149.195.36]:33508
-	"EHLO mx.cpushare.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760095AbYB1ALO (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Feb 2008 19:11:14 -0500
-Date: Thu, 28 Feb 2008 01:11:04 +0100
-From: Andrea Arcangeli <andrea@qumranet.com>
-To: Christoph Lameter <clameter@sgi.com>
-Cc: Nick Piggin <nickpiggin@yahoo.com.au>, akpm@linux-foundation.org,
-       Robin Holt <holt@sgi.com>, Avi Kivity <avi@qumranet.com>,
-       Izik Eidus <izike@qumranet.com>, kvm-devel@lists.sourceforge.net,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, general@lists.openfabrics.org,
-       Steve Wise <swise@opengridcomputing.com>,
-       Roland Dreier <rdreier@cisco.com>, Kanoj Sarcar <kanojsarcar@yahoo.com>,
-       steiner@sgi.com, linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       daniel.blueman@quadrics.com
-Subject: Re: [patch 2/6] mmu_notifier: Callbacks to invalidate address
-	ranges
-Message-ID: <20080228001104.GB8091@v2.random>
-References: <20080215064859.384203497@sgi.com> <20080215064932.620773824@sgi.com> <200802201008.49933.nickpiggin@yahoo.com.au> <Pine.LNX.4.64.0802271424390.13186@schroedinger.engr.sgi.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0802271424390.13186@schroedinger.engr.sgi.com>
+	Wed, 27 Feb 2008 19:11:33 -0500
+Received: from relay2.sgi.com ([192.48.171.30]:35229 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S932083AbYB1ALc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 Feb 2008 19:11:32 -0500
+Date: Wed, 27 Feb 2008 18:11:29 -0600
+From: Paul Jackson <pj@sgi.com>
+To: Max Krasnyanskiy <maxk@qualcomm.com>
+Cc: a.p.zijlstra@chello.nl, mingo@elte.hu, tglx@linutronix.de, oleg@tv-sign.ru,
+       rostedt@goodmis.org, linux-kernel@vger.kernel.org
+Subject: Re: [RFC/PATCH 2/4] cpuset: system sets
+Message-Id: <20080227181129.59086769.pj@sgi.com>
+In-Reply-To: <47C5F7D6.2000203@qualcomm.com>
+References: <20080227222103.673194000@chello.nl>
+	<20080227222542.311184000@chello.nl>
+	<47C5F7D6.2000203@qualcomm.com>
+Organization: SGI
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.12.0; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Feb 27, 2008 at 02:35:59PM -0800, Christoph Lameter wrote:
-> Could you be specific? This refers to page migration? Hmmm... Guess we 
+Max wrote:
+> Hmm, shouldn't patches be sent inline ?
 
-If the reader schedule, the synchronize_rcu will return in the other
-cpu and the objects in the list will be freed and overwritten, and
-when the task is scheduled back in, it'll follow dangling pointers...
-You can't use RCU if you want any of your invalidate methods to
-schedule. Otherwise it's like having zero locking.
+Huh?  Peter's patches were inline for me ... odd.
 
-> 2. Not handle file backed mappings (XPmem could work mostly in such a 
-> config)
-
-IMHO that fits under your definition of "hacking something in now and
-then having to modify it later".
-
-> 3. Keep the refcount elevated until pages are freed in another execution 
-> context.
-
-Page refcount is not enough (the mmu_notifier_release will run in
-another cpu the moment after i_mmap_lock is unlocked) but mm_users may
-prevent us to change the i_mmap_lock to a mutex, but it'll slowdown
-truncate as it'll have to drop the lock and restart the radix tree
-walk every time so a change like this better fits as a separate
-CONFIG_XPMEM IMHO.
+-- 
+                  I won't rest till it's the best ...
+                  Programmer, Linux Scalability
+                  Paul Jackson <pj@sgi.com> 1.940.382.4214
