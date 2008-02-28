@@ -1,48 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762252AbYB1UmW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762998AbYB1UoA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762252AbYB1UmW (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Feb 2008 15:42:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758807AbYB1UmN
+	id S1762998AbYB1UoA (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Feb 2008 15:44:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758275AbYB1Unu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Feb 2008 15:42:13 -0500
-Received: from 1wt.eu ([62.212.114.60]:2204 "EHLO 1wt.eu"
+	Thu, 28 Feb 2008 15:43:50 -0500
+Received: from havoc.gtf.org ([69.61.125.42]:53845 "EHLO havoc.gtf.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758378AbYB1UmN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Feb 2008 15:42:13 -0500
-Date: Thu, 28 Feb 2008 21:41:47 +0100
-From: Willy Tarreau <w@1wt.eu>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: Nebojsa Miljanovic <neb@alcatel-lucent.com>, linux-kernel@vger.kernel.org,
-       "Kittlitz, Edward (Ned)" <nkittlitz@alcatel-lucent.com>,
-       asweeney@alcatel-lucent.com,
-       "Polhemus, William (Bart)" <bpolhemus@alcatel-lucent.com>
-Subject: Re: SO_REUSEADDR not allowing server and client to use same port
-Message-ID: <20080228204146.GE8953@1wt.eu>
-References: <47C6FA2A.5030302@alcatel-lucent.com> <20080228201926.558c4e7c@core>
-Mime-Version: 1.0
+	id S1757905AbYB1Unt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 28 Feb 2008 15:43:49 -0500
+Date: Thu, 28 Feb 2008 15:43:48 -0500
+From: Jeff Garzik <jeff@garzik.org>
+To: linux-ide@vger.kernel.org, crane.cai@amd.com, Henry.Su@amd.com,
+       shane.huang@amd.com
+Cc: LKML <linux-kernel@vger.kernel.org>
+Subject: [PATCH RFC] ahci: fix SB600 h/w errata issue
+Message-ID: <20080228204348.GA30539@havoc.gtf.org>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080228201926.558c4e7c@core>
-User-Agent: Mutt/1.5.11
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Feb 28, 2008 at 08:19:26PM +0000, Alan Cox wrote:
-> > Currently, Linux does not allow reuse of same local port for both TCP server and
-> > TCP client. I understand that there may be a need to prevent two servers from
-> 
-> Think about what happens for simultaneous connect (that obscure little
-> corner of the tcp/ip spec). Now think about what it means for security.
->
-> ALan
+I haven't seen anyone work on the recent SB600 errata, where the
+hardware does not like 256-length PRD entries.
 
-exactly. That's why I think that requiring the server to explicitly allow
-socket reuse is mandatory. On another side of the problem, I really think
-that we should make the simultaneous connect configurable. I've been patching
-all of my own 2.4 kernels for a while to add a config option to turn it off
-because there is a real security issue with this on. At least for mainline,
-it should be a sysctl. No stateful firewall I know supports the feature, so
-legitimate uses of this feature are likely very very small.
+Is this correct, AMD folks?
 
-Willy
+It hurts performance on SB600, but it is more important to get a
+correct patch eliminating the data corruption/lockups, and then later
+on tune for performance.
+
+We simply limit each command to a maximum of 255 sectors, on SB600.
+
+Signed-off-by: Jeff Garzik <jgarzik@redhat.com>
+---
+ drivers/ata/ahci.c |   14 +++++++++++++-
+ 1 file changed, 13 insertions(+), 1 deletion(-)
+
+diff --git a/drivers/ata/ahci.c b/drivers/ata/ahci.c
+index 1db93b6..8a49835 100644
+--- a/drivers/ata/ahci.c
++++ b/drivers/ata/ahci.c
+@@ -186,6 +186,7 @@ enum {
+ 	AHCI_HFLAG_NO_MSI		= (1 << 5), /* no PCI MSI */
+ 	AHCI_HFLAG_NO_PMP		= (1 << 6), /* no PMP */
+ 	AHCI_HFLAG_NO_HOTPLUG		= (1 << 7), /* ignore PxSERR.DIAG.N */
++	AHCI_HFLAG_SECT255		= (1 << 8), /* max 255 sectors */
+ 
+ 	/* ap->flags bits */
+ 
+@@ -255,6 +256,7 @@ static void ahci_vt8251_error_handler(struct ata_port *ap);
+ static void ahci_p5wdh_error_handler(struct ata_port *ap);
+ static void ahci_post_internal_cmd(struct ata_queued_cmd *qc);
+ static int ahci_port_resume(struct ata_port *ap);
++static void ahci_dev_config(struct ata_device *dev);
+ static unsigned int ahci_fill_sg(struct ata_queued_cmd *qc, void *cmd_tbl);
+ static void ahci_fill_cmd_slot(struct ahci_port_priv *pp, unsigned int tag,
+ 			       u32 opts);
+@@ -294,6 +296,8 @@ static const struct ata_port_operations ahci_ops = {
+ 	.check_altstatus	= ahci_check_status,
+ 	.dev_select		= ata_noop_dev_select,
+ 
++	.dev_config		= ahci_dev_config,
++
+ 	.tf_read		= ahci_tf_read,
+ 
+ 	.qc_defer		= sata_pmp_qc_defer_cmd_switch,
+@@ -425,7 +429,7 @@ static const struct ata_port_info ahci_port_info[] = {
+ 	/* board_ahci_sb600 */
+ 	{
+ 		AHCI_HFLAGS	(AHCI_HFLAG_IGN_SERR_INTERNAL |
+-				 AHCI_HFLAG_32BIT_ONLY | AHCI_HFLAG_NO_PMP),
++				 AHCI_HFLAG_SECT255 | AHCI_HFLAG_NO_PMP),
+ 		.flags		= AHCI_FLAG_COMMON,
+ 		.link_flags	= AHCI_LFLAG_COMMON,
+ 		.pio_mask	= 0x1f, /* pio0-4 */
+@@ -1176,6 +1180,14 @@ static void ahci_init_controller(struct ata_host *host)
+ 	VPRINTK("HOST_CTL 0x%x\n", tmp);
+ }
+ 
++static void ahci_dev_config(struct ata_device *dev)
++{
++	struct ahci_host_priv *hpriv = dev->link->ap->host->private_data;
++
++	if (hpriv->flags & AHCI_HFLAG_SECT255)
++		dev->max_sectors = 255;
++}
++
+ static unsigned int ahci_dev_classify(struct ata_port *ap)
+ {
+ 	void __iomem *port_mmio = ahci_port_base(ap);
