@@ -1,104 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755173AbYB1VUl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762902AbYB1VVP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755173AbYB1VUl (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Feb 2008 16:20:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762669AbYB1VUH
+	id S1762902AbYB1VVP (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Feb 2008 16:21:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754445AbYB1VUy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Feb 2008 16:20:07 -0500
-Received: from smtp114.sbc.mail.re2.yahoo.com ([68.142.229.91]:30498 "HELO
-	smtp114.sbc.mail.re2.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1760527AbYB1VUF (ORCPT
+	Thu, 28 Feb 2008 16:20:54 -0500
+Received: from ug-out-1314.google.com ([66.249.92.170]:43341 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753562AbYB1VUx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Feb 2008 16:20:05 -0500
-X-YMail-OSG: aimf760VM1mLDc2T_cyZDHpmrdvTB3j85lwdeKTyOJqpJ7WqeABnQkGWK_OOqfnYwkJNvoS8kcl6kh5MjQs3cFUEa7uywYmyef3pGStYpOlclLmRwi6ySjRFwVPu.XsFncTFBlDQTqMx5r4-
-X-Yahoo-Newman-Property: ymail-3
-Date: Thu, 28 Feb 2008 15:17:20 -0600
-From: serge@hallyn.com
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-Cc: Pavel Emelyanov <xemul@openvz.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       David Miller <davem@davemloft.net>,
-       Alexey Dobriyan <adobriyan@openvz.org>,
-       Linux Netdev List <netdev@vger.kernel.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 0/2] Fix /proc/net in presence of net namespaces
-Message-ID: <20080228211720.GA1232@vino.hallyn.com>
-References: <47C6D743.1050802@openvz.org> <m1y794514k.fsf@ebiederm.dsl.xmission.com>
+	Thu, 28 Feb 2008 16:20:53 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=ZSQHd6+nZjKAUA1Lb1BwwIMIMSs4UbNSkteyRXVSspJpc6vOJOsD4/Y0rvD/SYllMHBlrboapLaz1UKSBm3HrXkVtx7/tizJP+MVcPu53cVVN9X4yMCEohj+LFw2NYwafdZHLkPBZGB7biX7fTAOaw/pRyyJfuK/2tNQ3XCF7vA=
+Message-ID: <b6fcc0a0802281320u5bc0fb3fga3ee73f0946ff845@mail.gmail.com>
+Date: Fri, 29 Feb 2008 00:20:48 +0300
+From: "Alexey Dobriyan" <adobriyan@gmail.com>
+To: "Randy Dunlap" <randy.dunlap@oracle.com>
+Subject: Re: [PATCH] CodingStyle: multiple updates
+Cc: "SL Baur" <steve@xemacs.org>, "Krzysztof Halasa" <khc@pm.waw.pl>,
+       "Guennadi Liakhovetski" <g.liakhovetski@gmx.de>,
+       "Jan Engelhardt" <jengelh@computergmbh.de>, ricknu-0@student.ltu.se,
+       bhalevy.lists@gmail.com,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
+In-Reply-To: <20080226213432.1388717b.randy.dunlap@oracle.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <m1y794514k.fsf@ebiederm.dsl.xmission.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+References: <1204062430.47c488def40a4@portal.student.luth.se>
+	 <20080226135444.f83a0536.randy.dunlap@oracle.com>
+	 <Pine.LNX.4.64.0802262310050.15321@fbirervta.pbzchgretzou.qr>
+	 <Pine.LNX.4.64.0802270033310.5714@axis700.grange>
+	 <m31w6zcm4l.fsf@maximus.localdomain>
+	 <ed10ee420802261657w3830e1a1rf0cc9601cdacb142@mail.gmail.com>
+	 <20080226213432.1388717b.randy.dunlap@oracle.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Quoting Eric W. Biederman (ebiederm@xmission.com):
-> Pavel Emelyanov <xemul@openvz.org> writes:
-> 
-> > Current /proc/net is done with so called "shadows", but current
-> > implementation is broken and has little chances to get fixed.
-> >
-> > The problem is that dentries subtree of /proc/net directory has
-> > fancy revalidation rules to make processes living in different
-> > net namespaces see different entries in /proc/net subtree, but
-> > currently, tasks see in the /proc/net subdir the contents of any
-> > other namespace, depending on who opened the file first.
-> >
-> > The proposed fix is to turn /proc/net into a symlink, which behaves
-> > similar to /proc/self link - it points to .netns/<id> directory 
-> > where the <id> is the id of net namespace, current task lives in.
-> >
-> > # ls -l /proc/net
-> > lrwxrwxrwx  1 root root 8 Feb 28 18:38 /proc/net -> .netns/0
-> >
-> > The /proc/.netns dir contains subtrees for all the namespaces in 
-> > the system:
-> >
-> > # ls -l /proc/.netns/
-> > total 0
-> > dr-xr-xr-x  5 root root 0 Feb 28 18:39 0
-> > dr-xr-xr-x  3 root root 0 Feb 28 18:39 1
-> >
-> > To provide some security each /proc/.netns/<id> directory allows
-> > access to tasks that live in the owning namespace only (with the
-> > exception, that init_net tasks can see everything).
-> 
-> 
-> Nack.  Yet another global set of ids that require us to implement another
-> namespace looks like the wrong way to go.
+On 2/27/08, Randy Dunlap <randy.dunlap@oracle.com> wrote:
+> I would gladly NAK it, but most recent email from Linus about
+> coding style is that we are getting too detailed about it,
+> so unless there is some overwhelming need to change anything in
+> CodingStyle, I'm for no changes (or maybe even some removals).
 
-Sentiment granted, but I'm not sure it can be an issue.  It *could* be
-in issue if we moved to a more flexible access control here here any
-netns could access the .netns/N directories for all it's child
-namespaces.
+Amen!
 
-But it can't, and /proc/net is set by the kernel.  So the <id> can't be
-an issue for any checkpoint/restart except htat of the whole system, and
-of course on whole-system resume we have no <id> collision worries.
-
-So userspace can't do anything with <id>, so there is no reason to worry
-about it becoming another namespace?
-
-Right?
-
-thanks,
--serge
-
-> Can you try this approach by capturing a struct pid instead of an id
-> in a new global namespace? 
-> 
-> In particular the pid of the process that creates the pid namespace.
-> Like we do with setsid.
-> 
-> I think the implementation difficulty should be about the same, but
-> it will allow us something that works cleanly in the cases of
-> migration and nested namespaces.  As well as not adding an unnecessary
-> special case with init_net and visibility.
-> 
-> Eric
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+CodingStyleForDummies is long overdue...
