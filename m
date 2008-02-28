@@ -1,93 +1,206 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757382AbYB1IqT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756367AbYB1Iuf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757382AbYB1IqT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Feb 2008 03:46:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752589AbYB1IqJ
+	id S1756367AbYB1Iuf (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Feb 2008 03:50:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752431AbYB1IuY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Feb 2008 03:46:09 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:39117 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751340AbYB1IqH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Feb 2008 03:46:07 -0500
-Date: Thu, 28 Feb 2008 09:45:58 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Nick Piggin <npiggin@suse.de>
-Cc: Andi Kleen <ak@suse.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-arch@vger.kernel.org
-Subject: Re: [rfc][patch] x86-64 new smp_call_function design
-Message-ID: <20080228084558.GA32631@elte.hu>
-References: <20080227124217.GA1340@wotan.suse.de> <20080227132713.GA13681@elte.hu> <20080227135041.GC1340@wotan.suse.de> <20080227150210.GA21610@elte.hu> <20080227221407.GA26067@wotan.suse.de>
+	Thu, 28 Feb 2008 03:50:24 -0500
+Received: from rv-out-0910.google.com ([209.85.198.184]:27551 "EHLO
+	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751943AbYB1IuX (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 28 Feb 2008 03:50:23 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
+        b=Ba1Fij3G6NcN6rOUWCP4mnyE3Hivrcx8FZHJK2+of+PuxzLPPRk3wIohE3WDz9yjS0TrNtSforuFqKEmKLwjBYy1cpYWqQ/qh8Ee6+vU6Pe9o4CGSfffqRWOoTAmZl1a6YTSwvuSzHqfAPURLTOSPWNog6KIGW6KXbEED87pSpA=
+Message-ID: <47C675C6.8000904@gmail.com>
+Date: Thu, 28 Feb 2008 17:50:14 +0900
+From: Tejun Heo <htejun@gmail.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20070801)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080227221407.GA26067@wotan.suse.de>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+To: Mike Galbraith <efault@gmx.de>, Andrew Morton <akpm@linux-foundation.org>,
+       Jens Axboe <jens.axboe@oracle.com>
+CC: LKML <linux-kernel@vger.kernel.org>, linux-ide@vger.kernel.org,
+       linux-scsi@vger.kernel.org, Jeff Garzik <jgarzik@pobox.com>
+Subject: [PATCH] block: fix residual byte count handling
+References: <1203583379.6244.27.camel@homer.simson.net>	 <20080222073228.GZ23197@kernel.dk>	 <1203752563.5225.4.camel@homer.simson.net>	 <1203839683.17463.9.camel@homer.simson.net>	 <1204019283.8731.11.camel@homer.simson.net>	 <1204033003.11828.22.camel@homer.simson.net>	 <20080226150845.2196bc1a.akpm@linux-foundation.org>	 <1204079075.26640.8.camel@homer.simson.net>	 <1204092010.9934.31.camel@homer.simson.net>	 <1204096025.1623.9.camel@homer.simson.net>  <47C6661E.9010504@gmail.com> <1204186800.7362.7.camel@homer.simson.net>
+In-Reply-To: <1204186800.7362.7.camel@homer.simson.net>
+X-Enigmail-Version: 0.95.5
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+rq->raw_data_len introduced for block layer padding and draining
+(commit 6b00769fe1502b4ad97bb327ef7ac971b208bfb5) broke residual byte
+count handling.  Block drivers modify rq->data_len to notify residual
+byte count to the block layer which blindly reported unmodified
+rq->raw_data_len to userland.
 
-* Nick Piggin <npiggin@suse.de> wrote:
+To keep block drivers dealing only with rq->data_len, this should be
+handled inside block layer.  However, how much extra buffer was
+appened is lost after rq->data_len is modified.
 
-> On Wed, Feb 27, 2008 at 04:02:10PM +0100, Ingo Molnar wrote:
-> > 
-> > * Nick Piggin <npiggin@suse.de> wrote:
-> > 
-> > > > the two structures are quite similar in size and role - why not have 
-> > > > a type field and handle them largely together? I think we should try 
-> > > > to preserve a single queue and a single vector - that would remove a 
-> > > > number of ugly special-cases from the patch.
-> > > 
-> > > A single queue will kill one of the big fundamental scalability 
-> > > improvements of the call_single. That's the problem.
-> > 
-> > hm, indeed. Then how about the other way around: couldnt the normal 
-> > all-cpus SMP function call be implemented transparently via using 
-> > smp_call_single() calls?
-> 
-> That's possible, but it is slower and less scalable on my 8-way, and
-> I suspect it might become even slower than the generic code on larger
-> systems.
+This patch replaces rq->raw_data_len with rq->extra_len and add
+blk_rq_raw_data_len() helper to calculate raw data size from
+rq->data_len and rq->extra_len.  The helper returns correct raw
+residual byte count when called on a rq whose data_len is modified to
+carry residual byte count.
 
-i dont mean "implement call-all as a series of call-single" calls, but 
-use just a single queue of requests and differentiate on the data 
-structure level. Right now you use the vector # as the differentiator.
+This problem was reported and diagnosed by Mike Galbraith.
 
-but ... no strong feelings, i'm just playing the devil's advocate :) 
-Your work is great (and i now see that i forgot to state this clearly 
-enough in my first mail - i thought i to be obvious, based on your 
-numbers!), i'm really just trying to micro-optimize the concept.
-
-Could you try to unify it with the 32-bit code, preferably into a 
-separate, unified arch/x86/kernel/smp.c file? Such an approach would 
-make it into x86.git in a heartbeat :)
-
-> > The vector duplication is really ugly and feels wrong.
-> 
-> Why?
-
-it's ~0.5% of our irq vector space? :-)
-
-we could also try to implement a "NOP" type of single call [ using a nop 
-callback is one of the easiest possibilities there ;) ] - which would 
-allow us to eliminate the special reschedule vector as well. That means 
-we could consolidate all the SMP cross-calls into a single vector.
-
-OTOH, i see how you save multiplexing/demultiplexing complexity on both 
-the sending and the receiving side by using the separate vectors. So i 
-guess, if it's fast enough, we should indeed do your two vectors 
-approach and also merge the reschedule special vector into the 
-single-call path and thus have no effect on the size of the vector 
-space. (no need to add a new vector even - just rename the reschedule 
-vector to single-call vector)
-
-	Ingo
+Signed-off-by: Tejun Heo <htejun@gmail.com>
+Cc: Mike Galbraith <efault@gmx.de>
+---
+ block/blk-core.c          |    3 +--
+ block/blk-map.c           |    2 +-
+ block/blk-merge.c         |    1 +
+ block/bsg.c               |    8 ++++----
+ block/scsi_ioctl.c        |    4 ++--
+ drivers/ata/libata-scsi.c |    3 ++-
+ include/linux/blkdev.h    |    8 +++++++-
+ 7 files changed, 18 insertions(+), 11 deletions(-)
+diff --git a/block/blk-core.c b/block/blk-core.c
+index 775c851..929ab61 100644
+--- a/block/blk-core.c
++++ b/block/blk-core.c
+@@ -127,7 +127,7 @@ void rq_init(struct request_queue *q, struct request *rq)
+ 	rq->nr_hw_segments = 0;
+ 	rq->ioprio = 0;
+ 	rq->special = NULL;
+-	rq->raw_data_len = 0;
++	rq->extra_len = 0;
+ 	rq->buffer = NULL;
+ 	rq->tag = -1;
+ 	rq->errors = 0;
+@@ -2016,7 +2016,6 @@ void blk_rq_bio_prep(struct request_queue *q, struct request *rq,
+ 	rq->hard_cur_sectors = rq->current_nr_sectors;
+ 	rq->hard_nr_sectors = rq->nr_sectors = bio_sectors(bio);
+ 	rq->buffer = bio_data(bio);
+-	rq->raw_data_len = bio->bi_size;
+ 	rq->data_len = bio->bi_size;
+ 
+ 	rq->bio = rq->biotail = bio;
+diff --git a/block/blk-map.c b/block/blk-map.c
+index 09f7fd0..c67a75f 100644
+--- a/block/blk-map.c
++++ b/block/blk-map.c
+@@ -19,7 +19,6 @@ int blk_rq_append_bio(struct request_queue *q, struct request *rq,
+ 		rq->biotail->bi_next = bio;
+ 		rq->biotail = bio;
+ 
+-		rq->raw_data_len += bio->bi_size;
+ 		rq->data_len += bio->bi_size;
+ 	}
+ 	return 0;
+@@ -156,6 +155,7 @@ int blk_rq_map_user(struct request_queue *q, struct request *rq,
+ 		bio->bi_io_vec[bio->bi_vcnt - 1].bv_len += pad_len;
+ 		bio->bi_size += pad_len;
+ 		rq->data_len += pad_len;
++		rq->extra_len += pad_len;
+ 	}
+ 
+ 	rq->buffer = rq->data = NULL;
+diff --git a/block/blk-merge.c b/block/blk-merge.c
+index 7506c4f..efb5b4d 100644
+--- a/block/blk-merge.c
++++ b/block/blk-merge.c
+@@ -232,6 +232,7 @@ new_segment:
+ 			    (PAGE_SIZE - 1));
+ 		nsegs++;
+ 		rq->data_len += q->dma_drain_size;
++		rq->extra_len += q->dma_drain_size;
+ 	}
+ 
+ 	if (sg)
+diff --git a/block/bsg.c b/block/bsg.c
+index 7f3c095..81b2133 100644
+--- a/block/bsg.c
++++ b/block/bsg.c
+@@ -437,14 +437,14 @@ static int blk_complete_sgv4_hdr_rq(struct request *rq, struct sg_io_v4 *hdr,
+ 	}
+ 
+ 	if (rq->next_rq) {
+-		hdr->dout_resid = rq->raw_data_len;
+-		hdr->din_resid = rq->next_rq->raw_data_len;
++		hdr->dout_resid = blk_rq_raw_data_len(rq);
++		hdr->din_resid = blk_rq_raw_data_len(rq->next_rq);
+ 		blk_rq_unmap_user(bidi_bio);
+ 		blk_put_request(rq->next_rq);
+ 	} else if (rq_data_dir(rq) == READ)
+-		hdr->din_resid = rq->raw_data_len;
++		hdr->din_resid = blk_rq_raw_data_len(rq);
+ 	else
+-		hdr->dout_resid = rq->raw_data_len;
++		hdr->dout_resid = blk_rq_raw_data_len(rq);
+ 
+ 	/*
+ 	 * If the request generated a negative error number, return it
+diff --git a/block/scsi_ioctl.c b/block/scsi_ioctl.c
+index e993cac..32424b3 100644
+--- a/block/scsi_ioctl.c
++++ b/block/scsi_ioctl.c
+@@ -266,7 +266,7 @@ static int blk_complete_sghdr_rq(struct request *rq, struct sg_io_hdr *hdr,
+ 	hdr->info = 0;
+ 	if (hdr->masked_status || hdr->host_status || hdr->driver_status)
+ 		hdr->info |= SG_INFO_CHECK;
+-	hdr->resid = rq->raw_data_len;
++	hdr->resid = blk_rq_raw_data_len(rq);
+ 	hdr->sb_len_wr = 0;
+ 
+ 	if (rq->sense_len && hdr->sbp) {
+@@ -528,8 +528,8 @@ static int __blk_send_generic(struct request_queue *q, struct gendisk *bd_disk,
+ 	rq = blk_get_request(q, WRITE, __GFP_WAIT);
+ 	rq->cmd_type = REQ_TYPE_BLOCK_PC;
+ 	rq->data = NULL;
+-	rq->raw_data_len = 0;
+ 	rq->data_len = 0;
++	rq->extra_len = 0;
+ 	rq->timeout = BLK_DEFAULT_SG_TIMEOUT;
+ 	memset(rq->cmd, 0, sizeof(rq->cmd));
+ 	rq->cmd[0] = cmd;
+diff --git a/drivers/ata/libata-scsi.c b/drivers/ata/libata-scsi.c
+index 0562b0a..5cab84c 100644
+--- a/drivers/ata/libata-scsi.c
++++ b/drivers/ata/libata-scsi.c
+@@ -2539,7 +2539,8 @@ static unsigned int atapi_xlat(struct ata_queued_cmd *qc)
+ 	 * want to set it properly, and for DMA where it is
+ 	 * effectively meaningless.
+ 	 */
+-	nbytes = min(scmd->request->raw_data_len, (unsigned int)63 * 1024);
++	nbytes = min(blk_rq_raw_data_len(scmd->request),
++		     (unsigned int)63 * 1024);
+ 
+ 	/* Most ATAPI devices which honor transfer chunk size don't
+ 	 * behave according to the spec when odd chunk size which
+diff --git a/drivers/block/cciss.c b/drivers/block/cciss.c
+diff --git a/drivers/scsi/scsi_lib.c b/drivers/scsi/scsi_lib.c
+diff --git a/include/linux/blkdev.h b/include/linux/blkdev.h
+index 6fe67d1..917b97f 100644
+--- a/include/linux/blkdev.h
++++ b/include/linux/blkdev.h
+@@ -216,8 +216,8 @@ struct request {
+ 	unsigned int cmd_len;
+ 	unsigned char cmd[BLK_MAX_CDB];
+ 
+-	unsigned int raw_data_len;
+ 	unsigned int data_len;
++	unsigned int extra_len;	/* length of alignment and padding */
+ 	unsigned int sense_len;
+ 	void *data;
+ 	void *sense;
+@@ -477,6 +477,12 @@ enum {
+ 
+ #define rq_data_dir(rq)		((rq)->cmd_flags & 1)
+ 
++/* data_len of the request sans extra stuff for alignment and padding */
++static inline unsigned int blk_rq_raw_data_len(struct request *rq)
++{
++	return rq->data_len - min(rq->extra_len, rq->data_len);
++}
++
+ /*
+  * We regard a request as sync, if it's a READ or a SYNC write.
+  */
