@@ -1,89 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758113AbYB1O0t@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759503AbYB1O3x@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758113AbYB1O0t (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Feb 2008 09:26:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751107AbYB1O0l
+	id S1759503AbYB1O3x (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Feb 2008 09:29:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752752AbYB1O3q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Feb 2008 09:26:41 -0500
-Received: from el-out-1112.google.com ([209.85.162.182]:46995 "EHLO
-	el-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750842AbYB1O0l (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Feb 2008 09:26:41 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:mime-version:content-type:content-transfer-encoding:content-disposition;
-        b=pa9Y1bbQn/mMISdnMwS7HKgl4EiGh+npjgNqwUv1uT3ooYJBBk9sfiVDaUh3LfpmK+Sx1oZOuo2IMPQ5Ri2oJuzG3SrpatMAON368HS66PrjTG1vIEPJrCwo73OLU86cP1Obad7zOiOMexeaoZM2/noghpqGRe0ohH3n1mNguhY=
-Message-ID: <f19298770802280626g5ee17328ldedf7658a9f26f56@mail.gmail.com>
-Date: Thu, 28 Feb 2008 17:26:38 +0300
-From: "Alexey Zaytsev" <alexey.zaytsev@gmail.com>
-To: "Ingo Molnar" <mingo@elte.hu>, "Thomas Gleixner" <tglx@linutronix.de>
-Subject: printk timestamps jumping back and forth in 2.6.25-rc.
-Cc: lkml <linux-kernel@vger.kernel.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+	Thu, 28 Feb 2008 09:29:46 -0500
+Received: from public.id2-vpn.continvity.gns.novell.com ([195.33.99.129]:30723
+	"EHLO public.id2-vpn.continvity.gns.novell.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752301AbYB1O3q convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 28 Feb 2008 09:29:46 -0500
+Message-Id: <47C6D37F.76E4.0078.0@novell.com>
+X-Mailer: Novell GroupWise Internet Agent 7.0.3 Beta 
+Date: Thu, 28 Feb 2008 14:30:07 +0000
+From: "Jan Beulich" <jbeulich@novell.com>
+To: "Ingo Molnar" <mingo@elte.hu>
+Cc: "Arjan van de Ven" <arjan@infradead.org>,
+       "Thomas Gleixner" <tglx@linutronix.de>, <linux-kernel@vger.kernel.org>,
+       "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: x86: potential ioremap() issues
+References: <47C6BE37.76E4.0078.0@novell.com>
+ <20080228132404.GB18551@elte.hu>
+In-Reply-To: <20080228132404.GB18551@elte.hu>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 8BIT
 Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello.
+>> - When ioremap_page_range() fails, remove_vm_area() is used rather
+>>   than vunmap() - I think this will cause a 'struct vm_struct' leak.
+>
+>indeed, good catch - could you check whether the patch below fixes this? 
 
-Long story short, this is what I see in my dmesg:
+Yes, it certainly does. You using it rather than vunmap() makes me notice
+other inconsistencies (but harmless in nature): The ioremap_change_attr()
+failure case should use the same function, and iounmap() could be
+simplified using it, too.
 
-http://romomatic.osuosl.org/share/xl0/dmesg-2.6.25-rc3
-http://romomatic.osuosl.org/share/xl0/dmesg-2.6.25-rc3-clocksource-acpi_pm
-http://romomatic.osuosl.org/share/xl0/dmesg-2.6.25-rc3-clocksource-hpet
+Acked-by: Jan Beulich <jbeulich@novell.com>
 
-Specifying clocksource=acpi_pm and hpet changes nothing.
+>> - While ioremap() continues to happily map RAM pages (with a bogus
+>>   [see below] WARN_ON_ONCE()), cacheability of the memory is not
+>>   being restored in iounmap().
+>
+>correct - these are never supposed to be 'true', generally allocated RAM 
+>pages - or like we do with AGP where the pages are exclusively owned we 
+>restore their cacheability explicitly.
 
-Apart from the jumpy timestamps, I think the
-scheduler is not working well, because the mouse
-looses smoothness from time to time during
-compilations. Not that noticeble, but definetely
-worse than it was in 2.6.23. Probably might be related,
-I don't know.
+Never supposed to be doesn't mean they really aren't. I think as long as
+one permits it, the other should undo its effects. Further more, it would
+seem to me that you could easily ioremap() a hot-pluggable (but
+unpopulated) memory range, and get into inconsistencies once that
+range gets actually populated. Or am I not seeing a safeguard
+preventing this?
 
-I tried to bisect the problem, but it first lead me to
+>> - The check for RAM pages (except for the WARN_ON_ONCE())
+>>   continues to be applied only to lowmem pages.
+>
+>yes, the biggest constraint from ioremap comes when it applies to pages 
+>that are mapped by the kernel. But i guess we could extend this to all 
+>things RAM ... the second patch below does this. What do you think? I've 
+>queued this up in x86.git#testing as well.
 
-commit 326e96b92306b7af24a3608ec01156cba17a3fc1
-Author: Ingo Molnar <mingo@elte.hu>
-Date:   Sun Jan 27 08:03:54 2008 +0100
+Yes, that's exactly what I would have thought it should look like.
 
-    printk: revert ktime_get() timestamps
+Acked-by: Jan Beulich <jbeulich@novell.com>
 
-    revert 19ef9309273d26cb005cb23e6a370353dca91099.
+>> - The WARN_ON_ONCE() itself is applied to the pfn after the
+>>   preceding loop finished, i.e. to a pfn that doesn't actually participate
+>>   in the operation. Shouldn't it be moved inside the loop?
+>
+>i removed the WARN_ON_ONCE() from x86.git a few days ago, it's lined up 
+>for the next push.
 
-    Kevin Winchester reported a lockup during X startup an bisected
-    it to this commit.
+Great, thanks!
 
-Reverting this revert kind of worked:
-http://romomatic.osuosl.org/share/xl0/dmesg-2.6.25-rc3-reverted
-but clearly this was not the right thing. ;)
+Jan
 
-and after bisecting 2.6.24 - commit before
-19ef9309273d26cb005cb23e6a370353dca91099
-I got to
-
-commit d713f519332e029d43eca8462629314eee1ded86
-Author: Ingo Molnar <mingo@elte.hu>
-Date:   Fri Jan 25 21:07:58 2008 +0100
-
-    sched: fix CONFIG_PRINT_TIME's reliance on sched_clock()
-
-    Stefano Brivio reported weird printk timestamp behavior during
-    CPU frequency changes:
-
-      http://bugzilla.kernel.org/show_bug.cgi?id=9475
-
-    fix CONFIG_PRINT_TIME's reliance on sched_clock() and use cpu_clock()
-    instead.
-
-    Reported-and-bisected-by: Stefano Brivio <stefano.brivio@polimi.it>
-    Signed-off-by: Ingo Molnar <mingo@elte.hu>
-
-
-which sound like "happy debugging, losers" to me. ;)
-
-Anything else I can do?
