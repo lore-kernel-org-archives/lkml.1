@@ -1,161 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756726AbYB1DDw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756404AbYB1DKQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756726AbYB1DDw (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Feb 2008 22:03:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752334AbYB1DDm
+	id S1756404AbYB1DKQ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Feb 2008 22:10:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752185AbYB1DKE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Feb 2008 22:03:42 -0500
-Received: from smtp121.sbc.mail.re3.yahoo.com ([66.196.96.94]:30941 "HELO
-	smtp121.sbc.mail.re3.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1752261AbYB1DDm (ORCPT
+	Wed, 27 Feb 2008 22:10:04 -0500
+Received: from g1t0026.austin.hp.com ([15.216.28.33]:40152 "EHLO
+	g1t0026.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751744AbYB1DKD convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Feb 2008 22:03:42 -0500
-X-YMail-OSG: TjlMOngVM1m.gm6GyRF.s8yuXtkiomtYkkKnbE2wyYs69KueaQnxP.IwBB3.F5MvbdZKVB57OK4f4ZFI_9fw5AlsaAAQoHjypBvcrDcs8NhGzITGDyk-
-X-Yahoo-Newman-Property: ymail-3
-Date: Wed, 27 Feb 2008 21:00:53 -0600
-From: serge@hallyn.com
-To: BuraphaLinux Server <buraphalinuxserver@gmail.com>
-Cc: serge@hallyn.com, linux-kernel@vger.kernel.org
-Subject: Re: at program breaks with kernel 2.6.24
-Message-ID: <20080228030053.GA25033@vino.hallyn.com>
-References: <5d75f4610802270427y789ffae9ie2682059206eed51@mail.gmail.com> <20080227181740.GA14532@vino.hallyn.com> <5d75f4610802271147m77d3b3e3r4d01ecf3740a7dbb@mail.gmail.com>
+	Wed, 27 Feb 2008 22:10:03 -0500
+From: "Mingarelli, Thomas" <Thomas.Mingarelli@hp.com>
+To: Roland Dreier <rdreier@cisco.com>
+CC: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Date: Thu, 28 Feb 2008 03:09:03 +0000
+Subject: RE: hpwdt oops in clflush_cache_range
+Thread-Topic: hpwdt oops in clflush_cache_range
+Thread-Index: Ach5nqwVouG/vmJgS3qFwAPu9ZT4ygAGIXCg
+Message-ID: <E14D1C2A44812C4F9C3ED321127EDF6505829D5A91@G3W0854.americas.hpqcorp.net>
+References: <adad4qiwcmz.fsf@cisco.com>
+	<alpine.LFD.1.00.0802271913050.7583@apollo.tec.linutronix.de>
+	<ada1w6y1bzk.fsf@cisco.com>
+	<alpine.LFD.1.00.0802272011130.7583@apollo.tec.linutronix.de>
+	<20080227203655.GA30054@elte.hu>
+	<alpine.LFD.1.00.0802272140050.7583@apollo.tec.linutronix.de>
+	<alpine.LFD.1.00.0802272155190.7583@apollo.tec.linutronix.de>
+	<ada3areyu7x.fsf@cisco.com>
+	<E14D1C2A44812C4F9C3ED321127EDF6505829D59DF@G3W0854.americas.hpqcorp.net>
+ <adamypmx7k1.fsf@cisco.com>
+In-Reply-To: <adamypmx7k1.fsf@cisco.com>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <5d75f4610802271147m77d3b3e3r4d01ecf3740a7dbb@mail.gmail.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Quoting BuraphaLinux Server (buraphalinuxserver@gmail.com):
-> This is gmail which has broken line wrapping I cannot fix. Anyway, I
-> did build the new kernel but it still does not work for me. I tried to
-> strace, but that didn't work for me either. This is as a non-root user
-> (and same 'at'/'atd' binaries work on 2.6.23.X):
-> 
-> bash-3.2$ at now
-> warning: commands will be executed using /bin/sh
-> at> echo "suid is busted"
-> at> <EOT>
-> job 4 at Thu Feb 28 02:16:00 2008
-> Can't signal atd (permission denied)
-> bash-3.2$ ls -ld $(which at)
-> -rws--x--x 1 daemon daemon 36468 Jan 11 15:37 /usr/bin/at
-> bash-3.2$ ps -ef | grep atd
-> daemon 2874 1 0 02:14 ? 00:00:00 /usr/sbin/atd -b 15 -l 1
-> bozo 3054 3049 0 02:16 pts/0 00:00:00 grep atd
-> bash-3.2$ ls -ld /var/spool/at*
-> drwxrwxrwt 2 daemon daemon 4096 Feb 28 02:16 /var/spool/atjobs
-> drwx------ 2 daemon daemon 4096 Feb 27 20:02 /var/spool/atspool
-> bash-3.2$ uname -a
-> Linux zappaman.cs.buu.ac.th 2.6.25-rc3 #1 SMP Thu Feb 28 01:29:46 ICT
-> 2008 i686 pentium4 i386 GNU/Linux
-> bash-3.2$ strace -s 99999 -v -o /tmp/pain at now
-> warning: commands will be executed using /bin/sh
-> Cannot open lockfile /var/spool/atjobs/.SEQ: Permission denied
-> bash-3.2$ at now
-> warning: commands will be executed using /bin/sh
-> at> echo "hi"
-> at> <EOT>
-> job 7 at Thu Feb 28 02:19:00 2008
-> Can't signal atd (permission denied)
-> 
-> My kenrel .config is big, so it is attached so I don't get any cut and
-> paste error.
-> 
-> On 2/28/08, serge@hallyn.com <serge@hallyn.com> wrote:
-> > Quoting BuraphaLinux Server (buraphalinuxserver@gmail.com):
-> > > http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=463669
-> > >
-> > > I have the same problem - it is not debian specific. Did the
-> > > semantics of kill() change with the new kernel? I thought as long as
-> > > something is setuid, even with capability stuff around the setuid
-> > > programs just get _all_ capabilities and would keep working.
-> > >
-> > > I did a good search and found many people with the problem, but no
-> > > solutions except going back to 2.6.23.x kernels. I guess you'll flame
-> > > me, but at least include a link to the solution too.
-> >
-> > Why would we flame you?
-> 
-> Because maybe I'm doing something stupid and didn't patch/rebuild
-> something when changing kernels like I should.  I haven't had trouble
-> with at for many years of kernel changes, but 2.6.24 was the first
-> with the new security stuff and maybe I need to have some
-> capability-aware 'at' program?
-> 
-> >                                          I'll just apologize as I think it's my fault,
-> > and ask you to please try the newest available kernel where I believe it
-> > should be fixed.
-> 
-> Do I need to recompile glibc and the at software to adjust so some
-> kernel interface changes?  Did the 'make oldconfig' generate some bad
-> config combination?  As root it works, so I don't think the at or atd
-> are broken (but maybe they have to be patched for >2.6.23.X ?)
-> 
-> bash-3.2$ su - root
-> Password:
-> BLS #at now
-> warning: commands will be executed using /bin/sh
-> at> echo "uh-huh..."
-> at> <EOT>
-> job 8 at Thu Feb 28 02:30:00 2008
-> 
-> (and I checked and the job completes normally)
-> 
-> > thanks,
-> > -serge
-> 
-> Thank you for reading.  Any ideas on what to try next?
-
-I'm working on setting up something I can test this on better, but just
-for good measure can you try the following patch?  It should simply
-prevent the extra signal checks from happening.
-
-thanks,
--serge
-
->From f48d28fe525652cb7321d5f545f9dcdfb3ce97d8 Mon Sep 17 00:00:00 2001
-From: Serge Hallyn <serge@hallyn.com>
-Date: Wed, 27 Feb 2008 20:53:47 +0000
-Subject: [PATCH 1/1] file capabilities: get rid of cap_task_kill
-
-This is just a test to not use cap_task_kill.  We will see whether
-this fixes the atd problem
-
-Signed-off-by: Serge Hallyn <serge@hallyn.com>
----
- include/linux/security.h |    2 +-
- security/capability.c    |    1 -
- 2 files changed, 1 insertions(+), 2 deletions(-)
-
-diff --git a/include/linux/security.h b/include/linux/security.h
-index fe52cde..4c43914 100644
---- a/include/linux/security.h
-+++ b/include/linux/security.h
-@@ -2138,7 +2138,7 @@ static inline int security_task_kill (struct task_struct *p,
- 				      struct siginfo *info, int sig,
- 				      u32 secid)
- {
--	return cap_task_kill(p, info, sig, secid);
-+	return 0;
- }
- 
- static inline int security_task_wait (struct task_struct *p)
-diff --git a/security/capability.c b/security/capability.c
-index 9e99f36..2c6e06d 100644
---- a/security/capability.c
-+++ b/security/capability.c
-@@ -40,7 +40,6 @@ static struct security_operations capability_ops = {
- 	.inode_need_killpriv =		cap_inode_need_killpriv,
- 	.inode_killpriv =		cap_inode_killpriv,
- 
--	.task_kill =			cap_task_kill,
- 	.task_setscheduler =		cap_task_setscheduler,
- 	.task_setioprio =		cap_task_setioprio,
- 	.task_setnice =			cap_task_setnice,
--- 
-1.5.2.5
+Understood. I am just trying to get as much data about the issue as I can.
 
 
+-----Original Message-----
+From: Roland Dreier [mailto:rdreier@cisco.com]
+Sent: Wednesday, February 27, 2008 6:13 PM
+To: Mingarelli, Thomas
+Cc: Thomas Gleixner; Ingo Molnar; linux-kernel@vger.kernel.org
+Subject: Re: hpwdt oops in clflush_cache_range
+
+ > Did I read correctly that this was on a Debian OS? Looks like I need to jump in and see what is different about Debian because I haven't seen such an issue on RedHat 5.
+ >
+ > Yes, the driver was made specifically for G5 (and newer) systems. I will set a system up here and figure out what's wrong as soon as I am sure it is Debian.
+
+I can't imagine that the fact that it's Debian has anything to do with
+it -- this is purely in the kernel.
+
+ - R.
