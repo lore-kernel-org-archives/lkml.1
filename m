@@ -1,126 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757917AbYB1JSm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758650AbYB1JUH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757917AbYB1JSm (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Feb 2008 04:18:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754102AbYB1JS2
+	id S1758650AbYB1JUH (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Feb 2008 04:20:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754783AbYB1JTv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Feb 2008 04:18:28 -0500
-Received: from pasmtpb.tele.dk ([80.160.77.98]:33375 "EHLO pasmtpB.tele.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753959AbYB1JS0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Feb 2008 04:18:26 -0500
-Date: Thu, 28 Feb 2008 10:18:39 +0100
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Richard Hacker <lerichi@gmx.net>
-Cc: kai@germaschewski.name, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 001/002] scripts/mod/modpost.c: New option -E to load extra symbols
-Message-ID: <20080228091839.GA18519@uranus.ravnborg.org>
-References: <200802280940.53020.lerichi@gmx.net>
+	Thu, 28 Feb 2008 04:19:51 -0500
+Received: from caramon.arm.linux.org.uk ([78.32.30.218]:48733 "EHLO
+	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754723AbYB1JTt (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 28 Feb 2008 04:19:49 -0500
+Date: Thu, 28 Feb 2008 09:15:36 +0000
+From: Russell King <rmk+lkml@arm.linux.org.uk>
+To: Adrian Bunk <bunk@kernel.org>, Andrew Morton <akpm@linux-foundation.org>,
+       linux-pcmcia@lists.infradead.org, linux-kernel@vger.kernel.org,
+       Dominik Brodowski <linux@brodo.de>
+Subject: Re: [2.6 patch] the long overdue pcmcia_ioctl.c removal
+Message-ID: <20080228091536.GA23304@flint.arm.linux.org.uk>
+Mail-Followup-To: Adrian Bunk <bunk@kernel.org>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	linux-pcmcia@lists.infradead.org, linux-kernel@vger.kernel.org,
+	Dominik Brodowski <linux@brodo.de>
+References: <20080213213115.GW3383@cs181133002.pp.htv.fi> <20080218050133.23454db1.akpm@linux-foundation.org> <20080227181303.GB29269@cs181133002.pp.htv.fi> <20080227204407.GA10455@flint.arm.linux.org.uk> <20080228002457.30489.qmail@cdy.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <200802280940.53020.lerichi@gmx.net>
+In-Reply-To: <20080228002457.30489.qmail@cdy.org>
 User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Richard.
+On Thu, Feb 28, 2008 at 01:24:57AM +0100, Peter Stuge wrote:
+> (Really cross-post like this?)
+> 
+> On Wed, Feb 27, 2008 at 08:44:07PM +0000, Russell King wrote:
+> > TBH I've given up trying to fight this continue "lets remove these
+> > IOCTLs which no one uses" crap.  Obviously, _I_ use them.
+> 
+> I suppose critical mass or other powers that be have decided they
+> aren't good enough. If your userspace will never change, settling
+> on a kernel as well shouldn't be too big a deal.
+> 
+> Closed source sure sucks.
 
-I had your first patchqueued up for this and will soon take a look
-at this update.
+It's not closed source, but a case of "the machine with the CVS on was
+taken down a couple of months after the project ended".
 
-At first quick look it looked good and I have only two comments:
-1) The variable should be named KBUILD_* to fit the general namespace used
-2) The new possibility should be documented in Documentation/kbuild/modules.txt
-
-I will get back when I have given it a closer look.
-
-PS. Please also cc: linux-kbuild@vger.kernel.org if you submit again.
-
-	Sam
-
-On Thu, Feb 28, 2008 at 09:40:52AM +0100, Richard Hacker wrote:
-> This patch adds a new command line option -E to modpost, expecting a symbol
-> file as an argument which is read prior to symbol processing. -E can be 
-> supplied multiple times for as many files as is needed.
-> 
-> Signed-off-by: Richard Hacker <lerichi@gmx.net>
-> 
-> ---
-> When building kernel modules that depend on other modules not in the main 
-> kernel tree, modpost complains about undefined symbols:
-> # make -C /path/to/linux/kernel M=/path/to/my/module
-> ...
-> Building modules, stage 2.
-> ....
-> WARNING: "rt_copy_buf" [/home/rich/osc_etl_rtw/osc_kmod.ko] undefined!
-> ...etc
-> 
-> This situation occurs when modpost processes the new module's symbols. When
-> it finds symbols not exported by the mainline kernel, it issues this warning.
-> 
-> The patch adds a new command line option -E to modpost which expects a symbol
-> file as an argument. The symbols listed in this file are added to modpost's
-> symbol tables during startup. -E can be supplied as often as required.
-> 
-> This patch works together with the second patch. It introduces a new make
-> variable, EXTRA_SYMBOLS, which is used when calling modpost.
-> 
-> I hope this patch is useful and finds its way into the kernel.
-> 
-> o Changes from the previous attempt:
->    - patches kernel version 2.6.24
->    - patches for scripts/mod/modpost.c and scripts/Makefile.modpost are 
->      separated
->    - the argument to -E is now a single file, not a comma separated list 
->      any more. To pass more than one file, -E is used as often as required
->    - patch 002/002 in this series introduces the Kbuild variable EXTRA_SYMBOLS
->      to scripts/Makefile.modpost that in turn calls modpost with the correct
->      -E command line arguments.
-> 
-> --- linux-2.6.24-vanilla/scripts/mod/modpost.c	2008-02-27 21:10:24.000000000 
-> +0100
-> +++ linux-2.6.24/scripts/mod/modpost.c	2008-02-27 21:14:36.000000000 +0100
-> @@ -1658,8 +1658,12 @@ int main(int argc, char **argv)
->  	char *dump_write = NULL;
->  	int opt;
->  	int err;
-> +	struct ext_sym_list {
-> +		struct ext_sym_list *next;
-> +		const char *file;
-> +	} *extsym_start = NULL, *extsym_iter;
->  
-> -	while ((opt = getopt(argc, argv, "i:I:mso:aw")) != -1) {
-> +	while ((opt = getopt(argc, argv, "i:I:E:mso:aw")) != -1) {
->  		switch(opt) {
->  			case 'i':
->  				kernel_read = optarg;
-> @@ -1668,6 +1672,14 @@ int main(int argc, char **argv)
->  				module_read = optarg;
->  				external_module = 1;
->  				break;
-> +			case 'E':
-> +				external_module = 1;
-> +				extsym_iter =
-> +					NOFAIL(malloc(sizeof(*extsym_iter)));
-> +				extsym_iter->next = extsym_start;
-> +				extsym_iter->file = optarg;
-> +				extsym_start = extsym_iter;
-> +				break;
->  			case 'm':
->  				modversions = 1;
->  				break;
-> @@ -1692,6 +1704,12 @@ int main(int argc, char **argv)
->  		read_dump(kernel_read, 1);
->  	if (module_read)
->  		read_dump(module_read, 0);
-> +	while (extsym_start) {
-> +		read_dump(extsym_start->file, 0);
-> +		extsym_iter = extsym_start->next;
-> +		free(extsym_start);
-> +		extsym_start = extsym_iter;
-> +	}
->  
->  	while (optind < argc) {
->  		read_symbols(argv[optind++]);
+-- 
+Russell King
+ Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
+ maintainer of:
