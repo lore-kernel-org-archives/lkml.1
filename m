@@ -1,59 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762247AbYB1AVu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762054AbYB1AWk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762247AbYB1AVu (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Feb 2008 19:21:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760757AbYB1AVf
+	id S1762054AbYB1AWk (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Feb 2008 19:22:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756200AbYB1AWb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Feb 2008 19:21:35 -0500
-Received: from e31.co.us.ibm.com ([32.97.110.149]:35403 "EHLO
-	e31.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760469AbYB1AVe (ORCPT
+	Wed, 27 Feb 2008 19:22:31 -0500
+Received: from idcmail-mo1so.shaw.ca ([24.71.223.10]:47080 "EHLO
+	pd3mo2so.prod.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755686AbYB1AWa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Feb 2008 19:21:34 -0500
-Date: Wed, 27 Feb 2008 16:21:10 -0800
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: linux-kernel@vger.kernel.org
-Cc: hidave.darkstar@gmail.com, akpm@linux-foundation.org,
-       fzu@wemgehoertderstaat.de, mingo@elte.hu, ego@in.ibm.com,
-       dipankar@in.ibm.com, niv@us.ibm.com, dvhltc@us.ibm.com
-Subject: [PATCH] Fix hibernate/resume in presence of PREEMPT_RCU and hotplug
-Message-ID: <20080228002110.GA20091@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Wed, 27 Feb 2008 19:22:30 -0500
+Date: Wed, 27 Feb 2008 18:24:27 -0600
+From: Robert Hancock <hancockr@shaw.ca>
+Subject: Re: [PATCH] sata_nv: fix nmi intr or system hanging in rhel4u6 adma.
+In-reply-to: <15F501D1A78BD343BE8F4D8DB854566B1BFE2AE7@hkemmail01.nvidia.com>
+To: Kuan Luo <kluo@nvidia.com>
+Cc: Jeff Garzik <jeff@garzik.org>, linux-kernel <linux-kernel@vger.kernel.org>,
+       Tejun Heo <htejun@gmail.com>, Peer Chen <pchen@nvidia.com>,
+       Allen Martin <AMartin@nvidia.com>
+Message-id: <47C5FF3B.2000000@shaw.ca>
+MIME-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1; format=flowed
+Content-transfer-encoding: 7bit
+References: <15F501D1A78BD343BE8F4D8DB854566B1BFE2AE5@hkemmail01.nvidia.com>
+ <47C42534.1090107@shaw.ca> <47C43E27.5070700@garzik.org>
+ <15F501D1A78BD343BE8F4D8DB854566B1BFE2AE7@hkemmail01.nvidia.com>
+User-Agent: Thunderbird 2.0.0.9 (Windows/20071031)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello!
+Kuan Luo wrote:
+> Jeff wrote:
+>> robert worte:
+>>> This is basically avoiding switching into register mode, 
+>> right? I don't 
+>>> think this is a very good solution as the point of the 
+>> tf_read function 
+>>> is that it's supposed to read the taskfile provided by the drive to 
+>>> diagnose the error, so not doing this isn't a good thing.
+>> Agree with this analysis -- if ->tf_read() is being called, then 
+>> obviously the core wants a current copy of the device's ATA registers.
+>>
+>> It is not a good solution to simply avoiding returning 
+>> meaningful data, 
+>> because -- as Robert notes -- we need tf_read for analysis.
+>>
+>> 	Jeff
+>>
+> 
+> The driver got one error : "nv_adma_check_cpb: CPB 0, flags=0x11". The
+> code entered ata_port_abort -> ata_qc_complete
+> -> fill_result_tf->nv_adma_tf_read.
+> 
+> Firstly, nv_adma_register_mode failed, showing the below messages:
+> timeout waiting for ADMA IDLE, stat=0x440
+> timeout waiting for ADMA LEGACY, stat=0x440
+> 
+> Then enter ata_tf_read function. 
+> I found the system hung at tf->hob_nsect = ioread8(ioaddr->nsect_addr);
+> Sometimes the screen showed "
+> CPU0: Machin check Exception 0000000000000004
+> Bank 4:b200000000070f0f
+> kernel panic -not syncing: CPU Context corrupt.
+> "
+> If nv_adma_register_mode failed, the reg result should be not
+> meaningful. 
+> I don't know why the systm hung.
 
-This fixes a oops encountered when doing hibernate/resume in presence
-of PREEMPT_RCU.  The problem was that the code failed to disable preemption
-when accessing a per-CPU variable.  This is OK when called from code
-that already has preemption disabled, but such is not the case from
-the suspend/resume code path.
-
-Reported-by: Dave Young <hidave.darkstar@gmail.com>
-Tested-by: Dave Young <hidave.darkstar@gmail.com>
-Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
----
-
- rcupreempt.c |    3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
-
-diff -urpNa -X dontdiff linux-2.6.25-rc3/kernel/rcupreempt.c linux-2.6.25-rc3-rcuoffline/kernel/rcupreempt.c
---- linux-2.6.25-rc3/kernel/rcupreempt.c	2008-02-26 16:58:43.000000000 -0800
-+++ linux-2.6.25-rc3-rcuoffline/kernel/rcupreempt.c	2008-02-26 17:04:17.000000000 -0800
-@@ -702,8 +702,9 @@ void rcu_offline_cpu(int cpu)
- 	 * fix.
- 	 */
- 
-+	local_irq_save(flags);
- 	rdp = RCU_DATA_ME();
--	spin_lock_irqsave(&rdp->lock, flags);
-+	spin_lock(&rdp->lock);
- 	*rdp->nexttail = list;
- 	if (list)
- 		rdp->nexttail = tail;
+By the way, this MCE indicates that the CPU integrated northbridge got a 
+watchdog error indicating that a bus transaction timed out (presumably 
+on the HyperTransport link). This likely indicates that the chipset 
+failed to respond to a CPU read of that register. Obviously this is 
+something we want to avoid causing..
