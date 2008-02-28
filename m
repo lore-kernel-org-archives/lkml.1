@@ -1,117 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758496AbYB1ShU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759792AbYB1SiS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758496AbYB1ShU (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Feb 2008 13:37:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751932AbYB1ShI
+	id S1759792AbYB1SiS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Feb 2008 13:38:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753329AbYB1SiG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Feb 2008 13:37:08 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:43627 "EHLO mx1.redhat.com"
+	Thu, 28 Feb 2008 13:38:06 -0500
+Received: from mail.tmr.com ([64.65.253.246]:52509 "EHLO gaimboi.tmr.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751565AbYB1ShF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Feb 2008 13:37:05 -0500
-Date: Thu, 28 Feb 2008 13:36:04 -0500
-From: Vivek Goyal <vgoyal@redhat.com>
-To: andrea@qumranet.com
-Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@osdl.org>,
-       Nick Piggin <npiggin@suse.de>
-Subject: Re: [PATCH] reserve RAM below PHYSICAL_START
-Message-ID: <20080228183604.GA19901@redhat.com>
-References: <20080227003325.GS28483@v2.random>
+	id S1753043AbYB1SiF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 28 Feb 2008 13:38:05 -0500
+Message-ID: <47C70067.6060205@tmr.com>
+Date: Thu, 28 Feb 2008 13:41:43 -0500
+From: Bill Davidsen <davidsen@tmr.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.8) Gecko/20061105 SeaMonkey/1.0.6
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080227003325.GS28483@v2.random>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+To: Frans Pop <elendil@planet.nl>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: 2.6.25-rc1/2 CD/DVD burning broken
+References: <47b8c177.2QDr0ADTa5ExM+/T%Joerg.Schilling@fokus.fraunhofer.de> <E1JR1e0-0001R1-IR@faramir.fjphome.nl>
+In-Reply-To: <E1JR1e0-0001R1-IR@faramir.fjphome.nl>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Feb 27, 2008 at 01:33:25AM +0100, Andrea Arcangeli wrote:
-> Hello,
+Frans Pop wrote:
+> Joerg Schilling wrote:
+>> This fragment is much too short to allow to judge on possible reasons.
+>> There is a high probability that your problem is caused by the cdrecord
+>> fork called "wodim".
 > 
-> this patch allows to prevent linux from using the ram below
-> PHYSICAL_START.
-> 
-> The "reserved RAM" can be mapped by virtualization software with to
-> create a 1:1 mapping between guest physical (bus) address and host
-> physical (bus) address. This will allow pci passthrough with DMA for
-> the guest with current production hardware that misses VT-d. The only
-> detail to take care of is the ram marked "reserved RAM failed". The
-> virtualization software must create for the guest an e820 map that
-> only includes the "reserved RAM" regions but if the guest touches
-> memory with guest physical address in the "reserved RAM failed" ranges
-> (linux guest will do that even if the ram isn't present in the e820
-> map), it should provide that as ram and map it with a not-ident
-> mapping. This should allow any linux kernel to run fine with pci
-> passthrough and hopefully any other OS too with all VT enabled
-> hardware.
-> 
-> (the virtualization software should do if (pfn_valid(gfn))
-> get_page(pfn_to_page(gfn)) instead of get_user_pages and equivalent
-> check in the release path)
-> 
-> The trampoline page marked as "reserved RAM failed" can be easily
-> relocated near 640k with an incremental patch to avoid an e820 hole at
-> 0x6000 if any bootloader or OS gets confused.
-> 
-> The end of the patch are just bugfixes. However the limit of the
-> reserved ram is 1G... this can also be relaxed with an incremental
-> patch later on if needed (currently 1G is enough). Perhaps this has
-> other usages.
-> 
-> Let me know if this can be merged, thanks!
-> 
+> There is also the 100% certainty that this reply was from a known troll and
+> should just be ignored.
 
-I don't know much about pci passthrough thing, but in a nutshell it
-looks like you just want a way to reserve memory in host which is not
-used by host and then also reserve a virtual range in host where you
-can create another set of mapping for that reserved memory?
+Actually he is the author of the software in question, and has 
+maintained it for a decade. Anyone who reads the cdwrite mailing list 
+knows that I have criticized his endless whining that Linux doesn't do 
+things right, but aside from the cosole output whining about Linux from 
+his program[1], and the fact that it must run as root[2], the real 
+cdrecord works in more cases, with more hardware, produces working burns 
+in more cases, and has more useful output, and is the software to use in 
+preference to wodim.
 
-Can't you just provide a command line parameter to reserve a section
-of memory, the way crashkernel=X@Y parameter does?
- 
-[..]
-> diff --git a/arch/x86/Kconfig b/arch/x86/Kconfig
-> --- a/arch/x86/Kconfig
-> +++ b/arch/x86/Kconfig
-> @@ -1109,8 +1109,36 @@ config CRASH_DUMP
->  	  (CONFIG_RELOCATABLE=y).
->  	  For more details see Documentation/kdump/kdump.txt
->  
-> +config RESERVE_PHYSICAL_START
-> +	bool "Reserve all RAM below PHYSICAL_START (EXPERIMENTAL)"
-> +	depends on !RELOCATABLE && X86_64
-> +	help
+[1] cdrecord advises to use Linux 2.4 (and I think Solaris), and says 
+you should avoid using readable names for devices and use some 
+pseudo-SCSI numbers he likes instead.
 
-What prevents you from doing this for RELOCATABLE kernels?
+[2] Linux developers filter commands sent to devices to protect them 
+from commands like erase BIOS. Joerg uses vendor proprietary commands 
+for greater functionality, and says if you have write on the device it 
+shouldn't be filtered and those commands should be permitted by the 
+filter. (That is a simplification, there are personal issues on both sides).
 
-[..]
->  #ifndef __ASSEMBLY__
->  struct e820entry {
-> diff --git a/include/asm-x86/page_64.h b/include/asm-x86/page_64.h
-> --- a/include/asm-x86/page_64.h
-> +++ b/include/asm-x86/page_64.h
-> @@ -29,6 +29,7 @@
->  #define __PAGE_OFFSET           _AC(0xffff810000000000, UL)
->  
->  #define __PHYSICAL_START	CONFIG_PHYSICAL_START
-> +#define __PHYSICAL_OFFSET	(__PHYSICAL_START-0x200000)
->  #define __KERNEL_ALIGN		0x200000
->  
->  /*
-> @@ -47,7 +48,7 @@
->  #define __PHYSICAL_MASK_SHIFT	46
->  #define __VIRTUAL_MASK_SHIFT	48
->  
-> -#define KERNEL_TEXT_SIZE  (40*1024*1024)
-> +#define KERNEL_TEXT_SIZE  (40*1024*1024+__PHYSICAL_OFFSET)
-
-Why are you changing this? What is __PHYSICAL_OFFSET? Are you expanding
-the kernel text/data region so that you can additionally map this
-reserved area? 
-
-If yes, I think probably we should have a separate area altoghether to
-map this reserved area than expanding existing kernel text/data region.
-
-Thanks
-Vivek
+-- 
+Bill Davidsen <davidsen@tmr.com>
+   "We have more to fear from the bungling of the incompetent than from
+the machinations of the wicked."  - from Slashdot
