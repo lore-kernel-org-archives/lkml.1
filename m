@@ -1,60 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932094AbYB1Ph7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760677AbYB1Pk6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932094AbYB1Ph7 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Feb 2008 10:37:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758118AbYB1Phw
+	id S1760677AbYB1Pk6 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Feb 2008 10:40:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757500AbYB1Pkv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Feb 2008 10:37:52 -0500
-Received: from turing-police.cc.vt.edu ([128.173.14.107]:60835 "EHLO
-	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757976AbYB1Phv (ORCPT
-	<RFC822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Feb 2008 10:37:51 -0500
-X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
-To: Francis Moreau <francis.moro@gmail.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: linux-v2.6.25-rc3 issue: nvidiafb: cannot ioremap FB base
-In-Reply-To: Your message of "Thu, 28 Feb 2008 15:07:27 +0100."
-             <38b2ab8a0802280607h46a89f04wdd190a7c87571668@mail.gmail.com>
-From: Valdis.Kletnieks@vt.edu
-References: <38b2ab8a0802280607h46a89f04wdd190a7c87571668@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="==_Exmh_1204213070_3311P";
-	 micalg=pgp-sha1; protocol="application/pgp-signature"
-Content-Transfer-Encoding: 7bit
-Date: Thu, 28 Feb 2008 10:37:50 -0500
-Message-ID: <22886.1204213070@turing-police.cc.vt.edu>
+	Thu, 28 Feb 2008 10:40:51 -0500
+Received: from styx.suse.cz ([82.119.242.94]:34294 "EHLO mail.suse.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1757253AbYB1Pku (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 28 Feb 2008 10:40:50 -0500
+Date: Thu, 28 Feb 2008 16:40:49 +0100 (CET)
+From: Jiri Kosina <jkosina@suse.cz>
+To: Oleg Nesterov <oleg@tv-sign.ru>
+cc: Roland McGrath <roland@redhat.com>,
+       Davide Libenzi <davidel@xmailserver.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] [RFC] fix missed SIGCONT cases
+In-Reply-To: <20080228153043.GA11484@tv-sign.ru>
+Message-ID: <Pine.LNX.4.64.0802281633540.3391@jikos.suse.cz>
+References: <Pine.LNX.4.64.0802271610330.3391@jikos.suse.cz>
+ <20080227210038.93AFC2700FD@magilla.localdomain> <Pine.LNX.4.64.0802272258150.3391@jikos.suse.cz>
+ <20080228102649.071572700FD@magilla.localdomain> <20080228153043.GA11484@tv-sign.ru>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---==_Exmh_1204213070_3311P
-Content-Type: text/plain; charset=us-ascii
+On Thu, 28 Feb 2008, Oleg Nesterov wrote:
 
-On Thu, 28 Feb 2008 15:07:27 +0100, Francis Moreau said:
-> Hi,
-> 
-> I gave to the latest -rc (rc3) a test and it appears to fail to load the
-> nvidiafb module and the reason given is:
-> 
-> nvidiafb: cannot ioremap FB base
-> 
-> Does anybody have a clue ?
+> BTW, I think we have the same problem when handle_stop_signal() does 
+> do_notify_parent_cldstop(p, CLD_STOPPED) above. The multithreaded app in 
+> the middle of the group stop can resume without actually seeing SIGCONT, 
+> no?
 
-Umm.. do you also have vesafb or other FB built as a module?  I got bit by
-that with the binary NVidia driver, discovered it was because vesafb had
-already done an ioremap of the space, but with different caching flags...
+Yes, I think so, this would also need fixing.
 
---==_Exmh_1204213070_3311P
-Content-Type: application/pgp-signature
+> Currently I have the very vagues idea, please see the "patch" below (it 
+> is not right of course, just for illustration).
+> These unlock(->siglock)'s on the signal sending path are really nasty,
+> it would be wonderfull to avoid them. Note also sig_needs_tasklist(),
+> we take tasklist_lock() exactly because we will probably drop siglock.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.8 (GNU/Linux)
-Comment: Exmh version 2.5 07/13/2001
+Whould it be problematic to change do_notify_parent_cldstop() so that it 
+doesn't acquire siglock, but asumes that is is called with siglock held 
+instead? I can't immediately see any reason why this shouldn't be 
+possible.
 
-iD8DBQFHxtVNcC3lWbTT17ARArTJAJ9uRcF+rtEBDg6/OhKIA/PfyX9CqwCeKmRz
-xvYmUoVOuV6KQDGtFIz4I2Y=
-=KnwD
------END PGP SIGNATURE-----
+> What do you think about the approach at least?
 
---==_Exmh_1204213070_3311P--
+So it basically does the same thing my patch did -- postpones signalling 
+the parent until it is safe, right?
+
+Thanks,
+
+-- 
+Jiri Kosina
