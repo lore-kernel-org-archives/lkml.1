@@ -1,76 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760158AbYB1PIR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760499AbYB1PJR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760158AbYB1PIR (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Feb 2008 10:08:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756103AbYB1PIF
+	id S1760499AbYB1PJR (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Feb 2008 10:09:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756591AbYB1PJD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Feb 2008 10:08:05 -0500
-Received: from einhorn.in-berlin.de ([192.109.42.8]:45045 "EHLO
-	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754144AbYB1PIE (ORCPT
+	Thu, 28 Feb 2008 10:09:03 -0500
+Received: from el-out-1112.google.com ([209.85.162.182]:60673 "EHLO
+	el-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755590AbYB1PJB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Feb 2008 10:08:04 -0500
-X-Envelope-From: stefanr@s5r6.in-berlin.de
-Date: Thu, 28 Feb 2008 16:07:55 +0100 (CET)
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-Subject: hfsplus_unlink...hfsplus_block_free: lockdep warning
-To: linux-kernel@vger.kernel.org
-cc: Roman Zippel <zippel@linux-m68k.org>,
-       Peter Zijlstra <peterz@infradead.org>
-Message-ID: <tkrat.9bcd69644c113f6d@s5r6.in-berlin.de>
+	Thu, 28 Feb 2008 10:09:01 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=hXEHklrPCFdiq2gKfwdRCdyZLDV/dj/r9M8sI7uXfs4X7WrafBHa/edrLEDjsMY09YQb7Eez5ZKnsaD9obZ1Sgj6WM8AI/uXGN0uzpnw1BpBYF+Q2fhowaYL4vZzHM/3hr/mBRFsf8fgYk7BiOqasdBbrMdFFiaQjMZFvAc1Of8=
+Message-ID: <cfd18e0f0802280708r26fc88ch5a488eb8bc1227c5@mail.gmail.com>
+Date: Thu, 28 Feb 2008 16:08:56 +0100
+From: "Michael Kerrisk" <mtk.manpages@googlemail.com>
+To: Valdis.Kletnieks@vt.edu
+Subject: Re: epoll and shared fd's
+Cc: 7eggert@gmx.de, "Davide Libenzi" <davidel@xmailserver.org>,
+       "Pierre Habouzit" <madcoder@debian.org>,
+       lkml <linux-kernel@vger.kernel.org>,
+       "Eric Dumazet" <dada1@cosmosbay.com>,
+       "Marc Lehmann" <schmorp@schmorp.de>,
+       "David Schwartz" <davids@webmaster.com>
+In-Reply-To: <19752.1204206788@turing-police.cc.vt.edu>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; CHARSET=us-ascii
-Content-Disposition: INLINE
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <9MZLT-1YO-33@gated-at.bofh.it> <9N6Ng-5tn-21@gated-at.bofh.it>
+	 <9P5WE-33i-11@gated-at.bofh.it> <9Pk9l-1KA-1@gated-at.bofh.it>
+	 <9PNNZ-b0-5@gated-at.bofh.it> <a19Lb-1F0-13@gated-at.bofh.it>
+	 <a19Lb-1F0-11@gated-at.bofh.it>
+	 <E1JU4Lu-0000mn-H2@be1.7eggert.dyndns.org>
+	 <19752.1204206788@turing-police.cc.vt.edu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Thu, Feb 28, 2008 at 2:53 PM,  <Valdis.Kletnieks@vt.edu> wrote:
+> On Tue, 26 Feb 2008 19:16:30 +0100, Bodo Eggert said:
+>  > Michael Kerrisk <mtk.manpages@googlemail.com> wrote:
+>
+>
+> > >               file  handle  have  been  closed.  This means that
+>  > >               even after a file descriptor that is  part  of  an
+>  > >               epoll  set has been closed, events may be reported
+>  > >               for that file descriptor if other file descriptors
+>  > >               referring  to the same underlying file description
+>  > >               remain open.
+>
+>  Is it worth making special mention of the case where a process gets events
+>  for a FD that it has closed, because a parent or child process still has
+>  an inherited copy of the FD still open?
 
-I got this with 2.6.25-rc3 when doing an rm -rf on a HFS+ filesystem:
+I'm not sure -- perhaps under a BUGS section?  Did you read my reply
+about this point in the thread "Re: epoll design problems with common
+fork/exec patterns"?
 
+Cheers,
 
-[ INFO: possible recursive locking detected ]
-2.6.25-rc3 #6
----------------------------------------------
-rm/7564 is trying to acquire lock:
- (&sb->s_type->i_mutex_key#8){--..}, at: [<ffffffff880fc4ba>] hfsplus_block_free+0x57/0x209 [hfsplus]
-
-but task is already holding lock:
- (&sb->s_type->i_mutex_key#8){--..}, at: [<ffffffff80284f1c>] vfs_unlink+0x41/0xb7
-
-other info that might help us debug this:
-2 locks held by rm/7564:
- #0:  (&type->i_mutex_dir_key#5/1){--..}, at: [<ffffffff80286cac>] do_unlinkat+0x6c/0x154
- #1:  (&sb->s_type->i_mutex_key#8){--..}, at: [<ffffffff80284f1c>] vfs_unlink+0x41/0xb7
-
-stack backtrace:
-Pid: 7564, comm: rm Not tainted 2.6.25-rc3 #6
-
-Call Trace:
- [<ffffffff802497bb>] __lock_acquire+0x849/0xbd5
- [<ffffffff880fc4ba>] :hfsplus:hfsplus_block_free+0x57/0x209
- [<ffffffff80249efd>] lock_acquire+0x51/0x6c
- [<ffffffff880fc4ba>] :hfsplus:hfsplus_block_free+0x57/0x209
- [<ffffffff80246b71>] debug_mutex_lock_common+0x16/0x23
- [<ffffffff80418eb0>] mutex_lock_nested+0xd9/0x268
- [<ffffffff880fc4ba>] :hfsplus:hfsplus_block_free+0x57/0x209
- [<ffffffff880f647f>] :hfsplus:hfsplus_free_extents+0x54/0x9b
- [<ffffffff880f6a92>] :hfsplus:hfsplus_file_truncate+0xa4/0x2ce
- [<ffffffff880f52de>] :hfsplus:hfsplus_delete_inode+0x57/0x5d
- [<ffffffff880f77e6>] :hfsplus:hfsplus_unlink+0xd0/0x158
- [<ffffffff80284f36>] vfs_unlink+0x5b/0xb7
- [<ffffffff80286cf1>] do_unlinkat+0xb1/0x154
- [<ffffffff80419e4c>] trace_hardirqs_on_thunk+0x35/0x3a
- [<ffffffff80248b03>] trace_hardirqs_on+0xf3/0x117
- [<ffffffff80419e4c>] trace_hardirqs_on_thunk+0x35/0x3a
- [<ffffffff880fb4a5>] :hfsplus:hfsplus_uni2asc+0x251/0x29f
- [<ffffffff8020b0bb>] system_call_after_swapgs+0x7b/0x80
+Michael
 
 
-Is this merely a case for annotation?
 -- 
-Stefan Richter
--=====-==--- --=- ===--
-http://arcgraph.de/sr/
-
+Michael Kerrisk
+Maintainer of the Linux man-pages project
+http://www.kernel.org/doc/man-pages/
+Want to report a man-pages bug?  Look here:
+http://www.kernel.org/doc/man-pages/reporting_bugs.html
