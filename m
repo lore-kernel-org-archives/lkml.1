@@ -1,85 +1,142 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759963AbYB1NNr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759435AbYB1NSR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759963AbYB1NNr (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Feb 2008 08:13:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753601AbYB1NNh
+	id S1759435AbYB1NSR (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Feb 2008 08:18:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753601AbYB1NSE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Feb 2008 08:13:37 -0500
-Received: from mtagate1.uk.ibm.com ([195.212.29.134]:30704 "EHLO
-	mtagate1.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752109AbYB1NNg (ORCPT
+	Thu, 28 Feb 2008 08:18:04 -0500
+Received: from triton.rz.uni-saarland.de ([134.96.7.25]:17674 "EHLO
+	triton.rz.uni-saarland.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752109AbYB1NSC (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Feb 2008 08:13:36 -0500
-Message-ID: <47C6B373.8020605@fr.ibm.com>
-Date: Thu, 28 Feb 2008 14:13:23 +0100
-From: Cedric Le Goater <clg@fr.ibm.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
-MIME-Version: 1.0
-To: Rik van Riel <riel@redhat.com>
-CC: Oleg Nesterov <oleg@tv-sign.ru>,
-       Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       roland@redhat.com, Andy Whitcroft <apw@shadowen.org>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>
-Subject: Re: [BUG] 2.6.25-rc2-mm1 - Kernel panic while bootup caused by signal_group_exit()
-References: <20080216002522.9c4bd0fb.akpm@linux-foundation.org>	<47B7B3B9.2090706@linux.vnet.ibm.com>	<20080220143417.6e419c5e@cuia.boston.redhat.com>	<20080220200440.GA105@tv-sign.ru> <20080220175309.6ce3cb31@cuia.boston.redhat.com>
-In-Reply-To: <20080220175309.6ce3cb31@cuia.boston.redhat.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Thu, 28 Feb 2008 08:18:02 -0500
+Date: Thu, 28 Feb 2008 14:13:41 +0100
+From: Alexander van Heukelum <heukelum@mailshack.com>
+To: Ingo Molnar <mingo@elte.hu>, Ian Campbell <ijc@hellion.org.uk>
+Cc: Alexander van Heukelum <heukelum@fastmail.fm>,
+       "H. Peter Anvin" <hpa@zytor.com>, Andi Kleen <ak@suse.de>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Jeremy Fitzhardinge <jeremy@goop.org>,
+       Mark McLoughlin <markmc@redhat.com>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: [PATCH] reserve end-of-conventional-memory to 1MB on 32-bit
+Message-ID: <20080228131341.GA25213@mailshack.com>
+References: <20080224174605.GA21661@mailshack.com> <47C22568.1010405@zytor.com> <1203958478.20033.1239002461@webmail.messagingengine.com> <20080225170134.GA15839@elte.hu> <20080225180750.GA31054@mailshack.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080225180750.GA31054@mailshack.com>
+User-Agent: Mutt/1.5.9i
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (triton.rz.uni-saarland.de [134.96.7.25]); Thu, 28 Feb 2008 14:16:17 +0100 (CET)
+X-AntiVirus: checked by AntiVir MailGate (version: 2.1.2-14; AVE: 7.6.0.67; VDF: 7.0.2.206; host: AntiVir3)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello !
+The 32-bit code still uses reserve_bootmem, so this is not really
+a unification with the 64-bit version of the ebda reservation code,
+but at least it provides the same detection logic and reserves the
+same areas.
 
-Rik van Riel wrote:
-> On Wed, 20 Feb 2008 23:04:40 +0300
-> Oleg Nesterov <oleg@tv-sign.ru> wrote:
-> 
->> Yes, please look at http://marc.info/?t=120309840500006
->>
->> Btw. The bug in tty_io.c _can_ explain this trace, but it would be nice
->> to ensure we don't have other problems. Could you try this
->>
->> 	http://marc.info/?l=linux-kernel&m=120352655031911
->>
->> patch?
-> 
-> Fun.  With that debugging patch applied, the oops on boot no longer
-> happens...
-> 
-> No, I have no idea why...
+This does not crash immediately on qemu. No further testing was
+done! Otherwise:
 
-It also fixed a oops at boot time for me. Here's a warning I got with oleg patch.
+Signed-off-by: Alexander van Heukelum <heukelum@fastmail.fm>
 
-Thanks,
+---
 
-C.
+Hello Ian, Ingo,
 
-WARNING: at /home/legoater/linux/2.6.25-rc2-mm1/kernel/pid.c:213 put_pid+0x4b/0x82()
-Modules linked in: tg3 sg joydev ext3 jbd uhci_hcd ohci_hcd ehci_hcd
-Pid: 1, comm: init Not tainted 2.6.25-rc2-mm1 #6
+This patch should do the same reservations as the reserve_early
+patch for 64 bit. Maybe you could try if this solves the problems
+you are seeing with Xen?
 
-Call Trace:
- [<ffffffff8022f0a1>] warn_on_slowpath+0x58/0x85
- [<ffffffff8024b87d>] ? trace_hardirqs_on+0xd/0xf
- [<ffffffff8024b84c>] ? trace_hardirqs_on_caller+0xf2/0x116
- [<ffffffff8024b87d>] ? trace_hardirqs_on+0xd/0xf
- [<ffffffff8024b84c>] ? trace_hardirqs_on_caller+0xf2/0x116
- [<ffffffff8023fb0f>] put_pid+0x4b/0x82
- [<ffffffff802ccd6e>] ? proc_delete_inode+0x0/0x4f
- [<ffffffff802ccd90>] proc_delete_inode+0x22/0x4f
- [<ffffffff802ccd6e>] ? proc_delete_inode+0x0/0x4f
- [<ffffffff802a0826>] generic_delete_inode+0xb8/0x138
- [<ffffffff8029fd5d>] iput+0x7c/0x80
- [<ffffffff8029d835>] dentry_iput+0xa3/0xbb
- [<ffffffff8029d8ea>] d_kill+0x21/0x42
- [<ffffffff8029ebee>] dput+0x114/0x125
- [<ffffffff802cefe0>] proc_flush_task+0x125/0x28f
- [<ffffffff8024b87d>] ? trace_hardirqs_on+0xd/0xf
- [<ffffffff802312a5>] release_task+0x24/0x331
- [<ffffffff80231ca1>] do_wait+0x6ef/0xa99
- [<ffffffff80227b43>] ? default_wake_function+0x0/0xf
- [<ffffffff802320dc>] sys_wait4+0x91/0xab
- [<ffffffff8020b21b>] system_call_after_swapgs+0x7b/0x80
+On the other hand, Xen should be able to use those legacy ranges
+as normal memory. Why doesn't it work? Does Xen use a special
+bootloader? In that case it could just add the reservation to
+the e820 memory map that is provided.
 
+Another possible approach to the whole problem is just to ammend
+the e820 memory map in the boot-code. Thanks to hpa, it is now easy
+to change this code. Then the kernel can just trust the e820 memory
+map, and only 'sophisticated' bootloaders need to do something
+similar by themselves.
+
+Greetings,
+    Alexander
+
+diff --git a/arch/x86/kernel/setup_32.c b/arch/x86/kernel/setup_32.c
+index a1d7071..e12cc31 100644
+--- a/arch/x86/kernel/setup_32.c
++++ b/arch/x86/kernel/setup_32.c
+@@ -385,15 +385,47 @@ unsigned long __init find_max_low_pfn(void)
+ 	return max_low_pfn;
+ }
+ 
++#define BIOS_EBDA_SEGMENT 0x40E
++#define BIOS_LOWMEM_KILOBYTES 0x413
++
+ /*
+- * workaround for Dell systems that neglect to reserve EBDA
++ * The BIOS places the EBDA/XBDA at the top of conventional
++ * memory, and usually decreases the reported amount of
++ * conventional memory (int 0x12) too. This also contains a
++ * workaround for Dell systems that neglect to reserve EBDA.
++ * The same workaround also avoids a problem with the AMD768MPX
++ * chipset: reserve a page before VGA to prevent PCI prefetch
++ * into it (errata #56). Usually the page is reserved anyways,
++ * unless you have no PS/2 mouse plugged in.
+  */
+ static void __init reserve_ebda_region(void)
+ {
+-	unsigned int addr;
+-	addr = get_bios_ebda();
+-	if (addr)
+-		reserve_bootmem(addr, PAGE_SIZE, BOOTMEM_DEFAULT);
++	unsigned int lowmem, ebda_addr;
++
++	/* end of low (conventional) memory */
++	lowmem = *(unsigned short *)__va(BIOS_LOWMEM_KILOBYTES);
++	lowmem <<= 10;
++
++	/* start of EBDA area */
++	ebda_addr = *(unsigned short *)__va(BIOS_EBDA_SEGMENT);
++	ebda_addr <<= 4;
++
++	/* Fixup: bios puts an EBDA in the top 64K segment */
++	/* of conventional memory, but does not adjust lowmem. */
++	if ((lowmem - ebda_addr) <= 0x10000)
++		lowmem = ebda_addr;
++
++	/* Fixup: bios does not report an EBDA at all. */
++	/* Some old Dells seem to need 4k anyhow (bugzilla 2990) */
++	if ((ebda_addr == 0) && (lowmem >= 0x9f000))
++		lowmem = 0x9f000;
++
++	/* Paranoia: should never happen, but... */
++	if (lowmem >= 0x100000)
++		lowmem = 0xa0000;
++
++	/* reserve all memory between lowmem and the 1MB mark */
++	reserve_bootmem(lowmem, 0x100000 - lowmem, BOOTMEM_DEFAULT);
+ }
+ 
+ #ifndef CONFIG_NEED_MULTIPLE_NODES
+@@ -619,16 +651,9 @@ void __init setup_bootmem_allocator(void)
+ 	 */
+ 	reserve_bootmem(0, PAGE_SIZE, BOOTMEM_DEFAULT);
+ 
+-	/* reserve EBDA region, it's a 4K region */
++	/* reserve EBDA region */
+ 	reserve_ebda_region();
+ 
+-    /* could be an AMD 768MPX chipset. Reserve a page  before VGA to prevent
+-       PCI prefetch into it (errata #56). Usually the page is reserved anyways,
+-       unless you have no PS/2 mouse plugged in. */
+-	if (boot_cpu_data.x86_vendor == X86_VENDOR_AMD &&
+-	    boot_cpu_data.x86 == 6)
+-	     reserve_bootmem(0xa0000 - 4096, 4096, BOOTMEM_DEFAULT);
+-
+ #ifdef CONFIG_SMP
+ 	/*
+ 	 * But first pinch a few for the stack/trampoline stuff
