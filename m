@@ -1,78 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757494AbYB1Eys@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758459AbYB1Ezz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757494AbYB1Eys (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Feb 2008 23:54:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751731AbYB1Eyj
+	id S1758459AbYB1Ezz (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Feb 2008 23:55:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751605AbYB1Ezr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Feb 2008 23:54:39 -0500
-Received: from tomts20-srv.bellnexxia.net ([209.226.175.74]:42638 "EHLO
-	tomts20-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751478AbYB1Eyi (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Feb 2008 23:54:38 -0500
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: Ah4FADjNxUdMQWRV/2dsb2JhbACBVq0JgXo
-Date: Wed, 27 Feb 2008 23:54:33 -0500
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: akpm@linux-foundation.org
-Cc: Jan Kiszka <jan.kiszka@siemens.com>, "Frank Ch. Eigler" <fche@redhat.com>,
-       linux-kernel@vger.kernel.org
-Subject: [PATCH] Linux Kernel Markers - if check format
-Message-ID: <20080228045433.GA32364@Krystal>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 23:53:07 up 17 days, 53 min,  3 users,  load average: 1.61, 1.14,
-	0.95
-User-Agent: Mutt/1.5.16 (2007-06-11)
+	Wed, 27 Feb 2008 23:55:47 -0500
+Received: from www.tglx.de ([62.245.132.106]:55545 "EHLO www.tglx.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751478AbYB1Ezq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 Feb 2008 23:55:46 -0500
+Date: Thu, 28 Feb 2008 05:54:51 +0100 (CET)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Oleg Nesterov <oleg@tv-sign.ru>
+cc: Pavel Emelyanov <xemul@openvz.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Roland McGrath <roland@redhat.com>
+Subject: Re: [PATCH 3/3] Consolidate send_sigqueue and send_group_sigqueue
+In-Reply-To: <20080222144155.GA4349@tv-sign.ru>
+Message-ID: <alpine.LFD.1.00.0802280546360.7583@apollo.tec.linutronix.de>
+References: <47BEC663.7050904@openvz.org> <20080222144155.GA4349@tv-sign.ru>
+User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Wrap __mark_check_format() into an if(0) to make sure that parameters such as
+On Fri, 22 Feb 2008, Oleg Nesterov wrote:
+> > -
+> > -	if (unlikely(!list_empty(&q->list))) {
+> > -		/*
+> > -		 * If an SI_TIMER entry is already queue just increment
+> > -		 * the overrun count.
+> > -		 */
+> > -		BUG_ON(q->info.si_code != SI_TIMER);
+> > -		q->info.si_overrun++;
+> > -		goto out;
+> > -	}
+> > -	/* Short-circuit ignored signals.  */
+> > -	if (sig_ignored(p, sig)) {
+> > -		ret = 1;
+> > -		goto out;
+> > -	}
 
-trace_mark(mm_page_alloc, "order %u pfn %lu", order, page?page_to_pfn(page):0);
+> >  send_group_sigqueue(int sig, struct sigqueue *q, struct task_struct *p)
 
-(where page_to_pfn() has side-effects) won't generate code because of the
-__mark_check_format().
+> > -	/* Short-circuit ignored signals.  */
+> > -	if (sig_ignored(p, sig)) {
+> > -		ret = 1;
+> > -		goto out;
+> > -	}
+> > -
+> > -	if (unlikely(!list_empty(&q->list))) {
+> > -		/*
+> > -		 * If an SI_TIMER entry is already queue just increment
+> > -		 * the overrun count.  Other uses should not try to
+> > -		 * send the signal multiple times.
+> > -		 */
+> > -		BUG_ON(q->info.si_code != SI_TIMER);
+> > -		q->info.si_overrun++;
+> > -		goto out;
+> > -	} 
+> 
+> Personally, I think this change is very good. But send_sigqueue() and
+> send_group_sigqueue() have a very subtle difference which I was never
+> able to understand.
+> 
+> Let's suppose that sigqueue is already queued, and the signal is ignored
+> (the latter means we should re-schedule cpu timer or handle overrruns).
+> In that case send_sigqueue() returns 0, but send_group_sigqueue() returns 1.
+> 
+> I think this is not the problem (in fact, I think this patch makes the
+> behaviour more correct), but I hope Thomas can take a look and confirm.
 
-Thanks to Jan Kiszka for reporting this.
+It should not change anything. We should never have a signal enqueued
+when it's ignored anyway.
 
-Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-CC: Jan Kiszka <jan.kiszka@siemens.com>
-CC: "Frank Ch. Eigler" <fche@redhat.com>
----
- include/linux/marker.h |    8 +++++++-
- 1 file changed, 7 insertions(+), 1 deletion(-)
+Roland, any insight why this is different aside of a copy and paste
+error ?
 
-Index: linux-2.6-lttng/include/linux/marker.h
-===================================================================
---- linux-2.6-lttng.orig/include/linux/marker.h	2008-02-27 11:08:50.000000000 -0500
-+++ linux-2.6-lttng/include/linux/marker.h	2008-02-27 11:11:27.000000000 -0500
-@@ -104,10 +104,16 @@ static inline void marker_update_probe_r
- #define MARK_NOARGS " "
- 
- /* To be used for string format validity checking with gcc */
--static inline void __printf(1, 2) __mark_check_format(const char *fmt, ...)
-+static inline void __printf(1, 2) ___mark_check_format(const char *fmt, ...)
- {
- }
- 
-+#define __mark_check_format(format, args...)				\
-+	do {								\
-+		if (0)							\
-+			___mark_check_format(format, ## args);		\
-+	} while (0)
-+
- extern marker_probe_func __mark_empty_function;
- 
- extern void marker_probe_cb(const struct marker *mdata,
+Thanks,
 
--- 
-Mathieu Desnoyers
-Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+	tglx
