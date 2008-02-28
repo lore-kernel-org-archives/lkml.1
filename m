@@ -1,50 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762110AbYB1TYQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762362AbYB1T0I@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762110AbYB1TYQ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Feb 2008 14:24:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762528AbYB1TX4
+	id S1762362AbYB1T0I (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Feb 2008 14:26:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758806AbYB1TZy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Feb 2008 14:23:56 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:46205
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1761974AbYB1TXz (ORCPT
+	Thu, 28 Feb 2008 14:25:54 -0500
+Received: from smtp1.linux-foundation.org ([207.189.120.13]:33498 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756864AbYB1TZx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Feb 2008 14:23:55 -0500
-Date: Thu, 28 Feb 2008 11:23:55 -0800 (PST)
-Message-Id: <20080228.112355.15717375.davem@davemloft.net>
-To: herbert@gondor.apana.org.au
-Cc: Daniel.Beschorner@facton.com, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org, rpurdie@rpsys.net
-Subject: Re: zlib oops with ipcomp in 2.6.24
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20080228175011.GA17185@gondor.apana.org.au>
-References: <20080223000328.3a71e858.akpm@linux-foundation.org>
-	<3C59DB883F7B0B4D8096010D45ACCD134F2112@exch.facton.local>
-	<20080228175011.GA17185@gondor.apana.org.au>
-X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+	Thu, 28 Feb 2008 14:25:53 -0500
+Date: Thu, 28 Feb 2008 11:24:23 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: kosaki.motohiro@jp.fujitsu.com, srostedt@redhat.com,
+       Lee.Schermerhorn@hp.com, linux-ia64@vger.kernel.org,
+       linux-kernel@vger.kernel.org, tony.luck@intel.com, mingo@redhat.com,
+       bob.picco@hp.com, eric.whitney@hp.com
+Subject: Re: 2.6.25-rc2-mm1 - boot hangs on ia64
+Message-Id: <20080228112423.fed6add2.akpm@linux-foundation.org>
+In-Reply-To: <20080228191214.GA17872@elte.hu>
+References: <20080227103831.423F.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+	<20080227071118.GA4638@elte.hu>
+	<20080228192509.BDCF.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+	<20080228115041.GA22082@elte.hu>
+	<20080228101343.1b9548e6.akpm@linux-foundation.org>
+	<20080228191214.GA17872@elte.hu>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Herbert Xu <herbert@gondor.apana.org.au>
-Date: Fri, 29 Feb 2008 01:50:11 +0800
+On Thu, 28 Feb 2008 20:12:14 +0100
+Ingo Molnar <mingo@elte.hu> wrote:
 
-> [IPCOMP]: Disable BH on output when using shared tfm
 > 
-> Because we use shared tfm objects in order to conserve memory,
-> (each tfm requires 128K of vmalloc memory), BH needs to be turned
-> off on output as that can occur in process context.
+> * Andrew Morton <akpm@linux-foundation.org> wrote:
 > 
-> Previously this was done implicitly by the xfrm output code.
-> That was lost when it became lockless.  So we need to add the
-> BH disabling to IPComp directly.
+> > On Thu, 28 Feb 2008 12:50:41 +0100 Ingo Molnar <mingo@elte.hu> wrote:
+> > 
+> > > @@ -1000,7 +1001,7 @@ void release_console_sem(void)
+> > >  	 * If we try to wake up klogd while printing with the runqueue lock
+> > >  	 * held, this will deadlock.
+> > >  	 */
+> > > -	if (wake_klogd && !runqueue_is_locked())
+> > > +	if (wake_klogd)
+> > >  		wake_up_klogd();
+> > >  }
+> > 
+> > I don't think we shoudl have added that hack in the first place.  It 
+> > solves a problem which about three developers hit four times in five 
+> > years but it has made kernel logging less reliable for everyone.
 > 
-> Signed-off-by: Herbert Xu <herbert@gondor.apana.org.au>
+> well, the problem was ia64, not a problem on x86 or other platforms.
 
-Applied, thanks Herbert.
-
-The xfrm output lockless stuff is only in 2.6.25, so
-we should not need this for -stable right?
+I am referring to the original change which made klogd wakeups unreliable.
