@@ -1,62 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756404AbYB1DKQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757815AbYB1DMS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756404AbYB1DKQ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Feb 2008 22:10:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752185AbYB1DKE
+	id S1757815AbYB1DMS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Feb 2008 22:12:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752308AbYB1DMH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Feb 2008 22:10:04 -0500
-Received: from g1t0026.austin.hp.com ([15.216.28.33]:40152 "EHLO
-	g1t0026.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751744AbYB1DKD convert rfc822-to-8bit (ORCPT
+	Wed, 27 Feb 2008 22:12:07 -0500
+Received: from smtp1.linux-foundation.org ([207.189.120.13]:58739 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752185AbYB1DMG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Feb 2008 22:10:03 -0500
-From: "Mingarelli, Thomas" <Thomas.Mingarelli@hp.com>
-To: Roland Dreier <rdreier@cisco.com>
-CC: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Date: Thu, 28 Feb 2008 03:09:03 +0000
-Subject: RE: hpwdt oops in clflush_cache_range
-Thread-Topic: hpwdt oops in clflush_cache_range
-Thread-Index: Ach5nqwVouG/vmJgS3qFwAPu9ZT4ygAGIXCg
-Message-ID: <E14D1C2A44812C4F9C3ED321127EDF6505829D5A91@G3W0854.americas.hpqcorp.net>
-References: <adad4qiwcmz.fsf@cisco.com>
-	<alpine.LFD.1.00.0802271913050.7583@apollo.tec.linutronix.de>
-	<ada1w6y1bzk.fsf@cisco.com>
-	<alpine.LFD.1.00.0802272011130.7583@apollo.tec.linutronix.de>
-	<20080227203655.GA30054@elte.hu>
-	<alpine.LFD.1.00.0802272140050.7583@apollo.tec.linutronix.de>
-	<alpine.LFD.1.00.0802272155190.7583@apollo.tec.linutronix.de>
-	<ada3areyu7x.fsf@cisco.com>
-	<E14D1C2A44812C4F9C3ED321127EDF6505829D59DF@G3W0854.americas.hpqcorp.net>
- <adamypmx7k1.fsf@cisco.com>
-In-Reply-To: <adamypmx7k1.fsf@cisco.com>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-MIME-Version: 1.0
+	Wed, 27 Feb 2008 22:12:06 -0500
+Date: Wed, 27 Feb 2008 19:11:04 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Randy Dunlap <randy.dunlap@oracle.com>
+Cc: lkml <linux-kernel@vger.kernel.org>, Sam Ravnborg <sam@ravnborg.org>
+Subject: Re: [PATCH] kernel-doc: set verbose mode via environment
+Message-Id: <20080227191104.6f166972.akpm@linux-foundation.org>
+In-Reply-To: <20080224175358.3202f0d0.randy.dunlap@oracle.com>
+References: <20080224175358.3202f0d0.randy.dunlap@oracle.com>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Understood. I am just trying to get as much data about the issue as I can.
+On Sun, 24 Feb 2008 17:53:58 -0800 Randy Dunlap <randy.dunlap@oracle.com> wrote:
 
+> From: Randy Dunlap <randy.dunlap@oracle.com>
+> 
+> Allow setting environment variable "KERNEL_DOC_VERBOSE=1" to enable
+> verbose mode in scripts/kernel-doc.  Useful for getting more
+> info and warnings from kernel-doc.
+> 
+> Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
+> ---
+>  scripts/kernel-doc |    4 ++++
+>  1 file changed, 4 insertions(+)
+> 
+> --- linux-2.6.25-rc3.orig/scripts/kernel-doc
+> +++ linux-2.6.25-rc3/scripts/kernel-doc
+> @@ -247,6 +247,10 @@ my ($function, %function_table,%paramete
+>  my ($type,$declaration_name,$return_type);
+>  my ($newsection,$newcontents,$prototype,$filelist, $brcount, %source_map);
+>  
+> +if (defined($ENV{'KERNEL_DOC_VERBOSE'})) {
+> +	$verbose = "$ENV{'KERNEL_DOC_VERBOSE'}";
+> +}
+> +
+>  # Generated docbook code is inserted in a template at a point where
+>  # docbook v3.1 requires a non-zero sequence of RefEntry's; see:
+>  # http://www.oasis-open.org/docbook/documentation/reference/html/refentry.html
 
------Original Message-----
-From: Roland Dreier [mailto:rdreier@cisco.com]
-Sent: Wednesday, February 27, 2008 6:13 PM
-To: Mingarelli, Thomas
-Cc: Thomas Gleixner; Ingo Molnar; linux-kernel@vger.kernel.org
-Subject: Re: hpwdt oops in clflush_cache_range
+Shouldn't this be, err, documented somewhere?
 
- > Did I read correctly that this was on a Debian OS? Looks like I need to jump in and see what is different about Debian because I haven't seen such an issue on RedHat 5.
- >
- > Yes, the driver was made specifically for G5 (and newer) systems. I will set a system up here and figure out what's wrong as soon as I am sure it is Debian.
-
-I can't imagine that the fact that it's Debian has anything to do with
-it -- this is purely in the kernel.
-
- - R.
+I'd have expected to obtain this functionality by running `make V=1 foodocs'?
