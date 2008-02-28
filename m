@@ -1,94 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932382AbYB1BHy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932565AbYB1BIV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932382AbYB1BHy (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Feb 2008 20:07:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759221AbYB1BHo
+	id S932565AbYB1BIV (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Feb 2008 20:08:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759332AbYB1BIF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Feb 2008 20:07:44 -0500
-Received: from web36606.mail.mud.yahoo.com ([209.191.85.23]:23117 "HELO
-	web36606.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1752744AbYB1BHn (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Feb 2008 20:07:43 -0500
-X-YMail-OSG: vQQFemAVM1kMAlDSG_KZ0siZ91a841i.j2zY3VFO2LvbuMJVhwxY7cNqvM0eAt1ii_hmhBuOHQ--
-X-RocketYMMF: rancidfat
-Date: Wed, 27 Feb 2008 17:07:41 -0800 (PST)
-From: Casey Schaufler <casey@schaufler-ca.com>
-Reply-To: casey@schaufler-ca.com
-Subject: Re: [PATCH 01/11] Security: Add hook to get full maclabel xattr name
-To: Dave Quigley <dpquigl@tycho.nsa.gov>, casey@schaufler-ca.com
-Cc: hch@infradead.org, viro@ftp.linux.org.uk, trond.myklebust@fys.uio.no,
-       bfields@fieldses.org, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org
-In-Reply-To: <1204157539.24345.3.camel@moss-terrapins.epoch.ncsc.mil>
+	Wed, 27 Feb 2008 20:08:05 -0500
+Received: from cn.fujitsu.com ([222.73.24.84]:54504 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1757142AbYB1BIE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 Feb 2008 20:08:04 -0500
+Message-ID: <47C60910.7000102@cn.fujitsu.com>
+Date: Thu, 28 Feb 2008 09:06:24 +0800
+From: Li Zefan <lizf@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-Message-ID: <804125.16775.qm@web36606.mail.mud.yahoo.com>
+To: Paul Menage <menage@google.com>
+CC: Paul Jackson <pj@sgi.com>, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] cpuset: fix return value of cpuset_populate()
+References: <47C5131A.80508@cn.fujitsu.com>	 <20080227014135.0c361ab3.pj@sgi.com> <6599ad830802271649h29a13ceevf2255dd6235b42ba@mail.gmail.com>
+In-Reply-To: <6599ad830802271649h29a13ceevf2255dd6235b42ba@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
---- Dave Quigley <dpquigl@tycho.nsa.gov> wrote:
-
+Paul Menage wrote:
+> On Tue, Feb 26, 2008 at 11:41 PM, Paul Jackson <pj@sgi.com> wrote:
+>>  - no need to check err == 0
+>>  - the last return value of cgroup_add_file() is ignored
+>>
+>>  Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
 > 
-> On Wed, 2008-02-27 at 15:42 -0800, Casey Schaufler wrote:
-> > --- "David P. Quigley" <dpquigl@tycho.nsa.gov> wrote:
-> > 
-> > ...
-> > > +	const char *(*maclabel_getname) (void);
-> > 
-> > I think that calling this a maclabel is a really bad idea. For one
-> > thing, it assumes that all interesting security attributes are for
-> > Mandatory Access Control. Also, it assumes that they are stored as
-> > xattrs. While these conditions are both met by the two current LSMs
-> > I would suggest that this is not a fair assumption for the long
-> > haul unless the intention is to lock the lSM into only supporting
-> > xattr based label based MAC modules.
+> Looks fine from a cleanliness PoV, although since we don't actually do
+> anything with an error result from subsys->populate() (a behaviour
+> that I sort of inherited from cpusets ...) it won't make a whole lot
+> of difference to the code.
 > 
-> Actually that is a completely fair assumption.
+> A better change would be to make cpuset_populate() use cgroup_add_files().
+> 
 
-A completely reasonable LSM would be a discretionary time lock.
-The owner could set or unset the times when a file might be accessed.
-Stored as an xattr, but neither a label nor Mandatory Access Control.
-I propose this as an example of why the name maclabel is inappropriate,
-because in this case the data involved is neither. Please also consider
-that, as horrible as it may seem, an LSM could legitimately require
-more than one xattr. A proper Compartmented Mode Workstation, for
-example, might have a MAC label and an Information label, and as anyone
-familiar with the CMW spec will tell you, they have to be separate.
-Granted, the information label is only supposed to be used to indicate
-the actual sensitivity of information, but if it's available someone is
-going to use it programaticly.
-
-> When this whole thing
-> started it was mandated that security attributes be stored in xattrs.
-
-I'll grant you the xattr bit.
-
-> I
-> originally had a more convoluted name but after asking around we thought
-> this one was better. Not to mention this is a slightly reworked hook
-> that was just removed from the LSM since there were no users. While I'm
-> open to potentially changing the name the paradigm that we use the xattr
-> functionality of linux to handle security labels has been around since
-> the beginning of LSM. If we want to revisit that idea I'm willing to do
-> it but it needs more people than just you and I to agree to reopen it. 
-
-The paradigm is* a security "blob" which is meaningfull only to the
-security module proper. This is what allows SELinux to use secids and
-Smack to toss around text strings. It's not MAC data and it's not
-an NFS label, it's private to the LSM. It makes a lot of sense to use
-an xattr to store a blob but, as the AppArmor people have been known
-espouse, it's not the only way. The blob could be referenced from a
-table using the inode number (it has been done on other systems and
-works fine) rather than an xattr, in which case the whole "name" may
-be meaningless.
-
-
-----
-* It was when the whole thing started out at least.
-
-Casey Schaufler
-casey@schaufler-ca.com
+Yes, I'm considering this, and I will verify if this will save some bytes
+in the object file.
