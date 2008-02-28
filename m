@@ -1,72 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765351AbYB1T62@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765430AbYB1T6s@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765351AbYB1T62 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Feb 2008 14:58:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764285AbYB1TyA
+	id S1765430AbYB1T6s (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Feb 2008 14:58:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764477AbYB1TyL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Feb 2008 14:54:00 -0500
-Received: from einhorn.in-berlin.de ([192.109.42.8]:60338 "EHLO
-	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1764544AbYB1Txz (ORCPT
+	Thu, 28 Feb 2008 14:54:11 -0500
+Received: from gv-out-0910.google.com ([216.239.58.190]:45318 "EHLO
+	gv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1764435AbYB1TyI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Feb 2008 14:53:55 -0500
-X-Envelope-From: stefanr@s5r6.in-berlin.de
-Date: Thu, 28 Feb 2008 20:53:45 +0100 (CET)
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-Subject: [PATCH 4/4] firewire: fw-sbp2: reduce log noise
-To: linux1394-devel@lists.sourceforge.net
-cc: linux-kernel@vger.kernel.org
-In-Reply-To: <tkrat.efdb1b5f8ccb3cbd@s5r6.in-berlin.de>
-Message-ID: <tkrat.e91ea76ee0e2c394@s5r6.in-berlin.de>
-References: <tkrat.efdb1b5f8ccb3cbd@s5r6.in-berlin.de>
+	Thu, 28 Feb 2008 14:54:08 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=WZqUVbpDQlcKfoA+akyPi9d+329/hhdGptVcbpKIual103XNL9K+rNHNgQRjqWzOv3sVvDn4nnKO9IK4YRBhyiGxPsprYoNC1aEh8/lXp7r43QQIyw5/5QkdaNLKw6F0DKMS+KY7Crgvhvm/zrm+4KvABCcoTM7pGQUOe+0VpEY=
+Message-ID: <2c0942db0802281154y3176e847g8b9a4091df5cc8af@mail.gmail.com>
+Date: Thu, 28 Feb 2008 11:54:04 -0800
+From: "Ray Lee" <ray-lk@madrabbit.org>
+To: "Carlos R. Mafra" <crmafra2@gmail.com>
+Subject: Re: Interactivity issue in 2.6.25-rc3
+Cc: linux-kernel@vger.kernel.org, "Ingo Molnar" <mingo@elte.hu>
+In-Reply-To: <20080228191824.GA20019@elte.hu>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; CHARSET=us-ascii
-Content-Disposition: INLINE
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20080228184407.GA7117@localhost.ift.unesp.br>
+	 <20080228191824.GA20019@elte.hu>
+X-Google-Sender-Auth: 500bb592b049d268
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The block/unblock logic is now sufficiently tested.
+On Thu, Feb 28, 2008 at 11:18 AM, Ingo Molnar <mingo@elte.hu> wrote:
+>
+>  * Carlos R. Mafra <crmafra2@gmail.com> wrote:
+>
+>  > I want to report a bad interactivity which happened in my desktop
+>  > running the latest kernel (2.6.25-rc3-00081-g7704a8b).
+>  >
+>  > I tried to play 'flightgear' and the desktop became _very_ slow while
+>  > flightgear was "loading scenery objects" (a task which never finished
+>  > and I could not play it).
+>  >
+>  > The desktop is a P4 @ 3.0 GHz, 512MB, with the nv graphics driver.
+>
+>  yes, but this means you run the soft-3D driver under Xorg, right? That
+>  is known to starve its clients. The stats you sent show no worse than a
+>  few tens of msecs delays caused by CPU scheduling itself:
+>
+>   mrxvt (3730, #threads: 1)
+>   se.wait_max                        :            18.679129
+>
+>  so the scheduler kept things within the ~40 msecs default latency
+>  target:
+>
+>   .sysctl_sched_latency                    : 40.000000
 
-Signed-off-by: Stefan Richter <stefanr@s5r6.in-berlin.de>
----
+[...]
 
-To be postponed after 2.6.25.
+>> As I have the group scheduler enabled, I tried to run flightgear as
+>> root to see what happens
 
- drivers/firewire/fw-sbp2.c |    8 ++------
- 1 file changed, 2 insertions(+), 6 deletions(-)
+Also, please try disabling the group scheduler and run the test again.
+The group scheduler has known bad interactivity issues. Also be on the
+watch for any abnormally high disk activity, to rule out starvation
+due to the kernel choosing poor candidates for swap-in/swap-out.
+(Running a vmstat 1 in a console ahead of time and watching for high
+IO Wait -- the last column printed -- will give you a good indicator
+other than the drive LED.)
 
-Index: linux/drivers/firewire/fw-sbp2.c
-===================================================================
---- linux.orig/drivers/firewire/fw-sbp2.c
-+++ linux/drivers/firewire/fw-sbp2.c
-@@ -687,10 +687,8 @@ static void sbp2_conditionally_block(str
- 	if (!tgt->dont_block && !lu->blocked &&
- 	    lu->generation != card->generation) {
- 		lu->blocked = true;
--		if (++tgt->blocked == 1) {
-+		if (++tgt->blocked == 1)
- 			scsi_block_requests(shost);
--			fw_notify("blocked %s\n", lu->tgt->bus_id);
--		}
- 	}
- 	spin_unlock_irqrestore(&card->lock, flags);
- }
-@@ -717,10 +715,8 @@ static void sbp2_conditionally_unblock(s
- 	}
- 	spin_unlock_irqrestore(&card->lock, flags);
- 
--	if (unblock) {
-+	if (unblock)
- 		scsi_unblock_requests(shost);
--		fw_notify("unblocked %s\n", lu->tgt->bus_id);
--	}
- }
- 
- /*
-
--- 
-Stefan Richter
--=====-==--- --=- ===--
-http://arcgraph.de/sr/
-
+Ray
