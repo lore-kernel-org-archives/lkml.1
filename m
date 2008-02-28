@@ -1,133 +1,123 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755939AbYB1HLl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756926AbYB1HMU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755939AbYB1HLl (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Feb 2008 02:11:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751930AbYB1HLc
+	id S1756926AbYB1HMU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Feb 2008 02:12:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752388AbYB1HMB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Feb 2008 02:11:32 -0500
-Received: from out3.smtp.messagingengine.com ([66.111.4.27]:47603 "EHLO
-	out3.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751605AbYB1HLb (ORCPT
+	Thu, 28 Feb 2008 02:12:01 -0500
+Received: from smtp1.linux-foundation.org ([207.189.120.13]:46048 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752234AbYB1HMA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Feb 2008 02:11:31 -0500
-X-Sasl-enc: 42tKlczwLhpLPnb+Uxz6kiBD81vr6dzMF3RweYzDSBA0 1204182689
-Subject: Re: [PATCH 3/4] autofs4 - track uid and gid of last mount requestor
-From: Ian Kent <raven@themaw.net>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       autofs mailing list <autofs@linux.kernel.org>,
-       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
-       Pavel Emelyanov <xemul@openvz.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>
-In-Reply-To: <20080227223734.caab0165.akpm@linux-foundation.org>
-References: <Pine.LNX.4.64.0802261151400.8490@raven.themaw.net>
-	 <Pine.LNX.4.64.0802261208400.8490@raven.themaw.net>
-	 <20080227204546.72e16e8d.akpm@linux-foundation.org>
-	 <1204179747.3501.21.camel@raven.themaw.net>
-	 <20080227223734.caab0165.akpm@linux-foundation.org>
-Content-Type: text/plain
-Date: Thu, 28 Feb 2008 16:08:20 +0900
-Message-Id: <1204182500.3501.49.camel@raven.themaw.net>
+	Thu, 28 Feb 2008 02:12:00 -0500
+Date: Wed, 27 Feb 2008 23:09:41 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Mark Brown <broonie@opensource.wolfsonmicro.com>
+Cc: Dmitry Torokhov <dtor@mail.ru>, linux-input@vger.kernel.org,
+       linux-kernel@vger.kernel.org,
+       Liam Girdwood <liam.girdwood@wolfsonmicro.com>,
+       Graeme Gregory <gg@opensource.wolfsonmicro.com>,
+       Mike Arthur <mike.arthur@wolfsonmicro.com>,
+       Dmitry Baryshkov <dbaryshkov@gmail.com>,
+       Stanley Cai <stanley.cai@intel.com>,
+       Rodolfo Giometti <giometti@enneenne.com>,
+       Russell King <rmk@arm.linux.org.uk>,
+       Marc Kleine-Budde <mkl@pengutronix.de>,
+       Pete MacKay <linux01@architechnical.net>, Ian Molton <spyro@f2s.com>,
+       Vince Sanders <vince@kyllikki.org>, Andrew Zabolotny <zap@homelink.ru>
+Subject: Re: [PATCH 5/6] Driver for WM97xx touchscreens in streaming mode on
+ Mainstone
+Message-Id: <20080227230941.f0885763.akpm@linux-foundation.org>
+In-Reply-To: <12040332181746-git-send-email-broonie@opensource.wolfsonmicro.com>
+References: <12040332183316-git-send-email-broonie@opensource.wolfsonmicro.com>
+	<12040332181161-git-send-email-broonie@opensource.wolfsonmicro.com>
+	<12040332181394-git-send-email-broonie@opensource.wolfsonmicro.com>
+	<12040332182008-git-send-email-broonie@opensource.wolfsonmicro.com>
+	<12040332181746-git-send-email-broonie@opensource.wolfsonmicro.com>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 (2.12.3-1.fc8) 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, 26 Feb 2008 13:40:17 +0000 Mark Brown <broonie@opensource.wolfsonmicro.com> wrote:
 
-On Wed, 2008-02-27 at 22:37 -0800, Andrew Morton wrote:
-> On Thu, 28 Feb 2008 15:22:27 +0900 Ian Kent <raven@themaw.net> wrote:
-> 
-> > 
-> > > > +++ linux-2.6.25-rc2-mm1/fs/autofs4/waitq.c	2008-02-20 13:10:23.000000000 +0900
-> > > > @@ -363,6 +363,38 @@ int autofs4_wait(struct autofs_sb_info *
-> > > >  
-> > > >  	status = wq->status;
-> > > >  
-> > > > +	/*
-> > > > +	 * For direct and offset mounts we need to track the requestor
-> > > > +	 * uid and gid in the dentry info struct. This is so it can be
-> > > > +	 * supplied, on request, by the misc device ioctl interface.
-> > > > +	 * This is needed during daemon resatart when reconnecting
-> > > > +	 * to existing, active, autofs mounts. The uid and gid (and
-> > > > +	 * related string values) may be used for macro substitution
-> > > > +	 * in autofs mount maps.
-> > > > +	 */
-> > > > +	if (!status) {
-> > > > +		struct dentry *de = NULL;
-> > > > +
-> > > > +		/* direct mount or browsable map */
-> > > > +		ino = autofs4_dentry_ino(dentry);
-> > > > +		if (!ino) {
-> > > > +			/* If not lookup actual dentry used */
-> > > > +			de = d_lookup(dentry->d_parent, &dentry->d_name);
-> > > > +			ino = autofs4_dentry_ino(de);
-> > > > +		}
-> > > > +
-> > > > +		/* Set mount requestor */
-> > > > +		if (ino) {
-> > > > +			if (ino) {
-> > > > +				ino->uid = wq->uid;
-> > > > +				ino->gid = wq->gid;
-> > > > +			}
-> > > > +		}
-> > > > +
-> > > > +		if (de)
-> > > > +			dput(de);
-> > > > +	}
-> > > > +
-> > > 
-> > > But uids and gids are no longer system-wide-unique.  Two different users
-> > > can have the same identifiers in different namespaces.  What happens then?
-> > 
-> > That's a tricky question.
-> > 
-> > Presumably, the process requesting the mount has the user space daemon
-> > running in the namespace within which the uid and gid are to be looked
-> > up, by the daemon.
-> > 
-> > Am I missing something?
-> > 
-> 
-> err, you assume more knowledge at this end about what you're trying to do
-> than actually exists :)
-> 
-> You seem to imply that if a machine is running 100 user namespaces then it
-> needs to run 100 mount daemons.  Doesn't seem good.
+> +#ifdef CONFIG_PXA27x
+> +static void wm97xx_acc_pen_up(struct wm97xx *wm)
+> +{
+> +	set_current_state(TASK_INTERRUPTIBLE);
+> +	schedule_timeout(1);
+> +
+> +	while (MISR & (1 << 2))
+> +		MODR;
+> +}
+> +#else
+> +static void wm97xx_acc_pen_up(struct wm97xx *wm)
+> +{
+> +	int count = 16;
+> +	set_current_state(TASK_INTERRUPTIBLE);
+> +	schedule_timeout(1);
+> +
+> +	while (count < 16) {
+> +		MODR;
+> +		count--;
+> +	}
+> +}
+> +#endif
 
-More likely my lack of understanding of how namespaces are meant to
-work.
+Can use schedule_timeout_interruptible() here.
 
-> 
-> What problem are you actually trying to solve here?
+If the calling process happens to have a signal pending then the
+schedule_timeout() becomes a no-op.  Will the driver still function
+correctly?
 
-The basic problem arises only when we want to restart the user space
-daemon and there are active autofs managed mounts in place at exit (ie.
-autofs mounts that have busy user mounts). They are left mounted and
-processes using them continue to function. But then, when we startup
-autofs we need to reconnect to these autofs mounts, some of which can
-covered the by mounted file systems, and hence the need for another way
-to open an ioctl descriptor to them.
+> +static int wm97xx_acc_pen_down(struct wm97xx *wm)
+> +{
+> +	u16 x, y, p = 0x100 | WM97XX_ADCSEL_PRES;
+> +	int reads = 0;
+> +
+> +	/* data is never immediately available after pen down irq */
+> +	set_current_state(TASK_INTERRUPTIBLE);
+> +	schedule_timeout(1);
 
-It may have been overkill to re-implement all the current ioctls (and
-add a couple of other much needed ones) but I though it sensible for
-completeness, and we get to identify any possible problems the current
-ioctls might have had due to the use of the BKL (by the VFS when calling
-the ioctls).
+dittoes.
 
-So, why do we need the uid and gid? When someone walks over an autofs
-dentry that is meant to cause a mount we send a request packet to the
-daemon via a pipe which includes the process uid and gid, and as part of
-the lookup we set macros for several mount map substitution variables,
-derived from the uid and gid of the process requesting the mount and
-they can be used within autofs maps.
-
-This is all fine as long as we don't need to re-connect to these mounts
-when starting up, since we don't get kernel requests for the mounts, we
-need to obtain that information from the active mount itself.
-
-Ian
-
-
+> +	if (tries > 5) {
+> +		tries = 0;
+> +		return RC_PENUP;
+> +	}
+> +
+> +	x = MODR;
+> +	if (x == last) {
+> +		tries++;
+> +		return RC_AGAIN;
+> +	}
+> +	last = x;
+> +	do {
+> +		if (reads)
+> +			x = MODR;
+> +		y = MODR;
+> +		if (pressure)
+> +			p = MODR;
+> +
+> +		/* are samples valid */
+> +		if ((x & 0x7000) != WM97XX_ADCSEL_X ||
+> +			(y & 0x7000) != WM97XX_ADCSEL_Y ||
+> +			(p & 0x7000) != WM97XX_ADCSEL_PRES)
+> +			goto up;
+> +
+> +		/* coordinate is good */
+> +		tries = 0;
+> +		input_report_abs(wm->input_dev, ABS_X, x & 0xfff);
+> +		input_report_abs(wm->input_dev, ABS_Y, y & 0xfff);
+> +		input_report_abs(wm->input_dev, ABS_PRESSURE, p & 0xfff);
+> +		input_sync(wm->input_dev);
+> +		reads++;
+> +	} while (reads < cinfo[sp_idx].reads);
+> +up:
+> +	return RC_PENDOWN | RC_AGAIN;
+> +}
+> +
 
