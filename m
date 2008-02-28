@@ -1,62 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932462AbYB1ViB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932474AbYB1VkT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932462AbYB1ViB (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Feb 2008 16:38:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757241AbYB1Vhx
+	id S932474AbYB1VkT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Feb 2008 16:40:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752884AbYB1VkE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Feb 2008 16:37:53 -0500
-Received: from smtp123.sbc.mail.re3.yahoo.com ([66.196.96.96]:45407 "HELO
-	smtp123.sbc.mail.re3.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1752116AbYB1Vhw (ORCPT
+	Thu, 28 Feb 2008 16:40:04 -0500
+Received: from filer.fsl.cs.sunysb.edu ([130.245.126.2]:34917 "EHLO
+	filer.fsl.cs.sunysb.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751298AbYB1VkD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Feb 2008 16:37:52 -0500
-X-YMail-OSG: wA_RZH0VM1nkBtCcDfqVWRFzZRB_kT8l3xuvdWlKupuemcZxSO2.Q9DfyzxxVCCD1O7XUC.HgA--
-X-Yahoo-Newman-Property: ymail-3
-Date: Thu, 28 Feb 2008 15:35:07 -0600
-From: serge@hallyn.com
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-Cc: serge@hallyn.com, Andrew Morton <akpm@linux-foundation.org>,
-       Pavel Emelyanov <xemul@openvz.org>, Oleg Nesterov <oleg@tv-sign.ru>,
-       linux-kernel@vger.kernel.org, Andrew Morgan <morgan@kernel.org>
-Subject: Re: Fw: [PATCH 1/1] file capabilities: simplify signal check
-Message-ID: <20080228213507.GD1232@vino.hallyn.com>
-References: <20080223000237.518aace0.akpm@linux-foundation.org> <m17igu6e73.fsf@ebiederm.dsl.xmission.com> <20080227043306.GA9293@vino.hallyn.com> <m1tzjs4yn6.fsf@ebiederm.dsl.xmission.com>
+	Thu, 28 Feb 2008 16:40:03 -0500
+Date: Thu, 28 Feb 2008 16:39:32 -0500
+From: "Josef 'Jeff' Sipek" <jeffpc@josefsipek.net>
+To: Dave Quigley <dpquigl@tycho.nsa.gov>
+Cc: hch@infradead.org, viro@ftp.linux.org.uk, trond.myklebust@fys.uio.no,
+       bfields@fieldses.org, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org
+Subject: Re: [PATCH 03/11] VFS: Add security label support to *notify
+Message-ID: <20080228213932.GH32351@josefsipek.net>
+References: <1204144786-3502-1-git-send-email-dpquigl@tycho.nsa.gov> <1204144786-3502-4-git-send-email-dpquigl@tycho.nsa.gov> <20080228201004.GC32351@josefsipek.net> <1204231170.24345.100.camel@moss-terrapins.epoch.ncsc.mil> <20080228211531.GE32351@josefsipek.net> <1204232711.24345.112.camel@moss-terrapins.epoch.ncsc.mil>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <m1tzjs4yn6.fsf@ebiederm.dsl.xmission.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+In-Reply-To: <1204232711.24345.112.camel@moss-terrapins.epoch.ncsc.mil>
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Quoting Eric W. Biederman (ebiederm@xmission.com):
-> serge@hallyn.com writes:
+On Thu, Feb 28, 2008 at 04:05:11PM -0500, Dave Quigley wrote:
 > 
-> > Quoting Eric W. Biederman (ebiederm@xmission.com):
-> >> Andrew Morton <akpm@linux-foundation.org> writes:
-> >> 
-> >> > um, is that code namespace-clean?
-> >> 
-> >> Choke, gag.
-> >
-> > Oh, sorry, I got lost in the set of patches in the message.  To be
-> > clear, my little 4-patch uid-ns-signal patchset can simply be updated
-> > to make the cap_task_kill() uid check into if (task_user_equiv(current, p)
-> >
-> > But Eric if you simply drop cap_task_kill() (don't make it return 0,
-> > just drop the function and go back to not setting task_kill in the
-> > capability_security_ops) I'll ack that.  Else I'll write the patch
-> > thursday.  At this point the only thing that will be denied by
-> > cap_task_kill() but not by check_kill_permission() is funky euid cases.
-> > That's wrong.  (cc'ing amorgan in the event I'm forgetting something
-> > useful the fn is doing)
+> On Thu, 2008-02-28 at 16:15 -0500, Josef 'Jeff' Sipek wrote:
+> > On Thu, Feb 28, 2008 at 03:39:30PM -0500, Dave Quigley wrote:
+> > ...
+> > > > Alright...so, few things...
+> > > > 
+> > > > 1) why do you need the locked/unlocked versions?
+> > > > 
+> > > > 2) instead of passing a flag to a common function, why not have:
+> > > > 
+> > > > vfs_setxattr_locked(....)
+> > > > {
+> > > > 	// original code minus the lock/unlock calls
+> > > > }
+> > > > 
+> > > > vfs_setxattr(....)
+> > > > {
+> > > > 	mutex_lock(...);
+> > > > 	vfs_setxattr_locked(...);
+> > > > 	mutex_unlock(...);
+> > > > }
+> > > 
+> > > What we do and what you propose aren't logically equivalent. There is a
+> > > permission check inside vfs_setxattr before the mutex lock.
+> > 
+> > Ah, right. I didn't notice the @@ line...
+> > 
+> > Josef 'Jeff' Sipek.
+> > 
 > 
-> Go ahead.   I'm fighting a cold and am fairly overloaded at the moment.
-> 
-> Eric
+> I'm compiling a test kernel with your proposed change to make sure it
+> doesn't deadlock. If it works then I'll go with your solution since its
+> less messy.
 
-Thanks - patch sent a little while ago.  The description explains why
-I believe cap_task_kill() became worthless (not just 'it's inconvenient' :)
+I glanced at the call chain, and this one is making me uneasy:
 
--serge
+vfs_setxattr => xattr_permission => permission => inode_op->permission
+
+But Documentation/filesystems/Locking says that the inode permission op
+doesn't need an i_mutex, so things should be ok.
+
+Josef 'Jeff' Sipek.
+
+-- 
+Failure is not an option,
+It comes bundled with your Microsoft product.
