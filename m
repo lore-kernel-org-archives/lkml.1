@@ -1,73 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765430AbYB1T6s@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765457AbYB1T7U@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765430AbYB1T6s (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Feb 2008 14:58:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764477AbYB1TyL
+	id S1765457AbYB1T7U (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Feb 2008 14:59:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764428AbYB1Ty0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Feb 2008 14:54:11 -0500
-Received: from gv-out-0910.google.com ([216.239.58.190]:45318 "EHLO
-	gv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1764435AbYB1TyI (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Feb 2008 14:54:08 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=WZqUVbpDQlcKfoA+akyPi9d+329/hhdGptVcbpKIual103XNL9K+rNHNgQRjqWzOv3sVvDn4nnKO9IK4YRBhyiGxPsprYoNC1aEh8/lXp7r43QQIyw5/5QkdaNLKw6F0DKMS+KY7Crgvhvm/zrm+4KvABCcoTM7pGQUOe+0VpEY=
-Message-ID: <2c0942db0802281154y3176e847g8b9a4091df5cc8af@mail.gmail.com>
-Date: Thu, 28 Feb 2008 11:54:04 -0800
-From: "Ray Lee" <ray-lk@madrabbit.org>
-To: "Carlos R. Mafra" <crmafra2@gmail.com>
-Subject: Re: Interactivity issue in 2.6.25-rc3
-Cc: linux-kernel@vger.kernel.org, "Ingo Molnar" <mingo@elte.hu>
-In-Reply-To: <20080228191824.GA20019@elte.hu>
+	Thu, 28 Feb 2008 14:54:26 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:52906 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1763052AbYB1TyY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 28 Feb 2008 14:54:24 -0500
+Date: Thu, 28 Feb 2008 20:53:09 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+Cc: linux-kernel@vger.kernel.org, hidave.darkstar@gmail.com,
+       akpm@linux-foundation.org, fzu@wemgehoertderstaat.de, ego@in.ibm.com,
+       dipankar@in.ibm.com, niv@us.ibm.com, dvhltc@us.ibm.com
+Subject: Re: [PATCH] Remove never-migrates assumption from
+	rcu_process_callbacks()
+Message-ID: <20080228195309.GA29720@elte.hu>
+References: <20080228002110.GA20091@linux.vnet.ibm.com> <20080228195107.GA31203@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <20080228184407.GA7117@localhost.ift.unesp.br>
-	 <20080228191824.GA20019@elte.hu>
-X-Google-Sender-Auth: 500bb592b049d268
+In-Reply-To: <20080228195107.GA31203@linux.vnet.ibm.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Feb 28, 2008 at 11:18 AM, Ingo Molnar <mingo@elte.hu> wrote:
->
->  * Carlos R. Mafra <crmafra2@gmail.com> wrote:
->
->  > I want to report a bad interactivity which happened in my desktop
->  > running the latest kernel (2.6.25-rc3-00081-g7704a8b).
->  >
->  > I tried to play 'flightgear' and the desktop became _very_ slow while
->  > flightgear was "loading scenery objects" (a task which never finished
->  > and I could not play it).
->  >
->  > The desktop is a P4 @ 3.0 GHz, 512MB, with the nv graphics driver.
->
->  yes, but this means you run the soft-3D driver under Xorg, right? That
->  is known to starve its clients. The stats you sent show no worse than a
->  few tens of msecs delays caused by CPU scheduling itself:
->
->   mrxvt (3730, #threads: 1)
->   se.wait_max                        :            18.679129
->
->  so the scheduler kept things within the ~40 msecs default latency
->  target:
->
->   .sysctl_sched_latency                    : 40.000000
 
-[...]
+* Paul E. McKenney <paulmck@linux.vnet.ibm.com> wrote:
 
->> As I have the group scheduler enabled, I tried to run flightgear as
->> root to see what happens
+> Hello again!
+> 
+> This patch fixes a potentially invalid access to a per-CPU variable in 
+> rcu_process_callbacks().  This per-CPU access needs to be done in such 
+> a way as to guarantee that the code using it cannot move to some other 
+> CPU before all uses of the value accessed have completed.  Even though 
+> this code is currently only invoked from softirq context, which 
+> currrently cannot migrate to some other CPU, life would be better if 
+> this code did not silently make such an assumption.
 
-Also, please try disabling the group scheduler and run the test again.
-The group scheduler has known bad interactivity issues. Also be on the
-watch for any abnormally high disk activity, to rule out starvation
-due to the kernel choosing poor candidates for swap-in/swap-out.
-(Running a vmstat 1 in a console ahead of time and watching for high
-IO Wait -- the last column printed -- will give you a good indicator
-other than the drive LED.)
+i've got the patch below queued up already - same thing, right?
 
-Ray
+	Ingo
+
+----------->
+Subject: rcupreempt: fix hibernate/resume in presence of PREEMPT_RCU and hotplug
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+Date: Wed, 27 Feb 2008 16:21:10 -0800
+
+This fixes a oops encountered when doing hibernate/resume in presence
+of PREEMPT_RCU.  The problem was that the code failed to disable preemption
+when accessing a per-CPU variable.  This is OK when called from code
+that already has preemption disabled, but such is not the case from
+the suspend/resume code path.
+
+Reported-by: Dave Young <hidave.darkstar@gmail.com>
+Tested-by: Dave Young <hidave.darkstar@gmail.com>
+Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+---
+ kernel/rcupreempt.c |    3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+Index: linux/kernel/rcupreempt.c
+===================================================================
+--- linux.orig/kernel/rcupreempt.c
++++ linux/kernel/rcupreempt.c
+@@ -918,8 +918,9 @@ void rcu_offline_cpu(int cpu)
+ 	 * fix.
+ 	 */
+ 
++	local_irq_save(flags);
+ 	rdp = RCU_DATA_ME();
+-	spin_lock_irqsave(&rdp->lock, flags);
++	spin_lock(&rdp->lock);
+ 	*rdp->nexttail = list;
+ 	if (list)
+ 		rdp->nexttail = tail;
