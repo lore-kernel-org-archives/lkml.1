@@ -1,112 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755384AbYB1GRO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754158AbYB1GSP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755384AbYB1GRO (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Feb 2008 01:17:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751261AbYB1GRB
+	id S1754158AbYB1GSP (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Feb 2008 01:18:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751040AbYB1GR7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Feb 2008 01:17:01 -0500
-Received: from ug-out-1314.google.com ([66.249.92.171]:24739 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750820AbYB1GRA (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Feb 2008 01:17:00 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=date:to:cc:subject:message-id:reply-to:mail-followup-to:references:mime-version:content-type:content-disposition:content-transfer-encoding:in-reply-to:user-agent:from;
-        b=Md1HYbQ/7CvJLfAjt8fY3K14Dzdld+m+DQg7suUpe70r80MKjKFmMiarOYtpHLXsoTwn601/6iIg1F0L97dD+lNLjrqEfR1LflyaZr0FqWDBEZexd1M/Nd7v2YiqiAHzkwWOPxgHAT1u/mr/2IckhmF9VnDSQi3VhFiV2EhY+tk=
-Date: Thu, 28 Feb 2008 07:16:54 +0100
-To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Cc: linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org
-Subject: Re: [PATCH 4/5] ide-cd: shorten lines longer than 80 columns
-Message-ID: <20080228061654.GE9545@gollum.tnic>
-Reply-To: petkovbb@gmail.com
-Mail-Followup-To: petkovbb@gmail.com,
-	Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-	linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org
-References: <1204136449-9490-1-git-send-email-petkovbb@gmail.com> <200802272218.50537.bzolnier@gmail.com> <20080227221532.GB9545@gollum.tnic> <200802280001.43316.bzolnier@gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+	Thu, 28 Feb 2008 01:17:59 -0500
+Received: from x346.tv-sign.ru ([89.108.83.215]:39115 "EHLO mail.screens.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750695AbYB1GR7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 28 Feb 2008 01:17:59 -0500
+Date: Thu, 28 Feb 2008 09:17:23 +0300
+From: Oleg Nesterov <oleg@tv-sign.ru>
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: Pavel Emelyanov <xemul@openvz.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Roland McGrath <roland@redhat.com>
+Subject: Re: [PATCH 3/3] Consolidate send_sigqueue and send_group_sigqueue
+Message-ID: <20080228061723.GB108@tv-sign.ru>
+References: <47BEC663.7050904@openvz.org> <20080222144155.GA4349@tv-sign.ru> <alpine.LFD.1.00.0802280546360.7583@apollo.tec.linutronix.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <200802280001.43316.bzolnier@gmail.com>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
-From: Borislav Petkov <petkovbb@googlemail.com>
+In-Reply-To: <alpine.LFD.1.00.0802280546360.7583@apollo.tec.linutronix.de>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Feb 28, 2008 at 12:01:43AM +0100, Bartlomiej Zolnierkiewicz wrote:
-> On Wednesday 27 February 2008, Borislav Petkov wrote:
-> > On Wed, Feb 27, 2008 at 10:18:50PM +0100, Bartlomiej Zolnierkiewicz wrote:
-> > > On Wednesday 27 February 2008, Borislav Petkov wrote:
-> > > > Signed-off-by: Borislav Petkov <petkovbb@gmail.com>
-> > > 
-> > > interdiff for the merged version
-> > > 
+On 02/28, Thomas Gleixner wrote:
+>
+> On Fri, 22 Feb 2008, Oleg Nesterov wrote:
+> > > -
+> > > -	if (unlikely(!list_empty(&q->list))) {
+> > > -		/*
+> > > -		 * If an SI_TIMER entry is already queue just increment
+> > > -		 * the overrun count.
+> > > -		 */
+> > > -		BUG_ON(q->info.si_code != SI_TIMER);
+> > > -		q->info.si_overrun++;
+> > > -		goto out;
+> > > -	}
+> > > -	/* Short-circuit ignored signals.  */
+> > > -	if (sig_ignored(p, sig)) {
+> > > -		ret = 1;
+> > > -		goto out;
+> > > -	}
 > 
-> [...]
+> > >  send_group_sigqueue(int sig, struct sigqueue *q, struct task_struct *p)
 > 
-> > > diff -u b/drivers/ide/ide-cd.c b/drivers/ide/ide-cd.c
-> > > --- b/drivers/ide/ide-cd.c
-> > > +++ b/drivers/ide/ide-cd.c
-> > > @@ -510,7 +510,7 @@
-> > >  	default:
-> > >  		if (!(rq->cmd_flags & REQ_QUIET))
-> > >  			printk(KERN_INFO "ide-cd: cmd 0x%x timed out\n",
-> > > -				rq->cmd[0]);
-> > > +					 rq->cmd[0]);
+> > > -	/* Short-circuit ignored signals.  */
+> > > -	if (sig_ignored(p, sig)) {
+> > > -		ret = 1;
+> > > -		goto out;
+> > > -	}
+> > > -
+> > > -	if (unlikely(!list_empty(&q->list))) {
+> > > -		/*
+> > > -		 * If an SI_TIMER entry is already queue just increment
+> > > -		 * the overrun count.  Other uses should not try to
+> > > -		 * send the signal multiple times.
+> > > -		 */
+> > > -		BUG_ON(q->info.si_code != SI_TIMER);
+> > > -		q->info.si_overrun++;
+> > > -		goto out;
+> > > -	} 
 > > 
-> > why do you push the rq->cmd[0] thingy back here. Shouldn't it be aligned
-> > with the opening brace as the zillion others so far?
-> 
-> IDE is quite consistent with the above style but maybe it is just me being
-> used to it.  I could revert this change if you feel strong about it...
-> 
-
-not at all, i'm not that concerned with codestyle issues as long as it is mostly
-readable :). The only issue of importance is consistency along all the source
-files so i'll try to keep up with the rest of ide.
-
-> > > @@ -819,8 +819,8 @@
-> > >  static void restore_request(struct request *rq)
-> > >  {
-> > >  	if (rq->buffer != bio_data(rq->bio)) {
-> > > -		sector_t n = (rq->buffer - (char *) bio_data(rq->bio)) /
-> > > -				SECTOR_SIZE;
-> > > +		sector_t n =
-> > > +			(rq->buffer - (char *)bio_data(rq->bio)) / SECTOR_SIZE;
+> > Personally, I think this change is very good. But send_sigqueue() and
+> > send_group_sigqueue() have a very subtle difference which I was never
+> > able to understand.
 > > 
-> > i must say, lines like this one always look ugly, no matter the formatting
-> > tricks.
+> > Let's suppose that sigqueue is already queued, and the signal is ignored
+> > (the latter means we should re-schedule cpu timer or handle overrruns).
+> > In that case send_sigqueue() returns 0, but send_group_sigqueue() returns 1.
+> > 
+> > I think this is not the problem (in fact, I think this patch makes the
+> > behaviour more correct), but I hope Thomas can take a look and confirm.
 > 
-> For this case there is a simple solution: fix ide-cd to use hwif->sg_table
-> instead of having it to walk rq->bio's and the whole function will vanish. ;-)
+> It should not change anything. We should never have a signal enqueued
+> when it's ignored anyway.
 
-Is this hwif->sg_table walk something similar to what it is being done in
-ide_build_sglist() or ide_build_dmatable()?
+Well, it _is_ possible. Suppose that the signal is both ignored and blocked.
+Now, if the task unblocks the signal, it could be ignored, queued, and
+sig_ignored() == T.
 
-> [ IOW We are putting way too much time into these coding style fixes and as
->   the old code is replaced with the new one the coding style improves itself. ]
+But yes, I think you are right, this can't change anything. I just wanted
+to be sure there is no subtle reason to prefer one way or another.
 
-Exactly my thoughts. On the one hand, it is important to clean up the code
-before you stare at it for a magnitude of hours looking for bugs and actually this
-cleanup was supposed to be really brief, to begin with, but you know how things
-really work out in reality :). On the other hand, there are places in ide-cd that
-are just horrible and need rewriting, besides API changes.
+> Roland, any insight why this is different aside of a copy and paste
+> error ?
 
-On a different note, i'm working on ripping out pipelining from ide-tape
-since this'll make ATAPI unification a lot easier. Do you happen to have figured
-out what this tape->merge_stage is supposed to do, i know it is a pipeline stage
-and in all r/w requests the tape->merge_stage->bh is the buffer that
-receives/sends the data to/from the device but still it looks really strange.
-What i've done so far is remove the pipeline control algos and have kept the
-tape->merge_stage for simplicity. In a different cycle i'll have to kick it out
-too replacing it with a simple data buffer.
+I guess this was the reason for the difference.
 
-Any ideas?
+Oleg.
 
-Thanks.
-
--- 
-Regards/Gruﬂ,
-    Boris.
