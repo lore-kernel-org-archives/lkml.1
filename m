@@ -1,183 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761622AbYB1TPh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761986AbYB1TR7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761622AbYB1TPh (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Feb 2008 14:15:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760001AbYB1TO6
+	id S1761986AbYB1TR7 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Feb 2008 14:17:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755418AbYB1TRu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Feb 2008 14:14:58 -0500
-Received: from wx-out-0506.google.com ([66.249.82.227]:16115 "EHLO
-	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755418AbYB1TOz (ORCPT
+	Thu, 28 Feb 2008 14:17:50 -0500
+Received: from moutng.kundenserver.de ([212.227.126.179]:53090 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755323AbYB1TRt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Feb 2008 14:14:55 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=X1LBptJf1Xia2Tc5mUlC7zzlwha6BO/95U320Jns7Fo+9ZulSlhj2EwxoljXdelHBbholxvw8WkMiPChorduTEH/A6ZTbDxNFZ3Om5csDuTzabJSkyxLCi0vY6Mt4wQMqJ2kMBJYFqTkPAW4ah8cQMdITJnJ6ygKgd2dgf7oDpk=
-Message-ID: <5d75f4610802281114s6802b8aey6bb3748d09953df6@mail.gmail.com>
-Date: Fri, 29 Feb 2008 02:14:53 +0700
-From: "BuraphaLinux Server" <buraphalinuxserver@gmail.com>
-To: serge@hallyn.com
-Subject: Re: [PATCH 1/1] file capabilities: remove cap_task_kill()
-Cc: lkml <linux-kernel@vger.kernel.org>, linux-security-module@vger.kernel.org,
-       "Andrew Morgan" <morgan@kernel.org>,
-       "Stephen Smalley" <sds@epoch.ncsc.mil>,
-       "Mike Galbraith" <efault@gmx.de>, elendil@planet.nl
-In-Reply-To: <20080228173817.GA32661@vino.hallyn.com>
+	Thu, 28 Feb 2008 14:17:49 -0500
+Date: Thu, 28 Feb 2008 20:17:07 +0100 (CET)
+From: Bodo Eggert <7eggert@gmx.de>
+To: Michael Kerrisk <mtk.manpages@googlemail.com>
+cc: 7eggert@gmx.de, Davide Libenzi <davidel@xmailserver.org>,
+       Pierre Habouzit <madcoder@debian.org>,
+       lkml <linux-kernel@vger.kernel.org>, Eric Dumazet <dada1@cosmosbay.com>,
+       Marc Lehmann <schmorp@schmorp.de>,
+       David Schwartz <davids@webmaster.com>
+Subject: Re: epoll and shared fd's
+In-Reply-To: <cfd18e0f0802280410wccefb42ja66a2f4ee7513183@mail.gmail.com>
+Message-ID: <alpine.LSU.0.999.0802281942420.2968@be1.lrz>
+References: <9MZLT-1YO-33@gated-at.bofh.it> <9N6Ng-5tn-21@gated-at.bofh.it>
+  <9P5WE-33i-11@gated-at.bofh.it> <9Pk9l-1KA-1@gated-at.bofh.it> 
+ <9PNNZ-b0-5@gated-at.bofh.it> <a19Lb-1F0-13@gated-at.bofh.it> 
+ <a19Lb-1F0-11@gated-at.bofh.it>  <E1JU4Lu-0000mn-H2@be1.7eggert.dyndns.org>
+ <cfd18e0f0802280410wccefb42ja66a2f4ee7513183@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20080228173817.GA32661@vino.hallyn.com>
+Content-Type: TEXT/PLAIN; charset=us-ascii
+X-be10.7eggert.dyndns.org-MailScanner-Information: See www.mailscanner.info for information
+X-be10.7eggert.dyndns.org-MailScanner: Found to be clean
+X-be10.7eggert.dyndns.org-MailScanner-From: 7eggert@gmx.de
+X-Provags-ID: V01U2FsdGVkX1/WqAxHMDX10BPlitFONApCFvTWWiwJcUoHpJL
+ dps1ACuB+TgM2TVbY8GL5L9vGWbNa1RNV7xWmah3JVzPe1NPfG
+ JQGi1R1W2IeZZmdKHu77w==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-For 2.6.25-rc3,
-Tested-By: John Gatewood Ham <buraphalinuxserver@gmail.com>
+On Thu, 28 Feb 2008, Michael Kerrisk wrote:
 
-This fixes the 'at' command for non-root users.  Thank you.
+> On Tue, Feb 26, 2008 at 7:16 PM, Bodo Eggert <7eggert@gmx.de> wrote:
+> > Michael Kerrisk <mtk.manpages@googlemail.com> wrote:
+> >
+> >  > b) It seems to me that you text doesn't quite make the point explicit
+> >  > enough.  I've tried to rewrite it; could you please check:
+> >  >
+> >  >        A6     Yes, but be aware of the following point.  A  file
+> >  >               descriptor is a reference to an open file descrip-
+> >  >               tion (see  open(2)).   Whenever  a  descriptor  is
+> >  >               duplicated  via dup(2), dup2(2), fcntl(2) F_DUPFD,
+[.........]
 
+> >  > Does that seem okay?  I plan to include the text in man-pages-2.79.
+> >
+> >  It's hard to read for me, and probably very hard to read for others.
+> 
+> Bodo,
+> 
+> I'm just reviewing this text, trying to see if I can improve it.  At
+> the moment, I'm a little stuck.  can you say a little more about why
+> you find it hard to read?  that may help me improve it.
 
-On 2/29/08, serge@hallyn.com <serge@hallyn.com> wrote:
-> The original justification for cap_task_kill() was as follows:
->
-> 	check_kill_permission() does appropriate uid equivalence checks.
-> 	However with file capabilities it becomes possible for an
-> 	unprivileged user to execute a file with file capabilities
-> 	resulting in a more privileged task with the same uid.
->
-> However now that cap_task_kill() always returns 0 (permission
-> granted) when p->uid==current->uid, the whole hook is worthless,
-> and only likely to create more subtle problems in the corner cases
-> where it might still be called but return -EPERM.  Those cases
-> are basically when uids are different but euid/suid is equivalent
-> as per the check in check_kill_permission().
->
-> This patch removes cap_task_kill().
->
-> Signed-off-by: Serge Hallyn <serge@hallyn.com>
-> ---
->  include/linux/security.h   |    3 +--
->  security/capability.c      |    1 -
->  security/commoncap.c       |   40 ----------------------------------------
->  security/smack/smack_lsm.c |    5 -----
->  4 files changed, 1 insertions(+), 48 deletions(-)
->
-> diff --git a/include/linux/security.h b/include/linux/security.h
-> index fe52cde..95cb830 100644
-> --- a/include/linux/security.h
-> +++ b/include/linux/security.h
-> @@ -63,7 +63,6 @@ extern int cap_inode_need_killpriv(struct dentry *dentry);
->  extern int cap_inode_killpriv(struct dentry *dentry);
->  extern int cap_task_post_setuid (uid_t old_ruid, uid_t old_euid, uid_t
-> old_suid, int flags);
->  extern void cap_task_reparent_to_init (struct task_struct *p);
-> -extern int cap_task_kill(struct task_struct *p, struct siginfo *info, int
-> sig, u32 secid);
->  extern int cap_task_setscheduler (struct task_struct *p, int policy, struct
-> sched_param *lp);
->  extern int cap_task_setioprio (struct task_struct *p, int ioprio);
->  extern int cap_task_setnice (struct task_struct *p, int nice);
-> @@ -2138,7 +2137,7 @@ static inline int security_task_kill (struct
-> task_struct *p,
->  				      struct siginfo *info, int sig,
->  				      u32 secid)
->  {
-> -	return cap_task_kill(p, info, sig, secid);
-> +	return 0;
->  }
->
->  static inline int security_task_wait (struct task_struct *p)
-> diff --git a/security/capability.c b/security/capability.c
-> index 9e99f36..2c6e06d 100644
-> --- a/security/capability.c
-> +++ b/security/capability.c
-> @@ -40,7 +40,6 @@ static struct security_operations capability_ops = {
->  	.inode_need_killpriv =		cap_inode_need_killpriv,
->  	.inode_killpriv =		cap_inode_killpriv,
->
-> -	.task_kill =			cap_task_kill,
->  	.task_setscheduler =		cap_task_setscheduler,
->  	.task_setioprio =		cap_task_setioprio,
->  	.task_setnice =			cap_task_setnice,
-> diff --git a/security/commoncap.c b/security/commoncap.c
-> index bb0c095..06d5c94 100644
-> --- a/security/commoncap.c
-> +++ b/security/commoncap.c
-> @@ -540,41 +540,6 @@ int cap_task_setnice (struct task_struct *p, int nice)
->  	return cap_safe_nice(p);
->  }
->
-> -int cap_task_kill(struct task_struct *p, struct siginfo *info,
-> -				int sig, u32 secid)
-> -{
-> -	if (info != SEND_SIG_NOINFO && (is_si_special(info) ||
-> SI_FROMKERNEL(info)))
-> -		return 0;
-> -
-> -	/*
-> -	 * Running a setuid root program raises your capabilities.
-> -	 * Killing your own setuid root processes was previously
-> -	 * allowed.
-> -	 * We must preserve legacy signal behavior in this case.
-> -	 */
-> -	if (p->uid == current->uid)
-> -		return 0;
-> -
-> -	/* sigcont is permitted within same session */
-> -	if (sig == SIGCONT && (task_session_nr(current) == task_session_nr(p)))
-> -		return 0;
-> -
-> -	if (secid)
-> -		/*
-> -		 * Signal sent as a particular user.
-> -		 * Capabilities are ignored.  May be wrong, but it's the
-> -		 * only thing we can do at the moment.
-> -		 * Used only by usb drivers?
-> -		 */
-> -		return 0;
-> -	if (cap_issubset(p->cap_permitted, current->cap_permitted))
-> -		return 0;
-> -	if (capable(CAP_KILL))
-> -		return 0;
-> -
-> -	return -EPERM;
-> -}
-> -
->  /*
->   * called from kernel/sys.c for prctl(PR_CABSET_DROP)
->   * done without task_capability_lock() because it introduces
-> @@ -605,11 +570,6 @@ int cap_task_setnice (struct task_struct *p, int nice)
->  {
->  	return 0;
->  }
-> -int cap_task_kill(struct task_struct *p, struct siginfo *info,
-> -				int sig, u32 secid)
-> -{
-> -	return 0;
-> -}
->  #endif
->
->  void cap_task_reparent_to_init (struct task_struct *p)
-> diff --git a/security/smack/smack_lsm.c b/security/smack/smack_lsm.c
-> index 770eb06..a9ca412 100644
-> --- a/security/smack/smack_lsm.c
-> +++ b/security/smack/smack_lsm.c
-> @@ -1124,11 +1124,6 @@ static int smack_task_movememory(struct task_struct
-> *p)
->  static int smack_task_kill(struct task_struct *p, struct siginfo *info,
->  			   int sig, u32 secid)
->  {
-> -	int rc;
-> -
-> -	rc = cap_task_kill(p, info, sig, secid);
-> -	if (rc != 0)
-> -		return rc;
->  	/*
->  	 * Special cases where signals really ought to go through
->  	 * in spite of policy. Stephen Smalley suggests it may
-> --
-> 1.5.2.5
->
->
+I think it's enough to mention that the last copy of the file descriptor 
+(e.g. by dup or fork) must be closed *or* the file must be explicitely 
+unregistered (As far as I understand by now).
+-- 
+"Aim towards the Enemy."
+-Instruction printed on US Rocket Launcher
