@@ -1,49 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756087AbYB1G1b@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753550AbYB1Gfq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756087AbYB1G1b (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Feb 2008 01:27:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751582AbYB1G1W
+	id S1753550AbYB1Gfq (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Feb 2008 01:35:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752200AbYB1Gfh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Feb 2008 01:27:22 -0500
-Received: from gate.crashing.org ([63.228.1.57]:37181 "EHLO gate.crashing.org"
+	Thu, 28 Feb 2008 01:35:37 -0500
+Received: from chilli.pcug.org.au ([203.10.76.44]:34840 "EHLO smtps.tip.net.au"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750769AbYB1G1V (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Feb 2008 01:27:21 -0500
-Subject: Re: [PATCH 1/2] firewire: endianess fix
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Reply-To: benh@kernel.crashing.org
-To: Jarod Wilson <jwilson@redhat.com>
-Cc: Stefan Richter <stefanr@s5r6.in-berlin.de>,
-       Kristian Hoegsberg <krh@bitplanet.net>, linux-kernel@vger.kernel.org,
-       linuxppc-dev@ozlabs.org, sparclinux@vger.kernel.org,
-       linux1394-devel@lists.sourceforge.net, Sam Ravnborg <sam@ravnborg.org>,
-       Harvey Harrison <harvey.harrison@gmail.com>
-In-Reply-To: <200802272221.38985.jwilson@redhat.com>
-References: <20080220220326.GA22328@uranus.ravnborg.org>
-	 <200802271458.28401.jwilson@redhat.com>
-	 <1204166422.15052.334.camel@pasglop>
-	 <200802272221.38985.jwilson@redhat.com>
-Content-Type: text/plain
-Date: Thu, 28 Feb 2008 17:25:59 +1100
-Message-Id: <1204179959.15052.372.camel@pasglop>
+	id S1751006AbYB1Gfg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 28 Feb 2008 01:35:36 -0500
+Date: Thu, 28 Feb 2008 17:35:32 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: inux-next@vger.kernel.org
+Cc: LKML <linux-kernel@vger.kernel.org>
+Subject: linux-next: Tree for Feb 28
+Message-Id: <20080228173532.67549ca9.sfr@canb.auug.org.au>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.8; i486-pc-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Thu__28_Feb_2008_17_35_32_+1100_Dpa/m9lTwadhlmQ3"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+--Signature=_Thu__28_Feb_2008_17_35_32_+1100_Dpa/m9lTwadhlmQ3
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-> Under Mac OS X, system.log says "FireWire (OHCI) Apple ID 31 built-in now 
-> active". Could still be lucent though, judging by the subsys device ID of 
-> 5811, which matches up w/the Lucent/Agere FW323. But no, apparently I don't 
-> have the interesting one.
+Hi all,
 
-Well, it's interesting in the sense that it's a "normal" OHCI then on a
-BE machine :-) My Pismo, which had the weirdo one, unfortunately died a
-while ago. I'll see if I can find another machine with that one in.
+I have created today's linux-next tree at
+git://git.kernel.org/pub/scm/linux/kernel/git/sfr/linux-next.git.
 
+You can see which trees have been included by looking in the Next/Trees
+file in the source.  There are also quilt-import.log and merge.log files
+in the Next directory.  Between each merge, the tree was built with
+allmodconfig for both powerpc and x86_64.
+
+There was only one minor merge problem.
+
+We are up to 38 trees, more are welcome (even if they are currently
+empty).
+
+Status of my local build tests is at
+http://kisskb.ellerman.id.au/kisskb/branch/9/.  We have added a 64bit
+s390 compiler to our list.  If maintainers want to give advise about
+cross compilers/configs that work, we are always open to add more builds.
+
+Also, the linux-next tree is being build/boot tested by the guys at
+test.kernel.org.  Thanks to them.
+
+--=20
 Cheers,
-Ben.
+Stephen Rothwell                    sfr@canb.auug.org.au
 
+--Signature=_Thu__28_Feb_2008_17_35_32_+1100_Dpa/m9lTwadhlmQ3
+Content-Type: application/pgp-signature
 
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQFHxlY5TgG2atn1QN8RAu7EAJ931Xua2UV5lYy31LVXndSJ/tT3lgCePJ9f
+vVG/pqybRweF1e1tI4sP3KA=
+=Gp7j
+-----END PGP SIGNATURE-----
+
+--Signature=_Thu__28_Feb_2008_17_35_32_+1100_Dpa/m9lTwadhlmQ3--
