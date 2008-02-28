@@ -1,71 +1,262 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759937AbYB1Puq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761268AbYB1PwY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759937AbYB1Puq (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Feb 2008 10:50:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761313AbYB1Pu2
+	id S1761268AbYB1PwY (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Feb 2008 10:52:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758267AbYB1PwN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Feb 2008 10:50:28 -0500
-Received: from viefep31-int.chello.at ([62.179.121.49]:62176 "EHLO
-	viefep31-int.chello.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761288AbYB1Pu0 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Feb 2008 10:50:26 -0500
-Subject: Re: [PATCH] proc: Add RLIMIT_RTTIME to /proc/<pid>/limits
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Michael Kerrisk <mtk.manpages@googlemail.com>
-Cc: Michael Kerrisk <mtk.manpages@gmail.com>, Eugene Teo <eugeneteo@kernel.sg>,
-       linux-kernel@vger.kernel.org, Neil Horman <nhorman@tuxdriver.com>,
-       Ingo Molnar <mingo@elte.hu>
-In-Reply-To: <cfd18e0f0802280744q18ccad3at3c88bac166806118@mail.gmail.com>
-References: <20080208145950.GA3910@kernel.sg>
-	 <1202483445.6292.1.camel@lappy>
-	 <517f3f820802280712o3d756b4fq46461b226515e1f2@mail.gmail.com>
-	 <1204212100.12120.9.camel@twins>
-	 <cfd18e0f0802280744q18ccad3at3c88bac166806118@mail.gmail.com>
-Content-Type: text/plain
-Date: Thu, 28 Feb 2008 16:50:21 +0100
-Message-Id: <1204213821.12120.15.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.21.90 
+	Thu, 28 Feb 2008 10:52:13 -0500
+Received: from sacred.ru ([62.205.161.221]:58958 "EHLO sacred.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757636AbYB1PwM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 28 Feb 2008 10:52:12 -0500
+Message-ID: <47C6D885.90302@openvz.org>
+Date: Thu, 28 Feb 2008 18:51:33 +0300
+From: Pavel Emelyanov <xemul@openvz.org>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080213)
+MIME-Version: 1.0
+To: Andrew Morton <akpm@linux-foundation.org>,
+       David Miller <davem@davemloft.net>
+CC: Alexey Dobriyan <adobriyan@openvz.org>,
+       Linux Netdev List <netdev@vger.kernel.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       "Eric W. Biederman" <ebiederm@xmission.com>
+Subject: [PATCH 2/2] Make /proc/net a symlink and drop proc shadows
+References: <47C6D743.1050802@openvz.org>
+In-Reply-To: <47C6D743.1050802@openvz.org>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+X-Greylist: Sender succeeded SMTP AUTH authentication, not delayed by milter-greylist-3.0 (sacred.ru [62.205.161.221]); Thu, 28 Feb 2008 18:51:26 +0300 (MSK)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Turn /proc/net into a symlink, which behaves similar to /proc/self
+link - it points to .netns/<id> directory where the <id> is the id
+of net namespace, current task lives in.
 
-On Thu, 2008-02-28 at 16:44 +0100, Michael Kerrisk wrote:
-> Peter,
-> 
-> Thanks for the text.
-> 
-> On Thu, Feb 28, 2008 at 4:21 PM, Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:
-> >
-> >  On Thu, 2008-02-28 at 16:12 +0100, Michael Kerrisk wrote:
-> >  > Peter,
-> >  >
-> >  > Could you please provide some text describing RLIMIT_RTTIMEfor the
-> >  > getrlimit.2 man page.
-> >
-> >  The rlimit sets a timeout in [us] for SCHED_RR and SCHED_FIFO tasks.
-> >  This time is measured between sleeps, so a schedule in RR or a
-> >  preemption in either is not a sleep - the task needs to be dequeued and
-> >  enqueued for the timer to reset.
-> 
-> Just to clarify: sleep here means a call to some blocking syscall
-> (e.g., nanosleep(), read(), select(), etc.), right?  Is there anything
-> else that falls under the category of "sleep"?  What about a call to
-> sched_yield() where the process explicitly lets go of the CPU?
+# ls -l /proc/net
+lrwxrwxrwx  1 root root 8 Feb 28 18:38 /proc/net -> .netns/0
 
-Yes, and yes, others would be blocking on futexes and the like.
+The /proc/.netns dir contains subtrees for all the namespaces in 
+the system:
 
-> Also, is this limit per-thread or per-process?  I assume the latter --
-> but can you confirm please.
+# ls -l /proc/.netns/
+total 0
+dr-xr-xr-x  5 root root 0 Feb 28 18:39 0
+dr-xr-xr-x  3 root root 0 Feb 28 18:39 1
 
-Per process. Requests have been made to allow for per thread, but
-rlimits are not.
+To provide some security each /proc/.netns/<id> directory allows
+access to tasks that live in the owning namespace only (with the
+exception, that init_net tasks can see everything).
 
-Its really not meant as a fine-grained deadline notification mechanism,
-we have posix timers for that, but as a watchdog to ensure we behave
-'well'.
+Signed-off-by: Pavel Emelyanov <xemul@openvz.org>
 
+---
 
+diff --git a/fs/proc/generic.c b/fs/proc/generic.c
+index 68971e6..d4103e5 100644
+--- a/fs/proc/generic.c
++++ b/fs/proc/generic.c
+@@ -227,7 +227,7 @@ static const struct file_operations proc_file_operations = {
+ 	.write		= proc_file_write,
+ };
+ 
+-static int proc_notify_change(struct dentry *dentry, struct iattr *iattr)
++int proc_notify_change(struct dentry *dentry, struct iattr *iattr)
+ {
+ 	struct inode *inode = dentry->d_inode;
+ 	struct proc_dir_entry *de = PDE(inode);
+@@ -248,7 +248,7 @@ out:
+ 	return error;
+ }
+ 
+-static int proc_getattr(struct vfsmount *mnt, struct dentry *dentry,
++int proc_getattr(struct vfsmount *mnt, struct dentry *dentry,
+ 			struct kstat *stat)
+ {
+ 	struct inode *inode = dentry->d_inode;
+@@ -393,8 +393,6 @@ struct dentry *proc_lookup(struct inode * dir, struct dentry *dentry, struct nam
+ 			if (!memcmp(dentry->d_name.name, de->name, de->namelen)) {
+ 				unsigned int ino;
+ 
+-				if (de->shadow_proc)
+-					de = de->shadow_proc(current, de);
+ 				ino = de->low_ino;
+ 				de_get(de);
+ 				spin_unlock(&proc_subdir_lock);
+diff --git a/fs/proc/proc_net.c b/fs/proc/proc_net.c
+index 14e9b5a..8000ea4 100644
+--- a/fs/proc/proc_net.c
++++ b/fs/proc/proc_net.c
+@@ -83,14 +83,6 @@ struct net *get_proc_net(const struct inode *inode)
+ }
+ EXPORT_SYMBOL_GPL(get_proc_net);
+ 
+-static struct proc_dir_entry *shadow_pde;
+-
+-static struct proc_dir_entry *proc_net_shadow(struct task_struct *task,
+-						struct proc_dir_entry *de)
+-{
+-	return task->nsproxy->net_ns->proc_net;
+-}
+-
+ struct proc_dir_entry *proc_net_mkdir(struct net *net, const char *name,
+ 		struct proc_dir_entry *parent)
+ {
+@@ -102,47 +94,61 @@ struct proc_dir_entry *proc_net_mkdir(struct net *net, const char *name,
+ }
+ EXPORT_SYMBOL_GPL(proc_net_mkdir);
+ 
++static int proc_netns_id_permission(struct inode *inode, int mask,
++		struct nameidata *nd)
++{
++	struct net *net = current->nsproxy->net_ns;
++
++	if (net == &init_net || net == PDE(inode)->data)
++		return generic_permission(inode, mask, NULL);
++	else
++		return -EACCES;
++}
++
++static const struct inode_operations proc_netns_id_ops = {
++	.lookup		= proc_lookup,
++	.getattr	= proc_getattr,
++	.setattr	= proc_notify_change,
++	.permission	= proc_netns_id_permission,
++};
++
++static struct proc_dir_entry *netns_dir;
++
+ static __net_init int proc_net_ns_init(struct net *net)
+ {
+-	struct proc_dir_entry *root, *netd, *net_statd;
+-	int err;
++	struct proc_dir_entry *netd, *net_statd;
++	char id[PROC_NUMBUF];
+ 
+-	err = -ENOMEM;
+-	root = kzalloc(sizeof(*root), GFP_KERNEL);
+-	if (!root)
+-		goto out;
++	snprintf(id, sizeof(id), "%d", net->id);
+ 
+-	err = -EEXIST;
+-	netd = proc_net_mkdir(net, "net", root);
++	netd = proc_net_mkdir(net, id, netns_dir);
+ 	if (!netd)
+-		goto free_root;
++		goto out;
++
++	netd->proc_iops = &proc_netns_id_ops;
+ 
+-	err = -EEXIST;
+ 	net_statd = proc_net_mkdir(net, "stat", netd);
+ 	if (!net_statd)
+ 		goto free_net;
+ 
+-	root->data = net;
+-
+-	net->proc_net_root = root;
+ 	net->proc_net = netd;
+ 	net->proc_net_stat = net_statd;
+-	err = 0;
++	return 0;
+ 
+-out:
+-	return err;
+ free_net:
+-	remove_proc_entry("net", root);
+-free_root:
+-	kfree(root);
+-	goto out;
++	remove_proc_entry(id, netns_dir);
++out:
++	return -ENOMEM;
+ }
+ 
+ static __net_exit void proc_net_ns_exit(struct net *net)
+ {
++	char id[PROC_NUMBUF];
++
++	snprintf(id, sizeof(id), "%d", net->id);
++
+ 	remove_proc_entry("stat", net->proc_net);
+-	remove_proc_entry("net", net->proc_net_root);
+-	kfree(net->proc_net_root);
++	remove_proc_entry(id, netns_dir);
+ }
+ 
+ static struct pernet_operations __net_initdata proc_net_ns_ops = {
+@@ -150,10 +156,36 @@ static struct pernet_operations __net_initdata proc_net_ns_ops = {
+ 	.exit = proc_net_ns_exit,
+ };
+ 
++static int proc_net_readlink(struct dentry *dentry, char __user *buffer,
++			      int buflen)
++{
++	char tmp[PROC_NUMBUF];
++
++	sprintf(tmp, ".netns/%d", current->nsproxy->net_ns->id);
++	return vfs_readlink(dentry, buffer, buflen, tmp);
++}
++
++static void *proc_net_follow_link(struct dentry *dentry, struct nameidata *nd)
++{
++	char tmp[PROC_NUMBUF];
++
++	sprintf(tmp, ".netns/%d", current->nsproxy->net_ns->id);
++	return ERR_PTR(vfs_follow_link(nd, tmp));
++}
++
++static const struct inode_operations proc_net_link_ops = {
++	.readlink	= proc_net_readlink,
++	.follow_link	= proc_net_follow_link,
++};
++
+ int __init proc_net_init(void)
+ {
+-	shadow_pde = proc_mkdir("net", NULL);
+-	shadow_pde->shadow_proc = proc_net_shadow;
++	struct proc_dir_entry *nnet;
++
++	netns_dir = proc_mkdir(".netns", NULL);
++	nnet = proc_symlink("net", NULL, ".netns/0");
++
++	nnet->proc_iops = &proc_net_link_ops;
+ 
+ 	return register_pernet_subsys(&proc_net_ns_ops);
+ }
+diff --git a/include/linux/proc_fs.h b/include/linux/proc_fs.h
+index d9a9e71..be0c9b7 100644
+--- a/include/linux/proc_fs.h
++++ b/include/linux/proc_fs.h
+@@ -82,7 +82,6 @@ struct proc_dir_entry {
+ 	int pde_users;	/* number of callers into module in progress */
+ 	spinlock_t pde_unload_lock; /* proc_fops checks and pde_users bumps */
+ 	struct completion *pde_unload_completion;
+-	shadow_proc_t *shadow_proc;
+ };
+ 
+ struct kcore_list {
+@@ -145,6 +144,9 @@ extern struct inode *proc_get_inode(struct super_block *, unsigned int, struct p
+  */
+ extern int proc_readdir(struct file *, void *, filldir_t);
+ extern struct dentry *proc_lookup(struct inode *, struct dentry *, struct nameidata *);
++extern int proc_getattr(struct vfsmount *mnt, struct dentry *dentry,
++			struct kstat *stat);
++extern int proc_notify_change(struct dentry *dentry, struct iattr *iattr);
+ 
+ extern const struct file_operations proc_kcore_operations;
+ extern const struct file_operations proc_kmsg_operations;
+diff --git a/include/net/net_namespace.h b/include/net/net_namespace.h
+index 28738b7..8aedfd6 100644
+--- a/include/net/net_namespace.h
++++ b/include/net/net_namespace.h
+@@ -32,7 +32,6 @@ struct net {
+ 
+ 	struct proc_dir_entry 	*proc_net;
+ 	struct proc_dir_entry 	*proc_net_stat;
+-	struct proc_dir_entry 	*proc_net_root;
+ 
+ 	struct list_head	sysctl_table_headers;
+ 
