@@ -1,71 +1,143 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763329AbYB1ULW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763561AbYB1UNj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763329AbYB1ULW (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Feb 2008 15:11:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752962AbYB1ULM
+	id S1763561AbYB1UNj (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Feb 2008 15:13:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753733AbYB1UN2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Feb 2008 15:11:12 -0500
-Received: from wolverine01.qualcomm.com ([199.106.114.254]:32837 "EHLO
-	wolverine01.qualcomm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752439AbYB1ULL (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Feb 2008 15:11:11 -0500
-X-IronPort-AV: E=McAfee;i="5200,2160,5241"; a="988320"
-Message-ID: <47C7155C.5060607@qualcomm.com>
-Date: Thu, 28 Feb 2008 12:11:08 -0800
-From: Max Krasnyansky <maxk@qualcomm.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+	Thu, 28 Feb 2008 15:13:28 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:54999 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752516AbYB1UN1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 28 Feb 2008 15:13:27 -0500
+Date: Thu, 28 Feb 2008 21:13:15 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Alexey Zaytsev <alexey.zaytsev@gmail.com>
+Cc: Thomas Gleixner <tglx@linutronix.de>, lkml <linux-kernel@vger.kernel.org>
+Subject: Re: printk timestamps jumping back and forth in 2.6.25-rc.
+Message-ID: <20080228201315.GA30736@elte.hu>
+References: <f19298770802280626g5ee17328ldedf7658a9f26f56@mail.gmail.com>
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Paul Jackson <pj@sgi.com>, a.p.zijlstra@chello.nl, tglx@linutronix.de,
-       oleg@tv-sign.ru, rostedt@goodmis.org, linux-kernel@vger.kernel.org
-Subject: Re: [RFC/PATCH 0/4] CPUSET driven CPU isolation
-References: <20080227222103.673194000@chello.nl> <20080228075010.GA28781@elte.hu> <20080228020808.3fd22f77.pj@sgi.com> <20080228090847.GA1133@elte.hu> <20080228031710.3405e405.pj@sgi.com> <20080228104637.GA9129@elte.hu>
-In-Reply-To: <20080228104637.GA9129@elte.hu>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <f19298770802280626g5ee17328ldedf7658a9f26f56@mail.gmail.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
-> * Paul Jackson <pj@sgi.com> wrote:
+
+* Alexey Zaytsev <alexey.zaytsev@gmail.com> wrote:
+
+>     fix CONFIG_PRINT_TIME's reliance on sched_clock() and use 
+>     cpu_clock() instead.
 > 
->> But your words sound alot like what we at SGI call a 'boot' cpuset.
->>
->> Our big honkin NUMA customers, who are managing most of the system 
->> either for a few dedicated, very-important jobs, and/or under a batch 
->> scheduler, need to leave a few nodes to run the classic Unix load such 
->> as init, cron, assorted daemons and the admins login shell.
->>
->> So we provide them some init script mechanisms that make it easy to 
->> set this up, which includes moving every task (not many at the low 
->> numbered init script time this runs) that isn't pinned (doesn't have a 
->> restricted Cpus_allowed) into the boot cpuset, conventionally named 
->> /dev/cpuset/boot.
+>     Reported-and-bisected-by: Stefano Brivio <stefano.brivio@polimi.it>
+>     Signed-off-by: Ingo Molnar <mingo@elte.hu>
 > 
-> yes. Ideally Peter's patchset should turn into something equivalent and 
-> i very much agree with Peter's arguments. There was never any design 
-> level problem with cpusets, and the parallel cpu_isolated_map approach 
-> was misdirected IMO.
-> 
-> There was indeed a problem with the _manageability_ of cpusets in 
-> certain (rather new) usecases like real-time or virtualization, and how 
-> they are connected to other system resources like IRQs and how easy it 
-> is to manage these resources. IRQs should probably be tied to specific 
-> cpusets and should migrate together with them, were the span of that 
-> cpuset be changed. (by default they'd be tied to the boot cpuset)
-> 
-> IMO Peter's patchset is a good first step in that it removes the 
-> cpu_isolated_map API hack, and i think we should try to go the whole way 
-> and just offer a /dev/cpuset/boot/ default set that can then be 
-> restricted to isolate the default workloads away from other CPUs.
+> which sound like "happy debugging, losers" to me. ;)
 
-I like the concept of the "boot" set. But we still need a separate "system"
-flag. Users should not have to move cpu back into the "boot" set to allow for
-kernel (irqs, etc) activity on it. And it's just more explicit and clear that way.
+i hope not :)
 
-Max
+> Anything else I can do?
 
+yes, please test the patch below - does it fix the problem?
 
+	Ingo
 
+------------------>
+Subject: sched: make cpu_clock() globally synchronous
+From: Ingo Molnar <mingo@elte.hu>
+Date: Thu Feb 28 21:00:21 CET 2008
+
+Alexey Zaytsev reported (and bisected) that the introduction of 
+cpu_clock() in printk made the timestamps jump back and forth.
+
+Make cpu_clock() more reliable while still keeping it fast when it's 
+called frequently.
+
+Bisected-by: Alexey Zaytsev <alexey.zaytsev@gmail.com>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+---
+ kernel/sched.c |   52 +++++++++++++++++++++++++++++++++++++++++++++++++---
+ 1 file changed, 49 insertions(+), 3 deletions(-)
+
+Index: linux/kernel/sched.c
+===================================================================
+--- linux.orig/kernel/sched.c
++++ linux/kernel/sched.c
+@@ -710,11 +710,39 @@ static inline u64 global_rt_runtime(void
+ 	return (u64)sysctl_sched_rt_runtime * NSEC_PER_USEC;
+ }
+ 
++static const unsigned long long time_sync_thresh = 100000;
++
++static DEFINE_PER_CPU(unsigned long long, time_offset);
++static DEFINE_PER_CPU(unsigned long long, prev_cpu_time);
++
+ /*
+- * For kernel-internal use: high-speed (but slightly incorrect) per-cpu
+- * clock constructed from sched_clock():
++ * Global lock which we take every now and then to synchronize
++ * the CPUs time. This method is not warp-safe, but it's good
++ * enough to synchronize slowly diverging time sources and thus
++ * it's good enough for tracing:
+  */
+-unsigned long long cpu_clock(int cpu)
++static DEFINE_SPINLOCK(time_sync_lock);
++static unsigned long long prev_global_time;
++
++static unsigned long long __sync_cpu_clock(cycles_t time, int cpu)
++{
++	unsigned long flags;
++
++	spin_lock_irqsave(&time_sync_lock, flags);
++
++	if (time < prev_global_time) {
++		per_cpu(time_offset, cpu) += prev_global_time - time;
++		time = prev_global_time;
++	} else {
++		prev_global_time = time;
++	}
++
++	spin_unlock_irqrestore(&time_sync_lock, flags);
++
++	return time;
++}
++
++static unsigned long long __cpu_clock(int cpu)
+ {
+ 	unsigned long long now;
+ 	unsigned long flags;
+@@ -735,6 +763,24 @@ unsigned long long cpu_clock(int cpu)
+ 
+ 	return now;
+ }
++
++/*
++ * For kernel-internal use: high-speed (but slightly incorrect) per-cpu
++ * clock constructed from sched_clock():
++ */
++unsigned long long cpu_clock(int cpu)
++{
++	unsigned long long prev_cpu_time, time, delta_time;
++
++	prev_cpu_time = per_cpu(prev_cpu_time, cpu);
++	time = __cpu_clock(cpu) + per_cpu(time_offset, cpu);
++	delta_time = time-prev_cpu_time;
++
++	if (unlikely(delta_time > time_sync_thresh))
++		time = __sync_clock(time, cpu);
++
++	return time;
++}
+ EXPORT_SYMBOL_GPL(cpu_clock);
+ 
+ #ifndef prepare_arch_switch
