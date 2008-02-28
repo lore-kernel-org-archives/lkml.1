@@ -1,57 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932554AbYB1VgS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932462AbYB1ViB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932554AbYB1VgS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Feb 2008 16:36:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752116AbYB1VgG
+	id S932462AbYB1ViB (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Feb 2008 16:38:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757241AbYB1Vhx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Feb 2008 16:36:06 -0500
-Received: from smtp117.sbc.mail.re3.yahoo.com ([66.196.96.90]:47549 "HELO
-	smtp117.sbc.mail.re3.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1750895AbYB1VgG (ORCPT
+	Thu, 28 Feb 2008 16:37:53 -0500
+Received: from smtp123.sbc.mail.re3.yahoo.com ([66.196.96.96]:45407 "HELO
+	smtp123.sbc.mail.re3.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1752116AbYB1Vhw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Feb 2008 16:36:06 -0500
-X-YMail-OSG: 3YxRm8sVM1l.2rUL7wPutLRcBwLeq72_9qhX3qK3okgxATGsvUXC9rvd0ehev32IwvDb0Zpptq9szY9SXVyIvOBWpMQXakLOiXxDmDZSEBuPUEYbdz.lsQmvkO4IXlJla0Pnma6GrbFW0kA-
+	Thu, 28 Feb 2008 16:37:52 -0500
+X-YMail-OSG: wA_RZH0VM1nkBtCcDfqVWRFzZRB_kT8l3xuvdWlKupuemcZxSO2.Q9DfyzxxVCCD1O7XUC.HgA--
 X-Yahoo-Newman-Property: ymail-3
-Date: Thu, 28 Feb 2008 15:33:19 -0600
+Date: Thu, 28 Feb 2008 15:35:07 -0600
 From: serge@hallyn.com
-To: Paul Menage <menage@google.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, containers@lists.osdl.org,
-       linux-kernel@vger.kernel.org, balbir@linux.vnet.ibm.com,
-       a.p.zijlstra@chello.nl, xemul@openvz.org, pj@sgi.com
-Subject: Re: [RFC] Prefixing cgroup generic control filenames with "cgroup."
-Message-ID: <20080228213319.GC1232@vino.hallyn.com>
-References: <6599ad830802281314s25c033d6tc021725ae28aef8d@mail.gmail.com> <20080228132142.4d4b1eef.akpm@linux-foundation.org> <6599ad830802281328q162d0585v3ac6b45a119a4a05@mail.gmail.com>
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+Cc: serge@hallyn.com, Andrew Morton <akpm@linux-foundation.org>,
+       Pavel Emelyanov <xemul@openvz.org>, Oleg Nesterov <oleg@tv-sign.ru>,
+       linux-kernel@vger.kernel.org, Andrew Morgan <morgan@kernel.org>
+Subject: Re: Fw: [PATCH 1/1] file capabilities: simplify signal check
+Message-ID: <20080228213507.GD1232@vino.hallyn.com>
+References: <20080223000237.518aace0.akpm@linux-foundation.org> <m17igu6e73.fsf@ebiederm.dsl.xmission.com> <20080227043306.GA9293@vino.hallyn.com> <m1tzjs4yn6.fsf@ebiederm.dsl.xmission.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <6599ad830802281328q162d0585v3ac6b45a119a4a05@mail.gmail.com>
+In-Reply-To: <m1tzjs4yn6.fsf@ebiederm.dsl.xmission.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Quoting Paul Menage (menage@google.com):
-> On Thu, Feb 28, 2008 at 1:21 PM, Andrew Morton
-> <akpm@linux-foundation.org> wrote:
+Quoting Eric W. Biederman (ebiederm@xmission.com):
+> serge@hallyn.com writes:
 > 
+> > Quoting Eric W. Biederman (ebiederm@xmission.com):
+> >> Andrew Morton <akpm@linux-foundation.org> writes:
+> >> 
+> >> > um, is that code namespace-clean?
+> >> 
+> >> Choke, gag.
 > >
-> >  Because if something is in /foo/bar/cgroup/notify_on_release then
-> >  prefixing the filename with "cgroup_" seems pretty pointless.
+> > Oh, sorry, I got lost in the set of patches in the message.  To be
+> > clear, my little 4-patch uid-ns-signal patchset can simply be updated
+> > to make the cap_task_kill() uid check into if (task_user_equiv(current, p)
 > >
+> > But Eric if you simply drop cap_task_kill() (don't make it return 0,
+> > just drop the function and go back to not setting task_kill in the
+> > capability_security_ops) I'll ack that.  Else I'll write the patch
+> > thursday.  At this point the only thing that will be denied by
+> > cap_task_kill() but not by check_kill_permission() is funky euid cases.
+> > That's wrong.  (cc'ing amorgan in the event I'm forgetting something
+> > useful the fn is doing)
 > 
-> The point would be to avoid situations where a user has code that
-> creates a group directory called "foo", and then in a future kernel
-> release cgroups introduces a control file called "foo". If it's
-> prefixed, then the user just has to avoid creating groups prefixed by
-> "cgroup." or any subsystem name, so collisions will be less likely.
+> Go ahead.   I'm fighting a cold and am fairly overloaded at the moment.
+> 
+> Eric
 
-Have you already run into that case?
-
-You said the set of files belong to cgroup itself is likely to increase
-- do you have some candidates in mind?  Perhaps ones which are likely
-to conflict with choice taskgroup names?
-
-If anything I'd say add a 'prefix_cgroup' mount option and use it to
-decide whether to prefix or not (rather than use the noprefix option).
+Thanks - patch sent a little while ago.  The description explains why
+I believe cap_task_kill() became worthless (not just 'it's inconvenient' :)
 
 -serge
