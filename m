@@ -1,160 +1,258 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763998AbYB1Tr1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762693AbYB1Trq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763998AbYB1Tr1 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Feb 2008 14:47:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762648AbYB1TmQ
+	id S1762693AbYB1Trq (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Feb 2008 14:47:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761801AbYB1TmR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Feb 2008 14:42:16 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:45315 "EHLO mx1.redhat.com"
+	Thu, 28 Feb 2008 14:42:17 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:45319 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1763300AbYB1TmD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Feb 2008 14:42:03 -0500
-Message-Id: <20080228192929.285488161@redhat.com>
+	id S1763305AbYB1TmE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 28 Feb 2008 14:42:04 -0500
+Message-Id: <20080228192928.566747790@redhat.com>
 References: <20080228192908.126720629@redhat.com>
 User-Agent: quilt/0.46-1
-Date: Thu, 28 Feb 2008 14:29:23 -0500
+Date: Thu, 28 Feb 2008 14:29:16 -0500
 From: Rik van Riel <riel@redhat.com>
 To: linux-kernel@vger.kernel.org
 Cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Lee Schermerhorn <Lee.Schermerhorn@hp.com>, linux-mm@kvack.org,
-       Lee Schermerhorn <lee.schermerhorn@hp.com>
-Subject: [patch 15/21] ramfs pages are non-reclaimable
-Content-Disposition: inline; filename=noreclaim-02-ramdisk-and-ramfs-pages-are-nonreclaimable.patch
+       Lee Schermerhorn <Lee.Schermerhorn@hp.com>, linux-mm@kvack.org
+Subject: [patch 08/21] (NEW) add some sanity checks to get_scan_ratio
+Content-Disposition: inline; filename=rvr-04-linux-2.6-scan-ratio-fixes.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-V3 -> V4:
-+ drivers/block/rd.c was replaced by brd.c in 24-rc4-mm1.
-  Update patch to add brd_open() to mark mapping as nonreclaimable
+The access ratio based scan rate determination in get_scan_ratio
+works ok in most situations, but needs to be corrected in some
+corner cases:
+- if we run out of swap space, do not bother scanning the anon LRUs
+- if we have already freed all of the page cache, we need to scan
+  the anon LRUs
+- restore the *actual* access ratio based scan rate algorithm, the
+  previous versions of this patch series had the wrong version
+- scale the number of pages added to zone->nr_scan[l]
 
-V2 -> V3:
-+  rebase to 23-mm1 atop RvR's split LRU series [no changes]
+Signed-off-by: Rik van Riel <riel@redhat.com>
 
-V1 -> V2:
-+  add ramfs pages to this class of non-reclaimable pages by
-   marking ramfs address_space [mapping] as non-reclaimble.
-
-Christoph Lameter pointed out that ram disk pages also clutter the
-LRU lists.  When vmscan finds them dirty and tries to clean them,
-the ram disk writeback function just redirties the page so that it
-goes back onto the active list.  Round and round she goes...
-
-Define new address_space flag [shares address_space flags member
-with mapping's gfp mask] to indicate that the address space contains
-all non-reclaimable pages.  This will provide for efficient testing
-of ramdisk pages in page_reclaimable().
-
-Also provide wrapper functions to set/test the noreclaim state to
-minimize #ifdefs in ramdisk driver and any other users of this
-facility.
-
-Set the noreclaim state on address_space structures for new
-ramdisk inodes.  Test the noreclaim state in page_reclaimable()
-to cull non-reclaimable pages.
-
-Similarly, ramfs pages are non-reclaimable.  Set the 'noreclaim'
-address_space flag for new ramfs inodes.
-
-These changes depend on [CONFIG_]NORECLAIM.
-
-
-Signed-off-by:  Lee Schermerhorn <lee.schermerhorn@hp.com>
-Signed-off-by:  Rik van Riel <riel@redhat.com>
-
-Index: linux-2.6.25-rc2-mm1/include/linux/pagemap.h
-===================================================================
---- linux-2.6.25-rc2-mm1.orig/include/linux/pagemap.h	2008-02-19 16:23:08.000000000 -0500
-+++ linux-2.6.25-rc2-mm1/include/linux/pagemap.h	2008-02-28 12:48:52.000000000 -0500
-@@ -30,6 +30,28 @@ static inline void mapping_set_error(str
- 	}
- }
- 
-+#ifdef CONFIG_NORECLAIM
-+#define AS_NORECLAIM	(__GFP_BITS_SHIFT + 2)	/* e.g., ramdisk, SHM_LOCK */
-+
-+static inline void mapping_set_noreclaim(struct address_space *mapping)
-+{
-+	set_bit(AS_NORECLAIM, &mapping->flags);
-+}
-+
-+static inline int mapping_non_reclaimable(struct address_space *mapping)
-+{
-+	if (mapping && (mapping->flags & AS_NORECLAIM))
-+		return 1;
-+	return 0;
-+}
-+#else
-+static inline void mapping_set_noreclaim(struct address_space *mapping) { }
-+static inline int mapping_non_reclaimable(struct address_space *mapping)
-+{
-+	return 0;
-+}
-+#endif
-+
- static inline gfp_t mapping_gfp_mask(struct address_space * mapping)
- {
- 	return (__force gfp_t)mapping->flags & __GFP_BITS_MASK;
 Index: linux-2.6.25-rc2-mm1/mm/vmscan.c
 ===================================================================
---- linux-2.6.25-rc2-mm1.orig/mm/vmscan.c	2008-02-28 12:48:01.000000000 -0500
-+++ linux-2.6.25-rc2-mm1/mm/vmscan.c	2008-02-28 12:48:52.000000000 -0500
-@@ -2283,6 +2283,7 @@ int zone_reclaim(struct zone *zone, gfp_
-  *               If !NULL, called from fault path.
-  *
-  * Reasons page might not be reclaimable:
-+ * + page's mapping marked non-reclaimable
-  * TODO - later patches
-  *
-  * TODO:  specify locking assumptions
-@@ -2292,6 +2293,9 @@ int page_reclaimable(struct page *page, 
+--- linux-2.6.25-rc2-mm1.orig/mm/vmscan.c	2008-02-28 00:29:35.000000000 -0500
++++ linux-2.6.25-rc2-mm1/mm/vmscan.c	2008-02-28 00:29:40.000000000 -0500
+@@ -906,8 +906,13 @@ static unsigned long shrink_inactive_lis
+ 		__mod_zone_page_state(zone, NR_INACTIVE_ANON,
+ 						-count[LRU_INACTIVE_ANON]);
  
- 	VM_BUG_ON(PageNoreclaim(page));
+-		if (scan_global_lru(sc))
++		if (scan_global_lru(sc)) {
+ 			zone->pages_scanned += nr_scan;
++			zone->recent_scanned_anon += count[LRU_ACTIVE_ANON] +
++						     count[LRU_INACTIVE_ANON];
++			zone->recent_scanned_file += count[LRU_ACTIVE_FILE] +
++						     count[LRU_INACTIVE_FILE];
++		}
+ 		spin_unlock_irq(&zone->lru_lock);
  
-+	if (mapping_non_reclaimable(page_mapping(page)))
-+		return 0;
+ 		nr_scanned += nr_scan;
+@@ -957,11 +962,13 @@ static unsigned long shrink_inactive_lis
+ 			VM_BUG_ON(PageLRU(page));
+ 			SetPageLRU(page);
+ 			list_del(&page->lru);
+-			if (page_file_cache(page)) {
++			if (page_file_cache(page))
+ 				lru += LRU_FILE;
+-				zone->recent_rotated_file++;
+-			} else {
+-				zone->recent_rotated_anon++;
++			if (scan_global_lru(sc)) {
++				if (page_file_cache(page))
++					zone->recent_rotated_file++;
++				else
++					zone->recent_rotated_anon++;
+ 			}
+ 			if (PageActive(page))
+ 				lru += LRU_ACTIVE;
+@@ -1040,8 +1047,13 @@ static void shrink_active_list(unsigned 
+ 	 * zone->pages_scanned is used for detect zone's oom
+ 	 * mem_cgroup remembers nr_scan by itself.
+ 	 */
+-	if (scan_global_lru(sc))
++	if (scan_global_lru(sc)) {
+ 		zone->pages_scanned += pgscanned;
++		if (file)
++			zone->recent_scanned_file += pgscanned;
++		else
++			zone->recent_scanned_anon += pgscanned;
++	}
+ 	if (file)
+ 		__mod_zone_page_state(zone, NR_ACTIVE_FILE, -pgmoved);
+ 	else
+@@ -1182,9 +1194,8 @@ static unsigned long shrink_list(enum lr
+ static void get_scan_ratio(struct zone *zone, struct scan_control * sc,
+ 					unsigned long *percent)
+ {
+-	unsigned long anon, file;
++	unsigned long anon, file, free;
+ 	unsigned long anon_prio, file_prio;
+-	unsigned long rotate_sum;
+ 	unsigned long ap, fp;
+ 
+ 	anon  = zone_page_state(zone, NR_ACTIVE_ANON) +
+@@ -1192,15 +1203,19 @@ static void get_scan_ratio(struct zone *
+ 	file  = zone_page_state(zone, NR_ACTIVE_FILE) +
+ 		zone_page_state(zone, NR_INACTIVE_FILE);
+ 
+-	rotate_sum = zone->recent_rotated_file + zone->recent_rotated_anon;
+-
+ 	/* Keep a floating average of RECENT references. */
+-	if (unlikely(rotate_sum > min(anon, file))) {
++	if (unlikely(zone->recent_scanned_anon > anon / zone->inactive_ratio)) {
+ 		spin_lock_irq(&zone->lru_lock);
+-		zone->recent_rotated_file /= 2;
++		zone->recent_scanned_anon /= 2;
+ 		zone->recent_rotated_anon /= 2;
+ 		spin_unlock_irq(&zone->lru_lock);
+-		rotate_sum /= 2;
++	}
 +
- 	/* TODO:  test page [!]reclaimable conditions */
++	if (unlikely(zone->recent_scanned_file > file / 4)) {
++		spin_lock_irq(&zone->lru_lock);
++		zone->recent_scanned_file /= 2;
++		zone->recent_rotated_file /= 2;
++		spin_unlock_irq(&zone->lru_lock);
+ 	}
  
- 	return 1;
-Index: linux-2.6.25-rc2-mm1/fs/ramfs/inode.c
-===================================================================
---- linux-2.6.25-rc2-mm1.orig/fs/ramfs/inode.c	2008-02-19 16:22:43.000000000 -0500
-+++ linux-2.6.25-rc2-mm1/fs/ramfs/inode.c	2008-02-28 12:48:52.000000000 -0500
-@@ -61,6 +61,7 @@ struct inode *ramfs_get_inode(struct sup
- 		inode->i_mapping->a_ops = &ramfs_aops;
- 		inode->i_mapping->backing_dev_info = &ramfs_backing_dev_info;
- 		mapping_set_gfp_mask(inode->i_mapping, GFP_HIGHUSER);
-+		mapping_set_noreclaim(inode->i_mapping);
- 		inode->i_atime = inode->i_mtime = inode->i_ctime = CURRENT_TIME;
- 		switch (mode & S_IFMT) {
- 		default:
-Index: linux-2.6.25-rc2-mm1/drivers/block/brd.c
-===================================================================
---- linux-2.6.25-rc2-mm1.orig/drivers/block/brd.c	2008-02-19 16:23:05.000000000 -0500
-+++ linux-2.6.25-rc2-mm1/drivers/block/brd.c	2008-02-28 12:48:52.000000000 -0500
-@@ -373,8 +373,21 @@ static int brd_ioctl(struct inode *inode
- 	return error;
+ 	/*
+@@ -1213,23 +1228,33 @@ static void get_scan_ratio(struct zone *
+ 	/*
+ 	 *                  anon       recent_rotated_anon
+ 	 * %anon = 100 * ----------- / ------------------- * IO cost
+-	 *               anon + file       rotate_sum
++	 *               anon + file   recent_scanned_anon
+ 	 */
+-	ap = (anon_prio * anon) / (anon + file + 1);
+-	ap *= rotate_sum / (zone->recent_rotated_anon + 1);
+-	if (ap == 0)
+-		ap = 1;
+-	else if (ap > 100)
+-		ap = 100;
+-	percent[0] = ap;
+-
+-	fp = (file_prio * file) / (anon + file + 1);
+-	fp *= rotate_sum / (zone->recent_rotated_file + 1);
+-	if (fp == 0)
+-		fp = 1;
+-	else if (fp > 100)
+-		fp = 100;
+-	percent[1] = fp;
++	ap = (anon_prio + 1) * (zone->recent_scanned_anon + 1);
++	ap /= zone->recent_rotated_anon + 1;
++
++	fp = (file_prio + 1) * (zone->recent_scanned_file + 1);
++	fp /= zone->recent_rotated_file + 1;
++
++	/* Normalize to percentages */
++	percent[0] = 100 * ap / (ap + fp + 1);
++	percent[1] = 100 - percent[0];
++
++	free = zone_page_state(zone, NR_FREE_PAGES);
++
++	/*
++	 * If we have no swap space, do not bother scanning anon pages.
++	 */
++	if (nr_swap_pages <= 0) {
++		percent[0] = 0;
++		percent[1] = 100;
++	}
++	/*
++	 * If we already freed most file pages, scan the anon pages
++	 * regardless of the page access ratios or swappiness setting.
++	 */
++	else if (file + free <= zone->pages_high)
++		percent[0] = 100;
  }
  
-+/*
-+ * brd_open():
-+ * Just mark the mapping as containing non-reclaimable pages
-+ */
-+static int brd_open(struct inode *inode, struct file *filp)
-+{
-+	struct address_space *mapping = inode->i_mapping;
+ 
+@@ -1250,13 +1275,17 @@ static unsigned long shrink_zone(int pri
+ 	for_each_lru(l) {
+ 		if (scan_global_lru(sc)) {
+ 			int file = is_file_lru(l);
++			int scan;
+ 			/*
+ 			 * Add one to nr_to_scan just to make sure that the
+-			 * kernel will slowly sift through the active list.
++			 * kernel will slowly sift through each list.
+ 			 */
+-			zone->nr_scan[l] += (zone_page_state(zone,
+-				NR_INACTIVE_ANON + l) >> priority) + 1;
+-			nr[l] = zone->nr_scan[l] * percent[file] / 100;
++			scan = zone_page_state(zone, NR_INACTIVE_ANON + l);
++			scan >>= priority;
++			scan = (scan * percent[file]) / 100;
 +
-+	mapping_set_noreclaim(mapping);
-+	return 0;
-+}
++			zone->nr_scan[l] += scan + 1;
++			nr[l] = zone->nr_scan[l];
+ 			if (nr[l] >= sc->swap_cluster_max)
+ 				zone->nr_scan[l] = 0;
+ 			else
+Index: linux-2.6.25-rc2-mm1/include/linux/mmzone.h
+===================================================================
+--- linux-2.6.25-rc2-mm1.orig/include/linux/mmzone.h	2008-02-28 00:29:35.000000000 -0500
++++ linux-2.6.25-rc2-mm1/include/linux/mmzone.h	2008-02-28 00:29:40.000000000 -0500
+@@ -300,6 +300,8 @@ struct zone {
+ 
+ 	unsigned long		recent_rotated_anon;
+ 	unsigned long		recent_rotated_file;
++	unsigned long		recent_scanned_anon;
++	unsigned long		recent_scanned_file;
+ 
+ 	unsigned long		pages_scanned;	   /* since last reclaim */
+ 	unsigned long		flags;		   /* zone flags, see below */
+Index: linux-2.6.25-rc2-mm1/mm/page_alloc.c
+===================================================================
+--- linux-2.6.25-rc2-mm1.orig/mm/page_alloc.c	2008-02-28 00:29:35.000000000 -0500
++++ linux-2.6.25-rc2-mm1/mm/page_alloc.c	2008-02-28 00:29:40.000000000 -0500
+@@ -3478,7 +3478,8 @@ static void __meminit free_area_init_cor
+ 		}
+ 		zone->recent_rotated_anon = 0;
+ 		zone->recent_rotated_file = 0;
+-//TODO recent_scanned_* ???
++		zone->recent_scanned_anon = 0;
++		zone->recent_scanned_file = 0;
+ 		zap_zone_vm_stats(zone);
+ 		zone->flags = 0;
+ 		if (!size)
+Index: linux-2.6.25-rc2-mm1/mm/swap.c
+===================================================================
+--- linux-2.6.25-rc2-mm1.orig/mm/swap.c	2008-02-28 00:27:06.000000000 -0500
++++ linux-2.6.25-rc2-mm1/mm/swap.c	2008-02-28 00:29:40.000000000 -0500
+@@ -191,8 +191,8 @@ void activate_page(struct page *page)
+ 
+ 	spin_lock_irq(&zone->lru_lock);
+ 	if (PageLRU(page) && !PageActive(page)) {
+-		int lru = LRU_BASE;
+-		lru += page_file_cache(page);
++		int file = page_file_cache(page);
++		int lru = LRU_BASE + file;
+ 		del_page_from_lru_list(zone, page, lru);
+ 
+ 		SetPageActive(page);
+@@ -200,6 +200,15 @@ void activate_page(struct page *page)
+ 		add_page_to_lru_list(zone, page, lru);
+ 		__count_vm_event(PGACTIVATE);
+ 		mem_cgroup_move_lists(page_get_page_cgroup(page), true);
 +
- static struct block_device_operations brd_fops = {
- 	.owner =		THIS_MODULE,
-+	.open  =		brd_open,
- 	.ioctl =		brd_ioctl,
- #ifdef CONFIG_BLK_DEV_XIP
- 	.direct_access =	brd_direct_access,
++		if (file) {
++			zone->recent_scanned_file++;
++			zone->recent_rotated_file++;
++		} else {
++			/* Can this happen?  Maybe through tmpfs... */
++			zone->recent_scanned_anon++;
++			zone->recent_rotated_anon++;
++		}
+ 	}
+ 	spin_unlock_irq(&zone->lru_lock);
+ }
 
 -- 
 All Rights Reversed
