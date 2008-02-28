@@ -1,118 +1,278 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759363AbYB1K0r@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759430AbYB1K1i@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759363AbYB1K0r (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Feb 2008 05:26:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754466AbYB1K0j
+	id S1759430AbYB1K1i (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Feb 2008 05:27:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754466AbYB1K1a
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Feb 2008 05:26:39 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:33396 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755139AbYB1K0i (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Feb 2008 05:26:38 -0500
-Subject: Re: [RFC/PATCH 0/4] CPUSET driven CPU isolation
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: David Rientjes <rientjes@google.com>
-Cc: Paul Jackson <pj@sgi.com>, Ingo Molnar <mingo@elte.hu>, tglx@linutronix.de,
-       oleg@tv-sign.ru, rostedt@goodmis.org, maxk@qualcomm.com,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <alpine.DEB.1.00.0802280212070.23040@chino.kir.corp.google.com>
-References: <20080227222103.673194000@chello.nl>
-	 <20080228075010.GA28781@elte.hu> <20080228020808.3fd22f77.pj@sgi.com>
-	 <20080228090847.GA1133@elte.hu> <20080228031710.3405e405.pj@sgi.com>
-	 <alpine.DEB.1.00.0802280129580.15900@chino.kir.corp.google.com>
-	 <alpine.DEB.1.00.0802280212070.23040@chino.kir.corp.google.com>
-Content-Type: text/plain
-Date: Thu, 28 Feb 2008 11:26:01 +0100
-Message-Id: <1204194361.6243.31.camel@lappy>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.21.90 
+	Thu, 28 Feb 2008 05:27:30 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:40054 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754878AbYB1K12 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 28 Feb 2008 05:27:28 -0500
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+From: Roland McGrath <roland@redhat.com>
+To: Jiri Kosina <jkosina@suse.cz>
+X-Fcc: ~/Mail/linus
+Cc: Oleg Nesterov <oleg@tv-sign.ru>, Davide Libenzi <davidel@xmailserver.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] [RFC] fix missed SIGCONT cases
+In-Reply-To: Jiri Kosina's message of  Wednesday, 27 February 2008 23:04:38 +0100 <Pine.LNX.4.64.0802272258150.3391@jikos.suse.cz>
+References: <Pine.LNX.4.64.0802271610330.3391@jikos.suse.cz>
+	<20080227210038.93AFC2700FD@magilla.localdomain>
+	<Pine.LNX.4.64.0802272258150.3391@jikos.suse.cz>
+Emacs: because one operating system isn't enough.
+Message-Id: <20080228102649.071572700FD@magilla.localdomain>
+Date: Thu, 28 Feb 2008 02:26:49 -0800 (PST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+My apologies!  I misread your original message and was looking only at the
+do_notify_parent_cldstop before the wakeup (CLD_STOPPED case), and not the
+one afterwards (CLD_CONTINUED) that you were referring to.  I do now
+understand the problem and see how it can happen as you describe.
 
-On Thu, 2008-02-28 at 02:12 -0800, David Rientjes wrote:
-> On Thu, 28 Feb 2008, David Rientjes wrote:
-> 
-> > Should the kernel refuse to move some threads, such as the migration 
-> > or watchdog kthreads, out of the root cpuset where the mems can be 
-> > adjusted to disallow access to the cpu to which they are bound?  This is 
-> > a quick way to cause a crash or soft lockup.
+I'm not very fond of your patch, though I think its behavior is probably
+correct.  I was hoping to find a solution that did not require changes
+outside handle_stop_signal, as those additions make the code that much more
+intricate and hard to follow.  But I haven't found one yet; an idea like
+moving the CLD_CONTINUED notification and its troublesome lock-dropping to
+before the wakeups is attractive, but I think it opens another can of worms
+not worth the trouble.  Perhaps Oleg can think of something simpler.
 
-Indeed, there is a hole in my cpus_match_system() logic in that when the
-system set is reduced to a single cpu, the tasks bound to that cpu also
-match.
+I prefer at least to do some cleanup while taking the same essential
+approach, and change the control flow only of the part that needs to move
+to fix this problem.  What do you think about the patch below?  (I have not
+tested this with your test case, nor much testing for other regressions.)
 
-I had wanted to avoid adding PF_ flags (as I remember we're running
-short on them), but I think you're right.
 
-Thanks!
+Thanks,
+Roland
 
-> Something like this?
-> ---
->  include/linux/sched.h |    1 +
->  kernel/cpuset.c       |    5 ++++-
->  kernel/kthread.c      |    1 +
->  kernel/sched.c        |    6 ++++++
->  4 files changed, 12 insertions(+), 1 deletions(-)
-> 
-> diff --git a/include/linux/sched.h b/include/linux/sched.h
-> --- a/include/linux/sched.h
-> +++ b/include/linux/sched.h
-> @@ -1464,6 +1464,7 @@ static inline void put_task_struct(struct task_struct *t)
->  #define PF_SWAPWRITE	0x00800000	/* Allowed to write to swap */
->  #define PF_SPREAD_PAGE	0x01000000	/* Spread page cache over cpuset */
->  #define PF_SPREAD_SLAB	0x02000000	/* Spread some slab caches over cpuset */
-> +#define PF_CPU_BOUND	0x04000000	/* Kthread bound to specific cpu */
->  #define PF_MEMPOLICY	0x10000000	/* Non-default NUMA mempolicy */
->  #define PF_MUTEX_TESTER	0x20000000	/* Thread belongs to the rt mutex tester */
->  #define PF_FREEZER_SKIP	0x40000000	/* Freezer should not count it as freezeable */
-> diff --git a/kernel/cpuset.c b/kernel/cpuset.c
-> --- a/kernel/cpuset.c
-> +++ b/kernel/cpuset.c
-> @@ -1175,11 +1175,14 @@ static void cpuset_attach(struct cgroup_subsys *ss,
->  	struct mm_struct *mm;
->  	struct cpuset *cs = cgroup_cs(cont);
->  	struct cpuset *oldcs = cgroup_cs(oldcont);
-> +	int ret;
->  
->  	mutex_lock(&callback_mutex);
->  	guarantee_online_cpus(cs, &cpus);
-> -	set_cpus_allowed(tsk, cpus);
-> +	ret = set_cpus_allowed(tsk, cpus);
->  	mutex_unlock(&callback_mutex);
-> +	if (ret < 0)
-> +		return;
->  
->  	from = oldcs->mems_allowed;
->  	to = cs->mems_allowed;
-> diff --git a/kernel/kthread.c b/kernel/kthread.c
-> --- a/kernel/kthread.c
-> +++ b/kernel/kthread.c
-> @@ -180,6 +180,7 @@ void kthread_bind(struct task_struct *k, unsigned int cpu)
->  	wait_task_inactive(k);
->  	set_task_cpu(k, cpu);
->  	k->cpus_allowed = cpumask_of_cpu(cpu);
-> +	k->flags |= PF_CPU_BOUND;
->  }
->  EXPORT_SYMBOL(kthread_bind);
->  
-> diff --git a/kernel/sched.c b/kernel/sched.c
-> --- a/kernel/sched.c
-> +++ b/kernel/sched.c
-> @@ -5345,6 +5345,12 @@ int set_cpus_allowed(struct task_struct *p, cpumask_t new_mask)
->  		goto out;
->  	}
->  
-> +	if (unlikely((p->flags & PF_CPU_BOUND) && p != current &&
-> +	    	     !cpus_equal(p->cpus_allowed, new_mask))) {
-> +		ret = -EINVAL;
-> +		goto out;
-> +	}
-> +
->  	if (p->sched_class->set_cpus_allowed)
->  		p->sched_class->set_cpus_allowed(p, &new_mask);
->  	else {
+---
+[PATCH] clean up and fix SIGCONT
 
+This reorganizes some of the signals code, replacing handle_stop_signal()
+with prepare_signal() and finish_signal(), called as a pair before and
+after generating any signal.  The CLD_CONTINUED notification to parent is
+moved into finish_signal(), taking place after the signal is made pending
+and siglock dropped.  This fixes a race where a process waking from SIGCONT
+could resume application code without running its SIGCONT handler first.
+
+Signed-off-by: Roland McGrath <roland@redhat.com>
+---
+ kernel/signal.c |   74 ++++++++++++++++++++++++++++++++++++++++++++----------
+ 1 files changed, 60 insertions(+), 14 deletions(-)
+
+diff --git a/kernel/signal.c b/kernel/signal.c
+index 84917fe..3a94657 100644
+--- a/kernel/signal.c
++++ b/kernel/signal.c
+@@ -555,16 +555,20 @@ static void do_notify_parent_cldstop(struct task_struct *tsk, int why);
+  * time regardless of blocking, ignoring, or handling.  This does the
+  * actual continuing for SIGCONT, but not the actual stopping for stop
+  * signals.  The process stop is done as a signal action for SIG_DFL.
++ * Returns nonzero if CLD_CONTINUED notification should be done.
++ * finish_signal() should always be called with our return value
++ * after posting the signal (or failing to do so).
+  */
+-static void handle_stop_signal(int sig, struct task_struct *p)
++static int prepare_signal(int sig, struct task_struct *p)
+ {
+ 	struct task_struct *t;
++	int cont = 0;
+ 
+ 	if (p->signal->flags & SIGNAL_GROUP_EXIT)
+ 		/*
+ 		 * The process is in the middle of dying already.
+ 		 */
+-		return;
++		return cont;
+ 
+ 	if (sig_kernel_stop(sig)) {
+ 		/*
+@@ -635,11 +639,9 @@ static void handle_stop_signal(int sig, struct task_struct *p)
+ 			 * We were in fact stopped, and are now continued.
+ 			 * Notify the parent with CLD_CONTINUED.
+ 			 */
++			cont = 1;
+ 			p->signal->flags = SIGNAL_STOP_CONTINUED;
+ 			p->signal->group_exit_code = 0;
+-			spin_unlock(&p->sighand->siglock);
+-			do_notify_parent_cldstop(p, CLD_CONTINUED);
+-			spin_lock(&p->sighand->siglock);
+ 		} else {
+ 			/*
+ 			 * We are not stopped, but there could be a stop
+@@ -655,6 +657,18 @@ static void handle_stop_signal(int sig, struct task_struct *p)
+ 		 */
+ 		p->signal->flags = 0;
+ 	}
++
++	return cont;
++}
++
++/*
++ * This pairs with prepare_signal() and must always be called afterward,
++ * with the siglock already unlocked, but tasklist_lock still held.
++ */
++static void finish_signal(int cont, struct task_struct *p)
++{
++	if (cont)
++		do_notify_parent_cldstop(p, CLD_CONTINUED);
+ }
+ 
+ static int send_signal(int sig, struct siginfo *info, struct task_struct *t,
+@@ -921,13 +935,17 @@ __group_complete_signal(int sig, struct task_struct *p)
+ 	return;
+ }
+ 
+-int
+-__group_send_sig_info(int sig, struct siginfo *info, struct task_struct *p)
++/*
++ * Internal entry point for sending group-wide signals.
++ * This must always be followed by finish_signal(*continued, p).
++ */
++static int generate_group_signal(int sig, struct siginfo *info,
++				 struct task_struct *p, int *continued)
+ {
+ 	int ret = 0;
+ 
+ 	assert_spin_locked(&p->sighand->siglock);
+-	handle_stop_signal(sig, p);
++	*continued = prepare_signal(sig, p);
+ 
+ 	/* Short-circuit ignored signals.  */
+ 	if (sig_ignored(p, sig))
+@@ -951,6 +969,22 @@ __group_send_sig_info(int sig, struct siginfo *info, struct task_struct *p)
+ }
+ 
+ /*
++ * This is called by a few places outside this file.
++ */
++int
++__group_send_sig_info(int sig, struct siginfo *info, struct task_struct *p)
++{
++	int cont;
++	int ret = generate_group_signal(sig, info, p, &cont);
++	if (unlikely(cont)) {
++		spin_unlock(&p->sighand->siglock);
++		do_notify_parent_cldstop(p, CLD_CONTINUED);
++		spin_lock(&p->sighand->siglock);
++	}
++	return ret;
++}
++
++/*
+  * Nuke all other threads in the group.
+  */
+ void zap_other_threads(struct task_struct *p)
+@@ -1009,8 +1043,10 @@ int group_send_sig_info(int sig, struct siginfo *info, struct task_struct *p)
+ 	if (!ret && sig) {
+ 		ret = -ESRCH;
+ 		if (lock_task_sighand(p, &flags)) {
+-			ret = __group_send_sig_info(sig, info, p);
++			int cont;
++			ret = generate_group_signal(sig, info, p, &cont);
+ 			unlock_task_sighand(p, &flags);
++			finish_signal(cont, p);
+ 		}
+ 	}
+ 
+@@ -1102,10 +1138,12 @@ int kill_pid_info_as_uid(int sig, struct siginfo *info, struct pid *pid,
+ 	if (ret)
+ 		goto out_unlock;
+ 	if (sig && p->sighand) {
++		int cont;
+ 		unsigned long flags;
+ 		spin_lock_irqsave(&p->sighand->siglock, flags);
+-		ret = __group_send_sig_info(sig, info, p);
++		ret = generate_group_signal(sig, info, p, &cont);
+ 		spin_unlock_irqrestore(&p->sighand->siglock, flags);
++		finish_signal(cont, p);
+ 	}
+ out_unlock:
+ 	read_unlock(&tasklist_lock);
+@@ -1351,13 +1389,14 @@ send_group_sigqueue(int sig, struct sigqueue *q, struct task_struct *p)
+ {
+ 	unsigned long flags;
+ 	int ret = 0;
++	int cont;
+ 
+ 	BUG_ON(!(q->flags & SIGQUEUE_PREALLOC));
+ 
+ 	read_lock(&tasklist_lock);
+ 	/* Since it_lock is held, p->sighand cannot be NULL. */
+ 	spin_lock_irqsave(&p->sighand->siglock, flags);
+-	handle_stop_signal(sig, p);
++	cont = prepare_signal(sig, p);
+ 
+ 	/* Short-circuit ignored signals.  */
+ 	if (sig_ignored(p, sig)) {
+@@ -1392,6 +1431,7 @@ send_group_sigqueue(int sig, struct sigqueue *q, struct task_struct *p)
+ 	__group_complete_signal(sig, p);
+ out:
+ 	spin_unlock_irqrestore(&p->sighand->siglock, flags);
++	finish_signal(cont, p);
+ 	read_unlock(&tasklist_lock);
+ 	return ret;
+ }
+@@ -1415,6 +1455,7 @@ void do_notify_parent(struct task_struct *tsk, int sig)
+ 	struct siginfo info;
+ 	unsigned long flags;
+ 	struct sighand_struct *psig;
++	int cont = 0;
+ 
+ 	BUG_ON(sig == -1);
+ 
+@@ -1485,9 +1526,10 @@ void do_notify_parent(struct task_struct *tsk, int sig)
+ 			sig = 0;
+ 	}
+ 	if (valid_signal(sig) && sig > 0)
+-		__group_send_sig_info(sig, &info, tsk->parent);
++		generate_group_signal(sig, &info, tsk->parent, &cont);
+ 	__wake_up_parent(tsk, tsk->parent);
+ 	spin_unlock_irqrestore(&psig->siglock, flags);
++	finish_signal(cont, tsk->parent);
+ }
+ 
+ static void do_notify_parent_cldstop(struct task_struct *tsk, int why)
+@@ -1496,6 +1538,7 @@ static void do_notify_parent_cldstop(struct task_struct *tsk, int why)
+ 	unsigned long flags;
+ 	struct task_struct *parent;
+ 	struct sighand_struct *sighand;
++	int cont = 0;
+ 
+ 	if (tsk->ptrace & PT_PTRACED)
+ 		parent = tsk->parent;
+@@ -1538,12 +1581,13 @@ static void do_notify_parent_cldstop(struct task_struct *tsk, int why)
+ 	spin_lock_irqsave(&sighand->siglock, flags);
+ 	if (sighand->action[SIGCHLD-1].sa.sa_handler != SIG_IGN &&
+ 	    !(sighand->action[SIGCHLD-1].sa.sa_flags & SA_NOCLDSTOP))
+-		__group_send_sig_info(SIGCHLD, &info, parent);
++		generate_group_signal(SIGCHLD, &info, parent, &cont);
+ 	/*
+ 	 * Even if SIGCHLD is not generated, we must wake up wait4 calls.
+ 	 */
+ 	__wake_up_parent(tsk, parent);
+ 	spin_unlock_irqrestore(&sighand->siglock, flags);
++	finish_signal(cont, parent);
+ }
+ 
+ static inline int may_ptrace_stop(void)
+@@ -2251,10 +2295,12 @@ static int do_tkill(int tgid, int pid, int sig)
+ 		 * probe.  No signal is actually delivered.
+ 		 */
+ 		if (!error && sig && p->sighand) {
++			int cont;
+ 			spin_lock_irq(&p->sighand->siglock);
+-			handle_stop_signal(sig, p);
++			cont = prepare_signal(sig, p);
+ 			error = specific_send_sig_info(sig, &info, p);
+ 			spin_unlock_irq(&p->sighand->siglock);
++			finish_signal(cont, p);
+ 		}
+ 	}
+ 	read_unlock(&tasklist_lock);
