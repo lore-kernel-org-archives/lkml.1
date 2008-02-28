@@ -1,107 +1,119 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762116AbYB1XB6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932299AbYB1XFu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762116AbYB1XB6 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Feb 2008 18:01:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759041AbYB1XBs
+	id S932299AbYB1XFu (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Feb 2008 18:05:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757701AbYB1XFl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Feb 2008 18:01:48 -0500
-Received: from smtp-out.google.com ([216.239.33.17]:38552 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758567AbYB1XBr (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Feb 2008 18:01:47 -0500
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=received:date:from:x-x-sender:to:cc:subject:in-reply-to:
-	message-id:references:user-agent:mime-version:content-type;
-	b=aCvId45MTxSX0Yh88CYlkgowbKsy0n+j2T+gXcB1KOFLZssldzONnmZYHYnq8cV3M
-	hkaw3vP0yk1CBIIDooCQA==
-Date: Thu, 28 Feb 2008 15:00:37 -0800 (PST)
-From: David Rientjes <rientjes@google.com>
-X-X-Sender: rientjes@chino.kir.corp.google.com
-To: Paul Jackson <pj@sgi.com>
-cc: mingo@elte.hu, a.p.zijlstra@chello.nl, tglx@linutronix.de, oleg@tv-sign.ru,
-       rostedt@goodmis.org, maxk@qualcomm.com, linux-kernel@vger.kernel.org
-Subject: Re: [RFC/PATCH 0/4] CPUSET driven CPU isolation
-In-Reply-To: <20080228164637.114fb19d.pj@sgi.com>
-Message-ID: <alpine.DEB.1.00.0802281452340.13082@chino.kir.corp.google.com>
-References: <20080227222103.673194000@chello.nl> <20080228075010.GA28781@elte.hu> <20080228020808.3fd22f77.pj@sgi.com> <20080228090847.GA1133@elte.hu> <20080228031710.3405e405.pj@sgi.com> <alpine.DEB.1.00.0802280129580.15900@chino.kir.corp.google.com>
- <alpine.DEB.1.00.0802280212070.23040@chino.kir.corp.google.com> <20080228113728.7b8e5811.pj@sgi.com> <alpine.DEB.1.00.0802281309480.24402@chino.kir.corp.google.com> <20080228164637.114fb19d.pj@sgi.com>
-User-Agent: Alpine 1.00 (DEB 882 2007-12-20)
+	Thu, 28 Feb 2008 18:05:41 -0500
+Received: from relay1.sgi.com ([192.48.171.29]:45307 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1757039AbYB1XFl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 28 Feb 2008 18:05:41 -0500
+Date: Thu, 28 Feb 2008 15:05:30 -0800 (PST)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Andrea Arcangeli <andrea@qumranet.com>
+cc: Jack Steiner <steiner@sgi.com>, Nick Piggin <npiggin@suse.de>,
+       akpm@linux-foundation.org, Robin Holt <holt@sgi.com>,
+       Avi Kivity <avi@qumranet.com>, Izik Eidus <izike@qumranet.com>,
+       kvm-devel@lists.sourceforge.net,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, general@lists.openfabrics.org,
+       Steve Wise <swise@opengridcomputing.com>,
+       Roland Dreier <rdreier@cisco.com>, Kanoj Sarcar <kanojsarcar@yahoo.com>,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       daniel.blueman@quadrics.com
+Subject: Re: [PATCH] mmu notifiers #v7
+In-Reply-To: <20080227192610.GF28483@v2.random>
+Message-ID: <Pine.LNX.4.64.0802281456200.1152@schroedinger.engr.sgi.com>
+References: <20080219084357.GA22249@wotan.suse.de> <20080219135851.GI7128@v2.random>
+ <20080219231157.GC18912@wotan.suse.de> <20080220010941.GR7128@v2.random>
+ <20080220103942.GU7128@v2.random> <20080221045430.GC15215@wotan.suse.de>
+ <20080221144023.GC9427@v2.random> <20080221161028.GA14220@sgi.com>
+ <20080227192610.GF28483@v2.random>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 28 Feb 2008, Paul Jackson wrote:
+On Wed, 27 Feb 2008, Andrea Arcangeli wrote:
 
-> > How about moving watchdog/0 to a cpuset with exclusive access to only cpu 
-> > 1?
-> 
-> I don't understand your question here.
-> 
+> +struct mmu_notifier_head {
+> +	struct hlist_head head;
+> +	spinlock_t lock;
+> +};
 
-Move the watchdog/0 thread to a cpuset that doesn't have access to cpu 0.  
+Still think that the lock here is not of too much use and can be easily 
+replaced by mmap_sem.
 
-> > >     +	if (unlikely((p->flags & PF_CPU_BOUND) && p != current &&
-> > >     +	    	     !cpus_subset(p->cpus_allowed, new_mask))) {
-> > >     +		ret = -EINVAL;
-> > > 
-> > 
-> > That's a convenient way for a kthread to temporarily expand its set of 
-> > cpus_allowed and then never be able to remove the added cpus again.  Do 
-> > you have any examples in the tree where a kthread does this?
-> 
-> Good question.  Actually, we -normally- have pinned tasks in the top cpuset,
-> where the top cpuset allows all CPUs, but the pinned task has a cpus_allowed
-> (in its task struct) of just one or a few CPUs (for node pinning.)
-> 
+> +#define mmu_notifier(function, mm, args...)				\
+> +	do {								\
+> +		struct mmu_notifier *__mn;				\
+> +		struct hlist_node *__n;					\
+> +									\
+> +		if (unlikely(!hlist_empty(&(mm)->mmu_notifier.head))) { \
+> +			rcu_read_lock();				\
+> +			hlist_for_each_entry_rcu(__mn, __n,		\
+> +						 &(mm)->mmu_notifier.head, \
+> +						 hlist)			\
+> +				if (__mn->ops->function)		\
+> +					__mn->ops->function(__mn,	\
+> +							    mm,		\
+> +							    args);	\
+> +			rcu_read_unlock();				\
+> +		}							\
+> +	} while (0)
 
-Same situation occurs for a task bound to a cpuset that issues a 
-sched_setaffinity() call to restrict its cpumask further.  There's nothing 
-new there.
+Andrew recomended local variables for parameters used multile times. This 
+means the mm parameter here.
 
-> So ... could we allow moving pinned threads to any cpuset that allowed
-> the CPUs to which it was pinned (my cpus_subset() test, above), but
-> -not- change the pinned tasks cpus_allowed in its task struct, keeping
-> it pinned to just the same one or few CPUs?
-> 
+> +/*
+> + * Notifiers that use the parameters that they were passed so that the
+> + * compiler does not complain about unused variables but does proper
+> + * parameter checks even if !CONFIG_MMU_NOTIFIER.
+> + * Macros generate no code.
+> + */
+> +#define mmu_notifier(function, mm, args...)			       \
+> +	do {							       \
+> +		if (0) {					       \
+> +			struct mmu_notifier *__mn;		       \
+> +								       \
+> +			__mn = (struct mmu_notifier *)(0x00ff);	       \
+> +			__mn->ops->function(__mn, mm, args);	       \
+> +		};						       \
+> +	} while (0)
 
-I'd hesitate to do that unless you can guarantee that restricting 
-kthreads mems_allowed via the cpuset interface won't cause any problems 
-either.  Is there a benefit to reducing the size of a kthread's 
-mems_allowed that doesn't have an adverse effect on the kernel?  What 
-about kswapd?
+Note also Andrew's comments on the use of 0x00ff...
 
-> I don't think that the cpus_equal() check prevents that (shrinking a
-> pinned tasks cpuset out from under it.)  Try the following on a freshly
-> booted system with your proposed patch:
-> 
->   mkdir /dev/cpuset
->   mount -t cpuset cpuset /dev/cpuset
->   cd /dev/cpuset
->   mkdir a
->   cp ???s a
->   < tasks sed -un -e p -e 10q > a/tasks
-> 
-> I'll wager you just moved a few pinned tasks into cpuset 'a'.  This
-> would be allowed, as 'a' has the same cpus as the top cpuset.  But then
-> one could shrink a (if it had more than 1 CPU in the first place), leaving
-> some pinned tasks in a cpuset they weren't allowed to run in, essentially
-> unpinning them.
-> 
+> +/*
+> + * No synchronization. This function can only be called when only a single
+> + * process remains that performs teardown.
+> + */
+> +void mmu_notifier_release(struct mm_struct *mm)
+> +{
+> +	struct mmu_notifier *mn;
+> +	struct hlist_node *n, *tmp;
+> +
+> +	if (unlikely(!hlist_empty(&mm->mmu_notifier.head))) {
+> +		hlist_for_each_entry_safe(mn, n, tmp,
+> +					  &mm->mmu_notifier.head, hlist) {
+> +			hlist_del(&mn->hlist);
+> +			if (mn->ops->release)
+> +				mn->ops->release(mn, mm);
+> +		}
+> +	}
+> +}
 
-You can move them, but you cannot reduce the size of the thread's 
-cpus_allowed since it was bound to a specific cpu via kthread_bind().  The 
-change to set_cpus_allowed() simply prevents this from happening in the 
-kernel as opposed to just stopping the possibility through cpusets.
+One could avoid a hlist_for_each_entry_safe here by simply always deleting 
+the first object. 
 
-> > PF_CPU_BOUND follows the nomenclature of kthread_bind() really well, but 
-> > it could probably be confused with a processor-bound task.  So perhaps 
-> > PF_BOUND_CPU is even better?
-> 
-> Good point - "BOUND" as the past tense of "BIND".  How about
-> PF_THREAD_BIND ;)?
-> 
+Also re the _notify variants: The binding to pte_clear_flush_young etc 
+will become a problem for notifiers that want to sleep because 
+pte_clear_flush is usually called with the pte lock held. See f.e. 
+try_to_unmap_one, page_mkclean_one etc.
 
-Sure.
+It would be better if the notifier calls could be moved outside of the 
+pte lock.
+
+
+
