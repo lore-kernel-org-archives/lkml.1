@@ -1,339 +1,123 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765592AbYB1UOn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765499AbYB1UPV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765592AbYB1UOn (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Feb 2008 15:14:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758798AbYB1UNw
+	id S1765499AbYB1UPV (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Feb 2008 15:15:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756863AbYB1UOx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Feb 2008 15:13:52 -0500
-Received: from filer.fsl.cs.sunysb.edu ([130.245.126.2]:55465 "EHLO
-	filer.fsl.cs.sunysb.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1764176AbYB1UNt (ORCPT
+	Thu, 28 Feb 2008 15:14:53 -0500
+Received: from Mycroft.westnet.com ([216.187.52.7]:55629 "EHLO
+	Mycroft.westnet.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759042AbYB1UOv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Feb 2008 15:13:49 -0500
-Date: Thu, 28 Feb 2008 15:10:05 -0500
-From: "Josef 'Jeff' Sipek" <jeffpc@josefsipek.net>
-To: "David P. Quigley" <dpquigl@tycho.nsa.gov>
-Cc: hch@infradead.org, viro@ftp.linux.org.uk, trond.myklebust@fys.uio.no,
-       bfields@fieldses.org, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org
-Subject: Re: [PATCH 03/11] VFS: Add security label support to *notify
-Message-ID: <20080228201004.GC32351@josefsipek.net>
-References: <1204144786-3502-1-git-send-email-dpquigl@tycho.nsa.gov> <1204144786-3502-4-git-send-email-dpquigl@tycho.nsa.gov>
+	Thu, 28 Feb 2008 15:14:51 -0500
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1204144786-3502-4-git-send-email-dpquigl@tycho.nsa.gov>
-User-Agent: Mutt/1.5.16 (2007-06-11)
+Content-Transfer-Encoding: 7bit
+Message-ID: <18375.5642.424239.215806@stoffel.org>
+Date: Thu, 28 Feb 2008 15:14:02 -0500
+From: "John Stoffel" <john@stoffel.org>
+To: Rik van Riel <riel@redhat.com>
+Cc: linux-kernel@vger.kernel.org,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Lee Schermerhorn <Lee.Schermerhorn@hp.com>, linux-mm@kvack.org
+Subject: Re: [patch 00/21] VM pageout scalability improvements
+In-Reply-To: <20080228192908.126720629@redhat.com>
+References: <20080228192908.126720629@redhat.com>
+X-Mailer: VM 8.0.9 under Emacs 22.1.1 (i486-pc-linux-gnu)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ignoring the security parts of it, here are a few comments about the VFS and
-coding style related bits...
 
-Josef 'Jeff' Sipek.
+Rik> On large memory systems, the VM can spend way too much time
+Rik> scanning through pages that it cannot (or should not) evict from
+Rik> memory. Not only does it use up CPU time, but it also provokes
+Rik> lock contention and can leave large systems under memory presure
+Rik> in a catatonic state.
 
-On Wed, Feb 27, 2008 at 03:39:38PM -0500, David P. Quigley wrote:
-> This patch adds two new fields to the iattr structure. The first field holds a
-> security label while the second contains the length of this label. In addition
-> the patch adds a new helper function inode_setsecurity which calls the LSM to
-> set the security label on the inode. Finally the patch modifies the necessary
-> functions such that fsnotify_change can handle notification requests for
-> dnotify and inotify.
-> 
-> Signed-off-by: David P. Quigley <dpquigl@tycho.nsa.gov>
-> ---
->  fs/attr.c                |   43 +++++++++++++++++++++++++++++++++++++++++++
->  fs/xattr.c               |   33 +++++++++++++++++++++++++++------
->  include/linux/fcntl.h    |    1 +
->  include/linux/fs.h       |   11 +++++++++++
->  include/linux/fsnotify.h |    6 ++++++
->  include/linux/inotify.h  |    3 ++-
->  include/linux/xattr.h    |    1 +
->  7 files changed, 91 insertions(+), 7 deletions(-)
-> 
-> diff --git a/fs/attr.c b/fs/attr.c
-> index 966b73e..1df6603 100644
-> --- a/fs/attr.c
-> +++ b/fs/attr.c
-> @@ -5,6 +5,7 @@
->   *  changes by Thomas Schoebel-Theuer
->   */
->  
-> +#include <linux/fs.h>
->  #include <linux/module.h>
->  #include <linux/time.h>
->  #include <linux/mm.h>
-> @@ -14,9 +15,35 @@
->  #include <linux/fcntl.h>
->  #include <linux/quotaops.h>
->  #include <linux/security.h>
-> +#include <linux/xattr.h>
->  
->  /* Taken over from the old code... */
->  
-> +#ifdef CONFIG_SECURITY
-> +/*
-> + * Update the in core label.
-> + */
-> +int inode_setsecurity(struct inode *inode, struct iattr *attr)
-> +{
-> +	const char *suffix = security_maclabel_getname() 
-> +				+ XATTR_SECURITY_PREFIX_LEN;
-> +	int error;
-> +
-> +	if (!attr->ia_valid & ATTR_SECURITY_LABEL)
-> +		return -EINVAL;
+Nitpicky, but what is a large memory system?  I read your web page and
+you talk about large memory being greater than several Gb, and about
+huge systems (> 128gb).  So which is this patch addressing?  
 
-You most likely want:
+I ask because I've got a new system with 4Gb of RAM and my motherboard
+can goto 8Gb.  Should this be a large memory system or not?  I've also
+only got a single dual core CPU, how does that affect things?
 
-	if (!(attr->ia_valid & ATTR_SECURITY_LABEL))
+You talk about the Inactive list in the Anonymous memory section, and
+about limiting it.  You say 30% on a 1Gb system, but 1% on a 1Tb
+system, which is interesting numbers but it's not clear where they
+come from.
 
-IOW, watch out for operator precedence.
+Should the IO limits (raised lower down in the document) be a more
+core feature?  I.e. if you only have 20MBytes/sec bandwidth to disk
+for swap, should you be limiting the inactive list to 5seconds of
+bandwidth in terms of size?  Or 10s, or 60s?  
 
-> +
-> +	error = security_inode_setsecurity(inode, suffix, attr->ia_label,
-> +					   attr->ia_label_len, 0);
-> +	if (error)
-> +		printk(KERN_ERR "%s() %s %d security_inode_setsecurity() %d\n"
-> +			, __func__, (char *)attr->ia_label, attr->ia_label_len
-> +			, error);
+Should we be more aggresive in pre-swapping Anonymous memory to swap,
+but keeping it cached in memory for use?  If there's pressure, it
+seems like it would be easy to just dump pre-swapped pages from the
+inactive list, without having to spend time writing them out.
 
-The commas should really be on the previous line.
+Also, how does having more CPUs/IO bandwidth change things?  Do we
+need an exponential backoff algorithm in terms of how much memory is
+allocated to the various lists?  As memory gets bigger and bigger, do
+we allocated fewer and fewer pages since we can't swap them out fast
+enough?  
 
-> +
-> +	return error;
-> +}
-> +EXPORT_SYMBOL(inode_setsecurity);
-> +#endif
-> +
->  /* POSIX UID/GID verification for setting inode attributes. */
->  int inode_change_ok(struct inode *inode, struct iattr *attr)
->  {
-> @@ -94,6 +121,10 @@ int inode_setattr(struct inode * inode, struct iattr * attr)
->  			mode &= ~S_ISGID;
->  		inode->i_mode = mode;
->  	}
-> +#ifdef CONFIG_SECURITY
-> +	if (ia_valid & ATTR_SECURITY_LABEL)
-> +		inode_setsecurity(inode, attr);
-> +#endif
->  	mark_inode_dirty(inode);
->  
->  	return 0;
-> @@ -157,6 +188,18 @@ int notify_change(struct dentry * dentry, struct iattr * attr)
->  	if (ia_valid & ATTR_SIZE)
->  		down_write(&dentry->d_inode->i_alloc_sem);
->  
-> +#ifdef CONFIG_SECURITY
-> +	if (ia_valid & ATTR_SECURITY_LABEL) {
-> +		char *key = (char *)security_maclabel_getname();
-> +		vfs_setxattr_locked(dentry, key,
-> +			attr->ia_label, attr->ia_label_len, 0);
-> +		/* Avoid calling inode_setsecurity()
-> +		 * via inode_setattr() below
-> +		 */
-> +		attr->ia_valid &= ~ATTR_SECURITY_LABEL;
-> +	}
-> +#endif
-> +
->  	if (inode->i_op && inode->i_op->setattr) {
->  		error = security_inode_setattr(dentry, attr);
->  		if (!error)
-> diff --git a/fs/xattr.c b/fs/xattr.c
-> index 3acab16..b5a91e1 100644
-> --- a/fs/xattr.c
-> +++ b/fs/xattr.c
-> @@ -67,9 +67,9 @@ xattr_permission(struct inode *inode, const char *name, int mask)
->  	return permission(inode, mask, NULL);
->  }
->  
-> -int
-> -vfs_setxattr(struct dentry *dentry, char *name, void *value,
-> -		size_t size, int flags)
-> +static int
-> +_vfs_setxattr(struct dentry *dentry, char *name, void *value,
-> +		size_t size, int flags, int lock)
+I dunno... I honestly don't have the time or the knowledge to do more
+than poke sticks into things and see what happens.  And to ask
+annoying questions.  
 
-The convention is to use __ or do_ as the prefix.
+I do appreciate your work on this.
 
->  {
->  	struct inode *inode = dentry->d_inode;
->  	int error;
-> @@ -78,7 +78,8 @@ vfs_setxattr(struct dentry *dentry, char *name, void *value,
->  	if (error)
->  		return error;
->  
-> -	mutex_lock(&inode->i_mutex);
-> +	if (lock)
-> +		mutex_lock(&inode->i_mutex);
->  	error = security_inode_setxattr(dentry, name, value, size, flags);
->  	if (error)
->  		goto out;
-> @@ -95,15 +96,35 @@ vfs_setxattr(struct dentry *dentry, char *name, void *value,
->  		const char *suffix = name + XATTR_SECURITY_PREFIX_LEN;
->  		error = security_inode_setsecurity(inode, suffix, value,
->  						   size, flags);
-> -		if (!error)
-> +		if (!error) {
-> +#ifdef CONFIG_SECURITY
-> +			fsnotify_change(dentry, ATTR_SECURITY_LABEL);
-> +#endif
->  			fsnotify_xattr(dentry);
-> +		}
->  	}
->  out:
-> -	mutex_unlock(&inode->i_mutex);
-> +	if (lock)
-> +		mutex_unlock(&inode->i_mutex);
->  	return error;
->  }
-> +
-> +int
-> +vfs_setxattr(struct dentry *dentry, char *name, void *value,
-> +		size_t size, int flags)
-> +{
-> +	return _vfs_setxattr(dentry, name, value, size, flags, 1);
-> +}
->  EXPORT_SYMBOL_GPL(vfs_setxattr);
->  
-> +int
-> +vfs_setxattr_locked(struct dentry *dentry, char *name, void *value,
-> +			size_t size, int flags)
-> +{
-> +	return _vfs_setxattr(dentry, name, value, size, flags, 0);
-> +}
-> +EXPORT_SYMBOL_GPL(vfs_setxattr_locked);
-
-Alright...so, few things...
-
-1) why do you need the locked/unlocked versions?
-
-2) instead of passing a flag to a common function, why not have:
-
-vfs_setxattr_locked(....)
-{
-	// original code minus the lock/unlock calls
-}
-
-vfs_setxattr(....)
-{
-	mutex_lock(...);
-	vfs_setxattr_locked(...);
-	mutex_unlock(...);
-}
+John
 
 
-> +
->  ssize_t
->  xattr_getsecurity(struct inode *inode, const char *name, void *value,
->  			size_t size)
-> diff --git a/include/linux/fcntl.h b/include/linux/fcntl.h
-> index 8603740..fae1e59 100644
-> --- a/include/linux/fcntl.h
-> +++ b/include/linux/fcntl.h
-> @@ -30,6 +30,7 @@
->  #define DN_DELETE	0x00000008	/* File removed */
->  #define DN_RENAME	0x00000010	/* File renamed */
->  #define DN_ATTRIB	0x00000020	/* File changed attibutes */
-> +#define DN_LABEL        0x00000040      /* File (re)labeled */
->  #define DN_MULTISHOT	0x80000000	/* Don't remove notifier */
->  
->  #define AT_FDCWD		-100    /* Special value used to indicate
-> diff --git a/include/linux/fs.h b/include/linux/fs.h
-> index b84b848..757add6 100644
-> --- a/include/linux/fs.h
-> +++ b/include/linux/fs.h
-> @@ -335,6 +335,10 @@ typedef void (dio_iodone_t)(struct kiocb *iocb, loff_t offset,
->  #define ATTR_KILL_PRIV	16384
->  #define ATTR_OPEN	32768	/* Truncating from open(O_TRUNC) */
->  
-> +#ifdef CONFIG_SECURITY
-> +#define ATTR_SECURITY_LABEL  65536
-> +#endif
-> +
->  /*
->   * This is the Inode Attributes structure, used for notify_change().  It
->   * uses the above definitions as flags, to know which values have changed.
-> @@ -360,6 +364,10 @@ struct iattr {
->  	 * check for (ia_valid & ATTR_FILE), and not for (ia_file != NULL).
->  	 */
->  	struct file	*ia_file;
-> +#ifdef CONFIG_SECURITY
-> +	void		*ia_label;
-> +	u32		 ia_label_len;
-> +#endif
->  };
->  
->  /*
-> @@ -1971,6 +1979,9 @@ extern int buffer_migrate_page(struct address_space *,
->  #define buffer_migrate_page NULL
->  #endif
->  
-> +#ifdef CONFIG_SECURITY
-> +extern int inode_setsecurity(struct inode *inode, struct iattr *attr);
-> +#endif
->  extern int inode_change_ok(struct inode *, struct iattr *);
->  extern int __must_check inode_setattr(struct inode *, struct iattr *);
->  
-> diff --git a/include/linux/fsnotify.h b/include/linux/fsnotify.h
-> index d4b7c4a..b54a3cb 100644
-> --- a/include/linux/fsnotify.h
-> +++ b/include/linux/fsnotify.h
-> @@ -253,6 +253,12 @@ static inline void fsnotify_change(struct dentry *dentry, unsigned int ia_valid)
->  		in_mask |= IN_ATTRIB;
->  		dn_mask |= DN_ATTRIB;
->  	}
-> +#ifdef CONFIG_SECURITY
-> +	if (ia_valid & ATTR_SECURITY_LABEL) {
-> +		in_mask |= IN_LABEL;
-> +		dn_mask |= DN_LABEL;
-> +	}
-> +#endif
->  
->  	if (dn_mask)
->  		dnotify_parent(dentry, dn_mask);
-> diff --git a/include/linux/inotify.h b/include/linux/inotify.h
-> index 742b917..10f3ace 100644
-> --- a/include/linux/inotify.h
-> +++ b/include/linux/inotify.h
-> @@ -36,6 +36,7 @@ struct inotify_event {
->  #define IN_DELETE		0x00000200	/* Subfile was deleted */
->  #define IN_DELETE_SELF		0x00000400	/* Self was deleted */
->  #define IN_MOVE_SELF		0x00000800	/* Self was moved */
-> +#define IN_LABEL		0x00001000	/* Self was (re)labeled */
->  
->  /* the following are legal events.  they are sent as needed to any watch */
->  #define IN_UNMOUNT		0x00002000	/* Backing fs was unmounted */
-> @@ -61,7 +62,7 @@ struct inotify_event {
->  #define IN_ALL_EVENTS	(IN_ACCESS | IN_MODIFY | IN_ATTRIB | IN_CLOSE_WRITE | \
->  			 IN_CLOSE_NOWRITE | IN_OPEN | IN_MOVED_FROM | \
->  			 IN_MOVED_TO | IN_DELETE | IN_CREATE | IN_DELETE_SELF | \
-> -			 IN_MOVE_SELF)
-> +			 IN_MOVE_SELF | IN_LABEL)
->  
->  #ifdef __KERNEL__
->  
-> diff --git a/include/linux/xattr.h b/include/linux/xattr.h
-> index df6b95d..1169963 100644
-> --- a/include/linux/xattr.h
-> +++ b/include/linux/xattr.h
-> @@ -50,6 +50,7 @@ ssize_t xattr_getsecurity(struct inode *, const char *, void *, size_t);
->  ssize_t vfs_getxattr(struct dentry *, char *, void *, size_t);
->  ssize_t vfs_listxattr(struct dentry *d, char *list, size_t size);
->  int vfs_setxattr(struct dentry *, char *, void *, size_t, int);
-> +int vfs_setxattr_locked(struct dentry *, char *, void *, size_t, int);
->  int vfs_removexattr(struct dentry *, char *);
->  
->  ssize_t generic_getxattr(struct dentry *dentry, const char *name, void *buffer, size_t size);
-> -- 
-> 1.5.3.8
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+Rik> Against 2.6.24-rc6-mm1
 
--- 
-Don't drink and derive. Alcohol and algebra don't mix.
+Rik> This patch series improves VM scalability by:
+
+Rik> 1) making the locking a little more scalable
+
+Rik> 2) putting filesystem backed, swap backed and non-reclaimable pages
+Rik>    onto their own LRUs, so the system only scans the pages that it
+Rik>    can/should evict from memory
+
+Rik> 3) switching to SEQ replacement for the anonymous LRUs, so the
+Rik>    number of pages that need to be scanned when the system
+Rik>    starts swapping is bound to a reasonable number
+
+Rik> More info on the overall design can be found at:
+
+Rik> 	http://linux-mm.org/PageReplacementDesign
+
+
+Rik> Changelog:
+Rik> - pull the memcontrol lru arrayification earlier into the patch series
+Rik> - use a pagevec array similar to the lru array
+Rik> - clean up the code in various places
+Rik> - improved pageout balancing and reduced pageout cpu use
+
+Rik> - fix compilation on PPC and without memcontrol
+Rik> - make page_is_pagecache more readable
+Rik> - replace get_scan_ratio with correct version
+
+Rik> - merge memcontroller split LRU code into the main split LRU patch,
+Rik>   since it is not functionally different (it was split up only to help
+Rik>   people who had seen the last version of the patch series review it)
+Rik> - drop the page_file_cache debugging patch, since it never triggered
+Rik> - reintroduce code to not scan anon list if swap is full
+Rik> - add code to scan anon list if page cache is very small already
+Rik> - use lumpy reclaim more aggressively for smaller order > 1 allocations
+
+Rik> -- 
+Rik> All Rights Reversed
+
+Rik> --
+Rik> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+Rik> the body of a message to majordomo@vger.kernel.org
+Rik> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+Rik> Please read the FAQ at  http://www.tux.org/lkml/
+
+
+Rik> !DSPAM:47c70f4e50261498712856!
