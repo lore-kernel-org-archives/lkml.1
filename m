@@ -1,164 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760981AbYB1RlU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760255AbYB1RqF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760981AbYB1RlU (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Feb 2008 12:41:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754475AbYB1RlI
+	id S1760255AbYB1RqF (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Feb 2008 12:46:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753665AbYB1Rpz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Feb 2008 12:41:08 -0500
-Received: from smtp110.sbc.mail.re2.yahoo.com ([68.142.229.95]:27458 "HELO
-	smtp110.sbc.mail.re2.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1752083AbYB1RlH (ORCPT
+	Thu, 28 Feb 2008 12:45:55 -0500
+Received: from rv-out-0910.google.com ([209.85.198.187]:46583 "EHLO
+	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753655AbYB1Rpy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Feb 2008 12:41:07 -0500
-X-YMail-OSG: Vb6xrHMVM1njHbNtUMN9NJv3AiuMfheKY9T6XV6TCg923Ctslzglz7hV_iioz3SI8rb3r0McTrWu0ix4623jmL7_d6w9CRQGaVQjh52cmLg1OrOX7Q--
-X-Yahoo-Newman-Property: ymail-3
-Date: Thu, 28 Feb 2008 11:38:17 -0600
-From: serge@hallyn.com
-To: lkml <linux-kernel@vger.kernel.org>, linux-security-module@vger.kernel.org
-Cc: Andrew Morgan <morgan@kernel.org>, Stephen Smalley <sds@epoch.ncsc.mil>,
-       Mike Galbraith <efault@gmx.de>, buraphalinuxserver@gmail.com,
-       elendil@planet.nl
-Subject: [PATCH 1/1] file capabilities: remove cap_task_kill()
-Message-ID: <20080228173817.GA32661@vino.hallyn.com>
+	Thu, 28 Feb 2008 12:45:54 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=GOWYjRTqm2UOpCjw9Ew6lYf/RfkJT8fT5ethSr6qX08T2oennnpv8had+DETtEvfGuPedJmpJX5MXqaJ79ASbUH8OtQE0XKPTXJhTPWMKZxcOx3qEnT8nxCCEPmxDReLtlJUuYPC7Q3ijZ1kw+t4UrLe2ttP/ZC6ZE0q/ooB+u4=
+Message-ID: <86802c440802280945w4dd71038y95936656cd535c9c@mail.gmail.com>
+Date: Thu, 28 Feb 2008 09:45:52 -0800
+From: "Yinghai Lu" <yhlu.kernel@gmail.com>
+To: "Mel Gorman" <mel@csn.ul.ie>
+Subject: Re: 2.6.24 git2/mm1: cpu_to_node mapping to non-existant nodes causing boot failure
+Cc: "Mike Travis" <travis@sgi.com>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, mingo@elte.hu, tglx@linutronix.de,
+       "Christoph Lameter" <clameter@sgi.com>,
+       "Jack Steiner" <steiner@sgi.com>
+In-Reply-To: <20080228154244.GA4038@csn.ul.ie>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-User-Agent: Mutt/1.5.16 (2007-06-09)
+References: <20080203171634.58ab668b.akpm@linux-foundation.org>
+	 <47B33ACF.5030700@sgi.com> <20080214201727.GC30841@csn.ul.ie>
+	 <47B4A774.7050509@sgi.com> <20080215020208.GA6500@csn.ul.ie>
+	 <47B77E90.5050809@sgi.com> <47BAFFD3.1070606@sgi.com>
+	 <20080219192319.GE12386@csn.ul.ie>
+	 <86802c440802262229t37c61c98y45607ba34d7c6417@mail.gmail.com>
+	 <20080228154244.GA4038@csn.ul.ie>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The original justification for cap_task_kill() was as follows:
+On Thu, Feb 28, 2008 at 7:42 AM, Mel Gorman <mel@csn.ul.ie> wrote:
+> On (26/02/08 22:29), Yinghai Lu didst pronounce:
+>
+> > >  >
+>  > >  > Did you get a chance to try out this patch to see if it cleared up the problem
+>  > >  > booting on your x86_64 numa box?
+>  >
+>  > did it fail with x86.git#testing?
+>  >
+>
+>  No, it boots successfully with that git branch. Somewhere in there is a fix.
+>
 
-	check_kill_permission() does appropriate uid equivalence checks.
-	However with file capabilities it becomes possible for an
-	unprivileged user to execute a file with file capabilities
-	resulting in a more privileged task with the same uid.
+can you verify which one fix that ?
 
-However now that cap_task_kill() always returns 0 (permission
-granted) when p->uid==current->uid, the whole hook is worthless,
-and only likely to create more subtle problems in the corner cases
-where it might still be called but return -EPERM.  Those cases
-are basically when uids are different but euid/suid is equivalent
-as per the check in check_kill_permission().
+http://git.kernel.org/?p=linux/kernel/git/x86/linux-2.6-x86.git;a=commitdiff;h=a8de04ce4e4cf0af94aeb3829be8c9f813b2f5de
+http://git.kernel.org/?p=linux/kernel/git/x86/linux-2.6-x86.git;a=commitdiff;h=96916d56dc6b500e39fd1855c3a6ce170b0fe28b
+http://git.kernel.org/?p=linux/kernel/git/x86/linux-2.6-x86.git;a=commit;h=fa3dc9e2ad8a2aeb95a6ed3e6574cc09ab1c3115
 
-This patch removes cap_task_kill().
-
-Signed-off-by: Serge Hallyn <serge@hallyn.com>
----
- include/linux/security.h   |    3 +--
- security/capability.c      |    1 -
- security/commoncap.c       |   40 ----------------------------------------
- security/smack/smack_lsm.c |    5 -----
- 4 files changed, 1 insertions(+), 48 deletions(-)
-
-diff --git a/include/linux/security.h b/include/linux/security.h
-index fe52cde..95cb830 100644
---- a/include/linux/security.h
-+++ b/include/linux/security.h
-@@ -63,7 +63,6 @@ extern int cap_inode_need_killpriv(struct dentry *dentry);
- extern int cap_inode_killpriv(struct dentry *dentry);
- extern int cap_task_post_setuid (uid_t old_ruid, uid_t old_euid, uid_t old_suid, int flags);
- extern void cap_task_reparent_to_init (struct task_struct *p);
--extern int cap_task_kill(struct task_struct *p, struct siginfo *info, int sig, u32 secid);
- extern int cap_task_setscheduler (struct task_struct *p, int policy, struct sched_param *lp);
- extern int cap_task_setioprio (struct task_struct *p, int ioprio);
- extern int cap_task_setnice (struct task_struct *p, int nice);
-@@ -2138,7 +2137,7 @@ static inline int security_task_kill (struct task_struct *p,
- 				      struct siginfo *info, int sig,
- 				      u32 secid)
- {
--	return cap_task_kill(p, info, sig, secid);
-+	return 0;
- }
- 
- static inline int security_task_wait (struct task_struct *p)
-diff --git a/security/capability.c b/security/capability.c
-index 9e99f36..2c6e06d 100644
---- a/security/capability.c
-+++ b/security/capability.c
-@@ -40,7 +40,6 @@ static struct security_operations capability_ops = {
- 	.inode_need_killpriv =		cap_inode_need_killpriv,
- 	.inode_killpriv =		cap_inode_killpriv,
- 
--	.task_kill =			cap_task_kill,
- 	.task_setscheduler =		cap_task_setscheduler,
- 	.task_setioprio =		cap_task_setioprio,
- 	.task_setnice =			cap_task_setnice,
-diff --git a/security/commoncap.c b/security/commoncap.c
-index bb0c095..06d5c94 100644
---- a/security/commoncap.c
-+++ b/security/commoncap.c
-@@ -540,41 +540,6 @@ int cap_task_setnice (struct task_struct *p, int nice)
- 	return cap_safe_nice(p);
- }
- 
--int cap_task_kill(struct task_struct *p, struct siginfo *info,
--				int sig, u32 secid)
--{
--	if (info != SEND_SIG_NOINFO && (is_si_special(info) || SI_FROMKERNEL(info)))
--		return 0;
--
--	/*
--	 * Running a setuid root program raises your capabilities.
--	 * Killing your own setuid root processes was previously
--	 * allowed.
--	 * We must preserve legacy signal behavior in this case.
--	 */
--	if (p->uid == current->uid)
--		return 0;
--
--	/* sigcont is permitted within same session */
--	if (sig == SIGCONT && (task_session_nr(current) == task_session_nr(p)))
--		return 0;
--
--	if (secid)
--		/*
--		 * Signal sent as a particular user.
--		 * Capabilities are ignored.  May be wrong, but it's the
--		 * only thing we can do at the moment.
--		 * Used only by usb drivers?
--		 */
--		return 0;
--	if (cap_issubset(p->cap_permitted, current->cap_permitted))
--		return 0;
--	if (capable(CAP_KILL))
--		return 0;
--
--	return -EPERM;
--}
--
- /*
-  * called from kernel/sys.c for prctl(PR_CABSET_DROP)
-  * done without task_capability_lock() because it introduces
-@@ -605,11 +570,6 @@ int cap_task_setnice (struct task_struct *p, int nice)
- {
- 	return 0;
- }
--int cap_task_kill(struct task_struct *p, struct siginfo *info,
--				int sig, u32 secid)
--{
--	return 0;
--}
- #endif
- 
- void cap_task_reparent_to_init (struct task_struct *p)
-diff --git a/security/smack/smack_lsm.c b/security/smack/smack_lsm.c
-index 770eb06..a9ca412 100644
---- a/security/smack/smack_lsm.c
-+++ b/security/smack/smack_lsm.c
-@@ -1124,11 +1124,6 @@ static int smack_task_movememory(struct task_struct *p)
- static int smack_task_kill(struct task_struct *p, struct siginfo *info,
- 			   int sig, u32 secid)
- {
--	int rc;
--
--	rc = cap_task_kill(p, info, sig, secid);
--	if (rc != 0)
--		return rc;
- 	/*
- 	 * Special cases where signals really ought to go through
- 	 * in spite of policy. Stephen Smalley suggests it may
--- 
-1.5.2.5
-
+YH
