@@ -1,58 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758960AbYB1CJk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757598AbYB1CWM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758960AbYB1CJk (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Feb 2008 21:09:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755395AbYB1CJa
+	id S1757598AbYB1CWM (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Feb 2008 21:22:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751054AbYB1CV4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Feb 2008 21:09:30 -0500
-Received: from zombie.ncsc.mil ([144.51.88.131]:59911 "EHLO zombie.ncsc.mil"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754293AbYB1CJ3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Feb 2008 21:09:29 -0500
-Subject: Re: [PATCH 05/11] NFSv4: Add label recommended attribute and NFSv4
-	flags
-From: Dave Quigley <dpquigl@tycho.nsa.gov>
-To: James Morris <jmorris@namei.org>
-Cc: hch@infradead.org, viro@ftp.linux.org.uk, trond.myklebust@fys.uio.no,
-       bfields@fieldses.org, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org
-In-Reply-To: <Xine.LNX.4.64.0802281247130.27221@us.intercode.com.au>
-References: <1204150294-4678-1-git-send-email-dpquigl@tycho.nsa.gov>
-	 <1204150294-4678-6-git-send-email-dpquigl@tycho.nsa.gov>
-	 <Xine.LNX.4.64.0802281247130.27221@us.intercode.com.au>
-Content-Type: text/plain
-Date: Wed, 27 Feb 2008 20:45:12 -0500
-Message-Id: <1204163112.24345.40.camel@moss-terrapins.epoch.ncsc.mil>
+	Wed, 27 Feb 2008 21:21:56 -0500
+Received: from foo.birdnet.se ([213.88.146.6]:34209 "HELO foo.birdnet.se"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1750802AbYB1CVz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 Feb 2008 21:21:55 -0500
+X-Greylist: delayed 3667 seconds by postgrey-1.27 at vger.kernel.org; Wed, 27 Feb 2008 21:21:55 EST
+Message-ID: <20080228002457.30489.qmail@cdy.org>
+Date: Thu, 28 Feb 2008 01:24:57 +0100
+From: Peter Stuge <stuge-linux-pcmcia@cdy.org>
+To: Adrian Bunk <bunk@kernel.org>, Andrew Morton <akpm@linux-foundation.org>,
+       linux-pcmcia@lists.infradead.org, linux-kernel@vger.kernel.org,
+       Dominik Brodowski <linux@brodo.de>
+Subject: Re: [2.6 patch] the long overdue pcmcia_ioctl.c removal
+Mail-Followup-To: Adrian Bunk <bunk@kernel.org>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	linux-pcmcia@lists.infradead.org, linux-kernel@vger.kernel.org,
+	Dominik Brodowski <linux@brodo.de>
+References: <20080213213115.GW3383@cs181133002.pp.htv.fi> <20080218050133.23454db1.akpm@linux-foundation.org> <20080227181303.GB29269@cs181133002.pp.htv.fi> <20080227204407.GA10455@flint.arm.linux.org.uk>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 (2.12.3-1.fc8) 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080227204407.GA10455@flint.arm.linux.org.uk>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+(Really cross-post like this?)
 
-On Thu, 2008-02-28 at 12:52 +1100, James Morris wrote:
-> On Wed, 27 Feb 2008, David P. Quigley wrote:
-> 
-> > +#define NFS4_MAXLABELLEN	255
-> 
-> I remember raising this before, but I think we need to try and find a 
-> better way to implement this than always allocating labels of a fixed and 
-> possibly too-small size.
-> 
-> What about perhaps starting with a statically allocated array of say 64 
-> bytes (I can't see any labels on my system larger than that), and then 
-> falling back to a a dynamic allocation of up to 32k if it turns out to be 
-> too small ?  i.e. large labels are a slow path and there is no practical 
-> limit on label size.
-> 
-> 
-> - James
+On Wed, Feb 27, 2008 at 08:44:07PM +0000, Russell King wrote:
+> TBH I've given up trying to fight this continue "lets remove these
+> IOCTLs which no one uses" crap.  Obviously, _I_ use them.
 
-I'm not convinced that it is worth all of that extra logic just to save
-some space on a transient data structure. 255 characters seems to be
-overkill to begin with considering you don't often get a label like the
-one below which is only 90 characters.
+I suppose critical mass or other powers that be have decided they
+aren't good enough. If your userspace will never change, settling
+on a kernel as well shouldn't be too big a deal.
 
-thisismyuser_u:withseveralroles_r:andanoverlylongtype_t:s0-s12:c0,c1,c2,c3,c4,c5,c6,c7,c8
+Closed source sure sucks.
 
+
+//Peter
