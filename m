@@ -1,138 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760562AbYB1VUT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755173AbYB1VUl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760562AbYB1VUT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Feb 2008 16:20:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759730AbYB1VT6
+	id S1755173AbYB1VUl (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Feb 2008 16:20:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762669AbYB1VUH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Feb 2008 16:19:58 -0500
-Received: from hs-out-0708.google.com ([64.233.178.251]:27616 "EHLO
-	hs-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758703AbYB1VT5 (ORCPT
+	Thu, 28 Feb 2008 16:20:07 -0500
+Received: from smtp114.sbc.mail.re2.yahoo.com ([68.142.229.91]:30498 "HELO
+	smtp114.sbc.mail.re2.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1760527AbYB1VUF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Feb 2008 16:19:57 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:mail-followup-to:mime-version:content-type:content-disposition:user-agent;
-        b=n2Vfk1+CM934OjKGs1F8tXCHFswxtE02PTVyC5rdc/4RPwsNTZaiWBGt0pvWtXMtDKKWTwCyO7oipYT/TdGDhHIP8Z5nodUFnsslqr5RFSdJMl448sBH+zXgGP7pUEAjNsNmEBZH7kDKd5pFtuFfOvPLZIeyfE56cXRLAGiR8IU=
-Date: Thu, 28 Feb 2008 18:21:26 -0300
-From: "Carlos R. Mafra" <crmafra2@gmail.com>
-To: linux-kernel@vger.kernel.org
-Cc: ray-lk@madrabbit.org, mingo@elte.hu
-Subject: Re: Interactivity issue in 2.6.25-rc3
-Message-ID: <20080228212126.GA4819@localhost.ift.unesp.br>
-Mail-Followup-To: linux-kernel@vger.kernel.org, ray-lk@madrabbit.org,
-	mingo@elte.hu
+	Thu, 28 Feb 2008 16:20:05 -0500
+X-YMail-OSG: aimf760VM1mLDc2T_cyZDHpmrdvTB3j85lwdeKTyOJqpJ7WqeABnQkGWK_OOqfnYwkJNvoS8kcl6kh5MjQs3cFUEa7uywYmyef3pGStYpOlclLmRwi6ySjRFwVPu.XsFncTFBlDQTqMx5r4-
+X-Yahoo-Newman-Property: ymail-3
+Date: Thu, 28 Feb 2008 15:17:20 -0600
+From: serge@hallyn.com
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+Cc: Pavel Emelyanov <xemul@openvz.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       David Miller <davem@davemloft.net>,
+       Alexey Dobriyan <adobriyan@openvz.org>,
+       Linux Netdev List <netdev@vger.kernel.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 0/2] Fix /proc/net in presence of net namespaces
+Message-ID: <20080228211720.GA1232@vino.hallyn.com>
+References: <47C6D743.1050802@openvz.org> <m1y794514k.fsf@ebiederm.dsl.xmission.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-User-Agent: Mutt/1.5.17 (2007-11-01)
+In-Reply-To: <m1y794514k.fsf@ebiederm.dsl.xmission.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Resending with lkml Cc:ed.
-
-On Thu 28.Feb'08 at 11:54:04 -0800, Ray Lee wrote:
-> On Thu, Feb 28, 2008 at 11:18 AM, Ingo Molnar <mingo@elte.hu> wrote:
+Quoting Eric W. Biederman (ebiederm@xmission.com):
+> Pavel Emelyanov <xemul@openvz.org> writes:
+> 
+> > Current /proc/net is done with so called "shadows", but current
+> > implementation is broken and has little chances to get fixed.
 > >
-> >  * Carlos R. Mafra <crmafra2@gmail.com> wrote:
+> > The problem is that dentries subtree of /proc/net directory has
+> > fancy revalidation rules to make processes living in different
+> > net namespaces see different entries in /proc/net subtree, but
+> > currently, tasks see in the /proc/net subdir the contents of any
+> > other namespace, depending on who opened the file first.
 > >
-> >  > I want to report a bad interactivity which happened in my desktop
-> >  > running the latest kernel (2.6.25-rc3-00081-g7704a8b).
-> >  >
-> >  > I tried to play 'flightgear' and the desktop became _very_ slow while
-> >  > flightgear was "loading scenery objects" (a task which never finished
-> >  > and I could not play it).
-> >  >
-> >  > The desktop is a P4 @ 3.0 GHz, 512MB, with the nv graphics driver.
+> > The proposed fix is to turn /proc/net into a symlink, which behaves
+> > similar to /proc/self link - it points to .netns/<id> directory 
+> > where the <id> is the id of net namespace, current task lives in.
 > >
-> >  yes, but this means you run the soft-3D driver under Xorg, right? That
-> >  is known to starve its clients. The stats you sent show no worse than a
-> >  few tens of msecs delays caused by CPU scheduling itself:
+> > # ls -l /proc/net
+> > lrwxrwxrwx  1 root root 8 Feb 28 18:38 /proc/net -> .netns/0
 > >
-> >   mrxvt (3730, #threads: 1)
-> >   se.wait_max                        :            18.679129
+> > The /proc/.netns dir contains subtrees for all the namespaces in 
+> > the system:
 > >
+> > # ls -l /proc/.netns/
+> > total 0
+> > dr-xr-xr-x  5 root root 0 Feb 28 18:39 0
+> > dr-xr-xr-x  3 root root 0 Feb 28 18:39 1
+> >
+> > To provide some security each /proc/.netns/<id> directory allows
+> > access to tasks that live in the owning namespace only (with the
+> > exception, that init_net tasks can see everything).
+> 
+> 
+> Nack.  Yet another global set of ids that require us to implement another
+> namespace looks like the wrong way to go.
 
-Thanks Ingo!
+Sentiment granted, but I'm not sure it can be an issue.  It *could* be
+in issue if we moved to a more flexible access control here here any
+netns could access the .netns/N directories for all it's child
+namespaces.
 
-Hm, but I remember that my desktop became unusable. I was experiencing
-latencies _much_ higher than msecs. But I think I have an explanation
-for this low number, if you excuse my attempt to understand this.
+But it can't, and /proc/net is set by the kernel.  So the <id> can't be
+an issue for any checkpoint/restart except htat of the whole system, and
+of course on whole-system resume we have no <id> collision worries.
 
-Could it be that your debug script generated these numbers while
-fgfs was being killed, and then it felt no more the bad latencies
-fgfs was causing? 
+So userspace can't do anything with <id>, so there is no reason to worry
+about it becoming another namespace?
 
-This was the first scenario:
+Right?
 
-1) Start 'fgfs' as normal user.
+thanks,
+-serge
 
-2) Wait a few seconds until fgfs' message "loading scenery objects"
-   appeared.
-   
-3) Everything becomes _very_ slow (measured in seconds, not msecs),
-   so I notice something is wrong (at least I thought it was).
-   
-4) Killed fgfs with Ctrl-c.
-
-5) I go to Ingo's page and download his debug scripts.
-
-6) Preparing for the battle to follow, I run cfs-debug-info-clear.sh
-   
-7) Start 'fgfs' and system becomes slow while loading scenery objects.
-   
-8) I try to reach the mrxvt terminal to run cfs-debug-info.sh. Each
-   letter I type takes seconds to appear.
-
-9) I manage to start cfs-debug-info.sh. I could read the first line after 
-   a few seconds: 
-   
-   sched info dump (of tasks, modules, hw, dmesg, config, fs):
-
-   But I am sure I did not see the 
-   "gathering statistics for 15 seconds ..."
-   
-   As that was the first time ever that I used this script, I didn't 
-   even know what I was supposed to do, but I was waiting for more
-   than a minute and nothing happened.
-
-10) I managed to change tab and kill fgfs with Crtl-c.
-
-11) I got back to the debug script tab and waited a few seconds
-    for it to finish.
-
-12) That is the debug log which I put in the page mentioned in the
-    first email.
-
-I am sorry to especulate about it, but maybe the script got the
-latencies after (or meanwhile) I was killing fgfs.
-
-> Also, please try disabling the group scheduler and run the test again.
-> The group scheduler has known bad interactivity issues. Also be on the
-> watch for any abnormally high disk activity, to rule out starvation
-> due to the kernel choosing poor candidates for swap-in/swap-out.
-> (Running a vmstat 1 in a console ahead of time and watching for high
-> IO Wait -- the last column printed -- will give you a good indicator
-> other than the drive LED.)
-
-I have rebooted and tried to repeat the experiment, but I couldn't
-reproduce the bad interactivity I reported earlier. Flightgear 
-loaded the scenery (which it did not do before) and the airplane
-appeared in the screen. The game was slow, but I had a very good
-usability of the desktop and I could type things almost normally,
-I could switch desktops etc. Definitely not what happened before!
-
-So I am sorry for the noise, but something bad happened before 
-and unfortunately I am not sure I could run Ingo's debug script
-correctly. I'll be more patient if that happens again.
-
-Anyway, I want to thank Ingo and Ray for their replies and
-would like to humbly ask: 
-
-Is it an scheduler anomaly if 'se.wait_max' is bigger than
-40 msecs for _any_ of the processes which appear in the 
-debug script log? In other words, is the scheduler 
-mathematically build to not allow latencies higher than
-40 msecs?
-
+> Can you try this approach by capturing a struct pid instead of an id
+> in a new global namespace? 
+> 
+> In particular the pid of the process that creates the pid namespace.
+> Like we do with setsid.
+> 
+> I think the implementation difficulty should be about the same, but
+> it will allow us something that works cleanly in the cases of
+> migration and nested namespaces.  As well as not adding an unnecessary
+> special case with init_net and visibility.
+> 
+> Eric
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
