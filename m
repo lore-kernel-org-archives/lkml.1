@@ -1,61 +1,114 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759297AbYB1N37@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759882AbYB1Nca@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759297AbYB1N37 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Feb 2008 08:29:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752844AbYB1N3v
+	id S1759882AbYB1Nca (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Feb 2008 08:32:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752844AbYB1NcV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Feb 2008 08:29:51 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:43402 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752434AbYB1N3u (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Feb 2008 08:29:50 -0500
-Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
-	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
-	Kingdom.
-	Registered in England and Wales under Company Registration No. 3798903
-From: David Howells <dhowells@redhat.com>
-Subject: [PATCH] Fix hpet_(un)register_irq_handler() for emulation
-To: torvalds@osdl.org, akpm@linux-foundation.org, bwalle@suse.de
-Cc: dhowells@redhat.com, linux-kernel@vger.kernel.org
-Date: Thu, 28 Feb 2008 13:29:43 +0000
-Message-ID: <20080228132943.7822.32718.stgit@warthog.procyon.org.uk>
-User-Agent: StGIT/0.14.1
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+	Thu, 28 Feb 2008 08:32:21 -0500
+Received: from triton.rz.uni-saarland.de ([134.96.7.25]:13647 "EHLO
+	triton.rz.uni-saarland.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752766AbYB1NcV (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 28 Feb 2008 08:32:21 -0500
+Date: Thu, 28 Feb 2008 14:28:23 +0100
+From: Alexander van Heukelum <heukelum@mailshack.com>
+To: Ingo Molnar <mingo@elte.hu>, Ian Campbell <ijc@hellion.org.uk>
+Cc: Alexander van Heukelum <heukelum@fastmail.fm>,
+       "H. Peter Anvin" <hpa@zytor.com>, Andi Kleen <ak@suse.de>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Jeremy Fitzhardinge <jeremy@goop.org>,
+       Mark McLoughlin <markmc@redhat.com>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: [RFC] use realmode code to reserve end-of-conventional-memory to 1MB
+Message-ID: <20080228132822.GA25278@mailshack.com>
+References: <20080224174605.GA21661@mailshack.com> <47C22568.1010405@zytor.com> <1203958478.20033.1239002461@webmail.messagingengine.com> <20080225170134.GA15839@elte.hu> <20080225180750.GA31054@mailshack.com> <20080228131341.GA25213@mailshack.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080228131341.GA25213@mailshack.com>
+User-Agent: Mutt/1.5.9i
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (triton.rz.uni-saarland.de [134.96.7.25]); Thu, 28 Feb 2008 14:31:17 +0100 (CET)
+X-AntiVirus: checked by AntiVir MailGate (version: 2.1.2-14; AVE: 7.6.0.67; VDF: 7.0.2.206; host: AntiVir3)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Fix hpet_(un)register_irq_handler() for when CONFIG_HPET_EMULATE_RTC=n.  They
-are provided macros that substitute value 0, but if they are called as
-functions and the return value isn't checked, the following warnings appear:
+Instead of using early reservations inside the kernel code,
+we could use the realmode code to modify the e820 memmap.
+This patch shows what that would look like. I have not looked
+at the case where the BIOS does not provide an e820 memmap
+yet. Probably a full solution would need to create a fake
+e820 memmap in that case.
 
-	drivers/char/rtc.c: In function `rtc_init':
-	drivers/char/rtc.c:1063: warning: statement with no effect
-	drivers/char/rtc.c: In function `rtc_exit':
-	drivers/char/rtc.c:1157: warning: statement with no effect
+Comments?
 
-Signed-off-by: David Howells <dhowells@redhat.com>
----
+Signed-off-by: Alexander van Heukelum <heukelum@fastmail.fm>
 
- drivers/char/rtc.c |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
-
-
-diff --git a/drivers/char/rtc.c b/drivers/char/rtc.c
-index 78b151c..5c3142b 100644
---- a/drivers/char/rtc.c
-+++ b/drivers/char/rtc.c
-@@ -110,8 +110,8 @@ static int rtc_has_irq = 1;
- #define hpet_set_rtc_irq_bit(arg)		0
- #define hpet_rtc_timer_init()			do { } while (0)
- #define hpet_rtc_dropped_irq()			0
--#define hpet_register_irq_handler(h)		0
--#define hpet_unregister_irq_handler(h)		0
-+#define hpet_register_irq_handler(h)		({ 0; })
-+#define hpet_unregister_irq_handler(h)		({ 0; })
- #ifdef RTC_IRQ
- static irqreturn_t hpet_rtc_interrupt(int irq, void *dev_id)
- {
+diff --git a/arch/x86/boot/memory.c b/arch/x86/boot/memory.c
+index e77d89f..522920a 100644
+--- a/arch/x86/boot/memory.c
++++ b/arch/x86/boot/memory.c
+@@ -23,6 +23,7 @@ static int detect_memory_e820(void)
+ 	int count = 0;
+ 	u32 next = 0;
+ 	u32 size, id;
++	u32 lowmem, ebda_addr;
+ 	u8 err;
+ 	struct e820entry *desc = boot_params.e820_map;
+ 
+@@ -50,13 +51,51 @@ static int detect_memory_e820(void)
+ 		   just return failure. */
+ 		if (id != SMAP) {
+ 			count = 0;
+-			break;
++			goto out;
+ 		}
+ 
+ 		count++;
+ 		desc++;
+-	} while (next && count < E820MAX);
+-
++	} while (next && count < (E820MAX - 1));
++
++	/* Some BIOSes do not reserve the EBDA/XBDA area correctly in.
++	   The e820-map. Find out where the EBDA resides by looking at
++	   the BIOS data area and reserve the EBDA and the following
++	   legacy adapter area explicitly. */
++#define BIOS_EBDA_SEGMENT 0x40E
++#define BIOS_LOWMEM_KILOBYTES 0x413
++
++	/* end of low (conventional) memory */
++	set_fs(0);
++	lowmem = rdfs16(BIOS_LOWMEM_KILOBYTES);
++	lowmem <<= 10;
++
++	/* start of EBDA area */
++	ebda_addr = rdfs16(BIOS_EBDA_SEGMENT);
++	ebda_addr <<= 4;
++
++	/* Fixup: bios puts an EBDA in the top 64K segment */
++	/* of conventional memory, but does not adjust lowmem. */
++	if ((lowmem - ebda_addr) <= 0x10000)
++		lowmem = ebda_addr;
++
++	/* Fixup: bios does not report an EBDA at all. */
++	/* Some old Dells seem to need 4k anyhow (bugzilla 2990) */
++	if ((ebda_addr == 0) && (lowmem >= 0x9f000))
++		lowmem = 0x9f000;
++
++	/* Paranoia: should never happen, but... */
++	if (lowmem >= 0x100000)
++		lowmem = 0xa0000;
++
++	/* reserve all memory between lowmem and the 1MB mark */
++	desc->addr = lowmem;
++	desc->size = 0x100000 - lowmem;
++	desc->type = E820_RESERVED;
++	count++;
++	desc++;
++
++out:
+ 	return boot_params.e820_entries = count;
+ }
+ 
 
