@@ -1,76 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762251AbYB1Tys@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764771AbYB1TzT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762251AbYB1Tys (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Feb 2008 14:54:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763878AbYB1Tt0
+	id S1764771AbYB1TzT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Feb 2008 14:55:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932343AbYB1TuJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Feb 2008 14:49:26 -0500
-Received: from xspect.dk ([212.97.129.87]:38049 "EHLO xspect.dk"
+	Thu, 28 Feb 2008 14:50:09 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:48815 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1763062AbYB1TtW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Feb 2008 14:49:22 -0500
-Date: Thu, 28 Feb 2008 20:49:20 +0100
-From: "Klaus S. Madsen" <ksm@hjernemadsen.org>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
-       Pavel Machek <pavel@ucw.cz>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: Regression in 2.6.25-rc3: s2ram segfaults before suspending
-Message-ID: <20080228194920.GJ17932@hjernemadsen.org>
-References: <20080227221033.GR17932@hjernemadsen.org> <20080228091639.GB1133@elte.hu> <20080228092846.GC17932@hjernemadsen.org> <20080228094000.GA2987@elte.hu> <20080228150444.GG17932@hjernemadsen.org> <47C6F4F9.90700@zytor.com> <20080228192404.GH17932@hjernemadsen.org> <47C70C01.4020605@zytor.com>
+	id S932338AbYB1TuH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 28 Feb 2008 14:50:07 -0500
+Date: Thu, 28 Feb 2008 14:49:54 -0500
+From: Rik van Riel <riel@redhat.com>
+To: Rik van Riel <riel@redhat.com>
+Cc: linux-kernel@vger.kernel.org,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Lee Schermerhorn <Lee.Schermerhorn@hp.com>, linux-mm@kvack.org
+Subject: Re: [patch 00/21] VM pageout scalability improvements
+Message-ID: <20080228144954.5ee05247@bree.surriel.com>
+In-Reply-To: <20080228192908.126720629@redhat.com>
+References: <20080228192908.126720629@redhat.com>
+Organization: Red Hat, Inc.
+X-Mailer: Claws Mail 3.0.2 (GTK+ 2.10.4; x86_64-redhat-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <47C70C01.4020605@zytor.com>
-User-Agent: Mutt/1.5.9i
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Feb 28, 2008 at 11:31:13 -0800, H. Peter Anvin wrote:
-> Klaus S. Madsen wrote:
-> >>
-> >>Typically, when the kernel reflects an error in VM86 mode it will update 
-> >>the structure in memory (in your case, the vm86plus_struct) to reflect 
-> >>the context.  Would it be possible for you to read it out?
-> >Hmm. As far as I can tell, its actually using the vm86old system call?
-> >That's at least what the comment in libx86 states.
-> >
-> >However the contents of struct vm86_struct after the segfault is:
-> >
-> >(gdb) print context.vm
-> >$2 = {regs = {ebx = 0, ecx = 0, edx = 0, esi = 0, edi = 0, ebp = 0, 
-> >    eax = 20227, __null_ds = 0, __null_es = 0, __null_fs = -1071579136, 
-> >    __null_gs = 0, orig_eax = -1, eip = 6326, cs = 49152, __csh = 0, 
-> >    eflags = 209410, esp = 4090, ss = 256, __ssh = 0, es = 0, __esh = 0, 
-> >    ds = 64, __dsh = 0, fs = 0, __fsh = 0, gs = 0, __gsh = 0}, flags = 0, 
-> >  screen_bitmap = 0, cpu_type = 0, int_revectored = {__map = {0, 0, 0,0, 
-> >  0, 0, 0, 2147483648}}, int21_revectored = {__map = {0, 0, 0, 0, 0, 
-> >      0, 0, 0}}}
-> >
-> >My version of glibc does not seem to have vm86old declared, so I haven't
-> >tried to remove the assembly code.
-> >
-> >Should I try to change it to use vm86, instead of vm86old?
-> >
-> 
-> Yes, that would probably be a good idea.  To some degree, I guess it 
-> really has nothing to do with the more fundamental issue, but it's 
-> somewhat odd.
-Ok. I tried changing the code from the assembly to do:
+On Thu, 28 Feb 2008 14:29:08 -0500
+Rik van Riel <riel@redhat.com> wrote:
 
-vm86(VM86_ENTER, vm)
+> Against 2.6.24-rc6-mm1
 
-instead. vm the vm86plus_struct structure fill in exactly the same way
-as vm86_struct.
+I rediffed all the patches, but forgot to edit the intro email.
 
-The output from GDB after the segfault is exactly the same as
-previously, and all the fields in vm86plus_info_struct is zero.
-
-> I'll pick apart the state above looking for fishiness as soon as I get 
-> back from lunch.
-Great, thanks.
+It really is against 2.6.25-rc2-mm1.
 
 -- 
-Kind regards
-	Klaus S. Madsen
+All rights reversed.
