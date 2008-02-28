@@ -1,72 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755759AbYB1GkO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755240AbYB1Gpg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755759AbYB1GkO (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Feb 2008 01:40:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752560AbYB1GkD
+	id S1755240AbYB1Gpg (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Feb 2008 01:45:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751605AbYB1Gp2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Feb 2008 01:40:03 -0500
-Received: from chilli.pcug.org.au ([203.10.76.44]:38971 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751447AbYB1GkB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Feb 2008 01:40:01 -0500
-Date: Thu, 28 Feb 2008 17:39:55 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: linux-next@vger.kernel.org
-Cc: LKML <linux-kernel@vger.kernel.org>
-Subject: linux-next: Tree for Feb 28
-Message-Id: <20080228173955.8dad1d5e.sfr@canb.auug.org.au>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.8; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Thu__28_Feb_2008_17_39_55_+1100_bdIFM04FnIkkL3ui"
+	Thu, 28 Feb 2008 01:45:28 -0500
+Received: from miranda.se.axis.com ([193.13.178.8]:47789 "EHLO
+	miranda.se.axis.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751341AbYB1Gp1 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 28 Feb 2008 01:45:27 -0500
+From: "Mikael Starvik" <mikael.starvik@axis.com>
+To: "'Adrian Bunk'" <bunk@kernel.org>,
+       "Mikael Starvik" <mikael.starvik@axis.com>,
+       "Jesper Nilsson" <Jesper.Nilsson@axis.com>
+Cc: "'Sam Ravnborg'" <sam@ravnborg.org>, <linux-kernel@vger.kernel.org>
+Subject: RE: cris: build creates links in the source directory
+Date: Thu, 28 Feb 2008 07:45:00 +0100
+Message-ID: <BFECAF9E178F144FAEF2BF4CE739C66804C404A8@exmail1.se.axis.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+X-Priority: 3 (Normal)
+X-MSMail-Priority: Normal
+X-Mailer: Microsoft Outlook, Build 10.0.6626
+Importance: Normal
+X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2800.1106
+In-Reply-To: <BFECAF9E178F144FAEF2BF4CE739C66805B645B0@exmail1.se.axis.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Thu__28_Feb_2008_17_39_55_+1100_bdIFM04FnIkkL3ui
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+That is correct and we have thoughts about using Makfiles and compiler flags
+to resolve this instead as done for other architectures.
 
-[Resend due to cut and paste error on address :-(]
+/Mikael
 
-Hi all,
+-----Original Message-----
+From: Adrian Bunk [mailto:bunk@kernel.org] 
+Sent: Wednesday, February 27, 2008 11:06 PM
+To: Mikael Starvik; Jesper Nilsson
+Cc: dev-etrax; Sam Ravnborg; linux-kernel@vger.kernel.org
+Subject: cris: build creates links in the source directory
 
-I have created today's linux-next tree at
-git://git.kernel.org/pub/scm/linux/kernel/git/sfr/linux-next.git.
 
-You can see which trees have been included by looking in the Next/Trees
-file in the source.  There are also quilt-import.log and merge.log files
-in the Next directory.  Between each merge, the tree was built with
-allmodconfig for both powerpc and x86_64.
+Especially when building with a separate object directory the following 
+part of arch/cris/Makefile is not so nice since it creates links in the 
+source directory:
 
-There was only one minor merge problem.
+<--  snip  -->
 
-We are up to 38 trees, more are welcome (even if they are currently
-empty).
+# Create some links to make all tools happy
+$(SRC_ARCH)/.links:
+        @rm -rf $(SRC_ARCH)/drivers
+        @ln -sfn $(SARCH)/drivers $(SRC_ARCH)/drivers
+        @rm -rf $(SRC_ARCH)/boot
+        @ln -sfn $(SARCH)/boot $(SRC_ARCH)/boot
+        @rm -rf $(SRC_ARCH)/lib
+        @ln -sfn $(SARCH)/lib $(SRC_ARCH)/lib
+        @rm -f $(SRC_ARCH)/arch/mach
+        @rm -rf $(SRC_ARCH)/arch
+        @ln -sfn $(SARCH) $(SRC_ARCH)/arch
+ifdef CONFIG_ETRAX_ARCH_V32
+        @ln -sfn ../$(SARCH)/$(MACH) $(SRC_ARCH)/arch/mach
+endif
+        @rm -rf $(SRC_ARCH)/kernel/vmlinux.lds.S
+        @ln -sfn ../$(SARCH)/vmlinux.lds.S $(SRC_ARCH)/kernel/vmlinux.lds.S
+        @rm -rf $(SRC_ARCH)/kernel/asm-offsets.c
+        @ln -sfn ../$(SARCH)/kernel/asm-offsets.c
+$(SRC_ARCH)/kernel/asm-offsets.c
+        @touch $@
 
-Status of my local build tests is at
-http://kisskb.ellerman.id.au/kisskb/branch/9/.  We have added a 64bit
-s390 compiler to our list.  If maintainers want to give advise about
-cross compilers/configs that work, we are always open to add more builds.
+# Create link to sub arch includes
+$(srctree)/include/asm-$(ARCH)/.arch: $(wildcard 
+include/config/arch/*.h)
+        @echo '  SYMLINK include/asm-$(ARCH)/arch ->
+include/asm-$(ARCH)/$(SARCH)'
+        @rm -f $(srctree)/include/asm-$(ARCH)/arch/mach
+        @rm -f $(srctree)/include/asm-$(ARCH)/arch
+        @ln -sf $(SARCH) $(srctree)/include/asm-$(ARCH)/arch
+ifdef CONFIG_ETRAX_ARCH_V32
+        @ln -sf $(MACH) $(srctree)/include/asm-$(ARCH)/arch/mach
+endif
+        @touch $@
 
-Also, the linux-next tree is being build/boot tested by the guys at
-test.kernel.org.  Thanks to them.
+<--  snip  -->
 
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
+cu
+Adrian
 
---Signature=_Thu__28_Feb_2008_17_39_55_+1100_bdIFM04FnIkkL3ui
-Content-Type: application/pgp-signature
+-- 
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
 
-iD8DBQFHxldCTgG2atn1QN8RAoCJAJsFQsyzBF4pZWi1+yYZ7/wni4qcggCfaMIQ
-T00hNLuEY6B47Kp6VGn2sSA=
-=5qUu
------END PGP SIGNATURE-----
-
---Signature=_Thu__28_Feb_2008_17_39_55_+1100_bdIFM04FnIkkL3ui--
