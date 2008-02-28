@@ -1,41 +1,180 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760168AbYB1OmO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758366AbYB1O44@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760168AbYB1OmO (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Feb 2008 09:42:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754103AbYB1OmA
+	id S1758366AbYB1O44 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Feb 2008 09:56:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753069AbYB1O4q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Feb 2008 09:42:00 -0500
-Received: from hpsmtp-eml18.KPNXCHANGE.COM ([213.75.38.118]:46480 "EHLO
-	hpsmtp-eml18.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752332AbYB1Ol7 (ORCPT
+	Thu, 28 Feb 2008 09:56:46 -0500
+Received: from smtp104.sbc.mail.re2.yahoo.com ([68.142.229.101]:38118 "HELO
+	smtp104.sbc.mail.re2.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1751828AbYB1O4p (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Feb 2008 09:41:59 -0500
-To: zkopex mtrof <zkopex@yahoo.com>
-Subject: Re: [Regression in 2.6.25-rcX] CD/DVD writer no longer works
-Cc: efault@gmx.de, linux-kernel@vger.kernel.org
-In-reply-To: <916729.18642.qm@web45209.mail.sp1.yahoo.com>
-References: <1203910587.12670.9.camel@homer.simson.net> <916729.18642.qm@web45209.mail.sp1.yahoo.com>
-Message-Id: <E1JUjxL-0001wm-Cg@faramir.fjphome.nl>
-From: Frans Pop <elendil@planet.nl>
-Date: Thu, 28 Feb 2008 15:41:55 +0100
-X-OriginalArrivalTime: 28 Feb 2008 14:41:57.0300 (UTC) FILETIME=[11976F40:01C87A18]
+	Thu, 28 Feb 2008 09:56:45 -0500
+X-YMail-OSG: DgCBj7EVM1nVlm.1V7VN4SPXdfpUE828.o5rQZsvQ75I72_jkrCzJiwj1_IWe9aMqRBLXJJZ_I_J3hpSzMz4qba3XLDLZr9t5_bnaI81_8PtHSxYurevsaFN6P3sbTa5tI4owVbqAUeEWFY-
+X-Yahoo-Newman-Property: ymail-3
+Date: Thu, 28 Feb 2008 08:54:00 -0600
+From: serge@hallyn.com
+To: BuraphaLinux Server <buraphalinuxserver@gmail.com>
+Cc: serge@hallyn.com, linux-kernel@vger.kernel.org
+Subject: Re: at program breaks with kernel 2.6.24
+Message-ID: <20080228145400.GA31770@vino.hallyn.com>
+References: <5d75f4610802270427y789ffae9ie2682059206eed51@mail.gmail.com> <20080227181740.GA14532@vino.hallyn.com> <5d75f4610802271147m77d3b3e3r4d01ecf3740a7dbb@mail.gmail.com> <20080228030053.GA25033@vino.hallyn.com> <5d75f4610802272123g1cb1ec52l181406be9035dd5f@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <5d75f4610802272123g1cb1ec52l181406be9035dd5f@mail.gmail.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-zkopex mtrof wrote:
-> Thank you very much! The patch you supplied fixes the regression!
-> 
-> What do we need to do in order to get this patch applied in
-> mainline so that the regression gets fixed?
-> 
-> To be honest, I was expecting a few replies from the appropriate
-> kernel developers. It looks like I have missed something in
-> my regression report.
+Quoting BuraphaLinux Server (buraphalinuxserver@gmail.com):
+> Thank you for the patch to try.  This patch works perfectly.  Is it
+> safe to apply this to 2.6.24.3?  I hope it is in 2.6.24.4
 
-This did happen in a different thread. Looks like a final patch has now been
-found which can be expected in mainline soon. See:
-http://lkml.org/lkml/2008/2/28/76
+Hmm, in your 'uname -a' you showed 2.6.25-rc3.  I used
+roughly 2.6.25-rc3 on a fedora 8 system and at worked
+fine.  What distro are you using?  Looks like debian - any
+particular version?  I'll have to try setting up another vm
+(though I'm out of space... hmm) to test.
 
-Cheers,
-FJP
+thanks,
+-serge
+
+> 
+> 
+> On 2/28/08, serge@hallyn.com <serge@hallyn.com> wrote:
+> > Quoting BuraphaLinux Server (buraphalinuxserver@gmail.com):
+> > > This is gmail which has broken line wrapping I cannot fix. Anyway, I
+> > > did build the new kernel but it still does not work for me. I tried to
+> > > strace, but that didn't work for me either. This is as a non-root user
+> > > (and same 'at'/'atd' binaries work on 2.6.23.X):
+> > >
+> > > bash-3.2$ at now
+> > > warning: commands will be executed using /bin/sh
+> > > at> echo "suid is busted"
+> > > at> <EOT>
+> > > job 4 at Thu Feb 28 02:16:00 2008
+> > > Can't signal atd (permission denied)
+> > > bash-3.2$ ls -ld $(which at)
+> > > -rws--x--x 1 daemon daemon 36468 Jan 11 15:37 /usr/bin/at
+> > > bash-3.2$ ps -ef | grep atd
+> > > daemon 2874 1 0 02:14 ? 00:00:00 /usr/sbin/atd -b 15 -l 1
+> > > bozo 3054 3049 0 02:16 pts/0 00:00:00 grep atd
+> > > bash-3.2$ ls -ld /var/spool/at*
+> > > drwxrwxrwt 2 daemon daemon 4096 Feb 28 02:16 /var/spool/atjobs
+> > > drwx------ 2 daemon daemon 4096 Feb 27 20:02 /var/spool/atspool
+> > > bash-3.2$ uname -a
+> > > Linux zappaman.cs.buu.ac.th 2.6.25-rc3 #1 SMP Thu Feb 28 01:29:46 ICT
+> > > 2008 i686 pentium4 i386 GNU/Linux
+> > > bash-3.2$ strace -s 99999 -v -o /tmp/pain at now
+> > > warning: commands will be executed using /bin/sh
+> > > Cannot open lockfile /var/spool/atjobs/.SEQ: Permission denied
+> > > bash-3.2$ at now
+> > > warning: commands will be executed using /bin/sh
+> > > at> echo "hi"
+> > > at> <EOT>
+> > > job 7 at Thu Feb 28 02:19:00 2008
+> > > Can't signal atd (permission denied)
+> > >
+> > > My kenrel .config is big, so it is attached so I don't get any cut and
+> > > paste error.
+> > >
+> > > On 2/28/08, serge@hallyn.com <serge@hallyn.com> wrote:
+> > > > Quoting BuraphaLinux Server (buraphalinuxserver@gmail.com):
+> > > > > http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=463669
+> > > > >
+> > > > > I have the same problem - it is not debian specific. Did the
+> > > > > semantics of kill() change with the new kernel? I thought as long as
+> > > > > something is setuid, even with capability stuff around the setuid
+> > > > > programs just get _all_ capabilities and would keep working.
+> > > > >
+> > > > > I did a good search and found many people with the problem, but no
+> > > > > solutions except going back to 2.6.23.x kernels. I guess you'll flame
+> > > > > me, but at least include a link to the solution too.
+> > > >
+> > > > Why would we flame you?
+> > >
+> > > Because maybe I'm doing something stupid and didn't patch/rebuild
+> > > something when changing kernels like I should.  I haven't had trouble
+> > > with at for many years of kernel changes, but 2.6.24 was the first
+> > > with the new security stuff and maybe I need to have some
+> > > capability-aware 'at' program?
+> > >
+> > > >                                          I'll just apologize as I think
+> > it's my fault,
+> > > > and ask you to please try the newest available kernel where I believe it
+> > > > should be fixed.
+> > >
+> > > Do I need to recompile glibc and the at software to adjust so some
+> > > kernel interface changes?  Did the 'make oldconfig' generate some bad
+> > > config combination?  As root it works, so I don't think the at or atd
+> > > are broken (but maybe they have to be patched for >2.6.23.X ?)
+> > >
+> > > bash-3.2$ su - root
+> > > Password:
+> > > BLS #at now
+> > > warning: commands will be executed using /bin/sh
+> > > at> echo "uh-huh..."
+> > > at> <EOT>
+> > > job 8 at Thu Feb 28 02:30:00 2008
+> > >
+> > > (and I checked and the job completes normally)
+> > >
+> > > > thanks,
+> > > > -serge
+> > >
+> > > Thank you for reading.  Any ideas on what to try next?
+> >
+> > I'm working on setting up something I can test this on better, but just
+> > for good measure can you try the following patch?  It should simply
+> > prevent the extra signal checks from happening.
+> >
+> > thanks,
+> > -serge
+> >
+> > From f48d28fe525652cb7321d5f545f9dcdfb3ce97d8 Mon Sep 17 00:00:00 2001
+> > From: Serge Hallyn <serge@hallyn.com>
+> > Date: Wed, 27 Feb 2008 20:53:47 +0000
+> > Subject: [PATCH 1/1] file capabilities: get rid of cap_task_kill
+> >
+> > This is just a test to not use cap_task_kill.  We will see whether
+> > this fixes the atd problem
+> >
+> > Signed-off-by: Serge Hallyn <serge@hallyn.com>
+> > ---
+> >  include/linux/security.h |    2 +-
+> >  security/capability.c    |    1 -
+> >  2 files changed, 1 insertions(+), 2 deletions(-)
+> >
+> > diff --git a/include/linux/security.h b/include/linux/security.h
+> > index fe52cde..4c43914 100644
+> > --- a/include/linux/security.h
+> > +++ b/include/linux/security.h
+> > @@ -2138,7 +2138,7 @@ static inline int security_task_kill (struct
+> > task_struct *p,
+> >  				      struct siginfo *info, int sig,
+> >  				      u32 secid)
+> >  {
+> > -	return cap_task_kill(p, info, sig, secid);
+> > +	return 0;
+> >  }
+> >
+> >  static inline int security_task_wait (struct task_struct *p)
+> > diff --git a/security/capability.c b/security/capability.c
+> > index 9e99f36..2c6e06d 100644
+> > --- a/security/capability.c
+> > +++ b/security/capability.c
+> > @@ -40,7 +40,6 @@ static struct security_operations capability_ops = {
+> >  	.inode_need_killpriv =		cap_inode_need_killpriv,
+> >  	.inode_killpriv =		cap_inode_killpriv,
+> >
+> > -	.task_kill =			cap_task_kill,
+> >  	.task_setscheduler =		cap_task_setscheduler,
+> >  	.task_setioprio =		cap_task_setioprio,
+> >  	.task_setnice =			cap_task_setnice,
+> > --
+> > 1.5.2.5
+> >
+> >
+> >
