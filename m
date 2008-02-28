@@ -1,26 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759305AbYB1Hc7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758684AbYB1HdU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759305AbYB1Hc7 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Feb 2008 02:32:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757114AbYB1Hc2
+	id S1758684AbYB1HdU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Feb 2008 02:33:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754591AbYB1Hch
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Feb 2008 02:32:28 -0500
-Received: from py-out-1112.google.com ([64.233.166.176]:38768 "EHLO
+	Thu, 28 Feb 2008 02:32:37 -0500
+Received: from py-out-1112.google.com ([64.233.166.177]:40533 "EHLO
 	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754754AbYB1Hc0 (ORCPT
+	with ESMTP id S1758880AbYB1Hcg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Feb 2008 02:32:26 -0500
+	Thu, 28 Feb 2008 02:32:36 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=message-id:date:user-agent:mime-version:to:subject:content-type:content-transfer-encoding:from;
-        b=hFWJvUfKUGg9xdLoVI2LWPgSqsdKkr17b8gOGrQM1QeH5Opsbc8K1mcPMrrQmwd5cKvtxF+RlpPEdsQBpkkBAOrXSWbG5HGfUACUTycP/keIhxiBoCqH3FU1WPlSZtduEje/KsavrjTVFP4PC+uHFTaXQ8c6qHkUBM67UKxEfb0=
-Message-ID: <47C6632A.2000505@watson.wustl.edu>
-Date: Thu, 28 Feb 2008 01:30:50 -0600
+        b=o9Sj1dthP80cakwMgKtnPPJQygRqgz2D2fjrwiSvbYQvmUs3HwmZrD7fO8TS1nf6nvYgtMhciLXaHZndjrXnnnV1d/P43jJeSJDWyy5ZU7e8vjcPzIHI9zMU6Tx2at2Z6Vk1ca7z9Uqshupt03UpaHf4vVIXWRtEiGqMlBznlOk=
+Message-ID: <47C66334.7080003@watson.wustl.edu>
+Date: Thu, 28 Feb 2008 01:31:00 -0600
 User-Agent: Thunderbird 2.0.0.6 (X11/20071022)
 MIME-Version: 1.0
 To: linux-kernel@vger.kernel.org, trivial@kernel.org,
        kernel-janitors@vger.kernel.org
-Subject: [PATCH 4/9] /drivers/net/appletalk/cops.c replaced init_module&cleanup_module
+Subject: [PATCH 5/9] /drivers/net/appletalk/ltpc.c replaced init_module&cleanup_module
  with module_init&module_exit
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
@@ -33,32 +33,24 @@ Replaced init_module and cleanup_module with static functions and module_init/mo
 
 Signed-off-by: Jon Schindler <jkschind@gmail.com>
 ---
-diff --git a/drivers/net/appletalk/cops.c b/drivers/net/appletalk/cops.c
-index 92c3a4c..65b901e 100644
---- a/drivers/net/appletalk/cops.c
-+++ b/drivers/net/appletalk/cops.c
-@@ -1010,7 +1010,7 @@ module_param(io, int, 0);
- module_param(irq, int, 0);
- module_param(board_type, int, 0);
+diff --git a/drivers/net/appletalk/ltpc.c b/drivers/net/appletalk/ltpc.c
+index 6ab2c2d..fef5560 100644
+--- a/drivers/net/appletalk/ltpc.c
++++ b/drivers/net/appletalk/ltpc.c
+@@ -1252,7 +1252,7 @@ module_param(irq, int, 0);
+ module_param(dma, int, 0);
+ 
  
 -int __init init_module(void)
-+static int __init cops_module_init(void)
++static int __init ltpc_module_init(void)
  {
- 	if (io == 0)
- 		printk(KERN_WARNING "%s: You shouldn't autoprobe with insmod\n",
-@@ -1021,12 +1021,14 @@ int __init init_module(void)
-         return 0;
+         if(io == 0)
+ 		printk(KERN_NOTICE
+@@ -1263,6 +1263,7 @@ int __init init_module(void)
+ 		return PTR_ERR(dev_ltpc);
+ 	return 0;
  }
++module_init(ltpc_module_init);
+ #endif
  
--void __exit cleanup_module(void)
-+static void __exit cops_module_exit(void)
- {
- 	unregister_netdev(cops_dev);
- 	cleanup_card(cops_dev);
- 	free_netdev(cops_dev);
- }
-+module_init(cops_module_init);
-+module_exit(cops_module_exit);
- #endif /* MODULE */
- 
- /*
+ static void __exit ltpc_cleanup(void)
