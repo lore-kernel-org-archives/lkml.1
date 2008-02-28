@@ -1,69 +1,124 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932500AbYB1XPi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932570AbYB1XR1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932500AbYB1XPi (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Feb 2008 18:15:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758109AbYB1XPa
+	id S932570AbYB1XR1 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Feb 2008 18:17:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759302AbYB1XRT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Feb 2008 18:15:30 -0500
-Received: from vs166246.vserver.de ([62.75.166.246]:52154 "EHLO
-	vs166246.vserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757357AbYB1XPa (ORCPT
+	Thu, 28 Feb 2008 18:17:19 -0500
+Received: from mtaout03-winn.ispmail.ntl.com ([81.103.221.49]:22900 "EHLO
+	mtaout03-winn.ispmail.ntl.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1758109AbYB1XRS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Feb 2008 18:15:30 -0500
-From: Michael Buesch <mb@bu3sch.de>
-To: "Alexey Zaytsev" <alexey.zaytsev@gmail.com>
-Subject: Re: bcm43xx regression in 2.6.24 (with patch)
-Date: Fri, 29 Feb 2008 00:14:38 +0100
-User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
-Cc: "John W. Linville" <linville@tuxdriver.com>, "Ingo Molnar" <mingo@elte.hu>,
-       "Alexey Zaytsev" <zaytsev.a@protei.ru>, "Greg KH" <greg@kroah.com>,
-       linux-kernel@vger.kernel.org
-References: <47BEAF3B.3080809@protei.ru> <200802282303.42676.mb@bu3sch.de> <f19298770802281448k91e71dh6583db94e1a6f4e7@mail.gmail.com>
-In-Reply-To: <f19298770802281448k91e71dh6583db94e1a6f4e7@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
+	Thu, 28 Feb 2008 18:17:18 -0500
+From: Ian Campbell <ijc@hellion.org.uk>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: Alexander van Heukelum <heukelum@mailshack.com>,
+       Ingo Molnar <mingo@elte.hu>,
+       Alexander van Heukelum <heukelum@fastmail.fm>, Andi Kleen <ak@suse.de>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Jeremy Fitzhardinge <jeremy@goop.org>,
+       Mark McLoughlin <markmc@redhat.com>,
+       LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <47C72432.3010606@zytor.com>
+References: <20080224174605.GA21661@mailshack.com>
+	 <47C22568.1010405@zytor.com>
+	 <1203958478.20033.1239002461@webmail.messagingengine.com>
+	 <20080225170134.GA15839@elte.hu> <20080225180750.GA31054@mailshack.com>
+	 <20080228131341.GA25213@mailshack.com>
+	 <20080228132822.GA25278@mailshack.com>
+	 <1204233131.28798.12.camel@cthulhu.hellion.org.uk>
+	 <47C72432.3010606@zytor.com>
+Content-Type: text/plain
+Date: Thu, 28 Feb 2008 23:16:49 +0000
+Message-Id: <1204240609.28798.33.camel@cthulhu.hellion.org.uk>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.3 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200802290014.38661.mb@bu3sch.de>
+X-SA-Exim-Connect-IP: 192.168.1.223
+X-SA-Exim-Mail-From: ijc@hellion.org.uk
+Subject: Re: [RFC] use realmode code to reserve end-of-conventional-memory
+	to 1MB
+X-SA-Exim-Version: 4.2.1 (built Tue, 09 Jan 2007 17:23:22 +0000)
+X-SA-Exim-Scanned: Yes (on hopkins.hellion.org.uk)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 28 February 2008 23:48:48 Alexey Zaytsev wrote:
-> On Fri, Feb 29, 2008 at 1:03 AM, Michael Buesch <mb@bu3sch.de> wrote:
-> > On Tuesday 26 February 2008 23:41:55 Michael Buesch wrote:
-> >  > On Tuesday 26 February 2008 23:12:32 Alexey Zaytsev wrote:
-> >  > > >  Yeah, seems so. But if you are willing to test an adjusted version, I can
-> >  > > >  probably do a backported version of this patch.
-> >  > > >  This patch is well tested and does the right thing, so I'm willing to sign
-> >  > > >  off a backported version of this.
-> >  > > >  First need to find the place in the old phy.c code that matches the new wa.c code.
-> >  > > >
-> >  > > I'll do the testing.
-> >  >
-> >  > Index: linux-2.6.24.3/drivers/net/wireless/b43/dma.c
-> >  > ===================================================================
-> >  > --- linux-2.6.24.3.orig/drivers/net/wireless/b43/dma.c        2008-02-26 23:39:39.000000000 +0100
-> >  > +++ linux-2.6.24.3/drivers/net/wireless/b43/dma.c     2008-02-26 23:39:43.000000000 +0100
-> >  > @@ -165,7 +165,7 @@ static void op64_fill_descriptor(struct
-> >  >       addrhi = (((u64) dmaaddr >> 32) & ~SSB_DMA_TRANSLATION_MASK);
-> >  >       addrext = (((u64) dmaaddr >> 32) & SSB_DMA_TRANSLATION_MASK)
-> >  [snip]
-> >
-> >  So are you actually going to do this anytime soon?
-> >
+
+On Thu, 2008-02-28 at 13:14 -0800, H. Peter Anvin wrote:
+> Ian Campbell wrote:
+> > On Thu, 2008-02-28 at 14:28 +0100, Alexander van Heukelum wrote:
+> >> Instead of using early reservations inside the kernel code,
+> >> we could use the realmode code to modify the e820 memmap.
+> >> This patch shows what that would look like. I have not looked
+> >> at the case where the BIOS does not provide an e820 memmap
+> >> yet. Probably a full solution would need to create a fake
+> >> e820 memmap in that case.
+> > 
+> > An e820 is already faked up in machine_specific_memory_setup() if one
+> > doesn't already exist.
+> > 
+> >> Comments?
+> > 
+> > This won't work for Xen since the real-mode code never runs there. I
+> > think it could be fixed in xen_memory_setup() though if native goes down
+> > this route.
+> > 
 > 
-> Sorry for the delay. Yes, it worked fine.
+> s/could/should/.
+> 
+> You need to set up your memory map more sensibly; it's not just the 
+> kernel, user space tries to access these areas too.
 
-Fine :)
+Agreed, I think it's pure luck that Xen kernels have gotten away with it
+in the past.
 
-> Btw, when booting the system with the b43 driver, I get a
-> ~30 socond delay after the boot scripts report
-> "Waiting for /dev to be fully populated" and all the modules
-> get loaded. Is this something expected?
+The patch below seems like the right thing to do. It certainly boots in
+a domU without the DMI problem (without any of the other related patches
+such as Alexander's).
 
-No. Probably firmware related.
+However ddcprobe hangs when run -- need to investigate some more, vm86
+in general works ok (i.e. my vm86 test code passes).
+
+BTW Jeremy, the kernel doesn't use XENMEM_memory_map -- any reason other
+than it not being useful at the time? These days the tools can push an
+arbitrary e820 down for a guest which might be useful to support,
+although nothing interesting is done with it today.
+
+Ian.
+
+x86/xen: Construct e820 map with a hole between 640K-1M.
+
+Signed-off-by: Ian Campbell <ijc@hellion.org.uk>
+Cc: Thomas Gleixner <tglx@linutronix.de>
+Cc: Ingo Molnar <mingo@redhat.com>
+Cc: H. Peter Anvin <hpa@zytor.com>
+Cc: Jeremy Fitzhardinge <jeremy@goop.org>
+---
+ arch/x86/xen/setup.c |    3 ++-
+ 1 files changed, 2 insertions(+), 1 deletions(-)
+
+diff --git a/arch/x86/xen/setup.c b/arch/x86/xen/setup.c
+index 3bad477..2341492 100644
+--- a/arch/x86/xen/setup.c
++++ b/arch/x86/xen/setup.c
+@@ -38,7 +38,8 @@ char * __init xen_memory_setup(void)
+ 	unsigned long max_pfn = xen_start_info->nr_pages;
+ 
+ 	e820.nr_map = 0;
+-	add_memory_region(0, PFN_PHYS(max_pfn), E820_RAM);
++	add_memory_region(0, LOWMEMSIZE(), E820_RAM);
++	add_memory_region(HIGH_MEMORY, PFN_PHYS(max_pfn)-HIGH_MEMORY, E820_RAM);
+ 
+ 	return "Xen";
+ }
+-- 
+1.5.4.2
+
 
 -- 
-Greetings Michael.
+Ian Campbell
+
+His mind is like a steel trap: full of mice.
+		-- Foghorn Leghorn
+
