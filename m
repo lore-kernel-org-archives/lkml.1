@@ -1,76 +1,236 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763004AbYB1Tls@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761537AbYB1Tm2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763004AbYB1Tls (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Feb 2008 14:41:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759493AbYB1Tli
+	id S1761537AbYB1Tm2 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Feb 2008 14:42:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761442AbYB1Tl6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Feb 2008 14:41:38 -0500
-Received: from mail.tmr.com ([64.65.253.246]:52545 "EHLO gaimboi.tmr.com"
+	Thu, 28 Feb 2008 14:41:58 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:45268 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751301AbYB1Tlh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Feb 2008 14:41:37 -0500
-Message-ID: <47C70F41.4020406@tmr.com>
-Date: Thu, 28 Feb 2008 14:45:05 -0500
-From: Bill Davidsen <davidsen@tmr.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.8) Gecko/20061105 SeaMonkey/1.0.6
-MIME-Version: 1.0
-To: Nicholas Marquez <nicholas.marquez@gatech.edu>
-CC: linux-kernel@vger.kernel.org, akpm@osdl.org
-Subject: Re: [PATCH] More accessible usage of custom flags
-References: <e367bd3e0802161852v1265f101h86326b16362dd860@mail.gmail.com>
-In-Reply-To: <e367bd3e0802161852v1265f101h86326b16362dd860@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	id S1759493AbYB1Tl4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 28 Feb 2008 14:41:56 -0500
+Message-Id: <20080228192928.004828816@redhat.com>
+References: <20080228192908.126720629@redhat.com>
+User-Agent: quilt/0.46-1
+Date: Thu, 28 Feb 2008 14:29:09 -0500
+From: Rik van Riel <riel@redhat.com>
+To: linux-kernel@vger.kernel.org
+Cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Lee Schermerhorn <Lee.Schermerhorn@hp.com>, linux-mm@kvack.org,
+       Nick Piggin <npiggin@suse.de>
+Subject: [patch 01/21] move isolate_lru_page() to vmscan.c
+Content-Disposition: inline; filename=np-01-move-and-rework-isolate_lru_page-v2.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Nicholas Marquez wrote:
-> I submitted this patch to the zen-sources Gentoo community and got
-> much praise and has promptly been included.  This kind of thing have
-> very likely already been done in other patchsets, but I haven't seen
-> it around, so I've gone ahead and made one.  The idea is that one can
-> enable -Os and various other options transparently through standard
-> kernel configuration, so why bar the builder from any other options to
-> pass on to gcc (et al)?  One can indeed add one's own flags in the
-> Makefile, but this method is a good deal friendlier.  Granted, this
-> could be misused by ricers and idiots, but they'll get themselves into
-> that mess all of their own fault and we'll all go on our merry ways.
-> It just seems that much use could be made out of this, both in terms
-> of (sane) optimizations and easier access to enhanced debugging
-> opportunities.
-> 
-> I see that people who build a Linux kernel are largely of two types:
-> ~the ones that understand and know enough that they could, with some
-> nudging and learning, become bonafide kernel devs and
-> ~the ones that understand it to some very basic degree and can get
-> through configuring it without too much trouble (though with limited
-> understanding)
-> I believe one of the very simple things that can be addressed is to
-> make the kernel more "accessible" without harming its integrity or
-> functionality.  This involves trying to fill the gap between those two
-> types of people, allowing there to be more understanding,
-> configuration, and (down the line) development opportunities within
-> the kernel to better ease these people into learning enough to begin
-> contributing back.  More developers can only be a Good Thing (tm).
-> Though a haughty and abstract opinion/goal/thought of mine, this patch
-> conforms to it and I think that with minimal effort such a vision
-> could be implemented.  Whilst all other kernel devs are hacking away
-> at the rough and tumultuous innards of the kernel, a few people of
-> less confidence and experience (people like me) could polish the
-> outside to make it more appealing to more people. So that eventually
-> they too will sink below the surface and join the party.
-> 
-> Anyway, I'm not quite sure that my implementation is as clean as it
-> could be and any feedback is certainly welcome.  This is my first time
-> posting to LKML, so I fully expect to be shot down anyway.
-> 
-It seems to make access to these features easier, and I really don't see 
-that it is going to create a higher number of posts here, the "I did X 
-and..." posts might go up, and the "How do I..." post might go down, and 
-I doubt either will change enough to notice.
+V1 -> V2 [lts]:
++  fix botched merge -- add back "get_page_unless_zero()"
+
+  From: Nick Piggin <npiggin@suse.de>
+  To: Linux Memory Management <linux-mm@kvack.org>
+  Subject: [patch 1/4] mm: move and rework isolate_lru_page
+  Date:	Mon, 12 Mar 2007 07:38:44 +0100 (CET)
+
+isolate_lru_page logically belongs to be in vmscan.c than migrate.c.
+
+It is tough, because we don't need that function without memory migration
+so there is a valid argument to have it in migrate.c. However a subsequent
+patch needs to make use of it in the core mm, so we can happily move it
+to vmscan.c.
+
+Also, make the function a little more generic by not requiring that it
+adds an isolated page to a given list. Callers can do that.
+
+	Note that we now have '__isolate_lru_page()', that does
+	something quite different, visible outside of vmscan.c
+	for use with memory controller.  Methinks we need to
+	rationalize these names/purposes.	--lts
+
+Signed-off-by: Nick Piggin <npiggin@suse.de>
+Signed-off-by: Rik van Riel <riel@redhat.com>
+Signed-off-by: Lee Schermerhorn <Lee.Schermerhorn@hp.com>
+
+Index: linux-2.6.25-rc2-mm1/include/linux/migrate.h
+===================================================================
+--- linux-2.6.25-rc2-mm1.orig/include/linux/migrate.h	2007-07-08 19:32:17.000000000 -0400
++++ linux-2.6.25-rc2-mm1/include/linux/migrate.h	2008-02-25 17:10:54.000000000 -0500
+@@ -25,7 +25,6 @@ static inline int vma_migratable(struct 
+ 	return 1;
+ }
+ 
+-extern int isolate_lru_page(struct page *p, struct list_head *pagelist);
+ extern int putback_lru_pages(struct list_head *l);
+ extern int migrate_page(struct address_space *,
+ 			struct page *, struct page *);
+@@ -42,8 +41,6 @@ extern int migrate_vmas(struct mm_struct
+ static inline int vma_migratable(struct vm_area_struct *vma)
+ 					{ return 0; }
+ 
+-static inline int isolate_lru_page(struct page *p, struct list_head *list)
+-					{ return -ENOSYS; }
+ static inline int putback_lru_pages(struct list_head *l) { return 0; }
+ static inline int migrate_pages(struct list_head *l, new_page_t x,
+ 		unsigned long private) { return -ENOSYS; }
+Index: linux-2.6.25-rc2-mm1/mm/internal.h
+===================================================================
+--- linux-2.6.25-rc2-mm1.orig/mm/internal.h	2008-02-19 16:23:09.000000000 -0500
++++ linux-2.6.25-rc2-mm1/mm/internal.h	2008-02-25 17:10:54.000000000 -0500
+@@ -34,6 +34,8 @@ static inline void __put_page(struct pag
+ 	atomic_dec(&page->_count);
+ }
+ 
++extern int isolate_lru_page(struct page *page);
++
+ extern void __init __free_pages_bootmem(struct page *page,
+ 						unsigned int order);
+ 
+Index: linux-2.6.25-rc2-mm1/mm/migrate.c
+===================================================================
+--- linux-2.6.25-rc2-mm1.orig/mm/migrate.c	2008-02-19 16:23:09.000000000 -0500
++++ linux-2.6.25-rc2-mm1/mm/migrate.c	2008-02-25 17:10:54.000000000 -0500
+@@ -36,36 +36,6 @@
+ #define lru_to_page(_head) (list_entry((_head)->prev, struct page, lru))
+ 
+ /*
+- * Isolate one page from the LRU lists. If successful put it onto
+- * the indicated list with elevated page count.
+- *
+- * Result:
+- *  -EBUSY: page not on LRU list
+- *  0: page removed from LRU list and added to the specified list.
+- */
+-int isolate_lru_page(struct page *page, struct list_head *pagelist)
+-{
+-	int ret = -EBUSY;
+-
+-	if (PageLRU(page)) {
+-		struct zone *zone = page_zone(page);
+-
+-		spin_lock_irq(&zone->lru_lock);
+-		if (PageLRU(page) && get_page_unless_zero(page)) {
+-			ret = 0;
+-			ClearPageLRU(page);
+-			if (PageActive(page))
+-				del_page_from_active_list(zone, page);
+-			else
+-				del_page_from_inactive_list(zone, page);
+-			list_add_tail(&page->lru, pagelist);
+-		}
+-		spin_unlock_irq(&zone->lru_lock);
+-	}
+-	return ret;
+-}
+-
+-/*
+  * migrate_prep() needs to be called before we start compiling a list of pages
+  * to be migrated using isolate_lru_page().
+  */
+@@ -870,14 +840,17 @@ static int do_move_pages(struct mm_struc
+ 				!migrate_all)
+ 			goto put_and_set;
+ 
+-		err = isolate_lru_page(page, &pagelist);
++		err = isolate_lru_page(page);
++		if (err) {
+ put_and_set:
+-		/*
+-		 * Either remove the duplicate refcount from
+-		 * isolate_lru_page() or drop the page ref if it was
+-		 * not isolated.
+-		 */
+-		put_page(page);
++			/*
++			 * Either remove the duplicate refcount from
++			 * isolate_lru_page() or drop the page ref if it was
++			 * not isolated.
++			 */
++			put_page(page);
++		} else
++			list_add_tail(&page->lru, &pagelist);
+ set_status:
+ 		pp->status = err;
+ 	}
+Index: linux-2.6.25-rc2-mm1/mm/vmscan.c
+===================================================================
+--- linux-2.6.25-rc2-mm1.orig/mm/vmscan.c	2008-02-19 16:23:16.000000000 -0500
++++ linux-2.6.25-rc2-mm1/mm/vmscan.c	2008-02-25 17:10:54.000000000 -0500
+@@ -829,6 +829,47 @@ static unsigned long clear_active_flags(
+ 	return nr_active;
+ }
+ 
++/**
++ * isolate_lru_page(@page)
++ *
++ * Isolate one @page from the LRU lists. Must be called with an elevated
++ * refcount on the page, which is a fundamentnal difference from
++ * isolate_lru_pages (which is called without a stable reference).
++ *
++ * The returned page will have PageLru() cleared, and PageActive set,
++ * if it was found on the active list. This flag generally will need to be
++ * cleared by the caller before letting the page go.
++ *
++ * The vmstat page counts corresponding to the list on which the page was
++ * found will be decremented.
++ *
++ * lru_lock must not be held, interrupts must be enabled.
++ *
++ * Returns:
++ *  -EBUSY: page not on LRU list
++ *  0: page removed from LRU list.
++ */
++int isolate_lru_page(struct page *page)
++{
++	int ret = -EBUSY;
++
++	if (PageLRU(page)) {
++		struct zone *zone = page_zone(page);
++
++		spin_lock_irq(&zone->lru_lock);
++		if (PageLRU(page) && get_page_unless_zero(page)) {
++			ret = 0;
++			ClearPageLRU(page);
++			if (PageActive(page))
++				del_page_from_active_list(zone, page);
++			else
++				del_page_from_inactive_list(zone, page);
++		}
++		spin_unlock_irq(&zone->lru_lock);
++	}
++	return ret;
++}
++
+ /*
+  * shrink_inactive_list() is a helper for shrink_zone().  It returns the number
+  * of reclaimed pages
+Index: linux-2.6.25-rc2-mm1/mm/mempolicy.c
+===================================================================
+--- linux-2.6.25-rc2-mm1.orig/mm/mempolicy.c	2008-02-19 16:23:09.000000000 -0500
++++ linux-2.6.25-rc2-mm1/mm/mempolicy.c	2008-02-25 17:10:54.000000000 -0500
+@@ -93,6 +93,8 @@
+ #include <asm/tlbflush.h>
+ #include <asm/uaccess.h>
+ 
++#include "internal.h"
++
+ /* Internal flags */
+ #define MPOL_MF_DISCONTIG_OK (MPOL_MF_INTERNAL << 0)	/* Skip checks for continuous vmas */
+ #define MPOL_MF_INVERT (MPOL_MF_INTERNAL << 1)		/* Invert check for nodemask */
+@@ -618,8 +620,11 @@ static void migrate_page_add(struct page
+ 	/*
+ 	 * Avoid migrating a page that is shared with others.
+ 	 */
+-	if ((flags & MPOL_MF_MOVE_ALL) || page_mapcount(page) == 1)
+-		isolate_lru_page(page, pagelist);
++	if ((flags & MPOL_MF_MOVE_ALL) || page_mapcount(page) == 1) {
++		if (!isolate_lru_page(page)) {
++			list_add_tail(&page->lru, pagelist);
++		}
++	}
+ }
+ 
+ static struct page *new_node_page(struct page *page, unsigned long node, int **x)
 
 -- 
-Bill Davidsen <davidsen@tmr.com>
-   "We have more to fear from the bungling of the incompetent than from
-the machinations of the wicked."  - from Slashdot
+All Rights Reversed
+
