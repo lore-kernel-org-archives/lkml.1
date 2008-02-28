@@ -1,89 +1,179 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761277AbYB1ROa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759200AbYB1RWq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761277AbYB1ROa (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Feb 2008 12:14:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753248AbYB1ROU
+	id S1759200AbYB1RWq (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Feb 2008 12:22:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753401AbYB1RWh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Feb 2008 12:14:20 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:50457 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754181AbYB1ROR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Feb 2008 12:14:17 -0500
-From: Jeff Moyer <jmoyer@redhat.com>
-To: Ian Kent <raven@themaw.net>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       autofs mailing list <autofs@linux.kernel.org>,
-       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
-       Pavel Emelyanov <xemul@openvz.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>
-Subject: Re: [PATCH 3/4] autofs4 - track uid and gid of last mount requestor
-References: <Pine.LNX.4.64.0802261151400.8490@raven.themaw.net>
-	<Pine.LNX.4.64.0802261208400.8490@raven.themaw.net>
-	<20080227204546.72e16e8d.akpm@linux-foundation.org>
-	<1204179747.3501.21.camel@raven.themaw.net>
-	<20080227223734.caab0165.akpm@linux-foundation.org>
-	<1204182500.3501.49.camel@raven.themaw.net>
-	<20080227232339.af6e904a.akpm@linux-foundation.org>
-	<1204185623.3501.84.camel@raven.themaw.net>
-X-PGP-KeyID: 1F78E1B4
-X-PGP-CertKey: F6FE 280D 8293 F72C 65FD  5A58 1FF8 A7CA 1F78 E1B4
-X-PCLoadLetter: What the f**k does that mean?
-Date: Thu, 28 Feb 2008 12:13:50 -0500
-In-Reply-To: <1204185623.3501.84.camel@raven.themaw.net> (Ian Kent's message
-	of "Thu, 28 Feb 2008 17:00:23 +0900")
-Message-ID: <x494pbtxaup.fsf@segfault.boston.devel.redhat.com>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
+	Thu, 28 Feb 2008 12:22:37 -0500
+Received: from smtp118.sbc.mail.re3.yahoo.com ([66.196.96.91]:30835 "HELO
+	smtp118.sbc.mail.re3.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1752725AbYB1RWh (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 28 Feb 2008 12:22:37 -0500
+X-YMail-OSG: vVSDPJUVM1kthMV4DrSVJ2ZrCmWztF8Bc324EAd145fxpMwN7YJuTHIn9fACaBWRirQ2E1X_a1SYPyf7yyUzr.gyf2pr0Bev1XOYDOsLA6JSeZeM_WPUT3Etv3v83proStFc2vCPFZEILA--
+X-Yahoo-Newman-Property: ymail-3
+Date: Thu, 28 Feb 2008 11:19:51 -0600
+From: serge@hallyn.com
+To: BuraphaLinux Server <buraphalinuxserver@gmail.com>
+Cc: serge@hallyn.com, linux-kernel@vger.kernel.org
+Subject: Re: at program breaks with kernel 2.6.24
+Message-ID: <20080228171951.GA32567@vino.hallyn.com>
+References: <5d75f4610802270427y789ffae9ie2682059206eed51@mail.gmail.com> <20080227181740.GA14532@vino.hallyn.com> <5d75f4610802271147m77d3b3e3r4d01ecf3740a7dbb@mail.gmail.com> <20080228030053.GA25033@vino.hallyn.com> <5d75f4610802272123g1cb1ec52l181406be9035dd5f@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <5d75f4610802272123g1cb1ec52l181406be9035dd5f@mail.gmail.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ian Kent <raven@themaw.net> writes:
+Quoting BuraphaLinux Server (buraphalinuxserver@gmail.com):
+> Thank you for the patch to try.  This patch works perfectly.  Is it
+> safe to apply this to 2.6.24.3?
 
-> On Wed, 2008-02-27 at 23:23 -0800, Andrew Morton wrote:
->> On Thu, 28 Feb 2008 16:08:20 +0900 Ian Kent <raven@themaw.net> wrote:
->> > which includes the process uid and gid, and as part of
->> > the lookup we set macros for several mount map substitution variables,
->> > derived from the uid and gid of the process requesting the mount and
->> > they can be used within autofs maps.
->> 
->> yeah, could be a problem.  Hopefully the namespace people can advise. 
->> Perhaps we need a concept of an exportable-to-userspace namespace-id+uid,
->> namespace-id+gid, namespace-id+pid, etc for this sort of thing.  It has
->> come up before.  Recently, but I forget what the context was.
->
-> I'm all ears to any feedback from others on this, please.
+I took care not to touch commoncap.c so that it should hopefully apply
+cleanly to the past few kernels.
 
-I think there is some confusion surrounding what the UID and GID are
-used for in this context.  I'll try to explain it as best I can.
+> I hope it is in 2.6.24.4
 
-When the automount daemon parses a map entry, it will do some amount of
-variable substitution.  So, let's say you're running on an i386 box, and
-you want to mount a library directory from a server.  You might have a
-map entry that looks like this:
+I'm getting ready to send out a more complete version of the patch.
 
-lib	server:/export/$ARCH/lib
+thanks,
+-serge
 
-In this case, the automount daemon will replace $ARCH with i386, and
-will try the following mount command:
-
-mount -t nfs server:/export/i386/lib /automountdir/lib
-
-There are cases where it would be helpful to use the requesting
-process's UID in such a variable substitution.  Consider the case of a
-CIFS share, where the automount daemon runs as user root, but we want to
-mount the share using the credentials of the requesting user.  In this
-case, the UID and GID can be helpful in formatting the mount options for
-mounting the share.
-
-So, the UID and GID are used only for map substitutions.  Now, having
-said all of that, I'll have to look more closely at why we even need to
-keep track of it, given that it only needs to be used when performing
-the lookup, and at that time we have information on the requesting UID
-and GID.
-
-Cheers,
-
-Jeff
+> On 2/28/08, serge@hallyn.com <serge@hallyn.com> wrote:
+> > Quoting BuraphaLinux Server (buraphalinuxserver@gmail.com):
+> > > This is gmail which has broken line wrapping I cannot fix. Anyway, I
+> > > did build the new kernel but it still does not work for me. I tried to
+> > > strace, but that didn't work for me either. This is as a non-root user
+> > > (and same 'at'/'atd' binaries work on 2.6.23.X):
+> > >
+> > > bash-3.2$ at now
+> > > warning: commands will be executed using /bin/sh
+> > > at> echo "suid is busted"
+> > > at> <EOT>
+> > > job 4 at Thu Feb 28 02:16:00 2008
+> > > Can't signal atd (permission denied)
+> > > bash-3.2$ ls -ld $(which at)
+> > > -rws--x--x 1 daemon daemon 36468 Jan 11 15:37 /usr/bin/at
+> > > bash-3.2$ ps -ef | grep atd
+> > > daemon 2874 1 0 02:14 ? 00:00:00 /usr/sbin/atd -b 15 -l 1
+> > > bozo 3054 3049 0 02:16 pts/0 00:00:00 grep atd
+> > > bash-3.2$ ls -ld /var/spool/at*
+> > > drwxrwxrwt 2 daemon daemon 4096 Feb 28 02:16 /var/spool/atjobs
+> > > drwx------ 2 daemon daemon 4096 Feb 27 20:02 /var/spool/atspool
+> > > bash-3.2$ uname -a
+> > > Linux zappaman.cs.buu.ac.th 2.6.25-rc3 #1 SMP Thu Feb 28 01:29:46 ICT
+> > > 2008 i686 pentium4 i386 GNU/Linux
+> > > bash-3.2$ strace -s 99999 -v -o /tmp/pain at now
+> > > warning: commands will be executed using /bin/sh
+> > > Cannot open lockfile /var/spool/atjobs/.SEQ: Permission denied
+> > > bash-3.2$ at now
+> > > warning: commands will be executed using /bin/sh
+> > > at> echo "hi"
+> > > at> <EOT>
+> > > job 7 at Thu Feb 28 02:19:00 2008
+> > > Can't signal atd (permission denied)
+> > >
+> > > My kenrel .config is big, so it is attached so I don't get any cut and
+> > > paste error.
+> > >
+> > > On 2/28/08, serge@hallyn.com <serge@hallyn.com> wrote:
+> > > > Quoting BuraphaLinux Server (buraphalinuxserver@gmail.com):
+> > > > > http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=463669
+> > > > >
+> > > > > I have the same problem - it is not debian specific. Did the
+> > > > > semantics of kill() change with the new kernel? I thought as long as
+> > > > > something is setuid, even with capability stuff around the setuid
+> > > > > programs just get _all_ capabilities and would keep working.
+> > > > >
+> > > > > I did a good search and found many people with the problem, but no
+> > > > > solutions except going back to 2.6.23.x kernels. I guess you'll flame
+> > > > > me, but at least include a link to the solution too.
+> > > >
+> > > > Why would we flame you?
+> > >
+> > > Because maybe I'm doing something stupid and didn't patch/rebuild
+> > > something when changing kernels like I should.  I haven't had trouble
+> > > with at for many years of kernel changes, but 2.6.24 was the first
+> > > with the new security stuff and maybe I need to have some
+> > > capability-aware 'at' program?
+> > >
+> > > >                                          I'll just apologize as I think
+> > it's my fault,
+> > > > and ask you to please try the newest available kernel where I believe it
+> > > > should be fixed.
+> > >
+> > > Do I need to recompile glibc and the at software to adjust so some
+> > > kernel interface changes?  Did the 'make oldconfig' generate some bad
+> > > config combination?  As root it works, so I don't think the at or atd
+> > > are broken (but maybe they have to be patched for >2.6.23.X ?)
+> > >
+> > > bash-3.2$ su - root
+> > > Password:
+> > > BLS #at now
+> > > warning: commands will be executed using /bin/sh
+> > > at> echo "uh-huh..."
+> > > at> <EOT>
+> > > job 8 at Thu Feb 28 02:30:00 2008
+> > >
+> > > (and I checked and the job completes normally)
+> > >
+> > > > thanks,
+> > > > -serge
+> > >
+> > > Thank you for reading.  Any ideas on what to try next?
+> >
+> > I'm working on setting up something I can test this on better, but just
+> > for good measure can you try the following patch?  It should simply
+> > prevent the extra signal checks from happening.
+> >
+> > thanks,
+> > -serge
+> >
+> > From f48d28fe525652cb7321d5f545f9dcdfb3ce97d8 Mon Sep 17 00:00:00 2001
+> > From: Serge Hallyn <serge@hallyn.com>
+> > Date: Wed, 27 Feb 2008 20:53:47 +0000
+> > Subject: [PATCH 1/1] file capabilities: get rid of cap_task_kill
+> >
+> > This is just a test to not use cap_task_kill.  We will see whether
+> > this fixes the atd problem
+> >
+> > Signed-off-by: Serge Hallyn <serge@hallyn.com>
+> > ---
+> >  include/linux/security.h |    2 +-
+> >  security/capability.c    |    1 -
+> >  2 files changed, 1 insertions(+), 2 deletions(-)
+> >
+> > diff --git a/include/linux/security.h b/include/linux/security.h
+> > index fe52cde..4c43914 100644
+> > --- a/include/linux/security.h
+> > +++ b/include/linux/security.h
+> > @@ -2138,7 +2138,7 @@ static inline int security_task_kill (struct
+> > task_struct *p,
+> >  				      struct siginfo *info, int sig,
+> >  				      u32 secid)
+> >  {
+> > -	return cap_task_kill(p, info, sig, secid);
+> > +	return 0;
+> >  }
+> >
+> >  static inline int security_task_wait (struct task_struct *p)
+> > diff --git a/security/capability.c b/security/capability.c
+> > index 9e99f36..2c6e06d 100644
+> > --- a/security/capability.c
+> > +++ b/security/capability.c
+> > @@ -40,7 +40,6 @@ static struct security_operations capability_ops = {
+> >  	.inode_need_killpriv =		cap_inode_need_killpriv,
+> >  	.inode_killpriv =		cap_inode_killpriv,
+> >
+> > -	.task_kill =			cap_task_kill,
+> >  	.task_setscheduler =		cap_task_setscheduler,
+> >  	.task_setioprio =		cap_task_setioprio,
+> >  	.task_setnice =			cap_task_setnice,
+> > --
+> > 1.5.2.5
+> >
+> >
+> >
