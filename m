@@ -1,59 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762285AbYB1TSs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761425AbYB1TVv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762285AbYB1TSs (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Feb 2008 14:18:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758652AbYB1TSk
+	id S1761425AbYB1TVv (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Feb 2008 14:21:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755350AbYB1TVn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Feb 2008 14:18:40 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:42004 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755022AbYB1TSj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Feb 2008 14:18:39 -0500
-Date: Thu, 28 Feb 2008 20:18:24 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: linux-kernel@vger.kernel.org, "Carlos R. Mafra" <crmafra2@gmail.com>
-Subject: Re: Interactivity issue in 2.6.25-rc3
-Message-ID: <20080228191824.GA20019@elte.hu>
-References: <20080228184407.GA7117@localhost.ift.unesp.br>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080228184407.GA7117@localhost.ift.unesp.br>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Thu, 28 Feb 2008 14:21:43 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:41689
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1755022AbYB1TVm (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 28 Feb 2008 14:21:42 -0500
+Date: Thu, 28 Feb 2008 11:21:41 -0800 (PST)
+Message-Id: <20080228.112141.261415906.davem@davemloft.net>
+To: alexey.zaytsev@gmail.com
+Cc: mingo@elte.hu, tglx@linutronix.de, linux-kernel@vger.kernel.org
+Subject: Re: printk timestamps jumping back and forth in 2.6.25-rc.
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <f19298770802280626g5ee17328ldedf7658a9f26f56@mail.gmail.com>
+References: <f19298770802280626g5ee17328ldedf7658a9f26f56@mail.gmail.com>
+X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+From: "Alexey Zaytsev" <alexey.zaytsev@gmail.com>
+Date: Thu, 28 Feb 2008 17:26:38 +0300
 
-* Carlos R. Mafra <crmafra2@gmail.com> wrote:
-
-> I want to report a bad interactivity which happened in my desktop 
-> running the latest kernel (2.6.25-rc3-00081-g7704a8b).
+> commit d713f519332e029d43eca8462629314eee1ded86
+> Author: Ingo Molnar <mingo@elte.hu>
+> Date:   Fri Jan 25 21:07:58 2008 +0100
 > 
-> I tried to play 'flightgear' and the desktop became _very_ slow while 
-> flightgear was "loading scenery objects" (a task which never finished 
-> and I could not play it).
+>     sched: fix CONFIG_PRINT_TIME's reliance on sched_clock()
 > 
-> The desktop is a P4 @ 3.0 GHz, 512MB, with the nv graphics driver.
+>     Stefano Brivio reported weird printk timestamp behavior during
+>     CPU frequency changes:
+> 
+>       http://bugzilla.kernel.org/show_bug.cgi?id=9475
+> 
+>     fix CONFIG_PRINT_TIME's reliance on sched_clock() and use cpu_clock()
+>     instead.
+> 
+>     Reported-and-bisected-by: Stefano Brivio <stefano.brivio@polimi.it>
+>     Signed-off-by: Ingo Molnar <mingo@elte.hu>
+> 
+> 
+> which sound like "happy debugging, losers" to me. ;)
+> 
+> Anything else I can do?
 
-yes, but this means you run the soft-3D driver under Xorg, right? That 
-is known to starve its clients. The stats you sent show no worse than a 
-few tens of msecs delays caused by CPU scheduling itself:
+FWIW, I've been seeing jumping printk timestamps ever since this
+change on SMP sparc64 as well.  Especially on my Niagara boxes.
 
-  mrxvt (3730, #threads: 1)
-  se.wait_max                        :            18.679129
-
-so the scheduler kept things within the ~40 msecs default latency 
-target:
-
-  .sysctl_sched_latency                    : 40.000000
-
-	Ingo
+The timestamp base seem to be dependant upon which cpu prints the
+message.  I guess the per-runqueue timestamps this new scheme is using
+are all differently based.
