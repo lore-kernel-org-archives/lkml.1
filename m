@@ -1,40 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764193AbYB1UqP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764036AbYB1UrJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764193AbYB1UqP (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Feb 2008 15:46:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761357AbYB1Up5
+	id S1764036AbYB1UrJ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Feb 2008 15:47:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757111AbYB1Uqx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Feb 2008 15:45:57 -0500
-Received: from wolverine01.qualcomm.com ([199.106.114.254]:32994 "EHLO
-	wolverine01.qualcomm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761314AbYB1Up4 (ORCPT
+	Thu, 28 Feb 2008 15:46:53 -0500
+Received: from smtp1.linux-foundation.org ([207.189.120.13]:48248 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1761266AbYB1Uqw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Feb 2008 15:45:56 -0500
-X-IronPort-AV: E=McAfee;i="5200,2160,5241"; a="989979"
-Message-ID: <47C71D81.3030008@qualcomm.com>
-Date: Thu, 28 Feb 2008 12:45:53 -0800
-From: Max Krasnyansky <maxk@qualcomm.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
-MIME-Version: 1.0
-To: Paul Jackson <pj@sgi.com>
-CC: mingo@elte.hu, a.p.zijlstra@chello.nl, tglx@linutronix.de, oleg@tv-sign.ru,
-       rostedt@goodmis.org, linux-kernel@vger.kernel.org
-Subject: Re: [RFC/PATCH 0/4] CPUSET driven CPU isolation
-References: <20080227222103.673194000@chello.nl>	<20080228075010.GA28781@elte.hu>	<20080228020808.3fd22f77.pj@sgi.com>	<20080228090847.GA1133@elte.hu>	<20080228031710.3405e405.pj@sgi.com>	<20080228104637.GA9129@elte.hu>	<47C7155C.5060607@qualcomm.com>	<20080228141339.b83ae00f.pj@sgi.com>	<47C718DE.9020107@qualcomm.com> <20080228142733.f96864d3.pj@sgi.com>
-In-Reply-To: <20080228142733.f96864d3.pj@sgi.com>
-Content-Type: text/plain; charset=ISO-8859-1
+	Thu, 28 Feb 2008 15:46:52 -0500
+Date: Thu, 28 Feb 2008 12:45:22 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Roland McGrath <roland@redhat.com>
+Cc: torvalds@linux-foundation.org, mingo@elte.hu, linux-kernel@vger.kernel.org,
+       shaohua.li@intel.com, linux-ia64@vger.kernel.org
+Subject: Re: [PATCH] core dump: user_regset writeback
+Message-Id: <20080228124522.3ae08f19.akpm@linux-foundation.org>
+In-Reply-To: <20080227200638.15D092700FD@magilla.localdomain>
+References: <20080227200638.15D092700FD@magilla.localdomain>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Paul Jackson wrote:
-> Max K wrote:
->> btw Can you send me those init scripts that you mentioned. ie Those that
->> create "boot" set from userspace.
+On Wed, 27 Feb 2008 12:06:38 -0800 (PST)
+Roland McGrath <roland@redhat.com> wrote:
+
 > 
-> They aren't open source ;).
+> This makes the user_regset-based core dump code call user_regset
+> writeback hooks when available.  This is necessary groundwork to
+> allow IA64 to set CORE_DUMP_USE_REGSET.
+> 
+> CC: Shaohua Li <shaohua.li@intel.com>
+> Signed-off-by: Roland McGrath <roland@redhat.com>
+> ---
+>  fs/binfmt_elf.c |   15 +++++++++++++++
+>  1 files changed, 15 insertions(+), 0 deletions(-)
+> 
+> diff --git a/fs/binfmt_elf.c b/fs/binfmt_elf.c
+> index 41a958a..eb7cca3 100644
+> --- a/fs/binfmt_elf.c
+> +++ b/fs/binfmt_elf.c
+> @@ -1424,6 +1424,18 @@ struct elf_note_info {
+>  	int thread_notes;
+>  };
+>  
+> +/*
+> + * When a regset has a writeback hook, we call it on each thread before
+> + * dumping user memory.  On register window machines, this makes sure the
+> + * user memory backing the register data is up to date before we read it.
+> + */
+> +static void do_thread_regset_writeback(struct task_struct *task,
+> +				       const struct user_regset *regset)
+> +{
+> +	if (regset->writeback)
+> +		regset->writeback(task, regset, 1);
+> +}
+> +
+>  static int fill_thread_core_info(struct elf_thread_core_info *t,
+>  				 const struct user_regset_view *view,
+>  				 long signr, size_t *total)
+> @@ -1445,6 +1457,8 @@ static int fill_thread_core_info(struct elf_thread_core_info *t,
+>  		  sizeof(t->prstatus), &t->prstatus);
+>  	*total += notesize(&t->notes[0]);
+>  
+> +	do_thread_regset_writeback(t->task, &view->regsets[0]);
+> +
+>  	/*
+>  	 * Each other regset might generate a note too.  For each regset
+>  	 * that has no core_note_type or is inactive, we leave t->notes[i]
+> @@ -1452,6 +1466,7 @@ static int fill_thread_core_info(struct elf_thread_core_info *t,
+>  	 */
+>  	for (i = 1; i < view->n; ++i) {
+>  		const struct user_regset *regset = &view->regsets[i];
+> +		do_thread_regset_writeback(t->task, regset);
+>  		if (regset->core_note_type &&
+>  		    (!regset->active || regset->active(t->task, regset))) {
+>  			int ret;
 
-Oh, I see. It's probably patented too ;-)
-
-Max
+Is there a need for this in 2.6.25?
