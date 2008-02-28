@@ -1,27 +1,29 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756710AbYB1Jkb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757577AbYB1Jqr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756710AbYB1Jkb (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Feb 2008 04:40:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754237AbYB1JkW
+	id S1757577AbYB1Jqr (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Feb 2008 04:46:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754841AbYB1Jqg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Feb 2008 04:40:22 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:47803 "EHLO mx2.mail.elte.hu"
+	Thu, 28 Feb 2008 04:46:36 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:40223 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753985AbYB1JkV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Feb 2008 04:40:21 -0500
-Date: Thu, 28 Feb 2008 10:40:00 +0100
+	id S1754160AbYB1Jqf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 28 Feb 2008 04:46:35 -0500
+Date: Thu, 28 Feb 2008 10:46:13 +0100
 From: Ingo Molnar <mingo@elte.hu>
-To: "Klaus S. Madsen" <ksm@hjernemadsen.org>
-Cc: LKML <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, "H. Peter Anvin" <hpa@zytor.com>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: Regression in 2.6.25-rc3: s2ram segfaults before suspending
-Message-ID: <20080228094000.GA2987@elte.hu>
-References: <20080227221033.GR17932@hjernemadsen.org> <20080228091639.GB1133@elte.hu> <20080228092846.GC17932@hjernemadsen.org>
+To: Ian Campbell <ijc@hellion.org.uk>
+Cc: linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
+       Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>,
+       Jeremy Fitzhardinge <jeremy@goop.org>,
+       Mark McLoughlin <markmc@redhat.com>,
+       Alexander van Heukelum <heukelum@fastmail.fm>
+Subject: Re: [PATCH 2/2] x86/xen: Disable DMI parsing in Xen kernel.
+Message-ID: <20080228094613.GC2987@elte.hu>
+References: <1204187174-27143-1-git-send-email-ijc@hellion.org.uk> <1204187174-27143-2-git-send-email-ijc@hellion.org.uk> <1204191082.5446.13.camel@zakaz.uk.xensource.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080228092846.GC17932@hjernemadsen.org>
+In-Reply-To: <1204191082.5446.13.camel@zakaz.uk.xensource.com>
 User-Agent: Mutt/1.5.17 (2007-11-01)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -36,58 +38,20 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Klaus S. Madsen <ksm@hjernemadsen.org> wrote:
+* Ian Campbell <ijc@hellion.org.uk> wrote:
 
-> > > 524             int r;
-> > > 525     #ifdef __PIC__
-> > > 526             asm volatile (
-> > > 527              "pushl %%ebx\n\t"
-> > > 528              "movl %2, %%ebx\n\t"
-> > > 529              "int $0x80\n\t"
-> > > 530              "popl %%ebx"
-> > > (gdb) bt 
-> > > #0  0xb7facf4a in run_vm86 () at lrmi.c:526
-> > > #1  0xb7fad61b in LRMI_int (i=16, r=0xbffca670) at lrmi.c:844
-> > > #2  0x0804acfc in do_vbe_service (AX=20227, BX=0, regs=0xbffca670)
-> > >     at vbetool/vbetool.c:158
-> > > #3  0x0804af7e in __get_mode () at vbetool/vbetool.c:453
-> > > #4  0x0804a30f in s2ram_hacks () at s2ram-x86.c:268
-> > > #5  0x0804954f in main (argc=1, argv=0x0) at s2ram-main.c:92
-> > > 
-> > > I have tried to bisect the problem, and it fingered the following
-> > > commit:
-> > > 
-> > > commit 82bc03fc158e28c90d7ed9919410776039cb4e14
-> > > Author: Ingo Molnar <mingo@elte.hu>
-> > > 
-> > >     x86: add PWT to NOCACHE flags
-> > > 
-> > > Reverting this commit in the bisected tree (by executing git show 
-> > > 82bc03fc158e28c90d7ed9919410776039cb4e14 | patch -R -p1), makes the 
-> > > segfault go away. I've run make clean between each kernel compile, to 
-> > > be sure the tree was correctly compiled.
-> > 
-> > thanks for tracking this down. It would be nice to figure out why this 
-> > change made a difference. Perhaps VM86 mode has some restrictions in 
-> > what type of pagetables it can operate in - and the CPU just refuses to 
-> > properly emulate those 16-bit instructions? (this would be very weird). 
-> > We are trying to execute 16-bit BIOS code here, right?
-> > 
-> > which instruction is the segfault coming from - the int $0x80? So in 
-> > vm86 mode we generated a #GPF which shows up as a SIGSEGV?
-> I must say, that I don't quite understand why gdb fingers the "asm
-> volatile" line and not one of the assembly lines, when reporting the
-> segfault. But I'm not really well versed in lowlevel gdb use, so if you
-> could give me a about how I get gdb to disassemble the code at the
-> instruction pointer, I'll return with the result.
+> Actually scratch this patchset -- its not sufficient. For example 
+> ddcprobe in userspace causes the exact same issue vs 0xa0000.
+> 
+> Looks like the only sane solution will be to mark regions between 
+> 640K-1M reserved early on in boot.
 
-typing 'disassemble' should do the trick.
+and as luck has it, such a patch from Alexander van Heukelum has been 
+put into x86.git#testing just yesterday.
 
-If you have a specific address outside of the current instruction 
-pointer, then doing disassembly on a range:
-
-  disassemble 0xb7facf4a 0xb7facf8a
-
-should work too.
+So ... could you try x86.git#testing - does it work out of box? Is the 
+reservation early enough to prevent pagetables be allocated in weird 
+places? [or am i missing something - this is about the guest kernel 
+reserving th 640k..1M area, not the host kernel - right?]
 
 	Ingo
