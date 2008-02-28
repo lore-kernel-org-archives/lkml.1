@@ -1,23 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758623AbYB1LJK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759701AbYB1LLS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758623AbYB1LJK (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Feb 2008 06:09:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757414AbYB1LIs
+	id S1759701AbYB1LLS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Feb 2008 06:11:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756749AbYB1LLJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Feb 2008 06:08:48 -0500
-Received: from ns.suse.de ([195.135.220.2]:57392 "EHLO mx1.suse.de"
+	Thu, 28 Feb 2008 06:11:09 -0500
+Received: from mail.suse.de ([195.135.220.2]:57638 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757058AbYB1LIr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Feb 2008 06:08:47 -0500
-Date: Thu, 28 Feb 2008 12:08:45 +0100
-Message-ID: <s5hir09s5he.wl%tiwai@suse.de>
+	id S1755542AbYB1LLI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 28 Feb 2008 06:11:08 -0500
+Date: Thu, 28 Feb 2008 12:11:06 +0100
+Message-ID: <s5hhcfts5dh.wl%tiwai@suse.de>
 From: Takashi Iwai <tiwai@suse.de>
 To: Harvey Harrison <harvey.harrison@gmail.com>
 Cc: Andrew Morton <akpm@linux-foundation.org>,
        LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 10/12] sound: au88x0_pcm.c fix integer as NULL pointer	warning
-In-Reply-To: <1204160169.20280.58.camel@brick>
-References: <1204160169.20280.58.camel@brick>
+Subject: Re: [PATCH 13/12] sound: au88x0_core.c fix incorrect signedness	warnings
+In-Reply-To: <1204160803.20280.62.camel@brick>
+References: <1204160803.20280.62.camel@brick>
 User-Agent: Wanderlust/2.15.5 (Almost Unreal) SEMI/1.14.6 (Maruoka)
  FLIM/1.14.7 (=?ISO-8859-4?Q?Sanj=F2?=) APEL/10.6 MULE XEmacs/21.5 (beta28)
  (fuki) (+CVS-20070806) (i386-suse-linux)
@@ -27,29 +27,24 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-At Wed, 27 Feb 2008 16:56:08 -0800,
+> Subject: Re: [PATCH 13/12] sound: au88x0_core.c fix incorrect signedness warnings 
+
+The patch overflow?  ;-)
+
+At Wed, 27 Feb 2008 17:06:43 -0800,
 Harvey Harrison wrote:
 > 
-> sound/pci/au88x0/au88x0_pcm.c:508:15: warning: Using plain integer as NULL pointer
+> Fixes the following, repeated at every callsite, vortex->fixed_res is always
+> passed in this argument, the change to unsigned int won't change anything.
 > 
-> Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
-> ---
->  sound/pci/au88x0/au88x0_pcm.c |    2 +-
->  1 files changed, 1 insertions(+), 1 deletions(-)
-> 
-> diff --git a/sound/pci/au88x0/au88x0_pcm.c b/sound/pci/au88x0/au88x0_pcm.c
-> index 526c6c5..232eb80 100644
-> --- a/sound/pci/au88x0/au88x0_pcm.c
-> +++ b/sound/pci/au88x0/au88x0_pcm.c
-> @@ -505,7 +505,7 @@ static int __devinit snd_vortex_new_pcm(vortex_t * chip, int idx, int nr)
->  	int i;
->  	int err, nr_capt;
->  
-> -	if ((chip == 0) || (idx < 0) || (idx >= VORTEX_PCM_LAST))
-> +	if ((chip == NULL) || (idx < 0) || (idx >= VORTEX_PCM_LAST))
+> sound/pci/au88x0/au88x0_core.c:2047:54: warning: incorrect type in argument 2 (different signedness)
+> sound/pci/au88x0/au88x0_core.c:2047:54:    expected int *resmap
+> sound/pci/au88x0/au88x0_core.c:2047:54:    got unsigned int *<noident>
 
-"if (!chip)" is the standard style.  Let's fix in that way.
-Also, strip unneeded parentheses.
+I thought this warning is rather a compiler issue.  We had this with
+some gcc version but it was suppressed as default in the end.
+
+Fine to fix in the code as it's obviously correct, though.
 
 
 thanks,
