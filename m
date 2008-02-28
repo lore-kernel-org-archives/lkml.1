@@ -1,301 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764100AbYB1TsQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762681AbYB1Tsm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764100AbYB1TsQ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Feb 2008 14:48:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762780AbYB1TmT
+	id S1762681AbYB1Tsm (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Feb 2008 14:48:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763319AbYB1TmU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Feb 2008 14:42:19 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:45320 "EHLO mx1.redhat.com"
+	Thu, 28 Feb 2008 14:42:20 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:45318 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1763319AbYB1TmE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Feb 2008 14:42:04 -0500
-Message-Id: <20080228192929.203173998@redhat.com>
+	id S1763304AbYB1TmD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 28 Feb 2008 14:42:03 -0500
+Message-Id: <20080228192928.954667833@redhat.com>
 References: <20080228192908.126720629@redhat.com>
 User-Agent: quilt/0.46-1
-Date: Thu, 28 Feb 2008 14:29:22 -0500
+Date: Thu, 28 Feb 2008 14:29:19 -0500
 From: Rik van Riel <riel@redhat.com>
 To: linux-kernel@vger.kernel.org
 Cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Lee Schermerhorn <Lee.Schermerhorn@hp.com>, linux-mm@kvack.org,
-       Lee Schermerhorn <lee.schermerhorn@hp.com>
-Subject: [patch 14/21] scan noreclaim list for reclaimable pages
-Content-Disposition: inline; filename=noreclaim-01.3-scan-noreclaim-list-for-reclaimable-pages.patch
+       Lee Schermerhorn <Lee.Schermerhorn@hp.com>, linux-mm@kvack.org
+Subject: [patch 11/21] (NEW) more aggressively use lumpy reclaim
+Content-Disposition: inline; filename=lumpy-reclaim-lower-order.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-V2 -> V3:
-+ rebase to 23-mm1 atop RvR's split LRU series
+During an AIM7 run on a 16GB system, fork started failing around
+32000 threads, despite the system having plenty of free swap and
+15GB of pageable memory.
 
-New in V2
+If normal pageout does not result in contiguous free pages for
+kernel stacks, fall back to lumpy reclaim instead of failing fork
+or doing excessive pageout IO.
 
-This patch adds a function to scan individual or all zones' noreclaim
-lists and move any pages that have become reclaimable onto the respective
-zone's inactive list, where shrink_inactive_list() will deal with them.
+I do not know whether this change is needed due to the extreme
+stress test or because the inactive list is a smaller fraction
+of system memory on huge systems.
 
-This replaces the function to splice the entire noreclaim list onto the
-active list for rescan by shrink_active_list().  That method had problems
-with vmstat accounting and complicated '[__]isolate_lru_pages()'.  Now,
-__isolate_lru_page() will never isolate a non-reclaimable page.  The
-only time it should see one is when scanning nearby pages for lumpy
-reclaim.
+Signed-off-by: Rik van Riel <riel@redhat.com>
 
-  TODO:  This approach may still need some refinement.
-         E.g., put back to active list?
-
-DEBUGGING ONLY: NOT FOR UPSTREAM MERGE
-
-Signed-off-by:  Lee Schermerhorn <lee.schermerhorn@hp.com>
-Signed-off-by:  Rik van Riel <riel@redhat.com>
-
-
-Index: linux-2.6.25-rc2-mm1/include/linux/swap.h
-===================================================================
---- linux-2.6.25-rc2-mm1.orig/include/linux/swap.h	2008-02-28 12:05:42.000000000 -0500
-+++ linux-2.6.25-rc2-mm1/include/linux/swap.h	2008-02-28 12:48:26.000000000 -0500
-@@ -7,6 +7,7 @@
- #include <linux/list.h>
- #include <linux/memcontrol.h>
- #include <linux/sched.h>
-+#include <linux/node.h>
- 
- #include <asm/atomic.h>
- #include <asm/page.h>
-@@ -244,12 +245,26 @@ static inline int zone_reclaim(struct zo
- 
- #ifdef CONFIG_NORECLAIM
- extern int page_reclaimable(struct page *page, struct vm_area_struct *vma);
-+extern void scan_zone_noreclaim_pages(struct zone *);
-+extern void scan_all_zones_noreclaim_pages(void);
-+extern unsigned long scan_noreclaim_pages;
-+extern int scan_noreclaim_handler(struct ctl_table *, int, struct file *,
-+					void __user *, size_t *, loff_t *);
-+extern int scan_noreclaim_register_node(struct node *node);
-+extern void scan_noreclaim_unregister_node(struct node *node);
- #else
- static inline int page_reclaimable(struct page *page,
- 						struct vm_area_struct *vma)
- {
- 	return 1;
- }
-+static inline void scan_zone_noreclaim_pages(struct zone *z) { }
-+static inline void scan_all_zones_noreclaim_pages(void) { }
-+static inline int scan_noreclaim_register_node(struct node *node)
-+{
-+	return 0;
-+}
-+static inline void scan_noreclaim_unregister_node(struct node *node) { }
- #endif
- 
- extern int kswapd_run(int nid);
 Index: linux-2.6.25-rc2-mm1/mm/vmscan.c
 ===================================================================
---- linux-2.6.25-rc2-mm1.orig/mm/vmscan.c	2008-02-28 11:05:04.000000000 -0500
-+++ linux-2.6.25-rc2-mm1/mm/vmscan.c	2008-02-28 12:48:01.000000000 -0500
-@@ -39,6 +39,7 @@
- #include <linux/kthread.h>
- #include <linux/freezer.h>
- #include <linux/memcontrol.h>
-+#include <linux/sysctl.h>
+--- linux-2.6.25-rc2-mm1.orig/mm/vmscan.c	2008-02-28 00:29:46.000000000 -0500
++++ linux-2.6.25-rc2-mm1/mm/vmscan.c	2008-02-28 00:29:55.000000000 -0500
+@@ -870,7 +870,8 @@ int isolate_lru_page(struct page *page)
+  * of reclaimed pages
+  */
+ static unsigned long shrink_inactive_list(unsigned long max_scan,
+-			struct zone *zone, struct scan_control *sc, int file)
++			struct zone *zone, struct scan_control *sc,
++			int priority, int file)
+ {
+ 	LIST_HEAD(page_list);
+ 	struct pagevec pvec;
+@@ -888,8 +889,19 @@ static unsigned long shrink_inactive_lis
+ 		unsigned long nr_freed;
+ 		unsigned long nr_active;
+ 		unsigned int count[NR_LRU_LISTS] = { 0, };
+-		int mode = (sc->order > PAGE_ALLOC_COSTLY_ORDER) ?
+-					ISOLATE_BOTH : ISOLATE_INACTIVE;
++		int mode = ISOLATE_INACTIVE;
++
++		/*
++		 * If we need a large contiguous chunk of memory, or have
++		 * trouble getting a small set of contiguous pages, we
++		 * will reclaim both active and inactive pages.
++		 *
++		 * We use the same threshold as pageout congestion_wait below.
++		 */
++		if (sc->order > PAGE_ALLOC_COSTLY_ORDER)
++			mode = ISOLATE_BOTH;
++		else if (sc->order && priority < DEF_PRIORITY - 2)
++			mode = ISOLATE_BOTH;
  
- #include <asm/tlbflush.h>
- #include <asm/div64.h>
-@@ -2295,4 +2296,144 @@ int page_reclaimable(struct page *page, 
- 
- 	return 1;
- }
-+
-+/**
-+ * scan_zone_noreclaim_pages(@zone)
-+ * @zone - zone to scan
-+ *
-+ * Scan @zone's noreclaim LRU lists to check for pages that have become
-+ * reclaimable.  Move those that have to @zone's inactive list where they
-+ * become candidates for reclaim, unless shrink_inactive_zone() decides
-+ * to reactivate them.  Pages that are still non-reclaimable are rotated
-+ * back onto @zone's noreclaim list.
-+ */
-+#define SCAN_NORECLAIM_BATCH_SIZE 16UL	/* arbitrary lock hold batch size */
-+void scan_zone_noreclaim_pages(struct zone *zone)
-+{
-+	struct list_head *l_noreclaim = &zone->list[LRU_NORECLAIM];
-+	struct list_head *l_inactive_anon  = &zone->list[LRU_INACTIVE_ANON];
-+	struct list_head *l_inactive_file  = &zone->list[LRU_INACTIVE_FILE];
-+	unsigned long scan;
-+	unsigned long nr_to_scan = zone_page_state(zone, NR_NORECLAIM);
-+
-+	while (nr_to_scan > 0) {
-+		unsigned long batch_size = min(nr_to_scan,
-+						SCAN_NORECLAIM_BATCH_SIZE);
-+
-+		spin_lock_irq(&zone->lru_lock);
-+		for (scan = 0;  scan < batch_size; scan++) {
-+			struct page* page = lru_to_page(l_noreclaim);
-+
-+			if (unlikely(!PageLRU(page) || !PageNoreclaim(page)))
-+				continue;
-+
-+			prefetchw_prev_lru_page(page, l_noreclaim, flags);
-+
-+			ClearPageNoreclaim(page); /* for page_reclaimable() */
-+			if(page_reclaimable(page, NULL)) {
-+				__dec_zone_state(zone, NR_NORECLAIM);
-+				if (page_file_cache(page)) {
-+					list_move(&page->lru, l_inactive_file);
-+					__inc_zone_state(zone, NR_INACTIVE_FILE);
-+				} else {
-+					list_move(&page->lru, l_inactive_anon);
-+					__inc_zone_state(zone, NR_INACTIVE_ANON);
-+				}
-+			} else {
-+				SetPageNoreclaim(page);
-+				list_move(&page->lru, l_noreclaim);
-+			}
-+
-+		}
-+		spin_unlock_irq(&zone->lru_lock);
-+
-+		nr_to_scan -= batch_size;
-+	}
-+}
-+
-+
-+/**
-+ * scan_all_zones_noreclaim_pages()
-+ *
-+ * A really big hammer:  scan all zones' noreclaim LRU lists to check for
-+ * pages that have become reclaimable.  Move those back to the zones'
-+ * inactive list where they become candidates for reclaim.
-+ * This occurs when, e.g., we have unswappable pages on the noreclaim lists,
-+ * and we add swap to the system.  As such, it runs in the context of a task
-+ * that has possibly/probably made some previously non-reclaimable pages
-+ * reclaimable.
-+//TODO:  or as a last resort under extreme memory pressure--before OOM?
-+ */
-+void scan_all_zones_noreclaim_pages(void)
-+{
-+	struct zone *zone;
-+
-+	for_each_zone(zone) {
-+		scan_zone_noreclaim_pages(zone);
-+	}
-+}
-+
-+/*
-+ * scan_noreclaim_pages [vm] sysctl handler.  On demand re-scan of
-+ * all nodes' noreclaim lists for reclaimable pages
-+ */
-+unsigned long scan_noreclaim_pages;
-+
-+int scan_noreclaim_handler( struct ctl_table *table, int write,
-+			   struct file *file, void __user *buffer,
-+			   size_t *length, loff_t *ppos)
-+{
-+	proc_doulongvec_minmax(table, write, file, buffer, length, ppos);
-+
-+	if (write && *(unsigned long *)table->data)
-+		scan_all_zones_noreclaim_pages();
-+
-+	scan_noreclaim_pages = 0;
-+	return 0;
-+}
-+
-+/*
-+ * per node 'scan_noreclaim_pages' attribute.  On demand re-scan of
-+ * a specified node's per zone noreclaim lists for reclaimable pages.
-+ */
-+
-+static ssize_t read_scan_noreclaim_node(struct sys_device *dev, char *buf)
-+{
-+	return sprintf(buf, "0\n");	/* always zero; should fit... */
-+}
-+
-+static ssize_t write_scan_noreclaim_node(struct sys_device *dev,
-+                                       const char *buf, size_t count)
-+{
-+	struct zone *node_zones = NODE_DATA(dev->id)->node_zones;
-+	struct zone *zone;
-+	unsigned long req = simple_strtoul(buf, NULL, 10);
-+
-+	if (!req)
-+		return 1;	/* zero is no-op */
-+
-+	for (zone = node_zones; zone - node_zones < MAX_NR_ZONES; ++zone) {
-+		if (!populated_zone(zone))
-+			continue;
-+		scan_zone_noreclaim_pages(zone);
-+	}
-+	return 1;
-+}
-+
-+
-+static SYSDEV_ATTR(scan_noreclaim_pages, S_IRUGO | S_IWUSR,
-+			read_scan_noreclaim_node,
-+			write_scan_noreclaim_node);
-+
-+int scan_noreclaim_register_node(struct node *node)
-+{
-+	return sysdev_create_file(&node->sysdev, &attr_scan_noreclaim_pages);
-+}
-+
-+void scan_noreclaim_unregister_node(struct node *node)
-+{
-+	sysdev_remove_file(&node->sysdev, &attr_scan_noreclaim_pages);
-+}
-+
-+
- #endif
-Index: linux-2.6.25-rc2-mm1/kernel/sysctl.c
-===================================================================
---- linux-2.6.25-rc2-mm1.orig/kernel/sysctl.c	2008-02-19 16:23:16.000000000 -0500
-+++ linux-2.6.25-rc2-mm1/kernel/sysctl.c	2008-02-28 12:48:01.000000000 -0500
-@@ -1165,6 +1165,16 @@ static struct ctl_table vm_table[] = {
- 		.extra2		= &one,
- 	},
- #endif
-+#ifdef CONFIG_NORECLAIM
-+	{
-+		.ctl_name	= CTL_UNNUMBERED,
-+		.procname	= "scan_noreclaim_pages",
-+		.data		= &scan_noreclaim_pages,
-+		.maxlen		= sizeof(scan_noreclaim_pages),
-+		.mode		= 0644,
-+		.proc_handler	= &scan_noreclaim_handler,
-+	},
-+#endif
- /*
-  * NOTE: do not add new entries to this table unless you have read
-  * Documentation/sysctl/ctl_unnumbered.txt
-Index: linux-2.6.25-rc2-mm1/drivers/base/node.c
-===================================================================
---- linux-2.6.25-rc2-mm1.orig/drivers/base/node.c	2008-02-28 12:47:36.000000000 -0500
-+++ linux-2.6.25-rc2-mm1/drivers/base/node.c	2008-02-28 12:48:01.000000000 -0500
-@@ -13,6 +13,7 @@
- #include <linux/nodemask.h>
- #include <linux/cpu.h>
- #include <linux/device.h>
-+#include <linux/swap.h>
- 
- static struct sysdev_class node_class = {
- 	.name = "node",
-@@ -162,6 +163,8 @@ int register_node(struct node *node, int
- 		sysdev_create_file(&node->sysdev, &attr_meminfo);
- 		sysdev_create_file(&node->sysdev, &attr_numastat);
- 		sysdev_create_file(&node->sysdev, &attr_distance);
-+
-+		scan_noreclaim_register_node(node);
+ 		nr_taken = sc->isolate_pages(sc->swap_cluster_max,
+ 			     &page_list, &nr_scan, sc->order, mode,
+@@ -1178,7 +1190,7 @@ static unsigned long shrink_list(enum lr
+ 		shrink_active_list(nr_to_scan, zone, sc, priority, file);
+ 		return 0;
  	}
- 	return error;
- }
-@@ -180,6 +183,8 @@ void unregister_node(struct node *node)
- 	sysdev_remove_file(&node->sysdev, &attr_numastat);
- 	sysdev_remove_file(&node->sysdev, &attr_distance);
- 
-+	scan_noreclaim_unregister_node(node);
-+
- 	sysdev_unregister(&node->sysdev);
+-	return shrink_inactive_list(nr_to_scan, zone, sc, file);
++	return shrink_inactive_list(nr_to_scan, zone, sc, priority, file);
  }
  
+ /*
 
 -- 
 All Rights Reversed
