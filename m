@@ -1,78 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759382AbYB1IEQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758188AbYB1IIW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759382AbYB1IEQ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Feb 2008 03:04:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759147AbYB1ID6
+	id S1758188AbYB1IIW (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Feb 2008 03:08:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753314AbYB1IIO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Feb 2008 03:03:58 -0500
-Received: from smtp4.pp.htv.fi ([213.243.153.38]:41943 "EHLO smtp4.pp.htv.fi"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759137AbYB1ID5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Feb 2008 03:03:57 -0500
-Date: Thu, 28 Feb 2008 10:02:44 +0200
-From: Adrian Bunk <bunk@kernel.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Evgeniy Polyakov <johnpol@2ka.mipt.ru>, Martin Michlmayr <tbm@cyrius.com>,
-       linux-kernel@vger.kernel.org, Herbert Xu <herbert@gondor.apana.org.au>,
-       Ralf Baechle <ralf@linux-mips.org>, linux-crypto@vger.kernel.org
-Subject: Re: [2.6.25 patch] drivers/crypto/hifn_795x.c: fix 64bit division
-Message-ID: <20080228080244.GA29269@cs181133002.pp.htv.fi>
-References: <20080226122100.GB22699@deprecation.cyrius.com> <20080226153421.GB10717@cs181133002.pp.htv.fi> <20080226185240.GA2521@2ka.mipt.ru> <20080226160439.5941cc31.akpm@linux-foundation.org> <20080227062207.GB10603@cs181133002.pp.htv.fi> <20080226224719.6994a3bf.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <20080226224719.6994a3bf.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+	Thu, 28 Feb 2008 03:08:14 -0500
+Received: from relay1.sgi.com ([192.48.171.29]:48521 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753733AbYB1IIO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 28 Feb 2008 03:08:14 -0500
+Date: Thu, 28 Feb 2008 02:08:08 -0600
+From: Paul Jackson <pj@sgi.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: a.p.zijlstra@chello.nl, tglx@linutronix.de, oleg@tv-sign.ru,
+       rostedt@goodmis.org, maxk@qualcomm.com, linux-kernel@vger.kernel.org
+Subject: Re: [RFC/PATCH 0/4] CPUSET driven CPU isolation
+Message-Id: <20080228020808.3fd22f77.pj@sgi.com>
+In-Reply-To: <20080228075010.GA28781@elte.hu>
+References: <20080227222103.673194000@chello.nl>
+	<20080228075010.GA28781@elte.hu>
+Organization: SGI
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.12.0; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Feb 26, 2008 at 10:47:19PM -0800, Andrew Morton wrote:
->...
-> Something like this:
+Ingo wrote:
+> nice work Peter
 
-Generally agreed, but
+agreed
 
-> --- a/include/linux/delay.h~a
-> +++ a/include/linux/delay.h
-> @@ -7,10 +7,12 @@
->   * Delay routines, using a pre-computed "loops_per_jiffy" value.
->   */
->  
-> -extern unsigned long loops_per_jiffy;
-> +#include <linux/kernel.h>
->  
->  #include <asm/delay.h>
->  
-> +extern unsigned long loops_per_jiffy;
-> +
->...
+> i've queued up your patches in sched-devel.git
 
-this part of your patch breaks m68k:
+Before this patchset gets too far, I'd like to decide on whether to
+adapt my suggestion to call that per-cpuset flag 'cpus_system' (or
+anything else with 'cpu' in it, perhaps 'system_cpus' would be more
+idiomatic), rather than the tad too generic 'system'.
 
-<--  snip  -->
-
-...
-  CC      init/main.o
-In file included from 
-/home/bunk/linux/kernel-2.6/git/linux-2.6/include/linux/delay.h:12,
-                 from 
-/home/bunk/linux/kernel-2.6/git/linux-2.6/init/main.c:19:
-include2/asm/delay.h: In function '__const_udelay':
-include2/asm/delay.h:33: error: 'loops_per_jiffy' undeclared (first use in this function)
-include2/asm/delay.h:33: error: (Each undeclared identifier is reported only once
-include2/asm/delay.h:33: error: for each function it appears in.)
-make[2]: *** [init/main.o] Error 1
-
-<--  snip  -->
-
-cu
-Adrian
+People doing 'ls /dev/cpuset' should be able to half-way guess
+what things do, just from their name.
 
 -- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
-
+                  I won't rest till it's the best ...
+                  Programmer, Linux Scalability
+                  Paul Jackson <pj@sgi.com> 1.940.382.4214
