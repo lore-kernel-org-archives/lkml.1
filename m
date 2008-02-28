@@ -1,204 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756847AbYB1Jf3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756710AbYB1Jkb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756847AbYB1Jf3 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Feb 2008 04:35:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753857AbYB1JfR
+	id S1756710AbYB1Jkb (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Feb 2008 04:40:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754237AbYB1JkW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Feb 2008 04:35:17 -0500
-Received: from el-out-1112.google.com ([209.85.162.182]:7664 "EHLO
-	el-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752833AbYB1JfP (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Feb 2008 04:35:15 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:subject:references:in-reply-to:x-enigmail-version:content-type;
-        b=iqgmi/Lc954N5AanyYpC5XNKB8OZs90POWbNExyiszaWuuKFRUc+uoS/dLFE+az7ts6XaaaGlblKUdR0yRwnjZj9E4zjfCCLsisGjJC3M83YFo15kMCk/LqVnfk74j/+eWrp7DqxqaHBHFuN82cw9pI0QXx40WCLL9FNbKA6YMg=
-Message-ID: <47C6804A.50705@gmail.com>
-Date: Thu, 28 Feb 2008 18:35:06 +0900
-From: Tejun Heo <htejun@gmail.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20070801)
+	Thu, 28 Feb 2008 04:40:22 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:47803 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753985AbYB1JkV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 28 Feb 2008 04:40:21 -0500
+Date: Thu, 28 Feb 2008 10:40:00 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: "Klaus S. Madsen" <ksm@hjernemadsen.org>
+Cc: LKML <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, "H. Peter Anvin" <hpa@zytor.com>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: Regression in 2.6.25-rc3: s2ram segfaults before suspending
+Message-ID: <20080228094000.GA2987@elte.hu>
+References: <20080227221033.GR17932@hjernemadsen.org> <20080228091639.GB1133@elte.hu> <20080228092846.GC17932@hjernemadsen.org>
 MIME-Version: 1.0
-To: Tejun Heo <htejun@gmail.com>, Jeff Garzik <jeff@garzik.org>,
-       linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org,
-       Kristen Carlson Accardi <kristen.c.accardi@intel.com>
-Subject: Re: [PATCH] libata: Register for dock events when the drive is	inside
- a dock station
-References: <20080214124048.GB9708@homac.suse.de> <20080214125615.GD9708@homac.suse.de> <47BC5F44.605@garzik.org> <20080221115305.GB5032@homac.suse.de> <47BE26A0.2040708@gmail.com> <20080226101551.GB10721@homac.suse.de>
-In-Reply-To: <20080226101551.GB10721@homac.suse.de>
-X-Enigmail-Version: 0.95.5
-Content-Type: multipart/mixed;
- boundary="------------060804070902010603020600"
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080228092846.GC17932@hjernemadsen.org>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------060804070902010603020600
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
 
-Holger Macht wrote:
-> The hotplug handler is only called if the device is actually inside the
-> dock station. If it is not, nothing will happen. I hope that I got your
-> question right?
+* Klaus S. Madsen <ksm@hjernemadsen.org> wrote:
 
-Yes, right.
+> > > 524             int r;
+> > > 525     #ifdef __PIC__
+> > > 526             asm volatile (
+> > > 527              "pushl %%ebx\n\t"
+> > > 528              "movl %2, %%ebx\n\t"
+> > > 529              "int $0x80\n\t"
+> > > 530              "popl %%ebx"
+> > > (gdb) bt 
+> > > #0  0xb7facf4a in run_vm86 () at lrmi.c:526
+> > > #1  0xb7fad61b in LRMI_int (i=16, r=0xbffca670) at lrmi.c:844
+> > > #2  0x0804acfc in do_vbe_service (AX=20227, BX=0, regs=0xbffca670)
+> > >     at vbetool/vbetool.c:158
+> > > #3  0x0804af7e in __get_mode () at vbetool/vbetool.c:453
+> > > #4  0x0804a30f in s2ram_hacks () at s2ram-x86.c:268
+> > > #5  0x0804954f in main (argc=1, argv=0x0) at s2ram-main.c:92
+> > > 
+> > > I have tried to bisect the problem, and it fingered the following
+> > > commit:
+> > > 
+> > > commit 82bc03fc158e28c90d7ed9919410776039cb4e14
+> > > Author: Ingo Molnar <mingo@elte.hu>
+> > > 
+> > >     x86: add PWT to NOCACHE flags
+> > > 
+> > > Reverting this commit in the bisected tree (by executing git show 
+> > > 82bc03fc158e28c90d7ed9919410776039cb4e14 | patch -R -p1), makes the 
+> > > segfault go away. I've run make clean between each kernel compile, to 
+> > > be sure the tree was correctly compiled.
+> > 
+> > thanks for tracking this down. It would be nice to figure out why this 
+> > change made a difference. Perhaps VM86 mode has some restrictions in 
+> > what type of pagetables it can operate in - and the CPU just refuses to 
+> > properly emulate those 16-bit instructions? (this would be very weird). 
+> > We are trying to execute 16-bit BIOS code here, right?
+> > 
+> > which instruction is the segfault coming from - the int $0x80? So in 
+> > vm86 mode we generated a #GPF which shows up as a SIGSEGV?
+> I must say, that I don't quite understand why gdb fingers the "asm
+> volatile" line and not one of the assembly lines, when reporting the
+> segfault. But I'm not really well versed in lowlevel gdb use, so if you
+> could give me a about how I get gdb to disassemble the code at the
+> instruction pointer, I'll return with the result.
 
-> However, if this would be helpful, it would be easy to add something like
-> a am_I_on_dock_station?(...) function to the dock driver.
+typing 'disassemble' should do the trick.
 
-Hmm.. as long as the event is only delivered when the device is actually
-connected behind dock, I think it's okay.
+If you have a specific address outside of the current instruction 
+pointer, then doing disassembly on a range:
 
-Does the attached patch fix the previous undock problem?  It now
-explicitly tells libata EH to detach the notified devices on
-EJECT_REQUEST and wait for EH to complete such that control is returned
-to ACPI after all notified devices are actually detached.
+  disassemble 0xb7facf4a 0xb7facf8a
 
-Thanks.
+should work too.
 
--- 
-tejun
-
---------------060804070902010603020600
-Content-Type: text/plain;
- name="patch"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="patch"
-
-diff --git a/drivers/ata/libata-acpi.c b/drivers/ata/libata-acpi.c
-index 9e8ec19..e1bdca1 100644
---- a/drivers/ata/libata-acpi.c
-+++ b/drivers/ata/libata-acpi.c
-@@ -118,45 +118,76 @@ static void ata_acpi_associate_ide_port(struct ata_port *ap)
- 		ap->pflags |= ATA_PFLAG_INIT_GTM_VALID;
- }
- 
--static void ata_acpi_handle_hotplug(struct ata_port *ap, struct kobject *kobj,
-+static void ata_acpi_handle_hotplug(struct ata_port *ap, struct ata_device *dev,
- 				    u32 event)
- {
- 	char event_string[12];
- 	char *envp[] = { event_string, NULL };
- 	struct ata_eh_info *ehi = &ap->link.eh_info;
-+	struct kobject *kobj = NULL;
-+	int wait = 0;
-+	unsigned long flags;
-+
-+	if (!ap)
-+		ap = dev->link->ap;
-+
-+	spin_lock_irqsave(ap->lock, flags);
-+
-+	switch (event) {
-+	case ACPI_NOTIFY_BUS_CHECK:
-+	case ACPI_NOTIFY_DEVICE_CHECK:
-+		ata_ehi_push_desc(ehi, "ACPI event");
-+		ata_ehi_hotplugged(ehi);
-+		ata_port_freeze(ap);
-+		break;
-+
-+	case ACPI_NOTIFY_EJECT_REQUEST:
-+		ata_ehi_push_desc(ehi, "ACPI event");
-+		if (dev)
-+			dev->flags |= ATA_DFLAG_DETACH;
-+		else {
-+			struct ata_link *tlink;
-+			struct ata_device *tdev;
-+
-+			ata_port_for_each_link(tlink, ap)
-+				ata_link_for_each_dev(tdev, tlink)
-+					tdev->flags |= ATA_DFLAG_DETACH;
-+		}
- 
--	if (event == 0 || event == 1) {
--	       unsigned long flags;
--	       spin_lock_irqsave(ap->lock, flags);
--	       ata_ehi_clear_desc(ehi);
--	       ata_ehi_push_desc(ehi, "ACPI event");
--	       ata_ehi_hotplugged(ehi);
--	       ata_port_freeze(ap);
--	       spin_unlock_irqrestore(ap->lock, flags);
-+		ata_port_schedule_eh(ap);
-+		wait = 1;
-+		break;
- 	}
- 
-+	if (dev) {
-+		if (dev->sdev)
-+			kobj = &dev->sdev->sdev_gendev.kobj;
-+	} else
-+		kobj = &ap->dev->kobj;
-+
- 	if (kobj) {
- 		sprintf(event_string, "BAY_EVENT=%d", event);
- 		kobject_uevent_env(kobj, KOBJ_CHANGE, envp);
- 	}
-+
-+	spin_unlock_irqrestore(ap->lock, flags);
-+
-+	if (wait)
-+		ata_port_wait_eh(ap);
- }
- 
- static void ata_acpi_dev_notify(acpi_handle handle, u32 event, void *data)
- {
- 	struct ata_device *dev = data;
--	struct kobject *kobj = NULL;
--
--	if (dev->sdev)
--		kobj = &dev->sdev->sdev_gendev.kobj;
- 
--	ata_acpi_handle_hotplug(dev->link->ap, kobj, event);
-+	ata_acpi_handle_hotplug(NULL, dev, event);
- }
- 
- static void ata_acpi_ap_notify(acpi_handle handle, u32 event, void *data)
- {
- 	struct ata_port *ap = data;
- 
--	ata_acpi_handle_hotplug(ap, &ap->dev->kobj, event);
-+	ata_acpi_handle_hotplug(ap, NULL, event);
- }
- 
- /**
-@@ -191,20 +222,33 @@ void ata_acpi_associate(struct ata_host *host)
- 		else
- 			ata_acpi_associate_ide_port(ap);
- 
--		if (ap->acpi_handle)
-+		if (ap->acpi_handle) {
- 			acpi_install_notify_handler (ap->acpi_handle,
- 						     ACPI_SYSTEM_NOTIFY,
- 						     ata_acpi_ap_notify,
- 						     ap);
-+#if defined(CONFIG_ACPI_DOCK) || defined(CONFIG_ACPI_DOCK_MODULE)
-+			/* we might be on a docking station */
-+			register_hotplug_dock_device(ap->acpi_handle,
-+						     ata_acpi_ap_notify, ap);
-+#endif
-+		}
- 
- 		for (j = 0; j < ata_link_max_devices(&ap->link); j++) {
- 			struct ata_device *dev = &ap->link.device[j];
- 
--			if (dev->acpi_handle)
-+			if (dev->acpi_handle) {
- 				acpi_install_notify_handler (dev->acpi_handle,
- 							     ACPI_SYSTEM_NOTIFY,
- 							     ata_acpi_dev_notify,
- 							     dev);
-+#if defined(CONFIG_ACPI_DOCK) || defined(CONFIG_ACPI_DOCK_MODULE)
-+				/* we might be on a docking station */
-+				register_hotplug_dock_device(ap->acpi_handle,
-+							     ata_acpi_dev_notify,
-+							     ap);
-+#endif
-+			}
- 		}
- 	}
- }
-
---------------060804070902010603020600--
+	Ingo
