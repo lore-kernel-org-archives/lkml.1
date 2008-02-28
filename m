@@ -1,66 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932360AbYB1VOZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762342AbYB1VTU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932360AbYB1VOZ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Feb 2008 16:14:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756383AbYB1VOP
+	id S1762342AbYB1VTU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Feb 2008 16:19:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757182AbYB1VTG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Feb 2008 16:14:15 -0500
-Received: from smtp-out.google.com ([216.239.33.17]:32119 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754345AbYB1VOO (ORCPT
+	Thu, 28 Feb 2008 16:19:06 -0500
+Received: from filer.fsl.cs.sunysb.edu ([130.245.126.2]:33039 "EHLO
+	filer.fsl.cs.sunysb.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752439AbYB1VTF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Feb 2008 16:14:14 -0500
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=received:message-id:date:from:to:subject:cc:mime-version:
-	content-type:content-transfer-encoding:content-disposition;
-	b=o88xLjVz7ef083Y9jAleKpSq6ajZxm3eFBTQ0oi5AfQv0fYwHYorySk60ctfoBAiV
-	hnK7WX6pT3qrXxxKksmPA==
-Message-ID: <6599ad830802281314s25c033d6tc021725ae28aef8d@mail.gmail.com>
-Date: Thu, 28 Feb 2008 13:14:05 -0800
-From: "Paul Menage" <menage@google.com>
-To: "Linux Containers" <containers@lists.osdl.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       "Balbir Singh" <balbir@linux.vnet.ibm.com>,
-       "Peter Zijlstra" <a.p.zijlstra@chello.nl>,
-       "Pavel Emelianov" <xemul@openvz.org>, "Paul Jackson" <pj@sgi.com>
-Subject: [RFC] Prefixing cgroup generic control filenames with "cgroup."
-Cc: "Andrew Morton" <akpm@linux-foundation.org>
+	Thu, 28 Feb 2008 16:19:05 -0500
+Date: Thu, 28 Feb 2008 16:15:31 -0500
+From: "Josef 'Jeff' Sipek" <jeffpc@josefsipek.net>
+To: Dave Quigley <dpquigl@tycho.nsa.gov>
+Cc: hch@infradead.org, viro@ftp.linux.org.uk, trond.myklebust@fys.uio.no,
+       bfields@fieldses.org, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org
+Subject: Re: [PATCH 03/11] VFS: Add security label support to *notify
+Message-ID: <20080228211531.GE32351@josefsipek.net>
+References: <1204144786-3502-1-git-send-email-dpquigl@tycho.nsa.gov> <1204144786-3502-4-git-send-email-dpquigl@tycho.nsa.gov> <20080228201004.GC32351@josefsipek.net> <1204231170.24345.100.camel@moss-terrapins.epoch.ncsc.mil>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
+In-Reply-To: <1204231170.24345.100.camel@moss-terrapins.epoch.ncsc.mil>
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-All control files created by cgroup subsystems are given a prefix
-corresponding to their subsystem name. But control files provided by
-cgroups itself have no prefix. Currently that set of files is just
-"tasks", "notify_on_release" and "release_agent", but that set is
-likely to expand in the future. To reduce the risk of clashes, it
-would make sense to prefix these files and any future ones with the
-"cgroup." prefix.
+On Thu, Feb 28, 2008 at 03:39:30PM -0500, Dave Quigley wrote:
+...
+> > Alright...so, few things...
+> > 
+> > 1) why do you need the locked/unlocked versions?
+> > 
+> > 2) instead of passing a flag to a common function, why not have:
+> > 
+> > vfs_setxattr_locked(....)
+> > {
+> > 	// original code minus the lock/unlock calls
+> > }
+> > 
+> > vfs_setxattr(....)
+> > {
+> > 	mutex_lock(...);
+> > 	vfs_setxattr_locked(...);
+> > 	mutex_unlock(...);
+> > }
+> 
+> What we do and what you propose aren't logically equivalent. There is a
+> permission check inside vfs_setxattr before the mutex lock.
 
-The only reason that I can see *not* to do this would be for
-compatibility with 2.6.24. Do people think this is a strong enough
-reason to leave the existing names? If distros are planning to ship
-products based on 2.6.24, presumably they'd be adding their own
-patches anyway, so they could add a trivial prefix change patch too.
-(I realise this discussion would have been more useful *before* 2.6.24
-shipped, but I didn't quite get round to it ...)
+Ah, right. I didn't notice the @@ line...
 
-A compromise might be to keep "tasks" unprefixed, and say that future
-names get the "cgroup." prefix; in this case I'd be inclined to add
-the prefix to notify_on_release and release_agent on the grounds that
-there's much less chance of breaking anyone with those files since (I
-suspect) they're much less used.
+Josef 'Jeff' Sipek.
 
-Note that if you mount a cgroup filesystem with the "noprefix" option,
-which is what the cpuset filesystem wrapper does, no subsystems have
-prefixes, and in this case the "cgroup." prefix wouldn't be used
-either. So this doesn't affect any users that explicitly mount cpusets
-rather than cgroups.
-
-Thoughts?
-
-Paul
+-- 
+Keyboard not found!
+Press F1 to enter Setup
