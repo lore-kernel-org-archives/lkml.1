@@ -1,61 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932414AbYB1Ufc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932486AbYB1Ugp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932414AbYB1Ufc (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Feb 2008 15:35:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763266AbYB1UfA
+	id S932486AbYB1Ugp (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Feb 2008 15:36:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760984AbYB1Ug3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Feb 2008 15:35:00 -0500
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:50138 "EHLO
-	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1762864AbYB1Ue6 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Feb 2008 15:34:58 -0500
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: Pavel Emelyanov <xemul@openvz.org>
-Cc: Ian Kent <raven@themaw.net>, Andrew Morton <akpm@linux-foundation.org>,
-       Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       autofs mailing list <autofs@linux.kernel.org>,
-       linux-fsdevel <linux-fsdevel@vger.kernel.org>
-Subject: Re: [PATCH 3/4] autofs4 - track uid and gid of last mount requestor
-References: <Pine.LNX.4.64.0802261151400.8490@raven.themaw.net>
-	<Pine.LNX.4.64.0802261208400.8490@raven.themaw.net>
-	<20080227204546.72e16e8d.akpm@linux-foundation.org>
-	<1204179747.3501.21.camel@raven.themaw.net>
-	<20080227223734.caab0165.akpm@linux-foundation.org>
-	<1204182500.3501.49.camel@raven.themaw.net>
-	<47C667EC.6060700@openvz.org>
-Date: Thu, 28 Feb 2008 13:33:07 -0700
-In-Reply-To: <47C667EC.6060700@openvz.org> (Pavel Emelyanov's message of "Thu,
-	28 Feb 2008 10:51:08 +0300")
-Message-ID: <m1oda04y9o.fsf@ebiederm.dsl.xmission.com>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
-MIME-Version: 1.0
+	Thu, 28 Feb 2008 15:36:29 -0500
+Received: from 1wt.eu ([62.212.114.60]:2201 "EHLO 1wt.eu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752510AbYB1Ug1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 28 Feb 2008 15:36:27 -0500
+Date: Thu, 28 Feb 2008 21:36:17 +0100
+From: Willy Tarreau <w@1wt.eu>
+To: Nebojsa Miljanovic <neb@alcatel-lucent.com>
+Cc: linux-kernel@vger.kernel.org,
+       "Kittlitz, Edward (Ned)" <nkittlitz@alcatel-lucent.com>,
+       asweeney@alcatel-lucent.com,
+       "Polhemus, William (Bart)" <bpolhemus@alcatel-lucent.com>,
+       netdev@vger.kernel.org
+Subject: Re: SO_REUSEADDR not allowing server and client to use same port
+Message-ID: <20080228203616.GD8953@1wt.eu>
+References: <47C6FA2A.5030302@alcatel-lucent.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <47C6FA2A.5030302@alcatel-lucent.com>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Pavel Emelyanov <xemul@openvz.org> writes:
+[cc'd netdev]
 
-> Why do we need the uid then? Is just pid not enough to uniquely 
-> identify a task?
->
-> Assuming we can get by with a pid only, this problem can be solved
-> by sending a pid_nr() of a task, i.e. the pid by which this task is
-> seen from an initial namespace. This pid is unique across the system
-> even when pid namespaces are created.
+On Thu, Feb 28, 2008 at 12:15:06PM -0600, Nebojsa Miljanovic wrote:
+> Hello all,
+> I have seen similar complaints about this issue before in the list archive, but
+> I have not seen any resolution. So, I am posting the question again in hope of
+> getting some replies.
+> 
+> Currently, Linux does not allow reuse of same local port for both TCP server and
+> TCP client. I understand that there may be a need to prevent two servers from
+> binding to the same local port, but having 1 server and 1 outgoing client use it
+> should be allowed. Other Unix like operating systems do allow it.
 
-Pavel it is never correct to use a global pid when talking to user space.
-In fact the concept is just a bit dubious.  We must always translate
-the pid into the pid namespace of the task we are talking to, or at
-least into the pid namespace of the process that opened the file
-handle, (essentially the same, but does not have races in the corner
-cases).
+I've been encountering the need for SO_REUSEPORT as implemented on some BSD
+for instance. It allows any process to explicitly permit another one to bind
+to the same IP:port provided that it also sets its socket with SO_REUSEPORT.
+This is a real requirement when you need to restart a service without any
+service disruption.
 
-Even in the kernel using global ids is dubious.  When dealing with
-user space it is just wrong.  
+In the end, I've written a trivial patch for 2.4 (but most likely 2.6 would
+use nearly the same one). I noticed that the conflict detection logic already
+distinguished between 3 cases: sk->reuse==0, sk->reuse==1, sk->reuse >1.
+sk->reuse was set to 1 with SO_REUSEADDR. I simply had to make SO_REUSEPORT
+do sk->reuse |= 2 to get everything working as expected.
 
-Speaking of.  I think we still need work on autofs in this regard.
-I know last I looked we had some outstanding issues there.
+I don't know yet if it is as easy to do in 2.6, but if there is a possible
+acceptance of including this useful feature into mainline, I can try to
+work a patch (possibly cleaner than my existing one for 2.4).
 
-Eric
+Regards,
+Willy
+
