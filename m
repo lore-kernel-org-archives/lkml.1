@@ -1,71 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763072AbYB1WMN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763291AbYB1WOp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763072AbYB1WMN (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Feb 2008 17:12:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760027AbYB1WL5
+	id S1763291AbYB1WOp (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Feb 2008 17:14:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759551AbYB1WOe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Feb 2008 17:11:57 -0500
-Received: from mx1.riseup.net ([204.13.164.18]:45055 "EHLO mx1.riseup.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757664AbYB1WL4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Feb 2008 17:11:56 -0500
-Date: Thu, 28 Feb 2008 23:11:45 +0100
-From: Matthias Kaehlcke <matthias@kaehlcke.net>
-To: viro@zeniv.linux.org.uk, linux-fsdevel@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org
-Subject: [PATCH] fs/inode.c: use hlist_for_each_entry()
-Message-ID: <20080228221145.GA5720@traven>
-Mail-Followup-To: Matthias Kaehlcke <matthias@kaehlcke.net>,
-	viro@zeniv.linux.org.uk, linux-fsdevel@vger.kernel.org,
-	linux-kernel@vger.kernel.org, akpm@linux-foundation.org
-MIME-Version: 1.0
+	Thu, 28 Feb 2008 17:14:34 -0500
+Received: from tomts16.bellnexxia.net ([209.226.175.4]:44157 "EHLO
+	tomts16-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1759247AbYB1WOd (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 28 Feb 2008 17:14:33 -0500
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: Ao8CAIjAxkdMQWRV/2dsb2JhbACBVqxx
+Date: Thu, 28 Feb 2008 17:14:30 -0500
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: Max Krasnyanskiy <maxk@qualcomm.com>
+Cc: Jason Baron <jbaron@redhat.com>, akpm@linux-foundation.org,
+       Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
+       Rusty Russell <rusty@rustcorp.com.au>
+Subject: Re: [patch 1/2] add ALL_CPUS option to stop_machine_run()
+Message-ID: <20080228221430.GA22958@Krystal>
+References: <20080202210828.840735763@polymtl.ca> <20080202211204.268876860@polymtl.ca> <20080226225242.GA15926@redhat.com> <20080227190519.GA14335@Krystal> <20080228163303.GA6195@redhat.com> <47C73121.2000109@qualcomm.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-User-Agent: Mutt/1.5.17 (2007-11-01)
+In-Reply-To: <47C73121.2000109@qualcomm.com>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.21.3-grsec (i686)
+X-Uptime: 17:12:19 up 17 days, 18:12,  4 users,  load average: 0.46, 0.56,
+	0.65
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-fs/inode.c: use hlist_for_each_entry() in find_inode() and
-find_inode_fast()
+* Max Krasnyanskiy (maxk@qualcomm.com) wrote:
+> Jason Baron wrote:
+>> -allow stop_mahcine_run() to call a function on all cpus. Calling  
+>> stop_machine_run() with a 'ALL_CPUS' invokes this new behavior.
+>>  stop_machine_run() proceeds as normal until the calling cpu has
+>>  invoked 'fn'. Then, we tell all the other cpus to call 'fn'.
+>
+> Jason, we're actually trying to reduce the usage of the stop_machine in 
+> general. It's a very big hammer that kills latencies and stuff. It'd be 
+> nice if we did not introduce any more dependencies on it. I guess in some 
+> case there is simply no other way to handle what need to do. But please 
+> think twice
+> (or more :)).
+>
+> Max
+>
+>
 
-Signed-off-by: Matthias Kaehlcke <matthias@kaehlcke.net>
+I have a "more complex" immediate value implementation that does not
+depend on such heavy lock. I made this simplified version because Rusty
+preferred it, although I say from the beginning that it kills interrupt
+latency. I could propose the atomic, nmi-safe version directly if enough
+people are in favor of it.
 
---
-
-diff --git a/fs/inode.c b/fs/inode.c
-index 53245ff..ab5dfc2 100644
---- a/fs/inode.c
-+++ b/fs/inode.c
-@@ -495,8 +495,7 @@ static struct inode * find_inode(struct super_block * sb, struct hlist_head *hea
- 	struct inode * inode = NULL;
- 
- repeat:
--	hlist_for_each (node, head) { 
--		inode = hlist_entry(node, struct inode, i_hash);
-+	hlist_for_each_entry (inode, node, head, i_hash) {
- 		if (inode->i_sb != sb)
- 			continue;
- 		if (!test(inode, data))
-@@ -520,8 +519,7 @@ static struct inode * find_inode_fast(struct super_block * sb, struct hlist_head
- 	struct inode * inode = NULL;
- 
- repeat:
--	hlist_for_each (node, head) {
--		inode = hlist_entry(node, struct inode, i_hash);
-+	hlist_for_each_entry (inode, node, head, i_hash) {
- 		if (inode->i_ino != ino)
- 			continue;
- 		if (inode->i_sb != sb)
+Mathieu
 
 -- 
-Matthias Kaehlcke
-Linux System Developer
-Barcelona
-
-     The assumption that what currently exists must necessarily
-      exist is the acid that corrodes all visionary thinking
-                                                                 .''`.
-    using free software / Debian GNU/Linux | http://debian.org  : :'  :
-                                                                `. `'`
-gpg --keyserver pgp.mit.edu --recv-keys 47D8E5D4                  `-
+Mathieu Desnoyers
+Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
