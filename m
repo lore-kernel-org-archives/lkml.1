@@ -1,84 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761043AbYB1Q3U@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761050AbYB1QvQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761043AbYB1Q3U (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Feb 2008 11:29:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759531AbYB1Q3H
+	id S1761050AbYB1QvQ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Feb 2008 11:51:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758443AbYB1QvE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Feb 2008 11:29:07 -0500
-Received: from wipro-blr-out01.wipro.com ([203.91.198.74]:5344 "EHLO
-	wipro-blr-out01.wipro.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753527AbYB1Q3F convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Feb 2008 11:29:05 -0500
-X-Greylist: delayed 1232 seconds by postgrey-1.27 at vger.kernel.org; Thu, 28 Feb 2008 11:29:05 EST
-X-AuditID: cb5bdd57-aa730bb000000741-c2-47c6e9413819
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Subject: Wrong IRQ assigned on MPC8349EMDS board
-Date: Thu, 28 Feb 2008 21:38:36 +0530
-Message-ID: <4F36B0A4CDAD6F46A61B2B32C33DC69C05C579C0@BLR-EC-MBX03.wipro.com>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: Wrong IRQ assigned on MPC8349EMDS board
-Thread-Index: Ach6JCyQFcb6EASnQ8ehC43Eoit3Gg==
-From: <biswa.nayak@wipro.com>
-To: <linuxppc-dev@ozlabs.org>
-Cc: <linux-kernel@vger.kernel.org>
-X-OriginalArrivalTime: 28 Feb 2008 16:08:30.0358 (UTC) FILETIME=[28E53360:01C87A24]
-X-Brightmail-Tracker: AAAAAA==
+	Thu, 28 Feb 2008 11:51:04 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:60236 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758347AbYB1QvB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 28 Feb 2008 11:51:01 -0500
+Date: Thu, 28 Feb 2008 11:50:00 -0500
+From: Jason Baron <jbaron@redhat.com>
+To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+Cc: akpm@linux-foundation.org, Ingo Molnar <mingo@elte.hu>,
+       linux-kernel@vger.kernel.org, Rusty Russell <rusty@rustcorp.com.au>
+Subject: Re: [patch 1/7] Immediate Values - Architecture Independent Code
+Message-ID: <20080228165000.GA6856@redhat.com>
+References: <20080202210828.840735763@polymtl.ca> <20080202211204.268876860@polymtl.ca> <20080226225242.GA15926@redhat.com> <20080227190519.GA14335@Krystal>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080227190519.GA14335@Krystal>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello list
-I am trying to bring up MPC8349EMDS board with linux-2.6.18 kernel with
-ramfs enabled.
-I am passing a device tree binary (dtb) compiled from the corresponding
-dts file found from the 'arch/powerpc/boot/dts' directory and compiled
-with the device tree compiler.
- 
-I found that the IRQ lines assigned to different peripherals are
-completely wrong.
-My serial ports are connected to pin 9 and 10, but in this kernel the
-IRQs assigned are 16 and 17. 
+On Wed, Feb 27, 2008 at 02:05:19PM -0500, Mathieu Desnoyers wrote:
+> > +struct stop_machine_data {
+> > +	int (*fn)(void *);
+> > +	void *data;
+> > +	struct completion done;
+> > +	int run_all;
+> > +} smdata;
+> > +
+> 
+> Why do we now have to declare this static ? Can we pass it as a pointer
+> to stopmachine instead ?
+> 
 
-On a little investigation I found that the base address assigned to the
-IPIC chip is '0xFDDFB700'
+Since the other cpus need to access 'fn', i made smdata a global.
+stop_machine_run() is system-wide, so we only need one of these...
 
-If I compile the linux version with 'ARCH=ppc' and boot then my IPIC
-base address
-is getting assigned as 0xFE000700, which I think is the correct
-behaviour. 
+thanks,
 
-I checked in the dts file and found that the IPIC offset is mentioned as
-700 and size as 100,
-which are correct as per the manual. 
-Even the IRQ lines mentioned for the Serial ports in the DTS are '9' and
-'A'.
+-Jason
 
-Does this wrong assignment is due to the wrong base address of the IPIC
-chip?
-With IRQs 16 and 17, how the serial console is working fine?
-
-When I tried hard coding the IPIC base value to '0xfe000700' then the
-system refuses to boot up.
-
-I kept the IPIC base as 0xfddfb700 and hard coded the irq lines for
-serial ports as 9 and 10
-and in that case the 'request_irq' call fails with the error number as
-'-38',
-which translates to '-ENOSYS'. 
-
-The changes in the dts never gets reflected in the kernel, 
-no matter what lines I set for serial line in the dts, the request
-always goes for line 16 and 17.
-
-Please let me know if you need any more information regarding the same.
-Any help in this will be highly appreciated.
-
-Thanks
-Biswa
