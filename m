@@ -1,41 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758688AbYB0X7G@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760669AbYB1AF5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758688AbYB0X7G (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Feb 2008 18:59:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757974AbYB0X6k
+	id S1760669AbYB1AF5 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Feb 2008 19:05:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755541AbYB1AFr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Feb 2008 18:58:40 -0500
-Received: from smtp1.linux-foundation.org ([207.189.120.13]:44488 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755720AbYB0X6i (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Feb 2008 18:58:38 -0500
-Date: Wed, 27 Feb 2008 15:58:36 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Harvey Harrison <harvey.harrison@gmail.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] char: fix sparse variable shadowing and int as NULL
- pointer in rocket.c
-Message-Id: <20080227155836.48d86c12.akpm@linux-foundation.org>
-In-Reply-To: <1204155487.20280.20.camel@brick>
-References: <1203702419.5962.8.camel@brick>
-	<20080227152948.34b6e295.akpm@linux-foundation.org>
-	<1204155487.20280.20.camel@brick>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+	Wed, 27 Feb 2008 19:05:47 -0500
+Received: from mail.gmx.net ([213.165.64.20]:44087 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1754834AbYB1AFq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 Feb 2008 19:05:46 -0500
+X-Authenticated: #14349625
+X-Provags-ID: V01U2FsdGVkX18vDTww4mUvxdMCiLlQSe8B/Bw5Q+BVweZ+prC5LH
+	QqyPZXKMAcjVFd
+Subject: Re: Linux 2.6.24.3
+From: Mike Galbraith <efault@gmx.de>
+To: Randy Dunlap <randy.dunlap@oracle.com>
+Cc: Greg KH <gregkh@suse.de>, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       torvalds@linux-foundation.org, stable@kernel.org
+In-Reply-To: <20080227134945.c1430710.randy.dunlap@oracle.com>
+References: <20080226010024.GA26889@suse.de>
+	 <20080225195229.11ec1f12.randy.dunlap@oracle.com>
+	 <20080226041545.GA30567@suse.de>
+	 <20080227134945.c1430710.randy.dunlap@oracle.com>
+Content-Type: text/plain
+Date: Thu, 28 Feb 2008 01:05:41 +0100
+Message-Id: <1204157141.8466.4.camel@homer.simson.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.12.0 
 Content-Transfer-Encoding: 7bit
+X-Y-GMX-Trusted: 0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 27 Feb 2008 15:38:07 -0800
-Harvey Harrison <harvey.harrison@gmail.com> wrote:
 
-> > Probably this code is cleaner than the old version so let's do it, but it
-> > seems that we need a general fix.
+On Wed, 2008-02-27 at 13:49 -0800, Randy Dunlap wrote:
+> On Mon, 25 Feb 2008 20:15:45 -0800 Greg KH wrote:
+
+> > Is this a regression from 2.6.24.2?
 > 
-> min3()?  No _good_ ideas I'm afraid.
+> Yes.
+> 
+> > If so, any ideas which patch caused it?
 
-Fix sparse, I'd say.  Probably hard to do, but that warning really
-isn't useful.
+Which ever one that added this.
+
+diff --git a/include/linux/Kbuild b/include/linux/Kbuild
+index f30fa92..4b32bb1 100644
+--- a/include/linux/Kbuild
++++ b/include/linux/Kbuild
+@@ -217,6 +217,7 @@ unifdef-y += i2o-dev.h
+ unifdef-y += icmp.h
+ unifdef-y += icmpv6.h
+ unifdef-y += if_addr.h
++unifdef-y += if_addrlabel.h
+ unifdef-y += if_arp.h
+ unifdef-y += if_bridge.h
+ unifdef-y += if_ec.h
+
+
