@@ -1,119 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932299AbYB1XFu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932390AbYB1XHE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932299AbYB1XFu (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Feb 2008 18:05:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757701AbYB1XFl
+	id S932390AbYB1XHE (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Feb 2008 18:07:04 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759067AbYB1XGx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Feb 2008 18:05:41 -0500
-Received: from relay1.sgi.com ([192.48.171.29]:45307 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1757039AbYB1XFl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Feb 2008 18:05:41 -0500
-Date: Thu, 28 Feb 2008 15:05:30 -0800 (PST)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Andrea Arcangeli <andrea@qumranet.com>
-cc: Jack Steiner <steiner@sgi.com>, Nick Piggin <npiggin@suse.de>,
-       akpm@linux-foundation.org, Robin Holt <holt@sgi.com>,
-       Avi Kivity <avi@qumranet.com>, Izik Eidus <izike@qumranet.com>,
-       kvm-devel@lists.sourceforge.net,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, general@lists.openfabrics.org,
-       Steve Wise <swise@opengridcomputing.com>,
-       Roland Dreier <rdreier@cisco.com>, Kanoj Sarcar <kanojsarcar@yahoo.com>,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       daniel.blueman@quadrics.com
-Subject: Re: [PATCH] mmu notifiers #v7
-In-Reply-To: <20080227192610.GF28483@v2.random>
-Message-ID: <Pine.LNX.4.64.0802281456200.1152@schroedinger.engr.sgi.com>
-References: <20080219084357.GA22249@wotan.suse.de> <20080219135851.GI7128@v2.random>
- <20080219231157.GC18912@wotan.suse.de> <20080220010941.GR7128@v2.random>
- <20080220103942.GU7128@v2.random> <20080221045430.GC15215@wotan.suse.de>
- <20080221144023.GC9427@v2.random> <20080221161028.GA14220@sgi.com>
- <20080227192610.GF28483@v2.random>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Thu, 28 Feb 2008 18:06:53 -0500
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:39896 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1757039AbYB1XGw (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 28 Feb 2008 18:06:52 -0500
+Date: Thu, 28 Feb 2008 22:56:03 +0000
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+Cc: linux-kernel@vger.kernel.org, Jeff Garzik <jeff@garzik.org>,
+       linux-ide@vger.kernel.org
+Subject: Re: Unknown SATA PIIX PCI device ID 0x29b6
+Message-ID: <20080228225603.2764bfd1@core>
+In-Reply-To: <Pine.LNX.4.64.0802282306190.10087@axis700.grange>
+References: <Pine.LNX.4.64.0802282306190.10087@axis700.grange>
+X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 27 Feb 2008, Andrea Arcangeli wrote:
+On Thu, 28 Feb 2008 23:37:36 +0100 (CET)
+Guennadi Liakhovetski <g.liakhovetski@gmx.de> wrote:
 
-> +struct mmu_notifier_head {
-> +	struct hlist_head head;
-> +	spinlock_t lock;
-> +};
+> Hi
+> 
+> just found out that the eSATA connector on my Intel DQ35JO motherboard 
+> doesn't work... because it is connected to the controller with product ID 
+> 29b6... And this ID is not yet handled by the driver. Can I have a patch, 
+> please?:-) I think the correct entry would be
 
-Still think that the lock here is not of too much use and can be easily 
-replaced by mmap_sem.
-
-> +#define mmu_notifier(function, mm, args...)				\
-> +	do {								\
-> +		struct mmu_notifier *__mn;				\
-> +		struct hlist_node *__n;					\
-> +									\
-> +		if (unlikely(!hlist_empty(&(mm)->mmu_notifier.head))) { \
-> +			rcu_read_lock();				\
-> +			hlist_for_each_entry_rcu(__mn, __n,		\
-> +						 &(mm)->mmu_notifier.head, \
-> +						 hlist)			\
-> +				if (__mn->ops->function)		\
-> +					__mn->ops->function(__mn,	\
-> +							    mm,		\
-> +							    args);	\
-> +			rcu_read_unlock();				\
-> +		}							\
-> +	} while (0)
-
-Andrew recomended local variables for parameters used multile times. This 
-means the mm parameter here.
-
-> +/*
-> + * Notifiers that use the parameters that they were passed so that the
-> + * compiler does not complain about unused variables but does proper
-> + * parameter checks even if !CONFIG_MMU_NOTIFIER.
-> + * Macros generate no code.
-> + */
-> +#define mmu_notifier(function, mm, args...)			       \
-> +	do {							       \
-> +		if (0) {					       \
-> +			struct mmu_notifier *__mn;		       \
-> +								       \
-> +			__mn = (struct mmu_notifier *)(0x00ff);	       \
-> +			__mn->ops->function(__mn, mm, args);	       \
-> +		};						       \
-> +	} while (0)
-
-Note also Andrew's comments on the use of 0x00ff...
-
-> +/*
-> + * No synchronization. This function can only be called when only a single
-> + * process remains that performs teardown.
-> + */
-> +void mmu_notifier_release(struct mm_struct *mm)
-> +{
-> +	struct mmu_notifier *mn;
-> +	struct hlist_node *n, *tmp;
-> +
-> +	if (unlikely(!hlist_empty(&mm->mmu_notifier.head))) {
-> +		hlist_for_each_entry_safe(mn, n, tmp,
-> +					  &mm->mmu_notifier.head, hlist) {
-> +			hlist_del(&mn->hlist);
-> +			if (mn->ops->release)
-> +				mn->ops->release(mn, mm);
-> +		}
-> +	}
-> +}
-
-One could avoid a hlist_for_each_entry_safe here by simply always deleting 
-the first object. 
-
-Also re the _notify variants: The binding to pte_clear_flush_young etc 
-will become a problem for notifiers that want to sleep because 
-pte_clear_flush is usually called with the pte lock held. See f.e. 
-try_to_unmap_one, page_mkclean_one etc.
-
-It would be better if the notifier calls could be moved outside of the 
-pte lock.
-
-
+If the device is in AHCI mode it should match the ahci class entry - is
+the device in AHCI mode or PIIX mode ?
 
