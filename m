@@ -1,262 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761268AbYB1PwY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760704AbYB1P6a@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761268AbYB1PwY (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Feb 2008 10:52:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758267AbYB1PwN
+	id S1760704AbYB1P6a (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Feb 2008 10:58:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759276AbYB1P6U
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Feb 2008 10:52:13 -0500
-Received: from sacred.ru ([62.205.161.221]:58958 "EHLO sacred.ru"
+	Thu, 28 Feb 2008 10:58:20 -0500
+Received: from cantor.suse.de ([195.135.220.2]:50018 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757636AbYB1PwM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Feb 2008 10:52:12 -0500
-Message-ID: <47C6D885.90302@openvz.org>
-Date: Thu, 28 Feb 2008 18:51:33 +0300
-From: Pavel Emelyanov <xemul@openvz.org>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080213)
+	id S1758882AbYB1P6T (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 28 Feb 2008 10:58:19 -0500
+Date: Thu, 28 Feb 2008 16:58:17 +0100
+From: Holger Macht <hmacht@suse.de>
+To: Tejun Heo <htejun@gmail.com>
+Cc: Jeff Garzik <jeff@garzik.org>, linux-kernel@vger.kernel.org,
+       linux-ide@vger.kernel.org,
+       Kristen Carlson Accardi <kristen.c.accardi@intel.com>
+Subject: Re: [PATCH] libata: Register for dock events when the drive is
+	inside a dock station
+Message-ID: <20080228155817.GB5593@homac.suse.de>
+Mail-Followup-To: Tejun Heo <htejun@gmail.com>,
+	Jeff Garzik <jeff@garzik.org>, linux-kernel@vger.kernel.org,
+	linux-ide@vger.kernel.org,
+	Kristen Carlson Accardi <kristen.c.accardi@intel.com>
+References: <20080214124048.GB9708@homac.suse.de> <20080214125615.GD9708@homac.suse.de> <47BC5F44.605@garzik.org> <20080221115305.GB5032@homac.suse.de> <47BE26A0.2040708@gmail.com> <20080226101551.GB10721@homac.suse.de> <47C6804A.50705@gmail.com> <20080228110927.GA5745@homac.suse.de> <47C6B1B1.2040602@gmail.com>
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>,
-       David Miller <davem@davemloft.net>
-CC: Alexey Dobriyan <adobriyan@openvz.org>,
-       Linux Netdev List <netdev@vger.kernel.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>
-Subject: [PATCH 2/2] Make /proc/net a symlink and drop proc shadows
-References: <47C6D743.1050802@openvz.org>
-In-Reply-To: <47C6D743.1050802@openvz.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-Greylist: Sender succeeded SMTP AUTH authentication, not delayed by milter-greylist-3.0 (sacred.ru [62.205.161.221]); Thu, 28 Feb 2008 18:51:26 +0300 (MSK)
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <47C6B1B1.2040602@gmail.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Turn /proc/net into a symlink, which behaves similar to /proc/self
-link - it points to .netns/<id> directory where the <id> is the id
-of net namespace, current task lives in.
+On Thu 28. Feb - 22:05:53, Tejun Heo wrote:
+> Holger Macht wrote:
+> > On Thu 28. Feb - 18:35:06, Tejun Heo wrote:
+> >> Holger Macht wrote:
+> >>> The hotplug handler is only called if the device is actually inside the
+> >>> dock station. If it is not, nothing will happen. I hope that I got your
+> >>> question right?
+> >> Yes, right.
+> >>
+> >>> However, if this would be helpful, it would be easy to add something like
+> >>> a am_I_on_dock_station?(...) function to the dock driver.
+> >> Hmm.. as long as the event is only delivered when the device is actually
+> >> connected behind dock, I think it's okay.
+> > 
+> > The dock driver also export a is_dock_device(acpi_handle) function, which
+> > could be used to make more fine-grained decisions, but it shouldn't be
+> > needed here.
+> > 
+> >> Does the attached patch fix the previous undock problem?  It now
+> >> explicitly tells libata EH to detach the notified devices on
+> >> EJECT_REQUEST and wait for EH to complete such that control is returned
+> >> to ACPI after all notified devices are actually detached.
+> > 
+> > No it does not. Apparently, it freezes faster (from 1 second down to
+> > immediately). Before, it just froze when someone (in this case HAL) tried
+> > to access the device. The "echo 1 > undock" call does not even return, so
+> > it might have introduced another problem.
+> 
+> The code should be in generally right direction.  Can you be persuaded
+> into tracking down what's going on?
 
-# ls -l /proc/net
-lrwxrwxrwx  1 root root 8 Feb 28 18:38 /proc/net -> .netns/0
+I had a quick glance with adding some printk's. Now I got a different
+behaviour once. System did not freeze, but were certainly confused. The
+last thing which got printed to messages was exactly before
+spin_lock_irqsave(ap->lock, flags); at the beginning of ata_acpi_handle_hotplug(...)
 
-The /proc/.netns dir contains subtrees for all the namespaces in 
-the system:
+The printk immediately after this call didn't come through anymore (with
+being able to use the system for a short time afterwards).
 
-# ls -l /proc/.netns/
-total 0
-dr-xr-xr-x  5 root root 0 Feb 28 18:39 0
-dr-xr-xr-x  3 root root 0 Feb 28 18:39 1
+Maybe this helps.
 
-To provide some security each /proc/.netns/<id> directory allows
-access to tasks that live in the owning namespace only (with the
-exception, that init_net tasks can see everything).
+For further debugging, I would have to setup remote debugger, but I doubt
+I get around to do this for the next couple of days or even 1-2 weeks.
 
-Signed-off-by: Pavel Emelyanov <xemul@openvz.org>
+I could test new patches, of course.
 
----
+Regards,
+	Holger
 
-diff --git a/fs/proc/generic.c b/fs/proc/generic.c
-index 68971e6..d4103e5 100644
---- a/fs/proc/generic.c
-+++ b/fs/proc/generic.c
-@@ -227,7 +227,7 @@ static const struct file_operations proc_file_operations = {
- 	.write		= proc_file_write,
- };
- 
--static int proc_notify_change(struct dentry *dentry, struct iattr *iattr)
-+int proc_notify_change(struct dentry *dentry, struct iattr *iattr)
- {
- 	struct inode *inode = dentry->d_inode;
- 	struct proc_dir_entry *de = PDE(inode);
-@@ -248,7 +248,7 @@ out:
- 	return error;
- }
- 
--static int proc_getattr(struct vfsmount *mnt, struct dentry *dentry,
-+int proc_getattr(struct vfsmount *mnt, struct dentry *dentry,
- 			struct kstat *stat)
- {
- 	struct inode *inode = dentry->d_inode;
-@@ -393,8 +393,6 @@ struct dentry *proc_lookup(struct inode * dir, struct dentry *dentry, struct nam
- 			if (!memcmp(dentry->d_name.name, de->name, de->namelen)) {
- 				unsigned int ino;
- 
--				if (de->shadow_proc)
--					de = de->shadow_proc(current, de);
- 				ino = de->low_ino;
- 				de_get(de);
- 				spin_unlock(&proc_subdir_lock);
-diff --git a/fs/proc/proc_net.c b/fs/proc/proc_net.c
-index 14e9b5a..8000ea4 100644
---- a/fs/proc/proc_net.c
-+++ b/fs/proc/proc_net.c
-@@ -83,14 +83,6 @@ struct net *get_proc_net(const struct inode *inode)
- }
- EXPORT_SYMBOL_GPL(get_proc_net);
- 
--static struct proc_dir_entry *shadow_pde;
--
--static struct proc_dir_entry *proc_net_shadow(struct task_struct *task,
--						struct proc_dir_entry *de)
--{
--	return task->nsproxy->net_ns->proc_net;
--}
--
- struct proc_dir_entry *proc_net_mkdir(struct net *net, const char *name,
- 		struct proc_dir_entry *parent)
- {
-@@ -102,47 +94,61 @@ struct proc_dir_entry *proc_net_mkdir(struct net *net, const char *name,
- }
- EXPORT_SYMBOL_GPL(proc_net_mkdir);
- 
-+static int proc_netns_id_permission(struct inode *inode, int mask,
-+		struct nameidata *nd)
-+{
-+	struct net *net = current->nsproxy->net_ns;
-+
-+	if (net == &init_net || net == PDE(inode)->data)
-+		return generic_permission(inode, mask, NULL);
-+	else
-+		return -EACCES;
-+}
-+
-+static const struct inode_operations proc_netns_id_ops = {
-+	.lookup		= proc_lookup,
-+	.getattr	= proc_getattr,
-+	.setattr	= proc_notify_change,
-+	.permission	= proc_netns_id_permission,
-+};
-+
-+static struct proc_dir_entry *netns_dir;
-+
- static __net_init int proc_net_ns_init(struct net *net)
- {
--	struct proc_dir_entry *root, *netd, *net_statd;
--	int err;
-+	struct proc_dir_entry *netd, *net_statd;
-+	char id[PROC_NUMBUF];
- 
--	err = -ENOMEM;
--	root = kzalloc(sizeof(*root), GFP_KERNEL);
--	if (!root)
--		goto out;
-+	snprintf(id, sizeof(id), "%d", net->id);
- 
--	err = -EEXIST;
--	netd = proc_net_mkdir(net, "net", root);
-+	netd = proc_net_mkdir(net, id, netns_dir);
- 	if (!netd)
--		goto free_root;
-+		goto out;
-+
-+	netd->proc_iops = &proc_netns_id_ops;
- 
--	err = -EEXIST;
- 	net_statd = proc_net_mkdir(net, "stat", netd);
- 	if (!net_statd)
- 		goto free_net;
- 
--	root->data = net;
--
--	net->proc_net_root = root;
- 	net->proc_net = netd;
- 	net->proc_net_stat = net_statd;
--	err = 0;
-+	return 0;
- 
--out:
--	return err;
- free_net:
--	remove_proc_entry("net", root);
--free_root:
--	kfree(root);
--	goto out;
-+	remove_proc_entry(id, netns_dir);
-+out:
-+	return -ENOMEM;
- }
- 
- static __net_exit void proc_net_ns_exit(struct net *net)
- {
-+	char id[PROC_NUMBUF];
-+
-+	snprintf(id, sizeof(id), "%d", net->id);
-+
- 	remove_proc_entry("stat", net->proc_net);
--	remove_proc_entry("net", net->proc_net_root);
--	kfree(net->proc_net_root);
-+	remove_proc_entry(id, netns_dir);
- }
- 
- static struct pernet_operations __net_initdata proc_net_ns_ops = {
-@@ -150,10 +156,36 @@ static struct pernet_operations __net_initdata proc_net_ns_ops = {
- 	.exit = proc_net_ns_exit,
- };
- 
-+static int proc_net_readlink(struct dentry *dentry, char __user *buffer,
-+			      int buflen)
-+{
-+	char tmp[PROC_NUMBUF];
-+
-+	sprintf(tmp, ".netns/%d", current->nsproxy->net_ns->id);
-+	return vfs_readlink(dentry, buffer, buflen, tmp);
-+}
-+
-+static void *proc_net_follow_link(struct dentry *dentry, struct nameidata *nd)
-+{
-+	char tmp[PROC_NUMBUF];
-+
-+	sprintf(tmp, ".netns/%d", current->nsproxy->net_ns->id);
-+	return ERR_PTR(vfs_follow_link(nd, tmp));
-+}
-+
-+static const struct inode_operations proc_net_link_ops = {
-+	.readlink	= proc_net_readlink,
-+	.follow_link	= proc_net_follow_link,
-+};
-+
- int __init proc_net_init(void)
- {
--	shadow_pde = proc_mkdir("net", NULL);
--	shadow_pde->shadow_proc = proc_net_shadow;
-+	struct proc_dir_entry *nnet;
-+
-+	netns_dir = proc_mkdir(".netns", NULL);
-+	nnet = proc_symlink("net", NULL, ".netns/0");
-+
-+	nnet->proc_iops = &proc_net_link_ops;
- 
- 	return register_pernet_subsys(&proc_net_ns_ops);
- }
-diff --git a/include/linux/proc_fs.h b/include/linux/proc_fs.h
-index d9a9e71..be0c9b7 100644
---- a/include/linux/proc_fs.h
-+++ b/include/linux/proc_fs.h
-@@ -82,7 +82,6 @@ struct proc_dir_entry {
- 	int pde_users;	/* number of callers into module in progress */
- 	spinlock_t pde_unload_lock; /* proc_fops checks and pde_users bumps */
- 	struct completion *pde_unload_completion;
--	shadow_proc_t *shadow_proc;
- };
- 
- struct kcore_list {
-@@ -145,6 +144,9 @@ extern struct inode *proc_get_inode(struct super_block *, unsigned int, struct p
-  */
- extern int proc_readdir(struct file *, void *, filldir_t);
- extern struct dentry *proc_lookup(struct inode *, struct dentry *, struct nameidata *);
-+extern int proc_getattr(struct vfsmount *mnt, struct dentry *dentry,
-+			struct kstat *stat);
-+extern int proc_notify_change(struct dentry *dentry, struct iattr *iattr);
- 
- extern const struct file_operations proc_kcore_operations;
- extern const struct file_operations proc_kmsg_operations;
-diff --git a/include/net/net_namespace.h b/include/net/net_namespace.h
-index 28738b7..8aedfd6 100644
---- a/include/net/net_namespace.h
-+++ b/include/net/net_namespace.h
-@@ -32,7 +32,6 @@ struct net {
- 
- 	struct proc_dir_entry 	*proc_net;
- 	struct proc_dir_entry 	*proc_net_stat;
--	struct proc_dir_entry 	*proc_net_root;
- 
- 	struct list_head	sysctl_table_headers;
- 
+P.S.: You'll need [1] patch for testing, otherwise the hotplug handler is
+never called.
+
+[1] http://git.kernel.org/?p=linux/kernel/git/lenb/linux-acpi-2.6.git;a=commit;h=3b5fee5952ff7eb6ff7a64247a01040b8b331b74
