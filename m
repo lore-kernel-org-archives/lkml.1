@@ -1,50 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758182AbYB1OE0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759547AbYB1OHg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758182AbYB1OE0 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Feb 2008 09:04:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752519AbYB1OEO
+	id S1759547AbYB1OHg (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Feb 2008 09:07:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753053AbYB1OH3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Feb 2008 09:04:14 -0500
-Received: from gw.c1.byte.nl ([82.94.214.64]:43271 "EHLO smtp.byte.nl"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752512AbYB1OEO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Feb 2008 09:04:14 -0500
-Date: Thu, 28 Feb 2008 15:04:12 +0100 (CET)
-From: Allard Hoeve <allard@byte.nl>
-Reply-To: Allard Hoeve <allard@byte.nl>
+	Thu, 28 Feb 2008 09:07:29 -0500
+Received: from rv-out-0910.google.com ([209.85.198.188]:56166 "EHLO
+	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751882AbYB1OH2 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 28 Feb 2008 09:07:28 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
+        b=c61yEk6QYI1kYBwyPhgsrF21ZYgW1z6i8+BRFICwn9Hb4znMM/lW4Wfp5uWp82fDgyIECtI1dm27zzWt+7E++fIUnmaGm8D2LqSsIhlwIrBkDMzccO1KT5uRYwIsrF+GrCQrek0ckXOR2qLSLU0iarwUuMV7qJ6uw+zscnC2kC8=
+Message-ID: <38b2ab8a0802280607h46a89f04wdd190a7c87571668@mail.gmail.com>
+Date: Thu, 28 Feb 2008 15:07:27 +0100
+From: "Francis Moreau" <francis.moro@gmail.com>
 To: linux-kernel@vger.kernel.org
-Subject: Scheduler lockup or nfsd problem in 2.6.24.2 and 2.6.23.17?
-Message-ID: <Pine.LNX.4.62.0802281452240.1709@office2.c1.internal>
+Subject: linux-v2.6.25-rc3 issue: nvidiafb: cannot ioremap FB base
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi,
 
-Hello all,
+I gave to the latest -rc (rc3) a test and it appears to fail to load the
+nvidiafb module and the reason given is:
 
-The last few days our trusty NFS server has experienced several soft 
-lockups. These occur every 11 hours or so. The system does not respond 
-afterwards. Sending sysrq commands over the serial console seems to work 
-allthough we had to powercycle the server once.
+nvidiafb: cannot ioremap FB base
 
-First we thought it would be an NFS problem, and now that we tried 
-2.6.23.17 instead of 2.6.24.2, we now have two different stacktraces that 
-share a trace through nfsd (nfsd_direct_splice_actor):
+Does anybody have a clue ?
 
-http://article.gmane.org/gmane.linux.nfs/19107
-http://article.gmane.org/gmane.linux.nfs/19130
+Full dmesg output is attached.
 
-The second however, leads me to think the (relatively new) scheduler might 
-be involved through __check_preempt_curr_fair.
-
-I'm now trying 2.6.22.19, which has a recent lockd issue with NFS fixed 
-but hasn't had the scheduler update.
-
-How do I go about debugging this problem? What do you experts think?
-
-Regards,
-
-Allard Hoeve
-
+Thanks
+-- 
+Francis
