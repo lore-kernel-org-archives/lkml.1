@@ -1,73 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760339AbYB1SPM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754098AbYB1SPi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760339AbYB1SPM (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Feb 2008 13:15:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752236AbYB1SOz
+	id S1754098AbYB1SPi (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Feb 2008 13:15:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754955AbYB1SO4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Feb 2008 13:14:55 -0500
-Received: from e5.ny.us.ibm.com ([32.97.182.145]:55523 "EHLO e5.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750983AbYB1SOy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 28 Feb 2008 13:14:56 -0500
+Received: from smtp1.linux-foundation.org ([207.189.120.13]:33203 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751391AbYB1SOy (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
 	Thu, 28 Feb 2008 13:14:54 -0500
-Date: Thu, 28 Feb 2008 10:12:45 -0800
-From: sukadev@us.ibm.com
-To: Andrew Morton <akpm@osdl.org>
-Cc: Pavel Emelianov <xemul@openvz.org>, Containers <containers@lists.osdl.org>,
-       linux-kernel@vger.kernel.org
-Subject: [PATCH] Fix warning in kernel/pid.c
-Message-ID: <20080228181245.GA26319@us.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-X-Operating-System: Linux 2.0.32 on an i486
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+Date: Thu, 28 Feb 2008 10:13:43 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Steven Rostedt <srostedt@redhat.com>,
+       Lee Schermerhorn <Lee.Schermerhorn@hp.com>,
+       linux-ia64 <linux-ia64@vger.kernel.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Tony Luck <tony.luck@intel.com>, Ingo Molnar <mingo@redhat.com>,
+       Bob Picco <bob.picco@hp.com>, Eric Whitney <eric.whitney@hp.com>
+Subject: Re: 2.6.25-rc2-mm1 - boot hangs on ia64
+Message-Id: <20080228101343.1b9548e6.akpm@linux-foundation.org>
+In-Reply-To: <20080228115041.GA22082@elte.hu>
+References: <20080227103831.423F.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+	<20080227071118.GA4638@elte.hu>
+	<20080228192509.BDCF.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+	<20080228115041.GA22082@elte.hu>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, 28 Feb 2008 12:50:41 +0100 Ingo Molnar <mingo@elte.hu> wrote:
 
-From: Sukadev Bhattiprolu <sukadev@us.ibm.com>
-Subject: [PATCH]: Fix compile warning in kernel/pid.c
+> @@ -1000,7 +1001,7 @@ void release_console_sem(void)
+>  	 * If we try to wake up klogd while printing with the runqueue lock
+>  	 * held, this will deadlock.
+>  	 */
+> -	if (wake_klogd && !runqueue_is_locked())
+> +	if (wake_klogd)
+>  		wake_up_klogd();
+>  }
 
-We get a warning in kernel/pid.c due to the deprecated find_task_by_pid().
-Make the function inline in sched.h to avoid the warning.
+I don't think we shoudl have added that hack in the first place.  It solves a
+problem which about three developers hit four times in five years but it
+has made kernel logging less reliable for everyone.
 
-Signed-off-by: Sukadev Bhattiprolu <sukadev@us.ibm.com>
----
- include/linux/sched.h |    5 ++++-
- kernel/pid.c          |    6 ------
- 2 files changed, 4 insertions(+), 7 deletions(-)
-
-Index: linux-2.6-25-rc2-mm1/include/linux/sched.h
-===================================================================
---- linux-2.6-25-rc2-mm1.orig/include/linux/sched.h	2008-02-27 16:07:52.000000000 -0800
-+++ linux-2.6-25-rc2-mm1/include/linux/sched.h	2008-02-27 16:29:31.000000000 -0800
-@@ -1632,7 +1632,10 @@ extern struct pid_namespace init_pid_ns;
- extern struct task_struct *find_task_by_pid_type_ns(int type, int pid,
- 		struct pid_namespace *ns);
- 
--extern struct task_struct *find_task_by_pid(pid_t nr) __deprecated;
-+static inline struct task_struct *__deprecated find_task_by_pid(pid_t nr)
-+{
-+	return find_task_by_pid_type_ns(PIDTYPE_PID, nr, &init_pid_ns);
-+}
- extern struct task_struct *find_task_by_vpid(pid_t nr);
- extern struct task_struct *find_task_by_pid_ns(pid_t nr,
- 		struct pid_namespace *ns);
-Index: linux-2.6-25-rc2-mm1/kernel/pid.c
-===================================================================
---- linux-2.6-25-rc2-mm1.orig/kernel/pid.c	2008-02-27 15:18:22.000000000 -0800
-+++ linux-2.6-25-rc2-mm1/kernel/pid.c	2008-02-27 16:29:31.000000000 -0800
-@@ -380,12 +380,6 @@ struct task_struct *find_task_by_pid_typ
- 
- EXPORT_SYMBOL(find_task_by_pid_type_ns);
- 
--struct task_struct *find_task_by_pid(pid_t nr)
--{
--	return find_task_by_pid_type_ns(PIDTYPE_PID, nr, &init_pid_ns);
--}
--EXPORT_SYMBOL(find_task_by_pid);
--
- struct task_struct *find_task_by_vpid(pid_t vnr)
- {
- 	return find_task_by_pid_type_ns(PIDTYPE_PID, vnr,
