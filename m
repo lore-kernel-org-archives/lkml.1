@@ -1,50 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763304AbYB1BDl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755136AbYB1BEU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763304AbYB1BDl (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Feb 2008 20:03:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754619AbYB1BD2
+	id S1755136AbYB1BEU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Feb 2008 20:04:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757925AbYB1BED
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Feb 2008 20:03:28 -0500
-Received: from relay2.sgi.com ([192.48.171.30]:39258 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753470AbYB1BD1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Feb 2008 20:03:27 -0500
-Date: Wed, 27 Feb 2008 17:03:21 -0800 (PST)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Andrea Arcangeli <andrea@qumranet.com>
-cc: Nick Piggin <nickpiggin@yahoo.com.au>, akpm@linux-foundation.org,
-       Robin Holt <holt@sgi.com>, Avi Kivity <avi@qumranet.com>,
-       Izik Eidus <izike@qumranet.com>, kvm-devel@lists.sourceforge.net,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, general@lists.openfabrics.org,
-       Steve Wise <swise@opengridcomputing.com>,
-       Roland Dreier <rdreier@cisco.com>, Kanoj Sarcar <kanojsarcar@yahoo.com>,
-       steiner@sgi.com, linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       daniel.blueman@quadrics.com
-Subject: Re: [patch 2/6] mmu_notifier: Callbacks to invalidate address ranges
-In-Reply-To: <20080228005249.GF8091@v2.random>
-Message-ID: <Pine.LNX.4.64.0802271702490.16510@schroedinger.engr.sgi.com>
-References: <20080215064859.384203497@sgi.com> <20080215064932.620773824@sgi.com>
- <200802201008.49933.nickpiggin@yahoo.com.au>
- <Pine.LNX.4.64.0802271424390.13186@schroedinger.engr.sgi.com>
- <20080228001104.GB8091@v2.random> <Pine.LNX.4.64.0802271613080.15791@schroedinger.engr.sgi.com>
- <20080228005249.GF8091@v2.random>
+	Wed, 27 Feb 2008 20:04:03 -0500
+Received: from ti-out-0910.google.com ([209.85.142.187]:4664 "EHLO
+	ti-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755812AbYB1BEB (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 Feb 2008 20:04:01 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=FAOp1ngW1qnDrt2a9wlApgP80dwNgKMOh7gWH7nyZ820QoiYFOyoqp4XmmtVGeZSrMUbGiIs5aDxXU4LrrtTacXvC7w4M9g+s6ChRTlf9BJKUo0dbmDtlPLkJuzTGwJ2FF2PKhhFr8fqdJ4XzIQ52xv/60MgqVhgs1IHE4BGRrE=
+Message-ID: <a8e1da0802271703x42152aabn8f5862b16357c083@mail.gmail.com>
+Date: Thu, 28 Feb 2008 09:03:57 +0800
+From: "Dave Young" <hidave.darkstar@gmail.com>
+To: "Quel Qun" <kelk1@comcast.net>
+Subject: Re: Kernel oops with bluetooth usb dongle
+Cc: "Thomas Gleixner" <tglx@linutronix.de>,
+       "David Woodhouse" <dwmw2@infradead.org>,
+       "Marcel Holtmann" <marcel@holtmann.org>,
+       LKML <linux-kernel@vger.kernel.org>, "Jiri Kosina" <jkosina@suse.cz>,
+       "Ingo Molnar" <mingo@elte.hu>
+In-Reply-To: <022620080003.1247.47C35750000085C8000004DF2207300793CE05040A05@comcast.net>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <022620080003.1247.47C35750000085C8000004DF2207300793CE05040A05@comcast.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 28 Feb 2008, Andrea Arcangeli wrote:
+On Tue, Feb 26, 2008 at 8:03 AM, Quel Qun <kelk1@comcast.net> wrote:
+>  -------------- Original message ----------------------
+>  From: Thomas Gleixner <tglx@linutronix.de>
+>
+>
+> > On Fri, 22 Feb 2008, David Woodhouse wrote:
+>  >
+>  > > On Fri, 2008-02-22 at 08:23 +0100, Thomas Gleixner wrote:
+>  > > >
+>  > > > +       del_timer(&conn->info_timer);
+>  > > > +
+>  > > >         hcon->l2cap_data = NULL;
+>  > > >         kfree(conn);
+>  > >
+>  > > Shouldn't that be del_timer_sync() ?
+>  >
+>  > Hmm, probably yes.
+>  >
+>  Hi,
+>
+>  Great news: only adding adding del_timer_sync() to 2.6.25-rc3 does prevent the crash.
+>
+>  Bad news: I still cannot use the device.
+>
+>  hcitool inq, hcitool scan, hcitool name <btaddr> and hcitool info <btaddr>
+>  commands work.
+>
+>  hcitool cc <btaddr>, sdptool <btaddr>, rfcomm connect command fail, most of them
+>  with a 'Connection reset by peer' error.
 
-> On Wed, Feb 27, 2008 at 04:14:08PM -0800, Christoph Lameter wrote:
-> > Erm. This would also be needed by RDMA etc.
-> 
-> The only RDMA I know is Quadrics, and Quadrics apparently doesn't need
-> to schedule inside the invalidate methods AFIK, so I doubt the above
-> is true. It'd be interesting to know if IB is like Quadrics and it
-> also doesn't require blocking to invalidate certain remote mappings.
+Could you send the dmesg and hcidump content while connecting (eg.
+rfcomm connect)?
 
-RDMA works across a network and I would assume that it needs confirmation 
-that a connection has been torn down before pages can be unmapped.
- 
+>
+>  # rpm -q bluez-utils
+>  bluez-utils-3.27-1mdv2008.1
+>
+>  Thank you,
+>  --
+>  Eric
+>
