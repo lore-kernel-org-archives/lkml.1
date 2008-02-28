@@ -1,68 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763690AbYB1U0k@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763476AbYB1U1G@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763690AbYB1U0k (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Feb 2008 15:26:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762302AbYB1U0W
+	id S1763476AbYB1U1G (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Feb 2008 15:27:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756484AbYB1U0t
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Feb 2008 15:26:22 -0500
-Received: from mail.tmr.com ([64.65.253.246]:52578 "EHLO gaimboi.tmr.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761987AbYB1U0U (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Feb 2008 15:26:20 -0500
-Message-ID: <47C719CB.6070704@tmr.com>
-Date: Thu, 28 Feb 2008 15:30:03 -0500
-From: Bill Davidsen <davidsen@tmr.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.8) Gecko/20061105 SeaMonkey/1.0.6
+	Thu, 28 Feb 2008 15:26:49 -0500
+Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:53817 "EHLO
+	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755613AbYB1U0s (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 28 Feb 2008 15:26:48 -0500
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: serge@hallyn.com
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Pavel Emelyanov <xemul@openvz.org>, Oleg Nesterov <oleg@tv-sign.ru>,
+       linux-kernel@vger.kernel.org, Andrew Morgan <morgan@kernel.org>
+Subject: Re: Fw: [PATCH 1/1] file capabilities: simplify signal check
+References: <20080223000237.518aace0.akpm@linux-foundation.org>
+	<m17igu6e73.fsf@ebiederm.dsl.xmission.com>
+	<20080227043306.GA9293@vino.hallyn.com>
+Date: Thu, 28 Feb 2008 13:25:01 -0700
+In-Reply-To: <20080227043306.GA9293@vino.hallyn.com> (serge@hallyn.com's
+	message of "Tue, 26 Feb 2008 22:33:06 -0600")
+Message-ID: <m1tzjs4yn6.fsf@ebiederm.dsl.xmission.com>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
 MIME-Version: 1.0
-To: Mariella Petrini <mariellapetrini@yahoo.com>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: Linux and SSD and how to decrease io delay : question, please
-References: <847418.75727.qm@web35715.mail.mud.yahoo.com>
-In-Reply-To: <847418.75727.qm@web35715.mail.mud.yahoo.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mariella Petrini wrote:
-> Hi All,
-> 
-> I have been running Linux kernel 2.6.23 with Debian on
-> 
-> a 2 CPUs Dual-Core AMD Opteron(tm) Processor 2218.
-> I have been using an SSD drive (MTRON) connected to a
-> raid controller (LSI      MegaRAID 8704ELP) to contain
-> data stored on several databases.
-> Each database contains 20,000 files and there are 50
-> databases total (1,000,000 files distributed across 50
-> directories on the filesystem on the ssd).
-> 
-> The database server uses the databases very "write"
-> intensively.
-> An approximate percentage could be 20% reads versus
-> 80% random writes.
-> 
-> No matter which filesystem type is used (I have tried
-> ext3, xfs, jfs, reiserfs) I see every few seconds
-> snapshots (the could last in the worst case up to 200
-> seconds, depending on the filesystem type) 
-> where the iowait on the ssd device goes approximately
-> over 50% (up to 100%) and 
-> the database server threads go to wait (get
-> suspended).
-> 
-> Is there any Linux kernel parameter or any Linux
-> parameter that could be varied that could help to
-> decrease the time spent to sync all the data to the
-> SSD device ?
-> 
-I may misunderstand the problem, but have you tried tuning the 
-parameters /proc/sys/vm/dirty_* to help this? It sounds as if you may be 
-filling write cache and then flushing. Of course you didn't measure the 
-disk i/o rates along with this, so it's hard to see what's happening.
+serge@hallyn.com writes:
 
--- 
-Bill Davidsen <davidsen@tmr.com>
-   "We have more to fear from the bungling of the incompetent than from
-the machinations of the wicked."  - from Slashdot
+> Quoting Eric W. Biederman (ebiederm@xmission.com):
+>> Andrew Morton <akpm@linux-foundation.org> writes:
+>> 
+>> > um, is that code namespace-clean?
+>> 
+>> Choke, gag.
+>
+> Oh, sorry, I got lost in the set of patches in the message.  To be
+> clear, my little 4-patch uid-ns-signal patchset can simply be updated
+> to make the cap_task_kill() uid check into if (task_user_equiv(current, p)
+>
+> But Eric if you simply drop cap_task_kill() (don't make it return 0,
+> just drop the function and go back to not setting task_kill in the
+> capability_security_ops) I'll ack that.  Else I'll write the patch
+> thursday.  At this point the only thing that will be denied by
+> cap_task_kill() but not by check_kill_permission() is funky euid cases.
+> That's wrong.  (cc'ing amorgan in the event I'm forgetting something
+> useful the fn is doing)
+
+Go ahead.   I'm fighting a cold and am fairly overloaded at the moment.
+
+Eric
