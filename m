@@ -1,130 +1,129 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759401AbYB1NXq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760039AbYB1NYb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759401AbYB1NXq (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Feb 2008 08:23:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756452AbYB1NXi
+	id S1760039AbYB1NYb (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Feb 2008 08:24:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757122AbYB1NYX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Feb 2008 08:23:38 -0500
-Received: from el-out-1112.google.com ([209.85.162.182]:1410 "EHLO
-	el-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755927AbYB1NXh convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Feb 2008 08:23:37 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=JzLpyTMsytSIJrp5/8U/ymFUke6ClABVKkkrsifbl4HLkXbhm8kLkIpIGqTJraG/SWnsBV3h9oYj3BGQqklbqiYXN4P477a9hKlWvluEvXHUdem19s6mGnPblzSfVDdyAg50bzYiD0NeDQHbOiZ4qZ1hc52/92RkqgbbCiuDAn8=
-Message-ID: <cfd18e0f0802280523p1bdacfc5s274387f8280238c8@mail.gmail.com>
-Date: Thu, 28 Feb 2008 14:23:34 +0100
-From: "Michael Kerrisk" <mtk.manpages@googlemail.com>
-To: "Davide Libenzi" <davidel@xmailserver.org>
-Subject: Re: epoll design problems with common fork/exec patterns
-Cc: "=?ISO-2022-JP?B?Q2hyaXMgIhskQiUvGyhCIiBIZWF0aA==?=" 
-	<chris@heathens.co.nz>,
-       "David Schwartz" <davids@webmaster.com>, dada1@cosmosbay.com,
-       "Linux-Kernel@Vger. Kernel. Org" <linux-kernel@vger.kernel.org>,
-       linux-man@vger.kernel.org
-In-Reply-To: <cfd18e0f0802280512q43a457d0sc9a8dc83c51e8e1c@mail.gmail.com>
+	Thu, 28 Feb 2008 08:24:23 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:53529 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756304AbYB1NYW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 28 Feb 2008 08:24:22 -0500
+Date: Thu, 28 Feb 2008 14:24:04 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Jan Beulich <jbeulich@novell.com>
+Cc: linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       Arjan van de Ven <arjan@infradead.org>
+Subject: Re: x86: potential ioremap() issues
+Message-ID: <20080228132404.GB18551@elte.hu>
+References: <47C6BE37.76E4.0078.0@novell.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <MDEHLPKNGKAHNMBLJOLKAEHCHNAC.davids@webmaster.com>
-	 <Pine.LNX.4.64.0710291147180.3387@alien.or.mcafeemobile.com>
-	 <47C42CA7.4030607@gmail.com>
-	 <Pine.LNX.4.64.0802261049040.27243@alien.or.mcafeemobile.com>
-	 <1204075804.5238.7.camel@linux.heathens.co.nz>
-	 <Pine.LNX.4.64.0802271131180.377@alien.or.mcafeemobile.com>
-	 <cfd18e0f0802280512q43a457d0sc9a8dc83c51e8e1c@mail.gmail.com>
+In-Reply-To: <47C6BE37.76E4.0078.0@novell.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Feb 28, 2008 at 2:12 PM, Michael Kerrisk
-<mtk.manpages@googlemail.com> wrote:
->
-> On Wed, Feb 27, 2008 at 8:35 PM, Davide Libenzi <davidel@xmailserver.org> wrote:
->  > On Tue, 26 Feb 2008, Chris "ã~B¯" Heath wrote:
->  >
->  >  > On Tue, 2008-02-26 at 10:51 -0800, Davide Libenzi wrote:
->  >  > >
->  >
->  > > > Yes, you can't add the same fd twice. Think about a DB where "file*,fd" is
->  >  > > the key.
->  >  >
->  >  > To clarify, the key appears to be file* plus the user-space integer that
->  >  > represents the fd.
->  >
->  >  Yes, that's what I said.
->  >
->  >  > > > c) It is possible to add duplicated file descriptors referring to the same
->  >  > > > underlying open file description ("file *").  As you note, this can be a
->  >  > > > useful filtering technique, if the two file descriptors specify different
->  >  > > > masks.
->  >  > > >
->  >  > > > Assuming that is all correct, for man-pages-2.79, I've reworked the text
->  >  > > > for Q1/A1 as follows:
->  >  > > >
->  >  > > >        Q1     What  happens  if you add the same file descriptor
->  >  > > >               to an epoll set twice?
->  >  > > >
->  >  > > >        A1     You will probably get EEXIST.  However, it is pos-
->  >  > > >               sible   to   add  a  duplicate  (dup(2),  dup2(2),
->  >  > > >               fcntl(2) F_DUPFD, fork(2)) descriptor to the  same
->  >  > > >               epoll  set.   This  can  be a useful technique for
->  >  > > >               filtering events, if the duplicate  file  descrip-
->  >  > > >               tors are registered with different events masks.
->  >  > > >
->  >  > > > Seem okay Davide?
->  >  > >
->  >  > > Looks sane to me.
->  >  >
->  >  > I think fork(2) should not be in the above list.  fork(2) duplicates the
->  >  > kernel's fd, but the user-space integer that represents the fd remains
->  >  > the same, so you will get EEXIST if you try to add the fd that was
->  >  > duplicated by fork.
->  >
->  >  Good catch, fork(2) should not be there.
->
->  Okay -- removed.
->
->  But it is an ugly inconsistency.  On the one hand, a child process
->  cannot add the duplicate file descriptor to the epoll set.  (In every
->  other case that I can think of , descriptors duplicated by fork have
->  similar semantics to descriptors duplicated by dup() and friends.)  On
->  the other hand, the very fact that the child has a duplicate of the
->  descriptor means that even if the parent closes its descriptor, then
->  epoll_wait() in the parent will continue to receive notifications for
->  that descriptor because of the duplicated descriptor in the child.
->
->  The choice of [file *, fd] as the key for epoll sets really does seem
->  unfortunate.  Keying on [pid, fd] would have given saner semantics, it
->  seems to me.  Obviously it can't be changed now though.
 
+* Jan Beulich <jbeulich@novell.com> wrote:
 
-Davide,
+> Ingo,
+> 
+> with the new ioremap() implementation I see a couple of (potential)
+> issues:
+> - When ioremap_page_range() fails, remove_vm_area() is used rather
+>   than vunmap() - I think this will cause a 'struct vm_struct' leak.
 
-with the earlier discussion in this thread in mind, I added a Q0/A0 to
-epoll.7, just make the point about keys clear:
+indeed, good catch - could you check whether the patch below fixes this? 
+I also pushed this out into x86.git#testing, which you can pick up via:
 
+       http://people.redhat.com/mingo/x86.git/README
 
-       Q0  What is the key used to distinguish the file descrip-
-           tors in an epoll set?
+> - While ioremap() continues to happily map RAM pages (with a bogus
+>   [see below] WARN_ON_ONCE()), cacheability of the memory is not
+>   being restored in iounmap().
 
-       A0  The key is the combination  of  the  file  descriptor
-           number  and  the open file description (also known as
-           "open file handle", the kernel's internal representa-
-           tion of an open file).
+correct - these are never supposed to be 'true', generally allocated RAM 
+pages - or like we do with AGP where the pages are exclusively owned we 
+restore their cacheability explicitly.
 
-Does that seem okay?
+> - The check for RAM pages (except for the WARN_ON_ONCE())
+>   continues to be applied only to lowmem pages.
 
-Cheers,
+yes, the biggest constraint from ioremap comes when it applies to pages 
+that are mapped by the kernel. But i guess we could extend this to all 
+things RAM ... the second patch below does this. What do you think? I've 
+queued this up in x86.git#testing as well.
 
-Michael
+> - The WARN_ON_ONCE() itself is applied to the pfn after the
+>   preceding loop finished, i.e. to a pfn that doesn't actually participate
+>   in the operation. Shouldn't it be moved inside the loop?
 
--- 
-Michael Kerrisk
-Maintainer of the Linux man-pages project
-http://www.kernel.org/doc/man-pages/
-Want to report a man-pages bug?  Look here:
-http://www.kernel.org/doc/man-pages/reporting_bugs.html
+i removed the WARN_ON_ONCE() from x86.git a few days ago, it's lined up 
+for the next push.
+
+	Ingo
+
+--------------------->
+Subject: x86: fix leak un ioremap_page_range() failure
+From: Ingo Molnar <mingo@elte.hu>
+Date: Thu Feb 28 14:02:08 CET 2008
+
+Jan Beulich noticed that if a driver's ioremap() fails (say due to -ENOMEM)
+then we might leak the struct vm_area - free it properly.
+
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+---
+ arch/x86/mm/ioremap.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+Index: linux-x86.q/arch/x86/mm/ioremap.c
+===================================================================
+--- linux-x86.q.orig/arch/x86/mm/ioremap.c
++++ linux-x86.q/arch/x86/mm/ioremap.c
+@@ -179,7 +179,7 @@ static void __iomem *__ioremap(unsigned 
+ 	area->phys_addr = phys_addr;
+ 	vaddr = (unsigned long) area->addr;
+ 	if (ioremap_page_range(vaddr, vaddr + size, phys_addr, prot)) {
+-		remove_vm_area((void *)(vaddr & PAGE_MASK));
++		free_vm_area(area);
+ 		return NULL;
+ 	}
+
+-------------------> 
+Subject: x86: ioremap(), extend check to all RAM pages
+From: Ingo Molnar <mingo@elte.hu>
+Date: Thu Feb 28 14:10:49 CET 2008
+
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+---
+ arch/x86/mm/ioremap.c |    5 +++--
+ 1 file changed, 3 insertions(+), 2 deletions(-)
+
+Index: linux-x86.q/arch/x86/mm/ioremap.c
+===================================================================
+--- linux-x86.q.orig/arch/x86/mm/ioremap.c
++++ linux-x86.q/arch/x86/mm/ioremap.c
+@@ -146,8 +146,9 @@ static void __iomem *__ioremap(unsigned 
+ 	/*
+ 	 * Don't allow anybody to remap normal RAM that we're using..
+ 	 */
+-	for (pfn = phys_addr >> PAGE_SHIFT; pfn < max_pfn_mapped &&
+-	     (pfn << PAGE_SHIFT) < last_addr; pfn++) {
++	for (pfn = phys_addr >> PAGE_SHIFT;
++				(pfn << PAGE_SHIFT) < last_addr; pfn++) {
++
+ 		if (page_is_ram(pfn) && pfn_valid(pfn) &&
+ 		    !PageReserved(pfn_to_page(pfn)))
+ 			return NULL;
