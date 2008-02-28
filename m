@@ -1,51 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761561AbYB1Soc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760368AbYB1Ssg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761561AbYB1Soc (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Feb 2008 13:44:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761309AbYB1SoS
+	id S1760368AbYB1Ssg (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Feb 2008 13:48:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753776AbYB1Ss2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Feb 2008 13:44:18 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:49138 "EHLO mx1.redhat.com"
+	Thu, 28 Feb 2008 13:48:28 -0500
+Received: from alpha.facton.com ([83.236.152.122]:57418 "EHLO alpha.facton.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760541AbYB1SoQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Feb 2008 13:44:16 -0500
-From: Jarod Wilson <jwilson@redhat.com>
-Organization: Red Hat, Inc.
-To: benh@kernel.crashing.org
-Subject: Re: [PATCH 1/2] firewire: endianess fix
-Date: Thu, 28 Feb 2008 13:42:05 -0500
-User-Agent: KMail/1.9.6 (enterprise 0.20071204.744707)
-Cc: Stefan Richter <stefanr@s5r6.in-berlin.de>,
-       Kristian Hoegsberg <krh@bitplanet.net>, linux-kernel@vger.kernel.org,
-       linuxppc-dev@ozlabs.org, sparclinux@vger.kernel.org,
-       linux1394-devel@lists.sourceforge.net, Sam Ravnborg <sam@ravnborg.org>,
-       Harvey Harrison <harvey.harrison@gmail.com>
-References: <20080220220326.GA22328@uranus.ravnborg.org> <200802272221.38985.jwilson@redhat.com> <1204179959.15052.372.camel@pasglop>
-In-Reply-To: <1204179959.15052.372.camel@pasglop>
+	id S1753113AbYB1Ss2 convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 28 Feb 2008 13:48:28 -0500
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200802281342.06493.jwilson@redhat.com>
+	charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Subject: Re: zlib oops with ipcomp in 2.6.24
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Date: Thu, 28 Feb 2008 19:47:43 +0100
+Message-ID: <3C59DB883F7B0B4D8096010D45ACCD134F2143@exch.facton.local>
+In-Reply-To: <20080228175011.GA17185@gondor.apana.org.au>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: Re: zlib oops with ipcomp in 2.6.24
+Thread-Index: Ach6MmVrnwAGsZ7uTu2NlT5hQ+iGSQAB4Qcg
+References: <3C59DB883F7B0B4D8096010D45ACCD134F210D@exch.facton.local> <20080223000328.3a71e858.akpm@linux-foundation.org> <3C59DB883F7B0B4D8096010D45ACCD134F2112@exch.facton.local> <20080228175011.GA17185@gondor.apana.org.au>
+From: "Beschorner Daniel" <Daniel.Beschorner@facton.com>
+To: "Herbert Xu" <herbert@gondor.apana.org.au>,
+       "David S. Miller" <davem@davemloft.net>
+Cc: "Andrew Morton" <akpm@linux-foundation.org>,
+       <linux-kernel@vger.kernel.org>, "Richard Purdie" <rpurdie@rpsys.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 28 February 2008 01:25:59 am Benjamin Herrenschmidt wrote:
-> > Under Mac OS X, system.log says "FireWire (OHCI) Apple ID 31 built-in now
-> > active". Could still be lucent though, judging by the subsys device ID of
-> > 5811, which matches up w/the Lucent/Agere FW323. But no, apparently I
-> > don't have the interesting one.
+> OK I've finally found the bug which I must've been subconsciously
+> ignoring :)
 >
-> Well, it's interesting in the sense that it's a "normal" OHCI then on a
-> BE machine :-) My Pismo, which had the weirdo one, unfortunately died a
-> while ago. I'll see if I can find another machine with that one in.
+> [IPCOMP]: Disable BH on output when using shared tfm
 
-Ah, the pismo has it, eh? I think I may actually know of someone in the office 
-that still has one of those that I might be able to borrow and poke at...
+Thank you, it took 4 weeks and 50 oopses to kill the beast :-)
+First tests are looking fine.
 
-
--- 
-Jarod Wilson
-jwilson@redhat.com
+Daniel
