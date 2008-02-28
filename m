@@ -1,59 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759792AbYB1SiS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760769AbYB1Skr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759792AbYB1SiS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Feb 2008 13:38:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753329AbYB1SiG
+	id S1760769AbYB1Skr (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Feb 2008 13:40:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752699AbYB1Skh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Feb 2008 13:38:06 -0500
-Received: from mail.tmr.com ([64.65.253.246]:52509 "EHLO gaimboi.tmr.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753043AbYB1SiF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Feb 2008 13:38:05 -0500
-Message-ID: <47C70067.6060205@tmr.com>
-Date: Thu, 28 Feb 2008 13:41:43 -0500
-From: Bill Davidsen <davidsen@tmr.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.8) Gecko/20061105 SeaMonkey/1.0.6
-MIME-Version: 1.0
-To: Frans Pop <elendil@planet.nl>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: 2.6.25-rc1/2 CD/DVD burning broken
-References: <47b8c177.2QDr0ADTa5ExM+/T%Joerg.Schilling@fokus.fraunhofer.de> <E1JR1e0-0001R1-IR@faramir.fjphome.nl>
-In-Reply-To: <E1JR1e0-0001R1-IR@faramir.fjphome.nl>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Thu, 28 Feb 2008 13:40:37 -0500
+Received: from smtp1.linux-foundation.org ([207.189.120.13]:50252 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751657AbYB1Skg (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 28 Feb 2008 13:40:36 -0500
+Date: Thu, 28 Feb 2008 10:39:55 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: "Hawkes Steve-FSH016" <Steve.Hawkes@motorola.com>
+Cc: <davem@davemloft.net>, <joe@perches.com>, <linux-kernel@vger.kernel.org>,
+       <netdev@vger.kernel.org>
+Subject: Re: printk_ratelimit and net_ratelimit conflict and tunable
+ behavior
+Message-Id: <20080228103955.570ade3e.akpm@linux-foundation.org>
+In-Reply-To: <7BFDACCD6948EF4D8FE8F4888A91596A01637208@tx14exm60.ds.mot.com>
+References: <200802252036.m1PKaeMY012587@ftw.mot.com>
+	<20080225154521.e119cbb6.akpm@linux-foundation.org>
+	<7BFDACCD6948EF4D8FE8F4888A91596A01637208@tx14exm60.ds.mot.com>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Frans Pop wrote:
-> Joerg Schilling wrote:
->> This fragment is much too short to allow to judge on possible reasons.
->> There is a high probability that your problem is caused by the cdrecord
->> fork called "wodim".
+On Thu, 28 Feb 2008 10:19:02 -0600 "Hawkes Steve-FSH016" <Steve.Hawkes@motorola.com> wrote:
+
+> Andrew Morton wrote:
 > 
-> There is also the 100% certainty that this reply was from a known troll and
-> should just be ignored.
+> > This patch causes a large and nasty reject.
+> > Probably because you patched 2.6.24.  We're developing 2.6.25 now, and
+> > the difference between the two is very large inded.  Please raise
+> patches
+> > against Linus's latest tree?
+> 
+> Will do. I'm learning the process. I assume Linus's latest tree is the
+> one
+> listed as the latest prepatch for the stable Linux kernel tree.
 
-Actually he is the author of the software in question, and has 
-maintained it for a decade. Anyone who reads the cdwrite mailing list 
-knows that I have criticized his endless whining that Linux doesn't do 
-things right, but aside from the cosole output whining about Linux from 
-his program[1], and the fact that it must run as root[2], the real 
-cdrecord works in more cases, with more hardware, produces working burns 
-in more cases, and has more useful output, and is the software to use in 
-preference to wodim.
+No, the stable tree is 2.6.24.  You'll want
+ftp://ftp.kernel.org/pub/linux/kernel/v2.6/snapshots/
 
-[1] cdrecord advises to use Linux 2.4 (and I think Solaris), and says 
-you should avoid using readable names for devices and use some 
-pseudo-SCSI numbers he likes instead.
+> > >  int net_ratelimit(void)
+> > >  {
+> > > -	return __printk_ratelimit(net_msg_cost, net_msg_burst);
+> > > +	static struct printk_ratelimit_state limit_state = {
+> > > +		.toks          = 10 * 5 * HZ,
+> > > +		.last_jiffies  = 0,
+> > > +		.missed        = 0,
+> > > +		.limit_jiffies = 5 * HZ,
+> > > +		.limit_burst   = 10,
+> > > +		.facility      = "net"
+> > > +	};
+> > > +
+> > > +	return __printk_ratelimit(net_msg_cost, net_msg_burst,
+> &limit_state);
+> > 
+> > I don't get it.  There's one instance of limit_state, kernel-wide, and
+> > __printk_ratelimit() modifies it.  What prevents one CPU's activities
+> from
+> > interfering with a second CPU's activities?
+> 
+> The state is protected by the spinlock in __printk_ratelimit, like it is
+> in
+> the current kernel. Am I missing something?
 
-[2] Linux developers filter commands sent to devices to protect them 
-from commands like erase BIOS. Joerg uses vendor proprietary commands 
-for greater functionality, and says if you have write on the device it 
-shouldn't be filtered and those commands should be permitted by the 
-filter. (That is a simplification, there are personal issues on both sides).
+ah, OK.
 
--- 
-Bill Davidsen <davidsen@tmr.com>
-   "We have more to fear from the bungling of the incompetent than from
-the machinations of the wicked."  - from Slashdot
+I've occasionally wondered if ratelimiting should be per-callsite rather
+than kernel-wide, but I'm not aware of the present setup causing anyone any
+problems.
+
