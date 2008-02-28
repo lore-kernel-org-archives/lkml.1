@@ -1,91 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759441AbYB1KU5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758974AbYB1KXg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759441AbYB1KU5 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Feb 2008 05:20:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758811AbYB1KU3
+	id S1758974AbYB1KXg (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Feb 2008 05:23:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755066AbYB1KX1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Feb 2008 05:20:29 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:58849 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758660AbYB1KU0 (ORCPT
+	Thu, 28 Feb 2008 05:23:27 -0500
+Received: from atrey.karlin.mff.cuni.cz ([195.113.31.123]:43603 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754111AbYB1KX1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Feb 2008 05:20:26 -0500
-Subject: Re: [RFC/PATCH 0/4] CPUSET driven CPU isolation
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Max Krasnyanskiy <maxk@qualcomm.com>
-Cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       Oleg Nesterov <oleg@tv-sign.ru>, Steven Rostedt <rostedt@goodmis.org>,
-       Paul Jackson <pj@sgi.com>, linux-kernel@vger.kernel.org
-In-Reply-To: <47C5F470.7000802@qualcomm.com>
-References: <20080227222103.673194000@chello.nl>
-	 <47C5F470.7000802@qualcomm.com>
-Content-Type: text/plain
-Date: Thu, 28 Feb 2008 11:19:47 +0100
-Message-Id: <1204193987.6243.29.camel@lappy>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.21.90 
-Content-Transfer-Encoding: 7bit
+	Thu, 28 Feb 2008 05:23:27 -0500
+Date: Thu, 28 Feb 2008 11:23:25 +0100
+From: Jan Hubicka <hubicka@ucw.cz>
+To: Jakub Jelinek <jakub@redhat.com>
+Cc: Jan Hubicka <hubicka@ucw.cz>, David Rientjes <rientjes@google.com>,
+       Joe Perches <joe@perches.com>, Matthew Wilcox <matthew@wil.cx>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-fsdevel@vger.kernel.org, gcc@gcc.gnu.org,
+       zadeck@naturalbridge.com
+Subject: Re: [PATCH] linux/fs.h - Convert debug functions declared inline  __attribute__((format (printf,x,y) to statement expression macros
+Message-ID: <20080228102325.GC13246@atrey.karlin.mff.cuni.cz>
+References: <1204081722.19319.405.camel@localhost> <1204084947.19319.411.camel@localhost> <20080227041316.GA23188@parisc-linux.org> <alpine.DEB.1.00.0802262140160.23764@chino.kir.corp.google.com> <1204095249.19319.444.camel@localhost> <alpine.DEB.1.00.0802271454430.3836@chino.kir.corp.google.com> <20080227235835.GA31048@atrey.karlin.mff.cuni.cz> <20080228084237.GU24887@devserv.devel.redhat.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080228084237.GU24887@devserv.devel.redhat.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-On Wed, 2008-02-27 at 15:38 -0800, Max Krasnyanskiy wrote:
-> Peter Zijlstra wrote:
-> > My vision on the direction we should take wrt cpu isolation.
-> General impressions:
-> - "cpu_system_map" is %100 identical to the "~cpu_isolated_map" as in my 
-> patches. It's updated from different place but functionally wise it's very 
-> much the same. I guess you did not like the 'isolated' name ;-). As I 
-> mentioned before I'm not hung up on the name so it's cool :).
-
-Ah, but you miss that cpu_system_map doesn't do the one thing the
-cpu_isolated_map ever did, prevent sched_domains from forming on those
-cpus.
-
-Which is a major point.
-
-> - Updating cpu_system_map from cpusets
-> There are a couple of things that I do not like about this approach:
-> 1. We lost the ability to isolate CPUs at boot. Which means slower boot times 
-> for me (ie before I can start my apps I need to create cpuset, etc). Not a big 
-> deal, I can live with it.
-
-I'm sure those few lines in rc.local won't grow your boot time by a
-significant amount of time.
-
-That said, we should look into a replacement for the boot time parameter
-(if only to decide not to do it) because of backward compatibility.
-
-> 2. We now need another notification mechanism to propagate the updates to the 
-> cpu_system_map. That by itself is not a big deal. The big deal is that now we 
-> need to basically audit the kernel and make sure that everything affected must
-> have proper notifier and react to the mask changes.
-> For example your current patch does not move the timers and I do not think it 
-> makes sense to go and add notifier for the timers. I think the better approach 
-> is to use CPU hotplug here. ie Enforce the rule that cpu_system_map is updated 
->   only when CPU is off-line.
-> By bringing CPU down first we get a lot of features for free. All the kernel 
-> threads, timers, softirqs, HW irqs, workqueues, etc are properly 
-> terminated/moved/canceled/etc. This gives us a very clean state when we bring 
-> the CPU back online with "system" bit cleared (or "isolated" bit set like in 
-> my patches). I do not see a good reason for reimplementing that functionality 
-> via system_map notifiers.
-
-I'm not convinced cpu hotplug notifiers are the right thing here. Sure
-we could easily iterate the old and new system map and call the matching
-cpu hotplug notifiers, but they seem overly complex to me.
-
-The audit would be a good idea anyway. If we do indeed end up with a 1:1
-mapping of whatever cpu hotplug does, then well, perhaps you're right.
-
-> I'll comment more on the individual patches.
+> On Thu, Feb 28, 2008 at 12:58:35AM +0100, Jan Hubicka wrote:
+> > We probably also can simply allow inlining variadic functions not
+> > calling va_start.  I must say that this option appeared to me but I was
+> > unable to think of any sane use case.  This probably is one ;)
 > 
-> > Next on the list would be figuring out a nice solution to the workqueue
-> > flush issue.
-> Do not forget the "stop machine", or more specifically module loading/unloading.
+> We already allow inlining variadic functions not calling va_start, already
+> 3.2.x did that and so do all following gccs.  In 4.3+
+> __builtin_va_arg_pack{,_len} support was added, so that you can even pass
+> the ... arguments to variable length functions, query their count etc.
 
-No, the full stop machine thing, there are more interesting users than
-module loading. But I'm not too interested in solving this particular
-problem atm, I have too much on my plate as it is.
+Hmm, I now remember this change. Thanks for pointing it out ;) I guess
+it is just more or less random difference then (ie different ordering of
+hashtables). The difference is tiny anyway.  The call ought to be always
+early inlined and not seen by any optimization pass.
 
+Honza
+> 
+> 	Jakub
