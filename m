@@ -1,69 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759880AbYB1Wdg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760912AbYB1Wgh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759880AbYB1Wdg (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Feb 2008 17:33:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752873AbYB1Wd1
+	id S1760912AbYB1Wgh (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Feb 2008 17:36:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754021AbYB1Wg2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Feb 2008 17:33:27 -0500
-Received: from www.tglx.de ([62.245.132.106]:40636 "EHLO www.tglx.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751170AbYB1Wd1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Feb 2008 17:33:27 -0500
-Date: Thu, 28 Feb 2008 23:32:05 +0100 (CET)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Roland McGrath <roland@redhat.com>
-cc: Oleg Nesterov <oleg@tv-sign.ru>, Pavel Emelyanov <xemul@openvz.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 3/3] Consolidate send_sigqueue and send_group_sigqueue
-In-Reply-To: <20080228113633.7431C2700FD@magilla.localdomain>
-Message-ID: <alpine.LFD.1.00.0802282326560.3111@apollo.tec.linutronix.de>
-References: <47BEC663.7050904@openvz.org> <20080222144155.GA4349@tv-sign.ru> <alpine.LFD.1.00.0802280546360.7583@apollo.tec.linutronix.de> <20080228061723.GB108@tv-sign.ru> <20080228113633.7431C2700FD@magilla.localdomain>
-User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
+	Thu, 28 Feb 2008 17:36:28 -0500
+Received: from el-out-1112.google.com ([209.85.162.177]:41173 "EHLO
+	el-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752873AbYB1Wg1 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 28 Feb 2008 17:36:27 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=nbDvZiGW2bgF4Kt43sGDWcTOQZ17effPhMdQ14cTSBXHL+2yI6Lt/y2i1A5IIevnCPsrEXyh56nb6mJX0CFzyBgwJQeVaLqwGmBMQxxFH9fL5QhAx6Zlm9plWXmO1ea04y9HLmQWUpOA3pW+MdZwZ24K0j/sXA+lKabtOzQjBIo=
+Message-ID: <9a8748490802281436h350bccafy88bb059d63fe3b74@mail.gmail.com>
+Date: Thu, 28 Feb 2008 23:36:24 +0100
+From: "Jesper Juhl" <jesper.juhl@gmail.com>
+To: "akpm@linux-foundation.org" <akpm@linux-foundation.org>
+Subject: Re: + markers-dont-risk-null-deref-in-marker-checkpatch-fixes.patch added to -mm tree
+Cc: mm-commits@vger.kernel.org, mathieu.desnoyers@polymtl.ca,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
+In-Reply-To: <200802280334.m1S3YbWM013644@imap1.linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <200802280334.m1S3YbWM013644@imap1.linux-foundation.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 28 Feb 2008, Roland McGrath wrote:
+On 28/02/2008, akpm@linux-foundation.org <akpm@linux-foundation.org> wrote:
+>
+>  The patch titled
+>      markers-dont-risk-null-deref-in-marker-checkpatch-fixes
+>  has been added to the -mm tree.  Its filename is
+>      markers-dont-risk-null-deref-in-marker-checkpatch-fixes.patch
+>
+<snip>
+>  Subject: markers-dont-risk-null-deref-in-marker-checkpatch-fixes
+>  From: Andrew Morton <akpm@linux-foundation.org>
+>
 
-> That code dates from the original introduction of those two functions.
-> I can't see any reason why those ever had swapped order of the two checks.
-> I think it must have just been sloppy coding in the original work.
-> 
-> I'm not clear on how the already-queued case could ever happen.  Do we
-> really need that check at all?  It shouldn't be possible for the timer to
-> be firing when it's already queued, because it won't have been reloaded.
-> It only reloads via do_schedule_next_timer after it's dequeued, or because
-> a 1 return value said it never was queued.  Perhaps a timer_settime can
-> restart it while queued?  But I don't think it should.
-> 
-> I think the rules for send_sigqueue and send_group_sigqueue should match.
-> Any call that did not result in the signal being queued must return 1.
-> If it is in fact possible at all that the signal is already queued, then
-> that case must return 0 if the signal will ever be dequeued.
-> 
-> Looking at this makes me think we are incorrect in another anal case.
-> Say the timer signal is blocked and the timer has fired, so it is on the
-> queue and expects to be reloaded by do_schedule_next_timer at dequeue.
-> Now, sigaction is used to set that signal to SIG_IGN, so the pending
-> signal is removed from the queue but not dequeued.  Time passes, so the
-> timer has in theory fired and reloaded several times counted as overruns.
-> Next, sigaction is used to establish a handler for that signal, and then
-> we unblock it too.  Time continues to pass, but the timer has not been
-> reloaded after the first firing, and so it never fires with the handled
-> signal though it now should have done so.  This case is at least a bit
-> pathological.  But I'm not sure there is anything in POSIX to exempt us
-> from making it work correctly.  Off hand the change that seems like it
-> would work is to do the dequeue-time SI_TIMER check at discard time too.
+Andrew,  I very much do not agree with you and/or checkpatch here :
 
-Right. I was working on a fix for that for a different reason. What we
-really want is a check for such a timer on a transition from SIGIGN to
-another state.  This would allow us to drop the ugly auto rearm code
-for ignored timers completely. I had some working proof of concept
-code, but got distracted. Need to find it again and dust if off.
+>  WARNING: braces {} are not necessary for single statement blocks
+>  #34: FILE: kernel/marker.c:715:
+>  +       if (!entry) {
+>  +               goto end;
+>  +       }
+>
+>  total: 0 errors, 1 warnings, 29 lines checked
+>
+>  ./patches/markers-dont-risk-null-deref-in-marker.patch has style problems, please review.  If any of these errors
+>  are false positives report them to the maintainer, see
+>  CHECKPATCH in MAINTAINERS.
+>
+>  Please run checkpatch prior to sending patches
+>
+>  Cc: Jesper Juhl <jesper.juhl@gmail.com>
+>  Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+>  Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+>  ---
+>
+>   kernel/marker.c |    6 ++----
+>   1 file changed, 2 insertions(+), 4 deletions(-)
+>
+>  diff -puN kernel/marker.c~markers-dont-risk-null-deref-in-marker-checkpatch-fixes kernel/marker.c
+>  --- a/kernel/marker.c~markers-dont-risk-null-deref-in-marker-checkpatch-fixes
+>  +++ a/kernel/marker.c
+>  @@ -702,9 +702,8 @@ int marker_probe_unregister(const char *
+>
+>         mutex_lock(&markers_mutex);
+>         entry = get_marker(name);
+>  -       if (!entry) {
+>  +       if (!entry)
+>                 goto end;
+>  -       }
+>         if (entry->rcu_pending)
+>                 rcu_barrier();
+>         old = marker_entry_remove_probe(entry, probe, probe_private);
+>  @@ -712,9 +711,8 @@ int marker_probe_unregister(const char *
+>         marker_update_probes();         /* may update entry */
+>         mutex_lock(&markers_mutex);
+>         entry = get_marker(name);
+>  -       if (!entry) {
+>  +       if (!entry)
+>                 goto end;
+>  -       }
+>         entry->oldptr = old;
+>         entry->rcu_pending = 1;
+>         /* write rcu_pending before calling the RCU callback */
 
-Thanks,
+While it is entirely true that the compiler has no need for the extra
+{} they are very nice for human readers/editors of the code - and if
+what's inside happens to be a macro, also potentially safer.
 
-	tglx
+I left them in very much on purpose.
+
+-- 
+Jesper Juhl <jesper.juhl@gmail.com>
+Don't top-post  http://www.catb.org/~esr/jargon/html/T/top-post.html
+Plain text mails only, please      http://www.expita.com/nomime.html
