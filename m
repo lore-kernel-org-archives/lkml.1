@@ -1,73 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760499AbYB1PJR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760408AbYB1PMc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760499AbYB1PJR (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Feb 2008 10:09:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756591AbYB1PJD
+	id S1760408AbYB1PMc (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Feb 2008 10:12:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757447AbYB1PMY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Feb 2008 10:09:03 -0500
-Received: from el-out-1112.google.com ([209.85.162.182]:60673 "EHLO
-	el-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755590AbYB1PJB (ORCPT
+	Thu, 28 Feb 2008 10:12:24 -0500
+Received: from hu-out-0506.google.com ([72.14.214.238]:42815 "EHLO
+	hu-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757411AbYB1PMX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Feb 2008 10:09:01 -0500
+	Thu, 28 Feb 2008 10:12:23 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=hXEHklrPCFdiq2gKfwdRCdyZLDV/dj/r9M8sI7uXfs4X7WrafBHa/edrLEDjsMY09YQb7Eez5ZKnsaD9obZ1Sgj6WM8AI/uXGN0uzpnw1BpBYF+Q2fhowaYL4vZzHM/3hr/mBRFsf8fgYk7BiOqasdBbrMdFFiaQjMZFvAc1Of8=
-Message-ID: <cfd18e0f0802280708r26fc88ch5a488eb8bc1227c5@mail.gmail.com>
-Date: Thu, 28 Feb 2008 16:08:56 +0100
-From: "Michael Kerrisk" <mtk.manpages@googlemail.com>
-To: Valdis.Kletnieks@vt.edu
-Subject: Re: epoll and shared fd's
-Cc: 7eggert@gmx.de, "Davide Libenzi" <davidel@xmailserver.org>,
-       "Pierre Habouzit" <madcoder@debian.org>,
-       lkml <linux-kernel@vger.kernel.org>,
-       "Eric Dumazet" <dada1@cosmosbay.com>,
-       "Marc Lehmann" <schmorp@schmorp.de>,
-       "David Schwartz" <davids@webmaster.com>
-In-Reply-To: <19752.1204206788@turing-police.cc.vt.edu>
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=BU8n+LVe2e/QiQPYjFktl4KhursVT0TNl3IpwW3UbowbwJ47o+kaeHR1/mVqjvSSX7KWz3IEYvMEJ19kVO9+nkBDFKE2YxCkt7ObGTe7Et+FMUu7rfzxIZxtMlP9YDGXR1QkZiLPcWORI4l2y/pRnU5Dqaj68QM9s0jRW6tHyzM=
+Message-ID: <517f3f820802280712o3d756b4fq46461b226515e1f2@mail.gmail.com>
+Date: Thu, 28 Feb 2008 16:12:21 +0100
+From: "Michael Kerrisk" <mtk.manpages@gmail.com>
+To: "Peter Zijlstra" <a.p.zijlstra@chello.nl>
+Subject: Re: [PATCH] proc: Add RLIMIT_RTTIME to /proc/<pid>/limits
+Cc: "Eugene Teo" <eugeneteo@kernel.sg>, linux-kernel@vger.kernel.org,
+       "Neil Horman" <nhorman@tuxdriver.com>, "Ingo Molnar" <mingo@elte.hu>,
+       mtk.manpages@gmail.com
+In-Reply-To: <1202483445.6292.1.camel@lappy>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <9MZLT-1YO-33@gated-at.bofh.it> <9N6Ng-5tn-21@gated-at.bofh.it>
-	 <9P5WE-33i-11@gated-at.bofh.it> <9Pk9l-1KA-1@gated-at.bofh.it>
-	 <9PNNZ-b0-5@gated-at.bofh.it> <a19Lb-1F0-13@gated-at.bofh.it>
-	 <a19Lb-1F0-11@gated-at.bofh.it>
-	 <E1JU4Lu-0000mn-H2@be1.7eggert.dyndns.org>
-	 <19752.1204206788@turing-police.cc.vt.edu>
+References: <20080208145950.GA3910@kernel.sg> <1202483445.6292.1.camel@lappy>
+X-Google-Sender-Auth: 8f4bca003fad159f
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Feb 28, 2008 at 2:53 PM,  <Valdis.Kletnieks@vt.edu> wrote:
-> On Tue, 26 Feb 2008 19:16:30 +0100, Bodo Eggert said:
->  > Michael Kerrisk <mtk.manpages@googlemail.com> wrote:
->
->
-> > >               file  handle  have  been  closed.  This means that
->  > >               even after a file descriptor that is  part  of  an
->  > >               epoll  set has been closed, events may be reported
->  > >               for that file descriptor if other file descriptors
->  > >               referring  to the same underlying file description
->  > >               remain open.
->
->  Is it worth making special mention of the case where a process gets events
->  for a FD that it has closed, because a parent or child process still has
->  an inherited copy of the FD still open?
+Peter,
 
-I'm not sure -- perhaps under a BUGS section?  Did you read my reply
-about this point in the thread "Re: epoll design problems with common
-fork/exec patterns"?
+Could you please provide some text describing RLIMIT_RTTIMEfor the
+getrlimit.2 man page.
 
 Cheers,
 
 Michael
 
+On Fri, Feb 8, 2008 at 4:10 PM, Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:
+>
+> On Fri, 2008-02-08 at 22:59 +0800, Eugene Teo wrote:
+> > RLIMIT_RTTIME was introduced to allow the user to set a runtime timeout on
+> > real-time tasks: http://lkml.org/lkml/2007/12/18/218. This patch updates
+> > /proc/<pid>/limits with the new rlimit.
+>
+> Ah, didn't know about that file, thanks!
+>
+> > Signed-off-by: Eugene Teo <eugeneteo@kernel.sg>
+>
+> Acked-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+>
+>
+> > ---
+> >  fs/proc/base.c |    1 +
+> >  1 files changed, 1 insertions(+), 0 deletions(-)
+> >
+> > diff --git a/fs/proc/base.c b/fs/proc/base.c
+> > index c59852b..dcf7be8 100644
+> > --- a/fs/proc/base.c
+> > +++ b/fs/proc/base.c
+> > @@ -412,6 +412,7 @@ static const struct limit_names lnames[RLIM_NLIMITS] = {
+> >       [RLIMIT_MSGQUEUE] = {"Max msgqueue size", "bytes"},
+> >       [RLIMIT_NICE] = {"Max nice priority", NULL},
+> >       [RLIMIT_RTPRIO] = {"Max realtime priority", NULL},
+> > +     [RLIMIT_RTTIME] = {"Max realtime timeout", "us"},
+> >  };
+> >
+> >  /* Display limits for a process */
+>
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+>
+
+
 
 -- 
-Michael Kerrisk
-Maintainer of the Linux man-pages project
-http://www.kernel.org/doc/man-pages/
-Want to report a man-pages bug?  Look here:
-http://www.kernel.org/doc/man-pages/reporting_bugs.html
+I'll likely only see replies if they are CCed to mtk.manpages at gmail dot com
