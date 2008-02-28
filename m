@@ -1,45 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932565AbYB1BIV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932537AbYB1BKh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932565AbYB1BIV (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Feb 2008 20:08:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759332AbYB1BIF
+	id S932537AbYB1BKh (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Feb 2008 20:10:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758837AbYB1BK3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Feb 2008 20:08:05 -0500
-Received: from cn.fujitsu.com ([222.73.24.84]:54504 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1757142AbYB1BIE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Feb 2008 20:08:04 -0500
-Message-ID: <47C60910.7000102@cn.fujitsu.com>
-Date: Thu, 28 Feb 2008 09:06:24 +0800
-From: Li Zefan <lizf@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+	Wed, 27 Feb 2008 20:10:29 -0500
+Received: from host36-195-149-62.serverdedicati.aruba.it ([62.149.195.36]:44901
+	"EHLO mx.cpushare.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757029AbYB1BK2 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 Feb 2008 20:10:28 -0500
+Date: Thu, 28 Feb 2008 02:10:20 +0100
+From: Andrea Arcangeli <andrea@qumranet.com>
+To: Christoph Lameter <clameter@sgi.com>
+Cc: Nick Piggin <nickpiggin@yahoo.com.au>, akpm@linux-foundation.org,
+       Robin Holt <holt@sgi.com>, Avi Kivity <avi@qumranet.com>,
+       Izik Eidus <izike@qumranet.com>, kvm-devel@lists.sourceforge.net,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, general@lists.openfabrics.org,
+       Steve Wise <swise@opengridcomputing.com>,
+       Roland Dreier <rdreier@cisco.com>, Kanoj Sarcar <kanojsarcar@yahoo.com>,
+       steiner@sgi.com, linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       daniel.blueman@quadrics.com
+Subject: Re: [patch 2/6] mmu_notifier: Callbacks to invalidate address
+	ranges
+Message-ID: <20080228011020.GG8091@v2.random>
+References: <20080215064859.384203497@sgi.com> <20080215064932.620773824@sgi.com> <200802201008.49933.nickpiggin@yahoo.com.au> <Pine.LNX.4.64.0802271424390.13186@schroedinger.engr.sgi.com> <20080228001104.GB8091@v2.random> <Pine.LNX.4.64.0802271613080.15791@schroedinger.engr.sgi.com> <20080228005249.GF8091@v2.random> <Pine.LNX.4.64.0802271702490.16510@schroedinger.engr.sgi.com>
 MIME-Version: 1.0
-To: Paul Menage <menage@google.com>
-CC: Paul Jackson <pj@sgi.com>, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] cpuset: fix return value of cpuset_populate()
-References: <47C5131A.80508@cn.fujitsu.com>	 <20080227014135.0c361ab3.pj@sgi.com> <6599ad830802271649h29a13ceevf2255dd6235b42ba@mail.gmail.com>
-In-Reply-To: <6599ad830802271649h29a13ceevf2255dd6235b42ba@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0802271702490.16510@schroedinger.engr.sgi.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Paul Menage wrote:
-> On Tue, Feb 26, 2008 at 11:41 PM, Paul Jackson <pj@sgi.com> wrote:
->>  - no need to check err == 0
->>  - the last return value of cgroup_add_file() is ignored
->>
->>  Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
-> 
-> Looks fine from a cleanliness PoV, although since we don't actually do
-> anything with an error result from subsys->populate() (a behaviour
-> that I sort of inherited from cpusets ...) it won't make a whole lot
-> of difference to the code.
-> 
-> A better change would be to make cpuset_populate() use cgroup_add_files().
-> 
+On Wed, Feb 27, 2008 at 05:03:21PM -0800, Christoph Lameter wrote:
+> RDMA works across a network and I would assume that it needs confirmation 
+> that a connection has been torn down before pages can be unmapped.
 
-Yes, I'm considering this, and I will verify if this will save some bytes
-in the object file.
+Depends on the latency of the network, for example with page pinning
+it can even try to reduce the wait time, by tearing down the mapping
+in range_begin and spin waiting the ack only later in range_end.
