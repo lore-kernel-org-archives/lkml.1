@@ -1,31 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932640AbYB1XtW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756902AbYB1Xyq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932640AbYB1XtW (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Feb 2008 18:49:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755594AbYB1XtH
+	id S1756902AbYB1Xyq (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Feb 2008 18:54:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751597AbYB1Xyd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Feb 2008 18:49:07 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:53525 "EHLO
+	Thu, 28 Feb 2008 18:54:33 -0500
+Received: from bombadil.infradead.org ([18.85.46.34]:38472 "EHLO
 	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751332AbYB1XtF (ORCPT
+	with ESMTP id S1751269AbYB1Xyc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Feb 2008 18:49:05 -0500
-Date: Thu, 28 Feb 2008 18:48:50 -0500
+	Thu, 28 Feb 2008 18:54:32 -0500
+Date: Thu, 28 Feb 2008 18:54:27 -0500
 From: Christoph Hellwig <hch@infradead.org>
-To: Stephen Smalley <sds@tycho.nsa.gov>
-Cc: casey@schaufler-ca.com, Dave Quigley <dpquigl@tycho.nsa.gov>,
-       hch@infradead.org, viro@ftp.linux.org.uk, trond.myklebust@fys.uio.no,
+To: "David P. Quigley" <dpquigl@tycho.nsa.gov>
+Cc: hch@infradead.org, viro@ftp.linux.org.uk, trond.myklebust@fys.uio.no,
        bfields@fieldses.org, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org,
-       LSM List <linux-security-module@vger.kernel.org>
-Subject: Re: [PATCH 01/11] Security: Add hook to get full maclabel xattr
-	name
-Message-ID: <20080228234850.GA25829@infradead.org>
-References: <746385.69480.qm@web36611.mail.mud.yahoo.com> <1204227035.31790.207.camel@moss-spartans.epoch.ncsc.mil>
+       linux-fsdevel@vger.kernel.org
+Subject: Re: [PATCH 03/11] VFS: Add security label support to *notify
+Message-ID: <20080228235427.GA17757@infradead.org>
+References: <1204150294-4678-1-git-send-email-dpquigl@tycho.nsa.gov> <1204150294-4678-4-git-send-email-dpquigl@tycho.nsa.gov>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1204227035.31790.207.camel@moss-spartans.epoch.ncsc.mil>
+In-Reply-To: <1204150294-4678-4-git-send-email-dpquigl@tycho.nsa.gov>
 User-Agent: Mutt/1.5.17 (2007-11-01)
 X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
 	See http://www.infradead.org/rpr.html
@@ -33,32 +30,45 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Feb 28, 2008 at 02:30:35PM -0500, Stephen Smalley wrote:
-> This is an interface to be used by NFS to get information from the
-> security module.  The information desired is specific to the MAC
-> labeling functionality in NFSv4 that is being proposed.  That
-> functionality is MAC specific (necessarily so, just like the ACL
-> functionality is ACL specific).  We are hiding the SELinux-specific bits
-> behind the LSM interface, and non-MAC LSMs are free to return NULL in
-> order to indicate that they don't support MAC labeling.  We do NOT want
-> the capability module to return its security blob here, or any other
-> non-MAC LSM - it will yield the wrong semantics for the NFS MAC support.
+On Wed, Feb 27, 2008 at 05:11:26PM -0500, David P. Quigley wrote:
+> This patch adds two new fields to the iattr structure. The first field holds a
+> security label while the second contains the length of this label. In addition
+> the patch adds a new helper function inode_setsecurity which calls the LSM to
+> set the security label on the inode. Finally the patch modifies the necessary
+> functions such that fsnotify_change can handle notification requests for
+> dnotify and inotify.
 
-I think Casey is totally right here.  The LSM interface should not be
-as specific here.  If you want to limit the NFSv4 interface to single
-MAC xattr label based systems add an additional method to check if
-the LSM is that.  But the proper fix is of course to not add somthing
-so specific to NFSv4 at all, as it's got enough shortcoming already.
-Please add a proper xattr protocol.  It's not like it's hard, SGI
-has been doing this in IRIX for NFSv3 for ages as a sideband protocol,
-and even release the reference source under the GPL.  Just either use
-that with NFSv4 or if you feel fancy merge it into the NFS spec for
-NFSv6^H4.2.
+Please don't overload setattr with this.  Just looking at your callers
+shows that it's much cleaner as a separate method.
 
-> In any event, I don't think we need your permission.
+Now what's really lacking is a desciption _why_ you actually need it
+to start with.  The current method to set security labels is through
+the security.* xattrs.  Now if we want to clean up that somewhat
+messy method that might be a good idea, but we should do it for all
+callers and not just some.
 
-Wow, that's rude even to someone as direct as me.  Casey is the only
-other person having an in-tree LSM, and I think his input in this
-area is important.  But if not I as a VFS person can happily give
-you my "no" for the current version from the VFS point of view.
+> +#define DN_LABEL        0x00000040      /* File (re)labeled */
 
+An any inotify/dnotify additions should be separate from the vfs to
+filesystem interface.  Please make it a separate patch and describe
+properly why it's needed in it's description.
+
+> index df6b95d..1169963 100644
+> --- a/include/linux/xattr.h
+> +++ b/include/linux/xattr.h
+> @@ -50,6 +50,7 @@ ssize_t xattr_getsecurity(struct inode *, const char *, void *, size_t);
+>  ssize_t vfs_getxattr(struct dentry *, char *, void *, size_t);
+>  ssize_t vfs_listxattr(struct dentry *d, char *list, size_t size);
+>  int vfs_setxattr(struct dentry *, char *, void *, size_t, int);
+> +int vfs_setxattr_locked(struct dentry *, char *, void *, size_t, int);
+>  int vfs_removexattr(struct dentry *, char *);
+>  
+>  ssize_t generic_getxattr(struct dentry *dentry, const char *name, void *buffer, size_t size);
+> -- 
+> 1.5.3.8
+> 
+> -
+> To unsubscribe from this list: send the line "unsubscribe linux-fsdevel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+---end quoted text---
