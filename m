@@ -1,46 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760728AbYB1Pd2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760655AbYB1Pf7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760728AbYB1Pd2 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Feb 2008 10:33:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757770AbYB1PdU
+	id S1760655AbYB1Pf7 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Feb 2008 10:35:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757770AbYB1Pft
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Feb 2008 10:33:20 -0500
-Received: from x346.tv-sign.ru ([89.108.83.215]:46351 "EHLO mail.screens.ru"
+	Thu, 28 Feb 2008 10:35:49 -0500
+Received: from brick.kernel.dk ([87.55.233.238]:21170 "EHLO kernel.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757809AbYB1PdT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Feb 2008 10:33:19 -0500
-Date: Thu, 28 Feb 2008 18:36:55 +0300
-From: Oleg Nesterov <oleg@tv-sign.ru>
-To: Roland McGrath <roland@redhat.com>
-Cc: Thomas Gleixner <tglx@linutronix.de>, Pavel Emelyanov <xemul@openvz.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 3/3] Consolidate send_sigqueue and send_group_sigqueue
-Message-ID: <20080228153655.GC11484@tv-sign.ru>
-References: <47BEC663.7050904@openvz.org> <20080222144155.GA4349@tv-sign.ru> <alpine.LFD.1.00.0802280546360.7583@apollo.tec.linutronix.de> <20080228061723.GB108@tv-sign.ru> <20080228113633.7431C2700FD@magilla.localdomain>
-Mime-Version: 1.0
+	id S1757596AbYB1Pfs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 28 Feb 2008 10:35:48 -0500
+Date: Thu, 28 Feb 2008 16:35:43 +0100
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Tejun Heo <htejun@gmail.com>
+Cc: Mike Galbraith <efault@gmx.de>, Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, linux-ide@vger.kernel.org,
+       linux-scsi@vger.kernel.org, Jeff Garzik <jgarzik@pobox.com>
+Subject: Re: [PATCH] block: fix residual byte count handling
+Message-ID: <20080228153542.GZ6704@kernel.dk>
+References: <1203839683.17463.9.camel@homer.simson.net> <1204019283.8731.11.camel@homer.simson.net> <1204033003.11828.22.camel@homer.simson.net> <20080226150845.2196bc1a.akpm@linux-foundation.org> <1204079075.26640.8.camel@homer.simson.net> <1204092010.9934.31.camel@homer.simson.net> <1204096025.1623.9.camel@homer.simson.net> <47C6661E.9010504@gmail.com> <1204186800.7362.7.camel@homer.simson.net> <47C675C6.8000904@gmail.com>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080228113633.7431C2700FD@magilla.localdomain>
-User-Agent: Mutt/1.5.11
+In-Reply-To: <47C675C6.8000904@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 02/28, Roland McGrath wrote:
->
-> That code dates from the original introduction of those two functions.
-> I can't see any reason why those ever had swapped order of the two checks.
-> I think it must have just been sloppy coding in the original work.
+On Thu, Feb 28 2008, Tejun Heo wrote:
+> rq->raw_data_len introduced for block layer padding and draining
+> (commit 6b00769fe1502b4ad97bb327ef7ac971b208bfb5) broke residual byte
+> count handling.  Block drivers modify rq->data_len to notify residual
+> byte count to the block layer which blindly reported unmodified
+> rq->raw_data_len to userland.
 > 
-> I'm not clear on how the already-queued case could ever happen.  Do we
-> really need that check at all?  It shouldn't be possible for the timer to
-> be firing when it's already queued, because it won't have been reloaded.
-> It only reloads via do_schedule_next_timer after it's dequeued, or because
-> a 1 return value said it never was queued.
+> To keep block drivers dealing only with rq->data_len, this should be
+> handled inside block layer.  However, how much extra buffer was
+> appened is lost after rq->data_len is modified.
+> 
+> This patch replaces rq->raw_data_len with rq->extra_len and add
+> blk_rq_raw_data_len() helper to calculate raw data size from
+> rq->data_len and rq->extra_len.  The helper returns correct raw
+> residual byte count when called on a rq whose data_len is modified to
+> carry residual byte count.
+> 
+> This problem was reported and diagnosed by Mike Galbraith.
 
-This is true for the posix timers, but posix cpu timers case is different.
-Note the run_posix_cpu_timers()->cpu_timer_fire().
+Tejun, this patch isn't much cleaner at all. It really shows the pain of
+these two seperate, yet related, variables.
 
-Oleg.
+-- 
+Jens Axboe
 
