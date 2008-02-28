@@ -1,52 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932386AbYB1AOV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761626AbYB1ASf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932386AbYB1AOV (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Feb 2008 19:14:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757490AbYB1AOK
+	id S1761626AbYB1ASf (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Feb 2008 19:18:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755207AbYB1AS1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Feb 2008 19:14:10 -0500
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:34617 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1756450AbYB1AOJ (ORCPT
+	Wed, 27 Feb 2008 19:18:27 -0500
+Received: from sovereign.computergmbh.de ([85.214.69.204]:43895 "EHLO
+	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756133AbYB1AS1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Feb 2008 19:14:09 -0500
-Date: Wed, 27 Feb 2008 16:14:08 -0800 (PST)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Andrea Arcangeli <andrea@qumranet.com>
-cc: Nick Piggin <nickpiggin@yahoo.com.au>, akpm@linux-foundation.org,
-       Robin Holt <holt@sgi.com>, Avi Kivity <avi@qumranet.com>,
-       Izik Eidus <izike@qumranet.com>, kvm-devel@lists.sourceforge.net,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, general@lists.openfabrics.org,
-       Steve Wise <swise@opengridcomputing.com>,
-       Roland Dreier <rdreier@cisco.com>, Kanoj Sarcar <kanojsarcar@yahoo.com>,
-       steiner@sgi.com, linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       daniel.blueman@quadrics.com
-Subject: Re: [patch 2/6] mmu_notifier: Callbacks to invalidate address ranges
-In-Reply-To: <20080228001104.GB8091@v2.random>
-Message-ID: <Pine.LNX.4.64.0802271613080.15791@schroedinger.engr.sgi.com>
-References: <20080215064859.384203497@sgi.com> <20080215064932.620773824@sgi.com>
- <200802201008.49933.nickpiggin@yahoo.com.au>
- <Pine.LNX.4.64.0802271424390.13186@schroedinger.engr.sgi.com>
- <20080228001104.GB8091@v2.random>
+	Wed, 27 Feb 2008 19:18:27 -0500
+Date: Thu, 28 Feb 2008 01:18:23 +0100 (CET)
+From: Jan Engelhardt <jengelh@computergmbh.de>
+To: SL Baur <steve@xemacs.org>
+cc: Richard Knutsson <ricknu-0@student.ltu.se>,
+       Randy Dunlap <randy.dunlap@oracle.com>,
+       Krzysztof Halasa <khc@pm.waw.pl>,
+       Guennadi Liakhovetski <g.liakhovetski@gmx.de>, bhalevy.lists@gmail.com,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] CodingStyle: multiple updates
+In-Reply-To: <ed10ee420802271611l3a09e76ej531158f167512a03@mail.gmail.com>
+Message-ID: <Pine.LNX.4.64.0802280116260.5388@fbirervta.pbzchgretzou.qr>
+References: <1204062430.47c488def40a4@portal.student.luth.se> 
+ <20080226135444.f83a0536.randy.dunlap@oracle.com> 
+ <Pine.LNX.4.64.0802262310050.15321@fbirervta.pbzchgretzou.qr> 
+ <Pine.LNX.4.64.0802270033310.5714@axis700.grange>  <m31w6zcm4l.fsf@maximus.localdomain>
+  <ed10ee420802261657w3830e1a1rf0cc9601cdacb142@mail.gmail.com> 
+ <20080226213432.1388717b.randy.dunlap@oracle.com>  <47C5DDE0.3040403@student.ltu.se>
+ <ed10ee420802271611l3a09e76ej531158f167512a03@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 28 Feb 2008, Andrea Arcangeli wrote:
 
-> > 3. Keep the refcount elevated until pages are freed in another execution 
-> > context.
-> 
-> Page refcount is not enough (the mmu_notifier_release will run in
-> another cpu the moment after i_mmap_lock is unlocked) but mm_users may
-> prevent us to change the i_mmap_lock to a mutex, but it'll slowdown
-> truncate as it'll have to drop the lock and restart the radix tree
-> walk every time so a change like this better fits as a separate
-> CONFIG_XPMEM IMHO.
+On Feb 27 2008 16:11, SL Baur wrote:
+>On 2/27/08, Richard Knutsson <ricknu-0@student.ltu.se> wrote:
+>
+>>  Actually, I see this as an quite simple question: is tab _the
+>>  indention-marker_? If not, then why the refusal of spaces indents (or mix)?
+>
+>Because mixing spaces and tabs is often ugly.  8 spaces and a
+>single tab often do not have the same width when you're viewing
+>the text in a variable width font.
 
-Erm. This would also be needed by RDMA etc.
+By the way, neither tab nor bunch-a'-spaces makes alignment look good.
+Try:
 
- 
+	/* fails when !monospace || tab != 8 */
+	fprintf(fp, KERN_WARNING
+		"Opening quotes should be right after (");
+
+	/* fails if !monospace */
+	fprintf(fp, KERN_WARNING
+	        "Opening quotes should be right after (");
+
+hm... :-/
