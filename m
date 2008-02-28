@@ -1,95 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762998AbYB1UoA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763539AbYB1Uok@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762998AbYB1UoA (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Feb 2008 15:44:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758275AbYB1Unu
+	id S1763539AbYB1Uok (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Feb 2008 15:44:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759765AbYB1Uo2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Feb 2008 15:43:50 -0500
-Received: from havoc.gtf.org ([69.61.125.42]:53845 "EHLO havoc.gtf.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757905AbYB1Unt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Feb 2008 15:43:49 -0500
-Date: Thu, 28 Feb 2008 15:43:48 -0500
-From: Jeff Garzik <jeff@garzik.org>
-To: linux-ide@vger.kernel.org, crane.cai@amd.com, Henry.Su@amd.com,
-       shane.huang@amd.com
-Cc: LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH RFC] ahci: fix SB600 h/w errata issue
-Message-ID: <20080228204348.GA30539@havoc.gtf.org>
+	Thu, 28 Feb 2008 15:44:28 -0500
+Received: from ihemail4.lucent.com ([135.245.0.39]:51590 "EHLO
+	ihemail4.lucent.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757123AbYB1Uo0 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 28 Feb 2008 15:44:26 -0500
+Message-ID: <47C71D1F.80005@alcatel-lucent.com>
+Date: Thu, 28 Feb 2008 14:44:15 -0600
+From: Nebojsa Miljanovic <neb@alcatel-lucent.com>
+Organization: Lucent Technologies
+User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:1.0.1) Gecko/20020823 Netscape/7.0 (CK-LucentTPES)
+X-Accept-Language: sr, hr, en, zh, zh-cn, zh-hk, z
 MIME-Version: 1.0
+To: Willy Tarreau <w@1wt.eu>
+CC: linux-kernel@vger.kernel.org,
+       "Kittlitz, Edward (Ned)" <nkittlitz@alcatel-lucent.com>,
+       asweeney@alcatel-lucent.com,
+       "Polhemus, William (Bart)" <bpolhemus@alcatel-lucent.com>,
+       netdev@vger.kernel.org
+Subject: Re: SO_REUSEADDR not allowing server and client to use same port
+References: <47C6FA2A.5030302@alcatel-lucent.com> <20080228203616.GD8953@1wt.eu>
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.17 (2007-11-01)
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I haven't seen anyone work on the recent SB600 errata, where the
-hardware does not like 256-length PRD entries.
+Willy,
+I agree. That would also work nicely. I do wish SO_REUSEPORT was available.
 
-Is this correct, AMD folks?
+But, I am amazed that this issue has a long history (I've seen posts from 1999)
+and that there was no progress with it.
 
-It hurts performance on SB600, but it is more important to get a
-correct patch eliminating the data corruption/lockups, and then later
-on tune for performance.
+Thanks,
+Neb
 
-We simply limit each command to a maximum of 255 sectors, on SB600.
 
-Signed-off-by: Jeff Garzik <jgarzik@redhat.com>
----
- drivers/ata/ahci.c |   14 +++++++++++++-
- 1 file changed, 13 insertions(+), 1 deletion(-)
+On 2/28/2008 2:36 PM, Willy Tarreau wrote:
+> [cc'd netdev]
+> 
+> On Thu, Feb 28, 2008 at 12:15:06PM -0600, Nebojsa Miljanovic wrote:
+> 
+>>Hello all,
+>>I have seen similar complaints about this issue before in the list archive, but
+>>I have not seen any resolution. So, I am posting the question again in hope of
+>>getting some replies.
+>>
+>>Currently, Linux does not allow reuse of same local port for both TCP server and
+>>TCP client. I understand that there may be a need to prevent two servers from
+>>binding to the same local port, but having 1 server and 1 outgoing client use it
+>>should be allowed. Other Unix like operating systems do allow it.
+> 
+> 
+> I've been encountering the need for SO_REUSEPORT as implemented on some BSD
+> for instance. It allows any process to explicitly permit another one to bind
+> to the same IP:port provided that it also sets its socket with SO_REUSEPORT.
+> This is a real requirement when you need to restart a service without any
+> service disruption.
+> 
+> In the end, I've written a trivial patch for 2.4 (but most likely 2.6 would
+> use nearly the same one). I noticed that the conflict detection logic already
+> distinguished between 3 cases: sk->reuse==0, sk->reuse==1, sk->reuse >1.
+> sk->reuse was set to 1 with SO_REUSEADDR. I simply had to make SO_REUSEPORT
+> do sk->reuse |= 2 to get everything working as expected.
+> 
+> I don't know yet if it is as easy to do in 2.6, but if there is a possible
+> acceptance of including this useful feature into mainline, I can try to
+> work a patch (possibly cleaner than my existing one for 2.4).
+> 
+> Regards,
+> Willy
+> 
 
-diff --git a/drivers/ata/ahci.c b/drivers/ata/ahci.c
-index 1db93b6..8a49835 100644
---- a/drivers/ata/ahci.c
-+++ b/drivers/ata/ahci.c
-@@ -186,6 +186,7 @@ enum {
- 	AHCI_HFLAG_NO_MSI		= (1 << 5), /* no PCI MSI */
- 	AHCI_HFLAG_NO_PMP		= (1 << 6), /* no PMP */
- 	AHCI_HFLAG_NO_HOTPLUG		= (1 << 7), /* ignore PxSERR.DIAG.N */
-+	AHCI_HFLAG_SECT255		= (1 << 8), /* max 255 sectors */
- 
- 	/* ap->flags bits */
- 
-@@ -255,6 +256,7 @@ static void ahci_vt8251_error_handler(struct ata_port *ap);
- static void ahci_p5wdh_error_handler(struct ata_port *ap);
- static void ahci_post_internal_cmd(struct ata_queued_cmd *qc);
- static int ahci_port_resume(struct ata_port *ap);
-+static void ahci_dev_config(struct ata_device *dev);
- static unsigned int ahci_fill_sg(struct ata_queued_cmd *qc, void *cmd_tbl);
- static void ahci_fill_cmd_slot(struct ahci_port_priv *pp, unsigned int tag,
- 			       u32 opts);
-@@ -294,6 +296,8 @@ static const struct ata_port_operations ahci_ops = {
- 	.check_altstatus	= ahci_check_status,
- 	.dev_select		= ata_noop_dev_select,
- 
-+	.dev_config		= ahci_dev_config,
-+
- 	.tf_read		= ahci_tf_read,
- 
- 	.qc_defer		= sata_pmp_qc_defer_cmd_switch,
-@@ -425,7 +429,7 @@ static const struct ata_port_info ahci_port_info[] = {
- 	/* board_ahci_sb600 */
- 	{
- 		AHCI_HFLAGS	(AHCI_HFLAG_IGN_SERR_INTERNAL |
--				 AHCI_HFLAG_32BIT_ONLY | AHCI_HFLAG_NO_PMP),
-+				 AHCI_HFLAG_SECT255 | AHCI_HFLAG_NO_PMP),
- 		.flags		= AHCI_FLAG_COMMON,
- 		.link_flags	= AHCI_LFLAG_COMMON,
- 		.pio_mask	= 0x1f, /* pio0-4 */
-@@ -1176,6 +1180,14 @@ static void ahci_init_controller(struct ata_host *host)
- 	VPRINTK("HOST_CTL 0x%x\n", tmp);
- }
- 
-+static void ahci_dev_config(struct ata_device *dev)
-+{
-+	struct ahci_host_priv *hpriv = dev->link->ap->host->private_data;
-+
-+	if (hpriv->flags & AHCI_HFLAG_SECT255)
-+		dev->max_sectors = 255;
-+}
-+
- static unsigned int ahci_dev_classify(struct ata_port *ap)
- {
- 	void __iomem *port_mmio = ahci_port_base(ap);
+
