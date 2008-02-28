@@ -1,72 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760236AbYB1OL5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757351AbYB1OX1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760236AbYB1OL5 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Feb 2008 09:11:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755067AbYB1OLt
+	id S1757351AbYB1OX1 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Feb 2008 09:23:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751053AbYB1OXM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Feb 2008 09:11:49 -0500
-Received: from hall.aurel32.net ([88.191.38.19]:33098 "EHLO hall.aurel32.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752187AbYB1OLs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Feb 2008 09:11:48 -0500
-Message-ID: <47C6C10E.9000300@aurel32.net>
-Date: Thu, 28 Feb 2008 15:11:26 +0100
-From: Aurelien Jarno <aurelien@aurel32.net>
-User-Agent: IceDove 1.5.0.14pre (X11/20080208)
+	Thu, 28 Feb 2008 09:23:12 -0500
+Received: from gv-out-0910.google.com ([216.239.58.191]:20605 "EHLO
+	gv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750841AbYB1OWz (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 28 Feb 2008 09:22:55 -0500
+Message-ID: <7e0fb38c0802280622o75a474deg38157ff6aace16b@mail.gmail.com>
+Date: Thu, 28 Feb 2008 09:22:50 -0500
+From: "Eric Paris" <eparis@parisplace.org>
+To: "David P. Quigley" <dpquigl@tycho.nsa.gov>
+Subject: Re: [PATCH 07/11] NFS/SELinux: Add security_label text mount option to nfs and add handling code to the security server.
+Cc: hch@infradead.org, viro@ftp.linux.org.uk, trond.myklebust@fys.uio.no,
+       bfields@fieldses.org, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org
+In-Reply-To: <1204150294-4678-8-git-send-email-dpquigl@tycho.nsa.gov>
 MIME-Version: 1.0
-To: "John W. Linville" <linville@tuxdriver.com>
-CC: Michael Buesch <mb@bu3sch.de>, Adrian Bunk <bunk@kernel.org>,
-       Larry Finger <Larry.Finger@lwfinger.net>, ralf@linux-mips.org,
-       linux-mips@linux-mips.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] [SSB] PCI core driver: use new SPROM data structure
-References: <20080217200947.GH1403@cs181133002.pp.htv.fi> <20080218100126.GA22519@hall.aurel32.net> <20080218100257.GB22519@hall.aurel32.net> <200802181910.46581.mb@bu3sch.de>
-In-Reply-To: <200802181910.46581.mb@bu3sch.de>
-Content-Type: text/plain; charset=ISO-8859-15
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <1204150294-4678-1-git-send-email-dpquigl@tycho.nsa.gov>
+	 <1204150294-4678-8-git-send-email-dpquigl@tycho.nsa.gov>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Michael Buesch a écrit :
-> On Monday 18 February 2008 11:02:57 Aurelien Jarno wrote:
->> Switch the SSB PCI core driver to the new SPROM data structure now that
->> the old one has been removed.
->>
->> Signed-off-by: Aurelien Jarno <aurelien@aurel32.net>
-> 
-> Acked-by: Michael Buesch <mb@bu3sch.de>
-> 
-> John, can you please apply this?
+On 2/27/08, David P. Quigley <dpquigl@tycho.nsa.gov> wrote:
+> The new method for pulling argument for NFS from mount is through a text
+>  parsing system. This patch adds two new entries to the argument parsing code
+>  "securlty_label" and "nosecurity_label". Even though we use text across the
+>  user/kernel boundary internally we still pack a binary structure for mount info
+>  to be passed around. We add a flag for use in the nfs{4,}_mount_data struct to
+>  indicate that are using security labels. Finally we add the SELinux support to
+>  mark the labeling method as native.
 
-John, any news about this patch?
+I've got patches that noone has seen because I haven't posted them yet
+(my test box crashed yesterday and I didn't have time to make sure it
+wasn't my new patches) you are going to need to rebase this against.
+Adding more nfs'isms to selinux code isn't a good thing in the long
+run.  But, does this even really work?  I thought both NFS and NFSv4
+were actually passing around struct nfs_parsed_mount_data now rather
+than just nfs_mount_data.  Maybe not, but this patch, although fine
+for testing isn't fine to go in.  I'll get you and the list my new
+option interfaces on monday so we can get NFS out of all of the LSMs
+and get SELinux out of NFS.
 
->> ---
->>  drivers/ssb/driver_pcicore.c |    2 +-
->>  1 files changed, 1 insertions(+), 1 deletions(-)
->>
->> diff --git a/drivers/ssb/driver_pcicore.c b/drivers/ssb/driver_pcicore.c
->> index 2faaa90..191db7a 100644
->> --- a/drivers/ssb/driver_pcicore.c
->> +++ b/drivers/ssb/driver_pcicore.c
->> @@ -362,7 +362,7 @@ static int pcicore_is_in_hostmode(struct ssb_pcicore *pc)
->>  	    chipid_top != 0x5300)
->>  		return 0;
->>  
->> -	if (bus->sprom.r1.boardflags_lo & SSB_PCICORE_BFL_NOPCI)
->> +	if (bus->sprom.boardflags_lo & SSB_PCICORE_BFL_NOPCI)
->>  		return 0;
->>  
->>  	/* The 200-pin BCM4712 package does not bond out PCI. Even when
->> -- 
->> 1.5.4.1
->>
-> 
-> 
-> 
-
-
--- 
-  .''`.  Aurelien Jarno	            | GPG: 1024D/F1BCDB73
- : :' :  Debian developer           | Electrical Engineer
- `. `'   aurel32@debian.org         | aurelien@aurel32.net
-   `-    people.debian.org/~aurel32 | www.aurel32.net
+-Eric
