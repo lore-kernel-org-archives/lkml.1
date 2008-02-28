@@ -1,26 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761446AbYB1TLl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761688AbYB1TL5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761446AbYB1TLl (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Feb 2008 14:11:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757816AbYB1TLT
+	id S1761688AbYB1TL5 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Feb 2008 14:11:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758472AbYB1TLV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Feb 2008 14:11:19 -0500
-Received: from wa-out-1112.google.com ([209.85.146.180]:19675 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756991AbYB1TLS (ORCPT
+	Thu, 28 Feb 2008 14:11:21 -0500
+Received: from el-out-1112.google.com ([209.85.162.181]:4689 "EHLO
+	el-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757683AbYB1TLT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Feb 2008 14:11:18 -0500
+	Thu, 28 Feb 2008 14:11:19 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=subject:from:to:cc:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=wtKG7lIFkaNat90lNHLMkeo0sIXy6rLJRBY4D4+yhQT8jnZNEihGaEppGpBOg1m2zLTX9oaoprBeYKdq+/B3wAYkG0DEvUvlP2of5fn1ojxoZyI54oE9AoJwgJ+Bltz3Z/PJcWmCaceL/OFZwKaZQ0HNt18QIfmx/znnvuS6vhs=
-Subject: [PATCH 4/8] sound: ice1712: unused structs
+        b=HMwiSVTIhAyhl9G7wRR1Lc350TQ7eQ18cRi3vFfQ0I53SFB0OC3ceCQkWEfd+NabYJuxL6I7zvNHFsQBrsrzpLRgGGxR5rAMFeQK2Or0rvV8wdglmsZvUGm2GF+w6D0dtGwZ5tc3GsLM4SoqzVb9y2ZvC8h8BP/gBT6Cc/XuSOY=
+Subject: [PATCH 2/8] sound: emu10k1x.c fix shadowed variable warnings
 From: Harvey Harrison <harvey.harrison@gmail.com>
 To: Takashi Iwai <tiwai@suse.de>
 Cc: LKML <linux-kernel@vger.kernel.org>
 Content-Type: text/plain
-Date: Thu, 28 Feb 2008 11:11:13 -0800
-Message-Id: <1204225873.20280.82.camel@brick>
+Date: Thu, 28 Feb 2008 11:11:12 -0800
+Message-Id: <1204225872.20280.80.camel@brick>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.12.1 
 Content-Transfer-Encoding: 7bit
@@ -28,43 +28,71 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Don't need to declare a struct when defining a structure layout.  Both
-of these structs are unused.
-sound/pci/ice1712/revo.c:39:3: warning: symbol 'revo51' was not declared. Should it be static?
-sound/pci/ice1712/phase.c:54:3: warning: symbol 'phase28' was not declared. Should it be static?
+enable in these contexts refers specifically to intr enable, as
+per the two functions it is found in.  Use intr_enable instead.
+sound/pci/emu10k1/emu10k1x.c:330:15: warning: symbol 'enable' shadows an earlier one
+sound/pci/emu10k1/emu10k1x.c:53:12: originally declared here
+sound/pci/emu10k1/emu10k1x.c:341:15: warning: symbol 'enable' shadows an earlier one
+sound/pci/emu10k1/emu10k1x.c:53:12: originally declared here
+
+instead of shadowing, use cap_voice as we test for the capture
+voice in this statement.
+sound/pci/emu10k1/emu10k1x.c:798:25: warning: symbol 'pvoice' shadows an earlier one
+sound/pci/emu10k1/emu10k1x.c:787:24: originally declared here
 
 Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
 ---
- sound/pci/ice1712/phase.c |    2 +-
- sound/pci/ice1712/revo.c  |    2 +-
- 2 files changed, 2 insertions(+), 2 deletions(-)
+ sound/pci/emu10k1/emu10k1x.c |   22 +++++++++++-----------
+ 1 files changed, 11 insertions(+), 11 deletions(-)
 
-diff --git a/sound/pci/ice1712/phase.c b/sound/pci/ice1712/phase.c
-index 9ab4a9f..5a158b7 100644
---- a/sound/pci/ice1712/phase.c
-+++ b/sound/pci/ice1712/phase.c
-@@ -51,7 +51,7 @@
- struct phase28_spec {
- 	unsigned short master[2];
- 	unsigned short vol[8];
--} phase28;
-+};
- 
- /* WM8770 registers */
- #define WM_DAC_ATTEN		0x00	/* DAC1-8 analog attenuation */
-diff --git a/sound/pci/ice1712/revo.c b/sound/pci/ice1712/revo.c
-index ddd5fc8..301bf92 100644
---- a/sound/pci/ice1712/revo.c
-+++ b/sound/pci/ice1712/revo.c
-@@ -36,7 +36,7 @@
- struct revo51_spec {
- 	struct snd_i2c_device *dev;
- 	struct snd_pt2258 *pt2258;
--} revo51;
-+};
- 
- static void revo_i2s_mclk_changed(struct snd_ice1712 *ice)
+diff --git a/sound/pci/emu10k1/emu10k1x.c b/sound/pci/emu10k1/emu10k1x.c
+index 5512abd..341f34e 100644
+--- a/sound/pci/emu10k1/emu10k1x.c
++++ b/sound/pci/emu10k1/emu10k1x.c
+@@ -327,22 +327,22 @@ static void snd_emu10k1x_ptr_write(struct emu10k1x *emu,
+ static void snd_emu10k1x_intr_enable(struct emu10k1x *emu, unsigned int intrenb)
  {
+ 	unsigned long flags;
+-	unsigned int enable;
+-  
++	unsigned int intr_enable;
++
+ 	spin_lock_irqsave(&emu->emu_lock, flags);
+-	enable = inl(emu->port + INTE) | intrenb;
+-	outl(enable, emu->port + INTE);
++	intr_enable = inl(emu->port + INTE) | intrenb;
++	outl(intr_enable, emu->port + INTE);
+ 	spin_unlock_irqrestore(&emu->emu_lock, flags);
+ }
+ 
+ static void snd_emu10k1x_intr_disable(struct emu10k1x *emu, unsigned int intrenb)
+ {
+ 	unsigned long flags;
+-	unsigned int enable;
+-  
++	unsigned int intr_enable;
++
+ 	spin_lock_irqsave(&emu->emu_lock, flags);
+-	enable = inl(emu->port + INTE) & ~intrenb;
+-	outl(enable, emu->port + INTE);
++	intr_enable = inl(emu->port + INTE) & ~intrenb;
++	outl(intr_enable, emu->port + INTE);
+ 	spin_unlock_irqrestore(&emu->emu_lock, flags);
+ }
+ 
+@@ -795,9 +795,9 @@ static irqreturn_t snd_emu10k1x_interrupt(int irq, void *dev_id)
+ 
+ 	// capture interrupt
+ 	if (status & (IPR_CAP_0_LOOP | IPR_CAP_0_HALF_LOOP)) {
+-		struct emu10k1x_voice *pvoice = &chip->capture_voice;
+-		if (pvoice->use)
+-			snd_emu10k1x_pcm_interrupt(chip, pvoice);
++		struct emu10k1x_voice *cap_voice = &chip->capture_voice;
++		if (cap_voice->use)
++			snd_emu10k1x_pcm_interrupt(chip, cap_voice);
+ 		else
+ 			snd_emu10k1x_intr_disable(chip, 
+ 						  INTE_CAP_0_LOOP |
 -- 
 1.5.4.3.342.g99e8
 
