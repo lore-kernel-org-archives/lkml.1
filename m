@@ -1,75 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757313AbYB1B3I@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758424AbYB1Bc6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757313AbYB1B3I (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Feb 2008 20:29:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752478AbYB1B2v
+	id S1758424AbYB1Bc6 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Feb 2008 20:32:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753401AbYB1Bcv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Feb 2008 20:28:51 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:40581 "EHLO mx1.redhat.com"
+	Wed, 27 Feb 2008 20:32:51 -0500
+Received: from ra.tuxdriver.com ([70.61.120.52]:2468 "EHLO ra.tuxdriver.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751500AbYB1B2u (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Feb 2008 20:28:50 -0500
-Date: Wed, 27 Feb 2008 22:27:30 -0300
-From: Arnaldo Carvalho de Melo <acme@redhat.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: David Miller <davem@davemloft.net>, akpm@linux-foundation.org,
-       dada1@cosmosbay.com, herbert@gondor.apana.org.au,
-       netdev@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: include/linux/pcounter.h
-Message-ID: <20080228012730.GN4725@ghostprotocols.net>
-Mail-Followup-To: Arnaldo Carvalho de Melo <acme@redhat.com>,
-	Ingo Molnar <mingo@elte.hu>, David Miller <davem@davemloft.net>,
-	akpm@linux-foundation.org, dada1@cosmosbay.com,
-	herbert@gondor.apana.org.au, netdev@vger.kernel.org,
-	linux-kernel@vger.kernel.org
-References: <20080216112618.ec450f9b.akpm@linux-foundation.org> <20080216.215401.20463603.davem@davemloft.net> <20080226092454.GA10987@elte.hu> <20080226.133531.69481052.davem@davemloft.net> <20080227073650.GC4638@elte.hu>
+	id S1752478AbYB1Bcu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 Feb 2008 20:32:50 -0500
+Date: Wed, 27 Feb 2008 20:15:15 -0500
+From: "John W. Linville" <linville@tuxdriver.com>
+To: Michael Buesch <mb@bu3sch.de>
+Cc: Larry Finger <larry.finger@lwfinger.net>,
+       Alexey Zaytsev <alexey.zaytsev@gmail.com>,
+       Stefano Brivio <stefano.brivio@polimi.it>,
+       Jeff Garzik <jgarzik@pobox.com>, Greg KH <greg@kroah.com>,
+       Pekka Enberg <penberg@cs.helsinki.fi>, Ingo Molnar <mingo@elte.hu>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Fix the bcm43xx driver breakage in 2.6.24/25.
+Message-ID: <20080228011515.GH3078@tuxdriver.com>
+References: <47C01D03.9030601@gmail.com> <47C19ABA.4040904@lwfinger.net> <20080227201550.GG3078@tuxdriver.com> <200802272258.33888.mb@bu3sch.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080227073650.GC4638@elte.hu>
-X-Url: http://oops.ghostprotocols.net:81/blog
+In-Reply-To: <200802272258.33888.mb@bu3sch.de>
 User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Em Wed, Feb 27, 2008 at 08:36:50AM +0100, Ingo Molnar escreveu:
-> 
-> * David Miller <davem@davemloft.net> wrote:
-> 
-> > > but the main and fundamental question still remains unanswered (more 
-> > > than 3 weeks after Andrew asked that question): why was this piece 
-> > > of general infrastructure merged via net.git and not submitted to 
-> > > lkml ever? The code touching -mm does _not_ count as "review".
+On Wed, Feb 27, 2008 at 10:58:33PM +0100, Michael Buesch wrote:
+> On Wednesday 27 February 2008 21:15:50 John W. Linville wrote:
+> > On Sun, Feb 24, 2008 at 09:26:34AM -0700, Larry Finger wrote:
 > > 
-> > I already stated this was a mistake and it won't happen again in the 
-> > future.
+> > > I have reviewed the above patches and tested them with what I believe to be 
+> > > most combinations. Everything worked and corrected the unintended 
+> > > consequence of breaking bcm43xx when b44 is included. I agree that these 
+> > > patches belong in 2.6.25 and stable (2.6.24). Of course, the problem goes 
+> > > away in 2.6.26.
+> > 
+> > I can't say I really like Alexey's patches, but I guess they are OK.
+> > I think I like the "b43_pci_bridge as a module" option a little better,
+> > but as Michael illustrated there are problems with that approach too.
 > 
-> sorry - that bit of the thread didnt seem to make it to lkml. I just saw 
-> this incomplete discussion with a denial and with no resolution.
-> 
-> And you did the right thing anyway by thinking in terms of a generic 
-> piece of infrastructure instead of hiding it away into say 
-> include/net/pcounter.h (which nobody could have objected against).
-> 
-> I sometimes think that the forced isolation of subsystems (rather 
-> strongly enforced both by -mm and by linux-next) and their hiding away 
-> on non-lkml lists will eventually hurt the core kernel because less and 
-> less people will be willing to go the trouble of doing proper 
-> cross-subsystem development. That results in duplicated or specialistic 
-> infrastructure, increased code size and longer term, ultimately less 
-> performance. (by the time we notice _that_ it will probably be too late 
-> to do anything about it)
+> Well, I do like  "b43_pci_bridge as a module" more than this inter-dependency
+> crap. Yeah, I don't like "b43_pci_bridge as a module" a lot, but certainly
+> more than Alexey's patch.
 
-This more friendly wording makes me feel actually happy to get from my
-hiding place and tell that I actually saw the percpu counters code, just
-after I made Eric's code generic as I thought it should have been from
-the start, I found out about what was already in lib/.
+Patches welcome... :-)
 
-I just got lazy to do what at the time looked the right thing
-to do: to read thru the existing lib/ code and use it where pcounter was
-being used. But at least it got exposed 8-)
-
-Anyway, progress was made, I do not feel too bad about it even now.
-
-- Arnaldo
+-- 
+John W. Linville
+linville@tuxdriver.com
