@@ -1,200 +1,313 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760154AbYB1Tms@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756991AbYB1TnR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760154AbYB1Tms (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Feb 2008 14:42:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761775AbYB1Tl7
+	id S1756991AbYB1TnR (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Feb 2008 14:43:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755942AbYB1TmA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Feb 2008 14:41:59 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:45274 "EHLO mx1.redhat.com"
+	Thu, 28 Feb 2008 14:42:00 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:45275 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761355AbYB1Tl4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1761405AbYB1Tl4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Thu, 28 Feb 2008 14:41:56 -0500
-Message-Id: <20080228192928.335536700@redhat.com>
+Message-Id: <20080228192928.165393706@redhat.com>
 References: <20080228192908.126720629@redhat.com>
 User-Agent: quilt/0.46-1
-Date: Thu, 28 Feb 2008 14:29:13 -0500
+Date: Thu, 28 Feb 2008 14:29:11 -0500
 From: Rik van Riel <riel@redhat.com>
 To: linux-kernel@vger.kernel.org
 Cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Lee Schermerhorn <Lee.Schermerhorn@hp.com>, linux-mm@kvack.org,
-       Lee Schermerhorn <lee.schermerhorn@hp.com>
-Subject: [patch 05/21] define page_file_cache() function
-Content-Disposition: inline; filename=rvr-01-linux-2.6-page_file_cache.patch
+       Lee Schermerhorn <Lee.Schermerhorn@hp.com>, linux-mm@kvack.org
+Subject: [patch 03/21] use an array for the LRU pagevecs
+Content-Disposition: inline; filename=pagevec-array.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Define page_file_cache() function to answer the question:
-	is page backed by a file?
+Turn the pagevecs into an array just like the LRUs.  This significantly
+cleans up the source code and reduces the size of the kernel by about
+13kB after all the LRU lists have been created further down in the split
+VM patch series.
 
-Originally part of Rik van Riel's split-lru patch.  Extracted
-to make available for other, independent reclaim patches.
+Signed-off-by: Rik van Riel <riel@redhat.com>
+Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
 
-Moved inline function to linux/mm_inline.h where it will
-be needed by subsequent "split LRU" and "noreclaim" patches.  
+ include/linux/mmzone.h  |   15 +++++-
+ include/linux/pagevec.h |   13 ++++-
+ include/linux/swap.h    |   18 ++++++-
+ mm/migrate.c            |   11 ----
+ mm/swap.c               |   87 +++++++++++++++-----------------------
+ 5 files changed, 76 insertions(+), 68 deletions(-)
 
-Unfortunately this needs to use a page flag, since the
-PG_swapbacked state needs to be preserved all the way
-to the point where the page is last removed from the
-LRU.  Trying to derive the status from other info in
-the page resulted in wrong VM statistics in earlier
-split VM patchsets.
-
-
-Signed-off-by:  Rik van Riel <riel@redhat.com>
-Signed-off-by:  Lee Schermerhorn <lee.schermerhorn@hp.com>
-
-
-Index: linux-2.6.25-rc2-mm1/include/linux/mm_inline.h
+Index: linux-2.6.25-rc2-mm1/include/linux/mmzone.h
 ===================================================================
---- linux-2.6.25-rc2-mm1.orig/include/linux/mm_inline.h	2008-02-26 21:29:50.000000000 -0500
-+++ linux-2.6.25-rc2-mm1/include/linux/mm_inline.h	2008-02-27 14:36:57.000000000 -0500
-@@ -1,3 +1,24 @@
-+#ifndef LINUX_MM_INLINE_H
-+#define LINUX_MM_INLINE_H
+--- linux-2.6.25-rc2-mm1.orig/include/linux/mmzone.h	2008-02-26 21:24:23.000000000 -0500
++++ linux-2.6.25-rc2-mm1/include/linux/mmzone.h	2008-02-27 14:19:08.000000000 -0500
+@@ -105,13 +105,24 @@ enum zone_stat_item {
+ #endif
+ 	NR_VM_ZONE_STAT_ITEMS };
+ 
++#define LRU_BASE 0
 +
-+/**
-+ * page_file_cache(@page)
-+ * Returns !0 if @page is page cache page backed by a regular filesystem,
-+ * or 0 if @page is anonymous, tmpfs or otherwise ram or swap backed.
-+ *
-+ * We would like to get this info without a page flag, but the state
-+ * needs to survive until the page is last deleted from the LRU, which
-+ * could be as far down as __page_cache_release.
-+ */
-+static inline int page_file_cache(struct page *page)
+ enum lru_list {
+-	LRU_INACTIVE,	/* must match order of NR_[IN]ACTIVE */
+-	LRU_ACTIVE,	/*  "     "     "   "       "        */
++	LRU_INACTIVE = LRU_BASE,	/* must match order of NR_[IN]ACTIVE */
++	LRU_ACTIVE,			/*  "     "     "   "       "        */
+ 	NR_LRU_LISTS };
+ 
+ #define for_each_lru(l) for (l = 0; l < NR_LRU_LISTS; l++)
+ 
++static inline int is_active_lru(enum lru_list l)
 +{
-+	if (PageSwapBacked(page))
-+		return 0;
-+
-+	/* The page is page cache backed by a normal filesystem. */
-+	return 2;
++	if (l == LRU_ACTIVE)
++		return 1;
++	return 0;
 +}
 +
- static inline void
- add_page_to_lru_list(struct zone *zone, struct page *page, enum lru_list l)
++enum lru_list page_lru(struct page *page);
++
+ struct per_cpu_pages {
+ 	int count;		/* number of pages in the list */
+ 	int high;		/* high watermark, emptying needed */
+Index: linux-2.6.25-rc2-mm1/mm/swap.c
+===================================================================
+--- linux-2.6.25-rc2-mm1.orig/mm/swap.c	2008-02-26 21:24:23.000000000 -0500
++++ linux-2.6.25-rc2-mm1/mm/swap.c	2008-02-27 14:31:35.000000000 -0500
+@@ -34,8 +34,7 @@
+ /* How many pages do we try to swap or page in/out together? */
+ int page_cluster;
+ 
+-static DEFINE_PER_CPU(struct pagevec, lru_add_pvecs) = { 0, };
+-static DEFINE_PER_CPU(struct pagevec, lru_add_active_pvecs) = { 0, };
++static DEFINE_PER_CPU(struct pagevec[NR_LRU_LISTS], lru_add_pvecs) = { {0,}, };
+ static DEFINE_PER_CPU(struct pagevec, lru_rotate_pvecs) = { 0, };
+ 
+ /*
+@@ -98,6 +97,19 @@ void put_pages_list(struct list_head *pa
+ EXPORT_SYMBOL(put_pages_list);
+ 
+ /*
++ * Returns the LRU list a page should be on.
++ */
++enum lru_list page_lru(struct page *page)
++{
++	enum lru_list lru = LRU_BASE;
++
++	if (PageActive(page))
++		lru += LRU_ACTIVE;
++
++	return lru;
++}
++
++/*
+  * pagevec_move_tail() must be called with IRQ disabled.
+  * Otherwise this may cause nasty races.
+  */
+@@ -200,28 +212,24 @@ void mark_page_accessed(struct page *pag
+ 
+ EXPORT_SYMBOL(mark_page_accessed);
+ 
+-/**
+- * lru_cache_add: add a page to the page lists
+- * @page: the page to add
+- */
+-void lru_cache_add(struct page *page)
++void __lru_cache_add(struct page *page, enum lru_list lru)
  {
-@@ -49,3 +70,4 @@ del_page_from_lru(struct zone *zone, str
- 	__dec_zone_state(zone, NR_INACTIVE + l);
+-	struct pagevec *pvec = &get_cpu_var(lru_add_pvecs);
++	struct pagevec *pvec = &get_cpu_var(lru_add_pvecs)[lru];
+ 
+ 	page_cache_get(page);
+ 	if (!pagevec_add(pvec, page))
+-		__pagevec_lru_add(pvec);
++		____pagevec_lru_add(pvec, lru);
+ 	put_cpu_var(lru_add_pvecs);
  }
  
-+#endif
-Index: linux-2.6.25-rc2-mm1/mm/shmem.c
+-void lru_cache_add_active(struct page *page)
++void lru_cache_add_lru(struct page *page, enum lru_list lru)
+ {
+-	struct pagevec *pvec = &get_cpu_var(lru_add_active_pvecs);
++	if (PageActive(page)) {
++		ClearPageActive(page);
++	}
+ 
+-	page_cache_get(page);
+-	if (!pagevec_add(pvec, page))
+-		__pagevec_lru_add_active(pvec);
+-	put_cpu_var(lru_add_active_pvecs);
++	VM_BUG_ON(PageLRU(page) || PageActive(page));
++	__lru_cache_add(page, lru);
+ }
+ 
+ /*
+@@ -231,15 +239,15 @@ void lru_cache_add_active(struct page *p
+  */
+ static void drain_cpu_pagevecs(int cpu)
+ {
++	struct pagevec *pvecs = per_cpu(lru_add_pvecs, cpu);
+ 	struct pagevec *pvec;
++	int lru;
+ 
+-	pvec = &per_cpu(lru_add_pvecs, cpu);
+-	if (pagevec_count(pvec))
+-		__pagevec_lru_add(pvec);
+-
+-	pvec = &per_cpu(lru_add_active_pvecs, cpu);
+-	if (pagevec_count(pvec))
+-		__pagevec_lru_add_active(pvec);
++	for_each_lru(lru) {
++		pvec = &pvecs[lru - LRU_BASE];
++		if (pagevec_count(pvec))
++			____pagevec_lru_add(pvec, lru);
++	}
+ 
+ 	pvec = &per_cpu(lru_rotate_pvecs, cpu);
+ 	if (pagevec_count(pvec)) {
+@@ -393,7 +401,7 @@ void __pagevec_release_nonlru(struct pag
+  * Add the passed pages to the LRU, then drop the caller's refcount
+  * on them.  Reinitialises the caller's pagevec.
+  */
+-void __pagevec_lru_add(struct pagevec *pvec)
++void ____pagevec_lru_add(struct pagevec *pvec, enum lru_list lru)
+ {
+ 	int i;
+ 	struct zone *zone = NULL;
+@@ -410,7 +418,9 @@ void __pagevec_lru_add(struct pagevec *p
+ 		}
+ 		VM_BUG_ON(PageLRU(page));
+ 		SetPageLRU(page);
+-		add_page_to_inactive_list(zone, page);
++		if (is_active_lru(lru))
++			SetPageActive(page);
++		add_page_to_lru_list(zone, page, lru);
+ 	}
+ 	if (zone)
+ 		spin_unlock_irq(&zone->lru_lock);
+@@ -418,34 +428,7 @@ void __pagevec_lru_add(struct pagevec *p
+ 	pagevec_reinit(pvec);
+ }
+ 
+-EXPORT_SYMBOL(__pagevec_lru_add);
+-
+-void __pagevec_lru_add_active(struct pagevec *pvec)
+-{
+-	int i;
+-	struct zone *zone = NULL;
+-
+-	for (i = 0; i < pagevec_count(pvec); i++) {
+-		struct page *page = pvec->pages[i];
+-		struct zone *pagezone = page_zone(page);
+-
+-		if (pagezone != zone) {
+-			if (zone)
+-				spin_unlock_irq(&zone->lru_lock);
+-			zone = pagezone;
+-			spin_lock_irq(&zone->lru_lock);
+-		}
+-		VM_BUG_ON(PageLRU(page));
+-		SetPageLRU(page);
+-		VM_BUG_ON(PageActive(page));
+-		SetPageActive(page);
+-		add_page_to_active_list(zone, page);
+-	}
+-	if (zone)
+-		spin_unlock_irq(&zone->lru_lock);
+-	release_pages(pvec->pages, pvec->nr, pvec->cold);
+-	pagevec_reinit(pvec);
+-}
++EXPORT_SYMBOL(____pagevec_lru_add);
+ 
+ /*
+  * Try to drop buffers from the pages in a pagevec
+Index: linux-2.6.25-rc2-mm1/include/linux/pagevec.h
 ===================================================================
---- linux-2.6.25-rc2-mm1.orig/mm/shmem.c	2008-02-19 16:23:09.000000000 -0500
-+++ linux-2.6.25-rc2-mm1/mm/shmem.c	2008-02-27 14:36:57.000000000 -0500
-@@ -1434,6 +1434,7 @@ repeat:
- 				goto failed;
- 			}
+--- linux-2.6.25-rc2-mm1.orig/include/linux/pagevec.h	2007-07-08 19:32:17.000000000 -0400
++++ linux-2.6.25-rc2-mm1/include/linux/pagevec.h	2008-02-27 13:41:27.000000000 -0500
+@@ -23,8 +23,7 @@ struct pagevec {
+ void __pagevec_release(struct pagevec *pvec);
+ void __pagevec_release_nonlru(struct pagevec *pvec);
+ void __pagevec_free(struct pagevec *pvec);
+-void __pagevec_lru_add(struct pagevec *pvec);
+-void __pagevec_lru_add_active(struct pagevec *pvec);
++void ____pagevec_lru_add(struct pagevec *pvec, enum lru_list lru);
+ void pagevec_strip(struct pagevec *pvec);
+ unsigned pagevec_lookup(struct pagevec *pvec, struct address_space *mapping,
+ 		pgoff_t start, unsigned nr_pages);
+@@ -81,6 +80,16 @@ static inline void pagevec_free(struct p
+ 		__pagevec_free(pvec);
+ }
  
-+			SetPageSwapBacked(filepage);
- 			spin_lock(&info->lock);
- 			entry = shmem_swp_alloc(info, idx, sgp);
- 			if (IS_ERR(entry))
-Index: linux-2.6.25-rc2-mm1/include/linux/page-flags.h
-===================================================================
---- linux-2.6.25-rc2-mm1.orig/include/linux/page-flags.h	2008-02-19 16:23:08.000000000 -0500
-+++ linux-2.6.25-rc2-mm1/include/linux/page-flags.h	2008-02-27 14:36:57.000000000 -0500
-@@ -89,6 +89,7 @@
- #define PG_mappedtodisk		16	/* Has blocks allocated on-disk */
- #define PG_reclaim		17	/* To be reclaimed asap */
- #define PG_buddy		19	/* Page is free, on buddy lists */
-+#define PG_swapbacked		20	/* Page is backed by RAM/swap */
- 
- /* PG_readahead is only used for file reads; PG_reclaim is only for writes */
- #define PG_readahead		PG_reclaim /* Reminder to do async read-ahead */
-@@ -252,6 +253,10 @@ static inline void SetPageUptodate(struc
- #define ClearPageReclaim(page)	clear_bit(PG_reclaim, &(page)->flags)
- #define TestClearPageReclaim(page) test_and_clear_bit(PG_reclaim, &(page)->flags)
- 
-+#define PageSwapBacked(page)	test_bit(PG_swapbacked, &(page)->flags)
-+#define SetPageSwapBacked(page)	set_bit(PG_swapbacked, &(page)->flags)
-+#define __ClearPageSwapBacked(page)	__clear_bit(PG_swapbacked, &(page)->flags)
++static inline void __pagevec_lru_add(struct pagevec *pvec)
++{
++	____pagevec_lru_add(pvec, LRU_INACTIVE);
++}
 +
- #define PageCompound(page)	test_bit(PG_compound, &(page)->flags)
- #define __SetPageCompound(page)	__set_bit(PG_compound, &(page)->flags)
- #define __ClearPageCompound(page) __clear_bit(PG_compound, &(page)->flags)
-Index: linux-2.6.25-rc2-mm1/mm/memory.c
++static inline void __pagevec_lru_add_active(struct pagevec *pvec)
++{
++	____pagevec_lru_add(pvec, LRU_ACTIVE);
++}
++
+ static inline void pagevec_lru_add(struct pagevec *pvec)
+ {
+ 	if (pagevec_count(pvec))
+Index: linux-2.6.25-rc2-mm1/include/linux/swap.h
 ===================================================================
---- linux-2.6.25-rc2-mm1.orig/mm/memory.c	2008-02-19 16:23:16.000000000 -0500
-+++ linux-2.6.25-rc2-mm1/mm/memory.c	2008-02-27 14:36:57.000000000 -0500
-@@ -1677,6 +1677,7 @@ gotten:
- 		ptep_clear_flush(vma, address, page_table);
- 		set_pte_at(mm, address, page_table, entry);
- 		update_mmu_cache(vma, address, entry);
-+		SetPageSwapBacked(new_page);
- 		lru_cache_add_active(new_page);
- 		page_add_new_anon_rmap(new_page, vma, address);
+--- linux-2.6.25-rc2-mm1.orig/include/linux/swap.h	2008-02-19 16:23:08.000000000 -0500
++++ linux-2.6.25-rc2-mm1/include/linux/swap.h	2008-02-27 14:31:21.000000000 -0500
+@@ -171,8 +171,8 @@ extern unsigned int nr_free_pagecache_pa
  
-@@ -2148,6 +2149,7 @@ static int do_anonymous_page(struct mm_s
- 	if (!pte_none(*page_table))
- 		goto release;
- 	inc_mm_counter(mm, anon_rss);
-+	SetPageSwapBacked(page);
- 	lru_cache_add_active(page);
- 	page_add_new_anon_rmap(page, vma, address);
- 	set_pte_at(mm, address, page_table, entry);
-@@ -2291,6 +2293,7 @@ static int __do_fault(struct mm_struct *
- 		set_pte_at(mm, address, page_table, entry);
- 		if (anon) {
-                         inc_mm_counter(mm, anon_rss);
-+			SetPageSwapBacked(page);
-                         lru_cache_add_active(page);
-                         page_add_new_anon_rmap(page, vma, address);
- 		} else {
-Index: linux-2.6.25-rc2-mm1/mm/swap_state.c
-===================================================================
---- linux-2.6.25-rc2-mm1.orig/mm/swap_state.c	2008-02-19 16:23:09.000000000 -0500
-+++ linux-2.6.25-rc2-mm1/mm/swap_state.c	2008-02-27 14:36:57.000000000 -0500
-@@ -82,6 +82,7 @@ int add_to_swap_cache(struct page *page,
- 		if (!error) {
- 			page_cache_get(page);
- 			SetPageSwapCache(page);
-+			SetPageSwapBacked(page);
- 			set_page_private(page, entry.val);
- 			total_swapcache_pages++;
- 			__inc_zone_page_state(page, NR_FILE_PAGES);
+ 
+ /* linux/mm/swap.c */
+-extern void lru_cache_add(struct page *);
+-extern void lru_cache_add_active(struct page *);
++extern void __lru_cache_add(struct page *, enum lru_list lru);
++extern void lru_cache_add_lru(struct page *, enum lru_list lru);
+ extern void activate_page(struct page *);
+ extern void mark_page_accessed(struct page *);
+ extern void lru_add_drain(void);
+@@ -180,6 +180,20 @@ extern int lru_add_drain_all(void);
+ extern int rotate_reclaimable_page(struct page *page);
+ extern void swap_setup(void);
+ 
++/**
++ * lru_cache_add: add a page to the page lists
++ * @page: the page to add
++ */
++static inline void lru_cache_add(struct page *page)
++{
++	__lru_cache_add(page, LRU_INACTIVE);
++}
++
++static inline void lru_cache_add_active(struct page *page)
++{
++	__lru_cache_add(page, LRU_ACTIVE);
++}
++
+ /* linux/mm/vmscan.c */
+ extern unsigned long try_to_free_pages(struct zone **zones, int order,
+ 					gfp_t gfp_mask);
 Index: linux-2.6.25-rc2-mm1/mm/migrate.c
 ===================================================================
---- linux-2.6.25-rc2-mm1.orig/mm/migrate.c	2008-02-27 14:24:23.000000000 -0500
-+++ linux-2.6.25-rc2-mm1/mm/migrate.c	2008-02-27 14:36:57.000000000 -0500
-@@ -537,6 +537,8 @@ static int move_to_new_page(struct page 
- 	/* Prepare mapping for the new page.*/
- 	newpage->index = page->index;
- 	newpage->mapping = page->mapping;
-+	if (PageSwapBacked(page))
-+		SetPageSwapBacked(newpage);
+--- linux-2.6.25-rc2-mm1.orig/mm/migrate.c	2008-02-25 17:10:54.000000000 -0500
++++ linux-2.6.25-rc2-mm1/mm/migrate.c	2008-02-27 14:24:23.000000000 -0500
+@@ -54,16 +54,7 @@ int migrate_prep(void)
  
- 	mapping = page_mapping(page);
- 	if (!mapping)
-Index: linux-2.6.25-rc2-mm1/mm/page_alloc.c
-===================================================================
---- linux-2.6.25-rc2-mm1.orig/mm/page_alloc.c	2008-02-26 21:24:23.000000000 -0500
-+++ linux-2.6.25-rc2-mm1/mm/page_alloc.c	2008-02-27 14:36:57.000000000 -0500
-@@ -253,6 +253,7 @@ static void bad_page(struct page *page)
- 			1 << PG_slab    |
- 			1 << PG_swapcache |
- 			1 << PG_writeback |
-+			1 << PG_swapbacked |
- 			1 << PG_buddy );
- 	set_page_count(page, 0);
- 	reset_page_mapcount(page);
-@@ -485,6 +486,8 @@ static inline int free_pages_check(struc
- 		bad_page(page);
- 	if (PageDirty(page))
- 		__ClearPageDirty(page);
-+	if (PageSwapBacked(page))
-+		__ClearPageSwapBacked(page);
- 	/*
- 	 * For now, we report if PG_reserved was found set, but do not
- 	 * clear it, and do not free the page.  But we shall soon need
-@@ -631,6 +634,7 @@ static int prep_new_page(struct page *pa
- 			1 << PG_swapcache |
- 			1 << PG_writeback |
- 			1 << PG_reserved |
-+			1 << PG_swapbacked |
- 			1 << PG_buddy ))))
- 		bad_page(page);
+ static inline void move_to_lru(struct page *page)
+ {
+-	if (PageActive(page)) {
+-		/*
+-		 * lru_cache_add_active checks that
+-		 * the PG_active bit is off.
+-		 */
+-		ClearPageActive(page);
+-		lru_cache_add_active(page);
+-	} else {
+-		lru_cache_add(page);
+-	}
++	lru_cache_add_lru(page, page_lru(page));
+ 	put_page(page);
+ }
  
 
 -- 
