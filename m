@@ -1,60 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758724AbYB1LmU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758810AbYB1Lqo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758724AbYB1LmU (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Feb 2008 06:42:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756040AbYB1LmJ
+	id S1758810AbYB1Lqo (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Feb 2008 06:46:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752620AbYB1Lqg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Feb 2008 06:42:09 -0500
-Received: from styx.suse.cz ([82.119.242.94]:54588 "EHLO mail.suse.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1755541AbYB1LmI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Feb 2008 06:42:08 -0500
-Date: Thu, 28 Feb 2008 12:42:07 +0100 (CET)
-From: Jiri Kosina <jkosina@suse.cz>
-To: Roland McGrath <roland@redhat.com>
-cc: Oleg Nesterov <oleg@tv-sign.ru>, Davide Libenzi <davidel@xmailserver.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] [RFC] fix missed SIGCONT cases
-In-Reply-To: <20080228102649.071572700FD@magilla.localdomain>
-Message-ID: <Pine.LNX.4.64.0802281238550.3391@jikos.suse.cz>
-References: <Pine.LNX.4.64.0802271610330.3391@jikos.suse.cz>
- <20080227210038.93AFC2700FD@magilla.localdomain> <Pine.LNX.4.64.0802272258150.3391@jikos.suse.cz>
- <20080228102649.071572700FD@magilla.localdomain>
+	Thu, 28 Feb 2008 06:46:36 -0500
+Received: from opensource.wolfsonmicro.com ([80.75.67.52]:57873 "EHLO
+	opensource2.wolfsonmicro.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1751741AbYB1Lqf (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 28 Feb 2008 06:46:35 -0500
+Date: Thu, 28 Feb 2008 11:46:33 +0000
+From: Mark Brown <broonie@opensource.wolfsonmicro.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Dmitry Torokhov <dtor@mail.ru>, linux-input@vger.kernel.org,
+       linux-kernel@vger.kernel.org,
+       Liam Girdwood <liam.girdwood@wolfsonmicro.com>,
+       Graeme Gregory <gg@opensource.wolfsonmicro.com>,
+       Dmitry Baryshkov <dbaryshkov@gmail.com>,
+       Rodolfo Giometti <giometti@enneenne.com>,
+       Russell King <rmk@arm.linux.org.uk>,
+       Marc Kleine-Budde <mkl@pengutronix.de>,
+       Pete MacKay <linux01@architechnical.net>, Ian Molton <spyro@f2s.com>,
+       Vince Sanders <vince@kyllikki.org>, Andrew Zabolotny <zap@homelink.ru>
+Subject: Re: [PATCH 2/6] Add chip driver for WM9705 touchscreen
+Message-ID: <20080228114633.GA20092@rakim.wolfsonmicro.main>
+Mail-Followup-To: Andrew Morton <akpm@linux-foundation.org>,
+	Dmitry Torokhov <dtor@mail.ru>, linux-input@vger.kernel.org,
+	linux-kernel@vger.kernel.org,
+	Liam Girdwood <liam.girdwood@wolfsonmicro.com>,
+	Graeme Gregory <gg@opensource.wolfsonmicro.com>,
+	Dmitry Baryshkov <dbaryshkov@gmail.com>,
+	Rodolfo Giometti <giometti@enneenne.com>,
+	Russell King <rmk@arm.linux.org.uk>,
+	Marc Kleine-Budde <mkl@pengutronix.de>,
+	Pete MacKay <linux01@architechnical.net>,
+	Ian Molton <spyro@f2s.com>, Vince Sanders <vince@kyllikki.org>,
+	Andrew Zabolotny <zap@homelink.ru>
+References: <12040332183316-git-send-email-broonie@opensource.wolfsonmicro.com> <12040332181161-git-send-email-broonie@opensource.wolfsonmicro.com> <20080227230932.3e7f699c.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080227230932.3e7f699c.akpm@linux-foundation.org>
+X-Cookie: Individualists unite!
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 28 Feb 2008, Roland McGrath wrote:
+On Wed, Feb 27, 2008 at 11:09:32PM -0800, Andrew Morton wrote:
+> On Tue, 26 Feb 2008 13:40:14 +0000 Mark Brown <broonie@opensource.wolfsonmicro.com> wrote:
 
-> [PATCH] clean up and fix SIGCONT
-> This reorganizes some of the signals code, replacing handle_stop_signal()
-> with prepare_signal() and finish_signal(), called as a pair before and
-> after generating any signal.  The CLD_CONTINUED notification to parent is
-> moved into finish_signal(), taking place after the signal is made pending
-> and siglock dropped.  This fixes a race where a process waking from SIGCONT
-> could resume application code without running its SIGCONT handler first.
+> > + *
+> > + * Adjust this value if you are having problems with pen detect not
+> > + * detecting any down events.
+> > + */
+> > +static int pdd = 8;
+> > +module_param(pdd, int, 0);
+> > +MODULE_PARM_DESC(pdd, "Set pen detect comparator threshold");
 
-Hi Roland,
+> I guess that's all the documentation we get ;) It won't kill us - we've done
+> worse..
 
-I haven't tested what is the behavior with my patch, or without any 
-patches at all (will do), but with your patch applied, when I run the test 
-program under strace, it resumes immediately ... doesn't look particularly 
-OK to me:
+> It would be rather nice if the kerneldoc system could extract the above
+> comments and put them in a module-parameters-documentation section, but I
+> don't think it can do that.
 
-$ strace -o /dev/null ./a.out | head -10
-finished (without SIGCONT)
-finished (without SIGCONT)
-finished (without SIGCONT)
-finished (without SIGCONT)
-finished (without SIGCONT)
-finished (without SIGCONT)
-finished (without SIGCONT)
-finished (without SIGCONT)
-finished (without SIGCONT)
-finished (without SIGCONT)
+What would be really nice for this application would be a way to pass
+platform data to devices enumerated by non-platform buses - most of the
+time these parameters are determined by the board the system is on.  In
+that case we'd be able to provide kerneldoc for the struct used to pass
+in platform data.
 
--- 
-Jiri Kosina
-SUSE Labs
+> > +	if (timeout <= 0) {
+
+> timeout cannot be negative here.
+
+Fixed, thanks.
