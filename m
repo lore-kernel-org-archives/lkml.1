@@ -1,134 +1,136 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765485AbYB1UQi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932323AbYB1UTd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765485AbYB1UQi (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Feb 2008 15:16:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756243AbYB1UQ1
+	id S932323AbYB1UTd (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Feb 2008 15:19:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754533AbYB1UTZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Feb 2008 15:16:27 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:50856 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753023AbYB1UQ0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Feb 2008 15:16:26 -0500
-Date: Thu, 28 Feb 2008 21:16:13 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Alexey Zaytsev <alexey.zaytsev@gmail.com>
-Cc: Thomas Gleixner <tglx@linutronix.de>, lkml <linux-kernel@vger.kernel.org>
-Subject: Re: printk timestamps jumping back and forth in 2.6.25-rc.
-Message-ID: <20080228201613.GA30999@elte.hu>
-References: <f19298770802280626g5ee17328ldedf7658a9f26f56@mail.gmail.com> <20080228201315.GA30736@elte.hu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080228201315.GA30736@elte.hu>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Thu, 28 Feb 2008 15:19:25 -0500
+Received: from g4t0014.houston.hp.com ([15.201.24.17]:34804 "EHLO
+	g4t0014.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752874AbYB1UTZ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 28 Feb 2008 15:19:25 -0500
+Subject: Re: [patch 21/21] cull non-reclaimable anon pages from the LRU at
+	fault time
+From: Lee Schermerhorn <Lee.Schermerhorn@hp.com>
+Cc: linux-kernel@vger.kernel.org,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>, linux-mm@kvack.org
+In-Reply-To: <20080228192929.793021800@redhat.com>
+References: <20080228192908.126720629@redhat.com>
+	 <20080228192929.793021800@redhat.com>
+Content-Type: text/plain
+Organization: HP/OSLO
+Date: Thu, 28 Feb 2008 15:19:33 -0500
+Message-Id: <1204229973.5301.34.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.6.1 
+Content-Transfer-Encoding: 7bit
+To: unlisted-recipients:; (no To-header on input)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, 2008-02-28 at 14:29 -0500, Rik van Riel wrote:
 
-* Ingo Molnar <mingo@elte.hu> wrote:
+corrections to description in case we decide to keep this patch.
 
-> > Anything else I can do?
+
+> V2 -> V3:
+> + rebase to 23-mm1 atop RvR's split lru series.
 > 
-> yes, please test the patch below - does it fix the problem?
+> V1 -> V2:
+> +  no changes
+> 
+> Optional part of "noreclaim infrastructure"
+> 
+> In the fault paths that install new anonymous pages, check whether
+> the page is reclaimable or not using lru_cache_add_active_or_noreclaim().
+> If the page is reclaimable, just add it to the active lru list [via
+> the pagevec cache], else add it to the noreclaim list.  
+> 
+> This "proactive" culling in the fault path mimics the handling of
+> mlocked pages in Nick Piggin's series to keep mlocked pages off
+> the lru lists.
+> 
+> Notes:
+> 
+> 1) This patch is optional--e.g., if one is concerned about the
+>    additional test in the fault path.  We can defer the moving of
+>    nonreclaimable pages until when vmscan [shrink_*_list()]
+>    encounters them.  Vmscan will only need to handle such pages
+>    once.
+> 
+> 2) I moved the call to page_add_new_anon_rmap() to before the test
+>    for page_reclaimable() and thus before the calls to
+>    lru_cache_add_{active|noreclaim}(), so that page_reclaimable()
+>    could recognize the page as anon, 
+<snip the bit about the vma arg.  replaced with new note 3 below>
+>    TBD:   I think this reordering is OK, but the previous order may
+>    have existed to close some obscure race?
+> 
+<delete prev note 3, as it referred to patches that are no longer in the
+series [altho' I continue to maintain them separately, "just in case"].
+replace with this note about vma arg to page_reclaimable()>
 
-(assuming you prefer patches that build, here's an updated one below.)
+3) The 'vma' argument to page_reclaimable() is require to notice that
+   we're faulting a page into an mlock()ed vma w/o having to scan the
+   page's rmap in the fault path.   Culling mlock()ed anon pages is
+   currently the only reason for this patch.
+> 
+> Signed-off-by:  Lee Schermerhorn <lee.schermerhorn@hp.com>
+> Signed-off-by:  Rik van Riel <riel@redhat.com>
+> 
+> Index: linux-2.6.25-rc2-mm1/mm/memory.c
+> ===================================================================
+> --- linux-2.6.25-rc2-mm1.orig/mm/memory.c	2008-02-28 00:27:06.000000000 -0500
+> +++ linux-2.6.25-rc2-mm1/mm/memory.c	2008-02-28 12:49:23.000000000 -0500
+> @@ -1678,7 +1678,7 @@ gotten:
+>  		set_pte_at(mm, address, page_table, entry);
+>  		update_mmu_cache(vma, address, entry);
+>  		SetPageSwapBacked(new_page);
+> -		lru_cache_add_active_anon(new_page);
+> +		lru_cache_add_active_or_noreclaim(new_page, vma);
+>  		page_add_new_anon_rmap(new_page, vma, address);
+>  
+>  		/* Free the old page.. */
+> @@ -2150,7 +2150,7 @@ static int do_anonymous_page(struct mm_s
+>  		goto release;
+>  	inc_mm_counter(mm, anon_rss);
+>  	SetPageSwapBacked(page);
+> -	lru_cache_add_active_anon(page);
+> +	lru_cache_add_active_or_noreclaim(page, vma);
+>  	page_add_new_anon_rmap(page, vma, address);
+>  	set_pte_at(mm, address, page_table, entry);
+>  
+> @@ -2292,10 +2292,10 @@ static int __do_fault(struct mm_struct *
+>  			entry = maybe_mkwrite(pte_mkdirty(entry), vma);
+>  		set_pte_at(mm, address, page_table, entry);
+>  		if (anon) {
+> -                        inc_mm_counter(mm, anon_rss);
+> +			inc_mm_counter(mm, anon_rss);
+>  			SetPageSwapBacked(page);
+> -                        lru_cache_add_active_anon(page);
+> -                        page_add_new_anon_rmap(page, vma, address);
+> +			lru_cache_add_active_or_noreclaim(page, vma);
+> +			page_add_new_anon_rmap(page, vma, address);
+>  		} else {
+>  			inc_mm_counter(mm, file_rss);
+>  			page_add_file_rmap(page);
+> Index: linux-2.6.25-rc2-mm1/mm/swap_state.c
+> ===================================================================
+> --- linux-2.6.25-rc2-mm1.orig/mm/swap_state.c	2008-02-28 00:29:51.000000000 -0500
+> +++ linux-2.6.25-rc2-mm1/mm/swap_state.c	2008-02-28 12:49:23.000000000 -0500
+> @@ -300,7 +300,10 @@ struct page *read_swap_cache_async(swp_e
+>  			/*
+>  			 * Initiate read into locked page and return.
+>  			 */
+> -			lru_cache_add_anon(new_page);
+> +			if (!page_reclaimable(new_page, vma))
+> +				lru_cache_add_noreclaim(new_page);
+> +			else
+> +				lru_cache_add_anon(new_page);
+>  			swap_readpage(NULL, new_page);
+>  			return new_page;
+>  		}
+> 
 
-	Ingo
-
--------------->
-Subject: sched: make cpu_clock() globally synchronous
-From: Ingo Molnar <mingo@elte.hu>
-Date: Thu Feb 28 21:00:21 CET 2008
-
-Alexey Zaytsev reported (and bisected) that the introduction of
-cpu_clock() in printk made the timestamps jump back and forth.
-
-Make cpu_clock() more reliable while still keeping it fast when it's
-called frequently.
-
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
----
- kernel/sched.c |   52 +++++++++++++++++++++++++++++++++++++++++++++++++---
- 1 file changed, 49 insertions(+), 3 deletions(-)
-
-Index: linux/kernel/sched.c
-===================================================================
---- linux.orig/kernel/sched.c
-+++ linux/kernel/sched.c
-@@ -710,11 +710,39 @@ static inline u64 global_rt_runtime(void
- 	return (u64)sysctl_sched_rt_runtime * NSEC_PER_USEC;
- }
- 
-+static const unsigned long long time_sync_thresh = 100000;
-+
-+static DEFINE_PER_CPU(unsigned long long, time_offset);
-+static DEFINE_PER_CPU(unsigned long long, prev_cpu_time);
-+
- /*
-- * For kernel-internal use: high-speed (but slightly incorrect) per-cpu
-- * clock constructed from sched_clock():
-+ * Global lock which we take every now and then to synchronize
-+ * the CPUs time. This method is not warp-safe, but it's good
-+ * enough to synchronize slowly diverging time sources and thus
-+ * it's good enough for tracing:
-  */
--unsigned long long cpu_clock(int cpu)
-+static DEFINE_SPINLOCK(time_sync_lock);
-+static unsigned long long prev_global_time;
-+
-+static unsigned long long __sync_cpu_clock(cycles_t time, int cpu)
-+{
-+	unsigned long flags;
-+
-+	spin_lock_irqsave(&time_sync_lock, flags);
-+
-+	if (time < prev_global_time) {
-+		per_cpu(time_offset, cpu) += prev_global_time - time;
-+		time = prev_global_time;
-+	} else {
-+		prev_global_time = time;
-+	}
-+
-+	spin_unlock_irqrestore(&time_sync_lock, flags);
-+
-+	return time;
-+}
-+
-+static unsigned long long __cpu_clock(int cpu)
- {
- 	unsigned long long now;
- 	unsigned long flags;
-@@ -735,6 +763,24 @@ unsigned long long cpu_clock(int cpu)
- 
- 	return now;
- }
-+
-+/*
-+ * For kernel-internal use: high-speed (but slightly incorrect) per-cpu
-+ * clock constructed from sched_clock():
-+ */
-+unsigned long long cpu_clock(int cpu)
-+{
-+	unsigned long long prev_cpu_time, time, delta_time;
-+
-+	prev_cpu_time = per_cpu(prev_cpu_time, cpu);
-+	time = __cpu_clock(cpu) + per_cpu(time_offset, cpu);
-+	delta_time = time-prev_cpu_time;
-+
-+	if (unlikely(delta_time > time_sync_thresh))
-+		time = __sync_cpu_clock(time, cpu);
-+
-+	return time;
-+}
- EXPORT_SYMBOL_GPL(cpu_clock);
- 
- #ifndef prepare_arch_switch
