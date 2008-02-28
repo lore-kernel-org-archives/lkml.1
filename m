@@ -1,156 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932828AbYB1Xge@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932495AbYB1Xnm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932828AbYB1Xge (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Feb 2008 18:36:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932155AbYB1Xg0
+	id S932495AbYB1Xnm (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Feb 2008 18:43:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754021AbYB1Xnb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Feb 2008 18:36:26 -0500
-Received: from relay1.sgi.com ([192.48.171.29]:57866 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S932084AbYB1XgZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Feb 2008 18:36:25 -0500
-Date: Thu, 28 Feb 2008 17:36:18 -0600
-From: Paul Jackson <pj@sgi.com>
-To: "Paul Menage" <menage@google.com>
-Cc: containers@lists.osdl.org, linux-kernel@vger.kernel.org,
-       balbir@linux.vnet.ibm.com, a.p.zijlstra@chello.nl, xemul@openvz.org,
-       akpm@linux-foundation.org
-Subject: Re: [RFC] Prefixing cgroup generic control filenames with "cgroup."
-Message-Id: <20080228173618.139f5bb4.pj@sgi.com>
-In-Reply-To: <6599ad830802281314s25c033d6tc021725ae28aef8d@mail.gmail.com>
-References: <6599ad830802281314s25c033d6tc021725ae28aef8d@mail.gmail.com>
-Organization: SGI
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.12.0; i686-pc-linux-gnu)
+	Thu, 28 Feb 2008 18:43:31 -0500
+Received: from agminet01.oracle.com ([141.146.126.228]:37302 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752260AbYB1Xn3 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 28 Feb 2008 18:43:29 -0500
+Date: Thu, 28 Feb 2008 15:41:52 -0800
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: Rik van Riel <riel@redhat.com>
+Cc: linux-kernel@vger.kernel.org,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Lee Schermerhorn <Lee.Schermerhorn@hp.com>, linux-mm@kvack.org,
+       Lee Schermerhorn <lee.schermerhorn@hp.com>
+Subject: Re: [patch 14/21] scan noreclaim list for reclaimable pages
+Message-Id: <20080228154152.9648b7b8.randy.dunlap@oracle.com>
+In-Reply-To: <20080228192929.203173998@redhat.com>
+References: <20080228192908.126720629@redhat.com>
+	<20080228192929.203173998@redhat.com>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.4.7 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Paul M wrote:
-> But control files provided by
-> cgroups itself have no prefix. Currently that set of files is just
-> "tasks", "notify_on_release" and "release_agent", but that set is
-> likely to expand in the future. To reduce the risk of clashes, it
-> would make sense to prefix these files and any future ones with the
-> "cgroup." prefix.
+On Thu, 28 Feb 2008 14:29:22 -0500 Rik van Riel wrote:
 
-I don't see the mixing of kernel generated filenames with user
-generated names to be a practical problem.  There just aren't that many
-names in play here.
-
-I'd think that renaming even the few cgroup files that were published
-in 2.6.24 would be a fairly unacceptable incompatibility.
-
-Paul M wrote:
-> The point would be to avoid situations where a user has code that
-> creates a group directory called "foo", and then in a future kernel
-> release cgroups introduces a control file called "foo". 
-
-We could accomplish that much by decreeing that future new kernel
-generated names that we might add follow some stronger convention,
-such as the cgroup_ or appropriate subsystem prefix.  No need to
-change the existing well known names for this reason.
-
-Serge wrote:
-> To me it seems quite logical that files belonging to the cgroup
-> subsystem would have no prefix, and I don't see any good reason to
-> do so.
-
-Agreed.
-
-Paul M wrote:
-> It wouldn't be hard to throw that away and move all the user-created
-> group directories into their own subdirectory, i.e. change the
-> existing directory layout from something like:
-
-Yuck.  You're complicating this more than necessary, to solve a problem
-that exists only in your imagination ;).  Simple, overlapping,
-namespaces really are ok, so long as the number of distinct names and
-the rate of their growth are sufficiently low.
-
-> But I don't know what other users might want to do.
-
-Just set some convention for future added names; that's enough to enable
-others adding user space names to avoid collisions.  Such as using only
-lower case letters and underscores, or the cgroup_ or other prefix
-on -future- names.  That's sufficient, if not more than sufficient.
-
-> But I still don't see any argument *against*
-> doing the prefixing automatically (rather than an argument that it's
-> no better or worse) other than wanting 2.6.24 compatibility.
-
-That's sufficient reason.  Actually, in terms of 'common names used
-by humans' some of these names, "tasks" and "notify_on_release", date
-back much earlier than that.  Please don't rename these two files in
-cgroups; and of course absolutely don't rename them in cpusets.
-
-Please don't end up with different names of these files, depending on
-whether you're in cgroups or cpusets, either.
-
-Andrew, looking at a tree that Paul M drew, wrote:
-> That looks nice.
-
-Not to me ;)  Yuck.
-
-Andrew wrote:
-> That doesn't.  It sounds like cpusets legacy has mucked us up here?
+> V2 -> V3:
+> + rebase to 23-mm1 atop RvR's split LRU series
 > 
-> Could we do something like auto-prefixing user-created directories with a
-> fixed string so that there is no way in which the user can cause a
-> collision with kernel-created files?
-
-Lordy lordy -- a bunch of intrusive, complicating crap to solve a
-non-existent problem (sorry for the indelicate choice of words ;).
-
-> So yet another option would be to promise to prefix all _future_
-> kernel-generated files with "kern_", ...
-
-that could work
-
-> ... and to change the implementation now
-> to reject any user-created files which start with "kern_".  hm.
-
-Unnecessary complication.  No need to burden our children and grand children
-with this special case, forever after, in order to solve some empty set of
-special cases currently facing us.
-
->  > It wouldn't be hard to throw that away and move all the user-created
->  > group directories into their own subdirectory, i.e. change the
->  > existing directory layout from something like:
-> ...
-> I'll put a patch together for consideration.
-
-I'll keep a bucket of ice water handy, for that patch ;).  One nice
-property of the cpuset file system is that there is exactly one
-directory per cpuset.  The kernel creates regular files; the user
-creates directories; no exceptions.  I encourage us to keep that state
-of affairs, for both cgroups and cpusets.
-
-> >  If so, we could do the prefixing only for non-cpusets directories,
-> >  but that's getting a bit weird.
+> New in V2
 > 
-> We already have something like that in place, actually.
+> This patch adds a function to scan individual or all zones' noreclaim
+> lists and move any pages that have become reclaimable onto the respective
+> zone's inactive list, where shrink_inactive_list() will deal with them.
+> 
+> This replaces the function to splice the entire noreclaim list onto the
+> active list for rescan by shrink_active_list().  That method had problems
+> with vmstat accounting and complicated '[__]isolate_lru_pages()'.  Now,
+> __isolate_lru_page() will never isolate a non-reclaimable page.  The
+> only time it should see one is when scanning nearby pages for lumpy
+> reclaim.
+> 
+>   TODO:  This approach may still need some refinement.
+>          E.g., put back to active list?
+> 
+> DEBUGGING ONLY: NOT FOR UPSTREAM MERGE
+> 
+> Signed-off-by:  Lee Schermerhorn <lee.schermerhorn@hp.com>
+> Signed-off-by:  Rik van Riel <riel@redhat.com>
 
-I probably won't insist on a full force NAK so long as cpusets are
-unchanged, thanks to such compatibility measures; though I would be
-tempted to ... if I could think of a sufficient reason.
 
-Human beings really don't have problems with overlapping name spaces
-like this; to them it seems simpler in many cases, such as this one.
+Hi,
 
-This has been, in my (biased and less than humble) view, one of the
-successes of the cpuset interface.  It's just enough to comfortably do
-what's needed; not some overly formalized and unnecessarily robust
-complication beyond what's practically needed.  More people can
-comfortably understand it this way.
+I haven't looked at all 21 patches, but please use kernel-doc
+notation as it's defined.  See Documentation/kernel-doc-nano-HOWTO.txt
+for details, or ask.
 
-Design interfaces, and write code, for humans.  Resists making
-concessions to the limitations of computers (or our fellow geeks) as
-best you can, whenever you can.
+> Index: linux-2.6.25-rc2-mm1/mm/vmscan.c
+> ===================================================================
+> --- linux-2.6.25-rc2-mm1.orig/mm/vmscan.c	2008-02-28 11:05:04.000000000 -0500
+> +++ linux-2.6.25-rc2-mm1/mm/vmscan.c	2008-02-28 12:48:01.000000000 -0500
+> @@ -2295,4 +2296,144 @@ int page_reclaimable(struct page *page, 
+>  
+>  	return 1;
+>  }
+> +
+> +/**
+> + * scan_zone_noreclaim_pages(@zone)
+> + * @zone - zone to scan
 
--- 
-                  I won't rest till it's the best ...
-                  Programmer, Linux Scalability
-                  Paul Jackson <pj@sgi.com> 1.940.382.4214
+E.g.:
+
+ * scan_zone_reclaim_pages - some short description here
+ * @zone: zone to scan
+
+
+> + *
+> + * Scan @zone's noreclaim LRU lists to check for pages that have become
+> + * reclaimable.  Move those that have to @zone's inactive list where they
+> + * become candidates for reclaim, unless shrink_inactive_zone() decides
+> + * to reactivate them.  Pages that are still non-reclaimable are rotated
+> + * back onto @zone's noreclaim list.
+> + */
+> +#define SCAN_NORECLAIM_BATCH_SIZE 16UL	/* arbitrary lock hold batch size */
+
+and don't insert macros between the kernel-doc section and the
+function definition, please.
+
+
+> +void scan_zone_noreclaim_pages(struct zone *zone)
+> +{
+...
+> +}
+
+---
+~Randy
