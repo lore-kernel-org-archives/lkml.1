@@ -1,63 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760899AbYB1QVk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760520AbYB1Qba@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760899AbYB1QVk (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Feb 2008 11:21:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752671AbYB1QVd
+	id S1760520AbYB1Qba (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Feb 2008 11:31:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754700AbYB1QbW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Feb 2008 11:21:33 -0500
-Received: from wf-out-1314.google.com ([209.85.200.175]:31639 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752498AbYB1QVc (ORCPT
+	Thu, 28 Feb 2008 11:31:22 -0500
+Received: from agminet01.oracle.com ([141.146.126.228]:15106 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753811AbYB1QbV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Feb 2008 11:21:32 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=TRtZ0i8XZi1bKUlgfb7mO2ou35p6GWPjXBdA+jw24+XZvhESpeOJVlcjlfWQnHblfhisFIYyd3tRQUqS29DHy5b9cSiG/PKogNTXQhY6QpOOJqmLV0Pqwiicuxe0nXg6wNrxkTrtbUh5J5mnxvImIy/y3vcZvaG+SsXL+em5eIY=
-Message-ID: <e9e943910802280821q7fa5d0e2ya92023d46bcdb392@mail.gmail.com>
-Date: Thu, 28 Feb 2008 16:21:29 +0000
-From: "Duane Griffin" <duaneg@dghda.com>
-To: "Abel Bernabeu" <abel.bernabeu@gmail.com>
-Subject: Re: kernel BUG at fs/ext3/namei.c:383
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <15577be70802280233n412108exb0a5f03a2405ceca@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Thu, 28 Feb 2008 11:31:21 -0500
+Date: Thu, 28 Feb 2008 08:30:09 -0800
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: lkml <linux-kernel@vger.kernel.org>, Sam Ravnborg <sam@ravnborg.org>
+Subject: Re: [PATCH] kernel-doc: set verbose mode via environment
+Message-Id: <20080228083009.5955a7eb.randy.dunlap@oracle.com>
+In-Reply-To: <20080227191104.6f166972.akpm@linux-foundation.org>
+References: <20080224175358.3202f0d0.randy.dunlap@oracle.com>
+	<20080227191104.6f166972.akpm@linux-foundation.org>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.4.7 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <15577be70802280233n412108exb0a5f03a2405ceca@mail.gmail.com>
-X-Google-Sender-Auth: faa3f32342197f5a
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 28/02/2008, Abel Bernabeu <abel.bernabeu@gmail.com> wrote:
-> My kernel says that has a bug.
->
->  I attach two logs:
->
->  1) The output of dmesg.
->  2) The output printed in my console.
->
->  In defense of Linux I have to admit that I previously used the EXT3
->  filesystem that kernel was trying to access with Windows (by means of
->  an EXT2 driver from http://www.fs-driver.org/).
+On Wed, 27 Feb 2008 19:11:04 -0800 Andrew Morton wrote:
 
-This is fixed in recent kernels (commit
-3d82abae9523c33d4a16fdfdfd2bdde316d7b56a, to be precise). The windows
-driver is corrupting the filesystem but ext3 shouldn't BUG and if you
-update to a recent kernel it won't. If you can't update then you
-should e2fsck the filesystem after using the windows driver. That
-should fix up the corruption.
+> On Sun, 24 Feb 2008 17:53:58 -0800 Randy Dunlap <randy.dunlap@oracle.com> wrote:
+> 
+> > From: Randy Dunlap <randy.dunlap@oracle.com>
+> > 
+> > Allow setting environment variable "KERNEL_DOC_VERBOSE=1" to enable
+> > verbose mode in scripts/kernel-doc.  Useful for getting more
+> > info and warnings from kernel-doc.
+> > 
+> > Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
+> > ---
+> >  scripts/kernel-doc |    4 ++++
+> >  1 file changed, 4 insertions(+)
+> > 
+> > --- linux-2.6.25-rc3.orig/scripts/kernel-doc
+> > +++ linux-2.6.25-rc3/scripts/kernel-doc
+> > @@ -247,6 +247,10 @@ my ($function, %function_table,%paramete
+> >  my ($type,$declaration_name,$return_type);
+> >  my ($newsection,$newcontents,$prototype,$filelist, $brcount, %source_map);
+> >  
+> > +if (defined($ENV{'KERNEL_DOC_VERBOSE'})) {
+> > +	$verbose = "$ENV{'KERNEL_DOC_VERBOSE'}";
+> > +}
+> > +
+> >  # Generated docbook code is inserted in a template at a point where
+> >  # docbook v3.1 requires a non-zero sequence of RefEntry's; see:
+> >  # http://www.oasis-open.org/docbook/documentation/reference/html/refentry.html
+> 
+> Shouldn't this be, err, documented somewhere?
 
-Also, for future reference, LKML folks generally don't like
-attachments, so if possible just include logs or other info inline
-next time.
+I did think about that.  I was still wondering where to add it.
 
->  Yours, Abel.
+> I'd have expected to obtain this functionality by running `make V=1 foodocs'?
 
-Cheers,
-Duane.
+Sam, any thoughts on Makefile passing "-v" to scripts/kernel-doc ?
 
--- 
-"I never could learn to drink that blood and call it wine" - Bob Dylan
+---
+~Randy
