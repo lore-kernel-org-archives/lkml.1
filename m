@@ -1,69 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932119AbYB1VaM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932389AbYB1Vau@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932119AbYB1VaM (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Feb 2008 16:30:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756859AbYB1V3z
+	id S932389AbYB1Vau (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Feb 2008 16:30:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762176AbYB1V36
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Feb 2008 16:29:55 -0500
-Received: from smtp1.linux-foundation.org ([207.189.120.13]:48299 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756747AbYB1V3y (ORCPT
+	Thu, 28 Feb 2008 16:29:58 -0500
+Received: from mu-out-0910.google.com ([209.85.134.189]:6319 "EHLO
+	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757624AbYB1V34 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Feb 2008 16:29:54 -0500
-Date: Thu, 28 Feb 2008 13:21:42 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: "Paul Menage" <menage@google.com>
-Cc: containers@lists.osdl.org, linux-kernel@vger.kernel.org,
-       balbir@linux.vnet.ibm.com, a.p.zijlstra@chello.nl, xemul@openvz.org,
-       pj@sgi.com
-Subject: Re: [RFC] Prefixing cgroup generic control filenames with "cgroup."
-Message-Id: <20080228132142.4d4b1eef.akpm@linux-foundation.org>
-In-Reply-To: <6599ad830802281314s25c033d6tc021725ae28aef8d@mail.gmail.com>
-References: <6599ad830802281314s25c033d6tc021725ae28aef8d@mail.gmail.com>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 28 Feb 2008 16:29:56 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
+        b=H6TnDV9JdMpMNwBU9vnHWtJ1Fx84j7HMam6efd0w6Nk0zq10u+v+OJd1E2iLTlHLZ6Ig/+y0e1PvmrxM2VY9YaO0h3AQXp6TqJRkzwBDCQgpqH3NtHBTPySuZP5GHKdnDXYfc9/JfWKaCe52o6SRbmMRu1U4wW0JrxKREN40Ci8=
+Date: Thu, 28 Feb 2008 22:34:57 +0100
+From: Jarek Poplawski <jarkao2@gmail.com>
+To: bugme-daemon@bugzilla.kernel.org
+Cc: Yannick Dirou <yannick.dirou@axetic.com>,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+Subject: Re: [Bug 10071] kernel hang in inet_init (PREEMPT_RCU problem)
+Message-ID: <20080228213457.GA2770@ami.dom.local>
+References: <bug-10071-11547@http.bugzilla.kernel.org/> <20080228205303.261D311D108@picon.linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080228205303.261D311D108@picon.linux-foundation.org>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 28 Feb 2008 13:14:05 -0800
-"Paul Menage" <menage@google.com> wrote:
+On Thu, Feb 28, 2008 at 12:53:03PM -0800, bugme-daemon@bugzilla.kernel.org wrote:
+> http://bugzilla.kernel.org/show_bug.cgi?id=10071
+...
+> ------- Comment #17 from yannick.dirou@axetic.com  2008-02-28 12:53 -------
+> bingo with classic rcu
 
-> All control files created by cgroup subsystems are given a prefix
-> corresponding to their subsystem name. But control files provided by
-> cgroups itself have no prefix. Currently that set of files is just
-> "tasks", "notify_on_release" and "release_agent", but that set is
-> likely to expand in the future. To reduce the risk of clashes, it
-> would make sense to prefix these files and any future ones with the
-> "cgroup." prefix.
-> 
-> The only reason that I can see *not* to do this would be for
-> compatibility with 2.6.24. Do people think this is a strong enough
-> reason to leave the existing names? If distros are planning to ship
-> products based on 2.6.24, presumably they'd be adding their own
-> patches anyway, so they could add a trivial prefix change patch too.
-> (I realise this discussion would have been more useful *before* 2.6.24
-> shipped, but I didn't quite get round to it ...)
-> 
-> A compromise might be to keep "tasks" unprefixed, and say that future
-> names get the "cgroup." prefix; in this case I'd be inclined to add
-> the prefix to notify_on_release and release_agent on the grounds that
-> there's much less chance of breaking anyone with those files since (I
-> suspect) they're much less used.
-> 
-> Note that if you mount a cgroup filesystem with the "noprefix" option,
-> which is what the cpuset filesystem wrapper does, no subsystems have
-> prefixes, and in this case the "cgroup." prefix wouldn't be used
-> either. So this doesn't affect any users that explicitly mount cpusets
-> rather than cgroups.
-> 
-> Thoughts?
-> 
+Congratulations Yannick!
 
-It would be easier to judge if we could see the full directory tree.
+So, it seems mainly RCU vs. timer(?) problem. I send CC of this message
+to RCU author, linux-kernel and netdev lists.
 
-Because if something is in /foo/bar/cgroup/notify_on_release then
-prefixing the filename with "cgroup_" seems pretty pointless.
+I'm not sure how much time you could/will to offer for this debugging.
+Anyway, if it's possible I think it would be interesting to check with
+CONFIG_PREEMPT_RCU = y again, but CONFIG_HOTPLUG_CPU = n ("Processor
+type and features --> Support for suspend on SMP and ...") in the
+meantime.
 
+Many thanks,
+Jarek P.
+
+
+> [    0.770854] NET: Registered protocol family 2
+> [    0.770868] 4294668327 net/ipv4/af_inet.c 1387
+> [    0.770884] 4294668327 net/ipv4/af_inet.c 1390
+> [    0.770888] 4294668327 net/ipv4/af_inet.c 1393
+> [    0.770891] 4294668327 net/ipv4/af_inet.c 1402
+> [    0.770893] 4294668327 net/ipv4/af_inet.c 1407
+> [    0.773078] 0 4294668328l
+> [    0.774036] 0 4294668329l
+> [    0.775037] 0 4294668330l
+> [    0.775040] 4294668330 net/ipv4/af_inet.c 1419
+> [    0.775077] 4294668330 net/ipv4/af_inet.c 1426
+> [    0.775077] 4294668330 net/ipv4/route.c 2998
+> [    0.775077] 4294668330 net/ipv4/route.c 3009
+> [    0.775077] 4294668330 net/ipv4/route.c 3016
+> [    0.775077] IP route cache hash table entries: 32768 (order: 5, 131072
+> bytes)
+> [    0.775077] 4294668330 net/ipv4/route.c 3027
+> [    0.775492] TCP established hash table entries: 131072 (order: 8, 1048576
+> bytes)
+> [    0.776318] TCP bind hash table entries: 65536 (order: 9, 2359296 bytes)
+> [    0.785670] TCP: Hash tables configured (established 131072 bind 65536)
+> [    0.785715] TCP reno registered
+> 
+> 
+> -- 
+> Configure bugmail: http://bugzilla.kernel.org/userprefs.cgi?tab=email
+> ------- You are receiving this mail because: -------
+> You are on the CC list for the bug, or are watching someone who is.
+> You are the assignee for the bug, or are watching the assignee.
