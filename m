@@ -1,83 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758776AbYB1SJ7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755456AbYB1SNm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758776AbYB1SJ7 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Feb 2008 13:09:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750708AbYB1SJv
+	id S1755456AbYB1SNm (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Feb 2008 13:13:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750785AbYB1SNe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Feb 2008 13:09:51 -0500
-Received: from mtagate4.uk.ibm.com ([195.212.29.137]:18090 "EHLO
-	mtagate4.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750751AbYB1SJv (ORCPT
+	Thu, 28 Feb 2008 13:13:34 -0500
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:40567 "EHLO
+	gprs189-60.eurotel.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750704AbYB1SNe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Feb 2008 13:09:51 -0500
-Message-ID: <47C6F8EB.4050507@fr.ibm.com>
-Date: Thu, 28 Feb 2008 19:09:47 +0100
-From: Cedric Le Goater <clg@fr.ibm.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+	Thu, 28 Feb 2008 13:13:34 -0500
+Date: Thu, 28 Feb 2008 19:13:57 +0100
+From: Pavel Machek <pavel@ucw.cz>
+To: Randy Dunlap <randy.dunlap@oracle.com>
+Cc: kernel list <linux-kernel@vger.kernel.org>,
+       Linux-pm mailing list <linux-pm@lists.osdl.org>
+Subject: Re: [linux-pm] [demo patch/RFC] sleepy linux
+Message-ID: <20080228181357.GA6050@elf.ucw.cz>
+References: <20080226102652.GA1830@elf.ucw.cz> <20080226085422.6408fc4a.randy.dunlap@oracle.com>
 MIME-Version: 1.0
-To: Andy Whitcroft <apw@shadowen.org>
-CC: Randy Dunlap <rdunlap@xenotime.net>, Joel Schopp <jschopp@austin.ibm.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: [PATCH] try to fix false positives reports of checkpatch.pl
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080226085422.6408fc4a.randy.dunlap@oracle.com>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Cedric Le Goater <clg@fr.ibm.com>
+Hi!
 
-This is an humble attempt to fix these reports that seem to be false positives. 
-aren't they ? If so, you should triple check the fix because I got lost in the 
-'elsif' and I took the first shortcut I found :)
+> Is this limited to UP and only one disk?
 
-Thanks for maintaining checkpatch.pl. it's a great tool.
+Yes... for now.
 
-C.
+> [comments below]
 
-ERROR: need consistent spacing around '*' (ctx:WxV)
-#139: FILE: ipc/mq_sysctl.c:17:
-+static void *get_mq(ctl_table *table)
-                               ^
+Thanks!
 
-ERROR: need consistent spacing around '*' (ctx:WxV)
-#148: FILE: ipc/mq_sysctl.c:26:
-+static int proc_mq_dointvec(ctl_table *table, int write, struct file *filp,
-                                       ^
+> > --- /dev/null
+> > +++ b/Documentation/power/sleepy.txt
+> > @@ -0,0 +1,55 @@
+> > +		Sleepy Linux
+> > +		~~~~~~~~~~~~
+> > +
+> > +Copyright 2007 Pavel Machek <pavel@suse.cz>
+> > +	  GPLv2
+> > +
+> > +Current Linux versions can enter suspend-to-RAM just fine, but only
+> > +can do it on explicit request. But suspend-to-RAM is important, eating
+> 
+>   Usually "can only do it" AFAIK.
+> 
+> > +something like 10% of power needed for idle system. Starting suspend
+> > +manually is not too convinient; it is not an option on multiuser
+> 
+>                        convenient;
 
-ERROR: need consistent spacing around '*' (ctx:WxV)
-#158: FILE: ipc/mq_sysctl.c:36:
-+static int proc_mq_dointvec_minmax(ctl_table *table, int write,
-                                              ^
+Spelling applied.
 
-ERROR: need consistent spacing around '*' (ctx:WxV)
-#169: FILE: ipc/mq_sysctl.c:47:
-+static int proc_mq_dointvec(ctl_table *table, int write, struct file *filp,
-                                       ^
+> > +Then, enable SCSI powersave by something like:
+> > +
+> > +mount /sys
+> 
+> Isn't /sys auto-mounted by kernel?
 
-ERROR: need consistent spacing around '*' (ctx:WxV)
-#175: FILE: ipc/mq_sysctl.c:53:
-+static int proc_mq_dointvec_minmax(ctl_table *table, int write,
-                                              ^
+No.
 
-total: 5 errors, 0 warnings, 216 lines checked
+> > +/* The host and its devices are all idle so we can autosuspend */
+> > +static int autosuspend(struct Scsi_Host *host)
+> > +{
+> > +	if (my_pdev && autosuspend_enabled) {
+> > +		printk("ahci: should autosuspend\n");
+> 
+> Use printk() KERN_* levels (multiple places).
 
-Signed-off-by: Cedric Le Goater <clg@fr.ibm.com>
+Well, code obviously needs a lot of work... I said it was ugly ;-).
 
----
- scripts/checkpatch.pl |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+> > @@ -1820,6 +1858,10 @@ static void ahci_thaw(struct ata_port *a
+> >  
+> >  static void ahci_error_handler(struct ata_port *ap)
+> >  {
+> > +	struct ata_host *host = ap->host;
+> > +	int rc;
+> > +	extern int slept;
+> 
+> Eh?
 
-Index: 2.6.25-rc2-mm1/scripts/checkpatch.pl
-===================================================================
---- 2.6.25-rc2-mm1.orig/scripts/checkpatch.pl
-+++ 2.6.25-rc2-mm1/scripts/checkpatch.pl
-@@ -1387,7 +1387,7 @@ sub process {
- 					 $op eq '*' or $op eq '/' or
- 					 $op eq '%')
- 				{
--					if ($ctx !~ /VxV|WxW|VxE|WxE|VxO/) {
-+					if ($ctx !~ /VxV|WxW|VxE|WxE|VxO|WxV/) {
- 						ERROR("need consistent spacing around '$op' $at\n" .
- 							$hereptr);
- 					}
+Pavel in hack mode ;-). Yes, I'll clean it up once I fix the
+fundamental issues -- like UP only etc... 
+									Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
