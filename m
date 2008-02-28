@@ -1,53 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760866AbYB1RrS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761274AbYB1RsX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760866AbYB1RrS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Feb 2008 12:47:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752696AbYB1RrG
+	id S1761274AbYB1RsX (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Feb 2008 12:48:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754189AbYB1RsO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Feb 2008 12:47:06 -0500
-Received: from relay2.sgi.com ([192.48.171.30]:47978 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752005AbYB1RrF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Feb 2008 12:47:05 -0500
-Date: Thu, 28 Feb 2008 11:47:00 -0600
-From: Paul Jackson <pj@sgi.com>
+	Thu, 28 Feb 2008 12:48:14 -0500
+Received: from wolverine01.qualcomm.com ([199.106.114.254]:1434 "EHLO
+	wolverine01.qualcomm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754008AbYB1RsN (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 28 Feb 2008 12:48:13 -0500
+X-IronPort-AV: E=McAfee;i="5200,2160,5240"; a="979321"
+Message-ID: <47C6F3DB.8070309@qualcomm.com>
+Date: Thu, 28 Feb 2008 09:48:11 -0800
+From: Max Krasnyanskiy <maxk@qualcomm.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+MIME-Version: 1.0
 To: Ingo Molnar <mingo@elte.hu>
-Cc: a.p.zijlstra@chello.nl, tglx@linutronix.de, oleg@tv-sign.ru,
-       rostedt@goodmis.org, maxk@qualcomm.com, linux-kernel@vger.kernel.org
+CC: Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Thomas Gleixner <tglx@linutronix.de>, Oleg Nesterov <oleg@tv-sign.ru>,
+       Steven Rostedt <rostedt@goodmis.org>, Paul Jackson <pj@sgi.com>,
+       linux-kernel@vger.kernel.org
 Subject: Re: [RFC/PATCH 0/4] CPUSET driven CPU isolation
-Message-Id: <20080228114700.c9ecf1f0.pj@sgi.com>
-In-Reply-To: <20080228104637.GA9129@elte.hu>
-References: <20080227222103.673194000@chello.nl>
-	<20080228075010.GA28781@elte.hu>
-	<20080228020808.3fd22f77.pj@sgi.com>
-	<20080228090847.GA1133@elte.hu>
-	<20080228031710.3405e405.pj@sgi.com>
-	<20080228104637.GA9129@elte.hu>
-Organization: SGI
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.12.0; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+References: <20080227222103.673194000@chello.nl> <20080228075010.GA28781@elte.hu>
+In-Reply-To: <20080228075010.GA28781@elte.hu>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo wrote:
-> ( an initscripts approach, while i'm sure it works, would always be a
->   bit fragile
+Ingo Molnar wrote:
+> * Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:
+> 
+>> My vision on the direction we should take wrt cpu isolation.
+>>
+>> Next on the list would be figuring out a nice solution to the 
+>> workqueue flush issue.
+> 
+> nice work Peter, i find this "system sets" extension to cpusets a much 
+> more elegant (and much more future-proof) solution than the proposed 
+> spreadout of the limited hack of isolcpus/cpu_isolated_map. It 
+> concentrates us on a single API and on a single mechanism to handle 
+> isolation matters. (be that for clustering/supercomputing or real-time 
+> purposes)
+Come on Ingo. You make it sounds like it's radically different solution.
+At the end of the day we have a bitmap that represents which CPUs can be used 
+for the kernel stuff. How is that different ?
+I was saying all along that cpusets is a higher level API and was discussing 
+or trying to discuss (people were ignoring my questions) ways to integrate it.
 
-Agreed.  In the early days of cpusets, (1) the less I put in the kernel,
-the easier it was to get those first patches accepted, and (2) the more
-there was that remained for me to code in user space, where my employer
-could provide better, leading edge, products for a profit.
+> Thanks for insisting on using cpusets for this!
+> 
+> i've queued up your patches in sched-devel.git, and lets make sure this 
+> has no side-effects on existing functionality. (it shouldnt)
+Hmm, that was easy. Not a single ack. Even the core part is not complete yet. 
+I pointed out several issues. Like the fact that it does not provide full 
+isolation because it does not move timers, does not handle workqueues.
+I did not even get a chance to test this stuff properly and see if it actually 
+solves the usecase I was solving with my patches.
+_Obviously_ we could not have taken my tested solution and evolved it in the 
+direction people wanted to see it evolve, ie integration with the cpusets :(.
 
-Overtime, these user space features that prove their worth, but that
-were difficult to code in the most usable and robust manner in user
-space, such as boot cpusets here, and, on another thread, cpuset
-relative NUMA mempolicies, naturally migrate to the kernel, for wider
-availability.
+My main concern is that it introduces a whole new set of notifiers that 
+perform similar functions to what CPU hotplut already does.
 
--- 
-                  I won't rest till it's the best ...
-                  Programmer, Linux Scalability
-                  Paul Jackson <pj@sgi.com> 1.940.382.4214
+Max
