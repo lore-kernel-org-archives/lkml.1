@@ -1,79 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760769AbYB1Skr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761190AbYB1Smr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760769AbYB1Skr (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Feb 2008 13:40:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752699AbYB1Skh
+	id S1761190AbYB1Smr (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Feb 2008 13:42:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753776AbYB1Smk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Feb 2008 13:40:37 -0500
-Received: from smtp1.linux-foundation.org ([207.189.120.13]:50252 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751657AbYB1Skg (ORCPT
+	Thu, 28 Feb 2008 13:42:40 -0500
+Received: from wx-out-0506.google.com ([66.249.82.235]:35993 "EHLO
+	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752699AbYB1Smj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Feb 2008 13:40:36 -0500
-Date: Thu, 28 Feb 2008 10:39:55 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: "Hawkes Steve-FSH016" <Steve.Hawkes@motorola.com>
-Cc: <davem@davemloft.net>, <joe@perches.com>, <linux-kernel@vger.kernel.org>,
-       <netdev@vger.kernel.org>
-Subject: Re: printk_ratelimit and net_ratelimit conflict and tunable
- behavior
-Message-Id: <20080228103955.570ade3e.akpm@linux-foundation.org>
-In-Reply-To: <7BFDACCD6948EF4D8FE8F4888A91596A01637208@tx14exm60.ds.mot.com>
-References: <200802252036.m1PKaeMY012587@ftw.mot.com>
-	<20080225154521.e119cbb6.akpm@linux-foundation.org>
-	<7BFDACCD6948EF4D8FE8F4888A91596A01637208@tx14exm60.ds.mot.com>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 28 Feb 2008 13:42:39 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:mail-followup-to:mime-version:content-type:content-disposition:user-agent;
+        b=at0CQFJi02y0OpAR2oj2i+Qdnb5ppGcD5WJSxtkBLtV9AuFsoQPeZ2KQQ0/6jEYB6G54VpYOkVnXM1twAW3yzTHWhNud3XvvsIyBg/BR3EVpv/MiC40UkcCbxO+IEymUQOMM8Uwnik0GvN/hv0FknozaFmZUCKyEV7lGOKT+7/s=
+Date: Thu, 28 Feb 2008 15:44:07 -0300
+From: "Carlos R. Mafra" <crmafra2@gmail.com>
+To: mingo@elte.hu
+Cc: linux-kernel@vger.kernel.org
+Subject: Interactivity issue in 2.6.25-rc3
+Message-ID: <20080228184407.GA7117@localhost.ift.unesp.br>
+Mail-Followup-To: mingo@elte.hu, linux-kernel@vger.kernel.org
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 28 Feb 2008 10:19:02 -0600 "Hawkes Steve-FSH016" <Steve.Hawkes@motorola.com> wrote:
+I want to report a bad interactivity which happened in my 
+desktop running the latest kernel (2.6.25-rc3-00081-g7704a8b).
 
-> Andrew Morton wrote:
-> 
-> > This patch causes a large and nasty reject.
-> > Probably because you patched 2.6.24.  We're developing 2.6.25 now, and
-> > the difference between the two is very large inded.  Please raise
-> patches
-> > against Linus's latest tree?
-> 
-> Will do. I'm learning the process. I assume Linus's latest tree is the
-> one
-> listed as the latest prepatch for the stable Linux kernel tree.
+I tried to play 'flightgear' and the desktop became _very_
+slow while flightgear was "loading scenery objects" (a task
+which never finished and I could not play it).
 
-No, the stable tree is 2.6.24.  You'll want
-ftp://ftp.kernel.org/pub/linux/kernel/v2.6/snapshots/
+The desktop is a P4 @ 3.0 GHz, 512MB, with the nv graphics 
+driver. 
 
-> > >  int net_ratelimit(void)
-> > >  {
-> > > -	return __printk_ratelimit(net_msg_cost, net_msg_burst);
-> > > +	static struct printk_ratelimit_state limit_state = {
-> > > +		.toks          = 10 * 5 * HZ,
-> > > +		.last_jiffies  = 0,
-> > > +		.missed        = 0,
-> > > +		.limit_jiffies = 5 * HZ,
-> > > +		.limit_burst   = 10,
-> > > +		.facility      = "net"
-> > > +	};
-> > > +
-> > > +	return __printk_ratelimit(net_msg_cost, net_msg_burst,
-> &limit_state);
-> > 
-> > I don't get it.  There's one instance of limit_state, kernel-wide, and
-> > __printk_ratelimit() modifies it.  What prevents one CPU's activities
-> from
-> > interfering with a second CPU's activities?
-> 
-> The state is protected by the spinlock in __printk_ratelimit, like it is
-> in
-> the current kernel. Am I missing something?
+I ran 'fgfs' firstly as a regular user (mafra) and tried to execute
+Ingo's cfs-debug script as root in a terminal (mrxvt) which had 3 open
+tabs. It took minutes to switch tabs and run cfs-debug-info.sh, which
+completed its job only after I managed to kill flightgear (after more
+than a couple minutes). The result is here:
 
-ah, OK.
+http://www.ift.unesp.br/users/crmafra/cfs-debug-info-2008.02.28-14.04.59
 
-I've occasionally wondered if ratelimiting should be per-callsite rather
-than kernel-wide, but I'm not aware of the present setup causing anyone any
-problems.
+[ I want to emphasize that I started the script while the system
+was slow, waited a few minutes, killed flightgear, and then
+the script finished its job. ]
+
+As I have the group scheduler enabled, I tried to run flightgear as
+root to see what happens. I could not even start to run the debug
+script, because each letter I typed took many seconds to appear.
+
+The mouse pointer however was responsive, but Window Maker wasn't.
+I tried to switch desktops, and after a few minutes the pressing
+of "Alt+5" took effect and the desktop 5 appeared ok in the screen.
+
+Then I tried to go back to desktop 1 with "Alt+1" and after exactly
+12 minutes I gave up and hit "Ctrl-Alt-Backspace". After 5 or
+10 seconds X was killed and everything was normal 
+again (no need to reboot).
+
+Is this experience normal? I know that trying to play a game without
+3D is a crazy thing, but it didn't feel _fair_ to wait minutes to
+see the result of a key press.
 
