@@ -1,57 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761630AbYB1AnR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755442AbYB1AuL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761630AbYB1AnR (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Feb 2008 19:43:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758407AbYB1AnB
+	id S1755442AbYB1AuL (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Feb 2008 19:50:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751218AbYB1At6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Feb 2008 19:43:01 -0500
-Received: from smtp115.sbc.mail.sp1.yahoo.com ([69.147.64.88]:44352 "HELO
-	smtp115.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1758221AbYB1AnA (ORCPT
+	Wed, 27 Feb 2008 19:49:58 -0500
+Received: from smtp-out.google.com ([216.239.45.13]:2364 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751102AbYB1At5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Feb 2008 19:43:00 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=irmQgmVcSIa+mi/DGHzAF1gGcSiCIHWIpJSXHe/zoWiN1BP2eqyWpw/g7zbnYhy7l2+x0/b4mjB7BAnzgemmUjeFtWCgT7DsLkG9/gn0vPLgZiQG0gNTrXAjBHbpbwn9SFlnrr6yOQv7uCzRCOCtAEg23rD89RM6NgbQ0g/PqkM=  ;
-X-YMail-OSG: .JFq8rAVM1lt4QpGDRkYAOp9CyLibr36ynjQxl_ZOtftbbuHnVGVgyqmgDAbbEzuH.2w5V0Dww--
-X-Yahoo-Newman-Property: ymail-3
-From: David Brownell <david-b@pacbell.net>
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [patch 2.6.25-rc2-git] gpio:  <linux/gpio.h> and "no GPIO support here" stubs
-Date: Wed, 27 Feb 2008 16:42:57 -0800
-User-Agent: KMail/1.9.6
-Cc: linux-kernel@vger.kernel.org, cbouatmailru@gmail.com,
-       avorontsov@ru.mvista.com, florian.fainelli@telecomint.eu
-References: <200802221712.17815.david-b@pacbell.net> <20080227154854.6ee9432c.akpm@linux-foundation.org>
-In-Reply-To: <20080227154854.6ee9432c.akpm@linux-foundation.org>
+	Wed, 27 Feb 2008 19:49:57 -0500
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=received:message-id:date:from:to:subject:cc:in-reply-to:
+	mime-version:content-type:content-transfer-encoding:
+	content-disposition:references;
+	b=DuoM3OiaXUlj6M+3Fb+qJ4k22769uBapt7k/uBL5PS5UCrs4I8Le4EKG3pUaKuLOc
+	ITRT5gwBpmDRmyJu7kFYg==
+Message-ID: <6599ad830802271649h29a13ceevf2255dd6235b42ba@mail.gmail.com>
+Date: Wed, 27 Feb 2008 16:49:44 -0800
+From: "Paul Menage" <menage@google.com>
+To: "Paul Jackson" <pj@sgi.com>
+Subject: Re: [PATCH] cpuset: fix return value of cpuset_populate()
+Cc: "Li Zefan" <lizf@cn.fujitsu.com>, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <20080227014135.0c361ab3.pj@sgi.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200802271642.57895.david-b@pacbell.net>
+References: <47C5131A.80508@cn.fujitsu.com>
+	 <20080227014135.0c361ab3.pj@sgi.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > Add a <linux/gpio.h> defining fail/warn stubs for GPIO calls on platforms
-> > that don't support the GPIO programming interface.  That includes the
-> > arch-specific implementation glue otherwise.
-> > 
-> > This facilitates a new model for GPIO usage:  drivers that can use GPIOs
-> > if they're available, but don't require them.  ...
-> > 
-> 
-> Looks sane.
-> 
-> > Please include before 2.6.25-final ...
-> 
-> For what reason?
+On Tue, Feb 26, 2008 at 11:41 PM, Paul Jackson <pj@sgi.com> wrote:
+>
+>  - no need to check err == 0
+>  - the last return value of cgroup_add_file() is ignored
+>
+>  Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
 
-So that 2.6.25 based systems can start to use it.  This patch is in that
-"safe, can't break any existing code" category, so I don't see a downside.
+Looks fine from a cleanliness PoV, although since we don't actually do
+anything with an error result from subsys->populate() (a behaviour
+that I sort of inherited from cpusets ...) it won't make a whole lot
+of difference to the code.
 
-- Dave
+A better change would be to make cpuset_populate() use cgroup_add_files().
 
+Paul
 
+>  ---
+>   kernel/cpuset.c |    4 ++--
+>   1 files changed, 2 insertions(+), 2 deletions(-)
+>
+>  diff --git a/kernel/cpuset.c b/kernel/cpuset.c
+>  index 3e296ed..1c5b2d2 100644
+>  --- a/kernel/cpuset.c
+>  +++ b/kernel/cpuset.c
+>  @@ -1482,10 +1482,10 @@ static int cpuset_populate(struct cgroup_subsys *ss, struct cgroup *cont)
+>         if ((err = cgroup_add_file(cont, ss, &cft_spread_slab)) < 0)
+>                 return err;
+>         /* memory_pressure_enabled is in root cpuset only */
+>  -       if (err == 0 && !cont->parent)
+>  +       if (!cont->parent)
+>                 err = cgroup_add_file(cont, ss,
+>                                          &cft_memory_pressure_enabled);
+>  -       return 0;
+>  +       return err;
+>   }
+>
+>   /*
+>  --
+>  1.5.4.rc3
+>
+>
+>  --
+>                   I won't rest till it's the best ...
+>                   Programmer, Linux Scalability
+>                   Paul Jackson <pj@sgi.com> 1.940.382.4214
+>
