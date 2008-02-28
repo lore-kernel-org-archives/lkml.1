@@ -1,163 +1,164 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761860AbYB1VI5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764472AbYB1VKm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761860AbYB1VI5 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Feb 2008 16:08:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763905AbYB1VI1
+	id S1764472AbYB1VKm (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Feb 2008 16:10:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758807AbYB1VKd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Feb 2008 16:08:27 -0500
-Received: from smtp-out.google.com ([216.239.33.17]:31731 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1762078AbYB1VIY (ORCPT
+	Thu, 28 Feb 2008 16:10:33 -0500
+Received: from mtaout03-winn.ispmail.ntl.com ([81.103.221.49]:14105 "EHLO
+	mtaout03-winn.ispmail.ntl.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751231AbYB1VKc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Feb 2008 16:08:24 -0500
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=received:date:from:x-x-sender:to:cc:subject:in-reply-to:
-	message-id:references:user-agent:mime-version:content-type;
-	b=ZXxC6hwxe917ewOXHpVIe6bLL3z/osZtXM+3bwHg21nPEeOmJXCEi3OVQMmXAiRzy
-	Qc6KX1b1K5ExoTIgaFiqg==
-Date: Thu, 28 Feb 2008 13:08:03 -0800 (PST)
-From: David Rientjes <rientjes@google.com>
-X-X-Sender: rientjes@chino.kir.corp.google.com
-To: Lee Schermerhorn <Lee.Schermerhorn@hp.com>
-cc: Paul Jackson <pj@sgi.com>, Christoph Lameter <clameter@sgi.com>,
-       Andi Kleen <ak@suse.de>, linux-kernel@vger.kernel.org,
-       Michael Kerrisk <mtk-manpages@gmx.net>
-Subject: Re: [patch 5/6] mempolicy: add MPOL_F_RELATIVE_NODES flag
-In-Reply-To: <1204126666.5029.26.camel@localhost>
-Message-ID: <alpine.DEB.1.00.0802281259030.24402@chino.kir.corp.google.com>
-References: <alpine.DEB.1.00.0802250012420.12368@chino.kir.corp.google.com>  <alpine.DEB.1.00.0802250013580.12368@chino.kir.corp.google.com>  <alpine.DEB.1.00.0802250014170.12368@chino.kir.corp.google.com>  <alpine.DEB.1.00.0802250014410.12368@chino.kir.corp.google.com>
-  <alpine.DEB.1.00.0802250016120.12368@chino.kir.corp.google.com>  <alpine.DEB.1.00.0802261704310.25919@chino.kir.corp.google.com> <1204126666.5029.26.camel@localhost>
-User-Agent: Alpine 1.00 (DEB 882 2007-12-20)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Thu, 28 Feb 2008 16:10:32 -0500
+From: Ian Campbell <ijc@hellion.org.uk>
+To: Alexander van Heukelum <heukelum@mailshack.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Alexander van Heukelum <heukelum@fastmail.fm>,
+       "H. Peter Anvin" <hpa@zytor.com>, Andi Kleen <ak@suse.de>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Jeremy Fitzhardinge <jeremy@goop.org>,
+       Mark McLoughlin <markmc@redhat.com>,
+       LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <20080228131341.GA25213@mailshack.com>
+References: <20080224174605.GA21661@mailshack.com>
+	 <47C22568.1010405@zytor.com>
+	 <1203958478.20033.1239002461@webmail.messagingengine.com>
+	 <20080225170134.GA15839@elte.hu> <20080225180750.GA31054@mailshack.com>
+	 <20080228131341.GA25213@mailshack.com>
+Content-Type: text/plain
+Date: Thu, 28 Feb 2008 21:09:56 +0000
+Message-Id: <1204232996.28798.8.camel@cthulhu.hellion.org.uk>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.3 
+Content-Transfer-Encoding: 7bit
+X-SA-Exim-Connect-IP: 192.168.1.223
+X-SA-Exim-Mail-From: ijc@hellion.org.uk
+Subject: Re: [PATCH] reserve end-of-conventional-memory to 1MB on 32-bit
+X-SA-Exim-Version: 4.2.1 (built Tue, 09 Jan 2007 17:23:22 +0000)
+X-SA-Exim-Scanned: Yes (on hopkins.hellion.org.uk)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 27 Feb 2008, Lee Schermerhorn wrote:
 
-> > Here's some examples of the functional changes between the default 
-> > actions of the various mempolicy modes and the new behavior with 
-> > MPOL_F_STATIC_NODES or MPOL_F_RELATIVE_NODES.
+On Thu, 2008-02-28 at 14:13 +0100, Alexander van Heukelum wrote:
+> The 32-bit code still uses reserve_bootmem, so this is not really
+> a unification with the 64-bit version of the ebda reservation code,
+> but at least it provides the same detection logic and reserves the
+> same areas.
 > 
-> Nice work.  Would you consider adding this [with the corrections you
-> note below] to the memory policy doc under the "interaction with
-> cpusets" section?
-> 
+> This does not crash immediately on qemu. No further testing was
+> done! Otherwise:
 
-I think it's overly verbose for adding to documentation.  Other than 
-describing the effects of MPOL_F_STATIC_NODES and MPOL_F_RELATIVE_NODES, I 
-don't think much more in the way of examples need to be provided (they 
-were here to show that the patchset actually works on creation and 
-rebind).
+I haven't tested extensively either but it does seem to solve the
+problem for Xen.
 
-> > 			MPOL_INTERLEAVE
-> > 			---------------
-> > 	mems	nodemask	result		rebind		result
-> > 	1-3	0-2		1-2[*]		4-6		4-5
-> > 	1-3	1-2		1-2		0-2		0-1
-> > 	1-3	1-3		1-3		4-7		4-6
-> > 	1-3	2-4		2-3		0-2		1-2
-> > 	1-3	2-6		2-3		4-7		5-6
-> > 	1-3	4-7		EINVAL
-> > 	1-3	0-7		1-3		4-7		4-6
-> > 
-> > 			MPOL_PREFERRED
-> > 			--------------
-> > 	mems	nodemask	result		rebind		result
-> > 	1-3	0		EINVAL
-> > 	1-3	2		2		4-7		5
-> > 	1-3	5		EINVAL
-> > 
-> > 			MPOL_BIND
-> > 			---------
-> > 	mems	nodemask	result		rebind		result
-> > 	1-3	0-2		1-2		0-2		0-1
-> > 	1-3	1-2		1-2		2-7		2-3
-> > 	1-3	1-3		1-3		0-1		0-1
-> > 	1-3	2-4		2-3		3-6		4-5
-> > 	1-3	2-6		2-3		5		5
-> > 	1-3	4-7		EINVAL
-> > 	1-3	0-7		1-3		1-3		1-3
+Thanks!
+Ian
+
 > 
-> Just a note here:  If you had used the same set of "rebind targets" for
-> _BIND as you did for _INTERLEAVE, I would expect the same results,
-> because were just remapping bit masks in both cases.  Do you agree?
+> Signed-off-by: Alexander van Heukelum <heukelum@fastmail.fm>
+> 
+> ---
+> 
+> Hello Ian, Ingo,
+> 
+> This patch should do the same reservations as the reserve_early
+> patch for 64 bit. Maybe you could try if this solves the problems
+> you are seeing with Xen?
+> 
+> On the other hand, Xen should be able to use those legacy ranges
+> as normal memory. Why doesn't it work? Does Xen use a special
+> bootloader? In that case it could just add the reservation to
+> the e820 memory map that is provided.
+> 
+> Another possible approach to the whole problem is just to ammend
+> the e820 memory map in the boot-code. Thanks to hpa, it is now easy
+> to change this code. Then the kernel can just trust the e820 memory
+> map, and only 'sophisticated' bootloaders need to do something
+> similar by themselves.
+> 
+> Greetings,
+>     Alexander
+> 
+> diff --git a/arch/x86/kernel/setup_32.c b/arch/x86/kernel/setup_32.c
+> index a1d7071..e12cc31 100644
+> --- a/arch/x86/kernel/setup_32.c
+> +++ b/arch/x86/kernel/setup_32.c
+> @@ -385,15 +385,47 @@ unsigned long __init find_max_low_pfn(void)
+>  	return max_low_pfn;
+>  }
 >  
-
-Yes, the results are the same for both interleave and bind and that's 
-actually why I didn't use the same rebind targets.
-
-> >  [*] Notice how the resulting nodemask for all of these examples when
-> >      creating the mempolicy is intersected with mems_allowed.  This is
-> >      the current behavior, with contextualize_policy(), and is identical
-> >      to the initial result of the MPOL_F_STATIC_NODES case.
-> > 
-> >      Perhaps it would make more sense to remap the nodemask when it is
-> >      created, as well, in the ~MPOL_F_STATIC_NODES case.  For example, in
-> >      this case, the "result" would be 1-3 instead.
-> > 
-> >      That is a departure from what is currently implemented in HEAD (and,
-> >      thus, can be used as ample justification for the above behavior) but
-> >      makes more sense.  Thoughts?
+> +#define BIOS_EBDA_SEGMENT 0x40E
+> +#define BIOS_LOWMEM_KILOBYTES 0x413
+> +
+>  /*
+> - * workaround for Dell systems that neglect to reserve EBDA
+> + * The BIOS places the EBDA/XBDA at the top of conventional
+> + * memory, and usually decreases the reported amount of
+> + * conventional memory (int 0x12) too. This also contains a
+> + * workaround for Dell systems that neglect to reserve EBDA.
+> + * The same workaround also avoids a problem with the AMD768MPX
+> + * chipset: reserve a page before VGA to prevent PCI prefetch
+> + * into it (errata #56). Usually the page is reserved anyways,
+> + * unless you have no PS/2 mouse plugged in.
+>   */
+>  static void __init reserve_ebda_region(void)
+>  {
+> -	unsigned int addr;
+> -	addr = get_bios_ebda();
+> -	if (addr)
+> -		reserve_bootmem(addr, PAGE_SIZE, BOOTMEM_DEFAULT);
+> +	unsigned int lowmem, ebda_addr;
+> +
+> +	/* end of low (conventional) memory */
+> +	lowmem = *(unsigned short *)__va(BIOS_LOWMEM_KILOBYTES);
+> +	lowmem <<= 10;
+> +
+> +	/* start of EBDA area */
+> +	ebda_addr = *(unsigned short *)__va(BIOS_EBDA_SEGMENT);
+> +	ebda_addr <<= 4;
+> +
+> +	/* Fixup: bios puts an EBDA in the top 64K segment */
+> +	/* of conventional memory, but does not adjust lowmem. */
+> +	if ((lowmem - ebda_addr) <= 0x10000)
+> +		lowmem = ebda_addr;
+> +
+> +	/* Fixup: bios does not report an EBDA at all. */
+> +	/* Some old Dells seem to need 4k anyhow (bugzilla 2990) */
+> +	if ((ebda_addr == 0) && (lowmem >= 0x9f000))
+> +		lowmem = 0x9f000;
+> +
+> +	/* Paranoia: should never happen, but... */
+> +	if (lowmem >= 0x100000)
+> +		lowmem = 0xa0000;
+> +
+> +	/* reserve all memory between lowmem and the 1MB mark */
+> +	reserve_bootmem(lowmem, 0x100000 - lowmem, BOOTMEM_DEFAULT);
+>  }
+>  
+>  #ifndef CONFIG_NEED_MULTIPLE_NODES
+> @@ -619,16 +651,9 @@ void __init setup_bootmem_allocator(void)
+>  	 */
+>  	reserve_bootmem(0, PAGE_SIZE, BOOTMEM_DEFAULT);
+>  
+> -	/* reserve EBDA region, it's a 4K region */
+> +	/* reserve EBDA region */
+>  	reserve_ebda_region();
+>  
+> -    /* could be an AMD 768MPX chipset. Reserve a page  before VGA to prevent
+> -       PCI prefetch into it (errata #56). Usually the page is reserved anyways,
+> -       unless you have no PS/2 mouse plugged in. */
+> -	if (boot_cpu_data.x86_vendor == X86_VENDOR_AMD &&
+> -	    boot_cpu_data.x86 == 6)
+> -	     reserve_bootmem(0xa0000 - 4096, 4096, BOOTMEM_DEFAULT);
+> -
+>  #ifdef CONFIG_SMP
+>  	/*
+>  	 * But first pinch a few for the stack/trampoline stuff
 > 
-> Thoughts:
-> 
-> 1) this IS a change in behavior, right?  My first inclination is to shy
-> away from this.  However, ...
-> 
+-- 
+Ian Campbell
 
-Yes, it's the current behavior as a result of contextualize_policy() 
-before mpol_new() is ever reached.
+In spite of everything, I still believe that people are good at heart.
+		-- Anne Frank
 
-> 2) the current interaction of mempolicies with cpusets is not well
-> documented--until Paul's cpuset.4 man page hits the streets, anyway.
-> That doc does say that mempolicy is not allowed to use a node outside
-> the cpuset.  It does NOT say how this is enforced--reject vs masking vs
-> remap.  The set_mempolicy(2) and mbind(2) man pages [in at least 2.70
-> man pages] says that you get EINVAL if you specify a node outside the
-> current cpuset constraints.  This was relaxed by the recent patch to
-> "silently restrict" the nodes to mems allowed.
-> 
-> Since we update the man pages anyway, we COULD change it to say that we
-> remap policy to allowed nodes.  However, the application may have chosen
-> the nodes based on some knowledge of hardware topology, such as IO
-> attachement, interrupt handling cpus, ...  In this case, remapping
-> doesn't make so much sense to me.  
-> 
-> If you need/want a mode that remaps policy to mems allowed on
-> installation--e.g., to provide the maximum number of interleave
-> nodes--how about yet another flag, such as '_REMAP, to effect this
-> behavior?
-> 
-
-MPOL_F_RELATIVE_NODES actually does map onto and fold the passed nodemask 
-when the mempolicy is created.  That flag specifically refers to relative 
-nodes within a task's mems_allowed all the time; MPOL_F_STATIC_NODES 
-refers specifically to physical node ids.
-
-So adding MPOL_F_REMAP doesn't make sense for MPOL_F_RELATIVE_NODES since 
-its already mapped onto and folded, and doesn't make sense for 
-MPOL_F_STATIC_NODES since the nodemask is explicitly never remapped.
-
-It would make sense as an optional third flag that would be disjoint from 
-the other two and would only be useful when the mempolicy is created.
-
-> > 			MPOL_INTERLEAVE | MPOL_F_STATIC_NODES
-> > 			-------------------------------------
-> > 	mems	nodemask	result		rebind		result
-> > 	1-3	0-2		1-2		4-6		nil
-> > 	1-3	1-2		1-2		0-2		1-2
-> > 	1-3	1-3		1-3		4-7		nil
-> > 	1-3	2-4		2-3		0-2		2
-> > 	1-3	2-6		2-3		4-7		4-6
-> > 	1-3	4-7		EINVAL
-> > 	1-3	0-7		1-3		4-7		4-7
-> 
-> 'nil' falls back to local allocation, right?
-> 
-
-Yes, it's an interleave over no nodes and is thus a local allocation 
-(current->il_next is numa_node_id()).
-
-		David
