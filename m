@@ -1,112 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757603AbYB1EqW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757494AbYB1Eys@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757603AbYB1EqW (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Feb 2008 23:46:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751731AbYB1EqL
+	id S1757494AbYB1Eys (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Feb 2008 23:54:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751731AbYB1Eyj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Feb 2008 23:46:11 -0500
-Received: from smtp1.linux-foundation.org ([207.189.120.13]:34766 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751299AbYB1EqK (ORCPT
+	Wed, 27 Feb 2008 23:54:39 -0500
+Received: from tomts20-srv.bellnexxia.net ([209.226.175.74]:42638 "EHLO
+	tomts20-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751478AbYB1Eyi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Feb 2008 23:46:10 -0500
-Date: Wed, 27 Feb 2008 20:45:46 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Ian Kent <raven@themaw.net>
-Cc: Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       autofs mailing list <autofs@linux.kernel.org>,
-       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
-       Pavel Emelyanov <xemul@openvz.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>
-Subject: Re: [PATCH 3/4] autofs4 - track uid and gid of last mount requestor
-Message-Id: <20080227204546.72e16e8d.akpm@linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.64.0802261208400.8490@raven.themaw.net>
-References: <Pine.LNX.4.64.0802261151400.8490@raven.themaw.net>
-	<Pine.LNX.4.64.0802261208400.8490@raven.themaw.net>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+	Wed, 27 Feb 2008 23:54:38 -0500
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: Ah4FADjNxUdMQWRV/2dsb2JhbACBVq0JgXo
+Date: Wed, 27 Feb 2008 23:54:33 -0500
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: akpm@linux-foundation.org
+Cc: Jan Kiszka <jan.kiszka@siemens.com>, "Frank Ch. Eigler" <fche@redhat.com>,
+       linux-kernel@vger.kernel.org
+Subject: [PATCH] Linux Kernel Markers - if check format
+Message-ID: <20080228045433.GA32364@Krystal>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.21.3-grsec (i686)
+X-Uptime: 23:53:07 up 17 days, 53 min,  3 users,  load average: 1.61, 1.14,
+	0.95
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 26 Feb 2008 12:23:20 +0900 (WST) Ian Kent <raven@themaw.net> wrote:
+Wrap __mark_check_format() into an if(0) to make sure that parameters such as
 
-> Hi Andrew,
-> 
-> Patch to track the uid and gid of the last process to request
-> a mount for on an autofs dentry.
-> 
-> Signed-off-by: Ian Kent < raven@themaw.net>
-> 
-> Ian
-> 
-> ---
-> diff -up linux-2.6.25-rc2-mm1/fs/autofs4/inode.c.track-last-mount-ids linux-2.6.25-rc2-mm1/fs/autofs4/inode.c
-> --- linux-2.6.25-rc2-mm1/fs/autofs4/inode.c.track-last-mount-ids	2008-02-20 13:11:28.000000000 +0900
-> +++ linux-2.6.25-rc2-mm1/fs/autofs4/inode.c	2008-02-20 13:12:23.000000000 +0900
-> @@ -43,6 +43,8 @@ struct autofs_info *autofs4_init_ino(str
->  
->  	ino->flags = 0;
->  	ino->mode = mode;
-> +	ino->uid = 0;
-> +	ino->gid = 0;
->  	ino->inode = NULL;
->  	ino->dentry = NULL;
->  	ino->size = 0;
-> diff -up linux-2.6.25-rc2-mm1/fs/autofs4/autofs_i.h.track-last-mount-ids linux-2.6.25-rc2-mm1/fs/autofs4/autofs_i.h
-> --- linux-2.6.25-rc2-mm1/fs/autofs4/autofs_i.h.track-last-mount-ids	2008-02-20 13:14:03.000000000 +0900
-> +++ linux-2.6.25-rc2-mm1/fs/autofs4/autofs_i.h	2008-02-20 13:14:34.000000000 +0900
-> @@ -58,6 +58,9 @@ struct autofs_info {
->  	unsigned long last_used;
->  	atomic_t count;
->  
-> +	uid_t uid;
-> +	gid_t gid;
-> +
->  	mode_t	mode;
->  	size_t	size;
->  
-> diff -up linux-2.6.25-rc2-mm1/fs/autofs4/waitq.c.track-last-mount-ids linux-2.6.25-rc2-mm1/fs/autofs4/waitq.c
-> --- linux-2.6.25-rc2-mm1/fs/autofs4/waitq.c.track-last-mount-ids	2008-02-20 13:06:20.000000000 +0900
-> +++ linux-2.6.25-rc2-mm1/fs/autofs4/waitq.c	2008-02-20 13:10:23.000000000 +0900
-> @@ -363,6 +363,38 @@ int autofs4_wait(struct autofs_sb_info *
->  
->  	status = wq->status;
->  
-> +	/*
-> +	 * For direct and offset mounts we need to track the requestor
-> +	 * uid and gid in the dentry info struct. This is so it can be
-> +	 * supplied, on request, by the misc device ioctl interface.
-> +	 * This is needed during daemon resatart when reconnecting
-> +	 * to existing, active, autofs mounts. The uid and gid (and
-> +	 * related string values) may be used for macro substitution
-> +	 * in autofs mount maps.
-> +	 */
-> +	if (!status) {
-> +		struct dentry *de = NULL;
-> +
-> +		/* direct mount or browsable map */
-> +		ino = autofs4_dentry_ino(dentry);
-> +		if (!ino) {
-> +			/* If not lookup actual dentry used */
-> +			de = d_lookup(dentry->d_parent, &dentry->d_name);
-> +			ino = autofs4_dentry_ino(de);
-> +		}
-> +
-> +		/* Set mount requestor */
-> +		if (ino) {
-> +			if (ino) {
-> +				ino->uid = wq->uid;
-> +				ino->gid = wq->gid;
-> +			}
-> +		}
-> +
-> +		if (de)
-> +			dput(de);
-> +	}
-> +
+trace_mark(mm_page_alloc, "order %u pfn %lu", order, page?page_to_pfn(page):0);
 
-But uids and gids are no longer system-wide-unique.  Two different users
-can have the same identifiers in different namespaces.  What happens then?
+(where page_to_pfn() has side-effects) won't generate code because of the
+__mark_check_format().
+
+Thanks to Jan Kiszka for reporting this.
+
+Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+CC: Jan Kiszka <jan.kiszka@siemens.com>
+CC: "Frank Ch. Eigler" <fche@redhat.com>
+---
+ include/linux/marker.h |    8 +++++++-
+ 1 file changed, 7 insertions(+), 1 deletion(-)
+
+Index: linux-2.6-lttng/include/linux/marker.h
+===================================================================
+--- linux-2.6-lttng.orig/include/linux/marker.h	2008-02-27 11:08:50.000000000 -0500
++++ linux-2.6-lttng/include/linux/marker.h	2008-02-27 11:11:27.000000000 -0500
+@@ -104,10 +104,16 @@ static inline void marker_update_probe_r
+ #define MARK_NOARGS " "
+ 
+ /* To be used for string format validity checking with gcc */
+-static inline void __printf(1, 2) __mark_check_format(const char *fmt, ...)
++static inline void __printf(1, 2) ___mark_check_format(const char *fmt, ...)
+ {
+ }
+ 
++#define __mark_check_format(format, args...)				\
++	do {								\
++		if (0)							\
++			___mark_check_format(format, ## args);		\
++	} while (0)
++
+ extern marker_probe_func __mark_empty_function;
+ 
+ extern void marker_probe_cb(const struct marker *mdata,
+
+-- 
+Mathieu Desnoyers
+Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
