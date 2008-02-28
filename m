@@ -1,164 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764472AbYB1VKm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764698AbYB1VLc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764472AbYB1VKm (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Feb 2008 16:10:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758807AbYB1VKd
+	id S1764698AbYB1VLc (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Feb 2008 16:11:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759851AbYB1VLX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Feb 2008 16:10:33 -0500
-Received: from mtaout03-winn.ispmail.ntl.com ([81.103.221.49]:14105 "EHLO
-	mtaout03-winn.ispmail.ntl.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751231AbYB1VKc (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Feb 2008 16:10:32 -0500
-From: Ian Campbell <ijc@hellion.org.uk>
-To: Alexander van Heukelum <heukelum@mailshack.com>
-Cc: Ingo Molnar <mingo@elte.hu>, Alexander van Heukelum <heukelum@fastmail.fm>,
-       "H. Peter Anvin" <hpa@zytor.com>, Andi Kleen <ak@suse.de>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Jeremy Fitzhardinge <jeremy@goop.org>,
-       Mark McLoughlin <markmc@redhat.com>,
-       LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <20080228131341.GA25213@mailshack.com>
-References: <20080224174605.GA21661@mailshack.com>
-	 <47C22568.1010405@zytor.com>
-	 <1203958478.20033.1239002461@webmail.messagingengine.com>
-	 <20080225170134.GA15839@elte.hu> <20080225180750.GA31054@mailshack.com>
-	 <20080228131341.GA25213@mailshack.com>
-Content-Type: text/plain
-Date: Thu, 28 Feb 2008 21:09:56 +0000
-Message-Id: <1204232996.28798.8.camel@cthulhu.hellion.org.uk>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 
+	Thu, 28 Feb 2008 16:11:23 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:58030 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754291AbYB1VLW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 28 Feb 2008 16:11:22 -0500
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-X-SA-Exim-Connect-IP: 192.168.1.223
-X-SA-Exim-Mail-From: ijc@hellion.org.uk
-Subject: Re: [PATCH] reserve end-of-conventional-memory to 1MB on 32-bit
-X-SA-Exim-Version: 4.2.1 (built Tue, 09 Jan 2007 17:23:22 +0000)
-X-SA-Exim-Scanned: Yes (on hopkins.hellion.org.uk)
+From: Roland McGrath <roland@redhat.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+X-Fcc: ~/Mail/linus
+Cc: torvalds@linux-foundation.org, mingo@elte.hu, linux-kernel@vger.kernel.org,
+       shaohua.li@intel.com, linux-ia64@vger.kernel.org
+Subject: Re: [PATCH] core dump: user_regset writeback
+In-Reply-To: Andrew Morton's message of  Thursday, 28 February 2008 12:45:22 -0800 <20080228124522.3ae08f19.akpm@linux-foundation.org>
+X-Fcc: ~/Mail/linus
+References: <20080227200638.15D092700FD@magilla.localdomain>
+	<20080228124522.3ae08f19.akpm@linux-foundation.org>
+X-Windows: form follows malfunction.
+Message-Id: <20080228211047.AFDF92700FD@magilla.localdomain>
+Date: Thu, 28 Feb 2008 13:10:47 -0800 (PST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+> Is there a need for this in 2.6.25?
 
-On Thu, 2008-02-28 at 14:13 +0100, Alexander van Heukelum wrote:
-> The 32-bit code still uses reserve_bootmem, so this is not really
-> a unification with the 64-bit version of the ebda reservation code,
-> but at least it provides the same detection logic and reserves the
-> same areas.
-> 
-> This does not crash immediately on qemu. No further testing was
-> done! Otherwise:
+It is a prerequisite for ia64 to switch on CORE_DUMP_USE_REGSET.  (It's
+also a very low-impact patch easy to convince oneself does nothing on other
+machines, and it's in new 2.6.25 code so far used only on x86, powerpc, and
+sparc.)  I think those patches are on their way to being merged by ia64
+maintainers.  But I don't know what their targets are.  I'm guessing not
+til after .25.  Shaohua Li is driving that effort.
 
-I haven't tested extensively either but it does seem to solve the
-problem for Xen.
 
-Thanks!
-Ian
-
-> 
-> Signed-off-by: Alexander van Heukelum <heukelum@fastmail.fm>
-> 
-> ---
-> 
-> Hello Ian, Ingo,
-> 
-> This patch should do the same reservations as the reserve_early
-> patch for 64 bit. Maybe you could try if this solves the problems
-> you are seeing with Xen?
-> 
-> On the other hand, Xen should be able to use those legacy ranges
-> as normal memory. Why doesn't it work? Does Xen use a special
-> bootloader? In that case it could just add the reservation to
-> the e820 memory map that is provided.
-> 
-> Another possible approach to the whole problem is just to ammend
-> the e820 memory map in the boot-code. Thanks to hpa, it is now easy
-> to change this code. Then the kernel can just trust the e820 memory
-> map, and only 'sophisticated' bootloaders need to do something
-> similar by themselves.
-> 
-> Greetings,
->     Alexander
-> 
-> diff --git a/arch/x86/kernel/setup_32.c b/arch/x86/kernel/setup_32.c
-> index a1d7071..e12cc31 100644
-> --- a/arch/x86/kernel/setup_32.c
-> +++ b/arch/x86/kernel/setup_32.c
-> @@ -385,15 +385,47 @@ unsigned long __init find_max_low_pfn(void)
->  	return max_low_pfn;
->  }
->  
-> +#define BIOS_EBDA_SEGMENT 0x40E
-> +#define BIOS_LOWMEM_KILOBYTES 0x413
-> +
->  /*
-> - * workaround for Dell systems that neglect to reserve EBDA
-> + * The BIOS places the EBDA/XBDA at the top of conventional
-> + * memory, and usually decreases the reported amount of
-> + * conventional memory (int 0x12) too. This also contains a
-> + * workaround for Dell systems that neglect to reserve EBDA.
-> + * The same workaround also avoids a problem with the AMD768MPX
-> + * chipset: reserve a page before VGA to prevent PCI prefetch
-> + * into it (errata #56). Usually the page is reserved anyways,
-> + * unless you have no PS/2 mouse plugged in.
->   */
->  static void __init reserve_ebda_region(void)
->  {
-> -	unsigned int addr;
-> -	addr = get_bios_ebda();
-> -	if (addr)
-> -		reserve_bootmem(addr, PAGE_SIZE, BOOTMEM_DEFAULT);
-> +	unsigned int lowmem, ebda_addr;
-> +
-> +	/* end of low (conventional) memory */
-> +	lowmem = *(unsigned short *)__va(BIOS_LOWMEM_KILOBYTES);
-> +	lowmem <<= 10;
-> +
-> +	/* start of EBDA area */
-> +	ebda_addr = *(unsigned short *)__va(BIOS_EBDA_SEGMENT);
-> +	ebda_addr <<= 4;
-> +
-> +	/* Fixup: bios puts an EBDA in the top 64K segment */
-> +	/* of conventional memory, but does not adjust lowmem. */
-> +	if ((lowmem - ebda_addr) <= 0x10000)
-> +		lowmem = ebda_addr;
-> +
-> +	/* Fixup: bios does not report an EBDA at all. */
-> +	/* Some old Dells seem to need 4k anyhow (bugzilla 2990) */
-> +	if ((ebda_addr == 0) && (lowmem >= 0x9f000))
-> +		lowmem = 0x9f000;
-> +
-> +	/* Paranoia: should never happen, but... */
-> +	if (lowmem >= 0x100000)
-> +		lowmem = 0xa0000;
-> +
-> +	/* reserve all memory between lowmem and the 1MB mark */
-> +	reserve_bootmem(lowmem, 0x100000 - lowmem, BOOTMEM_DEFAULT);
->  }
->  
->  #ifndef CONFIG_NEED_MULTIPLE_NODES
-> @@ -619,16 +651,9 @@ void __init setup_bootmem_allocator(void)
->  	 */
->  	reserve_bootmem(0, PAGE_SIZE, BOOTMEM_DEFAULT);
->  
-> -	/* reserve EBDA region, it's a 4K region */
-> +	/* reserve EBDA region */
->  	reserve_ebda_region();
->  
-> -    /* could be an AMD 768MPX chipset. Reserve a page  before VGA to prevent
-> -       PCI prefetch into it (errata #56). Usually the page is reserved anyways,
-> -       unless you have no PS/2 mouse plugged in. */
-> -	if (boot_cpu_data.x86_vendor == X86_VENDOR_AMD &&
-> -	    boot_cpu_data.x86 == 6)
-> -	     reserve_bootmem(0xa0000 - 4096, 4096, BOOTMEM_DEFAULT);
-> -
->  #ifdef CONFIG_SMP
->  	/*
->  	 * But first pinch a few for the stack/trampoline stuff
-> 
--- 
-Ian Campbell
-
-In spite of everything, I still believe that people are good at heart.
-		-- Anne Frank
-
+Thanks,
+Roland
