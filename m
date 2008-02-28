@@ -1,88 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932134AbYB1TN2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762468AbYB1TNr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932134AbYB1TN2 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Feb 2008 14:13:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760745AbYB1TL2
+	id S1762468AbYB1TNr (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Feb 2008 14:13:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762092AbYB1TMk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Feb 2008 14:11:28 -0500
-Received: from gv-out-0910.google.com ([216.239.58.184]:33939 "EHLO
-	gv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760393AbYB1TLZ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Feb 2008 14:11:25 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:to:cc:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=g08eFoMSEvMy4RXcc6PGrJizPF93+LQ9XEz8+d3r6svPmWJypl9+InqUBbo3rbD0buDJm7QCjTWsFtHrQKdpO+w7kDLPVX4Drh/ASI/mlqNJtL5/oM+oQQrvCR3IjkkLpl76ebIdgKsU4Bw/QTq16Yt+BbvPasQBW+0Z9LawrdE=
-Subject: [PATCH 6/8] sound: pcxhr_core.c fix shadowed variable warning
-From: Harvey Harrison <harvey.harrison@gmail.com>
-To: Takashi Iwai <tiwai@suse.de>
-Cc: LKML <linux-kernel@vger.kernel.org>
-Content-Type: text/plain
-Date: Thu, 28 Feb 2008 11:11:14 -0800
-Message-Id: <1204225874.20280.85.camel@brick>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
-Content-Transfer-Encoding: 7bit
+	Thu, 28 Feb 2008 14:12:40 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:43622 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1761230AbYB1TMi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 28 Feb 2008 14:12:38 -0500
+Date: Thu, 28 Feb 2008 20:12:14 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Steven Rostedt <srostedt@redhat.com>,
+       Lee Schermerhorn <Lee.Schermerhorn@hp.com>,
+       linux-ia64 <linux-ia64@vger.kernel.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Tony Luck <tony.luck@intel.com>, Ingo Molnar <mingo@redhat.com>,
+       Bob Picco <bob.picco@hp.com>, Eric Whitney <eric.whitney@hp.com>
+Subject: Re: 2.6.25-rc2-mm1 - boot hangs on ia64
+Message-ID: <20080228191214.GA17872@elte.hu>
+References: <20080227103831.423F.KOSAKI.MOTOHIRO@jp.fujitsu.com> <20080227071118.GA4638@elte.hu> <20080228192509.BDCF.KOSAKI.MOTOHIRO@jp.fujitsu.com> <20080228115041.GA22082@elte.hu> <20080228101343.1b9548e6.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080228101343.1b9548e6.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Inner loop redeclares err with u32 rather than int, stupid fix here
-is to change the inner err to err2.
-sound/pci/pcxhr/pcxhr_core.c:1008:8: warning: symbol 'err' shadows an earlier one
-sound/pci/pcxhr/pcxhr_core.c:983:6: originally declared here
 
-Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
----
- sound/pci/pcxhr/pcxhr_core.c |   20 ++++++++++----------
- 1 files changed, 10 insertions(+), 10 deletions(-)
+* Andrew Morton <akpm@linux-foundation.org> wrote:
 
-diff --git a/sound/pci/pcxhr/pcxhr_core.c b/sound/pci/pcxhr/pcxhr_core.c
-index c4e415d..5287a80 100644
---- a/sound/pci/pcxhr/pcxhr_core.c
-+++ b/sound/pci/pcxhr/pcxhr_core.c
-@@ -1005,29 +1005,29 @@ void pcxhr_msg_tasklet(unsigned long arg)
- 			int nb_stream = (prmh->stat[i] >> (2*FIELD_SIZE)) & MASK_FIRST_FIELD;
- 			int pipe = prmh->stat[i] & MASK_FIRST_FIELD;
- 			int is_capture = prmh->stat[i] & 0x400000;
--			u32 err;
-+			u32 err2;
- 
- 			if (prmh->stat[i] & 0x800000) {	/* if BIT_END */
- 				snd_printdd("TASKLET : End%sPipe %d\n",
- 					    is_capture ? "Record" : "Play", pipe);
- 			}
- 			i++;
--			err = prmh->stat[i] ? prmh->stat[i] : prmh->stat[i+1];
--			if (err)
--				pcxhr_handle_async_err(mgr, err, PCXHR_ERR_PIPE,
-+			err2 = prmh->stat[i] ? prmh->stat[i] : prmh->stat[i+1];
-+			if (err2)
-+				pcxhr_handle_async_err(mgr, err2, PCXHR_ERR_PIPE,
- 						       pipe, is_capture);
- 			i += 2;
- 			for (j = 0; j < nb_stream; j++) {
--				err = prmh->stat[i] ? prmh->stat[i] : prmh->stat[i+1];
--				if (err)
--					pcxhr_handle_async_err(mgr, err, PCXHR_ERR_STREAM,
-+				err2 = prmh->stat[i] ? prmh->stat[i] : prmh->stat[i+1];
-+				if (err2)
-+					pcxhr_handle_async_err(mgr, err2, PCXHR_ERR_STREAM,
- 							       pipe, is_capture);
- 				i += 2;
- 			}
- 			for (j = 0; j < nb_audio; j++) {
--				err = prmh->stat[i] ? prmh->stat[i] : prmh->stat[i+1];
--				if (err)
--					pcxhr_handle_async_err(mgr, err, PCXHR_ERR_AUDIO,
-+				err2 = prmh->stat[i] ? prmh->stat[i] : prmh->stat[i+1];
-+				if (err2)
-+					pcxhr_handle_async_err(mgr, err2, PCXHR_ERR_AUDIO,
- 							       pipe, is_capture);
- 				i += 2;
- 			}
--- 
-1.5.4.3.342.g99e8
+> On Thu, 28 Feb 2008 12:50:41 +0100 Ingo Molnar <mingo@elte.hu> wrote:
+> 
+> > @@ -1000,7 +1001,7 @@ void release_console_sem(void)
+> >  	 * If we try to wake up klogd while printing with the runqueue lock
+> >  	 * held, this will deadlock.
+> >  	 */
+> > -	if (wake_klogd && !runqueue_is_locked())
+> > +	if (wake_klogd)
+> >  		wake_up_klogd();
+> >  }
+> 
+> I don't think we shoudl have added that hack in the first place.  It 
+> solves a problem which about three developers hit four times in five 
+> years but it has made kernel logging less reliable for everyone.
 
+well, the problem was ia64, not a problem on x86 or other platforms. The 
+problem here is ia64 not setting up percpu data structures soon enough. 
+It has blown up in the past in other areas, and it will likely blow up 
+in the future in other areas as well. It's just not robust to have init 
+dependencies on such basic data structures like percpu areas like that.
 
+	Ingo
