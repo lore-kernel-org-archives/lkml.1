@@ -1,74 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758830AbYB1WA7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761627AbYB1WFK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758830AbYB1WA7 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Feb 2008 17:00:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759551AbYB1WAh
+	id S1761627AbYB1WFK (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Feb 2008 17:05:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754134AbYB1WE7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Feb 2008 17:00:37 -0500
-Received: from www.tglx.de ([62.245.132.106]:40648 "EHLO www.tglx.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759140AbYB1WAg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Feb 2008 17:00:36 -0500
-Date: Thu, 28 Feb 2008 22:58:49 +0100 (CET)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Andrew Morton <akpm@linux-foundation.org>
-cc: Segher Boessenkool <segher@kernel.crashing.org>,
-       linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
-       john stultz <johnstul@us.ibm.com>
-Subject: Re: [PATCH] Prevent the loop in timespec_add_ns() to be optimised
- away
-In-Reply-To: <20080227154341.824efe3c.akpm@linux-foundation.org>
-Message-ID: <alpine.LFD.1.00.0802282257490.3111@apollo.tec.linutronix.de>
-References: <6a95d77ad55b29ff2d856c9e1f7dd79682370300.1203715782.git.segher@kernel.crashing.org> <20080227154341.824efe3c.akpm@linux-foundation.org>
-User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
+	Thu, 28 Feb 2008 17:04:59 -0500
+Received: from vs166246.vserver.de ([62.75.166.246]:45999 "EHLO
+	vs166246.vserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754084AbYB1WE6 convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 28 Feb 2008 17:04:58 -0500
+From: Michael Buesch <mb@bu3sch.de>
+To: "Alexey Zaytsev" <alexey.zaytsev@gmail.com>
+Subject: Re: bcm43xx regression in 2.6.24 (with patch)
+Date: Thu, 28 Feb 2008 23:03:42 +0100
+User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
+Cc: "John W. Linville" <linville@tuxdriver.com>, "Ingo Molnar" <mingo@elte.hu>,
+       "Alexey Zaytsev" <zaytsev.a@protei.ru>, "Greg KH" <greg@kroah.com>,
+       linux-kernel@vger.kernel.org
+References: <47BEAF3B.3080809@protei.ru> <f19298770802261412j7a3fec4bv1754db8123796d54@mail.gmail.com> <200802262341.55675.mb@bu3sch.de>
+In-Reply-To: <200802262341.55675.mb@bu3sch.de>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+Message-Id: <200802282303.42676.mb@bu3sch.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 27 Feb 2008, Andrew Morton wrote:
+On Tuesday 26 February 2008 23:41:55 Michael Buesch wrote:
+> On Tuesday 26 February 2008 23:12:32 Alexey Zaytsev wrote:
+> > >  Yeah, seems so. But if you are willing to test an adjusted version, I can
+> > >  probably do a backported version of this patch.
+> > >  This patch is well tested and does the right thing, so I'm willing to sign
+> > >  off a backported version of this.
+> > >  First need to find the place in the old phy.c code that matches the new wa.c code.
+> > >
+> > I'll do the testing.
+> 
+> Index: linux-2.6.24.3/drivers/net/wireless/b43/dma.c
+> ===================================================================
+> --- linux-2.6.24.3.orig/drivers/net/wireless/b43/dma.c	2008-02-26 23:39:39.000000000 +0100
+> +++ linux-2.6.24.3/drivers/net/wireless/b43/dma.c	2008-02-26 23:39:43.000000000 +0100
+> @@ -165,7 +165,7 @@ static void op64_fill_descriptor(struct 
+>  	addrhi = (((u64) dmaaddr >> 32) & ~SSB_DMA_TRANSLATION_MASK);
+>  	addrext = (((u64) dmaaddr >> 32) & SSB_DMA_TRANSLATION_MASK)
+[snip]
 
-> On Fri, 22 Feb 2008 22:40:45 +0100
-> Segher Boessenkool <segher@kernel.crashing.org> wrote:
-> 
-> > ...since some architectures don't support __udivdi3() (and
-> > we don't want to use that, anyway).
-> > 
-> > Signed-off-by: Segher Boessenkool <segher@kernel.crashing.org>
-> > ---
-> >  include/linux/time.h |    4 ++++
-> >  1 files changed, 4 insertions(+), 0 deletions(-)
-> > 
-> > diff --git a/include/linux/time.h b/include/linux/time.h
-> > index 2091a19..d32ef0a 100644
-> > --- a/include/linux/time.h
-> > +++ b/include/linux/time.h
-> > @@ -174,6 +174,10 @@ static inline void timespec_add_ns(struct timespec *a, u64 ns)
-> >  {
-> >  	ns += a->tv_nsec;
-> >  	while(unlikely(ns >= NSEC_PER_SEC)) {
-> > +		/* The following asm() prevents the compiler from
-> > +		 * optimising this loop into a modulo operation.  */
-> > +		asm("" : "+r"(ns));
-> > +
-> >  		ns -= NSEC_PER_SEC;
-> >  		a->tv_sec++;
-> >  	}
-> 
-> It's pretty sad that we need to turn this into a loop just because of the
-> __udivdi3() thing.
-> 
-> otoh, it's rarely occurring, and it could be that the number of times it
-> loops is usually 1 (if it wasn't zero), so perhaps a loop is faster than a
-> divide anyway.
-> 
-> This code is probably too large to be inlined.
-> 
-> I queued this patch as needed-in-2.6.25, to-be-merged-via-Thomas.
+So are you actually going to do this anytime soon?
 
-Are you going to send it or should I grab it from the mailing list
-myself ?
-
-Thanks,
-	tglx
+-- 
+Greetings Michael.
