@@ -1,201 +1,187 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760969AbYB1Tvm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932374AbYB1TwD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760969AbYB1Tvm (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Feb 2008 14:51:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758918AbYB1Tmb
+	id S932374AbYB1TwD (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Feb 2008 14:52:03 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757196AbYB1Tmc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Feb 2008 14:42:31 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:45333 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759493AbYB1TmH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Feb 2008 14:42:07 -0500
-Message-Id: <20080228192929.537996441@redhat.com>
-References: <20080228192908.126720629@redhat.com>
-User-Agent: quilt/0.46-1
-Date: Thu, 28 Feb 2008 14:29:26 -0500
-From: Rik van Riel <riel@redhat.com>
-To: linux-kernel@vger.kernel.org
-Cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Lee Schermerhorn <Lee.Schermerhorn@hp.com>, linux-mm@kvack.org,
-       Lee Schermerhorn <lee.schermerhorn@hp.com>
-Subject: [patch 18/21] mlock vma pages under mmap_sem held for read
-Content-Disposition: inline; filename=noreclaim-04.1a-lock-vma-pages-under-read-lock.patch
+	Thu, 28 Feb 2008 14:42:32 -0500
+Received: from e36.co.us.ibm.com ([32.97.110.154]:35903 "EHLO
+	e36.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1763305AbYB1TmU (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 28 Feb 2008 14:42:20 -0500
+Date: Thu, 28 Feb 2008 13:42:09 -0600
+From: "Serge E. Hallyn" <serue@us.ibm.com>
+To: BuraphaLinux Server <buraphalinuxserver@gmail.com>
+Cc: serge@hallyn.com, lkml <linux-kernel@vger.kernel.org>,
+       linux-security-module@vger.kernel.org,
+       Andrew Morgan <morgan@kernel.org>, Stephen Smalley <sds@epoch.ncsc.mil>,
+       Mike Galbraith <efault@gmx.de>, elendil@planet.nl
+Subject: Re: [PATCH 1/1] file capabilities: remove cap_task_kill()
+Message-ID: <20080228194209.GA16587@sergelap.austin.ibm.com>
+References: <20080228173817.GA32661@vino.hallyn.com> <5d75f4610802281114s6802b8aey6bb3748d09953df6@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <5d75f4610802281114s6802b8aey6bb3748d09953df6@mail.gmail.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-V2 -> V3:
-+ rebase to 23-mm1 atop RvR's split lru series [no change]
-+ fix function return types [void -> int] to fix build when
-  not configured.
+Quoting BuraphaLinux Server (buraphalinuxserver@gmail.com):
+> For 2.6.25-rc3,
+> Tested-By: John Gatewood Ham <buraphalinuxserver@gmail.com>
+> 
+> This fixes the 'at' command for non-root users.  Thank you.
 
-New in V2.
+Cool, thanks much for testing.
 
-We need to hold the mmap_sem for write to initiatate mlock()/munlock()
-because we may need to merge/split vmas.  However, this can lead to
-very long lock hold times attempting to fault in a large memory region
-to mlock it into memory.   This can hold off other faults against the
-mm [multithreaded tasks] and other scans of the mm, such as via /proc.
-To alleviate this, downgrade the mmap_sem to read mode during the 
-population of the region for locking.  This is especially the case 
-if we need to reclaim memory to lock down the region.  We [probably?]
-don't need to do this for unlocking as all of the pages should be
-resident--they're already mlocked.
+-serge
 
-Now, the caller's of the mlock functions [mlock_fixup() and 
-mlock_vma_pages_range()] expect the mmap_sem to be returned in write
-mode.  Changing all callers appears to be way too much effort at this
-point.  So, restore write mode before returning.  Note that this opens
-a window where the mmap list could change in a multithreaded process.
-So, at least for mlock_fixup(), where we could be called in a loop over
-multiple vmas, we check that a vma still exists at the start address
-and that vma still covers the page range [start,end).  If not, we return
-an error, -EAGAIN, and let the caller deal with it.
-
-Return -EAGAIN from mlock_vma_pages_range() function and mlock_fixup()
-if the vma at 'start' disappears or changes so that the page range
-[start,end) is no longer contained in the vma.  Again, let the caller
-deal with it.  Looks like only sys_remap_file_pages() [via mmap_region()]
-should actually care.
-
-With this patch, I no longer see processes like ps(1) blocked for seconds
-or minutes at a time waiting for a large [multiple gigabyte] region to be
-locked down.  
-
-Signed-off-by:  Lee Schermerhorn <lee.schermerhorn@hp.com>
-Signed-off-by:  Rik van Riel <riel@redhat.com>
-
-Index: linux-2.6.25-rc2-mm1/mm/mlock.c
-===================================================================
---- linux-2.6.25-rc2-mm1.orig/mm/mlock.c	2008-02-28 12:49:02.000000000 -0500
-+++ linux-2.6.25-rc2-mm1/mm/mlock.c	2008-02-28 12:49:09.000000000 -0500
-@@ -200,6 +200,37 @@ int __mlock_vma_pages_range(struct vm_ar
- 	return ret;
- }
- 
-+/**
-+ * mlock_vma_pages_range
-+ * @vma - vm area to mlock into memory
-+ * @start - start address in @vma of range to mlock,
-+ * @end   - end address in @vma of range
-+ *
-+ * Called with current->mm->mmap_sem held write locked.  Downgrade to read
-+ * for faulting in pages.  This can take a looong time for large segments.
-+ *
-+ * We need to restore the mmap_sem to write locked because our callers'
-+ * callers expect this.	 However, because the mmap could have changed
-+ * [in a multi-threaded process], we need to recheck.
-+ */
-+int mlock_vma_pages_range(struct vm_area_struct *vma,
-+			unsigned long start, unsigned long end)
-+{
-+	struct mm_struct *mm = vma->vm_mm;
-+
-+	downgrade_write(&mm->mmap_sem);
-+	__mlock_vma_pages_range(vma, start, end, 1);
-+
-+	up_read(&mm->mmap_sem);
-+	/* vma can change or disappear */
-+	down_write(&mm->mmap_sem);
-+	vma = find_vma(mm, start);
-+	/* non-NULL vma must contain @start, but need to check @end */
-+	if (!vma ||  end > vma->vm_end)
-+		return -EAGAIN;
-+	return 0;
-+}
-+
- #else /* CONFIG_NORECLAIM_MLOCK */
- 
- /*
-@@ -266,14 +297,38 @@ success:
- 	mm->locked_vm += nr_pages;
- 
- 	/*
--	 * vm_flags is protected by the mmap_sem held in write mode.
-+	 * vm_flags is protected by the mmap_sem held for write.
- 	 * It's okay if try_to_unmap_one unmaps a page just after we
- 	 * set VM_LOCKED, __mlock_vma_pages_range will bring it back.
- 	 */
- 	vma->vm_flags = newflags;
- 
-+	/*
-+	 * mmap_sem is currently held for write.  If we're locking pages,
-+	 * downgrade the write lock to a read lock so that other faults,
-+	 * mmap scans, ... while we fault in all pages.
-+	 */
-+	if (lock)
-+		downgrade_write(&mm->mmap_sem);
-+
- 	__mlock_vma_pages_range(vma, start, end, lock);
- 
-+	if (lock) {
-+		/*
-+		 * Need to reacquire mmap sem in write mode, as our callers
-+		 * expect this.  We have no support for atomically upgrading
-+		 * a sem to write, so we need to check for changes while sem
-+		 * is unlocked.
-+		 */
-+		up_read(&mm->mmap_sem);
-+		/* vma can change or disappear */
-+		down_write(&mm->mmap_sem);
-+		*prev = find_vma(mm, start);
-+		/* non-NULL *prev must contain @start, but need to check @end */
-+		if (!(*prev) || end > (*prev)->vm_end)
-+			ret = -EAGAIN;
-+	}
-+
- out:
- 	if (ret == -ENOMEM)
- 		ret = -EAGAIN;
-Index: linux-2.6.25-rc2-mm1/mm/internal.h
-===================================================================
---- linux-2.6.25-rc2-mm1.orig/mm/internal.h	2008-02-28 12:49:02.000000000 -0500
-+++ linux-2.6.25-rc2-mm1/mm/internal.h	2008-02-28 12:49:09.000000000 -0500
-@@ -61,24 +61,21 @@ extern int __mlock_vma_pages_range(struc
- /*
-  * mlock all pages in this vma range.  For mmap()/mremap()/...
-  */
--static inline void mlock_vma_pages_range(struct vm_area_struct *vma,
--			unsigned long start, unsigned long end)
--{
--	__mlock_vma_pages_range(vma, start, end, 1);
--}
-+extern int mlock_vma_pages_range(struct vm_area_struct *vma,
-+			unsigned long start, unsigned long end);
- 
- /*
-  * munlock range of pages.   For munmap() and exit().
-  * Always called to operate on a full vma that is being unmapped.
-  */
--static inline void munlock_vma_pages_range(struct vm_area_struct *vma,
-+static inline int munlock_vma_pages_range(struct vm_area_struct *vma,
- 			unsigned long start, unsigned long end)
- {
- // TODO:  verify my assumption.  Should we just drop the start/end args?
- 	VM_BUG_ON(start != vma->vm_start || end != vma->vm_end);
- 
- 	vma->vm_flags &= ~VM_LOCKED;    /* try_to_unlock() needs this */
--	__mlock_vma_pages_range(vma, start, end, 0);
-+	return __mlock_vma_pages_range(vma, start, end, 0);
- }
- 
- extern void clear_page_mlock(struct page *page);
-@@ -90,10 +87,10 @@ static inline int is_mlocked_vma(struct 
- }
- static inline void clear_page_mlock(struct page *page) { }
- static inline void mlock_vma_page(struct page *page) { }
--static inline void mlock_vma_pages_range(struct vm_area_struct *vma,
--			unsigned long start, unsigned long end) { }
--static inline void munlock_vma_pages_range(struct vm_area_struct *vma,
--			unsigned long start, unsigned long end) { }
-+static inline int mlock_vma_pages_range(struct vm_area_struct *vma,
-+			unsigned long start, unsigned long end) { return 0; }
-+static inline int munlock_vma_pages_range(struct vm_area_struct *vma,
-+			unsigned long start, unsigned long end) { return 0; }
- 
- #endif /* CONFIG_NORECLAIM_MLOCK */
- 
-
--- 
-All Rights Reversed
-
+> On 2/29/08, serge@hallyn.com <serge@hallyn.com> wrote:
+> > The original justification for cap_task_kill() was as follows:
+> >
+> > 	check_kill_permission() does appropriate uid equivalence checks.
+> > 	However with file capabilities it becomes possible for an
+> > 	unprivileged user to execute a file with file capabilities
+> > 	resulting in a more privileged task with the same uid.
+> >
+> > However now that cap_task_kill() always returns 0 (permission
+> > granted) when p->uid==current->uid, the whole hook is worthless,
+> > and only likely to create more subtle problems in the corner cases
+> > where it might still be called but return -EPERM.  Those cases
+> > are basically when uids are different but euid/suid is equivalent
+> > as per the check in check_kill_permission().
+> >
+> > This patch removes cap_task_kill().
+> >
+> > Signed-off-by: Serge Hallyn <serge@hallyn.com>
+> > ---
+> >  include/linux/security.h   |    3 +--
+> >  security/capability.c      |    1 -
+> >  security/commoncap.c       |   40 ----------------------------------------
+> >  security/smack/smack_lsm.c |    5 -----
+> >  4 files changed, 1 insertions(+), 48 deletions(-)
+> >
+> > diff --git a/include/linux/security.h b/include/linux/security.h
+> > index fe52cde..95cb830 100644
+> > --- a/include/linux/security.h
+> > +++ b/include/linux/security.h
+> > @@ -63,7 +63,6 @@ extern int cap_inode_need_killpriv(struct dentry *dentry);
+> >  extern int cap_inode_killpriv(struct dentry *dentry);
+> >  extern int cap_task_post_setuid (uid_t old_ruid, uid_t old_euid, uid_t
+> > old_suid, int flags);
+> >  extern void cap_task_reparent_to_init (struct task_struct *p);
+> > -extern int cap_task_kill(struct task_struct *p, struct siginfo *info, int
+> > sig, u32 secid);
+> >  extern int cap_task_setscheduler (struct task_struct *p, int policy, struct
+> > sched_param *lp);
+> >  extern int cap_task_setioprio (struct task_struct *p, int ioprio);
+> >  extern int cap_task_setnice (struct task_struct *p, int nice);
+> > @@ -2138,7 +2137,7 @@ static inline int security_task_kill (struct
+> > task_struct *p,
+> >  				      struct siginfo *info, int sig,
+> >  				      u32 secid)
+> >  {
+> > -	return cap_task_kill(p, info, sig, secid);
+> > +	return 0;
+> >  }
+> >
+> >  static inline int security_task_wait (struct task_struct *p)
+> > diff --git a/security/capability.c b/security/capability.c
+> > index 9e99f36..2c6e06d 100644
+> > --- a/security/capability.c
+> > +++ b/security/capability.c
+> > @@ -40,7 +40,6 @@ static struct security_operations capability_ops = {
+> >  	.inode_need_killpriv =		cap_inode_need_killpriv,
+> >  	.inode_killpriv =		cap_inode_killpriv,
+> >
+> > -	.task_kill =			cap_task_kill,
+> >  	.task_setscheduler =		cap_task_setscheduler,
+> >  	.task_setioprio =		cap_task_setioprio,
+> >  	.task_setnice =			cap_task_setnice,
+> > diff --git a/security/commoncap.c b/security/commoncap.c
+> > index bb0c095..06d5c94 100644
+> > --- a/security/commoncap.c
+> > +++ b/security/commoncap.c
+> > @@ -540,41 +540,6 @@ int cap_task_setnice (struct task_struct *p, int nice)
+> >  	return cap_safe_nice(p);
+> >  }
+> >
+> > -int cap_task_kill(struct task_struct *p, struct siginfo *info,
+> > -				int sig, u32 secid)
+> > -{
+> > -	if (info != SEND_SIG_NOINFO && (is_si_special(info) ||
+> > SI_FROMKERNEL(info)))
+> > -		return 0;
+> > -
+> > -	/*
+> > -	 * Running a setuid root program raises your capabilities.
+> > -	 * Killing your own setuid root processes was previously
+> > -	 * allowed.
+> > -	 * We must preserve legacy signal behavior in this case.
+> > -	 */
+> > -	if (p->uid == current->uid)
+> > -		return 0;
+> > -
+> > -	/* sigcont is permitted within same session */
+> > -	if (sig == SIGCONT && (task_session_nr(current) == task_session_nr(p)))
+> > -		return 0;
+> > -
+> > -	if (secid)
+> > -		/*
+> > -		 * Signal sent as a particular user.
+> > -		 * Capabilities are ignored.  May be wrong, but it's the
+> > -		 * only thing we can do at the moment.
+> > -		 * Used only by usb drivers?
+> > -		 */
+> > -		return 0;
+> > -	if (cap_issubset(p->cap_permitted, current->cap_permitted))
+> > -		return 0;
+> > -	if (capable(CAP_KILL))
+> > -		return 0;
+> > -
+> > -	return -EPERM;
+> > -}
+> > -
+> >  /*
+> >   * called from kernel/sys.c for prctl(PR_CABSET_DROP)
+> >   * done without task_capability_lock() because it introduces
+> > @@ -605,11 +570,6 @@ int cap_task_setnice (struct task_struct *p, int nice)
+> >  {
+> >  	return 0;
+> >  }
+> > -int cap_task_kill(struct task_struct *p, struct siginfo *info,
+> > -				int sig, u32 secid)
+> > -{
+> > -	return 0;
+> > -}
+> >  #endif
+> >
+> >  void cap_task_reparent_to_init (struct task_struct *p)
+> > diff --git a/security/smack/smack_lsm.c b/security/smack/smack_lsm.c
+> > index 770eb06..a9ca412 100644
+> > --- a/security/smack/smack_lsm.c
+> > +++ b/security/smack/smack_lsm.c
+> > @@ -1124,11 +1124,6 @@ static int smack_task_movememory(struct task_struct
+> > *p)
+> >  static int smack_task_kill(struct task_struct *p, struct siginfo *info,
+> >  			   int sig, u32 secid)
+> >  {
+> > -	int rc;
+> > -
+> > -	rc = cap_task_kill(p, info, sig, secid);
+> > -	if (rc != 0)
+> > -		return rc;
+> >  	/*
+> >  	 * Special cases where signals really ought to go through
+> >  	 * in spite of policy. Stephen Smalley suggests it may
+> > --
+> > 1.5.2.5
+> >
+> >
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-security-module" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
