@@ -1,57 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762080AbYB1WnZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762129AbYB1Wqw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762080AbYB1WnZ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Feb 2008 17:43:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753546AbYB1WnR
+	id S1762129AbYB1Wqw (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Feb 2008 17:46:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753546AbYB1Wqn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Feb 2008 17:43:17 -0500
-Received: from wa-out-1112.google.com ([209.85.146.177]:41282 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755472AbYB1WnQ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Feb 2008 17:43:16 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=ue78JW8TQiRfzn7nSbor5iJr55RFJL1KFSem9hPO3C8Y2a/yXbwz/yec5+ClPSVH/Vhhh2Sq6s4uVaOuT2IewhF+D/lC1faiLRH2I0bQbsusR7K1zKVZC7PpK8D6W4XyZFASDnKSWbYh7cqUZTYAQCIT3eHH23sTU8sWN6r/FLg=
-Message-ID: <9a8748490802281443v62252343y5987e432df9462bd@mail.gmail.com>
-Date: Thu, 28 Feb 2008 23:43:15 +0100
-From: "Jesper Juhl" <jesper.juhl@gmail.com>
-To: "Paul Jackson" <pj@sgi.com>
-Subject: Re: cpuset trivial documentation fix s/N_MEMORY/N_HIGH_MEMORY/
-Cc: "KOSAKI Motohiro" <kosaki.motohiro@jp.fujitsu.com>,
-       linux-kernel@vger.kernel.org, trivial@kernel.org, clameter@sgi.com,
-       menage@google.com
-In-Reply-To: <20080219073450.7479cb00.pj@sgi.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Thu, 28 Feb 2008 17:46:43 -0500
+Received: from relay2.sgi.com ([192.48.171.30]:47842 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1750729AbYB1Wqm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 28 Feb 2008 17:46:42 -0500
+Date: Thu, 28 Feb 2008 16:46:37 -0600
+From: Paul Jackson <pj@sgi.com>
+To: David Rientjes <rientjes@google.com>
+Cc: mingo@elte.hu, a.p.zijlstra@chello.nl, tglx@linutronix.de, oleg@tv-sign.ru,
+       rostedt@goodmis.org, maxk@qualcomm.com, linux-kernel@vger.kernel.org
+Subject: Re: [RFC/PATCH 0/4] CPUSET driven CPU isolation
+Message-Id: <20080228164637.114fb19d.pj@sgi.com>
+In-Reply-To: <alpine.DEB.1.00.0802281309480.24402@chino.kir.corp.google.com>
+References: <20080227222103.673194000@chello.nl>
+	<20080228075010.GA28781@elte.hu>
+	<20080228020808.3fd22f77.pj@sgi.com>
+	<20080228090847.GA1133@elte.hu>
+	<20080228031710.3405e405.pj@sgi.com>
+	<alpine.DEB.1.00.0802280129580.15900@chino.kir.corp.google.com>
+	<alpine.DEB.1.00.0802280212070.23040@chino.kir.corp.google.com>
+	<20080228113728.7b8e5811.pj@sgi.com>
+	<alpine.DEB.1.00.0802281309480.24402@chino.kir.corp.google.com>
+Organization: SGI
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.12.0; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20080219193503.94A0.KOSAKI.MOTOHIRO@jp.fujitsu.com>
-	 <20080219073450.7479cb00.pj@sgi.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 19/02/2008, Paul Jackson <pj@sgi.com> wrote:
-> KOSAKI-san wrote:
->  > +++ b/Documentation/cpusets.txt 2008-02-19 19:37:14.000000000 +0900
->
-> > ...
->
-> > -automatically tracks the value of node_states[N_MEMORY]--i.e.,
->  > +automatically tracks the value of node_states[N_HIGH_MEMORY]--i.e.,
->
->
-> Thanks.
->
->  Acked-by: Paul Jackson <pj@sgi.com>
->
+David wrote:
+> How about moving watchdog/0 to a cpuset with exclusive access to only cpu 
+> 1?
 
-If no one else picks this up, I'll submit it to Linus via the trivial
-tree when the next merge window opens.
+I don't understand your question here.
+
+> >     +	if (unlikely((p->flags & PF_CPU_BOUND) && p != current &&
+> >     +	    	     !cpus_subset(p->cpus_allowed, new_mask))) {
+> >     +		ret = -EINVAL;
+> > 
+> 
+> That's a convenient way for a kthread to temporarily expand its set of 
+> cpus_allowed and then never be able to remove the added cpus again.  Do 
+> you have any examples in the tree where a kthread does this?
+
+Good question.  Actually, we -normally- have pinned tasks in the top cpuset,
+where the top cpuset allows all CPUs, but the pinned task has a cpus_allowed
+(in its task struct) of just one or a few CPUs (for node pinning.)
+
+So ... could we allow moving pinned threads to any cpuset that allowed
+the CPUs to which it was pinned (my cpus_subset() test, above), but
+-not- change the pinned tasks cpus_allowed in its task struct, keeping
+it pinned to just the same one or few CPUs?
+
+> That's why the check in set_cpus_allowed() is
+> 
+> 	cpus_equal(p->cpus_allowed, newmask)
+> 
+> since it prevents PF_CPU_BOUND tasks from being moved out of the root 
+> cpuset.
+
+I don't think that the cpus_equal() check prevents that (shrinking a
+pinned tasks cpuset out from under it.)  Try the following on a freshly
+booted system with your proposed patch:
+
+  mkdir /dev/cpuset
+  mount -t cpuset cpuset /dev/cpuset
+  cd /dev/cpuset
+  mkdir a
+  cp ???s a
+  < tasks sed -un -e p -e 10q > a/tasks
+
+I'll wager you just moved a few pinned tasks into cpuset 'a'.  This
+would be allowed, as 'a' has the same cpus as the top cpuset.  But then
+one could shrink a (if it had more than 1 CPU in the first place), leaving
+some pinned tasks in a cpuset they weren't allowed to run in, essentially
+unpinning them.
+
+> PF_CPU_BOUND follows the nomenclature of kthread_bind() really well, but 
+> it could probably be confused with a processor-bound task.  So perhaps 
+> PF_BOUND_CPU is even better?
+
+Good point - "BOUND" as the past tense of "BIND".  How about
+PF_THREAD_BIND ;)?
 
 -- 
-Jesper Juhl <jesper.juhl@gmail.com>
-Don't top-post  http://www.catb.org/~esr/jargon/html/T/top-post.html
-Plain text mails only, please      http://www.expita.com/nomime.html
+                  I won't rest till it's the best ...
+                  Programmer, Linux Scalability
+                  Paul Jackson <pj@sgi.com> 1.940.382.4214
