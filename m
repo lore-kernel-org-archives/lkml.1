@@ -1,85 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760370AbYB1ByR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760171AbYB1B6i@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760370AbYB1ByR (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Feb 2008 20:54:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755598AbYB1ByA
+	id S1760171AbYB1B6i (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Feb 2008 20:58:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756205AbYB1B63
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Feb 2008 20:54:00 -0500
-Received: from wolverine01.qualcomm.com ([199.106.114.254]:40901 "EHLO
-	wolverine01.qualcomm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755247AbYB1Bx7 (ORCPT
+	Wed, 27 Feb 2008 20:58:29 -0500
+Received: from smtp1.linux-foundation.org ([207.189.120.13]:47773 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755612AbYB1B62 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Feb 2008 20:53:59 -0500
-X-IronPort-AV: E=McAfee;i="5200,2160,5239"; a="958862"
-Message-ID: <47C61434.7060703@qualcomm.com>
-Date: Wed, 27 Feb 2008 17:53:56 -0800
-From: Max Krasnyanskiy <maxk@qualcomm.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
-MIME-Version: 1.0
-To: Paul Jackson <pj@sgi.com>
-CC: Peter Zijlstra <a.p.zijlstra@chello.nl>, mingo@elte.hu, tglx@linutronix.de,
-       oleg@tv-sign.ru, rostedt@goodmis.org, linux-kernel@vger.kernel.org
-Subject: Re: [RFC/PATCH 2/4] cpuset: system sets
-References: <20080227222103.673194000@chello.nl>	<20080227222542.311184000@chello.nl> <20080227173958.c6ffb32a.pj@sgi.com>
-In-Reply-To: <20080227173958.c6ffb32a.pj@sgi.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Wed, 27 Feb 2008 20:58:28 -0500
+Date: Wed, 27 Feb 2008 17:57:26 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Christoph Lameter <clameter@sgi.com>
+Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+       Pekka Enberg <penberg@cs.helsinki.fi>,
+       Torsten Kaiser <just.for.lkml@googlemail.com>,
+       Ingo Molnar <mingo@elte.hu>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Eric Dumazet <dada1@cosmosbay.com>
+Subject: Re: Linux 2.6.25-rc2
+Message-Id: <20080227175726.ad6bda9d.akpm@linux-foundation.org>
+In-Reply-To: <Pine.LNX.4.64.0802271532220.14380@schroedinger.engr.sgi.com>
+References: <alpine.LFD.1.00.0802151302210.9496@woody.linux-foundation.org>
+	<64bb37e0802161338j306c1357m25bc224f09e6b7cd@mail.gmail.com>
+	<20080219061107.GA23229@elte.hu>
+	<64bb37e0802182254l49b10cbblc23f8a83d189ff8e@mail.gmail.com>
+	<84144f020802182321x452888bai639c71ea2a5067da@mail.gmail.com>
+	<20080219140230.GA32236@Krystal>
+	<84144f020802190621s509dbe7gc8e5609d94aca9b4@mail.gmail.com>
+	<20080219200852.GC11197@Krystal>
+	<Pine.LNX.4.64.0802271532220.14380@schroedinger.engr.sgi.com>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Paul Jackson wrote:
-> Peter wrote:
->> A system set will be one that caters the
->> general purpose OS. This patch provides the infrastructure, but doesn't
->> actually provide any new functionality.
->>
->> Typical functionality would be setting the IRQ affinity of unbound IRQs to
->> within the system set. And setting the affinity of unbounded kernel threads to
->> within the system set.
+On Wed, 27 Feb 2008 15:32:52 -0800 (PST) Christoph Lameter <clameter@sgi.com> wrote:
+
+> On Tue, 19 Feb 2008, Mathieu Desnoyers wrote:
 > 
-> "one that caters the general purpose OS" ... a tad terse on the
-> documentation ;).
+> > incrementing the variable with a "++" when interrupts are not disabled.
+> > It's not an atomic add and it's racy. The code within stat() does
+> > exactly this.
 > 
-> I guess what you have is a new cpumask_t cpu_system_map, which is the
-> union of the CPUs of all the cpusets marked 'system', where to a rough
-> approximation the CPUs -not- in that cpumask are what we would have
-> called the isolated CPUs by the old code?
-Yes it's in fact exactly the same as ~cpu_isolated_map in the patches that I 
-sent out earlier.
-
-> In any case, if this patch survives its birth, it will need an added
-> change for some file in the Documentation directory.
-Sure. We can just update readme from my patch to use cpuset instead of 
-/sys/system/cpu/cpu1/isolated bits. If we go with this approach that is.
-
-> Could we get the term 'cpu' in the name 'system' somehow?  Perhaps call
-> this new cpuset flag 'cpus_system' or some such.  Cpusets handles both
-> CPU and memory configuration, and I make some effort to mark per-cpuset
-> specific attributes that apply to only one of these with a prefix
-> indicating to which they apply.  The per-cpuset flag name 'system', by
-> itself, would mean little to someone just listing the files in a cpuset
-> directory.
-Makes sense to me too. ie cpus_system is more descriptive.
-
-> In the rebuild_system_map() code, you have:
-> +	if (cpus_empty(*new_system_map))
-> +		BUG();
+> Yes but that is only for used for statistics which can be racy. Note that 
+> the VM event statistics also can be racy.
 > 
-> ... what's to prevent simply turning off the 'system' (aka cpus_system)
-> in the top cpuset, on a system with only that one cpuset, and hitting
-> this BUG()?
-Good point.
 
-> Overall I like this approach.  I suspect you made a good choice in
-> marking the non-isolated (aka system) CPUs, rather than the isolated
-> CPUs.  It seems clearer that way, in understanding the affects of
-> overlapping cpusets with various markings.
-Ok so you did not like the 'isolated' name too ;-).
+Doing ++ on a u32 _is_ atomic wrt interrupts on x86 and probably lots of
+other architectures, so we're OK using unsigned there.  But on some other
+architectures ++ on u32 is not atomic wrt interrutps, so they should use
+atomic_t or some other arch-specific mechanism.
 
-Max
-
-
-
-
-
+And guess what?  It's already all been done: local_t.
