@@ -1,63 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759279AbYB1EWP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757490AbYB1Eke@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759279AbYB1EWP (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Feb 2008 23:22:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756485AbYB1EWA
+	id S1757490AbYB1Eke (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Feb 2008 23:40:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751299AbYB1EkY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Feb 2008 23:22:00 -0500
-Received: from mail.gmx.net ([213.165.64.20]:36991 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1752849AbYB1EV7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Feb 2008 23:21:59 -0500
-X-Authenticated: #14349625
-X-Provags-ID: V01U2FsdGVkX19KYNBjyCNKRIXqgVH3K84OMiD619YOxLhDLuVNrL
-	Ix9jfZddDr1ryk
-Subject: Re: [Regression in 2.6.25-rcX] CD/DVD writer no longer works
-From: Mike Galbraith <efault@gmx.de>
-To: zkopex mtrof <zkopex@yahoo.com>
-Cc: LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <916729.18642.qm@web45209.mail.sp1.yahoo.com>
-References: <916729.18642.qm@web45209.mail.sp1.yahoo.com>
-Content-Type: text/plain
-Date: Thu, 28 Feb 2008 05:21:56 +0100
-Message-Id: <1204172516.10161.14.camel@homer.simson.net>
+	Wed, 27 Feb 2008 23:40:24 -0500
+Received: from smtp1.linux-foundation.org ([207.189.120.13]:35223 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751243AbYB1EkX (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 Feb 2008 23:40:23 -0500
+Date: Wed, 27 Feb 2008 20:40:02 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Ian Kent <raven@themaw.net>
+Cc: Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       autofs mailing list <autofs@linux.kernel.org>,
+       linux-fsdevel <linux-fsdevel@vger.kernel.org>
+Subject: Re: [PATCH 0/4] autofs4 - autofs needs a miscelaneous device for
+ ioctls
+Message-Id: <20080227204002.49f4c5fb.akpm@linux-foundation.org>
+In-Reply-To: <Pine.LNX.4.64.0802261151400.8490@raven.themaw.net>
+References: <Pine.LNX.4.64.0802261151400.8490@raven.themaw.net>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.12.0 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-Y-GMX-Trusted: 0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, 26 Feb 2008 12:21:58 +0900 (WST) Ian Kent <raven@themaw.net> wrote:
 
-On Wed, 2008-02-27 at 19:26 -0800, zkopex mtrof wrote:
-
-> [patch snipped]
 > 
-> Thank you very much! The patch you supplied fixes the regression!
+> Hi Andrew,
+> 
+> There is a problem with active restarts in autofs (that is to
+> say restarting autofs when there are busy mounts).
+> 
+> Currently autofs uses "umount -l" to clear active mounts at
+> restart. While using lazy umount works for most cases, anything
+> that needs to walk back up the mount tree to construct a path,
+> such as getcwd(2) and the proc file system /proc/<pid>/cwd, no
+> longer works because the point from which the path is constructed
+> has been detached from the mount tree.
+> 
+> The actual problem with autofs is that it can't reconnect to
+> existing mounts. Immediately one things of just adding the
+> ability to remount autofs file systems would solve it, but
+> alas, that can't work. This is because autofs direct mounts
+> and the implementation of "on demand mount and expire" of
+> nested mount trees have the file system mounted on top of
+> the mount trigger dentry.
+> 
+> To resolve this a miscellaneous device node for routing ioctl
+> commands to these mount points has been implemented for the
+> autofs4 kernel module.
+> 
+> For those wishing to test this out an updated user space daemon
+> is needed. Checking out and building from the git repo or
+> applying all the current patches to the 5.0.3 tar distribution
+> will do the trick. This is all available at the usual location
+> on kernel.org.
+> 
 
-You're welcome.  In the meantime, I found a better way.
+Could we please be a bit more specific than "the usual location"?
 
-diff --git a/drivers/scsi/scsi_lib.c b/drivers/scsi/scsi_lib.c
-index ba21d97..7a6f784 100644
---- a/drivers/scsi/scsi_lib.c
-+++ b/drivers/scsi/scsi_lib.c
-@@ -871,7 +871,7 @@ void scsi_io_completion(struct scsi_cmnd *cmd, unsigned int good_bytes)
- 			scsi_end_bidi_request(cmd);
- 			return;
- 		}
--		req->data_len = scsi_get_resid(cmd);
-+		req->data_len = req->raw_data_len = scsi_get_resid(cmd);
- 	}
- 
- 	BUG_ON(blk_bidi_rq(req)); /* bidi not support for !blk_pc_request yet */
-
-
-> To be honest, I was expecting a few replies from the appropriate
-> kernel developers. It looks like I have missed something in
-> my regression report.
-
-I think some of those are traveling.
-
-	-Mike
-
+Should autofs userspace have an entry in Documentation/Changes?
