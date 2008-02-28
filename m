@@ -1,66 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762749AbYB1UYI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763627AbYB1UYe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762749AbYB1UYI (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Feb 2008 15:24:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751511AbYB1UXz
+	id S1763627AbYB1UYe (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Feb 2008 15:24:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759489AbYB1UYR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Feb 2008 15:23:55 -0500
-Received: from wolverine01.qualcomm.com ([199.106.114.254]:33081 "EHLO
-	wolverine01.qualcomm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751284AbYB1UXy (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Feb 2008 15:23:54 -0500
-X-IronPort-AV: E=McAfee;i="5200,2160,5241"; a="988951"
-Message-ID: <47C71857.5060606@qualcomm.com>
-Date: Thu, 28 Feb 2008 12:23:51 -0800
-From: Max Krasnyansky <maxk@qualcomm.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
-MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Paul Jackson <pj@sgi.com>, a.p.zijlstra@chello.nl, tglx@linutronix.de,
-       oleg@tv-sign.ru, rostedt@goodmis.org, linux-kernel@vger.kernel.org
-Subject: Re: [RFC/PATCH 0/4] CPUSET driven CPU isolation
-References: <20080227222103.673194000@chello.nl> <20080228075010.GA28781@elte.hu> <20080228020808.3fd22f77.pj@sgi.com> <20080228090847.GA1133@elte.hu>
-In-Reply-To: <20080228090847.GA1133@elte.hu>
-Content-Type: text/plain; charset=ISO-8859-1
+	Thu, 28 Feb 2008 15:24:17 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:58563 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1760627AbYB1UYQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 28 Feb 2008 15:24:16 -0500
+Date: Thu, 28 Feb 2008 15:23:56 -0500
+From: Rik van Riel <riel@redhat.com>
+To: "John Stoffel" <john@stoffel.org>
+Cc: linux-kernel@vger.kernel.org,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Lee Schermerhorn <Lee.Schermerhorn@hp.com>, linux-mm@kvack.org
+Subject: Re: [patch 00/21] VM pageout scalability improvements
+Message-ID: <20080228152356.0fc8178f@bree.surriel.com>
+In-Reply-To: <18375.5642.424239.215806@stoffel.org>
+References: <20080228192908.126720629@redhat.com>
+	<18375.5642.424239.215806@stoffel.org>
+Organization: Red Hat, Inc.
+X-Mailer: Claws Mail 3.0.2 (GTK+ 2.10.4; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
-> * Paul Jackson <pj@sgi.com> wrote:
+On Thu, 28 Feb 2008 15:14:02 -0500
+"John Stoffel" <john@stoffel.org> wrote:
+
+> Nitpicky, but what is a large memory system?  I read your web page and
+> you talk about large memory being greater than several Gb, and about
+> huge systems (> 128gb).  So which is this patch addressing?  
 > 
->>> i've queued up your patches in sched-devel.git
->> Before this patchset gets too far, I'd like to decide on whether to 
->> adapt my suggestion to call that per-cpuset flag 'cpus_system' (or 
->> anything else with 'cpu' in it, perhaps 'system_cpus' would be more 
->> idiomatic), rather than the tad too generic 'system'.
-> 
-> yeah. In fact i'm not at all sure this is really a "system" thing - it's 
-> more of a "bootup" default.
-> once the system has booted up and the user is in a position to create 
-> cpusets, i believe the distinction and assymetry between any bootup 
-> cpuset and the other cpusets should vanish. The "bootup" cpuset is just 
-> a convenience container to handle everything that the box booted up 
-> with, and then we can shrink it (without having to enumerate every PID 
-> and every irq and other resource explicitly) to make place for other 
-> cpusets.
-> 
-> maybe it's even more idomatic to call it "set0" and just create a 
-> /dev/cpuset/set0/ directory for it and making it an explicit cpuset - 
-> instead of the hardcoded /dev/cpusets/system thing? Do you have any 
-> established naming scheme for cpusets that we could follow here?
+> I ask because I've got a new system with 4Gb of RAM and my motherboard
+> can goto 8Gb.  Should this be a large memory system or not?  I've also
+> only got a single dual core CPU, how does that affect things?
 
-I think that is a separate thing. Bootup default is one thing and being able
-to explicitly allow/disallow kernel activity on a CPU(s) is another.
+It depends a lot on the workload.
 
-I think "boot" or "set0" makes perfect sense. In fact that was the first thing
-I noticed when I started playing with it. ie Even if I just wanted to isolated
- one cpu I now need to create a cpuset for the other cpus and move all the
-tasks there explicitly. It'd be very useful if it happens by default.
+On a few workloads, the current VM explodes with as little as
+16GB of RAM, while a few other workloads the current VM works
+fine with 128GB of RAM.
 
-Max
+This patch tries to address the behaviour of the kernel when
+faced with workloads that trip up the current VM.
 
+> You talk about the Inactive list in the Anonymous memory section, and
+> about limiting it.  You say 30% on a 1Gb system, but 1% on a 1Tb
+> system, which is interesting numbers but it's not clear where they
+> come from.
 
+They seemed a reasonable balance between limiting the maximum amount
+of work the VM needs to do and allowing pages the time to get referenced
+again.  If benchmarks suggest that the ratio should be tweaked, we can 
+do so quite easily.
 
+> I dunno... I honestly don't have the time or the knowledge to do more
+> than poke sticks into things and see what happens.  And to ask
+> annoying questions.  
+
+Patch series like this can always use a good poking.  Especially by
+people who run all kinds of nasty programs to trip up the VM :)
+
+-- 
+All rights reversed.
