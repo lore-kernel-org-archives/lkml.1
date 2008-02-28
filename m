@@ -1,51 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932397AbYB1UVP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762749AbYB1UYI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932397AbYB1UVP (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Feb 2008 15:21:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757123AbYB1UVA
+	id S1762749AbYB1UYI (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Feb 2008 15:24:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751511AbYB1UXz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Feb 2008 15:21:00 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:41641 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751167AbYB1UVA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Feb 2008 15:21:00 -0500
-Date: Thu, 28 Feb 2008 15:20:44 -0500
-From: Rik van Riel <riel@redhat.com>
-To: Lee Schermerhorn <Lee.Schermerhorn@hp.com>
-Cc: linux-kernel@vger.kernel.org,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>, linux-mm@kvack.org
-Subject: Re: [patch 04/21] free swap space on swap-in/activation
-Message-ID: <20080228152044.218efa45@bree.surriel.com>
-In-Reply-To: <1204229154.5301.22.camel@localhost>
-References: <20080228192908.126720629@redhat.com>
-	<20080228192928.251195952@redhat.com>
-	<1204229154.5301.22.camel@localhost>
-Organization: Red Hat, Inc.
-X-Mailer: Claws Mail 3.0.2 (GTK+ 2.10.4; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Thu, 28 Feb 2008 15:23:55 -0500
+Received: from wolverine01.qualcomm.com ([199.106.114.254]:33081 "EHLO
+	wolverine01.qualcomm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751284AbYB1UXy (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 28 Feb 2008 15:23:54 -0500
+X-IronPort-AV: E=McAfee;i="5200,2160,5241"; a="988951"
+Message-ID: <47C71857.5060606@qualcomm.com>
+Date: Thu, 28 Feb 2008 12:23:51 -0800
+From: Max Krasnyansky <maxk@qualcomm.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+MIME-Version: 1.0
+To: Ingo Molnar <mingo@elte.hu>
+CC: Paul Jackson <pj@sgi.com>, a.p.zijlstra@chello.nl, tglx@linutronix.de,
+       oleg@tv-sign.ru, rostedt@goodmis.org, linux-kernel@vger.kernel.org
+Subject: Re: [RFC/PATCH 0/4] CPUSET driven CPU isolation
+References: <20080227222103.673194000@chello.nl> <20080228075010.GA28781@elte.hu> <20080228020808.3fd22f77.pj@sgi.com> <20080228090847.GA1133@elte.hu>
+In-Reply-To: <20080228090847.GA1133@elte.hu>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 28 Feb 2008 15:05:53 -0500
-Lee Schermerhorn <Lee.Schermerhorn@hp.com> wrote:
-
-> On Thu, 2008-02-28 at 14:29 -0500, Rik van Riel wrote:
-> > plain text document attachment (rvr-00-linux-2.6-swapfree.patch)
-> > + lts' convert anon_vma list lock to reader/write lock patch
-> > + Nick Piggin's move and rework isolate_lru_page() patch
+Ingo Molnar wrote:
+> * Paul Jackson <pj@sgi.com> wrote:
 > 
-> Hi, Rik:
+>>> i've queued up your patches in sched-devel.git
+>> Before this patchset gets too far, I'd like to decide on whether to 
+>> adapt my suggestion to call that per-cpuset flag 'cpus_system' (or 
+>> anything else with 'cpu' in it, perhaps 'system_cpus' would be more 
+>> idiomatic), rather than the tad too generic 'system'.
 > 
-> We no long depend on the anon_vma rwlock patch, right?   And, since
-> they're now all part of the same series, we can probably loose the note
-> about depending on Nick's move/rework patch.  These are hold overs from
-> my overly paranoid dependency annotations.  We can fix the description
-> on next posting.  [Or am I being too pessimistic?]
+> yeah. In fact i'm not at all sure this is really a "system" thing - it's 
+> more of a "bootup" default.
+> once the system has booted up and the user is in a position to create 
+> cpusets, i believe the distinction and assymetry between any bootup 
+> cpuset and the other cpusets should vanish. The "bootup" cpuset is just 
+> a convenience container to handle everything that the box booted up 
+> with, and then we can shrink it (without having to enumerate every PID 
+> and every irq and other resource explicitly) to make place for other 
+> cpusets.
+> 
+> maybe it's even more idomatic to call it "set0" and just create a 
+> /dev/cpuset/set0/ directory for it and making it an explicit cpuset - 
+> instead of the hardcoded /dev/cpusets/system thing? Do you have any 
+> established naming scheme for cpusets that we could follow here?
 
-Fixed the description for the next posting.  Thanks.
+I think that is a separate thing. Bootup default is one thing and being able
+to explicitly allow/disallow kernel activity on a CPU(s) is another.
 
--- 
-All rights reversed.
+I think "boot" or "set0" makes perfect sense. In fact that was the first thing
+I noticed when I started playing with it. ie Even if I just wanted to isolated
+ one cpu I now need to create a cpuset for the other cpus and move all the
+tasks there explicitly. It'd be very useful if it happens by default.
+
+Max
+
+
+
