@@ -1,82 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759471AbYB1AKq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932280AbYB1ALW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759471AbYB1AKq (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Feb 2008 19:10:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757731AbYB1AKg
+	id S932280AbYB1ALW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Feb 2008 19:11:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759070AbYB1ALJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Feb 2008 19:10:36 -0500
-Received: from wolverine01.qualcomm.com ([199.106.114.254]:22078 "EHLO
-	wolverine01.qualcomm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757728AbYB1AKf (ORCPT
+	Wed, 27 Feb 2008 19:11:09 -0500
+Received: from wa-out-1112.google.com ([209.85.146.180]:46732 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759068AbYB1ALH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Feb 2008 19:10:35 -0500
-X-IronPort-AV: E=McAfee;i="5200,2160,5239"; a="954403"
-Message-ID: <47C5FBF9.5010106@qualcomm.com>
-Date: Wed, 27 Feb 2008 16:10:33 -0800
-From: Max Krasnyanskiy <maxk@qualcomm.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+	Wed, 27 Feb 2008 19:11:07 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=FsO+GWJTyisB/UnMo9ifl4S8Ot2OagG6SEsgwqH9R2Wh+E/4gi5+jGf/MHNi+Cqr25Z9mM4o/ET3fMoIp5ifCxiIo2qEMKoDAhAAJOwkFavuWwHe521tF8cDTgcIVQMenDeL36H1dfdK+FyvMe8px1saaOXc00JOu6s3S/h+GZA=
+Message-ID: <ed10ee420802271611l3a09e76ej531158f167512a03@mail.gmail.com>
+Date: Wed, 27 Feb 2008 16:11:06 -0800
+From: "SL Baur" <steve@xemacs.org>
+To: "Richard Knutsson" <ricknu-0@student.ltu.se>
+Subject: Re: [PATCH] CodingStyle: multiple updates
+Cc: "Randy Dunlap" <randy.dunlap@oracle.com>,
+       "Krzysztof Halasa" <khc@pm.waw.pl>,
+       "Guennadi Liakhovetski" <g.liakhovetski@gmx.de>,
+       "Jan Engelhardt" <jengelh@computergmbh.de>, bhalevy.lists@gmail.com,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
+In-Reply-To: <47C5DDE0.3040403@student.ltu.se>
 MIME-Version: 1.0
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-CC: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       Oleg Nesterov <oleg@tv-sign.ru>, Steven Rostedt <rostedt@goodmis.org>,
-       Paul Jackson <pj@sgi.com>, linux-kernel@vger.kernel.org
-Subject: Re: [RFC/PATCH 3/4] genirq: system set irq affinities
-References: <20080227222103.673194000@chello.nl> <20080227222542.659932000@chello.nl>
-In-Reply-To: <20080227222542.659932000@chello.nl>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <1204062430.47c488def40a4@portal.student.luth.se>
+	 <20080226135444.f83a0536.randy.dunlap@oracle.com>
+	 <Pine.LNX.4.64.0802262310050.15321@fbirervta.pbzchgretzou.qr>
+	 <Pine.LNX.4.64.0802270033310.5714@axis700.grange>
+	 <m31w6zcm4l.fsf@maximus.localdomain>
+	 <ed10ee420802261657w3830e1a1rf0cc9601cdacb142@mail.gmail.com>
+	 <20080226213432.1388717b.randy.dunlap@oracle.com>
+	 <47C5DDE0.3040403@student.ltu.se>
+X-Google-Sender-Auth: b85c3ea5970ab5d0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Besides the notifier stuff it's identical to my genirq patch that I sent to 
-Thomas and you for the review ~5 days ago.
-There are a couple of things you missed.
-Current call site for select_smp_affinity() inside request_irq() is incorrect. 
-It ends up moving irq each time requires_irq() is called, and it is called 
-multiple times for the shared irqs. My patch moves it into setup_irq() under 
-if(!shared) check.
+On 2/27/08, Richard Knutsson <ricknu-0@student.ltu.se> wrote:
 
-Also the following part is unsafe
+>  Actually, I see this as an quite simple question: is tab _the
+>  indention-marker_? If not, then why the refusal of spaces indents (or mix)?
 
-> +#ifdef CONFIG_CPUSETS
-> +static int system_irq_notifier(struct notifier_block *nb,
-> +		unsigned long action, void *cpus)
-> +{
-> +	cpumask_t *new_system_map = (cpumask_t *)cpus;
-> +	int i;
-> +
-> +	for (i = 0; i < NR_IRQS; i++) {
-> +		struct irq_desc *desc = &irq_desc[i];
-> +
-> +		if (desc->chip == &no_irq_chip || !irq_can_set_affinity(i))
-> +			continue;
-> +
-> +		if (cpus_match_system(desc->affinity)) {
-> +			cpumask_t online_system;
-> +
-> +			cpus_and(online_system, new_system_map, cpu_online_map);
-> +
-> +			set_balance_irq_affinity(i, online_system);
-> +
-> +			desc->affinity = online_system;
-> +			desc->chip->set_affinity(i, online_system);
-Two lines above should be
-	irq_set_affinity(i, online_system);
+Because mixing spaces and tabs is often ugly.  8 spaces and a
+single tab often do not have the same width when you're viewing
+the text in a variable width font.
 
-If you look at how irq_set_affinity() is implemented, you'll see this
+I've read all my mail in a variable width font for over a decade, at
+first to watch for regressions in the XEmacs display engine, but I
+continued because I liked it.  I presume I'm not the only one doing
+so.
 
-#ifdef CONFIG_GENERIC_PENDING_IRQ
-         set_pending_irq(irq, cpumask);
-#else
-         desc->affinity = cpumask;
-         desc->chip->set_affinity(irq, cpumask);
-#endif
-
-set_pending_irq() is the safe way to move pending irqs.
-
-btw It should be ok to call chip->set_affinity() directly from 
-select_smp_affinity() because in my patch is is guarantied to be called only 
-for the first handler registration.
-
-Max
+-sb
