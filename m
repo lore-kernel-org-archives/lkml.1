@@ -1,72 +1,117 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760823AbYB1Scg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758496AbYB1ShU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760823AbYB1Scg (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Feb 2008 13:32:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751932AbYB1Sc2
+	id S1758496AbYB1ShU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Feb 2008 13:37:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751932AbYB1ShI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Feb 2008 13:32:28 -0500
-Received: from pasmtpa.tele.dk ([80.160.77.114]:42155 "EHLO pasmtpA.tele.dk"
+	Thu, 28 Feb 2008 13:37:08 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:43627 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751766AbYB1Sc1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Feb 2008 13:32:27 -0500
-Date: Thu, 28 Feb 2008 19:32:34 +0100
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Randy Dunlap <randy.dunlap@oracle.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       lkml <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] kernel-doc: set verbose mode via environment
-Message-ID: <20080228183234.GA24684@uranus.ravnborg.org>
-References: <20080224175358.3202f0d0.randy.dunlap@oracle.com> <20080227191104.6f166972.akpm@linux-foundation.org> <20080228083009.5955a7eb.randy.dunlap@oracle.com>
-Mime-Version: 1.0
+	id S1751565AbYB1ShF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 28 Feb 2008 13:37:05 -0500
+Date: Thu, 28 Feb 2008 13:36:04 -0500
+From: Vivek Goyal <vgoyal@redhat.com>
+To: andrea@qumranet.com
+Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@osdl.org>,
+       Nick Piggin <npiggin@suse.de>
+Subject: Re: [PATCH] reserve RAM below PHYSICAL_START
+Message-ID: <20080228183604.GA19901@redhat.com>
+References: <20080227003325.GS28483@v2.random>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080228083009.5955a7eb.randy.dunlap@oracle.com>
-User-Agent: Mutt/1.4.2.1i
+In-Reply-To: <20080227003325.GS28483@v2.random>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Feb 28, 2008 at 08:30:09AM -0800, Randy Dunlap wrote:
-> On Wed, 27 Feb 2008 19:11:04 -0800 Andrew Morton wrote:
+On Wed, Feb 27, 2008 at 01:33:25AM +0100, Andrea Arcangeli wrote:
+> Hello,
 > 
-> > On Sun, 24 Feb 2008 17:53:58 -0800 Randy Dunlap <randy.dunlap@oracle.com> wrote:
-> > 
-> > > From: Randy Dunlap <randy.dunlap@oracle.com>
-> > > 
-> > > Allow setting environment variable "KERNEL_DOC_VERBOSE=1" to enable
-> > > verbose mode in scripts/kernel-doc.  Useful for getting more
-> > > info and warnings from kernel-doc.
-> > > 
-> > > Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
-> > > ---
-> > >  scripts/kernel-doc |    4 ++++
-> > >  1 file changed, 4 insertions(+)
-> > > 
-> > > --- linux-2.6.25-rc3.orig/scripts/kernel-doc
-> > > +++ linux-2.6.25-rc3/scripts/kernel-doc
-> > > @@ -247,6 +247,10 @@ my ($function, %function_table,%paramete
-> > >  my ($type,$declaration_name,$return_type);
-> > >  my ($newsection,$newcontents,$prototype,$filelist, $brcount, %source_map);
-> > >  
-> > > +if (defined($ENV{'KERNEL_DOC_VERBOSE'})) {
-> > > +	$verbose = "$ENV{'KERNEL_DOC_VERBOSE'}";
-> > > +}
-> > > +
-> > >  # Generated docbook code is inserted in a template at a point where
-> > >  # docbook v3.1 requires a non-zero sequence of RefEntry's; see:
-> > >  # http://www.oasis-open.org/docbook/documentation/reference/html/refentry.html
-> > 
-> > Shouldn't this be, err, documented somewhere?
+> this patch allows to prevent linux from using the ram below
+> PHYSICAL_START.
 > 
-> I did think about that.  I was still wondering where to add it.
-In the same file where you document all the kconfig stuff - so we can let it be
-a 'all build features ' document?
+> The "reserved RAM" can be mapped by virtualization software with to
+> create a 1:1 mapping between guest physical (bus) address and host
+> physical (bus) address. This will allow pci passthrough with DMA for
+> the guest with current production hardware that misses VT-d. The only
+> detail to take care of is the ram marked "reserved RAM failed". The
+> virtualization software must create for the guest an e820 map that
+> only includes the "reserved RAM" regions but if the guest touches
+> memory with guest physical address in the "reserved RAM failed" ranges
+> (linux guest will do that even if the ram isn't present in the e820
+> map), it should provide that as ram and map it with a not-ident
+> mapping. This should allow any linux kernel to run fine with pci
+> passthrough and hopefully any other OS too with all VT enabled
+> hardware.
+> 
+> (the virtualization software should do if (pfn_valid(gfn))
+> get_page(pfn_to_page(gfn)) instead of get_user_pages and equivalent
+> check in the release path)
+> 
+> The trampoline page marked as "reserved RAM failed" can be easily
+> relocated near 640k with an incremental patch to avoid an e820 hole at
+> 0x6000 if any bootloader or OS gets confused.
+> 
+> The end of the patch are just bugfixes. However the limit of the
+> reserved ram is 1G... this can also be relaxed with an incremental
+> patch later on if needed (currently 1G is enough). Perhaps this has
+> other usages.
+> 
+> Let me know if this can be merged, thanks!
+> 
 
-> 
-> > I'd have expected to obtain this functionality by running `make V=1 foodocs'?
-> 
-> Sam, any thoughts on Makefile passing "-v" to scripts/kernel-doc ?
-Please implemnt this. Either add a flag to docproc or
-just read the env-variable KBUILD_VERBOSE in kernel-doc.
+I don't know much about pci passthrough thing, but in a nutshell it
+looks like you just want a way to reserve memory in host which is not
+used by host and then also reserve a virtual range in host where you
+can create another set of mapping for that reserved memory?
 
-	Sam
+Can't you just provide a command line parameter to reserve a section
+of memory, the way crashkernel=X@Y parameter does?
+ 
+[..]
+> diff --git a/arch/x86/Kconfig b/arch/x86/Kconfig
+> --- a/arch/x86/Kconfig
+> +++ b/arch/x86/Kconfig
+> @@ -1109,8 +1109,36 @@ config CRASH_DUMP
+>  	  (CONFIG_RELOCATABLE=y).
+>  	  For more details see Documentation/kdump/kdump.txt
+>  
+> +config RESERVE_PHYSICAL_START
+> +	bool "Reserve all RAM below PHYSICAL_START (EXPERIMENTAL)"
+> +	depends on !RELOCATABLE && X86_64
+> +	help
+
+What prevents you from doing this for RELOCATABLE kernels?
+
+[..]
+>  #ifndef __ASSEMBLY__
+>  struct e820entry {
+> diff --git a/include/asm-x86/page_64.h b/include/asm-x86/page_64.h
+> --- a/include/asm-x86/page_64.h
+> +++ b/include/asm-x86/page_64.h
+> @@ -29,6 +29,7 @@
+>  #define __PAGE_OFFSET           _AC(0xffff810000000000, UL)
+>  
+>  #define __PHYSICAL_START	CONFIG_PHYSICAL_START
+> +#define __PHYSICAL_OFFSET	(__PHYSICAL_START-0x200000)
+>  #define __KERNEL_ALIGN		0x200000
+>  
+>  /*
+> @@ -47,7 +48,7 @@
+>  #define __PHYSICAL_MASK_SHIFT	46
+>  #define __VIRTUAL_MASK_SHIFT	48
+>  
+> -#define KERNEL_TEXT_SIZE  (40*1024*1024)
+> +#define KERNEL_TEXT_SIZE  (40*1024*1024+__PHYSICAL_OFFSET)
+
+Why are you changing this? What is __PHYSICAL_OFFSET? Are you expanding
+the kernel text/data region so that you can additionally map this
+reserved area? 
+
+If yes, I think probably we should have a separate area altoghether to
+map this reserved area than expanding existing kernel text/data region.
+
+Thanks
+Vivek
