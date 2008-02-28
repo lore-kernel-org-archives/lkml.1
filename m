@@ -1,109 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932495AbYB1Xnm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932640AbYB1XtW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932495AbYB1Xnm (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Feb 2008 18:43:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754021AbYB1Xnb
+	id S932640AbYB1XtW (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Feb 2008 18:49:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755594AbYB1XtH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Feb 2008 18:43:31 -0500
-Received: from agminet01.oracle.com ([141.146.126.228]:37302 "EHLO
-	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752260AbYB1Xn3 (ORCPT
+	Thu, 28 Feb 2008 18:49:07 -0500
+Received: from bombadil.infradead.org ([18.85.46.34]:53525 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751332AbYB1XtF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Feb 2008 18:43:29 -0500
-Date: Thu, 28 Feb 2008 15:41:52 -0800
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: Rik van Riel <riel@redhat.com>
-Cc: linux-kernel@vger.kernel.org,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Lee Schermerhorn <Lee.Schermerhorn@hp.com>, linux-mm@kvack.org,
-       Lee Schermerhorn <lee.schermerhorn@hp.com>
-Subject: Re: [patch 14/21] scan noreclaim list for reclaimable pages
-Message-Id: <20080228154152.9648b7b8.randy.dunlap@oracle.com>
-In-Reply-To: <20080228192929.203173998@redhat.com>
-References: <20080228192908.126720629@redhat.com>
-	<20080228192929.203173998@redhat.com>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.4.7 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+	Thu, 28 Feb 2008 18:49:05 -0500
+Date: Thu, 28 Feb 2008 18:48:50 -0500
+From: Christoph Hellwig <hch@infradead.org>
+To: Stephen Smalley <sds@tycho.nsa.gov>
+Cc: casey@schaufler-ca.com, Dave Quigley <dpquigl@tycho.nsa.gov>,
+       hch@infradead.org, viro@ftp.linux.org.uk, trond.myklebust@fys.uio.no,
+       bfields@fieldses.org, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org,
+       LSM List <linux-security-module@vger.kernel.org>
+Subject: Re: [PATCH 01/11] Security: Add hook to get full maclabel xattr
+	name
+Message-ID: <20080228234850.GA25829@infradead.org>
+References: <746385.69480.qm@web36611.mail.mud.yahoo.com> <1204227035.31790.207.camel@moss-spartans.epoch.ncsc.mil>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1204227035.31790.207.camel@moss-spartans.epoch.ncsc.mil>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 28 Feb 2008 14:29:22 -0500 Rik van Riel wrote:
+On Thu, Feb 28, 2008 at 02:30:35PM -0500, Stephen Smalley wrote:
+> This is an interface to be used by NFS to get information from the
+> security module.  The information desired is specific to the MAC
+> labeling functionality in NFSv4 that is being proposed.  That
+> functionality is MAC specific (necessarily so, just like the ACL
+> functionality is ACL specific).  We are hiding the SELinux-specific bits
+> behind the LSM interface, and non-MAC LSMs are free to return NULL in
+> order to indicate that they don't support MAC labeling.  We do NOT want
+> the capability module to return its security blob here, or any other
+> non-MAC LSM - it will yield the wrong semantics for the NFS MAC support.
 
-> V2 -> V3:
-> + rebase to 23-mm1 atop RvR's split LRU series
-> 
-> New in V2
-> 
-> This patch adds a function to scan individual or all zones' noreclaim
-> lists and move any pages that have become reclaimable onto the respective
-> zone's inactive list, where shrink_inactive_list() will deal with them.
-> 
-> This replaces the function to splice the entire noreclaim list onto the
-> active list for rescan by shrink_active_list().  That method had problems
-> with vmstat accounting and complicated '[__]isolate_lru_pages()'.  Now,
-> __isolate_lru_page() will never isolate a non-reclaimable page.  The
-> only time it should see one is when scanning nearby pages for lumpy
-> reclaim.
-> 
->   TODO:  This approach may still need some refinement.
->          E.g., put back to active list?
-> 
-> DEBUGGING ONLY: NOT FOR UPSTREAM MERGE
-> 
-> Signed-off-by:  Lee Schermerhorn <lee.schermerhorn@hp.com>
-> Signed-off-by:  Rik van Riel <riel@redhat.com>
+I think Casey is totally right here.  The LSM interface should not be
+as specific here.  If you want to limit the NFSv4 interface to single
+MAC xattr label based systems add an additional method to check if
+the LSM is that.  But the proper fix is of course to not add somthing
+so specific to NFSv4 at all, as it's got enough shortcoming already.
+Please add a proper xattr protocol.  It's not like it's hard, SGI
+has been doing this in IRIX for NFSv3 for ages as a sideband protocol,
+and even release the reference source under the GPL.  Just either use
+that with NFSv4 or if you feel fancy merge it into the NFS spec for
+NFSv6^H4.2.
 
+> In any event, I don't think we need your permission.
 
-Hi,
+Wow, that's rude even to someone as direct as me.  Casey is the only
+other person having an in-tree LSM, and I think his input in this
+area is important.  But if not I as a VFS person can happily give
+you my "no" for the current version from the VFS point of view.
 
-I haven't looked at all 21 patches, but please use kernel-doc
-notation as it's defined.  See Documentation/kernel-doc-nano-HOWTO.txt
-for details, or ask.
-
-> Index: linux-2.6.25-rc2-mm1/mm/vmscan.c
-> ===================================================================
-> --- linux-2.6.25-rc2-mm1.orig/mm/vmscan.c	2008-02-28 11:05:04.000000000 -0500
-> +++ linux-2.6.25-rc2-mm1/mm/vmscan.c	2008-02-28 12:48:01.000000000 -0500
-> @@ -2295,4 +2296,144 @@ int page_reclaimable(struct page *page, 
->  
->  	return 1;
->  }
-> +
-> +/**
-> + * scan_zone_noreclaim_pages(@zone)
-> + * @zone - zone to scan
-
-E.g.:
-
- * scan_zone_reclaim_pages - some short description here
- * @zone: zone to scan
-
-
-> + *
-> + * Scan @zone's noreclaim LRU lists to check for pages that have become
-> + * reclaimable.  Move those that have to @zone's inactive list where they
-> + * become candidates for reclaim, unless shrink_inactive_zone() decides
-> + * to reactivate them.  Pages that are still non-reclaimable are rotated
-> + * back onto @zone's noreclaim list.
-> + */
-> +#define SCAN_NORECLAIM_BATCH_SIZE 16UL	/* arbitrary lock hold batch size */
-
-and don't insert macros between the kernel-doc section and the
-function definition, please.
-
-
-> +void scan_zone_noreclaim_pages(struct zone *zone)
-> +{
-...
-> +}
-
----
-~Randy
