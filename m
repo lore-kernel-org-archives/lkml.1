@@ -1,58 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759896AbYB1MNY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758868AbYB1MPX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759896AbYB1MNY (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Feb 2008 07:13:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758113AbYB1MNR
+	id S1758868AbYB1MPX (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Feb 2008 07:15:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751049AbYB1MPK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Feb 2008 07:13:17 -0500
-Received: from cdptpa-omtalb.mail.rr.com ([75.180.132.121]:61029 "EHLO
-	cdptpa-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757973AbYB1MNQ (ORCPT
+	Thu, 28 Feb 2008 07:15:10 -0500
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:33787 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751126AbYB1MPI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Feb 2008 07:13:16 -0500
-Message-ID: <47C6A516.4070707@cfl.rr.com>
-Date: Thu, 28 Feb 2008 07:12:06 -0500
-From: Mark Hounschell <dmarkh@cfl.rr.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20070801)
+	Thu, 28 Feb 2008 07:15:08 -0500
+Date: Thu, 28 Feb 2008 21:13:39 +0900
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: Ingo Molnar <mingo@elte.hu>
+Subject: Re: 2.6.25-rc2-mm1 - boot hangs on ia64
+Cc: kosaki.motohiro@jp.fujitsu.com, Steven Rostedt <srostedt@redhat.com>,
+       Lee Schermerhorn <Lee.Schermerhorn@hp.com>,
+       linux-ia64 <linux-ia64@vger.kernel.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Tony Luck <tony.luck@intel.com>, Ingo Molnar <mingo@redhat.com>,
+       Bob Picco <bob.picco@hp.com>, Eric Whitney <eric.whitney@hp.com>
+In-Reply-To: <20080228115041.GA22082@elte.hu>
+References: <20080228192509.BDCF.KOSAKI.MOTOHIRO@jp.fujitsu.com> <20080228115041.GA22082@elte.hu>
+Message-Id: <20080228211044.BDD5.KOSAKI.MOTOHIRO@jp.fujitsu.com>
 MIME-Version: 1.0
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-CC: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       Oleg Nesterov <oleg@tv-sign.ru>, Steven Rostedt <rostedt@goodmis.org>,
-       Paul Jackson <pj@sgi.com>, Max Krasnyanskiy <maxk@qualcomm.com>,
-       linux-kernel@vger.kernel.org,
-       "markh@compro.net >> Mark Hounschell" <markh@compro.net>
-Subject: Re: [RFC/PATCH 0/4] CPUSET driven CPU isolation
-References: <20080227222103.673194000@chello.nl>
-In-Reply-To: <20080227222103.673194000@chello.nl>
-X-Enigmail-Version: 0.95.5
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset="US-ASCII"
 Content-Transfer-Encoding: 7bit
+X-Mailer: Becky! ver. 2.42 [ja]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Peter Zijlstra wrote:
-> My vision on the direction we should take wrt cpu isolation.
+Hi Ingo,
+
+> thanks for bisecting it down! Could ia64 have trouble accessing the 
+> percpu data structures of the scheduler?
 > 
-> Next on the list would be figuring out a nice solution to the workqueue
-> flush issue.
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
-> 
+> does the patch below resolve the hang?
 
-Is it now the intent, not only that I have to enable cpusets in the
-kernel but I will also have to use them in userland to take advantage of
-this.
+Thanks!
+that patch works well on my test environment.
 
-And hot-plug too??
+Tested-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
 
-Can I predict that in the future that userland sched_setaffinity will be
-taken away also and be forced to use cpusets?
 
-And hot-plug too??
+BTW: Your work is ultimate fast. it's wonderful :)
 
-Mark
+
+
+
