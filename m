@@ -1,120 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765478AbYB1T7q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763747AbYB1UA3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765478AbYB1T7q (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Feb 2008 14:59:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764670AbYB1Tyy
+	id S1763747AbYB1UA3 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Feb 2008 15:00:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757086AbYB1Ty6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Feb 2008 14:54:54 -0500
-Received: from einhorn.in-berlin.de ([192.109.42.8]:60386 "EHLO
-	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758862AbYB1Tyx (ORCPT
+	Thu, 28 Feb 2008 14:54:58 -0500
+Received: from smtp1.linux-foundation.org ([207.189.120.13]:44159 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1764856AbYB1Ty4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Feb 2008 14:54:53 -0500
-X-Envelope-From: stefanr@s5r6.in-berlin.de
-Date: Thu, 28 Feb 2008 20:54:43 +0100 (CET)
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-Subject: [PATCH] firewire: fw-ohci: add option for remote debugging
-To: linux1394-devel@lists.sourceforge.net
-cc: linux-kernel@vger.kernel.org, Bernhard Kaindl <bk@suse.de>
-Message-ID: <tkrat.66c379c72c01f7fa@s5r6.in-berlin.de>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; CHARSET=us-ascii
-Content-Disposition: INLINE
+	Thu, 28 Feb 2008 14:54:56 -0500
+Date: Thu, 28 Feb 2008 11:40:41 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: David Rientjes <rientjes@google.com>
+Cc: tbm@cyrius.com, linux-kernel@vger.kernel.org, johnpol@2ka.mipt.ru,
+       herbert@gondor.apana.org.au, ralf@linux-mips.org, kaber@trash.net
+Subject: Re: 2.6.25-rc3: "__divdi3" [drivers/crypto/hifn_795x.ko] undefined!
+Message-Id: <20080228114041.2fc51217.akpm@linux-foundation.org>
+In-Reply-To: <alpine.DEB.1.00.0802261945370.22324@chino.kir.corp.google.com>
+References: <20080226122100.GB22699@deprecation.cyrius.com>
+	<alpine.DEB.1.00.0802261945370.22324@chino.kir.corp.google.com>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This way firewire-ohci can be used for remote debugging like ohci1394.
+On Tue, 26 Feb 2008 19:46:35 -0800 (PST)
+David Rientjes <rientjes@google.com> wrote:
 
-Signed-off-by: Stefan Richter <stefanr@s5r6.in-berlin.de>
----
- Documentation/debugging-via-ohci1394.txt |   13 ++++++++-----
- drivers/firewire/fw-ohci.c               |    9 +++++++++
- lib/Kconfig.debug                        |   10 ++++++++++
- 3 files changed, 27 insertions(+), 5 deletions(-)
+> On Tue, 26 Feb 2008, Martin Michlmayr wrote:
+> 
+> > With 2.6.25-rc3 and a config file with
+> > 
+> > CONFIG_CRYPTO_DEV_HIFN_795X=m
+> > CONFIG_CRYPTO_DEV_HIFN_795X_RNG=y
+> > 
+> > I get the following build error on at least ARM and MIPS:
+> > 
+> >   Building modules, stage 2.
+> >   MODPOST 759 modules
+> > ERROR: "__divdi3" [drivers/crypto/hifn_795x.ko] undefined!
+> > 
+> 
+> crypto: use do_div() when registering the rng
+> 
+> Use do_div() instead of the divide operator.
+> 
+> Cc: Patrick McHardy <kaber@trash.net>
+> Cc: Herbert Xu <herbert@gondor.apana.org.au>
+> Signed-off-by: David Rientjes <rientjes@google.com>
+> ---
+>  Looks like this was triggered by f881d829, which causes this code to be
+>  compiled for CONFIG_CRYPTO_DEV_HIFN_795X_RNG.
+> 
+>  drivers/crypto/hifn_795x.c |    8 +++++---
+>  1 files changed, 5 insertions(+), 3 deletions(-)
+> 
+> diff --git a/drivers/crypto/hifn_795x.c b/drivers/crypto/hifn_795x.c
+> --- a/drivers/crypto/hifn_795x.c
+> +++ b/drivers/crypto/hifn_795x.c
+> @@ -822,12 +822,14 @@ static int hifn_rng_data_read(struct hwrng *rng, u32 *data)
+>  
+>  static int hifn_register_rng(struct hifn_device *dev)
+>  {
+> +	unsigned int tmp;
+> +
+>  	/*
+>  	 * We must wait at least 256 Pk_clk cycles between two reads of the rng.
+>  	 */
+> -	dev->rng_wait_time	= DIV_ROUND_UP(NSEC_PER_SEC, dev->pk_clk_freq) *
+> -				  256;
+> -
+> +	tmp = NSEC_PER_SEC + dev->pk_clk_freq - 1;
+> +	do_div(tmp, dev->pk_clk_freq);
+> +	dev->rng_wait_time	= tmp * 256;
+>  	dev->rng.name		= dev->name;
+>  	dev->rng.data_present	= hifn_rng_data_present,
+>  	dev->rng.data_read	= hifn_rng_data_read,
 
-Index: linux/Documentation/debugging-via-ohci1394.txt
-===================================================================
---- linux.orig/Documentation/debugging-via-ohci1394.txt
-+++ linux/Documentation/debugging-via-ohci1394.txt
-@@ -41,11 +41,14 @@ to a working state and enables physical 
- This can be turned off by ohci1394's module parameter phys_dma=0.
- 
- The alternative firewire-ohci driver in drivers/firewire uses filtered physical
--DMA, hence is not yet suitable for remote debugging.
--
--Because ohci1394 depends on the PCI enumeration to be completed, an
--initialization routine which runs pretty early (long before console_init()
--which makes the printk buffer appear on the console can be called) was written.
-+DMA by default, which is more secure but not suitable for remote debugging.
-+Compile the driver with CONFIG_FIREWIRE_OHCI_REMOTE_DMA to get unfiltered
-+physical DMA.
-+
-+Because ohci1394 and firewire-ohci depend on the PCI enumeration to be
-+completed, an initialization routine which runs pretty early has been
-+implemented for x86.  This routine runs long before console_init() can be
-+called, i.e. before the printk buffer appears on the console.
- 
- To activate it, enable CONFIG_PROVIDE_OHCI1394_DMA_INIT (Kernel hacking menu:
- Provide code for enabling DMA over FireWire early on boot) and pass the
-Index: linux/drivers/firewire/fw-ohci.c
-===================================================================
---- linux.orig/drivers/firewire/fw-ohci.c
-+++ linux/drivers/firewire/fw-ohci.c
-@@ -1091,6 +1091,11 @@ static void bus_reset_tasklet(unsigned l
- 		reg_write(ohci, OHCI1394_ConfigROMhdr, ohci->next_header);
- 	}
- 
-+#ifdef CONFIG_FIREWIRE_OHCI_REMOTE_DMA
-+	reg_write(ohci, OHCI1394_PhyReqFilterHiSet, ~0);
-+	reg_write(ohci, OHCI1394_PhyReqFilterLoSet, ~0);
-+#endif
-+
- 	spin_unlock_irqrestore(&ohci->lock, flags);
- 
- 	if (free_rom)
-@@ -1429,6 +1434,9 @@ static int ohci_cancel_packet(struct fw_
- static int
- ohci_enable_phys_dma(struct fw_card *card, int node_id, int generation)
- {
-+#ifdef CONFIG_FIREWIRE_OHCI_REMOTE_DMA
-+	return 0;
-+#else
- 	struct fw_ohci *ohci = fw_ohci(card);
- 	unsigned long flags;
- 	int n, retval = 0;
-@@ -1460,6 +1468,7 @@ ohci_enable_phys_dma(struct fw_card *car
-  out:
- 	spin_unlock_irqrestore(&ohci->lock, flags);
- 	return retval;
-+#endif /* CONFIG_FIREWIRE_OHCI_REMOTE_DMA */
- }
- 
- static u64
-Index: linux/lib/Kconfig.debug
-===================================================================
---- linux.orig/lib/Kconfig.debug
-+++ linux/lib/Kconfig.debug
-@@ -592,6 +592,16 @@ config LATENCYTOP
- 	  Enable this option if you want to use the LatencyTOP tool
- 	  to find out which userspace is blocking on what kernel operations.
- 
-+config FIREWIRE_OHCI_REMOTE_DMA
-+	bool "Remote debugging via firewire-ohci"
-+	depends on FIREWIRE_OHCI
-+	help
-+	  This option lets you use the FireWire bus for remote debugging.
-+	  It enables unfiltered remote DMA in the firewire-ohci driver.
-+	  See Documentation/debugging-via-ohci1394.txt for more information.
-+
-+	  If unsure, say N.
-+
- config PROVIDE_OHCI1394_DMA_INIT
- 	bool "Provide code for enabling DMA over FireWire early on boot"
- 	depends on PCI && X86
-
--- 
-Stefan Richter
--=====-==--- --=- ===--
-http://arcgraph.de/sr/
+do_div takes a u64 as its first arg.  If we're going to make the above
+change then we may as well use plain old "/".
 
