@@ -1,68 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761274AbYB1RsX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757045AbYB1Rsj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761274AbYB1RsX (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Feb 2008 12:48:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754189AbYB1RsO
+	id S1757045AbYB1Rsj (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Feb 2008 12:48:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761238AbYB1RsW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Feb 2008 12:48:14 -0500
-Received: from wolverine01.qualcomm.com ([199.106.114.254]:1434 "EHLO
-	wolverine01.qualcomm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754008AbYB1RsN (ORCPT
+	Thu, 28 Feb 2008 12:48:22 -0500
+Received: from sj-iport-3.cisco.com ([171.71.176.72]:47105 "EHLO
+	sj-iport-3.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761207AbYB1RsV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Feb 2008 12:48:13 -0500
-X-IronPort-AV: E=McAfee;i="5200,2160,5240"; a="979321"
-Message-ID: <47C6F3DB.8070309@qualcomm.com>
-Date: Thu, 28 Feb 2008 09:48:11 -0800
-From: Max Krasnyanskiy <maxk@qualcomm.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+	Thu, 28 Feb 2008 12:48:21 -0500
+To: "Mingarelli, Thomas" <Thomas.Mingarelli@hp.com>,
+       Wim Van Sebroeck <wim@iguana.be>
+Cc: linux-kernel@vger.kernel.org
+Subject: [PATCH for 2.6.26] [WATCHDOG] Fix return value warning in hpwdt
+X-Message-Flag: Warning: May contain useful information
+References: <adad4qiwcmz.fsf@cisco.com>
+	<alpine.LFD.1.00.0802271913050.7583@apollo.tec.linutronix.de>
+	<ada1w6y1bzk.fsf@cisco.com>
+	<alpine.LFD.1.00.0802272011130.7583@apollo.tec.linutronix.de>
+	<20080227203655.GA30054@elte.hu>
+	<alpine.LFD.1.00.0802272140050.7583@apollo.tec.linutronix.de>
+	<alpine.LFD.1.00.0802272155190.7583@apollo.tec.linutronix.de>
+	<ada3areyu7x.fsf@cisco.com>
+	<E14D1C2A44812C4F9C3ED321127EDF6505829D59DF@G3W0854.americas.hpqcorp.net>
+	<adamypmx7k1.fsf@cisco.com>
+	<E14D1C2A44812C4F9C3ED321127EDF6505829D5D6C@G3W0854.americas.hpqcorp.net>
+	<adaejaxx9p7.fsf_-_@cisco.com>
+From: Roland Dreier <rdreier@cisco.com>
+Date: Thu, 28 Feb 2008 09:48:10 -0800
+In-Reply-To: <adaejaxx9p7.fsf_-_@cisco.com> (Roland Dreier's message of "Thu, 28 Feb 2008 09:38:44 -0800")
+Message-ID: <adaabllx99h.fsf_-_@cisco.com>
+User-Agent: Gnus/5.1008 (Gnus v5.10.8) XEmacs/21.4.21 (linux)
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Thomas Gleixner <tglx@linutronix.de>, Oleg Nesterov <oleg@tv-sign.ru>,
-       Steven Rostedt <rostedt@goodmis.org>, Paul Jackson <pj@sgi.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [RFC/PATCH 0/4] CPUSET driven CPU isolation
-References: <20080227222103.673194000@chello.nl> <20080228075010.GA28781@elte.hu>
-In-Reply-To: <20080228075010.GA28781@elte.hu>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+X-OriginalArrivalTime: 28 Feb 2008 17:48:12.0556 (UTC) FILETIME=[16902CC0:01C87A32]
+Authentication-Results: sj-dkim-2; header.From=rdreier@cisco.com; dkim=pass (
+	sig from cisco.com/sjdkim2002 verified; ); 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
-> * Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:
-> 
->> My vision on the direction we should take wrt cpu isolation.
->>
->> Next on the list would be figuring out a nice solution to the 
->> workqueue flush issue.
-> 
-> nice work Peter, i find this "system sets" extension to cpusets a much 
-> more elegant (and much more future-proof) solution than the proposed 
-> spreadout of the limited hack of isolcpus/cpu_isolated_map. It 
-> concentrates us on a single API and on a single mechanism to handle 
-> isolation matters. (be that for clustering/supercomputing or real-time 
-> purposes)
-Come on Ingo. You make it sounds like it's radically different solution.
-At the end of the day we have a bitmap that represents which CPUs can be used 
-for the kernel stuff. How is that different ?
-I was saying all along that cpusets is a higher level API and was discussing 
-or trying to discuss (people were ignoring my questions) ways to integrate it.
+The return value of smbios_scan_machine() is never used, and when it
+succeeds it doesn't return anything, so just make it void.  This fixes:
 
-> Thanks for insisting on using cpusets for this!
-> 
-> i've queued up your patches in sched-devel.git, and lets make sure this 
-> has no side-effects on existing functionality. (it shouldnt)
-Hmm, that was easy. Not a single ack. Even the core part is not complete yet. 
-I pointed out several issues. Like the fact that it does not provide full 
-isolation because it does not move timers, does not handle workqueues.
-I did not even get a chance to test this stuff properly and see if it actually 
-solves the usecase I was solving with my patches.
-_Obviously_ we could not have taken my tested solution and evolved it in the 
-direction people wanted to see it evolve, ie integration with the cpusets :(.
+    drivers/watchdog/hpwdt.c: In function 'smbios_scan_machine':
+    drivers/watchdog/hpwdt.c:562: warning: control reaches end of non-void function
 
-My main concern is that it introduces a whole new set of notifiers that 
-perform similar functions to what CPU hotplut already does.
-
-Max
+Signed-off-by: Roland Dreier <rolandd@cisco.com>
+---
+diff --git a/drivers/watchdog/hpwdt.c b/drivers/watchdog/hpwdt.c
+index a2e174b..b1cd0ac 100644
+--- a/drivers/watchdog/hpwdt.c
++++ b/drivers/watchdog/hpwdt.c
+@@ -528,20 +528,19 @@ static int __devinit smbios_present(const char __iomem *p)
+ 	return -ENODEV;
+ }
+ 
+-static int __devinit smbios_scan_machine(void)
++static void __devinit smbios_scan_machine(void)
+ {
+ 	char __iomem *p, *q;
+-	int rc;
+ 
+ 	if (efi_enabled) {
+ 		if (efi.smbios == EFI_INVALID_TABLE_ADDR)
+-			return -ENODEV;
++			return;
+ 
+ 		p = ioremap(efi.smbios, 32);
+ 		if (p == NULL)
+-			return -ENOMEM;
++			return;
+ 
+-		rc = smbios_present(p);
++		smbios_present(p);
+ 		iounmap(p);
+ 	} else {
+ 		/*
+@@ -549,14 +548,12 @@ static int __devinit smbios_scan_machine(void)
+ 		 */
+ 		p = ioremap(PCI_ROM_BASE1, ROM_SIZE);
+ 		if (p == NULL)
+-			return -ENOMEM;
++			return;
+ 
+-		for (q = p; q < p + ROM_SIZE; q += 16) {
+-			rc = smbios_present(q);
+-			if (!rc) {
++		for (q = p; q < p + ROM_SIZE; q += 16)
++			if (!smbios_present(q))
+ 				break;
+-			}
+-		}
++
+ 		iounmap(p);
+ 	}
+ }
