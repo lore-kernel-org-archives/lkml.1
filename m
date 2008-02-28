@@ -1,61 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759860AbYB1RY6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760002AbYB1R31@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759860AbYB1RY6 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Feb 2008 12:24:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756880AbYB1RYu
+	id S1760002AbYB1R31 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Feb 2008 12:29:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753996AbYB1R3T
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Feb 2008 12:24:50 -0500
-Received: from de01egw01.freescale.net ([192.88.165.102]:53365 "EHLO
-	de01egw01.freescale.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755797AbYB1RYt (ORCPT
+	Thu, 28 Feb 2008 12:29:19 -0500
+Received: from hpsmtp-eml15.kpnxchange.com ([213.75.38.115]:48624 "EHLO
+	hpsmtp-eml15.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753534AbYB1R3T (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Feb 2008 12:24:49 -0500
-Date: Thu, 28 Feb 2008 11:24:34 -0600
-From: Scott Wood <scottwood@freescale.com>
-To: biswa.nayak@wipro.com
-Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
-Subject: Re: Wrong IRQ assigned on MPC8349EMDS board
-Message-ID: <20080228172434.GA25737@ld0162-tx32.am.freescale.net>
-References: <4F36B0A4CDAD6F46A61B2B32C33DC69C05C579C0@BLR-EC-MBX03.wipro.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Thu, 28 Feb 2008 12:29:19 -0500
+From: Frans Pop <elendil@planet.nl>
+To: linux-nfs@vger.kernel.org
+Subject: [regression] nfs4: 30 second delay during umount of remote fs on system shutdown
+Date: Thu, 28 Feb 2008 18:29:15 +0100
+User-Agent: KMail/1.9.7
+Cc: linux-kernel@vger.kernel.org
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <4F36B0A4CDAD6F46A61B2B32C33DC69C05C579C0@BLR-EC-MBX03.wipro.com>
-User-Agent: Mutt/1.4.1i
+Message-Id: <200802281829.16343.elendil@planet.nl>
+X-OriginalArrivalTime: 28 Feb 2008 17:29:17.0410 (UTC) FILETIME=[71F6A420:01C87A2F]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Feb 28, 2008 at 09:38:36PM +0530, biswa.nayak@wipro.com wrote:
-> I found that the IRQ lines assigned to different peripherals are
-> completely wrong.
-> My serial ports are connected to pin 9 and 10, but in this kernel the
-> IRQs assigned are 16 and 17. 
+With 2.6.25-rc2 and -rc3 I noticed a pause of 30 seconds when my system 
+(Debian unstable, x86_64) is being shutdown. The cause is the unmounting of 
+an nfs4 remote file system.
+The pause does not happen with 2.6.24. I'm unsure about 2.6.25-rc1 as I was 
+concentrating on other issues when I was testing that.
 
-These are virtual IRQ numbers, which have nothing to do with the IPIC IRQ
-numbers.
+I can reproduce the same pause on an active system by stopping portmap 
+before doing an umount of the filesystem.
 
-> On a little investigation I found that the base address assigned to the
-> IPIC chip is '0xFDDFB700'
+The shutdown sequence on my box includes:
+K20nfs-common
+[...]
+S20sendsigs
+[...]
+S31umountnfs.sh
+S32portmap
 
-That's a virtual address returned from ioremap(), not the physical
-address of the IPIC.
+So it seems that things should be OK (S32portmap is after S31umountnfs.sh), 
+but in fact portmap has already been killed during S20sendsigs!
 
-> Does this wrong assignment is due to the wrong base address of the IPIC
-> chip?
-> With IRQs 16 and 17, how the serial console is working fine?
-> 
-> When I tried hard coding the IPIC base value to '0xfe000700' then the
-> system refuses to boot up.
+I have verified that portmap is also not running during S31umountnfs.sh with 
+2.6.24, so apparently there has been a change in the kernel that has made 
+umount look for portmap and cause the 30 second delay if it is not running.
 
-That might be a hint that things aren't as wrong as you think. :-)
+Is this a kernel regression?
 
-> I kept the IPIC base as 0xfddfb700 and hard coded the irq lines for
-> serial ports as 9 and 10
-> and in that case the 'request_irq' call fails with the error number as
-> '-38',
-> which translates to '-ENOSYS'. 
-
-Likewise.
-
--Scott
+Cheers,
+FJP
