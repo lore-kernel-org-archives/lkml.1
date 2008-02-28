@@ -1,26 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760623AbYB1Hei@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759189AbYB1Hdg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760623AbYB1Hei (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Feb 2008 02:34:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759247AbYB1Hc4
+	id S1759189AbYB1Hdg (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Feb 2008 02:33:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758249AbYB1Hcp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Feb 2008 02:32:56 -0500
-Received: from py-out-1112.google.com ([64.233.166.181]:43453 "EHLO
+	Thu, 28 Feb 2008 02:32:45 -0500
+Received: from py-out-1112.google.com ([64.233.166.177]:40533 "EHLO
 	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759217AbYB1Hcy (ORCPT
+	with ESMTP id S1759020AbYB1Hcn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Feb 2008 02:32:54 -0500
+	Thu, 28 Feb 2008 02:32:43 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=message-id:date:user-agent:mime-version:to:subject:content-type:content-transfer-encoding:from;
-        b=lPpzCNGY28m+G+fiqTfxCGcOsQzOMgsAxrbZp2rxZQQ5tACiY2OjSo6BaC7GiCO0rjtD2RZ853/u8AyLibkAePt+XWpbCeBQ7iNqdxH3JfT4fuwVgoL70Oi6jOZ+ZGU0AP1CkljMI2y/KrLC+T4C6yDQzJ7HXOp8dew0dQv/NIw=
-Message-ID: <47C66346.80108@watson.wustl.edu>
-Date: Thu, 28 Feb 2008 01:31:18 -0600
+        b=O6LxaS3zDC/1BNbPDYyegMgdYYFMTHquuNrseSYxUf7IC1W8Cd9GsC2jLgN6aMwrnmlX1g9efVdg+9/Ulevt7QZgRyjvfvz142hPwUbnqBVhlTr+Rmya/9iJYyUG/u0CvhgK9QW1CmVipHEau1xMs6rhIkH11bDtFDMG8XDaQ0s=
+Message-ID: <47C66339.9090607@watson.wustl.edu>
+Date: Thu, 28 Feb 2008 01:31:05 -0600
 User-Agent: Thunderbird 2.0.0.6 (X11/20071022)
 MIME-Version: 1.0
 To: linux-kernel@vger.kernel.org, trivial@kernel.org,
        kernel-janitors@vger.kernel.org
-Subject: [PATCH 9/9] /drivers/net/atarilance.c replaced init_module&cleanup_module
+Subject: [PATCH 6/9] /drivers/net/arcnet/capmode.c replaced init_module&cleanup_module
  with module_init&module_exit
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
@@ -33,33 +33,29 @@ Replaced init_module and cleanup_module with static functions and module_init/mo
 
 Signed-off-by: Jon Schindler <jkschind@gmail.com>
 ---
-diff --git a/drivers/net/atarilance.c b/drivers/net/atarilance.c
-index b74dbee..8422e3b 100644
---- a/drivers/net/atarilance.c
-+++ b/drivers/net/atarilance.c
-@@ -1156,7 +1156,7 @@ static int lance_set_mac_address( struct net_device *dev, void *addr )
+diff --git a/drivers/net/arcnet/capmode.c b/drivers/net/arcnet/capmode.c
+index cc4610d..02cb8f1 100644
+--- a/drivers/net/arcnet/capmode.c
++++ b/drivers/net/arcnet/capmode.c
+@@ -80,17 +80,19 @@ void arcnet_cap_init(void)
+ 
  #ifdef MODULE
- static struct net_device *atarilance_dev;
  
 -int __init init_module(void)
-+static int __init atarilance_module_init(void)
++static int __init capmode_module_init(void)
  {
- 	atarilance_dev = atarilance_probe(-1);
- 	if (IS_ERR(atarilance_dev))
-@@ -1164,13 +1164,14 @@ int __init init_module(void)
+ 	printk(VERSION);
+ 	arcnet_cap_init();
  	return 0;
  }
  
--void __exit cleanup_module(void)
-+static void __exit atarilance_module_exit(void)
+-void cleanup_module(void)
++static void __exit capmode_module_exit(void)
  {
- 	unregister_netdev(atarilance_dev);
- 	free_irq(atarilance_dev->irq, atarilance_dev);
- 	free_netdev(atarilance_dev);
+ 	arcnet_unregister_proto(&capmode_proto);
  }
--
-+module_init(atarilance_module_init);
-+module_exit(atarilance_module_exit);
- #endif /* MODULE */
++module_init(capmode_module_init);
++module_exit(capmode_module_exit);
  
- 
+ MODULE_LICENSE("GPL");
+ #endif				/* MODULE */
