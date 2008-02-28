@@ -1,54 +1,183 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761993AbYB1TPM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761622AbYB1TPh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761993AbYB1TPM (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Feb 2008 14:15:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751533AbYB1TOz
+	id S1761622AbYB1TPh (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Feb 2008 14:15:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760001AbYB1TO6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Feb 2008 14:14:55 -0500
-Received: from rv-out-0910.google.com ([209.85.198.186]:5209 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755196AbYB1TOy (ORCPT
+	Thu, 28 Feb 2008 14:14:58 -0500
+Received: from wx-out-0506.google.com ([66.249.82.227]:16115 "EHLO
+	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755418AbYB1TOz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Feb 2008 14:14:54 -0500
+	Thu, 28 Feb 2008 14:14:55 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=mGaQTnD3BNxatPY1IcjkYdMr/qOTfflHiBPSHfDMjPeqotul42ikpEEqiFoIhBKB6m8OVGXYUqLFjB3HeR8L6EyPWACMPfwVXK9Bjeia1hQMF8hIiZb4hB2e/zcL1LdClAEK3w8Iu+7OgIldo+MsClVhTQ6Djpf6a5jbu9gmakQ=
-Message-ID: <38b2ab8a0802281114o5192251ew6f827e31b03551a2@mail.gmail.com>
-Date: Thu, 28 Feb 2008 20:14:53 +0100
-From: "Francis Moreau" <francis.moro@gmail.com>
-To: Valdis.Kletnieks@vt.edu
-Subject: Re: linux-v2.6.25-rc3 issue: nvidiafb: cannot ioremap FB base
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <22886.1204213070@turing-police.cc.vt.edu>
+        b=X1LBptJf1Xia2Tc5mUlC7zzlwha6BO/95U320Jns7Fo+9ZulSlhj2EwxoljXdelHBbholxvw8WkMiPChorduTEH/A6ZTbDxNFZ3Om5csDuTzabJSkyxLCi0vY6Mt4wQMqJ2kMBJYFqTkPAW4ah8cQMdITJnJ6ygKgd2dgf7oDpk=
+Message-ID: <5d75f4610802281114s6802b8aey6bb3748d09953df6@mail.gmail.com>
+Date: Fri, 29 Feb 2008 02:14:53 +0700
+From: "BuraphaLinux Server" <buraphalinuxserver@gmail.com>
+To: serge@hallyn.com
+Subject: Re: [PATCH 1/1] file capabilities: remove cap_task_kill()
+Cc: lkml <linux-kernel@vger.kernel.org>, linux-security-module@vger.kernel.org,
+       "Andrew Morgan" <morgan@kernel.org>,
+       "Stephen Smalley" <sds@epoch.ncsc.mil>,
+       "Mike Galbraith" <efault@gmx.de>, elendil@planet.nl
+In-Reply-To: <20080228173817.GA32661@vino.hallyn.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <38b2ab8a0802280607h46a89f04wdd190a7c87571668@mail.gmail.com>
-	 <22886.1204213070@turing-police.cc.vt.edu>
+References: <20080228173817.GA32661@vino.hallyn.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Feb 28, 2008 at 4:37 PM,  <Valdis.Kletnieks@vt.edu> wrote:
-> On Thu, 28 Feb 2008 15:07:27 +0100, Francis Moreau said:
->  > Hi,
->  >
->  > I gave to the latest -rc (rc3) a test and it appears to fail to load the
->  > nvidiafb module and the reason given is:
->  >
->  > nvidiafb: cannot ioremap FB base
->  >
->  > Does anybody have a clue ?
->
->  Umm.. do you also have vesafb or other FB built as a module?  I got bit by
->  that with the binary NVidia driver, discovered it was because vesafb had
->  already done an ioremap of the space, but with different caching flags...
->
+For 2.6.25-rc3,
+Tested-By: John Gatewood Ham <buraphalinuxserver@gmail.com>
 
-no, actually I have only nvidiafb and it's built in the kernel (not a module).
+This fixes the 'at' command for non-root users.  Thank you.
 
-Thanks
--- 
-Francis
+
+On 2/29/08, serge@hallyn.com <serge@hallyn.com> wrote:
+> The original justification for cap_task_kill() was as follows:
+>
+> 	check_kill_permission() does appropriate uid equivalence checks.
+> 	However with file capabilities it becomes possible for an
+> 	unprivileged user to execute a file with file capabilities
+> 	resulting in a more privileged task with the same uid.
+>
+> However now that cap_task_kill() always returns 0 (permission
+> granted) when p->uid==current->uid, the whole hook is worthless,
+> and only likely to create more subtle problems in the corner cases
+> where it might still be called but return -EPERM.  Those cases
+> are basically when uids are different but euid/suid is equivalent
+> as per the check in check_kill_permission().
+>
+> This patch removes cap_task_kill().
+>
+> Signed-off-by: Serge Hallyn <serge@hallyn.com>
+> ---
+>  include/linux/security.h   |    3 +--
+>  security/capability.c      |    1 -
+>  security/commoncap.c       |   40 ----------------------------------------
+>  security/smack/smack_lsm.c |    5 -----
+>  4 files changed, 1 insertions(+), 48 deletions(-)
+>
+> diff --git a/include/linux/security.h b/include/linux/security.h
+> index fe52cde..95cb830 100644
+> --- a/include/linux/security.h
+> +++ b/include/linux/security.h
+> @@ -63,7 +63,6 @@ extern int cap_inode_need_killpriv(struct dentry *dentry);
+>  extern int cap_inode_killpriv(struct dentry *dentry);
+>  extern int cap_task_post_setuid (uid_t old_ruid, uid_t old_euid, uid_t
+> old_suid, int flags);
+>  extern void cap_task_reparent_to_init (struct task_struct *p);
+> -extern int cap_task_kill(struct task_struct *p, struct siginfo *info, int
+> sig, u32 secid);
+>  extern int cap_task_setscheduler (struct task_struct *p, int policy, struct
+> sched_param *lp);
+>  extern int cap_task_setioprio (struct task_struct *p, int ioprio);
+>  extern int cap_task_setnice (struct task_struct *p, int nice);
+> @@ -2138,7 +2137,7 @@ static inline int security_task_kill (struct
+> task_struct *p,
+>  				      struct siginfo *info, int sig,
+>  				      u32 secid)
+>  {
+> -	return cap_task_kill(p, info, sig, secid);
+> +	return 0;
+>  }
+>
+>  static inline int security_task_wait (struct task_struct *p)
+> diff --git a/security/capability.c b/security/capability.c
+> index 9e99f36..2c6e06d 100644
+> --- a/security/capability.c
+> +++ b/security/capability.c
+> @@ -40,7 +40,6 @@ static struct security_operations capability_ops = {
+>  	.inode_need_killpriv =		cap_inode_need_killpriv,
+>  	.inode_killpriv =		cap_inode_killpriv,
+>
+> -	.task_kill =			cap_task_kill,
+>  	.task_setscheduler =		cap_task_setscheduler,
+>  	.task_setioprio =		cap_task_setioprio,
+>  	.task_setnice =			cap_task_setnice,
+> diff --git a/security/commoncap.c b/security/commoncap.c
+> index bb0c095..06d5c94 100644
+> --- a/security/commoncap.c
+> +++ b/security/commoncap.c
+> @@ -540,41 +540,6 @@ int cap_task_setnice (struct task_struct *p, int nice)
+>  	return cap_safe_nice(p);
+>  }
+>
+> -int cap_task_kill(struct task_struct *p, struct siginfo *info,
+> -				int sig, u32 secid)
+> -{
+> -	if (info != SEND_SIG_NOINFO && (is_si_special(info) ||
+> SI_FROMKERNEL(info)))
+> -		return 0;
+> -
+> -	/*
+> -	 * Running a setuid root program raises your capabilities.
+> -	 * Killing your own setuid root processes was previously
+> -	 * allowed.
+> -	 * We must preserve legacy signal behavior in this case.
+> -	 */
+> -	if (p->uid == current->uid)
+> -		return 0;
+> -
+> -	/* sigcont is permitted within same session */
+> -	if (sig == SIGCONT && (task_session_nr(current) == task_session_nr(p)))
+> -		return 0;
+> -
+> -	if (secid)
+> -		/*
+> -		 * Signal sent as a particular user.
+> -		 * Capabilities are ignored.  May be wrong, but it's the
+> -		 * only thing we can do at the moment.
+> -		 * Used only by usb drivers?
+> -		 */
+> -		return 0;
+> -	if (cap_issubset(p->cap_permitted, current->cap_permitted))
+> -		return 0;
+> -	if (capable(CAP_KILL))
+> -		return 0;
+> -
+> -	return -EPERM;
+> -}
+> -
+>  /*
+>   * called from kernel/sys.c for prctl(PR_CABSET_DROP)
+>   * done without task_capability_lock() because it introduces
+> @@ -605,11 +570,6 @@ int cap_task_setnice (struct task_struct *p, int nice)
+>  {
+>  	return 0;
+>  }
+> -int cap_task_kill(struct task_struct *p, struct siginfo *info,
+> -				int sig, u32 secid)
+> -{
+> -	return 0;
+> -}
+>  #endif
+>
+>  void cap_task_reparent_to_init (struct task_struct *p)
+> diff --git a/security/smack/smack_lsm.c b/security/smack/smack_lsm.c
+> index 770eb06..a9ca412 100644
+> --- a/security/smack/smack_lsm.c
+> +++ b/security/smack/smack_lsm.c
+> @@ -1124,11 +1124,6 @@ static int smack_task_movememory(struct task_struct
+> *p)
+>  static int smack_task_kill(struct task_struct *p, struct siginfo *info,
+>  			   int sig, u32 secid)
+>  {
+> -	int rc;
+> -
+> -	rc = cap_task_kill(p, info, sig, secid);
+> -	if (rc != 0)
+> -		return rc;
+>  	/*
+>  	 * Special cases where signals really ought to go through
+>  	 * in spite of policy. Stephen Smalley suggests it may
+> --
+> 1.5.2.5
+>
+>
