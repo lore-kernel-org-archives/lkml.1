@@ -1,26 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761100AbYB1A4U@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762021AbYB1A4h@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761100AbYB1A4U (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Feb 2008 19:56:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752902AbYB1A4K
+	id S1762021AbYB1A4h (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Feb 2008 19:56:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753376AbYB1A4M
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Feb 2008 19:56:10 -0500
-Received: from el-out-1112.google.com ([209.85.162.176]:41369 "EHLO
+	Wed, 27 Feb 2008 19:56:12 -0500
+Received: from el-out-1112.google.com ([209.85.162.177]:41507 "EHLO
 	el-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752502AbYB1A4J (ORCPT
+	with ESMTP id S1752733AbYB1A4J (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 27 Feb 2008 19:56:09 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=subject:from:to:cc:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=RKhFP0keXMY5cWDWIruc4V/DTbWFILbJT5WPtjJoXRMEr5dfLPW/i7FNOU5DrSJ+fYy9X2mCjsL2PLgJalYt+5D+nbJqxYS2EK0gRH5qc8vHVh4lgeC3t5mWvaEII4C+I99y/u7KNrqYe4UxSTO+fzV1IFOT/rl45MEMvRJygF8=
-Subject: [PATCH 01/12] sound: cmipci.c fix shadowed variable warning
+        b=fX6FiP0FRxdrjGJRLM80T4R/UurnxC0sbL5IPo8eStZpbF1BAsTnjLIlMbZ+p3cbY8bFBg8lPokpY/rU8XEM9SdZi9Ohja7Za2sqITXzA5q5/VwK1jzE0AXk0yP2ZisOo1JHHPMKOP4cp0O7rNzsQqtfyEVDqSgQv0l0IRF4Bwk=
+Subject: [PATCH 02/12] sound: ens1370.c fix shadowed variable warning
 From: Harvey Harrison <harvey.harrison@gmail.com>
 To: Andrew Morton <akpm@linux-foundation.org>
 Cc: LKML <linux-kernel@vger.kernel.org>
 Content-Type: text/plain
 Date: Wed, 27 Feb 2008 16:56:04 -0800
-Message-Id: <1204160164.20280.49.camel@brick>
+Message-Id: <1204160165.20280.50.camel@brick>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.12.1 
 Content-Transfer-Encoding: 7bit
@@ -28,39 +28,45 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-A temporary variable for each mixer element is used in an initialization
-loop, use the name elem_id.
+index is incremented only when AC97_EI_SPDIF and then assigned to
+the index field.  Change the temporary name to is_spdif.
 
-sound/pci/cmipci.c:2747:26: warning: symbol 'id' shadows an earlier one
-sound/pci/cmipci.c:56:13: originally declared here
+sound/pci/ens1370.c:1638:10: warning: symbol 'index' shadows an earlier one
+sound/pci/ens1370.c:84:12: originally declared here
 
 Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
 ---
- sound/pci/cmipci.c |   10 +++++-----
- 1 files changed, 5 insertions(+), 5 deletions(-)
+ sound/pci/ens1370.c |    6 +++---
+ 1 files changed, 3 insertions(+), 3 deletions(-)
 
-diff --git a/sound/pci/cmipci.c b/sound/pci/cmipci.c
-index 135f308..3e763b9 100644
---- a/sound/pci/cmipci.c
-+++ b/sound/pci/cmipci.c
-@@ -2744,12 +2744,12 @@ static int __devinit snd_cmipci_mixer_new(struct cmipci *cm, int pcm_spdif_devic
- 	}
+diff --git a/sound/pci/ens1370.c b/sound/pci/ens1370.c
+index 72d85a5..52fae4a 100644
+--- a/sound/pci/ens1370.c
++++ b/sound/pci/ens1370.c
+@@ -1635,20 +1635,20 @@ static int __devinit snd_ensoniq_1371_mixer(struct ensoniq *ensoniq,
+ 	if (has_spdif > 0 ||
+ 	    (!has_spdif && es1371_quirk_lookup(ensoniq, es1371_spdif_present))) {
+ 		struct snd_kcontrol *kctl;
+-		int i, index = 0;
++		int i, is_spdif = 0;
  
- 	for (idx = 0; idx < CM_SAVED_MIXERS; idx++) {
--		struct snd_ctl_elem_id id;
-+		struct snd_ctl_elem_id elem_id;
- 		struct snd_kcontrol *ctl;
--		memset(&id, 0, sizeof(id));
--		id.iface = SNDRV_CTL_ELEM_IFACE_MIXER;
--		strcpy(id.name, cm_saved_mixer[idx].name);
--		if ((ctl = snd_ctl_find_id(cm->card, &id)) != NULL)
-+		memset(&elem_id, 0, sizeof(elem_id));
-+		elem_id.iface = SNDRV_CTL_ELEM_IFACE_MIXER;
-+		strcpy(elem_id.name, cm_saved_mixer[idx].name);
-+		if ((ctl = snd_ctl_find_id(cm->card, &elem_id)) != NULL)
- 			cm->mixer_res_ctl[idx] = ctl;
- 	}
+ 		ensoniq->spdif_default = ensoniq->spdif_stream =
+ 			SNDRV_PCM_DEFAULT_CON_SPDIF;
+ 		outl(ensoniq->spdif_default, ES_REG(ensoniq, CHANNEL_STATUS));
  
+ 		if (ensoniq->u.es1371.ac97->ext_id & AC97_EI_SPDIF)
+-			index++;
++			is_spdif++;
+ 
+ 		for (i = 0; i < ARRAY_SIZE(snd_es1371_mixer_spdif); i++) {
+ 			kctl = snd_ctl_new1(&snd_es1371_mixer_spdif[i], ensoniq);
+ 			if (!kctl)
+ 				return -ENOMEM;
+-			kctl->id.index = index;
++			kctl->id.index = is_spdif;
+ 			err = snd_ctl_add(card, kctl);
+ 			if (err < 0)
+ 				return err;
 -- 
 1.5.4.3.342.g99e8
 
