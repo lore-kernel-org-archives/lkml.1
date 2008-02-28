@@ -1,75 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762054AbYB1AWk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932102AbYB1AZE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762054AbYB1AWk (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Feb 2008 19:22:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756200AbYB1AWb
+	id S932102AbYB1AZE (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Feb 2008 19:25:04 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756858AbYB1AYy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Feb 2008 19:22:31 -0500
-Received: from idcmail-mo1so.shaw.ca ([24.71.223.10]:47080 "EHLO
-	pd3mo2so.prod.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755686AbYB1AWa (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Feb 2008 19:22:30 -0500
-Date: Wed, 27 Feb 2008 18:24:27 -0600
-From: Robert Hancock <hancockr@shaw.ca>
-Subject: Re: [PATCH] sata_nv: fix nmi intr or system hanging in rhel4u6 adma.
-In-reply-to: <15F501D1A78BD343BE8F4D8DB854566B1BFE2AE7@hkemmail01.nvidia.com>
-To: Kuan Luo <kluo@nvidia.com>
-Cc: Jeff Garzik <jeff@garzik.org>, linux-kernel <linux-kernel@vger.kernel.org>,
-       Tejun Heo <htejun@gmail.com>, Peer Chen <pchen@nvidia.com>,
-       Allen Martin <AMartin@nvidia.com>
-Message-id: <47C5FF3B.2000000@shaw.ca>
-MIME-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1; format=flowed
-Content-transfer-encoding: 7bit
-References: <15F501D1A78BD343BE8F4D8DB854566B1BFE2AE5@hkemmail01.nvidia.com>
- <47C42534.1090107@shaw.ca> <47C43E27.5070700@garzik.org>
- <15F501D1A78BD343BE8F4D8DB854566B1BFE2AE7@hkemmail01.nvidia.com>
-User-Agent: Thunderbird 2.0.0.9 (Windows/20071031)
+	Wed, 27 Feb 2008 19:24:54 -0500
+Received: from relay2.sgi.com ([192.48.171.30]:49700 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1756200AbYB1AYy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 Feb 2008 19:24:54 -0500
+Date: Wed, 27 Feb 2008 16:24:53 -0800 (PST)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Andrea Arcangeli <andrea@qumranet.com>
+cc: Nick Piggin <npiggin@suse.de>, Steve Wise <swise@opengridcomputing.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-mm@kvack.org,
+       Kanoj Sarcar <kanojsarcar@yahoo.com>, Roland Dreier <rdreier@cisco.com>,
+       Jack Steiner <steiner@sgi.com>, linux-kernel@vger.kernel.org,
+       Avi Kivity <avi@qumranet.com>, kvm-devel@lists.sourceforge.net,
+       daniel.blueman@quadrics.com, Robin Holt <holt@sgi.com>,
+       general@lists.openfabrics.org, akpm@linux-foundation.org
+Subject: Re: [kvm-devel] [PATCH] mmu notifiers #v7
+In-Reply-To: <20080228002121.GC8091@v2.random>
+Message-ID: <Pine.LNX.4.64.0802271624170.15965@schroedinger.engr.sgi.com>
+References: <20080219231157.GC18912@wotan.suse.de> <20080220010941.GR7128@v2.random>
+ <20080220103942.GU7128@v2.random> <20080221045430.GC15215@wotan.suse.de>
+ <20080221144023.GC9427@v2.random> <20080221161028.GA14220@sgi.com>
+ <20080227192610.GF28483@v2.random> <Pine.LNX.4.64.0802271503050.13186@schroedinger.engr.sgi.com>
+ <20080227234317.GM28483@v2.random> <Pine.LNX.4.64.0802271605480.15667@schroedinger.engr.sgi.com>
+ <20080228002121.GC8091@v2.random>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Kuan Luo wrote:
-> Jeff wrote:
->> robert worte:
->>> This is basically avoiding switching into register mode, 
->> right? I don't 
->>> think this is a very good solution as the point of the 
->> tf_read function 
->>> is that it's supposed to read the taskfile provided by the drive to 
->>> diagnose the error, so not doing this isn't a good thing.
->> Agree with this analysis -- if ->tf_read() is being called, then 
->> obviously the core wants a current copy of the device's ATA registers.
->>
->> It is not a good solution to simply avoiding returning 
->> meaningful data, 
->> because -- as Robert notes -- we need tf_read for analysis.
->>
->> 	Jeff
->>
-> 
-> The driver got one error : "nv_adma_check_cpb: CPB 0, flags=0x11". The
-> code entered ata_port_abort -> ata_qc_complete
-> -> fill_result_tf->nv_adma_tf_read.
-> 
-> Firstly, nv_adma_register_mode failed, showing the below messages:
-> timeout waiting for ADMA IDLE, stat=0x440
-> timeout waiting for ADMA LEGACY, stat=0x440
-> 
-> Then enter ata_tf_read function. 
-> I found the system hung at tf->hob_nsect = ioread8(ioaddr->nsect_addr);
-> Sometimes the screen showed "
-> CPU0: Machin check Exception 0000000000000004
-> Bank 4:b200000000070f0f
-> kernel panic -not syncing: CPU Context corrupt.
-> "
-> If nv_adma_register_mode failed, the reg result should be not
-> meaningful. 
-> I don't know why the systm hung.
+On Thu, 28 Feb 2008, Andrea Arcangeli wrote:
 
-By the way, this MCE indicates that the CPU integrated northbridge got a 
-watchdog error indicating that a bus transaction timed out (presumably 
-on the HyperTransport link). This likely indicates that the chipset 
-failed to respond to a CPU read of that register. Obviously this is 
-something we want to avoid causing..
+> I'm not suggesting not to address the issues, just that those issues
+> requires VM core changes, and likely those changes should be
+> switchable under a CONFIG_XPMEM, so I see no reason to delay the mmu
+> notifier until those changes are done and merged too. It's kind of a
+> separate problem.
+
+No its the core problem of the mmu notifier. It needs to be usable for a 
+lot of scenarios.
+
+ 
