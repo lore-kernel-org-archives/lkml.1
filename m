@@ -1,92 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765674AbYB1UCS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761913AbYB1UE0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765674AbYB1UCS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Feb 2008 15:02:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765482AbYB1UAE
+	id S1761913AbYB1UE0 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Feb 2008 15:04:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751250AbYB1UEO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Feb 2008 15:00:04 -0500
-Received: from web36613.mail.mud.yahoo.com ([209.191.85.30]:33167 "HELO
-	web36613.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1761681AbYB1T77 (ORCPT
+	Thu, 28 Feb 2008 15:04:14 -0500
+Received: from x35.xmailserver.org ([64.71.152.41]:43484 "EHLO
+	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751004AbYB1UEM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Feb 2008 14:59:59 -0500
-X-YMail-OSG: i1apEeMVM1kDOCWVixnyXPZUE0rXAOM_iOKzeR0sz6B0C8CTe022OFt7q6dEtLymeIZMg06a6g--
-X-RocketYMMF: rancidfat
-Date: Thu, 28 Feb 2008 11:59:58 -0800 (PST)
-From: Casey Schaufler <casey@schaufler-ca.com>
-Reply-To: casey@schaufler-ca.com
-Subject: Re: [PATCH 01/11] Security: Add hook to get full maclabel xattr name
-To: Stephen Smalley <sds@tycho.nsa.gov>, casey@schaufler-ca.com
-Cc: Dave Quigley <dpquigl@tycho.nsa.gov>, hch@infradead.org,
-       viro@ftp.linux.org.uk, trond.myklebust@fys.uio.no, bfields@fieldses.org,
-       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       LSM List <linux-security-module@vger.kernel.org>
-In-Reply-To: <1204227035.31790.207.camel@moss-spartans.epoch.ncsc.mil>
+	Thu, 28 Feb 2008 15:04:12 -0500
+X-AuthUser: davidel@xmailserver.org
+Date: Thu, 28 Feb 2008 12:04:10 -0800 (PST)
+From: Davide Libenzi <davidel@xmailserver.org>
+X-X-Sender: davide@alien.or.mcafeemobile.com
+To: Roland Dreier <rdreier@cisco.com>
+cc: Christoph Hellwig <hch@lst.de>, linux-fsdevel@vger.kernel.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Avi Kivity <avi@qumranet.com>, kvm-devel@lists.sourceforge.net,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Al Viro <viro@ftp.linux.org.uk>
+Subject: Re: [PATCH/RFC 1/2] anon-inodes: Remove fd_install() from
+ anon_inode_getfd()
+In-Reply-To: <adar6eyx8y5.fsf@cisco.com>
+Message-ID: <Pine.LNX.4.64.0802281150060.7660@alien.or.mcafeemobile.com>
+References: <20080225191043.GA32342@lst.de> <adak5kqyzv1.fsf@cisco.com>
+ <Pine.LNX.4.64.0802271138170.377@alien.or.mcafeemobile.com> <adabq62yx5r.fsf@cisco.com>
+ <Pine.LNX.4.64.0802271218210.377@alien.or.mcafeemobile.com> <ada7igqyurw.fsf@cisco.com>
+ <adar6eyx8y5.fsf@cisco.com>
+X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
+X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-Message-ID: <252958.17620.qm@web36613.mail.mud.yahoo.com>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, 27 Feb 2008, Roland Dreier wrote:
 
---- Stephen Smalley <sds@tycho.nsa.gov> wrote:
-
+>  > http://git.kernel.org/?p=linux/kernel/git/viro/vfs-2.6.git;a=commit;h=49be4f8114e6ff0efdab10ebba2493fb67bc3034
 > 
-> On Thu, 2008-02-28 at 11:23 -0800, Casey Schaufler wrote:
-> ...
-> > LSM is not supposed to be only for MAC and it's not supposed
-> > to be only for label based schemes. It's supposed to be
-> > for additional security restrictions. Providing an interface
-> > that should be generally applicable with a name that
-> > constrains it to a specific subset of those schemes is wrong.
+> Actually, looking closer at the kvm changes here, I think that
+> create_vcpu_fd() needs the same treatment as kvm_dev_ioctl_create_vm()
+> gets in the patch because of the race I mentioned in the changelog
+> for my patch: otherwise kvm_vcpu_release() could drop the last
+> reference to vcpu->kvm->filp before the get_file() gets an extra
+> reference.
 > 
-> Casey, you aren't listening (why am I surprised?).
+> I'm beginning to think that moving the fd_install() out of
+> anon_inode_getfd() really is worth it to make a safer interface.
 
-I think that I am listening, and I appologize for doing
-such a poor job of getting my view on the across.
+If we let the caller call fd_install(), then it may be messed up WRT 
+cleanup (fd, file, inode).
+How about removing the inode pointer handout altogether, and *doing* 
+fd_install() inside anon_inode_getfd() like:
 
-> This is an interface to be used by NFS to get information from the
-> security module.  The information desired is specific to the MAC
-> labeling functionality in NFSv4 that is being proposed.
+	if (pfile != NULL) {
+		get_file(file);
+		*pfile = file;
+	}
+	fd_install(fd, file);
 
-Do you understand that if the functionality being proposed
-is specific to a particular file system it ought to be contained
-in that file system, not proposed as a part of the general
-purpose interface?
-
-> That
-> functionality is MAC specific (necessarily so, just like the ACL
-> functionality is ACL specific).
-
-The ACL funtionality over NFS could be done using general interfaces,
-and there are examples (e.g. Irix) where it has been done. I
-understand the rationale for the current implementation while
-disagreeing with that rationale. Further, there is a major difference
-between ACLs and a legitimate LSM (for MAC or DAC) in that ACLs
-are a change to the Linux access control scheme (they interact with
-the mode bits) whereas a legitimate LSM is strictly additional
-restrictions.
-
-> We are hiding the SELinux-specific bits
-> behind the LSM interface, and non-MAC LSMs are free to return NULL in
-> order to indicate that they don't support MAC labeling.  We do NOT want
-> the capability module to return its security blob here, or any other
-> non-MAC LSM - it will yield the wrong semantics for the NFS MAC support.
-
-I should hope then that your SELinux specific NFS server should
-look at the name presented and treat it appropriately.
-
-> In any event, I don't think we need your permission.
-
-You're correct, you don't. You can propose anything you like.
-Don't take my criticisms personally, but I think you're wrong
-on this one. I don't like to see this unnecessary limitation,
-the kind that could haunt the code base for years, when it seems
-pretty obvious that it could be better.
+In this way, if the caller want the file* back, he gets the reference 
+bumped before fd_install().
 
 
 
-Casey Schaufler
-casey@schaufler-ca.com
+- Davide
+
+
