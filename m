@@ -1,187 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932374AbYB1TwD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764286AbYB1Twm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932374AbYB1TwD (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Feb 2008 14:52:03 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757196AbYB1Tmc
+	id S1764286AbYB1Twm (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Feb 2008 14:52:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762102AbYB1Tna
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Feb 2008 14:42:32 -0500
-Received: from e36.co.us.ibm.com ([32.97.110.154]:35903 "EHLO
-	e36.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1763305AbYB1TmU (ORCPT
+	Thu, 28 Feb 2008 14:43:30 -0500
+Received: from e33.co.us.ibm.com ([32.97.110.151]:48491 "EHLO
+	e33.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1762060AbYB1Tn3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Feb 2008 14:42:20 -0500
-Date: Thu, 28 Feb 2008 13:42:09 -0600
-From: "Serge E. Hallyn" <serue@us.ibm.com>
-To: BuraphaLinux Server <buraphalinuxserver@gmail.com>
-Cc: serge@hallyn.com, lkml <linux-kernel@vger.kernel.org>,
-       linux-security-module@vger.kernel.org,
-       Andrew Morgan <morgan@kernel.org>, Stephen Smalley <sds@epoch.ncsc.mil>,
-       Mike Galbraith <efault@gmx.de>, elendil@planet.nl
-Subject: Re: [PATCH 1/1] file capabilities: remove cap_task_kill()
-Message-ID: <20080228194209.GA16587@sergelap.austin.ibm.com>
-References: <20080228173817.GA32661@vino.hallyn.com> <5d75f4610802281114s6802b8aey6bb3748d09953df6@mail.gmail.com>
+	Thu, 28 Feb 2008 14:43:29 -0500
+Date: Thu, 28 Feb 2008 11:43:23 -0800
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: Gautham R Shenoy <ego@in.ibm.com>
+Cc: linux-kernel@vger.kernel.org, hidave.darkstar@gmail.com,
+       akpm@linux-foundation.org, fzu@wemgehoertderstaat.de, mingo@elte.hu,
+       dipankar@in.ibm.com, niv@us.ibm.com, dvhltc@us.ibm.com
+Subject: Re: [PATCH] Fix hibernate/resume in presence of PREEMPT_RCU and hotplug
+Message-ID: <20080228194323.GI15409@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <20080228002110.GA20091@linux.vnet.ibm.com> <20080228050507.GA31289@in.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <5d75f4610802281114s6802b8aey6bb3748d09953df6@mail.gmail.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+In-Reply-To: <20080228050507.GA31289@in.ibm.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Quoting BuraphaLinux Server (buraphalinuxserver@gmail.com):
-> For 2.6.25-rc3,
-> Tested-By: John Gatewood Ham <buraphalinuxserver@gmail.com>
+On Thu, Feb 28, 2008 at 10:35:08AM +0530, Gautham R Shenoy wrote:
+> On Wed, Feb 27, 2008 at 04:21:10PM -0800, Paul E. McKenney wrote:
+> > Hello!
+> > 
+> > This fixes a oops encountered when doing hibernate/resume in presence
+> > of PREEMPT_RCU.  The problem was that the code failed to disable preemption
+> > when accessing a per-CPU variable.  This is OK when called from code
+> > that already has preemption disabled, but such is not the case from
+> > the suspend/resume code path.
 > 
-> This fixes the 'at' command for non-root users.  Thank you.
+> Well, rcu_offline_cpu() is called from the cpu-offline callback path, and
+> AFAICS, it doesn't disable preemption.
+> 
+> I wonder how we're seeing this only now! Indeed a good catch!
 
-Cool, thanks much for testing.
+I wonder as well.  In fact there is (at least) one other such bug,
+submitting patch separately.  :-/
 
--serge
+							Thanx, Paul
 
-> On 2/29/08, serge@hallyn.com <serge@hallyn.com> wrote:
-> > The original justification for cap_task_kill() was as follows:
-> >
-> > 	check_kill_permission() does appropriate uid equivalence checks.
-> > 	However with file capabilities it becomes possible for an
-> > 	unprivileged user to execute a file with file capabilities
-> > 	resulting in a more privileged task with the same uid.
-> >
-> > However now that cap_task_kill() always returns 0 (permission
-> > granted) when p->uid==current->uid, the whole hook is worthless,
-> > and only likely to create more subtle problems in the corner cases
-> > where it might still be called but return -EPERM.  Those cases
-> > are basically when uids are different but euid/suid is equivalent
-> > as per the check in check_kill_permission().
-> >
-> > This patch removes cap_task_kill().
-> >
-> > Signed-off-by: Serge Hallyn <serge@hallyn.com>
+> Reviewed-by: Gautham R Shenoy <ego@in.ibm.com>
+> 
+> > 
+> > Reported-by: Dave Young <hidave.darkstar@gmail.com>
+> > Tested-by: Dave Young <hidave.darkstar@gmail.com>
+> > Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
 > > ---
-> >  include/linux/security.h   |    3 +--
-> >  security/capability.c      |    1 -
-> >  security/commoncap.c       |   40 ----------------------------------------
-> >  security/smack/smack_lsm.c |    5 -----
-> >  4 files changed, 1 insertions(+), 48 deletions(-)
-> >
-> > diff --git a/include/linux/security.h b/include/linux/security.h
-> > index fe52cde..95cb830 100644
-> > --- a/include/linux/security.h
-> > +++ b/include/linux/security.h
-> > @@ -63,7 +63,6 @@ extern int cap_inode_need_killpriv(struct dentry *dentry);
-> >  extern int cap_inode_killpriv(struct dentry *dentry);
-> >  extern int cap_task_post_setuid (uid_t old_ruid, uid_t old_euid, uid_t
-> > old_suid, int flags);
-> >  extern void cap_task_reparent_to_init (struct task_struct *p);
-> > -extern int cap_task_kill(struct task_struct *p, struct siginfo *info, int
-> > sig, u32 secid);
-> >  extern int cap_task_setscheduler (struct task_struct *p, int policy, struct
-> > sched_param *lp);
-> >  extern int cap_task_setioprio (struct task_struct *p, int ioprio);
-> >  extern int cap_task_setnice (struct task_struct *p, int nice);
-> > @@ -2138,7 +2137,7 @@ static inline int security_task_kill (struct
-> > task_struct *p,
-> >  				      struct siginfo *info, int sig,
-> >  				      u32 secid)
-> >  {
-> > -	return cap_task_kill(p, info, sig, secid);
-> > +	return 0;
-> >  }
-> >
-> >  static inline int security_task_wait (struct task_struct *p)
-> > diff --git a/security/capability.c b/security/capability.c
-> > index 9e99f36..2c6e06d 100644
-> > --- a/security/capability.c
-> > +++ b/security/capability.c
-> > @@ -40,7 +40,6 @@ static struct security_operations capability_ops = {
-> >  	.inode_need_killpriv =		cap_inode_need_killpriv,
-> >  	.inode_killpriv =		cap_inode_killpriv,
-> >
-> > -	.task_kill =			cap_task_kill,
-> >  	.task_setscheduler =		cap_task_setscheduler,
-> >  	.task_setioprio =		cap_task_setioprio,
-> >  	.task_setnice =			cap_task_setnice,
-> > diff --git a/security/commoncap.c b/security/commoncap.c
-> > index bb0c095..06d5c94 100644
-> > --- a/security/commoncap.c
-> > +++ b/security/commoncap.c
-> > @@ -540,41 +540,6 @@ int cap_task_setnice (struct task_struct *p, int nice)
-> >  	return cap_safe_nice(p);
-> >  }
-> >
-> > -int cap_task_kill(struct task_struct *p, struct siginfo *info,
-> > -				int sig, u32 secid)
-> > -{
-> > -	if (info != SEND_SIG_NOINFO && (is_si_special(info) ||
-> > SI_FROMKERNEL(info)))
-> > -		return 0;
-> > -
-> > -	/*
-> > -	 * Running a setuid root program raises your capabilities.
-> > -	 * Killing your own setuid root processes was previously
-> > -	 * allowed.
-> > -	 * We must preserve legacy signal behavior in this case.
-> > -	 */
-> > -	if (p->uid == current->uid)
-> > -		return 0;
-> > -
-> > -	/* sigcont is permitted within same session */
-> > -	if (sig == SIGCONT && (task_session_nr(current) == task_session_nr(p)))
-> > -		return 0;
-> > -
-> > -	if (secid)
-> > -		/*
-> > -		 * Signal sent as a particular user.
-> > -		 * Capabilities are ignored.  May be wrong, but it's the
-> > -		 * only thing we can do at the moment.
-> > -		 * Used only by usb drivers?
-> > -		 */
-> > -		return 0;
-> > -	if (cap_issubset(p->cap_permitted, current->cap_permitted))
-> > -		return 0;
-> > -	if (capable(CAP_KILL))
-> > -		return 0;
-> > -
-> > -	return -EPERM;
-> > -}
-> > -
-> >  /*
-> >   * called from kernel/sys.c for prctl(PR_CABSET_DROP)
-> >   * done without task_capability_lock() because it introduces
-> > @@ -605,11 +570,6 @@ int cap_task_setnice (struct task_struct *p, int nice)
-> >  {
-> >  	return 0;
-> >  }
-> > -int cap_task_kill(struct task_struct *p, struct siginfo *info,
-> > -				int sig, u32 secid)
-> > -{
-> > -	return 0;
-> > -}
-> >  #endif
-> >
-> >  void cap_task_reparent_to_init (struct task_struct *p)
-> > diff --git a/security/smack/smack_lsm.c b/security/smack/smack_lsm.c
-> > index 770eb06..a9ca412 100644
-> > --- a/security/smack/smack_lsm.c
-> > +++ b/security/smack/smack_lsm.c
-> > @@ -1124,11 +1124,6 @@ static int smack_task_movememory(struct task_struct
-> > *p)
-> >  static int smack_task_kill(struct task_struct *p, struct siginfo *info,
-> >  			   int sig, u32 secid)
-> >  {
-> > -	int rc;
-> > -
-> > -	rc = cap_task_kill(p, info, sig, secid);
-> > -	if (rc != 0)
-> > -		return rc;
-> >  	/*
-> >  	 * Special cases where signals really ought to go through
-> >  	 * in spite of policy. Stephen Smalley suggests it may
-> > --
-> > 1.5.2.5
-> >
-> >
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-security-module" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> > 
+> >  rcupreempt.c |    3 ++-
+> >  1 file changed, 2 insertions(+), 1 deletion(-)
+> > 
+> > diff -urpNa -X dontdiff linux-2.6.25-rc3/kernel/rcupreempt.c linux-2.6.25-rc3-rcuoffline/kernel/rcupreempt.c
+> > --- linux-2.6.25-rc3/kernel/rcupreempt.c	2008-02-26 16:58:43.000000000 -0800
+> > +++ linux-2.6.25-rc3-rcuoffline/kernel/rcupreempt.c	2008-02-26 17:04:17.000000000 -0800
+> > @@ -702,8 +702,9 @@ void rcu_offline_cpu(int cpu)
+> >  	 * fix.
+> >  	 */
+> > 
+> > +	local_irq_save(flags);
+> >  	rdp = RCU_DATA_ME();
+> > -	spin_lock_irqsave(&rdp->lock, flags);
+> > +	spin_lock(&rdp->lock);
+> >  	*rdp->nexttail = list;
+> >  	if (list)
+> >  		rdp->nexttail = tail;
+> 
+> -- 
+> Thanks and Regards
+> gautham
