@@ -1,143 +1,132 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763561AbYB1UNj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764625AbYB1UN7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763561AbYB1UNj (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Feb 2008 15:13:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753733AbYB1UN2
+	id S1764625AbYB1UN7 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Feb 2008 15:13:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760421AbYB1UNf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Feb 2008 15:13:28 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:54999 "EHLO mx3.mail.elte.hu"
+	Thu, 28 Feb 2008 15:13:35 -0500
+Received: from srv5.dvmed.net ([207.36.208.214]:51507 "EHLO mail.dvmed.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752516AbYB1UN1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Feb 2008 15:13:27 -0500
-Date: Thu, 28 Feb 2008 21:13:15 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Alexey Zaytsev <alexey.zaytsev@gmail.com>
-Cc: Thomas Gleixner <tglx@linutronix.de>, lkml <linux-kernel@vger.kernel.org>
-Subject: Re: printk timestamps jumping back and forth in 2.6.25-rc.
-Message-ID: <20080228201315.GA30736@elte.hu>
-References: <f19298770802280626g5ee17328ldedf7658a9f26f56@mail.gmail.com>
+	id S1761008AbYB1UNe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 28 Feb 2008 15:13:34 -0500
+Message-ID: <47C715EB.3060303@garzik.org>
+Date: Thu, 28 Feb 2008 15:13:31 -0500
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <f19298770802280626g5ee17328ldedf7658a9f26f56@mail.gmail.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+To: git@vger.kernel.org
+CC: LKML <linux-kernel@vger.kernel.org>
+Subject: Re: 'git gc' always run, on old kernel repo?
+References: <47C71233.4050705@garzik.org>
+In-Reply-To: <47C71233.4050705@garzik.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.4 (----)
+X-Spam-Report: SpamAssassin version 3.2.3 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Alexey Zaytsev <alexey.zaytsev@gmail.com> wrote:
-
->     fix CONFIG_PRINT_TIME's reliance on sched_clock() and use 
->     cpu_clock() instead.
+Jeff Garzik wrote:
+>> [jgarzik@pretzel netdev-2.6]$ git-am --signoff --utf8 /g/tmp/mbox 
+>> Applying Add support for HT1100 SATA controller - sent from evolution
+>> Auto packing your repository for optimum performance. You may also
+>> run "git gc" manually. See "git help gc" for more information.
+>> Counting objects: 1, done.
+>> Writing objects: 100% (1/1), done.
+>> Total 1 (delta 0), reused 0 (delta 0)
+>> warning: There are too many unreachable loose objects; run 'git prune' 
+>> to remove them.
 > 
->     Reported-and-bisected-by: Stefano Brivio <stefano.brivio@polimi.it>
->     Signed-off-by: Ingo Molnar <mingo@elte.hu>
-> 
-> which sound like "happy debugging, losers" to me. ;)
+> IMO there is a broken hueristic in there somewhere...  I regularly run 
+> 'git gc' on my repos...
 
-i hope not :)
 
-> Anything else I can do?
+Follow-up...   this is already becoming a PITA.
 
-yes, please test the patch below - does it fix the problem?
+I am going through and rebasing multiple repos in the same repository... 
+and it keeps running 'git gc' on each branch!  grrrr.
 
-	Ingo
+Step 1:
+pull "../linux-2.6" into master branch of local repo.  this repo was 
+created with "--reference".  It _might_ be reasonable to expect 'git gc' 
+to be run:
 
------------------->
-Subject: sched: make cpu_clock() globally synchronous
-From: Ingo Molnar <mingo@elte.hu>
-Date: Thu Feb 28 21:00:21 CET 2008
+> [jgarzik@pretzel libata-dev]$ git pull ../linux-2.6/
+> Updating bfa274e..7704a8b
+> Fast forward
+> Auto packing your repository for optimum performance. You may also
+> run "git gc" manually. See "git help gc" for more information.
+> Counting objects: 462, done.
+> Compressing objects: 100% (333/333), done.
+> Writing objects: 100% (462/462), done.
+> Total 462 (delta 345), reused 176 (delta 129)
+> warning: There are too many unreachable loose objects; run 'git prune' to remove them.
 
-Alexey Zaytsev reported (and bisected) that the introduction of 
-cpu_clock() in printk made the timestamps jump back and forth.
 
-Make cpu_clock() more reliable while still keeping it fast when it's 
-called frequently.
+Step 2:
+In the same repo, rebase a branch (contains a single changeset), 
+immediately following step #1:
 
-Bisected-by: Alexey Zaytsev <alexey.zaytsev@gmail.com>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
----
- kernel/sched.c |   52 +++++++++++++++++++++++++++++++++++++++++++++++++---
- 1 file changed, 49 insertions(+), 3 deletions(-)
+> [jgarzik@pretzel libata-dev]$ git branch
+>   ALL
+>   NEXT
+> * master
+>   mv-ahci-pata
+>   new-eh
+>   sii-lbt
+> [jgarzik@pretzel libata-dev]$ git-checkout sii-lbt && git-rebase master
+> Switched to branch "sii-lbt"
+> First, rewinding head to replay your work on top of it...
+> HEAD is now at 7704a8b... Merge branch 'for-linus' of git://oss.sgi.com:8090/xfs/xfs-2.6
+> Applying [libata] sata_sil: Turn on Large Block Transfer (LBT) feature
+> Auto packing your repository for optimum performance. You may also
+> run "git gc" manually. See "git help gc" for more information.
+> Counting objects: 4, done.
+> Compressing objects: 100% (4/4), done.
+> Writing objects: 100% (4/4), done.
+> Total 4 (delta 0), reused 0 (delta 0)
+> warning: There are too many unreachable loose objects; run 'git prune' to remove them.
 
-Index: linux/kernel/sched.c
-===================================================================
---- linux.orig/kernel/sched.c
-+++ linux/kernel/sched.c
-@@ -710,11 +710,39 @@ static inline u64 global_rt_runtime(void
- 	return (u64)sysctl_sched_rt_runtime * NSEC_PER_USEC;
- }
- 
-+static const unsigned long long time_sync_thresh = 100000;
-+
-+static DEFINE_PER_CPU(unsigned long long, time_offset);
-+static DEFINE_PER_CPU(unsigned long long, prev_cpu_time);
-+
- /*
-- * For kernel-internal use: high-speed (but slightly incorrect) per-cpu
-- * clock constructed from sched_clock():
-+ * Global lock which we take every now and then to synchronize
-+ * the CPUs time. This method is not warp-safe, but it's good
-+ * enough to synchronize slowly diverging time sources and thus
-+ * it's good enough for tracing:
-  */
--unsigned long long cpu_clock(int cpu)
-+static DEFINE_SPINLOCK(time_sync_lock);
-+static unsigned long long prev_global_time;
-+
-+static unsigned long long __sync_cpu_clock(cycles_t time, int cpu)
-+{
-+	unsigned long flags;
-+
-+	spin_lock_irqsave(&time_sync_lock, flags);
-+
-+	if (time < prev_global_time) {
-+		per_cpu(time_offset, cpu) += prev_global_time - time;
-+		time = prev_global_time;
-+	} else {
-+		prev_global_time = time;
-+	}
-+
-+	spin_unlock_irqrestore(&time_sync_lock, flags);
-+
-+	return time;
-+}
-+
-+static unsigned long long __cpu_clock(int cpu)
- {
- 	unsigned long long now;
- 	unsigned long flags;
-@@ -735,6 +763,24 @@ unsigned long long cpu_clock(int cpu)
- 
- 	return now;
- }
-+
-+/*
-+ * For kernel-internal use: high-speed (but slightly incorrect) per-cpu
-+ * clock constructed from sched_clock():
-+ */
-+unsigned long long cpu_clock(int cpu)
-+{
-+	unsigned long long prev_cpu_time, time, delta_time;
-+
-+	prev_cpu_time = per_cpu(prev_cpu_time, cpu);
-+	time = __cpu_clock(cpu) + per_cpu(time_offset, cpu);
-+	delta_time = time-prev_cpu_time;
-+
-+	if (unlikely(delta_time > time_sync_thresh))
-+		time = __sync_clock(time, cpu);
-+
-+	return time;
-+}
- EXPORT_SYMBOL_GPL(cpu_clock);
- 
- #ifndef prepare_arch_switch
+
+Step 3:
+Ditto, a second rebase in the same repo, immediately following step #2:
+
+> [jgarzik@pretzel libata-dev]$ git-checkout new-eh && git-rebase master
+> Switched to branch "new-eh"
+> First, rewinding head to replay your work on top of it...
+> HEAD is now at 7704a8b... Merge branch 'for-linus' of git://oss.sgi.com:8090/xfs/xfs-2.6
+> Applying [libata #new-eh] sata_sx4: convert to new EH
+> Auto packing your repository for optimum performance. You may also
+> run "git gc" manually. See "git help gc" for more information.
+> Counting objects: 4, done.
+> Compressing objects: 100% (4/4), done.
+> Writing objects: 100% (4/4), done.
+> Total 4 (delta 0), reused 0 (delta 0)
+> warning: There are too many unreachable loose objects; run 'git prune' to remove them.
+
+
+Step 4:
+Ditto, a third rebase in the same repo, immediately following step #3:
+
+> [jgarzik@pretzel libata-dev]$ git-checkout mv-ahci-pata && git-rebase master
+> Switched to branch "mv-ahci-pata"
+> First, rewinding head to replay your work on top of it...
+> HEAD is now at 7704a8b... Merge branch 'for-linus' of git://oss.sgi.com:8090/xfs/xfs-2.6
+> Applying [libata #mv-ahci-pata] ahci: add rough draft Marvell PATA support
+> Auto packing your repository for optimum performance. You may also
+> run "git gc" manually. See "git help gc" for more information.
+> Counting objects: 5, done.
+> Compressing objects: 100% (5/5), done.
+> Writing objects: 100% (5/5), done.
+> Total 5 (delta 0), reused 0 (delta 0)
+> warning: There are too many unreachable loose objects; run 'git prune' to remove them.
+
+
+Will the 'git gc' never end???
+
+	Jeff
+
+
+
