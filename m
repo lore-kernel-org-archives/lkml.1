@@ -1,75 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759481AbYB1Kfv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758553AbYB1Kjv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759481AbYB1Kfv (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Feb 2008 05:35:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755747AbYB1Kfn
+	id S1758553AbYB1Kjv (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Feb 2008 05:39:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754754AbYB1Kjm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Feb 2008 05:35:43 -0500
-Received: from mtaout01-winn.ispmail.ntl.com ([81.103.221.47]:14201 "EHLO
-	mtaout01-winn.ispmail.ntl.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753736AbYB1Kfm (ORCPT
+	Thu, 28 Feb 2008 05:39:42 -0500
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:58554 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753363AbYB1Kjl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Feb 2008 05:35:42 -0500
-From: Ian Campbell <ijc@hellion.org.uk>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
-       Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>,
-       Jeremy Fitzhardinge <jeremy@goop.org>,
-       Mark McLoughlin <markmc@redhat.com>,
-       Alexander van Heukelum <heukelum@fastmail.fm>
-In-Reply-To: <20080228094613.GC2987@elte.hu>
-References: <1204187174-27143-1-git-send-email-ijc@hellion.org.uk>
-	 <1204187174-27143-2-git-send-email-ijc@hellion.org.uk>
-	 <1204191082.5446.13.camel@zakaz.uk.xensource.com>
-	 <20080228094613.GC2987@elte.hu>
-Content-Type: text/plain
-Date: Thu, 28 Feb 2008 10:35:23 +0000
-Message-Id: <1204194923.5446.30.camel@zakaz.uk.xensource.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 
+	Thu, 28 Feb 2008 05:39:41 -0500
+Date: Thu, 28 Feb 2008 19:38:01 +0900
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: Ingo Molnar <mingo@elte.hu>, Steven Rostedt <srostedt@redhat.com>
+Subject: Re: 2.6.25-rc2-mm1 - boot hangs on ia64
+Cc: kosaki.motohiro@jp.fujitsu.com, Lee Schermerhorn <Lee.Schermerhorn@hp.com>,
+       linux-ia64 <linux-ia64@vger.kernel.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Tony Luck <tony.luck@intel.com>, Ingo Molnar <mingo@redhat.com>,
+       Bob Picco <bob.picco@hp.com>, Eric Whitney <eric.whitney@hp.com>,
+       akpm@linux-foundation.org
+In-Reply-To: <20080227071118.GA4638@elte.hu>
+References: <20080227103831.423F.KOSAKI.MOTOHIRO@jp.fujitsu.com> <20080227071118.GA4638@elte.hu>
+Message-Id: <20080228192509.BDCF.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="US-ASCII"
 Content-Transfer-Encoding: 7bit
-X-SA-Exim-Connect-IP: 217.46.209.99
-X-SA-Exim-Mail-From: ijc@hellion.org.uk
-Subject: Re: [PATCH 2/2] x86/xen: Disable DMI parsing in Xen kernel.
-X-SA-Exim-Version: 4.2.1 (built Tue, 09 Jan 2007 17:23:22 +0000)
-X-SA-Exim-Scanned: Yes (on hopkins.hellion.org.uk)
+X-Mailer: Becky! ver. 2.42 [ja]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi Ingo,
+CC'ed Steven Rostedt 
 
-On Thu, 2008-02-28 at 10:46 +0100, Ingo Molnar wrote:
-> * Ian Campbell <ijc@hellion.org.uk> wrote:
+I found the following patch cause regression by bisect.
+
+2.6.25-rc2-mm1:                            doesn't boot
+2.6.25-rc2-mm1 + revert following patch:   works well
+
+but I think it is very strange.
+runqueue_is_locked() seems simple and have not bug. ;)
+
+What do you think this problem?
+
+
+-------------------------------------------------------------------
+commit 033394c2c097215ac556a446154af24fbf18b064
+Author: Steven Rostedt <srostedt@redhat.com>
+Date:   Mon Feb 25 21:15:44 2008 +0100
+
+    printk: dont wake up klogd with the rq locked
+
+    It is not wise to place a printk where the runqueue lock is held.
+
+
 > 
-> > Actually scratch this patchset -- its not sufficient. For example 
-> > ddcprobe in userspace causes the exact same issue vs 0xa0000.
+> * KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com> wrote:
+> 
+> > > hm, that's a bit weird - nothing really should have broken it. Could you 
+> > > try to do a specific bisection of sched-devel.git:
+> > > 
+> > >    http://people.redhat.com/mingo/sched-devel.git/README
 > > 
-> > Looks like the only sane solution will be to mark regions between 
-> > 640K-1M reserved early on in boot.
+> > How do I know revision of git-sched.patch of 2.6.25-rc2-mm1? Should I 
+> > do bisect from HEAD of sched-devel.git?
 > 
-> and as luck has it, such a patch from Alexander van Heukelum has been 
-> put into x86.git#testing just yesterday.
-> 
-> So ... could you try x86.git#testing - does it work out of box? Is the 
-> reservation early enough to prevent pagetables be allocated in weird 
-> places?
+> yeah, please. If it's caused by sched-devel.git then you should see the 
+> hang there too.
 
-That patch is 64 bit only and also I'm not sure what EBDA looks like to
-a Xen domU (I expect it doesn't exist). I'll give it a go but I'm not
-hopeful.
-
->  [or am i missing something - this is about the guest kernel 
-> reserving th 640k..1M area, not the host kernel - right?]
-
-Correct, the area between 640k and 1M is just normal memory for a Xen
-guest and the memory map reflects that so page tables and other stuff
-get allocated in regions which would be magic data structures on native.
-
-Ian.
--- 
-Ian Campbell
-
-The woman you buy -- and she is the least expensive -- takes a great
-deal of money.  The woman who gives herself takes all your time.
-		-- Balzac
 
