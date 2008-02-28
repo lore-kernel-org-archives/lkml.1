@@ -1,69 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932544AbYB1VbT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932634AbYB1Vbs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932544AbYB1VbT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Feb 2008 16:31:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932339AbYB1Vam
+	id S932634AbYB1Vbs (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Feb 2008 16:31:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932270AbYB1VbX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Feb 2008 16:30:42 -0500
-Received: from mummy.ncsc.mil ([144.51.88.129]:54109 "EHLO mummy.ncsc.mil"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932318AbYB1Vak (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Feb 2008 16:30:40 -0500
-Subject: Re: [PATCH 03/11] VFS: Add security label support to *notify
-From: Dave Quigley <dpquigl@tycho.nsa.gov>
-To: "Josef 'Jeff' Sipek" <jeffpc@josefsipek.net>
-Cc: hch@infradead.org, viro@ftp.linux.org.uk, trond.myklebust@fys.uio.no,
-       bfields@fieldses.org, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org
-In-Reply-To: <20080228211531.GE32351@josefsipek.net>
-References: <1204144786-3502-1-git-send-email-dpquigl@tycho.nsa.gov>
-	 <1204144786-3502-4-git-send-email-dpquigl@tycho.nsa.gov>
-	 <20080228201004.GC32351@josefsipek.net>
-	 <1204231170.24345.100.camel@moss-terrapins.epoch.ncsc.mil>
-	 <20080228211531.GE32351@josefsipek.net>
-Content-Type: text/plain
-Date: Thu, 28 Feb 2008 16:05:11 -0500
-Message-Id: <1204232711.24345.112.camel@moss-terrapins.epoch.ncsc.mil>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 (2.12.3-1.fc8) 
-Content-Transfer-Encoding: 7bit
+	Thu, 28 Feb 2008 16:31:23 -0500
+Received: from smtp116.sbc.mail.re3.yahoo.com ([66.196.96.89]:26321 "HELO
+	smtp116.sbc.mail.re3.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S932531AbYB1VbU (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 28 Feb 2008 16:31:20 -0500
+X-YMail-OSG: jnodukEVM1nAWv2mPSM1k3R03hJFkD899KgnNqGSw0R8X9AYrrFrpdUklOlWDAB9sG7MVf0n1o6kf0alwgASlDkyPk9J9KdZSVzoPFgFfeP3RcTiPrzmK4DTcrogIVpYfQOLUOhvI1ObBFM-
+X-Yahoo-Newman-Property: ymail-3
+Date: Thu, 28 Feb 2008 15:28:35 -0600
+From: serge@hallyn.com
+To: Paul Menage <menage@google.com>
+Cc: Linux Containers <containers@lists.osdl.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Pavel Emelianov <xemul@openvz.org>, Paul Jackson <pj@sgi.com>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [RFC] Prefixing cgroup generic control filenames with "cgroup."
+Message-ID: <20080228212835.GB1232@vino.hallyn.com>
+References: <6599ad830802281314s25c033d6tc021725ae28aef8d@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <6599ad830802281314s25c033d6tc021725ae28aef8d@mail.gmail.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-On Thu, 2008-02-28 at 16:15 -0500, Josef 'Jeff' Sipek wrote:
-> On Thu, Feb 28, 2008 at 03:39:30PM -0500, Dave Quigley wrote:
-> ...
-> > > Alright...so, few things...
-> > > 
-> > > 1) why do you need the locked/unlocked versions?
-> > > 
-> > > 2) instead of passing a flag to a common function, why not have:
-> > > 
-> > > vfs_setxattr_locked(....)
-> > > {
-> > > 	// original code minus the lock/unlock calls
-> > > }
-> > > 
-> > > vfs_setxattr(....)
-> > > {
-> > > 	mutex_lock(...);
-> > > 	vfs_setxattr_locked(...);
-> > > 	mutex_unlock(...);
-> > > }
-> > 
-> > What we do and what you propose aren't logically equivalent. There is a
-> > permission check inside vfs_setxattr before the mutex lock.
+Quoting Paul Menage (menage@google.com):
+> All control files created by cgroup subsystems are given a prefix
+> corresponding to their subsystem name. But control files provided by
+> cgroups itself have no prefix. Currently that set of files is just
+> "tasks", "notify_on_release" and "release_agent", but that set is
+> likely to expand in the future. To reduce the risk of clashes, it
+> would make sense to prefix these files and any future ones with the
+> "cgroup." prefix.
 > 
-> Ah, right. I didn't notice the @@ line...
+> The only reason that I can see *not* to do this would be for
+> compatibility with 2.6.24. Do people think this is a strong enough
+> reason to leave the existing names? If distros are planning to ship
+> products based on 2.6.24, presumably they'd be adding their own
+> patches anyway, so they could add a trivial prefix change patch too.
+> (I realise this discussion would have been more useful *before* 2.6.24
+> shipped, but I didn't quite get round to it ...)
 > 
-> Josef 'Jeff' Sipek.
+> A compromise might be to keep "tasks" unprefixed, and say that future
+> names get the "cgroup." prefix; in this case I'd be inclined to add
+> the prefix to notify_on_release and release_agent on the grounds that
+> there's much less chance of breaking anyone with those files since (I
+> suspect) they're much less used.
 > 
+> Note that if you mount a cgroup filesystem with the "noprefix" option,
+> which is what the cpuset filesystem wrapper does, no subsystems have
+> prefixes, and in this case the "cgroup." prefix wouldn't be used
+> either. So this doesn't affect any users that explicitly mount cpusets
+> rather than cgroups.
+> 
+> Thoughts?
 
-I'm compiling a test kernel with your proposed change to make sure it
-doesn't deadlock. If it works then I'll go with your solution since its
-less messy.
+To me it seems quite logical that files belonging to the cgroup
+subsystem would have no prefix, and I don't see any good reason to
+do so.
 
-Dave
-
+-serge
