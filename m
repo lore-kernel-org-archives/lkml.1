@@ -1,37 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761224AbYB1WrR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762079AbYB1Ws6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761224AbYB1WrR (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Feb 2008 17:47:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761642AbYB1Wqv
+	id S1762079AbYB1Ws6 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Feb 2008 17:48:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755476AbYB1Wsu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Feb 2008 17:46:51 -0500
-Received: from terminus.zytor.com ([198.137.202.10]:60593 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761254AbYB1Wqu (ORCPT
+	Thu, 28 Feb 2008 17:48:50 -0500
+Received: from el-out-1112.google.com ([209.85.162.178]:61707 "EHLO
+	el-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752987AbYB1Wsu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Feb 2008 17:46:50 -0500
-Message-ID: <47C739A6.5020608@zytor.com>
-Date: Thu, 28 Feb 2008 14:45:58 -0800
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+	Thu, 28 Feb 2008 17:48:50 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=DlTC/YdyxBXCgZbSzJ+xSgy21xmOttG3uy65648unAW8I8sgDqEfCplNn/cy9dk4z/0KJuNWfxms+xrGUoPYt7QwE8SypOTZ9vssUbwE8wZIrBzjSnNeYuWBdrutuXWOmY6XGqu7mPCSx2U/cNISwuGRqDTmnM+Z/RUl7P/1nB0=
+Message-ID: <f19298770802281448k91e71dh6583db94e1a6f4e7@mail.gmail.com>
+Date: Fri, 29 Feb 2008 01:48:48 +0300
+From: "Alexey Zaytsev" <alexey.zaytsev@gmail.com>
+To: "Michael Buesch" <mb@bu3sch.de>
+Subject: Re: bcm43xx regression in 2.6.24 (with patch)
+Cc: "John W. Linville" <linville@tuxdriver.com>, "Ingo Molnar" <mingo@elte.hu>,
+       "Alexey Zaytsev" <zaytsev.a@protei.ru>, "Greg KH" <greg@kroah.com>,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <200802282303.42676.mb@bu3sch.de>
 MIME-Version: 1.0
-To: "Klaus S. Madsen" <ksm@hjernemadsen.org>
-CC: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
-       Pavel Machek <pavel@ucw.cz>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: Regression in 2.6.25-rc3: s2ram segfaults before suspending
-References: <20080227221033.GR17932@hjernemadsen.org> <20080228091639.GB1133@elte.hu> <20080228092846.GC17932@hjernemadsen.org> <20080228094000.GA2987@elte.hu> <20080228150444.GG17932@hjernemadsen.org> <47C6F4F9.90700@zytor.com> <20080228192404.GH17932@hjernemadsen.org> <47C70C01.4020605@zytor.com> <20080228194920.GJ17932@hjernemadsen.org>
-In-Reply-To: <20080228194920.GJ17932@hjernemadsen.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <47BEAF3B.3080809@protei.ru>
+	 <f19298770802261412j7a3fec4bv1754db8123796d54@mail.gmail.com>
+	 <200802262341.55675.mb@bu3sch.de> <200802282303.42676.mb@bu3sch.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I just realized something important.
+On Fri, Feb 29, 2008 at 1:03 AM, Michael Buesch <mb@bu3sch.de> wrote:
+> On Tuesday 26 February 2008 23:41:55 Michael Buesch wrote:
+>  > On Tuesday 26 February 2008 23:12:32 Alexey Zaytsev wrote:
+>  > > >  Yeah, seems so. But if you are willing to test an adjusted version, I can
+>  > > >  probably do a backported version of this patch.
+>  > > >  This patch is well tested and does the right thing, so I'm willing to sign
+>  > > >  off a backported version of this.
+>  > > >  First need to find the place in the old phy.c code that matches the new wa.c code.
+>  > > >
+>  > > I'll do the testing.
+>  >
+>  > Index: linux-2.6.24.3/drivers/net/wireless/b43/dma.c
+>  > ===================================================================
+>  > --- linux-2.6.24.3.orig/drivers/net/wireless/b43/dma.c        2008-02-26 23:39:39.000000000 +0100
+>  > +++ linux-2.6.24.3/drivers/net/wireless/b43/dma.c     2008-02-26 23:39:43.000000000 +0100
+>  > @@ -165,7 +165,7 @@ static void op64_fill_descriptor(struct
+>  >       addrhi = (((u64) dmaaddr >> 32) & ~SSB_DMA_TRANSLATION_MASK);
+>  >       addrext = (((u64) dmaaddr >> 32) & SSB_DMA_TRANSLATION_MASK)
+>  [snip]
+>
+>  So are you actually going to do this anytime soon?
+>
 
-Could you please send me a *complete* strace of the execution of s2ram 
-from the beginning?
+Sorry for the delay. Yes, it worked fine.
 
-	-hpa
+Btw, when booting the system with the b43 driver, I get a
+~30 socond delay after the boot scripts report
+"Waiting for /dev to be fully populated" and all the modules
+get loaded. Is this something expected?
 
+
+
+>  --
+>  Greetings Michael.
+>
