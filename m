@@ -1,121 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760913AbYB1PuJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760132AbYB1Pua@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760913AbYB1PuJ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Feb 2008 10:50:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759243AbYB1Ptz
+	id S1760132AbYB1Pua (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Feb 2008 10:50:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760614AbYB1PuG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Feb 2008 10:49:55 -0500
-Received: from sacred.ru ([62.205.161.221]:38383 "EHLO sacred.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758995AbYB1Pty (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Feb 2008 10:49:54 -0500
-Message-ID: <47C6D812.9060909@openvz.org>
-Date: Thu, 28 Feb 2008 18:49:38 +0300
-From: Pavel Emelyanov <xemul@openvz.org>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080213)
+	Thu, 28 Feb 2008 10:50:06 -0500
+Received: from hpsmtp-eml12.kpnxchange.com ([213.75.38.112]:26753 "EHLO
+	hpsmtp-eml12.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1760328AbYB1PuE (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 28 Feb 2008 10:50:04 -0500
+From: Frans Pop <elendil@planet.nl>
+To: Romano Giannetti <romanol@upcomillas.es>
+Subject: Re: Intel 945GM: 2.6.25-rc3 report (with a possible regression)
+Date: Thu, 28 Feb 2008 16:50:01 +0100
+User-Agent: KMail/1.9.7
+Cc: Stefan Richter <stefanr@s5r6.in-berlin.de>, linux-kernel@vger.kernel.org
+References: <1204056556.7745.22.camel@localhost> <E1JULSV-0001qy-7N@faramir.fjphome.nl> <1204190794.16668.4.camel@pern>
+In-Reply-To: <1204190794.16668.4.camel@pern>
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>,
-       David Miller <davem@davemloft.net>
-CC: Alexey Dobriyan <adobriyan@openvz.org>,
-       Linux Netdev List <netdev@vger.kernel.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>
-Subject: [PATCH 1/2] Add an id to struct net
-References: <47C6D743.1050802@openvz.org>
-In-Reply-To: <47C6D743.1050802@openvz.org>
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
-X-Greylist: Sender succeeded SMTP AUTH authentication, not delayed by milter-greylist-3.0 (sacred.ru [62.205.161.221]); Thu, 28 Feb 2008 18:49:28 +0300 (MSK)
+Content-Disposition: inline
+Message-Id: <200802281650.02471.elendil@planet.nl>
+X-OriginalArrivalTime: 28 Feb 2008 15:50:02.0931 (UTC) FILETIME=[94D14030:01C87A21]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is required to implement the /proc/net symlink, but can later 
-be used to enhance networking hash functions - objects like sockets,
-fragments, twbuckets, etc should better be stored in different hash
-chains when they live in different namespaces.
+On Thursday 28 February 2008, Romano Giannetti wrote:
+> On Wed, 2008-02-27 at 13:32 +0100, Frans Pop wrote:
+> > This sounds like that could be a bug I filed recently and which was
+> > solved in 2.2.1: http://bugs.freedesktop.org/show_bug.cgi?id=14481.
+>
+> Yes, it seems the same. I will try as soon as I came around to a way to
+> do it.
+>
+> Could this account to the LCD/CRT switching problem to?
 
-Id generation is done via ida to handle the id overflowing.
+I'm afraid I can't help you there.
 
-Signed-off-by: Pavel Emelyanov <xemul@openvz.org>
-
----
-
-diff --git a/include/net/net_namespace.h b/include/net/net_namespace.h
-index 28738b7..8aedfd6 100644
---- a/include/net/net_namespace.h
-+++ b/include/net/net_namespace.h
-@@ -26,6 +26,7 @@ struct net {
- 	atomic_t		use_count;	/* To track references we
- 						 * destroy on demand
- 						 */
-+	int			id;
- 	struct list_head	list;		/* list of network namespaces */
- 	struct work_struct	work;		/* work struct for freeing */
- 
-diff --git a/net/core/net_namespace.c b/net/core/net_namespace.c
-index 7b66083..31b018a 100644
---- a/net/core/net_namespace.c
-+++ b/net/core/net_namespace.c
-@@ -6,6 +6,7 @@
- #include <linux/delay.h>
- #include <linux/sched.h>
- #include <net/net_namespace.h>
-+#include <linux/idr.h>
- 
- /*
-  *	Our network namespace constructor/destructor lists
-@@ -20,6 +21,8 @@ LIST_HEAD(net_namespace_list);
- struct net init_net;
- EXPORT_SYMBOL(init_net);
- 
-+static struct ida net_ns_ids;
-+
- /*
-  * setup_net runs the initializers for the network namespace object.
-  */
-@@ -31,8 +34,17 @@ static __net_init int setup_net(struct net *net)
- 
- 	atomic_set(&net->count, 1);
- 	atomic_set(&net->use_count, 0);
-+retry:
-+	error = ida_get_new(&net_ns_ids, &net->id);
-+	if (error) {
-+		if (error == -EAGAIN) {
-+			ida_pre_get(&net_ns_ids, GFP_KERNEL);
-+			goto retry;
-+		}
-+
-+		goto out;
-+	}
- 
--	error = 0;
- 	list_for_each_entry(ops, &pernet_list, list) {
- 		if (ops->init) {
- 			error = ops->init(net);
-@@ -53,6 +65,8 @@ out_undo:
- 	}
- 
- 	rcu_barrier();
-+
-+	ida_remove(&net_ns_ids, net->id);
- 	goto out;
- }
- 
-@@ -142,6 +156,7 @@ static void cleanup_net(struct work_struct *work)
- 	 */
- 	rcu_barrier();
- 
-+	ida_remove(&net_ns_ids, net->id);
- 	/* Finally it is safe to free my network namespace structure */
- 	net_free(net);
- }
-@@ -179,6 +194,8 @@ static int __init net_ns_init(void)
- 		panic("Could not create netns workq");
- #endif
- 
-+	ida_init(&net_ns_ids);
-+
- 	mutex_lock(&net_mutex);
- 	err = setup_net(&init_net);
- 
+As I said before, the only way to make sure is to see if the problem gets 
+solved if you boot the system with an older kernel version.
