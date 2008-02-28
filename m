@@ -1,265 +1,245 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761682AbYB1Tn6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763300AbYB1Tob@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761682AbYB1Tn6 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Feb 2008 14:43:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761402AbYB1TmE
+	id S1763300AbYB1Tob (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Feb 2008 14:44:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762016AbYB1TmG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Feb 2008 14:42:04 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:45279 "EHLO mx1.redhat.com"
+	Thu, 28 Feb 2008 14:42:06 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:45296 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761988AbYB1Tl5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Feb 2008 14:41:57 -0500
-Message-Id: <20080228192929.369262007@redhat.com>
+	id S1759493AbYB1Tl6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 28 Feb 2008 14:41:58 -0500
+Message-Id: <20080228192928.492644028@redhat.com>
 References: <20080228192908.126720629@redhat.com>
 User-Agent: quilt/0.46-1
-Date: Thu, 28 Feb 2008 14:29:24 -0500
+Date: Thu, 28 Feb 2008 14:29:15 -0500
 From: Rik van Riel <riel@redhat.com>
 To: linux-kernel@vger.kernel.org
 Cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Lee Schermerhorn <Lee.Schermerhorn@hp.com>, linux-mm@kvack.org,
-       Lee Schermerhorn <lee.schermerhorn@hp.com>
-Subject: [patch 16/21] SHM_LOCKED pages are nonreclaimable
-Content-Disposition: inline; filename=noreclaim-03-SHM_LOCKed-pages-are-nonreclaimable.patch
+       Lee Schermerhorn <Lee.Schermerhorn@hp.com>, linux-mm@kvack.org
+Subject: [patch 07/21] SEQ replacement for anonymous pages
+Content-Disposition: inline; filename=rvr-03-linux-2.6-vm-anon-seq.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-V2 -> V3:
-+ rebase to 23-mm1 atop RvR's split LRU series.
-+ Use scan_mapping_noreclaim_page() on unlock.  See below.
+We avoid evicting and scanning anonymous pages for the most part, but
+under some workloads we can end up with most of memory filled with
+anonymous pages.  At that point, we suddenly need to clear the referenced
+bits on all of memory, which can take ages on very large memory systems.
 
-V1 -> V2:
-+  modify to use reworked 'scan_all_zones_noreclaim_pages()'
-   See 'TODO' below - still pending.
+We can reduce the maximum number of pages that need to be scanned by
+not taking the referenced state into account when deactivating an
+anonymous page.  After all, every anonymous page starts out referenced,
+so why check?
 
-While working with Nick Piggin's mlock patches, I noticed that
-shmem segments locked via shmctl(SHM_LOCKED) were not being handled.
-SHM_LOCKed pages work like ramdisk pages--the writeback function
-just redirties the page so that it can't be reclaimed.  Deal with
-these using the same approach as for ram disk pages.
+If an anonymous page gets referenced again before it reaches the end
+of the inactive list, we move it back to the active list.
 
-Use the AS_NORECLAIM flag to mark address_space of SHM_LOCKed
-shared memory regions as non-reclaimable.  Then these pages
-will be culled off the normal LRU lists during vmscan.
+To keep the maximum amount of necessary work reasonable, we scale the
+active to inactive ratio with the size of memory, using the formula
+active:inactive ratio = sqrt(memory in GB * 10).
 
-Add new wrapper function to clear the mapping's noreclaim state
-when/if shared memory segment is munlocked.
+Kswapd CPU use now seems to scale by the amount of pageout bandwidth,
+instead of by the amount of memory present in the system.
 
-Add 'scan_mapping_noreclaim_page()' to mm/vmscan.c to scan all
-pages in the shmem segment's mapping [struct address_space] for
-reclaimability now that they're no longer locked.  If so, move
-them to the appropriate zone lru list.
+Signed-off-by: Rik van Riel <riel@redhat.com>
+Reviewed-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
 
-Changes depend on [CONFIG_]NORECLAIM.
-
-Signed-off-by:  Lee Schermerhorn <lee.schermerhorn@hp.com>
-Signed-off-by:  Rik van Riel <riel@redhat.com>
-
-Index: linux-2.6.25-rc2-mm1/mm/shmem.c
+Index: linux-2.6.25-rc2-mm1/include/linux/mm_inline.h
 ===================================================================
---- linux-2.6.25-rc2-mm1.orig/mm/shmem.c	2008-02-28 00:26:04.000000000 -0500
-+++ linux-2.6.25-rc2-mm1/mm/shmem.c	2008-02-28 12:48:57.000000000 -0500
-@@ -1525,10 +1525,13 @@ int shmem_lock(struct file *file, int lo
- 		if (!user_shm_lock(inode->i_size, user))
- 			goto out_nomem;
- 		info->flags |= VM_LOCKED;
-+		mapping_set_noreclaim(file->f_mapping);
- 	}
- 	if (!lock && (info->flags & VM_LOCKED) && user) {
- 		user_shm_unlock(inode->i_size, user);
- 		info->flags &= ~VM_LOCKED;
-+		mapping_clear_noreclaim(file->f_mapping);
-+		scan_mapping_noreclaim_pages(file->f_mapping);
- 	}
- 	retval = 0;
- out_nomem:
-Index: linux-2.6.25-rc2-mm1/include/linux/pagemap.h
-===================================================================
---- linux-2.6.25-rc2-mm1.orig/include/linux/pagemap.h	2008-02-28 12:48:52.000000000 -0500
-+++ linux-2.6.25-rc2-mm1/include/linux/pagemap.h	2008-02-28 12:48:57.000000000 -0500
-@@ -38,14 +38,20 @@ static inline void mapping_set_noreclaim
- 	set_bit(AS_NORECLAIM, &mapping->flags);
+--- linux-2.6.25-rc2-mm1.orig/include/linux/mm_inline.h	2008-02-28 00:27:06.000000000 -0500
++++ linux-2.6.25-rc2-mm1/include/linux/mm_inline.h	2008-02-28 00:29:35.000000000 -0500
+@@ -95,4 +95,16 @@ del_page_from_lru(struct zone *zone, str
+ 	__dec_zone_state(zone, NR_INACTIVE_ANON + l);
  }
  
-+static inline void mapping_clear_noreclaim(struct address_space *mapping)
++static inline int inactive_anon_low(struct zone *zone)
 +{
-+	clear_bit(AS_NORECLAIM, &mapping->flags);
-+}
++	unsigned long active, inactive;
 +
- static inline int mapping_non_reclaimable(struct address_space *mapping)
- {
--	if (mapping && (mapping->flags & AS_NORECLAIM))
--		return 1;
-+	if (mapping)
-+		return test_bit(AS_NORECLAIM, &mapping->flags);
- 	return 0;
- }
- #else
- static inline void mapping_set_noreclaim(struct address_space *mapping) { }
-+static inline void mapping_clear_noreclaim(struct address_space *mapping) { }
- static inline int mapping_non_reclaimable(struct address_space *mapping)
- {
- 	return 0;
-Index: linux-2.6.25-rc2-mm1/mm/vmscan.c
++	active = zone_page_state(zone, NR_ACTIVE_ANON);
++	inactive = zone_page_state(zone, NR_INACTIVE_ANON);
++
++	if (inactive * zone->inactive_ratio < active)
++		return 1;
++
++	return 0;
++}
+ #endif
+Index: linux-2.6.25-rc2-mm1/include/linux/mmzone.h
 ===================================================================
---- linux-2.6.25-rc2-mm1.orig/mm/vmscan.c	2008-02-28 12:48:52.000000000 -0500
-+++ linux-2.6.25-rc2-mm1/mm/vmscan.c	2008-02-28 12:48:57.000000000 -0500
-@@ -2301,6 +2301,30 @@ int page_reclaimable(struct page *page, 
- 	return 1;
- }
+--- linux-2.6.25-rc2-mm1.orig/include/linux/mmzone.h	2008-02-28 00:27:06.000000000 -0500
++++ linux-2.6.25-rc2-mm1/include/linux/mmzone.h	2008-02-28 00:29:35.000000000 -0500
+@@ -322,6 +322,11 @@ struct zone {
+ 	 */
+ 	int prev_priority;
  
-+/*
-+ * check_move_noreclaim_page() -- check @page for reclaimability and move
-+ * to appropriate @zone lru list.
-+ * @zone->lru_lock held on entry/exit.
-+ * @page is on LRU and has PageNoreclaim true
-+ */
-+static void check_move_noreclaim_page(struct page *page, struct zone* zone)
-+{
++	/*
++	 * The ratio of active to inactive pages.
++	 */
++	unsigned int inactive_ratio;
 +
-+	ClearPageNoreclaim(page); /* for page_reclaimable() */
-+	if(page_reclaimable(page, NULL)) {
-+		enum lru_list l = LRU_INACTIVE_ANON + page_file_cache(page);
-+		__dec_zone_state(zone, NR_NORECLAIM);
-+		list_move(&page->lru, &zone->list[l]);
-+		__inc_zone_state(zone, NR_INACTIVE_ANON + l);
-+	} else {
-+		/*
-+		 * rotate noreclaim list
-+		 */
-+		SetPageNoreclaim(page);
-+		list_move(&page->lru, &zone->list[LRU_NORECLAIM]);
-+	}
-+}
-+
- /**
-  * scan_zone_noreclaim_pages(@zone)
-  * @zone - zone to scan
-@@ -2315,8 +2339,6 @@ int page_reclaimable(struct page *page, 
- void scan_zone_noreclaim_pages(struct zone *zone)
- {
- 	struct list_head *l_noreclaim = &zone->list[LRU_NORECLAIM];
--	struct list_head *l_inactive_anon  = &zone->list[LRU_INACTIVE_ANON];
--	struct list_head *l_inactive_file  = &zone->list[LRU_INACTIVE_FILE];
- 	unsigned long scan;
- 	unsigned long nr_to_scan = zone_page_state(zone, NR_NORECLAIM);
  
-@@ -2328,26 +2350,15 @@ void scan_zone_noreclaim_pages(struct zo
- 		for (scan = 0;  scan < batch_size; scan++) {
- 			struct page* page = lru_to_page(l_noreclaim);
- 
--			if (unlikely(!PageLRU(page) || !PageNoreclaim(page)))
-+			if (TestSetPageLocked(page))
- 				continue;
- 
- 			prefetchw_prev_lru_page(page, l_noreclaim, flags);
- 
--			ClearPageNoreclaim(page); /* for page_reclaimable() */
--			if(page_reclaimable(page, NULL)) {
--				__dec_zone_state(zone, NR_NORECLAIM);
--				if (page_file_cache(page)) {
--					list_move(&page->lru, l_inactive_file);
--					__inc_zone_state(zone, NR_INACTIVE_FILE);
--				} else {
--					list_move(&page->lru, l_inactive_anon);
--					__inc_zone_state(zone, NR_INACTIVE_ANON);
--				}
--			} else {
--				SetPageNoreclaim(page);
--				list_move(&page->lru, l_noreclaim);
--			}
-+			if (likely(PageLRU(page) && PageNoreclaim(page)))
-+				check_move_noreclaim_page(page, zone);
- 
-+			unlock_page(page);
- 		}
- 		spin_unlock_irq(&zone->lru_lock);
- 
-@@ -2377,6 +2388,62 @@ void scan_all_zones_noreclaim_pages(void
- 	}
+ 	ZONE_PADDING(_pad2_)
+ 	/* Rarely used or read-mostly fields */
+Index: linux-2.6.25-rc2-mm1/mm/page_alloc.c
+===================================================================
+--- linux-2.6.25-rc2-mm1.orig/mm/page_alloc.c	2008-02-28 00:27:06.000000000 -0500
++++ linux-2.6.25-rc2-mm1/mm/page_alloc.c	2008-02-28 00:29:35.000000000 -0500
+@@ -4232,6 +4232,45 @@ void setup_per_zone_pages_min(void)
+ 	calculate_totalreserve_pages();
  }
  
 +/**
-+ * scan_mapping_noreclaim_pages(mapping)
-+ * @mapping - struct address_space to scan for reclaimable pages
++ * setup_per_zone_inactive_ratio - called when min_free_kbytes changes.
 + *
-+ * scan all pages in mapping.  check non-reclaimable pages for
-+ * reclaimabililty and move them to the appropriate zone lru list.
++ * The inactive anon list should be small enough that the VM never has to
++ * do too much work, but large enough that each inactive page has a chance
++ * to be referenced again before it is swapped out.
++ *
++ * The inactive_anon ratio is the ratio of active to inactive anonymous
++ * pages.  Ie. a ratio of 3 means 3:1 or 25% of the anonymous pages are
++ * on the inactive list.
++ *
++ * total     return    max
++ * memory    value     inactive anon
++ * -------------------------------------
++ *   10MB       1         5MB
++ *  100MB       1        50MB
++ *    1GB       3       250MB
++ *   10GB      10       0.9GB
++ *  100GB      31         3GB
++ *    1TB     101        10GB
++ *   10TB     320        32GB
 + */
-+void scan_mapping_noreclaim_pages(struct address_space *mapping)
++void setup_per_zone_inactive_ratio(void)
 +{
-+	pgoff_t next = 0;
-+	pgoff_t end   = i_size_read(mapping->host);
 +	struct zone *zone;
-+	struct pagevec pvec;
 +
-+	if (mapping->nrpages == 0)
-+		return;
++	for_each_zone(zone) {
++		unsigned int gb, ratio;
 +
-+	pagevec_init(&pvec, 0);
-+	while (next < end &&
-+		pagevec_lookup(&pvec, mapping, next, PAGEVEC_SIZE)) {
-+		int i;
++		/* Zone size in gigabytes */
++		gb = zone->present_pages >> (30 - PAGE_SHIFT);
++		ratio = int_sqrt(10 * gb);
++		if (!ratio)
++			ratio = 1;
 +
-+		zone = NULL;
-+
-+		for (i = 0; i < pagevec_count(&pvec); i++) {
-+			struct page *page = pvec.pages[i];
-+			pgoff_t page_index = page->index;
-+			struct zone *pagezone = page_zone(page);
-+
-+			if (page_index > next)
-+				next = page_index;
-+			next++;
-+
-+			if (TestSetPageLocked(page))
-+				continue;
-+
-+			if (pagezone != zone) {
-+				if (zone)
-+					spin_unlock(&zone->lru_lock);
-+				zone = pagezone;
-+				spin_lock(&zone->lru_lock);
-+			}
-+
-+			if (PageLRU(page) && PageNoreclaim(page))
-+				check_move_noreclaim_page(page, zone);
-+
-+			unlock_page(page);
-+
-+		}
-+		if (zone)
-+			spin_unlock(&zone->lru_lock);
-+		pagevec_release(&pvec);
++		zone->inactive_ratio = ratio;
 +	}
-+
 +}
 +
  /*
-  * scan_noreclaim_pages [vm] sysctl handler.  On demand re-scan of
-  * all nodes' noreclaim lists for reclaimable pages
-Index: linux-2.6.25-rc2-mm1/include/linux/swap.h
-===================================================================
---- linux-2.6.25-rc2-mm1.orig/include/linux/swap.h	2008-02-28 12:48:26.000000000 -0500
-+++ linux-2.6.25-rc2-mm1/include/linux/swap.h	2008-02-28 12:48:57.000000000 -0500
-@@ -247,6 +247,7 @@ static inline int zone_reclaim(struct zo
- extern int page_reclaimable(struct page *page, struct vm_area_struct *vma);
- extern void scan_zone_noreclaim_pages(struct zone *);
- extern void scan_all_zones_noreclaim_pages(void);
-+extern void scan_mapping_noreclaim_pages(struct address_space *);
- extern unsigned long scan_noreclaim_pages;
- extern int scan_noreclaim_handler(struct ctl_table *, int, struct file *,
- 					void __user *, size_t *, loff_t *);
-@@ -260,6 +261,9 @@ static inline int page_reclaimable(struc
- }
- static inline void scan_zone_noreclaim_pages(struct zone *z) { }
- static inline void scan_all_zones_noreclaim_pages(void) { }
-+static inline void scan_mapping_noreclaim_pages(struct address_space *mapping)
-+{
-+}
- static inline int scan_noreclaim_register_node(struct node *node)
- {
+  * Initialise min_free_kbytes.
+  *
+@@ -4269,6 +4308,7 @@ static int __init init_per_zone_pages_mi
+ 		min_free_kbytes = 65536;
+ 	setup_per_zone_pages_min();
+ 	setup_per_zone_lowmem_reserve();
++	setup_per_zone_inactive_ratio();
  	return 0;
+ }
+ module_init(init_per_zone_pages_min)
+Index: linux-2.6.25-rc2-mm1/mm/vmscan.c
+===================================================================
+--- linux-2.6.25-rc2-mm1.orig/mm/vmscan.c	2008-02-28 00:27:06.000000000 -0500
++++ linux-2.6.25-rc2-mm1/mm/vmscan.c	2008-02-28 00:29:35.000000000 -0500
+@@ -1019,7 +1019,7 @@ static inline int zone_is_near_oom(struc
+ static void shrink_active_list(unsigned long nr_pages, struct zone *zone,
+ 				struct scan_control *sc, int priority, int file)
+ {
+-	unsigned long pgmoved;
++	unsigned long pgmoved = 0;
+ 	int pgdeactivate = 0;
+ 	unsigned long pgscanned;
+ 	LIST_HEAD(l_hold);	/* The pages which were snipped off */
+@@ -1058,12 +1058,25 @@ static void shrink_active_list(unsigned 
+ 		cond_resched();
+ 		page = lru_to_page(&l_hold);
+ 		list_del(&page->lru);
+-		if (page_referenced(page, 0, sc->mem_cgroup))
+-			lru = LRU_ACTIVE_ANON;
++		if (page_referenced(page, 0, sc->mem_cgroup)) {
++			if (file)
++				/* Referenced file pages stay active. */
++				lru = LRU_ACTIVE_ANON;
++			else
++				/* Anonymous pages always get deactivated. */
++				pgmoved++;
++		}
+ 		list_add(&page->lru, &list[lru]);
+ 	}
+ 
+ 	/*
++	 * Count the referenced anon pages as rotated, to balance pageout
++	 * scan pressure between file and anonymous pages in get_scan_ratio.
++	 */
++	if (!file)
++		zone->recent_rotated_anon += pgmoved;
++
++	/*
+ 	 * Now put the pages back to the appropriate [file or anon] inactive
+ 	 * and active lists.
+ 	 */
+@@ -1145,7 +1158,11 @@ static unsigned long shrink_list(enum lr
+ {
+ 	int file = is_file_lru(lru);
+ 
+-	if (lru == LRU_ACTIVE_ANON || lru == LRU_ACTIVE_FILE) {
++	if (lru == LRU_ACTIVE_FILE) {
++		shrink_active_list(nr_to_scan, zone, sc, priority, file);
++		return 0;
++	}
++	if (lru == LRU_ACTIVE_ANON && inactive_anon_low(zone)) {
+ 		shrink_active_list(nr_to_scan, zone, sc, priority, file);
+ 		return 0;
+ 	}
+@@ -1255,8 +1272,8 @@ static unsigned long shrink_zone(int pri
+ 		}
+ 	}
+ 
+-	while (nr[LRU_ACTIVE_ANON] || nr[LRU_INACTIVE_ANON] ||
+-				nr[LRU_ACTIVE_FILE] || nr[LRU_INACTIVE_FILE]) {
++	while (nr[LRU_INACTIVE_ANON] || nr[LRU_ACTIVE_FILE] ||
++						 nr[LRU_INACTIVE_FILE]) {
+ 		for_each_lru(l) {
+ 			if (nr[l]) {
+ 				nr_to_scan = min(nr[l],
+@@ -1560,6 +1577,14 @@ loop_again:
+ 			    priority != DEF_PRIORITY)
+ 				continue;
+ 
++			/*
++			 * Do some background aging of the anon list, to give
++			 * pages a chance to be referenced before reclaiming.
++			 */
++			if (inactive_anon_low(zone))
++				shrink_active_list(SWAP_CLUSTER_MAX, zone,
++							&sc, priority, 0);
++
+ 			if (!zone_watermark_ok(zone, order, zone->pages_high,
+ 					       0, 0)) {
+ 				end_zone = i;
+Index: linux-2.6.25-rc2-mm1/mm/vmstat.c
+===================================================================
+--- linux-2.6.25-rc2-mm1.orig/mm/vmstat.c	2008-02-28 00:27:06.000000000 -0500
++++ linux-2.6.25-rc2-mm1/mm/vmstat.c	2008-02-28 00:29:35.000000000 -0500
+@@ -800,10 +800,12 @@ static void zoneinfo_show_print(struct s
+ 	seq_printf(m,
+ 		   "\n  all_unreclaimable: %u"
+ 		   "\n  prev_priority:     %i"
+-		   "\n  start_pfn:         %lu",
++		   "\n  start_pfn:         %lu"
++		   "\n  inactive_ratio:    %u",
+ 			   zone_is_all_unreclaimable(zone),
+ 		   zone->prev_priority,
+-		   zone->zone_start_pfn);
++		   zone->zone_start_pfn,
++		   zone->inactive_ratio);
+ 	seq_putc(m, '\n');
+ }
+ 
 
 -- 
 All Rights Reversed
