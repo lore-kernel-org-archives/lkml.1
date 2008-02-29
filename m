@@ -1,112 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763369AbYB2BLo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758978AbYB2BMI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763369AbYB2BLo (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Feb 2008 20:11:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762996AbYB2BEo
+	id S1758978AbYB2BMI (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Feb 2008 20:12:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753822AbYB2BGK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Feb 2008 20:04:44 -0500
-Received: from web36613.mail.mud.yahoo.com ([209.191.85.30]:21784 "HELO
-	web36613.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1764772AbYB2BEl (ORCPT
+	Thu, 28 Feb 2008 20:06:10 -0500
+Received: from smtp-out.google.com ([216.239.45.13]:38421 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755858AbYB2BGI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Feb 2008 20:04:41 -0500
-X-YMail-OSG: zOOGU6YVM1kHdW3j0SBpXSthdOt91.i1X1V75U_nWBkr_7Xt
-X-RocketYMMF: rancidfat
-Date: Thu, 28 Feb 2008 17:04:39 -0800 (PST)
-From: Casey Schaufler <casey@schaufler-ca.com>
-Reply-To: casey@schaufler-ca.com
-Subject: Re: [PATCH 01/11] Security: Add hook to get full maclabel xattr name
-To: Dave Quigley <dpquigl@tycho.nsa.gov>,
-       Christoph Hellwig <hch@infradead.org>
-Cc: Stephen Smalley <sds@tycho.nsa.gov>, casey@schaufler-ca.com,
-       viro@ftp.linux.org.uk, trond.myklebust@fys.uio.no, bfields@fieldses.org,
-       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       LSM List <linux-security-module@vger.kernel.org>
-In-Reply-To: <1204243497.2715.24.camel@moss-terrapins.epoch.ncsc.mil>
+	Thu, 28 Feb 2008 20:06:08 -0500
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=received:date:from:x-x-sender:to:cc:subject:in-reply-to:
+	message-id:references:user-agent:mime-version:content-type;
+	b=YsLAhZZ8ue515MwIzCs6xuhrw2PHULsHLX8sb9k7rVP/KN/Vb8ZSQWv3Wh0lmnXQe
+	qVE/xHVDaaNuAAJ6yvZCA==
+Date: Thu, 28 Feb 2008 17:05:21 -0800 (PST)
+From: David Rientjes <rientjes@google.com>
+X-X-Sender: rientjes@chino.kir.corp.google.com
+To: Paul Jackson <pj@sgi.com>
+cc: mingo@elte.hu, a.p.zijlstra@chello.nl, tglx@linutronix.de, oleg@tv-sign.ru,
+       rostedt@goodmis.org, maxk@qualcomm.com, linux-kernel@vger.kernel.org
+Subject: Re: [RFC/PATCH 0/4] CPUSET driven CPU isolation
+In-Reply-To: <20080228181611.49671331.pj@sgi.com>
+Message-ID: <alpine.DEB.1.00.0802281659460.3158@chino.kir.corp.google.com>
+References: <20080227222103.673194000@chello.nl> <20080228075010.GA28781@elte.hu> <20080228020808.3fd22f77.pj@sgi.com> <20080228090847.GA1133@elte.hu> <20080228031710.3405e405.pj@sgi.com> <alpine.DEB.1.00.0802280129580.15900@chino.kir.corp.google.com>
+ <alpine.DEB.1.00.0802280212070.23040@chino.kir.corp.google.com> <20080228113728.7b8e5811.pj@sgi.com> <alpine.DEB.1.00.0802281309480.24402@chino.kir.corp.google.com> <20080228164637.114fb19d.pj@sgi.com> <alpine.DEB.1.00.0802281452340.13082@chino.kir.corp.google.com>
+ <20080228181611.49671331.pj@sgi.com>
+User-Agent: Alpine 1.00 (DEB 882 2007-12-20)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-Message-ID: <177491.29492.qm@web36613.mail.mud.yahoo.com>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, 28 Feb 2008, Paul Jackson wrote:
 
---- Dave Quigley <dpquigl@tycho.nsa.gov> wrote:
-
+> > Move the watchdog/0 thread to a cpuset that doesn't have access to cpu 0.  
 > 
-> ...
+> I still don't understand ... you must have some context in mind that
+> I've spaced out ... I can't even tell if that is a statement or a
+> question.
 > 
-> I can only speak for myself but honestly I've only seen Casey act
-> confrontational to this idea from the beginning.
 
-That is simply because I don't care for your design and implementation
-choices, I think they're a bad way to go, I've suggested what I
-think you should do, and I'm sorry that that comes off as
-confrontational but that does not change what I see as flaws in
-your approach. I understand what you're trying to do and I think
-it's wrong.
+You said that you weren't aware of any problems that could arise that are 
+fixed with this added check in set_cpus_allowed(), so I asked that you 
+setup a cpuset that doesn't have access to cpu 0 and move the watchdog/0 
+thread to it.
 
-> There is absolutely
-> nothing in here that is SELinux specific, tecnically its not even MAC
-> specific.
+> Backing up, hopefully unwrapping, you seemed to allow moving bound tasks
+> only to cpusets with the same cpus (how come you didn't check for the
+> same memory nodes too?).  If you really needed to move bound tasks at all,
+> then that seemed like an unnecessarily tight constraint.  It wouldn't hurt
+> the bound task to move to another cpuset that still allowed the CPUs it was
+> bound to.
+> 
+> ... but after an another iteration of that subthread ... I'm wondering
+> why you have to move bound tasks at all.  How about PF_THREAD_BIND just
+> meaning (1) "can't be moved to any other cpuset", and (2) "always
+> placed in the top cpuset," so we don't have to worry about being unable
+> to move threads out of child cpusets.
+> 
+> Do you have any situation in which pinned threads have to be moved?
+> 
+> I don't.  Can we just prohibit it?
+> 
 
-Then why are you putting "mac" in the interface name?
+The fix is more general than just the cpusets case, even though it is 
+probably the only user in the kernel of set_cpus_allowed() that allows 
+bound kthreads to be moved.
 
-> I said from the beginning that this was perhaps not the best
-> name and we are willing to change it.
+The idea is to expressly deny kthreads that have called kthread_bind() 
+from changing their cpus_allowed via set_cpus_allowed().  Cpusets should 
+handle that gracefully, but my fix is more general: it adds the check to 
+set_cpus_allowed() instead of in the cpusets code.
 
-If you read back in the thread, that is what I suggested you do.
+This is a little difficult with the current way that cpusets calls 
+set_cpus_allowed() since its attach function is void and does not return 
+error or success to the cgroup interface, yet my patch prevents the soft 
+lockups and kernel crashes that can occur when cpusets changes the 
+cpus_allowed of watchdog or migration threads that is obviously in error.
 
-> There is nothing in this hook that
-> wasn't in LSM before. This is almost identical functionality to what
-> Adrian removed in 2.6.24. The only difference between this and
-> security_inode_getsuffix is that this returns security.suffix and that
-> the name is different. I don't have a SMACK box to test it on but I'm
-> 99% sure that if Casey tried to use SMACK with this patch set that he
-> would have labeled nfs working with SMACK.
-
-You're very possibly right. I am not argueing from what's right for
-Smack, I am argueing from what's right for the LSM. Smack is a label
-based MAC LSM, like SELinux. I would expect that it would be easy for
-the NFS implementation to accomodate both.
-
-> If it doesn't work with SMACK
-> right now I'm willing to help him with that and even include it in the
-> patch set. But spreading FUD about how we are including SELinux specific
-> code in here is just that.
-
-Sorry, but I'm not argueing that it's SELinux specific at this point.
-I'm argueing that it's specific to single label stored in an xattr
-based MAC systems (a set of which both SELinux and Smack are members)
-and that it is file system specific to NFS. Any of these attributes
-makes it questionable as an LSM interface.
-
-As I said before, trying to be helpful, call it security_blob_name(),
-and the upcoming Discretionary Time Lock module can return NULL,
-indicating that it wants to share no blob name. Or call it
-security_xattr_names() and DTL can return NULL and B&L+Biba can
-return "security.Bell&LaPadula security.Biba", hoping that everyone
-who uses the interface accepts the blank seperation as an indication
-that there are multiple xattrs involved.
-
-I am saying that security_maclabel() is a bad choice, and I think
-that as an LSM (not MAC, not xattr, not NFS) interface it should
-serve the LSM, making the LSM interface better first, and being
-the specific interface that a particular file system finds
-convenient second.
-
-And before we go any further, I have personally been involved in
-doing labeled NFS three times, and I know where the bodies are
-buried. Your approach is fine for single label stored in xattr based
-MAC systems. It does not generalize worth catfish whiskers, whereas
-the two other schemes I've done do so flawlessly. I am critical of
-this approach only because I know that y'all can do better.
-
-Great. Now I owe the entire labeled NFS team beer.
-
-Thank you.
-
-
-Casey Schaufler
-casey@schaufler-ca.com
+		David
