@@ -1,74 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932947AbYB2Q1T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933117AbYB2Q1j@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932947AbYB2Q1T (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Feb 2008 11:27:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757938AbYB2Q1H
+	id S933117AbYB2Q1j (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Feb 2008 11:27:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932669AbYB2Q1M
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Feb 2008 11:27:07 -0500
-Received: from spirit.analogic.com ([204.178.40.4]:3254 "EHLO
-	spirit.analogic.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756835AbYB2Q1H convert rfc822-to-8bit (ORCPT
+	Fri, 29 Feb 2008 11:27:12 -0500
+Received: from smtp1.linux-foundation.org ([207.189.120.13]:34356 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S932563AbYB2Q1K (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 Feb 2008 11:27:07 -0500
+	Fri, 29 Feb 2008 11:27:10 -0500
+Date: Fri, 29 Feb 2008 08:26:14 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Ingo Molnar <mingo@elte.hu>
+cc: Roland McGrath <roland@redhat.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] x86_64 ia32 syscall restart fix
+In-Reply-To: <20080229155207.GC27248@elte.hu>
+Message-ID: <alpine.LFD.1.00.0802290814320.17889@woody.linux-foundation.org>
+References: <20080229035707.EAE862700FD@magilla.localdomain> <20080229155207.GC27248@elte.hu>
+User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-X-OriginalArrivalTime: 29 Feb 2008 16:26:08.0190 (UTC) FILETIME=[C9D34DE0:01C87AEF]
-Content-class: urn:content-classes:message
-Subject: Re: 64-bit sources
-Date: Fri, 29 Feb 2008 11:25:58 -0500
-Message-ID: <Pine.LNX.4.61.0802291123280.23162@chaos.analogic.com>
-In-Reply-To: <Pine.LNX.4.64.0802291631020.24056@fbirervta.pbzchgretzou.qr>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: 64-bit sources
-Thread-Index: Ach678nvcA87FCxRTYyinoucd1U5ZQ==
-References: <Pine.LNX.4.61.0802290954390.22942@chaos.analogic.com> <Pine.LNX.4.64.0802291631020.24056@fbirervta.pbzchgretzou.qr>
-From: "linux-os (Dick Johnson)" <linux-os@analogic.com>
-To: "Jan Engelhardt" <jengelh@computergmbh.de>
-Cc: "Linux kernel" <linux-kernel@vger.kernel.org>
-Reply-To: "linux-os (Dick Johnson)" <linux-os@analogic.com>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-Yes. The RPM contains only patches and the patches won't
-patch a 2.6.11 kernel either! Perhaps they need to be
-in some undefined order.
 
-On Fri, 29 Feb 2008, Jan Engelhardt wrote:
+On Fri, 29 Feb 2008, Ingo Molnar wrote:
+> 
+> * Roland McGrath <roland@redhat.com> wrote:
+> 
+> > The code to restart syscalls after signals depends on checking for a 
+> > negative orig_ax, and for particular negative -ERESTART* values in ax. 
+> > These fields are 64 bits and for a 32-bit task they get zero-extended. 
+> > The syscall restart behavior is lost, a regression from a native 
+> > 32-bit kernel and from 64-bit tasks' behavior.  This patch fixes the 
+> > problem by doing sign-extension where it matters.  For orig_ax, the 
+> > only time the value should be -1 but winds up as 0x0ffffffff is via a 
+> > 32-bit ptrace call.  So the patch changes ptrace to sign-extend the 
+> > 32-bit orig_eax value when it's stored; it doesn't change the checks 
+> > on orig_ax, though it uses the new current_syscall() inline to better 
+> > document the subtle importance of the used of signedness there.  The 
+> > ax value is stored a lot of ways and it seems hard to get them all 
+> > sign-extended at their origins.  So for that, we use the 
+> > current_syscall_ret() to sign-extend it only for 32-bit tasks at the 
+> > time of the -ERESTART* comparisons.
+> 
+> thanks, applied.
+
+Btw, can we please try to keep commit log messages readable?
+
+The above "blob of text" could/should have more structure than being just 
+one big block, and could have been structured as a few shorter paragraphs 
+to make it easier to read: (1) problem description (2) patch description 
+and (3) explanation of why patch was done it was done.
+
+I don't know about you guys, but I read a *lot* of emails (and commit 
+messages), and I hate seeing big blobs of text without structure. Give it 
+a few breaks to make it easier to read, like just making new paragraphs, 
+ie something like:
+
+> The code to restart syscalls after signals depends on checking for a 
+> negative orig_ax, and for particular negative -ERESTART* values in ax. 
+> These fields are 64 bits and for a 32-bit task they get zero-extended. 
+> The syscall restart behavior is lost, a regression from a native 32-bit 
+> kernel and from 64-bit tasks' behavior.
 >
-> On Feb 29 2008 10:07, linux-os (Dick Johnson) wrote:
->> Hello all,
->>
->> I inherited a problem with linux-2.6.11-1.1369_FC4smp in
->> that plugging in a USB mouse on a new AMD machine causes
->> a crash. I took a new disk and installed the complete
->> installation from "Fedora core." The sources provided
->> with the distribution do not compile with the tools
->> provided with the distribution! I need to find the
->> real sources for this kernel, something that will
->> compile so I can add some debugging info in the
->> ohci-hcd driver.
->>
->> Checking the web only shows a ".rpm" that contains
->> only patches, no source. What goes? Is this a secret
->> distribution?
+> This patch fixes the problem by doing sign-extension where it matters.  
+> For orig_ax, the only time the value should be -1 but winds up as 
+> 0x0ffffffff is via a 32-bit ptrace call.  So the patch changes ptrace to 
+> sign-extend the 32-bit orig_eax value when it's stored; it doesn't 
+> change the checks on orig_ax, though it uses the new current_syscall() 
+> inline to better document the subtle importance of the used of 
+> signedness there.
 >
-> This one?
-> http://ftp-stud.hs-esslingen.de/pub/fedora/linux/core/4/SRPMS/kernel-2.6.11-1.1369_FC4.src.rpm
->
+> The ax value is stored a lot of ways and it seems hard to get them all 
+> sign-extended at their origins.  So for that, we use the 
+> current_syscall_ret() to sign-extend it only for 32-bit tasks at the 
+> time of the -ERESTART* comparisons.
 
-Cheers,
-Dick Johnson
-Penguin : Linux version 2.6.22.1 on an i686 machine (5588.28 BogoMips).
-My book : http://www.AbominableFirebug.com/
-_
+and now you have a bit of a breather space and some visual cues for whare 
+you are in the text.
 
+Yeah, maybe it's just me, but I like my whitespace. Ihaveareallyhardtime
+readingtextthatdoesn'thavethepropermarkersforwhereconceptsstartandbegin, 
+andthatreallydoesincludetheverticalwhitespacetoo.
 
-****************************************************************
-The information transmitted in this message is confidential and may be privileged.  Any review, retransmission, dissemination, or other use of this information by persons or entities other than the intended recipient is prohibited.  If you are not the intended recipient, please notify Analogic Corporation immediately - by replying to this message or by sending an email to DeliveryErrors@analogic.com - and destroy all copies of this information, including any attachments, without reading or disclosing them.
+Now, the only reason I mention this is that normally I would probably just 
+have fixed this up myself without even a comment (because it's such a tiny 
+detail that it's not not worth one), but when Ingo merges it I'll now get 
+it through git and it will be fixed.
 
-Thank you.
+			Linus "yeah, I can be anal" Torvalds
