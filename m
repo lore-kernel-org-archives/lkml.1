@@ -1,77 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932607AbYB2NbR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932225AbYB2Nbc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932607AbYB2NbR (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Feb 2008 08:31:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753470AbYB2Na7
+	id S932225AbYB2Nbc (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Feb 2008 08:31:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759442AbYB2NbM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Feb 2008 08:30:59 -0500
-Received: from zombie.ncsc.mil ([144.51.88.131]:43931 "EHLO zombie.ncsc.mil"
+	Fri, 29 Feb 2008 08:31:12 -0500
+Received: from scrub.xs4all.nl ([194.109.195.176]:48245 "EHLO scrub.xs4all.nl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752457AbYB2Na6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 Feb 2008 08:30:58 -0500
-Subject: Re: [PATCH 01/11] Security: Add hook to get full maclabel xattr
-	name
-From: Stephen Smalley <sds@tycho.nsa.gov>
-To: Christoph Hellwig <hch@infradead.org>
-Cc: Dave Quigley <dpquigl@tycho.nsa.gov>, casey@schaufler-ca.com,
-       viro@ftp.linux.org.uk, trond.myklebust@fys.uio.no, bfields@fieldses.org,
-       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       LSM List <linux-security-module@vger.kernel.org>
-In-Reply-To: <20080229010055.GA26176@infradead.org>
-References: <746385.69480.qm@web36611.mail.mud.yahoo.com>
-	 <1204227035.31790.207.camel@moss-spartans.epoch.ncsc.mil>
-	 <20080228234850.GA25829@infradead.org>
-	 <1204243497.2715.24.camel@moss-terrapins.epoch.ncsc.mil>
-	 <20080229003937.GA16343@infradead.org>
-	 <1204245167.2715.37.camel@moss-terrapins.epoch.ncsc.mil>
-	 <20080229010055.GA26176@infradead.org>
-Content-Type: text/plain
-Organization: National Security Agency
-Date: Fri, 29 Feb 2008 08:30:06 -0500
-Message-Id: <1204291806.31790.233.camel@moss-spartans.epoch.ncsc.mil>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 (2.12.3-1.fc8) 
-Content-Transfer-Encoding: 7bit
+	id S932435AbYB2NbK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 29 Feb 2008 08:31:10 -0500
+Date: Fri, 29 Feb 2008 14:31:02 +0100 (CET)
+From: Roman Zippel <zippel@linux-m68k.org>
+X-X-Sender: roman@scrub.home
+To: Ray Lee <ray-lk@madrabbit.org>
+cc: john stultz <johnstul@us.ibm.com>, lkml <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
+       Steven Rostedt <rostedt@goodmis.org>
+Subject: Re: [PATCH] Remove obsolete CLOCK_TICK_ADJUST
+In-Reply-To: <2c0942db0802282225j7d01eee3vbe6bbb7b93e86e47@mail.gmail.com>
+Message-ID: <Pine.LNX.4.64.0802291422070.2723@scrub.home>
+References: <1201142334.6383.40.camel@localhost.localdomain> 
+ <Pine.LNX.4.64.0802120335170.3378@scrub.home>  <1202963796.6195.141.camel@localhost.localdomain>
+  <Pine.LNX.4.64.0802150436300.1822@scrub.home>  <1203382940.5984.242.camel@localhost>
+  <Pine.LNX.4.64.0802190219360.2723@scrub.home>  <1203472250.6123.98.camel@localhost>
+  <Pine.LNX.4.64.0802200348230.2723@scrub.home>  <1203647951.6150.80.camel@localhost.localdomain>
+  <Pine.LNX.4.64.0802290547320.2723@scrub.home>
+ <2c0942db0802282225j7d01eee3vbe6bbb7b93e86e47@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi,
 
-On Thu, 2008-02-28 at 20:00 -0500, Christoph Hellwig wrote:
-> On Thu, Feb 28, 2008 at 07:32:47PM -0500, Dave Quigley wrote:
-> > I can always go with the original hook name of get_security_xattr_name
-> > which turns into a security_get_security_xattr_name call which seems a
-> > bit ludicrous. The only other complaint that I saw from Casey besides
-> > the name of the function was that there could be more than one xattr. If
-> > we want to address that then I need another hook that says give me all
-> > data that the LSM deems important for this file. Which is essentially
-> > the same thing as taking each of the xattr names that the module will
-> > provide, grabbing each of them in turn, and concatenating them together.
-> > For SELinux this is no different than getsecurity with the selinux
-> > suffix. The same goes for SMACK.
+On Thu, 28 Feb 2008, Ray Lee wrote:
+
+> >  Revert bbe4d18ac2e058c56adb0cd71f49d9ed3216a405 and
+> >  e13a2e61dd5152f5499d2003470acf9c838eab84 and remove CLOCK_TICK_ADJUST
+> >  completely. Add a optional kernel parameter ntp_tick_adj instead to allow
+> >  adjusting of a large base drift and thus keeping ntpd happy.
 > 
-> What about Casey's suggestion of get_security_blob?  For any reasonable
-> module that just has a single xattr it's trivial and for those that
-> have multiple or a different storage model it might get complicated
-> but that's not our problem for now.
+> Wait, so you're saying that something that the kernel correctly
+> figures out on its own today should instead be a kernel parameter,
+> with users having to supply it explicitly? Am I confused?
+> 
+> If I'm not confused, would you'd be so kind to explain to the peanut
+> gallery over here why this is a good thing?
 
-Possibly I'm missing something, but if I'm implementing a security
-module that has any security attribute at all, e.g. capability module
-with security.capability, and I see a hook called "get_security_blob" or
-"get_security_attr" or the like, I'll implement that hook and return my
-attribute there.  Which in turn will _break_ the labeled NFS
-functionality because it is expecting a MAC label specifically.
+Sorry, for causing this confusion.
+Unless you run a computer with the PIT or jiffies clock, this value is 
+just a random value added to the calculation.
+Even if you use the PIT clock, the drift isn't large enough to be worried 
+about it with standard configurations. You have to manually set HZ to 2000 
+and use the PIT clock, then you might have a need for this parameter.
 
-The whole point here is that we do not want modules like capability to
-return their security attributes here, because this is to support
-labeled NFS functionality in support of enforcing MAC.
-
-I don't especially care about the hook name per se, but the interface
-(whatever it may be) needs to convey the proper semantics, and the
-semantics truly are MAC specific (and should be).
-
-
--- 
-Stephen Smalley
-National Security Agency
-
+bye, Roman
