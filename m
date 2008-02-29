@@ -1,90 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755130AbYB2GU2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758582AbYB2GVM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755130AbYB2GU2 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Feb 2008 01:20:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753136AbYB2GUP
+	id S1758582AbYB2GVM (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Feb 2008 01:21:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753136AbYB2GU5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Feb 2008 01:20:15 -0500
-Received: from c60.cesmail.net ([216.154.195.49]:32422 "EHLO c60.cesmail.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750893AbYB2GUO convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 Feb 2008 01:20:14 -0500
-Message-ID: <20080229012012.ajlsk4pow8wkkgss@webmail.spamcop.net>
-Date: Fri, 29 Feb 2008 01:20:12 -0500
-From: Pavel Roskin <proski@gnu.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>,
-       Jon Masters <jcm@jonmasters.org>, Rusty Russell <rusty@rustcorp.com.au>
-Subject: Re: [PATCH 2.6.25] module: allow ndiswrapper to use GPL-only
-	symbols
-References: <1204236662.3612.6.camel@dv>
-	<alpine.LFD.1.00.0802281525170.5780@woody.linux-foundation.org>
-In-Reply-To: <alpine.LFD.1.00.0802281525170.5780@woody.linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII;
-	DelSp=Yes	format=flowed
-Content-Disposition: inline
-Content-Transfer-Encoding: 7BIT
-User-Agent: Internet Messaging Program (IMP) H3 (4.1.4)
+	Fri, 29 Feb 2008 01:20:57 -0500
+Received: from relay2.sgi.com ([192.48.171.30]:46771 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752868AbYB2GU5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 29 Feb 2008 01:20:57 -0500
+Date: Fri, 29 Feb 2008 00:20:51 -0600
+From: Paul Jackson <pj@sgi.com>
+To: Paul Menage <menage@google.com>
+Cc: akpm@linux-foundation.org, containers@lists.osdl.org,
+       linux-kernel@vger.kernel.org, balbir@linux.vnet.ibm.com,
+       a.p.zijlstra@chello.nl, xemul@openvz.org
+Subject: Re: [RFC] [PATCH] Re: Prefixing cgroup generic control filenames
+ with "cgroup."
+Message-Id: <20080229002051.86de45a5.pj@sgi.com>
+In-Reply-To: <47C79F39.5080005@google.com>
+References: <6599ad830802281314s25c033d6tc021725ae28aef8d@mail.gmail.com>
+	<20080228132142.4d4b1eef.akpm@linux-foundation.org>
+	<6599ad830802281328q162d0585v3ac6b45a119a4a05@mail.gmail.com>
+	<20080228134027.05b2aa87.akpm@linux-foundation.org>
+	<6599ad830802281406t38e486d8g267df1873bc754c2@mail.gmail.com>
+	<20080228142100.2dce0e46.akpm@linux-foundation.org>
+	<47C79F39.5080005@google.com>
+Organization: SGI
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.12.0; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Quoting Linus Torvalds <torvalds@linux-foundation.org>:
+Paul M wrote:
+> Thoughts? Is this a direction we want to go in? As an option, or by default?
 
-> On Thu, 28 Feb 2008, Pavel Roskin wrote:
->>
->> A change after 2.6.24 broke ndiswrapper by accidentally removing its
->> access to GPL-only symbols.  Revert that change and add comments about
->> the reasons why ndiswrapper and driverloader are treated in a special
->> way.
->
-> I'm not seeing why ndiswrapper should be treated separately.
+So ... this proposal adds a 'groups' subdirectory in each cgroup, and places
+the user generated subgroups in there.
 
-It is already treated separately, and has been for a long time.  Since  
-ndiswrapper taints itself when it loads a proprietary NDIS module, I  
-don't think any special treatment is needed anymore, but that's beyond  
-my point.
+It looks like an unnecessary, incompatible and complicating change to me.
 
-All I'm trying to do it to revert a patch that, as its author  
-admitted, had unexpected consequences:
-http://kerneltrap.org/mailarchive/linux-kernel/2008/1/30/648044
+For example, what would have been cgroup:
 
-> If it loads non-GPL modules, it shouldn't be able to use GPLONLY symbols.
+	/mnt/cgroup/user_created_groupname1/user_created_groupname2
 
-This is not the original intention of GPLONLY.  GPLONLY exists to  
-prevent loading of modules that are proprietary, but can be considered  
-to be Linux derivatives due to their use of Linux specific API.
+now becomes:
 
-In case of ndiswrapper, there is no question that ndiswrapper is a  
-Linux derivative, but it's under GPL.  Yet the proprietary modules are  
-not Linux derivatives because they don't use Linux API.  In fact, they  
-were never intended to run on Linux.
+	/mnt/cgroup/cgroups/user_created_groupname1/cgroups/user_created_groupname2
 
-By using GPLONLY to exclude ndiswrapper, you would give GPLONLY an  
-additional meaning, namely functions that are not available to  
-ndiswrapper.
+Right?
 
-> So if ndiswrapper needs GPL-only symbols, you'd better ask the people who
-> made those symbols GPL-only whether they could be made available to
-> ndiswrapper.
+Why would you do this?
 
-That would mean that I would have to ask those symbols to be opened to  
-proprietary Linux kernel modules as well, which is not my intention.
+There is no problem with the current implementation, no bug we're
+having trouble coding a fix for, no feature we're have trouble adding.
+The current code, that simply doesn't allow colliding user names
+because the kernel provided names are already there, works just fine.
 
-> ndiswrapper itself is *not* compatible with the GPL. Trying to claim that
-> ndiswrapper somehow itself is GPL'd even though it then loads modules that
-> aren't is stupid and pointless. Clearly it just re-exports those GPLONLY
-> functions to code that is *not* GPL'd.
+You're doing this just to "protect the user from themself", to make
+it more difficult for them to rely on some name that in a future
+version is no longer available.
 
-Simple re-exporting would be useless.  It's a wrapper that isolates  
-NDIS API from Linux API.  Anything Linux specific is in ndiswrapper  
-itself.  The proprietary modules call only NDIS functions.
+It annoys users, and rightfully so, to have to permanently deal with
+interface warts, because the computer is trying to protect the user
+from some hypothetical scenario that is not a problem the user needs
+solving.
 
-I believe, the license is a choice of the copyright holders.  Apart  
-from that, I don't feel qualified to discuss any legal matters.
+There is really a trivial resolution to this ... stake out what
+additional kernel generated names might ever be added ... some
+pattern(s) of characters which all future names will match, which
+leave wide swaths of names safely available, in perpetuity, for
+user created names, with no risk of future collision.
+
+And did I say incompatible with released versions?
+
+Hopefully Paul M isn't too surprised that I'm not endorsing this one ;).
 
 -- 
-Regards,
-Pavel Roskin
+                  I won't rest till it's the best ...
+                  Programmer, Linux Scalability
+                  Paul Jackson <pj@sgi.com> 1.940.382.4214
