@@ -1,19 +1,19 @@
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757373AbYB2GqT (ORCPT <rfc822;ralf@linux-mips.org>);
-	Fri, 29 Feb 2008 01:46:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752965AbYB2GqC
+	id S1761636AbYB2Syp (ORCPT <rfc822;ralf@linux-mips.org>);
+	Fri, 29 Feb 2008 13:54:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758269AbYB2Sye
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Feb 2008 01:46:02 -0500
-Received: from ag-out-0708.google.com ([72.14.246.247]:49426 "EHLO
+	Fri, 29 Feb 2008 13:54:34 -0500
+Received: from ag-out-0708.google.com ([72.14.246.240]:36639 "EHLO
 	ag-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751539AbYB2GqA (ORCPT
+	with ESMTP id S1757868AbYB2Sye (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 Feb 2008 01:46:00 -0500
-Message-ID: <d7ed7b510802282245g190af24fr55b79a0fe8a624f9@mail.gmail.com>
-Date: Fri, 29 Feb 2008 14:45:53 +0800
-From: "=?BIG5?B?vbKrYaX0?=" <nv6753e86jwi@gmail.com>
-To: linct@pine.yuntech.edu.tw
-Subject: =?BIG5?B?MjAwOC8yLzI5IKG6ofWh7iC6xqhnpGo=?= =?BIG5?B?qfGwZbZSqOKuTbBlo7iuTSChvaHvob0gMTQ6NDU=?=
+	Fri, 29 Feb 2008 13:54:34 -0500
+Message-ID: <e44ce9b20802291054i752e8646g19d3a357efe2552b@mail.gmail.com>
+Date: Sat, 1 Mar 2008 02:54:22 +0800
+From: "=?BIG5?B?wcK2rrRQ?=" <t1d8l0u4dq@gmail.com>
+To: linvisa@sparqnet.net
+Subject: =?BIG5?B?MjAwOC8zLzEgoe6hu6G9pVukSqaorLCn2qq6?= =?BIG5?B?s8y3UrGhvey69Ld8rfukRafpwHW0ZqHyofeh9CAyOjU0?=
 MIME-Version: 1.0
 Content-Type: text/plain; charset=BIG5
 Content-Transfer-Encoding: base64
@@ -21,8 +21,8 @@ Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
-Return-Path: <linux-kernel-owner+ralf=40linux-mips.org-S1757373AbYB2GqT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+ralf=40linux-mips.org-S1761636AbYB2Syp@vger.kernel.org>
 
-MjAwOC0yLTI5CqH3CgqrerbrISEhIaRApPk1MAoKaHR0cDovL3NhbS55YWhvby1raXNzLmNvbS8K
-CqX+pn61TKXwqEOk6aRVpMg1wkmrZaRVs+YtuWqk0adZpWmmdrB0qOyzZgoKusaoZ6RqqfGwZbZS
-qOKuTbBlo7iuTQoKaHR0cDovL3NhbS55b3lvLWR2ZC5jb20vCgoxNDo0NTo1MAoKtb8K
+MjAwOC0zLTEKoe4KCqfaqrqzzLdSsaG97Lr0saG97LDTq34KCmh0dHA6Ly9saXBpMTIzMS5saXBp
+bi5jb20udHcvaW5kZXgyLmFzcAoKpf6mfrVMpfCoQ6TppFWkyDXCSatlpFWz5i25aqTRp1mlaaZ2
+sHSo7LNmCgoyOjU0OjIxCgrPtAo=
