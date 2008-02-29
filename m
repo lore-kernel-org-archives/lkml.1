@@ -1,90 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760541AbYB2AJ3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761008AbYB2AKs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760541AbYB2AJ3 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Feb 2008 19:09:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753461AbYB2AJS
+	id S1761008AbYB2AKs (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Feb 2008 19:10:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753546AbYB2AKk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Feb 2008 19:09:18 -0500
-Received: from zombie.ncsc.mil ([144.51.88.131]:59420 "EHLO zombie.ncsc.mil"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753108AbYB2AJR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Feb 2008 19:09:17 -0500
-Subject: Re: [PATCH 03/11] VFS: Add security label support to *notify
-From: Dave Quigley <dpquigl@tycho.nsa.gov>
-To: Christoph Hellwig <hch@infradead.org>
-Cc: viro@ftp.linux.org.uk, trond.myklebust@fys.uio.no, bfields@fieldses.org,
-       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
-In-Reply-To: <20080228235427.GA17757@infradead.org>
-References: <1204150294-4678-1-git-send-email-dpquigl@tycho.nsa.gov>
-	 <1204150294-4678-4-git-send-email-dpquigl@tycho.nsa.gov>
-	 <20080228235427.GA17757@infradead.org>
-Content-Type: text/plain
-Date: Thu, 28 Feb 2008 18:44:43 -0500
-Message-Id: <1204242283.2715.9.camel@moss-terrapins.epoch.ncsc.mil>
+	Thu, 28 Feb 2008 19:10:40 -0500
+Received: from rgminet01.oracle.com ([148.87.113.118]:41068 "EHLO
+	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753461AbYB2AKj (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 28 Feb 2008 19:10:39 -0500
+Date: Thu, 28 Feb 2008 16:09:20 -0800
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: Sam Ravnborg <sam@ravnborg.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       lkml <linux-kernel@vger.kernel.org>
+Subject: [PATCH v2] kernel-doc: set verbose mode via environment
+Message-Id: <20080228160920.c66c7b88.randy.dunlap@oracle.com>
+In-Reply-To: <20080228183234.GA24684@uranus.ravnborg.org>
+References: <20080224175358.3202f0d0.randy.dunlap@oracle.com>
+	<20080227191104.6f166972.akpm@linux-foundation.org>
+	<20080228083009.5955a7eb.randy.dunlap@oracle.com>
+	<20080228183234.GA24684@uranus.ravnborg.org>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.4.7 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 (2.12.3-1.fc8) 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, 28 Feb 2008 19:32:34 +0100 Sam Ravnborg wrote:
 
-On Thu, 2008-02-28 at 18:54 -0500, Christoph Hellwig wrote:
-> On Wed, Feb 27, 2008 at 05:11:26PM -0500, David P. Quigley wrote:
-> > This patch adds two new fields to the iattr structure. The first field holds a
-> > security label while the second contains the length of this label. In addition
-> > the patch adds a new helper function inode_setsecurity which calls the LSM to
-> > set the security label on the inode. Finally the patch modifies the necessary
-> > functions such that fsnotify_change can handle notification requests for
-> > dnotify and inotify.
-> 
-> Please don't overload setattr with this.  Just looking at your callers
-> shows that it's much cleaner as a separate method.
-> 
-> Now what's really lacking is a desciption _why_ you actually need it
-> to start with.  The current method to set security labels is through
-> the security.* xattrs.  Now if we want to clean up that somewhat
-> messy method that might be a good idea, but we should do it for all
-> callers and not just some.
-
-The main reason for this was the way that NFS passes information it
-receives around. If you look in patch 11 you will see that
-nfsd4_decode_fattr doesn't give us access to an inode to use for
-security_inode_setsecurity and it doesn't give us a dentry to use the
-xattr helpers with. The only thing we get here is an iattr structure
-which is then passed back up to fill in the inode fields. Also without
-functionality provided by patch 1 we don't even know where to put the
-security blob we are getting from the wire. 
-
-> 
-> > +#define DN_LABEL        0x00000040      /* File (re)labeled */
-> 
-> An any inotify/dnotify additions should be separate from the vfs to
-> filesystem interface.  Please make it a separate patch and describe
-> properly why it's needed in it's description.
-
-Will do. We added them to conform to the functionality provided for
-other elements in the iattr structure. We will add a more robust
-explanation in the patch.
-
-> 
-> > index df6b95d..1169963 100644
-> > --- a/include/linux/xattr.h
-> > +++ b/include/linux/xattr.h
-> > @@ -50,6 +50,7 @@ ssize_t xattr_getsecurity(struct inode *, const char *, void *, size_t);
-> >  ssize_t vfs_getxattr(struct dentry *, char *, void *, size_t);
-> >  ssize_t vfs_listxattr(struct dentry *d, char *list, size_t size);
-> >  int vfs_setxattr(struct dentry *, char *, void *, size_t, int);
-> > +int vfs_setxattr_locked(struct dentry *, char *, void *, size_t, int);
-> >  int vfs_removexattr(struct dentry *, char *);
-> >  
-> >  ssize_t generic_getxattr(struct dentry *dentry, const char *name, void *buffer, size_t size);
-> > -- 
-> > 1.5.3.8
+> On Thu, Feb 28, 2008 at 08:30:09AM -0800, Randy Dunlap wrote:
+> > On Wed, 27 Feb 2008 19:11:04 -0800 Andrew Morton wrote:
 > > 
-> > -
-> > To unsubscribe from this list: send the line "unsubscribe linux-fsdevel" in
-> > the body of a message to majordomo@vger.kernel.org
-> > More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> ---end quoted text---
+> > > On Sun, 24 Feb 2008 17:53:58 -0800 Randy Dunlap <randy.dunlap@oracle.com> wrote:
+> > > 
+...
+> > > 
+> > > Shouldn't this be, err, documented somewhere?
+> > 
+> > I did think about that.  I was still wondering where to add it.
+> In the same file where you document all the kconfig stuff - so we can let it be
+> a 'all build features ' document?
+
+Which "same file" is that?
+
+
+> > > I'd have expected to obtain this functionality by running `make V=1 foodocs'?
+> > 
+> > Sam, any thoughts on Makefile passing "-v" to scripts/kernel-doc ?
+> Please implemnt this. Either add a flag to docproc or
+> just read the env-variable KBUILD_VERBOSE in kernel-doc.
+
+Sure, I'll change /KERNEL_DOC_VERBOSE/ to /KBUILD_VERBOSE/ in
+scripts/kernel-doc.  docproc doesn't need to be involved,
+especially since scripts/kernel-doc is easily usable without docproc.
+
+That also means that I can just use the existing KBUILD_VERBOSE
+documentation.  :)
+
+---
+From: Randy Dunlap <randy.dunlap@oracle.com>
+
+Honor the environment variable "KBUILD_VERBOSE=1" (as set by
+make V=1) to enable verbose mode in scripts/kernel-doc.  Useful for
+getting more info and warnings from kernel-doc.
+
+Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
+---
+ scripts/kernel-doc |    4 ++++
+ 1 file changed, 4 insertions(+)
+
+--- linux-2625-rc3-kdoc.orig/scripts/kernel-doc
++++ linux-2625-rc3-kdoc/scripts/kernel-doc
+@@ -247,6 +247,10 @@ my ($function, %function_table,%paramete
+ my ($type,$declaration_name,$return_type);
+ my ($newsection,$newcontents,$prototype,$filelist, $brcount, %source_map);
+ 
++if (defined($ENV{'KBUILD_VERBOSE'})) {
++	$verbose = "$ENV{'KBUILD_VERBOSE'}";
++}
++
+ # Generated docbook code is inserted in a template at a point where
+ # docbook v3.1 requires a non-zero sequence of RefEntry's; see:
+ # http://www.oasis-open.org/docbook/documentation/reference/html/refentry.html
 
