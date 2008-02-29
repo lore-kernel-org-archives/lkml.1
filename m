@@ -1,55 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756736AbYB2FCp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756241AbYB2FFT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756736AbYB2FCp (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Feb 2008 00:02:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756096AbYB2FCW
+	id S1756241AbYB2FFT (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Feb 2008 00:05:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750953AbYB2FFF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Feb 2008 00:02:22 -0500
-Received: from smtp1.linux-foundation.org ([207.189.120.13]:56849 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755982AbYB2FCV (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 Feb 2008 00:02:21 -0500
-Date: Thu, 28 Feb 2008 21:01:40 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: paulmck@linux.vnet.ibm.com
-Cc: Steven Rostedt <rostedt@goodmis.org>, LKML <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       john stultz <johnstul@us.ibm.com>, jarkao2@gmail.com,
-       netdev@vger.kernel.org
-Subject: Re: [PATCH] fix boot-time hangs from PREEMPT_RCU and NO_HZ
-Message-Id: <20080228210140.37abe9cd.akpm@linux-foundation.org>
-In-Reply-To: <20080229044329.GA20207@linux.vnet.ibm.com>
-References: <Pine.LNX.4.58.0801291113350.20371@gandalf.stny.rr.com>
-	<20080229044329.GA20207@linux.vnet.ibm.com>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+	Fri, 29 Feb 2008 00:05:05 -0500
+Received: from pat.uio.no ([129.240.10.15]:45197 "EHLO pat.uio.no"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750843AbYB2FFD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 29 Feb 2008 00:05:03 -0500
+Subject: Re: [PATCH 01/11] Security: Add hook to get full maclabel xattr
+	name
+From: Trond Myklebust <trond.myklebust@fys.uio.no>
+To: casey@schaufler-ca.com
+Cc: Christoph Hellwig <hch@infradead.org>,
+       Dave Quigley <dpquigl@tycho.nsa.gov>,
+       Stephen Smalley <sds@tycho.nsa.gov>, viro@ftp.linux.org.uk,
+       bfields@fieldses.org, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org,
+       LSM List <linux-security-module@vger.kernel.org>
+In-Reply-To: <710000.44550.qm@web36605.mail.mud.yahoo.com>
+References: <710000.44550.qm@web36605.mail.mud.yahoo.com>
+Content-Type: text/plain
+Date: Thu, 28 Feb 2008 21:04:51 -0800
+Message-Id: <1204261491.7213.16.camel@heimdal.trondhjem.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.12.1 
 Content-Transfer-Encoding: 7bit
+X-UiO-Resend: resent
+X-UiO-Spam-info: not spam, SpamAssassin (score=0.0, required=5.0, autolearn=disabled, none)
+X-UiO-Scanned: BEB883CBF3CE061C1AFC2C08FC5F28C9482B0EE7
+X-UiO-SR-test: 62C7E0A7D54906B9AD7D2D631AA1FEDD39EAD450
+X-UiO-SPAM-Test: remote_host: 129.240.10.9 spam_score: 0 maxlevel 200 minaction 2 bait 0 mail/h: 28 total 7144125 max/h 8345 blacklist 0 greylist 0 ratelimit 0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 28 Feb 2008 20:43:29 -0800 "Paul E. McKenney" <paulmck@linux.vnet.ibm.com> wrote:
 
-> This is a repost of http://lkml.org/lkml/2008/2/2/11.  It is needed in
-> 2.6.25 in order to prevent boot-time hangs when running with PREEMPT_RCU
-> and NO_HZ.
-> 
-> Preemptible RCU can get stuck if a CPU goes idle and NO_HZ is set. The
-> idle CPU will not progress the RCU through its grace period, so that
-> any subsequent synchronize_rcu() invocations can hang until such time
-> as a process starts running on the idle CPU.  If no such process runs,
-> subsequent synchronize_rcu() invocations will hang indefinitely, in turn
-> hanging the system.  Without this patch, one of Steve Rostedt's boxes
-> hangs on boot when PREEMPT_RCU and NO_HZ are set. That same box boots
-> fine with this patch.
-> 
-> Note: This patch came directly from the -rt patch where it has been tested
-> for several months.
-> 
-> Andrew, could you please apply this?
+On Thu, 2008-02-28 at 17:55 -0800, Casey Schaufler wrote:
 
-I already have it, via git-sched.  Presumably Ingo has it lined up for the
-next sched-related merge.
+> > There should be no need for ioctls.
+> 
+> Sorry, but as far as I'm concerned you just threw a bunny under
+> the train for no apparent reason. What have ioctls got to do with
+> anything?
+
+What part of 'interoperability' don't you get here?
+
+There is no room for extensions that allow clients+servers to establish
+arbitrary private protocols.
+
