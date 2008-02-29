@@ -1,27 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755581AbYB2A6v@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760145AbYB2A7r@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755581AbYB2A6v (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Feb 2008 19:58:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932705AbYB2ArD
+	id S1760145AbYB2A7r (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Feb 2008 19:59:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763311AbYB2ArZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Feb 2008 19:47:03 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:58783 "EHLO mx1.redhat.com"
+	Thu, 28 Feb 2008 19:47:25 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:58805 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932660AbYB2Aq4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Feb 2008 19:46:56 -0500
+	id S932371AbYB2ArP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 28 Feb 2008 19:47:15 -0500
 Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
 	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
 	Kingdom.
 	Registered in England and Wales under Company Registration No. 3798903
 From: David Howells <dhowells@redhat.com>
-Subject: [PATCH 27/37] NFS: Define and create inode-level cache objects [ver
-	#34]
+Subject: [PATCH 31/37] NFS: FS-Cache page management [ver #34]
 To: Trond.Myklebust@netapp.com, chuck.lever@oracle.com, casey@schaufler-ca.com
 Cc: nfsv4@linux-nfs.org, linux-kernel@vger.kernel.org,
        linux-fsdevel@vger.kernel.org, selinux@tycho.nsa.gov,
        linux-security-module@vger.kernel.org, dhowells@redhat.com
-Date: Fri, 29 Feb 2008 00:45:58 +0000
-Message-ID: <20080229004558.4142.37189.stgit@warthog.procyon.org.uk>
+Date: Fri, 29 Feb 2008 00:46:19 +0000
+Message-ID: <20080229004619.4142.35797.stgit@warthog.procyon.org.uk>
 In-Reply-To: <20080229004332.4142.51771.stgit@warthog.procyon.org.uk>
 References: <20080229004332.4142.51771.stgit@warthog.procyon.org.uk>
 User-Agent: StGIT/0.14.1
@@ -32,166 +31,190 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Define and create inode-level cache data storage objects (as managed by
-nfs_inode structs).
-
-Each inode-level object is created in a superblock-level index object and is
-itself a data storage object into which pages from the inode are stored.
-
-The inode object key is the NFS file handle for the inode.
-
-The inode object is given coherency data to carry in the auxiliary data
-permitted by the cache.  This is a sequence made up of:
-
- (1) i_mtime from the NFS inode.
-
- (2) i_ctime from the NFS inode.
-
- (3) i_size from the NFS inode.
-
-As the cache is a persistent cache, the auxiliary data is checked when a new
-NFS in-memory inode is set up that matches an already existing data storage
-object in the cache.  If the coherency data is the same, the on-disk object is
-retained and used; if not, it is scrapped and a new one created.
+FS-Cache page management for NFS.  This includes hooking the releasing and
+invalidation of pages marked with PG_fscache (aka PG_private_2) and waiting for
+completion of the write-to-cache flag (PG_fscache_write aka PG_owner_priv_2).
 
 Signed-off-by: David Howells <dhowells@redhat.com>
 ---
 
- fs/nfs/fscache-index.c |  112 ++++++++++++++++++++++++++++++++++++++++++++++++
- fs/nfs/fscache.h       |    1 
- 2 files changed, 113 insertions(+), 0 deletions(-)
+ fs/nfs/file.c    |   17 +++++++++++++----
+ fs/nfs/fscache.c |   49 +++++++++++++++++++++++++++++++++++++++++++++++++
+ fs/nfs/fscache.h |   22 ++++++++++++++++++++++
+ 3 files changed, 84 insertions(+), 4 deletions(-)
 
 
-diff --git a/fs/nfs/fscache-index.c b/fs/nfs/fscache-index.c
-index b5a52e3..c3c63fa 100644
---- a/fs/nfs/fscache-index.c
-+++ b/fs/nfs/fscache-index.c
-@@ -150,3 +150,115 @@ const struct fscache_cookie_def nfs_cache_super_index_def = {
- 	.type 		= FSCACHE_COOKIE_TYPE_INDEX,
- 	.get_key	= nfs_super_get_key,
- };
+diff --git a/fs/nfs/file.c b/fs/nfs/file.c
+index 26a073b..60db3ea 100644
+--- a/fs/nfs/file.c
++++ b/fs/nfs/file.c
+@@ -35,6 +35,7 @@
+ #include "delegation.h"
+ #include "internal.h"
+ #include "iostat.h"
++#include "fscache.h"
+ 
+ #define NFSDBG_FACILITY		NFSDBG_FILE
+ 
+@@ -358,7 +359,7 @@ static int nfs_write_end(struct file *file, struct address_space *mapping,
+  * Partially or wholly invalidate a page
+  * - Release the private state associated with a page if undergoing complete
+  *   page invalidation
+- * - Called if either PG_private or PG_private_2 is set on the page
++ * - Called if either PG_private or PG_fscache is set on the page
+  * - Caller holds page lock
+  */
+ static void nfs_invalidate_page(struct page *page, unsigned long offset)
+@@ -367,30 +368,35 @@ static void nfs_invalidate_page(struct page *page, unsigned long offset)
+ 		return;
+ 	/* Cancel any unstarted writes on this page */
+ 	nfs_wb_page_cancel(page->mapping->host, page);
++
++	nfs_fscache_invalidate_page(page, page->mapping->host);
+ }
+ 
+ /*
+  * Attempt to release the private state associated with a page
+- * - Called if either PG_private or PG_private_2 is set on the page
++ * - Called if either PG_private or PG_fscache is set on the page
+  * - Caller holds page lock
+  * - Return true (may release page) or false (may not)
+  */
+ static int nfs_release_page(struct page *page, gfp_t gfp)
+ {
+ 	/* If PagePrivate() is set, then the page is not freeable */
+-	return 0;
++	if (PagePrivate(page))
++		return 0;
++	return nfs_fscache_release_page(page, gfp);
+ }
+ 
+ /*
+  * Attempt to clear the private state associated with a page when an error
+  * occurs that requires the cached contents of an inode to be written back or
+  * destroyed
+- * - Called if either PG_private or PG_private_2 is set on the page
++ * - Called if either PG_private or fscache is set on the page
+  * - Caller holds page lock
+  * - Return 0 if successful, -error otherwise
+  */
+ static int nfs_launder_page(struct page *page)
+ {
++	wait_on_page_fscache_write(page);
+ 	return nfs_wb_page(page->mapping->host, page);
+ }
+ 
+@@ -422,6 +428,9 @@ static int nfs_vm_page_mkwrite(struct vm_area_struct *vma, struct page *page)
+ 	int ret = -EINVAL;
+ 	struct address_space *mapping;
+ 
++	/* make sure the cache has finished storing the page */
++	wait_on_page_fscache_write(page);
++
+ 	lock_page(page);
+ 	mapping = page->mapping;
+ 	if (mapping != vma->vm_file->f_path.dentry->d_inode->i_mapping)
+diff --git a/fs/nfs/fscache.c b/fs/nfs/fscache.c
+index 839a5ea..4c0a8e2 100644
+--- a/fs/nfs/fscache.c
++++ b/fs/nfs/fscache.c
+@@ -19,6 +19,7 @@
+ #include <linux/seq_file.h>
+ 
+ #include "internal.h"
++#include "iostat.h"
+ #include "fscache.h"
+ 
+ #define NFSDBG_FACILITY		NFSDBG_FSCACHE
+@@ -340,3 +341,51 @@ void nfs_fscache_attr_changed(struct inode *inode)
+ 	fscache_attr_changed(NFS_I(inode)->fscache);
+ 	nfs_fscache_inode_unlock(inode);
+ }
 +
 +/*
-+ * Definition of the auxiliary data attached to NFS inode storage objects
-+ * within the cache.
-+ *
-+ * The contents of this struct are recorded in the on-disk local cache in the
-+ * auxiliary data attached to the data storage object backing an inode.  This
-+ * permits coherency to be managed when a new inode binds to an already extant
-+ * cache object.
++ * Release the caching state associated with a page, if the page isn't busy
++ * interacting with the cache.
++ * - Returns true (can release page) or false (page busy).
 + */
-+struct nfs_cache_inode_auxdata {
-+	struct timespec	mtime;
-+	struct timespec	ctime;
-+	loff_t		size;
-+};
-+
-+/*
-+ * Generate a key to describe an NFS inode in an NFS server's index
-+ */
-+static uint16_t nfs_cache_inode_get_key(const void *cookie_netfs_data,
-+					void *buffer, uint16_t bufmax)
++int nfs_fscache_release_page(struct page *page, gfp_t gfp)
 +{
-+	const struct nfs_inode *nfsi = cookie_netfs_data;
-+	uint16_t nsize;
++	if (PageFsCacheWrite(page)) {
++		if (!(gfp & __GFP_WAIT))
++			return 0;
++		wait_on_page_fscache_write(page);
++	}
 +
-+	/* use the inode's NFS filehandle as the key */
-+	nsize = nfsi->fh.size;
-+	memcpy(buffer, nfsi->fh.data, nsize);
-+	return nsize;
++	if (PageFsCache(page)) {
++		struct nfs_inode *nfsi = NFS_I(page->mapping->host);
++
++		BUG_ON(!nfsi->fscache);
++
++		dfprintk(FSCACHE, "NFS: fscache releasepage (0x%p/0x%p/0x%p)\n",
++			 nfsi->fscache, page, nfsi);
++
++		fscache_uncache_page(nfsi->fscache, page);
++		nfs_add_stats(page->mapping->host, NFSIOS_FSCACHE_UNCACHE, 1);
++	}
++
++	return 1;
 +}
 +
 +/*
-+ * Get certain file attributes from the netfs data
-+ * - This function can be absent for an index
-+ * - Not permitted to return an error
-+ * - The netfs data from the cookie being used as the source is presented
++ * Release the caching state associated with a page if undergoing complete page
++ * invalidation.
 + */
-+static void nfs_cache_inode_get_attr(const void *cookie_netfs_data, uint64_t *size)
++void __nfs_fscache_invalidate_page(struct page *page, struct inode *inode)
 +{
-+	const struct nfs_inode *nfsi = cookie_netfs_data;
++	struct nfs_inode *nfsi = NFS_I(inode);
 +
-+	*size = nfsi->vfs_inode.i_size;
++	BUG_ON(!nfsi->fscache);
++
++	dfprintk(FSCACHE, "NFS: fscache invalidatepage (0x%p/0x%p/0x%p)\n",
++		 nfsi->fscache, page, nfsi);
++
++	wait_on_page_fscache_write(page);
++
++	BUG_ON(!PageLocked(page));
++	fscache_uncache_page(nfsi->fscache, page);
++	nfs_add_stats(page->mapping->host, NFSIOS_FSCACHE_UNCACHE, 1);
 +}
-+
-+/*
-+ * Get the auxiliary data from netfs data
-+ * - This function can be absent if the index carries no state data
-+ * - Should store the auxiliary data in the buffer
-+ * - Should return the amount of amount stored
-+ * - Not permitted to return an error
-+ * - The netfs data from the cookie being used as the source is presented
-+ */
-+static uint16_t nfs_cache_inode_get_aux(const void *cookie_netfs_data,
-+					void *buffer, uint16_t bufmax)
-+{
-+	struct nfs_cache_inode_auxdata auxdata;
-+	const struct nfs_inode *nfsi = cookie_netfs_data;
-+
-+	auxdata.size = nfsi->vfs_inode.i_size;
-+	auxdata.mtime = nfsi->vfs_inode.i_mtime;
-+	auxdata.ctime = nfsi->vfs_inode.i_ctime;
-+
-+	if (bufmax > sizeof(auxdata))
-+		bufmax = sizeof(auxdata);
-+
-+	memcpy(buffer, &auxdata, bufmax);
-+	return bufmax;
-+}
-+
-+/*
-+ * Consult the netfs about the state of an object
-+ * - This function can be absent if the index carries no state data
-+ * - The netfs data from the cookie being used as the target is
-+ *   presented, as is the auxiliary data
-+ */
-+static enum fscache_checkaux nfs_cache_inode_check_aux(void *cookie_netfs_data,
-+						       const void *data,
-+						       uint16_t datalen)
-+{
-+	struct nfs_cache_inode_auxdata auxdata;
-+	struct nfs_inode *nfsi = cookie_netfs_data;
-+
-+	if (datalen > sizeof(auxdata))
-+		return FSCACHE_CHECKAUX_OBSOLETE;
-+
-+	auxdata.size = nfsi->vfs_inode.i_size;
-+	auxdata.mtime = nfsi->vfs_inode.i_mtime;
-+	auxdata.ctime = nfsi->vfs_inode.i_ctime;
-+
-+	if (memcmp(data, &auxdata, datalen) != 0)
-+		return FSCACHE_CHECKAUX_OBSOLETE;
-+
-+	return FSCACHE_CHECKAUX_OKAY;
-+}
-+
-+/*
-+ * Define the inode object for FS-Cache.  This is used to describe an inode
-+ * object to fscache_acquire_cookie().  It is keyed by the NFS file handle for
-+ * an inode.
-+ *
-+ * Coherency is managed by comparing the copies of i_size, i_mtime and i_ctime
-+ * held in the cache auxiliary data for the data storage object with those in
-+ * the inode struct in memory.
-+ */
-+const struct fscache_cookie_def nfs_cache_inode_object_def = {
-+	.name		= "NFS.fh",
-+	.type		= FSCACHE_COOKIE_TYPE_DATAFILE,
-+	.get_key	= nfs_cache_inode_get_key,
-+	.get_attr	= nfs_cache_inode_get_attr,
-+	.get_aux	= nfs_cache_inode_get_aux,
-+	.check_aux	= nfs_cache_inode_check_aux,
-+};
 diff --git a/fs/nfs/fscache.h b/fs/nfs/fscache.h
-index d23ca8f..21bf6c4 100644
+index 8f6f974..597019e 100644
 --- a/fs/nfs/fscache.h
 +++ b/fs/nfs/fscache.h
-@@ -62,6 +62,7 @@ struct nfs_fscache_key {
- extern struct fscache_netfs nfs_cache_netfs;
- extern const struct fscache_cookie_def nfs_cache_server_index_def;
- extern const struct fscache_cookie_def nfs_cache_super_index_def;
-+extern const struct fscache_cookie_def nfs_cache_inode_object_def;
+@@ -84,6 +84,21 @@ extern void nfs_fscache_set_inode_cookie(struct inode *, struct file *);
+ extern void nfs_fscache_renew_inode_cookie(struct inode *);
+ extern void nfs_fscache_attr_changed(struct inode *);
  
- extern int nfs_fscache_register(void);
- extern void nfs_fscache_unregister(void);
++extern void __nfs_fscache_invalidate_page(struct page *, struct inode *);
++extern int nfs_fscache_release_page(struct page *, gfp_t);
++
++/*
++ * release the caching state associated with a page if undergoing complete page
++ * invalidation
++ */
++static inline void nfs_fscache_invalidate_page(struct page *page,
++					       struct inode *inode)
++{
++	if (PageFsCache(page))
++		__nfs_fscache_invalidate_page(page, inode);
++}
++
++
+ #else /* CONFIG_NFS_FSCACHE */
+ static inline int nfs_fscache_register(void) { return 0; }
+ static inline void nfs_fscache_unregister(void) {}
+@@ -106,5 +121,12 @@ static inline void nfs_fscache_set_inode_cookie(struct inode *inode,
+ 					     struct file *filp) {}
+ static inline void nfs_fscache_attr_changed(struct inode *inode) {}
+ 
++static inline int nfs_fscache_release_page(struct page *page, gfp_t gfp)
++{
++	return 1; /* True: may release page */
++}
++static inline void nfs_fscache_invalidate_page(struct page *page,
++					       struct inode *inode) {}
++
+ #endif /* CONFIG_NFS_FSCACHE */
+ #endif /* _NFS_FSCACHE_H */
 
