@@ -1,68 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756225AbYB2FtG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758061AbYB2FtY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756225AbYB2FtG (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Feb 2008 00:49:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752353AbYB2Fsx
+	id S1758061AbYB2FtY (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Feb 2008 00:49:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756561AbYB2FtH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Feb 2008 00:48:53 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:49221 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752047AbYB2Fsw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 Feb 2008 00:48:52 -0500
-Message-ID: <47C79CB1.6050104@redhat.com>
-Date: Fri, 29 Feb 2008 00:48:33 -0500
-From: Jarod Wilson <jwilson@redhat.com>
-Organization: Red Hat, Inc.
-User-Agent: Thunderbird 2.0.0.9 (Macintosh/20071031)
+	Fri, 29 Feb 2008 00:49:07 -0500
+Received: from smtp-out.google.com ([216.239.33.17]:55329 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756129AbYB2FtF (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 29 Feb 2008 00:49:05 -0500
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=received:message-id:date:from:to:subject:cc:in-reply-to:
+	mime-version:content-type:content-transfer-encoding:
+	content-disposition:references;
+	b=VH6a33uqGD8UNqMHY0kvGCLkTVOxy6aFGQT7IjnrQVtHyy8yxWfT3PADJCO5wKfPE
+	1w6jZQun41qHZ3t8FRutw==
+Message-ID: <6599ad830802282148g7f309995l450fc15074234cd7@mail.gmail.com>
+Date: Thu, 28 Feb 2008 21:48:51 -0800
+From: "Paul Menage" <menage@google.com>
+To: "Dhaval Giani" <dhaval@linux.vnet.ibm.com>
+Subject: Re: [patch 2/2] sched: allow cpuacct stats to be reset
+Cc: vatsa@linux.vnet.ibm.com, balbir@linux.vnet.ibm.com, mingo@elte.hu,
+       linux-kernel@vger.kernel.org, a.p.zijlstra@chello.nl,
+       akpm@linux-foundation.org, skumar@linux.vnet.ibm.com
+In-Reply-To: <20080229043751.555866685@linux.vnet.ibm.com>
 MIME-Version: 1.0
-To: benh@kernel.crashing.org
-CC: Kristian Hoegsberg <krh@bitplanet.net>, linux-kernel@vger.kernel.org,
-       linuxppc-dev@ozlabs.org, Stefan Richter <stefanr@s5r6.in-berlin.de>,
-       sparclinux@vger.kernel.org, linux1394-devel@lists.sourceforge.net,
-       Sam Ravnborg <sam@ravnborg.org>,
-       Harvey Harrison <harvey.harrison@gmail.com>
-Subject: Re: [PATCH 1/2] firewire: endianess fix
-References: <20080220220326.GA22328@uranus.ravnborg.org>	 <200802272221.38985.jwilson@redhat.com>	 <1204179959.15052.372.camel@pasglop>	 <200802281342.06493.jwilson@redhat.com> <1204241162.15052.393.camel@pasglop>
-In-Reply-To: <1204241162.15052.393.camel@pasglop>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20080229043242.110741439@linux.vnet.ibm.com>
+	 <20080229043751.555866685@linux.vnet.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Benjamin Herrenschmidt wrote:
-> On Thu, 2008-02-28 at 13:42 -0500, Jarod Wilson wrote:
->> On Thursday 28 February 2008 01:25:59 am Benjamin Herrenschmidt wrote:
->>>> Under Mac OS X, system.log says "FireWire (OHCI) Apple ID 31 built-in now
->>>> active". Could still be lucent though, judging by the subsys device ID of
->>>> 5811, which matches up w/the Lucent/Agere FW323. But no, apparently I
->>>> don't have the interesting one.
->>> Well, it's interesting in the sense that it's a "normal" OHCI then on a
->>> BE machine :-) My Pismo, which had the weirdo one, unfortunately died a
->>> while ago. I'll see if I can find another machine with that one in.
->> Ah, the pismo has it, eh? I think I may actually know of someone in the office 
->> that still has one of those that I might be able to borrow and poke at...
-> 
-> I -think- it has it... Pismo definitely has one of the first variant of
-> UniNorth with "working" FW afaik.
-> 
-> The first UniNorth was used in the first "toilet-seat" ibook, but I
-> think this one didn't have firewire, or a non-working one... and in the
-> first Sawtooth G4 for which FW and Ethernet even were separate PCI chips
-> because the ones in UniNorth were too broken.
-> 
-> It's possible that early G4 titanium powerbooks or other model of FW
-> iBooks have that UniNorth FW variant too.
+On Thu, Feb 28, 2008 at 8:32 PM, Dhaval Giani <dhaval@linux.vnet.ibm.com> wrote:
+> Currently the schedstats implementation does not allow the statistics
+>  to be reset. This patch aims to allow that.
+>
+>  echo 0 > cpuacct.usage
+>
+>  resets the usage. Any other value is not allowed and returns -EINVAL.
+>
+>  Signed-off-by: Dhaval Giani <dhaval@linux.vnet.ibm.com>
+>
+>  ---
+>   kernel/sched.c |   24 ++++++++++++++++++++++++
+>   1 files changed, 24 insertions(+)
+>
+>  Index: linux-2.6/kernel/sched.c
+>  ===================================================================
+>  --- linux-2.6.orig/kernel/sched.c       2008-02-28 20:05:27.000000000 +0530
+>  +++ linux-2.6/kernel/sched.c    2008-02-28 20:05:30.000000000 +0530
+>  @@ -8243,10 +8243,34 @@ static u64 cpuusage_read(struct cgroup *
+>         return totalcpuusage;
+>   }
+>
+>  +static int cpuusage_write(struct cgroup *cgrp, struct cftype *cftype,
+>  +                                                               u64 reset)
+>  +{
+>  +       struct cpuacct *ca = cgroup_ca(cgrp);
+>  +       int err = 0;
+>  +       int i;
+>  +
+>  +       if (reset) {
+>  +               err = -EINVAL;
+>  +               goto out;
+>  +       }
+>  +
+>  +       for_each_possible_cpu(i) {
+>  +               u64 *cpuusage = percpu_ptr(ca->cpuusage, i);
+>  +
+>  +               spin_lock_irq(&cpu_rq(i)->lock);
+>  +               *cpuusage = 0;
+>  +               spin_unlock_irq(&cpu_rq(i)->lock);
+>  +       }
+>  +out:
+>  +       return err;
+>  +}
+>  +
+>   static struct cftype files[] = {
+>         {
+>                 .name = "usage",
+>                 .read_uint = cpuusage_read,
+>  +               .write_uint = cpuusage_write,
+>         },
+>   };
+>
 
-Still no luck finding one here. The person I was thinking of has a 
-Lombard, which has no firewire. I did get ahold of a 667MHz Titanium, 
-but its got an Agere FW323. Pretty sure my old man actually has a Pismo, 
-but its about a 3000 mile drive over to my folks house. The search 
-continues... I wonder how many people still actually 1) have a machine 
-with this controller, 2) are running Linux on it and 3) use firewire 
-devices with it. Both of you, please speak up, we're trying to help you! 
-(if only out of morbid curiosity to see this mythical goofy controller).
+Can I suggest, in order to be more generic, that this patch instead
+set each CPU's counter to the written value divided by the number of
+CPUs? (Either forgetting the remainder, or spreading it among the
+first few CPUs).
 
--- 
-Jarod Wilson
-jwilson@redhat.com
+Paul
