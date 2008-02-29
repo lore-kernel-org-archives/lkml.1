@@ -1,58 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933452AbYB2Q4V@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933352AbYB2Q4h@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933452AbYB2Q4V (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Feb 2008 11:56:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755694AbYB2Q4J
+	id S933352AbYB2Q4h (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Feb 2008 11:56:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933438AbYB2Q4T
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Feb 2008 11:56:09 -0500
-Received: from zcars04f.nortel.com ([47.129.242.57]:65245 "EHLO
-	zcars04f.nortel.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752237AbYB2Q4I (ORCPT
+	Fri, 29 Feb 2008 11:56:19 -0500
+Received: from e32.co.us.ibm.com ([32.97.110.150]:57014 "EHLO
+	e32.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933425AbYB2Q4S (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 Feb 2008 11:56:08 -0500
-Message-ID: <47C838C5.8030707@nortel.com>
-Date: Fri, 29 Feb 2008 10:54:29 -0600
-From: "Chris Friesen" <cfriesen@nortel.com>
-User-Agent: Mozilla Thunderbird 1.0.2-6 (X11/20050513)
-X-Accept-Language: en-us, en
+	Fri, 29 Feb 2008 11:56:18 -0500
+Date: Fri, 29 Feb 2008 08:55:57 -0800
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>, john stultz <johnstul@us.ibm.com>,
+       jarkao2@gmail.com, netdev@vger.kernel.org
+Subject: Re: [PATCH] fix boot-time hangs from PREEMPT_RCU and NO_HZ
+Message-ID: <20080229165557.GC13330@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <Pine.LNX.4.58.0801291113350.20371@gandalf.stny.rr.com> <20080229044329.GA20207@linux.vnet.ibm.com> <20080228210140.37abe9cd.akpm@linux-foundation.org> <20080229154835.GB27248@elte.hu>
 MIME-Version: 1.0
-To: Linus Torvalds <torvalds@linux-foundation.org>
-CC: Pavel Roskin <proski@gnu.org>, linux-kernel <linux-kernel@vger.kernel.org>,
-       Jon Masters <jcm@jonmasters.org>, Rusty Russell <rusty@rustcorp.com.au>
-Subject: Re: [PATCH 2.6.25] module: allow ndiswrapper to use GPL-only symbols
-References: <1204236662.3612.6.camel@dv> <alpine.LFD.1.00.0802281525170.5780@woody.linux-foundation.org> <20080229012012.ajlsk4pow8wkkgss@webmail.spamcop.net> <alpine.LFD.1.00.0802290807110.17889@woody.linux-foundation.org>
-In-Reply-To: <alpine.LFD.1.00.0802290807110.17889@woody.linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 29 Feb 2008 16:54:32.0450 (UTC) FILETIME=[C1A4BE20:01C87AF3]
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080229154835.GB27248@elte.hu>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus Torvalds wrote:
+On Fri, Feb 29, 2008 at 04:48:35PM +0100, Ingo Molnar wrote:
 > 
-> On Fri, 29 Feb 2008, Pavel Roskin wrote:
+> * Andrew Morton <akpm@linux-foundation.org> wrote:
 > 
->>>I'm not seeing why ndiswrapper should be treated separately.
->>
->>It is already treated separately, and has been for a long time.
+> > > Note: This patch came directly from the -rt patch where it has been 
+> > > tested for several months.
+> > > 
+> > > Andrew, could you please apply this?
+> > 
+> > I already have it, via git-sched.  Presumably Ingo has it lined up for 
+> > the next sched-related merge.
 > 
-> 
-> No, I mean "separately from the thing it loads".
-> 
-> It loads non-GPL code, it is non-GPL.
+> yes.
 
-But the GPL only applies to derivative works.  Given that ndiswrapper 
-loads binaries designed for another OS, doesn't that mean that it is 
-unlikely that the binaries would be impacted by the GPL?
+Ah, thank you both and sorry for the noise!
 
-So the portion that is a derivative work (ndiswrapper itself) is GPL, 
-and it loads something that is clearly not a derivative work.  From a 
-licensing standpoint how is this different than an open-source driver 
-loading a proprietary firmware?
-
-Once ndiswrapper loads the binary blob the kernel should be considered 
-tainted from a debuggability standpoint, but I have some sympathy for an 
-argument suggesting that ndiswrapper should be able to use GPLONLY symbols.
-
-Chris
+						Thanx, Paul
