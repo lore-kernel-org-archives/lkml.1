@@ -1,79 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761665AbYB2S1j@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932255AbYB2SaJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761665AbYB2S1j (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Feb 2008 13:27:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755519AbYB2S1a
+	id S932255AbYB2SaJ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Feb 2008 13:30:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757080AbYB2S3x
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Feb 2008 13:27:30 -0500
-Received: from spirit.analogic.com ([204.178.40.4]:4812 "EHLO
-	spirit.analogic.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754256AbYB2S13 convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 Feb 2008 13:27:29 -0500
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-X-OriginalArrivalTime: 29 Feb 2008 18:24:14.0644 (UTC) FILETIME=[49AE5F40:01C87B00]
-Content-class: urn:content-classes:message
-Subject: Re: 64-bit sources
-Date: Fri, 29 Feb 2008 13:24:09 -0500
-Message-ID: <Pine.LNX.4.61.0802291323190.23352@chaos.analogic.com>
-In-Reply-To: <28962.1204303003@turing-police.cc.vt.edu>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: 64-bit sources
-Thread-Index: Ach7AEm4o5FSGBI0TcSoo3wq9v4klw==
-References: <Pine.LNX.4.61.0802290954390.22942@chaos.analogic.com> <Pine.LNX.4.64.0802291631020.24056@fbirervta.pbzchgretzou.qr>            <Pine.LNX.4.61.0802291123280.23162@chaos.analogic.com> <28962.1204303003@turing-police.cc.vt.edu>
-From: "linux-os (Dick Johnson)" <linux-os@analogic.com>
-To: <Valdis.Kletnieks@vt.edu>
-Cc: "Jan Engelhardt" <jengelh@computergmbh.de>,
-       "Linux kernel" <linux-kernel@vger.kernel.org>
-Reply-To: "linux-os (Dick Johnson)" <linux-os@analogic.com>
+	Fri, 29 Feb 2008 13:29:53 -0500
+Received: from pat.uio.no ([129.240.10.15]:43945 "EHLO pat.uio.no"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755346AbYB2S3v (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 29 Feb 2008 13:29:51 -0500
+Subject: Re: [PATCH 01/11] Security: Add hook to get full maclabel xattr
+	name
+From: Trond Myklebust <trond.myklebust@fys.uio.no>
+To: casey@schaufler-ca.com
+Cc: Christoph Hellwig <hch@infradead.org>,
+       Dave Quigley <dpquigl@tycho.nsa.gov>,
+       Stephen Smalley <sds@tycho.nsa.gov>, viro@ftp.linux.org.uk,
+       bfields@fieldses.org, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org,
+       LSM List <linux-security-module@vger.kernel.org>
+In-Reply-To: <856298.92497.qm@web36605.mail.mud.yahoo.com>
+References: <856298.92497.qm@web36605.mail.mud.yahoo.com>
+Content-Type: text/plain
+Date: Fri, 29 Feb 2008 10:28:39 -0800
+Message-Id: <1204309719.10512.36.camel@heimdal.trondhjem.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.1 
+Content-Transfer-Encoding: 7bit
+X-UiO-Resend: resent
+X-UiO-Spam-info: not spam, SpamAssassin (score=0.0, required=5.0, autolearn=disabled, none)
+X-UiO-Scanned: 5FBB9FBD67A16DECF7FF93D480FF80595E986F2E
+X-UiO-SR-test: 0C6E007704C78D1B2AFAA4AEAD3D234BA8173685
+X-UiO-SPAM-Test: remote_host: 129.240.10.9 spam_score: 0 maxlevel 200 minaction 2 bait 0 mail/h: 217 total 7160902 max/h 8345 blacklist 0 greylist 0 ratelimit 0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, 2008-02-29 at 09:46 -0800, Casey Schaufler wrote:
+> > There is no room for extensions that allow clients+servers to establish
+> > arbitrary private protocols.
+> 
+> I think that I understand that you believe that, what I
+> don't understand is why you believe that. Is it an artifact
+> of the locking protocol that only worked about half the
+> time, and then in a half donkied way?
+> 
+> I'm not trying to be an obstructionist idiot here, even if
+> that's how it may appear. I have my pet solution, I really
+> don't see the problem with it, and it looks to me like the
+> arguements against it are either so obvious I'm missing them
+> (does happen) or based on dogmas I don't subscribe to.
+> 
+> Thank you for helping me (and maybe some others) understand
+> the issues we're up against so that I (we) can address issues
+> better in the future.
 
-Okay, Thanks. I "think" I am compiling it now!
-There are lots of warnings, but it didn't blow up (yet)!
+Two of the main reasons for NFS's success as a protocol are the facts
+that it is (more or less) standardized, while remaining (again more or
+less) back-end agnostic. I can take pretty much any client from any one
+vendor and any server from any other vendor, and make them work
+together.
 
+The reason why this works is mainly because the protocol has built upon
+a consensus assumption of POSIX filesystem semantics on the servers
+(hence, BTW, the pain when the IETF requested that we add
+Microsoft-compatible semantics to NFSv4 as a precondition for making it
+a standard).
 
-On Fri, 29 Feb 2008 Valdis.Kletnieks@vt.edu wrote:
+If you look back at the NFS extensions that failed, and fell by the
+road, then they tend to be the semi-private non-posix extensions
+(typically ACL semantics, xattrs/named attributes, "secure NFS",...)
+which break the underlying assumption that I can mix and match clients
+and servers.
 
-> On Fri, 29 Feb 2008 11:25:58 EST, "linux-os (Dick Johnson)" said:
->>
->> Yes. The RPM contains only patches and the patches won't
->> patch a 2.6.11 kernel either! Perhaps they need to be
->> in some undefined order.
->
-> Umm... I just checked that specific RPM, and that RPM *does* contain all that
-> you need. In particular, the following *are* in there:
->
-> kernel-2.6.spec
-> linux-2.6.11.tar.bz2
-> patch-2.6.12-rc5-neutered.bz2  <- probably why they won't patch a 2.6.11
->
-> The spec file lists all the *.patch files and the order to apply them in.  It
-> even has a whole bunch of *.config files.
->
-> Your best best is to 'rpm -ivh' that RPM - that will put the pieces in
-> /usr/src/redhat/SOURCES and /usr/src/redhat/SPECS.  'rpmbuild kernel.spec'
-> (with appropriate flags, you probably want '--target x86_64' if you want
-> a  64-bit build only).  Adding patches is a matter of dropping the patch in
-> /usr/src/redhat/SOURCES and adding a few lines to the kernel-2.6.spec file.
->
->
->
+<rhetorical>Does that mean that we shouldn't provide extensions
+protocols for doing these things?</rhetorical> Of course not... The
+point about such extensions is that they need to be agreed upon by the
+NFS community/stakeholders, in much the same way that any changes to the
+kernel need to be agreed upon by the Linux community/stakeholders.
 
-Cheers,
-Dick Johnson
-Penguin : Linux version 2.6.22.1 on an i686 machine (5588.28 BogoMips).
-My book : http://www.AbominableFirebug.com/
-_
+Adding a mechanism that allows subsets of clients/servers to set up
+private protocols circumvents that consensus process, and are therefore
+a bad thing, and should be avoided. That would be engaging in the exact
+same "embrace, extend and extinguish" tactics for which we keep
+criticizing certain other monopolists.
 
+This should be a no-brainer...
 
-****************************************************************
-The information transmitted in this message is confidential and may be privileged.  Any review, retransmission, dissemination, or other use of this information by persons or entities other than the intended recipient is prohibited.  If you are not the intended recipient, please notify Analogic Corporation immediately - by replying to this message or by sending an email to DeliveryErrors@analogic.com - and destroy all copies of this information, including any attachments, without reading or disclosing them.
+Trond
 
-Thank you.
