@@ -1,63 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759824AbYB2ML3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759642AbYB2MRU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759824AbYB2ML3 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Feb 2008 07:11:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754453AbYB2MLU
+	id S1759642AbYB2MRU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Feb 2008 07:17:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755046AbYB2MRJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Feb 2008 07:11:20 -0500
-Received: from srv5.dvmed.net ([207.36.208.214]:39937 "EHLO mail.dvmed.net"
+	Fri, 29 Feb 2008 07:17:09 -0500
+Received: from chilli.pcug.org.au ([203.10.76.44]:50436 "EHLO smtps.tip.net.au"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752366AbYB2MLT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 Feb 2008 07:11:19 -0500
-Message-ID: <47C7F664.5040102@garzik.org>
-Date: Fri, 29 Feb 2008 07:11:16 -0500
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
-MIME-Version: 1.0
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-CC: Tejun Heo <htejun@gmail.com>,
-       Linux IDE mailing list <linux-ide@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: devres and requesting resources
-References: <47C75392.3020606@garzik.org> <20080229112651.5b2a7f6f@core>
-In-Reply-To: <20080229112651.5b2a7f6f@core>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.4 (----)
-X-Spam-Report: SpamAssassin version 3.2.3 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.4 points, 5.0 required)
+	id S1754770AbYB2MRI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 29 Feb 2008 07:17:08 -0500
+Date: Fri, 29 Feb 2008 23:17:04 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Haavard Skinnemoen <hskinnemoen@atmel.com>
+Cc: Matthew Wilcox <matthew@wil.cx>, linux-next@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>, Greg KH <greg@kroah.com>,
+       Mark Fasheh <mark.fasheh@oracle.com>
+Subject: Re: linux-next: semaphore update merge conflicts
+Message-Id: <20080229231704.112d8112.sfr@canb.auug.org.au>
+In-Reply-To: <20080229111731.13840877@hskinnemoen.norway.atmel.com>
+References: <20080229153958.fc34e281.sfr@canb.auug.org.au>
+	<20080229111731.13840877@hskinnemoen.norway.atmel.com>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.8; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Fri__29_Feb_2008_23_17_04_+1100_vknRUyQ2/kFMSYx9"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alan Cox wrote:
->> In converting to pcim_iomap_regions(), we no longer reserve /all/ 
->> regions, only the ones requested.
->>
->> This is actually a bug:  it was intentional to call 
->> pci_request_regions(), because that ensures that no other software will 
->> use our resources -- even if we are not actively using the resource in 
->> question.
-> 
-> That would be a bug. We should only reserve the regions we are using. It
-> is possible that the other regions can be used correctly by another driver
-> (consider the CS5520 or the MPIIX where the IDE is only part of one
-> function of the PCI device).
+--Signature=_Fri__29_Feb_2008_23_17_04_+1100_vknRUyQ2/kFMSYx9
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Only rare PCI devices are shareable among multiple drivers.
+On Fri, 29 Feb 2008 11:17:31 +0100 Haavard Skinnemoen <hskinnemoen@atmel.co=
+m> wrote:
+>
+> Stephen Rothwell <sfr@canb.auug.org.au> wrote:
+>=20
+> > 	arch/avr32/kernel/semaphore.c
+> > 		the avr32 tree appeared to just change spaces to tabs
+> > 		in this file so I removed it (as your changes did).
+>=20
+> I yanked that change out of my tree. No point cleaning up that file if
+> it's going away.
 
-sata_* at least intentionally used pci_request_regions() because it is 
-obvious from the hardware spec that multiple regions accessed by 
-multiple drivers is highly unlikely, without the driver being 
-specifically coded to support such sharing.  Such sharing code is far 
-beyond simple resource reservation, to avoid stepping on toes when there 
-is a single MMIO region and set of interrupt clearing registers.
+OK, thanks.
 
-So reading your email it sounds like there are valid cases for both 
-configurations.
+By the way, is there some place I can get a cross compiler to build avr32
+kernels (or better yet a recipe for crosstool to make one)?
 
-Its a design choice either way, not a bug either way.
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
 
-	Jeff
+--Signature=_Fri__29_Feb_2008_23_17_04_+1100_vknRUyQ2/kFMSYx9
+Content-Type: application/pgp-signature
 
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
 
+iD8DBQFHx/fFTgG2atn1QN8RAgHKAJ0bmNfReinSub0dKsZL5cY4RWKHmQCeL19K
+6DCMQ+7ZzmIpMIuKywSJcjM=
+=tAUy
+-----END PGP SIGNATURE-----
+
+--Signature=_Fri__29_Feb_2008_23_17_04_+1100_vknRUyQ2/kFMSYx9--
