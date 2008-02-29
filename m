@@ -1,77 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932679AbYB2Qrz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760701AbYB2Qtj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932679AbYB2Qrz (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Feb 2008 11:47:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752901AbYB2Qro
+	id S1760701AbYB2Qtj (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Feb 2008 11:49:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754185AbYB2Qta
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Feb 2008 11:47:44 -0500
-Received: from accolon.hansenpartnership.com ([76.243.235.52]:41969 "EHLO
-	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753068AbYB2Qrm (ORCPT
+	Fri, 29 Feb 2008 11:49:30 -0500
+Received: from 209-198-142-2-host.prismnet.net ([209.198.142.2]:56358 "EHLO
+	smtp.opengridcomputing.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753897AbYB2Qt3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 Feb 2008 11:47:42 -0500
-Subject: Re: [PATCH] block: fix residual byte count handling
-From: James Bottomley <James.Bottomley@HansenPartnership.com>
-To: Tejun Heo <htejun@gmail.com>
-Cc: Jens Axboe <jens.axboe@oracle.com>, Mike Galbraith <efault@gmx.de>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, linux-ide@vger.kernel.org,
-       linux-scsi@vger.kernel.org, Jeff Garzik <jgarzik@pobox.com>
-In-Reply-To: <47C6D73E.4030302@gmail.com>
-References: <1203839683.17463.9.camel@homer.simson.net>
-	 <1204019283.8731.11.camel@homer.simson.net>
-	 <1204033003.11828.22.camel@homer.simson.net>
-	 <20080226150845.2196bc1a.akpm@linux-foundation.org>
-	 <1204079075.26640.8.camel@homer.simson.net>
-	 <1204092010.9934.31.camel@homer.simson.net>
-	 <1204096025.1623.9.camel@homer.simson.net> <47C6661E.9010504@gmail.com>
-	 <1204186800.7362.7.camel@homer.simson.net> <47C675C6.8000904@gmail.com>
-	 <20080228153542.GZ6704@kernel.dk>  <47C6D73E.4030302@gmail.com>
-Content-Type: text/plain
-Date: Fri, 29 Feb 2008 10:47:36 -0600
-Message-Id: <1204303656.4003.19.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 (2.12.3-1.fc8) 
+	Fri, 29 Feb 2008 11:49:29 -0500
+Message-ID: <47C83798.3090702@opengridcomputing.com>
+Date: Fri, 29 Feb 2008 10:49:28 -0600
+From: Steve Wise <swise@opengridcomputing.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20071022)
+MIME-Version: 1.0
+To: Roland Dreier <rdreier@cisco.com>
+CC: Jon Mason <jon@opengridcomputing.com>, linux-kernel@vger.kernel.org,
+       general@lists.openfabrics.org
+Subject: Re: [PATCH] iwch_create_cq off by one error
+References: <1204158583-22858-1-git-send-email-jon@opengridcomputing.com>
+In-Reply-To: <1204158583-22858-1-git-send-email-jon@opengridcomputing.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Acked-by: Steve Wise <swise@opengridcomputing.com>
 
-On Fri, 2008-02-29 at 00:46 +0900, Tejun Heo wrote:
-> Jens Axboe wrote:
-> >> This problem was reported and diagnosed by Mike Galbraith.
-> > 
-> > Tejun, this patch isn't much cleaner at all. It really shows the pain of
-> > these two seperate, yet related, variables.
+
+Jon Mason wrote:
+> The cxbg3 driver is unnecessarily decreasing the number of cq entries
+> by one when creating a cq.  This will cause an error of not having as
+> many cqs as requested by the user, if the user requests a power of 2
+> cq length.
 > 
-> Not much cleaner compared to what?  I think padding stuff is bound to be
-> somewhat complex.  It's a nasty thing in nature.  I think ->extra_len is
-> better than ->raw_data_len because ->extra_len only needs to be updated
-> where the dirty jobs are done and extra buffer areas are added.  Any
-> better suggestions?
-
-Well, I just investigated a bug report in the SCSI transport class.  Our
-SMP handler is broken in exactly the same way.  We rely on the incoming
-reported request lengths to size our request data, and they've blown up
-from the true length to 512 bytes (the size of our alignment).
-
-With the original patch, I have to run through the whole of libsas and
-scsi_transport_sas doing
-
-s/data_len/raw_data_len/
-
-With your update it looks like I have to run through them all doing
-
-s/data_len/data_len - extra_len/
-
-which is even worse.  Can't we put things back to a point where data_len
-means exactly that and extra_len means how much we have spare on the
-end, so you know you can DMA up to data_len + extra_len if need be?
-
-That way we don't have to sweep through every block driver altering the
-way it uses data_len.
-
-James
-
+> Thanks,
+> Jon
+> 
+> Signed-off-by: Jon Mason <jon@opengridcomputing.com>
+> ---
+>  drivers/infiniband/hw/cxgb3/iwch_provider.c |    2 +-
+>  1 files changed, 1 insertions(+), 1 deletions(-)
+> 
+> diff --git a/drivers/infiniband/hw/cxgb3/iwch_provider.c b/drivers/infiniband/hw/cxgb3/iwch_provider.c
+> index f0c7775..800ef6d 100644
+> --- a/drivers/infiniband/hw/cxgb3/iwch_provider.c
+> +++ b/drivers/infiniband/hw/cxgb3/iwch_provider.c
+> @@ -188,7 +188,7 @@ static struct ib_cq *iwch_create_cq(struct ib_device *ibdev, int entries, int ve
+>  		return ERR_PTR(-ENOMEM);
+>  	}
+>  	chp->rhp = rhp;
+> -	chp->ibcq.cqe = (1 << chp->cq.size_log2) - 1;
+> +	chp->ibcq.cqe = 1 << chp->cq.size_log2;
+>  	spin_lock_init(&chp->lock);
+>  	atomic_set(&chp->refcnt, 1);
+>  	init_waitqueue_head(&chp->wait);
 
