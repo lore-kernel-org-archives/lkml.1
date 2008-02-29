@@ -1,59 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755863AbYB2Ec7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756507AbYB2Efc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755863AbYB2Ec7 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Feb 2008 23:32:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753589AbYB2Ecs
+	id S1756507AbYB2Efc (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Feb 2008 23:35:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754114AbYB2EfV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Feb 2008 23:32:48 -0500
-Received: from e35.co.us.ibm.com ([32.97.110.153]:54794 "EHLO
-	e35.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751697AbYB2Ecr (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Feb 2008 23:32:47 -0500
-Date: Thu, 28 Feb 2008 20:32:35 -0800
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Jarek Poplawski <jarkao2@gmail.com>
-Cc: bugme-daemon@bugzilla.kernel.org, Yannick Dirou <yannick.dirou@axetic.com>,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Subject: Re: [Bug 10071] kernel hang in inet_init (PREEMPT_RCU problem)
-Message-ID: <20080229043235.GA25167@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <bug-10071-11547@http.bugzilla.kernel.org/> <20080228205303.261D311D108@picon.linux-foundation.org> <20080228213457.GA2770@ami.dom.local> <20080229005823.GF14104@linux.vnet.ibm.com>
+	Thu, 28 Feb 2008 23:35:21 -0500
+Received: from scrub.xs4all.nl ([194.109.195.176]:35289 "EHLO scrub.xs4all.nl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753999AbYB2EfU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 28 Feb 2008 23:35:20 -0500
+From: Roman Zippel <zippel@linux-m68k.org>
+To: ego@in.ibm.com
+Subject: Re: [RFC PATCH 4/6] Preempt-RCU: Implementation
+Date: Fri, 29 Feb 2008 05:34:54 +0100
+User-Agent: KMail/1.9.7
+Cc: linux-kernel@vger.kernel.org, linux-rt-users@vger.kernel.org,
+       Ingo Molnar <mingo@elte.hu>, Steven Rostedt <rostedt@goodmis.org>,
+       Paul E McKenney <paulmck@us.ibm.com>,
+       Dipankar Sarma <dipankar@in.ibm.com>, Ted Tso <tytso@us.ibm.com>,
+       dvhltc@us.ibm.com, Oleg Nesterov <oleg@tv-sign.ru>,
+       Andrew Morton <akpm@linux-foundation.org>, bunk@kernel.org,
+       Josh Triplett <josh@freedesktop.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>
+References: <20071213170348.GA25981@in.ibm.com> <20071213171658.GE25981@in.ibm.com>
+In-Reply-To: <20071213171658.GE25981@in.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20080229005823.GF14104@linux.vnet.ibm.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Message-Id: <200802290534.57040.zippel@linux-m68k.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Feb 28, 2008 at 04:58:23PM -0800, Paul E. McKenney wrote:
-> On Thu, Feb 28, 2008 at 10:34:57PM +0100, Jarek Poplawski wrote:
-> > On Thu, Feb 28, 2008 at 12:53:03PM -0800, bugme-daemon@bugzilla.kernel.org wrote:
-> > > http://bugzilla.kernel.org/show_bug.cgi?id=10071
-> > ...
-> > > ------- Comment #17 from yannick.dirou@axetic.com  2008-02-28 12:53 -------
-> > > bingo with classic rcu
-> > 
-> > Congratulations Yannick!
-> > 
-> > So, it seems mainly RCU vs. timer(?) problem. I send CC of this message
-> > to RCU author, linux-kernel and netdev lists.
-> 
-> Interesting!  Any chance of a pointer to the original messages?
-> A quick Google search and a look at LKML showed me nothing.  :-/
+Hi,
 
-Thanks to Raphael for pointing me at the above bugzilla URL!
+On Thursday 13. December 2007, Gautham R Shenoy wrote:
 
-Yannick,
+> diff --git a/kernel/Kconfig.preempt b/kernel/Kconfig.preempt
+> index c64ce9c..06cafcc 100644
+> --- a/kernel/Kconfig.preempt
+> +++ b/kernel/Kconfig.preempt
+> @@ -63,3 +63,41 @@ config PREEMPT_BKL
+>  	  Say Y here if you are building a kernel for a desktop system.
+>  	  Say N if you are unsure.
+>
+> +choice
+> +	prompt "RCU implementation type:"
+> +	default CLASSIC_RCU
+> +
+> +config CLASSIC_RCU
+> +	bool "Classic RCU"
+> +	help
+> +	  This option selects the classic RCU implementation that is
+> +	  designed for best read-side performance on non-realtime
+> +	  systems.
+> +
+> +	  Say Y if you are unsure.
+> +
+> +config PREEMPT_RCU
+> +	bool "Preemptible RCU"
+> +	depends on PREEMPT
+> +	help
+> +	  This option reduces the latency of the kernel by making certain
+> +	  RCU sections preemptible. Normally RCU code is non-preemptible, if
+> +	  this option is selected then read-only RCU sections become
+> +	  preemptible. This helps latency, but may expose bugs due to
+> +	  now-naive assumptions about each RCU read-side critical section
+> +	  remaining on a given CPU through its execution.
+> +
+> +	  Say N if you are unsure.
+> +
+> +endchoice
 
-Would you be willing to try your test again after applying the
-patch in http://lkml.org/lkml/2008/2/2/11 and rebuilding your
-kernel?
+Why got this moved into init/Kconfig?
+Now it's somewhere in the root menu, not really belonging to anything.
+Also why is this a choice? Are more RCU types planned?
 
-This patch does not appear to be in 2.6.25-rc3.  :-(
-
-I am reposting this patch separately.
-
-							Thanx, Paul
+bye, Roman
