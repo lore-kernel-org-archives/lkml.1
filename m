@@ -1,44 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932723AbYB2O4K@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932876AbYB2O52@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932723AbYB2O4K (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Feb 2008 09:56:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754486AbYB2Oz4
+	id S932876AbYB2O52 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Feb 2008 09:57:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754486AbYB2O5V
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Feb 2008 09:55:56 -0500
-Received: from fg-out-1718.google.com ([72.14.220.153]:27527 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753526AbYB2Ozz convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 Feb 2008 09:55:55 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:in-reply-to:references:x-mailer:mime-version:content-type:content-transfer-encoding;
-        b=CrGgA2exoIQKF+p00aAj1RkqFKbThApWHtqIB6kraiFgbztcFJbGIWIEDTamYChMfcHm1woHjZ/VePDyOfK6qmMuizY7JpGAAVxJD1JRnCWbg1lS4HOqqQpbaBIbW4Z+WhWHC0AgGk6TAhmc9T6AVfgXGuE+Pg/2GjLfgIyc0Yc=
-Date: Fri, 29 Feb 2008 15:54:08 +0100
-From: Diego Calleja <diegocg@gmail.com>
-To: "Stephen Cuppett" <cuppett@gmail.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: Performance versus FreeBSD 7.0
-Message-Id: <20080229155408.116fa5a1.diegocg@gmail.com>
-In-Reply-To: <316a20a40802290538g55c4171y7cdbcb3a9c1d0f1b@mail.gmail.com>
-References: <316a20a40802290538g55c4171y7cdbcb3a9c1d0f1b@mail.gmail.com>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.8; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+	Fri, 29 Feb 2008 09:57:21 -0500
+Received: from mx-1.enea.se ([192.36.1.70]:25159 "EHLO mx-1.enea.se"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754057AbYB2O5U (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 29 Feb 2008 09:57:20 -0500
+Message-ID: <47C81DA6.8040100@enea.com>
+Date: Fri, 29 Feb 2008 15:58:46 +0100
+From: Arvid Brodin <arvid.brodin@enea.com>
+Organization: Enea
+User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
+MIME-Version: 1.0
+To: linux-kernel@vger.kernel.org
+Subject: Re: Print long messages to console from kernel module
+References: <47C2FB39.3080508@enea.com>
+In-Reply-To: <47C2FB39.3080508@enea.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 29 Feb 2008 14:57:18.0604 (UTC) FILETIME=[612504C0:01C87AE3]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-El Fri, 29 Feb 2008 08:38:00 -0500, "Stephen Cuppett" <cuppett@gmail.com> escribió:
+Things have cleared a bit. First, my problem is with printing to console.
+Second, the date-time-host header is only appended when using loglevel
+KERN_DEBUG. Third, the <n> tag is only appended to the beginning of the printk
+printout if the last printout did not end with a '\n'. The whole printk code is
+quite confuscated IMO, not the least so call_console_drivers(), so this could be
+a feature, however it looks to me like the loglevel tag is for internal use and
+my guess is it should never be printed on the console at all.
 
-> loads and 1500% at high loads. When compared with the best performing
-> Linux kernel (2.6.22 or 2.6.24) performance is 15% better. Results are
+I'll look into filing a bug report and patch for this. At the moment the best
+solution seems to be to search through the log I want to print and cut the
+printout after every '\n'. That should take care of most of the "<n>"'s.
 
-There has been some performance problems with sysbench performance in linux
-which made it slower than freebsd, there were some patches to speed things up,
-not sure if they have been merged.
+-- 
+Arvid Brodin
+Enea LCC
 
-Myself I find fun that they look at Linux as the Leader That Must Be Surpassed.
-All the performance highlights of freebsd 7.0 are things that linux already did some
-years ago.
+
+On 2008-02-25 18:30, Arvid Brodin wrote:
+> I need to write messages > 1023 characters long to the console from a module*. printk() is limited to 1023 characters, and splitting the message over several printk()'s results in a line break and "Month hh:mm:ss host kernel:" being inserted in my text.
+> 
+> I tried including <linux/console.h> and using the console_drivers declared there, but get
+> "WARNING: "console_drivers" [<path>/log.ko] undefined!" when compiling and
+> "insmod: error inserting 'log.ko': -1 Unknown symbol in module" when insmodding.
+> 
+> I guess this is because non EXPORT_SYMBOL'd symbols are only accessible to statically linked code, and not to modules? I see in printk.c that console_drivers is set up there, and I haven't been able to find any other interface to console_drivers.
+> 
+> In short: is there any way to print messages to the console from a kernel module, except printk()? Is opening /dev/tty and writing to it the way to go?
+> 
+> 
+> * I'm writing an in-memory logger to be included in a module. The log can be several megabytes. The idea is to use SysRq to print the contents of the log to console after a kernel panic or otherwise when writing to disk might not work.
+> 
