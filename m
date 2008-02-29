@@ -1,110 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760059AbYB2MZV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759078AbYB2MZt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760059AbYB2MZV (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Feb 2008 07:25:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756985AbYB2MZF
+	id S1759078AbYB2MZt (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Feb 2008 07:25:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757938AbYB2MZj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Feb 2008 07:25:05 -0500
-Received: from courier.cs.helsinki.fi ([128.214.9.1]:60317 "EHLO
-	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756966AbYB2MZD (ORCPT
+	Fri, 29 Feb 2008 07:25:39 -0500
+Received: from mu-out-0910.google.com ([209.85.134.186]:6775 "EHLO
+	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757362AbYB2MZi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 Feb 2008 07:25:03 -0500
-Date: Fri, 29 Feb 2008 14:24:59 +0200 (EET)
-From: "=?ISO-8859-1?Q?Ilpo_J=E4rvinen?=" <ilpo.jarvinen@helsinki.fi>
-X-X-Sender: ijjarvin@kivilampi-30.cs.helsinki.fi
-To: Bill Fink <billfink@mindspring.com>,
-       Andrew Morton <akpm@linux-foundation.org>
-cc: Guillaume Chazarain <guichaz@gmail.com>,
-       Giangiacomo Mariotti <giangiacomo_mariotti@yahoo.com>,
-       LKML <linux-kernel@vger.kernel.org>, Netdev <netdev@vger.kernel.org>
-Subject: Re: WARNING: at net/ipv4/tcp_input.c:2054 tcp_mark_head_lost()
-In-Reply-To: <20080228233514.63b7136e.billfink@mindspring.com>
-Message-ID: <Pine.LNX.4.64.0802290941120.18002@kivilampi-30.cs.helsinki.fi>
-References: <858077.97160.qm@web39709.mail.mud.yahoo.com>
- <20080223000310.4630daa8.akpm@linux-foundation.org>
- <Pine.LNX.4.64.0802271108290.13029@kivilampi-30.cs.helsinki.fi>
- <3d8471ca0802271056l320a7ee2m5227e114a968d483@mail.gmail.com>
- <Pine.LNX.4.64.0802272120430.1741@kivilampi-30.cs.helsinki.fi>
- <Pine.LNX.4.64.0802281018480.32401@kivilampi-30.cs.helsinki.fi>
- <20080228171011.fc56eace.akpm@linux-foundation.org>
- <20080228233514.63b7136e.billfink@mindspring.com>
-MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED; boundary="-696243703-1639218683-1204271164=:18002"
-Content-ID: <Pine.LNX.4.64.0802291408120.13029@kivilampi-30.cs.helsinki.fi>
+	Fri, 29 Feb 2008 07:25:38 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:x-mailer:mime-version:content-type:content-transfer-encoding;
+        b=tFRIGtg7nawoH3J+jev+7vLOIBSotC8g3BbxowdtIVtv2HWkyp9Rs+Ze9v0U5MH91YjYM7WLb+Z+4SnGMdvvNrlHXicBi4Q7Ccc5cKhuzPLsP/HXbYh002AzLpyJJSipItnoqQuFfaCEZ2Og4DdRCzG5kco7YL78SPQ/igyUI8w=
+Date: Fri, 29 Feb 2008 13:25:30 +0100
+From: Paolo Ciarrocchi <paolo.ciarrocchi@gmail.com>
+To: hpa <hpa@zytor.com>, Ingo Molnar <mingo@elte.hu>,
+       tglx <tglx@linutronix.de>
+Cc: Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: [PATCH 2/3] x86: coding style fixes to
+ arch/x86/kernel/early_printk.c
+Message-ID: <20080229132530.40dfaa27@paolo-desktop>
+X-Mailer: Sylpheed-Claws 1.0.5 (GTK+ 1.2.10; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
+Before:
+total: 17 errors, 3 warnings, 254 lines checked
 
----696243703-1639218683-1204271164=:18002
-Content-Type: TEXT/PLAIN; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
-Content-ID: <Pine.LNX.4.64.0802291159241.13029@kivilampi-30.cs.helsinki.fi>
+After:
+total: 2 errors, 3 warnings, 254 lines checked
 
-On Thu, 28 Feb 2008, Bill Fink wrote:
+paolo@paolo-desktop:/tmp/b$ md5sum *
+da32f5cd8f248970e4809e1005393e95  early_printk.o.after
+da32f5cd8f248970e4809e1005393e95  early_printk.o.before
 
-> On Thu, 28 Feb 2008, Andrew Morton wrote:
-> 
-> > On Thu, 28 Feb 2008 10:22:27 +0200 (EET) "Ilpo Järvinen" <ilpo.jarvinen@helsinki.fi> wrote:
-> > 
-> > > [PATCH] TCP debug S+L (for 2.6.25-rcs, incompatible with 2.6.24.y)
-> > > 
-> > > ---
-> > >  include/net/tcp.h     |    9 +++-
-> > >  net/ipv4/tcp_input.c  |   18 +++++++-
-> > >  net/ipv4/tcp_ipv4.c   |  127 +++++++++++++++++++++++++++++++++++++++++++++++++
-> > >  net/ipv4/tcp_output.c |   23 +++++++--
-> > 
-> > I'll put this in -mm, see if we can flush anything out.
+paolo@paolo-desktop:/tmp/b$ size *
+   text    data     bss     dec     hex filename
+   1172     280      12    1464     5b8 early_printk.o.after
+   1172     280      12    1464     5b8 early_printk.o.befor
 
-Ok, thanks. Were you aware of the considerable cpu consumption it will 
-cause...? I.e., scanning throught the write queue in a number of place per 
-ACK will certainly show up if somebody tests with netperf or so... ;-)
-...Just please make sure it won't leak into mainline (for sure you would 
-have done that without this explicit note :-)).
+Signed-off-by: Paolo Ciarrocchi <paolo.ciarrocchi@gmail.com>
+---
+ arch/x86/kernel/early_printk.c |   20 ++++++++++----------
+ 1 files changed, 10 insertions(+), 10 deletions(-)
 
-Good thing in that debug patch is that it catches inconsistencies 
-immediately when they happen even if the cheap trap (which is in mainline) 
-wouldn't ever see them because the situation would correct itself due to 
-some other event.
-
-> > Please let me know if/when it's obsolete, updated, etc.
-
-Ok. Since many seem to now reporting this, I suppose the cause is 
-relatively easy to find.
-
-> > What is "S+L"?
-> 
-> I'll let Ilpo give the definitive answer.  But to test if I'm starting
-> to grasp this, I'll give my understanding.  I believe 'S' means that a
-> transmitted TCP skb has been acknowledged by a SACK, while 'L' means
-> that a transmitted SKB is believed lost.  Since the 'S' state implies
-> that the packet has actually been successfully received, it should not be
-> possible for it to be considered lost ('L' state).  Thus an "S+L" state
-> for a TCP skb is an internally inconsistent state and an indication of
-> a TCP bug.
-> 
-> Anyone feel free to correct me if I'm way off base in my understanding.
-
-Yes, this is exactly what it means. There's a big comment about them in 
-the net/ipv4/tcp_input.c too. I answered to a similar question (but Bill 
-mostly told all of it already):
-  http://marc.info/?l=linux-netdev&m=120099888912383&w=2
-
-We can do only cheap checking for sacked_out+lost_out > packets_out in 
-mainline, and if that's true those warnings get printed but they won't 
-necessarily tell the location of the bug because there might be 
-considerable "latency" before that check triggers. On the other hand, this 
-S+L debug patch verifies skb's ->sacked bitmaps against sacked/lost_out 
-counters in multiple places per ACK and will catch the inconsistencies 
-immediately at the site where they occurred (even if sacked_out + lost_out 
-would still be below or equal to packets_out).
-
-
-
+diff --git a/arch/x86/kernel/early_printk.c b/arch/x86/kernel/early_printk.c
+index cff84cd..a8f965d 100644
+--- a/arch/x86/kernel/early_printk.c
++++ b/arch/x86/kernel/early_printk.c
+@@ -108,12 +108,12 @@ static __init void early_serial_init(char *s)
+ 
+ 	if (*s) {
+ 		unsigned port;
+-		if (!strncmp(s,"0x",2)) {
++		if (!strncmp(s, "0x", 2)) {
+ 			early_serial_base = simple_strtoul(s, &e, 16);
+ 		} else {
+ 			static int bases[] = { 0x3f8, 0x2f8 };
+ 
+-			if (!strncmp(s,"ttyS",4))
++			if (!strncmp(s, "ttyS", 4))
+ 				s += 4;
+ 			port = simple_strtoul(s, &e, 10);
+ 			if (port > 1 || s == e)
+@@ -202,9 +202,9 @@ void early_printk(const char *fmt, ...)
+ 	int n;
+ 	va_list ap;
+ 
+-	va_start(ap,fmt);
+-	n = vscnprintf(buf,512,fmt,ap);
+-	early_console->write(early_console,buf,n);
++	va_start(ap, fmt);
++	n = vscnprintf(buf, 512, fmt, ap);
++	early_console->write(early_console, buf, n);
+ 	va_end(ap);
+ }
+ 
+@@ -229,15 +229,15 @@ static int __init setup_early_printk(char *buf)
+ 		early_serial_init(buf);
+ 		early_console = &early_serial_console;
+ 	} else if (!strncmp(buf, "vga", 3)
+-	           && boot_params.screen_info.orig_video_isVGA == 1) {
++		&& boot_params.screen_info.orig_video_isVGA == 1) {
+ 		max_xpos = boot_params.screen_info.orig_video_cols;
+ 		max_ypos = boot_params.screen_info.orig_video_lines;
+ 		current_ypos = boot_params.screen_info.orig_y;
+ 		early_console = &early_vga_console;
+- 	} else if (!strncmp(buf, "simnow", 6)) {
+- 		simnow_init(buf + 6);
+- 		early_console = &simnow_console;
+- 		keep_early = 1;
++	} else if (!strncmp(buf, "simnow", 6)) {
++		simnow_init(buf + 6);
++		early_console = &simnow_console;
++		keep_early = 1;
+ #ifdef CONFIG_HVC_XEN
+ 	} else if (!strncmp(buf, "xen", 3)) {
+ 		early_console = &xenboot_console;
 -- 
- i.
----696243703-1639218683-1204271164=:18002--
+1.5.4.2.316.gf7a7
+
