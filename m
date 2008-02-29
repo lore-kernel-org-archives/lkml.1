@@ -1,59 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932433AbYB2OtZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932723AbYB2O4K@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932433AbYB2OtZ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Feb 2008 09:49:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759163AbYB2OtQ
+	id S932723AbYB2O4K (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Feb 2008 09:56:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754486AbYB2Oz4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Feb 2008 09:49:16 -0500
-Received: from g1t0028.austin.hp.com ([15.216.28.35]:12332 "EHLO
-	g1t0028.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759116AbYB2OtP (ORCPT
+	Fri, 29 Feb 2008 09:55:56 -0500
+Received: from fg-out-1718.google.com ([72.14.220.153]:27527 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753526AbYB2Ozz convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 Feb 2008 09:49:15 -0500
-Subject: Re: [PATCH 5/6] Filter based on a nodemask as well as a gfp_mask
-From: Lee Schermerhorn <Lee.Schermerhorn@hp.com>
-To: Paul Jackson <pj@sgi.com>
-Cc: Mel Gorman <mel@csn.ul.ie>, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org, rientjes@google.com,
-       nacc@us.ibm.com, kamezawa.hiroyu@jp.fujitsu.com, clameter@sgi.com
-In-Reply-To: <20080228230140.321581a4.pj@sgi.com>
-References: <20071109143226.23540.12907.sendpatchset@skynet.skynet.ie>
-	 <20071109143406.23540.41284.sendpatchset@skynet.skynet.ie>
-	 <20080228230140.321581a4.pj@sgi.com>
-Content-Type: text/plain
-Organization: HP/OSLO
-Date: Fri, 29 Feb 2008 09:49:24 -0500
-Message-Id: <1204296564.5311.10.camel@localhost>
+	Fri, 29 Feb 2008 09:55:55 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:in-reply-to:references:x-mailer:mime-version:content-type:content-transfer-encoding;
+        b=CrGgA2exoIQKF+p00aAj1RkqFKbThApWHtqIB6kraiFgbztcFJbGIWIEDTamYChMfcHm1woHjZ/VePDyOfK6qmMuizY7JpGAAVxJD1JRnCWbg1lS4HOqqQpbaBIbW4Z+WhWHC0AgGk6TAhmc9T6AVfgXGuE+Pg/2GjLfgIyc0Yc=
+Date: Fri, 29 Feb 2008 15:54:08 +0100
+From: Diego Calleja <diegocg@gmail.com>
+To: "Stephen Cuppett" <cuppett@gmail.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: Performance versus FreeBSD 7.0
+Message-Id: <20080229155408.116fa5a1.diegocg@gmail.com>
+In-Reply-To: <316a20a40802290538g55c4171y7cdbcb3a9c1d0f1b@mail.gmail.com>
+References: <316a20a40802290538g55c4171y7cdbcb3a9c1d0f1b@mail.gmail.com>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.8; x86_64-pc-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.6.1 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2008-02-28 at 23:01 -0600, Paul Jackson wrote:
-> Mel wrote:
-> > A positive benefit of
-> > this is that allocations using MPOL_BIND now use the local-node-ordered
-> > zonelist instead of a custom node-id-ordered zonelist.
-> 
-> Could you update the now obsolete documentation (perhaps just delete
-> the no longer correct remark):
-> 
-> Documentation/vm/numa_memory_policy.txt:
-> 
->         MPOL_BIND:  This mode specifies that memory must come from the
->         set of nodes specified by the policy.
-> 
->             The memory policy APIs do not specify an order in which the nodes
->             will be searched.  However, unlike "local allocation", the Bind
->             policy does not consider the distance between the nodes.  Rather,
->             allocations will fallback to the nodes specified by the policy in
->             order of numeric node id.  Like everything in Linux, this is subject
->             to change.
-> 
+El Fri, 29 Feb 2008 08:38:00 -0500, "Stephen Cuppett" <cuppett@gmail.com> escribió:
 
-Yes, will do.  
+> loads and 1500% at high loads. When compared with the best performing
+> Linux kernel (2.6.22 or 2.6.24) performance is 15% better. Results are
 
-Thanks, Lee
+There has been some performance problems with sysbench performance in linux
+which made it slower than freebsd, there were some patches to speed things up,
+not sure if they have been merged.
 
+Myself I find fun that they look at Linux as the Leader That Must Be Surpassed.
+All the performance highlights of freebsd 7.0 are things that linux already did some
+years ago.
