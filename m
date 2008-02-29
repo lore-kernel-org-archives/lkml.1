@@ -1,88 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933846AbYB2VEF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933908AbYB2VEg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933846AbYB2VEF (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Feb 2008 16:04:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752496AbYB2VDv
+	id S933908AbYB2VEg (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Feb 2008 16:04:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760977AbYB2VEZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Feb 2008 16:03:51 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:58316 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758946AbYB2VDu (ORCPT
+	Fri, 29 Feb 2008 16:04:25 -0500
+Received: from smtp1.linux-foundation.org ([207.189.120.13]:44036 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751685AbYB2VEY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 Feb 2008 16:03:50 -0500
-Subject: Re: [RFC/PATCH] cpuset: cpuset irq affinities
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Max Krasnyanskiy <maxk@qualcomm.com>
-Cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       Oleg Nesterov <oleg@tv-sign.ru>, Steven Rostedt <rostedt@goodmis.org>,
-       Paul Jackson <pj@sgi.com>, linux-kernel@vger.kernel.org,
-       David Rientjes <rientjes@google.com>
-In-Reply-To: <47C87084.3090208@qualcomm.com>
-References: <20080227222103.673194000@chello.nl>
-	 <1204311351.6243.130.camel@lappy> <20080229190223.GA17820@elte.hu>
-	 <47C87084.3090208@qualcomm.com>
-Content-Type: text/plain
-Date: Fri, 29 Feb 2008 22:03:00 +0100
-Message-Id: <1204318980.6243.133.camel@lappy>
+	Fri, 29 Feb 2008 16:04:24 -0500
+Date: Fri, 29 Feb 2008 13:02:37 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: torvalds@linux-foundation.org, roland@redhat.com, tglx@linutronix.de,
+       linux-kernel@vger.kernel.org, stable@kernel.org
+Subject: Re: [PATCH] x86_64 ia32 syscall restart fix
+Message-Id: <20080229130237.da291a1e.akpm@linux-foundation.org>
+In-Reply-To: <20080229173705.GA19423@elte.hu>
+References: <20080229035707.EAE862700FD@magilla.localdomain>
+	<20080229155207.GC27248@elte.hu>
+	<alpine.LFD.1.00.0802290814320.17889@woody.linux-foundation.org>
+	<20080229164510.GA6850@elte.hu>
+	<alpine.LFD.1.00.0802290855230.17889@woody.linux-foundation.org>
+	<20080229171737.GA10604@elte.hu>
+	<20080229173705.GA19423@elte.hu>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.21.90 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, 29 Feb 2008 18:37:05 +0100
+Ingo Molnar <mingo@elte.hu> wrote:
 
-On Fri, 2008-02-29 at 12:52 -0800, Max Krasnyanskiy wrote:
-> Ingo Molnar wrote:
-> > * Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:
-> > 
-> >> @@ -174,11 +174,20 @@ struct irq_desc {
-> >>  #ifdef CONFIG_PROC_FS
-> >>  	struct proc_dir_entry	*dir;
-> >>  #endif
-> >> +#ifdef CONFIG_CPUSETS
-> >> +	struct cpuset		*cs;
-> >> +#endif
-> > 
-> > i like this approach - it makes irqs more resource-alike and attaches 
-> > them to a specific resource control group.
-> > 
-> > So if /cgroup/boot is changed to have less CPUs then the "default" irqs 
-> > move along with it.
-> > 
-> > but if an isolated RT domain has specific irqs attached to it (say the 
-> > IRQ of some high-speed data capture device), then the irqs would move 
-> > together with that domain.
-> > 
-> > irqs are no longer a bolted-upon concept, but more explicitly managed.
-> > 
-> > [ If you boot-test it and if Paul agrees with the general approach then
-> >   i could even apply it to sched-devel.git ;-) ]
 > 
-> Believe it or not but I like it too :).
-> Now we're talking different approach compared to the cpu_isolated_map since 
-> with this patch cpu_system_map is no longer needed.
-> I've been playing with latest sched-devel tree and while I think we'll endup 
-> adding a lot more code, doing it with the cpuset is definitely more flexible.
-> This way we can provide more fine grain control of what part of the "system" 
-> services are allowed to run on a cpuset. Rather that "catch all" system flag.
+> * Ingo Molnar <mingo@elte.hu> wrote:
 > 
-> Current sched-devel tree does not provide complete isolation at this point. 
-> There are still many things here and there that need to be added/fixed.
-> Having finer control here helps.
+> > and one area where commit messages are totally important IMO is bug 
+> > forensics. For every regression we find we try to put in the commit ID 
+> > that broke it. Information like that is vital to have a good (and 
+> > objective) picture about how bugs get into and get out of the kernel 
+> > and it also alerts us to change/improve infrastructure if certain 
+> > categories of bugs happen too often.
 > 
-> One concern I have is that this API conflicts with /proc/irq/X/smp_affinity.
-> ie Setting smp_affinity manually will override affinity set by the cpuset.
-> In other words I think
-> 	int irq_set_affinity(unsigned int irq, cpumask_t cpumask)
-> now needs to make sure that cpumask does not have cpus that do not belong to 
-> the cpuset this irq belongs to. Just like sched_setaffinity() does for the tasks.
+> another "commit space" feature Thomas and me was thinking about was to 
+> put in "backport suggestions" for -stable the following way:
+> 
+>    Backport-suggested-by: Ingo Molnar <mingo@elte.hu>
+> 
+> and the -stable tree could then notice it, and once it has been 
+> backported, they could put in their "done" notifiers via:
+> 
+>    Backported-from: 67ca7bde2e9d3516b5
+> 
+> or:
+> 
+>    Backport-rejected: 67ca7bde2e9d3516b5
+> 
+> This way the act of suggesting backports to the -stable tree (and their 
+> rejection) could be fully automated, and the answer to the rather 
+> difficult question:
+> 
+>    "has -stable picked up all backport requests, and if not, why?"
+> 
+> could be scripted up.
+> 
+> A further (small) variation of this scheme: if a fix is noticed to be a 
+> backport candidate later on, or a user notices that a fix that has gone 
+> upstream fixes a -stable bug too, this information could be signalled in 
+> a separate, special, empty commit:
+> 
+>    Backport-suggested-by: 67ca7bde2e9d35, Ingo Molnar <mingo@elte.hu>
+> 
+> 
+> this way subsystem maintainers could have a reliable protocol of getting 
+> fixes integrated into -stable - purely via the commit messages in your 
+> tree.
+> 
+> ... but then we decided that handling x86 architecture maintainance is 
+> work enough already, without us complicating our own life any further 
+> ;-)
+> 
+> But the idea is solid nevertheless, and if everyone did it the -stable 
+> guys would have a much easier life as well :-) [ We could start doing it 
+> in x86.git if there's general agreement and if the -stable guys 
+> specifically asked for this. ]
+> 
 
-The patch also needs to handle group destruction too; currently it
-leaves cpuset pointers dangling. So it would either have to refuse
-removing a group when there are still irqs associated, or move them to
-the parent.
+I believe the -stable guys have a bot which trolls the mainline commits
+mailing list for "cc:.*stable@kernel.org".  So anybody anywhere in the
+patch delivery chain can append "Cc: <stable@kernel.org>" and things
+should get appropriate consideration.
 
-But yeah, this was just a quick hack to show the idea, glad you like it.
-Will try to flesh it out a bit in the coming week.
+The place where I suspect there is a lot of lossage is people simply not
+thinking about whether a fix should be backported.  I'm forever fussing
+about that for the patches I handle (and I still miss some) but I have a
+suspicion that not all tree-owners do this fully.
 
