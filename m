@@ -1,85 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932637AbYB2Oqw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932773AbYB2Oro@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932637AbYB2Oqw (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Feb 2008 09:46:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757797AbYB2Oql
+	id S932773AbYB2Oro (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Feb 2008 09:47:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759269AbYB2Orf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Feb 2008 09:46:41 -0500
-Received: from mummy.ncsc.mil ([144.51.88.129]:53891 "EHLO mummy.ncsc.mil"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753526AbYB2Oqk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 Feb 2008 09:46:40 -0500
-Subject: Re: [PATCH 01/11] Security: Add hook to get full maclabel xattr
-	name
-From: Stephen Smalley <sds@tycho.nsa.gov>
-To: Christoph Hellwig <hch@infradead.org>
-Cc: Dave Quigley <dpquigl@tycho.nsa.gov>, casey@schaufler-ca.com,
-       viro@ftp.linux.org.uk, trond.myklebust@fys.uio.no, bfields@fieldses.org,
-       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       LSM List <linux-security-module@vger.kernel.org>
-In-Reply-To: <1204291806.31790.233.camel@moss-spartans.epoch.ncsc.mil>
-References: <746385.69480.qm@web36611.mail.mud.yahoo.com>
-	 <1204227035.31790.207.camel@moss-spartans.epoch.ncsc.mil>
-	 <20080228234850.GA25829@infradead.org>
-	 <1204243497.2715.24.camel@moss-terrapins.epoch.ncsc.mil>
-	 <20080229003937.GA16343@infradead.org>
-	 <1204245167.2715.37.camel@moss-terrapins.epoch.ncsc.mil>
-	 <20080229010055.GA26176@infradead.org>
-	 <1204291806.31790.233.camel@moss-spartans.epoch.ncsc.mil>
+	Fri, 29 Feb 2008 09:47:35 -0500
+Received: from g5t0009.atlanta.hp.com ([15.192.0.46]:29699 "EHLO
+	g5t0009.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759181AbYB2Orf (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 29 Feb 2008 09:47:35 -0500
+Subject: Re: [patch 17/21] non-reclaimable mlocked pages
+From: Lee Schermerhorn <Lee.Schermerhorn@hp.com>
+To: minchan Kim <barrioskmc@gmail.com>
+Cc: Rik van Riel <riel@redhat.com>, linux-kernel@vger.kernel.org,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>, linux-mm@kvack.org
+In-Reply-To: <44c63dc40802282055q508af6ccsb0e8ac3fb5e67d24@mail.gmail.com>
+References: <20080228192908.126720629@redhat.com>
+	 <20080228192929.453373535@redhat.com>
+	 <44c63dc40802282055q508af6ccsb0e8ac3fb5e67d24@mail.gmail.com>
 Content-Type: text/plain
-Organization: National Security Agency
-Date: Fri, 29 Feb 2008 09:45:57 -0500
-Message-Id: <1204296357.31790.273.camel@moss-spartans.epoch.ncsc.mil>
+Organization: HP/OSLO
+Date: Fri, 29 Feb 2008 09:47:44 -0500
+Message-Id: <1204296464.5311.6.camel@localhost>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 (2.12.3-1.fc8) 
+X-Mailer: Evolution 2.6.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-On Fri, 2008-02-29 at 08:30 -0500, Stephen Smalley wrote:
-> On Thu, 2008-02-28 at 20:00 -0500, Christoph Hellwig wrote:
-> > On Thu, Feb 28, 2008 at 07:32:47PM -0500, Dave Quigley wrote:
-> > > I can always go with the original hook name of get_security_xattr_name
-> > > which turns into a security_get_security_xattr_name call which seems a
-> > > bit ludicrous. The only other complaint that I saw from Casey besides
-> > > the name of the function was that there could be more than one xattr. If
-> > > we want to address that then I need another hook that says give me all
-> > > data that the LSM deems important for this file. Which is essentially
-> > > the same thing as taking each of the xattr names that the module will
-> > > provide, grabbing each of them in turn, and concatenating them together.
-> > > For SELinux this is no different than getsecurity with the selinux
-> > > suffix. The same goes for SMACK.
-> > 
-> > What about Casey's suggestion of get_security_blob?  For any reasonable
-> > module that just has a single xattr it's trivial and for those that
-> > have multiple or a different storage model it might get complicated
-> > but that's not our problem for now.
+On Fri, 2008-02-29 at 13:55 +0900, minchan Kim wrote:
+>         Index: linux-2.6.25-rc2-mm1/mm/page_alloc.c
+>         ===================================================================
+>         --- linux-2.6.25-rc2-mm1.orig/mm/page_alloc.c   2008-02-28
+>         12:47:36.000000000 -0500
+>         +++ linux-2.6.25-rc2-mm1/mm/page_alloc.c        2008-02-28
+>         12:49:02.000000000 -0500
+>         @@ -257,6 +257,7 @@ static void bad_page(struct page *page)
+>                                1 << PG_swapcache |
+>                                1 << PG_writeback |
+>                                1 << PG_swapbacked |
+>         +                       1 << PG_mlocked |
+>                                1 << PG_buddy );
+>                set_page_count(page, 0);
+>                reset_page_mapcount(page);
+>  
+> It would be compile error unless CONFIG_NORECLAIM_MLOCK is defined.  
 > 
-> Possibly I'm missing something, but if I'm implementing a security
-> module that has any security attribute at all, e.g. capability module
-> with security.capability, and I see a hook called "get_security_blob" or
-> "get_security_attr" or the like, I'll implement that hook and return my
-> attribute there.  Which in turn will _break_ the labeled NFS
-> functionality because it is expecting a MAC label specifically.
 > 
-> The whole point here is that we do not want modules like capability to
-> return their security attributes here, because this is to support
-> labeled NFS functionality in support of enforcing MAC.
+>         
+>         @@ -656,7 +662,9 @@ static int prep_new_page(struct page *pa
+>         
+>                page->flags &= ~(1 << PG_uptodate | 1 << PG_error | 1
+>         << PG_readahead |
+>                                1 << PG_referenced | 1 << PG_arch_1 |
+>         -                       1 << PG_owner_priv_1 | 1 <<
+>         PG_mappedtodisk);
+>         +                       1 << PG_owner_priv_1 | 1 <<
+>         PG_mappedtodisk |
+>         +//TODO take care of it here, for now.
+>         +                       1 << PG_mlocked );
+>                set_page_private(page, 0);
+>                set_page_refcounted(page);
+>  
+> ditto 
+
+Well, it will be a compile error for 32-bit systems, so we need to fix
+it.   PG_mlocked is unconditionally defined/reserved when (BITS_PER_LONG
+> 32).
+
+Thanks,
+Lee
 > 
-> I don't especially care about the hook name per se, but the interface
-> (whatever it may be) needs to convey the proper semantics, and the
-> semantics truly are MAC specific (and should be).
-
-BTW, to date, "security blob" has been used to refer to the structures
-allocated by the security modules referenced by the void* security
-fields in the kernel data structures (task, inode, ...), while
-"secctx" (security context) and "secid" (security id) have been
-leveraged by subsystems like audit, netlink and labeled IPSEC to
-represent security labels.
-
--- 
-Stephen Smalley
-National Security Agency
 
