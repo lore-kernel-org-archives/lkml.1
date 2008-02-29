@@ -1,53 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933868AbYB2VGx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933615AbYB2VHy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933868AbYB2VGx (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Feb 2008 16:06:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758384AbYB2VGp
+	id S933615AbYB2VHy (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Feb 2008 16:07:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755903AbYB2VHp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Feb 2008 16:06:45 -0500
-Received: from terminus.zytor.com ([198.137.202.10]:54037 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756272AbYB2VGo (ORCPT
+	Fri, 29 Feb 2008 16:07:45 -0500
+Received: from hawking.rebel.net.au ([203.20.69.83]:57493 "EHLO
+	hawking.rebel.net.au" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757537AbYB2VHp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 Feb 2008 16:06:44 -0500
-Message-ID: <47C873AA.6040305@zytor.com>
-Date: Fri, 29 Feb 2008 13:05:46 -0800
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+	Fri, 29 Feb 2008 16:07:45 -0500
+Message-ID: <47C87460.2030705@davidnewall.com>
+Date: Sat, 01 Mar 2008 07:38:48 +1030
+From: David Newall <davidn@davidnewall.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20071022)
 MIME-Version: 1.0
-To: "Klaus S. Madsen" <ksm@hjernemadsen.org>
-CC: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
-       Pavel Machek <pavel@ucw.cz>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: Regression in 2.6.25-rc3: s2ram segfaults before suspending
-References: <20080227221033.GR17932@hjernemadsen.org> <20080228091639.GB1133@elte.hu> <20080228092846.GC17932@hjernemadsen.org> <20080228094000.GA2987@elte.hu> <20080228150444.GG17932@hjernemadsen.org> <47C6F4F9.90700@zytor.com> <20080228192404.GH17932@hjernemadsen.org> <47C70C01.4020605@zytor.com> <20080228194920.GJ17932@hjernemadsen.org> <47C739A6.5020608@zytor.com> <20080229070028.GK17932@hjernemadsen.org>
-In-Reply-To: <20080229070028.GK17932@hjernemadsen.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Pavel Roskin <proski@gnu.org>
+CC: "John W. Linville" <linville@tuxdriver.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Zan Lynx <zlynx@acm.org>, linux-kernel <linux-kernel@vger.kernel.org>,
+       Jon Masters <jcm@jonmasters.org>, Rusty Russell <rusty@rustcorp.com.au>
+Subject: Re: [PATCH 2.6.25] module: allow ndiswrapper to use	GPL-only	symbols
+References: <1204236662.3612.6.camel@dv>	 <alpine.LFD.1.00.0802281525170.5780@woody.linux-foundation.org>	 <20080229012012.ajlsk4pow8wkkgss@webmail.spamcop.net>	 <alpine.LFD.1.00.0802290807110.17889@woody.linux-foundation.org>	 <1204304352.6767.21.camel@localhost>	 <alpine.LFD.1.00.0802290906520.17889@woody.linux-foundation.org>	 <1204305609.21719.16.camel@dv>	 <alpine.LFD.1.00.0802290929590.17889@woody.linux-foundation.org>	 <1204313978.2316.8.camel@dv> <20080229201711.GF3234@tuxdriver.com>	 <47C86DCA.5080706@davidnewall.com> <1204318797.2316.29.camel@dv>
+In-Reply-To: <1204318797.2316.29.camel@dv>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Klaus S. Madsen wrote:
-> open("/dev/mem", O_RDWR)                = 5
-> mmap2(NULL, 1282, PROT_READ|PROT_WRITE|PROT_EXEC, MAP_SHARED|MAP_FIXED, 5, 0) = 0
-> mmap2(0xa0000, 393216, PROT_READ|PROT_WRITE, MAP_SHARED|MAP_FIXED, 5, 0xa0) = 0xa0000
-                          ^^^^^^^^^^^^^^^^^^^^
-> close(5)                                = 0
-> ioperm(0, 0x400, 0x1)                   = 0
-> iopl(0x3)                               = 0
-> access("/sys/bus/pci", R_OK)            = 0
-> write(1, "Calling get_mode\n", 17)      = 17
-> vm86(0x1, 0xb7f14ccc, 0xb7f14830, 0xc000, 0x18b6 <unfinished ...>
-> --- SIGSEGV (Segmentation fault) @ 0 (0) ---
-> +++ killed by SIGSEGV (core dumped) +++
+Pavel Roskin wrote:
+> On Sat, 2008-03-01 at 07:10 +1030, David Newall wrote:
+>   
+>> John W. Linville wrote:
+>>     
+>>> On Fri, Feb 29, 2008 at 02:39:38PM -0500, Pavel Roskin wrote:
+>>>   
+>>>       
+>>>> I doubt ndiswrapper will ever be ported to the
+>>>> userspace.  It's much more likely that some other approach will be used.
+>>>>     
+>>>>         
+>>> Maybe it should be -- that might solve a lot of problems
+>>>       
+>> Maybe it's time to rename it from "ndiswrapper" to "NdisWrapper".
+>>
+>> How stupid do you have to be to not see that it will be fixed in any way
+>> necessary.
+>>     
+>
+> I'm quite sure that something like that is going to be the short term
+> fix.  Still, it would be nice to have a more long term solution, the one
+> that tries to resolve the tensions rather than hide them.  I'm not sure
+> it's possible, but just trying to negotiate could help find
+> understanding
 
-This is the VGA BIOS being mapped, it's mapped PROT_READ|PROT_WRITE, but 
-  no PROT_EXEC; if the kernel is NX-capable it *should* segfault trying 
-to execute out of this area, which is exactly what will happen when vm86 
-executes INT 10h.
+I think there's a political agenda, and that's something that nobody can
+solve.  The simplest solution is to change the name it uses on a regular
+basis, and that something relatively  unimportant.  People will still
+call it ndiswrapper, but it will identify itself to the kernel as
+wrappythingy, and then ndisthingy, and then wrapndis.  Heck, make it
+purely random.  Solve the problem for all time.
 
-If we can find that mmap() in the s2ram source code and add PROT_EXEC to 
-it, it would be interesting.
-
-	-hpa
+It's a stupid problem promulgated by stupid people, and I use the word
+"stupid" in it's most pejorative sense.
