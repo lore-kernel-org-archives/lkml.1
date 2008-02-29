@@ -1,33 +1,32 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758582AbYB2GVM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759317AbYB2GV1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758582AbYB2GVM (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Feb 2008 01:21:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753136AbYB2GU5
+	id S1759317AbYB2GV1 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Feb 2008 01:21:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755208AbYB2GVD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Feb 2008 01:20:57 -0500
-Received: from relay2.sgi.com ([192.48.171.30]:46771 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752868AbYB2GU5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 Feb 2008 01:20:57 -0500
-Date: Fri, 29 Feb 2008 00:20:51 -0600
-From: Paul Jackson <pj@sgi.com>
-To: Paul Menage <menage@google.com>
-Cc: akpm@linux-foundation.org, containers@lists.osdl.org,
-       linux-kernel@vger.kernel.org, balbir@linux.vnet.ibm.com,
-       a.p.zijlstra@chello.nl, xemul@openvz.org
-Subject: Re: [RFC] [PATCH] Re: Prefixing cgroup generic control filenames
- with "cgroup."
-Message-Id: <20080229002051.86de45a5.pj@sgi.com>
-In-Reply-To: <47C79F39.5080005@google.com>
-References: <6599ad830802281314s25c033d6tc021725ae28aef8d@mail.gmail.com>
-	<20080228132142.4d4b1eef.akpm@linux-foundation.org>
-	<6599ad830802281328q162d0585v3ac6b45a119a4a05@mail.gmail.com>
-	<20080228134027.05b2aa87.akpm@linux-foundation.org>
-	<6599ad830802281406t38e486d8g267df1873bc754c2@mail.gmail.com>
-	<20080228142100.2dce0e46.akpm@linux-foundation.org>
-	<47C79F39.5080005@google.com>
-Organization: SGI
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.12.0; i686-pc-linux-gnu)
+	Fri, 29 Feb 2008 01:21:03 -0500
+Received: from smtp1.linux-foundation.org ([207.189.120.13]:56656 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754884AbYB2GVA (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 29 Feb 2008 01:21:00 -0500
+Date: Thu, 28 Feb 2008 22:19:48 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Matthew Wilcox <matthew@wil.cx>
+Cc: Mark Pearson <devnull.port@googlemail.com>,
+       Karol Kozimor <sziwan@hell.org.pl>, Julia Lawall <julia@diku.dk>,
+       corentincj@iksaif.net, sziwan@users.sourceforge.net,
+       acpi4asus-user@lists.sourceforge.net, linux-kernel@vger.kernel.org,
+       kernel-janitors@vger.kernel.org, Len Brown <lenb@kernel.org>
+Subject: Re: [PATCH 2/9] drivers/acpi/asus_acpi.c: Correct use of ! and &
+Message-Id: <20080228221948.2602527a.akpm@linux-foundation.org>
+In-Reply-To: <20080229061023.GD19198@parisc-linux.org>
+References: <Pine.LNX.4.64.0802262142120.18200@ask.diku.dk>
+	<7C626792-02A6-4BE6-B5F2-D75899F3990C@hell.org.pl>
+	<47C5ABFB.3050607@googlemail.com>
+	<20080228215503.b942bb3c.akpm@linux-foundation.org>
+	<20080229061023.GD19198@parisc-linux.org>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
@@ -35,51 +34,21 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Paul M wrote:
-> Thoughts? Is this a direction we want to go in? As an option, or by default?
+On Thu, 28 Feb 2008 23:10:23 -0700 Matthew Wilcox <matthew@wil.cx> wrote:
 
-So ... this proposal adds a 'groups' subdirectory in each cgroup, and places
-the user generated subgroups in there.
+> On Thu, Feb 28, 2008 at 09:55:03PM -0800, Andrew Morton wrote:
+> >  	if (invert)		/* invert target value */
+> > -		led_out = !led_out & 0x1;
+> > +		led_out = !led_out;
+> >  
+> >  	if (!write_acpi_int(hotk->handle, ledname, led_out, NULL))
+> 
+> But now you're writing 0xffffffff instead of 1.  I think the suggestion
+> of led_out ^= 1 was the correct one.
+> 
 
-It looks like an unnecessary, incompatible and complicating change to me.
+!0 is 1, not 0xffffffff.
 
-For example, what would have been cgroup:
+IOW, ! != ~ ;)
 
-	/mnt/cgroup/user_created_groupname1/user_created_groupname2
 
-now becomes:
-
-	/mnt/cgroup/cgroups/user_created_groupname1/cgroups/user_created_groupname2
-
-Right?
-
-Why would you do this?
-
-There is no problem with the current implementation, no bug we're
-having trouble coding a fix for, no feature we're have trouble adding.
-The current code, that simply doesn't allow colliding user names
-because the kernel provided names are already there, works just fine.
-
-You're doing this just to "protect the user from themself", to make
-it more difficult for them to rely on some name that in a future
-version is no longer available.
-
-It annoys users, and rightfully so, to have to permanently deal with
-interface warts, because the computer is trying to protect the user
-from some hypothetical scenario that is not a problem the user needs
-solving.
-
-There is really a trivial resolution to this ... stake out what
-additional kernel generated names might ever be added ... some
-pattern(s) of characters which all future names will match, which
-leave wide swaths of names safely available, in perpetuity, for
-user created names, with no risk of future collision.
-
-And did I say incompatible with released versions?
-
-Hopefully Paul M isn't too surprised that I'm not endorsing this one ;).
-
--- 
-                  I won't rest till it's the best ...
-                  Programmer, Linux Scalability
-                  Paul Jackson <pj@sgi.com> 1.940.382.4214
