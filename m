@@ -1,100 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933531AbYB2Uzg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760941AbYB2Uz4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933531AbYB2Uzg (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Feb 2008 15:55:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754007AbYB2UzZ
+	id S1760941AbYB2Uz4 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Feb 2008 15:55:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758515AbYB2Uzn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Feb 2008 15:55:25 -0500
-Received: from relay1.sgi.com ([192.48.171.29]:46894 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753715AbYB2UzY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 Feb 2008 15:55:24 -0500
-Date: Fri, 29 Feb 2008 14:55:16 -0600
-From: Paul Jackson <pj@sgi.com>
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: mingo@elte.hu, tglx@linutronix.de, oleg@tv-sign.ru, rostedt@goodmis.org,
-       maxk@qualcomm.com, linux-kernel@vger.kernel.org, rientjes@google.com
-Subject: Re: [RFC/PATCH] cpuset: cpuset irq affinities
-Message-Id: <20080229145516.4d96aeaa.pj@sgi.com>
-In-Reply-To: <1204311351.6243.130.camel@lappy>
-References: <20080227222103.673194000@chello.nl>
-	<1204311351.6243.130.camel@lappy>
-Organization: SGI
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.12.0; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Fri, 29 Feb 2008 15:55:43 -0500
+Received: from fmmailgate02.web.de ([217.72.192.227]:33379 "EHLO
+	fmmailgate02.web.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758243AbYB2Uzm (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 29 Feb 2008 15:55:42 -0500
+Message-ID: <47C870FD.4000808@razik.name>
+Date: Fri, 29 Feb 2008 21:54:21 +0100
+From: Lukas Razik <linux@razik.name>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.7.13) Gecko/20060417 FreeBSD/i386
+X-Accept-Language: de-de, en-us, en
+MIME-Version: 1.0
+To: linux-kernel@vger.kernel.org
+Subject: Ethernet over Kernel Sockets
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 8bit
+X-Provags-ID: V01U2FsdGVkX18+1i70l++BMvgPDuMo4EwryrfK0Bvksb6VIChc
+	zIWVw3Y4IbJ4MgJxVLra9fAXD7FDu8T/EPN0/zCwr9pWm8PD3G
+	Vr3qmEeco=
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Like Ingo, I like the approach.
+Hello all!
 
-But I am concerned it won't work, as stated.
+As you know, some network cards doesn't have a 'eth' interface under linux.
+Because of that I'm developing a net_device based driver which doesn't 
+transmit and receive directly through a real network card but through 
+UDP kernel sockets.
+That means:
+If my net_device->hard_start_xmit function gets an packet to transmit 
+(in interrupt context), there will be a work struct queued into a 
+workqueue and the packet will be processed by the workqueue later on (in 
+process context).
+On the receiver side I have a kernel thread which blocks on 
+sock_recvmsg() and if there comes a UDP message, then it will be 
+processed and a sk_buff will be passed to the kernel.
+The current state is that all works stable but I've bad transmission 
+rates and bad ping times.
 
-Unfortunately, my blithering ignorance of how one might want to
-distribute irq's across a system is making it difficult for me
-to say for sure if this works or not.
+For example I've to systems and each has one Gigabit-Ethernet card:
+System 1: ifconfig eth0 192.168.0.1
+System 2: ifconfig eth0 192.168.0.2
 
-The thing about /dev/cpuset that I am afraid will get in the way
-with this use of cpusets to place irqs is that we can really only
-have a single purpose hierarchy below /dev/cpuset.
+If I load my driver then I get an additional eth interface (for example):
+System 1: ifconfig eth1 192.168.1.1
+System 2: ifconfig eth1 192.168.1.2
 
-For example, lets say we have:
+So the eth1 interfaces are based on sockets which use the eth0 (Gigabit) 
+interfaces for the communication.
+Now, if I measure the transmission between 192.168.0.1 and 192.168.0.2 
+then I get transmission rates that are normal for Gigabit-Ethernet 
+(~25µsec (PingPong) and ~900Mbit/s).
+If I measure the transmission through the eth1 interfaces between 
+192.168.1.1 and 192.168.1.2 then I only get ~1msec (PingPong) and only 
+about ~400Mbit/s.
 
-    /dev/cpuset
-        boot
-	big_special_app
-	a_few_isolated_rt_nodes
-	batchscheduler
-            batch job 1
-	    batch job 2
-	    ...
+The interesting thing is, that I always get PingPongs of 1ms (= one 
+jiffie). Although if I measure with 100MBit- or other non-Ethernet cards.
+Maybe it's because I run the socket_recvmsg() function in a kernel 
+thread which blocks on the function and must wait to be executed by the 
+scheduler.
 
-I guess, with your "cpuset: cpuset irq affinities" patch, we'd start
-off with /dev/cpuset/irqs listing the irqs available, and we could
-reasonably decide to move any or all irqs to /dev/cpuset/boot/irqs,
-by writing the numbers of those irqs to that file, one irq number
-per write(2) system call (as is the cpuset convention.)
+Now I don't know how I could solve this problem:
+How can I force the kernel to process a received message immediately 
+when it comes in through an UDP kernel socket?
 
-Do these irqs have any special hardware affinity?  Or are they
-just consumers of CPU cycles that can be jammed onto whatever CPU(s)
-we're willing to let be interrupted?
+I hope that someone of you can help me....
+The source code you can find here:
+http://net.razik.de/ethos.tar.gz
 
-If for reason of desired hardware affinity, or perhaps for some other
-reason that I'm not aware of, we wanted to have the combined CPUs in
-both the 'boot' and 'big_special_app' handle some irq, then we'd be
-screwed.  We can't easily define, using the cpuset interface and its
-conventions, a distinct cpuset overlapping boot and big_special_app,
-to hold that irq.  Any such combining cpuset would have to be the
-common parent of both the combined cpusets, an annoying intrusion on
-the expected hierarchy.
-
-If the actual set of CPUs we wanted to handle a particular irq wasn't
-even the union of any pre-existing set of cpusets, then we'd be even
-more screwed, unable even to force the issue by imposing additional
-intermediate combined cpusets to meet the need.
-
-If there is any potential for this to be a problem, then we should
-examine the possibility of making irqs their own cgroup, rather than
-piggy backing them on cpusets (which are now just one instance of a
-cgroup module.)
-
-Could you educate me a little, Peter, on what these irqs are and on
-the sorts of ways people might want to place them across CPUs?
-
-
-> +	if (s->len > 0)
-> +		s->len += scnprintf(s->buf + s->len, s->buflen - s->len, " ");
-
-The other 'vector' type cpuset file, "tasks", uses a newline '\n'
-field terminator, not a space ' ' separator.  Would '\n' work here,
-or is ' ' just too much the expected irq separator in such ascii lists?
-My preference is toward using the exact same vector syntax in each
-place, so that once someone has code that handles one, they can
-repurpose that code for another with minimum breakage.
-
--- 
-                  I won't rest till it's the best ...
-                  Programmer, Linux Scalability
-                  Paul Jackson <pj@sgi.com> 1.940.382.4214
+Regards and Many Thanks for any help!
+Lukas
