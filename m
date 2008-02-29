@@ -1,58 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932832AbYB2Ukd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761798AbYB2Und@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932832AbYB2Ukd (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Feb 2008 15:40:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754672AbYB2UkQ
+	id S1761798AbYB2Und (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Feb 2008 15:43:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751831AbYB2UnZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Feb 2008 15:40:16 -0500
-Received: from perninha.conectiva.com.br ([200.140.247.100]:46472 "EHLO
-	perninha.conectiva.com.br" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758975AbYB2UkO (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 Feb 2008 15:40:14 -0500
-Date: Fri, 29 Feb 2008 17:40:07 -0300
-From: "Luiz Fernando N. Capitulino" <lcapitulino@mandriva.com.br>
-To: serge@hallyn.com
-Cc: lkml <linux-kernel@vger.kernel.org>, linux-security-module@vger.kernel.org,
-       Andrew Morgan <morgan@kernel.org>, Stephen Smalley <sds@epoch.ncsc.mil>,
-       Mike Galbraith <efault@gmx.de>, buraphalinuxserver@gmail.com,
-       elendil@planet.nl
-Subject: Re: [PATCH 1/1] file capabilities: remove cap_task_kill()
-Message-ID: <20080229174007.0a934cc6@mandriva.com.br>
-In-Reply-To: <20080228173817.GA32661@vino.hallyn.com>
-References: <20080228173817.GA32661@vino.hallyn.com>
-Organization: Mandriva
-X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.8; i586-mandriva-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Fri, 29 Feb 2008 15:43:25 -0500
+Received: from gw.goop.org ([64.81.55.164]:33012 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751360AbYB2UnY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 29 Feb 2008 15:43:24 -0500
+Message-ID: <47C86D7A.5030608@goop.org>
+Date: Fri, 29 Feb 2008 12:39:22 -0800
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+MIME-Version: 1.0
+To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+       Ingo Molnar <mingo@elte.hu>
+CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       "H. Peter Anvin" <hpa@zytor.com>, Andi Kleen <ak@suse.de>,
+       Zachary Amsden <zach@vmware.com>
+Subject: bad paravirt/Xen interaction in "x86 - Enhance DEBUG_RODATA support
+ - alternatives"
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Em Thu, 28 Feb 2008 11:38:17 -0600
-serge@hallyn.com escreveu:
+The patch "x86 - Enhance DEBUG_RODATA support - alternatives" enables 
+the kernel for writing by clearing X86_CR0_WP allow privileged writes.  
+This won't work in a paravirt environment for two reasons:
 
-| The original justification for cap_task_kill() was as follows:
-| 
-| 	check_kill_permission() does appropriate uid equivalence checks.
-| 	However with file capabilities it becomes possible for an
-| 	unprivileged user to execute a file with file capabilities
-| 	resulting in a more privileged task with the same uid.
-| 
-| However now that cap_task_kill() always returns 0 (permission
-| granted) when p->uid==current->uid, the whole hook is worthless,
-| and only likely to create more subtle problems in the corner cases
-| where it might still be called but return -EPERM.  Those cases
-| are basically when uids are different but euid/suid is equivalent
-| as per the check in check_kill_permission().
-| 
-| This patch removes cap_task_kill().
+   1. the kernel may not be running in ring 0, so writes will still be
+      prevented
+   2. the hypervisor prevents X86_CR0_WP from being cleared anyway (it
+      GPFs the cr0 update)
 
- 2.6.24 seems to have the same bug, what about a rediff for it and
-submit the patch to -stable team?
+This crashes on Xen, and it would probably break VMI too.
 
- Thanks.
+The only safe way to allow writes is to change the page permissions 
+(either on the page itself, or create a temporary writable alias for 
+that page).  Perhaps something you could do it with kmap_atomic.
 
--- 
-Luiz Fernando N. Capitulino
+    J
