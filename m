@@ -1,116 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760315AbYB2NQh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932381AbYB2NS2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760315AbYB2NQh (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Feb 2008 08:16:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752539AbYB2NQ3
+	id S932381AbYB2NS2 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Feb 2008 08:18:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753482AbYB2NSS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Feb 2008 08:16:29 -0500
-Received: from x346.tv-sign.ru ([89.108.83.215]:39918 "EHLO mail.screens.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751592AbYB2NQ2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 Feb 2008 08:16:28 -0500
-Date: Fri, 29 Feb 2008 16:20:30 +0300
-From: Oleg Nesterov <oleg@tv-sign.ru>
-To: Roland McGrath <roland@redhat.com>
-Cc: Jiri Kosina <jkosina@suse.cz>, Davide Libenzi <davidel@xmailserver.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] [RFC] fix missed SIGCONT cases
-Message-ID: <20080229132030.GA2301@tv-sign.ru>
-References: <Pine.LNX.4.64.0802271610330.3391@jikos.suse.cz> <20080227210038.93AFC2700FD@magilla.localdomain> <Pine.LNX.4.64.0802272258150.3391@jikos.suse.cz> <20080228102649.071572700FD@magilla.localdomain> <20080228153043.GA11484@tv-sign.ru> <20080229023902.D93E12700FD@magilla.localdomain> <20080229120101.GA1410@tv-sign.ru>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080229120101.GA1410@tv-sign.ru>
-User-Agent: Mutt/1.5.11
+	Fri, 29 Feb 2008 08:18:18 -0500
+Received: from g1t0028.austin.hp.com ([15.216.28.35]:26179 "EHLO
+	g1t0028.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753271AbYB2NSR (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 29 Feb 2008 08:18:17 -0500
+Message-ID: <47C8061A.6080009@hp.com>
+Date: Fri, 29 Feb 2008 08:18:18 -0500
+From: Mark Seger <Mark.Seger@hp.com>
+Organization: Consulting and Architecture
+User-Agent: Thunderbird 2.0.0.9 (Windows/20071031)
+MIME-Version: 1.0
+To: util-linux-ng@vger.kernel.org, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org
+Subject: Collectl now support monitoring Interrupts by CPU
+References: <477FDAA8.2030001@hp.com>
+In-Reply-To: <477FDAA8.2030001@hp.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 02/29, Oleg Nesterov wrote:
->
-> On 02/28, Roland McGrath wrote:
-> >
-> > I don't dislike the direction of your flag-setting approach above.  But
-> > it does introduce more new subtleties that warrant more thought.
->
-> Yes sure.
+In keeping with the spirit of adding new useful features when they help 
+solve real world problems, I've added this ability to collectl as a 
+direct result of a problem we were recently having when doing some 
+network performance testing.  It turned out all the interrupts were 
+being processed by cpu0 (this was on an 8-core system) but all collectl 
+told us was the aggregate number!  Once we moved to a NIC/driver that 
+supported multiple queues that could distribute interrupts to multiple 
+CPUs it only made sense to enhance collectl to let us verify that this 
+was indeed happening - I personally find examining /proc/interrupts for 
+changes more trouble than it's worth.
 
-Still. The more I think about it, the more I like it. It is so simple,
-and allows us to do further cleanups. Please look at the patch below.
-Now we don't need tasklist to send the signal.
+In any event, the following is an example of how collectl can present 
+this data, first summarized by CPU:
 
-handle_stop_signal() should be cleanuped as you pointed out, but this
-patch only does the requied minimum.
+#Time     Cpu0 Cpu1 Cpu2 Cpu3 Cpu4 Cpu5 Cpu6 Cpu7
+12:49:55  4828  16K 1000  16K   18  16K  16K    0
+12:49:56  4804  16K 1000  16K    0  16K  16K    0
+12:49:57  4811  16K 1000  16K   18  16K  16K    0
+12:49:58  4789  16K 1000  16K    0  17K  16K   44
 
-I am worried about ptrace, but hopefully there is no problem.
+and here by the type of the interrupt itself:
 
-Oleg.
+# INTERRUPT DETAILS
+#          Int    Cpu0   Cpu1   Cpu2   Cpu3   Cpu4   Cpu5   Cpu6   Cpu7 
+  Type            Device(s)
+12:48:50   082       0      0      0   7731      0      0      0      
+0   PCI-MSI-X       eth2 (queue 0)
+12:48:50   098       0      0      0      0   2037      0      0      
+0   PCI-MSI-X       eth2 (queue 2)
+12:48:50   122       0      0   2240      0      0      0      0      
+0   PCI-MSI-X       eth2 (queue 5)
+12:48:50   138       0   7084      0      0      0      0      0      
+0   PCI-MSI-X       eth2 (queue 7)
+12:48:50   154       0      0      0      0      0   7723      0      
+0   PCI-MSI-X       eth3 (queue 0)
+12:48:50   162    9082      0      0      0      0      0      0      
+0   PCI-MSI-X       eth3 (queue 1)
+12:48:50   178       0      0      0      0      0      0   8253      
+0   PCI-MSI-X       eth3 (queue 3)
+12:48:50   210       0      0      0      0      0      0      0   
+6417   PCI-MSI-X       eth3 (queue 7)
+12:48:50   218       1      0      0      0      0      0      0      
+0   PCI-MSI         eth0
 
---- 25/include/linux/sched.h~SIG_NP	2008-02-25 19:13:05.000000000 +0300
-+++ 25/include/linux/sched.h	2008-02-29 15:38:00.000000000 +0300
-@@ -455,6 +455,8 @@ struct signal_struct {
- 	int			group_stop_count;
- 	unsigned int		flags; /* see SIGNAL_* flags below */
- 
-+	unsigned int		notify_parent; /* will be moved into ->flags */
-+
- 	/* POSIX.1b Interval Timers */
- 	struct list_head posix_timers;
- 
---- 25/kernel/signal.c~SIG_NP	2008-02-29 15:28:28.000000000 +0300
-+++ 25/kernel/signal.c	2008-02-29 15:54:54.000000000 +0300
-@@ -597,9 +597,7 @@ static void handle_stop_signal(int sig, 
- 			 */
- 			p->signal->group_stop_count = 0;
- 			p->signal->flags = SIGNAL_STOP_CONTINUED;
--			spin_unlock(&p->sighand->siglock);
--			do_notify_parent_cldstop(p, CLD_STOPPED);
--			spin_lock(&p->sighand->siglock);
-+			p->signal->notify_parent = CLD_STOPPED;
- 		}
- 		rm_from_queue(SIG_KERNEL_STOP_MASK, &p->signal->shared_pending);
- 		t = p;
-@@ -638,9 +636,7 @@ static void handle_stop_signal(int sig, 
- 			 */
- 			p->signal->flags = SIGNAL_STOP_CONTINUED;
- 			p->signal->group_exit_code = 0;
--			spin_unlock(&p->sighand->siglock);
--			do_notify_parent_cldstop(p, CLD_CONTINUED);
--			spin_lock(&p->sighand->siglock);
-+			p->signal->notify_parent = CLD_CONTINUED;
- 		} else {
- 			/*
- 			 * We are not stopped, but there could be a stop
-@@ -1748,6 +1744,21 @@ static int do_signal_stop(int signr)
- 	return 1;
- }
- 
-+static int handle_notify_parent(void)
-+{
-+	int why = current->signal->notify_parent;
-+	if (likely(!why))
-+		return 0;
-+	current->signal->notify_parent = 0;
-+	spin_unlock_irq(&current->sighand->siglock);
-+
-+	read_lock(&tasklist_lock);
-+	do_notify_parent_cldstop(current, why);
-+	read_unlock(&tasklist_lock);
-+
-+	return 1;
-+}
-+
- int get_signal_to_deliver(siginfo_t *info, struct k_sigaction *return_ka,
- 			  struct pt_regs *regs, void *cookie)
- {
-@@ -1761,6 +1772,9 @@ relock:
- 	for (;;) {
- 		struct k_sigaction *ka;
- 
-+		if (unlikely(handle_notify_parent()))
-+			goto relock;
-+
- 		if (unlikely(current->signal->group_stop_count > 0) &&
- 		    do_signal_stop(0))
- 			goto relock;
+You can also look at all CPU loads and interrupts together like this:
 
+# SINGLE CPU STATISTICS
+#            CPU  USER NICE  SYS WAIT IRQ  SOFT STEAL IDLE INTRPT
+07:09:28       0     0    0    0    0    0    0     0  100     16
+07:09:28       1     0    0    0    0    0    0     0  100      0
+07:09:28       2     0    0    0    0    0    0     0  100    999
+07:09:28       3     0    0    0    0    0    0     0  100     16
+
+For those not familiar with collectl, you can collect virtually 
+everything all the existing linux 'stat' utilitie provide plus a lot 
+more such as processes (including I/O stats), Infininband, Quadrics, 
+Slab, Lustre and more.  Plus a lot more feature too numerous to list but 
+there's a pretty good summary here - 
+http://collectl.sourceforge.net/Features.html
+
+But don't take my word for it, check out the website at 
+http://collectl.sourceforge.net/ where you can see a pretty good set of 
+examples in the documentation and even follow the tutorial.
+
+-mark
