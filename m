@@ -1,274 +1,129 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757235AbYB2B5o@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757555AbYB2B6Z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757235AbYB2B5o (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Feb 2008 20:57:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752763AbYB2B5e
+	id S1757555AbYB2B6Z (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Feb 2008 20:58:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752763AbYB2B6K
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Feb 2008 20:57:34 -0500
-Received: from smtp1.linux-foundation.org ([207.189.120.13]:53250 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752026AbYB2B5d (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Feb 2008 20:57:33 -0500
-Date: Thu, 28 Feb 2008 17:57:29 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Matthew Wilcox <matthew@wil.cx>
-Cc: linux-kernel@vger.kernel.org, Matthew Wilcox <willy@linux.intel.com>,
-       linux-arch@vger.kernel.org
-Subject: Re: [PATCH 11/12] Generic semaphore implementation
-Message-Id: <20080228175729.e7bebc44.akpm@linux-foundation.org>
-In-Reply-To: <1204180441-8540-11-git-send-email-matthew@wil.cx>
-References: <20080227003605.GC5715@parisc-linux.org>
-	<1204180441-8540-1-git-send-email-matthew@wil.cx>
-	<1204180441-8540-2-git-send-email-matthew@wil.cx>
-	<1204180441-8540-3-git-send-email-matthew@wil.cx>
-	<1204180441-8540-4-git-send-email-matthew@wil.cx>
-	<1204180441-8540-5-git-send-email-matthew@wil.cx>
-	<1204180441-8540-6-git-send-email-matthew@wil.cx>
-	<1204180441-8540-7-git-send-email-matthew@wil.cx>
-	<1204180441-8540-8-git-send-email-matthew@wil.cx>
-	<1204180441-8540-9-git-send-email-matthew@wil.cx>
-	<1204180441-8540-10-git-send-email-matthew@wil.cx>
-	<1204180441-8540-11-git-send-email-matthew@wil.cx>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+	Thu, 28 Feb 2008 20:58:10 -0500
+Received: from mummy.ncsc.mil ([144.51.88.129]:61439 "EHLO mummy.ncsc.mil"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752805AbYB2B6I (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 28 Feb 2008 20:58:08 -0500
+Subject: Re: [PATCH 01/11] Security: Add hook to get full maclabel xattr
+	name
+From: Dave Quigley <dpquigl@tycho.nsa.gov>
+To: casey@schaufler-ca.com
+Cc: Christoph Hellwig <hch@infradead.org>, Stephen Smalley <sds@tycho.nsa.gov>,
+       viro@ftp.linux.org.uk, trond.myklebust@fys.uio.no, bfields@fieldses.org,
+       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       LSM List <linux-security-module@vger.kernel.org>
+In-Reply-To: <519499.69572.qm@web36614.mail.mud.yahoo.com>
+References: <519499.69572.qm@web36614.mail.mud.yahoo.com>
+Content-Type: text/plain
+Date: Thu, 28 Feb 2008 20:33:18 -0500
+Message-Id: <1204248798.2715.62.camel@moss-terrapins.epoch.ncsc.mil>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.12.3 (2.12.3-1.fc8) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 28 Feb 2008 01:34:00 -0500 Matthew Wilcox <matthew@wil.cx> wrote:
 
-> Semaphores are no longer performance-critical, so a generic C
-> implementation is better for maintainability, debuggability and
-> extensibility.
+On Thu, 2008-02-28 at 17:47 -0800, Casey Schaufler wrote:
+> --- Dave Quigley <dpquigl@tycho.nsa.gov> wrote:
 > 
+> > 
+> > ...
+> > 
+> > The reason we are trying to go through the standards process in the
+> > first place is that there is a desire to use SELinux with large netapp
+> > storage boxes. I don't believe that netapp supports the existing
+> > side-band protocol for NFSv4 and the impression I got was that they we
+> > were going to have an incredibly hard time convincing them of putting
+> > anything in that isn't part of the standard.
+> 
+> Most of the original SGI XFS team went to NetApp. The engineer
+> who developed the side-band xattr protocol (last I heard he was a
+> real estate speculator in Florida) spent lots of time with them.
+> They may not be so hostile to the idea as you seem to think.
+> 
+> > It seems that adding one
+> > recommended attribute which is described in a 3 page internet draft(Most
+> > of which is BS that is part of the template) would be significantly
+> > easier to get into the standard than trying to push an out of band xattr
+> > protocol.
+> 
+> Easier may be pragmatic, but that does not make it right.
+> I suggest, that in my opinion (there, is that sufficiently
+> non-confrontational?) that Linux and the LSM are much better
+> served by a general xattr protocol than by adding a single
+> reccommended attribute.
 
-This make all architectures use the lib/semaphore-sleepers.c
-implementation.  The major difference is that down() and up() will now
-unconditionally do a spin_lock_irq[save]() on the not-contended fastpath,
-whereas the hand-optimised arch-specific implementations would avoid that.
+You might be right that Linux and LSM are better served by this, but
+this has to be used by more than just Linux. Solaris has the new FMAC
+initiative (The F is silent) which will probably want to use this as
+well. SEBSD/SEDarwin also has a use for this and they have a MAC label
+concept in their OS with a system call for getting/setting it. 
 
-Yes, hopefully not many sempahores are used on fastpaths any more, and a
-suitable fix for any which _are_ so used is usually convert-to-mutex.
+> 
+> > Also, I believe Trond even expressed some discontent with it a
+> > while back when we first started development. 
+> 
+> And he wasn't confrontational at all! (insert smiley here)
 
-And spin_lock_irqsave() probably isn't hugely slower than an atomic-dec
-anyway.
+I'm not about to get between him and Christoph :)
 
+> > 
+> > ...
+> > > 
+> > > And changing the name and minor details is exactly what Casey requested.
+> > 
+> > I can always go with the original hook name of get_security_xattr_name
+> > which turns into a security_get_security_xattr_name call which seems a
+> > bit ludicrous.
+> 
+> Well, that's why I keep suggesting security_blob_name.
+> Do you have something against blobs?
+> 
+> > The only other complaint that I saw from Casey besides
+> > the name of the function was that there could be more than one xattr.
+> 
+> More precisely, I said that there could be a number other than one,
+> with zero also being an option, and the possibility existing that the
+> name of the blob might not be an xattr (it could be uid, gid, access
+> time, or inode number based) and still make a useful LSM.
 
+It seems your argument is against using xattrs. Regardless of this hook
+the 0 xattr LSM is still borked by this. security_inode_getsecurity(...,
+suffix, ...). It is assumed that the fundamental function for getting
+security information takes an xattr suffix. Don't bother responding to
+this email eventually you will get to the one where I agree with you on
+some points.
 
-A few nits, most or all of which pertain to the old code:
+> 
+> > If
+> > we want to address that then I need another hook that says give me all
+> > data that the LSM deems important for this file. Which is essentially
+> > the same thing as taking each of the xattr names that the module will
+> > provide, grabbing each of them in turn, and concatenating them together.
+> 
+> That would be security_getblob(), would it not?
+> And if you have that, why do you need the attribute name?
 
-> --- /dev/null
-> +++ b/kernel/semaphore.c
-> @@ -0,0 +1,204 @@
-> +/*
-> + * Copyright (c) 2008 Intel Corporation
-> + * Author: Matthew Wilcox <willy@linux.intel.com>
-> + *
-> + * Distributed under the terms of the GNU GPL, version 2
-> + */
-> +
-> +#include <linux/compiler.h>
-> +#include <linux/kernel.h>
-> +#include <linux/module.h>
-> +#include <linux/sched.h>
-> +#include <linux/semaphore.h>
-> +#include <linux/spinlock.h>
-> +
-> +/*
-> + * Some notes on the implementation:
-> + *
-> + * down_trylock() and up() can be called from interrupt context.
-> + * So we have to disable interrupts when taking the lock.
-> + *
-> + * The ->count variable, if positive, defines how many more tasks can
-> + * acquire the semaphore.  If negative, it represents how many tasks are
-> + * waiting on the semaphore (*).  If zero, no tasks are waiting, and no more
-> + * tasks can acquire the semaphore.
-> + *
-> + * (*) Except for the window between one task calling up() and the task
-> + * sleeping in a __down_common() waking up.  In order to avoid a third task
-> + * coming in and stealing the second task's wakeup, we leave the ->count
-> + * negative.  If we have a more complex situation, the ->count may become
-> + * zero or negative (eg a semaphore with count = 2, three tasks attempt to
-> + * acquire it, one sleeps, two finish and call up(), the second task to call
-> + * up() notices that the list is empty and just increments count).
-> + */
-> +
-> +static void noinline __down(struct semaphore *sem);
-> +static int noinline __down_interruptible(struct semaphore *sem);
-> +static int noinline __down_killable(struct semaphore *sem);
-> +static void noinline __up(struct semaphore *sem);
+Keep reading your emails :)
+> 
+> > For SELinux this is no different than getsecurity with the selinux
+> > suffix. The same goes for SMACK.
+> 
+> True enough, but like I keep saying, those are both single label
+> stored in an xattr based MAC systems.
+> 
+> BTW, I prefer "Smack" to SMACK. Much less 1970's.
+> 
+> Thank you.
+> 
+> 
+> Casey Schaufler
+> casey@schaufler-ca.com
 
-We conventionally do `static inline void' rather than `static void inline',
-so I guess we should do `static noinline void' too.
-
-> +int down_interruptible(struct semaphore *sem)
-> +{
-> +	int result = 0;
-> +	might_sleep();
-> +	spin_lock_irq(&sem->lock);
-> +	if (unlikely(sem->count-- <= 0))
-> +		result = __down_interruptible(sem);
-> +	spin_unlock_irq(&sem->lock);
-> +	return result;
-> +}
-> +EXPORT_SYMBOL(down_interruptible);
-
-Some functions leave no blank line between end-of-locals and start-of-code...
-
-> +int down_killable(struct semaphore *sem)
-> +{
-> +	int result = 0;
-> +	might_sleep();
-> +	spin_lock_irq(&sem->lock);
-> +	if (unlikely(sem->count-- <= 0))
-> +		result = __down_killable(sem);
-> +	spin_unlock_irq(&sem->lock);
-> +	return result;
-> +}
-> +EXPORT_SYMBOL(down_killable);
-> +
-> +/**
-> + * down_trylock - try to acquire the semaphore, without waiting
-> + * @sem: the semaphore to be acquired
-> + *
-> + * Try to acquire the semaphore atomically.  Returns 0 if the mutex has
-> + * been acquired successfully and 1 if it is contended.
-> + *
-> + * NOTE: This return value is inverted from both spin_trylock and
-> + * mutex_trylock!  Be careful about this when converting code.
-> + *
-> + * Unlike mutex_trylock, this function can be used from interrupt context,
-> + * and the semaphore can be released by any task or interrupt.
-> + */
-> +int down_trylock(struct semaphore *sem)
-> +{
-> +	unsigned long flags;
-> +	int count;
-> +
-> +	spin_lock_irqsave(&sem->lock, flags);
-> +	count = sem->count - 1;
-> +	if (likely(count >= 0))
-> +		sem->count = count;
-> +	spin_unlock_irqrestore(&sem->lock, flags);
-> +	return (count < 0);
-> +}
-> +EXPORT_SYMBOL(down_trylock);
-
-whereas some others do leave a blank line.
-
-I think the 51% consensus is that the latter form is preferred.
-
-> +void up(struct semaphore *sem)
-> +{
-> +	unsigned long flags;
-> +
-> +	spin_lock_irqsave(&sem->lock, flags);
-> +	if (likely(sem->count >= 0))
-> +		sem->count++;
-> +	else
-> +		__up(sem);
-> +	spin_unlock_irqrestore(&sem->lock, flags);
-> +}
-> +EXPORT_SYMBOL(up);
-> +
-> +/* Functions for the contended case */
-> +
-> +struct semaphore_waiter {
-> +	struct list_head list;
-> +	struct task_struct *task;
-> +	int up;
-> +};
-> +
-> +/*
-> + * Wake up a process waiting on a semaphore.  We need to call this from both
-> + * __up and __down_common as it's possible to race a task into the semaphore
-> + * if it comes in at just the right time between two tasks calling up() and
-> + * a third task waking up.  This function assumes the wait_list is already
-> + * checked for being non-empty.
-> + */
-> +static void noinline __sched __up_down_common(struct semaphore *sem)
-> +{
-> +	struct semaphore_waiter *waiter = list_first_entry(&sem->wait_list,
-> +						struct semaphore_waiter, list);
-> +	list_del(&waiter->list);
-> +	waiter->up = 1;
-
-hm.  Do we need a barrier here?
-
-> +	wake_up_process(waiter->task);
-> +}
-> +
-> +/*
-> + * Because this function is inlined, the 'state' parameter will be constant,
-> + * and thus optimised away by the compiler.
-> + */
-> +static inline int __sched __down_common(struct semaphore *sem, long state)
-> +{
-> +	int result = 0;
-> +	struct task_struct *task = current;
-> +	struct semaphore_waiter waiter;
-> +
-> +	list_add_tail(&waiter.list, &sem->wait_list);
-> +	waiter.task = task;
-> +	waiter.up = 0;
-> +
-> +	for (;;) {
-> +		if (unlikely((state == TASK_INTERRUPTIBLE &&
-> +					signal_pending(task)) ||
-> +			     (state == TASK_KILLABLE &&
-> +					fatal_signal_pending(task))))
-> +			goto interrupted;
-> +		__set_task_state(task, state);
-> +		spin_unlock_irq(&sem->lock);
-> +		schedule();
-> +		spin_lock_irq(&sem->lock);
-> +		if (waiter.up)
-> +			goto woken;
-> +	}
-> +
-> + interrupted:
-> +	list_del(&waiter.list);
-> +	result = -EINTR;
-> + woken:
-> +	/*
-> +	 * Account for the process which woke us up.  For the case where
-> +	 * we're interrupted, we need to increment the count on our own
-> +	 * behalf.  I don't believe we can hit the case where the
-> +	 * sem->count hits zero, *and* there's a second task sleeping,
-> +	 * but it doesn't hurt, that's not a commonly exercised path and
-> +	 * it's not a performance path either.
-> +	 */
-> +	if (unlikely((++sem->count >= 0) && !list_empty(&sem->wait_list)))
-> +		__up_down_common(sem);
-> +	return result;
-> +}
-
-That is one huuuuuuuge inline.  Are we sure it's justified?
-
-> +static void noinline __sched __down(struct semaphore *sem)
-> +{
-> +	__down_common(sem, TASK_UNINTERRUPTIBLE);
-> +}
-> +
-> +static int noinline __sched __down_interruptible(struct semaphore *sem)
-> +{
-> +	return __down_common(sem, TASK_INTERRUPTIBLE);
-> +}
-> +
-> +static int noinline __sched __down_killable(struct semaphore *sem)
-> +{
-> +	return __down_common(sem, TASK_KILLABLE);
-> +}
-> +
-> +static void noinline __sched __up(struct semaphore *sem)
-> +{
-> +	if (unlikely(list_empty(&sem->wait_list)))
-> +		sem->count++;
-> +	else
-> +		__up_down_common(sem);
-> +}
-> Please read the FAQ at  http://www.tux.org/lkml/
