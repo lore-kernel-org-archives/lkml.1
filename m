@@ -1,52 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759793AbYB2La5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759590AbYB2Lf0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759793AbYB2La5 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Feb 2008 06:30:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752654AbYB2Las
+	id S1759590AbYB2Lf0 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Feb 2008 06:35:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752657AbYB2LfP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Feb 2008 06:30:48 -0500
-Received: from ozlabs.org ([203.10.76.45]:52881 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752182AbYB2Lar (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 Feb 2008 06:30:47 -0500
+	Fri, 29 Feb 2008 06:35:15 -0500
+Received: from ik-out-1112.google.com ([66.249.90.180]:6643 "EHLO
+	ik-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753041AbYB2LfN (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 29 Feb 2008 06:35:13 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
+        b=Uxko8qHO1r+Nke/Ns0L/S94pM8xX5LdxLSAZUTv531praGSSl5sge0CkVTbouW41Q14zG0rJ6xwrI5MxmFB2ZClb2uxBFcI8WvQ7erFsvIfW2E8jGYQ8TNjm54f9WVPzJdGuXYkjirVsFViO9IWGXqIBWKHkJ71VUPz68ictsW0=
+Message-ID: <47C7EDE4.9040909@gmail.com>
+Date: Fri, 29 Feb 2008 12:35:00 +0100
+From: Jiri Olsa <olsajiri@gmail.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: [BUG] soft lockup detected with ipcs
+References: <47C7E280.4010805@gmail.com>	<20080229025707.971ce0bd.akpm@linux-foundation.org>	<47C7E607.6090308@gmail.com> <20080229032902.a1a235df.akpm@linux-foundation.org>
+In-Reply-To: <20080229032902.a1a235df.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Message-ID: <18375.60394.166769.540668@cargo.ozlabs.ibm.com>
-Date: Fri, 29 Feb 2008 22:26:34 +1100
-From: Paul Mackerras <paulus@samba.org>
-To: Jarod Wilson <jwilson@redhat.com>
-Cc: benh@kernel.crashing.org, Kristian Hoegsberg <krh@bitplanet.net>,
-       linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-       Stefan Richter <stefanr@s5r6.in-berlin.de>, sparclinux@vger.kernel.org,
-       linux1394-devel@lists.sourceforge.net, Sam Ravnborg <sam@ravnborg.org>,
-       Harvey Harrison <harvey.harrison@gmail.com>
-Subject: Re: [PATCH 1/2] firewire: endianess fix
-In-Reply-To: <47C79CB1.6050104@redhat.com>
-References: <20080220220326.GA22328@uranus.ravnborg.org>
-	<200802272221.38985.jwilson@redhat.com>
-	<1204179959.15052.372.camel@pasglop>
-	<200802281342.06493.jwilson@redhat.com>
-	<1204241162.15052.393.camel@pasglop>
-	<47C79CB1.6050104@redhat.com>
-X-Mailer: VM 7.19 under Emacs 21.4.1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jarod Wilson writes:
+Andrew Morton wrote:
+> On Fri, 29 Feb 2008 12:01:27 +0100 Jiri Olsa <olsajiri@gmail.com> wrote:
+> 
+>> Andrew Morton wrote:
+>>> On Fri, 29 Feb 2008 11:46:24 +0100 Jiri Olsa <olsajiri@gmail.com> wrote:
+>>>
+>>>> when I run 'ipcs' my system freeze up immediatelly.
+>>>> I was able to get kernel BUG message once, I think it is not
+>>>> printed out all the time it freeze.
+>>>>
+>>>> I tried on 2.6.24, 2.6.20 and 2.6.18.
+>>>> I attached screenshot from 2.6.18 freeze and config.
+>>> how weird.  Lots of people are surely running ipcs and not seeing this.
+>>>
+>>> Can you suggest what's different about your setup?
+>> no idea :) I noticed like 2 weeks ago... I probably changed some config,
+>> but I dont remember what it was, I'll try to figure out.
+>>
+>> Anyway I can reproduce this immediatelly, so I can run any diag you'd need to see.
+>>
+> 
+> (reversed top-posting - please don't do that ;))
+> 
+> Strange.  I guess as a first step it would be good if you can get a full
+> backtrace - can you set up netconsole
+> (Documentation/networking/netconsole.txt) and grab that?
+> 
+> We have your config.  Can you tell us how you're triggering it?  Does a
+> particular workload have to be run, or is it triggerable straight after
+> bootup?
+> 
+> Thanks.
 
-> Still no luck finding one here. The person I was thinking of has a 
-> Lombard, which has no firewire. I did get ahold of a 667MHz Titanium, 
-> but its got an Agere FW323. Pretty sure my old man actually has a Pismo, 
-> but its about a 3000 mile drive over to my folks house. The search 
-> continues... I wonder how many people still actually 1) have a machine 
-> with this controller, 2) are running Linux on it and 3) use firewire 
-> devices with it. Both of you, please speak up, we're trying to help you! 
-> (if only out of morbid curiosity to see this mythical goofy controller).
+I'll try to get the netconsole..
 
-I have a first-generation titanium powerbook that has this controller
-(assuming we're talking about vendor/device id = 0x106b / 0x18), and
-yes I run Linux (only) on it and use firewire disks. :)
+The trigger is simple just type ipcs and press enter :)
+I noticed that running from xterm freeze all the time.
+It wont freeze up sometimes running directly from terminal.
 
-Paul.
+I also tried to reproduce it in qemu but with no luck.
