@@ -1,51 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759981AbYB2BJx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1750851AbYB2BKi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759981AbYB2BJx (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Feb 2008 20:09:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762762AbYB2BBF
+	id S1750851AbYB2BKi (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Feb 2008 20:10:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763222AbYB2BDM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Feb 2008 20:01:05 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:52590 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761518AbYB2BBD (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Feb 2008 20:01:03 -0500
-Date: Thu, 28 Feb 2008 20:00:55 -0500
-From: Christoph Hellwig <hch@infradead.org>
-To: Dave Quigley <dpquigl@tycho.nsa.gov>
-Cc: Christoph Hellwig <hch@infradead.org>, Stephen Smalley <sds@tycho.nsa.gov>,
-       casey@schaufler-ca.com, viro@ftp.linux.org.uk,
-       trond.myklebust@fys.uio.no, bfields@fieldses.org,
-       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       LSM List <linux-security-module@vger.kernel.org>
-Subject: Re: [PATCH 01/11] Security: Add hook to get full maclabel xattr
-	name
-Message-ID: <20080229010055.GA26176@infradead.org>
-References: <746385.69480.qm@web36611.mail.mud.yahoo.com> <1204227035.31790.207.camel@moss-spartans.epoch.ncsc.mil> <20080228234850.GA25829@infradead.org> <1204243497.2715.24.camel@moss-terrapins.epoch.ncsc.mil> <20080229003937.GA16343@infradead.org> <1204245167.2715.37.camel@moss-terrapins.epoch.ncsc.mil>
+	Thu, 28 Feb 2008 20:03:12 -0500
+Received: from relay1.sgi.com ([192.48.171.29]:42935 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1761774AbYB2BDD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 28 Feb 2008 20:03:03 -0500
+Date: Thu, 28 Feb 2008 17:03:01 -0800 (PST)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Andrea Arcangeli <andrea@qumranet.com>
+cc: Jack Steiner <steiner@sgi.com>, Nick Piggin <npiggin@suse.de>,
+       akpm@linux-foundation.org, Robin Holt <holt@sgi.com>,
+       Avi Kivity <avi@qumranet.com>, Izik Eidus <izike@qumranet.com>,
+       kvm-devel@lists.sourceforge.net,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, general@lists.openfabrics.org,
+       Steve Wise <swise@opengridcomputing.com>,
+       Roland Dreier <rdreier@cisco.com>, Kanoj Sarcar <kanojsarcar@yahoo.com>,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       daniel.blueman@quadrics.com
+Subject: Re: [PATCH] mmu notifiers #v7
+In-Reply-To: <20080229004001.GN8091@v2.random>
+Message-ID: <Pine.LNX.4.64.0802281700060.1954@schroedinger.engr.sgi.com>
+References: <20080219084357.GA22249@wotan.suse.de> <20080219135851.GI7128@v2.random>
+ <20080219231157.GC18912@wotan.suse.de> <20080220010941.GR7128@v2.random>
+ <20080220103942.GU7128@v2.random> <20080221045430.GC15215@wotan.suse.de>
+ <20080221144023.GC9427@v2.random> <20080221161028.GA14220@sgi.com>
+ <20080227192610.GF28483@v2.random> <Pine.LNX.4.64.0802281456200.1152@schroedinger.engr.sgi.com>
+ <20080229004001.GN8091@v2.random>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1204245167.2715.37.camel@moss-terrapins.epoch.ncsc.mil>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Feb 28, 2008 at 07:32:47PM -0500, Dave Quigley wrote:
-> I can always go with the original hook name of get_security_xattr_name
-> which turns into a security_get_security_xattr_name call which seems a
-> bit ludicrous. The only other complaint that I saw from Casey besides
-> the name of the function was that there could be more than one xattr. If
-> we want to address that then I need another hook that says give me all
-> data that the LSM deems important for this file. Which is essentially
-> the same thing as taking each of the xattr names that the module will
-> provide, grabbing each of them in turn, and concatenating them together.
-> For SELinux this is no different than getsecurity with the selinux
-> suffix. The same goes for SMACK.
+On Fri, 29 Feb 2008, Andrea Arcangeli wrote:
 
-What about Casey's suggestion of get_security_blob?  For any reasonable
-module that just has a single xattr it's trivial and for those that
-have multiple or a different storage model it might get complicated
-but that's not our problem for now.
+> > Also re the _notify variants: The binding to pte_clear_flush_young etc 
+> > will become a problem for notifiers that want to sleep because 
+> > pte_clear_flush is usually called with the pte lock held. See f.e. 
+> > try_to_unmap_one, page_mkclean_one etc.
+> 
+> Calling __free_page out of the PT lock is much bigger
+> change. do_wp_page will require changes anyway when the sleepable
+> notifiers are merged.
+
+I thought you wanted to get rid of the sync via pte lock?
+What changes to do_wp_page do you envision?
+
+> > It would be better if the notifier calls could be moved outside of the 
+> > pte lock.
+> 
+> The point is that it can't make a difference right now, and my
+> objective was to avoid unnecessary source code duplication (later it
+> will be necessary, right now it isn't). By the time you rework
+> do_wp_page, removing _notify will be a very minor detail compared to
+> the rest of the changes to do_wp_page IMHO. Expanding it now won't
+> provide a real advantage later.
+
+What is the trouble with the current do_wp_page modifications? There is 
+no need for invalidate_page() there so far. invalidate_range() does the 
+trick there.
+
