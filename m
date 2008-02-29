@@ -1,50 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933145AbYB2P6x@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933130AbYB2QBL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933145AbYB2P6x (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Feb 2008 10:58:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759307AbYB2P6o
+	id S933130AbYB2QBL (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Feb 2008 11:01:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932391AbYB2QA5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Feb 2008 10:58:44 -0500
-Received: from www.tglx.de ([62.245.132.106]:57573 "EHLO www.tglx.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756370AbYB2P6n (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 Feb 2008 10:58:43 -0500
-Date: Fri, 29 Feb 2008 16:57:57 +0100 (CET)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Andrew Morton <akpm@linux-foundation.org>
-cc: Karsten Wiese <fzu@wemgehoertderstaat.de>, linux-kernel@vger.kernel.org,
-       Ingo Molnar <mingo@elte.hu>
-Subject: Re: [PATCH] Optimise tick_nohz_stop_sched_tick() a bit
-In-Reply-To: <20080228171634.f6fab4de.akpm@linux-foundation.org>
-Message-ID: <alpine.LFD.1.00.0802291657090.6427@apollo.tec.linutronix.de>
-References: <200802281510.51191.fzu@wemgehoertderstaat.de> <20080228171634.f6fab4de.akpm@linux-foundation.org>
-User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
+	Fri, 29 Feb 2008 11:00:57 -0500
+Received: from mail.syneticon.net ([213.239.212.131]:42829 "EHLO
+	mail2.syneticon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932300AbYB2QA5 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 29 Feb 2008 11:00:57 -0500
+Message-ID: <47C82C2A.5000301@wpkg.org>
+Date: Fri, 29 Feb 2008 17:00:42 +0100
+From: Tomasz Chmielewski <mangoo@wpkg.org>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.8) Gecko/20061110 Mandriva/1.5.0.8-1mdv2007.1 (2007.1) Thunderbird/1.5.0.8 Mnenhy/0.7.4.666
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Gordon Mckeown <ml_lkml@thefluffyone.net>
+Cc: LKML <linux-kernel@vger.kernel.org>
+Subject: Re: Very high IOWait during all disk activity
+References: <47C82244.60307@wpkg.org> <74d8fc520802290747o2c97992ar7af2b8c295fe2fb2@mail.gmail.com>
+In-Reply-To: <74d8fc520802290747o2c97992ar7af2b8c295fe2fb2@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 28 Feb 2008, Andrew Morton wrote:
-> On Thu, 28 Feb 2008 15:10:50 +0100 Karsten Wiese <fzu@wemgehoertderstaat.de> wrote:
-> -static ktime_t tick_nohz_start_idle(int cpu, struct tick_sched *ts)
-> +static ktime_t tick_nohz_start_idle(struct tick_sched *ts)
->  {
->  	ktime_t now, delta;
->  
-> @@ -200,7 +200,7 @@ void tick_nohz_stop_sched_tick(void)
->  
->  	cpu = smp_processor_id();
->  	ts = &per_cpu(tick_cpu_sched, cpu);
-> -	now = tick_nohz_start_idle(cpu, ts);
-> +	now = tick_nohz_start_idle(ts);
->  
->  	/*
->  	 * If this cpu is offline and it is the one which updates
+Gordon Mckeown schrieb:
 
-Combined patch applied to hrt.git
+(...)
 
-Thanks,
+> Unfortunately this doesn't help explain why Windows XP on the same box
+> can complete an "identical" copy operation in half the time. Perhaps
+> it's just due to the different filesystems, or the way write caching
+> works?
 
-	tglx
+Did you, at least:
 
+* made a NTFS on that drive for a Windows test
+* made a ext3 on that same drive for a Linux test
+
+Or, is Linux using partition A, and Windows using partition B?
+
+If it's the latter, such tests are not very meaningful.
+
+Also, you gave too few details to say anything meaningful, really (did 
+you drop cache on both systems before starting copying? did you sync 
+after copying on both systems to see how long does it take? etc.).
+
+
+-- 
+Tomasz Chmielewski
+http://wpkg.org
