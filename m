@@ -1,55 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756538AbYB2JHm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756732AbYB2JK4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756538AbYB2JHm (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Feb 2008 04:07:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753935AbYB2JHd
+	id S1756732AbYB2JK4 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Feb 2008 04:10:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754607AbYB2JKm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Feb 2008 04:07:33 -0500
-Received: from courier.cs.helsinki.fi ([128.214.9.1]:49969 "EHLO
-	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753518AbYB2JHb (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 Feb 2008 04:07:31 -0500
-Date: Fri, 29 Feb 2008 11:07:30 +0200 (EET)
-From: Pekka J Enberg <penberg@cs.helsinki.fi>
-To: clameter@sgi.com
-cc: linux-kernel@vger.kernel.org
-Subject: [PATCH] slub: look up object from the freelist once
-Message-ID: <Pine.LNX.4.64.0802291105230.5423@sbz-30.cs.Helsinki.FI>
-Mime-Version: 1.0
+	Fri, 29 Feb 2008 04:10:42 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:49843 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754538AbYB2JKk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 29 Feb 2008 04:10:40 -0500
+Date: Fri, 29 Feb 2008 10:10:18 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Thomas Gleixner <tglx@linutronix.de>, Oleg Nesterov <oleg@tv-sign.ru>,
+       Steven Rostedt <rostedt@goodmis.org>, Paul Jackson <pj@sgi.com>,
+       Max Krasnyanskiy <maxk@qualcomm.com>, linux-kernel@vger.kernel.org
+Subject: Re: [RFC/PATCH 0/4] CPUSET driven CPU isolation
+Message-ID: <20080229091018.GA19823@elte.hu>
+References: <20080227222103.673194000@chello.nl> <20080228075010.GA28781@elte.hu> <20080229003155.bbab795d.akpm@linux-foundation.org>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+In-Reply-To: <20080229003155.bbab795d.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Pekka Enberg <penberg@cs.helsinki.fi>
 
-We only need to look up object from c->page->freelist once in 
-__slab_alloc().
+* Andrew Morton <akpm@linux-foundation.org> wrote:
 
-Signed-off-by: Pekka Enberg <penberg@cs.helsinki.fi>
----
- mm/slub.c |    2 --
- 1 file changed, 2 deletions(-)
+> It of course lays waste to a series of cgroup patches from Paul Menage 
+> which I already had queued.
 
-Index: linux-2.6/mm/slub.c
-===================================================================
---- linux-2.6.orig/mm/slub.c
-+++ linux-2.6/mm/slub.c
-@@ -1522,7 +1522,6 @@ load_freelist:
- 	if (unlikely(SlabDebug(c->page)))
- 		goto debug;
- 
--	object = c->page->freelist;
- 	c->freelist = object[c->offset];
- 	c->page->inuse = s->objects;
- 	c->page->freelist = c->page->end;
-@@ -1578,7 +1577,6 @@ new_slab:
- 
- 	return NULL;
- debug:
--	object = c->page->freelist;
- 	if (!alloc_debug_processing(s, c->page, object, addr))
- 		goto another_slab;
- 
+Andrew, please stop tracking sched-devel.git and track this tree 
+instead:
+
+   git://git.kernel.org/pub/scm/linux/kernel/git/mingo/linux-2.6-sched.git
+
+thanks,
+
+	Ingo
