@@ -1,86 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761047AbYB2BIj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755716AbYB2BI7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761047AbYB2BIj (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Feb 2008 20:08:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764578AbYB2A6m
+	id S1755716AbYB2BI7 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Feb 2008 20:08:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759482AbYB2BAG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Feb 2008 19:58:42 -0500
-Received: from e32.co.us.ibm.com ([32.97.110.150]:35614 "EHLO
-	e32.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759975AbYB2A6l (ORCPT
+	Thu, 28 Feb 2008 20:00:06 -0500
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:35928 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1762046AbYB2BAB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Feb 2008 19:58:41 -0500
-Date: Thu, 28 Feb 2008 16:58:23 -0800
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Jarek Poplawski <jarkao2@gmail.com>
-Cc: bugme-daemon@bugzilla.kernel.org, Yannick Dirou <yannick.dirou@axetic.com>,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Subject: Re: [Bug 10071] kernel hang in inet_init (PREEMPT_RCU problem)
-Message-ID: <20080229005823.GF14104@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <bug-10071-11547@http.bugzilla.kernel.org/> <20080228205303.261D311D108@picon.linux-foundation.org> <20080228213457.GA2770@ami.dom.local>
+	Thu, 28 Feb 2008 20:00:01 -0500
+Date: Thu, 28 Feb 2008 16:59:59 -0800 (PST)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Andrea Arcangeli <andrea@qumranet.com>
+cc: Nick Piggin <nickpiggin@yahoo.com.au>, akpm@linux-foundation.org,
+       Robin Holt <holt@sgi.com>, Avi Kivity <avi@qumranet.com>,
+       Izik Eidus <izike@qumranet.com>, kvm-devel@lists.sourceforge.net,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, general@lists.openfabrics.org,
+       Steve Wise <swise@opengridcomputing.com>,
+       Roland Dreier <rdreier@cisco.com>, Kanoj Sarcar <kanojsarcar@yahoo.com>,
+       steiner@sgi.com, linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       daniel.blueman@quadrics.com
+Subject: Re: [patch 2/6] mmu_notifier: Callbacks to invalidate address ranges
+In-Reply-To: <20080229005530.GO8091@v2.random>
+Message-ID: <Pine.LNX.4.64.0802281658560.1954@schroedinger.engr.sgi.com>
+References: <20080215064859.384203497@sgi.com> <20080215064932.620773824@sgi.com>
+ <200802201008.49933.nickpiggin@yahoo.com.au>
+ <Pine.LNX.4.64.0802271424390.13186@schroedinger.engr.sgi.com>
+ <20080228001104.GB8091@v2.random> <Pine.LNX.4.64.0802271613080.15791@schroedinger.engr.sgi.com>
+ <20080228005249.GF8091@v2.random> <Pine.LNX.4.64.0802271702490.16510@schroedinger.engr.sgi.com>
+ <20080228011020.GG8091@v2.random> <Pine.LNX.4.64.0802281043430.29191@schroedinger.engr.sgi.com>
+ <20080229005530.GO8091@v2.random>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080228213457.GA2770@ami.dom.local>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Feb 28, 2008 at 10:34:57PM +0100, Jarek Poplawski wrote:
-> On Thu, Feb 28, 2008 at 12:53:03PM -0800, bugme-daemon@bugzilla.kernel.org wrote:
-> > http://bugzilla.kernel.org/show_bug.cgi?id=10071
-> ...
-> > ------- Comment #17 from yannick.dirou@axetic.com  2008-02-28 12:53 -------
-> > bingo with classic rcu
-> 
-> Congratulations Yannick!
-> 
-> So, it seems mainly RCU vs. timer(?) problem. I send CC of this message
-> to RCU author, linux-kernel and netdev lists.
+On Fri, 29 Feb 2008, Andrea Arcangeli wrote:
 
-Interesting!  Any chance of a pointer to the original messages?
-A quick Google search and a look at LKML showed me nothing.  :-/
+> On Thu, Feb 28, 2008 at 10:43:54AM -0800, Christoph Lameter wrote:
+> > What about invalidate_page()?
+> 
+> That would just spin waiting an ack (just like the smp-tlb-flushing
+> invalidates in numa already does).
 
-						Thanx, Paul
+And thus the device driver may stop receiving data on a UP system? It will 
+never get the ack.
+ 
+> Thinking more about this, we could also parallelize it with an
+> invalidate_page_before/end. If it takes 1usec to flush remotely,
+> scheduling would be overkill, but spending 1usec in a while loop isn't
+> nice if we can parallelize that 1usec with the ipi-tlb-flush. Not sure
+> if it makes sense... it certainly would be quick to add it (especially
+> thanks to _notify ;).
 
-> I'm not sure how much time you could/will to offer for this debugging.
-> Anyway, if it's possible I think it would be interesting to check with
-> CONFIG_PREEMPT_RCU = y again, but CONFIG_HOTPLUG_CPU = n ("Processor
-> type and features --> Support for suspend on SMP and ...") in the
-> meantime.
-> 
-> Many thanks,
-> Jarek P.
-> 
-> 
-> > [    0.770854] NET: Registered protocol family 2
-> > [    0.770868] 4294668327 net/ipv4/af_inet.c 1387
-> > [    0.770884] 4294668327 net/ipv4/af_inet.c 1390
-> > [    0.770888] 4294668327 net/ipv4/af_inet.c 1393
-> > [    0.770891] 4294668327 net/ipv4/af_inet.c 1402
-> > [    0.770893] 4294668327 net/ipv4/af_inet.c 1407
-> > [    0.773078] 0 4294668328l
-> > [    0.774036] 0 4294668329l
-> > [    0.775037] 0 4294668330l
-> > [    0.775040] 4294668330 net/ipv4/af_inet.c 1419
-> > [    0.775077] 4294668330 net/ipv4/af_inet.c 1426
-> > [    0.775077] 4294668330 net/ipv4/route.c 2998
-> > [    0.775077] 4294668330 net/ipv4/route.c 3009
-> > [    0.775077] 4294668330 net/ipv4/route.c 3016
-> > [    0.775077] IP route cache hash table entries: 32768 (order: 5, 131072
-> > bytes)
-> > [    0.775077] 4294668330 net/ipv4/route.c 3027
-> > [    0.775492] TCP established hash table entries: 131072 (order: 8, 1048576
-> > bytes)
-> > [    0.776318] TCP bind hash table entries: 65536 (order: 9, 2359296 bytes)
-> > [    0.785670] TCP: Hash tables configured (established 131072 bind 65536)
-> > [    0.785715] TCP reno registered
-> > 
-> > 
-> > -- 
-> > Configure bugmail: http://bugzilla.kernel.org/userprefs.cgi?tab=email
-> > ------- You are receiving this mail because: -------
-> > You are on the CC list for the bug, or are watching someone who is.
-> > You are the assignee for the bug, or are watching the assignee.
+invalidate_page_before/end could be realized as an 
+invalidate_range_begin/end on a page sized range?
