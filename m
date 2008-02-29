@@ -1,63 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932735AbYB2VNm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933778AbYB2VOB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932735AbYB2VNm (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Feb 2008 16:13:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751353AbYB2VNd
+	id S933778AbYB2VOB (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Feb 2008 16:14:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761449AbYB2VNh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Feb 2008 16:13:33 -0500
-Received: from gw.goop.org ([64.81.55.164]:52830 "EHLO mail.goop.org"
+	Fri, 29 Feb 2008 16:13:37 -0500
+Received: from c60.cesmail.net ([216.154.195.49]:16466 "EHLO c60.cesmail.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751227AbYB2VNc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 Feb 2008 16:13:32 -0500
-Message-ID: <47C87488.9030205@goop.org>
-Date: Fri, 29 Feb 2008 13:09:28 -0800
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
-MIME-Version: 1.0
-To: "H. Peter Anvin" <hpa@zytor.com>
-CC: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       Ingo Molnar <mingo@elte.hu>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andi Kleen <ak@suse.de>, Zachary Amsden <zach@vmware.com>
-Subject: Re: bad paravirt/Xen interaction in "x86 - Enhance DEBUG_RODATA support
- - alternatives"
-References: <47C86D7A.5030608@goop.org> <47C8717F.3030009@zytor.com>
-In-Reply-To: <47C8717F.3030009@zytor.com>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=UTF-8; format=flowed
+	id S1761161AbYB2VNg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 29 Feb 2008 16:13:36 -0500
+Subject: Re: [PATCH 2.6.25] module: allow ndiswrapper to use GPL-only
+	symbols
+From: Pavel Roskin <proski@gnu.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Zan Lynx <zlynx@acm.org>, linux-kernel <linux-kernel@vger.kernel.org>,
+       Jon Masters <jcm@jonmasters.org>, Rusty Russell <rusty@rustcorp.com.au>
+In-Reply-To: <alpine.LFD.1.00.0802291224290.17889@woody.linux-foundation.org>
+References: <1204236662.3612.6.camel@dv>
+	 <alpine.LFD.1.00.0802281525170.5780@woody.linux-foundation.org>
+	 <20080229012012.ajlsk4pow8wkkgss@webmail.spamcop.net>
+	 <alpine.LFD.1.00.0802290807110.17889@woody.linux-foundation.org>
+	 <1204304352.6767.21.camel@localhost>
+	 <alpine.LFD.1.00.0802290906520.17889@woody.linux-foundation.org>
+	 <1204305609.21719.16.camel@dv>
+	 <alpine.LFD.1.00.0802290929590.17889@woody.linux-foundation.org>
+	 <1204313978.2316.8.camel@dv>
+	 <alpine.LFD.1.00.0802291151460.17889@woody.linux-foundation.org>
+	 <1204315713.2316.15.camel@dv>
+	 <alpine.LFD.1.00.0802291224290.17889@woody.linux-foundation.org>
+Content-Type: text/plain
+Date: Fri, 29 Feb 2008 16:13:34 -0500
+Message-Id: <1204319614.2316.39.camel@dv>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.3 (2.12.3-1.fc8) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-H. Peter Anvin wrote:
-> Jeremy Fitzhardinge wrote:
->> The patch "x86 - Enhance DEBUG_RODATA support - alternatives" enables 
->> the kernel for writing by clearing X86_CR0_WP allow privileged 
->> writes.  This won't work in a paravirt environment for two reasons:
->>
->>   1. the kernel may not be running in ring 0, so writes will still be
->>      prevented
->>   2. the hypervisor prevents X86_CR0_WP from being cleared anyway (it
->>      GPFs the cr0 update)
->>
->> This crashes on Xen, and it would probably break VMI too.
-
-(lguest too, of course)
-
->> The only safe way to allow writes is to change the page permissions 
->> (either on the page itself, or create a temporary writable alias for 
->> that page).  Perhaps something you could do it with kmap_atomic.
->>
+On Fri, 2008-02-29 at 12:28 -0800, Linus Torvalds wrote:
+> 
+> On Fri, 29 Feb 2008, Pavel Roskin wrote:
+> > 
+> > This still leaves us with the workqueue interface:
+> > 
+> > __create_workqueue_key
+> > destroy_workqueue
+> > flush_workqueue
+> > queue_work
+> 
+> Hmm. Personally, I don't see those as being a big issue, but they've been 
+> marked GPL-only for a long while. 
+> 
+> The thing is, I personally don't mind, and I think "derived code" is what 
+> matters, but others disagree, and quite frankly, I'm not going to force 
+> them - I have my _personal_ beliefs, but hey, others have theirs.
 >
-> A properly implemented hypervisor should arguably emulate this.
->
-> Doesn't really mean the patch is worth the pain.
+> So you really need to talk to not me, but to the people who actually wrote 
+> and maintain that code.
 
-No, it would be irritating to implement.
+As far as I can tell, those people have never tried to prevent
+ndiswrapper from using their code.  Both times ndiswrapper was prevented
+from using GPLONLY symbols, it was done unintentionally.
 
-Seems to me that doing the update in a temporary kmap_atomic mapping 
-would be a more straightforward way to go, anyway.  How would you 
-implement this on a processor without something like X86_CR0_WP?
+> When they come back and say "yeah, we think 
+> ndiswrapper is a special case and we're ok with it", I'll happily either 
+> mark those things non-GPL or just mark ndiswrapper special in the module 
+> loader again.
 
-    J
+OK, I'll keep it in mind in case such approach actually becomes
+necessary.
+
+-- 
+Regards,
+Pavel Roskin
