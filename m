@@ -1,115 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758863AbYB2CQx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759327AbYB2CRh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758863AbYB2CQx (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Feb 2008 21:16:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753856AbYB2CQn
+	id S1759327AbYB2CRh (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Feb 2008 21:17:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754275AbYB2CR2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Feb 2008 21:16:43 -0500
-Received: from sca-es-mail-2.Sun.COM ([192.18.43.133]:53442 "EHLO
-	sca-es-mail-2.sun.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751654AbYB2CQm (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Feb 2008 21:16:42 -0500
-Date: Thu, 28 Feb 2008 18:16:37 -0800
-From: Andreas Dilger <adilger@sun.com>
-Subject: Re: [RFC][PATCH] fs/partitions/msdos: directly check if FAT boot	sector
-In-reply-to: <47C6A9C1.8000008@suse.de>
-To: Frank Seidel <fseidel@suse.de>
-Cc: Alexander Viro <viro@zeniv.linux.org.uk>, linux-fsdevel@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>
-Message-id: <20080229021637.GF3176@webber.adilger.int>
-MIME-version: 1.0
-Content-type: text/plain; charset=us-ascii
-Content-transfer-encoding: 7BIT
-Content-disposition: inline
-X-GPG-Key: 1024D/0D35BED6
-X-GPG-Fingerprint: 7A37 5D79 BF1B CECA D44F  8A29 A488 39F5 0D35 BED6
-References: <47C6A9C1.8000008@suse.de>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+	Thu, 28 Feb 2008 21:17:28 -0500
+Received: from zombie.ncsc.mil ([144.51.88.131]:41300 "EHLO zombie.ncsc.mil"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754124AbYB2CR0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 28 Feb 2008 21:17:26 -0500
+Subject: Re: [PATCH 03/11] VFS: Add security label support to *notify
+From: Dave Quigley <dpquigl@tycho.nsa.gov>
+To: Christoph Hellwig <hch@infradead.org>
+Cc: viro@ftp.linux.org.uk, trond.myklebust@fys.uio.no, bfields@fieldses.org,
+       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
+In-Reply-To: <20080229002312.GA9198@infradead.org>
+References: <1204150294-4678-1-git-send-email-dpquigl@tycho.nsa.gov>
+	 <1204150294-4678-4-git-send-email-dpquigl@tycho.nsa.gov>
+	 <20080228235427.GA17757@infradead.org>
+	 <1204242283.2715.9.camel@moss-terrapins.epoch.ncsc.mil>
+	 <20080229002312.GA9198@infradead.org>
+Content-Type: text/plain
+Date: Thu, 28 Feb 2008 20:52:57 -0500
+Message-Id: <1204249977.2715.69.camel@moss-terrapins.epoch.ncsc.mil>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.3 (2.12.3-1.fc8) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Feb 28, 2008  13:32 +0100, Frank Seidel wrote:
-> i received a complaint that some FAT formated medias
-> (e.g. sd memory cards) trigger a "unknown partition table" message even though
-> there is no partition table and they work correctly, while in general
-> (when e.g. formated with mkdosfs or even Windows Vista) this message is not
-> shown.
-> Currently this seems only to happen when the medias get formatted with
-> Windows XP (and possibly Win 2000). Then the boot indicator byte contains
-> garbage (part of text message) and so do the other parts checked by
-> msdos_paritition which then later triggers this message.
-> 
-> Would the patch below be appropriate to solve this issue/calm those users?
-> It works ok here for the medias i could test.
+So after looking at this it seems that this is going to be a far more
+changes to NFS to set something that is an inode attribute. I can keep
+looking into it but it seems like it can be done much cleaner as an
+inode_setattr extension rather than adding new structures all over the
+nfs code.
 
-There is also a similar complaint from users who format ext3 directly on
-a disk/LUN without a partition table, because the partition table offset
-negatively impacts the performance of the filesystem (causing unaligned
-IO on a RAID device).  Turning off this message is very good.
+Dave
 
-> ---
-> From: Frank Seidel <fseidel@suse.de>
-> Subject: detect fat media without partition table correctly
-> References: novell bug #364365
+On Thu, 2008-02-28 at 19:23 -0500, Christoph Hellwig wrote:
+> On Thu, Feb 28, 2008 at 06:44:43PM -0500, Dave Quigley wrote:
+> > The main reason for this was the way that NFS passes information it
+> > receives around. If you look in patch 11 you will see that
+> > nfsd4_decode_fattr doesn't give us access to an inode to use for
+> > security_inode_setsecurity and it doesn't give us a dentry to use the
+> > xattr helpers with. The only thing we get here is an iattr structure
+> > which is then passed back up to fill in the inode fields. Also without
+> > functionality provided by patch 1 we don't even know where to put the
+> > security blob we are getting from the wire. 
 > 
-> Most fat formatted media without partition table contains
-> zeros in the boot indication and the other tested bytes
-> and so falls through the checks in msdos_partition, leading
-> it to return with 1 (all is fine).
-> But some (e.g. WinXP formatted) fat fomated medias don't
-> use boot_ind and so the check fails and causes a
-> "unkown partition table" warning eventhough there is none
-> and everything would be fine.
-> This additional check directly verifies if there is a
-> fat formatted medium without a partition table.
+> Take a look at how ACLs are handled.  They're passed up from the _decode
+> operations into a small structure that is referenced by struct
+> nfsd4_<operation> and pass it up until the level where the dentry
+> is available.
 > 
-> Signed-off-by: Frank Seidel <fseidel@suse.de>
-> ---
->  fs/partitions/msdos.c |    9 ++++++++-
->  1 file changed, 8 insertions(+), 1 deletion(-)
-> 
-> --- a/fs/partitions/msdos.c
-> +++ b/fs/partitions/msdos.c
-> @@ -18,7 +18,7 @@
->   *
->   *  Re-organised Feb 1998 Russell King
->   */
-> -
-> +#include <linux/msdos_fs.h>
->  
->  #include "check.h"
->  #include "msdos.h"
-> @@ -419,6 +419,7 @@ int msdos_partition(struct parsed_partit
->  	Sector sect;
->  	unsigned char *data;
->  	struct partition *p;
-> +	struct fat_boot_sector *fb;
->  	int slot;
->  
->  	data = read_dev_sector(bdev, 0, &sect);
-> @@ -441,6 +442,12 @@ int msdos_partition(struct parsed_partit
->  	 * partition table. Reject this in case the boot indicator
->  	 * is not 0 or 0x80.
->  	 */
-> +	fb = (struct fat_boot_sector *) data;
-> +	if (fb->reserved && fb->fats && FAT_VALID_MEDIA(fb->media)) {
-> +		printk("\n");
-> +		put_dev_sector(sect);
-> +		return 1;
-> +	}
->  	p = (struct partition *) (data + 0x1be);
->  	for (slot = 1; slot <= 4; slot++, p++) {
->  		if (p->boot_ind != 0 && p->boot_ind != 0x80) {
-> -
-> To unsubscribe from this list: send the line "unsubscribe linux-fsdevel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-
-Cheers, Andreas
---
-Andreas Dilger
-Sr. Staff Engineer, Lustre Group
-Sun Microsystems of Canada, Inc.
+> > 
+> > > 
+> > > > +#define DN_LABEL        0x00000040      /* File (re)labeled */
+> > > 
+> > > An any inotify/dnotify additions should be separate from the vfs to
+> > > filesystem interface.  Please make it a separate patch and describe
+> > > properly why it's needed in it's description.
+> > 
+> > Will do. We added them to conform to the functionality provided for
+> > other elements in the iattr structure. We will add a more robust
+> > explanation in the patch.
+> > 
+> > > 
+> > > > index df6b95d..1169963 100644
+> > > > --- a/include/linux/xattr.h
+> > > > +++ b/include/linux/xattr.h
+> > > > @@ -50,6 +50,7 @@ ssize_t xattr_getsecurity(struct inode *, const char *, void *, size_t);
+> > > >  ssize_t vfs_getxattr(struct dentry *, char *, void *, size_t);
+> > > >  ssize_t vfs_listxattr(struct dentry *d, char *list, size_t size);
+> > > >  int vfs_setxattr(struct dentry *, char *, void *, size_t, int);
+> > > > +int vfs_setxattr_locked(struct dentry *, char *, void *, size_t, int);
+> > > >  int vfs_removexattr(struct dentry *, char *);
+> > > >  
+> > > >  ssize_t generic_getxattr(struct dentry *dentry, const char *name, void *buffer, size_t size);
+> > > > -- 
+> > > > 1.5.3.8
+> > > > 
+> > > > -
+> > > > To unsubscribe from this list: send the line "unsubscribe linux-fsdevel" in
+> > > > the body of a message to majordomo@vger.kernel.org
+> > > > More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> > > ---end quoted text---
+> > 
+> > --
+> > To unsubscribe from this list: send the line "unsubscribe linux-fsdevel" in
+> > the body of a message to majordomo@vger.kernel.org
+> > More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> ---end quoted text---
 
