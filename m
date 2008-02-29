@@ -1,73 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758683AbYCaV6v@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756995AbYCAXK4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758683AbYCaV6v (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 31 Mar 2008 17:58:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758498AbYCaV6l
+	id S1756995AbYCAXK4 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 1 Mar 2008 18:10:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750946AbYCAXKq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 31 Mar 2008 17:58:41 -0400
-Received: from zeniv.linux.org.uk ([195.92.253.2]:37928 "EHLO
-	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758103AbYCaV6k (ORCPT
+	Sat, 1 Mar 2008 18:10:46 -0500
+Received: from filer.fsl.cs.sunysb.edu ([130.245.126.2]:33554 "EHLO
+	filer.fsl.cs.sunysb.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750755AbYCAXKn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 31 Mar 2008 17:58:40 -0400
-Date: Mon, 31 Mar 2008 22:58:35 +0100
-From: Al Viro <viro@ZenIV.linux.org.uk>
-To: Harvey Harrison <harvey.harrison@gmail.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: Sparse Question
-Message-ID: <20080331215835.GM9785@ZenIV.linux.org.uk>
-References: <1206998108.6543.74.camel@brick> <1206999598.6543.76.camel@brick>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1206999598.6543.76.camel@brick>
-User-Agent: Mutt/1.4.2.3i
+	Sat, 1 Mar 2008 18:10:43 -0500
+From: "Josef 'Jeff' Sipek" <jeffpc@josefsipek.net>
+To: linux-s390@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: "Josef 'Jeff' Sipek" <jeffpc@josefsipek.net>, ubraun@linux.vnet.ibm.com,
+       blaschka@linux.vnet.ibm.com
+Subject: [PATCH 1/1] iucv: Fix compilation with !CONFIG_SMP
+Date: Fri, 29 Feb 2008 17:30:41 -0500
+Message-Id: <1204324241-2276-1-git-send-email-jeffpc@josefsipek.net>
+X-Mailer: git-send-email 1.5.4.2
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Mar 31, 2008 at 02:39:58PM -0700, Harvey Harrison wrote:
-> On Mon, 2008-03-31 at 14:15 -0700, Harvey Harrison wrote:
-> > Hi Al,
-> > 
-> > Further to eliminating some of the trivial sparse noise in a kernel
-> > build, I just can't seem to understand what sparse is warning about:
-> > 
-> 
-> I should have mentioned, the other block of warnings comes from
-> drivers/media/video/videodev.c....again initializing arrays of IOCTLs
+CC [M]  net/iucv/iucv.o
+net/iucv/iucv.c: In function `iucv_cleanup_queue':
+net/iucv/iucv.c:657: error: `__iucv_cleanup_queue' undeclared (first use in this function)
 
-1 ? 0 : x
+With !CONFIG_SMP the smp_call_function call turns into up_smp_call_function
+call which is just a return 0. Unfortunately, since up_smp_call_function is
+a static inline, the __iucv_cleanup_queue symbol is referenced.
 
-is not valid in contexts where C requires integer constant expressions.
-Index in static array initializer is one of those.
+Cc: ubraun@linux.vnet.ibm.com
+Cc: blaschka@linux.vnet.ibm.com
+Signed-off-by: Josef 'Jeff' Sipek <jeffpc@josefsipek.net>
+---
+ net/iucv/iucv.c |    2 --
+ 1 files changed, 0 insertions(+), 2 deletions(-)
 
-gcc allows it, but its extensions in that area are inconsistent, to say
-the least - basically, it goes with "if optimizer can fold that into
-constant with this set of options, it will be accepted".  With very weird
-boundary between accepted and not accepted (as in "reorder arguments of +,
-and what had been recognized as constant is not recognized anymore").
-
-sparse doesn't even try to duplicate that set of bugs.  We _could_ try
-to go for a more or less reasonable subset (e.g. ?: with integer constant
-expression as the first argument and integer constant expression as
-the second or the third resp., depending on the value of the first one,
-similar for && and ||), but I'm not all that sure that it's worth doing.
-
-The fact is, use of what we have for _IOC in such contexts is not just
-a gccism, it's ill-defined one.  I suspect that the right solution is
-to sanitize _that_...
-
-FWIW, why not simply put division by 0 into the branch that shouldn't
-be reached instead of using a variable that doesn't exist and would
-blow at ld(1) time?  I.e. go with
-#define _IOC_TYPECHECK(t) \
-        ((sizeof(t) == sizeof(t[1]) && \
-          sizeof(t) < (1 << _IOC_SIZEBITS)) ? \
-          sizeof(t) : 1/0)
-instead.  I'd say that trading a pretty name in linker stderr for
-compiler error that shows exact location in the source would be
-a good bargain...
-
-Linus, would you object against that in post-2.6.25?
+diff --git a/net/iucv/iucv.c b/net/iucv/iucv.c
+index 2753b0c..d764f4c 100644
+--- a/net/iucv/iucv.c
++++ b/net/iucv/iucv.c
+@@ -621,7 +621,6 @@ static int iucv_sever_pathid(u16 pathid, u8 userdata[16])
+ 	return iucv_call_b2f0(IUCV_SEVER, parm);
+ }
+ 
+-#ifdef CONFIG_SMP
+ /**
+  * __iucv_cleanup_queue
+  * @dummy: unused dummy argument
+@@ -632,7 +631,6 @@ static int iucv_sever_pathid(u16 pathid, u8 userdata[16])
+ static void __iucv_cleanup_queue(void *dummy)
+ {
+ }
+-#endif
+ 
+ /**
+  * iucv_cleanup_queue
+-- 
+1.5.4.2
