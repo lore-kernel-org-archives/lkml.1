@@ -1,57 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932685AbYB2NiR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932816AbYB2Nc0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932685AbYB2NiR (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Feb 2008 08:38:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755445AbYB2NiD
+	id S932816AbYB2Nc0 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Feb 2008 08:32:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932789AbYB2NcG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Feb 2008 08:38:03 -0500
-Received: from wf-out-1314.google.com ([209.85.200.173]:58894 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752739AbYB2NiB (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 Feb 2008 08:38:01 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
-        b=xYA3CgFjeWQxROGpygarjMwLuWle5n4CVO8lfZvXApDbv/zRTBdJoc24Lfu6LJayT8GA5zJXA4aD4s4m52PhsIcWDb+kNFIC3UvuhyonpfAzM7wUS51azRBkF5EeLxb1X7Efi4h+kKCGGLo0lMy6DBqDbN6Y/G0bmd5Hj4q1X38=
-Message-ID: <316a20a40802290538g55c4171y7cdbcb3a9c1d0f1b@mail.gmail.com>
-Date: Fri, 29 Feb 2008 08:38:00 -0500
-From: "Stephen Cuppett" <cuppett@gmail.com>
-To: linux-kernel@vger.kernel.org
-Subject: Performance versus FreeBSD 7.0
+	Fri, 29 Feb 2008 08:32:06 -0500
+Received: from ns2.uludag.org.tr ([193.140.100.220]:54354 "EHLO uludag.org.tr"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S932692AbYB2NcF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 29 Feb 2008 08:32:05 -0500
+From: "=?utf-8?q?S=2E=C3=87a=C4=9Flar?= Onur" <caglar@pardus.org.tr>
+Reply-To: caglar@pardus.org.tr
+Organization: =?utf-8?q?T=C3=9CB=C4=B0TAK_/?= UEKAE
+To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Subject: Re: trivial clean up to zlc_setup
+Date: Fri, 29 Feb 2008 15:31:34 +0200
+User-Agent: KMail/1.9.9
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Lee Schermerhorn <Lee.Schermerhorn@hp.com>, Paul Jackson <pj@sgi.com>,
+       linux-mm@kvack.org, LKML <linux-kernel@vger.kernel.org>
+References: <20080229151057.66ED.KOSAKI.MOTOHIRO@jp.fujitsu.com> <20080229000544.5cf2667e.akpm@linux-foundation.org> <20080229171136.66F6.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+In-Reply-To: <20080229171136.66F6.KOSAKI.MOTOHIRO@jp.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: multipart/signed;
+  boundary="nextPart7846280.53EjfgUmJ3";
+  protocol="application/pgp-signature";
+  micalg=pgp-sha1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+Message-Id: <200802291531.36498.caglar@pardus.org.tr>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Not lobbing the first artillery shell by any means, but I saw this
-bullet on the FreeBSD release announcement:
+--nextPart7846280.53EjfgUmJ3
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-# Dramatic improvements in performance and SMP scalability shown by
-various database and other benchmarks, in some cases showing peak
-performance improvements as high as 350% over FreeBSD 6.X under normal
-loads and 1500% at high loads. When compared with the best performing
-Linux kernel (2.6.22 or 2.6.24) performance is 15% better. Results are
-from benchmarks used to analyze and improve system performance,
-results with your specific work load may vary. Some of the changes
-that contribute to this improvement are:
+Hi;
 
-    * The 1:1 libthr threading model is now the default.
-    * Finer-grained IPC, networking, and scheduler locking.
-    * A major focus on optimizing the SMP architecture that was put in
-place during the 5.x and 6.x branches.
+29 =C5=9Eub 2008 Cum tarihinde, KOSAKI Motohiro =C5=9Funlar=C4=B1 yazm=C4=
+=B1=C5=9Ft=C4=B1:=20
+> > > -       if (jiffies - zlc->last_full_zap > 1 * HZ) {
+> > > +       if (time_after(jiffies, zlc->last_full_zap + HZ)) {
+> > >                 bitmap_zero(zlc->fullzones, MAX_ZONES_PER_ZONELIST);
+> > >                 zlc->last_full_zap =3D jiffies;
+> > >         }
+> >=20
+> > That's a mainline bug.  Also present in 2.6.24, maybe earlier.
+> > But it's a minor one - we'll fix it up one second later (yes?)
+>=20
+> I think so, may be.
 
-Some benchmarks show linear scaling up to 8 CPUs. Many workloads see a
-significant performance improvement with multicore systems.
+Andrew "Use time_* macros" series i sent to LKML on 14 Feb [1] has this chu=
+nk also (and by the way this version not includes linux/jiffies.h for time_=
+after macro). Some part of this series already gone into Linus's tree with =
+different subsystems but others not received any review/ack or nack. Will y=
+ou grab others for -mm or will i resend them?
 
-The whole thing is available at:
+[1] http://lkml.org/lkml/2008/2/14/195
 
-http://www.freebsd.org/releases/7.0R/announce.html
+Cheers
+=2D-=20
+S.=C3=87a=C4=9Flar Onur <caglar@pardus.org.tr>
+http://cekirdek.pardus.org.tr/~caglar/
 
-However, their site is pretty scant on details about those benchmarks.
- Was just curious if anybody on this list had any input or links on
-the metrics, the hardware, the workloads, how was Linux or FreeBSD
-tuned, knew more information, could point me to the stats....
+Linux is like living in a teepee. No Windows, no Gates and an Apache in hou=
+se!
+
+--nextPart7846280.53EjfgUmJ3
+Content-Type: application/pgp-signature; name=signature.asc 
+Content-Description: This is a digitally signed message part.
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.4 (GNU/Linux)
+
+iD8DBQBHyAk4y7E6i0LKo6YRAkedAJ0bV2dspLjQsgMFMaaRDnirS3SotACfTWRO
+nOAUG5qHfNizTv8y5xyYW2M=
+=D4sN
+-----END PGP SIGNATURE-----
+
+--nextPart7846280.53EjfgUmJ3--
