@@ -1,81 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934090AbYB2Wl5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934254AbYB2Wma@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934090AbYB2Wl5 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Feb 2008 17:41:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760054AbYB2Wlr
+	id S934254AbYB2Wma (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Feb 2008 17:42:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932273AbYB2WmU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Feb 2008 17:41:47 -0500
-Received: from host36-195-149-62.serverdedicati.aruba.it ([62.149.195.36]:38009
-	"EHLO mx.cpushare.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756381AbYB2Wlr (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 Feb 2008 17:41:47 -0500
-Date: Fri, 29 Feb 2008 23:41:44 +0100
-From: Andrea Arcangeli <andrea@qumranet.com>
-To: Christoph Lameter <clameter@sgi.com>
-Cc: Nick Piggin <nickpiggin@yahoo.com.au>, akpm@linux-foundation.org,
-       Robin Holt <holt@sgi.com>, Avi Kivity <avi@qumranet.com>,
-       Izik Eidus <izike@qumranet.com>, kvm-devel@lists.sourceforge.net,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, general@lists.openfabrics.org,
-       Steve Wise <swise@opengridcomputing.com>,
-       Roland Dreier <rdreier@cisco.com>, Kanoj Sarcar <kanojsarcar@yahoo.com>,
-       steiner@sgi.com, linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       daniel.blueman@quadrics.com
-Subject: Re: [patch 2/6] mmu_notifier: Callbacks to invalidate address
-	ranges
-Message-ID: <20080229224144.GE8091@v2.random>
-References: <20080229005530.GO8091@v2.random> <Pine.LNX.4.64.0802281658560.1954@schroedinger.engr.sgi.com> <20080229131302.GT8091@v2.random> <Pine.LNX.4.64.0802291149290.11292@schroedinger.engr.sgi.com> <20080229201744.GB8091@v2.random> <Pine.LNX.4.64.0802291301530.11889@schroedinger.engr.sgi.com> <20080229212327.GC8091@v2.random> <Pine.LNX.4.64.0802291329250.13402@schroedinger.engr.sgi.com> <20080229214800.GD8091@v2.random> <Pine.LNX.4.64.0802291408520.14224@schroedinger.engr.sgi.com>
+	Fri, 29 Feb 2008 17:42:20 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:53427 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932330AbYB2WmT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 29 Feb 2008 17:42:19 -0500
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0802291408520.14224@schroedinger.engr.sgi.com>
+Content-Transfer-Encoding: 7bit
+From: Roland McGrath <roland@redhat.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] x86_64 ia32 syscall restart fix
+In-Reply-To: Linus Torvalds's message of  Friday, 29 February 2008 08:26:14 -0800 <alpine.LFD.1.00.0802290814320.17889@woody.linux-foundation.org>
+X-Fcc: ~/Mail/linus
+References: <20080229035707.EAE862700FD@magilla.localdomain>
+	<20080229155207.GC27248@elte.hu>
+	<alpine.LFD.1.00.0802290814320.17889@woody.linux-foundation.org>
+Emacs: if SIGINT doesn't work, try a tranquilizer.
+Message-Id: <20080229224212.24A532700FE@magilla.localdomain>
+Date: Fri, 29 Feb 2008 14:42:12 -0800 (PST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Feb 29, 2008 at 02:12:57PM -0800, Christoph Lameter wrote:
-> On Fri, 29 Feb 2008, Andrea Arcangeli wrote:
-> 
-> > > AFAICT The rw semaphore fastpath is similar in performance to a rw 
-> > > spinlock. 
-> > 
-> > read side is taken in the slow path.
-> 
-> Slowpath meaning VM slowpath or lock slow path? Its seems that the rwsem 
+And here I thought I was so good for using coherent English sentences
+with proper punctuation and capitalization, not to mention actually
+explaining the issues of the change.  I must admit I've been a little
+bewildered in the past when Ingo has changed my log entries to be
+ungrammatical, eschew standard punctuation, and with an apparent
+vendetta on the shift key, not to mention sometimes removed half the
+relevant technical detail to boot.
 
-With slow path I meant the VM. Sorry if that was confusing given locks
-also have fast paths (no contention) and slow paths (contention).
+I suppose I shouldn't be surprised at being harangued for making my log
+entries too informative.  People love to remove clauses out of the
+middle of my code comments too--so they can match the norm of run-on
+sentences, I guess.
 
-> read side path is pretty efficient:
+Most log entries I see are short.  But they really don't explain the
+problem being fixed so I know enough about it without digging out some
+long mailing list threads.  If that's your preference, then I guess we'll
+just have to keep having Ingo remove the text I write.  At least it will
+be in the archives from my posting.  (Reading it is the only way I'll
+remember myself what details mattered, after a week has gone by.)
 
-Yes. The assembly doesn't worry me at all.
+If what you want is formulaic log text that always puts blank lines in
+between bug description, change description, and change justification, I
+can do that.  If there is any place that documents the conventions you
+want in log entries, I've overlooked it.
 
-> > pagefault is fast path, VM during swapping is slow path.
-> 
-> Not sure what you are saying here. A pagefault should be considered as a 
-> fast path and swapping is not performance critical?
+As Ingo alluded to, most of the time my number one focus is to record all
+the important facts and decisions before I go back to something else or
+knock off for the night.  I hate nothing more than looking at an old
+change of mine and not being able to figure out what some of the logic
+behind it was.  If there's one thing I can rely on, it's that I'll forget
+what I knew the first time until I spend hours the second time
+recapitulating the same debugging to find out that I may have had some
+sense after all six months back.
 
-Yes, swapping is I/O bound and it rarely becomes CPU hog in the common
-case.
+Anyway, if the worst push-back on my submissions is a handful
+of foreigners telling me how to write English, then I guess
+things are ... as they should be. ;-)
 
-There are corner case workloads (including OOM) where swapping can
-become cpu bound (that's also where rwlock helps). But certainly the
-speed of fork() and a page fault, is critical for _everyone_, not just
-a few workloads and setups.
 
-> Ok too many calls to schedule() because the slow path (of the semaphore) 
-> is taken?
+As to the question of tagging for backports, I am not really clear on
+what the intended criteria are.  Take this bug for example.  It is a
+consistent behavior that has existed since the dawn of time (I've only
+actually checked back to 2.6.9).  It's wrong, but can't be a surprise
+on any system based on a stable release.  It's a regression of the
+64-bit kernel vs the native 32-bit kernel, but not a version-to-version
+regression.  The fix is straightforward to backport and has very low
+risk.  How does all that translate into whether a given stable version
+wants a backport or not?
 
-Yes, that's the only possible worry when converting a spinlock to
-mutex.
 
-> But that is only happening for the contended case. Certainly a spinlock is 
-> better for 2p system but the more processors content for the lock (and 
-> the longer the hold off is, typical for the processors with 4p or 8p or 
-> more) the better a semaphore will work.
-
-Sure. That's also why the PT lock switches for >4way compiles. Config
-option helps to keep the VM optimal for everyone. Here it is possible
-it won't be necessary but I can't be sure given both i_mmap_lock and
-anon-vma lock are used in some many places. Some TPC comparison would
-be nice before making a default switch IMHO.
+Thanks,
+Roland
