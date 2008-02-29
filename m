@@ -1,74 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932270AbYB2M3W@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932403AbYB2M3m@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932270AbYB2M3W (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Feb 2008 07:29:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758884AbYB2M3H
+	id S932403AbYB2M3m (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Feb 2008 07:29:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760004AbYB2M3M
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Feb 2008 07:29:07 -0500
-Received: from wa-out-1112.google.com ([209.85.146.183]:36149 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758202AbYB2M3F (ORCPT
+	Fri, 29 Feb 2008 07:29:12 -0500
+Received: from rv-out-0910.google.com ([209.85.198.187]:1244 "EHLO
+	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758929AbYB2M3H (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 Feb 2008 07:29:05 -0500
+	Fri, 29 Feb 2008 07:29:07 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
-        b=VspksfGXza1z1gvi6gqWRr884JZTb6OvZ4E073aVemN8YBlKvIqAD5NRo834vpAifSf+ozX45T7EfcAqjrWLO1ypKsrZLjKiba993D2Xq4qVBY1DjBqKfMqDZROSwO5IdJ3vuwVVhp9QJXrIoQqylflSoSI4C151w2qlN6WdT+A=
-Message-ID: <47C7FA8B.7040306@gmail.com>
-Date: Fri, 29 Feb 2008 21:28:59 +0900
-From: Tejun Heo <htejun@gmail.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20070801)
+        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=cj2N4Ca7dWiTXUt52It/+6vIsP0bqoaKEWdl4UaixDUABVe0WKcQSTEtAsJ0iRfxdaHJWLTUb12a4j4AEBeRmg32RFspzZ0ppeCCkI0XMKJqNJVUjjGcWRH6il85cZ7FtNtY+cUPgFktpOSYGDOWfaysfu+zD2zdI1dvZxOgMeU=
+Message-ID: <84144f020802290429v25bd4ab2j8ab640e2ccb48140@mail.gmail.com>
+Date: Fri, 29 Feb 2008 14:29:06 +0200
+From: "Pekka Enberg" <penberg@cs.helsinki.fi>
+To: "Peter Zijlstra" <a.p.zijlstra@chello.nl>
+Subject: Re: [PATCH 00/28] Swap over NFS -v16
+Cc: "Neil Brown" <neilb@suse.de>, "Andrew Morton" <akpm@linux-foundation.org>,
+       "Linus Torvalds" <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       netdev@vger.kernel.org, trond.myklebust@fys.uio.no,
+       "Christoph Lameter" <clameter@sgi.com>
+In-Reply-To: <1204287533.6243.105.camel@lappy>
 MIME-Version: 1.0
-To: Jeff Garzik <jeff@garzik.org>
-CC: Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Linux IDE mailing list <linux-ide@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: devres and requesting resources
-References: <47C75392.3020606@garzik.org> <20080229112651.5b2a7f6f@core> <47C7F664.5040102@garzik.org>
-In-Reply-To: <47C7F664.5040102@garzik.org>
-X-Enigmail-Version: 0.95.5
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20080220144610.548202000@chello.nl>
+	 <20080223000620.7fee8ff8.akpm@linux-foundation.org>
+	 <18371.43950.150842.429997@notabene.brown>
+	 <1204023042.6242.271.camel@lappy>
+	 <18372.64081.995262.986841@notabene.brown>
+	 <1204099113.6242.353.camel@lappy>
+	 <84144f020802270005p3bfbd04ar9da2875218ef98c4@mail.gmail.com>
+	 <1204285912.6243.93.camel@lappy>
+	 <84144f020802290358t2774f7bwd87efe79e7bd4235@mail.gmail.com>
+	 <1204287533.6243.105.camel@lappy>
+X-Google-Sender-Auth: 4072f1e8b766abbb
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jeff Garzik wrote:
-> Only rare PCI devices are shareable among multiple drivers.
-> 
-> sata_* at least intentionally used pci_request_regions() because it is
-> obvious from the hardware spec that multiple regions accessed by
-> multiple drivers is highly unlikely, without the driver being
-> specifically coded to support such sharing.  Such sharing code is far
-> beyond simple resource reservation, to avoid stepping on toes when there
-> is a single MMIO region and set of interrupt clearing registers.
-> 
-> So reading your email it sounds like there are valid cases for both
-> configurations.
-> 
-> Its a design choice either way, not a bug either way.
+On Fri, Feb 29, 2008 at 2:18 PM, Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:
+>  Clearing PG_emergency would mean kmem_is_emergency() would return false
+>  in kfree_reserve() and fail to un-charge the object.
+>
+>  Previously objects would track their account status themselves (when
+>  needed) and freeing PG_emergency wouldn't be a problem.
+>
+>  > and allocate a new fresh page to the reserves?
+>
+>  Not sure I understand this properly. We would only do this once the page
+>  watermarks are high enough, so the reserves are full again.
 
-I was thinking like Alan when I was writing pcim_request_regions() but I
-agree reserving all the regions does avoid certain problems.  Especially
-true for controller which duals as native SATA and compatible SFF
-controller like ICH AHCIs.  ata_generic or ide generic might attach to a
-controller which is already being driven by ahci under certain
-configurations.
+The problem with PG_emergency is that, once the watermarks are high
+again, SLUB keeps holding to the emergency page and it cannot be used
+for regular kmalloc allocations, right?
 
-Please note that pcim_request_regions() is a helper to do
-pci_request_region() calls and pcim_iomap() in one go.  Drivers which
-have different requirements can just open code pci_request_regions() and
-pcim_iomap().  pcim_request_regions() should provide sensible default
-behavior for common cases.
+So the way to fix this is to batch uncharge the objects and clear
+PG_emergency for the said SLUB pages thus freeing them for regular
+allocations. And to compensate for the loss in the reserves, we ask
+the page allocator to give a new one that SLUB knows nothing about.
 
-I think the best solution is to allow duplicate request regions for
-managed devices which is okay as we know we're holding the resource and
-let drivers which need to reserve all regions call pci_request_regions()
-before calling pcim_request_regions().
+If you don't do this, the reserve page can only contain few objects
+making them unavailable for regular allocations. So we're might be
+forced into "emergency mode" even though there's enough memory
+available to satisfy the allocation.
 
-How does it sound?
-
-Thanks.
-
--- 
-tejun
+                          Pekka
