@@ -1,149 +1,366 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933294AbYB2QxH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932940AbYB2Qxc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933294AbYB2QxH (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Feb 2008 11:53:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757181AbYB2Qwh
+	id S932940AbYB2Qxc (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Feb 2008 11:53:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932882AbYB2Qwj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Feb 2008 11:52:37 -0500
-Received: from opensource.wolfsonmicro.com ([80.75.67.52]:36944 "EHLO
+	Fri, 29 Feb 2008 11:52:39 -0500
+Received: from opensource.wolfsonmicro.com ([80.75.67.52]:36941 "EHLO
 	opensource2.wolfsonmicro.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1755475AbYB2Qwc (ORCPT
+	by vger.kernel.org with ESMTP id S1755467AbYB2Qwd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 Feb 2008 11:52:32 -0500
+	Fri, 29 Feb 2008 11:52:33 -0500
 From: Mark Brown <broonie@opensource.wolfsonmicro.com>
 To: Andrew Morton <akpm@linux-foundation.org>, Dmitry Torokhov <dtor@mail.ru>
 Cc: linux-input@vger.kernel.org, linux-kernel@vger.kernel.org,
        Mark Brown <broonie@opensource.wolfsonmicro.com>,
-       Liam Girdwood <liam.girdwood@wolfsonmicro.com>
-Subject: [PATCH 6/6] Build system and MAINTAINERS entry for WM97xx touchscreen drivers
-Date: Fri, 29 Feb 2008 16:52:26 +0000
-Message-Id: <1204303946-17798-6-git-send-email-broonie@opensource.wolfsonmicro.com>
+       Liam Girdwood <liam.girdwood@wolfsonmicro.com>,
+       Graeme Gregory <gg@opensource.wolfsonmicro.com>,
+       Mike Arthur <mike.arthur@wolfsonmicro.com>,
+       Dmitry Baryshkov <dbaryshkov@gmail.com>,
+       Stanley Cai <stanley.cai@intel.com>,
+       Rodolfo Giometti <giometti@enneenne.com>,
+       Russell King <rmk@arm.linux.org.uk>,
+       Marc Kleine-Budde <mkl@pengutronix.de>,
+       Pete MacKay <linux01@architechnical.net>, Ian Molton <spyro@f2s.com>,
+       Vince Sanders <vince@kyllikki.org>, Andrew Zabolotny <zap@homelink.ru>
+Subject: [PATCH 5/6] Driver for WM97xx touchscreens in streaming mode on Mainstone
+Date: Fri, 29 Feb 2008 16:52:25 +0000
+Message-Id: <1204303946-17798-5-git-send-email-broonie@opensource.wolfsonmicro.com>
 X-Mailer: git-send-email 1.5.4.3
-In-Reply-To: <1204303946-17798-5-git-send-email-broonie@opensource.wolfsonmicro.com>
+In-Reply-To: <1204303946-17798-4-git-send-email-broonie@opensource.wolfsonmicro.com>
 References: <20080229165029.GB11451@rakim.wolfsonmicro.main>
  <1204303946-17798-1-git-send-email-broonie@opensource.wolfsonmicro.com>
  <1204303946-17798-2-git-send-email-broonie@opensource.wolfsonmicro.com>
  <1204303946-17798-3-git-send-email-broonie@opensource.wolfsonmicro.com>
  <1204303946-17798-4-git-send-email-broonie@opensource.wolfsonmicro.com>
- <1204303946-17798-5-git-send-email-broonie@opensource.wolfsonmicro.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Signed-off-by: Mark Brown <broonie@opensource.wolfsonmicro.com>
 Signed-off-by: Liam Girdwood <liam.girdwood@wolfsonmicro.com>
+Signed-off-by: Graeme Gregory <gg@opensource.wolfsonmicro.com>
+Signed-off-by: Mike Arthur <mike.arthur@wolfsonmicro.com>
+Signed-off-by: Mark Brown <broonie@opensource.wolfsonmicro.com>
+Cc: Dmitry Baryshkov <dbaryshkov@gmail.com>
+Cc: Stanley Cai <stanley.cai@intel.com>
+Cc: Rodolfo Giometti <giometti@enneenne.com>
+Cc: Russell King <rmk@arm.linux.org.uk>
+Cc: Marc Kleine-Budde <mkl@pengutronix.de>
+Cc: Pete MacKay <linux01@architechnical.net>
+Cc: Ian Molton <spyro@f2s.com>
+Cc: Vince Sanders <vince@kyllikki.org>
+Cc: Andrew Zabolotny <zap@homelink.ru>
 ---
- MAINTAINERS                        |   10 +++++++
- drivers/input/touchscreen/Kconfig  |   52 ++++++++++++++++++++++++++++++++++++
- drivers/input/touchscreen/Makefile |    7 +++++
- 3 files changed, 69 insertions(+), 0 deletions(-)
+ drivers/input/touchscreen/mainstone-wm97xx.c |  299 ++++++++++++++++++++++++++
+ 1 files changed, 299 insertions(+), 0 deletions(-)
+ create mode 100644 drivers/input/touchscreen/mainstone-wm97xx.c
 
-diff --git a/MAINTAINERS b/MAINTAINERS
-index 36c7bc6..96d19c1 100644
---- a/MAINTAINERS
-+++ b/MAINTAINERS
-@@ -4317,6 +4317,16 @@ L:	linux-wireless@vger.kernel.org
- W:	http://oops.ghostprotocols.net:81/blog
- S:	Maintained
- 
-+WM97XX TOUCHSCREEN DRIVERS
-+P:	Mark Brown
-+M:	broonie@opensource.wolfsonmicro.com
-+P:	Liam Girdwood
-+M:	liam.girdwood@wolfsonmicro.com
-+L:	linux-input@vger.kernel.org
-+T:	git git://opensource.wolfsonmicro.com/linux-2.6-touch
-+W:	http://opensource.wolfsonmicro.com/node/7
-+S:	Supported
+diff --git a/drivers/input/touchscreen/mainstone-wm97xx.c b/drivers/input/touchscreen/mainstone-wm97xx.c
+new file mode 100644
+index 0000000..4730757
+--- /dev/null
++++ b/drivers/input/touchscreen/mainstone-wm97xx.c
+@@ -0,0 +1,299 @@
++/*
++ * mainstone-wm97xx.c  --  Mainstone Continuous Touch screen driver for
++ *                         Wolfson WM97xx AC97 Codecs.
++ *
++ * Copyright 2004, 2007 Wolfson Microelectronics PLC.
++ * Author: Liam Girdwood
++ *         liam.girdwood@wolfsonmicro.com or linux@wolfsonmicro.com
++ * Parts Copyright : Ian Molton <spyro@f2s.com>
++ *                   Andrew Zabolotny <zap@homelink.ru>
++ *
++ *  This program is free software; you can redistribute  it and/or modify it
++ *  under  the terms of  the GNU General  Public License as published by the
++ *  Free Software Foundation;  either version 2 of the  License, or (at your
++ *  option) any later version.
++ *
++ * Notes:
++ *     This is a wm97xx extended touch driver to capture touch
++ *     data in a continuous manner on the Intel XScale archictecture
++ *
++ *  Features:
++ *       - codecs supported:- WM9705, WM9712, WM9713
++ *       - processors supported:- Intel XScale PXA25x, PXA26x, PXA27x
++ *
++ */
 +
- X.25 NETWORK LAYER
- P:	Henner Eisen
- M:	eis@baty.hanse.de
-diff --git a/drivers/input/touchscreen/Kconfig b/drivers/input/touchscreen/Kconfig
-index 90e8e92..0be05a2 100644
---- a/drivers/input/touchscreen/Kconfig
-+++ b/drivers/input/touchscreen/Kconfig
-@@ -158,6 +158,58 @@ config TOUCHSCREEN_TOUCHRIGHT
- 	  To compile this driver as a module, choose M here: the
- 	  module will be called touchright.
- 
-+config TOUCHSCREEN_WM97XX
-+	tristate "Support for WM97xx AC97 touchscreen controllers"
-+	depends on AC97_BUS
++#include <linux/module.h>
++#include <linux/moduleparam.h>
++#include <linux/version.h>
++#include <linux/kernel.h>
++#include <linux/init.h>
++#include <linux/delay.h>
++#include <linux/irq.h>
++#include <linux/interrupt.h>
++#include <linux/wm97xx.h>
++#include <linux/io.h>
++#include <asm/arch/pxa-regs.h>
 +
-+config TOUCHSCREEN_WM9705
-+	bool "WM9705 Touchscreen interface support"
-+	depends on TOUCHSCREEN_WM97XX
-+	help
-+	  Say Y here if you have a Wolfson Microelectronics WM9705 touchscreen
-+	  controller connected to your system.
++#define VERSION		"0.13"
 +
-+	  If unsure, say N.
++struct continuous {
++	u16 id;    /* codec id */
++	u8 code;   /* continuous code */
++	u8 reads;  /* number of coord reads per read cycle */
++	u32 speed; /* number of coords per second */
++};
 +
-+	  To compile this driver as a module, choose M here: the
-+	  module will be called wm9705.
++#define WM_READS(sp) ((sp / HZ) + 1)
 +
-+config TOUCHSCREEN_WM9712
-+	bool "WM9712 Touchscreen interface support"
-+	depends on TOUCHSCREEN_WM97XX
-+	help
-+	  Say Y here if you have a Wolfson Microelectronics WM9712 touchscreen
-+	  controller connected to your system.
++static const struct continuous cinfo[] = {
++	{WM9705_ID2, 0, WM_READS(94), 94},
++	{WM9705_ID2, 1, WM_READS(188), 188},
++	{WM9705_ID2, 2, WM_READS(375), 375},
++	{WM9705_ID2, 3, WM_READS(750), 750},
++	{WM9712_ID2, 0, WM_READS(94), 94},
++	{WM9712_ID2, 1, WM_READS(188), 188},
++	{WM9712_ID2, 2, WM_READS(375), 375},
++	{WM9712_ID2, 3, WM_READS(750), 750},
++	{WM9713_ID2, 0, WM_READS(94), 94},
++	{WM9713_ID2, 1, WM_READS(120), 120},
++	{WM9713_ID2, 2, WM_READS(154), 154},
++	{WM9713_ID2, 3, WM_READS(188), 188},
++};
 +
-+	  If unsure, say N.
++/* continuous speed index */
++static int sp_idx;
++static u16 last, tries;
 +
-+	  To compile this driver as a module, choose M here: the
-+	  module will be called wm9712.
++/*
++ * Pen sampling frequency (Hz) in continuous mode.
++ */
++static int cont_rate = 200;
++module_param(cont_rate, int, 0);
++MODULE_PARM_DESC(cont_rate, "Sampling rate in continuous mode (Hz)");
 +
-+config TOUCHSCREEN_WM9713
-+	bool "WM9713 Touchscreen interface support"
-+	depends on TOUCHSCREEN_WM97XX
-+	help
-+	  Say Y here if you have a Wolfson Microelectronics WM9713 touchscreen
-+	  controller connected to your system.
++/*
++ * Pen down detection.
++ *
++ * This driver can either poll or use an interrupt to indicate a pen down
++ * event. If the irq request fails then it will fall back to polling mode.
++ */
++static int pen_int;
++module_param(pen_int, int, 0);
++MODULE_PARM_DESC(pen_int, "Pen down detection (1 = interrupt, 0 = polling)");
 +
-+	  If unsure, say N.
++/*
++ * Pressure readback.
++ *
++ * Set to 1 to read back pen down pressure
++ */
++static int pressure;
++module_param(pressure, int, 0);
++MODULE_PARM_DESC(pressure, "Pressure readback (1 = pressure, 0 = no pressure)");
 +
-+	  To compile this driver as a module, choose M here: the
-+	  module will be called wm9713.
++/*
++ * AC97 touch data slot.
++ *
++ * Touch screen readback data ac97 slot
++ */
++static int ac97_touch_slot = 5;
++module_param(ac97_touch_slot, int, 0);
++MODULE_PARM_DESC(ac97_touch_slot, "Touch screen data slot AC97 number");
 +
-+config TOUCHSCREEN_WM97XX_MAINSTONE
-+	tristate "WM97xx Mainstone accelerated touch"
-+	depends on TOUCHSCREEN_WM97XX && ARCH_PXA
-+	help
-+	  Say Y here for support for streaming mode with WM97xx touchscreens
-+	  on Mainstone systems.
 +
-+	  If unsure, say N
++/* flush AC97 slot 5 FIFO on pxa machines */
++#ifdef CONFIG_PXA27x
++static void wm97xx_acc_pen_up(struct wm97xx *wm)
++{
++	schedule_timeout_uninterruptible(1);
 +
-+	  To compile this driver as a module, choose M here: the
-+	  module will be called mainstone-wm97xx
++	while (MISR & (1 << 2))
++		MODR;
++}
++#else
++static void wm97xx_acc_pen_up(struct wm97xx *wm)
++{
++	int count = 16;
++	schedule_timeout_uninterruptible(1);
 +
- config TOUCHSCREEN_TOUCHWIN
- 	tristate "Touchwin serial touchscreen"
- 	select SERIO
-diff --git a/drivers/input/touchscreen/Makefile b/drivers/input/touchscreen/Makefile
-index 35d4097..d38156e 100644
---- a/drivers/input/touchscreen/Makefile
-+++ b/drivers/input/touchscreen/Makefile
-@@ -4,6 +4,8 @@
- 
- # Each configuration option enables a list of files.
- 
-+wm97xx-ts-y := wm97xx-core.o
++	while (count < 16) {
++		MODR;
++		count--;
++	}
++}
++#endif
 +
- obj-$(CONFIG_TOUCHSCREEN_ADS7846)	+= ads7846.o
- obj-$(CONFIG_TOUCHSCREEN_BITSY)		+= h3600_ts_input.o
- obj-$(CONFIG_TOUCHSCREEN_CORGI)		+= corgi_ts.o
-@@ -19,3 +21,8 @@ obj-$(CONFIG_TOUCHSCREEN_PENMOUNT)	+= penmount.o
- obj-$(CONFIG_TOUCHSCREEN_TOUCHRIGHT)	+= touchright.o
- obj-$(CONFIG_TOUCHSCREEN_TOUCHWIN)	+= touchwin.o
- obj-$(CONFIG_TOUCHSCREEN_UCB1400)	+= ucb1400_ts.o
-+obj-$(CONFIG_TOUCHSCREEN_WM97XX)	+= wm97xx-ts.o
-+obj-$(CONFIG_TOUCHSCREEN_WM97XX_MAINSTONE)	+= mainstone-wm97xx.o
-+wm97xx-ts-$(CONFIG_TOUCHSCREEN_WM9705)  += wm9705.o
-+wm97xx-ts-$(CONFIG_TOUCHSCREEN_WM9712)  += wm9712.o
-+wm97xx-ts-$(CONFIG_TOUCHSCREEN_WM9713)  += wm9713.o
++static int wm97xx_acc_pen_down(struct wm97xx *wm)
++{
++	u16 x, y, p = 0x100 | WM97XX_ADCSEL_PRES;
++	int reads = 0;
++
++	/* When the AC97 queue has been drained we need to allow time
++	 * to buffer up samples otherwise we end up spinning polling
++	 * for samples.  The controller can't have a suitably low
++	 * threashold set to use the notifications it gives.
++	 */
++	schedule_timeout_uninterruptible(1);
++
++	if (tries > 5) {
++		tries = 0;
++		return RC_PENUP;
++	}
++
++	x = MODR;
++	if (x == last) {
++		tries++;
++		return RC_AGAIN;
++	}
++	last = x;
++	do {
++		if (reads)
++			x = MODR;
++		y = MODR;
++		if (pressure)
++			p = MODR;
++
++		/* are samples valid */
++		if ((x & WM97XX_ADCSRC_MASK) != WM97XX_ADCSEL_X ||
++		    (y & WM97XX_ADCSRC_MASK) != WM97XX_ADCSEL_Y ||
++		    (p & WM97XX_ADCSRC_MASK) != WM97XX_ADCSEL_PRES)
++			goto up;
++
++		/* coordinate is good */
++		tries = 0;
++		input_report_abs(wm->input_dev, ABS_X, x & 0xfff);
++		input_report_abs(wm->input_dev, ABS_Y, y & 0xfff);
++		input_report_abs(wm->input_dev, ABS_PRESSURE, p & 0xfff);
++		input_sync(wm->input_dev);
++		reads++;
++	} while (reads < cinfo[sp_idx].reads);
++up:
++	return RC_PENDOWN | RC_AGAIN;
++}
++
++static int wm97xx_acc_startup(struct wm97xx *wm)
++{
++	int idx = 0;
++
++	/* check we have a codec */
++	if (wm->ac97 == NULL)
++		return -ENODEV;
++
++	/* Go you big red fire engine */
++	for (idx = 0; idx < ARRAY_SIZE(cinfo); idx++) {
++		if (wm->id != cinfo[idx].id)
++			continue;
++		sp_idx = idx;
++		if (cont_rate <= cinfo[idx].speed)
++			break;
++	}
++	wm->acc_rate = cinfo[sp_idx].code;
++	wm->acc_slot = ac97_touch_slot;
++	dev_info(wm->dev,
++		 "mainstone accelerated touchscreen driver, %d samples/sec\n",
++		 cinfo[sp_idx].speed);
++
++	/* codec specific irq config */
++	if (pen_int) {
++		switch (wm->id) {
++		case WM9705_ID2:
++			wm->pen_irq = IRQ_GPIO(4);
++			set_irq_type(IRQ_GPIO(4), IRQT_BOTHEDGE);
++			break;
++		case WM9712_ID2:
++		case WM9713_ID2:
++			/* enable pen down interrupt */
++			/* use PEN_DOWN GPIO 13 to assert IRQ on GPIO line 2 */
++			wm->pen_irq = MAINSTONE_AC97_IRQ;
++			wm97xx_config_gpio(wm, WM97XX_GPIO_13, WM97XX_GPIO_IN,
++					   WM97XX_GPIO_POL_HIGH,
++					   WM97XX_GPIO_STICKY,
++					   WM97XX_GPIO_WAKE);
++			wm97xx_config_gpio(wm, WM97XX_GPIO_2, WM97XX_GPIO_OUT,
++					   WM97XX_GPIO_POL_HIGH,
++					   WM97XX_GPIO_NOTSTICKY,
++					   WM97XX_GPIO_NOWAKE);
++			break;
++		default:
++			dev_err(wm->dev,
++				"pen down irq not supported on this device\n");
++			pen_int = 0;
++			break;
++		}
++	}
++
++	return 0;
++}
++
++static void wm97xx_acc_shutdown(struct wm97xx *wm)
++{
++	/* codec specific deconfig */
++	if (pen_int) {
++		switch (wm->id & 0xffff) {
++		case WM9705_ID2:
++			wm->pen_irq = 0;
++			break;
++		case WM9712_ID2:
++		case WM9713_ID2:
++			/* disable interrupt */
++			wm->pen_irq = 0;
++			break;
++		}
++	}
++}
++
++static void wm97xx_irq_enable(struct wm97xx *wm, int enable)
++{
++	if (enable)
++		enable_irq(wm->pen_irq);
++	else
++		disable_irq(wm->pen_irq);
++}
++
++static struct wm97xx_mach_ops mainstone_mach_ops = {
++	.acc_enabled = 1,
++	.acc_pen_up = wm97xx_acc_pen_up,
++	.acc_pen_down = wm97xx_acc_pen_down,
++	.acc_startup = wm97xx_acc_startup,
++	.acc_shutdown = wm97xx_acc_shutdown,
++	.irq_enable = wm97xx_irq_enable,
++};
++
++static int mainstone_wm97xx_probe(struct platform_device *pdev)
++{
++	struct wm97xx *wm = platform_get_drvdata(pdev);
++	return wm97xx_register_mach_ops(wm, &mainstone_mach_ops);
++}
++
++static int mainstone_wm97xx_remove(struct platform_device *pdev)
++{
++	struct wm97xx *wm = platform_get_drvdata(pdev);
++	wm97xx_unregister_mach_ops(wm);
++	return 0;
++}
++
++static struct platform_driver mainstone_wm97xx_driver = {
++	.probe = mainstone_wm97xx_probe,
++	.remove = mainstone_wm97xx_remove,
++	.driver = {
++		.name = "wm97xx-touch",
++	},
++};
++
++static int __init mainstone_wm97xx_init(void)
++{
++	return platform_driver_register(&mainstone_wm97xx_driver);
++}
++
++static void __exit mainstone_wm97xx_exit(void)
++{
++	platform_driver_unregister(&mainstone_wm97xx_driver);
++}
++
++module_init(mainstone_wm97xx_init);
++module_exit(mainstone_wm97xx_exit);
++
++/* Module information */
++MODULE_AUTHOR("Liam Girdwood <liam.girdwood@wolfsonmicro.com>");
++MODULE_DESCRIPTION("wm97xx continuous touch driver for mainstone");
++MODULE_LICENSE("GPL");
 -- 
 1.5.4.3
 
