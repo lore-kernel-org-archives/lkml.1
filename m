@@ -1,79 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760319AbYB2MrU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932067AbYB2Mtc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760319AbYB2MrU (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Feb 2008 07:47:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752979AbYB2MrM
+	id S932067AbYB2Mtc (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Feb 2008 07:49:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758336AbYB2MtY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Feb 2008 07:47:12 -0500
-Received: from smtp-out3.blueyonder.co.uk ([195.188.213.6]:43474 "EHLO
-	smtp-out3.blueyonder.co.uk" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751633AbYB2MrL (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 Feb 2008 07:47:11 -0500
-Message-ID: <47C7FECD.3040205@Keehan.net>
-Date: Fri, 29 Feb 2008 12:47:09 +0000
-From: Mike Keehan <Mike@Keehan.net>
-Reply-To: Mike@Keehan.net
-User-Agent: Thunderbird 2.0.0.12 (X11/20080213)
+	Fri, 29 Feb 2008 07:49:24 -0500
+Received: from the.earth.li ([217.147.81.2]:50059 "EHLO the.earth.li"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754963AbYB2MtX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 29 Feb 2008 07:49:23 -0500
+X-Greylist: delayed 3386 seconds by postgrey-1.27 at vger.kernel.org; Fri, 29 Feb 2008 07:49:23 EST
+Date: Fri, 29 Feb 2008 11:52:57 +0000
+From: Simon Huggins <huggie@earth.li>
+To: linux-kernel@vger.kernel.org
+Subject: Scheduler broken? sdhci issues with scheduling
+Message-ID: <20080229115256.GG24533@paranoidfreak.co.uk>
+Mail-Followup-To: huggie@earth.li, linux-kernel@vger.kernel.org
 MIME-Version: 1.0
-To: Harald Dunkel <harald.dunkel@t-online.de>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: strange behavior on multimedia eject button for cdrom
-References: <47C15020.8040806@t-online.de>
-In-Reply-To: <47C15020.8040806@t-online.de>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+X-Attribution: huggie
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Harold.
+[ Please Cc me on replies ]
 
-Somewhere on the web I read that some of the M1330 media keys are 
-directly connected to the drive, hence the lack of keycodes.
+I had a bug with sdhci which Pierre Ossman looked at for me.
 
-If you eject a disk while it is being played, then the Linux driver 
-will get a read failure.  What happens then may not be well defined :)
+In the end essentially the fix was to use HZ=1000 and nothing else.
+Pierre seemed to think that this was a bug in the scheduler.
 
-Mike.
+I'm interested if someone who groks the scheduler could take a look at
+the mmc/* code and see if it's abusing HZ or if there's anything
+obviously wrong there.  If it's not then perhaps there really is a bug
+in the scheduler?
 
+See
+http://list.drzeus.cx/pipermail/sdhci-devel/2008-February/002164.html
+http://list.drzeus.cx/pipermail/sdhci-devel/2008-January/002142.html
 
-Harald Dunkel wrote:
-> Hi folks,
-> 
-> My laptop (Dell XPS M1330) has some multimedia keys added to the
-> keyboard, including an eject button for the cdrom drive, instead
-> of a "regular" eject button built into the drive itself.
-> 
-> When I press it to eject a CD, then Linux becomes pretty mad: The
-> audio device gets stuck somehow, playing the same tune over and
-> over again, the network connection is frozen, etc. Once the CD is
-> out it is back to normal, as it seems.
-> 
-> I would guess that the eject button triggers some bios functionality,
-> outside of the control of the kernel. But is it? How comes that
-> Linux seems to loose control in this case?
-> 
-> Kernel is 2.6.24.2 (amd64).
-> 
-> AFAICS this eject button has no keycode. The other multimedia keys
-> have.
-> 
-> 
-> Any helpful idea would be very welcome.
-> 
-> 
-> Regards
-> 
-> Harri
-> 
-> -- 
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
-> 
-> 
-> 
+Here's the log that caused him to suspect the scheduler:
+http://list.drzeus.cx/pipermail/sdhci-devel/2007-December/002086.html
+and his post saying so:
+http://list.drzeus.cx/pipermail/sdhci-devel/2007-December/002087.html
 
+Originally I tried to narrow it down:
+http://list.drzeus.cx/pipermail/sdhci-devel/2007-November/002072.html
+and shows a commit that seemed to "fix" it for me
+http://list.drzeus.cx/pipermail/sdhci-devel/2007-November/002072.html
+but apparently the commit I reverted was good
+http://list.drzeus.cx/pipermail/sdhci-devel/2007-November/002078.html
 
+I'm happy to provide more information or try different kernels/config
+options etc (I really should upgrade the kernel on my laptop anyway).
+
+Thanks,
+
+-- 
+----------(   "An excellent suggestion sir, with only two    )----------
+Simon ----(            minor flaws...." - Kryten             )---- Nomis
+                             Htag.pl 0.0.22
