@@ -1,136 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932564AbYB2N27@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932607AbYB2NbR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932564AbYB2N27 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Feb 2008 08:28:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755812AbYB2N2w
+	id S932607AbYB2NbR (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Feb 2008 08:31:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753470AbYB2Na7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Feb 2008 08:28:52 -0500
-Received: from tomts36.bellnexxia.net ([209.226.175.93]:33076 "EHLO
-	tomts36-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755612AbYB2N2v (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 Feb 2008 08:28:51 -0500
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: Ao8CAD+Xx0dMQWoK/2dsb2JhbACBVpBkmxaBeg
-Date: Fri, 29 Feb 2008 08:28:48 -0500
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: Christoph Lameter <clameter@sgi.com>
-Cc: Eric Dumazet <dada1@cosmosbay.com>, Pekka Enberg <penberg@cs.helsinki.fi>,
-       Torsten Kaiser <just.for.lkml@googlemail.com>,
-       Ingo Molnar <mingo@elte.hu>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: [PATCH] Slub Freeoffset check overflow
-Message-ID: <20080229132848.GA10565@Krystal>
-References: <20080219200358.GB11197@Krystal> <Pine.LNX.4.64.0802271532580.14380@schroedinger.engr.sgi.com> <20080228055510.GA9026@Krystal> <Pine.LNX.4.64.0802281054230.29191@schroedinger.engr.sgi.com> <20080228232507.GB20319@Krystal> <Pine.LNX.4.64.0802281648510.1954@schroedinger.engr.sgi.com> <20080229015621.GB32200@Krystal> <Pine.LNX.4.64.0802281812290.3159@schroedinger.engr.sgi.com> <20080229033255.GA2200@Krystal> <Pine.LNX.4.64.0802282107090.5947@schroedinger.engr.sgi.com>
+	Fri, 29 Feb 2008 08:30:59 -0500
+Received: from zombie.ncsc.mil ([144.51.88.131]:43931 "EHLO zombie.ncsc.mil"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752457AbYB2Na6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 29 Feb 2008 08:30:58 -0500
+Subject: Re: [PATCH 01/11] Security: Add hook to get full maclabel xattr
+	name
+From: Stephen Smalley <sds@tycho.nsa.gov>
+To: Christoph Hellwig <hch@infradead.org>
+Cc: Dave Quigley <dpquigl@tycho.nsa.gov>, casey@schaufler-ca.com,
+       viro@ftp.linux.org.uk, trond.myklebust@fys.uio.no, bfields@fieldses.org,
+       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       LSM List <linux-security-module@vger.kernel.org>
+In-Reply-To: <20080229010055.GA26176@infradead.org>
+References: <746385.69480.qm@web36611.mail.mud.yahoo.com>
+	 <1204227035.31790.207.camel@moss-spartans.epoch.ncsc.mil>
+	 <20080228234850.GA25829@infradead.org>
+	 <1204243497.2715.24.camel@moss-terrapins.epoch.ncsc.mil>
+	 <20080229003937.GA16343@infradead.org>
+	 <1204245167.2715.37.camel@moss-terrapins.epoch.ncsc.mil>
+	 <20080229010055.GA26176@infradead.org>
+Content-Type: text/plain
+Organization: National Security Agency
+Date: Fri, 29 Feb 2008 08:30:06 -0500
+Message-Id: <1204291806.31790.233.camel@moss-spartans.epoch.ncsc.mil>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+X-Mailer: Evolution 2.12.3 (2.12.3-1.fc8) 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0802282107090.5947@schroedinger.engr.sgi.com>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 08:17:54 up  9:28,  2 users,  load average: 0.23, 0.12, 0.22
-User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Christoph Lameter (clameter@sgi.com) wrote:
-> On Thu, 28 Feb 2008, Mathieu Desnoyers wrote:
+
+On Thu, 2008-02-28 at 20:00 -0500, Christoph Hellwig wrote:
+> On Thu, Feb 28, 2008 at 07:32:47PM -0500, Dave Quigley wrote:
+> > I can always go with the original hook name of get_security_xattr_name
+> > which turns into a security_get_security_xattr_name call which seems a
+> > bit ludicrous. The only other complaint that I saw from Casey besides
+> > the name of the function was that there could be more than one xattr. If
+> > we want to address that then I need another hook that says give me all
+> > data that the LSM deems important for this file. Which is essentially
+> > the same thing as taking each of the xattr names that the module will
+> > provide, grabbing each of them in turn, and concatenating them together.
+> > For SELinux this is no different than getsecurity with the selinux
+> > suffix. The same goes for SMACK.
 > 
-> > * Christoph Lameter (clameter@sgi.com) wrote:
-> > > On Thu, 28 Feb 2008, Mathieu Desnoyers wrote:
-> > > 
-> > > > In short, the we also use the versioning to check for change of slab.
-> 
-> Then we do not need the page->end field anymore right? I will try 
-> to rediff your patch against current slab-mm and see how we can proceed 
-> from there.
+> What about Casey's suggestion of get_security_blob?  For any reasonable
+> module that just has a single xattr it's trivial and for those that
+> have multiple or a different storage model it might get complicated
+> but that's not our problem for now.
 
+Possibly I'm missing something, but if I'm implementing a security
+module that has any security attribute at all, e.g. capability module
+with security.capability, and I see a hook called "get_security_blob" or
+"get_security_attr" or the like, I'll implement that hook and return my
+attribute there.  Which in turn will _break_ the labeled NFS
+functionality because it is expecting a MAC label specifically.
 
-Slub Freeoffset check overflow
+The whole point here is that we do not want modules like capability to
+return their security attributes here, because this is to support
+labeled NFS functionality in support of enforcing MAC.
 
-Check for overflow of the freeoffset version number.
+I don't especially care about the hook name per se, but the interface
+(whatever it may be) needs to convey the proper semantics, and the
+semantics truly are MAC specific (and should be).
 
-I just thought adding this check in CONFIG_SLUB_DEBUG makes sense. It's
-really unlikely that enough interrupt handlers will nest over the slub
-fast path, and each of them do about a million alloc/free on 32 bits or
-a huge amount of alloc/free on 64 bits, but just in case, it seems good
-to warn if we detect we are half-way to a version overflow.
-
-Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
----
- mm/slub.c |   32 ++++++++++++++++++++++++++------
- 1 file changed, 26 insertions(+), 6 deletions(-)
-
-Index: linux-2.6-lttng/mm/slub.c
-===================================================================
---- linux-2.6-lttng.orig/mm/slub.c	2008-02-29 08:05:01.000000000 -0500
-+++ linux-2.6-lttng/mm/slub.c	2008-02-29 08:16:13.000000000 -0500
-@@ -1660,7 +1660,7 @@ static __always_inline void *slab_alloc(
-  */
- 
- #ifdef SLUB_FASTPATH
--	unsigned long freeoffset, newoffset;
-+	unsigned long freeoffset, newoffset, resoffset;
- 
- 	c = get_cpu_slab(s, raw_smp_processor_id());
- 	do {
-@@ -1682,8 +1682,18 @@ static __always_inline void *slab_alloc(
- 		newoffset = freeoffset;
- 		newoffset &= ~c->off_mask;
- 		newoffset |= (unsigned long)object[c->offset] & c->off_mask;
--	} while (cmpxchg_local(&c->freeoffset, freeoffset, newoffset)
--			!= freeoffset);
-+		resoffset = cmpxchg_local(&c->freeoffset, freeoffset,
-+				newoffset);
-+#ifdef CONFIG_SLUB_DEBUG
-+		/*
-+		 * Just to be paranoid : warn if we detect that enough
-+		 * allocations nested on top of us to get the counter to go
-+		 * half-way to overflow. That would be insane to do that much
-+		 * allocations in interrupt handers, but check it anyway.
-+		 */
-+		WARN_ON(resoffset - freeoffset > -1UL >> 1);
-+#endif
-+	} while (resoffset != freeoffset);
- #else
- 	unsigned long flags;
- 
-@@ -1822,7 +1832,7 @@ static __always_inline void slab_free(st
- 	struct kmem_cache_cpu *c;
- 
- #ifdef SLUB_FASTPATH
--	unsigned long freeoffset, newoffset;
-+	unsigned long freeoffset, newoffset, resoffset;
- 
- 	c = get_cpu_slab(s, raw_smp_processor_id());
- 	debug_check_no_locks_freed(object, s->objsize);
-@@ -1850,8 +1860,18 @@ static __always_inline void slab_free(st
- 		newoffset = freeoffset + c->off_mask + 1;
- 		newoffset &= ~c->off_mask;
- 		newoffset |= (unsigned long)object & c->off_mask;
--	} while (cmpxchg_local(&c->freeoffset, freeoffset, newoffset)
--			!= freeoffset);
-+		resoffset = cmpxchg_local(&c->freeoffset, freeoffset,
-+				newoffset);
-+#ifdef CONFIG_SLUB_DEBUG
-+		/*
-+		 * Just to be paranoid : warn if we detect that enough
-+		 * allocations nested on top of us to get the counter to go
-+		 * half-way to overflow. That would be insane to do that much
-+		 * allocations in interrupt handers, but check it anyway.
-+		 */
-+		WARN_ON(resoffset - freeoffset > -1UL >> 1);
-+#endif
-+	} while (resoffset != freeoffset);
- #else
- 	unsigned long flags;
- 
 
 -- 
-Mathieu Desnoyers
-Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+Stephen Smalley
+National Security Agency
+
