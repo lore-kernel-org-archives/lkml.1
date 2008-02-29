@@ -1,62 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933166AbYB2QTF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932809AbYB2QVm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933166AbYB2QTF (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Feb 2008 11:19:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932415AbYB2QSy
+	id S932809AbYB2QVm (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Feb 2008 11:21:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752409AbYB2QVd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Feb 2008 11:18:54 -0500
-Received: from opensource.wolfsonmicro.com ([80.75.67.52]:44685 "EHLO
-	opensource2.wolfsonmicro.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1759866AbYB2QSx (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 Feb 2008 11:18:53 -0500
-Date: Fri, 29 Feb 2008 16:18:51 +0000
-From: Mark Brown <broonie@opensource.wolfsonmicro.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Dmitry Torokhov <dtor@mail.ru>, linux-input@vger.kernel.org,
-       linux-kernel@vger.kernel.org,
-       Liam Girdwood <liam.girdwood@wolfsonmicro.com>,
-       Graeme Gregory <gg@opensource.wolfsonmicro.com>,
-       Mike Arthur <mike.arthur@wolfsonmicro.com>,
-       Dmitry Baryshkov <dbaryshkov@gmail.com>,
-       Stanley Cai <stanley.cai@intel.com>,
-       Rodolfo Giometti <giometti@enneenne.com>,
-       Russell King <rmk@arm.linux.org.uk>,
-       Marc Kleine-Budde <mkl@pengutronix.de>,
-       Pete MacKay <linux01@architechnical.net>, Ian Molton <spyro@f2s.com>,
-       Vince Sanders <vince@kyllikki.org>, Andrew Zabolotny <zap@homelink.ru>
-Subject: Re: [PATCH 5/6] Driver for WM97xx touchscreens in streaming mode
-	on Mainstone
-Message-ID: <20080229161850.GA11451@rakim.wolfsonmicro.main>
-Mail-Followup-To: Andrew Morton <akpm@linux-foundation.org>,
-	Dmitry Torokhov <dtor@mail.ru>, linux-input@vger.kernel.org,
-	linux-kernel@vger.kernel.org,
-	Liam Girdwood <liam.girdwood@wolfsonmicro.com>,
-	Graeme Gregory <gg@opensource.wolfsonmicro.com>,
-	Mike Arthur <mike.arthur@wolfsonmicro.com>,
-	Dmitry Baryshkov <dbaryshkov@gmail.com>,
-	Stanley Cai <stanley.cai@intel.com>,
-	Rodolfo Giometti <giometti@enneenne.com>,
-	Russell King <rmk@arm.linux.org.uk>,
-	Marc Kleine-Budde <mkl@pengutronix.de>,
-	Pete MacKay <linux01@architechnical.net>,
-	Ian Molton <spyro@f2s.com>, Vince Sanders <vince@kyllikki.org>,
-	Andrew Zabolotny <zap@homelink.ru>
-References: <12040332183316-git-send-email-broonie@opensource.wolfsonmicro.com> <12040332181161-git-send-email-broonie@opensource.wolfsonmicro.com> <12040332181394-git-send-email-broonie@opensource.wolfsonmicro.com> <12040332182008-git-send-email-broonie@opensource.wolfsonmicro.com> <12040332181746-git-send-email-broonie@opensource.wolfsonmicro.com> <20080227230941.f0885763.akpm@linux-foundation.org>
+	Fri, 29 Feb 2008 11:21:33 -0500
+Received: from sacred.ru ([62.205.161.221]:57971 "EHLO sacred.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751980AbYB2QVc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 29 Feb 2008 11:21:32 -0500
+Message-ID: <47C830B9.20505@openvz.org>
+Date: Fri, 29 Feb 2008 19:20:09 +0300
+From: Pavel Emelyanov <xemul@openvz.org>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080213)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080227230941.f0885763.akpm@linux-foundation.org>
-X-Cookie: Printed on recycled paper.
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+To: "Serge E. Hallyn" <serue@us.ibm.com>
+CC: Ian Kent <raven@themaw.net>, Jeff Moyer <jmoyer@redhat.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       autofs mailing list <autofs@linux.kernel.org>,
+       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
+       "Eric W. Biederman" <ebiederm@xmission.com>
+Subject: Re: [PATCH 3/4] autofs4 - track uid and gid of last mount requestor
+References: <Pine.LNX.4.64.0802261208400.8490@raven.themaw.net> <20080227204546.72e16e8d.akpm@linux-foundation.org> <1204179747.3501.21.camel@raven.themaw.net> <20080227223734.caab0165.akpm@linux-foundation.org> <1204182500.3501.49.camel@raven.themaw.net> <20080227232339.af6e904a.akpm@linux-foundation.org> <1204185623.3501.84.camel@raven.themaw.net> <x494pbtxaup.fsf@segfault.boston.devel.redhat.com> <20080228195118.GA16634@sergelap.austin.ibm.com> <1204255932.3969.86.camel@raven.themaw.net> <20080229160921.GA24296@sergelap.ibm.com>
+In-Reply-To: <20080229160921.GA24296@sergelap.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-Greylist: Sender succeeded SMTP AUTH authentication, not delayed by milter-greylist-3.0 (sacred.ru [62.205.161.221]); Fri, 29 Feb 2008 19:20:01 +0300 (MSK)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Feb 27, 2008 at 11:09:41PM -0800, Andrew Morton wrote:
+> The way the user namespaces work right now is similar to say the IPC
+> namespace - a task belongs to one user, that user belongs to precisely
+> one user namespace.
+> 
+> Even in my additional userns patches, I was changing uid to store the
+> (uid, userns) so a struct user still belonged to just one user
+> namespace.
+> 
+> In contrast, with pid namespaces a task is associated with a 'struct
+> pid' which links it to multiple process ids, one in each pid namespace
+> to which it belongs.
+> 
+> Perhaps we should be treating user namespaces like pid namespaces?
 
-> If the calling process happens to have a signal pending then the
-> schedule_timeout() becomes a no-op.  Will the driver still function
-> correctly?
+I'm afraid, that I'm just starting a new thread of discussion in a
+wrong place, but I can't refrain from asking "what for?"
 
-No, it doesn't.  Changed to be non-interruptible - thanks!
+> So if I'm user 500 in what I think is the initial user namespace, I can
+> create a container with a new user namespace, the init task of which is
+> both uid 0 in the child userns, and uid 500 in the higher level,
+> automatically giving the container access to any files I own.
+
+So do you mean that I can become a root, by calling clone()?
+
+Thanks,
+Pavel
