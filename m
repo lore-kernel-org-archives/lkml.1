@@ -1,55 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757657AbYB2GOr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756412AbYB2GTs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757657AbYB2GOr (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Feb 2008 01:14:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752868AbYB2GOi
+	id S1756412AbYB2GTs (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Feb 2008 01:19:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750893AbYB2GTk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Feb 2008 01:14:38 -0500
-Received: from palinux.external.hp.com ([192.25.206.14]:53258 "EHLO
-	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752677AbYB2GOh (ORCPT
+	Fri, 29 Feb 2008 01:19:40 -0500
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:41086 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750802AbYB2GTk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 Feb 2008 01:14:37 -0500
-Date: Thu, 28 Feb 2008 23:14:35 -0700
-From: Matthew Wilcox <matthew@wil.cx>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Mark Pearson <devnull.port@googlemail.com>,
-       Karol Kozimor <sziwan@hell.org.pl>, Julia Lawall <julia@diku.dk>,
-       corentincj@iksaif.net, sziwan@users.sourceforge.net,
-       acpi4asus-user@lists.sourceforge.net, linux-kernel@vger.kernel.org,
-       kernel-janitors@vger.kernel.org, Len Brown <lenb@kernel.org>
-Subject: Re: [PATCH 2/9] drivers/acpi/asus_acpi.c: Correct use of ! and &
-Message-ID: <20080229061435.GE19198@parisc-linux.org>
-References: <Pine.LNX.4.64.0802262142120.18200@ask.diku.dk> <7C626792-02A6-4BE6-B5F2-D75899F3990C@hell.org.pl> <47C5ABFB.3050607@googlemail.com> <20080228215503.b942bb3c.akpm@linux-foundation.org> <20080229061023.GD19198@parisc-linux.org>
+	Fri, 29 Feb 2008 01:19:40 -0500
+Date: Fri, 29 Feb 2008 15:19:39 +0900
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: Lee Schermerhorn <Lee.Schermerhorn@hp.com>, Paul Jackson <pj@sgi.com>,
+       linux-mm@kvack.org, LKML <linux-kernel@vger.kernel.org>
+Subject: trivial clean up to zlc_setup
+Cc: kosaki.motohiro@jp.fujitsu.com
+Message-Id: <20080229151057.66ED.KOSAKI.MOTOHIRO@jp.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080229061023.GD19198@parisc-linux.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Content-Type: text/plain; charset="US-ASCII"
+Content-Transfer-Encoding: 7bit
+X-Mailer: Becky! ver. 2.42 [ja]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Feb 28, 2008 at 11:10:23PM -0700, Matthew Wilcox wrote:
-> On Thu, Feb 28, 2008 at 09:55:03PM -0800, Andrew Morton wrote:
-> >  	if (invert)		/* invert target value */
-> > -		led_out = !led_out & 0x1;
-> > +		led_out = !led_out;
-> >  
-> >  	if (!write_acpi_int(hotk->handle, ledname, led_out, NULL))
-> 
-> But now you're writing 0xffffffff instead of 1.  I think the suggestion
-> of led_out ^= 1 was the correct one.
+Hi
 
-! is not ~
-! is not ~
-! is not ~
-....
+I found very small bug during review mel's 2 zonelist patch series.
 
-I'll go to sleep now.
+this patch is trivial clean up.
+jiffies subtraction may cause overflow problem.
+it shold be used time_after().
 
--- 
-Intel are signing my paycheques ... these opinions are still mine
-"Bill, look, we understand that you're interested in selling us this
-operating system, but compare it to ours.  We can't possibly take such
-a retrograde step."
+Thanks.
+
+
+Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+CC: Lee Schermerhorn <Lee.Schermerhorn@hp.com>
+CC: Paul Jackson <pj@sgi.com>
+---
+ mm/page_alloc.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+Index: b/mm/page_alloc.c
+===================================================================
+--- a/mm/page_alloc.c   2008-02-18 17:17:25.000000000 +0900
++++ b/mm/page_alloc.c   2008-02-29 15:17:03.000000000 +0900
+@@ -1294,7 +1294,7 @@ static nodemask_t *zlc_setup(struct zone
+        if (!zlc)
+                return NULL;
+
+-       if (jiffies - zlc->last_full_zap > 1 * HZ) {
++       if (time_after(jiffies, zlc->last_full_zap + HZ)) {
+                bitmap_zero(zlc->fullzones, MAX_ZONES_PER_ZONELIST);
+                zlc->last_full_zap = jiffies;
+        }
+
+
+
+
+
