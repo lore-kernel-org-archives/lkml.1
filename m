@@ -1,50 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761505AbYB2UdL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933477AbYB2Udw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761505AbYB2UdL (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Feb 2008 15:33:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753048AbYB2Uc5
+	id S933477AbYB2Udw (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Feb 2008 15:33:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758137AbYB2Udn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Feb 2008 15:32:57 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:47246 "EHLO mx2.mail.elte.hu"
+	Fri, 29 Feb 2008 15:33:43 -0500
+Received: from ra.tuxdriver.com ([70.61.120.52]:3674 "EHLO ra.tuxdriver.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752236AbYB2Uc5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 Feb 2008 15:32:57 -0500
-Date: Fri, 29 Feb 2008 21:32:02 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Kei Tokunaga <tokunaga.keiich@jp.fujitsu.com>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-kernel@vger.kernel.org,
-       Dhaval Giani <dhaval@linux.vnet.ibm.com>,
-       vatsa <vatsa@linux.vnet.ibm.com>, Kei Tokunaga <ktokunag@redhat.com>
-Subject: Re: A strange behavior of sched_fair
-Message-ID: <20080229203202.GA27212@elte.hu>
-References: <47C5E977.2010401@jp.fujitsu.com> <1204277686.6243.52.camel@lappy> <1204279909.6243.64.camel@lappy> <20080229194213.GA21249@elte.hu> <47C8692D.1030701@jp.fujitsu.com>
+	id S1753950AbYB2Udn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 29 Feb 2008 15:33:43 -0500
+Date: Fri, 29 Feb 2008 15:17:11 -0500
+From: "John W. Linville" <linville@tuxdriver.com>
+To: Pavel Roskin <proski@gnu.org>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>, Zan Lynx <zlynx@acm.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Jon Masters <jcm@jonmasters.org>, Rusty Russell <rusty@rustcorp.com.au>
+Subject: Re: [PATCH 2.6.25] module: allow ndiswrapper to use GPL-only
+	symbols
+Message-ID: <20080229201711.GF3234@tuxdriver.com>
+References: <1204236662.3612.6.camel@dv> <alpine.LFD.1.00.0802281525170.5780@woody.linux-foundation.org> <20080229012012.ajlsk4pow8wkkgss@webmail.spamcop.net> <alpine.LFD.1.00.0802290807110.17889@woody.linux-foundation.org> <1204304352.6767.21.camel@localhost> <alpine.LFD.1.00.0802290906520.17889@woody.linux-foundation.org> <1204305609.21719.16.camel@dv> <alpine.LFD.1.00.0802290929590.17889@woody.linux-foundation.org> <1204313978.2316.8.camel@dv>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <47C8692D.1030701@jp.fujitsu.com>
+In-Reply-To: <1204313978.2316.8.camel@dv>
 User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, Feb 29, 2008 at 02:39:38PM -0500, Pavel Roskin wrote:
 
-* Kei Tokunaga <tokunaga.keiich@jp.fujitsu.com> wrote:
+> I doubt ndiswrapper will ever be ported to the
+> userspace.  It's much more likely that some other approach will be used.
 
-> Hi Ingo, Peter,
->
-> Thanks for the patch, Peter.  I modified it a bit to compile and 
-> confirmed the issue did not occur on my ia64 box.  I am attaching the 
-> revised patch below.
+Maybe it should be -- that might solve a lot of problems.
 
-thanks, queued it up. Could you send me your Tested-by (and Acked-by) 
-lines?
-
-	Ingo
+-- 
+John W. Linville
+linville@tuxdriver.com
