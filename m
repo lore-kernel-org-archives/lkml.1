@@ -1,54 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761593AbYB2RUa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933018AbYB2RY4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761593AbYB2RUa (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Feb 2008 12:20:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753738AbYB2RUN
+	id S933018AbYB2RY4 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Feb 2008 12:24:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754625AbYB2RYr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Feb 2008 12:20:13 -0500
-Received: from c60.cesmail.net ([216.154.195.49]:54993 "EHLO c60.cesmail.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753465AbYB2RUM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 Feb 2008 12:20:12 -0500
-Subject: Re: [PATCH 2.6.25] module: allow ndiswrapper to use GPL-only
-	symbols
-From: Pavel Roskin <proski@gnu.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Zan Lynx <zlynx@acm.org>, linux-kernel <linux-kernel@vger.kernel.org>,
-       Jon Masters <jcm@jonmasters.org>, Rusty Russell <rusty@rustcorp.com.au>
-In-Reply-To: <alpine.LFD.1.00.0802290906520.17889@woody.linux-foundation.org>
-References: <1204236662.3612.6.camel@dv>
-	 <alpine.LFD.1.00.0802281525170.5780@woody.linux-foundation.org>
-	 <20080229012012.ajlsk4pow8wkkgss@webmail.spamcop.net>
-	 <alpine.LFD.1.00.0802290807110.17889@woody.linux-foundation.org>
-	 <1204304352.6767.21.camel@localhost>
-	 <alpine.LFD.1.00.0802290906520.17889@woody.linux-foundation.org>
-Content-Type: text/plain
-Date: Fri, 29 Feb 2008 12:20:09 -0500
-Message-Id: <1204305609.21719.16.camel@dv>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 (2.12.3-1.fc8) 
+	Fri, 29 Feb 2008 12:24:47 -0500
+Received: from wa-out-1112.google.com ([209.85.146.178]:26423 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753738AbYB2RYq (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 29 Feb 2008 12:24:46 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:mime-version:content-type:content-transfer-encoding:content-disposition;
+        b=Ml4p1y5haDT/ldp9drwO0E1WufqHWX1fotyLkDf9YL7BzCjQCmBleyegSSGqI5S0Jsn6tlAWspH1B2OY7vEejylS4NNXSUB99LYK0GDcEZAc3N7PNqIrIURxOvSC6eB6DnI835TP6N5AY0YdSewk7uGpociGCq6GRO4Fa11edxg=
+Message-ID: <847993120802290924m6b12567p964a17e080030889@mail.gmail.com>
+Date: Fri, 29 Feb 2008 10:24:44 -0700
+From: "Craig Kelley" <namonai@gmail.com>
+To: mhoffman@lightlink.com
+Subject: [patch 1/1] hwmon: add 0x8c id for smsc47b397 driver
+Cc: lm-sensors@lm-sensors.org, linux-kernel@vger.kernel.org
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+From: Craig Kelley <namonai@gmail.com>
 
-On Fri, 2008-02-29 at 09:07 -0800, Linus Torvalds wrote:
-> 
-> On Fri, 29 Feb 2008, Zan Lynx wrote:
-> > 
-> > The Linux kernel itself will load proprietary modules.  It does not as a
-> > general rule, but it will.
-> 
-> .. and it doesn't export GPLONLY modules to them.
-> 
-> How stupid do you have to be to not understand that?
+Added a new ID (0x8c) for the smsc47b397 hardware monitor driver.
+This ID is used by HP in, at least, their dc7700 line.
 
-Actually, it's a flawed comparison.  The only thing ndiswrapper exports
-to NDIS modules is NDIS API.  GPLONLY symbols are only used to implement
-that API in the code that's under GPL.  That's the code you can fork,
-change and redistribute.
+Signed-off-by: Craig Kelley <namonai@gmail.com>
+---
 
--- 
-Regards,
-Pavel Roskin
+--- drivers/hwmon/smsc47b397.c-orig     2008-02-29 07:54:18.000000000 -0800
++++ drivers/hwmon/smsc47b397.c  2008-02-29 07:53:00.000000000 -0800
+@@ -331,11 +331,23 @@ exit:
+ static int __init smsc47b397_find(unsigned short *addr)
+ {
+        u8 id, rev;
++       char *name;
+
+        superio_enter();
+        id = superio_inb(SUPERIO_REG_DEVID);
+
+-       if ((id != 0x6f) && (id != 0x81) && (id != 0x85)) {
++       switch(id) {
++       case 0x81:
++               name = "SCH5307-NS";
++               break;
++       case 0x6f:
++               name = "LPC47B397-NC";
++               break;
++       case 0x85:
++       case 0x8c:
++               name = "SCH5317";
++               break;
++       default:
+                superio_exit();
+                return -ENODEV;
+        }
+@@ -348,8 +360,7 @@ static int __init smsc47b397_find(unsign
+
+        printk(KERN_INFO DRVNAME ": found SMSC %s "
+                "(base address 0x%04x, revision %u)\n",
+-               id == 0x81 ? "SCH5307-NS" : id == 0x85 ? "SCH5317" :
+-              "LPC47B397-NC", *addr, rev);
++               name, *addr, rev);
+
+        superio_exit();
+        return 0;
