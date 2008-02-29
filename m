@@ -1,36 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933916AbYB2VdH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934146AbYB2Vep@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933916AbYB2VdH (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Feb 2008 16:33:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934167AbYB2Vco
+	id S934146AbYB2Vep (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Feb 2008 16:34:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756584AbYB2Veg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Feb 2008 16:32:44 -0500
-Received: from sj-iport-2.cisco.com ([171.71.176.71]:23086 "EHLO
-	sj-iport-2.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932407AbYB2Vcn (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 Feb 2008 16:32:43 -0500
-X-IronPort-AV: E=Sophos;i="4.25,429,1199692800"; 
-   d="scan'208";a="24256058"
-To: Pete Wyckoff <pw@osc.edu>
-Cc: linux-kernel@vger.kernel.org, Olaf Kirch <olaf.kirch@oracle.com>,
-       general@lists.openfabrics.org, linux-scsi@vger.kernel.org
-Subject: Re: [ofa-general] [PATCH 2/2] ib fmr pool: flush used clean entries
-X-Message-Flag: Warning: May contain useful information
-References: <20080225225330.GA3316@osc.edu> <ada1w70zlkf.fsf@cisco.com>
-	<20080226182655.GD7033@osc.edu> <20080226182753.GF7033@osc.edu>
-From: Roland Dreier <rdreier@cisco.com>
-Date: Fri, 29 Feb 2008 13:32:33 -0800
-In-Reply-To: <20080226182753.GF7033@osc.edu> (Pete Wyckoff's message of "Tue, 26 Feb 2008 13:27:53 -0500")
-Message-ID: <ada4pbrv47i.fsf@cisco.com>
-User-Agent: Gnus/5.1008 (Gnus v5.10.8) XEmacs/21.4.21 (linux)
+	Fri, 29 Feb 2008 16:34:36 -0500
+Received: from relay1.sgi.com ([192.48.171.29]:49191 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753187AbYB2Vef (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 29 Feb 2008 16:34:35 -0500
+Date: Fri, 29 Feb 2008 13:34:34 -0800 (PST)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Andrea Arcangeli <andrea@qumranet.com>
+cc: Nick Piggin <nickpiggin@yahoo.com.au>, akpm@linux-foundation.org,
+       Robin Holt <holt@sgi.com>, Avi Kivity <avi@qumranet.com>,
+       Izik Eidus <izike@qumranet.com>, kvm-devel@lists.sourceforge.net,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, general@lists.openfabrics.org,
+       Steve Wise <swise@opengridcomputing.com>,
+       Roland Dreier <rdreier@cisco.com>, Kanoj Sarcar <kanojsarcar@yahoo.com>,
+       steiner@sgi.com, linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       daniel.blueman@quadrics.com
+Subject: Re: [patch 2/6] mmu_notifier: Callbacks to invalidate address ranges
+In-Reply-To: <20080229212327.GC8091@v2.random>
+Message-ID: <Pine.LNX.4.64.0802291329250.13402@schroedinger.engr.sgi.com>
+References: <20080228005249.GF8091@v2.random>
+ <Pine.LNX.4.64.0802271702490.16510@schroedinger.engr.sgi.com>
+ <20080228011020.GG8091@v2.random> <Pine.LNX.4.64.0802281043430.29191@schroedinger.engr.sgi.com>
+ <20080229005530.GO8091@v2.random> <Pine.LNX.4.64.0802281658560.1954@schroedinger.engr.sgi.com>
+ <20080229131302.GT8091@v2.random> <Pine.LNX.4.64.0802291149290.11292@schroedinger.engr.sgi.com>
+ <20080229201744.GB8091@v2.random> <Pine.LNX.4.64.0802291301530.11889@schroedinger.engr.sgi.com>
+ <20080229212327.GC8091@v2.random>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-OriginalArrivalTime: 29 Feb 2008 21:32:34.0124 (UTC) FILETIME=[98B230C0:01C87B1A]
-Authentication-Results: sj-dkim-4; header.From=rdreier@cisco.com; dkim=pass (
-	sig from cisco.com/sjdkim4002 verified; ); 
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-thanks, applied
+On Fri, 29 Feb 2008, Andrea Arcangeli wrote:
+
+> On Fri, Feb 29, 2008 at 01:03:16PM -0800, Christoph Lameter wrote:
+> > That means we need both the anon_vma locks and the i_mmap_lock to become 
+> > semaphores. I think semaphores are better than mutexes. Rik and Lee saw 
+> > some performance improvements because list can be traversed in parallel 
+> > when the anon_vma lock is switched to be a rw lock.
+> 
+> The improvement was with a rw spinlock IIRC, so I don't see how it's
+> related to this.
+
+AFAICT The rw semaphore fastpath is similar in performance to a rw 
+spinlock. 
+ 
+> Perhaps the rwlock spinlock can be changed to a rw semaphore without
+> measurable overscheduling in the fast path. However theoretically
+
+Overscheduling? You mean overhead?
+
+> speaking the rw_lock spinlock is more efficient than a rw semaphore in
+> case of a little contention during the page fault fast path because
+> the critical section is just a list_add so it'd be overkill to
+> schedule while waiting. That's why currently it's a spinlock (or rw
+> spinlock).
+
+On the other hand a semaphore puts the process to sleep and may actually 
+improve performance because there is less time spend in a busy loop. 
+Other processes may do something useful and we stay off the contended 
+cacheline reducing traffic on the interconnect.
+ 
+> preempt-rt runs quite a bit slower, or we could rip spinlocks out of
+> the kernel in the first place ;)
+
+The question is why that is the case and it seesm that there are issues 
+with interrupt on/off that are important here and particularly significant 
+with the SLAB allocator (significant hacks there to deal with that issue). 
+The fastpath that we have in the works for SLUB may address a large 
+part of that issue because it no longer relies on disabling interrupts.
