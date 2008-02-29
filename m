@@ -1,93 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759994AbYB2BIN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761047AbYB2BIj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759994AbYB2BIN (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Feb 2008 20:08:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761349AbYB2A5W
+	id S1761047AbYB2BIj (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Feb 2008 20:08:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764578AbYB2A6m
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Feb 2008 19:57:22 -0500
-Received: from zombie.ncsc.mil ([144.51.88.131]:44769 "EHLO zombie.ncsc.mil"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761900AbYB2A5T (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Feb 2008 19:57:19 -0500
-Subject: Re: [PATCH 01/11] Security: Add hook to get full maclabel xattr
-	name
-From: Dave Quigley <dpquigl@tycho.nsa.gov>
-To: Christoph Hellwig <hch@infradead.org>
-Cc: Stephen Smalley <sds@tycho.nsa.gov>, casey@schaufler-ca.com,
-       viro@ftp.linux.org.uk, trond.myklebust@fys.uio.no, bfields@fieldses.org,
-       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       LSM List <linux-security-module@vger.kernel.org>
-In-Reply-To: <20080229003937.GA16343@infradead.org>
-References: <746385.69480.qm@web36611.mail.mud.yahoo.com>
-	 <1204227035.31790.207.camel@moss-spartans.epoch.ncsc.mil>
-	 <20080228234850.GA25829@infradead.org>
-	 <1204243497.2715.24.camel@moss-terrapins.epoch.ncsc.mil>
-	 <20080229003937.GA16343@infradead.org>
-Content-Type: text/plain
-Date: Thu, 28 Feb 2008 19:32:47 -0500
-Message-Id: <1204245167.2715.37.camel@moss-terrapins.epoch.ncsc.mil>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 (2.12.3-1.fc8) 
-Content-Transfer-Encoding: 7bit
+	Thu, 28 Feb 2008 19:58:42 -0500
+Received: from e32.co.us.ibm.com ([32.97.110.150]:35614 "EHLO
+	e32.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759975AbYB2A6l (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 28 Feb 2008 19:58:41 -0500
+Date: Thu, 28 Feb 2008 16:58:23 -0800
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: Jarek Poplawski <jarkao2@gmail.com>
+Cc: bugme-daemon@bugzilla.kernel.org, Yannick Dirou <yannick.dirou@axetic.com>,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+Subject: Re: [Bug 10071] kernel hang in inet_init (PREEMPT_RCU problem)
+Message-ID: <20080229005823.GF14104@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <bug-10071-11547@http.bugzilla.kernel.org/> <20080228205303.261D311D108@picon.linux-foundation.org> <20080228213457.GA2770@ami.dom.local>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080228213457.GA2770@ami.dom.local>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-On Thu, 2008-02-28 at 19:39 -0500, Christoph Hellwig wrote:
-> On Thu, Feb 28, 2008 at 07:04:57PM -0500, Dave Quigley wrote:
-> > There are several things here. I've spoken to several people about this
-> > and the belief I've gotten from most of them is that a recommended
-> > attribute is how this is to be transported. The NFSv4 spec people will
-> > probably say that if you want xattr like functionality for NFSv4 use
-> > named attributes. For us this is not an option since we require
-> > semantics to label on create/open and the only way we can do this is by
-> > adding a recommended attribute. The create/open calls in NFSv4 takes a
-> > list of attributes to use on create as part of the request. I really
-> > don't see a difference between the security blob and the
-> > username/groupname that NFSv4 currently uses. Also there is a good
-> > chance that we will need to translate labels at some point (read future
-> > work).
+On Thu, Feb 28, 2008 at 10:34:57PM +0100, Jarek Poplawski wrote:
+> On Thu, Feb 28, 2008 at 12:53:03PM -0800, bugme-daemon@bugzilla.kernel.org wrote:
+> > http://bugzilla.kernel.org/show_bug.cgi?id=10071
+> ...
+> > ------- Comment #17 from yannick.dirou@axetic.com  2008-02-28 12:53 -------
+> > bingo with classic rcu
 > 
-> Then use the existing side-band protocol and ignore the NFSv4 spec
-> group.  They're <skip colourful language here> anyway.
-
-The reason we are trying to go through the standards process in the
-first place is that there is a desire to use SELinux with large netapp
-storage boxes. I don't believe that netapp supports the existing
-side-band protocol for NFSv4 and the impression I got was that they we
-were going to have an incredibly hard time convincing them of putting
-anything in that isn't part of the standard. It seems that adding one
-recommended attribute which is described in a 3 page internet draft(Most
-of which is BS that is part of the template) would be significantly
-easier to get into the standard than trying to push an out of band xattr
-protocol. Also, I believe Trond even expressed some discontent with it a
-while back when we first started development. 
-
+> Congratulations Yannick!
 > 
-> > > Wow, that's rude even to someone as direct as me.  Casey is the only
-> > > other person having an in-tree LSM, and I think his input in this
-> > > area is important.  But if not I as a VFS person can happily give
-> > > you my "no" for the current version from the VFS point of view.
+> So, it seems mainly RCU vs. timer(?) problem. I send CC of this message
+> to RCU author, linux-kernel and netdev lists.
+
+Interesting!  Any chance of a pointer to the original messages?
+A quick Google search and a look at LKML showed me nothing.  :-/
+
+						Thanx, Paul
+
+> I'm not sure how much time you could/will to offer for this debugging.
+> Anyway, if it's possible I think it would be interesting to check with
+> CONFIG_PREEMPT_RCU = y again, but CONFIG_HOTPLUG_CPU = n ("Processor
+> type and features --> Support for suspend on SMP and ...") in the
+> meantime.
+> 
+> Many thanks,
+> Jarek P.
+> 
+> 
+> > [    0.770854] NET: Registered protocol family 2
+> > [    0.770868] 4294668327 net/ipv4/af_inet.c 1387
+> > [    0.770884] 4294668327 net/ipv4/af_inet.c 1390
+> > [    0.770888] 4294668327 net/ipv4/af_inet.c 1393
+> > [    0.770891] 4294668327 net/ipv4/af_inet.c 1402
+> > [    0.770893] 4294668327 net/ipv4/af_inet.c 1407
+> > [    0.773078] 0 4294668328l
+> > [    0.774036] 0 4294668329l
+> > [    0.775037] 0 4294668330l
+> > [    0.775040] 4294668330 net/ipv4/af_inet.c 1419
+> > [    0.775077] 4294668330 net/ipv4/af_inet.c 1426
+> > [    0.775077] 4294668330 net/ipv4/route.c 2998
+> > [    0.775077] 4294668330 net/ipv4/route.c 3009
+> > [    0.775077] 4294668330 net/ipv4/route.c 3016
+> > [    0.775077] IP route cache hash table entries: 32768 (order: 5, 131072
+> > bytes)
+> > [    0.775077] 4294668330 net/ipv4/route.c 3027
+> > [    0.775492] TCP established hash table entries: 131072 (order: 8, 1048576
+> > bytes)
+> > [    0.776318] TCP bind hash table entries: 65536 (order: 9, 2359296 bytes)
+> > [    0.785670] TCP: Hash tables configured (established 131072 bind 65536)
+> > [    0.785715] TCP reno registered
 > > 
-> > I can only speak for myself but honestly I've only seen Casey act
-> > confrontational to this idea from the beginning. There is absolutely
-> > nothing in here that is SELinux specific, tecnically its not even MAC
-> > specific. I said from the beginning that this was perhaps not the best
-> > name and we are willing to change it
-> 
-> And changing the name and minor details is exactly what Casey requested.
-
-I can always go with the original hook name of get_security_xattr_name
-which turns into a security_get_security_xattr_name call which seems a
-bit ludicrous. The only other complaint that I saw from Casey besides
-the name of the function was that there could be more than one xattr. If
-we want to address that then I need another hook that says give me all
-data that the LSM deems important for this file. Which is essentially
-the same thing as taking each of the xattr names that the module will
-provide, grabbing each of them in turn, and concatenating them together.
-For SELinux this is no different than getsecurity with the selinux
-suffix. The same goes for SMACK.
-
-Dave
-
+> > 
+> > -- 
+> > Configure bugmail: http://bugzilla.kernel.org/userprefs.cgi?tab=email
+> > ------- You are receiving this mail because: -------
+> > You are on the CC list for the bug, or are watching someone who is.
+> > You are the assignee for the bug, or are watching the assignee.
