@@ -1,50 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760760AbYB2ShK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932512AbYB2SiU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760760AbYB2ShK (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Feb 2008 13:37:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756809AbYB2Sg5
+	id S932512AbYB2SiU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Feb 2008 13:38:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756690AbYB2SiG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Feb 2008 13:36:57 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:40599 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755816AbYB2Sg5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 Feb 2008 13:36:57 -0500
-Date: Fri, 29 Feb 2008 19:36:39 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: ray-lk@madrabbit.org, linux-kernel@vger.kernel.org
-Subject: Re: Interactivity issue in 2.6.25-rc3
-Message-ID: <20080229183639.GC8258@elte.hu>
-References: <20080228184407.GA7117@localhost.ift.unesp.br> <20080228191824.GA20019@elte.hu> <2c0942db0802281154y3176e847g8b9a4091df5cc8af@mail.gmail.com> <20080228210627.GA4337@localhost.ift.unesp.br> <20080229160408.GG27248@elte.hu> <20080229171442.GA5173@localhost.ift.unesp.br>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080229171442.GA5173@localhost.ift.unesp.br>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0001]
+	Fri, 29 Feb 2008 13:38:06 -0500
+Received: from accolon.hansenpartnership.com ([76.243.235.52]:44186 "EHLO
+	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751337AbYB2SiD (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 29 Feb 2008 13:38:03 -0500
+Subject: Re: [PATCH 1/3 v3] dma: document dma_{un}map_{single|sg}_attrs()
+	interface
+From: James Bottomley <James.Bottomley@HansenPartnership.com>
+To: Grant Grundler <grundler@parisc-linux.org>
+Cc: Michael Ellerman <michael@ellerman.id.au>, akepner@sgi.com,
+       Tony Luck <tony.luck@intel.com>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>, Jes Sorensen <jes@sgi.com>,
+       Randy Dunlap <randy.dunlap@oracle.com>,
+       Roland Dreier <rdreier@cisco.com>, David Miller <davem@davemloft.net>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <20080229182504.GA18102@colo.lackof.org>
+References: <20080228032448.GS11012@sgi.com>
+	 <dc1166600802281845t1613beedj7a285399a21cd@mail.gmail.com>
+	 <20080229182504.GA18102@colo.lackof.org>
+Content-Type: text/plain
+Date: Fri, 29 Feb 2008 12:37:56 -0600
+Message-Id: <1204310276.4003.48.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.3 (2.12.3-1.fc8) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Carlos R. Mafra <crmafra2@gmail.com> wrote:
-
-> > and obviously, even if you only 'feel' long delays that's too an 
-> > anomaly by definition, no matter what the scripts say about it. It 
-> > might even be a scheduler anomaly as well: for example if the 
-> > scheduler clock has an anomaly - on which the delay statistics are 
-> > based too.
+On Fri, 2008-02-29 at 11:25 -0700, Grant Grundler wrote:
+> On Fri, Feb 29, 2008 at 01:45:46PM +1100, Michael Ellerman wrote:
+> > On Thu, Feb 28, 2008 at 2:24 PM,  <akepner@sgi.com> wrote:
+> > >
+> > >  Document the new dma_{un}map_{single|sg}_attrs() functions.
+> > >
+> > >  diff --git a/Documentation/DMA-attributes.txt b/Documentation/DMA-attributes.txt
+> > >  index e69de29..36baea5 100644
+> > >  --- a/Documentation/DMA-attributes.txt
+> > >  +++ b/Documentation/DMA-attributes.txt
+> > >  @@ -0,0 +1,29 @@
+> > >  +                       DMA attributes
+> > >  +                       ==============
+> > >  +
+> > >  +This document describes the semantics of the DMA attributes that are
+> > >  +defined in linux/dma-attrs.h.
+> > >  +
+> > >  +
+> > >  +DMA_ATTR_SYNC_ON_WRITE
+> > >  +----------------------
+> > >  +
+> > >  +DMA_ATTR_SYNC_ON_WRITE is used on the IA64_SGI_SN2 architecture.
+> > >  +It provides a mechanism for devices to explicitly order their DMA
+> > >  +writes.
+> > >  +
+> > >  +On IA64_SGI_SN2 machines, DMA may be reordered within the NUMA
+> > >  +interconnect. Allowing reordering improves performance, but in some
+> > >  +situations it may be necessary to ensure that one DMA write is
+> > >  +complete before another is visible. For example, if the device does
+> > >  +a DMA write to indicate that data is available in memory, DMA of the
+> > >  +"completion indication" can race with DMA of data.
+> > >  +
+> > >  +When a memory region is mapped with the DMA_ATTR_SYNC_ON_WRITE attribute,
+> > >  +a write to that region causes all in-flight DMA to be flushed to memory.
+> > >  +Any pending DMA will complete and be visible in memory before the write
+> > >  +to the region with the DMA_ATTR_SYNC_ON_WRITE attribute becomes visible.
+> > 
+> > 
+> > I'm not clear how this is all meant to work. Your intial patch says
+> > this is an interface to pass "architecture-specific
+> > attributes" from drivers through to the DMA mapping code, which is
+> > fair enough - we want to do something similar.
+> > 
+> > But it's not clear that DMA_ATTR_SYNC_ON_WRITE is architecture
+> > specific. If I was a driver writer might assume it works on all
+> > platforms.
 > 
-> But if the scripts say all 'se.wait_max' are < 40 msecs than it is not 
-> CFS' fault, right? Even if it takes 3 seconds for a typed letter to 
-> appear in the terminal?
+> That would be a fair assumption. But it is required to be a NOP on
+> platforms that don't need the "hint" ("attr" or whatever you want
+> to call it). Specific architectures (SN2 in this case) will need
+> to implement something.
 
-yeah, in 99.9% of the cases it's not the scheduler's fault.
+To be honest, I still don't like the name.  SYNC_ON_WRITE is the SN2
+implementation.  What it's actually doing is implementing strict
+ordering semantics.  I think it should really be
+DMA_ATTR_STRICT_ORDERING (with a corresponding
+DMA_ATTR_RELAXED_ORDERING).
 
-	Ingo
+This means that if ever anyone sets a PCIe bridge to relaxed ordering by
+default, this attribute will also work for them.
+
+James
+
+
