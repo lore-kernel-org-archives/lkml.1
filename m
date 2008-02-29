@@ -1,76 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757381AbYB2CAf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755673AbYB2CIO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757381AbYB2CAf (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Feb 2008 21:00:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752558AbYB2CA0
+	id S1755673AbYB2CIO (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Feb 2008 21:08:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752270AbYB2CH4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Feb 2008 21:00:26 -0500
-Received: from chilli.pcug.org.au ([203.10.76.44]:51293 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751309AbYB2CAZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Feb 2008 21:00:25 -0500
-Date: Fri, 29 Feb 2008 13:00:19 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Matthew Wilcox <matthew@wil.cx>
-Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-       Matthew Wilcox <willy@linux.intel.com>,
-       Thomas Gleixner <tglx@linutronix.de>, Andrew Morton <akpm@osdl.org>,
-       linux-next@vger.kernel.org, Linus <torvalds@linux-foundation.org>
-Subject: Re: [PATCH 11/12] Generic semaphore implementation
-Message-Id: <20080229130019.3ede8053.sfr@canb.auug.org.au>
-In-Reply-To: <20080229003954.GA525@parisc-linux.org>
-References: <1204180441-8540-3-git-send-email-matthew@wil.cx>
-	<1204180441-8540-4-git-send-email-matthew@wil.cx>
-	<1204180441-8540-5-git-send-email-matthew@wil.cx>
-	<1204180441-8540-6-git-send-email-matthew@wil.cx>
-	<1204180441-8540-7-git-send-email-matthew@wil.cx>
-	<1204180441-8540-8-git-send-email-matthew@wil.cx>
-	<1204180441-8540-9-git-send-email-matthew@wil.cx>
-	<1204180441-8540-10-git-send-email-matthew@wil.cx>
-	<1204180441-8540-11-git-send-email-matthew@wil.cx>
-	<20080228071822.GA13571@elte.hu>
-	<20080229003954.GA525@parisc-linux.org>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.8; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Fri__29_Feb_2008_13_00_19_+1100_IXTD1j0jxA8JAmtW"
+	Thu, 28 Feb 2008 21:07:56 -0500
+Received: from web36609.mail.mud.yahoo.com ([209.191.85.26]:40974 "HELO
+	web36609.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1751803AbYB2CHz (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 28 Feb 2008 21:07:55 -0500
+X-YMail-OSG: KvJ4UNYVM1kHX5dxJcHLFwEexW5.OReEzOeOITqEml4wRKuUgPve6eJyHlUyAEXclx5_SQVMsA--
+X-RocketYMMF: rancidfat
+Date: Thu, 28 Feb 2008 18:07:53 -0800 (PST)
+From: Casey Schaufler <casey@schaufler-ca.com>
+Reply-To: casey@schaufler-ca.com
+Subject: Re: [PATCH 01/11] Security: Add hook to get full maclabel xattr name
+To: Dave Quigley <dpquigl@tycho.nsa.gov>,
+       Christoph Hellwig <hch@infradead.org>
+Cc: Stephen Smalley <sds@tycho.nsa.gov>, casey@schaufler-ca.com,
+       viro@ftp.linux.org.uk, trond.myklebust@fys.uio.no, bfields@fieldses.org,
+       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       LSM List <linux-security-module@vger.kernel.org>
+In-Reply-To: <1204245767.2715.43.camel@moss-terrapins.epoch.ncsc.mil>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+Message-ID: <147227.75672.qm@web36609.mail.mud.yahoo.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Fri__29_Feb_2008_13_00_19_+1100_IXTD1j0jxA8JAmtW
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
 
-On Thu, 28 Feb 2008 17:39:54 -0700 Matthew Wilcox <matthew@wil.cx> wrote:
->
-> Stephen, I've put the semaphore patches into a git tree; can you add it
-> to linux-next?
->=20
-> http://git.kernel.org/?p=3Dlinux/kernel/git/willy/misc.git;a=3Dshortlog;h=
-=3Dsemaphore
+--- Dave Quigley <dpquigl@tycho.nsa.gov> wrote:
 
-I have put this in for toady's build (but using the git URL).  This tree
-is in the "too many conflicts and its out until fixed" category ...
-However, it is also a candidate for Linus' "next" branch (if he is going
-to run one ...).
+> 
+> On Thu, 2008-02-28 at 20:00 -0500, Christoph Hellwig wrote:
+> > On Thu, Feb 28, 2008 at 07:32:47PM -0500, Dave Quigley wrote:
+> > > I can always go with the original hook name of get_security_xattr_name
+> > > which turns into a security_get_security_xattr_name call which seems a
+> > > bit ludicrous. The only other complaint that I saw from Casey besides
+> > > the name of the function was that there could be more than one xattr. If
+> > > we want to address that then I need another hook that says give me all
+> > > data that the LSM deems important for this file. Which is essentially
+> > > the same thing as taking each of the xattr names that the module will
+> > > provide, grabbing each of them in turn, and concatenating them together.
+> > > For SELinux this is no different than getsecurity with the selinux
+> > > suffix. The same goes for SMACK.
+> > 
+> > What about Casey's suggestion of get_security_blob?  For any reasonable
+> > module that just has a single xattr it's trivial and for those that
+> > have multiple or a different storage model it might get complicated
+> > but that's not our problem for now.
+> 
+> If this is the method we are going to use then we need a corresponding
+> set_security_blob as well.
 
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+Not to sound stupid, but why would you need this?
 
---Signature=_Fri__29_Feb_2008_13_00_19_+1100_IXTD1j0jxA8JAmtW
-Content-Type: application/pgp-signature
+> This seems like a paradigm shift for
+> accessing security information in the kernel.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
+Well, yes, but look at David Howell's file cacheing work
+before you take too firm a stand.
 
-iD8DBQFHx2c4TgG2atn1QN8RAn6/AJwPb43lGhng72FdId7tGDxAboCwcQCcCsNR
-W6aCB7SLZOUSuz5sc2SpDEg=
-=ehA/
------END PGP SIGNATURE-----
+> I said to Casey in the
+> beginning that I'd be willing to revisit it but that neither he or I
+> alone could make the decision. Unless I misunderstood the original
+> mandate for security information and that it only applies to how user
+> space accesses it.
 
---Signature=_Fri__29_Feb_2008_13_00_19_+1100_IXTD1j0jxA8JAmtW--
+Sorry, I don't understand how user space and mandates go together here.
+
+
+Casey Schaufler
+casey@schaufler-ca.com
