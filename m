@@ -1,26 +1,32 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761076AbYB2RIF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761357AbYB2RI5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761076AbYB2RIF (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Feb 2008 12:08:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751217AbYB2RHx
+	id S1761357AbYB2RI5 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Feb 2008 12:08:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933493AbYB2RIg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Feb 2008 12:07:53 -0500
-Received: from smtp1.linux-foundation.org ([207.189.120.13]:41769 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750759AbYB2RHw (ORCPT
+	Fri, 29 Feb 2008 12:08:36 -0500
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:35572 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761181AbYB2RIe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 Feb 2008 12:07:52 -0500
-Date: Fri, 29 Feb 2008 09:06:40 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Chris Friesen <cfriesen@nortel.com>
-cc: Pavel Roskin <proski@gnu.org>, linux-kernel <linux-kernel@vger.kernel.org>,
-       Jon Masters <jcm@jonmasters.org>, Rusty Russell <rusty@rustcorp.com.au>
-Subject: Re: [PATCH 2.6.25] module: allow ndiswrapper to use GPL-only
- symbols
-In-Reply-To: <47C838C5.8030707@nortel.com>
-Message-ID: <alpine.LFD.1.00.0802290905240.17889@woody.linux-foundation.org>
-References: <1204236662.3612.6.camel@dv> <alpine.LFD.1.00.0802281525170.5780@woody.linux-foundation.org> <20080229012012.ajlsk4pow8wkkgss@webmail.spamcop.net> <alpine.LFD.1.00.0802290807110.17889@woody.linux-foundation.org> <47C838C5.8030707@nortel.com>
-User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
+	Fri, 29 Feb 2008 12:08:34 -0500
+Date: Fri, 29 Feb 2008 12:08:29 -0500 (EST)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: Ingo Molnar <mingo@elte.hu>
+cc: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>, john stultz <johnstul@us.ibm.com>,
+       jarkao2@gmail.com, netdev@vger.kernel.org
+Subject: Re: [PATCH] fix boot-time hangs from PREEMPT_RCU and NO_HZ
+In-Reply-To: <20080229165752.GB7952@elte.hu>
+Message-ID: <Pine.LNX.4.58.0802291207250.30943@gandalf.stny.rr.com>
+References: <Pine.LNX.4.58.0801291113350.20371@gandalf.stny.rr.com>
+ <20080229044329.GA20207@linux.vnet.ibm.com> <20080228210140.37abe9cd.akpm@linux-foundation.org>
+ <20080229154835.GB27248@elte.hu> <20080229165557.GC13330@linux.vnet.ibm.com>
+ <20080229165752.GB7952@elte.hu>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
@@ -29,18 +35,17 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 
 
-On Fri, 29 Feb 2008, Chris Friesen wrote:
+On Fri, 29 Feb 2008, Ingo Molnar wrote:
 >
-> But the GPL only applies to derivative works.  Given that ndiswrapper loads
-> binaries designed for another OS, doesn't that mean that it is unlikely that
-> the binaries would be impacted by the GPL?
+> no, sorry about me taking longer than usual about it - this is not a
+> small patch and it had to be observed a bit longer. But as it is usual
+> with your patches, it's working perfectly :-)
 
-But that's what GPLONLY means.
+Not to mention that this patch has been in the -rt tree for some time now.
+But you are right, it's a pretty big patch to go in without shaking it out
+further.
 
-What's so hard to understand? The driver may not be a derivative work, but 
-it sure as hell isn't GPL'd. 
+Good to know that I hasn't needed any tweaks in the bigger arena.
 
-So stop blathering. ndiswrapper has one purpose, and one purpose only: to 
-load non-GPL'd code. So OF COURSE it shouldn't touch GPLONLY functions.
+-- Steve
 
-		Linus
