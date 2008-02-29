@@ -1,75 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933018AbYB2RY4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760998AbYB2R0k@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933018AbYB2RY4 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Feb 2008 12:24:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754625AbYB2RYr
+	id S1760998AbYB2R0k (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Feb 2008 12:26:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756495AbYB2R02
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Feb 2008 12:24:47 -0500
-Received: from wa-out-1112.google.com ([209.85.146.178]:26423 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753738AbYB2RYq (ORCPT
+	Fri, 29 Feb 2008 12:26:28 -0500
+Received: from web36607.mail.mud.yahoo.com ([209.191.85.24]:35052 "HELO
+	web36607.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1754625AbYB2R01 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 Feb 2008 12:24:46 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:mime-version:content-type:content-transfer-encoding:content-disposition;
-        b=Ml4p1y5haDT/ldp9drwO0E1WufqHWX1fotyLkDf9YL7BzCjQCmBleyegSSGqI5S0Jsn6tlAWspH1B2OY7vEejylS4NNXSUB99LYK0GDcEZAc3N7PNqIrIURxOvSC6eB6DnI835TP6N5AY0YdSewk7uGpociGCq6GRO4Fa11edxg=
-Message-ID: <847993120802290924m6b12567p964a17e080030889@mail.gmail.com>
-Date: Fri, 29 Feb 2008 10:24:44 -0700
-From: "Craig Kelley" <namonai@gmail.com>
-To: mhoffman@lightlink.com
-Subject: [patch 1/1] hwmon: add 0x8c id for smsc47b397 driver
-Cc: lm-sensors@lm-sensors.org, linux-kernel@vger.kernel.org
+	Fri, 29 Feb 2008 12:26:27 -0500
+X-YMail-OSG: ZdmpUjsVM1nAZrBRQVtaLKH.KM7RY2k.FNHeEiuq
+X-RocketYMMF: rancidfat
+Date: Fri, 29 Feb 2008 09:26:25 -0800 (PST)
+From: Casey Schaufler <casey@schaufler-ca.com>
+Reply-To: casey@schaufler-ca.com
+Subject: Re: [PATCH 01/11] Security: Add hook to get full maclabel xattr name
+To: Trond Myklebust <trond.myklebust@fys.uio.no>, casey@schaufler-ca.com
+Cc: Christoph Hellwig <hch@infradead.org>,
+       Dave Quigley <dpquigl@tycho.nsa.gov>,
+       Stephen Smalley <sds@tycho.nsa.gov>, viro@ftp.linux.org.uk,
+       bfields@fieldses.org, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org,
+       LSM List <linux-security-module@vger.kernel.org>
+In-Reply-To: <1204261289.7213.12.camel@heimdal.trondhjem.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+Message-ID: <200003.6173.qm@web36607.mail.mud.yahoo.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Craig Kelley <namonai@gmail.com>
 
-Added a new ID (0x8c) for the smsc47b397 hardware monitor driver.
-This ID is used by HP in, at least, their dc7700 line.
+--- Trond Myklebust <trond.myklebust@fys.uio.no> wrote:
 
-Signed-off-by: Craig Kelley <namonai@gmail.com>
----
+> 
+> ...
+> > With the SGI supplied reference implementation it ought to be a
+> > small matter of work to write an RFC. If the information weren't
+> > SGI proprietary I could even tell you how long it ought to take
+> > a junior engineer in Melbourne to write. The fact that there is
+> > currently no RFC does not mean that there cannot be a RFC, only
+> > that no one has written (or published) one yet.
+> 
+> NO! It is not a "small matter of work".
 
---- drivers/hwmon/smsc47b397.c-orig     2008-02-29 07:54:18.000000000 -0800
-+++ drivers/hwmon/smsc47b397.c  2008-02-29 07:53:00.000000000 -0800
-@@ -331,11 +331,23 @@ exit:
- static int __init smsc47b397_find(unsigned short *addr)
- {
-        u8 id, rev;
-+       char *name;
+Ah, well, I don't understand why, but that's probably just
+me being ignorant. It happens from time to time.
 
-        superio_enter();
-        id = superio_inb(SUPERIO_REG_DEVID);
+> The fact is that private crap like the 'security' and 'system' namespace
+> makes describing 'xattr' as a protocol a non-starter and an
+> interoperability nightmare.
 
--       if ((id != 0x6f) && (id != 0x81) && (id != 0x85)) {
-+       switch(id) {
-+       case 0x81:
-+               name = "SCH5307-NS";
-+               break;
-+       case 0x6f:
-+               name = "LPC47B397-NC";
-+               break;
-+       case 0x85:
-+       case 0x8c:
-+               name = "SCH5317";
-+               break;
-+       default:
-                superio_exit();
-                return -ENODEV;
-        }
-@@ -348,8 +360,7 @@ static int __init smsc47b397_find(unsign
+Ok, I can buy that it doesn't fit in with the current protocol
+mindset, and that I for one have not demonstrated that it can
+be. I remember how upset the IETF got over the original CIPSO
+proposal not specifying which label tag value coresponded to
+"Top Secret". 
 
-        printk(KERN_INFO DRVNAME ": found SMSC %s "
-                "(base address 0x%04x, revision %u)\n",
--               id == 0x81 ? "SCH5307-NS" : id == 0x85 ? "SCH5317" :
--              "LPC47B397-NC", *addr, rev);
-+               name, *addr, rev);
+> If you can't do better than xattr for a
+> security protocol, then it is time to go look for another job...
 
-        superio_exit();
-        return 0;
+But ... I don't have a job. You're being mean. (smiley)
+
+I think that we have a conflict between what works well for
+a filesystem (xattrs are really helpful) and what works well
+for a network protocol (undefined blobs of goo are atrocious)
+in the case of a network file system. From either standpoint
+the other is completely unworkable.
+
+It may be the case that for NFS the proposed scheme (delta
+LSM naming propriety, which is getting addressed) is the
+best we can do. NFS is an old protocol (older than some of
+the people reading this) and should be excused some shortcomings.
+
+Thank you.
+
+
+Casey Schaufler
+casey@schaufler-ca.com
