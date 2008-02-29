@@ -1,125 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932608AbYB2ScS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932750AbYB2Sdu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932608AbYB2ScS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Feb 2008 13:32:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757015AbYB2ScG
+	id S932750AbYB2Sdu (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Feb 2008 13:33:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755346AbYB2Sdm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Feb 2008 13:32:06 -0500
-Received: from mga11.intel.com ([192.55.52.93]:63306 "EHLO mga11.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756890AbYB2ScF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 Feb 2008 13:32:05 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.25,427,1199692800"; 
-   d="scan'208";a="526725479"
-Date: Fri, 29 Feb 2008 10:24:32 -0800
-From: Venki Pallipadi <venkatesh.pallipadi@intel.com>
-To: Len Brown <lenb@kernel.org>
-Cc: Jan Willies <jan@willies.info>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       linux-acpi@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: 100% C0 with 2.6.25-rc
-Message-ID: <20080229182432.GA28660@linux-os.sc.intel.com>
-References: <47BD600F.9090502@willies.info> <200802211733.54759.rjw@sisk.pl> <47BEF0A6.9000405@willies.info> <B5B0CFF685D7DF46A05CF1678CFB42ED20E00658@orsmsx423.amr.corp.intel.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+	Fri, 29 Feb 2008 13:33:42 -0500
+Received: from nf-out-0910.google.com ([64.233.182.187]:31016 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752835AbYB2Sdl (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 29 Feb 2008 13:33:41 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=jPFSnaDH6d69ovh2mltARW3b9jp6ENhSTW2BCf+Q2TO9kHQTrtkh95OZA2z0eiposBFexX/J8K2j9C//o5jpOy2IW9kMK2MxVYVDfmK797H2bQLwi7gSykW0fgFYzOb88RA9siVOoo/s6ePnai0GnP3gdXe/b39ihFqUhDX0s1c=
+Message-ID: <2c0942db0802291033p6a7f8be1te227c9c1a5ea4c5e@mail.gmail.com>
+Date: Fri, 29 Feb 2008 10:33:39 -0800
+From: "Ray Lee" <ray-lk@madrabbit.org>
+To: "Ingo Molnar" <mingo@elte.hu>
+Subject: Re: Interactivity issue in 2.6.25-rc3
+Cc: "Carlos R. Mafra" <crmafra2@gmail.com>,
+       "kernel list" <linux-kernel@vger.kernel.org>,
+       "Arjan van de Ven" <arjan@infradead.org>
+In-Reply-To: <20080229155741.GF27248@elte.hu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <B5B0CFF685D7DF46A05CF1678CFB42ED20E00658@orsmsx423.amr.corp.intel.com>
-User-Agent: Mutt/1.4.1i
+References: <20080228184407.GA7117@localhost.ift.unesp.br>
+	 <20080228191824.GA20019@elte.hu>
+	 <2c0942db0802281154y3176e847g8b9a4091df5cc8af@mail.gmail.com>
+	 <20080228210627.GA4337@localhost.ift.unesp.br>
+	 <2c0942db0802281328y276d110cqbcc9cfe92f0c6832@mail.gmail.com>
+	 <20080229155741.GF27248@elte.hu>
+X-Google-Sender-Auth: ed118f65d7c05973
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Feb 22, 2008 at 09:03:55AM -0800, Pallipadi, Venkatesh wrote:
->  
-> 
-> >-----Original Message-----
-> >From: Jan Willies [mailto:jan@willies.info] 
-> >Sent: Friday, February 22, 2008 7:56 AM
-> >To: Rafael J. Wysocki
-> >Cc: linux-acpi@vger.kernel.org; Ingo Molnar; LKML; Thomas 
-> >Gleixner; Pallipadi, Venkatesh
-> >Subject: Re: 100% C0 with 2.6.25-rc
-> >
-> >Rafael J. Wysocki wrote:
-> >> On Thursday, 21 of February 2008, Jan Willies wrote:
-> >>> Since 2.6.25-rc1 I have a lot of wakeups/s (≈134191,4) and 
-> >spend 100% in C0.
-> >>> It worked fine with 2.6.24 and commandline nolapic. Without 
-> >nolapic I had 80k
-> >>> wakeups/s after some time, but not right from the start like now.  
-> >> 
-> >> We have a regression from 2.6.24, apparently interrupts-related.
-> >
-> >After a lot of bisecting I've found the bad commit: 
-> >
-> >9b12e18cdc1553de62d931e73443c806347cd974 is first bad commit
-> >commit 9b12e18cdc1553de62d931e73443c806347cd974
-> >Author: venkatesh.pallipadi@intel.com <venkatesh.pallipadi@intel.com>
-> >Date:   Thu Jan 31 17:35:05 2008 -0800
-> >
-> >    ACPI: cpuidle: Support C1 idle time accounting
-> >    
-> >    Show C1 idle time in /sysfs cpuidle interface. C1 idle time may not
-> >    be entirely accurate in all cases. It includes the time spent
-> >    in the interrupt handler after wakeup with "hlt" based C1. 
-> >But, it will
-> >    be accurate with "mwait" based C1.
-> >
-> >
-> >Reverting the commit brings my laptop back to C2.
-> >
-> 
-> Thanks for the bisect info. I will look at the bad side effects that patch
-> may be having and I should have a patch for you to test later today....
-> 
+On Fri, Feb 29, 2008 at 7:57 AM, Ingo Molnar <mingo@elte.hu> wrote:
+>
+>  * Ray Lee <ray-lk@madrabbit.org> wrote:
+>
+>  > But it's good to keep in mind that the scheduler can't do anything
+>  > about slowdowns due to tasks being swapped out or waiting on reads
+>  > from the disk. I mention this as shortly after CFS got into mainline,
+>  > something changed in the VM that seems to make my system spend a lot
+>  > more time in IO wait, causing the system to be much less responsive
+>  > than it used to be.
+>  >
+>  > Unfortunately it seems to be dependent upon the history of what tasks
+>  > I've run and their memory usage, so it's been hard to come up with a
+>  > reproducible test case (well that and a complete lack of time). All I
+>  > can say is that I've seen what you've reported as well, though it had
+>  > nothing to do with using any 3d applications, just a browser, editor,
+>  > gcc, etc.
+>
+>  what does latencytop say about those delays, what causes them? It should
+>  be able to capture all sorts of latency sources in the system.
 
-Jan replied later on this issue that he is not able to reproduce this problem
-any more. Looking at the above, I could see a potential problem where
-menu governor may get confused by the C-state residency time from poll
-idle or C1 idle, where this timing info is not accurate. This inaccuracy is
-due to interrupts being handled before we account for C-state exit.
+Ah, thanks for the reminder. The last I tried it, it didn't show
+anything other than scheduler: waiting on cpu, but using a git clone
+version captured this almost immediately:
 
-Patch below fixes this and is needed regardless of the issue pointed out by
-Jan Willies here. But, I am suspecting that the patch will also fix the
-problem reported by Jan.
+EXT3: Waiting for journal access                  2261.1 msec         15.0 %
+Writing a page to disk                            112.4 msec          0.7 %
+Scheduler: waiting for cpu                         57.9 msec         17.7 %
+default_wake_function __queue_work call_usermodehe  5.9 msec          0.1 %
+Waiting for event (poll)                            5.0 msec         37.5 %
+Waiting for data on unix socket                     5.0 msec          2.1 %
+Userspace lock contention                           4.9 msec         23.5 %
+Waiting for TTY data                                4.9 msec          0.3 %
+Sending TCP/IP data                                 4.9 msec          0.0 %
 
-Do not mark TIME_VALID for CO poll state.
-Mark C1 time as valid only with mwait (CSTATE_FFH) entry method.
+I'm running postgresql in the background on this system and it does
+regular sync's, so perhaps that's related?
 
-This makes governors use the timing information only when it is correct and
-eliminates any wrong policy decisions that may result from invalid timing
-information.
-
-Signed-off-by: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
-
-Index: linux-2.6.git/drivers/acpi/processor_idle.c
-===================================================================
---- linux-2.6.git.orig/drivers/acpi/processor_idle.c	2008-02-15 02:18:14.000000000 -0800
-+++ linux-2.6.git/drivers/acpi/processor_idle.c	2008-02-26 07:02:30.000000000 -0800
-@@ -1686,7 +1686,9 @@
- 		switch (cx->type) {
- 			case ACPI_STATE_C1:
- 			state->flags |= CPUIDLE_FLAG_SHALLOW;
--			state->flags |= CPUIDLE_FLAG_TIME_VALID;
-+			if (cx->entry_method == ACPI_CSTATE_FFH)
-+				state->flags |= CPUIDLE_FLAG_TIME_VALID;
-+
- 			state->enter = acpi_idle_enter_c1;
- 			dev->safe_state = state;
- 			break;
-Index: linux-2.6.git/drivers/cpuidle/cpuidle.c
-===================================================================
---- linux-2.6.git.orig/drivers/cpuidle/cpuidle.c	2008-02-15 02:18:14.000000000 -0800
-+++ linux-2.6.git/drivers/cpuidle/cpuidle.c	2008-02-22 03:59:01.000000000 -0800
-@@ -224,7 +224,7 @@
- 	state->exit_latency = 0;
- 	state->target_residency = 0;
- 	state->power_usage = -1;
--	state->flags = CPUIDLE_FLAG_POLL | CPUIDLE_FLAG_TIME_VALID;
-+	state->flags = CPUIDLE_FLAG_POLL;
- 	state->enter = poll_idle;
- }
- #else
+It doesn't look like latencytop saves the trace data anywhere other
+than my eyes? I'll hack in a log and see what else it gets.
