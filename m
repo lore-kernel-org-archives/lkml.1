@@ -1,347 +1,131 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761542AbYB2TSf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932432AbYB2TTx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761542AbYB2TSf (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Feb 2008 14:18:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752240AbYB2TSW
+	id S932432AbYB2TTx (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Feb 2008 14:19:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753116AbYB2TTo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Feb 2008 14:18:22 -0500
-Received: from rgminet01.oracle.com ([148.87.113.118]:25346 "EHLO
-	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761216AbYB2TSU (ORCPT
+	Fri, 29 Feb 2008 14:19:44 -0500
+Received: from x35.xmailserver.org ([64.71.152.41]:41162 "EHLO
+	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752216AbYB2TTn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 Feb 2008 14:18:20 -0500
-Date: Fri, 29 Feb 2008 11:18:05 -0800
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: corbet@lwn.net (Jonathan Corbet)
-Cc: Martin Bligh <mbligh@google.com>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Add seq_file howto to Documentation/
-Message-Id: <20080229111805.8cc3be58.randy.dunlap@oracle.com>
-In-Reply-To: <26216.1185221348@lwn.net>
-References: <46A50567.3020308@google.com>
-	<26216.1185221348@lwn.net>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.4.7 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+	Fri, 29 Feb 2008 14:19:43 -0500
+X-AuthUser: davidel@xmailserver.org
+Date: Fri, 29 Feb 2008 11:19:37 -0800 (PST)
+From: Davide Libenzi <davidel@xmailserver.org>
+X-X-Sender: davide@alien.or.mcafeemobile.com
+To: Michael Kerrisk <mtk.manpages@googlemail.com>
+cc: =?X-UNKNOWN?Q?Chris_=22=A5=AF=22_Heath?= <chris@heathens.co.nz>,
+       David Schwartz <davids@webmaster.com>, dada1@cosmosbay.com,
+       "Linux-Kernel@Vger. Kernel. Org" <linux-kernel@vger.kernel.org>,
+       linux-man@vger.kernel.org
+Subject: Re: epoll design problems with common fork/exec patterns
+In-Reply-To: <cfd18e0f0802290746p3cb7efc9j72394cd77ff37829@mail.gmail.com>
+Message-ID: <Pine.LNX.4.64.0802291111320.31028@alien.or.mcafeemobile.com>
+References: <MDEHLPKNGKAHNMBLJOLKAEHCHNAC.davids@webmaster.com> 
+ <Pine.LNX.4.64.0710291147180.3387@alien.or.mcafeemobile.com> 
+ <47C42CA7.4030607@gmail.com>  <Pine.LNX.4.64.0802261049040.27243@alien.or.mcafeemobile.com>
+  <1204075804.5238.7.camel@linux.heathens.co.nz> 
+ <Pine.LNX.4.64.0802271131180.377@alien.or.mcafeemobile.com> 
+ <cfd18e0f0802280512q43a457d0sc9a8dc83c51e8e1c@mail.gmail.com> 
+ <Pine.LNX.4.64.0802281106050.7660@alien.or.mcafeemobile.com>
+ <cfd18e0f0802290746p3cb7efc9j72394cd77ff37829@mail.gmail.com>
+X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
+X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 23 Jul 2007 14:09:08 -0600 Jonathan Corbet wrote:
+On Fri, 29 Feb 2008, Michael Kerrisk wrote:
 
-> > +[Another seq_file reference is "Driver porting: The seq_file interface"
-> > +at <http://lwn.net/Articles/22355/>, which is part of the
-> > +LWN.net series "Porting Drivers to 2.5" that is located at
-> > +<http://lwn.net/Articles/driver-porting/>.]
+> As I think is clear, I've only given it very limited thought ;-).
 > 
-> Funny thing, that...I had sent in a version of that document for
-> consideration back in 2003.  Guess that was still the Good Old Days when
-> the patch management system was rather lossier, so I never heard back.
-> Here it is again just in case anybody's interested.
-> 
-> In general, I'm more than happy to have anything I put on LWN go into
-> Documentation/ if there's interest - just say the word.
-> 
-> jon
+> The point is that the existing implementation actually supports
+> "different *processes* sharing a single epoll fd and doing
+> epoll_wait() over it", but the semantics are unintuitive.  It may be
+> that the existing implementation was the best way of doing things.
+> But when I see the strange corner cases in the semantics, I can't help
+> but wonder (way too late), whether there might have been some other
+> way of implementing things that led to more intuitive semantics.
 
-Jon,
-Can we get this merged??  or does it need to be updated first?
+Oh boy. The fact that you can have an epoll fd cross the fork boundary, 
+does not mean that any indiscriminate use of it leads to sane results:
+
+	efd = epoll_create();
+	fork();
+					pipe(fds);
+					epoll_ctl(efd, ADD, fds[0]);
+	epoll_wait(); ????
+	...
+	pipe(fds);
+	epoll_ctl(efd, ADD, fds[0]);
+					epoll_wait(); ????
 
 
-> To: linux-kernel@vger.kernel.org
-> Subject: [PATCH] seq_file documentation
-> cc: torvalds@osdl.org
-> From: Jonathan Corbet <corbet@lwn.net>
-> Date: Thu, 13 Nov 2003 10:16:31 -0700
-> Sender: corbet
-> 
-> I went ahead and packaged up my seq_file document as a basic text file, in
-> the interests of getting something out there.  
-> 
-> jon
-> 
-> Jonathan Corbet
-> Executive editor, LWN.net
-> corbet@lwn.net
-> 
-> 
-> diff -urN test9-vanilla/Documentation/filesystems/seq_file.txt test9/Documentation/filesystems/seq_file.txt
-> --- test9-vanilla/Documentation/filesystems/seq_file.txt	Wed Dec 31 17:00:00 1969
-> +++ test9/Documentation/filesystems/seq_file.txt	Fri Nov 14 01:03:58 2003
-> @@ -0,0 +1,268 @@
-> +The seq_file interface
-> +
-> +	Copyright 2003 Jonathan Corbet <corbet@lwn.net>
-> +	This file is originally from the LWN.net Driver Porting series at
-> +	http://lwn.net/Articles/driver-porting/
-> +
-> +
-> +There are numerous ways for a device driver (or other kernel component) to
-> +provide information to the user or system administrator.  One very useful
-> +technique is the creation of virtual files, in /proc or elsewhere. Virtual
-> +files can provide human-readable output that is easy to get at without any
-> +special utility programs; they can also make life easier for script
-> +writers. It is not surprising that the use of virtual files has grown over
-> +the years.
-> +
-> +Creating those files correctly has always been a bit of a challenge,
-> +however. It is not that hard to make a /proc file which returns a
-> +string. But life gets trickier if the output is long - anything greater
-> +than an application is likely to read in a single operation.  Handling
-> +multiple reads (and seeks) requires careful attention to the reader's
-> +position within the virtual file - that position is, likely as not, in the
-> +middle of a line of output. The kernel is full of /proc file
-> +implementations that get this wrong.
-> +
-> +The 2.6 kernel contains a set of functions (implemented by Alexander Viro)
-> +which are designed to make it easy for virtual file creators to get it
-> +right. This interface (called "seq_file") is not strictly a 2.6 feature -
-> +it was also merged into 2.4.15.
-> +
-> +The seq_file interface is available via <linux/seq_file.h>. There are
-> +three aspects to seq_file:
-> +
-> +     * An iterator interface which lets a virtual file implementation
-> +       step through the objects it is presenting.
-> +
-> +     * Some utility functions for formatting objects for output without
-> +       needing to worry about things like output buffers.
-> +
-> +     * A set of canned file_operations which implement most operations on
-> +       the virtual file.
-> +
-> +We'll look at the seq_file interface via an extremely simple example: a
-> +loadable module which creates a file called /proc/sequence. The file, when
-> +read, simply produces a set of increasing integer values, one per line. The
-> +sequence will continue until the user loses patience and finds something
-> +better to do. The file is seekable, in that one can do something like the
-> +following:
-> +
-> +    dd if=/proc/sequence of=out1 count=1
-> +    dd if=/proc/sequence skip=1 out=out2 count=1
-> +
-> +Then concatenate the output files out1 and out2 and get the right
-> +result. Yes, it is a thoroughly useless module, but the point is to show
-> +how the mechanism works without getting lost in other details.  (Those
-> +wanting to see the full source for this module can find it at
-> +http://lwn.net/Articles/22359/).
-> +
-> +
-> +The iterator interface
-> +
-> +Modules implementing a virtual file with seq_file must implement a simple
-> +iterator object that allows stepping through the data of
-> +interest. Iterators must be able to move to a specific position - like the
-> +file they implement - but the interpretation of that position is up to the
-> +iterator itself. A seq_file implementation that is formatting firewall
-> +rules, for example, could interpret position N as the Nth rule in the
-> +chain. Positioning can thus be done in whatever way makes the most sense
-> +for the generator of the data, which need not be aware of how a position
-> +translates to an offset in the virtual file. The one obvious exception is
-> +that a position of zero should indicate the beginning of the file.
-> +
-> +The /proc/sequence iterator just uses the count of the next number it
-> +will output as its position.
-> +
-> +Four functions must be implemented to make the iterator work. The first,
-> +called start() takes a position as an argument and returns an iterator
-> +which will start reading at that position. For our simple sequence example,
-> +the start() function looks like:
-> +
-> +	static void *ct_seq_start(struct seq_file *s, loff_t *pos)
-> +	{
-> +	        loff_t *spos = kmalloc(sizeof(loff_t), GFP_KERNEL);
-> +	        if (! spos)
-> +	                return NULL;
-> +	        *spos = *pos;
-> +	        return spos;
-> +	}
-> +
-> +The entire data structure for this iterator is a single loff_t value
-> +holding the current position. There is no upper bound for the sequence
-> +iterator, but that will not be the case for most other seq_file
-> +implementations; in most cases the start() function should check for a
-> +"past end of file" condition and return NULL if need be.
-> +
-> +For more complicated applications, the private field of the seq_file
-> +structure can be used. There is also a special value whch can be returned
-> +by the start() function called SEQ_START_TOKEN; it can be used if you wish
-> +to instruct your show() function (described below) to print a header at the
-> +top of the output. SEQ_START_TOKEN should only be used if the offset is
-> +zero, however.
-> +
-> +The next function to implement is called, amazingly, next(); its job is to
-> +move the iterator forward to the next position in the sequence.  The
-> +example module can simply increment the position by one; more useful
-> +modules will do what is needed to step through some data structure. The
-> +next() function returns a new iterator, or NULL if the sequence is
-> +complete. Here's the example version:
-> +
-> +	static void *ct_seq_next(struct seq_file *s, void *v, loff_t *pos)
-> +	{
-> +	        loff_t *spos = (loff_t *) v;
-> +	        *pos = ++(*spos);
-> +	        return spos;
-> +	}
-> +
-> +The stop() function is called when iteration is complete; its job, of
-> +course, is to clean up. If dynamic memory is allocated for the iterator,
-> +stop() is the place to return it.
-> +
-> +	static void ct_seq_stop(struct seq_file *s, void *v)
-> +	{
-> +	        kfree (v);
-> +	}
-> +
-> +Finally, the show() function should format the object currently pointed to
-> +by the iterator for output. It should return zero, or an error code if
-> +something goes wrong. The example module's show() function is:
-> +
-> +	static int ct_seq_show(struct seq_file *s, void *v)
-> +	{
-> +	        loff_t *spos = (loff_t *) v;
-> +	        seq_printf(s, "%Ld\n", *spos);
-> +	        return 0;
-> +	}
-> +
-> +We will look at seq_printf() in a moment. But first, the definition of the
-> +seq_file iterator is finished by creating a seq_operations structure with
-> +the four functions we have just defined:
-> +
-> +	static struct seq_operations ct_seq_ops = {
-> +	        .start = ct_seq_start,
-> +	        .next  = ct_seq_next,
-> +	        .stop  = ct_seq_stop,
-> +	        .show  = ct_seq_show
-> +	};
-> +
-> +This structure will be needed to tie our iterator to the /proc file in
-> +a little bit.
-> +
-> +It's worth noting that the interator value returned by start() and
-> +manipulated by the other functions is considered to be completely opaque by
-> +the seq_file code. It can thus be anything that is useful in stepping
-> +through the data to be output. Counters can be useful, but it could also be
-> +a direct pointer into an array or linked list. Anything goes, as long as
-> +the programmer is aware that things can happen between calls to the
-> +iterator function. However, the seq_file code (by design) will not sleep
-> +between the calls to start() and stop(), so holding a lock during that time
-> +is a reasonable thing to do. The seq_file code will also avoid taking any
-> +other locks while the iterator is active.
-> +
-> +
-> +Formatted output
-> +
-> +The seq_file code manages positioning within the output created by the
-> +iterator and getting it into the user's buffer. But, for that to work, that
-> +output must be passed to the seq_file code. Some utility functions have
-> +been defined which make this task easy.
-> +
-> +Most code will simply use seq_printf(), which works pretty much like
-> +printk(), but which requires the seq_file pointer as an argument. It is
-> +common to ignore the return value from seq_printf(), but a function
-> +producing complicated output may want to check that value and quit if
-> +something non-zero is returned; an error return means that the seq_file
-> +buffer has been filled and further output will be discarded.
-> +
-> +For straight character output, the following functions may be used:
-> +
-> +	int seq_putc(struct seq_file *m, char c);
-> +	int seq_puts(struct seq_file *m, const char *s);
-> +	int seq_escape(struct seq_file *m, const char *s, const char *esc);
-> +
-> +The first two output a single character and a string, just like one would
-> +expect. seq_escape() is like seq_puts(), except that any character in s
-> +which is in the string esc will be represented in octal form in the output.
-> +
-> +There is also a function for printing filenames:
-> +
-> +	int seq_path(struct seq_file *m, struct vfsmount *mnt,
-> +	             struct dentry *dentry, char *esc);
-> +
-> +Here, mnt and dentry indicate the file of interest, and esc is a set of
-> +characters which should be escaped in the output. 
-> +
-> +
-> +Making it all work
-> +
-> +So far, we have a nice set of functions which can produce output within the
-> +seq_file system, but we have not yet turned them into a file that a user
-> +can see. Creating a file within the kernel requires, of course, the
-> +creation of a set of file_operations which implement the operations on that
-> +file. The seq_file interface provides a set of canned operations which do
-> +most of the work. The virtual file author still must implement the open()
-> +method, however, to hook everything up. The open function is often a single
-> +line, as in the example module:
-> +
-> +	static int ct_open(struct inode *inode, struct file *file)
-> +	{
-> +		return seq_open(file, &ct_seq_ops);
-> +	};
-> +
-> +Here, the call to seq_open() takes the seq_operations structure we created
-> +before, and gets set up to iterate through the virtual file.
-> +
-> +On a successful open, seq_open() stores the struct seq_file pointer in
-> +file->private_data. If you have an application where the same iterator can
-> +be used for more than one file, you can store an arbitrary pointer in the
-> +private field of the seq_file structure; that value can then be retrieved
-> +by the iterator functions.
-> +
-> +The other operations of interest - read(), llseek(), and release() - are
-> +all implemented by the seq_file code itself. So a virtual file's
-> +file_operations structure will look like:
-> +
-> +	static struct file_operations ct_file_ops = {
-> +	        .owner   = THIS_MODULE,
-> +	        .open    = ct_open,
-> +	        .read    = seq_read,
-> +	        .llseek  = seq_lseek,
-> +	        .release = seq_release
-> +	};
-> +
-> +There is also a seq_release_private() which passes the contents of the
-> +seq_file private field to kfree() before releasing the structure.
-> +
-> +The final step is the creation of the /proc file itself. In the example
-> +code, that is done in the initialization code in the usual way:
-> +
-> +	static int ct_init(void)
-> +	{
-> +	        struct proc_dir_entry *entry;
-> +
-> +	        entry = create_proc_entry("sequence", 0, NULL);
-> +	        if (entry)
-> +	                entry->proc_fops = &ct_file_ops;
-> +	        return 0;
-> +	}
-> +
-> +	module_init(ct_init);
-> +
-> +And that is pretty much it.
-> +
-> +
-> +The extra-simple version
-> +
-> +For extremely simple virtual files, there is an even easier interface.  A
-> +module can define only the show() function, which should create all the
-> +output that the virtual file will contain. The file's open() method then
-> +calls:
-> +
-> +	int single_open(struct file *file,
-> +	                int (*show)(struct seq_file *m, void *p),
-> +	                void *data);
-> +
-> +When output time comes, the show() function will be called once. The data
-> +value given to single_open() can be found in the private field of the
-> +seq_file structure. When using single_open(), the programmer should use
-> +single_release() instead of seq_release() in the file_operations structure
-> +to avoid a memory leak.
+It is *NOT* a matter of semantics.
 
----
-~Randy
+
+
+> >  If the next question is "But then why we made the epoll fd inheritable?",
+> >  the answer is, because it makes sense in many cases for a parent to hand
+> >  over an fd set to a child.
+> 
+> Fair enough.
+> 
+> So here's an idea about how things might alternatively have been done:
+> 
+> a) The key for epoll entries could have been [file *, fd, PID]
+> 
+> b) an epoll_wait() only returns events for fds where the PID maps that
+> of the caller.
+> 
+> c) a close of a file descriptor removes the corresponding  [file *,
+> fd, PID] from the epoll set.
+> 
+> d) when a fork() is done, then the epoll set has a new set of keys
+> added.  These are duplicates of the  [file *, fd, PID] entries for the
+> parent, but with the PID of the child substituted into the new keys.
+> Say the parent had PID 1000, and the child has PID 2000.  If the epoll
+> set initially contained:
+> 
+> [X, 3, 1000]
+> [Y, 4, 1000]
+> 
+> then after fork() we'd have:
+> 
+> [X, 3, 1000]
+> [Y, 4, 1000]
+> [X, 3, 2000]
+> [Y, 4, 2000]
+> 
+> There is of course room for debate about the efficiency of this
+> approach, I suppose.
+
+There sure is :)
+
+
+
+> You said elsewhere:
+> 
+> [[
+> That'd mean placing an eventpoll custom hook into sys_close(). Looks very
+> bad to me, and probably will look even worse to other kernel folks.
+> Is not much a performance issue (a check to see if a file* is an eventpoll
+> file is as easy as comparing the f_op pointer), but a design/style issue.
+> ]]
+> 
+> But that wasn't very clear to me actually.  I note that filp_close()
+> already has special case handling for dnotify (R.I.P.) and fcntl()
+> )aka POSIX) file locks, so there was already precedent for a custom
+> hook, AFAICS, and epoll is at least as worthy of special treatment as
+> either of those cases.
+
+I guess that over the time, Al became software WRT junk going there :)
+
+
+
+- Davide
+
+
