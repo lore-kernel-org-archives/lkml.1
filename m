@@ -1,24 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759716AbYB2LRf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758740AbYB2L06@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759716AbYB2LRf (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Feb 2008 06:17:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755627AbYB2LR0
+	id S1758740AbYB2L06 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Feb 2008 06:26:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755657AbYB2L0p
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Feb 2008 06:17:26 -0500
-Received: from smtp1.linux-foundation.org ([207.189.120.13]:56689 "EHLO
+	Fri, 29 Feb 2008 06:26:45 -0500
+Received: from smtp1.linux-foundation.org ([207.189.120.13]:39612 "EHLO
 	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753367AbYB2LRZ (ORCPT
+	by vger.kernel.org with ESMTP id S1755392AbYB2L0o (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 Feb 2008 06:17:25 -0500
-Date: Fri, 29 Feb 2008 03:16:56 -0800
+	Fri, 29 Feb 2008 06:26:44 -0500
+Date: Fri, 29 Feb 2008 03:26:01 -0800
 From: Andrew Morton <akpm@linux-foundation.org>
-To: Harvey Harrison <harvey.harrison@gmail.com>
-Cc: linux-arch <linux-arch@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 1/2] kprobes: Introduce kprobe_handle_fault()
-Message-Id: <20080229031656.1abac83a.akpm@linux-foundation.org>
-In-Reply-To: <1202007623.1844.44.camel@brick>
-References: <1202007623.1844.44.camel@brick>
+To: Miklos Szeredi <miklos@szeredi.hu>
+Cc: a.p.zijlstra@chello.nl, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org, linux-mm@kvack.org,
+       Kay Sievers <kay.sievers@vrfy.org>, Greg KH <greg@kroah.com>,
+       Trond Myklebust <trond.myklebust@fys.uio.no>,
+       linux-ia64@vger.kernel.org
+Subject: Re: [patch 2/6] mm: bdi: export BDI attributes in sysfs
+Message-Id: <20080229032601.4a9e31eb.akpm@linux-foundation.org>
+In-Reply-To: <20080129154948.823761079@szeredi.hu>
+References: <20080129154900.145303789@szeredi.hu>
+	<20080129154948.823761079@szeredi.hu>
 X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
@@ -27,41 +31,72 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 02 Feb 2008 19:00:23 -0800 Harvey Harrison <harvey.harrison@gmail.com> wrote:
+On Tue, 29 Jan 2008 16:49:02 +0100 Miklos Szeredi <miklos@szeredi.hu> wrote:
 
-> Use a central kprobe_handle_fault() inline in kprobes.h to remove
-> all of the arch-dependant, practically identical implementations in
-> avr32, ia64, powerpc, s390, sparc64, and x86.
+> From: Peter Zijlstra <a.p.zijlstra@chello.nl>
 > 
-> avr32 was the only arch without the preempt_disable/enable pair
-> in its notify_page_fault implementation.
+> Provide a place in sysfs (/sys/class/bdi) for the backing_dev_info
+> object.  This allows us to see and set the various BDI specific
+> variables.
 > 
-> This uncovered a possible bug in the s390 version as that purely
-> copied the x86 version unconditionally passing 14 as the trapnr
-> rather than the error_code parameter.  s390 is changed to pass
-> error_code in this patch.
+> In particular this properly exposes the read-ahead window for all
+> relevant users and /sys/block/<block>/queue/read_ahead_kb should be
+> deprecated.
 > 
-> Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
-> ---
-> Andrew, 1/2 is low risk, 2/2 has been tested on x86-32 and 64,
-> but the !preemptible invariant seems correct.
+> With patient help from Kay Sievers and Greg KH
 > 
->  arch/arm/mm/fault.c     |   25 +------------------------
->  arch/avr32/mm/fault.c   |   21 +--------------------
->  arch/ia64/mm/fault.c    |   24 +-----------------------
->  arch/powerpc/mm/fault.c |   25 +------------------------
->  arch/s390/mm/fault.c    |   25 +------------------------
->  arch/sparc64/mm/fault.c |   23 +----------------------
->  arch/x86/mm/fault.c     |   26 ++------------------------
->  include/linux/kprobes.h |   20 ++++++++++++++++++++
->  8 files changed, 28 insertions(+), 161 deletions(-)
+> [mszeredi@suse.cz]
+> 
+>  - split off NFS and FUSE changes into separate patches
+>  - document new sysfs attributes under Documentation/ABI
+>  - do bdi_class_init as a core_initcall, otherwise the "default" BDI
+>    won't be initialized
+>  - remove bdi_init_fmt macro, it's not used very much
 
-Breaks the ia64 build:
+please always provide diffstats.
 
-include/linux/kprobes.h: In function `kprobe_handle_fault':
-include/linux/kprobes.h:234: error: implicit declaration of function `kprobe_fault_handler'                                                                     
+ Documentation/ABI/testing/sysfs-class-bdi |   50 +++++++++++++                
+ block/genhd.c                             |    3 
+ include/linux/backing-dev.h               |    8 ++
+ include/linux/writeback.h                 |    3 
+ lib/percpu_counter.c                      |    1 
+ mm/backing-dev.c                          |  108 ++++++++++++++++++++++++++++++
+ mm/page-writeback.c                       |    2 
+ mm/readahead.c                            |    8 +-
+ 8 files changed, 181 insertions(+), 2 deletions(-)
 
-and ia64 doesn't implement kprobe_fault_handler() so there's no easy fix
-here.
+would you believe this breaks ia64 allmodconfig, in the usual place:
 
-There's too much inlining in linux/kprobes.h, btw.
+In file included from arch/ia64/ia32/sys_ia32.c:59:
+arch/ia64/ia32/ia32priv.h:342:1: warning: "SET_PERSONALITY" redefined
+In file included from include/linux/elf.h:7,
+                 from include/linux/module.h:14,
+                 from include/linux/device.h:21,
+                 from include/linux/backing-dev.h:15,
+                 from include/linux/nfs_fs_sb.h:5,
+                 from include/linux/nfs_fs.h:50,
+                 from arch/ia64/ia32/sys_ia32.c:35:
+include/asm/elf.h:180:1: warning: this is the location of the previous definition
+
+
+We keep on hitting stupid build errors in this area: ia64 and elf.  It is
+obviously quite fragile.  It would be nice to fix it properly.
+
+
+For now, the easy fix:
+
+--- a/include/linux/backing-dev.h~mm-bdi-export-bdi-attributes-in-sysfs-ia64-fix
++++ a/include/linux/backing-dev.h
+@@ -12,10 +12,10 @@
+ #include <linux/log2.h>
+ #include <linux/proportions.h>
+ #include <linux/kernel.h>
+-#include <linux/device.h>
+ #include <asm/atomic.h>
+ 
+ struct page;
++struct device;
+ 
+ /*
+  * Bits in backing_dev_info.state
+
