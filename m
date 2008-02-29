@@ -1,56 +1,139 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757784AbYB2HTV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757358AbYB2HWy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757784AbYB2HTV (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Feb 2008 02:19:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754669AbYB2HTG
+	id S1757358AbYB2HWy (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Feb 2008 02:22:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753356AbYB2HWq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Feb 2008 02:19:06 -0500
-Received: from eusa.axetic.com ([194.242.114.93]:54408 "EHLO eusa.axetic.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751683AbYB2HTF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 Feb 2008 02:19:05 -0500
-X-Greylist: delayed 1535 seconds by postgrey-1.27 at vger.kernel.org; Fri, 29 Feb 2008 02:19:04 EST
-Message-ID: <47C7ABE3.6080004@axetic.com>
-Date: Fri, 29 Feb 2008 07:53:23 +0100
-From: Yannick <yannick.dirou@axetic.com>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080227)
-MIME-Version: 1.0
-To: paulmck@linux.vnet.ibm.com
-CC: Jarek Poplawski <jarkao2@gmail.com>, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org
-Subject: Re: [Bug 10071] kernel hang in inet_init (PREEMPT_RCU problem)
-References: <bug-10071-11547@http.bugzilla.kernel.org/> <20080228205303.261D311D108@picon.linux-foundation.org> <20080228213457.GA2770@ami.dom.local> <20080229005823.GF14104@linux.vnet.ibm.com> <20080229043235.GA25167@linux.vnet.ibm.com>
-In-Reply-To: <20080229043235.GA25167@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Fri, 29 Feb 2008 02:22:46 -0500
+Received: from smtp1.linux-foundation.org ([207.189.120.13]:50317 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752331AbYB2HWp (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 29 Feb 2008 02:22:45 -0500
+Date: Thu, 28 Feb 2008 23:20:48 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Ritesh Raj Sarraf <rrs@researchut.com>
+Cc: Christophe Saout <christophe@saout.de>, linux-kernel@vger.kernel.org,
+       dm-devel@redhat.com, Herbert Xu <herbert@gondor.apana.org.au>
+Subject: Re: 2.6.24 Kernel Soft Lock Up with heavy I/O in dm-crypt
+Message-Id: <20080228232048.51e28c1d.akpm@linux-foundation.org>
+In-Reply-To: <200802281924.03996.rrs@researchut.com>
+References: <200802281924.03996.rrs@researchut.com>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-(In reply to comment #20)
- > Reply-To: paulmck@linux.vnet.ibm.com
- >
- > Would you be willing to try your test again after applying the
- > patch in http://lkml.org/lkml/2008/2/2/11 and rebuilding your
- > kernel?
- >
- > This patch does not appear to be in 2.6.25-rc3.  :-(
- >
- > I am reposting this patch separately.
- >
- >                                                         Thanx, Paul
+On Thu, 28 Feb 2008 19:24:03 +0530 Ritesh Raj Sarraf <rrs@researchut.com> wrote:
 
-Congratulations Paul and thanks a lot to Jarek , It works,
-no more hang or slow boot :
-[1.061675] Calling initcall 0xc03b8e10: inet_init+0x0/0x3ba()
-[1.061895] NET: Registered protocol family 2
-[1.339007] IP route cache hash table entries: 32768 (order: 5, 131072 bytes)
-[1.339470] TCP established hash table entries: 131072 (order: 8, 1048576 
-bytes)
-[1.340375] TCP bind hash table entries: 65536 (order: 9, 2359296 bytes)
-[1.349809] TCP: Hash tables configured (established 131072 bind 65536)
-[1.349906] TCP reno registered
-[1.098514] initcall 0xc03b8e10: inet_init+0x0/0x3ba() returned 0.
-[1.098604] initcall 0xc03b8e10 ran for 32 msecs: inet_init+0x0/0x3ba()
+> Hi Christophe,
 
-Yannick
+(cc's added)
+
+> I noted kernel soft lockup messages on my laptop when doing a lot of I/O 
+> (200GB) to a dm-crypt device. It was setup using LUKS.
+> The I/O never got disrupted nor anything failed. Just the messages.
+> 
+> Kernel: 2.6.24
+> Distribution: Debian Testing/Unstable
+> Tainted: Yes (nvidia proprietary drivers)
+> 
+> I've not filed a bugzilla because my kernel is a tainted kernel because of 
+> nvidia drivers.
+
+That would be pretty dogmatic - if nuking the nvodia module prevents this
+I'll eat several hats.
+
+> I'm attaching the messages. Please let me know if it stands as a candidate for 
+> a bug report.
+> 
+
+> a200 EDI: 0000000a EBP: 00000000 ESP: f32bfd7c
+>  DS: 007b ES: 007b FS: 00d8 GS: 0000 SS: 0068
+> CR0: 8005003b CR2: b3c3e000 CR3: 003b5000 CR4: 000026d0
+> DR0: 00000000 DR1: 00000000 DR2: 00000000 DR3: 00000000
+> DR6: ffff0ff0 DR7: 00000400
+>  [<c012902d>] do_softirq+0x45/0x53
+>  [<c0129291>] irq_exit+0x38/0x6b
+>  [<c01066f2>] do_IRQ+0x5a/0x70
+>  [<c01048c3>] common_interrupt+0x23/0x28
+>  [<f899202f>] xor_128+0x0/0x17 [cbc]
+>  [<f899237e>] crypto_cbc_encrypt+0xe4/0x146 [cbc]
+>  [<f899202f>] xor_128+0x0/0x17 [cbc]
+>  [<c01dd80a>] cfq_allow_merge+0x0/0x5a
+>  [<f89ad6ef>] aes_encrypt+0x0/0x17 [aes_i586]
+>  [<f88fe648>] crypt_convert_scatterlist+0x73/0xc3 [dm_crypt]
+>  [<f88fe7e0>] crypt_convert+0x148/0x185 [dm_crypt]
+>  [<f88fe9fe>] kcryptd_do_crypt+0x1e1/0x25e [dm_crypt]
+>  [<f88fe81d>] kcryptd_do_crypt+0x0/0x25e [dm_crypt]
+>  [<c0132225>] run_workqueue+0x7d/0x109
+>  [<c0135554>] prepare_to_wait+0x12/0x49
+>  [<c0132a9b>] worker_thread+0x0/0xc5
+>  [<c0132b55>] worker_thread+0xba/0xc5
+>  [<c0135441>] autoremove_wake_function+0x0/0x35
+>  [<c013537a>] kthread+0x38/0x5e
+>  [<c0135342>] kthread+0x0/0x5e
+>  [<c0104b0f>] kernel_thread_helper+0x7/0x10
+>  =======================
+> BUG: soft lockup - CPU#0 stuck for 11s! [kcryptd:22652]
+> 
+> Pid: 22652, comm: kcryptd Tainted: P        (2.6.24-1-686 #1)
+> EIP: 0060:[<c0128f6c>] EFLAGS: 00000202 CPU: 0
+> EIP is at __do_softirq+0x57/0xd3
+> EAX: c03b4860 EBX: 00000020 ECX: 00000009 EDX: 01c5c000
+> ESI: c036a200 EDI: 0000000a EBP: 00000000 ESP: f32bfd30
+>  DS: 007b ES: 007b FS: 00d8 GS: 0000 SS: 0068
+> CR0: 8005003b CR2: b3c3e000 CR3: 003b5000 CR4: 000026d0
+> DR0: 00000000 DR1: 00000000 DR2: 00000000 DR3: 00000000
+> DR6: ffff0ff0 DR7: 00000400
+>  [<c012902d>] do_softirq+0x45/0x53
+>  [<c0129291>] irq_exit+0x38/0x6b
+>  [<c01066f2>] do_IRQ+0x5a/0x70
+>  [<c01048c3>] common_interrupt+0x23/0x28
+>  [<c01100d8>] cyrix_get_arr+0xb4/0x126
+>  [<c011ad36>] native_flush_tlb_single+0x3/0x4
+>  [<c011d0e9>] kunmap_atomic+0x60/0x94
+>  [<f89742d5>] blkcipher_walk_done+0x87/0x1fe [blkcipher]
+>  [<f89923cc>] crypto_cbc_encrypt+0x132/0x146 [cbc]
+>  [<f899202f>] xor_128+0x0/0x17 [cbc]
+>  [<c01dd80a>] cfq_allow_merge+0x0/0x5a
+>  [<f89ad6ef>] aes_encrypt+0x0/0x17 [aes_i586]
+>  [<f88fe648>] crypt_convert_scatterlist+0x73/0xc3 [dm_crypt]
+>  [<f88fe7e0>] crypt_convert+0x148/0x185 [dm_crypt]
+>  [<f88fe9fe>] kcryptd_do_crypt+0x1e1/0x25e [dm_crypt]
+>  [<f88fe81d>] kcryptd_do_crypt+0x0/0x25e [dm_crypt]
+>  [<c0132225>] run_workqueue+0x7d/0x109
+>  [<c0135554>] prepare_to_wait+0x12/0x49
+>  [<c0132a9b>] worker_thread+0x0/0xc5
+>  [<c0132b55>] worker_thread+0xba/0xc5
+>  [<c0135441>] autoremove_wake_function+0x0/0x35
+>  [<c013537a>] kthread+0x38/0x5e
+>  [<c0135342>] kthread+0x0/0x5e
+>  [<c0104b0f>] kernel_thread_helper+0x7/0x10
+>  =======================
+> BUG: soft lockup - CPU#0 stuck for 11s! [kcryptd:22652]
+> 
+
+Could be a dm-crypt problem, could be a crypto problem, could even be a
+core block problems.
+
+If nothing happens in the next few days, yes, please do raise a bugzilla
+report.  That helps us to avoid forgetting about it, but it doesn't do much
+to get things fixed, I'm afraid.
+
+If you can provide us with a simple step-by-step recipe to reprodue this,
+and if others can indeed reproduce it, the chances of getting it fixed will
+increase.
+
+
+Now, I'm assuming that it's just unreasonable for a machine to spend a full
+11 seconds crunching away on crypto in that code path.  Maybe it _is_
+reasonable, and all we need to do is to poke a cond_resched() in there
+somewhere.  Herbert, any thoughts?  What's the speed of that code?
+
+Thanks.
+
+
