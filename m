@@ -1,50 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759988AbYB2SP1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761241AbYB2SQS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759988AbYB2SP1 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Feb 2008 13:15:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751932AbYB2SPQ
+	id S1761241AbYB2SQS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Feb 2008 13:16:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751932AbYB2SQH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Feb 2008 13:15:16 -0500
-Received: from smtp1.linux-foundation.org ([207.189.120.13]:51207 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751011AbYB2SPO (ORCPT
+	Fri, 29 Feb 2008 13:16:07 -0500
+Received: from rhun.apana.org.au ([64.62.148.172]:47919 "EHLO
+	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753094AbYB2SQG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 Feb 2008 13:15:14 -0500
-Date: Fri, 29 Feb 2008 10:14:13 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-cc: Michael Kerrisk <michael.kerrisk@googlemail.com>, aaw <aaw@google.com>,
-       Andrew Morton <akpm@linux-foundation.org>, michael.kerrisk@gmail.com,
-       carlos@codesourcery.com, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       linux-kernel <linux-kernel@vger.kernel.org>, drepper@redhat.com,
-       mtk.manpages@gmail.com
-Subject: Re: [RFC/PATCH] RLIMIT_ARG_MAX
-In-Reply-To: <1204307756.6243.121.camel@lappy>
-Message-ID: <alpine.LFD.1.00.0802291013090.17889@woody.linux-foundation.org>
-References: <1204119455.6242.403.camel@lappy>  <alpine.LFD.1.00.0802290801290.17889@woody.linux-foundation.org>  <c49095e30802290858t42eb8a61ua0ed73e27971bc77@mail.gmail.com>  <1204305244.6243.111.camel@lappy>  <alpine.LFD.1.00.0802290934130.17889@woody.linux-foundation.org>
- <1204307756.6243.121.camel@lappy>
-User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
+	Fri, 29 Feb 2008 13:16:06 -0500
+Date: Sat, 1 Mar 2008 02:15:51 +0800
+From: Herbert Xu <herbert@gondor.apana.org.au>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Ritesh Raj Sarraf <rrs@researchut.com>,
+       Christophe Saout <christophe@saout.de>, linux-kernel@vger.kernel.org,
+       dm-devel@redhat.com
+Subject: Re: 2.6.24 Kernel Soft Lock Up with heavy I/O in dm-crypt
+Message-ID: <20080229181551.GA28193@gondor.apana.org.au>
+References: <200802281924.03996.rrs@researchut.com> <20080228232048.51e28c1d.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080228232048.51e28c1d.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, Feb 28, 2008 at 11:20:48PM -0800, Andrew Morton wrote:
+>
+> Now, I'm assuming that it's just unreasonable for a machine to spend a full
+> 11 seconds crunching away on crypto in that code path.  Maybe it _is_
+> reasonable, and all we need to do is to poke a cond_resched() in there
+> somewhere.  Herbert, any thoughts?  What's the speed of that code?
 
+It encryps 512 bytes each time so it should definitely be pretty
+quick.  Perhaps the caller is disabling interrupts or something?
 
-On Fri, 29 Feb 2008, Peter Zijlstra wrote:
-> 
-> Well, I agree with that point. It just that apparently POSIX does not.
-> According to Michael POSIX does not consider the arg+env array part of
-> the stack proper.
-
-I don't think that's true.
-
-POSIX has always been guided on "what you can depend on", not "we make up 
-new features". And if that has changed, then it's a problem for POSIX, not 
-for Linux.
-
-IOW, I think somebody is either reading the standard wrong, or the 
-standard is not worth reading.
-
-		Linus
+Cheers,
+-- 
+Visit Openswan at http://www.openswan.org/
+Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
+Home Page: http://gondor.apana.org.au/~herbert/
+PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
