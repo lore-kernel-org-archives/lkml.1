@@ -1,63 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933558AbYB2TCE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932401AbYB2TC6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933558AbYB2TCE (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Feb 2008 14:02:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758688AbYB2TBx
+	id S932401AbYB2TC6 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Feb 2008 14:02:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751258AbYB2TCt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Feb 2008 14:01:53 -0500
-Received: from smtp-out.google.com ([216.239.33.17]:32647 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754021AbYB2TBw (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 Feb 2008 14:01:52 -0500
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=received:message-id:date:from:to:subject:cc:in-reply-to:
-	mime-version:content-type:content-transfer-encoding:
-	content-disposition:references;
-	b=m4kjUzpMy6Gy3D/LI99Tl5gP3mBRu0hMt7fKyT0ZdoZ9I7L4FX1Mx2ybBsFB+nWpl
-	WOfukMw6EzLbNmx70Yw9A==
-Message-ID: <65dd6fd50802291101j3786ee60iec0f3a24f5df9945@mail.gmail.com>
-Date: Fri, 29 Feb 2008 11:01:38 -0800
-From: "Ollie Wild" <aaw@google.com>
-To: "Linus Torvalds" <torvalds@linux-foundation.org>
-Subject: Re: [RFC/PATCH] RLIMIT_ARG_MAX
-Cc: "Peter Zijlstra" <a.p.zijlstra@chello.nl>,
-       "Michael Kerrisk" <michael.kerrisk@googlemail.com>,
-       "Andrew Morton" <akpm@linux-foundation.org>, michael.kerrisk@gmail.com,
-       carlos@codesourcery.com, "Alan Cox" <alan@lxorguk.ukuu.org.uk>,
-       linux-kernel <linux-kernel@vger.kernel.org>, drepper@redhat.com,
-       mtk.manpages@gmail.com
-In-Reply-To: <alpine.LFD.1.00.0802290956110.17889@woody.linux-foundation.org>
+	Fri, 29 Feb 2008 14:02:49 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:56397 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757748AbYB2TCs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 29 Feb 2008 14:02:48 -0500
+Date: Fri, 29 Feb 2008 20:02:23 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Thomas Gleixner <tglx@linutronix.de>, Oleg Nesterov <oleg@tv-sign.ru>,
+       Steven Rostedt <rostedt@goodmis.org>, Paul Jackson <pj@sgi.com>,
+       Max Krasnyanskiy <maxk@qualcomm.com>, linux-kernel@vger.kernel.org,
+       David Rientjes <rientjes@google.com>
+Subject: Re: [RFC/PATCH] cpuset: cpuset irq affinities
+Message-ID: <20080229190223.GA17820@elte.hu>
+References: <20080227222103.673194000@chello.nl> <1204311351.6243.130.camel@lappy>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <1204119455.6242.403.camel@lappy>
-	 <alpine.LFD.1.00.0802290801290.17889@woody.linux-foundation.org>
-	 <c49095e30802290858t42eb8a61ua0ed73e27971bc77@mail.gmail.com>
-	 <alpine.LFD.1.00.0802290907480.17889@woody.linux-foundation.org>
-	 <1204305488.6243.113.camel@lappy>
-	 <alpine.LFD.1.00.0802290928200.17889@woody.linux-foundation.org>
-	 <1204306934.6243.119.camel@lappy>
-	 <alpine.LFD.1.00.0802290956110.17889@woody.linux-foundation.org>
+In-Reply-To: <1204311351.6243.130.camel@lappy>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Feb 29, 2008 at 10:12 AM, Linus Torvalds
-<torvalds@linux-foundation.org> wrote:
->
-> So it's not *going* to be exact even with RLIMIT_ARG_MAX, because it's
-> going to have all those other issues to contend with - on a 64-bit
-> architecture, the argument _pointers_ are often within an order of
-> magnitude of the argument strings themselves, and I don't think your patch
-> counted them as part of the argument/environemnt size (I was too lazy to
-> check the sources, but I'm pretty sure argv/env_start/end is just the
-> string space, not the pointers).
 
-This is precisely why I picked 25% as the maximum argument size ratio.
- In practice, that 25% can easily mean 50% or more.  If people want to
-increase this, it can probably be tweaked somewhat, but switching it
-to, say, 50% probably isn't a good idea.
+* Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:
 
-Ollie
+> @@ -174,11 +174,20 @@ struct irq_desc {
+>  #ifdef CONFIG_PROC_FS
+>  	struct proc_dir_entry	*dir;
+>  #endif
+> +#ifdef CONFIG_CPUSETS
+> +	struct cpuset		*cs;
+> +#endif
+
+i like this approach - it makes irqs more resource-alike and attaches 
+them to a specific resource control group.
+
+So if /cgroup/boot is changed to have less CPUs then the "default" irqs 
+move along with it.
+
+but if an isolated RT domain has specific irqs attached to it (say the 
+IRQ of some high-speed data capture device), then the irqs would move 
+together with that domain.
+
+irqs are no longer a bolted-upon concept, but more explicitly managed.
+
+[ If you boot-test it and if Paul agrees with the general approach then
+  i could even apply it to sched-devel.git ;-) ]
+
+	Ingo
