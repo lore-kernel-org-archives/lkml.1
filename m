@@ -1,27 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757324AbYB2IdY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756024AbYB2Ihn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757324AbYB2IdY (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Feb 2008 03:33:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753497AbYB2IdN
+	id S1756024AbYB2Ihn (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Feb 2008 03:37:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753077AbYB2Ihf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Feb 2008 03:33:13 -0500
-Received: from smtp1.linux-foundation.org ([207.189.120.13]:54399 "EHLO
+	Fri, 29 Feb 2008 03:37:35 -0500
+Received: from smtp1.linux-foundation.org ([207.189.120.13]:40125 "EHLO
 	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751754AbYB2IdM (ORCPT
+	by vger.kernel.org with ESMTP id S1751411AbYB2Ihe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 Feb 2008 03:33:12 -0500
-Date: Fri, 29 Feb 2008 00:31:55 -0800
+	Fri, 29 Feb 2008 03:37:34 -0500
+Date: Fri, 29 Feb 2008 00:36:28 -0800
 From: Andrew Morton <akpm@linux-foundation.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
+To: Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
        Thomas Gleixner <tglx@linutronix.de>, Oleg Nesterov <oleg@tv-sign.ru>,
        Steven Rostedt <rostedt@goodmis.org>, Paul Jackson <pj@sgi.com>,
        Max Krasnyanskiy <maxk@qualcomm.com>, linux-kernel@vger.kernel.org
 Subject: Re: [RFC/PATCH 0/4] CPUSET driven CPU isolation
-Message-Id: <20080229003155.bbab795d.akpm@linux-foundation.org>
-In-Reply-To: <20080228075010.GA28781@elte.hu>
+Message-Id: <20080229003628.0989794e.akpm@linux-foundation.org>
+In-Reply-To: <20080229003155.bbab795d.akpm@linux-foundation.org>
 References: <20080227222103.673194000@chello.nl>
 	<20080228075010.GA28781@elte.hu>
+	<20080229003155.bbab795d.akpm@linux-foundation.org>
 X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
@@ -30,40 +30,65 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 28 Feb 2008 08:50:11 +0100 Ingo Molnar <mingo@elte.hu> wrote:
+On Fri, 29 Feb 2008 00:31:55 -0800 Andrew Morton <akpm@linux-foundation.org> wrote:
 
-> 
-> * Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:
-> 
-> > My vision on the direction we should take wrt cpu isolation.
-> > 
-> > Next on the list would be figuring out a nice solution to the 
-> > workqueue flush issue.
-> 
-> nice work Peter, i find this "system sets" extension to cpusets a much 
-> more elegant (and much more future-proof) solution than the proposed 
-> spreadout of the limited hack of isolcpus/cpu_isolated_map. It 
-> concentrates us on a single API and on a single mechanism to handle 
-> isolation matters. (be that for clustering/supercomputing or real-time 
-> purposes)
-> 
-> Thanks for insisting on using cpusets for this!
-> 
-> i've queued up your patches in sched-devel.git, and lets make sure this 
-> has no side-effects on existing functionality. (it shouldnt)
-> 
+> So I shall drop git-sched again.
 
-It of course lays waste to a series of cgroup patches from Paul Menage
-which I already had queued.
+And when I do this I get:
 
-So I shall drop git-sched again.
+***************
+*** 8125,8137 ****
+  	return simple_read_from_buffer(buf, nbytes, ppos, tmp, len);
+  }
+  
+- static int cpu_rt_period_write_uint(struct cgroup *cgrp, struct cftype *cftype,
+  		u64 rt_period_us)
+  {
+  	return sched_group_set_rt_period(cgroup_tg(cgrp), rt_period_us);
+  }
+  
+- static u64 cpu_rt_period_read_uint(struct cgroup *cgrp, struct cftype *cft)
+  {
+  	return sched_group_rt_period(cgroup_tg(cgrp));
+  }
+--- 8125,8137 ----
+  	return simple_read_from_buffer(buf, nbytes, ppos, tmp, len);
+  }
+  
++ static int cpu_rt_period_write_u64(struct cgroup *cgrp, struct cftype *cftype,
+  		u64 rt_period_us)
+  {
+  	return sched_group_set_rt_period(cgroup_tg(cgrp), rt_period_us);
+  }
+  
++ static u64 cpu_rt_period_read_u64(struct cgroup *cgrp, struct cftype *cft)
+  {
+  	return sched_group_rt_period(cgroup_tg(cgrp));
+  }
+***************
+*** 8367,8374 ****
+  	},
+  	{
+  		.name = "rt_period_us",
+- 		.read_uint = cpu_rt_period_read_uint,
+- 		.write_uint = cpu_rt_period_write_uint,
+  	},
+  #endif
+  };
+--- 8367,8374 ----
+  	},
+  	{
+  		.name = "rt_period_us",
++ 		.read_u64 = cpu_rt_period_read_u64,
++ 		.write_u64 = cpu_rt_period_write_u64,
+  	},
+  #endif
+  };
 
-How often do I have to say this?  git-sched is not
-git-everything-which-looks-shiny!  It is for the CPU scheduler.
+and if I then fix that up, and later restore git-sched, Paul's patch is now
+broken.
 
-If you had put this patchset into a private branch for private testing, or
-even into a separate git-petes-stuff then I wouldn't have to collaterally
-drop the entirety of git-sched because of this.
+Your trees continue to cause more trouble than anyone else's have ever
+done, by a lot.
 
-Sigh.
-
+Let me try yesterday's git-sched.patch.
