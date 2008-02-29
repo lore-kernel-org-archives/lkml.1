@@ -1,70 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933942AbYB2VVA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761421AbYB2VVb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933942AbYB2VVA (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Feb 2008 16:21:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933196AbYB2VUp
+	id S1761421AbYB2VVb (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Feb 2008 16:21:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933743AbYB2VUu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Feb 2008 16:20:45 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:48138 "EHLO mx3.mail.elte.hu"
+	Fri, 29 Feb 2008 16:20:50 -0500
+Received: from mummy.ncsc.mil ([144.51.88.129]:40360 "EHLO mummy.ncsc.mil"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932992AbYB2VUo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 Feb 2008 16:20:44 -0500
-Date: Fri, 29 Feb 2008 22:20:14 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: torvalds@linux-foundation.org, roland@redhat.com, tglx@linutronix.de,
-       linux-kernel@vger.kernel.org, stable@kernel.org
-Subject: Re: [PATCH] x86_64 ia32 syscall restart fix
-Message-ID: <20080229212014.GJ27212@elte.hu>
-References: <20080229035707.EAE862700FD@magilla.localdomain> <20080229155207.GC27248@elte.hu> <alpine.LFD.1.00.0802290814320.17889@woody.linux-foundation.org> <20080229164510.GA6850@elte.hu> <alpine.LFD.1.00.0802290855230.17889@woody.linux-foundation.org> <20080229171737.GA10604@elte.hu> <20080229173705.GA19423@elte.hu> <20080229130237.da291a1e.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080229130237.da291a1e.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	id S933574AbYB2VUt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 29 Feb 2008 16:20:49 -0500
+Subject: Re: [PATCH 03/11] VFS: Add security label support to *notify
+From: Dave Quigley <dpquigl@tycho.nsa.gov>
+To: Christoph Hellwig <hch@infradead.org>
+Cc: viro@ftp.linux.org.uk, trond.myklebust@fys.uio.no, bfields@fieldses.org,
+       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
+In-Reply-To: <20080229002312.GA9198@infradead.org>
+References: <1204150294-4678-1-git-send-email-dpquigl@tycho.nsa.gov>
+	 <1204150294-4678-4-git-send-email-dpquigl@tycho.nsa.gov>
+	 <20080228235427.GA17757@infradead.org>
+	 <1204242283.2715.9.camel@moss-terrapins.epoch.ncsc.mil>
+	 <20080229002312.GA9198@infradead.org>
+Content-Type: text/plain
+Date: Fri, 29 Feb 2008 15:19:12 -0500
+Message-Id: <1204316352.2715.105.camel@moss-terrapins.epoch.ncsc.mil>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.3 (2.12.3-1.fc8) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+So this method will work on the server side and I will probably switch
+to it. However while working on switching over I found that the client
+side uses an iattr to pass inode information down into the protocol
+calls. So there are two options. Add this to the iattr structure and do
+this properly in a clean way. Or add additional params down the call
+chain into these protocol handlers for NFS. Which is the better option
+for this?
 
-* Andrew Morton <akpm@linux-foundation.org> wrote:
+Dave
 
-> I believe the -stable guys have a bot which trolls the mainline 
-> commits mailing list for "cc:.*stable@kernel.org".  So anybody 
-> anywhere in the patch delivery chain can append "Cc: 
-> <stable@kernel.org>" and things should get appropriate consideration.
 
-ok, didnt know about that.
 
-> The place where I suspect there is a lot of lossage is people simply 
-> not thinking about whether a fix should be backported.  I'm forever 
-> fussing about that for the patches I handle (and I still miss some) 
-> but I have a suspicion that not all tree-owners do this fully.
+On Thu, 2008-02-28 at 19:23 -0500, Christoph Hellwig wrote:
+> On Thu, Feb 28, 2008 at 06:44:43PM -0500, Dave Quigley wrote:
+> > The main reason for this was the way that NFS passes information it
+> > receives around. If you look in patch 11 you will see that
+> > nfsd4_decode_fattr doesn't give us access to an inode to use for
+> > security_inode_setsecurity and it doesn't give us a dentry to use the
+> > xattr helpers with. The only thing we get here is an iattr structure
+> > which is then passed back up to fill in the inode fields. Also without
+> > functionality provided by patch 1 we don't even know where to put the
+> > security blob we are getting from the wire. 
+> 
+> Take a look at how ACLs are handled.  They're passed up from the _decode
+> operations into a small structure that is referenced by struct
+> nfsd4_<operation> and pass it up until the level where the dentry
+> is available.
+> 
+> > 
+> > > 
+> > > > +#define DN_LABEL        0x00000040      /* File (re)labeled */
+> > > 
+> > > An any inotify/dnotify additions should be separate from the vfs to
+> > > filesystem interface.  Please make it a separate patch and describe
+> > > properly why it's needed in it's description.
+> > 
+> > Will do. We added them to conform to the functionality provided for
+> > other elements in the iattr structure. We will add a more robust
+> > explanation in the patch.
+> > 
+> > > 
+> > > > index df6b95d..1169963 100644
+> > > > --- a/include/linux/xattr.h
+> > > > +++ b/include/linux/xattr.h
+> > > > @@ -50,6 +50,7 @@ ssize_t xattr_getsecurity(struct inode *, const char *, void *, size_t);
+> > > >  ssize_t vfs_getxattr(struct dentry *, char *, void *, size_t);
+> > > >  ssize_t vfs_listxattr(struct dentry *d, char *list, size_t size);
+> > > >  int vfs_setxattr(struct dentry *, char *, void *, size_t, int);
+> > > > +int vfs_setxattr_locked(struct dentry *, char *, void *, size_t, int);
+> > > >  int vfs_removexattr(struct dentry *, char *);
+> > > >  
+> > > >  ssize_t generic_getxattr(struct dentry *dentry, const char *name, void *buffer, size_t size);
+> > > > -- 
+> > > > 1.5.3.8
+> > > > 
+> > > > -
+> > > > To unsubscribe from this list: send the line "unsubscribe linux-fsdevel" in
+> > > > the body of a message to majordomo@vger.kernel.org
+> > > > More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> > > ---end quoted text---
+> > 
+> > --
+> > To unsubscribe from this list: send the line "unsubscribe linux-fsdevel" in
+> > the body of a message to majordomo@vger.kernel.org
+> > More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> ---end quoted text---
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
 
-we watch out for this, but still, about 50% of the cases, the 
-realization "this should be backported" comes later on. Often because 
-fixes get applied with low latency, and testers lag in realizing that 
-some particular -stable problem is fixed by a -git fix. Sometimes people 
-do bisection in search of backportable fixes - that too has a lag.
-
-so the more formal:
-
-    Backport-suggested-by: commit-id, person
-
-entry would solve both cases. Also, a commit entry in -stable:
-
-    Backported-from: commit-id
-
-would finish the transaction. [ But this is clearly something that the 
--stable folks have to request - it wont help much if we start doing it 
-but the -stable folks ignore the entries :-) ]
-
-	Ingo
