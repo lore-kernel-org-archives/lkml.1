@@ -1,82 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933144AbYB2Tzp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933749AbYB2T4f@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933144AbYB2Tzp (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Feb 2008 14:55:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932649AbYB2TzV
+	id S933749AbYB2T4f (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Feb 2008 14:56:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754107AbYB2T4Z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Feb 2008 14:55:21 -0500
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:58031 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754107AbYB2TzS (ORCPT
+	Fri, 29 Feb 2008 14:56:25 -0500
+Received: from smtp-out.google.com ([216.239.33.17]:36447 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754173AbYB2T4X (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 Feb 2008 14:55:18 -0500
-Date: Fri, 29 Feb 2008 11:55:17 -0800 (PST)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Andrea Arcangeli <andrea@qumranet.com>
-cc: Nick Piggin <nickpiggin@yahoo.com.au>, akpm@linux-foundation.org,
-       Robin Holt <holt@sgi.com>, Avi Kivity <avi@qumranet.com>,
-       Izik Eidus <izike@qumranet.com>, kvm-devel@lists.sourceforge.net,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, general@lists.openfabrics.org,
-       Steve Wise <swise@opengridcomputing.com>,
-       Roland Dreier <rdreier@cisco.com>, Kanoj Sarcar <kanojsarcar@yahoo.com>,
-       steiner@sgi.com, linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       daniel.blueman@quadrics.com
-Subject: Re: [patch 2/6] mmu_notifier: Callbacks to invalidate address ranges
-In-Reply-To: <20080229131302.GT8091@v2.random>
-Message-ID: <Pine.LNX.4.64.0802291149290.11292@schroedinger.engr.sgi.com>
-References: <200802201008.49933.nickpiggin@yahoo.com.au>
- <Pine.LNX.4.64.0802271424390.13186@schroedinger.engr.sgi.com>
- <20080228001104.GB8091@v2.random> <Pine.LNX.4.64.0802271613080.15791@schroedinger.engr.sgi.com>
- <20080228005249.GF8091@v2.random> <Pine.LNX.4.64.0802271702490.16510@schroedinger.engr.sgi.com>
- <20080228011020.GG8091@v2.random> <Pine.LNX.4.64.0802281043430.29191@schroedinger.engr.sgi.com>
- <20080229005530.GO8091@v2.random> <Pine.LNX.4.64.0802281658560.1954@schroedinger.engr.sgi.com>
- <20080229131302.GT8091@v2.random>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Fri, 29 Feb 2008 14:56:23 -0500
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=received:subject:from:to:cc:in-reply-to:references:
+	content-type:organization:date:message-id:mime-version:x-mailer:content-transfer-encoding;
+	b=xWzjZI/a3PptDsO867OjmoB0hSnxfz1EGBstdisoaaUxWFlbx+dFismIYoNzQlkNB
+	A/AQQCY5O7km2hDD0Qebg==
+Subject: Re: [Bugme-new] [Bug 9906] New: Weird hang with NPTL and SIGPROF.
+From: Frank Mayhar <fmayhar@google.com>
+To: parag.warudkar@gmail.com
+Cc: Alejandro Riveira =?ISO-8859-1?Q?Fern=E1ndez?= 
+	<ariveira@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       bugme-daemon@bugzilla.kernel.org, linux-kernel@vger.kernel.org,
+       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       Roland McGrath <roland@redhat.com>, Jakub Jelinek <jakub@redhat.com>
+In-Reply-To: <alpine.LRH.1.00.0802071153130.15220@mini.warudkars.net>
+References: <bug-9906-10286@http.bugzilla.kernel.org/>
+	 <20080206165045.89b809cc.akpm@linux-foundation.org>
+	 <1202345893.8525.33.camel@peace.smo.corp.google.com>
+	 <alpine.LRH.1.00.0802062148480.7445@mini.warudkars.net>
+	 <20080207162203.3e3cf5ab@Varda>
+	 <alpine.LRH.1.00.0802071040010.29320@mini.warudkars.net>
+	 <alpine.LRH.1.00.0802071054160.29320@mini.warudkars.net>
+	 <20080207165455.04ec490b@Varda>
+	 <alpine.LRH.1.00.0802071100230.29369@mini.warudkars.net>
+	 <alpine.LRH.1.00.0802071153130.15220@mini.warudkars.net>
+Content-Type: text/plain
+Organization: Google, Inc.
+Date: Fri, 29 Feb 2008 11:55:04 -0800
+Message-Id: <1204314904.4850.23.camel@peace.smo.corp.google.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.6.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 29 Feb 2008, Andrea Arcangeli wrote:
-
-> On Thu, Feb 28, 2008 at 04:59:59PM -0800, Christoph Lameter wrote:
-> > And thus the device driver may stop receiving data on a UP system? It will 
-> > never get the ack.
+On Thu, 2008-02-07 at 11:53 -0500, Parag Warudkar wrote:
+> On Thu, 7 Feb 2008, Parag Warudkar wrote:
+> > Yep. I will enable PREEMPT and see if it reproduces for me.
 > 
-> Not sure to follow, sorry.
-> 
-> My idea was:
-> 
->    post the invalidate in the mmio region of the device
->    smp_call_function()
->    while (mmio device wait-bitflag is on);
+> Not reproducible with PREEMPT either. 
 
-So the device driver on UP can only operate through interrupts? If you are 
-hogging the only cpu then driver operations may not be possible.
+Okay, here's an analysis of the problem and a potential solution.  I
+mentioned this in the bug itself but I'll repeat it here:
 
-> > invalidate_page_before/end could be realized as an 
-> > invalidate_range_begin/end on a page sized range?
-> 
-> If we go this route, once you add support to xpmem, you'll have to
-> make the anon_vma lock a mutex too, that would be fine with me
-> though. The main reason invalidate_page exists, is to allow you to
-> leave it as non-sleep-capable even after you make invalidate_range
-> sleep capable, and to implement the mmu_rmap_notifiers sleep capable
-> in all the paths that invalidate_page would be called. That was the
-> strategy you had in your patch. I'll try to drop invalidate_page. I
-> wonder if then you won't need the mmu_rmap_notifiers anymore.
+A couple of us here have been investigating this thing and have
+concluded that the problem lies in the implementation of
+run_posix_cpu_timers() and specifically in the quadratic nature of the
+implementation.  It calls check_process_timers() to sum the
+utime/stime/sched_time (in 2.6.18.5, under another name in 2.6.24+) of
+all threads in the thread group.  This means that runtime there grows
+with the number of threads.  It can go through the list _again_ if and
+when it decides to rebalance expiry times.
 
-I am mainly concerned with making the mmu notifier a generally useful 
-feature for multiple users. Xpmem is one example of a different user. It 
-should be considered as one example of a different type of callback user. 
-It is not the gold standard that you make it to be. RDMA is another and 
-there are likely scores of others (DMA engines etc) once it becomes clear 
-that such a feature is available. In general the mmu notifier will allows 
-us to fix the problems caused by memory pinning and mlock by various 
-devices and other mechanisms that need to directly access memory. 
+After thinking through it, it seems clear that the critical number of
+threads is that in which run_posix_cpu_timers() takes as long as or
+longer than a tick to get its work done.  The system makes progress to
+that point but after that everything goes to hell as it gets further and
+further behind.  This explains all the symptoms we've seen, including
+seeing run_posix_cpu_timers() at the top of a bunch of profiling stats
+(I saw it get more than a third of overall processing time on a bunch of
+tests, even where the system _didn't_ hang!).  It explains the fact that
+things get slow right before they go to hell and it explains why under
+certain conditions the system can recover (if the threads have started
+exiting by the time it hangs, for example).
 
-And yes I would like to get rid of the mmu_rmap_notifiers altogether. It 
-would be much cleaner with just one mmu_notifier that can sleep in all 
-functions.
+I've come up with a potential fix for the problem.  It does two things.
+First, rather than summing the utime/stime/sched_time at interrupt it
+adds all of those times to a new task_struct field on the group leader
+then at interrupt just consults those fields; this avoids repeatedly
+blowing the cache as well as a loop across all the threads.
+
+Second, if there are more than 1000 threads in the process (as noted in
+task->signal->live), it just punts all of the processing to a workqueue.
+
+With these changes I've gone from a hang at 4500 (or fewer) threads to
+running out of resources at more than 32000 threads on a single-CPU box.
+When I've finished testing I'll polish the patch a bit and submit it to
+the LKML but I thought you guys might want to know the state of things.
+
+Oh, and one more note:  This bug is also dependent on HZ, since it
+matters how long a tick is.  I've been running with HZ=1000.  A faster
+machine or one with HZ=100 would potentially need to generate a _lot_
+more threads to see the hang.
+-- 
+Frank Mayhar <fmayhar@google.com>
+Google, Inc.
 
