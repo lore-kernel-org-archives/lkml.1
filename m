@@ -1,33 +1,30 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756795AbYB2KjS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758373AbYB2Kjc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756795AbYB2KjS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Feb 2008 05:39:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755213AbYB2Ki7
+	id S1758373AbYB2Kjc (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Feb 2008 05:39:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756154AbYB2KjN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Feb 2008 05:38:59 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:47106 "EHLO
+	Fri, 29 Feb 2008 05:39:13 -0500
+Received: from bombadil.infradead.org ([18.85.46.34]:47111 "EHLO
 	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755205AbYB2Ki6 (ORCPT
+	with ESMTP id S1755951AbYB2KjM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 Feb 2008 05:38:58 -0500
-Subject: Re: [RFC, PATCH 1/2] sched: change the fairness model of the CFS
-	group scheduler
+	Fri, 29 Feb 2008 05:39:12 -0500
+Subject: Re: [patch 2/2] sched: allow cpuacct stats to be reset
 From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Dhaval Giani <dhaval@linux.vnet.ibm.com>
-Cc: Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>, Ingo Molnar <mingo@elte.hu>,
-       Sudhir Kumar <skumar@linux.vnet.ibm.com>,
-       Balbir Singh <balbir@in.ibm.com>,
-       Aneesh Kumar KV <aneesh.kumar@linux.vnet.ibm.com>,
-       lkml <linux-kernel@vger.kernel.org>, vgoyal@redhat.com,
-       serue@us.ibm.com, menage@google.com
-In-Reply-To: <20080229090400.GD15328@linux.vnet.ibm.com>
-References: <20080225141504.GA27746@linux.vnet.ibm.com>
-	 <20080225141604.GA29213@linux.vnet.ibm.com>
-	 <1204227768.6243.42.camel@lappy>
-	 <20080229090400.GD15328@linux.vnet.ibm.com>
+To: Paul Menage <menage@google.com>
+Cc: Dhaval Giani <dhaval@linux.vnet.ibm.com>, vatsa@linux.vnet.ibm.com,
+       balbir@linux.vnet.ibm.com, mingo@elte.hu, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org, skumar@linux.vnet.ibm.com
+In-Reply-To: <6599ad830802290208l6b9d97d1l67e351fc2f9112f7@mail.gmail.com>
+References: <20080229043242.110741439@linux.vnet.ibm.com>
+	 <20080229043751.555866685@linux.vnet.ibm.com>
+	 <6599ad830802282148g7f309995l450fc15074234cd7@mail.gmail.com>
+	 <20080229060435.GB5478@linux.vnet.ibm.com>
+	 <6599ad830802290208l6b9d97d1l67e351fc2f9112f7@mail.gmail.com>
 Content-Type: text/plain
-Date: Fri, 29 Feb 2008 11:37:55 +0100
-Message-Id: <1204281475.6243.73.camel@lappy>
+Date: Fri, 29 Feb 2008 11:38:54 +0100
+Message-Id: <1204281534.6243.75.camel@lappy>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.21.90 
 Content-Transfer-Encoding: 7bit
@@ -36,68 +33,25 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-On Fri, 2008-02-29 at 14:34 +0530, Dhaval Giani wrote:
-
-> > > +#elif defined CONFIG_USER_SCHED
-> > > +		/*
-> > > +		 * In case of task-groups formed thr' the user id of tasks,
-> > > +		 * init_task_group represents tasks belonging to root user.
-> > > +		 * Hence it forms a sibling of all subsequent groups formed.
-> > > +		 * In this case, init_task_group gets only a fraction of overall
-> > > +		 * system cpu resource, based on the weight assigned to root
-> > > +		 * user's cpu share (INIT_TASK_GROUP_LOAD). This is accomplished
-> > > +		 * by letting tasks of init_task_group sit in a separate cfs_rq
-> > > +		 * (init_cfs_rq) and having one entity represent this group of
-> > > +		 * tasks in rq->cfs (i.e init_task_group->se[] != NULL).
-> > > +		 */
-> > >  		init_tg_cfs_entry(rq, &init_task_group,
-> > >  				&per_cpu(init_cfs_rq, i),
-> > >  				&per_cpu(init_sched_entity, i), i, 1);
-> > 
-> > But I fail to parse this lengthy comment. What does it do:
-> > 
-> >     init_group
-> >    /     |    \
-> > uid-0 uid-1000 uid-n
-> > 
-> > or does it blend uid-0 into the init_group?
-> > 
+On Fri, 2008-02-29 at 02:08 -0800, Paul Menage wrote:
+> On Thu, Feb 28, 2008 at 10:04 PM, Dhaval Giani
+> <dhaval@linux.vnet.ibm.com> wrote:
+> > On Thu, Feb 28, 2008 at 09:48:51PM -0800, Paul Menage wrote:
+> >
+> > > On Thu, Feb 28, 2008 at 8:32 PM, Dhaval Giani <dhaval@linux.vnet.ibm.com> wrote:
+> >  >
+> >
+> > > Can I suggest, in order to be more generic, that this patch instead
+> >  > set each CPU's counter to the written value divided by the number of
+> >  > CPUs? (Either forgetting the remainder, or spreading it among the
+> >  > first few CPUs).
+> >  >
+> >
+> >  This patch is only allowing a reset of the stats. In what sort of a
+> >  situation would one be looking for changing the usage value?
 > 
-> It blends uid-0 (root) into init_group.
+> How about Checkpoint/Restart?
 
-Any particular reason why? It seems to me uid-0 should be treated like
-any other uid.
-
-> > > @@ -1100,6 +1127,27 @@ static void check_preempt_wakeup(struct 
-> > >  	if (!sched_feat(WAKEUP_PREEMPT))
-> > >  		return;
-> > >  
-> > > +	/*
-> > > +	 * preemption test can be made between sibling entities who are in the
-> > > +	 * same cfs_rq i.e who have a common parent. Walk up the hierarchy of
-> > > +	 * both tasks untill we find their ancestors who are siblings of common
-> > > +	 * parent.
-> > > +	 */
-> > > +
-> > > +	/* First walk up until both entities are at same depth */
-> > > +	se_depth = depth_se(se);
-> > > +	pse_depth = depth_se(pse);
-> > > +
-> > > +	while (se_depth > pse_depth) {
-> > > +		se_depth--;
-> > > +		se = parent_entity(se);
-> > > +	}
-> > > +
-> > > +	while (pse_depth > se_depth) {
-> > > +		pse_depth--;
-> > > +		pse = parent_entity(pse);
-> > > +	}
-> > 
-> > Sad, but needed.. for now..
-> > 
-> 
-> better ideas if any are welcome! Cannot think of anything right now :(
-
-Single rq can do without :-) If only I could get that latency isolation
-going...
+Shouldn't that be a kernel side thing? And from the kernel you can put
+back any value you fancy.
 
