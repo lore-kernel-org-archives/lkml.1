@@ -1,55 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761509AbYB2RS3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760933AbYB2RSo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761509AbYB2RS3 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Feb 2008 12:18:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755475AbYB2RSV
+	id S1760933AbYB2RSo (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Feb 2008 12:18:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761535AbYB2RSb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Feb 2008 12:18:21 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:50101 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755025AbYB2RSU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 Feb 2008 12:18:20 -0500
-Date: Fri, 29 Feb 2008 18:17:37 +0100
-From: Ingo Molnar <mingo@elte.hu>
+	Fri, 29 Feb 2008 12:18:31 -0500
+Received: from bombadil.infradead.org ([18.85.46.34]:50698 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761528AbYB2RSa (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 29 Feb 2008 12:18:30 -0500
+Subject: Re: [RFC/PATCH] RLIMIT_ARG_MAX
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
 To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Roland McGrath <roland@redhat.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] x86_64 ia32 syscall restart fix
-Message-ID: <20080229171737.GA10604@elte.hu>
-References: <20080229035707.EAE862700FD@magilla.localdomain> <20080229155207.GC27248@elte.hu> <alpine.LFD.1.00.0802290814320.17889@woody.linux-foundation.org> <20080229164510.GA6850@elte.hu> <alpine.LFD.1.00.0802290855230.17889@woody.linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.1.00.0802290855230.17889@woody.linux-foundation.org>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Cc: Michael Kerrisk <michael.kerrisk@googlemail.com>, aaw <aaw@google.com>,
+       Andrew Morton <akpm@linux-foundation.org>, michael.kerrisk@gmail.com,
+       carlos@codesourcery.com, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       linux-kernel <linux-kernel@vger.kernel.org>, drepper@redhat.com,
+       mtk.manpages@gmail.com
+In-Reply-To: <alpine.LFD.1.00.0802290907480.17889@woody.linux-foundation.org>
+References: <1204119455.6242.403.camel@lappy>
+	 <alpine.LFD.1.00.0802290801290.17889@woody.linux-foundation.org>
+	 <c49095e30802290858t42eb8a61ua0ed73e27971bc77@mail.gmail.com>
+	 <alpine.LFD.1.00.0802290907480.17889@woody.linux-foundation.org>
+Content-Type: text/plain
+Date: Fri, 29 Feb 2008 18:18:08 +0100
+Message-Id: <1204305488.6243.113.camel@lappy>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.21.90 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Linus Torvalds <torvalds@linux-foundation.org> wrote:
+On Fri, 2008-02-29 at 09:12 -0800, Linus Torvalds wrote:
 
-> So the kernel is probably fairly odd in generally not asking for any 
-> fixed-format stuff at all (like the GNU changelogs do) but instead 
-> writing a small human-readable novella ;)
+> > 2. It provides a sane mechanism for an application to determine the
+> > space available for argv+environ.  Formerly this space was an
+> > invariant, advertised via sysconf(_SC_ARG_MAX).
+> 
+> ... and what's the point? We've never had it before, nobody has ever cared, 
+> and the whole notion is just stupid. Why would we want to limit it? The 
+> only thing that the kernel *cares* about is the stack size - any other 
+> size limits are always going to be arbitrary.
 
-i think it's also a good learning tool. Subscribing to git-commits-head 
-might be more useful to a newbie these days than subscribing to lkml :-/
+Well, don't think of limiting it, but querying the limit.
 
-and one area where commit messages are totally important IMO is bug 
-forensics. For every regression we find we try to put in the commit ID 
-that broke it. Information like that is vital to have a good (and 
-objective) picture about how bugs get into and get out of the kernel and 
-it also alerts us to change/improve infrastructure if certain categories 
-of bugs happen too often.
+Programs like xargs would need to know how much to stuff into argv
+before starting a new invocation.
 
-	Ingo
+
