@@ -1,72 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933979AbYB2WK3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934137AbYB2WLw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933979AbYB2WK3 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Feb 2008 17:10:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761743AbYB2WKP
+	id S934137AbYB2WLw (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Feb 2008 17:11:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759706AbYB2WLm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Feb 2008 17:10:15 -0500
-Received: from smtp1.linux-foundation.org ([207.189.120.13]:59595 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751769AbYB2WKO (ORCPT
+	Fri, 29 Feb 2008 17:11:42 -0500
+Received: from an-out-0708.google.com ([209.85.132.248]:62757 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761578AbYB2WLl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 Feb 2008 17:10:14 -0500
-Date: Fri, 29 Feb 2008 14:08:42 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Roman Zippel <zippel@linux-m68k.org>
-Cc: johnstul@us.ibm.com, linux-kernel@vger.kernel.org, mingo@elte.hu,
-       rostedt@goodmis.org
-Subject: Re: [PATCH] Remove obsolete CLOCK_TICK_ADJUST
-Message-Id: <20080229140842.575e72aa.akpm@linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.64.0802290547320.2723@scrub.home>
-References: <1201142334.6383.40.camel@localhost.localdomain>
-	<1201573686.6766.13.camel@localhost>
-	<Pine.LNX.4.64.0801290439480.17507@scrub.home>
-	<1201659263.6766.40.camel@localhost>
-	<Pine.LNX.4.64.0801310251090.17507@scrub.home>
-	<1201745776.6195.14.camel@localhost.localdomain>
-	<Pine.LNX.4.64.0801310404480.17507@scrub.home>
-	<1201914175.6216.46.camel@jstultz-laptop>
-	<Pine.LNX.4.64.0802081718040.3378@scrub.home>
-	<1202523452.6174.45.camel@localhost.localdomain>
-	<Pine.LNX.4.64.0802101917030.3378@scrub.home>
-	<1202774999.5984.106.camel@localhost>
-	<Pine.LNX.4.64.0802120335170.3378@scrub.home>
-	<1202963796.6195.141.camel@localhost.localdomain>
-	<Pine.LNX.4.64.0802150436300.1822@scrub.home>
-	<1203382940.5984.242.camel@localhost>
-	<Pine.LNX.4.64.0802190219360.2723@scrub.home>
-	<1203472250.6123.98.camel@localhost>
-	<Pine.LNX.4.64.0802200348230.2723@scrub.home>
-	<1203647951.6150.80.camel@localhost.localdomain>
-	<Pine.LNX.4.64.0802290547320.2723@scrub.home>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Fri, 29 Feb 2008 17:11:41 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:mime-version:content-type:content-transfer-encoding:content-disposition;
+        b=jtaz9t5o0cmowLh1QZF1PFG6MMS17bhCTD9VmqHIeSrdYb/zeR1zOXBxHGJrKUcIEH+yJh6csiQitAifOa6l0y2jfeYrnIJLgR/+aD+JmT3NdvFhjxJ1DaXryTxCNjzMJsh56gGvX1u+hQE0eqDHfdMkWDhqN9ySO7XNDKEi+zA=
+Message-ID: <c384c5ea0802291411s44cfb349r811da1e7daaefa19@mail.gmail.com>
+Date: Fri, 29 Feb 2008 23:11:40 +0100
+From: "Leon Woestenberg" <leon.woestenberg@gmail.com>
+To: linux-rt-users@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: [PATCH] Fix build, missing profile.h include in kernel/sysctl.c (against 2.6.24.3-rt3)
+Cc: "Steven Rostedt" <rostedt@goodmis.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 29 Feb 2008 05:49:35 +0100 (CET)
-Roman Zippel <zippel@linux-m68k.org> wrote:
+Build fix for kernel/sysctl.c:356: error: 'prof_pid' undeclared here
+(not in a function).
+The fix is to include <linux/profile.h> which defines prof_pid as external.
+Patch is against 2.6.24.3-rt3.
 
-> Can we please clean up the current mess and get the patch below merged?
-> 
-> bye, Roman
-> 
-> 
-> Revert bbe4d18ac2e058c56adb0cd71f49d9ed3216a405 and
-> e13a2e61dd5152f5499d2003470acf9c838eab84 and remove CLOCK_TICK_ADJUST
-> completely. Add a optional kernel parameter ntp_tick_adj instead to allow
-> adjusting of a large base drift and thus keeping ntpd happy.
-> The CLOCK_TICK_ADJUST mechanism was introduced at a time PIT was the
-> primary clock, but we have a varity of clock sources now, so a global PIT
-> specific adjustment makes little sense anymore.
-> 
+Signed-off-by: Leon Woestenberg <leon@sidebranch.com>
 
-The changelog provides no reason for the revert of those two patches.
+Index: linux-2.6.24.3/kernel/sysctl.c
+===================================================================
+--- linux-2.6.24.3.orig/kernel/sysctl.c 2008-02-29 00:52:45.000000000 +0100
++++ linux-2.6.24.3/kernel/sysctl.c      2008-02-29 00:52:59.000000000 +0100
+@@ -47,6 +47,7 @@
+ #include <linux/acpi.h>
+ #include <linux/reboot.h>
+ #include <linux/ftrace.h>
++#include <linux/profile.h>
 
-Look at it from the point of view of a person who hasn't been following the
-discussion (whose initials might be LT).  That person might get puzzled and
-upset, no?
+ #include <asm/uaccess.h>
+ #include <asm/processor.h>
 
+
+-- 
+Leon
