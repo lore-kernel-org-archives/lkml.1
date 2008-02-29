@@ -1,26 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760902AbYB2ASW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755556AbYB2ASj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760902AbYB2ASW (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Feb 2008 19:18:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754215AbYB2ASN
+	id S1755556AbYB2ASj (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Feb 2008 19:18:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754528AbYB2ASN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
 	Thu, 28 Feb 2008 19:18:13 -0500
-Received: from wa-out-1112.google.com ([209.85.146.178]:65360 "EHLO
+Received: from wa-out-1112.google.com ([209.85.146.178]:65407 "EHLO
 	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753694AbYB2ASM (ORCPT
+	with ESMTP id S1753878AbYB2ASM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Thu, 28 Feb 2008 19:18:12 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=subject:from:to:cc:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=VPjVYA1k+7PKDtCbdav4y3cd3UsRNgk/kxZYM0LiC59kLFKsxmghP7wXDflwtj3uvDzlL8IurETPBT3p/YienR+Nk8wFeKgBJrIgS0R0GmG9Bl+ZXEPWfgkTvVQ8ouenJxnoVvrtY+tVxoSS/CNX4ocwSf89r/NFO72FNQfVs9g=
-Subject: [PATCH 2/3] sound: patch_sigmatel.c fix shadowed variable warning
+        b=ICNSmlLQN8ED15kXokwdIi4WiYXQaTHRbcNt7/4hBjyztUSUfNCe0y8C24pRMDormlkohbqGe4cPInPecjmlxvk+eSYOmViZZ+TNUCHOS1caJBRD6FSZiBVHSTYrtlTcIChqi9V4REMcc/jJ5E+TvmzQrfeKmzYHTtm2kvcpGv0=
+Subject: [PATCH 3/3] sound: vmaster.c missing include of hda_local.h
 From: Harvey Harrison <harvey.harrison@gmail.com>
 To: Takashi Iwai <tiwai@suse.de>
 Cc: LKML <linux-kernel@vger.kernel.org>
 Content-Type: text/plain
-Date: Thu, 28 Feb 2008 16:18:10 -0800
-Message-Id: <1204244290.20280.102.camel@brick>
+Date: Thu, 28 Feb 2008 16:18:11 -0800
+Message-Id: <1204244291.20280.104.camel@brick>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.12.1 
 Content-Transfer-Encoding: 7bit
@@ -28,37 +28,29 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Temp variable in the loop shadows the second argument (which is otherwise
-unused in this function).  Change this to defcfg as it is used to hold
-the default config.
-sound/pci/hda/patch_sigmatel.c:2759:18: warning: symbol 'cfg' shadows an earlier one
-sound/pci/hda/patch_sigmatel.c:2734:26: originally declared here
+Needed for the two prototypes, must include hda_codec.h as well
+due to some dependencies between the headers.
+sound/pci/hda/vmaster.c:230:5: warning: symbol 'snd_ctl_add_slave' was not declared. Should it be static?
+sound/pci/hda/vmaster.c:329:21: warning: symbol 'snd_ctl_make_virtual_master' was not declared. Should it be static?
 
 Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
 ---
- sound/pci/hda/patch_sigmatel.c |    6 +++---
- 1 files changed, 3 insertions(+), 3 deletions(-)
+ sound/pci/hda/vmaster.c |    2 ++
+ 1 files changed, 2 insertions(+), 0 deletions(-)
 
-diff --git a/sound/pci/hda/patch_sigmatel.c b/sound/pci/hda/patch_sigmatel.c
-index 2912047..6a7f508 100644
---- a/sound/pci/hda/patch_sigmatel.c
-+++ b/sound/pci/hda/patch_sigmatel.c
-@@ -2757,11 +2757,11 @@ static int stac9200_auto_create_lfe_ctls(struct hda_codec *codec,
- 	if (lfe_pin == 0 && spec->autocfg.speaker_outs == 0) {
- 		for (i = 0; i < spec->autocfg.line_outs && lfe_pin == 0x0; i++) {
- 			hda_nid_t pin = spec->autocfg.line_out_pins[i];
--			unsigned long cfg;
--			cfg = snd_hda_codec_read(codec, pin, 0,
-+			unsigned long defcfg;
-+			defcfg = snd_hda_codec_read(codec, pin, 0,
- 						 AC_VERB_GET_CONFIG_DEFAULT,
- 						 0x00);
--			if (get_defcfg_device(cfg) == AC_JACK_SPEAKER) {
-+			if (get_defcfg_device(defcfg) == AC_JACK_SPEAKER) {
- 				unsigned long wcaps = get_wcaps(codec, pin);
- 				wcaps &= (AC_WCAP_STEREO | AC_WCAP_OUT_AMP);
- 				if (wcaps == AC_WCAP_OUT_AMP)
+diff --git a/sound/pci/hda/vmaster.c b/sound/pci/hda/vmaster.c
+index 2da49d2..26149b5 100644
+--- a/sound/pci/hda/vmaster.c
++++ b/sound/pci/hda/vmaster.c
+@@ -12,6 +12,8 @@
+ #include <linux/slab.h>
+ #include <sound/core.h>
+ #include <sound/control.h>
++#include "hda_codec.h"
++#include "hda_local.h"
+ 
+ /*
+  * a subset of information returned via ctl info callback
 -- 
 1.5.4.3.342.g99e8
-
 
