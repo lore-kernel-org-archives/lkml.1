@@ -1,59 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761057AbYB2Uu4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932761AbYB2Uwf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761057AbYB2Uu4 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Feb 2008 15:50:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751086AbYB2Uut
+	id S932761AbYB2Uwf (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Feb 2008 15:52:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752543AbYB2UwX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Feb 2008 15:50:49 -0500
-Received: from smtp1.linux-foundation.org ([207.189.120.13]:49401 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750775AbYB2Uus (ORCPT
+	Fri, 29 Feb 2008 15:52:23 -0500
+Received: from wolverine01.qualcomm.com ([199.106.114.254]:22712 "EHLO
+	wolverine01.qualcomm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751086AbYB2UwW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 Feb 2008 15:50:48 -0500
-Date: Fri, 29 Feb 2008 12:49:42 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Bill Nottingham <notting@redhat.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH, RFC, BAD IDEA] /proc/tty/console
-Message-Id: <20080229124942.fd402273.akpm@linux-foundation.org>
-In-Reply-To: <20080229150730.GA8209@nostromo.devel.redhat.com>
-References: <20080227181857.GA3137@nostromo.devel.redhat.com>
-	<20080228224923.fbbd97dc.akpm@linux-foundation.org>
-	<20080229150730.GA8209@nostromo.devel.redhat.com>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Fri, 29 Feb 2008 15:52:22 -0500
+X-IronPort-AV: E=McAfee;i="5200,2160,5242"; a="1038528"
+Message-ID: <47C87084.3090208@qualcomm.com>
+Date: Fri, 29 Feb 2008 12:52:20 -0800
+From: Max Krasnyanskiy <maxk@qualcomm.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+MIME-Version: 1.0
+To: Ingo Molnar <mingo@elte.hu>
+CC: Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Thomas Gleixner <tglx@linutronix.de>, Oleg Nesterov <oleg@tv-sign.ru>,
+       Steven Rostedt <rostedt@goodmis.org>, Paul Jackson <pj@sgi.com>,
+       linux-kernel@vger.kernel.org, David Rientjes <rientjes@google.com>
+Subject: Re: [RFC/PATCH] cpuset: cpuset irq affinities
+References: <20080227222103.673194000@chello.nl> <1204311351.6243.130.camel@lappy> <20080229190223.GA17820@elte.hu>
+In-Reply-To: <20080229190223.GA17820@elte.hu>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 29 Feb 2008 10:07:30 -0500
-Bill Nottingham <notting@redhat.com> wrote:
-
-> Andrew Morton (akpm@linux-foundation.org) said: 
-> > > The attached patch adds /proc/tty/console. The contents of it are
-> > > simply a description of the current drivers attached to /dev/console.
-> > > For example, a boot with 'console=ttyS3,115200n1 console=tty0' would
-> > > yield:
-> > > 
-> > > # cat /proc/tty/console
-> > > unknown             /dev/tty0
-> > > serial              /dev/ttyS3
-> > 
-> > I must say that the what-consoles-are-registered problem makes my head spin
-> > sometimes too.  Seems a worthy objective.
-> > 
-> > However I think that a bunch of plain old printks which are emitted when a
-> > console is added or removed would suffice?
+Ingo Molnar wrote:
+> * Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:
 > 
-> We already do that in register_console(), albeit without flags.
+>> @@ -174,11 +174,20 @@ struct irq_desc {
+>>  #ifdef CONFIG_PROC_FS
+>>  	struct proc_dir_entry	*dir;
+>>  #endif
+>> +#ifdef CONFIG_CPUSETS
+>> +	struct cpuset		*cs;
+>> +#endif
+> 
+> i like this approach - it makes irqs more resource-alike and attaches 
+> them to a specific resource control group.
+> 
+> So if /cgroup/boot is changed to have less CPUs then the "default" irqs 
+> move along with it.
+> 
+> but if an isolated RT domain has specific irqs attached to it (say the 
+> IRQ of some high-speed data capture device), then the irqs would move 
+> together with that domain.
+> 
+> irqs are no longer a bolted-upon concept, but more explicitly managed.
+> 
+> [ If you boot-test it and if Paul agrees with the general approach then
+>   i could even apply it to sched-devel.git ;-) ]
 
-oh.
+Believe it or not but I like it too :).
+Now we're talking different approach compared to the cpu_isolated_map since 
+with this patch cpu_system_map is no longer needed.
+I've been playing with latest sched-devel tree and while I think we'll endup 
+adding a lot more code, doing it with the cpuset is definitely more flexible.
+This way we can provide more fine grain control of what part of the "system" 
+services are allowed to run on a cpuset. Rather that "catch all" system flag.
 
-> My concern is I'd like to easily programmatically do something with this
-> info - ideally it would be in sysfs so it can easily be used from udev
-> or something similar.
+Current sched-devel tree does not provide complete isolation at this point. 
+There are still many things here and there that need to be added/fixed.
+Having finer control here helps.
 
-That's the sort of information which really must be in the changelog, fully
-spelled out.
+One concern I have is that this API conflicts with /proc/irq/X/smp_affinity.
+ie Setting smp_affinity manually will override affinity set by the cpuset.
+In other words I think
+	int irq_set_affinity(unsigned int irq, cpumask_t cpumask)
+now needs to make sure that cpumask does not have cpus that do not belong to 
+the cpuset this irq belongs to. Just like sched_setaffinity() does for the tasks.
+
+Max
