@@ -1,30 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759608AbYB2Tvb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932717AbYB2Tyu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759608AbYB2Tvb (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Feb 2008 14:51:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933628AbYB2TvO
+	id S932717AbYB2Tyu (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Feb 2008 14:54:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752155AbYB2Tyj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Feb 2008 14:51:14 -0500
-Received: from smtp1.linux-foundation.org ([207.189.120.13]:55532 "EHLO
+	Fri, 29 Feb 2008 14:54:39 -0500
+Received: from smtp1.linux-foundation.org ([207.189.120.13]:41740 "EHLO
 	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1760252AbYB2TvM (ORCPT
+	by vger.kernel.org with ESMTP id S1753270AbYB2Tyj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 Feb 2008 14:51:12 -0500
-Date: Fri, 29 Feb 2008 11:50:17 -0800 (PST)
+	Fri, 29 Feb 2008 14:54:39 -0500
+Date: Fri, 29 Feb 2008 11:53:50 -0800 (PST)
 From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Jakub Jelinek <jakub@redhat.com>
-cc: Ollie Wild <aaw@google.com>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Michael Kerrisk <michael.kerrisk@googlemail.com>,
-       Andrew Morton <akpm@linux-foundation.org>, michael.kerrisk@gmail.com,
-       carlos@codesourcery.com, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       linux-kernel <linux-kernel@vger.kernel.org>, drepper@redhat.com,
-       mtk.manpages@gmail.com
-Subject: Re: [RFC/PATCH] RLIMIT_ARG_MAX
-In-Reply-To: <20080229190952.GM24887@devserv.devel.redhat.com>
-Message-ID: <alpine.LFD.1.00.0802291128560.17889@woody.linux-foundation.org>
-References: <1204119455.6242.403.camel@lappy> <alpine.LFD.1.00.0802290801290.17889@woody.linux-foundation.org> <c49095e30802290858t42eb8a61ua0ed73e27971bc77@mail.gmail.com> <alpine.LFD.1.00.0802290907480.17889@woody.linux-foundation.org> <1204305488.6243.113.camel@lappy>
- <alpine.LFD.1.00.0802290928200.17889@woody.linux-foundation.org> <1204306934.6243.119.camel@lappy> <alpine.LFD.1.00.0802290956110.17889@woody.linux-foundation.org> <65dd6fd50802291101j3786ee60iec0f3a24f5df9945@mail.gmail.com>
- <20080229190952.GM24887@devserv.devel.redhat.com>
+To: Pavel Roskin <proski@gnu.org>
+cc: Zan Lynx <zlynx@acm.org>, linux-kernel <linux-kernel@vger.kernel.org>,
+       Jon Masters <jcm@jonmasters.org>, Rusty Russell <rusty@rustcorp.com.au>
+Subject: Re: [PATCH 2.6.25] module: allow ndiswrapper to use GPL-only
+ symbols
+In-Reply-To: <1204313978.2316.8.camel@dv>
+Message-ID: <alpine.LFD.1.00.0802291151460.17889@woody.linux-foundation.org>
+References: <1204236662.3612.6.camel@dv>  <alpine.LFD.1.00.0802281525170.5780@woody.linux-foundation.org>  <20080229012012.ajlsk4pow8wkkgss@webmail.spamcop.net>  <alpine.LFD.1.00.0802290807110.17889@woody.linux-foundation.org>  <1204304352.6767.21.camel@localhost>
+  <alpine.LFD.1.00.0802290906520.17889@woody.linux-foundation.org>  <1204305609.21719.16.camel@dv>  <alpine.LFD.1.00.0802290929590.17889@woody.linux-foundation.org> <1204313978.2316.8.camel@dv>
 User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
@@ -34,23 +30,14 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 
 
-On Fri, 29 Feb 2008, Jakub Jelinek wrote:
-> On Fri, Feb 29, 2008 at 11:01:38AM -0800, Ollie Wild wrote:
-> > 
-> > This is precisely why I picked 25% as the maximum argument size ratio.
-> >  In practice, that 25% can easily mean 50% or more.  If people want to
-> > increase this, it can probably be tweaked somewhat, but switching it
-> > to, say, 50% probably isn't a good idea.
+On Fri, 29 Feb 2008, Pavel Roskin wrote:
 > 
-> I think 50% would be still fine.  And, ideally make that
-> MAX (RLIMIT_STACK / 2, 128KB) to avoid regressions for programs which assume
-> they can pass ARG_MAX args+env, even if they have say 192KB stack limit.
+> I already know what USB folks will say.  They want proprietary drivers
+> to be in the userspace.  I doubt ndiswrapper will ever be ported to the
+> userspace.  It's much more likely that some other approach will be used.
 
-It would certainly be worth at least testing that as an approach.
-
-Another thing we could decide to do is to just check the size of the stack 
-that is left at the end of all the stack setup code, and just say "if it's 
-less than X bytes, just return ENOMEM rather than set up a process with a 
-really unusably small stack".
+If that's the case, then talk to the USB people. Maybe they are ok with 
+wrapping them in GPL wrappers. But it sounds like they would prefer the 
+stricter GPLONLY meaning (ie no ndiswrapper), and it's their code.
 
 			Linus
