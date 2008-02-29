@@ -1,80 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758018AbYB2BHu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759994AbYB2BIN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758018AbYB2BHu (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Feb 2008 20:07:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754306AbYB2A5N
+	id S1759994AbYB2BIN (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Feb 2008 20:08:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761349AbYB2A5W
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Feb 2008 19:57:13 -0500
-Received: from smtp1.linux-foundation.org ([207.189.120.13]:39793 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754267AbYB2A5L (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Feb 2008 19:57:11 -0500
-Date: Thu, 28 Feb 2008 16:56:08 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Andrea Arcangeli <andrea@qumranet.com>
-Cc: Christoph Lameter <clameter@sgi.com>, Jack Steiner <steiner@sgi.com>,
-       Nick Piggin <npiggin@suse.de>, Robin Holt <holt@sgi.com>,
-       Avi Kivity <avi@qumranet.com>, Izik Eidus <izike@qumranet.com>,
-       kvm-devel@lists.sourceforge.net,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, general@lists.openfabrics.org,
-       Steve Wise <swise@opengridcomputing.com>,
-       Roland Dreier <rdreier@cisco.com>, Kanoj Sarcar <kanojsarcar@yahoo.com>,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       daniel.blueman@quadrics.com
-Subject: Re: [PATCH] mmu notifiers #v7
-Message-Id: <20080228165608.de7c8ae4.akpm@linux-foundation.org>
-In-Reply-To: <20080229004001.GN8091@v2.random>
-References: <20080219084357.GA22249@wotan.suse.de>
-	<20080219135851.GI7128@v2.random>
-	<20080219231157.GC18912@wotan.suse.de>
-	<20080220010941.GR7128@v2.random>
-	<20080220103942.GU7128@v2.random>
-	<20080221045430.GC15215@wotan.suse.de>
-	<20080221144023.GC9427@v2.random>
-	<20080221161028.GA14220@sgi.com>
-	<20080227192610.GF28483@v2.random>
-	<Pine.LNX.4.64.0802281456200.1152@schroedinger.engr.sgi.com>
-	<20080229004001.GN8091@v2.random>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+	Thu, 28 Feb 2008 19:57:22 -0500
+Received: from zombie.ncsc.mil ([144.51.88.131]:44769 "EHLO zombie.ncsc.mil"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1761900AbYB2A5T (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 28 Feb 2008 19:57:19 -0500
+Subject: Re: [PATCH 01/11] Security: Add hook to get full maclabel xattr
+	name
+From: Dave Quigley <dpquigl@tycho.nsa.gov>
+To: Christoph Hellwig <hch@infradead.org>
+Cc: Stephen Smalley <sds@tycho.nsa.gov>, casey@schaufler-ca.com,
+       viro@ftp.linux.org.uk, trond.myklebust@fys.uio.no, bfields@fieldses.org,
+       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       LSM List <linux-security-module@vger.kernel.org>
+In-Reply-To: <20080229003937.GA16343@infradead.org>
+References: <746385.69480.qm@web36611.mail.mud.yahoo.com>
+	 <1204227035.31790.207.camel@moss-spartans.epoch.ncsc.mil>
+	 <20080228234850.GA25829@infradead.org>
+	 <1204243497.2715.24.camel@moss-terrapins.epoch.ncsc.mil>
+	 <20080229003937.GA16343@infradead.org>
+Content-Type: text/plain
+Date: Thu, 28 Feb 2008 19:32:47 -0500
+Message-Id: <1204245167.2715.37.camel@moss-terrapins.epoch.ncsc.mil>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.12.3 (2.12.3-1.fc8) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 29 Feb 2008 01:40:01 +0100 Andrea Arcangeli <andrea@qumranet.com> wrote:
 
-> > > +#define mmu_notifier(function, mm, args...)				\
-> > > +	do {								\
-> > > +		struct mmu_notifier *__mn;				\
-> > > +		struct hlist_node *__n;					\
-> > > +									\
-> > > +		if (unlikely(!hlist_empty(&(mm)->mmu_notifier.head))) { \
-> > > +			rcu_read_lock();				\
-> > > +			hlist_for_each_entry_rcu(__mn, __n,		\
-> > > +						 &(mm)->mmu_notifier.head, \
-> > > +						 hlist)			\
-> > > +				if (__mn->ops->function)		\
-> > > +					__mn->ops->function(__mn,	\
-> > > +							    mm,		\
-> > > +							    args);	\
-> > > +			rcu_read_unlock();				\
-> > > +		}							\
-> > > +	} while (0)
-> > 
-> > Andrew recomended local variables for parameters used multile times. This 
-> > means the mm parameter here.
+On Thu, 2008-02-28 at 19:39 -0500, Christoph Hellwig wrote:
+> On Thu, Feb 28, 2008 at 07:04:57PM -0500, Dave Quigley wrote:
+> > There are several things here. I've spoken to several people about this
+> > and the belief I've gotten from most of them is that a recommended
+> > attribute is how this is to be transported. The NFSv4 spec people will
+> > probably say that if you want xattr like functionality for NFSv4 use
+> > named attributes. For us this is not an option since we require
+> > semantics to label on create/open and the only way we can do this is by
+> > adding a recommended attribute. The create/open calls in NFSv4 takes a
+> > list of attributes to use on create as part of the request. I really
+> > don't see a difference between the security blob and the
+> > username/groupname that NFSv4 currently uses. Also there is a good
+> > chance that we will need to translate labels at some point (read future
+> > work).
 > 
-> I don't exactly see what "buggy macro" meant?
+> Then use the existing side-band protocol and ignore the NFSv4 spec
+> group.  They're <skip colourful language here> anyway.
 
-multiple refernces to the argument, so
+The reason we are trying to go through the standards process in the
+first place is that there is a desire to use SELinux with large netapp
+storage boxes. I don't believe that netapp supports the existing
+side-band protocol for NFSv4 and the impression I got was that they we
+were going to have an incredibly hard time convincing them of putting
+anything in that isn't part of the standard. It seems that adding one
+recommended attribute which is described in a 3 page internet draft(Most
+of which is BS that is part of the template) would be significantly
+easier to get into the standard than trying to push an out of band xattr
+protocol. Also, I believe Trond even expressed some discontent with it a
+while back when we first started development. 
 
-	mmu_notifier(foo, bar(), zot);
+> 
+> > > Wow, that's rude even to someone as direct as me.  Casey is the only
+> > > other person having an in-tree LSM, and I think his input in this
+> > > area is important.  But if not I as a VFS person can happily give
+> > > you my "no" for the current version from the VFS point of view.
+> > 
+> > I can only speak for myself but honestly I've only seen Casey act
+> > confrontational to this idea from the beginning. There is absolutely
+> > nothing in here that is SELinux specific, tecnically its not even MAC
+> > specific. I said from the beginning that this was perhaps not the best
+> > name and we are willing to change it
+> 
+> And changing the name and minor details is exactly what Casey requested.
 
-will call bar() either once or twice.
+I can always go with the original hook name of get_security_xattr_name
+which turns into a security_get_security_xattr_name call which seems a
+bit ludicrous. The only other complaint that I saw from Casey besides
+the name of the function was that there could be more than one xattr. If
+we want to address that then I need another hook that says give me all
+data that the LSM deems important for this file. Which is essentially
+the same thing as taking each of the xattr names that the module will
+provide, grabbing each of them in turn, and concatenating them together.
+For SELinux this is no different than getsecurity with the selinux
+suffix. The same goes for SMACK.
 
-Unlikely in this case, but bad practice.  Easily fixable by using another
-temporary.
+Dave
 
