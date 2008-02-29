@@ -1,29 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933076AbYB2PtS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932959AbYB2Pw7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933076AbYB2PtS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Feb 2008 10:49:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759098AbYB2Ps6
+	id S932959AbYB2Pw7 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Feb 2008 10:52:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756370AbYB2Pwv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Feb 2008 10:48:58 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:46795 "EHLO mx2.mail.elte.hu"
+	Fri, 29 Feb 2008 10:52:51 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:58013 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932343AbYB2Ps5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 Feb 2008 10:48:57 -0500
-Date: Fri, 29 Feb 2008 16:48:35 +0100
+	id S1753435AbYB2Pwu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 29 Feb 2008 10:52:50 -0500
+Date: Fri, 29 Feb 2008 16:52:07 +0100
 From: Ingo Molnar <mingo@elte.hu>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: paulmck@linux.vnet.ibm.com, Steven Rostedt <rostedt@goodmis.org>,
-       LKML <linux-kernel@vger.kernel.org>,
+To: Roland McGrath <roland@redhat.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
        Linus Torvalds <torvalds@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>, john stultz <johnstul@us.ibm.com>,
-       jarkao2@gmail.com, netdev@vger.kernel.org
-Subject: Re: [PATCH] fix boot-time hangs from PREEMPT_RCU and NO_HZ
-Message-ID: <20080229154835.GB27248@elte.hu>
-References: <Pine.LNX.4.58.0801291113350.20371@gandalf.stny.rr.com> <20080229044329.GA20207@linux.vnet.ibm.com> <20080228210140.37abe9cd.akpm@linux-foundation.org>
+       Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] x86_64 ia32 syscall restart fix
+Message-ID: <20080229155207.GC27248@elte.hu>
+References: <20080229035707.EAE862700FD@magilla.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080228210140.37abe9cd.akpm@linux-foundation.org>
+In-Reply-To: <20080229035707.EAE862700FD@magilla.localdomain>
 User-Agent: Mutt/1.5.17 (2007-11-01)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -38,16 +36,24 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Andrew Morton <akpm@linux-foundation.org> wrote:
+* Roland McGrath <roland@redhat.com> wrote:
 
-> > Note: This patch came directly from the -rt patch where it has been 
-> > tested for several months.
-> > 
-> > Andrew, could you please apply this?
-> 
-> I already have it, via git-sched.  Presumably Ingo has it lined up for 
-> the next sched-related merge.
+> The code to restart syscalls after signals depends on checking for a 
+> negative orig_ax, and for particular negative -ERESTART* values in ax. 
+> These fields are 64 bits and for a 32-bit task they get zero-extended. 
+> The syscall restart behavior is lost, a regression from a native 
+> 32-bit kernel and from 64-bit tasks' behavior.  This patch fixes the 
+> problem by doing sign-extension where it matters.  For orig_ax, the 
+> only time the value should be -1 but winds up as 0x0ffffffff is via a 
+> 32-bit ptrace call.  So the patch changes ptrace to sign-extend the 
+> 32-bit orig_eax value when it's stored; it doesn't change the checks 
+> on orig_ax, though it uses the new current_syscall() inline to better 
+> document the subtle importance of the used of signedness there.  The 
+> ax value is stored a lot of ways and it seems hard to get them all 
+> sign-extended at their origins.  So for that, we use the 
+> current_syscall_ret() to sign-extend it only for 32-bit tasks at the 
+> time of the -ERESTART* comparisons.
 
-yes.
+thanks, applied.
 
 	Ingo
