@@ -1,25 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759208AbYB2LEe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759483AbYB2LFv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759208AbYB2LEe (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Feb 2008 06:04:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755654AbYB2LE1
+	id S1759483AbYB2LFv (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Feb 2008 06:05:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755930AbYB2LFn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Feb 2008 06:04:27 -0500
-Received: from cantor.suse.de ([195.135.220.2]:47728 "EHLO mx1.suse.de"
+	Fri, 29 Feb 2008 06:05:43 -0500
+Received: from ns1.suse.de ([195.135.220.2]:47907 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755555AbYB2LE0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 Feb 2008 06:04:26 -0500
-Date: Fri, 29 Feb 2008 12:04:24 +0100
-Message-ID: <s5hhcfsqb0n.wl%tiwai@suse.de>
+	id S1755654AbYB2LFn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 29 Feb 2008 06:05:43 -0500
+Date: Fri, 29 Feb 2008 12:05:42 +0100
+Message-ID: <s5hfxvcqayh.wl%tiwai@suse.de>
 From: Takashi Iwai <tiwai@suse.de>
 To: Harvey Harrison <harvey.harrison@gmail.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 10/12v2] sound: au88x0_pcm.c fix integer as NULL	pointer	warning
-In-Reply-To: <1204222012.20280.64.camel@brick>
-References: <1204160169.20280.58.camel@brick>
-	<s5hir09s5he.wl%tiwai@suse.de>
-	<1204222012.20280.64.camel@brick>
+Cc: LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 1/8] sound: emuproc.c fix signedness warning
+In-Reply-To: <1204225872.20280.79.camel@brick>
+References: <1204225872.20280.79.camel@brick>
 User-Agent: Wanderlust/2.15.5 (Almost Unreal) SEMI/1.14.6 (Maruoka)
  FLIM/1.14.7 (=?ISO-8859-4?Q?Sanj=F2?=) APEL/10.6 MULE XEmacs/21.5 (beta28)
  (fuki) (+CVS-20070806) (i386-suse-linux)
@@ -29,16 +26,20 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-At Thu, 28 Feb 2008 10:06:49 -0800,
+At Thu, 28 Feb 2008 11:11:12 -0800,
 Harvey Harrison wrote:
 > 
-> sound/pci/au88x0/au88x0_pcm.c:508:15: warning: Using plain integer as NULL pointer
-> 
-> Also some small codingstyle fixes.
+> Reading regs from the fpga into an int instead of a u32, trivial
+> fix.
+> sound/pci/emu10k1/emuproc.c:422:34: warning: incorrect type in argument 3 (different signedness)
+> sound/pci/emu10k1/emuproc.c:422:34:    expected unsigned int [usertype] *value
+> sound/pci/emu10k1/emuproc.c:422:34:    got int *<noident>
 > 
 > Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
 
-Applied to ALSA tree.  Thanks.
+Thanks, all applied to ALSA tree (with trivial coding-style fixes --
+could you run checkpatch.pl at the next time and fix the issues
+together?)
 
 
 Takashi
