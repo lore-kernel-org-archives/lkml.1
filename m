@@ -1,77 +1,120 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932312AbYB2SYx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761390AbYB2SZg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932312AbYB2SYx (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Feb 2008 13:24:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755862AbYB2SYo
+	id S1761390AbYB2SZg (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Feb 2008 13:25:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756429AbYB2SZS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Feb 2008 13:24:44 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:57480 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752910AbYB2SYn (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 Feb 2008 13:24:43 -0500
-Subject: Re: [IA64] fix userspace compile error in gcc_intrin.h
-From: David Woodhouse <dwmw2@infradead.org>
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Cc: Doug Chapman <doug.chapman@hp.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Tony Luck <tony.luck@intel.com>
-In-Reply-To: <200802052007.m15K7vuv005319@hera.kernel.org>
-References: <200802052007.m15K7vuv005319@hera.kernel.org>
-Content-Type: text/plain
-Date: Fri, 29 Feb 2008 13:24:43 -0500
-Message-Id: <1204309483.18955.66.camel@shinybook.infradead.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 (2.12.3-1.fc8.dwmw2.1) 
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
+	Fri, 29 Feb 2008 13:25:18 -0500
+Received: from colo.lackof.org ([198.49.126.79]:54776 "EHLO colo.lackof.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754504AbYB2SZQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 29 Feb 2008 13:25:16 -0500
+Date: Fri, 29 Feb 2008 11:25:04 -0700
+From: Grant Grundler <grundler@parisc-linux.org>
+To: Michael Ellerman <michael@ellerman.id.au>
+Cc: akepner@sgi.com, Tony Luck <tony.luck@intel.com>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>, Jes Sorensen <jes@sgi.com>,
+       Randy Dunlap <randy.dunlap@oracle.com>,
+       Roland Dreier <rdreier@cisco.com>,
+       James Bottomley <James.Bottomley@hansenpartnership.com>,
+       David Miller <davem@davemloft.net>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Grant Grundler <grundler@parisc-linux.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/3 v3] dma: document dma_{un}map_{single|sg}_attrs()
+	interface
+Message-ID: <20080229182504.GA18102@colo.lackof.org>
+References: <20080228032448.GS11012@sgi.com> <dc1166600802281845t1613beedj7a285399a21cd@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <dc1166600802281845t1613beedj7a285399a21cd@mail.gmail.com>
+X-Home-Page: http://www.parisc-linux.org/
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-On Tue, 2008-02-05 at 20:07 +0000, Linux Kernel Mailing List wrote:
-> Gitweb:     http://git.kernel.org/git/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=0df29025fd0379d5950d206314d0b10a2c8a9607
-> Commit:     0df29025fd0379d5950d206314d0b10a2c8a9607
-> Parent:     d2fc0bacd5c438cb459fdf531eff00ab18422a00
-> Author:     Doug Chapman <doug.chapman@hp.com>
-> AuthorDate: Mon Jan 28 15:33:28 2008 -0800
-> Committer:  Tony Luck <tony.luck@intel.com>
-> CommitDate: Mon Feb 4 15:08:25 2008 -0800
+On Fri, Feb 29, 2008 at 01:45:46PM +1100, Michael Ellerman wrote:
+> On Thu, Feb 28, 2008 at 2:24 PM,  <akepner@sgi.com> wrote:
+> >
+> >  Document the new dma_{un}map_{single|sg}_attrs() functions.
+> >
+> >  diff --git a/Documentation/DMA-attributes.txt b/Documentation/DMA-attributes.txt
+> >  index e69de29..36baea5 100644
+> >  --- a/Documentation/DMA-attributes.txt
+> >  +++ b/Documentation/DMA-attributes.txt
+> >  @@ -0,0 +1,29 @@
+> >  +                       DMA attributes
+> >  +                       ==============
+> >  +
+> >  +This document describes the semantics of the DMA attributes that are
+> >  +defined in linux/dma-attrs.h.
+> >  +
+> >  +
+> >  +DMA_ATTR_SYNC_ON_WRITE
+> >  +----------------------
+> >  +
+> >  +DMA_ATTR_SYNC_ON_WRITE is used on the IA64_SGI_SN2 architecture.
+> >  +It provides a mechanism for devices to explicitly order their DMA
+> >  +writes.
+> >  +
+> >  +On IA64_SGI_SN2 machines, DMA may be reordered within the NUMA
+> >  +interconnect. Allowing reordering improves performance, but in some
+> >  +situations it may be necessary to ensure that one DMA write is
+> >  +complete before another is visible. For example, if the device does
+> >  +a DMA write to indicate that data is available in memory, DMA of the
+> >  +"completion indication" can race with DMA of data.
+> >  +
+> >  +When a memory region is mapped with the DMA_ATTR_SYNC_ON_WRITE attribute,
+> >  +a write to that region causes all in-flight DMA to be flushed to memory.
+> >  +Any pending DMA will complete and be visible in memory before the write
+> >  +to the region with the DMA_ATTR_SYNC_ON_WRITE attribute becomes visible.
 > 
->     [IA64] fix userspace compile error in gcc_intrin.h
->     
->     Fixes userspace build errors when linux/ipv6.h is included such as in the
->     dhcpv6 package under fedora.  Likely causes other userspace build errors as
->     well.  I found this in akpm's tree from 2.6.18 but could not find any case
->     of anyone proposing it for the main tree.
->     
->     Signed-off-by: Doug Chapman <doug.chapman@hp.com>
->     Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
->     Signed-off-by: Tony Luck <tony.luck@intel.com>
-> ---
->  include/asm-ia64/gcc_intrin.h |    2 ++
->  1 files changed, 2 insertions(+), 0 deletions(-)
 > 
-> diff --git a/include/asm-ia64/gcc_intrin.h b/include/asm-ia64/gcc_intrin.h
-> index 5b6665c..de2ed2c 100644
-> --- a/include/asm-ia64/gcc_intrin.h
-> +++ b/include/asm-ia64/gcc_intrin.h
-> @@ -24,7 +24,9 @@
->  extern void ia64_bad_param_for_setreg (void);
->  extern void ia64_bad_param_for_getreg (void);
->  
-> +#ifdef __KERNEL__
->  register unsigned long ia64_r13 asm ("r13") __used;
-> +#endif
->  
->  #define ia64_setreg(regnum, val)						\
->  ({										\
+> I'm not clear how this is all meant to work. Your intial patch says
+> this is an interface to pass "architecture-specific
+> attributes" from drivers through to the DMA mapping code, which is
+> fair enough - we want to do something similar.
+> 
+> But it's not clear that DMA_ATTR_SYNC_ON_WRITE is architecture
+> specific. If I was a driver writer might assume it works on all
+> platforms.
 
-You also want to move gcc_interin.h from $(header-y) to $(unifdef-y) in
-include/asm-ia64/Kbuild.
+That would be a fair assumption. But it is required to be a NOP on
+platforms that don't need the "hint" ("attr" or whatever you want
+to call it). Specific architectures (SN2 in this case) will need
+to implement something.
 
--- 
-dwmw2
+> And in fact in patch 3/3 you define it in
+> linux/dma-attrs.h, so it's not architecture specific.
 
+Correct. The same driver needs to compile on all architectures.
+
+> What is architecture specific is the semantic. DMA_ATTR_SYNC_ON_WRITE
+> is defined entirely in terms of what it does on ia64 hardware, and a
+> particular flavour thereof.
+> 
+> It just seems to me we're going to end up with a gazillion flags,
+> because DMA_ATTR_SYNC_ON_WRITE isn't quite the same semantic as what
+> Power can do. So we'll have to add
+> DMA_ATTR_SYNC_ON_WRITE_WRT_OTHER_SYNC_ON_WRITE_MAPPINGS_ONLY and so
+> on. Or, we end with subtle driver bugs because the semantics aren't
+> clear across platforms.
+
+I agree. Just have to sort those issues out as people come up with them.
+
+> I guess I think the attributes should either be truly arch-specific,
+> ie. DMA_ATTR_IA64_SYNC_ON_WRITE. Or we need to come up with some well
+> defined, and architecture neutral semantics for what the flags mean.
+
+The latter. I have no intention of adding arch specific flags that
+only mean something on one arch. The intent here is to enable
+correct functionality on specific arches without impacting
+performance on arches that don't need those "attributes".
+
+hth,
+grant
+
+> 
+> cheers
