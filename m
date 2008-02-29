@@ -1,39 +1,189 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933594AbYB2WFQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933888AbYB2WHS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933594AbYB2WFQ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Feb 2008 17:05:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755397AbYB2WFC
+	id S933888AbYB2WHS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Feb 2008 17:07:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761379AbYB2WHF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Feb 2008 17:05:02 -0500
-Received: from fg-out-1718.google.com ([72.14.220.159]:1317 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754786AbYB2WE7 (ORCPT
+	Fri, 29 Feb 2008 17:07:05 -0500
+Received: from sj-iport-4.cisco.com ([171.68.10.86]:25568 "EHLO
+	sj-iport-4.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758753AbYB2WHD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 Feb 2008 17:04:59 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=uQBj5Gx86rbXyPewlUB4nlAkS9xiwtNpqEnI9krHfKoXhsilHMBnzUBA1L2OJiIBC1gz9/+w1tTXKrhMpulihX0PUHXCydZ6wp5av67BqSJi5xF9Dz8wShv8JuLfQnkRxBd+a+wbhQFhUd+AU/AabhsswKjK3DSY2bmyZAZWr+4=
-Message-ID: <6101e8c40802291404u49037ad9u4347f552ce72bf28@mail.gmail.com>
-Date: Fri, 29 Feb 2008 23:04:58 +0100
-From: "Oliver Pinter" <oliver.pntr@gmail.com>
-To: "Ingo Molnar" <mingo@elte.hu>
-Subject: Re: x86: potential ioremap() issues
-Cc: "Jan Beulich" <jbeulich@novell.com>, linux-kernel@vger.kernel.org,
-       "Thomas Gleixner" <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       "Arjan van de Ven" <arjan@infradead.org>
-In-Reply-To: <20080228132404.GB18551@elte.hu>
+	Fri, 29 Feb 2008 17:07:03 -0500
+X-IronPort-AV: E=Sophos;i="4.25,429,1199692800"; 
+   d="scan'208";a="7661766"
+To: torvalds@linux-foundation.org, akpm@linux-foundation.org
+Cc: general@lists.openfabrics.org, linux-kernel@vger.kernel.org
+Subject: [GIT PULL] please pull infiniband.git
+X-Message-Flag: Warning: May contain useful information
+From: Roland Dreier <rdreier@cisco.com>
+Date: Fri, 29 Feb 2008 14:06:55 -0800
+Message-ID: <adaod9zto1s.fsf@cisco.com>
+User-Agent: Gnus/5.1008 (Gnus v5.10.8) XEmacs/21.4.21 (linux)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-2
-Content-Disposition: inline
-References: <47C6BE37.76E4.0078.0@novell.com> <20080228132404.GB18551@elte.hu>
+Content-Type: text/plain; charset=us-ascii
+X-OriginalArrivalTime: 29 Feb 2008 22:06:55.0936 (UTC) FILETIME=[65A1BC00:01C87B1F]
+Authentication-Results: sj-dkim-1; header.From=rdreier@cisco.com; dkim=pass (
+	sig from cisco.com/sjdkim1004 verified; ); 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
-Content-Transfer-Encoding: 8bit
-X-MIME-Autoconverted: from base64 to 8bit by alpha id m1TM5Lnq002736
 
-Hi Ingo!
-this patch is needed for 2.6.22 kernel? I see, this code inarch/x86_64/mm/ioremap.c
-/* a kérdés az, hogy ezt a patchet backportoljam 2.6.22 alá vagy ne?x86_64 alatt megtaláltam a cserélendõ kódrészt... * köszönöm a választ */On 2/28/08, Ingo Molnar <mingo@elte.hu> wrote:>> * Jan Beulich <jbeulich@novell.com> wrote:>> > Ingo,> >> > with the new ioremap() implementation I see a couple of (potential)> > issues:> > - When ioremap_page_range() fails, remove_vm_area() is used rather> > than vunmap() - I think this will cause a 'struct vm_struct' leak.>> indeed, good catch - could you check whether the patch below fixes this?> I also pushed this out into x86.git#testing, which you can pick up via:>> http://people.redhat.com/mingo/x86.git/README>> > - While ioremap() continues to happily map RAM pages (with a bogus> > [see below] WARN_ON_ONCE()), cacheability of the memory is not> > being restored in iounmap().>> correct - these are never supposed to be 'true', generally allocated RAM> pages - or like we do with AGP where the pages are exclusively owned we> restore their cacheability explicitly.>> > - The check for RAM pages (except for the WARN_ON_ONCE())> > continues to be applied only to lowmem pages.>> yes, the biggest constraint from ioremap comes when it applies to pages> that are mapped by the kernel. But i guess we could extend this to all> things RAM ... the second patch below does this. What do you think? I've> queued this up in x86.git#testing as well.>> > - The WARN_ON_ONCE() itself is applied to the pfn after the> > preceding loop finished, i.e. to a pfn that doesn't actually participate> > in the operation. Shouldn't it be moved inside the loop?>> i removed the WARN_ON_ONCE() from x86.git a few days ago, it's lined up> for the next push.>> Ingo>> --------------------->> Subject: x86: fix leak un ioremap_page_range() failure> From: Ingo Molnar <mingo@elte.hu>> Date: Thu Feb 28 14:02:08 CET 2008>> Jan Beulich noticed that if a driver's ioremap() fails (say due to -ENOMEM)> then we might leak the struct vm_area - free it properly.>> Signed-off-by: Ingo Molnar <mingo@elte.hu>> ---> arch/x86/mm/ioremap.c | 2 +-> 1 file changed, 1 insertion(+), 1 deletion(-)>> Index: linux-x86.q/arch/x86/mm/ioremap.c> ===================================================================> --- linux-x86.q.orig/arch/x86/mm/ioremap.c> +++ linux-x86.q/arch/x86/mm/ioremap.c> @@ -179,7 +179,7 @@ static void __iomem *__ioremap(unsigned> area->phys_addr = phys_addr;> vaddr = (unsigned long) area->addr;> if (ioremap_page_range(vaddr, vaddr + size, phys_addr, prot)) {> -	remove_vm_area((void *)(vaddr & PAGE_MASK));> +	free_vm_area(area);> return NULL;> }>> ------------------->> Subject: x86: ioremap(), extend check to all RAM pages> From: Ingo Molnar <mingo@elte.hu>> Date: Thu Feb 28 14:10:49 CET 2008>> Signed-off-by: Ingo Molnar <mingo@elte.hu>> ---> arch/x86/mm/ioremap.c | 5 +++--> 1 file changed, 3 insertions(+), 2 deletions(-)>> Index: linux-x86.q/arch/x86/mm/ioremap.c> ===================================================================> --- linux-x86.q.orig/arch/x86/mm/ioremap.c> +++ linux-x86.q/arch/x86/mm/ioremap.c> @@ -146,8 +146,9 @@ static void __iomem *__ioremap(unsigned> /*> * Don't allow anybody to remap normal RAM that we're using..> */> -	for (pfn = phys_addr >> PAGE_SHIFT; pfn < max_pfn_mapped &&> -	(pfn << PAGE_SHIFT) < last_addr; pfn++) {> +	for (pfn = phys_addr >> PAGE_SHIFT;> +	(pfn << PAGE_SHIFT) < last_addr; pfn++) {> +> if (page_is_ram(pfn) && pfn_valid(pfn) &&> !PageReserved(pfn_to_page(pfn)))> return NULL;> --> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in> the body of a message to majordomo@vger.kernel.org> More majordomo info at http://vger.kernel.org/majordomo-info.html> Please read the FAQ at http://www.tux.org/lkml/>--Thanks,Oliverÿôèº{.nÇ+‰·Ÿ®‰­†+%ŠËÿ±éÝ¶¥Šwÿº{.nÇ+‰·¥Š{±þG«éÿŠ{ayºÊ‡Ú™ë,j­¢f£¢·hšïêÿ‘êçz_è®(­éšŽŠÝ¢j"ú¶m§ÿÿ¾«þG«éÿ¢¸?™¨è­Ú&£ø§~á¶iO•æ¬z·švØ^¶m§ÿÿÃÿ¶ìÿ¢¸?–I¥
+Linus, please pull from
+
+    master.kernel.org:/pub/scm/linux/kernel/git/roland/infiniband.git for-linus
+
+This tree is also available from kernel.org mirrors at:
+
+    git://git.kernel.org/pub/scm/linux/kernel/git/roland/infiniband.git for-linus
+
+This will get some more small post-2.6.25-rc3 fixes:
+
+Arthur Jones (1):
+      MAINTAINERS: update ipath owner
+
+Jon Mason (1):
+      RDMA/cxgb3: Return correct max_inline_data when creating a QP
+
+Pete Wyckoff (2):
+      Revert "IB/fmr_pool: ib_fmr_pool_flush() should flush all dirty FMRs"
+      IB/fmr_pool: Flush all dirty FMRs from ib_fmr_pool_flush()
+
+Sean Hefty (1):
+      IB/cm: Flush workqueue when removing device
+
+ MAINTAINERS                                 |    2 +-
+ drivers/infiniband/core/cm.c                |    3 +-
+ drivers/infiniband/core/fmr_pool.c          |   38 +++++++++++++++-----------
+ drivers/infiniband/hw/cxgb3/iwch_provider.c |    3 ++
+ 4 files changed, 28 insertions(+), 18 deletions(-)
+
+
+diff --git a/MAINTAINERS b/MAINTAINERS
+index fed09b5..f229e16 100644
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -2143,7 +2143,7 @@ L:	netdev@vger.kernel.org
+ S:	Maintained
+ 
+ IPATH DRIVER:
+-P:	Arthur Jones
++P:	Ralph Campbell
+ M:	infinipath@qlogic.com
+ L:	general@lists.openfabrics.org
+ T:	git git://git.qlogic.com/ipath-linux-2.6
+diff --git a/drivers/infiniband/core/cm.c b/drivers/infiniband/core/cm.c
+index b10ade9..4df4051 100644
+--- a/drivers/infiniband/core/cm.c
++++ b/drivers/infiniband/core/cm.c
+@@ -3759,6 +3759,7 @@ static void cm_remove_one(struct ib_device *device)
+ 		port = cm_dev->port[i-1];
+ 		ib_modify_port(device, port->port_num, 0, &port_modify);
+ 		ib_unregister_mad_agent(port->mad_agent);
++		flush_workqueue(cm.wq);
+ 		cm_remove_port_fs(port);
+ 	}
+ 	kobject_put(&cm_dev->dev_obj);
+@@ -3813,6 +3814,7 @@ static void __exit ib_cm_cleanup(void)
+ 		cancel_delayed_work(&timewait_info->work.work);
+ 	spin_unlock_irq(&cm.lock);
+ 
++	ib_unregister_client(&cm_client);
+ 	destroy_workqueue(cm.wq);
+ 
+ 	list_for_each_entry_safe(timewait_info, tmp, &cm.timewait_list, list) {
+@@ -3820,7 +3822,6 @@ static void __exit ib_cm_cleanup(void)
+ 		kfree(timewait_info);
+ 	}
+ 
+-	ib_unregister_client(&cm_client);
+ 	class_unregister(&cm_class);
+ 	idr_destroy(&cm.local_id_table);
+ }
+diff --git a/drivers/infiniband/core/fmr_pool.c b/drivers/infiniband/core/fmr_pool.c
+index 7f00347..06d502c 100644
+--- a/drivers/infiniband/core/fmr_pool.c
++++ b/drivers/infiniband/core/fmr_pool.c
+@@ -139,7 +139,7 @@ static inline struct ib_pool_fmr *ib_fmr_cache_lookup(struct ib_fmr_pool *pool,
+ static void ib_fmr_batch_release(struct ib_fmr_pool *pool)
+ {
+ 	int                 ret;
+-	struct ib_pool_fmr *fmr, *next;
++	struct ib_pool_fmr *fmr;
+ 	LIST_HEAD(unmap_list);
+ 	LIST_HEAD(fmr_list);
+ 
+@@ -158,20 +158,6 @@ static void ib_fmr_batch_release(struct ib_fmr_pool *pool)
+ #endif
+ 	}
+ 
+-	/*
+-	 * The free_list may hold FMRs that have been put there
+-	 * because they haven't reached the max_remap count.
+-	 * Invalidate their mapping as well.
+-	 */
+-	list_for_each_entry_safe(fmr, next, &pool->free_list, list) {
+-		if (fmr->remap_count == 0)
+-			continue;
+-		hlist_del_init(&fmr->cache_node);
+-		fmr->remap_count = 0;
+-		list_add_tail(&fmr->fmr->list, &fmr_list);
+-		list_move(&fmr->list, &unmap_list);
+-	}
+-
+ 	list_splice(&pool->dirty_list, &unmap_list);
+ 	INIT_LIST_HEAD(&pool->dirty_list);
+ 	pool->dirty_len = 0;
+@@ -384,6 +370,11 @@ void ib_destroy_fmr_pool(struct ib_fmr_pool *pool)
+ 
+ 	i = 0;
+ 	list_for_each_entry_safe(fmr, tmp, &pool->free_list, list) {
++		if (fmr->remap_count) {
++			INIT_LIST_HEAD(&fmr_list);
++			list_add_tail(&fmr->fmr->list, &fmr_list);
++			ib_unmap_fmr(&fmr_list);
++		}
+ 		ib_dealloc_fmr(fmr->fmr);
+ 		list_del(&fmr->list);
+ 		kfree(fmr);
+@@ -407,8 +398,23 @@ EXPORT_SYMBOL(ib_destroy_fmr_pool);
+  */
+ int ib_flush_fmr_pool(struct ib_fmr_pool *pool)
+ {
+-	int serial = atomic_inc_return(&pool->req_ser);
++	int serial;
++	struct ib_pool_fmr *fmr, *next;
++
++	/*
++	 * The free_list holds FMRs that may have been used
++	 * but have not been remapped enough times to be dirty.
++	 * Put them on the dirty list now so that the cleanup
++	 * thread will reap them too.
++	 */
++	spin_lock_irq(&pool->pool_lock);
++	list_for_each_entry_safe(fmr, next, &pool->free_list, list) {
++		if (fmr->remap_count > 0)
++			list_move(&fmr->list, &pool->dirty_list);
++	}
++	spin_unlock_irq(&pool->pool_lock);
+ 
++	serial = atomic_inc_return(&pool->req_ser);
+ 	wake_up_process(pool->thread);
+ 
+ 	if (wait_event_interruptible(pool->force_wait,
+diff --git a/drivers/infiniband/hw/cxgb3/iwch_provider.c b/drivers/infiniband/hw/cxgb3/iwch_provider.c
+index df1838f..ee3d63c 100644
+--- a/drivers/infiniband/hw/cxgb3/iwch_provider.c
++++ b/drivers/infiniband/hw/cxgb3/iwch_provider.c
+@@ -819,8 +819,11 @@ static struct ib_qp *iwch_create_qp(struct ib_pd *pd,
+ 		kfree(qhp);
+ 		return ERR_PTR(-ENOMEM);
+ 	}
++
+ 	attrs->cap.max_recv_wr = rqsize - 1;
+ 	attrs->cap.max_send_wr = sqsize;
++	attrs->cap.max_inline_data = T3_MAX_INLINE;
++
+ 	qhp->rhp = rhp;
+ 	qhp->attr.pd = php->pdid;
+ 	qhp->attr.scq = ((struct iwch_cq *) attrs->send_cq)->cq.cqid;
