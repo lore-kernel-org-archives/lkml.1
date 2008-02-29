@@ -1,94 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761008AbYB2AKs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932173AbYB2AQh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761008AbYB2AKs (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Feb 2008 19:10:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753546AbYB2AKk
+	id S932173AbYB2AQh (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Feb 2008 19:16:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753878AbYB2AQ2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Feb 2008 19:10:40 -0500
-Received: from rgminet01.oracle.com ([148.87.113.118]:41068 "EHLO
-	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753461AbYB2AKj (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Feb 2008 19:10:39 -0500
-Date: Thu, 28 Feb 2008 16:09:20 -0800
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: Sam Ravnborg <sam@ravnborg.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       lkml <linux-kernel@vger.kernel.org>
-Subject: [PATCH v2] kernel-doc: set verbose mode via environment
-Message-Id: <20080228160920.c66c7b88.randy.dunlap@oracle.com>
-In-Reply-To: <20080228183234.GA24684@uranus.ravnborg.org>
-References: <20080224175358.3202f0d0.randy.dunlap@oracle.com>
-	<20080227191104.6f166972.akpm@linux-foundation.org>
-	<20080228083009.5955a7eb.randy.dunlap@oracle.com>
-	<20080228183234.GA24684@uranus.ravnborg.org>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.4.7 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+	Thu, 28 Feb 2008 19:16:28 -0500
+Received: from relay1.sgi.com ([192.48.171.29]:59834 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753473AbYB2AQ1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 28 Feb 2008 19:16:27 -0500
+Date: Thu, 28 Feb 2008 18:16:11 -0600
+From: Paul Jackson <pj@sgi.com>
+To: David Rientjes <rientjes@google.com>
+Cc: mingo@elte.hu, a.p.zijlstra@chello.nl, tglx@linutronix.de, oleg@tv-sign.ru,
+       rostedt@goodmis.org, maxk@qualcomm.com, linux-kernel@vger.kernel.org
+Subject: Re: [RFC/PATCH 0/4] CPUSET driven CPU isolation
+Message-Id: <20080228181611.49671331.pj@sgi.com>
+In-Reply-To: <alpine.DEB.1.00.0802281452340.13082@chino.kir.corp.google.com>
+References: <20080227222103.673194000@chello.nl>
+	<20080228075010.GA28781@elte.hu>
+	<20080228020808.3fd22f77.pj@sgi.com>
+	<20080228090847.GA1133@elte.hu>
+	<20080228031710.3405e405.pj@sgi.com>
+	<alpine.DEB.1.00.0802280129580.15900@chino.kir.corp.google.com>
+	<alpine.DEB.1.00.0802280212070.23040@chino.kir.corp.google.com>
+	<20080228113728.7b8e5811.pj@sgi.com>
+	<alpine.DEB.1.00.0802281309480.24402@chino.kir.corp.google.com>
+	<20080228164637.114fb19d.pj@sgi.com>
+	<alpine.DEB.1.00.0802281452340.13082@chino.kir.corp.google.com>
+Organization: SGI
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.12.0; i686-pc-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 28 Feb 2008 19:32:34 +0100 Sam Ravnborg wrote:
+David wrote:
+> Move the watchdog/0 thread to a cpuset that doesn't have access to cpu 0.  
 
-> On Thu, Feb 28, 2008 at 08:30:09AM -0800, Randy Dunlap wrote:
-> > On Wed, 27 Feb 2008 19:11:04 -0800 Andrew Morton wrote:
-> > 
-> > > On Sun, 24 Feb 2008 17:53:58 -0800 Randy Dunlap <randy.dunlap@oracle.com> wrote:
-> > > 
-...
-> > > 
-> > > Shouldn't this be, err, documented somewhere?
-> > 
-> > I did think about that.  I was still wondering where to add it.
-> In the same file where you document all the kconfig stuff - so we can let it be
-> a 'all build features ' document?
+I still don't understand ... you must have some context in mind that
+I've spaced out ... I can't even tell if that is a statement or a
+question.
 
-Which "same file" is that?
+> I'd hesitate to do that unless you can guarantee that restricting 
+> kthreads mems_allowed via the cpuset interface won't cause any problems 
+> either.  Is there a benefit to reducing the size of a kthread's 
+> mems_allowed that doesn't have an adverse effect on the kernel?  What 
+> about kswapd?
 
+Well ... I'm suspecting we've got this portion of our discussion wrapped
+around the axle one time too many.
 
-> > > I'd have expected to obtain this functionality by running `make V=1 foodocs'?
-> > 
-> > Sam, any thoughts on Makefile passing "-v" to scripts/kernel-doc ?
-> Please implemnt this. Either add a flag to docproc or
-> just read the env-variable KBUILD_VERBOSE in kernel-doc.
+Backing up, hopefully unwrapping, you seemed to allow moving bound tasks
+only to cpusets with the same cpus (how come you didn't check for the
+same memory nodes too?).  If you really needed to move bound tasks at all,
+then that seemed like an unnecessarily tight constraint.  It wouldn't hurt
+the bound task to move to another cpuset that still allowed the CPUs it was
+bound to.
 
-Sure, I'll change /KERNEL_DOC_VERBOSE/ to /KBUILD_VERBOSE/ in
-scripts/kernel-doc.  docproc doesn't need to be involved,
-especially since scripts/kernel-doc is easily usable without docproc.
+... but after an another iteration of that subthread ... I'm wondering
+why you have to move bound tasks at all.  How about PF_THREAD_BIND just
+meaning (1) "can't be moved to any other cpuset", and (2) "always
+placed in the top cpuset," so we don't have to worry about being unable
+to move threads out of child cpusets.
 
-That also means that I can just use the existing KBUILD_VERBOSE
-documentation.  :)
+Do you have any situation in which pinned threads have to be moved?
 
----
-From: Randy Dunlap <randy.dunlap@oracle.com>
+I don't.  Can we just prohibit it?
 
-Honor the environment variable "KBUILD_VERBOSE=1" (as set by
-make V=1) to enable verbose mode in scripts/kernel-doc.  Useful for
-getting more info and warnings from kernel-doc.
-
-Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
----
- scripts/kernel-doc |    4 ++++
- 1 file changed, 4 insertions(+)
-
---- linux-2625-rc3-kdoc.orig/scripts/kernel-doc
-+++ linux-2625-rc3-kdoc/scripts/kernel-doc
-@@ -247,6 +247,10 @@ my ($function, %function_table,%paramete
- my ($type,$declaration_name,$return_type);
- my ($newsection,$newcontents,$prototype,$filelist, $brcount, %source_map);
- 
-+if (defined($ENV{'KBUILD_VERBOSE'})) {
-+	$verbose = "$ENV{'KBUILD_VERBOSE'}";
-+}
-+
- # Generated docbook code is inserted in a template at a point where
- # docbook v3.1 requires a non-zero sequence of RefEntry's; see:
- # http://www.oasis-open.org/docbook/documentation/reference/html/refentry.html
-
+-- 
+                  I won't rest till it's the best ...
+                  Programmer, Linux Scalability
+                  Paul Jackson <pj@sgi.com> 1.940.382.4214
