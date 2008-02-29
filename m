@@ -1,84 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932284AbYB2NF4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759444AbYB2NJ3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932284AbYB2NF4 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Feb 2008 08:05:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758204AbYB2NFr
+	id S1759444AbYB2NJ3 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Feb 2008 08:09:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751102AbYB2NJV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Feb 2008 08:05:47 -0500
-Received: from smtp6.pp.htv.fi ([213.243.153.40]:43274 "EHLO smtp6.pp.htv.fi"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754585AbYB2NFq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 Feb 2008 08:05:46 -0500
-Date: Fri, 29 Feb 2008 15:04:26 +0200
-From: Adrian Bunk <bunk@kernel.org>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Cc: Russell King <rmk+lkml@arm.linux.org.uk>,
-       LKML <linux-kernel@vger.kernel.org>, linux-next@vger.kernel.org,
-       linux-arch@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Linus <torvalds@linux-foundation.org>
-Subject: Re: Announce: Linux-next (Or Andrew's dream  :-))
-Message-ID: <20080229130426.GB22335@cs181133002.pp.htv.fi>
-References: <20080212120208.f7168a91.sfr@canb.auug.org.au> <20080216000943.GD31474@flint.arm.linux.org.uk> <20080226145418.59f6f35f.sfr@canb.auug.org.au> <20080229234551.d8023f5c.sfr@canb.auug.org.au>
+	Fri, 29 Feb 2008 08:09:21 -0500
+Received: from host36-195-149-62.serverdedicati.aruba.it ([62.149.195.36]:32945
+	"EHLO mx.cpushare.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750852AbYB2NJV (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 29 Feb 2008 08:09:21 -0500
+Date: Fri, 29 Feb 2008 14:09:05 +0100
+From: Andrea Arcangeli <andrea@qumranet.com>
+To: Christoph Lameter <clameter@sgi.com>
+Cc: Jack Steiner <steiner@sgi.com>, Nick Piggin <npiggin@suse.de>,
+       akpm@linux-foundation.org, Robin Holt <holt@sgi.com>,
+       Avi Kivity <avi@qumranet.com>, Izik Eidus <izike@qumranet.com>,
+       kvm-devel@lists.sourceforge.net,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, general@lists.openfabrics.org,
+       Steve Wise <swise@opengridcomputing.com>,
+       Roland Dreier <rdreier@cisco.com>, Kanoj Sarcar <kanojsarcar@yahoo.com>,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       daniel.blueman@quadrics.com
+Subject: Re: [PATCH] mmu notifiers #v7
+Message-ID: <20080229130905.GS8091@v2.random>
+References: <20080219231157.GC18912@wotan.suse.de> <20080220010941.GR7128@v2.random> <20080220103942.GU7128@v2.random> <20080221045430.GC15215@wotan.suse.de> <20080221144023.GC9427@v2.random> <20080221161028.GA14220@sgi.com> <20080227192610.GF28483@v2.random> <Pine.LNX.4.64.0802281456200.1152@schroedinger.engr.sgi.com> <20080229004001.GN8091@v2.random> <Pine.LNX.4.64.0802281700060.1954@schroedinger.engr.sgi.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080229234551.d8023f5c.sfr@canb.auug.org.au>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+In-Reply-To: <Pine.LNX.4.64.0802281700060.1954@schroedinger.engr.sgi.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Feb 29, 2008 at 11:45:51PM +1100, Stephen Rothwell wrote:
-> Hi Russell,
-> 
-> On Tue, 26 Feb 2008 14:54:18 +1100 Stephen Rothwell <sfr@canb.auug.org.au> wrote:
-> >
-> > On Sat, 16 Feb 2008 00:09:43 +0000 Russell King <rmk+lkml@arm.linux.org.uk> wrote:
-> > >
-> > > As mentioned elsewhere, what we need for ARM is to extend the kautobuild
-> > > infrastructure (see armlinux.simtec.co.uk) so that we can have more trees
-> > > at least compile tested regularly - but that requires the folk there to
-> > > have additional compute power (which isn't going to happen unless folk
-> > > stamp up some machines _or_ funding).
-> > 
-> > I now have an arm cross compiler (gcc-4.0.2-glibc-2.3.6
-> > arm-unknown-linux-gnu).  (See the results page at
-> > http://kisskb.ellerman.id.au/kisskb/branch/9/ - I must get a better
-> > name/place :-(.)  Is this sufficient to help you out?  What configs would
-> > be useful to build (as Andrew said, they don't take very long each).
-> > 
-> > I really want as many subsystems as possible in the linux-next tree in an
-> > attempt to avoid some of the merge/conflict problems we have had in the
-> > past.  What can we do to help?
-> 
-> OK, I tried this out:  I built all 75 arm defconfigs with the cross
-> compiler above (the resulting log file is at
-> http://ozlabs.org/~sfr/armall.log.bz2). 17 failed (I don't know why - I
-> didn't even really look).
+On Thu, Feb 28, 2008 at 05:03:01PM -0800, Christoph Lameter wrote:
+> I thought you wanted to get rid of the sync via pte lock?
 
-2 errors are expected (long-standing breakages).
+Sure. _notify is happening inside the pt lock by coincidence, to
+reduce the changes to mm/* as long as the mmu notifiers aren't
+sleep capable.
 
-14 failures are due to your ancient gcc 4.0.2 not supporting -mabi=aapcs-linux:
-/scratch/sfr/next/scripts/mod/empty.c:1: error: invalid ABI option: -mabi=aapcs-linux
+> What changes to do_wp_page do you envision?
 
-Another one is an internal error in your ancient compiler:
-/scratch/sfr/next/arch/arm/common/it8152.c:148: internal compiler error: in trunc_int_for_mode, at explow.c:53
+Converting it to invalidate_range_begin/end.
 
-Can you build a cross compiler using gcc 4.2.3 from ftp.gnu.org instead?
-That one serves me perfectly for my cross-compile tests.
+> What is the trouble with the current do_wp_page modifications? There is 
+> no need for invalidate_page() there so far. invalidate_range() does the 
+> trick there.
 
->...
-> Cheers,
-> Stephen Rothwell                    sfr@canb.auug.org.au
->...
-
-cu
-Adrian
-
--- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
-
+No trouble, it's just that I didn't want to mangle over the logic of
+do_wp_page unless it was strictly required, the patch has to be
+obviously safe. You need to keep that bit of your patch to make the
+mmu notifiers sleepable.
