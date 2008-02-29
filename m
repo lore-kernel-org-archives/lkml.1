@@ -1,47 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756646AbYB2GEv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757472AbYB2GKw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756646AbYB2GEv (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Feb 2008 01:04:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752677AbYB2GEn
+	id S1757472AbYB2GKw (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Feb 2008 01:10:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752868AbYB2GKp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Feb 2008 01:04:43 -0500
-Received: from E23SMTP04.au.ibm.com ([202.81.18.173]:41418 "EHLO
-	e23smtp04.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752083AbYB2GEm (ORCPT
+	Fri, 29 Feb 2008 01:10:45 -0500
+Received: from palinux.external.hp.com ([192.25.206.14]:53252 "EHLO
+	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752168AbYB2GKp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 Feb 2008 01:04:42 -0500
-Date: Fri, 29 Feb 2008 11:34:35 +0530
-From: Dhaval Giani <dhaval@linux.vnet.ibm.com>
-To: Paul Menage <menage@google.com>
-Cc: vatsa@linux.vnet.ibm.com, balbir@linux.vnet.ibm.com, mingo@elte.hu,
-       linux-kernel@vger.kernel.org, a.p.zijlstra@chello.nl,
-       akpm@linux-foundation.org, skumar@linux.vnet.ibm.com
-Subject: Re: [patch 2/2] sched: allow cpuacct stats to be reset
-Message-ID: <20080229060435.GB5478@linux.vnet.ibm.com>
-Reply-To: Dhaval Giani <dhaval@linux.vnet.ibm.com>
-References: <20080229043242.110741439@linux.vnet.ibm.com> <20080229043751.555866685@linux.vnet.ibm.com> <6599ad830802282148g7f309995l450fc15074234cd7@mail.gmail.com>
+	Fri, 29 Feb 2008 01:10:45 -0500
+Date: Thu, 28 Feb 2008 23:10:23 -0700
+From: Matthew Wilcox <matthew@wil.cx>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Mark Pearson <devnull.port@googlemail.com>,
+       Karol Kozimor <sziwan@hell.org.pl>, Julia Lawall <julia@diku.dk>,
+       corentincj@iksaif.net, sziwan@users.sourceforge.net,
+       acpi4asus-user@lists.sourceforge.net, linux-kernel@vger.kernel.org,
+       kernel-janitors@vger.kernel.org, Len Brown <lenb@kernel.org>
+Subject: Re: [PATCH 2/9] drivers/acpi/asus_acpi.c: Correct use of ! and &
+Message-ID: <20080229061023.GD19198@parisc-linux.org>
+References: <Pine.LNX.4.64.0802262142120.18200@ask.diku.dk> <7C626792-02A6-4BE6-B5F2-D75899F3990C@hell.org.pl> <47C5ABFB.3050607@googlemail.com> <20080228215503.b942bb3c.akpm@linux-foundation.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <6599ad830802282148g7f309995l450fc15074234cd7@mail.gmail.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+In-Reply-To: <20080228215503.b942bb3c.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Feb 28, 2008 at 09:48:51PM -0800, Paul Menage wrote:
-> On Thu, Feb 28, 2008 at 8:32 PM, Dhaval Giani <dhaval@linux.vnet.ibm.com> wrote:
-> 
-> Can I suggest, in order to be more generic, that this patch instead
-> set each CPU's counter to the written value divided by the number of
-> CPUs? (Either forgetting the remainder, or spreading it among the
-> first few CPUs).
-> 
+On Thu, Feb 28, 2008 at 09:55:03PM -0800, Andrew Morton wrote:
+>  	if (invert)		/* invert target value */
+> -		led_out = !led_out & 0x1;
+> +		led_out = !led_out;
+>  
+>  	if (!write_acpi_int(hotk->handle, ledname, led_out, NULL))
 
-This patch is only allowing a reset of the stats. In what sort of a
-situation would one be looking for changing the usage value?
+But now you're writing 0xffffffff instead of 1.  I think the suggestion
+of led_out ^= 1 was the correct one.
 
-thanks,
 -- 
-regards,
-Dhaval
+Intel are signing my paycheques ... these opinions are still mine
+"Bill, look, we understand that you're interested in selling us this
+operating system, but compare it to ours.  We can't possibly take such
+a retrograde step."
