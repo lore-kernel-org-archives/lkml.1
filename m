@@ -1,54 +1,183 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933597AbYB2V3g@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934116AbYB2V35@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933597AbYB2V3g (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Feb 2008 16:29:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758536AbYB2V3Y
+	id S934116AbYB2V35 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Feb 2008 16:29:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933134AbYB2V33
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Feb 2008 16:29:24 -0500
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:41263 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1756670AbYB2V3X (ORCPT
+	Fri, 29 Feb 2008 16:29:29 -0500
+Received: from smtp121.sbc.mail.re3.yahoo.com ([66.196.96.94]:48034 "HELO
+	smtp121.sbc.mail.re3.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1761486AbYB2V31 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 Feb 2008 16:29:23 -0500
-Date: Fri, 29 Feb 2008 13:29:22 -0800 (PST)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Andrea Arcangeli <andrea@qumranet.com>
-cc: Nick Piggin <nickpiggin@yahoo.com.au>, akpm@linux-foundation.org,
-       Robin Holt <holt@sgi.com>, Avi Kivity <avi@qumranet.com>,
-       Izik Eidus <izike@qumranet.com>, kvm-devel@lists.sourceforge.net,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, general@lists.openfabrics.org,
-       Steve Wise <swise@opengridcomputing.com>,
-       Roland Dreier <rdreier@cisco.com>, Kanoj Sarcar <kanojsarcar@yahoo.com>,
-       steiner@sgi.com, linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       daniel.blueman@quadrics.com
-Subject: Re: [patch 2/6] mmu_notifier: Callbacks to invalidate address ranges
-In-Reply-To: <20080229212327.GC8091@v2.random>
-Message-ID: <Pine.LNX.4.64.0802291325580.13402@schroedinger.engr.sgi.com>
-References: <20080228005249.GF8091@v2.random>
- <Pine.LNX.4.64.0802271702490.16510@schroedinger.engr.sgi.com>
- <20080228011020.GG8091@v2.random> <Pine.LNX.4.64.0802281043430.29191@schroedinger.engr.sgi.com>
- <20080229005530.GO8091@v2.random> <Pine.LNX.4.64.0802281658560.1954@schroedinger.engr.sgi.com>
- <20080229131302.GT8091@v2.random> <Pine.LNX.4.64.0802291149290.11292@schroedinger.engr.sgi.com>
- <20080229201744.GB8091@v2.random> <Pine.LNX.4.64.0802291301530.11889@schroedinger.engr.sgi.com>
- <20080229212327.GC8091@v2.random>
+	Fri, 29 Feb 2008 16:29:27 -0500
+X-YMail-OSG: Qtdd4C8VM1kT0rXCINUh8rOL7Adb3Fg0FyB8L6wl1DkVIBdDl9_kKN9DQNjHOL4_QolFOnS8NpHXzFRsPN2rWN2Rzg--
+X-Yahoo-Newman-Property: ymail-3
+Date: Fri, 29 Feb 2008 15:26:34 -0600
+From: serge@hallyn.com
+To: "Luiz Fernando N. Capitulino" <lcapitulino@mandriva.com.br>
+Cc: serge@hallyn.com, lkml <linux-kernel@vger.kernel.org>,
+       linux-security-module@vger.kernel.org,
+       Andrew Morgan <morgan@kernel.org>, Stephen Smalley <sds@epoch.ncsc.mil>,
+       Mike Galbraith <efault@gmx.de>, buraphalinuxserver@gmail.com,
+       elendil@planet.nl, stable@kernel.org
+Subject: Re: [PATCH 1/1] file capabilities: remove cap_task_kill()
+Message-ID: <20080229212634.GA7278@vino.hallyn.com>
+References: <20080228173817.GA32661@vino.hallyn.com> <20080229174007.0a934cc6@mandriva.com.br>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080229174007.0a934cc6@mandriva.com.br>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 29 Feb 2008, Andrea Arcangeli wrote:
+Quoting Luiz Fernando N. Capitulino (lcapitulino@mandriva.com.br):
+> Em Thu, 28 Feb 2008 11:38:17 -0600
+> serge@hallyn.com escreveu:
+> 
+> | The original justification for cap_task_kill() was as follows:
+> | 
+> | 	check_kill_permission() does appropriate uid equivalence checks.
+> | 	However with file capabilities it becomes possible for an
+> | 	unprivileged user to execute a file with file capabilities
+> | 	resulting in a more privileged task with the same uid.
+> | 
+> | However now that cap_task_kill() always returns 0 (permission
+> | granted) when p->uid==current->uid, the whole hook is worthless,
+> | and only likely to create more subtle problems in the corner cases
+> | where it might still be called but return -EPERM.  Those cases
+> | are basically when uids are different but euid/suid is equivalent
+> | as per the check in check_kill_permission().
+> | 
+> | This patch removes cap_task_kill().
+> 
+>  2.6.24 seems to have the same bug, what about a rediff for it and
+> submit the patch to -stable team?
 
-> I don't have a strong opinion if it should become a semaphore
-> unconditionally or only with a CONFIG_XPMEM=y. But keep in mind
-> preempt-rt runs quite a bit slower, or we could rip spinlocks out of
-> the kernel in the first place ;)
+Luiz, could you confirm that the below works?
 
-D you just skip comments of people on the mmu_notifier? It took me to 
-remind you about Andrew's comments to note those. And I just responded on 
-the XPmem issue in the morning.
+thanks,
+-serge
+
+>From c77b7d418933c14707383f06a1da61169e84071b Mon Sep 17 00:00:00 2001
+From: Serge Hallyn <serge@hallyn.com>
+Date: Fri, 29 Feb 2008 15:14:57 +0000
+Subject: [PATCH 1/1] file capabilities: remove cap_task_kill()
+
+The original justification for cap_task_kill() was as follows:
+
+	check_kill_permission() does appropriate uid equivalence checks.
+	However with file capabilities it becomes possible for an
+	unprivileged user to execute a file with file capabilities
+	resulting in a more privileged task with the same uid.
+
+However now that cap_task_kill() always returns 0 (permission
+granted) when p->uid==current->uid, the whole hook is worthless,
+and only likely to create more subtle problems in the corner cases
+where it might still be called but return -EPERM.  Those cases
+are basically when uids are different but euid/suid is equivalent
+as per the check in check_kill_permission().
+
+This patch removes cap_task_kill().
+
+Signed-off-by: Serge Hallyn <serge@hallyn.com>
+---
+ include/linux/security.h |    3 +--
+ security/capability.c    |    1 -
+ security/commoncap.c     |   39 ---------------------------------------
+ 3 files changed, 1 insertions(+), 42 deletions(-)
+
+diff --git a/include/linux/security.h b/include/linux/security.h
+index ac05083..d842ee3 100644
+--- a/include/linux/security.h
++++ b/include/linux/security.h
+@@ -62,7 +62,6 @@ extern int cap_inode_need_killpriv(struct dentry *dentry);
+ extern int cap_inode_killpriv(struct dentry *dentry);
+ extern int cap_task_post_setuid (uid_t old_ruid, uid_t old_euid, uid_t old_suid, int flags);
+ extern void cap_task_reparent_to_init (struct task_struct *p);
+-extern int cap_task_kill(struct task_struct *p, struct siginfo *info, int sig, u32 secid);
+ extern int cap_task_setscheduler (struct task_struct *p, int policy, struct sched_param *lp);
+ extern int cap_task_setioprio (struct task_struct *p, int ioprio);
+ extern int cap_task_setnice (struct task_struct *p, int nice);
+@@ -2112,7 +2111,7 @@ static inline int security_task_kill (struct task_struct *p,
+ 				      struct siginfo *info, int sig,
+ 				      u32 secid)
+ {
+-	return cap_task_kill(p, info, sig, secid);
++	return 0;
+ }
  
-Again for the gazillionth time: There will be no CONFIG_XPMEM because the 
-functionality needs to be generic and not XPMEM specific.
+ static inline int security_task_wait (struct task_struct *p)
+diff --git a/security/capability.c b/security/capability.c
+index 9e99f36..2c6e06d 100644
+--- a/security/capability.c
++++ b/security/capability.c
+@@ -40,7 +40,6 @@ static struct security_operations capability_ops = {
+ 	.inode_need_killpriv =		cap_inode_need_killpriv,
+ 	.inode_killpriv =		cap_inode_killpriv,
+ 
+-	.task_kill =			cap_task_kill,
+ 	.task_setscheduler =		cap_task_setscheduler,
+ 	.task_setioprio =		cap_task_setioprio,
+ 	.task_setnice =			cap_task_setnice,
+diff --git a/security/commoncap.c b/security/commoncap.c
+index ea61bc7..6e9065c 100644
+--- a/security/commoncap.c
++++ b/security/commoncap.c
+@@ -527,40 +527,6 @@ int cap_task_setnice (struct task_struct *p, int nice)
+ 	return cap_safe_nice(p);
+ }
+ 
+-int cap_task_kill(struct task_struct *p, struct siginfo *info,
+-				int sig, u32 secid)
+-{
+-	if (info != SEND_SIG_NOINFO && (is_si_special(info) || SI_FROMKERNEL(info)))
+-		return 0;
+-
+-	/*
+-	 * Running a setuid root program raises your capabilities.
+-	 * Killing your own setuid root processes was previously
+-	 * allowed.
+-	 * We must preserve legacy signal behavior in this case.
+-	 */
+-	if (p->euid == 0 && p->uid == current->uid)
+-		return 0;
+-
+-	/* sigcont is permitted within same session */
+-	if (sig == SIGCONT && (task_session_nr(current) == task_session_nr(p)))
+-		return 0;
+-
+-	if (secid)
+-		/*
+-		 * Signal sent as a particular user.
+-		 * Capabilities are ignored.  May be wrong, but it's the
+-		 * only thing we can do at the moment.
+-		 * Used only by usb drivers?
+-		 */
+-		return 0;
+-	if (cap_issubset(p->cap_permitted, current->cap_permitted))
+-		return 0;
+-	if (capable(CAP_KILL))
+-		return 0;
+-
+-	return -EPERM;
+-}
+ #else
+ int cap_task_setscheduler (struct task_struct *p, int policy,
+ 			   struct sched_param *lp)
+@@ -575,11 +541,6 @@ int cap_task_setnice (struct task_struct *p, int nice)
+ {
+ 	return 0;
+ }
+-int cap_task_kill(struct task_struct *p, struct siginfo *info,
+-				int sig, u32 secid)
+-{
+-	return 0;
+-}
+ #endif
+ 
+ void cap_task_reparent_to_init (struct task_struct *p)
+-- 
+1.5.2.5
 
