@@ -1,44 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757684AbYB2Fwr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756422AbYB2F40@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757684AbYB2Fwr (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Feb 2008 00:52:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752363AbYB2Fwj
+	id S1756422AbYB2F40 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Feb 2008 00:56:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752654AbYB2F4R
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Feb 2008 00:52:39 -0500
-Received: from e31.co.us.ibm.com ([32.97.110.149]:40849 "EHLO
-	e31.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751983AbYB2Fwi (ORCPT
+	Fri, 29 Feb 2008 00:56:17 -0500
+Received: from smtp1.linux-foundation.org ([207.189.120.13]:49855 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751684AbYB2F4Q (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 Feb 2008 00:52:38 -0500
-Date: Fri, 29 Feb 2008 11:32:30 +0530
-From: Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>
-To: "Paul Menage" <menage@google.com>
-Cc: "Dhaval Giani" <dhaval@linux.vnet.ibm.com>, balbir@linux.vnet.ibm.com,
-       mingo@elte.hu, linux-kernel@vger.kernel.org, a.p.zijlstra@chello.nl,
-       akpm@linux-foundation.org, skumar@linux.vnet.ibm.com
-Subject: Re: [patch 2/2] sched: allow cpuacct stats to be reset
-Message-ID: <20080229060230.GC3806@linux.vnet.ibm.com>
-Reply-To: vatsa@linux.vnet.ibm.com
-References: <20080229043242.110741439@linux.vnet.ibm.com> <20080229043751.555866685@linux.vnet.ibm.com> <6599ad830802282148g7f309995l450fc15074234cd7@mail.gmail.com>
+	Fri, 29 Feb 2008 00:56:16 -0500
+Date: Thu, 28 Feb 2008 21:55:03 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Mark Pearson <devnull.port@googlemail.com>
+Cc: Karol Kozimor <sziwan@hell.org.pl>, Julia Lawall <julia@diku.dk>,
+       corentincj@iksaif.net, sziwan@users.sourceforge.net,
+       acpi4asus-user@lists.sourceforge.net, linux-kernel@vger.kernel.org,
+       kernel-janitors@vger.kernel.org, Len Brown <lenb@kernel.org>
+Subject: Re: [PATCH 2/9] drivers/acpi/asus_acpi.c: Correct use of ! and &
+Message-Id: <20080228215503.b942bb3c.akpm@linux-foundation.org>
+In-Reply-To: <47C5ABFB.3050607@googlemail.com>
+References: <Pine.LNX.4.64.0802262142120.18200@ask.diku.dk>
+	<7C626792-02A6-4BE6-B5F2-D75899F3990C@hell.org.pl>
+	<47C5ABFB.3050607@googlemail.com>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <6599ad830802282148g7f309995l450fc15074234cd7@mail.gmail.com>
-User-Agent: Mutt/1.5.11
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Feb 28, 2008 at 09:48:51PM -0800, Paul Menage wrote:
-> Can I suggest, in order to be more generic, that this patch instead
-> set each CPU's counter to the written value divided by the number of
-> CPUs? (Either forgetting the remainder, or spreading it among the
-> first few CPUs).
+On Wed, 27 Feb 2008 19:29:15 +0100 Mark Pearson <devnull.port@googlemail.com> wrote:
 
-Paul,
-	When would you want to reset the counters to non-zero value?
-What would be its usecase?
+> Karol Kozimor wrote:
+> > On 26-02-2008, at 21:42, Julia Lawall wrote:
+> >>      if (invert)        /* invert target value */
+> >> -        led_out = !led_out & 0x1;
+> >> +        led_out = !(led_out & 0x1);
+> >>
+> >>      if (!write_acpi_int(hotk->handle, ledname, led_out, NULL))
+> >>          printk(KERN_WARNING "Asus ACPI: LED (%s) write failed\n",
+> > 
+> > 
+> > IIRC we're just supposed to flip the last bit here, so the original code
+> > is correct.
+> > Best regards,
+> > 
+> 
+> Seems an odd way of doing:
+> 
+> 	led_out ^= 0x01;
 
--- 
-Regards,
-vatsa
+It does.
+
+> It this due to some optimisation?
+
+Surely not ;)
+
+That code has been there for many years.
+
+I changed the patch to this:
+
+--- a/drivers/acpi/asus_acpi.c~drivers-acpi-asus_acpic-correct-use-of-and
++++ a/drivers/acpi/asus_acpi.c
+@@ -610,7 +610,7 @@ write_led(const char __user * buffer, un
+ 	    (led_out) ? (hotk->status | ledmask) : (hotk->status & ~ledmask);
+ 
+ 	if (invert)		/* invert target value */
+-		led_out = !led_out & 0x1;
++		led_out = !led_out;
+ 
+ 	if (!write_acpi_int(hotk->handle, ledname, led_out, NULL))
+ 		printk(KERN_WARNING "Asus ACPI: LED (%s) write failed\n",
+_
+
