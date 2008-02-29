@@ -1,75 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932689AbYB2Ne6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932685AbYB2NiR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932689AbYB2Ne6 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Feb 2008 08:34:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755964AbYB2Net
+	id S932685AbYB2NiR (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Feb 2008 08:38:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755445AbYB2NiD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Feb 2008 08:34:49 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:58730 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752762AbYB2Net (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 Feb 2008 08:34:49 -0500
-Date: Fri, 29 Feb 2008 14:34:33 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: huggie@earth.li, linux-kernel@vger.kernel.org
-Cc: Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: Scheduler broken? sdhci issues with scheduling
-Message-ID: <20080229133433.GA15532@elte.hu>
-References: <20080229115256.GG24533@paranoidfreak.co.uk>
+	Fri, 29 Feb 2008 08:38:03 -0500
+Received: from wf-out-1314.google.com ([209.85.200.173]:58894 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752739AbYB2NiB (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 29 Feb 2008 08:38:01 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
+        b=xYA3CgFjeWQxROGpygarjMwLuWle5n4CVO8lfZvXApDbv/zRTBdJoc24Lfu6LJayT8GA5zJXA4aD4s4m52PhsIcWDb+kNFIC3UvuhyonpfAzM7wUS51azRBkF5EeLxb1X7Efi4h+kKCGGLo0lMy6DBqDbN6Y/G0bmd5Hj4q1X38=
+Message-ID: <316a20a40802290538g55c4171y7cdbcb3a9c1d0f1b@mail.gmail.com>
+Date: Fri, 29 Feb 2008 08:38:00 -0500
+From: "Stephen Cuppett" <cuppett@gmail.com>
+To: linux-kernel@vger.kernel.org
+Subject: Performance versus FreeBSD 7.0
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20080229115256.GG24533@paranoidfreak.co.uk>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Not lobbing the first artillery shell by any means, but I saw this
+bullet on the FreeBSD release announcement:
 
-* Simon Huggins <huggie@earth.li> wrote:
+# Dramatic improvements in performance and SMP scalability shown by
+various database and other benchmarks, in some cases showing peak
+performance improvements as high as 350% over FreeBSD 6.X under normal
+loads and 1500% at high loads. When compared with the best performing
+Linux kernel (2.6.22 or 2.6.24) performance is 15% better. Results are
+from benchmarks used to analyze and improve system performance,
+results with your specific work load may vary. Some of the changes
+that contribute to this improvement are:
 
-> [ Please Cc me on replies ]
-> 
-> I had a bug with sdhci which Pierre Ossman looked at for me.
-> 
-> In the end essentially the fix was to use HZ=1000 and nothing else. 
-> Pierre seemed to think that this was a bug in the scheduler.
+    * The 1:1 libthr threading model is now the default.
+    * Finer-grained IPC, networking, and scheduler locking.
+    * A major focus on optimizing the SMP architecture that was put in
+place during the 5.x and 6.x branches.
 
-does the patch below help, even if you keep HZ=100? This doesnt look 
-like a scheduler issue, it's more of a timer/timing issue. Different HZ 
-means different msleep() results - and the mmc code does a loop of small 
-msleep delays.
+Some benchmarks show linear scaling up to 8 CPUs. Many workloads see a
+significant performance improvement with multicore systems.
 
-	Ingo
+The whole thing is available at:
 
--------------->
----
- drivers/mmc/core/core.h |    7 +------
- 1 file changed, 1 insertion(+), 6 deletions(-)
+http://www.freebsd.org/releases/7.0R/announce.html
 
-Index: linux/drivers/mmc/core/core.h
-===================================================================
---- linux.orig/drivers/mmc/core/core.h
-+++ linux/drivers/mmc/core/core.h
-@@ -36,12 +36,7 @@ void mmc_set_timing(struct mmc_host *hos
- 
- static inline void mmc_delay(unsigned int ms)
- {
--	if (ms < 1000 / HZ) {
--		cond_resched();
--		mdelay(ms);
--	} else {
--		msleep(ms);
--	}
-+	mdelay(ms);
- }
- 
- void mmc_rescan(struct work_struct *work);
+However, their site is pretty scant on details about those benchmarks.
+ Was just curious if anybody on this list had any input or links on
+the metrics, the hardware, the workloads, how was Linux or FreeBSD
+tuned, knew more information, could point me to the stats....
