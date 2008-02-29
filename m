@@ -1,367 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932846AbYB2PkY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760656AbYB2PlS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932846AbYB2PkY (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Feb 2008 10:40:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754055AbYB2PkM
+	id S1760656AbYB2PlS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Feb 2008 10:41:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755313AbYB2Pk7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Feb 2008 10:40:12 -0500
-Received: from hellhawk.shadowen.org ([80.68.90.175]:1365 "EHLO
-	hellhawk.shadowen.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752302AbYB2PkK (ORCPT
+	Fri, 29 Feb 2008 10:40:59 -0500
+Received: from smtp121.sbc.mail.re3.yahoo.com ([66.196.96.94]:46119 "HELO
+	smtp121.sbc.mail.re3.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1755247AbYB2Pk6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 Feb 2008 10:40:10 -0500
-Date: Fri, 29 Feb 2008 15:40:56 +0000
-From: Andy Whitcroft <apw@shadowen.org>
-To: Rik van Riel <riel@redhat.com>
-Cc: linux-kernel@vger.kernel.org,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Lee Schermerhorn <Lee.Schermerhorn@hp.com>, linux-mm@kvack.org
-Subject: Re: [patch 03/21] use an array for the LRU pagevecs
-Message-ID: <20080229154056.GF28849@shadowen.org>
-References: <20080228192908.126720629@redhat.com> <20080228192928.165393706@redhat.com>
+	Fri, 29 Feb 2008 10:40:58 -0500
+X-YMail-OSG: Xq_XaDMVM1n25rlAoYw.4ao2cYJGbfR7hJHPGIB8wFg7gpVH
+X-Yahoo-Newman-Property: ymail-3
+Date: Fri, 29 Feb 2008 09:38:11 -0600
+From: serge@hallyn.com
+To: Pavel Emelyanov <xemul@openvz.org>
+Cc: serge@hallyn.com, "Eric W. Biederman" <ebiederm@xmission.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       David Miller <davem@davemloft.net>,
+       Alexey Dobriyan <adobriyan@openvz.org>,
+       Linux Netdev List <netdev@vger.kernel.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 0/2] Fix /proc/net in presence of net namespaces
+Message-ID: <20080229153811.GA5647@vino.hallyn.com>
+References: <47C6D743.1050802@openvz.org> <m1y794514k.fsf@ebiederm.dsl.xmission.com> <20080228211720.GA1232@vino.hallyn.com> <m1k5ko4sfi.fsf@ebiederm.dsl.xmission.com> <20080229031737.GA3047@vino.hallyn.com> <47C7BF4D.6020202@openvz.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080228192928.165393706@redhat.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <47C7BF4D.6020202@openvz.org>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Feb 28, 2008 at 02:29:11PM -0500, Rik van Riel wrote:
-> Turn the pagevecs into an array just like the LRUs.  This significantly
-> cleans up the source code and reduces the size of the kernel by about
-> 13kB after all the LRU lists have been created further down in the split
-> VM patch series.
+Quoting Pavel Emelyanov (xemul@openvz.org):
+> [snip]
 > 
-> Signed-off-by: Rik van Riel <riel@redhat.com>
-> Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+> >> However at least for visibility and inspection we want that.
+> >> We want to inspect what is happening to other processes.  If we didn't
+> >> care then all of the pid namespaces could just be disjoint.
+> > 
+> > But the way Pavel has it coded, only tasks in the init namespace can
+> > view /proc/.net/* for any other net namespaces.
 > 
->  include/linux/mmzone.h  |   15 +++++-
->  include/linux/pagevec.h |   13 ++++-
->  include/linux/swap.h    |   18 ++++++-
->  mm/migrate.c            |   11 ----
->  mm/swap.c               |   87 +++++++++++++++-----------------------
->  5 files changed, 76 insertions(+), 68 deletions(-)
+> This is not essential part of the patch :) I did so to make my
+> life in init namespace easier. This part can be dropped.
 > 
-> Index: linux-2.6.25-rc2-mm1/include/linux/mmzone.h
-> ===================================================================
-> --- linux-2.6.25-rc2-mm1.orig/include/linux/mmzone.h	2008-02-26 21:24:23.000000000 -0500
-> +++ linux-2.6.25-rc2-mm1/include/linux/mmzone.h	2008-02-27 14:19:08.000000000 -0500
-> @@ -105,13 +105,24 @@ enum zone_stat_item {
->  #endif
->  	NR_VM_ZONE_STAT_ITEMS };
->  
-> +#define LRU_BASE 0
-> +
->  enum lru_list {
-> -	LRU_INACTIVE,	/* must match order of NR_[IN]ACTIVE */
-> -	LRU_ACTIVE,	/*  "     "     "   "       "        */
-> +	LRU_INACTIVE = LRU_BASE,	/* must match order of NR_[IN]ACTIVE */
-> +	LRU_ACTIVE,			/*  "     "     "   "       "        */
->  	NR_LRU_LISTS };
+> [snip]
+> 
+> >> Think of user space processes inspecting /proc etc.
+> > 
+> > Well a task in one pid namespace cannot view the /proc for another pid
+> > namespace, right?
+> 
+> No. Pid namespace provides another pid-to-task map, but have noting
+> to do with VFS visibility.
+> 
+> >> Having directory
+> >> names change out form under you for no apparent reason is pretty nasty.
+> > 
+> > Yes, but they won't just 'change out' from under you, you ask for it...
+> > But here like I said I do prefer an approach where /proc/net is bind
+> > mounted by the user.  But I have no good reason to back it up...
+> 
+> If you make /proc/net be a bund mount then you have to force all of
+> the users to update their init scripts. I tried to make so with sysctl 
+> filesystem, but this thread was not very popular :)
 
-Can this not be:
+Ok.
 
-	enum lru_list {
-		LRU_BASE = 0,
-		LRU_INACTIVE = LRU_BASE,
-		LRU_ACTIVE,
-		NR_LRU_LISTS
-	};
+A symlink is far preferable to sneaky redirection imo.
 
-Also, can we not rely on enum's being based at 0 anyhow?  We assume
-often that it will be, as we did here with NR_LRU_LISTS being meaningful
-should it be.  Could it not then be:
+> Another way to do so - is to mount this one from inside the kernel, 
+> but are you ready to fight with Al Viro for this? :)
 
-	enum lru_list {
-		LRU_BASE,
-		LRU_INACTIVE = LRU_BASE,
-		LRU_ACTIVE,
-		NR_LRU_LISTS
-	};
+Nope :)  Especially since it's an ugly idea.
 
->  #define for_each_lru(l) for (l = 0; l < NR_LRU_LISTS; l++)
->  
-> +static inline int is_active_lru(enum lru_list l)
-> +{
-> +	if (l == LRU_ACTIVE)
-> +		return 1;
-> +	return 0;
+> [snip]
+> 
+> >> So I think /proc/.netns/ or simply /proc/netns/ is a good choice. We
+> >> just need a non-global id for our directory entries so we don't paint
+> >> ourselves into a corner.
+> > 
+> > But I don't see how this is going to work.  If you're using a pid_nr
+> > inside a pid namespace, then you're not guaranteeing that the pid_nr
+> > will be unique, so you may not be able to create th e/proc/.netns/X
+> > directory.  If you're using the global pid, then you're not guaranteeing
+> > that it will be available upon a container restart.
+> 
+> Right - this is the same as using other ids, which I propose.
+> 
+> >> And honestly pid visibility is a very natural choice for which network
+> >> namespaces you can see.  You can see the namespace of any process you
+> >> can see.  Which especially means your children.  It is an arbitrary
+> >> rule, it is a simple rule to explain, and it works recursively unlike
+> > 
+> > But apparently not simple enough for a simpleton like me to understand,
+> > sorry :(
+> > 
+> >> any init_net is special rule.
+> >>
+> >> Eric
 
-Can this not be:
+I suspect I'm misunderstanding Eric's proposal, though.
 
-	return (l == LRU_ACTIVE);
-
-> +}
-> +
-> +enum lru_list page_lru(struct page *page);
-> +
->  struct per_cpu_pages {
->  	int count;		/* number of pages in the list */
->  	int high;		/* high watermark, emptying needed */
-> Index: linux-2.6.25-rc2-mm1/mm/swap.c
-> ===================================================================
-> --- linux-2.6.25-rc2-mm1.orig/mm/swap.c	2008-02-26 21:24:23.000000000 -0500
-> +++ linux-2.6.25-rc2-mm1/mm/swap.c	2008-02-27 14:31:35.000000000 -0500
-> @@ -34,8 +34,7 @@
->  /* How many pages do we try to swap or page in/out together? */
->  int page_cluster;
->  
-> -static DEFINE_PER_CPU(struct pagevec, lru_add_pvecs) = { 0, };
-> -static DEFINE_PER_CPU(struct pagevec, lru_add_active_pvecs) = { 0, };
-> +static DEFINE_PER_CPU(struct pagevec[NR_LRU_LISTS], lru_add_pvecs) = { {0,}, };
->  static DEFINE_PER_CPU(struct pagevec, lru_rotate_pvecs) = { 0, };
->  
->  /*
-> @@ -98,6 +97,19 @@ void put_pages_list(struct list_head *pa
->  EXPORT_SYMBOL(put_pages_list);
->  
->  /*
-> + * Returns the LRU list a page should be on.
-> + */
-> +enum lru_list page_lru(struct page *page)
-> +{
-> +	enum lru_list lru = LRU_BASE;
-> +
-> +	if (PageActive(page))
-> +		lru += LRU_ACTIVE;
-
-This is introducing an assumption that LRU_BASE and LRU_INACTIVE are
-synonymous?  Would it not be better to explicitly use LRU_INACTIVE:
-
-So either:
-
-	if (PageActive(page))
-		lru = LRU_ACTIVE;
-	else
-		lru = LRU_INACTIVE;
-
-Or if (as I assume) this is later going to have other mappings added in
-you could do it more like the following.  This should produce identicle
-asm, but removes any possiblity of LRU_BASE/INACTIVE slippage breaking
-things:
-
-	enum lru_list lru = LRU_INACTIVE;
-
-	if (PageActive(page))
-		lru += (LRU_ACTIVE - LRU_INACTIVE);
-	
-> +
-> +	return lru;
-> +}
-> +
-> +/*
->   * pagevec_move_tail() must be called with IRQ disabled.
->   * Otherwise this may cause nasty races.
->   */
-> @@ -200,28 +212,24 @@ void mark_page_accessed(struct page *pag
->  
->  EXPORT_SYMBOL(mark_page_accessed);
->  
-> -/**
-> - * lru_cache_add: add a page to the page lists
-> - * @page: the page to add
-> - */
-> -void lru_cache_add(struct page *page)
-> +void __lru_cache_add(struct page *page, enum lru_list lru)
->  {
-> -	struct pagevec *pvec = &get_cpu_var(lru_add_pvecs);
-> +	struct pagevec *pvec = &get_cpu_var(lru_add_pvecs)[lru];
->  
->  	page_cache_get(page);
->  	if (!pagevec_add(pvec, page))
-> -		__pagevec_lru_add(pvec);
-> +		____pagevec_lru_add(pvec, lru);
->  	put_cpu_var(lru_add_pvecs);
->  }
->  
-> -void lru_cache_add_active(struct page *page)
-> +void lru_cache_add_lru(struct page *page, enum lru_list lru)
->  {
-> -	struct pagevec *pvec = &get_cpu_var(lru_add_active_pvecs);
-> +	if (PageActive(page)) {
-> +		ClearPageActive(page);
-> +	}
-
-{}'s are not needed here.
-
->  
-> -	page_cache_get(page);
-> -	if (!pagevec_add(pvec, page))
-> -		__pagevec_lru_add_active(pvec);
-> -	put_cpu_var(lru_add_active_pvecs);
-> +	VM_BUG_ON(PageLRU(page) || PageActive(page));
-> +	__lru_cache_add(page, lru);
->  }
->  
->  /*
-> @@ -231,15 +239,15 @@ void lru_cache_add_active(struct page *p
->   */
->  static void drain_cpu_pagevecs(int cpu)
->  {
-> +	struct pagevec *pvecs = per_cpu(lru_add_pvecs, cpu);
->  	struct pagevec *pvec;
-> +	int lru;
->  
-> -	pvec = &per_cpu(lru_add_pvecs, cpu);
-> -	if (pagevec_count(pvec))
-> -		__pagevec_lru_add(pvec);
-> -
-> -	pvec = &per_cpu(lru_add_active_pvecs, cpu);
-> -	if (pagevec_count(pvec))
-> -		__pagevec_lru_add_active(pvec);
-> +	for_each_lru(lru) {
-> +		pvec = &pvecs[lru - LRU_BASE];
-> +		if (pagevec_count(pvec))
-> +			____pagevec_lru_add(pvec, lru);
-> +	}
->  
->  	pvec = &per_cpu(lru_rotate_pvecs, cpu);
->  	if (pagevec_count(pvec)) {
-> @@ -393,7 +401,7 @@ void __pagevec_release_nonlru(struct pag
->   * Add the passed pages to the LRU, then drop the caller's refcount
->   * on them.  Reinitialises the caller's pagevec.
->   */
-> -void __pagevec_lru_add(struct pagevec *pvec)
-> +void ____pagevec_lru_add(struct pagevec *pvec, enum lru_list lru)
->  {
->  	int i;
->  	struct zone *zone = NULL;
-> @@ -410,7 +418,9 @@ void __pagevec_lru_add(struct pagevec *p
->  		}
->  		VM_BUG_ON(PageLRU(page));
->  		SetPageLRU(page);
-> -		add_page_to_inactive_list(zone, page);
-> +		if (is_active_lru(lru))
-> +			SetPageActive(page);
-> +		add_page_to_lru_list(zone, page, lru);
->  	}
->  	if (zone)
->  		spin_unlock_irq(&zone->lru_lock);
-> @@ -418,34 +428,7 @@ void __pagevec_lru_add(struct pagevec *p
->  	pagevec_reinit(pvec);
->  }
->  
-> -EXPORT_SYMBOL(__pagevec_lru_add);
-> -
-> -void __pagevec_lru_add_active(struct pagevec *pvec)
-> -{
-> -	int i;
-> -	struct zone *zone = NULL;
-> -
-> -	for (i = 0; i < pagevec_count(pvec); i++) {
-> -		struct page *page = pvec->pages[i];
-> -		struct zone *pagezone = page_zone(page);
-> -
-> -		if (pagezone != zone) {
-> -			if (zone)
-> -				spin_unlock_irq(&zone->lru_lock);
-> -			zone = pagezone;
-> -			spin_lock_irq(&zone->lru_lock);
-> -		}
-> -		VM_BUG_ON(PageLRU(page));
-> -		SetPageLRU(page);
-> -		VM_BUG_ON(PageActive(page));
-> -		SetPageActive(page);
-> -		add_page_to_active_list(zone, page);
-> -	}
-> -	if (zone)
-> -		spin_unlock_irq(&zone->lru_lock);
-> -	release_pages(pvec->pages, pvec->nr, pvec->cold);
-> -	pagevec_reinit(pvec);
-> -}
-> +EXPORT_SYMBOL(____pagevec_lru_add);
->  
->  /*
->   * Try to drop buffers from the pages in a pagevec
-> Index: linux-2.6.25-rc2-mm1/include/linux/pagevec.h
-> ===================================================================
-> --- linux-2.6.25-rc2-mm1.orig/include/linux/pagevec.h	2007-07-08 19:32:17.000000000 -0400
-> +++ linux-2.6.25-rc2-mm1/include/linux/pagevec.h	2008-02-27 13:41:27.000000000 -0500
-> @@ -23,8 +23,7 @@ struct pagevec {
->  void __pagevec_release(struct pagevec *pvec);
->  void __pagevec_release_nonlru(struct pagevec *pvec);
->  void __pagevec_free(struct pagevec *pvec);
-> -void __pagevec_lru_add(struct pagevec *pvec);
-> -void __pagevec_lru_add_active(struct pagevec *pvec);
-> +void ____pagevec_lru_add(struct pagevec *pvec, enum lru_list lru);
->  void pagevec_strip(struct pagevec *pvec);
->  unsigned pagevec_lookup(struct pagevec *pvec, struct address_space *mapping,
->  		pgoff_t start, unsigned nr_pages);
-> @@ -81,6 +80,16 @@ static inline void pagevec_free(struct p
->  		__pagevec_free(pvec);
->  }
->  
-> +static inline void __pagevec_lru_add(struct pagevec *pvec)
-> +{
-> +	____pagevec_lru_add(pvec, LRU_INACTIVE);
-> +}
-> +
-> +static inline void __pagevec_lru_add_active(struct pagevec *pvec)
-> +{
-> +	____pagevec_lru_add(pvec, LRU_ACTIVE);
-> +}
-> +
->  static inline void pagevec_lru_add(struct pagevec *pvec)
->  {
->  	if (pagevec_count(pvec))
-> Index: linux-2.6.25-rc2-mm1/include/linux/swap.h
-> ===================================================================
-> --- linux-2.6.25-rc2-mm1.orig/include/linux/swap.h	2008-02-19 16:23:08.000000000 -0500
-> +++ linux-2.6.25-rc2-mm1/include/linux/swap.h	2008-02-27 14:31:21.000000000 -0500
-> @@ -171,8 +171,8 @@ extern unsigned int nr_free_pagecache_pa
->  
->  
->  /* linux/mm/swap.c */
-> -extern void lru_cache_add(struct page *);
-> -extern void lru_cache_add_active(struct page *);
-> +extern void __lru_cache_add(struct page *, enum lru_list lru);
-> +extern void lru_cache_add_lru(struct page *, enum lru_list lru);
->  extern void activate_page(struct page *);
->  extern void mark_page_accessed(struct page *);
->  extern void lru_add_drain(void);
-> @@ -180,6 +180,20 @@ extern int lru_add_drain_all(void);
->  extern int rotate_reclaimable_page(struct page *page);
->  extern void swap_setup(void);
->  
-> +/**
-> + * lru_cache_add: add a page to the page lists
-> + * @page: the page to add
-> + */
-> +static inline void lru_cache_add(struct page *page)
-> +{
-> +	__lru_cache_add(page, LRU_INACTIVE);
-> +}
-> +
-> +static inline void lru_cache_add_active(struct page *page)
-> +{
-> +	__lru_cache_add(page, LRU_ACTIVE);
-> +}
-> +
->  /* linux/mm/vmscan.c */
->  extern unsigned long try_to_free_pages(struct zone **zones, int order,
->  					gfp_t gfp_mask);
-> Index: linux-2.6.25-rc2-mm1/mm/migrate.c
-> ===================================================================
-> --- linux-2.6.25-rc2-mm1.orig/mm/migrate.c	2008-02-25 17:10:54.000000000 -0500
-> +++ linux-2.6.25-rc2-mm1/mm/migrate.c	2008-02-27 14:24:23.000000000 -0500
-> @@ -54,16 +54,7 @@ int migrate_prep(void)
->  
->  static inline void move_to_lru(struct page *page)
->  {
-> -	if (PageActive(page)) {
-> -		/*
-> -		 * lru_cache_add_active checks that
-> -		 * the PG_active bit is off.
-> -		 */
-> -		ClearPageActive(page);
-> -		lru_cache_add_active(page);
-> -	} else {
-> -		lru_cache_add(page);
-> -	}
-> +	lru_cache_add_lru(page, page_lru(page));
->  	put_page(page);
->  }
-
--apw
+-serge
