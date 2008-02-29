@@ -1,72 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757057AbYB2Q5L@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933481AbYB2Q6X@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757057AbYB2Q5L (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Feb 2008 11:57:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933037AbYB2Q44
+	id S933481AbYB2Q6X (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Feb 2008 11:58:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756752AbYB2Q6K
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Feb 2008 11:56:56 -0500
-Received: from threatwall.zlynx.org ([199.45.143.218]:34203 "EHLO zlynx.org"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S932671AbYB2Q4z (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 Feb 2008 11:56:55 -0500
-Subject: Re: [PATCH 2.6.25] module: allow ndiswrapper to use GPL-only
-	symbols
-From: Zan Lynx <zlynx@acm.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Pavel Roskin <proski@gnu.org>, linux-kernel <linux-kernel@vger.kernel.org>,
-       Jon Masters <jcm@jonmasters.org>, Rusty Russell <rusty@rustcorp.com.au>
-In-Reply-To: <alpine.LFD.1.00.0802290807110.17889@woody.linux-foundation.org>
-References: <1204236662.3612.6.camel@dv>
-	 <alpine.LFD.1.00.0802281525170.5780@woody.linux-foundation.org>
-	 <20080229012012.ajlsk4pow8wkkgss@webmail.spamcop.net>
-	 <alpine.LFD.1.00.0802290807110.17889@woody.linux-foundation.org>
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-mbatWducwQfd9kfrWbvL"
-Date: Fri, 29 Feb 2008 09:59:11 -0700
-Message-Id: <1204304352.6767.21.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 
-X-Envelope-From: zlynx@acm.org
-X-Spam-Id: 20080229/1JV8XM-000259-Hi-linux-kernel@vger.kernel.org:zlynx@acm.org:199.45.143.218
+	Fri, 29 Feb 2008 11:58:10 -0500
+Received: from e32.co.us.ibm.com ([32.97.110.150]:33573 "EHLO
+	e32.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755013AbYB2Q6I (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 29 Feb 2008 11:58:08 -0500
+Date: Fri, 29 Feb 2008 08:58:01 -0800
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: Yannick <yannick.dirou@axetic.com>
+Cc: Jarek Poplawski <jarkao2@gmail.com>, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org
+Subject: Re: [Bug 10071] kernel hang in inet_init (PREEMPT_RCU problem)
+Message-ID: <20080229165801.GD13330@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <bug-10071-11547@http.bugzilla.kernel.org/> <20080228205303.261D311D108@picon.linux-foundation.org> <20080228213457.GA2770@ami.dom.local> <20080229005823.GF14104@linux.vnet.ibm.com> <20080229043235.GA25167@linux.vnet.ibm.com> <47C7ABE3.6080004@axetic.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <47C7ABE3.6080004@axetic.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, Feb 29, 2008 at 07:53:23AM +0100, Yannick wrote:
+> (In reply to comment #20)
+> > Reply-To: paulmck@linux.vnet.ibm.com
+> >
+> > Would you be willing to try your test again after applying the
+> > patch in http://lkml.org/lkml/2008/2/2/11 and rebuilding your
+> > kernel?
+> >
+> > This patch does not appear to be in 2.6.25-rc3.  :-(
+> >
+> > I am reposting this patch separately.
+> >
+> >                                                         Thanx, Paul
+> 
+> Congratulations Paul and thanks a lot to Jarek , It works,
+> no more hang or slow boot :
+> [1.061675] Calling initcall 0xc03b8e10: inet_init+0x0/0x3ba()
+> [1.061895] NET: Registered protocol family 2
+> [1.339007] IP route cache hash table entries: 32768 (order: 5, 131072 bytes)
+> [1.339470] TCP established hash table entries: 131072 (order: 8, 1048576 
+> bytes)
+> [1.340375] TCP bind hash table entries: 65536 (order: 9, 2359296 bytes)
+> [1.349809] TCP: Hash tables configured (established 131072 bind 65536)
+> [1.349906] TCP reno registered
+> [1.098514] initcall 0xc03b8e10: inet_init+0x0/0x3ba() returned 0.
+> [1.098604] initcall 0xc03b8e10 ran for 32 msecs: inet_init+0x0/0x3ba()
 
---=-mbatWducwQfd9kfrWbvL
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+Thank you very much for testing this, Yannick!
 
+Andrew and Ingo have this patch on track to merge into a later -rc
+of 2.6.25, so we will get there.  ;-)
 
-On Fri, 2008-02-29 at 08:08 -0800, Linus Torvalds wrote:
-[cut]
-> It loads non-GPL code, it is non-GPL.
-[cut]
-> Exactly. And ndiswrapper loads proprietary modules.
-
-The Linux kernel itself will load proprietary modules.  It does not as a
-general rule, but it will.
-
-Is the Linux kernel then not GPL?  No.  This argument doesn't work,
-Linus.
-
-There exists at least one GPL NDIS driver[1].  How about if everyone
-involved piously promises to load it at least once?
-
-[1] http://cipe-win32.sourceforge.net/
---=20
-Zan Lynx <zlynx@acm.org>
-
---=-mbatWducwQfd9kfrWbvL
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.7 (GNU/Linux)
-
-iD8DBQBHyDnfG8fHaOLTWwgRAiPxAKCn1Psqzna4ZHU/u6CI9q+3qa6TVgCdEyDL
-qTwnN2Dd8JB+hLzm7udZjOg=
-=FfJY
------END PGP SIGNATURE-----
-
---=-mbatWducwQfd9kfrWbvL--
-
+						Thanx, Paul
