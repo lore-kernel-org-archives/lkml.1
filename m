@@ -1,48 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759286AbYB2LQV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759716AbYB2LRf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759286AbYB2LQV (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Feb 2008 06:16:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753838AbYB2LQK
+	id S1759716AbYB2LRf (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Feb 2008 06:17:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755627AbYB2LR0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Feb 2008 06:16:10 -0500
-Received: from ozlabs.org ([203.10.76.45]:43169 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753531AbYB2LQJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 Feb 2008 06:16:09 -0500
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Fri, 29 Feb 2008 06:17:26 -0500
+Received: from smtp1.linux-foundation.org ([207.189.120.13]:56689 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753367AbYB2LRZ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 29 Feb 2008 06:17:25 -0500
+Date: Fri, 29 Feb 2008 03:16:56 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Harvey Harrison <harvey.harrison@gmail.com>
+Cc: linux-arch <linux-arch@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 1/2] kprobes: Introduce kprobe_handle_fault()
+Message-Id: <20080229031656.1abac83a.akpm@linux-foundation.org>
+In-Reply-To: <1202007623.1844.44.camel@brick>
+References: <1202007623.1844.44.camel@brick>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Message-ID: <18375.59486.392919.984544@cargo.ozlabs.ibm.com>
-Date: Fri, 29 Feb 2008 22:11:26 +1100
-From: Paul Mackerras <paulus@samba.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Alexey Zaytsev <alexey.zaytsev@gmail.com>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       lkml <linux-kernel@vger.kernel.org>
-Subject: Re: printk timestamps jumping back and forth in 2.6.25-rc.
-In-Reply-To: <20080228201613.GA30999@elte.hu>
-References: <f19298770802280626g5ee17328ldedf7658a9f26f56@mail.gmail.com>
-	<20080228201315.GA30736@elte.hu>
-	<20080228201613.GA30999@elte.hu>
-X-Mailer: VM 7.19 under Emacs 21.4.1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar writes:
+On Sat, 02 Feb 2008 19:00:23 -0800 Harvey Harrison <harvey.harrison@gmail.com> wrote:
 
-> * Ingo Molnar <mingo@elte.hu> wrote:
+> Use a central kprobe_handle_fault() inline in kprobes.h to remove
+> all of the arch-dependant, practically identical implementations in
+> avr32, ia64, powerpc, s390, sparc64, and x86.
 > 
-> > > Anything else I can do?
-> > 
-> > yes, please test the patch below - does it fix the problem?
+> avr32 was the only arch without the preempt_disable/enable pair
+> in its notify_page_fault implementation.
 > 
-> (assuming you prefer patches that build, here's an updated one below.)
+> This uncovered a possible bug in the s390 version as that purely
+> copied the x86 version unconditionally passing 14 as the trapnr
+> rather than the error_code parameter.  s390 is changed to pass
+> error_code in this patch.
+> 
+> Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
+> ---
+> Andrew, 1/2 is low risk, 2/2 has been tested on x86-32 and 64,
+> but the !preemptible invariant seems correct.
+> 
+>  arch/arm/mm/fault.c     |   25 +------------------------
+>  arch/avr32/mm/fault.c   |   21 +--------------------
+>  arch/ia64/mm/fault.c    |   24 +-----------------------
+>  arch/powerpc/mm/fault.c |   25 +------------------------
+>  arch/s390/mm/fault.c    |   25 +------------------------
+>  arch/sparc64/mm/fault.c |   23 +----------------------
+>  arch/x86/mm/fault.c     |   26 ++------------------------
+>  include/linux/kprobes.h |   20 ++++++++++++++++++++
+>  8 files changed, 28 insertions(+), 161 deletions(-)
 
-Is this patch going to add overhead?
+Breaks the ia64 build:
 
-On powerpc we use the timebase register, which is synchronized across
-CPUs, so if this will add unnecessary overhead, we will want to way to
-turn it off on powerpc (assuming this ends up going upstream).
+include/linux/kprobes.h: In function `kprobe_handle_fault':
+include/linux/kprobes.h:234: error: implicit declaration of function `kprobe_fault_handler'                                                                     
 
-Paul.
+and ia64 doesn't implement kprobe_fault_handler() so there's no easy fix
+here.
+
+There's too much inlining in linux/kprobes.h, btw.
