@@ -1,100 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760316AbYB2Qpm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932679AbYB2Qrz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760316AbYB2Qpm (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Feb 2008 11:45:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753441AbYB2Qpc
+	id S932679AbYB2Qrz (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Feb 2008 11:47:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752901AbYB2Qro
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Feb 2008 11:45:32 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:39449 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753020AbYB2Qpa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 Feb 2008 11:45:30 -0500
-Date: Fri, 29 Feb 2008 17:45:10 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Roland McGrath <roland@redhat.com>,
+	Fri, 29 Feb 2008 11:47:44 -0500
+Received: from accolon.hansenpartnership.com ([76.243.235.52]:41969 "EHLO
+	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753068AbYB2Qrm (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 29 Feb 2008 11:47:42 -0500
+Subject: Re: [PATCH] block: fix residual byte count handling
+From: James Bottomley <James.Bottomley@HansenPartnership.com>
+To: Tejun Heo <htejun@gmail.com>
+Cc: Jens Axboe <jens.axboe@oracle.com>, Mike Galbraith <efault@gmx.de>,
        Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] x86_64 ia32 syscall restart fix
-Message-ID: <20080229164510.GA6850@elte.hu>
-References: <20080229035707.EAE862700FD@magilla.localdomain> <20080229155207.GC27248@elte.hu> <alpine.LFD.1.00.0802290814320.17889@woody.linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.1.00.0802290814320.17889@woody.linux-foundation.org>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+       LKML <linux-kernel@vger.kernel.org>, linux-ide@vger.kernel.org,
+       linux-scsi@vger.kernel.org, Jeff Garzik <jgarzik@pobox.com>
+In-Reply-To: <47C6D73E.4030302@gmail.com>
+References: <1203839683.17463.9.camel@homer.simson.net>
+	 <1204019283.8731.11.camel@homer.simson.net>
+	 <1204033003.11828.22.camel@homer.simson.net>
+	 <20080226150845.2196bc1a.akpm@linux-foundation.org>
+	 <1204079075.26640.8.camel@homer.simson.net>
+	 <1204092010.9934.31.camel@homer.simson.net>
+	 <1204096025.1623.9.camel@homer.simson.net> <47C6661E.9010504@gmail.com>
+	 <1204186800.7362.7.camel@homer.simson.net> <47C675C6.8000904@gmail.com>
+	 <20080228153542.GZ6704@kernel.dk>  <47C6D73E.4030302@gmail.com>
+Content-Type: text/plain
+Date: Fri, 29 Feb 2008 10:47:36 -0600
+Message-Id: <1204303656.4003.19.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.3 (2.12.3-1.fc8) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Linus Torvalds <torvalds@linux-foundation.org> wrote:
-
-> > > The code to restart syscalls after signals depends on checking for a 
-> > > negative orig_ax, and for particular negative -ERESTART* values in ax. 
-> > > These fields are 64 bits and for a 32-bit task they get zero-extended. 
-> > > The syscall restart behavior is lost, a regression from a native 
-> > > 32-bit kernel and from 64-bit tasks' behavior.  This patch fixes the 
-> > > problem by doing sign-extension where it matters.  For orig_ax, the 
-> > > only time the value should be -1 but winds up as 0x0ffffffff is via a 
-> > > 32-bit ptrace call.  So the patch changes ptrace to sign-extend the 
-> > > 32-bit orig_eax value when it's stored; it doesn't change the checks 
-> > > on orig_ax, though it uses the new current_syscall() inline to better 
-> > > document the subtle importance of the used of signedness there.  The 
-> > > ax value is stored a lot of ways and it seems hard to get them all 
-> > > sign-extended at their origins.  So for that, we use the 
-> > > current_syscall_ret() to sign-extend it only for 32-bit tasks at the 
-> > > time of the -ERESTART* comparisons.
+On Fri, 2008-02-29 at 00:46 +0900, Tejun Heo wrote:
+> Jens Axboe wrote:
+> >> This problem was reported and diagnosed by Mike Galbraith.
 > > 
-> > thanks, applied.
+> > Tejun, this patch isn't much cleaner at all. It really shows the pain of
+> > these two seperate, yet related, variables.
 > 
-> Btw, can we please try to keep commit log messages readable?
+> Not much cleaner compared to what?  I think padding stuff is bound to be
+> somewhat complex.  It's a nasty thing in nature.  I think ->extra_len is
+> better than ->raw_data_len because ->extra_len only needs to be updated
+> where the dirty jobs are done and extra buffer areas are added.  Any
+> better suggestions?
 
-yeah - the minute i added the patch i pinged Roland about that offline.
+Well, I just investigated a bug report in the SCSI transport class.  Our
+SMP handler is broken in exactly the same way.  We rely on the incoming
+reported request lengths to size our request data, and they've blown up
+from the true length to 512 bytes (the size of our alignment).
 
-> Yeah, maybe it's just me, but I like my whitespace. 
-> Ihaveareallyhardtime 
-> readingtextthatdoesn'thavethepropermarkersforwhereconceptsstartandbegin, 
-> andthatreallydoesincludetheverticalwhitespacetoo.
+With the original patch, I have to run through the whole of libsas and
+scsi_transport_sas doing
 
-heh :)
+s/data_len/raw_data_len/
 
-> Now, the only reason I mention this is that normally I would probably 
-> just have fixed this up myself without even a comment (because it's 
-> such a tiny detail that it's not not worth one), but when Ingo merges 
-> it I'll now get it through git and it will be fixed.
+With your update it looks like I have to run through them all doing
 
-currently the reality is that i have to fix over 90% of the commit 
-messages that go towards you :-/
+s/data_len/data_len - extra_len/
 
-While i'd like that proportion to be a lot lower, it's really hard for 
-people to write good commit messages for fixes: people tend to send 
-their fixes the minute they find the problem (being happy about having 
-found and fixed a problem!), so the commit message gets little 
-attention.
+which is even worse.  Can't we put things back to a point where data_len
+means exactly that and extra_len means how much we have spare on the
+end, so you know you can DMA up to data_len + extra_len if need be?
 
-another effect is that kernel generalist people like Roland have a very 
-large list of todo items so when they write up the commit message they 
-might be thinking about the next unsolved problem already - and the 
-commit message becomes a quick, unstructured and semi-automatic 
-brain-dump of all details in essence :-/
+That way we don't have to sweep through every block driver altering the
+way it uses data_len.
 
-Also, who am i to complain about the commit message - i'm often the one 
-who has put the bug in to begin with! [ So i'm perfectly happy with you 
-volunteering to take over that role ;-) ]
+James
 
-But yes, it's easier for me too to sort and prioritize patches if their 
-description has good structure, so i regularly try to remind high-volume 
-patch submitters about that. ( With little success i have to say - 
-commit messages seem to be suffering from the same curse of inattention 
-as other types of documentation do :-/ )
 
-	Ingo
