@@ -1,97 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757300AbYB2EyA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757923AbYB2Ezb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757300AbYB2EyA (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Feb 2008 23:54:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754565AbYB2Exv
+	id S1757923AbYB2Ezb (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Feb 2008 23:55:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755048AbYB2EzW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Feb 2008 23:53:51 -0500
-Received: from e35.co.us.ibm.com ([32.97.110.153]:58105 "EHLO
-	e35.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754438AbYB2Exu (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Feb 2008 23:53:50 -0500
-Date: Thu, 28 Feb 2008 20:53:28 -0800
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Roman Zippel <zippel@linux-m68k.org>
-Cc: ego@in.ibm.com, linux-kernel@vger.kernel.org,
-       linux-rt-users@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Dipankar Sarma <dipankar@in.ibm.com>, Ted Tso <tytso@us.ibm.com>,
-       dvhltc@us.ibm.com, Oleg Nesterov <oleg@tv-sign.ru>,
-       Andrew Morton <akpm@linux-foundation.org>, bunk@kernel.org,
-       Josh Triplett <josh@freedesktop.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: Re: [RFC PATCH 4/6] Preempt-RCU: Implementation
-Message-ID: <20080229045328.GA18687@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <20071213170348.GA25981@in.ibm.com> <20071213171658.GE25981@in.ibm.com> <200802290534.57040.zippel@linux-m68k.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200802290534.57040.zippel@linux-m68k.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Thu, 28 Feb 2008 23:55:22 -0500
+Received: from pat.uio.no ([129.240.10.15]:40380 "EHLO pat.uio.no"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755004AbYB2EzV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 28 Feb 2008 23:55:21 -0500
+Subject: Re: [regression] nfs4: 30 second delay during umount of remote fs
+	on system shutdown
+From: Trond Myklebust <trond.myklebust@fys.uio.no>
+To: Frans Pop <elendil@planet.nl>
+Cc: linux-nfs@vger.kernel.org, linux-kernel@vger.kernel.org
+In-Reply-To: <200802290203.06241.elendil@planet.nl>
+References: <200802281829.16343.elendil@planet.nl>
+	 <1204235218.7109.13.camel@heimdal.trondhjem.org>
+	 <200802290203.06241.elendil@planet.nl>
+Content-Type: text/plain
+Date: Thu, 28 Feb 2008 20:55:16 -0800
+Message-Id: <1204260916.7213.5.camel@heimdal.trondhjem.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.1 
+Content-Transfer-Encoding: 7bit
+X-UiO-Resend: resent
+X-UiO-Spam-info: not spam, SpamAssassin (score=0.0, required=5.0, autolearn=disabled, none)
+X-UiO-Scanned: 47ED2608BEB890C2EF3F0763717D6E667209752A
+X-UiO-SR-test: 5D45DE90FDCF72B09467895E12B000C1D4F7FC7A
+X-UiO-SPAM-Test: remote_host: 129.240.10.9 spam_score: 0 maxlevel 200 minaction 2 bait 0 mail/h: 76 total 7144084 max/h 8345 blacklist 0 greylist 0 ratelimit 0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Feb 29, 2008 at 05:34:54AM +0100, Roman Zippel wrote:
-> Hi,
-> 
-> On Thursday 13. December 2007, Gautham R Shenoy wrote:
-> 
-> > diff --git a/kernel/Kconfig.preempt b/kernel/Kconfig.preempt
-> > index c64ce9c..06cafcc 100644
-> > --- a/kernel/Kconfig.preempt
-> > +++ b/kernel/Kconfig.preempt
-> > @@ -63,3 +63,41 @@ config PREEMPT_BKL
-> >  	  Say Y here if you are building a kernel for a desktop system.
-> >  	  Say N if you are unsure.
+
+On Fri, 2008-02-29 at 02:03 +0100, Frans Pop wrote:
+> On Thursday 28 February 2008, Trond Myklebust wrote:
+> > On Thu, 2008-02-28 at 18:29 +0100, Frans Pop wrote:
+> > > I have verified that portmap is also not running during S31umountnfs.sh
+> > > with 2.6.24, so apparently there has been a change in the kernel that
+> > > has made umount look for portmap and cause the 30 second delay if it is
+> > > not running.
 > >
-> > +choice
-> > +	prompt "RCU implementation type:"
-> > +	default CLASSIC_RCU
-> > +
-> > +config CLASSIC_RCU
-> > +	bool "Classic RCU"
-> > +	help
-> > +	  This option selects the classic RCU implementation that is
-> > +	  designed for best read-side performance on non-realtime
-> > +	  systems.
-> > +
-> > +	  Say Y if you are unsure.
-> > +
-> > +config PREEMPT_RCU
-> > +	bool "Preemptible RCU"
-> > +	depends on PREEMPT
-> > +	help
-> > +	  This option reduces the latency of the kernel by making certain
-> > +	  RCU sections preemptible. Normally RCU code is non-preemptible, if
-> > +	  this option is selected then read-only RCU sections become
-> > +	  preemptible. This helps latency, but may expose bugs due to
-> > +	  now-naive assumptions about each RCU read-side critical section
-> > +	  remaining on a given CPU through its execution.
-> > +
-> > +	  Say N if you are unsure.
-> > +
-> > +endchoice
+> > You are probably seeing the effect of lockd going down: it always
+> > attempts to unregister from the portmapper (and no, this is _not_ new
+> > behaviour).
 > 
-> Why got this moved into init/Kconfig?
+> It is _very much_ new behavior because as soon as I boot (and shut down) 
+> with a 2.6.24 kernel the problem completely disappears. Userland is *100% 
+> identical* between my tests.
 
-Because there are some arches that don't have kernel/Kconfig.preempt,
-its earlier home.  Therefore, putting it into kernel/Kconfig.preempt
-broke those arches' builds by supplying neither PREEMPT_RCU nor
-CLASSIC_RCU.
+The "new behaviour" is that we fixed a bug whereby the lockd code was
+failing to flush signals before attempting the rpc unregister. The sad
+fact is that userland appears to have been 100% broken for some time.
+The difference is that it was able to get away with it earlier...
 
-> Now it's somewhere in the root menu, not really belonging to anything.
+> > If debian is killing the portmapper while lockd is still up, then that
+> > is a definite debian bug...
+> 
+> I have no idea about that. AFAICT lockd is not even running (at least, 
+> there's no process named lockd, even when the system is running normally.
+> Isn't lockd an nfs3 thing? I'm using nfs4 here.
 
-Do you have a suggested location?
+NFSv4 has a delegation recall server to kill. Same difference...
 
-> Also why is this a choice? Are more RCU types planned?
+Trond
 
-I don't expect additional drop-in replacements for RCU, though people
-are certainly free to experiment if they wish.  It is a choice because
-this gives people a very clear idea of the two options and because
-it makes the implementation a bit cleaner.
-
-							Thanx, Paul
