@@ -1,68 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756318AbYB2CL3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757450AbYB2CMz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756318AbYB2CL3 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Feb 2008 21:11:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752296AbYB2CLU
+	id S1757450AbYB2CMz (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Feb 2008 21:12:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752906AbYB2CMr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Feb 2008 21:11:20 -0500
-Received: from smtp1.linux-foundation.org ([207.189.120.13]:35925 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750946AbYB2CLT (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Feb 2008 21:11:19 -0500
-Date: Thu, 28 Feb 2008 18:10:54 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Cc: Matthew Wilcox <matthew@wil.cx>, Ingo Molnar <mingo@elte.hu>,
-       linux-kernel@vger.kernel.org, Matthew Wilcox <willy@linux.intel.com>,
-       Thomas Gleixner <tglx@linutronix.de>, linux-next@vger.kernel.org,
-       Linus <torvalds@linux-foundation.org>, linux-arch@vger.kernel.org
-Subject: Re: [PATCH 11/12] Generic semaphore implementation
-Message-Id: <20080228181054.dddcf559.akpm@linux-foundation.org>
-In-Reply-To: <20080229130019.3ede8053.sfr@canb.auug.org.au>
-References: <1204180441-8540-3-git-send-email-matthew@wil.cx>
-	<1204180441-8540-4-git-send-email-matthew@wil.cx>
-	<1204180441-8540-5-git-send-email-matthew@wil.cx>
-	<1204180441-8540-6-git-send-email-matthew@wil.cx>
-	<1204180441-8540-7-git-send-email-matthew@wil.cx>
-	<1204180441-8540-8-git-send-email-matthew@wil.cx>
-	<1204180441-8540-9-git-send-email-matthew@wil.cx>
-	<1204180441-8540-10-git-send-email-matthew@wil.cx>
-	<1204180441-8540-11-git-send-email-matthew@wil.cx>
-	<20080228071822.GA13571@elte.hu>
-	<20080229003954.GA525@parisc-linux.org>
-	<20080229130019.3ede8053.sfr@canb.auug.org.au>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 28 Feb 2008 21:12:47 -0500
+Received: from relay2.sgi.com ([192.48.171.30]:39128 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752731AbYB2CMq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 28 Feb 2008 21:12:46 -0500
+Date: Thu, 28 Feb 2008 18:12:43 -0800 (PST)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+cc: Eric Dumazet <dada1@cosmosbay.com>, Pekka Enberg <penberg@cs.helsinki.fi>,
+       Torsten Kaiser <just.for.lkml@googlemail.com>,
+       Ingo Molnar <mingo@elte.hu>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] Implement slub fastpath in terms of freebase and freeoffset
+In-Reply-To: <20080229015621.GB32200@Krystal>
+Message-ID: <Pine.LNX.4.64.0802281812290.3159@schroedinger.engr.sgi.com>
+References: <64bb37e0802182254l49b10cbblc23f8a83d189ff8e@mail.gmail.com>
+ <84144f020802182321x452888bai639c71ea2a5067da@mail.gmail.com>
+ <20080219140230.GA32236@Krystal> <20080219172739.55c341b5.dada1@cosmosbay.com>
+ <20080219200358.GB11197@Krystal> <Pine.LNX.4.64.0802271532580.14380@schroedinger.engr.sgi.com>
+ <20080228055510.GA9026@Krystal> <Pine.LNX.4.64.0802281054230.29191@schroedinger.engr.sgi.com>
+ <20080228232507.GB20319@Krystal> <Pine.LNX.4.64.0802281648510.1954@schroedinger.engr.sgi.com>
+ <20080229015621.GB32200@Krystal>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 29 Feb 2008 13:00:19 +1100 Stephen Rothwell <sfr@canb.auug.org.au> wrote:
+On Thu, 28 Feb 2008, Mathieu Desnoyers wrote:
 
-> On Thu, 28 Feb 2008 17:39:54 -0700 Matthew Wilcox <matthew@wil.cx> wrote:
-> >
-> > Stephen, I've put the semaphore patches into a git tree; can you add it
-> > to linux-next?
-> > 
-> > http://git.kernel.org/?p=linux/kernel/git/willy/misc.git;a=shortlog;h=semaphore
-> 
-> I have put this in for toady's build (but using the git URL).  This tree
-> is in the "too many conflicts and its out until fixed" category ...
+> In short, the we also use the versioning to check for change of slab.
 
-A shame.
-
-Most of the conflicts will be due to all the
-
--#include <asm/semaphore.h>
-+#include <linux/semaphore.h>
-
-but they're all optional anyway, because include/asm-*/semaphore.h is
-
-#include <linux/semaphore.h>
-
-so either a) you just ignore all those conflicts or b) we ask Willy to
-remove all that stuff and we can trickle it in via subsystems later.
+Sounds good.
 
