@@ -1,49 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758763AbYB2MD1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759607AbYB2MIz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758763AbYB2MD1 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Feb 2008 07:03:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753820AbYB2MDS
+	id S1759607AbYB2MIz (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Feb 2008 07:08:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753156AbYB2MIp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Feb 2008 07:03:18 -0500
-Received: from mail.amln.net ([88.203.210.2]:33076 "EHLO neon.bastun.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753504AbYB2MDR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 Feb 2008 07:03:17 -0500
-X-Greylist: delayed 1537 seconds by postgrey-1.27 at vger.kernel.org; Fri, 29 Feb 2008 07:03:17 EST
-Message-ID: <47C7EEAC.7010907@amln.net>
-Date: Fri, 29 Feb 2008 13:38:20 +0200
-From: Xpl++ <xpl@amln.net>
-User-Agent: Mozilla Thunderbird 1.5.0.14 (Windows/20071210)
-MIME-Version: 1.0
-To: Paul Menage <menage@google.com>
-CC: Linux Containers <containers@lists.osdl.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Pavel Emelianov <xemul@openvz.org>, Paul Jackson <pj@sgi.com>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [RFC] Prefixing cgroup generic control filenames with "cgroup."
-References: <6599ad830802281314s25c033d6tc021725ae28aef8d@mail.gmail.com>
-In-Reply-To: <6599ad830802281314s25c033d6tc021725ae28aef8d@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Fri, 29 Feb 2008 07:08:45 -0500
+Received: from e28smtp03.in.ibm.com ([59.145.155.3]:51452 "EHLO
+	e28esmtp03.in.ibm.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752801AbYB2MIo (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 29 Feb 2008 07:08:44 -0500
+Date: Fri, 29 Feb 2008 17:38:32 +0530
+From: "K. Prasad" <prasad@linux.vnet.ibm.com>
+To: dwilder@us.ibm.com
+Cc: David Wilder <dwilder@us.ibm.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       systemtap@sourceware.org, prasadav@us.ibm.com, hch@infradead.org
+Subject: Re: [PATCH 0/3] A kernel tracing interface
+Message-ID: <20080229120832.GA4650@in.ibm.com>
+Reply-To: prasad@linux.vnet.ibm.com
+References: <1204065517.26964.14.camel@lc4eb748232119.ibm.com> <20080228020437.8f99f646.akpm@linux-foundation.org> <47C70E25.5020708@us.ibm.com> <20080229053605.GA10497@in.ibm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080229053605.GA10497@in.ibm.com>
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Paul Menage ??????:
-> ...
+On Fri, Feb 29, 2008 at 11:06:05AM +0530, K. Prasad wrote:
+> On Thu, Feb 28, 2008 at 11:40:21AM -0800, David Wilder wrote:
+> > Andrew Morton wrote:
+> > >On Tue, 26 Feb 2008 14:38:37 -0800 "David J. Wilder" <dwilder@us.ibm.com> 
+> > >wrote:
+> > >
+> > >>These patches provide a kernel tracing interface called "trace".
+> > >>
+> > >>ChangeLog:
+> > >>-Updated to 2.6.25-rc2-mm1
+> > >>-Removed sem_watch example, to hard to maintain.
+> > >>-Added a new example that demonstrates per-cpu continuous tracing
+> > >> of data generated using marker probes.
+> > >>-Removed inline from relay patch.
+> > >>-Moved examples into /sample directory.
+> > >>
+> > >>The motivation for "trace" is to:
+> > >>- Provide a simple set of tracing primitives that will utilize the high-
+> > >>  performance and low-overhead of relayfs for passing traces data from
+> > >>  kernel to user space.
+> > >>- Provide a common user interface for managing kernel traces.
+> > >>- Allow for binary as well as ascii trace data.
+> > >>- Incorporate features from the systemtap runtime that are
+> > >>  useful to others.
+> > >
+> > >So... what's the story on this versus lttng?
+> > 
+> > Trace is simpler to use and a smaller bit of code than lttng.
+> > It may not have all the features of lttng but it is good starting point 
+> > that can be expanded upon.  I have several users of trace that just 
+> > wanted a simple way to get data out of the kernel without the overhead 
+> > of lttng trace is working well for them.  Trace also works well with 
+> > markers and kprobes.  For example systemtap is is using the basic trace 
+> > code to gather data from kprobes and markers.
+> > >
+> > >Is there some userspace code available for people to test this?  Maybe it's
+> > >mentioned and I missed it.
+> > 
+> > I purposely designed trace so no special user code is required to gather 
+> > trace data. Standard user utilities like cat, grep, sort and more is all 
+> > that is needed.  I show an example in /samples/trace/fork_trace.c.
+> > 
+> > However since trace uses relay as its transport any user interfaces 
+> > provided by relay can be used to read trace data. (documented in 
+> > /Documentation/relay.txt)
+> > 
+> > >
+> > >It'd be interesting to see a writeup of the proposed kernel<->userspace
+> > >interfaces.  I see a description of kernel-internal interfaces, but how do
+> > >users use it?
+> > 
+> > I will add some text in the documentation.
+> > >
+> > >I see it uses things from blktrace.  Can blktrace be switched over to being
+> > >a client of this code?
+> > 
+> > yep.
+> >
+> Dave,
+> 	I might also want to add to the discussion by stating that you
+> will find a user for the 'trace' infrastructure in the marker handler 
+> code of the proposed markers for futex subsystem. I hope to post the 
+> patches soon to the community.
 >
-> A compromise might be to keep "tasks" unprefixed, and say that future
-> names get the "cgroup." prefix; in this case I'd be inclined to add
-> the prefix to notify_on_release and release_agent on the grounds that
-> there's much less chance of breaking anyone with those files since (I
-> suspect) they're much less used.
->   
-This makes most sense to me. It won't break any existing software (most 
-likely) while it seems reasonable to leave 'tasks' unprefixed as this is 
-something that any software using any subsystem of cgroup would be using 
-anyway and it is not that much associated with a particulat subsystem.
+Also to let you know that I tested the patches (sent against
+2.6.25-rc2-mm1) on a x86 machine and they've been working fine....
 
-Regards,
-Peter Litov.
+Thanks,
+K.Prasad
+
