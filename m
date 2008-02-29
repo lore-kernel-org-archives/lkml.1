@@ -1,27 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932350AbYB2BD7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762358AbYB2BDi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932350AbYB2BD7 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Feb 2008 20:03:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763570AbYB2AsI
+	id S1762358AbYB2BDi (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Feb 2008 20:03:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763484AbYB2AsG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Feb 2008 19:48:08 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:58782 "EHLO mx1.redhat.com"
+	Thu, 28 Feb 2008 19:48:06 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:58810 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932666AbYB2Aq4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Feb 2008 19:46:56 -0500
+	id S1762977AbYB2ArU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 28 Feb 2008 19:47:20 -0500
 Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
 	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
 	Kingdom.
 	Registered in England and Wales under Company Registration No. 3798903
 From: David Howells <dhowells@redhat.com>
-Subject: [PATCH 26/37] NFS: Define and create superblock-level objects [ver
-	#34]
+Subject: [PATCH 24/37] NFS: Register NFS for caching and retrieve the
+	top-level index [ver #34]
 To: Trond.Myklebust@netapp.com, chuck.lever@oracle.com, casey@schaufler-ca.com
 Cc: nfsv4@linux-nfs.org, linux-kernel@vger.kernel.org,
        linux-fsdevel@vger.kernel.org, selinux@tycho.nsa.gov,
        linux-security-module@vger.kernel.org, dhowells@redhat.com
-Date: Fri, 29 Feb 2008 00:45:53 +0000
-Message-ID: <20080229004552.4142.26149.stgit@warthog.procyon.org.uk>
+Date: Fri, 29 Feb 2008 00:45:42 +0000
+Message-ID: <20080229004542.4142.34211.stgit@warthog.procyon.org.uk>
 In-Reply-To: <20080229004332.4142.51771.stgit@warthog.procyon.org.uk>
 References: <20080229004332.4142.51771.stgit@warthog.procyon.org.uk>
 User-Agent: StGIT/0.14.1
@@ -32,332 +32,134 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Define and create superblock-level cache index objects (as managed by
-nfs_server structs).
-
-Each superblock object is created in a server level index object and is itself
-an index into which inode-level objects are inserted.
-
-Ideally there would be one superblock-level object per server, and the former
-would be folded into the latter; however, since the "nosharecache" option
-exists this isn't possible.
-
-The superblock object key is a sequence consisting of:
-
- (1) Certain superblock s_flags.
-
- (2) Various connection parameters that serve to distinguish superblocks for
-     sget().
-
- (3) The volume FSID.
-
- (4) The security flavour.
-
- (5) The uniquifier length.
-
- (6) The uniquifier text.  This is normally an empty string, unless the fsc=xyz
-     mount option was used to explicitly specify a uniquifier.
-
-The key blob is of variable length, depending on the length of (6).
-
-The superblock object is given no coherency data to carry in the auxiliary data
-permitted by the cache.  It is assumed that the superblock is always coherent.
-
-
-This patch also adds uniquification handling such that two otherwise identical
-superblocks, at least one of which is marked "nosharecache", won't end up
-trying to share the on-disk cache.  It will be possible to manually provide a
-uniquifier through a mount option with a later patch to avoid the error
-otherwise produced.
+Register NFS for caching and retrieve the top-level cache index object cookie.
 
 Signed-off-by: David Howells <dhowells@redhat.com>
 ---
 
- fs/nfs/fscache-index.c    |   34 +++++++++++++
- fs/nfs/fscache.c          |  116 +++++++++++++++++++++++++++++++++++++++++++++
- fs/nfs/fscache.h          |   49 +++++++++++++++++++
- fs/nfs/internal.h         |    3 +
- fs/nfs/super.c            |    8 ++-
- include/linux/nfs_fs_sb.h |    5 ++
- 6 files changed, 213 insertions(+), 2 deletions(-)
+ fs/nfs/Makefile        |    1 +
+ fs/nfs/fscache-index.c |   53 ++++++++++++++++++++++++++++++++++++++++++++++++
+ fs/nfs/fscache.h       |   35 ++++++++++++++++++++++++++++++++
+ fs/nfs/inode.c         |    8 +++++++
+ 4 files changed, 97 insertions(+), 0 deletions(-)
+ create mode 100644 fs/nfs/fscache-index.c
+ create mode 100644 fs/nfs/fscache.h
 
 
+diff --git a/fs/nfs/Makefile b/fs/nfs/Makefile
+index df0f41e..6d7176d 100644
+--- a/fs/nfs/Makefile
++++ b/fs/nfs/Makefile
+@@ -16,3 +16,4 @@ nfs-$(CONFIG_NFS_V4)	+= nfs4proc.o nfs4xdr.o nfs4state.o nfs4renewd.o \
+ 			   nfs4namespace.o
+ nfs-$(CONFIG_NFS_DIRECTIO) += direct.o
+ nfs-$(CONFIG_SYSCTL) += sysctl.o
++nfs-$(CONFIG_NFS_FSCACHE) += fscache-index.o
 diff --git a/fs/nfs/fscache-index.c b/fs/nfs/fscache-index.c
-index 25ac4a1..b5a52e3 100644
---- a/fs/nfs/fscache-index.c
+new file mode 100644
+index 0000000..225ed5d
+--- /dev/null
 +++ b/fs/nfs/fscache-index.c
-@@ -116,3 +116,37 @@ const struct fscache_cookie_def nfs_cache_server_index_def = {
- 	.type 		= FSCACHE_COOKIE_TYPE_INDEX,
- 	.get_key	= nfs_server_get_key,
- };
-+
-+/*
-+ * Generate a key to describe a superblock key in the main NFS index
+@@ -0,0 +1,53 @@
++/* NFS FS-Cache index structure definition
++ *
++ * Copyright (C) 2008 Red Hat, Inc. All Rights Reserved.
++ * Written by David Howells (dhowells@redhat.com)
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU General Public Licence
++ * as published by the Free Software Foundation; either version
++ * 2 of the Licence, or (at your option) any later version.
 + */
-+static uint16_t nfs_super_get_key(const void *cookie_netfs_data,
-+				  void *buffer, uint16_t bufmax)
-+{
-+	const struct nfs_fscache_key *key;
-+	const struct nfs_server *nfss = cookie_netfs_data;
-+	uint16_t len;
 +
-+	key = nfss->fscache_key;
-+	len = sizeof(key->key) + key->key.uniq_len;
-+	if (len > bufmax) {
-+		len = 0;
-+	} else {
-+		memcpy(buffer, &key->key, sizeof(key->key));
-+		memcpy(buffer + sizeof(key->key),
-+		       key->key.uniquifier, key->key.uniq_len);
-+	}
++#include <linux/init.h>
++#include <linux/kernel.h>
++#include <linux/sched.h>
++#include <linux/mm.h>
++#include <linux/nfs_fs.h>
++#include <linux/nfs_fs_sb.h>
++#include <linux/in6.h>
 +
-+	return len;
-+}
++#include "internal.h"
++#include "fscache.h"
 +
-+/*
-+ * Define the superblock object for FS-Cache.  This is used to describe a
-+ * superblock object to fscache_acquire_cookie().  It is keyed by all the NFS
-+ * parameters that might cause a separate superblock.
-+ */
-+const struct fscache_cookie_def nfs_cache_super_index_def = {
-+	.name		= "NFS.super",
-+	.type 		= FSCACHE_COOKIE_TYPE_INDEX,
-+	.get_key	= nfs_super_get_key,
++#define NFSDBG_FACILITY		NFSDBG_FSCACHE
++
++static const struct fscache_netfs_operations nfs_cache_ops = {
 +};
-diff --git a/fs/nfs/fscache.c b/fs/nfs/fscache.c
-index dcc1800..cbd09f0 100644
---- a/fs/nfs/fscache.c
-+++ b/fs/nfs/fscache.c
-@@ -23,6 +23,9 @@
- 
- #define NFSDBG_FACILITY		NFSDBG_FSCACHE
- 
-+static struct rb_root nfs_fscache_keys = RB_ROOT;
-+static DEFINE_SPINLOCK(nfs_fscache_keys_lock);
-+
- /*
-  * Get the per-client index cookie for an NFS client if the appropriate mount
-  * flag was set
-@@ -50,3 +53,116 @@ void nfs_fscache_release_client_cookie(struct nfs_client *clp)
- 	fscache_relinquish_cookie(clp->fscache, 0);
- 	clp->fscache = NULL;
- }
 +
 +/*
-+ * Get the cache cookie for an NFS superblock.  We have to handle
-+ * uniquification here because the cache doesn't do it for us.
++ * Define the NFS filesystem for FS-Cache.  Upon registration FS-Cache sticks
++ * the cookie for the top-level index object for NFS into this structure.  The
++ * top-level index can than have other cache objects inserted into it.
 + */
-+void nfs_fscache_get_super_cookie(struct super_block *sb,
-+				  struct nfs_parsed_mount_data *data)
++struct fscache_netfs nfs_cache_netfs = {
++	.name		= "nfs",
++	.version	= 0,
++	.ops		= &nfs_cache_ops,
++};
++
++/*
++ * Register NFS for caching
++ */
++int nfs_fscache_register(void)
 +{
-+	struct nfs_fscache_key *key, *xkey;
-+	struct nfs_server *nfss = NFS_SB(sb);
-+	struct rb_node **p, *parent;
-+	const char *uniq = data->fscache_uniq ?: "";
-+	int diff, ulen;
-+
-+	ulen = strlen(uniq);
-+	key = kzalloc(sizeof(*key) + ulen, GFP_KERNEL);
-+	if (!key)
-+		return;
-+
-+	key->nfs_client = nfss->nfs_client;
-+	key->key.super.s_flags = sb->s_flags & NFS_MS_MASK;
-+	key->key.nfs_server.flags = nfss->flags;
-+	key->key.nfs_server.rsize = nfss->rsize;
-+	key->key.nfs_server.wsize = nfss->wsize;
-+	key->key.nfs_server.acregmin = nfss->acregmin;
-+	key->key.nfs_server.acregmax = nfss->acregmax;
-+	key->key.nfs_server.acdirmin = nfss->acdirmin;
-+	key->key.nfs_server.acdirmax = nfss->acdirmax;
-+	key->key.nfs_server.fsid = nfss->fsid;
-+	key->key.rpc_auth.au_flavor = nfss->client->cl_auth->au_flavor;
-+
-+	key->key.uniq_len = ulen;
-+	memcpy(key->key.uniquifier, uniq, ulen);
-+
-+	spin_lock(&nfs_fscache_keys_lock);
-+	p = &nfs_fscache_keys.rb_node;
-+	parent = NULL;
-+	while (*p) {
-+		parent = *p;
-+		xkey = rb_entry(parent, struct nfs_fscache_key, node);
-+
-+		if (key->nfs_client < xkey->nfs_client)
-+			goto go_left;
-+		if (key->nfs_client > xkey->nfs_client)
-+			goto go_right;
-+
-+		diff = memcmp(&key->key, &xkey->key, sizeof(key->key));
-+		if (diff < 0)
-+			goto go_left;
-+		if (diff > 0)
-+			goto go_right;
-+
-+		if (key->key.uniq_len == 0)
-+			goto non_unique;
-+		diff = memcmp(key->key.uniquifier,
-+			      xkey->key.uniquifier,
-+			      key->key.uniq_len);
-+		if (diff < 0)
-+			goto go_left;
-+		if (diff > 0)
-+			goto go_right;
-+		goto non_unique;
-+
-+	go_left:
-+		p = &(*p)->rb_left;
-+		continue;
-+	go_right:
-+		p = &(*p)->rb_right;
-+	}
-+
-+	rb_link_node(&key->node, parent, p);
-+	rb_insert_color(&key->node, &nfs_fscache_keys);
-+	spin_unlock(&nfs_fscache_keys_lock);
-+	nfss->fscache_key = key;
-+
-+	/* create a cache index for looking up filehandles */
-+	nfss->fscache = fscache_acquire_cookie(nfss->nfs_client->fscache,
-+					       &nfs_cache_super_index_def,
-+					       nfss);
-+	dfprintk(FSCACHE, "NFS: get superblock cookie (0x%p/0x%p)\n",
-+		 nfss, nfss->fscache);
-+	return;
-+
-+non_unique:
-+	spin_unlock(&nfs_fscache_keys_lock);
-+	kfree(key);
-+	nfss->fscache_key = NULL;
-+	nfss->fscache = NULL;
-+	printk(KERN_WARNING "NFS:"
-+	       " Cache request denied due to non-unique superblock keys\n");
++	return fscache_register_netfs(&nfs_cache_netfs);
 +}
 +
 +/*
-+ * release a per-superblock cookie
++ * Unregister NFS for caching
 + */
-+void nfs_fscache_release_super_cookie(struct super_block *sb)
++void nfs_fscache_unregister(void)
 +{
-+	struct nfs_server *nfss = NFS_SB(sb);
-+
-+	dfprintk(FSCACHE, "NFS: releasing superblock cookie (0x%p/0x%p)\n",
-+		 nfss, nfss->fscache);
-+
-+	fscache_relinquish_cookie(nfss->fscache, 0);
-+	nfss->fscache = NULL;
-+
-+	if (nfss->fscache_key) {
-+		spin_lock(&nfs_fscache_keys_lock);
-+		rb_erase(&nfss->fscache_key->node, &nfs_fscache_keys);
-+		spin_unlock(&nfs_fscache_keys_lock);
-+		kfree(nfss->fscache_key);
-+		nfss->fscache_key = NULL;
-+	}
++	fscache_unregister_netfs(&nfs_cache_netfs);
 +}
 diff --git a/fs/nfs/fscache.h b/fs/nfs/fscache.h
-index c35c32c..d23ca8f 100644
---- a/fs/nfs/fscache.h
+new file mode 100644
+index 0000000..74ab060
+--- /dev/null
 +++ b/fs/nfs/fscache.h
-@@ -20,10 +20,48 @@
- #ifdef CONFIG_NFS_FSCACHE
- 
- /*
-+ * set of NFS FS-Cache objects that form a superblock key
+@@ -0,0 +1,35 @@
++/* NFS filesystem cache interface definitions
++ *
++ * Copyright (C) 2008 Red Hat, Inc. All Rights Reserved.
++ * Written by David Howells (dhowells@redhat.com)
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU General Public Licence
++ * as published by the Free Software Foundation; either version
++ * 2 of the Licence, or (at your option) any later version.
 + */
-+struct nfs_fscache_key {
-+	struct rb_node		node;
-+	struct nfs_client	*nfs_client;	/* the server */
 +
-+	/* the elements of the unique key - as used by nfs_compare_super() and
-+	 * nfs_compare_mount_options() to distinguish superblocks */
-+	struct {
-+		struct {
-+			unsigned long	s_flags;	/* various flags
-+							 * (& NFS_MS_MASK) */
-+		} super;
++#ifndef _NFS_FSCACHE_H
++#define _NFS_FSCACHE_H
 +
-+		struct {
-+			struct nfs_fsid fsid;
-+			int		flags;
-+			unsigned int	rsize;		/* read size */
-+			unsigned int	wsize;		/* write size */
-+			unsigned int	acregmin;	/* attr cache timeouts */
-+			unsigned int	acregmax;
-+			unsigned int	acdirmin;
-+			unsigned int	acdirmax;
-+		} nfs_server;
++#include <linux/nfs_fs.h>
++#include <linux/nfs_mount.h>
++#include <linux/nfs4_mount.h>
++#include <linux/fscache.h>
 +
-+		struct {
-+			rpc_authflavor_t au_flavor;
-+		} rpc_auth;
-+
-+		/* uniquifier - can be used if nfs_server.flags includes
-+		 * NFS_MOUNT_UNSHARED  */
-+		u8 uniq_len;
-+		char uniquifier[0];
-+	} key;
-+};
++#ifdef CONFIG_NFS_FSCACHE
 +
 +/*
-  * fscache-index.c
-  */
- extern struct fscache_netfs nfs_cache_netfs;
- extern const struct fscache_cookie_def nfs_cache_server_index_def;
-+extern const struct fscache_cookie_def nfs_cache_super_index_def;
- 
- extern int nfs_fscache_register(void);
- extern void nfs_fscache_unregister(void);
-@@ -34,6 +72,10 @@ extern void nfs_fscache_unregister(void);
- extern void nfs_fscache_get_client_cookie(struct nfs_client *);
- extern void nfs_fscache_release_client_cookie(struct nfs_client *);
- 
-+extern void nfs_fscache_get_super_cookie(struct super_block *,
-+					 struct nfs_parsed_mount_data *);
-+extern void nfs_fscache_release_super_cookie(struct super_block *);
++ * fscache-index.c
++ */
++extern struct fscache_netfs nfs_cache_netfs;
 +
- #else /* CONFIG_NFS_FSCACHE */
- static inline int nfs_fscache_register(void) { return 0; }
- static inline void nfs_fscache_unregister(void) {}
-@@ -41,5 +83,12 @@ static inline void nfs_fscache_unregister(void) {}
- static inline void nfs_fscache_get_client_cookie(struct nfs_client *clp) {}
- static inline void nfs_fscache_release_client_cookie(struct nfs_client *clp) {}
- 
-+static inline void nfs_fscache_get_super_cookie(
-+	struct super_block *sb,
-+	struct nfs_parsed_mount_data *data)
-+{
-+}
-+static inline void nfs_fscache_release_super_cookie(struct super_block *sb) {}
++extern int nfs_fscache_register(void);
++extern void nfs_fscache_unregister(void);
 +
- #endif /* CONFIG_NFS_FSCACHE */
- #endif /* _NFS_FSCACHE_H */
-diff --git a/fs/nfs/internal.h b/fs/nfs/internal.h
-index 0f56196..e49cb6e 100644
---- a/fs/nfs/internal.h
-+++ b/fs/nfs/internal.h
-@@ -4,6 +4,8 @@
- 
- #include <linux/mount.h>
- 
-+#define NFS_MS_MASK (MS_RDONLY|MS_NOSUID|MS_NODEV|MS_NOEXEC|MS_SYNCHRONOUS)
++#else /* CONFIG_NFS_FSCACHE */
++static inline int nfs_fscache_register(void) { return 0; }
++static inline void nfs_fscache_unregister(void) {}
 +
- struct nfs_string;
- 
- /* Maximum number of readahead requests
-@@ -40,6 +42,7 @@ struct nfs_parsed_mount_data {
- 	unsigned int		auth_flavor_len;
- 	rpc_authflavor_t	auth_flavors[1];
- 	char			*client_address;
-+	char			*fscache_uniq;
- 
- 	struct {
- 		struct sockaddr_storage	address;
-diff --git a/fs/nfs/super.c b/fs/nfs/super.c
-index 1fb3818..79c4abe 100644
---- a/fs/nfs/super.c
-+++ b/fs/nfs/super.c
-@@ -59,6 +59,7 @@
++#endif /* CONFIG_NFS_FSCACHE */
++#endif /* _NFS_FSCACHE_H */
+diff --git a/fs/nfs/inode.c b/fs/nfs/inode.c
+index 966a885..7254d5c 100644
+--- a/fs/nfs/inode.c
++++ b/fs/nfs/inode.c
+@@ -46,6 +46,7 @@
  #include "delegation.h"
  #include "iostat.h"
  #include "internal.h"
@@ -365,69 +167,32 @@ index 1fb3818..79c4abe 100644
  
  #define NFSDBG_FACILITY		NFSDBG_VFS
  
-@@ -1357,8 +1358,6 @@ static void nfs_clone_super(struct super_block *sb,
-  	nfs_initialise_sb(sb);
- }
- 
--#define NFS_MS_MASK (MS_RDONLY|MS_NOSUID|MS_NODEV|MS_NOEXEC|MS_SYNCHRONOUS)
--
- static int nfs_compare_mount_options(const struct super_block *s, const struct nfs_server *b, int flags)
+@@ -1222,6 +1223,10 @@ static int __init init_nfs_fs(void)
  {
- 	const struct nfs_server *a = s->s_fs_info;
-@@ -1507,6 +1506,7 @@ static int nfs_get_sb(struct file_system_type *fs_type,
- 	if (!s->s_root) {
- 		/* initial superblock/root creation */
- 		nfs_fill_super(s, &data);
-+		nfs_fscache_get_super_cookie(s, &data);
- 	}
+ 	int err;
  
- 	mntroot = nfs_get_root(s, &mntfh);
-@@ -1523,6 +1523,7 @@ static int nfs_get_sb(struct file_system_type *fs_type,
- out:
- 	kfree(data.nfs_server.hostname);
- 	kfree(data.mount_server.hostname);
-+	kfree(data.fscache_uniq);
- 	return error;
- 
- out_err_nosb:
-@@ -1543,6 +1544,7 @@ static void nfs_kill_super(struct super_block *s)
- 	struct nfs_server *server = NFS_SB(s);
- 
- 	kill_anon_super(s);
-+	nfs_fscache_release_super_cookie(s);
- 	nfs_free_server(server);
++	err = nfs_fscache_register();
++	if (err < 0)
++		goto out6;
++
+ 	err = nfs_fs_proc_init();
+ 	if (err)
+ 		goto out5;
+@@ -1268,6 +1273,8 @@ out3:
+ out4:
+ 	nfs_fs_proc_exit();
+ out5:
++	nfs_fscache_unregister();
++out6:
+ 	return err;
  }
  
-@@ -1881,6 +1883,7 @@ static int nfs4_get_sb(struct file_system_type *fs_type,
- 	if (!s->s_root) {
- 		/* initial superblock/root creation */
- 		nfs4_fill_super(s);
-+		nfs_fscache_get_super_cookie(s, &data);
- 	}
- 
- 	mntroot = nfs4_get_root(s, &mntfh);
-@@ -1898,6 +1901,7 @@ out:
- 	kfree(data.client_address);
- 	kfree(data.nfs_server.export_path);
- 	kfree(data.nfs_server.hostname);
-+	kfree(data.fscache_uniq);
- 	return error;
- 
- out_free:
-diff --git a/include/linux/nfs_fs_sb.h b/include/linux/nfs_fs_sb.h
-index 8d23dcb..fd592cc 100644
---- a/include/linux/nfs_fs_sb.h
-+++ b/include/linux/nfs_fs_sb.h
-@@ -110,6 +110,11 @@ struct nfs_server {
- 	__u64			maxfilesize;	/* maximum file size */
- 	unsigned long		mount_time;	/* when this fs was mounted */
- 	dev_t			s_dev;		/* superblock dev numbers */
-+ 
-+#ifdef CONFIG_NFS_FSCACHE
-+	struct nfs_fscache_key	*fscache_key;	/* unique key for superblock */
-+	struct fscache_cookie	*fscache;	/* superblock cookie */
-+#endif
- 
- #ifdef CONFIG_NFS_V4
- 	u32			attr_bitmask[2];/* V4 bitmask representing the set
+@@ -1278,6 +1285,7 @@ static void __exit exit_nfs_fs(void)
+ 	nfs_destroy_readpagecache();
+ 	nfs_destroy_inodecache();
+ 	nfs_destroy_nfspagecache();
++	nfs_fscache_unregister();
+ #ifdef CONFIG_PROC_FS
+ 	rpc_proc_unregister("nfs");
+ #endif
 
