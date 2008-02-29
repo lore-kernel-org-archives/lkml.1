@@ -1,74 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756902AbYB1Xyq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760043AbYB2ACo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756902AbYB1Xyq (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Feb 2008 18:54:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751597AbYB1Xyd
+	id S1760043AbYB2ACo (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Feb 2008 19:02:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751311AbYB2ACe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Feb 2008 18:54:33 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:38472 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751269AbYB1Xyc (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Feb 2008 18:54:32 -0500
-Date: Thu, 28 Feb 2008 18:54:27 -0500
-From: Christoph Hellwig <hch@infradead.org>
-To: "David P. Quigley" <dpquigl@tycho.nsa.gov>
-Cc: hch@infradead.org, viro@ftp.linux.org.uk, trond.myklebust@fys.uio.no,
-       bfields@fieldses.org, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org
-Subject: Re: [PATCH 03/11] VFS: Add security label support to *notify
-Message-ID: <20080228235427.GA17757@infradead.org>
-References: <1204150294-4678-1-git-send-email-dpquigl@tycho.nsa.gov> <1204150294-4678-4-git-send-email-dpquigl@tycho.nsa.gov>
+	Thu, 28 Feb 2008 19:02:34 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:53772 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752737AbYB2ACd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 28 Feb 2008 19:02:33 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [linux-pm] Fundamental flaw in system suspend, exposed by freezer removal
+Date: Fri, 29 Feb 2008 01:01:06 +0100
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: Linux-pm mailing list <linux-pm@lists.linux-foundation.org>,
+       Kernel development list <linux-kernel@vger.kernel.org>,
+       Alexey Starikovskiy <astarikovskiy@suse.de>
+References: <Pine.LNX.4.44L0.0802281741030.2180-100000@iolanthe.rowland.org>
+In-Reply-To: <Pine.LNX.4.44L0.0802281741030.2180-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <1204150294-4678-4-git-send-email-dpquigl@tycho.nsa.gov>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
+Message-Id: <200802290101.06650.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Feb 27, 2008 at 05:11:26PM -0500, David P. Quigley wrote:
-> This patch adds two new fields to the iattr structure. The first field holds a
-> security label while the second contains the length of this label. In addition
-> the patch adds a new helper function inode_setsecurity which calls the LSM to
-> set the security label on the inode. Finally the patch modifies the necessary
-> functions such that fsnotify_change can handle notification requests for
-> dnotify and inotify.
+On Thursday, 28 of February 2008, Alan Stern wrote:
+> Rafael:
 
-Please don't overload setattr with this.  Just looking at your callers
-shows that it's much cleaner as a separate method.
+Hi,
 
-Now what's really lacking is a desciption _why_ you actually need it
-to start with.  The current method to set security labels is through
-the security.* xattrs.  Now if we want to clean up that somewhat
-messy method that might be a good idea, but we should do it for all
-callers and not just some.
+> Here's my patch.  It doesn't include the timers for deadlock debugging, 
+> but it does include all the other stuff we've been talking about.  My 
+> base probably isn't quite in sync with yours, so this may not apply 
+> cleanly on your system.  But the divergences should be small.
 
-> +#define DN_LABEL        0x00000040      /* File (re)labeled */
+No big deal.  In fact we're working with Alex on a patch that modifies main.c
+too, so I'll have to resolve merging conflicts anyway. ;-)
 
-An any inotify/dnotify additions should be separate from the vfs to
-filesystem interface.  Please make it a separate patch and describe
-properly why it's needed in it's description.
+> Incidentally, there seemed to be a bug in your dpm_suspend() -- the 
+> dpm_list_mtx needs to be reacquired before the error checking.
 
-> index df6b95d..1169963 100644
-> --- a/include/linux/xattr.h
-> +++ b/include/linux/xattr.h
-> @@ -50,6 +50,7 @@ ssize_t xattr_getsecurity(struct inode *, const char *, void *, size_t);
->  ssize_t vfs_getxattr(struct dentry *, char *, void *, size_t);
->  ssize_t vfs_listxattr(struct dentry *d, char *list, size_t size);
->  int vfs_setxattr(struct dentry *, char *, void *, size_t, int);
-> +int vfs_setxattr_locked(struct dentry *, char *, void *, size_t, int);
->  int vfs_removexattr(struct dentry *, char *);
->  
->  ssize_t generic_getxattr(struct dentry *dentry, const char *name, void *buffer, size_t size);
-> -- 
-> 1.5.3.8
-> 
-> -
-> To unsubscribe from this list: send the line "unsubscribe linux-fsdevel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
----end quoted text---
+Oh, yes.  Will you please send a fix when
+http://marc.info/?l=linux-acpi&m=120389632114090&w=4 is merged?
+
+> This patch fixes that.  It also removes pm_sleep_rwsem, which isn't used 
+> any more.
+
+Yeah.  I left pm_sleep_rwsem, because I wasn't sure it would be necessary
+in the future.
+
+> We should think about device_pm_schedule_removal().  It won't work
+> right if a suspend method calls it for the device being suspended, 
+> because the device gets moved to the dpm_off list after the method 
+> runs.
+
+I think we should remove device_pm_schedule_removal() early in the 2.6.26
+cycle.
+
+I'll review the patch more thoroughly tomorrow, since I have some new material
+for the regressions list I need to take care of.
+
+Thanks,
+Rafael
