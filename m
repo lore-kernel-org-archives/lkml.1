@@ -1,41 +1,119 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758578AbYB2AZR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762450AbYB2A0v@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758578AbYB2AZR (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Feb 2008 19:25:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752934AbYB2AZE
+	id S1762450AbYB2A0v (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Feb 2008 19:26:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755648AbYB2A0n
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Feb 2008 19:25:04 -0500
-Received: from host36-195-149-62.serverdedicati.aruba.it ([62.149.195.36]:35541
-	"EHLO mx.cpushare.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755303AbYB2AZD (ORCPT
+	Thu, 28 Feb 2008 19:26:43 -0500
+Received: from g4t0016.houston.hp.com ([15.201.24.19]:28047 "EHLO
+	g4t0016.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752534AbYB2A0m (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Feb 2008 19:25:03 -0500
-Date: Fri, 29 Feb 2008 01:24:59 +0100
-From: Andrea Arcangeli <andrea@qumranet.com>
-To: Jack Steiner <steiner@sgi.com>
-Cc: Christoph Lameter <clameter@sgi.com>, Nick Piggin <npiggin@suse.de>,
-       akpm@linux-foundation.org, Robin Holt <holt@sgi.com>,
-       Avi Kivity <avi@qumranet.com>, Izik Eidus <izike@qumranet.com>,
-       kvm-devel@lists.sourceforge.net,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, general@lists.openfabrics.org,
-       Steve Wise <swise@opengridcomputing.com>,
-       Roland Dreier <rdreier@cisco.com>, Kanoj Sarcar <kanojsarcar@yahoo.com>,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       daniel.blueman@quadrics.com
-Subject: Re: [PATCH] mmu notifiers #v7
-Message-ID: <20080229001126.GL8091@v2.random>
-References: <20080219231157.GC18912@wotan.suse.de> <20080220010941.GR7128@v2.random> <20080220103942.GU7128@v2.random> <20080221045430.GC15215@wotan.suse.de> <20080221144023.GC9427@v2.random> <20080221161028.GA14220@sgi.com> <20080227192610.GF28483@v2.random> <Pine.LNX.4.64.0802281139250.30865@schroedinger.engr.sgi.com> <20080228215257.GJ8091@v2.random> <20080228231732.GA21604@sgi.com>
+	Thu, 28 Feb 2008 19:26:42 -0500
+Date: Thu, 28 Feb 2008 17:26:40 -0700
+From: Alex Chiang <achiang@hp.com>
+To: Gary Hade <garyhade@us.ibm.com>, kaneshige.kenji@jp.fujitsu.com,
+       warthog19@eaglescrag.net
+Cc: Matthew Wilcox <matthew@wil.cx>, gregkh@suse.de,
+       kristen.c.accardi@intel.com, rick.jones2@hp.com,
+       linux-kernel@vger.kernel.org, linux-pci@atrey.karlin.mff.cuni.cz,
+       linux-acpi@vger.kernel.org
+Subject: [PATCH 1/4] Remove path attribute from sgi_hotplug
+Message-ID: <20080229002640.GB21420@ldl.fc.hp.com>
+Mail-Followup-To: Alex Chiang <achiang@hp.com>,
+	Gary Hade <garyhade@us.ibm.com>, kaneshige.kenji@jp.fujitsu.com,
+	warthog19@eaglescrag.net, Matthew Wilcox <matthew@wil.cx>,
+	gregkh@suse.de, kristen.c.accardi@intel.com, rick.jones2@hp.com,
+	linux-kernel@vger.kernel.org, linux-pci@atrey.karlin.mff.cuni.cz,
+	linux-acpi@vger.kernel.org
+References: <20080229002341.GA21420@ldl.fc.hp.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080228231732.GA21604@sgi.com>
+In-Reply-To: <20080229002341.GA21420@ldl.fc.hp.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Feb 28, 2008 at 05:17:33PM -0600, Jack Steiner wrote:
-> I disagree. The location of the callout IS a performance issue. In simple
-> comparisons of the 2 patches (Christoph's vs. Andrea's), Andrea's has a 7X
-> increase in the number of TLB purges being issued to the GRU. TLB flushing
+Rename the slot to be the contents of the 'path' sysfs attribute, and
+delete the attribute.  The mapping from pci address to slot name is
+supposed to be done through the 'address' file, which will be provided
+automatically later in this series of patches.
 
-Are you sure that you're referring to #v7?
+Signed-off-by: Alex Chiang <achiang@hp.com>
+Signed-off-by: Matthew Wilcox <matthew@wil.cx>
+---
+ drivers/pci/hotplug/sgi_hotplug.c |   32 +-------------------------------
+ 1 files changed, 1 insertions(+), 31 deletions(-)
+
+diff --git a/drivers/pci/hotplug/sgi_hotplug.c b/drivers/pci/hotplug/sgi_hotplug.c
+index ef07c36..693519e 100644
+--- a/drivers/pci/hotplug/sgi_hotplug.c
++++ b/drivers/pci/hotplug/sgi_hotplug.c
+@@ -91,21 +91,6 @@ static struct hotplug_slot_ops sn_hotplug_slot_ops = {
+ 
+ static DEFINE_MUTEX(sn_hotplug_mutex);
+ 
+-static ssize_t path_show (struct hotplug_slot *bss_hotplug_slot,
+-	       		  char *buf)
+-{
+-	int retval = -ENOENT;
+-	struct slot *slot = bss_hotplug_slot->private;
+-
+-	if (!slot)
+-		return retval;
+-
+-	retval = sprintf (buf, "%s\n", slot->physical_path);
+-	return retval;
+-}
+-
+-static struct hotplug_slot_attribute sn_slot_path_attr = __ATTR_RO(path);
+-
+ static int sn_pci_slot_valid(struct pci_bus *pci_bus, int device)
+ {
+ 	struct pcibus_info *pcibus_info;
+@@ -173,18 +158,10 @@ static int sn_hp_slot_private_alloc(struct hotplug_slot *bss_hotplug_slot,
+ 		return -ENOMEM;
+ 	bss_hotplug_slot->private = slot;
+ 
+-	bss_hotplug_slot->name = kmalloc(SN_SLOT_NAME_SIZE, GFP_KERNEL);
+-	if (!bss_hotplug_slot->name) {
+-		kfree(bss_hotplug_slot->private);
+-		return -ENOMEM;
+-	}
++	bss_hotplug_slot->name = slot->physical_path;
+ 
+ 	slot->device_num = device;
+ 	slot->pci_bus = pci_bus;
+-	sprintf(bss_hotplug_slot->name, "%04x:%02x:%02x",
+-		pci_domain_nr(pci_bus),
+-		((u16)pcibus_info->pbi_buscommon.bs_persist_busnum),
+-		device + 1);
+ 
+ 	sn_generate_path(pci_bus, slot->physical_path);
+ 
+@@ -203,8 +180,6 @@ static struct hotplug_slot * sn_hp_destroy(void)
+ 		bss_hotplug_slot = slot->hotplug_slot;
+ 		list_del(&((struct slot *)bss_hotplug_slot->private)->
+ 			 hp_list);
+-		sysfs_remove_file(&bss_hotplug_slot->kobj,
+-				  &sn_slot_path_attr.attr);
+ 		break;
+ 	}
+ 	return bss_hotplug_slot;
+@@ -653,11 +628,6 @@ static int sn_hotplug_slot_register(struct pci_bus *pci_bus)
+ 		rc = pci_hp_register(bss_hotplug_slot);
+ 		if (rc)
+ 			goto register_err;
+-
+-		rc = sysfs_create_file(&bss_hotplug_slot->kobj,
+-				       &sn_slot_path_attr.attr);
+-		if (rc)
+-			goto register_err;
+ 	}
+ 	dev_dbg(&pci_bus->self->dev, "Registered bus with hotplug\n");
+ 	return rc;
+-- 
+1.5.3.1.g1e61
+
