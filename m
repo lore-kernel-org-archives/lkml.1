@@ -1,89 +1,112 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933121AbYB2Wj3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759998AbYB2WkH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933121AbYB2Wj3 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Feb 2008 17:39:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757332AbYB2WjV
+	id S1759998AbYB2WkH (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Feb 2008 17:40:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760317AbYB2Wjs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Feb 2008 17:39:21 -0500
-Received: from smtp1.linux-foundation.org ([207.189.120.13]:38660 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751429AbYB2WjU (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 Feb 2008 17:39:20 -0500
-Date: Fri, 29 Feb 2008 14:38:56 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Roman Zippel <zippel@linux-m68k.org>
-Cc: johnstul@us.ibm.com, linux-kernel@vger.kernel.org, mingo@elte.hu,
-       rostedt@goodmis.org
-Subject: Re: [PATCH] Remove obsolete CLOCK_TICK_ADJUST
-Message-Id: <20080229143856.64aec39b.akpm@linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.64.0802292315480.2723@scrub.home>
-References: <1201142334.6383.40.camel@localhost.localdomain>
-	<1201659263.6766.40.camel@localhost>
-	<Pine.LNX.4.64.0801310251090.17507@scrub.home>
-	<1201745776.6195.14.camel@localhost.localdomain>
-	<Pine.LNX.4.64.0801310404480.17507@scrub.home>
-	<1201914175.6216.46.camel@jstultz-laptop>
-	<Pine.LNX.4.64.0802081718040.3378@scrub.home>
-	<1202523452.6174.45.camel@localhost.localdomain>
-	<Pine.LNX.4.64.0802101917030.3378@scrub.home>
-	<1202774999.5984.106.camel@localhost>
-	<Pine.LNX.4.64.0802120335170.3378@scrub.home>
-	<1202963796.6195.141.camel@localhost.localdomain>
-	<Pine.LNX.4.64.0802150436300.1822@scrub.home>
-	<1203382940.5984.242.camel@localhost>
-	<Pine.LNX.4.64.0802190219360.2723@scrub.home>
-	<1203472250.6123.98.camel@localhost>
-	<Pine.LNX.4.64.0802200348230.2723@scrub.home>
-	<1203647951.6150.80.camel@localhost.localdomain>
-	<Pine.LNX.4.64.0802290547320.2723@scrub.home>
-	<20080229140842.575e72aa.akpm@linux-foundation.org>
-	<Pine.LNX.4.64.0802292315480.2723@scrub.home>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+	Fri, 29 Feb 2008 17:39:48 -0500
+Received: from zombie.ncsc.mil ([144.51.88.131]:57668 "EHLO zombie.ncsc.mil"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1759605AbYB2Wjr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 29 Feb 2008 17:39:47 -0500
+Subject: Re: [PATCH 01/11] Security: Add hook to get full maclabel xattr
+	name
+From: Dave Quigley <dpquigl@tycho.nsa.gov>
+To: casey@schaufler-ca.com
+Cc: Trond Myklebust <trond.myklebust@fys.uio.no>,
+       Christoph Hellwig <hch@infradead.org>,
+       Stephen Smalley <sds@tycho.nsa.gov>, viro@ftp.linux.org.uk,
+       bfields@fieldses.org, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org,
+       LSM List <linux-security-module@vger.kernel.org>
+In-Reply-To: <47870.32208.qm@web36615.mail.mud.yahoo.com>
+References: <47870.32208.qm@web36615.mail.mud.yahoo.com>
+Content-Type: text/plain
+Date: Fri, 29 Feb 2008 17:15:05 -0500
+Message-Id: <1204323305.2715.134.camel@moss-terrapins.epoch.ncsc.mil>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.12.3 (2.12.3-1.fc8) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 29 Feb 2008 23:27:01 +0100 (CET)
-Roman Zippel <zippel@linux-m68k.org> wrote:
 
-> Hi,
+On Fri, 2008-02-29 at 14:27 -0800, Casey Schaufler wrote:
+> --- Dave Quigley <dpquigl@tycho.nsa.gov> wrote:
 > 
-> On Fri, 29 Feb 2008, Andrew Morton wrote:
-> 
-> > The changelog provides no reason for the revert of those two patches.
 > > 
-> > Look at it from the point of view of a person who hasn't been following the
-> > discussion (whose initials might be LT).  That person might get puzzled and
-> > upset, no?
+> > ...
+> > > Yes, I can see that having a specific interface reduces the
+> > > documentation required, and simplifies it as well. Unfortunately,
+> > > given the way that a secctx is defined for either SELinux or
+> > > Smack, and the fact that the relationships between secctx values
+> > > are defined independently on the server and client* it does not
+> > > appear that the interoperability issue has been addressed, or
+> > > even really acknowleged with the proposed scheme. Yes, the issue
+> > > of label translation has been acknowleged, but it appears to me
+> > > that a day one solution is required for the scheme to be useful.
+> > 
+> > I completely disagree here. The Linux development model isn't to code
+> > the entire thing throw it over a wall and then deal with the collateral
+> > damage. This first version assumes a heterogenous environment and from
+> > what we see so far that seems to be the common usecase for this
+> > technology. A prototype implementation is already done for label
+> > translations and it does need to be outlined in the RFC (Which I've
+> > already started doing). However it is not necessary for an initial
+> > release. The translation engine allows you to plug in an arbitrary
+> > module to support whatever LSM you are going to use so this end of the
+> > architecture is agnostic to the format that is going to be used on the
+> > wire. For now that format is just a secctx which assumes the LSM running
+> > on both ends is the same.
 > 
-> I'm puzzled at how to explain this...
+> It assumes more than that. It assumes that a secctx will be
+> interpreted exactly the same way on both the client and the server.
+> On an old style MLS machine, where the label was encoded in a
+> data structure, this was usually a reasonable assumption, but
+> even then not always. Given that there is no reason to expect that
+> the policy on the server will match that on the client it looks
+> to me like you've got a day one exposure. It doesn't matter that
+> the LSM is the same on both ends, that's one of Trond's arguements
+> that I've just accepted. You have no reason to expect
+> interoperability even with SELinux on both ends unless you can
+> somehow make statements about the relative values of the secctx
+> on the two machines. This applies to Smack just as strongly as
+> it does to SELinux, so it appears the scheme is flawwed in general,
+> not just in the SELinux case.
 
-Please try.
+Actually we can expect interoperability with SELinux on both ends. With
+policy being the same on both ends it is completely valid to export a
+secctx which is a user readable text representation of a label and be
+able to use it on another selinux machine with the same policy. If I
+have a RHEL4 and RHEL 5 box with different policies then it is the job
+of the translation daemon to say I've gotten this label from this doi do
+I have a mapping for it. If yes translate it into my doi. If not reject
+it. This property is really no different from a user or group and I
+don't see anyone suggesting we start storing those in xattrs instead of
+recommended attrs.
 
-> The whole details have been explained over and over during the discussion.
+You need to give me a specific example of why if I have policy A on both
+ends on an SELinux box that a secctx isn't the same on both boxes. 
 
-That's no use to someone who is trying to understand this patch.
-
-> The simple answer is that CLOCK_TICK_ADJUST has been causing extra clock 
-> drift, John's attempt didn't fix the real cause.
-> My patch doesn't just revert the patches, it also includes the _real_ fix, 
-> so why would the real fix require more justification? That person also 
-> didn't get puzzled why two patches claiming to fix the same problem got 
-> merged...
-
-A revert patch's changelog should explain why the code is being reverted. 
-ie: what was wrong with it.
-
-A bugfix patch's changelog should explain the problem which is being
-solved, and how it solves it.
-
-
-Look at it from the point of view of someone who isn't intimately involved
-in that subsystem and who isn't following every email on whatever mailing
-list.  Your changelog des not provide sufficient detail for such a person
-to understand your patch.
+> 
+> I hope that's clear and specific enough. Let me know if I'm
+> missing something.
+> 
+> 
+> > Once the basics are refined and we can use it
+> > as a base we will keep adding more functionality (process label
+> > transport, better change notification, server side policy enforcement,
+> > translation mappings.) 
+> > 
+> > This is just a tiny fraction of what James outlined in the requirements
+> > document. So, one step at a time lest we trip over imaginary stones.
+> 
+> The iteritive development model has it's advantages.
+> 
+> Thank you.
+> 
+> 
+> Casey Schaufler
+> casey@schaufler-ca.com
 
