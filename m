@@ -1,53 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934137AbYB2WLw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934119AbYB2WNU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934137AbYB2WLw (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Feb 2008 17:11:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759706AbYB2WLm
+	id S934119AbYB2WNU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Feb 2008 17:13:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759706AbYB2WNJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Feb 2008 17:11:42 -0500
-Received: from an-out-0708.google.com ([209.85.132.248]:62757 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761578AbYB2WLl (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 Feb 2008 17:11:41 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:mime-version:content-type:content-transfer-encoding:content-disposition;
-        b=jtaz9t5o0cmowLh1QZF1PFG6MMS17bhCTD9VmqHIeSrdYb/zeR1zOXBxHGJrKUcIEH+yJh6csiQitAifOa6l0y2jfeYrnIJLgR/+aD+JmT3NdvFhjxJ1DaXryTxCNjzMJsh56gGvX1u+hQE0eqDHfdMkWDhqN9ySO7XNDKEi+zA=
-Message-ID: <c384c5ea0802291411s44cfb349r811da1e7daaefa19@mail.gmail.com>
-Date: Fri, 29 Feb 2008 23:11:40 +0100
-From: "Leon Woestenberg" <leon.woestenberg@gmail.com>
-To: linux-rt-users@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [PATCH] Fix build, missing profile.h include in kernel/sysctl.c (against 2.6.24.3-rt3)
-Cc: "Steven Rostedt" <rostedt@goodmis.org>
+	Fri, 29 Feb 2008 17:13:09 -0500
+Received: from relay1.sgi.com ([192.48.171.29]:42012 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751794AbYB2WNI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 29 Feb 2008 17:13:08 -0500
+Date: Fri, 29 Feb 2008 14:12:57 -0800 (PST)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Andrea Arcangeli <andrea@qumranet.com>
+cc: Nick Piggin <nickpiggin@yahoo.com.au>, akpm@linux-foundation.org,
+       Robin Holt <holt@sgi.com>, Avi Kivity <avi@qumranet.com>,
+       Izik Eidus <izike@qumranet.com>, kvm-devel@lists.sourceforge.net,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, general@lists.openfabrics.org,
+       Steve Wise <swise@opengridcomputing.com>,
+       Roland Dreier <rdreier@cisco.com>, Kanoj Sarcar <kanojsarcar@yahoo.com>,
+       steiner@sgi.com, linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       daniel.blueman@quadrics.com
+Subject: Re: [patch 2/6] mmu_notifier: Callbacks to invalidate address ranges
+In-Reply-To: <20080229214800.GD8091@v2.random>
+Message-ID: <Pine.LNX.4.64.0802291408520.14224@schroedinger.engr.sgi.com>
+References: <20080228011020.GG8091@v2.random>
+ <Pine.LNX.4.64.0802281043430.29191@schroedinger.engr.sgi.com>
+ <20080229005530.GO8091@v2.random> <Pine.LNX.4.64.0802281658560.1954@schroedinger.engr.sgi.com>
+ <20080229131302.GT8091@v2.random> <Pine.LNX.4.64.0802291149290.11292@schroedinger.engr.sgi.com>
+ <20080229201744.GB8091@v2.random> <Pine.LNX.4.64.0802291301530.11889@schroedinger.engr.sgi.com>
+ <20080229212327.GC8091@v2.random> <Pine.LNX.4.64.0802291329250.13402@schroedinger.engr.sgi.com>
+ <20080229214800.GD8091@v2.random>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Build fix for kernel/sysctl.c:356: error: 'prof_pid' undeclared here
-(not in a function).
-The fix is to include <linux/profile.h> which defines prof_pid as external.
-Patch is against 2.6.24.3-rt3.
+On Fri, 29 Feb 2008, Andrea Arcangeli wrote:
 
-Signed-off-by: Leon Woestenberg <leon@sidebranch.com>
+> > AFAICT The rw semaphore fastpath is similar in performance to a rw 
+> > spinlock. 
+> 
+> read side is taken in the slow path.
 
-Index: linux-2.6.24.3/kernel/sysctl.c
-===================================================================
---- linux-2.6.24.3.orig/kernel/sysctl.c 2008-02-29 00:52:45.000000000 +0100
-+++ linux-2.6.24.3/kernel/sysctl.c      2008-02-29 00:52:59.000000000 +0100
-@@ -47,6 +47,7 @@
- #include <linux/acpi.h>
- #include <linux/reboot.h>
- #include <linux/ftrace.h>
-+#include <linux/profile.h>
+Slowpath meaning VM slowpath or lock slow path? Its seems that the rwsem 
+read side path is pretty efficient:
 
- #include <asm/uaccess.h>
- #include <asm/processor.h>
+static inline void __down_read(struct rw_semaphore *sem)
+{
+        __asm__ __volatile__(
+                "# beginning down_read\n\t"
+LOCK_PREFIX     "  incl      (%%eax)\n\t" /* adds 0x00000001, returns the old value */
+                "  jns        1f\n"
+                "  call call_rwsem_down_read_failed\n"
+                "1:\n\t"
+                "# ending down_read\n\t"
+                : "+m" (sem->count)
+                : "a" (sem)
+                : "memory", "cc");
+}
 
 
--- 
-Leon
+
+> 
+> write side is taken in the fast path.
+> 
+> pagefault is fast path, VM during swapping is slow path.
+
+Not sure what you are saying here. A pagefault should be considered as a 
+fast path and swapping is not performance critical?
+
+> > > Perhaps the rwlock spinlock can be changed to a rw semaphore without
+> > > measurable overscheduling in the fast path. However theoretically
+> > 
+> > Overscheduling? You mean overhead?
+> 
+> The only possible overhead that a rw semaphore could ever generate vs
+> a rw lock is overscheduling.
+
+Ok too many calls to schedule() because the slow path (of the semaphore) 
+is taken?
+
+> > On the other hand a semaphore puts the process to sleep and may actually 
+> > improve performance because there is less time spend in a busy loop. 
+> > Other processes may do something useful and we stay off the contended 
+> > cacheline reducing traffic on the interconnect.
+> 
+> Yes, that's the positive side, the negative side is that you'll put
+> the task in uninterruptible sleep and call schedule() and require a
+> wakeup, because a list_add taking <1usec is running in the
+> other cpu. No other downside. But that's the only reason it's a
+> spinlock right now, infact there can't be any other reason.
+
+But that is only happening for the contended case. Certainly a spinlock is 
+better for 2p system but the more processors content for the lock (and 
+the longer the hold off is, typical for the processors with 4p or 8p or 
+more) the better a semaphore will work.
+
