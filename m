@@ -1,95 +1,140 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759327AbYB2CRh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755522AbYB2C35@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759327AbYB2CRh (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Feb 2008 21:17:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754275AbYB2CR2
+	id S1755522AbYB2C35 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Feb 2008 21:29:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752296AbYB2C3r
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Feb 2008 21:17:28 -0500
-Received: from zombie.ncsc.mil ([144.51.88.131]:41300 "EHLO zombie.ncsc.mil"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754124AbYB2CR0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Feb 2008 21:17:26 -0500
-Subject: Re: [PATCH 03/11] VFS: Add security label support to *notify
-From: Dave Quigley <dpquigl@tycho.nsa.gov>
-To: Christoph Hellwig <hch@infradead.org>
-Cc: viro@ftp.linux.org.uk, trond.myklebust@fys.uio.no, bfields@fieldses.org,
-       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
-In-Reply-To: <20080229002312.GA9198@infradead.org>
-References: <1204150294-4678-1-git-send-email-dpquigl@tycho.nsa.gov>
-	 <1204150294-4678-4-git-send-email-dpquigl@tycho.nsa.gov>
-	 <20080228235427.GA17757@infradead.org>
-	 <1204242283.2715.9.camel@moss-terrapins.epoch.ncsc.mil>
-	 <20080229002312.GA9198@infradead.org>
-Content-Type: text/plain
-Date: Thu, 28 Feb 2008 20:52:57 -0500
-Message-Id: <1204249977.2715.69.camel@moss-terrapins.epoch.ncsc.mil>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 (2.12.3-1.fc8) 
-Content-Transfer-Encoding: 7bit
+	Thu, 28 Feb 2008 21:29:47 -0500
+Received: from web36615.mail.mud.yahoo.com ([209.191.85.32]:47747 "HELO
+	web36615.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1750875AbYB2C3p (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 28 Feb 2008 21:29:45 -0500
+X-YMail-OSG: X5JLxNsVM1n5e_XZrqlp3RCiJu8Y.CtgrLSUF4IeNwnKYrycsmExCpBRiLQ2BrhI5gzbr7XgdA--
+X-RocketYMMF: rancidfat
+Date: Thu, 28 Feb 2008 18:29:44 -0800 (PST)
+From: Casey Schaufler <casey@schaufler-ca.com>
+Reply-To: casey@schaufler-ca.com
+Subject: Re: [PATCH 01/11] Security: Add hook to get full maclabel xattr name
+To: Dave Quigley <dpquigl@tycho.nsa.gov>, casey@schaufler-ca.com
+Cc: Christoph Hellwig <hch@infradead.org>, Stephen Smalley <sds@tycho.nsa.gov>,
+       viro@ftp.linux.org.uk, trond.myklebust@fys.uio.no, bfields@fieldses.org,
+       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       LSM List <linux-security-module@vger.kernel.org>
+In-Reply-To: <1204246379.2715.52.camel@moss-terrapins.epoch.ncsc.mil>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+Message-ID: <276677.7998.qm@web36615.mail.mud.yahoo.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-So after looking at this it seems that this is going to be a far more
-changes to NFS to set something that is an inode attribute. I can keep
-looking into it but it seems like it can be done much cleaner as an
-inode_setattr extension rather than adding new structures all over the
-nfs code.
 
-Dave
+--- Dave Quigley <dpquigl@tycho.nsa.gov> wrote:
 
-On Thu, 2008-02-28 at 19:23 -0500, Christoph Hellwig wrote:
-> On Thu, Feb 28, 2008 at 06:44:43PM -0500, Dave Quigley wrote:
-> > The main reason for this was the way that NFS passes information it
-> > receives around. If you look in patch 11 you will see that
-> > nfsd4_decode_fattr doesn't give us access to an inode to use for
-> > security_inode_setsecurity and it doesn't give us a dentry to use the
-> > xattr helpers with. The only thing we get here is an iattr structure
-> > which is then passed back up to fill in the inode fields. Also without
-> > functionality provided by patch 1 we don't even know where to put the
-> > security blob we are getting from the wire. 
 > 
-> Take a look at how ACLs are handled.  They're passed up from the _decode
-> operations into a small structure that is referenced by struct
-> nfsd4_<operation> and pass it up until the level where the dentry
-> is available.
+> On Thu, 2008-02-28 at 17:04 -0800, Casey Schaufler wrote:
+> > --- Dave Quigley <dpquigl@tycho.nsa.gov> wrote:
+> > 
+> > > 
+> > > ...
+> > > 
+> > > I can only speak for myself but honestly I've only seen Casey act
+> > > confrontational to this idea from the beginning.
+> > 
+> > That is simply because I don't care for your design and implementation
+> > choices, I think they're a bad way to go, I've suggested what I
+> > think you should do, and I'm sorry that that comes off as
+> > confrontational but that does not change what I see as flaws in
+> > your approach. I understand what you're trying to do and I think
+> > it's wrong.
+> > 
+> > > There is absolutely
+> > > nothing in here that is SELinux specific, tecnically its not even MAC
+> > > specific.
+> > 
+> > Then why are you putting "mac" in the interface name?
+> > 
+> > > I said from the beginning that this was perhaps not the best
+> > > name and we are willing to change it.
+> > 
+> > If you read back in the thread, that is what I suggested you do.
 > 
-> > 
-> > > 
-> > > > +#define DN_LABEL        0x00000040      /* File (re)labeled */
-> > > 
-> > > An any inotify/dnotify additions should be separate from the vfs to
-> > > filesystem interface.  Please make it a separate patch and describe
-> > > properly why it's needed in it's description.
-> > 
-> > Will do. We added them to conform to the functionality provided for
-> > other elements in the iattr structure. We will add a more robust
-> > explanation in the patch.
-> > 
-> > > 
-> > > > index df6b95d..1169963 100644
-> > > > --- a/include/linux/xattr.h
-> > > > +++ b/include/linux/xattr.h
-> > > > @@ -50,6 +50,7 @@ ssize_t xattr_getsecurity(struct inode *, const char *, void *, size_t);
-> > > >  ssize_t vfs_getxattr(struct dentry *, char *, void *, size_t);
-> > > >  ssize_t vfs_listxattr(struct dentry *d, char *list, size_t size);
-> > > >  int vfs_setxattr(struct dentry *, char *, void *, size_t, int);
-> > > > +int vfs_setxattr_locked(struct dentry *, char *, void *, size_t, int);
-> > > >  int vfs_removexattr(struct dentry *, char *);
-> > > >  
-> > > >  ssize_t generic_getxattr(struct dentry *dentry, const char *name, void *buffer, size_t size);
-> > > > -- 
-> > > > 1.5.3.8
-> > > > 
-> > > > -
-> > > > To unsubscribe from this list: send the line "unsubscribe linux-fsdevel" in
-> > > > the body of a message to majordomo@vger.kernel.org
-> > > > More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> > > ---end quoted text---
-> > 
-> > --
-> > To unsubscribe from this list: send the line "unsubscribe linux-fsdevel" in
-> > the body of a message to majordomo@vger.kernel.org
-> > More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> ---end quoted text---
+> I know but for some odd reason we kept arguing about it. Unless you want
+> me to repost the patch on it's own with the name changed you are going
+> to have to wait for version two :)
 
+No trouble there.
+
+> > 
+> > > There is nothing in this hook that
+> > > wasn't in LSM before. This is almost identical functionality to what
+> > > Adrian removed in 2.6.24. The only difference between this and
+> > > security_inode_getsuffix is that this returns security.suffix and that
+> > > the name is different. I don't have a SMACK box to test it on but I'm
+> > > 99% sure that if Casey tried to use SMACK with this patch set that he
+> > > would have labeled nfs working with SMACK.
+> > 
+> > You're very possibly right. I am not argueing from what's right for
+> > Smack, I am argueing from what's right for the LSM. Smack is a label
+> > based MAC LSM, like SELinux. I would expect that it would be easy for
+> > the NFS implementation to accomodate both.
+> > 
+> > > If it doesn't work with SMACK
+> > > right now I'm willing to help him with that and even include it in the
+> > > patch set. But spreading FUD about how we are including SELinux specific
+> > > code in here is just that.
+> > 
+> > Sorry, but I'm not argueing that it's SELinux specific at this point.
+> > I'm argueing that it's specific to single label stored in an xattr
+> > based MAC systems (a set of which both SELinux and Smack are members)
+> > and that it is file system specific to NFS. Any of these attributes
+> > makes it questionable as an LSM interface.
+> > 
+> > As I said before, trying to be helpful, call it security_blob_name(),
+> > and the upcoming Discretionary Time Lock module can return NULL,
+> > indicating that it wants to share no blob name. Or call it
+> > security_xattr_names() and DTL can return NULL and B&L+Biba can
+> > return "security.Bell&LaPadula security.Biba", hoping that everyone
+> > who uses the interface accepts the blank seperation as an indication
+> > that there are multiple xattrs involved.
+> 
+> I agree with your suggestion here but nowhere in earlier emails did you
+> outline this. You just vaguely described a method that sounds like the
+> selinux sidtab. If you had described it this way in the beginning we
+> would have be done with after the first response. If we are going to
+> work well in the future you need to be more clear when you make
+> constructive criticisms (or even destructive ones *wink* ).
+
+Sorry 'bout that.
+
+> > 
+> > I am saying that security_maclabel() is a bad choice, and I think
+> > that as an LSM (not MAC, not xattr, not NFS) interface it should
+> > serve the LSM, making the LSM interface better first, and being
+> > the specific interface that a particular file system finds
+> > convenient second.
+> > 
+> > And before we go any further, I have personally been involved in
+> > doing labeled NFS three times, and I know where the bodies are
+> > buried. Your approach is fine for single label stored in xattr based
+> > MAC systems. It does not generalize worth catfish whiskers, whereas
+> > the two other schemes I've done do so flawlessly. I am critical of
+> > this approach only because I know that y'all can do better.
+> 
+> That is fine. I welcome constructive criticism but you have a tendency
+> of being vague with what you mean and at times it comes off the wrong
+> way. This is the whole reason the patch set was posted to begin with. We
+> have been working on it for so long without much outside input so we
+> decided to get criticism on it.
+
+Thank you for doing so.
+
+> > Great. Now I owe the entire labeled NFS team beer.
+
+Phew, he missed that one.
+
+
+Casey Schaufler
+casey@schaufler-ca.com
