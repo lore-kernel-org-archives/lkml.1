@@ -1,188 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756377AbYB2BFE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762198AbYB2BFi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756377AbYB2BFE (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Feb 2008 20:05:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764086AbYB2At1
+	id S1762198AbYB2BFi (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Feb 2008 20:05:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932271AbYB2Aud
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Feb 2008 19:49:27 -0500
-Received: from e36.co.us.ibm.com ([32.97.110.154]:46742 "EHLO
-	e36.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1764066AbYB2AtZ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Feb 2008 19:49:25 -0500
-Subject: Re: [RFC][PATCH] make /proc/pid/pagemap work with huge pages and
-	return page size
-From: Dave Hansen <haveblue@us.ibm.com>
-To: Hans Rosenfeld <hans.rosenfeld@amd.com>
-Cc: Matt Mackall <mpm@selenic.com>, linux-kernel@vger.kernel.org,
-       Adam Litke <aglitke@gmail.com>, nacc <nacc@linux.vnet.ibm.com>,
-       Jon Tollefson <kniht@linux.vnet.ibm.com>
-In-Reply-To: <20080228120055.GF5963@escobedo.amd.com>
-References: <20080220135743.GA10127@escobedo.amd.com>
-	 <1203733096.14838.154.camel@cinder.waste.org>
-	 <1203791461.11305.135.camel@nimitz.home.sr71.net>
-	 <20080225120951.GA5963@escobedo.amd.com>
-	 <1203964750.28196.7.camel@nimitz.home.sr71.net>
-	 <20080226202533.GD5963@escobedo.amd.com>
-	 <1204134244.5207.28.camel@nimitz.home.sr71.net>
-	 <20080228120055.GF5963@escobedo.amd.com>
+	Thu, 28 Feb 2008 19:50:33 -0500
+Received: from pat.uio.no ([129.240.10.15]:55022 "EHLO pat.uio.no"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1760481AbYB2Au1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 28 Feb 2008 19:50:27 -0500
+Subject: Re: [PATCH 01/11] Security: Add hook to get full maclabel xattr
+	name
+From: Trond Myklebust <trond.myklebust@fys.uio.no>
+To: Christoph Hellwig <hch@infradead.org>
+Cc: Dave Quigley <dpquigl@tycho.nsa.gov>, Stephen Smalley <sds@tycho.nsa.gov>,
+       casey@schaufler-ca.com, viro@ftp.linux.org.uk, bfields@fieldses.org,
+       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       LSM List <linux-security-module@vger.kernel.org>
+In-Reply-To: <20080229003937.GA16343@infradead.org>
+References: <746385.69480.qm@web36611.mail.mud.yahoo.com>
+	 <1204227035.31790.207.camel@moss-spartans.epoch.ncsc.mil>
+	 <20080228234850.GA25829@infradead.org>
+	 <1204243497.2715.24.camel@moss-terrapins.epoch.ncsc.mil>
+	 <20080229003937.GA16343@infradead.org>
 Content-Type: text/plain
-Date: Thu, 28 Feb 2008 16:49:11 -0800
-Message-Id: <1204246151.23269.3.camel@nimitz.home.sr71.net>
+Date: Thu, 28 Feb 2008 16:50:06 -0800
+Message-Id: <1204246206.7363.13.camel@heimdal.trondhjem.org>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.12.1 
 Content-Transfer-Encoding: 7bit
+X-UiO-Resend: resent
+X-UiO-Spam-info: not spam, SpamAssassin (score=0.0, required=5.0, autolearn=disabled, none)
+X-UiO-Scanned: 7242691330AC17E181FBA9D44A0E9E947EAECA92
+X-UiO-SR-test: C330EBE6F5987778147120841AEE4B95914EB241
+X-UiO-SPAM-Test: remote_host: 129.240.10.9 spam_score: 0 maxlevel 200 minaction 2 bait 0 mail/h: 144 total 7143547 max/h 8345 blacklist 0 greylist 0 ratelimit 0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-On Thu, 2008-02-28 at 13:00 +0100, Hans Rosenfeld wrote: 
-> On Wed, Feb 27, 2008 at 09:44:04AM -0800, Dave Hansen wrote:
-> > On Tue, 2008-02-26 at 21:25 +0100, Hans Rosenfeld wrote:
-> > I'm just worried that once we establish the format, we can't really
-> > change it.  We have enough room in the pseudo-pte now, but what happens
-> > when the next group of people pop up that want something else from this
-> > interface.  Right now we have normal memory, swap, and hugetlb pages.
-> > 
-> > What if people want migration ptes marked next?  I'm not sure those fit
-> > into what you have here.
-> > 
-> > It all fits today, I'm just worried about tomorrow. :(
+On Thu, 2008-02-28 at 19:39 -0500, Christoph Hellwig wrote:
+> On Thu, Feb 28, 2008 at 07:04:57PM -0500, Dave Quigley wrote:
+> > There are several things here. I've spoken to several people about this
+> > and the belief I've gotten from most of them is that a recommended
+> > attribute is how this is to be transported. The NFSv4 spec people will
+> > probably say that if you want xattr like functionality for NFSv4 use
+> > named attributes. For us this is not an option since we require
+> > semantics to label on create/open and the only way we can do this is by
+> > adding a recommended attribute. The create/open calls in NFSv4 takes a
+> > list of attributes to use on create as part of the request. I really
+> > don't see a difference between the security blob and the
+> > username/groupname that NFSv4 currently uses. Also there is a good
+> > chance that we will need to translate labels at some point (read future
+> > work).
 > 
-> We could change the interface to return just a pfn (which is aligned to
-> the pshift returned), as it was before. That would free up some bits
-> that we could reserve for future use.
+> Then use the existing side-band protocol and ignore the NFSv4 spec
+> group.  They're <skip colourful language here> anyway.
 
-Yeah, I think we should do that.  No reason to zero-pad it.
-
-> > > @@ -574,7 +581,7 @@ static int pagemap_pte_hole(unsigned long start, unsigned long end,
-> > >  u64 swap_pte_to_pagemap_entry(pte_t pte)
-> > >  {
-> > >  	swp_entry_t e = pte_to_swp_entry(pte);
-> > > -	return PM_SWAP | swp_type(e) | (swp_offset(e) << MAX_SWAPFILES_SHIFT);
-> > > +	return swp_type(e) | (swp_offset(e) << MAX_SWAPFILES_SHIFT);
-> > >  }
-> > 
-> > Is there any way to do unions of bitfields?  It seems a bit silly that
-> > we have this bitfield, and then subdivide the bitfield for the swap
-> > entries.  
-> 
-> Having a union of bitfields is allowed, but having a union in a
-> struct of bitfields or vice-versa will probably cause the compiler not
-> to put all of this together in a single 64 bit entity.
-> 
-> This whole swap thing still needs some thought. The swap file offset
-> can take 59 bits, so there is a possibilty that this will break once
-> someone uses a really huge swap file. I doubt that this will happen, but
-> that doesn't mean it can't happen. Maybe there should be some completely
-> different interface for the swap stuff, like /proc/pid/swapmap or
-> something like that.
-
-I wouldn't worry about overflowing it.  I think there are plenty of
-block layer things that will break, first. :)
-
-> > >  static int pagemap_pte_range(pmd_t *pmd, unsigned long addr, unsigned long end,
-> > > @@ -584,16 +591,23 @@ static int pagemap_pte_range(pmd_t *pmd, unsigned long addr, unsigned long end,
-> > >  	pte_t *pte;
-> > >  	int err = 0;
-> > > 
-> > > -	for (; addr != end; addr += PAGE_SIZE) {
-> > > -		u64 pfn = PM_NOT_PRESENT;
-> > > +	if (pmd_huge(*pmd))
-> > > +		add_huge_to_pagemap(addr, end, pmd_to_ppte(pmd), pm);
-> > 
-> > Could you make this work with other architectures' large pages as well?
-> > I'd hate to leave ia64, MIPS and powerpc out in the cold.  powerpc at
-> > least has large pmds, it just doesn't really expose them to generic
-> > code.  
-> 
-> Well, if some powerpc guy would implement pmd_huge() and pmd_pfn() for
-> powerpc, the x86 specific pmd_to_ppte() won't be that x86 specific no
-> more. I didn't know there were huge pmds on powerpc, as pmd_huge() is
-> defined as zero for everything but x86.
-
-OK, I'm now convinced that doing this with pmds is actually completely
-wrong. :(
-
-Take a look at this code from mm/hugetlb.c:
-
-        for (address = start; address < end; address += HPAGE_SIZE) {
-                ptep = huge_pte_offset(mm, address);
-                if (!ptep)
-                        continue;
-
-                if (huge_pmd_unshare(mm, &address, ptep))
-                        continue;
-
-                pte = huge_ptep_get_and_clear(mm, address, ptep);
-                if (pte_none(pte))
-                        continue;
-
-                page = pte_page(pte);
-                if (pte_dirty(pte))
-                        set_page_dirty(page);
-                list_add(&page->lru, &page_list);
-        }
-
-The arch code is completely responsible for taking the mm and address
-and giving you back a pte that you can do pte_page() on.  This is a
-nice, arch-abstracted interface that everybody can use regardless of how
-their arch actually does it internally. 
-
-The only issue is that this is *after* the code has decided that a
-particular virtual area is for huge pages.  The best arch-generic
-interface I know for that is: is_vm_hugetlb_page(), but that is
-VMA-based.  Perhaps we should change the pagemap walk to pass the VMA
-around. 
-
-We should probably use a similar approach in the pagemap code.  Or, if
-we're really smart, we can actually share that code with the hugetlb
-code. 
-
-> Does it have huge puds as well? Once we support 1G pages for x86 a new
-> function has to be added to this file to handle that special case, too.
-
-Yes, it does (or will soon have) huge puds.  But, they're nicely wrapped
-up in that pte_t interface I showed above like the rest of the large
-pages.
-
-> > >  		pte = pte_offset_map(pmd, addr);
-> > > -		if (is_swap_pte(*pte))
-> > > -			pfn = swap_pte_to_pagemap_entry(*pte);
-> > > -		else if (pte_present(*pte))
-> > > -			pfn = pte_pfn(*pte);
-> > > +		if (is_swap_pte(*pte)) {
-> > > +			ppte.swap = 1;
-> > > +			ppte.paddr = swap_pte_to_pagemap_entry(*pte);
-> > > +		} else if (pte_present(*pte)) {
-> > > +			ppte.present = 1;
-> > > +			ppte.pshift = PAGE_SHIFT;
-> > > +			ppte.paddr = pte_pfn(*pte) << PAGE_SHIFT;
-> > > +		}
-> 
-> This is the place where those architectures that define the page size in
-> the pte should test for a huge page and put the correct page size in the
-> pshift field. I looked at some of them and did not find a function or a
-> macro to do this test, no generic one and no arch-dependent one.
-
-To test a pte for its huge page size?  Well, for now, we only support
-one huge page size at a time, and that's HPAGE_SIZE.
-
-> > The bitfields are nice, and I do see they've spread to generic code.
-> > So, I won't object to them, but please do double-check that they don't
-> > cause any problems, especially with compilers that you might not be
-> > using.
-> 
-> The standard says the ordering of bitfields is "implementation defined".
-> I'm currently unsure whether this means the implementation of a machine
-> or of the compiler. In the latter case, using a different compiler for
-> a user space program than the one that was used to compile the kernel
-> could create problems.
-
-I'd hate to be the first ones to depend on a bitfield for a
-user<->kernel interface.  Can you look around for precedent in this
-area, or convert them back?
-
--- Dave
+As I've told you several times before: we're _NOT_ putting private
+ioctl^Hxattrs onto the wire. If the protocol can't be described in an
+RFC, then it isn't going in no matter what expletive you choose to
+use...
 
