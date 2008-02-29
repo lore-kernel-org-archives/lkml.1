@@ -1,73 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932403AbYB2M3m@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932376AbYB2Mae@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932403AbYB2M3m (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Feb 2008 07:29:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760004AbYB2M3M
+	id S932376AbYB2Mae (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Feb 2008 07:30:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758640AbYB2MaY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Feb 2008 07:29:12 -0500
-Received: from rv-out-0910.google.com ([209.85.198.187]:1244 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758929AbYB2M3H (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 Feb 2008 07:29:07 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=cj2N4Ca7dWiTXUt52It/+6vIsP0bqoaKEWdl4UaixDUABVe0WKcQSTEtAsJ0iRfxdaHJWLTUb12a4j4AEBeRmg32RFspzZ0ppeCCkI0XMKJqNJVUjjGcWRH6il85cZ7FtNtY+cUPgFktpOSYGDOWfaysfu+zD2zdI1dvZxOgMeU=
-Message-ID: <84144f020802290429v25bd4ab2j8ab640e2ccb48140@mail.gmail.com>
-Date: Fri, 29 Feb 2008 14:29:06 +0200
-From: "Pekka Enberg" <penberg@cs.helsinki.fi>
-To: "Peter Zijlstra" <a.p.zijlstra@chello.nl>
-Subject: Re: [PATCH 00/28] Swap over NFS -v16
-Cc: "Neil Brown" <neilb@suse.de>, "Andrew Morton" <akpm@linux-foundation.org>,
-       "Linus Torvalds" <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       netdev@vger.kernel.org, trond.myklebust@fys.uio.no,
-       "Christoph Lameter" <clameter@sgi.com>
-In-Reply-To: <1204287533.6243.105.camel@lappy>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20080220144610.548202000@chello.nl>
-	 <20080223000620.7fee8ff8.akpm@linux-foundation.org>
-	 <18371.43950.150842.429997@notabene.brown>
-	 <1204023042.6242.271.camel@lappy>
-	 <18372.64081.995262.986841@notabene.brown>
-	 <1204099113.6242.353.camel@lappy>
-	 <84144f020802270005p3bfbd04ar9da2875218ef98c4@mail.gmail.com>
-	 <1204285912.6243.93.camel@lappy>
-	 <84144f020802290358t2774f7bwd87efe79e7bd4235@mail.gmail.com>
-	 <1204287533.6243.105.camel@lappy>
-X-Google-Sender-Auth: 4072f1e8b766abbb
+	Fri, 29 Feb 2008 07:30:24 -0500
+Received: from chilli.pcug.org.au ([203.10.76.44]:42738 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753818AbYB2MaX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 29 Feb 2008 07:30:23 -0500
+Date: Fri, 29 Feb 2008 23:30:19 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Haavard Skinnemoen <hskinnemoen@atmel.com>
+Cc: Matthew Wilcox <matthew@wil.cx>, linux-next@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>, Greg KH <greg@kroah.com>,
+       Mark Fasheh <mark.fasheh@oracle.com>
+Subject: Re: linux-next: semaphore update merge conflicts
+Message-Id: <20080229233019.780abba7.sfr@canb.auug.org.au>
+In-Reply-To: <20080229132514.00d5087e@hskinnemoen.norway.atmel.com>
+References: <20080229153958.fc34e281.sfr@canb.auug.org.au>
+	<20080229111731.13840877@hskinnemoen.norway.atmel.com>
+	<20080229231704.112d8112.sfr@canb.auug.org.au>
+	<20080229132514.00d5087e@hskinnemoen.norway.atmel.com>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.8; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Fri__29_Feb_2008_23_30_19_+1100_hPOI89nmbANUdAWX"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Feb 29, 2008 at 2:18 PM, Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:
->  Clearing PG_emergency would mean kmem_is_emergency() would return false
->  in kfree_reserve() and fail to un-charge the object.
+--Signature=_Fri__29_Feb_2008_23_30_19_+1100_hPOI89nmbANUdAWX
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
+
+On Fri, 29 Feb 2008 13:25:14 +0100 Haavard Skinnemoen <hskinnemoen@atmel.co=
+m> wrote:
 >
->  Previously objects would track their account status themselves (when
->  needed) and freeing PG_emergency wouldn't be a problem.
->
->  > and allocate a new fresh page to the reserves?
->
->  Not sure I understand this properly. We would only do this once the page
->  watermarks are high enough, so the reserves are full again.
+> On Fri, 29 Feb 2008 23:17:04 +1100
+> Stephen Rothwell <sfr@canb.auug.org.au> wrote:
+>=20
+> > By the way, is there some place I can get a cross compiler to build avr=
+32
+> > kernels (or better yet a recipe for crosstool to make one)?
+>=20
+> You can get the official toolchain from this page:
+>=20
+> http://www.atmel.com/dyn/products/tools_card.asp?tool_id=3D4118
+>=20
+> I'm not sure about crosstool, but you can get a patched version of
+> buildroot from this page:
+>=20
+> http://www.atmel.no/buildroot/
+>=20
+> Maybe you can just grab the patches from buildroot and use them with
+> crosstool? Or I can send them to you if you don't want to download the
+> whole thing.
 
-The problem with PG_emergency is that, once the watermarks are high
-again, SLUB keeps holding to the emergency page and it cannot be used
-for regular kmalloc allocations, right?
+I'll have a look and let you know.  Thanks.
 
-So the way to fix this is to batch uncharge the objects and clear
-PG_emergency for the said SLUB pages thus freeing them for regular
-allocations. And to compensate for the loss in the reserves, we ask
-the page allocator to give a new one that SLUB knows nothing about.
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
 
-If you don't do this, the reserve page can only contain few objects
-making them unavailable for regular allocations. So we're might be
-forced into "emergency mode" even though there's enough memory
-available to satisfy the allocation.
+--Signature=_Fri__29_Feb_2008_23_30_19_+1100_hPOI89nmbANUdAWX
+Content-Type: application/pgp-signature
 
-                          Pekka
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQFHx/rhTgG2atn1QN8RAkGWAJ4+B3g0Qjf7DsNK2FZi2Uh0Jf7GOgCfWquB
+kDx+ScLl3S5fbrCapPS+wNM=
+=Ypbd
+-----END PGP SIGNATURE-----
+
+--Signature=_Fri__29_Feb_2008_23_30_19_+1100_hPOI89nmbANUdAWX--
