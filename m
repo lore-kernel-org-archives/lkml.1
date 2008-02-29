@@ -1,101 +1,137 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932512AbYB2SiU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932910AbYB2Si5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932512AbYB2SiU (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Feb 2008 13:38:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756690AbYB2SiG
+	id S932910AbYB2Si5 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Feb 2008 13:38:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758085AbYB2Siq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Feb 2008 13:38:06 -0500
-Received: from accolon.hansenpartnership.com ([76.243.235.52]:44186 "EHLO
-	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751337AbYB2SiD (ORCPT
+	Fri, 29 Feb 2008 13:38:46 -0500
+Received: from out3.smtp.messagingengine.com ([66.111.4.27]:52998 "EHLO
+	out3.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755519AbYB2Sip (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 Feb 2008 13:38:03 -0500
-Subject: Re: [PATCH 1/3 v3] dma: document dma_{un}map_{single|sg}_attrs()
-	interface
-From: James Bottomley <James.Bottomley@HansenPartnership.com>
-To: Grant Grundler <grundler@parisc-linux.org>
-Cc: Michael Ellerman <michael@ellerman.id.au>, akepner@sgi.com,
-       Tony Luck <tony.luck@intel.com>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>, Jes Sorensen <jes@sgi.com>,
-       Randy Dunlap <randy.dunlap@oracle.com>,
-       Roland Dreier <rdreier@cisco.com>, David Miller <davem@davemloft.net>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <20080229182504.GA18102@colo.lackof.org>
-References: <20080228032448.GS11012@sgi.com>
-	 <dc1166600802281845t1613beedj7a285399a21cd@mail.gmail.com>
-	 <20080229182504.GA18102@colo.lackof.org>
-Content-Type: text/plain
-Date: Fri, 29 Feb 2008 12:37:56 -0600
-Message-Id: <1204310276.4003.48.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 (2.12.3-1.fc8) 
+	Fri, 29 Feb 2008 13:38:45 -0500
+Message-Id: <1204310323.24514.1239870063@webmail.messagingengine.com>
+X-Sasl-Enc: TqtdmYrEoxNUY8hsQTNmmTq44460JOE8WR9+7vA0TjDf 1204310323
+From: "Alexander van Heukelum" <heukelum@fastmail.fm>
+To: "Mark McLoughlin" <markmc@redhat.com>,
+       "Alexander van Heukelum" <heukelum@mailshack.com>
+Cc: "Ingo Molnar" <mingo@elte.hu>, "Ian Campbell" <ijc@hellion.org.uk>,
+       "H. Peter Anvin" <hpa@zytor.com>, "Andi Kleen" <ak@suse.de>,
+       "Thomas Gleixner" <tglx@linutronix.de>,
+       "Jeremy Fitzhardinge" <jeremy@goop.org>,
+       "LKML" <linux-kernel@vger.kernel.org>
+Content-Disposition: inline
 Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="ISO-8859-1"
+MIME-Version: 1.0
+X-Mailer: MessagingEngine.com Webmail Interface
+References: <20080224174605.GA21661@mailshack.com> <47C22568.1010405@zytor.com>
+   <1203958478.20033.1239002461@webmail.messagingengine.com>
+   <20080225170134.GA15839@elte.hu>
+   <20080225180750.GA31054@mailshack.com>
+   <20080228131341.GA25213@mailshack.com>
+   <1204232996.28798.8.camel@cthulhu.hellion.org.uk>
+   <20080229114943.GA1909@mailshack.com> <1204305247.2037.2.camel@muff>
+Subject: Re: [PATCH] reserve end-of-conventional-memory to 1MB on 32-bit
+In-Reply-To: <1204305247.2037.2.camel@muff>
+Date: Fri, 29 Feb 2008 19:38:43 +0100
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2008-02-29 at 11:25 -0700, Grant Grundler wrote:
-> On Fri, Feb 29, 2008 at 01:45:46PM +1100, Michael Ellerman wrote:
-> > On Thu, Feb 28, 2008 at 2:24 PM,  <akepner@sgi.com> wrote:
-> > >
-> > >  Document the new dma_{un}map_{single|sg}_attrs() functions.
-> > >
-> > >  diff --git a/Documentation/DMA-attributes.txt b/Documentation/DMA-attributes.txt
-> > >  index e69de29..36baea5 100644
-> > >  --- a/Documentation/DMA-attributes.txt
-> > >  +++ b/Documentation/DMA-attributes.txt
-> > >  @@ -0,0 +1,29 @@
-> > >  +                       DMA attributes
-> > >  +                       ==============
-> > >  +
-> > >  +This document describes the semantics of the DMA attributes that are
-> > >  +defined in linux/dma-attrs.h.
-> > >  +
-> > >  +
-> > >  +DMA_ATTR_SYNC_ON_WRITE
-> > >  +----------------------
-> > >  +
-> > >  +DMA_ATTR_SYNC_ON_WRITE is used on the IA64_SGI_SN2 architecture.
-> > >  +It provides a mechanism for devices to explicitly order their DMA
-> > >  +writes.
-> > >  +
-> > >  +On IA64_SGI_SN2 machines, DMA may be reordered within the NUMA
-> > >  +interconnect. Allowing reordering improves performance, but in some
-> > >  +situations it may be necessary to ensure that one DMA write is
-> > >  +complete before another is visible. For example, if the device does
-> > >  +a DMA write to indicate that data is available in memory, DMA of the
-> > >  +"completion indication" can race with DMA of data.
-> > >  +
-> > >  +When a memory region is mapped with the DMA_ATTR_SYNC_ON_WRITE attribute,
-> > >  +a write to that region causes all in-flight DMA to be flushed to memory.
-> > >  +Any pending DMA will complete and be visible in memory before the write
-> > >  +to the region with the DMA_ATTR_SYNC_ON_WRITE attribute becomes visible.
+On Fri, 29 Feb 2008 17:14:07 +0000, "Mark McLoughlin"
+<markmc@redhat.com> said:
+> On Fri, 2008-02-29 at 12:49 +0100, Alexander van Heukelum wrote:
+> > This patch adds explicit detection of the EBDA and reservation
+> > of the rom and adapter address space 0xa0000-0x100000 to the
+> > i386 kernels. It uses reserve_bootmem instead of reserve_early,
+> > because reserve_early is not yet available on i386.
 > > 
+> > Before this patch, the EBDA size was hardcoded as 4Kb. Also, the 
+> > reservation of the adapter range was done by modifying the e820
+> > map which is now not necessary any longer, and the code is removed
+> > from copy_e820_map.
 > > 
-> > I'm not clear how this is all meant to work. Your intial patch says
-> > this is an interface to pass "architecture-specific
-> > attributes" from drivers through to the DMA mapping code, which is
-> > fair enough - we want to do something similar.
+> > The changes in e820_64.c are only a change in the comment above
+> > copy_e820_map, and some changes of the types of local variables
+> > in that function such that the 32 and 64 bit versions become equal.
 > > 
-> > But it's not clear that DMA_ATTR_SYNC_ON_WRITE is architecture
-> > specific. If I was a driver writer might assume it works on all
-> > platforms.
+> > Signed-off-by: Alexander van Heukelum <heukelum@fastmail.fm>
+> > 
+> > ---
+> > 
+> > On Thu, Feb 28, 2008 at 09:09:56PM +0000, Ian Campbell wrote:
+> > > On Thu, 2008-02-28 at 14:13 +0100, Alexander van Heukelum wrote:
+> > > > The 32-bit code still uses reserve_bootmem, so this is not really
+> > > > a unification with the 64-bit version of the ebda reservation code,
+> > > > but at least it provides the same detection logic and reserves the
+> > > > same areas.
+> > > > 
+> > > > This does not crash immediately on qemu. No further testing was
+> > > > done! Otherwise:
+> > > 
+> > > I haven't tested extensively either but it does seem to solve the
+> > > problem for Xen.
+> > > 
+> > > Thanks!
+> > > Ian
+> > 
+> > Thank you!
+> > 
+> > Ingo,
+> > 
+> > I think this is ready for -x86#testing.
+> > It boots to a small userspace in qemu (i386).
+> > If I should separate the cleanups, let me know.
 > 
-> That would be a fair assumption. But it is required to be a NOP on
-> platforms that don't need the "hint" ("attr" or whatever you want
-> to call it). Specific architectures (SN2 in this case) will need
-> to implement something.
+> 	I haven't investigated in any detail, but with 2.6.25-rc3 and your
+> patch I'm seeing a Xen guest hit this BUG:
+> 
+> void __init smp_alloc_memory(void)
+> {
+>         trampoline_base = alloc_bootmem_low_pages(PAGE_SIZE);
+>         /*                                                                
+>          * Has to be in very low memory so we can execute                 
+>          * real-mode AP code.                                             
+>          */
+>         if (__pa(trampoline_base) >= 0x9F000)
+>                 BUG();
+> }
+> 
+> 	Stack looks like:
+> 
+>   [<c137ef97>] smp_alloc_memory+0x25  <--
+>   [<c137ef97>] smp_alloc_memory+0x25 
+>   [<c137a500>] setup_arch+0x28e 
+>   [<c13735f7>] start_kernel+0x7a 
+>   [<c1379240>] xen_start_kernel+0x300 
 
-To be honest, I still don't like the name.  SYNC_ON_WRITE is the SN2
-implementation.  What it's actually doing is implementing strict
-ordering semantics.  I think it should really be
-DMA_ATTR_STRICT_ORDERING (with a corresponding
-DMA_ATTR_RELAXED_ORDERING).
+Ouch.
 
-This means that if ever anyone sets a PCIe bridge to relaxed ordering by
-default, this attribute will also work for them.
+My first guess is that the BIOS data area is completely non-existent for
+Xen.
+Is it guaranteed that the memory is zeroed out on boot? In that case we
+can
+special-case it easily:
 
-James
+change:
+        /* Paranoia: should never happen, but... */
+        if (lowmem >= 0x100000)
+                lowmem = 0xa0000;
 
+into:
+        /* Strange case, like Xen ;) */
+        if (lowmem == 0 || lowmem >= 0x100000)
+                lowmem = 0x9f000;
+
+Can you test that?
+
+Greetings,
+    Alexander
+-- 
+  Alexander van Heukelum
+  heukelum@fastmail.fm
+
+-- 
+http://www.fastmail.fm - Send your email first class
 
