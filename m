@@ -1,94 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933842AbYB2VyX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934193AbYB2V4b@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933842AbYB2VyX (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Feb 2008 16:54:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761503AbYB2VyG
+	id S934193AbYB2V4b (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Feb 2008 16:56:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761618AbYB2V4W
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Feb 2008 16:54:06 -0500
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:43142 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1761550AbYB2VyE (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 Feb 2008 16:54:04 -0500
-Date: Fri, 29 Feb 2008 15:53:57 -0600
-From: Paul Jackson <pj@sgi.com>
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: mingo@elte.hu, tglx@linutronix.de, oleg@tv-sign.ru, rostedt@goodmis.org,
-       maxk@qualcomm.com, linux-kernel@vger.kernel.org, rientjes@google.com
-Subject: Re: [RFC/PATCH] cpuset: cpuset irq affinities
-Message-Id: <20080229155357.97cee748.pj@sgi.com>
-In-Reply-To: <1204319674.6243.145.camel@lappy>
-References: <20080227222103.673194000@chello.nl>
-	<1204311351.6243.130.camel@lappy>
-	<20080229145516.4d96aeaa.pj@sgi.com>
-	<1204319674.6243.145.camel@lappy>
-Organization: SGI
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.12.0; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Fri, 29 Feb 2008 16:56:22 -0500
+Received: from smtp4.pp.htv.fi ([213.243.153.38]:38056 "EHLO smtp4.pp.htv.fi"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1761611AbYB2V4V (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 29 Feb 2008 16:56:21 -0500
+Date: Fri, 29 Feb 2008 23:55:00 +0200
+From: Adrian Bunk <bunk@kernel.org>
+To: Jon Masters <jonathan@jonmasters.org>
+Cc: Zan Lynx <zlynx@acm.org>, Linus Torvalds <torvalds@linux-foundation.org>,
+       Pavel Roskin <proski@gnu.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Jon Masters <jcm@jonmasters.org>, Rusty Russell <rusty@rustcorp.com.au>
+Subject: Re: [PATCH 2.6.25] module: allow ndiswrapper to use GPL-only
+	symbols
+Message-ID: <20080229215500.GA25835@cs181133002.pp.htv.fi>
+References: <1204236662.3612.6.camel@dv> <alpine.LFD.1.00.0802281525170.5780@woody.linux-foundation.org> <20080229012012.ajlsk4pow8wkkgss@webmail.spamcop.net> <alpine.LFD.1.00.0802290807110.17889@woody.linux-foundation.org> <1204304352.6767.21.camel@localhost> <1204305492.3501.83.camel@jcmlaptop>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <1204305492.3501.83.camel@jcmlaptop>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Peter wrote:
-> IRQ are hardware notifiers and
-> do all kinds of things depending on the hardware.
+On Fri, Feb 29, 2008 at 12:18:12PM -0500, Jon Masters wrote:
+>...
+> *). Keep this patch. And potentially add some more for other similar
+> shim layers - I can think of a certain graphics driver that might
+> qualify for similar treatment, if one wants to go there. But I might
+> need to find a tailor specializing in *really* fire retardant pants
+> before I think of being the one who submits that patch.
+>...
 
-So some of these irqs might have very particular node affinity then,
-right?  If my thingamajig board is attached to node 72, then I might
-want its interrupts going to a CPU on node 72, right?
+If all that's missing for getting such a patch included is submitting it 
+I would even do it with my normal pants on. [1]
 
-In which case, putting that irq in my boot cpuset that only has nodes
-0-3 would be harmful to the performance of my thingamajig board, right?
+I would leave the *really* fire retardant pants for the case that 
+someone will ever try some "are binary modules legal" case at court by 
+suing people operating ftp mirrors of Debian non-free and similar
+repositories of other distributions... [2,3]
 
-I'm suspecting here that you don't want a small 'boot' cpuset
-(usually a small cpuset running legacy Unix stuff) holding the irqs,
-but rather you want a big 'system' cpuset, which has -all-but- a few
-nodes dedicated to hard real time or other isolated (there's that
-word again) purposes.
+> Jon.
+>...
 
-That way, most irqs can go to most CPUs, depending on their specific
-needs.
+cu
+Adrian
 
-Unfortunately, I don't think the cpuset hierarchy and conventions admit
-of both a big 'system' cpuset (all but a few isolated nodes) and a small
-overlapping 'boot' cpuset.
-
-> We don't support mv on cgroups, right? To easily create
-> common parents...
-
-The only mv supported is simple rename, preserving parentage.
-
-And if one could and did a tree reshaping mv near the top of the
-hierarchy, it would confuse the heck out of existing uses and users.
-
-> I might just be new-fangled, but I have a /cgroup mount.
-> but I guess that's just different mount-point of cgroup, right?
-
-All cgroups mount beneath /cgroup.  For backwards compatibility,
-one can also "mount -t cpuset cpuset /dev/cpuset", and just get
-the cpuset interface, with a couple of legacy hooks to make it behave
-just like good old fashioned cpusets, rather than new fangled cgroups.
-
-> I'm fine with whatever, I saw a ',' in the bitmap stuff, not really sure
-> how that ended up being a ' ' in the patch I send out... :-)
-
-Yes - that's another commonly supported form.  If that's a better
-presentation, then you'd probably want to rework your code, to take
-in and display the entire vector of irq numbers in one line, using
-a comma-separated list of irqs and ranges of irqs.
-
-See further bitmap_scnprintf(), bitmap_parse_user(),
-bitmap_scnlistprintf() and bitmap_parselist(), in bitmap.c.
-
-Given that you don't have an pre-existing bitmap of irqs (that I know
-of) and that you might have a distinct error code for each irq that you
-try to attach to a different cpuset, I'm guessing you want to stick
-with the single irq per write on input, single irq per line on output,
-paradigm, similar to what the 'tasks' file uses for task pids.
+[1] no matter whether in the British or the American meaning of "pants"
+[2] realistically, if these things will ever go to court, the person 
+    suing might not want to choose some billion Dollar US company
+    but some local private person or university as defendant
+[3] like e.g. Caldera turning into SCO and a Linux developer fired by 
+    Novell yesterday being hired by Microsoft tomorrow life changes 
+    fast, and one of the many copyright holders of the kernel might some 
+    day find some reason why he wants to do this
 
 -- 
-                  I won't rest till it's the best ...
-                  Programmer, Linux Scalability
-                  Paul Jackson <pj@sgi.com> 1.940.382.4214
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
+
