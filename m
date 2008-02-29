@@ -1,55 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759373AbYB2BK6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755290AbYB2BL2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759373AbYB2BK6 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Feb 2008 20:10:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763745AbYB2BDQ
+	id S1755290AbYB2BL2 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Feb 2008 20:11:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764043AbYB2BDo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Feb 2008 20:03:16 -0500
-Received: from hpsmtp-eml11.kpnxchange.com ([213.75.38.111]:11189 "EHLO
-	hpsmtp-eml11.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1762625AbYB2BDO (ORCPT
+	Thu, 28 Feb 2008 20:03:44 -0500
+Received: from smtp-out.google.com ([216.239.33.17]:44688 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1763778AbYB2BDm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Feb 2008 20:03:14 -0500
-From: Frans Pop <elendil@planet.nl>
-To: Trond Myklebust <trond.myklebust@fys.uio.no>
-Subject: Re: [regression] nfs4: 30 second delay during umount of remote fs on system shutdown
-Date: Fri, 29 Feb 2008 02:03:05 +0100
-User-Agent: KMail/1.9.7
-References: <200802281829.16343.elendil@planet.nl> <1204235218.7109.13.camel@heimdal.trondhjem.org>
-In-Reply-To: <1204235218.7109.13.camel@heimdal.trondhjem.org>
-Cc: linux-nfs@vger.kernel.org, linux-kernel@vger.kernel.org
+	Thu, 28 Feb 2008 20:03:42 -0500
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=received:message-id:date:from:to:subject:cc:in-reply-to:
+	mime-version:content-type:content-transfer-encoding:
+	content-disposition:references;
+	b=cOrNglV7T1O0IN/m30VaTwxmZ9WdJSJulH01vA+HbNW5lJmFCp2CzPyaigOeJezAa
+	26gVrEQc08Ad9kPFpuBLQ==
+Message-ID: <6599ad830802281703hb3cff06r8ba4755f705a0879@mail.gmail.com>
+Date: Thu, 28 Feb 2008 17:03:33 -0800
+From: "Paul Menage" <menage@google.com>
+To: "Paul Jackson" <pj@sgi.com>
+Subject: Re: [RFC] Prefixing cgroup generic control filenames with "cgroup."
+Cc: containers@lists.osdl.org, linux-kernel@vger.kernel.org,
+       balbir@linux.vnet.ibm.com, a.p.zijlstra@chello.nl, xemul@openvz.org,
+       akpm@linux-foundation.org
+In-Reply-To: <20080228173618.139f5bb4.pj@sgi.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200802290203.06241.elendil@planet.nl>
-X-OriginalArrivalTime: 29 Feb 2008 01:03:08.0062 (UTC) FILETIME=[D8B263E0:01C87A6E]
+References: <6599ad830802281314s25c033d6tc021725ae28aef8d@mail.gmail.com>
+	 <20080228173618.139f5bb4.pj@sgi.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 28 February 2008, Trond Myklebust wrote:
-> On Thu, 2008-02-28 at 18:29 +0100, Frans Pop wrote:
-> > I have verified that portmap is also not running during S31umountnfs.sh
-> > with 2.6.24, so apparently there has been a change in the kernel that
-> > has made umount look for portmap and cause the 30 second delay if it is
-> > not running.
+On Thu, Feb 28, 2008 at 3:36 PM, Paul Jackson <pj@sgi.com> wrote:
 >
-> You are probably seeing the effect of lockd going down: it always
-> attempts to unregister from the portmapper (and no, this is _not_ new
-> behaviour).
+>  We could accomplish that much by decreeing that future new kernel
+>  generated names that we might add follow some stronger convention,
+>  such as the cgroup_ or appropriate subsystem prefix.
 
-It is _very much_ new behavior because as soon as I boot (and shut down) 
-with a 2.6.24 kernel the problem completely disappears. Userland is *100% 
-identical* between my tests.
+Subsystem-created files already have an appropriate prefix.
 
-> If debian is killing the portmapper while lockd is still up, then that
-> is a definite debian bug...
+> No need to
+>  change the existing well known names for this reason.
 
-I have no idea about that. AFAICT lockd is not even running (at least, 
-there's no process named lockd, even when the system is running normally.
-Isn't lockd an nfs3 thing? I'm using nfs4 here.
+But that's part of my point - is it reasonable to describe a system
+that was only introduced in 2.6.24 as "well-known"?
 
-Cheers,
-FJP
+>
+>    Actually, in terms of 'common names used
+>  by humans' some of these names, "tasks" and "notify_on_release", date
+>  back much earlier than that.  Please don't rename these two files in
+>  cgroups; and of course absolutely don't rename them in cpusets.
+
+No, I wasn't planning to make any changes to cpusets.
+
+>
+>  Please don't end up with different names of these files, depending on
+>  whether you're in cgroups or cpusets, either.
+
+That already happens - when mounted as the "cpuset" filesystem, we
+have names like "mems_allowed". When mounted as cgroups, we have names
+like cpuset.mems_allowed.
+
+>
+> > Could we do something like auto-prefixing user-created directories with a
+>  > fixed string so that there is no way in which the user can cause a
+>  > collision with kernel-created files?
+>
+>  Lordy lordy -- a bunch of intrusive, complicating crap to solve a
+>  non-existent problem (sorry for the indelicate choice of words ;).
+
+No, I don't like that idea either.
+
+Paul
