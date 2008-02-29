@@ -1,75 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760692AbYB2Mtr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932124AbYB2NEK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760692AbYB2Mtr (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Feb 2008 07:49:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759442AbYB2Mt1
+	id S932124AbYB2NEK (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Feb 2008 08:04:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754585AbYB2NDz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Feb 2008 07:49:27 -0500
-Received: from scrub.xs4all.nl ([194.109.195.176]:33865 "EHLO scrub.xs4all.nl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758649AbYB2MtZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 Feb 2008 07:49:25 -0500
-Date: Fri, 29 Feb 2008 13:38:15 +0100 (CET)
-From: Roman Zippel <zippel@linux-m68k.org>
-X-X-Sender: roman@scrub.home
-To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-cc: ego@in.ibm.com, linux-kernel@vger.kernel.org,
-       linux-rt-users@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Dipankar Sarma <dipankar@in.ibm.com>, Ted Tso <tytso@us.ibm.com>,
-       dvhltc@us.ibm.com, Oleg Nesterov <oleg@tv-sign.ru>,
-       Andrew Morton <akpm@linux-foundation.org>, bunk@kernel.org,
-       Josh Triplett <josh@freedesktop.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: Re: [RFC PATCH 4/6] Preempt-RCU: Implementation
-In-Reply-To: <20080229045328.GA18687@linux.vnet.ibm.com>
-Message-ID: <Pine.LNX.4.64.0802291330590.2723@scrub.home>
-References: <20071213170348.GA25981@in.ibm.com> <20071213171658.GE25981@in.ibm.com>
- <200802290534.57040.zippel@linux-m68k.org> <20080229045328.GA18687@linux.vnet.ibm.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Fri, 29 Feb 2008 08:03:55 -0500
+Received: from tomts16-srv.bellnexxia.net ([209.226.175.4]:64181 "EHLO
+	tomts16-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754574AbYB2NDy (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 29 Feb 2008 08:03:54 -0500
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: Ao8CAI+Rx0dMQWoK/2dsb2JhbACBVqtx
+Date: Fri, 29 Feb 2008 08:03:48 -0500
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: Christoph Lameter <clameter@sgi.com>
+Cc: Eric Dumazet <dada1@cosmosbay.com>, Pekka Enberg <penberg@cs.helsinki.fi>,
+       Torsten Kaiser <just.for.lkml@googlemail.com>,
+       Ingo Molnar <mingo@elte.hu>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] Implement slub fastpath in terms of freebase and
+	freeoffset
+Message-ID: <20080229130348.GA9714@Krystal>
+References: <20080219200358.GB11197@Krystal> <Pine.LNX.4.64.0802271532580.14380@schroedinger.engr.sgi.com> <20080228055510.GA9026@Krystal> <Pine.LNX.4.64.0802281054230.29191@schroedinger.engr.sgi.com> <20080228232507.GB20319@Krystal> <Pine.LNX.4.64.0802281648510.1954@schroedinger.engr.sgi.com> <20080229015621.GB32200@Krystal> <Pine.LNX.4.64.0802281812290.3159@schroedinger.engr.sgi.com> <20080229033255.GA2200@Krystal> <Pine.LNX.4.64.0802282107090.5947@schroedinger.engr.sgi.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0802282107090.5947@schroedinger.engr.sgi.com>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.21.3-grsec (i686)
+X-Uptime: 07:55:50 up  9:06,  2 users,  load average: 0.16, 0.28, 0.51
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi
-
-On Thu, 28 Feb 2008, Paul E. McKenney wrote:
-
-> > Why got this moved into init/Kconfig?
+* Christoph Lameter (clameter@sgi.com) wrote:
+> On Thu, 28 Feb 2008, Mathieu Desnoyers wrote:
 > 
-> Because there are some arches that don't have kernel/Kconfig.preempt,
-> its earlier home.  Therefore, putting it into kernel/Kconfig.preempt
-> broke those arches' builds by supplying neither PREEMPT_RCU nor
-> CLASSIC_RCU.
+> > * Christoph Lameter (clameter@sgi.com) wrote:
+> > > On Thu, 28 Feb 2008, Mathieu Desnoyers wrote:
+> > > 
+> > > > In short, the we also use the versioning to check for change of slab.
 > 
-> > Now it's somewhere in the root menu, not really belonging to anything.
-> 
-> Do you have a suggested location?
-> 
-> > Also why is this a choice? Are more RCU types planned?
-> 
-> I don't expect additional drop-in replacements for RCU, though people
-> are certainly free to experiment if they wish.  It is a choice because
-> this gives people a very clear idea of the two options and because
-> it makes the implementation a bit cleaner.
+> Then we do not need the page->end field anymore right? I will try 
+> to rediff your patch against current slab-mm and see how we can proceed 
+> from there.
 
-I'd suggest to move PREEMPT_RCU back to Kconfig.preempt and if you really 
-need the second symbol leave this behind (maybe with a comment):
+I guess you could replace page->end with the (expensive)
+page_address(page) + 1 in new_slab.
 
-config CLASSIC_RCU
-	def_bool !PREEMPT_RCU
+You would also have to change slab_address() to use
+page_address(page). Since this is used by check_valid_pointer, I am not
+sure it's a good idea to use this slow operation there.
 
-Once there are more options, we can still look for a better place...
+Or maybe you have a different alternative in mind ?
 
-Also could you please add a proper dependency to RCU_TRACE on PREEMPT_RCU, 
-so that this condition isn't needed anymore:
+Mathieu
 
-ifeq ($(CONFIG_PREEMPT_RCU),y)
-obj-$(CONFIG_RCU_TRACE) += rcupreempt_trace.o
-endif
-
-Thanks.
-
-bye, Roman
+-- 
+Mathieu Desnoyers
+Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
