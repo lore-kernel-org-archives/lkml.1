@@ -1,26 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758516AbYB2RfH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759773AbYB2RhQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758516AbYB2RfH (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Feb 2008 12:35:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753843AbYB2Rez
+	id S1759773AbYB2RhQ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Feb 2008 12:37:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753935AbYB2RhE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Feb 2008 12:34:55 -0500
-Received: from smtp1.linux-foundation.org ([207.189.120.13]:41493 "EHLO
+	Fri, 29 Feb 2008 12:37:04 -0500
+Received: from smtp1.linux-foundation.org ([207.189.120.13]:34953 "EHLO
 	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751031AbYB2Rez (ORCPT
+	by vger.kernel.org with ESMTP id S1753843AbYB2RhC (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 Feb 2008 12:34:55 -0500
-Date: Fri, 29 Feb 2008 09:33:47 -0800 (PST)
+	Fri, 29 Feb 2008 12:37:02 -0500
+Date: Fri, 29 Feb 2008 09:35:17 -0800 (PST)
 From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Pavel Roskin <proski@gnu.org>
-cc: Zan Lynx <zlynx@acm.org>, linux-kernel <linux-kernel@vger.kernel.org>,
-       Jon Masters <jcm@jonmasters.org>, Rusty Russell <rusty@rustcorp.com.au>
-Subject: Re: [PATCH 2.6.25] module: allow ndiswrapper to use GPL-only
- symbols
-In-Reply-To: <1204305609.21719.16.camel@dv>
-Message-ID: <alpine.LFD.1.00.0802290929590.17889@woody.linux-foundation.org>
-References: <1204236662.3612.6.camel@dv>  <alpine.LFD.1.00.0802281525170.5780@woody.linux-foundation.org>  <20080229012012.ajlsk4pow8wkkgss@webmail.spamcop.net>  <alpine.LFD.1.00.0802290807110.17889@woody.linux-foundation.org>  <1204304352.6767.21.camel@localhost>
-  <alpine.LFD.1.00.0802290906520.17889@woody.linux-foundation.org> <1204305609.21719.16.camel@dv>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+cc: Michael Kerrisk <michael.kerrisk@googlemail.com>, aaw <aaw@google.com>,
+       Andrew Morton <akpm@linux-foundation.org>, michael.kerrisk@gmail.com,
+       carlos@codesourcery.com, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       linux-kernel <linux-kernel@vger.kernel.org>, drepper@redhat.com,
+       mtk.manpages@gmail.com
+Subject: Re: [RFC/PATCH] RLIMIT_ARG_MAX
+In-Reply-To: <1204305244.6243.111.camel@lappy>
+Message-ID: <alpine.LFD.1.00.0802290934130.17889@woody.linux-foundation.org>
+References: <1204119455.6242.403.camel@lappy>  <alpine.LFD.1.00.0802290801290.17889@woody.linux-foundation.org>  <c49095e30802290858t42eb8a61ua0ed73e27971bc77@mail.gmail.com> <1204305244.6243.111.camel@lappy>
 User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
@@ -30,27 +31,14 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 
 
-On Fri, 29 Feb 2008, Pavel Roskin wrote:
+On Fri, 29 Feb 2008, Peter Zijlstra wrote:
 > 
-> Actually, it's a flawed comparison.  The only thing ndiswrapper exports
-> to NDIS modules is NDIS API.  GPLONLY symbols are only used to implement
-> that API in the code that's under GPL.  That's the code you can fork,
-> change and redistribute.
+> You fail to mention that <23 will still fault the first time it tries to
+> grow the stack when you set rlimit_stack to 128k and actually supply
+> 128k of env+arg.
 
-.. and it's stuill just a wrapper.
-
-A fairly thick one, but still...
-
-More importantly, none of the people arguing against this at all even 
-reacted to my suggestion for how to fix things *properly* in my original 
-email. Which just means that you're apparently not interested in actually 
-fixing this, you're just trying to disagree about some interpretation of 
-GPLONLY.
-
-In other words: the next person who can't even be bothered to tell what 
-symbols are involved and why they haven't asked whether those symbols 
-could instead be relaxed, automaticaly will go into my "flamers" filter, 
-and just stay there. Then you can complain as much as you like, and I'll 
-never see it.
+So? That's what rlimit_stack has always meant (and not just on Linux 
+either, afaik). That's not a bug, it's a feature. If the system has a 
+limited stack, it has a limited stack. That's what RLIMIT_STACK means.
 
 		Linus
