@@ -1,71 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758829AbYB2Nb7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932689AbYB2Ne6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758829AbYB2Nb7 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Feb 2008 08:31:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759442AbYB2Nbq
+	id S932689AbYB2Ne6 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Feb 2008 08:34:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755964AbYB2Net
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Feb 2008 08:31:46 -0500
-Received: from zombie.ncsc.mil ([144.51.88.131]:44021 "EHLO zombie.ncsc.mil"
+	Fri, 29 Feb 2008 08:34:49 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:58730 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759277AbYB2Nbp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 Feb 2008 08:31:45 -0500
-Subject: Re: [PATCH 01/11] Security: Add hook to get full maclabel xattr
-	name
-From: Stephen Smalley <sds@tycho.nsa.gov>
-To: Christoph Hellwig <hch@infradead.org>
-Cc: casey@schaufler-ca.com, Dave Quigley <dpquigl@tycho.nsa.gov>,
-       viro@ftp.linux.org.uk, trond.myklebust@fys.uio.no, bfields@fieldses.org,
-       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       LSM List <linux-security-module@vger.kernel.org>
-In-Reply-To: <20080228234850.GA25829@infradead.org>
-References: <746385.69480.qm@web36611.mail.mud.yahoo.com>
-	 <1204227035.31790.207.camel@moss-spartans.epoch.ncsc.mil>
-	 <20080228234850.GA25829@infradead.org>
-Content-Type: text/plain
-Organization: National Security Agency
-Date: Fri, 29 Feb 2008 08:31:05 -0500
-Message-Id: <1204291865.31790.235.camel@moss-spartans.epoch.ncsc.mil>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 (2.12.3-1.fc8) 
-Content-Transfer-Encoding: 7bit
+	id S1752762AbYB2Net (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 29 Feb 2008 08:34:49 -0500
+Date: Fri, 29 Feb 2008 14:34:33 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: huggie@earth.li, linux-kernel@vger.kernel.org
+Cc: Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: Scheduler broken? sdhci issues with scheduling
+Message-ID: <20080229133433.GA15532@elte.hu>
+References: <20080229115256.GG24533@paranoidfreak.co.uk>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080229115256.GG24533@paranoidfreak.co.uk>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-On Thu, 2008-02-28 at 18:48 -0500, Christoph Hellwig wrote:
-> On Thu, Feb 28, 2008 at 02:30:35PM -0500, Stephen Smalley wrote:
-> > This is an interface to be used by NFS to get information from the
-> > security module.  The information desired is specific to the MAC
-> > labeling functionality in NFSv4 that is being proposed.  That
-> > functionality is MAC specific (necessarily so, just like the ACL
-> > functionality is ACL specific).  We are hiding the SELinux-specific bits
-> > behind the LSM interface, and non-MAC LSMs are free to return NULL in
-> > order to indicate that they don't support MAC labeling.  We do NOT want
-> > the capability module to return its security blob here, or any other
-> > non-MAC LSM - it will yield the wrong semantics for the NFS MAC support.
-> 
-> I think Casey is totally right here.  The LSM interface should not be
-> as specific here.  If you want to limit the NFSv4 interface to single
-> MAC xattr label based systems add an additional method to check if
-> the LSM is that.  But the proper fix is of course to not add somthing
-> so specific to NFSv4 at all, as it's got enough shortcoming already.
-> Please add a proper xattr protocol.  It's not like it's hard, SGI
-> has been doing this in IRIX for NFSv3 for ages as a sideband protocol,
-> and even release the reference source under the GPL.  Just either use
-> that with NFSv4 or if you feel fancy merge it into the NFS spec for
-> NFSv6^H4.2.
-> 
-> > In any event, I don't think we need your permission.
-> 
-> Wow, that's rude even to someone as direct as me.  Casey is the only
-> other person having an in-tree LSM, and I think his input in this
-> area is important.  But if not I as a VFS person can happily give
-> you my "no" for the current version from the VFS point of view.
+* Simon Huggins <huggie@earth.li> wrote:
 
-Fair point - my apologies to Casey.
+> [ Please Cc me on replies ]
+> 
+> I had a bug with sdhci which Pierre Ossman looked at for me.
+> 
+> In the end essentially the fix was to use HZ=1000 and nothing else. 
+> Pierre seemed to think that this was a bug in the scheduler.
 
--- 
-Stephen Smalley
-National Security Agency
+does the patch below help, even if you keep HZ=100? This doesnt look 
+like a scheduler issue, it's more of a timer/timing issue. Different HZ 
+means different msleep() results - and the mmc code does a loop of small 
+msleep delays.
 
+	Ingo
+
+-------------->
+---
+ drivers/mmc/core/core.h |    7 +------
+ 1 file changed, 1 insertion(+), 6 deletions(-)
+
+Index: linux/drivers/mmc/core/core.h
+===================================================================
+--- linux.orig/drivers/mmc/core/core.h
++++ linux/drivers/mmc/core/core.h
+@@ -36,12 +36,7 @@ void mmc_set_timing(struct mmc_host *hos
+ 
+ static inline void mmc_delay(unsigned int ms)
+ {
+-	if (ms < 1000 / HZ) {
+-		cond_resched();
+-		mdelay(ms);
+-	} else {
+-		msleep(ms);
+-	}
++	mdelay(ms);
+ }
+ 
+ void mmc_rescan(struct work_struct *work);
