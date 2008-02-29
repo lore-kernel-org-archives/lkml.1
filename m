@@ -1,120 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761390AbYB2SZg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761572AbYB2S0m@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761390AbYB2SZg (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Feb 2008 13:25:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756429AbYB2SZS
+	id S1761572AbYB2S0m (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Feb 2008 13:26:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755519AbYB2S0e
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Feb 2008 13:25:18 -0500
-Received: from colo.lackof.org ([198.49.126.79]:54776 "EHLO colo.lackof.org"
+	Fri, 29 Feb 2008 13:26:34 -0500
+Received: from er-systems.de ([85.25.136.202]:47245 "EHLO er-systems.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754504AbYB2SZQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 Feb 2008 13:25:16 -0500
-Date: Fri, 29 Feb 2008 11:25:04 -0700
-From: Grant Grundler <grundler@parisc-linux.org>
-To: Michael Ellerman <michael@ellerman.id.au>
-Cc: akepner@sgi.com, Tony Luck <tony.luck@intel.com>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>, Jes Sorensen <jes@sgi.com>,
-       Randy Dunlap <randy.dunlap@oracle.com>,
-       Roland Dreier <rdreier@cisco.com>,
-       James Bottomley <James.Bottomley@hansenpartnership.com>,
-       David Miller <davem@davemloft.net>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Grant Grundler <grundler@parisc-linux.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/3 v3] dma: document dma_{un}map_{single|sg}_attrs()
-	interface
-Message-ID: <20080229182504.GA18102@colo.lackof.org>
-References: <20080228032448.GS11012@sgi.com> <dc1166600802281845t1613beedj7a285399a21cd@mail.gmail.com>
+	id S1754504AbYB2S0d (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 29 Feb 2008 13:26:33 -0500
+X-Greylist: delayed 580 seconds by postgrey-1.27 at vger.kernel.org; Fri, 29 Feb 2008 13:26:33 EST
+Date: Fri, 29 Feb 2008 19:16:51 +0100 (CET)
+From: Thomas Voegtle <tv@lio96.de>
+To: linux-kernel@vger.kernel.org
+cc: tilman.baumann@collax.com, Andreas Hofmeister <andi@collax.com>
+Subject: permissions on /proc/tty/driver/
+Message-ID: <Pine.LNX.4.64.0802291912310.24941@er-systems.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <dc1166600802281845t1613beedj7a285399a21cd@mail.gmail.com>
-X-Home-Page: http://www.parisc-linux.org/
-User-Agent: Mutt/1.5.16 (2007-06-11)
+Content-Type: MULTIPART/MIXED; BOUNDARY="425052808-150254357-1204309011=:24941"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Feb 29, 2008 at 01:45:46PM +1100, Michael Ellerman wrote:
-> On Thu, Feb 28, 2008 at 2:24 PM,  <akepner@sgi.com> wrote:
-> >
-> >  Document the new dma_{un}map_{single|sg}_attrs() functions.
-> >
-> >  diff --git a/Documentation/DMA-attributes.txt b/Documentation/DMA-attributes.txt
-> >  index e69de29..36baea5 100644
-> >  --- a/Documentation/DMA-attributes.txt
-> >  +++ b/Documentation/DMA-attributes.txt
-> >  @@ -0,0 +1,29 @@
-> >  +                       DMA attributes
-> >  +                       ==============
-> >  +
-> >  +This document describes the semantics of the DMA attributes that are
-> >  +defined in linux/dma-attrs.h.
-> >  +
-> >  +
-> >  +DMA_ATTR_SYNC_ON_WRITE
-> >  +----------------------
-> >  +
-> >  +DMA_ATTR_SYNC_ON_WRITE is used on the IA64_SGI_SN2 architecture.
-> >  +It provides a mechanism for devices to explicitly order their DMA
-> >  +writes.
-> >  +
-> >  +On IA64_SGI_SN2 machines, DMA may be reordered within the NUMA
-> >  +interconnect. Allowing reordering improves performance, but in some
-> >  +situations it may be necessary to ensure that one DMA write is
-> >  +complete before another is visible. For example, if the device does
-> >  +a DMA write to indicate that data is available in memory, DMA of the
-> >  +"completion indication" can race with DMA of data.
-> >  +
-> >  +When a memory region is mapped with the DMA_ATTR_SYNC_ON_WRITE attribute,
-> >  +a write to that region causes all in-flight DMA to be flushed to memory.
-> >  +Any pending DMA will complete and be visible in memory before the write
-> >  +to the region with the DMA_ATTR_SYNC_ON_WRITE attribute becomes visible.
-> 
-> 
-> I'm not clear how this is all meant to work. Your intial patch says
-> this is an interface to pass "architecture-specific
-> attributes" from drivers through to the DMA mapping code, which is
-> fair enough - we want to do something similar.
-> 
-> But it's not clear that DMA_ATTR_SYNC_ON_WRITE is architecture
-> specific. If I was a driver writer might assume it works on all
-> platforms.
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
 
-That would be a fair assumption. But it is required to be a NOP on
-platforms that don't need the "hint" ("attr" or whatever you want
-to call it). Specific architectures (SN2 in this case) will need
-to implement something.
+--425052808-150254357-1204309011=:24941
+Content-Type: TEXT/PLAIN; charset=ISO-8859-15
+Content-Transfer-Encoding: 8BIT
 
-> And in fact in patch 3/3 you define it in
-> linux/dma-attrs.h, so it's not architecture specific.
 
-Correct. The same driver needs to compile on all architectures.
+Hi,
 
-> What is architecture specific is the semantic. DMA_ATTR_SYNC_ON_WRITE
-> is defined entirely in terms of what it does on ia64 hardware, and a
-> particular flavour thereof.
-> 
-> It just seems to me we're going to end up with a gazillion flags,
-> because DMA_ATTR_SYNC_ON_WRITE isn't quite the same semantic as what
-> Power can do. So we'll have to add
-> DMA_ATTR_SYNC_ON_WRITE_WRT_OTHER_SYNC_ON_WRITE_MAPPINGS_ONLY and so
-> on. Or, we end with subtle driver bugs because the semantics aren't
-> clear across platforms.
+we noticed that only root can enter /proc/tty/driver/, which appears to be 
+wrong, because the files therein are actually world readable...
 
-I agree. Just have to sort those issues out as people come up with them.
 
-> I guess I think the attributes should either be truly arch-specific,
-> ie. DMA_ATTR_IA64_SYNC_ON_WRITE. Or we need to come up with some well
-> defined, and architecture neutral semantics for what the flags mean.
 
-The latter. I have no intention of adding arch specific flags that
-only mean something on one arch. The intent here is to enable
-correct functionality on specific arches without impacting
-performance on arches that don't need those "attributes".
+Signed-off-by: Tilman Baumann <tilman.baumann@collax.comy>
+Signed-off-by: Thomas Voegtle <tv@lio96.de>
+---
+ fs/proc/proc_tty.c |    4 +++-
+ 1 files changed, 3 insertions(+), 1 deletions(-)
 
-hth,
-grant
+diff --git a/fs/proc/proc_tty.c b/fs/proc/proc_tty.c
+index 49816e0..eb73d96 100644
+--- a/fs/proc/proc_tty.c
++++ b/fs/proc/proc_tty.c
+@@ -224,7 +224,9 @@ void __init proc_tty_init(void)
+ 	 * password lengths and inter-keystroke timings during password
+ 	 * entry.
+ 	 */
+-	proc_tty_driver = proc_mkdir_mode("tty/driver", S_IRUSR | S_IXUSR, NULL);
++	proc_tty_driver = proc_mkdir_mode("tty/driver",
++			S_IRUSR|S_IXUSR|S_IRGRP|S_IXGRP|S_IROTH|S_IXOTH,
++			NULL);
+ 
+ 	create_proc_read_entry("tty/ldiscs", 0, NULL, tty_ldiscs_read_proc, NULL);
+ 	entry = create_proc_entry("tty/drivers", 0, NULL);
+-- 
+1.5.3
 
-> 
-> cheers
+      Thomas
+
+-- 
+ Thomas Vögtle    email: thomas@voegtle-clan.de
+ ----- http://www.voegtle-clan.de/thomas ------
+--425052808-150254357-1204309011=:24941--
