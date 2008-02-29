@@ -1,81 +1,138 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755988AbYB2DuT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755480AbYB2D62@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755988AbYB2DuT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Feb 2008 22:50:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751914AbYB2DuH
+	id S1755480AbYB2D62 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Feb 2008 22:58:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751906AbYB2D6S
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Feb 2008 22:50:07 -0500
-Received: from relay1.sgi.com ([192.48.171.29]:36830 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751581AbYB2DuG (ORCPT
-	<rfc822;@relay.sgi.com:linux-kernel@vger.kernel.org>);
-	Thu, 28 Feb 2008 22:50:06 -0500
-Date: Fri, 29 Feb 2008 14:50:00 +1100
-To: torvalds@linux-foundation.org
-Cc: linux-kernel@vger.kernel.org, xfs@oss.sgi.com, akpm@linux-foundation.org
-Subject: [GIT PULL] XFS update for 2.6.25-rc4
-User-Agent: nail 11.25 7/29/05
+	Thu, 28 Feb 2008 22:58:18 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:56372 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750951AbYB2D6R (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 28 Feb 2008 22:58:17 -0500
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Message-Id: <20080229035000.7B24058C4C0F@chook.melbourne.sgi.com>
-From: lachlan@sgi.com (Lachlan McIlroy)
+From: Roland McGrath <roland@redhat.com>
+To: Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>
+X-Fcc: ~/Mail/linus
+Cc: linux-kernel@vger.kernel.org
+Subject: [PATCH] x86_64 ia32 syscall restart fix
+X-Zippy-Says: Hey, wait a minute!!  I want a divorce!!..  you're not Clint Eastwood!!
+Message-Id: <20080229035707.EAE862700FD@magilla.localdomain>
+Date: Thu, 28 Feb 2008 19:57:07 -0800 (PST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Please pull from the for-linus branch:
-    git pull git://oss.sgi.com:8090/xfs/xfs-2.6.git for-linus
 
-This will update the following files:
+The code to restart syscalls after signals depends on checking for a
+negative orig_ax, and for particular negative -ERESTART* values in ax.
+These fields are 64 bits and for a 32-bit task they get zero-extended.
+The syscall restart behavior is lost, a regression from a native 32-bit
+kernel and from 64-bit tasks' behavior.  This patch fixes the problem by
+doing sign-extension where it matters.  For orig_ax, the only time the
+value should be -1 but winds up as 0x0ffffffff is via a 32-bit ptrace
+call.  So the patch changes ptrace to sign-extend the 32-bit orig_eax
+value when it's stored; it doesn't change the checks on orig_ax, though
+it uses the new current_syscall() inline to better document the subtle
+importance of the used of signedness there.  The ax value is stored a
+lot of ways and it seems hard to get them all sign-extended at their
+origins.  So for that, we use the current_syscall_ret() to sign-extend
+it only for 32-bit tasks at the time of the -ERESTART* comparisons.
 
- fs/xfs/linux-2.6/xfs_super.c |   14 +++++++-------
- fs/xfs/xfs_clnt.h            |    2 +-
- fs/xfs/xfs_ialloc.c          |    2 +-
- fs/xfs/xfs_mount.h           |    2 +-
- fs/xfs/xfs_vfsops.c          |    4 ++--
- 5 files changed, 12 insertions(+), 12 deletions(-)
+Signed-off-by: Roland McGrath <roland@redhat.com>
+---
+ arch/x86/kernel/ptrace.c    |    9 ++++++++-
+ arch/x86/kernel/signal_64.c |   38 +++++++++++++++++++++++++++++++++-----
+ 2 files changed, 41 insertions(+), 6 deletions(-)
 
-through these commits:
-
-commit b7405bb65a83e819dd3b21a6d9636c279d9ce79a
-Author: Niv Sardi <xaiki@sgi.com>
-Date:   Fri Feb 29 13:58:40 2008 +1100
-
-    [XFS] If you mount an XFS filesystem with no mount options at all, then
-    the "ikeep" option is set rather than "noikeep".
-    
-    This regression was introduced in 970451.
-    
-    With no mount options specified, xfs_parseargs() does the following:
-    
-    int ikeep = 0;
-    
-    args->flags |= XFSMNT_BARRIER;
-    
-    args->flags2 |= XFSMNT2_COMPAT_IOSIZE;
-    
-    if (!options)
-    
-    goto done;
-    
-    It only sets the above two options by default and before, it also used to
-    set XFSMNT_IDELETE by default.
-    
-    If options are specified, then
-    
-    if (!(args->flags & XFSMNT_DMAPI) && !ikeep)
-    
-    args->flags |= XFSMNT_IDELETE;
-    
-    is executed later on which is skipped by the "goto done;" above.
-    
-    The solution is to invert the logic.
-    
-    SGI-PV: 977771
-    SGI-Modid: xfs-linux-melb:xfs-kern:30590a
-    
-    Signed-off-by: Niv Sardi <xaiki@sgi.com>
-    Signed-off-by: Barry Naujok <bnaujok@sgi.com>
-    Signed-off-by: Josef 'Jeff' Sipek <jeffpc@josefsipek.net>
-    Signed-off-by: Lachlan McIlroy <lachlan@sgi.com>
+diff --git a/arch/x86/kernel/ptrace.c b/arch/x86/kernel/ptrace.c
+index d862e39..3975351 100644
+--- a/arch/x86/kernel/ptrace.c
++++ b/arch/x86/kernel/ptrace.c
+@@ -1035,10 +1035,17 @@ static int putreg32(struct task_struct *child, unsigned regno, u32 value)
+ 	R32(esi, si);
+ 	R32(ebp, bp);
+ 	R32(eax, ax);
+-	R32(orig_eax, orig_ax);
+ 	R32(eip, ip);
+ 	R32(esp, sp);
+ 
++	case offsetof(struct user32, regs.orig_eax):
++		/*
++		 * Sign-extend the value so that orig_eax = -1
++		 * causes (long)orig_ax < 0 tests to fire correctly.
++		 */
++		regs->orig_ax = (long) (s32) value;
++		break;
++
+ 	case offsetof(struct user32, regs.eflags):
+ 		return set_flags(child, value);
+ 
+diff --git a/arch/x86/kernel/signal_64.c b/arch/x86/kernel/signal_64.c
+index 7347bb1..ce317ee 100644
+--- a/arch/x86/kernel/signal_64.c
++++ b/arch/x86/kernel/signal_64.c
+@@ -311,6 +311,35 @@ give_sigsegv:
+ }
+ 
+ /*
++ * Return -1L or the syscall number that @regs is executing.
++ */
++static long current_syscall(struct pt_regs *regs)
++{
++	/*
++	 * We always sign-extend a -1 value being set here,
++	 * so this is always either -1L or a syscall number.
++	 */
++	return regs->orig_ax;
++}
++
++/*
++ * Return a value that is -EFOO if the system call in @regs->orig_ax
++ * returned an error.  This only works for @regs from @current.
++ */
++static long current_syscall_ret(struct pt_regs *regs)
++{
++#ifdef CONFIG_IA32_EMULATION
++	if (test_thread_flag(TIF_IA32))
++		/*
++		 * Sign-extend the value so (int)-EFOO becomes (long)-EFOO
++		 * and will match correctly in comparisons.
++		 */
++		return (int) regs->ax;
++#endif
++	return regs->ax;
++}
++
++/*
+  * OK, we're invoking a handler
+  */	
+ 
+@@ -327,9 +356,9 @@ handle_signal(unsigned long sig, siginfo_t *info, struct k_sigaction *ka,
+ #endif
+ 
+ 	/* Are we from a system call? */
+-	if ((long)regs->orig_ax >= 0) {
++	if (current_syscall(regs) >= 0) {
+ 		/* If so, check system call restarting.. */
+-		switch (regs->ax) {
++		switch (current_syscall_ret(regs)) {
+ 		        case -ERESTART_RESTARTBLOCK:
+ 			case -ERESTARTNOHAND:
+ 				regs->ax = -EINTR;
+@@ -426,10 +455,9 @@ static void do_signal(struct pt_regs *regs)
+ 	}
+ 
+ 	/* Did we come from a system call? */
+-	if ((long)regs->orig_ax >= 0) {
++	if (current_syscall(regs) >= 0) {
+ 		/* Restart the system call - no handlers present */
+-		long res = regs->ax;
+-		switch (res) {
++		switch (current_syscall_ret(regs)) {
+ 		case -ERESTARTNOHAND:
+ 		case -ERESTARTSYS:
+ 		case -ERESTARTNOINTR:
