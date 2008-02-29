@@ -1,39 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756533AbYB2CiR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757944AbYB2Cie@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756533AbYB2CiR (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Feb 2008 21:38:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753030AbYB2CiE
+	id S1757944AbYB2Cie (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Feb 2008 21:38:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754567AbYB2CiK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Feb 2008 21:38:04 -0500
-Received: from ug-out-1314.google.com ([66.249.92.174]:22698 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752217AbYB2CiC (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Feb 2008 21:38:02 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:to:cc:in-reply-to:references:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=vwjFXEyMX8FB2fInbX8jIsuwLnFUIW5Rmfa3kVzsnTjOw8t9ZiPBlsvXBQ3jDsZv5ckeS0G9MWtI2M8tn7wMBX4CnXZ6e6JMnK8lBfFdxvICJ8pkdhhEZcvOr+yFCjaOVjM1NoIHeFeNx/BZQkbiC6TEF4IhCq/CwnQSvSM6O6w=
-Subject: Re: [PATCH 11/12] Generic semaphore implementation
-From: Harvey Harrison <harvey.harrison@gmail.com>
-To: Matthew Wilcox <matthew@wil.cx>
-Cc: linux-kernel@vger.kernel.org, Matthew Wilcox <willy@linux.intel.com>
-In-Reply-To: <1204180441-8540-11-git-send-email-matthew@wil.cx>
-References: <20080227003605.GC5715@parisc-linux.org>
-	 <1204180441-8540-1-git-send-email-matthew@wil.cx>
-	 <1204180441-8540-2-git-send-email-matthew@wil.cx>
-	 <1204180441-8540-3-git-send-email-matthew@wil.cx>
-	 <1204180441-8540-4-git-send-email-matthew@wil.cx>
-	 <1204180441-8540-5-git-send-email-matthew@wil.cx>
-	 <1204180441-8540-6-git-send-email-matthew@wil.cx>
-	 <1204180441-8540-7-git-send-email-matthew@wil.cx>
-	 <1204180441-8540-8-git-send-email-matthew@wil.cx>
-	 <1204180441-8540-9-git-send-email-matthew@wil.cx>
-	 <1204180441-8540-10-git-send-email-matthew@wil.cx>
-	 <1204180441-8540-11-git-send-email-matthew@wil.cx>
+	Thu, 28 Feb 2008 21:38:10 -0500
+Received: from gate.crashing.org ([63.228.1.57]:50200 "EHLO gate.crashing.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754262AbYB2CiJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 28 Feb 2008 21:38:09 -0500
+Subject: Weirdness in pci_read_bases()
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Reply-To: benh@kernel.crashing.org
+To: linux-pci@atrey.karlin.mff.cuni.cz
+Cc: Linux Kernel list <linux-kernel@vger.kernel.org>,
+       Matthew Wilcox <matthew@wil.cx>
 Content-Type: text/plain
-Date: Thu, 28 Feb 2008 18:37:59 -0800
-Message-Id: <1204252679.20280.115.camel@brick>
+Date: Fri, 29 Feb 2008 13:37:47 +1100
+Message-Id: <1204252667.15052.402.camel@pasglop>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.12.1 
 Content-Transfer-Encoding: 7bit
@@ -41,39 +25,52 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> +/*
-> + * Because this function is inlined, the 'state' parameter will be constant,
-> + * and thus optimised away by the compiler.
-> + */
+Hi !
 
-If so, is unlikely() still needed?
+There is something dodgy going on in pci_read_bases().
 
-> +static inline int __sched __down_common(struct semaphore *sem, long state)
-> +{
-> +	int result = 0;
-> +	struct task_struct *task = current;
-> +	struct semaphore_waiter waiter;
-> +
-> +	list_add_tail(&waiter.list, &sem->wait_list);
-> +	waiter.task = task;
-> +	waiter.up = 0;
-> +
-> +	for (;;) {
-> +		if (unlikely((state == TASK_INTERRUPTIBLE &&
-> +					signal_pending(task)) ||
-> +			     (state == TASK_KILLABLE &&
-> +					fatal_signal_pending(task))))
-> +			goto interrupted;
+In addition to the fact (or related to it) that we tend to treat
+res->start == 0 as meaning "unassigned" (which at this stage is mostly
+incorrect, but let's say I can cope), however, there is some bit of code
+that I think is just plain wrong:
 
-		if (state == TASK_INTERRUPTIBLE && signal_pending(task))
-			goto interrupted;
-		if (state == TASK_KILLABLE && fatal_signal_pending(task))
-			goto interrupted;
+		reg = PCI_BASE_ADDRESS_0 + (pos << 2);
+		pci_read_config_dword(dev, reg, &l);
+		pci_write_config_dword(dev, reg, ~0);
+		pci_read_config_dword(dev, reg, &sz);
+		pci_write_config_dword(dev, reg, l);
+		if (!sz || sz == 0xffffffff)
+			continue;
+		if (l == 0xffffffff)
+			l = 0;
 
-Other than that small bit, looks great, any thoughts to getting rid of
-all the likely/unlikely as well?  If they're no longer performance
-critical, it would be nice to have it that little bit cleaner.
+So here, we read the BAR value, which at this stage could either be some
+assigned address or some ff's from a freshly unassigned BAR. _however_
+that test against 0xffffffff looks totally bogus to me.
 
+If we read that value, we write 0 in l. Which means that if we read some
+unassigned resource that had the address space bits set to IO, we
+overwrite this with a bit encoding that means Memory, and further along,
+start sizing & treating this as a memory resource.
 
-Harvey
+In fact, a BAR value should always contain a 0 bit. A Memory BAR must
+contain a 0 at the bottom, and an IO BAR should contain a 0 in bit 1.
+And we do check that case fine when reading back sz.
+
+Thus a l value of 0xffffffff should not happen in practice, and if it
+does, we should -at-least- try to get the address space bits from sz
+(since in this case sz looks allright), not from l, no ? Or maybe just
+skip the whole resource ?
+
+Do we have practical cases where we see that 0xffffffff value ?
+
+This isn't a problem I'm encountering in practice. I just noticed that
+while trying to audit what it would take to fix the code to stop using
+res->start = 0 as a way to mark unassigned resources (unrelated), so it
+doesn't -need- to be fixed per-se, but I'm curious where that came from
+in the first place.
+
+Cheers,
+Ben.
+
 
