@@ -1,91 +1,125 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932255AbYB2SaJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932608AbYB2ScS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932255AbYB2SaJ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Feb 2008 13:30:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757080AbYB2S3x
+	id S932608AbYB2ScS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Feb 2008 13:32:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757015AbYB2ScG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Feb 2008 13:29:53 -0500
-Received: from pat.uio.no ([129.240.10.15]:43945 "EHLO pat.uio.no"
+	Fri, 29 Feb 2008 13:32:06 -0500
+Received: from mga11.intel.com ([192.55.52.93]:63306 "EHLO mga11.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755346AbYB2S3v (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 Feb 2008 13:29:51 -0500
-Subject: Re: [PATCH 01/11] Security: Add hook to get full maclabel xattr
-	name
-From: Trond Myklebust <trond.myklebust@fys.uio.no>
-To: casey@schaufler-ca.com
-Cc: Christoph Hellwig <hch@infradead.org>,
-       Dave Quigley <dpquigl@tycho.nsa.gov>,
-       Stephen Smalley <sds@tycho.nsa.gov>, viro@ftp.linux.org.uk,
-       bfields@fieldses.org, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org,
-       LSM List <linux-security-module@vger.kernel.org>
-In-Reply-To: <856298.92497.qm@web36605.mail.mud.yahoo.com>
-References: <856298.92497.qm@web36605.mail.mud.yahoo.com>
-Content-Type: text/plain
-Date: Fri, 29 Feb 2008 10:28:39 -0800
-Message-Id: <1204309719.10512.36.camel@heimdal.trondhjem.org>
+	id S1756890AbYB2ScF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 29 Feb 2008 13:32:05 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.25,427,1199692800"; 
+   d="scan'208";a="526725479"
+Date: Fri, 29 Feb 2008 10:24:32 -0800
+From: Venki Pallipadi <venkatesh.pallipadi@intel.com>
+To: Len Brown <lenb@kernel.org>
+Cc: Jan Willies <jan@willies.info>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       linux-acpi@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: 100% C0 with 2.6.25-rc
+Message-ID: <20080229182432.GA28660@linux-os.sc.intel.com>
+References: <47BD600F.9090502@willies.info> <200802211733.54759.rjw@sisk.pl> <47BEF0A6.9000405@willies.info> <B5B0CFF685D7DF46A05CF1678CFB42ED20E00658@orsmsx423.amr.corp.intel.com>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
-Content-Transfer-Encoding: 7bit
-X-UiO-Resend: resent
-X-UiO-Spam-info: not spam, SpamAssassin (score=0.0, required=5.0, autolearn=disabled, none)
-X-UiO-Scanned: 5FBB9FBD67A16DECF7FF93D480FF80595E986F2E
-X-UiO-SR-test: 0C6E007704C78D1B2AFAA4AEAD3D234BA8173685
-X-UiO-SPAM-Test: remote_host: 129.240.10.9 spam_score: 0 maxlevel 200 minaction 2 bait 0 mail/h: 217 total 7160902 max/h 8345 blacklist 0 greylist 0 ratelimit 0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <B5B0CFF685D7DF46A05CF1678CFB42ED20E00658@orsmsx423.amr.corp.intel.com>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2008-02-29 at 09:46 -0800, Casey Schaufler wrote:
-> > There is no room for extensions that allow clients+servers to establish
-> > arbitrary private protocols.
+On Fri, Feb 22, 2008 at 09:03:55AM -0800, Pallipadi, Venkatesh wrote:
+>  
 > 
-> I think that I understand that you believe that, what I
-> don't understand is why you believe that. Is it an artifact
-> of the locking protocol that only worked about half the
-> time, and then in a half donkied way?
+> >-----Original Message-----
+> >From: Jan Willies [mailto:jan@willies.info] 
+> >Sent: Friday, February 22, 2008 7:56 AM
+> >To: Rafael J. Wysocki
+> >Cc: linux-acpi@vger.kernel.org; Ingo Molnar; LKML; Thomas 
+> >Gleixner; Pallipadi, Venkatesh
+> >Subject: Re: 100% C0 with 2.6.25-rc
+> >
+> >Rafael J. Wysocki wrote:
+> >> On Thursday, 21 of February 2008, Jan Willies wrote:
+> >>> Since 2.6.25-rc1 I have a lot of wakeups/s (≈134191,4) and 
+> >spend 100% in C0.
+> >>> It worked fine with 2.6.24 and commandline nolapic. Without 
+> >nolapic I had 80k
+> >>> wakeups/s after some time, but not right from the start like now.  
+> >> 
+> >> We have a regression from 2.6.24, apparently interrupts-related.
+> >
+> >After a lot of bisecting I've found the bad commit: 
+> >
+> >9b12e18cdc1553de62d931e73443c806347cd974 is first bad commit
+> >commit 9b12e18cdc1553de62d931e73443c806347cd974
+> >Author: venkatesh.pallipadi@intel.com <venkatesh.pallipadi@intel.com>
+> >Date:   Thu Jan 31 17:35:05 2008 -0800
+> >
+> >    ACPI: cpuidle: Support C1 idle time accounting
+> >    
+> >    Show C1 idle time in /sysfs cpuidle interface. C1 idle time may not
+> >    be entirely accurate in all cases. It includes the time spent
+> >    in the interrupt handler after wakeup with "hlt" based C1. 
+> >But, it will
+> >    be accurate with "mwait" based C1.
+> >
+> >
+> >Reverting the commit brings my laptop back to C2.
+> >
 > 
-> I'm not trying to be an obstructionist idiot here, even if
-> that's how it may appear. I have my pet solution, I really
-> don't see the problem with it, and it looks to me like the
-> arguements against it are either so obvious I'm missing them
-> (does happen) or based on dogmas I don't subscribe to.
+> Thanks for the bisect info. I will look at the bad side effects that patch
+> may be having and I should have a patch for you to test later today....
 > 
-> Thank you for helping me (and maybe some others) understand
-> the issues we're up against so that I (we) can address issues
-> better in the future.
 
-Two of the main reasons for NFS's success as a protocol are the facts
-that it is (more or less) standardized, while remaining (again more or
-less) back-end agnostic. I can take pretty much any client from any one
-vendor and any server from any other vendor, and make them work
-together.
+Jan replied later on this issue that he is not able to reproduce this problem
+any more. Looking at the above, I could see a potential problem where
+menu governor may get confused by the C-state residency time from poll
+idle or C1 idle, where this timing info is not accurate. This inaccuracy is
+due to interrupts being handled before we account for C-state exit.
 
-The reason why this works is mainly because the protocol has built upon
-a consensus assumption of POSIX filesystem semantics on the servers
-(hence, BTW, the pain when the IETF requested that we add
-Microsoft-compatible semantics to NFSv4 as a precondition for making it
-a standard).
+Patch below fixes this and is needed regardless of the issue pointed out by
+Jan Willies here. But, I am suspecting that the patch will also fix the
+problem reported by Jan.
 
-If you look back at the NFS extensions that failed, and fell by the
-road, then they tend to be the semi-private non-posix extensions
-(typically ACL semantics, xattrs/named attributes, "secure NFS",...)
-which break the underlying assumption that I can mix and match clients
-and servers.
+Do not mark TIME_VALID for CO poll state.
+Mark C1 time as valid only with mwait (CSTATE_FFH) entry method.
 
-<rhetorical>Does that mean that we shouldn't provide extensions
-protocols for doing these things?</rhetorical> Of course not... The
-point about such extensions is that they need to be agreed upon by the
-NFS community/stakeholders, in much the same way that any changes to the
-kernel need to be agreed upon by the Linux community/stakeholders.
+This makes governors use the timing information only when it is correct and
+eliminates any wrong policy decisions that may result from invalid timing
+information.
 
-Adding a mechanism that allows subsets of clients/servers to set up
-private protocols circumvents that consensus process, and are therefore
-a bad thing, and should be avoided. That would be engaging in the exact
-same "embrace, extend and extinguish" tactics for which we keep
-criticizing certain other monopolists.
+Signed-off-by: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
 
-This should be a no-brainer...
-
-Trond
-
+Index: linux-2.6.git/drivers/acpi/processor_idle.c
+===================================================================
+--- linux-2.6.git.orig/drivers/acpi/processor_idle.c	2008-02-15 02:18:14.000000000 -0800
++++ linux-2.6.git/drivers/acpi/processor_idle.c	2008-02-26 07:02:30.000000000 -0800
+@@ -1686,7 +1686,9 @@
+ 		switch (cx->type) {
+ 			case ACPI_STATE_C1:
+ 			state->flags |= CPUIDLE_FLAG_SHALLOW;
+-			state->flags |= CPUIDLE_FLAG_TIME_VALID;
++			if (cx->entry_method == ACPI_CSTATE_FFH)
++				state->flags |= CPUIDLE_FLAG_TIME_VALID;
++
+ 			state->enter = acpi_idle_enter_c1;
+ 			dev->safe_state = state;
+ 			break;
+Index: linux-2.6.git/drivers/cpuidle/cpuidle.c
+===================================================================
+--- linux-2.6.git.orig/drivers/cpuidle/cpuidle.c	2008-02-15 02:18:14.000000000 -0800
++++ linux-2.6.git/drivers/cpuidle/cpuidle.c	2008-02-22 03:59:01.000000000 -0800
+@@ -224,7 +224,7 @@
+ 	state->exit_latency = 0;
+ 	state->target_residency = 0;
+ 	state->power_usage = -1;
+-	state->flags = CPUIDLE_FLAG_POLL | CPUIDLE_FLAG_TIME_VALID;
++	state->flags = CPUIDLE_FLAG_POLL;
+ 	state->enter = poll_idle;
+ }
+ #else
