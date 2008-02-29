@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759483AbYB2LFv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759621AbYB2LG6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759483AbYB2LFv (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Feb 2008 06:05:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755930AbYB2LFn
+	id S1759621AbYB2LG6 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Feb 2008 06:06:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756115AbYB2LGu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Feb 2008 06:05:43 -0500
-Received: from ns1.suse.de ([195.135.220.2]:47907 "EHLO mx1.suse.de"
+	Fri, 29 Feb 2008 06:06:50 -0500
+Received: from mail.suse.de ([195.135.220.2]:48038 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755654AbYB2LFn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 Feb 2008 06:05:43 -0500
-Date: Fri, 29 Feb 2008 12:05:42 +0100
-Message-ID: <s5hfxvcqayh.wl%tiwai@suse.de>
+	id S1755982AbYB2LGu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 29 Feb 2008 06:06:50 -0500
+Date: Fri, 29 Feb 2008 12:06:48 +0100
+Message-ID: <s5hejawqawn.wl%tiwai@suse.de>
 From: Takashi Iwai <tiwai@suse.de>
 To: Harvey Harrison <harvey.harrison@gmail.com>
 Cc: LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 1/8] sound: emuproc.c fix signedness warning
-In-Reply-To: <1204225872.20280.79.camel@brick>
-References: <1204225872.20280.79.camel@brick>
+Subject: Re: [PATCH 2/3] sound: patch_sigmatel.c fix shadowed variable warning
+In-Reply-To: <1204244290.20280.102.camel@brick>
+References: <1204244290.20280.102.camel@brick>
 User-Agent: Wanderlust/2.15.5 (Almost Unreal) SEMI/1.14.6 (Maruoka)
  FLIM/1.14.7 (=?ISO-8859-4?Q?Sanj=F2?=) APEL/10.6 MULE XEmacs/21.5 (beta28)
  (fuki) (+CVS-20070806) (i386-suse-linux)
@@ -26,20 +26,20 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-At Thu, 28 Feb 2008 11:11:12 -0800,
+At Thu, 28 Feb 2008 16:18:10 -0800,
 Harvey Harrison wrote:
 > 
-> Reading regs from the fpga into an int instead of a u32, trivial
-> fix.
-> sound/pci/emu10k1/emuproc.c:422:34: warning: incorrect type in argument 3 (different signedness)
-> sound/pci/emu10k1/emuproc.c:422:34:    expected unsigned int [usertype] *value
-> sound/pci/emu10k1/emuproc.c:422:34:    got int *<noident>
+> Temp variable in the loop shadows the second argument (which is otherwise
+> unused in this function).  Change this to defcfg as it is used to hold
+> the default config.
+> sound/pci/hda/patch_sigmatel.c:2759:18: warning: symbol 'cfg' shadows an earlier one
+> sound/pci/hda/patch_sigmatel.c:2734:26: originally declared here
 > 
 > Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
 
-Thanks, all applied to ALSA tree (with trivial coding-style fixes --
-could you run checkpatch.pl at the next time and fix the issues
-together?)
+Thanks, applied to ALSA tree.
+(Oh it's using long instead of int - although it's harmless, I'll fix
+ soon...)
 
 
 Takashi
