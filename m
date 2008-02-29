@@ -1,56 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758788AbYB2HLU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758292AbYB2HPu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758788AbYB2HLU (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Feb 2008 02:11:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754382AbYB2HLL
+	id S1758292AbYB2HPu (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Feb 2008 02:15:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754669AbYB2HPm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Feb 2008 02:11:11 -0500
-Received: from mail.gmx.net ([213.165.64.20]:49015 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1753619AbYB2HLK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 Feb 2008 02:11:10 -0500
-X-Authenticated: #14349625
-X-Provags-ID: V01U2FsdGVkX1/afbYyprPagTrngw9xKh7yIOGlNmTvVUgHWIYqYk
-	9MsKcVpc+Qzzst
-Subject: Re: [PATCH] sched: revert load_balance_monitor()
-From: Mike Galbraith <efault@gmx.de>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Dhaval Giani <dhaval@linux.vnet.ibm.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Srivatsa Vaddagiri <vatsa@in.ibm.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-In-Reply-To: <1204215191.4319.7.camel@homer.simson.net>
-References: <1203942167.6242.142.camel@lappy>
-	 <1203949799.4688.9.camel@homer.simson.net>
-	 <20080225143518.GA29275@linux.vnet.ibm.com>
-	 <1203950233.4688.11.camel@homer.simson.net>
-	 <20080228132627.GA24096@elte.hu> <1204215191.4319.7.camel@homer.simson.net>
-Content-Type: text/plain
-Date: Fri, 29 Feb 2008 08:11:05 +0100
-Message-Id: <1204269065.6143.20.camel@homer.simson.net>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.0 
-Content-Transfer-Encoding: 7bit
-X-Y-GMX-Trusted: 0
+	Fri, 29 Feb 2008 02:15:42 -0500
+Received: from colo.lackof.org ([198.49.126.79]:39455 "EHLO colo.lackof.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754503AbYB2HPl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 29 Feb 2008 02:15:41 -0500
+Date: Fri, 29 Feb 2008 00:15:25 -0700
+From: Grant Grundler <grundler@parisc-linux.org>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: linux-pci@atrey.karlin.mff.cuni.cz,
+       Linux Kernel list <linux-kernel@vger.kernel.org>,
+       Matthew Wilcox <matthew@wil.cx>
+Subject: Re: Weirdness in pci_read_bases()
+Message-ID: <20080229071525.GA14419@colo.lackof.org>
+References: <1204252667.15052.402.camel@pasglop>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1204252667.15052.402.camel@pasglop>
+X-Home-Page: http://www.parisc-linux.org/
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-On Thu, 2008-02-28 at 17:13 +0100, Mike Galbraith wrote:
-> On Thu, 2008-02-28 at 14:26 +0100, Ingo Molnar wrote: 
+On Fri, Feb 29, 2008 at 01:37:47PM +1100, Benjamin Herrenschmidt wrote:
+> Hi !
 > 
-> > Mike, could you check whether today's sched-devel.git (which includes 
-> > the full revert) works well for you? (with group scheduler enabled)
-> 
-> No, it's fairly lurchy with three root chew-max and one user chew-max
-> running.  Moving the mouse around while they're running, I can see/feel
-> the load, and max latency for the user chew-max quickly shoots to
-> >500ms.
+> There is something dodgy going on in pci_read_bases().
+...
+> 		if (l == 0xffffffff)
+> 			l = 0;
+...
+> Thus a l value of 0xffffffff should not happen in practice, and if it
+> does, we should -at-least- try to get the address space bits from sz
+> (since in this case sz looks allright), not from l, no ? Or maybe just
+> skip the whole resource ?
 
-fair-group: single RQ approach was responsible for the lurchiness.  In
-testing with that commit reverted, I've hit a couple anomalies.  Details
-and mondo data sent offline.
+I agree this code looks wrong.
 
-	-Mike
+I used "the google" to track this down and at least got a bit
+closer to when this was added: 2.3.15 it seems:
 
+	http://www.linuxhq.com/kernel/v2.3/15/drivers/pci/pci.c
+
+--- v2.3.14/linux/drivers/pci/pci.c   Thu Aug 12 11:50:14 1999
++++ linux/drivers/pci/pci.c   Mon Aug 23 13:47:35 1999
+
+It doesn't explain why but I suspect knowing the timeframe should
+make the search a bit easier.
+
+I have to confess. This is right around the time I got involved
+with the linux kernel developement and specifically the parisc-linux.org
+port. I was rewriting Alan Cox's first cut of Dino PCI Host-bus controller
+"driver" (IRQ and PCI bus support for Dino chip).
+
+
+Hrm...found an earlier reference to similar code:
+
+http://www.srcdoc.com/linux_2.2.26/drivers_2pci_2pci_8c-source.html
+
+...
+00136         for(reg=0; reg<howmany; reg++) {
+00137                 pci_read_config_dword(dev, PCI_BASE_ADDRESS_0 + (reg << 2), &l);
+00138                 if (l == 0xffffffff)
+00139                         continue;
+00140                 dev->base_address[reg] = l;
+...
+
+This is a check to avoid mucking with 64-bit BARs.
+But a bit later where pci_read_bases is called from:
+
+00225                         pci_read_bases(dev, 6);
+00226                         pcibios_read_config_dword(bus->number, devfn, PCI_ROM_ADDRESS, &l);
+00227                         dev->rom_address = (l == 0xffffffff) ? 0 : l;
+00228                         break;
+
+The Expansion ROM BAR was clearly treated differently and I don't know why.
+
+...
+> Do we have practical cases where we see that 0xffffffff value ?
+
+I can think of two cases this _might_ (but shouldn't) happen.
+1) We probe the upper 32-bits of a 64-bit BAR and it already
+contains 0xffffffff. This would be a bug in the probing IMHO.
+
+2) PCI device ceases to talk to PCI Host and we get a PCI master abort.
+I expect ~0 to be returned by HW in this case.
+We need to skip this device and/or restart the probing
+of this device (and possible others in the same PCI segment.)
+
+hth,
+grant
