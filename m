@@ -1,94 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932381AbYB2NS2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932288AbYB2NZm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932381AbYB2NS2 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Feb 2008 08:18:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753482AbYB2NSS
+	id S932288AbYB2NZm (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Feb 2008 08:25:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754426AbYB2NZd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Feb 2008 08:18:18 -0500
-Received: from g1t0028.austin.hp.com ([15.216.28.35]:26179 "EHLO
-	g1t0028.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753271AbYB2NSR (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 Feb 2008 08:18:17 -0500
-Message-ID: <47C8061A.6080009@hp.com>
-Date: Fri, 29 Feb 2008 08:18:18 -0500
-From: Mark Seger <Mark.Seger@hp.com>
-Organization: Consulting and Architecture
-User-Agent: Thunderbird 2.0.0.9 (Windows/20071031)
+	Fri, 29 Feb 2008 08:25:33 -0500
+Received: from scrub.xs4all.nl ([194.109.195.176]:50168 "EHLO scrub.xs4all.nl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753470AbYB2NZc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 29 Feb 2008 08:25:32 -0500
+Date: Fri, 29 Feb 2008 14:22:01 +0100 (CET)
+From: Roman Zippel <zippel@linux-m68k.org>
+X-X-Sender: roman@scrub.home
+To: Yinghai Lu <yhlu.kernel@gmail.com>
+cc: Sam Ravnborg <sam@ravnborg.org>, Ingo Molnar <mingo@elte.hu>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       kiran@scalemp.com, shai@scalemp.com, Glauber Costa <gcosta@redhat.com>,
+       linux-kbuild <linux-kbuild@vger.kernel.org>
+Subject: Re: [PATCH 1/3] fix recursive dependencies
+In-Reply-To: <86802c440802282105j2c0d0ce3o551c3afdcc5c2b17@mail.gmail.com>
+Message-ID: <Pine.LNX.4.64.0802291417140.2723@scrub.home>
+References: <200802210258.45011.yinghai.lu@sun.com>  <200802241832.37850.yinghai.lu@sun.com>
+  <200802242136.28744.yinghai.lu@sun.com>  <200802242243.49576.yinghai.lu@sun.com>
+  <20080226194058.GA31438@uranus.ravnborg.org>  <Pine.LNX.4.64.0802290443440.2723@scrub.home>
+ <86802c440802282105j2c0d0ce3o551c3afdcc5c2b17@mail.gmail.com>
 MIME-Version: 1.0
-To: util-linux-ng@vger.kernel.org, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org
-Subject: Collectl now support monitoring Interrupts by CPU
-References: <477FDAA8.2030001@hp.com>
-In-Reply-To: <477FDAA8.2030001@hp.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-In keeping with the spirit of adding new useful features when they help 
-solve real world problems, I've added this ability to collectl as a 
-direct result of a problem we were recently having when doing some 
-network performance testing.  It turned out all the interrupts were 
-being processed by cpu0 (this was on an 8-core system) but all collectl 
-told us was the aggregate number!  Once we moved to a NIC/driver that 
-supported multiple queues that could distribute interrupts to multiple 
-CPUs it only made sense to enhance collectl to let us verify that this 
-was indeed happening - I personally find examining /proc/interrupts for 
-changes more trouble than it's worth.
+Hi,
 
-In any event, the following is an example of how collectl can present 
-this data, first summarized by CPU:
+On Thu, 28 Feb 2008, Yinghai Lu wrote:
 
-#Time     Cpu0 Cpu1 Cpu2 Cpu3 Cpu4 Cpu5 Cpu6 Cpu7
-12:49:55  4828  16K 1000  16K   18  16K  16K    0
-12:49:56  4804  16K 1000  16K    0  16K  16K    0
-12:49:57  4811  16K 1000  16K   18  16K  16K    0
-12:49:58  4789  16K 1000  16K    0  17K  16K   44
+> x86: PARAVIRT needed by PARAVIRT_GUEST or X86_VSMP
+> x86: vSMP selection in config
 
-and here by the type of the interrupt itself:
+Sorry, I hadn't seen there already was a followup.
 
-# INTERRUPT DETAILS
-#          Int    Cpu0   Cpu1   Cpu2   Cpu3   Cpu4   Cpu5   Cpu6   Cpu7 
-  Type            Device(s)
-12:48:50   082       0      0      0   7731      0      0      0      
-0   PCI-MSI-X       eth2 (queue 0)
-12:48:50   098       0      0      0      0   2037      0      0      
-0   PCI-MSI-X       eth2 (queue 2)
-12:48:50   122       0      0   2240      0      0      0      0      
-0   PCI-MSI-X       eth2 (queue 5)
-12:48:50   138       0   7084      0      0      0      0      0      
-0   PCI-MSI-X       eth2 (queue 7)
-12:48:50   154       0      0      0      0      0   7723      0      
-0   PCI-MSI-X       eth3 (queue 0)
-12:48:50   162    9082      0      0      0      0      0      0      
-0   PCI-MSI-X       eth3 (queue 1)
-12:48:50   178       0      0      0      0      0      0   8253      
-0   PCI-MSI-X       eth3 (queue 3)
-12:48:50   210       0      0      0      0      0      0      0   
-6417   PCI-MSI-X       eth3 (queue 7)
-12:48:50   218       1      0      0      0      0      0      0      
-0   PCI-MSI         eth0
+> in x86.git#testing to use Roman's three patches.
 
-You can also look at all CPU loads and interrupts together like this:
+Only the first patch needs merging, the other two can wait a little.
 
-# SINGLE CPU STATISTICS
-#            CPU  USER NICE  SYS WAIT IRQ  SOFT STEAL IDLE INTRPT
-07:09:28       0     0    0    0    0    0    0     0  100     16
-07:09:28       1     0    0    0    0    0    0     0  100      0
-07:09:28       2     0    0    0    0    0    0     0  100    999
-07:09:28       3     0    0    0    0    0    0     0  100     16
-
-For those not familiar with collectl, you can collect virtually 
-everything all the existing linux 'stat' utilitie provide plus a lot 
-more such as processes (including I/O stats), Infininband, Quadrics, 
-Slab, Lustre and more.  Plus a lot more feature too numerous to list but 
-there's a pretty good summary here - 
-http://collectl.sourceforge.net/Features.html
-
-But don't take my word for it, check out the website at 
-http://collectl.sourceforge.net/ where you can see a pretty good set of 
-examples in the documentation and even follow the tutorial.
-
--mark
+bye, Roman
