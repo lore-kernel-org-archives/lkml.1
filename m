@@ -1,77 +1,155 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756422AbYB2F40@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758067AbYB2F5q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756422AbYB2F40 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Feb 2008 00:56:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752654AbYB2F4R
+	id S1758067AbYB2F5q (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Feb 2008 00:57:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752083AbYB2F5i
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Feb 2008 00:56:17 -0500
-Received: from smtp1.linux-foundation.org ([207.189.120.13]:49855 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751684AbYB2F4Q (ORCPT
+	Fri, 29 Feb 2008 00:57:38 -0500
+Received: from E23SMTP02.au.ibm.com ([202.81.18.163]:39741 "EHLO
+	e23smtp02.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751983AbYB2F5h (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 Feb 2008 00:56:16 -0500
-Date: Thu, 28 Feb 2008 21:55:03 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Mark Pearson <devnull.port@googlemail.com>
-Cc: Karol Kozimor <sziwan@hell.org.pl>, Julia Lawall <julia@diku.dk>,
-       corentincj@iksaif.net, sziwan@users.sourceforge.net,
-       acpi4asus-user@lists.sourceforge.net, linux-kernel@vger.kernel.org,
-       kernel-janitors@vger.kernel.org, Len Brown <lenb@kernel.org>
-Subject: Re: [PATCH 2/9] drivers/acpi/asus_acpi.c: Correct use of ! and &
-Message-Id: <20080228215503.b942bb3c.akpm@linux-foundation.org>
-In-Reply-To: <47C5ABFB.3050607@googlemail.com>
-References: <Pine.LNX.4.64.0802262142120.18200@ask.diku.dk>
-	<7C626792-02A6-4BE6-B5F2-D75899F3990C@hell.org.pl>
-	<47C5ABFB.3050607@googlemail.com>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Fri, 29 Feb 2008 00:57:37 -0500
+Date: Fri, 29 Feb 2008 11:27:30 +0530
+From: Dhaval Giani <dhaval@linux.vnet.ibm.com>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>, Ingo Molnar <mingo@elte.hu>,
+       Sudhir Kumar <skumar@linux.vnet.ibm.com>,
+       Balbir Singh <balbir@in.ibm.com>,
+       Aneesh Kumar KV <aneesh.kumar@linux.vnet.ibm.com>,
+       lkml <linux-kernel@vger.kernel.org>, vgoyal@redhat.com,
+       serue@us.ibm.com, menage@google.com
+Subject: Re: [RFC, PATCH 1/2] sched: allow the CFS group scheduler to have
+	multiple levels
+Message-ID: <20080229055730.GA5478@linux.vnet.ibm.com>
+Reply-To: Dhaval Giani <dhaval@linux.vnet.ibm.com>
+References: <20080225141504.GA27746@linux.vnet.ibm.com> <20080225141703.GB29213@linux.vnet.ibm.com> <1204227766.6243.41.camel@lappy>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1204227766.6243.41.camel@lappy>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 27 Feb 2008 19:29:15 +0100 Mark Pearson <devnull.port@googlemail.com> wrote:
-
-> Karol Kozimor wrote:
-> > On 26-02-2008, at 21:42, Julia Lawall wrote:
-> >>      if (invert)        /* invert target value */
-> >> -        led_out = !led_out & 0x1;
-> >> +        led_out = !(led_out & 0x1);
-> >>
-> >>      if (!write_acpi_int(hotk->handle, ledname, led_out, NULL))
-> >>          printk(KERN_WARNING "Asus ACPI: LED (%s) write failed\n",
-> > 
-> > 
-> > IIRC we're just supposed to flip the last bit here, so the original code
-> > is correct.
-> > Best regards,
-> > 
+On Thu, Feb 28, 2008 at 08:42:46PM +0100, Peter Zijlstra wrote:
 > 
-> Seems an odd way of doing:
+> On Mon, 2008-02-25 at 19:47 +0530, Dhaval Giani wrote:
+> > This patch makes the group scheduler multi hierarchy aware.
 > 
-> 	led_out ^= 0x01;
+> Ok, good thing to do in principle
+> 
 
-It does.
+thanks!
 
-> It this due to some optimisation?
+> > Signed-off-by: Dhaval Giani <dhaval@linux.vnet.ibm.com>
+> > 
+> > ---
+> >  include/linux/sched.h |    2 +-
+> >  kernel/sched.c        |   41 ++++++++++++++++++++++++-----------------
+> >  2 files changed, 25 insertions(+), 18 deletions(-)
+> > 
+> > Index: linux-2.6.25-rc2/include/linux/sched.h
+> > ===================================================================
+> > --- linux-2.6.25-rc2.orig/include/linux/sched.h
+> > +++ linux-2.6.25-rc2/include/linux/sched.h
+> > @@ -2031,7 +2031,7 @@ extern void normalize_rt_tasks(void);
+> >  
+> >  extern struct task_group init_task_group;
+> >  
+> > -extern struct task_group *sched_create_group(void);
+> > +extern struct task_group *sched_create_group(struct task_group *parent);
+> >  extern void sched_destroy_group(struct task_group *tg);
+> >  extern void sched_move_task(struct task_struct *tsk);
+> >  #ifdef CONFIG_FAIR_GROUP_SCHED
+> > Index: linux-2.6.25-rc2/kernel/sched.c
+> > ===================================================================
+> > --- linux-2.6.25-rc2.orig/kernel/sched.c
+> > +++ linux-2.6.25-rc2/kernel/sched.c
+> > @@ -7155,10 +7155,11 @@ static void init_rt_rq(struct rt_rq *rt_
+> >  }
+> >  
+> >  #ifdef CONFIG_FAIR_GROUP_SCHED
+> > -static void init_tg_cfs_entry(struct rq *rq, struct task_group *tg,
+> > -		struct cfs_rq *cfs_rq, struct sched_entity *se,
+> > -		int cpu, int add)
+> > +static void init_tg_cfs_entry(struct task_group *tg, struct cfs_rq *cfs_rq,
+> > +				struct sched_entity *se, int cpu, int add,
+> > +				struct sched_entity *parent)
+> >  {
+> > +	struct rq *rq = cpu_rq(cpu);
+> >  	tg->cfs_rq[cpu] = cfs_rq;
+> >  	init_cfs_rq(cfs_rq, rq);
+> >  	cfs_rq->tg = tg;
+> > @@ -7170,7 +7171,11 @@ static void init_tg_cfs_entry(struct rq 
+> >  	if (!se)
+> >  		return;
+> >  
+> > -	se->cfs_rq = &rq->cfs;
+> > +	if (parent == NULL)
+> 
+> !parent ?
+> 
 
-Surely not ;)
+Will do. (need to start remembering to doing this one!)
 
-That code has been there for many years.
+> > +		se->cfs_rq = &rq->cfs;
+> > +	else
+> > +		se->cfs_rq = parent->my_q;
+> > +
+> >  	se->my_q = cfs_rq;
+> >  	se->load.weight = tg->shares;
+> >  	se->load.inv_weight = div64_64(1ULL<<32, se->load.weight);
+> > @@ -7244,7 +7249,8 @@ void __init sched_init(void)
+> >  		 * We achieve this by letting init_task_group's tasks sit
+> >  		 * directly in rq->cfs (i.e init_task_group->se[] = NULL).
+> >  		 */
+> > -		init_tg_cfs_entry(rq, &init_task_group, &rq->cfs, NULL, i, 1);
+> > +		init_tg_cfs_entry(&init_task_group, &rq->cfs,
+> > +							NULL, i, 1, NULL);
+> >  		init_tg_rt_entry(rq, &init_task_group, &rq->rt, NULL, i, 1);
+> >  #elif defined CONFIG_USER_SCHED
+> >  		/*
+> > @@ -7260,7 +7266,7 @@ void __init sched_init(void)
+> >  		 */
+> >  		init_tg_cfs_entry(rq, &init_task_group,
+> >  				&per_cpu(init_cfs_rq, i),
+> > -				&per_cpu(init_sched_entity, i), i, 1);
+> > +				&per_cpu(init_sched_entity, i), i, 1, NULL);
+> >  
+> >  #endif
+> >  #endif /* CONFIG_FAIR_GROUP_SCHED */
+> > @@ -7630,7 +7636,8 @@ static void free_fair_sched_group(struct
+> >  	kfree(tg->se);
+> >  }
+> >  
+> > -static int alloc_fair_sched_group(struct task_group *tg)
+> > +static int alloc_fair_sched_group(struct task_group *tg,
+> > +					struct task_group *parent)
+> >  {
+> >  	struct cfs_rq *cfs_rq;
+> >  	struct sched_entity *se;
+> > @@ -7658,8 +7665,11 @@ static int alloc_fair_sched_group(struct
+> >  				GFP_KERNEL|__GFP_ZERO, cpu_to_node(i));
+> >  		if (!se)
+> >  			goto err;
+> > -
+> > -		init_tg_cfs_entry(rq, tg, cfs_rq, se, i, 0);
+> > +		if (!parent) {
+> > +			init_tg_cfs_entry(tg, cfs_rq, se, i, 0,	parent->se[i]);
+> > +		} else {
+> > +			init_tg_cfs_entry(tg, cfs_rq, se, i, 0, NULL);
+> > +		}
+> 
+> Looks like you got the cases switched, this looks like an instant NULL
+> deref.
+> 
 
-I changed the patch to this:
-
---- a/drivers/acpi/asus_acpi.c~drivers-acpi-asus_acpic-correct-use-of-and
-+++ a/drivers/acpi/asus_acpi.c
-@@ -610,7 +610,7 @@ write_led(const char __user * buffer, un
- 	    (led_out) ? (hotk->status | ledmask) : (hotk->status & ~ledmask);
+eeeks! Yeah, you are right. Funny though how I did not hit it while
+testing.
  
- 	if (invert)		/* invert target value */
--		led_out = !led_out & 0x1;
-+		led_out = !led_out;
- 
- 	if (!write_acpi_int(hotk->handle, ledname, led_out, NULL))
- 		printk(KERN_WARNING "Asus ACPI: LED (%s) write failed\n",
-_
 
+-- 
+regards,
+Dhaval
