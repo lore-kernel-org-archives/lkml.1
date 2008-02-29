@@ -1,59 +1,203 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932959AbYB2Pw7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932673AbYB2PyP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932959AbYB2Pw7 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Feb 2008 10:52:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756370AbYB2Pwv
+	id S932673AbYB2PyP (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Feb 2008 10:54:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758298AbYB2Px7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Feb 2008 10:52:51 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:58013 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753435AbYB2Pwu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 Feb 2008 10:52:50 -0500
-Date: Fri, 29 Feb 2008 16:52:07 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Roland McGrath <roland@redhat.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] x86_64 ia32 syscall restart fix
-Message-ID: <20080229155207.GC27248@elte.hu>
-References: <20080229035707.EAE862700FD@magilla.localdomain>
+	Fri, 29 Feb 2008 10:53:59 -0500
+Received: from iolanthe.rowland.org ([192.131.102.54]:40835 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1756370AbYB2Px5 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 29 Feb 2008 10:53:57 -0500
+Date: Fri, 29 Feb 2008 10:53:57 -0500 (EST)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+cc: Linux-pm mailing list <linux-pm@lists.linux-foundation.org>,
+       Kernel development list <linux-kernel@vger.kernel.org>
+Subject: Re: [linux-pm] Fundamental flaw in system suspend, exposed by freezer
+ removal
+In-Reply-To: <200802291526.08522.rjw@sisk.pl>
+Message-ID: <Pine.LNX.4.44L0.0802291025450.2140-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080229035707.EAE862700FD@magilla.localdomain>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, 29 Feb 2008, Rafael J. Wysocki wrote:
 
-* Roland McGrath <roland@redhat.com> wrote:
+> > +There is an unavoidable race between the PM core suspending all the
+> > +children of a device and the device's driver registering new children.
+> > +As a result, it is possible that the core may try to suspend a device
+> > +without first having suspended all of the device's children.  Drivers
+> > +must check for this; a suspend method should return -EBUSY if there are
+> > +unsuspended children.  (The child->power.sleeping field can be used
+> > +for this check.)  In addition, it is illegal to register a child device
+> 
+> s/illegal/invalid/
 
-> The code to restart syscalls after signals depends on checking for a 
-> negative orig_ax, and for particular negative -ERESTART* values in ax. 
-> These fields are 64 bits and for a 32-bit task they get zero-extended. 
-> The syscall restart behavior is lost, a regression from a native 
-> 32-bit kernel and from 64-bit tasks' behavior.  This patch fixes the 
-> problem by doing sign-extension where it matters.  For orig_ax, the 
-> only time the value should be -1 but winds up as 0x0ffffffff is via a 
-> 32-bit ptrace call.  So the patch changes ptrace to sign-extend the 
-> 32-bit orig_eax value when it's stored; it doesn't change the checks 
-> on orig_ax, though it uses the new current_syscall() inline to better 
-> document the subtle importance of the used of signedness there.  The 
-> ax value is stored a lot of ways and it seems hard to get them all 
-> sign-extended at their origins.  So for that, we use the 
-> current_syscall_ret() to sign-extend it only for 32-bit tasks at the 
-> time of the -ERESTART* comparisons.
+How about instead: "attempts to register a child device below a 
+suspended parent will fail.  Hence..."?
 
-thanks, applied.
+> > +below a suspended parent; hence suspend methods must synchronize with
+> > +other kernel threads that may attempt to add new children.  The suspend
+> > +method must prevent new registrations and wait for concurrent registrations
+> > +to complete before it returns.  New children may be added once more when
+> > +the resume method runs.
 
-	Ingo
+...
+
+> > --- usb-2.6.orig/include/linux/pm.h
+> > +++ usb-2.6/include/linux/pm.h
+> > @@ -180,8 +180,20 @@ typedef struct pm_message {
+> >  #define PMSG_HIBERNATE	((struct pm_message){ .event = PM_EVENT_HIBERNATE, })
+> >  #define PMSG_ON		((struct pm_message){ .event = PM_EVENT_ON, })
+> >  
+> > +/* This records which method calls have been made, not the device's
+> > + * actual power state.  It is read-only to drivers.
+> > + */
+> > +enum pm_sleep_state {
+> 
+> I'd call it dev_pm_state, in analogy with dev_pm_info etc.
+
+Okay.
+
+> > +	PM_AWAKE,		/* = 0, normal situation */
+> > +	PM_SLEEPING,		/* suspend method is running */
+> > +	PM_ASLEEP,		/* suspend method has returned */
+> > +	PM_WAKING,		/* resume method is running */
+> > +	PM_GONE,		/* device has been unregistered */
+> > +};
+> > +
+> >  struct dev_pm_info {
+> >  	pm_message_t		power_state;
+> > +	enum pm_sleep_state	sleeping;
+> 
+> In fact 'sleeping' doesn't look good in this context.  'pm_state' seems
+> better to me (although it is confusingly similar to 'power_state', we're going
+> to get rid of the latter anyway).
+
+Okay.
+
+> > Index: usb-2.6/drivers/base/power/main.c
+> > ===================================================================
+> > --- usb-2.6.orig/drivers/base/power/main.c
+> > +++ usb-2.6/drivers/base/power/main.c
+> > @@ -54,7 +54,9 @@ static LIST_HEAD(dpm_destroy);
+> >  
+> >  static DEFINE_MUTEX(dpm_list_mtx);
+> >  
+> > -static DECLARE_RWSEM(pm_sleep_rwsem);
+> > +/* Protected by dpm_list_mtx */
+> > +static bool child_added_while_parent_suspends; 
+> 
+> I don't like this name, but I have no better idea at the moment.
+
+It gets used in only a couple of places, so nobody should object too 
+violently.  :-)
+
+> > -void device_pm_add(struct device *dev)
+> > +int device_pm_add(struct device *dev)
+> >  {
+> > +	int rc = 0;
+> > +
+> >  	pr_debug("PM: Adding info for %s:%s\n",
+> >  		 dev->bus ? dev->bus->name : "No Bus",
+> >  		 kobject_name(&dev->kobj));
+> >  	mutex_lock(&dpm_list_mtx);
+> > -	list_add_tail(&dev->power.entry, &dpm_active);
+> > +	if (dev->parent) {
+> 
+> Hmm.
+> 
+> Suppose we add a mutex to dev_pm_info, say pm_mtx, and require it to be:
+> (1) taken by suspend_device(dev) (at the beginning)
+> (2) released by resume_device(dev) (at the end)
+> (3) taken (and released) by device_pm_add() if dev is the parent of the device
+>     being added.
+> 
+> In that case, device_pm_add() will block on attepmpts to register devices whose
+> parents are suspended (or suspending) and we're done.  At least so it would
+> seem.
+
+No; this would repeat the same mistake we were struggling with last
+week.  Blocking registration attempts (especially if we start _before_
+calling the device's suspend method or end _after_ calling the resume
+method) will lead to deadlocks while suspending or resuming.
+
+If the blocking starts after the suspend method returns then it will be 
+safer.  But what's the point?  If a registration attempt is made at 
+that stage, it means there's a bug in the driver.  So failing the 
+registration seems like a reasonable thing to do.
+
+One issue: This rule doesn't allow suspend_late or resume_early methods
+to register any new devices.  Will that cause problems with the CPU
+hotplug or ACPI subsystems?  ACPI in particular may need to freeze the
+kacpi_notify workqueue -- in fact, that might solve the problem in
+Bugzilla #9874.
+
+> > +		switch (dev->parent->power.sleeping) {
+> > +		case PM_SLEEPING:
+> > +			child_added_while_parent_suspends = true;
+> > +			break;
+> > +		case PM_ASLEEP:
+> > +			dev_err(dev, "added while parent '%s' is asleep\n",
+> > +					dev->parent->bus_id);
+> > +			rc = -EHOSTDOWN;
+> > +			break;
+> > +		default:
+> > +			break;
+> > +		}
+> > +	} else if (all_devices_asleep) {
+> > +		dev_err(dev, "added while all devices are asleep\n");
+> > +		rc = -ENETDOWN;
+> > +	}
+> 
+> The error codes are a bit unusual, but whatever.
+
+I agree.  But there aren't any -EPOWER* or -EPM* error codes defined!  
+Some should be added, but this patch isn't the place to do it.
+
+> > @@ -433,10 +446,24 @@ static int dpm_suspend(pm_message_t stat
+> >  					""));
+> >  			break;
+> >  		}
+> > -		mutex_lock(&dpm_list_mtx);
+> > -		if (!list_empty(&dev->power.entry))
+> > -			list_move(&dev->power.entry, &dpm_off);
+> > +		if (dev->power.sleeping != PM_GONE) {
+> > +			if (child_added_while_parent_suspends) {
+> > +				dev_err(dev, "suspended while a child "
+> > +						"was added\n");
+> > +				dev->power.sleeping = PM_WAKING;
+> > +				mutex_unlock(&dpm_list_mtx);
+> 
+> This seems to be a weak spot.  The resuming of the device at this point need
+> not work correctly, given that the system's target state is still a sleep
+> state.
+
+That may be true.  But this is an error-recovery path intended to work
+around a driver bug.  It doesn't have to guarantee perfect operation, 
+just do its best.
+
+Remember too that the target state is set before any devices are
+suspended.  Hence, after the state is set there may still be runtime
+resumes taking place.  Those _must_ not fail, which means that this
+resume ought to work also.
+
+> > +				resume_device(dev);
+> > +				mutex_lock(&dpm_list_mtx);
+> > +				if (dev->power.sleeping != PM_GONE)
+> > +					dev->power.sleeping = PM_AWAKE;
+> > +			} else {
+
+> Well, I wish it could be simpler ...
+
+Me too.  But until the API is changed, this seems to be the best we can 
+do.  It's not quite as bad as it looks, since a fair amount of the new 
+code is just for reporting on and recovering from bugs in drivers.
+
+Alan Stern
+
