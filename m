@@ -1,58 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761000AbYB2SGp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757974AbYB2SG6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761000AbYB2SGp (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Feb 2008 13:06:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756504AbYB2SGf
+	id S1757974AbYB2SG6 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Feb 2008 13:06:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757940AbYB2SGi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Feb 2008 13:06:35 -0500
-Received: from wolverine01.qualcomm.com ([199.106.114.254]:22941 "EHLO
-	wolverine01.qualcomm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755320AbYB2SGe (ORCPT
+	Fri, 29 Feb 2008 13:06:38 -0500
+Received: from fg-out-1718.google.com ([72.14.220.153]:15924 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757363AbYB2SGg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 Feb 2008 13:06:34 -0500
-X-IronPort-AV: E=McAfee;i="5200,2160,5242"; a="1029451"
-Message-ID: <47C849A7.7020607@qualcomm.com>
-Date: Fri, 29 Feb 2008 10:06:31 -0800
-From: Max Krasnyanskiy <maxk@qualcomm.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+	Fri, 29 Feb 2008 13:06:36 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
+        b=LZKOef9EqZavG3Si2+D87vw09Ji3dDYluBX6nsj7iZUNrQCvJ1tBPFwZiq+xE9vzQlzcgFH6WF5pijnp13zWe5406nD0mMCZ9c+j0+23AewnM6fGO8Y2+inrbozHfZo9e0gcn9qEU5mTKqPuhsC7l8AEpqcsglDfSqKwwqlNA38=
+Message-ID: <47C849B8.1000902@googlemail.com>
+Date: Fri, 29 Feb 2008 19:06:48 +0100
+From: Mark Pearson <devnull.port@googlemail.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Andrew Morton <akpm@linux-foundation.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Thomas Gleixner <tglx@linutronix.de>, Oleg Nesterov <oleg@tv-sign.ru>,
-       Steven Rostedt <rostedt@goodmis.org>, Paul Jackson <pj@sgi.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [RFC/PATCH 0/4] CPUSET driven CPU isolation
-References: <20080227222103.673194000@chello.nl> <20080228075010.GA28781@elte.hu> <20080229003155.bbab795d.akpm@linux-foundation.org> <20080229091018.GA19823@elte.hu>
-In-Reply-To: <20080229091018.GA19823@elte.hu>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: Karol Kozimor <sziwan@hell.org.pl>, Julia Lawall <julia@diku.dk>,
+       corentincj@iksaif.net, sziwan@users.sourceforge.net,
+       acpi4asus-user@lists.sourceforge.net, linux-kernel@vger.kernel.org,
+       kernel-janitors@vger.kernel.org, Len Brown <lenb@kernel.org>
+Subject: Re: [PATCH 2/9] drivers/acpi/asus_acpi.c: Correct use of ! and &
+References: <Pine.LNX.4.64.0802262142120.18200@ask.diku.dk>	<7C626792-02A6-4BE6-B5F2-D75899F3990C@hell.org.pl>	<47C5ABFB.3050607@googlemail.com> <20080228215503.b942bb3c.akpm@linux-foundation.org>
+In-Reply-To: <20080228215503.b942bb3c.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
-> * Andrew Morton <akpm@linux-foundation.org> wrote:
+Andrew Morton wrote:
+>> Seems an odd way of doing:
+>>
+>> 	led_out ^= 0x01;
 > 
->> It of course lays waste to a series of cgroup patches from Paul Menage 
->> which I already had queued.
+> It does.
 > 
-> Andrew, please stop tracking sched-devel.git and track this tree 
-> instead:
+>> It this due to some optimisation?
 > 
->    git://git.kernel.org/pub/scm/linux/kernel/git/mingo/linux-2.6-sched.git
+> Surely not ;)
+>
+;) Thought so - one doesn't like to be too presumptuous ;)
 
-Another option is to have cpusets or cpu isolation tree that I've started 
-already. I was saying from the very beginning cpu isolation stuff does not 
-imho belong in the scheduler tree. Besides a tiny patch to the sched.c that 
-adds/removes the bitmaps there are no scheduler changes needed for this 
-specifically.
+> That code has been there for many years.
+> 
+> I changed the patch to this:
+> 
+> --- a/drivers/acpi/asus_acpi.c~drivers-acpi-asus_acpic-correct-use-of-and
+> +++ a/drivers/acpi/asus_acpi.c
+> @@ -610,7 +610,7 @@ write_led(const char __user * buffer, un
+>  	    (led_out) ? (hotk->status | ledmask) : (hotk->status & ~ledmask);
+>  
+>  	if (invert)		/* invert target value */
+> -		led_out = !led_out & 0x1;
+> +		led_out = !led_out;
+>  
+>  	if (!write_acpi_int(hotk->handle, ledname, led_out, NULL))
+>  		printk(KERN_WARNING "Asus ACPI: LED (%s) write failed\n",
+> _
+> 
+> 
 
-Peter, Ingo, if you guys are ok with this lets just have this stuff in 
-cpuisol-2.6.git. I'm anyway rebasing it ontop of Peter's work. Of course we'll 
-go through regular review and stuff and Andrew can track that tree separately.
+Is the ! operator architecture/compiler dependent? or can one always say that
+!NON_ZERO_VALUE == 0 and !0 == 1?
 
-Just a suggestion. I'm ok with submitting patches via sched-devel. Separate 
-tree seems more appropriate though.
-
-Max
+Cheers, Mark.
