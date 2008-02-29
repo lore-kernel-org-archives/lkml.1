@@ -1,69 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759642AbYB2MRU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760207AbYB2MUJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759642AbYB2MRU (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Feb 2008 07:17:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755046AbYB2MRJ
+	id S1760207AbYB2MUJ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Feb 2008 07:20:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754831AbYB2MT4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Feb 2008 07:17:09 -0500
-Received: from chilli.pcug.org.au ([203.10.76.44]:50436 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754770AbYB2MRI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 Feb 2008 07:17:08 -0500
-Date: Fri, 29 Feb 2008 23:17:04 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Haavard Skinnemoen <hskinnemoen@atmel.com>
-Cc: Matthew Wilcox <matthew@wil.cx>, linux-next@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>, Greg KH <greg@kroah.com>,
-       Mark Fasheh <mark.fasheh@oracle.com>
-Subject: Re: linux-next: semaphore update merge conflicts
-Message-Id: <20080229231704.112d8112.sfr@canb.auug.org.au>
-In-Reply-To: <20080229111731.13840877@hskinnemoen.norway.atmel.com>
-References: <20080229153958.fc34e281.sfr@canb.auug.org.au>
-	<20080229111731.13840877@hskinnemoen.norway.atmel.com>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.8; i486-pc-linux-gnu)
+	Fri, 29 Feb 2008 07:19:56 -0500
+Received: from bombadil.infradead.org ([18.85.46.34]:33284 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754453AbYB2MTz (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 29 Feb 2008 07:19:55 -0500
+Subject: Re: [PATCH 00/28] Swap over NFS -v16
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Pekka Enberg <penberg@cs.helsinki.fi>
+Cc: Neil Brown <neilb@suse.de>, Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       netdev@vger.kernel.org, trond.myklebust@fys.uio.no,
+       Christoph Lameter <clameter@sgi.com>
+In-Reply-To: <84144f020802290358t2774f7bwd87efe79e7bd4235@mail.gmail.com>
+References: <20080220144610.548202000@chello.nl>
+	 <20080223000620.7fee8ff8.akpm@linux-foundation.org>
+	 <18371.43950.150842.429997@notabene.brown>
+	 <1204023042.6242.271.camel@lappy>
+	 <18372.64081.995262.986841@notabene.brown>
+	 <1204099113.6242.353.camel@lappy>
+	 <84144f020802270005p3bfbd04ar9da2875218ef98c4@mail.gmail.com>
+	 <1204285912.6243.93.camel@lappy>
+	 <84144f020802290358t2774f7bwd87efe79e7bd4235@mail.gmail.com>
+Content-Type: text/plain
+Date: Fri, 29 Feb 2008 13:18:53 +0100
+Message-Id: <1204287533.6243.105.camel@lappy>
 Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Fri__29_Feb_2008_23_17_04_+1100_vknRUyQ2/kFMSYx9"
+X-Mailer: Evolution 2.21.90 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Fri__29_Feb_2008_23_17_04_+1100_vknRUyQ2/kFMSYx9
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
 
-On Fri, 29 Feb 2008 11:17:31 +0100 Haavard Skinnemoen <hskinnemoen@atmel.co=
-m> wrote:
->
-> Stephen Rothwell <sfr@canb.auug.org.au> wrote:
->=20
-> > 	arch/avr32/kernel/semaphore.c
-> > 		the avr32 tree appeared to just change spaces to tabs
-> > 		in this file so I removed it (as your changes did).
->=20
-> I yanked that change out of my tree. No point cleaning up that file if
-> it's going away.
+On Fri, 2008-02-29 at 13:58 +0200, Pekka Enberg wrote:
+> Hi Peter,
+> 
+> On Fri, Feb 29, 2008 at 1:51 PM, Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:
+> >  I made page->reserve into PG_emergency and made that bit stick for the
+> >  lifetime of that page allocation. I then made kmem_is_emergency() look
+> >  up the head page backing that allocation's slab and return
+> >  PageEmergency().
+> 
+> [snip]
+> 
+> On Fri, Feb 29, 2008 at 1:51 PM, Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:
+> >  This is a stricter model than I had before, and has one ramification I'm
+> >  not entirely sure I like.
+> >
+> >  It means the page remains a reserve page throughout its lifetime, which
+> >  means the slab remains a reserve slab throughout its lifetime. Therefore
+> >  it may never be used for !reserve allocations. Which in turn generates
+> >  complexities for the partial list.
+> 
+> Hmm, so why don't we then clear the PG_emergency flag then 
 
-OK, thanks.
+Clearing PG_emergency would mean kmem_is_emergency() would return false
+in kfree_reserve() and fail to un-charge the object.
 
-By the way, is there some place I can get a cross compiler to build avr32
-kernels (or better yet a recipe for crosstool to make one)?
+Previously objects would track their account status themselves (when
+needed) and freeing PG_emergency wouldn't be a problem.
 
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
+> and allocate a new fresh page to the reserves?
 
---Signature=_Fri__29_Feb_2008_23_17_04_+1100_vknRUyQ2/kFMSYx9
-Content-Type: application/pgp-signature
+Not sure I understand this properly. We would only do this once the page
+watermarks are high enough, so the reserves are full again.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
+> On Fri, Feb 29, 2008 at 1:51 PM, Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:
+> >  Does this sound like something I should pursuit? I feel it might
+> >  complicate the slab allocators too much..
+> 
+> I can't answer that question until I see the code ;-). But overall, I
+> think it's better to put that code in SLUB rather than trying to work
+> around it elsewhere. The fact is, as soon as you have some sort of
+> reservation for _objects_, you need help from the SLUB allocator.
 
-iD8DBQFHx/fFTgG2atn1QN8RAgHKAJ0bmNfReinSub0dKsZL5cY4RWKHmQCeL19K
-6DCMQ+7ZzmIpMIuKywSJcjM=
-=tAUy
------END PGP SIGNATURE-----
+Well, I agree with that consolidating it makes sense. And like I said,
+it gives pretty code. However, it also puts the burden of this feature
+on everyone and might affect performance - still its only the slow path,
+but still.
 
---Signature=_Fri__29_Feb_2008_23_17_04_+1100_vknRUyQ2/kFMSYx9--
+
