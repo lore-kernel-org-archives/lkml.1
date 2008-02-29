@@ -1,27 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764152AbYB2Aze@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761172AbYB2A4L@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764152AbYB2Aze (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Feb 2008 19:55:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762434AbYB2Aqg
+	id S1761172AbYB2A4L (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Feb 2008 19:56:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932527AbYB2Aql
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Feb 2008 19:46:36 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:58735 "EHLO mx1.redhat.com"
+	Thu, 28 Feb 2008 19:46:41 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:58739 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760463AbYB2Aqd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Feb 2008 19:46:33 -0500
+	id S932280AbYB2Aqh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 28 Feb 2008 19:46:37 -0500
 Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
 	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
 	Kingdom.
 	Registered in England and Wales under Company Registration No. 3798903
 From: David Howells <dhowells@redhat.com>
-Subject: [PATCH 13/37] FS-Cache: Provide an add_wait_queue_tail() function
-	[ver #34]
+Subject: [PATCH 32/37] NFS: Add read context retention for FS-Cache to call
+	back with [ver #34]
 To: Trond.Myklebust@netapp.com, chuck.lever@oracle.com, casey@schaufler-ca.com
 Cc: nfsv4@linux-nfs.org, linux-kernel@vger.kernel.org,
        linux-fsdevel@vger.kernel.org, selinux@tycho.nsa.gov,
        linux-security-module@vger.kernel.org, dhowells@redhat.com
-Date: Fri, 29 Feb 2008 00:44:43 +0000
-Message-ID: <20080229004443.4142.30446.stgit@warthog.procyon.org.uk>
+Date: Fri, 29 Feb 2008 00:46:25 +0000
+Message-ID: <20080229004624.4142.56662.stgit@warthog.procyon.org.uk>
 In-Reply-To: <20080229004332.4142.51771.stgit@warthog.procyon.org.uk>
 References: <20080229004332.4142.51771.stgit@warthog.procyon.org.uk>
 User-Agent: StGIT/0.14.1
@@ -32,89 +32,58 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Provide an add_wait_queue_tail() function to add a waiter to the back of a
-wait queue instead of the front.
+Add read context retention so that FS-Cache can call back into NFS when a read
+operation on the cache fails EIO rather than reading data.  This permits NFS to
+then fetch the data from the server instead using the appropriate security
+context.
 
 Signed-off-by: David Howells <dhowells@redhat.com>
 ---
 
- include/linux/pagemap.h |    7 +++++--
- include/linux/wait.h    |    1 +
- kernel/wait.c           |   18 ++++++++++++++++++
- mm/filemap.c            |    2 +-
- 4 files changed, 25 insertions(+), 3 deletions(-)
+ fs/nfs/fscache-index.c |   26 ++++++++++++++++++++++++++
+ 1 files changed, 26 insertions(+), 0 deletions(-)
 
 
-diff --git a/include/linux/pagemap.h b/include/linux/pagemap.h
-index c5df3ae..ad9484f 100644
---- a/include/linux/pagemap.h
-+++ b/include/linux/pagemap.h
-@@ -225,8 +225,11 @@ static inline void wait_on_page_writeback(struct page *page)
- 
- extern void end_page_writeback(struct page *page);
- 
--/*
-- * Wait for a PG_owner_priv_2 to become clear
-+/**
-+ * wait_on_page_owner_priv_2 - Wait for PG_owner_priv_2 to become clear
-+ * @page: The page to monitor
-+ *
-+ * Wait for a PG_owner_priv_2 to become clear on the specified page.
-  */
- static inline void wait_on_page_owner_priv_2(struct page *page)
- {
-diff --git a/include/linux/wait.h b/include/linux/wait.h
-index 0081147..a6a6607 100644
---- a/include/linux/wait.h
-+++ b/include/linux/wait.h
-@@ -118,6 +118,7 @@ static inline int waitqueue_active(wait_queue_head_t *q)
- #define is_sync_wait(wait)	(!(wait) || ((wait)->private))
- 
- extern void add_wait_queue(wait_queue_head_t *q, wait_queue_t *wait);
-+extern void add_wait_queue_tail(wait_queue_head_t *q, wait_queue_t *wait);
- extern void add_wait_queue_exclusive(wait_queue_head_t *q, wait_queue_t *wait);
- extern void remove_wait_queue(wait_queue_head_t *q, wait_queue_t *wait);
- 
-diff --git a/kernel/wait.c b/kernel/wait.c
-index c275c56..191df0d 100644
---- a/kernel/wait.c
-+++ b/kernel/wait.c
-@@ -29,6 +29,24 @@ void add_wait_queue(wait_queue_head_t *q, wait_queue_t *wait)
+diff --git a/fs/nfs/fscache-index.c b/fs/nfs/fscache-index.c
+index eec8e7e..af9f06b 100644
+--- a/fs/nfs/fscache-index.c
++++ b/fs/nfs/fscache-index.c
+@@ -285,6 +285,30 @@ static void nfs_cache_inode_now_uncached(void *cookie_netfs_data)
  }
- EXPORT_SYMBOL(add_wait_queue);
  
-+/**
-+ * add_wait_queue_tail - Add a waiter to the back of a waitqueue
-+ * @q: the wait queue to append the waiter to
-+ * @wait: the waiter to be queued
-+ *
-+ * Add a waiter to the back of a waitqueue so that it gets woken up last.
+ /*
++ * Get an extra reference on a read context.
++ * - This function can be absent if the completion function doesn't require a
++ *   context.
++ * - The read context is passed back to NFS in the event that a data read on the
++ *   cache fails with EIO - in which case the server must be contacted to
++ *   retrieve the data, which requires the read context for security.
 + */
-+void add_wait_queue_tail(wait_queue_head_t *q, wait_queue_t *wait)
++static void nfs_fh_get_context(void *cookie_netfs_data, void *context)
 +{
-+	unsigned long flags;
-+
-+	wait->flags &= ~WQ_FLAG_EXCLUSIVE;
-+	spin_lock_irqsave(&q->lock, flags);
-+	__add_wait_queue_tail(q, wait);
-+	spin_unlock_irqrestore(&q->lock, flags);
++	get_nfs_open_context(context);
 +}
-+EXPORT_SYMBOL(add_wait_queue_tail);
 +
- void add_wait_queue_exclusive(wait_queue_head_t *q, wait_queue_t *wait)
- {
- 	unsigned long flags;
-diff --git a/mm/filemap.c b/mm/filemap.c
-index 8951d67..b72e112 100644
---- a/mm/filemap.c
-+++ b/mm/filemap.c
-@@ -587,7 +587,7 @@ void end_page_writeback(struct page *page)
- EXPORT_SYMBOL(end_page_writeback);
- 
- /**
-- * end_page_own - Clear PG_owner_priv_2 and wake up any waiters
-+ * end_page_owner_priv_2 - Clear PG_owner_priv_2 and wake up any waiters
-  * @page: the page
-  *
-  * Clear PG_owner_priv_2 and wake up any processes waiting for that event.
++/*
++ * Release an extra reference on a read context.
++ * - This function can be absent if the completion function doesn't require a
++ *   context.
++ */
++static void nfs_fh_put_context(void *cookie_netfs_data, void *context)
++{
++	if (context)
++		put_nfs_open_context(context);
++}
++
++/*
+  * Define the inode object for FS-Cache.  This is used to describe an inode
+  * object to fscache_acquire_cookie().  It is keyed by the NFS file handle for
+  * an inode.
+@@ -301,4 +325,6 @@ const struct fscache_cookie_def nfs_cache_inode_object_def = {
+ 	.get_aux	= nfs_cache_inode_get_aux,
+ 	.check_aux	= nfs_cache_inode_check_aux,
+ 	.now_uncached	= nfs_cache_inode_now_uncached,
++	.get_context	= nfs_fh_get_context,
++	.put_context	= nfs_fh_put_context,
+ };
 
