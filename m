@@ -1,130 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755621AbYB2IAD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756049AbYB2IGS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755621AbYB2IAD (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Feb 2008 03:00:03 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751369AbYB2H7t
+	id S1756049AbYB2IGS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Feb 2008 03:06:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751194AbYB2IGD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Feb 2008 02:59:49 -0500
-Received: from sacred.ru ([62.205.161.221]:52274 "EHLO sacred.ru"
+	Fri, 29 Feb 2008 03:06:03 -0500
+Received: from www.tglx.de ([62.245.132.106]:52458 "EHLO www.tglx.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751936AbYB2H7r (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 Feb 2008 02:59:47 -0500
-Message-ID: <47C7BB1B.9060906@openvz.org>
-Date: Fri, 29 Feb 2008 10:58:19 +0300
-From: Pavel Emelyanov <xemul@openvz.org>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080213)
-MIME-Version: 1.0
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-CC: serge@hallyn.com, Andrew Morton <akpm@linux-foundation.org>,
-       David Miller <davem@davemloft.net>,
-       Alexey Dobriyan <adobriyan@openvz.org>,
-       Linux Netdev List <netdev@vger.kernel.org>,
+	id S1750789AbYB2IGB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 29 Feb 2008 03:06:01 -0500
+Date: Fri, 29 Feb 2008 09:04:37 +0100 (CET)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Roland McGrath <roland@redhat.com>
+cc: Oleg Nesterov <oleg@tv-sign.ru>, Pavel Emelyanov <xemul@openvz.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 0/2] Fix /proc/net in presence of net namespaces
-References: <47C6D743.1050802@openvz.org>	<m1y794514k.fsf@ebiederm.dsl.xmission.com>	<20080228211720.GA1232@vino.hallyn.com> <m1k5ko4sfi.fsf@ebiederm.dsl.xmission.com>
-In-Reply-To: <m1k5ko4sfi.fsf@ebiederm.dsl.xmission.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-Greylist: Sender succeeded SMTP AUTH authentication, not delayed by milter-greylist-3.0 (sacred.ru [62.205.161.221]); Fri, 29 Feb 2008 10:58:19 +0300 (MSK)
+Subject: Re: [PATCH 3/3] Consolidate send_sigqueue and send_group_sigqueue
+In-Reply-To: <20080228224141.A47B12700FD@magilla.localdomain>
+Message-ID: <alpine.LFD.1.00.0802290902000.3111@apollo.tec.linutronix.de>
+References: <47BEC663.7050904@openvz.org> <20080222144155.GA4349@tv-sign.ru> <alpine.LFD.1.00.0802280546360.7583@apollo.tec.linutronix.de> <20080228061723.GB108@tv-sign.ru> <20080228113633.7431C2700FD@magilla.localdomain> <alpine.LFD.1.00.0802282326560.3111@apollo.tec.linutronix.de>
+ <20080228224141.A47B12700FD@magilla.localdomain>
+User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> I was thinking we might be able to hide the existence of
-> /proc/.netns/NNN/  however we can read the current working directory.
-> So even if we only allow explicit access through /proc/net and all
-> others paths don't work we have something that is visible.
+On Thu, 28 Feb 2008, Roland McGrath wrote:
 
-I have a patch that overrides the ->readdir method for /proc/.netns,
-so that you can no longer read the directory contents, but you still
-can guess one by guessing and opening files in it. Overriding the 
-->lookup to screw one up looks like "shadowing" technics.
-
-OTOH - consider you have the ids of existing net namespaces, but cannot 
-read the contents on any but yours. So what? This information is useless
-for you. So I dropped this part of a patch.
-
-> So we really need something that we are not afraid to air in public.
-> That we are not afraid to use and have it's use expanded upon.
+> > Right. I was working on a fix for that for a different reason. What we
+> > really want is a check for such a timer on a transition from SIGIGN to
+> > another state.  This would allow us to drop the ugly auto rearm code
+> > for ignored timers completely. I had some working proof of concept
+> > code, but got distracted. Need to find it again and dust if off.
 > 
->> Right?
-> 
-> Think of user space processes inspecting /proc etc.  Having directory
-> names change out form under you for no apparent reason is pretty nasty.
+> That is certainly what came first to mind.  (Note that it's not strictly
+> SIG_IGN alone, but sigaction_says_ignore.)  We'll have to contemplate a lot
+> of corners to be sure we get it right.  It's not real clear to me how you
+> go about finding all the affected timers sanely from sigaction.
 
-Have you ever bothered about /proc/<pid> change?
+My idea was to dequeue the timer signal and put it into some separate
+"check me on unignore" queue. That's the easy part. The nasty part is
+to rearm the timer without running into locking madness.
 
-> Plus we have the consequence that a user space visible id is likely to
-> get used for reporting in user space programs.  Reporting that will go
-> haywire on a migration event.
->
-> And if the id is used in reporting people are likely to want to use the
-> id for control (so this may be the edge of a slippery slope).
-> 
-> Things like inode numbers that are a secondary effect are enough of a problem
-> when looking at how things interact.  A directly visible user space visible
-> id is a problem.
-> 
-> All we need to do if we use a pid as an id is:
-> - Have one directory .netns with all of the net directories listed by pid.
+Thanks,
 
-We have one now.
-
-> - Have readdir and lookup filter the directory entries by the pid
->   namespace of the proc mount.
-
-So, how are you going to filter the lookup? The problem I see - you have
-a process that opened the /proc/.netns/X directory (he onws that namespace)
-and the other one trying to do the same. The VFS layer finds the hashed
-dentry corresponding to this /proc/.netns/X. The only way you can prevent
-VFS from giving one to the second task is to override .d_revalidate method 
-and drop that dentry....
-
-But we've already tried to walk this way with no luck.
-
-> It looks like we have to tweak things just a bit so that free_pid
-> would not be called until the pid namespace goes away.  Something
-> similar to how we do the hash chains.
-
-This is not about pid namespace, this is about net namespace and
-tuning pids management to facilitate networking needs is not the right
-thing to do.
-
-> If we make namespaces show up anywhere besides under
-> "/proc/<pid>/task/<tid>/" we have to do something like this, and pids
-> are largely designed for this kind of use.
-
-Proc consists of two parts - the <pid>-s one with generated-on-the-fly
-entries and the static one that is represented by proc_dir_entry tree.
-Do you propose to mix those two?
-
-> It looks like the way /proc is currently structured we don't need a
-> reverse map from pid to net namespace.  But I would not have a problem
-> with that.
-> 
-> Our limitations are:
-> - We need an inviolate dentry tree of the VFS dcache goes nuts.
-> - We need an id that is in a namespace, or else we get pushed
->   into the yet another namespace problem.
-> - We want to aim for minimal dentry duplication, to keep resource
->   consumption under control.  Which makes /proc/<pid>/task/<tid>/net
->   an unfortunate choice.
-> 
-> So I think /proc/.netns/ or simply /proc/netns/ is a good choice. We
-
-Thanks.
-
-> just need a non-global id for our directory entries so we don't paint
-> ourselves into a corner.
-
-What namespace do you mean by "non-global"?
-
-> And honestly pid visibility is a very natural choice for which network
-> namespaces you can see.  You can see the namespace of any process you
-> can see.  Which especially means your children.  It is an arbitrary
-> rule, it is a simple rule to explain, and it works recursively unlike
-> any init_net is special rule.
-> 
-> Eric
-> 
-
+	tglx
