@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758926AbYB2LH0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760096AbYB2LHr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758926AbYB2LH0 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Feb 2008 06:07:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759191AbYB2LHH
+	id S1760096AbYB2LHr (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Feb 2008 06:07:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759932AbYB2LHZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Feb 2008 06:07:07 -0500
-Received: from mx2.suse.de ([195.135.220.15]:41461 "EHLO mx2.suse.de"
+	Fri, 29 Feb 2008 06:07:25 -0500
+Received: from mail.suse.de ([195.135.220.2]:48104 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759709AbYB2LHF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 Feb 2008 06:07:05 -0500
-Date: Fri, 29 Feb 2008 12:07:04 +0100
-Message-ID: <s5hd4qgqaw7.wl%tiwai@suse.de>
+	id S1759913AbYB2LHX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 29 Feb 2008 06:07:23 -0500
+Date: Fri, 29 Feb 2008 12:07:21 +0100
+Message-ID: <s5hbq60qavq.wl%tiwai@suse.de>
 From: Takashi Iwai <tiwai@suse.de>
 To: Harvey Harrison <harvey.harrison@gmail.com>
 Cc: LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 1/3] sound: hda: missing includes of hda_patch.h
-In-Reply-To: <1204244289.20280.100.camel@brick>
-References: <1204244289.20280.100.camel@brick>
+Subject: Re: [PATCH 3/3] sound: vmaster.c missing include of hda_local.h
+In-Reply-To: <1204244291.20280.104.camel@brick>
+References: <1204244291.20280.104.camel@brick>
 User-Agent: Wanderlust/2.15.5 (Almost Unreal) SEMI/1.14.6 (Maruoka)
  FLIM/1.14.7 (=?ISO-8859-4?Q?Sanj=F2?=) APEL/10.6 MULE XEmacs/21.5 (beta28)
  (fuki) (+CVS-20070806) (i386-suse-linux)
@@ -26,25 +26,17 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-At Thu, 28 Feb 2008 16:18:09 -0800,
+At Thu, 28 Feb 2008 16:18:11 -0800,
 Harvey Harrison wrote:
 > 
-> Move the array declaration to hda_codec.c where it is used and add includes
-> where the individual presets are declared.
-> 
-> Fixes the following sparse warnings:
-> sound/pci/hda/patch_realtek.c:13744:25: warning: symbol 'snd_hda_preset_realtek' was not declared. Should it be static?
-> sound/pci/hda/patch_cmedia.c:729:25: warning: symbol 'snd_hda_preset_cmedia' was not declared. Should it be static?
-> sound/pci/hda/patch_analog.c:3656:25: warning: symbol 'snd_hda_preset_analog' was not declared. Should it be static?
-> sound/pci/hda/patch_sigmatel.c:3995:25: warning: symbol 'snd_hda_preset_sigmatel' was not declared. Should it be static?
-> sound/pci/hda/patch_si3054.c:286:25: warning: symbol 'snd_hda_preset_si3054' was not declared. Should it be static?
-> sound/pci/hda/patch_atihdmi.c:156:25: warning: symbol 'snd_hda_preset_atihdmi' was not declared. Should it be static?
-> sound/pci/hda/patch_conexant.c:1721:25: warning: symbol 'snd_hda_preset_conexant' was not declared. Should it be static?
-> sound/pci/hda/patch_via.c:1962:25: warning: symbol 'snd_hda_preset_via' was not declared. Should it be static?
+> Needed for the two prototypes, must include hda_codec.h as well
+> due to some dependencies between the headers.
+> sound/pci/hda/vmaster.c:230:5: warning: symbol 'snd_ctl_add_slave' was not declared. Should it be static?
+> sound/pci/hda/vmaster.c:329:21: warning: symbol 'snd_ctl_make_virtual_master' was not declared. Should it be static?
 > 
 > Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
 
-Applied to ALSA tree.  Thanks.
+This isn't needed any more on the latest ALSA tree.
 
 
 Takashi
