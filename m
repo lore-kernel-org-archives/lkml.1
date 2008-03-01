@@ -1,143 +1,134 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758408AbYCAPHf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758513AbYCAPUP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758408AbYCAPHf (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 1 Mar 2008 10:07:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754403AbYCAPH0
+	id S1758513AbYCAPUP (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 1 Mar 2008 10:20:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754925AbYCAPUA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 1 Mar 2008 10:07:26 -0500
-Received: from psa.adit.fi ([217.112.250.17]:42367 "EHLO psa.adit.fi"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752494AbYCAPHZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 1 Mar 2008 10:07:25 -0500
-X-Greylist: delayed 797 seconds by postgrey-1.27 at vger.kernel.org; Sat, 01 Mar 2008 10:07:23 EST
-Message-ID: <47C96DEB.5070304@adit.fi>
-Date: Sat, 01 Mar 2008 16:53:31 +0200
-From: Pekka Sarnila <sarnila@adit.fi>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.11) Gecko/20070217 Iceape/1.0.8 (Debian-1.0.8-4)
-MIME-Version: 1.0
-To: jkosina@suse.cz
-CC: linux-kernel@vger.kernel.org
-Subject: [patch] hid: quirk to fixup fullspeed interval on highspeed devices
-Content-Type: text/plain; charset=ISO-8859-1
+	Sat, 1 Mar 2008 10:20:00 -0500
+Received: from accolon.hansenpartnership.com ([76.243.235.52]:36366 "EHLO
+	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754403AbYCAPT6 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 1 Mar 2008 10:19:58 -0500
+Subject: Re: [PATCH] block: fix residual byte count handling
+From: James Bottomley <James.Bottomley@HansenPartnership.com>
+To: Tejun Heo <htejun@gmail.com>
+Cc: Jens Axboe <jens.axboe@oracle.com>, Mike Galbraith <efault@gmx.de>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, linux-ide@vger.kernel.org,
+       linux-scsi@vger.kernel.org, Jeff Garzik <jgarzik@pobox.com>
+In-Reply-To: <47C8F4FC.1040505@gmail.com>
+References: <20080226150845.2196bc1a.akpm@linux-foundation.org>
+	 <1204079075.26640.8.camel@homer.simson.net>
+	 <1204092010.9934.31.camel@homer.simson.net>
+	 <1204096025.1623.9.camel@homer.simson.net> <47C6661E.9010504@gmail.com>
+	 <1204186800.7362.7.camel@homer.simson.net> <47C675C6.8000904@gmail.com>
+	 <20080228153542.GZ6704@kernel.dk> <47C6D73E.4030302@gmail.com>
+	 <1204303656.4003.19.camel@localhost.localdomain>
+	 <20080229201123.GK6704@kernel.dk>  <47C8F4FC.1040505@gmail.com>
+Content-Type: text/plain
+Date: Sat, 01 Mar 2008 09:19:53 -0600
+Message-Id: <1204384793.4003.102.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.3 (2.12.3-1.fc8) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Pekka Sarnila <sarnila@adit.fi>
 
-Many vendors highspeed devices give erroneously fullspeed interval value in endpoint descriptor for interrupt endpoints. This quirk fixes up that by recalculating the right value for highspeed device.
+On Sat, 2008-03-01 at 15:17 +0900, Tejun Heo wrote:
+> Hello, Jens, James.
+> 
+> Jens Axboe wrote:
+> >> With the original patch, I have to run through the whole of libsas and
+> >> scsi_transport_sas doing
+> >>
+> >> s/data_len/raw_data_len/
+> >>
+> >> With your update it looks like I have to run through them all doing
+> >>
+> >> s/data_len/data_len - extra_len/
+> 
+> blk_rq_raw_data_len() should do.
 
----
+I know we *could* sweep through all the block drivers altering them; my
+point is that I don't think we *should*.  Fundamentally, every driver
+that cares is assuming req->data_len is the length of the request that
+came down.  The fact that it got padded is irrelevant (and actually
+detrimental) to most of them as the SMP driver illustrates.
 
-This patch is against jikos/hid.git.
+We use a high dma_alignment not because we care about padding, but
+because we want to avoid scatter gather.  So we care about alignment of
+the start of the buffer (to avoid sg), but fundamentally, we need to
+know what its true length (not its padded length) is.  The true length
+feeds into the smp frame size and is checked by the interfaces, which is
+why the changes caused an SMP failure.
 
-At the time of hid configuration this quirk calculates which highspeed interval value gives same interval delay as, or next smaller then, what it would be if the original value would be interpreted as fullspeed value. In subsequent urbs that new value is used instead.
+Just for the principle of least surprise, can we not keep req->data_len
+what it has always been, namely the true data length of the request and
+express the fact that we've padded it by req->extra_len or something, so
+we don't have to do all of these driver changes.
 
-Forming the 'hid->name' in usb_hid_config() was moved up to accommodate more descriptive printk reporting the fixup.
+> >> which is even worse.  Can't we put things back to a point where data_len
+> >> means exactly that and extra_len means how much we have spare on the
+> >> end, so you know you can DMA up to data_len + extra_len if need be?
+> >>
+> >> That way we don't have to sweep through every block driver altering the
+> >> way it uses data_len.
+> 
+> If SMP is broken because it needs start address alignment but not
+> padding to align the size, what should be done is to make that exact
+> requirement visible to the block layer.  Say,
+> blk_queue_dma_start_alignment() or maybe change
+> blk_queue_dma_alignment() such that it only indicates start address
+> alignment and add blk_queue_dma_size_alignment() for drivers which
+> require size to be aligned too.  I think those are few.
 
-In this patch the quirk is set for one such device: Afatech DVB-T 2 infrared HID-keyboard. It reports value 16 which means 4,069s in highspeed while obviously 16ms was intended. In this case quirk calculates new value to be 8 which gives when interpreted as highspeed value 16ms as wanted. The behavior of the device was verified to be what expected both before and after the patch.
+But this is true of *every* current user of the block layer apart from
+IDE ... we all care about alignment not padding.  Any current user that
+actually cares about padding will be doing their own adjustments, so
+they need changing anyway.
 
-Actually better place for this fixup would be in the usb/core/config.c:usb_parse_endpoint(), but usb subsystem provides no quirk system, and there is no way for the parser to generally know that the value is wrong (except if the value is out of range; then fix is done there).
+We can frame that with a different API, but blk_queue_dma_alignment()
+better be the common case (start but not pad alignment).
 
-Signed-off-by: Pekka Sarnila <sarnila@adit.fi>
+> I think the decision which value rq->data_len represents comes down to
+> which size is used more in low level drivers because no matter which way
+> we choose we'll have to update some of the drivers which expects the
+> other thing from rq->data_len.
 
+Right, and currently, apart from IDE, they all want it to mean the true
+data length.
 
-diff -uprN -X hid.orig/Documentation/dontdiff hid.orig/drivers/hid/usbhid/hid-core.c hid/drivers/hid/usbhid/hid-core.c
---- hid.orig/drivers/hid/usbhid/hid-core.c	2008-02-29 19:35:24.000000000 +0200
-+++ hid/drivers/hid/usbhid/hid-core.c	2008-03-01 14:18:13.000000000 +0200
-@@ -800,6 +800,22 @@ static struct hid_device *usb_hid_config
- 		goto fail;
- 	}
- 
-+	hid->name[0] = 0;
-+
-+	if (dev->manufacturer)
-+		strlcpy(hid->name, dev->manufacturer, sizeof(hid->name));
-+
-+	if (dev->product) {
-+		if (dev->manufacturer)
-+			strlcat(hid->name, " ", sizeof(hid->name));
-+		strlcat(hid->name, dev->product, sizeof(hid->name));
-+	}
-+
-+	if (!strlen(hid->name))
-+		snprintf(hid->name, sizeof(hid->name), "HID %04x:%04x",
-+			 le16_to_cpu(dev->descriptor.idVendor),
-+			 le16_to_cpu(dev->descriptor.idProduct));
-+
- 	for (n = 0; n < interface->desc.bNumEndpoints; n++) {
- 
- 		struct usb_endpoint_descriptor *endpoint;
-@@ -812,6 +828,14 @@ static struct hid_device *usb_hid_config
- 
- 		interval = endpoint->bInterval;
- 
-+		/* Some vendors give fullspeed interval on highspeed devides */
-+		if (quirks & HID_QUIRK_FULLSPEED_INTERVAL  &&
-+		    dev->speed == USB_SPEED_HIGH) {
-+			interval = fls(endpoint->bInterval*8);
-+			printk(KERN_INFO "%s: Fixing fullspeed to highspeed interval: %d -> %d\n",
-+			       hid->name, endpoint->bInterval, interval);
-+		}
-+
- 		/* Change the polling interval of mice. */
- 		if (hid->collection->usage == HID_GD_MOUSE && hid_mousepoll_interval > 0)
- 			interval = hid_mousepoll_interval;
-@@ -859,22 +883,6 @@ static struct hid_device *usb_hid_config
- 	usbhid->intf = intf;
- 	usbhid->ifnum = interface->desc.bInterfaceNumber;
- 
--	hid->name[0] = 0;
--
--	if (dev->manufacturer)
--		strlcpy(hid->name, dev->manufacturer, sizeof(hid->name));
--
--	if (dev->product) {
--		if (dev->manufacturer)
--			strlcat(hid->name, " ", sizeof(hid->name));
--		strlcat(hid->name, dev->product, sizeof(hid->name));
--	}
--
--	if (!strlen(hid->name))
--		snprintf(hid->name, sizeof(hid->name), "HID %04x:%04x",
--			 le16_to_cpu(dev->descriptor.idVendor),
--			 le16_to_cpu(dev->descriptor.idProduct));
--
- 	hid->bus = BUS_USB;
- 	hid->vendor = le16_to_cpu(dev->descriptor.idVendor);
- 	hid->product = le16_to_cpu(dev->descriptor.idProduct);
-diff -uprN -X hid.orig/Documentation/dontdiff hid.orig/drivers/hid/usbhid/hid-quirks.c hid/drivers/hid/usbhid/hid-quirks.c
---- hid.orig/drivers/hid/usbhid/hid-quirks.c	2008-02-29 19:35:24.000000000 +0200
-+++ hid/drivers/hid/usbhid/hid-quirks.c	2008-02-29 19:49:28.000000000 +0200
-@@ -32,6 +32,9 @@
- #define USB_VENDOR_ID_ADS_TECH 		0x06e1
- #define USB_DEVICE_ID_ADS_TECH_RADIO_SI470X	0xa155
- 
-+#define USB_VENDOR_ID_AFATECH		0x15a4
-+#define USB_DEVICE_ID_AFATECH_AF9016	0x9016
-+
- #define USB_VENDOR_ID_AIPTEK		0x08ca
- #define USB_DEVICE_ID_AIPTEK_01		0x0001
- #define USB_DEVICE_ID_AIPTEK_10		0x0010
-@@ -414,6 +417,8 @@ static const struct hid_blacklist {
- 	
- 	{ USB_VENDOR_ID_LOGITECH, USB_DEVICE_ID_DINOVO_EDGE, HID_QUIRK_DUPLICATE_USAGES },
- 
-+	{ USB_VENDOR_ID_AFATECH, USB_DEVICE_ID_AFATECH_AF9016, HID_QUIRK_FULLSPEED_INTERVAL },
-+
- 	{ USB_VENDOR_ID_BELKIN, USB_DEVICE_ID_FLIP_KVM, HID_QUIRK_HIDDEV },
- 	{ USB_VENDOR_ID_APPLE, USB_DEVICE_ID_APPLE_IRCONTROL4, HID_QUIRK_HIDDEV | HID_QUIRK_IGNORE_HIDINPUT },
- 	{ USB_VENDOR_ID_MICROSOFT, USB_DEVICE_ID_SIDEWINDER_GV, HID_QUIRK_HIDINPUT },
-diff -uprN -X hid.orig/Documentation/dontdiff hid.orig/include/linux/hid.h hid/include/linux/hid.h
---- hid.orig/include/linux/hid.h	2008-02-29 19:35:29.000000000 +0200
-+++ hid/include/linux/hid.h	2008-02-29 20:07:15.000000000 +0200
-@@ -284,6 +284,7 @@ struct hid_item {
- #define HID_QUIRK_2WHEEL_MOUSE_HACK_B8		0x02000000
- #define HID_QUIRK_HWHEEL_WHEEL_INVERT		0x04000000
- #define HID_QUIRK_MICROSOFT_KEYS		0x08000000
-+#define HID_QUIRK_FULLSPEED_INTERVAL		0x10000000
- 
- /*
-  * Separate quirks for runtime report descriptor fixup
+> blk_rq_raw_data_len() is needed iff a driver needs dummy buffers
+> attached at the end and still needs to know the original request size
+> which isn't the common case.
+
+I think it *is* the common case.
+
+> > Fully agree. The reason why I think it's so ugly is that you have to
+> > keep these two seperate variables in sync. The burning was just one bug,
+> > there will be others...
+> 
+> The posted modification isn't too bad as the maintenance of the two
+> variables is at places where the nasty things happen.  I think what
+> rq->data_len should represent when seen from LLDs is more important and
+> please note that if SMP is broken because it simply doesn't require
+> 512byte size alignment, it's a different issue.
+
+But we still have to find all the bugs this causes in all the block
+drivers ... that's my biggest concern right now.
+
+> As long as both raw_data_len and data_len are accessible, I'm okay
+> either way.  My biggest reluctance is against breaking sum(sg) ==
+> rq->data_len.  I think this can lead to much more subtle problems such
+> as programming the controller w/ wrong bytes count and wrapped-around
+> resid calculation.
+
+OK, so can we go back to data_len being the true value and add an
+extra_len for drivers who want to know where the padding lies?
+
+James
+
 
