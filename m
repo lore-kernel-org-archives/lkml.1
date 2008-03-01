@@ -1,69 +1,119 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760409AbYCAMmR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758651AbYCAMrd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760409AbYCAMmR (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 1 Mar 2008 07:42:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752512AbYCAMmG
+	id S1758651AbYCAMrd (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 1 Mar 2008 07:47:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754299AbYCAMrZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 1 Mar 2008 07:42:06 -0500
-Received: from the.earth.li ([217.147.81.2]:47805 "EHLO the.earth.li"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750778AbYCAMmF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 1 Mar 2008 07:42:05 -0500
-Date: Sat, 1 Mar 2008 12:42:04 +0000
-From: Simon Huggins <huggie@earth.li>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
-       Pierre Ossman <drzeus@drzeus.cx>
-Subject: Re: Scheduler broken? sdhci issues with scheduling
-Message-ID: <20080301124203.GL24533@paranoidfreak.co.uk>
-References: <20080229115256.GG24533@paranoidfreak.co.uk> <20080229133433.GA15532@elte.hu> <20080229135137.GA23781@elte.hu> <20080229140024.GA26342@elte.hu> <20080229115256.GG24533@paranoidfreak.co.uk> <20080229133433.GA15532@elte.hu> <20080229193951.GI24533@paranoidfreak.co.uk> <20080229203914.GD27212@elte.hu>
+	Sat, 1 Mar 2008 07:47:25 -0500
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:55966 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752512AbYCAMrY (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 1 Mar 2008 07:47:24 -0500
+Date: Sat, 01 Mar 2008 21:46:52 +0900
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: Rik van Riel <riel@redhat.com>
+Subject: Re: [patch 06/21] split LRU lists into anon & file sets
+Cc: kosaki.motohiro@jp.fujitsu.com, linux-kernel@vger.kernel.org,
+       Lee Schermerhorn <Lee.Schermerhorn@hp.com>, linux-mm@kvack.org
+In-Reply-To: <20080228192928.412991306@redhat.com>
+References: <20080228192908.126720629@redhat.com> <20080228192928.412991306@redhat.com>
+Message-Id: <20080301214315.529B.KOSAKI.MOTOHIRO@jp.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080229203914.GD27212@elte.hu>
-X-Attribution: huggie
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Content-Type: text/plain; charset="US-ASCII"
+Content-Transfer-Encoding: 7bit
+X-Mailer: Becky! ver. 2.42 [ja]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-(please cc me)
+Hi
 
-On Fri, Feb 29, 2008 at 09:39:14PM +0100, Ingo Molnar wrote:
-> * Simon Huggins <huggie@earth.li> wrote:
-> > On Fri, Feb 29, 2008 at 02:34:33PM +0100, Ingo Molnar wrote:
-> > > * Simon Huggins <huggie@earth.li> wrote:
-> > > > [ Please Cc me on replies ]
-> > > > I had a bug with sdhci which Pierre Ossman looked at for me.
-> > > > In the end essentially the fix was to use HZ=1000 and nothing else. 
-> > > > Pierre seemed to think that this was a bug in the scheduler.
-> > > does the patch below help, even if you keep HZ=100? This doesnt look 
-> > > like a scheduler issue, it's more of a timer/timing issue. Different HZ 
-> > > means different msleep() results - and the mmc code does a loop of small 
-> > > msleep delays.
-> > Thanks for looking at it.
-> > I did tests with 2.6.24.3 with HZ=1000 and HZ=100 and as expected the
-> > latter didn't work.
-[..]
-> > That doesn't work.  I did a test with HZ=100 and this patch.  I've 
-> > attached the log as patch1-log.
+> @@ -153,43 +153,47 @@ static int meminfo_read_proc(char *page,
+>  	 * Tagged format, for easy grepping and expansion.
+>  	 */
+>  	len = sprintf(page,
+> -		"MemTotal:     %8lu kB\n"
+> -		"MemFree:      %8lu kB\n"
+> -		"Buffers:      %8lu kB\n"
+> -		"Cached:       %8lu kB\n"
+> -		"SwapCached:   %8lu kB\n"
+> -		"Active:       %8lu kB\n"
+> -		"Inactive:     %8lu kB\n"
+> +		"MemTotal:       %8lu kB\n"
+> +		"MemFree:        %8lu kB\n"
+> +		"Buffers:        %8lu kB\n"
+> +		"Cached:         %8lu kB\n"
+> +		"SwapCached:     %8lu kB\n"
+> +		"Active(anon):   %8lu kB\n"
+> +		"Inactive(anon): %8lu kB\n"
+> +		"Active(file):   %8lu kB\n"
+> +		"Inactive(file): %8lu kB\n"
 
-> > Anything else I can try?
-> so neither precise, nor imprecise timings help??
+Unfortunately this change corrupt "vmstat -a".
+could we add field instead replace it?
 
-I don't know.  I don't really understand the patches I applied I'm
-afraid; I'm just reporting the results.
+-kosaki
 
-I've cc'd Pierre Ossman so he might have a look from the sdhci point of
-view.
 
-Pierre, the thread starts here:
-http://lkml.org/lkml/2008/2/29/118
+---
+ fs/proc/proc_misc.c |   21 +++++++++++++++++----
+ 1 file changed, 17 insertions(+), 4 deletions(-)
 
-Simon.
+Index: b/fs/proc/proc_misc.c
+===================================================================
+--- a/fs/proc/proc_misc.c       2008-03-01 21:32:13.000000000 +0900
++++ b/fs/proc/proc_misc.c       2008-03-01 21:39:04.000000000 +0900
+@@ -131,6 +131,10 @@ static int meminfo_read_proc(char *page,
+        unsigned long allowed;
+        struct vmalloc_info vmi;
+        long cached;
++       unsigned long active_anon;
++       unsigned long inactive_anon;
++       unsigned long active_file;
++       unsigned long inactive_file;
 
--- 
-Just another wannabie |  "It's so nice to have a big   |  Just another fool
-----------------------+ strong spud around the house." +-------------------
-This message was brought to you by the letter E and the number 13.
-htag.pl 0.0.22 -- http://www.earth.li/projectpurple/progs/htag.html
+ /*
+  * display in kilobytes.
+@@ -149,6 +153,11 @@ static int meminfo_read_proc(char *page,
+
+        get_vmalloc_info(&vmi);
+
++       active_anon   = global_page_state(NR_ACTIVE_ANON);
++       inactive_anon = global_page_state(NR_INACTIVE_ANON);
++       active_file   = global_page_state(NR_ACTIVE_FILE);
++       inactive_file = global_page_state(NR_INACTIVE_FILE);
++
+        /*
+         * Tagged format, for easy grepping and expansion.
+         */
+@@ -158,6 +167,8 @@ static int meminfo_read_proc(char *page,
+                "Buffers:        %8lu kB\n"
+                "Cached:         %8lu kB\n"
+                "SwapCached:     %8lu kB\n"
++               "Active:         %8lu kB\n"
++               "Inactive:       %8lu kB\n"
+                "Active(anon):   %8lu kB\n"
+                "Inactive(anon): %8lu kB\n"
+                "Active(file):   %8lu kB\n"
+@@ -190,10 +201,12 @@ static int meminfo_read_proc(char *page,
+                K(i.bufferram),
+                K(cached),
+                K(total_swapcache_pages),
+-               K(global_page_state(NR_ACTIVE_ANON)),
+-               K(global_page_state(NR_INACTIVE_ANON)),
+-               K(global_page_state(NR_ACTIVE_FILE)),
+-               K(global_page_state(NR_INACTIVE_FILE)),
++               K(active_anon   + active_file),
++               K(inactive_anon + inactive_file),
++               K(active_anon),
++               K(inactive_anon),
++               K(active_file),
++               K(inactive_file),
+ #ifdef CONFIG_HIGHMEM
+                K(i.totalhigh),
+                K(i.freehigh),
+
+
+
+
