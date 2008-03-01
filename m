@@ -1,180 +1,140 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762261AbYCAVEt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762317AbYCAVHu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762261AbYCAVEt (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 1 Mar 2008 16:04:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758455AbYCAVEl
+	id S1762317AbYCAVHu (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 1 Mar 2008 16:07:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758761AbYCAVHn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 1 Mar 2008 16:04:41 -0500
-Received: from lvps87-230-0-242.dedicated.hosteurope.de ([87.230.0.242]:45836
-	"EHLO lvps87-230-0-242.dedicated.hosteurope.de" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1757598AbYCAVEl (ORCPT
+	Sat, 1 Mar 2008 16:07:43 -0500
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:47813 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758610AbYCAVHm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 1 Mar 2008 16:04:41 -0500
-X-Greylist: delayed 400 seconds by postgrey-1.27 at vger.kernel.org; Sat, 01 Mar 2008 16:04:40 EST
-Mime-Version: 1.0 (Apple Message framework v753)
-To: linux-kernel@vger.kernel.org
-Message-Id: <8900A36F-F8C4-4DB5-9842-E372312F8886@it-loops.com>
-Content-Type: multipart/signed; micalg=sha1; boundary=Apple-Mail-1-612093164; protocol="application/pkcs7-signature"
-From: Michael Guntsche <mike@it-loops.com>
-Subject: Strange RAID-5 rebuild problem
-Date: Sat, 1 Mar 2008 21:57:55 +0100
-X-Mailer: Apple Mail (2.753)
+	Sat, 1 Mar 2008 16:07:42 -0500
+X-Greylist: delayed 100749 seconds by postgrey-1.27 at vger.kernel.org; Sat, 01 Mar 2008 16:07:42 EST
+Date: Sat, 1 Mar 2008 16:07:38 -0500 (EST)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+cc: Roman Zippel <zippel@linux-m68k.org>, ego@in.ibm.com,
+       linux-kernel@vger.kernel.org, linux-rt-users@vger.kernel.org,
+       Ingo Molnar <mingo@elte.hu>, Dipankar Sarma <dipankar@in.ibm.com>,
+       Ted Tso <tytso@us.ibm.com>, dvhltc@us.ibm.com,
+       Oleg Nesterov <oleg@tv-sign.ru>,
+       Andrew Morton <akpm@linux-foundation.org>, bunk@kernel.org,
+       Josh Triplett <josh@freedesktop.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>
+Subject: Re: [RFC PATCH 4/6] Preempt-RCU: Implementation
+In-Reply-To: <20080301193903.GC15887@linux.vnet.ibm.com>
+Message-ID: <Pine.LNX.4.58.0803011602300.30335@gandalf.stny.rr.com>
+References: <20071213170348.GA25981@in.ibm.com> <20071213171658.GE25981@in.ibm.com>
+ <200802290534.57040.zippel@linux-m68k.org> <20080229045328.GA18687@linux.vnet.ibm.com>
+ <Pine.LNX.4.64.0802291330590.2723@scrub.home> <20080301193903.GC15887@linux.vnet.ibm.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
---Apple-Mail-1-612093164
-Content-Transfer-Encoding: 7bit
-Content-Type: text/plain;
-	charset=US-ASCII;
-	delsp=yes;
-	format=flowed
+On Sat, 1 Mar 2008, Paul E. McKenney wrote:
+> Is this what you had in mind?  I don't have any way to test on a
+> system not supporting CONFIG_PREEMPT, but seems to work on x86.
+>
+> Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
+> ---
+>
+>  init/Kconfig           |   34 +++-------------------------------
+>  kernel/Kconfig.preempt |   15 +++++++++++++++
+>  2 files changed, 18 insertions(+), 31 deletions(-)
+>
+> diff -urpNa -X dontdiff linux-2.6.25-rc3/init/Kconfig linux-2.6.25-rc3-preempt_rcu/init/Kconfig
+> --- linux-2.6.25-rc3/init/Kconfig	2008-02-26 16:58:42.000000000 -0800
+> +++ linux-2.6.25-rc3-preempt_rcu/init/Kconfig	2008-03-01 11:30:59.000000000 -0800
+> @@ -860,38 +860,10 @@ source "block/Kconfig"
+>  config PREEMPT_NOTIFIERS
+>  	bool
+>
+> -choice
+> -	prompt "RCU implementation type:"
+> -	default CLASSIC_RCU
+> -	help
+> -	  This allows you to choose either the classic RCU implementation
+> -	  that is designed for best read-side performance on non-realtime
+> -	  systems, or the preemptible RCU implementation for best latency
+> -	  on realtime systems.  Note that some kernel preemption modes
+> -	  will restrict your choice.
+> -
+> -	  Select the default if you are unsure.
+> -
+>  config CLASSIC_RCU
+> -	bool "Classic RCU"
+> +	def_bool !PREEMPT_RCU
+>  	help
+>  	  This option selects the classic RCU implementation that is
+>  	  designed for best read-side performance on non-realtime
+> -	  systems.
 
-Ok, after going through benchmarking for the last few days, I now  
-started acutally deploying the system.
+Actually Paul, you don't need to make this an "option". Simply the default
+if PREEMPT_RCU is not selected. In otherwords, no prompt.
 
-I created a RAID-5 with a 1.0 superblock and let the RAID resync.
-I had to reboot the computer for another update and did not think  
-about thw rebuilding process since it should continue just fine after  
-a restart. After a reboot I noticed that the RAID was in the  
-following state.
+	config CLASSIC_RCU
+	  bool
+	  depends on !PREEMPT_RCU
+	  default y
 
-/dev/md1:
-         Version : 01.00.03
-   Creation Time : Sat Mar  1 21:42:18 2008
-      Raid Level : raid5
-      Array Size : 1464982272 (1397.12 GiB 1500.14 GB)
-   Used Dev Size : 976654848 (465.71 GiB 500.05 GB)
-    Raid Devices : 4
-   Total Devices : 4
-Preferred Minor : 1
-     Persistence : Superblock is persistent
+Then, have the PREEMPT_RCU defined down below (as you already did), and
+have it be the only option. That is, you can have normal RCU or select
+to have PREEMPT_RCU.
 
-     Update Time : Sat Mar  1 21:50:19 2008
-           State : clean, degraded
-  Active Devices : 3
-Working Devices : 4
-  Failed Devices : 0
-   Spare Devices : 1
+If the user selects PREEMPT_RCU, CLASSIC_RCU will be unselected.
 
-          Layout : left-symmetric
-      Chunk Size : 256K
+-- Steve
 
-            Name : gibson:1  (local to host gibson)
-            UUID : 80b0698e:d7c76d22:e231f03e:d25feba2
-          Events : 32
-
-     Number   Major   Minor   RaidDevice State
-        0       8        2        0      active sync   /dev/sda2
-        1       8       18        1      active sync   /dev/sdb2
-        2       8       34        2      active sync   /dev/sdc2
-        4       8       50        3      spare rebuilding   /dev/sdd2
-
-mdadm -E /dev/sdd2:
-
-/dev/sdd2:
-           Magic : a92b4efc
-         Version : 1.0
-     Feature Map : 0x2
-      Array UUID : 80b0698e:d7c76d22:e231f03e:d25feba2
-            Name : gibson:1  (local to host gibson)
-   Creation Time : Sat Mar  1 21:42:18 2008
-      Raid Level : raid5
-    Raid Devices : 4
-
-  Avail Dev Size : 976655336 (465.71 GiB 500.05 GB)
-      Array Size : 2929964544 (1397.12 GiB 1500.14 GB)
-   Used Dev Size : 976654848 (465.71 GiB 500.05 GB)
-    Super Offset : 976655592 sectors
-Recovery Offset : 973312 sectors
-           State : clean
-     Device UUID : 5d6d28dd:c1d4d59d:3617c511:267c47f6
-
-     Update Time : Sat Mar  1 21:55:44 2008
-        Checksum : a1ca2174 - correct
-          Events : 52
-
-          Layout : left-symmetric
-      Chunk Size : 256K
-
-     Array Slot : 4 (0, 1, 2, failed, 3)
-    Array State : uuuU 1 failed
-
-
-
-
-/proc/mdstat showed now progress bar though. Ok, since he seems stuck  
-I thought, why not just mark sdd2 as failed.
-I was able to mark it as failed but looking at the detail again I saw  
-"spare rebuilding" and I could not remove it.
-Next I tried a fail/remove which also did not work. I stopped the  
-array started it again, and THEN it removed the disk.
-I tried this several times, the same result every time.
-
-Just for kicks I created the RAID with a 0.90 superblock and tried  
-the same thing. Lo and behold after stopping the array and starting  
-it again the progress bar showed up and everything started rebuilding  
-where it stopped earlier.
-
-Is this "normal" or is this a superblock 1.0 related problem?
-
-Current kernel is 2.6.24.2, mdadm is v2.6.4 from debian unstable.
-
-I do not need the RAID right now so I could run some tests on it if  
-someone wants me too.
-
-Kind regards,
-Michael
---Apple-Mail-1-612093164
-Content-Transfer-Encoding: base64
-Content-Type: application/pkcs7-signature;
-	name=smime.p7s
-Content-Disposition: attachment;
-	filename=smime.p7s
-
-MIAGCSqGSIb3DQEHAqCAMIACAQExCzAJBgUrDgMCGgUAMIAGCSqGSIb3DQEHAQAAoIIGIzCCAtww
-ggJFoAMCAQICEBd4Zp9b22liUjK/V/e8ZTUwDQYJKoZIhvcNAQEFBQAwYjELMAkGA1UEBhMCWkEx
-JTAjBgNVBAoTHFRoYXd0ZSBDb25zdWx0aW5nIChQdHkpIEx0ZC4xLDAqBgNVBAMTI1RoYXd0ZSBQ
-ZXJzb25hbCBGcmVlbWFpbCBJc3N1aW5nIENBMB4XDTA3MTAzMTE2MDMwMVoXDTA4MTAzMDE2MDMw
-MVowQzEfMB0GA1UEAxMWVGhhd3RlIEZyZWVtYWlsIE1lbWJlcjEgMB4GCSqGSIb3DQEJARYRbWlr
-ZUBpdC1sb29wcy5jb20wggEiMA0GCSqGSIb3DQEBAQUAA4IBDwAwggEKAoIBAQC/D9ePLG2ZNk/Z
-NXTRfUq7Rs+3k5M/nqmZ8riQYRnt8sCTj6o/fPS4qjaDf9jRfgbxViROiShFWMoBNJkKg91doJFk
-FYdive8ujFfKpPR6FVGu8rN/sHUZM/gowZUcqDyIMAJVr7iiWhQYxP3U4hmprJsmUaGkjBU37Bcw
-vJnEZ4gDCgYiZLiHUACDDfsl2xl5r6XvtXV9TsjWA3eQSeju68nQFP0PjFU+UtYfr3z1nFMJpuzE
-xStjCEZ+EkYBOHK+RmBaOLEfF2Rq8175oaX5ScotY61s7wjADYesS//bvdcZ11jf/R+UCE90p8iC
-Y1TjqqRv+zMc+VpyfG1dt9ELAgMBAAGjLjAsMBwGA1UdEQQVMBOBEW1pa2VAaXQtbG9vcHMuY29t
-MAwGA1UdEwEB/wQCMAAwDQYJKoZIhvcNAQEFBQADgYEAgVh3S3v4j1ydxqgc/DWXcO5RRnyfLTjU
-bJwYwTdaQVuykeXrT+2ITDIpOpVEqZ7xV/N9aKMM/izyQ8oMvw/J13TUm1N77kNCp5jYy1S+Ntuz
-bCdOdFVA5tFVn/nMfmK1Is6NjK+0GmryYPEpn8vaP9ZGy57wCpKZrwmytgm3oPQwggM/MIICqKAD
-AgECAgENMA0GCSqGSIb3DQEBBQUAMIHRMQswCQYDVQQGEwJaQTEVMBMGA1UECBMMV2VzdGVybiBD
-YXBlMRIwEAYDVQQHEwlDYXBlIFRvd24xGjAYBgNVBAoTEVRoYXd0ZSBDb25zdWx0aW5nMSgwJgYD
-VQQLEx9DZXJ0aWZpY2F0aW9uIFNlcnZpY2VzIERpdmlzaW9uMSQwIgYDVQQDExtUaGF3dGUgUGVy
-c29uYWwgRnJlZW1haWwgQ0ExKzApBgkqhkiG9w0BCQEWHHBlcnNvbmFsLWZyZWVtYWlsQHRoYXd0
-ZS5jb20wHhcNMDMwNzE3MDAwMDAwWhcNMTMwNzE2MjM1OTU5WjBiMQswCQYDVQQGEwJaQTElMCMG
-A1UEChMcVGhhd3RlIENvbnN1bHRpbmcgKFB0eSkgTHRkLjEsMCoGA1UEAxMjVGhhd3RlIFBlcnNv
-bmFsIEZyZWVtYWlsIElzc3VpbmcgQ0EwgZ8wDQYJKoZIhvcNAQEBBQADgY0AMIGJAoGBAMSmPFVz
-VftOucqZWh5owHUEcJ3f6f+jHuy9zfVb8hp2vX8MOmHyv1HOAdTlUAow1wJjWiyJFXCO3cnwK4Va
-qj9xVsuvPAsH5/EfkTYkKhPPK9Xzgnc9A74r/rsYPge/QIACZNenprufZdHFKlSFD0gEf6e20Txh
-BEAeZBlyYLf7AgMBAAGjgZQwgZEwEgYDVR0TAQH/BAgwBgEB/wIBADBDBgNVHR8EPDA6MDigNqA0
-hjJodHRwOi8vY3JsLnRoYXd0ZS5jb20vVGhhd3RlUGVyc29uYWxGcmVlbWFpbENBLmNybDALBgNV
-HQ8EBAMCAQYwKQYDVR0RBCIwIKQeMBwxGjAYBgNVBAMTEVByaXZhdGVMYWJlbDItMTM4MA0GCSqG
-SIb3DQEBBQUAA4GBAEiM0VCD6gsuzA2jZqxnD3+vrL7CF6FDlpSdf0whuPg2H6otnzYvwPQcUCCT
-cDz9reFhYsPZOhl+hLGZGwDFGguCdJ4lUJRix9sncVcljd2pnDmOjCBPZV+V2vf3h9bGCE6u9uo0
-5RAaWzVNd+NWIXiC3CEZNd4ksdMdRv9dX2VPMYIDEDCCAwwCAQEwdjBiMQswCQYDVQQGEwJaQTEl
-MCMGA1UEChMcVGhhd3RlIENvbnN1bHRpbmcgKFB0eSkgTHRkLjEsMCoGA1UEAxMjVGhhd3RlIFBl
-cnNvbmFsIEZyZWVtYWlsIElzc3VpbmcgQ0ECEBd4Zp9b22liUjK/V/e8ZTUwCQYFKw4DAhoFAKCC
-AW8wGAYJKoZIhvcNAQkDMQsGCSqGSIb3DQEHATAcBgkqhkiG9w0BCQUxDxcNMDgwMzAxMjA1NzU2
-WjAjBgkqhkiG9w0BCQQxFgQURSeQq15gKciLm5B6qqD8pWK2nT0wgYUGCSsGAQQBgjcQBDF4MHYw
-YjELMAkGA1UEBhMCWkExJTAjBgNVBAoTHFRoYXd0ZSBDb25zdWx0aW5nIChQdHkpIEx0ZC4xLDAq
-BgNVBAMTI1RoYXd0ZSBQZXJzb25hbCBGcmVlbWFpbCBJc3N1aW5nIENBAhAXeGafW9tpYlIyv1f3
-vGU1MIGHBgsqhkiG9w0BCRACCzF4oHYwYjELMAkGA1UEBhMCWkExJTAjBgNVBAoTHFRoYXd0ZSBD
-b25zdWx0aW5nIChQdHkpIEx0ZC4xLDAqBgNVBAMTI1RoYXd0ZSBQZXJzb25hbCBGcmVlbWFpbCBJ
-c3N1aW5nIENBAhAXeGafW9tpYlIyv1f3vGU1MA0GCSqGSIb3DQEBAQUABIIBAKpJQ1/usuENH+zC
-HTcCVtZJcSfLh8SfMjB2WsHgfRtinJoPn9XdfmBbeIuReNGekp6PSGOn55oD96/6ZCywZH13d51u
-0UfMWPYyDg4rzsYT/l6vTJ8wpznLqf6Ng4hJYwU0015pR1yimnlRruUagYfL29v3tYXROEHt/20c
-hszPMlBYwgg80ZpZqMwlQYTagjFAOb3bPQuEPBSlbOgcNhPd3ePjyBcTpitRyMI01ItaGT6yfllt
-byX837XNu7sb4Yqy+24+HOoQilHofj7TanXCixwt/M04jG6Ds0nzRRfbS/bWCqwghDxGLe9cmTRZ
-4kILFmQKWbv5trIKEqXq5EoAAAAAAAA=
-
---Apple-Mail-1-612093164--
+> -
+> -	  Say Y if you are unsure.
+> -
+> -config PREEMPT_RCU
+> -	bool "Preemptible RCU"
+> -	depends on PREEMPT
+> -	help
+> -	  This option reduces the latency of the kernel by making certain
+> -	  RCU sections preemptible. Normally RCU code is non-preemptible, if
+> -	  this option is selected then read-only RCU sections become
+> -	  preemptible. This helps latency, but may expose bugs due to
+> -	  now-naive assumptions about each RCU read-side critical section
+> -	  remaining on a given CPU through its execution.
+> -
+> -	  Say N if you are unsure.
+> -
+> -endchoice
+> +	  systems.  Classic RCU is the default.  Note that the
+> +	  PREEMPT_RCU symbol is used to select/deselect this option.
+> diff -urpNa -X dontdiff linux-2.6.25-rc3/kernel/Kconfig.preempt linux-2.6.25-rc3-preempt_rcu/kernel/Kconfig.preempt
+> --- linux-2.6.25-rc3/kernel/Kconfig.preempt	2008-02-26 16:58:42.000000000 -0800
+> +++ linux-2.6.25-rc3-preempt_rcu/kernel/Kconfig.preempt	2008-03-01 11:35:39.000000000 -0800
+> @@ -52,8 +52,23 @@ config PREEMPT
+>
+>  endchoice
+>
+> +config PREEMPT_RCU
+> +	bool "Preemptible RCU"
+> +	depends on PREEMPT
+> +	default n
+> +	help
+> +	  This option reduces the latency of the kernel by making certain
+> +	  RCU sections preemptible. Normally RCU code is non-preemptible, if
+> +	  this option is selected then read-only RCU sections become
+> +	  preemptible. This helps latency, but may expose bugs due to
+> +	  now-naive assumptions about each RCU read-side critical section
+> +	  remaining on a given CPU through its execution.
+> +
+> +	  Say N if you are unsure.
+> +
+>  config RCU_TRACE
+>  	bool "Enable tracing for RCU - currently stats in debugfs"
+> +	depends on PREEMPT_RCU
+>  	select DEBUG_FS
+>  	default y
+>  	help
+>
