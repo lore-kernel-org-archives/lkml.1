@@ -1,76 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757466AbYCASaH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757514AbYCASgo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757466AbYCASaH (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 1 Mar 2008 13:30:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751943AbYCAS3z
+	id S1757514AbYCASgo (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 1 Mar 2008 13:36:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752362AbYCASgd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 1 Mar 2008 13:29:55 -0500
-Received: from nf-out-0910.google.com ([64.233.182.185]:43365 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751352AbYCAS3z (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 1 Mar 2008 13:29:55 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=OzB/6lfEXHn+ReUOx9E+hATUzRTArNZbdA+BnJJdqaBz17QofE0idPKrm6njTwdoEctjDYTrf8aig/AIsDQwJDFFpr2IowqRCz+nTgN7tUk9B7+YzXiBUmacQR9+/zK38Zby3LZLYD1fLgtxUzs0Ehnrta+mofEri95JR8QUJg4=
-Message-ID: <524f69650803011029w50d16badkc52c2591c8113a99@mail.gmail.com>
-Date: Sat, 1 Mar 2008 12:29:53 -0600
-From: "Steve French" <smfrench@gmail.com>
-To: "Adrian Bunk" <bunk@kernel.org>
-Subject: Re: [PATCH][fs/cifs/cifsfs.c] Make use of cifs_xquota_get
-Cc: "Roel Kluin" <12o3l@tiscali.nl>, sfrench@samba.org,
-       linux-cifs-client@lists.samba.org, samba-technical@lists.samba.org,
-       lkml <linux-kernel@vger.kernel.org>
-In-Reply-To: <20080301161515.GD25835@cs181133002.pp.htv.fi>
+	Sat, 1 Mar 2008 13:36:33 -0500
+Received: from brick.kernel.dk ([87.55.233.238]:18144 "EHLO kernel.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751943AbYCASgc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 1 Mar 2008 13:36:32 -0500
+Date: Sat, 1 Mar 2008 19:36:28 +0100
+From: Jens Axboe <jens.axboe@oracle.com>
+To: petkovbb@gmail.com, bzolnier@gmail.com, linux-ide@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 00/24] ide-tape: remove pipelined mode operation
+Message-ID: <20080301183627.GB6704@kernel.dk>
+References: <1204361928-30229-1-git-send-email-petkovbb@gmail.com> <20080301095518.GW6704@kernel.dk> <20080301154529.GB30547@gollum.tnic>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <47B08A0B.4020604@tiscali.nl>
-	 <20080301093712.GB25835@cs181133002.pp.htv.fi>
-	 <524f69650803010806m1571df8fiff4b9587b7bf1cc7@mail.gmail.com>
-	 <20080301161515.GD25835@cs181133002.pp.htv.fi>
+In-Reply-To: <20080301154529.GB30547@gollum.tnic>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Mar 1, 2008 at 10:15 AM, Adrian Bunk <bunk@kernel.org> wrote:
-> On Sat, Mar 01, 2008 at 10:06:11AM -0600, Steve French wrote:
->  > There are quite a few fixes stuck in cifs-2.6.git that are fine to be
->  > merged with mainline but didn't want to bug Linus with multiple merge
->  > requests (there are a couple of more fixes that are not in
->  > cifs-2.6.git pending review)
-Just tried to check my cifs-2.6 tree on kernel.org and forward the merge
-request off to Linus but it looks like the mainline tree has been rebuilt
-(git diff shows "warning: no common commits").  Am syncing again.
+On Sat, Mar 01 2008, Borislav Petkov wrote:
+> On Sat, Mar 01, 2008 at 10:55:18AM +0100, Jens Axboe wrote:
+> > On Sat, Mar 01 2008, Borislav Petkov wrote:
+> > > Hi Bart,
+> > > 
+> > > here's the 1st draft of the pipeline removal series. As the diffstat below openly
+> > > states it, a lot of code got removed - even more than the cleanup series we did
+> > > earlier. There are several issues that we need to address concerning these
+> > > patches:
+> > > 
+> > > 1. only compile-tested since i don't have the hardware, i.e. longer -mm brewing is
+> > > advisable the least.
+> > > 
+> > > 2. I have left the tape->merge_stage buffer structure along with its
+> > > alloc/free functions intact for now, for simplicity. The next step would be
+> > > to go and carefully audit the code and then remove that last piece
+> > > too and use allocations on the stack instead. I guess we still expect
+> > > Jens's response on whether blk_{get,put}_request is the way to go here.
+> > > 
+> > > Jens?
+> > 
+> > Hm, I have not seen any questions regarding this directed my way :-)
+> > Please point me to the original question and I'll take a look at it.
+> 
+> Hi Jens,
+> 
+> sorry but maybe we weren't that explicit, here's a pointer to the
+> relevant thread:
+> http://www.mail-archive.com/linux-ide@vger.kernel.org/msg15541.html.
+> It boils down to removing the statically allocated arrays of buffers
+> for pc and rq structs in ide-floppy and ide-tape, and using GFP_ATOMIC
+> stack memory instead.  Bart's idea was to even go a step further and
+> even avoid allocation errors in out-of-mem situations by reusing
+> requests from the request queue but wasn't sure whether this'll fly
+> and wanted to run it by you...
 
+That sounds like asking for trouble, if you ask me (well you did :-)
 
->  But generally please try to get fixes to Linus early - and having a few
->  more weeks for getting fixes tested is more important than how often
->  Linus pulls from you.
->
->  > Thanks,
->  >
->  > Steve
->
->  cu
->
->
-> Adrian
->
->  --
->
->        "Is there not promise of rain?" Ling Tan asked suddenly out
->         of the darkness. There had been need of rain for many days.
->        "Only a promise," Lao Er said.
->                                        Pearl S. Buck - Dragon Seed
->
->
-
-
+And being a very rarely exercised path (if at all, you should be very
+unlucky to NOT get a request even with GFP_ATOMIC), then it wont even
+get tested properly. So I'd say stick to GFP_ATOMIC, and just plug the
+device and retry if you get into allocation errors.
 
 -- 
-Thanks,
+Jens Axboe
 
-Steve
