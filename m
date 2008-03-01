@@ -1,98 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758386AbYCAO0f@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758741AbYCAO3W@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758386AbYCAO0f (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 1 Mar 2008 09:26:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751912AbYCAO0Z
+	id S1758741AbYCAO3W (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 1 Mar 2008 09:29:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753033AbYCAO3O
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 1 Mar 2008 09:26:25 -0500
-Received: from mail.codesourcery.com ([65.74.133.4]:43080 "EHLO
-	mail.codesourcery.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751548AbYCAO0Y (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 1 Mar 2008 09:26:24 -0500
-X-Greylist: delayed 400 seconds by postgrey-1.27 at vger.kernel.org; Sat, 01 Mar 2008 09:26:24 EST
-Message-ID: <47C96659.80306@codesourcery.com>
-Date: Sat, 01 Mar 2008 09:21:13 -0500
-From: "Carlos O'Donell" <carlos@codesourcery.com>
-Organization: CodeSourcery
-User-Agent: Mozilla-Thunderbird 2.0.0.9 (X11/20080110)
+	Sat, 1 Mar 2008 09:29:14 -0500
+Received: from www.tglx.de ([62.245.132.106]:40310 "EHLO www.tglx.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752363AbYCAO3N (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 1 Mar 2008 09:29:13 -0500
+Date: Sat, 1 Mar 2008 15:29:03 +0100 (CET)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Ed Tomlinson <edt@aei.ca>
+cc: linux-kernel@vger.kernel.org
+Subject: Re: Panic 2.6.24-3 NMI Watchdog detected LOCKUP on CPU 0
+In-Reply-To: <200803010911.04569.edt@aei.ca>
+Message-ID: <alpine.LFD.1.00.0803011527410.11084@apollo.tec.linutronix.de>
+References: <200803010911.04569.edt@aei.ca>
+User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
 MIME-Version: 1.0
-To: Linus Torvalds <torvalds@linux-foundation.org>
-CC: Michael Kerrisk <michael.kerrisk@googlemail.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, aaw <aaw@google.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       linux-kernel <linux-kernel@vger.kernel.org>, drepper@redhat.com,
-       mtk.manpages@gmail.com, Geoff Clare <gwc@opengroup.org>
-Subject: Re: [RFC/PATCH] RLIMIT_ARG_MAX
-References: <1204119455.6242.403.camel@lappy>  <alpine.LFD.1.00.0802290801290.17889@woody.linux-foundation.org>  <c49095e30802290858t42eb8a61ua0ed73e27971bc77@mail.gmail.com>  <1204305244.6243.111.camel@lappy>  <alpine.LFD.1.00.0802290934130.17889@woody.linux-foundation.org>  <1204307756.6243.121.camel@lappy> <47C84C6C.2000201@gmail.com>  <alpine.LFD.1.00.0802291032370.17889@woody.linux-foundation.org> <c49095e30802291149t7ad01f6bl59b9083bfb41c920@mail.gmail.com> <alpine.LFD.1.00.0802291200580.17889@woody.linux-foundation.org> <alpine.LFD.1.00.0802291350550.17889@woody.linux-foundation.org>
-In-Reply-To: <alpine.LFD.1.00.0802291350550.17889@woody.linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus Torvalds wrote:
-> On Fri, 29 Feb 2008, Linus Torvalds wrote:
->> I do agree that we should at least make the "MAX(stacksize/4, 128k)" 
->> change for backwards compatibility.
+On Sat, 1 Mar 2008, Ed Tomlinson wrote:
+> Hi,
 > 
-> How about something like this?
-
-This is perfect. As the original submitter of the bug my primary 
-interest is in having the regression fixed.
-
-> The alternative is to just remove that size check entirely, and depend on 
-> get_user_pages() doing the stack limit check (among all the *other* checks 
-> it does when it does the acct_stack_growth() thing).
+> I have been seeing these since I installed .24 kernels.  It does not seem to matter if I change the clocksource from tsc
+> to apci_pm.  Its happened with all .24 kernels I have tried starting with stock 2.6.24 upto 2.6.24-gentoo-r2 + 2.6.24-3
 > 
-> I'd almost prefer that simpler approach, but I don't have any really 
-> strong preferences. Anybody?
-> 
-> 		Linus
-> 
-> ---
->  fs/exec.c |   10 +++++++++-
->  1 files changed, 9 insertions(+), 1 deletions(-)
-> 
-> diff --git a/fs/exec.c b/fs/exec.c
-> index a44b142..e91f9cb 100644
-> --- a/fs/exec.c
-> +++ b/fs/exec.c
-> @@ -173,8 +173,15 @@ static struct page *get_arg_page(struct linux_binprm *bprm, unsigned long pos,
->  		return NULL;
->  
->  	if (write) {
-> -		struct rlimit *rlim = current->signal->rlim;
->  		unsigned long size = bprm->vma->vm_end - bprm->vma->vm_start;
-> +		struct rlimit *rlim;
-> +
-> +		/*
-> +		 * We've historically supported up to 32 pages of argument
-> +		 * strings even with small stacks
-> +		 */
-> +		if (size <= 32*PAGE_SIZE)
-> +			return page;
+> Ideas?
 
-Could you use ARG_MAX as defined in include/linux/limits.h?
+Questions first. Is there a particular reason to use idle=poll ?
 
->  
->  		/*
->  		 * Limit to 1/4-th the stack size for the argv+env strings.
-> @@ -183,6 +190,7 @@ static struct page *get_arg_page(struct linux_binprm *bprm, unsigned long pos,
->  		 *  - the program will have a reasonable amount of stack left
->  		 *    to work from.
->  		 */
-> +		rlim = current->signal->rlim;
->  		if (size > rlim[RLIMIT_STACK].rlim_cur / 4) {
->  			put_page(page);
->  			return NULL;
+Idea: does the patch below help ?
 
-Cheers,
-Carlos.
--- 
-Carlos O'Donell
-CodeSourcery
-carlos@codesourcery.com
-(650) 331-3385 x716
+Thanks,
+	tglx
+
+---
+
+ arch/x86/kernel/process_64.c |    3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
+
+Index: linux-2.6.24/arch/x86/kernel/process_64.c
+===================================================================
+--- linux-2.6.24.orig/arch/x86/kernel/process_64.c
++++ linux-2.6.24/arch/x86/kernel/process_64.c
+@@ -212,14 +212,13 @@ void cpu_idle (void)
+ 	current_thread_info()->status |= TS_POLLING;
+ 	/* endless idle loop with no priority at all */
+ 	while (1) {
++		tick_nohz_stop_sched_tick();
+ 		while (!need_resched()) {
+ 			void (*idle)(void);
+ 
+ 			if (__get_cpu_var(cpu_idle_state))
+ 				__get_cpu_var(cpu_idle_state) = 0;
+ 
+-			tick_nohz_stop_sched_tick();
+-
+ 			rmb();
+ 			idle = pm_idle;
+ 			if (!idle)
