@@ -1,22 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760877AbYCAGEu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758628AbYCAGFL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760877AbYCAGEu (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 1 Mar 2008 01:04:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753703AbYCAGEi
+	id S1758628AbYCAGFL (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 1 Mar 2008 01:05:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753731AbYCAGEj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 1 Mar 2008 01:04:38 -0500
-Received: from rgminet01.oracle.com ([148.87.113.118]:58802 "EHLO
-	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753630AbYCAGEh (ORCPT
+	Sat, 1 Mar 2008 01:04:39 -0500
+Received: from agminet01.oracle.com ([141.146.126.228]:32114 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753334AbYCAGEh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Sat, 1 Mar 2008 01:04:37 -0500
-Date: Fri, 29 Feb 2008 22:03:07 -0800
+Date: Fri, 29 Feb 2008 22:03:15 -0800
 From: Randy Dunlap <randy.dunlap@oracle.com>
-To: lkml <linux-kernel@vger.kernel.org>, lud <linux-usb@vger.kernel.org>
-Cc: gregkh <greg@kroah.com>, akpm <akpm@linux-foundation.org>,
-       torvalds <torvalds@linux-foundation.org>
-Subject: [PATCH 4/6] docbook: fix usb source files
-Message-Id: <20080229220307.7a637ce2.randy.dunlap@oracle.com>
+To: lkml <linux-kernel@vger.kernel.org>
+Cc: akpm <akpm@linux-foundation.org>, torvalds <torvalds@linux-foundation.org>
+Subject: [PATCH 5/6] docbook: fix kernel-api source files
+Message-Id: <20080229220315.d51003be.randy.dunlap@oracle.com>
 Organization: Oracle Linux Eng.
 X-Mailer: Sylpheed 2.4.7 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
@@ -32,66 +31,50 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Randy Dunlap <randy.dunlap@oracle.com>
 
-Fix docbook problems in USB source files.
+Fix docbook problems in kernel-api.tmpl.
 These cause the generated docbook to be incorrect.
 
 Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
 ---
- drivers/usb/core/usb.c |    6 ++----
- include/linux/usb.h    |    9 +++------
- 2 files changed, 5 insertions(+), 10 deletions(-)
+ drivers/base/transport_class.c |    4 +---
+ drivers/pci/rom.c              |    3 +--
+ mm/truncate.c                  |    3 +--
+ 3 files changed, 3 insertions(+), 7 deletions(-)
 
---- lin2625-rc3g2-kdoc.orig/drivers/usb/core/usb.c
-+++ lin2625-rc3g2-kdoc/drivers/usb/core/usb.c
-@@ -99,8 +99,7 @@ struct usb_interface *usb_ifnum_to_if(co
- EXPORT_SYMBOL_GPL(usb_ifnum_to_if);
+--- lin2625-rc3g2-kdoc.orig/drivers/base/transport_class.c
++++ lin2625-rc3g2-kdoc/drivers/base/transport_class.c
+@@ -126,9 +126,7 @@ static int transport_setup_classdev(stru
+ }
  
  /**
-- * usb_altnum_to_altsetting - get the altsetting structure with a given
-- *	alternate setting number.
-+ * usb_altnum_to_altsetting - get the altsetting structure with a given alternate setting number.
-  * @intf: the interface containing the altsetting in question
-  * @altnum: the desired alternate setting number
+- * transport_setup_device - declare a new dev for transport class association
+- *			    but don't make it visible yet.
+- *
++ * transport_setup_device - declare a new dev for transport class association but don't make it visible yet.
+  * @dev: the generic device representing the entity being added
   *
-@@ -442,8 +441,7 @@ EXPORT_SYMBOL_GPL(usb_put_intf);
-  */
+  * Usually, dev represents some component in the HBA system (either
+--- lin2625-rc3g2-kdoc.orig/drivers/pci/rom.c
++++ lin2625-rc3g2-kdoc/drivers/pci/rom.c
+@@ -242,8 +242,7 @@ void pci_remove_rom(struct pci_dev *pdev
+ #endif  /*  0  */
  
  /**
-- * usb_lock_device_for_reset - cautiously acquire the lock for a
-- *	usb device structure
-+ * usb_lock_device_for_reset - cautiously acquire the lock for a usb device structure
-  * @udev: device that's being locked
-  * @iface: interface bound to the driver making the request (optional)
+- * pci_cleanup_rom - internal routine for freeing the ROM copy created
+- * by pci_map_rom_copy called from remove.c
++ * pci_cleanup_rom - free the ROM copy created by pci_map_rom_copy
+  * @pdev: pointer to pci device struct
   *
---- lin2625-rc3g2-kdoc.orig/include/linux/usb.h
-+++ lin2625-rc3g2-kdoc/include/linux/usb.h
-@@ -781,8 +781,7 @@ static inline int usb_endpoint_is_isoc_o
- 	.idVendor = (vend), \
- 	.idProduct = (prod)
- /**
-- * USB_DEVICE_VER - macro used to describe a specific usb device with a
-- *		version range
-+ * USB_DEVICE_VER - describe a specific usb device with a version range
-  * @vend: the 16 bit USB Vendor ID
-  * @prod: the 16 bit USB Product ID
-  * @lo: the bcdDevice_lo value
-@@ -799,8 +798,7 @@ static inline int usb_endpoint_is_isoc_o
- 	.bcdDevice_hi = (hi)
+  * Free the copied ROM if we allocated one.
+--- lin2625-rc3g2-kdoc.orig/mm/truncate.c
++++ lin2625-rc3g2-kdoc/mm/truncate.c
+@@ -134,8 +134,7 @@ invalidate_complete_page(struct address_
+ }
  
  /**
-- * USB_DEVICE_INTERFACE_PROTOCOL - macro used to describe a usb
-- *		device with a specific interface protocol
-+ * USB_DEVICE_INTERFACE_PROTOCOL - describe a usb device with a specific interface protocol
-  * @vend: the 16 bit USB Vendor ID
-  * @prod: the 16 bit USB Product ID
-  * @pr: bInterfaceProtocol value
-@@ -846,8 +844,7 @@ static inline int usb_endpoint_is_isoc_o
- 	.bInterfaceProtocol = (pr)
- 
- /**
-- * USB_DEVICE_AND_INTERFACE_INFO - macro used to describe a specific usb device
-- * 		with a class of usb interfaces
-+ * USB_DEVICE_AND_INTERFACE_INFO - describe a specific usb device with a class of usb interfaces
-  * @vend: the 16 bit USB Vendor ID
-  * @prod: the 16 bit USB Product ID
-  * @cl: bInterfaceClass value
+- * truncate_inode_pages - truncate range of pages specified by start and
+- * end byte offsets
++ * truncate_inode_pages - truncate range of pages specified by start & end byte offsets
+  * @mapping: mapping to truncate
+  * @lstart: offset from which to truncate
+  * @lend: offset to which to truncate
