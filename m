@@ -1,51 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758646AbYCAIOv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757703AbYCAIhD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758646AbYCAIOv (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 1 Mar 2008 03:14:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754772AbYCAIOn
+	id S1757703AbYCAIhD (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 1 Mar 2008 03:37:03 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755118AbYCAIgw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 1 Mar 2008 03:14:43 -0500
-Received: from hawking.rebel.net.au ([203.20.69.83]:57591 "EHLO
-	hawking.rebel.net.au" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754248AbYCAIOl (ORCPT
+	Sat, 1 Mar 2008 03:36:52 -0500
+Received: from rv-out-0910.google.com ([209.85.198.186]:33656 "EHLO
+	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755087AbYCAIgv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 1 Mar 2008 03:14:41 -0500
-Message-ID: <47C910B3.80608@davidnewall.com>
-Date: Sat, 01 Mar 2008 18:45:47 +1030
-From: David Newall <davidn@davidnewall.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20071022)
+	Sat, 1 Mar 2008 03:36:51 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=lqdMmaJ+GKQuk93kId0aSW4X97fV8EZiO9kxOiwL4/gOI0fymuD9nuXLRJvJnOBWQPY0asCV0MynLgVRmMYTWmtuaVuijvr9eWcsaR4jNSLeT8rJaxVgU7FWPJ2mQg70N6koX3SM0epRRcg6rSc+RjiXgaFRQ8vmCzc5AkAME9k=
+Message-ID: <86802c440803010036u2cb89a30h2adb90b3ee497cfc@mail.gmail.com>
+Date: Sat, 1 Mar 2008 00:36:50 -0800
+From: "Yinghai Lu" <yhlu.kernel@gmail.com>
+To: "Greg KH" <greg@kroah.com>
+Subject: Re: [PATCH] x86 pci: remove checking type for mmconfig probe v2
+Cc: "Ingo Molnar" <mingo@elte.hu>, "Andrew Morton" <akpm@linux-foundation.org>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
+In-Reply-To: <20080301060236.GE20032@kroah.com>
 MIME-Version: 1.0
-To: Pavel Roskin <proski@gnu.org>
-CC: "John W. Linville" <linville@tuxdriver.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Zan Lynx <zlynx@acm.org>, linux-kernel <linux-kernel@vger.kernel.org>,
-       Jon Masters <jcm@jonmasters.org>, Rusty Russell <rusty@rustcorp.com.au>
-Subject: Re: [PATCH 2.6.25] module: allow ndiswrapper to	use	GPL-only	symbols
-References: <1204236662.3612.6.camel@dv>	 <alpine.LFD.1.00.0802281525170.5780@woody.linux-foundation.org>	 <20080229012012.ajlsk4pow8wkkgss@webmail.spamcop.net>	 <alpine.LFD.1.00.0802290807110.17889@woody.linux-foundation.org>	 <1204304352.6767.21.camel@localhost>	 <alpine.LFD.1.00.0802290906520.17889@woody.linux-foundation.org>	 <1204305609.21719.16.camel@dv>	 <alpine.LFD.1.00.0802290929590.17889@woody.linux-foundation.org>	 <1204313978.2316.8.camel@dv> <20080229201711.GF3234@tuxdriver.com>	 <47C86DCA.5080706@davidnewall.com> <1204318797.2316.29.camel@dv>	 <47C87460.2030705@davidnewall.com> <1204323473.2316.59.camel@dv>
-In-Reply-To: <1204323473.2316.59.camel@dv>
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <200802271639.52958.yinghai.lu@sun.com>
+	 <200802282356.50496.yinghai.lu@sun.com>
+	 <20080301060236.GE20032@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Pavel Roskin wrote:
-> On Sat, 2008-03-01 at 07:38 +1030, David Newall wrote:
->   
->> It's a stupid problem promulgated by stupid people, and I use the word
->> "stupid" in it's most pejorative sense.
->>     
+On Fri, Feb 29, 2008 at 10:02 PM, Greg KH <greg@kroah.com> wrote:
+> On Thu, Feb 28, 2008 at 11:56:50PM -0800, Yinghai Lu wrote:
+>  >
+>  > doesn't need to check if it is type1 or type2. we can use raw_pci_ops dirctly.
 >
-> It would be more useful if you counter specific arguments rather than
-> employ ad hominem attacks.
+>  Why?  is this because the ops are already set up?  It would be nice to
+>  add the "why this change is necessary and/or possible now" for the
+>  changelog.
+yes.
+raw_pci_ops got assigned when check direct_type1 and direct_type2.
+and could used in hostbridge check to get MMCONF base.
 
-True.  Somebody had just said something quite similar, which undoubtedly
-is what brought the thought to mind.  However, it is a stupid problem,
-and all of the arguments have already been done to death.  Nothing
-remains to be said, and the sensible strategy now is just to work around
-the stupid blocks and ignore any fools who care to howl.  Also, working
-around the blocks serves as a useful object lesson to everybody who has
-forgotten that the point of the GPL is to provide freedom to innovate
-and change, not to restrict it.
+make mmconfig probe clean
+with checking if raw_pci_ops is assigned instead of passing type or
+checking type.
 
-Just do it.
+YH
