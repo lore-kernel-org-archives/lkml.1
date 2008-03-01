@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763719AbYCAQ2v@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763155AbYCAQ3Q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763719AbYCAQ2v (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 1 Mar 2008 11:28:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762880AbYCAQYk
+	id S1763155AbYCAQ3Q (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 1 Mar 2008 11:29:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763034AbYCAQYn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 1 Mar 2008 11:24:40 -0500
-Received: from smtp4.pp.htv.fi ([213.243.153.38]:55880 "EHLO smtp4.pp.htv.fi"
+	Sat, 1 Mar 2008 11:24:43 -0500
+Received: from smtp6.pp.htv.fi ([213.243.153.40]:57412 "EHLO smtp6.pp.htv.fi"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762477AbYCAQYj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 1 Mar 2008 11:24:39 -0500
-Date: Sat, 1 Mar 2008 18:23:13 +0200
+	id S1758026AbYCAQYm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 1 Mar 2008 11:24:42 -0500
+Date: Sat, 1 Mar 2008 18:23:16 +0200
 From: Adrian Bunk <bunk@kernel.org>
-To: chas@cmf.nrl.navy.mil, jgarzik@pobox.com
-Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [2.6 patch] atm/idt77252.c: make 2 functions static
-Message-ID: <20080301162313.GZ25835@cs181133002.pp.htv.fi>
+To: axboe@kernel.dk
+Cc: linux-kernel@vger.kernel.org
+Subject: [2.6 patch] make cdrom.c:check_for_audio_disc() static
+Message-ID: <20080301162316.GA25835@cs181133002.pp.htv.fi>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
@@ -23,40 +23,25 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch makes the following needlessly global functions static:
-- idt77252_send()
-- idt77252_dev_close()
+This patch makes the needlessly global check_for_audio_disc() static.
 
 Signed-off-by: Adrian Bunk <bunk@kernel.org>
 
 ---
-
- drivers/atm/idt77252.c |    6 ++----
- 1 file changed, 2 insertions(+), 4 deletions(-)
-
-36dff5da01d6548a345e7d9a115ee3121df95591 foobar
-diff --git a/drivers/atm/idt77252.c b/drivers/atm/idt77252.c
-index eee54c0..9e94b64 100644
---- a/drivers/atm/idt77252.c
-+++ b/drivers/atm/idt77252.c
-@@ -2016,8 +2016,7 @@ idt77252_send_skb(struct atm_vcc *vcc, struct sk_buff *skb, int oam)
- 	return 0;
- }
- 
--int
--idt77252_send(struct atm_vcc *vcc, struct sk_buff *skb)
-+static int idt77252_send(struct atm_vcc *vcc, struct sk_buff *skb)
+3b370f4edc826997a406f09c21a612e812e882fd foobar
+diff --git a/drivers/cdrom/cdrom.c b/drivers/cdrom/cdrom.c
+index db259e6..12f5bae 100644
+--- a/drivers/cdrom/cdrom.c
++++ b/drivers/cdrom/cdrom.c
+@@ -1152,8 +1152,8 @@ clean_up_and_return:
+ /* This code is similar to that in open_for_data. The routine is called
+    whenever an audio play operation is requested.
+ */
+-int check_for_audio_disc(struct cdrom_device_info * cdi,
+-			 struct cdrom_device_ops * cdo)
++static int check_for_audio_disc(struct cdrom_device_info * cdi,
++				struct cdrom_device_ops * cdo)
  {
- 	return idt77252_send_skb(vcc, skb, 0);
- }
-@@ -3072,8 +3071,7 @@ idt77252_dev_open(struct idt77252_dev *card)
- 	return 0;
- }
- 
--void
--idt77252_dev_close(struct atm_dev *dev)
-+static void idt77252_dev_close(struct atm_dev *dev)
- {
- 	struct idt77252_dev *card = dev->dev_data;
- 	u32 conf;
+         int ret;
+ 	tracktype tracks;
 
