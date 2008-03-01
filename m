@@ -1,294 +1,113 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762047AbYCAK0A@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757163AbYCAKuU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762047AbYCAK0A (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 1 Mar 2008 05:26:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756633AbYCAKZZ
+	id S1757163AbYCAKuU (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 1 Mar 2008 05:50:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752245AbYCAKuG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 1 Mar 2008 05:25:25 -0500
-Received: from www.tglx.de ([62.245.132.106]:44134 "EHLO www.tglx.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756248AbYCAKZY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 1 Mar 2008 05:25:24 -0500
-Message-Id: <20080301100325.632812903@linutronix.de>
-References: <20080301100019.640027768@linutronix.de>
-User-Agent: quilt/0.46-1
-Date: Sat, 01 Mar 2008 10:25:00 -0000
-From: Thomas Gleixner <tglx@linutronix.de>
-To: LKML <linux-kernel@vger.kernel.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       Greg KH <greg@kroah.com>
-Subject: [patch 2/2] add timer specific object debugging code
-Content-Disposition: inline; filename=timer-debugging.patch
+	Sat, 1 Mar 2008 05:50:06 -0500
+Received: from ug-out-1314.google.com ([66.249.92.173]:47775 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752618AbYCAKuE (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 1 Mar 2008 05:50:04 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=lNcv02NIwat6zx/aRnagX+F4bZPSv//xefhMzL3H6BxxhW4Cr/Mtn2zHpMKjD5CtsZuFfPr+Ft9RcycdXSZThjHTjucDYIdZ6jtlMNa+KbnjtsgRFfKKUJ47ugXsZPkn8TrDwsDZky9CuWpgfQ88jNnRq+9Yxq59A8i0zQKg2zQ=
+Message-ID: <b6fcc0a0803010250p42035759r97babcca98adaaec@mail.gmail.com>
+Date: Sat, 1 Mar 2008 13:50:03 +0300
+From: "Alexey Dobriyan" <adobriyan@gmail.com>
+To: ptb@inv.it.uc3m.es
+Subject: Re: sysctl in 2.6.24.2 excludes unapproved files from /proc/sys?
+Cc: "linux kernel" <linux-kernel@vger.kernel.org>
+In-Reply-To: <200803010222.m212MAq16160@inv.it.uc3m.es>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <b6fcc0a0802291746y7375ba71ja0dc0beb58c4ccb1@mail.gmail.com>
+	 <200803010222.m212MAq16160@inv.it.uc3m.es>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Add calls to the generic object debugging infrastructure and provide a
-fixup function which allows to keep the system alive when recoverable
-problems have been detected by the object debugging core code. Add a
-selftest, which covers the two possible mistakes: free/init of an
-active timer.
+On 3/1/08, Peter T. Breuer <ptb@inv.it.uc3m.es> wrote:
+> "Also sprach Alexey Dobriyan:"
+> > On 3/1/08, Peter T. Breuer <ptb@inv.it.uc3m.es> wrote:
+> > > A change in 2.6.24.x kernel/sysctl.c seems to exclude exo-kernel drivers
+> > > from using the /proc/sys/ interface:
+> >
+> > That's somewhat correct.
+>
+> OK. Thanks. That's a relief. It's always good to know that it's the
+> universe that's crazy, not me.
+>
+> > > What's a person to do?
+> >
+> > If I understand you correcty, the answer is drop '.ctl_name' bits from
+> > new sysctls and make sure common parts of tables match the ones
+> > in mainline.
+>
+> You are saying, O wise delphic oracle, that I *can* add stuff in the
+> /proc/sys tree, provided it's at an approved leaf? Or that I must use
+> CTL_UNNUMBERED for flipping efferything, not just most things? (one
+> would have thought one was entitled to number things in ones own
+> subdirectories, failing some comment to the contrary). I tried
+> CTL_UNNUMBERED at least on my top level directory, and didn't add any
+> entries to it, and THAT failed. So on the face of it that
+> interpretation of your words cannot be correct.
+>
+> /proc/sys/dev is where I am trying to add a directory, because I am none
+> of
+>
+> { DEV_CDROM, "cdrom", trans_cdrom_table },
+> { DEV_PARPORT, "parport", trans_parport_table },
+> { DEV_RAID, "raid", trans_raid_table },
+> { DEV_MAC_HID, "mac_hid", trans_mac_hid_files },
+> { DEV_SCSI, "scsi", trans_scsi_table },
+> { DEV_IPMI, "ipmi", trans_ipmi_table },
+>
+> and those are the legal entries at the moment, and I can't see any
+> commonality in or among any of those or between them and me.
+>
+> That's not a leaf. However, none of its eventual leaves have anything
+> to do with my driver. So here in dev/ would be just fine to plonk a new
+> device driver subtree, methinks.
+>
+> And you want me to use CTL_UNNUMBERED for everything in my subtree
+> from where it branches off?
+>
+> OK. I'm game. I'll try. I've tried a lot of other things over the past
+> few days.
+>
+> And how am I supposed to maintain this driver, now that it's full of
+> #iffoo < 2.6.24 every two lines?
 
-Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
----
- include/linux/debugobjects.h |    1 
- include/linux/timer.h        |   22 +++++++++++
- kernel/timer.c               |   85 +++++++++++++++++++++++++++++++++++++++++++
- lib/Kconfig.debug            |    7 +++
- lib/debugobjects.c           |   18 ++++++++-
- 5 files changed, 131 insertions(+), 2 deletions(-)
+Out of tree driver -- nobody cares.
 
-Index: linux-2.6/include/linux/debugobjects.h
-===================================================================
---- linux-2.6.orig/include/linux/debugobjects.h
-+++ linux-2.6/include/linux/debugobjects.h
-@@ -14,6 +14,7 @@ enum debug_obj_op {
- 
- enum {
- 	ODEBUG_TYPE_UNKNOWN,
-+	ODEBUG_TYPE_TIMER,
- 	ODEBUG_MAX_TYPES
- };
- 
-Index: linux-2.6/include/linux/timer.h
-===================================================================
---- linux-2.6.orig/include/linux/timer.h
-+++ linux-2.6/include/linux/timer.h
-@@ -4,6 +4,7 @@
- #include <linux/list.h>
- #include <linux/ktime.h>
- #include <linux/stddef.h>
-+#include <linux/debugobjects.h>
- 
- struct tvec_base;
- 
-@@ -20,6 +21,9 @@ struct timer_list {
- 	char start_comm[16];
- 	int start_pid;
- #endif
-+#ifdef CONFIG_DEBUG_OBJECT_TIMERS
-+	struct debug_obj dobj;
-+#endif
- };
- 
- extern struct tvec_base boot_tvec_bases;
-@@ -164,5 +168,23 @@ unsigned long __round_jiffies_relative(u
- unsigned long round_jiffies(unsigned long j);
- unsigned long round_jiffies_relative(unsigned long j);
- 
-+#ifdef CONFIG_DEBUG_OBJECT_TIMERS
-+static inline void
-+debug_timer_object_op(struct timer_list *timer, enum debug_obj_op mode)
-+{
-+	timer->dobj.type = ODEBUG_TYPE_TIMER;
-+	debug_object_op(&timer->dobj, mode);
-+}
-+extern int timer_fixup_object(struct debug_obj *obj, enum debug_obj_op mode);
-+extern int timer_debug_object_selftest(void);
-+#else
-+static inline void
-+debug_timer_object_op(struct timer_list *timer, enum debug_obj_op mode)
-+{
-+}
-+# define timer_fixup_object NULL
-+static inline int timer_debug_object_selftest(void) { return 0; }
-+#endif
-+
- 
- #endif
-Index: linux-2.6/kernel/timer.c
-===================================================================
---- linux-2.6.orig/kernel/timer.c
-+++ linux-2.6/kernel/timer.c
-@@ -320,6 +320,84 @@ static void timer_stats_account_timer(st
- static void timer_stats_account_timer(struct timer_list *timer) {}
- #endif
- 
-+#ifdef CONFIG_DEBUG_OBJECT_TIMERS
-+
-+static int timer_fixup_done __read_mostly;
-+
-+int timer_fixup_object(struct debug_obj *obj, enum debug_obj_op op)
-+{
-+	struct timer_list *timer = container_of(obj, struct timer_list, dobj);
-+
-+	switch (op) {
-+	case ODEBUG_INIT:
-+	case ODEBUG_FREE:
-+		del_timer_sync(timer);
-+		timer_fixup_done++;
-+		return 0;
-+	/*
-+	 * These are fatal timer.c internal errors. No real way to
-+	 * survive:
-+	 */
-+	case ODEBUG_ADD:
-+	case ODEBUG_DEL:
-+		return -1;
-+	default:
-+		return -1;
-+	}
-+}
-+
-+/*
-+ * Test the two popular bugs:
-+ *
-+ * - reinit a timer which is enqueued
-+ * - free a datastructure which contains an enqueued timer
-+ */
-+
-+static void __init timer_debug_selftest_fn(unsigned long arg)
-+{
-+}
-+
-+int __init timer_debug_object_selftest(void)
-+{
-+	struct timer_list *timer;
-+	int fixup_cnt = timer_fixup_done;
-+
-+	timer = kmalloc(sizeof(struct timer_list), GFP_KERNEL);
-+	if (!timer)
-+		return -ENOMEM;
-+
-+	setup_timer(timer, timer_debug_selftest_fn, 0);
-+
-+	timer->expires = jiffies + HZ;
-+	add_timer(timer);
-+
-+	setup_timer(timer, timer_debug_selftest_fn, 0);
-+	if (fixup_cnt == timer_fixup_done)
-+		goto err;
-+
-+#ifdef CONFIG_DEBUG_OBJECTS_FREE
-+	timer->expires = jiffies + HZ;
-+	add_timer(timer);
-+
-+	fixup_cnt = timer_fixup_done;
-+	kfree(timer);
-+	timer = NULL;
-+
-+	if (fixup_cnt == timer_fixup_done)
-+		goto err;
-+#else
-+	kfree(timer);
-+#endif
-+	return 0;
-+
-+err:
-+	printk(KERN_ERR "TIMER: ODEBUG selftest failed\n");
-+	kfree(timer);
-+	return -1;
-+}
-+
-+#endif
-+
- /**
-  * init_timer - initialize a timer.
-  * @timer: the timer to be initialized
-@@ -329,6 +407,8 @@ static void timer_stats_account_timer(st
-  */
- void init_timer(struct timer_list *timer)
- {
-+	debug_timer_object_op(timer, ODEBUG_INIT);
-+
- 	timer->entry.next = NULL;
- 	timer->base = __raw_get_cpu_var(tvec_bases);
- #ifdef CONFIG_TIMER_STATS
-@@ -351,6 +431,8 @@ static inline void detach_timer(struct t
- {
- 	struct list_head *entry = &timer->entry;
- 
-+	debug_timer_object_op(timer, ODEBUG_DEL);
-+
- 	__list_del(entry->prev, entry->next);
- 	if (clear_pending)
- 		entry->next = NULL;
-@@ -405,6 +487,8 @@ int __mod_timer(struct timer_list *timer
- 		ret = 1;
- 	}
- 
-+	debug_timer_object_op(timer, ODEBUG_ADD);
-+
- 	new_base = __get_cpu_var(tvec_bases);
- 
- 	if (base != new_base) {
-@@ -450,6 +534,7 @@ void add_timer_on(struct timer_list *tim
- 	BUG_ON(timer_pending(timer) || !timer->function);
- 	spin_lock_irqsave(&base->lock, flags);
- 	timer_set_base(timer, base);
-+	debug_timer_object_op(timer, ODEBUG_ADD);
- 	internal_add_timer(base, timer);
- 	spin_unlock_irqrestore(&base->lock, flags);
- }
-Index: linux-2.6/lib/Kconfig.debug
-===================================================================
---- linux-2.6.orig/lib/Kconfig.debug
-+++ linux-2.6/lib/Kconfig.debug
-@@ -199,6 +199,13 @@ config DEBUG_OBJECT_FREE
- 	 properly.  This can make kmalloc/kfree-intensive workloads
- 	 much slower.
- 
-+config DEBUG_OBJECT_TIMERS
-+	bool "Debug timer objects"
-+       	depends on DEBUG_OBJECT_OPS
-+       	help
-+	  If you say Y here, additional code will be inserted into the
-+	  timer routines to validate the timer operations.
-+
- config DEBUG_SLAB
- 	bool "Debug slab memory allocations"
- 	depends on DEBUG_KERNEL && SLAB
-Index: linux-2.6/lib/debugobjects.c
-===================================================================
---- linux-2.6.orig/lib/debugobjects.c
-+++ linux-2.6/lib/debugobjects.c
-@@ -12,6 +12,7 @@
- #include <linux/debugfs.h>
- #include <linux/debugobjects.h>
- #include <linux/seq_file.h>
-+#include <linux/timer.h>
- 
- #define ODEBUG_HASH_SIZE	4096
- #define ODEBUG_HASH_MASK	(ODEBUG_HASH_SIZE - 1)
-@@ -48,11 +49,13 @@ static struct odebug *object_get_hash(un
- }
- 
- static const void * const debug_fixup[ODEBUG_MAX_TYPES] = {
-+	[ODEBUG_TYPE_TIMER] = timer_fixup_object,
- };
- 
- static const char * const obj_types[ODEBUG_MAX_TYPES] = {
- 
- 	[ODEBUG_TYPE_UNKNOWN] = "unknown type",
-+	[ODEBUG_TYPE_TIMER] = "timer_list",
- };
- 
- static void debug_print_object(struct debug_obj *obj, char *msg)
-@@ -246,11 +249,22 @@ void __init debug_objects_init(void)
- 
- int __init debug_objects_do_selftest(void)
- {
-+	int res;
-+
- 	if (!debug_objects_enabled)
- 		return 0;
- 
- 	debug_objects_init_debugfs();
--	printk(KERN_INFO "ODEBUG: Selftest pass\n");
--	return 0;
-+
-+	debug_objects_selftest = 1;
-+
-+	res = timer_debug_object_selftest();
-+
-+	debug_objects_selftest = 0;
-+
-+	if (!res)
-+		printk(KERN_INFO "ODEBUG: Selftest pass\n");
-+
-+	return res;
- }
- __initcall(debug_objects_do_selftest);
+> And while I am here, what's the purpose of this change? What's the
+> point of checking that only the pre-approved entries to this tree are
+> made? I don't get it! If you don't want somebody adding something
+> to /proc/sys just delete their registration call from the kernel
+> tree, surely! Is this some sort of in-kernel fight? Defenders of
+> /proc/sys against attackers? Is the problem that one can't persuade
+> some maintainers to stop their authors from adding to /proc/sys, so
+> instead it's been made it necessary to ask permission of the /proc/sys
+> maintainer instead via this change?
 
--- 
+All of this silly and not silly questions are answered by corresponding
+commit message. You cited actual patch which started to error out
+bad sysctl tables, have you read changelog? It will be very enlightening
+for you to do so.
 
+> Now every author has to make a change in their code AND make a change in
+> the sysctl code in a totally different part of the kernel when they want
+> a single change - adding a file or dir to their file hierarchy.
+
+Correct only for "their code" part.
+
+> And what's the registration function for, now that the details are
+> largely there in sysctl.c and sysctl_check.c? It just adds detail
+> like strategy and proc_handler? And says when to put up and tear down
+> the subtree in question? Why not move ALL the detail over to
+> kernel/sysctl.c too!
