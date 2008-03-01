@@ -1,109 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932678AbYCADFw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933392AbYCADM2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932678AbYCADFw (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Feb 2008 22:05:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753430AbYCADFo
+	id S933392AbYCADM2 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Feb 2008 22:12:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755611AbYCADMT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Feb 2008 22:05:44 -0500
-Received: from gate.crashing.org ([63.228.1.57]:52443 "EHLO gate.crashing.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753407AbYCADFn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 Feb 2008 22:05:43 -0500
-Subject: Re: [PATCH] add strncmp to PowerPC
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Reply-To: benh@kernel.crashing.org
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: paulus@samba.org, linuxppc-dev@ozlabs.org,
-       LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <1204301097.14759.6.camel@localhost.localdomain>
-References: <1204301097.14759.6.camel@localhost.localdomain>
-Content-Type: text/plain
-Date: Sat, 01 Mar 2008 14:04:50 +1100
-Message-Id: <1204340690.15052.457.camel@pasglop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
+	Fri, 29 Feb 2008 22:12:19 -0500
+Received: from outbound-mail-37.bluehost.com ([69.89.20.191]:49779 "HELO
+	outbound-mail-37.bluehost.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1750909AbYCADMS (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 29 Feb 2008 22:12:18 -0500
+From: Jesse Barnes <jbarnes@virtuousgeek.org>
+To: benh@kernel.crashing.org
+Subject: Re: [PATCH 1/3 v3] dma: document dma_{un}map_{single|sg}_attrs() interface
+Date: Fri, 29 Feb 2008 19:11:32 -0800
+User-Agent: KMail/1.9.6 (enterprise 0.20071204.744707)
+Cc: James Bottomley <James.Bottomley@hansenpartnership.com>,
+       Grant Grundler <grundler@parisc-linux.org>,
+       Michael Ellerman <michael@ellerman.id.au>, akepner@sgi.com,
+       Tony Luck <tony.luck@intel.com>, Jes Sorensen <jes@sgi.com>,
+       Randy Dunlap <randy.dunlap@oracle.com>,
+       Roland Dreier <rdreier@cisco.com>, David Miller <davem@davemloft.net>,
+       linux-kernel@vger.kernel.org
+References: <20080228032448.GS11012@sgi.com> <1204310276.4003.48.camel@localhost.localdomain> <1204340204.15052.452.camel@pasglop>
+In-Reply-To: <1204340204.15052.452.camel@pasglop>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200802291911.33646.jbarnes@virtuousgeek.org>
+X-Identified-User: {642:box128.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.27.49 authed with jbarnes@virtuousgeek.org}
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Friday, February 29, 2008 6:56 pm Benjamin Herrenschmidt wrote:
+> On Fri, 2008-02-29 at 12:37 -0600, James Bottomley wrote:
+> > To be honest, I still don't like the name.  SYNC_ON_WRITE is the SN2
+> > implementation.  What it's actually doing is implementing strict
+> > ordering semantics.  I think it should really be
+> > DMA_ATTR_STRICT_ORDERING (with a corresponding
+> > DMA_ATTR_RELAXED_ORDERING).
+> >
+> > This means that if ever anyone sets a PCIe bridge to relaxed ordering
+> > by
+> > default, this attribute will also work for them.
+>
+> But that would be asking for trouble no ? I would expect pretty much
+> everything to break appart with relaxed by default no ? Or I don't fully
+> understand what your arch calls "relaxed"...
 
-On Fri, 2008-02-29 at 11:04 -0500, Steven Rostedt wrote:
-> strncmp is defined in assembly for bootup, but it is not defined in the
-> normal running kernel. This patch takes the strncmp code from the bootup
-> and copies it to the kernel proper.
-> 
-> Signed-off-by: Steven Rostedt <srostedt@redhat.com>
-> ---
+Depends on how the device completes commands and what the driver does to check 
+for completion.  It would probably work fine in many cases.
 
-Do we have any indication that it performs better than the C one ?
+> I do agree that we should aim for simple semantics, they should cover
+> 99% of the needs, and leave some bit space or attribute space for archs
+> to define private ones when really needed.
+>
+> In our case, I suspect that the two main thing we could define here for
+> DMA that would be useful generally would be relaxed ordering (strict
+> being the default) and maybe read prefetching (though that would be the
+> default, maybe no prefetch). We -might- have use of separating relaxed
+> ordering for read vs. writes, but that's pretty much it.
 
-Ben.
+Sounds about right.  I've got to poke the PCIe 3.0 folks again about some of 
+the potential ordering changes there; hopefully we can cover that stuff too 
+with Arthur's approach.
 
->  arch/powerpc/kernel/ppc_ksyms.c |    1 +
->  arch/powerpc/lib/string.S       |   12 ++++++++++++
->  include/asm-powerpc/string.h    |    2 ++
->  3 files changed, 15 insertions(+)
-> 
-> Index: linux-sched-devel.git/arch/powerpc/kernel/ppc_ksyms.c
-> ===================================================================
-> --- linux-sched-devel.git.orig/arch/powerpc/kernel/ppc_ksyms.c	2008-02-27 14:01:38.000000000 -0800
-> +++ linux-sched-devel.git/arch/powerpc/kernel/ppc_ksyms.c	2008-02-29 07:24:22.000000000 -0800
-> @@ -78,6 +78,7 @@ EXPORT_SYMBOL(strncpy);
->  EXPORT_SYMBOL(strcat);
->  EXPORT_SYMBOL(strlen);
->  EXPORT_SYMBOL(strcmp);
-> +EXPORT_SYMBOL(strncmp);
->  
->  EXPORT_SYMBOL(csum_partial);
->  EXPORT_SYMBOL(csum_partial_copy_generic);
-> Index: linux-sched-devel.git/arch/powerpc/lib/string.S
-> ===================================================================
-> --- linux-sched-devel.git.orig/arch/powerpc/lib/string.S	2008-02-27 14:01:38.000000000 -0800
-> +++ linux-sched-devel.git/arch/powerpc/lib/string.S	2008-02-29 07:24:22.000000000 -0800
-> @@ -75,6 +75,18 @@ _GLOBAL(strcmp)
->  	beq	1b
->  	blr
->  
-> +_GLOBAL(strncmp)
-> +	mtctr	r5
-> +	addi	r5,r3,-1
-> +	addi	r4,r4,-1
-> +1:	lbzu	r3,1(r5)
-> +	cmpwi	1,r3,0
-> +	lbzu	r0,1(r4)
-> +	subf.	r3,r0,r3
-> +	beqlr	1
-> +	bdnzt	eq,1b
-> +	blr
-> +
->  _GLOBAL(strlen)
->  	addi	r4,r3,-1
->  1:	lbzu	r0,1(r4)
-> Index: linux-sched-devel.git/include/asm-powerpc/string.h
-> ===================================================================
-> --- linux-sched-devel.git.orig/include/asm-powerpc/string.h	2008-02-27 14:01:58.000000000 -0800
-> +++ linux-sched-devel.git/include/asm-powerpc/string.h	2008-02-29 07:24:22.000000000 -0800
-> @@ -7,6 +7,7 @@
->  #define __HAVE_ARCH_STRNCPY
->  #define __HAVE_ARCH_STRLEN
->  #define __HAVE_ARCH_STRCMP
-> +#define __HAVE_ARCH_STRNCMP
->  #define __HAVE_ARCH_STRCAT
->  #define __HAVE_ARCH_MEMSET
->  #define __HAVE_ARCH_MEMCPY
-> @@ -18,6 +19,7 @@ extern char * strcpy(char *,const char *
->  extern char * strncpy(char *,const char *, __kernel_size_t);
->  extern __kernel_size_t strlen(const char *);
->  extern int strcmp(const char *,const char *);
-> +extern int strncmp(const char *,const char *,__kernel_size_t);
->  extern char * strcat(char *, const char *);
->  extern void * memset(void *,int,__kernel_size_t);
->  extern void * memcpy(void *,const void *,__kernel_size_t);
-> 
-> 
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-dev
-
+Jesse
