@@ -1,42 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759119AbYCAMke@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760409AbYCAMmR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759119AbYCAMke (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 1 Mar 2008 07:40:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752512AbYCAMk1
+	id S1760409AbYCAMmR (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 1 Mar 2008 07:42:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752512AbYCAMmG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 1 Mar 2008 07:40:27 -0500
-Received: from one.firstfloor.org ([213.235.205.2]:58968 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751369AbYCAMk0 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 1 Mar 2008 07:40:26 -0500
-Date: Sat, 1 Mar 2008 13:41:24 +0100
-From: Andi Kleen <andi@firstfloor.org>
-To: Suresh Siddha <suresh.b.siddha@intel.com>
-Cc: mingo@elte.hu, hpa@zytor.com, tglx@linutronix.de, andi@firstfloor.org,
-       hch@infradead.org, linux-kernel@vger.kernel.org,
-       Arjan van de Ven <arjan@linux.intel.com>
-Subject: Re: [patch 2/2] x86, fpu: lazy allocation of FPU area - v2
-Message-ID: <20080301124124.GA28230@one.firstfloor.org>
-References: <20080301005141.997705000@linux-os.sc.intel.com> <20080301005142.156610000@linux-os.sc.intel.com>
-Mime-Version: 1.0
+	Sat, 1 Mar 2008 07:42:06 -0500
+Received: from the.earth.li ([217.147.81.2]:47805 "EHLO the.earth.li"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750778AbYCAMmF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 1 Mar 2008 07:42:05 -0500
+Date: Sat, 1 Mar 2008 12:42:04 +0000
+From: Simon Huggins <huggie@earth.li>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
+       Pierre Ossman <drzeus@drzeus.cx>
+Subject: Re: Scheduler broken? sdhci issues with scheduling
+Message-ID: <20080301124203.GL24533@paranoidfreak.co.uk>
+References: <20080229115256.GG24533@paranoidfreak.co.uk> <20080229133433.GA15532@elte.hu> <20080229135137.GA23781@elte.hu> <20080229140024.GA26342@elte.hu> <20080229115256.GG24533@paranoidfreak.co.uk> <20080229133433.GA15532@elte.hu> <20080229193951.GI24533@paranoidfreak.co.uk> <20080229203914.GD27212@elte.hu>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080301005142.156610000@linux-os.sc.intel.com>
-User-Agent: Mutt/1.4.2.1i
+In-Reply-To: <20080229203914.GD27212@elte.hu>
+X-Attribution: huggie
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Feb 29, 2008 at 04:51:19PM -0800, Suresh Siddha wrote:
-> Only allocate the FPU area when the application actually uses FPU, i.e., in the
-> first lazy FPU trap. This could save memory for non-fpu using apps.
-> 
-> Signed-off-by: Suresh Siddha <suresh.b.siddha@intel.com>
-> Cc: Arjan van de Ven <arjan@linux.intel.com>
+(please cc me)
 
-I reviewed both patches and they look good to me.
+On Fri, Feb 29, 2008 at 09:39:14PM +0100, Ingo Molnar wrote:
+> * Simon Huggins <huggie@earth.li> wrote:
+> > On Fri, Feb 29, 2008 at 02:34:33PM +0100, Ingo Molnar wrote:
+> > > * Simon Huggins <huggie@earth.li> wrote:
+> > > > [ Please Cc me on replies ]
+> > > > I had a bug with sdhci which Pierre Ossman looked at for me.
+> > > > In the end essentially the fix was to use HZ=1000 and nothing else. 
+> > > > Pierre seemed to think that this was a bug in the scheduler.
+> > > does the patch below help, even if you keep HZ=100? This doesnt look 
+> > > like a scheduler issue, it's more of a timer/timing issue. Different HZ 
+> > > means different msleep() results - and the mmc code does a loop of small 
+> > > msleep delays.
+> > Thanks for looking at it.
+> > I did tests with 2.6.24.3 with HZ=1000 and HZ=100 and as expected the
+> > latter didn't work.
+[..]
+> > That doesn't work.  I did a test with HZ=100 and this patch.  I've 
+> > attached the log as patch1-log.
 
-Acked-by: Andi Kleen <ak@suse.de>
+> > Anything else I can try?
+> so neither precise, nor imprecise timings help??
 
--Andi
+I don't know.  I don't really understand the patches I applied I'm
+afraid; I'm just reporting the results.
+
+I've cc'd Pierre Ossman so he might have a look from the sdhci point of
+view.
+
+Pierre, the thread starts here:
+http://lkml.org/lkml/2008/2/29/118
+
+Simon.
+
+-- 
+Just another wannabie |  "It's so nice to have a big   |  Just another fool
+----------------------+ strong spud around the house." +-------------------
+This message was brought to you by the letter E and the number 13.
+htag.pl 0.0.22 -- http://www.earth.li/projectpurple/progs/htag.html
