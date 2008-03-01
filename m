@@ -1,28 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762666AbYCAUo5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762176AbYCAUpn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762666AbYCAUo5 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 1 Mar 2008 15:44:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757374AbYCAUnk
+	id S1762176AbYCAUpn (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 1 Mar 2008 15:45:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760289AbYCAUnl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 1 Mar 2008 15:43:40 -0500
-Received: from ug-out-1314.google.com ([66.249.92.175]:27722 "EHLO
+	Sat, 1 Mar 2008 15:43:41 -0500
+Received: from ug-out-1314.google.com ([66.249.92.172]:28384 "EHLO
 	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756109AbYCAUng (ORCPT
+	with ESMTP id S1759745AbYCAUni (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 1 Mar 2008 15:43:36 -0500
+	Sat, 1 Mar 2008 15:43:38 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=from:to:subject:date:user-agent:cc:mime-version:content-disposition:message-id:content-type:content-transfer-encoding;
-        b=M5P+k1KDt+94n2zZvuR3Xcc6ocRTMWTTQ/Xa1JEYoKh3mOJ5FxkpGWT9VewA2xvKTDCUmpq9xNNtF+Or4eiJW2Sa3B6P/R0Z5UWivSYTBRp9bqm4onoYknRTyOi/MPuoCLfemqobrIfHxTpjBUPnG7oNYo7KnjPhG3BnWiNMcRY=
+        b=f/UPbgLGo9ZVbiuC01mPiuK4b/ZMenLFzZlAbUaqkmhcr7KQWtZZsqtjjfNwJEFOJ2+h/B8JIpx6ripqUEz2VCKiuICqI0UE/ugzLRQ5h1I0f+KpN+SoFkD0hXy+G0/X1Go0B/gwEyQy0q2uXoHlyTqHvfEC05NnC6u/TdftrQg=
 From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
 To: linux-ide@vger.kernel.org
-Subject: [PATCH 2/9] ide-4drives: manage I/O resources in driver
-Date: Sat, 1 Mar 2008 19:47:43 +0100
+Subject: [PATCH 3/9] ide_arm: manage I/O resources in driver
+Date: Sat, 1 Mar 2008 19:47:49 +0100
 User-Agent: KMail/1.9.6 (enterprise 0.20071204.744707)
 Cc: linux-kernel@vger.kernel.org
 MIME-Version: 1.0
 Content-Disposition: inline
-Message-Id: <200803011947.43296.bzolnier@gmail.com>
+Message-Id: <200803011947.49203.bzolnier@gmail.com>
 Content-Type: text/plain;
   charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
@@ -36,52 +36,30 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 * Use driver name for resources management.
 
-* Remove no longer needed 'hwif->chipset == ide_4drives' handling
-  from ide_device_add_all().
-
 Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
 ---
- drivers/ide/ide-probe.c          |    3 +--
- drivers/ide/legacy/ide-4drives.c |   20 +++++++++++++++++++-
- 2 files changed, 20 insertions(+), 3 deletions(-)
+ drivers/ide/arm/ide_arm.c |   19 ++++++++++++++++++-
+ 1 file changed, 18 insertions(+), 1 deletion(-)
 
-Index: b/drivers/ide/ide-probe.c
+Index: b/drivers/ide/arm/ide_arm.c
 ===================================================================
---- a/drivers/ide/ide-probe.c
-+++ b/drivers/ide/ide-probe.c
-@@ -1526,8 +1526,7 @@ int ide_device_add_all(u8 *idx, const st
+--- a/drivers/ide/arm/ide_arm.c
++++ b/drivers/ide/arm/ide_arm.c
+@@ -14,6 +14,8 @@
+ #include <asm/mach-types.h>
+ #include <asm/irq.h>
  
- 		hwif = &ide_hwifs[idx[i]];
- 
--		if ((hwif->chipset != ide_4drives || !hwif->mate ||
--		     !hwif->mate->present) && ide_hwif_request_regions(hwif)) {
-+		if (ide_hwif_request_regions(hwif)) {
- 			printk(KERN_ERR "%s: ports already in use, "
- 					"skipping probe\n", hwif->name);
- 			continue;
-Index: b/drivers/ide/legacy/ide-4drives.c
-===================================================================
---- a/drivers/ide/legacy/ide-4drives.c
-+++ b/drivers/ide/legacy/ide-4drives.c
-@@ -4,6 +4,8 @@
- #include <linux/module.h>
- #include <linux/ide.h>
- 
-+#define DRV_NAME "ide-4drives"
++#define DRV_NAME "ide_arm"
 +
- int probe_4drives;
- 
- module_param_named(probe, probe_4drives, bool, 0);
-@@ -12,21 +14,36 @@ MODULE_PARM_DESC(probe, "probe for gener
- static int __init ide_4drives_init(void)
+ #ifdef CONFIG_ARCH_CLPS7500
+ # include <asm/arch/hardware.h>
+ #
+@@ -28,15 +30,30 @@ static int __init ide_arm_init(void)
  {
- 	ide_hwif_t *hwif, *mate;
-+	unsigned long base = 0x1f0, ctl = 0x3f6;
- 	u8 idx[4] = { 0xff, 0xff, 0xff, 0xff };
+ 	ide_hwif_t *hwif;
  	hw_regs_t hw;
- 
- 	if (probe_4drives == 0)
- 		return -ENODEV;
++	unsigned long base = IDE_ARM_IO, ctl = IDE_ARM_IO + 0x206;
+ 	u8 idx[4] = { 0xff, 0xff, 0xff, 0xff };
  
 +	if (!request_region(base, 8, DRV_NAME)) {
 +		printk(KERN_ERR "%s: I/O resource 0x%lX-0x%lX not free.\n",
@@ -97,24 +75,14 @@ Index: b/drivers/ide/legacy/ide-4drives.c
 +	}
 +
  	memset(&hw, 0, sizeof(hw));
- 
--	ide_std_init_ports(&hw, 0x1f0, 0x3f6);
+-	ide_std_init_ports(&hw, IDE_ARM_IO, IDE_ARM_IO + 0x206);
 +	ide_std_init_ports(&hw, base, ctl);
- 	hw.irq = 14;
- 	hw.chipset = ide_4drives;
+ 	hw.irq = IDE_ARM_IRQ;
  
  	hwif = ide_find_port();
  	if (hwif) {
  		ide_init_port_hw(hwif, &hw);
 +		hwif->mmio = 1;
  		idx[0] = hwif->index;
- 	}
  
-@@ -35,6 +52,7 @@ static int __init ide_4drives_init(void)
- 		ide_init_port_hw(mate, &hw);
- 		mate->drives[0].select.all ^= 0x20;
- 		mate->drives[1].select.all ^= 0x20;
-+		mate->mmio = 1;
- 		idx[1] = mate->index;
- 
- 		if (hwif) {
+ 		ide_device_add(idx, NULL);
