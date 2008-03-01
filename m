@@ -1,176 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763138AbYCAUsT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760876AbYCAVCV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763138AbYCAUsT (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 1 Mar 2008 15:48:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759167AbYCAUn5
+	id S1760876AbYCAVCV (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 1 Mar 2008 16:02:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755236AbYCAVCJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 1 Mar 2008 15:43:57 -0500
-Received: from ug-out-1314.google.com ([66.249.92.174]:27483 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760148AbYCAUnk (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 1 Mar 2008 15:43:40 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:mime-version:content-disposition:message-id:content-type:content-transfer-encoding;
-        b=gJBaXRRp8Yos9lyRJFdfXyQsaGuNAr04oaZosn/9F2Mlyd/A2kd1dSJC2e0FHp1CE93WUpKZIazLg37X1IHxxZcu2nYYTcPj2aTtDMy/mEtKRI+Ys33Bm0qPuOjmm1ZgatO8PshzYex3X+gpGQiX+DaguTlJEI3eA7O8jlUNhpM=
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: linux-ide@vger.kernel.org
-Subject: [PATCH 5/9] ide: manage I/O resources in ide_legacy_init_one()
-Date: Sat, 1 Mar 2008 19:47:59 +0100
-User-Agent: KMail/1.9.6 (enterprise 0.20071204.744707)
-Cc: linux-kernel@vger.kernel.org
+	Sat, 1 Mar 2008 16:02:09 -0500
+Received: from sandeen.net ([209.173.210.139]:15336 "EHLO sandeen.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751298AbYCAVCH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 1 Mar 2008 16:02:07 -0500
+Message-ID: <47C9C44D.8080400@sandeen.net>
+Date: Sat, 01 Mar 2008 15:02:05 -0600
+From: Eric Sandeen <sandeen@sandeen.net>
+User-Agent: Thunderbird 2.0.0.12 (Macintosh/20080213)
 MIME-Version: 1.0
-Content-Disposition: inline
-Message-Id: <200803011948.00032.bzolnier@gmail.com>
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+To: =?ISO-8859-15?Q?Thomas_M=FCller?= <thomas@mathtm.de>
+CC: xfs@oss.sgi.com, linux-kernel@vger.kernel.org
+Subject: Re: Kernel oops / XFS filesystem corruption
+References: <47C93C32.40006@mathtm.de>
+In-Reply-To: <47C93C32.40006@mathtm.de>
+Content-Type: text/plain; charset=ISO-8859-15
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Tell IDE layer to not manage resources by setting hwif->mmio flag.
+Thomas Müller wrote:
+> Hello :)
+> 
+> My system just crashed because of a power fluctuation and the root
+> filesystem was damaged.
+> The system booted up just fine, but when samba tried to start up
+> the kernel oops'd.
+> 
+> xfs_repair was apparently able to repair the damage, though I seem
+> to have lost some files.
+> 
+> I do realize that a lot of awful things can happen if you just cut
+> the power, but the kernel shouldn't oops on a mounted file
+> system, right?
 
-* Use {request,release}_region() for resources management.
+right.
 
-* Set ->name field of 'struct ide_port_info' instances in legacy VLB
-  host drivers and use driver name for resources management.
+here's the disassembly of that function in your kernrel FWIW:
 
-Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
----
- drivers/ide/ide-probe.c      |   14 ++++++++++++++
- drivers/ide/legacy/ali14xx.c |    3 +++
- drivers/ide/legacy/dtc2278.c |    3 +++
- drivers/ide/legacy/ht6560b.c |    1 +
- drivers/ide/legacy/qd65xx.c  |    3 +++
- drivers/ide/legacy/umc8672.c |    3 +++
- 6 files changed, 27 insertions(+)
+0001012c <xfs_attr_shortform_getvalue>:
+   1012c:       55                      push   %ebp
+   1012d:       57                      push   %edi
+   1012e:       56                      push   %esi
+   1012f:       53                      push   %ebx
+   10130:       89 c3                   mov    %eax,%ebx
+   10132:       83 ec 0c                sub    $0xc,%esp
+   10135:       8b 40 20                mov    0x20(%eax),%eax
+   10138:       8b 40 4c                mov    0x4c(%eax),%eax
+   1013b:       8b 40 14                mov    0x14(%eax),%eax
+   1013e:       8d 78 04                lea    0x4(%eax),%edi
+   10141:       0f b6 40 02             movzbl 0x2(%eax),%eax <--- boom.
+   10145:       c7 44 24 08 00 00 00    movl   $0x0,0x8(%esp)
+   1014c:       00
+   1014d:       89 44 24 04             mov    %eax,0x4(%esp)
+   10151:       e9 96 00 00 00          jmp    101ec
+<xfs_attr_shortform_getvalue+0xc0>
+...
 
-Index: b/drivers/ide/ide-probe.c
-===================================================================
---- a/drivers/ide/ide-probe.c
-+++ b/drivers/ide/ide-probe.c
-@@ -1644,12 +1644,26 @@ static void ide_legacy_init_one(u8 *idx,
- 		irq  = 15;
- 	}
- 
-+	if (!request_region(base, 8, d->name)) {
-+		printk(KERN_ERR "%s: I/O resource 0x%lX-0x%lX not free.\n",
-+				d->name, base, base + 7);
-+		return;
-+	}
-+
-+	if (!request_region(ctl, 1, d->name)) {
-+		printk(KERN_ERR "%s: I/O resource 0x%lX not free.\n",
-+				d->name, ctl);
-+		release_region(base, 8);
-+		return;
-+	}
-+
- 	ide_std_init_ports(hw, base, ctl);
- 	hw->irq = irq;
- 
- 	hwif = ide_find_port_slot(d);
- 	if (hwif) {
- 		ide_init_port_hw(hwif, hw);
-+		hwif->mmio = 1;
- 		if (config)
- 			hwif->config_data = config;
- 		idx[port_no] = hwif->index;
-Index: b/drivers/ide/legacy/ali14xx.c
-===================================================================
---- a/drivers/ide/legacy/ali14xx.c
-+++ b/drivers/ide/legacy/ali14xx.c
-@@ -49,6 +49,8 @@
- 
- #include <asm/io.h>
- 
-+#define DRV_NAME "ali14xx"
-+
- /* port addresses for auto-detection */
- #define ALI_NUM_PORTS 4
- static const int ports[ALI_NUM_PORTS] __initdata =
-@@ -197,6 +199,7 @@ static const struct ide_port_ops ali14xx
- };
- 
- static const struct ide_port_info ali14xx_port_info = {
-+	.name			= DRV_NAME,
- 	.chipset		= ide_ali14xx,
- 	.port_ops		= &ali14xx_port_ops,
- 	.host_flags		= IDE_HFLAG_NO_DMA | IDE_HFLAG_NO_AUTOTUNE,
-Index: b/drivers/ide/legacy/dtc2278.c
-===================================================================
---- a/drivers/ide/legacy/dtc2278.c
-+++ b/drivers/ide/legacy/dtc2278.c
-@@ -16,6 +16,8 @@
- 
- #include <asm/io.h>
- 
-+#define DRV_NAME "dtc2278"
-+
- /*
-  * Changing this #undef to #define may solve start up problems in some systems.
-  */
-@@ -91,6 +93,7 @@ static const struct ide_port_ops dtc2278
- };
- 
- static const struct ide_port_info dtc2278_port_info __initdata = {
-+	.name			= DRV_NAME,
- 	.chipset		= ide_dtc2278,
- 	.port_ops		= &dtc2278_port_ops,
- 	.host_flags		= IDE_HFLAG_SERIALIZE |
-Index: b/drivers/ide/legacy/ht6560b.c
-===================================================================
---- a/drivers/ide/legacy/ht6560b.c
-+++ b/drivers/ide/legacy/ht6560b.c
-@@ -335,6 +335,7 @@ static const struct ide_port_ops ht6560b
- };
- 
- static const struct ide_port_info ht6560b_port_info __initdata = {
-+	.name			= DRV_NAME,
- 	.chipset		= ide_ht6560b,
- 	.port_ops		= &ht6560b_port_ops,
- 	.host_flags		= IDE_HFLAG_SERIALIZE | /* is this needed? */
-Index: b/drivers/ide/legacy/qd65xx.c
-===================================================================
---- a/drivers/ide/legacy/qd65xx.c
-+++ b/drivers/ide/legacy/qd65xx.c
-@@ -37,6 +37,8 @@
- #include <asm/system.h>
- #include <asm/io.h>
- 
-+#define DRV_NAME "qd65xx"
-+
- #include "qd65xx.h"
- 
- /*
-@@ -317,6 +319,7 @@ static const struct ide_port_ops qd6580_
- };
- 
- static const struct ide_port_info qd65xx_port_info __initdata = {
-+	.name			= DRV_NAME,
- 	.chipset		= ide_qd65xx,
- 	.host_flags		= IDE_HFLAG_IO_32BIT |
- 				  IDE_HFLAG_NO_DMA |
-Index: b/drivers/ide/legacy/umc8672.c
-===================================================================
---- a/drivers/ide/legacy/umc8672.c
-+++ b/drivers/ide/legacy/umc8672.c
-@@ -51,6 +51,8 @@
- 
- #include <asm/io.h>
- 
-+#define DRV_NAME "umc8672"
-+
- /*
-  * Default speeds.  These can be changed with "auto-tune" and/or hdparm.
-  */
-@@ -125,6 +127,7 @@ static const struct ide_port_ops umc8672
- };
- 
- static const struct ide_port_info umc8672_port_info __initdata = {
-+	.name			= DRV_NAME,
- 	.chipset		= ide_umc8672,
- 	.port_ops		= &umc8672_port_ops,
- 	.host_flags		= IDE_HFLAG_NO_DMA | IDE_HFLAG_NO_AUTOTUNE,
+at this point eax is "sf" (0x0) and edi is "sfe" (0x04)
+
+Mar  1 10:32:03 linux kernel: eax: 00000000   ebx: f268cddc   ecx:
+f8ae4d9d   edx: 08d26645
+Mar  1 10:32:03 linux kernel: esi: f04d1600   edi: 00000004   ebp:
+f8ae4d91   esp: f268cdbc
+
+first part of the function:
+
+int
+xfs_attr_shortform_getvalue(xfs_da_args_t *args)
+{
+        xfs_attr_shortform_t *sf;
+        xfs_attr_sf_entry_t *sfe;
+        int i;
+
+        ASSERT(args->dp->i_d.di_aformat == XFS_IFINLINE);
+        sf = (xfs_attr_shortform_t *)args->dp->i_afp->if_u1.if_data;
+        sfe = &sf->list[0];
+        for (i = 0; i < sf->hdr.count; <--- died here, sf is 0
+                                sfe = XFS_ATTR_SF_NEXTENTRY(sfe), i++) {
+
+we blew up on sf->hdr.count because sf is NULL (hdr.count is 0x2 into sf)
+
+maybe the sgi guys can take it from there ;)  Did you also happen to
+save the xfs_repair output?
+
+-Eric
+
