@@ -1,21 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758628AbYCAGFL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761885AbYCAGFh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758628AbYCAGFL (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 1 Mar 2008 01:05:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753731AbYCAGEj
+	id S1761885AbYCAGFh (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 1 Mar 2008 01:05:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753941AbYCAGEm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 1 Mar 2008 01:04:39 -0500
-Received: from agminet01.oracle.com ([141.146.126.228]:32114 "EHLO
+	Sat, 1 Mar 2008 01:04:42 -0500
+Received: from agminet01.oracle.com ([141.146.126.228]:32121 "EHLO
 	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753334AbYCAGEh (ORCPT
+	with ESMTP id S1753796AbYCAGEj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 1 Mar 2008 01:04:37 -0500
-Date: Fri, 29 Feb 2008 22:03:15 -0800
+	Sat, 1 Mar 2008 01:04:39 -0500
+Date: Fri, 29 Feb 2008 22:03:27 -0800
 From: Randy Dunlap <randy.dunlap@oracle.com>
-To: lkml <linux-kernel@vger.kernel.org>
-Cc: akpm <akpm@linux-foundation.org>, torvalds <torvalds@linux-foundation.org>
-Subject: [PATCH 5/6] docbook: fix kernel-api source files
-Message-Id: <20080229220315.d51003be.randy.dunlap@oracle.com>
+To: lkml <linux-kernel@vger.kernel.org>, scsi <linux-scsi@vger.kernel.org>
+Cc: Eric.Moore@lsi.com, support@lsi.com,
+       jejb <James.Bottomley@HansenPartnership.com>,
+       akpm <akpm@linux-foundation.org>,
+       torvalds <torvalds@linux-foundation.org>
+Subject: [PATCH 6/6] docbook: fix fusion source files
+Message-Id: <20080229220327.f2908b41.randy.dunlap@oracle.com>
 Organization: Oracle Linux Eng.
 X-Mailer: Sylpheed 2.4.7 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
@@ -31,50 +34,130 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Randy Dunlap <randy.dunlap@oracle.com>
 
-Fix docbook problems in kernel-api.tmpl.
+Fix docbook problems in fusion source files.
 These cause the generated docbook to be incorrect.
 
 Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
 ---
- drivers/base/transport_class.c |    4 +---
- drivers/pci/rom.c              |    3 +--
- mm/truncate.c                  |    3 +--
- 3 files changed, 3 insertions(+), 7 deletions(-)
+ drivers/message/fusion/mptbase.c  |   25 +++++++++++++------------
+ drivers/message/fusion/mptscsih.c |   14 +++++---------
+ 2 files changed, 18 insertions(+), 21 deletions(-)
 
---- lin2625-rc3g2-kdoc.orig/drivers/base/transport_class.c
-+++ lin2625-rc3g2-kdoc/drivers/base/transport_class.c
-@@ -126,9 +126,7 @@ static int transport_setup_classdev(stru
+--- lin2625-rc3g2-kdoc.orig/drivers/message/fusion/mptbase.c
++++ lin2625-rc3g2-kdoc/drivers/message/fusion/mptbase.c
+@@ -632,8 +632,7 @@ mpt_deregister(u8 cb_idx)
+ 
+ /*=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=*/
+ /**
+- *	mpt_event_register - Register protocol-specific event callback
+- *	handler.
++ *	mpt_event_register - Register protocol-specific event callback handler.
+  *	@cb_idx: previously registered (via mpt_register) callback handle
+  *	@ev_cbfunc: callback function
+  *
+@@ -654,8 +653,7 @@ mpt_event_register(u8 cb_idx, MPT_EVHAND
+ 
+ /*=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=*/
+ /**
+- *	mpt_event_deregister - Deregister protocol-specific event callback
+- *	handler.
++ *	mpt_event_deregister - Deregister protocol-specific event callback handler
+  *	@cb_idx: previously registered callback handle
+  *
+  *	Each protocol-specific driver should call this routine
+@@ -765,11 +763,13 @@ mpt_device_driver_deregister(u8 cb_idx)
+ 
+ /*=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=*/
+ /**
+- *	mpt_get_msg_frame - Obtain a MPT request frame from the pool (of 1024)
+- *	allocated per MPT adapter.
++ *	mpt_get_msg_frame - Obtain an MPT request frame from the pool
+  *	@cb_idx: Handle of registered MPT protocol driver
+  *	@ioc: Pointer to MPT adapter structure
+  *
++ *	Obtain an MPT request frame from the pool (of 1024) that are
++ *	allocated per MPT adapter.
++ *
+  *	Returns pointer to a MPT request frame or %NULL if none are available
+  *	or IOC is not active.
+  */
+@@ -834,13 +834,12 @@ mpt_get_msg_frame(u8 cb_idx, MPT_ADAPTER
+ 
+ /*=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=*/
+ /**
+- *	mpt_put_msg_frame - Send a protocol specific MPT request frame
+- *	to a IOC.
++ *	mpt_put_msg_frame - Send a protocol-specific MPT request frame to an IOC
+  *	@cb_idx: Handle of registered MPT protocol driver
+  *	@ioc: Pointer to MPT adapter structure
+  *	@mf: Pointer to MPT request frame
+  *
+- *	This routine posts a MPT request frame to the request post FIFO of a
++ *	This routine posts an MPT request frame to the request post FIFO of a
+  *	specific MPT adapter.
+  */
+ void
+@@ -868,13 +867,15 @@ mpt_put_msg_frame(u8 cb_idx, MPT_ADAPTER
  }
  
  /**
-- * transport_setup_device - declare a new dev for transport class association
-- *			    but don't make it visible yet.
+- *	mpt_put_msg_frame_hi_pri - Send a protocol specific MPT request frame
+- *	to a IOC using hi priority request queue.
++ *	mpt_put_msg_frame_hi_pri - Send a hi-pri protocol-specific MPT request frame
+  *	@cb_idx: Handle of registered MPT protocol driver
+  *	@ioc: Pointer to MPT adapter structure
+  *	@mf: Pointer to MPT request frame
+  *
+- *	This routine posts a MPT request frame to the request post FIFO of a
++ *	Send a protocol-specific MPT request frame to an IOC using
++ *	hi-priority request queue.
++ *
++ *	This routine posts an MPT request frame to the request post FIFO of a
+  *	specific MPT adapter.
+  **/
+ void
+--- lin2625-rc3g2-kdoc.orig/drivers/message/fusion/mptscsih.c
++++ lin2625-rc3g2-kdoc/drivers/message/fusion/mptscsih.c
+@@ -1533,7 +1533,7 @@ mptscsih_freeChainBuffers(MPT_ADAPTER *i
+  *
+  *	Remark: Currently invoked from a non-interrupt thread (_bh).
+  *
+- *	Remark: With old EH code, at most 1 SCSI TaskMgmt function per IOC
++ *	Note: With old EH code, at most 1 SCSI TaskMgmt function per IOC
+  *	will be active.
+  *
+  *	Returns 0 for SUCCESS, or %FAILED.
+@@ -2537,14 +2537,12 @@ mptscsih_copy_sense_data(struct scsi_cmn
+ 
+ /**
+  * mptscsih_get_scsi_lookup
 - *
-+ * transport_setup_device - declare a new dev for transport class association but don't make it visible yet.
-  * @dev: the generic device representing the entity being added
+- * retrieves scmd entry from ScsiLookup[] array list
+- *
+  * @ioc: Pointer to MPT_ADAPTER structure
+  * @i: index into the array
   *
-  * Usually, dev represents some component in the HBA system (either
---- lin2625-rc3g2-kdoc.orig/drivers/pci/rom.c
-+++ lin2625-rc3g2-kdoc/drivers/pci/rom.c
-@@ -242,8 +242,7 @@ void pci_remove_rom(struct pci_dev *pdev
- #endif  /*  0  */
+- * Returns the scsi_cmd pointer
++ * retrieves scmd entry from ScsiLookup[] array list
+  *
++ * Returns the scsi_cmd pointer
+  **/
+ static struct scsi_cmnd *
+ mptscsih_get_scsi_lookup(MPT_ADAPTER *ioc, int i)
+@@ -2561,14 +2559,12 @@ mptscsih_get_scsi_lookup(MPT_ADAPTER *io
  
  /**
-- * pci_cleanup_rom - internal routine for freeing the ROM copy created
-- * by pci_map_rom_copy called from remove.c
-+ * pci_cleanup_rom - free the ROM copy created by pci_map_rom_copy
-  * @pdev: pointer to pci device struct
+  * mptscsih_getclear_scsi_lookup
+- *
+- * retrieves and clears scmd entry from ScsiLookup[] array list
+- *
+  * @ioc: Pointer to MPT_ADAPTER structure
+  * @i: index into the array
   *
-  * Free the copied ROM if we allocated one.
---- lin2625-rc3g2-kdoc.orig/mm/truncate.c
-+++ lin2625-rc3g2-kdoc/mm/truncate.c
-@@ -134,8 +134,7 @@ invalidate_complete_page(struct address_
- }
- 
- /**
-- * truncate_inode_pages - truncate range of pages specified by start and
-- * end byte offsets
-+ * truncate_inode_pages - truncate range of pages specified by start & end byte offsets
-  * @mapping: mapping to truncate
-  * @lstart: offset from which to truncate
-  * @lend: offset to which to truncate
+- * Returns the scsi_cmd pointer
++ * retrieves and clears scmd entry from ScsiLookup[] array list
+  *
++ * Returns the scsi_cmd pointer
+  **/
+ static struct scsi_cmnd *
+ mptscsih_getclear_scsi_lookup(MPT_ADAPTER *ioc, int i)
