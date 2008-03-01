@@ -1,79 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756922AbYCAS06@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757466AbYCASaH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756922AbYCAS06 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 1 Mar 2008 13:26:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751408AbYCAS0q
+	id S1757466AbYCASaH (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 1 Mar 2008 13:30:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751943AbYCAS3z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 1 Mar 2008 13:26:46 -0500
-Received: from ug-out-1314.google.com ([66.249.92.175]:43593 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751319AbYCAS0p (ORCPT
+	Sat, 1 Mar 2008 13:29:55 -0500
+Received: from nf-out-0910.google.com ([64.233.182.185]:43365 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751352AbYCAS3z (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 1 Mar 2008 13:26:45 -0500
+	Sat, 1 Mar 2008 13:29:55 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
-        b=r61K89E4gEWhKuKMeokvDvkrWJObEBc+TAdMV3xOcPKQ7Xh9qltQKVEaZTjSDdEfSdDerS5zw3iLDeTJJgtMJ+Ld7yEnwCvKF/UM5R+p/FQAvU0vxb83Ei+0zwDjJlS33DtXVajmbm6OWi9sfmlSw2cbCpS4kx8ZJDLOGqsKHWc=
-Message-ID: <47C99FE1.8080206@gmail.com>
-Date: Sat, 01 Mar 2008 21:26:41 +0300
-From: Alexey Starikovskiy <aystarik@gmail.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20071022)
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=OzB/6lfEXHn+ReUOx9E+hATUzRTArNZbdA+BnJJdqaBz17QofE0idPKrm6njTwdoEctjDYTrf8aig/AIsDQwJDFFpr2IowqRCz+nTgN7tUk9B7+YzXiBUmacQR9+/zK38Zby3LZLYD1fLgtxUzs0Ehnrta+mofEri95JR8QUJg4=
+Message-ID: <524f69650803011029w50d16badkc52c2591c8113a99@mail.gmail.com>
+Date: Sat, 1 Mar 2008 12:29:53 -0600
+From: "Steve French" <smfrench@gmail.com>
+To: "Adrian Bunk" <bunk@kernel.org>
+Subject: Re: [PATCH][fs/cifs/cifsfs.c] Make use of cifs_xquota_get
+Cc: "Roel Kluin" <12o3l@tiscali.nl>, sfrench@samba.org,
+       linux-cifs-client@lists.samba.org, samba-technical@lists.samba.org,
+       lkml <linux-kernel@vger.kernel.org>
+In-Reply-To: <20080301161515.GD25835@cs181133002.pp.htv.fi>
 MIME-Version: 1.0
-To: Adrian Bunk <bunk@kernel.org>
-CC: lenb@kernel.org, astarikovskiy@suse.de, linux-acpi@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [2.6 patch] acpi/battery.c: make 2 functions static
-References: <20080301161902.GN25835@cs181133002.pp.htv.fi>
-In-Reply-To: <20080301161902.GN25835@cs181133002.pp.htv.fi>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <47B08A0B.4020604@tiscali.nl>
+	 <20080301093712.GB25835@cs181133002.pp.htv.fi>
+	 <524f69650803010806m1571df8fiff4b9587b7bf1cc7@mail.gmail.com>
+	 <20080301161515.GD25835@cs181133002.pp.htv.fi>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-May I keep them inline?
+On Sat, Mar 1, 2008 at 10:15 AM, Adrian Bunk <bunk@kernel.org> wrote:
+> On Sat, Mar 01, 2008 at 10:06:11AM -0600, Steve French wrote:
+>  > There are quite a few fixes stuck in cifs-2.6.git that are fine to be
+>  > merged with mainline but didn't want to bug Linus with multiple merge
+>  > requests (there are a couple of more fixes that are not in
+>  > cifs-2.6.git pending review)
+Just tried to check my cifs-2.6 tree on kernel.org and forward the merge
+request off to Linus but it looks like the mainline tree has been rebuilt
+(git diff shows "warning: no common commits").  Am syncing again.
 
+
+>  But generally please try to get fixes to Linus early - and having a few
+>  more weeks for getting fixes tested is more important than how often
+>  Linus pulls from you.
+>
+>  > Thanks,
+>  >
+>  > Steve
+>
+>  cu
+>
+>
+> Adrian
+>
+>  --
+>
+>        "Is there not promise of rain?" Ling Tan asked suddenly out
+>         of the darkness. There had been need of rain for many days.
+>        "Only a promise," Lao Er said.
+>                                        Pearl S. Buck - Dragon Seed
+>
+>
+
+
+
+-- 
 Thanks,
-Alex.
-Adrian Bunk wrote:
-> This patch makes the following functions static instead of global inline:
-> - acpi_battery_present()
-> - acpi_battery_units()
->
-> Signed-off-by: Adrian Bunk <bunk@kernel.org>
->
-> ---
->
->  drivers/acpi/battery.c |    4 ++--
->  1 file changed, 2 insertions(+), 2 deletions(-)
->
-> 9cfc2b0a3162d8e2f23537faefb6937c97513f38 foobar
-> diff --git a/drivers/acpi/battery.c b/drivers/acpi/battery.c
-> index f6215e8..d941c5a 100644
-> --- a/drivers/acpi/battery.c
-> +++ b/drivers/acpi/battery.c
-> @@ -116,7 +116,7 @@ struct acpi_battery {
->  
->  #define to_acpi_battery(x) container_of(x, struct acpi_battery, bat);
->  
-> -inline int acpi_battery_present(struct acpi_battery *battery)
-> +static int acpi_battery_present(struct acpi_battery *battery)
->  {
->  	return battery->device->status.battery_present;
->  }
-> @@ -235,7 +235,7 @@ static enum power_supply_property energy_battery_props[] = {
->  #endif
->  
->  #ifdef CONFIG_ACPI_PROCFS_POWER
-> -inline char *acpi_battery_units(struct acpi_battery *battery)
-> +static char *acpi_battery_units(struct acpi_battery *battery)
->  {
->  	return (battery->power_unit)?"mA":"mW";
->  }
->
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-acpi" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
->   
 
+Steve
