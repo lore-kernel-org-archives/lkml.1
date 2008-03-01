@@ -1,28 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762176AbYCAUpn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762732AbYCAUqH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762176AbYCAUpn (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 1 Mar 2008 15:45:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760289AbYCAUnl
+	id S1762732AbYCAUqH (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 1 Mar 2008 15:46:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757595AbYCAUnn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 1 Mar 2008 15:43:41 -0500
-Received: from ug-out-1314.google.com ([66.249.92.172]:28384 "EHLO
+	Sat, 1 Mar 2008 15:43:43 -0500
+Received: from ug-out-1314.google.com ([66.249.92.172]:28111 "EHLO
 	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759745AbYCAUni (ORCPT
+	with ESMTP id S1759908AbYCAUni (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Sat, 1 Mar 2008 15:43:38 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=from:to:subject:date:user-agent:cc:mime-version:content-disposition:message-id:content-type:content-transfer-encoding;
-        b=f/UPbgLGo9ZVbiuC01mPiuK4b/ZMenLFzZlAbUaqkmhcr7KQWtZZsqtjjfNwJEFOJ2+h/B8JIpx6ripqUEz2VCKiuICqI0UE/ugzLRQ5h1I0f+KpN+SoFkD0hXy+G0/X1Go0B/gwEyQy0q2uXoHlyTqHvfEC05NnC6u/TdftrQg=
+        b=tOTLbjW79JoyrxvPTLsC+m0DflVwC9S+x1+NBSvmS99Ncv8ANFVqU9zTH7Np9fun9rXjO17db/A7G7BbkNvKYQksjAiytiJqb+u/V9wb29w34bKdfOf70JMT7glzAmrOpr1jcQLekJMzZcOegzlwXvTNcSms+pzbM0euk/m/Qzg=
 From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
 To: linux-ide@vger.kernel.org
-Subject: [PATCH 3/9] ide_arm: manage I/O resources in driver
-Date: Sat, 1 Mar 2008 19:47:49 +0100
+Subject: [PATCH 4/9] ide: add ide_legacy_init_one() helper
+Date: Sat, 1 Mar 2008 19:47:54 +0100
 User-Agent: KMail/1.9.6 (enterprise 0.20071204.744707)
 Cc: linux-kernel@vger.kernel.org
 MIME-Version: 1.0
 Content-Disposition: inline
-Message-Id: <200803011947.49203.bzolnier@gmail.com>
+Message-Id: <200803011947.54984.bzolnier@gmail.com>
 Content-Type: text/plain;
   charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
@@ -30,59 +30,92 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Tell IDE layer to not manage resources by setting hwif->mmio flag.
+Move the common code for primary/seconary port setup from
+ide_legacy_device_add() to ide_legacy_init_one().
 
-* Use {request,release}_region() for resources management.
-
-* Use driver name for resources management.
+There should be no functional changes caused by this patch.
 
 Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
 ---
- drivers/ide/arm/ide_arm.c |   19 ++++++++++++++++++-
- 1 file changed, 18 insertions(+), 1 deletion(-)
+ drivers/ide/ide-probe.c |   58 ++++++++++++++++++++++++++++--------------------
+ 1 file changed, 34 insertions(+), 24 deletions(-)
 
-Index: b/drivers/ide/arm/ide_arm.c
+Index: b/drivers/ide/ide-probe.c
 ===================================================================
---- a/drivers/ide/arm/ide_arm.c
-+++ b/drivers/ide/arm/ide_arm.c
-@@ -14,6 +14,8 @@
- #include <asm/mach-types.h>
- #include <asm/irq.h>
+--- a/drivers/ide/ide-probe.c
++++ b/drivers/ide/ide-probe.c
+@@ -1626,40 +1626,50 @@ void ide_port_scan(ide_hwif_t *hwif)
+ }
+ EXPORT_SYMBOL_GPL(ide_port_scan);
  
-+#define DRV_NAME "ide_arm"
-+
- #ifdef CONFIG_ARCH_CLPS7500
- # include <asm/arch/hardware.h>
- #
-@@ -28,15 +30,30 @@ static int __init ide_arm_init(void)
+-int ide_legacy_device_add(const struct ide_port_info *d, unsigned long config)
++static void ide_legacy_init_one(u8 *idx, hw_regs_t *hw, u8 port_no,
++				const struct ide_port_info *d,
++				unsigned long config)
  {
- 	ide_hwif_t *hwif;
- 	hw_regs_t hw;
-+	unsigned long base = IDE_ARM_IO, ctl = IDE_ARM_IO + 0x206;
- 	u8 idx[4] = { 0xff, 0xff, 0xff, 0xff };
- 
-+	if (!request_region(base, 8, DRV_NAME)) {
-+		printk(KERN_ERR "%s: I/O resource 0x%lX-0x%lX not free.\n",
-+				DRV_NAME, base, base + 7);
-+		return -EBUSY;
-+	}
+-	ide_hwif_t *hwif, *mate;
+-	u8 idx[4] = { 0xff, 0xff, 0xff, 0xff };
+-	hw_regs_t hw[2];
+-
+-	memset(&hw, 0, sizeof(hw));
+-
+-	ide_std_init_ports(&hw[0], 0x1f0, 0x3f6);
+-	hw[0].irq = 14;
++	ide_hwif_t *hwif;
++	unsigned long base, ctl;
++	int irq;
 +
-+	if (!request_region(ctl, 1, DRV_NAME)) {
-+		printk(KERN_ERR "%s: I/O resource 0x%lX not free.\n",
-+				DRV_NAME, ctl);
-+		release_region(base, 8);
-+		return -EBUSY;
++	if (port_no == 0) {
++		base = 0x1f0;
++		ctl  = 0x3f6;
++		irq  = 14;
++	} else {
++		base = 0x170;
++		ctl  = 0x376;
++		irq  = 15;
 +	}
-+
- 	memset(&hw, 0, sizeof(hw));
--	ide_std_init_ports(&hw, IDE_ARM_IO, IDE_ARM_IO + 0x206);
-+	ide_std_init_ports(&hw, base, ctl);
- 	hw.irq = IDE_ARM_IRQ;
  
- 	hwif = ide_find_port();
+-	ide_std_init_ports(&hw[1], 0x170, 0x376);
+-	hw[1].irq = 15;
++	ide_std_init_ports(hw, base, ctl);
++	hw->irq = irq;
+ 
+ 	hwif = ide_find_port_slot(d);
  	if (hwif) {
- 		ide_init_port_hw(hwif, &hw);
-+		hwif->mmio = 1;
- 		idx[0] = hwif->index;
+-		u8 j = (d->host_flags & IDE_HFLAG_QD_2ND_PORT) ? 1 : 0;
+-
+-		ide_init_port_hw(hwif, &hw[j]);
++		ide_init_port_hw(hwif, hw);
+ 		if (config)
+ 			hwif->config_data = config;
+-		idx[j] = hwif->index;
++		idx[port_no] = hwif->index;
+ 	}
++}
  
- 		ide_device_add(idx, NULL);
+-	if (hwif == NULL && (d->host_flags & IDE_HFLAG_SINGLE))
+-		return -ENOENT;
++int ide_legacy_device_add(const struct ide_port_info *d, unsigned long config)
++{
++	u8 idx[4] = { 0xff, 0xff, 0xff, 0xff };
++	hw_regs_t hw[2];
+ 
+-	mate = ide_find_port_slot(d);
+-	if (mate) {
+-		ide_init_port_hw(mate, &hw[1]);
+-		if (config)
+-			mate->config_data = config;
+-		idx[1] = mate->index;
+-	}
++	memset(&hw, 0, sizeof(hw));
++
++	if ((d->host_flags & IDE_HFLAG_QD_2ND_PORT) == 0)
++		ide_legacy_init_one(idx, &hw[0], 0, d, config);
++	ide_legacy_init_one(idx, &hw[1], 1, d, config);
++
++	if (idx[0] == 0xff && idx[1] == 0xff &&
++	    (d->host_flags & IDE_HFLAG_SINGLE))
++		return -ENOENT;
+ 
+ 	ide_device_add(idx, d);
+ 
