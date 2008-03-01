@@ -1,66 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757364AbYCAR76@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756922AbYCAS06@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757364AbYCAR76 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 1 Mar 2008 12:59:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755448AbYCAR7t
+	id S1756922AbYCAS06 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 1 Mar 2008 13:26:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751408AbYCAS0q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 1 Mar 2008 12:59:49 -0500
-Received: from wx-out-0506.google.com ([66.249.82.228]:51889 "EHLO
-	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755339AbYCAR7t (ORCPT
+	Sat, 1 Mar 2008 13:26:46 -0500
+Received: from ug-out-1314.google.com ([66.249.92.175]:43593 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751319AbYCAS0p (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 1 Mar 2008 12:59:49 -0500
+	Sat, 1 Mar 2008 13:26:45 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=QvuYm+n3m8qhGYfxYaTMS3nt+O4dXqSxMlUfKuy2ITHWyiYMVrljgQKIQOjuFC9dyMLaBawuTNnbmUeIZg6aXwLOXlLD41E7plNPnupn4klG0c7wi3aUdc8ZGj5e7ig9c3OG1cmVgTfhWIXnGYa8ZDwgp9ApfJacWjp4x8QxEV8=
-Message-ID: <d6c8ef150803010959t2f82e12q12c182e698d165fe@mail.gmail.com>
-Date: Sat, 1 Mar 2008 18:59:48 +0100
-From: "Bosko Radivojevic" <bosko.radivojevic@gmail.com>
-To: linux-kernel@vger.kernel.org
-Subject: High resolution timers on AT91SAM926x
-In-Reply-To: <d6c8ef150803010952g666118dfu7679593b3c92c8be@mail.gmail.com>
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
+        b=r61K89E4gEWhKuKMeokvDvkrWJObEBc+TAdMV3xOcPKQ7Xh9qltQKVEaZTjSDdEfSdDerS5zw3iLDeTJJgtMJ+Ld7yEnwCvKF/UM5R+p/FQAvU0vxb83Ei+0zwDjJlS33DtXVajmbm6OWi9sfmlSw2cbCpS4kx8ZJDLOGqsKHWc=
+Message-ID: <47C99FE1.8080206@gmail.com>
+Date: Sat, 01 Mar 2008 21:26:41 +0300
+From: Alexey Starikovskiy <aystarik@gmail.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20071022)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+To: Adrian Bunk <bunk@kernel.org>
+CC: lenb@kernel.org, astarikovskiy@suse.de, linux-acpi@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [2.6 patch] acpi/battery.c: make 2 functions static
+References: <20080301161902.GN25835@cs181133002.pp.htv.fi>
+In-Reply-To: <20080301161902.GN25835@cs181133002.pp.htv.fi>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <d6c8ef150803010952g666118dfu7679593b3c92c8be@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
+May I keep them inline?
 
- Is there a way to enable high resolution timers on AT91SAM926x? The
-best resolution I can get (kernel 2.6.23.11-rt14 with at91 patch from
-maxim.org.za) is around 1ms. Is there any other way to get timers with
-better resolution?
+Thanks,
+Alex.
+Adrian Bunk wrote:
+> This patch makes the following functions static instead of global inline:
+> - acpi_battery_present()
+> - acpi_battery_units()
+>
+> Signed-off-by: Adrian Bunk <bunk@kernel.org>
+>
+> ---
+>
+>  drivers/acpi/battery.c |    4 ++--
+>  1 file changed, 2 insertions(+), 2 deletions(-)
+>
+> 9cfc2b0a3162d8e2f23537faefb6937c97513f38 foobar
+> diff --git a/drivers/acpi/battery.c b/drivers/acpi/battery.c
+> index f6215e8..d941c5a 100644
+> --- a/drivers/acpi/battery.c
+> +++ b/drivers/acpi/battery.c
+> @@ -116,7 +116,7 @@ struct acpi_battery {
+>  
+>  #define to_acpi_battery(x) container_of(x, struct acpi_battery, bat);
+>  
+> -inline int acpi_battery_present(struct acpi_battery *battery)
+> +static int acpi_battery_present(struct acpi_battery *battery)
+>  {
+>  	return battery->device->status.battery_present;
+>  }
+> @@ -235,7 +235,7 @@ static enum power_supply_property energy_battery_props[] = {
+>  #endif
+>  
+>  #ifdef CONFIG_ACPI_PROCFS_POWER
+> -inline char *acpi_battery_units(struct acpi_battery *battery)
+> +static char *acpi_battery_units(struct acpi_battery *battery)
+>  {
+>  	return (battery->power_unit)?"mA":"mW";
+>  }
+>
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-acpi" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+>   
 
-When I enable CONFIG_GENERIC_TIME and CONFIG_GENERIC_CLOCKEVENTS (as
-prerequisites for CONFIG_HIGH_RES) I'm unable to compile at91 part of
-kernel.
-
-Is there any "unofficial" patch? I saw that in 2.6.24 high res is
-supported for ARM, but AT91 still lacks support.
-
-
-$ cat /proc/timer_list
-Timer List Version: v0.3
-HRTIMER_MAX_CLOCK_BASES: 2
-now at 11995813000 nsecs
-
-cpu: 0
- clock 0:
-  .index:      0
-  .resolution: 999961 nsecs
-  .get_time:   ktime_get_real
- active timers:
- clock 1:
-  .index:      1
-  .resolution: 999961 nsecs
-  .get_time:   ktime_get
-active timers:
- #0: <c388de9c>, it_real_fn, S:01
- # expires at 1207195374000 nsecs [in 1195199561000 nsecs]
-
-Thanks!
