@@ -1,21 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758750AbYCAQYf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763314AbYCAQY5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758750AbYCAQYf (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 1 Mar 2008 11:24:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762610AbYCAQVP
+	id S1763314AbYCAQY5 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 1 Mar 2008 11:24:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756949AbYCAQVW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 1 Mar 2008 11:21:15 -0500
-Received: from smtp4.pp.htv.fi ([213.243.153.38]:55688 "EHLO smtp4.pp.htv.fi"
+	Sat, 1 Mar 2008 11:21:22 -0500
+Received: from smtp5.pp.htv.fi ([213.243.153.39]:39039 "EHLO smtp5.pp.htv.fi"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758361AbYCAQVN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 1 Mar 2008 11:21:13 -0500
-Date: Sat, 1 Mar 2008 18:19:48 +0200
+	id S1762611AbYCAQVT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 1 Mar 2008 11:21:19 -0500
+Date: Sat, 1 Mar 2008 18:19:53 +0200
 From: Adrian Bunk <bunk@kernel.org>
-To: samuel@sortiz.org
-Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       "Robert P. J. Day" <rpjday@crashcourse.ca>
-Subject: [RFC: 2.6 patch] remove irlan_eth_send_gratuitous_arp()
-Message-ID: <20080301161948.GQ25835@cs181133002.pp.htv.fi>
+To: linux-kernel@vger.kernel.org
+Cc: "Robert P. J. Day" <rpjday@crashcourse.ca>
+Subject: [2.6 patch] fs/partitions/acorn.c: remove dead code
+Message-ID: <20080301161953.GR25835@cs181133002.pp.htv.fi>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
@@ -24,104 +23,36 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Even kernel 2.2.26 (sic) already contains the
-  #undef CONFIG_IRLAN_SEND_GRATUITOUS_ARP
-with the comment "but for some reason the machine crashes if you use DHCP".
-
-Either someone finally looks into this or it's simply time to remove 
-this dead code.
+I missed this when I did the arm26 removal.
 
 Reported-by: Robert P. J. Day <rpjday@crashcourse.ca>
 Signed-off-by: Adrian Bunk <bunk@kernel.org>
 
 ---
 
- include/net/irda/irlan_eth.h  |    1 -
- net/irda/irlan/irlan_common.c |   10 ----------
- net/irda/irlan/irlan_eth.c    |   33 ---------------------------------
- 3 files changed, 44 deletions(-)
+ fs/partitions/acorn.c |   10 ----------
+ 1 file changed, 10 deletions(-)
 
-d8768e55070eb92eddb69ab8136ded02cc4ef9d0 foobar
-diff --git a/include/net/irda/irlan_eth.h b/include/net/irda/irlan_eth.h
-index 0062347..de5c816 100644
---- a/include/net/irda/irlan_eth.h
-+++ b/include/net/irda/irlan_eth.h
-@@ -29,5 +29,4 @@ struct net_device *alloc_irlandev(const char *name);
- int  irlan_eth_receive(void *instance, void *sap, struct sk_buff *skb);
+f7dc697bb2d04227b2f41a9d56f626fbd65c3d9d foobar
+diff --git a/fs/partitions/acorn.c b/fs/partitions/acorn.c
+index 3d3e166..a97b477 100644
+--- a/fs/partitions/acorn.c
++++ b/fs/partitions/acorn.c
+@@ -275,16 +275,6 @@ adfspart_check_ADFS(struct parsed_partitions *state, struct block_device *bdev)
+ 	id = data[0x1fc] & 15;
+ 	put_dev_sector(sect);
  
- void irlan_eth_flow_indication( void *instance, void *sap, LOCAL_FLOW flow);
--void irlan_eth_send_gratuitous_arp(struct net_device *dev);
- #endif
-diff --git a/net/irda/irlan/irlan_common.c b/net/irda/irlan/irlan_common.c
-index a4b56e2..c31cb55 100644
---- a/net/irda/irlan/irlan_common.c
-+++ b/net/irda/irlan/irlan_common.c
-@@ -54,13 +54,6 @@
- #include <net/irda/irlan_filter.h>
- 
- 
--/*
-- * Send gratuitous ARP when connected to a new AP or not. May be a clever
-- * thing to do, but for some reason the machine crashes if you use DHCP. So
-- * lets not use it by default.
-- */
--#undef CONFIG_IRLAN_SEND_GRATUITOUS_ARP
--
- /* extern char sysctl_devname[]; */
- 
- /*
-@@ -395,9 +388,6 @@ static void irlan_connect_confirm(void *instance, void *sap,
- 	/* Ready to transfer Ethernet frames */
- 	netif_start_queue(self->dev);
- 	self->disconnect_reason = 0; /* Clear reason */
--#ifdef CONFIG_IRLAN_SEND_GRATUITOUS_ARP
--	irlan_eth_send_gratuitous_arp(&self->dev);
+-#ifdef CONFIG_BLK_DEV_MFM
+-	if (MAJOR(bdev->bd_dev) == MFM_ACORN_MAJOR) {
+-		extern void xd_set_geometry(struct block_device *,
+-			unsigned char, unsigned char, unsigned int);
+-		xd_set_geometry(bdev, dr->secspertrack, heads, 1);
+-		invalidate_bh_lrus();
+-		truncate_inode_pages(bdev->bd_inode->i_mapping, 0);
+-	}
 -#endif
- 	wake_up_interruptible(&self->open_wait);
- }
- 
-diff --git a/net/irda/irlan/irlan_eth.c b/net/irda/irlan/irlan_eth.c
-index 1ab91f7..ef12ef1 100644
---- a/net/irda/irlan/irlan_eth.c
-+++ b/net/irda/irlan/irlan_eth.c
-@@ -289,39 +289,6 @@ void irlan_eth_flow_indication(void *instance, void *sap, LOCAL_FLOW flow)
- }
- 
- /*
-- * Function irlan_etc_send_gratuitous_arp (dev)
-- *
-- *    Send gratuitous ARP to announce that we have changed
-- *    hardware address, so that all peers updates their ARP tables
-- */
--void irlan_eth_send_gratuitous_arp(struct net_device *dev)
--{
--#ifdef CONFIG_INET
--	struct in_device *in_dev;
 -
--	/*
--	 * When we get a new MAC address do a gratuitous ARP. This
--	 * is useful if we have changed access points on the same
--	 * subnet.
--	 */
--	IRDA_DEBUG(4, "IrLAN: Sending gratuitous ARP\n");
--	rcu_read_lock();
--	in_dev = __in_dev_get_rcu(dev);
--	if (in_dev == NULL)
--		goto out;
--	if (in_dev->ifa_list)
--
--	arp_send(ARPOP_REQUEST, ETH_P_ARP,
--		 in_dev->ifa_list->ifa_address,
--		 dev,
--		 in_dev->ifa_list->ifa_address,
--		 NULL, dev->dev_addr, NULL);
--out:
--	rcu_read_unlock();
--#endif /* CONFIG_INET */
--}
--
--/*
-  * Function set_multicast_list (dev)
-  *
-  *    Configure the filtering of the device
+ 	/*
+ 	 * Work out start of non-adfs partition.
+ 	 */
 
