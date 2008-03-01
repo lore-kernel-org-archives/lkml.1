@@ -1,54 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757989AbYCATRS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757202AbYCATf1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757989AbYCATRS (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 1 Mar 2008 14:17:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755487AbYCATRF
+	id S1757202AbYCATf1 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 1 Mar 2008 14:35:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751963AbYCATfQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 1 Mar 2008 14:17:05 -0500
-Received: from lsd-gw.ic.unicamp.br ([143.106.7.165]:48789 "EHLO
-	marquesa.lsd.ic.unicamp.br" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1753102AbYCATRE (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 1 Mar 2008 14:17:04 -0500
-X-Greylist: delayed 1738 seconds by postgrey-1.27 at vger.kernel.org; Sat, 01 Mar 2008 14:17:03 EST
-To: Pawel Plociennik <paplociennik@gmail.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] chroot= as a new kernel parameter
-References: <200803011409.59526.paplociennik@gmail.com>
-From: Alexandre Oliva <oliva@lsd.ic.unicamp.br>
-Date: Sat, 01 Mar 2008 15:47:53 -0300
-In-Reply-To: <200803011409.59526.paplociennik@gmail.com> (Pawel Plociennik's message of "Sat\, 1 Mar 2008 14\:09\:59 -0500")
-Message-ID: <orejauxova.fsf@oliva.athome.lsd.ic.unicamp.br>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.1 (gnu/linux)
+	Sat, 1 Mar 2008 14:35:16 -0500
+Received: from the.earth.li ([217.147.81.2]:53665 "EHLO the.earth.li"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751284AbYCATfO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 1 Mar 2008 14:35:14 -0500
+Date: Sat, 1 Mar 2008 19:35:11 +0000
+From: Jonathan McDowell <noodles@earth.li>
+To: xorg-driver-ati@lists.x.org, linux-kernel@vger.kernel.org
+Subject: 2.6.25-rc3 + RS690 + DRM + xf86-video-ati hang
+Message-ID: <20080301193511.GP9009@earth.li>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mar  1, 2008, Pawel Plociennik <paplociennik@gmail.com> wrote:
+If I enable CONFIG_DRM_RADEON under 2.6.25-rc3 then starting up
+X using the xf86-video-ati driver (6.8.0 or latest git) causes the
+machine to become unresponsive; while it still pings and will accept
+incoming connections they never actually complete and it's not possible
+to login over a serial console (the actual video console doesn't display
+anything and the monitor reports a loss of sync).
 
-> In the short this patch has added a new chroot= kernel parameter
-> which can be used to changing a chroot of an init process before it
-> will has been runed.
+Disabling the kernel DRM option results in X running successfully.
+Likewise 2.6.24 works fine with DRM enabled, presumably because the
+support for the RS690 was only added in 2.6.25-rc
 
-Hey, this is cool, I've wanted something like this for a long time.
-However, I was thinking of implementing it in mkinitrd, not in the
-kernel proper.
+The last messages from the kernel before it becomes unresponsive are:
 
-OT1H, having it in the kernel proper makes it easier to support even
-on distros whose mkinitrd doesn't support this stuff, or that don't
-even use an initrd.  OTOH, having it in mkinitrd means you can use
-this even on distros whose kernels don't support chroot=.
+[drm] Setting GART location based on new memory map
+[drm] Loading R300 Microcode
+[drm] writeback test succeeded in 1 usecs
 
-And then, given that booting up a kernel from one distro on another
-requires setting up /lib/modules for proper functioning (unless your
-mkinitrd does that for you, which is something else I've been thinking
-of doing for similar reasons), I figured changing mkinitrd might be a
-better way to go.
+The motherboard in question is an ASUS M2A-VM HDMI, with the analog VGA
+output being used. The machine is running an AMD64 with Debian unstable.
+I have put the output of lspci, a non drm Xorg.log and a drm Xorg.log
+at:
+
+http://the.earth.li/~noodles/xorg-ati-drm/lspci
+http://the.earth.li/~noodles/xorg-ati-drm/Xorg.0.log-nodrm
+http://the.earth.li/~noodles/xorg-ati-drm/Xorg.0.log-drm
+
+If I can provide any more useful information please let me know.
+
+J.
 
 -- 
-Alexandre Oliva         http://www.lsd.ic.unicamp.br/~oliva/
-FSF Latin America Board Member         http://www.fsfla.org/
-Red Hat Compiler Engineer   aoliva@{redhat.com, gcc.gnu.org}
-Free Software Evangelist  oliva@{lsd.ic.unicamp.br, gnu.org}
+ I get the feeling that I've been  |  .''`.  Debian GNU/Linux Developer
+             cheated.              | : :' :  Happy to accept PGP signed
+                                   | `. `'   or encrypted mail - RSA +
+                                   |   `-    DSA keys on the keyservers.
