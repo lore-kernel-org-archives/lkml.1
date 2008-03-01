@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754622AbYCAEJx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761236AbYCAEKi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754622AbYCAEJx (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Feb 2008 23:09:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758275AbYCAEGy
+	id S1761236AbYCAEKi (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Feb 2008 23:10:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758378AbYCAEGz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Feb 2008 23:06:54 -0500
-Received: from relay1.sgi.com ([192.48.171.29]:46591 "EHLO relay.sgi.com"
+	Fri, 29 Feb 2008 23:06:55 -0500
+Received: from relay1.sgi.com ([192.48.171.29]:46590 "EHLO relay.sgi.com"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751781AbYCAEGY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1751757AbYCAEGY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 29 Feb 2008 23:06:24 -0500
-Message-Id: <20080301040620.994846388@sgi.com>
+Message-Id: <20080301040621.484085808@sgi.com>
 References: <20080301040534.797979115@sgi.com>
 User-Agent: quilt/0.46-1
-Date: Fri, 29 Feb 2008 20:05:39 -0800
+Date: Fri, 29 Feb 2008 20:05:41 -0800
 From: Christoph Lameter <clameter@sgi.com>
 To: linux-kernel@vger.kernel.org
 Cc: Mel Gorman <mel@csn.ul.ie>
@@ -21,64 +21,153 @@ Cc: Rik van Riel <riel@redhat.com>
 Cc: Andrew Morton <akpm@linux-foundation.org>
 Cc: apw@shadowen.org
 Cc: linux-mm@kback.org
-Subject: [rfc 05/10] Sparsemem: Vmemmap does not need section bits
-Content-Disposition: inline; filename=sparsemem_vmemmap_does_not_need_section_flags
+Subject: [rfc 07/10] Pageflags: Get rid of FLAGS_RESERVED
+Content-Disposition: inline; filename=pageflags-get-rid-of-flags-reserved
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Sparsemem vmemmap does not need any section bits. This patch has
-the effect of reducing the number of bits used in page->flags
-by at least 6.
+NR_PAGEFLAGS specifies the number of page flags we are using.
+>From that we can calculate the number of bits leftover that can
+be used for zone, node (and maybe the sections id). There is
+no need anymore for FLAGS_RESERVED if we use NR_PAGEFLAGS.
 
-Add an #error in sparse.c to avoid trouble if the page flags use
-becomes so large that no node number fits in there anymore. We can then
-no longer fallback from the use of the node to the use of the sectionID
-for sparsemem vmemmap. The node width is always smaller than the width
-of the section. So one would never want to fallback this way for
-vmemmap.
+Use the new methods to make NR_PAGEFLAGS available via
+the preprocessor. NR_PAGEFLAGS is used to calculate field
+boundaries in the page flags fields. These field widths have
+to be available to the preprocessor.
 
 Signed-off-by: Christoph Lameter <clameter@sgi.com>
 
 ---
- include/linux/mm.h |    8 ++++----
- mm/sparse.c        |    4 ++++
- 2 files changed, 8 insertions(+), 4 deletions(-)
+ include/linux/bounds.h     |    2 ++
+ include/linux/mm.h         |    6 +++---
+ include/linux/mmzone.h     |   19 -------------------
+ include/linux/page-flags.h |   14 +++++++-------
+ kernel/bounds.c            |    1 +
+ 5 files changed, 13 insertions(+), 29 deletions(-)
 
 Index: linux-2.6/include/linux/mm.h
 ===================================================================
---- linux-2.6.orig/include/linux/mm.h	2008-02-29 16:09:13.000000000 -0800
-+++ linux-2.6/include/linux/mm.h	2008-02-29 16:11:28.000000000 -0800
-@@ -390,11 +390,11 @@ static inline void set_compound_order(st
-  * we have run out of space and have to fall back to an
-  * alternate (slower) way of determining the node.
-  *
-- *        No sparsemem: |       NODE     | ZONE | ... | FLAGS |
-- * with space for node: | SECTION | NODE | ZONE | ... | FLAGS |
-- *   no space for node: | SECTION |     ZONE    | ... | FLAGS |
-+ * No sparsemem or sparsemem vmemmap: |       NODE     | ZONE | ... | FLAGS |
-+ * classic sparse with space for node:| SECTION | NODE | ZONE | ... | FLAGS |
-+ * classic sparse no space for node:  | SECTION |     ZONE    | ... | FLAGS |
-  */
--#ifdef CONFIG_SPARSEMEM
-+#if defined(CONFIG_SPARSEMEM) && !defined(CONFIG_SPARSEMEM_VMEMMAP)
- #define SECTIONS_WIDTH		SECTIONS_SHIFT
- #else
- #define SECTIONS_WIDTH		0
-Index: linux-2.6/mm/sparse.c
-===================================================================
---- linux-2.6.orig/mm/sparse.c	2008-02-29 16:11:32.000000000 -0800
-+++ linux-2.6/mm/sparse.c	2008-02-29 16:12:28.000000000 -0800
-@@ -27,6 +27,10 @@ struct mem_section mem_section[NR_SECTIO
- EXPORT_SYMBOL(mem_section);
+--- linux-2.6.orig/include/linux/mm.h	2008-02-29 19:21:35.000000000 -0800
++++ linux-2.6/include/linux/mm.h	2008-02-29 19:29:53.000000000 -0800
+@@ -402,7 +402,7 @@ static inline void set_compound_order(st
  
- #ifdef NODE_NOT_IN_PAGE_FLAGS
-+#ifdef CONFIG_SPARSEMEM_VMEMMAP
-+#error SPARSEMEM_VMEMMAP must have the node in page flags
-+#endif
-+
+ #define ZONES_WIDTH		ZONES_SHIFT
+ 
+-#if SECTIONS_WIDTH+ZONES_WIDTH+NODES_SHIFT <= FLAGS_RESERVED
++#if SECTIONS_WIDTH+ZONES_WIDTH+NODES_SHIFT <= BITS_PER_LONG - NR_PAGEFLAGS
+ #define NODES_WIDTH		NODES_SHIFT
+ #else
+ #define NODES_WIDTH		0
+@@ -447,8 +447,8 @@ static inline void set_compound_order(st
+ 
+ #define ZONEID_PGSHIFT		(ZONEID_PGOFF * (ZONEID_SHIFT != 0))
+ 
+-#if SECTIONS_WIDTH+NODES_WIDTH+ZONES_WIDTH > FLAGS_RESERVED
+-#error SECTIONS_WIDTH+NODES_WIDTH+ZONES_WIDTH > FLAGS_RESERVED
++#if SECTIONS_WIDTH+NODES_WIDTH+ZONES_WIDTH > BITS_PER_LONG - NR_PAGEFLAGS
++#error SECTIONS_WIDTH+NODES_WIDTH+ZONES_WIDTH > BITS_PER_LONG - NR_PAGEFLAGS
+ #endif
+ 
+ #define ZONES_MASK		((1UL << ZONES_WIDTH) - 1)
+Index: linux-2.6/include/linux/mmzone.h
+===================================================================
+--- linux-2.6.orig/include/linux/mmzone.h	2008-02-29 19:13:55.000000000 -0800
++++ linux-2.6/include/linux/mmzone.h	2008-02-29 19:29:53.000000000 -0800
+@@ -735,25 +735,6 @@ extern struct zone *next_zone(struct zon
+ #include <asm/sparsemem.h>
+ #endif
+ 
+-#if BITS_PER_LONG == 32
+-/*
+- * with 32 bit page->flags field, we reserve 9 bits for node/zone info.
+- * there are 4 zones (3 bits) and this leaves 9-3=6 bits for nodes.
+- */
+-#define FLAGS_RESERVED		9
+-
+-#elif BITS_PER_LONG == 64
+-/*
+- * with 64 bit flags field, there's plenty of room.
+- */
+-#define FLAGS_RESERVED		32
+-
+-#else
+-
+-#error BITS_PER_LONG not defined
+-
+-#endif
+-
+ #if !defined(CONFIG_HAVE_ARCH_EARLY_PFN_TO_NID) && \
+ 	!defined(CONFIG_ARCH_POPULATES_NODE_MAP)
+ #define early_pfn_to_nid(nid)  (0UL)
+Index: linux-2.6/include/linux/page-flags.h
+===================================================================
+--- linux-2.6.orig/include/linux/page-flags.h	2008-02-29 19:20:11.000000000 -0800
++++ linux-2.6/include/linux/page-flags.h	2008-02-29 19:29:53.000000000 -0800
+@@ -7,6 +7,7 @@
+ 
+ #include <linux/types.h>
+ #include <linux/mm_types.h>
++#include <linux/bounds.h>
+ 
  /*
-  * If we did not store the node number in the page then we have to
-  * do a lookup in the section_to_node_table in order to find which
+  * Various page->flags bits:
+@@ -59,13 +60,12 @@
+  * extends from the high bits downwards.
+  *
+  *  | FIELD | ... | FLAGS |
+- *  N-1     ^             0
+- *          (N-FLAGS_RESERVED)
++ *  N-1           ^       0
++ *               (NR_PAGEFLAGS)
+  *
+- * The fields area is reserved for fields mapping zone, node and SPARSEMEM
+- * section.  The boundry between these two areas is defined by
+- * FLAGS_RESERVED which defines the width of the fields section
+- * (see linux/mmzone.h).  New flags must _not_ overlap with this area.
++ * The fields area is reserved for fields mapping zone, node (for NUMA) and
++ * SPARSEMEM section (for variants of SPARSEMEM that require section ids like
++ * SPARSEMEM_EXTREME with !SPARSEMEM_VMEMMAP).
+  */
+ enum pageflags {
+ 	PG_locked,		/* Page is locked. Don't touch. */
+@@ -86,7 +86,6 @@ enum pageflags {
+ 	PG_mappedtodisk,	/* Has blocks allocated on-disk */
+ 	PG_reclaim,		/* To be reclaimed asap */
+ 	PG_buddy,		/* Page is free, on buddy lists */
+-	NR_PAGEFLAGS,		/* For verification purposes */
+ 
+ #if (BITS_PER_LONG > 32)
+ /*
+@@ -98,6 +97,7 @@ enum pageflags {
+  */
+ 	PG_uncached = 31,		/* Page has been mapped as uncached */
+ #endif
++	__NR_PAGEFLAGS,
+ };
+ 
+ /*
+Index: linux-2.6/kernel/bounds.c
+===================================================================
+--- linux-2.6.orig/kernel/bounds.c	2008-02-29 19:29:38.000000000 -0800
++++ linux-2.6/kernel/bounds.c	2008-02-29 19:29:53.000000000 -0800
+@@ -13,4 +13,5 @@
+ 
+ void foo(void)
+ {
++	DEFINE(NR_PAGEFLAGS, __NR_PAGEFLAGS);
+ }
+Index: linux-2.6/include/linux/bounds.h
+===================================================================
+--- linux-2.6.orig/include/linux/bounds.h	2008-02-29 19:30:04.000000000 -0800
++++ linux-2.6/include/linux/bounds.h	2008-02-29 19:30:08.000000000 -0800
+@@ -7,4 +7,6 @@
+  *
+  */
+ 
++#define NR_PAGEFLAGS 32 /* __NR_PAGEFLAGS	# */
++
+ #endif
 
 -- 
