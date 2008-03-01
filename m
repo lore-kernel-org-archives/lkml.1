@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763155AbYCAQ3Q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763897AbYCAQ3p@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763155AbYCAQ3Q (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 1 Mar 2008 11:29:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763034AbYCAQYn
+	id S1763897AbYCAQ3p (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 1 Mar 2008 11:29:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763264AbYCAQYt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 1 Mar 2008 11:24:43 -0500
-Received: from smtp6.pp.htv.fi ([213.243.153.40]:57412 "EHLO smtp6.pp.htv.fi"
+	Sat, 1 Mar 2008 11:24:49 -0500
+Received: from smtp4.pp.htv.fi ([213.243.153.38]:55885 "EHLO smtp4.pp.htv.fi"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758026AbYCAQYm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 1 Mar 2008 11:24:42 -0500
-Date: Sat, 1 Mar 2008 18:23:16 +0200
+	id S1763255AbYCAQYs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 1 Mar 2008 11:24:48 -0500
+Date: Sat, 1 Mar 2008 18:23:23 +0200
 From: Adrian Bunk <bunk@kernel.org>
-To: axboe@kernel.dk
+To: clemens@ladisch.de
 Cc: linux-kernel@vger.kernel.org
-Subject: [2.6 patch] make cdrom.c:check_for_audio_disc() static
-Message-ID: <20080301162316.GA25835@cs181133002.pp.htv.fi>
+Subject: [2.6 patch] #if 0 hpet_unregister()
+Message-ID: <20080301162323.GB25835@cs181133002.pp.htv.fi>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
@@ -23,25 +23,34 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch makes the needlessly global check_for_audio_disc() static.
+This patch #if 0's the unused hpet_unregister().
 
 Signed-off-by: Adrian Bunk <bunk@kernel.org>
 
 ---
-3b370f4edc826997a406f09c21a612e812e882fd foobar
-diff --git a/drivers/cdrom/cdrom.c b/drivers/cdrom/cdrom.c
-index db259e6..12f5bae 100644
---- a/drivers/cdrom/cdrom.c
-+++ b/drivers/cdrom/cdrom.c
-@@ -1152,8 +1152,8 @@ clean_up_and_return:
- /* This code is similar to that in open_for_data. The routine is called
-    whenever an audio play operation is requested.
- */
--int check_for_audio_disc(struct cdrom_device_info * cdi,
--			 struct cdrom_device_ops * cdo)
-+static int check_for_audio_disc(struct cdrom_device_info * cdi,
-+				struct cdrom_device_ops * cdo)
+
+ drivers/char/hpet.c |    2 ++
+ 1 file changed, 2 insertions(+)
+
+addfb1ea425cb7e01ddd99fd921c6ca42cc6840b foobar
+diff --git a/drivers/char/hpet.c b/drivers/char/hpet.c
+index 465ad35..98ffdcc 100644
+--- a/drivers/char/hpet.c
++++ b/drivers/char/hpet.c
+@@ -619,6 +619,7 @@ static inline int hpet_tpcheck(struct hpet_task *tp)
+ 	return -ENXIO;
+ }
+ 
++#if 0
+ int hpet_unregister(struct hpet_task *tp)
  {
-         int ret;
- 	tracktype tracks;
+ 	struct hpet_dev *devp;
+@@ -648,6 +649,7 @@ int hpet_unregister(struct hpet_task *tp)
+ 
+ 	return 0;
+ }
++#endif  /*  0  */
+ 
+ static ctl_table hpet_table[] = {
+ 	{
 
