@@ -1,52 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759413AbYCAMcd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756812AbYCAMiP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759413AbYCAMcd (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 1 Mar 2008 07:32:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754299AbYCAMc0
+	id S1756812AbYCAMiP (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 1 Mar 2008 07:38:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751187AbYCAMh5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 1 Mar 2008 07:32:26 -0500
-Received: from gateway.drzeus.cx ([85.8.24.16]:33524 "EHLO smtp.drzeus.cx"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751676AbYCAMcZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 1 Mar 2008 07:32:25 -0500
-Date: Sat, 1 Mar 2008 13:31:27 +0100
-From: Pierre Ossman <drzeus-list@drzeus.cx>
-To: lsorense@csclub.uwaterloo.ca (Lennart Sorensen)
-Cc: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
-       Adam Belay <abelay@novell.com>, linux-pm@lists.linux-foundation.org,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [RFC][PATCH] cpuidle: avoid singing capacitors
-Message-ID: <20080301133127.0a85f319@mjolnir.drzeus.cx>
-In-Reply-To: <20080229214407.GC1289@csclub.uwaterloo.ca>
-References: <20080229193812.31f45b0c@mjolnir.drzeus.cx>
-	<20080229214407.GC1289@csclub.uwaterloo.ca>
-X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.8; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Sat, 1 Mar 2008 07:37:57 -0500
+Received: from einhorn.in-berlin.de ([192.109.42.8]:32927 "EHLO
+	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750778AbYCAMh4 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 1 Mar 2008 07:37:56 -0500
+X-Envelope-From: stefanr@s5r6.in-berlin.de
+Date: Sat, 1 Mar 2008 13:36:05 +0100 (CET)
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Subject: Re: [PATCH 1/2] firewire: endianess fix
+To: linux1394-devel@lists.sourceforge.net
+cc: Harvey Harrison <harvey.harrison@gmail.com>,
+       Sam Ravnborg <sam@ravnborg.org>, linux-kernel@vger.kernel.org,
+       sparclinux@vger.kernel.org, linuxppc-dev@ozlabs.org,
+       Kristian Hoegsberg <krh@bitplanet.net>,
+       Jarod Wilson <jwilson@redhat.com>
+In-Reply-To: <47C00DB0.20605@s5r6.in-berlin.de>
+Message-ID: <tkrat.8be5d3017a57e1f0@s5r6.in-berlin.de>
+References: <20080220220326.GA22328@uranus.ravnborg.org>
+ <1203545913.25307.47.camel@brick> <tkrat.e2bfb30f2c0ae70a@s5r6.in-berlin.de>
+ <tkrat.9e19fa31951506af@s5r6.in-berlin.de>
+ <47C00DB0.20605@s5r6.in-berlin.de>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; CHARSET=us-ascii
+Content-Disposition: INLINE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 29 Feb 2008 16:44:07 -0500
-lsorense@csclub.uwaterloo.ca (Lennart Sorensen) wrote:
+On 23 Feb, I wrote:
+>> This needs to be tested on different big endian PCs, if possible with
+>> the Apple Uninorth FireWire controller and other types of controllers.
 
-> On Fri, Feb 29, 2008 at 07:38:12PM +0100, Pierre Ossman wrote:
-> > +/*
-> > + * The minimum number of ticks needed to not oscillate faster than
-> > + * 500 Hz.
-> > + */
-> > +#define MIN_DEEP_INTERVAL (HZ / 500)
-> 
-> What happens here if HZ < 500?  Or does the fact that you have less than
-> 500HZ jiffies automatically imply that you can't go to sleep more than
-> the jiffy rate times per second?
+I tested it myself now with VT6306 on PPC32.
 
-A low HZ will still go to sleep very often (provided NO_HZ is in effect). But a HZ < 500 makes that number up there turn to zero.  But the check further down makes sure that at least 1 tick passes. So that means it will not enter C3 more often than min(HZ, 500) Hz. Another reason to stop using jiffies.
+> it should be triggered by replacing
+> 	&fw_high_memory_region
+> by
+> 	&fw_private_region
+> in drivers/firewire/fw-sbp2.c and testing with any SBP-2 device
 
+This indeed demonstrates the fix.  Any IO to SBP-2 devices fails with
+timeouts.  Just removing the posted write enable bit in fw-ohci wasn't
+sufficient to catch it though.  Maybe the controller has write posting
+enabled by default.
+
+However, this endianess bug was low-profile because there are currently
+no kernelspace or userspace drivers for the firewire stack which need to
+respond in split transactions.
 -- 
-     -- Pierre Ossman
+Stefan Richter
+-=====-==--- --== ----=
+http://arcgraph.de/sr/
 
-  Linux kernel, MMC maintainer        http://www.kernel.org
-  PulseAudio, core developer          http://pulseaudio.org
-  rdesktop, core developer          http://www.rdesktop.org
