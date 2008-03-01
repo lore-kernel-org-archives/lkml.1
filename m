@@ -1,88 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759598AbYCAOj1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759411AbYCAOnk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759598AbYCAOj1 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 1 Mar 2008 09:39:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753857AbYCAOjU
+	id S1759411AbYCAOnk (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 1 Mar 2008 09:43:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751960AbYCAOnb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 1 Mar 2008 09:39:20 -0500
-Received: from mail001.aei.ca ([206.123.6.130]:54560 "EHLO mail001.aei.ca"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753033AbYCAOjT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 1 Mar 2008 09:39:19 -0500
-/m: spam: 3.2.1
-From: Ed Tomlinson <edt@aei.ca>
-To: Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: Panic 2.6.24-3 NMI Watchdog detected LOCKUP on CPU 0
-Date: Sat, 1 Mar 2008 09:38:57 -0500
-User-Agent: KMail/1.9.7
-Cc: linux-kernel@vger.kernel.org
-References: <200803010911.04569.edt@aei.ca> <alpine.LFD.1.00.0803011527410.11084@apollo.tec.linutronix.de>
-In-Reply-To: <alpine.LFD.1.00.0803011527410.11084@apollo.tec.linutronix.de>
+	Sat, 1 Mar 2008 09:43:31 -0500
+Received: from palinux.external.hp.com ([192.25.206.14]:51004 "EHLO
+	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753335AbYCAOna (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 1 Mar 2008 09:43:30 -0500
+Date: Sat, 1 Mar 2008 07:43:07 -0700
+From: Matthew Wilcox <matthew@wil.cx>
+To: Greg KH <gregkh@suse.de>
+Cc: Alex Chiang <achiang@hp.com>, Gary Hade <garyhade@us.ibm.com>,
+       kaneshige.kenji@jp.fujitsu.com, warthog19@eaglescrag.net,
+       kristen.c.accardi@intel.com, rick.jones2@hp.com,
+       linux-kernel@vger.kernel.org, linux-pci@atrey.karlin.mff.cuni.cz,
+       linux-acpi@vger.kernel.org
+Subject: Re: [PATCH 4/4] ACPI PCI slot detection driver
+Message-ID: <20080301144307.GD24386@parisc-linux.org>
+References: <20080229002341.GA21420@ldl.fc.hp.com> <20080229002938.GE21420@ldl.fc.hp.com> <20080301052542.GD19353@suse.de>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="ansi_x3.4-1968"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200803010939.00229.edt@aei.ca>
+In-Reply-To: <20080301052542.GD19353@suse.de>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On March 1, 2008, Thomas Gleixner wrote:
-> On Sat, 1 Mar 2008, Ed Tomlinson wrote:
-> > Hi,
-> > 
-> > I have been seeing these since I installed .24 kernels.  It does not seem to matter if I change the clocksource from tsc
-> > to apci_pm.  Its happened with all .24 kernels I have tried starting with stock 2.6.24 upto 2.6.24-gentoo-r2 + 2.6.24-3
-> > 
-> > Ideas?
-> 
-> Questions first. Is there a particular reason to use idle=poll ?
+On Fri, Feb 29, 2008 at 09:25:42PM -0800, Greg KH wrote:
+> What is the guarantee that the names of these slots are correct and do
+> not happen to be the same as the hotpluggable ones?
 
-For another issue Ingo suggested using 'nmi_watchdog=2 idle=poll' to get the nmi_watchdog working.  I can remove it
-if you think it will help.
+That would be a bug -- and yes, bugs happen, and we have to deal with
+them.
 
-> Idea: does the patch below help ?
+> Why show this information on machines that can not do anything with
+> these slots at all?  Will that not just confuse people?
 
-I'm rebuilding any will let you know.  It may take a while to trigger.
+Only for people who think that /sys/bus/pci/slots/ is for hotpluggable
+slots only.  There is plenty of useful information available for slots
+that aren't hotpluggable (eg bus address, speed, width, error status).
 
-Thanks for the prompt response!
-Ed
-
-> Thanks,
-> 	tglx
-> 
-> ---
-> 
->  arch/x86/kernel/process_64.c |    3 +--
->  1 file changed, 1 insertion(+), 2 deletions(-)
-> 
-> Index: linux-2.6.24/arch/x86/kernel/process_64.c
-> ===================================================================
-> --- linux-2.6.24.orig/arch/x86/kernel/process_64.c
-> +++ linux-2.6.24/arch/x86/kernel/process_64.c
-> @@ -212,14 +212,13 @@ void cpu_idle (void)
->  	current_thread_info()->status |= TS_POLLING;
->  	/* endless idle loop with no priority at all */
->  	while (1) {
-> +		tick_nohz_stop_sched_tick();
->  		while (!need_resched()) {
->  			void (*idle)(void);
->  
->  			if (__get_cpu_var(cpu_idle_state))
->  				__get_cpu_var(cpu_idle_state) = 0;
->  
-> -			tick_nohz_stop_sched_tick();
-> -
->  			rmb();
->  			idle = pm_idle;
->  			if (!idle)
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
-> 
-> 
-
-
+-- 
+Intel are signing my paycheques ... these opinions are still mine
+"Bill, look, we understand that you're interested in selling us this
+operating system, but compare it to ours.  We can't possibly take such
+a retrograde step."
