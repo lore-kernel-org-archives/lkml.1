@@ -1,40 +1,111 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762122AbYCAGZl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756172AbYCAHDV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762122AbYCAGZl (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 1 Mar 2008 01:25:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761533AbYCAGZK
+	id S1756172AbYCAHDV (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 1 Mar 2008 02:03:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751874AbYCAHDE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 1 Mar 2008 01:25:10 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:50820 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756357AbYCAGZJ (ORCPT
+	Sat, 1 Mar 2008 02:03:04 -0500
+Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:32924 "EHLO
+	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751586AbYCAHCs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 1 Mar 2008 01:25:09 -0500
-Date: Fri, 29 Feb 2008 22:02:36 -0800
-From: Greg KH <greg@kroah.com>
-To: Yinghai Lu <Yinghai.Lu@Sun.COM>
-Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] x86 pci: remove checking type for mmconfig probe v2
-Message-ID: <20080301060236.GE20032@kroah.com>
-References: <200802271639.52958.yinghai.lu@sun.com> <200802282356.50496.yinghai.lu@sun.com>
+	Sat, 1 Mar 2008 02:02:48 -0500
+Date: Sat, 01 Mar 2008 16:02:04 +0900
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: Andy Whitcroft <apw@shadowen.org>
+Subject: Re: [patch 03/21] use an array for the LRU pagevecs
+Cc: kosaki.motohiro@jp.fujitsu.com, Rik van Riel <riel@redhat.com>,
+       linux-kernel@vger.kernel.org,
+       Lee Schermerhorn <Lee.Schermerhorn@hp.com>, linux-mm@kvack.org
+In-Reply-To: <20080229154056.GF28849@shadowen.org>
+References: <20080228192928.165393706@redhat.com> <20080229154056.GF28849@shadowen.org>
+Message-Id: <20080301153941.528A.KOSAKI.MOTOHIRO@jp.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200802282356.50496.yinghai.lu@sun.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+Content-Type: text/plain; charset="US-ASCII"
+Content-Transfer-Encoding: 7bit
+X-Mailer: Becky! ver. 2.42 [ja]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Feb 28, 2008 at 11:56:50PM -0800, Yinghai Lu wrote:
+Hi Andy
+
+sorry, almost mistake maked by me. 
+
+> >  #define for_each_lru(l) for (l = 0; l < NR_LRU_LISTS; l++)
+> >  
+> > +static inline int is_active_lru(enum lru_list l)
+> > +{
+> > +	if (l == LRU_ACTIVE)
+> > +		return 1;
+> > +	return 0;
 > 
-> doesn't need to check if it is type1 or type2. we can use raw_pci_ops dirctly.
+> Can this not be:
+> 
+> 	return (l == LRU_ACTIVE);
 
-Why?  is this because the ops are already set up?  It would be nice to
-add the "why this change is necessary and/or possible now" for the
-changelog.
+yes, your code is more better.
 
-thanks,
+Thanks.
 
-greg k-h
+
+> > @@ -98,6 +97,19 @@ void put_pages_list(struct list_head *pa
+> >  EXPORT_SYMBOL(put_pages_list);
+> >  
+> >  /*
+> > + * Returns the LRU list a page should be on.
+> > + */
+> > +enum lru_list page_lru(struct page *page)
+> > +{
+> > +	enum lru_list lru = LRU_BASE;
+> > +
+> > +	if (PageActive(page))
+> > +		lru += LRU_ACTIVE;
+> 
+> This is introducing an assumption that LRU_BASE and LRU_INACTIVE are
+> synonymous?  Would it not be better to explicitly use LRU_INACTIVE:
+
+Yes.
+this patch series assume LRU_BASE == LRU_INACTIVE.
+
+> So either:
+> 
+> 	if (PageActive(page))
+> 		lru = LRU_ACTIVE;
+> 	else
+> 		lru = LRU_INACTIVE;
+
+if add LRU_FILE, this statement makes messy.
+key point of indexed arraynize is able to arithmetic calculationed.
+
+
+> Or if (as I assume) this is later going to have other mappings added in
+> you could do it more like the following.  This should produce identicle
+> asm, but removes any possiblity of LRU_BASE/INACTIVE slippage breaking
+> things:
+> 
+> 	enum lru_list lru = LRU_INACTIVE;
+> 
+> 	if (PageActive(page))
+> 		lru += (LRU_ACTIVE - LRU_INACTIVE);
+
+I think your code is more descriptive, but not best simply.
+I think LRU_BASE == LRU_INACTIVE assumption make simply code.
+
+> > -	struct pagevec *pvec = &get_cpu_var(lru_add_active_pvecs);
+> > +	if (PageActive(page)) {
+> > +		ClearPageActive(page);
+> > +	}
+> 
+> {}'s are not needed here.
+
+agghh
+thank you good catch ;)
+
+
+Thank you again for your very careful reviews.
+
+
+- kosaki
+
+
