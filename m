@@ -1,25 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762007AbYCAJBw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761434AbYCAJCl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762007AbYCAJBw (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 1 Mar 2008 04:01:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756371AbYCAI7W
+	id S1761434AbYCAJCl (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 1 Mar 2008 04:02:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756775AbYCAI70
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 1 Mar 2008 03:59:22 -0500
-Received: from nf-out-0910.google.com ([64.233.182.191]:64804 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754957AbYCAI7P (ORCPT
+	Sat, 1 Mar 2008 03:59:26 -0500
+Received: from fk-out-0910.google.com ([209.85.128.190]:13216 "EHLO
+	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756248AbYCAI7V (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 1 Mar 2008 03:59:15 -0500
+	Sat, 1 Mar 2008 03:59:21 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=googlemail.com; s=gamma;
         h=to:cc:subject:date:message-id:x-mailer:in-reply-to:references:from;
-        b=WBUvGLw3Uwm76n2Idequ6HqE1BHnlVnpyYEc/e+eNLv8Ski9X+8C4jHfou3sElU3S7IAohcnSNTtKv0cmtMcks+XMV732VMSp92RuZB/clrdQnXHiy4isBD+4lbxRyJkmRdLLEaIxJgJgigvbPXAap++q5YEa7f+RyiXQ3Xayrk=
+        b=PncNDGH0MQvlX9Xxmjc3tycWdDxueQAZ2G4ttYpd6ElbJr8cWLjsWtiTKWNkQ1VEY1LTDyIcK6wJz+r0S555csO6nCxCK57DUWo5cMSasIJ0W6BRcA4Hcc7DGzIhte4ZozWWS6ttHg8Xlv86FeCAEhXtHlFBxrOnyqY5Cyo6Hsk=
 To: <bzolnier@gmail.com>
 Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org,
        Borislav Petkov <petkovbb@gmail.com>
-Subject: [RFCPATCH 10/24] ide-tape: remove pipeline-specific code from idetape_chrdev_ioctl
-Date: Sat,  1 Mar 2008 09:58:34 +0100
-Message-Id: <1204361928-30229-11-git-send-email-petkovbb@gmail.com>
+Subject: [PATCH 24/24] ide-tape: remove comments markup from Documentation/ide/ide-tape.txt
+Date: Sat,  1 Mar 2008 09:58:48 +0100
+Message-Id: <1204361928-30229-25-git-send-email-petkovbb@gmail.com>
 X-Mailer: git-send-email 1.5.4.1
 In-Reply-To: <1204361928-30229-1-git-send-email-petkovbb@gmail.com>
 References: <1204361928-30229-1-git-send-email-petkovbb@gmail.com>
@@ -28,95 +28,148 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The function used to compute the block_offset in order to write it
-into mtget.mt_blkno, among others, by going over the stages still
-present in the pipeline and adding the sectors left to submit in each
-request. This was being done in idetape_pipeline_size() so remove it.
-Since we do non-pipelined operation only, compute the offset now
-from the sectors left to submit in the currently active request.
-
 Signed-off-by: Borislav Petkov <petkovbb@gmail.com>
 ---
- drivers/ide/ide-tape.c |   39 +++++++++------------------------------
- 1 files changed, 9 insertions(+), 30 deletions(-)
+ Documentation/ide/ide-tape.txt |  132 ++++++++++++++++++++--------------------
+ 1 files changed, 65 insertions(+), 67 deletions(-)
 
-diff --git a/drivers/ide/ide-tape.c b/drivers/ide/ide-tape.c
-index dd11c7b..447b7b4 100644
---- a/drivers/ide/ide-tape.c
-+++ b/drivers/ide/ide-tape.c
-@@ -2353,27 +2353,6 @@ static void idetape_pad_zeros(ide_drive_t *drive, int bcount)
- 	}
- }
- 
--static int idetape_pipeline_size(ide_drive_t *drive)
--{
--	idetape_tape_t *tape = drive->driver_data;
--	idetape_stage_t *stage;
--	struct request *rq;
--	int size = 0;
--
--	idetape_wait_for_pipeline(drive);
--	stage = tape->first_stage;
--	while (stage != NULL) {
--		rq = &stage->rq;
--		size += tape->blk_size * (rq->nr_sectors -
--				rq->current_nr_sectors);
--		if (rq->errors == IDETAPE_ERROR_FILEMARK)
--			size += tape->blk_size;
--		stage = stage->next;
--	}
--	size += tape->merge_stage_size;
--	return size;
--}
--
- /*
-  * Rewinds the tape to the Beginning Of the current Partition (BOP). We
-  * currently support only one partition.
-@@ -2779,7 +2758,7 @@ static int idetape_mtioctop(ide_drive_t *drive, short mt_op, int mt_count)
- 
- /*
-  * Our character device ioctls. General mtio.h magnetic io commands are
-- * supported here, and not in the corresponding block interface. Our own
-+ * supported here and not in the corresponding block interface. Our own
-  * ide-tape ioctls are supported on both interfaces.
-  */
- static int idetape_chrdev_ioctl(struct inode *inode, struct file *file,
-@@ -2795,18 +2774,20 @@ static int idetape_chrdev_ioctl(struct inode *inode, struct file *file,
- 
- 	debug_log(DBG_CHRDEV, "Enter %s, cmd=%u\n", __func__, cmd);
- 
--	tape->restart_speed_control_req = 1;
--	if (tape->chrdev_dir == IDETAPE_DIR_WRITE) {
--		idetape_empty_write_pipeline(drive);
-+	if (tape->chrdev_dir == IDETAPE_DIR_WRITE)
- 		idetape_flush_tape_buffers(drive);
--	}
+diff --git a/Documentation/ide/ide-tape.txt b/Documentation/ide/ide-tape.txt
+index 51f596b..3f348a0 100644
+--- a/Documentation/ide/ide-tape.txt
++++ b/Documentation/ide/ide-tape.txt
+@@ -1,67 +1,65 @@
+-/*
+- * IDE ATAPI streaming tape driver.
+- *
+- * This driver is a part of the Linux ide driver.
+- *
+- * The driver, in co-operation with ide.c, basically traverses the
+- * request-list for the block device interface. The character device
+- * interface, on the other hand, creates new requests, adds them
+- * to the request-list of the block device, and waits for their completion.
+- *
+- * The block device major and minor numbers are determined from the
+- * tape's relative position in the ide interfaces, as explained in ide.c.
+- *
+- * The character device interface consists of the following devices:
+- *
+- * ht0		major 37, minor 0	first  IDE tape, rewind on close.
+- * ht1		major 37, minor 1	second IDE tape, rewind on close.
+- * ...
+- * nht0		major 37, minor 128	first  IDE tape, no rewind on close.
+- * nht1		major 37, minor 129	second IDE tape, no rewind on close.
+- * ...
+- *
+- * The general magnetic tape commands compatible interface, as defined by
+- * include/linux/mtio.h, is accessible through the character device.
+- *
+- * General ide driver configuration options, such as the interrupt-unmask
+- * flag, can be configured by issuing an ioctl to the block device interface,
+- * as any other ide device.
+- *
+- * Our own ide-tape ioctl's can be issued to either the block device or
+- * the character device interface.
+- *
+- * Maximal throughput with minimal bus load will usually be achieved in the
+- * following scenario:
+- *
+- *	1.	ide-tape is operating in the pipelined operation mode.
+- *	2.	No buffering is performed by the user backup program.
+- *
+- * Testing was done with a 2 GB CONNER CTMA 4000 IDE ATAPI Streaming Tape Drive.
+- *
+- * Here are some words from the first releases of hd.c, which are quoted
+- * in ide.c and apply here as well:
+- *
+- * | Special care is recommended.  Have Fun!
+- *
+- *	Possible improvements.
+- *
+- *	1.	Support for the ATAPI overlap protocol.
+- *
+- *		In order to maximize bus throughput, we currently use the DSC
+- *		overlap method which enables ide.c to service requests from the
+- *		other device while the tape is busy executing a command. The
+- *		DSC overlap method involves polling the tape's status register
+- *		for the DSC bit, and servicing the other device while the tape
+- *		isn't ready.
+- *
+- *		In the current QIC development standard (December 1995),
+- *		it is recommended that new tape drives will *in addition*
+- *		implement the ATAPI overlap protocol, which is used for the
+- *		same purpose - efficient use of the IDE bus, but is interrupt
+- *		driven and thus has much less CPU overhead.
+- *
+- *		ATAPI overlap is likely to be supported in most new ATAPI
+- *		devices, including new ATAPI cdroms, and thus provides us
+- *		a method by which we can achieve higher throughput when
+- *		sharing a (fast) ATA-2 disk with any (slow) new ATAPI device.
+- */
++IDE ATAPI streaming tape driver.
 +
- 	if (cmd == MTIOCGET || cmd == MTIOCPOS) {
--		block_offset = idetape_pipeline_size(drive) /
--			(tape->blk_size * tape->user_bs_factor);
-+		struct request *rq = tape->active_data_rq;
++This driver is a part of the Linux ide driver.
 +
-+		block_offset = (rq->nr_sectors - rq->current_nr_sectors) /
-+			       (tape->blk_size * tape->user_bs_factor);
++The driver, in co-operation with ide.c, basically traverses the
++request-list for the block device interface. The character device
++interface, on the other hand, creates new requests, adds them
++to the request-list of the block device, and waits for their completion.
 +
- 		position = idetape_read_position(drive);
- 		if (position < 0)
- 			return -EIO;
- 	}
++The block device major and minor numbers are determined from the
++tape's relative position in the ide interfaces, as explained in ide.c.
 +
- 	switch (cmd) {
- 	case MTIOCTOP:
- 		if (copy_from_user(&mtop, argp, sizeof(struct mtop)))
-@@ -2832,8 +2813,6 @@ static int idetape_chrdev_ioctl(struct inode *inode, struct file *file,
- 			return -EFAULT;
- 		return 0;
- 	default:
--		if (tape->chrdev_dir == IDETAPE_DIR_READ)
--			idetape_discard_read_pipeline(drive, 1);
- 		return idetape_blkdev_ioctl(drive, cmd, arg);
- 	}
- }
++The character device interface consists of the following devices:
++
++ht0		major 37, minor 0	first  IDE tape, rewind on close.
++ht1		major 37, minor 1	second IDE tape, rewind on close.
++...
++nht0		major 37, minor 128	first  IDE tape, no rewind on close.
++nht1		major 37, minor 129	second IDE tape, no rewind on close.
++...
++
++The general magnetic tape commands compatible interface, as defined by
++include/linux/mtio.h, is accessible through the character device.
++
++General ide driver configuration options, such as the interrupt-unmask
++flag, can be configured by issuing an ioctl to the block device interface,
++as any other ide device.
++
++Our own ide-tape ioctl's can be issued to either the block device or
++the character device interface.
++
++Maximal throughput with minimal bus load will usually be achieved in the
++following scenario:
++
++     1.	ide-tape is operating in the pipelined operation mode.
++     2.	No buffering is performed by the user backup program.
++
++Testing was done with a 2 GB CONNER CTMA 4000 IDE ATAPI Streaming Tape Drive.
++
++Here are some words from the first releases of hd.c, which are quoted
++in ide.c and apply here as well:
++
++| Special care is recommended.  Have Fun!
++
++Possible improvements:
++
++1. Support for the ATAPI overlap protocol.
++
++In order to maximize bus throughput, we currently use the DSC
++overlap method which enables ide.c to service requests from the
++other device while the tape is busy executing a command. The
++DSC overlap method involves polling the tape's status register
++for the DSC bit, and servicing the other device while the tape
++isn't ready.
++
++In the current QIC development standard (December 1995),
++it is recommended that new tape drives will *in addition*
++implement the ATAPI overlap protocol, which is used for the
++same purpose - efficient use of the IDE bus, but is interrupt
++driven and thus has much less CPU overhead.
++
++ATAPI overlap is likely to be supported in most new ATAPI
++devices, including new ATAPI cdroms, and thus provides us
++a method by which we can achieve higher throughput when
++sharing a (fast) ATA-2 disk with any (slow) new ATAPI device.
 -- 
 1.5.4.1
 
