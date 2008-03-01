@@ -1,69 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757214AbYCARHi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757388AbYCARWl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757214AbYCARHi (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 1 Mar 2008 12:07:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752472AbYCARH3
+	id S1757388AbYCARWl (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 1 Mar 2008 12:22:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754667AbYCARWb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 1 Mar 2008 12:07:29 -0500
-Received: from mga02.intel.com ([134.134.136.20]:2192 "EHLO mga02.intel.com"
+	Sat, 1 Mar 2008 12:22:31 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:34405 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752030AbYCARH2 convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 1 Mar 2008 12:07:28 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.25,432,1199692800"; 
-   d="scan'208";a="348309026"
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="US-ASCII"
-Content-Transfer-Encoding: 8BIT
-Subject: CLONE_NEWNS and bind mounts to make "chroot" jail
-Date: Sat, 1 Mar 2008 09:05:18 -0800
-Message-ID: <645B0EE4078B7C49A6C12F5E7B3B6C2603D3D607@orsmsx418.amr.corp.intel.com>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: CLONE_NEWNS and bind mounts to make "chroot" jail
-thread-index: Ach7vm0Hz/4QqS9NQ7OQ6d8lqCgz2g==
-From: "Leibowitz, Michael" <michael.leibowitz@intel.com>
-To: <linux-kernel@vger.kernel.org>
-X-OriginalArrivalTime: 01 Mar 2008 17:05:19.0272 (UTC) FILETIME=[6D97B280:01C87BBE]
+	id S1754556AbYCARWa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 1 Mar 2008 12:22:30 -0500
+Date: Sat, 1 Mar 2008 12:21:56 -0500
+From: Rik van Riel <riel@redhat.com>
+To: Christoph Lameter <clameter@sgi.com>
+Cc: linux-kernel@vger.kernel.org, Mel Gorman <mel@csn.ul.ie>,
+       Nick Piggin <npiggin@suse.de>,
+       Andrew Morton <akpm@linux-foundation.org>, apw@shadowen.org,
+       linux-mm@kback.org
+Subject: Re: [rfc 10/10] Pageflags land grab
+Message-ID: <20080301122156.5994b949@bree.surriel.com>
+In-Reply-To: <20080301040622.220638278@sgi.com>
+References: <20080301040534.797979115@sgi.com>
+	<20080301040622.220638278@sgi.com>
+Organization: Red Hat, Inc.
+X-Mailer: Claws Mail 3.0.2 (GTK+ 2.10.4; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I have been trying to use the combination of CLONE_NEWNS and bind mounts
-to create a better (than) chroot jail.  I wish to have the ability to
-bind (ro will be possible in the future, I understand) certain
-directories into the jail (perhaps /bin, /lib, /usr), but not have
-parallel directories in the jail (no /etc, ..., /home). 
+On Fri, 29 Feb 2008 20:05:44 -0800
+Christoph Lameter <clameter@sgi.com> wrote:
 
-I have heard that this should be possible, but have yet to get a working
-solution.
+> We have enough page flags after vmemmap no longer uses section ids.
+> 
+> Reserve 5 of the 6 saved flags for functionality that is currently
+> under development in the VM.
+> 
+> The new flags are only available if either of these conditions are met:
+> 
+> 1. 64 Bit system. (then we have 8 more free of the 32)
+> 
+> 2. !NUMA. In that case 2 bits are needed for the zone
+>    id which leaves 30 page flag bits. Of those we use 24. 6 left.
+> 
+> 3. !SPARSEMEM. In that case we use 5 bits of the 30 available
+>    for the node. 1 leftover.
+> 
+> 4. SPARSEMEM_VMEMMAP. Case 3 applies.
 
-I have tried something analogous to:
-chdir("/jail");
-unshare(CLONE_NEWNS);
-/* mount(8) syntax given for simplicity, but mount(2) used below */
-mount --bind / /jail/old_root
-mount --bind /jail/old_root/bin /jail/bin
-mount --bind /jail/old_root/usr /jail/usr
-mount --bind /jail/old_root/lib /jail/lib
-mount --bind /jail /               # does nothing?
-umount2("/old_root", MNT_DETACH);  # never happens.
-exec("bin/sh");
+Nice!  I like your patch series.
 
-When bin/sh runs, I can still see old_root from /jail and the bind of
-/jail over / seems to have not done anything.  
-
-Is it possible to create such a jail with bind mounts?  Is there a
-recommended method for doing so?  Thank you for your time.
-
---
-Michael Leibowitz
-Software Engineer, UMG
-Intel Corporation
-michael.leibowitz at intel.com
-
-
+-- 
+All rights reversed.
