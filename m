@@ -1,63 +1,180 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761894AbYCAVDU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762261AbYCAVEt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761894AbYCAVDU (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 1 Mar 2008 16:03:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758455AbYCAVDN
+	id S1762261AbYCAVEt (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 1 Mar 2008 16:04:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758455AbYCAVEl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 1 Mar 2008 16:03:13 -0500
-Received: from adsl-67-120-171-161.dsl.lsan03.pacbell.net ([67.120.171.161]:44027
-	"HELO linuxace.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1758354AbYCAVDM (ORCPT
+	Sat, 1 Mar 2008 16:04:41 -0500
+Received: from lvps87-230-0-242.dedicated.hosteurope.de ([87.230.0.242]:45836
+	"EHLO lvps87-230-0-242.dedicated.hosteurope.de" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1757598AbYCAVEl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 1 Mar 2008 16:03:12 -0500
-Date: Sat, 1 Mar 2008 13:03:11 -0800
-From: Phil Oester <kernel@linuxace.com>
-To: Clem Taylor <clem.taylor@gmail.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: e1000 driver not loading in 2.6.24.3 on x86_64 (worked in 2.6.24-rc7)
-Message-ID: <20080301210311.GA10273@linuxace.com>
-References: <ecb4efd10803011242w3874d27eyb1afaea06766bdbf@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <ecb4efd10803011242w3874d27eyb1afaea06766bdbf@mail.gmail.com>
-User-Agent: Mutt/1.4.2.2i
+	Sat, 1 Mar 2008 16:04:41 -0500
+X-Greylist: delayed 400 seconds by postgrey-1.27 at vger.kernel.org; Sat, 01 Mar 2008 16:04:40 EST
+Mime-Version: 1.0 (Apple Message framework v753)
+To: linux-kernel@vger.kernel.org
+Message-Id: <8900A36F-F8C4-4DB5-9842-E372312F8886@it-loops.com>
+Content-Type: multipart/signed; micalg=sha1; boundary=Apple-Mail-1-612093164; protocol="application/pkcs7-signature"
+From: Michael Guntsche <mike@it-loops.com>
+Subject: Strange RAID-5 rebuild problem
+Date: Sat, 1 Mar 2008 21:57:55 +0100
+X-Mailer: Apple Mail (2.753)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Mar 01, 2008 at 03:42:58PM -0500, Clem Taylor wrote:
-> I'm trying to move from 2.6.24-rc7 to 2.6.24.3 on a x86_64 desktop
-> machine. With 2.6.24.3, the e1000 driver (compiled in, not a module)
-> does not claim the device. In 2.6.24-rc7 it works just fine.
-> 
-> The ethernet device shows up in lspci in both kernels, but the driver
-> doesn't seem to probe the card in 2.6.24.3
-> 
-> 2.6.24-rc7:
-> loop: module loaded
-> Intel(R) PRO/1000 Network Driver - version 7.3.20-k2
-> Copyright (c) 1999-2006 Intel Corporation.
-> ACPI: PCI Interrupt 0000:04:00.0[A] -> GSI 17 (level, low) -> IRQ 17
-> PCI: Setting latency timer of device 0000:04:00.0 to 64
-> e1000: 0000:04:00.0: e1000_probe: (PCI Express:2.5Gb/s:Width x1) 00:16:76:c9:33>
-> e1000: eth0: e1000_probe: Intel(R) PRO/1000 Network Connection
 
-Note the difference between the above line start (e1000)
-and this one:
+--Apple-Mail-1-612093164
+Content-Transfer-Encoding: 7bit
+Content-Type: text/plain;
+	charset=US-ASCII;
+	delsp=yes;
+	format=flowed
 
-> e1000e: Intel(R) PRO/1000 Network Driver - 0.2.0
-> e1000e: Copyright (c) 1999-2007 Intel Corporation.
+Ok, after going through benchmarking for the last few days, I now  
+started acutally deploying the system.
 
-> 2.6.24.3:
-> loop: module loaded
+I created a RAID-5 with a 1.0 superblock and let the RAID resync.
+I had to reboot the computer for another update and did not think  
+about thw rebuilding process since it should continue just fine after  
+a restart. After a reboot I noticed that the RAID was in the  
+following state.
 
-And note the absence of e1000 here:
+/dev/md1:
+         Version : 01.00.03
+   Creation Time : Sat Mar  1 21:42:18 2008
+      Raid Level : raid5
+      Array Size : 1464982272 (1397.12 GiB 1500.14 GB)
+   Used Dev Size : 976654848 (465.71 GiB 500.05 GB)
+    Raid Devices : 4
+   Total Devices : 4
+Preferred Minor : 1
+     Persistence : Superblock is persistent
 
-> e1000e: Intel(R) PRO/1000 Network Driver - 0.2.0
-> e1000e: Copyright (c) 1999-2007 Intel Corporation.
-> Uniform Multi-Platform E-IDE driver Revision: 7.00alpha2
+     Update Time : Sat Mar  1 21:50:19 2008
+           State : clean, degraded
+  Active Devices : 3
+Working Devices : 4
+  Failed Devices : 0
+   Spare Devices : 1
 
-In other words, you need the e1000 driver but don't have it.
+          Layout : left-symmetric
+      Chunk Size : 256K
 
-Phil
+            Name : gibson:1  (local to host gibson)
+            UUID : 80b0698e:d7c76d22:e231f03e:d25feba2
+          Events : 32
+
+     Number   Major   Minor   RaidDevice State
+        0       8        2        0      active sync   /dev/sda2
+        1       8       18        1      active sync   /dev/sdb2
+        2       8       34        2      active sync   /dev/sdc2
+        4       8       50        3      spare rebuilding   /dev/sdd2
+
+mdadm -E /dev/sdd2:
+
+/dev/sdd2:
+           Magic : a92b4efc
+         Version : 1.0
+     Feature Map : 0x2
+      Array UUID : 80b0698e:d7c76d22:e231f03e:d25feba2
+            Name : gibson:1  (local to host gibson)
+   Creation Time : Sat Mar  1 21:42:18 2008
+      Raid Level : raid5
+    Raid Devices : 4
+
+  Avail Dev Size : 976655336 (465.71 GiB 500.05 GB)
+      Array Size : 2929964544 (1397.12 GiB 1500.14 GB)
+   Used Dev Size : 976654848 (465.71 GiB 500.05 GB)
+    Super Offset : 976655592 sectors
+Recovery Offset : 973312 sectors
+           State : clean
+     Device UUID : 5d6d28dd:c1d4d59d:3617c511:267c47f6
+
+     Update Time : Sat Mar  1 21:55:44 2008
+        Checksum : a1ca2174 - correct
+          Events : 52
+
+          Layout : left-symmetric
+      Chunk Size : 256K
+
+     Array Slot : 4 (0, 1, 2, failed, 3)
+    Array State : uuuU 1 failed
+
+
+
+
+/proc/mdstat showed now progress bar though. Ok, since he seems stuck  
+I thought, why not just mark sdd2 as failed.
+I was able to mark it as failed but looking at the detail again I saw  
+"spare rebuilding" and I could not remove it.
+Next I tried a fail/remove which also did not work. I stopped the  
+array started it again, and THEN it removed the disk.
+I tried this several times, the same result every time.
+
+Just for kicks I created the RAID with a 0.90 superblock and tried  
+the same thing. Lo and behold after stopping the array and starting  
+it again the progress bar showed up and everything started rebuilding  
+where it stopped earlier.
+
+Is this "normal" or is this a superblock 1.0 related problem?
+
+Current kernel is 2.6.24.2, mdadm is v2.6.4 from debian unstable.
+
+I do not need the RAID right now so I could run some tests on it if  
+someone wants me too.
+
+Kind regards,
+Michael
+--Apple-Mail-1-612093164
+Content-Transfer-Encoding: base64
+Content-Type: application/pkcs7-signature;
+	name=smime.p7s
+Content-Disposition: attachment;
+	filename=smime.p7s
+
+MIAGCSqGSIb3DQEHAqCAMIACAQExCzAJBgUrDgMCGgUAMIAGCSqGSIb3DQEHAQAAoIIGIzCCAtww
+ggJFoAMCAQICEBd4Zp9b22liUjK/V/e8ZTUwDQYJKoZIhvcNAQEFBQAwYjELMAkGA1UEBhMCWkEx
+JTAjBgNVBAoTHFRoYXd0ZSBDb25zdWx0aW5nIChQdHkpIEx0ZC4xLDAqBgNVBAMTI1RoYXd0ZSBQ
+ZXJzb25hbCBGcmVlbWFpbCBJc3N1aW5nIENBMB4XDTA3MTAzMTE2MDMwMVoXDTA4MTAzMDE2MDMw
+MVowQzEfMB0GA1UEAxMWVGhhd3RlIEZyZWVtYWlsIE1lbWJlcjEgMB4GCSqGSIb3DQEJARYRbWlr
+ZUBpdC1sb29wcy5jb20wggEiMA0GCSqGSIb3DQEBAQUAA4IBDwAwggEKAoIBAQC/D9ePLG2ZNk/Z
+NXTRfUq7Rs+3k5M/nqmZ8riQYRnt8sCTj6o/fPS4qjaDf9jRfgbxViROiShFWMoBNJkKg91doJFk
+FYdive8ujFfKpPR6FVGu8rN/sHUZM/gowZUcqDyIMAJVr7iiWhQYxP3U4hmprJsmUaGkjBU37Bcw
+vJnEZ4gDCgYiZLiHUACDDfsl2xl5r6XvtXV9TsjWA3eQSeju68nQFP0PjFU+UtYfr3z1nFMJpuzE
+xStjCEZ+EkYBOHK+RmBaOLEfF2Rq8175oaX5ScotY61s7wjADYesS//bvdcZ11jf/R+UCE90p8iC
+Y1TjqqRv+zMc+VpyfG1dt9ELAgMBAAGjLjAsMBwGA1UdEQQVMBOBEW1pa2VAaXQtbG9vcHMuY29t
+MAwGA1UdEwEB/wQCMAAwDQYJKoZIhvcNAQEFBQADgYEAgVh3S3v4j1ydxqgc/DWXcO5RRnyfLTjU
+bJwYwTdaQVuykeXrT+2ITDIpOpVEqZ7xV/N9aKMM/izyQ8oMvw/J13TUm1N77kNCp5jYy1S+Ntuz
+bCdOdFVA5tFVn/nMfmK1Is6NjK+0GmryYPEpn8vaP9ZGy57wCpKZrwmytgm3oPQwggM/MIICqKAD
+AgECAgENMA0GCSqGSIb3DQEBBQUAMIHRMQswCQYDVQQGEwJaQTEVMBMGA1UECBMMV2VzdGVybiBD
+YXBlMRIwEAYDVQQHEwlDYXBlIFRvd24xGjAYBgNVBAoTEVRoYXd0ZSBDb25zdWx0aW5nMSgwJgYD
+VQQLEx9DZXJ0aWZpY2F0aW9uIFNlcnZpY2VzIERpdmlzaW9uMSQwIgYDVQQDExtUaGF3dGUgUGVy
+c29uYWwgRnJlZW1haWwgQ0ExKzApBgkqhkiG9w0BCQEWHHBlcnNvbmFsLWZyZWVtYWlsQHRoYXd0
+ZS5jb20wHhcNMDMwNzE3MDAwMDAwWhcNMTMwNzE2MjM1OTU5WjBiMQswCQYDVQQGEwJaQTElMCMG
+A1UEChMcVGhhd3RlIENvbnN1bHRpbmcgKFB0eSkgTHRkLjEsMCoGA1UEAxMjVGhhd3RlIFBlcnNv
+bmFsIEZyZWVtYWlsIElzc3VpbmcgQ0EwgZ8wDQYJKoZIhvcNAQEBBQADgY0AMIGJAoGBAMSmPFVz
+VftOucqZWh5owHUEcJ3f6f+jHuy9zfVb8hp2vX8MOmHyv1HOAdTlUAow1wJjWiyJFXCO3cnwK4Va
+qj9xVsuvPAsH5/EfkTYkKhPPK9Xzgnc9A74r/rsYPge/QIACZNenprufZdHFKlSFD0gEf6e20Txh
+BEAeZBlyYLf7AgMBAAGjgZQwgZEwEgYDVR0TAQH/BAgwBgEB/wIBADBDBgNVHR8EPDA6MDigNqA0
+hjJodHRwOi8vY3JsLnRoYXd0ZS5jb20vVGhhd3RlUGVyc29uYWxGcmVlbWFpbENBLmNybDALBgNV
+HQ8EBAMCAQYwKQYDVR0RBCIwIKQeMBwxGjAYBgNVBAMTEVByaXZhdGVMYWJlbDItMTM4MA0GCSqG
+SIb3DQEBBQUAA4GBAEiM0VCD6gsuzA2jZqxnD3+vrL7CF6FDlpSdf0whuPg2H6otnzYvwPQcUCCT
+cDz9reFhYsPZOhl+hLGZGwDFGguCdJ4lUJRix9sncVcljd2pnDmOjCBPZV+V2vf3h9bGCE6u9uo0
+5RAaWzVNd+NWIXiC3CEZNd4ksdMdRv9dX2VPMYIDEDCCAwwCAQEwdjBiMQswCQYDVQQGEwJaQTEl
+MCMGA1UEChMcVGhhd3RlIENvbnN1bHRpbmcgKFB0eSkgTHRkLjEsMCoGA1UEAxMjVGhhd3RlIFBl
+cnNvbmFsIEZyZWVtYWlsIElzc3VpbmcgQ0ECEBd4Zp9b22liUjK/V/e8ZTUwCQYFKw4DAhoFAKCC
+AW8wGAYJKoZIhvcNAQkDMQsGCSqGSIb3DQEHATAcBgkqhkiG9w0BCQUxDxcNMDgwMzAxMjA1NzU2
+WjAjBgkqhkiG9w0BCQQxFgQURSeQq15gKciLm5B6qqD8pWK2nT0wgYUGCSsGAQQBgjcQBDF4MHYw
+YjELMAkGA1UEBhMCWkExJTAjBgNVBAoTHFRoYXd0ZSBDb25zdWx0aW5nIChQdHkpIEx0ZC4xLDAq
+BgNVBAMTI1RoYXd0ZSBQZXJzb25hbCBGcmVlbWFpbCBJc3N1aW5nIENBAhAXeGafW9tpYlIyv1f3
+vGU1MIGHBgsqhkiG9w0BCRACCzF4oHYwYjELMAkGA1UEBhMCWkExJTAjBgNVBAoTHFRoYXd0ZSBD
+b25zdWx0aW5nIChQdHkpIEx0ZC4xLDAqBgNVBAMTI1RoYXd0ZSBQZXJzb25hbCBGcmVlbWFpbCBJ
+c3N1aW5nIENBAhAXeGafW9tpYlIyv1f3vGU1MA0GCSqGSIb3DQEBAQUABIIBAKpJQ1/usuENH+zC
+HTcCVtZJcSfLh8SfMjB2WsHgfRtinJoPn9XdfmBbeIuReNGekp6PSGOn55oD96/6ZCywZH13d51u
+0UfMWPYyDg4rzsYT/l6vTJ8wpznLqf6Ng4hJYwU0015pR1yimnlRruUagYfL29v3tYXROEHt/20c
+hszPMlBYwgg80ZpZqMwlQYTagjFAOb3bPQuEPBSlbOgcNhPd3ePjyBcTpitRyMI01ItaGT6yfllt
+byX837XNu7sb4Yqy+24+HOoQilHofj7TanXCixwt/M04jG6Ds0nzRRfbS/bWCqwghDxGLe9cmTRZ
+4kILFmQKWbv5trIKEqXq5EoAAAAAAAA=
+
+--Apple-Mail-1-612093164--
