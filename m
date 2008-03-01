@@ -1,89 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762179AbYCABUy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933640AbYCABYd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762179AbYCABUy (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Feb 2008 20:20:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932801AbYCABUS
+	id S933640AbYCABYd (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Feb 2008 20:24:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758260AbYCABYY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Feb 2008 20:20:18 -0500
-Received: from 187.Red-80-37-203.staticIP.rima-tde.net ([80.37.203.187]:27112
-	"EHLO betty.it.uc3m.es" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S933632AbYCABUP (ORCPT
+	Fri, 29 Feb 2008 20:24:24 -0500
+Received: from smtp1.linux-foundation.org ([207.189.120.13]:39125 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756573AbYCABYX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 Feb 2008 20:20:15 -0500
-X-Greylist: delayed 484 seconds by postgrey-1.27 at vger.kernel.org; Fri, 29 Feb 2008 20:20:14 EST
-From: "Peter T. Breuer" <ptb@inv.it.uc3m.es>
-Message-Id: <200803010112.m211C5h4027092@betty.it.uc3m.es>
-Subject: sysctl in 2.6.24.2 excludes unapproved files from /proc/sys?
-X-ELM-OSV: (Our standard violations) hdr-charset=US-ASCII; no-hdr-encoding=1
-To: linux kernel <linux-kernel@vger.kernel.org>
-Date: Sat, 1 Mar 2008 02:12:05 +0100 (CET)
-Reply-To: ptb@inv.it.uc3m.es
-X-Anonymously-To: 
-X-message-flag: Had your Outlook virus, today?
- http://www.counterpane.com/crypto-gram-0103.html#4
-X-WebTV-Stationery: Standard\; BGColor=black\; TextColor=black
-X-Mailer: ELM [version 2.4ME+ PL123]
-MIME-Version: 1.0
+	Fri, 29 Feb 2008 20:24:23 -0500
+Date: Fri, 29 Feb 2008 17:24:06 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Jon Schindler <jkschind@gmail.com>
+Cc: linux-kernel@vger.kernel.org, trivial@kernel.org,
+       kernel-janitors@vger.kernel.org
+Subject: Re: [PATCH 2/9] /drivers/net/8390.c replaced
+ init_module&cleanup_module with module_init&module_exit
+Message-Id: <20080229172406.ec0f0cd9.akpm@linux-foundation.org>
+In-Reply-To: <47C66311.7020000@watson.wustl.edu>
+References: <47C66311.7020000@watson.wustl.edu>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-A change in 2.6.24.x kernel/sysctl.c seems to exclude exo-kernel drivers
-from using the /proc/sys/ interface:
+On Thu, 28 Feb 2008 01:30:25 -0600
+Jon Schindler <jkschind@gmail.com> wrote:
 
-@@ -1275,7 +1481,9 @@ static void sysctl_set_parent(struct ctl
+> Replaced init_module and cleanup_module with static functions and module_init/module_exit.
 
- static __init int sysctl_init(void)
- {
-+       int err;
-        sysctl_set_parent(NULL, root_table);
-+       err = sysctl_check_table(root_table);
-        return 0;
- }
- 
-and
+I get
 
-@@ -1360,6 +1568,10 @@ struct ctl_table_header *register_sysctl
-        tmp->used = 0;
-        tmp->unregistering = NULL;
-        sysctl_set_parent(NULL, table);
-+       if (sysctl_check_table(tmp->ctl_table)) {
-+               kfree(tmp);
-+               return NULL;
-+       }
-        spin_lock(&sysctl_lock);
-        list_add_tail(&tmp->ctl_entry, &root_table_header.ctl_entry);
-        spin_unlock(&sysctl_lock);
+drivers/net/8390.c: In function '__inittest':
+drivers/net/8390.c:60: error: 'ns8390_init_module' undeclared (first use in this function)
+drivers/net/8390.c:60: error: (Each undeclared identifier is reported only once
+drivers/net/8390.c:60: error: for each function it appears in.)
+drivers/net/8390.c: At top level:
+drivers/net/8390.c:60: error: 'init_module' aliased to undefined symbol 'ns8390_init_module'
 
-and IT TURNS OUT THAT (sorry, did I scream?) sysctl_check_table can't
-succeed on anything that's now not been hardwired into the core kernel
-because of the new sysctl_check.c file  which contains gazzilions of
-explict tables aying what is supposed to be in there in excruciating
-detail and which are consulted through sysctl_check_table and
-sysctl_binary_lookup.  E.g:
 
-static struct trans_ctl_table trans_random_table[] = {
-        { RANDOM_POOLSIZE,      "poolsize" },
-        { RANDOM_ENTROPY_COUNT, "entropy_avail" },
-        { RANDOM_READ_THRESH,   "read_wakeup_threshold" },
-        { RANDOM_WRITE_THRESH,  "write_wakeup_threshold" },
-        { RANDOM_BOOT_ID,       "boot_id" },
-        { RANDOM_UUID,          "uuid" },
-        {}
-};
-
-It appears to me, not that I am totally sure because of the lack of
-comments, that every attempt to add a new direcotry in the tree with
-a number that is not listed in the above mess fails through
-sysctl_binary_lookup.sysctl_binary_lookup, and every attempt to add
-a directory with CTL_UNNUMBERED instead fails if it has children because
-the children cry about having an unnumbered parent. Every attempt to
-add a directory usurping an existing number fails through some string
-mismatch against the trans_.._tables on the dirnames in one of the
-numerous lookup functions (forget which).
-
-(somebody has really spent their holidays on this).
-
-What's a person to do? 
-
-Peter
