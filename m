@@ -1,140 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762317AbYCAVHu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761152AbYCAVMp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762317AbYCAVHu (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 1 Mar 2008 16:07:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758761AbYCAVHn
+	id S1761152AbYCAVMp (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 1 Mar 2008 16:12:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756893AbYCAVMg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 1 Mar 2008 16:07:43 -0500
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:47813 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758610AbYCAVHm (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 1 Mar 2008 16:07:42 -0500
-X-Greylist: delayed 100749 seconds by postgrey-1.27 at vger.kernel.org; Sat, 01 Mar 2008 16:07:42 EST
-Date: Sat, 1 Mar 2008 16:07:38 -0500 (EST)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-cc: Roman Zippel <zippel@linux-m68k.org>, ego@in.ibm.com,
-       linux-kernel@vger.kernel.org, linux-rt-users@vger.kernel.org,
-       Ingo Molnar <mingo@elte.hu>, Dipankar Sarma <dipankar@in.ibm.com>,
-       Ted Tso <tytso@us.ibm.com>, dvhltc@us.ibm.com,
-       Oleg Nesterov <oleg@tv-sign.ru>,
-       Andrew Morton <akpm@linux-foundation.org>, bunk@kernel.org,
-       Josh Triplett <josh@freedesktop.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: Re: [RFC PATCH 4/6] Preempt-RCU: Implementation
-In-Reply-To: <20080301193903.GC15887@linux.vnet.ibm.com>
-Message-ID: <Pine.LNX.4.58.0803011602300.30335@gandalf.stny.rr.com>
-References: <20071213170348.GA25981@in.ibm.com> <20071213171658.GE25981@in.ibm.com>
- <200802290534.57040.zippel@linux-m68k.org> <20080229045328.GA18687@linux.vnet.ibm.com>
- <Pine.LNX.4.64.0802291330590.2723@scrub.home> <20080301193903.GC15887@linux.vnet.ibm.com>
+	Sat, 1 Mar 2008 16:12:36 -0500
+Received: from smtp6.pp.htv.fi ([213.243.153.40]:41594 "EHLO smtp6.pp.htv.fi"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751744AbYCAVMf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 1 Mar 2008 16:12:35 -0500
+Date: Sat, 1 Mar 2008 23:11:08 +0200
+From: Adrian Bunk <bunk@kernel.org>
+To: Casey Schaufler <casey@schaufler-ca.com>
+Cc: "Ahmed S. Darwish" <darwish.07@gmail.com>,
+       Chris Wright <chrisw@sous-sol.org>, Stephen Smalley <sds@tycho.nsa.gov>,
+       James Morris <jmorris@namei.org>, Eric Paris <eparis@parisplace.org>,
+       Alexey Dobriyan <adobriyan@sw.ru>, LKML <linux-kernel@vger.kernel.org>,
+       LSM-ML <linux-security-module@vger.kernel.org>
+Subject: Re: [RFC PATCH -mm] LSM: Add lsm= boot parameter
+Message-ID: <20080301211108.GF25835@cs181133002.pp.htv.fi>
+References: <20080301190718.GA16307@ubuntu> <804479.65789.qm@web36610.mail.mud.yahoo.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <804479.65789.qm@web36610.mail.mud.yahoo.com>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sat, Mar 01, 2008 at 12:28:43PM -0800, Casey Schaufler wrote:
+> 
+> --- "Ahmed S. Darwish" <darwish.07@gmail.com> wrote:
+> 
+> > Hi everybody,
+> > 
+> > This is a first try of adding lsm= boot parameter. 
+> > 
+> > Current situation is:
+> > 1- Ignore wrong input, with a small warning to users.
+> > 2- If user didn't specify a specific module, none will be loaded
+> 
+> I'm not fond of this behavior for the case where only one LSM
+> has been built in. Fedora, for example, ought to boot SELinux
+> without specifing lsm=SELinux, and all the rest should boot
+> whatever they are built with. In the case where a kernel is
+> built with conflicting LSMs (today SELinux and Smack) I see
+> this as a useful way to decide which to use until you get
+> your kernel rebuilt sanely, so it appears to be worth having.
+>...
 
-On Sat, 1 Mar 2008, Paul E. McKenney wrote:
-> Is this what you had in mind?  I don't have any way to test on a
-> system not supporting CONFIG_PREEMPT, but seems to work on x86.
->
-> Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
-> ---
->
->  init/Kconfig           |   34 +++-------------------------------
->  kernel/Kconfig.preempt |   15 +++++++++++++++
->  2 files changed, 18 insertions(+), 31 deletions(-)
->
-> diff -urpNa -X dontdiff linux-2.6.25-rc3/init/Kconfig linux-2.6.25-rc3-preempt_rcu/init/Kconfig
-> --- linux-2.6.25-rc3/init/Kconfig	2008-02-26 16:58:42.000000000 -0800
-> +++ linux-2.6.25-rc3-preempt_rcu/init/Kconfig	2008-03-01 11:30:59.000000000 -0800
-> @@ -860,38 +860,10 @@ source "block/Kconfig"
->  config PREEMPT_NOTIFIERS
->  	bool
->
-> -choice
-> -	prompt "RCU implementation type:"
-> -	default CLASSIC_RCU
-> -	help
-> -	  This allows you to choose either the classic RCU implementation
-> -	  that is designed for best read-side performance on non-realtime
-> -	  systems, or the preemptible RCU implementation for best latency
-> -	  on realtime systems.  Note that some kernel preemption modes
-> -	  will restrict your choice.
-> -
-> -	  Select the default if you are unsure.
-> -
->  config CLASSIC_RCU
-> -	bool "Classic RCU"
-> +	def_bool !PREEMPT_RCU
->  	help
->  	  This option selects the classic RCU implementation that is
->  	  designed for best read-side performance on non-realtime
-> -	  systems.
+Remarks:
 
-Actually Paul, you don't need to make this an "option". Simply the default
-if PREEMPT_RCU is not selected. In otherwords, no prompt.
+Your comment would be covered if the default for this boot parameter (if 
+not explicitely set through the boot loader would not be "disabled" but 
+set through kconfig (based on the selected LSMs).
 
-	config CLASSIC_RCU
-	  bool
-	  depends on !PREEMPT_RCU
-	  default y
+We should really get this resolved for 2.6.25.
 
-Then, have the PREEMPT_RCU defined down below (as you already did), and
-have it be the only option. That is, you can have normal RCU or select
-to have PREEMPT_RCU.
+security= suggestion is IMHO more intuitive than lsm=
 
-If the user selects PREEMPT_RCU, CLASSIC_RCU will be unselected.
+cu
+Adrian
 
--- Steve
+-- 
 
-> -
-> -	  Say Y if you are unsure.
-> -
-> -config PREEMPT_RCU
-> -	bool "Preemptible RCU"
-> -	depends on PREEMPT
-> -	help
-> -	  This option reduces the latency of the kernel by making certain
-> -	  RCU sections preemptible. Normally RCU code is non-preemptible, if
-> -	  this option is selected then read-only RCU sections become
-> -	  preemptible. This helps latency, but may expose bugs due to
-> -	  now-naive assumptions about each RCU read-side critical section
-> -	  remaining on a given CPU through its execution.
-> -
-> -	  Say N if you are unsure.
-> -
-> -endchoice
-> +	  systems.  Classic RCU is the default.  Note that the
-> +	  PREEMPT_RCU symbol is used to select/deselect this option.
-> diff -urpNa -X dontdiff linux-2.6.25-rc3/kernel/Kconfig.preempt linux-2.6.25-rc3-preempt_rcu/kernel/Kconfig.preempt
-> --- linux-2.6.25-rc3/kernel/Kconfig.preempt	2008-02-26 16:58:42.000000000 -0800
-> +++ linux-2.6.25-rc3-preempt_rcu/kernel/Kconfig.preempt	2008-03-01 11:35:39.000000000 -0800
-> @@ -52,8 +52,23 @@ config PREEMPT
->
->  endchoice
->
-> +config PREEMPT_RCU
-> +	bool "Preemptible RCU"
-> +	depends on PREEMPT
-> +	default n
-> +	help
-> +	  This option reduces the latency of the kernel by making certain
-> +	  RCU sections preemptible. Normally RCU code is non-preemptible, if
-> +	  this option is selected then read-only RCU sections become
-> +	  preemptible. This helps latency, but may expose bugs due to
-> +	  now-naive assumptions about each RCU read-side critical section
-> +	  remaining on a given CPU through its execution.
-> +
-> +	  Say N if you are unsure.
-> +
->  config RCU_TRACE
->  	bool "Enable tracing for RCU - currently stats in debugfs"
-> +	depends on PREEMPT_RCU
->  	select DEBUG_FS
->  	default y
->  	help
->
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
+
