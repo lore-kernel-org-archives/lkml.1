@@ -1,54 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757291AbYCAJh2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758722AbYCAJip@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757291AbYCAJh2 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 1 Mar 2008 04:37:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751254AbYCAJhO
+	id S1758722AbYCAJip (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 1 Mar 2008 04:38:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753241AbYCAJih
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 1 Mar 2008 04:37:14 -0500
-Received: from 187.Red-80-37-203.staticIP.rima-tde.net ([80.37.203.187]:28433
-	"EHLO betty.it.uc3m.es" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1750754AbYCAJhM (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 1 Mar 2008 04:37:12 -0500
-From: "Peter T. Breuer" <ptb@inv.it.uc3m.es>
-Message-Id: <200803010937.m219b3or011970@betty.it.uc3m.es>
-Subject: Re: sysctl in 2.6.24.2 excludes unapproved files from
- /proc/sys?
-X-ELM-OSV: (Our standard violations) hdr-charset=US-ASCII; no-hdr-encoding=1
-In-Reply-To: <b6fcc0a0802291746y7375ba71ja0dc0beb58c4ccb1@mail.gmail.com>
-To: Alexey Dobriyan <adobriyan@gmail.com>
-Date: Sat, 1 Mar 2008 10:37:03 +0100 (CET)
-CC: linux kernel <linux-kernel@vger.kernel.org>
-Reply-To: ptb@inv.it.uc3m.es
-X-Anonymously-To: 
-X-message-flag: Had your Outlook virus, today?
- http://www.counterpane.com/crypto-gram-0103.html#4
-X-WebTV-Stationery: Standard\; BGColor=black\; TextColor=black
-X-Mailer: ELM [version 2.4ME+ PL123]
+	Sat, 1 Mar 2008 04:38:37 -0500
+Received: from smtp6.pp.htv.fi ([213.243.153.40]:38299 "EHLO smtp6.pp.htv.fi"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751254AbYCAJig (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 1 Mar 2008 04:38:36 -0500
+Date: Sat, 1 Mar 2008 11:37:12 +0200
+From: Adrian Bunk <bunk@kernel.org>
+To: Roel Kluin <12o3l@tiscali.nl>
+Cc: sfrench@samba.org, linux-cifs-client@lists.samba.org,
+       samba-technical@lists.samba.org, lkml <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH][fs/cifs/cifsfs.c] Make use of cifs_xquota_get
+Message-ID: <20080301093712.GB25835@cs181133002.pp.htv.fi>
+References: <47B08A0B.4020604@tiscali.nl>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <47B08A0B.4020604@tiscali.nl>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-"Also sprach Alexey Dobriyan:"
+On Mon, Feb 11, 2008 at 06:46:51PM +0100, Roel Kluin wrote:
+> Functions cifs_xquota_set and cifs_xquota_get at respectively
+> fs/cifs/cifsfs.c:367 and 392 are entirely similar - except for
+> whitespace
 > 
-> If I understand you correcty, the answer is drop '.ctl_name' bits from
-> new sysctls and make sure common parts of tables match the ones
-> in mainline.
+> struct quotactl_ops contains function pointers .set_xquota and
+> .get_xquota that both get the address of cifs_xquota_set.
+> cifs_xquota_get isn't called anywhere else in the kernel.
+> 
+> The patch below makes use of the function cifs_xquota_get, As
+> an alternative the entire function cifs_xquota_get could be 
+> removed.
+> ---
+> Make use of cifs_xquota_get
+> 
+> Signed-off-by: Roel Kluin <12o3l@tiscali.nl>
+> ---
+> diff --git a/fs/cifs/cifsfs.c b/fs/cifs/cifsfs.c
+> index fcc4342..339b829 100644
+> --- a/fs/cifs/cifsfs.c
+> +++ b/fs/cifs/cifsfs.c
+> @@ -461,7 +461,7 @@ int cifs_xstate_get(struct super_block *sb, struct fs_quota_stat *qstats)
+>  
+>  static struct quotactl_ops cifs_quotactl_ops = {
+>  	.set_xquota	= cifs_xquota_set,
+> -	.get_xquota	= cifs_xquota_set,
+> +	.get_xquota	= cifs_xquota_get,
+>  	.set_xstate	= cifs_xstate_set,
+>  	.get_xstate	= cifs_xstate_get,
+>  };
 
-YES! Setting .ctl_name to 0 on _every_ _single_ _item_ of my sub-hierarchy
-did the trick. Thank you, thank you, thank you.
+Steve, this obvious bugfix seems to be stuck in cifs-2.6.git.
 
-And how does it know when it gets to the end of a list held as
-consecutive entries in an array now? One always used to set .ctl_name
-to zero for that marker!
+Can you forward this fix (and other fixes if you have any) to Linus soon?
 
-I'd better zero absolutely everything at array end.
+TIA
+Adrian
 
-Thanks again. I was looking at the documentation for configfs (it
-exists!) and muttering "this is way too hard and unsuitable anyway",
-and sysfs ("this is just not appropriate"). Sysctl is definitely
-the right thing to do for me .. modulo that I would like some finer
-control, at my choice, of over when things appear and disappear.
+-- 
 
-Peter
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
+
+
