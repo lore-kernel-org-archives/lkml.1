@@ -1,75 +1,148 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757222AbYCAHSs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756946AbYCAHvW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757222AbYCAHSs (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 1 Mar 2008 02:18:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752482AbYCAHSi
+	id S1756946AbYCAHvW (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 1 Mar 2008 02:51:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753933AbYCAHvL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 1 Mar 2008 02:18:38 -0500
-Received: from colo.lackof.org ([198.49.126.79]:43621 "EHLO colo.lackof.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751143AbYCAHSi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 1 Mar 2008 02:18:38 -0500
-Date: Sat, 1 Mar 2008 00:18:24 -0700
-From: Grant Grundler <grundler@parisc-linux.org>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: James Bottomley <James.Bottomley@HansenPartnership.com>,
-       Grant Grundler <grundler@parisc-linux.org>,
-       Michael Ellerman <michael@ellerman.id.au>, akepner@sgi.com,
-       Tony Luck <tony.luck@intel.com>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>, Jes Sorensen <jes@sgi.com>,
-       Randy Dunlap <randy.dunlap@oracle.com>,
-       Roland Dreier <rdreier@cisco.com>, David Miller <davem@davemloft.net>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/3 v3] dma: document dma_{un}map_{single|sg}_attrs()
-	interface
-Message-ID: <20080301071824.GC9373@colo.lackof.org>
-References: <20080228032448.GS11012@sgi.com> <dc1166600802281845t1613beedj7a285399a21cd@mail.gmail.com> <20080229182504.GA18102@colo.lackof.org> <1204310276.4003.48.camel@localhost.localdomain> <1204340204.15052.452.camel@pasglop>
+	Sat, 1 Mar 2008 02:51:11 -0500
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:50920 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752970AbYCAHvK (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 1 Mar 2008 02:51:10 -0500
+Date: Sat, 01 Mar 2008 16:51:28 +0900
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: "J. Bruce Fields" <bfields@citi.umich.edu>, linux-ia64@vger.kernel.org
+Subject: [PATCH][2.6.25-rc2-mm1] ia64: remove unnecessary nfs includes from sys_ia32.c
+Cc: kosaki.motohiro@jp.fujitsu.com, Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Message-Id: <20080301164035.528F.KOSAKI.MOTOHIRO@jp.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1204340204.15052.452.camel@pasglop>
-X-Home-Page: http://www.parisc-linux.org/
-User-Agent: Mutt/1.5.16 (2007-06-11)
+Content-Type: text/plain; charset="US-ASCII"
+Content-Transfer-Encoding: 7bit
+X-Mailer: Becky! ver. 2.42 [ja]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Mar 01, 2008 at 01:56:44PM +1100, Benjamin Herrenschmidt wrote:
-...
-> > This means that if ever anyone sets a PCIe bridge to relaxed ordering
-> > by default, this attribute will also work for them.
+Hi
 
-Is this the same "relaxed ordering" defined in PCIe 1.0 specs?
-If so, as explained before, use of "RO" bit in the DMA transactions
-is up the the device and it MUST send a DMA transaction without
-RO bit set to flush in-flight writes to the device. The host OS
-does not have control over individual transactions, just the
-general enablement of the feature. And "RO" bit should be
-transperent to current applications including RDMA.
+if compile 2.6.25-rc2-mm1 on ia64, output many warnings.
 
-It's a very different issue than the SN2 node interconnect where
-ALL transactions can be re-ordered by default and we have to do
-something special to force ordering whene DMA writes are issued
-to specific memory regions. The PCI device has no control over
-this (unlike RO-bit discussed above).
+----------------------------------------------------------------
+% LANG=C make arch/ia64/ia32/sys_ia32.o
+<-mm1% LANG=C make arch/ia64/ia32/sys_ia32.o
+  CHK     include/linux/version.h
+  CHK     include/linux/utsrelease.h
+  CALL    scripts/checksyscalls.sh
+  CC      arch/ia64/ia32/sys_ia32.o
+In file included from arch/ia64/ia32/sys_ia32.c:59:
+arch/ia64/ia32/ia32priv.h:297:1: warning: "elf_check_arch" redefined
+In file included from include/linux/elf.h:7,
+                 from include/linux/module.h:14,
+                 from include/linux/device.h:21,
+                 from include/linux/backing-dev.h:15,
+                 from include/linux/nfs_fs_sb.h:5,
+                 from include/linux/nfs_fs.h:50,
+                 from arch/ia64/ia32/sys_ia32.c:35:
+include/asm/elf.h:19:1: warning: this is the location of the previous definition
+In file included from arch/ia64/ia32/sys_ia32.c:59:
+arch/ia64/ia32/ia32priv.h:302:1: warning: "ELF_CLASS" redefined
+In file included from include/linux/elf.h:7,
+                 from include/linux/module.h:14,
+                 from include/linux/device.h:21,
+                 from include/linux/backing-dev.h:15,
+                 from include/linux/nfs_fs_sb.h:5,
+                 from include/linux/nfs_fs.h:50,
+                 from arch/ia64/ia32/sys_ia32.c:35:
+include/asm/elf.h:24:1: warning: this is the location of the previous definition
+In file included from arch/ia64/ia32/sys_ia32.c:59:
+arch/ia64/ia32/ia32priv.h:304:1: warning: "ELF_ARCH" redefined
+In file included from include/linux/elf.h:7,
+                 from include/linux/module.h:14,
+                 from include/linux/device.h:21,
+                 from include/linux/backing-dev.h:15,
+                 from include/linux/nfs_fs_sb.h:5,
+                 from include/linux/nfs_fs.h:50,
+                 from arch/ia64/ia32/sys_ia32.c:35:
+include/asm/elf.h:26:1: warning: this is the location of the previous definition
+In file included from arch/ia64/ia32/sys_ia32.c:59:
+arch/ia64/ia32/ia32priv.h:318:1: warning: "ELF_EXEC_PAGESIZE" redefined
+In file included from include/linux/elf.h:7,
+                 from include/linux/module.h:14,
+                 from include/linux/device.h:21,
+                 from include/linux/backing-dev.h:15,
+                 from include/linux/nfs_fs_sb.h:5,
+                 from include/linux/nfs_fs.h:50,
+                 from arch/ia64/ia32/sys_ia32.c:35:
+include/asm/elf.h:34:1: warning: this is the location of the previous definition
+In file included from arch/ia64/ia32/sys_ia32.c:59:
+arch/ia64/ia32/ia32priv.h:327:1: warning: "ELF_ET_DYN_BASE" redefined
+In file included from include/linux/elf.h:7,
+                 from include/linux/module.h:14,
+                 from include/linux/device.h:21,
+                 from include/linux/backing-dev.h:15,
+                 from include/linux/nfs_fs_sb.h:5,
+                 from include/linux/nfs_fs.h:50,
+                 from arch/ia64/ia32/sys_ia32.c:35:
+include/asm/elf.h:43:1: warning: this is the location of the previous definition
+In file included from arch/ia64/ia32/sys_ia32.c:59:
+arch/ia64/ia32/ia32priv.h:330:1: warning: "ELF_PLAT_INIT" redefined
+In file included from include/linux/elf.h:7,
+                 from include/linux/module.h:14,
+                 from include/linux/device.h:21,
+                 from include/linux/backing-dev.h:15,
+                 from include/linux/nfs_fs_sb.h:5,
+                 from include/linux/nfs_fs.h:50,
+                 from arch/ia64/ia32/sys_ia32.c:35:
+include/asm/elf.h:140:1: warning: this is the location of the previous definition
+In file included from arch/ia64/ia32/sys_ia32.c:59:
+arch/ia64/ia32/ia32priv.h:342:1: warning: "SET_PERSONALITY" redefined
+In file included from include/linux/elf.h:7,
+                 from include/linux/module.h:14,
+                 from include/linux/device.h:21,
+                 from include/linux/backing-dev.h:15,
+                 from include/linux/nfs_fs_sb.h:5,
+                 from include/linux/nfs_fs.h:50,
+                 from arch/ia64/ia32/sys_ia32.c:35:
+include/asm/elf.h:180:1: warning: this is the location of the previous definition
+------------------------------------------------------------------------
 
-hth,
-grant
+IA64 support 2 ELF format (IA64 binary and IA32 binary),
+thus if 2 elf related header included, cause many warning or error.
 
-> But that would be asking for trouble no ? I would expect pretty much
-> everything to break appart with relaxed by default no ? Or I don't fully
-> understand what your arch calls "relaxed"...
-> 
-> I do agree that we should aim for simple semantics, they should cover
-> 99% of the needs, and leave some bit space or attribute space for archs
-> to define private ones when really needed.
-> 
-> In our case, I suspect that the two main thing we could define here for
-> DMA that would be useful generally would be relaxed ordering (strict
-> being the default) and maybe read prefetching (though that would be the
-> default, maybe no prefetch). We -might- have use of separating relaxed
-> ordering for read vs. writes, but that's pretty much it.
-> 
-> Cheers,
-> Ben.
-> 
+about 2 week ago, J. Bruce Fields proposed this problem fixed patch.
+(http://marc.info/?l=linux-ia64&m=120329313305695&w=2)
+
+but unfortunately, it can't applied -mm tree.
+I rebase against 2.6.25-rc2-mm1.
+
+
+
+Signed-off-by: J. Bruce Fields <bfields@citi.umich.edu>
+Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+
+---
+ arch/ia64/ia32/sys_ia32.c |    7 +------
+ 1 file changed, 1 insertion(+), 6 deletions(-)
+
+Index: b/arch/ia64/ia32/sys_ia32.c
+===================================================================
+--- a/arch/ia64/ia32/sys_ia32.c 2008-02-18 17:13:15.000000000 +0900
++++ b/arch/ia64/ia32/sys_ia32.c 2008-03-01 16:48:36.000000000 +0900
+@@ -32,13 +32,8 @@
+ #include <linux/shm.h>
+ #include <linux/slab.h>
+ #include <linux/uio.h>
+-#include <linux/nfs_fs.h>
++#include <linux/socket.h>
+ #include <linux/quota.h>
+-#include <linux/sunrpc/svc.h>
+-#include <linux/nfsd/nfsd.h>
+-#include <linux/nfsd/cache.h>
+-#include <linux/nfsd/xdr.h>
+-#include <linux/nfsd/syscall.h>
+ #include <linux/poll.h>
+ #include <linux/eventpoll.h>
+ #include <linux/personality.h>
+
