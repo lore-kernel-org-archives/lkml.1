@@ -1,130 +1,285 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754684AbYCAXLj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758088AbYCAXad@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754684AbYCAXLj (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 1 Mar 2008 18:11:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750755AbYCAXLV
+	id S1758088AbYCAXad (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 1 Mar 2008 18:30:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751593AbYCAXaV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 1 Mar 2008 18:11:21 -0500
-Received: from gv-out-0910.google.com ([216.239.58.190]:46745 "EHLO
-	gv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756789AbYCAXK4 (ORCPT
+	Sat, 1 Mar 2008 18:30:21 -0500
+Received: from ug-out-1314.google.com ([66.249.92.175]:38145 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751290AbYCAXaT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 1 Mar 2008 18:10:56 -0500
+	Sat, 1 Mar 2008 18:30:19 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition:x-google-sender-auth;
-        b=pGqc/BJD6uZNPT7lUwPqKh9eWOrYyZFb/uX520YrlJmKdQbpHOlsBXjSioK4vIGmMSTT2ZBI+GDg8Zbq4RZYz5I/c99T4gbuqxkeRnxt72Kj0ILkYp9GSyq4A7L/UZrxx71BARNEDNHb/US1v8bmDR+JVOZYLS2hEbO9n2mzeNg=
-Message-ID: <2c0942db0803011510s5cfc30cbhee8ac9c1b849a2aa@mail.gmail.com>
-Date: Sat, 1 Mar 2008 15:10:52 -0800
-From: "Ray Lee" <ray-lk@madrabbit.org>
-To: "kernel list" <linux-kernel@vger.kernel.org>, netdev@vger.kernel.org
-Subject: assertion (packets <= tp->packets_out) failed
+        h=date:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent:from;
+        b=wruKCLhDdCTvxt6Zko5wcSYDVWD/OePLeuvrungqvdPeOvv8VnatMorCYnRalVkiSJkrutjcYSdIxJD9RPgT3POJbYAIWOD3ZGo3jCoofHDblBBHMKzL/6cLbhyKSNFkP7i9nPpHcrKbvMmW0yZXprklT6NaAsIG68ZUVZmD2e8=
+Date: Sun, 2 Mar 2008 01:27:08 +0200
+To: Casey Schaufler <casey@schaufler-ca.com>
+Cc: Adrian Bunk <bunk@kernel.org>, Chris Wright <chrisw@sous-sol.org>,
+       Stephen Smalley <sds@tycho.nsa.gov>, James Morris <jmorris@namei.org>,
+       Eric Paris <eparis@parisplace.org>, Alexey Dobriyan <adobriyan@sw.ru>,
+       LKML <linux-kernel@vger.kernel.org>,
+       LSM-ML <linux-security-module@vger.kernel.org>,
+       Anrew Morton <akpm@linux-foundation.org>
+Subject: [PATCH -v2 -mm] LSM: Add security= boot parameter
+Message-ID: <20080301232708.GA625@ubuntu>
+References: <20080301211108.GF25835@cs181133002.pp.htv.fi> <674864.46980.qm@web36615.mail.mud.yahoo.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-X-Google-Sender-Auth: f2015536a9113455
+In-Reply-To: <674864.46980.qm@web36615.mail.mud.yahoo.com>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+From: "Ahmed S. Darwish" <darwish.07@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Wireless below is b43, wired interface (tg3) was disconnected. I run
-openvpn which uses a tun interface and regularly sends a heartbeat
-even when not in use. The trace appeared twice.
+Hi!,
 
-Likely unrelated but reporting just for completeness: about fifteen
-minutes after this the system oopsed when I told my wireless base
-station to switch from mixed B/G to just B. I'll be taking that up
-separately with the bcm43xx list.
+Add the security= boot parameter. This is done to avoid LSM 
+registration clashes in case of more than one bult-in module.
 
-Mar  1 11:06:37 phoenix kernel: [35251.208275] eth1: switched to short
-barker preamble (BSSID=00:16:01:d1:44:3e)
-Mar  1 11:06:37 phoenix kernel: [35251.320282] eth1: switched to long
-barker preamble (BSSID=00:16:01:d1:44:3e)
-Mar  1 11:08:28 phoenix kernel: [35274.396163] KERNEL: assertion
-(packets <= tp->packets_out) failed at net/ipv4/tcp_input.c (2139)
-Mar  1 11:08:29 phoenix kernel: [35274.406126] ------------[ cut here
-]------------
-Mar  1 11:08:29 phoenix kernel: [35274.406132] WARNING: at
-net/ipv4/tcp_input.c:2506 tcp_ack+0xe3f/0x1b12()
-Mar  1 11:08:29 phoenix kernel: [35274.406134] Modules linked in: b43
-mac80211 nls_iso8859_1 vfat fat usb_storage libusu
-al tun nls_cp437 cifs af_packet rfcomm l2cap bluetooth binfmt_misc
-radeon drm powernow_k8 cpufreq_stats iptable_filter i
-p_tables x_tables dm_mod sbp2 snd_atiixp snd_atiixp_modem
-snd_ac97_codec ac97_bus arc4 snd_pcm_oss ecb crypto_blkcipher
-snd_pcm snd_mixer_oss snd_seq_dummy snd_seq_oss snd_seq_midi cfg80211
-snd_rawmidi snd_seq_midi_event pcmcia led_class sn
-d_seq snd_timer snd_seq_device sdhci serio_raw snd yenta_socket video
-tifm_7xx1 rsrc_nonstatic evdev container output mm
-c_core soundcore psmouse tifm_core pcmcia_core ssb battery ac button
-pcspkr snd_page_alloc ext3 jbd mbcache ohci1394 sg
-ieee1394 tg3 sr_mod cdrom sd_mod ehci_hcd ohci_hcd ata_generic usbcore
-thermal processor fan fuse [last unloaded: mac80211]
-Mar  1 11:08:29 phoenix kernel: [35274.406162] Pid: 5095, comm:
-openvpn Tainted: G   M    2.6.24 #12
-Mar  1 11:08:29 phoenix kernel: [35274.406162]
-Mar  1 11:08:29 phoenix kernel: [35274.406162] Call Trace:
-Mar  1 11:08:29 phoenix kernel: [35274.406162]  <IRQ>
-[ext3:warn_on_slowpath+0x58/0x277] warn_on_slowpath+0x58/0x6b
-Mar  1 11:08:29 phoenix kernel: [35274.406162]
-[discard_slab+0x30/0x32] ? discard_slab+0x30/0x32
-Mar  1 11:08:29 phoenix kernel: [35274.406162]
-[__slab_free+0xd0/0x357] ? __slab_free+0xd0/0x357
-Mar  1 11:08:29 phoenix kernel: [35274.406162]
-[skb_release_data+0xa7/0xac] ? skb_release_data+0xa7/0xac
-Mar  1 11:08:29 phoenix kernel: [35274.406162]
-[tcp_rtt_estimator+0xf2/0x142] ? tcp_rtt_estimator+0xf2/0x142
-Mar  1 11:08:29 phoenix kernel: [35274.406162]  [tcp_ack+0xe3f/0x1b12]
-tcp_ack+0xe3f/0x1b12
-Mar  1 11:08:29 phoenix kernel: [35274.406162]
-[tcp_rcv_established+0x602/0x712] tcp_rcv_established+0x602/0x712
-Mar  1 11:08:29 phoenix kernel: [35274.406169]
-[tcp_v4_do_rcv+0x31/0x1c8] tcp_v4_do_rcv+0x31/0x1c8
-Mar  1 11:08:29 phoenix kernel: [35274.406176]
-[tcp_v4_rcv+0x68c/0x6e9] tcp_v4_rcv+0x68c/0x6e9
-Mar  1 11:08:29 phoenix kernel: [35274.406184]
-[ip_local_deliver_finish+0x135/0x1c4]
-ip_local_deliver_finish+0x135/0x1c4
-Mar  1 11:08:29 phoenix kernel: [35274.406189]
-[ip_local_deliver+0x72/0x7c] ip_local_deliver+0x72/0x7c
-Mar  1 11:08:29 phoenix kernel: [35274.406194]
-[ip_rcv_finish+0x296/0x2bb] ip_rcv_finish+0x296/0x2bb
-Mar  1 11:08:29 phoenix kernel: [35274.406198]
-[tg3:netif_receive_skb+0x3c0/0x5f7] ? netif_receive_skb+0x3c0/0x3e2
-Mar  1 11:08:29 phoenix kernel: [35274.406205]  [ip_rcv+0x22e/0x250]
-ip_rcv+0x22e/0x250
-Mar  1 11:08:29 phoenix kernel: [35274.406208]
-[process_backlog+0xd3/0xfc] ? process_backlog+0xd3/0xfc
-Mar  1 11:08:29 phoenix kernel: [35274.406213]
-[tg3:netif_receive_skb+0x3a8/0x5f7] netif_receive_skb+0x3a8/0x3e2
-Mar  1 11:08:29 phoenix kernel: [35274.406220]
-[process_backlog+0x94/0xfc] process_backlog+0x94/0xfc
-Mar  1 11:08:29 phoenix kernel: [35274.406226]
-[net_rx_action+0xab/0x1a1] net_rx_action+0xab/0x1a1
-Mar  1 11:08:29 phoenix kernel: [35274.406233]
-[__do_softirq+0x67/0xc9] __do_softirq+0x67/0xc9
-Mar  1 11:08:29 phoenix kernel: [35274.406239]
-[call_softirq+0x1c/0x28] call_softirq+0x1c/0x28
-Mar  1 11:08:29 phoenix kernel: [35274.406241]  <EOI>
-[do_softirq+0x4d/0xb0] do_softirq+0x4d/0xb0
-Mar  1 11:08:29 phoenix kernel: [35274.406248]
-[netif_rx_ni+0x31/0x58] netif_rx_ni+0x31/0x58
-Mar  1 11:08:29 phoenix kernel: [35274.406255]  [<ffffffff88368ce1>]
-:tun:tun_chr_aio_write+0x1e5/0x22c
-Mar  1 11:08:29 phoenix kernel: [35274.406266]
-[ext3:do_sync_write+0xeb/0x132] do_sync_write+0xeb/0x132
-Mar  1 11:08:29 phoenix kernel: [35274.406277]  [<ffffffff8023eda5>] ?
-autoremove_wake_function+0x0/0x38
-Mar  1 11:08:29 phoenix kernel: [35274.406281]
-[sys_recvfrom+0xc8/0xf5] ? sys_recvfrom+0xc8/0xf5
-Mar  1 11:08:29 phoenix kernel: [35274.406297]  [vfs_write+0xae/0x157]
-vfs_write+0xae/0x157
-Mar  1 11:08:29 phoenix kernel: [35274.406303]  [sys_write+0x47/0x70]
-sys_write+0x47/0x70
-Mar  1 11:08:29 phoenix kernel: [35274.406310]
-[system_call_after_swapgs+0x8a/0x8f]
-system_call_after_swapgs+0x8a/0x8f
-Mar  1 11:08:29 phoenix kernel: [35274.406319]
-Mar  1 11:08:29 phoenix kernel: [35274.406321] ---[ end trace
-1bac8d9854a4a52e ]---
+User can choose a security module to enable at boot. If no 
+security= boot parameter is specified, only the first LSM 
+asking for registration will be loaded. An invalid security 
+module name will be treated as if no module has been chosen.
+
+LSM modules must check now if they are allowed to register
+by calling security_module_enable(ops) first. Modify SELinux 
+and SMACK to do so.
+
+Signed-off-by: Ahmed S. Darwish <darwish.07@gmail.com>
+---
+
+I'll send a similar patch for 2.6.25 if no more concerns for
+the patch exist. 
+
+Adrian, Casey, Does this one have any more issues ?
+
+ Documentation/kernel-parameters.txt |    6 ++++
+ include/linux/security.h            |   12 +++++++++
+ security/dummy.c                    |    3 +-
+ security/security.c                 |   47 +++++++++++++++++++++++++++++++++++-
+ security/selinux/hooks.c            |    5 +++
+ security/smack/smack_lsm.c          |    7 +++++
+
+ 6 files changed, 77 insertions(+), 3 deletions(-)
+
+diff --git a/Documentation/kernel-parameters.txt b/Documentation/kernel-parameters.txt
+index c64dfd7..85044e8 100644
+--- a/Documentation/kernel-parameters.txt
++++ b/Documentation/kernel-parameters.txt
+@@ -374,6 +374,12 @@ and is between 256 and 4096 characters. It is defined in the file
+ 			possible to determine what the correct size should be.
+ 			This option provides an override for these situations.
+ 
++	security=	[SECURITY] Choose a security module to enable at boot. 
++			If this boot parameter is not specified, only the first 
++			security module asking for security registration will be
++			loaded. An invalid security module name will be treated
++			as if no module has been chosen.
++
+ 	capability.disable=
+ 			[SECURITY] Disable capabilities.  This would normally
+ 			be used only if an alternative security model is to be
+diff --git a/include/linux/security.h b/include/linux/security.h
+index a33fd03..416afcf 100644
+--- a/include/linux/security.h
++++ b/include/linux/security.h
+@@ -42,6 +42,9 @@
+ 
+ extern unsigned securebits;
+ 
++/* Maximum number of letters for an LSM name string */
++#define SECURITY_NAME_MAX	10
++
+ struct ctl_table;
+ 
+ /*
+@@ -117,6 +120,12 @@ struct request_sock;
+ /**
+  * struct security_operations - main security structure
+  *
++ * Security module identifier.
++ *
++ * @name:
++ *	A string that acts as  unique identifeir for the LSM with max number 
++ *	of characters = SECURITY_NAME_MAX.
++ *
+  * Security hooks for program execution operations.
+  *
+  * @bprm_alloc_security:
+@@ -1218,6 +1227,8 @@ struct request_sock;
+  * This is the main security structure.
+  */
+ struct security_operations {
++	char name[SECURITY_NAME_MAX + 1];
++
+ 	int (*ptrace) (struct task_struct * parent, struct task_struct * child);
+ 	int (*capget) (struct task_struct * target,
+ 		       kernel_cap_t * effective,
+@@ -1477,6 +1488,7 @@ struct security_operations {
+ 
+ /* prototypes */
+ extern int security_init	(void);
++extern int security_module_enable(struct security_operations *ops);
+ extern int register_security	(struct security_operations *ops);
+ extern int mod_reg_security	(const char *name, struct security_operations *ops);
+ extern struct dentry *securityfs_create_file(const char *name, mode_t mode,
+diff --git a/security/dummy.c b/security/dummy.c
+index 6a0056b..7cb999c 100644
+--- a/security/dummy.c
++++ b/security/dummy.c
+@@ -986,7 +986,7 @@ static int dummy_key_getsecurity(struct key *key, char **_buffer)
+ 
+ #endif /* CONFIG_KEYS */
+ 
+-struct security_operations dummy_security_ops;
++struct security_operations dummy_security_ops = { "dummy" };
+ 
+ #define set_to_dummy_if_null(ops, function)				\
+ 	do {								\
+@@ -999,6 +999,7 @@ struct security_operations dummy_security_ops;
+ 
+ void security_fixup_ops (struct security_operations *ops)
+ {
++	BUG_ON(!ops->name);
+ 	set_to_dummy_if_null(ops, ptrace);
+ 	set_to_dummy_if_null(ops, capget);
+ 	set_to_dummy_if_null(ops, capset_check);
+diff --git a/security/security.c b/security/security.c
+index 3e75b90..261d2e4 100644
+--- a/security/security.c
++++ b/security/security.c
+@@ -17,6 +17,9 @@
+ #include <linux/kernel.h>
+ #include <linux/security.h>
+ 
++/* Boot-time LSM user choice */
++static char chosen_lsm[SECURITY_NAME_MAX + 1];
++static atomic_t security_ops_registered = ATOMIC_INIT(0);
+ 
+ /* things that live in dummy.c */
+ extern struct security_operations dummy_security_ops;
+@@ -67,13 +70,54 @@ int __init security_init(void)
+ 	return 0;
+ }
+ 
++/* Save user chosen LSM */
++static int __init choose_lsm(char *str)
++{
++	if (strlen(str) > SECURITY_NAME_MAX) {
++		printk(KERN_INFO "Security: LSM name length extends possible"
++		       "limit.\n");
++		printk(KERN_INFO "Security: Ignoring passed security= "
++		       "parameter.\n");
++		return 0;
++	}
++
++	strncpy(chosen_lsm, str, SECURITY_NAME_MAX);
++	return 1;
++}
++__setup("security=", choose_lsm);
++
++/**
++ * security_module_enable - Load given security module on boot ?
++ * @ops: a pointer to the struct security_operations that is to be checked.
++ *
++ * Return true if:
++ *	-The passed LSM is the one chosen by user at boot time,
++ *	-or user didsn't specify a specific LSM and we're the first to ask
++ *	 for registeration permissoin.
++ * Otherwise, return false.
++ */
++int security_module_enable(struct security_operations *ops)
++{
++	if (!ops || !ops->name)
++		return 0;
++
++	if (!*chosen_lsm && !atomic_read(&security_ops_registered))
++		return 1;
++
++	if (!strncmp(ops->name, chosen_lsm, SECURITY_NAME_MAX))
++		return 1;
++	
++	return 0;
++}
++
+ /**
+  * register_security - registers a security framework with the kernel
+  * @ops: a pointer to the struct security_options that is to be registered
+  *
+  * This function is to allow a security module to register itself with the
+  * kernel security subsystem.  Some rudimentary checking is done on the @ops
+- * value passed to this function.
++ * value passed to this function. You'll need to check first if your LSM
++ * is allowed to register by calling security_module_enable(@ops).
+  *
+  * If there is already a security module registered with the kernel,
+  * an error will be returned.  Otherwise 0 is returned on success.
+@@ -90,6 +134,7 @@ int register_security(struct security_operations *ops)
+ 		return -EAGAIN;
+ 
+ 	security_ops = ops;
++	atomic_inc(&security_ops_registered);
+ 
+ 	return 0;
+ }
+diff --git a/security/selinux/hooks.c b/security/selinux/hooks.c
+index f42ebfc..fe30d2b 100644
+--- a/security/selinux/hooks.c
++++ b/security/selinux/hooks.c
+@@ -5233,6 +5233,8 @@ static int selinux_key_getsecurity(struct key *key, char **_buffer)
+ #endif
+ 
+ static struct security_operations selinux_ops = {
++	.name =				"selinux",
++
+ 	.ptrace =			selinux_ptrace,
+ 	.capget =			selinux_capget,
+ 	.capset_check =			selinux_capset_check,
+@@ -5420,7 +5422,8 @@ static __init int selinux_init(void)
+ {
+ 	struct task_security_struct *tsec;
+ 
+-	if (!selinux_enabled) {
++	if (!selinux_enabled || !security_module_enable(&selinux_ops)) {
++		selinux_enabled = 0;
+ 		printk(KERN_INFO "SELinux:  Disabled at boot.\n");
+ 		return 0;
+ 	}
+diff --git a/security/smack/smack_lsm.c b/security/smack/smack_lsm.c
+index 2b5d6f7..3fc8c6e 100644
+--- a/security/smack/smack_lsm.c
++++ b/security/smack/smack_lsm.c
+@@ -2358,6 +2358,8 @@ static void smack_release_secctx(char *secdata, u32 seclen)
+ }
+ 
+ static struct security_operations smack_ops = {
++	.name =				"smack",
++
+ 	.ptrace = 			smack_ptrace,
+ 	.capget = 			cap_capget,
+ 	.capset_check = 		cap_capset_check,
+@@ -2485,6 +2487,11 @@ static struct security_operations smack_ops = {
+  */
+ static __init int smack_init(void)
+ {
++	if (!security_module_enable(&smack_ops)) {
++		printk(KERN_INFO "Smack: Disabled at boot.\n");
++		return 0;
++	}
++
+ 	printk(KERN_INFO "Smack:  Initializing.\n");
+ 
+ 	/*
+
+-- 
+
+"Better to light a candle, than curse the darkness"
+
+Ahmed S. Darwish
+Homepage: http://darwish.07.googlepages.com
+Blog: http://darwish-07.blogspot.com
+
