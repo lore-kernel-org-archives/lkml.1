@@ -1,96 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762014AbYCAA6G@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762127AbYCABAK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762014AbYCAA6G (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Feb 2008 19:58:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752297AbYCAA5y
+	id S1762127AbYCABAK (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Feb 2008 20:00:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752973AbYCAA75
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Feb 2008 19:57:54 -0500
-Received: from rgminet01.oracle.com ([148.87.113.118]:13489 "EHLO
-	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750921AbYCAA5x (ORCPT
+	Fri, 29 Feb 2008 19:59:57 -0500
+Received: from gv-out-0910.google.com ([216.239.58.186]:57040 "EHLO
+	gv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752715AbYCAA74 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 Feb 2008 19:57:53 -0500
-Message-ID: <47C8A982.4080302@oracle.com>
-Date: Fri, 29 Feb 2008 16:55:30 -0800
-From: Randy Dunlap <randy.dunlap@oracle.com>
-User-Agent: Thunderbird 1.5.0.5 (X11/20060719)
+	Fri, 29 Feb 2008 19:59:56 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=f76c0/A6c35r/85fKAMowod7QGFxgEd2m/M7hX3pWp2lgN8zG4ZOrMe0IcxpY0Bi8RK/I61if/628ffDbJTS6BENn9xjTKlAJrZqLs4UE/kIZR2IE6+FDkl81/8lJzzhzEPfXL93S8z7R8CousaulFBMbwbc6feGCH99TlZrI8A=
+Message-ID: <f19298770802291659x741c9fd9h3b3090fd514fe77b@mail.gmail.com>
+Date: Sat, 1 Mar 2008 03:59:53 +0300
+From: "Alexey Zaytsev" <alexey.zaytsev@gmail.com>
+To: "Ingo Molnar" <mingo@elte.hu>
+Subject: Re: printk timestamps jumping back and forth in 2.6.25-rc.
+Cc: "Thomas Gleixner" <tglx@linutronix.de>,
+       lkml <linux-kernel@vger.kernel.org>,
+       "Arjan van de Ven" <arjan@linux.intel.com>
+In-Reply-To: <f19298770802291642v56a8a50ve5c7c88de53513f4@mail.gmail.com>
 MIME-Version: 1.0
-To: David Rientjes <rientjes@google.com>
-CC: Andrew Morton <akpm@linux-foundation.org>, Paul Jackson <pj@sgi.com>,
-       Christoph Lameter <clameter@sgi.com>,
-       Lee Schermerhorn <Lee.Schermerhorn@hp.com>, Andi Kleen <ak@suse.de>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [patch 6/6] mempolicy: update NUMA memory policy documentation
-References: <alpine.DEB.1.00.0802291640570.30883@chino.kir.corp.google.com> <alpine.DEB.1.00.0802291641500.30883@chino.kir.corp.google.com> <alpine.DEB.1.00.0802291642110.30883@chino.kir.corp.google.com> <alpine.DEB.1.00.0802291642290.30883@chino.kir.corp.google.com> <alpine.DEB.1.00.0802291644060.30883@chino.kir.corp.google.com> <alpine.DEB.1.00.0802291644290.30883@chino.kir.corp.google.com>
-In-Reply-To: <alpine.DEB.1.00.0802291644290.30883@chino.kir.corp.google.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+Content-Disposition: inline
+References: <f19298770802280626g5ee17328ldedf7658a9f26f56@mail.gmail.com>
+	 <20080228201315.GA30736@elte.hu> <20080228201613.GA30999@elte.hu>
+	 <f19298770802281324v1fc37cf4oebd680b81d0e0a2f@mail.gmail.com>
+	 <20080229194547.GC21249@elte.hu>
+	 <f19298770802291642v56a8a50ve5c7c88de53513f4@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David Rientjes wrote:
-> Updates Documentation/vm/numa_memory_policy.txt and
-> Documentation/filesystems/tmpfs.txt to describe optional mempolicy mode
-> flags.
-> 
-> Cc: Christoph Lameter <clameter@sgi.com>
-> Cc: Lee Schermerhorn <Lee.Schermerhorn@hp.com>
-> Cc: Andi Kleen <ak@suse.de>
-> Cc: Randy Dunlap <randy.dunlap@oracle.com>
-> Signed-off-by: David Rientjes <rientjes@google.com>
-> Signed-off-by: Paul Jackson <pj@sgi.com>
-> ---
->  Documentation/filesystems/tmpfs.txt     |   12 +++
->  Documentation/vm/numa_memory_policy.txt |  131 +++++++++++++++++++++++-------
->  2 files changed, 112 insertions(+), 31 deletions(-)
-> 
-> diff --git a/Documentation/vm/numa_memory_policy.txt b/Documentation/vm/numa_memory_policy.txt
-> --- a/Documentation/vm/numa_memory_policy.txt
-> +++ b/Documentation/vm/numa_memory_policy.txt
+On Sat, Mar 1, 2008 at 3:42 AM, Alexey Zaytsev <alexey.zaytsev@gmail.com> wrote:
+>
+> On Fri, Feb 29, 2008 at 10:45 PM, Ingo Molnar <mingo@elte.hu> wrote:
+>  >
+>  >  * Alexey Zaytsev <alexey.zaytsev@gmail.com> wrote:
+>  >
+>  >
+>  >
+>  > > On Thu, Feb 28, 2008 at 11:16 PM, Ingo Molnar <mingo@elte.hu> wrote:
+>  >  > >
+>  >  > >  * Ingo Molnar <mingo@elte.hu> wrote:
+>  >  > >
+>  >  > >  > > Anything else I can do?
+>  >  > >  >
+>  >  > >  > yes, please test the patch below - does it fix the problem?
+>  >  >
+>  >  > The patch worked well, thanks
+>  >  >
+>  >  > I still observe some uneven mouse behaviour during compilations (linux
+>  >  > kernel, make -j 6), like, when I slowly move the mouse, it would stop
+>  >  > for a split of a second every few seconds (the intervals are not
+>  >  > equal). On 2.6.23/24 it works very smooth. Of course, I can't say that
+>  >  > the scheduler is to be blamed. It was only my assumption because I
+>  >  > thought I might be confused by the non-monotinic time, which I see is
+>  >  > not the case. Any ideas, how to debug this?
+>  >
+>  >  could you try latencytop, what does it say, what type of scheduler (and
+>  >  other) delays are there?
+>  >
+>
+>  I'm not sure I fully understand how to use this tool.
+>  There are clearly two possible options to the utility,
+>  --unknown and -d, but I still have no idea what they do..
+>
+>  Does the latencytop-0.3 actually work? I my case the upper half of the
+>  window is always empty. The lower half shows always one line, like
+>
+>  Scheduler: waiting for cpu \t \t \t \t $some_val $some_val
+>
+>  The two values are always identical.
+>
+>  In the 2.6.24 case, the values for Xorg are always around 20 ms
+>  when a make -j 6 is runig in parallel. For the 2.6.25 the
+>  values jump from 100 ms to over 1000 ms.
+>
+>  Later I mounted a tmpfs and run the compilation (from root) there
+>  (swap turned off). This time the Xorg latency was usually less then
+>  30 ms, but the gnome-terminal (running from an other user) was not
+>  that lucky with latencies around 500-1000 ms. Now I ran the same compilation
+>  from user, and the latencies came back to what I observed before, with
+>  gnome-terminal being about 30-50 and Xorg jumping from 100 to now
+>  over 2000. The latencytop and some daemons runnig as different users
+>  also had comparable latencyes.
+>
+>  Yes, fair group scheduler enabled, the config can be seen here:
+>  http://romomatic.osuosl.org/share/xl0/config-2.6.25-rc3
+>
+>  I"ll now recompile with fair group scheduler disabled, just to be sure.
+>
 
-> @@ -231,6 +234,80 @@ Components of Memory Policies
->  	    the temporary interleaved system default policy works in this
->  	    mode.
->  
-> +   Linux memory policy supports the following optional mode flag:
-
-                                                               flags:
-
-> +
-> +	MPOL_F_STATIC_NODES:  This flag specifies that the nodemask passed by
-> +	the user should not be remapped if the task or VMA's set of allowed
-> +	nodes changes after the memory policy has been defined.
-> +
-> +	    Without this flag, anytime a mempolicy is rebound because of a
-> +	    change in the set of allowed nodes, the node (Preferred) or
-> +	    nodemask (Bind, Interleave) is remapped to the new set of
-> +	    allowed nodes.  This may result in nodes being used that were
-> +	    previously undesired.
-> +
-> +	    With this flag, if the user specified nodes overlap with the
-
-                                   user-specified
-
-> +	    nodes allowed by the task's cpuset, then the memory policy is
-> +	    applied to their intersection.  If the two sets of nodes do not
-> +	    overlap, the Default policy is used.
-> +
-> +	    For example, consider a task that is attached to a cpuset with
-> +	    mems 1-3 that sets an Interleave policy over the same set.  If
-> +	    the cpuset's mems change to 3-5, the Interleave will now occur
-> +	    over nodes 3, 4, and 5.  With this flag, however, since only node
-> +	    3 is allowed from the user's nodemask, the "interleave" only
-> +	    occurs over that node.  If no nodes from the user's nodemask are
-> +	    now allowed, the Default behavior is used.
-> +
-> +	    MPOL_F_STATIC_NODES cannot be used with MPOL_F_RELATIVE_NODES.
-> +
-
-
--- 
-~Randy
+Yes, with the group scheduler disabled, the latencies for both Xorg and
+gnome-terminal do net exceed 15 ms. And the mouse is also smooth.
