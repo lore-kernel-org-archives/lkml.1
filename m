@@ -1,25 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756880AbYCAJG7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754553AbYCAJHl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756880AbYCAJG7 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 1 Mar 2008 04:06:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755241AbYCAI7l
+	id S1754553AbYCAJHl (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 1 Mar 2008 04:07:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753108AbYCAI71
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 1 Mar 2008 03:59:41 -0500
-Received: from ug-out-1314.google.com ([66.249.92.171]:6285 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757438AbYCAI7c (ORCPT
+	Sat, 1 Mar 2008 03:59:27 -0500
+Received: from mu-out-0910.google.com ([209.85.134.187]:55344 "EHLO
+	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756210AbYCAI7V (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 1 Mar 2008 03:59:32 -0500
+	Sat, 1 Mar 2008 03:59:21 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=googlemail.com; s=gamma;
         h=to:cc:subject:date:message-id:x-mailer:in-reply-to:references:from;
-        b=PWfH/n0wDmA9wM4a7kFFmQDxuMrvQWETwK23HT9PwmOcoiooYLFbcx29czlhXXJwbWyhT7eRb61c6Wo1dRUCoxtDBLJY1UxZkIXgx2zQZopHZ20kd4y+OtN46l2pqi1WGkJ66Df132onc3SGCiTUE9o8C/N6rHOU4VRuoiRh/GM=
+        b=HrMgFB0CbsbdGkJoGRaLjLH//dNNTRAKtWaSUQFsoqyq8CXj40Pwp6+peF3CwIfSvNVlN9R8ZDHEpBTHyknsSJJaYfkC8VreExFT9OcbL3EQvinEuo/wREMbzxwZPjiEd9R04cXFCDJR+xtHFtzWq9c9tsRIvXADh/DMLI2XTuk=
 To: <bzolnier@gmail.com>
 Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org,
        Borislav Petkov <petkovbb@gmail.com>
-Subject: [PATCH 15/24] ide-tape: remove pipeline-specific code from idetape_end_request
-Date: Sat,  1 Mar 2008 09:58:39 +0100
-Message-Id: <1204361928-30229-16-git-send-email-petkovbb@gmail.com>
+Subject: [PATCH 05/24] ide-tape: cleanup pipeline-specific code from idetape_init_read
+Date: Sat,  1 Mar 2008 09:58:29 +0100
+Message-Id: <1204361928-30229-6-git-send-email-petkovbb@gmail.com>
 X-Mailer: git-send-email 1.5.4.1
 In-Reply-To: <1204361928-30229-1-git-send-email-petkovbb@gmail.com>
 References: <1204361928-30229-1-git-send-email-petkovbb@gmail.com>
@@ -28,232 +28,136 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-As a result, remove orphaned
-
-idetape_activate_next_stage
-idetape_remove_stage_head
-idetape_abort_pipeline
-idetape_wait_for_request
-idetape_kfree_stage
-
-too.
+Also, remove idetape_kmalloc_stage() and idetape_add_stage_tail() since they've
+become unused, as a result.
 
 Signed-off-by: Borislav Petkov <petkovbb@gmail.com>
 ---
- drivers/ide/ide-tape.c |  172 +-----------------------------------------------
- 1 files changed, 1 insertions(+), 171 deletions(-)
+ drivers/ide/ide-tape.c |   73 +++--------------------------------------------
+ 1 files changed, 5 insertions(+), 68 deletions(-)
 
 diff --git a/drivers/ide/ide-tape.c b/drivers/ide/ide-tape.c
-index a3a45b5..93e42e6 100644
+index 4a064c1..6bca29b 100644
 --- a/drivers/ide/ide-tape.c
 +++ b/drivers/ide/ide-tape.c
-@@ -673,28 +673,6 @@ static void idetape_analyze_error(ide_drive_t *drive, u8 *sense)
+@@ -1684,21 +1684,6 @@ abort:
+ 	return NULL;
+ }
+ 
+-static idetape_stage_t *idetape_kmalloc_stage(idetape_tape_t *tape)
+-{
+-	idetape_stage_t *cache_stage = tape->cache_stage;
+-
+-	debug_log(DBG_PROCS, "Enter %s\n", __func__);
+-
+-	if (tape->nr_stages >= tape->max_stages)
+-		return NULL;
+-	if (cache_stage != NULL) {
+-		tape->cache_stage = NULL;
+-		return cache_stage;
+-	}
+-	return __idetape_kmalloc_stage(tape, 0, 0);
+-}
+-
+ static int idetape_copy_stage_from_user(idetape_tape_t *tape,
+ 					const char __user *buf, int n)
+ {
+@@ -1776,30 +1761,8 @@ static void idetape_init_merge_stage(idetape_tape_t *tape)
  	}
  }
  
--static void idetape_activate_next_stage(ide_drive_t *drive)
+-/* Add a new stage at the end of the pipeline. */
+-static void idetape_add_stage_tail(ide_drive_t *drive, idetape_stage_t *stage)
 -{
 -	idetape_tape_t *tape = drive->driver_data;
--	idetape_stage_t *stage = tape->next_stage;
--	struct request *rq = &stage->rq;
--
--	debug_log(DBG_PROCS, "Enter %s\n", __func__);
--
--	if (stage == NULL) {
--		printk(KERN_ERR "ide-tape: bug: Trying to activate a non"
--				" existing stage\n");
--		return;
--	}
--
--	rq->rq_disk = tape->disk;
--	rq->buffer = NULL;
--	rq->special = (void *)stage->bh;
--	tape->active_data_rq = rq;
--	tape->active_stage = stage;
--	tape->next_stage = stage->next;
--}
--
- /* Free a stage along with its related buffers completely. */
- static void __idetape_kfree_stage(idetape_stage_t *stage)
- {
-@@ -717,84 +695,12 @@ static void __idetape_kfree_stage(idetape_stage_t *stage)
- 	kfree(stage);
- }
- 
--static void idetape_kfree_stage(idetape_tape_t *tape, idetape_stage_t *stage)
--{
--	__idetape_kfree_stage(stage);
--}
--
--/*
-- * Remove tape->first_stage from the pipeline. The caller should avoid race
-- * conditions.
-- */
--static void idetape_remove_stage_head(ide_drive_t *drive)
--{
--	idetape_tape_t *tape = drive->driver_data;
--	idetape_stage_t *stage;
--
--	debug_log(DBG_PROCS, "Enter %s\n", __func__);
--
--	if (tape->first_stage == NULL) {
--		printk(KERN_ERR "ide-tape: bug: tape->first_stage is NULL\n");
--		return;
--	}
--	if (tape->active_stage == tape->first_stage) {
--		printk(KERN_ERR "ide-tape: bug: Trying to free our active "
--				"pipeline stage\n");
--		return;
--	}
--	stage = tape->first_stage;
--	tape->first_stage = stage->next;
--	idetape_kfree_stage(tape, stage);
--	tape->nr_stages--;
--	if (tape->first_stage == NULL) {
--		tape->last_stage = NULL;
--		if (tape->next_stage != NULL)
--			printk(KERN_ERR "ide-tape: bug: tape->next_stage !="
--					" NULL\n");
--		if (tape->nr_stages)
--			printk(KERN_ERR "ide-tape: bug: nr_stages should be 0 "
--					"now\n");
--	}
--}
--
--/*
-- * This will free all the pipeline stages starting from new_last_stage->next
-- * to the end of the list, and point tape->last_stage to new_last_stage.
-- */
--static void idetape_abort_pipeline(ide_drive_t *drive,
--				   idetape_stage_t *new_last_stage)
--{
--	idetape_tape_t *tape = drive->driver_data;
--	idetape_stage_t *stage = new_last_stage->next;
--	idetape_stage_t *nstage;
--
--	debug_log(DBG_PROCS, "%s: Enter %s\n", tape->name, __func__);
--
--	while (stage) {
--		nstage = stage->next;
--		idetape_kfree_stage(tape, stage);
--		--tape->nr_stages;
--		--tape->nr_pending_stages;
--		stage = nstage;
--	}
--	if (new_last_stage)
--		new_last_stage->next = NULL;
--	tape->last_stage = new_last_stage;
--	tape->next_stage = NULL;
--}
--
--/*
-- * Finish servicing a request and insert a pending pipeline request into the
-- * main device queue.
-- */
-+/* Finish servicing a request. */
- static int idetape_end_request(ide_drive_t *drive, int uptodate, int nr_sects)
- {
- 	struct request *rq = HWGROUP(drive)->rq;
- 	idetape_tape_t *tape = drive->driver_data;
 -	unsigned long flags;
- 	int error;
--	int remove_stage = 0;
--	idetape_stage_t *active_stage;
- 
- 	debug_log(DBG_PROCS, "Enter %s\n", __func__);
- 
-@@ -812,61 +718,8 @@ static int idetape_end_request(ide_drive_t *drive, int uptodate, int nr_sects)
- 		return 0;
- 	}
- 
+-
+-	debug_log(DBG_PROCS, "Enter %s\n", __func__);
+-
 -	spin_lock_irqsave(&tape->lock, flags);
+-	stage->next = NULL;
+-	if (tape->last_stage != NULL)
+-		tape->last_stage->next = stage;
+-	else
+-		tape->first_stage = stage;
+-		tape->next_stage  = stage;
+-	tape->last_stage = stage;
+-	if (tape->next_stage == NULL)
+-		tape->next_stage = tape->last_stage;
+-	tape->nr_stages++;
+-	tape->nr_pending_stages++;
+-	spin_unlock_irqrestore(&tape->lock, flags);
+-}
 -
--	/* The request was a pipelined data transfer request */
--	if (tape->active_data_rq == rq) {
--		active_stage = tape->active_stage;
--		tape->active_stage = NULL;
--		tape->active_data_rq = NULL;
--		tape->nr_pending_stages--;
--		if (rq->cmd[0] & REQ_IDETAPE_WRITE) {
--			remove_stage = 1;
--			if (error) {
--				set_bit(IDETAPE_FLAG_PIPELINE_ERR,
--					&tape->flags);
--				if (error == IDETAPE_ERROR_EOD)
--					idetape_abort_pipeline(drive,
--								active_stage);
--			}
--		} else if (rq->cmd[0] & REQ_IDETAPE_READ) {
--			if (error == IDETAPE_ERROR_EOD) {
--				set_bit(IDETAPE_FLAG_PIPELINE_ERR,
--					&tape->flags);
--				idetape_abort_pipeline(drive, active_stage);
--			}
+-/* Install a completion in a pending request and sleep until it is serviced. The
++/*
++ * Install a completion in a pending request and sleep until it is serviced. The
+  * caller should ensure that the request will not be serviced before we install
+  * the completion (usually by disabling interrupts).
+  */
+@@ -2318,17 +2281,12 @@ static void idetape_restart_speed_control(ide_drive_t *drive)
+ static int idetape_init_read(ide_drive_t *drive, int max_stages)
+ {
+ 	idetape_tape_t *tape = drive->driver_data;
+-	idetape_stage_t *new_stage;
+ 	struct request rq;
+ 	int bytes_read;
+ 	u16 blocks = *(u16 *)&tape->caps[12];
+ 
+ 	/* Initialize read operation */
+ 	if (tape->chrdev_dir != IDETAPE_DIR_READ) {
+-		if (tape->chrdev_dir == IDETAPE_DIR_WRITE) {
+-			idetape_empty_write_pipeline(drive);
+-			idetape_flush_tape_buffers(drive);
 -		}
--		if (tape->next_stage != NULL) {
--			idetape_activate_next_stage(drive);
--
--			/* Insert the next request into the request queue. */
--			(void)ide_do_drive_cmd(drive, tape->active_data_rq,
--						ide_end);
--		} else if (!error) {
--			/*
--			 * This is a part of the feedback loop which tries to
--			 * find the optimum number of stages. We are starting
--			 * from a minimum maximum number of stages, and if we
--			 * sense that the pipeline is empty, we try to increase
--			 * it, until we reach the user compile time memory
--			 * limit.
--			 */
--			int i = (tape->max_pipeline - tape->min_pipeline) / 10;
--
--			tape->max_stages += max(i, 1);
--			tape->max_stages = max(tape->max_stages,
--						tape->min_pipeline);
--			tape->max_stages = min(tape->max_stages,
--						tape->max_pipeline);
+ 		if (tape->merge_stage || tape->merge_stage_size) {
+ 			printk(KERN_ERR "ide-tape: merge_stage_size should be"
+ 					 " 0 now\n");
+@@ -2347,8 +2305,8 @@ static int idetape_init_read(ide_drive_t *drive, int max_stages)
+ 		 */
+ 		if (drive->dsc_overlap) {
+ 			bytes_read = idetape_queue_rw_tail(drive,
+-							REQ_IDETAPE_READ, 0,
+-							tape->merge_stage->bh);
++							 REQ_IDETAPE_READ, 0,
++							 tape->merge_stage->bh);
+ 			if (bytes_read < 0) {
+ 				__idetape_kfree_stage(tape->merge_stage);
+ 				tape->merge_stage = NULL;
+@@ -2357,32 +2315,11 @@ static int idetape_init_read(ide_drive_t *drive, int max_stages)
+ 			}
+ 		}
+ 	}
+-	if (tape->restart_speed_control_req)
+-		idetape_restart_speed_control(drive);
+ 	idetape_init_rq(&rq, REQ_IDETAPE_READ);
+ 	rq.sector = tape->first_frame;
+ 	rq.nr_sectors = blocks;
+ 	rq.current_nr_sectors = blocks;
+-	if (!test_bit(IDETAPE_FLAG_PIPELINE_ERR, &tape->flags) &&
+-	    tape->nr_stages < max_stages) {
+-		new_stage = idetape_kmalloc_stage(tape);
+-		while (new_stage != NULL) {
+-			new_stage->rq = rq;
+-			idetape_add_stage_tail(drive, new_stage);
+-			if (tape->nr_stages >= max_stages)
+-				break;
+-			new_stage = idetape_kmalloc_stage(tape);
 -		}
 -	}
- 	ide_end_drive_cmd(drive, 0, 0);
- 
--	if (remove_stage)
--		idetape_remove_stage_head(drive);
--	if (tape->active_data_rq == NULL)
--		clear_bit(IDETAPE_FLAG_PIPELINE_ACTIVE, &tape->flags);
--	spin_unlock_irqrestore(&tape->lock, flags);
+-	if (!test_bit(IDETAPE_FLAG_PIPELINE_ACTIVE, &tape->flags)) {
+-		if (tape->nr_pending_stages >= 3 * max_stages / 4) {
+-			tape->measure_insert_time = 1;
+-			tape->insert_time = jiffies;
+-			tape->insert_size = 0;
+-			tape->insert_speed = 0;
+-			idetape_plug_pipeline(drive);
+-		}
+-	}
++
  	return 0;
  }
  
-@@ -1760,29 +1613,6 @@ static void idetape_init_merge_stage(idetape_tape_t *tape)
- 	}
- }
- 
--/*
-- * Install a completion in a pending request and sleep until it is serviced. The
-- * caller should ensure that the request will not be serviced before we install
-- * the completion (usually by disabling interrupts).
-- */
--static void idetape_wait_for_request(ide_drive_t *drive, struct request *rq)
--{
--	DECLARE_COMPLETION_ONSTACK(wait);
--	idetape_tape_t *tape = drive->driver_data;
--
--	if (rq == NULL || !blk_special_request(rq)) {
--		printk(KERN_ERR "ide-tape: bug: Trying to sleep on non-valid"
--				 " request\n");
--		return;
--	}
--	rq->end_io_data = &wait;
--	rq->end_io = blk_end_sync_rq;
--	spin_unlock_irq(&tape->lock);
--	wait_for_completion(&wait);
--	/* The stage and its struct request have been deallocated */
--	spin_lock_irq(&tape->lock);
--}
--
- static ide_startstop_t idetape_read_position_callback(ide_drive_t *drive)
- {
- 	idetape_tape_t *tape = drive->driver_data;
 -- 
 1.5.4.1
 
