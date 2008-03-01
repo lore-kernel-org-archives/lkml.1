@@ -1,59 +1,130 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758937AbYCAW6Z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754684AbYCAXLj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758937AbYCAW6Z (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 1 Mar 2008 17:58:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755172AbYCAW6P
+	id S1754684AbYCAXLj (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 1 Mar 2008 18:11:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750755AbYCAXLV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 1 Mar 2008 17:58:15 -0500
-Received: from smtp123.sbc.mail.sp1.yahoo.com ([69.147.64.96]:27119 "HELO
-	smtp123.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1755012AbYCAW6P (ORCPT
+	Sat, 1 Mar 2008 18:11:21 -0500
+Received: from gv-out-0910.google.com ([216.239.58.190]:46745 "EHLO
+	gv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756789AbYCAXK4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 1 Mar 2008 17:58:15 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=XZ7/3thsJHwdsrKlS2VWZOy8F9iKcG3ahkMKdMzOQsG2rw/Hgt9aQYWmkOC5b9yq+Ophdhw2Hjl1sgaNyRTxaWVAzc00ZTvjKk0XQ7A21ftsQU36n/mATB90xFKlTjvBL84ScQGUzno7SSNaTiONO7KQkym7vLP5UWk7eLGLW5g=  ;
-X-YMail-OSG: gTL6DpsVM1kBzd3zG_YcGu9Oyw_j6n2lbxidA49YXnEZc9J1gvQ1elWfI8fAiqzzX4p0q4MOon9Mh1odPpYXhjhXzfZSQeZgdSJXZGEXfJRYtbEDdg--
-X-Yahoo-Newman-Property: ymail-3
-From: David Brownell <david-b@pacbell.net>
-To: Bosko Radivojevic <bosko.radivojevic@gmail.com>
-Subject: Re: High resolution timers on AT91SAM926x
-Date: Sat, 1 Mar 2008 14:57:40 -0800
-User-Agent: KMail/1.9.6
-Cc: lkml <linux-kernel@vger.kernel.org>
+	Sat, 1 Mar 2008 18:10:56 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:sender:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition:x-google-sender-auth;
+        b=pGqc/BJD6uZNPT7lUwPqKh9eWOrYyZFb/uX520YrlJmKdQbpHOlsBXjSioK4vIGmMSTT2ZBI+GDg8Zbq4RZYz5I/c99T4gbuqxkeRnxt72Kj0ILkYp9GSyq4A7L/UZrxx71BARNEDNHb/US1v8bmDR+JVOZYLS2hEbO9n2mzeNg=
+Message-ID: <2c0942db0803011510s5cfc30cbhee8ac9c1b849a2aa@mail.gmail.com>
+Date: Sat, 1 Mar 2008 15:10:52 -0800
+From: "Ray Lee" <ray-lk@madrabbit.org>
+To: "kernel list" <linux-kernel@vger.kernel.org>, netdev@vger.kernel.org
+Subject: assertion (packets <= tp->packets_out) failed
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200803011457.40857.david-b@pacbell.net>
+X-Google-Sender-Auth: f2015536a9113455
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Is there a way to enable high resolution timers on AT91SAM926x?
+Wireless below is b43, wired interface (tg3) was disconnected. I run
+openvpn which uses a tun interface and regularly sends a heartbeat
+even when not in use. The trace appeared twice.
 
-Update PIT to support the clocksource/clockevent framework:
-  http://marc.info/?l=linux-arm-kernel&m=119940724711435&w=2
+Likely unrelated but reporting just for completeness: about fifteen
+minutes after this the system oopsed when I told my wireless base
+station to switch from mixed B/G to just B. I'll be taking that up
+separately with the bcm43xx list.
 
-Declare timer/counter block platform devices:
-  http://marc.info/?l=linux-arm-kernel&m=120302318811110&w=2
-
-Use timer/counter blocks for better clocksource and clockevents:
-  http://marc.info/?l=linux-kernel&m=120373043520279&w=2
-  http://marc.info/?l=linux-kernel&m=120373063320487&w=2
-
-The focus in that last patch is on NO_HZ support -- so the
-clockevents run at 32 KiHz (about 31 usec precision for HRT)
-to allow overall HZ to run below 1 where practical.   If you
-need even higher precision, you could update that clockevent
-code to use a different base clock.
-
-Those last two patches are in some MM tree, and Haavard has
-some updates to then (which don't much affect functionality).
-
-I understand the upcoming 2.6.24-at91 patch will include the
-first two patches.
-
-- Dave
+Mar  1 11:06:37 phoenix kernel: [35251.208275] eth1: switched to short
+barker preamble (BSSID=00:16:01:d1:44:3e)
+Mar  1 11:06:37 phoenix kernel: [35251.320282] eth1: switched to long
+barker preamble (BSSID=00:16:01:d1:44:3e)
+Mar  1 11:08:28 phoenix kernel: [35274.396163] KERNEL: assertion
+(packets <= tp->packets_out) failed at net/ipv4/tcp_input.c (2139)
+Mar  1 11:08:29 phoenix kernel: [35274.406126] ------------[ cut here
+]------------
+Mar  1 11:08:29 phoenix kernel: [35274.406132] WARNING: at
+net/ipv4/tcp_input.c:2506 tcp_ack+0xe3f/0x1b12()
+Mar  1 11:08:29 phoenix kernel: [35274.406134] Modules linked in: b43
+mac80211 nls_iso8859_1 vfat fat usb_storage libusu
+al tun nls_cp437 cifs af_packet rfcomm l2cap bluetooth binfmt_misc
+radeon drm powernow_k8 cpufreq_stats iptable_filter i
+p_tables x_tables dm_mod sbp2 snd_atiixp snd_atiixp_modem
+snd_ac97_codec ac97_bus arc4 snd_pcm_oss ecb crypto_blkcipher
+snd_pcm snd_mixer_oss snd_seq_dummy snd_seq_oss snd_seq_midi cfg80211
+snd_rawmidi snd_seq_midi_event pcmcia led_class sn
+d_seq snd_timer snd_seq_device sdhci serio_raw snd yenta_socket video
+tifm_7xx1 rsrc_nonstatic evdev container output mm
+c_core soundcore psmouse tifm_core pcmcia_core ssb battery ac button
+pcspkr snd_page_alloc ext3 jbd mbcache ohci1394 sg
+ieee1394 tg3 sr_mod cdrom sd_mod ehci_hcd ohci_hcd ata_generic usbcore
+thermal processor fan fuse [last unloaded: mac80211]
+Mar  1 11:08:29 phoenix kernel: [35274.406162] Pid: 5095, comm:
+openvpn Tainted: G   M    2.6.24 #12
+Mar  1 11:08:29 phoenix kernel: [35274.406162]
+Mar  1 11:08:29 phoenix kernel: [35274.406162] Call Trace:
+Mar  1 11:08:29 phoenix kernel: [35274.406162]  <IRQ>
+[ext3:warn_on_slowpath+0x58/0x277] warn_on_slowpath+0x58/0x6b
+Mar  1 11:08:29 phoenix kernel: [35274.406162]
+[discard_slab+0x30/0x32] ? discard_slab+0x30/0x32
+Mar  1 11:08:29 phoenix kernel: [35274.406162]
+[__slab_free+0xd0/0x357] ? __slab_free+0xd0/0x357
+Mar  1 11:08:29 phoenix kernel: [35274.406162]
+[skb_release_data+0xa7/0xac] ? skb_release_data+0xa7/0xac
+Mar  1 11:08:29 phoenix kernel: [35274.406162]
+[tcp_rtt_estimator+0xf2/0x142] ? tcp_rtt_estimator+0xf2/0x142
+Mar  1 11:08:29 phoenix kernel: [35274.406162]  [tcp_ack+0xe3f/0x1b12]
+tcp_ack+0xe3f/0x1b12
+Mar  1 11:08:29 phoenix kernel: [35274.406162]
+[tcp_rcv_established+0x602/0x712] tcp_rcv_established+0x602/0x712
+Mar  1 11:08:29 phoenix kernel: [35274.406169]
+[tcp_v4_do_rcv+0x31/0x1c8] tcp_v4_do_rcv+0x31/0x1c8
+Mar  1 11:08:29 phoenix kernel: [35274.406176]
+[tcp_v4_rcv+0x68c/0x6e9] tcp_v4_rcv+0x68c/0x6e9
+Mar  1 11:08:29 phoenix kernel: [35274.406184]
+[ip_local_deliver_finish+0x135/0x1c4]
+ip_local_deliver_finish+0x135/0x1c4
+Mar  1 11:08:29 phoenix kernel: [35274.406189]
+[ip_local_deliver+0x72/0x7c] ip_local_deliver+0x72/0x7c
+Mar  1 11:08:29 phoenix kernel: [35274.406194]
+[ip_rcv_finish+0x296/0x2bb] ip_rcv_finish+0x296/0x2bb
+Mar  1 11:08:29 phoenix kernel: [35274.406198]
+[tg3:netif_receive_skb+0x3c0/0x5f7] ? netif_receive_skb+0x3c0/0x3e2
+Mar  1 11:08:29 phoenix kernel: [35274.406205]  [ip_rcv+0x22e/0x250]
+ip_rcv+0x22e/0x250
+Mar  1 11:08:29 phoenix kernel: [35274.406208]
+[process_backlog+0xd3/0xfc] ? process_backlog+0xd3/0xfc
+Mar  1 11:08:29 phoenix kernel: [35274.406213]
+[tg3:netif_receive_skb+0x3a8/0x5f7] netif_receive_skb+0x3a8/0x3e2
+Mar  1 11:08:29 phoenix kernel: [35274.406220]
+[process_backlog+0x94/0xfc] process_backlog+0x94/0xfc
+Mar  1 11:08:29 phoenix kernel: [35274.406226]
+[net_rx_action+0xab/0x1a1] net_rx_action+0xab/0x1a1
+Mar  1 11:08:29 phoenix kernel: [35274.406233]
+[__do_softirq+0x67/0xc9] __do_softirq+0x67/0xc9
+Mar  1 11:08:29 phoenix kernel: [35274.406239]
+[call_softirq+0x1c/0x28] call_softirq+0x1c/0x28
+Mar  1 11:08:29 phoenix kernel: [35274.406241]  <EOI>
+[do_softirq+0x4d/0xb0] do_softirq+0x4d/0xb0
+Mar  1 11:08:29 phoenix kernel: [35274.406248]
+[netif_rx_ni+0x31/0x58] netif_rx_ni+0x31/0x58
+Mar  1 11:08:29 phoenix kernel: [35274.406255]  [<ffffffff88368ce1>]
+:tun:tun_chr_aio_write+0x1e5/0x22c
+Mar  1 11:08:29 phoenix kernel: [35274.406266]
+[ext3:do_sync_write+0xeb/0x132] do_sync_write+0xeb/0x132
+Mar  1 11:08:29 phoenix kernel: [35274.406277]  [<ffffffff8023eda5>] ?
+autoremove_wake_function+0x0/0x38
+Mar  1 11:08:29 phoenix kernel: [35274.406281]
+[sys_recvfrom+0xc8/0xf5] ? sys_recvfrom+0xc8/0xf5
+Mar  1 11:08:29 phoenix kernel: [35274.406297]  [vfs_write+0xae/0x157]
+vfs_write+0xae/0x157
+Mar  1 11:08:29 phoenix kernel: [35274.406303]  [sys_write+0x47/0x70]
+sys_write+0x47/0x70
+Mar  1 11:08:29 phoenix kernel: [35274.406310]
+[system_call_after_swapgs+0x8a/0x8f]
+system_call_after_swapgs+0x8a/0x8f
+Mar  1 11:08:29 phoenix kernel: [35274.406319]
+Mar  1 11:08:29 phoenix kernel: [35274.406321] ---[ end trace
+1bac8d9854a4a52e ]---
