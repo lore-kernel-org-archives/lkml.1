@@ -1,157 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757905AbYCATjV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758212AbYCATmI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757905AbYCATjV (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 1 Mar 2008 14:39:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751963AbYCATjM
+	id S1758212AbYCATmI (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 1 Mar 2008 14:42:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752559AbYCATl5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 1 Mar 2008 14:39:12 -0500
-Received: from e36.co.us.ibm.com ([32.97.110.154]:42053 "EHLO
-	e36.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751298AbYCATjL (ORCPT
+	Sat, 1 Mar 2008 14:41:57 -0500
+Received: from fk-out-0910.google.com ([209.85.128.191]:56179 "EHLO
+	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752516AbYCATl4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 1 Mar 2008 14:39:11 -0500
-Date: Sat, 1 Mar 2008 11:39:03 -0800
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Roman Zippel <zippel@linux-m68k.org>
-Cc: ego@in.ibm.com, linux-kernel@vger.kernel.org,
-       linux-rt-users@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Dipankar Sarma <dipankar@in.ibm.com>, Ted Tso <tytso@us.ibm.com>,
-       dvhltc@us.ibm.com, Oleg Nesterov <oleg@tv-sign.ru>,
-       Andrew Morton <akpm@linux-foundation.org>, bunk@kernel.org,
-       Josh Triplett <josh@freedesktop.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: Re: [RFC PATCH 4/6] Preempt-RCU: Implementation
-Message-ID: <20080301193903.GC15887@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <20071213170348.GA25981@in.ibm.com> <20071213171658.GE25981@in.ibm.com> <200802290534.57040.zippel@linux-m68k.org> <20080229045328.GA18687@linux.vnet.ibm.com> <Pine.LNX.4.64.0802291330590.2723@scrub.home>
+	Sat, 1 Mar 2008 14:41:56 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=kdD5PcbuN91UBgOyLLUw0cwjLSK+qGj+i2PqqxQ9U88v7ns7Beif8NhGHkQeHr65onWMvidXC4CgPjfXgOLIurtXH/nqAG/JDYbVFKUF8HoXATMStvifuqBdTApOmnNVn/h/57As8WXMUkdxGK9TkEp98CT9wJs+UFhiYWFSPEE=
+Message-ID: <74d8fc520803011141q74ec01e4j2185fad3f0073a16@mail.gmail.com>
+Date: Sat, 1 Mar 2008 19:41:51 +0000
+From: "Gordon Mckeown" <ml_lkml@thefluffyone.net>
+To: LKML <linux-kernel@vger.kernel.org>
+Subject: Re: Very high IOWait during all disk activity
+Cc: "Tomasz Chmielewski" <mangoo@wpkg.org>
+In-Reply-To: <74d8fc520803010531h3453ca91m4521f6bd94b1f5ad@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0802291330590.2723@scrub.home>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+References: <47C82244.60307@wpkg.org>
+	 <74d8fc520802290747o2c97992ar7af2b8c295fe2fb2@mail.gmail.com>
+	 <47C82C2A.5000301@wpkg.org>
+	 <74d8fc520803010531h3453ca91m4521f6bd94b1f5ad@mail.gmail.com>
+X-Google-Sender-Auth: 68857a57e1a6c763
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Feb 29, 2008 at 01:38:15PM +0100, Roman Zippel wrote:
-> Hi
-> 
-> On Thu, 28 Feb 2008, Paul E. McKenney wrote:
-> 
-> > > Why got this moved into init/Kconfig?
-> > 
-> > Because there are some arches that don't have kernel/Kconfig.preempt,
-> > its earlier home.  Therefore, putting it into kernel/Kconfig.preempt
-> > broke those arches' builds by supplying neither PREEMPT_RCU nor
-> > CLASSIC_RCU.
-> > 
-> > > Now it's somewhere in the root menu, not really belonging to anything.
-> > 
-> > Do you have a suggested location?
-> > 
-> > > Also why is this a choice? Are more RCU types planned?
-> > 
-> > I don't expect additional drop-in replacements for RCU, though people
-> > are certainly free to experiment if they wish.  It is a choice because
-> > this gives people a very clear idea of the two options and because
-> > it makes the implementation a bit cleaner.
-> 
-> I'd suggest to move PREEMPT_RCU back to Kconfig.preempt and if you really 
-> need the second symbol leave this behind (maybe with a comment):
-> 
-> config CLASSIC_RCU
-> 	def_bool !PREEMPT_RCU
-> 
-> Once there are more options, we can still look for a better place...
-> 
-> Also could you please add a proper dependency to RCU_TRACE on PREEMPT_RCU, 
-> so that this condition isn't needed anymore:
-> 
-> ifeq ($(CONFIG_PREEMPT_RCU),y)
-> obj-$(CONFIG_RCU_TRACE) += rcupreempt_trace.o
-> endif
+On Sat, Mar 1, 2008 at 1:31 PM, I wrote:
+>  I'll run some more tests with different filesystems to see if this is
+>  related to the use of EXT3 specifically.
 
-Is this what you had in mind?  I don't have any way to test on a
-system not supporting CONFIG_PREEMPT, but seems to work on x86.
+Much of the system CPU usage does appear to be due to the use of EXT3;
+the load with EXT2 is around half that with EXT3.
 
-Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
----
+See graph of results: http://www.ubergeek.org.uk/cpu_usage.png
 
- init/Kconfig           |   34 +++-------------------------------
- kernel/Kconfig.preempt |   15 +++++++++++++++
- 2 files changed, 18 insertions(+), 31 deletions(-)
+For Windows, the graph shows total CPU usage as reported by the OS.
+For Linux, the combined User+System figure was used.
 
-diff -urpNa -X dontdiff linux-2.6.25-rc3/init/Kconfig linux-2.6.25-rc3-preempt_rcu/init/Kconfig
---- linux-2.6.25-rc3/init/Kconfig	2008-02-26 16:58:42.000000000 -0800
-+++ linux-2.6.25-rc3-preempt_rcu/init/Kconfig	2008-03-01 11:30:59.000000000 -0800
-@@ -860,38 +860,10 @@ source "block/Kconfig"
- config PREEMPT_NOTIFIERS
- 	bool
- 
--choice
--	prompt "RCU implementation type:"
--	default CLASSIC_RCU
--	help
--	  This allows you to choose either the classic RCU implementation
--	  that is designed for best read-side performance on non-realtime
--	  systems, or the preemptible RCU implementation for best latency
--	  on realtime systems.  Note that some kernel preemption modes
--	  will restrict your choice.
--
--	  Select the default if you are unsure.
--
- config CLASSIC_RCU
--	bool "Classic RCU"
-+	def_bool !PREEMPT_RCU
- 	help
- 	  This option selects the classic RCU implementation that is
- 	  designed for best read-side performance on non-realtime
--	  systems.
--
--	  Say Y if you are unsure.
--
--config PREEMPT_RCU
--	bool "Preemptible RCU"
--	depends on PREEMPT
--	help
--	  This option reduces the latency of the kernel by making certain
--	  RCU sections preemptible. Normally RCU code is non-preemptible, if
--	  this option is selected then read-only RCU sections become
--	  preemptible. This helps latency, but may expose bugs due to
--	  now-naive assumptions about each RCU read-side critical section
--	  remaining on a given CPU through its execution.
--
--	  Say N if you are unsure.
--
--endchoice
-+	  systems.  Classic RCU is the default.  Note that the
-+	  PREEMPT_RCU symbol is used to select/deselect this option.
-diff -urpNa -X dontdiff linux-2.6.25-rc3/kernel/Kconfig.preempt linux-2.6.25-rc3-preempt_rcu/kernel/Kconfig.preempt
---- linux-2.6.25-rc3/kernel/Kconfig.preempt	2008-02-26 16:58:42.000000000 -0800
-+++ linux-2.6.25-rc3-preempt_rcu/kernel/Kconfig.preempt	2008-03-01 11:35:39.000000000 -0800
-@@ -52,8 +52,23 @@ config PREEMPT
- 
- endchoice
- 
-+config PREEMPT_RCU
-+	bool "Preemptible RCU"
-+	depends on PREEMPT
-+	default n
-+	help
-+	  This option reduces the latency of the kernel by making certain
-+	  RCU sections preemptible. Normally RCU code is non-preemptible, if
-+	  this option is selected then read-only RCU sections become
-+	  preemptible. This helps latency, but may expose bugs due to
-+	  now-naive assumptions about each RCU read-side critical section
-+	  remaining on a given CPU through its execution.
-+
-+	  Say N if you are unsure.
-+
- config RCU_TRACE
- 	bool "Enable tracing for RCU - currently stats in debugfs"
-+	depends on PREEMPT_RCU
- 	select DEBUG_FS
- 	default y
- 	help
+Regards,
+
+Gordon.
