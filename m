@@ -1,148 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756946AbYCAHvW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756373AbYCAHzR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756946AbYCAHvW (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 1 Mar 2008 02:51:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753933AbYCAHvL
+	id S1756373AbYCAHzR (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 1 Mar 2008 02:55:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751053AbYCAHzE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 1 Mar 2008 02:51:11 -0500
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:50920 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752970AbYCAHvK (ORCPT
+	Sat, 1 Mar 2008 02:55:04 -0500
+Received: from courier.cs.helsinki.fi ([128.214.9.1]:50789 "EHLO
+	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750842AbYCAHzC (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 1 Mar 2008 02:51:10 -0500
-Date: Sat, 01 Mar 2008 16:51:28 +0900
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: "J. Bruce Fields" <bfields@citi.umich.edu>, linux-ia64@vger.kernel.org
-Subject: [PATCH][2.6.25-rc2-mm1] ia64: remove unnecessary nfs includes from sys_ia32.c
-Cc: kosaki.motohiro@jp.fujitsu.com, Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Message-Id: <20080301164035.528F.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+	Sat, 1 Mar 2008 02:55:02 -0500
+Date: Sat, 1 Mar 2008 09:54:59 +0200 (EET)
+From: "=?ISO-8859-1?Q?Ilpo_J=E4rvinen?=" <ilpo.jarvinen@helsinki.fi>
+X-X-Sender: ijjarvin@kivilampi-30.cs.helsinki.fi
+To: Andrew Morton <akpm@linux-foundation.org>
+cc: LKML <linux-kernel@vger.kernel.org>
+Subject: [PATCH] i2o: remove static inline forward declarations
+Message-ID: <Pine.LNX.4.64.0803010948110.12640@kivilampi-30.cs.helsinki.fi>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
-Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.42 [ja]
+Content-Type: MULTIPART/MIXED; BOUNDARY="-696243703-274662813-1204358099=:12640"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
 
-if compile 2.6.25-rc2-mm1 on ia64, output many warnings.
-
-----------------------------------------------------------------
-% LANG=C make arch/ia64/ia32/sys_ia32.o
-<-mm1% LANG=C make arch/ia64/ia32/sys_ia32.o
-  CHK     include/linux/version.h
-  CHK     include/linux/utsrelease.h
-  CALL    scripts/checksyscalls.sh
-  CC      arch/ia64/ia32/sys_ia32.o
-In file included from arch/ia64/ia32/sys_ia32.c:59:
-arch/ia64/ia32/ia32priv.h:297:1: warning: "elf_check_arch" redefined
-In file included from include/linux/elf.h:7,
-                 from include/linux/module.h:14,
-                 from include/linux/device.h:21,
-                 from include/linux/backing-dev.h:15,
-                 from include/linux/nfs_fs_sb.h:5,
-                 from include/linux/nfs_fs.h:50,
-                 from arch/ia64/ia32/sys_ia32.c:35:
-include/asm/elf.h:19:1: warning: this is the location of the previous definition
-In file included from arch/ia64/ia32/sys_ia32.c:59:
-arch/ia64/ia32/ia32priv.h:302:1: warning: "ELF_CLASS" redefined
-In file included from include/linux/elf.h:7,
-                 from include/linux/module.h:14,
-                 from include/linux/device.h:21,
-                 from include/linux/backing-dev.h:15,
-                 from include/linux/nfs_fs_sb.h:5,
-                 from include/linux/nfs_fs.h:50,
-                 from arch/ia64/ia32/sys_ia32.c:35:
-include/asm/elf.h:24:1: warning: this is the location of the previous definition
-In file included from arch/ia64/ia32/sys_ia32.c:59:
-arch/ia64/ia32/ia32priv.h:304:1: warning: "ELF_ARCH" redefined
-In file included from include/linux/elf.h:7,
-                 from include/linux/module.h:14,
-                 from include/linux/device.h:21,
-                 from include/linux/backing-dev.h:15,
-                 from include/linux/nfs_fs_sb.h:5,
-                 from include/linux/nfs_fs.h:50,
-                 from arch/ia64/ia32/sys_ia32.c:35:
-include/asm/elf.h:26:1: warning: this is the location of the previous definition
-In file included from arch/ia64/ia32/sys_ia32.c:59:
-arch/ia64/ia32/ia32priv.h:318:1: warning: "ELF_EXEC_PAGESIZE" redefined
-In file included from include/linux/elf.h:7,
-                 from include/linux/module.h:14,
-                 from include/linux/device.h:21,
-                 from include/linux/backing-dev.h:15,
-                 from include/linux/nfs_fs_sb.h:5,
-                 from include/linux/nfs_fs.h:50,
-                 from arch/ia64/ia32/sys_ia32.c:35:
-include/asm/elf.h:34:1: warning: this is the location of the previous definition
-In file included from arch/ia64/ia32/sys_ia32.c:59:
-arch/ia64/ia32/ia32priv.h:327:1: warning: "ELF_ET_DYN_BASE" redefined
-In file included from include/linux/elf.h:7,
-                 from include/linux/module.h:14,
-                 from include/linux/device.h:21,
-                 from include/linux/backing-dev.h:15,
-                 from include/linux/nfs_fs_sb.h:5,
-                 from include/linux/nfs_fs.h:50,
-                 from arch/ia64/ia32/sys_ia32.c:35:
-include/asm/elf.h:43:1: warning: this is the location of the previous definition
-In file included from arch/ia64/ia32/sys_ia32.c:59:
-arch/ia64/ia32/ia32priv.h:330:1: warning: "ELF_PLAT_INIT" redefined
-In file included from include/linux/elf.h:7,
-                 from include/linux/module.h:14,
-                 from include/linux/device.h:21,
-                 from include/linux/backing-dev.h:15,
-                 from include/linux/nfs_fs_sb.h:5,
-                 from include/linux/nfs_fs.h:50,
-                 from arch/ia64/ia32/sys_ia32.c:35:
-include/asm/elf.h:140:1: warning: this is the location of the previous definition
-In file included from arch/ia64/ia32/sys_ia32.c:59:
-arch/ia64/ia32/ia32priv.h:342:1: warning: "SET_PERSONALITY" redefined
-In file included from include/linux/elf.h:7,
-                 from include/linux/module.h:14,
-                 from include/linux/device.h:21,
-                 from include/linux/backing-dev.h:15,
-                 from include/linux/nfs_fs_sb.h:5,
-                 from include/linux/nfs_fs.h:50,
-                 from arch/ia64/ia32/sys_ia32.c:35:
-include/asm/elf.h:180:1: warning: this is the location of the previous definition
-------------------------------------------------------------------------
-
-IA64 support 2 ELF format (IA64 binary and IA32 binary),
-thus if 2 elf related header included, cause many warning or error.
-
-about 2 week ago, J. Bruce Fields proposed this problem fixed patch.
-(http://marc.info/?l=linux-ia64&m=120329313305695&w=2)
-
-but unfortunately, it can't applied -mm tree.
-I rebase against 2.6.25-rc2-mm1.
+---696243703-274662813-1204358099=:12640
+Content-Type: TEXT/PLAIN; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 
 
+Nothing in between of them and the later declaration with body
+needs them.
 
-Signed-off-by: J. Bruce Fields <bfields@citi.umich.edu>
-Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-
+Signed-off-by: Ilpo Järvinen <ilpo.jarvinen@helsinki.fi>
 ---
- arch/ia64/ia32/sys_ia32.c |    7 +------
- 1 file changed, 1 insertion(+), 6 deletions(-)
+Here's another this kind of double declaration, ie., prototype and with 
+body later on in the same file (made my inline size tester to fail in
+compile there because it didn't know about the other, duplicate 
+defination).
 
-Index: b/arch/ia64/ia32/sys_ia32.c
-===================================================================
---- a/arch/ia64/ia32/sys_ia32.c 2008-02-18 17:13:15.000000000 +0900
-+++ b/arch/ia64/ia32/sys_ia32.c 2008-03-01 16:48:36.000000000 +0900
-@@ -32,13 +32,8 @@
- #include <linux/shm.h>
- #include <linux/slab.h>
- #include <linux/uio.h>
--#include <linux/nfs_fs.h>
-+#include <linux/socket.h>
- #include <linux/quota.h>
--#include <linux/sunrpc/svc.h>
--#include <linux/nfsd/nfsd.h>
--#include <linux/nfsd/cache.h>
--#include <linux/nfsd/xdr.h>
--#include <linux/nfsd/syscall.h>
- #include <linux/poll.h>
- #include <linux/eventpoll.h>
- #include <linux/personality.h>
+ include/linux/i2o.h |    5 -----
+ 1 files changed, 0 insertions(+), 5 deletions(-)
 
+diff --git a/include/linux/i2o.h b/include/linux/i2o.h
+index 7da5b98..a2f5861 100644
+--- a/include/linux/i2o.h
++++ b/include/linux/i2o.h
+@@ -613,14 +613,9 @@ struct i2o_sys_tbl {
+ extern struct list_head i2o_controllers;
+ 
+ /* Message functions */
+-static inline struct i2o_message *i2o_msg_get(struct i2o_controller *);
+ extern struct i2o_message *i2o_msg_get_wait(struct i2o_controller *, int);
+-static inline void i2o_msg_post(struct i2o_controller *, struct i2o_message *);
+-static inline int i2o_msg_post_wait(struct i2o_controller *,
+-				    struct i2o_message *, unsigned long);
+ extern int i2o_msg_post_wait_mem(struct i2o_controller *, struct i2o_message *,
+ 				 unsigned long, struct i2o_dma *);
+-static inline void i2o_flush_reply(struct i2o_controller *, u32);
+ 
+ /* IOP functions */
+ extern int i2o_status_get(struct i2o_controller *);
+-- 
+1.5.2.2
+
+---696243703-274662813-1204358099=:12640--
