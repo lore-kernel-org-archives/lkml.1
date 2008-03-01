@@ -1,77 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760605AbYCAVaO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758289AbYCAWAW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760605AbYCAVaO (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 1 Mar 2008 16:30:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758078AbYCAV3z
+	id S1758289AbYCAWAW (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 1 Mar 2008 17:00:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750759AbYCAWAH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 1 Mar 2008 16:29:55 -0500
-Received: from web36615.mail.mud.yahoo.com ([209.191.85.32]:31536 "HELO
-	web36615.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1753728AbYCAV3y (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 1 Mar 2008 16:29:54 -0500
-X-YMail-OSG: Od0a2L0VM1kFgZPklci5rr96mRCmJtS908y9JYCCGlEEDJ0wCqILYOqbQhfvYQtTKbCOnB0K_w--
-X-RocketYMMF: rancidfat
-Date: Sat, 1 Mar 2008 13:29:53 -0800 (PST)
-From: Casey Schaufler <casey@schaufler-ca.com>
-Reply-To: casey@schaufler-ca.com
-Subject: Re: [RFC PATCH -mm] LSM: Add lsm= boot parameter
-To: Adrian Bunk <bunk@kernel.org>, Casey Schaufler <casey@schaufler-ca.com>
-Cc: "Ahmed S. Darwish" <darwish.07@gmail.com>,
-       Chris Wright <chrisw@sous-sol.org>, Stephen Smalley <sds@tycho.nsa.gov>,
-       James Morris <jmorris@namei.org>, Eric Paris <eparis@parisplace.org>,
-       Alexey Dobriyan <adobriyan@sw.ru>, LKML <linux-kernel@vger.kernel.org>,
-       LSM-ML <linux-security-module@vger.kernel.org>
-In-Reply-To: <20080301211108.GF25835@cs181133002.pp.htv.fi>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-Message-ID: <674864.46980.qm@web36615.mail.mud.yahoo.com>
+	Sat, 1 Mar 2008 17:00:07 -0500
+Received: from main.gmane.org ([80.91.229.2]:58190 "EHLO ciao.gmane.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751196AbYCAWAF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 1 Mar 2008 17:00:05 -0500
+X-Injected-Via-Gmane: http://gmane.org/
+To: linux-kernel@vger.kernel.org
+From: Gunter Ohrner <G.Ohrner@post.rwth-aachen.de>
+Subject: Re: Re: 2.6.24 Kernel Soft Lock Up with heavy I/O in	dm-crypt
+Followup-To: gmane.linux.kernel.device-mapper.dm-crypt
+Date: Sat, 01 Mar 2008 22:59:33 +0100
+Message-ID: <fqcjj9$5bv$1@ger.gmane.org>
+References: <200802281924.03996.rrs@researchut.com>	<20080228232048.51e28c1d.akpm@linux-foundation.org>	<20080229184649.GJ1788@agk.fab.redhat.com>	<200803010029.18320.rrs@researchut.com> <47C9AEF3.7040507@redhat.com> <47C9AF8F.2050502@redhat.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7Bit
+X-Complaints-To: usenet@ger.gmane.org
+X-Gmane-NNTP-Posting-Host: bras-co-85-197-3-127.westend.de
+User-Agent: KNode/0.10.5
+Cc: dm-devel@redhat.com, dm-crypt@saout.de
+Cc: dm-devel@redhat.com, linux-kernel@vger.kernel.org
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Milan Broz wrote:
+> (the same patch for 2.6.24)
 
---- Adrian Bunk <bunk@kernel.org> wrote:
+Observations using this patch:
 
-> On Sat, Mar 01, 2008 at 12:28:43PM -0800, Casey Schaufler wrote:
-> > 
-> > --- "Ahmed S. Darwish" <darwish.07@gmail.com> wrote:
-> > 
-> > > Hi everybody,
-> > > 
-> > > This is a first try of adding lsm= boot parameter. 
-> > > 
-> > > Current situation is:
-> > > 1- Ignore wrong input, with a small warning to users.
-> > > 2- If user didn't specify a specific module, none will be loaded
-> > 
-> > I'm not fond of this behavior for the case where only one LSM
-> > has been built in. Fedora, for example, ought to boot SELinux
-> > without specifing lsm=SELinux, and all the rest should boot
-> > whatever they are built with. In the case where a kernel is
-> > built with conflicting LSMs (today SELinux and Smack) I see
-> > this as a useful way to decide which to use until you get
-> > your kernel rebuilt sanely, so it appears to be worth having.
-> >...
-> 
-> Remarks:
-> 
-> Your comment would be covered if the default for this boot parameter (if 
-> not explicitely set through the boot loader would not be "disabled" but 
-> set through kconfig (based on the selected LSMs).
+* I did not get a Soft Lockup during my tests so far.
 
-Agreed.
+* The latency problems I experienced when writing massive amounts of data to
+  an encrypted partitions are improved, though not solved. Using the "dd
+  if=/dev/zero of=test.null bs=4M count=1024 ; rm test.null" approach
+  mentioned in the other thread, the system stays more responsive and even
+  listening to music works more or less, although there are still audible
+  interruptions. A few times during the write, CPU usage will spike and IO
+  (including music playing in Amarok) will stall for about 0.5 seconds or a
+  second.
 
-> We should really get this resolved for 2.6.25.
+* This patch seems to hurt performance, I got much lower thoughput and the
+  system was never fully loaded, ie. gkrellm showed both cores to run
+  between 10% and 40% with a combined CPU utilization fo 30% most of the
+  time.
+  I got unstable timings from my dd command, but targetting the reiserfs
+  partition I got around 18 MB/sec and 34 MB/sec instead of the 41 MB/sec I
+  achieved in my tests yesterday.
+  So this looks like a viable work around if it reliably avoids the Soft
+  Lockup, but it does not seem to be a perfect solution.
+  (Addendum: I just got 41 MB/sec with this patch, with an otherwise nearly
+  idle system, ie. lots of active processes but none doing anything serious.
+  The numbers before applying the patch were much more stable and generally
+  higher. Now simply playing or not playing an OGG seems to make the
+  difference between 40 MB/sec and 30 MB/sec.)
 
-Agreed.
+Greetings,
 
-> security= suggestion is IMHO more intuitive than lsm=
+  Gunter
 
-security is a very overloaded term, but since this is one
-of the ways it's already loaded in I could be OK with that.
-
-
-Casey Schaufler
-casey@schaufler-ca.com
