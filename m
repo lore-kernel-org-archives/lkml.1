@@ -1,56 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757388AbYCARWl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757364AbYCAR76@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757388AbYCARWl (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 1 Mar 2008 12:22:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754667AbYCARWb
+	id S1757364AbYCAR76 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 1 Mar 2008 12:59:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755448AbYCAR7t
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 1 Mar 2008 12:22:31 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:34405 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754556AbYCARWa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 1 Mar 2008 12:22:30 -0500
-Date: Sat, 1 Mar 2008 12:21:56 -0500
-From: Rik van Riel <riel@redhat.com>
-To: Christoph Lameter <clameter@sgi.com>
-Cc: linux-kernel@vger.kernel.org, Mel Gorman <mel@csn.ul.ie>,
-       Nick Piggin <npiggin@suse.de>,
-       Andrew Morton <akpm@linux-foundation.org>, apw@shadowen.org,
-       linux-mm@kback.org
-Subject: Re: [rfc 10/10] Pageflags land grab
-Message-ID: <20080301122156.5994b949@bree.surriel.com>
-In-Reply-To: <20080301040622.220638278@sgi.com>
-References: <20080301040534.797979115@sgi.com>
-	<20080301040622.220638278@sgi.com>
-Organization: Red Hat, Inc.
-X-Mailer: Claws Mail 3.0.2 (GTK+ 2.10.4; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Sat, 1 Mar 2008 12:59:49 -0500
+Received: from wx-out-0506.google.com ([66.249.82.228]:51889 "EHLO
+	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755339AbYCAR7t (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 1 Mar 2008 12:59:49 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=QvuYm+n3m8qhGYfxYaTMS3nt+O4dXqSxMlUfKuy2ITHWyiYMVrljgQKIQOjuFC9dyMLaBawuTNnbmUeIZg6aXwLOXlLD41E7plNPnupn4klG0c7wi3aUdc8ZGj5e7ig9c3OG1cmVgTfhWIXnGYa8ZDwgp9ApfJacWjp4x8QxEV8=
+Message-ID: <d6c8ef150803010959t2f82e12q12c182e698d165fe@mail.gmail.com>
+Date: Sat, 1 Mar 2008 18:59:48 +0100
+From: "Bosko Radivojevic" <bosko.radivojevic@gmail.com>
+To: linux-kernel@vger.kernel.org
+Subject: High resolution timers on AT91SAM926x
+In-Reply-To: <d6c8ef150803010952g666118dfu7679593b3c92c8be@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <d6c8ef150803010952g666118dfu7679593b3c92c8be@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 29 Feb 2008 20:05:44 -0800
-Christoph Lameter <clameter@sgi.com> wrote:
+Hi!
 
-> We have enough page flags after vmemmap no longer uses section ids.
-> 
-> Reserve 5 of the 6 saved flags for functionality that is currently
-> under development in the VM.
-> 
-> The new flags are only available if either of these conditions are met:
-> 
-> 1. 64 Bit system. (then we have 8 more free of the 32)
-> 
-> 2. !NUMA. In that case 2 bits are needed for the zone
->    id which leaves 30 page flag bits. Of those we use 24. 6 left.
-> 
-> 3. !SPARSEMEM. In that case we use 5 bits of the 30 available
->    for the node. 1 leftover.
-> 
-> 4. SPARSEMEM_VMEMMAP. Case 3 applies.
+ Is there a way to enable high resolution timers on AT91SAM926x? The
+best resolution I can get (kernel 2.6.23.11-rt14 with at91 patch from
+maxim.org.za) is around 1ms. Is there any other way to get timers with
+better resolution?
 
-Nice!  I like your patch series.
+When I enable CONFIG_GENERIC_TIME and CONFIG_GENERIC_CLOCKEVENTS (as
+prerequisites for CONFIG_HIGH_RES) I'm unable to compile at91 part of
+kernel.
 
--- 
-All rights reversed.
+Is there any "unofficial" patch? I saw that in 2.6.24 high res is
+supported for ARM, but AT91 still lacks support.
+
+
+$ cat /proc/timer_list
+Timer List Version: v0.3
+HRTIMER_MAX_CLOCK_BASES: 2
+now at 11995813000 nsecs
+
+cpu: 0
+ clock 0:
+  .index:      0
+  .resolution: 999961 nsecs
+  .get_time:   ktime_get_real
+ active timers:
+ clock 1:
+  .index:      1
+  .resolution: 999961 nsecs
+  .get_time:   ktime_get
+active timers:
+ #0: <c388de9c>, it_real_fn, S:01
+ # expires at 1207195374000 nsecs [in 1195199561000 nsecs]
+
+Thanks!
