@@ -1,66 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760827AbYCAC5q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932558AbYCADBW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760827AbYCAC5q (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Feb 2008 21:57:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750713AbYCAC5h
+	id S932558AbYCADBW (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Feb 2008 22:01:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751438AbYCADBP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Feb 2008 21:57:37 -0500
-Received: from turing-police.cc.vt.edu ([128.173.14.107]:42535 "EHLO
-	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751307AbYCAC5g (ORCPT
-	<RFC822;linux-kernel@vger.kernel.org>);
-	Fri, 29 Feb 2008 21:57:36 -0500
-X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
-To: ptb@inv.it.uc3m.es
-Cc: linux kernel <linux-kernel@vger.kernel.org>
-Subject: Re: sysctl in 2.6.24.2 excludes unapproved files from /proc/sys?
-In-Reply-To: Your message of "Sat, 01 Mar 2008 02:12:05 +0100."
-             <200803010112.m211C5h4027092@betty.it.uc3m.es>
-From: Valdis.Kletnieks@vt.edu
-References: <200803010112.m211C5h4027092@betty.it.uc3m.es>
+	Fri, 29 Feb 2008 22:01:15 -0500
+Received: from gate.crashing.org ([63.228.1.57]:43880 "EHLO gate.crashing.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752025AbYCADBO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 29 Feb 2008 22:01:14 -0500
+Subject: Re: [PATCH 1/3 v3] dma: document dma_{un}map_{single|sg}_attrs()
+	interface
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Reply-To: benh@kernel.crashing.org
+To: James Bottomley <James.Bottomley@HansenPartnership.com>
+Cc: Grant Grundler <grundler@parisc-linux.org>,
+       Michael Ellerman <michael@ellerman.id.au>, akepner@sgi.com,
+       Tony Luck <tony.luck@intel.com>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>, Jes Sorensen <jes@sgi.com>,
+       Randy Dunlap <randy.dunlap@oracle.com>,
+       Roland Dreier <rdreier@cisco.com>, David Miller <davem@davemloft.net>,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <1204310276.4003.48.camel@localhost.localdomain>
+References: <20080228032448.GS11012@sgi.com>
+	 <dc1166600802281845t1613beedj7a285399a21cd@mail.gmail.com>
+	 <20080229182504.GA18102@colo.lackof.org>
+	 <1204310276.4003.48.camel@localhost.localdomain>
+Content-Type: text/plain
+Date: Sat, 01 Mar 2008 13:56:44 +1100
+Message-Id: <1204340204.15052.452.camel@pasglop>
 Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="==_Exmh_1204340252_3290P";
-	 micalg=pgp-sha1; protocol="application/pgp-signature"
+X-Mailer: Evolution 2.12.1 
 Content-Transfer-Encoding: 7bit
-Date: Fri, 29 Feb 2008 21:57:32 -0500
-Message-ID: <31088.1204340252@turing-police.cc.vt.edu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---==_Exmh_1204340252_3290P
-Content-Type: text/plain; charset=us-ascii
 
-On Sat, 01 Mar 2008 02:12:05 +0100, "Peter T. Breuer" said:
-> A change in 2.6.24.x kernel/sysctl.c seems to exclude exo-kernel drivers
-> from using the /proc/sys/ interface:
-
+On Fri, 2008-02-29 at 12:37 -0600, James Bottomley wrote:
+> To be honest, I still don't like the name.  SYNC_ON_WRITE is the SN2
+> implementation.  What it's actually doing is implementing strict
+> ordering semantics.  I think it should really be
+> DMA_ATTR_STRICT_ORDERING (with a corresponding
+> DMA_ATTR_RELAXED_ORDERING).
 > 
-> What's a person to do? 
+> This means that if ever anyone sets a PCIe bridge to relaxed ordering
+> by
+> default, this attribute will also work for them.
 
-Umm.. as a wild guess? Maybe a patch to add entries to the sysctl_check_table
-arrays for your sysctl?
+But that would be asking for trouble no ? I would expect pretty much
+everything to break appart with relaxed by default no ? Or I don't fully
+understand what your arch calls "relaxed"...
 
-They didn't spend their holiday just coming up with this to annoy you - the
-checking found a *lot* of entries that were well and truly broken (in the
-how-did-it-ever-not-panic sense)...
+I do agree that we should aim for simple semantics, they should cover
+99% of the needs, and leave some bit space or attribute space for archs
+to define private ones when really needed.
 
-Yes, it does make it more difficult for out-of-tree modules to create a new
-sysctl entry - which is probably just as well, given that there's sysfs and
-debugfs and a whole lot of other options as well for userspace-kernel
-interaction.
+In our case, I suspect that the two main thing we could define here for
+DMA that would be useful generally would be relaxed ordering (strict
+being the default) and maybe read prefetching (though that would be the
+default, maybe no prefetch). We -might- have use of separating relaxed
+ordering for read vs. writes, but that's pretty much it.
+
+Cheers,
+Ben.
 
 
---==_Exmh_1204340252_3290P
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.8 (GNU/Linux)
-Comment: Exmh version 2.5 07/13/2001
-
-iD8DBQFHyMYccC3lWbTT17ARAnCTAKDJ8ojMtxVVI6FmPViyK8lKsyvWXgCg6O5H
-wzX83I8mzRj/iP5InMoGwgI=
-=+5Qu
------END PGP SIGNATURE-----
-
---==_Exmh_1204340252_3290P--
