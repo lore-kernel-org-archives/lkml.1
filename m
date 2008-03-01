@@ -1,45 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757758AbYCAT6Z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761218AbYCAT7h@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757758AbYCAT6Z (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 1 Mar 2008 14:58:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756824AbYCAT6K
+	id S1761218AbYCAT7h (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 1 Mar 2008 14:59:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754194AbYCAT73
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 1 Mar 2008 14:58:10 -0500
-Received: from qmta05.westchester.pa.mail.comcast.net ([76.96.62.48]:60336
-	"EHLO QMTA05.westchester.pa.mail.comcast.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1760921AbYCAT6J (ORCPT
+	Sat, 1 Mar 2008 14:59:29 -0500
+Received: from ug-out-1314.google.com ([66.249.92.169]:16014 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756804AbYCAT72 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 1 Mar 2008 14:58:09 -0500
-X-Authority-Analysis: v=1.0 c=1 a=Vt2AcnKqAAAA:8 a=4a1OqAhKv9YY8Xs3N4kA:9
- a=D0gB5FNFFy5dV3tGkBusHDpZPSoA:4 a=lBRciGGoxdUA:10 a=JcB9aHnUDh0A:10
-Message-ID: <47C9B558.3080004@personnelware.com>
-Date: Sat, 01 Mar 2008 13:58:16 -0600
-From: Carl Karsten <carl@personnelware.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20071022)
+	Sat, 1 Mar 2008 14:59:28 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent:from;
+        b=gMEPvX4jYD3Dj7+Frx/Ypvaf6zG5X/PxD44gG8GUFPq8bZgaZ8i9qvIbm0aLc2TkTnF0F9wzh1Kn5XnNHkl2GqF51iFApciDZDzlbkrK7YmfCPjkn4UjyVbRz4mC09PYh/U3hzzijXvkEEkhho3s4E1OJ8ehH5OjiwCJN1jsde0=
+Date: Sat, 1 Mar 2008 21:56:22 +0200
+To: Chris Wright <chrisw@sous-sol.org>, Stephen Smalley <sds@tycho.nsa.gov>,
+       James Morris <jmorris@namei.org>, Eric Paris <eparis@parisplace.org>,
+       Casey Schaufler <casey@schaufler-ca.com>,
+       David Woodhouse <dwmw2@infradead.org>, Paul Moore <paul.moore@hp.com>,
+       Andrew Morton <akpm@linux-foundation.org>
+Cc: LKML <linux-kernel@vger.kernel.org>, Audit-ML <linux-audit@redhat.com>,
+       LSM-ML <linux-security-module@vger.kernel.org>
+Subject: [PATCH 4/9] Netlink: Use generic LSM hook
+Message-ID: <20080301195622.GE19636@ubuntu>
+References: <20080301194752.GA19636@ubuntu>
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-Subject: please promote multi-qtd URB patch
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080301194752.GA19636@ubuntu>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+From: "Ahmed S. Darwish" <darwish.07@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Signed-off-by: Misha Zhilin <[EMAIL PROTECTED]>
-Acked-by: Alan Stern <[EMAIL PROTECTED]>
-http://www.mail-archive.com/linux-usb@vger.kernel.org/msg01969.html
+Don't use SELinux exported selinux_get_task_sid symbol. 
+Use the generic LSM equivalent instead.
 
-This patch fixes a bug that is causing problems with a project I am working on. 
-    the bug effects a v4l2 driver, having to compile a kernel is making driver 
-debugging a big pain.
+Signed-off-by: Casey Schaufler <casey@schaufler-ca.com>
+Signed-off-by: Ahmed S. Darwish <darwish.07@gmail.com>
+---
 
-Getting this patch into Ubuntu's kernel will make things much easier, but:
+diff --git a/net/netlink/af_netlink.c b/net/netlink/af_netlink.c
+index 1ab0da2..61fd277 100644
+--- a/net/netlink/af_netlink.c
++++ b/net/netlink/af_netlink.c
+@@ -54,7 +54,6 @@
+ #include <linux/mm.h>
+ #include <linux/types.h>
+ #include <linux/audit.h>
+-#include <linux/selinux.h>
+ #include <linux/mutex.h>
+ 
+ #include <net/net_namespace.h>
+@@ -1239,7 +1238,7 @@ static int netlink_sendmsg(struct kiocb *kiocb, struct socket *sock,
+ 	NETLINK_CB(skb).pid	= nlk->pid;
+ 	NETLINK_CB(skb).dst_group = dst_group;
+ 	NETLINK_CB(skb).loginuid = audit_get_loginuid(current);
+-	selinux_get_task_sid(current, &(NETLINK_CB(skb).sid));
++	security_task_getsecid(current, &(NETLINK_CB(skb).sid));
+ 	memcpy(NETLINK_CREDS(skb), &siocb->scm->creds, sizeof(struct ucred));
+ 
+ 	/* What can I do? Netlink is asynchronous, so that
 
-Stefan Bader <stefan.bader@canonical.com> wrote:
-> Since that was even considered for .24 stable release, it will come in
-> that way. However, I'd like to wait for this to hit upstream.
+-- 
 
-If there is anything else I can to to make this happen, let me know.
+"Better to light a candle, than curse the darkness"
 
-Thanks,
-Carl Karsten
+Ahmed S. Darwish
+Homepage: http://darwish.07.googlepages.com
+Blog: http://darwish-07.blogspot.com
+
