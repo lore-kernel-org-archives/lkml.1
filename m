@@ -1,23 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932329AbYCAUqx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762754AbYCAUr3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932329AbYCAUqx (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 1 Mar 2008 15:46:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754896AbYCAUnr
+	id S1762754AbYCAUr3 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 1 Mar 2008 15:47:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760705AbYCAUnx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 1 Mar 2008 15:43:47 -0500
-Received: from ug-out-1314.google.com ([66.249.92.175]:27917 "EHLO
+	Sat, 1 Mar 2008 15:43:53 -0500
+Received: from ug-out-1314.google.com ([66.249.92.171]:28247 "EHLO
 	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756723AbYCAUno (ORCPT
+	with ESMTP id S1760295AbYCAUnm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 1 Mar 2008 15:43:44 -0500
+	Sat, 1 Mar 2008 15:43:42 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=from:to:subject:date:user-agent:cc:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
-        b=guehtR+IJQnF3pm04mV8LN0DU4oFHkYduL/PhQj1QiHlRNfVgQuxItWAOPIDF4EXcEdMAT7HbljCHDt2iHgfSlWlBv8eVAAJ60D+3Yb6BJoWH5s7DvIcerLCl4+4my9Oror+8jPs52z/3GVpkdjPzlQpiq7a3NQCL6eouLAzKV0=
+        b=eWR/6inRemnSUs1zjPtjCo8+Xf15uDKiHY87LJSsACHkI5AA6IHSXaZEweUJwQQBDx05ImKh+ZyAZUQsiiFJoTnb+LhOdu4XnxJChWDL67hHTeL0Qz3s/oNjCBn/BCuWnMGA7e3QeIy/q5flCgBybU/ziLlSz4vB1eDIxRPEhKo=
 From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
 To: linux-ide@vger.kernel.org
-Subject: [PATCH 9/9] ide: cleanup setting hwif->mmio flag
-Date: Sat, 1 Mar 2008 21:55:45 +0100
+Subject: [PATCH 7/9] ide: manage resources for PCI devices in ide_pci_enable()
+Date: Sat, 1 Mar 2008 21:51:32 +0100
 User-Agent: KMail/1.9.6 (enterprise 0.20071204.744707)
 Cc: linux-kernel@vger.kernel.org
 MIME-Version: 1.0
@@ -25,349 +25,277 @@ Content-Type: text/plain;
   charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200803012155.45689.bzolnier@gmail.com>
+Message-Id: <200803012151.33070.bzolnier@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-It is no longer needed to set hwif->mmio flag to tell IDE layer to not
-manage resources so cleanup host drivers that used hwif->mmio flag only
-for this purpose.
+* Reserve PCI BARs 0-3 (0-1 for single port controllers) in
+  ide_pci_enable() and remove ide_hwif_request_regions() call
+  from ide_device_add_all() (also cleanup resource management
+  in scc_pata host driver).
 
-Ditto for ide_legacy_init_one().
+* Fix handling of PCI BAR 4 in ide_pci_enable(), then cleanup
+  ide_iomio_dma() (+ init_hwif_trm290() in trm290 host driver)
+  and remove ide_release[_iomio]_dma().
 
 Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
 ---
- drivers/ide/arm/bast-ide.c        |    1 -
- drivers/ide/arm/icside.c          |    1 -
- drivers/ide/arm/ide_arm.c         |    1 -
- drivers/ide/arm/rapide.c          |    1 -
- drivers/ide/cris/ide-cris.c       |    2 +-
- drivers/ide/h8300/ide-h8300.c     |    1 -
- drivers/ide/ide-generic.c         |    1 -
- drivers/ide/ide-pnp.c             |    1 -
- drivers/ide/ide-probe.c           |    1 -
- drivers/ide/legacy/buddha.c       |    2 --
- drivers/ide/legacy/falconide.c    |    1 -
- drivers/ide/legacy/gayle.c        |    2 --
- drivers/ide/legacy/ide-4drives.c  |    2 --
- drivers/ide/legacy/ide_platform.c |    1 -
- drivers/ide/legacy/macide.c       |    2 --
- drivers/ide/legacy/q40ide.c       |    1 -
- drivers/ide/mips/au1xxx-ide.c     |    2 --
- drivers/ide/mips/swarm.c          |    3 +--
- drivers/ide/pci/cmd640.c          |    2 --
- drivers/ide/pci/delkin_cb.c       |    1 -
- drivers/ide/pci/sgiioc4.c         |    1 -
- drivers/ide/ppc/mpc8xx.c          |    2 --
- drivers/ide/ppc/pmac.c            |    2 --
- 23 files changed, 2 insertions(+), 32 deletions(-)
+ drivers/ide/ide-dma.c      |   43 +++----------------------------------------
+ drivers/ide/ide-probe.c    |    6 ------
+ drivers/ide/ide.c          |    2 +-
+ drivers/ide/pci/scc_pata.c |   27 ++++-----------------------
+ drivers/ide/pci/trm290.c   |    5 -----
+ drivers/ide/setup-pci.c    |   22 +++++++++++++++-------
+ include/linux/ide.h        |    4 ++--
+ 7 files changed, 25 insertions(+), 84 deletions(-)
 
-Index: b/drivers/ide/arm/bast-ide.c
+Index: b/drivers/ide/ide-dma.c
 ===================================================================
---- a/drivers/ide/arm/bast-ide.c
-+++ b/drivers/ide/arm/bast-ide.c
-@@ -55,7 +55,6 @@ static int __init bastide_register(unsig
- 		ide_init_port_data(hwif, i);
+--- a/drivers/ide/ide-dma.c
++++ b/drivers/ide/ide-dma.c
+@@ -810,7 +810,7 @@ void ide_dma_timeout (ide_drive_t *drive
  
- 	ide_init_port_hw(hwif, &hw);
--	hwif->mmio = 1;
- 	hwif->quirkproc = NULL;
+ EXPORT_SYMBOL(ide_dma_timeout);
  
- 	idx[0] = i;
-Index: b/drivers/ide/arm/icside.c
-===================================================================
---- a/drivers/ide/arm/icside.c
-+++ b/drivers/ide/arm/icside.c
-@@ -416,7 +416,6 @@ icside_setup(void __iomem *base, struct 
- 		 * Ensure we're using MMIO
- 		 */
- 		default_hwif_mmiops(hwif);
--		hwif->mmio = 1;
- 
- 		for (i = IDE_DATA_OFFSET; i <= IDE_STATUS_OFFSET; i++) {
- 			hwif->io_ports[i] = port;
-Index: b/drivers/ide/arm/ide_arm.c
-===================================================================
---- a/drivers/ide/arm/ide_arm.c
-+++ b/drivers/ide/arm/ide_arm.c
-@@ -53,7 +53,6 @@ static int __init ide_arm_init(void)
- 	hwif = ide_find_port();
- 	if (hwif) {
- 		ide_init_port_hw(hwif, &hw);
--		hwif->mmio = 1;
- 		idx[0] = hwif->index;
- 
- 		ide_device_add(idx, NULL);
-Index: b/drivers/ide/arm/rapide.c
-===================================================================
---- a/drivers/ide/arm/rapide.c
-+++ b/drivers/ide/arm/rapide.c
-@@ -53,7 +53,6 @@ rapide_probe(struct expansion_card *ec, 
- 
- 		ide_init_port_hw(hwif, &hw);
- 
--		hwif->mmio = 1;
- 		default_hwif_mmiops(hwif);
- 
- 		idx[0] = hwif->index;
-Index: b/drivers/ide/cris/ide-cris.c
-===================================================================
---- a/drivers/ide/cris/ide-cris.c
-+++ b/drivers/ide/cris/ide-cris.c
-@@ -815,7 +815,7 @@ static int __init init_e100_ide(void)
- 			continue;
- 		ide_init_port_data(hwif, hwif->index);
- 		ide_init_port_hw(hwif, &hw);
--		hwif->mmio = 1;
-+
- 		hwif->ata_input_data = &cris_ide_input_data;
- 		hwif->ata_output_data = &cris_ide_output_data;
- 		hwif->atapi_input_bytes = &cris_atapi_input_bytes;
-Index: b/drivers/ide/h8300/ide-h8300.c
-===================================================================
---- a/drivers/ide/h8300/ide-h8300.c
-+++ b/drivers/ide/h8300/ide-h8300.c
-@@ -74,7 +74,6 @@ static inline void hwif_setup(ide_hwif_t
+-static void ide_release_dma_engine(ide_hwif_t *hwif)
++void ide_release_dma_engine(ide_hwif_t *hwif)
  {
- 	default_hwif_iops(hwif);
+ 	if (hwif->dmatable_cpu) {
+ 		struct pci_dev *pdev = to_pci_dev(hwif->dev);
+@@ -821,27 +821,6 @@ static void ide_release_dma_engine(ide_h
+ 	}
+ }
  
--	hwif->mmio  = 1;
- 	hwif->OUTW  = mm_outw;
- 	hwif->OUTSW = mm_outsw;
- 	hwif->INW   = mm_inw;
-Index: b/drivers/ide/ide-generic.c
-===================================================================
---- a/drivers/ide/ide-generic.c
-+++ b/drivers/ide/ide-generic.c
-@@ -126,7 +126,6 @@ static int __init ide_generic_init(void)
- 			ide_std_init_ports(&hw, io_addr, io_addr + 0x206);
- 			hw.irq = ide_default_irq(io_addr);
- 			ide_init_port_hw(hwif, &hw);
--			hwif->mmio = 1;
+-static int ide_release_iomio_dma(ide_hwif_t *hwif)
+-{
+-	release_region(hwif->dma_base, 8);
+-	if (hwif->extra_ports)
+-		release_region(hwif->extra_base, hwif->extra_ports);
+-	return 1;
+-}
+-
+-/*
+- * Needed for allowing full modular support of ide-driver
+- */
+-int ide_release_dma(ide_hwif_t *hwif)
+-{
+-	ide_release_dma_engine(hwif);
+-
+-	if (hwif->mmio)
+-		return 1;
+-	else
+-		return ide_release_iomio_dma(hwif);
+-}
+-
+ static int ide_allocate_dma_engine(ide_hwif_t *hwif)
+ {
+ 	struct pci_dev *pdev = to_pci_dev(hwif->dev);
+@@ -871,25 +850,9 @@ static int ide_iomio_dma(ide_hwif_t *hwi
+ 	printk(KERN_INFO "    %s: BM-DMA at 0x%04lx-0x%04lx",
+ 	       hwif->name, base, base + 7);
  
- 			idx[i] = i;
- 		}
-Index: b/drivers/ide/ide-pnp.c
-===================================================================
---- a/drivers/ide/ide-pnp.c
-+++ b/drivers/ide/ide-pnp.c
-@@ -63,7 +63,6 @@ static int idepnp_probe(struct pnp_dev *
+-	if (!request_region(base, 8, hwif->name)) {
+-		printk(" -- Error, ports in use.\n");
+-		return 1;
+-	}
+-
+-	if (hwif->cds->extra) {
++	if (hwif->cds->extra)
+ 		hwif->extra_base = base + (hwif->channel ? 8 : 16);
  
- 		ide_init_port_data(hwif, index);
- 		ide_init_port_hw(hwif, &hw);
--		hwif->mmio = 1;
+-		if (!hwif->mate || !hwif->mate->extra_ports) {
+-			if (!request_region(hwif->extra_base,
+-					    hwif->cds->extra, hwif->cds->name)) {
+-				printk(" -- Error, extra ports in use.\n");
+-				release_region(base, 8);
+-				return 1;
+-			}
+-			hwif->extra_ports = hwif->cds->extra;
+-		}
+-	}
+-
+ 	return 0;
+ }
  
- 		printk(KERN_INFO "ide%d: generic PnP IDE interface\n", index);
- 		pnp_set_drvdata(dev, hwif);
+@@ -909,7 +872,7 @@ void ide_setup_dma(ide_hwif_t *hwif, uns
+ 		return;
+ 
+ 	if (ide_allocate_dma_engine(hwif)) {
+-		ide_release_dma(hwif);
++		ide_release_dma_engine(hwif);
+ 		return;
+ 	}
+ 
 Index: b/drivers/ide/ide-probe.c
 ===================================================================
 --- a/drivers/ide/ide-probe.c
 +++ b/drivers/ide/ide-probe.c
-@@ -1657,7 +1657,6 @@ static void ide_legacy_init_one(u8 *idx,
- 	hwif = ide_find_port_slot(d);
- 	if (hwif) {
- 		ide_init_port_hw(hwif, hw);
--		hwif->mmio = 1;
- 		if (config)
- 			hwif->config_data = config;
- 		idx[port_no] = hwif->index;
-Index: b/drivers/ide/legacy/buddha.c
-===================================================================
---- a/drivers/ide/legacy/buddha.c
-+++ b/drivers/ide/legacy/buddha.c
-@@ -228,8 +228,6 @@ fail_base2:
- 				ide_init_port_data(hwif, index);
- 				ide_init_port_hw(hwif, &hw);
+@@ -1526,12 +1526,6 @@ int ide_device_add_all(u8 *idx, const st
  
--				hwif->mmio = 1;
+ 		hwif = &ide_hwifs[idx[i]];
+ 
+-		if (ide_hwif_request_regions(hwif)) {
+-			printk(KERN_ERR "%s: ports already in use, "
+-					"skipping probe\n", hwif->name);
+-			continue;
+-		}
 -
- 				idx[i] = index;
- 			}
- 		}
-Index: b/drivers/ide/legacy/falconide.c
+ 		if (ide_probe_port(hwif) == 0)
+ 			hwif->present = 1;
+ 
+Index: b/drivers/ide/ide.c
 ===================================================================
---- a/drivers/ide/legacy/falconide.c
-+++ b/drivers/ide/legacy/falconide.c
-@@ -89,7 +89,6 @@ static int __init falconide_init(void)
+--- a/drivers/ide/ide.c
++++ b/drivers/ide/ide.c
+@@ -415,7 +415,7 @@ void ide_unregister(unsigned int index)
+ 	spin_lock_irq(&ide_lock);
  
- 		ide_init_port_data(hwif, index);
- 		ide_init_port_hw(hwif, &hw);
--		hwif->mmio = 1;
+ 	if (hwif->dma_base)
+-		(void)ide_release_dma(hwif);
++		ide_release_dma_engine(hwif);
  
- 		ide_get_lock(NULL, NULL);
- 		ide_device_add(idx, NULL);
-Index: b/drivers/ide/legacy/gayle.c
+ 	/* restore hwif data to pristine status */
+ 	ide_init_port_data(hwif, index);
+Index: b/drivers/ide/pci/scc_pata.c
 ===================================================================
---- a/drivers/ide/legacy/gayle.c
-+++ b/drivers/ide/legacy/gayle.c
-@@ -182,8 +182,6 @@ found:
- 	    ide_init_port_data(hwif, index);
- 	    ide_init_port_hw(hwif, &hw);
+--- a/drivers/ide/pci/scc_pata.c
++++ b/drivers/ide/pci/scc_pata.c
+@@ -492,21 +492,11 @@ static int setup_mmio_scc (struct pci_de
+ 	if (i >= MAX_HWIFS)
+ 		return -ENOMEM;
  
--	    hwif->mmio = 1;
+-	if (!request_mem_region(ctl_base, ctl_size, name)) {
+-		printk(KERN_WARNING "%s: IDE controller MMIO ports not available.\n", SCC_PATA_NAME);
+-		goto fail_0;
+-	}
 -
- 	    idx[i] = index;
- 	} else
- 	    release_mem_region(res_start, res_n);
-Index: b/drivers/ide/legacy/ide-4drives.c
-===================================================================
---- a/drivers/ide/legacy/ide-4drives.c
-+++ b/drivers/ide/legacy/ide-4drives.c
-@@ -43,7 +43,6 @@ static int __init ide_4drives_init(void)
- 	hwif = ide_find_port();
- 	if (hwif) {
- 		ide_init_port_hw(hwif, &hw);
--		hwif->mmio = 1;
- 		idx[0] = hwif->index;
- 	}
- 
-@@ -52,7 +51,6 @@ static int __init ide_4drives_init(void)
- 		ide_init_port_hw(mate, &hw);
- 		mate->drives[0].select.all ^= 0x20;
- 		mate->drives[1].select.all ^= 0x20;
--		mate->mmio = 1;
- 		idx[1] = mate->index;
- 
- 		if (hwif) {
-Index: b/drivers/ide/legacy/ide_platform.c
-===================================================================
---- a/drivers/ide/legacy/ide_platform.c
-+++ b/drivers/ide/legacy/ide_platform.c
-@@ -100,7 +100,6 @@ static int __devinit plat_ide_probe(stru
- 	hw.dev = &pdev->dev;
- 
- 	ide_init_port_hw(hwif, &hw);
--	hwif->mmio = 1;
- 
- 	if (mmio)
- 		default_hwif_mmiops(hwif);
-Index: b/drivers/ide/legacy/macide.c
-===================================================================
---- a/drivers/ide/legacy/macide.c
-+++ b/drivers/ide/legacy/macide.c
-@@ -128,8 +128,6 @@ static int __init macide_init(void)
- 		ide_init_port_data(hwif, index);
- 		ide_init_port_hw(hwif, &hw);
- 
--		hwif->mmio = 1;
+-	if (!request_mem_region(dma_base, dma_size, name)) {
+-		printk(KERN_WARNING "%s: IDE controller MMIO ports not available.\n", SCC_PATA_NAME);
+-		goto fail_1;
+-	}
 -
- 		ide_device_add(idx, NULL);
- 	}
+ 	if ((ctl_addr = ioremap(ctl_base, ctl_size)) == NULL)
+-		goto fail_2;
++		goto fail_0;
  
-Index: b/drivers/ide/legacy/q40ide.c
-===================================================================
---- a/drivers/ide/legacy/q40ide.c
-+++ b/drivers/ide/legacy/q40ide.c
-@@ -141,7 +141,6 @@ static int __init q40ide_init(void)
- 	if (hwif) {
- 		ide_init_port_data(hwif, hwif->index);
- 		ide_init_port_hw(hwif, &hw);
--		hwif->mmio = 1;
+ 	if ((dma_addr = ioremap(dma_base, dma_size)) == NULL)
+-		goto fail_3;
++		goto fail_1;
  
- 		idx[i] = hwif->index;
- 	}
-Index: b/drivers/ide/mips/au1xxx-ide.c
-===================================================================
---- a/drivers/ide/mips/au1xxx-ide.c
-+++ b/drivers/ide/mips/au1xxx-ide.c
-@@ -628,8 +628,6 @@ static int au_ide_probe(struct device *d
+ 	pci_set_master(dev);
+ 	scc_ports[i].ctl = (unsigned long)ctl_addr;
+@@ -515,12 +505,8 @@ static int setup_mmio_scc (struct pci_de
  
- 	hwif->dev = dev;
+ 	return 1;
  
--	hwif->mmio  = 1;
--
- 	/* If the user has selected DDMA assisted copies,
- 	   then set up a few local I/O function entry points 
- 	*/
-Index: b/drivers/ide/mips/swarm.c
-===================================================================
---- a/drivers/ide/mips/swarm.c
-+++ b/drivers/ide/mips/swarm.c
-@@ -110,8 +110,7 @@ static int __devinit swarm_ide_probe(str
- 
- 	/* Setup MMIO ops.  */
- 	default_hwif_mmiops(hwif);
--	/* Prevent resource map manipulation.  */
--	hwif->mmio = 1;
-+
- 	hwif->chipset = ide_generic;
- 
- 	for (i = IDE_DATA_OFFSET; i <= IDE_STATUS_OFFSET; i++)
-Index: b/drivers/ide/pci/cmd640.c
-===================================================================
---- a/drivers/ide/pci/cmd640.c
-+++ b/drivers/ide/pci/cmd640.c
-@@ -787,7 +787,6 @@ static int __init cmd640x_init(void)
- 	 */
- 	if (cmd_hwif0) {
- 		ide_init_port_hw(cmd_hwif0, &hw[0]);
--		cmd_hwif0->mmio = 1;
- 		idx[0] = cmd_hwif0->index;
- 	}
- 
-@@ -840,7 +839,6 @@ static int __init cmd640x_init(void)
- 	 */
- 	if (second_port_cmd640 && cmd_hwif1) {
- 		ide_init_port_hw(cmd_hwif1, &hw[1]);
--		cmd_hwif1->mmio = 1;
- 		idx[1] = cmd_hwif1->index;
- 	}
- 	printk(KERN_INFO "cmd640: %sserialized, secondary interface %s\n",
-Index: b/drivers/ide/pci/delkin_cb.c
-===================================================================
---- a/drivers/ide/pci/delkin_cb.c
-+++ b/drivers/ide/pci/delkin_cb.c
-@@ -93,7 +93,6 @@ delkin_cb_probe (struct pci_dev *dev, co
- 		ide_init_port_data(hwif, i);
- 
- 	ide_init_port_hw(hwif, &hw);
--	hwif->mmio = 1;
- 	hwif->port_ops = &delkin_cb_port_ops;
- 
- 	idx[0] = i;
-Index: b/drivers/ide/pci/sgiioc4.c
-===================================================================
---- a/drivers/ide/pci/sgiioc4.c
-+++ b/drivers/ide/pci/sgiioc4.c
-@@ -551,7 +551,6 @@ static int sgiioc4_ide_dma_setup(ide_dri
- static void __devinit
- ide_init_sgiioc4(ide_hwif_t * hwif)
+- fail_3:
+-	iounmap(ctl_addr);
+- fail_2:
+-	release_mem_region(dma_base, dma_size);
+  fail_1:
+-	release_mem_region(ctl_base, ctl_size);
++	iounmap(ctl_addr);
+  fail_0:
+ 	return -ENOMEM;
+ }
+@@ -729,10 +715,6 @@ static void __devexit scc_remove(struct 
  {
--	hwif->mmio = 1;
- 	hwif->INB = &sgiioc4_INB;
+ 	struct scc_ports *ports = pci_get_drvdata(dev);
+ 	ide_hwif_t *hwif = ports->hwif;
+-	unsigned long ctl_base = pci_resource_start(dev, 0);
+-	unsigned long dma_base = pci_resource_start(dev, 1);
+-	unsigned long ctl_size = pci_resource_len(dev, 0);
+-	unsigned long dma_size = pci_resource_len(dev, 1);
  
- 	if (hwif->dma_base == 0)
-Index: b/drivers/ide/ppc/mpc8xx.c
+ 	if (hwif->dmatable_cpu) {
+ 		pci_free_consistent(dev, PRD_ENTRIES * PRD_BYTES,
+@@ -745,8 +727,7 @@ static void __devexit scc_remove(struct 
+ 	hwif->chipset = ide_unknown;
+ 	iounmap((void*)ports->dma);
+ 	iounmap((void*)ports->ctl);
+-	release_mem_region(dma_base, dma_size);
+-	release_mem_region(ctl_base, ctl_size);
++	pci_release_selected_regions(dev, (1 << 2) - 1);
+ 	memset(ports, 0, sizeof(*ports));
+ }
+ 
+Index: b/drivers/ide/pci/trm290.c
 ===================================================================
---- a/drivers/ide/ppc/mpc8xx.c
-+++ b/drivers/ide/ppc/mpc8xx.c
-@@ -814,7 +814,6 @@ static int __init mpc8xx_ide_probe(void)
- 		ide_hwif_t *hwif = &ide_hwifs[0];
+--- a/drivers/ide/pci/trm290.c
++++ b/drivers/ide/pci/trm290.c
+@@ -257,11 +257,6 @@ static void __devinit init_hwif_trm290(i
+ 	printk(KERN_INFO "    %s: BM-DMA at 0x%04lx-0x%04lx",
+ 	       hwif->name, hwif->dma_base, hwif->dma_base + 3);
  
- 		ide_init_port_hw(hwif, &hw);
--		hwif->mmio = 1;
- 		hwif->pio_mask = ATA_PIO4;
- 		hwif->port_ops = &m8xx_port_ops;
- 
-@@ -826,7 +825,6 @@ static int __init mpc8xx_ide_probe(void)
- 		ide_hwif_t *mate = &ide_hwifs[1];
- 
- 		ide_init_port_hw(mate, &hw);
--		mate->mmio = 1;
- 		mate->pio_mask = ATA_PIO4;
- 		mate->port_ops = &m8xx_port_ops;
- 
-Index: b/drivers/ide/ppc/pmac.c
+-	if (!request_region(hwif->dma_base, 4, hwif->name)) {
+-		printk(KERN_CONT " -- Error, ports in use.\n");
+-		return;
+-	}
+-
+ 	hwif->dmatable_cpu = pci_alloc_consistent(dev, PRD_ENTRIES * PRD_BYTES,
+ 						  &hwif->dmatable_dma);
+ 	if (!hwif->dmatable_cpu) {
+Index: b/drivers/ide/setup-pci.c
 ===================================================================
---- a/drivers/ide/ppc/pmac.c
-+++ b/drivers/ide/ppc/pmac.c
-@@ -1045,8 +1045,6 @@ pmac_ide_setup_device(pmac_ide_hwif_t *p
- 	default_hwif_mmiops(hwif);
-        	hwif->OUTBSYNC = pmac_outbsync;
+--- a/drivers/ide/setup-pci.c
++++ b/drivers/ide/setup-pci.c
+@@ -158,7 +158,7 @@ EXPORT_SYMBOL_GPL(ide_setup_pci_noise);
  
--	/* Tell common code _not_ to mess with resources */
--	hwif->mmio = 1;
- 	hwif->hwif_data = pmif;
- 	ide_init_port_hw(hwif, hw);
- 	hwif->cbl = pmif->cable_80 ? ATA_CBL_PATA80 : ATA_CBL_PATA40;
+ static int ide_pci_enable(struct pci_dev *dev, const struct ide_port_info *d)
+ {
+-	int ret;
++	int ret, bars;
+ 
+ 	if (pci_enable_device(dev)) {
+ 		ret = pci_enable_device_io(dev);
+@@ -181,13 +181,21 @@ static int ide_pci_enable(struct pci_dev
+ 		goto out;
+ 	}
+ 
+-	/* FIXME: Temporary - until we put in the hotplug interface logic
+-	   Check that the bits we want are not in use by someone else. */
+-	ret = pci_request_region(dev, 4, "ide_tmp");
+-	if (ret < 0)
+-		goto out;
++	if (d->host_flags & IDE_HFLAG_SINGLE)
++		bars = (1 << 2) - 1;
++	else
++		bars = (1 << 4) - 1;
++
++	if ((d->host_flags & IDE_HFLAG_NO_DMA) == 0) {
++		if (d->host_flags & IDE_HFLAG_CS5520)
++			bars |= (1 << 2);
++		else
++			bars |= (1 << 4);
++	}
+ 
+-	pci_release_region(dev, 4);
++	ret = pci_request_selected_regions(dev, bars, d->name);
++	if (ret < 0)
++		printk(KERN_ERR "%s: can't reserve resources\n", d->name);
+ out:
+ 	return ret;
+ }
+Index: b/include/linux/ide.h
+===================================================================
+--- a/include/linux/ide.h
++++ b/include/linux/ide.h
+@@ -1160,7 +1160,7 @@ void ide_destroy_dmatable(ide_drive_t *)
+ 
+ #ifdef CONFIG_BLK_DEV_IDEDMA_SFF
+ extern int ide_build_dmatable(ide_drive_t *, struct request *);
+-extern int ide_release_dma(ide_hwif_t *);
++extern void ide_release_dma_engine(ide_hwif_t *);
+ extern void ide_setup_dma(ide_hwif_t *, unsigned long);
+ 
+ void ide_dma_host_set(ide_drive_t *, int);
+@@ -1184,7 +1184,7 @@ static inline void ide_check_dma_crc(ide
+ #endif /* CONFIG_BLK_DEV_IDEDMA */
+ 
+ #ifndef CONFIG_BLK_DEV_IDEDMA_SFF
+-static inline void ide_release_dma(ide_hwif_t *drive) {;}
++static inline void ide_release_dma_engine(ide_hwif_t *hwif) { ; }
+ #endif
+ 
+ #ifdef CONFIG_BLK_DEV_IDEACPI
