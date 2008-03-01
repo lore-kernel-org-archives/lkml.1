@@ -1,100 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762127AbYCABAK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933127AbYCABD5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762127AbYCABAK (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Feb 2008 20:00:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752973AbYCAA75
+	id S933127AbYCABD5 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Feb 2008 20:03:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752973AbYCABDr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Feb 2008 19:59:57 -0500
-Received: from gv-out-0910.google.com ([216.239.58.186]:57040 "EHLO
-	gv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752715AbYCAA74 (ORCPT
+	Fri, 29 Feb 2008 20:03:47 -0500
+Received: from smtp1.linux-foundation.org ([207.189.120.13]:60184 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751071AbYCABDq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 Feb 2008 19:59:56 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=f76c0/A6c35r/85fKAMowod7QGFxgEd2m/M7hX3pWp2lgN8zG4ZOrMe0IcxpY0Bi8RK/I61if/628ffDbJTS6BENn9xjTKlAJrZqLs4UE/kIZR2IE6+FDkl81/8lJzzhzEPfXL93S8z7R8CousaulFBMbwbc6feGCH99TlZrI8A=
-Message-ID: <f19298770802291659x741c9fd9h3b3090fd514fe77b@mail.gmail.com>
-Date: Sat, 1 Mar 2008 03:59:53 +0300
-From: "Alexey Zaytsev" <alexey.zaytsev@gmail.com>
-To: "Ingo Molnar" <mingo@elte.hu>
-Subject: Re: printk timestamps jumping back and forth in 2.6.25-rc.
-Cc: "Thomas Gleixner" <tglx@linutronix.de>,
-       lkml <linux-kernel@vger.kernel.org>,
-       "Arjan van de Ven" <arjan@linux.intel.com>
-In-Reply-To: <f19298770802291642v56a8a50ve5c7c88de53513f4@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+	Fri, 29 Feb 2008 20:03:46 -0500
+Date: Fri, 29 Feb 2008 17:02:46 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Frank Seidel <fseidel@suse.de>
+Cc: viro@zeniv.linux.org.uk, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org,
+       OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
+Subject: Re: [RFC][PATCH] fs/partitions/msdos: directly check if FAT boot
+ sector
+Message-Id: <20080229170246.67391f7b.akpm@linux-foundation.org>
+In-Reply-To: <47C6A9C1.8000008@suse.de>
+References: <47C6A9C1.8000008@suse.de>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <f19298770802280626g5ee17328ldedf7658a9f26f56@mail.gmail.com>
-	 <20080228201315.GA30736@elte.hu> <20080228201613.GA30999@elte.hu>
-	 <f19298770802281324v1fc37cf4oebd680b81d0e0a2f@mail.gmail.com>
-	 <20080229194547.GC21249@elte.hu>
-	 <f19298770802291642v56a8a50ve5c7c88de53513f4@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Mar 1, 2008 at 3:42 AM, Alexey Zaytsev <alexey.zaytsev@gmail.com> wrote:
->
-> On Fri, Feb 29, 2008 at 10:45 PM, Ingo Molnar <mingo@elte.hu> wrote:
->  >
->  >  * Alexey Zaytsev <alexey.zaytsev@gmail.com> wrote:
->  >
->  >
->  >
->  > > On Thu, Feb 28, 2008 at 11:16 PM, Ingo Molnar <mingo@elte.hu> wrote:
->  >  > >
->  >  > >  * Ingo Molnar <mingo@elte.hu> wrote:
->  >  > >
->  >  > >  > > Anything else I can do?
->  >  > >  >
->  >  > >  > yes, please test the patch below - does it fix the problem?
->  >  >
->  >  > The patch worked well, thanks
->  >  >
->  >  > I still observe some uneven mouse behaviour during compilations (linux
->  >  > kernel, make -j 6), like, when I slowly move the mouse, it would stop
->  >  > for a split of a second every few seconds (the intervals are not
->  >  > equal). On 2.6.23/24 it works very smooth. Of course, I can't say that
->  >  > the scheduler is to be blamed. It was only my assumption because I
->  >  > thought I might be confused by the non-monotinic time, which I see is
->  >  > not the case. Any ideas, how to debug this?
->  >
->  >  could you try latencytop, what does it say, what type of scheduler (and
->  >  other) delays are there?
->  >
->
->  I'm not sure I fully understand how to use this tool.
->  There are clearly two possible options to the utility,
->  --unknown and -d, but I still have no idea what they do..
->
->  Does the latencytop-0.3 actually work? I my case the upper half of the
->  window is always empty. The lower half shows always one line, like
->
->  Scheduler: waiting for cpu \t \t \t \t $some_val $some_val
->
->  The two values are always identical.
->
->  In the 2.6.24 case, the values for Xorg are always around 20 ms
->  when a make -j 6 is runig in parallel. For the 2.6.25 the
->  values jump from 100 ms to over 1000 ms.
->
->  Later I mounted a tmpfs and run the compilation (from root) there
->  (swap turned off). This time the Xorg latency was usually less then
->  30 ms, but the gnome-terminal (running from an other user) was not
->  that lucky with latencies around 500-1000 ms. Now I ran the same compilation
->  from user, and the latencies came back to what I observed before, with
->  gnome-terminal being about 30-50 and Xorg jumping from 100 to now
->  over 2000. The latencytop and some daemons runnig as different users
->  also had comparable latencyes.
->
->  Yes, fair group scheduler enabled, the config can be seen here:
->  http://romomatic.osuosl.org/share/xl0/config-2.6.25-rc3
->
->  I"ll now recompile with fair group scheduler disabled, just to be sure.
->
+On Thu, 28 Feb 2008 13:32:01 +0100
+Frank Seidel <fseidel@suse.de> wrote:
 
-Yes, with the group scheduler disabled, the latencies for both Xorg and
-gnome-terminal do net exceed 15 ms. And the mouse is also smooth.
+> Most fat formatted media without partition table contains
+> zeros in the boot indication and the other tested bytes
+> and so falls through the checks in msdos_partition, leading
+> it to return with 1 (all is fine).
+> But some (e.g. WinXP formatted) fat fomated medias don't
+> use boot_ind and so the check fails and causes a
+> "unkown partition table" warning eventhough there is none
+> and everything would be fine.
+> This additional check directly verifies if there is a
+> fat formatted medium without a partition table.
+> 
+> Signed-off-by: Frank Seidel <fseidel@suse.de>
+> ---
+>  fs/partitions/msdos.c |    9 ++++++++-
+>  1 file changed, 8 insertions(+), 1 deletion(-)
+> 
+> --- a/fs/partitions/msdos.c
+> +++ b/fs/partitions/msdos.c
+> @@ -18,7 +18,7 @@
+>   *
+>   *  Re-organised Feb 1998 Russell King
+>   */
+> -
+> +#include <linux/msdos_fs.h>
+>  
+>  #include "check.h"
+>  #include "msdos.h"
+> @@ -419,6 +419,7 @@ int msdos_partition(struct parsed_partit
+>  	Sector sect;
+>  	unsigned char *data;
+>  	struct partition *p;
+> +	struct fat_boot_sector *fb;
+>  	int slot;
+>  
+>  	data = read_dev_sector(bdev, 0, &sect);
+> @@ -441,6 +442,12 @@ int msdos_partition(struct parsed_partit
+>  	 * partition table. Reject this in case the boot indicator
+>  	 * is not 0 or 0x80.
+>  	 */
+> +	fb = (struct fat_boot_sector *) data;
+> +	if (fb->reserved && fb->fats && FAT_VALID_MEDIA(fb->media)) {
+> +		printk("\n");
+> +		put_dev_sector(sect);
+> +		return 1;
+> +	}
+>  	p = (struct partition *) (data + 0x1be);
+>  	for (slot = 1; slot <= 4; slot++, p++) {
+>  		if (p->boot_ind != 0 && p->boot_ind != 0x80) {
+
+fs/partitions/msdos.c: In function 'msdos_partition':
+fs/partitions/msdos.c:446: warning: comparison is always true due to limited range of data type
+
+didn't you get this?
+
+The reason is that FAT_VALID_MEDIA() is bogus:
+
+#define FAT_VALID_MEDIA(x)      ((0xF8 <= (x) && (x) <= 0xFF) || (x) == 0xF0)
+
+It appears that the on-disk field which FAT_VALID_MEDIA() is designed to
+test is only 8-bit, so the comparison with 0xff is pointless.  The only
+existing caller of FAT_VALID_MEDIA() cheats by copying the value into a
+local unsigned int first.
+
+So I'll leave things as they are for now, but I'd ask that someone can
+confirm that we should simply remove the 0xff test from FAT_VALID_MEDIA()?
+
