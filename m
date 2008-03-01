@@ -1,94 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760876AbYCAVCV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761894AbYCAVDU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760876AbYCAVCV (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 1 Mar 2008 16:02:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755236AbYCAVCJ
+	id S1761894AbYCAVDU (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 1 Mar 2008 16:03:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758455AbYCAVDN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 1 Mar 2008 16:02:09 -0500
-Received: from sandeen.net ([209.173.210.139]:15336 "EHLO sandeen.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751298AbYCAVCH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 1 Mar 2008 16:02:07 -0500
-Message-ID: <47C9C44D.8080400@sandeen.net>
-Date: Sat, 01 Mar 2008 15:02:05 -0600
-From: Eric Sandeen <sandeen@sandeen.net>
-User-Agent: Thunderbird 2.0.0.12 (Macintosh/20080213)
-MIME-Version: 1.0
-To: =?ISO-8859-15?Q?Thomas_M=FCller?= <thomas@mathtm.de>
-CC: xfs@oss.sgi.com, linux-kernel@vger.kernel.org
-Subject: Re: Kernel oops / XFS filesystem corruption
-References: <47C93C32.40006@mathtm.de>
-In-Reply-To: <47C93C32.40006@mathtm.de>
-Content-Type: text/plain; charset=ISO-8859-15
-Content-Transfer-Encoding: 8bit
+	Sat, 1 Mar 2008 16:03:13 -0500
+Received: from adsl-67-120-171-161.dsl.lsan03.pacbell.net ([67.120.171.161]:44027
+	"HELO linuxace.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1758354AbYCAVDM (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 1 Mar 2008 16:03:12 -0500
+Date: Sat, 1 Mar 2008 13:03:11 -0800
+From: Phil Oester <kernel@linuxace.com>
+To: Clem Taylor <clem.taylor@gmail.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: e1000 driver not loading in 2.6.24.3 on x86_64 (worked in 2.6.24-rc7)
+Message-ID: <20080301210311.GA10273@linuxace.com>
+References: <ecb4efd10803011242w3874d27eyb1afaea06766bdbf@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <ecb4efd10803011242w3874d27eyb1afaea06766bdbf@mail.gmail.com>
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Thomas Müller wrote:
-> Hello :)
+On Sat, Mar 01, 2008 at 03:42:58PM -0500, Clem Taylor wrote:
+> I'm trying to move from 2.6.24-rc7 to 2.6.24.3 on a x86_64 desktop
+> machine. With 2.6.24.3, the e1000 driver (compiled in, not a module)
+> does not claim the device. In 2.6.24-rc7 it works just fine.
 > 
-> My system just crashed because of a power fluctuation and the root
-> filesystem was damaged.
-> The system booted up just fine, but when samba tried to start up
-> the kernel oops'd.
+> The ethernet device shows up in lspci in both kernels, but the driver
+> doesn't seem to probe the card in 2.6.24.3
 > 
-> xfs_repair was apparently able to repair the damage, though I seem
-> to have lost some files.
-> 
-> I do realize that a lot of awful things can happen if you just cut
-> the power, but the kernel shouldn't oops on a mounted file
-> system, right?
+> 2.6.24-rc7:
+> loop: module loaded
+> Intel(R) PRO/1000 Network Driver - version 7.3.20-k2
+> Copyright (c) 1999-2006 Intel Corporation.
+> ACPI: PCI Interrupt 0000:04:00.0[A] -> GSI 17 (level, low) -> IRQ 17
+> PCI: Setting latency timer of device 0000:04:00.0 to 64
+> e1000: 0000:04:00.0: e1000_probe: (PCI Express:2.5Gb/s:Width x1) 00:16:76:c9:33>
+> e1000: eth0: e1000_probe: Intel(R) PRO/1000 Network Connection
 
-right.
+Note the difference between the above line start (e1000)
+and this one:
 
-here's the disassembly of that function in your kernrel FWIW:
+> e1000e: Intel(R) PRO/1000 Network Driver - 0.2.0
+> e1000e: Copyright (c) 1999-2007 Intel Corporation.
 
-0001012c <xfs_attr_shortform_getvalue>:
-   1012c:       55                      push   %ebp
-   1012d:       57                      push   %edi
-   1012e:       56                      push   %esi
-   1012f:       53                      push   %ebx
-   10130:       89 c3                   mov    %eax,%ebx
-   10132:       83 ec 0c                sub    $0xc,%esp
-   10135:       8b 40 20                mov    0x20(%eax),%eax
-   10138:       8b 40 4c                mov    0x4c(%eax),%eax
-   1013b:       8b 40 14                mov    0x14(%eax),%eax
-   1013e:       8d 78 04                lea    0x4(%eax),%edi
-   10141:       0f b6 40 02             movzbl 0x2(%eax),%eax <--- boom.
-   10145:       c7 44 24 08 00 00 00    movl   $0x0,0x8(%esp)
-   1014c:       00
-   1014d:       89 44 24 04             mov    %eax,0x4(%esp)
-   10151:       e9 96 00 00 00          jmp    101ec
-<xfs_attr_shortform_getvalue+0xc0>
-...
+> 2.6.24.3:
+> loop: module loaded
 
-at this point eax is "sf" (0x0) and edi is "sfe" (0x04)
+And note the absence of e1000 here:
 
-Mar  1 10:32:03 linux kernel: eax: 00000000   ebx: f268cddc   ecx:
-f8ae4d9d   edx: 08d26645
-Mar  1 10:32:03 linux kernel: esi: f04d1600   edi: 00000004   ebp:
-f8ae4d91   esp: f268cdbc
+> e1000e: Intel(R) PRO/1000 Network Driver - 0.2.0
+> e1000e: Copyright (c) 1999-2007 Intel Corporation.
+> Uniform Multi-Platform E-IDE driver Revision: 7.00alpha2
 
-first part of the function:
+In other words, you need the e1000 driver but don't have it.
 
-int
-xfs_attr_shortform_getvalue(xfs_da_args_t *args)
-{
-        xfs_attr_shortform_t *sf;
-        xfs_attr_sf_entry_t *sfe;
-        int i;
-
-        ASSERT(args->dp->i_d.di_aformat == XFS_IFINLINE);
-        sf = (xfs_attr_shortform_t *)args->dp->i_afp->if_u1.if_data;
-        sfe = &sf->list[0];
-        for (i = 0; i < sf->hdr.count; <--- died here, sf is 0
-                                sfe = XFS_ATTR_SF_NEXTENTRY(sfe), i++) {
-
-we blew up on sf->hdr.count because sf is NULL (hdr.count is 0x2 into sf)
-
-maybe the sgi guys can take it from there ;)  Did you also happen to
-save the xfs_repair output?
-
--Eric
-
+Phil
