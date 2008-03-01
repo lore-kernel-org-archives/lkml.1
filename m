@@ -1,28 +1,109 @@
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754125AbYCAFMn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761636AbYB2Syp (ORCPT <rfc822;ralf@linux-mips.org>);
-	Fri, 29 Feb 2008 13:54:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758269AbYB2Sye
+	id S1754125AbYCAFMn (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 1 Mar 2008 00:12:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751035AbYCAFMc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Feb 2008 13:54:34 -0500
-Received: from ag-out-0708.google.com ([72.14.246.240]:36639 "EHLO
-	ag-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757868AbYB2Sye (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 Feb 2008 13:54:34 -0500
-Message-ID: <e44ce9b20802291054i752e8646g19d3a357efe2552b@mail.gmail.com>
-Date: Sat, 1 Mar 2008 02:54:22 +0800
-From: "=?BIG5?B?wcK2rrRQ?=" <t1d8l0u4dq@gmail.com>
-To: linvisa@sparqnet.net
-Subject: =?BIG5?B?MjAwOC8zLzEgoe6hu6G9pVukSqaorLCn2qq6?= =?BIG5?B?s8y3UrGhvey69Ld8rfukRafpwHW0ZqHyofeh9CAyOjU0?=
+	Sat, 1 Mar 2008 00:12:32 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:43965 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750990AbYCAFMb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 1 Mar 2008 00:12:31 -0500
+From: Jarod Wilson <jwilson@redhat.com>
+Organization: Red Hat, Inc.
+To: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Subject: Re: [PATCH update 2] firewire: fix crash in automatic module unloading
+Date: Sat, 1 Mar 2008 00:12:07 -0500
+User-Agent: KMail/1.9.6 (enterprise 0.20071204.744707)
+Cc: linux1394-devel@lists.sourceforge.net, linux-scsi@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+References: <tkrat.43f73e8c841b3161@s5r6.in-berlin.de> <tkrat.6515bdc94ebad712@s5r6.in-berlin.de> <tkrat.47eb30c18d98ad28@s5r6.in-berlin.de>
+In-Reply-To: <tkrat.47eb30c18d98ad28@s5r6.in-berlin.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=BIG5
-Content-Transfer-Encoding: base64
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
+Message-Id: <200803010012.07663.jwilson@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
-Return-Path: <linux-kernel-owner+ralf=40linux-mips.org-S1761636AbYB2Syp@vger.kernel.org>
 
-MjAwOC0zLTEKoe4KCqfaqrqzzLdSsaG97Lr0saG97LDTq34KCmh0dHA6Ly9saXBpMTIzMS5saXBp
-bi5jb20udHcvaW5kZXgyLmFzcAoKpf6mfrVMpfCoQ6TppFWkyDXCSatlpFWz5i25aqTRp1mlaaZ2
-sHSo7LNmCgoyOjU0OjIxCgrPtAo=
+On Wednesday 27 February 2008 04:14:27 pm Stefan Richter wrote:
+> "modprobe firewire-ohci; sleep .1; modprobe -r firewire-ohci" used to
+> result in crashes like this:
+>
+>     BUG: unable to handle kernel paging request at ffffffff8807b455
+>     IP: [<ffffffff8807b455>]
+>     PGD 203067 PUD 207063 PMD 7c170067 PTE 0
+>     Oops: 0010 [1] PREEMPT SMP
+>     CPU 0
+>     Modules linked in: i915 drm cpufreq_ondemand acpi_cpufreq freq_table
+> applesmc input_polldev led_class coretemp hwmon eeprom snd_seq_oss
+> snd_seq_midi_event snd_seq snd_seq_device snd_pcm_oss snd_mixer_oss button
+> thermal processor sg snd_hda_intel snd_pcm snd_timer snd snd_page_alloc
+> sky2 i2c_i801 rtc [last unloaded: crc_itu_t] Pid: 9, comm: events/0 Not
+> tainted 2.6.25-rc2 #3
+>     RIP: 0010:[<ffffffff8807b455>]  [<ffffffff8807b455>]
+>     RSP: 0018:ffff81007dcdde88  EFLAGS: 00010246
+>     RAX: ffff81007dc95040 RBX: ffff81007dee5390 RCX: 0000000000005e13
+>     RDX: 0000000000008c8b RSI: 0000000000000001 RDI: ffff81007dee5388
+>     RBP: ffff81007dc5eb40 R08: 0000000000000002 R09: ffffffff8022d05c
+>     R10: ffffffff8023b34c R11: ffffffff8041a353 R12: ffff81007dee5388
+>     R13: ffffffff8807b455 R14: ffffffff80593bc0 R15: 0000000000000000
+>     FS:  0000000000000000(0000) GS:ffffffff8055a000(0000)
+> knlGS:0000000000000000 CS:  0010 DS: 0018 ES: 0018 CR0: 000000008005003b
+>     CR2: ffffffff8807b455 CR3: 0000000000201000 CR4: 00000000000006e0
+>     DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
+>     DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
+>     Process events/0 (pid: 9, threadinfo ffff81007dcdc000, task
+> ffff81007dc95040) Stack:  ffffffff8023b396 ffffffff88082524
+> 0000000000000000 ffffffff8807d9ae ffff81007dc5eb40 ffff81007dc9dce0
+> ffff81007dc5eb40 ffff81007dc5eb80 ffff81007dc9dce0 ffffffffffffffff
+> ffffffff8023be87 0000000000000000 Call Trace:
+>     [<ffffffff8023b396>] ? run_workqueue+0xdf/0x1df
+>     [<ffffffff8023be87>] ? worker_thread+0xd8/0xe3
+>     [<ffffffff8023e917>] ? autoremove_wake_function+0x0/0x2e
+>     [<ffffffff8023bdaf>] ? worker_thread+0x0/0xe3
+>     [<ffffffff8023e813>] ? kthread+0x47/0x74
+>     [<ffffffff804198e0>] ? trace_hardirqs_on_thunk+0x35/0x3a
+>     [<ffffffff8020c008>] ? child_rip+0xa/0x12
+>     [<ffffffff8020b6e3>] ? restore_args+0x0/0x3d
+>     [<ffffffff8023e68a>] ? kthreadd+0x14c/0x171
+>     [<ffffffff8023e68a>] ? kthreadd+0x14c/0x171
+>     [<ffffffff8023e7cc>] ? kthread+0x0/0x74
+>     [<ffffffff8020bffe>] ? child_rip+0x0/0x12
+>
+>
+>     Code:  Bad RIP value.
+>     RIP  [<ffffffff8807b455>]
+>     RSP <ffff81007dcdde88>
+>     CR2: ffffffff8807b455
+>     ---[ end trace c7366c6657fe5bed ]---
+>
+> Note that this crash happened _after_ firewire-core was unloaded.  The
+> shared workqueue tried to run firewire-core's device initialization jobs
+> or similar jobs.
+>
+> The fix makes sure that firewire-ohci and hence firewire-core is not
+> unloaded before all device shutdown jobs have been completed.  This is
+> determined by the count of device initializations minus device releases.
+>
+> Also skip useless retries in the node initialization job if the node is
+> to be shut down.
+>
+> Signed-off-by: Stefan Richter <stefanr@s5r6.in-berlin.de>
+> ---
+>
+> Update:  Refreshed to be applicable after patch "firewire: fw-sbp2:
+> better fix for NULL pointer dereference in scsi_remove_device".
+>
+> Update 2:  Update 1 had a use-after-free bug. #-|
+
+This version is working quite well for me.
+
+Signed-off-by: Jarod Wilson <jwilson@redhat.com>
+
+-- 
+Jarod Wilson
+jwilson@redhat.com
