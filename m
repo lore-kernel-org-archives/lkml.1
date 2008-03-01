@@ -1,58 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933651AbYCABUd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762179AbYCABUy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933651AbYCABUd (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Feb 2008 20:20:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934032AbYCABUF
+	id S1762179AbYCABUy (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Feb 2008 20:20:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932801AbYCABUS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Feb 2008 20:20:05 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:33752 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933043AbYCABUE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 Feb 2008 20:20:04 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: Regression in 2.6.25-rc3: s2ram segfaults before suspending
-Date: Sat, 1 Mar 2008 02:18:39 +0100
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: "Klaus S. Madsen" <ksm@hjernemadsen.org>, Ingo Molnar <mingo@elte.hu>,
-       LKML <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>,
-       Thomas Gleixner <tglx@linutronix.de>
-References: <20080227221033.GR17932@hjernemadsen.org> <20080229070028.GK17932@hjernemadsen.org> <47C873AA.6040305@zytor.com>
-In-Reply-To: <47C873AA.6040305@zytor.com>
+	Fri, 29 Feb 2008 20:20:18 -0500
+Received: from 187.Red-80-37-203.staticIP.rima-tde.net ([80.37.203.187]:27112
+	"EHLO betty.it.uc3m.es" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S933632AbYCABUP (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 29 Feb 2008 20:20:15 -0500
+X-Greylist: delayed 484 seconds by postgrey-1.27 at vger.kernel.org; Fri, 29 Feb 2008 20:20:14 EST
+From: "Peter T. Breuer" <ptb@inv.it.uc3m.es>
+Message-Id: <200803010112.m211C5h4027092@betty.it.uc3m.es>
+Subject: sysctl in 2.6.24.2 excludes unapproved files from /proc/sys?
+X-ELM-OSV: (Our standard violations) hdr-charset=US-ASCII; no-hdr-encoding=1
+To: linux kernel <linux-kernel@vger.kernel.org>
+Date: Sat, 1 Mar 2008 02:12:05 +0100 (CET)
+Reply-To: ptb@inv.it.uc3m.es
+X-Anonymously-To: 
+X-message-flag: Had your Outlook virus, today?
+ http://www.counterpane.com/crypto-gram-0103.html#4
+X-WebTV-Stationery: Standard\; BGColor=black\; TextColor=black
+X-Mailer: ELM [version 2.4ME+ PL123]
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200803010218.39930.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday, 29 of February 2008, H. Peter Anvin wrote:
-> Klaus S. Madsen wrote:
-> > open("/dev/mem", O_RDWR)                = 5
-> > mmap2(NULL, 1282, PROT_READ|PROT_WRITE|PROT_EXEC, MAP_SHARED|MAP_FIXED, 5, 0) = 0
-> > mmap2(0xa0000, 393216, PROT_READ|PROT_WRITE, MAP_SHARED|MAP_FIXED, 5, 0xa0) = 0xa0000
->                           ^^^^^^^^^^^^^^^^^^^^
-> > close(5)                                = 0
-> > ioperm(0, 0x400, 0x1)                   = 0
-> > iopl(0x3)                               = 0
-> > access("/sys/bus/pci", R_OK)            = 0
-> > write(1, "Calling get_mode\n", 17)      = 17
-> > vm86(0x1, 0xb7f14ccc, 0xb7f14830, 0xc000, 0x18b6 <unfinished ...>
-> > --- SIGSEGV (Segmentation fault) @ 0 (0) ---
-> > +++ killed by SIGSEGV (core dumped) +++
-> 
-> This is the VGA BIOS being mapped, it's mapped PROT_READ|PROT_WRITE, but 
->   no PROT_EXEC; if the kernel is NX-capable it *should* segfault trying 
-> to execute out of this area, which is exactly what will happen when vm86 
-> executes INT 10h.
-> 
-> If we can find that mmap() in the s2ram source code and add PROT_EXEC to 
-> it, it would be interesting.
+A change in 2.6.24.x kernel/sysctl.c seems to exclude exo-kernel drivers
+from using the /proc/sys/ interface:
 
-This is in radeontool.c, line 91, AFAICS.
+@@ -1275,7 +1481,9 @@ static void sysctl_set_parent(struct ctl
 
-Thanks,
-Rafael
+ static __init int sysctl_init(void)
+ {
++       int err;
+        sysctl_set_parent(NULL, root_table);
++       err = sysctl_check_table(root_table);
+        return 0;
+ }
+ 
+and
+
+@@ -1360,6 +1568,10 @@ struct ctl_table_header *register_sysctl
+        tmp->used = 0;
+        tmp->unregistering = NULL;
+        sysctl_set_parent(NULL, table);
++       if (sysctl_check_table(tmp->ctl_table)) {
++               kfree(tmp);
++               return NULL;
++       }
+        spin_lock(&sysctl_lock);
+        list_add_tail(&tmp->ctl_entry, &root_table_header.ctl_entry);
+        spin_unlock(&sysctl_lock);
+
+and IT TURNS OUT THAT (sorry, did I scream?) sysctl_check_table can't
+succeed on anything that's now not been hardwired into the core kernel
+because of the new sysctl_check.c file  which contains gazzilions of
+explict tables aying what is supposed to be in there in excruciating
+detail and which are consulted through sysctl_check_table and
+sysctl_binary_lookup.  E.g:
+
+static struct trans_ctl_table trans_random_table[] = {
+        { RANDOM_POOLSIZE,      "poolsize" },
+        { RANDOM_ENTROPY_COUNT, "entropy_avail" },
+        { RANDOM_READ_THRESH,   "read_wakeup_threshold" },
+        { RANDOM_WRITE_THRESH,  "write_wakeup_threshold" },
+        { RANDOM_BOOT_ID,       "boot_id" },
+        { RANDOM_UUID,          "uuid" },
+        {}
+};
+
+It appears to me, not that I am totally sure because of the lack of
+comments, that every attempt to add a new direcotry in the tree with
+a number that is not listed in the above mess fails through
+sysctl_binary_lookup.sysctl_binary_lookup, and every attempt to add
+a directory with CTL_UNNUMBERED instead fails if it has children because
+the children cry about having an unnumbered parent. Every attempt to
+add a directory usurping an existing number fails through some string
+mismatch against the trans_.._tables on the dirnames in one of the
+numerous lookup functions (forget which).
+
+(somebody has really spent their holidays on this).
+
+What's a person to do? 
+
+Peter
