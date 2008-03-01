@@ -1,25 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761652AbYCAJAv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761185AbYCAJBP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761652AbYCAJAv (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 1 Mar 2008 04:00:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754215AbYCAI7N
+	id S1761185AbYCAJBP (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 1 Mar 2008 04:01:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755078AbYCAI7P
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 1 Mar 2008 03:59:13 -0500
-Received: from ug-out-1314.google.com ([66.249.92.171]:6285 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751714AbYCAI7H (ORCPT
+	Sat, 1 Mar 2008 03:59:15 -0500
+Received: from nf-out-0910.google.com ([64.233.182.191]:64846 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752100AbYCAI7I (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 1 Mar 2008 03:59:07 -0500
+	Sat, 1 Mar 2008 03:59:08 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=googlemail.com; s=gamma;
         h=to:cc:subject:date:message-id:x-mailer:in-reply-to:references:from;
-        b=ttyiG9Znm+MlCMUYODqyTChN/smMTQIJjbz6q08oPRaJQ/koW0iiwDFZuo77IZaPf5HbBgFbZUSfD0osUTUuoK4hZqTBsXvdB59zM3bYjP5IheIYLnAzyR8axruZfmugxX6LCMaJSxjGoDEWAjiyonNK2imo+9d4ee9Nq7o6Mus=
+        b=VJdnXRXXktaMnj59BHFcgv/hs9v0wJCnQNAcm8eSAFVQSmsK+POJDNmgKBlVWhGSoxPjoe8qg78MtEYlb1nbFOWttdfYjborPQwRhWweFozsGUW9XFixdL7oUIZG+Yjn48LzWTTRs9IfMaWIJeGSu4/Znp0GcuqLHzVD+KVsbN0=
 To: <bzolnier@gmail.com>
 Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org,
        Borislav Petkov <petkovbb@gmail.com>
-Subject: [PATCH 02/24] ide-tape: remove pipeline-specific code from idetape_add_chrdev_write_request
-Date: Sat,  1 Mar 2008 09:58:26 +0100
-Message-Id: <1204361928-30229-3-git-send-email-petkovbb@gmail.com>
+Subject: [PATCH 23/24] ide-tape: remove pipelined mode description from Documentation/ide/ide-tape.txt
+Date: Sat,  1 Mar 2008 09:58:47 +0100
+Message-Id: <1204361928-30229-24-git-send-email-petkovbb@gmail.com>
 X-Mailer: git-send-email 1.5.4.1
 In-Reply-To: <1204361928-30229-1-git-send-email-petkovbb@gmail.com>
 References: <1204361928-30229-1-git-send-email-petkovbb@gmail.com>
@@ -28,128 +28,108 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Instead of plugging the request into the pipeline, queue it straight on the
-device's request queue through idetape_queue_rw_tail().
-
 Signed-off-by: Borislav Petkov <petkovbb@gmail.com>
 ---
- drivers/ide/ide-tape.c |   81 ++---------------------------------------------
- 1 files changed, 4 insertions(+), 77 deletions(-)
+ Documentation/ide/ide-tape.txt |   79 ----------------------------------------
+ 1 files changed, 0 insertions(+), 79 deletions(-)
 
-diff --git a/drivers/ide/ide-tape.c b/drivers/ide/ide-tape.c
-index 792c76e..abf3efa 100644
---- a/drivers/ide/ide-tape.c
-+++ b/drivers/ide/ide-tape.c
-@@ -2123,12 +2123,6 @@ static int idetape_queue_rw_tail(ide_drive_t *drive, int cmd, int blocks,
- 
- 	debug_log(DBG_SENSE, "%s: cmd=%d\n", __func__, cmd);
- 
--	if (test_bit(IDETAPE_FLAG_PIPELINE_ACTIVE, &tape->flags)) {
--		printk(KERN_ERR "ide-tape: bug: the pipeline is active in %s\n",
--				__func__);
--		return (0);
--	}
--
- 	idetape_init_rq(&rq, cmd);
- 	rq.rq_disk = tape->disk;
- 	rq.special = (void *)bh;
-@@ -2140,10 +2134,9 @@ static int idetape_queue_rw_tail(ide_drive_t *drive, int cmd, int blocks,
- 	if ((cmd & (REQ_IDETAPE_READ | REQ_IDETAPE_WRITE)) == 0)
- 		return 0;
- 
--	if (tape->merge_stage)
--		idetape_init_merge_stage(tape);
- 	if (rq.errors == IDETAPE_ERROR_GENERAL)
- 		return -EIO;
-+
- 	return (tape->blk_size * (blocks-rq.current_nr_sectors));
- }
- 
-@@ -2210,81 +2203,15 @@ static void idetape_wait_first_stage(ide_drive_t *drive)
- 	spin_unlock_irqrestore(&tape->lock, flags);
- }
- 
--/*
-- * Try to add a character device originated write request to our pipeline. In
-- * case we don't succeed, we revert to non-pipelined operation mode for this
-- * request. In order to accomplish that, we
+diff --git a/Documentation/ide/ide-tape.txt b/Documentation/ide/ide-tape.txt
+index 658f271..51f596b 100644
+--- a/Documentation/ide/ide-tape.txt
++++ b/Documentation/ide/ide-tape.txt
+@@ -8,8 +8,6 @@
+  * interface, on the other hand, creates new requests, adds them
+  * to the request-list of the block device, and waits for their completion.
+  *
+- * Pipelined operation mode is now supported on both reads and writes.
 - *
-- * 1. Try to allocate a new pipeline stage.
-- * 2. If we can't, wait for more and more requests to be serviced and try again
-- * each time.
-- * 3. If we still can't allocate a stage, fallback to non-pipelined operation
-- * mode for this request.
-- */
-+/* Queue up a character device originated write request. */
- static int idetape_add_chrdev_write_request(ide_drive_t *drive, int blocks)
- {
- 	idetape_tape_t *tape = drive->driver_data;
--	idetape_stage_t *new_stage;
--	unsigned long flags;
--	struct request *rq;
- 
- 	debug_log(DBG_CHRDEV, "Enter %s\n", __func__);
- 
--	/* Attempt to allocate a new stage. Beware possible race conditions. */
--	while ((new_stage = idetape_kmalloc_stage(tape)) == NULL) {
--		spin_lock_irqsave(&tape->lock, flags);
--		if (test_bit(IDETAPE_FLAG_PIPELINE_ACTIVE, &tape->flags)) {
--			idetape_wait_for_request(drive, tape->active_data_rq);
--			spin_unlock_irqrestore(&tape->lock, flags);
--		} else {
--			spin_unlock_irqrestore(&tape->lock, flags);
--			idetape_plug_pipeline(drive);
--			if (test_bit(IDETAPE_FLAG_PIPELINE_ACTIVE,
--					&tape->flags))
--				continue;
--			/*
--			 * The machine is short on memory. Fallback to non-
--			 * pipelined operation mode for this request.
--			 */
--			return idetape_queue_rw_tail(drive, REQ_IDETAPE_WRITE,
--						blocks, tape->merge_stage->bh);
--		}
--	}
--	rq = &new_stage->rq;
--	idetape_init_rq(rq, REQ_IDETAPE_WRITE);
--	/* Doesn't actually matter - We always assume sequential access */
--	rq->sector = tape->first_frame;
--	rq->current_nr_sectors = blocks;
--	rq->nr_sectors = blocks;
--
--	idetape_switch_buffers(tape, new_stage);
--	idetape_add_stage_tail(drive, new_stage);
--	tape->pipeline_head++;
--	idetape_calculate_speeds(drive);
--
--	/*
--	 * Estimate whether the tape has stopped writing by checking if our
--	 * write pipeline is currently empty. If we are not writing anymore,
--	 * wait for the pipeline to be almost completely full (90%) before
--	 * starting to service requests, so that we will be able to keep up with
--	 * the higher speeds of the tape.
--	 */
--	if (!test_bit(IDETAPE_FLAG_PIPELINE_ACTIVE, &tape->flags)) {
--		if (tape->nr_stages >= tape->max_stages * 9 / 10 ||
--			tape->nr_stages >= tape->max_stages -
--			tape->uncontrolled_pipeline_head_speed * 3 * 1024 /
--			tape->blk_size) {
--			tape->measure_insert_time = 1;
--			tape->insert_time = jiffies;
--			tape->insert_size = 0;
--			tape->insert_speed = 0;
--			idetape_plug_pipeline(drive);
--		}
--	}
--	if (test_and_clear_bit(IDETAPE_FLAG_PIPELINE_ERR, &tape->flags))
--		/* Return a deferred error */
--		return -EIO;
--	return blocks;
-+	return idetape_queue_rw_tail(drive, REQ_IDETAPE_WRITE, blocks,
-+					tape->merge_stage->bh);
- }
- 
- /*
+  * The block device major and minor numbers are determined from the
+  * tape's relative position in the ide interfaces, as explained in ide.c.
+  *
+@@ -45,83 +43,6 @@
+  *
+  * | Special care is recommended.  Have Fun!
+  *
+- *
+- * An overview of the pipelined operation mode.
+- *
+- * In the pipelined write mode, we will usually just add requests to our
+- * pipeline and return immediately, before we even start to service them. The
+- * user program will then have enough time to prepare the next request while
+- * we are still busy servicing previous requests. In the pipelined read mode,
+- * the situation is similar - we add read-ahead requests into the pipeline,
+- * before the user even requested them.
+- *
+- * The pipeline can be viewed as a "safety net" which will be activated when
+- * the system load is high and prevents the user backup program from keeping up
+- * with the current tape speed. At this point, the pipeline will get
+- * shorter and shorter but the tape will still be streaming at the same speed.
+- * Assuming we have enough pipeline stages, the system load will hopefully
+- * decrease before the pipeline is completely empty, and the backup program
+- * will be able to "catch up" and refill the pipeline again.
+- *
+- * When using the pipelined mode, it would be best to disable any type of
+- * buffering done by the user program, as ide-tape already provides all the
+- * benefits in the kernel, where it can be done in a more efficient way.
+- * As we will usually not block the user program on a request, the most
+- * efficient user code will then be a simple read-write-read-... cycle.
+- * Any additional logic will usually just slow down the backup process.
+- *
+- * Using the pipelined mode, I get a constant over 400 KBps throughput,
+- * which seems to be the maximum throughput supported by my tape.
+- *
+- * However, there are some downfalls:
+- *
+- *	1.	We use memory (for data buffers) in proportional to the number
+- *		of pipeline stages (each stage is about 26 KB with my tape).
+- *	2.	In the pipelined write mode, we cheat and postpone error codes
+- *		to the user task. In read mode, the actual tape position
+- *		will be a bit further than the last requested block.
+- *
+- * Concerning (1):
+- *
+- *	1.	We allocate stages dynamically only when we need them. When
+- *		we don't need them, we don't consume additional memory. In
+- *		case we can't allocate stages, we just manage without them
+- *		(at the expense of decreased throughput) so when Linux is
+- *		tight in memory, we will not pose additional difficulties.
+- *
+- *	2.	The maximum number of stages (which is, in fact, the maximum
+- *		amount of memory) which we allocate is limited by the compile
+- *		time parameter IDETAPE_MAX_PIPELINE_STAGES.
+- *
+- *	3.	The maximum number of stages is a controlled parameter - We
+- *		don't start from the user defined maximum number of stages
+- *		but from the lower IDETAPE_MIN_PIPELINE_STAGES (again, we
+- *		will not even allocate this amount of stages if the user
+- *		program can't handle the speed). We then implement a feedback
+- *		loop which checks if the pipeline is empty, and if it is, we
+- *		increase the maximum number of stages as necessary until we
+- *		reach the optimum value which just manages to keep the tape
+- *		busy with minimum allocated memory or until we reach
+- *		IDETAPE_MAX_PIPELINE_STAGES.
+- *
+- * Concerning (2):
+- *
+- *	In pipelined write mode, ide-tape can not return accurate error codes
+- *	to the user program since we usually just add the request to the
+- *      pipeline without waiting for it to be serviced. In case an error
+- *      occurs, I will report it on the next user request.
+- *
+- *	In the pipelined read mode, subsequent read requests or forward
+- *	filemark spacing will perform correctly, as we preserve all blocks
+- *	and filemarks which we encountered during our excess read-ahead.
+- *
+- *	For accurate tape positioning and error reporting, disabling
+- *	pipelined mode might be the best option.
+- *
+- * You can enable/disable/tune the pipelined operation mode by adjusting
+- * the compile time parameters below.
+- *
+- *
+  *	Possible improvements.
+  *
+  *	1.	Support for the ATAPI overlap protocol.
 -- 
 1.5.4.1
 
