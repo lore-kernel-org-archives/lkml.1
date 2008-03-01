@@ -1,51 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757518AbYCAM0x@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757749AbYCAMad@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757518AbYCAM0x (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 1 Mar 2008 07:26:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752512AbYCAM0m
+	id S1757749AbYCAMad (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 1 Mar 2008 07:30:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751676AbYCAMa0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 1 Mar 2008 07:26:42 -0500
-Received: from mx09.lb01.inode.at ([62.99.145.9]:63262 "EHLO mx.inode.at"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751024AbYCAM0l (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 1 Mar 2008 07:26:41 -0500
-X-Greylist: delayed 52189 seconds by postgrey-1.27 at vger.kernel.org; Sat, 01 Mar 2008 07:26:41 EST
-From: Gerold Jury <gml@inode.at>
-To: Sergey Vlasov <vsu@altlinux.ru>
-Subject: Re: extra bytes written to SATA DVD drive on kernel 2.6.23 till 2.6.24.2
-Date: Sat, 1 Mar 2008 13:29:11 +0100
-User-Agent: KMail/1.9.7
-Cc: Mike Galbraith <efault@gmx.de>, linux-kernel@vger.kernel.org,
-       linux-ide@vger.kernel.org, linux-scsi@vger.kernel.org
-References: <200802252005.22663.gml@inode.at> <200802292259.12047.gml@inode.at> <20080301145354.ca4d4f1a.vsu@altlinux.ru>
-In-Reply-To: <20080301145354.ca4d4f1a.vsu@altlinux.ru>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
+	Sat, 1 Mar 2008 07:30:26 -0500
+Received: from gateway.drzeus.cx ([85.8.24.16]:46980 "EHLO smtp.drzeus.cx"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751463AbYCAMa0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 1 Mar 2008 07:30:26 -0500
+Date: Sat, 1 Mar 2008 13:29:24 +0100
+From: Pierre Ossman <drzeus-list@drzeus.cx>
+To: Alan Jenkins <alan-jenkins@tuffmail.co.uk>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [RFC][PATCH] cpuidle: avoid singing capacitors
+Message-ID: <20080301132924.0dc22b36@mjolnir.drzeus.cx>
+In-Reply-To: <493b45a1-bb40-4e3c-9a8e-4b6ee7b8fdc3@b1g2000hsg.googlegroups.com>
+References: <a2itf-5jB-27@gated-at.bofh.it>
+	<493b45a1-bb40-4e3c-9a8e-4b6ee7b8fdc3@b1g2000hsg.googlegroups.com>
+X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.8; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200803011329.11315.gml@inode.at>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Yes it happens with the DVD+RW (testet with dd now) and with DVD+R
+On Fri, 29 Feb 2008 13:09:05 -0800 (PST)
+Alan Jenkins <alan-jenkins@tuffmail.co.uk> wrote:
 
-Thank you for the byte interpretation.
-Now I have a hint where to start with the debugging.
+> Pierre Ossman wrote:
+> > Many devices today are of a less than stellar quality, and singing
+> > transistors are a common problem. A high-pitch noise is created, caused
+> > by power fluctuations as the processor enters and leaves deep sleep at
+> > a high frequency.
+> 
+> Capacitors or transistors?  The subject and the description disagree.
+> 
 
-Regards
-Gerold
+That should teach me to write commit messages when I'm tired... Capacitors is of course the right answer. :)
 
-On Saturday 01 March 2008 12:53:54 Sergey Vlasov wrote:
->
->0x2a is the SCSI WRITE(10) command; the following 10 bytes look like
->its arguments (bytes 2-5 - logical block address, bytes 7-8 - transfer
->length in blocks); last 4 bytes seem to be another copy of the logical
->block address.
->
->
->Does this happen only with DVD-RAM?  Could you try with a DVD+RW disk
->(these disks could also be written to with a simple "dd" after initial
->formatting)?
->
+-- 
+     -- Pierre Ossman
+
+  Linux kernel, MMC maintainer        http://www.kernel.org
+  PulseAudio, core developer          http://pulseaudio.org
+  rdesktop, core developer          http://www.rdesktop.org
