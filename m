@@ -1,25 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761185AbYCAJBP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762178AbYCAJBe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761185AbYCAJBP (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 1 Mar 2008 04:01:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755078AbYCAI7P
+	id S1762178AbYCAJBe (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 1 Mar 2008 04:01:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756149AbYCAI7U
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 1 Mar 2008 03:59:15 -0500
-Received: from nf-out-0910.google.com ([64.233.182.191]:64846 "EHLO
+	Sat, 1 Mar 2008 03:59:20 -0500
+Received: from nf-out-0910.google.com ([64.233.182.185]:1512 "EHLO
 	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752100AbYCAI7I (ORCPT
+	with ESMTP id S1755303AbYCAI7S (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 1 Mar 2008 03:59:08 -0500
+	Sat, 1 Mar 2008 03:59:18 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=googlemail.com; s=gamma;
         h=to:cc:subject:date:message-id:x-mailer:in-reply-to:references:from;
-        b=VJdnXRXXktaMnj59BHFcgv/hs9v0wJCnQNAcm8eSAFVQSmsK+POJDNmgKBlVWhGSoxPjoe8qg78MtEYlb1nbFOWttdfYjborPQwRhWweFozsGUW9XFixdL7oUIZG+Yjn48LzWTTRs9IfMaWIJeGSu4/Znp0GcuqLHzVD+KVsbN0=
+        b=F0okIMzDdzqXlPtBde3nKM383F8pbaRVhWGJhwbLL/Gf3TVuNcIwpGyUmXqsgKBbs3b7MVImeFakxg7AkJJ9IWx8rYOtyPYFsl8LAzR6vtLVyIMtGy6wH96LFBsi2w3WHDt2lyd1ZyrePv5rbH51oKvM+MPHot5wkgJTEOYfL2g=
 To: <bzolnier@gmail.com>
 Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org,
        Borislav Petkov <petkovbb@gmail.com>
-Subject: [PATCH 23/24] ide-tape: remove pipelined mode description from Documentation/ide/ide-tape.txt
-Date: Sat,  1 Mar 2008 09:58:47 +0100
-Message-Id: <1204361928-30229-24-git-send-email-petkovbb@gmail.com>
+Subject: [PATCH 22/24] ide-tape: remove misc references to pipelined operation in the comments
+Date: Sat,  1 Mar 2008 09:58:46 +0100
+Message-Id: <1204361928-30229-23-git-send-email-petkovbb@gmail.com>
 X-Mailer: git-send-email 1.5.4.1
 In-Reply-To: <1204361928-30229-1-git-send-email-petkovbb@gmail.com>
 References: <1204361928-30229-1-git-send-email-petkovbb@gmail.com>
@@ -30,106 +30,64 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 Signed-off-by: Borislav Petkov <petkovbb@gmail.com>
 ---
- Documentation/ide/ide-tape.txt |   79 ----------------------------------------
- 1 files changed, 0 insertions(+), 79 deletions(-)
+ drivers/ide/ide-tape.c |   15 ++++-----------
+ 1 files changed, 4 insertions(+), 11 deletions(-)
 
-diff --git a/Documentation/ide/ide-tape.txt b/Documentation/ide/ide-tape.txt
-index 658f271..51f596b 100644
---- a/Documentation/ide/ide-tape.txt
-+++ b/Documentation/ide/ide-tape.txt
-@@ -8,8 +8,6 @@
-  * interface, on the other hand, creates new requests, adds them
-  * to the request-list of the block device, and waits for their completion.
+diff --git a/drivers/ide/ide-tape.c b/drivers/ide/ide-tape.c
+index 9810253..07e08a3 100644
+--- a/drivers/ide/ide-tape.c
++++ b/drivers/ide/ide-tape.c
+@@ -267,9 +267,7 @@ typedef struct ide_tape_obj {
+ 	 * While polling for DSC we use postponed_rq to postpone the current
+ 	 * request so that ide.c will be able to service pending requests on the
+ 	 * other device. Note that at most we will have only one DSC (usually
+-	 * data transfer) request in the device request queue. Additional
+-	 * requests can be queued in our internal pipeline, but they will be
+-	 * visible to ide.c only one at a time.
++	 * data transfer) request in the device request queue.
+ 	 */
+ 	struct request *postponed_rq;
+ 	/* The time in which we started polling for DSC */
+@@ -309,10 +307,8 @@ typedef struct ide_tape_obj {
+ 	 * At most, there is only one ide-tape originated data transfer request
+ 	 * in the device request queue. This allows ide.c to easily service
+ 	 * requests from the other device when we postpone our active request.
+-	 * In the pipelined operation mode, we use our internal pipeline
+-	 * structure to hold more data requests. The data buffer size is chosen
+-	 * based on the tape's recommendation.
+ 	 */
++
+ 	/* ptr to the request which is waiting in the device request queue */
+ 	struct request *active_data_rq;
+ 	/* Data buffer size chosen based on the tape's recommendation */
+@@ -1792,8 +1788,7 @@ static int idetape_init_read(ide_drive_t *drive)
+ }
+ 
+ /*
+- * Called from idetape_chrdev_read() to service a character device read request
+- * and add read-ahead requests to our pipeline.
++ * Called from idetape_chrdev_read() to service a character device read request.
+  */
+ static int idetape_add_chrdev_read_request(ide_drive_t *drive, int blocks)
+ {
+@@ -2112,8 +2107,7 @@ static int idetape_write_filemark(ide_drive_t *drive)
   *
-- * Pipelined operation mode is now supported on both reads and writes.
-- *
-  * The block device major and minor numbers are determined from the
-  * tape's relative position in the ide interfaces, as explained in ide.c.
+  * Note: MTBSF and MTBSFM are not supported when the tape doesn't support
+  * spacing over filemarks in the reverse direction. In this case, MTFSFM is also
+- * usually not supported (it is supported in the rare case in which we crossed
+- * the filemark during our read-ahead pipelined operation mode).
++ * usually not supported.
   *
-@@ -45,83 +43,6 @@
+  * The following commands are currently not supported:
   *
-  * | Special care is recommended.  Have Fun!
-  *
-- *
-- * An overview of the pipelined operation mode.
-- *
-- * In the pipelined write mode, we will usually just add requests to our
-- * pipeline and return immediately, before we even start to service them. The
-- * user program will then have enough time to prepare the next request while
-- * we are still busy servicing previous requests. In the pipelined read mode,
-- * the situation is similar - we add read-ahead requests into the pipeline,
-- * before the user even requested them.
-- *
-- * The pipeline can be viewed as a "safety net" which will be activated when
-- * the system load is high and prevents the user backup program from keeping up
-- * with the current tape speed. At this point, the pipeline will get
-- * shorter and shorter but the tape will still be streaming at the same speed.
-- * Assuming we have enough pipeline stages, the system load will hopefully
-- * decrease before the pipeline is completely empty, and the backup program
-- * will be able to "catch up" and refill the pipeline again.
-- *
-- * When using the pipelined mode, it would be best to disable any type of
-- * buffering done by the user program, as ide-tape already provides all the
-- * benefits in the kernel, where it can be done in a more efficient way.
-- * As we will usually not block the user program on a request, the most
-- * efficient user code will then be a simple read-write-read-... cycle.
-- * Any additional logic will usually just slow down the backup process.
-- *
-- * Using the pipelined mode, I get a constant over 400 KBps throughput,
-- * which seems to be the maximum throughput supported by my tape.
-- *
-- * However, there are some downfalls:
-- *
-- *	1.	We use memory (for data buffers) in proportional to the number
-- *		of pipeline stages (each stage is about 26 KB with my tape).
-- *	2.	In the pipelined write mode, we cheat and postpone error codes
-- *		to the user task. In read mode, the actual tape position
-- *		will be a bit further than the last requested block.
-- *
-- * Concerning (1):
-- *
-- *	1.	We allocate stages dynamically only when we need them. When
-- *		we don't need them, we don't consume additional memory. In
-- *		case we can't allocate stages, we just manage without them
-- *		(at the expense of decreased throughput) so when Linux is
-- *		tight in memory, we will not pose additional difficulties.
-- *
-- *	2.	The maximum number of stages (which is, in fact, the maximum
-- *		amount of memory) which we allocate is limited by the compile
-- *		time parameter IDETAPE_MAX_PIPELINE_STAGES.
-- *
-- *	3.	The maximum number of stages is a controlled parameter - We
-- *		don't start from the user defined maximum number of stages
-- *		but from the lower IDETAPE_MIN_PIPELINE_STAGES (again, we
-- *		will not even allocate this amount of stages if the user
-- *		program can't handle the speed). We then implement a feedback
-- *		loop which checks if the pipeline is empty, and if it is, we
-- *		increase the maximum number of stages as necessary until we
-- *		reach the optimum value which just manages to keep the tape
-- *		busy with minimum allocated memory or until we reach
-- *		IDETAPE_MAX_PIPELINE_STAGES.
-- *
-- * Concerning (2):
-- *
-- *	In pipelined write mode, ide-tape can not return accurate error codes
-- *	to the user program since we usually just add the request to the
-- *      pipeline without waiting for it to be serviced. In case an error
-- *      occurs, I will report it on the next user request.
-- *
-- *	In the pipelined read mode, subsequent read requests or forward
-- *	filemark spacing will perform correctly, as we preserve all blocks
-- *	and filemarks which we encountered during our excess read-ahead.
-- *
-- *	For accurate tape positioning and error reporting, disabling
-- *	pipelined mode might be the best option.
-- *
-- * You can enable/disable/tune the pipelined operation mode by adjusting
-- * the compile time parameters below.
-- *
-- *
-  *	Possible improvements.
-  *
-  *	1.	Support for the ATAPI overlap protocol.
+@@ -2129,7 +2123,6 @@ static int idetape_mtioctop(ide_drive_t *drive, short mt_op, int mt_count)
+ 	debug_log(DBG_ERR, "Handling MTIOCTOP ioctl: mt_op=%d, mt_count=%d\n",
+ 			mt_op, mt_count);
+ 
+-	/* Commands which need our pipelined read-ahead stages. */
+ 	switch (mt_op) {
+ 	case MTFSF:
+ 	case MTFSFM:
 -- 
 1.5.4.1
 
