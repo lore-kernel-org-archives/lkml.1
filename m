@@ -1,131 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934038AbYCABnT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933656AbYCABqu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934038AbYCABnT (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 29 Feb 2008 20:43:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760149AbYCABnK
+	id S933656AbYCABqu (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 29 Feb 2008 20:46:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757370AbYCABqn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 29 Feb 2008 20:43:10 -0500
-Received: from einhorn.in-berlin.de ([192.109.42.8]:35861 "EHLO
-	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758930AbYCABnI (ORCPT
+	Fri, 29 Feb 2008 20:46:43 -0500
+Received: from ug-out-1314.google.com ([66.249.92.169]:1205 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752894AbYCABqm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 29 Feb 2008 20:43:08 -0500
-X-Envelope-From: stefanr@s5r6.in-berlin.de
-Date: Sat, 1 Mar 2008 02:42:56 +0100 (CET)
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-Subject: [PATCH 1/3] firewire: fw-ohci: PPC PMac platform code
-To: linux1394-devel@lists.sourceforge.net
-cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
-In-Reply-To: <tkrat.ac97915a5b51e35b@s5r6.in-berlin.de>
-Message-ID: <tkrat.7e8e04e66a38dcd6@s5r6.in-berlin.de>
-References: <tkrat.ac97915a5b51e35b@s5r6.in-berlin.de>
+	Fri, 29 Feb 2008 20:46:42 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=ZHJqsW1QxziSu2wdmbzwe1l9RJIcXViE8IPKNcg9ZS//kRgVg4GhT752Sl02EQDjUpJOVUiYV/Br8g7bXfivufU6oZdXWOFoOHwClO+ZvAYAgQiEB6Bo5x25nJGkk+Besk+jxbajnTVgx2c7FLMU/Yrj4KJXQ81pBCsICf1cd6E=
+Message-ID: <b6fcc0a0802291746y7375ba71ja0dc0beb58c4ccb1@mail.gmail.com>
+Date: Sat, 1 Mar 2008 04:46:41 +0300
+From: "Alexey Dobriyan" <adobriyan@gmail.com>
+To: ptb@inv.it.uc3m.es
+Subject: Re: sysctl in 2.6.24.2 excludes unapproved files from /proc/sys?
+Cc: "linux kernel" <linux-kernel@vger.kernel.org>
+In-Reply-To: <200803010112.m211C5h4027092@betty.it.uc3m.es>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; CHARSET=us-ascii
-Content-Disposition: INLINE
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <200803010112.m211C5h4027092@betty.it.uc3m.es>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Copied from ohci1394.c.  This code is necessary to prevent machine check
-exceptions when reloading or resuming the driver.
+On 3/1/08, Peter T. Breuer <ptb@inv.it.uc3m.es> wrote:
+> A change in 2.6.24.x kernel/sysctl.c seems to exclude exo-kernel drivers
+> from using the /proc/sys/ interface:
 
-Signed-off-by: Stefan Richter <stefanr@s5r6.in-berlin.de>
----
- drivers/firewire/fw-ohci.c |   50 +++++++++++++++++++++++++++++++++++++++++++++
- 1 file changed, 50 insertions(+)
+That's somewhat correct.
 
-Index: linux-2.6.25-rc3/drivers/firewire/fw-ohci.c
-===================================================================
---- linux-2.6.25-rc3.orig/drivers/firewire/fw-ohci.c
-+++ linux-2.6.25-rc3/drivers/firewire/fw-ohci.c
-@@ -33,6 +33,10 @@
- #include <asm/page.h>
- #include <asm/system.h>
- 
-+#ifdef CONFIG_PPC_PMAC
-+#include <asm/pmac_feature.h>
-+#endif
-+
- #include "fw-ohci.h"
- #include "fw-transaction.h"
- 
-@@ -2057,6 +2061,18 @@ pci_probe(struct pci_dev *dev, const str
- 	int err;
- 	size_t size;
- 
-+#ifdef CONFIG_PPC_PMAC
-+	/* Necessary on some machines if fw-ohci was loaded/ unloaded before */
-+	if (machine_is(powermac)) {
-+		struct device_node *ofn = pci_device_to_OF_node(dev);
-+
-+		if (ofn) {
-+			pmac_call_feature(PMAC_FTR_1394_CABLE_POWER, ofn, 0, 1);
-+			pmac_call_feature(PMAC_FTR_1394_ENABLE, ofn, 0, 1);
-+		}
-+	}
-+#endif /* CONFIG_PPC_PMAC */
-+
- 	ohci = kzalloc(sizeof(*ohci), GFP_KERNEL);
- 	if (ohci == NULL) {
- 		fw_error("Could not malloc fw_ohci data.\n");
-@@ -2189,6 +2205,20 @@ static void pci_remove(struct pci_dev *d
- 	pci_iounmap(dev, ohci->registers);
- 	pci_release_region(dev, 0);
- 	pci_disable_device(dev);
-+
-+#ifdef CONFIG_PPC_PMAC
-+	/* On UniNorth, power down the cable and turn off the chip clock
-+	 * to save power on laptops */
-+	if (machine_is(powermac)) {
-+		struct device_node* ofn = pci_device_to_OF_node(dev);
-+
-+		if (ofn) {
-+			pmac_call_feature(PMAC_FTR_1394_ENABLE, ofn, 0, 0);
-+			pmac_call_feature(PMAC_FTR_1394_CABLE_POWER, ofn, 0, 0);
-+		}
-+	}
-+#endif /* CONFIG_PPC_PMAC */
-+
- 	kfree(&ohci->card);
- 
- 	fw_notify("Removed fw-ohci device.\n");
-@@ -2211,6 +2241,16 @@ static int pci_suspend(struct pci_dev *p
- 	if (err)
- 		fw_error("pci_set_power_state failed with %d\n", err);
- 
-+/* PowerMac suspend code comes last */
-+#ifdef CONFIG_PPC_PMAC
-+	if (machine_is(powermac)) {
-+		struct device_node *ofn = pci_device_to_OF_node(pdev);
-+
-+		if (ofn)
-+			pmac_call_feature(PMAC_FTR_1394_ENABLE, ofn, 0, 0);
-+	}
-+#endif /* CONFIG_PPC_PMAC */
-+
- 	return 0;
- }
- 
-@@ -2219,6 +2259,16 @@ static int pci_resume(struct pci_dev *pd
- 	struct fw_ohci *ohci = pci_get_drvdata(pdev);
- 	int err;
- 
-+/* PowerMac resume code comes first */
-+#ifdef CONFIG_PPC_PMAC
-+	if (machine_is(powermac)) {
-+		struct device_node *ofn = pci_device_to_OF_node(pdev);
-+
-+		if (ofn)
-+			pmac_call_feature(PMAC_FTR_1394_ENABLE, ofn, 0, 1);
-+	}
-+#endif /* CONFIG_PPC_PMAC */
-+
- 	pci_set_power_state(pdev, PCI_D0);
- 	pci_restore_state(pdev);
- 	err = pci_enable_device(pdev);
+> and IT TURNS OUT THAT (sorry, did I scream?)
 
--- 
-Stefan Richter
--=====-==--- --== ----=
-http://arcgraph.de/sr/
+Nobody gives a.
 
+> sysctl_check_table can't
+> succeed on anything that's now not been hardwired into the core kernel
+> because of the new sysctl_check.c file which contains gazzilions of
+> explict tables aying what is supposed to be in there in excruciating
+> detail and which are consulted through sysctl_check_table and
+> sysctl_binary_lookup. E.g:
+>
+> static struct trans_ctl_table trans_random_table[] = {
+> { RANDOM_POOLSIZE, "poolsize" },
+> { RANDOM_ENTROPY_COUNT, "entropy_avail" },
+> { RANDOM_READ_THRESH, "read_wakeup_threshold" },
+> { RANDOM_WRITE_THRESH, "write_wakeup_threshold" },
+> { RANDOM_BOOT_ID, "boot_id" },
+> { RANDOM_UUID, "uuid" },
+> {}
+> };
+>
+> It appears to me, not that I am totally sure because of the lack of
+> comments,
+
+Comments? You can read code, can't you?
+
+> that every attempt to add a new direcotry in the tree with
+> a number that is not listed in the above mess fails through
+> sysctl_binary_lookup.sysctl_binary_lookup, and every attempt to add
+> a directory with CTL_UNNUMBERED instead fails if it has children because
+> the children cry about having an unnumbered parent. Every attempt to
+> add a directory usurping an existing number fails through some string
+> mismatch against the trans_.._tables on the dirnames in one of the
+> numerous lookup functions (forget which).
+>
+> (somebody has really spent their holidays on this).
+>
+> What's a person to do?
+
+If I understand you correcty, the answer is drop '.ctl_name' bits from
+new sysctls and make sure common parts of tables match the ones
+in mainline.
