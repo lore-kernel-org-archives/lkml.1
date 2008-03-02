@@ -1,51 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754709AbYCBC1U@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756218AbYCBC3t@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754709AbYCBC1U (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 1 Mar 2008 21:27:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751117AbYCBC1L
+	id S1756218AbYCBC3t (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 1 Mar 2008 21:29:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752288AbYCBC3m
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 1 Mar 2008 21:27:11 -0500
-Received: from rv-out-0910.google.com ([209.85.198.187]:35572 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750696AbYCBC1J (ORCPT
+	Sat, 1 Mar 2008 21:29:42 -0500
+Received: from smtp112.sbc.mail.re2.yahoo.com ([68.142.229.93]:23995 "HELO
+	smtp112.sbc.mail.re2.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1751541AbYCBC3m (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 1 Mar 2008 21:27:09 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=hA2sXOXH5UKqV1STJccrrnQpZwb3UXPibx7yNp6tWnrC689UG89T56rW60zq5dmJK+FGGReBg8OeqmBuE2L0qaAb+FNqJeyGFhSfbHaWuwT0kqj2TRr7twOZ3Mu4SE7JK3CHKDM1cpXx+RqlhiLY9rLPK0IQLrN2MgwwyhKfyL4=
-Message-ID: <75b66ecd0803011827qd64e1f2ud593fedbec33abe9@mail.gmail.com>
-Date: Sat, 1 Mar 2008 21:27:09 -0500
-From: "Lee Revell" <rlrevell@joe-job.com>
-To: "Pierre Ossman" <drzeus-list@drzeus.cx>
-Subject: Re: [RFC][PATCH] cpuidle: avoid singing capacitors
-Cc: "Venkatesh Pallipadi" <venkatesh.pallipadi@intel.com>,
-       "Adam Belay" <abelay@novell.com>, linux-pm@lists.linux-foundation.org,
-       LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <20080229193812.31f45b0c@mjolnir.drzeus.cx>
+	Sat, 1 Mar 2008 21:29:42 -0500
+X-YMail-OSG: e2k4UksVM1kq7FyQAHMvYKt0w.Qikk0t4jkiK.PWqmc9dKNyAdBMVLv4eZSEbaQQ8xWHtaSPLbWMjlGtcWqmcrIX9e1j89YTSdF56LokDp2qwKrLNu9RXOtX111y7cluxHpQhsrBn0D6Dok-
+X-Yahoo-Newman-Property: ymail-3
+Date: Sat, 1 Mar 2008 20:26:56 -0600
+From: serge@hallyn.com
+To: "Leibowitz, Michael" <michael.leibowitz@intel.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: CLONE_NEWNS and bind mounts to make "chroot" jail
+Message-ID: <20080302022655.GA28450@vino.hallyn.com>
+References: <645B0EE4078B7C49A6C12F5E7B3B6C2603D3D607@orsmsx418.amr.corp.intel.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <20080229193812.31f45b0c@mjolnir.drzeus.cx>
-X-Google-Sender-Auth: c5dbcc786645d346
+In-Reply-To: <645B0EE4078B7C49A6C12F5E7B3B6C2603D3D607@orsmsx418.amr.corp.intel.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Feb 29, 2008 at 1:38 PM, Pierre Ossman <drzeus-list@drzeus.cx> wrote:
-> Many devices today are of a less than stellar quality, and singing
->  transistors are a common problem. A high-pitch noise is created, caused
->  by power fluctuations as the processor enters and leaves deep sleep at
->  a high frequency.
->
->  Instead of just disabling the deep sleep (which wastes power). This
->  patch merely reduces the number of times it is entered so that the
->  frequency doesn't exceed 500 Hz. That should make sure the problem is
->  inaudible.
+Quoting Leibowitz, Michael (michael.leibowitz@intel.com):
+> I have been trying to use the combination of CLONE_NEWNS and bind mounts
+> to create a better (than) chroot jail.  I wish to have the ability to
+> bind (ro will be possible in the future, I understand) certain
+> directories into the jail (perhaps /bin, /lib, /usr), but not have
+> parallel directories in the jail (no /etc, ..., /home). 
+> 
+> I have heard that this should be possible, but have yet to get a working
+> solution.
+> 
+> I have tried something analogous to:
 
-Should there be a comment stating the motivation for the change?
+Try a few more things.  Since you had entered /jail, you can view '/' by
+looking at .. .  But if you look at /, you dereference your
+task->fsroot.  You never changed that, so it points to the original
+mount.  If however you 'ls ..', you should see your 'jail' directory.
+However it won't have the /bin and /lib mounted because you didn't
+	mount --rbind /jail /
+What you really want to do is
+	mount --bind /jail /jail
+to make sure it's a mountpoint, then set up the new /jail using bind
+mounts like you're doing (and likely some rbinds in some places), then
+use pivot_root() to change your root.  Then umount2("/old_root",
+MNT_DETACH).
 
-Thanks for trying to address this problem, I know many users who are afflicted.
+-serge
 
-Lee
+> chdir("/jail");
+> unshare(CLONE_NEWNS);
+> /* mount(8) syntax given for simplicity, but mount(2) used below */
+> mount --bind / /jail/old_root
+> mount --bind /jail/old_root/bin /jail/bin
+> mount --bind /jail/old_root/usr /jail/usr
+> mount --bind /jail/old_root/lib /jail/lib
+> mount --bind /jail /               # does nothing?
+> umount2("/old_root", MNT_DETACH);  # never happens.
+> exec("bin/sh");
+> 
+> When bin/sh runs, I can still see old_root from /jail and the bind of
+> /jail over / seems to have not done anything.  
+> 
+> Is it possible to create such a jail with bind mounts?  Is there a
+> recommended method for doing so?  Thank you for your time.
+> 
+> --
+> Michael Leibowitz
+> Software Engineer, UMG
+> Intel Corporation
+> michael.leibowitz at intel.com
+> 
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
