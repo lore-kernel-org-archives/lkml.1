@@ -1,50 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754261AbYCBMLL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754530AbYCBMUa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754261AbYCBMLL (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 2 Mar 2008 07:11:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751045AbYCBMK6
+	id S1754530AbYCBMUa (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 2 Mar 2008 07:20:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751394AbYCBMUQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 2 Mar 2008 07:10:58 -0500
-Received: from userg501.nifty.com ([202.248.238.81]:44439 "EHLO
-	userg501.nifty.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750962AbYCBMK6 (ORCPT
+	Sun, 2 Mar 2008 07:20:16 -0500
+Received: from ug-out-1314.google.com ([66.249.92.173]:29592 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751045AbYCBMUO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 2 Mar 2008 07:10:58 -0500
-DomainKey-Signature: a=rsa-sha1; s=userg501; d=nifty.com; c=nofws; q=dns;
-	h=date:from:to:subject:message-id:in-reply-to:references:
-	x-mailer:mime-version:content-type:content-transfer-encoding;
-	b=M0GSQPCgVvPe/4EBdrKrRhnLjRRMccGfBq4srMTMSazbbal9M3sNurajhHs/ZxTmY
-	Y9sQk9dwBf9cVfg7EZlSA==
-X-Nifty-SrcIP: [222.159.205.91]
-Date: Sun, 2 Mar 2008 21:07:16 +0900
-From: Komuro <komurojun-mbn@nifty.com>
-To: linux-kernel@vger.kernel.org
-Subject: [BUG  kernel 2.6.25-rc3  IPV6]  ping6 -I eth0 ff02::1 causes system
- hang.
-Message-Id: <20080302210716.69727582.komurojun-mbn@nifty.com>
-In-Reply-To: <20071014073658.d4352b8c.komurojun@nifty.com>
-References: <20071006132601.f944f461.komurojun@nifty.com>
-	<20071014073658.d4352b8c.komurojun@nifty.com>
-X-Mailer: Sylpheed 2.3.1 (GTK+ 2.10.11; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Sun, 2 Mar 2008 07:20:14 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=AAT0iWECzx6kDbU5GUuqjxnxPEOkPMScXGvIGeyy1WguOyNDWh4GhxKiWSne0k7tnoRiW2DgkmFx9s/u5F7TjGxiWQLVxkVvfs1O9mA8MmR+ztt6uPcnOJ8RXhDbSDX4+L7+qGQYhbPWkEkSvliWf9FZ9ZJi5u3HJhtpYSuQbPQ=
+Message-ID: <3d8471ca0803020420ka42319bu1b9888217c869d9d@mail.gmail.com>
+Date: Sun, 2 Mar 2008 13:20:12 +0100
+From: "Guillaume Chazarain" <guichaz@gmail.com>
+To: "=?UTF-8?Q?Ilpo_J=C3=A4rvinen?=" <ilpo.jarvinen@helsinki.fi>
+Subject: Re: WARNING: at net/ipv4/tcp_input.c:2054 tcp_mark_head_lost()
+Cc: "Giangiacomo Mariotti" <giangiacomo_mariotti@yahoo.com>,
+       LKML <linux-kernel@vger.kernel.org>, Netdev <netdev@vger.kernel.org>,
+       "Andrew Morton" <akpm@linux-foundation.org>
+In-Reply-To: <Pine.LNX.4.64.0802281018480.32401@kivilampi-30.cs.helsinki.fi>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Disposition: inline
+References: <858077.97160.qm@web39709.mail.mud.yahoo.com>
+	 <20080223000310.4630daa8.akpm@linux-foundation.org>
+	 <Pine.LNX.4.64.0802271108290.13029@kivilampi-30.cs.helsinki.fi>
+	 <3d8471ca0802271056l320a7ee2m5227e114a968d483@mail.gmail.com>
+	 <Pine.LNX.4.64.0802272120430.1741@kivilampi-30.cs.helsinki.fi>
+	 <Pine.LNX.4.64.0802281018480.32401@kivilampi-30.cs.helsinki.fi>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
+Content-Transfer-Encoding: 8bit
+X-MIME-Autoconverted: from base64 to 8bit by alpha id m22CLAnq030478
 
-Hi,
-
-On kernel 2.6.25-rc3, IPV6 multicast ping causes system hang
-after sending several multicast ping packet.
-
->ping6 -I eth0 ff02::1 
-
-This problem does not happen on kernel 2.6.24.
-(does not depend on NIC)
-
-
-Best Regards
-Komuro
-
-
+On Thu, Feb 28, 2008 at 9:22 AM, Ilpo JÃ¤rvinen<ilpo.jarvinen@helsinki.fi> wrote:>  [PATCH] TCP debug S+L (for 2.6.25-rcs, incompatible with 2.6.24.y)
+Bittorrenting with this patch applied floods my dmesg. Here is a log dump:
+http://guichaz.free.fr/tcp-debug.log.bz2 (2.3M compressed, 113M uncompressed)
+It does not contain any "KERNEL: assertion (packets <=tp->packets_out) failed at" line, so I'm afraid it's just noise.
+Cheers.
+-- Guillaumeÿôèº{.nÇ+‰·Ÿ®‰­†+%ŠËÿ±éİ¶¥Šwÿº{.nÇ+‰·¥Š{±şG«éÿŠ{ayºÊ‡Ú™ë,j­¢f£¢·hšïêÿ‘êçz_è®(­éšŠİ¢j"ú¶m§ÿÿ¾«şG«éÿ¢¸?™¨è­Ú&£ø§~á¶iO•æ¬z·švØ^¶m§ÿÿÃÿ¶ìÿ¢¸?–I¥
