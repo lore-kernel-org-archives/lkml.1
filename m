@@ -1,50 +1,28 @@
-Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1757414AbYCKFAV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757414AbYCKFAV (ORCPT <rfc822;akpm@linux-foundation.org>);
-	Tue, 11 Mar 2008 01:00:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752473AbYCKFAG
+	id S1753622AbYCBGxf (ORCPT <rfc822;ralf@linux-mips.org>);
+	Sun, 2 Mar 2008 01:53:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751229AbYCBGx1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Mar 2008 01:00:06 -0400
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:55269 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751368AbYCKFAE (ORCPT
+	Sun, 2 Mar 2008 01:53:27 -0500
+Received: from hu-out-0506.google.com ([72.14.214.224]:7713 "EHLO
+	hu-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751320AbYCBGx0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Mar 2008 01:00:04 -0400
-Date: Tue, 11 Mar 2008 14:00:15 +0900
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: Balbir Singh <balbir@linux.vnet.ibm.com>
-Subject: +
-Cc: kosaki.motohiro@jp.fujitsu.com, Paul Menage <menage@google.com>,
-        Andrew Morton <akpm@linux-foundation.org>,
-        Pavel Emelianov <xemul@openvz.org>, Hugh Dickins <hugh@veritas.com>,
-        Sudhir Kumar <skumar@linux.vnet.ibm.com>,
-        YAMAMOTO Takashi <yamamoto@valinux.co.jp>, lizf@cn.fujitsu.com,
-        linux-kernel@vger.kernel.org, taka@valinux.co.jp, linux-mm@kvack.org,
-        David Rientjes <rientjes@google.com>,
-        KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20080311043149.20251.50059.sendpatchset@localhost.localdomain>
-References: <20080311043149.20251.50059.sendpatchset@localhost.localdomain>
-Message-Id: <20080311135933.8937.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+	Sun, 2 Mar 2008 01:53:26 -0500
+Message-ID: <4a47cc170803012253w3308a640ka9d8aea644d5a5@mail.gmail.com>
+Date: Sun, 2 Mar 2008 14:53:17 +0800
+From: "=?BIG5?B?rF+l7Kl1?=" <dhy6o2a7kw@gmail.com>
+To: lin@tokyoyen.com
+Subject: =?BIG5?B?ZWkgobsgpqikSLGhveylzqt+tlenQw==?= =?BIG5?B?rk27+bz2veakpCAxMzUztKy75aH3?=
 MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
-Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.42 [ja]
+Content-Type: text/plain; charset=BIG5
+Content-Transfer-Encoding: base64
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
+Return-Path: <linux-kernel-owner+ralf=40linux-mips.org-S1753622AbYCBGxf@vger.kernel.org>
 
-Hi
-
-> Signed-off-by: Balbir Singh <balbir@linux.vnet.ibm.com>
-> ---
-> 
->  linux/memcontrol.h |    0 
-
-???
-unnecessary hunk?
-or diff comannd bug?
-
->  mm/memcontrol.c    |   21 ++++++++++++++-------
->  2 files changed, 14 insertions(+), 7 deletions(-)
-
-
+MjAwOC0zLTIKofUKCqfaqrqzzLdSsaG97Lr0saG97LDTq34KCmh0dHA6Ly9saXBpMTIzMS5saXBp
+bi5jb20udHcvaW5kZXgyLmFzcAoKpf6mfrVMpfCoQ6TppFWkyDXCSatlpFWz5i25aqTRp1mlaaZ2
+sHSo7LNmCgoxNDo1MzoxMwoKuucK
