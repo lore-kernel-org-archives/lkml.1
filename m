@@ -1,101 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759251AbYCBWSx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758709AbYCBW2t@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759251AbYCBWSx (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 2 Mar 2008 17:18:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752602AbYCBWSm
+	id S1758709AbYCBW2t (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 2 Mar 2008 17:28:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752772AbYCBW2i
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 2 Mar 2008 17:18:42 -0500
-Received: from ns2.suse.de ([195.135.220.15]:53326 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751708AbYCBWSl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 2 Mar 2008 17:18:41 -0500
-From: Neil Brown <neilb@suse.de>
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Date: Mon, 3 Mar 2008 09:18:47 +1100
+	Sun, 2 Mar 2008 17:28:38 -0500
+Received: from el-out-1112.google.com ([209.85.162.179]:28586 "EHLO
+	el-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752237AbYCBW2i (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 2 Mar 2008 17:28:38 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=ahMplK0InWMnbCJT5miUkEz6Eu5Fy/NzBNVPtgpWaqVATlPpo5yuJZ6nctBFuC3NEKVMVMPl0yl9U2Y2uro0ac+FDlz4t9+kQQ8/pxGmRp1Nbp7sR1IpKNbRCweaLzi3VUidsYs8FveB8nxtYCEPXmhnLofBOD+irX56A2v6wWE=
+Message-ID: <b647ffbd0803021428h277ed1e0q6d302f0ae9392346@mail.gmail.com>
+Date: Sun, 2 Mar 2008 23:28:35 +0100
+From: "Dmitry Adamushko" <dmitry.adamushko@gmail.com>
+To: "Rusty Russell" <rusty@rustcorp.com.au>
+Subject: Re: [PATCH 1/2] kthread: add a missing memory barrier to kthread_stop()
+Cc: "Andrew Morton" <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       "Nick Piggin" <nickpiggin@yahoo.com.au>, "Ingo Molnar" <mingo@elte.hu>,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       "Peter Zijlstra" <a.p.zijlstra@chello.nl>,
+       "Andy Whitcroft" <apw@shadowen.org>
+In-Reply-To: <200803030850.57615.rusty@rustcorp.com.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Message-ID: <18379.10183.427082.282748@notabene.brown>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       netdev@vger.kernel.org, trond.myklebust@fys.uio.no
-Subject: Re: [PATCH 00/28] Swap over NFS -v16
-In-Reply-To: message from Peter Zijlstra on Friday February 29
-References: <20080220144610.548202000@chello.nl>
-	<20080223000620.7fee8ff8.akpm@linux-foundation.org>
-	<18371.43950.150842.429997@notabene.brown>
-	<1204023042.6242.271.camel@lappy>
-	<18372.64081.995262.986841@notabene.brown>
-	<1204099113.6242.353.camel@lappy>
-	<18375.24558.876276.255804@notabene.brown>
-	<1204280500.6243.70.camel@lappy>
-X-Mailer: VM 7.19 under Emacs 21.4.1
-X-face: [Gw_3E*Gng}4rRrKRYotwlE?.2|**#s9D<ml'fY1Vw+@XfR[fRCsUoP?K6bt3YD\ui5Fh?f
-	LONpR';(ql)VM_TQ/<l_^D3~B:z$\YC7gUCuC=sYm/80G=$tt"98mr8(l))QzVKCk$6~gldn~*FK9x
-	8`;pM{3S8679sP+MbP,72<3_PIH-$I&iaiIb|hV1d%cYg))BmI)AZ
+Content-Disposition: inline
+References: <1203543390.6307.24.camel@earth>
+	 <200803030850.57615.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday February 29, a.p.zijlstra@chello.nl wrote:
-> 
-> The tx path is a bit fuzzed. I assume it has an upper limit, take a stab
-> at that upper limit and leave it at that.
-> 
-> It should be full of holes, and there is some work on writeout
-> throttling to fill some of them - but I haven't seen any lockups in this
-> area for a long long while.
+On 02/03/2008, Rusty Russell <rusty@rustcorp.com.au> wrote:
+> On Thursday 21 February 2008 08:36:30 Dmitry Adamushko wrote:
+>  > From: Dmitry Adamushko <dmitry.adamushko@gmail.com>
+>  > Subject: kthread: add a missing memory barrier to kthread_stop()
+>  >
+>  > We must ensure that kthread_stop_info.k has been updated before
+>  > kthread's wakeup. This is required to properly support
+>  > the use of kthread_should_stop() in the main loop of kthread.
+>  >
+>  > wake_up_process() doesn't imply a full memory barrier,
+>  > so we add an explicit one.
+>
+>
+> I always believed that wake_up_process() implies a write barrier.  It's pretty
+>  common to set something up then wake the intended recipient.
 
-I think this is very interesting and useful.
+No, it didn't imply a write mb. Moreover, the situation I tried to
+address required a full mb (write vs. read ops. synchronization).
 
-You seem to be saying that the write-throttling is enough to avoid any
-starvation on the transmit path. i.e. the VM is limiting the amount
-of dirty memory so that when we desperately need memory on the
-writeout path we can always get it, without lots of careful
-accounting.
+Please take a look at the discussion here http://lkml.org/lkml/2008/2/23/238
 
-So why doesn't this work on for the receive side?  What - exactly - is
-the difference.
+and here is a more detailed description of the problem :
+http://groups.google.com/group/fa.linux.kernel/browse_thread/thread/44c45685680585fc/e58785df0eeee6f8?lnk=raot
 
-I think the difference is that on the receive side we have to hand
-out memory before we know how it will be used (i.e. whether it is for
-a SK_MEMALLOC socket or not) and so emergency memory could get stuck
-in some non-emergency usage.
+>
+>  So I think this patch is overkill, but I'm happy to be corrected.
 
-So suppose we forgot about all the allocation tracking (that doesn't
-seem to be needed on the send side so maybe isn't on the receive side)
-and just focus on not letting emergency memory get used for the wrong
-thing.
+We ended up adding an explicit smp_wmb() (a patch by Linus) to the
+very beginning of try_to_wake_up(). Combined with the following
+spin_lock() it acts as a 'full' mb for write vs. read ('read' takes
+place inside try_to_wake_up()) and that's exactly what we need here.
 
-So: Have some global flag that says "we are into the emergency pool"
-which gets set the first time an allocation has to dip below the low
-water mark, and cleared when an allocation succeeds without needing to
-dip that low.
+The 1st link mentioned above may provide more details for interested readers.
 
-Then whenever we have memory that might have been allocated from below
-the watermark (i.e. an incoming packet) and we find out that it isn't
-required for write-out (i.e. it gets attached to a socket for which
-SK_MEMALLOC is not set) we test the global flag and if it is set, we
-drop the packet and free the memory.
+So yes, now that we have got smp_wmb() in try_to_wake_up() this patch
+is redundant.
 
-To clarify: 
-   no new accounting
-   no new reservations
-   just "drop non-writeout packets when we are low on memory"
 
-Is there any chance that could work reliably?
+>
+>  Thanks!
+>
+> Rusty.
+>
 
-I call this the "Linus" approach because I remember reading somewhere
-(that google cannot find for me) where Linus said he didn't think a
-provably correct implementation was the way to go - just something
-that made it very likely that we won't run out of memory at an awkward
-time.
 
-I guess my position is that any accounting that we do needs to have a
-clear theoretical model underneath it so we can reason about it.
-I cannot see the clear model in beneath the current code so I'm trying
-to come up with models that seem to capture the important elements of
-the code, and to explore them.
-
-NeilBrown
+-- 
+Best regards,
+Dmitry Adamushko
