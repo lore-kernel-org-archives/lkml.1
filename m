@@ -1,65 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758223AbYCBUJS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759913AbYCBUKI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758223AbYCBUJS (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 2 Mar 2008 15:09:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755867AbYCBUJE
+	id S1759913AbYCBUKI (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 2 Mar 2008 15:10:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755839AbYCBUJ5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 2 Mar 2008 15:09:04 -0500
-Received: from nf-out-0910.google.com ([64.233.182.189]:22371 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755800AbYCBUJC (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 2 Mar 2008 15:09:02 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
-        b=eyN++PQXQ19To0IPEyriDTrAETWpcuX0o32KFMuotewFrLvHwG4mA42ZyBtkZOxFMc4NmWB6Z7E7MtPDkiuyr8K8HdudExLrBwYKLOMAvTZuz7Rg6S9VOOIUq9HW87F4q/GoRWIpg+x31lSENwAkDZPOqXf/MSRRTkIZ875yNrc=
-Date: Sun, 2 Mar 2008 21:08:05 +0100
-From: Marcin Slusarz <marcin.slusarz@gmail.com>
-To: Arjan van de Ven <arjan@infradead.org>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, Ingo Molnar <mingo@elte.hu>
-Subject: Re: 2.6.25-rc: complete lockup on boot/start of X (bisected)
-Message-ID: <20080302200801.GA6184@joi>
-References: <20080302185935.GA6100@joi> <20080302120010.79d19405@laptopd505.fenrus.org>
+	Sun, 2 Mar 2008 15:09:57 -0500
+Received: from mail.gmx.net ([213.165.64.20]:35676 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1755537AbYCBUJ4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 2 Mar 2008 15:09:56 -0500
+X-Authenticated: #5108953
+X-Provags-ID: V01U2FsdGVkX1/jIJF0GSTjMAvN9FpFGiJwmwVLRboyZ/q+16bBzp
+	g5shasFo8OaL4f
+From: Toralf =?iso-8859-15?q?F=F6rster?= <toralf.foerster@gmx.de>
+To: linux-kernel@vger.kernel.org
+Subject: Re: Re: why is CONFIG_PCI unset ? [was: build #350 issue for v2.6.25-rc1 in drivers/i2c/busses/i2c-i801.c]
+Date: Sun, 2 Mar 2008 21:09:53 +0100
+User-Agent: KMail/1.9.7
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080302120010.79d19405@laptopd505.fenrus.org>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+Message-Id: <200803022109.53851.toralf.foerster@gmx.de>
+Content-Type: multipart/signed;
+  boundary="nextPart1814651.eKZzvPAmEU";
+  protocol="application/pgp-signature";
+  micalg=pgp-sha1
+Content-Transfer-Encoding: 7bit
+X-Y-GMX-Trusted: 0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Mar 02, 2008 at 12:00:10PM -0800, Arjan van de Ven wrote:
-> On Sun, 2 Mar 2008 20:00:05 +0100
-> Marcin Slusarz <marcin.slusarz@gmail.com> wrote:
-> 
-> > Hi
-> > Since early 2.6.25 days I'm having strange lockup on boot. As it
-> > happens rarely (in ~10% of boots), I couldn't bisect it. No kernel
-> > panic, SysRq didn't work, so I couldn't provide any useful
-> > informations to LK community. I hoped someone else would fix it... :)
-> > 
-> > It's rc3 so I decided to narrow it down myself. I enabled netconsole 
-> > to see whether some other informations are printed before lockup.
-> > It didn't help, but I noticed that lockup happens much more
-> > frequenly! (~50%) So I bisected it down to:
-> > 
-> > 8f4d37ec073c17e2d4aa8851df5837d798606d6f is first bad commit
-> > commit 8f4d37ec073c17e2d4aa8851df5837d798606d6f
-> > Author: Peter Zijlstra <a.p.zijlstra@chello.nl>
-> > Date:   Fri Jan 25 21:08:29 2008 +0100
-> > 
-> >     sched: high-res preemption tick
-> > 
-> >     Use HR-timers (when available) to deliver an accurate preemption
-> > tick.
-> 
-> 
-> the only unusual/suspect thing you have is nvidiafb driver; that's not very commonly used.
-> Can you do a quick try with that thing disabled? Maybe it has some races that are more likely
-> to trigger after this patch...
-I switched from vesa to nvidiafb few days ago. Lockup started to happen earlier.
+--nextPart1814651.eKZzvPAmEU
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-Marcin
+Hi,=20
+
+At Sunday 02 March 2008 Adrian Bunk wrote :
+
+> Why are you doing the "<tweak config file> && make oldconfig" steps at al=
+l?
+>=20
+> Shouldn't KCONFIG_ALLCONFIG do what you want?
+>=20
+
+I grep out some stuff from the randomly generated config file.
+=46urthermore I prefer to have to whole stuff together in single file.
+
+=2D-=20
+MfG/Sincerely
+
+Toralf F=F6rster
+pgp finger print: 7B1A 07F4 EC82 0F90 D4C2 8936 872A E508 7DB6 9DA3
+
+--nextPart1814651.eKZzvPAmEU
+Content-Type: application/pgp-signature; name=signature.asc 
+Content-Description: This is a digitally signed message part.
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.7 (GNU/Linux)
+
+iD8DBQBHywmRhyrlCH22naMRApNxAJwN0L4/LauoDQhhLHDuAJSnCzf2UwCgrh01
+hEy0qtCysaFt/NZBUB6fi7E=
+=YFMV
+-----END PGP SIGNATURE-----
+
+--nextPart1814651.eKZzvPAmEU--
