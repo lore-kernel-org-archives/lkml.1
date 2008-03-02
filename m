@@ -1,66 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757349AbYCBTXx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758091AbYCBT0p@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757349AbYCBTXx (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 2 Mar 2008 14:23:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752762AbYCBTXn
+	id S1758091AbYCBT0p (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 2 Mar 2008 14:26:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753116AbYCBT0h
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 2 Mar 2008 14:23:43 -0500
-Received: from el-out-1112.google.com ([209.85.162.180]:9784 "EHLO
-	el-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752557AbYCBTXn (ORCPT
+	Sun, 2 Mar 2008 14:26:37 -0500
+Received: from fallback0.mail.ox.ac.uk ([129.67.1.175]:46086 "EHLO
+	fallback0.mail.ox.ac.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752762AbYCBT0h (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 2 Mar 2008 14:23:43 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=A8dZRMOpfIHF8ryEhprhRByZlOyXobNLSqtFiTfd1IOOMb3qy+siD4e4XzhAuqnzMOPwPQBAk99/ONsQC4FwLS3kRplSJ9sugbs0C6MzEn3gd1UylzPk8sUd4D1pWqApgFj/7zVa8g6UvuJC+Cl/JfytsltPxrs3An/Anmh/p7o=
-Message-ID: <a728f9f90803021123i4feacd07k9b5baa94107d46cf@mail.gmail.com>
-Date: Sun, 2 Mar 2008 14:23:41 -0500
-From: "Alex Deucher" <alexdeucher@gmail.com>
-To: "Jonathan McDowell" <noodles@earth.li>
-Subject: Re: 2.6.25-rc3 + RS690 + DRM + xf86-video-ati hang
-Cc: xorg-driver-ati@lists.x.org, linux-kernel@vger.kernel.org
-In-Reply-To: <20080301193511.GP9009@earth.li>
+	Sun, 2 Mar 2008 14:26:37 -0500
+X-Greylist: delayed 757 seconds by postgrey-1.27 at vger.kernel.org; Sun, 02 Mar 2008 14:26:37 EST
+From: ZJ Laczik <Laczik@eng.ox.ac.uk>
+Organization: University of Oxford
+To: linux-kernel@vger.kernel.org
+Subject: [PATCH 2.6.x] fs/Kconfig: fix missing CONFIG_ROOT_NFS option
+Date: Sun, 2 Mar 2008 19:13:53 +0000
+User-Agent: KMail/1.9.7
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <20080301193511.GP9009@earth.li>
+Message-Id: <200803021913.54107.Laczik@eng.ox.ac.uk>
+X-Oxford-Username: laczik
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Mar 1, 2008 at 2:35 PM, Jonathan McDowell <noodles@earth.li> wrote:
-> If I enable CONFIG_DRM_RADEON under 2.6.25-rc3 then starting up
->  X using the xf86-video-ati driver (6.8.0 or latest git) causes the
->  machine to become unresponsive; while it still pings and will accept
->  incoming connections they never actually complete and it's not possible
->  to login over a serial console (the actual video console doesn't display
->  anything and the monitor reports a loss of sync).
->
->  Disabling the kernel DRM option results in X running successfully.
->  Likewise 2.6.24 works fine with DRM enabled, presumably because the
->  support for the RS690 was only added in 2.6.25-rc
->
->  The last messages from the kernel before it becomes unresponsive are:
->
->  [drm] Setting GART location based on new memory map
->  [drm] Loading R300 Microcode
->  [drm] writeback test succeeded in 1 usecs
->
->  The motherboard in question is an ASUS M2A-VM HDMI, with the analog VGA
->  output being used. The machine is running an AMD64 with Debian unstable.
->  I have put the output of lspci, a non drm Xorg.log and a drm Xorg.log
->  at:
->
->  http://the.earth.li/~noodles/xorg-ati-drm/lspci
->  http://the.earth.li/~noodles/xorg-ati-drm/Xorg.0.log-nodrm
->  http://the.earth.li/~noodles/xorg-ati-drm/Xorg.0.log-drm
->
->  If I can provide any more useful information please let me know.
+Hi,
 
-Unfortunately, drm support on recent IGP chips is a little shaky at
-the moment.  In some cases it helps to change the bios vram options to
-a fixed vram size rather than setting it to "auto".
+The CONFIG_ROOT_NFS option has been missing at least since 2.6.18,
+fix is attached below:
 
-Alex
+---
+diff -uNr a/fs/Kconfig b/fs/Kconfig
+--- a/fs/Kconfig	2008-01-24 22:58:37.000000000 +0000
++++ b/fs/Kconfig	2008-03-02 17:59:54.000000000 +0000
+@@ -1743,7 +1743,7 @@
+ 
+ config ROOT_NFS
+ 	bool "Root file system on NFS"
+-	depends on NFS_FS=y && IP_PNP
++	depends on NFS_FS && IP_PNP
+ 	help
+ 	  If you want your Linux box to mount its whole root file system (the
+ 	  one containing the directory /) from some other computer over the
+---
+
+John
+
+-- 
+Dr ZJ Laczik
+=========================
+Oxford Optics Ltd.
+29 Harbord Road
+Oxford OX2 8LH, UK
+=========================
+University of Oxford
+Dept. of Engineering Sci.
+Parks Road
+Oxford OX1 3PJ, UK
+phone: +44 1865 273115
+fax:   +44 1865 273905
+=========================
