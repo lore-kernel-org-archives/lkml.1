@@ -1,69 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759735AbYCBVka@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760103AbYCBVpT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759735AbYCBVka (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 2 Mar 2008 16:40:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757201AbYCBVkS
+	id S1760103AbYCBVpT (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 2 Mar 2008 16:45:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757495AbYCBVpE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 2 Mar 2008 16:40:18 -0500
-Received: from ug-out-1314.google.com ([66.249.92.174]:1488 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756654AbYCBVkQ (ORCPT
+	Sun, 2 Mar 2008 16:45:04 -0500
+Received: from x35.xmailserver.org ([64.71.152.41]:39361 "EHLO
+	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755641AbYCBVpB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 2 Mar 2008 16:40:16 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=Nq7yoqirsQQwRWjaKypZSG+P7tV7zZklqjIqUs2/+QdVPM/6jAua8La7kN6S55gjZoLuYWMnhSHRPq/86Q7bAu/v+7DVSxqtEc8+mjZKbUSBoXHiErfVf9HFuHXSIArVtLvAzYtWTl8yWLca4//CU6KoVKy9sRTz9j3q8BBWdoo=
-Message-ID: <46a038f90803021340uf1c9c6te5501d9fb0565f19@mail.gmail.com>
-Date: Mon, 3 Mar 2008 10:40:15 +1300
-From: "Martin Langhoff" <martin.langhoff@gmail.com>
-To: "Linus Torvalds" <torvalds@linux-foundation.org>
-Subject: Re: kernel.org git tree corrupt?
-Cc: "Steve French" <smfrench@gmail.com>, lkml <linux-kernel@vger.kernel.org>,
-       git@vger.kernel.org
-In-Reply-To: <alpine.LFD.1.00.0803021302070.17889@woody.linux-foundation.org>
+	Sun, 2 Mar 2008 16:45:01 -0500
+X-AuthUser: davidel@xmailserver.org
+Date: Sun, 2 Mar 2008 13:44:53 -0800 (PST)
+From: Davide Libenzi <davidel@xmailserver.org>
+X-X-Sender: davide@alien.or.mcafeemobile.com
+To: Sam Varshavchik <mrsam@courier-mta.com>
+cc: linux-man@vger.kernel.org, Michael Kerrisk <mtk.manpages@googlemail.com>,
+       =?X-UNKNOWN?Q?Chris_=C2=A5=C2=AF_Heath?= <chris@heathens.co.nz>,
+       David Schwartz <davids@webmaster.com>, dada1@cosmosbay.com,
+       =?UTF-8?B?TGludXgtS2VybmVsQFZnZXIuIEtlcm5lbC4=?= Org 
+	<linux-kernel@vger.kernel.org>
+Subject: Re: epoll design problems with common fork/exec patterns
+In-Reply-To: <cone.1204470717.369031.30230.500@commodore.email-scan.com>
+Message-ID: <Pine.LNX.4.64.0803021342070.16600@alien.or.mcafeemobile.com>
+References: <MDEHLPKNGKAHNMBLJOLKAEHCHNAC.davids@webmaster.com>
+ <Pine.LNX.4.64.0710291147180.3387@alien.or.mcafeemobile.com>
+ <47C42CA7.4030607@gmail.com> <Pine.LNX.4.64.0802261049040.27243@alien.or.mcafeemobile.com>
+ <1204075804.5238.7.camel@linux.heathens.co.nz>
+ <Pine.LNX.4.64.0802271131180.377@alien.or.mcafeemobile.com>
+ <cfd18e0f0802280512q43a457d0sc9a8dc83c51e8e1c@mail.gmail.com>
+ <Pine.LNX.4.64.0802281106050.7660@alien.or.mcafeemobile.com>
+ <cfd18e0f0802290746p3cb7efc9j72394cd77ff37829@mail.gmail.com>
+ <Pine.LNX.4.64.0802291111320.31028@alien.or.mcafeemobile.com>
+ <cfd18e0f0802291154j612b4238i66cb8323b72814ca@mail.gmail.com>
+ <cone.1204470717.369031.30230.500@commodore.email-scan.com>
+X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
+X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <524f69650803020749o469f2e48l125a55267b0b5d13@mail.gmail.com>
-	 <alpine.LFD.1.00.0803021302070.17889@woody.linux-foundation.org>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Mar 3, 2008 at 10:16 AM, Linus Torvalds
-<torvalds@linux-foundation.org> wrote:
->  In that case, your "origin" simply isn't updated, but points somewhere
->  long back in history. I can only assume that cogito has done something
->  wrong, like not been able to handle packed refs or something, and you have
->  an updated tree but "origin" pointing to way back in the history.
+On Sun, 2 Mar 2008, Sam Varshavchik wrote:
 
-Strange - cogito over git protocol will use git itself to peek at the
-references. Steve, what is your git version?
+> Hijacking this epoll thread, the following related question occurs to me:
+> 
+> #Q8
+> #    Does an operation on a file descriptor affect the already collected but
+> #not yet reported events?
+> #
+> #A8
+> #    You can do two operations on an existing file descriptor. Remove would
+> #be meaningless for this case. Modify will re-read available I/O.
+> 
+> Why is EPOLL_CTL_DEL considered meaningless? A process is wrapping up its
+> business and is preparing to remove the fd from the epoll set, and then close
+> the file descriptor itself. In the meantime, the fd became readable, and a
+> POLLIN event gets collected. So, what happens to the collected event, when the
+> EPOLL_CTL_DEL operation is made?
 
->  > Ideas for another solution short of recloning and sorting through all
->  > of the last month or two of patches that affect this directory by
->  > hand?
-
-Linus' plan assumes you have a .git/config file. I don't think a
-cogito-based checkout follows such modern conventions - here's an
-alternative plan:
-
- - make sure you have a current git
-
- - get a fresh clone of linux-2.6, and in there
-
-    # tell it about your old checkout
-    $ git remote add oldlinux /path/to/your/older/linux/checkout/.git
-    $ git fetch oldlinux
-    # visualise what's in there
-    $ gitk origin/master oldlinux/master
-
-    # you may want to merge your old branch
-    $ git merge oldlinux/master
-
-hth,
+Any epoll_wait() done after the POLLIN and before the EPOLL_CTL_DEL, will 
+show up. After the EPOLL_CTL_DEL, of course, no events will be reported.
 
 
-martin
+
+- Davide
+
+
