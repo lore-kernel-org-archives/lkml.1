@@ -1,98 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757076AbYCBBQN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756398AbYCBBfI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757076AbYCBBQN (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 1 Mar 2008 20:16:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752221AbYCBBP7
+	id S1756398AbYCBBfI (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 1 Mar 2008 20:35:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751454AbYCBBe5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 1 Mar 2008 20:15:59 -0500
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:41765 "EHLO
-	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751853AbYCBBP6 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 1 Mar 2008 20:15:58 -0500
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: "Serge E. Hallyn" <serue@us.ibm.com>
-Cc: Ian Kent <raven@themaw.net>, Jeff Moyer <jmoyer@redhat.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       autofs mailing list <autofs@linux.kernel.org>,
-       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
-       Pavel Emelyanov <xemul@openvz.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>
-Subject: Re: [PATCH 3/4] autofs4 - track uid and gid of last mount requestor
-References: <Pine.LNX.4.64.0802261208400.8490@raven.themaw.net>
-	<20080227204546.72e16e8d.akpm@linux-foundation.org>
-	<1204179747.3501.21.camel@raven.themaw.net>
-	<20080227223734.caab0165.akpm@linux-foundation.org>
-	<1204182500.3501.49.camel@raven.themaw.net>
-	<20080227232339.af6e904a.akpm@linux-foundation.org>
-	<1204185623.3501.84.camel@raven.themaw.net>
-	<x494pbtxaup.fsf@segfault.boston.devel.redhat.com>
-	<20080228195118.GA16634@sergelap.austin.ibm.com>
-	<1204255932.3969.86.camel@raven.themaw.net>
-	<20080229160921.GA24296@sergelap.ibm.com>
-Date: Sat, 01 Mar 2008 18:13:51 -0700
-In-Reply-To: <20080229160921.GA24296@sergelap.ibm.com> (Serge E. Hallyn's
-	message of "Fri, 29 Feb 2008 10:09:21 -0600")
-Message-ID: <m1bq5y3p2o.fsf@ebiederm.dsl.xmission.com>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+	Sat, 1 Mar 2008 20:34:57 -0500
+Received: from sandeen.net ([209.173.210.139]:17181 "EHLO sandeen.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751366AbYCBBe4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 1 Mar 2008 20:34:56 -0500
+Message-ID: <47CA043F.5070202@sandeen.net>
+Date: Sat, 01 Mar 2008 19:34:55 -0600
+From: Eric Sandeen <sandeen@sandeen.net>
+User-Agent: Thunderbird 2.0.0.12 (Macintosh/20080213)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+To: =?ISO-8859-15?Q?Thomas_M=FCller?= <thomas@mathtm.de>
+CC: xfs@oss.sgi.com, linux-kernel@vger.kernel.org
+Subject: Re: Kernel oops / XFS filesystem corruption
+References: <47C93C32.40006@mathtm.de> <47C9C44D.8080400@sandeen.net> <47C9F5E9.70703@mathtm.de>
+In-Reply-To: <47C9F5E9.70703@mathtm.de>
+Content-Type: text/plain; charset=ISO-8859-15
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-"Serge E. Hallyn" <serue@us.ibm.com> writes:
->
-> The way the user namespaces work right now is similar to say the IPC
-> namespace - a task belongs to one user, that user belongs to precisely
-> one user namespace.
->
-> Even in my additional userns patches, I was changing uid to store the
-> (uid, userns) so a struct user still belonged to just one user
-> namespace.
->
-> In contrast, with pid namespaces a task is associated with a 'struct
-> pid' which links it to multiple process ids, one in each pid namespace
-> to which it belongs.
->
-> Perhaps we should be treating user namespaces like pid namespaces?
->
-> For autofs this would mean that when autofs wants a uid for some task,
-> it would be given the uid in the user namespace which autofs 'knows'.
->
-> It would also help me fix the siginfo problems I haven't solved yet -
-> rather than having to worry about user namespace lifetimes with siginfos
-> (which last a little while but have no clearly defined lifespan) we
-> could send the uid in an init user namespace or the uid in the target
-> uid namespace, or just a lightweight user struct proxy akin to 'struct
-> pid'.
->
-> And it also obviates the need for any sort of delegation.
->
-> So if I'm user 500 in what I think is the initial user namespace, I can
-> create a container with a new user namespace, the init task of which is
-> both uid 0 in the child userns, and uid 500 in the higher level,
-> automatically giving the container access to any files I own.
->
-> Eric, when you get a chance (I know you're overloaded atm) I'd love to
-> hear your thoughts on this...
+Thomas Müller wrote:
+> Eric Sandeen wrote:
+>> Did you also happen to save the xfs_repair output?
+> No, but I made a complete copy of the file system before
+> repairing it, so I can easily recreate it... :)
 
-Succinctly.
+oh, like a dd image?  great.  You can use xfs_metadump to make a more
+transportable image... xfs folks might even be able to use that to
+recreate the oops.
 
-I think the concept of mapping uids between user namespaces is
-fundamental to properly describing and thinking about the semantics of
-user namespaces correct.
-
-We don't have to start out anything except handling the case when
-no mapping exists, but asking the question how does this uid map
-between from one namespace to another is fundamental.
-
-Eric
-
-
-
-
-
-
-
+-Eric
