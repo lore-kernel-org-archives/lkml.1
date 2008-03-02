@@ -1,54 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758791AbYCBTJm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758824AbYCBTLg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758791AbYCBTJm (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 2 Mar 2008 14:09:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754912AbYCBTJd
+	id S1758824AbYCBTLg (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 2 Mar 2008 14:11:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753533AbYCBTL3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 2 Mar 2008 14:09:33 -0500
-Received: from ug-out-1314.google.com ([66.249.92.169]:57262 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752738AbYCBTJc (ORCPT
+	Sun, 2 Mar 2008 14:11:29 -0500
+Received: from bombadil.infradead.org ([18.85.46.34]:52820 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752738AbYCBTL2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 2 Mar 2008 14:09:32 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
-        b=f8PtWKv9+ua2MlvE0DayBKaC1ScYj91vHPjc6VcdSOpGNNqYjc7bN27cjkyqu8R0yXqg1aea/v56eRfEwTS0gFYJsRgHmR0+QeusbDC+mlJVXzw2Sv8t1Y3HpWk+VGe1cdZjcs0D3iGK9O9fBX8nplj+FownjnRUqQ4XDrSGUpc=
-From: Pawel Plociennik <paplociennik@gmail.com>
-To: "Guillaume Chazarain" <guichaz@gmail.com>
-Subject: Re: [PATCH] chroot= as a new kernel parameter
-Date: Sun, 2 Mar 2008 20:09:03 -0500
-User-Agent: KMail/1.9.5
-Cc: linux-kernel@vger.kernel.org
-References: <200803011409.59526.paplociennik@gmail.com> <200803021859.30473.paplociennik@gmail.com> <3d8471ca0803021005o46f99282l77d412306877607a@mail.gmail.com>
-In-Reply-To: <3d8471ca0803021005o46f99282l77d412306877607a@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
+	Sun, 2 Mar 2008 14:11:28 -0500
+Subject: Re: 2.6.25-rc: complete lockup on boot/start of X (bisected)
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Marcin Slusarz <marcin.slusarz@gmail.com>
+Cc: LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>
+In-Reply-To: <20080302185935.GA6100@joi>
+References: <20080302185935.GA6100@joi>
+Content-Type: text/plain
+Date: Sun, 02 Mar 2008 20:11:11 +0100
+Message-Id: <1204485071.6240.56.camel@lappy>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.21.90 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200803022009.04028.paplociennik@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday 02 March 2008 13:05, Guillaume Chazarain wrote:
 
-> You mean pid 1, right? ;-)
-Of course that (my brain has been mistaked) :-(
+On Sun, 2008-03-02 at 20:00 +0100, Marcin Slusarz wrote:
+> Hi
+> Since early 2.6.25 days I'm having strange lockup on boot. As it happens
+> rarely (in ~10% of boots), I couldn't bisect it. No kernel panic, SysRq
+> didn't work, so I couldn't provide any useful informations to LK community.
+> I hoped someone else would fix it... :)
 > 
-> Sure, but chroot should then exec /sbin/init as per the given kernel
-> command line. And then you run a real init.
+> It's rc3 so I decided to narrow it down myself. I enabled netconsole 
+> to see whether some other informations are printed before lockup.
+> It didn't help, but I noticed that lockup happens much more frequenly! (~50%)
+> So I bisected it down to:
 > 
-> I cannot try it as I don't have another distribution installed in a
-> subdirectory, but if you could test it we would quickly know if it
-> works or not.
+> 8f4d37ec073c17e2d4aa8851df5837d798606d6f is first bad commit
+> commit 8f4d37ec073c17e2d4aa8851df5837d798606d6f
+> Author: Peter Zijlstra <a.p.zijlstra@chello.nl>
+> Date:   Fri Jan 25 21:08:29 2008 +0100
 > 
-You have right.
-I have tested that and it  *works* :-)
-so I thing that my patch is *unnecessary* now :-(
+>     sched: high-res preemption tick
+> 
+>     Use HR-timers (when available) to deliver an accurate preemption tick.
+> 
+>     The regular scheduler tick that runs at 1/HZ can be too coarse when nice
+>     level are used. The fairness system will still keep the cpu utilisation 'fair'
+>     by then delaying the task that got an excessive amount of CPU time but try to
+>     minimize this by delivering preemption points spot-on.
+> 
+>     The average frequency of this extra interrupt is sched_latency / nr_latency.
+>     Which need not be higher than 1/HZ, its just that the distribution within the
+>     sched_latency period is important.
+> 
+>     Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+>     Signed-off-by: Ingo Molnar <mingo@elte.hu>
+> 
+> :040000 040000 ab225228500f7a19d5ad20ca12ca3fc8ff5f5ad1 f1742e1d225a72aecea9d6961ed989b5943d31d8 M      arch
+> :040000 040000 25d85e4ef7a71b0cc76801a2526ebeb4dce180fe ae61510186b4fad708ef0211ac169decba16d4e5 M      include
+> :040000 040000 9247cec7dd506c648ac027c17e5a07145aa41b26 950832cc1dc4d30923f593ecec883a06b45d62e9 M      kernel
+> 
+> I can't revert it on top of rc3 because of conflicts.
 
-Thanks You
+This should do, I guess. Weird though, I haven't had trouble with this
+patch in a long long while. Nor I suppose has Ingo's QA setup.
 
-Regards,
-Pawel
+Will try if I can reproduce using your .config.
+
+---
+
+diff --git a/kernel/sched.c b/kernel/sched.c
+index b73ee9e..02cbf34 100644
+--- a/kernel/sched.c
++++ b/kernel/sched.c
+@@ -741,7 +741,7 @@ const_debug unsigned int sysctl_sched_features =
+ 		SCHED_FEAT_NEW_FAIR_SLEEPERS	* 1 |
+ 		SCHED_FEAT_WAKEUP_PREEMPT	* 1 |
+ 		SCHED_FEAT_START_DEBIT		* 1 |
+-		SCHED_FEAT_HRTICK		* 1 |
++		SCHED_FEAT_HRTICK		* 0 |
+ 		SCHED_FEAT_DOUBLE_TICK		* 0;
+ 
+ #define sched_feat(x) (sysctl_sched_features & SCHED_FEAT_##x)
+
+
+
