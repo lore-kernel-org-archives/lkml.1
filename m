@@ -1,87 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759437AbYCBX3g@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759343AbYCBXbY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759437AbYCBX3g (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 2 Mar 2008 18:29:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751984AbYCBX3Z
+	id S1759343AbYCBXbY (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 2 Mar 2008 18:31:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751304AbYCBXbQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 2 Mar 2008 18:29:25 -0500
-Received: from el-out-1112.google.com ([209.85.162.178]:7312 "EHLO
-	el-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750915AbYCBX3Y (ORCPT
+	Sun, 2 Mar 2008 18:31:16 -0500
+Received: from an-out-0708.google.com ([209.85.132.247]:8132 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751202AbYCBXbP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 2 Mar 2008 18:29:24 -0500
+	Sun, 2 Mar 2008 18:31:15 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=jjurtjuKDXMrod4AoC4yundTQbiRHXtYlgVLHNV494D4RbWwyb68IwBvEwEpyNE0lr5JUlZKDUs8R0OCBeLfy1D1UdICkwZTpLa/J8FE0QhK/E49xub/higPe+RgM82mx+dh6q3C8RtWLJmPsNwWX3akSJ9n756VUZh6CgaisIQ=
-Message-ID: <9a8748490803021529m695f91egcc9e4dba13a5c911@mail.gmail.com>
-Date: Mon, 3 Mar 2008 00:29:19 +0100
-From: "Jesper Juhl" <jesper.juhl@gmail.com>
-To: "Peter Zijlstra" <a.p.zijlstra@chello.nl>
-Subject: Re: [PATCH] leak less memory in failure paths of alloc_rt_sched_group()
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       "Linus Torvalds" <torvalds@linux-foundation.org>, linux-mm@kvack.org,
-       "Ingo Molnar" <mingo@elte.hu>
-In-Reply-To: <1204499992.6240.109.camel@lappy>
+        h=date:from:to:cc:subject:message-id:mail-followup-to:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
+        b=IQH4vz9BNPFFvXomLp8sZbq89Aoh1igoxOVNEYZrzTT0IocmxZCM43BHxEGSB2WSAeuJ3dT+L5nTmQHfIojqpIwozAAYGnCE+lwrhsgs+qTab4kqKzJw82s8PWZ6JedsMSrTH6BQMqYVqBBXRfxXAhO3sg3sJanulpEjpi020x8=
+Date: Sun, 2 Mar 2008 20:34:15 -0300
+From: "Carlos R. Mafra" <crmafra2@gmail.com>
+To: Mikael Pettersson <mikpe@it.uu.se>
+Cc: linux-kernel@vger.kernel.org, James.Bottomley@HansenPartnership.com,
+       htejun@gmail.com, jens.axboe@oracle.com
+Subject: Re: [BUG] 2.6.25-rc2-git3 broke cdrecord
+Message-ID: <20080302233415.GA6258@Pilar>
+Mail-Followup-To: Mikael Pettersson <mikpe@it.uu.se>,
+	linux-kernel@vger.kernel.org, James.Bottomley@HansenPartnership.com,
+	htejun@gmail.com, jens.axboe@oracle.com
+References: <200803022053.m22KrP2Y023591@harpo.it.uu.se>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <alpine.LNX.1.00.0803030002520.4939@dragon.funnycrock.com>
-	 <1204499992.6240.109.camel@lappy>
+In-Reply-To: <200803022053.m22KrP2Y023591@harpo.it.uu.se>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 03/03/2008, Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:
->
->  On Mon, 2008-03-03 at 00:09 +0100, Jesper Juhl wrote:
->  > In kernel/sched.c b/kernel/sched.c::alloc_rt_sched_group() we currently do
->  > some paired memory allocations, and if one fails we bail out without
->  > freeing the previous one.
->  >
->  > If we fail inside the loop we should proably roll the whole thing back.
->  > This patch does not do that, it simply frees the first member of the
->  > paired alloc if the second fails. This is not perfect, but it's a simple
->  > change that will, at least, result in us leaking a little less than we
->  > currently do when an allocation fails.
->  >
->  > So, not perfect, but better than what we currently have.
->  > Please consider applying.
->
->
-> Doesn't the following handle that:
->
->  sched_create_group()
->  {
->  ...
->         if (!alloc_rt_sched_group())
->                 goto err;
->  ...
->
->  err:
->         free_sched_group();
->  }
->
->
->  free_sched_group()
->  {
->  ...
->         free_rt_sched_group();
->  ...
->  }
->
->  free_rt_sched_group()
->  {
->         free all relevant stuff
->  }
->
 
-Hmmm, it might. I must admit I only looked at alloc_rt_sched_group()
-isolated, and what I saw looked like leaks. It seems I need to do a
-more thorough reading of the code to be dead sure.
+On Sun  2.Mar'08 at 21:53:25 +0100, Mikael Pettersson wrote:
+> On my main workstation (Intel P965 chipset, ICH8 SATA driven by ahci,
+> Samsung/Toshiba SH-203P SATA DVD writer, FC5 user-space), cdrecord
+> stopped working on the 2.6.25-rc3 kernel, with the complaint:
+> 
+> Warning: controller returns zero sized CD capabilities page.
+> Warning: controller returns wrong page 0 for CD capabilities page (2A).
+> 
+> There's nothing in dmesg to suggest that the kernel has experienced
+> some problem.
+> 
+> 2.6.25-rc2-git2 was the last working kernel, 2.6.25-rc2-git3 up to
+> today's 2.6.25-rc3-git3 are all non-working.
+> 
+> I've narrowed the cause down to these two commits in 2.6.25-rc2-git3:
+> 
+> 40b01b9bbdf51ae543a04744283bf2d56c4a6afa
+> block: update bio according to DMA alignment padding
+> 
+> 6b00769fe1502b4ad97bb327ef7ac971b208bfb5
+> block: add request->raw_data_len
+> 
+> Four or so subsequent commits depend on the second of these, so it's
+> easier to test them by applying them to -git2 than to revert them.
+> 
+> Also, these two need to be treated as a unit. With only the first
+> applied, I get a massive delay as init tries to start udev, and then
+> if I try cdrecord it hangs in an unkillable state.
+> 
+> I've put some information in
+> <http://user.it.uu.se/~mikpe/linux/bug-2.6.25-rc3-cdrecord/>:
+> - the kernel's .config
+> - cdrecord -VV dev=/dev/scd0 blank=fast output for 2.6.25-rc2-git2 and -git3
+> - strace -v logs for the above cdrecord runs
 
--- 
-Jesper Juhl <jesper.juhl@gmail.com>
-Don't top-post  http://www.catb.org/~esr/jargon/html/T/top-post.html
-Plain text mails only, please      http://www.expita.com/nomime.html
+I will try to help by pointing you to the patch here: 
+http://lkml.org/lkml/2008/2/28/76
+
+It seems your problem is similar to the one Mike Galbraith reported.
