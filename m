@@ -1,65 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757149AbYCBSqf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757489AbYCBSsq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757149AbYCBSqf (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 2 Mar 2008 13:46:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751117AbYCBSq1
+	id S1757489AbYCBSsq (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 2 Mar 2008 13:48:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751713AbYCBSsj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 2 Mar 2008 13:46:27 -0500
-Received: from nf-out-0910.google.com ([64.233.182.190]:39817 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750891AbYCBSq1 (ORCPT
+	Sun, 2 Mar 2008 13:48:39 -0500
+Received: from neuf-infra-smtp-out-sp604007av.neufgp.fr ([84.96.92.120]:55833
+	"EHLO neuf-infra-smtp-out-sp604007av.neufgp.fr" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751307AbYCBSsh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 2 Mar 2008 13:46:27 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:organization:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
-        b=P9DMbmdpj8ESXM99R9o9u1noLilPDXdrBPdFibJ4pd94aIOpA7xqnxY3LtIyCS6i8V/pwjm4H58Rjao5L05pRvWG/GEfoRwvMBAPg+LsO/LUQyepLR+jH2qaCnprTwUbz23osXVv7wz8eT2ltYI47YLHsoLWMR3dJrfRzDYcDkg=
-Message-ID: <47CAF5FB.4070204@gmail.com>
-Date: Sun, 02 Mar 2008 21:46:19 +0300
-From: Dmitri Vorobiev <dmitri.vorobiev@gmail.com>
-Organization: DmVo Home
-User-Agent: Thunderbird 1.5.0.14pre (X11/20071022)
+	Sun, 2 Mar 2008 13:48:37 -0500
+Message-ID: <47CAF675.7010305@cosmosbay.com>
+Date: Sun, 02 Mar 2008 19:48:21 +0100
+From: Eric Dumazet <dada1@cosmosbay.com>
+User-Agent: Thunderbird 2.0.0.12 (Windows/20080213)
 MIME-Version: 1.0
-To: Harvey Harrison <harvey.harrison@gmail.com>
-CC: Mauro Carvalho Chehab <mchehab@infradead.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] saa7146: fix sparse warnings
-References: <1203616356.20345.45.camel@brick>  <47CAE50C.2000106@gmail.com> <1204481204.23005.8.camel@brick>
-In-Reply-To: <1204481204.23005.8.camel@brick>
-Content-Type: text/plain; charset=UTF-8
+To: Allan Menezes <amenezes007@sympatico.ca>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: HPL Benchmark performance degradation of kernel 2.6.24.3 vs 2.6.23.14
+References: <47CA3C60.8080402@sympatico.ca>
+In-Reply-To: <47CA3C60.8080402@sympatico.ca>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Harvey Harrison пишет:
-> On Sun, 2008-03-02 at 20:34 +0300, Dmitri Vorobiev wrote:
->> Harvey Harrison пишет:
->>>  
->>> -	if( 0 != (dev->ext)) {
->>> +	if( NULL != (dev->ext)) {
->> At the risk of looking an idiot, I'm taking a liberty to ask what is
->> the point in explicit comparison to zero in conditional operators? Is
->> it not a fundamental C idiom to write
-> 
-> <snip>
-> 
-> Yes, that's how I would have written it, but I tried to keep with the
-> prevailing style in that file.  I suppose I could see an argument for
-> consistency if you had a long series of if() statements to keep a
-> similar style.
+Allan Menezes a �crit :
+> Hi,
+>    I have a five node intel Q6600 quad core cluster and I benchmarked it 
+> with open source open mpi software using fc8 and it's supplied kernels 
+> recompiled and that of kernel.org with kernel 2.6.23.14 and 2.6.24.3.
+> With GotoBlas v 1.24 and open mpi beta both cases (v 1.3a) for kernels 
+> 2.6.23.14 with web100 i get 158GFlops.
+> But when i recompile with web100 for kernel 2.6.24 / without web100 and 
+> having 6gig DDR2800MHz ram on each node i get only 28GFLOPS AND 
+> 22GFLOPS  for 5 nodes whereas with or without web 100 for kernel 
+> 2.6.23.14 i get 156-8 GfLOPS. wITH OR WITHOUT web 100 i get for kernel 
+> 2.6.24.3 22- 28 Gflops for 5 nodes.!
+> Why is there a performance drop in kernel 2.6.24.3 All else hardware is 
+> the same!
+> For inter node communication i use three pci express gig eth cards ( 2 
+> intel and one syskonnect ) per node and using nptcp of netpipe their 
+> performance of intel and syskonnect cards in both kernels measured point 
+> to point is 880MBPS approx for all three cards with measured using 
+> netpipe for tcp with kernel 2.6.24.3 and 2.6.23.14 . I am also using 
+> three switches gigabit with high bisection b/w for these eth cards 
+> (copper) with 3 different subnets
+> Yet I am getting a substantial performance drop keeping the hardware and 
+> openmpi and hpl and gotoblas same. Can some one help me figure out why?
+> Please find attached my kernel's .config
 
-To me it looks that the original style in this file can be sacrificed
-in favor of
+Hi Allan
 
-1) satisfying the coding style rules of the kernel;
-2) keeping with informal, but commonly known idioms of C language.
+Your setup is quite complex, so you should give more information if you want 
+some help here.
 
-So I thought that while you're at it, you could also comb through
-this file and make the checkpatch.pl script happy with it.
+Is this benchmark stressing disk IO, task scheduler, network stack, memory, 
+swap... hard to tell in fact.
 
-But this is just my very personal opinion :)
+Examining your .config, I would point out CONFIG_SLUB_DEBUG=y
+You really should disable this expensive option.
+(and possibly use CONFIG_SLAB instead of CONFIG_SLUB)
 
-Dmitri
+You probably should try to use oprofile tool, because its results are probably 
+a good way to give hints about bad configuration, or kernel regressions.
 
+opcontrol --vmfile=/boot/vmlinux-2.6.24.3 --start
+<benchmarking>
+opreport -l /boot/vmlinux-2.6.24.3
