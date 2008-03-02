@@ -1,117 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758519AbYCBV2K@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760270AbYCBV3C@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758519AbYCBV2K (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 2 Mar 2008 16:28:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756953AbYCBV15
+	id S1760270AbYCBV3C (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 2 Mar 2008 16:29:02 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757087AbYCBV2v
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 2 Mar 2008 16:27:57 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:45192 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756906AbYCBV15 (ORCPT
+	Sun, 2 Mar 2008 16:28:51 -0500
+Received: from ug-out-1314.google.com ([66.249.92.174]:31002 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756953AbYCBV2u (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 2 Mar 2008 16:27:57 -0500
-X-Greylist: delayed 647 seconds by postgrey-1.27 at vger.kernel.org; Sun, 02 Mar 2008 16:27:57 EST
-Date: Sun, 2 Mar 2008 13:16:48 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Steve French <smfrench@gmail.com>
-cc: lkml <linux-kernel@vger.kernel.org>, git@vger.kernel.org
-Subject: Re: kernel.org git tree corrupt?
-In-Reply-To: <524f69650803020749o469f2e48l125a55267b0b5d13@mail.gmail.com>
-Message-ID: <alpine.LFD.1.00.0803021302070.17889@woody.linux-foundation.org>
-References: <524f69650803020749o469f2e48l125a55267b0b5d13@mail.gmail.com>
-User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
+	Sun, 2 Mar 2008 16:28:50 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=date:to:cc:subject:message-id:reply-to:mail-followup-to:references:mime-version:content-type:content-disposition:content-transfer-encoding:in-reply-to:user-agent:from;
+        b=lwAcsS2bHy3bTlcfNKUV9k60/dyWncTIQV5+/xXwOoFWOyeBTPH54DDyOZNxmUZr6whBrPHIU04ybMzgvDUao2y10e9IvtRiJwd99+ZPg9HlU6vXyjkmgNmxipkrUbWxoFDcxFy8Gy5r2XWK6DviSyBeNFydTejE1AHvy0IDEGI=
+Date: Sun, 2 Mar 2008 22:28:35 +0100
+To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 03/24] ide-tape: remove pipeline-specific code from
+	idetape_add_chrdev_read_request
+Message-ID: <20080302212835.GE4836@gollum.tnic>
+Reply-To: petkovbb@gmail.com
+Mail-Followup-To: petkovbb@gmail.com,
+	Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
+	linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
+References: <1204361928-30229-1-git-send-email-petkovbb@gmail.com> <1204361928-30229-4-git-send-email-petkovbb@gmail.com> <200803021936.12741.bzolnier@gmail.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <200803021936.12741.bzolnier@gmail.com>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+From: Borislav Petkov <petkovbb@googlemail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sun, Mar 02, 2008 at 07:36:12PM +0100, Bartlomiej Zolnierkiewicz wrote:
+> On Saturday 01 March 2008, Borislav Petkov wrote:
+> > We fall back to non-pipelined operation through idetape_queue_rw_tail with cmd
+> > set to REQ_IDETAPE_READ. Also, remove idetape_switch_buffers() since it becomes
+> > unused.
+> > 
+> > Signed-off-by: Borislav Petkov <petkovbb@gmail.com>
+> > ---
+> >  drivers/ide/ide-tape.c |   46 +---------------------------------------------
+> >  1 files changed, 1 insertions(+), 45 deletions(-)
+> > 
+> > diff --git a/drivers/ide/ide-tape.c b/drivers/ide/ide-tape.c
+> > index abf3efa..e919d41 100644
+> > --- a/drivers/ide/ide-tape.c
+> > +++ b/drivers/ide/ide-tape.c
+> > @@ -1776,16 +1776,6 @@ static void idetape_init_merge_stage(idetape_tape_t *tape)
+> >  	}
+> >  }
+> >  
+> > -static void idetape_switch_buffers(idetape_tape_t *tape, idetape_stage_t *stage)
+> > -{
+> > -	struct idetape_bh *tmp;
+> > -
+> > -	tmp = stage->bh;
+> > -	stage->bh = tape->merge_stage->bh;
+> > -	tape->merge_stage->bh = tmp;
+> > -	idetape_init_merge_stage(tape);
+> > -}
+> > -
+> >  /* Add a new stage at the end of the pipeline. */
+> >  static void idetape_add_stage_tail(ide_drive_t *drive, idetape_stage_t *stage)
+> >  {
+> > @@ -2403,9 +2393,6 @@ static int idetape_init_read(ide_drive_t *drive, int max_stages)
+> >  static int idetape_add_chrdev_read_request(ide_drive_t *drive, int blocks)
+> >  {
+> >  	idetape_tape_t *tape = drive->driver_data;
+> > -	unsigned long flags;
+> > -	struct request *rq_ptr;
+> > -	int bytes_read;
+> >  
+> >  	debug_log(DBG_PROCS, "Enter %s, %d blocks\n", __func__, blocks);
+> >  
+> > @@ -2413,39 +2400,8 @@ static int idetape_add_chrdev_read_request(ide_drive_t *drive, int blocks)
+> >  	if (test_bit(IDETAPE_FLAG_FILEMARK, &tape->flags))
+> >  		return 0;
+> >  
+> > -	/* Wait for the next block to reach the head of the pipeline. */
+> > -	idetape_init_read(drive, tape->max_stages);
+> 
+> Can it be simply removed?  Why?
 
+Bugger, actually this one _has_ to stay since it inits the tape->merge_stage
+buffer.
 
-On Sun, 2 Mar 2008, Steve French wrote:
->
-> In preparation for a merge request I do
->     cg-diff -m -r origin: | diffstat -p1
-> (git diff -m -r origin: shows the same problem) and
->     cg-log -m -r origin:
+> > -	if (tape->first_stage == NULL) {
+> > -		if (test_bit(IDETAPE_FLAG_PIPELINE_ERR, &tape->flags))
+> > -			return 0;
+> > -		return idetape_queue_rw_tail(drive, REQ_IDETAPE_READ, blocks,
+> > +	return idetape_queue_rw_tail(drive, REQ_IDETAPE_READ, blocks,
+> >  					tape->merge_stage->bh);
+> 
+> Looking at the driver code tape->first_stage is not always NULL,
+> seems like ide_tape_add_stage_tail() should vanish first?
 
-First off, you really should lay off the cogito thing, it's pretty much 
-guaranteed that any cogito usage will just be harder and less likely to be 
-correct than just usign native git (and almost nobody will be able to help 
-you any more - it's not like it's been maintained for the last year).
+At this moment there are no more stages in the pipeline besides only
+tape->merge_stage. But this boils down to whether we want to keep the driver
+functional in intermittent stages of the removal, as i pointed out before...
 
-It *sounds* like your "origin" isn't what you expect it to be. 
-
-> Was the linux-2.6.git rebuilt in the last four weeks with different 
-> changeset numbers? Something seems to have drastically changed in the 
-> kernel.org tree in the last few weeks.
-
-Nope, nothing has been rebuilt, but there's been another merge window, so 
-there's certainly been drastic changes.
-
-> Doing "cg-log -m -r origin: fs/cifs" shows changesets that are already
-> in linux-2.6.git (e.g. the vfs-wide changes to add path_put
-> 1d957f9bf87da74f420424d16ece005202bbebd3 and
-> 4ac9137858e08a19f29feac4e1f4df7c268b0ba5 )
-
-In that case, your "origin" simply isn't updated, but points somewhere 
-long back in history. I can only assume that cogito has done something 
-wrong, like not been able to handle packed refs or something, and you have 
-an updated tree but "origin" pointing to way back in the history.
-
-> Ideas for another solution short of recloning and sorting through all
-> of the last month or two of patches that affect this directory by
-> hand?
-
-Do this:
-
- - get rid of cogito (or at least make sure that it doesn't mess up the 
-   following sequence)
-
- - look at your .git/config file to make sure that the remote branches are 
-   sane. It should have something like this (and if it doesn't, add it):
-
-	[remote "origin"]
-		url = git://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux-2.6
-		fetch = +refs/heads/*:refs/remotes/origin/*
-
-	[branch "master"]
-		remote = origin
-		merge = refs/heads/master
-
- - look at your "origin" branch, and make sure it's a *remote* branch, not 
-   the old-style local one. Ie it should *not* show up when you do a 
-   plain
-
-	git branch
-
-   but it *should* show up (as both "origin/HEAD" and "origin/master") 
-   when you do
-
-	git branch -a
-
-   and if it's a local branch (very possible, since you're using cogito 
-   that may not even understand remote branches), then just blow it away 
-   entirely with "git branch -D origin".
-
- - do "git fetch" to make sure that the remote branches are up-to-date
-
- - now do "git log origin" an it should show something recent like
-
-	commit 038f2f725503b55ab76cfd2645915a85594710fe
-	Merge: 8d07a67... 855c603...
-	Author: Linus Torvalds <torvalds@woody.linux-foundation.org>
-	Date:   Sun Mar 2 12:38:17 2008 -0800
-	
-	    Merge branch 'for-linus' of git://git.kernel.org/pub/scm/linux/kernel/git/ieee1394/linux139
-	...
-
- - and if it does, now you should be all good, and you can dothe normal 
-   "gitk origin.." and see the commits that are in your tree but not in 
-   mine.
-
-Now your setup should be ok again. I *suspect* that what has happened is 
-that you got a local "origin" branch - probably through cogito - that hid 
-the remote one. 
-
-		Linus
+-- 
+Regards/Gruﬂ,
+    Boris.
