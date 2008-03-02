@@ -1,70 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759562AbYCBUyd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760211AbYCBUy7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759562AbYCBUyd (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 2 Mar 2008 15:54:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756046AbYCBUyX
+	id S1760211AbYCBUy7 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 2 Mar 2008 15:54:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759720AbYCBUyg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 2 Mar 2008 15:54:23 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:42540 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755744AbYCBUyW (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 2 Mar 2008 15:54:22 -0500
-Date: Sun, 2 Mar 2008 12:54:02 -0800
-From: Arjan van de Ven <arjan@infradead.org>
-To: Harald Dunkel <harald.dunkel@t-online.de>
-Cc: Mike@Keehan.net, linux-kernel@vger.kernel.org
-Subject: Re: strange behavior on multimedia eject button for cdrom
-Message-ID: <20080302125402.4af85abc@laptopd505.fenrus.org>
-In-Reply-To: <47CB11FA.60008@t-online.de>
-References: <47C15020.8040806@t-online.de>
-	<47C7FECD.3040205@Keehan.net>
-	<47CB11FA.60008@t-online.de>
-Organization: Intel
-X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.5; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+	Sun, 2 Mar 2008 15:54:36 -0500
+Received: from aun.it.uu.se ([130.238.12.36]:33521 "EHLO aun.it.uu.se"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1759156AbYCBUyb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 2 Mar 2008 15:54:31 -0500
+Date: Sun, 2 Mar 2008 21:53:25 +0100 (MET)
+Message-Id: <200803022053.m22KrP2Y023591@harpo.it.uu.se>
+From: Mikael Pettersson <mikpe@it.uu.se>
+To: linux-kernel@vger.kernel.org
+Subject: [BUG] 2.6.25-rc2-git3 broke cdrecord
+Cc: James.Bottomley@HansenPartnership.com, htejun@gmail.com,
+       jens.axboe@oracle.com
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 02 Mar 2008 21:45:46 +0100
-Harald Dunkel <harald.dunkel@t-online.de> wrote:
+On my main workstation (Intel P965 chipset, ICH8 SATA driven by ahci,
+Samsung/Toshiba SH-203P SATA DVD writer, FC5 user-space), cdrecord
+stopped working on the 2.6.25-rc3 kernel, with the complaint:
 
-> Hi Mike,
-> 
-> Mike Keehan wrote:
-> > Hi Harold.
-> > 
-> > Somewhere on the web I read that some of the M1330 media keys are 
-> > directly connected to the drive, hence the lack of keycodes.
-> > 
-> > If you eject a disk while it is being played, then the Linux driver
-> > will get a read failure.  What happens then may not be well
-> > defined :)
-> > 
-> 
-> Maybe there is some misunderstanding here: I am not playing music
-> from the CD. It is idle. But if I press the CD eject button, then
-> audio output (e.g. some mp3 file played from harddisk) gets
-> corrupted, the network connection is dead, etc.
-> 
-> Ejecting the CD takes about 7 seconds. Durig this time Linux is
-> dead! I haven't checked any SCHED_FIFO or SCHED_RR applications,
-> but AFAIK this shouldn't happen.
-> 
-> If I run "eject cdrom" on the console instead, then there is no
-> such problem.
+Warning: controller returns zero sized CD capabilities page.
+Warning: controller returns wrong page 0 for CD capabilities page (2A).
 
+There's nothing in dmesg to suggest that the kernel has experienced
+some problem.
 
-try (temporarily) disable the hal storage polling thing.....
-that could well avoid the entire issue.
+2.6.25-rc2-git2 was the last working kernel, 2.6.25-rc2-git3 up to
+today's 2.6.25-rc3-git3 are all non-working.
 
+I've narrowed the cause down to these two commits in 2.6.25-rc2-git3:
 
--- 
-If you want to reach me at my work email, use arjan@linux.intel.com
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
+40b01b9bbdf51ae543a04744283bf2d56c4a6afa
+block: update bio according to DMA alignment padding
+
+6b00769fe1502b4ad97bb327ef7ac971b208bfb5
+block: add request->raw_data_len
+
+Four or so subsequent commits depend on the second of these, so it's
+easier to test them by applying them to -git2 than to revert them.
+
+Also, these two need to be treated as a unit. With only the first
+applied, I get a massive delay as init tries to start udev, and then
+if I try cdrecord it hangs in an unkillable state.
+
+I've put some information in
+<http://user.it.uu.se/~mikpe/linux/bug-2.6.25-rc3-cdrecord/>:
+- the kernel's .config
+- cdrecord -VV dev=/dev/scd0 blank=fast output for 2.6.25-rc2-git2 and -git3
+- strace -v logs for the above cdrecord runs
+
+/Mikael
