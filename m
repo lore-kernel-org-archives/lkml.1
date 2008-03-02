@@ -1,197 +1,298 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754007AbYCBKsR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754141AbYCBLDT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754007AbYCBKsR (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 2 Mar 2008 05:48:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752433AbYCBKsG
+	id S1754141AbYCBLDT (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 2 Mar 2008 06:03:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753263AbYCBLDB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 2 Mar 2008 05:48:06 -0500
-Received: from mfe1.polimi.it ([131.175.12.23]:46108 "EHLO polimi.it"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752087AbYCBKsD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 2 Mar 2008 05:48:03 -0500
-Date: Sun, 2 Mar 2008 11:33:10 +0100
-From: Stefano Brivio <stefano.brivio@polimi.it>
-To: "John W. Linville" <linville@tuxdriver.com>
-Cc: Chris Clayton <chris2553@googlemail.com>, ivdoorn@gmail.com,
-       linux-kernel@vger.kernel.org, linux-wireless@vger.kernel.org,
-       johannes@sipsolutions.net, Mattias Nissler <mattias.nissler@gmx.de>,
-       Mike Kelly <pioto@pioto.org>
-Subject: Re: 2.6.25-rc2 regression in rt61pci wireless driver
-Message-ID: <20080302113310.7acbe9b3@morte>
-In-Reply-To: <20080227172546.GD3078@tuxdriver.com>
-References: <c6b1100b0802160406l24fed9dcje1dbfc8907fd7a16@mail.gmail.com>
-	<200802252104.32416.chris2553@googlemail.com>
-	<a32f33a40802251409ofbdab60w4a95c8aaefaad70a@mail.gmail.com>
-	<200802261911.39577.chris2553@googlemail.com>
-	<20080226194838.GD3013@tuxdriver.com>
-	<c6b1100b0802261313v12fb9cd5j6501e80f6d071019@mail.gmail.com>
-	<20080226223814.4ef2b435@morte>
-	<c6b1100b0802261436i7c5a4136j753501933037187@mail.gmail.com>
-	<20080227082642.218b8014@morte>
-	<20080227155111.GB3078@tuxdriver.com>
-	<20080227172546.GD3078@tuxdriver.com>
-X-Mailer: Claws Mail 3.1.0 (GTK+ 2.12.1; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-PMX-Version: 5.4.1.325704, Antispam-Engine: 2.6.0.325393, Antispam-Data: 2008.3.2.22949
-X-PerlMx-Spam: No virus found, Gauge=IIIIII, Probability=26%, Report='RELAY_IN_PBL_11 2.5, SXL_IP_DYNAMIC 0.5, RDNS_GENERIC_POOLED 0, RDNS_SUSP 0, RDNS_SUSP_GENERIC 0, RELAY_IN_PBL 0, __CT 0, __CTE 0, __CT_TEXT_PLAIN 0, __HAS_MSGID 0, __HAS_X_MAILER 0, __MIME_TEXT_ONLY 0, __MIME_VERSION 0, __SANE_MSGID 0'
+	Sun, 2 Mar 2008 06:03:01 -0500
+Received: from ug-out-1314.google.com ([66.249.92.174]:16915 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752433AbYCBLC7 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 2 Mar 2008 06:02:59 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent:from;
+        b=N8mCVB5355FYj7enjPMNk3kT+L9DsW+O3xI4/TwfwKkO4yDtSlFDtcOi4zoJip5R2hYNOddBuibN4WP19CxvdF0qd7qWwFmkGviPXxiLsDb7mJ2hY7xIOp5PQxVLOEq1mzSiSF2X1M3e/4IT+TM3vClvn4N7nfXI3BVpiFCojtk=
+Date: Sun, 2 Mar 2008 12:59:46 +0200
+To: Casey Schaufler <casey@schaufler-ca.com>
+Cc: Adrian Bunk <bunk@kernel.org>, Chris Wright <chrisw@sous-sol.org>,
+       Stephen Smalley <sds@tycho.nsa.gov>, James Morris <jmorris@namei.org>,
+       Eric Paris <eparis@parisplace.org>, Alexey Dobriyan <adobriyan@sw.ru>,
+       LKML <linux-kernel@vger.kernel.org>,
+       LSM-ML <linux-security-module@vger.kernel.org>,
+       Anrew Morton <akpm@linux-foundation.org>
+Subject: [PATCH -v3 -mm] LSM: Add security= boot parameter
+Message-ID: <20080302105946.GA6406@ubuntu>
+References: <20080301211108.GF25835@cs181133002.pp.htv.fi> <674864.46980.qm@web36615.mail.mud.yahoo.com> <20080301232708.GA625@ubuntu> <20080302074912.GA3215@ubuntu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080302074912.GA3215@ubuntu>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+From: "Ahmed S. Darwish" <darwish.07@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 27 Feb 2008 12:25:46 -0500
-"John W. Linville" <linville@tuxdriver.com> wrote:
+Hi!,
 
-> That might be easier said than done.  It looks like that patch depends
-> on the big cfg80211 API change queued for 2.6.26.
-> 
-> Stefano offered to rebase that on 2.6.25.  Stefano, could you post
-> that as part of this thread?
+[
+Fixed two bugs:
+       - concurrency: incrementing and testing atomic_t in different places.
+       - overflow: not ending string with NULL after using strncpy().
+       - I'll never write a patch when I'm asleep, sorry :(
 
-Sorry for the delay. This is based on 2.6.25-rc3. Please test.
+Added more verbose messages to SMACK and SELinux if they were not 
+chosen on boot.
 
+Casey: Failing to take permission to register an LSM does not mean that 
+       the other has registered its security_ops yet. It just means that
+       the other asked for allowance to call register_security(). It's 
+       not yet guraranteed that this registration succeeded.
+
+       This means that adding "SELinux: failed to load, LSM %s is loaded"
+       may lead to %s = "dummy" in case of a highly concurrent SMP system.
+]
+
+-->
+
+Add the security= boot parameter. This is done to avoid LSM 
+registration clashes in case of more than one bult-in module.
+
+User can choose a security module to enable at boot. If no 
+security= boot parameter is specified, only the first LSM 
+asking for registration will be loaded. An invalid security 
+module name will be treated as if no module has been chosen.
+
+LSM modules must check now if they are allowed to register
+by calling security_module_enable(ops) first. Modify SELinux 
+and SMACK to do so.
+
+Signed-off-by: Ahmed S. Darwish <darwish.07@gmail.com>
 ---
 
-Merge rate_control_pid_shift_adjust() to rate_control_pid_adjust_rate()
-in order to make the learning algorithm aware of constraints on rates. Also
-add some comments and rename variables.
+ Documentation/kernel-parameters.txt |    6 ++++
+ include/linux/security.h            |   12 +++++++++
+ security/dummy.c                    |    2 -
+ security/security.c                 |   46 +++++++++++++++++++++++++++++++++---
+ security/selinux/hooks.c            |   12 +++++++++
+ security/smack/smack_lsm.c          |   11 ++++++++
 
-This fixes a bug which prevented 802.11b/g non-AP STAs from working with
-802.11b only AP STAs.
+ 6 files changed, 85 insertions(+), 4 deletions(-)
 
-Signed-off-by: Stefano Brivio <stefano.brivio@polimi.it>
----
-Index: linux-2.6.24/net/mac80211/rc80211_pid_algo.c
-===================================================================
---- linux-2.6.24.orig/net/mac80211/rc80211_pid_algo.c
-+++ linux-2.6.24/net/mac80211/rc80211_pid_algo.c
-@@ -2,7 +2,7 @@
-  * Copyright 2002-2005, Instant802 Networks, Inc.
-  * Copyright 2005, Devicescape Software, Inc.
-  * Copyright 2007, Mattias Nissler <mattias.nissler@gmx.de>
-- * Copyright 2007, Stefano Brivio <stefano.brivio@polimi.it>
-+ * Copyright 2007-2008, Stefano Brivio <stefano.brivio@polimi.it>
+diff --git a/Documentation/kernel-parameters.txt b/Documentation/kernel-parameters.txt
+index c64dfd7..85044e8 100644
+--- a/Documentation/kernel-parameters.txt
++++ b/Documentation/kernel-parameters.txt
+@@ -374,6 +374,12 @@ and is between 256 and 4096 characters. It is defined in the file
+ 			possible to determine what the correct size should be.
+ 			This option provides an override for these situations.
+ 
++	security=	[SECURITY] Choose a security module to enable at boot. 
++			If this boot parameter is not specified, only the first 
++			security module asking for security registration will be
++			loaded. An invalid security module name will be treated
++			as if no module has been chosen.
++
+ 	capability.disable=
+ 			[SECURITY] Disable capabilities.  This would normally
+ 			be used only if an alternative security model is to be
+diff --git a/include/linux/security.h b/include/linux/security.h
+index a33fd03..601318a 100644
+--- a/include/linux/security.h
++++ b/include/linux/security.h
+@@ -42,6 +42,9 @@
+ 
+ extern unsigned securebits;
+ 
++/* Maximum number of letters for an LSM name string */
++#define SECURITY_NAME_MAX	10
++
+ struct ctl_table;
+ 
+ /*
+@@ -117,6 +120,12 @@ struct request_sock;
+ /**
+  * struct security_operations - main security structure
   *
-  * This program is free software; you can redistribute it and/or modify
-  * it under the terms of the GNU General Public License version 2 as
-@@ -63,72 +63,66 @@
-  * RC_PID_ARITH_SHIFT.
++ * Security module identifier.
++ *
++ * @name:
++ *	A string that acts as a unique identifeir for the LSM with max number 
++ *	of characters = SECURITY_NAME_MAX.
++ *
+  * Security hooks for program execution operations.
+  *
+  * @bprm_alloc_security:
+@@ -1218,6 +1227,8 @@ struct request_sock;
+  * This is the main security structure.
   */
+ struct security_operations {
++	char name[SECURITY_NAME_MAX + 1];
++
+ 	int (*ptrace) (struct task_struct * parent, struct task_struct * child);
+ 	int (*capget) (struct task_struct * target,
+ 		       kernel_cap_t * effective,
+@@ -1477,6 +1488,7 @@ struct security_operations {
  
--
--/* Shift the adjustment so that we won't switch to a lower rate if it exhibited
-- * a worse failed frames behaviour and we'll choose the highest rate whose
-- * failed frames behaviour is not worse than the one of the original rate
-- * target. While at it, check that the adjustment is within the ranges. Then,
-- * provide the new rate index. */
--static int rate_control_pid_shift_adjust(struct rc_pid_rateinfo *r,
--					 int adj, int cur, int l)
--{
--	int i, j, k, tmp;
--
--	j = r[cur].rev_index;
--	i = j + adj;
--
--	if (i < 0)
--		return r[0].index;
--	if (i >= l - 1)
--		return r[l - 1].index;
--
--	tmp = i;
--
--	if (adj < 0) {
--		for (k = j; k >= i; k--)
--			if (r[k].diff <= r[j].diff)
--				tmp = k;
--	} else {
--		for (k = i + 1; k + i < l; k++)
--			if (r[k].diff <= r[i].diff)
--				tmp = k;
--	}
--
--	return r[tmp].index;
--}
--
-+/* Adjust the rate while ensuring that we won't switch to a lower rate if it
-+ * exhibited a worse failed frames behaviour and we'll choose the highest rate
-+ * whose failed frames behaviour is not worse than the one of the original rate
-+ * target. While at it, check that the new rate is valid. */
- static void rate_control_pid_adjust_rate(struct ieee80211_local *local,
- 					 struct sta_info *sta, int adj,
- 					 struct rc_pid_rateinfo *rinfo)
+ /* prototypes */
+ extern int security_init	(void);
++extern int security_module_enable(struct security_operations *ops);
+ extern int register_security	(struct security_operations *ops);
+ extern int mod_reg_security	(const char *name, struct security_operations *ops);
+ extern struct dentry *securityfs_create_file(const char *name, mode_t mode,
+diff --git a/security/dummy.c b/security/dummy.c
+index 6a0056b..d0910f2 100644
+--- a/security/dummy.c
++++ b/security/dummy.c
+@@ -986,7 +986,7 @@ static int dummy_key_getsecurity(struct key *key, char **_buffer)
+ 
+ #endif /* CONFIG_KEYS */
+ 
+-struct security_operations dummy_security_ops;
++struct security_operations dummy_security_ops = { "dummy" };
+ 
+ #define set_to_dummy_if_null(ops, function)				\
+ 	do {								\
+diff --git a/security/security.c b/security/security.c
+index 3e75b90..6f2df1a 100644
+--- a/security/security.c
++++ b/security/security.c
+@@ -17,6 +17,9 @@
+ #include <linux/kernel.h>
+ #include <linux/security.h>
+ 
++/* Boot-time LSM user choice */
++static char chosen_lsm[SECURITY_NAME_MAX + 1];
++static atomic_t security_ops_enabled = ATOMIC_INIT(-1);
+ 
+ /* things that live in dummy.c */
+ extern struct security_operations dummy_security_ops;
+@@ -30,7 +33,7 @@ unsigned long mmap_min_addr = CONFIG_SECURITY_DEFAULT_MMAP_MIN_ADDR;
+ static inline int verify(struct security_operations *ops)
  {
- 	struct ieee80211_sub_if_data *sdata;
- 	struct ieee80211_hw_mode *mode;
--	int newidx;
--	int maxrate;
--	int back = (adj > 0) ? 1 : -1;
-+	int cur_sorted, new_sorted, probe, tmp, n_bitrates;
-+	int cur = sta->txrate;
- 
- 	sdata = IEEE80211_DEV_TO_SUB_IF(sta->dev);
- 
- 	mode = local->oper_hw_mode;
--	maxrate = sdata->bss ? sdata->bss->max_ratectrl_rateidx : -1;
-+	n_bitrates = mode->num_rates;
- 
--	newidx = rate_control_pid_shift_adjust(rinfo, adj, sta->txrate,
--					       mode->num_rates);
-+	/* Map passed arguments to sorted values. */
-+	cur_sorted = rinfo[cur].rev_index;
-+	new_sorted = cur_sorted + adj;
-+
-+	/* Check limits. */
-+	if (new_sorted < 0)
-+		new_sorted = rinfo[0].rev_index;
-+	else if (new_sorted >= n_bitrates)
-+		new_sorted = rinfo[n_bitrates - 1].rev_index;
- 
--	while (newidx != sta->txrate) {
--		if (rate_supported(sta, mode, newidx) &&
--		    (maxrate < 0 || newidx <= maxrate)) {
--			sta->txrate = newidx;
--			break;
--		}
-+	tmp = new_sorted;
- 
--		newidx += back;
-+	if (adj < 0) {
-+		/* Ensure that the rate decrease isn't disadvantageous. */
-+		for (probe = cur_sorted; probe >= new_sorted; probe--)
-+			if (rinfo[probe].diff <= rinfo[cur_sorted].diff &&
-+			    rate_supported(sta, mode, rinfo[probe].index))
-+				tmp = probe;
-+	} else {
-+		/* Look for rate increase with zero (or below) cost. */
-+		for (probe = new_sorted + 1; probe < n_bitrates; probe++)
-+			if (rinfo[probe].diff <= rinfo[new_sorted].diff &&
-+			    rate_supported(sta, mode, rinfo[probe].index))
-+				tmp = probe;
- 	}
- 
-+	/* Fit the rate found to the nearest supported rate. */
-+	do {
-+		if (rate_supported(sta, mode, rinfo[tmp].index)) {
-+			sta->txrate = rinfo[tmp].index;
-+			break;
-+		}
-+		if (adj < 0)
-+			tmp--;
-+		else
-+			tmp++;
-+	} while (tmp < n_bitrates && tmp >= 0);
-+
- #ifdef CONFIG_MAC80211_DEBUGFS
- 	rate_control_pid_event_rate_change(
- 		&((struct rc_pid_sta_info *)sta->rate_ctrl_priv)->events,
--		newidx, mode->rates[newidx].rate);
-+		cur, mode->rates[cur].rate);
- #endif
+ 	/* verify the security_operations structure exists */
+-	if (!ops)
++	if (!ops || !ops->name)
+ 		return -EINVAL;
+ 	security_fixup_ops(ops);
+ 	return 0;
+@@ -67,13 +70,51 @@ int __init security_init(void)
+ 	return 0;
  }
  
++/* Save user chosen LSM */
++static int __init choose_lsm(char *str)
++{
++	strncpy(chosen_lsm, str, SECURITY_NAME_MAX);
++	chosen_lsm[SECURITY_NAME_MAX] = NULL;
++
++	return 1;
++}
++__setup("security=", choose_lsm);
++
++/**
++ * security_module_enable - Load given security module on boot ?
++ * @ops: a pointer to the struct security_operations that is to be checked.
++ *
++ * Each LSM must pass this method before registering its own operations
++ * to avoid security registration races.
++ *
++ * Return true if:
++ *	-The passed LSM is the one chosen by user at boot time,
++ *	-or user didsn't specify a specific LSM and we're the first to ask
++ *	 for registeration permissoin.
++ * Otherwise, return false.
++ */
++int security_module_enable(struct security_operations *ops)
++{
++	if (!ops || !ops->name)
++		return 0;
++
++	if (!*chosen_lsm && atomic_inc_and_test(&security_ops_enabled))
++		return 1;
++
++	if (!strncmp(ops->name, chosen_lsm, SECURITY_NAME_MAX))
++		return 1;
++	
++	return 0;
++}
++
+ /**
+  * register_security - registers a security framework with the kernel
+  * @ops: a pointer to the struct security_options that is to be registered
+  *
+  * This function is to allow a security module to register itself with the
+  * kernel security subsystem.  Some rudimentary checking is done on the @ops
+- * value passed to this function.
++ * value passed to this function. You'll need to check first if your LSM
++ * is allowed to register its @ops by calling security_module_enable(@ops).
+  *
+  * If there is already a security module registered with the kernel,
+  * an error will be returned.  Otherwise 0 is returned on success.
+diff --git a/security/selinux/hooks.c b/security/selinux/hooks.c
+index f42ebfc..b507977 100644
+--- a/security/selinux/hooks.c
++++ b/security/selinux/hooks.c
+@@ -5233,6 +5233,8 @@ static int selinux_key_getsecurity(struct key *key, char **_buffer)
+ #endif
+ 
+ static struct security_operations selinux_ops = {
++	.name =				"selinux",
++
+ 	.ptrace =			selinux_ptrace,
+ 	.capget =			selinux_capget,
+ 	.capset_check =			selinux_capset_check,
+@@ -5425,6 +5427,15 @@ static __init int selinux_init(void)
+ 		return 0;
+ 	}
+ 
++	if (!security_module_enable(&selinux_ops)) {
++		selinux_enabled = 0;
++		printk(KERN_INFO "SELinux:  Security registration was not allowed.\n");
++		printk(KERN_INFO "SELinux:  Another security module was chosen.\n");
++		printk(KERN_INFO "SELinux:  Use security=%s to force choosing "
++		       "SELinux on boot.\n", selinux_ops.name);
++		return 0;
++	}
++
+ 	printk(KERN_INFO "SELinux:  Initializing.\n");
+ 
+ 	/* Set the security state for the initial task. */
+diff --git a/security/smack/smack_lsm.c b/security/smack/smack_lsm.c
+index 2b5d6f7..2e1adbb 100644
+--- a/security/smack/smack_lsm.c
++++ b/security/smack/smack_lsm.c
+@@ -2358,6 +2358,8 @@ static void smack_release_secctx(char *secdata, u32 seclen)
+ }
+ 
+ static struct security_operations smack_ops = {
++	.name =				"smack",
++
+ 	.ptrace = 			smack_ptrace,
+ 	.capget = 			cap_capget,
+ 	.capset_check = 		cap_capset_check,
+@@ -2485,6 +2487,14 @@ static struct security_operations smack_ops = {
+  */
+ static __init int smack_init(void)
+ {
++	if (!security_module_enable(&smack_ops)) {
++		printk(KERN_INFO "Smack:  Security registration was not allowed.\n");
++		printk(KERN_INFO "Smack:  Another security module was chosen.\n");
++		printk(KERN_INFO "Smack:  Use security=%s to force choosing "
++		       "Smack on boot.\n", smack_ops.name);
++		return 0;
++	}
++
+ 	printk(KERN_INFO "Smack:  Initializing.\n");
+ 
+ 	/*
 
+---
+"Better to light a candle, than curse the darkness"
 
--- 
-Ciao
-Stefano
+Ahmed S. Darwish
+Homepage: http://darwish.07.googlepages.com
+Blog: http://darwish-07.blogspot.com
+
