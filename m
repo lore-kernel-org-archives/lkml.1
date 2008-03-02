@@ -1,83 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758760AbYCBTwS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757747AbYCBT6U@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758760AbYCBTwS (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 2 Mar 2008 14:52:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752970AbYCBTwG
+	id S1757747AbYCBT6U (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 2 Mar 2008 14:58:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751054AbYCBT6K
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 2 Mar 2008 14:52:06 -0500
-Received: from smtp1.wifiinternet.cz ([89.31.47.1]:53844 "EHLO
-	bor.wifiinternet.cz" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753179AbYCBTwF (ORCPT
+	Sun, 2 Mar 2008 14:58:10 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:33920 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751709AbYCBT6J (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 2 Mar 2008 14:52:05 -0500
-X-Greylist: delayed 1535 seconds by postgrey-1.27 at vger.kernel.org; Sun, 02 Mar 2008 14:52:05 EST
-Message-ID: <47CAFF27.9030506@seznam.cz>
-Date: Sun, 02 Mar 2008 20:25:27 +0100
-From: Michal Simek <monstr@seznam.cz>
-Reply-To: monstr@seznam.cz
-User-Agent: Thunderbird 2.0.0.12 (Windows/20080213)
-MIME-Version: 1.0
-To: microblaze-uclinux@itee.uq.edu.au
-CC: John Williams <john.williams@petalogix.com>, monstr@monstr.eu,
-       linux-kernel@vger.kernel.org
-Subject: Re: [microblaze-uclinux] RE: [PATCH 24/52] [microblaze] time support
-References: <1201187014-3979-1-git-send-email-monstr@monstr.eu> <516d173b1789ea533431e8f5ad05751c6a353c88.1201107832.git.monstr@monstr.eu> <068508828aac6298b4cc65b0cd7b2737a61c466c.1201107832.git.monstr@monstr.eu> <010fc233f82a8f7a591c9f8315ae03f9951139aaeu> <64e6e541db30cc4f1ee5cd85da4bdea6024f75b8.1201107832.git.monstr@monstr.eu> <90badb264d0e4ec49fdaa76842a5e5f259681299.1201107832.git.monstr@monstr.eu> <a013a2b7044186c64d55cdafc8c9b29bc73a7fc5.1201107832.git.monstr@monstr.eu> <60642f04ebcf9f76da50a1d40191755f258edcc5.1201107832.git.monstr@monstr.eu> <240998be1af3774635995fd19248f8b3a9e8a702.1201107832.git.monstr@monstr.eu> <3bcb9581bc512fdd0a124ac8322af9e2a8adc975.1201107832.git.monstr@monstr.eu> <47BD86F3.9030400@petalogix.com> <20080221163040.5E9FA6A0056@mail168-sin.bigfish.com>
-In-Reply-To: <20080221163040.5E9FA6A0056@mail168-sin.bigfish.com>
-Content-Type: text/plain; charset=ISO-8859-1
+	Sun, 2 Mar 2008 14:58:09 -0500
+Date: Sun, 2 Mar 2008 11:57:09 -0800
+From: Arjan van de Ven <arjan@infradead.org>
+To: svaidy@linux.vnet.ibm.com
+Cc: discuss@LessWatts.org,
+       Linux-pm mailing list <linux-pm@lists.linux-foundation.org>,
+       Linux Kernel <linux-kernel@vger.kernel.org>,
+       Dipankar Sarma <dipankar@in.ibm.com>, Ingo Molnar <mingo@elte.hu>,
+       venkatesh.pallipadi@intel.com, tglx@linutronix.de,
+       suresh.b.siddha@intel.com, Gautham R Shenoy <ego@in.ibm.com>,
+       Chanda Sethia <chanda.sethia@in.ibm.com>
+Subject: Re: Too many timer interrupts in NO_HZ
+Message-ID: <20080302115709.30403490@laptopd505.fenrus.org>
+In-Reply-To: <20080302194812.GD10028@dirshya.in.ibm.com>
+References: <20080302194812.GD10028@dirshya.in.ibm.com>
+Organization: Intel
+X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.5; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-OK.
+On Mon, 3 Mar 2008 01:18:13 +0530
+Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com> wrote:
 
-I will wait for it.
+> Hi,
+> 
+> I am trying to play around with the tickless kernel and
+> sched_mc_power_savings tunables to increase the idle duration of the
+> CPU in an SMP server.  sched_mc_power_savings provides good
+> consolidation of long running jobs when the system is lightly loaded.
+> However I am interested to see CPU idle times for couple minutes on
+> atleast few CPUs in an completely idle SMP system.
+> 
+> I have posted related instrumentation results at
+> http://lkml.org/lkml/2008/1/8/243
+> 
+> The experimental setup is identical.  Just that I have tried to
+> collect more data and also bias the wakeup logic.
+> 
+> The kernel is 2.6.25-rc3 with NO_HZ, SCHED_MC, HIGH_RES_TIMERS, and
+> HPET turned on.
+> 
+> I have tried to collect interesting data from tick-sched.c, sched.c
+> and softirq.c.
+> 
+> As suggested by Ingo in the previous thread, I have hacked the sched.c
+> try_to_wake_up logic so that I can force all wake-ups to happen on
+> CPU0.  This is just and experiment, in reality we will have to
+> carefully choose a domain and CPU to bias all wakeups on an idle
+> system.
 
 
-Michal
-
-> 
-> There's also a pretty stupid one in the tree at git.xilinx.com.
-> 
-> Steve
-> 
-> -----Original Message-----
-> From: John Williams [mailto:john.williams@petalogix.com]
-> Sent: Thu 2/21/2008 6:13 AM
-> To: monstr@monstr.eu
-> Cc: linux-kernel@vger.kernel.org; Stephen Neuendorffer;
-> microblaze-uclinux@itee.uq.edu.au
-> Subject: Re: [PATCH 24/52] [microblaze] time support
-> 
-> Hi Michal,
-> 
-> monstr@monstr.eu wrote:
-> 
-> 
->> --- /dev/null
->> +++ b/include/asm-microblaze/delay.h
->> @@ -0,0 +1,28 @@
->> +/*
->> + * include/asm-microblaze/delay.h
->> + *
-> 
->> +
->> +static inline void udelay(unsigned long usec)
->> +{
->> +}
-> 
-> We need a proper udelay implementation.  I've got a semi-reasonable one
-> in a private branch somewhere, will dig it out and send it to you.
-> 
-> Cheers,
-> 
-> John
-> 
-> 
-> 
-> 
-> ------------------------------------------------------------------------
-> 
-> No virus found in this incoming message.
-> Checked by AVG Free Edition. 
-> Version: 7.5.516 / Virus Database: 269.21.3/1306 - Release Date: 1.3.2008 05:41
+please show us powertop -d output; that way we can at least see sort of what
+is going on...
