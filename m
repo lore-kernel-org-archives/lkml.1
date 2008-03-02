@@ -1,43 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756238AbYCBRBv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756183AbYCBRNX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756238AbYCBRBv (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 2 Mar 2008 12:01:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754394AbYCBRBo
+	id S1756183AbYCBRNX (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 2 Mar 2008 12:13:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754740AbYCBRNO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 2 Mar 2008 12:01:44 -0500
-Received: from wr-out-0506.google.com ([64.233.184.238]:14962 "EHLO
-	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754308AbYCBRBn (ORCPT
+	Sun, 2 Mar 2008 12:13:14 -0500
+Received: from 206-248-169-182.dsl.ncf.ca ([206.248.169.182]:54424 "EHLO
+	phobos.cabal.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754637AbYCBRNN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 2 Mar 2008 12:01:43 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=VDnjynxF646pBVPTl1JHg3NVyWaOy7xjBPBLscmX8QqrfO0kiwzs5aLyK09VfwJMuYwcGbUAiLVyKhHfHIPFjxwQvLteMxZt+vKjfYZg0tQ/TWj3Futm4wSur1qdA0XAVXuRbtggE15DSjiJuoupqZkg1ipy2e+C8FE0CJvlCuA=
-Message-ID: <2f11576a0803020901n715fda8esbfc0172f5a15ae3c@mail.gmail.com>
-Date: Mon, 3 Mar 2008 02:01:40 +0900
-From: "KOSAKI Motohiro" <m-kosaki@ceres.dti.ne.jp>
-To: "Rick van Rein" <rick@vanrein.org>
-Subject: Re: [PATCH 2.6.24] mm: BadRAM support for broken memory
-Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org
-In-Reply-To: <20080302134221.GA25196@phantom.vanrein.org>
+	Sun, 2 Mar 2008 12:13:13 -0500
+Date: Sun, 2 Mar 2008 12:13:11 -0500
+From: Kyle McMartin <kyle@mcmartin.ca>
+To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+Cc: linux-kernel@vger.kernel.org, linux-parisc@vger.kernel.org, tomof@acm.org,
+       Kyle McMartin <kyle@parisc-linux.org>, Matthew Wilcox <matthew@wil.cx>,
+       Grant Grundler <grundler@parisc-linux.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH -mm 0/3] fix iommu segment boundary problems (parisc)
+Message-ID: <20080302171311.GB18883@phobos.i.cabal.ca>
+References: <1204438228-4564-1-git-send-email-fujita.tomonori@lab.ntt.co.jp>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <20080302134221.GA25196@phantom.vanrein.org>
-X-Google-Sender-Auth: 6a6bdab15e6bd18e
+In-Reply-To: <1204438228-4564-1-git-send-email-fujita.tomonori@lab.ntt.co.jp>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi
+On Sun, Mar 02, 2008 at 03:10:25PM +0900, FUJITA Tomonori wrote:
+> This patchset is another sequel to my patchset to fix iommu segment
+> boundary problems, IOMMUs allocate memory areas without considering a
+> low level driver's segment boundary limits:
+> 
+> http://www.mail-archive.com/linux-scsi@vger.kernel.org/msg11919.html
+> 
 
-in general,
-Agreed with we need bad memory treatness.
+This looks fine. Are you able to test this? If not, we can set you up
+with an account on a machine with remote console and all that jazz, if
+you'd like to.
 
->  +#define PG_badram              20      /* BadRam page */
-
-some architecture use PG_reserved for treat bad memory.
-Why do you want introduce new page flag?
-for show_mem() improvement?
+cheers, Kyle
