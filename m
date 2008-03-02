@@ -1,53 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759999AbYCBUtL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759562AbYCBUyd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759999AbYCBUtL (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 2 Mar 2008 15:49:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757592AbYCBUst
+	id S1759562AbYCBUyd (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 2 Mar 2008 15:54:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756046AbYCBUyX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 2 Mar 2008 15:48:49 -0500
-Received: from gate.crashing.org ([63.228.1.57]:60452 "EHLO gate.crashing.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757297AbYCBUst (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 2 Mar 2008 15:48:49 -0500
-Subject: Re: [BUG/RFC/PATCH] drm: Fix for non-coherent DMA PowerPC
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Reply-To: benh@kernel.crashing.org
-To: Gerhard Pircher <gerhard_pircher@gmx.net>
-Cc: airlied@linux.ie, linux-kernel@vger.kernel.org,
-       dri-devel@lists.sourceforge.net, linuxppc-dev@ozlabs.org
-In-Reply-To: <20080302110505.175270@gmx.net>
-References: <20071125234254.B4405DDE49@ozlabs.org>
-	 <20080302110505.175270@gmx.net>
-Content-Type: text/plain
-Date: Mon, 03 Mar 2008 07:47:09 +1100
-Message-Id: <1204490829.15052.482.camel@pasglop>
+	Sun, 2 Mar 2008 15:54:23 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:42540 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755744AbYCBUyW (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 2 Mar 2008 15:54:22 -0500
+Date: Sun, 2 Mar 2008 12:54:02 -0800
+From: Arjan van de Ven <arjan@infradead.org>
+To: Harald Dunkel <harald.dunkel@t-online.de>
+Cc: Mike@Keehan.net, linux-kernel@vger.kernel.org
+Subject: Re: strange behavior on multimedia eject button for cdrom
+Message-ID: <20080302125402.4af85abc@laptopd505.fenrus.org>
+In-Reply-To: <47CB11FA.60008@t-online.de>
+References: <47C15020.8040806@t-online.de>
+	<47C7FECD.3040205@Keehan.net>
+	<47CB11FA.60008@t-online.de>
+Organization: Intel
+X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.5; i386-redhat-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sun, 02 Mar 2008 21:45:46 +0100
+Harald Dunkel <harald.dunkel@t-online.de> wrote:
 
-> Xorg (v7.1.1, Debian Etch) crashes with this patch (applied to 2.6.25-rc3)
-> on my AmigaOne with a Radeon 9200 (PCIGART mode enabled). See the attached
-> log file for the stack trace.
+> Hi Mike,
+> 
+> Mike Keehan wrote:
+> > Hi Harold.
+> > 
+> > Somewhere on the web I read that some of the M1330 media keys are 
+> > directly connected to the drive, hence the lack of keycodes.
+> > 
+> > If you eject a disk while it is being played, then the Linux driver
+> > will get a read failure.  What happens then may not be well
+> > defined :)
+> > 
+> 
+> Maybe there is some misunderstanding here: I am not playing music
+> from the CD. It is idle. But if I press the CD eject button, then
+> audio output (e.g. some mp3 file played from harddisk) gets
+> corrupted, the network connection is dead, etc.
+> 
+> Ejecting the CD takes about 7 seconds. Durig this time Linux is
+> dead! I haven't checked any SCHED_FIFO or SCHED_RR applications,
+> but AFAIK this shouldn't happen.
+> 
+> If I run "eject cdrom" on the console instead, then there is no
+> such problem.
 
-That doesn't look possible, which is weird... looks like we are passing
-0 to clean_dcache_range().
 
-Interestingly enough, I can -see- possible issues with the ppc32 DMA API
-when trying to use HIGHMEM but that isn't the case here... 
+try (temporarily) disable the hal storage polling thing.....
+that could well avoid the entire issue.
 
-Can you add printk's to ati_pcigart.c to print the arguments passed to
 
-+               dma_sync_single_for_device(&dev->pdev->dev,
-+                                          bus_address,
-+                                          max_pages * sizeof(u32),
-+                                          PCI_DMA_TODEVICE);
-+
-
-And also print the result of bus_to_virt(bus_address) ?
-
-Ben.
-
+-- 
+If you want to reach me at my work email, use arjan@linux.intel.com
+For development, discussion and tips for power savings, 
+visit http://www.lesswatts.org
