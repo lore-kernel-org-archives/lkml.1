@@ -1,69 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759913AbYCBUKI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757978AbYCBUTX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759913AbYCBUKI (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 2 Mar 2008 15:10:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755839AbYCBUJ5
+	id S1757978AbYCBUTX (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 2 Mar 2008 15:19:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753601AbYCBUTM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 2 Mar 2008 15:09:57 -0500
-Received: from mail.gmx.net ([213.165.64.20]:35676 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1755537AbYCBUJ4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 2 Mar 2008 15:09:56 -0500
-X-Authenticated: #5108953
-X-Provags-ID: V01U2FsdGVkX1/jIJF0GSTjMAvN9FpFGiJwmwVLRboyZ/q+16bBzp
-	g5shasFo8OaL4f
-From: Toralf =?iso-8859-15?q?F=F6rster?= <toralf.foerster@gmx.de>
-To: linux-kernel@vger.kernel.org
-Subject: Re: Re: why is CONFIG_PCI unset ? [was: build #350 issue for v2.6.25-rc1 in drivers/i2c/busses/i2c-i801.c]
-Date: Sun, 2 Mar 2008 21:09:53 +0100
-User-Agent: KMail/1.9.7
+	Sun, 2 Mar 2008 15:19:12 -0500
+Received: from wr-out-0506.google.com ([64.233.184.233]:44837 "EHLO
+	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753208AbYCBUTL (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 2 Mar 2008 15:19:11 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:mime-version:content-type:content-transfer-encoding:content-disposition;
+        b=i8GZ+5rLuymz0tCALjqwtwKbcQnsW2EVxXbxFp2WhYX2mxUezhGRlEijpqznOaTTGb5zOwWrxii0O5OAVPdamxGpshOiJrhSE3ylEo0QoqyiTSWysBAsQfWOCxZZklcNycIGZ/XzjxtxxM0QPF2sPzmmPJzsMLYC8HRo5+mS/4k=
+Message-ID: <8b67d60803021219k23ca6c6bt2ce2fb2c61cda42e@mail.gmail.com>
+Date: Sun, 2 Mar 2008 20:19:09 +0000
+From: "Adrian McMenamin" <lkmladrian@gmail.com>
+To: LKML <linux-kernel@vger.kernel.org>, dwmw2@infradead.org
+Subject: MTD types
+Cc: linux-sh <linux-sh@vger.kernel.org>
 MIME-Version: 1.0
-Message-Id: <200803022109.53851.toralf.foerster@gmx.de>
-Content-Type: multipart/signed;
-  boundary="nextPart1814651.eKZzvPAmEU";
-  protocol="application/pgp-signature";
-  micalg=pgp-sha1
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-Y-GMX-Trusted: 0
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---nextPart1814651.eKZzvPAmEU
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+A long time ago I took some work Paul Mundt did and used to build a
+working driver for the Sega Dreamcast Visual Memory Unit flash memory.
 
-Hi,=20
+I am now trying to revive that for 2.6 kernels.
 
-At Sunday 02 March 2008 Adrian Bunk wrote :
+In the past the flash was simply described as MTD_OTHER - but I see from:
 
-> Why are you doing the "<tweak config file> && make oldconfig" steps at al=
-l?
->=20
-> Shouldn't KCONFIG_ALLCONFIG do what you want?
->=20
+http://lkml.org/lkml/2006/4/13/151
 
-I grep out some stuff from the randomly generated config file.
-=46urthermore I prefer to have to whole stuff together in single file.
+that type was axed as it was thought unused (not unreasonable - my &
+Paul's driver resided in the Dreamcast Linux CVS, not anywhere near
+mainline).
 
-=2D-=20
-MfG/Sincerely
+I am loathe to just post a patch adding it back, so does it make any
+difference if I use another type (I really have no idea of what the
+physical type used in the Dreamcast is, though possibly someone here
+might?)
 
-Toralf F=F6rster
-pgp finger print: 7B1A 07F4 EC82 0F90 D4C2 8936 872A E508 7DB6 9DA3
-
---nextPart1814651.eKZzvPAmEU
-Content-Type: application/pgp-signature; name=signature.asc 
-Content-Description: This is a digitally signed message part.
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.7 (GNU/Linux)
-
-iD8DBQBHywmRhyrlCH22naMRApNxAJwN0L4/LauoDQhhLHDuAJSnCzf2UwCgrh01
-hEy0qtCysaFt/NZBUB6fi7E=
-=YFMV
------END PGP SIGNATURE-----
-
---nextPart1814651.eKZzvPAmEU--
+Adrian
