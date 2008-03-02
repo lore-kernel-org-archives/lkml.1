@@ -1,39 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754627AbYCBN4U@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755046AbYCBOHa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754627AbYCBN4U (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 2 Mar 2008 08:56:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751433AbYCBN4G
+	id S1755046AbYCBOHa (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 2 Mar 2008 09:07:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752743AbYCBOHR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 2 Mar 2008 08:56:06 -0500
-Received: from hawking.rebel.net.au ([203.20.69.83]:57778 "EHLO
-	hawking.rebel.net.au" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751628AbYCBN4F (ORCPT
+	Sun, 2 Mar 2008 09:07:17 -0500
+Received: from ti-out-0910.google.com ([209.85.142.185]:63681 "EHLO
+	ti-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752503AbYCBOHP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 2 Mar 2008 08:56:05 -0500
-Message-ID: <47CAB23C.1010602@davidnewall.com>
-Date: Mon, 03 Mar 2008 00:27:16 +1030
-From: David Newall <davidn@davidnewall.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20071022)
-MIME-Version: 1.0
-To: Bernd Petrovitsch <bernd@firmix.at>
-CC: Dimitrios Apostolou <jimis@gmx.net>, linux-kernel@vger.kernel.org
-Subject: Re: swap file over jffs2 partition
-References: <47C772E9.2000000@gmx.net>	 <1204276763.18969.10.camel@tara.firmix.at>  <47C84B40.6000501@gmx.net> <1204458909.4078.30.camel@gimli.at.home>
-In-Reply-To: <1204458909.4078.30.camel@gimli.at.home>
-Content-Type: text/plain; charset=ISO-8859-1
+	Sun, 2 Mar 2008 09:07:15 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:in-reply-to:references:x-mailer:mime-version:content-type:content-transfer-encoding;
+        b=k7jfFumQGUEknUCdBa0Btf3FmoUL5Uv2Eae/x6Kj/RgfFg8vfRKZAdCrAwJLm67p4WjM0JYhVAgYbKkMj/1M8q3GeBm+0r9ZRofwahCS57dQgKjTc1eV32Ph1P7c08eUyOA6NAv8lnDHRdLs4R+05RnaOWNXxJ71C1bbAZWhMgQ=
+Date: Sun, 2 Mar 2008 08:04:52 -0600
+From: Josh Boyer <jwboyer@gmail.com>
+To: Michael Halcrow <mhalcrow@us.ibm.com>
+Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       bdriessen@escrypt.com, shaggy@us.ibm.com, sandeen@redhat.com,
+       tchicks@us.ibm.com, trevor.highland@gmail.com
+Subject: Re: [PATCH] eCryptfs: Make ecryptfs_prepare_write decrypt the page
+Message-ID: <20080302080452.1e66b1a9@zod.rchland.ibm.com>
+In-Reply-To: <20080302064452.GD4627@localhost.austin.ibm.com>
+References: <20080302064452.GD4627@localhost.austin.ibm.com>
+X-Mailer: Claws Mail 3.3.0 (GTK+ 2.10.14; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Bernd Petrovitsch wrote:
-> The wear-levelling only makes all erase blocks/chunks/... wear out at
-> the same rate (at least more or less). It doesn't avoid or reduce
-> wearing out, it just distributes it.
->   
+On Sun, 2 Mar 2008 00:44:52 -0600
+Michael Halcrow <mhalcrow@us.ibm.com> wrote:
 
-Surely a unit with one defective block and a squillion good blocks is
-faulty.  Sure it is.  It has a fault, which is what it means to be
-faulty.  Spread the wear of that one block over all squillion and one
-blocks and you get a much longer lifetime.  It seems intuitive that
-distributing wear significantly increases time to failure.
+> When the page is not up to date, ecryptfs_prepare_write() should be
+> acting much like ecryptfs_readpage(). This includes the painfully
+> obvious step of actually decrypting the page contents read from the
+> lower encrypted file.
+> 
+> Note that this patch resolves a bug in eCryptfs in 2.6.24 that one can
+> produce with these steps:
+
+Should it go in -stable then?
+
+josh
