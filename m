@@ -1,44 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754629AbYCBIFR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754714AbYCBILU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754629AbYCBIFR (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 2 Mar 2008 03:05:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752191AbYCBIFG
+	id S1754714AbYCBILU (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 2 Mar 2008 03:11:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752191AbYCBILJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 2 Mar 2008 03:05:06 -0500
-Received: from main.gmane.org ([80.91.229.2]:46612 "EHLO ciao.gmane.org"
+	Sun, 2 Mar 2008 03:11:09 -0500
+Received: from smtp6.pp.htv.fi ([213.243.153.40]:60243 "EHLO smtp6.pp.htv.fi"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750800AbYCBIFF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 2 Mar 2008 03:05:05 -0500
-X-Injected-Via-Gmane: http://gmane.org/
-To: linux-kernel@vger.kernel.org
-From: Gunter Ohrner <G.Ohrner@post.rwth-aachen.de>
-Subject: Re: Re: 2.6.24 Kernel Soft Lock Up with heavy I/O in	dm-crypt
-Followup-To: gmane.linux.kernel.device-mapper.dm-crypt
-Date: Sun, 02 Mar 2008 08:58:52 +0100
-Message-ID: <fqdmmv$eov$1@ger.gmane.org>
-References: <200802281924.03996.rrs@researchut.com>	<20080228232048.51e28c1d.akpm@linux-foundation.org>	<20080229184649.GJ1788@agk.fab.redhat.com>	<200803010029.18320.rrs@researchut.com> <47C9AEF3.7040507@redhat.com> <47C9AF8F.2050502@redhat.com> <fqcjj9$5bv$1@ger.gmane.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7Bit
-X-Complaints-To: usenet@ger.gmane.org
-X-Gmane-NNTP-Posting-Host: bras-co-85-197-3-127.westend.de
-User-Agent: KNode/0.10.5
-Cc: dm-crypt@saout.de, dm-devel@redhat.com
-Cc: dm-crypt@saout.de, linux-kernel@vger.kernel.org
+	id S1750710AbYCBILI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 2 Mar 2008 03:11:08 -0500
+Date: Sun, 2 Mar 2008 10:09:39 +0200
+From: Adrian Bunk <bunk@kernel.org>
+To: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: How do arch/ppc and arch/powerpc differ?
+Message-ID: <20080302080939.GG25835@cs181133002.pp.htv.fi>
+References: <200803021602.EGJ81261.OJtOFVQFFHOSLM@I-love.SAKURA.ne.jp>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <200803021602.EGJ81261.OJtOFVQFFHOSLM@I-love.SAKURA.ne.jp>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Gunter Ohrner wrote:
-> * This patch seems to hurt performance, I got much lower thoughput and the
+On Sun, Mar 02, 2008 at 04:02:56PM +0900, Tetsuo Handa wrote:
+> Hello.
+> 
+> According to Documentation/SubmitChecklist,
+> ppc64 is a good architecture for cross-compilation checking.
+> I've just set up cross compiling environment for ppc64
+> using "crossdev -t ppc64" on Gentoo 2007.0 environment.
+> 
+> Now I'm trying to modify Makefile to build kernel for ppc64.
+> I've got a question here.
+> 
+>   ARCH            ?= powerpc
+>   CROSS_COMPILE   ?= powerpc64-unknown-linux-gnu-
+> 
+> Which keyword ("ppc" or "powerpc") do I need to set for ARCH
+> to do cross-compilation checking?
 
-Mh, strange, today I cannot reproduce the performance degradation...
+powerpc
 
-There seem to have been some factors in effect during my yesterday's tests
-which I'm not aware of - anyway, currently throughput is fine while running
-a 2.6.24.3 kernel with this patch applied.
+> How do they differ?
 
-Greetings,
+Documentation/feature-removal-schedule.txt says:
 
-  Gunter
+What: The arch/ppc and include/asm-ppc directories
+When: Jun 2008
+Why:  The arch/powerpc tree is the merged architecture for ppc32 and ppc64
+      platforms.  Currently there are efforts underway to port the remaining
+      arch/ppc platforms to the merged tree.  New submissions to the arch/ppc
+      tree have been frozen with the 2.6.22 kernel release and that tree will
+      remain in bug-fix only mode until its scheduled removal.  Platforms
+      that are not ported by June 2008 will be removed due to the lack of an
+      interested maintainer.
+Who:  linuxppc-dev@ozlabs.org
+
+
+> Regards.
+
+cu
+Adrian
+
+-- 
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
 
