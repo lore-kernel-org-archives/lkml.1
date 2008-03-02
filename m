@@ -1,45 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760015AbYCBTFs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759767AbYCBTG5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760015AbYCBTFs (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 2 Mar 2008 14:05:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757748AbYCBTDl
+	id S1759767AbYCBTG5 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 2 Mar 2008 14:06:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752544AbYCBTGs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 2 Mar 2008 14:03:41 -0500
-Received: from ug-out-1314.google.com ([66.249.92.174]:37702 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758884AbYCBTDh (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 2 Mar 2008 14:03:37 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-disposition:message-id:content-type:content-transfer-encoding;
-        b=v0MGIpqT6rwd5FE1nyBEwBRfOmJc/M/NgReqHAE+O4t56fniJ76qXIW9rvVnrUHGyl6kTeDMArGXp6nAFD6SUl1mzHT/gPGV9kXe+FubD5QbcbMgV9cKFI9gXF2uKdHZOe+opNl3htSSoQFCRIrVPDyJfD8BqOgeROEutFETyc4=
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: Borislav Petkov <petkovbb@googlemail.com>
-Subject: Re: [PATCH 06/24] ide-tape: remove unused stage-parameter from idetape_copy_stage_to_user
-Date: Sun, 2 Mar 2008 20:15:33 +0100
-User-Agent: KMail/1.9.6 (enterprise 0.20071204.744707)
-Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Borislav Petkov <petkovbb@gmail.com>
-References: <1204361928-30229-1-git-send-email-petkovbb@gmail.com> <1204361928-30229-7-git-send-email-petkovbb@gmail.com>
-In-Reply-To: <1204361928-30229-7-git-send-email-petkovbb@gmail.com>
+	Sun, 2 Mar 2008 14:06:48 -0500
+Received: from smtp5.pp.htv.fi ([213.243.153.39]:44759 "EHLO smtp5.pp.htv.fi"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752108AbYCBTGr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 2 Mar 2008 14:06:47 -0500
+Date: Sun, 2 Mar 2008 21:05:15 +0200
+From: Adrian Bunk <bunk@kernel.org>
+To: Toralf =?utf-8?Q?F=C3=B6rster?= <toralf.foerster@gmx.de>
+Cc: linux-kernel@vger.kernel.org, Sam Ravnborg <sam@ravnborg.org>,
+       linux-kbuild@vger.kernel.org
+Subject: Re: why is CONFIG_PCI unset ? [was: build #350 issue for
+	v2.6.25-rc1 in drivers/i2c/busses/i2c-i801.c]
+Message-ID: <20080302190515.GA25484@cs181133002.pp.htv.fi>
+References: <200802222143.38643.toralf.foerster@gmx.de> <20080222205855.GA7711@uranus.ravnborg.org> <200803021851.34398.toralf.foerster@gmx.de>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-Message-Id: <200803022015.33662.bzolnier@gmail.com>
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <200803021851.34398.toralf.foerster@gmx.de>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday 01 March 2008, Borislav Petkov wrote:
-> Signed-off-by: Borislav Petkov <petkovbb@gmail.com>
+On Sun, Mar 02, 2008 at 06:51:31PM +0100, Toralf Förster wrote:
+>...
+> I hard coded my script to prepend these 2 lines
+> CONFIG_PCI=y
+> CONFIG_I2C=y
+> at top of the each .config file before I run "make oldconfig" however the
+> resulting config CONFIG_PCI is very often unset.
+>...
 
-please move it at the beginning of the patch series
+Why are you doing the "<tweak config file> && make oldconfig" steps at all?
 
-Lets stop at this patch for now and get changes from patches #2-6
-into IDE tree first before moving on patches #7-24.
+Shouldn't KCONFIG_ALLCONFIG do what you want?
 
-Thanks,
-Bart
+cu
+Adrian
+
+-- 
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
+
