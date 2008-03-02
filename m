@@ -1,60 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753613AbYCBEEG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752856AbYCBFPy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753613AbYCBEEG (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 1 Mar 2008 23:04:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751754AbYCBEDy
+	id S1752856AbYCBFPy (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 2 Mar 2008 00:15:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751120AbYCBFPp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 1 Mar 2008 23:03:54 -0500
-Received: from scrub.xs4all.nl ([194.109.195.176]:34705 "EHLO scrub.xs4all.nl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750797AbYCBEDx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 1 Mar 2008 23:03:53 -0500
-Date: Sun, 2 Mar 2008 05:03:51 +0100 (CET)
-From: Roman Zippel <zippel@linux-m68k.org>
-X-X-Sender: roman@scrub.home
-To: john stultz <johnstul@us.ibm.com>
-cc: lkml <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       Steven Rostedt <rostedt@goodmis.org>
-Subject: Re: [PATCH] Remove obsolete CLOCK_TICK_ADJUST
-In-Reply-To: <1204326690.6136.15.camel@localhost.localdomain>
-Message-ID: <Pine.LNX.4.64.0803020420120.2723@scrub.home>
-References: <1201142334.6383.40.camel@localhost.localdomain> 
- <Pine.LNX.4.64.0801251349120.17507@scrub.home>  <1201573686.6766.13.camel@localhost>
-  <Pine.LNX.4.64.0801290439480.17507@scrub.home>  <1201659263.6766.40.camel@localhost>
-  <Pine.LNX.4.64.0801310251090.17507@scrub.home>  <1201745776.6195.14.camel@localhost.localdomain>
-  <Pine.LNX.4.64.0801310404480.17507@scrub.home>  <1201914175.6216.46.camel@jstultz-laptop>
-  <Pine.LNX.4.64.0802081718040.3378@scrub.home>  <1202523452.6174.45.camel@localhost.localdomain>
-  <Pine.LNX.4.64.0802101917030.3378@scrub.home>  <1202774999.5984.106.camel@localhost>
-  <Pine.LNX.4.64.0802120335170.3378@scrub.home>  <1202963796.6195.141.camel@localhost.localdomain>
-  <Pine.LNX.4.64.0802150436300.1822@scrub.home>  <1203382940.5984.242.camel@localhost>
-  <Pine.LNX.4.64.0802190219360.2723@scrub.home>  <1203472250.6123.98.camel@localhost>
-  <Pine.LNX.4.64.0802200348230.2723@scrub.home>  <1203647951.6150.80.camel@localhost.localdomain>
-  <Pine.LNX.4.64.0802290547320.2723@scrub.home> <1204326690.6136.15.camel@localhost.localdomain>
+	Sun, 2 Mar 2008 00:15:45 -0500
+Received: from twinlark.arctic.org ([208.69.40.136]:42377 "EHLO
+	twinlark.arctic.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751041AbYCBFPp (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 2 Mar 2008 00:15:45 -0500
+Message-ID: <47CA37E7.2030404@kernel.org>
+Date: Sat, 01 Mar 2008 21:15:19 -0800
+From: "Andrew G. Morgan" <morgan@kernel.org>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080213)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Christoph Hellwig <hch@infradead.org>
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       lkml <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] cleanup: correct tabbing of check_kill_permission()
+References: <47C9D986.3040805@kernel.org> <20080302004920.GA31969@infradead.org>
+In-Reply-To: <20080302004920.GA31969@infradead.org>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA1
 
-On Fri, 29 Feb 2008, john stultz wrote:
+Christoph,
 
-> I'm still not happy about the granularity issue (or non-issue in your
-> mind),
+I ran it through scripts/checkpatch.pl - it said it was ok - and I see
+that other places in this file contain code of this style -
+do_sigaltstack() for example.
 
-It's an issue, but it's not as big as you seem to think.
-The error drift should be small and 150ppm isn't too good, but it isn't an 
-error to be too worried about.
-As the alpha example shows, in the past we already tried to reduce this 
-error anyway, in this case by choosing an appropriate HZ value.
+Could you give me a reference for "completely right"? Its not obvious to
+me that Documentation/CodingStyle is what you are using as a reference.
 
-> but both my version and your version of the solution are pretty
-> close at this point and I can rework my difference on-top of this patch
-> without much trouble.
+Thanks
 
-Practically it should be enough to just check the base drift and print a 
-warning message, as it suggest to be more likely a configuration error.
+Andrew
 
-bye, Roman
+Christoph Hellwig wrote:
+| On Sat, Mar 01, 2008 at 02:32:38PM -0800, Andrew G. Morgan wrote:
+|> +	if (info == SEND_SIG_NOINFO
+|> +	    || (!is_si_special(info) && SI_FROMUSER(info))) {
+|> +		 /* Let audit system see the signal */
+|> +		error = audit_signal_info(sig, t);
+|>  		if (error)
+|>  			return error;
+|>  		error = -EPERM;
+|> -		if (((sig != SIGCONT) ||
+|> -			(task_session_nr(current) != task_session_nr(t)))
+|> +		if (((sig != SIGCONT)
+|> +		     || (task_session_nr(current) != task_session_nr(t)))
+|>  		    && (current->euid ^ t->suid) && (current->euid ^ t->uid)
+|>  		    && (current->uid ^ t->suid) && (current->uid ^ t->uid)
+|>  		    && !capable(CAP_KILL))
+|> -		return error;
+|> +			return error;
+|
+| If you start reformmating it please get it completely right:
+|
+| 	if (info == SEND_SIG_NOINFO ||
+| 	    (!is_si_special(info) && SI_FROMUSER(info))) {
+| 		/* Let audit system see the signal */
+| 		error = audit_signal_info(sig, t);
+|  		if (error)
+|  			return error;
+|  		error = -EPERM;
+| 		if ((sig != SIGCONT ||
+| 		     (task_session_nr(current) != task_session_nr(t))) &&
+| 		    (current->euid ^ t->suid) && (current->euid ^ t->uid) &&
+| 		    (current->uid ^ t->suid) && (current->uid ^ t->uid) &&
+| 		    !capable(CAP_KILL))
+| 			return error;
+|  	}
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.2.6 (GNU/Linux)
+
+iD8DBQFHyjfn+bHCR3gb8jsRAuilAJ9QJKsEQz66UrFtLOCcHVokGcVV7wCeP0HE
+ftOI2APLX1YpWiznyhLfN6U=
+=HGa0
+-----END PGP SIGNATURE-----
