@@ -1,54 +1,178 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758308AbYCAXuA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757783AbYCBAd5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758308AbYCAXuA (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 1 Mar 2008 18:50:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752113AbYCAXtw
+	id S1757783AbYCBAd5 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 1 Mar 2008 19:33:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751521AbYCBAds
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 1 Mar 2008 18:49:52 -0500
-Received: from gate.crashing.org ([63.228.1.57]:49625 "EHLO gate.crashing.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751593AbYCAXtv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 1 Mar 2008 18:49:51 -0500
-Subject: Re: [PATCH 1/3] firewire: fw-ohci: PPC PMac platform code
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Reply-To: benh@kernel.crashing.org
-To: Jarod Wilson <jwilson@redhat.com>
-Cc: Stefan Richter <stefanr@s5r6.in-berlin.de>, linuxppc-dev@ozlabs.org,
-       linux1394-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
-In-Reply-To: <47C9B1D3.3020402@redhat.com>
-References: <tkrat.ac97915a5b51e35b@s5r6.in-berlin.de>
-	 <tkrat.7e8e04e66a38dcd6@s5r6.in-berlin.de>  <47C9B1D3.3020402@redhat.com>
-Content-Type: text/plain
-Date: Sun, 02 Mar 2008 10:48:24 +1100
-Message-Id: <1204415304.15052.464.camel@pasglop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
-Content-Transfer-Encoding: 7bit
+	Sat, 1 Mar 2008 19:33:48 -0500
+Received: from moutng.kundenserver.de ([212.227.126.188]:56059 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751208AbYCBAds (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 1 Mar 2008 19:33:48 -0500
+Message-ID: <47C9F5E9.70703@mathtm.de>
+Date: Sun, 02 Mar 2008 01:33:45 +0100
+From: =?ISO-8859-15?Q?Thomas_M=FCller?= <thomas@mathtm.de>
+User-Agent: Thunderbird 2.0.0.12 (Windows/20080213)
+MIME-Version: 1.0
+To: Eric Sandeen <sandeen@sandeen.net>
+CC: xfs@oss.sgi.com, linux-kernel@vger.kernel.org
+Subject: Re: Kernel oops / XFS filesystem corruption
+References: <47C93C32.40006@mathtm.de> <47C9C44D.8080400@sandeen.net>
+In-Reply-To: <47C9C44D.8080400@sandeen.net>
+X-Enigmail-Version: 0.95.6
+Content-Type: multipart/mixed;
+ boundary="------------080300090103030503010006"
+X-Provags-ID: V01U2FsdGVkX1+aEmKx06ZJAj3jyd3KNc69dxwc/IXrhm67emb
+ YiyNopPPWYP6RklBChi5iJqLjPcgV6ndyOufllxmPGv6vuLkCO
+ YoLGiMUzZYAx2YpI1gZtMXjaVoeGLP5
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+This is a multi-part message in MIME format.
+--------------080300090103030503010006
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Transfer-Encoding: 7bit
 
-On Sat, 2008-03-01 at 14:43 -0500, Jarod Wilson wrote:
-> Stefan Richter wrote:
-> > Copied from ohci1394.c.  This code is necessary to prevent machine check
-> > exceptions when reloading or resuming the driver.
-> > 
-> > Signed-off-by: Stefan Richter <stefanr@s5r6.in-berlin.de>
-> 
-> I was able to reproduce the system exception on resume with a 3rd-gen 
-> Titanium PowerBook G4 667, and this patch does let the system resume 
-> successfully now.
-> 
-> Not quite clear if there was possibly an updated version coming using 
-> pci_enable_device() instead of the pair of pmac_call_feature() calls, 
-> but either way, this is a definite must-have, at least for older ppc 
-> macs -- my Aluminum PowerBook G4/1.67 suspends and resumes without this 
-> patch just fine.
-
-Let's go with Stefan patch for now. I'll find out what's up with
-pci_enable_device() later.
-
-Ben.
+Eric Sandeen wrote:
+> Did you also happen to save the xfs_repair output?
+No, but I made a complete copy of the file system before
+repairing it, so I can easily recreate it... :)
 
 
+Thomas
+
+--------------080300090103030503010006
+Content-Type: text/plain;
+ name="xfs_repair"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="xfs_repair"
+
+Phase 1 - find and verify superblock...
+Phase 2 - using internal log
+        - zero log...
+        - scan filesystem freespace and inode maps...
+        - found root inode chunk
+Phase 3 - for each AG...
+        - scan and clear agi unlinked lists...
+        - process known inodes and perform inode discovery...
+        - agno = 0
+data fork in ino 128638 claims free block 19018
+        - agno = 1
+        - agno = 2
+b5ac7b90: Badness in key lookup (length)
+bp=(bno 11701280, len 32768 bytes) key=(bno 11701280, len 8192 bytes)
+b5ac7b90: Badness in key lookup (length)
+bp=(bno 11708896, len 32768 bytes) key=(bno 11708896, len 8192 bytes)
+b5ac7b90: Badness in key lookup (length)
+bp=(bno 11739296, len 32768 bytes) key=(bno 11739296, len 8192 bytes)
+b5ac7b90: Badness in key lookup (length)
+bp=(bno 11751440, len 32768 bytes) key=(bno 11751440, len 8192 bytes)
+b5ac7b90: Badness in key lookup (length)
+bp=(bno 11754176, len 32768 bytes) key=(bno 11754176, len 8192 bytes)
+b5ac7b90: Badness in key lookup (length)
+bp=(bno 12026592, len 32768 bytes) key=(bno 12026592, len 8192 bytes)
+        - agno = 3
+b50c6b90: Badness in key lookup (length)
+bp=(bno 15569728, len 32768 bytes) key=(bno 15569728, len 8192 bytes)
+b50c6b90: Badness in key lookup (length)
+bp=(bno 15626080, len 32768 bytes) key=(bno 15626080, len 8192 bytes)
+        - agno = 4
+        - agno = 5
+        - agno = 6
+        - agno = 7
+b41ffb90: Badness in key lookup (length)
+bp=(bno 31116224, len 32768 bytes) key=(bno 31116224, len 8192 bytes)
+b41ffb90: Badness in key lookup (length)
+bp=(bno 31117856, len 32768 bytes) key=(bno 31117856, len 8192 bytes)
+b41ffb90: Badness in key lookup (length)
+bp=(bno 31128704, len 32768 bytes) key=(bno 31128704, len 8192 bytes)
+b41ffb90: Badness in key lookup (length)
+bp=(bno 31239104, len 32768 bytes) key=(bno 31239104, len 8192 bytes)
+b41ffb90: Badness in key lookup (length)
+bp=(bno 31261408, len 32768 bytes) key=(bno 31261408, len 8192 bytes)
+        - agno = 8
+local inode 33609156 attr too small (size = 0, min size = 4)
+bad attribute fork in inode 33609156, clearing attr fork
+clearing inode 33609156 attributes
+cleared inode 33609156
+        - agno = 9
+b50c6b90: Badness in key lookup (length)
+bp=(bno 38861808, len 32768 bytes) key=(bno 38861808, len 8192 bytes)
+        - agno = 10
+b41ffb90: Badness in key lookup (length)
+bp=(bno 42752032, len 32768 bytes) key=(bno 42752032, len 8192 bytes)
+        - agno = 11
+        - agno = 12
+b50c6b90: Badness in key lookup (length)
+bp=(bno 50475360, len 32768 bytes) key=(bno 50475360, len 8192 bytes)
+b50c6b90: Badness in key lookup (length)
+bp=(bno 50629312, len 32768 bytes) key=(bno 50629312, len 8192 bytes)
+        - agno = 13
+        - agno = 14
+        - agno = 15
+        - process newly discovered inodes...
+Phase 4 - check for duplicate blocks...
+        - setting up duplicate extent list...
+        - check for inodes claiming duplicate blocks...
+        - agno = 0
+        - agno = 1
+        - agno = 2
+        - agno = 3
+        - agno = 4
+        - agno = 5
+        - agno = 6
+        - agno = 7
+        - agno = 8
+bad bmap btree ptr 0xc3a0000100000000 in ino 33609156
+bad data fork in inode 33609156
+cleared inode 33609156
+        - agno = 9
+        - agno = 10
+        - agno = 11
+        - agno = 12
+        - agno = 13
+        - agno = 14
+        - agno = 15
+Phase 5 - rebuild AG headers and trees...
+        - reset superblock...
+Phase 6 - check inode connectivity...
+        - resetting contents of realtime bitmap and summary inodes
+        - traversing filesystem ...
+entry "locking.tdb" in directory inode 33585205 points to free inode 33609156
+bad hash table for directory inode 33585205 (no data entry): rebuilding
+rebuilding directory inode 33585205
+        - traversal finished ...
+        - moving disconnected inodes to lost+found ...
+disconnected inode 12636191, moving to lost+found
+disconnected inode 12643748, moving to lost+found
+disconnected inode 12643751, moving to lost+found
+disconnected inode 12674162, moving to lost+found
+disconnected inode 12674190, moving to lost+found
+disconnected inode 12686342, moving to lost+found
+disconnected inode 12689047, moving to lost+found
+disconnected inode 12689059, moving to lost+found
+disconnected inode 12961449, moving to lost+found
+disconnected inode 16816212, moving to lost+found
+disconnected inode 16872569, moving to lost+found
+disconnected inode 33609179, moving to lost+found
+disconnected inode 33609189, moving to lost+found
+disconnected inode 33610799, moving to lost+found
+disconnected inode 33610824, moving to lost+found
+disconnected inode 33610838, moving to lost+found
+disconnected inode 33610839, moving to lost+found
+disconnected inode 33621664, moving to lost+found
+disconnected inode 33621671, moving to lost+found
+disconnected inode 33621672, moving to lost+found
+disconnected inode 33732053, moving to lost+found
+disconnected inode 33754372, moving to lost+found
+disconnected inode 41977984, moving to lost+found
+disconnected inode 46179860, moving to lost+found
+disconnected inode 54526415, moving to lost+found
+disconnected inode 54680382, moving to lost+found
+Phase 7 - verify and correct link counts...
+done
+
+--------------080300090103030503010006--
