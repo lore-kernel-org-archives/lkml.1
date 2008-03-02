@@ -1,90 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758898AbYCBWiX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760094AbYCBWje@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758898AbYCBWiX (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 2 Mar 2008 17:38:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753950AbYCBWiH
+	id S1760094AbYCBWje (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 2 Mar 2008 17:39:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753950AbYCBWj1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 2 Mar 2008 17:38:07 -0500
-Received: from e5.ny.us.ibm.com ([32.97.182.145]:39557 "EHLO e5.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753729AbYCBWhy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 2 Mar 2008 17:37:54 -0500
-From: Anthony Liguori <aliguori@us.ibm.com>
-To: linux-kernel@vger.kernel.org
-Cc: Rusty Russell <rusty@rustcorp.com.au>, kvm-devel@lists.sourceforge.net,
-       Anthony Liguori <aliguori@us.ibm.com>
-Subject: [PATCH] Use spin_lock_irqsave/restore for virtio-pci
-Date: Sun,  2 Mar 2008 16:37:48 -0600
-Message-Id: <1204497468-13463-1-git-send-email-aliguori@us.ibm.com>
-X-Mailer: git-send-email 1.5.4.3
+	Sun, 2 Mar 2008 17:39:27 -0500
+Received: from agminet01.oracle.com ([141.146.126.228]:28666 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753926AbYCBWj0 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 2 Mar 2008 17:39:26 -0500
+Date: Sun, 2 Mar 2008 14:37:35 -0800
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: Matt Reuther <mreuther@umich.edu>
+Cc: LKML <linux-kernel@vger.kernel.org>
+Subject: Re: 2.6.24.3 Error During Compile
+Message-Id: <20080302143735.241a50a0.randy.dunlap@oracle.com>
+In-Reply-To: <200803021303.50181.mreuther@umich.edu>
+References: <200803021303.50181.mreuther@umich.edu>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.4.7 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-virtio-pci acquires its spin lock in an interrupt context so it's necessary
-to use spin_lock_irqsave/restore variants.  This patch fixes guest SMP when
-using virtio devices in KVM.
+On Sun, 2 Mar 2008 13:03:49 -0500 Matt Reuther wrote:
 
-Signed-off-by: Anthony Liguori <aliguori@us.ibm.com>
+> I get the following error when I compile a vanilla 2.6.24.3 kernel:
+> 
+>   UNIFDEF include/linux/hayesesp.h
+>   UNIFDEF include/linux/hdlc.h
+>   UNIFDEF include/linux/hdlcdrv.h
+>   UNIFDEF include/linux/hdreg.h
+>   UNIFDEF include/linux/hiddev.h
+>   UNIFDEF include/linux/hpet.h
+>   UNIFDEF include/linux/i2c.h
+>   UNIFDEF include/linux/i2o-dev.h
+>   UNIFDEF include/linux/icmp.h
+>   UNIFDEF include/linux/icmpv6.h
+>   UNIFDEF include/linux/if_addr.h
+> make[3]: *** No rule to make target 
+> `/usr/local/src/linux-2.6.24.3/include/linux/if_addrlabel.h', needed by 
+> `/usr/local/src/linux-2.6.24.3/usr/include/linux/if_addrlabel.h'.  Stop.
+> make[2]: *** [linux] Error 2
+> make[1]: *** [headers_install] Error 2
+> make: *** [vmlinux] Error 2
+> 
+> My .config is attached. I carried over my .config from 2.6.23.12, and 
+> ran 'make menuconfig' on it to update the options.
+> 
+> Please let me know if I need to provide any more info.
 
-diff --git a/drivers/virtio/virtio_pci.c b/drivers/virtio/virtio_pci.c
-index 26f787d..59a8f73 100644
---- a/drivers/virtio/virtio_pci.c
-+++ b/drivers/virtio/virtio_pci.c
-@@ -177,6 +177,7 @@ static irqreturn_t vp_interrupt(int irq, void *opaque)
- 	struct virtio_pci_device *vp_dev = opaque;
- 	struct virtio_pci_vq_info *info;
- 	irqreturn_t ret = IRQ_NONE;
-+	unsigned long flags;
- 	u8 isr;
- 
- 	/* reading the ISR has the effect of also clearing it so it's very
-@@ -197,12 +198,12 @@ static irqreturn_t vp_interrupt(int irq, void *opaque)
- 			drv->config_changed(&vp_dev->vdev);
- 	}
- 
--	spin_lock(&vp_dev->lock);
-+	spin_lock_irqsave(&vp_dev->lock, flags);
- 	list_for_each_entry(info, &vp_dev->virtqueues, node) {
- 		if (vring_interrupt(irq, info->vq) == IRQ_HANDLED)
- 			ret = IRQ_HANDLED;
- 	}
--	spin_unlock(&vp_dev->lock);
-+	spin_unlock_irqrestore(&vp_dev->lock, flags);
- 
- 	return ret;
- }
-@@ -214,6 +215,7 @@ static struct virtqueue *vp_find_vq(struct virtio_device *vdev, unsigned index,
- 	struct virtio_pci_device *vp_dev = to_vp_device(vdev);
- 	struct virtio_pci_vq_info *info;
- 	struct virtqueue *vq;
-+	unsigned long flags;
- 	u16 num;
- 	int err;
- 
-@@ -255,9 +257,9 @@ static struct virtqueue *vp_find_vq(struct virtio_device *vdev, unsigned index,
- 	vq->priv = info;
- 	info->vq = vq;
- 
--	spin_lock(&vp_dev->lock);
-+	spin_lock_irqsave(&vp_dev->lock, flags);
- 	list_add(&info->node, &vp_dev->virtqueues);
--	spin_unlock(&vp_dev->lock);
-+	spin_unlock_irqrestore(&vp_dev->lock, flags);
- 
- 	return vq;
- 
-@@ -274,10 +276,11 @@ static void vp_del_vq(struct virtqueue *vq)
- {
- 	struct virtio_pci_device *vp_dev = to_vp_device(vq->vdev);
- 	struct virtio_pci_vq_info *info = vq->priv;
-+	unsigned long flags;
- 
--	spin_lock(&vp_dev->lock);
-+	spin_lock_irqsave(&vp_dev->lock, flags);
- 	list_del(&info->node);
--	spin_unlock(&vp_dev->lock);
-+	spin_unlock_irqrestore(&vp_dev->lock, flags);
- 
- 	vring_del_virtqueue(vq);
- 
+Already reported.  The patch that caused it will be reverted.
+
+---
+~Randy
