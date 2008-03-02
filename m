@@ -1,72 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754707AbYCBMip@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754836AbYCBMst@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754707AbYCBMip (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 2 Mar 2008 07:38:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753605AbYCBMic
+	id S1754836AbYCBMst (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 2 Mar 2008 07:48:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753760AbYCBMsj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 2 Mar 2008 07:38:32 -0500
-Received: from courier.cs.helsinki.fi ([128.214.9.1]:48393 "EHLO
-	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753573AbYCBMib (ORCPT
+	Sun, 2 Mar 2008 07:48:39 -0500
+Received: from einhorn.in-berlin.de ([192.109.42.8]:39947 "EHLO
+	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753723AbYCBMsj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 2 Mar 2008 07:38:31 -0500
-Date: Sun, 2 Mar 2008 14:38:30 +0200 (EET)
-From: "=?ISO-8859-1?Q?Ilpo_J=E4rvinen?=" <ilpo.jarvinen@helsinki.fi>
-X-X-Sender: ijjarvin@kivilampi-30.cs.helsinki.fi
-To: Guillaume Chazarain <guichaz@gmail.com>
-cc: Giangiacomo Mariotti <giangiacomo_mariotti@yahoo.com>,
-       LKML <linux-kernel@vger.kernel.org>, Netdev <netdev@vger.kernel.org>,
+	Sun, 2 Mar 2008 07:48:39 -0500
+X-Envelope-From: stefanr@s5r6.in-berlin.de
+Date: Sun, 2 Mar 2008 13:47:52 +0100 (CET)
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Subject: [GIT PULL] FireWire updates
+To: Linus Torvalds <torvalds@linux-foundation.org>,
        Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: WARNING: at net/ipv4/tcp_input.c:2054 tcp_mark_head_lost()
-In-Reply-To: <3d8471ca0803020420ka42319bu1b9888217c869d9d@mail.gmail.com>
-Message-ID: <Pine.LNX.4.64.0803021432200.17919@kivilampi-30.cs.helsinki.fi>
-References: <858077.97160.qm@web39709.mail.mud.yahoo.com> 
- <20080223000310.4630daa8.akpm@linux-foundation.org> 
- <Pine.LNX.4.64.0802271108290.13029@kivilampi-30.cs.helsinki.fi> 
- <3d8471ca0802271056l320a7ee2m5227e114a968d483@mail.gmail.com> 
- <Pine.LNX.4.64.0802272120430.1741@kivilampi-30.cs.helsinki.fi> 
- <Pine.LNX.4.64.0802281018480.32401@kivilampi-30.cs.helsinki.fi>
- <3d8471ca0803020420ka42319bu1b9888217c869d9d@mail.gmail.com>
+cc: linux-kernel@vger.kernel.org, linux1394-devel@lists.sourceforge.net
+In-Reply-To: <tkrat.14d846ed63cc91c2@s5r6.in-berlin.de>
+Message-ID: <tkrat.948f418ebe464164@s5r6.in-berlin.de>
+References: <tkrat.459cc31de75e4149@s5r6.in-berlin.de>
+ <tkrat.68585c2b7aee00eb@s5r6.in-berlin.de>
+ <tkrat.14d846ed63cc91c2@s5r6.in-berlin.de>
 MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED; BOUNDARY="-696243703-2090882198-1204461510=:17919"
+Content-Type: TEXT/PLAIN; CHARSET=us-ascii
+Content-Disposition: INLINE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
+Linus, please pull from the for-linus branch at
 
----696243703-2090882198-1204461510=:17919
-Content-Type: TEXT/PLAIN; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+    git://git.kernel.org/pub/scm/linux/kernel/git/ieee1394/linux1394-2.6.git for-linus
 
-On Sun, 2 Mar 2008, Guillaume Chazarain wrote:
+to receive the following updates for the firewire subsystem.  They fix
+module unloading.  I will follow up with the combined full log and diff.
+Diffstat and shortlog:
 
-> On Thu, Feb 28, 2008 at 9:22 AM, Ilpo Järvinen
-<ilpo.jarvinen@helsinki.fi> wrote:
-> >  [PATCH] TCP debug S+L (for 2.6.25-rcs, incompatible with 2.6.24.y)
->
-> Bittorrenting with this patch applied floods my dmesg. Here is a log 
-> dump:
-> 
-> http://guichaz.free.fr/tcp-debug.log.bz2 (2.3M compressed, 113M 
-> uncompressed)
+ drivers/firewire/fw-card.c        |   61 ++++++++++++++++++++--------
+ drivers/firewire/fw-device.c      |   21 +++-------
+ drivers/firewire/fw-device.h      |   16 +++++++-
+ drivers/firewire/fw-sbp2.c        |   50 +++++++++++++++---------
+ drivers/firewire/fw-topology.c    |    1 +
+ drivers/firewire/fw-transaction.h |    2 +
+ 6 files changed, 97 insertions(+), 54 deletions(-)
 
-In future, please inline at least the first one of them, if not sure 
-where to cut, too much won't hurt... :-)
+Stefan Richter (3):
+      firewire: fw-sbp2: better fix for NULL pointer dereference in scsi_remove_device
+      firewire: potentially invalid pointers used in fw_card_bm_work
+      firewire: fix crash in automatic module unloading
 
-> It does not contain any "KERNEL: assertion (packets <=
-> tp->packets_out) failed at" line, so I'm afraid it's just noise.
-
-At least it catches one bug which could cause that assertion (it is much 
-more rigid than the assertion and thus it catched it even though you 
-won't see that assertion to ever trigger :-)).
-
-Could you next figure out what is at:
-  [<c02e0f83>] tcp_ack+0x621/0xd2f
-
-
-
+Thanks,
 -- 
- i.
----696243703-2090882198-1204461510=:17919--
+Stefan Richter
+-=====-==--- --== ---=-
+http://arcgraph.de/sr/
+
