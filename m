@@ -1,103 +1,159 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755566AbYCBQPb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755951AbYCBQW5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755566AbYCBQPb (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 2 Mar 2008 11:15:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751480AbYCBQPW
+	id S1755951AbYCBQW5 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 2 Mar 2008 11:22:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754004AbYCBQWr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 2 Mar 2008 11:15:22 -0500
-Received: from smtp2.sssup.it ([193.205.80.100]:47762 "EHLO smpt2.sssup.it"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751224AbYCBQPV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 2 Mar 2008 11:15:21 -0500
-X-Greylist: delayed 1468 seconds by postgrey-1.27 at vger.kernel.org; Sun, 02 Mar 2008 11:15:20 EST
-Date: Sun, 2 Mar 2008 16:53:48 +0100
-From: Fabio Checconi <fchecconi@gmail.com>
-To: Arjan van de Ven <arjan@linux.intel.com>
-Cc: Gabriel C <nix.or.die@googlemail.com>,
-       Laurent Riffard <laurent.riffard@free.fr>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Stuart Bennett <sb476@cam.ac.uk>, Len Brown <lenb@kernel.org>,
-       tglx@linutronix.de, mingo@redhat.com
-Subject: Re: 2.6.25-rc2-mm1: WARNING at arch/x86/mm/ioremap.c:129
-Message-ID: <20080302155348.GA74305@gandalf.sssup.it>
-Mail-Followup-To: Arjan van de Ven <arjan@linux.intel.com>,
-	Gabriel C <nix.or.die@googlemail.com>,
-	Laurent Riffard <laurent.riffard@free.fr>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	linux-kernel@vger.kernel.org, Stuart Bennett <sb476@cam.ac.uk>,
-	Len Brown <lenb@kernel.org>, tglx@linutronix.de, mingo@redhat.com
-References: <20080216002522.9c4bd0fb.akpm@linux-foundation.org> <47B7553D.5040601@free.fr> <47C0BDE2.4020402@googlemail.com> <47C0DB7D.70407@linux.intel.com> <47C2ED51.4000105@googlemail.com> <47C344E5.5050205@linux.intel.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <47C344E5.5050205@linux.intel.com>
-User-Agent: Mutt/1.4.2.3i
+	Sun, 2 Mar 2008 11:22:47 -0500
+Received: from netrider.rowland.org ([192.131.102.5]:3400 "HELO
+	netrider.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1753980AbYCBQWq (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 2 Mar 2008 11:22:46 -0500
+Date: Sun, 2 Mar 2008 11:22:44 -0500 (EST)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@netrider.rowland.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+cc: Linux-pm mailing list <linux-pm@lists.linux-foundation.org>,
+       Kernel development list <linux-kernel@vger.kernel.org>
+Subject: Re: [linux-pm] Fundamental flaw in system suspend, exposed by freezer
+ removal
+In-Reply-To: <200803021437.31977.rjw@sisk.pl>
+Message-ID: <Pine.LNX.4.44L0.0803021018420.9430-100000@netrider.rowland.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[cc'd relevant maintainers]
+On Sun, 2 Mar 2008, Rafael J. Wysocki wrote:
 
-Hi,
+> If new children get registered when the parent is suspended, that's already
+> wrong, because the children should have been suspended before.  Think of a case
+> when the parent is a bus and the children are devices on it.  In that case, by
+> suspending the parent before the children we can make the children
+> unresponsive etc. (that would break the PCI PM rules, for one example).
 
-> From: Arjan van de Ven <arjan@linux.intel.com>
-> Date: Mon, Feb 25, 2008 02:44:53PM -0800
->
-> Gabriel C wrote:
-...
-> >With your patch from 
-> >http://marc.info/?l=linux-kernel&m=120336371506283&w=2 I don't have a 
-> >warning anymore.
-> >
+Agreed.  That's why I've been saying all along that once the parent has
+been moved to dpm_off, we should either block or fail child
+registrations.  Drivers trying to register a child at such times are 
+clearly buggy anyway.
+
+What we are really trying to agree on is how the PM core should handle 
+child registrations just before and while the parent is suspending.  
+Drivers trying to register a child at such times need not be buggy at 
+all; they may simply have lost a race.
+
+I agree that the core needs to protect itself, but I also think that
+drivers should need minimal changes -- preferably none.  If the core
+becomes moderately more complicated as a tradeoff for keeping drivers a
+little simpler, then IMO it's a win since there are lots and lots of
+drivers but only one PM core.
+
+> I think that the rule "the driver must not register new children after
+> ->suspend() has run" is not a good one, because in fact we don't want
+> ->suspend() to be called while new children are being registered.
+
+But you do agree that "drivers must not register new children after 
+->suspend() has run" is correct, right?  You just don't think it goes 
+far enough.
+
+>  IMO, we
+> should make the rule that "device registration may fail if it's carried out
+> concurrently with the parent's ->suspend() method".  At least, that will tell
+> the drivers what to do or avoid.
+
+In doing this you are putting a tremendous extra burden on drivers.  
+You force _them_ to handle registration failure caused by an impending
+suspend, something the driver has no way to know about beforehand!
+
+In effect, you are trying to take the extra complication my patch adds
+to the PM core and instead add that complication to _every_
+hotpluggable driver.  This is not a good approach.
+
+> I agree it's not a good idea to hold the locks throughout the entire cycle,
+> but that can be overcome if we use an additional variable under
+> dev_pm_info (see patch below).
+
+The new patch is no better.  If a driver tries to create a new child
+just before its suspend method is called, the registration will fail
+with -EBUSY for no reason the driver is aware of.  So now the driver
+has to detect the failure (which many drivers don't do!) and figure out
+how to retry it later on.
+
+> In fact, drivers _should_ check for device_add() failures and if they don't,
+> it's a plain bug.
+
+Of course they should check.  But they shouldn't have to deal with 
+failures that need to be retried for no good reason.
+
+In the long run, I still believe the best approach is to tell drivers
+beforehand they should stop registering children.  That will make both
+of us happy: The PM core can fail all later registration attempts with
+no qualms, and drivers won't have to worry about unexpected failures.  
+
+How many subsystems register new children at arbitrary times?  The
+earlier we can fix them up, the better.
+
+> Well, I think it's not correct to allow the parent to suspend with active (not
+> suspended) children.
+
+And I think it's a bad idea to make drivers responsible for recovering 
+from these failures.  Especially since the effort writing that recovery 
+code would be better spent in writing "prevent_new_children" and 
+"allow_new_children" methods.
+
+>  However, if we make the rule that device_add() may fail
+> if it's run concurrently with the parent's ->suspend(), the changes of the
+> drivers need not be substantial (they should check for the failures of
+> device_add() anyway).
+
+But this is different.  The failures you want to add are things which 
+_should_ succeed -- in fact they would succeed if they were delayed 
+until after the system wakes back up.
+
+I admit these failures will be very rare, since they depend on a race
+with a small window.  Here's a compromise: I'll agree to let these
+registrations fail if you'll agree to add "prevent_new_children" and
+"allow_new_children" methods along with the new pm_ops patch you and
+Alex have prepared.  Then drivers and subsystems can implement the
+methods later on, after which they won't have to worry about spurious
+registration failures.
+
+The prevent_new_children methods should be called in a separate initial
+forward pass through the dpm_active list -- rather like the reverted
+lock_all_devices() routine.  Similarly for the allow_new_children 
+methods (a final backward pass like unlock_all_devices()).
+
+The PM notifier messages can serve as a "prevent new children" 
+announcement to prevent registration of devices with no parent.
+
+> > There must some strange interactions going on.  For instance, what if a
+> > device sends a remote wakeup request before the system is fully asleep?
 > 
-> that is ... odd since it's the same in theory, just with some added 
-> printk's ;-(
+> On the systems I'm talking about there are some devices referred to by the
+> ACPI _PTS method, so they must be on line whey this method is being executed.
+> Since we don't know a priori what devices they are, we must put all devices on
+> line (into the full power state) before executing _PTS.
 
-the same here on 2.6.25-rc3, with the innocent ibmphp_access_ebda()
-that fires the WARN_ON() in __ioremap() asking for the pfn 0, even
-after the page_is_ram() change.  With your patch the warning
-disappears.
+Um.  Nobody has mentioned this before.  Are you saying that a disk 
+drive (for example) which has been spun down and put in a low-power 
+runtime-PM state must be spun up again before the system can suspend?
 
-I think this is because the pfn checked by the original code (before
-your patch) is the one after the last iteration, while your patch
-checks for each pfn that is going to be mapped.  The latter should
-be the intended behavior.  If I've understood the problem, the
-(trivial) patch below should fix it.
+> Below is the current version of the patch for handling device registrations
+> in the PM core.  In this version, the new registrations are failed if done too
+> late (or too early) and the locks are not held during the entire suspend/resume
+> cycle.
 
-Also, note that if last_addr is at the beginning of a page we can
-__ioremap() normal RAM (in fact we only emit the warning with the
-old code, instead of returning NULL.)  Is that possible/intended
-behavior?  If not the loop should do one more iteration.
+Actually you can simplify the whole thing by getting rid of 
+dev->power.lock entirely.  Protect the "sleeping" flag by dpm_list_mtx.
 
+You could even change the flag from bool to an enum, with a special
+"GONE" state for devices that were unregistered during a system sleep
+transition.  Once you do that, the whole thing starts to look a lot
+like a simplified version of my patch.
 
-__ioremap() emits a warning if the pfn after the last one it's going
-to map is of normal ram.  Correct this and emit the warning (once)
-only if one of the asked pages is.
+How does this sound?
 
-Signed-off-by: Fabio Checconi <fabio@gandalf.sssup.it>
----
-diff --git a/arch/x86/mm/ioremap.c b/arch/x86/mm/ioremap.c
-index ac3c959..6f7b158 100644
---- a/arch/x86/mm/ioremap.c
-+++ b/arch/x86/mm/ioremap.c
-@@ -109,7 +109,7 @@ static int ioremap_change_attr(unsigned long vaddr, unsigned long size,
- static void __iomem *__ioremap(unsigned long phys_addr, unsigned long size,
- 			       enum ioremap_mode mode)
- {
--	unsigned long pfn, offset, last_addr, vaddr;
-+	unsigned long pfn, offset, last_addr, vaddr, is_ram = 0;
- 	struct vm_struct *area;
- 	pgprot_t prot;
- 
-@@ -132,9 +132,10 @@ static void __iomem *__ioremap(unsigned long phys_addr, unsigned long size,
- 		if (page_is_ram(pfn) && pfn_valid(pfn) &&
- 		    !PageReserved(pfn_to_page(pfn)))
- 			return NULL;
-+		is_ram |= page_is_ram(pfn);
- 	}
- 
--	WARN_ON_ONCE(page_is_ram(pfn));
-+	WARN_ON_ONCE(is_ram);
- 
- 	switch (mode) {
- 	case IOR_MODE_UNCACHED:
+Alan Stern
+
