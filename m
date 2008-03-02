@@ -1,53 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759485AbYCBVgs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759735AbYCBVka@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759485AbYCBVgs (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 2 Mar 2008 16:36:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757126AbYCBVgj
+	id S1759735AbYCBVka (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 2 Mar 2008 16:40:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757201AbYCBVkS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 2 Mar 2008 16:36:39 -0500
-Received: from smtp6.pp.htv.fi ([213.243.153.40]:45017 "EHLO smtp6.pp.htv.fi"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752883AbYCBVgi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 2 Mar 2008 16:36:38 -0500
-Date: Sun, 2 Mar 2008 23:35:06 +0200
-From: Adrian Bunk <bunk@kernel.org>
-To: Stuart Menefy <stuart.menefy@st.com>, Paul Mundt <lethal@linux-sh.org>
-Cc: linux-sh@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: sh r7780mp_defconfig compile error
-Message-ID: <20080302213506.GD25484@cs181133002.pp.htv.fi>
+	Sun, 2 Mar 2008 16:40:18 -0500
+Received: from ug-out-1314.google.com ([66.249.92.174]:1488 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756654AbYCBVkQ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 2 Mar 2008 16:40:16 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=Nq7yoqirsQQwRWjaKypZSG+P7tV7zZklqjIqUs2/+QdVPM/6jAua8La7kN6S55gjZoLuYWMnhSHRPq/86Q7bAu/v+7DVSxqtEc8+mjZKbUSBoXHiErfVf9HFuHXSIArVtLvAzYtWTl8yWLca4//CU6KoVKy9sRTz9j3q8BBWdoo=
+Message-ID: <46a038f90803021340uf1c9c6te5501d9fb0565f19@mail.gmail.com>
+Date: Mon, 3 Mar 2008 10:40:15 +1300
+From: "Martin Langhoff" <martin.langhoff@gmail.com>
+To: "Linus Torvalds" <torvalds@linux-foundation.org>
+Subject: Re: kernel.org git tree corrupt?
+Cc: "Steve French" <smfrench@gmail.com>, lkml <linux-kernel@vger.kernel.org>,
+       git@vger.kernel.org
+In-Reply-To: <alpine.LFD.1.00.0803021302070.17889@woody.linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+References: <524f69650803020749o469f2e48l125a55267b0b5d13@mail.gmail.com>
+	 <alpine.LFD.1.00.0803021302070.17889@woody.linux-foundation.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit d02b08f6e8b184ffef349e395210a5e82ff4f4bc causes the following 
-compile error with r7780mp_defconfig:
+On Mon, Mar 3, 2008 at 10:16 AM, Linus Torvalds
+<torvalds@linux-foundation.org> wrote:
+>  In that case, your "origin" simply isn't updated, but points somewhere
+>  long back in history. I can only assume that cogito has done something
+>  wrong, like not been able to handle packed refs or something, and you have
+>  an updated tree but "origin" pointing to way back in the history.
 
-<--  snip  -->
+Strange - cogito over git protocol will use git itself to peek at the
+references. Steve, what is your git version?
 
-...
-  CC      init/main.o
-In file included from /home/bunk/linux/kernel-2.6/git/linux-2.6/include/linux/clocksource.h:18,
-                 from /home/bunk/linux/kernel-2.6/git/linux-2.6/include/linux/clockchips.h:13,
-                 from /home/bunk/linux/kernel-2.6/git/linux-2.6/include/linux/tick.h:9,
-                 from /home/bunk/linux/kernel-2.6/git/linux-2.6/init/main.c:44:
-include2/asm/io.h: In function '__ioremap_mode':
-include2/asm/io.h:331: error: implicit declaration of function 'P1SEGADDR'
-include2/asm/io.h:333: error: implicit declaration of function 'P2SEGADDR'
-make[2]: *** [init/main.o] Error 1
+>  > Ideas for another solution short of recloning and sorting through all
+>  > of the last month or two of patches that affect this directory by
+>  > hand?
 
-<--  snip  -->
+Linus' plan assumes you have a .git/config file. I don't think a
+cogito-based checkout follows such modern conventions - here's an
+alternative plan:
 
-cu
-Adrian
+ - make sure you have a current git
 
--- 
+ - get a fresh clone of linux-2.6, and in there
 
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
+    # tell it about your old checkout
+    $ git remote add oldlinux /path/to/your/older/linux/checkout/.git
+    $ git fetch oldlinux
+    # visualise what's in there
+    $ gitk origin/master oldlinux/master
 
+    # you may want to merge your old branch
+    $ git merge oldlinux/master
+
+hth,
+
+
+martin
