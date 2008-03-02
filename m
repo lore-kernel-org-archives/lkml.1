@@ -1,55 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754853AbYCBNPR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755042AbYCBNWB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754853AbYCBNPR (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 2 Mar 2008 08:15:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752943AbYCBNPF
+	id S1755042AbYCBNWB (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 2 Mar 2008 08:22:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753811AbYCBNVy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 2 Mar 2008 08:15:05 -0500
-Received: from ug-out-1314.google.com ([66.249.92.172]:51832 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752594AbYCBNPC (ORCPT
+	Sun, 2 Mar 2008 08:21:54 -0500
+Received: from gateway07.websitewelcome.com ([69.56.159.26]:48125 "HELO
+	gateway07.websitewelcome.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1752943AbYCBNVx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 2 Mar 2008 08:15:02 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=I2n2mLbRvFWJVXJsLi3ipYxyjMSUy+YKhVmHeWrOwibWY1IEQFtbmi2POBqRfmYEj+unoAtMAiQv5IabNe2Xoyz4vFJyyKzKpxVRcYpBvcRhIjyz79cIfDHgHMXPRITE8Iys4KjBsai6ORaLn9KsNXtNIh1kRvg+K8tP0/8jcAE=
-Message-ID: <3d8471ca0803020515m1e4af9d9xd37a8912e58a4504@mail.gmail.com>
-Date: Sun, 2 Mar 2008 14:15:01 +0100
-From: "Guillaume Chazarain" <guichaz@gmail.com>
-To: "=?UTF-8?Q?Ilpo_J=C3=A4rvinen?=" <ilpo.jarvinen@helsinki.fi>
-Subject: Re: WARNING: at net/ipv4/tcp_input.c:2054 tcp_mark_head_lost()
-Cc: "Giangiacomo Mariotti" <giangiacomo_mariotti@yahoo.com>,
-       LKML <linux-kernel@vger.kernel.org>, Netdev <netdev@vger.kernel.org>,
-       "Andrew Morton" <akpm@linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.64.0803021432200.17919@kivilampi-30.cs.helsinki.fi>
+	Sun, 2 Mar 2008 08:21:53 -0500
+X-Greylist: delayed 4801 seconds by postgrey-1.27 at vger.kernel.org; Sun, 02 Mar 2008 08:21:53 EST
+To: linux-kernel@vger.kernel.org
+Subject: Ta7lilcom " forex analysis web "
+Date: Sun, 2 Mar 2008 05:35:08 -0600
+From: tahlilcom@tahlilcom.com
+Message-ID: <387b0b35f8dc5b3faa6a975ebb57ef29@www.tahlilcom.com>
+X-Priority: 3
+X-Mailer: PHPMailer [version 1.73]
+X-Mailer: phplist v2.10.5
+X-MessageID: 56
+X-ListMember: linux-kernel@vger.kernel.org
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Disposition: inline
-References: <858077.97160.qm@web39709.mail.mud.yahoo.com>
-	 <20080223000310.4630daa8.akpm@linux-foundation.org>
-	 <Pine.LNX.4.64.0802271108290.13029@kivilampi-30.cs.helsinki.fi>
-	 <3d8471ca0802271056l320a7ee2m5227e114a968d483@mail.gmail.com>
-	 <Pine.LNX.4.64.0802272120430.1741@kivilampi-30.cs.helsinki.fi>
-	 <Pine.LNX.4.64.0802281018480.32401@kivilampi-30.cs.helsinki.fi>
-	 <3d8471ca0803020420ka42319bu1b9888217c869d9d@mail.gmail.com>
-	 <Pine.LNX.4.64.0803021432200.17919@kivilampi-30.cs.helsinki.fi>
+Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset="UTF-8"
+X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
+X-AntiAbuse: Primary Hostname - omni.websitewelcome.com
+X-AntiAbuse: Original Domain - vger.kernel.org
+X-AntiAbuse: Originator/Caller UID/GID - [34475 34476] / [47 12]
+X-AntiAbuse: Sender Address Domain - omni.websitewelcome.com
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
-Content-Transfer-Encoding: 8bit
-X-MIME-Autoconverted: from base64 to 8bit by alpha id m22DG8nq031152
 
-On Sun, Mar 2, 2008 at 1:38 PM, Ilpo J√§rvinen <ilpo.jarvinen@helsinki.fi> wrote:>  In future, please inline at least the first one of them, if not sure>  where to cut, too much won't hurt... :-)
-OK, will do.
->  > It does not contain any "KERNEL: assertion (packets <=>  > tp->packets_out) failed at" line, so I'm afraid it's just noise.>>  At least it catches one bug which could cause that assertion (it is much>  more rigid than the assertion and thus it catched it even though you>  won't see that assertion to ever trigger :-)).
-Great :-)
->  Could you next figure out what is at:>   [<c02e0f83>] tcp_ack+0x621/0xd2f
-tcp_clean_rtx_queue() is automatically inlined into tcp_ack() by gcc.
-That's:
-tcp_ack():        /* See if we can take anything off of the retransmit queue. */        flag |= tcp_clean_rtx_queue(sk, prior_fackets);
-tcp_clean_rtx_queue():        tcp_verify_left_out(tp);    <=========== Here
-        if (skb && (TCP_SKB_CB(skb)->sacked & TCPCB_SACKED_ACKED))                flag |= FLAG_SACK_RENEGING;
 
-Thanks.
--- GuillaumeˇÙË∫{.n«+â∑üÆâ≠Ü+%äÀˇ±È›∂•äwˇ∫{.n«+â∑•ä{±˛G´ùÈˇä{ay∫ á⁄ôÎ,j≠¢f£¢∑höèÔÅÍˇëÍÁz_ËÆ(≠Èöéä›¢j"ù˙∂mßˇˇæ´˛G´ùÈˇ¢∏?ô®Ë≠⁄&£¯ß~è·∂iOïÊ¨z∑övÿ^∂mßˇˇ√ˇ∂Ïˇ¢∏?ñI•
+
+www.Tahlilcom.com
+
+ TAHLILCOM.com provides useful information and suggestions that are
+of interest to investors in the currency markets, whether such
+investments are short-term or medium-term. This site is a result of
+experience gained essentially through technical analysis of foreign
+currencies markets over several years.
+
+* Our Services: click here <http://www.tahlilcom.com/indexe.php?id=5>
+
+* Free Services:
+
+ 1)The Majors Currency Pairs: click here
+<http://www.tahlilcom.com/indexe.php?Nid=1>
+
+ 2)The Crosses Currency Pairs: click here
+<http://www.tahlilcom.com/indexe.php?Nid=3>
+
+* Contact us: click here <http://www.tahlilcom.com/indexe.php?id=6>
+
+* For more information, click here
+<http://www.tahlilcom.com/indexe.php?id=1>
+
+ JG*E EHB9 " *-DJDCE "  (*B/JE E9DHE'* H'B*1'-'* EAJ/) *GE
+'DE3*+E1JF AJ '3H'B 'D9ED'* 'D1&J3J)  3H'! C'F* G0G 'D'3*+E'1'*
+B5J1) 'H E*H37) 'D',D HB/ ,'! C+E1) D.(1) 'C*3(* '3'3' EF .D'D
+'D*-DJD 'DAFJ D'3H'B 'D9ED'* 'D',F(J) 9DI E/I 9/) 3FH'*.
+
+ * 'D./E'* 'DEB/E): 'FB1 GF'
+<http://www.tahlilcom.com/index.php?id=1>
+
+* 'D./E'* 'DE,'FJ) :
+
+ 1) 'D9ED'* 'D1&J3J): 'FB1 GF'
+<http://www.tahlilcom.com/index.php?Nid=29>
+
+ 2) 'D9ED'* 'DE*B'79) : 'FB1 GF' <http://www.tahlilcom.com/?Nid=28>
+
+ * '*5D (F': 'FB1 GF' <http://www.tahlilcom.com/index.php?id=6>
+
+* DE2J/ EF 'DE9DHE'* 'FB1 GF' <http://www.tahlilcom.com/>
+
+www.Tahlilcom.com 
+
+
+
+
+
+
+--
+Powered by PHPlist, www.phplist.com --
+
+
