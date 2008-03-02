@@ -1,58 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758862AbYCBUqP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759072AbYCBUsv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758862AbYCBUqP (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 2 Mar 2008 15:46:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752183AbYCBUqA
+	id S1759072AbYCBUsv (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 2 Mar 2008 15:48:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753036AbYCBUsm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 2 Mar 2008 15:46:00 -0500
-Received: from mailout05.sul.t-online.de ([194.25.134.82]:40310 "EHLO
-	mailout05.sul.t-online.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753917AbYCBUp7 (ORCPT
+	Sun, 2 Mar 2008 15:48:42 -0500
+Received: from el-out-1112.google.com ([209.85.162.183]:38116 "EHLO
+	el-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752183AbYCBUsl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 2 Mar 2008 15:45:59 -0500
-Message-ID: <47CB11FA.60008@t-online.de>
-Date: Sun, 02 Mar 2008 21:45:46 +0100
-From: Harald Dunkel <harald.dunkel@t-online.de>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+	Sun, 2 Mar 2008 15:48:41 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=WZVEQXC7VkdG6nl/2m4dN0724I54cgoY9rV04/WXe/4220Ijd2Qk2dSFnWxW4m2UClwviHEI3bAZ/GmT1cC7HtbyN8RnVhTV5W4qM6rYafQOhqpY+BpycPV3Vn7VEBU8ZElwIzXLi6NVuZ5J6HweMpn4npVqHKVQOCy3g5YD4Pw=
+Message-ID: <84144f020803021248r53c3d179ga514c0c426e1e2d6@mail.gmail.com>
+Date: Sun, 2 Mar 2008 22:48:39 +0200
+From: "Pekka Enberg" <penberg@cs.helsinki.fi>
+To: "Cyrill Gorcunov" <gorcunov@gmail.com>
+Subject: Re: [PATCH] slub: fix possible NULL pointer dereference
+Cc: "Christoph Lameter" <clameter@sgi.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       "Peter Zijlstra" <peterz@infradead.org>,
+       "Rik van Riel" <riel@redhat.com>,
+       "Andrew Morton" <akpm@linux-foundation.org>
+In-Reply-To: <20080302202824.GA9032@cvg>
 MIME-Version: 1.0
-To: Mike@Keehan.net, linux-kernel@vger.kernel.org
-Subject: Re: strange behavior on multimedia eject button for cdrom
-References: <47C15020.8040806@t-online.de> <47C7FECD.3040205@Keehan.net>
-In-Reply-To: <47C7FECD.3040205@Keehan.net>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-ID: VmtlTiZvrh1Cqifgolp01gqn0YySUEo4f+Ukjh-byQi1fP4fGsJxTDKEOYZsTqww0Y
-X-TOI-MSGID: 9e347a2b-79f8-41f2-b029-a69af788e8b9
+Content-Disposition: inline
+References: <20080302202824.GA9032@cvg>
+X-Google-Sender-Auth: 0df936dd6c869c1c
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Mike,
+On Sun, Mar 2, 2008 at 10:28 PM, Cyrill Gorcunov <gorcunov@gmail.com> wrote:
+> This patch fix possible NULL pointer dereference if kzalloc
+>  failed. To be able to return proper error code the function
+>  return type is changed to ssize_t (according to callees and
+>  sysfs definitions).
+>
+>  Signed-off-by: Cyrill Gorcunov <gorcunov@gmail.com>
 
-Mike Keehan wrote:
-> Hi Harold.
-> 
-> Somewhere on the web I read that some of the M1330 media keys are 
-> directly connected to the drive, hence the lack of keycodes.
-> 
-> If you eject a disk while it is being played, then the Linux driver will 
-> get a read failure.  What happens then may not be well defined :)
-> 
+Looks good to me.
 
-Maybe there is some misunderstanding here: I am not playing music
-from the CD. It is idle. But if I press the CD eject button, then
-audio output (e.g. some mp3 file played from harddisk) gets
-corrupted, the network connection is dead, etc.
-
-Ejecting the CD takes about 7 seconds. Durig this time Linux is
-dead! I haven't checked any SCHED_FIFO or SCHED_RR applications,
-but AFAIK this shouldn't happen.
-
-If I run "eject cdrom" on the console instead, then there is no
-such problem.
-
-
-Regards
-
-Harri
-
+Reviewed-by: Pekka Enberg <penberg@cs.helsinki.fi>
