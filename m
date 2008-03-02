@@ -1,59 +1,117 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759759AbYCBV0S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758519AbYCBV2K@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759759AbYCBV0S (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 2 Mar 2008 16:26:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756885AbYCBV0I
+	id S1758519AbYCBV2K (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 2 Mar 2008 16:28:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756953AbYCBV15
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 2 Mar 2008 16:26:08 -0500
-Received: from styx.suse.cz ([82.119.242.94]:48387 "EHLO mail.suse.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1756663AbYCBV0H (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 2 Mar 2008 16:26:07 -0500
-Date: Sun, 2 Mar 2008 22:26:06 +0100 (CET)
-From: Jiri Kosina <jkosina@suse.cz>
-To: Jiri Olsa <olsajiri@gmail.com>, Andrew Morton <akpm@linux-foundation.org>
-cc: linux-kernel@vger.kernel.org, Nadia Derbey <Nadia.Derbey@bull.net>,
-       peifferp@gmail.com
-Subject: Re: [BUG] soft lockup detected with ipcs
-In-Reply-To: <Pine.LNX.4.64.0803022214190.15209@jikos.suse.cz>
-Message-ID: <Pine.LNX.4.64.0803022223360.15209@jikos.suse.cz>
-References: <47C7E280.4010805@gmail.com> <Pine.LNX.4.64.0802291241080.7699@twin.jikos.cz>
- <47CAE7D5.5040907@gmail.com> <20080302120236.61e0ec74.akpm@linux-foundation.org>
- <Pine.LNX.4.64.0803022214190.15209@jikos.suse.cz>
+	Sun, 2 Mar 2008 16:27:57 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:45192 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756906AbYCBV15 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 2 Mar 2008 16:27:57 -0500
+X-Greylist: delayed 647 seconds by postgrey-1.27 at vger.kernel.org; Sun, 02 Mar 2008 16:27:57 EST
+Date: Sun, 2 Mar 2008 13:16:48 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Steve French <smfrench@gmail.com>
+cc: lkml <linux-kernel@vger.kernel.org>, git@vger.kernel.org
+Subject: Re: kernel.org git tree corrupt?
+In-Reply-To: <524f69650803020749o469f2e48l125a55267b0b5d13@mail.gmail.com>
+Message-ID: <alpine.LFD.1.00.0803021302070.17889@woody.linux-foundation.org>
+References: <524f69650803020749o469f2e48l125a55267b0b5d13@mail.gmail.com>
+User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2 Mar 2008, Jiri Kosina wrote:
 
-> Could you please try what is the output with the attached patch below, so 
-> that we know which spinlock buggers?
 
-Uhm, and hereby I attach the patch.
+On Sun, 2 Mar 2008, Steve French wrote:
+>
+> In preparation for a merge request I do
+>     cg-diff -m -r origin: | diffstat -p1
+> (git diff -m -r origin: shows the same problem) and
+>     cg-log -m -r origin:
 
-diff --git a/ipc/shm.c b/ipc/shm.c
-index c47e872..2abfb70 100644
---- a/ipc/shm.c
-+++ b/ipc/shm.c
-@@ -615,6 +615,7 @@ static void shm_get_stat(struct ipc_namespace *ns, unsigned long *rss,
- 			*rss += (HPAGE_SIZE/PAGE_SIZE)*mapping->nrpages;
- 		} else {
- 			struct shmem_inode_info *info = SHMEM_I(inode);
-+			printk(KERN_DEBUG "info: %p\n", info);
- 			spin_lock(&info->lock);
- 			*rss += inode->i_mapping->nrpages;
- 			*swp += info->swapped;
-diff --git a/ipc/util.c b/ipc/util.c
-index fd1b50d..5a0d4d2 100644
---- a/ipc/util.c
-+++ b/ipc/util.c
-@@ -662,6 +662,7 @@ struct kern_ipc_perm *ipc_lock(struct ipc_ids *ids, int id)
- 
- 	up_read(&ids->rw_mutex);
- 
-+	printk(KERN_DEBUG "out: %p\n", out);
- 	spin_lock(&out->lock);
- 	
- 	/* ipc_rmid() may have already freed the ID while ipc_lock
+First off, you really should lay off the cogito thing, it's pretty much 
+guaranteed that any cogito usage will just be harder and less likely to be 
+correct than just usign native git (and almost nobody will be able to help 
+you any more - it's not like it's been maintained for the last year).
+
+It *sounds* like your "origin" isn't what you expect it to be. 
+
+> Was the linux-2.6.git rebuilt in the last four weeks with different 
+> changeset numbers? Something seems to have drastically changed in the 
+> kernel.org tree in the last few weeks.
+
+Nope, nothing has been rebuilt, but there's been another merge window, so 
+there's certainly been drastic changes.
+
+> Doing "cg-log -m -r origin: fs/cifs" shows changesets that are already
+> in linux-2.6.git (e.g. the vfs-wide changes to add path_put
+> 1d957f9bf87da74f420424d16ece005202bbebd3 and
+> 4ac9137858e08a19f29feac4e1f4df7c268b0ba5 )
+
+In that case, your "origin" simply isn't updated, but points somewhere 
+long back in history. I can only assume that cogito has done something 
+wrong, like not been able to handle packed refs or something, and you have 
+an updated tree but "origin" pointing to way back in the history.
+
+> Ideas for another solution short of recloning and sorting through all
+> of the last month or two of patches that affect this directory by
+> hand?
+
+Do this:
+
+ - get rid of cogito (or at least make sure that it doesn't mess up the 
+   following sequence)
+
+ - look at your .git/config file to make sure that the remote branches are 
+   sane. It should have something like this (and if it doesn't, add it):
+
+	[remote "origin"]
+		url = git://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux-2.6
+		fetch = +refs/heads/*:refs/remotes/origin/*
+
+	[branch "master"]
+		remote = origin
+		merge = refs/heads/master
+
+ - look at your "origin" branch, and make sure it's a *remote* branch, not 
+   the old-style local one. Ie it should *not* show up when you do a 
+   plain
+
+	git branch
+
+   but it *should* show up (as both "origin/HEAD" and "origin/master") 
+   when you do
+
+	git branch -a
+
+   and if it's a local branch (very possible, since you're using cogito 
+   that may not even understand remote branches), then just blow it away 
+   entirely with "git branch -D origin".
+
+ - do "git fetch" to make sure that the remote branches are up-to-date
+
+ - now do "git log origin" an it should show something recent like
+
+	commit 038f2f725503b55ab76cfd2645915a85594710fe
+	Merge: 8d07a67... 855c603...
+	Author: Linus Torvalds <torvalds@woody.linux-foundation.org>
+	Date:   Sun Mar 2 12:38:17 2008 -0800
+	
+	    Merge branch 'for-linus' of git://git.kernel.org/pub/scm/linux/kernel/git/ieee1394/linux139
+	...
+
+ - and if it does, now you should be all good, and you can dothe normal 
+   "gitk origin.." and see the commits that are in your tree but not in 
+   mine.
+
+Now your setup should be ok again. I *suspect* that what has happened is 
+that you got a local "origin" branch - probably through cogito - that hid 
+the remote one. 
+
+		Linus
