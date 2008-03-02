@@ -1,65 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760438AbYCBXRs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760201AbYCBXU1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760438AbYCBXRs (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 2 Mar 2008 18:17:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756428AbYCBXRk
+	id S1760201AbYCBXU1 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 2 Mar 2008 18:20:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756428AbYCBXUS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 2 Mar 2008 18:17:40 -0500
-Received: from el-out-1112.google.com ([209.85.162.178]:51056 "EHLO
-	el-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755743AbYCBXRk (ORCPT
+	Sun, 2 Mar 2008 18:20:18 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:59850 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755903AbYCBXUR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 2 Mar 2008 18:17:40 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=GnXTI5FUhobDj9naqIvHl3N9FM9MHDJkFz8TLW+cOlcP60pQVU4rdXD8tH1fy5nsdLOu2DYccuITqDY+I3oQtOydNOV1xtrTSTBHSmrRXs1zV3GZQ0Y68u1ciPcJmkncKoDffvUlxhqjcOSB4gnIrz6S8KkihU4vYxkNnSVCqyM=
-Message-ID: <9a8748490803021517o6017c7d8g36e1ffc509548080@mail.gmail.com>
-Date: Mon, 3 Mar 2008 00:17:37 +0100
-From: "Jesper Juhl" <jesper.juhl@gmail.com>
-To: "Matt Reuther" <mreuther@umich.edu>
-Subject: Re: 2.6.24.3 Error During Compile
-Cc: LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <200803021303.50181.mreuther@umich.edu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Sun, 2 Mar 2008 18:20:17 -0500
+Subject: Re: [PATCH] leak less memory in failure paths of
+	alloc_rt_sched_group()
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Jesper Juhl <jesper.juhl@gmail.com>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>, linux-mm@kvack.org,
+       Ingo Molnar <mingo@elte.hu>
+In-Reply-To: <alpine.LNX.1.00.0803030002520.4939@dragon.funnycrock.com>
+References: <alpine.LNX.1.00.0803030002520.4939@dragon.funnycrock.com>
+Content-Type: text/plain
+Date: Mon, 03 Mar 2008 00:19:52 +0100
+Message-Id: <1204499992.6240.109.camel@lappy>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.21.90 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <200803021303.50181.mreuther@umich.edu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 02/03/2008, Matt Reuther <mreuther@umich.edu> wrote:
-> I get the following error when I compile a vanilla 2.6.24.3 kernel:
->
->   UNIFDEF include/linux/hayesesp.h
->   UNIFDEF include/linux/hdlc.h
->   UNIFDEF include/linux/hdlcdrv.h
->   UNIFDEF include/linux/hdreg.h
->   UNIFDEF include/linux/hiddev.h
->   UNIFDEF include/linux/hpet.h
->   UNIFDEF include/linux/i2c.h
->   UNIFDEF include/linux/i2o-dev.h
->   UNIFDEF include/linux/icmp.h
->   UNIFDEF include/linux/icmpv6.h
->   UNIFDEF include/linux/if_addr.h
->  make[3]: *** No rule to make target
->  `/usr/local/src/linux-2.6.24.3/include/linux/if_addrlabel.h', needed by
->  `/usr/local/src/linux-2.6.24.3/usr/include/linux/if_addrlabel.h'.  Stop.
->  make[2]: *** [linux] Error 2
->  make[1]: *** [headers_install] Error 2
->  make: *** [vmlinux] Error 2
->
->  My .config is attached. I carried over my .config from 2.6.23.12, and
->  ran 'make menuconfig' on it to update the options.
->
-"make oldconfig" is usually what you want to use to carry over a
-previous .config ... not that it will make any difference here, just
-thought I'd mention it.
+
+On Mon, 2008-03-03 at 00:09 +0100, Jesper Juhl wrote:
+> In kernel/sched.c b/kernel/sched.c::alloc_rt_sched_group() we currently do 
+> some paired memory allocations, and if one fails we bail out without 
+> freeing the previous one.
+> 
+> If we fail inside the loop we should proably roll the whole thing back. 
+> This patch does not do that, it simply frees the first member of the 
+> paired alloc if the second fails. This is not perfect, but it's a simple 
+> change that will, at least, result in us leaking a little less than we 
+> currently do when an allocation fails.
+> 
+> So, not perfect, but better than what we currently have.
+> Please consider applying.
+
+Doesn't the following handle that:
+
+sched_create_group()
+{
+...
+	if (!alloc_rt_sched_group())
+		goto err;
+...
+
+err:
+	free_sched_group();
+}
 
 
--- 
-Jesper Juhl <jesper.juhl@gmail.com>
-Don't top-post  http://www.catb.org/~esr/jargon/html/T/top-post.html
-Plain text mails only, please      http://www.expita.com/nomime.html
+free_sched_group()
+{
+...
+	free_rt_sched_group();
+...
+}
+
+free_rt_sched_group()
+{
+ 	free all relevant stuff
+}
+
