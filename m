@@ -1,44 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755104AbYCBTDL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759044AbYCBTDt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755104AbYCBTDL (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 2 Mar 2008 14:03:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757375AbYCBTCx
+	id S1759044AbYCBTDt (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 2 Mar 2008 14:03:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757885AbYCBTDd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 2 Mar 2008 14:02:53 -0500
-Received: from moutng.kundenserver.de ([212.227.126.186]:55082 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757349AbYCBTCj (ORCPT
+	Sun, 2 Mar 2008 14:03:33 -0500
+Received: from ug-out-1314.google.com ([66.249.92.175]:37615 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758787AbYCBTDb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 2 Mar 2008 14:02:39 -0500
-Message-ID: <47CAF9C4.6090000@mathtm.de>
-Date: Sun, 02 Mar 2008 20:02:28 +0100
-From: =?ISO-8859-15?Q?Thomas_M=FCller?= <thomas@mathtm.de>
-User-Agent: Thunderbird 2.0.0.12 (Windows/20080213)
+	Sun, 2 Mar 2008 14:03:31 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
+        b=fiXMJTFWg7LgFoUGYVvCBBgzu6i3YEguKSSHPLs4vaGG76kWNETGXAM6bYlQ1TTzgtLjMpYDLE+TlvF5DKn1+5ygj2JBixwomFIWDtkPKnFti0ysw9Sg3xZKuFbspG4WjnmAPn4W+1bHYddJ8d7linVo5Ib1k+0kxU4McU50Vt8=
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+To: Borislav Petkov <petkovbb@googlemail.com>
+Subject: Re: [PATCH 01/24] ide-tape: remove idetape_pipeline_active()
+Date: Sun, 2 Mar 2008 19:21:30 +0100
+User-Agent: KMail/1.9.6 (enterprise 0.20071204.744707)
+Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Borislav Petkov <petkovbb@gmail.com>
+References: <1204361928-30229-1-git-send-email-petkovbb@gmail.com> <1204361928-30229-2-git-send-email-petkovbb@gmail.com>
+In-Reply-To: <1204361928-30229-2-git-send-email-petkovbb@gmail.com>
 MIME-Version: 1.0
-To: Eric Sandeen <sandeen@sandeen.net>
-CC: xfs@oss.sgi.com, linux-kernel@vger.kernel.org
-Subject: Re: Kernel oops / XFS filesystem corruption
-References: <47C93C32.40006@mathtm.de> <47C9C44D.8080400@sandeen.net> <47C9F5E9.70703@mathtm.de> <47CA043F.5070202@sandeen.net>
-In-Reply-To: <47CA043F.5070202@sandeen.net>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Type: text/plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
-X-Provags-ID: V01U2FsdGVkX1/mazNlOs0mqYxoAI30gKVkCV9ng20b6cbzldd
- k+QE9VuQPNF/mira2XdGh4kxW+YK5zLIdLuXUkU4utPq0EnNCf
- McSYwpt0aYazNXr1Jzahe6d/bJIAFB1
+Content-Disposition: inline
+Message-Id: <200803021921.30696.bzolnier@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Eric Sandeen wrote:
-> oh, like a dd image?  great.
-Yup :)
+On Saturday 01 March 2008, Borislav Petkov wrote:
+> This function was simply a wrapper for a test_bit() macro so remove it and
+> use the macro instead.
+> 
+> Signed-off-by: Borislav Petkov <petkovbb@gmail.com>
 
- > You can use xfs_metadump to make a more transportable image...
-I will, if someone needs it.
-
-As said, I have a complete file system image, so if anyone needs
-more information/data, just tell me.
-
-
-Thomas
+applied
