@@ -1,74 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755249AbYCCFsl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753870AbYCCGGl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755249AbYCCFsl (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Mar 2008 00:48:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750995AbYCCFsc
+	id S1753870AbYCCGGl (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Mar 2008 01:06:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750995AbYCCGGb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Mar 2008 00:48:32 -0500
-Received: from sitemail2.everyone.net ([216.200.145.36]:51293 "EHLO
-	omta09.mta.everyone.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1750921AbYCCFsc convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Mar 2008 00:48:32 -0500
-X-Greylist: delayed 1547 seconds by postgrey-1.27 at vger.kernel.org; Mon, 03 Mar 2008 00:48:32 EST
-X-Eon-Dm: dm43
-X-Eon-Sig: AQMBJPhHy4siMw7CowIAAAAB,255df1b2356070b99d5d5e1d88200ce5
-Message-ID: <3867-2200831321483862@elisar>
-From: "Cherry Anne Flores" <law06@DUBAICITY.COM>
-To: linux-kernel@vger.kernel.org
-Subject: Introducing The Most Powerful Opportunity of 2008!!! 
-Date: Mon, 3 Mar 2008 13:48:38 -0800
-MIME-Version: 1.0
-Content-type: text/plain; charset=windows-1252
-Content-Transfer-Encoding: 8BIT
+	Mon, 3 Mar 2008 01:06:31 -0500
+Received: from chilli.pcug.org.au ([203.10.76.44]:40161 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750704AbYCCGGb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 3 Mar 2008 01:06:31 -0500
+Date: Mon, 3 Mar 2008 17:06:12 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: linux-next@vger.kernel.org
+Cc: LKML <linux-kernel@vger.kernel.org>
+Subject: linux-next: Tree for March 3
+Message-Id: <20080303170612.65e60b99.sfr@canb.auug.org.au>
+X-Mailer: Sylpheed 2.5.0beta1 (GTK+ 2.12.8; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Mon__3_Mar_2008_17_06_12_+1100_FRIDLaaaXKzOyA.w"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+--Signature=_Mon__3_Mar_2008_17_06_12_+1100_FRIDLaaaXKzOyA.w
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Hi, 
- 
-My name is Cherry, and the reason for this email is that you and I might
-share something in common...At some point in our lives many of us have
-contemplated or tried to start a home business. Don't worry; I'm not
-trying to sell you anything. I just want to ask you a simple question?
+Hi all,
 
-"If I helped you start a part-time business from your home and in two
-years you retired... Would you send me a Thank You card?"
+I have created today's linux-next tree at
+git://git.kernel.org/pub/scm/linux/kernel/git/sfr/linux-next.git.
 
-If your answer is "Yes" then simply click the link below:
-http://trickurl.com/?r=bah
+You can see which trees have been included by looking in the Next/Trees
+file in the source.  There are also quilt-import.log and merge.log files
+in the Next directory.  Between each merge, the tree was built with
+allmodconfig for both powerpc and x86_64.
 
-I would like to offer you a membership, without obligation and with no 
-strings attached if you decide it is not for you. :) We are just
-looking for people who still have that "burning desire" to find an 
-opportunity that will reward them incredibly well, if they work at it.
-I am excited about the opportunity that I have by helping other's save 
-money. I love it!
+There were three minor merge problems.
 
-If your answer is no then please delete this email, I will not be
-contacting you again.
+We are up to 39 trees, more are welcome (even if they are currently
+empty).
 
-I hope you will at least take the next step and take a look. It's fun 
-and there is absolutely no obligation on your part for this 
-information.
+Status of my local build tests is at
+http://kisskb.ellerman.id.au/kisskb/branch/9/.  If maintainers want to
+give advice about cross compilers/configs that work, we are always open
+to add more builds.
 
-Thank you for your time.
-http://trickurl.com/?r=bah
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
 
-P.S. - This is a huge, ground floor opportunity that is much bigger 
-than me! If you are at all interested in making some extra money or 
-having a business of your own, let me know and I'll get you information
-on how the business works. It is fantastic!
+--Signature=_Mon__3_Mar_2008_17_06_12_+1100_FRIDLaaaXKzOyA.w
+Content-Type: application/pgp-signature
 
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
 
-Removal Instruction:
+iD8DBQFHy5VjTgG2atn1QN8RAhVwAJ4025VlHqsB+cvr+APjV6Z8P999lgCdGV49
+lR4CDPlg9Vt6qCnNQjcg/W4=
+=vrQ2
+-----END PGP SIGNATURE-----
 
-Reply with the subject "Remove Me" if you wish to be remove from my
-mailing list and to no longer receive emails from me.
-
-"We are where we are today, because of the choices we have made in the
- past. If you are not happy with where you are right now, then change
- the choices you make in your life."
-
-
+--Signature=_Mon__3_Mar_2008_17_06_12_+1100_FRIDLaaaXKzOyA.w--
