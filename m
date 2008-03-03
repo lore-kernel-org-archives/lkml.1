@@ -1,77 +1,110 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751739AbYCCLgl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752029AbYCCLlU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751739AbYCCLgl (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Mar 2008 06:36:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750803AbYCCLg2
+	id S1752029AbYCCLlU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Mar 2008 06:41:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750952AbYCCLlJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Mar 2008 06:36:28 -0500
-Received: from smtp4.pp.htv.fi ([213.243.153.38]:37095 "EHLO smtp4.pp.htv.fi"
+	Mon, 3 Mar 2008 06:41:09 -0500
+Received: from ozlabs.org ([203.10.76.45]:52603 "EHLO ozlabs.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750808AbYCCLgZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Mar 2008 06:36:25 -0500
-Date: Mon, 3 Mar 2008 13:34:51 +0200
-From: Adrian Bunk <bunk@kernel.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Sam Ravnborg <sam@ravnborg.org>, Alexey Starikovskiy <aystarik@gmail.com>,
-       lenb@kernel.org, astarikovskiy@suse.de, linux-acpi@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [2.6 patch] acpi/battery.c: make 2 functions static
-Message-ID: <20080303113451.GF4457@cs181133002.pp.htv.fi>
-References: <20080301161902.GN25835@cs181133002.pp.htv.fi> <47C99FE1.8080206@gmail.com> <20080301183550.GC25835@cs181133002.pp.htv.fi> <20080303085720.GD15943@elte.hu> <20080303091314.GC4457@cs181133002.pp.htv.fi> <20080303091714.GA18250@elte.hu> <20080303093103.GA23651@uranus.ravnborg.org> <20080303103933.GC21190@elte.hu>
+	id S1750884AbYCCLlI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 3 Mar 2008 06:41:08 -0500
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <20080303103933.GC21190@elte.hu>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Message-ID: <18379.58317.223229.950553@cargo.ozlabs.ibm.com>
+Date: Mon, 3 Mar 2008 22:41:01 +1100
+From: Paul Mackerras <paulus@samba.org>
+To: torvalds@linux-foundation.org
+CC: linuxppc-dev@ozlabs.org, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org
+Subject: Please pull powerpc.git merge branch
+X-Mailer: VM 7.19 under Emacs 21.4.1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Mar 03, 2008 at 11:39:33AM +0100, Ingo Molnar wrote:
-> 
-> * Sam Ravnborg <sam@ravnborg.org> wrote:
-> 
-> > >From compiler-gcc.h:
-> > >
-> > > #define inline          inline          __attribute__((always_inline))
-> > 
-> > So unless I am missing something obvious then each time we say inline 
-> > to a function we require gcc to inline the function.
-> > 
-> > It is my impression that today we only say inline if really needed and 
-> > otherwise let gcc decide. So in almost all cases inlise should just be 
-> > nuked?
-> 
-> no, what we should nuke is this always_inline definition. That was 
-> always the intention of FORCED_INLINE, and the removal of FORCED_INLINE 
-> was to _remove the forcing_, not to make it unconditional.
+Linus,
 
-It was always unconditional, and neither adding, toggling nor removing 
-of CONFIG_FORCED_INLINING changed this invariant.
+Please do:
 
-And what we should do is to attack the excessive wrong usage of inlines 
-in .c files, not messing with a global #define in a way that the results 
-on 24 architectures with 7 different releases of gcc would be unpredictable.
+git pull \
+git://git.kernel.org/pub/scm/linux/kernel/git/paulus/powerpc.git merge
 
-> so Adrian, if you knew about this bug all along, you might as well have 
-> reported it :-/
+to get a collection of bug-fixes for powerpc, for the Cell, 4xx and
+52xx platforms.
 
-http://lkml.org/lkml/2007/1/19/36
-http://lkml.org/lkml/2007/4/9/363
+Thanks,
+Paul.
 
-are the result of a quick Google search of me stating this previously on 
-linux-kernel. It might have been more often, but I'm too lame too 
-search further.
+ arch/powerpc/boot/cuboot-bamboo.c            |    1 
+ arch/powerpc/boot/cuboot-ebony.c             |    1 
+ arch/powerpc/boot/cuboot-katmai.c            |    1 
+ arch/powerpc/boot/cuboot-taishan.c           |    2 
+ arch/powerpc/boot/cuboot-warp.c              |    1 
+ arch/powerpc/boot/dts/haleakala.dts          |    2 
+ arch/powerpc/boot/dts/katmai.dts             |   58 +++++-----
+ arch/powerpc/oprofile/op_model_cell.c        |    2 
+ arch/powerpc/platforms/52xx/mpc52xx_common.c |    1 
+ arch/powerpc/platforms/cell/iommu.c          |  151 +++++++++++++++-----------
+ arch/powerpc/platforms/cell/setup.c          |    7 +
+ arch/powerpc/platforms/cell/spu_base.c       |   16 ++-
+ arch/powerpc/platforms/cell/spufs/context.c  |    7 +
+ arch/powerpc/platforms/cell/spufs/file.c     |   12 ++
+ arch/powerpc/platforms/cell/spufs/sched.c    |    2 
+ arch/powerpc/platforms/cell/spufs/sputrace.c |    7 +
+ arch/powerpc/platforms/cell/spufs/switch.c   |    6 +
+ arch/powerpc/platforms/celleb/beat.h         |    3 -
+ drivers/char/xilinx_hwicap/buffer_icap.c     |   80 +++++++-------
+ drivers/char/xilinx_hwicap/fifo_icap.c       |   60 +++++-----
+ drivers/char/xilinx_hwicap/xilinx_hwicap.c   |  138 +++++++++++-------------
+ drivers/char/xilinx_hwicap/xilinx_hwicap.h   |   24 ++--
+ include/asm-powerpc/reg.h                    |    3 +
+ 23 files changed, 318 insertions(+), 267 deletions(-)
 
-> 	Ingo
+Andre Detsch (1):
+      [POWERPC] spufs: fix use time accounting on SPE-overcommit
 
-cu
-Adrian
+Arnd Bergmann (3):
+      [POWERPC] spufs: synchronize IRQ when disabling
+      [POWERPC] spufs: invalidate SLB translation before adding a new entry
+      [POWERPC] spufs: serialize SLB invalidation against SLB loading
 
--- 
+Bob Nelson (1):
+      [POWERPC] OProfile: enable callgraph support for Cell
 
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
+Eric Dujardin (1):
+      [POWERPC] Add export for mpc52xx_set_psc_clkdiv
+
+Jens Osterkamp (2):
+      [POWERPC] move celleb DABRX definitions
+      [POWERPC] enable hardware watchpoints on cell blades
+
+Jeremy Kerr (3):
+      [POWERPC] spufs: fix context destruction during psmap fault
+      [POWERPC] spufs: fix invalid scheduling of forgotten contexts
+      [POWERPC] spufs: fix order of sputrace thread IDs
+
+Josh Boyer (1):
+      [POWERPC] 4xx: Use correct board info structure in cuboot wrappers
+
+Michael Ellerman (8):
+      [POWERPC] Clearup cell IOMMU fixed mapping terminology
+      [POWERPC] Use it_offset not pte_offset in cell IOMMU code
+      [POWERPC] Remove unused pte_offset variable
+      [POWERPC] Move allocation of cell IOMMU pad page
+      [POWERPC] Split setup of IOMMU stab and ptab, allocate dynamic/fixed ptabs separately
+      [POWERPC] Cell IOMMU: n_pte_pages is in 4K page units, not IOMMU_PAGE_SIZE
+      [POWERPC] Allow for different IOMMU page sizes in cell IOMMU code
+      [POWERPC] Convert the cell IOMMU fixed mapping to 16M IOMMU pages
+
+Stefan Roese (2):
+      [POWERPC] 4xx: Fix Haleakala PCIe compatibility problem in dts
+      [POWERPC] 4xx: Fix L1 cache size in katmai DTS
+
+Stephen Neuendorffer (1):
+      [POWERPC] Xilinx: hwicap cleanup
+
+Valentine Barshak (1):
+      [POWERPC] 44x: add missing define TARGET_4xx and TARGET_440GX to cuboot-taishan
 
