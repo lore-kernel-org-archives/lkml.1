@@ -1,47 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760037AbYCCSvc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759995AbYCCSxQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760037AbYCCSvc (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Mar 2008 13:51:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752859AbYCCSvV
+	id S1759995AbYCCSxQ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Mar 2008 13:53:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752814AbYCCSxA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Mar 2008 13:51:21 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:38145
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1752113AbYCCSvV (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Mar 2008 13:51:21 -0500
-Date: Mon, 03 Mar 2008 10:51:05 -0800 (PST)
-Message-Id: <20080303.105105.189914871.davem@davemloft.net>
-To: hannemann@nets.rwth-aachen.de
-Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Removing unneeded statement from tcp_ipv4.c
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <47CBFBDA.7000801@nets.rwth-aachen.de>
-References: <47CBFBDA.7000801@nets.rwth-aachen.de>
-X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+	Mon, 3 Mar 2008 13:53:00 -0500
+Received: from relay2.sgi.com ([192.48.171.30]:36184 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752257AbYCCSxA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 3 Mar 2008 13:53:00 -0500
+Date: Mon, 3 Mar 2008 12:52:53 -0600
+From: Paul Jackson <pj@sgi.com>
+To: "Paul Menage" <menage@google.com>
+Cc: a.p.zijlstra@chello.nl, maxk@qualcomm.com, mingo@elte.hu,
+       tglx@linutronix.de, oleg@tv-sign.ru, rostedt@goodmis.org,
+       linux-kernel@vger.kernel.org, rientjes@google.com
+Subject: Re: [RFC/PATCH] cpuset: cpuset irq affinities
+Message-Id: <20080303125253.5d2d580c.pj@sgi.com>
+In-Reply-To: <6599ad830803031041r6c635141n6520a915f2e1d08@mail.gmail.com>
+References: <20080227222103.673194000@chello.nl>
+	<1204311351.6243.130.camel@lappy>
+	<20080229190223.GA17820@elte.hu>
+	<47C87084.3090208@qualcomm.com>
+	<1204318980.6243.133.camel@lappy>
+	<47C8771C.1070001@qualcomm.com>
+	<1204545445.11412.6.camel@twins>
+	<20080303113621.1dfdda87.pj@sgi.com>
+	<1204567052.6241.4.camel@lappy>
+	<20080303121033.c8c9651c.pj@sgi.com>
+	<6599ad830803031041r6c635141n6520a915f2e1d08@mail.gmail.com>
+Organization: SGI
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.12.0; i686-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Arnd Hannemann <hannemann@nets.rwth-aachen.de>
-Date: Mon, 03 Mar 2008 14:23:38 +0100
+Paul M wrote:
+> It ... would allow memory and CPU assignments to be controlled
+> independently.
 
-> -       if (tmp_opt.saw_tstamp && !tmp_opt.rcv_tsval) {
-> +       if (tmp_opt.saw_tstamp && !tmp_opt.rcv_tsval)
->                 /* Some OSes (unknown ones, but I see them on web server, which
->                  * contains information interesting only for windows'
->                  * users) do not send their stamp in SYN. It is easy case.
->                  * We simply do not advertise TS support.
->                  */
->                 tmp_opt.saw_tstamp = 0;
-> -               tmp_opt.tstamp_ok  = 0;
-> -       }
-> +
+Could you motivate this suggestion -- who needs it, or why
+would is it needed?
 
-Please don't format it like this.
-
-When there is a multi-line comment, you should still enclose
-the basic block in braces.  It's unreadable otherwise.
+-- 
+                  I won't rest till it's the best ...
+                  Programmer, Linux Scalability
+                  Paul Jackson <pj@sgi.com> 1.940.382.4214
