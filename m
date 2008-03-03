@@ -1,136 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759686AbYCDCNA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755970AbYCDCcJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759686AbYCDCNA (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Mar 2008 21:13:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753021AbYCDCMr
+	id S1755970AbYCDCcJ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Mar 2008 21:32:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751749AbYCDCb6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Mar 2008 21:12:47 -0500
-Received: from e6.ny.us.ibm.com ([32.97.182.146]:41507 "EHLO e6.ny.us.ibm.com"
+	Mon, 3 Mar 2008 21:31:58 -0500
+Received: from mga02.intel.com ([134.134.136.20]:18963 "EHLO mga02.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757694AbYCDCMp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Mar 2008 21:12:45 -0500
-Date: Tue, 4 Mar 2008 07:43:15 +0530
-From: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
-To: Masami Hiramatsu <mhiramat@redhat.com>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       systemtap-ml <systemtap@sources.redhat.com>,
-       Jim Keniston <jkenisto@us.ibm.com>
-Subject: Re: [PATCH][2.6.25-rc2-mm1] fix a null pointer bug in
-	register_kretprobe
-Message-ID: <20080304021315.GA7126@in.ibm.com>
-Reply-To: ananth@in.ibm.com
-References: <47CC7B1C.1060305@redhat.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <47CC7B1C.1060305@redhat.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+	id S1751032AbYCDCb5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 3 Mar 2008 21:31:57 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.25,441,1199692800"; 
+   d="scan'208";a="349361542"
+Subject: Re: [BUG 2.6.25-rc3] scheduler/hotplug: some processes are
+	dealocked when cpu is set to offline
+From: Yi Yang <yi.y.yang@intel.com>
+Reply-To: yi.y.yang@intel.com
+To: ego@in.ibm.com
+Cc: Ingo Molnar <mingo@elte.hu>, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org, Oleg Nesterov <oleg@tv-sign.ru>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>
+In-Reply-To: <20080303153154.GA11288@in.ibm.com>
+References: <1204483329.3607.8.camel@yangyi-dev.bj.intel.com>
+	 <20080303153154.GA11288@in.ibm.com>
+Content-Type: text/plain
+Organization: Intel
+Date: Mon, 03 Mar 2008 22:45:04 +0800
+Message-Id: <1204555505.3842.4.camel@yangyi-dev.bj.intel.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 (2.10.1-4.fc7) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Mar 03, 2008 at 05:26:36PM -0500, Masami Hiramatsu wrote:
-> X-Enigmail-Version: 0.95.6
-> Content-Type: text/plain; charset=ISO-8859-1
-> Content-Transfer-Encoding: 7bit
-> X-Scanned-By: MIMEDefang 2.58 on 172.16.52.254
+On Mon, 2008-03-03 at 21:01 +0530, Gautham R Shenoy wrote:
+> > This issue seems such one, but i tried to change it to follow this rule but
+> > the issue is still there.
+> > 
+> > Why isn't the kernel thread [watchdog/1] reaped by its parent? its state
+> > is TASK_RUNNING with high priority (R< means this), why it isn't done?
+> > 
+> > Anyone ever met such a problem? Your thought?
 > 
->  Fix a bug in regiseter_kretprobe() which does not check
->  rp->kp.symbol_name == NULL before calling kprobe_lookup_name.
+> Hi Yi,
 > 
->  For maintainability, this introduces kprobe_addr helper function which
->  resolves addr field. It is used by register_kprobe and register_kretprobe.
+> This is indeed strange. I am able to reproduce this problem on my 4-way
+> box. From what I see in the past two runs, we're waiting in the
+> cpu-hotplug callback path for the watchdog/1 thread to stop.
 > 
-> Signed-off-by: Masami Hiramatsu <mhiramat@redhat.com>
-> CC: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
-> CC: Jim Keniston <jkenisto@us.ibm.com>
+> During cpu-offline, once the cpu goes offline, in the migration_call(), 
+> we migrate any tasks associated with the offline cpus
+> to some other cpu. This also mean breaking affinity for tasks which were
+> affined to the cpu which went down. So watchdog/1 has been migrated to
+> some other cpu.
+No, [watchdog/1] is just for CPU #1, if CPU #1 has been offline, it
+should be killed but not migrated to other CPU because other CPU has
+such a kthread.
 
-Acked-by: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
+Maybe migration_call was doing such a bad thing. :-)
+> 
+> However, it remains in R< state and has not executed the
+> kthread_should_stop() instruction.
+> 
+> I'm trying to probe further by inserting a few more printk's in there.
+> 
+> Will post the findings in a couple of hours.
+> 
+> Thanks for reporting the problem.
+> 
+> Regards
+> gautham.
 
-Thanks Masami!
 
-> ---
->  kernel/kprobes.c |   43 ++++++++++++++++++++++++++-----------------
->  1 file changed, 26 insertions(+), 17 deletions(-)
-> 
-> Index: 2.6.25-rc2-mm1/kernel/kprobes.c
-> ===================================================================
-> --- 2.6.25-rc2-mm1.orig/kernel/kprobes.c	2008-02-18 11:37:18.000000000 -0500
-> +++ 2.6.25-rc2-mm1/kernel/kprobes.c	2008-02-18 11:37:18.000000000 -0500
-> @@ -498,27 +498,36 @@ static int __kprobes in_kprobes_function
->  	return 0;
->  }
-> 
-> +/*
-> + * If we have a symbol_name argument, look it up and add the offset field
-> + * to it. This way, we can specify a relative address to a symbol.
-> + */
-> +static kprobe_opcode_t __kprobes *kprobe_addr(struct kprobe *p)
-> +{
-> +	kprobe_opcode_t *addr = p->addr;
-> +	if (p->symbol_name) {
-> +		if (addr)
-> +			return NULL;
-> +		kprobe_lookup_name(p->symbol_name, addr);
-> +	}
-> +
-> +	if (!addr)
-> +		return NULL;
-> +	return (kprobe_opcode_t *)(((char *)addr) + p->offset);
-> +}
-> +
->  static int __kprobes __register_kprobe(struct kprobe *p,
->  	unsigned long called_from)
->  {
->  	int ret = 0;
->  	struct kprobe *old_p;
->  	struct module *probed_mod;
-> +	kprobe_opcode_t *addr;
-> 
-> -	/*
-> -	 * If we have a symbol_name argument look it up,
-> -	 * and add it to the address.  That way the addr
-> -	 * field can either be global or relative to a symbol.
-> -	 */
-> -	if (p->symbol_name) {
-> -		if (p->addr)
-> -			return -EINVAL;
-> -		kprobe_lookup_name(p->symbol_name, p->addr);
-> -	}
-> -
-> -	if (!p->addr)
-> +	addr = kprobe_addr(p);
-> +	if (!addr)
->  		return -EINVAL;
-> -	p->addr = (kprobe_opcode_t *)(((char *)p->addr)+ p->offset);
-> +	p->addr = addr;
-> 
->  	if (!kernel_text_address((unsigned long) p->addr) ||
->  	    in_kprobes_functions((unsigned long) p->addr))
-> @@ -722,12 +731,12 @@ int __kprobes register_kretprobe(struct
->  	int ret = 0;
->  	struct kretprobe_instance *inst;
->  	int i;
-> -	void *addr = rp->kp.addr;
-> +	void *addr;
-> 
->  	if (kretprobe_blacklist_size) {
-> -		if (addr == NULL)
-> -			kprobe_lookup_name(rp->kp.symbol_name, addr);
-> -		addr += rp->kp.offset;
-> +		addr = kprobe_addr(&rp->kp);
-> +		if (!addr)
-> +			return -EINVAL;
-> 
->  		for (i = 0; kretprobe_blacklist[i].name != NULL; i++) {
->  			if (kretprobe_blacklist[i].addr == addr)
-> -- 
-> Masami Hiramatsu
-> 
-> Software Engineer
-> Hitachi Computer Products (America) Inc.
-> Software Solutions Division
-> 
-> e-mail: mhiramat@redhat.com
-> 
