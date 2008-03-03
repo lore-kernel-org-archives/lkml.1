@@ -1,67 +1,568 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761475AbYCCXBa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760378AbYCCXDV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761475AbYCCXBa (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Mar 2008 18:01:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754710AbYCCXBV
+	id S1760378AbYCCXDV (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Mar 2008 18:03:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754288AbYCCXDL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Mar 2008 18:01:21 -0500
-Received: from gw.goop.org ([64.81.55.164]:51676 "EHLO mail.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754679AbYCCXBV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Mar 2008 18:01:21 -0500
-Message-ID: <47CC8211.7090704@goop.org>
-Date: Mon, 03 Mar 2008 14:56:17 -0800
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
-MIME-Version: 1.0
-To: Segher Boessenkool <segher@kernel.crashing.org>
-CC: hans.rosenfeld@amd.com, torvalds@linux-foundation.org,
-       linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
-       Arjan van de Ven <arjan@linux.intel.com>,
-       "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: bisected boot regression post 2.6.25-rc3.. please revert
-References: <20080301105646.2c8620d9@laptopd505.fenrus.org> <20080303074620.GC5934@elte.hu> <20080303091304.GA17911@elte.hu> <47CC2A3D.1000307@linux.intel.com> <20080303174009.GA19131@elte.hu> <47CC451A.2060501@linux.intel.com> <962471e5d2b8c88858dd5e0f50269751@kernel.crashing.org> <4ffd9be7b13d6300b888c146d6d040d5@kernel.crashing.org> <a9af8424f96a9118c6b097d9b2df79b2@kernel.crashing.org>
-In-Reply-To: <a9af8424f96a9118c6b097d9b2df79b2@kernel.crashing.org>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Mon, 3 Mar 2008 18:03:11 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:41159
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1752219AbYCCXDJ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 3 Mar 2008 18:03:09 -0500
+Date: Mon, 03 Mar 2008 15:02:53 -0800 (PST)
+Message-Id: <20080303.150253.182278176.davem@davemloft.net>
+To: bunk@kernel.org
+Cc: wli@holomorphy.com, sparclinux@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: sparc vs. gcc 4.3
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20080303192651.GL26072@cs181133002.pp.htv.fi>
+References: <20080303192651.GL26072@cs181133002.pp.htv.fi>
+X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Segher Boessenkool wrote:
->>> so (on 32-bit) ~_PAGE_PSE is ~0x80L is 0xffffff7f, which when cast to
->>> 64-bit is 0x00000000ffffff7f,
->>
->> Actually, it is signed, so this isn't true.  Comments about unsafeness
->> still apply.
->
-> It turns out that PAGE_SIZE is unsigned.  So this gives us for
->
->     (~PAGE_MASK & ~_PAGE_USER & ~_PAGE_PSE & ~_PAGE_NX)
->
-> the types UL, L, L, ULL resp.
->
-> The associativity of & is left-to-right, so this in turn becomes
->
->     UL, L, ULL
->
->     UL, ULL
->
->     ULL
->
-> and that cast from UL to ULL doesn't sign-extend. 
+From: Adrian Bunk <bunk@kernel.org>
+Date: Mon, 3 Mar 2008 21:26:51 +0200
 
-I went through and made a bunch of these flags signed so that they would 
-sign-extend properly in 32 vs 64 bit.  We could make them 
-unconditionally 64-bit, but I'm worried that will have unforeseen 
-consequences too.
+> Does anyone have a clue what's going wrong here?
 
-In this case, PAGE_MASK should probably be signed too, so the sign 
-extension happens properly.
+Adrian, here is the patch I'll submit to fix this.
 
-Alternatively, they could be cast to pteval_t and/or phys_addr_t so that 
-they will have an inherent size which matches the pagetable format 
-(using _AT() rather than _AC()).
+Thanks for your report.
 
-    J
+commit f0e98c387e61de00646be31fab4c2fa0224e1efb
+Author: David S. Miller <davem@davemloft.net>
+Date:   Mon Mar 3 15:01:05 2008 -0800
+
+    [SPARC]: Fix link errors with gcc-4.3
+    
+    Reported by Adrian Bunk.
+    
+    Just like in changeset a3f9985843b674cbcb58f39fab8416675e7ab842
+    ("[SPARC64]: Move kernel unaligned trap handlers into assembler
+    file.") we have to move the assembler bits into a seperate
+    asm file because as far as the compiler is concerned
+    these inline bits we're doing in unaligned.c are unreachable.
+    
+    Signed-off-by: David S. Miller <davem@davemloft.net>
+
+diff --git a/arch/sparc/kernel/Makefile b/arch/sparc/kernel/Makefile
+index e795f28..bf1b15d 100644
+--- a/arch/sparc/kernel/Makefile
++++ b/arch/sparc/kernel/Makefile
+@@ -1,4 +1,4 @@
+-# $Id: Makefile,v 1.62 2000/12/15 00:41:17 davem Exp $
++#
+ # Makefile for the linux kernel.
+ #
+ 
+@@ -12,7 +12,8 @@ obj-y    := entry.o wof.o wuf.o etrap.o rtrap.o traps.o $(IRQ_OBJS) \
+ 	    sys_sparc.o sunos_asm.o systbls.o \
+ 	    time.o windows.o cpu.o devices.o sclow.o \
+ 	    tadpole.o tick14.o ptrace.o sys_solaris.o \
+-	    unaligned.o muldiv.o semaphore.o prom.o of_device.o devres.o
++	    unaligned.o una_asm.o muldiv.o semaphore.o \
++	    prom.o of_device.o devres.o
+ 
+ devres-y = ../../../kernel/irq/devres.o
+ 
+diff --git a/arch/sparc/kernel/una_asm.S b/arch/sparc/kernel/una_asm.S
+new file mode 100644
+index 0000000..8cc0345
+--- /dev/null
++++ b/arch/sparc/kernel/una_asm.S
+@@ -0,0 +1,153 @@
++/* una_asm.S: Kernel unaligned trap assembler helpers.
++ *
++ * Copyright (C) 1996,2005,2008 David S. Miller (davem@davemloft.net)
++ * Copyright (C) 1996,1997 Jakub Jelinek (jj@sunsite.mff.cuni.cz)
++ */
++
++#include <linux/errno.h>
++
++	.text
++
++retl_efault:
++	retl
++	 mov	-EFAULT, %o0
++
++	/* int __do_int_store(unsigned long *dst_addr, int size,
++	 *                    unsigned long *src_val)
++	 *
++	 * %o0 = dest_addr
++	 * %o1 = size
++	 * %o2 = src_val
++	 *
++	 * Return '0' on success, -EFAULT on failure.
++	 */
++	.globl	__do_int_store
++__do_int_store:
++	ld	[%o2], %g1
++	cmp	%1, 2
++	be	2f
++	 cmp	%1, 4
++	be	1f
++	 srl	%g1, 24, %g2
++	srl	%g1, 16, %g7
++4:	stb	%g2, [%o0]
++	srl	%g1, 8, %g2
++5:	stb	%g7, [%o0 + 1]
++	ld	[%o2 + 4], %g7
++6:	stb	%g2, [%o0 + 2]
++	srl	%g7, 24, %g2
++7:	stb	%g1, [%o0 + 3]
++	srl	%g7, 16, %g1
++8:	stb	%g2, [%o0 + 4]
++	srl	%g7, 8, %g2
++9:	stb	%g1, [%o0 + 5]
++10:	stb	%g2, [%o0 + 6]
++	b	0f
++11:	 stb	%g7, [%o0 + 7]
++1:	srl	%g1, 16, %g7
++12:	stb	%g2, [%o0]
++	srl	%g1, 8, %g2
++13:	stb	%g7, [%o0 + 1]
++14:	stb	%g2, [%o0 + 2]
++	b	0f
++15:	 stb	%g1, [%o0 + 3]
++2:	srl	%g1, 8, %g2
++16:	stb	%g2, [%o0]
++17:	stb	%g1, [%o0 + 1]
++0:	retl
++	 mov	0, %o0
++
++	.section __ex_table,#alloc
++	.word	4b, retl_efault
++	.word	5b, retl_efault
++	.word	6b, retl_efault
++	.word	7b, retl_efault
++	.word	8b, retl_efault
++	.word	9b, retl_efault
++	.word	10b, retl_efault
++	.word	11b, retl_efault
++	.word	12b, retl_efault
++	.word	13b, retl_efault
++	.word	14b, retl_efault
++	.word	15b, retl_efault
++	.word	16b, retl_efault
++	.word	17b, retl_efault
++	.previous
++
++	/* int do_int_load(unsigned long *dest_reg, int size,
++	 *                 unsigned long *saddr, int is_signed)
++	 *
++	 * %o0 = dest_reg
++	 * %o1 = size
++	 * %o2 = saddr
++	 * %o3 = is_signed
++	 *
++	 * Return '0' on success, -EFAULT on failure.
++	 */
++	.globl	do_int_load
++do_int_load:
++	cmp	%o1, 8
++	be	9f
++	 cmp	%o1, 4
++	be	6f
++4:	 ldub	[%o2], %g1
++5:	ldub	[%o2 + 1], %g2
++	sll	%g1, 8, %g1
++	tst	%o3
++	be	3f
++	 or	%g1, %g2, %g1
++	sll	%g1, 16, %g1
++	sra	%g1, 16, %g1
++3:	b	0f
++	 st	%g1, [%o0]
++6:	ldub	[%o2 + 1], %g2
++	sll	%g1, 24, %g1
++7:	ldub	[%o2 + 2], %g7
++	sll	%g2, 16, %g2
++8:	ldub	[%o2 + 3], %g3
++	sll	%g7, 8, %g7
++	or	%g3, %g2, %g3
++	or	%g7, %g3, %g7
++	or	%g1, %g7, %g1
++	b	0f
++	 st	%g1, [%o0]
++9:	ldub	[%o2], %g1
++10:	ldub	[%o2 + 1], %g2
++	sll	%g1, 24, %g1
++11:	ldub	[%o2 + 2], %g7
++	sll	%g2, 16, %g2
++12:	ldub	[%o2 + 3], %g3
++	sll	%g7, 8, %g7
++	or	%g1, %g2, %g1
++	or	%g7, %g3, %g7
++	or	%g1, %g7, %g7
++13:	ldub	[%o2 + 4], %g1
++	st	%g7, [%o0]
++14:	ldub	[%o2 + 5], %g2
++	sll	%g1, 24, %g1
++15:	ldub	[%o2 + 6], %g7
++	sll	%g2, 16, %g2
++16:	ldub	[%o2 + 7], %g3
++	sll	%g7, 8, %g7
++	or	%g1, %g2, %g1
++	or	%g7, %g3, %g7
++	or	%g1, %g7, %g7
++	st	%g7, [%o0 + 4]
++0:	retl
++	 mov	0, %o0
++
++	.section __ex_table,#alloc
++	.word	4b, retl_efault
++	.word	5b, retl_efault
++	.word	6b, retl_efault
++	.word	7b, retl_efault
++	.word	8b, retl_efault
++	.word	9b, retl_efault
++	.word	10b, retl_efault
++	.word	11b, retl_efault
++	.word	12b, retl_efault
++	.word	13b, retl_efault
++	.word	14b, retl_efault
++	.word	15b, retl_efault
++	.word	16b, retl_efault
++	.previous
+diff --git a/arch/sparc/kernel/unaligned.c b/arch/sparc/kernel/unaligned.c
+index a6330fb..33857be 100644
+--- a/arch/sparc/kernel/unaligned.c
++++ b/arch/sparc/kernel/unaligned.c
+@@ -175,157 +175,31 @@ static void unaligned_panic(char *str)
+ 	panic(str);
+ }
+ 
+-#define do_integer_load(dest_reg, size, saddr, is_signed, errh) ({		\
+-__asm__ __volatile__ (								\
+-	"cmp	%1, 8\n\t"							\
+-	"be	9f\n\t"								\
+-	" cmp	%1, 4\n\t"							\
+-	"be	6f\n"								\
+-"4:\t"	" ldub	[%2], %%l1\n"							\
+-"5:\t"	"ldub	[%2 + 1], %%l2\n\t"						\
+-	"sll	%%l1, 8, %%l1\n\t"						\
+-	"tst	%3\n\t"								\
+-	"be	3f\n\t"								\
+-	" add	%%l1, %%l2, %%l1\n\t"						\
+-	"sll	%%l1, 16, %%l1\n\t"						\
+-	"sra	%%l1, 16, %%l1\n"						\
+-"3:\t"	"b	0f\n\t"								\
+-	" st	%%l1, [%0]\n"							\
+-"6:\t"	"ldub	[%2 + 1], %%l2\n\t"						\
+-	"sll	%%l1, 24, %%l1\n"						\
+-"7:\t"	"ldub	[%2 + 2], %%g7\n\t"						\
+-	"sll	%%l2, 16, %%l2\n"						\
+-"8:\t"	"ldub	[%2 + 3], %%g1\n\t"						\
+-	"sll	%%g7, 8, %%g7\n\t"						\
+-	"or	%%l1, %%l2, %%l1\n\t"						\
+-	"or	%%g7, %%g1, %%g7\n\t"						\
+-	"or	%%l1, %%g7, %%l1\n\t"						\
+-	"b	0f\n\t"								\
+-	" st	%%l1, [%0]\n"							\
+-"9:\t"	"ldub	[%2], %%l1\n"							\
+-"10:\t"	"ldub	[%2 + 1], %%l2\n\t"						\
+-	"sll	%%l1, 24, %%l1\n"						\
+-"11:\t"	"ldub	[%2 + 2], %%g7\n\t"						\
+-	"sll	%%l2, 16, %%l2\n"						\
+-"12:\t"	"ldub	[%2 + 3], %%g1\n\t"						\
+-	"sll	%%g7, 8, %%g7\n\t"						\
+-	"or	%%l1, %%l2, %%l1\n\t"						\
+-	"or	%%g7, %%g1, %%g7\n\t"						\
+-	"or	%%l1, %%g7, %%g7\n"						\
+-"13:\t"	"ldub	[%2 + 4], %%l1\n\t"						\
+-	"st	%%g7, [%0]\n"							\
+-"14:\t"	"ldub	[%2 + 5], %%l2\n\t"						\
+-	"sll	%%l1, 24, %%l1\n"						\
+-"15:\t"	"ldub	[%2 + 6], %%g7\n\t"						\
+-	"sll	%%l2, 16, %%l2\n"						\
+-"16:\t"	"ldub	[%2 + 7], %%g1\n\t"						\
+-	"sll	%%g7, 8, %%g7\n\t"						\
+-	"or	%%l1, %%l2, %%l1\n\t"						\
+-	"or	%%g7, %%g1, %%g7\n\t"						\
+-	"or	%%l1, %%g7, %%g7\n\t"						\
+-	"st	%%g7, [%0 + 4]\n"						\
+-"0:\n\n\t"									\
+-	".section __ex_table,#alloc\n\t"					\
+-	".word	4b, " #errh "\n\t"						\
+-	".word	5b, " #errh "\n\t"						\
+-	".word	6b, " #errh "\n\t"						\
+-	".word	7b, " #errh "\n\t"						\
+-	".word	8b, " #errh "\n\t"						\
+-	".word	9b, " #errh "\n\t"						\
+-	".word	10b, " #errh "\n\t"						\
+-	".word	11b, " #errh "\n\t"						\
+-	".word	12b, " #errh "\n\t"						\
+-	".word	13b, " #errh "\n\t"						\
+-	".word	14b, " #errh "\n\t"						\
+-	".word	15b, " #errh "\n\t"						\
+-	".word	16b, " #errh "\n\n\t"						\
+-	".previous\n\t"								\
+-	: : "r" (dest_reg), "r" (size), "r" (saddr), "r" (is_signed)		\
+-	: "l1", "l2", "g7", "g1", "cc");					\
+-})
+-	
+-#define store_common(dst_addr, size, src_val, errh) ({				\
+-__asm__ __volatile__ (								\
+-	"ld	[%2], %%l1\n"							\
+-	"cmp	%1, 2\n\t"							\
+-	"be	2f\n\t"								\
+-	" cmp	%1, 4\n\t"							\
+-	"be	1f\n\t"								\
+-	" srl	%%l1, 24, %%l2\n\t"						\
+-	"srl	%%l1, 16, %%g7\n"						\
+-"4:\t"	"stb	%%l2, [%0]\n\t"							\
+-	"srl	%%l1, 8, %%l2\n"						\
+-"5:\t"	"stb	%%g7, [%0 + 1]\n\t"						\
+-	"ld	[%2 + 4], %%g7\n"						\
+-"6:\t"	"stb	%%l2, [%0 + 2]\n\t"						\
+-	"srl	%%g7, 24, %%l2\n"						\
+-"7:\t"	"stb	%%l1, [%0 + 3]\n\t"						\
+-	"srl	%%g7, 16, %%l1\n"						\
+-"8:\t"	"stb	%%l2, [%0 + 4]\n\t"						\
+-	"srl	%%g7, 8, %%l2\n"						\
+-"9:\t"	"stb	%%l1, [%0 + 5]\n"						\
+-"10:\t"	"stb	%%l2, [%0 + 6]\n\t"						\
+-	"b	0f\n"								\
+-"11:\t"	" stb	%%g7, [%0 + 7]\n"						\
+-"1:\t"	"srl	%%l1, 16, %%g7\n"						\
+-"12:\t"	"stb	%%l2, [%0]\n\t"							\
+-	"srl	%%l1, 8, %%l2\n"						\
+-"13:\t"	"stb	%%g7, [%0 + 1]\n"						\
+-"14:\t"	"stb	%%l2, [%0 + 2]\n\t"						\
+-	"b	0f\n"								\
+-"15:\t"	" stb	%%l1, [%0 + 3]\n"						\
+-"2:\t"	"srl	%%l1, 8, %%l2\n"						\
+-"16:\t"	"stb	%%l2, [%0]\n"							\
+-"17:\t"	"stb	%%l1, [%0 + 1]\n"						\
+-"0:\n\n\t"									\
+-	".section __ex_table,#alloc\n\t"					\
+-	".word	4b, " #errh "\n\t"						\
+-	".word	5b, " #errh "\n\t"						\
+-	".word	6b, " #errh "\n\t"						\
+-	".word	7b, " #errh "\n\t"						\
+-	".word	8b, " #errh "\n\t"						\
+-	".word	9b, " #errh "\n\t"						\
+-	".word	10b, " #errh "\n\t"						\
+-	".word	11b, " #errh "\n\t"						\
+-	".word	12b, " #errh "\n\t"						\
+-	".word	13b, " #errh "\n\t"						\
+-	".word	14b, " #errh "\n\t"						\
+-	".word	15b, " #errh "\n\t"						\
+-	".word	16b, " #errh "\n\t"						\
+-	".word	17b, " #errh "\n\n\t"						\
+-	".previous\n\t"								\
+-	: : "r" (dst_addr), "r" (size), "r" (src_val)				\
+-	: "l1", "l2", "g7", "g1", "cc");					\
+-})
+-
+-#define do_integer_store(reg_num, size, dst_addr, regs, errh) ({		\
+-	unsigned long *src_val;							\
+-	static unsigned long zero[2] = { 0, };					\
+-										\
+-	if (reg_num) src_val = fetch_reg_addr(reg_num, regs);			\
+-	else {									\
+-		src_val = &zero[0];						\
+-		if (size == 8)							\
+-			zero[1] = fetch_reg(1, regs);				\
+-	}									\
+-	store_common(dst_addr, size, src_val, errh);				\
+-})
++/* una_asm.S */
++extern int do_int_load(unsigned long *dest_reg, int size,
++		       unsigned long *saddr, int is_signed);
++extern int __do_int_store(unsigned long *dst_addr, int size,
++			  unsigned long *src_val);
++
++static int do_int_store(int reg_num, int size, unsigned long *dst_addr,
++			struct pt_regs *regs)
++{
++	unsigned long zero[2] = { 0, 0 };
++	unsigned long *src_val;
++
++	if (reg_num)
++		src_val = fetch_reg_addr(reg_num, regs);
++	else {
++		src_val = &zero[0];
++		if (size == 8)
++			zero[1] = fetch_reg(1, regs);
++	}
++	return __do_int_store(dst_addr, size, src_val);
++}
+ 
+ extern void smp_capture(void);
+ extern void smp_release(void);
+ 
+-#define do_atomic(srcdest_reg, mem, errh) ({					\
+-	unsigned long flags, tmp;						\
+-										\
+-	smp_capture();								\
+-	local_irq_save(flags);							\
+-	tmp = *srcdest_reg;							\
+-	do_integer_load(srcdest_reg, 4, mem, 0, errh);				\
+-	store_common(mem, 4, &tmp, errh);					\
+-	local_irq_restore(flags);						\
+-	smp_release();								\
+-})
+-
+ static inline void advance(struct pt_regs *regs)
+ {
+ 	regs->pc   = regs->npc;
+@@ -342,9 +216,7 @@ static inline int ok_for_kernel(unsigned int insn)
+ 	return !floating_point_load_or_store_p(insn);
+ }
+ 
+-void kernel_mna_trap_fault(struct pt_regs *regs, unsigned int insn) __asm__ ("kernel_mna_trap_fault");
+-
+-void kernel_mna_trap_fault(struct pt_regs *regs, unsigned int insn)
++static void kernel_mna_trap_fault(struct pt_regs *regs, unsigned int insn)
+ {
+ 	unsigned long g2 = regs->u_regs [UREG_G2];
+ 	unsigned long fixup = search_extables_range(regs->pc, &g2);
+@@ -379,48 +251,34 @@ asmlinkage void kernel_unaligned_trap(struct pt_regs *regs, unsigned int insn)
+ 		printk("Unsupported unaligned load/store trap for kernel at <%08lx>.\n",
+ 		       regs->pc);
+ 		unaligned_panic("Wheee. Kernel does fpu/atomic unaligned load/store.");
+-
+-		__asm__ __volatile__ ("\n"
+-"kernel_unaligned_trap_fault:\n\t"
+-		"mov	%0, %%o0\n\t"
+-		"call	kernel_mna_trap_fault\n\t"
+-		" mov	%1, %%o1\n\t"
+-		:
+-		: "r" (regs), "r" (insn)
+-		: "o0", "o1", "o2", "o3", "o4", "o5", "o7",
+-		  "g1", "g2", "g3", "g4", "g5", "g7", "cc");
+ 	} else {
+ 		unsigned long addr = compute_effective_address(regs, insn);
++		int err;
+ 
+ #ifdef DEBUG_MNA
+ 		printk("KMNA: pc=%08lx [dir=%s addr=%08lx size=%d] retpc[%08lx]\n",
+ 		       regs->pc, dirstrings[dir], addr, size, regs->u_regs[UREG_RETPC]);
+ #endif
+-		switch(dir) {
++		switch (dir) {
+ 		case load:
+-			do_integer_load(fetch_reg_addr(((insn>>25)&0x1f), regs),
+-					size, (unsigned long *) addr,
+-					decode_signedness(insn),
+-					kernel_unaligned_trap_fault);
++			err = do_int_load(fetch_reg_addr(((insn>>25)&0x1f),
++							 regs),
++					  size, (unsigned long *) addr,
++					  decode_signedness(insn));
+ 			break;
+ 
+ 		case store:
+-			do_integer_store(((insn>>25)&0x1f), size,
+-					 (unsigned long *) addr, regs,
+-					 kernel_unaligned_trap_fault);
++			err = do_int_store(((insn>>25)&0x1f), size,
++					   (unsigned long *) addr, regs);
+ 			break;
+-#if 0 /* unsupported */
+-		case both:
+-			do_atomic(fetch_reg_addr(((insn>>25)&0x1f), regs),
+-				  (unsigned long *) addr,
+-				  kernel_unaligned_trap_fault);
+-			break;
+-#endif
+ 		default:
+ 			panic("Impossible kernel unaligned trap.");
+ 			/* Not reached... */
+ 		}
+-		advance(regs);
++		if (err)
++			kernel_mna_trap_fault(regs, insn);
++		else
++			advance(regs);
+ 	}
+ }
+ 
+@@ -459,9 +317,7 @@ static inline int ok_for_user(struct pt_regs *regs, unsigned int insn,
+ 	return 0;
+ }
+ 
+-void user_mna_trap_fault(struct pt_regs *regs, unsigned int insn) __asm__ ("user_mna_trap_fault");
+-
+-void user_mna_trap_fault(struct pt_regs *regs, unsigned int insn)
++static void user_mna_trap_fault(struct pt_regs *regs, unsigned int insn)
+ {
+ 	siginfo_t info;
+ 
+@@ -485,7 +341,7 @@ asmlinkage void user_unaligned_trap(struct pt_regs *regs, unsigned int insn)
+ 	if(!ok_for_user(regs, insn, dir)) {
+ 		goto kill_user;
+ 	} else {
+-		int size = decode_access_size(insn);
++		int err, size = decode_access_size(insn);
+ 		unsigned long addr;
+ 
+ 		if(floating_point_load_or_store_p(insn)) {
+@@ -496,48 +352,34 @@ asmlinkage void user_unaligned_trap(struct pt_regs *regs, unsigned int insn)
+ 		addr = compute_effective_address(regs, insn);
+ 		switch(dir) {
+ 		case load:
+-			do_integer_load(fetch_reg_addr(((insn>>25)&0x1f), regs),
+-					size, (unsigned long *) addr,
+-					decode_signedness(insn),
+-					user_unaligned_trap_fault);
++			err = do_int_load(fetch_reg_addr(((insn>>25)&0x1f),
++							 regs),
++					  size, (unsigned long *) addr,
++					  decode_signedness(insn));
+ 			break;
+ 
+ 		case store:
+-			do_integer_store(((insn>>25)&0x1f), size,
+-					 (unsigned long *) addr, regs,
+-					 user_unaligned_trap_fault);
++			err = do_int_store(((insn>>25)&0x1f), size,
++					   (unsigned long *) addr, regs);
+ 			break;
+ 
+ 		case both:
+-#if 0 /* unsupported */
+-			do_atomic(fetch_reg_addr(((insn>>25)&0x1f), regs),
+-				  (unsigned long *) addr,
+-				  user_unaligned_trap_fault);
+-#else
+ 			/*
+ 			 * This was supported in 2.4. However, we question
+ 			 * the value of SWAP instruction across word boundaries.
+ 			 */
+ 			printk("Unaligned SWAP unsupported.\n");
+-			goto kill_user;
+-#endif
++			err = -EFAULT;
+ 			break;
+ 
+ 		default:
+ 			unaligned_panic("Impossible user unaligned trap.");
+-
+-			__asm__ __volatile__ ("\n"
+-"user_unaligned_trap_fault:\n\t"
+-			"mov	%0, %%o0\n\t"
+-			"call	user_mna_trap_fault\n\t"
+-			" mov	%1, %%o1\n\t"
+-			:
+-			: "r" (regs), "r" (insn)
+-			: "o0", "o1", "o2", "o3", "o4", "o5", "o7",
+-			  "g1", "g2", "g3", "g4", "g5", "g7", "cc");
+ 			goto out;
+ 		}
+-		advance(regs);
++		if (err)
++			goto kill_user;
++		else
++			advance(regs);
+ 		goto out;
+ 	}
+ 
