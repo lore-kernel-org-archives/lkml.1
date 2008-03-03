@@ -1,69 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757379AbYCCQRS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758820AbYCCQR7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757379AbYCCQRS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Mar 2008 11:17:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753486AbYCCQRG
+	id S1758820AbYCCQR7 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Mar 2008 11:17:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754475AbYCCQRv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Mar 2008 11:17:06 -0500
-Received: from wr-out-0506.google.com ([64.233.184.228]:15746 "EHLO
-	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753493AbYCCQRF (ORCPT
+	Mon, 3 Mar 2008 11:17:51 -0500
+Received: from ug-out-1314.google.com ([66.249.92.174]:5427 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753486AbYCCQRt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Mar 2008 11:17:05 -0500
+	Mon, 3 Mar 2008 11:17:49 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=UHnmXWretifCRjPSDnlNfxmuCnR+YndX6GYSTAANef6q25JVouLYs3+V5QGv2GwXeXs0Oye/EfRIScK9EWm9X2Jc3z5Aoz5aJ4E7LAbSR603mC8jC81dP87J95Actzkjq7gKcjJy5sHU3nXaAzRuHdHB/nKynb1m7Lgt7Yg3Vjs=
-Message-ID: <b6fcc0a0803030817s49aebbci503cbe264e4dbf28@mail.gmail.com>
-Date: Mon, 3 Mar 2008 19:17:01 +0300
-From: "Alexey Dobriyan" <adobriyan@gmail.com>
-To: "Holger Kiehl" <Holger.Kiehl@dwd.de>
-Subject: Re: sysfs: duplicate filename '74' can not be created
-Cc: linux-kernel <linux-kernel@vger.kernel.org>
-In-Reply-To: <Pine.LNX.4.64.0803031602460.17218@diagnostix.dwd.de>
+        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=x9D/foU83e9/4KKrHfD8keUZU66Gdr3eF+2RZd98HUnnrTXAZsT/bJMaK2t8S+ehQhrp9ChRO5vA8JSB0LOlNxZvpToYfNkEXW0Ud5kBdTfEHjKzgKdzZ923TAT7JHFr1gQ1Y9yj6Fkosg/7SEmQeIjsczB7M+c0yBdPByT0UI4=
+Message-ID: <59ad55d30803030817l6fce6716x2a97cc809b15b234@mail.gmail.com>
+Date: Mon, 3 Mar 2008 11:17:47 -0500
+From: "=?UTF-8?Q?Kristian_H=C3=B8gsberg?=" <krh@bitplanet.net>
+To: "Stefan Richter" <stefanr@s5r6.in-berlin.de>
+Subject: Re: [PATCH] firewire: reread config ROM when device reset the bus
+Cc: linux1394-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
+In-Reply-To: <tkrat.da30e6f15a74e036@s5r6.in-berlin.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-References: <Pine.LNX.4.64.0803031444570.17218@diagnostix.dwd.de>
-	 <b6fcc0a0803030750t1430171dib6497c980deee265@mail.gmail.com>
-	 <Pine.LNX.4.64.0803031602460.17218@diagnostix.dwd.de>
+References: <tkrat.c6610a8633fe0e41@s5r6.in-berlin.de>
+	 <tkrat.da30e6f15a74e036@s5r6.in-berlin.de>
+X-Google-Sender-Auth: cc3298ffaa7c6a78
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
+Content-Transfer-Encoding: 8bit
+X-MIME-Autoconverted: from base64 to 8bit by alpha id m23GIHnq022206
 
-On 3/3/08, Holger Kiehl <Holger.Kiehl@dwd.de> wrote:
-> On Mon, 3 Mar 2008, Alexey Dobriyan wrote:
->
-> > On 3/3/08, Holger Kiehl <Holger.Kiehl@dwd.de> wrote:
-> >> I get this approx. 4 hours after booting into 2.6.24.3 (2.6.23.16 worked
-> >> fine). This system has 4 CPU's (single core) and 8GB ram. Here some more
-> >> details:
-> >>
-> >>
-> >> Mar 3 13:36:56 helena -- MARK --
-> >> Mar 3 13:50:01 helena kernel: sysfs: duplicate filename '74' can not be
-> >> created
-> >> Mar 3 13:50:01 helena kernel: WARNING: at fs/sysfs/dir.c:424
-> sysfs_add_one()
-> >
-> >> Mar 3 13:54:05 helena kernel: Code: 48 8b 04 c2 49 89 04 24 55 9d 31 c0
-> >> c1 eb 0f 48 85 d2 0f 95
-> >> Mar 3 13:54:05 helena kernel: RIP [<ffffffff80279170>]
-> >> __kmalloc_track_caller+0x85/0xb9
-> >> Mar 3 13:54:05 helena kernel: RSP <ffff8101dad09da8>
-> >> Mar 3 13:54:05 helena kernel: ---[ end trace b8695bfb4832866d ]---
-> >
-> >> Any idea what is causing this? Kernel 2.6.23.* seems to be fine.
-> >
-> > Turn CONFIG_USER_SCHED off.
-> >
-> I think you mean CONFIG_FAIR_USER_SCHED?
-
-Yep, I looked at current kernel.
-
-> > I'll look at why oops happened.
-> >
-> If it helps I can send you all the oopses. I just posted this one.
-
-Thanks, but no thanks. :-) This one should be enough.
+On Sun, Mar 2, 2008 at 7:48 PM, Stefan Richter<stefanr@s5r6.in-berlin.de> wrote:> When a device changes its configuration ROM, it announces this with a>  bus reset.  firewire-core has to check which node initiated a bus reset>  and whether any unit directories went away or were added on this node.
+Nicely done, looks good to me.  I like how simple this turned out tobe.  I would just add a
+  case REREAD_BIB_CHANGED:    break;
+to the switch to make that clear, but otherwise
+Signed-off-by: Kristian HÃ¸gsberg <krh@redhat.com>
+>  Tested with an IOI FWB-IDE01AB which has its link-on bit set if bus>  power is available but does not respond to ROM read requests if self>  power is off.  This implements>   - recognition of the units if self power is switched on after fw-core>     gave up the initial attempt to read the config ROM,>   - shutdown of the units when self power is switched off.>>  Also tested with a second PC running Linux/ieee1394.  When the eth1394>  driver is inserted and removed on that node, fw-core now notices the>  addition and removal of the IPv4 unit on the ieee1394 node.>>  Signed-off-by: Stefan Richter <stefanr@s5r6.in-berlin.de>>  --->>  Applies after "firewire: replace static ROM cache by allocated cache".>>   drivers/firewire/fw-cdev.c     |   18 ++-->   drivers/firewire/fw-device.c   |  147 ++++++++++++++++++++++++++++++--->   drivers/firewire/fw-topology.c |    3>   drivers/firewire/fw-topology.h |   11 +->   4 files changed, 158 insertions(+), 21 deletions(-)>>  Index: linux/drivers/firewire/fw-cdev.c>  ===================================================================>  --- linux.orig/drivers/firewire/fw-cdev.c>  +++ linux/drivers/firewire/fw-cdev.c>  @@ -32,6 +32,7 @@>   #include <linux/idr.h>>   #include <linux/compat.h>>   #include <linux/firewire-cdev.h>>  +#include <asm/semaphore.h>>   #include <asm/system.h>>   #include <asm/uaccess.h>>   #include "fw-transaction.h">  @@ -269,20 +270,25 @@ static int ioctl_get_info(struct client>   {>         struct fw_cdev_get_info *get_info = buffer;>         struct fw_cdev_event_bus_reset bus_reset;>  +       struct fw_device *device = client->device;>  +       unsigned long ret = 0;>>         client->version = get_info->version;>         get_info->version = FW_CDEV_VERSION;>>  +       down(&device->device.sem);>         if (get_info->rom != 0) {>                 void __user *uptr = u64_to_uptr(get_info->rom);>                 size_t want = get_info->rom_length;>  -               size_t have = client->device->config_rom_length * 4;>  +               size_t have;>>  -               if (copy_to_user(uptr, client->device->config_rom,>  -                                min(want, have)))>  -                       return -EFAULT;>  +               have = device->config_rom_length * 4;>  +               ret = copy_to_user(uptr, device->config_rom, min(want, have));>         }>  -       get_info->rom_length = client->device->config_rom_length * 4;>  +       get_info->rom_length = device->config_rom_length * 4;>  +       up(&device->device.sem);>  +       if (ret != 0)>  +               return -EFAULT;>>         client->bus_reset_closure = get_info->bus_reset_closure;>         if (get_info->bus_reset != 0) {>  @@ -293,7 +299,7 @@ static int ioctl_get_info(struct client>                         return -EFAULT;>         }>>  -       get_info->card = client->device->card->index;>  +       get_info->card = device->card->index;>>         return 0;>   }>  Index: linux/drivers/firewire/fw-device.c>  ===================================================================>  --- linux.orig/drivers/firewire/fw-device.c>  +++ linux/drivers/firewire/fw-device.c>  @@ -26,6 +26,7 @@>   #include <linux/delay.h>>   #include <linux/idr.h>>   #include <linux/rwsem.h>>  +#include <linux/string.h>>   #include <asm/semaphore.h>>   #include <asm/system.h>>   #include <linux/ctype.h>>  @@ -160,9 +161,9 @@ static void fw_device_release(struct dev>          * Take the card lock so we don't set this to NULL while a>          * FW_NODE_UPDATED callback is being handled.>          */>  -       spin_lock_irqsave(&device->card->lock, flags);>  +       spin_lock_irqsave(&card->lock, flags);>         device->node->data = NULL;>  -       spin_unlock_irqrestore(&device->card->lock, flags);>  +       spin_unlock_irqrestore(&card->lock, flags);>>         fw_node_put(device->node);>         kfree(device->config_rom);>  @@ -337,10 +338,14 @@ static ssize_t>   config_rom_show(struct device *dev, struct device_attribute *attr, char *buf)>   {>         struct fw_device *device = fw_device(dev);>  +       size_t length;>>  -       memcpy(buf, device->config_rom, device->config_rom_length * 4);>  +       down(&dev->sem);>  +       length = device->config_rom_length * 4;>  +       memcpy(buf, device->config_rom, length);>  +       up(&dev->sem);>>  -       return device->config_rom_length * 4;>  +       return length;>   }>>   static ssize_t>  @@ -412,7 +417,7 @@ read_rom(struct fw_device *device, int g>   */>   static int read_bus_info_block(struct fw_device *device, int generation)>   {>  -       u32 *rom, *stack;>  +       u32 *rom, *stack, *old_rom, *new_rom;>         u32 sp, key;>         int i, end, length, ret = -1;>>  @@ -527,11 +532,18 @@ static int read_bus_info_block(struct fw>                         length = i;>         }>>  -       device->config_rom = kmalloc(length * 4, GFP_KERNEL);>  -       if (device->config_rom == NULL)>  +       old_rom = device->config_rom;>  +       new_rom = kmemdup(rom, length * 4, GFP_KERNEL);>  +       if (new_rom == NULL)>                 goto out;>  -       memcpy(device->config_rom, rom, length * 4);>  +>  +       /* serialize with readers via sysfs or ioctl */>  +       down(&device->device.sem);>  +       device->config_rom = new_rom;>         device->config_rom_length = length;>  +       up(&device->device.sem);>  +>  +       kfree(old_rom);>         ret = 0;>   out:>         kfree(rom);>  @@ -724,7 +736,7 @@ static void fw_device_init(struct work_s>         if (atomic_cmpxchg(&device->state,>                     FW_DEVICE_INITIALIZING,>                     FW_DEVICE_RUNNING) == FW_DEVICE_SHUTDOWN) {>  -               fw_device_shutdown(&device->work.work);>  +               fw_device_shutdown(work);>         } else {>                 if (device->config_rom_retries)>                         fw_notify("created device %s: GUID %08x%08x, S%d00, ">  @@ -738,6 +750,7 @@ static void fw_device_init(struct work_s>                                   device->device.bus_id,>                                   device->config_rom[3], device->config_rom[4],>                                   1 << device->max_speed);>  +               device->config_rom_retries = 0;>         }>>         /*>  @@ -784,6 +797,104 @@ static void fw_device_update(struct work>         device_for_each_child(&device->device, NULL, update_unit);>   }>>  +enum {>  +       REREAD_BIB_ERROR,>  +       REREAD_BIB_GONE,>  +       REREAD_BIB_UNCHANGED,>  +       REREAD_BIB_CHANGED,>  +};>  +>  +/* Reread and compare bus info block and header of root directory */>  +static int reread_bus_info_block(struct fw_device *device, int generation)>  +{>  +       u32 q;>  +       int i;>  +>  +       for (i = 0; i < 6; i++) {>  +               if (read_rom(device, generation, i, &q) != RCODE_COMPLETE)>  +                       return REREAD_BIB_ERROR;>  +>  +               if (i == 0 && q == 0)>  +                       return REREAD_BIB_GONE;>  +>  +               if (i > device->config_rom_length || q != device->config_rom[i])>  +                       return REREAD_BIB_CHANGED;>  +       }>  +>  +       return REREAD_BIB_UNCHANGED;>  +}>  +>  +static void fw_device_refresh(struct work_struct *work)>  +{>  +       struct fw_device *device =>  +               container_of(work, struct fw_device, work.work);>  +       struct fw_card *card = device->card;>  +       int node_id = device->node_id;>  +>  +       switch (reread_bus_info_block(device, device->generation)) {>  +       case REREAD_BIB_ERROR:>  +               if (device->config_rom_retries < MAX_RETRIES / 2 &&>  +                   atomic_read(&device->state) == FW_DEVICE_INITIALIZING) {>  +                       device->config_rom_retries++;>  +                       schedule_delayed_work(&device->work, RETRY_DELAY / 2);>  +>  +                       return;>  +               }>  +               goto give_up;>  +>  +       case REREAD_BIB_GONE:>  +               goto gone;>  +>  +       case REREAD_BIB_UNCHANGED:>  +               if (atomic_cmpxchg(&device->state,>  +                           FW_DEVICE_INITIALIZING,>  +                           FW_DEVICE_RUNNING) == FW_DEVICE_SHUTDOWN)>  +                       goto gone;>  +>  +               fw_device_update(work);>  +               device->config_rom_retries = 0;>  +>  +               return;>  +       }>  +>  +       /*>  +        * Something changed.  We keep things simple and don't investigate>  +        * further.  We just destroy all previous units and create new ones.>  +        */>  +       device_for_each_child(&device->device, NULL, shutdown_unit);>  +>  +       if (read_bus_info_block(device, device->generation) < 0) {>  +               if (device->config_rom_retries < MAX_RETRIES &&>  +                   atomic_read(&device->state) == FW_DEVICE_INITIALIZING) {>  +                       device->config_rom_retries++;>  +                       schedule_delayed_work(&device->work, RETRY_DELAY);>  +>  +                       return;>  +               }>  +               goto give_up;>  +       }>  +>  +       create_units(device);>  +>  +       if (atomic_cmpxchg(&device->state,>  +                   FW_DEVICE_INITIALIZING,>  +                   FW_DEVICE_RUNNING) == FW_DEVICE_SHUTDOWN)>  +               goto gone;>  +>  +       fw_notify("refreshed device %s\n", device->device.bus_id);>  +       device->config_rom_retries = 0;>  +       goto out;>  +>  + give_up:>  +       fw_notify("giving up on refresh of device %s\n", device->device.bus_id);>  + gone:>  +       atomic_set(&device->state, FW_DEVICE_SHUTDOWN);>  +       fw_device_shutdown(work);>  + out:>  +       if (node_id == card->root_node->node_id)>  +               schedule_delayed_work(&card->work, 0);>  +}>  +>   void fw_node_event(struct fw_card *card, struct fw_node *node, int event)>   {>         struct fw_device *device;>  @@ -793,7 +904,7 @@ void fw_node_event(struct fw_card *card,>         case FW_NODE_LINK_ON:>                 if (!node->link_on)>                         break;>  ->  + create:>                 device = kzalloc(sizeof(*device), GFP_ATOMIC);>                 if (device == NULL)>                         break;>  @@ -832,6 +943,22 @@ void fw_node_event(struct fw_card *card,>                 schedule_delayed_work(&device->work, INITIAL_DELAY);>                 break;>>  +       case FW_NODE_INITIATED_RESET:>  +               device = node->data;>  +               if (device == NULL)>  +                       goto create;>  +>  +               device->node_id = node->node_id;>  +               smp_wmb();  /* update node_id before generation */>  +               device->generation = card->generation;>  +               if (atomic_cmpxchg(&device->state,>  +                           FW_DEVICE_RUNNING,>  +                           FW_DEVICE_INITIALIZING) == FW_DEVICE_RUNNING) {>  +                       PREPARE_DELAYED_WORK(&device->work, fw_device_refresh);>  +                       schedule_delayed_work(&device->work, INITIAL_DELAY);>  +               }>  +               break;>  +>         case FW_NODE_UPDATED:>                 if (!node->link_on || node->data == NULL)>                         break;>  Index: linux/drivers/firewire/fw-topology.c>  ===================================================================>  --- linux.orig/drivers/firewire/fw-topology.c>  +++ linux/drivers/firewire/fw-topology.c>  @@ -107,6 +107,7 @@ static struct fw_node *fw_node_create(u3>         node->node_id = LOCAL_BUS | SELF_ID_PHY_ID(sid);>         node->link_on = SELF_ID_LINK_ON(sid);>         node->phy_speed = SELF_ID_PHY_SPEED(sid);>  +       node->initiated_reset = SELF_ID_PHY_INITIATOR(sid);>         node->port_count = port_count;>>         atomic_set(&node->ref_count, 1);>  @@ -430,6 +431,8 @@ update_tree(struct fw_card *card, struct>                         event = FW_NODE_LINK_OFF;>                 else if (!node0->link_on && node1->link_on)>                         event = FW_NODE_LINK_ON;>  +               else if (node1->initiated_reset && node1->link_on)>  +                       event = FW_NODE_INITIATED_RESET;>                 else>                         event = FW_NODE_UPDATED;>>  Index: linux/drivers/firewire/fw-topology.h>  ===================================================================>  --- linux.orig/drivers/firewire/fw-topology.h>  +++ linux/drivers/firewire/fw-topology.h>  @@ -20,11 +20,12 @@>   #define __fw_topology_h>>   enum {>  -       FW_NODE_CREATED =   0x00,>  -       FW_NODE_UPDATED =   0x01,>  -       FW_NODE_DESTROYED = 0x02,>  -       FW_NODE_LINK_ON =   0x03,>  -       FW_NODE_LINK_OFF =  0x04,>  +       FW_NODE_CREATED,>  +       FW_NODE_UPDATED,>  +       FW_NODE_DESTROYED,>  +       FW_NODE_LINK_ON,>  +       FW_NODE_LINK_OFF,>  +       FW_NODE_INITIATED_RESET,>   };>>   struct fw_node {>>  -->  Stefan Richter>  -=====-==--- --== ---==>  http://arcgraph.de/sr/>>>  ------------------------------------------------------------------------->  This SF.net email is sponsored by: Microsoft>  Defy all challenges. Microsoft(R) Visual Studio 2008.>  http://clk.atdmt.com/MRT/go/vse0120000070mrt/direct/01/>  _______________________________________________>  mailing list linux1394-devel@lists.sourceforge.net>  https://lists.sourceforge.net/lists/listinfo/linux1394-devel>ÿôèº{.nÇ+‰·Ÿ®‰­†+%ŠËÿ±éİ¶¥Šwÿº{.nÇ+‰·¥Š{±şG«éÿŠ{ayºÊ‡Ú™ë,j­¢f£¢·hšïêÿ‘êçz_è®(­éšŠİ¢j"ú¶m§ÿÿ¾«şG«éÿ¢¸?™¨è­Ú&£ø§~á¶iO•æ¬z·švØ^¶m§ÿÿÃÿ¶ìÿ¢¸?–I¥
