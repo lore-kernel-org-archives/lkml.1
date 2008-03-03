@@ -1,60 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759985AbYCCVbW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763415AbYCCVbn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759985AbYCCVbW (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Mar 2008 16:31:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752276AbYCCVbA
+	id S1763415AbYCCVbn (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Mar 2008 16:31:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762660AbYCCVbR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Mar 2008 16:31:00 -0500
-Received: from rv-out-0910.google.com ([209.85.198.185]:53941 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751492AbYCCVa7 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Mar 2008 16:30:59 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=wPwrULt0/1Fksms1x+pxgY0gfbBe7K+uTkBZF7NrQwsRvB1QdLKBxeHUYcH2BiSl3fcSqy7iJ4UIgxQnWSJGMhh4f/fgpc4Pv5+ZC/LicAFjFu8eqB5T+8CwrAEYbtd4BEgBuVtsqpPL7u8Ncm1WwjLDp1YLg75WItgli00V9kU=
-Message-ID: <84144f020803031330i2c0ea1f6kc5b02c8b26145797@mail.gmail.com>
-Date: Mon, 3 Mar 2008 23:30:56 +0200
-From: "Pekka Enberg" <penberg@cs.helsinki.fi>
-To: "Christoph Lameter" <clameter@sgi.com>
-Subject: Re: [rfc][patch 1/3] slub: fix small HWCACHE_ALIGN alignment
-Cc: "Nick Piggin" <npiggin@suse.de>, netdev@vger.kernel.org,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       yanmin_zhang@linux.intel.com, "David Miller" <davem@davemloft.net>,
-       "Eric Dumazet" <dada1@cosmosbay.com>
-In-Reply-To: <Pine.LNX.4.64.0803031315160.4131@schroedinger.engr.sgi.com>
+	Mon, 3 Mar 2008 16:31:17 -0500
+Received: from relay1.sgi.com ([192.48.171.29]:47609 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1762353AbYCCVbP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 3 Mar 2008 16:31:15 -0500
+Date: Mon, 3 Mar 2008 13:31:14 -0800 (PST)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Nick Piggin <npiggin@suse.de>
+cc: netdev@vger.kernel.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       yanmin_zhang@linux.intel.com, David Miller <davem@davemloft.net>,
+       Eric Dumazet <dada1@cosmosbay.com>
+Subject: Re: [rfc][patch 2/3] slab: introduce SMP alignment
+In-Reply-To: <20080303202411.GH8974@wotan.suse.de>
+Message-ID: <Pine.LNX.4.64.0803031327330.4375@schroedinger.engr.sgi.com>
+References: <20080303093449.GA15091@wotan.suse.de> <20080303093529.GB15091@wotan.suse.de>
+ <Pine.LNX.4.64.0803031104570.6917@schroedinger.engr.sgi.com>
+ <20080303200355.GB8974@wotan.suse.de> <Pine.LNX.4.64.0803031208400.16049@schroedinger.engr.sgi.com>
+ <20080303201211.GE8974@wotan.suse.de> <Pine.LNX.4.64.0803031216430.3110@schroedinger.engr.sgi.com>
+ <20080303202411.GH8974@wotan.suse.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20080303093449.GA15091@wotan.suse.de>
-	 <Pine.LNX.4.64.0803031107130.6917@schroedinger.engr.sgi.com>
-	 <20080303200613.GC8974@wotan.suse.de>
-	 <Pine.LNX.4.64.0803031209570.16049@schroedinger.engr.sgi.com>
-	 <20080303201701.GF8974@wotan.suse.de>
-	 <Pine.LNX.4.64.0803031315160.4131@schroedinger.engr.sgi.com>
-X-Google-Sender-Auth: a1a1a051a721e480
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
-
 On Mon, 3 Mar 2008, Nick Piggin wrote:
-> > > HWCACHE_ALIGN means that you want the object to be aligned at
-> > > cacheline boundaries for optimization. Why does crossing cacheline
-> > > boundaries matter in this case?
-> >
-> > No, HWCACHE_ALIGN means that you want the object not to cross cacheline
-> > boundaries for at least cache_line_size() bytes. You invented new
 
-On Mon, Mar 3, 2008 at 11:16 PM, Christoph Lameter <clameter@sgi.com> wrote:
->  Interesting new definition....
+> On Mon, Mar 03, 2008 at 12:17:20PM -0800, Christoph Lameter wrote:
+> > On Mon, 3 Mar 2008, Nick Piggin wrote:
+> > 
+> > > > You want two ways of specifying alignments?
+> > > 
+> > > I want a way to ask for SMP friendly allocation.
+> > 
+> > Then align the objects at cacheline boundaries by providing a value for 
+> > the align parameter to kmem_cache_create().
+> 
+> max(num_possible_cpus() > 1 ? cache_line_size() : 0, mandatory_alignment)?
 
-Well, not my definition either but SLAB has guaranteed that for small
-objects in the past, so I think Nick has a point here. However, with
-all this back and forth, I've lost track why this matters. I suppose
-it causes regression on some workload?
+The mandatory alignment is applied anyways. You do not need to max() on 
+that.
 
-                                Pekka
+One could simply specify cache_line_size() with Pekka's patch. 
+cache_line_size() could default to 0 if !SMP.
+
+> Then suppose we want a CONFIG_TINY option to eliminate it?
+
+No slab allocator supports that right now. However, SLOB in the past has 
+ignored the alignment in order to reduce memory use. So maybe Matt wants 
+to introduce this?
+
+> And maybe the VSMP guys will want to blow this out to their internode
+> alignment?
+> 
+> max(!CONFIG_TINY && num_possible_cpus() > 1 ? (is_vsmp ? internode_alignemnt : cache_line_size()) : 0, mandatory_alignment)
+
+No the slab allocators were optimized for VSMP so that the 
+internode_alignment is not necessary there. That was actually one of the 
+requirements that triggered the slab numa work.
+
