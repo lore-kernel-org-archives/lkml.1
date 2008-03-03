@@ -1,84 +1,200 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759471AbYCCQWW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758683AbYCCQZJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759471AbYCCQWW (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Mar 2008 11:22:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755872AbYCCQWL
+	id S1758683AbYCCQZJ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Mar 2008 11:25:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756160AbYCCQY4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Mar 2008 11:22:11 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:34924 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755644AbYCCQWK (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Mar 2008 11:22:10 -0500
-Date: Mon, 3 Mar 2008 08:21:35 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Steve French <smfrench@gmail.com>
-cc: git@vger.kernel.org, lkml <linux-kernel@vger.kernel.org>
-Subject: Re: kernel.org git tree corrupt?
-In-Reply-To: <524f69650803021943i33ce6ddbo309f118cd0a77ac9@mail.gmail.com>
-Message-ID: <alpine.LFD.1.00.0803030800460.17889@woody.linux-foundation.org>
-References: <524f69650803020749o469f2e48l125a55267b0b5d13@mail.gmail.com>  <alpine.LFD.1.00.0803021302070.17889@woody.linux-foundation.org> <524f69650803021943i33ce6ddbo309f118cd0a77ac9@mail.gmail.com>
-User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
+	Mon, 3 Mar 2008 11:24:56 -0500
+Received: from ns2.suse.de ([195.135.220.15]:47538 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754940AbYCCQYz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 3 Mar 2008 11:24:55 -0500
+Message-ID: <47CC2652.1080601@suse.de>
+Date: Mon, 03 Mar 2008 17:24:50 +0100
+From: Hannes Reinecke <hare@suse.de>
+User-Agent: Thunderbird 1.5 (X11/20060317)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Kiyoshi Ueda <k-ueda@ct.jp.nec.com>
+Cc: jens.axboe@oracle.com, linux-kernel@vger.kernel.org,
+       linux-scsi@vger.kernel.org, dm-devel@redhat.com, j-nomura@ce.jp.nec.com
+Subject: Re: [RFC PATCH 1/3] block: add rq->complete_io hook for request stacking
+References: <20080215.172727.39155014.k-ueda@ct.jp.nec.com>
+In-Reply-To: <20080215.172727.39155014.k-ueda@ct.jp.nec.com>
+X-Enigmail-Version: 0.94.0.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi Kiyoshi,
 
-
-On Sun, 2 Mar 2008, Steve French wrote:
+Kiyoshi Ueda wrote:
+> This patch adds ->complete_io() hook for request stacking.
+> Request stacking drivers (such as request-based dm) can set
+> a callback for completion.
+> (The hook is not called in blk_end_io(), since request-based dm uses
+>  it for clone completion in the following appendix patches.)
 > 
-> >   - look at your "origin" branch, and make sure it's a *remote* branch, not
-> >    the old-style local one. Ie it should *not* show up when you do a
-> >    plain
-> >
-> >         git branch
-> now only shows "* master"
-> 
-> >    but it *should* show up (as both "origin/HEAD" and "origin/master")
-> >    when you do
-> >
-> >         git branch -a
-> Now "git branch -a" shows
-> * master
->   origin/master
-> 
-> It is missing "origin/HEAD"
+[ .. ]
+I would rather have rq->complete_io() to be pointing to blk_end_io in the
+default case, this way rq->complete_io() would always be valid and we
+would be saving us the if() clause.
 
-Ahh, yeah, my bad. The origin/HEAD thing will be created if you use either 
-clone or "git remote add -m master" to create the remote. But when I asked 
-you to do it by just editing the config file, you now have to create that 
-HEAD pointer manually too.
+> Index: 2.6.25-rc1/block/blk-core.c
+> ===================================================================
+> --- 2.6.25-rc1.orig/block/blk-core.c
+> +++ 2.6.25-rc1/block/blk-core.c
+> @@ -138,6 +138,7 @@ void rq_init(struct request_queue *q, st
+>  	rq->data = NULL;
+>  	rq->sense = NULL;
+>  	rq->end_io = NULL;
+> +	rq->complete_io = NULL;
+rq->complete_io = blk_end_io;
 
-You can do
+>  	rq->end_io_data = NULL;
+>  	rq->next_rq = NULL;
+>  }
+> @@ -1917,6 +1918,9 @@ static int blk_end_io(struct request *rq
+>   **/
+>  int blk_end_request(struct request *rq, int error, unsigned int nr_bytes)
+>  {
+> +	if (rq->complete_io)
+> +		return rq->complete_io(rq, error, nr_bytes, 0, NULL);
+> +
+>  	return blk_end_io(rq, error, nr_bytes, 0, NULL);
+>  }
+So when using my proposal this would just become:
 
-	git symbolic-ref refs/remotes/origin/HEAD refs/remotes/origin/master
+{
+    BUG_ON(!rq->complete_io);
+    return rq->complete_io(rq, error, nr_bytes, 0, NULL);
+}
 
-to create the thing (it just creates a symbolic ref from the origin/HEAD 
-remote ref to the origin/master one, so now git will know that when you 
-talk about 'origin', it is supposed to just use the master branch of 
-that remote).
+>  EXPORT_SYMBOL_GPL(blk_end_request);
+> @@ -1936,6 +1940,27 @@ EXPORT_SYMBOL_GPL(blk_end_request);
+>   **/
+>  int __blk_end_request(struct request *rq, int error, unsigned int nr_bytes)
+>  {
+> +	if (unlikely(blk_queue_stackable(rq->q)))
+> +		printk(KERN_WARNING "dev: %s: Not ready for request stacking, "
+> +		       "but the device driver set it stackable. "
+> +		       "Need to fix the device driver!\n",
+> +		       rq->rq_disk ? rq->rq_disk->disk_name : "?");
+> +
+> +	if (unlikely(rq->complete_io)) {
+> +		/*
+> +		 * If we invoke the ->complete_io here, the request submitter's
+> +		 * handler would get deadlock on the queue lock.
+> +		 *
+> +		 * This happens, when the request submitter didn't check
+> +		 * whether the queue is stackable or the device driver marked
+> +		 * the queue stackable.
+> +		 * Need to fix the request submitter or the device driver.
+> +		 */
+> +		printk(KERN_ERR "The device driver isn't ready for "
+> +		       "request stacking.\n");
+> +		BUG();
+> +	}
+> +
+This could be skipped entirely then.
 
-> >   - now do "git log origin" an it should show something recent
-> git log origin and git log origin/master both return
-> "ambiguous argument 'origin': unknown revision"
+>  	if (blk_fs_request(rq) || blk_pc_request(rq)) {
+>  		if (__end_that_request_first(rq, error, nr_bytes))
+>  			return 1;
+> @@ -1966,6 +1991,9 @@ EXPORT_SYMBOL_GPL(__blk_end_request);
+>  int blk_end_bidi_request(struct request *rq, int error, unsigned int nr_bytes,
+>  			 unsigned int bidi_bytes)
+>  {
+> +	if (rq->complete_io)
+> +		return rq->complete_io(rq, error, nr_bytes, bidi_bytes, NULL);
+> +
+>  	return blk_end_io(rq, error, nr_bytes, bidi_bytes, NULL);
+>  }
+return rq->complete_io(rq, error, nr_bytes, bidi_bytes, NULL);
 
-Well, origin/master should have worked, but the fact that plain "origin" 
-didn't work is due to exactly the lack of HEAD file for that remote branch 
-(for your kernel tree, there's only one remote branch, so it may be 
-"obvious" that origin must be talking about the master branch, but if 
-there are multiple branches at the origin it's not obvious *which* branch 
-should be considered the default one, which is why we use HEAD)
+>  EXPORT_SYMBOL_GPL(blk_end_bidi_request);
+> @@ -1999,6 +2027,9 @@ int blk_end_request_callback(struct requ
+>  			     unsigned int nr_bytes,
+>  			     int (drv_callback)(struct request *))
+>  {
+> +	if (rq->complete_io)
+> +		return rq->complete_io(rq, error, nr_bytes, 0, drv_callback);
+> +
+>  	return blk_end_io(rq, error, nr_bytes, 0, drv_callback);
+return rq->complete_io(rq, error, nr_bytes, bidi_bytes, NULL);
 
-> I must be misunderstanding the syntax/manpage of git-log but "git diff
-> -m -r origin/master"
-> now works fine and displays exactly what I expect so things have improved.
+>  }
+>  EXPORT_SYMBOL_GPL(blk_end_request_callback);
+> Index: 2.6.25-rc1/include/linux/blkdev.h
+> ===================================================================
+> --- 2.6.25-rc1.orig/include/linux/blkdev.h
+> +++ 2.6.25-rc1/include/linux/blkdev.h
+> @@ -42,6 +42,9 @@ void copy_io_context(struct io_context *
+>  
+>  struct request;
+>  typedef void (rq_end_io_fn)(struct request *, int);
+> +typedef int (rq_complete_io_fn)(struct request *rq, int error,
+> +				unsigned int nr_bytes, unsigned int bidi_bytes,
+> +				int (drv_callback)(struct request *));
+>  
+>  struct request_list {
+>  	int count[2];
+> @@ -228,6 +231,7 @@ struct request {
+>  	 * completion callback.
+>  	 */
+>  	rq_end_io_fn *end_io;
+> +	rq_complete_io_fn *complete_io;
+>  	void *end_io_data;
+>  
+>  	/* for bidi */
+> @@ -401,6 +405,7 @@ struct request_queue
+>  #define QUEUE_FLAG_PLUGGED	7	/* queue is plugged */
+>  #define QUEUE_FLAG_ELVSWITCH	8	/* don't use elevator, just do FIFO */
+>  #define QUEUE_FLAG_BIDI		9	/* queue supports bidi requests */
+> +#define QUEUE_FLAG_STACKABLE	10	/* queue supports request stacking */
+>  
+>  enum {
+>  	/*
+> @@ -446,6 +451,8 @@ enum {
+>  #define blk_queue_tagged(q)	test_bit(QUEUE_FLAG_QUEUED, &(q)->queue_flags)
+>  #define blk_queue_stopped(q)	test_bit(QUEUE_FLAG_STOPPED, &(q)->queue_flags)
+>  #define blk_queue_flushing(q)	((q)->ordseq)
+> +#define blk_queue_stackable(q)	\
+> +		test_bit(QUEUE_FLAG_STACKABLE, &(q)->queue_flags)
+>  
+>  #define blk_fs_request(rq)	((rq)->cmd_type == REQ_TYPE_FS)
+>  #define blk_pc_request(rq)	((rq)->cmd_type == REQ_TYPE_BLOCK_PC)
+> Index: 2.6.25-rc1/drivers/scsi/scsi_lib.c
+> ===================================================================
+> --- 2.6.25-rc1.orig/drivers/scsi/scsi_lib.c
+> +++ 2.6.25-rc1/drivers/scsi/scsi_lib.c
+> @@ -1597,6 +1597,13 @@ struct request_queue *__scsi_alloc_queue
+>  	 */
+>  	blk_queue_dma_alignment(q, 0x03);
+>  
+> +	/*
+> +	 * SCSI is ready for request stacking, since it doesn't hold
+> +	 * queue lock when completing request.
+> +	 * (It doesn't use __blk_end_request().)
+> +	 */
+> +	set_bit(QUEUE_FLAG_STACKABLE, &q->queue_flags);
+> +
+>  	return q;
+>  }
+>  EXPORT_SYMBOL(__scsi_alloc_queue);
+> -
+> To unsubscribe from this list: send the line "unsubscribe linux-scsi" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
 
-Well, if "origin/master" works in that situation, then "origin/master" 
-should have worked in "git log" too, so maybe you mistyped?
+Apart from this: Great work!
 
-Anyway, with the HEAD link added for the remote 'origin', you should be 
-able to use plain 'origin' like you're used to.
+Cheers,
 
-			Linus
+Hannes
+-- 
+Dr. Hannes Reinecke		      zSeries & Storage
+hare@suse.de			      +49 911 74053 688
+SUSE LINUX Products GmbH, Maxfeldstr. 5, 90409 Nürnberg
+GF: Markus Rex, HRB 16746 (AG Nürnberg)
