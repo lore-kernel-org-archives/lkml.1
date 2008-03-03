@@ -1,95 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758218AbYCCJMS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758691AbYCCJNb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758218AbYCCJMS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Mar 2008 04:12:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753834AbYCCJMJ
+	id S1758691AbYCCJNb (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Mar 2008 04:13:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753840AbYCCJNY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Mar 2008 04:12:09 -0500
-Received: from smtp-out.google.com ([216.239.45.13]:30218 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753292AbYCCJMH (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Mar 2008 04:12:07 -0500
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=received:message-id:date:from:to:subject:cc:in-reply-to:
-	mime-version:content-type:content-transfer-encoding:
-	content-disposition:references;
-	b=dLEKwLTjgOyVdYipRtEaMAVwcvwkB0tNF7S+MJQyG1hT0ieVtON6WYrdl6Bwao6sQ
-	HBlNhqn7d3xNm6x8ehl5Q==
-Message-ID: <6599ad830803030111w5d6aa07fj761b988f15a4a111@mail.gmail.com>
-Date: Mon, 3 Mar 2008 01:11:51 -0800
-From: "Paul Menage" <menage@google.com>
-To: "Li Zefan" <lizf@cn.fujitsu.com>, Xpl++ <xpl@amln.net>,
-       "Balbir Singh" <balbir@linux.vnet.ibm.com>,
-       "Peter Zijlstra" <a.p.zijlstra@chello.nl>,
-       "Pavel Emelianov" <xemul@openvz.org>, "Paul Jackson" <pj@sgi.com>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "Serge E. Hallyn" <serue@us.ibm.com>
-Subject: Re: [RFC] Prefixing cgroup generic control filenames with "cgroup."
-Cc: "Linux Containers" <containers@lists.osdl.org>,
-       LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <47CBA787.8020100@cn.fujitsu.com>
+	Mon, 3 Mar 2008 04:13:24 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:57739 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753595AbYCCJNX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 3 Mar 2008 04:13:23 -0500
+Date: Mon, 3 Mar 2008 10:13:04 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Arjan van de Ven <arjan@linux.intel.com>
+Cc: torvalds@linux-foundation.org, hans.rosenfeld@amd.com,
+       linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: bisected boot regression post 2.6.25-rc3.. please revert
+Message-ID: <20080303091304.GA17911@elte.hu>
+References: <20080301105646.2c8620d9@laptopd505.fenrus.org> <20080303074620.GC5934@elte.hu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <6599ad830802281314s25c033d6tc021725ae28aef8d@mail.gmail.com>
-	 <47C7EEAC.7010907@amln.net> <47CBA787.8020100@cn.fujitsu.com>
+In-Reply-To: <20080303074620.GC5934@elte.hu>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-So, there have been various options suggested over the course of this thread:
 
---
+* Ingo Molnar <mingo@elte.hu> wrote:
 
-1) no code changes, just stake out all names matching a certain regexp
-(e.g. "[a-z].*") as being potentially used by the kernel in the
-future; document this, and let users who are worried about name
-clashes avoid these names
+> Could you try to hack up a debug patch perhaps? Uninline the 
+> fucntion(s) then add two versions (one is that breaks on your box and 
+> one is that works on your box) of this same pmd_bad()/pud_bad() 
+> functions and do something like this (pseudocode):
 
-pros: no work involved, avoids potentially complex changes to solve a
-possibly non-problem.
+i.e. something like the (tested) patch below. It is not clear whether 
+your testcase is on 32-bit or 64-bit - so i went for the more likely 
+32-bit case first.
 
-cons: leaves an intermingled namespace; since this would be a
-convention rather than an enforced rule, users might be unaware that
-they're setting themselves up for a fall
+	Ingo
 
---
+------------------>
+Subject: x86: patches/x86-debug-bad-page.patch
+From: Ingo Molnar <mingo@elte.hu>
+Date: Mon Mar 03 09:53:17 CET 2008
 
-2) separate out the kernel-generated names and user-generated names by
-putting the user-generated names in a "groups" sub-directory (can be a
-mount option that's automatically disabled for cpusets).
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+---
+ arch/x86/mm/pgtable_32.c     |    7 +++++++
+ include/asm-x86/pgtable_32.h |    6 +++++-
+ 2 files changed, 12 insertions(+), 1 deletion(-)
 
-pros: completely solves problem of intermingled namespaces; makes it
-easier to see sub-groups at a glance
-
-cons: extra code, slightly more awkward to deal with in the general
-case, is incompatible with the code that was in mainline in the brief
-period of time since 2.6.24 was finalized.
-
---
-
-3) prefix all cgroup-provided files with "cgroup."
-
-pros: hardly any extra code; mostly solves the namespace problem since
-user names are much less likely to begin with "cgroup."
-
-cons: changes name of "tasks" file visible in 2.6.24; doesn't help if
-a future new subsystem is introduced with a commonly-used name that
-might clash with existing user-generated names.
-
---
-
-4) prefix all future cgroup files with "cgroup." (possibly including
-existing notify_on_release and release_agent files?)
-
-pros: no extra code, just involves slightly longer strings for future
-new files; no incompatibility issues
-
-cons: ugly inconsistency between new cgroup files and grandfathered
-old ones, plus same clash problems as option 3
-
---
-
-Paul
+Index: linux-x86.q/arch/x86/mm/pgtable_32.c
+===================================================================
+--- linux-x86.q.orig/arch/x86/mm/pgtable_32.c
++++ linux-x86.q/arch/x86/mm/pgtable_32.c
+@@ -381,3 +381,10 @@ void __pmd_free_tlb(struct mmu_gather *t
+ }
+ 
+ #endif
++
++int pmd_bad(pmd_t pmd)
++{
++	WARN_ON_ONCE(pmd_bad_v1(pmd) != pmd_bad_v2(pmd));
++
++	return pmd_bad_v1(pmd);
++}
+Index: linux-x86.q/include/asm-x86/pgtable_32.h
+===================================================================
+--- linux-x86.q.orig/include/asm-x86/pgtable_32.h
++++ linux-x86.q/include/asm-x86/pgtable_32.h
+@@ -92,7 +92,11 @@ extern unsigned long pg0[];
+ /* To avoid harmful races, pmd_none(x) should check only the lower when PAE */
+ #define pmd_none(x)	(!(unsigned long)pmd_val(x))
+ #define pmd_present(x)	(pmd_val(x) & _PAGE_PRESENT)
+-#define	pmd_bad(x)	((pmd_val(x) \
++
++extern int pmd_bad(pmd_t pmd);
++
++#define pmd_bad_v1(x)	((pmd_val(x) & (~PAGE_MASK & ~_PAGE_USER)) != _KERNPG_TABLE)
++#define	pmd_bad_v2(x)	((pmd_val(x) \
+ 			  & ~(PAGE_MASK | _PAGE_USER | _PAGE_PSE | _PAGE_NX)) \
+ 			 != _KERNPG_TABLE)
+ 
