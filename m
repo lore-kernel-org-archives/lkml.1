@@ -1,79 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758131AbYCCPlS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758166AbYCCPmp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758131AbYCCPlS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Mar 2008 10:41:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754792AbYCCPlF
+	id S1758166AbYCCPmp (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Mar 2008 10:42:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754869AbYCCPmh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Mar 2008 10:41:05 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:45633 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754648AbYCCPlE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Mar 2008 10:41:04 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
+	Mon, 3 Mar 2008 10:42:37 -0500
+Received: from iolanthe.rowland.org ([192.131.102.54]:33088 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1754644AbYCCPmh (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 3 Mar 2008 10:42:37 -0500
+Date: Mon, 3 Mar 2008 10:42:35 -0500 (EST)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
 To: Pavel Machek <pavel@ucw.cz>
-Subject: Re: Regression in 2.6.25-rc3: s2ram segfaults before suspending
-Date: Mon, 3 Mar 2008 16:40:01 +0100
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: "Klaus S. Madsen" <ksm@hjernemadsen.org>,
-       Suspend-devel list <suspend-devel@lists.sourceforge.net>,
-       Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>
-References: <20080228150444.GG17932@hjernemadsen.org> <20080301094525.GQ17932@hjernemadsen.org> <20080303121735.GE28369@elf.ucw.cz>
-In-Reply-To: <20080303121735.GE28369@elf.ucw.cz>
+cc: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@osdl.org>,
+       Zdenek Kabelac <zdenek.kabelac@gmail.com>, <davem@davemloft.net>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, Pierre Ossman <drzeus-mmc@drzeus.cx>,
+       Kernel development list <linux-kernel@vger.kernel.org>,
+       pm list <linux-pm@lists.linux-foundation.org>
+Subject: Re: [patch] Re: using long instead of atomic_t when only set/read
+ is required
+In-Reply-To: <20080303120842.GA28369@elf.ucw.cz>
+Message-ID: <Pine.LNX.4.44L0.0803031023550.3611-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200803031640.01885.rjw@sisk.pl>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday, 3 of March 2008, Pavel Machek wrote:
+On Mon, 3 Mar 2008, Pavel Machek wrote:
+
 > Hi!
 > 
-> > > > Klaus S. Madsen wrote:
-> > > >> open("/dev/mem", O_RDWR)                = 5
-> > > >> mmap2(NULL, 1282, PROT_READ|PROT_WRITE|PROT_EXEC, MAP_SHARED|MAP_FIXED, 5, 0) = 0
-> > > >> mmap2(0xa0000, 393216, PROT_READ|PROT_WRITE, MAP_SHARED|MAP_FIXED, 5, 0xa0) = 0xa0000
-> > > >                          ^^^^^^^^^^^^^^^^^^^^
-> > > >> close(5)                                = 0
-> > > >> ioperm(0, 0x400, 0x1)                   = 0
-> > > >> iopl(0x3)                               = 0
-> > > >> access("/sys/bus/pci", R_OK)            = 0
-> > > >> write(1, "Calling get_mode\n", 17)      = 17
-> > > >> vm86(0x1, 0xb7f14ccc, 0xb7f14830, 0xc000, 0x18b6 <unfinished ...>
-> > > >> --- SIGSEGV (Segmentation fault) @ 0 (0) ---
-> > > >> +++ killed by SIGSEGV (core dumped) +++
-> > > >
-> > > > This is the VGA BIOS being mapped, it's mapped PROT_READ|PROT_WRITE, but  
-> > > > no PROT_EXEC; if the kernel is NX-capable it *should* segfault trying to 
-> > > > execute out of this area, which is exactly what will happen when vm86 
-> > > > executes INT 10h.
-> > > >
-> > > > If we can find that mmap() in the s2ram source code and add PROT_EXEC 
-> > > > to it, it would be interesting.
-> > > 
-> > > Klaus, could you send your .config as well? Lets make sure that NX is 
-> > > even relevant in this context.
-> > Allright. The mmap in question is in the x86-common.c file in libx86,
-> > and adding PROT_EXEC to it solves the problem.
-> 
-> Ok, sw should probably fix that in s2ram... can you mail a patch to
-> me, and suspend-devel?
-> 
-> > I have attached my .config.
+> > > Alan thinks that `subj` is correct...
 > > 
-> > The only thing I don't understand is why this is suddenly a problem with
-> > 2.6.25, and not with 2.6.24? Is there a bug in 2.6.24 and previously
-> > that allows real-mode execution of non-executable pages?
+> > More precisely, reads and writes of pointers are always atomic.  That 
+> > is, if a write and a read occur concurrently, it is guaranteed that the 
+> > read will obtain either the old or the new value of the pointer, never 
+> > a mish-mash of the two.  If this were not so then RCU wouldn't work.
+
+Right, Paul?
+
+> Ok, so linux actually atomicity of long?
 > 
-> It is strange indeed... Should it be traced as an regression?
+> If so, this should probably be applied...
+> 
+> Signed-off-by: Pavel Machek <pavel@suse.cz>
+> 
+> diff --git a/Documentation/atomic_ops.txt b/Documentation/atomic_ops.txt
+> index 4ef2450..0a7d180 100644
+> --- a/Documentation/atomic_ops.txt
+> +++ b/Documentation/atomic_ops.txt
+> @@ -21,6 +21,9 @@ local_t is very similar to atomic_t. If 
+>  updated by one CPU, local_t is probably more appropriate. Please see
+>  Documentation/local_ops.txt for the semantics of local_t.
+>  
+> +long (and int and void *) can be used instead of atomic_t, if all you
+> +need is atomic setting and atomic reading.
+> +
+>  The first operations to implement for atomic_t's are the initializers and
+>  plain reads.
 
-I'm tracing it FWIW.  However, it would be good to know if all of the previous
-kernels were buggy and 2.6.25 fixed the problem or it's the other way around.
+Yes indeed.  This fact doesn't seem to be documented anywhere, but it 
+is clearly a requirement of the kernel.  I would make the text a little 
+more explicit, see below.
 
-Thanks,
-Rafael
+Alan Stern
+
+-------------------------------------------------------
+
+
+Atomicity of reads of write for pointers and integral types (other than 
+long long) should be documented.
+
+Signed-off-by: Alan Stern <stern@rowland.harvard.edu>
+
+---
+
+Index: usb-2.6/Documentation/atomic_ops.txt
+===================================================================
+--- usb-2.6.orig/Documentation/atomic_ops.txt
++++ usb-2.6/Documentation/atomic_ops.txt
+@@ -21,6 +21,21 @@ local_t is very similar to atomic_t. If 
+ updated by one CPU, local_t is probably more appropriate. Please see
+ Documentation/local_ops.txt for the semantics of local_t.
+ 
++For all properly-aligned pointer and integral types other than long
++long, the kernel requires simple reads and writes to be atomic with
++respect to each other.  That is, if one CPU reads a pointer value at
++the same time as another CPU overwrites the pointer, it is guaranteed
++that the reader will obtain either the old or the new value of the
++pointer, never some mish-mash combination of the two.  Likewise, if
++one CPU writes a long value at the same time as another CPU does, it
++is guaranteed that one or the other of the values will end up stored
++in memory, not some mish-mash combination of bits.
++
++Thus, if all you need is atomicity of reading and writing then you can
++use plain old ints, longs, or pointers; you don't need to use
++atomic_t.  (But note: This guarantee emphatically does not apply to
++long long values or unaligned values!)
++
+ The first operations to implement for atomic_t's are the initializers and
+ plain reads.
+ 
+
