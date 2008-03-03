@@ -1,99 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754783AbYCCOfU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754869AbYCCOjY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754783AbYCCOfU (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Mar 2008 09:35:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752740AbYCCOfH
+	id S1754869AbYCCOjY (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Mar 2008 09:39:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753381AbYCCOjO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Mar 2008 09:35:07 -0500
-Received: from hp3.statik.tu-cottbus.de ([141.43.120.68]:50801 "EHLO
-	hp3.statik.tu-cottbus.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752723AbYCCOfF (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Mar 2008 09:35:05 -0500
-Message-ID: <47CC0C95.1030709@s5r6.in-berlin.de>
-Date: Mon, 03 Mar 2008 15:35:01 +0100
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.0; en-US; rv:1.8.1.12) Gecko/20080201 SeaMonkey/1.1.8
+	Mon, 3 Mar 2008 09:39:14 -0500
+Received: from psa.adit.fi ([217.112.250.17]:56972 "EHLO psa.adit.fi"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753358AbYCCOjN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 3 Mar 2008 09:39:13 -0500
+Message-ID: <47CC0D5E.6040405@adit.fi>
+Date: Mon, 03 Mar 2008 16:38:22 +0200
+From: Pekka Sarnila <sarnila@adit.fi>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.11) Gecko/20070217 Iceape/1.0.8 (Debian-1.0.8-4)
 MIME-Version: 1.0
-To: Gabriel Paubert <paubert@iram.es>
-CC: Jarod Wilson <jwilson@redhat.com>, benh@kernel.crashing.org,
-       Kristian Hoegsberg <krh@bitplanet.net>, linux-kernel@vger.kernel.org,
-       linuxppc-dev@ozlabs.org, sparclinux@vger.kernel.org,
-       linux1394-devel@lists.sourceforge.net, Sam Ravnborg <sam@ravnborg.org>,
-       Harvey Harrison <harvey.harrison@gmail.com>
-Subject: Re: [PATCH 1/2] firewire: endianess fix
-References: <20080220220326.GA22328@uranus.ravnborg.org> <200802272221.38985.jwilson@redhat.com> <1204179959.15052.372.camel@pasglop> <200802281342.06493.jwilson@redhat.com> <1204241162.15052.393.camel@pasglop> <47C79CB1.6050104@redhat.com> <20080303091927.GA27105@iram.es>
-In-Reply-To: <20080303091927.GA27105@iram.es>
+To: Jiri Kosina <jkosina@suse.cz>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: [patch] hid: quirk to fixup fullspeed interval on highspeed devices
+References: <47C96DEB.5070304@adit.fi> <Pine.LNX.4.64.0803031333080.15209@jikos.suse.cz>
+In-Reply-To: <Pine.LNX.4.64.0803031333080.15209@jikos.suse.cz>
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Gabriel Paubert wrote:
-> I have a Pismo which I use on a virtually
-> daily basis (and about to remove the last remnants of MacOS on it). 
-> However I have disabled Firewire because it would not sleep and wake 
-> up properly. 
+Hi,
+
+thanks for the answer.
+
+Jiri Kosina wrote:
+> On Sat, 1 Mar 2008, Pekka Sarnila wrote:
 > 
-> I can test it on Wednesday with a 5GB fireflly disk from 2001.
+>> Many vendors highspeed devices give erroneously fullspeed interval value 
+>> in endpoint descriptor for interrupt endpoints. This quirk fixes up that 
+>> by recalculating the right value for highspeed device.
 > 
-> Please tell me which configuration options I need to set for
-> Firewire (which stack, etc...).
+> Hi Pekka,
+> 
+> thanks for the patch. I however think that HID code is really a wrong 
+> place to to this, we really want to do this in USB core instead, as that 
+> it where it belongs.
 
-Config options of the new stack:
-FIREWIRE=m
-FIREWIRE_OHCI=m
-FIREWIRE_SBP2=m
+Yes, I kind of agree, but ...
 
-Config options of the old stack:
-IEEE1394=m
-IEEE1394_OHCI1394=m
-IEEE1394_SBP2=m
-and if desired also the other drivers for raw userspace access,
-isochronous I/O (alias video1394 even though it can also be used for
-other purposes), DV I/O, and IPv4 over 1394.
+> Why do you think that adding a new quirk for this device to 
+> usb/core/quirks.c and then checking for it in usb_parse_endpoint() is not 
+> feasible?
 
-The two SBP2 drivers also need SCSI and BLK_DEV_SD a.k.a. SCSI disk
-support or/and BLK_DEV_SR a.k.a. SCSI CDROM support.
+The quirks for usb/core (only two so far) are listed in
+include/linux/usb/quirks.h. As it is states there:
 
-You can also set the options to Y but I find loadable and hence
-unloadable modules more practical... 'cause I unload and reload them all
-the time.  :-)
+/*
+ * This file holds the definitions of quirks found in USB devices.
+ * Only quirks that affect the whole device, not an interface,
+ * belong here.
+ */
 
-Regarding which of the two stacks to build:  If you are going to test
-FireWire with a storage device only, then you can choose either stack.
-Caveats:
-  - You could build and install both stacks but should then blacklist
-    at least one of ohci1394 or firewire-ohci.  Better keep it simple
-    and install only one of the stacks at a time.
-  - We still have a serious use-after-free bug in the new stack.  This
-    may lead to kernel panic if the kernel was build with (slab? or
-    page allocation?) debugging enabled.
-Users of IP over 1394 and pro/semipro audio still need the old stack.
-Users of video should stick with the stack which their distribution has
-enabled because our support in the lowlevel libraries libraw1394 and
-libdc1394 to switch between the stacks is not quite comfortable yet.
+There are two interfaces on this particular device. Only one interface is
+HID, and the problem pertains only to that interface. Thus a class specific
+quirk (HID) to eliminate the kernel tinkering with the endpoints of the
+other interface (not having this problem).
 
-Suspend (to RAM) and resume worked for me [TM] when I last tested them
-with each stack.  I tested i586/APM, x86-64/ACPI, and last weekend ppc32
-on 1st generation PowerBook G4.  I haven't tested hibernate (to disk)
-and restore yet.
+This rises the question of the generality of this quirk. In this particular
+case there are no interrupt endpoints on the other device. So based on this
+one case it is impossible say anything on whether on devices having several
+interrupt endpoints, maybe on several interfaces, the problem is device,
+interface or endpoint specific. I suspect all combinations exist.
+One might speculate that manufacturers are combining in to one usb.2 device
+old usb.1 and new usb.2 components forgetting to update the interval value
+in the firmware for the old component (I suspects this has happened in this
+case: new being dvb, old ifr kbd).
 
-For successful resume on the Pismo with the new stack, you will most
-certainly need the brand new patches which add PPC_PMAC platform support
-to firewire-ohci.  From what I saw with the PowerBook, you will also
-need the UniNorth rev1 related patch.  I wasn't able to fully test that
-patch though because the electrical interface of my PowerBook's onboard
-FireWire is dead.  You can get the patches from kernel.org's
-linux1394-2.6.git (master branch, close to Linus's latest linux-2.6.git)
-or http://me.in-berlin.de/~s5r6/linux1394/updates/ (for a few kernel.org
-kernels).
+If so it implies the need, not only for device or class specific, but also
+interface and endpoint specific quirks. No such quirk-mechanism (to my
+knowledge) exist.
 
-The old stack as found in any remotely recent 2.6 kernel should be OK
-out of the box without patches... in theory.  I wouldn't be surprised of
-until now unreported bugs or old reported but forgotten bugs though.
--- 
-Stefan Richter
--=====-==--- --== ---==
-http://arcgraph.de/sr/
+Anyway, in the case of this particular device it was justified to limit
+the quirk to HID-class. What to do in general is the question: My guess is
+(without interface or endpoint specific quirks) class specific quirks hit
+the target more precisely. But it is really only a guess.
+
+Pekka
+
+ 
+> Thanks,
+> 
