@@ -1,54 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753580AbYCCFqk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755249AbYCCFsl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753580AbYCCFqk (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Mar 2008 00:46:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750921AbYCCFqb
+	id S1755249AbYCCFsl (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Mar 2008 00:48:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750995AbYCCFsc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Mar 2008 00:46:31 -0500
-Received: from n5.bullet.mail.mud.yahoo.com ([209.191.127.237]:41521 "HELO
-	n5.bullet.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1750834AbYCCFqa (ORCPT
+	Mon, 3 Mar 2008 00:48:32 -0500
+Received: from sitemail2.everyone.net ([216.200.145.36]:51293 "EHLO
+	omta09.mta.everyone.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1750921AbYCCFsc convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Mar 2008 00:46:30 -0500
-X-Greylist: delayed 314 seconds by postgrey-1.27 at vger.kernel.org; Mon, 03 Mar 2008 00:46:30 EST
-X-Yahoo-Newman-Id: 649811.1634.bm@omp408.mail.mud.yahoo.com
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=4BwbjqBktplbdOpFY60xadzidZ3v1zDdNe46P8rDDIJumYjZu625mYMF7gBnUVqq6TnFL04T0scRB1uIvUVCjEBfdNZDbq+EsV7a9OGWXz7bSKuEpcDA6Ae5Vag420c4nY6IX1AMP3cEFc6W+1sr1DNI5CnQMq95Ja1eAu1vxeA=  ;
-X-YMail-OSG: .xsAPO4VM1lw7gGAW1TyQ9jqSoSTxdKemk1.0PC6NxWART5I2oWqYB0WERTgB3KVnb_xZUNCtw--
-X-Yahoo-Newman-Property: ymail-3
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-To: "KOSAKI Motohiro" <m-kosaki@ceres.dti.ne.jp>
-Subject: Re: [PATCH 2.6.24] mm: BadRAM support for broken memory
-Date: Mon, 3 Mar 2008 16:32:47 +1100
-User-Agent: KMail/1.9.5
-Cc: "Rick van Rein" <rick@vanrein.org>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org
-References: <20080302134221.GA25196@phantom.vanrein.org> <2f11576a0803020901n715fda8esbfc0172f5a15ae3c@mail.gmail.com>
-In-Reply-To: <2f11576a0803020901n715fda8esbfc0172f5a15ae3c@mail.gmail.com>
+	Mon, 3 Mar 2008 00:48:32 -0500
+X-Greylist: delayed 1547 seconds by postgrey-1.27 at vger.kernel.org; Mon, 03 Mar 2008 00:48:32 EST
+X-Eon-Dm: dm43
+X-Eon-Sig: AQMBJPhHy4siMw7CowIAAAAB,255df1b2356070b99d5d5e1d88200ce5
+Message-ID: <3867-2200831321483862@elisar>
+From: "Cherry Anne Flores" <law06@DUBAICITY.COM>
+To: linux-kernel@vger.kernel.org
+Subject: Introducing The Most Powerful Opportunity of 2008!!! 
+Date: Mon, 3 Mar 2008 13:48:38 -0800
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200803031632.47888.nickpiggin@yahoo.com.au>
+Content-type: text/plain; charset=windows-1252
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 03 March 2008 04:01, KOSAKI Motohiro wrote:
-> Hi
->
-> in general,
-> Agreed with we need bad memory treatness.
->
-> >  +#define PG_badram              20      /* BadRam page */
->
-> some architecture use PG_reserved for treat bad memory.
-> Why do you want introduce new page flag?
-> for show_mem() improvement?
 
-I'd like to get rid of PG_reserved at some point. So I'd
-rather not overload it with more meanings ;)
+Hi, 
+ 
+My name is Cherry, and the reason for this email is that you and I might
+share something in common...At some point in our lives many of us have
+contemplated or tried to start a home business. Don't worry; I'm not
+trying to sell you anything. I just want to ask you a simple question?
+
+"If I helped you start a part-time business from your home and in two
+years you retired... Would you send me a Thank You card?"
+
+If your answer is "Yes" then simply click the link below:
+http://trickurl.com/?r=bah
+
+I would like to offer you a membership, without obligation and with no 
+strings attached if you decide it is not for you. :) We are just
+looking for people who still have that "burning desire" to find an 
+opportunity that will reward them incredibly well, if they work at it.
+I am excited about the opportunity that I have by helping other's save 
+money. I love it!
+
+If your answer is no then please delete this email, I will not be
+contacting you again.
+
+I hope you will at least take the next step and take a look. It's fun 
+and there is absolutely no obligation on your part for this 
+information.
+
+Thank you for your time.
+http://trickurl.com/?r=bah
+
+P.S. - This is a huge, ground floor opportunity that is much bigger 
+than me! If you are at all interested in making some extra money or 
+having a business of your own, let me know and I'll get you information
+on how the business works. It is fantastic!
+
+
+Removal Instruction:
+
+Reply with the subject "Remove Me" if you wish to be remove from my
+mailing list and to no longer receive emails from me.
+
+"We are where we are today, because of the choices we have made in the
+ past. If you are not happy with where you are right now, then change
+ the choices you make in your life."
+
 
