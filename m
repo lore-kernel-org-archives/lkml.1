@@ -1,59 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752888AbYCCXwW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757098AbYCCXwk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752888AbYCCXwW (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Mar 2008 18:52:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751882AbYCCXvq
+	id S1757098AbYCCXwk (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Mar 2008 18:52:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753846AbYCCXvw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Mar 2008 18:51:46 -0500
-Received: from e5.ny.us.ibm.com ([32.97.182.145]:43266 "EHLO e5.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751609AbYCCXvp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Mar 2008 18:51:45 -0500
-Subject: [PATCH 0/3] A kernel tracing interface (updated)
-From: "David J. Wilder" <dwilder@us.ibm.com>
-To: linux-kernel@vger.kernel.org, akpm@linux-foundation.org
-Cc: systemtap@sourceware.org
-Content-Type: text/plain
-Date: Mon, 03 Mar 2008 15:51:39 -0800
-Message-Id: <1204588300.32186.6.camel@lc4eb748232119.ibm.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.0.2 (2.0.2-35.0.4.el4) 
+	Mon, 3 Mar 2008 18:51:52 -0500
+Received: from g1t0029.austin.hp.com ([15.216.28.36]:42932 "EHLO
+	g1t0029.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753409AbYCCXvu (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 3 Mar 2008 18:51:50 -0500
+From: Paul Moore <paul.moore@hp.com>
+Organization: Hewlett-Packard
+To: "Ahmed S. Darwish" <darwish.07@gmail.com>
+Subject: Re: [PATCH 7/9] Audit: internally use the new LSM audit hooks
+Date: Mon, 3 Mar 2008 18:51:41 -0500
+User-Agent: KMail/1.9.7
+Cc: Chris Wright <chrisw@sous-sol.org>, Stephen Smalley <sds@tycho.nsa.gov>,
+       James Morris <jmorris@namei.org>, Eric Paris <eparis@parisplace.org>,
+       Casey Schaufler <casey@schaufler-ca.com>,
+       David Woodhouse <dwmw2@infradead.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, Audit-ML <linux-audit@redhat.com>,
+       LSM-ML <linux-security-module@vger.kernel.org>
+References: <20080301194752.GA19636@ubuntu> <20080301200111.GH19636@ubuntu>
+In-Reply-To: <20080301200111.GH19636@ubuntu>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200803031851.41978.paul.moore@hp.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-These patches provide a kernel tracing interface called "trace".
+On Saturday 01 March 2008 3:01:11 pm Ahmed S. Darwish wrote:
+> Convert Audit to use the new LSM Audit hooks instead of
+> the exported SELinux interface.
+>
+> Basically, use:
+> security_audit_rule_init
+> secuirty_audit_rule_free
+> security_audit_rule_known
+> security_audit_rule_match
+>
+> instad of (respectively) :
+> selinux_audit_rule_init
+> selinux_audit_rule_free
+> audit_rule_has_selinux
+> selinux_audit_rule_match
+>
+> Signed-off-by: Casey Schaufler <casey@schaufler-ca.com>
+> Signed-off-by: Ahmed S. Darwish <darwish.07@gmail.com>
+> ---
+>
+>  audit.c       |    7 ------
+>  auditfilter.c |   61
+> ++++++++++++++++------------------------------------------ auditsc.c 
+>    |    9 +++-----
+>  3 files changed, 22 insertions(+), 55 deletions(-)
 
-ChangeLog:
--Added "Examples of user interface" to doc.
--Fix state write to match only on exact commands.
--Updated to 2.6.25-rc2-mm1
--Added a new example that demonstrates per-cpu continuous tracing
- of data generated using marker probes.
--Removed inline from relay patch.
--Moved examples into /sample directory.
+For some reason some of your patches are not coming through with correct 
+diffstats (notice the lack of a path relative to the kernel base?).  
+Don't worry too much about it as it's not grounds to reject the patch 
+(at least in my mind) but it's worth looking into on your end for the 
+next time you submit patches.
 
-The motivation for "trace" is to:
-- Provide a simple set of tracing primitives that will utilize the high-
-  performance and low-overhead of relayfs for passing traces data from
-  kernel to user space.
-- Provide a common user interface for managing kernel traces.
-- Allow for binary as well as ascii trace data.
-- Incorporate features from the systemtap runtime that are
-  useful to others.
+> Andrew, please atomically merge patch #7 and patch #8. Although
+> a system with patch7 and without patch8 will be compiled fine,
+> the SELinux Audit hooks are not set up yet. This means below
+> audit hooks will point to the dummy hooks instead of SELinux
+> ones even if SELinux is enabled.
+>
+> I could not setup the SELinux hooks first cause they have
+> the same name of the old exported SELinux interface with a
+> difference of one parameter.
 
-Patches are built against 2.6.25-rc2-mm1.
-Tested on: 2.6.25-rc3
+In cases like this where you need patches applied atomically to ensure 
+correct operation you can always combine the two patches into one 
+(assuming they are still small enough to be posted, which shouldn't be 
+a problem here).  Small patches are nice and easy to review, but that 
+doesn't mean you have to break everything up if it is awkward.
 
-Summary of patches:
-[patch 1/3]  Relay Reset Consumed
-[patch 2/3]  Trace code and documentation
-[patch 3/3]  Trace sample
+I've looked over patches #7, #8, and #9 and they look okay to me, but 
+I'm not tagging them 'Reviewed-by' because they go beyond areas of the 
+kernel that I feel comfortable reviewing at this point.  Rest assured 
+there are other on the To/CC line that can help you out (I see James 
+Morris already Ack'd your entire patch set).
 
-Note: Patch 1/3 provides a service used by patch 2/3
-thus must be applied first or at the same time.
+Thanks for all your work on this, it's a nice improvement.
 
-Signed-off-by: David Wilder <dwilder@us.ibm.com>
-
-
+-- 
+paul moore
+linux security @ hp
