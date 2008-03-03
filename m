@@ -1,46 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757130AbYCCUX6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759353AbYCCUY2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757130AbYCCUX6 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Mar 2008 15:23:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751565AbYCCUXt
+	id S1759353AbYCCUY2 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Mar 2008 15:24:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753024AbYCCUYO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Mar 2008 15:23:49 -0500
-Received: from gate.crashing.org ([63.228.1.57]:59877 "EHLO gate.crashing.org"
+	Mon, 3 Mar 2008 15:24:14 -0500
+Received: from mail.suse.de ([195.135.220.2]:44888 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750875AbYCCUXt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Mar 2008 15:23:49 -0500
-In-Reply-To: <47CB826A.7000202@zytor.com>
-References: <4a8566f54ff84f498c5c0c0340076c296b1840e6@tazenda.hos.anvin.org> <7e0381d9932a37ad78f0c38b2a3c6a03@kernel.crashing.org> <47CB826A.7000202@zytor.com>
-Mime-Version: 1.0 (Apple Message framework v623)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <6d00362802813d8ed477b58ab218d03c@kernel.crashing.org>
-Content-Transfer-Encoding: 7bit
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Linux Arch Mailing List <linux-arch@vger.kernel.org>,
+	id S1751624AbYCCUYM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 3 Mar 2008 15:24:12 -0500
+Date: Mon, 3 Mar 2008 21:24:11 +0100
+From: Nick Piggin <npiggin@suse.de>
+To: Christoph Lameter <clameter@sgi.com>
+Cc: netdev@vger.kernel.org,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       David Brownell <dbrownell@users.sourceforge.net>
-From: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [PATCH 1/2] Add C99-style constructor macros for specific-sized integers
-Date: Mon, 3 Mar 2008 21:23:34 +0100
-To: "H. Peter Anvin" <hpa@zytor.com>
-X-Mailer: Apple Mail (2.623)
+       yanmin_zhang@linux.intel.com, David Miller <davem@davemloft.net>,
+       Eric Dumazet <dada1@cosmosbay.com>
+Subject: Re: [rfc][patch 2/3] slab: introduce SMP alignment
+Message-ID: <20080303202411.GH8974@wotan.suse.de>
+References: <20080303093449.GA15091@wotan.suse.de> <20080303093529.GB15091@wotan.suse.de> <Pine.LNX.4.64.0803031104570.6917@schroedinger.engr.sgi.com> <20080303200355.GB8974@wotan.suse.de> <Pine.LNX.4.64.0803031208400.16049@schroedinger.engr.sgi.com> <20080303201211.GE8974@wotan.suse.de> <Pine.LNX.4.64.0803031216430.3110@schroedinger.engr.sgi.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0803031216430.3110@schroedinger.engr.sgi.com>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->> Do these new macros really buy anything over just writing LL in the
->> few places that 64-bit constants are used?
->
-> It gives you macros that matches the s64/u64 et al definitions are, 
-> thus avoiding another class of spurious warnings.
+On Mon, Mar 03, 2008 at 12:17:20PM -0800, Christoph Lameter wrote:
+> On Mon, 3 Mar 2008, Nick Piggin wrote:
+> 
+> > > You want two ways of specifying alignments?
+> > 
+> > I want a way to ask for SMP friendly allocation.
+> 
+> Then align the objects at cacheline boundaries by providing a value for 
+> the align parameter to kmem_cache_create().
 
-GCC doesn't warn for implicit narrowing that doesn't change value.
+max(num_possible_cpus() > 1 ? cache_line_size() : 0, mandatory_alignment)?
 
-The printk() example is a read herring IMHO, since variable arguments
-functions are "very speshul" anyway, and require explicit casts in
-many cases.
+Then suppose we want a CONFIG_TINY option to eliminate it?
 
+max(!CONFIG_TINY && num_possible_cpus() > 1 ? cache_line_size() : 0, mandatory_alignment)
 
-Segher
+And maybe the VSMP guys will want to blow this out to their internode
+alignment?
+
+max(!CONFIG_TINY && num_possible_cpus() > 1 ? (is_vsmp ? internode_alignemnt : cache_line_size()) : 0, mandatory_alignment)
+
 
