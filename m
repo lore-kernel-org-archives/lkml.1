@@ -1,76 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759394AbYCCJVe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759770AbYCCJYs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759394AbYCCJVe (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Mar 2008 04:21:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754086AbYCCJVX
+	id S1759770AbYCCJYs (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Mar 2008 04:24:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754155AbYCCJYk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Mar 2008 04:21:23 -0500
-Received: from wf-out-1314.google.com ([209.85.200.174]:26527 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754025AbYCCJVV (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Mar 2008 04:21:21 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
-        b=jdyq5bZtMYaYF/SybgaN2M6aeccYXCOXjUebs9Ftst0DafbS6KpBrZY5Cqit3yTqj3R7uRmPNhRQmL6Q1WYsxHPzGSOwOsuQBUJc9u8A9FQ0mpphOY3amJaEaYD6fHzFrmaM0NG9UcLH03/B4Tc/hGLtWbeSG6fY8NnQk05UWfo=
-Message-ID: <47CBC309.7090106@gmail.com>
-Date: Mon, 03 Mar 2008 18:21:13 +0900
-From: Tejun Heo <htejun@gmail.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20070801)
+	Mon, 3 Mar 2008 04:24:40 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:59029 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753840AbYCCJYk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 3 Mar 2008 04:24:40 -0500
+Date: Mon, 3 Mar 2008 10:24:22 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Michael Kerrisk <mtk.manpages@googlemail.com>
+Cc: Arnd Bergmann <arnd@arndb.de>, Christoph Hellwig <hch@lst.de>,
+       cbe-oss-dev@ozlabs.org, Jeremy Kerr <jk@ozlabs.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: SCHED_IDLE documentation
+Message-ID: <20080303092422.GA18281@elte.hu>
+References: <1203376368.275756.252634247263.1.gpush@pokey> <200803030612.28039.arnd@arndb.de> <20080303051719.GA26102@lst.de> <200803030721.52869.arnd@arndb.de> <20080303073311.GB5934@elte.hu> <cfd18e0f0803030040l667dd2b7v6298e78c5b21bfec@mail.gmail.com>
 MIME-Version: 1.0
-To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-CC: tomof@acm.org, jens.axboe@oracle.com,
-       James.Bottomley@HansenPartnership.com, efault@gmx.de,
-       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       linux-ide@vger.kernel.org, linux-scsi@vger.kernel.org,
-       jgarzik@pobox.com
-Subject: Re: [PATCH] block: fix residual byte count handling
-References: <47CB6508.3040206@gmail.com>	<20080303125940T.fujita.tomonori@lab.ntt.co.jp>	<47CB79E9.8000505@gmail.com> <20080303172623O.fujita.tomonori@lab.ntt.co.jp>
-In-Reply-To: <20080303172623O.fujita.tomonori@lab.ntt.co.jp>
-X-Enigmail-Version: 0.95.5
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <cfd18e0f0803030040l667dd2b7v6298e78c5b21bfec@mail.gmail.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-FUJITA Tomonori wrote:
->>> I can't see what changing the meaning of rq->data_len (and
->>> investigating all the block drivers) gives us.
->> No matter which way you go, you change the meaning of rq->data_len and
->> you MUST inspect rq->data_len usage whichever way you go.
+
+* Michael Kerrisk <mtk.manpages@googlemail.com> wrote:
+
+> On Mon, Mar 3, 2008 at 8:33 AM, Ingo Molnar <mingo@elte.hu> wrote:
+> >
+> > * Arnd Bergmann <arnd@arndb.de> wrote:
+> >
+> > > If we don't have any man page, what is the actual definition of
+> > > SCHED_IDLE anyway?
+> >
+> > it's rather simple: "it's a priority level even lower priority than nice
+> > +19".
 > 
-> The patch doens't change that rq->data_len means the true data
-> length. But yeah, it breaks rq->data_len == sum(sg). So it might break
-> some drivers.
-
-Yeah, that's what I was saying.  You end up breaking one of the two
-assumptions.  As sglist is getting modified for any driver if it has DMA
-alignment set, whether rq->data_len is adjusted together or not, sglist
-and data_len usages have to be audited.
-
->> Apply your patch and try to do sg IO on IDE cdrom w/ various
->> transfer lengths.
+> Some other questions whose answers may be worth including in the man page:
 > 
-> I've just tried the patch with both ata and libata and it seems to
-> work.
+> * When was SCHED_IDLE added?  (Actually, who added it?)
 
-Right, I missed you added extra_len in libata and IDE isn't using block
-layer stuff yet.
+"git-blame include/linux/sched.h" gives you that information, it was 
+added by me as part of CFS:
 
-> For anyone hitting this problem, please try the following patch:
-> 
-> http://lkml.org/lkml/2008/3/2/218
+  commit 0e6aca43e08a62a48d6770e9a159dbec167bf4c6
+  Author: Ingo Molnar <mingo@elte.hu>
+  Date:   Mon Jul 9 18:51:57 2007 +0200
 
-Whether rq->data_len stays with requested data buffer size or sum(sg), I
-think we need to separate out padding from address alignment; otherwise,
-we'll have to audit every block driver to make sure they can deal with
-extended sglist no matter which value rq->data_len ends up indicating.
+      sched: add SCHED_IDLE policy
+ 
+> * Why was it added?  (What are the particular benefits of the new 
+> sceuling class as opposed to using a very low nice value for 
+> SCHED_OTHER?)
 
-If padding is applied iff explicitly requested, rq->data_len indicates
-matters only to the drivers which want to see the data length adjusted,
-so most of the problems go away.
+because some people wanted even lower priorities than what nice +19 
+gave, and extending nice levels wasnt possible for ABI reasons.
 
--- 
-tejun
+> * What's the difference between SCHED_IDLE and SCHED_BATCH?
+
+SCHED_BATCH can still have nice levels from -20 to +19, it is a modified 
+SCHED_OTHER/SCHED_NORMAL for "throughput oriented" workloads.
+
+SCHED_IDLE overrides the nice settings and it means a "super idle" 
+workload.
+
+	Ingo
