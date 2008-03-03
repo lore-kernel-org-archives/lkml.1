@@ -1,83 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756598AbYCCWNP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759438AbYCCWNx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756598AbYCCWNP (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Mar 2008 17:13:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753264AbYCCWM6
+	id S1759438AbYCCWNx (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Mar 2008 17:13:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752986AbYCCWNn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Mar 2008 17:12:58 -0500
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:56877 "EHLO
-	gprs189-60.eurotel.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753211AbYCCWM6 (ORCPT
+	Mon, 3 Mar 2008 17:13:43 -0500
+Received: from odyssey.analogic.com ([204.178.40.5]:1943 "EHLO
+	odyssey.analogic.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751955AbYCCWNm convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Mar 2008 17:12:58 -0500
-Date: Mon, 3 Mar 2008 23:13:23 +0100
-From: Pavel Machek <pavel@ucw.cz>
-To: "Alfred E. Heggestad" <aeh@db.org>
-Cc: dmitry.torokhov@gmail.com, linux-input@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] input: driver for USB VoIP phones with CM109 chipset
-Message-ID: <20080303221323.GK13869@elf.ucw.cz>
-References: <47AB5012.20509@db.org> <20080209191206.GD5139@ucw.cz> <47CC7686.5030600@db.org>
+	Mon, 3 Mar 2008 17:13:42 -0500
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <47CC7686.5030600@db.org>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.17 (2007-11-01)
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+X-OriginalArrivalTime: 03 Mar 2008 22:10:58.0348 (UTC) FILETIME=[755C1EC0:01C87D7B]
+Content-class: urn:content-classes:message
+Subject: Re: 64-bit AMD panic
+Date: Mon, 3 Mar 2008 17:10:53 -0500
+Message-ID: <Pine.LNX.4.61.0803031704290.7011@chaos.analogic.com>
+In-Reply-To: <20080303162246.3f33ee24@cuia.boston.redhat.com>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: 64-bit AMD panic
+Thread-Index: Ach9e3WEMhkDikCVQL+Xowsu4su8Sg==
+References: <Pine.LNX.4.61.0803031205030.5874@chaos.analogic.com><alpine.DEB.1.00.0803031942040.5974@sheep.housecafe.de> <20080303162246.3f33ee24@cuia.boston.redhat.com>
+From: "linux-os (Dick Johnson)" <linux-os@analogic.com>
+To: "Rik van Riel" <riel@redhat.com>
+Cc: "Christian Kujau" <lists@nerdbynature.de>,
+       "Linux kernel" <linux-kernel@vger.kernel.org>
+Reply-To: "linux-os (Dick Johnson)" <linux-os@analogic.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon 2008-03-03 23:07:02, Alfred E. Heggestad wrote:
-> Pavel Machek wrote:
->> Hi!
->>
->>> + Komunikate KIP1000 Keyboard Matrix
->>> +
->>> +     -> -- 1 -- 2 -- 3  --> GPI pin 4 (0x10)
->>> +      |    |    |    |
->>> +     <- -- 4 -- 5 -- 6  --> GPI pin 5 (0x20)
->>> +      |    |    |    |
->>> +     END - 7 -- 8 -- 9  --> GPI pin 6 (0x40)
->>> +      |    |    |    |
->>> +     OK -- * -- 0 -- #  --> GPI pin 7 (0x80)
->>> +      |    |    |    |
->>> +
->>> +     /|\  /|\  /|\  /|\
->>> +      |    |    |    |
->>> +GPO
->>> +pin:  3    2    1    0
->>> +     0x8  0x4  0x2  0x1
->>> +
->>> + */
->>> +static int keymap_kip1000(int scancode)
->>> +{
->>> +	switch (scancode) {			 /* phone key:   */
->>> +	case 0x82: return KEY_0;		 /*   0   */
->>> +	case 0x14: return KEY_1;		 /*   1   */
->>> +	case 0x12: return KEY_2;		 /*   2   */
->>> +	case 0x11: return KEY_3;		 /*   3   */
->>> +	case 0x24: return KEY_4;		 /*   4   */
->>> +	case 0x22: return KEY_5;		 /*   5   */
->>> +	case 0x21: return KEY_6;		 /*   6   */
->>> +	case 0x44: return KEY_7;		 /*   7   */
->>> +	case 0x42: return KEY_8;		 /*   8   */
->>> +	case 0x41: return KEY_9;		 /*   9   */
->>> +	case 0x81: return KEY_LEFTSHIFT | KEY_3 << 8; /*  #          */
->>
->> That's a very dirty hack, right?
->>
+
+On Mon, 3 Mar 2008, Rik van Riel wrote:
+
+> On Mon, 3 Mar 2008 19:45:52 +0100 (CET)
+> Christian Kujau <lists@nerdbynature.de> wrote:
 >
-> yeah, that is a dirty hack which we should avoid by defining
-> a new key called e.g. KEY_KPPOUND for the '#'-key.
+>> On Mon, 3 Mar 2008, linux-os (Dick Johnson) wrote:
+>>> We have 64-bit production machines that use the kernel shipped with
+>>> a RedHat distribution, linux-2.6.11-1.1369_FC4smp.
+>>
+>> Try asking on the Fedora lists or perhaps it's even in their bugzilla...
+>
+> It's a little late to ask support for Fedora 4.  The current released versions
+> are Fedora 7 and 8; Fedora 9 is the current development version.
+>
+> -- 
+> All Rights Reversed
+>
 
-Yes please. Phones are pretty common these days.
+That's the problem trying to support devices in production.
+The last kernel I was able to locate for the x86_64 project
+is linux-2.6.23. Its dates are from late last year so maybe
+it will work!
 
-> the CM109 driver is based on the Yealink driver
-> (drivers/input/misc/yealink.c) so the same hack exists there..
+It is now being compiled one one of the target machines.
+If this works, I'll have to find the differences between
+the old and the newer and patch the linux-2.6.11 because
+it is a "certified" kernel, i.e., selected by the FAA and
+determined to be politically correct!
 
-Fix it too ;-).
+I was hoping that somebody who works on these projects
+would just reply with "just change the xyz mask to ...."
+and it would work!
 
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+
+Cheers,
+Dick Johnson
+Penguin : Linux version 2.6.22.1 on an i686 machine (5588.28 BogoMips).
+My book : http://www.AbominableFirebug.com/
+_
+
+
+****************************************************************
+The information transmitted in this message is confidential and may be privileged.  Any review, retransmission, dissemination, or other use of this information by persons or entities other than the intended recipient is prohibited.  If you are not the intended recipient, please notify Analogic Corporation immediately - by replying to this message or by sending an email to DeliveryErrors@analogic.com - and destroy all copies of this information, including any attachments, without reading or disclosing them.
+
+Thank you.
