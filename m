@@ -1,180 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753252AbYCCMOO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754014AbYCCMRK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753252AbYCCMOO (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Mar 2008 07:14:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751435AbYCCMN6
+	id S1754014AbYCCMRK (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Mar 2008 07:17:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751579AbYCCMQ4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Mar 2008 07:13:58 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:39725 "EHLO mx2.mail.elte.hu"
+	Mon, 3 Mar 2008 07:16:56 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:50880 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751411AbYCCMN4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Mar 2008 07:13:56 -0500
-Date: Mon, 3 Mar 2008 13:13:35 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Adrian Bunk <bunk@kernel.org>
-Cc: Sam Ravnborg <sam@ravnborg.org>, Alexey Starikovskiy <aystarik@gmail.com>,
-       lenb@kernel.org, astarikovskiy@suse.de, linux-acpi@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Arjan van de Ven <arjan@infradead.org>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>
-Subject: [patch] x86: phase out forced inlining
-Message-ID: <20080303121335.GA15381@elte.hu>
-References: <20080301161902.GN25835@cs181133002.pp.htv.fi> <47C99FE1.8080206@gmail.com> <20080301183550.GC25835@cs181133002.pp.htv.fi> <20080303085720.GD15943@elte.hu> <20080303091314.GC4457@cs181133002.pp.htv.fi> <20080303091714.GA18250@elte.hu> <20080303093103.GA23651@uranus.ravnborg.org> <20080303103933.GC21190@elte.hu> <20080303113451.GF4457@cs181133002.pp.htv.fi> <20080303114533.GA4183@elte.hu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080303114533.GA4183@elte.hu>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	id S1751378AbYCCMQ4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 3 Mar 2008 07:16:56 -0500
+Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
+	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
+	Kingdom.
+	Registered in England and Wales under Company Registration No. 3798903
+From: David Howells <dhowells@redhat.com>
+In-Reply-To: <20080303114310.GA28139@flint.arm.linux.org.uk>
+References: <20080303114310.GA28139@flint.arm.linux.org.uk> <4a8566f54ff84f498c5c0c0340076c296b1840e6@tazenda.hos.anvin.org> <8260.1204541852@redhat.com>
+To: Russell King <rmk+lkml@arm.linux.org.uk>
+Cc: dhowells@redhat.com, "H. Peter Anvin" <hpa@zytor.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linux Arch Mailing List <linux-arch@vger.kernel.org>,
+       David Brownell <dbrownell@users.sourceforge.net>
+Subject: Re: [PATCH 1/2] Add C99-style constructor macros for specific-sized integers
+X-Mailer: MH-E 8.0.3+cvs; nmh 1.2-20070115cvs; GNU Emacs 23.0.50
+Date: Mon, 03 Mar 2008 12:15:59 +0000
+Message-ID: <8809.1204546559@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Russell King <rmk+lkml@arm.linux.org.uk> wrote:
 
-* Ingo Molnar <mingo@elte.hu> wrote:
-
-> > > no, what we should nuke is this always_inline definition. That was 
-> > > always the intention of FORCED_INLINE, and the removal of 
-> > > FORCED_INLINE was to _remove the forcing_, not to make it 
-> > > unconditional.
-> > 
-> > It was always unconditional, and neither adding, toggling nor 
-> > removing of CONFIG_FORCED_INLINING changed this invariant.
-> > 
-> > And what we should do is to attack the excessive wrong usage of 
-> > inlines in .c files, not messing with a global #define in a way that 
-> > the results on 24 architectures with 7 different releases of gcc 
-> > would be unpredictable.
+> > And #if defined(__ASSEMBLY__), just splat x through as is.
 > 
-> i see, so you never properly reported and fixed it because you prefer 
-> a 1000 small crappy changes over one change. You could have 
-> significantly contributed to truly making Linux smaller, but you 
-> decided not to do it.
-> 
-> and i disagree with your notion that flipping it around is risky in 
-> any unacceptable or unmanageable way. It has far less risks on the 
-> compiler than say CONFIG_CC_OPTIMIZE_FOR_SIZE. It has far less risks 
-> than changing to a new compiler version. Why you think it's 
-> "unpredictable" is a mystery to me.
-> 
-> It almost seems to me you were happy with having that bug in the 
-> kernel? Please tell me that i'm wrong about that impression!
-> 
-> i'll reinstate this .config option and let it do the right thing. 
-> Forced inlining was supposed to be _phased out_, not phased in.
+> We already have something like this on ARM - include/asm-arm/memory.h
 
-i just implemented the trivial fix below and it gave me a massive, 2.3% 
-text size reduction (!) on a typical .config. That's more than 120K 
-shaved off the vmlinux.
+Which you could perhaps replace.
 
-Why, despite being aware of this bug, you never fixed this properly is a 
-mystery to me - this is more .text size savings than you have done so 
-far with all your uninlining patches of the past few years combined, and 
-it's probably more than you could have achieved in the next 5 years.
-
-	Ingo
-
----------------------->
-Subject: x86: phase out forced inlining
-From: Ingo Molnar <mingo@elte.hu>
-Date: Mon Mar 03 12:38:52 CET 2008
-
-allow gcc to optimize the kernel image's size by uninlining
-functions that have been marked 'inline'. Previously gcc was
-forced by Linux to always-inline these functions via a gcc
-attribute:
-
- #define inline	inline __attribute__((always_inline))
-
-Especially when the user has already selected
-CONFIG_OPTIMIZE_FOR_SIZE=y this can make a huge difference in
-kernel image size (using a standard Fedora .config):
-
-   text    data     bss     dec           hex filename
-   5613924  562708 3854336 10030968    990f78 vmlinux.before
-   5486689  562708 3854336  9903733    971e75 vmlinux.after
-
-that's a 2.3% text size reduction (!).
-
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
----
- arch/x86/Kconfig.debug            |   13 +++++++++++++
- arch/x86/configs/i386_defconfig   |    1 +
- arch/x86/configs/x86_64_defconfig |    1 +
- include/linux/compiler-gcc.h      |   12 +++++++++---
- 4 files changed, 24 insertions(+), 3 deletions(-)
-
-Index: linux-x86.q/arch/x86/Kconfig.debug
-===================================================================
---- linux-x86.q.orig/arch/x86/Kconfig.debug
-+++ linux-x86.q/arch/x86/Kconfig.debug
-@@ -336,3 +336,16 @@ config CPA_DEBUG
- 	  Do change_page_attr() self-tests every 30 seconds.
- 
- endmenu
-+
-+config OPTIMIZE_INLINING
-+	bool "Allow gcc to uninline functions marked 'inline'"
-+	default y
-+	help
-+	  This option determines if the kernel forces gcc to inline the functions
-+	  developers have marked 'inline'. Doing so takes away freedom from gcc to
-+	  do what it thinks is best, which is desirable for the gcc 3.x series of
-+	  compilers. The gcc 4.x series have a rewritten inlining algorithm and
-+	  disabling this option will generate a smaller kernel there. Hopefully
-+	  this algorithm is so good that allowing gcc4 to make the decision can
-+	  become the default in the future, until then this option is there to
-+	  test gcc for this.
-Index: linux-x86.q/arch/x86/configs/i386_defconfig
-===================================================================
---- linux-x86.q.orig/arch/x86/configs/i386_defconfig
-+++ linux-x86.q/arch/x86/configs/i386_defconfig
-@@ -1421,6 +1421,7 @@ CONFIG_DEBUG_BUGVERBOSE=y
- # CONFIG_DEBUG_VM is not set
- # CONFIG_DEBUG_LIST is not set
- # CONFIG_FRAME_POINTER is not set
-+CONFIG_OPTIMIZE_INLINING=y
- # CONFIG_RCU_TORTURE_TEST is not set
- # CONFIG_LKDTM is not set
- # CONFIG_FAULT_INJECTION is not set
-Index: linux-x86.q/arch/x86/configs/x86_64_defconfig
-===================================================================
---- linux-x86.q.orig/arch/x86/configs/x86_64_defconfig
-+++ linux-x86.q/arch/x86/configs/x86_64_defconfig
-@@ -1346,6 +1346,7 @@ CONFIG_DEBUG_BUGVERBOSE=y
- # CONFIG_DEBUG_VM is not set
- # CONFIG_DEBUG_LIST is not set
- # CONFIG_FRAME_POINTER is not set
-+CONFIG_OPTIMIZE_INLINING=y
- # CONFIG_RCU_TORTURE_TEST is not set
- # CONFIG_LKDTM is not set
- # CONFIG_FAULT_INJECTION is not set
-Index: linux-x86.q/include/linux/compiler-gcc.h
-===================================================================
---- linux-x86.q.orig/include/linux/compiler-gcc.h
-+++ linux-x86.q/include/linux/compiler-gcc.h
-@@ -28,9 +28,15 @@
- #define __must_be_array(a) \
-   BUILD_BUG_ON_ZERO(__builtin_types_compatible_p(typeof(a), typeof(&a[0])))
- 
--#define inline		inline		__attribute__((always_inline))
--#define __inline__	__inline__	__attribute__((always_inline))
--#define __inline	__inline	__attribute__((always_inline))
-+/*
-+ * Force always-inline if the user requests it so via the .config:
-+ */
-+#ifndef CONFIG_OPTIMIZE_INLINING
-+# define inline		inline		__attribute__((always_inline))
-+# define __inline__	__inline__	__attribute__((always_inline))
-+# define __inline	__inline	__attribute__((always_inline))
-+#endif
-+
- #define __deprecated			__attribute__((deprecated))
- #define __packed			__attribute__((packed))
- #define __weak				__attribute__((weak))
+David
