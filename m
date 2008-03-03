@@ -1,70 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762745AbYCCT2U@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762873AbYCCT2h@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762745AbYCCT2U (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Mar 2008 14:28:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757315AbYCCT2H
+	id S1762873AbYCCT2h (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Mar 2008 14:28:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762783AbYCCT2Y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Mar 2008 14:28:07 -0500
-Received: from el-out-1112.google.com ([209.85.162.176]:53482 "EHLO
-	el-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756958AbYCCT2E (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Mar 2008 14:28:04 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:to:cc:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=kMANK/Ko7zLEYjaLh1prmgppOXJORpCYtVtDU8S3YikULE1tDfrdVNwSpzgYqk209TLaBKhDSmh/bHHHyzRafvVem4pmf7xgXhGFES0Aaww8abM25MN4SVvlYM1bwc8C0YNxFDZg7QfRn1wGJ/YmyWoGyTB2GlWWfsHugDVCATQ=
-Subject: [PATCH] sparc64: replace remaining __FUNCTION__ occurances
-From: Harvey Harrison <harvey.harrison@gmail.com>
-To: David Miller <davem@davemloft.net>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Content-Type: text/plain
-Date: Mon, 03 Mar 2008 11:28:01 -0800
-Message-Id: <1204572481.3266.44.camel@brick>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
-Content-Transfer-Encoding: 7bit
+	Mon, 3 Mar 2008 14:28:24 -0500
+Received: from relay2.sgi.com ([192.48.171.30]:41837 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1762775AbYCCT2W (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 3 Mar 2008 14:28:22 -0500
+Date: Mon, 3 Mar 2008 11:28:21 -0800 (PST)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Nick Piggin <nickpiggin@yahoo.com.au>
+cc: akpm@linux-foundation.org, Andrea Arcangeli <andrea@qumranet.com>,
+       Robin Holt <holt@sgi.com>, Avi Kivity <avi@qumranet.com>,
+       Izik Eidus <izike@qumranet.com>, kvm-devel@lists.sourceforge.net,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, general@lists.openfabrics.org,
+       Steve Wise <swise@opengridcomputing.com>,
+       Roland Dreier <rdreier@cisco.com>, Kanoj Sarcar <kanojsarcar@yahoo.com>,
+       steiner@sgi.com, linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       daniel.blueman@quadrics.com
+Subject: Re: [patch 2/6] mmu_notifier: Callbacks to invalidate address ranges
+In-Reply-To: <200803031611.10275.nickpiggin@yahoo.com.au>
+Message-ID: <Pine.LNX.4.64.0803031124001.7275@schroedinger.engr.sgi.com>
+References: <20080215064859.384203497@sgi.com> <200802201008.49933.nickpiggin@yahoo.com.au>
+ <Pine.LNX.4.64.0802271424390.13186@schroedinger.engr.sgi.com>
+ <200803031611.10275.nickpiggin@yahoo.com.au>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-__FUNCTION__ is gcc-specific, use __func__
+On Mon, 3 Mar 2008, Nick Piggin wrote:
 
-Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
----
- arch/sparc64/solaris/conv.h  |    2 +-
- arch/sparc64/solaris/timod.c |    2 +-
- 2 files changed, 2 insertions(+), 2 deletions(-)
+> Your skeleton is just registering notifiers and saying
+> 
+> /* you fill the hard part in */
+> 
+> If somebody needs a skeleton in order just to register the notifiers,
+> then almost by definition they are unqualified to write the hard
+> part ;)
 
-diff --git a/arch/sparc64/solaris/conv.h b/arch/sparc64/solaris/conv.h
-index 5faf59a..50e5823 100644
---- a/arch/sparc64/solaris/conv.h
-+++ b/arch/sparc64/solaris/conv.h
-@@ -28,7 +28,7 @@ extern unsigned sunos_sys_table[];
- #define SUNOS(x) ((long)sunos_sys_table[x])
- 
- #ifdef DEBUG_SOLARIS
--#define SOLD(s) printk("%s,%d,%s(): %s\n",__FILE__,__LINE__,__FUNCTION__,(s))
-+#define SOLD(s) printk("%s,%d,%s(): %s\n",__FILE__,__LINE__,__func__,(s))
- #define SOLDD(s) printk("solaris: "); printk s
- #else
- #define SOLD(s)
-diff --git a/arch/sparc64/solaris/timod.c b/arch/sparc64/solaris/timod.c
-index f53123c..15234fc 100644
---- a/arch/sparc64/solaris/timod.c
-+++ b/arch/sparc64/solaris/timod.c
-@@ -81,7 +81,7 @@ void mykfree(void *p)
- #define MKCTL_MAGIC	0xDEADBABEBADC0DEDL
- #define PUT_MAGIC(a,m)	do{(*(u64*)(a))=(m);}while(0)
- #define SCHECK_MAGIC(a,m)	do{if((*(u64*)(a))!=(m))printk("%s,%u,%s(): magic %08x at %p corrupted!\n",\
--				__FILE__,__LINE__,__FUNCTION__,(m),(a));}while(0)
-+				__FILE__,__LINE__,__func__,(m),(a));}while(0)
- #define BUF_OFFSET	sizeof(u64)
- #define MKCTL_TRAILER	sizeof(u64)
- 
--- 
-1.5.4.3.500.g83a2c
+Its also providing a locking scheme.
 
+> OK, there are ways to solve it or hack around it. But this is exactly
+> why I think the implementations should be kept seperate. Andrea's
+> notifiers are coherent, work on all types of mappings, and will
+> hopefully match closely the regular TLB invalidation sequence in the
+> Linux VM (at the moment it is quite close, but I hope to make it a
+> bit closer) so that it requires almost no changes to the mm.
 
+Then put it into the arch code for TLB invalidation. Paravirt ops gives 
+good examples on how to do that.
+
+> What about a completely different approach... XPmem runs over NUMAlink,
+> right? Why not provide some non-sleeping way to basically IPI remote
+> nodes over the NUMAlink where they can process the invalidation? If you
+> intra-node cache coherency has to run over this link anyway, then
+> presumably it is capable.
+
+There is another Linux instance at the remote end that first has to 
+remove its own ptes. Also would not work for Inifiniband and other 
+solutions. All the approaches that require evictions in an atomic context 
+are limiting the approach and do not allow the generic functionality that 
+we want in order to not add alternate APIs for this.
+
+> Or another idea, why don't you LD_PRELOAD in the MPT library to also
+> intercept munmap, mprotect, mremap etc as well as just fork()? That
+> would give you similarly "good enough" coherency as the mmu notifier
+> patches except that you can't swap (which Robin said was not a big
+> problem).
+
+The good enough solution right now is to pin pages by elevating 
+refcounts.
 
