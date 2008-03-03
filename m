@@ -1,47 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754234AbYCCUER@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757339AbYCCUG3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754234AbYCCUER (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Mar 2008 15:04:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753928AbYCCUD6
+	id S1757339AbYCCUG3 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Mar 2008 15:06:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754356AbYCCUGQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Mar 2008 15:03:58 -0500
-Received: from mx1.suse.de ([195.135.220.2]:42180 "EHLO mx1.suse.de"
+	Mon, 3 Mar 2008 15:06:16 -0500
+Received: from cantor.suse.de ([195.135.220.2]:42463 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753864AbYCCUD5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Mar 2008 15:03:57 -0500
-Date: Mon, 3 Mar 2008 21:03:55 +0100
+	id S1754351AbYCCUGP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 3 Mar 2008 15:06:15 -0500
+Date: Mon, 3 Mar 2008 21:06:13 +0100
 From: Nick Piggin <npiggin@suse.de>
 To: Christoph Lameter <clameter@sgi.com>
 Cc: netdev@vger.kernel.org,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
        yanmin_zhang@linux.intel.com, David Miller <davem@davemloft.net>,
        Eric Dumazet <dada1@cosmosbay.com>
-Subject: Re: [rfc][patch 2/3] slab: introduce SMP alignment
-Message-ID: <20080303200355.GB8974@wotan.suse.de>
-References: <20080303093449.GA15091@wotan.suse.de> <20080303093529.GB15091@wotan.suse.de> <Pine.LNX.4.64.0803031104570.6917@schroedinger.engr.sgi.com>
+Subject: Re: [rfc][patch 1/3] slub: fix small HWCACHE_ALIGN alignment
+Message-ID: <20080303200613.GC8974@wotan.suse.de>
+References: <20080303093449.GA15091@wotan.suse.de> <Pine.LNX.4.64.0803031107130.6917@schroedinger.engr.sgi.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0803031104570.6917@schroedinger.engr.sgi.com>
+In-Reply-To: <Pine.LNX.4.64.0803031107130.6917@schroedinger.engr.sgi.com>
 User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Mar 03, 2008 at 11:06:55AM -0800, Christoph Lameter wrote:
+On Mon, Mar 03, 2008 at 11:08:44AM -0800, Christoph Lameter wrote:
 > On Mon, 3 Mar 2008, Nick Piggin wrote:
 > 
-> > Introduce SLAB_SMP_ALIGN, for allocations where false sharing must be
-> > minimised on SMP systems.
+> > SLUB should pack even small objects nicely into cachelines if that is what
+> > has been asked for. Use the same algorithm as SLAB for this.
 > 
-> Mandatory alignment are specified as a parameter to kmem_cache_create not 
-> as flags.
+> Why? SLAB does not cacheline align objects smaller than cache_line_size() 
+> /2.
 
-Not after this patch.
+It still doesn't after this patch.
 
-> Ycan specify the alignment as a parameter. i.e. L1_CACHE_BYTES 
-> or cache_line_size().
+> If they are already not cache line aligned then we can make them as 
+> dense as possible. That is what SLUB does.
 
-We don't want either of those, though.
+Because when you specify HWCACHE_ALIGN, it means that you want the object
+not to cross cacheline boundaries for at least cache_line_size() bytes.
+SLAB does this. SLUB does not without this patch.
 
-I don't see why this is a problem to do inside slab.
