@@ -1,77 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760815AbYCCRog@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758287AbYCCRqa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760815AbYCCRog (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Mar 2008 12:44:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760910AbYCCRnx
+	id S1758287AbYCCRqa (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Mar 2008 12:46:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750960AbYCCRqU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Mar 2008 12:43:53 -0500
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:46103 "EHLO
-	gprs189-60.eurotel.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760529AbYCCRnw (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Mar 2008 12:43:52 -0500
-Date: Mon, 3 Mar 2008 18:44:22 +0100
-From: Pavel Machek <pavel@ucw.cz>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Alan Stern <stern@rowland.harvard.edu>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Zdenek Kabelac <zdenek.kabelac@gmail.com>, davem@davemloft.net,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, Pierre Ossman <drzeus-mmc@drzeus.cx>,
-       Kernel development list <linux-kernel@vger.kernel.org>,
-       pm list <linux-pm@lists.linux-foundation.org>
-Subject: Re: [patch] Re: using long instead of atomic_t when only set/read
-	is required
-Message-ID: <20080303174422.GB13869@elf.ucw.cz>
-References: <Pine.LNX.4.44L0.0803031207120.3611-100000@iolanthe.rowland.org> <alpine.LFD.1.00.0803030921420.17889@woody.linux-foundation.org>
+	Mon, 3 Mar 2008 12:46:20 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:42474 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750845AbYCCRqT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 3 Mar 2008 12:46:19 -0500
+Date: Mon, 3 Mar 2008 18:45:55 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Mel Gorman <mel@csn.ul.ie>
+Cc: Yinghai Lu <yhlu.kernel@gmail.com>, Mike Travis <travis@sgi.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       tglx@linutronix.de, Christoph Lameter <clameter@sgi.com>,
+       Jack Steiner <steiner@sgi.com>
+Subject: Re: 2.6.24 git2/mm1: cpu_to_node mapping to non-existant nodes
+	causing boot failure
+Message-ID: <20080303174555.GA25496@elte.hu>
+References: <20080214201727.GC30841@csn.ul.ie> <47B4A774.7050509@sgi.com> <20080215020208.GA6500@csn.ul.ie> <47B77E90.5050809@sgi.com> <47BAFFD3.1070606@sgi.com> <20080219192319.GE12386@csn.ul.ie> <86802c440802262229t37c61c98y45607ba34d7c6417@mail.gmail.com> <20080228154244.GA4038@csn.ul.ie> <86802c440802280945w4dd71038y95936656cd535c9c@mail.gmail.com> <20080303162711.GD5861@csn.ul.ie>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <alpine.LFD.1.00.0803030921420.17889@woody.linux-foundation.org>
-X-Warning: Reading this can be dangerous to your mental health.
+In-Reply-To: <20080303162711.GD5861@csn.ul.ie>
 User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
 
-> > Consider a routine like the following:
+* Mel Gorman <mel@csn.ul.ie> wrote:
+
+> > can you verify which one fix that ?
 > > 
-> > 	static task_struct *the_task;
-> > 
-> > 	void store_task(void)
-> > 	{
-> > 		the_task = current;
-> > 	}
-> > 
-> > Is it possible to say whether readers examining "the_task" are 
-> > guaranteed to see a coherent value?
+> > http://git.kernel.org/?p=linux/kernel/git/x86/linux-2.6-x86.git;a=commitdiff;h=a8de04ce4e4cf0af94aeb3829be8c9f813b2f5de
 > 
-> Yes, we do depend on this.  All the RCU stuff (and in general *anything* 
-> that depends on memory ordering as opposed to full locking, and we have 
-> quite a lot of it) is very fundamentally dependent on the fact that things 
-> like pointers get read and written atomically.
+> This one was the fix.
 > 
-> HOWEVER, it is worth pointing out that it's generally true in a 
-> "different" sense than the actual atomic accesses. For example, if you 
-> test a single bit of a word, it's still quite possible that gcc will have 
-> turned that "atomic" read into a single byte read, so it's not necessarily 
-> the case that we'll actually even read the whole word. 
+> commit a8de04ce4e4cf0af94aeb3829be8c9f813b2f5de
+> Author: Yinghai Lu <Yinghai.Lu@Sun.COM>
+> Date:   Tue Feb 19 15:35:54 2008 -0800
 > 
-> (Writes are different: if you do things like bitwise updates they simply 
-> *will*not* be atomic, but that's simply not what we depend on anyway).
+>     x86_64: not set node to cpu_to_node if the node is not online
 
-Ok... can we get Alan Stern's patch into Documentation/atomic_ops.txt
-, then? I was not aware of this, and there seems to be lot of
-confusion around...
+thanks - so should we accelerate this into v2.6.25?
 
-Plus... I really don't think we can "just access" this as normal
-pointers... due to the compiler issues Alan Cox mentioned, and due to
-the ACCESS_ONCE() issue.
-
-								Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+	Ingo
