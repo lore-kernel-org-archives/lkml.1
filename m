@@ -1,63 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763455AbYCCVYe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763564AbYCCVYz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763455AbYCCVYe (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Mar 2008 16:24:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763329AbYCCVWs
+	id S1763564AbYCCVYz (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Mar 2008 16:24:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763126AbYCCVW5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Mar 2008 16:22:48 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:41223 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1763041AbYCCVWq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Mar 2008 16:22:46 -0500
-From: Josef Bacik <jbacik@redhat.com>
-To: linux-ext4@vger.kernel.org
-Subject: [PATCH] fix mount option parsing for ext3/4
-Date: Mon, 3 Mar 2008 16:10:08 -0500
-User-Agent: KMail/1.9.6 (enterprise 0.20071204.744707)
-Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org
+	Mon, 3 Mar 2008 16:22:57 -0500
+Received: from namei.org ([69.55.235.186]:42137 "EHLO us.intercode.com.au"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1757559AbYCCVWz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 3 Mar 2008 16:22:55 -0500
+Date: Tue, 4 Mar 2008 08:21:14 +1100 (EST)
+From: James Morris <jmorris@namei.org>
+X-X-Sender: jmorris@us.intercode.com.au
+To: "Ahmed S. Darwish" <darwish.07@gmail.com>
+cc: Chris Wright <chrisw@sous-sol.org>, Stephen Smalley <sds@tycho.nsa.gov>,
+       Eric Paris <eparis@parisplace.org>,
+       Casey Schaufler <casey@schaufler-ca.com>,
+       David Woodhouse <dwmw2@infradead.org>, Paul Moore <paul.moore@hp.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, Audit-ML <linux-audit@redhat.com>,
+       LSM-ML <linux-security-module@vger.kernel.org>
+Subject: Re: [PATCH 9/9] Audit: Final renamings and cleanup
+In-Reply-To: <20080301200537.GJ19636@ubuntu>
+Message-ID: <Xine.LNX.4.64.0803040821010.8529@us.intercode.com.au>
+References: <20080301194752.GA19636@ubuntu> <20080301200537.GJ19636@ubuntu>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200803031610.09145.jbacik@redhat.com>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+On Sat, 1 Mar 2008, Ahmed S. Darwish wrote:
 
-Noticed that the "resize" option won't be noticed as it comes after the NULL 
-option, so if you try to mount (or in this case remount) with that option it 
-won't be recognized.  Both ext3 and ext4 have this problem.  Thank you,
+> Rename the se_str and se_rule audit fields elements to
+> lsm_str and lsm_rule to avoid confusion.
+> 
+> Signed-off-by: Casey Schaufler <casey@schaufler-ca.com>
+> Signed-off-by: Ahmed S. Darwish <darwish.07@gmail.com>
 
-Signed-off-by: Josef Bacik <jbacik@redhat.com>
+Acked-by: James Morris <jmorris@namei.org>
 
-Index: linux-2.6/fs/ext3/super.c
-===================================================================
---- linux-2.6.orig/fs/ext3/super.c
-+++ linux-2.6/fs/ext3/super.c
-@@ -806,8 +806,8 @@ static match_table_t tokens = {
- 	{Opt_quota, "quota"},
- 	{Opt_usrquota, "usrquota"},
- 	{Opt_barrier, "barrier=%u"},
--	{Opt_err, NULL},
- 	{Opt_resize, "resize"},
-+	{Opt_err, NULL},
- };
- 
- static ext3_fsblk_t get_sb_block(void **data)
-Index: linux-2.6/fs/ext4/super.c
-===================================================================
---- linux-2.6.orig/fs/ext4/super.c
-+++ linux-2.6/fs/ext4/super.c
-@@ -944,8 +944,8 @@ static match_table_t tokens = {
- 	{Opt_mballoc, "mballoc"},
- 	{Opt_nomballoc, "nomballoc"},
- 	{Opt_stripe, "stripe=%u"},
--	{Opt_err, NULL},
- 	{Opt_resize, "resize"},
-+	{Opt_err, NULL},
- };
- 
- static ext4_fsblk_t get_sb_block(void **data)
+
+-- 
+James Morris
+<jmorris@namei.org>
