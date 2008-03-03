@@ -1,23 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759353AbYCCR0K@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758132AbYCCR03@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759353AbYCCR0K (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Mar 2008 12:26:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759651AbYCCRPq
+	id S1758132AbYCCR03 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Mar 2008 12:26:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759670AbYCCRPr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Mar 2008 12:15:46 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:35645 "EHLO mx1.redhat.com"
+	Mon, 3 Mar 2008 12:15:47 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:35651 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756778AbYCCRPo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1759472AbYCCRPo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Mon, 3 Mar 2008 12:15:44 -0500
 From: Glauber Costa <gcosta@redhat.com>
 To: linux-kernel@vger.kernel.org
 Cc: akpm@linux-foundation.org, glommer@gmail.com, mingo@elte.hu,
        tglx@linutronix.de, Glauber Costa <gcosta@redhat.com>
-Subject: [PATCH 39/52] merge __cpu_disable and cpu_die
-Date: Mon,  3 Mar 2008 14:13:07 -0300
-Message-Id: <1204564400-17636-40-git-send-email-gcosta@redhat.com>
+Subject: [PATCH 40/52] make x86_64 accept the max_cpus parameter
+Date: Mon,  3 Mar 2008 14:13:08 -0300
+Message-Id: <1204564400-17636-41-git-send-email-gcosta@redhat.com>
 X-Mailer: git-send-email 1.5.3.6
-In-Reply-To: <1204564400-17636-39-git-send-email-gcosta@redhat.com>
+In-Reply-To: <1204564400-17636-40-git-send-email-gcosta@redhat.com>
 References: <1204564400-17636-1-git-send-email-gcosta@redhat.com>
  <1204564400-17636-2-git-send-email-gcosta@redhat.com>
  <1204564400-17636-3-git-send-email-gcosta@redhat.com>
@@ -57,331 +57,86 @@ References: <1204564400-17636-1-git-send-email-gcosta@redhat.com>
  <1204564400-17636-37-git-send-email-gcosta@redhat.com>
  <1204564400-17636-38-git-send-email-gcosta@redhat.com>
  <1204564400-17636-39-git-send-email-gcosta@redhat.com>
+ <1204564400-17636-40-git-send-email-gcosta@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-They are now equal, and are moved to a common file
+The parameter passing parsing is done in the common smpboot.c
 
 Signed-off-by: Glauber Costa <gcosta@redhat.com>
 ---
- arch/x86/kernel/smpboot.c    |   85 ++++++++++++++++++++++++++++++++++++++++++
- arch/x86/kernel/smpboot_32.c |   67 ---------------------------------
- arch/x86/kernel/smpboot_64.c |   79 ---------------------------------------
- include/asm-x86/smp.h        |    3 +
- include/asm-x86/smp_32.h     |    3 -
- include/asm-x86/smp_64.h     |    3 -
- 6 files changed, 88 insertions(+), 152 deletions(-)
+ arch/x86/kernel/mpparse_64.c |    7 +++++++
+ arch/x86/kernel/smpboot.c    |   12 ++++++++++++
+ arch/x86/kernel/smpboot_32.c |   13 -------------
+ 3 files changed, 19 insertions(+), 13 deletions(-)
 
+diff --git a/arch/x86/kernel/mpparse_64.c b/arch/x86/kernel/mpparse_64.c
+index 72ab140..2a1f788 100644
+--- a/arch/x86/kernel/mpparse_64.c
++++ b/arch/x86/kernel/mpparse_64.c
+@@ -32,6 +32,7 @@
+ 
+ /* Have we found an MP table */
+ int smp_found_config;
++unsigned int __cpuinitdata maxcpus = NR_CPUS;
+ 
+ /*
+  * Various Linux-internal data structures created from the
+@@ -115,6 +116,12 @@ static void __cpuinit MP_processor_info(struct mpc_config_processor *m)
+ 		return;
+ 	}
+ 
++	if (num_processors >= maxcpus) {
++		printk(KERN_WARNING "WARNING: maxcpus limit of %i reached."
++			" Processor ignored.\n", maxcpus);
++		return;
++	}
++
+ 	num_processors++;
+ 	cpus_complement(tmp_map, cpu_present_map);
+ 	cpu = first_cpu(tmp_map);
 diff --git a/arch/x86/kernel/smpboot.c b/arch/x86/kernel/smpboot.c
-index 644e609..c35cd31 100644
+index c35cd31..34c3117 100644
 --- a/arch/x86/kernel/smpboot.c
 +++ b/arch/x86/kernel/smpboot.c
-@@ -2,6 +2,13 @@
- #include <linux/smp.h>
- #include <linux/module.h>
- #include <linux/sched.h>
-+#include <linux/percpu.h>
-+
-+#include <asm/nmi.h>
-+#include <asm/irq.h>
-+#include <asm/smp.h>
-+#include <asm/cpu.h>
-+#include <asm/numa.h>
- 
- /* Number of siblings per CPU package */
- int smp_num_siblings = 1;
-@@ -181,5 +188,83 @@ __init void prefill_possible_map(void)
- 	for (i = 0; i < possible; i++)
- 		cpu_set(i, cpu_possible_map);
+@@ -268,3 +268,15 @@ void __cpu_die(unsigned int cpu)
  }
-+
-+static void __ref remove_cpu_from_maps(int cpu)
+ #endif
+ 
++/*
++ * If the BIOS enumerates physical processors before logical,
++ * maxcpus=N at enumeration-time can be used to disable HT.
++ */
++static int __init parse_maxcpus(char *arg)
 +{
-+	cpu_clear(cpu, cpu_online_map);
-+#ifdef CONFIG_X86_64
-+	cpu_clear(cpu, cpu_callout_map);
-+	cpu_clear(cpu, cpu_callin_map);
-+	/* was set by cpu_init() */
-+	clear_bit(cpu, (unsigned long *)&cpu_initialized);
-+	clear_node_cpumask(cpu);
-+#endif
-+}
++	extern unsigned int maxcpus;
 +
-+int __cpu_disable(void)
-+{
-+	int cpu = smp_processor_id();
-+
-+	/*
-+	 * Perhaps use cpufreq to drop frequency, but that could go
-+	 * into generic code.
-+	 *
-+	 * We won't take down the boot processor on i386 due to some
-+	 * interrupts only being able to be serviced by the BSP.
-+	 * Especially so if we're not using an IOAPIC	-zwane
-+	 */
-+	if (cpu == 0)
-+		return -EBUSY;
-+
-+	if (nmi_watchdog == NMI_LOCAL_APIC)
-+		stop_apic_nmi_watchdog(NULL);
-+	clear_local_APIC();
-+
-+	/*
-+	 * HACK:
-+	 * Allow any queued timer interrupts to get serviced
-+	 * This is only a temporary solution until we cleanup
-+	 * fixup_irqs as we do for IA64.
-+	 */
-+	local_irq_enable();
-+	mdelay(1);
-+
-+	local_irq_disable();
-+	remove_siblinginfo(cpu);
-+
-+	/* It's now safe to remove this processor from the online map */
-+	remove_cpu_from_maps(cpu);
-+	fixup_irqs(cpu_online_map);
++	maxcpus = simple_strtoul(arg, NULL, 0);
 +	return 0;
 +}
-+
-+void __cpu_die(unsigned int cpu)
-+{
-+	/* We don't do anything here: idle task is faking death itself. */
-+	unsigned int i;
-+
-+	for (i = 0; i < 10; i++) {
-+		/* They ack this in play_dead by setting CPU_DEAD */
-+		if (per_cpu(cpu_state, cpu) == CPU_DEAD) {
-+			printk(KERN_INFO "CPU %d is now offline\n", cpu);
-+			if (1 == num_online_cpus())
-+				alternatives_smp_switch(0);
-+			return;
-+		}
-+		msleep(100);
-+	}
-+	printk(KERN_ERR "CPU %u didn't die...\n", cpu);
-+}
-+#else /* ... !CONFIG_HOTPLUG_CPU */
-+int __cpu_disable(void)
-+{
-+	return -ENOSYS;
-+}
-+
-+void __cpu_die(unsigned int cpu)
-+{
-+	/* We said "no" in __cpu_disable */
-+	BUG();
-+}
- #endif
- 
++early_param("maxcpus", parse_maxcpus);
 diff --git a/arch/x86/kernel/smpboot_32.c b/arch/x86/kernel/smpboot_32.c
-index 3d21c66..00b1b59 100644
+index 00b1b59..3236e84 100644
 --- a/arch/x86/kernel/smpboot_32.c
 +++ b/arch/x86/kernel/smpboot_32.c
-@@ -1040,73 +1040,6 @@ void __init native_smp_prepare_boot_cpu(void)
- 	__get_cpu_var(cpu_state) = CPU_ONLINE;
- }
- 
--#ifdef CONFIG_HOTPLUG_CPU
--static void __ref remove_cpu_from_maps(int cpu)
--{
--	cpu_clear(cpu, cpu_online_map);
--}
--
--int __cpu_disable(void)
--{
--	cpumask_t map = cpu_online_map;
--	int cpu = smp_processor_id();
--
--	/*
--	 * Perhaps use cpufreq to drop frequency, but that could go
--	 * into generic code.
-- 	 *
--	 * We won't take down the boot processor on i386 due to some
--	 * interrupts only being able to be serviced by the BSP.
--	 * Especially so if we're not using an IOAPIC	-zwane
--	 */
--	if (cpu == 0)
--		return -EBUSY;
--	if (nmi_watchdog == NMI_LOCAL_APIC)
--		stop_apic_nmi_watchdog(NULL);
--	clear_local_APIC();
--	/* Allow any queued timer interrupts to get serviced */
--	local_irq_enable();
--	mdelay(1);
--	local_irq_disable();
--
--	remove_siblinginfo(cpu);
--
--	remove_cpu_from_maps(cpu);
--	fixup_irqs(map);
--
--	return 0;
--}
--
--void __cpu_die(unsigned int cpu)
--{
--	/* We don't do anything here: idle task is faking death itself. */
--	unsigned int i;
--
--	for (i = 0; i < 10; i++) {
--		/* They ack this in play_dead by setting CPU_DEAD */
--		if (per_cpu(cpu_state, cpu) == CPU_DEAD) {
--			printk ("CPU %d is now offline\n", cpu);
--			if (1 == num_online_cpus())
--				alternatives_smp_switch(0);
--			return;
--		}
--		msleep(100);
--	}
-- 	printk(KERN_ERR "CPU %u didn't die...\n", cpu);
--}
--#else /* ... !CONFIG_HOTPLUG_CPU */
--int __cpu_disable(void)
--{
--	return -ENOSYS;
--}
--
--void __cpu_die(unsigned int cpu)
--{
--	/* We said "no" in __cpu_disable */
--	BUG();
--}
--#endif /* CONFIG_HOTPLUG_CPU */
--
- int __cpuinit native_cpu_up(unsigned int cpu)
- {
- 	unsigned long flags;
-diff --git a/arch/x86/kernel/smpboot_64.c b/arch/x86/kernel/smpboot_64.c
-index 6509d3c..0c67e5a 100644
---- a/arch/x86/kernel/smpboot_64.c
-+++ b/arch/x86/kernel/smpboot_64.c
-@@ -836,82 +836,3 @@ void __init native_smp_cpus_done(unsigned int max_cpus)
- 	setup_ioapic_dest();
- 	check_nmi_watchdog();
+@@ -1113,16 +1113,3 @@ void __init smp_intr_init(void)
+ 	/* IPI for generic function call */
+ 	set_intr_gate(CALL_FUNCTION_VECTOR, call_function_interrupt);
  }
 -
--#ifdef CONFIG_HOTPLUG_CPU
--static void __ref remove_cpu_from_maps(int cpu)
+-/*
+- * If the BIOS enumerates physical processors before logical,
+- * maxcpus=N at enumeration-time can be used to disable HT.
+- */
+-static int __init parse_maxcpus(char *arg)
 -{
--	cpu_clear(cpu, cpu_online_map);
--	cpu_clear(cpu, cpu_callout_map);
--	cpu_clear(cpu, cpu_callin_map);
--	clear_bit(cpu, (unsigned long *)&cpu_initialized); /* was set by cpu_init() */
--	clear_node_cpumask(cpu);
--}
+-	extern unsigned int maxcpus;
 -
--int __cpu_disable(void)
--{
--	int cpu = smp_processor_id();
--
--	/*
--	 * Perhaps use cpufreq to drop frequency, but that could go
--	 * into generic code.
-- 	 *
--	 * We won't take down the boot processor on i386 due to some
--	 * interrupts only being able to be serviced by the BSP.
--	 * Especially so if we're not using an IOAPIC	-zwane
--	 */
--	if (cpu == 0)
--		return -EBUSY;
--
--	if (nmi_watchdog == NMI_LOCAL_APIC)
--		stop_apic_nmi_watchdog(NULL);
--	clear_local_APIC();
--
--	/*
--	 * HACK:
--	 * Allow any queued timer interrupts to get serviced
--	 * This is only a temporary solution until we cleanup
--	 * fixup_irqs as we do for IA64.
--	 */
--	local_irq_enable();
--	mdelay(1);
--
--	local_irq_disable();
--	remove_siblinginfo(cpu);
--
--	/* It's now safe to remove this processor from the online map */
--	remove_cpu_from_maps(cpu);
--	fixup_irqs(cpu_online_map);
+-	maxcpus = simple_strtoul(arg, NULL, 0);
 -	return 0;
 -}
--
--void __cpu_die(unsigned int cpu)
--{
--	/* We don't do anything here: idle task is faking death itself. */
--	unsigned int i;
--
--	for (i = 0; i < 10; i++) {
--		/* They ack this in play_dead by setting CPU_DEAD */
--		if (per_cpu(cpu_state, cpu) == CPU_DEAD) {
--			printk ("CPU %d is now offline\n", cpu);
--			if (1 == num_online_cpus())
--				alternatives_smp_switch(0);
--			return;
--		}
--		msleep(100);
--	}
-- 	printk(KERN_ERR "CPU %u didn't die...\n", cpu);
--}
--
--#else /* ... !CONFIG_HOTPLUG_CPU */
--
--int __cpu_disable(void)
--{
--	return -ENOSYS;
--}
--
--void __cpu_die(unsigned int cpu)
--{
--	/* We said "no" in __cpu_disable */
--	BUG();
--}
--#endif /* CONFIG_HOTPLUG_CPU */
-diff --git a/include/asm-x86/smp.h b/include/asm-x86/smp.h
-index c800b81..27d9f65 100644
---- a/include/asm-x86/smp.h
-+++ b/include/asm-x86/smp.h
-@@ -70,6 +70,9 @@ void native_smp_prepare_cpus(unsigned int max_cpus);
- void native_smp_cpus_done(unsigned int max_cpus);
- int native_cpu_up(unsigned int cpunum);
- 
-+extern int __cpu_disable(void);
-+extern void __cpu_die(unsigned int cpu);
-+
- extern unsigned disabled_cpus;
- extern void prefill_possible_map(void);
- #endif
-diff --git a/include/asm-x86/smp_32.h b/include/asm-x86/smp_32.h
-index 0b25134..4fec2fe 100644
---- a/include/asm-x86/smp_32.h
-+++ b/include/asm-x86/smp_32.h
-@@ -34,9 +34,6 @@ DECLARE_PER_CPU(u16, x86_cpu_to_apicid);
- #define startup_ipi_hook(phys_apicid, start_eip, start_esp) do { } while (0)
- #endif
- 
--extern int __cpu_disable(void);
--extern void __cpu_die(unsigned int cpu);
--
- /*
-  * This function is needed by all SMP systems. It must _always_ be valid
-  * from the initial startup. We map APIC_BASE very early in page_setup(),
-diff --git a/include/asm-x86/smp_64.h b/include/asm-x86/smp_64.h
-index 1ecf813..d554d7d 100644
---- a/include/asm-x86/smp_64.h
-+++ b/include/asm-x86/smp_64.h
-@@ -42,9 +42,6 @@ static inline int cpu_present_to_apicid(int mps_cpu)
- 
- #define SMP_TRAMPOLINE_BASE 0x6000
- 
--extern int __cpu_disable(void);
--extern void __cpu_die(unsigned int cpu);
--
- #define raw_smp_processor_id()	read_pda(cpunumber)
- #define cpu_physical_id(cpu)	per_cpu(x86_cpu_to_apicid, cpu)
- 
+-early_param("maxcpus", parse_maxcpus);
 -- 
 1.5.0.6
 
