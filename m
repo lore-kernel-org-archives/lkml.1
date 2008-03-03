@@ -1,68 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760286AbYCCWzm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759509AbYCCW4v@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760286AbYCCWzm (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Mar 2008 17:55:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753233AbYCCWz1
+	id S1759509AbYCCW4v (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Mar 2008 17:56:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753441AbYCCW4l
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Mar 2008 17:55:27 -0500
-Received: from ms4-1.1blu.de ([213.83.63.61]:49194 "EHLO ms4-1.1blu.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758282AbYCCWzZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Mar 2008 17:55:25 -0500
-X-Greylist: delayed 6721 seconds by postgrey-1.27 at vger.kernel.org; Mon, 03 Mar 2008 17:55:25 EST
-Message-ID: <47CC67F5.6030505@razik.name>
-Date: Mon, 03 Mar 2008 22:04:53 +0100
-From: Lukas Razik <linux@razik.name>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.7.13) Gecko/20060417 FreeBSD/i386
-X-Accept-Language: de-de, en-us, en
+	Mon, 3 Mar 2008 17:56:41 -0500
+Received: from smtp123.sbc.mail.sp1.yahoo.com ([69.147.64.96]:44049 "HELO
+	smtp123.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1753233AbYCCW4k (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 3 Mar 2008 17:56:40 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=pacbell.net;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=tjfiNZ3oSyHRwUIN3Fb9xgo+hrAiwDF+TP6fycxOQkRvFKJDvMhkl8xD0DqX/zhlG3BIMOufiOLzuYFqqCj079jEv1DY5R733nM5v4UWrL/8Hh6P6N4NG4SfLI1Rf8thFzFeVuexcTlyko9XqeK47WAEJ5+wcnrtFkoxLqQhTD0=  ;
+X-YMail-OSG: 8r_piGoVM1nGTXWgLWs6kzttnKFaKd3SaxkpMJy21f1Ph9LkvF44j9zvNa6rvkuiN6GuKDv.Xw--
+X-Yahoo-Newman-Property: ymail-3
+From: David Brownell <david-b@pacbell.net>
+To: linux-pm@lists.linux-foundation.org
+Subject: Re: [linux-pm] [PATCH RFC] introduce pm_call() macro to get rid of most	#ifdef CONFIG_PM
+Date: Mon, 3 Mar 2008 14:56:38 -0800
+User-Agent: KMail/1.9.6
+Cc: Pavel Machek <pavel@ucw.cz>, Anton Vorontsov <cbouatmailru@gmail.com>,
+       linux-kernel@vger.kernel.org
+References: <20080302234308.GA10116@zarina> <20080303141818.GE12606@elf.ucw.cz>
+In-Reply-To: <20080303141818.GE12606@elf.ucw.cz>
 MIME-Version: 1.0
-To: Pavel Machek <pavel@ucw.cz>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: Ethernet over Kernel Sockets
-References: <47C870FD.4000808@razik.name> <20080302104650.GC3861@ucw.cz>
-In-Reply-To: <20080302104650.GC3861@ucw.cz>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 8bit
-X-Con-Id: 21979
-X-Originating-IP: 78.50.93.146
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200803031456.38406.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello Pavel!
-
-Thanks for your answer!
-
->>As you know, some network cards doesn't have a 'eth' 
->>interface under linux.
->>Because of that I'm developing a net_device based driver 
->>which doesn't transmit and receive directly through a 
->>real network card but through UDP kernel sockets.
+On Monday 03 March 2008, Pavel Machek wrote:
+> > +/* avoid `defined but not used' warning */
+> > +#define pm_call(x) ((x) - 1 ? NULL : NULL)
+> > +#endif /* CONFIG_PM */
+> > +
 > 
-> What is it good for?
+> This is evil.
 
-It's good for network cards which have a socket implementation but no 
-'eth' interface which is needed by some applications...
+Ugly, yes.  It might merit some casts too.
 
->>The interesting thing is, that I always get PingPongs of 
->>1ms (= one jiffie). Although if I measure with 100MBit- 
->>or other non-Ethernet cards.
-> 
-> Try increasing HZ :-)... or maybe it is a gigabit interrupt mitigation
-> issue?
 
-Yes, that would have been a nice solution for an OS-freak (like me and 
-sure like you) but there are also other people :-/ who want to run more 
-than the really nice linux kernel on their machines... ;-)))
+> Maybe your gcc is smart enough to optimize this away, 
+> but I'm not sure mine is.
 
-The performance brake was the kernel thread for receiving packets. My 
-solution are socket callbacks.
-The idea I've got from someone of the kernelnewbies mailing list and 
-some other people. Now I've PingPong times of ~30µsec (with Ethernet 
-over Sockets over Ethernet, which natively has ~23µsec).
+It'll be a constant expression; it certainly ought to be.
 
-For interested people:
-http://mail.nl.linux.org/kernelnewbies/2008-03/msg00005.html
-
-Regards,
-Lukas
