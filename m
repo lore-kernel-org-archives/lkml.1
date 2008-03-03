@@ -1,62 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755958AbYCCNYe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756328AbYCCNZU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755958AbYCCNYe (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Mar 2008 08:24:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751951AbYCCNY1
+	id S1756328AbYCCNZU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Mar 2008 08:25:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753125AbYCCNZG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Mar 2008 08:24:27 -0500
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:34462 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751929AbYCCNY0 (ORCPT
+	Mon, 3 Mar 2008 08:25:06 -0500
+Received: from host36-195-149-62.serverdedicati.aruba.it ([62.149.195.36]:47673
+	"EHLO mx.cpushare.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752970AbYCCNZE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Mar 2008 08:24:26 -0500
-Date: Mon, 3 Mar 2008 08:24:23 -0500 (EST)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Jon Masters <jonathan@jonmasters.org>
-cc: Mark Hounschell <markh@compro.net>, Mark Hounschell <dmarkh@cfl.rr.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: 2.6.24-rt1 IRQ routing anomaly
-In-Reply-To: <1204518711.22885.68.camel@perihelion>
-Message-ID: <Pine.LNX.4.58.0803030820580.20684@gandalf.stny.rr.com>
-References: <47BD6802.60604@cfl.rr.com>  <Pine.LNX.4.58.0802210743080.9890@gandalf.stny.rr.com>
-  <47BD7D09.9050106@compro.net>  <Pine.LNX.4.58.0802211005380.9890@gandalf.stny.rr.com>
- <1204518711.22885.68.camel@perihelion>
+	Mon, 3 Mar 2008 08:25:04 -0500
+Date: Mon, 3 Mar 2008 14:24:59 +0100
+From: Andrea Arcangeli <andrea@qumranet.com>
+To: Nick Piggin <npiggin@suse.de>
+Cc: Jack Steiner <steiner@sgi.com>, akpm@linux-foundation.org,
+       Robin Holt <holt@sgi.com>, Avi Kivity <avi@qumranet.com>,
+       Izik Eidus <izike@qumranet.com>, kvm-devel@lists.sourceforge.net,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, general@lists.openfabrics.org,
+       Steve Wise <swise@opengridcomputing.com>,
+       Roland Dreier <rdreier@cisco.com>, Kanoj Sarcar <kanojsarcar@yahoo.com>,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       daniel.blueman@quadrics.com, Christoph Lameter <clameter@sgi.com>
+Subject: Re: [PATCH] mmu notifiers #v8
+Message-ID: <20080303132459.GT8091@v2.random>
+References: <20080220010941.GR7128@v2.random> <20080220103942.GU7128@v2.random> <20080221045430.GC15215@wotan.suse.de> <20080221144023.GC9427@v2.random> <20080221161028.GA14220@sgi.com> <20080227192610.GF28483@v2.random> <20080302155457.GK8091@v2.random> <20080303032934.GA3301@wotan.suse.de> <20080303125152.GS8091@v2.random> <20080303131017.GC13138@wotan.suse.de>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080303131017.GC13138@wotan.suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, Mar 03, 2008 at 02:10:17PM +0100, Nick Piggin wrote:
+> Is this just a GRU problem? Can't we just require them to take a ref
+> on the page (IIRC Jack said GRU could be changed to more like a TLB
+> model).
 
-On Sun, 2 Mar 2008, Jon Masters wrote:
-> On Thu, 2008-02-21 at 10:08 -0500, Steven Rostedt wrote:
-> > On Thu, 21 Feb 2008, Mark Hounschell wrote:
-> > > >
-> > > > To prove this is the problem, boot with noapic in the kernel command line.
-> > > > 1) the problem should disappear.
-> > > > 2) (I'm betting) you see that the eth and EMU10K1 share the same
-> > > >    interrupt line.
-> > > >
-> > >
-> > > Yep, you were right. They do share the same IRQ and the problem does go away.
-> > > Unfortunately  I can't run this machine with noapic. I need irq affinity.
-> > >
-> >
-> > Thanks for verifying. OK, I'll see if I can get the workaround on i386.
->
-> What's the situation with this one? Want me to look at it?
+Yes, it's just a GRU problem, it tries to optimize performance by
+calling follow_page only in the fast path, and fallbacks to
+get_user_pages; put_page in the slow path. xpmem could also send the
+message in _begin and wait the message in _end, to reduce the wait
+time. But if you forge GRU to call get_user_pages only (like KVM
+does), the _begin can be removed. In theory we could also optimize KVM
+to use follow_page only if the pte is already established. I'm not
+sure how much that is a worthwhile optimization though.
 
-Jon,
-
-The board Mark has may just be some cheap hardware. It would be great
-that RT would work on all boxes, but I'm not sure we want to spend time on
-"broken-by-design" hardware while there's bigger fish in the sea to catch.
-
-The current workaround is just use noapic, although I do understand
-that's not good enough for Mark. But I'm sure Mark has other hardware
-he could use ;-)
-
--- Steve
-
+However note that Quadrics also had a callback before and one after,
+so they may be using the callback before for similar
+optimizations. But functionality-wise _end is the only required bit if
+everyone takes refcounts like KVM and XPMEM do.
