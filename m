@@ -1,67 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763460AbYCCVlX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760203AbYCCVlz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763460AbYCCVlX (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Mar 2008 16:41:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755681AbYCCVlN
+	id S1760203AbYCCVlz (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Mar 2008 16:41:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755681AbYCCVlo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Mar 2008 16:41:13 -0500
-Received: from wa-out-1112.google.com ([209.85.146.180]:36186 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754296AbYCCVlM (ORCPT
+	Mon, 3 Mar 2008 16:41:44 -0500
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:56649 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754296AbYCCVln (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Mar 2008 16:41:12 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:to:cc:in-reply-to:references:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=s4U/7TYwhFdb8B5eqSgo6lmAVbiuD2btEP7+8Mm1fPH5vqTwtzp8WIjrEv4kwWpWsnX8+s8DpDdAxbKhYzJwn/G58fccEUl3pXqd+ajaYDB3Repue7NvQdA/xLUJyDcrnlQeLD4G8Gyj+Yb1kHttFg7mHk07dhGAS2CoF9ivPBM=
-Subject: Re: sparc vs. gcc 4.3
-From: Harvey Harrison <harvey.harrison@gmail.com>
-To: David Miller <davem@davemloft.net>
-Cc: bunk@kernel.org, wli@holomorphy.com, sparclinux@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <20080303.130348.25289482.davem@davemloft.net>
-References: <20080303192651.GL26072@cs181133002.pp.htv.fi>
-	 <20080303.130348.25289482.davem@davemloft.net>
-Content-Type: text/plain
-Date: Mon, 03 Mar 2008 13:41:11 -0800
-Message-Id: <1204580471.22933.17.camel@brick>
+	Mon, 3 Mar 2008 16:41:43 -0500
+Date: Mon, 3 Mar 2008 21:29:55 +0000
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: benh@kernel.crashing.org
+Cc: Jesse Barnes <jbarnes@virtuousgeek.org>,
+       linux-pci@atrey.karlin.mff.cuni.cz,
+       Linux Kernel list <linux-kernel@vger.kernel.org>,
+       Matthew Wilcox <matthew@wil.cx>
+Subject: Re: Weirdness in pci_read_bases()
+Message-ID: <20080303212955.1c0f29c7@core>
+In-Reply-To: <1204576954.21545.10.camel@pasglop>
+References: <1204252667.15052.402.camel@pasglop>
+	<200803031112.27658.jbarnes@virtuousgeek.org>
+	<1204576954.21545.10.camel@pasglop>
+X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
 Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2008-03-03 at 13:03 -0800, David Miller wrote:
-> From: Adrian Bunk <bunk@kernel.org>
-> Date: Mon, 3 Mar 2008 21:26:51 +0200
-> 
-> >   LD      arch/sparc/boot/image
-> > arch/sparc/kernel/built-in.o:(__ex_table+0x394): undefined reference to `kernel_unaligned_trap_fault'
-> ...
-> > arch/sparc/kernel/built-in.o:(__ex_table+0x46c): undefined reference to `user_unaligned_trap_fault'
-> 
-> > Does anyone have a clue what's going wrong here?
-> 
-> We hit the same problem a while back on sparc64 too.
-> 
-> GCC can't see how the inline asm is reachable so eliminates it
-> entirely.  We hide the label inside the inline asm string and call it
-> from exception handlers.
-> 
-> The way we fixed this on sparc64 was quite invasive (patch below for
-> reference), so I'll try to come up with something simpler.
+> The main question regarding 0 in a BAR is do we know of devices that
+> consider it as "disabled" and don't operate/decode 0 ? (That would be
+> gross and out of spec but who knows...)
 
-Could you hide the asm inside an actual function and annotate the
-function with __used?
+In the PC world it never gets tested so it might be wise to be cautious.
 
-Similar to how the kprobes has a function called kretprobe_trampoline_holder
-for their trampoline asm?
+> But that can be solved, using something akin to IORESOURCE_UNSET, like
+> we do on powerpc, generalizing it, and having an x86-specific quirk set
+> it on anything that comes up with resource->start == 0.
 
-arch/x86/kernel/kprobes.c line 584
+And add pci_resource_unassigned() to wrap it nicely. That would
+definitely be a good thing as we have confusion right now and it has
+turned up in the real world.
 
-Cheers,
-
-Harvey
-
-
+Alan
