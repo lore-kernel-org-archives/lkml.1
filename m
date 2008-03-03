@@ -1,94 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754547AbYCCXsn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755862AbYCCXv4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754547AbYCCXsn (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Mar 2008 18:48:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751147AbYCCXsf
+	id S1755862AbYCCXv4 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Mar 2008 18:51:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751588AbYCCXvp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Mar 2008 18:48:35 -0500
-Received: from mu-out-0910.google.com ([209.85.134.189]:54626 "EHLO
-	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751093AbYCCXse (ORCPT
+	Mon, 3 Mar 2008 18:51:45 -0500
+Received: from wx-out-0506.google.com ([66.249.82.225]:33020 "EHLO
+	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751329AbYCCXvo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Mar 2008 18:48:34 -0500
+	Mon, 3 Mar 2008 18:51:44 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:reply-to:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
-        b=Fg9AUeFjWKDM0znnwdoA2ugwe/r8P2Ke8Y3z63OrJ4MoPIcRWy0GvUwElEXJ4woImp4S4odODqoG08wgk7xDiaaVXEs10vGa455tYlN1sRBuxwFxSAPK2XpIs94c65OXZQYlPaL5CaLV5NlDAznNteRag9/N5YvHq9LonrRolfo=
-Date: Tue, 4 Mar 2008 02:26:58 +0300
-From: Anton Vorontsov <cbouatmailru@gmail.com>
-To: Arjan van de Ven <arjan@infradead.org>
-Cc: linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org
-Subject: Re: [PATCH RFC] introduce pm_call() macro to get rid of most
-	#ifdef CONFIG_PM
-Message-ID: <20080303232658.GB27395@zarina>
-Reply-To: cbouatmailru@gmail.com
-References: <20080302234308.GA10116@zarina> <20080302160820.1930a770@laptopd505.fenrus.org>
+        h=message-id:date:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding:from;
+        b=HbM0ta/HDk6mOsxO3pnLD5dTbx+ozb6u18emanHr2/HdvE5x1MwAgjeQsAxtWSc41wkZhbWlVtJmQ9/48SQJoiqZJ4vkEH5I6Uvd5asBb+XHJmhqmByVgo1SAxsoKyXI56WRGFVO0RFLrLNb2yEhbQLkXRl/JcFobGg83pVv70I=
+Message-ID: <47CC8C0C.9080502@gmail.com>
+Date: Tue, 04 Mar 2008 08:38:52 +0900
+User-Agent: Thunderbird 2.0.0.6 (X11/20071008)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf8
-Content-Disposition: inline
-In-Reply-To: <20080302160820.1930a770@laptopd505.fenrus.org>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+To: Rik van Riel <riel@redhat.com>
+CC: Lee Schermerhorn <Lee.Schermerhorn@hp.com>, linux-kernel@vger.kernel.org,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>, linux-mm@kvack.org
+Subject: Re: [patch 12/21] No Reclaim LRU Infrastructure
+References: <20080228192908.126720629@redhat.com>	<20080228192929.031646681@redhat.com>	<44c63dc40802282058h67f7597bvb614575f06c62e2c@mail.gmail.com>	<1204296534.5311.8.camel@localhost>	<44c63dc40803021904n5de681datba400e08079c152d@mail.gmail.com> <20080303134634.5893b5e0@cuia.boston.redhat.com>
+In-Reply-To: <20080303134634.5893b5e0@cuia.boston.redhat.com>
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Content-Transfer-Encoding: 7bit
+From: "barrioskmc@gmail" <minchan.kim@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Mar 02, 2008 at 04:08:20PM -0800, Arjan van de Ven wrote:
-> On Mon, 3 Mar 2008 02:43:08 +0300
-> Anton Vorontsov <cbouatmailru@gmail.com> wrote:
+Rik van Riel wrote:
+> On Mon, 3 Mar 2008 12:04:14 +0900
+> "minchan Kim" <barrioskmc@gmail.com> wrote:
 > 
-> > Currently drivers handle CONFIG_PM this way:
-> > 
-> > #ifdef CONFIG_PM
-> > drv_suspend() {}
-> > drv_resume() {}
-> > #else
-> > #define drv_suspend NULL
-> > #define drv_resume NULL
-> > #endif
-> > 
-> > struct driver drv = {
-> > 	.suspend = drv_suspend,
-> > 	.resume = drv_resume,
-> > };
-> > 
-> > With this patch, the code above converts into:
-> > 
-> > drv_suspend() {}
-> > drv_resume() {}
-> > 
-> > struct driver drv = {
-> > 	.suspend = pm_call(drv_suspend),
-> > 	.resume = pm_call(drv_resume),
-> > };
-> > 
-> > GCC will optimize away suspend/resume calls if they're really
-> > not used.
-> > 
+>> One more thing.
+>>
+>> zoneinfo_show_print fail to show right information.
+>> That's why 'enum zone_stat_item' and 'vmstat_text' index didn't matched.
+>> This is a problem about CONFIG_NORECLAIM, too.
 > 
+> In what configuration do they not line up, and why?
 > 
-> to be honest, at this point I would think it's time to remove
-> CONFIG_PM, or rather,
-> just make it always be there and just get rid of the ifdefs.
+> AFAICS the #ifdefs in zone_stat_item and vmstat_text match up...
+> 
 
-Don't be so CONFIG_PM-centric :-)
+So sorry, It was my mistake.
+I seem to have a bad eye :(
 
-$ zcat /proc/config.gz | grep CONFIG_PM
-# CONFIG_PM is not set
-
-This is machine I use at home.
-
-> We're saving 2 words and a bit of code,
-> but only a case that not even the embedded guys use. 
-
-Well, on my ARM machine, with CONFIG_PM=y vmlinux grows by 30KB, half
-of that is in drivers/. 30KB is 1% of the vmlinux. Is it enough to
-worth saving? I don't know.
-
-On a x86 box, CONFIG_PM=y grows the vmlinux by 400KB (yeah, it's
-including ACPI and stuff), though here I didn't count drivers'
-suspend/resume hooks contribution share.
-
--- 
-Anton Vorontsov
-email: cbouatmailru@gmail.com
-irc://irc.freenode.net/bd2
+Thanks,
+barrios
