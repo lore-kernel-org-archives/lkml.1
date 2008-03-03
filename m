@@ -1,103 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762615AbYCCTQA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762711AbYCCTRU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762615AbYCCTQA (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Mar 2008 14:16:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755099AbYCCTPw
+	id S1762711AbYCCTRU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Mar 2008 14:17:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755099AbYCCTRJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Mar 2008 14:15:52 -0500
-Received: from relay1.sgi.com ([192.48.171.29]:42433 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753651AbYCCTPv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Mar 2008 14:15:51 -0500
-Date: Mon, 3 Mar 2008 13:15:40 -0600
-From: Jack Steiner <steiner@sgi.com>
-To: Nick Piggin <npiggin@suse.de>
-Cc: Andrea Arcangeli <andrea@qumranet.com>, akpm@linux-foundation.org,
-       Robin Holt <holt@sgi.com>, Avi Kivity <avi@qumranet.com>,
-       Izik Eidus <izike@qumranet.com>, kvm-devel@lists.sourceforge.net,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, general@lists.openfabrics.org,
-       Steve Wise <swise@opengridcomputing.com>,
-       Roland Dreier <rdreier@cisco.com>, Kanoj Sarcar <kanojsarcar@yahoo.com>,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       daniel.blueman@quadrics.com, Christoph Lameter <clameter@sgi.com>
-Subject: Re: [PATCH] mmu notifiers #v8
-Message-ID: <20080303191540.GB11156@sgi.com>
-References: <20080221161028.GA14220@sgi.com> <20080227192610.GF28483@v2.random> <20080302155457.GK8091@v2.random> <20080303032934.GA3301@wotan.suse.de> <20080303125152.GS8091@v2.random> <20080303131017.GC13138@wotan.suse.de> <20080303151859.GA19374@sgi.com> <20080303165910.GA23998@wotan.suse.de> <20080303180605.GA3552@sgi.com> <20080303184517.GA4951@wotan.suse.de>
+	Mon, 3 Mar 2008 14:17:09 -0500
+Received: from gv-out-0910.google.com ([216.239.58.190]:54439 "EHLO
+	gv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751468AbYCCTRH (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 3 Mar 2008 14:17:07 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=subject:from:to:cc:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
+        b=qTo9Rto9T7AeykeAcfHzfma7T4z3aP8HkjCeKo4mzBCOjVMlbiibQmHWrLGerlCLpZHvA+oByW+nfxXlF8SpSTHGGV/LfaAiD2N3Xphv/q8RwhaG27mJMur+g1PHQq35aR6JEVkAFYN/f3M/fMSryB4Wr3nb+iZdFnwJFOrMEvU=
+Subject: [PATCH] ppc: replace remaining __FUNCTION__ occurances
+From: Harvey Harrison <harvey.harrison@gmail.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: LKML <linux-kernel@vger.kernel.org>
+Content-Type: text/plain
+Date: Mon, 03 Mar 2008 11:17:02 -0800
+Message-Id: <1204571822.3266.38.camel@brick>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080303184517.GA4951@wotan.suse.de>
-User-Agent: Mutt/1.4.2.1i
+X-Mailer: Evolution 2.12.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Mar 03, 2008 at 07:45:17PM +0100, Nick Piggin wrote:
-> On Mon, Mar 03, 2008 at 12:06:05PM -0600, Jack Steiner wrote:
-> > On Mon, Mar 03, 2008 at 05:59:10PM +0100, Nick Piggin wrote:
-> > > > Maintaining a long-term reference on a page is a problem. The GRU does not
-> > > > currently maintain tables to track the pages for which dropins have been done.
-> > > > 
-> > > > The GRU has a large internal TLB and is designed to reference up to 8PB of
-> > > > memory. The size of the tables to track this many referenced pages would be
-> > > > a problem (at best).
-> > > 
-> > > Is it any worse a problem than the pagetables of the processes which have
-> > > their virtual memory exported to GRU? AFAIKS, no; it is on the same
-> > > magnitude of difficulty. So you could do it without introducing any
-> > > fundamental problem (memory usage might be increased by some constant
-> > > factor, but I think we can cope with that in order to make the core patch
-> > > really nice and simple).
-> > 
-> > Functionally, the GRU is very close to what I would consider to be the
-> > "standard TLB" model. Dropins and flushs map closely to processor dropins
-> > and flushes for cpus.  The internal structure of the GRU TLB is identical to
-> > the TLB of existing cpus.  Requiring the GRU driver to track dropins with
-> > long term page references seems to me a deviation from having the basic
-> > mmuops support a "standard TLB" model. AFAIK, no other processor requires
-> > this.
-> 
-> That is because the CPU TLBs have the mmu_gather batching APIs which
-> avoid the problem. It would be possible to do something similar for
-> GRU which would involve taking a reference for each page-to-be-invalidated
-> in invalidate_page, and release them when you invalidate_range. Or else
-> do some other scheme which makes mmu notifiers work similarly to the
-> mmu gather API. But not just go an invent something completely different
-> in the form of this invalidate_begin,clear linux pte,invalidate_end API.
+__FUNCTION__ is gcc-specific, use __func__
 
-Correct. If the mmu_gather were passed on the mmuops callout and the callout were
-done at the same point as the tlb_finish_mmu(), the GRU could
-efficiently work w/o the range invalidates. A range invalidate might still
-be slightly more efficient but not measureable so. The net difference is
-not worth the extra complexity of range callouts.
+Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
+---
+ arch/ppc/8xx_io/fec.c               |    4 ++--
+ arch/ppc/platforms/radstone_ppc7d.c |    8 ++++----
+ 2 files changed, 6 insertions(+), 6 deletions(-)
+
+diff --git a/arch/ppc/8xx_io/fec.c b/arch/ppc/8xx_io/fec.c
+index 11b0aa6..1d4b49a 100644
+--- a/arch/ppc/8xx_io/fec.c
++++ b/arch/ppc/8xx_io/fec.c
+@@ -520,7 +520,7 @@ fec_enet_interrupt(int irq, void * dev_id)
+ #ifdef	CONFIG_USE_MDIO
+ 			fec_enet_mii(dev);
+ #else
+-printk("%s[%d] %s: unexpected FEC_ENET_MII event\n", __FILE__,__LINE__,__FUNCTION__);
++printk("%s[%d] %s: unexpected FEC_ENET_MII event\n", __FILE__, __LINE__, __func__);
+ #endif	/* CONFIG_USE_MDIO */
+ 		}
+ 
+@@ -1441,7 +1441,7 @@ irqreturn_t mii_link_interrupt(int irq, void * dev_id)
+ 		fecp->fec_ecntrl = ecntrl;	/* restore old settings */
+ 	}
+ #else
+-printk("%s[%d] %s: unexpected Link interrupt\n", __FILE__,__LINE__,__FUNCTION__);
++printk("%s[%d] %s: unexpected Link interrupt\n", __FILE__, __LINE__, __func__);
+ #endif	/* CONFIG_USE_MDIO */
+ 
+ #ifndef CONFIG_RPXCLASSIC
+diff --git a/arch/ppc/platforms/radstone_ppc7d.c b/arch/ppc/platforms/radstone_ppc7d.c
+index 44d4398..fc928a2 100644
+--- a/arch/ppc/platforms/radstone_ppc7d.c
++++ b/arch/ppc/platforms/radstone_ppc7d.c
+@@ -512,7 +512,7 @@ static void __init ppc7d_init_irq(void)
+ {
+ 	int irq;
+ 
+-	pr_debug("%s\n", __FUNCTION__);
++	pr_debug("%s\n", __func__);
+ 	i8259_init(0, 0);
+ 	mv64360_init_irq();
+ 
+@@ -569,7 +569,7 @@ static int __init ppc7d_map_irq(struct pci_dev *dev, unsigned char idsel,
+ 	};
+ 	const long min_idsel = 10, max_idsel = 14, irqs_per_slot = 4;
+ 
+-	pr_debug("%s: %04x/%04x/%x: idsel=%hx pin=%hu\n", __FUNCTION__,
++	pr_debug("%s: %04x/%04x/%x: idsel=%hx pin=%hu\n", __func__,
+ 		 dev->vendor, dev->device, PCI_FUNC(dev->devfn), idsel, pin);
+ 
+ 	return PCI_IRQ_TABLE_LOOKUP;
+@@ -1300,7 +1300,7 @@ static void ppc7d_init2(void)
+ 	u32 data;
+ 	u8 data8;
+ 
+-	pr_debug("%s: enter\n", __FUNCTION__);
++	pr_debug("%s: enter\n", __func__);
+ 
+ 	/* Wait for debugger? */
+ 	if (ppc7d_wait_debugger) {
+@@ -1333,7 +1333,7 @@ static void ppc7d_init2(void)
+         ppc_md.set_rtc_time = ppc7d_set_rtc_time;
+         ppc_md.get_rtc_time = ppc7d_get_rtc_time;
+ 
+-	pr_debug("%s: exit\n", __FUNCTION__);
++	pr_debug("%s: exit\n", __func__);
+ }
+ 
+ /* Called from machine_init(), early, before any of the __init functions
+-- 
+1.5.4.3.500.g83a2c
 
 
-> 
-> 
-> > Tracking TLB dropins (and long term page references) could be done but it
-> > adds significant complexity and scaling issues. The size of the tables to
-> > track many TB (to PB) of memory can get large. If the memory is being
-> > referenced by highly threaded applications, then the problem becomes even
-> > more complex. Either tables must be replicated per-thread (and require even
-> > more memory), or the table structure becomes even more complex to deal with
-> > node locality, cacheline bouncing, etc.
-> 
-> I don't think it would be that significant in terms of complexity or
-> scaling.
-> 
-> For a quick solution, you could stick a radix tree in each of your mmu
-> notifiers registered (ie. one per mm), which is indexed on virtual address
-> >> PAGE_SHIFT, and returns the struct page *. Size is no different than
-> page tables, and locking is pretty scalable.
-> 
-> After that, I would really like to see whether the numbers justify
-> larger changes.
 
-I'm still concerned about performance. Each dropin would first have to access
-an additional data structure that would most likely be non-node-local and
-non-cache-resident. The net effect would be measurable but not a killer.
-
-I haven't thought about locking requirements for the radix tree. Most accesses
-would be read-only & updates infrequent. Any chance of an RCU-based radix
-implementation?  Otherwise, don't we add the potential for hot locks/cachelines
-for threaded applications ???
