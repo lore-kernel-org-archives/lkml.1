@@ -1,69 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755169AbYCCMwP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756472AbYCCMwd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755169AbYCCMwP (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Mar 2008 07:52:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752759AbYCCMv5
+	id S1756472AbYCCMwd (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Mar 2008 07:52:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755000AbYCCMwJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Mar 2008 07:51:57 -0500
-Received: from host36-195-149-62.serverdedicati.aruba.it ([62.149.195.36]:39651
-	"EHLO mx.cpushare.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752730AbYCCMv4 (ORCPT
+	Mon, 3 Mar 2008 07:52:09 -0500
+Received: from courier.cs.helsinki.fi ([128.214.9.1]:35106 "EHLO
+	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754820AbYCCMwH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Mar 2008 07:51:56 -0500
-Date: Mon, 3 Mar 2008 13:51:53 +0100
-From: Andrea Arcangeli <andrea@qumranet.com>
-To: Nick Piggin <npiggin@suse.de>
-Cc: Jack Steiner <steiner@sgi.com>, akpm@linux-foundation.org,
-       Robin Holt <holt@sgi.com>, Avi Kivity <avi@qumranet.com>,
-       Izik Eidus <izike@qumranet.com>, kvm-devel@lists.sourceforge.net,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, general@lists.openfabrics.org,
-       Steve Wise <swise@opengridcomputing.com>,
-       Roland Dreier <rdreier@cisco.com>, Kanoj Sarcar <kanojsarcar@yahoo.com>,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       daniel.blueman@quadrics.com, Christoph Lameter <clameter@sgi.com>
-Subject: Re: [PATCH] mmu notifiers #v8
-Message-ID: <20080303125152.GS8091@v2.random>
-References: <20080219135851.GI7128@v2.random> <20080219231157.GC18912@wotan.suse.de> <20080220010941.GR7128@v2.random> <20080220103942.GU7128@v2.random> <20080221045430.GC15215@wotan.suse.de> <20080221144023.GC9427@v2.random> <20080221161028.GA14220@sgi.com> <20080227192610.GF28483@v2.random> <20080302155457.GK8091@v2.random> <20080303032934.GA3301@wotan.suse.de>
-MIME-Version: 1.0
+	Mon, 3 Mar 2008 07:52:07 -0500
+Date: Mon, 3 Mar 2008 14:52:05 +0200 (EET)
+From: Pekka J Enberg <penberg@cs.helsinki.fi>
+To: akpm@linux-foundation.org
+cc: tglx@linutronix.de, mingo@redhat.com, hpa@zytor.com, clameter@sgi.com,
+       linux-kernel@vger.kernel.org
+Subject: [PATCH] mm: move cache_line_size() to <linux/cache.h>
+Message-ID: <Pine.LNX.4.64.0803031450330.27319@sbz-30.cs.Helsinki.FI>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080303032934.GA3301@wotan.suse.de>
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Mar 03, 2008 at 04:29:34AM +0100, Nick Piggin wrote:
-> to something I prefer. Others may not, but I'll post them for debate
-> anyway.
+From: Pekka Enberg <penberg@cs.helsinki.fi>
 
-Sure, thanks!
+Not all architectures define cache_line_size() so as suggested by Andrew move
+the private implementations in mm/slab.c and mm/slob.c to <linux/cache.h>.
 
-> > I didn't drop invalidate_page, because invalidate_range_begin/end
-> > would be slower for usages like KVM/GRU (we don't need a begin/end
-> > there because where invalidate_page is called, the VM holds a
-> > reference on the page). do_wp_page should also use invalidate_page
-> > since it can free the page after dropping the PT lock without losing
-> > any performance (that's not true for the places where invalidate_range
-> > is called).
-> 
-> I'm still not completely happy with this. I had a very quick look
-> at the GRU driver, but I don't see why it can't be implemented
-> more like the regular TLB model, and have TLB insertions depend on
-> the linux pte, and do invalidates _after_ restricting permissions
-> to the pte.
-> 
-> Ie. I'd still like to get rid of invalidate_range_begin, and get
-> rid of invalidate calls from places where permissions are relaxed.
+Cc: Thomas Gleixner <tglx@linutronix.de>
+Cc: Ingo Molnar <mingo@redhat.com>
+Cc: H. Peter Anvin <hpa@zytor.com>
+Cc: Christoph Lameter <clameter@sgi.com>
+Signed-off-by: Pekka Enberg <penberg@cs.helsinki.fi>
+---
+ arch/x86/Kconfig      |    3 +++
+ include/linux/cache.h |    4 ++++
+ mm/slab.c             |    4 ----
+ mm/slub.c             |    5 -----
+ 4 files changed, 7 insertions(+), 9 deletions(-)
 
-_begin exists because by the time _end is called, the VM already
-dropped the reference on the page. This way we can do a single
-invalidate no matter how large the range is. I don't see ways to
-remove _begin while still invoking _end a single time for the whole
-range.
-
-> If we can agree on the API, then I don't see any reason why it can't
-> go into 2.6.25, unless someome wants more time to review it (but
-> 2.6.25 release should be quite far away still so there should be quite
-> a bit of time).
-
-Cool! ;)
+Index: linux-2.6/include/linux/cache.h
+===================================================================
+--- linux-2.6.orig/include/linux/cache.h
++++ linux-2.6/include/linux/cache.h
+@@ -60,4 +60,8 @@
+ #endif
+ #endif
+ 
++#ifndef CONFIG_ARCH_HAS_CACHE_LINE_SIZE
++#define cache_line_size()	L1_CACHE_BYTES
++#endif
++
+ #endif /* __LINUX_CACHE_H */
+Index: linux-2.6/mm/slab.c
+===================================================================
+--- linux-2.6.orig/mm/slab.c
++++ linux-2.6/mm/slab.c
+@@ -139,10 +139,6 @@
+ #define	BYTES_PER_WORD		sizeof(void *)
+ #define	REDZONE_ALIGN		max(BYTES_PER_WORD, __alignof__(unsigned long long))
+ 
+-#ifndef cache_line_size
+-#define cache_line_size()	L1_CACHE_BYTES
+-#endif
+-
+ #ifndef ARCH_KMALLOC_MINALIGN
+ /*
+  * Enforce a minimum alignment for the kmalloc caches.
+Index: linux-2.6/mm/slub.c
+===================================================================
+--- linux-2.6.orig/mm/slub.c
++++ linux-2.6/mm/slub.c
+@@ -207,11 +207,6 @@ static inline void ClearSlabDebug(struct
+ #define __KMALLOC_CACHE		0x20000000 /* objects freed using kfree */
+ #define __PAGE_ALLOC_FALLBACK	0x10000000 /* Allow fallback to page alloc */
+ 
+-/* Not all arches define cache_line_size */
+-#ifndef cache_line_size
+-#define cache_line_size()	L1_CACHE_BYTES
+-#endif
+-
+ static int kmem_size = sizeof(struct kmem_cache);
+ 
+ #ifdef CONFIG_SMP
+Index: linux-2.6/arch/x86/Kconfig
+===================================================================
+--- linux-2.6.orig/arch/x86/Kconfig
++++ linux-2.6/arch/x86/Kconfig
+@@ -118,6 +118,9 @@ config GENERIC_TIME_VSYSCALL
+ config ARCH_HAS_CPU_RELAX
+ 	def_bool y
+ 
++config ARCH_HAS_CACHE_LINE_SIZE
++	def_bool y
++
+ config HAVE_SETUP_PER_CPU_AREA
+ 	def_bool X86_64
+ 
