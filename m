@@ -1,47 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757784AbYCCSkN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759264AbYCCSl7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757784AbYCCSkN (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Mar 2008 13:40:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751355AbYCCSkA
+	id S1759264AbYCCSl7 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Mar 2008 13:41:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752024AbYCCSlu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Mar 2008 13:40:00 -0500
-Received: from smtp117.sbc.mail.sp1.yahoo.com ([69.147.64.90]:24476 "HELO
-	smtp117.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751031AbYCCSj7 (ORCPT
+	Mon, 3 Mar 2008 13:41:50 -0500
+Received: from ug-out-1314.google.com ([66.249.92.175]:34113 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751453AbYCCSlt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Mar 2008 13:39:59 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=eufX7byyMZRMMpqrfespNJkwl7VZCuVwzT2rcGL0tgspLz1DY7MqKKs5Vku9ycUWgkSOxpVRhUjPIr8dmHces6pO6oTNOeo/hL4J9SY7xHtK+Op2qYDbX3ifm5Vf0cCOTNm0ic9KAzczG00PNHjM05Zx3jYriLBBoWmEDDH3c4M=  ;
-X-YMail-OSG: tPUFHhcVM1lXDZ9HGnEgECth6hsgp69Ze.98eo7xNu_weTJ.DiWUBa2Lt5GNeJ.bco7N9zMyJA--
-X-Yahoo-Newman-Property: ymail-3
-From: David Brownell <david-b@pacbell.net>
-To: "Bosko Radivojevic" <bosko.radivojevic@gmail.com>
-Subject: Re: High resolution timers on AT91SAM926x
-Date: Mon, 3 Mar 2008 10:39:57 -0800
-User-Agent: KMail/1.9.6
-Cc: lkml <linux-kernel@vger.kernel.org>, linux-rt-users@vger.kernel.org,
-       tglx@linutronix.de
-References: <200803011457.40857.david-b@pacbell.net> <d6c8ef150803030226m75f68bffvfa20feba9133b247@mail.gmail.com>
-In-Reply-To: <d6c8ef150803030226m75f68bffvfa20feba9133b247@mail.gmail.com>
+	Mon, 3 Mar 2008 13:41:49 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
+        b=c+bNzpuKccaKfLw3a8+RXnrQXeFFFDoYrGlPjtWRkB8Voqhuov1L4uyvbJsPaIfYfCZfx++nNL80uCwOCkrNVavwG11i/w7qgvDw/P3SN2PB46FDvNxbmdVoEPrFykkShqy8y5/QQx147AYekY5G1wi8H3TbbPIhyf5UXQg+v2M=
+Message-ID: <47CC440E.9070108@gmail.com>
+Date: Mon, 03 Mar 2008 19:31:42 +0100
+From: Jiri Slaby <jirislaby@gmail.com>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080213)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
+To: Neal Becker <ndbecker2@gmail.com>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: Books on writing linux device drivers
+References: <fqhebq$os3$1@ger.gmane.org>
+In-Reply-To: <fqhebq$os3$1@ger.gmane.org>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200803031039.57909.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 03 March 2008, Bosko Radivojevic wrote:
-> thank you for the reply. But, I'm getting pretty strange behavior.
+On 03/03/2008 07:00 PM, Neal Becker wrote:
+> I am about to start on writing a linux device driver.  What books are
+> recommended?  There are some books that are a few years old now, that deal
+> with 2.4 kernel.  What would be useful for a relatively recent kernel?
 
-Presumably you got different results when your Kconfig
-enabled a HRT/NO_HZ capable clockevent source, instead
-of just the PIT?
-
-CONFIG_ATMEL_TCLIB=y
-CONFIG_ATMEL_TCB_CLKSRC=y
-CONFIG_ATMEL_TCB_CLKSRC_BLOCK=0
+google://ldd3
+Documentation/kernel-docs.txt
