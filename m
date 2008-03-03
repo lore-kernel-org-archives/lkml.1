@@ -1,76 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755523AbYCCPT1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757179AbYCCPTt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755523AbYCCPT1 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Mar 2008 10:19:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751343AbYCCPTR
+	id S1757179AbYCCPTt (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Mar 2008 10:19:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754918AbYCCPTY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Mar 2008 10:19:17 -0500
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:60677 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751086AbYCCPTQ (ORCPT
+	Mon, 3 Mar 2008 10:19:24 -0500
+Received: from rv-out-0910.google.com ([209.85.198.188]:5764 "EHLO
+	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754869AbYCCPTX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Mar 2008 10:19:16 -0500
-Date: Mon, 3 Mar 2008 09:18:59 -0600
-From: Jack Steiner <steiner@sgi.com>
-To: Nick Piggin <npiggin@suse.de>
-Cc: Andrea Arcangeli <andrea@qumranet.com>, akpm@linux-foundation.org,
-       Robin Holt <holt@sgi.com>, Avi Kivity <avi@qumranet.com>,
-       Izik Eidus <izike@qumranet.com>, kvm-devel@lists.sourceforge.net,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, general@lists.openfabrics.org,
-       Steve Wise <swise@opengridcomputing.com>,
-       Roland Dreier <rdreier@cisco.com>, Kanoj Sarcar <kanojsarcar@yahoo.com>,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       daniel.blueman@quadrics.com, Christoph Lameter <clameter@sgi.com>
-Subject: Re: [PATCH] mmu notifiers #v8
-Message-ID: <20080303151859.GA19374@sgi.com>
-References: <20080220010941.GR7128@v2.random> <20080220103942.GU7128@v2.random> <20080221045430.GC15215@wotan.suse.de> <20080221144023.GC9427@v2.random> <20080221161028.GA14220@sgi.com> <20080227192610.GF28483@v2.random> <20080302155457.GK8091@v2.random> <20080303032934.GA3301@wotan.suse.de> <20080303125152.GS8091@v2.random> <20080303131017.GC13138@wotan.suse.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Mon, 3 Mar 2008 10:19:23 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=YiIHWFP4C08jgu/9yEc/7HSV4S8grGwZd+zs9otkJJLRKLOaLPYNo8V8nyeYt1DYgWqbOgQ8tB23ut9Nbwn1K4g7F9DFdIBSOPGS0RRcO55yAf4pKxMFMGg/hm7R7hASC3OHvWac8aX9UK0Ujza+HOlwBzT8TyqJU6JtTbGgqWY=
+Message-ID: <3d8471ca0803030719x418f9997tc428344e659a6c90@mail.gmail.com>
+Date: Mon, 3 Mar 2008 16:19:22 +0100
+From: "Guillaume Chazarain" <guichaz@gmail.com>
+To: "Pavel Machek" <pavel@ucw.cz>
+Subject: Re: [PATCH] chroot= as a new kernel parameter
+Cc: "Pawel Plociennik" <paplociennik@gmail.com>, linux-kernel@vger.kernel.org
+In-Reply-To: <20080303141203.GB12606@elf.ucw.cz>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20080303131017.GC13138@wotan.suse.de>
-User-Agent: Mutt/1.4.2.1i
+References: <200803011409.59526.paplociennik@gmail.com>
+	 <200803021859.30473.paplociennik@gmail.com>
+	 <3d8471ca0803021005o46f99282l77d412306877607a@mail.gmail.com>
+	 <200803022009.04028.paplociennik@gmail.com>
+	 <20080303141203.GB12606@elf.ucw.cz>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Mar 03, 2008 at 02:10:17PM +0100, Nick Piggin wrote:
-> On Mon, Mar 03, 2008 at 01:51:53PM +0100, Andrea Arcangeli wrote:
-> > On Mon, Mar 03, 2008 at 04:29:34AM +0100, Nick Piggin wrote:
-> > > to something I prefer. Others may not, but I'll post them for debate
-> > > anyway.
-> > 
-> > Sure, thanks!
-> > 
-> > > > I didn't drop invalidate_page, because invalidate_range_begin/end
-> > > > would be slower for usages like KVM/GRU (we don't need a begin/end
-> > > > there because where invalidate_page is called, the VM holds a
-> > > > reference on the page). do_wp_page should also use invalidate_page
-> > > > since it can free the page after dropping the PT lock without losing
-> > > > any performance (that's not true for the places where invalidate_range
-> > > > is called).
-> > > 
-> > > I'm still not completely happy with this. I had a very quick look
-> > > at the GRU driver, but I don't see why it can't be implemented
-> > > more like the regular TLB model, and have TLB insertions depend on
-> > > the linux pte, and do invalidates _after_ restricting permissions
-> > > to the pte.
-> > > 
-> > > Ie. I'd still like to get rid of invalidate_range_begin, and get
-> > > rid of invalidate calls from places where permissions are relaxed.
-> > 
-> > _begin exists because by the time _end is called, the VM already
-> > dropped the reference on the page. This way we can do a single
-> > invalidate no matter how large the range is. I don't see ways to
-> > remove _begin while still invoking _end a single time for the whole
-> > range.
-> 
-> Is this just a GRU problem? Can't we just require them to take a ref
-> on the page (IIRC Jack said GRU could be changed to more like a TLB
-> model).
+On Mon, Mar 3, 2008 at 3:12 PM, Pavel Machek <pavel@ucw.cz> wrote:
+> On Sun 2008-03-02 20:09:03, Pawel Plociennik wrote:
+>  > so I thing that my patch is *unnecessary* now :-(
+>
+>  Actually I disagree here. This means that if distro in / breaks, you
+>  will not be able to boot in ditstro in /foo any more :-(.
 
-Maintaining a long-term reference on a page is a problem. The GRU does not
-currently maintain tables to track the pages for which dropins have been done.
+For this case, you can boot with something like:
 
-The GRU has a large internal TLB and is designed to reference up to 8PB of
-memory. The size of the tables to track this many referenced pages would be
-a problem (at best).
+init=/working_distro/lib/ld-linux.so.2 --library-path
+/working_distro/lib  /working_distro/usr/sbin/chroot /working_distro/
+/sbin/init
+
+And that's actually how you should setup your grub.conf to avoid
+depending on the distro in /.
+
+-- 
+Guillaume
