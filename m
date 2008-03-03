@@ -1,56 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759302AbYCCJcS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760156AbYCCJfG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759302AbYCCJcS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Mar 2008 04:32:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751408AbYCCJcH
+	id S1760156AbYCCJfG (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Mar 2008 04:35:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752918AbYCCJex
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Mar 2008 04:32:07 -0500
-Received: from moutng.kundenserver.de ([212.227.126.179]:53984 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752169AbYCCJcF (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Mar 2008 04:32:05 -0500
-From: Arnd Bergmann <arnd@arndb.de>
-To: Ingo Molnar <mingo@elte.hu>
-Subject: Re: SCHED_IDLE documentation
-Date: Mon, 3 Mar 2008 10:31:51 +0100
-User-Agent: KMail/1.9.6 (enterprise 0.20080118.763038)
-Cc: Michael Kerrisk <mtk.manpages@googlemail.com>,
-       Christoph Hellwig <hch@lst.de>, cbe-oss-dev@ozlabs.org,
-       Jeremy Kerr <jk@ozlabs.org>, linux-kernel@vger.kernel.org
-References: <1203376368.275756.252634247263.1.gpush@pokey> <cfd18e0f0803030040l667dd2b7v6298e78c5b21bfec@mail.gmail.com> <20080303092422.GA18281@elte.hu>
-In-Reply-To: <20080303092422.GA18281@elte.hu>
-X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>=?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
- =?utf-8?q?3zb?=)
- =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
- =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+	Mon, 3 Mar 2008 04:34:53 -0500
+Received: from mail.suse.de ([195.135.220.2]:49965 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752477AbYCCJew (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 3 Mar 2008 04:34:52 -0500
+Date: Mon, 3 Mar 2008 10:34:49 +0100
+From: Nick Piggin <npiggin@suse.de>
+To: netdev@vger.kernel.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       yanmin_zhang@linux.intel.com, David Miller <davem@davemloft.net>,
+       Christoph Lameter <clameter@engr.sgi.com>,
+       Eric Dumazet <dada1@cosmosbay.com>
+Subject: [rfc][patch 1/3] slub: fix small HWCACHE_ALIGN alignment
+Message-ID: <20080303093449.GA15091@wotan.suse.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200803031031.52335.arnd@arndb.de>
-X-Provags-ID: V01U2FsdGVkX19AuBu6Wt/ZVFP2/F+ZXeQPUIkKcj38AkBcbwh
- byhIuTGmJIcn7cxGxf6pMnrGLKFJWjsTPt7dl2ZVG9br7hsjpV
- 00oHIxfa+67mK36/wsVxA==
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 03 March 2008, Ingo Molnar wrote:
-> > * What's the difference between SCHED_IDLE and SCHED_BATCH?
-> 
-> SCHED_BATCH can still have nice levels from -20 to +19, it is a modified 
-> SCHED_OTHER/SCHED_NORMAL for "throughput oriented" workloads.
-> 
-> SCHED_IDLE overrides the nice settings and it means a "super idle" 
-> workload.
 
-Does that mean that a SCHED_IDLE task still runs some of the time if
-you have a CPU hog running on +19, or can any other process starve the
-SCHED_IDLE task?
+SLUB should pack even small objects nicely into cachelines if that is what
+has been asked for. Use the same algorithm as SLAB for this.
 
-What happens if you have two SCHED_IDLE tasks on a single CPU, do they get
-equal share, or will they just run as batch jobs?
-
-	Arnd <><
+Signed-off-by: Nick Piggin <npiggin@suse.de>
+---
+Index: linux-2.6/mm/slub.c
+===================================================================
+--- linux-2.6.orig/mm/slub.c
++++ linux-2.6/mm/slub.c
+@@ -1896,12 +1896,15 @@ static unsigned long calculate_alignment
+ 	 * specified alignment though. If that is greater
+ 	 * then use it.
+ 	 */
+-	if ((flags & SLAB_HWCACHE_ALIGN) &&
+-			size > cache_line_size() / 2)
+-		return max_t(unsigned long, align, cache_line_size());
++	if (flags & SLAB_HWCACHE_ALIGN) {
++		unsigned long ralign = cache_line_size();
++		while (size <= ralign / 2)
++			ralign /= 2;
++		align = max(align, ralign);
++	}
+ 
+ 	if (align < ARCH_SLAB_MINALIGN)
+-		return ARCH_SLAB_MINALIGN;
++		align = ARCH_SLAB_MINALIGN;
+ 
+ 	return ALIGN(align, sizeof(void *));
+ }
