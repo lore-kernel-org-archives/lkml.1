@@ -1,49 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757776AbYCCS0P@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758650AbYCCS1Y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757776AbYCCS0P (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Mar 2008 13:26:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752615AbYCCSZ7
+	id S1758650AbYCCS1Y (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Mar 2008 13:27:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753633AbYCCS1O
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Mar 2008 13:25:59 -0500
-Received: from rhineheart.priorweb.be ([213.193.229.215]:51479 "HELO
-	rhineheart.priorweb.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1751314AbYCCSZ6 (ORCPT
+	Mon, 3 Mar 2008 13:27:14 -0500
+Received: from accolon.hansenpartnership.com ([76.243.235.52]:35967 "EHLO
+	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751708AbYCCS1M (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Mar 2008 13:25:58 -0500
-Date: Mon, 3 Mar 2008 18:25:49 +0000
-From: Kristof Provost <Kristof@sigsegv.be>
-To: Neal Becker <ndbecker2@gmail.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: Books on writing linux device drivers
-Message-ID: <20080303182549.GD16004@nereid>
-References: <fqhebq$os3$1@ger.gmane.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii; x-action=pgp-signed
-Content-Disposition: inline
-In-Reply-To: <fqhebq$os3$1@ger.gmane.org>
-X-PGP-Fingerprint: 6B6E 5EED 8ECF FAE7 1F61  7458 5046 7D0E 11B0 0EE8
-User-Agent: Mutt/1.5.13 (2006-08-11)
-X-Spam-Scanned: 0.0
+	Mon, 3 Mar 2008 13:27:12 -0500
+Subject: Re: [PATCH] block: separate out padding from alignment
+From: James Bottomley <James.Bottomley@HansenPartnership.com>
+To: Tejun Heo <htejun@gmail.com>
+Cc: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>, tomof@acm.org,
+       jens.axboe@oracle.com, efault@gmx.de, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org,
+       linux-scsi@vger.kernel.org, jgarzik@pobox.com
+In-Reply-To: <47CB9654.2000109@gmail.com>
+References: <47C8F4FC.1040505@gmail.com>	<20080302235223X.tomof@acm.org>
+	 <47CB6508.3040206@gmail.com>
+	 <20080303125940T.fujita.tomonori@lab.ntt.co.jp>
+	 <47CB79E9.8000505@gmail.com> <47CB95C2.40309@gmail.com>
+	 <47CB9654.2000109@gmail.com>
+Content-Type: text/plain
+Date: Mon, 03 Mar 2008 12:27:07 -0600
+Message-Id: <1204568827.3043.33.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.3 (2.12.3-1.fc8) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
------BEGIN PGP SIGNED MESSAGE-----
-Hash: SHA1
+On Mon, 2008-03-03 at 15:10 +0900, Tejun Heo wrote:
+> Block layer alignment was used for two different purposes - memory
+> alignment and padding.  This causes problems in lower layers because
+> drivers which only require memory alignment ends up with adjusted
+> rq->data_len.  Separate out padding such that padding occurs iff
+> driver explicitly requests it.
 
-On 2008-03-03 13:00:26 (-0500), Neal Becker <ndbecker2@gmail.com> wrote:
-> I am about to start on writing a linux device driver.  What books are
-> recommended?  There are some books that are a few years old now, that deal
-> with 2.4 kernel.  What would be useful for a relatively recent kernel?
-Recent revisions of "Linux Device Drivers". You may wish to address such
-questions to Google in the future.
+This puts the libsas SMP handler back into a working state again.
 
-Kristof
+Thanks,
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
+James
 
-iD8DBQFHzEKtUEZ9DhGwDugRAn5zAJ9R+J5FqTjFlJXRpFNfIxinhUIBWQCfQwo2
-Gg70VPCh5KiAXeQtqR4UUj8=
-=S92b
------END PGP SIGNATURE-----
+
