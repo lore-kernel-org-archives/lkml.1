@@ -1,91 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762370AbYCCXRW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761215AbYCCXTr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762370AbYCCXRW (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Mar 2008 18:17:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754854AbYCCXRH
+	id S1761215AbYCCXTr (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Mar 2008 18:19:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753107AbYCCXTj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Mar 2008 18:17:07 -0500
-Received: from mta-1.ms.rz.RWTH-Aachen.DE ([134.130.7.72]:63128 "EHLO
-	mta-1.ms.rz.rwth-aachen.de" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753989AbYCCXRG (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Mar 2008 18:17:06 -0500
-Date: Tue, 04 Mar 2008 00:18:07 +0100
-From: Arnd Hannemann <hannemann@nets.rwth-aachen.de>
-Subject: [PATCH-RESEND] Removing unneeded statement from tcp_ipv4.c
-In-reply-to: <Pine.LNX.4.64.0803031603100.28251@kivilampi-30.cs.helsinki.fi>
-To: =?ISO-8859-1?Q?Ilpo_J=E4rvinen?= <ilpo.jarvinen@helsinki.fi>
-Cc: Netdev <netdev@vger.kernel.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Message-id: <47CC872F.9020202@nets.rwth-aachen.de>
-MIME-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-Content-transfer-encoding: 8BIT
-X-IronPort-AV: E=Sophos;i="4.25,440,1199660400";   d="scan'208";a="33736817"
-References: <47CBFBDA.7000801@nets.rwth-aachen.de>
- <Pine.LNX.4.64.0803031603100.28251@kivilampi-30.cs.helsinki.fi>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080227)
+	Mon, 3 Mar 2008 18:19:39 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:47991 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752337AbYCCXTi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 3 Mar 2008 18:19:38 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [linux-pm] Fundamental flaw in system suspend, exposed by freezer removal
+Date: Tue, 4 Mar 2008 00:18:36 +0100
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: Linux-pm mailing list <linux-pm@lists.linux-foundation.org>,
+       Kernel development list <linux-kernel@vger.kernel.org>,
+       Alexey Starikovskiy <astarikovskiy@suse.de>
+References: <Pine.LNX.4.44L0.0803031808150.8280-100000@iolanthe.rowland.org>
+In-Reply-To: <Pine.LNX.4.44L0.0803031808150.8280-100000@iolanthe.rowland.org>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200803040018.36668.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ilpo Järvinen schrieb:
-> On Mon, 3 Mar 2008, Arnd Hannemann wrote:
+On Tuesday, 4 of March 2008, Alan Stern wrote:
+> On Mon, 3 Mar 2008, Rafael J. Wysocki wrote:
 > 
->> Avoid setting tstamp_ok because this is done two lines later anyway.
->>
->> Signed-off-by: Arnd Hannemann <hannemann@nets.rwth-aachen.de>
->>
->> diff --git a/net/ipv4/tcp_ipv4.c b/net/ipv4/tcp_ipv4.c
->> index 00156bf..a28c4c2 100644
->> --- a/net/ipv4/tcp_ipv4.c
->> +++ b/net/ipv4/tcp_ipv4.c
->> @@ -1302,15 +1302,14 @@ int tcp_v4_conn_request(struct sock *sk, struct sk_buff *skb)
->>                 tmp_opt.saw_tstamp = 0;
->>         }
->>
->> -       if (tmp_opt.saw_tstamp && !tmp_opt.rcv_tsval) {
->> +       if (tmp_opt.saw_tstamp && !tmp_opt.rcv_tsval)
->>                 /* Some OSes (unknown ones, but I see them on web server, which
->>                  * contains information interesting only for windows'
->>                  * users) do not send their stamp in SYN. It is easy case.
->>                  * We simply do not advertise TS support.
->>                  */
->>                 tmp_opt.saw_tstamp = 0;
->> -               tmp_opt.tstamp_ok 
+> > > > Perhaps it's better to include dpm_sysfs_add() into device_pm_add(), since we
+> > > > are going the make the return a result anyway?
+> > > 
+> > > Yes.
+> > 
+> > Okay, I'll prepare a patch for that, on top of the one introducing the
+> > 'sleeping' field into 'struct dev_pm_info' (posting in a while).
 > 
-> Please move the comment before the if (), only then can you remove those 
-> braces safely (without affecting readability, etc.).
+> While you're at it, could you add a field to indicate whether 
+> begin_sleep() has been called?  It would help prevent multiple calls to 
+> that method when a race does occur, and it could be useful for drivers 
+> as well.
 
-Avoid setting tstamp_ok because this is done two lines later anyway.
+That will be added along with the new callbacks.
 
-Signed-off-by: Arnd Hannemann <hannemann@nets.rwth-aachen.de>
+I'd prefer to do all that in separate patches, so that it's clear what issue is
+addressed and how, by each of them.
 
-diff --git a/net/ipv4/tcp_ipv4.c b/net/ipv4/tcp_ipv4.c
-index 00156bf..ecef356 100644
---- a/net/ipv4/tcp_ipv4.c
-+++ b/net/ipv4/tcp_ipv4.c
-@@ -1302,15 +1302,14 @@ int tcp_v4_conn_request(struct sock *sk, struct sk_buff *skb)
-                tmp_opt.saw_tstamp = 0;
-        }
+> > The question remains what we're going to do with the drivers without pm_ops
+> > pointers in the long run (in the short run we will use the legacy callbacks in
+> > that cases, if defined).
+> 
+> One possibility is to unbind those drivers at the start of a sleep
+> transition and reprobe them at the end.
 
--       if (tmp_opt.saw_tstamp && !tmp_opt.rcv_tsval) {
--               /* Some OSes (unknown ones, but I see them on web server, which
--                * contains information interesting only for windows'
--                * users) do not send their stamp in SYN. It is easy case.
--                * We simply do not advertise TS support.
--                */
-+       /* Some OSes (unknown ones, but I see them on web server, which
-+        * contains information interesting only for windows'
-+        * users) do not send their stamp in SYN. It is easy case.
-+        * We simply do not advertise TS support.
-+        */
-+       if (tmp_opt.saw_tstamp && !tmp_opt.rcv_tsval)
-                tmp_opt.saw_tstamp = 0;
--               tmp_opt.tstamp_ok  = 0;
--       }
-+
-        tmp_opt.tstamp_ok = tmp_opt.saw_tstamp;
+That sounds promising.
 
-        tcp_openreq_init(req, &tmp_opt, skb);
+> Another possibility is to ignore the lack of PM support and hope it doesn't
+> cause any problems. 
 
+That would be easy, but that's what we do now and there are problems with it.
+
+Thanks,
+Rafael
