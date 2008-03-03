@@ -1,48 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761692AbYCCVIU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760468AbYCCVIe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761692AbYCCVIU (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Mar 2008 16:08:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751012AbYCCVIJ
+	id S1760468AbYCCVIe (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Mar 2008 16:08:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755830AbYCCVIK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
+	Mon, 3 Mar 2008 16:08:10 -0500
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:60729 "EHLO
+	gprs189-60.eurotel.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752394AbYCCVIJ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
 	Mon, 3 Mar 2008 16:08:09 -0500
-Received: from khc.piap.pl ([195.187.100.11]:53618 "EHLO khc.piap.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750812AbYCCVIH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Mar 2008 16:08:07 -0500
-To: Benny Halevy <bhalevy@panasas.com>
-Cc: Richard Knutsson <ricknu-0@student.ltu.se>, SL Baur <steve@xemacs.org>,
-       Randy Dunlap <randy.dunlap@oracle.com>,
-       Guennadi Liakhovetski <g.liakhovetski@gmx.de>,
-       Jan Engelhardt <jengelh@computergmbh.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] CodingStyle: multiple updates
-References: <1204062430.47c488def40a4@portal.student.luth.se>
-	<20080226135444.f83a0536.randy.dunlap@oracle.com>
-	<Pine.LNX.4.64.0802262310050.15321@fbirervta.pbzchgretzou.qr>
-	<Pine.LNX.4.64.0802270033310.5714@axis700.grange>
-	<m31w6zcm4l.fsf@maximus.localdomain>
-	<ed10ee420802261657w3830e1a1rf0cc9601cdacb142@mail.gmail.com>
-	<20080226213432.1388717b.randy.dunlap@oracle.com>
-	<47C5DDE0.3040403@student.ltu.se>
-	<ed10ee420802271611l3a09e76ej531158f167512a03@mail.gmail.com>
-	<47C71510.6060306@student.ltu.se> <m3skzb9ysw.fsf@maximus.localdomain>
-	<47CC24AD.1090409@panasas.com>
-From: Krzysztof Halasa <khc@pm.waw.pl>
-Date: Mon, 03 Mar 2008 22:08:05 +0100
-In-Reply-To: <47CC24AD.1090409@panasas.com> (Benny Halevy's message of "Mon\, 03 Mar 2008 18\:17\:49 +0200")
-Message-ID: <m3zltfy0qy.fsf@maximus.localdomain>
+Date: Mon, 3 Mar 2008 22:08:39 +0100
+From: Pavel Machek <pavel@ucw.cz>
+To: Pierre Ossman <drzeus-list@drzeus.cx>
+Cc: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
+       Adam Belay <abelay@novell.com>, linux-pm@lists.linux-foundation.org,
+       LKML <linux-kernel@vger.kernel.org>, Andi Kleen <andi@firstfloor.org>,
+       Lee Revell <rlrevell@joe-job.com>
+Subject: Re: [PATCH] cpuidle: avoid singing capacitors
+Message-ID: <20080303210839.GJ13869@elf.ucw.cz>
+References: <20080229193812.31f45b0c@mjolnir.drzeus.cx> <20080303211842.6f492782@mjolnir.drzeus.cx> <20080303204603.GA19775@elf.ucw.cz> <20080303220310.0cab7213@mjolnir.drzeus.cx>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080303220310.0cab7213@mjolnir.drzeus.cx>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Benny Halevy <bhalevy@panasas.com> writes:
+On Mon 2008-03-03 22:03:10, Pierre Ossman wrote:
+> On Mon, 3 Mar 2008 21:46:03 +0100
+> Pavel Machek <pavel@ucw.cz> wrote:
+> 
+> > >  
+> > > +static unsigned int min_deep_sleep = 2000;
+> > > +
+> > 
+> > Well, why not, but I believe we should default to old behaviour... not
+> > all machines are cheaply-build.
+> 
+> One would hope. ;)
+> 
+> But the problem is that most people will not be able to find this
+> option (or even know such an option exists). I'd guess the distros will
+> just end up having this on by default anyway. And since I could not
+> measure any extra power drain, I believe it's hard to justify having it
+> off by default (more than by pure principle).
 
-> When creating a new line copying the indentation from the line above
-> and potentially filling more spaces as needed, according to
-> parenthesis or operators on the previous line should do the trick.
-
-Which editor and settings?
+So just leave it off by default, and let distros break their own
+kernels ;-).
+									Pavel
 -- 
-Krzysztof Halasa
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
