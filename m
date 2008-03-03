@@ -1,89 +1,142 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752890AbYCCLv3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752735AbYCCLy5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752890AbYCCLv3 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Mar 2008 06:51:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751251AbYCCLvV
+	id S1752735AbYCCLy5 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Mar 2008 06:54:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751270AbYCCLyt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Mar 2008 06:51:21 -0500
-Received: from rv-out-0910.google.com ([209.85.198.185]:3798 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751145AbYCCLvT (ORCPT
+	Mon, 3 Mar 2008 06:54:49 -0500
+Received: from wa-out-1112.google.com ([209.85.146.176]:59152 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751228AbYCCLys (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Mar 2008 06:51:19 -0500
+	Mon, 3 Mar 2008 06:54:48 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=K5KPjgPoWAgnrvmeVALK+XH9Gibq3NHxdhCrnGFK6pOZLI1lGYRYS21YFL6Ei/ItzIz8SVOksKeGl+deL3CuDRehutnDcEOO8a6G54xJsykabMZGH0j6zcY0wkWri79azAYURBWOhuNVrvFh1rbBE1sFzxcEhQAwyhlyTaTs+d8=
-Message-ID: <84144f020803030351l2042e9aaqe656ad1610e5efc5@mail.gmail.com>
-Date: Mon, 3 Mar 2008 13:51:19 +0200
-From: "Pekka Enberg" <penberg@cs.helsinki.fi>
-To: "Andrew Morton" <akpm@linux-foundation.org>
-Subject: Re: [BUG] Linux 2.6.25-rc2 - Kernel Ooops while running dbench
-Cc: "Kamalesh Babulal" <kamalesh@linux.vnet.ibm.com>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       linux-ext4@vger.kernel.org, "Andy Whitcroft" <apw@shadowen.org>,
-       "Balbir Singh" <balbir@linux.vnet.ibm.com>,
-       "Christoph Lameter" <clameter@sgi.com>, linux-mm@kvack.org
-In-Reply-To: <20080218045954.50503fb1.akpm@linux-foundation.org>
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:references;
+        b=Z2DHJDlqkowCidR4gc/vYmQZA7hh5GXRi2ePiIkntveybhiybaQpaKr2S/h4roHU4FkjWD0aYN3bhDgDIBIVIbF8QPfs+QTNkn87Mlpuf0p2NVZCGsgCwLE3o51YKdc8AUwtUBIZKIM+YdQPu7zxsrB5hyd/1e+kPgWaD++S3/k=
+Message-ID: <b647ffbd0803030354s268089fo8e5b8f647ada0aae@mail.gmail.com>
+Date: Mon, 3 Mar 2008 12:54:47 +0100
+From: "Dmitry Adamushko" <dmitry.adamushko@gmail.com>
+To: yi.y.yang@intel.com
+Subject: Re: [BUG 2.6.25-rc3] scheduler/hotplug: some processes are dealocked when cpu is set to offline
+Cc: "Ingo Molnar" <mingo@elte.hu>, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <1204483329.3607.8.camel@yangyi-dev.bj.intel.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <alpine.LFD.1.00.0802151302210.9496@woody.linux-foundation.org>
-	 <47B6784E.2090401@linux.vnet.ibm.com>
-	 <20080218045954.50503fb1.akpm@linux-foundation.org>
-X-Google-Sender-Auth: 96520861375c65b9
+Content-Type: multipart/mixed; 
+	boundary="----=_Part_1985_31506725.1204545287718"
+References: <1204483329.3607.8.camel@yangyi-dev.bj.intel.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 16 Feb 2008 11:14:46 +0530 Kamalesh Babulal
-<kamalesh@linux.vnet.ibm.com> wrote:
->  > The 2.6.25-rc2 kernel oopses while running dbench on ext3 filesystem
->  > mounted with mount -o data=writeback,nobh option on the x86_64 box
->  >
->  > BUG: unable to handle kernel NULL pointer dereference at 0000000000000000
->  > IP: [<ffffffff80274972>] kmem_cache_alloc+0x3a/0x6c
->  > PGD 1f6860067 PUD 1f5d64067 PMD 0
->  > Oops: 0000 [1] SMP
->  > CPU 3
->  > Modules linked in:
->  > Pid: 4271, comm: dbench Not tainted 2.6.25-rc2-autotest #1
->  > RIP: 0010:[<ffffffff80274972>]  [<ffffffff80274972>] kmem_cache_alloc+0x3a/0x6c
->  > RSP: 0000:ffff8101fb041dc8  EFLAGS: 00010246
->  > RAX: 0000000000000000 RBX: ffff810180033c00 RCX: ffffffff8027b269
->  > RDX: 0000000000000000 RSI: 00000000000080d0 RDI: ffffffff80632d70
->  > RBP: 00000000000080d0 R08: 0000000000000001 R09: 0000000000000000
->  > R10: ffff8101feb36e50 R11: 0000000000000190 R12: 0000000000000001
->  > R13: 0000000000000000 R14: ffff8101f8f38000 R15: 00000000ffffff9c
->  > FS:  0000000000000000(0000) GS:ffff8101fff0f000(0063) knlGS:00000000f7e41460
->  > CS:  0010 DS: 002b ES: 002b CR0: 0000000080050033
->  > CR2: 0000000000000000 CR3: 00000001f5620000 CR4: 00000000000006e0
->  > DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
->  > DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
->  > Process dbench (pid: 4271, threadinfo ffff8101fb040000, task ffff8101fb180000)
->  > Stack:  0000000000000001 ffff8101fb041ea8 0000000000000001 ffffffff8027b269
->  >  ffff8101fb041ea8 ffffffff80281fe8 0000000000000001 0000000000000000
->  >  ffff8101fb041ea8 00000000ffffff9c 000000000000000b 0000000000000001
->  > Call Trace:
->  >  [<ffffffff8027b269>] get_empty_filp+0x55/0xf9
->  >  [<ffffffff80281fe8>] __path_lookup_intent_open+0x22/0x8f
->  >  [<ffffffff80282853>] open_namei+0x86/0x5a7
->  >  [<ffffffff8027d019>] vfs_stat_fd+0x3c/0x4a
->  >  [<ffffffff80279ab1>] do_filp_open+0x1c/0x3d
->  >  [<ffffffff80279c2c>] get_unused_fd_flags+0x79/0x111
->  >  [<ffffffff80279dce>] do_sys_open+0x46/0xca
->  >  [<ffffffff80221c82>] ia32_sysret+0x0/0xa
+------=_Part_1985_31506725.1204545287718
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-On Mon, Feb 18, 2008 at 2:59 PM, Andrew Morton
-<akpm@linux-foundation.org> wrote:
->  Looks to me like we broke slab.  Christoph is offline until the 27th..
+On 02/03/2008, Yi Yang <yi.y.yang@intel.com> wrote:
+> [ ... ]
+>
+>  Why isn't the kernel thread [watchdog/1] reaped by its parent?
+> its state
+>  is TASK_RUNNING with high priority (R< means this), why it isn't done?
+>
+>  Anyone ever met such a problem? Your thought?
+>
 
-This is probably fixed by:
+iirc, Andrew had the same issue.
 
-http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commitdiff;h=00e962c5408b9f2d0bebd2308673fe982cb9a5fe
+'watchdog's are supposed to be stopped with kthread_stop() from
+softlockup.c :: cpu_callback() :: case CPU_DEAD.
 
-As this is on the regression list, Kamalesh, can you please confirm
-it's fixed now?
+The 'R' state of 'watchdog' is strange indeed.
 
-                             Pekka
+would you please conduct a test with the patch [1] below and provide
+me with additional output it generates?
+
+(non-white-space-damaged versions are enclosed)
+
+with your current set-up and also with
+"echo 0 > /proc/sys/kernel/hung_task_timeout_secs"
+
+Then please try also the patch [2] (on top of [1]). With this 'magic'
+patch applied, the issue 'seemed' to disappear on Andrew's set-up...
+
+Thanks in advacne,
+
+
+[1]
+
+--- softlockup-prev.c   2008-03-03 12:35:01.000000000 +0100
++++ softlockup.c        2008-03-03 12:38:01.000000000 +0100
+@@ -237,6 +237,8 @@ static int watchdog(void *__bind_cpu)
+
+        }
+
++       printk(KERN_WARN "-> watchdog(cpu: %d) is done\n", this_cpu);
++
+        return 0;
+ }
+
+@@ -249,6 +251,9 @@ cpu_callback(struct notifier_block *nfb,
+        int hotcpu = (unsigned long)hcpu;
+        struct task_struct *p;
+
++       printk(KERN_WARN "-> cpu_callback(cpu: %d, action: %lu,
+check_cpu: %d)\n",
++               hotcpu, action, check_cpu);
++
+        switch (action) {
+        case CPU_UP_PREPARE:
+        case CPU_UP_PREPARE_FROZEN:
+
+
+[2]
+
+--- softlockup-prev-2.c 2008-03-03 12:38:36.000000000 +0100
++++ softlockup.c        2008-03-03 12:39:02.000000000 +0100
+@@ -294,6 +294,7 @@ cpu_callback(struct notifier_block *nfb,
+        case CPU_DEAD_FROZEN:
+                p = per_cpu(watchdog_task, hotcpu);
+                per_cpu(watchdog_task, hotcpu) = NULL;
++               mlseep(1);
+                kthread_stop(p);
+                break;
+ #endif /* CONFIG_HOTPLUG_CPU */
+
+
+-- 
+Best regards,
+Dmitry Adamushko
+
+------=_Part_1985_31506725.1204545287718
+Content-Type: text/x-patch; name=softlockup-debug-1.patch
+Content-Transfer-Encoding: base64
+X-Attachment-Id: f_fdcz58uz
+Content-Disposition: attachment; filename=softlockup-debug-1.patch
+
+LS0tIHNvZnRsb2NrdXAtcHJldi5jCTIwMDgtMDMtMDMgMTI6MzU6MDEuMDAwMDAwMDAwICswMTAw
+CisrKyBzb2Z0bG9ja3VwLmMJMjAwOC0wMy0wMyAxMjozODowMS4wMDAwMDAwMDAgKzAxMDAKQEAg
+LTIzNyw2ICsyMzcsOCBAQCBzdGF0aWMgaW50IHdhdGNoZG9nKHZvaWQgKl9fYmluZF9jcHUpCiAK
+IAl9CiAKKwlwcmludGsoS0VSTl9XQVJOICItPiB3YXRjaGRvZyhjcHU6ICVkKSBpcyBkb25lXG4i
+LCB0aGlzX2NwdSk7CisKIAlyZXR1cm4gMDsKIH0KIApAQCAtMjQ5LDYgKzI1MSw5IEBAIGNwdV9j
+YWxsYmFjayhzdHJ1Y3Qgbm90aWZpZXJfYmxvY2sgKm5mYiwKIAlpbnQgaG90Y3B1ID0gKHVuc2ln
+bmVkIGxvbmcpaGNwdTsKIAlzdHJ1Y3QgdGFza19zdHJ1Y3QgKnA7CiAKKwlwcmludGsoS0VSTl9X
+QVJOICItPiBjcHVfY2FsbGJhY2soY3B1OiAlZCwgYWN0aW9uOiAlbHUsIGNoZWNrX2NwdTogJWQp
+XG4iLAorCQlob3RjcHUsIGFjdGlvbiwgY2hlY2tfY3B1KTsKKwogCXN3aXRjaCAoYWN0aW9uKSB7
+CiAJY2FzZSBDUFVfVVBfUFJFUEFSRToKIAljYXNlIENQVV9VUF9QUkVQQVJFX0ZST1pFTjoK
+------=_Part_1985_31506725.1204545287718
+Content-Type: text/x-patch; name=softlockup-debug-2.patch
+Content-Transfer-Encoding: base64
+X-Attachment-Id: f_fdcz5fk9
+Content-Disposition: attachment; filename=softlockup-debug-2.patch
+
+LS0tIHNvZnRsb2NrdXAtcHJldi0yLmMJMjAwOC0wMy0wMyAxMjozODozNi4wMDAwMDAwMDAgKzAx
+MDAKKysrIHNvZnRsb2NrdXAuYwkyMDA4LTAzLTAzIDEyOjM5OjAyLjAwMDAwMDAwMCArMDEwMApA
+QCAtMjk0LDYgKzI5NCw3IEBAIGNwdV9jYWxsYmFjayhzdHJ1Y3Qgbm90aWZpZXJfYmxvY2sgKm5m
+YiwKIAljYXNlIENQVV9ERUFEX0ZST1pFTjoKIAkJcCA9IHBlcl9jcHUod2F0Y2hkb2dfdGFzaywg
+aG90Y3B1KTsKIAkJcGVyX2NwdSh3YXRjaGRvZ190YXNrLCBob3RjcHUpID0gTlVMTDsKKwkJbWxz
+ZWVwKDEpOwogCQlrdGhyZWFkX3N0b3AocCk7CiAJCWJyZWFrOwogI2VuZGlmIC8qIENPTkZJR19I
+T1RQTFVHX0NQVSAqLwo=
+------=_Part_1985_31506725.1204545287718--
