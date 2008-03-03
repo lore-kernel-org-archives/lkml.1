@@ -1,52 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759353AbYCCUY2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758375AbYCCU1m@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759353AbYCCUY2 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Mar 2008 15:24:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753024AbYCCUYO
+	id S1758375AbYCCU1m (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Mar 2008 15:27:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752542AbYCCU1e
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Mar 2008 15:24:14 -0500
-Received: from mail.suse.de ([195.135.220.2]:44888 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751624AbYCCUYM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Mar 2008 15:24:12 -0500
-Date: Mon, 3 Mar 2008 21:24:11 +0100
-From: Nick Piggin <npiggin@suse.de>
-To: Christoph Lameter <clameter@sgi.com>
-Cc: netdev@vger.kernel.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       yanmin_zhang@linux.intel.com, David Miller <davem@davemloft.net>,
-       Eric Dumazet <dada1@cosmosbay.com>
-Subject: Re: [rfc][patch 2/3] slab: introduce SMP alignment
-Message-ID: <20080303202411.GH8974@wotan.suse.de>
-References: <20080303093449.GA15091@wotan.suse.de> <20080303093529.GB15091@wotan.suse.de> <Pine.LNX.4.64.0803031104570.6917@schroedinger.engr.sgi.com> <20080303200355.GB8974@wotan.suse.de> <Pine.LNX.4.64.0803031208400.16049@schroedinger.engr.sgi.com> <20080303201211.GE8974@wotan.suse.de> <Pine.LNX.4.64.0803031216430.3110@schroedinger.engr.sgi.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0803031216430.3110@schroedinger.engr.sgi.com>
-User-Agent: Mutt/1.5.9i
+	Mon, 3 Mar 2008 15:27:34 -0500
+Received: from astoria.ccjclearline.com ([64.235.106.9]:40734 "EHLO
+	astoria.ccjclearline.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751897AbYCCU1d (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 3 Mar 2008 15:27:33 -0500
+Date: Mon, 3 Mar 2008 15:27:27 -0500 (EST)
+From: "Robert P. J. Day" <rpjday@crashcourse.ca>
+X-X-Sender: rpjday@localhost.localdomain
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+cc: Sam Ravnborg <sam@ravnborg.org>
+Subject: [PATCH] KBUILD:  Allow generalization of "unifdef" utility.
+Message-ID: <alpine.LFD.1.00.0803031523050.27901@localhost.localdomain>
+User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
+X-AntiAbuse: Primary Hostname - astoria.ccjclearline.com
+X-AntiAbuse: Original Domain - vger.kernel.org
+X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
+X-AntiAbuse: Sender Address Domain - crashcourse.ca
+X-Source: 
+X-Source-Args: 
+X-Source-Dir: 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Mar 03, 2008 at 12:17:20PM -0800, Christoph Lameter wrote:
-> On Mon, 3 Mar 2008, Nick Piggin wrote:
-> 
-> > > You want two ways of specifying alignments?
-> > 
-> > I want a way to ask for SMP friendly allocation.
-> 
-> Then align the objects at cacheline boundaries by providing a value for 
-> the align parameter to kmem_cache_create().
 
-max(num_possible_cpus() > 1 ? cache_line_size() : 0, mandatory_alignment)?
+Allow the user to override the selection of "unifdef" utility when
+generating user-space header files.  This allows the user to select
+the more powerful "sunifdef" program, which is more stringent with
+respect to cleaning and syntax checking.
 
-Then suppose we want a CONFIG_TINY option to eliminate it?
+Signed-off-by: Robert P. J. Day <rpjday@crashcourse.ca>
 
-max(!CONFIG_TINY && num_possible_cpus() > 1 ? cache_line_size() : 0, mandatory_alignment)
+---
 
-And maybe the VSMP guys will want to blow this out to their internode
-alignment?
+  obviously, if a user chooses to not take advantage of this feature,
+it should make no difference whatsoever.  but "sunifdef" is more
+strict in terms of cleaning compound preprocessor directives, and it
+also flags questionable preprocessor directives like this:
 
-max(!CONFIG_TINY && num_possible_cpus() > 1 ? (is_vsmp ? internode_alignemnt : cache_line_size()) : 0, mandatory_alignment)
+  UNIFDEF include/linux/netlink.h
+sunifdef: /home/rpjday/k/git/include/linux/netlink.h: line 206:
+warning 0x02070: Garbage following preprocessor directive in "#if
+PAGE_SIZE < 8192UL" (#if line 152 depth 2)
 
 
+diff --git a/scripts/Makefile.headersinst b/scripts/Makefile.headersinst
+index 53dae3e..e98e6b2 100644
+--- a/scripts/Makefile.headersinst
++++ b/scripts/Makefile.headersinst
+@@ -7,7 +7,8 @@
+ #
+ # ==========================================================================
+
+-UNIFDEF := scripts/unifdef -U__KERNEL__
++UNIFDEF_CMD ?= scripts/unifdef
++UNIFDEF := $(UNIFDEF_CMD) -U__KERNEL__
+
+ # Eliminate the contents of (and inclusions of) compiler.h
+ HDRSED  := sed 	-e "s/ inline / __inline__ /g" \
+
+
+========================================================================
+Robert P. J. Day
+Linux Consulting, Training and Annoying Kernel Pedantry:
+    Have classroom, will lecture.
+
+http://crashcourse.ca                          Waterloo, Ontario, CANADA
+========================================================================
