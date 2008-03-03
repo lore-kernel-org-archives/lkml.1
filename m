@@ -1,50 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756584AbYCCK5y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761210AbYCCK73@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756584AbYCCK5y (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Mar 2008 05:57:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755096AbYCCK5c
+	id S1761210AbYCCK73 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Mar 2008 05:59:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756429AbYCCK7S
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Mar 2008 05:57:32 -0500
-Received: from mail.tnp-online.de ([212.80.247.147]:58268 "EHLO
-	fallback.gigamail.to" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751441AbYCCK5a (ORCPT
+	Mon, 3 Mar 2008 05:59:18 -0500
+Received: from senator.holtmann.net ([87.106.208.187]:60196 "EHLO
+	mail.holtmann.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756321AbYCCK7R (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Mar 2008 05:57:30 -0500
-From: Arne Redlich <arne.redlich@xiranet.com>
-To: Roland Dreier <rolandd@cisco.com>
-Cc: ofa-general <general@lists.openfabrics.org>,
-       lkml <linux-kernel@vger.kernel.org>, erezz@voltaire.com
-Subject: [PATCH 0/2] IB/iSER bugfixes
-Date: Mon, 03 Mar 2008 11:35:48 +0100
-Message-ID: <87ejasxfgb.fsf@confield.dd.xiranet.com>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-xiranet-MailScanner-OpenProtect-Information: Please contact the ISP for more information
-X-xiranet-MailScanner-OpenProtect: Found to be clean
-X-xiranet-MailScanner-OpenProtect-MCPCheck: 
-X-xiranet-MailScanner-OpenProtect-From: arne.redlich@xiranet.com
+	Mon, 3 Mar 2008 05:59:17 -0500
+Cc: tglx@linutronix.de, davem@davemloft.net, linux-bluetooth@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Message-Id: <B208AF85-1FAD-4913-ADD6-4A1FD2D33F3C@holtmann.org>
+From: Marcel Holtmann <marcel@holtmann.org>
+To: Dave Young <hidave.darkstar@gmail.com>
+In-Reply-To: <20080303024845.GA3197@darkstar.te-china.tietoenator.com>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+Content-Transfer-Encoding: 7bit
+Mime-Version: 1.0 (Apple Message framework v919.2)
+Subject: Re: [PATCH] l2cap info_timer delete fix in hci_conn_del
+Date: Mon, 3 Mar 2008 11:59:04 +0100
+References: <20080303024845.GA3197@darkstar.te-china.tietoenator.com>
+X-Mailer: Apple Mail (2.919.2)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+Hi Dave,
 
-While reading through the iSER code I noticed two rather nasty issues:
+> When the l2cap info_timer is active the info_state will be set to
+> L2CAP_INFO_FEAT_MASK_REQ_SENT, and it will be unset after the timer
+> is deleted or timeout triggered.
+>
+> Here in hci_conn_del only call del_timer_sync when the info_state
+> is set to L2CAP_INFO_FEAT_MASK_REQ_SENT.
+>
+> Signed-off-by: Dave Young <hidave.darkstar@gmail.com>
 
-1. The iteration through the list of "iser_device"s during device
-lookup/creation is broken - it might result in an infinite loop if more
-than 1 HCA is used with iSER. Use list_for_each_entry() instead of the
-custom, flawed list iteration code.
+the comment should say l2cap_conn_del, but besides that, the patch is  
+good.
 
-2. "iser_device" allocation failure is "handled" with a BUG_ON() right
-before dereferencing the NULL-pointer.
-This is really scary, so here's my idea of a fix. Someone with a deeper
-understanding of the code should have a look at it since I'm not sure it
-does The Right Thing.
+Acked-by: Marcel Holtmann <marcel@holtmann.org>
 
-Both patches are merely compile tested, and patch #2 needs to be applied
-on top of #1.
+in case someone is quicker than me getting this to Linus.
 
-Cheers,
-Arne
+Regards
+
+Marcel
+
