@@ -1,66 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758575AbYCCWQb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758117AbYCCWSr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758575AbYCCWQb (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Mar 2008 17:16:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752659AbYCCWQX
+	id S1758117AbYCCWSr (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Mar 2008 17:18:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753140AbYCCWSj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Mar 2008 17:16:23 -0500
-Received: from wa-out-1112.google.com ([209.85.146.178]:21375 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751914AbYCCWQW (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Mar 2008 17:16:22 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=m4ht7puOMerEEIGD+/fpMOVxcv22LOXpA2T+uJSa7+uDGMUCcGmG3PVCjYv14h8MdffGT875LvEYgQMgAqS1mEs6DgUjMZi7EmxFbjraA+72OKLsa6yy6SvwqNXBCHzGsc93gQ62iRy2ZkSoaFTdL5aG3HX27oHbBfqF7XyIDk8=
-Message-ID: <f19298770803031416y32dbb7dakfc88b8572c2c10fe@mail.gmail.com>
-Date: Tue, 4 Mar 2008 01:16:22 +0300
-From: "Alexey Zaytsev" <alexey.zaytsev@gmail.com>
-To: "Ingo Molnar" <mingo@elte.hu>
-Subject: Re: printk timestamps jumping back and forth in 2.6.25-rc.
-Cc: "Thomas Gleixner" <tglx@linutronix.de>,
-       lkml <linux-kernel@vger.kernel.org>,
-       "Arjan van de Ven" <arjan@linux.intel.com>
-In-Reply-To: <20080303104559.GE21190@elte.hu>
+	Mon, 3 Mar 2008 17:18:39 -0500
+Received: from namei.org ([69.55.235.186]:42917 "EHLO us.intercode.com.au"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1750842AbYCCWSi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 3 Mar 2008 17:18:38 -0500
+Date: Tue, 4 Mar 2008 09:16:19 +1100 (EST)
+From: James Morris <jmorris@namei.org>
+X-X-Sender: jmorris@us.intercode.com.au
+To: "Ahmed S. Darwish" <darwish.07@gmail.com>
+cc: Stephen Smalley <sds@tycho.nsa.gov>,
+       Casey Schaufler <casey@schaufler-ca.com>, Adrian Bunk <bunk@kernel.org>,
+       Chris Wright <chrisw@sous-sol.org>, Eric Paris <eparis@parisplace.org>,
+       Alexey Dobriyan <adobriyan@sw.ru>, LKML <linux-kernel@vger.kernel.org>,
+       LSM-ML <linux-security-module@vger.kernel.org>,
+       Anrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH -v4 -mm] LSM: Add security= boot parameter
+In-Reply-To: <20080303212433.GA12998@ubuntu>
+Message-ID: <Xine.LNX.4.64.0803040906380.21610@us.intercode.com.au>
+References: <20080301211108.GF25835@cs181133002.pp.htv.fi>
+ <674864.46980.qm@web36615.mail.mud.yahoo.com> <20080301232708.GA625@ubuntu>
+ <20080302074912.GA3215@ubuntu> <20080302105946.GA6406@ubuntu>
+ <Xine.LNX.4.64.0803031910170.6729@us.intercode.com.au> <20080303153510.GA6963@ubuntu>
+ <1204559642.23738.63.camel@moss-spartans.epoch.ncsc.mil> <20080303212433.GA12998@ubuntu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <f19298770802280626g5ee17328ldedf7658a9f26f56@mail.gmail.com>
-	 <20080228201315.GA30736@elte.hu> <20080228201613.GA30999@elte.hu>
-	 <f19298770802281324v1fc37cf4oebd680b81d0e0a2f@mail.gmail.com>
-	 <20080229194547.GC21249@elte.hu>
-	 <f19298770802291642v56a8a50ve5c7c88de53513f4@mail.gmail.com>
-	 <f19298770802291659x741c9fd9h3b3090fd514fe77b@mail.gmail.com>
-	 <20080303104559.GE21190@elte.hu>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Mar 3, 2008 at 1:45 PM, Ingo Molnar <mingo@elte.hu> wrote:
->
->  * Alexey Zaytsev <alexey.zaytsev@gmail.com> wrote:
->
->
-> > >  I"ll now recompile with fair group scheduler disabled, just to be
->  > >  sure.
->  >
->  > Yes, with the group scheduler disabled, the latencies for both Xorg
->  > and gnome-terminal do net exceed 15 ms. And the mouse is also smooth.
->
->  could you also try the current scheduler fixes lineup in
->  sched-devel.git:
->
->    http://people.redhat.com/mingo/sched-devel.git/README
->
->  is the mouse smooth with the group scheduler _enabled_ too?
->
+On Mon, 3 Mar 2008, Ahmed S. Darwish wrote:
 
-Works fine. The latencies of both Xorg and gnome-terminal are
-reported to be about 5-20 ms, and the mouse is smooth too.
+>  static inline int verify(struct security_operations *ops)
+>  {
+>  	/* verify the security_operations structure exists */
+> -	if (!ops)
+> +	if (!ops || !ops->name)
+>  		return -EINVAL;
 
-Thanks for the fast response to the ptoblem.
+verify() will now be called after ops->name has been referenced, so these 
+checks won't be necessary now.
 
->         Ingo
->
+> +int security_module_enable(struct security_operations *ops)
+> +{
+> +	if (!ops || !ops->name) {
+> +		BUG();
+> +		return 0;
+> +	}
+
+It's not going to return after BUG(), and actually, you can probably just 
+rely on the subsequent oops (i.e. no check needed).
+
+> +
+> +	if (!*chosen_lsm && atomic_inc_and_test(&security_ops_enabled))
+> +		return 1;
+> +
+> +	if (!strncmp(ops->name, chosen_lsm, SECURITY_NAME_MAX))
+> +		return 1;
+
+
+I still think you should use a spinlock here to make the semantics 
+simpler.  Dispense with the confusingly named security_ops_enabled, and 
+fill chosen_lsm in with the first lsm to regsiter if none chosen at boot.
+
+
+> +               printk(KERN_INFO "SELinux:  Another security module was chosen.\n");
+> +               printk(KERN_INFO "SELinux:  Use security=%s to force loading "
+> +                      "SELinux on boot.\n", selinux_ops.name);
+
+These messages are not going to scale, e.g. what if there are 20 LSMs 
+compiled in, and they all print this on boot? Just print the chosen LSM 
+in security_module_enabled().
+
+
+- James
+-- 
+James Morris
+<jmorris@namei.org>
