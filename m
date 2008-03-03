@@ -1,133 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760910AbYCCKJe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761969AbYCCKKi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760910AbYCCKJe (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Mar 2008 05:09:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754484AbYCCKJ1
+	id S1761969AbYCCKKi (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Mar 2008 05:10:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755323AbYCCKKa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Mar 2008 05:09:27 -0500
-Received: from gir.skynet.ie ([193.1.99.77]:53713 "EHLO gir.skynet.ie"
+	Mon, 3 Mar 2008 05:10:30 -0500
+Received: from cantor.suse.de ([195.135.220.2]:54183 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753167AbYCCKJ0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Mar 2008 05:09:26 -0500
-Date: Mon, 3 Mar 2008 10:09:23 +0000
-From: Mel Gorman <mel@csn.ul.ie>
-To: Christoph Lameter <clameter@sgi.com>
-Cc: linux-kernel@vger.kernel.org, Nick Piggin <npiggin@suse.de>,
-       Rik van Riel <riel@redhat.com>,
-       Andrew Morton <akpm@linux-foundation.org>, apw@shadowen.org,
-       linux-mm@kback.org
-Subject: Re: [rfc 01/10] Pageflags: Use an enum for the flags
-Message-ID: <20080303100923.GC19485@csn.ul.ie>
-References: <20080301040534.797979115@sgi.com> <20080301040620.029724488@sgi.com>
+	id S1754484AbYCCKK3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 3 Mar 2008 05:10:29 -0500
+From: Andreas Schwab <schwab@suse.de>
+To: Gabriel Paubert <paubert@iram.es>
+Cc: Steven Rostedt <rostedt@goodmis.org>, paulus@samba.org,
+       LKML <linux-kernel@vger.kernel.org>, linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH] add strncmp to PowerPC
+References: <1204301097.14759.6.camel@localhost.localdomain>
+	<1204340690.15052.457.camel@pasglop>
+	<Pine.LNX.4.58.0802292250490.21555@gandalf.stny.rr.com>
+	<20080303095443.GB27105@iram.es>
+X-Yow: Bo Derek ruined my life!
+Date: Mon, 03 Mar 2008 11:10:27 +0100
+In-Reply-To: <20080303095443.GB27105@iram.es> (Gabriel Paubert's message of
+	"Mon\, 3 Mar 2008 10\:54\:43 +0100")
+Message-ID: <je4pbow224.fsf@sykes.suse.de>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/22.1 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
-Content-Disposition: inline
-In-Reply-To: <20080301040620.029724488@sgi.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On (29/02/08 20:05), Christoph Lameter didst pronounce:
-> Use an enum to ease the maintenance of page flags. This is going to change the
-> numbering from 0 to 18.
-> 
-> Signed-off-by: Christoph Lameter <clameter@sgi.com>
-> 
-> ---
->  include/linux/page-flags.h |   54 ++++++++++++++++++++-------------------------
->  1 file changed, 24 insertions(+), 30 deletions(-)
-> 
-> Index: linux-2.6/include/linux/page-flags.h
-> ===================================================================
-> --- linux-2.6.orig/include/linux/page-flags.h	2008-02-29 14:54:22.000000000 -0800
-> +++ linux-2.6/include/linux/page-flags.h	2008-02-29 15:00:00.000000000 -0800
-> @@ -67,35 +67,28 @@
->   * FLAGS_RESERVED which defines the width of the fields section
->   * (see linux/mmzone.h).  New flags must _not_ overlap with this area.
->   */
-> -#define PG_locked	 	 0	/* Page is locked. Don't touch. */
-> -#define PG_error		 1
-> -#define PG_referenced		 2
-> -#define PG_uptodate		 3
-> -
-> -#define PG_dirty	 	 4
-> -#define PG_lru			 5
-> -#define PG_active		 6
-> -#define PG_slab			 7	/* slab debug (Suparna wants this) */
-> -
-> -#define PG_owner_priv_1		 8	/* Owner use. If pagecache, fs may use*/
-> -#define PG_arch_1		 9
-> -#define PG_reserved		10
-> -#define PG_private		11	/* If pagecache, has fs-private data */
-> -
-> -#define PG_writeback		12	/* Page is under writeback */
-> -#define PG_compound		14	/* Part of a compound page */
-> -#define PG_swapcache		15	/* Swap page: swp_entry_t in private */
-> -
-> -#define PG_mappedtodisk		16	/* Has blocks allocated on-disk */
-> -#define PG_reclaim		17	/* To be reclaimed asap */
-> -#define PG_buddy		19	/* Page is free, on buddy lists */
-> -
-> -/* PG_readahead is only used for file reads; PG_reclaim is only for writes */
-> -#define PG_readahead		PG_reclaim /* Reminder to do async read-ahead */
-> -
-> -/* PG_owner_priv_1 users should have descriptive aliases */
-> -#define PG_checked		PG_owner_priv_1 /* Used by some filesystems */
-> -#define PG_pinned		PG_owner_priv_1	/* Xen pinned pagetable */
+Gabriel Paubert <paubert@iram.es> writes:
 
-These two verbose descriptions appear to go missing in the enum below.
-It probably is intentional because they are aliases but you can preseve them
-being aliases with
+> Now that I think a bit more about it, I believe that the C version is
+> incorrect: the clrldi/extsb dance takes a value between -255 and +255
+> and collapses it into the -128 to 127 range, meaning that the return
+> value may be wrong if we rely on the sign of the result. So unless I
+> miss something, the problem is much more serious than just stupid code
+> (I had just a look at the libc version in C and characters are cast to
+> unsigned char before the comparison).
 
-PG_checked = PG_owner_priv_1,
-PG_pinned = PG_owner_priv_1,
+The latter is explicitly required by the C standard.  Ie. even if your
+characters are signed they are always compared as unsigned by
+strcmp/strncmp/memcmp.
 
-That would keep the comments about flags in one place. I note that you
-move the comment to the macro definitions in a later patch but maybe having
-comments about some flags in multiple places is not very desirable?
-
-> +enum pageflags {
-> +	PG_locked,		/* Page is locked. Don't touch. */
-> +	PG_error,
-> +	PG_referenced,
-> +	PG_uptodate,
-> +	PG_dirty,
-> +	PG_lru,
-> +	PG_active,
-> +	PG_slab,
-> +	PG_owner_priv_1,	/* Owner use. If pagecache, fs may use*/
-> +	PG_arch_1,
-> +	PG_reserved,
-> +	PG_private,		/* If pagecache, has fs-private data */
-> +	PG_writeback,		/* Page is under writeback */
-> +	PG_compound,		/* A compound page */
-> +	PG_swapcache,		/* Swap page: swp_entry_t in private */
-> +	PG_mappedtodisk,	/* Has blocks allocated on-disk */
-> +	PG_reclaim,		/* To be reclaimed asap */
-> +	/* PG_readahead is only used for file reads; PG_reclaim is only for writes */
-> +	PG_readahead = PG_reclaim, /* Reminder to do async read-ahead */
-> +	PG_buddy,		/* Page is free, on buddy lists */
-> +	NR_PAGEFLAGS,		/* For verification purposes */
->  
->  #if (BITS_PER_LONG > 32)
->  /*
-> @@ -105,8 +98,9 @@
->   * 64 bit  |           FIELDS             | ??????         FLAGS         |
->   *         63                            32                              0
->   */
-> -#define PG_uncached		31	/* Page has been mapped as uncached */
-> +	PG_uncached = 31,		/* Page has been mapped as uncached */
->  #endif
-> +};
->  
->  /*
->   * Manipulation of page state flags
-> 
-> -- 
-> 
+Andreas.
 
 -- 
-Mel Gorman
-Part-time Phd Student                          Linux Technology Center
-University of Limerick                         IBM Dublin Software Lab
+Andreas Schwab, SuSE Labs, schwab@suse.de
+SuSE Linux Products GmbH, Maxfeldstraße 5, 90409 Nürnberg, Germany
+PGP key fingerprint = 58CA 54C7 6D53 942B 1756  01D3 44D5 214B 8276 4ED5
+"And now for something completely different."
