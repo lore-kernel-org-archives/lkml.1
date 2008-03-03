@@ -1,89 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755875AbYCCQ7Y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755108AbYCCRAs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755875AbYCCQ7Y (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Mar 2008 11:59:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752152AbYCCQ7O
+	id S1755108AbYCCRAs (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Mar 2008 12:00:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750918AbYCCRAk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Mar 2008 11:59:14 -0500
-Received: from mail.suse.de ([195.135.220.2]:36741 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751914AbYCCQ7N (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Mar 2008 11:59:13 -0500
-Date: Mon, 3 Mar 2008 17:59:10 +0100
-From: Nick Piggin <npiggin@suse.de>
-To: Jack Steiner <steiner@sgi.com>
-Cc: Andrea Arcangeli <andrea@qumranet.com>, akpm@linux-foundation.org,
-       Robin Holt <holt@sgi.com>, Avi Kivity <avi@qumranet.com>,
-       Izik Eidus <izike@qumranet.com>, kvm-devel@lists.sourceforge.net,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, general@lists.openfabrics.org,
-       Steve Wise <swise@opengridcomputing.com>,
-       Roland Dreier <rdreier@cisco.com>, Kanoj Sarcar <kanojsarcar@yahoo.com>,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       daniel.blueman@quadrics.com, Christoph Lameter <clameter@sgi.com>
-Subject: Re: [PATCH] mmu notifiers #v8
-Message-ID: <20080303165910.GA23998@wotan.suse.de>
-References: <20080220103942.GU7128@v2.random> <20080221045430.GC15215@wotan.suse.de> <20080221144023.GC9427@v2.random> <20080221161028.GA14220@sgi.com> <20080227192610.GF28483@v2.random> <20080302155457.GK8091@v2.random> <20080303032934.GA3301@wotan.suse.de> <20080303125152.GS8091@v2.random> <20080303131017.GC13138@wotan.suse.de> <20080303151859.GA19374@sgi.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080303151859.GA19374@sgi.com>
-User-Agent: Mutt/1.5.9i
+	Mon, 3 Mar 2008 12:00:40 -0500
+Received: from mga06.intel.com ([134.134.136.21]:41978 "EHLO
+	orsmga101.jf.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1750823AbYCCRAj (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 3 Mar 2008 12:00:39 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.25,438,1199692800"; 
+   d="scan'208";a="349080089"
+Message-ID: <47CC2A3D.1000307@linux.intel.com>
+Date: Mon, 03 Mar 2008 08:41:33 -0800
+From: Arjan van de Ven <arjan@linux.intel.com>
+User-Agent: Thunderbird 2.0.0.12 (Windows/20080213)
+MIME-Version: 1.0
+To: Ingo Molnar <mingo@elte.hu>
+CC: torvalds@linux-foundation.org, hans.rosenfeld@amd.com,
+       linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: bisected boot regression post 2.6.25-rc3.. please revert
+References: <20080301105646.2c8620d9@laptopd505.fenrus.org> <20080303074620.GC5934@elte.hu> <20080303091304.GA17911@elte.hu>
+In-Reply-To: <20080303091304.GA17911@elte.hu>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Mar 03, 2008 at 09:18:59AM -0600, Jack Steiner wrote:
-> On Mon, Mar 03, 2008 at 02:10:17PM +0100, Nick Piggin wrote:
-> > On Mon, Mar 03, 2008 at 01:51:53PM +0100, Andrea Arcangeli wrote:
-> > > On Mon, Mar 03, 2008 at 04:29:34AM +0100, Nick Piggin wrote:
-> > > > to something I prefer. Others may not, but I'll post them for debate
-> > > > anyway.
-> > > 
-> > > Sure, thanks!
-> > > 
-> > > > > I didn't drop invalidate_page, because invalidate_range_begin/end
-> > > > > would be slower for usages like KVM/GRU (we don't need a begin/end
-> > > > > there because where invalidate_page is called, the VM holds a
-> > > > > reference on the page). do_wp_page should also use invalidate_page
-> > > > > since it can free the page after dropping the PT lock without losing
-> > > > > any performance (that's not true for the places where invalidate_range
-> > > > > is called).
-> > > > 
-> > > > I'm still not completely happy with this. I had a very quick look
-> > > > at the GRU driver, but I don't see why it can't be implemented
-> > > > more like the regular TLB model, and have TLB insertions depend on
-> > > > the linux pte, and do invalidates _after_ restricting permissions
-> > > > to the pte.
-> > > > 
-> > > > Ie. I'd still like to get rid of invalidate_range_begin, and get
-> > > > rid of invalidate calls from places where permissions are relaxed.
-> > > 
-> > > _begin exists because by the time _end is called, the VM already
-> > > dropped the reference on the page. This way we can do a single
-> > > invalidate no matter how large the range is. I don't see ways to
-> > > remove _begin while still invoking _end a single time for the whole
-> > > range.
-> > 
-> > Is this just a GRU problem? Can't we just require them to take a ref
-> > on the page (IIRC Jack said GRU could be changed to more like a TLB
-> > model).
+Ingo Molnar wrote:
+> * Ingo Molnar <mingo@elte.hu> wrote:
 > 
-> Maintaining a long-term reference on a page is a problem. The GRU does not
-> currently maintain tables to track the pages for which dropins have been done.
+>> Could you try to hack up a debug patch perhaps? Uninline the 
+>> fucntion(s) then add two versions (one is that breaks on your box and 
+>> one is that works on your box) of this same pmd_bad()/pud_bad() 
+>> functions and do something like this (pseudocode):
 > 
-> The GRU has a large internal TLB and is designed to reference up to 8PB of
-> memory. The size of the tables to track this many referenced pages would be
-> a problem (at best).
+> i.e. something like the (tested) patch below. It is not clear whether 
+> your testcase is on 32-bit or 64-bit - so i went for the more likely 
+> 32-bit case first.
 
-Is it any worse a problem than the pagetables of the processes which have
-their virtual memory exported to GRU? AFAIKS, no; it is on the same
-magnitude of difficulty. So you could do it without introducing any
-fundamental problem (memory usage might be increased by some constant
-factor, but I think we can cope with that in order to make the core patch
-really nice and simple).
 
-It is going to be really easy to add more weird and wonderful notifiers
-later that deviate from our standard TLB model. It would be much harder to
-remove them. So I really want to see everyone conform to this model first.
-Numbers and comparisons can be brought out afterwards if people want to
-attempt to make such changes.
+------------[ cut here ]------------
+WARNING: at arch/x86/mm/pgtable_32.c:387 pmd_bad+0x44/0x53()
+Modules linked in:
+Pid: 1, comm: swapper Not tainted 2.6.25-rc3 #14
+  [<c0424ba5>] warn_on_slowpath+0x41/0x67
+  [<c0408c5c>] ? native_sched_clock+0x94/0xa6
+  [<c043f432>] ? lock_release_holdtime+0x1a/0x115
+  [<c04702d4>] ? handle_mm_fault+0x297/0x7e2
+  [<c063eee6>] ? _spin_unlock+0x1d/0x20
+  [<c04707f0>] ? handle_mm_fault+0x7b3/0x7e2
+  [<c04851c1>] ? do_sync_read+0xab/0xe9
+  [<c0417223>] pmd_bad+0x44/0x53
+  [<c046f37f>] follow_page+0x8b/0x1f2
+  [<c0470aa0>] get_user_pages+0x281/0x2ef
+  [<c0488dec>] get_arg_page+0x2d/0x79
+  [<c04f63cd>] ? strnlen_user+0x2f/0x4d
+  [<c0488efb>] copy_strings+0xc3/0x160
+  [<c0488fb4>] copy_strings_kernel+0x1c/0x2b
+  [<c048a109>] do_execve+0x11a/0x1f0
+  [<c0403351>] sys_execve+0x29/0x51
+  [<c0404ac6>] syscall_call+0x7/0xb
+  [<c0407697>] ? kernel_execve+0x17/0x1c
+  [<c04021d1>] ? _stext+0x69/0x12c
+  [<c040574f>] ? kernel_thread_helper+0x7/0x10
+  =======================
+---[ end trace 63b854b89f6f375d ]---
+
+
+
