@@ -1,200 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758683AbYCCQZJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759117AbYCCQ1Z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758683AbYCCQZJ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Mar 2008 11:25:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756160AbYCCQY4
+	id S1759117AbYCCQ1Z (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Mar 2008 11:27:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755479AbYCCQ1R
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Mar 2008 11:24:56 -0500
-Received: from ns2.suse.de ([195.135.220.15]:47538 "EHLO mx2.suse.de"
+	Mon, 3 Mar 2008 11:27:17 -0500
+Received: from gir.skynet.ie ([193.1.99.77]:59401 "EHLO gir.skynet.ie"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754940AbYCCQYz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Mar 2008 11:24:55 -0500
-Message-ID: <47CC2652.1080601@suse.de>
-Date: Mon, 03 Mar 2008 17:24:50 +0100
-From: Hannes Reinecke <hare@suse.de>
-User-Agent: Thunderbird 1.5 (X11/20060317)
+	id S1751045AbYCCQ1Q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 3 Mar 2008 11:27:16 -0500
+Date: Mon, 3 Mar 2008 16:27:11 +0000
+From: Mel Gorman <mel@csn.ul.ie>
+To: Yinghai Lu <yhlu.kernel@gmail.com>
+Cc: Mike Travis <travis@sgi.com>, Andrew Morton <akpm@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, mingo@elte.hu, tglx@linutronix.de,
+       Christoph Lameter <clameter@sgi.com>, Jack Steiner <steiner@sgi.com>
+Subject: Re: 2.6.24 git2/mm1: cpu_to_node mapping to non-existant nodes causing boot failure
+Message-ID: <20080303162711.GD5861@csn.ul.ie>
+References: <47B33ACF.5030700@sgi.com> <20080214201727.GC30841@csn.ul.ie> <47B4A774.7050509@sgi.com> <20080215020208.GA6500@csn.ul.ie> <47B77E90.5050809@sgi.com> <47BAFFD3.1070606@sgi.com> <20080219192319.GE12386@csn.ul.ie> <86802c440802262229t37c61c98y45607ba34d7c6417@mail.gmail.com> <20080228154244.GA4038@csn.ul.ie> <86802c440802280945w4dd71038y95936656cd535c9c@mail.gmail.com>
 MIME-Version: 1.0
-To: Kiyoshi Ueda <k-ueda@ct.jp.nec.com>
-Cc: jens.axboe@oracle.com, linux-kernel@vger.kernel.org,
-       linux-scsi@vger.kernel.org, dm-devel@redhat.com, j-nomura@ce.jp.nec.com
-Subject: Re: [RFC PATCH 1/3] block: add rq->complete_io hook for request stacking
-References: <20080215.172727.39155014.k-ueda@ct.jp.nec.com>
-In-Reply-To: <20080215.172727.39155014.k-ueda@ct.jp.nec.com>
-X-Enigmail-Version: 0.94.0.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=iso-8859-15
+Content-Disposition: inline
+In-Reply-To: <86802c440802280945w4dd71038y95936656cd535c9c@mail.gmail.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Kiyoshi,
-
-Kiyoshi Ueda wrote:
-> This patch adds ->complete_io() hook for request stacking.
-> Request stacking drivers (such as request-based dm) can set
-> a callback for completion.
-> (The hook is not called in blk_end_io(), since request-based dm uses
->  it for clone completion in the following appendix patches.)
+On (28/02/08 09:45), Yinghai Lu didst pronounce:
+> On Thu, Feb 28, 2008 at 7:42 AM, Mel Gorman <mel@csn.ul.ie> wrote:
+> > On (26/02/08 22:29), Yinghai Lu didst pronounce:
+> >
+> > > >  >
+> >  > >  > Did you get a chance to try out this patch to see if it cleared up the problem
+> >  > >  > booting on your x86_64 numa box?
+> >  >
+> >  > did it fail with x86.git#testing?
+> >  >
+> >
+> >  No, it boots successfully with that git branch. Somewhere in there is a fix.
+> >
 > 
-[ .. ]
-I would rather have rq->complete_io() to be pointing to blk_end_io in the
-default case, this way rq->complete_io() would always be valid and we
-would be saving us the if() clause.
+> can you verify which one fix that ?
+> 
+> http://git.kernel.org/?p=linux/kernel/git/x86/linux-2.6-x86.git;a=commitdiff;h=a8de04ce4e4cf0af94aeb3829be8c9f813b2f5de
 
-> Index: 2.6.25-rc1/block/blk-core.c
-> ===================================================================
-> --- 2.6.25-rc1.orig/block/blk-core.c
-> +++ 2.6.25-rc1/block/blk-core.c
-> @@ -138,6 +138,7 @@ void rq_init(struct request_queue *q, st
->  	rq->data = NULL;
->  	rq->sense = NULL;
->  	rq->end_io = NULL;
-> +	rq->complete_io = NULL;
-rq->complete_io = blk_end_io;
+This one was the fix.
 
->  	rq->end_io_data = NULL;
->  	rq->next_rq = NULL;
->  }
-> @@ -1917,6 +1918,9 @@ static int blk_end_io(struct request *rq
->   **/
->  int blk_end_request(struct request *rq, int error, unsigned int nr_bytes)
->  {
-> +	if (rq->complete_io)
-> +		return rq->complete_io(rq, error, nr_bytes, 0, NULL);
-> +
->  	return blk_end_io(rq, error, nr_bytes, 0, NULL);
->  }
-So when using my proposal this would just become:
+commit a8de04ce4e4cf0af94aeb3829be8c9f813b2f5de
+Author: Yinghai Lu <Yinghai.Lu@Sun.COM>
+Date:   Tue Feb 19 15:35:54 2008 -0800
 
-{
-    BUG_ON(!rq->complete_io);
-    return rq->complete_io(rq, error, nr_bytes, 0, NULL);
-}
+    x86_64: not set node to cpu_to_node if the node is not online
+    
+    numa_init_array will set round-bin to all cpu to online nodes.
+    init_cpu_to_node will use cpu->apic (from MADT or mptable) and
+    apic->node(from SRAT or AMD config space with k8_bus_64.c) to have cpu->node mapping.
+    and later identify_cpu will overwrite them again...(with nearby_node...)
+    
+    this patch will check if the node is online, otherwise will not update cpu_node map.
+    so keep cpu_node map to online node before identify_cpu..., to prevent possible  error.
+    
+    Signed-off-by: Yinghai Lu <yinghai.lu@sun.com>
+    Signed-off-by: Ingo Molnar <mingo@elte.hu>
 
->  EXPORT_SYMBOL_GPL(blk_end_request);
-> @@ -1936,6 +1940,27 @@ EXPORT_SYMBOL_GPL(blk_end_request);
->   **/
->  int __blk_end_request(struct request *rq, int error, unsigned int nr_bytes)
->  {
-> +	if (unlikely(blk_queue_stackable(rq->q)))
-> +		printk(KERN_WARNING "dev: %s: Not ready for request stacking, "
-> +		       "but the device driver set it stackable. "
-> +		       "Need to fix the device driver!\n",
-> +		       rq->rq_disk ? rq->rq_disk->disk_name : "?");
-> +
-> +	if (unlikely(rq->complete_io)) {
-> +		/*
-> +		 * If we invoke the ->complete_io here, the request submitter's
-> +		 * handler would get deadlock on the queue lock.
-> +		 *
-> +		 * This happens, when the request submitter didn't check
-> +		 * whether the queue is stackable or the device driver marked
-> +		 * the queue stackable.
-> +		 * Need to fix the request submitter or the device driver.
-> +		 */
-> +		printk(KERN_ERR "The device driver isn't ready for "
-> +		       "request stacking.\n");
-> +		BUG();
-> +	}
-> +
-This could be skipped entirely then.
-
->  	if (blk_fs_request(rq) || blk_pc_request(rq)) {
->  		if (__end_that_request_first(rq, error, nr_bytes))
->  			return 1;
-> @@ -1966,6 +1991,9 @@ EXPORT_SYMBOL_GPL(__blk_end_request);
->  int blk_end_bidi_request(struct request *rq, int error, unsigned int nr_bytes,
->  			 unsigned int bidi_bytes)
->  {
-> +	if (rq->complete_io)
-> +		return rq->complete_io(rq, error, nr_bytes, bidi_bytes, NULL);
-> +
->  	return blk_end_io(rq, error, nr_bytes, bidi_bytes, NULL);
->  }
-return rq->complete_io(rq, error, nr_bytes, bidi_bytes, NULL);
-
->  EXPORT_SYMBOL_GPL(blk_end_bidi_request);
-> @@ -1999,6 +2027,9 @@ int blk_end_request_callback(struct requ
->  			     unsigned int nr_bytes,
->  			     int (drv_callback)(struct request *))
->  {
-> +	if (rq->complete_io)
-> +		return rq->complete_io(rq, error, nr_bytes, 0, drv_callback);
-> +
->  	return blk_end_io(rq, error, nr_bytes, 0, drv_callback);
-return rq->complete_io(rq, error, nr_bytes, bidi_bytes, NULL);
-
->  }
->  EXPORT_SYMBOL_GPL(blk_end_request_callback);
-> Index: 2.6.25-rc1/include/linux/blkdev.h
-> ===================================================================
-> --- 2.6.25-rc1.orig/include/linux/blkdev.h
-> +++ 2.6.25-rc1/include/linux/blkdev.h
-> @@ -42,6 +42,9 @@ void copy_io_context(struct io_context *
->  
->  struct request;
->  typedef void (rq_end_io_fn)(struct request *, int);
-> +typedef int (rq_complete_io_fn)(struct request *rq, int error,
-> +				unsigned int nr_bytes, unsigned int bidi_bytes,
-> +				int (drv_callback)(struct request *));
->  
->  struct request_list {
->  	int count[2];
-> @@ -228,6 +231,7 @@ struct request {
->  	 * completion callback.
->  	 */
->  	rq_end_io_fn *end_io;
-> +	rq_complete_io_fn *complete_io;
->  	void *end_io_data;
->  
->  	/* for bidi */
-> @@ -401,6 +405,7 @@ struct request_queue
->  #define QUEUE_FLAG_PLUGGED	7	/* queue is plugged */
->  #define QUEUE_FLAG_ELVSWITCH	8	/* don't use elevator, just do FIFO */
->  #define QUEUE_FLAG_BIDI		9	/* queue supports bidi requests */
-> +#define QUEUE_FLAG_STACKABLE	10	/* queue supports request stacking */
->  
->  enum {
->  	/*
-> @@ -446,6 +451,8 @@ enum {
->  #define blk_queue_tagged(q)	test_bit(QUEUE_FLAG_QUEUED, &(q)->queue_flags)
->  #define blk_queue_stopped(q)	test_bit(QUEUE_FLAG_STOPPED, &(q)->queue_flags)
->  #define blk_queue_flushing(q)	((q)->ordseq)
-> +#define blk_queue_stackable(q)	\
-> +		test_bit(QUEUE_FLAG_STACKABLE, &(q)->queue_flags)
->  
->  #define blk_fs_request(rq)	((rq)->cmd_type == REQ_TYPE_FS)
->  #define blk_pc_request(rq)	((rq)->cmd_type == REQ_TYPE_BLOCK_PC)
-> Index: 2.6.25-rc1/drivers/scsi/scsi_lib.c
-> ===================================================================
-> --- 2.6.25-rc1.orig/drivers/scsi/scsi_lib.c
-> +++ 2.6.25-rc1/drivers/scsi/scsi_lib.c
-> @@ -1597,6 +1597,13 @@ struct request_queue *__scsi_alloc_queue
->  	 */
->  	blk_queue_dma_alignment(q, 0x03);
->  
-> +	/*
-> +	 * SCSI is ready for request stacking, since it doesn't hold
-> +	 * queue lock when completing request.
-> +	 * (It doesn't use __blk_end_request().)
-> +	 */
-> +	set_bit(QUEUE_FLAG_STACKABLE, &q->queue_flags);
-> +
->  	return q;
->  }
->  EXPORT_SYMBOL(__scsi_alloc_queue);
-> -
-> To unsubscribe from this list: send the line "unsubscribe linux-scsi" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-
-Apart from this: Great work!
-
-Cheers,
-
-Hannes
+diff --git a/arch/x86/mm/numa_64.c b/arch/x86/mm/numa_64.c
+index f744c46..0c9b2bd 100644
+--- a/arch/x86/mm/numa_64.c
++++ b/arch/x86/mm/numa_64.c
+@@ -620,13 +620,17 @@ void __init init_cpu_to_node(void)
+ 	int i;
+ 
+ 	for (i = 0; i < NR_CPUS; i++) {
++		int node;
+ 		u16 apicid = x86_cpu_to_apicid_init[i];
+ 
+ 		if (apicid == BAD_APICID)
+ 			continue;
+-		if (apicid_to_node[apicid] == NUMA_NO_NODE)
++		node = apicid_to_node[apicid];
++		if (node == NUMA_NO_NODE)
+ 			continue;
+-		numa_set_node(i, apicid_to_node[apicid]);
++		if (!node_online(node))
++			continue;
++		numa_set_node(i, node);
+ 	}
+ }
+ 
 -- 
-Dr. Hannes Reinecke		      zSeries & Storage
-hare@suse.de			      +49 911 74053 688
-SUSE LINUX Products GmbH, Maxfeldstr. 5, 90409 Nürnberg
-GF: Markus Rex, HRB 16746 (AG Nürnberg)
+Mel Gorman
+Part-time Phd Student                          Linux Technology Center
+University of Limerick                         IBM Dublin Software Lab
