@@ -1,88 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754869AbYCCOjY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755330AbYCCOme@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754869AbYCCOjY (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Mar 2008 09:39:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753381AbYCCOjO
+	id S1755330AbYCCOme (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Mar 2008 09:42:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753308AbYCCOm0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Mar 2008 09:39:14 -0500
-Received: from psa.adit.fi ([217.112.250.17]:56972 "EHLO psa.adit.fi"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753358AbYCCOjN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Mar 2008 09:39:13 -0500
-Message-ID: <47CC0D5E.6040405@adit.fi>
-Date: Mon, 03 Mar 2008 16:38:22 +0200
-From: Pekka Sarnila <sarnila@adit.fi>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.11) Gecko/20070217 Iceape/1.0.8 (Debian-1.0.8-4)
+	Mon, 3 Mar 2008 09:42:26 -0500
+Received: from wa-out-1112.google.com ([209.85.146.182]:16935 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752696AbYCCOm0 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 3 Mar 2008 09:42:26 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=LuXawa2V7+O65XMrFJSUxbcZjVbYkcaevx2wfZaASmhan1WHzsOfhKARgPWt2yxr6dK7rdyFMVF8CfHe9Yw7yBCiWHcjiHmU7V12ymMQ7gQsXcIvkGPGX7d+HIjMtK+k70aAfiSrPSfZEHlgj0CCvCVG5/61WWrRZq8PQvmeClE=
+Message-ID: <cfd18e0f0803030642m62cec927p80f1250fbe98afc6@mail.gmail.com>
+Date: Mon, 3 Mar 2008 15:42:24 +0100
+From: "Michael Kerrisk" <mtk.manpages@googlemail.com>
+To: "Ingo Molnar" <mingo@elte.hu>
+Subject: Re: SCHED_IDLE documentation
+Cc: "Arnd Bergmann" <arnd@arndb.de>, "Christoph Hellwig" <hch@lst.de>,
+       cbe-oss-dev@ozlabs.org, "Jeremy Kerr" <jk@ozlabs.org>,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <20080303125227.GA22160@elte.hu>
 MIME-Version: 1.0
-To: Jiri Kosina <jkosina@suse.cz>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: [patch] hid: quirk to fixup fullspeed interval on highspeed devices
-References: <47C96DEB.5070304@adit.fi> <Pine.LNX.4.64.0803031333080.15209@jikos.suse.cz>
-In-Reply-To: <Pine.LNX.4.64.0803031333080.15209@jikos.suse.cz>
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <1203376368.275756.252634247263.1.gpush@pokey>
+	 <200803030612.28039.arnd@arndb.de> <20080303051719.GA26102@lst.de>
+	 <200803030721.52869.arnd@arndb.de> <20080303073311.GB5934@elte.hu>
+	 <cfd18e0f0803030040l667dd2b7v6298e78c5b21bfec@mail.gmail.com>
+	 <20080303092422.GA18281@elte.hu>
+	 <cfd18e0f0803030431n69df391dw53843d5079d906dd@mail.gmail.com>
+	 <20080303125227.GA22160@elte.hu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+Ingo,
 
-thanks for the answer.
+One more thought while we're in this thread.  In my recent tests I
+notice that the magnitude of the effect of nice values has changed
+quite a lot in recent times.  For example, back in 2.6.18, two CPU
+intensive processes would get the following shares of the CPU over 100
+seconds of run time (here, three different examples of nice value
+settings):
 
-Jiri Kosina wrote:
-> On Sat, 1 Mar 2008, Pekka Sarnila wrote:
-> 
->> Many vendors highspeed devices give erroneously fullspeed interval value 
->> in endpoint descriptor for interrupt endpoints. This quirk fixes up that 
->> by recalculating the right value for highspeed device.
-> 
-> Hi Pekka,
-> 
-> thanks for the patch. I however think that HID code is really a wrong 
-> place to to this, we really want to do this in USB core instead, as that 
-> it where it belongs.
+A nice	B nice	%A	%B
+-20	-10	58.3	41.7
+-20	  0	89.2	10.8
+-20	+19	99.7	 0.3
 
-Yes, I kind of agree, but ...
+In 2.6.25-rc2, we have:
 
-> Why do you think that adding a new quirk for this device to 
-> usb/core/quirks.c and then checking for it in usb_parse_endpoint() is not 
-> feasible?
+A nice	B nice	%A	%B
+-20	-10	 90.5	9.5
+-20	  0	 99.0	1.0
+-20	+19	100.0	0.0
 
-The quirks for usb/core (only two so far) are listed in
-include/linux/usb/quirks.h. As it is states there:
+While I realise that nice values are not intended to guarantee any
+particular degree of access to the CPU, these wide variations in the
+effect of the nice value are surprising.  (For the 2.6.25-rc2 -20/+19
+case, my test shows the low priority process is getting 0.000% of the
+CPU -- i.e., < one thousandth of a percent.  In other words it is in
+effect being totally starved of the CPU.)  Any comments?
 
-/*
- * This file holds the definitions of quirks found in USB devices.
- * Only quirks that affect the whole device, not an interface,
- * belong here.
- */
+Cheers,
 
-There are two interfaces on this particular device. Only one interface is
-HID, and the problem pertains only to that interface. Thus a class specific
-quirk (HID) to eliminate the kernel tinkering with the endpoints of the
-other interface (not having this problem).
-
-This rises the question of the generality of this quirk. In this particular
-case there are no interrupt endpoints on the other device. So based on this
-one case it is impossible say anything on whether on devices having several
-interrupt endpoints, maybe on several interfaces, the problem is device,
-interface or endpoint specific. I suspect all combinations exist.
-One might speculate that manufacturers are combining in to one usb.2 device
-old usb.1 and new usb.2 components forgetting to update the interval value
-in the firmware for the old component (I suspects this has happened in this
-case: new being dvb, old ifr kbd).
-
-If so it implies the need, not only for device or class specific, but also
-interface and endpoint specific quirks. No such quirk-mechanism (to my
-knowledge) exist.
-
-Anyway, in the case of this particular device it was justified to limit
-the quirk to HID-class. What to do in general is the question: My guess is
-(without interface or endpoint specific quirks) class specific quirks hit
-the target more precisely. But it is really only a guess.
-
-Pekka
-
- 
-> Thanks,
-> 
+Michael
