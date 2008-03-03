@@ -1,56 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759968AbYCCSq2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760612AbYCCSqo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759968AbYCCSq2 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Mar 2008 13:46:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755650AbYCCSp5
+	id S1760612AbYCCSqo (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Mar 2008 13:46:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760093AbYCCSqA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Mar 2008 13:45:57 -0500
-Received: from ns2.g-housing.de ([81.169.133.75]:56144 "EHLO mail.g-house.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760035AbYCCSp4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Mar 2008 13:45:56 -0500
-Date: Mon, 3 Mar 2008 19:45:52 +0100 (CET)
-From: Christian Kujau <lists@nerdbynature.de>
-X-X-Sender: evil@sheep.housecafe.de
-To: "linux-os (Dick Johnson)" <linux-os@analogic.com>
-cc: Linux kernel <linux-kernel@vger.kernel.org>
-Subject: Re: 64-bit AMD panic
-In-Reply-To: <Pine.LNX.4.61.0803031205030.5874@chaos.analogic.com>
-Message-ID: <alpine.DEB.1.00.0803031942040.5974@sheep.housecafe.de>
-References: <Pine.LNX.4.61.0803031205030.5874@chaos.analogic.com>
-User-Agent: Alpine 1.00 (DEB 882 2007-12-20)
+	Mon, 3 Mar 2008 13:46:00 -0500
+Received: from 216-99-213-120.dsl.aracnet.com ([216.99.213.120]:40826 "EHLO
+	clueserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1760070AbYCCSp7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 3 Mar 2008 13:45:59 -0500
+X-Greylist: delayed 563 seconds by postgrey-1.27 at vger.kernel.org; Mon, 03 Mar 2008 13:45:58 EST
+Message-ID: <24975.198.182.193.170.1204569393.squirrel@clueserver.org>
+In-Reply-To: <20080303182549.GD16004@nereid>
+References: <fqhebq$os3$1@ger.gmane.org> <20080303182549.GD16004@nereid>
+Date: Mon, 3 Mar 2008 10:36:33 -0800 (PST)
+Subject: Re: Books on writing linux device drivers
+From: "Alan" <alan@clueserver.org>
+To: "Kristof Provost" <Kristof@sigsegv.be>
+Cc: "Neal Becker" <ndbecker2@gmail.com>, linux-kernel@vger.kernel.org
+User-Agent: SquirrelMail/1.4.10a-1.fc6
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+X-Priority: 3 (Normal)
+Importance: Normal
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 3 Mar 2008, linux-os (Dick Johnson) wrote:
-> We have 64-bit production machines that use the kernel shipped with
-> a RedHat distribution, linux-2.6.11-1.1369_FC4smp.
+> -----BEGIN PGP SIGNED MESSAGE-----
+> Hash: SHA1
+>
+> On 2008-03-03 13:00:26 (-0500), Neal Becker <ndbecker2@gmail.com> wrote:
+>> I am about to start on writing a linux device driver.  What books are
+>> recommended?  There are some books that are a few years old now, that
+>> deal
+>> with 2.4 kernel.  What would be useful for a relatively recent kernel?
+> Recent revisions of "Linux Device Drivers". You may wish to address such
+> questions to Google in the future.
 
-Try asking on the Fedora lists or perhaps it's even in their bugzilla...
+I think he is also looking for ones that are good, not just what is
+available.
 
-> There have been
-> no problems until we received recent hardware. With the latest hardware,
-> which the vendor claims hasn't changed,
+Greg Kroah-Hartman had a book written on Kernel Device Drivers.  get the
+latest edition of that.
 
-I'm not following: you changed the hardware, but the vendor said, the hard 
-did not change?
+More info on his web page on writing device drivers, with examples.
 
-> the machines panic when either
-> a USB mouse or USB keyboard are plugged in.
+http://www.kroah.com/linux/
 
-If you're stuck to this hardware (changed or not): did you try a more 
-recent kernel? 2.6.11 is pretty old for lkml....
 
-C.
-
-> The information transmitted in this message is confidential and may
-> be privileged.  Any review, retransmission, dissemination, or other
-
-damn, I retransmitted it :)
--- 
-BOFH excuse #154:
-
-You can tune a file system, but you can't tune a fish (from most tunefs man pages)
