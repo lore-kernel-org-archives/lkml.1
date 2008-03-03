@@ -1,23 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758724AbYCCRW2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755557AbYCCRWq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758724AbYCCRW2 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Mar 2008 12:22:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759587AbYCCRPU
+	id S1755557AbYCCRWq (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Mar 2008 12:22:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755802AbYCCRP3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Mar 2008 12:15:20 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:35575 "EHLO mx1.redhat.com"
+	Mon, 3 Mar 2008 12:15:29 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:35582 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759516AbYCCRPS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Mar 2008 12:15:18 -0500
+	id S1759638AbYCCRPX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 3 Mar 2008 12:15:23 -0500
 From: Glauber Costa <gcosta@redhat.com>
 To: linux-kernel@vger.kernel.org
 Cc: akpm@linux-foundation.org, glommer@gmail.com, mingo@elte.hu,
        tglx@linutronix.de, Glauber Costa <gcosta@redhat.com>
-Subject: [PATCH 29/52] adjust types in smpcommon_32.c
-Date: Mon,  3 Mar 2008 14:12:57 -0300
-Message-Id: <1204564400-17636-30-git-send-email-gcosta@redhat.com>
+Subject: [PATCH 33/52] move hotplug related extern definitions to smp.h
+Date: Mon,  3 Mar 2008 14:13:01 -0300
+Message-Id: <1204564400-17636-34-git-send-email-gcosta@redhat.com>
 X-Mailer: git-send-email 1.5.3.6
-In-Reply-To: <1204564400-17636-29-git-send-email-gcosta@redhat.com>
+In-Reply-To: <1204564400-17636-33-git-send-email-gcosta@redhat.com>
 References: <1204564400-17636-1-git-send-email-gcosta@redhat.com>
  <1204564400-17636-2-git-send-email-gcosta@redhat.com>
  <1204564400-17636-3-git-send-email-gcosta@redhat.com>
@@ -47,65 +47,58 @@ References: <1204564400-17636-1-git-send-email-gcosta@redhat.com>
  <1204564400-17636-27-git-send-email-gcosta@redhat.com>
  <1204564400-17636-28-git-send-email-gcosta@redhat.com>
  <1204564400-17636-29-git-send-email-gcosta@redhat.com>
+ <1204564400-17636-30-git-send-email-gcosta@redhat.com>
+ <1204564400-17636-31-git-send-email-gcosta@redhat.com>
+ <1204564400-17636-32-git-send-email-gcosta@redhat.com>
+ <1204564400-17636-33-git-send-email-gcosta@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-so they can have the same type as x86_64
+definitions that are inside CONFIG_HOTPLUG_CPU in
+the arch-specific smp*.h files are moved to common
+header
 
 Signed-off-by: Glauber Costa <gcosta@redhat.com>
 ---
- arch/x86/kernel/smpboot_32.c |    6 +++---
- include/asm-x86/smp_32.h     |    6 +++---
+ include/asm-x86/smp.h    |    6 ++++++
+ include/asm-x86/smp_32.h |    6 ------
  2 files changed, 6 insertions(+), 6 deletions(-)
 
-diff --git a/arch/x86/kernel/smpboot_32.c b/arch/x86/kernel/smpboot_32.c
-index 579b9b7..5a446f0 100644
---- a/arch/x86/kernel/smpboot_32.c
-+++ b/arch/x86/kernel/smpboot_32.c
-@@ -67,7 +67,7 @@ int smp_num_siblings = 1;
- EXPORT_SYMBOL(smp_num_siblings);
+diff --git a/include/asm-x86/smp.h b/include/asm-x86/smp.h
+index 1b4481a..c800b81 100644
+--- a/include/asm-x86/smp.h
++++ b/include/asm-x86/smp.h
+@@ -80,6 +80,12 @@ extern void prefill_possible_map(void);
+ # include "smp_64.h"
+ #endif
  
- /* Last level cache ID of each logical CPU */
--DEFINE_PER_CPU(u8, cpu_llc_id) = BAD_APICID;
-+DEFINE_PER_CPU(u16, cpu_llc_id) = BAD_APICID;
- 
- /* representing HT siblings of each logical CPU */
- DEFINE_PER_CPU(cpumask_t, cpu_sibling_map);
-@@ -92,10 +92,10 @@ DEFINE_PER_CPU_SHARED_ALIGNED(struct cpuinfo_x86, cpu_info);
- EXPORT_PER_CPU_SYMBOL(cpu_info);
- 
- /* which logical CPU number maps to which CPU (physical APIC ID) */
--u8 x86_cpu_to_apicid_init[NR_CPUS] __initdata =
-+u16 x86_cpu_to_apicid_init[NR_CPUS] __initdata =
- 			{ [0 ... NR_CPUS-1] = BAD_APICID };
- void *x86_cpu_to_apicid_early_ptr;
--DEFINE_PER_CPU(u8, x86_cpu_to_apicid) = BAD_APICID;
-+DEFINE_PER_CPU(u16, x86_cpu_to_apicid) = BAD_APICID;
- EXPORT_PER_CPU_SYMBOL(x86_cpu_to_apicid);
- 
- u8 apicid_2_node[MAX_APICID];
++#ifdef CONFIG_HOTPLUG_CPU
++extern void cpu_exit_clear(void);
++extern void cpu_uninit(void);
++extern void remove_siblinginfo(int cpu);
++#endif
++
+ extern void smp_alloc_memory(void);
+ extern void lock_ipi_call_lock(void);
+ extern void unlock_ipi_call_lock(void);
 diff --git a/include/asm-x86/smp_32.h b/include/asm-x86/smp_32.h
-index 41b58e0..29f6195 100644
+index 76247a9..0b25134 100644
 --- a/include/asm-x86/smp_32.h
 +++ b/include/asm-x86/smp_32.h
-@@ -21,13 +21,13 @@ extern cpumask_t cpu_callin_map;
- extern void (*mtrr_hook) (void);
- extern void zap_low_mappings (void);
+@@ -29,12 +29,6 @@ DECLARE_PER_CPU(cpumask_t, cpu_core_map);
+ DECLARE_PER_CPU(u16, cpu_llc_id);
+ DECLARE_PER_CPU(u16, x86_cpu_to_apicid);
  
--extern u8 __initdata x86_cpu_to_apicid_init[];
-+extern u16 __initdata x86_cpu_to_apicid_init[];
- extern void *x86_cpu_to_apicid_early_ptr;
- 
- DECLARE_PER_CPU(cpumask_t, cpu_sibling_map);
- DECLARE_PER_CPU(cpumask_t, cpu_core_map);
--DECLARE_PER_CPU(u8, cpu_llc_id);
--DECLARE_PER_CPU(u8, x86_cpu_to_apicid);
-+DECLARE_PER_CPU(u16, cpu_llc_id);
-+DECLARE_PER_CPU(u16, x86_cpu_to_apicid);
- 
- #ifdef CONFIG_HOTPLUG_CPU
- extern void cpu_exit_clear(void);
+-#ifdef CONFIG_HOTPLUG_CPU
+-extern void cpu_exit_clear(void);
+-extern void cpu_uninit(void);
+-extern void remove_siblinginfo(int cpu);
+-#endif
+-
+ #ifdef CONFIG_SMP
+ #ifndef CONFIG_PARAVIRT
+ #define startup_ipi_hook(phys_apicid, start_eip, start_esp) do { } while (0)
 -- 
 1.5.0.6
 
