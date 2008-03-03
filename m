@@ -1,23 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762539AbYCCR2b@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762615AbYCCR2r@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762539AbYCCR2b (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Mar 2008 12:28:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759959AbYCCRP5
+	id S1762615AbYCCR2r (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Mar 2008 12:28:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759369AbYCCRQA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Mar 2008 12:15:57 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:36429 "EHLO mx1.redhat.com"
+	Mon, 3 Mar 2008 12:16:00 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:36437 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759936AbYCCRPz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Mar 2008 12:15:55 -0500
+	id S1759986AbYCCRP5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 3 Mar 2008 12:15:57 -0500
 From: Glauber Costa <gcosta@redhat.com>
 To: linux-kernel@vger.kernel.org
 Cc: akpm@linux-foundation.org, glommer@gmail.com, mingo@elte.hu,
        tglx@linutronix.de, Glauber Costa <gcosta@redhat.com>
-Subject: [PATCH 42/52] adapt voyager's trampoline_base
-Date: Mon,  3 Mar 2008 14:13:10 -0300
-Message-Id: <1204564400-17636-43-git-send-email-gcosta@redhat.com>
+Subject: [PATCH 46/52] use cpu_relax instead of rep_nop
+Date: Mon,  3 Mar 2008 14:13:14 -0300
+Message-Id: <1204564400-17636-47-git-send-email-gcosta@redhat.com>
 X-Mailer: git-send-email 1.5.3.6
-In-Reply-To: <1204564400-17636-42-git-send-email-gcosta@redhat.com>
+In-Reply-To: <1204564400-17636-46-git-send-email-gcosta@redhat.com>
 References: <1204564400-17636-1-git-send-email-gcosta@redhat.com>
  <1204564400-17636-2-git-send-email-gcosta@redhat.com>
  <1204564400-17636-3-git-send-email-gcosta@redhat.com>
@@ -60,53 +60,43 @@ References: <1204564400-17636-1-git-send-email-gcosta@redhat.com>
  <1204564400-17636-40-git-send-email-gcosta@redhat.com>
  <1204564400-17636-41-git-send-email-gcosta@redhat.com>
  <1204564400-17636-42-git-send-email-gcosta@redhat.com>
+ <1204564400-17636-43-git-send-email-gcosta@redhat.com>
+ <1204564400-17636-44-git-send-email-gcosta@redhat.com>
+ <1204564400-17636-45-git-send-email-gcosta@redhat.com>
+ <1204564400-17636-46-git-send-email-gcosta@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Change voyager's trampoline base to unsigned char *
-instead of u32. This way, it won't conflict with
-the other architectures when including smp.h
+This is done for smpboot_32.c
 
 Signed-off-by: Glauber Costa <gcosta@redhat.com>
 ---
- arch/x86/mach-voyager/voyager_smp.c |    8 ++++----
- 1 files changed, 4 insertions(+), 4 deletions(-)
+ arch/x86/kernel/smpboot_32.c |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/arch/x86/mach-voyager/voyager_smp.c b/arch/x86/mach-voyager/voyager_smp.c
-index 0b3f52a..0ab236e 100644
---- a/arch/x86/mach-voyager/voyager_smp.c
-+++ b/arch/x86/mach-voyager/voyager_smp.c
-@@ -210,7 +210,7 @@ static int cpucount = 0;
- /* steal a page from the bottom of memory for the trampoline and
-  * squirrel its address away here.  This will be in kernel virtual
-  * space */
--static __u32 trampoline_base;
-+unsigned char *trampoline_base;
+diff --git a/arch/x86/kernel/smpboot_32.c b/arch/x86/kernel/smpboot_32.c
+index ee82659..2dd95ba 100644
+--- a/arch/x86/kernel/smpboot_32.c
++++ b/arch/x86/kernel/smpboot_32.c
+@@ -185,7 +185,7 @@ static void __cpuinit smp_callin(void)
+ 		 */
+ 		if (cpu_isset(cpuid, cpu_callout_map))
+ 			break;
+-		rep_nop();
++		cpu_relax();
+ 	}
  
- /* The per cpu profile stuff - used in smp_local_timer_interrupt */
- static DEFINE_PER_CPU(int, prof_multiplier) = 1;
-@@ -435,9 +435,9 @@ static __u32 __init setup_trampoline(void)
- 	extern const __u8 trampoline_end[];
- 	extern const __u8 trampoline_data[];
- 
--	memcpy((__u8 *) trampoline_base, trampoline_data,
-+	memcpy(trampoline_base, trampoline_data,
- 	       trampoline_end - trampoline_data);
--	return virt_to_phys((__u8 *) trampoline_base);
-+	return virt_to_phys(trampoline_base);
- }
- 
- /* Routine initially called when a non-boot CPU is brought online */
-@@ -1166,7 +1166,7 @@ void flush_tlb_all(void)
-  * is sorted out */
- void __init smp_alloc_memory(void)
- {
--	trampoline_base = (__u32) alloc_bootmem_low_pages(PAGE_SIZE);
-+	trampoline_base = alloc_bootmem_low_pages(PAGE_SIZE);
- 	if (__pa(trampoline_base) >= 0x93000)
- 		BUG();
- }
+ 	if (!time_before(jiffies, timeout)) {
+@@ -242,7 +242,7 @@ static void __cpuinit start_secondary(void *unused)
+ 	preempt_disable();
+ 	smp_callin();
+ 	while (!cpu_isset(smp_processor_id(), smp_commenced_mask))
+-		rep_nop();
++		cpu_relax();
+ 	/*
+ 	 * Check TSC synchronization with the BP:
+ 	 */
 -- 
 1.5.0.6
 
