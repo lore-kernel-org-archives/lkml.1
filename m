@@ -1,54 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758863AbYCCSKl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757541AbYCCSLY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758863AbYCCSKl (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Mar 2008 13:10:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758206AbYCCSJV
+	id S1757541AbYCCSLY (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Mar 2008 13:11:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759704AbYCCSJ5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Mar 2008 13:09:21 -0500
-Received: from smtp6.pp.htv.fi ([213.243.153.40]:51610 "EHLO smtp6.pp.htv.fi"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758075AbYCCSJT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Mar 2008 13:09:19 -0500
-Date: Mon, 3 Mar 2008 20:07:42 +0200
-From: Adrian Bunk <adrian.bunk@movial.fi>
-To: Paul Mundt <lethal@linux-sh.org>
-Cc: linux-sh@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [2.6 patch] sh/mm/pg-sh7705.c must #include <linux/fs.h>
-Message-ID: <20080303180742.GJ26072@cs181133002.pp.htv.fi>
+	Mon, 3 Mar 2008 13:09:57 -0500
+Received: from bzq-179-150-194.static.bezeqint.net ([212.179.150.194]:58261
+	"EHLO il.qumranet.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758671AbYCCSJ4 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 3 Mar 2008 13:09:56 -0500
+Message-ID: <47CC3EED.7090507@qumranet.com>
+Date: Mon, 03 Mar 2008 20:09:49 +0200
+From: Avi Kivity <avi@qumranet.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+To: Jack Steiner <steiner@sgi.com>
+CC: Nick Piggin <npiggin@suse.de>, Andrea Arcangeli <andrea@qumranet.com>,
+       akpm@linux-foundation.org, Robin Holt <holt@sgi.com>,
+       Izik Eidus <izike@qumranet.com>, kvm-devel@lists.sourceforge.net,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, general@lists.openfabrics.org,
+       Steve Wise <swise@opengridcomputing.com>,
+       Roland Dreier <rdreier@cisco.com>, Kanoj Sarcar <kanojsarcar@yahoo.com>,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       daniel.blueman@quadrics.com, Christoph Lameter <clameter@sgi.com>
+Subject: Re: [PATCH] mmu notifiers #v8
+References: <20080221045430.GC15215@wotan.suse.de> <20080221144023.GC9427@v2.random> <20080221161028.GA14220@sgi.com> <20080227192610.GF28483@v2.random> <20080302155457.GK8091@v2.random> <20080303032934.GA3301@wotan.suse.de> <20080303125152.GS8091@v2.random> <20080303131017.GC13138@wotan.suse.de> <20080303151859.GA19374@sgi.com> <20080303165910.GA23998@wotan.suse.de> <20080303180605.GA3552@sgi.com>
+In-Reply-To: <20080303180605.GA3552@sgi.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch fixes the following compile error:
+Jack Steiner wrote:
+> The range invalidates have a performance advantage for the GRU. TLB invalidates
+> on the GRU are relatively slow (usec) and interfere somewhat with the performance
+> of other active GRU instructions. Invalidating a large chunk of addresses with
+> a single GRU TLBINVAL operation is must faster than issuing a stream of single
+> page TLBINVALs.
+>
+> I expect this performance advantage will also apply to other users of mmuops.
+>   
 
-<--  snip  -->
+In theory this would apply to kvm as well (coalesce tlb flush IPIs, 
+lookup shadow page table once), but is it really a fast path?  What 
+triggers range operations for your use cases?
 
-...
-  CC      arch/sh/mm/pg-sh7705.o
-/home/bunk/linux/kernel-2.6/git/linux-2.6/arch/sh/mm/pg-sh7705.c: In function 'ptep_get_and_clear':
-/home/bunk/linux/kernel-2.6/git/linux-2.6/arch/sh/mm/pg-sh7705.c:130: error: implicit declaration of function 'mapping_writably_mapped'
-make[2]: *** [arch/sh/mm/pg-sh7705.o] Error 1
-
-<--  snip  -->
-
-Signed-off-by: Adrian Bunk <adrian.bunk@movial.fi>
-
----
-abeeede2889319116acd5969913c5fe3c78ead05 foobar
-diff --git a/arch/sh/mm/pg-sh7705.c b/arch/sh/mm/pg-sh7705.c
-index a4b015f..7f885b7 100644
---- a/arch/sh/mm/pg-sh7705.c
-+++ b/arch/sh/mm/pg-sh7705.c
-@@ -14,6 +14,7 @@
- #include <linux/mman.h>
- #include <linux/mm.h>
- #include <linux/threads.h>
-+#include <linux/fs.h>
- #include <asm/addrspace.h>
- #include <asm/page.h>
- #include <asm/pgtable.h>
+-- 
+error compiling committee.c: too many arguments to function
 
