@@ -1,39 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763358AbYCCVZ1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763492AbYCCV0A@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763358AbYCCVZ1 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Mar 2008 16:25:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763388AbYCCVXZ
+	id S1763492AbYCCV0A (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Mar 2008 16:26:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763472AbYCCVXv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Mar 2008 16:23:25 -0500
-Received: from gate.crashing.org ([63.228.1.57]:46487 "EHLO gate.crashing.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1763264AbYCCVXY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Mar 2008 16:23:24 -0500
-In-Reply-To: <962471e5d2b8c88858dd5e0f50269751@kernel.crashing.org>
-References: <20080301105646.2c8620d9@laptopd505.fenrus.org> <20080303074620.GC5934@elte.hu> <20080303091304.GA17911@elte.hu> <47CC2A3D.1000307@linux.intel.com> <20080303174009.GA19131@elte.hu> <47CC451A.2060501@linux.intel.com> <962471e5d2b8c88858dd5e0f50269751@kernel.crashing.org>
-Mime-Version: 1.0 (Apple Message framework v623)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <4ffd9be7b13d6300b888c146d6d040d5@kernel.crashing.org>
-Content-Transfer-Encoding: 7bit
-Cc: hans.rosenfeld@amd.com, torvalds@linux-foundation.org,
-       linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
-       Arjan van de Ven <arjan@linux.intel.com>,
-       "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>
-From: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: bisected boot regression post 2.6.25-rc3.. please revert
-Date: Mon, 3 Mar 2008 22:22:23 +0100
-To: Segher Boessenkool <segher@kernel.crashing.org>
-X-Mailer: Apple Mail (2.623)
+	Mon, 3 Mar 2008 16:23:51 -0500
+Received: from relay2.sgi.com ([192.48.171.30]:39419 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1763358AbYCCVXu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 3 Mar 2008 16:23:50 -0500
+Date: Mon, 3 Mar 2008 13:23:48 -0800 (PST)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Pekka Enberg <penberg@cs.helsinki.fi>
+cc: Nick Piggin <npiggin@suse.de>, netdev@vger.kernel.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       yanmin_zhang@linux.intel.com, David Miller <davem@davemloft.net>,
+       Eric Dumazet <dada1@cosmosbay.com>
+Subject: Re: [rfc][patch 2/3] slab: introduce SMP alignment
+In-Reply-To: <84144f020803031241l277aa3b8h2fe0714f5765cb49@mail.gmail.com>
+Message-ID: <Pine.LNX.4.64.0803031318310.4131@schroedinger.engr.sgi.com>
+References: <20080303093449.GA15091@wotan.suse.de>  <20080303093529.GB15091@wotan.suse.de>
+  <Pine.LNX.4.64.0803031104570.6917@schroedinger.engr.sgi.com> 
+ <20080303200355.GB8974@wotan.suse.de>  <Pine.LNX.4.64.0803031208400.16049@schroedinger.engr.sgi.com>
+  <20080303201211.GE8974@wotan.suse.de>  <Pine.LNX.4.64.0803031216430.3110@schroedinger.engr.sgi.com>
+  <20080303202411.GH8974@wotan.suse.de> <84144f020803031241l277aa3b8h2fe0714f5765cb49@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> so (on 32-bit) ~_PAGE_PSE is ~0x80L is 0xffffff7f, which when cast to
-> 64-bit is 0x00000000ffffff7f,
+On Mon, 3 Mar 2008, Pekka Enberg wrote:
 
-Actually, it is signed, so this isn't true.  Comments about unsafeness
-still apply.
+> Hmm... Can't we just fix SLAB_HWCACHE_ALIGN in SLUB to follow the
+> semantics of SLAB?
 
+AFAICT it follows SLAB semantics. The only small difference is for objects 
+small than cache_line_size() / 2 where SLUB does not bother to align to a 
+fraction of a cacheline since we are already placing multile object into a 
+cacheline. We effectively have made the decision to give up the 
+organization of objects in separatate cache lines.
 
-Segher
+Lets say you have a 64 byte cache line size. Then the alignment can be 
+as follows. (8 byte alignment is the basic alignment requirement).
+
+Objsize	[C	SLAB	SLUB
+-----------------------------
+> 64		X	X
+33 .. 64	64	64
+32		32	32
+24		32	24	-> 3 object per cacheline sizes = 72 so overlap.
+16		16	16
+8		8	8
+
+So there is only one difference for 24 byte sizes slabs.
+
 
