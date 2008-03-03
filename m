@@ -1,47 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763087AbYCCVdO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762966AbYCCVgI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763087AbYCCVdO (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Mar 2008 16:33:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752127AbYCCVcz
+	id S1762966AbYCCVgI (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Mar 2008 16:36:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756119AbYCCVfv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Mar 2008 16:32:55 -0500
-Received: from relay2.sgi.com ([192.48.171.30]:60977 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751180AbYCCVcy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Mar 2008 16:32:54 -0500
-Date: Mon, 3 Mar 2008 13:32:54 -0800 (PST)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Pekka Enberg <penberg@cs.helsinki.fi>
-cc: Nick Piggin <npiggin@suse.de>, netdev@vger.kernel.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       yanmin_zhang@linux.intel.com, David Miller <davem@davemloft.net>,
-       Eric Dumazet <dada1@cosmosbay.com>
-Subject: Re: [rfc][patch 1/3] slub: fix small HWCACHE_ALIGN alignment
-In-Reply-To: <84144f020803031330i2c0ea1f6kc5b02c8b26145797@mail.gmail.com>
-Message-ID: <Pine.LNX.4.64.0803031331340.4375@schroedinger.engr.sgi.com>
-References: <20080303093449.GA15091@wotan.suse.de> 
- <Pine.LNX.4.64.0803031107130.6917@schroedinger.engr.sgi.com> 
- <20080303200613.GC8974@wotan.suse.de>  <Pine.LNX.4.64.0803031209570.16049@schroedinger.engr.sgi.com>
-  <20080303201701.GF8974@wotan.suse.de>  <Pine.LNX.4.64.0803031315160.4131@schroedinger.engr.sgi.com>
- <84144f020803031330i2c0ea1f6kc5b02c8b26145797@mail.gmail.com>
+	Mon, 3 Mar 2008 16:35:51 -0500
+Received: from smtp4.pp.htv.fi ([213.243.153.38]:49755 "EHLO smtp4.pp.htv.fi"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753975AbYCCVfu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 3 Mar 2008 16:35:50 -0500
+Date: Mon, 3 Mar 2008 23:34:13 +0200
+From: Adrian Bunk <bunk@kernel.org>
+To: jgarzik@pobox.com, geert@linux-m68k.org, zippel@linux-m68k.org
+Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux-m68k@vger.kernel.org
+Subject: [2.6 patch] fix drivers/net/atarilance.c compilation
+Message-ID: <20080303213413.GN26072@cs181133002.pp.htv.fi>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 3 Mar 2008, Pekka Enberg wrote:
+This patch fixes the following build error:
 
-> Well, not my definition either but SLAB has guaranteed that for small
-> objects in the past, so I think Nick has a point here. However, with
-> all this back and forth, I've lost track why this matters. I suppose
-> it causes regression on some workload?
+<--  snip  -->
 
-Well the guarantee can only be exploited if you would check the cacheline 
-sizes and the object size from the code that creates the slab cache. 
-Basically you would have to guestimate what the slab allocator is doing.
+...
+  CC [M]  drivers/net/atarilance.o
+{standard input}: Assembler messages:
+{standard input}:406: Error: symbol `Lberr' is already defined
+{standard input}:460: Error: symbol `Lberr' is already defined
+make[3]: *** [drivers/net/atarilance.o] Error 1
 
-So the guarantee is basically meaningless. If the object is larger than a 
-cacheline then this will never work.
+<--  snip  -->
+
+Signed-off-by: Adrian Bunk <bunk@kernel.org>
+
+---
+
+ drivers/net/atarilance.c |    5 ++---
+ 1 file changed, 2 insertions(+), 3 deletions(-)
+
+0e01f8d77cf240995235717a4e8582dfefab2926 foobar
+diff --git a/drivers/net/atarilance.c b/drivers/net/atarilance.c
+index b74dbee..d612dd4 100644
+--- a/drivers/net/atarilance.c
++++ b/drivers/net/atarilance.c
+@@ -336,8 +336,6 @@ struct lance_addr {
+ 
+ /***************************** Prototypes *****************************/
+ 
+-static int addr_accessible( volatile void *regp, int wordflag, int
+-                            writeflag );
+ static unsigned long lance_probe1( struct net_device *dev, struct lance_addr
+                                    *init_rec );
+ static int lance_open( struct net_device *dev );
+@@ -406,7 +404,8 @@ struct net_device * __init atarilance_probe(int unit)
+ 
+ /* Derived from hwreg_present() in atari/config.c: */
+ 
+-static int __init addr_accessible( volatile void *regp, int wordflag, int writeflag )
++static noinline int __init addr_accessible(volatile void *regp, int wordflag,
++					   int writeflag)
+ {
+ 	int		ret;
+ 	long	flags;
 
