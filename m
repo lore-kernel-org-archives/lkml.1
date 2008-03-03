@@ -1,84 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758243AbYCCAFT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758695AbYCCAGR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758243AbYCCAFT (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 2 Mar 2008 19:05:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755429AbYCCAEt
+	id S1758695AbYCCAGR (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 2 Mar 2008 19:06:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754434AbYCCAGA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 2 Mar 2008 19:04:49 -0500
-Received: from ug-out-1314.google.com ([66.249.92.171]:1452 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754759AbYCCAEq (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 2 Mar 2008 19:04:46 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:mime-version:content-type:content-disposition:user-agent;
-        b=qpoTm+QlaTHwQa079vb43OdlhUSpnPStmUTjn4kSQqSHa3xLVmICgVL8DDBqGgJ66donW0l5d74t1WXo2tKkJ1z1u6ZNEmgdNrPa7gbAVgQK8Iw9OL5c6sj3/ZQU9sOH86atGXBbGHRIYTQzmL9BxQlCnPMYB4Q4eZouoemoP7A=
-Date: Mon, 3 Mar 2008 02:43:08 +0300
-From: Anton Vorontsov <cbouatmailru@gmail.com>
-To: linux-kernel@vger.kernel.org
-Cc: linux-pm@lists.linux-foundation.org
-Subject: [PATCH RFC] introduce pm_call() macro to get rid of most #ifdef
-	CONFIG_PM
-Message-ID: <20080302234308.GA10116@zarina>
+	Sun, 2 Mar 2008 19:06:00 -0500
+Received: from ns2.g-housing.de ([81.169.133.75]:57073 "EHLO mail.g-house.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753837AbYCCAGA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 2 Mar 2008 19:06:00 -0500
+Date: Mon, 3 Mar 2008 01:05:53 +0100 (CET)
+From: Christian Kujau <lists@nerdbynature.de>
+X-X-Sender: evil@sheep.housecafe.de
+To: LKML <linux-kernel@vger.kernel.org>
+cc: 0x0007@gmail.com
+Subject: WARNING: at drivers/usb/host/ehci-hcd.c:287
+Message-ID: <alpine.DEB.1.00.0803030058280.5974@sheep.housecafe.de>
+User-Agent: Alpine 1.00 (DEB 882 2007-12-20)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf8
-Content-Disposition: inline
-User-Agent: Mutt/1.5.16 (2007-06-09)
+Content-Type: TEXT/PLAIN; format=flowed; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Currently drivers handle CONFIG_PM this way:
+Hi,
 
-#ifdef CONFIG_PM
-drv_suspend() {}
-drv_resume() {}
-#else
-#define drv_suspend NULL
-#define drv_resume NULL
-#endif
+after upgrading to 2.6.25-rc3, kern.log shows:
 
-struct driver drv = {
-	.suspend = drv_suspend,
-	.resume = drv_resume,
-};
+[ 1535.884848] ------------[ cut here ]------------
+[ 1535.884855] WARNING: at drivers/usb/host/ehci-hcd.c:287 ehci_iaa_watchdog+0x7a/0x80()
+[ 1535.884858] Modules linked in: sha256_generic xt_tcpudp ipt_MASQUERADE iptable_nat nf_conntrack_ipv4 nf_nat_ftp nf_nat nf_conntrack_ftp xt_conntrack nf_conntrack iptable_filter ip_tables ipt_ULOG x_tables nfsd lockd nfs_acl auth_rpcgss exportfs tun sunrpc fuse twofish_i586 twofish_common eeprom w83l785ts asb100 hwmon_vid hwmon snd_pcm_oss snd_mixer_oss zd1211rw firmware_class snd_intel8x0 snd_ac97_codec mac80211 ac97_bus snd_pcm snd_timer snd soundcore snd_page_alloc cfg80211 pl2303 usbserial i2c_nforce2 i2c_core
+[ 1535.884901] Pid: 4272, comm: FahCore_78.exe Not tainted 2.6.25-rc3 #6
+[ 1535.884906]  [<c0119f9f>] warn_on_slowpath+0x5f/0x90
+[ 1535.884918]  [<f8d868b5>] sta_info_get+0x55/0x60 [mac80211]
+[ 1535.884940]  [<c0139285>] __lock_acquire+0x4e5/0xfd0
+[ 1535.884950]  [<c0139285>] __lock_acquire+0x4e5/0xfd0
+[ 1535.884955]  [<c0165487>] kmem_cache_free+0xa7/0xf0
+[ 1535.884964]  [<c0102f17>] restore_nocheck+0x12/0x15
+[ 1535.884970]  [<c01388c6>] trace_hardirqs_on+0x66/0x110
+[ 1535.884978]  [<c04410df>] _spin_lock_irqsave+0x3f/0x50
+[ 1535.884987]  [<c036369a>] ehci_iaa_watchdog+0x7a/0x80
+[ 1535.884991]  [<c0122cc8>] run_timer_softirq+0x128/0x190
+[ 1535.884998]  [<c02b8e3c>] blk_done_softirq+0x3c/0x70
+[ 1535.885004]  [<c0363620>] ehci_iaa_watchdog+0x0/0x80
+[ 1535.885010]  [<c011f232>] __do_softirq+0x52/0xa0
+[ 1535.885014]  [<c01056c8>] do_softirq+0x98/0xd0
+[ 1535.885020]  [<c0144df0>] handle_level_irq+0x0/0xe0
+[ 1535.885027]  [<c011f1bd>] irq_exit+0x4d/0x70
+[ 1535.885031]  [<c0105790>] do_IRQ+0x90/0xf0
+[ 1535.885034]  [<c01388fc>] trace_hardirqs_on+0x9c/0x110
+[ 1535.885040]  [<c01038c6>] common_interrupt+0x2e/0x34
+[ 1535.885049]  =======================
+[ 1535.885051] ---[ end trace b6c2a2178c98c162 ]---
 
-With this patch, the code above converts into:
 
-drv_suspend() {}
-drv_resume() {}
+There's no oops, and the box is running fine. The only USB devices in use 
+is the zd1211rw WLAN adapter and some mp3 player attached as usb-storage.
 
-struct driver drv = {
-	.suspend = pm_call(drv_suspend),
-	.resume = pm_call(drv_resume),
-};
+I've seen http://lkml.org/lkml/2008/2/13/566 with the same warning and a 
+real problem, but nothing happened. Linas, is this freeze still present?
 
-GCC will optimize away suspend/resume calls if they're really
-not used.
+Full dmesg and .config: http://nerdbynature.de/bits/2.6.25-rc3/
 
-Signed-off-by: Anton Vorontsov <cbouatmailru@gmail.com>
----
- include/linux/pm.h |    7 +++++++
- 1 files changed, 7 insertions(+), 0 deletions(-)
-
-diff --git a/include/linux/pm.h b/include/linux/pm.h
-index 015b735..6e0b9c2 100644
---- a/include/linux/pm.h
-+++ b/include/linux/pm.h
-@@ -114,6 +114,13 @@ typedef struct pm_message {
- 	int event;
- } pm_message_t;
- 
-+#ifdef CONFIG_PM
-+#define pm_call(x) (x)
-+#else
-+/* avoid `defined but not used' warning */
-+#define pm_call(x) ((x) - 1 ? NULL : NULL)
-+#endif /* CONFIG_PM */
-+
- /*
-  * Several driver power state transitions are externally visible, affecting
-  * the state of pending I/O queues and (for drivers that touch hardware)
+Thanks,
+Christian.
 -- 
-1.5.4.3
+BOFH excuse #415:
+
+Maintenance window broken
