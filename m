@@ -1,49 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758140AbYCCIIe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755119AbYCCIPa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758140AbYCCIIe (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Mar 2008 03:08:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752047AbYCCII1
+	id S1755119AbYCCIPa (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Mar 2008 03:15:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752026AbYCCIPU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Mar 2008 03:08:27 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:39033 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751841AbYCCII1 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Mar 2008 03:08:27 -0500
-Date: Mon, 3 Mar 2008 00:07:25 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Matti Linnanvuori <mattilinnanvuori@yahoo.com>
-Cc: zippel@linux-m68k.org, linux-kernel@vger.kernel.org, johnstul@us.ibm.com,
-       mingo@elte.hu, tglx@linutronix.de
-Subject: Re: [PATCH v2] Remove obsolete CLOCK_TICK_ADJUST
-Message-Id: <20080303000725.dd73760a.akpm@linux-foundation.org>
-In-Reply-To: <360162.3798.qm@web52011.mail.re2.yahoo.com>
-References: <360162.3798.qm@web52011.mail.re2.yahoo.com>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Mon, 3 Mar 2008 03:15:20 -0500
+Received: from smtp6.pp.htv.fi ([213.243.153.40]:40527 "EHLO smtp6.pp.htv.fi"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751979AbYCCIPU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 3 Mar 2008 03:15:20 -0500
+Date: Mon, 3 Mar 2008 10:13:45 +0200
+From: Adrian Bunk <bunk@kernel.org>
+To: Rusty Russell <rusty@rustcorp.com.au>
+Cc: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>,
+       LKML <linux-kernel@vger.kernel.org>, linux-input@vger.kernel.org,
+       Andy Whitcroft <apw@shadowen.org>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>,
+       Ivan Kokshaysky <ink@jurassic.park.msu.ru>
+Subject: Re: [BUILD_FAILURE] 2.6.24-git18 build fails section type conflict
+	psmouse-base
+Message-ID: <20080303081345.GA4457@cs181133002.pp.htv.fi>
+References: <47AC2FDB.7080104@linux.vnet.ibm.com> <20080208104851.GI7198@cs181133002.pp.htv.fi> <200803031535.17644.rusty@rustcorp.com.au>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <200803031535.17644.rusty@rustcorp.com.au>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 1 Mar 2008 22:48:45 -0800 (PST) Matti Linnanvuori <mattilinnanvuori@yahoo.com> wrote:
+On Mon, Mar 03, 2008 at 03:35:16PM +1100, Rusty Russell wrote:
+> On Friday 08 February 2008 21:48:51 Adrian Bunk wrote:
+> > On Fri, Feb 08, 2008 at 04:02:59PM +0530, Kamalesh Babulal wrote:
+> > > drivers/input/mouse/psmouse-base.c:44: error: __param_proto causes a
+> > > section type conflict drivers/input/mouse/psmouse-base.c:44: error:
+> > > __param_proto causes a section type conflict 
+> > @Rusty:
+> > Can you look at this issue? It's a modules problem on 3 architectures.
+> >
+> > cu
+> > Adrian
+> >
+> > [1] http://lkml.org/lkml/2007/12/27/29
+> 
+> Erk... This is horrible, and arguably something gcc should try to deal with.  
+> How about we just drop the const and add a comment, rather than breaking one 
+> arch at a time?
 
-> --- a/kernel/time/ntp.c~time-remove-obsolete-clock_tick_adjust
-> +++ a/kernel/time/ntp.c
-> @@ -42,12 +42,13 @@ long time_esterror = NTP_PHASE_LIMIT; /*
->  long time_freq;    /* frequency offset (scaled ppm)*/
->  static long time_reftime;  /* time at last adjustment (s) */
->  long time_adjust;
-> +static long ntp_tick_adj;
->  
->  static void ntp_update_frequency(void)
->  {
->   u64 second_length = (u64)(tick_usec * NSEC_PER_USEC * USER_HZ)
->      << TICK_LENGTH_SHIFT;
-> - second_length += (s64)CLOCK_TICK_ADJUST << TICK_LENGTH_SHIFT;
-> + second_length += (s64)ntp_tick_adj << TICK_LENGTH_SHIFT;
->   second_length += (s64)time_freq << (TICK_LENGTH_SHIFT - SHIFT_NSEC);
->  
+We should have caught all architectures having problems, and a slightly 
+improved patch is now in Linus' tree.
 
-your email client has converted the tabs into single-spaces.
+> Thanks,
+> Rusty.
+
+cu
+Adrian
+
+-- 
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
+
