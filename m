@@ -1,54 +1,113 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761969AbYCCKKi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759597AbYCCKLX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761969AbYCCKKi (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Mar 2008 05:10:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755323AbYCCKKa
+	id S1759597AbYCCKLX (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Mar 2008 05:11:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755626AbYCCKLO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Mar 2008 05:10:30 -0500
-Received: from cantor.suse.de ([195.135.220.2]:54183 "EHLO mx1.suse.de"
+	Mon, 3 Mar 2008 05:11:14 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:40414 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754484AbYCCKK3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Mar 2008 05:10:29 -0500
-From: Andreas Schwab <schwab@suse.de>
-To: Gabriel Paubert <paubert@iram.es>
-Cc: Steven Rostedt <rostedt@goodmis.org>, paulus@samba.org,
-       LKML <linux-kernel@vger.kernel.org>, linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH] add strncmp to PowerPC
-References: <1204301097.14759.6.camel@localhost.localdomain>
-	<1204340690.15052.457.camel@pasglop>
-	<Pine.LNX.4.58.0802292250490.21555@gandalf.stny.rr.com>
-	<20080303095443.GB27105@iram.es>
-X-Yow: Bo Derek ruined my life!
-Date: Mon, 03 Mar 2008 11:10:27 +0100
-In-Reply-To: <20080303095443.GB27105@iram.es> (Gabriel Paubert's message of
-	"Mon\, 3 Mar 2008 10\:54\:43 +0100")
-Message-ID: <je4pbow224.fsf@sykes.suse.de>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/22.1 (gnu/linux)
+	id S1755012AbYCCKLN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 3 Mar 2008 05:11:13 -0500
+Date: Mon, 3 Mar 2008 11:10:40 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Yinghai Lu <yhlu.kernel@gmail.com>
+Cc: Greg KH <gregkh@suse.de>, Muli Ben-Yehuda <muli@il.ibm.com>,
+       Zhao Yakui <yakui.zhao@intel.com>, lenb@kernel.org,
+       linux-acpi@vger.kernel.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] ACPI: Unneccessary to scan the PCI bus already scanned.
+Message-ID: <20080303101040.GG18281@elte.hu>
+References: <1204525186.4080.11.camel@yakui_zhao.sh.intel.com> <20080303073214.GA5934@elte.hu> <86802c440803030006m1879838awc238f07bc98ed43e@mail.gmail.com> <86802c440803030030p4ff9cec5tdb25d1cdc131d377@mail.gmail.com> <86802c440803030201i684f31c1m97fb3f1f1927d4f4@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <86802c440803030201i684f31c1m97fb3f1f1927d4f4@mail.gmail.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Gabriel Paubert <paubert@iram.es> writes:
 
-> Now that I think a bit more about it, I believe that the C version is
-> incorrect: the clrldi/extsb dance takes a value between -255 and +255
-> and collapses it into the -128 to 127 range, meaning that the return
-> value may be wrong if we rely on the sign of the result. So unless I
-> miss something, the problem is much more serious than just stupid code
-> (I had just a look at the libc version in C and characters are cast to
-> unsigned char before the comparison).
+* Yinghai Lu <yhlu.kernel@gmail.com> wrote:
 
-The latter is explicitly required by the C standard.  Ie. even if your
-characters are signed they are always compared as unsigned by
-strcmp/strncmp/memcmp.
+> also please use attached patch to replace the one patch in x86.git# 
+> testing. old one can not be applied after Yakui's patch.
 
-Andreas.
+ok, thanks. Note, i still have the patch below filed up against it - is 
+that still needed?
 
--- 
-Andreas Schwab, SuSE Labs, schwab@suse.de
-SuSE Linux Products GmbH, Maxfeldstraße 5, 90409 Nürnberg, Germany
-PGP key fingerprint = 58CA 54C7 6D53 942B 1756  01D3 44D5 214B 8276 4ED5
-"And now for something completely different."
+	Ingo
+
+-------------->
+Subject: x86: fix k8-bus_64.c build
+From: Ingo Molnar <mingo@elte.hu>
+Date: Wed Feb 20 10:30:15 CET 2008
+
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+---
+ arch/x86/pci/k8-bus_64.c   |    6 ++++++
+ include/asm-x86/topology.h |    4 ++--
+ 2 files changed, 8 insertions(+), 2 deletions(-)
+
+Index: linux-x86.q/arch/x86/pci/k8-bus_64.c
+===================================================================
+--- linux-x86.q.orig/arch/x86/pci/k8-bus_64.c
++++ linux-x86.q/arch/x86/pci/k8-bus_64.c
+@@ -22,6 +22,8 @@
+ #define SUBORDINATE_LDT_BUS_NUMBER(dword) ((dword >> 16) & 0xFF)
+ #define PCI_DEVICE_ID_K8HTCONFIG 0x1100
+ 
++#ifdef CONFIG_NUMA
++
+ #define BUS_NR 256
+ 
+ static int mp_bus_to_node[BUS_NR];
+@@ -51,6 +53,8 @@ int get_mp_bus_to_node(int busnum)
+ 	return node;
+ }
+ 
++#endif
++
+ /**
+  * early_fill_mp_bus_to_node()
+  * called before pcibios_scan_root and pci_scan_bus
+@@ -60,6 +64,7 @@ int get_mp_bus_to_node(int busnum)
+ __init static int
+ early_fill_mp_bus_to_node(void)
+ {
++#ifdef CONFIG_NUMA
+ 	int i, j;
+ 	unsigned slot;
+ 	u32 ldtbus, nid;
+@@ -111,6 +116,7 @@ early_fill_mp_bus_to_node(void)
+ 		if (node >= 0)
+ 			printk(KERN_DEBUG "bus: %02x to node: %02x\n", i, node);
+ 	}
++#endif
+ 	return 0;
+ }
+ 
+Index: linux-x86.q/include/asm-x86/topology.h
+===================================================================
+--- linux-x86.q.orig/include/asm-x86/topology.h
++++ linux-x86.q/include/asm-x86/topology.h
+@@ -165,8 +165,8 @@ extern int __node_distance(int, int);
+ #define node_distance(a, b) __node_distance(a, b)
+ #endif
+ 
+-int get_mp_bus_to_node(int busnum);
+-void set_mp_bus_to_node(int busnum, int node);
++extern int get_mp_bus_to_node(int busnum);
++extern void set_mp_bus_to_node(int busnum, int node);
+ 
+ #else /* CONFIG_NUMA */
+ 
