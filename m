@@ -1,44 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762921AbYCCTae@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762267AbYCCTby@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762921AbYCCTae (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Mar 2008 14:30:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756193AbYCCTaK
+	id S1762267AbYCCTby (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Mar 2008 14:31:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751015AbYCCTbp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Mar 2008 14:30:10 -0500
-Received: from relay2.sgi.com ([192.48.171.30]:53035 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1754205AbYCCTaI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Mar 2008 14:30:08 -0500
-Date: Mon, 3 Mar 2008 11:30:07 -0800 (PST)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Nick Piggin <nickpiggin@yahoo.com.au>
-cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Eric Dumazet <dada1@cosmosbay.com>,
-       "David S. Miller" <davem@davemloft.net>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       linux kernel <linux-kernel@vger.kernel.org>, netdev@vger.kernel.org,
-       "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
-Subject: Re: [PATCH] alloc_percpu() fails to allocate percpu data
-In-Reply-To: <200803031414.43076.nickpiggin@yahoo.com.au>
-Message-ID: <Pine.LNX.4.64.0803031129330.7275@schroedinger.engr.sgi.com>
-References: <47BDBC23.10605@cosmosbay.com> <200802232023.52352.nickpiggin@yahoo.com.au>
- <Pine.LNX.4.64.0802271140470.1790@schroedinger.engr.sgi.com>
- <200803031414.43076.nickpiggin@yahoo.com.au>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Mon, 3 Mar 2008 14:31:45 -0500
+Received: from wa-out-1112.google.com ([209.85.146.183]:49874 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750857AbYCCTbp (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 3 Mar 2008 14:31:45 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=subject:from:to:cc:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
+        b=L3NOPrgTOH9w79X97v1JLjhgTdUQpAltPBjWrIBTNYsPGR63Zu7sjtfDg6Hz67bUcjc6pZcQGXyzogglmpQlaKT9aU4DYpW718+JD5P3M6hB8ijue9UNLgVgPwDOnPD7/uDBtgtHgnzmwd1ViK+vdxej1PPL5c7nQp1fLkkcIuw=
+Subject: [PATCH] uml: replace remaining __FUNCTION__ occurance
+From: Harvey Harrison <harvey.harrison@gmail.com>
+To: Jeff Dike <jdike@addtoit.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Content-Type: text/plain
+Date: Mon, 03 Mar 2008 11:31:42 -0800
+Message-Id: <1204572702.3266.48.camel@brick>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 3 Mar 2008, Nick Piggin wrote:
+__FUNCTION__ is gcc-specific, use __func__
 
-> I think so. If we ask for HWCACHE_ALIGN, it must be for a good reason.
-> If some structures get too bloated for no good reason, then the problem
-> is not with the slab allocator but with the caller asking for
-> HWCACHE_ALIGN.
+Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
+---
+ arch/um/drivers/line.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-Right. There should only be a few select users of this strange flag. 
-Otherwise if a certain alignment is wanted specify it in the alignment 
-parameter passed to kmem_cache_create.
+diff --git a/arch/um/drivers/line.c b/arch/um/drivers/line.c
+index 2c898c4..10b86e1 100644
+--- a/arch/um/drivers/line.c
++++ b/arch/um/drivers/line.c
+@@ -304,7 +304,7 @@ int line_ioctl(struct tty_struct *tty, struct file * file,
+ 				break;
+ 		if (i == ARRAY_SIZE(tty_ioctls)) {
+ 			printk(KERN_ERR "%s: %s: unknown ioctl: 0x%x\n",
+-			       __FUNCTION__, tty->name, cmd);
++			       __func__, tty->name, cmd);
+ 		}
+ 		ret = -ENOIOCTLCMD;
+ 		break;
+-- 
+1.5.4.3.500.g83a2c
+
+
 
