@@ -1,23 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762615AbYCCR2r@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759005AbYCCR3L@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762615AbYCCR2r (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Mar 2008 12:28:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759369AbYCCRQA
+	id S1759005AbYCCR3L (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Mar 2008 12:29:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756036AbYCCRQE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Mar 2008 12:16:00 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:36437 "EHLO mx1.redhat.com"
+	Mon, 3 Mar 2008 12:16:04 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:36439 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759986AbYCCRP5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Mar 2008 12:15:57 -0500
+	id S1760003AbYCCRQB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 3 Mar 2008 12:16:01 -0500
 From: Glauber Costa <gcosta@redhat.com>
 To: linux-kernel@vger.kernel.org
 Cc: akpm@linux-foundation.org, glommer@gmail.com, mingo@elte.hu,
        tglx@linutronix.de, Glauber Costa <gcosta@redhat.com>
-Subject: [PATCH 46/52] use cpu_relax instead of rep_nop
-Date: Mon,  3 Mar 2008 14:13:14 -0300
-Message-Id: <1204564400-17636-47-git-send-email-gcosta@redhat.com>
+Subject: [PATCH 20/52] provide hlt_works function.
+Date: Mon,  3 Mar 2008 14:12:48 -0300
+Message-Id: <1204564400-17636-21-git-send-email-gcosta@redhat.com>
 X-Mailer: git-send-email 1.5.3.6
-In-Reply-To: <1204564400-17636-46-git-send-email-gcosta@redhat.com>
+In-Reply-To: <1204564400-17636-20-git-send-email-gcosta@redhat.com>
 References: <1204564400-17636-1-git-send-email-gcosta@redhat.com>
  <1204564400-17636-2-git-send-email-gcosta@redhat.com>
  <1204564400-17636-3-git-send-email-gcosta@redhat.com>
@@ -38,65 +38,38 @@ References: <1204564400-17636-1-git-send-email-gcosta@redhat.com>
  <1204564400-17636-18-git-send-email-gcosta@redhat.com>
  <1204564400-17636-19-git-send-email-gcosta@redhat.com>
  <1204564400-17636-20-git-send-email-gcosta@redhat.com>
- <1204564400-17636-21-git-send-email-gcosta@redhat.com>
- <1204564400-17636-22-git-send-email-gcosta@redhat.com>
- <1204564400-17636-23-git-send-email-gcosta@redhat.com>
- <1204564400-17636-24-git-send-email-gcosta@redhat.com>
- <1204564400-17636-25-git-send-email-gcosta@redhat.com>
- <1204564400-17636-26-git-send-email-gcosta@redhat.com>
- <1204564400-17636-27-git-send-email-gcosta@redhat.com>
- <1204564400-17636-28-git-send-email-gcosta@redhat.com>
- <1204564400-17636-29-git-send-email-gcosta@redhat.com>
- <1204564400-17636-30-git-send-email-gcosta@redhat.com>
- <1204564400-17636-31-git-send-email-gcosta@redhat.com>
- <1204564400-17636-32-git-send-email-gcosta@redhat.com>
- <1204564400-17636-33-git-send-email-gcosta@redhat.com>
- <1204564400-17636-34-git-send-email-gcosta@redhat.com>
- <1204564400-17636-35-git-send-email-gcosta@redhat.com>
- <1204564400-17636-36-git-send-email-gcosta@redhat.com>
- <1204564400-17636-37-git-send-email-gcosta@redhat.com>
- <1204564400-17636-38-git-send-email-gcosta@redhat.com>
- <1204564400-17636-39-git-send-email-gcosta@redhat.com>
- <1204564400-17636-40-git-send-email-gcosta@redhat.com>
- <1204564400-17636-41-git-send-email-gcosta@redhat.com>
- <1204564400-17636-42-git-send-email-gcosta@redhat.com>
- <1204564400-17636-43-git-send-email-gcosta@redhat.com>
- <1204564400-17636-44-git-send-email-gcosta@redhat.com>
- <1204564400-17636-45-git-send-email-gcosta@redhat.com>
- <1204564400-17636-46-git-send-email-gcosta@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is done for smpboot_32.c
+In x86_64, hlt always work. in i386, we'll query the cpuinfo associated
+with this cpu
 
 Signed-off-by: Glauber Costa <gcosta@redhat.com>
 ---
- arch/x86/kernel/smpboot_32.c |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
+ include/asm-x86/processor.h |    9 +++++++++
+ 1 files changed, 9 insertions(+), 0 deletions(-)
 
-diff --git a/arch/x86/kernel/smpboot_32.c b/arch/x86/kernel/smpboot_32.c
-index ee82659..2dd95ba 100644
---- a/arch/x86/kernel/smpboot_32.c
-+++ b/arch/x86/kernel/smpboot_32.c
-@@ -185,7 +185,7 @@ static void __cpuinit smp_callin(void)
- 		 */
- 		if (cpu_isset(cpuid, cpu_callout_map))
- 			break;
--		rep_nop();
-+		cpu_relax();
- 	}
+diff --git a/include/asm-x86/processor.h b/include/asm-x86/processor.h
+index 9054734..8bec23c 100644
+--- a/include/asm-x86/processor.h
++++ b/include/asm-x86/processor.h
+@@ -144,6 +144,15 @@ DECLARE_PER_CPU(struct cpuinfo_x86, cpu_info);
+ #define current_cpu_data	boot_cpu_data
+ #endif
  
- 	if (!time_before(jiffies, timeout)) {
-@@ -242,7 +242,7 @@ static void __cpuinit start_secondary(void *unused)
- 	preempt_disable();
- 	smp_callin();
- 	while (!cpu_isset(smp_processor_id(), smp_commenced_mask))
--		rep_nop();
-+		cpu_relax();
- 	/*
- 	 * Check TSC synchronization with the BP:
- 	 */
++static inline int hlt_works(int cpu)
++{
++#ifdef CONFIG_X86_32
++	return cpu_data(cpu).hlt_works_ok;
++#else
++	return 1;
++#endif
++}
++
+ #define cache_line_size()	(boot_cpu_data.x86_cache_alignment)
+ 
+ extern void cpu_detect(struct cpuinfo_x86 *c);
 -- 
 1.5.0.6
 
