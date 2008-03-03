@@ -1,81 +1,121 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758010AbYCCPya@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757242AbYCCPz0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758010AbYCCPya (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Mar 2008 10:54:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754618AbYCCPyW
+	id S1757242AbYCCPz0 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Mar 2008 10:55:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754682AbYCCPzK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Mar 2008 10:54:22 -0500
-Received: from moutng.kundenserver.de ([212.227.126.187]:49560 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754555AbYCCPyV (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Mar 2008 10:54:21 -0500
-From: Bodo Eggert <7eggert@gmx.de>
-Subject: RE: CLONE_NEWNS and bind mounts to make "chroot" jail
-To: Leibowitz@vger.kernel.org, Michael <michael.leibowitz@intel.com>,
-       serge@hallyn.com, linux-kernel@vger.kernel.org
-Reply-To: 7eggert@gmx.de
-Date: Mon, 03 Mar 2008 16:54:15 +0100
-References: <a2DnP-4KR-9@gated-at.bofh.it> <a2M7M-1rM-5@gated-at.bofh.it> <a3cOQ-1eQ-3@gated-at.bofh.it>
-User-Agent: KNode/0.10.4
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7Bit
-Message-Id: <E1JWCzY-0003zx-1z@be1.7eggert.dyndns.org>
-X-be10.7eggert.dyndns.org-MailScanner-Information: See www.mailscanner.info for information
-X-be10.7eggert.dyndns.org-MailScanner: Found to be clean
-X-be10.7eggert.dyndns.org-MailScanner-From: 7eggert@gmx.de
-X-Provags-ID: V01U2FsdGVkX1+f2XPlEmyia9Bxw37Deo6sgnrXChRfSNjJT7B
- SJtXPRkW5wbxi7xS87LTb1soXIoG+CfssujHGF2EM+2OnFsjaY
- B5xnNyjun5oVH5OxoJ9Iw==
+	Mon, 3 Mar 2008 10:55:10 -0500
+Received: from systemlinux.org ([83.151.29.59]:39141 "EHLO m18s25.vlinux.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754075AbYCCPzI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 3 Mar 2008 10:55:08 -0500
+Date: Mon, 3 Mar 2008 16:54:49 +0100
+From: Andre Noll <maan@systemlinux.org>
+To: NeilBrown <neilb@suse.de>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-raid@vger.kernel.org,
+       linux-kernel@vger.kernel.org, "K.Tanaka" <k-tanaka@ce.jp.nec.com>
+Subject: Re: [PATCH 001 of 9] md: Fix deadlock in md/raid1 and md/raid10 when handling a read error.
+Message-ID: <20080303155449.GA32242@skl-net.de>
+References: <20080303111240.23302.patches@notabene> <1080303001705.23577@suse.de>
+Mime-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="UugvWAfsgieZRqgk"
+Content-Disposition: inline
+In-Reply-To: <1080303001705.23577@suse.de>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Leibowitz, Michael <michael.leibowitz@intel.com> wrote:
 
-> If I understand correctly, the following should accomplish what I'm
-> looking for.  However, pivot_root gives me EBUSY.  I played around with
-> moving the mount --bind /jail /jail to before the unshared, as well as
-> making old_root a bind mount to itself.  However, pivot_root always
-> seems to fail.  Is there something obvious that I'm doing wrong?  The
-> following is my test code (error checking has been removed for clarity,
-> except for pivot_root).
-> 
->   char *newargv[]= { "sh", NULL };
-> 
->   chdir("/jail");
->   unshare(CLONE_NEWNS));
->   mount("/jail", "/jail", NULL, MS_BIND, NULL));
->   mount("/bin", "bin", NULL, MS_BIND, NULL));
->   mount("/usr", "usr", NULL, MS_BIND, NULL));
->   mount("/lib", "lib", NULL, MS_BIND, NULL));
->   if (pivot_root(".", "old_root")) perror("pivot_root . old_root");
->   exec("./bash-static"); /* copied to /jail prior to running */
+--UugvWAfsgieZRqgk
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-This works for me:
+On 11:17, NeilBrown wrote:
 
-#include <sys/mount.h>
-#include <unistd.h>
+> So we create a new function 'flush_pending_writes' to give that attention,
+> and call it in freeze_array to be sure that we aren't waiting on raid1d.
 
-#define _GNU_SOURCE
-#include <sched.h>
+Two minor remarks:
 
-#define MNT_DETACH      2       /* Detach from tree only */
+> +static int flush_pending_writes(conf_t *conf)
+> +{
+> +	/* Any writes that have been queued but are awaiting
+> +	 * bitmap updates get flushed here.
+> +	 * We return 1 if any requests were actually submitted.
+> +	 */
+> +	int rv =3D 0;
+> +
+> +	spin_lock_irq(&conf->device_lock);
+> =20
+> +	if (conf->pending_bio_list.head) {
+> +		struct bio *bio;
+> +		bio =3D bio_list_get(&conf->pending_bio_list);
+> +		blk_remove_plug(conf->mddev->queue);
+> +		spin_unlock_irq(&conf->device_lock);
+> +		/* flush any pending bitmap writes to disk
+> +		 * before proceeding w/ I/O */
+> +		bitmap_unplug(conf->mddev->bitmap);
+> +
+> +		while (bio) { /* submit pending writes */
+> +			struct bio *next =3D bio->bi_next;
+> +			bio->bi_next =3D NULL;
+> +			generic_make_request(bio);
+> +			bio =3D next;
+> +		}
+> +		rv =3D 1;
+> +	} else
+> +		spin_unlock_irq(&conf->device_lock);
+> +	return rv;
+> +}
 
-int main()
-{
-  unshare(CLONE_NEWNS);
-  mount("jail", "jail", NULL, MS_BIND, NULL);
-  mount("/bin", "jail/bin", NULL, MS_BIND, NULL);
-  mount("/usr", "jail/usr", NULL, MS_BIND, NULL);
-  mount("/lib", "jail/lib", NULL, MS_BIND, NULL);
-  /* abuse bin as the temporary old root directory */
-  if (pivot_root("jail", "jail/bin"))
-    perror("pivot_root");
-  chdir("/");
-  umount2("bin", MNT_DETACH);
-  execl("./sash", NULL); /* copied to /jail prior to running */
-}
+Do we really need to take the spin lock in the common case where
+conf->pending_bio_list.head is NULL? If not, the above could be
+optimized to the slightly faster and better readable
+
+	struct bio *bio;
+
+	if (!conf->pending_bio_list.head)
+		return 0;
+	spin_lock_irq(&conf->device_lock);
+	bio =3D bio_list_get(&conf->pending_bio_list);
+	...
+	spin_unlock_irq(&conf->device_lock);
+	return 1;
 
 
+> diff .prev/drivers/md/raid1.c ./drivers/md/raid1.c
+> --- .prev/drivers/md/raid1.c	2008-02-22 15:45:35.000000000 +1100
+> +++ ./drivers/md/raid1.c	2008-02-22 15:45:35.000000000 +1100
+> @@ -592,6 +592,37 @@ static int raid1_congested(void *data, i
+>  }
+> =20
+> =20
+> +static int flush_pending_writes(conf_t *conf)
+> +{
+
+[snip]
+
+Any chance to avoid this code duplication?
+
+Regards
+Andre
+--=20
+The only person who always got his work done by Friday was Robinson Crusoe
+
+--UugvWAfsgieZRqgk
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.1 (GNU/Linux)
+
+iD8DBQFHzB9JWto1QDEAkw8RAuE4AKCh82vDzhPVas/TlS7ZMoxnbDfYDQCgiVxu
+yPwIJRLu/wHL+VYrUED08cg=
+=G+gj
+-----END PGP SIGNATURE-----
+
+--UugvWAfsgieZRqgk--
