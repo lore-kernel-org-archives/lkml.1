@@ -1,48 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755186AbYCCQTQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759471AbYCCQWW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755186AbYCCQTQ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Mar 2008 11:19:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754504AbYCCQTB
+	id S1759471AbYCCQWW (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Mar 2008 11:22:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755872AbYCCQWL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Mar 2008 11:19:01 -0500
-Received: from bzq-219-195-70.pop.bezeqint.net ([62.219.195.70]:59753 "EHLO
-	bh-buildlin1.bhalevy.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754475AbYCCQTA (ORCPT
+	Mon, 3 Mar 2008 11:22:11 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:34924 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755644AbYCCQWK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Mar 2008 11:19:00 -0500
-Message-ID: <47CC24AD.1090409@panasas.com>
-Date: Mon, 03 Mar 2008 18:17:49 +0200
-From: Benny Halevy <bhalevy@panasas.com>
-Organization: Panasas, Inc.
-User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
+	Mon, 3 Mar 2008 11:22:10 -0500
+Date: Mon, 3 Mar 2008 08:21:35 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Steve French <smfrench@gmail.com>
+cc: git@vger.kernel.org, lkml <linux-kernel@vger.kernel.org>
+Subject: Re: kernel.org git tree corrupt?
+In-Reply-To: <524f69650803021943i33ce6ddbo309f118cd0a77ac9@mail.gmail.com>
+Message-ID: <alpine.LFD.1.00.0803030800460.17889@woody.linux-foundation.org>
+References: <524f69650803020749o469f2e48l125a55267b0b5d13@mail.gmail.com>  <alpine.LFD.1.00.0803021302070.17889@woody.linux-foundation.org> <524f69650803021943i33ce6ddbo309f118cd0a77ac9@mail.gmail.com>
+User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
 MIME-Version: 1.0
-To: Krzysztof Halasa <khc@pm.waw.pl>
-CC: Richard Knutsson <ricknu-0@student.ltu.se>, SL Baur <steve@xemacs.org>,
-       Randy Dunlap <randy.dunlap@oracle.com>,
-       Guennadi Liakhovetski <g.liakhovetski@gmx.de>,
-       Jan Engelhardt <jengelh@computergmbh.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] CodingStyle: multiple updates
-References: <1204062430.47c488def40a4@portal.student.luth.se>	<20080226135444.f83a0536.randy.dunlap@oracle.com>	<Pine.LNX.4.64.0802262310050.15321@fbirervta.pbzchgretzou.qr>	<Pine.LNX.4.64.0802270033310.5714@axis700.grange>	<m31w6zcm4l.fsf@maximus.localdomain>	<ed10ee420802261657w3830e1a1rf0cc9601cdacb142@mail.gmail.com>	<20080226213432.1388717b.randy.dunlap@oracle.com>	<47C5DDE0.3040403@student.ltu.se>	<ed10ee420802271611l3a09e76ej531158f167512a03@mail.gmail.com>	<47C71510.6060306@student.ltu.se> <m3skzb9ysw.fsf@maximus.localdomain>
-In-Reply-To: <m3skzb9ysw.fsf@maximus.localdomain>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mar. 01, 2008, 0:34 +0200, Krzysztof Halasa <khc@pm.waw.pl> wrote:
-> Richard Knutsson <ricknu-0@student.ltu.se> writes:
+
+
+On Sun, 2 Mar 2008, Steve French wrote:
 > 
->> In those cases, an only-used-as-indent-character is most preferable.
+> >   - look at your "origin" branch, and make sure it's a *remote* branch, not
+> >    the old-style local one. Ie it should *not* show up when you do a
+> >    plain
+> >
+> >         git branch
+> now only shows "* master"
 > 
-> It is. The problem is that the editors can't do it (yet?). Or am I
-> mistaken?
+> >    but it *should* show up (as both "origin/HEAD" and "origin/master")
+> >    when you do
+> >
+> >         git branch -a
+> Now "git branch -a" shows
+> * master
+>   origin/master
+> 
+> It is missing "origin/HEAD"
 
-"Yet" is the right answer :)
-When creating a new line copying the indentation from the line above
-and potentially filling more spaces as needed, according to
-parenthesis or operators on the previous line should do the trick.
+Ahh, yeah, my bad. The origin/HEAD thing will be created if you use either 
+clone or "git remote add -m master" to create the remote. But when I asked 
+you to do it by just editing the config file, you now have to create that 
+HEAD pointer manually too.
 
-Benny
+You can do
 
+	git symbolic-ref refs/remotes/origin/HEAD refs/remotes/origin/master
+
+to create the thing (it just creates a symbolic ref from the origin/HEAD 
+remote ref to the origin/master one, so now git will know that when you 
+talk about 'origin', it is supposed to just use the master branch of 
+that remote).
+
+> >   - now do "git log origin" an it should show something recent
+> git log origin and git log origin/master both return
+> "ambiguous argument 'origin': unknown revision"
+
+Well, origin/master should have worked, but the fact that plain "origin" 
+didn't work is due to exactly the lack of HEAD file for that remote branch 
+(for your kernel tree, there's only one remote branch, so it may be 
+"obvious" that origin must be talking about the master branch, but if 
+there are multiple branches at the origin it's not obvious *which* branch 
+should be considered the default one, which is why we use HEAD)
+
+> I must be misunderstanding the syntax/manpage of git-log but "git diff
+> -m -r origin/master"
+> now works fine and displays exactly what I expect so things have improved.
+
+Well, if "origin/master" works in that situation, then "origin/master" 
+should have worked in "git log" too, so maybe you mistyped?
+
+Anyway, with the HEAD link added for the remote 'origin', you should be 
+able to use plain 'origin' like you're used to.
+
+			Linus
