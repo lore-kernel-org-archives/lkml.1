@@ -1,23 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760982AbYCCRc2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759175AbYCCRco@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760982AbYCCRc2 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Mar 2008 12:32:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759596AbYCCRQT
+	id S1759175AbYCCRco (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Mar 2008 12:32:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757705AbYCCRQV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Mar 2008 12:16:19 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:36473 "EHLO mx1.redhat.com"
+	Mon, 3 Mar 2008 12:16:21 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:36486 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759702AbYCCRQO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Mar 2008 12:16:14 -0500
+	id S1759468AbYCCRQR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 3 Mar 2008 12:16:17 -0500
 From: Glauber Costa <gcosta@redhat.com>
 To: linux-kernel@vger.kernel.org
 Cc: akpm@linux-foundation.org, glommer@gmail.com, mingo@elte.hu,
        tglx@linutronix.de, Glauber Costa <gcosta@redhat.com>
-Subject: [PATCH 49/52] wrap esr setting up in i386 in lapic_setup_esr
-Date: Mon,  3 Mar 2008 14:13:17 -0300
-Message-Id: <1204564400-17636-50-git-send-email-gcosta@redhat.com>
+Subject: [PATCH 51/52] make map_cpu_to_logical_apicid nonstatic
+Date: Mon,  3 Mar 2008 14:13:19 -0300
+Message-Id: <1204564400-17636-52-git-send-email-gcosta@redhat.com>
 X-Mailer: git-send-email 1.5.3.6
-In-Reply-To: <1204564400-17636-49-git-send-email-gcosta@redhat.com>
+In-Reply-To: <1204564400-17636-51-git-send-email-gcosta@redhat.com>
 References: <1204564400-17636-1-git-send-email-gcosta@redhat.com>
  <1204564400-17636-2-git-send-email-gcosta@redhat.com>
  <1204564400-17636-3-git-send-email-gcosta@redhat.com>
@@ -67,114 +67,42 @@ References: <1204564400-17636-1-git-send-email-gcosta@redhat.com>
  <1204564400-17636-47-git-send-email-gcosta@redhat.com>
  <1204564400-17636-48-git-send-email-gcosta@redhat.com>
  <1204564400-17636-49-git-send-email-gcosta@redhat.com>
+ <1204564400-17636-50-git-send-email-gcosta@redhat.com>
+ <1204564400-17636-51-git-send-email-gcosta@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-it is a little bit more complicated than x86_64 due to erratas and
-other stuff, but its existance will ease integration
+it is used by smp_callin, that is about to be removed from
+this file.
 
 Signed-off-by: Glauber Costa <gcosta@redhat.com>
 ---
- arch/x86/kernel/apic_32.c |   73 ++++++++++++++++++++++++--------------------
- 1 files changed, 40 insertions(+), 33 deletions(-)
+ arch/x86/kernel/smpboot_32.c |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/arch/x86/kernel/apic_32.c b/arch/x86/kernel/apic_32.c
-index 6aa93db..4a754ee 100644
---- a/arch/x86/kernel/apic_32.c
-+++ b/arch/x86/kernel/apic_32.c
-@@ -897,12 +897,50 @@ void __init init_bsp_APIC(void)
- 	apic_write_around(APIC_LVT1, value);
- }
+diff --git a/arch/x86/kernel/smpboot_32.c b/arch/x86/kernel/smpboot_32.c
+index 4a08822..adad1ad 100644
+--- a/arch/x86/kernel/smpboot_32.c
++++ b/arch/x86/kernel/smpboot_32.c
+@@ -73,7 +73,7 @@ EXPORT_PER_CPU_SYMBOL(x86_cpu_to_apicid);
  
-+void __cpuinit lapic_setup_esr(void)
-+{
-+	unsigned long oldvalue, value, maxlvt;
-+	if (lapic_is_integrated() && !esr_disable) {
-+		/* !82489DX */
-+		maxlvt = lapic_get_maxlvt();
-+		if (maxlvt > 3)		/* Due to the Pentium erratum 3AP. */
-+			apic_write(APIC_ESR, 0);
-+		oldvalue = apic_read(APIC_ESR);
-+
-+		/* enables sending errors */
-+		value = ERROR_APIC_VECTOR;
-+		apic_write_around(APIC_LVTERR, value);
-+		/*
-+		 * spec says clear errors after enabling vector.
-+		 */
-+		if (maxlvt > 3)
-+			apic_write(APIC_ESR, 0);
-+		value = apic_read(APIC_ESR);
-+		if (value != oldvalue)
-+			apic_printk(APIC_VERBOSE, "ESR value before enabling "
-+				"vector: 0x%08lx  after: 0x%08lx\n",
-+				oldvalue, value);
-+	} else {
-+		if (esr_disable)
-+			/*
-+			 * Something untraceable is creating bad interrupts on
-+			 * secondary quads ... for the moment, just leave the
-+			 * ESR disabled - we can't do anything useful with the
-+			 * errors anyway - mbligh
-+			 */
-+			printk(KERN_INFO "Leaving ESR disabled.\n");
-+		else
-+			printk(KERN_INFO "No ESR for 82489DX.\n");
-+	}
-+}
-+
-+
- /**
-  * setup_local_APIC - setup the local APIC
-  */
- void __cpuinit setup_local_APIC(void)
+ u8 apicid_2_node[MAX_APICID];
+ 
+-static void map_cpu_to_logical_apicid(void);
++void map_cpu_to_logical_apicid(void);
+ 
+ /* State of each CPU. */
+ DEFINE_PER_CPU(int, cpu_state) = { 0 };
+@@ -353,7 +353,7 @@ static inline void unmap_cpu_to_node(int cpu)
+ 
+ u8 cpu_2_logical_apicid[NR_CPUS] __read_mostly = { [0 ... NR_CPUS-1] = BAD_APICID };
+ 
+-static void map_cpu_to_logical_apicid(void)
++void map_cpu_to_logical_apicid(void)
  {
--	unsigned long oldvalue, value, maxlvt, integrated;
-+	unsigned long value, integrated;
- 	int i, j;
- 
- 	/* Pound the ESR really hard over the head with a big hammer - mbligh */
-@@ -1027,38 +1065,7 @@ void __cpuinit setup_local_APIC(void)
- 		value |= APIC_LVT_LEVEL_TRIGGER;
- 	apic_write_around(APIC_LVT1, value);
- 
--	if (integrated && !esr_disable) {
--		/* !82489DX */
--		maxlvt = lapic_get_maxlvt();
--		if (maxlvt > 3)		/* Due to the Pentium erratum 3AP. */
--			apic_write(APIC_ESR, 0);
--		oldvalue = apic_read(APIC_ESR);
--
--		/* enables sending errors */
--		value = ERROR_APIC_VECTOR;
--		apic_write_around(APIC_LVTERR, value);
--		/*
--		 * spec says clear errors after enabling vector.
--		 */
--		if (maxlvt > 3)
--			apic_write(APIC_ESR, 0);
--		value = apic_read(APIC_ESR);
--		if (value != oldvalue)
--			apic_printk(APIC_VERBOSE, "ESR value before enabling "
--				"vector: 0x%08lx  after: 0x%08lx\n",
--				oldvalue, value);
--	} else {
--		if (esr_disable)
--			/*
--			 * Something untraceable is creating bad interrupts on
--			 * secondary quads ... for the moment, just leave the
--			 * ESR disabled - we can't do anything useful with the
--			 * errors anyway - mbligh
--			 */
--			printk(KERN_INFO "Leaving ESR disabled.\n");
--		else
--			printk(KERN_INFO "No ESR for 82489DX.\n");
--	}
-+	lapic_setup_esr();
- 
- 	/* Disable the local apic timer */
- 	value = apic_read(APIC_LVTT);
+ 	int cpu = smp_processor_id();
+ 	int apicid = logical_smp_processor_id();
 -- 
 1.5.0.6
 
