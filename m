@@ -1,75 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759773AbYCCTZH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760208AbYCCT1A@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759773AbYCCTZH (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Mar 2008 14:25:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755707AbYCCTYz
+	id S1760208AbYCCT1A (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Mar 2008 14:27:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756139AbYCCT0w
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Mar 2008 14:24:55 -0500
-Received: from n29.bullet.mail.mud.yahoo.com ([68.142.200.152]:26628 "HELO
-	n29.bullet.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1755590AbYCCTYz convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Mar 2008 14:24:55 -0500
-X-Yahoo-Newman-Id: 383688.18930.bm@omp401.mail.mud.yahoo.com
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=QMahkevlYryT9HNtVkTPTvRLjTFMb6GFd2yYs3einFQdBcA9G7klB08H+mm6WNYdOyJdHptK8QB2shZDu+PZcp5rdxOK2PWFJkTpgxetqAQVVd53RmqZ6y2V1I2Hp2KaMlJ4ZicuSEJ9AweHVu/78AIHTwiHGWd6Cx/8dhBwFLg=  ;
-X-YMail-OSG: nRJVTUEVM1kKUmdnSOYrotdreCmNa5M5vJDbdmjI_InsXESjAMTKw.Dz1dv7gXOmNcO4PKHxnih8xtrFdgwnMlu4xHf2Gc9VER4IW0HLGfOc7.Wh1Wc-
-X-Yahoo-Newman-Property: ymail-3
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-To: Cyrus Massoumi <cyrusm@gmx.net>
-Subject: Re: Performance versus FreeBSD 7.0
-Date: Tue, 4 Mar 2008 06:24:23 +1100
-User-Agent: KMail/1.9.5
-Cc: Diego Calleja <diegocg@gmail.com>, Stephen Cuppett <cuppett@gmail.com>,
-       linux-kernel@vger.kernel.org, mingo@elte.hu, a.p.zijlstra@chello.nl
-References: <316a20a40802290538g55c4171y7cdbcb3a9c1d0f1b@mail.gmail.com> <200803040004.52299.nickpiggin@yahoo.com.au> <47CC4B3F.8060405@gmx.net>
-In-Reply-To: <47CC4B3F.8060405@gmx.net>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
-Message-Id: <200803040624.24119.nickpiggin@yahoo.com.au>
+	Mon, 3 Mar 2008 14:26:52 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:52438 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755707AbYCCT0v (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 3 Mar 2008 14:26:51 -0500
+Date: Mon, 3 Mar 2008 14:26:34 -0500
+From: Rik van Riel <riel@redhat.com>
+To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Cc: kosaki.motohiro@jp.fujitsu.com, linux-kernel@vger.kernel.org,
+       Lee Schermerhorn <Lee.Schermerhorn@hp.com>, linux-mm@kvack.org
+Subject: Re: [patch 09/21] (NEW) improve reclaim balancing
+Message-ID: <20080303142634.041d3c66@cuia.boston.redhat.com>
+In-Reply-To: <20080301221216.529E.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+References: <20080228192908.126720629@redhat.com>
+	<20080228192928.648701083@redhat.com>
+	<20080301221216.529E.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+Organization: Red Hat, Inc
+X-Mailer: Claws Mail 3.1.0 (GTK+ 2.12.1; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 04 March 2008 06:02, Cyrus Massoumi wrote:
-> Nick Piggin wrote:
-> > On Saturday 01 March 2008 01:54, Diego Calleja wrote:
-> >> El Fri, 29 Feb 2008 08:38:00 -0500, "Stephen Cuppett"
-> >> <cuppett@gmail.com>
-> >
-> > escribió:
-> >>> loads and 1500% at high loads. When compared with the best performing
-> >>> Linux kernel (2.6.22 or 2.6.24) performance is 15% better. Results are
-> >>
-> >> There has been some performance problems with sysbench performance in
-> >> linux which made it slower than freebsd, there were some patches to
-> >> speed things up, not sure if they have been merged.
-> >
-> > There definitely were performance problems with threaded malloc/free
-> > in the Linux kernel and glibc. Fixes have been merged in both packages,
-> > and AFAIK the FreeBSD guys tested with those fixes in place.
-> >
-> > I think these were never really run into before in part due to MySQL's
-> > unscalable heap design makes it not scale well on higher numbers of
-> > CPUs anyway, and also made the malloc problems more pronounced (ie.
-> > they added a bit to the contention of the single heap lock, which is
-> > the big killer here).
->
-> IIRC, going to fine-grained file locking gave them a huge boost in this
-> particular benchmark (and maybe others).
-> As I said on lwn.net Peter Zijlstra posted a patch to break the global
-> file list lock about a year ago [1], but I don't think it was ever
-> merged. Here [2] are some numbers for the patchset.
->
-> [1] http://lkml.org/lkml/2007/1/28/29
-> [2] http://lkml.org/lkml/2007/1/28/116
+On Sat, 01 Mar 2008 22:35:44 +0900
+KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com> wrote:
 
-The mysql workload is not constrained by this lock. The important
-part (where freebsd saw their gain) is probably fd lookups, which
-are lockless in Linux for a long time.
+> hi
+> 
+> > +	/*
+> > +	 * Even if we did not try to evict anon pages at all, we want to
+> > +	 * rebalance the anon lru active/inactive ratio.
+> > +	 */
+> > +	if (inactive_anon_low(zone))
+> > +		shrink_list(NR_ACTIVE_ANON, SWAP_CLUSTER_MAX, zone, sc,
+> > +								priority);
+> > +
+> 
+> you want check global zone status, right?
+> if so, this statement only do that at global scan.
 
+Good catch.  I have merged your suggestions.
+
+-- 
+All Rights Reversed
