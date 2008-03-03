@@ -1,82 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756029AbYCCMv0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755169AbYCCMwP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756029AbYCCMv0 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Mar 2008 07:51:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754327AbYCCMuy
+	id S1755169AbYCCMwP (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Mar 2008 07:52:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752759AbYCCMv5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Mar 2008 07:50:54 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:53448 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754312AbYCCMuq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Mar 2008 07:50:46 -0500
-Date: Mon, 3 Mar 2008 13:50:27 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Adrian Bunk <bunk@kernel.org>
-Cc: Sam Ravnborg <sam@ravnborg.org>, Alexey Starikovskiy <aystarik@gmail.com>,
-       lenb@kernel.org, astarikovskiy@suse.de, linux-acpi@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       Arjan van de Ven <arjan@infradead.org>
-Subject: Re: [2.6 patch] acpi/battery.c: make 2 functions static
-Message-ID: <20080303125027.GA21577@elte.hu>
-References: <20080303085720.GD15943@elte.hu> <20080303091314.GC4457@cs181133002.pp.htv.fi> <20080303091714.GA18250@elte.hu> <20080303093103.GA23651@uranus.ravnborg.org> <20080303103933.GC21190@elte.hu> <20080303113451.GF4457@cs181133002.pp.htv.fi> <20080303114533.GA4183@elte.hu> <20080303120211.GG4457@cs181133002.pp.htv.fi> <20080303121015.GA12660@elte.hu> <20080303122953.GH4457@cs181133002.pp.htv.fi>
+	Mon, 3 Mar 2008 07:51:57 -0500
+Received: from host36-195-149-62.serverdedicati.aruba.it ([62.149.195.36]:39651
+	"EHLO mx.cpushare.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752730AbYCCMv4 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 3 Mar 2008 07:51:56 -0500
+Date: Mon, 3 Mar 2008 13:51:53 +0100
+From: Andrea Arcangeli <andrea@qumranet.com>
+To: Nick Piggin <npiggin@suse.de>
+Cc: Jack Steiner <steiner@sgi.com>, akpm@linux-foundation.org,
+       Robin Holt <holt@sgi.com>, Avi Kivity <avi@qumranet.com>,
+       Izik Eidus <izike@qumranet.com>, kvm-devel@lists.sourceforge.net,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, general@lists.openfabrics.org,
+       Steve Wise <swise@opengridcomputing.com>,
+       Roland Dreier <rdreier@cisco.com>, Kanoj Sarcar <kanojsarcar@yahoo.com>,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       daniel.blueman@quadrics.com, Christoph Lameter <clameter@sgi.com>
+Subject: Re: [PATCH] mmu notifiers #v8
+Message-ID: <20080303125152.GS8091@v2.random>
+References: <20080219135851.GI7128@v2.random> <20080219231157.GC18912@wotan.suse.de> <20080220010941.GR7128@v2.random> <20080220103942.GU7128@v2.random> <20080221045430.GC15215@wotan.suse.de> <20080221144023.GC9427@v2.random> <20080221161028.GA14220@sgi.com> <20080227192610.GF28483@v2.random> <20080302155457.GK8091@v2.random> <20080303032934.GA3301@wotan.suse.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080303122953.GH4457@cs181133002.pp.htv.fi>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <20080303032934.GA3301@wotan.suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, Mar 03, 2008 at 04:29:34AM +0100, Nick Piggin wrote:
+> to something I prefer. Others may not, but I'll post them for debate
+> anyway.
 
-* Adrian Bunk <bunk@kernel.org> wrote:
+Sure, thanks!
 
-> I can only repeat that I did state several times on linux-kernel that 
-> it never worked.
+> > I didn't drop invalidate_page, because invalidate_range_begin/end
+> > would be slower for usages like KVM/GRU (we don't need a begin/end
+> > there because where invalidate_page is called, the VM holds a
+> > reference on the page). do_wp_page should also use invalidate_page
+> > since it can free the page after dropping the PT lock without losing
+> > any performance (that's not true for the places where invalidate_range
+> > is called).
 > 
-> If you consider it my fault that noone reads my emails then you are 
-> right that it's my fault...
+> I'm still not completely happy with this. I had a very quick look
+> at the GRU driver, but I don't see why it can't be implemented
+> more like the regular TLB model, and have TLB insertions depend on
+> the linux pte, and do invalidates _after_ restricting permissions
+> to the pte.
+> 
+> Ie. I'd still like to get rid of invalidate_range_begin, and get
+> rid of invalidate calls from places where permissions are relaxed.
 
-well, i'm trying to assume the best, so please explain the following 
-sequence of events to me:
+_begin exists because by the time _end is called, the VM already
+dropped the reference on the page. This way we can do a single
+invalidate no matter how large the range is. I don't see ways to
+remove _begin while still invoking _end a single time for the whole
+range.
 
-1) as you said you knew about this bug - which bug causes more inlining
-   overhead than hundreds of your uninlining patches combined. The bug
-   was introduced ~2 years ago in -mm - before the feature hit mainline
-   in v2.6.16.
+> If we can agree on the API, then I don't see any reason why it can't
+> go into 2.6.25, unless someome wants more time to review it (but
+> 2.6.25 release should be quite far away still so there should be quite
+> a bit of time).
 
-2) the fix was really trivial and the intention of the feature was well 
-   understood - but the feature stayed as a NOP in the upstream kernel 
-   for 2 years.
-
-still, while you clearly had interest in this general area of the kernel 
-(for example you wrote hundreds of tiny uninlining patches that work 
-towards a similar goal), but strangely at the same time you neither 
-fixed, nor properly escallated this _far_ bigger bug that causes +2.3% 
-of text bloat on x86 [more than 120K of kernel text]. In fact:
-
-- you created bugzillas for far smaller bugs in the past, but you never
-  created a bugzilla for this that i'm aware of.
-
-- you never directly raised this issue with us: "look guys, this thing
-  really is broken - please reply to me with a fix".
-
-- you never said "this is a regression that should be fixed" to any of
-  the regression lists.
-
-in other words: for about two years you knew about a bug that should 
-have been fixed the day after it got introduced.
-
-i obviously cannot know what your intentions were with this conduct, so 
-i'm eagerly awaiting your explanation for it. Thanks,
-
-	Ingo
+Cool! ;)
