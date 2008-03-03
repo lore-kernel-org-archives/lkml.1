@@ -1,70 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760978AbYCCDjS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761333AbYCCDnw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760978AbYCCDjS (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 2 Mar 2008 22:39:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756559AbYCCDjI
+	id S1761333AbYCCDnw (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 2 Mar 2008 22:43:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756668AbYCCDnm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 2 Mar 2008 22:39:08 -0500
-Received: from ns.suse.de ([195.135.220.2]:37113 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752785AbYCCDjF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 2 Mar 2008 22:39:05 -0500
-Date: Mon, 3 Mar 2008 04:39:04 +0100
-From: Nick Piggin <npiggin@suse.de>
-To: Andrea Arcangeli <andrea@qumranet.com>
-Cc: Jack Steiner <steiner@sgi.com>, akpm@linux-foundation.org,
-       Robin Holt <holt@sgi.com>, Avi Kivity <avi@qumranet.com>,
-       Izik Eidus <izike@qumranet.com>, kvm-devel@lists.sourceforge.net,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, general@lists.openfabrics.org,
-       Steve Wise <swise@opengridcomputing.com>,
-       Roland Dreier <rdreier@cisco.com>, Kanoj Sarcar <kanojsarcar@yahoo.com>,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       daniel.blueman@quadrics.com, Christoph Lameter <clameter@sgi.com>
-Subject: Re: [PATCH] mmu notifiers #v8
-Message-ID: <20080303033903.GE3301@wotan.suse.de>
-References: <20080219084357.GA22249@wotan.suse.de> <20080219135851.GI7128@v2.random> <20080219231157.GC18912@wotan.suse.de> <20080220010941.GR7128@v2.random> <20080220103942.GU7128@v2.random> <20080221045430.GC15215@wotan.suse.de> <20080221144023.GC9427@v2.random> <20080221161028.GA14220@sgi.com> <20080227192610.GF28483@v2.random> <20080302155457.GK8091@v2.random>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Sun, 2 Mar 2008 22:43:42 -0500
+Received: from ug-out-1314.google.com ([66.249.92.175]:30808 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752720AbYCCDnl (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 2 Mar 2008 22:43:41 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=YppswvagIaHAhYE/QbKRwjO9V34/scIIvwzlWnh/nwGzXdLtHQNcSDxoMHo8cu4lAXy4sT2ek2JOzlwdydQPDq/MzFfhLcPjNWmHcGZ2+0oLMEbgq67P0v8zR33qchj1Y3D4XiSZ6zL28aAe+WmLKhAt6bL4W8DcWcRpXCwQoFc=
+Message-ID: <524f69650803021943i33ce6ddbo309f118cd0a77ac9@mail.gmail.com>
+Date: Sun, 2 Mar 2008 21:43:39 -0600
+From: "Steve French" <smfrench@gmail.com>
+To: git@vger.kernel.org, lkml <linux-kernel@vger.kernel.org>
+Subject: Re: kernel.org git tree corrupt?
+Cc: "Linus Torvalds" <torvalds@linux-foundation.org>
+In-Reply-To: <alpine.LFD.1.00.0803021302070.17889@woody.linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20080302155457.GK8091@v2.random>
-User-Agent: Mutt/1.5.9i
+References: <524f69650803020749o469f2e48l125a55267b0b5d13@mail.gmail.com>
+	 <alpine.LFD.1.00.0803021302070.17889@woody.linux-foundation.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Mar 02, 2008 at 04:54:57PM +0100, Andrea Arcangeli wrote:
-> Difference between #v7 and #v8:
+On Sun, Mar 2, 2008 at 3:16 PM, Linus Torvalds
+<torvalds@linux-foundation.org> wrote:
+>
+>  On Sun, 2 Mar 2008, Steve French wrote:
+>  >
+>  > In preparation for a merge request I do
+>  >     cg-diff -m -r origin: | diffstat -p1
+>  > (git diff -m -r origin: shows the same problem) and
+>  >     cg-log -m -r origin:
+>
+>  First off, you really should lay off the cogito thing
+no problem
 
-Here is just a couple of checkpatch fixes on top of the last patches.
+>   - look at your .git/config file to make sure that the remote branches are
+>    sane. It should have something like this (and if it doesn't, add it):
+>
+>         [remote "origin"]
+>                 url = git://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux-2.6
+>                 fetch = +refs/heads/*:refs/remotes/origin/*
+>
+>         [branch "master"]
+>                 remote = origin
+>                 merge = refs/heads/master
+.git/config now includes
 
-Index: linux-2.6/include/linux/mmu_notifier.h
-===================================================================
---- linux-2.6.orig/include/linux/mmu_notifier.h
-+++ linux-2.6/include/linux/mmu_notifier.h
-@@ -46,7 +46,7 @@ struct mmu_notifier_ops {
- 	 */
- 	void (*invalidate_range_begin)(struct mmu_notifier *mn,
- 				       struct mm_struct *mm,
--				       unsigned long start, unsigned long end);       
-+				       unsigned long start, unsigned long end);
- 	void (*invalidate_range_end)(struct mmu_notifier *mn,
- 				     struct mm_struct *mm,
- 				     unsigned long start, unsigned long end);
-@@ -137,7 +137,7 @@ static inline void mmu_notifier_mm_init(
- #define ptep_clear_flush_notify(__vma, __address, __ptep)		\
- ({									\
- 	pte_t __pte;							\
--	struct vm_area_struct * ___vma = __vma;				\
-+	struct vm_area_struct *___vma = __vma;				\
- 	unsigned long ___address = __address;				\
- 	__pte = ptep_clear_flush(___vma, ___address, __ptep);		\
- 	mmu_notifier_invalidate_page(___vma->vm_mm, ___address);	\
-@@ -147,7 +147,7 @@ static inline void mmu_notifier_mm_init(
- #define ptep_clear_flush_young_notify(__vma, __address, __ptep)		\
- ({									\
- 	int __young;							\
--	struct vm_area_struct * ___vma = __vma;				\
-+	struct vm_area_struct *___vma = __vma;				\
- 	unsigned long ___address = __address;				\
- 	__young = ptep_clear_flush_young(___vma, ___address, __ptep);	\
- 	__young |= mmu_notifier_clear_flush_young(___vma->vm_mm,	\
+[core]
+        repositoryformatversion = 0
+        filemode = true
+        bare = false
+        logallrefupdates = true
+[remote "origin"]
+        url = /pub/scm/linux/kernel/git/torvalds/linux-2.6.git
+        fetch = +refs/heads/*:refs/remotes/origin/*
+[branch "master"]
+        remote = origin
+        merge = refs/heads/master
+
+
+>   - look at your "origin" branch, and make sure it's a *remote* branch, not
+>    the old-style local one. Ie it should *not* show up when you do a
+>    plain
+>
+>         git branch
+now only shows "* master"
+
+>    but it *should* show up (as both "origin/HEAD" and "origin/master")
+>    when you do
+>
+>         git branch -a
+Now "git branch -a" shows
+* master
+  origin/master
+
+It is missing "origin/HEAD"
+>   - now do "git log origin" an it should show something recent
+git log origin and git log origin/master both return
+"ambiguous argument 'origin': unknown revision"
+
+I must be misunderstanding the syntax/manpage of git-log but "git diff
+-m -r origin/master"
+now works fine and displays exactly what I expect so things have improved.
+
+
+
+>  Now your setup should be ok again. I *suspect* that what has happened is
+>  that you got a local "origin" branch - probably through cogito - that hid
+>  the remote one.
+This seems plausible and
+
+
+-- 
+Thanks,
+
+Steve
