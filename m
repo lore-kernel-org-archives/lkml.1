@@ -1,75 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755599AbYCCOwS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755970AbYCCOyo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755599AbYCCOwS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Mar 2008 09:52:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753667AbYCCOwA
+	id S1755970AbYCCOyo (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Mar 2008 09:54:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751847AbYCCOyg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Mar 2008 09:52:00 -0500
-Received: from accolon.hansenpartnership.com ([76.243.235.52]:56304 "EHLO
-	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753354AbYCCOv6 (ORCPT
+	Mon, 3 Mar 2008 09:54:36 -0500
+Received: from palinux.external.hp.com ([192.25.206.14]:57396 "EHLO
+	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753606AbYCCOyf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Mar 2008 09:51:58 -0500
-Subject: Re: [BUG] 2.6.25-rc2-git3 broke cdrecord
-From: James Bottomley <James.Bottomley@HansenPartnership.com>
-To: Mikael Pettersson <mikpe@it.uu.se>
-Cc: Stefan Richter <stefanr@s5r6.in-berlin.de>,
-       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>, crmafra2@gmail.com,
-       linux-kernel@vger.kernel.org, htejun@gmail.com, jens.axboe@oracle.com,
-       linux-ide@vger.kernel.org, linux-scsi@vger.kernel.org
-In-Reply-To: <18379.53492.171481.255371@harpo.it.uu.se>
-References: <20080302233415.GA6258@Pilar>
-	 <18379.18297.838050.536473@harpo.it.uu.se>
-	 <tkrat.468fd04c47ae1a2a@s5r6.in-berlin.de>
-	 <20080303172641Z.fujita.tomonori@lab.ntt.co.jp>
-	 <47CBC014.9090309@s5r6.in-berlin.de>
-	 <18379.51360.744676.894510@harpo.it.uu.se>
-	 <18379.53492.171481.255371@harpo.it.uu.se>
-Content-Type: text/plain
-Date: Mon, 03 Mar 2008 08:51:53 -0600
-Message-Id: <1204555913.3043.1.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 (2.12.3-1.fc8) 
-Content-Transfer-Encoding: 7bit
+	Mon, 3 Mar 2008 09:54:35 -0500
+Date: Mon, 3 Mar 2008 07:54:34 -0700
+From: Matthew Wilcox <matthew@wil.cx>
+To: Harvey Harrison <harvey.harrison@gmail.com>
+Cc: linux-kernel@vger.kernel.org, Matthew Wilcox <willy@linux.intel.com>
+Subject: Re: [PATCH 11/12] Generic semaphore implementation
+Message-ID: <20080303145434.GH24386@parisc-linux.org>
+References: <1204180441-8540-3-git-send-email-matthew@wil.cx> <1204180441-8540-4-git-send-email-matthew@wil.cx> <1204180441-8540-5-git-send-email-matthew@wil.cx> <1204180441-8540-6-git-send-email-matthew@wil.cx> <1204180441-8540-7-git-send-email-matthew@wil.cx> <1204180441-8540-8-git-send-email-matthew@wil.cx> <1204180441-8540-9-git-send-email-matthew@wil.cx> <1204180441-8540-10-git-send-email-matthew@wil.cx> <1204180441-8540-11-git-send-email-matthew@wil.cx> <1204252679.20280.115.camel@brick>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1204252679.20280.115.camel@brick>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2008-03-03 at 11:20 +0100, Mikael Pettersson wrote:
-> Mikael Pettersson writes:
->  > Stefan Richter writes:
->  >  > FUJITA Tomonori wrote:
->  >  > > On Mon, 3 Mar 2008 02:48:23 +0100 (CET)
->  >  > > Stefan Richter <stefanr@s5r6.in-berlin.de> wrote:
->  >  > >> CD burning still fails for me via ide-cd, although in a
->  >  > >> different way than without the patch.  (Without the patch, ide-cd also
->  >  > >> fails like described by you for SATA.)
->  >  > >>
->  >  > >> With the patch, the failure is as follows.  I don't know if this is
->  >  > >> related to the data length arithmetic or something entirely different;
->  >  > >> all I learned so far is that 2.6.24 works.  Application log from
->  >  > >> 2.6.25-rc3 + Tejun's patch + Gentoo's cdrkit-1.1.6 + k3b:
->  >  > > 
->  >  > > Can you try the following patch?
->  >  > > 
->  >  > > http://lkml.org/lkml/2008/3/2/218
->  >  > 
->  >  > Fails just like with Tejun's patch, alas.
->  > 
->  > At this point I must confess I feel very uneasy about this situation.
->  > 
->  > Dare I suggest the perhaps hereditary solution of reverting these
->  > changes and doing them right after 2.6.25 final?
+On Thu, Feb 28, 2008 at 06:37:59PM -0800, Harvey Harrison wrote:
+> > +/*
+> > + * Because this function is inlined, the 'state' parameter will be constant,
+> > + * and thus optimised away by the compiler.
+> > + */
 > 
-> Doh! s/hereditary/heretical/
+> If so, is unlikely() still needed?
 
-Unfortunately not.  This patch set was first introduced to fix a panic
-in the SAS drivers that support SATAPI because they couldn't cope with
-the way libata mangled the sg list.
+It's needed for the case where the function is inlined into
+__down_interruptible / __down_killable.
 
-We know what the problem is, we just have to find an acceptable way of
-fixing it.
+> Other than that small bit, looks great, any thoughts to getting rid of
+> all the likely/unlikely as well?  If they're no longer performance
+> critical, it would be nice to have it that little bit cleaner.
 
-James
+I'd rather keep it as close to mutex.c as possible.
 
-
+-- 
+Intel are signing my paycheques ... these opinions are still mine
+"Bill, look, we understand that you're interested in selling us this
+operating system, but compare it to ours.  We can't possibly take such
+a retrograde step."
