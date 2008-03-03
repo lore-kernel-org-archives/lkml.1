@@ -1,57 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758287AbYCCRqa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756051AbYCCRrO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758287AbYCCRqa (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Mar 2008 12:46:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750960AbYCCRqU
+	id S1756051AbYCCRrO (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Mar 2008 12:47:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750851AbYCCRq4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Mar 2008 12:46:20 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:42474 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750845AbYCCRqT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Mar 2008 12:46:19 -0500
-Date: Mon, 3 Mar 2008 18:45:55 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Mel Gorman <mel@csn.ul.ie>
-Cc: Yinghai Lu <yhlu.kernel@gmail.com>, Mike Travis <travis@sgi.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       tglx@linutronix.de, Christoph Lameter <clameter@sgi.com>,
-       Jack Steiner <steiner@sgi.com>
-Subject: Re: 2.6.24 git2/mm1: cpu_to_node mapping to non-existant nodes
-	causing boot failure
-Message-ID: <20080303174555.GA25496@elte.hu>
-References: <20080214201727.GC30841@csn.ul.ie> <47B4A774.7050509@sgi.com> <20080215020208.GA6500@csn.ul.ie> <47B77E90.5050809@sgi.com> <47BAFFD3.1070606@sgi.com> <20080219192319.GE12386@csn.ul.ie> <86802c440802262229t37c61c98y45607ba34d7c6417@mail.gmail.com> <20080228154244.GA4038@csn.ul.ie> <86802c440802280945w4dd71038y95936656cd535c9c@mail.gmail.com> <20080303162711.GD5861@csn.ul.ie>
+	Mon, 3 Mar 2008 12:46:56 -0500
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:50726 "EHLO
+	gprs189-60.eurotel.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750699AbYCCRqz (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 3 Mar 2008 12:46:55 -0500
+Date: Mon, 3 Mar 2008 18:47:24 +0100
+From: Pavel Machek <pavel@ucw.cz>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: "Klaus S. Madsen" <ksm@hjernemadsen.org>,
+       Suspend-devel list <suspend-devel@lists.sourceforge.net>,
+       Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, Thomas Gleixner <tglx@linutronix.de>,
+       mjg59@srcf.ucam.org
+Subject: Re: Regression in 2.6.25-rc3: s2ram segfaults before suspending
+Message-ID: <20080303174724.GC13869@elf.ucw.cz>
+References: <20080228192404.GH17932@hjernemadsen.org> <47C70C01.4020605@zytor.com> <20080228194920.GJ17932@hjernemadsen.org> <47C739A6.5020608@zytor.com> <20080229070028.GK17932@hjernemadsen.org> <47C873AA.6040305@zytor.com> <20080229212654.GL27212@elte.hu> <20080301094525.GQ17932@hjernemadsen.org> <20080303121735.GE28369@elf.ucw.cz> <47CC310B.8000305@zytor.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080303162711.GD5861@csn.ul.ie>
+In-Reply-To: <47CC310B.8000305@zytor.com>
+X-Warning: Reading this can be dangerous to your mental health.
 User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon 2008-03-03 09:10:35, H. Peter Anvin wrote:
+> Pavel Machek wrote:
+>>>
+>>> The only thing I don't understand is why this is suddenly a problem with
+>>> 2.6.25, and not with 2.6.24? Is there a bug in 2.6.24 and previously
+>>> that allows real-mode execution of non-executable pages?
+>>
+>> It is strange indeed... Should it be traced as an regression?
+>
+> I'd like to understand what the heck happened, but as far as we can observe 
+> right now, it's a *progression*, not a regression, since executing out of a 
+> non-PROT_EXEC area isn't *supposed* to work...
 
-* Mel Gorman <mel@csn.ul.ie> wrote:
+Okay, I guess this depends on the eye of the beholder... because s2ram
+*is* supposed to work ;-).
 
-> > can you verify which one fix that ?
-> > 
-> > http://git.kernel.org/?p=linux/kernel/git/x86/linux-2.6-x86.git;a=commitdiff;h=a8de04ce4e4cf0af94aeb3829be8c9f813b2f5de
-> 
-> This one was the fix.
-> 
-> commit a8de04ce4e4cf0af94aeb3829be8c9f813b2f5de
-> Author: Yinghai Lu <Yinghai.Lu@Sun.COM>
-> Date:   Tue Feb 19 15:35:54 2008 -0800
-> 
->     x86_64: not set node to cpu_to_node if the node is not online
-
-thanks - so should we accelerate this into v2.6.25?
-
-	Ingo
+Ideally, I'd like to keep 2.6.24 behaviour for at least a while, so we
+can try to fix the libx86 out there or something...
+									Pavel
+PS: Matthew, there's problem in libx86: it tries to execute from area
+not marked as PROT_EXEC.
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
