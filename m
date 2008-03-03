@@ -1,63 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756789AbYCCHSQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755317AbYCCHWB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756789AbYCCHSQ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Mar 2008 02:18:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751206AbYCCHSB
+	id S1755317AbYCCHWB (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Mar 2008 02:22:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751206AbYCCHVx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Mar 2008 02:18:01 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:51953 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751196AbYCCHSA (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Mar 2008 02:18:00 -0500
-Date: Sun, 2 Mar 2008 23:17:37 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: David Rientjes <rientjes@google.com>
-Cc: Paul Jackson <pj@sgi.com>, Christoph Lameter <clameter@sgi.com>,
-       Lee Schermerhorn <Lee.Schermerhorn@hp.com>, Andi Kleen <ak@suse.de>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [patch 1/6] mempolicy: convert MPOL constants to enum
-Message-Id: <20080302231737.f5b68b0c.akpm@linux-foundation.org>
-In-Reply-To: <alpine.DEB.1.00.0802291640570.30883@chino.kir.corp.google.com>
-References: <alpine.DEB.1.00.0802291640570.30883@chino.kir.corp.google.com>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+	Mon, 3 Mar 2008 02:21:53 -0500
+Received: from x346.tv-sign.ru ([89.108.83.215]:46528 "EHLO mail.screens.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750696AbYCCHVx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 3 Mar 2008 02:21:53 -0500
+Date: Mon, 3 Mar 2008 10:21:23 +0300
+From: Oleg Nesterov <oleg@tv-sign.ru>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Roland McGrath <roland@redhat.com>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2/2] introduce ptrace_reparented() helper
+Message-ID: <20080303072123.GA25282@tv-sign.ru>
+References: <20080303041751.GA18914@tv-sign.ru>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080303041751.GA18914@tv-sign.ru>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 29 Feb 2008 16:44:59 -0800 (PST) David Rientjes <rientjes@google.com> wrote:
+Somehow the patch I sent misses the change in ptrace.c, it can use the
+new helper too.
 
-> The mempolicy mode constants, MPOL_DEFAULT, MPOL_PREFERRED, MPOL_BIND,
-> and MPOL_INTERLEAVE, are better declared as part of an enum since they
-> are sequentially numbered and cannot be combined.
-> 
-> The policy member of struct mempolicy is also converted from type short
-> to type unsigned short.  A negative policy does not have any legitimate
-> meaning, so it is possible to change its type in preparation for adding
-> optional mode flags later.
-> 
-> The equivalent member of struct shmem_sb_info is also changed from int
-> to unsigned short.
-> 
-> For compatibility, the policy formal to get_mempolicy() remains as a
-> pointer to an int:
-> 
-> 	int get_mempolicy(int *policy, unsigned long *nmask,
-> 			  unsigned long maxnode, unsigned long addr,
-> 			  unsigned long flags);
-> 
-> although the only possible values is the range of type unsigned short.
 
-The collisions between this work and Mel's
+[PATCH 2/2] introduce ptrace_reparented() helper
 
-mm-use-zonelists-instead-of-zones-when-direct-reclaiming-pages.patch
-mm-introduce-node_zonelist-for-accessing-the-zonelist-for-a-gfp-mask.patch
-mm-remember-what-the-preferred-zone-is-for-zone_statistics.patch
-mm-use-two-zonelist-that-are-filtered-by-gfp-mask.patch
-mm-have-zonelist-contains-structs-with-both-a-zone-pointer-and-zone_idx.patch
-mm-filter-based-on-a-nodemask-as-well-as-a-gfp_mask.patch
+Add another trivial helper for the sake of grep. It also auto-documents the
+fact that ->parent != real_parent implies ->ptrace.
 
-are more than I'm comfortable with fixing, sorry.
+No functional changes.
+
+Signed-off-by: Oleg Nesterov <oleg@tv-sign.ru>
+
+--- 25/include/linux/ptrace.h~5_PR	2008-02-17 23:40:09.000000000 +0300
++++ 25/include/linux/ptrace.h	2008-03-03 06:22:15.000000000 +0300
+@@ -98,6 +98,10 @@ extern void ptrace_untrace(struct task_s
+ extern int ptrace_may_attach(struct task_struct *task);
+ extern int __ptrace_may_attach(struct task_struct *task);
+ 
++static inline int ptrace_reparented(struct task_struct *child)
++{
++	return child->real_parent != child->parent;
++}
+ static inline void ptrace_link(struct task_struct *child,
+ 			       struct task_struct *new_parent)
+ {
+--- 25/kernel/exit.c~5_PR	2008-03-03 05:43:17.000000000 +0300
++++ 25/kernel/exit.c	2008-03-03 06:24:56.000000000 +0300
+@@ -629,7 +629,7 @@ reparent_thread(struct task_struct *p, s
+ 	if (unlikely(traced)) {
+ 		/* Preserve ptrace links if someone else is tracing this child.  */
+ 		list_del_init(&p->ptrace_list);
+-		if (p->parent != p->real_parent)
++		if (ptrace_reparented(p))
+ 			list_add(&p->ptrace_list, &p->real_parent->ptrace_children);
+ 	} else {
+ 		/* If this child is being traced, then we're the one tracing it
+@@ -796,8 +796,8 @@ static void exit_notify(struct task_stru
+ 	 * only has special meaning to our real parent.
+ 	 */
+ 	if (!task_detached(tsk) && thread_group_empty(tsk)) {
+-		int signal = (tsk->parent == tsk->real_parent)
+-				? tsk->exit_signal : SIGCHLD;
++		int signal = ptrace_reparented(tsk) ?
++				SIGCHLD : tsk->exit_signal;
+ 		do_notify_parent(tsk, signal);
+ 	} else if (tsk->ptrace) {
+ 		do_notify_parent(tsk, SIGCHLD);
+@@ -1198,8 +1198,7 @@ static int wait_task_zombie(struct task_
+ 		return 0;
+ 	}
+ 
+-	/* traced means p->ptrace, but not vice versa */
+-	traced = (p->real_parent != p->parent);
++	traced = ptrace_reparented(p);
+ 
+ 	if (likely(!traced)) {
+ 		struct signal_struct *psig;
+--- 25/kernel/ptrace.c~5_PR	2008-02-17 23:40:09.000000000 +0300
++++ 25/kernel/ptrace.c	2008-03-03 06:23:43.000000000 +0300
+@@ -73,7 +73,7 @@ void __ptrace_unlink(struct task_struct 
+ 	BUG_ON(!child->ptrace);
+ 
+ 	child->ptrace = 0;
+-	if (!list_empty(&child->ptrace_list)) {
++	if (ptrace_reparented(child)) {
+ 		list_del_init(&child->ptrace_list);
+ 		remove_parent(child);
+ 		child->parent = child->real_parent;
+
