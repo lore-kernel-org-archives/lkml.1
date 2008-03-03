@@ -1,52 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760612AbYCCSqo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759455AbYCCSrB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760612AbYCCSqo (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Mar 2008 13:46:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760093AbYCCSqA
+	id S1759455AbYCCSrB (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Mar 2008 13:47:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757932AbYCCSqt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Mar 2008 13:46:00 -0500
-Received: from 216-99-213-120.dsl.aracnet.com ([216.99.213.120]:40826 "EHLO
-	clueserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760070AbYCCSp7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Mar 2008 13:45:59 -0500
-X-Greylist: delayed 563 seconds by postgrey-1.27 at vger.kernel.org; Mon, 03 Mar 2008 13:45:58 EST
-Message-ID: <24975.198.182.193.170.1204569393.squirrel@clueserver.org>
-In-Reply-To: <20080303182549.GD16004@nereid>
-References: <fqhebq$os3$1@ger.gmane.org> <20080303182549.GD16004@nereid>
-Date: Mon, 3 Mar 2008 10:36:33 -0800 (PST)
-Subject: Re: Books on writing linux device drivers
-From: "Alan" <alan@clueserver.org>
-To: "Kristof Provost" <Kristof@sigsegv.be>
-Cc: "Neal Becker" <ndbecker2@gmail.com>, linux-kernel@vger.kernel.org
-User-Agent: SquirrelMail/1.4.10a-1.fc6
-MIME-Version: 1.0
+	Mon, 3 Mar 2008 13:46:49 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:33688 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1760652AbYCCSqs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 3 Mar 2008 13:46:48 -0500
+Date: Mon, 3 Mar 2008 13:46:34 -0500
+From: Rik van Riel <riel@redhat.com>
+To: "minchan Kim" <barrioskmc@gmail.com>
+Cc: "Lee Schermerhorn" <Lee.Schermerhorn@hp.com>, linux-kernel@vger.kernel.org,
+       "KOSAKI Motohiro" <kosaki.motohiro@jp.fujitsu.com>, linux-mm@kvack.org
+Subject: Re: [patch 12/21] No Reclaim LRU Infrastructure
+Message-ID: <20080303134634.5893b5e0@cuia.boston.redhat.com>
+In-Reply-To: <44c63dc40803021904n5de681datba400e08079c152d@mail.gmail.com>
+References: <20080228192908.126720629@redhat.com>
+	<20080228192929.031646681@redhat.com>
+	<44c63dc40802282058h67f7597bvb614575f06c62e2c@mail.gmail.com>
+	<1204296534.5311.8.camel@localhost>
+	<44c63dc40803021904n5de681datba400e08079c152d@mail.gmail.com>
+Organization: Red Hat, Inc
+X-Mailer: Claws Mail 3.1.0 (GTK+ 2.12.1; i386-redhat-linux-gnu)
+Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-X-Priority: 3 (Normal)
-Importance: Normal
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> -----BEGIN PGP SIGNED MESSAGE-----
-> Hash: SHA1
->
-> On 2008-03-03 13:00:26 (-0500), Neal Becker <ndbecker2@gmail.com> wrote:
->> I am about to start on writing a linux device driver.  What books are
->> recommended?  There are some books that are a few years old now, that
->> deal
->> with 2.4 kernel.  What would be useful for a relatively recent kernel?
-> Recent revisions of "Linux Device Drivers". You may wish to address such
-> questions to Google in the future.
+On Mon, 3 Mar 2008 12:04:14 +0900
+"minchan Kim" <barrioskmc@gmail.com> wrote:
 
-I think he is also looking for ones that are good, not just what is
-available.
+> One more thing.
+> 
+> zoneinfo_show_print fail to show right information.
+> That's why 'enum zone_stat_item' and 'vmstat_text' index didn't matched.
+> This is a problem about CONFIG_NORECLAIM, too.
 
-Greg Kroah-Hartman had a book written on Kernel Device Drivers.  get the
-latest edition of that.
+In what configuration do they not line up, and why?
 
-More info on his web page on writing device drivers, with examples.
+AFAICS the #ifdefs in zone_stat_item and vmstat_text match up...
 
-http://www.kroah.com/linux/
-
-
+-- 
+All Rights Reversed
