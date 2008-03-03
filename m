@@ -1,81 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760177AbYCCAKl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758008AbYCCARJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760177AbYCCAKl (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 2 Mar 2008 19:10:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755197AbYCCAKH
+	id S1758008AbYCCARJ (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 2 Mar 2008 19:17:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751564AbYCCAQt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 2 Mar 2008 19:10:07 -0500
-Received: from terminus.zytor.com ([198.137.202.10]:33151 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754035AbYCCAKF (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 2 Mar 2008 19:10:05 -0500
-Date: Sun, 2 Mar 2008 16:09:56 -0800
-From: "H. Peter Anvin" <hpa@zytor.com>
-Subject: [PATCH 2/2] Use U64_C() instead of casts in kernel/time.c
-To: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linux Arch Mailing List <linux-arch@vger.kernel.org>,
-       David Brownell <dbrownell@users.sourceforge.net>
-Message-ID: <b5b828ae3f1d4edff5509ba64a98bdba283a28e0@tazenda.hos.anvin.org>
-In-Reply-To: <4a8566f54ff84f498c5c0c0340076c296b1840e6@tazenda.hos.anvin.org>
-References: <4a8566f54ff84f498c5c0c0340076c296b1840e6@tazenda.hos.anvin.org>
+	Sun, 2 Mar 2008 19:16:49 -0500
+Received: from mx2.suse.de ([195.135.220.15]:45631 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750992AbYCCAQt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 2 Mar 2008 19:16:49 -0500
+From: NeilBrown <neilb@suse.de>
+To: Andrew Morton <akpm@linux-foundation.org>
+Date: Mon, 3 Mar 2008 11:16:58 +1100
+X-face: [Gw_3E*Gng}4rRrKRYotwlE?.2|**#s9D<ml'fY1Vw+@XfR[fRCsUoP?K6bt3YDui5Fh?f
+	LONpR';(ql)VM_TQ/<l_^D3~B:z$YC7gUCuC=sYm/80G=$tt"98mr8(l))QzVKCk$6~gldn~*FK9x
+	8`;pM{3S8679sP+MbP,72<3_PIH-$I&iaiIb|hV1d%cYg))BmI)AZ
+Cc: linux-raid@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: Keld Simonsen <keld@dkuug.dk>
+Cc: "K.Tanaka" <k-tanaka@ce.jp.nec.com>
+Subject: [PATCH 000 of 9] md: Introduction EXPLAIN PATCH SET HERE
+Message-ID: <20080303111240.23302.patches@notabene>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Use the new U64_C() constructor macro instead of using casts for
-constants in kernel/time.c.  This avoids warnings with some gcc
-versions.
+Following are 9 patches for md in 2.6.25-rc2-mm1.  All are fairly
+simply bugfixes and are suitable for 2.6.25 (though I confess I
+should have sent some of them eariler :-( ).
 
-This resolves Bugzilla 10153.
+They include fixes for three bugs found but the scsi fault injection framework
+(thanks!), and small raid10 read optimisation, and various other bits
+and pieces.
 
-Signed-off-by: H. Peter Anvin <hpa@zytor.com>
----
- kernel/time.c |    8 ++++----
- 1 files changed, 4 insertions(+), 4 deletions(-)
+NeilBrown
 
-diff --git a/kernel/time.c b/kernel/time.c
-index a5ec013..47b24f4 100644
---- a/kernel/time.c
-+++ b/kernel/time.c
-@@ -244,7 +244,7 @@ unsigned int inline jiffies_to_msecs(const unsigned long j)
- 	return (j + (HZ / MSEC_PER_SEC) - 1)/(HZ / MSEC_PER_SEC);
- #else
- # if BITS_PER_LONG == 32
--	return ((u64)HZ_TO_MSEC_MUL32 * j) >> HZ_TO_MSEC_SHR32;
-+	return (U64_C(HZ_TO_MSEC_MUL32) * j) >> HZ_TO_MSEC_SHR32;
- # else
- 	return (j * HZ_TO_MSEC_NUM) / HZ_TO_MSEC_DEN;
- # endif
-@@ -260,7 +260,7 @@ unsigned int inline jiffies_to_usecs(const unsigned long j)
- 	return (j + (HZ / USEC_PER_SEC) - 1)/(HZ / USEC_PER_SEC);
- #else
- # if BITS_PER_LONG == 32
--	return ((u64)HZ_TO_USEC_MUL32 * j) >> HZ_TO_USEC_SHR32;
-+	return (U64_C(HZ_TO_USEC_MUL32) * j) >> HZ_TO_USEC_SHR32;
- # else
- 	return (j * HZ_TO_USEC_NUM) / HZ_TO_USEC_DEN;
- # endif
-@@ -469,7 +469,7 @@ unsigned long msecs_to_jiffies(const unsigned int m)
- 	if (HZ > MSEC_PER_SEC && m > jiffies_to_msecs(MAX_JIFFY_OFFSET))
- 		return MAX_JIFFY_OFFSET;
- 
--	return ((u64)MSEC_TO_HZ_MUL32 * m + MSEC_TO_HZ_ADJ32)
-+	return (U64_C(MSEC_TO_HZ_MUL32) * m + MSEC_TO_HZ_ADJ32)
- 		>> MSEC_TO_HZ_SHR32;
- #endif
- }
-@@ -484,7 +484,7 @@ unsigned long usecs_to_jiffies(const unsigned int u)
- #elif HZ > USEC_PER_SEC && !(HZ % USEC_PER_SEC)
- 	return u * (HZ / USEC_PER_SEC);
- #else
--	return ((u64)USEC_TO_HZ_MUL32 * u + USEC_TO_HZ_ADJ32)
-+	return (U64_C(USEC_TO_HZ_MUL32) * u + USEC_TO_HZ_ADJ32)
- 		>> USEC_TO_HZ_SHR32;
- #endif
- }
--- 
-1.5.4.1
 
+ [PATCH 001 of 9] md: Fix deadlock in md/raid1 and md/raid10 when handling a read error.
+ [PATCH 002 of 9] md: Reduce CPU wastage on idle md array with a write-intent bitmap.
+ [PATCH 003 of 9] md: Guard against possible bad array geometry in v1 metadata.
+ [PATCH 004 of 9] md: Clean up irregularity with raid autodetect.
+ [PATCH 005 of 9] md: Make sure a reshape is started when device switches to read-write.
+ [PATCH 006 of 9] md: Lock access to rdev attributes properly
+ [PATCH 007 of 9] md: Don't attempt read-balancing for raid10 'far' layouts.
+ [PATCH 008 of 9] md: Fix possible raid1/raid10 deadlock on read error during resync.
+ [PATCH 009 of 9] md: The md RAID10 resync thread could cause a md RAID10 array deadlock
