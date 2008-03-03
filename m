@@ -1,68 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761609AbYCCKEs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760932AbYCCKHV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761609AbYCCKEs (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Mar 2008 05:04:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755323AbYCCKEk
+	id S1760932AbYCCKHV (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Mar 2008 05:07:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754520AbYCCKHJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Mar 2008 05:04:40 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:58264 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754647AbYCCKEj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Mar 2008 05:04:39 -0500
-Date: Mon, 3 Mar 2008 11:04:18 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Arnd Bergmann <arnd@arndb.de>
-Cc: Michael Kerrisk <mtk.manpages@googlemail.com>,
-       Christoph Hellwig <hch@lst.de>, cbe-oss-dev@ozlabs.org,
-       Jeremy Kerr <jk@ozlabs.org>, linux-kernel@vger.kernel.org
+	Mon, 3 Mar 2008 05:07:09 -0500
+Received: from wa-out-1112.google.com ([209.85.146.177]:60958 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751727AbYCCKHH (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 3 Mar 2008 05:07:07 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=iMDAuG3AWDxy5trKfef0ljktv4xGYwZngWv6ac6uAKxLdaQ+qHgPofW6VbQ283Sv1/zu25+jCpaqWzRSFOQXLRBSV0rqCizR55/3d/t7g2rYrcM18O0u9Pv48VhjyP2nUdHolapXWjyNdU98UXlo3ac5jGeF3jPmL2r0g/DAgkI=
+Message-ID: <cfd18e0f0803030207j73da3172mf9470859bb918546@mail.gmail.com>
+Date: Mon, 3 Mar 2008 11:07:06 +0100
+From: "Michael Kerrisk" <mtk.manpages@googlemail.com>
+To: "Ingo Molnar" <mingo@elte.hu>
 Subject: Re: SCHED_IDLE documentation
-Message-ID: <20080303100418.GF18281@elte.hu>
-References: <1203376368.275756.252634247263.1.gpush@pokey> <cfd18e0f0803030040l667dd2b7v6298e78c5b21bfec@mail.gmail.com> <20080303092422.GA18281@elte.hu> <200803031031.52335.arnd@arndb.de>
+Cc: "Arnd Bergmann" <arnd@arndb.de>, "Christoph Hellwig" <hch@lst.de>,
+       cbe-oss-dev@ozlabs.org, "Jeremy Kerr" <jk@ozlabs.org>,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <20080303092422.GA18281@elte.hu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <200803031031.52335.arnd@arndb.de>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+References: <1203376368.275756.252634247263.1.gpush@pokey>
+	 <200803030612.28039.arnd@arndb.de> <20080303051719.GA26102@lst.de>
+	 <200803030721.52869.arnd@arndb.de> <20080303073311.GB5934@elte.hu>
+	 <cfd18e0f0803030040l667dd2b7v6298e78c5b21bfec@mail.gmail.com>
+	 <20080303092422.GA18281@elte.hu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, Mar 3, 2008 at 10:24 AM, Ingo Molnar <mingo@elte.hu> wrote:
+>
+> * Michael Kerrisk <mtk.manpages@googlemail.com> wrote:
+>
+> > On Mon, Mar 3, 2008 at 8:33 AM, Ingo Molnar <mingo@elte.hu> wrote:
+> > >
+> > > * Arnd Bergmann <arnd@arndb.de> wrote:
+> > >
+> > > > If we don't have any man page, what is the actual definition of
+> > > > SCHED_IDLE anyway?
+> > >
+> > > it's rather simple: "it's a priority level even lower priority than nice
+> > > +19".
+> >
+> > Some other questions whose answers may be worth including in the man page:
+> >
+> > * When was SCHED_IDLE added?  (Actually, who added it?)
+>
+> "git-blame include/linux/sched.h" gives you that information, it was
+> added by me as part of CFS:
+>
+>  commit 0e6aca43e08a62a48d6770e9a159dbec167bf4c6
+>  Author: Ingo Molnar <mingo@elte.hu>
+>  Date:   Mon Jul 9 18:51:57 2007 +0200
 
-* Arnd Bergmann <arnd@arndb.de> wrote:
+Yep -- I found it later -- thanks.
 
-> On Monday 03 March 2008, Ingo Molnar wrote:
-> > > * What's the difference between SCHED_IDLE and SCHED_BATCH?
-> > 
-> > SCHED_BATCH can still have nice levels from -20 to +19, it is a modified 
-> > SCHED_OTHER/SCHED_NORMAL for "throughput oriented" workloads.
-> > 
-> > SCHED_IDLE overrides the nice settings and it means a "super idle" 
-> > workload.
-> 
-> Does that mean that a SCHED_IDLE task still runs some of the time if 
-> you have a CPU hog running on +19, or can any other process starve the 
-> SCHED_IDLE task?
+Ingo, could you please CC me when kernel-userland API changes go into
+mainline?  Otherwise, they potentially end up undocumented, and
+un(der)used.
 
-yes, even SCHED_IDLE tasks get some CPU time - so complete starvation 
-should not be possible. We dont really want to define the exact amount 
-of time they need. (we might want to change that in the future) But it 
-will always be less prio than nice +19 :-) You can think of it as if it 
-was "nice +30".
+Thanks,
 
-> What happens if you have two SCHED_IDLE tasks on a single CPU, do they 
-> get equal share, or will they just run as batch jobs?
+Michael
 
-they get equal share.
 
-you can try it out too: if you have 2.6.23 or newer kernels then just 
-pick up schedtool and use "schedtool -I" to run SCHED_IDLE tasks.
-
-	Ingo
+-- 
+Michael Kerrisk
+Maintainer of the Linux man-pages project
+http://www.kernel.org/doc/man-pages/
+Want to report a man-pages bug?  Look here:
+http://www.kernel.org/doc/man-pages/reporting_bugs.html
