@@ -1,91 +1,148 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754987AbYCCIdT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754762AbYCCIf1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754987AbYCCIdT (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Mar 2008 03:33:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753390AbYCCIcm
+	id S1754762AbYCCIf1 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Mar 2008 03:35:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752536AbYCCIfS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Mar 2008 03:32:42 -0500
-Received: from namei.org ([69.55.235.186]:54085 "EHLO us.intercode.com.au"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753277AbYCCIci (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Mar 2008 03:32:38 -0500
-Date: Mon, 3 Mar 2008 19:29:22 +1100 (EST)
-From: James Morris <jmorris@namei.org>
-X-X-Sender: jmorris@us.intercode.com.au
-To: "Ahmed S. Darwish" <darwish.07@gmail.com>
-cc: Casey Schaufler <casey@schaufler-ca.com>, Adrian Bunk <bunk@kernel.org>,
-       Chris Wright <chrisw@sous-sol.org>, Stephen Smalley <sds@tycho.nsa.gov>,
-       Eric Paris <eparis@parisplace.org>, Alexey Dobriyan <adobriyan@sw.ru>,
-       LKML <linux-kernel@vger.kernel.org>,
-       LSM-ML <linux-security-module@vger.kernel.org>,
-       Anrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH -v3 -mm] LSM: Add security= boot parameter
-In-Reply-To: <20080302105946.GA6406@ubuntu>
-Message-ID: <Xine.LNX.4.64.0803031910170.6729@us.intercode.com.au>
-References: <20080301211108.GF25835@cs181133002.pp.htv.fi>
- <674864.46980.qm@web36615.mail.mud.yahoo.com> <20080301232708.GA625@ubuntu>
- <20080302074912.GA3215@ubuntu> <20080302105946.GA6406@ubuntu>
+	Mon, 3 Mar 2008 03:35:18 -0500
+Received: from smtp239.poczta.interia.pl ([217.74.64.239]:11721 "EHLO
+	smtp239.poczta.interia.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752489AbYCCIfQ convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 3 Mar 2008 03:35:16 -0500
+Date: 03 Mar 2008 09:35:09 +0100
+From: Wojciech Migda <wojtek.golf@interia.pl>
+Subject: Re: [PATCH] V4L/DVB: tuner and radio addresses are missing for the PixelView PlayTV card
+To: "mchehab@infradead.org" <mchehab@infradead.org>,
+       "v4l-dvb-maintainer@linuxtv.org" <v4l-dvb-maintainer@linuxtv.org>
+Cc: "torvalds@linux-foundation.org" <torvalds@linux-foundation.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "trivial@kernel.org" <trivial@kernel.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: TEXT/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+X-ORIGINATE-IP: 89.187.248.13
+X-Mailer: PSE
+Message-Id: <20080303083509.A735D45B885@f49.poczta.interia.pl>
+X-EMID: 1a40acc
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2 Mar 2008, Ahmed S. Darwish wrote:
+Hi again,
 
-> Add the security= boot parameter. This is done to avoid LSM 
-> registration clashes in case of more than one bult-in module.
+the previous patch was for the 2.6.22 kernel. The two below are for the 2.6.24.3 and 2.6.25-rc3, respectively:
+
+         Signed-off-by: Wojciech Migda <wojtek <dot> golf <at> interia <dot> pl>
+
+---
+--- /usr/src/linux/drivers/media/video/bt8xx/bttv-cards.c.orig	2008-03-03 08:13:47.000000000 +0000
++++ /usr/src/linux/drivers/media/video/bt8xx/bttv-cards.c	2008-03-03 08:20:33.944363735 +0000
+@@ -589,6 +589,8 @@ struct tvcard bttv_tvcards[] = {
+ 		.needs_tvaudio	= 1,
+ 		.pll		= PLL_28,
+ 		.tuner_type	= UNSET,
++		.tuner_addr	= ADDR_UNSET,
++		.radio_addr	= ADDR_UNSET,
+ 	},
+ 	[BTTV_BOARD_WINVIEW_601] = {
+ 		.name		= "Leadtek WinView 601",
+
+
+---
+--- /usr/src/linux/drivers/media/video/bt8xx/bttv-cards.c.orig	2008-03-03 08:14:56.000000000 +0000
++++ /usr/src/linux/drivers/media/video/bt8xx/bttv-cards.c	2008-03-03 08:27:42.217028054 +0000
+@@ -576,6 +576,8 @@ struct tvcard bttv_tvcards[] = {
+ 		.needs_tvaudio	= 1,
+ 		.pll		= PLL_28,
+ 		.tuner_type	= UNSET,
++		.tuner_addr	= ADDR_UNSET,
++		.radio_addr	= ADDR_UNSET,
+ 	},
+ 	[BTTV_BOARD_WINVIEW_601] = {
+ 		.name		= "Leadtek WinView 601",
+
+> From: Wojciech Migda <wojtek.golf@interia.pl>
 > 
-> User can choose a security module to enable at boot. If no 
-> security= boot parameter is specified, only the first LSM 
-> asking for registration will be loaded. An invalid security 
-> module name will be treated as if no module has been chosen.
+> the PixelView PlayTV card definition structure was missing initialization
+> of the tuner_addr and radio_addr fields. As a result it was impossible to
+> have the tuner initialized using parameters specified while loading the
+> bttv.ko module. This regression became visible after the v4l rearrangements
+> introduced somewhere around 2.6.15 kernel version. The root cause for the
+> tuner initialization failure is located in the attach_inform function in
+> the bttv-i2c.c file. There at the very beginning the addr variable holding
+> the tuner device address is initialized with the value taken from the
+> bttv_tvcards array. For the PixelView PlayTV card the tuner address field
+> (and the radio address as well) was uninitialized, and thus equal 0. Later
+> in that function execution of the TUNER_SET_TYPE_ADDR tuner command is
+> guarded with check for the tuner address either equal ADDR_UNSET, or
+> client->addr. Since both are non-zero (the latter in case of   the card
+> owned by me at the runtime is equal 0x61) the TUNER_SET_TYPE_ADDR command
+> is not executed, and consequently in the tuner_attach function in the
+> tuner-core.c file call to i2c_attach_client does not result in assigning
+> the tuner type variable with the requested value. Providing initialization
+> of the tuner_addr and radio_addr with ADDR_UNSET values as it is already
+> done for other tv cards defined in bttv-cards.c ensures that the tuner
+> initialization is done correctly, just as it used to be in the 2.6.14
+> kernel.
 > 
-> LSM modules must check now if they are allowed to register
-> by calling security_module_enable(ops) first. Modify SELinux 
-> and SMACK to do so.
+> 
+>         Developer's Certificate of Origin 1.1
+> 
+>         By making a contribution to this project, I certify that:
+> 
+>         (a) The contribution was created in whole or in part by me and I
+>             have the right to submit it under the open source license
+>             indicated in the file; or
+> 
+>         (b) The contribution is based upon previous work that, to the
+> best
+>             of my knowledge, is covered under an appropriate open source
+>             license and I have the right under that license to submit
+> that
+>             work with modifications, whether created in whole or in part
+>             by me, under the same open source license (unless I am
+>             permitted to submit under a different license), as indicated
+>             in the file; or
+> 
+>         (c) The contribution was provided directly to me by some other
+>             person who certified (a), (b) or (c) and I have not modified
+>             it.
+> 
+>         (d) I understand and agree that this project and the contribution
+>             are public and that a record of the contribution (including
+> all
+>             personal information I submit with it, including my sign-off)
+> is
+>             maintained indefinitely and may be redistributed consistent
+> with
+>             this project or the open source license(s) involved.
+> 
+> 
+>         Signed-off-by: Wojciech Migda <wojtek.golf@interia.pl>
+> 
+> ---
+> 
+> --- drivers/media/video/bt8xx/bttv-cards.c.orig	2007-07-08
+> 23:32:17.000000000 +0000
+> +++ drivers/media/video/bt8xx/bttv-cards.c	2008-03-01 20:48:19.183306298
+> +0000
+> @@ -588,6 +588,8 @@ struct tvcard bttv_tvcards[] = {
+>  		.needs_tvaudio	= 1,
+>  		.pll		= PLL_28,
+>  		.tuner_type	= -1,
+> +		.tuner_addr	= ADDR_UNSET,
+> +		.radio_addr	= ADDR_UNSET,
+>  	},
+>  	[BTTV_BOARD_WINVIEW_601] = {
+>  		.name		= "Leadtek WinView 601",
+> 
+> 
+> 
+> 
 
-I think this can be simplified by folding the logic into 
-register_security(), rather than having a two-stage LSM registration 
-process.
 
-So, this function would now look like
+----------------------------------------------------------------------
+Wojna wampirow trwa - po ktorej jestes stronie?
+Zagraj >>> http://link.interia.pl/f1cf4
 
-	int register_security(ops, *status);
-
-and set *status to LSM_WAS_CHOSEN (or similar) if the module being 
-registered was also chosen via the security= parameter.  If there is no 
-value for the parameter, the first module to register is automatically 
-chosen, to preserve existing behavior.
-
-The calling code can then decide what to do, e.g. not panic if 
-registration failed and the LSM was not chosen; panic on failure when it 
-was chosen.
-
-> +static atomic_t security_ops_enabled = ATOMIC_INIT(-1);
-
-I'd suggest getting rid of this atomic and using a spinlock to protect the 
-global chosen_lsm string, which is always filled when an LSM registers.
-
->  
-> +/* Save user chosen LSM */
-> +static int __init choose_lsm(char *str)
-> +{
-> +	strncpy(chosen_lsm, str, SECURITY_NAME_MAX);
-> +	chosen_lsm[SECURITY_NAME_MAX] = NULL;
-
-You should never need to set the last byte to NULL -- it's initialized to 
-that and by definition should never be overwritten.
-
-> +int security_module_enable(struct security_operations *ops)
-> +{
-> +	if (!ops || !ops->name)
-> +		return 0;
-
-Lack of ops->name during registration needs to be a BUG_ON.
-
-
-- James
--- 
-James Morris
-<jmorris@namei.org>
