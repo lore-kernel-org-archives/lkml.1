@@ -1,206 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761497AbYCCLYc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751739AbYCCLgl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761497AbYCCLYc (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Mar 2008 06:24:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756899AbYCCLYX
+	id S1751739AbYCCLgl (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Mar 2008 06:36:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750803AbYCCLg2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Mar 2008 06:24:23 -0500
-Received: from styx.suse.cz ([82.119.242.94]:49110 "EHLO duck.suse.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1756243AbYCCLYW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Mar 2008 06:24:22 -0500
-Date: Mon, 3 Mar 2008 12:24:20 +0100
-From: Jan Kara <jack@suse.cz>
-To: Josef Bacik <jbacik@redhat.com>
-Cc: linux-kernel@vger.kernel.org, linux-ext4@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH 2/2] fix possible journal overflow issues
-Message-ID: <20080303112420.GB13725@duck.suse.cz>
-References: <200802271351.54026.jbacik@redhat.com>
+	Mon, 3 Mar 2008 06:36:28 -0500
+Received: from smtp4.pp.htv.fi ([213.243.153.38]:37095 "EHLO smtp4.pp.htv.fi"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750808AbYCCLgZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 3 Mar 2008 06:36:25 -0500
+Date: Mon, 3 Mar 2008 13:34:51 +0200
+From: Adrian Bunk <bunk@kernel.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Sam Ravnborg <sam@ravnborg.org>, Alexey Starikovskiy <aystarik@gmail.com>,
+       lenb@kernel.org, astarikovskiy@suse.de, linux-acpi@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [2.6 patch] acpi/battery.c: make 2 functions static
+Message-ID: <20080303113451.GF4457@cs181133002.pp.htv.fi>
+References: <20080301161902.GN25835@cs181133002.pp.htv.fi> <47C99FE1.8080206@gmail.com> <20080301183550.GC25835@cs181133002.pp.htv.fi> <20080303085720.GD15943@elte.hu> <20080303091314.GC4457@cs181133002.pp.htv.fi> <20080303091714.GA18250@elte.hu> <20080303093103.GA23651@uranus.ravnborg.org> <20080303103933.GC21190@elte.hu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <200802271351.54026.jbacik@redhat.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+In-Reply-To: <20080303103933.GC21190@elte.hu>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed 27-02-08 13:51:53, Josef Bacik wrote:
-> Hello,
+On Mon, Mar 03, 2008 at 11:39:33AM +0100, Ingo Molnar wrote:
 > 
-> There are several cases where the running transaction can get buffers added to 
-> its BJ_Metadata list which it never dirtied, which makes its t_nr_buffers 
-> counter end up larger than its t_outstanding_credits counter.  This will cause 
-> issues when starting new transactions as while we are logging buffers we 
-> decrement t_outstanding_buffers, so when t_outstanding_buffers goes negative, 
-> we will report that we need less space in the journal than we actually need, so 
-> transactions will be started even though there may not be enough room for them.  
-> In the worst case scenario (which admittedly is almost impossible to reproduce) 
-> this will result in the journal running out of space.  The fix is to only 
-> refile buffers from the committing transaction to the running transactions 
-> BJ_Modified list when b_modified is set on that journal, which is the only way 
-> to be sure if the running transaction has modified that buffer.  This patch 
-> also fixes an accounting error in journal_forget, it is possible that we can 
-> call journal_forget on a buffer without having modified it, only gotten write 
-> access to it, so instead of freeing a credit, we only do so if the buffer was 
-> modified.  The assert will help catch if this problem occurs.  Without these 
-> two patches I could hit this assert within minutes of running postmark, with 
-> them this issue no longer arises.  Thank you,
+> * Sam Ravnborg <sam@ravnborg.org> wrote:
 > 
-> Signed-off-by: Josef Bacik <jbacik@redhat.com>
-  Acked-by: Jan Kara <jack@suse.cz>
+> > >From compiler-gcc.h:
+> > >
+> > > #define inline          inline          __attribute__((always_inline))
+> > 
+> > So unless I am missing something obvious then each time we say inline 
+> > to a function we require gcc to inline the function.
+> > 
+> > It is my impression that today we only say inline if really needed and 
+> > otherwise let gcc decide. So in almost all cases inlise should just be 
+> > nuked?
+> 
+> no, what we should nuke is this always_inline definition. That was 
+> always the intention of FORCED_INLINE, and the removal of FORCED_INLINE 
+> was to _remove the forcing_, not to make it unconditional.
 
-									Honza
-> 
-> Index: linux-2.6/fs/jbd/transaction.c
-> ===================================================================
-> --- linux-2.6.orig/fs/jbd/transaction.c
-> +++ linux-2.6/fs/jbd/transaction.c
-> @@ -1234,6 +1234,7 @@ int journal_forget (handle_t *handle, st
->  	struct journal_head *jh;
->  	int drop_reserve = 0;
->  	int err = 0;
-> +	int was_modified = 0;
->  
->  	BUFFER_TRACE(bh, "entry");
->  
-> @@ -1252,6 +1253,9 @@ int journal_forget (handle_t *handle, st
->  		goto not_jbd;
->  	}
->  
-> +	/* keep track of wether or not this transaction modified us */
-> +	was_modified = jh->b_modified;
-> +
->  	/*
->  	 * The buffer's going from the transaction, we must drop
->  	 * all references -bzzz
-> @@ -1269,7 +1273,12 @@ int journal_forget (handle_t *handle, st
->  
->  		JBUFFER_TRACE(jh, "belongs to current transaction: unfile");
->  
-> -		drop_reserve = 1;
-> +		/*
-> +		 * we only want to drop a reference if this transaction
-> +		 * modified the buffer
-> +		 */
-> +		if (was_modified)
-> +			drop_reserve = 1;
->  
->  		/*
->  		 * We are no longer going to journal this buffer.
-> @@ -1309,7 +1318,13 @@ int journal_forget (handle_t *handle, st
->  		if (jh->b_next_transaction) {
->  			J_ASSERT(jh->b_next_transaction == transaction);
->  			jh->b_next_transaction = NULL;
-> -			drop_reserve = 1;
-> +
-> +			/*
-> +			 * only drop a reference if this transaction modified
-> +			 * the buffer
-> +			 */
-> +			if (was_modified)
-> +				drop_reserve = 1;
->  		}
->  	}
->  
-> @@ -2081,7 +2096,7 @@ void __journal_refile_buffer(struct jour
->  	jh->b_transaction = jh->b_next_transaction;
->  	jh->b_next_transaction = NULL;
->  	__journal_file_buffer(jh, jh->b_transaction,
-> -				was_dirty ? BJ_Metadata : BJ_Reserved);
-> +				jh->b_modified ? BJ_Metadata : BJ_Reserved);
->  	J_ASSERT_JH(jh, jh->b_transaction->t_state == T_RUNNING);
->  
->  	if (was_dirty)
-> Index: linux-2.6/fs/jbd2/transaction.c
-> ===================================================================
-> --- linux-2.6.orig/fs/jbd2/transaction.c
-> +++ linux-2.6/fs/jbd2/transaction.c
-> @@ -1243,6 +1243,7 @@ int jbd2_journal_forget (handle_t *handl
->  	struct journal_head *jh;
->  	int drop_reserve = 0;
->  	int err = 0;
-> +	int was_modified = 0;
->  
->  	BUFFER_TRACE(bh, "entry");
->  
-> @@ -1261,6 +1262,9 @@ int jbd2_journal_forget (handle_t *handl
->  		goto not_jbd;
->  	}
->  
-> +	/* keep track of wether or not this transaction modified us */
-> +	was_modified = jh->b_modified;
-> +
->  	/*
->  	 * The buffer's going from the transaction, we must drop
->  	 * all references -bzzz
-> @@ -1278,7 +1282,12 @@ int jbd2_journal_forget (handle_t *handl
->  
->  		JBUFFER_TRACE(jh, "belongs to current transaction: unfile");
->  
-> -		drop_reserve = 1;
-> +		/*
-> +		 * we only want to drop a reference if this transaction
-> +		 * modified the buffer
-> +		 */
-> +		if (was_modified)
-> +			drop_reserve = 1;
->  
->  		/*
->  		 * We are no longer going to journal this buffer.
-> @@ -1318,7 +1327,13 @@ int jbd2_journal_forget (handle_t *handl
->  		if (jh->b_next_transaction) {
->  			J_ASSERT(jh->b_next_transaction == transaction);
->  			jh->b_next_transaction = NULL;
-> -			drop_reserve = 1;
-> +
-> +			/*
-> +			 * only drop a reference if this transaction modified
-> +			 * the buffer
-> +			 */
-> +			if (was_modified)
-> +				drop_reserve = 1;
->  		}
->  	}
->  
-> @@ -2090,7 +2105,7 @@ void __jbd2_journal_refile_buffer(struct
->  	jh->b_transaction = jh->b_next_transaction;
->  	jh->b_next_transaction = NULL;
->  	__jbd2_journal_file_buffer(jh, jh->b_transaction,
-> -				was_dirty ? BJ_Metadata : BJ_Reserved);
-> +				jh->b_modified ? BJ_Metadata : BJ_Reserved);
->  	J_ASSERT_JH(jh, jh->b_transaction->t_state == T_RUNNING);
->  
->  	if (was_dirty)
-> Index: linux-2.6/fs/jbd/commit.c
-> ===================================================================
-> --- linux-2.6.orig/fs/jbd/commit.c
-> +++ linux-2.6/fs/jbd/commit.c
-> @@ -472,6 +472,9 @@ void journal_commit_transaction(journal_
->  	 */
->  	commit_transaction->t_state = T_COMMIT;
->  
-> +	J_ASSERT(commit_transaction->t_nr_buffers <=
-> +		 commit_transaction->t_outstanding_credits);
-> +
->  	descriptor = NULL;
->  	bufs = 0;
->  	while (commit_transaction->t_buffers) {
-> Index: linux-2.6/fs/jbd2/commit.c
-> ===================================================================
-> --- linux-2.6.orig/fs/jbd2/commit.c
-> +++ linux-2.6/fs/jbd2/commit.c
-> @@ -568,6 +568,9 @@ void jbd2_journal_commit_transaction(jou
->  	stats.u.run.rs_blocks = commit_transaction->t_outstanding_credits;
->  	stats.u.run.rs_blocks_logged = 0;
->  
-> +	J_ASSERT(commit_transaction->t_nr_buffers <=
-> +		 commit_transaction->t_outstanding_credits);
-> +
->  	descriptor = NULL;
->  	bufs = 0;
->  	while (commit_transaction->t_buffers) {
+It was always unconditional, and neither adding, toggling nor removing 
+of CONFIG_FORCED_INLINING changed this invariant.
+
+And what we should do is to attack the excessive wrong usage of inlines 
+in .c files, not messing with a global #define in a way that the results 
+on 24 architectures with 7 different releases of gcc would be unpredictable.
+
+> so Adrian, if you knew about this bug all along, you might as well have 
+> reported it :-/
+
+http://lkml.org/lkml/2007/1/19/36
+http://lkml.org/lkml/2007/4/9/363
+
+are the result of a quick Google search of me stating this previously on 
+linux-kernel. It might have been more often, but I'm too lame too 
+search further.
+
+> 	Ingo
+
+cu
+Adrian
+
 -- 
-Jan Kara <jack@suse.cz>
-SUSE Labs, CR
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
+
