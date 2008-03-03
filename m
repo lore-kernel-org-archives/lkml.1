@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758924AbYCCES1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762012AbYCCESx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758924AbYCCES1 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 2 Mar 2008 23:18:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751927AbYCCESS
+	id S1762012AbYCCESx (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 2 Mar 2008 23:18:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755066AbYCCESm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 2 Mar 2008 23:18:18 -0500
-Received: from x346.tv-sign.ru ([89.108.83.215]:58834 "EHLO mail.screens.ru"
+	Sun, 2 Mar 2008 23:18:42 -0500
+Received: from x346.tv-sign.ru ([89.108.83.215]:58849 "EHLO mail.screens.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751024AbYCCESS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 2 Mar 2008 23:18:18 -0500
-Date: Mon, 3 Mar 2008 07:17:53 +0300
+	id S1753351AbYCCESl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 2 Mar 2008 23:18:41 -0500
+Date: Mon, 3 Mar 2008 07:17:51 +0300
 From: Oleg Nesterov <oleg@tv-sign.ru>
 To: Andrew Morton <akpm@linux-foundation.org>
 Cc: Roland McGrath <roland@redhat.com>, linux-kernel@vger.kernel.org
-Subject: [PATCH] reparent_thread: use same_thread_group()
-Message-ID: <20080303041753.GA18917@tv-sign.ru>
+Subject: [PATCH 2/2] introduce ptrace_reparented() helper
+Message-ID: <20080303041751.GA18914@tv-sign.ru>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
@@ -23,19 +23,56 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Trivial, use same_thread_group() in reparent_thread().
+Add another trivial helper for the sake of grep. It also auto-documents the
+fact that ->parent != real_parent implies ->ptrace.
+
+No functional changes.
 
 Signed-off-by: Oleg Nesterov <oleg@tv-sign.ru>
 
---- 25/kernel/exit.c~6_EN_SG	2008-03-03 06:24:56.000000000 +0300
-+++ 25/kernel/exit.c	2008-03-03 06:46:00.000000000 +0300
-@@ -653,7 +653,7 @@ reparent_thread(struct task_struct *p, s
- 	/* If this is a threaded reparent there is no need to
- 	 * notify anyone anything has happened.
- 	 */
--	if (p->real_parent->group_leader == father->group_leader)
-+	if (same_thread_group(p->real_parent, father))
- 		return;
+--- 25/include/linux/ptrace.h~5_PR	2008-02-17 23:40:09.000000000 +0300
++++ 25/include/linux/ptrace.h	2008-03-03 06:22:15.000000000 +0300
+@@ -98,6 +98,10 @@ extern void ptrace_untrace(struct task_s
+ extern int ptrace_may_attach(struct task_struct *task);
+ extern int __ptrace_may_attach(struct task_struct *task);
  
- 	/* We don't want people slaying init.  */
++static inline int ptrace_reparented(struct task_struct *child)
++{
++	return child->real_parent != child->parent;
++}
+ static inline void ptrace_link(struct task_struct *child,
+ 			       struct task_struct *new_parent)
+ {
+--- 25/kernel/exit.c~5_PR	2008-03-03 05:43:17.000000000 +0300
++++ 25/kernel/exit.c	2008-03-03 06:24:56.000000000 +0300
+@@ -629,7 +629,7 @@ reparent_thread(struct task_struct *p, s
+ 	if (unlikely(traced)) {
+ 		/* Preserve ptrace links if someone else is tracing this child.  */
+ 		list_del_init(&p->ptrace_list);
+-		if (p->parent != p->real_parent)
++		if (ptrace_reparented(p))
+ 			list_add(&p->ptrace_list, &p->real_parent->ptrace_children);
+ 	} else {
+ 		/* If this child is being traced, then we're the one tracing it
+@@ -796,8 +796,8 @@ static void exit_notify(struct task_stru
+ 	 * only has special meaning to our real parent.
+ 	 */
+ 	if (!task_detached(tsk) && thread_group_empty(tsk)) {
+-		int signal = (tsk->parent == tsk->real_parent)
+-				? tsk->exit_signal : SIGCHLD;
++		int signal = ptrace_reparented(tsk) ?
++				SIGCHLD : tsk->exit_signal;
+ 		do_notify_parent(tsk, signal);
+ 	} else if (tsk->ptrace) {
+ 		do_notify_parent(tsk, SIGCHLD);
+@@ -1198,8 +1198,7 @@ static int wait_task_zombie(struct task_
+ 		return 0;
+ 	}
+ 
+-	/* traced means p->ptrace, but not vice versa */
+-	traced = (p->real_parent != p->parent);
++	traced = ptrace_reparented(p);
+ 
+ 	if (likely(!traced)) {
+ 		struct signal_struct *psig;
 
