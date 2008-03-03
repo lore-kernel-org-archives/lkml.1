@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760441AbYCCSK6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758863AbYCCSKl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760441AbYCCSK6 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Mar 2008 13:10:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757184AbYCCSJa
+	id S1758863AbYCCSKl (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Mar 2008 13:10:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758206AbYCCSJV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Mar 2008 13:09:30 -0500
-Received: from smtp4.pp.htv.fi ([213.243.153.38]:35880 "EHLO smtp4.pp.htv.fi"
+	Mon, 3 Mar 2008 13:09:21 -0500
+Received: from smtp6.pp.htv.fi ([213.243.153.40]:51610 "EHLO smtp6.pp.htv.fi"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758519AbYCCSJ2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Mar 2008 13:09:28 -0500
-Date: Mon, 3 Mar 2008 20:07:52 +0200
-From: Adrian Bunk <bunk@kernel.org>
-To: Artem Bityutskiy <Artem.Bityutskiy@nokia.com>
-Cc: linux-mtd@lists.infradead.org, linux-kernel@vger.kernel.org
-Subject: [2.6 patch] mtd/ubi/vtbl.c: fix memory leak
-Message-ID: <20080303180752.GK26072@cs181133002.pp.htv.fi>
+	id S1758075AbYCCSJT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 3 Mar 2008 13:09:19 -0500
+Date: Mon, 3 Mar 2008 20:07:42 +0200
+From: Adrian Bunk <adrian.bunk@movial.fi>
+To: Paul Mundt <lethal@linux-sh.org>
+Cc: linux-sh@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: [2.6 patch] sh/mm/pg-sh7705.c must #include <linux/fs.h>
+Message-ID: <20080303180742.GJ26072@cs181133002.pp.htv.fi>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
@@ -23,59 +23,32 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch fixes a memory leak introduced by commit 
-4ccf8cffa963c7b5bdc6d455ea9417084ee49aa8 and spotted by the Coverity 
-checker.
+This patch fixes the following compile error:
 
-Signed-off-by: Adrian Bunk <bunk@kernel.org>
+<--  snip  -->
+
+...
+  CC      arch/sh/mm/pg-sh7705.o
+/home/bunk/linux/kernel-2.6/git/linux-2.6/arch/sh/mm/pg-sh7705.c: In function 'ptep_get_and_clear':
+/home/bunk/linux/kernel-2.6/git/linux-2.6/arch/sh/mm/pg-sh7705.c:130: error: implicit declaration of function 'mapping_writably_mapped'
+make[2]: *** [arch/sh/mm/pg-sh7705.o] Error 1
+
+<--  snip  -->
+
+Signed-off-by: Adrian Bunk <adrian.bunk@movial.fi>
 
 ---
-
- drivers/mtd/ubi/vtbl.c |    1 +
- 1 file changed, 1 insertion(+)
-
---- linux-2.6/drivers/mtd/ubi/vtbl.c.orig	2008-03-02 14:06:25.000000000 +0200
-+++ linux-2.6/drivers/mtd/ubi/vtbl.c	2008-03-02 14:15:54.000000000 +0200
-@@ -502,40 +502,41 @@ static int init_volumes(struct ubi_devic
- 		vol = kzalloc(sizeof(struct ubi_volume), GFP_KERNEL);
- 		if (!vol)
- 			return -ENOMEM;
- 
- 		vol->reserved_pebs = be32_to_cpu(vtbl[i].reserved_pebs);
- 		vol->alignment = be32_to_cpu(vtbl[i].alignment);
- 		vol->data_pad = be32_to_cpu(vtbl[i].data_pad);
- 		vol->vol_type = vtbl[i].vol_type == UBI_VID_DYNAMIC ?
- 					UBI_DYNAMIC_VOLUME : UBI_STATIC_VOLUME;
- 		vol->name_len = be16_to_cpu(vtbl[i].name_len);
- 		vol->usable_leb_size = ubi->leb_size - vol->data_pad;
- 		memcpy(vol->name, vtbl[i].name, vol->name_len);
- 		vol->name[vol->name_len] = '\0';
- 		vol->vol_id = i;
- 
- 		if (vtbl[i].flags & UBI_VTBL_AUTORESIZE_FLG) {
- 			/* Auto re-size flag may be set only for one volume */
- 			if (ubi->autoresize_vol_id != -1) {
- 				ubi_err("more then one auto-resize volume (%d "
- 					"and %d)", ubi->autoresize_vol_id, i);
-+				kfree(vol);
- 				return -EINVAL;
- 			}
- 
- 			ubi->autoresize_vol_id = i;
- 		}
- 
- 		ubi_assert(!ubi->volumes[i]);
- 		ubi->volumes[i] = vol;
- 		ubi->vol_count += 1;
- 		vol->ubi = ubi;
- 		reserved_pebs += vol->reserved_pebs;
- 
- 		/*
- 		 * In case of dynamic volume UBI knows nothing about how many
- 		 * data is stored there. So assume the whole volume is used.
- 		 */
- 		if (vol->vol_type == UBI_DYNAMIC_VOLUME) {
- 			vol->used_ebs = vol->reserved_pebs;
- 			vol->last_eb_bytes = vol->usable_leb_size;
- 			vol->used_bytes =
+abeeede2889319116acd5969913c5fe3c78ead05 foobar
+diff --git a/arch/sh/mm/pg-sh7705.c b/arch/sh/mm/pg-sh7705.c
+index a4b015f..7f885b7 100644
+--- a/arch/sh/mm/pg-sh7705.c
++++ b/arch/sh/mm/pg-sh7705.c
+@@ -14,6 +14,7 @@
+ #include <linux/mman.h>
+ #include <linux/mm.h>
+ #include <linux/threads.h>
++#include <linux/fs.h>
+ #include <asm/addrspace.h>
+ #include <asm/page.h>
+ #include <asm/pgtable.h>
 
