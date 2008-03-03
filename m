@@ -1,109 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758166AbYCCPmp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758279AbYCCPo1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758166AbYCCPmp (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Mar 2008 10:42:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754869AbYCCPmh
+	id S1758279AbYCCPo1 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Mar 2008 10:44:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755057AbYCCPoT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Mar 2008 10:42:37 -0500
-Received: from iolanthe.rowland.org ([192.131.102.54]:33088 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1754644AbYCCPmh (ORCPT
+	Mon, 3 Mar 2008 10:44:19 -0500
+Received: from an-out-0708.google.com ([209.85.132.244]:51654 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754792AbYCCPoS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Mar 2008 10:42:37 -0500
-Date: Mon, 3 Mar 2008 10:42:35 -0500 (EST)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: Pavel Machek <pavel@ucw.cz>
-cc: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@osdl.org>,
-       Zdenek Kabelac <zdenek.kabelac@gmail.com>, <davem@davemloft.net>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, Pierre Ossman <drzeus-mmc@drzeus.cx>,
-       Kernel development list <linux-kernel@vger.kernel.org>,
-       pm list <linux-pm@lists.linux-foundation.org>
-Subject: Re: [patch] Re: using long instead of atomic_t when only set/read
- is required
-In-Reply-To: <20080303120842.GA28369@elf.ucw.cz>
-Message-ID: <Pine.LNX.4.44L0.0803031023550.3611-100000@iolanthe.rowland.org>
+	Mon, 3 Mar 2008 10:44:18 -0500
+Message-ID: <fa686aa40803030744r184be6a5w6aca213a418f120c@mail.gmail.com>
+Date: Mon, 3 Mar 2008 08:44:15 -0700
+From: "Grant Likely" <grant.likely@secretlab.ca>
+To: "Paul Mackerras" <paulus@samba.org>
+Subject: Re: Please pull powerpc.git merge branch
+Cc: torvalds@linux-foundation.org, linuxppc-dev@ozlabs.org,
+       akpm@linux-foundation.org, linux-kernel@vger.kernel.org
+In-Reply-To: <18379.58317.223229.950553@cargo.ozlabs.ibm.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <18379.58317.223229.950553@cargo.ozlabs.ibm.com>
+X-Google-Sender-Auth: bbdfbdb2d9cae9b7
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 3 Mar 2008, Pavel Machek wrote:
+Paul, can you please pick up this one too?
 
-> Hi!
-> 
-> > > Alan thinks that `subj` is correct...
-> > 
-> > More precisely, reads and writes of pointers are always atomic.  That 
-> > is, if a write and a read occur concurrently, it is guaranteed that the 
-> > read will obtain either the old or the new value of the pointer, never 
-> > a mish-mash of the two.  If this were not so then RCU wouldn't work.
+http://patchwork.ozlabs.org/linuxppc/patch?id=16965
 
-Right, Paul?
+Thanks,
+g.
 
-> Ok, so linux actually atomicity of long?
-> 
-> If so, this should probably be applied...
-> 
-> Signed-off-by: Pavel Machek <pavel@suse.cz>
-> 
-> diff --git a/Documentation/atomic_ops.txt b/Documentation/atomic_ops.txt
-> index 4ef2450..0a7d180 100644
-> --- a/Documentation/atomic_ops.txt
-> +++ b/Documentation/atomic_ops.txt
-> @@ -21,6 +21,9 @@ local_t is very similar to atomic_t. If 
->  updated by one CPU, local_t is probably more appropriate. Please see
->  Documentation/local_ops.txt for the semantics of local_t.
->  
-> +long (and int and void *) can be used instead of atomic_t, if all you
-> +need is atomic setting and atomic reading.
-> +
->  The first operations to implement for atomic_t's are the initializers and
->  plain reads.
+On Mon, Mar 3, 2008 at 4:41 AM, Paul Mackerras <paulus@samba.org> wrote:
+> Linus,
+>
+>  Please do:
+>
+>  git pull \
+>  git://git.kernel.org/pub/scm/linux/kernel/git/paulus/powerpc.git merge
+>
+>  to get a collection of bug-fixes for powerpc, for the Cell, 4xx and
+>  52xx platforms.
+>
+>  Thanks,
+>  Paul.
 
-Yes indeed.  This fact doesn't seem to be documented anywhere, but it 
-is clearly a requirement of the kernel.  I would make the text a little 
-more explicit, see below.
-
-Alan Stern
-
--------------------------------------------------------
-
-
-Atomicity of reads of write for pointers and integral types (other than 
-long long) should be documented.
-
-Signed-off-by: Alan Stern <stern@rowland.harvard.edu>
-
----
-
-Index: usb-2.6/Documentation/atomic_ops.txt
-===================================================================
---- usb-2.6.orig/Documentation/atomic_ops.txt
-+++ usb-2.6/Documentation/atomic_ops.txt
-@@ -21,6 +21,21 @@ local_t is very similar to atomic_t. If 
- updated by one CPU, local_t is probably more appropriate. Please see
- Documentation/local_ops.txt for the semantics of local_t.
- 
-+For all properly-aligned pointer and integral types other than long
-+long, the kernel requires simple reads and writes to be atomic with
-+respect to each other.  That is, if one CPU reads a pointer value at
-+the same time as another CPU overwrites the pointer, it is guaranteed
-+that the reader will obtain either the old or the new value of the
-+pointer, never some mish-mash combination of the two.  Likewise, if
-+one CPU writes a long value at the same time as another CPU does, it
-+is guaranteed that one or the other of the values will end up stored
-+in memory, not some mish-mash combination of bits.
-+
-+Thus, if all you need is atomicity of reading and writing then you can
-+use plain old ints, longs, or pointers; you don't need to use
-+atomic_t.  (But note: This guarantee emphatically does not apply to
-+long long values or unaligned values!)
-+
- The first operations to implement for atomic_t's are the initializers and
- plain reads.
- 
-
+-- 
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
