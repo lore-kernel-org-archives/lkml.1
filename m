@@ -1,103 +1,170 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761092AbYCCWs4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757450AbYCCWzW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761092AbYCCWs4 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Mar 2008 17:48:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753591AbYCCWsr
+	id S1757450AbYCCWzW (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Mar 2008 17:55:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753233AbYCCWzI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Mar 2008 17:48:47 -0500
-Received: from iolanthe.rowland.org ([192.131.102.54]:33963 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1753150AbYCCWsq (ORCPT
+	Mon, 3 Mar 2008 17:55:08 -0500
+Received: from wr-out-0506.google.com ([64.233.184.227]:15834 "EHLO
+	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751779AbYCCWzH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Mar 2008 17:48:46 -0500
-Date: Mon, 3 Mar 2008 17:48:45 -0500 (EST)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-cc: Linux-pm mailing list <linux-pm@lists.linux-foundation.org>,
-       Kernel development list <linux-kernel@vger.kernel.org>,
-       Alexey Starikovskiy <astarikovskiy@suse.de>
-Subject: Re: [linux-pm] Fundamental flaw in system suspend, exposed by freezer
- removal
-In-Reply-To: <200803032147.10223.rjw@sisk.pl>
-Message-ID: <Pine.LNX.4.44L0.0803031626180.8280-100000@iolanthe.rowland.org>
+	Mon, 3 Mar 2008 17:55:07 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:sender:to:subject:cc:mime-version:content-type:content-transfer-encoding:content-disposition:x-google-sender-auth;
+        b=wT/IpMlHOSuMdIzAx+6QU5EJzq3dkUyFouNMgDJ+6MJ57kU/wAmr3dF90cDPkwFtwutWbsap1R08FXZJQPWJUu/LT5pPII5ojBVD2WFoJMifWSAxZfdCkZTvsh4quF1ZtG6MuQJw8XeNPhguMIa2sQxkEVOvi343hc15Vx0f9hU=
+Message-ID: <386072610803031454r684c4701hc82eee900b71ccd7@mail.gmail.com>
+Date: Mon, 3 Mar 2008 14:54:59 -0800
+From: "Bryan Wu" <cooloney@kernel.org>
+To: "Linus Torvalds" <torvalds@linux-foundation.org>
+Subject: [GIT PULL] Blackfin arch fixing for 2.6.25-rc4
+Cc: LKML <linux-kernel@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+X-Google-Sender-Auth: 58b5ab836fbbf616
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 3 Mar 2008, Rafael J. Wysocki wrote:
+Hi Linus,
 
-> > > Of course, it won't be necessary if the ->suspend_begin() methods are called
-> > > in an initial forward pass through dpm_active.
-> > 
-> > Right.  That would be simpler.
+Please pull from 'for-linus' branch of
 
-Let's stick with that for now.
+master.kernel.org:/pub/scm/linux/kernel/git/cooloney/blackfin-2.6.git for-linus
 
-What about on the resume side?  Do you want to prevent child
-registrations until after end_sleep has run?  Or would you be okay with
-allowing the resume method to register new children?  It should be safe
-to assume that drivers are smart enough to bring the device back to
-full power before looking for new children.
+to receive the following updates:
 
-In fact, maybe we don't need an end_sleep method at all.  There isn't
-any synchronization issue to worry about -- drivers aren't going to
-register their new children in a suspended state!
+ arch/blackfin/kernel/fixed_code.S       |   12 ++++++------
+ arch/blackfin/mach-bf548/boards/ezkit.c |    4 ++--
+ arch/blackfin/mach-common/entry.S       |    5 ++++-
+ include/asm-blackfin/unistd.h           |    6 ++++--
+ 4 files changed, 16 insertions(+), 11 deletions(-)
 
-> > > That's correct.  Perhaps we should change device_add().
-> > 
-> > I had a change like that in my version of the patch.  It's excerpted 
-> > below.
-> 
-> Hm, I wonder why you didn't move dpm_sysfs_add() along with device_pm_add()?
+Bryan Wu (1):
+      [Blackfin] arch: add new timerfd syscalls
 
-Because I didn't think of it.  :-)
+Michael Hennerich (1):
+      [Blackfin] arch: fix bug - allow SDH driver to be used as module
 
-> Perhaps it's better to include dpm_sysfs_add() into device_pm_add(), since we
-> are going the make the return a result anyway?
+Mike Frysinger (1):
+      [Blackfin] arch: fix atomic and32/xor32 comments and ENDPROC markings
 
-Yes.
+diff --git a/arch/blackfin/kernel/fixed_code.S
+b/arch/blackfin/kernel/fixed_code.S
+index 9026269..5ed4722 100644
+--- a/arch/blackfin/kernel/fixed_code.S
++++ b/arch/blackfin/kernel/fixed_code.S
+@@ -101,9 +101,9 @@ ENDPROC (_atomic_ior32)
 
-> > > I thought ->suspend() would be mandatory, even if it's to be empty.
-> > 
-> > There's no need for that.  If it isn't implemented, treat it as though 
-> > it was successful.
-> 
-> Well, I'm not sure.  Right now we have a problem with distinguishing drivers
-> that don't implement ->suspend() purposefully from the ones that just don't
-> support suspend/hibernation ...
-> 
-> OTOH, since we are going to have a pointer to 'struct pm_ops', we can safely
-> assume that if it's not NULL, the driver writer knows what he's doing.
+ .align 16
+ 	/*
+-	 * Atomic ior, 32 bit.
++	 * Atomic and, 32 bit.
+ 	 * Inputs:	P0: memory address to use
+-	 *		R0: value to ior
++	 *		R0: value to and
+ 	 * Outputs:	R0: new contents of the memory address.
+ 	 *		R1: previous contents of the memory address.
+ 	 */
+@@ -112,13 +112,13 @@ ENTRY(_atomic_and32)
+ 	R0 = R1 & R0;
+ 	[P0] = R0;
+ 	rts;
+-ENDPROC (_atomic_ior32)
++ENDPROC (_atomic_and32)
 
-That's reasonable.  If a driver doesn't support PM then it won't have 
-a pm_ops pointer.
+ .align 16
+ 	/*
+-	 * Atomic ior, 32 bit.
++	 * Atomic xor, 32 bit.
+ 	 * Inputs:	P0: memory address to use
+-	 *		R0: value to ior
++	 *		R0: value to xor
+ 	 * Outputs:	R0: new contents of the memory address.
+ 	 *		R1: previous contents of the memory address.
+ 	 */
+@@ -127,7 +127,7 @@ ENTRY(_atomic_xor32)
+ 	R0 = R1 ^ R0;
+ 	[P0] = R0;
+ 	rts;
+-ENDPROC (_atomic_ior32)
++ENDPROC (_atomic_xor32)
 
-> > > > Here's something else to think about.  We might want to allow some 
-> > > > devices to be "power-irrelevant".  That is, the device exists in the 
-> > > > kernel only as a representation of some software state, not as a 
-> > > > physical device.  It doesn't consume power, it doesn't have any state 
-> > > > to lose during a sleep, and its driver doesn't implement suspend or 
-> > > > resume methods.  For these sorts of devices, we might allow 
-> > > > device_add() to skip calling device_pm_add() altogether.  USB 
-> > > > interfaces are a little like this, as are SCSI hosts and MMC hosts.
-> > > 
-> > > If such devices serve as logical parents of some "real" ones, we should
-> > > at least mark them as "sleeping" during suspend to protect the dpm_active
-> > > ordering.
-> > 
-> > They wouldn't have to be marked at all.  They would never get on any of 
-> > the PM lists, because they would never be passed to device_pm_add().
-> 
-> But dev->parent will be not NULL for their children being on dpm_active ...
-> 
-> IMO it's simpler to just add those devices without any suspend callbacks
-> defined to dpm_active and handle them normally than to introduce a special
-> case.
+ .align 16
+ 	/*
+diff --git a/arch/blackfin/mach-bf548/boards/ezkit.c
+b/arch/blackfin/mach-bf548/boards/ezkit.c
+index a0950c1..40846aa 100644
+--- a/arch/blackfin/mach-bf548/boards/ezkit.c
++++ b/arch/blackfin/mach-bf548/boards/ezkit.c
+@@ -323,7 +323,7 @@ static struct platform_device bf5xx_nand_device = {
+ };
+ #endif
 
-Yeah, I'm just trying to think too far ahead.
+-#if defined(CONFIG_SDH_BFIN) || defined(CONFIG_SDH_BFIN)
++#if defined(CONFIG_SDH_BFIN) || defined(CONFIG_SDH_BFIN_MODULE)
+ static struct platform_device bf54x_sdh_device = {
+ 	.name = "bfin-sdh",
+ 	.id = 0,
+@@ -636,7 +636,7 @@ static struct platform_device *ezkit_devices[]
+__initdata = {
+ 	&bf5xx_nand_device,
+ #endif
 
-Alan Stern
+-#if defined(CONFIG_SDH_BFIN) || defined(CONFIG_SDH_BFIN)
++#if defined(CONFIG_SDH_BFIN) || defined(CONFIG_SDH_BFIN_MODULE)
+ 	&bf54x_sdh_device,
+ #endif
 
+diff --git a/arch/blackfin/mach-common/entry.S
+b/arch/blackfin/mach-common/entry.S
+index 2cbb7a0..cee54ce 100644
+--- a/arch/blackfin/mach-common/entry.S
++++ b/arch/blackfin/mach-common/entry.S
+@@ -1369,7 +1369,7 @@ ENTRY(_sys_call_table)
+ 	.long _sys_epoll_pwait
+ 	.long _sys_utimensat
+ 	.long _sys_signalfd
+-	.long _sys_ni_syscall
++	.long _sys_timerfd_create
+ 	.long _sys_eventfd	/* 350 */
+ 	.long _sys_pread64
+ 	.long _sys_pwrite64
+@@ -1378,6 +1378,9 @@ ENTRY(_sys_call_table)
+ 	.long _sys_get_robust_list	/* 355 */
+ 	.long _sys_fallocate
+ 	.long _sys_semtimedop
++	.long _sys_timerfd_settime
++	.long _sys_timerfd_gettime
++
+ 	.rept NR_syscalls-(.-_sys_call_table)/4
+ 	.long _sys_ni_syscall
+ 	.endr
+diff --git a/include/asm-blackfin/unistd.h b/include/asm-blackfin/unistd.h
+index e981673..c18a399 100644
+--- a/include/asm-blackfin/unistd.h
++++ b/include/asm-blackfin/unistd.h
+@@ -361,7 +361,7 @@
+ #define __NR_epoll_pwait	346
+ #define __NR_utimensat		347
+ #define __NR_signalfd		348
+-#define __NR_timerfd		349
++#define __NR_timerfd_create	349
+ #define __NR_eventfd		350
+ #define __NR_pread64		351
+ #define __NR_pwrite64		352
+@@ -370,8 +370,10 @@
+ #define __NR_get_robust_list	355
+ #define __NR_fallocate		356
+ #define __NR_semtimedop		357
++#define __NR_timerfd_settime	358
++#define __NR_timerfd_gettime	359
+
+-#define __NR_syscall		358
++#define __NR_syscall		360
+ #define NR_syscalls		__NR_syscall
+
+ /* Old optional stuff no one actually uses */
