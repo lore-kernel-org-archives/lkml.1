@@ -1,73 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762184AbYCCKMU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761617AbYCCKNJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762184AbYCCKMU (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Mar 2008 05:12:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756097AbYCCKMJ
+	id S1761617AbYCCKNJ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Mar 2008 05:13:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756508AbYCCKM4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Mar 2008 05:12:09 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:40665 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755571AbYCCKMI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Mar 2008 05:12:08 -0500
-Date: Mon, 3 Mar 2008 11:11:51 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Yinghai Lu <yhlu.kernel@gmail.com>
-Cc: Greg KH <gregkh@suse.de>, Muli Ben-Yehuda <muli@il.ibm.com>,
-       Zhao Yakui <yakui.zhao@intel.com>, lenb@kernel.org,
-       linux-acpi@vger.kernel.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] ACPI: Unneccessary to scan the PCI bus already scanned.
-Message-ID: <20080303101151.GH18281@elte.hu>
-References: <1204525186.4080.11.camel@yakui_zhao.sh.intel.com> <20080303073214.GA5934@elte.hu> <86802c440803030006m1879838awc238f07bc98ed43e@mail.gmail.com> <86802c440803030030p4ff9cec5tdb25d1cdc131d377@mail.gmail.com> <86802c440803030201i684f31c1m97fb3f1f1927d4f4@mail.gmail.com>
+	Mon, 3 Mar 2008 05:12:56 -0500
+Received: from gv-out-0910.google.com ([216.239.58.185]:39817 "EHLO
+	gv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756097AbYCCKMz (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 3 Mar 2008 05:12:55 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=pbWz225ValX3S67Nc08cgHnm3RMTBaCu9Hf8mnu6f1OIrvr3C+k+j5qqQFNdlCTUxUO1FVSFnixa/Otsee57XXwnQ71UvotZZ2FDtKzWlCuCNKYceEKAPMH20GaTx5Qq/WF2HWTDymOIBgejVs8m7/RGIctCSP3kDJk2Gz+5aBE=
+Message-ID: <cfd18e0f0803030212l3783567ek6ca058889873dfac@mail.gmail.com>
+Date: Mon, 3 Mar 2008 11:12:52 +0100
+From: "Michael Kerrisk" <mtk.manpages@googlemail.com>
+To: "Ingo Molnar" <mingo@elte.hu>
+Subject: Re: SCHED_IDLE documentation
+Cc: "Arnd Bergmann" <arnd@arndb.de>, "Christoph Hellwig" <hch@lst.de>,
+       cbe-oss-dev@ozlabs.org, "Jeremy Kerr" <jk@ozlabs.org>,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <20080303100418.GF18281@elte.hu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <86802c440803030201i684f31c1m97fb3f1f1927d4f4@mail.gmail.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+References: <1203376368.275756.252634247263.1.gpush@pokey>
+	 <cfd18e0f0803030040l667dd2b7v6298e78c5b21bfec@mail.gmail.com>
+	 <20080303092422.GA18281@elte.hu> <200803031031.52335.arnd@arndb.de>
+	 <20080303100418.GF18281@elte.hu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, Mar 3, 2008 at 11:04 AM, Ingo Molnar <mingo@elte.hu> wrote:
+>
+> * Arnd Bergmann <arnd@arndb.de> wrote:
+>
+> > On Monday 03 March 2008, Ingo Molnar wrote:
+> > > > * What's the difference between SCHED_IDLE and SCHED_BATCH?
+> > >
+> > > SCHED_BATCH can still have nice levels from -20 to +19, it is a modified
+> > > SCHED_OTHER/SCHED_NORMAL for "throughput oriented" workloads.
+> > >
+> > > SCHED_IDLE overrides the nice settings and it means a "super idle"
+> > > workload.
+> >
+> > Does that mean that a SCHED_IDLE task still runs some of the time if
+> > you have a CPU hog running on +19, or can any other process starve the
+> > SCHED_IDLE task?
+>
+> yes, even SCHED_IDLE tasks get some CPU time - so complete starvation
+> should not be possible. We dont really want to define the exact amount
+> of time they need. (we might want to change that in the future) But it
+> will always be less prio than nice +19 :-) You can think of it as if it
+> was "nice +30".
+>
+> > What happens if you have two SCHED_IDLE tasks on a single CPU, do they
+> > get equal share, or will they just run as batch jobs?
+>
+> they get equal share.
+>
+> you can try it out too: if you have 2.6.23 or newer kernels then just
+> pick up schedtool and use "schedtool -I" to run SCHED_IDLE tasks.
 
-i also had to hand-merge the x86.git#testing patch below - could you 
-double-check that it's needed in this form?
+Thanks for the answers Ingo!
 
-	Ingo
+Cheers,
 
------------>
-Subject: x86/acpi: make dev_to_node return online node
-From: Yinghai Lu <Yinghai.Lu@Sun.COM>
-Date: Wed, 20 Feb 2008 12:41:52 -0800
+Michael
 
-some numa system (with multi HT chains) may return node without ram. aka it
-is not online. Try to get an online node, otherwise return -1
-
-Signed-off-by: Yinghai Lu <yinghai.lu@sun.com>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
----
- arch/x86/pci/acpi.c |    3 +++
- 1 file changed, 3 insertions(+)
-
-Index: linux-x86.q/arch/x86/pci/acpi.c
-===================================================================
---- linux-x86.q.orig/arch/x86/pci/acpi.c
-+++ linux-x86.q/arch/x86/pci/acpi.c
-@@ -213,6 +213,9 @@ struct pci_bus * __devinit pci_acpi_scan
- 		set_mp_bus_to_node(busnum, node);
- 	else
- 		node = get_mp_bus_to_node(busnum);
-+
-+	if (node != -1 && !node_online(node))
-+		node = -1;
- #endif
- 
- 	bus = pci_find_bus(domain, busnum);
-
+-- 
+Michael Kerrisk
+Maintainer of the Linux man-pages project
+http://www.kernel.org/doc/man-pages/
+Want to report a man-pages bug?  Look here:
+http://www.kernel.org/doc/man-pages/reporting_bugs.html
