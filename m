@@ -1,85 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758305AbYCCU3K@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757701AbYCCUhv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758305AbYCCU3K (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Mar 2008 15:29:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752288AbYCCU2z
+	id S1757701AbYCCUhv (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Mar 2008 15:37:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751958AbYCCUhl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Mar 2008 15:28:55 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:47041 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754762AbYCCU2y (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Mar 2008 15:28:54 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [patch] Re: using long instead of atomic_t when only set/read is required
-Date: Mon, 3 Mar 2008 21:27:29 +0100
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Alan Stern <stern@rowland.harvard.edu>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@osdl.org>,
-       Zdenek Kabelac <zdenek.kabelac@gmail.com>, davem@davemloft.net,
-       Pierre Ossman <drzeus-mmc@drzeus.cx>,
-       Kernel development list <linux-kernel@vger.kernel.org>,
-       pm list <linux-pm@lists.linux-foundation.org>,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-References: <20080225090316.GA420@elf.ucw.cz> <20080303154831.22a4eb14@core> <20080303172410.GA13869@elf.ucw.cz>
-In-Reply-To: <20080303172410.GA13869@elf.ucw.cz>
+	Mon, 3 Mar 2008 15:37:41 -0500
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:35972 "EHLO
+	gprs189-60.eurotel.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750771AbYCCUhl (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 3 Mar 2008 15:37:41 -0500
+Date: Mon, 3 Mar 2008 21:38:08 +0100
+From: Pavel Machek <pavel@ucw.cz>
+To: Pierre Ossman <drzeus-list@drzeus.cx>
+Cc: huggie@earth.li, linux-kernel@vger.kernel.org
+Subject: Re: Scheduler broken? sdhci issues with scheduling
+Message-ID: <20080303203808.GH13869@elf.ucw.cz>
+References: <20080229115256.GG24533@paranoidfreak.co.uk> <20080302104031.GB3861@ucw.cz> <20080303204300.69cbe392@mjolnir.drzeus.cx>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200803032127.30761.rjw@sisk.pl>
+In-Reply-To: <20080303204300.69cbe392@mjolnir.drzeus.cx>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday, 3 of March 2008, Pavel Machek wrote:
-> Hi!
+On Mon 2008-03-03 20:43:00, Pierre Ossman wrote:
+> On Sun, 2 Mar 2008 11:40:31 +0100
+> Pavel Machek <pavel@ucw.cz> wrote:
 > 
-> > > Ok, so linux actually atomicity of long?
->                          ^~-- assumes should be here.
-> 
-> > No it doesn't. And even if it did you couldn't use long for this because
-> > atomic_t also ensures the points operations complete are defined. You
-> > might just about get away with volatile long * objects on x86 for simple
-> > assignments but for anything else gcc can and will generate code to
-> > update values whichever way it feels best - which includes turning
 > > 
-> > 	long *x = a + b;
+> > Is mmc slow or does it just break down? Slow would be expected, but
+> > breaking down should be fixed in MMC, too...
 > > 
-> > into
-> > 
-> > 	*x = a;
-> > 	*x += b;
 > 
-> Ok, I can understand the gcc side. But do we actually run on an
-> architecture where
+> The problem is that the kernel sleeps _less_ than asked for, not more. No hardware can be expected to work if its needed delays aren't respected.
 > 
-> long *x;
-> 
-> *x = 0;
-> 
-> racing with 
-> 
-> *x = 0x12345678;
-> 
-> can produce
-> 
-> *x == 0x12340000;
-> 
-> or something like that?
 
-Well something like this could happen, in theory, on a "32-bit" architecture
-with a 16-bit bus.  In that case, one can imagine, the first word of the
-first write may be sent through the bus immediately followed by the first
-word of the second write, followed by the second word of the second
-write and by the second word of the first write, in this order.
+Oops, that's bad. Can you perhaps create small testcase for
+scheduler/timer people to play with?
 
-> I'm told RCU relies on architectures not doing this, and I'd like to get this
-> clarified.
-
-Yes, it would be good to know that for sure.
-
-Rafael 
+Also... you may want to switch timesources. notsc fixed "wait for much
+too long" for me.
+								Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
