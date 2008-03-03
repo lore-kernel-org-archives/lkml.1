@@ -1,29 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758171AbYCCIrn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757127AbYCCIu3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758171AbYCCIrn (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Mar 2008 03:47:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756939AbYCCIre
+	id S1757127AbYCCIu3 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Mar 2008 03:50:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753292AbYCCIuV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Mar 2008 03:47:34 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:49025 "EHLO mx2.mail.elte.hu"
+	Mon, 3 Mar 2008 03:50:21 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:33167 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754349AbYCCIrd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Mar 2008 03:47:33 -0500
-Date: Mon, 3 Mar 2008 09:47:00 +0100
+	id S1752646AbYCCIuU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 3 Mar 2008 03:50:20 -0500
+Date: Mon, 3 Mar 2008 09:50:00 +0100
 From: Ingo Molnar <mingo@elte.hu>
-To: Arjan van de Ven <arjan@linux.intel.com>
-Cc: Gabriel C <nix.or.die@googlemail.com>,
-       Laurent Riffard <laurent.riffard@free.fr>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Stuart Bennett <sb476@cam.ac.uk>, Len Brown <lenb@kernel.org>,
-       tglx@linutronix.de, mingo@redhat.com
-Subject: Re: 2.6.25-rc2-mm1: WARNING at arch/x86/mm/ioremap.c:129
-Message-ID: <20080303084700.GA16195@elte.hu>
-References: <20080216002522.9c4bd0fb.akpm@linux-foundation.org> <47B7553D.5040601@free.fr> <47C0BDE2.4020402@googlemail.com> <47C0DB7D.70407@linux.intel.com> <47C2ED51.4000105@googlemail.com> <47C344E5.5050205@linux.intel.com> <20080302155348.GA74305@gandalf.sssup.it> <47CADC9D.9090403@linux.intel.com> <20080303084611.GA15943@elte.hu>
+To: Suresh Siddha <suresh.b.siddha@intel.com>
+Cc: hpa@zytor.com, tglx@linutronix.de, andi@firstfloor.org, hch@infradead.org,
+       linux-kernel@vger.kernel.org, Arjan van de Ven <arjan@linux.intel.com>
+Subject: Re: [patch 1/2] x86, fpu: split FPU state from task struct - v2
+Message-ID: <20080303085000.GB15943@elte.hu>
+References: <20080301005141.997705000@linux-os.sc.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080303084611.GA15943@elte.hu>
+In-Reply-To: <20080301005141.997705000@linux-os.sc.intel.com>
 User-Agent: Mutt/1.5.17 (2007-11-01)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -38,11 +35,41 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Ingo Molnar <mingo@elte.hu> wrote:
+* Suresh Siddha <suresh.b.siddha@intel.com> wrote:
 
-> well upstream doesnt have the warning anymore, i queued up the patch 
-> below into x86.git#testing.
+> Split the FPU save area from the task struct. This allows easy 
+> migration of FPU context, and it's generally cleaner. It also allows 
+> the following two optimizations:
+> 
+> 1) only allocate when the application actually uses FPU, so in the 
+> first lazy FPU trap. This could save memory for non-fpu using apps. 
+> Next patch does this lazy allocation.
+> 
+> 2) allocate the right size for the actual cpu rather than 512 bytes 
+> always. Patches enabling xsave/xrstor support (coming shortly) will 
+> take advantage of this.
 
-i mean, x86.git#testing doesnt have the warning anymore.
+thanks, i've applied your two patches to x86.git#testing.
+
+the #ifdefs are still a bit ugly:
+
+> +#ifndef arch_task_cache_init
+> +#define arch_task_cache_init()
+> +#endif
+
+use a __weak alias instead. (that way if an architecture defines the 
+function, that function takes over automatically at link time, without 
+any #ifdef complications)
+
+> +#ifndef arch_dup_task_struct
+> +static inline int arch_dup_task_struct(struct task_struct *dst,
+> +				       struct task_struct *src)
+> +{
+> +	*dst = *src;
+> +	return 0;
+> +}
+> +#endif
+
+ditto.
 
 	Ingo
