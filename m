@@ -1,73 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755020AbYCCMcQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754318AbYCCMfJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755020AbYCCMcQ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Mar 2008 07:32:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752144AbYCCMb7
+	id S1754318AbYCCMfJ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Mar 2008 07:35:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752110AbYCCMe5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Mar 2008 07:31:59 -0500
-Received: from gv-out-0910.google.com ([216.239.58.185]:22551 "EHLO
-	gv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751683AbYCCMb6 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Mar 2008 07:31:58 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=kFGuDKkwpIJ7ixChgHP/bQoM2A/jeRjrmlY26Os1stVzVDrNBExhoVsAHW4Y5hVDOHtEmBlfz1sNVFfB+qBvoIaP7GTckowbCTlDwwcgHFuZivNw/hsWn9+r7iukR3zWvq1/ZaKQLT/ncqssG1mYy2RQP+wEMExeRHiOsnOmDDM=
-Message-ID: <cfd18e0f0803030431n69df391dw53843d5079d906dd@mail.gmail.com>
-Date: Mon, 3 Mar 2008 13:31:54 +0100
-From: "Michael Kerrisk" <mtk.manpages@googlemail.com>
-To: "Ingo Molnar" <mingo@elte.hu>
-Subject: Re: SCHED_IDLE documentation
-Cc: "Arnd Bergmann" <arnd@arndb.de>, "Christoph Hellwig" <hch@lst.de>,
-       cbe-oss-dev@ozlabs.org, "Jeremy Kerr" <jk@ozlabs.org>,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <20080303092422.GA18281@elte.hu>
+	Mon, 3 Mar 2008 07:34:57 -0500
+Received: from mx2.suse.de ([195.135.220.15]:39247 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751763AbYCCMe4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 3 Mar 2008 07:34:56 -0500
+To: "Stephen Cuppett" <cuppett@gmail.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: Performance versus FreeBSD 7.0
+From: Andi Kleen <andi@firstfloor.org>
+References: <316a20a40802290538g55c4171y7cdbcb3a9c1d0f1b@mail.gmail.com>
+Date: Mon, 03 Mar 2008 13:34:55 +0100
+In-Reply-To: <316a20a40802290538g55c4171y7cdbcb3a9c1d0f1b@mail.gmail.com> (Stephen Cuppett's message of "Fri\, 29 Feb 2008 08\:38\:00 -0500")
+Message-ID: <p73r6es6l5c.fsf@bingen.suse.de>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.1 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <1203376368.275756.252634247263.1.gpush@pokey>
-	 <200803030612.28039.arnd@arndb.de> <20080303051719.GA26102@lst.de>
-	 <200803030721.52869.arnd@arndb.de> <20080303073311.GB5934@elte.hu>
-	 <cfd18e0f0803030040l667dd2b7v6298e78c5b21bfec@mail.gmail.com>
-	 <20080303092422.GA18281@elte.hu>
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo,
+"Stephen Cuppett" <cuppett@gmail.com> writes:
 
-> > * What's the difference between SCHED_IDLE and SCHED_BATCH?
->
-> SCHED_BATCH can still have nice levels from -20 to +19, it is a modified
-> SCHED_OTHER/SCHED_NORMAL for "throughput oriented" workloads.
+> Not lobbing the first artillery shell by any means, but I saw this
+> bullet on the FreeBSD release announcement:
 
-So, suppose we have two CPU intensive jobs, one SCHED_OTHER and the
-other SCHED_BATCH.  If they have the same nice value, will/should the
-scheduler favour one over the other?
+I posted a comment on that on the LWN thread, but their website 
+has eaten it.
 
-I've done some testing on 2.6.25-rc2, x86-32 for this case, and it
-appears that the two jobs are treated the same by the scheduler (each
-gets 50% of CPU).  Is that expected behavior?  If it is, can you give
-an example where scheduling SCHED_OTHER versus SCHED_BATCH should show
-a difference in the amount of CPU received by each process?
+Anyways I would be very careful with any benchmarks testing mysql
+especially on sysbench on larger systems (like they did with a 8 core
+system). I did some similar testing on a slightly larger system (16 core) 
+some time ago and found that mysql itself didn't scale at all.
+With sysbench which only exercises a single table it would end up basically 
+just banging on a single mysql user space lock and spend nearly all
+the kernel time in the scheduler over-scheduling like crazy.
 
-> SCHED_IDLE overrides the nice settings and it means a "super idle"
-> workload.
+The FreeBSD people are not very clear on what they exactly benchmarked
+(MySQL has lots of configuration options and engines), but I'll assume
+they used the standard MyISAM.
 
-Tested on 2.6.25-rc2, x86-32.  Two CPU intensive jobs, one
-SCHED_OTHER, nice=+19, the other SCHED_IDLE.  The SCHED_OTHER job gets
-~88% of CPU.  So SCHED_IDLE does indeed give a "super low nice"
-effect.
+I don't think that's a very useful benchmark to tune for in this
+form at least not until MySQL is fixed to actually scale and sysbench
+replaced with some a little more sane. It's worse than dbench. 
 
-Cheers,
-
-Michael
-
--- 
-Michael Kerrisk
-Maintainer of the Linux man-pages project
-http://www.kernel.org/doc/man-pages/
-Want to report a man-pages bug?  Look here:
-http://www.kernel.org/doc/man-pages/reporting_bugs.html
+-Andi
