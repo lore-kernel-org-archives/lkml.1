@@ -1,54 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755142AbYCCH2v@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753904AbYCCHdi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755142AbYCCH2v (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Mar 2008 02:28:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751041AbYCCH2n
+	id S1753904AbYCCHdi (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Mar 2008 02:33:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751180AbYCCHda
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Mar 2008 02:28:43 -0500
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:44355 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750853AbYCCH2m (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Mar 2008 02:28:42 -0500
-Message-ID: <47CBA787.8020100@cn.fujitsu.com>
-Date: Mon, 03 Mar 2008 16:23:51 +0900
-From: Li Zefan <lizf@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
+	Mon, 3 Mar 2008 02:33:30 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:37010 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751041AbYCCHda (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 3 Mar 2008 02:33:30 -0500
+Date: Mon, 3 Mar 2008 08:33:11 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Arnd Bergmann <arnd@arndb.de>
+Cc: Christoph Hellwig <hch@lst.de>, cbe-oss-dev@ozlabs.org,
+       Jeremy Kerr <jk@ozlabs.org>, linux-kernel@vger.kernel.org,
+       Michael Kerrisk <mtk.manpages@googlemail.com>
+Subject: Re: SCHED_IDLE documentation
+Message-ID: <20080303073311.GB5934@elte.hu>
+References: <1203376368.275756.252634247263.1.gpush@pokey> <200803030612.28039.arnd@arndb.de> <20080303051719.GA26102@lst.de> <200803030721.52869.arnd@arndb.de>
 MIME-Version: 1.0
-To: Xpl++ <xpl@amln.net>
-CC: Paul Menage <menage@google.com>,
-       Linux Containers <containers@lists.osdl.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Pavel Emelianov <xemul@openvz.org>, Paul Jackson <pj@sgi.com>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [RFC] Prefixing cgroup generic control filenames with "cgroup."
-References: <6599ad830802281314s25c033d6tc021725ae28aef8d@mail.gmail.com> <47C7EEAC.7010907@amln.net>
-In-Reply-To: <47C7EEAC.7010907@amln.net>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200803030721.52869.arnd@arndb.de>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: 0.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=0.5 required=5.9 tests=BAYES_40 autolearn=no SpamAssassin version=3.2.3
+	0.5 BAYES_40               BODY: Bayesian spam probability is 20 to 40%
+	[score: 0.3448]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Xpl++ wrote:
-> Paul Menage ??????:
->> ...
->>
->> A compromise might be to keep "tasks" unprefixed, and say that future
->> names get the "cgroup." prefix; in this case I'd be inclined to add
->> the prefix to notify_on_release and release_agent on the grounds that
->> there's much less chance of breaking anyone with those files since (I
->> suspect) they're much less used.
->>   
-> This makes most sense to me. It won't break any existing software 
-> (most likely) while it seems reasonable to leave 'tasks' unprefixed as 
-> this is something that any software using any subsystem of cgroup 
-> would be using anyway and it is not that much associated with a 
-> particulat subsystem.
->
 
-And it makes most sense to me too, though I still doubt name collision 
-will be a problem.
+* Arnd Bergmann <arnd@arndb.de> wrote:
 
+> If we don't have any man page, what is the actual definition of 
+> SCHED_IDLE anyway?
+
+it's rather simple: "it's a priority level even lower priority than nice 
++19".
+
+	Ingo
