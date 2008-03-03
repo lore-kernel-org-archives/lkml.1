@@ -1,63 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759597AbYCCJoV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760233AbYCCJqS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759597AbYCCJoV (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Mar 2008 04:44:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753211AbYCCJoJ
+	id S1760233AbYCCJqS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Mar 2008 04:46:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753211AbYCCJqA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Mar 2008 04:44:09 -0500
-Received: from rv-out-0910.google.com ([209.85.198.186]:2352 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753015AbYCCJoI (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Mar 2008 04:44:08 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=O9i3tUvuuoa1/4uB3oOBlG4u9gYXQJ2N2oF7unEajaZbLf8jv5GvxqlfBaAdcAFA8BLZmsIqWzUGtlr7Zf4gyNDEuIvGrMGuXnfEMEfTi2RCetuqrxtXKHRLZTkTwxbinME9n0JyEkR9+pA0aTT1cmOeUP2llGsYbA7h/mJxCuU=
-Message-ID: <84144f020803030144v17544936ybe222e8f4850dfa2@mail.gmail.com>
-Date: Mon, 3 Mar 2008 11:44:07 +0200
-From: "Pekka Enberg" <penberg@cs.helsinki.fi>
-To: "Nick Piggin" <npiggin@suse.de>
-Subject: Re: [rfc][patch 1/3] slub: fix small HWCACHE_ALIGN alignment
-Cc: netdev@vger.kernel.org,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       yanmin_zhang@linux.intel.com, "David Miller" <davem@davemloft.net>,
-       "Christoph Lameter" <clameter@engr.sgi.com>,
-       "Eric Dumazet" <dada1@cosmosbay.com>
-In-Reply-To: <20080303093449.GA15091@wotan.suse.de>
+	Mon, 3 Mar 2008 04:46:00 -0500
+Received: from aun.it.uu.se ([130.238.12.36]:43148 "EHLO aun.it.uu.se"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751430AbYCCJp7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 3 Mar 2008 04:45:59 -0500
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20080303093449.GA15091@wotan.suse.de>
-X-Google-Sender-Auth: 68219a03eb70b04c
+Message-ID: <18379.51360.744676.894510@harpo.it.uu.se>
+Date: Mon, 3 Mar 2008 10:45:04 +0100
+From: Mikael Pettersson <mikpe@it.uu.se>
+To: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Cc: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>, mikpe@it.uu.se,
+       crmafra2@gmail.com, linux-kernel@vger.kernel.org,
+       James.Bottomley@HansenPartnership.com, htejun@gmail.com,
+       jens.axboe@oracle.com, linux-ide@vger.kernel.org,
+       linux-scsi@vger.kernel.org
+Subject: Re: [BUG] 2.6.25-rc2-git3 broke cdrecord
+In-Reply-To: <47CBC014.9090309@s5r6.in-berlin.de>
+References: <20080302233415.GA6258@Pilar>
+	<18379.18297.838050.536473@harpo.it.uu.se>
+	<tkrat.468fd04c47ae1a2a@s5r6.in-berlin.de>
+	<20080303172641Z.fujita.tomonori@lab.ntt.co.jp>
+	<47CBC014.9090309@s5r6.in-berlin.de>
+X-Mailer: VM 7.17 under Emacs 20.7.1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Nick,
+Stefan Richter writes:
+ > FUJITA Tomonori wrote:
+ > > On Mon, 3 Mar 2008 02:48:23 +0100 (CET)
+ > > Stefan Richter <stefanr@s5r6.in-berlin.de> wrote:
+ > >> CD burning still fails for me via ide-cd, although in a
+ > >> different way than without the patch.  (Without the patch, ide-cd also
+ > >> fails like described by you for SATA.)
+ > >>
+ > >> With the patch, the failure is as follows.  I don't know if this is
+ > >> related to the data length arithmetic or something entirely different;
+ > >> all I learned so far is that 2.6.24 works.  Application log from
+ > >> 2.6.25-rc3 + Tejun's patch + Gentoo's cdrkit-1.1.6 + k3b:
+ > > 
+ > > Can you try the following patch?
+ > > 
+ > > http://lkml.org/lkml/2008/3/2/218
+ > 
+ > Fails just like with Tejun's patch, alas.
 
-On Mon, Mar 3, 2008 at 11:34 AM, Nick Piggin <npiggin@suse.de> wrote:
->  SLUB should pack even small objects nicely into cachelines if that is what
->  has been asked for. Use the same algorithm as SLAB for this.
+At this point I must confess I feel very uneasy about this situation.
 
-The patches look good but this changelog is missing context. Why do we
-want to do this?
-
-On Mon, Mar 3, 2008 at 11:34 AM, Nick Piggin <npiggin@suse.de> wrote:
->  @@ -1896,12 +1896,15 @@ static unsigned long calculate_alignment
->          * specified alignment though. If that is greater
->          * then use it.
->          */
-
-You might want to fix the above comment too.
-
->  -       if ((flags & SLAB_HWCACHE_ALIGN) &&
->  -                       size > cache_line_size() / 2)
->  -               return max_t(unsigned long, align, cache_line_size());
->  +       if (flags & SLAB_HWCACHE_ALIGN) {
->  +               unsigned long ralign = cache_line_size();
->  +               while (size <= ralign / 2)
->  +                       ralign /= 2;
->  +               align = max(align, ralign);
->  +       }
+Dare I suggest the perhaps hereditary solution of reverting these
+changes and doing them right after 2.6.25 final?
