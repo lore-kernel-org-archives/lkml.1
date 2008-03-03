@@ -1,63 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760111AbYCCJbW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759302AbYCCJcS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760111AbYCCJbW (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Mar 2008 04:31:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757595AbYCCJbH
+	id S1759302AbYCCJcS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Mar 2008 04:32:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751408AbYCCJcH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Mar 2008 04:31:07 -0500
-Received: from ug-out-1314.google.com ([66.249.92.170]:60003 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752030AbYCCJbF (ORCPT
+	Mon, 3 Mar 2008 04:32:07 -0500
+Received: from moutng.kundenserver.de ([212.227.126.179]:53984 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752169AbYCCJcF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Mar 2008 04:31:05 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=sNpC5VsqI6csowyVNEy3JCHD9qNlkhb5j1psnDGNVSWo0hlARRdCLLqTG9NOD5HBGuNcM0sAC2FC0nG0XSS2gLeenJB8mQHLMH/qEBy1oPk5QNqdeC9JCkB0PCG51PoPujH+uuKh+iTcXC3NyOeAkapFidmszt957tFEhJ4RjrQ=
-Message-ID: <4ac2955e0803030131t72354cecpbdaf53460ef3d09f@mail.gmail.com>
-Date: Mon, 3 Mar 2008 15:01:00 +0530
-From: "mahendra varman" <mahendravarman15@gmail.com>
-To: "David Brownell" <david-b@pacbell.net>
-Subject: Re: usb detecting only high speed devices only - not detecting low speed devices
-Cc: "Andrew Morton" <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-usb@vger.kernel.org
-In-Reply-To: <200802261817.02830.david-b@pacbell.net>
+	Mon, 3 Mar 2008 04:32:05 -0500
+From: Arnd Bergmann <arnd@arndb.de>
+To: Ingo Molnar <mingo@elte.hu>
+Subject: Re: SCHED_IDLE documentation
+Date: Mon, 3 Mar 2008 10:31:51 +0100
+User-Agent: KMail/1.9.6 (enterprise 0.20080118.763038)
+Cc: Michael Kerrisk <mtk.manpages@googlemail.com>,
+       Christoph Hellwig <hch@lst.de>, cbe-oss-dev@ozlabs.org,
+       Jeremy Kerr <jk@ozlabs.org>, linux-kernel@vger.kernel.org
+References: <1203376368.275756.252634247263.1.gpush@pokey> <cfd18e0f0803030040l667dd2b7v6298e78c5b21bfec@mail.gmail.com> <20080303092422.GA18281@elte.hu>
+In-Reply-To: <20080303092422.GA18281@elte.hu>
+X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>=?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
+ =?utf-8?q?3zb?=)
+ =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
+ =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <4ac2955e0802260543n7d7e5d81nb590d2bc10648269@mail.gmail.com>
-	 <20080226160538.086a681d.akpm@linux-foundation.org>
-	 <200802261817.02830.david-b@pacbell.net>
+Message-Id: <200803031031.52335.arnd@arndb.de>
+X-Provags-ID: V01U2FsdGVkX19AuBu6Wt/ZVFP2/F+ZXeQPUIkKcj38AkBcbwh
+ byhIuTGmJIcn7cxGxf6pMnrGLKFJWjsTPt7dl2ZVG9br7hsjpV
+ 00oHIxfa+67mK36/wsVxA==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Feb 27, 2008 at 7:47 AM, David Brownell <david-b@pacbell.net> wrote:
-> On Tuesday 26 February 2008, Andrew Morton wrote:
->  > > usb 3-1: new low speed USB device using ohci_hcd and address 2
->  > > ohci_hcd 0000:01:04.1: Unlink after no-IRQ?  Controller is probably
->  > > using the wrong IRQ.
->
->  My diagnosis hasn't changed since last time he asked this question:
->  it's related to IRQ handling, outside the scope of USB.  If USB
->  were getting the OHCI interrupts, it would not issue that message.
->
->  Now as to *why* that happens, I don't know.  We've certainly had folk
->  using Philips/NXP EHCI controllers successfully before.  Maybe this
->  board has a hardware problem, like a bad chip or not having wired
->  up the power lines that OHCI controller uses.
+On Monday 03 March 2008, Ingo Molnar wrote:
+> > * What's the difference between SCHED_IDLE and SCHED_BATCH?
+> 
+> SCHED_BATCH can still have nice levels from -20 to +19, it is a modified 
+> SCHED_OTHER/SCHED_NORMAL for "throughput oriented" workloads.
+> 
+> SCHED_IDLE overrides the nice settings and it means a "super idle" 
+> workload.
 
-still the low speed devices are giving unlink after no IRQ.. My
-hardware engineer says he followed the reference schematics of ISP1562
-of philips. He says that ohci side, the power lines are wired up
+Does that mean that a SCHED_IDLE task still runs some of the time if
+you have a CPU hog running on +19, or can any other process starve the
+SCHED_IDLE task?
 
-My Ehci devices can be mounted and the files are read
-Today I faced another issue
-For some usb ehci devices its giving "device descriptor read/64, error
--71" ( for some usb stick of usb2.0)
-but for others i can able to mount without this error.....
+What happens if you have two SCHED_IDLE tasks on a single CPU, do they get
+equal share, or will they just run as batch jobs?
 
-Sir, Any clue regarding the above problem iam facing currently ??
-
-Thanks
+	Arnd <><
