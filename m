@@ -1,88 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759381AbYCCRhu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760147AbYCCRiS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759381AbYCCRhu (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Mar 2008 12:37:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759975AbYCCRZf
+	id S1760147AbYCCRiS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Mar 2008 12:38:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756084AbYCCR2l
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Mar 2008 12:25:35 -0500
-Received: from mga11.intel.com ([192.55.52.93]:45382 "EHLO mga11.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759974AbYCCRZa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Mar 2008 12:25:30 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.25,438,1199692800"; 
-   d="scan'208";a="214349033"
-Message-ID: <47CC3453.9010108@intel.com>
-Date: Mon, 03 Mar 2008 09:24:35 -0800
-From: "Kok, Auke" <auke-jan.h.kok@intel.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071125)
+	Mon, 3 Mar 2008 12:28:41 -0500
+Received: from rv-out-0910.google.com ([209.85.198.187]:14265 "EHLO
+	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1762584AbYCCR2k (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 3 Mar 2008 12:28:40 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=VYg8drE/aphS7w8VLvYld63dm72u9y/oOXfXMaVmKF4YTjt2WTNvRdSlyqCVNTCUPuKF5liYNCL0JZZamuKMFECfUDbDVJZCSMRmGWjySW5lqE70MvLOftNcTvJ7LnoGtMiNlCx8l8foEHZObcqyqNLfasE3G1LhSH6cn5aT2ps=
+Message-ID: <59ad55d30803030928t47ab84ebs1f37434d6558b72e@mail.gmail.com>
+Date: Mon, 3 Mar 2008 12:28:38 -0500
+From: "=?UTF-8?Q?Kristian_H=C3=B8gsberg?=" <krh@bitplanet.net>
+To: "Stefan Richter" <stefanr@s5r6.in-berlin.de>
+Subject: Re: [PATCH] firewire: reread config ROM when device reset the bus
+Cc: linux1394-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
+In-Reply-To: <47CC2C95.1050205@s5r6.in-berlin.de>
 MIME-Version: 1.0
-To: Adrian Bunk <bunk@kernel.org>
-CC: Jeff Kirsher <jeffrey.t.kirsher@intel.com>, Jeff Garzik <jeff@garzik.org>,
-       jesse.brandeburg@intel.com, john.ronciak@intel.com,
-       e1000-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org
-Subject: Re: [RFC: 2.6 patch] #if 0 e1000e_read_nvm_spi()
-References: <20080301162302.GX25835@cs181133002.pp.htv.fi>
-In-Reply-To: <20080301162302.GX25835@cs181133002.pp.htv.fi>
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 03 Mar 2008 17:25:26.0914 (UTC) FILETIME=[923ABE20:01C87D53]
+Content-Disposition: inline
+References: <tkrat.c6610a8633fe0e41@s5r6.in-berlin.de>
+	 <tkrat.da30e6f15a74e036@s5r6.in-berlin.de>
+	 <59ad55d30803030817l6fce6716x2a97cc809b15b234@mail.gmail.com>
+	 <47CC2C95.1050205@s5r6.in-berlin.de>
+X-Google-Sender-Auth: 864bc251045532eb
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Adrian Bunk wrote:
-> This patch #if 0's the no longer used e1000e_read_nvm_spi().
+On Mon, Mar 3, 2008 at 11:51 AM, Stefan Richter
+<stefanr@s5r6.in-berlin.de> wrote:
+...
+>  Maybe I should rather use fw-device.c::idr_rwsem instead of device.sem,
+>  to have better control over who takes the mutex when.  Could also be a
+>  new dedicated mutex but we don't want to end up with too many of them...
+>  Do you have an opinion?
 
-OK, thanks Adrian
+Using the struct device mutex is fine, and it parallelizes better than
+the global idr_mutex (FWIW).  The only concern I have there is that
+the device core structs seem to change now and then, and it's not
+clear what is implementation details and what is exported for drivers
+to use (eg the subsystem sem).
 
-I'll send a patch to remove the function alltogether.
-
-Auke
-
-
-> 
-> Signed-off-by: Adrian Bunk <bunk@kernel.org>
-> 
-> ---
-> 
->  drivers/net/e1000e/e1000.h |    1 -
->  drivers/net/e1000e/lib.c   |    2 ++
->  2 files changed, 2 insertions(+), 1 deletion(-)
-> 
-> 9bab4dc421a7e5a947739e2fa1363b4efffbcbe2 foobar
-> diff --git a/drivers/net/e1000e/e1000.h b/drivers/net/e1000e/e1000.h
-> index 327c062..6e0c6ed 100644
-> --- a/drivers/net/e1000e/e1000.h
-> +++ b/drivers/net/e1000e/e1000.h
-> @@ -462,7 +462,6 @@ extern s32 e1000e_acquire_nvm(struct e1000_hw *hw);
->  extern s32 e1000e_write_nvm_spi(struct e1000_hw *hw, u16 offset, u16 words, u16 *data);
->  extern s32 e1000e_update_nvm_checksum_generic(struct e1000_hw *hw);
->  extern s32 e1000e_poll_eerd_eewr_done(struct e1000_hw *hw, int ee_reg);
-> -extern s32 e1000e_read_nvm_spi(struct e1000_hw *hw, u16 offset, u16 words, u16 *data);
->  extern s32 e1000e_read_nvm_eerd(struct e1000_hw *hw, u16 offset, u16 words, u16 *data);
->  extern s32 e1000e_validate_nvm_checksum_generic(struct e1000_hw *hw);
->  extern void e1000e_release_nvm(struct e1000_hw *hw);
-> diff --git a/drivers/net/e1000e/lib.c b/drivers/net/e1000e/lib.c
-> index 95f75a4..cb2dac8 100644
-> --- a/drivers/net/e1000e/lib.c
-> +++ b/drivers/net/e1000e/lib.c
-> @@ -1851,6 +1851,7 @@ static s32 e1000_ready_nvm_eeprom(struct e1000_hw *hw)
->  	return 0;
->  }
->  
-> +#if 0
->  /**
->   *  e1000e_read_nvm_spi - Reads EEPROM using SPI
->   *  @hw: pointer to the HW structure
-> @@ -1906,6 +1907,7 @@ s32 e1000e_read_nvm_spi(struct e1000_hw *hw, u16 offset, u16 words, u16 *data)
->  	nvm->ops.release_nvm(hw);
->  	return 0;
->  }
-> +#endif  /*  0  */
->  
->  /**
->   *  e1000e_read_nvm_eerd - Reads EEPROM using EERD register
-> 
-
+cheers,
+Kristian
