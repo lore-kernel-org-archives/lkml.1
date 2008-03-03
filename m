@@ -1,148 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754762AbYCCIf1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755590AbYCCIid@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754762AbYCCIf1 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Mar 2008 03:35:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752536AbYCCIfS
+	id S1755590AbYCCIid (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Mar 2008 03:38:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753121AbYCCIi0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Mar 2008 03:35:18 -0500
-Received: from smtp239.poczta.interia.pl ([217.74.64.239]:11721 "EHLO
-	smtp239.poczta.interia.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752489AbYCCIfQ convert rfc822-to-8bit (ORCPT
+	Mon, 3 Mar 2008 03:38:26 -0500
+Received: from smtp-out.google.com ([216.239.33.17]:59562 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753123AbYCCIiZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Mar 2008 03:35:16 -0500
-Date: 03 Mar 2008 09:35:09 +0100
-From: Wojciech Migda <wojtek.golf@interia.pl>
-Subject: Re: [PATCH] V4L/DVB: tuner and radio addresses are missing for the PixelView PlayTV card
-To: "mchehab@infradead.org" <mchehab@infradead.org>,
-       "v4l-dvb-maintainer@linuxtv.org" <v4l-dvb-maintainer@linuxtv.org>
-Cc: "torvalds@linux-foundation.org" <torvalds@linux-foundation.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "trivial@kernel.org" <trivial@kernel.org>
+	Mon, 3 Mar 2008 03:38:25 -0500
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=received:message-id:date:from:to:subject:cc:in-reply-to:
+	mime-version:content-type:content-transfer-encoding:
+	content-disposition:references;
+	b=mLGWYDACrt/p6WBE9X9KooFMgULyZKk30Xs4nLUJLz1Ibb0QVMUjJdB0uVPu1Mtbd
+	yn2wQRaCJUimT14sc8Ckw==
+Message-ID: <6599ad830803030038p2d81883bu895260a96fedaec6@mail.gmail.com>
+Date: Mon, 3 Mar 2008 00:38:16 -0800
+From: "Paul Menage" <menage@google.com>
+To: serge@hallyn.com
+Subject: Re: [RFC] Prefixing cgroup generic control filenames with "cgroup."
+Cc: "Andrew Morton" <akpm@linux-foundation.org>, containers@lists.osdl.org,
+       linux-kernel@vger.kernel.org, balbir@linux.vnet.ibm.com,
+       a.p.zijlstra@chello.nl, xemul@openvz.org, pj@sgi.com
+In-Reply-To: <6599ad830802281406s512ee32bkeb2b0387a7737a87@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: TEXT/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-X-ORIGINATE-IP: 89.187.248.13
-X-Mailer: PSE
-Message-Id: <20080303083509.A735D45B885@f49.poczta.interia.pl>
-X-EMID: 1a40acc
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <6599ad830802281314s25c033d6tc021725ae28aef8d@mail.gmail.com>
+	 <20080228132142.4d4b1eef.akpm@linux-foundation.org>
+	 <6599ad830802281328q162d0585v3ac6b45a119a4a05@mail.gmail.com>
+	 <20080228213319.GC1232@vino.hallyn.com>
+	 <6599ad830802281406s512ee32bkeb2b0387a7737a87@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi again,
+On Thu, Feb 28, 2008 at 2:06 PM, Paul Menage <menage@google.com> wrote:
+> On Thu, Feb 28, 2008 at 1:33 PM,  <serge@hallyn.com> wrote:
+>  >
+>  >  You said the set of files belong to cgroup itself is likely to increase
+>  >  - do you have some candidates in mind?
+>
+>  Nothing concrete right now. One example that I already proposed was
+>  the "cgroup.api" file but that's shelved for now, until such time as I
+>  actually propose the binary API that it was intended to help support.
+>
 
-the previous patch was for the 2.6.22 kernel. The two below are for the 2.6.24.3 and 2.6.25-rc3, respectively:
+One likely new file that people agreed a while ago could be useful
+would be a "procs" file, similar to "tasks", but acting (and
+reporting) on thread groups rather than individual tasks.
 
-         Signed-off-by: Wojciech Migda <wojtek <dot> golf <at> interia <dot> pl>
-
----
---- /usr/src/linux/drivers/media/video/bt8xx/bttv-cards.c.orig	2008-03-03 08:13:47.000000000 +0000
-+++ /usr/src/linux/drivers/media/video/bt8xx/bttv-cards.c	2008-03-03 08:20:33.944363735 +0000
-@@ -589,6 +589,8 @@ struct tvcard bttv_tvcards[] = {
- 		.needs_tvaudio	= 1,
- 		.pll		= PLL_28,
- 		.tuner_type	= UNSET,
-+		.tuner_addr	= ADDR_UNSET,
-+		.radio_addr	= ADDR_UNSET,
- 	},
- 	[BTTV_BOARD_WINVIEW_601] = {
- 		.name		= "Leadtek WinView 601",
-
-
----
---- /usr/src/linux/drivers/media/video/bt8xx/bttv-cards.c.orig	2008-03-03 08:14:56.000000000 +0000
-+++ /usr/src/linux/drivers/media/video/bt8xx/bttv-cards.c	2008-03-03 08:27:42.217028054 +0000
-@@ -576,6 +576,8 @@ struct tvcard bttv_tvcards[] = {
- 		.needs_tvaudio	= 1,
- 		.pll		= PLL_28,
- 		.tuner_type	= UNSET,
-+		.tuner_addr	= ADDR_UNSET,
-+		.radio_addr	= ADDR_UNSET,
- 	},
- 	[BTTV_BOARD_WINVIEW_601] = {
- 		.name		= "Leadtek WinView 601",
-
-> From: Wojciech Migda <wojtek.golf@interia.pl>
-> 
-> the PixelView PlayTV card definition structure was missing initialization
-> of the tuner_addr and radio_addr fields. As a result it was impossible to
-> have the tuner initialized using parameters specified while loading the
-> bttv.ko module. This regression became visible after the v4l rearrangements
-> introduced somewhere around 2.6.15 kernel version. The root cause for the
-> tuner initialization failure is located in the attach_inform function in
-> the bttv-i2c.c file. There at the very beginning the addr variable holding
-> the tuner device address is initialized with the value taken from the
-> bttv_tvcards array. For the PixelView PlayTV card the tuner address field
-> (and the radio address as well) was uninitialized, and thus equal 0. Later
-> in that function execution of the TUNER_SET_TYPE_ADDR tuner command is
-> guarded with check for the tuner address either equal ADDR_UNSET, or
-> client->addr. Since both are non-zero (the latter in case of   the card
-> owned by me at the runtime is equal 0x61) the TUNER_SET_TYPE_ADDR command
-> is not executed, and consequently in the tuner_attach function in the
-> tuner-core.c file call to i2c_attach_client does not result in assigning
-> the tuner type variable with the requested value. Providing initialization
-> of the tuner_addr and radio_addr with ADDR_UNSET values as it is already
-> done for other tv cards defined in bttv-cards.c ensures that the tuner
-> initialization is done correctly, just as it used to be in the 2.6.14
-> kernel.
-> 
-> 
->         Developer's Certificate of Origin 1.1
-> 
->         By making a contribution to this project, I certify that:
-> 
->         (a) The contribution was created in whole or in part by me and I
->             have the right to submit it under the open source license
->             indicated in the file; or
-> 
->         (b) The contribution is based upon previous work that, to the
-> best
->             of my knowledge, is covered under an appropriate open source
->             license and I have the right under that license to submit
-> that
->             work with modifications, whether created in whole or in part
->             by me, under the same open source license (unless I am
->             permitted to submit under a different license), as indicated
->             in the file; or
-> 
->         (c) The contribution was provided directly to me by some other
->             person who certified (a), (b) or (c) and I have not modified
->             it.
-> 
->         (d) I understand and agree that this project and the contribution
->             are public and that a record of the contribution (including
-> all
->             personal information I submit with it, including my sign-off)
-> is
->             maintained indefinitely and may be redistributed consistent
-> with
->             this project or the open source license(s) involved.
-> 
-> 
->         Signed-off-by: Wojciech Migda <wojtek.golf@interia.pl>
-> 
-> ---
-> 
-> --- drivers/media/video/bt8xx/bttv-cards.c.orig	2007-07-08
-> 23:32:17.000000000 +0000
-> +++ drivers/media/video/bt8xx/bttv-cards.c	2008-03-01 20:48:19.183306298
-> +0000
-> @@ -588,6 +588,8 @@ struct tvcard bttv_tvcards[] = {
->  		.needs_tvaudio	= 1,
->  		.pll		= PLL_28,
->  		.tuner_type	= -1,
-> +		.tuner_addr	= ADDR_UNSET,
-> +		.radio_addr	= ADDR_UNSET,
->  	},
->  	[BTTV_BOARD_WINVIEW_601] = {
->  		.name		= "Leadtek WinView 601",
-> 
-> 
-> 
-> 
-
-
-----------------------------------------------------------------------
-Wojna wampirow trwa - po ktorej jestes stronie?
-Zagraj >>> http://link.interia.pl/f1cf4
-
+Paul
