@@ -1,79 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760161AbYCCUPV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756941AbYCCURY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760161AbYCCUPV (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Mar 2008 15:15:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751093AbYCCUPH
+	id S1756941AbYCCURY (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Mar 2008 15:17:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751540AbYCCURH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Mar 2008 15:15:07 -0500
-Received: from smtp-out2.blueyonder.co.uk ([195.188.213.5]:54986 "EHLO
-	smtp-out2.blueyonder.co.uk" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750850AbYCCUPG (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Mar 2008 15:15:06 -0500
-Message-ID: <47CC5C47.8050604@Keehan.net>
-Date: Mon, 03 Mar 2008 20:15:03 +0000
-From: Mike Keehan <Mike@Keehan.net>
-Reply-To: Mike@Keehan.net
-User-Agent: Thunderbird 2.0.0.12 (X11/20080213)
-MIME-Version: 1.0
-To: Harald Dunkel <harald.dunkel@t-online.de>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: strange behavior on multimedia eject button for cdrom
-References: <47C15020.8040806@t-online.de> <47C7FECD.3040205@Keehan.net> <47CB11FA.60008@t-online.de>
-In-Reply-To: <47CB11FA.60008@t-online.de>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Mon, 3 Mar 2008 15:17:07 -0500
+Received: from cantor2.suse.de ([195.135.220.15]:57783 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751369AbYCCURC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 3 Mar 2008 15:17:02 -0500
+Date: Mon, 3 Mar 2008 21:17:01 +0100
+From: Nick Piggin <npiggin@suse.de>
+To: Christoph Lameter <clameter@sgi.com>
+Cc: netdev@vger.kernel.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       yanmin_zhang@linux.intel.com, David Miller <davem@davemloft.net>,
+       Eric Dumazet <dada1@cosmosbay.com>
+Subject: Re: [rfc][patch 1/3] slub: fix small HWCACHE_ALIGN alignment
+Message-ID: <20080303201701.GF8974@wotan.suse.de>
+References: <20080303093449.GA15091@wotan.suse.de> <Pine.LNX.4.64.0803031107130.6917@schroedinger.engr.sgi.com> <20080303200613.GC8974@wotan.suse.de> <Pine.LNX.4.64.0803031209570.16049@schroedinger.engr.sgi.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0803031209570.16049@schroedinger.engr.sgi.com>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Harald Dunkel wrote:
-> Hi Mike,
+On Mon, Mar 03, 2008 at 12:10:59PM -0800, Christoph Lameter wrote:
+> On Mon, 3 Mar 2008, Nick Piggin wrote:
 > 
-> Mike Keehan wrote:
->> Hi Harold.
->>
->> Somewhere on the web I read that some of the M1330 media keys are 
->> directly connected to the drive, hence the lack of keycodes.
->>
->> If you eject a disk while it is being played, then the Linux driver 
->> will get a read failure.  What happens then may not be well defined :)
->>
+> > > If they are already not cache line aligned then we can make them as 
+> > > dense as possible. That is what SLUB does.
+> > 
+> > Because when you specify HWCACHE_ALIGN, it means that you want the object
+> > not to cross cacheline boundaries for at least cache_line_size() bytes.
+> > SLAB does this. SLUB does not without this patch.
 > 
-> Maybe there is some misunderstanding here: I am not playing music
-> from the CD. It is idle. But if I press the CD eject button, then
-> audio output (e.g. some mp3 file played from harddisk) gets
-> corrupted, the network connection is dead, etc.
-> 
-> Ejecting the CD takes about 7 seconds. Durig this time Linux is
-> dead! I haven't checked any SCHED_FIFO or SCHED_RR applications,
-> but AFAIK this shouldn't happen.
-> 
-> If I run "eject cdrom" on the console instead, then there is no
-> such problem.
-> 
-> 
-> Regards
-> 
-> Harri
-> 
+> HWCACHE_ALIGN means that you want the object to be aligned at 
+> cacheline boundaries for optimization. Why does crossing cacheline 
+> boundaries matter in this case?
 
-Hi again.
-
-Ok, I just tried doing the same thing on my M1330.  It behaves 
-differently to yours in that a small section of music repeats again 
-and again until the disk is ejected, and then carries on (I was using 
-RealPlayer with a local file as a simple test).
-
-And it does look like other things stop working while the disk is 
-ejected - screen updates freeze and network too I think.
-
-I'm going to be travelling for the next few days, so I won't be able 
-to try anything else till later in the week.
-
-Regards,
-
-    Mike.
-
-
+No, HWCACHE_ALIGN means that you want the object not to cross cacheline
+boundaries for at least cache_line_size() bytes. You invented new
+semantics with SLUB, but all the callers were written expecting the
+existing semantics, presumably. So we should retain that behaviour, and
+if you disagree with the actual callers, then that is fine but you
+should discuss each case with the relevant people.
 
