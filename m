@@ -1,81 +1,144 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754424AbYCCMkq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755202AbYCCMl5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754424AbYCCMkq (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Mar 2008 07:40:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752145AbYCCMki
+	id S1755202AbYCCMl5 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Mar 2008 07:41:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752229AbYCCMlp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Mar 2008 07:40:38 -0500
-Received: from pasmtpa.tele.dk ([80.160.77.114]:56809 "EHLO pasmtpA.tele.dk"
+	Mon, 3 Mar 2008 07:41:45 -0500
+Received: from ns1.suse.de ([195.135.220.2]:46745 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752136AbYCCMkh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Mar 2008 07:40:37 -0500
-Date: Mon, 3 Mar 2008 13:40:50 +0100
-From: Sam Ravnborg <sam@ravnborg.org>
-To: David Howells <dhowells@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
+	id S1751425AbYCCMlo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 3 Mar 2008 07:41:44 -0500
+Date: Mon, 3 Mar 2008 13:41:42 +0100
+From: Nick Piggin <npiggin@suse.de>
+To: Eric Dumazet <dada1@cosmosbay.com>
+Cc: netdev@vger.kernel.org,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linux Arch Mailing List <linux-arch@vger.kernel.org>,
-       David Brownell <dbrownell@users.sourceforge.net>
-Subject: Re: [PATCH 1/2] Add C99-style constructor macros for specific-sized integers
-Message-ID: <20080303124050.GA24841@uranus.ravnborg.org>
-References: <4a8566f54ff84f498c5c0c0340076c296b1840e6@tazenda.hos.anvin.org> <8260.1204541852@redhat.com> <20080303114310.GA28139@flint.arm.linux.org.uk>
+       yanmin_zhang@linux.intel.com, David Miller <davem@davemloft.net>,
+       Christoph Lameter <clameter@engr.sgi.com>
+Subject: Re: [rfc][patch 3/3] use SLAB_ALIGN_SMP
+Message-ID: <20080303124142.GB13138@wotan.suse.de>
+References: <20080303093449.GA15091@wotan.suse.de> <20080303093624.GC15091@wotan.suse.de> <47CBCAB0.2040604@cosmosbay.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-In-Reply-To: <20080303114310.GA28139@flint.arm.linux.org.uk>
-User-Agent: Mutt/1.4.2.1i
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <47CBCAB0.2040604@cosmosbay.com>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Mar 03, 2008 at 11:43:10AM +0000, Russell King wrote:
-> On Mon, Mar 03, 2008 at 10:57:32AM +0000, David Howells wrote:
-> > H. Peter Anvin <hpa@zytor.com> wrote:
-> > 
-> > > +#define S8_C(x)	 x
-> > > +#define U8_C(x)  x ## U
-> > > +#define S16_C(x) x
-> > > +#define U16_C(x) x ## U
-> > > +#define S32_C(x) x
-> > > +#define U32_C(x) x ## U
-> > > +#define S64_C(x) x ## LL
-> > > +#define U64_C(x) x ## ULL
-> > 
-> > And #if defined(__ASSEMBLY__), just splat x through as is.
+On Mon, Mar 03, 2008 at 10:53:52AM +0100, Eric Dumazet wrote:
+> Nick Piggin a écrit :
+> >Use SLAB_SMP_ALIGN in a few places.
+> >
+> >  
 > 
-> We already have something like this on ARM - include/asm-arm/memory.h
+> I dont understand why you added SLAB_SMP_ALIGN, without removing 
+> SLAB_HWCACHE_ALIGN on these places.
+
+Because I thought that in most of the cases, we also want some cacheline
+alignment on UP systems as well because we care about the layout of the
+structure WRT the cachelines for the mandatory/capacity miss cases, as
+well as wanting to avoid false sharing misses on SMP.
+
+Actually I didn't think _too_ hard about them, possibly some could be
+removed. But the problem is that these things do require careful
+thought so I should not change them unless I have done that ;)
+
+I guess there are some basic guidelines -- if size is a problem (ie if
+there can be lots of these structures), then that is going to be a
+factor; if the total pool of objects is likely to be fairly densely
+resident in cache, then it will start to favour dense packing rather
+than good alignment.
+
 > 
-> /*
->  * Allow for constants defined here to be used from assembly code
->  * by prepending the UL suffix only with actual C code compilation.
->  */
-> #ifndef __ASSEMBLY__
-> #define UL(x) (x##UL)
-> #else
-> #define UL(x) (x)
-> #endif
-
-And in linux/const.h we have yet another variant:
-/* Some constant macros are used in both assembler and
- * C code.  Therefore we cannot annotate them always with
- * 'UL' and other type specifiers unilaterally.  We
- * use the following macros to deal with this.
- *
- * Similarly, _AT() will cast an expression with a type in C, but
- * leave it unchanged in asm.
- */
-
-#ifdef __ASSEMBLY__
-#define _AC(X,Y)        X
-#define _AT(T,X)        X
-#else
-#define __AC(X,Y)       (X##Y)
-#define _AC(X,Y)        __AC(X,Y)
-#define _AT(T,X)        ((T)(X))
-#endif
-
-Not as typestrict as hpa's and arm's version but
-used in a few placed already.
-
-	Sam
+> >Signed-off-by: Nick Piggin <npiggin@suse.de>
+> >---
+> >Index: linux-2.6/fs/block_dev.c
+> >===================================================================
+> >--- linux-2.6.orig/fs/block_dev.c
+> >+++ linux-2.6/fs/block_dev.c
+> >@@ -332,8 +332,8 @@ void __init bdev_cache_init(void)
+> > {
+> > 	int err;
+> > 	bdev_cachep = kmem_cache_create("bdev_cache", sizeof(struct 
+> > 	bdev_inode),
+> >-			0, (SLAB_HWCACHE_ALIGN|SLAB_RECLAIM_ACCOUNT|
+> >-				SLAB_MEM_SPREAD|SLAB_PANIC),
+> >+			0, (SLAB_HWCACHE_ALIGN|SLAB_SMP_ALIGN|
+> >+			SLAB_RECLAIM_ACCOUNT|SLAB_MEM_SPREAD|SLAB_PANIC),
+> > 			init_once);
+> > 	err = register_filesystem(&bd_type);
+> > 	if (err)
+> >Index: linux-2.6/kernel/fork.c
+> >===================================================================
+> >--- linux-2.6.orig/kernel/fork.c
+> >+++ linux-2.6/kernel/fork.c
+> >@@ -1547,23 +1547,23 @@ void __init proc_caches_init(void)
+> > {
+> > 	sighand_cachep = kmem_cache_create("sighand_cache",
+> > 			sizeof(struct sighand_struct), 0,
+> >-			SLAB_HWCACHE_ALIGN|SLAB_PANIC|SLAB_DESTROY_BY_RCU,
+> >+		 
+> >SLAB_HWCACHE_ALIGN|SLAB_SMP_ALIGN|SLAB_PANIC|SLAB_DESTROY_BY_RCU,
+> > 			sighand_ctor);
+> > 	signal_cachep = kmem_cache_create("signal_cache",
+> > 			sizeof(struct signal_struct), 0,
+> >-			SLAB_HWCACHE_ALIGN|SLAB_PANIC, NULL);
+> >+			SLAB_HWCACHE_ALIGN|SLAB_SMP_ALIGN|SLAB_PANIC, NULL);
+> > 	files_cachep = kmem_cache_create("files_cache",
+> > 			sizeof(struct files_struct), 0,
+> >-			SLAB_HWCACHE_ALIGN|SLAB_PANIC, NULL);
+> >+			SLAB_HWCACHE_ALIGN|SLAB_SMP_ALIGN|SLAB_PANIC, NULL);
+> > 	fs_cachep = kmem_cache_create("fs_cache",
+> > 			sizeof(struct fs_struct), 0,
+> >-			SLAB_HWCACHE_ALIGN|SLAB_PANIC, NULL);
+> >+			SLAB_HWCACHE_ALIGN|SLAB_SMP_ALIGN|SLAB_PANIC, NULL);
+> > 	vm_area_cachep = kmem_cache_create("vm_area_struct",
+> > 			sizeof(struct vm_area_struct), 0,
+> > 			SLAB_PANIC, NULL);
+> > 	mm_cachep = kmem_cache_create("mm_struct",
+> > 			sizeof(struct mm_struct), ARCH_MIN_MMSTRUCT_ALIGN,
+> >-			SLAB_HWCACHE_ALIGN|SLAB_PANIC, NULL);
+> >+			SLAB_HWCACHE_ALIGN|SLAB_SMP_ALIGN|SLAB_PANIC, NULL);
+> > }
+> > 
+> > /*
+> >Index: linux-2.6/kernel/pid.c
+> >===================================================================
+> >--- linux-2.6.orig/kernel/pid.c
+> >+++ linux-2.6/kernel/pid.c
+> >@@ -526,5 +526,5 @@ void __init pidmap_init(void)
+> > 	atomic_dec(&init_pid_ns.pidmap[0].nr_free);
+> > 
+> > 	init_pid_ns.pid_cachep = KMEM_CACHE(pid,
+> >-			SLAB_HWCACHE_ALIGN | SLAB_PANIC);
+> >+			SLAB_HWCACHE_ALIGN | SLAB_SMP_ALIGN | SLAB_PANIC);
+> > }
+> >Index: linux-2.6/kernel/user.c
+> >===================================================================
+> >--- linux-2.6.orig/kernel/user.c
+> >+++ linux-2.6/kernel/user.c
+> >@@ -503,7 +503,7 @@ static int __init uid_cache_init(void)
+> > 	int n;
+> > 
+> > 	uid_cachep = kmem_cache_create("uid_cache", sizeof(struct 
+> > 	user_struct),
+> >-			0, SLAB_HWCACHE_ALIGN|SLAB_PANIC, NULL);
+> >+			0, SLAB_HWCACHE_ALIGN|SLAB_SMP_ALIGN|SLAB_PANIC, 
+> >NULL);
+> > 
+> > 	for(n = 0; n < UIDHASH_SZ; ++n)
+> > 		INIT_HLIST_HEAD(init_user_ns.uidhash_table + n);
+> >--
+> >To unsubscribe from this list: send the line "unsubscribe netdev" in
+> >the body of a message to majordomo@vger.kernel.org
+> >More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> >
+> >
+> >  
+> 
+> 
+> 
