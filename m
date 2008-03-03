@@ -1,50 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758731AbYCCUKg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758926AbYCCULU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758731AbYCCUKg (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Mar 2008 15:10:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754938AbYCCUKO
+	id S1758926AbYCCULU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Mar 2008 15:11:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755178AbYCCULB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Mar 2008 15:10:14 -0500
-Received: from ns2.suse.de ([195.135.220.15]:57079 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754921AbYCCUKK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Mar 2008 15:10:10 -0500
-Date: Mon, 3 Mar 2008 21:10:08 +0100
-From: Nick Piggin <npiggin@suse.de>
-To: Christoph Lameter <clameter@sgi.com>
-Cc: Pekka Enberg <penberg@cs.helsinki.fi>, Eric Dumazet <dada1@cosmosbay.com>,
-       netdev@vger.kernel.org,
+	Mon, 3 Mar 2008 15:11:01 -0500
+Received: from relay2.sgi.com ([192.48.171.30]:49039 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1754247AbYCCULA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 3 Mar 2008 15:11:00 -0500
+Date: Mon, 3 Mar 2008 12:10:59 -0800 (PST)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Nick Piggin <npiggin@suse.de>
+cc: netdev@vger.kernel.org,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       yanmin_zhang@linux.intel.com, David Miller <davem@davemloft.net>
-Subject: Re: [rfc][patch 3/3] use SLAB_ALIGN_SMP
-Message-ID: <20080303201008.GD8974@wotan.suse.de>
-References: <20080303093449.GA15091@wotan.suse.de> <20080303093624.GC15091@wotan.suse.de> <47CBCAB0.2040604@cosmosbay.com> <20080303124142.GB13138@wotan.suse.de> <47CBF683.10201@cosmosbay.com> <20080303134622.GD13138@wotan.suse.de> <84144f020803030553s35a40dd8yf88585ccd5a599fd@mail.gmail.com> <Pine.LNX.4.64.0803031109200.6917@schroedinger.engr.sgi.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0803031109200.6917@schroedinger.engr.sgi.com>
-User-Agent: Mutt/1.5.9i
+       yanmin_zhang@linux.intel.com, David Miller <davem@davemloft.net>,
+       Eric Dumazet <dada1@cosmosbay.com>
+Subject: Re: [rfc][patch 1/3] slub: fix small HWCACHE_ALIGN alignment
+In-Reply-To: <20080303200613.GC8974@wotan.suse.de>
+Message-ID: <Pine.LNX.4.64.0803031209570.16049@schroedinger.engr.sgi.com>
+References: <20080303093449.GA15091@wotan.suse.de>
+ <Pine.LNX.4.64.0803031107130.6917@schroedinger.engr.sgi.com>
+ <20080303200613.GC8974@wotan.suse.de>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Mar 03, 2008 at 11:09:51AM -0800, Christoph Lameter wrote:
-> On Mon, 3 Mar 2008, Pekka Enberg wrote:
-> 
-> > At least historically SLAB_HWCACHE_ALIGN has been just a hint,
-> > although slab tries very hard to satisfy it (see the comments in
-> > mm/slab.c). Why do we need stronger guarantees than that, btw?
-> 
-> Its a hint. Alignment is specified as a parameter to kmem_cache_create not 
-> as a flag. Maybe we could remove SLAB_HWCACHE_ALIGN because it is causing 
-> so much confusion?
+On Mon, 3 Mar 2008, Nick Piggin wrote:
 
-Yeah, that's what I thought too, when I got confused by these new
-SLUB semantics that you made up. Actually if you look at SLAB,
-it has very precise and rational semantics. SLUB should respect that.
+> > If they are already not cache line aligned then we can make them as 
+> > dense as possible. That is what SLUB does.
+> 
+> Because when you specify HWCACHE_ALIGN, it means that you want the object
+> not to cross cacheline boundaries for at least cache_line_size() bytes.
+> SLAB does this. SLUB does not without this patch.
 
-If you really configure for tiny memory footprint, then I'm fine with
-it going away. In that respect, it is still a hint (the callers can't
-rely on it being a particular alignment), and that also applies for
-SLAB_SMP_ALIGN, in case you are concerned that flags must only be hints.
+HWCACHE_ALIGN means that you want the object to be aligned at 
+cacheline boundaries for optimization. Why does crossing cacheline 
+boundaries matter in this case?
 
