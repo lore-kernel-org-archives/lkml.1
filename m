@@ -1,623 +1,346 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762021AbYCCXcg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762561AbYCCXdt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762021AbYCCXcg (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Mar 2008 18:32:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756180AbYCCXc1
+	id S1762561AbYCCXdt (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Mar 2008 18:33:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756586AbYCCXdi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Mar 2008 18:32:27 -0500
-Received: from wa-out-1112.google.com ([209.85.146.182]:8849 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754319AbYCCXcZ (ORCPT
+	Mon, 3 Mar 2008 18:33:38 -0500
+Received: from g5t0008.atlanta.hp.com ([15.192.0.45]:43866 "EHLO
+	g5t0008.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756457AbYCCXdh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Mar 2008 18:32:25 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:to:cc:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=xLjc6BQv1pUriwPt5wcq3YLypc9wAJ9VY6FZsJpdD2TrGUe+Yfh2GzHmXbtPnxCsc60EEqEUcROJyoL1HHm8wYopSvrSUs+oXy+yBXP6I1KGzegoTJ1qU53ryWDsNH0kr7+OS/4W9jcwuUpaLYIUjK7+NjA+/XnkgyaaCO7PPQI=
-Subject: [PATCH] sound: replace remaining __FUNCTION__ occurences
-From: Harvey Harrison <harvey.harrison@gmail.com>
-To: Takashi Iwai <tiwai@suse.de>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Content-Type: text/plain
-Date: Mon, 03 Mar 2008 15:32:18 -0800
-Message-Id: <1204587138.22933.23.camel@brick>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
+	Mon, 3 Mar 2008 18:33:37 -0500
+From: Paul Moore <paul.moore@hp.com>
+Organization: Hewlett-Packard
+To: "Ahmed S. Darwish" <darwish.07@gmail.com>
+Subject: Re: [PATCH 3/9] Audit: use new LSM hooks instead of SELinux exports
+Date: Mon, 3 Mar 2008 18:31:28 -0500
+User-Agent: KMail/1.9.7
+Cc: Chris Wright <chrisw@sous-sol.org>, Stephen Smalley <sds@tycho.nsa.gov>,
+       James Morris <jmorris@namei.org>, Eric Paris <eparis@parisplace.org>,
+       Casey Schaufler <casey@schaufler-ca.com>,
+       David Woodhouse <dwmw2@infradead.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, Audit-ML <linux-audit@redhat.com>,
+       LSM-ML <linux-security-module@vger.kernel.org>
+References: <20080301194752.GA19636@ubuntu> <20080301195438.GD19636@ubuntu>
+In-Reply-To: <20080301195438.GD19636@ubuntu>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200803031831.28367.paul.moore@hp.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-__FUNCTION__ is gcc-specific, use __func__
+On Saturday 01 March 2008 2:54:38 pm Ahmed S. Darwish wrote:
+> Stop using the following exported SELinux interfaces:
+> selinux_get_inode_sid(inode, sid)
+> selinux_get_ipc_sid(ipcp, sid)
+> selinux_get_task_sid(tsk, sid)
+> selinux_sid_to_string(sid, ctx, len)
+> kfree(ctx)
+>
+> and use following generic LSM equivalents respectively:
+> security_inode_getsecid(inode, secid)
+> security_ipc_getsecid*(ipcp, secid)
+> security_task_getsecid(tsk, secid)
+> security_sid_to_secctx(sid, ctx, len)
+> security_release_secctx(ctx, len)
+>
+> Call security_release_secctx only if security_secid_to_secctx
+> succeeded.
 
-Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
----
- sound/arm/pxa2xx-ac97.c         |    8 ++++----
- sound/core/init.c               |    2 +-
- sound/isa/sb/sb16_csp.c         |   28 ++++++++++++++--------------
- sound/isa/sb/sb_common.c        |    6 +++---
- sound/oss/trident.h             |    2 +-
- sound/oss/vwsnd.c               |    6 +++---
- sound/pci/ad1889.c              |    4 ++--
- sound/pci/als300.c              |    4 ++--
- sound/pci/azt3328.c             |    4 ++--
- sound/pci/intel8x0.c            |    2 +-
- sound/soc/pxa/pxa2xx-ac97.c     |    8 ++++----
- sound/soc/s3c24xx/s3c24xx-i2s.c |   20 ++++++++++----------
- sound/soc/s3c24xx/s3c24xx-pcm.c |   28 ++++++++++++++--------------
- sound/soc/soc-dapm.c            |    2 +-
- 14 files changed, 62 insertions(+), 62 deletions(-)
+Thanks for fixing this while you were making your changes.
 
-diff --git a/sound/arm/pxa2xx-ac97.c b/sound/arm/pxa2xx-ac97.c
-index 5d86e68..5910275 100644
---- a/sound/arm/pxa2xx-ac97.c
-+++ b/sound/arm/pxa2xx-ac97.c
-@@ -66,7 +66,7 @@ static unsigned short pxa2xx_ac97_read(struct snd_ac97 *ac97, unsigned short reg
- 	if (wait_event_timeout(gsr_wq, (GSR | gsr_bits) & GSR_SDONE, 1) <= 0 &&
- 	    !((GSR | gsr_bits) & GSR_SDONE)) {
- 		printk(KERN_ERR "%s: read error (ac97_reg=%d GSR=%#lx)\n",
--				__FUNCTION__, reg, GSR | gsr_bits);
-+				__func__, reg, GSR | gsr_bits);
- 		val = -1;
- 		goto out;
- 	}
-@@ -98,7 +98,7 @@ static void pxa2xx_ac97_write(struct snd_ac97 *ac97, unsigned short reg, unsigne
- 	if (wait_event_timeout(gsr_wq, (GSR | gsr_bits) & GSR_CDONE, 1) <= 0 &&
- 	    !((GSR | gsr_bits) & GSR_CDONE))
- 		printk(KERN_ERR "%s: write error (ac97_reg=%d GSR=%#lx)\n",
--				__FUNCTION__, reg, GSR | gsr_bits);
-+				__func__, reg, GSR | gsr_bits);
- 
- 	mutex_unlock(&car_mutex);
- }
-@@ -125,7 +125,7 @@ static void pxa2xx_ac97_reset(struct snd_ac97 *ac97)
- 
- 	if (!((GSR | gsr_bits) & (GSR_PCR | GSR_SCR))) {
- 		printk(KERN_INFO "%s: cold reset timeout (GSR=%#lx)\n",
--				 __FUNCTION__, gsr_bits);
-+				 __func__, gsr_bits);
- 
- 		/* let's try warm reset */
- 		gsr_bits = 0;
-@@ -144,7 +144,7 @@ static void pxa2xx_ac97_reset(struct snd_ac97 *ac97)
- 
- 		if (!((GSR | gsr_bits) & (GSR_PCR | GSR_SCR)))
- 			printk(KERN_INFO "%s: warm reset timeout (GSR=%#lx)\n",
--					 __FUNCTION__, gsr_bits);
-+					 __func__, gsr_bits);
- 	}
- 
- 	GCR &= ~(GCR_PRIRDY_IEN|GCR_SECRDY_IEN);
-diff --git a/sound/core/init.c b/sound/core/init.c
-index e3338d6..f045f7d 100644
---- a/sound/core/init.c
-+++ b/sound/core/init.c
-@@ -254,7 +254,7 @@ static int snd_disconnect_release(struct inode *inode, struct file *file)
- 	if (likely(df))
- 		return df->disconnected_f_op->release(inode, file);
- 
--	panic("%s(%p, %p) failed!", __FUNCTION__, inode, file);
-+	panic("%s(%p, %p) failed!", __func__, inode, file);
- }
- 
- static unsigned int snd_disconnect_poll(struct file * file, poll_table * wait)
-diff --git a/sound/isa/sb/sb16_csp.c b/sound/isa/sb/sb16_csp.c
-index bed29ca..f3fd7b4 100644
---- a/sound/isa/sb/sb16_csp.c
-+++ b/sound/isa/sb/sb16_csp.c
-@@ -331,7 +331,7 @@ static int snd_sb_csp_riff_load(struct snd_sb_csp * p,
- 		return -EFAULT;
- 	if ((file_h.name != RIFF_HEADER) ||
- 	    (le32_to_cpu(file_h.len) >= SNDRV_SB_CSP_MAX_MICROCODE_FILE_SIZE - sizeof(file_h))) {
--		snd_printd("%s: Invalid RIFF header\n", __FUNCTION__);
-+		snd_printd("%s: Invalid RIFF header\n", __func__);
- 		return -EINVAL;
- 	}
- 	data_ptr += sizeof(file_h);
-@@ -340,7 +340,7 @@ static int snd_sb_csp_riff_load(struct snd_sb_csp * p,
- 	if (copy_from_user(&item_type, data_ptr, sizeof(item_type)))
- 		return -EFAULT;
- 	if (item_type != CSP__HEADER) {
--		snd_printd("%s: Invalid RIFF file type\n", __FUNCTION__);
-+		snd_printd("%s: Invalid RIFF file type\n", __func__);
- 		return -EINVAL;
- 	}
- 	data_ptr += sizeof (item_type);
-@@ -395,7 +395,7 @@ static int snd_sb_csp_riff_load(struct snd_sb_csp * p,
- 				return -EFAULT;
- 
- 			if (code_h.name != MAIN_HEADER) {
--				snd_printd("%s: Missing 'main' microcode\n", __FUNCTION__);
-+				snd_printd("%s: Missing 'main' microcode\n", __func__);
- 				return -EINVAL;
- 			}
- 			data_ptr += sizeof(code_h);
-@@ -439,7 +439,7 @@ static int snd_sb_csp_riff_load(struct snd_sb_csp * p,
- 				p->acc_format = p->acc_width = p->acc_rates = 0;
- 				p->mode = 0;
- 				snd_printd("%s: Unsupported CSP codec type: 0x%04x\n",
--					   __FUNCTION__,
-+					   __func__,
- 					   le16_to_cpu(funcdesc_h.VOC_type));
- 				return -EINVAL;
- 			}
-@@ -458,7 +458,7 @@ static int snd_sb_csp_riff_load(struct snd_sb_csp * p,
- 			return 0;
- 		}
- 	}
--	snd_printd("%s: Function #%d not found\n", __FUNCTION__, info.func_req);
-+	snd_printd("%s: Function #%d not found\n", __func__, info.func_req);
- 	return -EINVAL;
- }
- 
-@@ -612,7 +612,7 @@ static int get_version(struct snd_sb *chip)
- static int snd_sb_csp_check_version(struct snd_sb_csp * p)
- {
- 	if (p->version < 0x10 || p->version > 0x1f) {
--		snd_printd("%s: Invalid CSP version: 0x%x\n", __FUNCTION__, p->version);
-+		snd_printd("%s: Invalid CSP version: 0x%x\n", __func__, p->version);
- 		return 1;
- 	}
- 	return 0;
-@@ -631,7 +631,7 @@ static int snd_sb_csp_load(struct snd_sb_csp * p, const unsigned char *buf, int
- 	spin_lock_irqsave(&p->chip->reg_lock, flags);
- 	snd_sbdsp_command(p->chip, 0x01);	/* CSP download command */
- 	if (snd_sbdsp_get_byte(p->chip)) {
--		snd_printd("%s: Download command failed\n", __FUNCTION__);
-+		snd_printd("%s: Download command failed\n", __func__);
- 		goto __fail;
- 	}
- 	/* Send CSP low byte (size - 1) */
-@@ -658,7 +658,7 @@ static int snd_sb_csp_load(struct snd_sb_csp * p, const unsigned char *buf, int
- 			udelay (10);
- 		}
- 		if (status != 0x55) {
--			snd_printd("%s: Microcode initialization failed\n", __FUNCTION__);
-+			snd_printd("%s: Microcode initialization failed\n", __func__);
- 			goto __fail;
- 		}
- 	} else {
-@@ -824,19 +824,19 @@ static int snd_sb_csp_start(struct snd_sb_csp * p, int sample_width, int channel
- 	unsigned long flags;
- 
- 	if (!(p->running & (SNDRV_SB_CSP_ST_LOADED | SNDRV_SB_CSP_ST_AUTO))) {
--		snd_printd("%s: Microcode not loaded\n", __FUNCTION__);
-+		snd_printd("%s: Microcode not loaded\n", __func__);
- 		return -ENXIO;
- 	}
- 	if (p->running & SNDRV_SB_CSP_ST_RUNNING) {
--		snd_printd("%s: CSP already running\n", __FUNCTION__);
-+		snd_printd("%s: CSP already running\n", __func__);
- 		return -EBUSY;
- 	}
- 	if (!(sample_width & p->acc_width)) {
--		snd_printd("%s: Unsupported PCM sample width\n", __FUNCTION__);
-+		snd_printd("%s: Unsupported PCM sample width\n", __func__);
- 		return -EINVAL;
- 	}
- 	if (!(channels & p->acc_channels)) {
--		snd_printd("%s: Invalid number of channels\n", __FUNCTION__);
-+		snd_printd("%s: Invalid number of channels\n", __func__);
- 		return -EINVAL;
- 	}
- 
-@@ -858,11 +858,11 @@ static int snd_sb_csp_start(struct snd_sb_csp * p, int sample_width, int channel
- 		s_type |= 0x22;	/* 00dX 00dX    (d = 1 if 8 bit samples) */
- 
- 	if (set_codec_parameter(p->chip, 0x81, s_type)) {
--		snd_printd("%s: Set sample type command failed\n", __FUNCTION__);
-+		snd_printd("%s: Set sample type command failed\n", __func__);
- 		goto __fail;
- 	}
- 	if (set_codec_parameter(p->chip, 0x80, 0x00)) {
--		snd_printd("%s: Codec start command failed\n", __FUNCTION__);
-+		snd_printd("%s: Codec start command failed\n", __func__);
- 		goto __fail;
- 	}
- 	p->run_width = sample_width;
-diff --git a/sound/isa/sb/sb_common.c b/sound/isa/sb/sb_common.c
-index d63c1af..b432d9a 100644
---- a/sound/isa/sb/sb_common.c
-+++ b/sound/isa/sb/sb_common.c
-@@ -51,7 +51,7 @@ int snd_sbdsp_command(struct snd_sb *chip, unsigned char val)
- 			outb(val, SBP(chip, COMMAND));
- 			return 1;
- 		}
--	snd_printd("%s [0x%lx]: timeout (0x%x)\n", __FUNCTION__, chip->port, val);
-+	snd_printd("%s [0x%lx]: timeout (0x%x)\n", __func__, chip->port, val);
- 	return 0;
- }
- 
-@@ -68,7 +68,7 @@ int snd_sbdsp_get_byte(struct snd_sb *chip)
- 			return val;
- 		}
- 	}
--	snd_printd("%s [0x%lx]: timeout\n", __FUNCTION__, chip->port);
-+	snd_printd("%s [0x%lx]: timeout\n", __func__, chip->port);
- 	return -ENODEV;
- }
- 
-@@ -87,7 +87,7 @@ int snd_sbdsp_reset(struct snd_sb *chip)
- 			else
- 				break;
- 		}
--	snd_printdd("%s [0x%lx] failed...\n", __FUNCTION__, chip->port);
-+	snd_printdd("%s [0x%lx] failed...\n", __func__, chip->port);
- 	return -ENODEV;
- }
- 
-diff --git a/sound/oss/trident.h b/sound/oss/trident.h
-index 4713b49..ff30a1d 100644
---- a/sound/oss/trident.h
-+++ b/sound/oss/trident.h
-@@ -322,7 +322,7 @@ enum miscint_bits {
- #define VALIDATE_MAGIC(FOO,MAG)				\
- ({						  	\
- 	if (!(FOO) || (FOO)->magic != MAG) { 		\
--		printk(invalid_magic,__FUNCTION__);	\
-+		printk(invalid_magic,__func__);	\
- 		return -ENXIO;			  	\
- 	}					  	\
- })
-diff --git a/sound/oss/vwsnd.c b/sound/oss/vwsnd.c
-index d25249a..2c5aaa5 100644
---- a/sound/oss/vwsnd.c
-+++ b/sound/oss/vwsnd.c
-@@ -194,11 +194,11 @@ static void dbgassert(const char *fcn, int line, const char *expr)
-  *	DBGRV	- debug print function return when verbose
-  */
- 
--#define ASSERT(e)      ((e) ? (void) 0 : dbgassert(__FUNCTION__, __LINE__, #e))
-+#define ASSERT(e)      ((e) ? (void) 0 : dbgassert(__func__, __LINE__, #e))
- #define DBGDO(x)            x
- #define DBGX(fmt, args...)  (in_interrupt() ? 0 : printk(KERN_ERR fmt, ##args))
--#define DBGP(fmt, args...)  (DBGX("%s: " fmt, __FUNCTION__ , ##args))
--#define DBGE(fmt, args...)  (DBGX("%s" fmt, __FUNCTION__ , ##args))
-+#define DBGP(fmt, args...)  (DBGX("%s: " fmt, __func__ , ##args))
-+#define DBGE(fmt, args...)  (DBGX("%s" fmt, __func__ , ##args))
- #define DBGC(rtn)           (DBGP("calling %s\n", rtn))
- #define DBGR()              (DBGP("returning\n"))
- #define DBGXV(fmt, args...) (shut_up ? 0 : DBGX(fmt, ##args))
-diff --git a/sound/pci/ad1889.c b/sound/pci/ad1889.c
-index a66d515..1edb644 100644
---- a/sound/pci/ad1889.c
-+++ b/sound/pci/ad1889.c
-@@ -264,10 +264,10 @@ snd_ad1889_ac97_ready(struct snd_ad1889 *chip)
- 		mdelay(1);
- 	if (!retry) {
- 		snd_printk(KERN_ERR PFX "[%s] Link is not ready.\n",
--		       __FUNCTION__);
-+		       __func__);
- 		return -EIO;
- 	}
--	ad1889_debug("[%s] ready after %d ms\n", __FUNCTION__, 400 - retry);
-+	ad1889_debug("[%s] ready after %d ms\n", __func__, 400 - retry);
- 
- 	return 0;
- }
-diff --git a/sound/pci/als300.c b/sound/pci/als300.c
-index 0e990a7..8df6824 100644
---- a/sound/pci/als300.c
-+++ b/sound/pci/als300.c
-@@ -92,8 +92,8 @@
- 
- #if DEBUG_CALLS
- #define snd_als300_dbgcalls(format, args...) printk(format, ##args)
--#define snd_als300_dbgcallenter() printk(KERN_ERR "--> %s\n", __FUNCTION__)
--#define snd_als300_dbgcallleave() printk(KERN_ERR "<-- %s\n", __FUNCTION__)
-+#define snd_als300_dbgcallenter() printk(KERN_ERR "--> %s\n", __func__)
-+#define snd_als300_dbgcallleave() printk(KERN_ERR "<-- %s\n", __func__)
- #else
- #define snd_als300_dbgcalls(format, args...)
- #define snd_als300_dbgcallenter()
-diff --git a/sound/pci/azt3328.c b/sound/pci/azt3328.c
-index 4e71a55..be87d31 100644
---- a/sound/pci/azt3328.c
-+++ b/sound/pci/azt3328.c
-@@ -157,8 +157,8 @@ MODULE_SUPPORTED_DEVICE("{{Aztech,AZF3328}}");
- 
- #if DEBUG_CALLS
- #define snd_azf3328_dbgcalls(format, args...) printk(format, ##args)
--#define snd_azf3328_dbgcallenter() printk(KERN_ERR "--> %s\n", __FUNCTION__)
--#define snd_azf3328_dbgcallleave() printk(KERN_ERR "<-- %s\n", __FUNCTION__)
-+#define snd_azf3328_dbgcallenter() printk(KERN_ERR "--> %s\n", __func__)
-+#define snd_azf3328_dbgcallleave() printk(KERN_ERR "<-- %s\n", __func__)
- #else
- #define snd_azf3328_dbgcalls(format, args...)
- #define snd_azf3328_dbgcallenter()
-diff --git a/sound/pci/intel8x0.c b/sound/pci/intel8x0.c
-index c52abd0..48c1f56 100644
---- a/sound/pci/intel8x0.c
-+++ b/sound/pci/intel8x0.c
-@@ -2648,7 +2648,7 @@ static void __devinit intel8x0_measure_ac97_clock(struct intel8x0 *chip)
- 	t = stop_time.tv_sec - start_time.tv_sec;
- 	t *= 1000000;
- 	t += stop_time.tv_usec - start_time.tv_usec;
--	printk(KERN_INFO "%s: measured %lu usecs\n", __FUNCTION__, t);
-+	printk(KERN_INFO "%s: measured %lu usecs\n", __func__, t);
- 	if (t == 0) {
- 		snd_printk(KERN_ERR "?? calculation error..\n");
- 		return;
-diff --git a/sound/soc/pxa/pxa2xx-ac97.c b/sound/soc/pxa/pxa2xx-ac97.c
-index 815c153..a57a964 100644
---- a/sound/soc/pxa/pxa2xx-ac97.c
-+++ b/sound/soc/pxa/pxa2xx-ac97.c
-@@ -81,7 +81,7 @@ static unsigned short pxa2xx_ac97_read(struct snd_ac97 *ac97,
- 	wait_event_timeout(gsr_wq, (GSR | gsr_bits) & GSR_SDONE, 1);
- 	if (!((GSR | gsr_bits) & GSR_SDONE)) {
- 		printk(KERN_ERR "%s: read error (ac97_reg=%x GSR=%#lx)\n",
--				__FUNCTION__, reg, GSR | gsr_bits);
-+				__func__, reg, GSR | gsr_bits);
- 		val = -1;
- 		goto out;
- 	}
-@@ -121,7 +121,7 @@ static void pxa2xx_ac97_write(struct snd_ac97 *ac97, unsigned short reg,
- 	wait_event_timeout(gsr_wq, (GSR | gsr_bits) & GSR_CDONE, 1);
- 	if (!((GSR | gsr_bits) & GSR_CDONE))
- 		printk(KERN_ERR "%s: write error (ac97_reg=%x GSR=%#lx)\n",
--				__FUNCTION__, reg, GSR | gsr_bits);
-+				__func__, reg, GSR | gsr_bits);
- 
- 	mutex_unlock(&car_mutex);
- }
-@@ -145,7 +145,7 @@ static void pxa2xx_ac97_warm_reset(struct snd_ac97 *ac97)
- 
- 	if (!((GSR | gsr_bits) & (GSR_PCR | GSR_SCR)))
- 		printk(KERN_INFO "%s: warm reset timeout (GSR=%#lx)\n",
--				 __FUNCTION__, gsr_bits);
-+				 __func__, gsr_bits);
- 
- 	GCR &= ~(GCR_PRIRDY_IEN|GCR_SECRDY_IEN);
- 	GCR |= GCR_SDONE_IE|GCR_CDONE_IE;
-@@ -172,7 +172,7 @@ static void pxa2xx_ac97_cold_reset(struct snd_ac97 *ac97)
- 
- 	if (!((GSR | gsr_bits) & (GSR_PCR | GSR_SCR)))
- 		printk(KERN_INFO "%s: cold reset timeout (GSR=%#lx)\n",
--				 __FUNCTION__, gsr_bits);
-+				 __func__, gsr_bits);
- 
- 	GCR &= ~(GCR_PRIRDY_IEN|GCR_SECRDY_IEN);
- 	GCR |= GCR_SDONE_IE|GCR_CDONE_IE;
-diff --git a/sound/soc/s3c24xx/s3c24xx-i2s.c b/sound/soc/s3c24xx/s3c24xx-i2s.c
-index 0a3c630..301002c 100644
---- a/sound/soc/s3c24xx/s3c24xx-i2s.c
-+++ b/sound/soc/s3c24xx/s3c24xx-i2s.c
-@@ -89,7 +89,7 @@ static void s3c24xx_snd_txctrl(int on)
- 	u32 iiscon;
- 	u32 iismod;
- 
--	DBG("Entered %s\n", __FUNCTION__);
-+	DBG("Entered %s\n", __func__);
- 
- 	iisfcon = readl(s3c24xx_i2s.regs + S3C2410_IISFCON);
- 	iiscon  = readl(s3c24xx_i2s.regs + S3C2410_IISCON);
-@@ -134,7 +134,7 @@ static void s3c24xx_snd_rxctrl(int on)
- 	u32 iiscon;
- 	u32 iismod;
- 
--	DBG("Entered %s\n", __FUNCTION__);
-+	DBG("Entered %s\n", __func__);
- 
- 	iisfcon = readl(s3c24xx_i2s.regs + S3C2410_IISFCON);
- 	iiscon  = readl(s3c24xx_i2s.regs + S3C2410_IISCON);
-@@ -182,7 +182,7 @@ static int s3c24xx_snd_lrsync(void)
- 	u32 iiscon;
- 	unsigned long timeout = jiffies + msecs_to_jiffies(5);
- 
--	DBG("Entered %s\n", __FUNCTION__);
-+	DBG("Entered %s\n", __func__);
- 
- 	while (1) {
- 		iiscon = readl(s3c24xx_i2s.regs + S3C2410_IISCON);
-@@ -201,7 +201,7 @@ static int s3c24xx_snd_lrsync(void)
-  */
- static inline int s3c24xx_snd_is_clkmaster(void)
- {
--	DBG("Entered %s\n", __FUNCTION__);
-+	DBG("Entered %s\n", __func__);
- 
- 	return (readl(s3c24xx_i2s.regs + S3C2410_IISMOD) & S3C2410_IISMOD_SLAVE) ? 0:1;
- }
-@@ -214,7 +214,7 @@ static int s3c24xx_i2s_set_fmt(struct snd_soc_cpu_dai *cpu_dai,
- {
- 	u32 iismod;
- 
--	DBG("Entered %s\n", __FUNCTION__);
-+	DBG("Entered %s\n", __func__);
- 
- 	iismod = readl(s3c24xx_i2s.regs + S3C2410_IISMOD);
- 	DBG("hw_params r: IISMOD: %lx \n", iismod);
-@@ -250,7 +250,7 @@ static int s3c24xx_i2s_hw_params(struct snd_pcm_substream *substream,
- 	struct snd_soc_pcm_runtime *rtd = substream->private_data;
- 	u32 iismod;
- 
--	DBG("Entered %s\n", __FUNCTION__);
-+	DBG("Entered %s\n", __func__);
- 
- 	if (substream->stream == SNDRV_PCM_STREAM_PLAYBACK)
- 		rtd->dai->cpu_dai->dma_data = &s3c24xx_i2s_pcm_stereo_out;
-@@ -278,7 +278,7 @@ static int s3c24xx_i2s_trigger(struct snd_pcm_substream *substream, int cmd)
- {
- 	int ret = 0;
- 
--	DBG("Entered %s\n", __FUNCTION__);
-+	DBG("Entered %s\n", __func__);
- 
- 	switch (cmd) {
- 	case SNDRV_PCM_TRIGGER_START:
-@@ -320,7 +320,7 @@ static int s3c24xx_i2s_set_sysclk(struct snd_soc_cpu_dai *cpu_dai,
- {
- 	u32 iismod = readl(s3c24xx_i2s.regs + S3C2410_IISMOD);
- 
--	DBG("Entered %s\n", __FUNCTION__);
-+	DBG("Entered %s\n", __func__);
- 
- 	iismod &= ~S3C2440_IISMOD_MPLL;
- 
-@@ -346,7 +346,7 @@ static int s3c24xx_i2s_set_clkdiv(struct snd_soc_cpu_dai *cpu_dai,
- {
- 	u32 reg;
- 
--	DBG("Entered %s\n", __FUNCTION__);
-+	DBG("Entered %s\n", __func__);
- 
- 	switch (div_id) {
- 	case S3C24XX_DIV_BCLK:
-@@ -381,7 +381,7 @@ EXPORT_SYMBOL_GPL(s3c24xx_i2s_get_clockrate);
- 
- static int s3c24xx_i2s_probe(struct platform_device *pdev)
- {
--	DBG("Entered %s\n", __FUNCTION__);
-+	DBG("Entered %s\n", __func__);
- 
- 	s3c24xx_i2s.regs = ioremap(S3C2410_PA_IIS, 0x100);
- 	if (s3c24xx_i2s.regs == NULL)
-diff --git a/sound/soc/s3c24xx/s3c24xx-pcm.c b/sound/soc/s3c24xx/s3c24xx-pcm.c
-index 29a6c82..40112e2 100644
---- a/sound/soc/s3c24xx/s3c24xx-pcm.c
-+++ b/sound/soc/s3c24xx/s3c24xx-pcm.c
-@@ -88,7 +88,7 @@ static void s3c24xx_pcm_enqueue(struct snd_pcm_substream *substream)
- 	dma_addr_t pos = prtd->dma_pos;
- 	int ret;
- 
--	DBG("Entered %s\n", __FUNCTION__);
-+	DBG("Entered %s\n", __func__);
- 
- 	while (prtd->dma_loaded < prtd->dma_limit) {
- 		unsigned long len = prtd->dma_period;
-@@ -98,7 +98,7 @@ static void s3c24xx_pcm_enqueue(struct snd_pcm_substream *substream)
- 		if ((pos + len) > prtd->dma_end) {
- 			len  = prtd->dma_end - pos;
- 			DBG(KERN_DEBUG "%s: corrected dma len %ld\n",
--			       __FUNCTION__, len);
-+			       __func__, len);
- 		}
- 
- 		ret = s3c2410_dma_enqueue(prtd->params->channel, 
-@@ -123,7 +123,7 @@ static void s3c24xx_audio_buffdone(struct s3c2410_dma_chan *channel,
- 	struct snd_pcm_substream *substream = dev_id;
- 	struct s3c24xx_runtime_data *prtd;
- 
--	DBG("Entered %s\n", __FUNCTION__);
-+	DBG("Entered %s\n", __func__);
- 
- 	if (result == S3C2410_RES_ABORT || result == S3C2410_RES_ERR)
- 		return;
-@@ -152,7 +152,7 @@ static int s3c24xx_pcm_hw_params(struct snd_pcm_substream *substream,
- 	unsigned long totbytes = params_buffer_bytes(params);
- 	int ret=0;
- 
--	DBG("Entered %s\n", __FUNCTION__);
-+	DBG("Entered %s\n", __func__);
- 
- 	/* return if this is a bufferless transfer e.g.
- 	 * codec <--> BT codec or GSM modem -- lg FIXME */
-@@ -200,7 +200,7 @@ static int s3c24xx_pcm_hw_free(struct snd_pcm_substream *substream)
- {
- 	struct s3c24xx_runtime_data *prtd = substream->runtime->private_data;
- 
--	DBG("Entered %s\n", __FUNCTION__);
-+	DBG("Entered %s\n", __func__);
- 
- 	/* TODO - do we need to ensure DMA flushed */
- 	snd_pcm_set_runtime_buffer(substream, NULL);
-@@ -218,7 +218,7 @@ static int s3c24xx_pcm_prepare(struct snd_pcm_substream *substream)
- 	struct s3c24xx_runtime_data *prtd = substream->runtime->private_data;
- 	int ret = 0;
- 
--	DBG("Entered %s\n", __FUNCTION__);
-+	DBG("Entered %s\n", __func__);
- 
- 	/* return if this is a bufferless transfer e.g.
- 	 * codec <--> BT codec or GSM modem -- lg FIXME */
-@@ -263,7 +263,7 @@ static int s3c24xx_pcm_trigger(struct snd_pcm_substream *substream, int cmd)
- 	struct s3c24xx_runtime_data *prtd = substream->runtime->private_data;
- 	int ret = 0;
- 
--	DBG("Entered %s\n", __FUNCTION__);
-+	DBG("Entered %s\n", __func__);
- 
- 	spin_lock(&prtd->lock);
- 
-@@ -301,7 +301,7 @@ static snd_pcm_uframes_t
- 	unsigned long res;
- 	dma_addr_t src, dst;
- 
--	DBG("Entered %s\n", __FUNCTION__);
-+	DBG("Entered %s\n", __func__);
- 
- 	spin_lock(&prtd->lock);
- 	s3c2410_dma_getposition(prtd->params->channel, &src, &dst);
-@@ -334,7 +334,7 @@ static int s3c24xx_pcm_open(struct snd_pcm_substream *substream)
- 	struct snd_pcm_runtime *runtime = substream->runtime;
- 	struct s3c24xx_runtime_data *prtd;
- 
--	DBG("Entered %s\n", __FUNCTION__);
-+	DBG("Entered %s\n", __func__);
- 
- 	snd_soc_set_runtime_hwparams(substream, &s3c24xx_pcm_hardware);
- 
-@@ -353,7 +353,7 @@ static int s3c24xx_pcm_close(struct snd_pcm_substream *substream)
- 	struct snd_pcm_runtime *runtime = substream->runtime;
- 	struct s3c24xx_runtime_data *prtd = runtime->private_data;
- 
--	DBG("Entered %s\n", __FUNCTION__);
-+	DBG("Entered %s\n", __func__);
- 
- 	if (prtd)
- 		kfree(prtd);
-@@ -368,7 +368,7 @@ static int s3c24xx_pcm_mmap(struct snd_pcm_substream *substream,
- {
- 	struct snd_pcm_runtime *runtime = substream->runtime;
- 
--	DBG("Entered %s\n", __FUNCTION__);
-+	DBG("Entered %s\n", __func__);
- 
- 	return dma_mmap_writecombine(substream->pcm->card->dev, vma,
-                                      runtime->dma_area,
-@@ -394,7 +394,7 @@ static int s3c24xx_pcm_preallocate_dma_buffer(struct snd_pcm *pcm, int stream)
- 	struct snd_dma_buffer *buf = &substream->dma_buffer;
- 	size_t size = s3c24xx_pcm_hardware.buffer_bytes_max;
- 
--	DBG("Entered %s\n", __FUNCTION__);
-+	DBG("Entered %s\n", __func__);
- 
- 	buf->dev.type = SNDRV_DMA_TYPE_DEV;
- 	buf->dev.dev = pcm->card->dev;
-@@ -413,7 +413,7 @@ static void s3c24xx_pcm_free_dma_buffers(struct snd_pcm *pcm)
- 	struct snd_dma_buffer *buf;
- 	int stream;
- 
--	DBG("Entered %s\n", __FUNCTION__);
-+	DBG("Entered %s\n", __func__);
- 
- 	for (stream = 0; stream < 2; stream++) {
- 		substream = pcm->streams[stream].substream;
-@@ -437,7 +437,7 @@ static int s3c24xx_pcm_new(struct snd_card *card,
- {
- 	int ret = 0;
- 
--	DBG("Entered %s\n", __FUNCTION__);
-+	DBG("Entered %s\n", __func__);
- 
- 	if (!card->dev->dma_mask)
- 		card->dev->dma_mask = &s3c24xx_pcm_dmamask;
-diff --git a/sound/soc/soc-dapm.c b/sound/soc/soc-dapm.c
-index 620d7ea..9ef47cc 100644
---- a/sound/soc/soc-dapm.c
-+++ b/sound/soc/soc-dapm.c
-@@ -1288,7 +1288,7 @@ int snd_soc_dapm_stream_event(struct snd_soc_codec *codec,
- 	mutex_unlock(&codec->mutex);
- 
- 	dapm_power_widgets(codec, event);
--	dump_dapm(codec, __FUNCTION__);
-+	dump_dapm(codec, __func__);
- 	return 0;
- }
- EXPORT_SYMBOL_GPL(snd_soc_dapm_stream_event);
+> Signed-off-by: Casey Schaufler <casey@schaufler-ca.com>
+> Signed-off-by: Ahmed S. Darwish <darwish.07@gmail.com>
+
+Reviewed-by: Paul Moore <paul.moore@hp.com>
+
+> ---
+>
+>  audit.c       |   17 +++++++++--------
+>  auditfilter.c |    8 +++++---
+>  auditsc.c     |   55
+> +++++++++++++++++++++++++++++-------------------------- 3 files
+> changed, 43 insertions(+), 37 deletions(-)
+>
+> diff --git a/kernel/audit.c b/kernel/audit.c
+> index 8316a88..d79f866 100644
+> --- a/kernel/audit.c
+> +++ b/kernel/audit.c
+> @@ -259,13 +259,13 @@ static int audit_log_config_change(char
+> *function_name, int new, int old, char *ctx = NULL;
+>  		u32 len;
+>
+> -		rc = selinux_sid_to_string(sid, &ctx, &len);
+> +		rc = security_secid_to_secctx(sid, &ctx, &len);
+>  		if (rc) {
+>  			audit_log_format(ab, " sid=%u", sid);
+>  			allow_changes = 0; /* Something weird, deny request */
+>  		} else {
+>  			audit_log_format(ab, " subj=%s", ctx);
+> -			kfree(ctx);
+> +			security_release_secctx(ctx, len);
+>  		}
+>  	}
+>  	audit_log_format(ab, " res=%d", allow_changes);
+> @@ -543,12 +543,13 @@ static int audit_log_common_recv_msg(struct
+> audit_buffer **ab, u16 msg_type, audit_log_format(*ab, "user pid=%d
+> uid=%u auid=%u",
+>  			 pid, uid, auid);
+>  	if (sid) {
+> -		rc = selinux_sid_to_string(sid, &ctx, &len);
+> +		rc = security_secid_to_secctx(sid, &ctx, &len);
+>  		if (rc)
+>  			audit_log_format(*ab, " ssid=%u", sid);
+> -		else
+> +		else {
+>  			audit_log_format(*ab, " subj=%s", ctx);
+> -		kfree(ctx);
+> +			security_release_secctx(ctx, len);
+> +		}
+>  	}
+>
+>  	return rc;
+> @@ -750,18 +751,18 @@ static int audit_receive_msg(struct sk_buff
+> *skb, struct nlmsghdr *nlh) break;
+>  	}
+>  	case AUDIT_SIGNAL_INFO:
+> -		err = selinux_sid_to_string(audit_sig_sid, &ctx, &len);
+> +		err = security_secid_to_secctx(audit_sig_sid, &ctx, &len);
+>  		if (err)
+>  			return err;
+>  		sig_data = kmalloc(sizeof(*sig_data) + len, GFP_KERNEL);
+>  		if (!sig_data) {
+> -			kfree(ctx);
+> +			security_release_secctx(ctx, len);
+>  			return -ENOMEM;
+>  		}
+>  		sig_data->uid = audit_sig_uid;
+>  		sig_data->pid = audit_sig_pid;
+>  		memcpy(sig_data->ctx, ctx, len);
+> -		kfree(ctx);
+> +		security_release_secctx(ctx, len);
+>  		audit_send_reply(NETLINK_CB(skb).pid, seq, AUDIT_SIGNAL_INFO,
+>  				0, 0, sig_data, sizeof(*sig_data) + len);
+>  		kfree(sig_data);
+> diff --git a/kernel/auditfilter.c b/kernel/auditfilter.c
+> index 2f2914b..35e58a1 100644
+> --- a/kernel/auditfilter.c
+> +++ b/kernel/auditfilter.c
+> @@ -28,6 +28,7 @@
+>  #include <linux/netlink.h>
+>  #include <linux/sched.h>
+>  #include <linux/inotify.h>
+> +#include <linux/security.h>
+>  #include <linux/selinux.h>
+>  #include "audit.h"
+>
+> @@ -1515,11 +1516,12 @@ static void audit_log_rule_change(uid_t
+> loginuid, u32 sid, char *action, if (sid) {
+>  		char *ctx = NULL;
+>  		u32 len;
+> -		if (selinux_sid_to_string(sid, &ctx, &len))
+> +		if (security_secid_to_secctx(sid, &ctx, &len))
+>  			audit_log_format(ab, " ssid=%u", sid);
+> -		else
+> +		else {
+>  			audit_log_format(ab, " subj=%s", ctx);
+> -		kfree(ctx);
+> +			security_release_secctx(ctx, len);
+> +		}
+>  	}
+>  	audit_log_format(ab, " op=%s rule key=", action);
+>  	if (rule->filterkey)
+> diff --git a/kernel/auditsc.c b/kernel/auditsc.c
+> index d07fc4a..a9fc9dd 100644
+> --- a/kernel/auditsc.c
+> +++ b/kernel/auditsc.c
+> @@ -530,7 +530,7 @@ static int audit_filter_rules(struct task_struct
+> *tsk, logged upon error */
+>  			if (f->se_rule) {
+>  				if (need_sid) {
+> -					selinux_get_task_sid(tsk, &sid);
+> +					security_task_getsecid(tsk, &sid);
+>  					need_sid = 0;
+>  				}
+>  				result = selinux_audit_rule_match(sid, f->type,
+> @@ -885,11 +885,11 @@ void audit_log_task_context(struct audit_buffer
+> *ab) int error;
+>  	u32 sid;
+>
+> -	selinux_get_task_sid(current, &sid);
+> +	security_task_getsecid(current, &sid);
+>  	if (!sid)
+>  		return;
+>
+> -	error = selinux_sid_to_string(sid, &ctx, &len);
+> +	error = security_secid_to_secctx(sid, &ctx, &len);
+>  	if (error) {
+>  		if (error != -EINVAL)
+>  			goto error_path;
+> @@ -897,7 +897,7 @@ void audit_log_task_context(struct audit_buffer
+> *ab) }
+>
+>  	audit_log_format(ab, " subj=%s", ctx);
+> -	kfree(ctx);
+> +	security_release_secctx(ctx, len);
+>  	return;
+>
+>  error_path:
+> @@ -941,7 +941,7 @@ static int audit_log_pid_context(struct
+> audit_context *context, pid_t pid, u32 sid, char *comm)
+>  {
+>  	struct audit_buffer *ab;
+> -	char *s = NULL;
+> +	char *ctx = NULL;
+>  	u32 len;
+>  	int rc = 0;
+>
+> @@ -951,15 +951,16 @@ static int audit_log_pid_context(struct
+> audit_context *context, pid_t pid,
+>
+>  	audit_log_format(ab, "opid=%d oauid=%d ouid=%d oses=%d", pid, auid,
+>  			 uid, sessionid);
+> -	if (selinux_sid_to_string(sid, &s, &len)) {
+> +	if (security_secid_to_secctx(sid, &ctx, &len)) {
+>  		audit_log_format(ab, " obj=(none)");
+>  		rc = 1;
+> -	} else
+> -		audit_log_format(ab, " obj=%s", s);
+> +	} else {
+> +		audit_log_format(ab, " obj=%s", ctx);
+> +		security_release_secctx(ctx, len);
+> +	}
+>  	audit_log_format(ab, " ocomm=");
+>  	audit_log_untrustedstring(ab, comm);
+>  	audit_log_end(ab);
+> -	kfree(s);
+>
+>  	return rc;
+>  }
+> @@ -1268,14 +1269,15 @@ static void audit_log_exit(struct
+> audit_context *context, struct task_struct *ts if (axi->osid != 0) {
+>  				char *ctx = NULL;
+>  				u32 len;
+> -				if (selinux_sid_to_string(
+> +				if (security_secid_to_secctx(
+>  						axi->osid, &ctx, &len)) {
+>  					audit_log_format(ab, " osid=%u",
+>  							axi->osid);
+>  					call_panic = 1;
+> -				} else
+> +				} else {
+>  					audit_log_format(ab, " obj=%s", ctx);
+> -				kfree(ctx);
+> +					security_release_secctx(ctx, len);
+> +				}
+>  			}
+>  			break; }
+>
+> @@ -1389,13 +1391,14 @@ static void audit_log_exit(struct
+> audit_context *context, struct task_struct *ts if (n->osid != 0) {
+>  			char *ctx = NULL;
+>  			u32 len;
+> -			if (selinux_sid_to_string(
+> +			if (security_secid_to_secctx(
+>  				n->osid, &ctx, &len)) {
+>  				audit_log_format(ab, " osid=%u", n->osid);
+>  				call_panic = 2;
+> -			} else
+> +			} else {
+>  				audit_log_format(ab, " obj=%s", ctx);
+> -			kfree(ctx);
+> +				security_release_secctx(ctx, len);
+> +			}
+>  		}
+>
+>  		audit_log_end(ab);
+> @@ -1772,7 +1775,7 @@ static void audit_copy_inode(struct audit_names
+> *name, const struct inode *inode name->uid   = inode->i_uid;
+>  	name->gid   = inode->i_gid;
+>  	name->rdev  = inode->i_rdev;
+> -	selinux_get_inode_sid(inode, &name->osid);
+> +	security_inode_getsecid(inode, &name->osid);
+>  }
+>
+>  /**
+> @@ -2187,8 +2190,7 @@ int __audit_ipc_obj(struct kern_ipc_perm *ipcp)
+>  	ax->uid = ipcp->uid;
+>  	ax->gid = ipcp->gid;
+>  	ax->mode = ipcp->mode;
+> -	selinux_get_ipc_sid(ipcp, &ax->osid);
+> -
+> +	security_ipc_getsecid(ipcp, &ax->osid);
+>  	ax->d.type = AUDIT_IPC;
+>  	ax->d.next = context->aux;
+>  	context->aux = (void *)ax;
+> @@ -2340,7 +2342,7 @@ void __audit_ptrace(struct task_struct *t)
+>  	context->target_auid = audit_get_loginuid(t);
+>  	context->target_uid = t->uid;
+>  	context->target_sessionid = audit_get_sessionid(t);
+> -	selinux_get_task_sid(t, &context->target_sid);
+> +	security_task_getsecid(t, &context->target_sid);
+>  	memcpy(context->target_comm, t->comm, TASK_COMM_LEN);
+>  }
+>
+> @@ -2368,7 +2370,7 @@ int __audit_signal_info(int sig, struct
+> task_struct *t) audit_sig_uid = tsk->loginuid;
+>  			else
+>  				audit_sig_uid = tsk->uid;
+> -			selinux_get_task_sid(tsk, &audit_sig_sid);
+> +			security_task_getsecid(tsk, &audit_sig_sid);
+>  		}
+>  		if (!audit_signals || audit_dummy_context())
+>  			return 0;
+> @@ -2381,7 +2383,7 @@ int __audit_signal_info(int sig, struct
+> task_struct *t) ctx->target_auid = audit_get_loginuid(t);
+>  		ctx->target_uid = t->uid;
+>  		ctx->target_sessionid = audit_get_sessionid(t);
+> -		selinux_get_task_sid(t, &ctx->target_sid);
+> +		security_task_getsecid(t, &ctx->target_sid);
+>  		memcpy(ctx->target_comm, t->comm, TASK_COMM_LEN);
+>  		return 0;
+>  	}
+> @@ -2402,7 +2404,7 @@ int __audit_signal_info(int sig, struct
+> task_struct *t) axp->target_auid[axp->pid_count] =
+> audit_get_loginuid(t);
+>  	axp->target_uid[axp->pid_count] = t->uid;
+>  	axp->target_sessionid[axp->pid_count] = audit_get_sessionid(t);
+> -	selinux_get_task_sid(t, &axp->target_sid[axp->pid_count]);
+> +	security_task_getsecid(t, &axp->target_sid[axp->pid_count]);
+>  	memcpy(axp->target_comm[axp->pid_count], t->comm, TASK_COMM_LEN);
+>  	axp->pid_count++;
+>
+> @@ -2432,16 +2434,17 @@ void audit_core_dumps(long signr)
+>  	ab = audit_log_start(NULL, GFP_KERNEL, AUDIT_ANOM_ABEND);
+>  	audit_log_format(ab, "auid=%u uid=%u gid=%u ses=%u",
+>  			auid, current->uid, current->gid, sessionid);
+> -	selinux_get_task_sid(current, &sid);
+> +	security_task_getsecid(current, &sid);
+>  	if (sid) {
+>  		char *ctx = NULL;
+>  		u32 len;
+>
+> -		if (selinux_sid_to_string(sid, &ctx, &len))
+> +		if (security_secid_to_secctx(sid, &ctx, &len))
+>  			audit_log_format(ab, " ssid=%u", sid);
+> -		else
+> +		else {
+>  			audit_log_format(ab, " subj=%s", ctx);
+> -		kfree(ctx);
+> +			security_release_secctx(ctx, len);
+> +		}
+>  	}
+>  	audit_log_format(ab, " pid=%d comm=", current->pid);
+>  	audit_log_untrustedstring(ab, current->comm);
+
+
+
 -- 
-1.5.4.3.500.g83a2c
-
-
-
+paul moore
+linux security @ hp
