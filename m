@@ -1,93 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761884AbYCCAUj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758932AbYCCAbP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761884AbYCCAUj (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 2 Mar 2008 19:20:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760505AbYCCARw
+	id S1758932AbYCCAbP (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 2 Mar 2008 19:31:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754751AbYCCAa6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 2 Mar 2008 19:17:52 -0500
-Received: from cantor2.suse.de ([195.135.220.15]:45733 "EHLO mx2.suse.de"
+	Sun, 2 Mar 2008 19:30:58 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:41155 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756712AbYCCARu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 2 Mar 2008 19:17:50 -0500
-From: NeilBrown <neilb@suse.de>
-To: Andrew Morton <akpm@linux-foundation.org>
-Date: Mon, 3 Mar 2008 11:18:00 +1100
-Message-Id: <1080303001800.23698@suse.de>
-X-face: [Gw_3E*Gng}4rRrKRYotwlE?.2|**#s9D<ml'fY1Vw+@XfR[fRCsUoP?K6bt3YDui5Fh?f
-	LONpR';(ql)VM_TQ/<l_^D3~B:z$YC7gUCuC=sYm/80G=$tt"98mr8(l))QzVKCk$6~gldn~*FK9x
-	8`;pM{3S8679sP+MbP,72<3_PIH-$I&iaiIb|hV1d%cYg))BmI)AZ
-Cc: linux-raid@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: "K.Tanaka" <k-tanaka@ce.jp.nec.com>
-Subject: [PATCH 009 of 9] md: The md RAID10 resync thread could cause a md RAID10 array deadlock
-References: <20080303111240.23302.patches@notabene>
+	id S1753079AbYCCAa6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 2 Mar 2008 19:30:58 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Arjan van de Ven <arjan@infradead.org>
+Subject: Re: [PATCH RFC] introduce pm_call() macro to get rid of most #ifdef CONFIG_PM
+Date: Mon, 3 Mar 2008 01:29:28 +0100
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: Anton Vorontsov <cbouatmailru@gmail.com>, linux-kernel@vger.kernel.org,
+       linux-pm@lists.linux-foundation.org
+References: <20080302234308.GA10116@zarina> <20080302160820.1930a770@laptopd505.fenrus.org>
+In-Reply-To: <20080302160820.1930a770@laptopd505.fenrus.org>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200803030129.29087.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Monday, 3 of March 2008, Arjan van de Ven wrote:
+> On Mon, 3 Mar 2008 02:43:08 +0300
+> Anton Vorontsov <cbouatmailru@gmail.com> wrote:
+> 
+> > Currently drivers handle CONFIG_PM this way:
+> > 
+> > #ifdef CONFIG_PM
+> > drv_suspend() {}
+> > drv_resume() {}
+> > #else
+> > #define drv_suspend NULL
+> > #define drv_resume NULL
+> > #endif
+> > 
+> > struct driver drv = {
+> > 	.suspend = drv_suspend,
+> > 	.resume = drv_resume,
+> > };
+> > 
+> > With this patch, the code above converts into:
+> > 
+> > drv_suspend() {}
+> > drv_resume() {}
+> > 
+> > struct driver drv = {
+> > 	.suspend = pm_call(drv_suspend),
+> > 	.resume = pm_call(drv_resume),
+> > };
+> > 
+> > GCC will optimize away suspend/resume calls if they're really
+> > not used.
+> > 
+> 
+> 
+> to be honest, at this point I would think it's time to remove CONFIG_PM, or rather,
+> just make it always be there and just get rid of the ifdefs. We're saving 2 words and a bit of code,
+> but only a case that not even the embedded guys use. 
 
-From: "K.Tanaka" <k-tanaka@ce.jp.nec.com>
+All of the drivers' ->suspend() and ->resume() callbacks currently depend on
+CONFIG_PM, which they shouldn't.
 
-This message describes another issue about md RAID10 found by
-testing the 2.6.24 md RAID10 using new scsi fault injection framework.
+Still, we're going to introduce new callbacks for suspend/hibernation and the
+$subject change will probably get us in the way.  Also, it won't be necessary
+afterwards.
 
-Abstract:
-When a scsi error results in disabling a disk during RAID10 recovery,
-the resync threads of md RAID10 could stall.
-This case, the raid array has already been broken and it may not matter.
-But I think stall is not preferable. If it occurs, even shutdown or reboot
-will fail because of resource busy.
-
-The deadlock mechanism:
-The r10bio_s structure has a "remaining" member to keep track of BIOs yet to be
-handled when recovering. The "remaining" counter is incremented when building a BIO
-in sync_request() and is decremented when finish a BIO in end_sync_write().
-
-If building a BIO fails for some reasons in sync_request(), the "remaining" should be
-decremented if it has already been incremented. I found a case where this decrement
-is forgotten. This causes a md_do_sync() deadlock because md_do_sync() waits for
-md_done_sync() called by end_sync_write(), but end_sync_write() never calls
-md_done_sync() because of the "remaining" counter mismatch.
-
-For example, this problem would be reproduced in the following case:
-
-Personalities : [raid10]
-md0 : active raid10 sdf1[4] sde1[5](F) sdd1[2] sdc1[1] sdb1[6](F)
-      3919616 blocks 64K chunks 2 near-copies [4/2] [_UU_]
-      [>....................]  recovery =  2.2% (45376/1959808) finish=0.7min speed=45376K/sec
-
-This case, sdf1 is recovering, sdb1 and sde1 are disabled.
-An additional error with detaching sdd will cause a deadlock.
-
-md0 : active raid10 sdf1[4] sde1[5](F) sdd1[6](F) sdc1[1] sdb1[7](F)
-      3919616 blocks 64K chunks 2 near-copies [4/1] [_U__]
-      [=>...................]  recovery =  5.0% (99520/1959808) finish=5.9min speed=5237K/sec
-
- 2739 ?        S<     0:17 [md0_raid10]
-28608 ?        D<     0:00 [md0_resync]
-28629 pts/1    Ss     0:00 bash
-28830 pts/1    R+     0:00 ps ax
-31819 ?        D<     0:00 [kjournald]
-
-The resync thread keeps working, but actually it is deadlocked.
-
-Patch:
-By this patch, the remaining counter will be decremented if needed.
-
-Signed-off-by: Neil Brown <neilb@suse.de>
-
-### Diffstat output
- ./drivers/md/raid10.c |    2 ++
- 1 file changed, 2 insertions(+)
-
-diff .prev/drivers/md/raid10.c ./drivers/md/raid10.c
---- .prev/drivers/md/raid10.c	2008-03-03 09:56:53.000000000 +1100
-+++ ./drivers/md/raid10.c	2008-03-03 11:08:28.000000000 +1100
-@@ -1818,6 +1818,8 @@ static sector_t sync_request(mddev_t *md
- 				if (j == conf->copies) {
- 					/* Cannot recover, so abort the recovery */
- 					put_buf(r10_bio);
-+					if (rb2)
-+						atomic_dec(&rb2->remaining);
- 					r10_bio = rb2;
- 					if (!test_and_set_bit(MD_RECOVERY_ERR, &mddev->recovery))
- 						printk(KERN_INFO "raid10: %s: insufficient working devices for recovery.\n",
+Thanks,
+Rafael
