@@ -1,89 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757427AbYCCQvw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755875AbYCCQ7Y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757427AbYCCQvw (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Mar 2008 11:51:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753202AbYCCQvo
+	id S1755875AbYCCQ7Y (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Mar 2008 11:59:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752152AbYCCQ7O
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Mar 2008 11:51:44 -0500
-Received: from einhorn.in-berlin.de ([192.109.42.8]:43457 "EHLO
-	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751976AbYCCQvo (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Mar 2008 11:51:44 -0500
-X-Envelope-From: stefanr@s5r6.in-berlin.de
-Message-ID: <47CC2C95.1050205@s5r6.in-berlin.de>
-Date: Mon, 03 Mar 2008 17:51:33 +0100
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.12) Gecko/20080219 SeaMonkey/1.1.8
-MIME-Version: 1.0
-To: =?ISO-8859-1?Q?Kristian_H=F8gsberg?= <krh@bitplanet.net>
-CC: linux1394-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] firewire: reread config ROM when device reset the bus
-References: <tkrat.c6610a8633fe0e41@s5r6.in-berlin.de>	 <tkrat.da30e6f15a74e036@s5r6.in-berlin.de> <59ad55d30803030817l6fce6716x2a97cc809b15b234@mail.gmail.com>
-In-Reply-To: <59ad55d30803030817l6fce6716x2a97cc809b15b234@mail.gmail.com>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 8bit
+	Mon, 3 Mar 2008 11:59:14 -0500
+Received: from mail.suse.de ([195.135.220.2]:36741 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751914AbYCCQ7N (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 3 Mar 2008 11:59:13 -0500
+Date: Mon, 3 Mar 2008 17:59:10 +0100
+From: Nick Piggin <npiggin@suse.de>
+To: Jack Steiner <steiner@sgi.com>
+Cc: Andrea Arcangeli <andrea@qumranet.com>, akpm@linux-foundation.org,
+       Robin Holt <holt@sgi.com>, Avi Kivity <avi@qumranet.com>,
+       Izik Eidus <izike@qumranet.com>, kvm-devel@lists.sourceforge.net,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, general@lists.openfabrics.org,
+       Steve Wise <swise@opengridcomputing.com>,
+       Roland Dreier <rdreier@cisco.com>, Kanoj Sarcar <kanojsarcar@yahoo.com>,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       daniel.blueman@quadrics.com, Christoph Lameter <clameter@sgi.com>
+Subject: Re: [PATCH] mmu notifiers #v8
+Message-ID: <20080303165910.GA23998@wotan.suse.de>
+References: <20080220103942.GU7128@v2.random> <20080221045430.GC15215@wotan.suse.de> <20080221144023.GC9427@v2.random> <20080221161028.GA14220@sgi.com> <20080227192610.GF28483@v2.random> <20080302155457.GK8091@v2.random> <20080303032934.GA3301@wotan.suse.de> <20080303125152.GS8091@v2.random> <20080303131017.GC13138@wotan.suse.de> <20080303151859.GA19374@sgi.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080303151859.GA19374@sgi.com>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Kristian Høgsberg wrote:
-> I would just add a
+On Mon, Mar 03, 2008 at 09:18:59AM -0600, Jack Steiner wrote:
+> On Mon, Mar 03, 2008 at 02:10:17PM +0100, Nick Piggin wrote:
+> > On Mon, Mar 03, 2008 at 01:51:53PM +0100, Andrea Arcangeli wrote:
+> > > On Mon, Mar 03, 2008 at 04:29:34AM +0100, Nick Piggin wrote:
+> > > > to something I prefer. Others may not, but I'll post them for debate
+> > > > anyway.
+> > > 
+> > > Sure, thanks!
+> > > 
+> > > > > I didn't drop invalidate_page, because invalidate_range_begin/end
+> > > > > would be slower for usages like KVM/GRU (we don't need a begin/end
+> > > > > there because where invalidate_page is called, the VM holds a
+> > > > > reference on the page). do_wp_page should also use invalidate_page
+> > > > > since it can free the page after dropping the PT lock without losing
+> > > > > any performance (that's not true for the places where invalidate_range
+> > > > > is called).
+> > > > 
+> > > > I'm still not completely happy with this. I had a very quick look
+> > > > at the GRU driver, but I don't see why it can't be implemented
+> > > > more like the regular TLB model, and have TLB insertions depend on
+> > > > the linux pte, and do invalidates _after_ restricting permissions
+> > > > to the pte.
+> > > > 
+> > > > Ie. I'd still like to get rid of invalidate_range_begin, and get
+> > > > rid of invalidate calls from places where permissions are relaxed.
+> > > 
+> > > _begin exists because by the time _end is called, the VM already
+> > > dropped the reference on the page. This way we can do a single
+> > > invalidate no matter how large the range is. I don't see ways to
+> > > remove _begin while still invoking _end a single time for the whole
+> > > range.
+> > 
+> > Is this just a GRU problem? Can't we just require them to take a ref
+> > on the page (IIRC Jack said GRU could be changed to more like a TLB
+> > model).
 > 
->   case REREAD_BIB_CHANGED:
->     break;
+> Maintaining a long-term reference on a page is a problem. The GRU does not
+> currently maintain tables to track the pages for which dropins have been done.
 > 
-> to the switch to make that clear,
+> The GRU has a large internal TLB and is designed to reference up to 8PB of
+> memory. The size of the tables to track this many referenced pages would be
+> a problem (at best).
 
-Yes, that's nicer.
+Is it any worse a problem than the pagetables of the processes which have
+their virtual memory exported to GRU? AFAIKS, no; it is on the same
+magnitude of difficulty. So you could do it without introducing any
+fundamental problem (memory usage might be increased by some constant
+factor, but I think we can cope with that in order to make the core patch
+really nice and simple).
 
-> but otherwise
-> 
-> Signed-off-by: Kristian Høgsberg <krh@redhat.com>
-
-Thanks.
-
-...
->>  --- linux.orig/drivers/firewire/fw-cdev.c
->>  +++ linux/drivers/firewire/fw-cdev.c
->>  @@ -269,20 +270,25 @@ static int ioctl_get_info(struct client
->>   {
->>         struct fw_cdev_get_info *get_info = buffer;
->>         struct fw_cdev_event_bus_reset bus_reset;
->>  +       struct fw_device *device = client->device;
->>  +       unsigned long ret = 0;
->>
->>         client->version = get_info->version;
->>         get_info->version = FW_CDEV_VERSION;
->>
->>  +       down(&device->device.sem);
->>         if (get_info->rom != 0) {
->>                 void __user *uptr = u64_to_uptr(get_info->rom);
->>                 size_t want = get_info->rom_length;
->>  -               size_t have = client->device->config_rom_length * 4;
->>  +               size_t have;
->>
->>  -               if (copy_to_user(uptr, client->device->config_rom,
->>  -                                min(want, have)))
->>  -                       return -EFAULT;
->>  +               have = device->config_rom_length * 4;
->>  +               ret = copy_to_user(uptr, device->config_rom, min(want, have));
->>         }
->>  -       get_info->rom_length = client->device->config_rom_length * 4;
->>  +       get_info->rom_length = device->config_rom_length * 4;
->>  +       up(&device->device.sem);
->>  +       if (ret != 0)
->>  +               return -EFAULT;
->>
->>         client->bus_reset_closure = get_info->bus_reset_closure;
->>         if (get_info->bus_reset != 0) {
-
-Maybe I should rather use fw-device.c::idr_rwsem instead of device.sem, 
-to have better control over who takes the mutex when.  Could also be a 
-new dedicated mutex but we don't want to end up with too many of them... 
-Do you have an opinion?
--- 
-Stefan Richter
--=====-==--- --== ---==
-http://arcgraph.de/sr/
+It is going to be really easy to add more weird and wonderful notifiers
+later that deviate from our standard TLB model. It would be much harder to
+remove them. So I really want to see everyone conform to this model first.
+Numbers and comparisons can be brought out afterwards if people want to
+attempt to make such changes.
