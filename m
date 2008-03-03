@@ -1,42 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754014AbYCCMRK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752491AbYCCMR4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754014AbYCCMRK (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Mar 2008 07:17:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751579AbYCCMQ4
+	id S1752491AbYCCMR4 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Mar 2008 07:17:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751739AbYCCMRs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Mar 2008 07:16:56 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:50880 "EHLO mx1.redhat.com"
+	Mon, 3 Mar 2008 07:17:48 -0500
+Received: from ns.suse.de ([195.135.220.2]:43431 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751378AbYCCMQ4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Mar 2008 07:16:56 -0500
-Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
-	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
-	Kingdom.
-	Registered in England and Wales under Company Registration No. 3798903
-From: David Howells <dhowells@redhat.com>
-In-Reply-To: <20080303114310.GA28139@flint.arm.linux.org.uk>
-References: <20080303114310.GA28139@flint.arm.linux.org.uk> <4a8566f54ff84f498c5c0c0340076c296b1840e6@tazenda.hos.anvin.org> <8260.1204541852@redhat.com>
-To: Russell King <rmk+lkml@arm.linux.org.uk>
-Cc: dhowells@redhat.com, "H. Peter Anvin" <hpa@zytor.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linux Arch Mailing List <linux-arch@vger.kernel.org>,
-       David Brownell <dbrownell@users.sourceforge.net>
-Subject: Re: [PATCH 1/2] Add C99-style constructor macros for specific-sized integers
-X-Mailer: MH-E 8.0.3+cvs; nmh 1.2-20070115cvs; GNU Emacs 23.0.50
-Date: Mon, 03 Mar 2008 12:15:59 +0000
-Message-ID: <8809.1204546559@redhat.com>
+	id S1751579AbYCCMRr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 3 Mar 2008 07:17:47 -0500
+To: Andrea Arcangeli <andrea@qumranet.com>
+Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@osdl.org>,
+       Nick Piggin <npiggin@suse.de>
+Subject: Re: [PATCH] reserve RAM below PHYSICAL_START
+From: Andi Kleen <andi@firstfloor.org>
+References: <20080227003325.GS28483@v2.random>
+Date: Mon, 03 Mar 2008 13:17:46 +0100
+In-Reply-To: <20080227003325.GS28483@v2.random> (Andrea Arcangeli's message of "Wed\, 27 Feb 2008 01\:33\:25 +0100")
+Message-ID: <p73ve446lxx.fsf@bingen.suse.de>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.1 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Russell King <rmk+lkml@arm.linux.org.uk> wrote:
+Andrea Arcangeli <andrea@qumranet.com> writes:
 
-> > And #if defined(__ASSEMBLY__), just splat x through as is.
-> 
-> We already have something like this on ARM - include/asm-arm/memory.h
+> Hello,
+>
+> this patch allows to prevent linux from using the ram below
+> PHYSICAL_START.
+>
+> The "reserved RAM" can be mapped by virtualization software with to
+> create a 1:1 mapping between guest physical (bus) address and host
+> physical (bus) address.
 
-Which you could perhaps replace.
+Wouldn't it be easier if your virtualization software just marked
+that area reserved or unmapped in its e820 map? 
 
-David
+Of if you don't want that you can get the same result with mem=... 
+arguments (e.g commonly used by crash dumping) 
+
+Even if that was all not possible for some reason having CONFIG for this would
+seem unfortunate for me -- i don't think users really want specially
+compiled kernels for specific hypervisors. With paravirt Linux
+is trying to get away from that. Some runtime setup method
+would be much better.
+
+-Andi
