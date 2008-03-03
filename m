@@ -1,170 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757450AbYCCWzW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760286AbYCCWzm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757450AbYCCWzW (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Mar 2008 17:55:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753233AbYCCWzI
+	id S1760286AbYCCWzm (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Mar 2008 17:55:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753233AbYCCWz1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Mar 2008 17:55:08 -0500
-Received: from wr-out-0506.google.com ([64.233.184.227]:15834 "EHLO
-	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751779AbYCCWzH (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Mar 2008 17:55:07 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:cc:mime-version:content-type:content-transfer-encoding:content-disposition:x-google-sender-auth;
-        b=wT/IpMlHOSuMdIzAx+6QU5EJzq3dkUyFouNMgDJ+6MJ57kU/wAmr3dF90cDPkwFtwutWbsap1R08FXZJQPWJUu/LT5pPII5ojBVD2WFoJMifWSAxZfdCkZTvsh4quF1ZtG6MuQJw8XeNPhguMIa2sQxkEVOvi343hc15Vx0f9hU=
-Message-ID: <386072610803031454r684c4701hc82eee900b71ccd7@mail.gmail.com>
-Date: Mon, 3 Mar 2008 14:54:59 -0800
-From: "Bryan Wu" <cooloney@kernel.org>
-To: "Linus Torvalds" <torvalds@linux-foundation.org>
-Subject: [GIT PULL] Blackfin arch fixing for 2.6.25-rc4
-Cc: LKML <linux-kernel@vger.kernel.org>
+	Mon, 3 Mar 2008 17:55:27 -0500
+Received: from ms4-1.1blu.de ([213.83.63.61]:49194 "EHLO ms4-1.1blu.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758282AbYCCWzZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 3 Mar 2008 17:55:25 -0500
+X-Greylist: delayed 6721 seconds by postgrey-1.27 at vger.kernel.org; Mon, 03 Mar 2008 17:55:25 EST
+Message-ID: <47CC67F5.6030505@razik.name>
+Date: Mon, 03 Mar 2008 22:04:53 +0100
+From: Lukas Razik <linux@razik.name>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.7.13) Gecko/20060417 FreeBSD/i386
+X-Accept-Language: de-de, en-us, en
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-X-Google-Sender-Auth: 58b5ab836fbbf616
+To: Pavel Machek <pavel@ucw.cz>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: Ethernet over Kernel Sockets
+References: <47C870FD.4000808@razik.name> <20080302104650.GC3861@ucw.cz>
+In-Reply-To: <20080302104650.GC3861@ucw.cz>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 8bit
+X-Con-Id: 21979
+X-Originating-IP: 78.50.93.146
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Linus,
+Hello Pavel!
 
-Please pull from 'for-linus' branch of
+Thanks for your answer!
 
-master.kernel.org:/pub/scm/linux/kernel/git/cooloney/blackfin-2.6.git for-linus
+>>As you know, some network cards doesn't have a 'eth' 
+>>interface under linux.
+>>Because of that I'm developing a net_device based driver 
+>>which doesn't transmit and receive directly through a 
+>>real network card but through UDP kernel sockets.
+> 
+> What is it good for?
 
-to receive the following updates:
+It's good for network cards which have a socket implementation but no 
+'eth' interface which is needed by some applications...
 
- arch/blackfin/kernel/fixed_code.S       |   12 ++++++------
- arch/blackfin/mach-bf548/boards/ezkit.c |    4 ++--
- arch/blackfin/mach-common/entry.S       |    5 ++++-
- include/asm-blackfin/unistd.h           |    6 ++++--
- 4 files changed, 16 insertions(+), 11 deletions(-)
+>>The interesting thing is, that I always get PingPongs of 
+>>1ms (= one jiffie). Although if I measure with 100MBit- 
+>>or other non-Ethernet cards.
+> 
+> Try increasing HZ :-)... or maybe it is a gigabit interrupt mitigation
+> issue?
 
-Bryan Wu (1):
-      [Blackfin] arch: add new timerfd syscalls
+Yes, that would have been a nice solution for an OS-freak (like me and 
+sure like you) but there are also other people :-/ who want to run more 
+than the really nice linux kernel on their machines... ;-)))
 
-Michael Hennerich (1):
-      [Blackfin] arch: fix bug - allow SDH driver to be used as module
+The performance brake was the kernel thread for receiving packets. My 
+solution are socket callbacks.
+The idea I've got from someone of the kernelnewbies mailing list and 
+some other people. Now I've PingPong times of ~30µsec (with Ethernet 
+over Sockets over Ethernet, which natively has ~23µsec).
 
-Mike Frysinger (1):
-      [Blackfin] arch: fix atomic and32/xor32 comments and ENDPROC markings
+For interested people:
+http://mail.nl.linux.org/kernelnewbies/2008-03/msg00005.html
 
-diff --git a/arch/blackfin/kernel/fixed_code.S
-b/arch/blackfin/kernel/fixed_code.S
-index 9026269..5ed4722 100644
---- a/arch/blackfin/kernel/fixed_code.S
-+++ b/arch/blackfin/kernel/fixed_code.S
-@@ -101,9 +101,9 @@ ENDPROC (_atomic_ior32)
-
- .align 16
- 	/*
--	 * Atomic ior, 32 bit.
-+	 * Atomic and, 32 bit.
- 	 * Inputs:	P0: memory address to use
--	 *		R0: value to ior
-+	 *		R0: value to and
- 	 * Outputs:	R0: new contents of the memory address.
- 	 *		R1: previous contents of the memory address.
- 	 */
-@@ -112,13 +112,13 @@ ENTRY(_atomic_and32)
- 	R0 = R1 & R0;
- 	[P0] = R0;
- 	rts;
--ENDPROC (_atomic_ior32)
-+ENDPROC (_atomic_and32)
-
- .align 16
- 	/*
--	 * Atomic ior, 32 bit.
-+	 * Atomic xor, 32 bit.
- 	 * Inputs:	P0: memory address to use
--	 *		R0: value to ior
-+	 *		R0: value to xor
- 	 * Outputs:	R0: new contents of the memory address.
- 	 *		R1: previous contents of the memory address.
- 	 */
-@@ -127,7 +127,7 @@ ENTRY(_atomic_xor32)
- 	R0 = R1 ^ R0;
- 	[P0] = R0;
- 	rts;
--ENDPROC (_atomic_ior32)
-+ENDPROC (_atomic_xor32)
-
- .align 16
- 	/*
-diff --git a/arch/blackfin/mach-bf548/boards/ezkit.c
-b/arch/blackfin/mach-bf548/boards/ezkit.c
-index a0950c1..40846aa 100644
---- a/arch/blackfin/mach-bf548/boards/ezkit.c
-+++ b/arch/blackfin/mach-bf548/boards/ezkit.c
-@@ -323,7 +323,7 @@ static struct platform_device bf5xx_nand_device = {
- };
- #endif
-
--#if defined(CONFIG_SDH_BFIN) || defined(CONFIG_SDH_BFIN)
-+#if defined(CONFIG_SDH_BFIN) || defined(CONFIG_SDH_BFIN_MODULE)
- static struct platform_device bf54x_sdh_device = {
- 	.name = "bfin-sdh",
- 	.id = 0,
-@@ -636,7 +636,7 @@ static struct platform_device *ezkit_devices[]
-__initdata = {
- 	&bf5xx_nand_device,
- #endif
-
--#if defined(CONFIG_SDH_BFIN) || defined(CONFIG_SDH_BFIN)
-+#if defined(CONFIG_SDH_BFIN) || defined(CONFIG_SDH_BFIN_MODULE)
- 	&bf54x_sdh_device,
- #endif
-
-diff --git a/arch/blackfin/mach-common/entry.S
-b/arch/blackfin/mach-common/entry.S
-index 2cbb7a0..cee54ce 100644
---- a/arch/blackfin/mach-common/entry.S
-+++ b/arch/blackfin/mach-common/entry.S
-@@ -1369,7 +1369,7 @@ ENTRY(_sys_call_table)
- 	.long _sys_epoll_pwait
- 	.long _sys_utimensat
- 	.long _sys_signalfd
--	.long _sys_ni_syscall
-+	.long _sys_timerfd_create
- 	.long _sys_eventfd	/* 350 */
- 	.long _sys_pread64
- 	.long _sys_pwrite64
-@@ -1378,6 +1378,9 @@ ENTRY(_sys_call_table)
- 	.long _sys_get_robust_list	/* 355 */
- 	.long _sys_fallocate
- 	.long _sys_semtimedop
-+	.long _sys_timerfd_settime
-+	.long _sys_timerfd_gettime
-+
- 	.rept NR_syscalls-(.-_sys_call_table)/4
- 	.long _sys_ni_syscall
- 	.endr
-diff --git a/include/asm-blackfin/unistd.h b/include/asm-blackfin/unistd.h
-index e981673..c18a399 100644
---- a/include/asm-blackfin/unistd.h
-+++ b/include/asm-blackfin/unistd.h
-@@ -361,7 +361,7 @@
- #define __NR_epoll_pwait	346
- #define __NR_utimensat		347
- #define __NR_signalfd		348
--#define __NR_timerfd		349
-+#define __NR_timerfd_create	349
- #define __NR_eventfd		350
- #define __NR_pread64		351
- #define __NR_pwrite64		352
-@@ -370,8 +370,10 @@
- #define __NR_get_robust_list	355
- #define __NR_fallocate		356
- #define __NR_semtimedop		357
-+#define __NR_timerfd_settime	358
-+#define __NR_timerfd_gettime	359
-
--#define __NR_syscall		358
-+#define __NR_syscall		360
- #define NR_syscalls		__NR_syscall
-
- /* Old optional stuff no one actually uses */
+Regards,
+Lukas
