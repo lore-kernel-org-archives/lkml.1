@@ -1,59 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763492AbYCCV0A@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763481AbYCCVYB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763492AbYCCV0A (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Mar 2008 16:26:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763472AbYCCVXv
+	id S1763481AbYCCVYB (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Mar 2008 16:24:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763277AbYCCVWe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Mar 2008 16:23:51 -0500
-Received: from relay2.sgi.com ([192.48.171.30]:39419 "EHLO relay.sgi.com"
+	Mon, 3 Mar 2008 16:22:34 -0500
+Received: from namei.org ([69.55.235.186]:42132 "EHLO us.intercode.com.au"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1763358AbYCCVXu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Mar 2008 16:23:50 -0500
-Date: Mon, 3 Mar 2008 13:23:48 -0800 (PST)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Pekka Enberg <penberg@cs.helsinki.fi>
-cc: Nick Piggin <npiggin@suse.de>, netdev@vger.kernel.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       yanmin_zhang@linux.intel.com, David Miller <davem@davemloft.net>,
-       Eric Dumazet <dada1@cosmosbay.com>
-Subject: Re: [rfc][patch 2/3] slab: introduce SMP alignment
-In-Reply-To: <84144f020803031241l277aa3b8h2fe0714f5765cb49@mail.gmail.com>
-Message-ID: <Pine.LNX.4.64.0803031318310.4131@schroedinger.engr.sgi.com>
-References: <20080303093449.GA15091@wotan.suse.de>  <20080303093529.GB15091@wotan.suse.de>
-  <Pine.LNX.4.64.0803031104570.6917@schroedinger.engr.sgi.com> 
- <20080303200355.GB8974@wotan.suse.de>  <Pine.LNX.4.64.0803031208400.16049@schroedinger.engr.sgi.com>
-  <20080303201211.GE8974@wotan.suse.de>  <Pine.LNX.4.64.0803031216430.3110@schroedinger.engr.sgi.com>
-  <20080303202411.GH8974@wotan.suse.de> <84144f020803031241l277aa3b8h2fe0714f5765cb49@mail.gmail.com>
+	id S1760228AbYCCVWd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 3 Mar 2008 16:22:33 -0500
+Date: Tue, 4 Mar 2008 08:20:55 +1100 (EST)
+From: James Morris <jmorris@namei.org>
+X-X-Sender: jmorris@us.intercode.com.au
+To: "Ahmed S. Darwish" <darwish.07@gmail.com>
+cc: Chris Wright <chrisw@sous-sol.org>, Stephen Smalley <sds@tycho.nsa.gov>,
+       Eric Paris <eparis@parisplace.org>,
+       Casey Schaufler <casey@schaufler-ca.com>,
+       David Woodhouse <dwmw2@infradead.org>, Paul Moore <paul.moore@hp.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, Audit-ML <linux-audit@redhat.com>,
+       LSM-ML <linux-security-module@vger.kernel.org>
+Subject: Re: [PATCH 8/9] SELinux: use new audit hooks, remove redundant
+ exports
+In-Reply-To: <20080301200314.GI19636@ubuntu>
+Message-ID: <Xine.LNX.4.64.0803040820430.8529@us.intercode.com.au>
+References: <20080301194752.GA19636@ubuntu> <20080301200314.GI19636@ubuntu>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 3 Mar 2008, Pekka Enberg wrote:
+On Sat, 1 Mar 2008, Ahmed S. Darwish wrote:
 
-> Hmm... Can't we just fix SLAB_HWCACHE_ALIGN in SLUB to follow the
-> semantics of SLAB?
+> Setup the new Audit LSM hooks for SELinux.
+> Remove the now redundant exported SELinux Audit interface.
+> 
+> Audit: Export 'audit_krule' and 'audit_field' to the public 
+> since their internals are needed by the implementation of the
+> new LSM hook 'audit_rule_known'.
+> 
+> Signed-off-by: Casey Schaufler <casey@schaufler-ca.com>
+> Signed-off-by: Ahmed S. Darwish <darwish.07@gmail.com>
 
-AFAICT it follows SLAB semantics. The only small difference is for objects 
-small than cache_line_size() / 2 where SLUB does not bother to align to a 
-fraction of a cacheline since we are already placing multile object into a 
-cacheline. We effectively have made the decision to give up the 
-organization of objects in separatate cache lines.
-
-Lets say you have a 64 byte cache line size. Then the alignment can be 
-as follows. (8 byte alignment is the basic alignment requirement).
-
-Objsize	[C	SLAB	SLUB
------------------------------
-> 64		X	X
-33 .. 64	64	64
-32		32	32
-24		32	24	-> 3 object per cacheline sizes = 72 so overlap.
-16		16	16
-8		8	8
-
-So there is only one difference for 24 byte sizes slabs.
+Acked-by: James Morris <jmorris@namei.org>
 
 
+
+-- 
+James Morris
+<jmorris@namei.org>
