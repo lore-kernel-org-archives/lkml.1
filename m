@@ -1,58 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760233AbYCCJqS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760836AbYCCJrk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760233AbYCCJqS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Mar 2008 04:46:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753211AbYCCJqA
+	id S1760836AbYCCJrk (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Mar 2008 04:47:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753211AbYCCJrb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Mar 2008 04:46:00 -0500
-Received: from aun.it.uu.se ([130.238.12.36]:43148 "EHLO aun.it.uu.se"
+	Mon, 3 Mar 2008 04:47:31 -0500
+Received: from smtp6.pp.htv.fi ([213.243.153.40]:47214 "EHLO smtp6.pp.htv.fi"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751430AbYCCJp7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Mar 2008 04:45:59 -0500
+	id S1751520AbYCCJrb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 3 Mar 2008 04:47:31 -0500
+Date: Mon, 3 Mar 2008 11:45:56 +0200
+From: Adrian Bunk <bunk@kernel.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Alexey Starikovskiy <aystarik@gmail.com>, lenb@kernel.org,
+       astarikovskiy@suse.de, linux-acpi@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [2.6 patch] acpi/battery.c: make 2 functions static
+Message-ID: <20080303094556.GD4457@cs181133002.pp.htv.fi>
+References: <20080301161902.GN25835@cs181133002.pp.htv.fi> <47C99FE1.8080206@gmail.com> <20080301183550.GC25835@cs181133002.pp.htv.fi> <20080303085720.GD15943@elte.hu> <20080303091314.GC4457@cs181133002.pp.htv.fi> <20080303091714.GA18250@elte.hu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-ID: <18379.51360.744676.894510@harpo.it.uu.se>
-Date: Mon, 3 Mar 2008 10:45:04 +0100
-From: Mikael Pettersson <mikpe@it.uu.se>
-To: Stefan Richter <stefanr@s5r6.in-berlin.de>
-Cc: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>, mikpe@it.uu.se,
-       crmafra2@gmail.com, linux-kernel@vger.kernel.org,
-       James.Bottomley@HansenPartnership.com, htejun@gmail.com,
-       jens.axboe@oracle.com, linux-ide@vger.kernel.org,
-       linux-scsi@vger.kernel.org
-Subject: Re: [BUG] 2.6.25-rc2-git3 broke cdrecord
-In-Reply-To: <47CBC014.9090309@s5r6.in-berlin.de>
-References: <20080302233415.GA6258@Pilar>
-	<18379.18297.838050.536473@harpo.it.uu.se>
-	<tkrat.468fd04c47ae1a2a@s5r6.in-berlin.de>
-	<20080303172641Z.fujita.tomonori@lab.ntt.co.jp>
-	<47CBC014.9090309@s5r6.in-berlin.de>
-X-Mailer: VM 7.17 under Emacs 20.7.1
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <20080303091714.GA18250@elte.hu>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Stefan Richter writes:
- > FUJITA Tomonori wrote:
- > > On Mon, 3 Mar 2008 02:48:23 +0100 (CET)
- > > Stefan Richter <stefanr@s5r6.in-berlin.de> wrote:
- > >> CD burning still fails for me via ide-cd, although in a
- > >> different way than without the patch.  (Without the patch, ide-cd also
- > >> fails like described by you for SATA.)
- > >>
- > >> With the patch, the failure is as follows.  I don't know if this is
- > >> related to the data length arithmetic or something entirely different;
- > >> all I learned so far is that 2.6.24 works.  Application log from
- > >> 2.6.25-rc3 + Tejun's patch + Gentoo's cdrkit-1.1.6 + k3b:
- > > 
- > > Can you try the following patch?
- > > 
- > > http://lkml.org/lkml/2008/3/2/218
- > 
- > Fails just like with Tejun's patch, alas.
+On Mon, Mar 03, 2008 at 10:17:14AM +0100, Ingo Molnar wrote:
+> 
+> * Adrian Bunk <bunk@kernel.org> wrote:
+> 
+> > On Mon, Mar 03, 2008 at 09:57:20AM +0100, Ingo Molnar wrote:
+> > > 
+> > > * Adrian Bunk <bunk@kernel.org> wrote:
+> > > 
+> > > > On Sat, Mar 01, 2008 at 09:26:41PM +0300, Alexey Starikovskiy wrote:
+> > > > > May I keep them inline?
+> > > > 
+> > > > The problem with such manual inlines is that we force gcc to always 
+> > > > inline them - and history has shown that functions grow without the 
+> > > > "inline" being removed.
+> > > 
+> > > what do you mean by "we force gcc to always inline them"?
+> > 
+> > #define inline          inline          __attribute__((always_inline))
+> > 
+> > > gcc is free to decide whether to inline or to not inline.
+> > 
+> > Not with __attribute__((always_inline)).
+> 
+> but that wasnt used in the code you patched:
+> 
+>   -inline int acpi_battery_present(struct acpi_battery *battery)
+>   +static int acpi_battery_present(struct acpi_battery *battery)
 
-At this point I must confess I feel very uneasy about this situation.
+It was used, since the #define affects all inline's in the kernel.
 
-Dare I suggest the perhaps hereditary solution of reverting these
-changes and doing them right after 2.6.25 final?
+> > > (and CONFIG_FORCED_INLINING got removed from 2.6.25)
+> > 
+> > CONFIG_FORCED_INLINING never had any effect.
+> 
+> my experience was that it had effects. Why do you say it 'never had any 
+> effect'?
+
+I don't see how it could have possibly had any effect.
+
+Which effects did you experience?
+
+> 	Ingo
+
+cu
+Adrian
+
+-- 
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
+
