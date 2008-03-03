@@ -1,216 +1,271 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761629AbYCCDyW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760965AbYCCECX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761629AbYCCDyW (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 2 Mar 2008 22:54:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756835AbYCCDyN
+	id S1760965AbYCCECX (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 2 Mar 2008 23:02:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754487AbYCCECM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 2 Mar 2008 22:54:13 -0500
-Received: from netrider.rowland.org ([192.131.102.5]:4028 "HELO
-	netrider.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1754969AbYCCDyM (ORCPT
+	Sun, 2 Mar 2008 23:02:12 -0500
+Received: from tama555.ecl.ntt.co.jp ([129.60.39.106]:64308 "EHLO
+	tama555.ecl.ntt.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752824AbYCCECL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 2 Mar 2008 22:54:12 -0500
-Date: Sun, 2 Mar 2008 22:54:09 -0500 (EST)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@netrider.rowland.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-cc: Linux-pm mailing list <linux-pm@lists.linux-foundation.org>,
-       Kernel development list <linux-kernel@vger.kernel.org>,
-       Alexey Starikovskiy <astarikovskiy@suse.de>
-Subject: Re: [linux-pm] Fundamental flaw in system suspend, exposed by freezer
- removal
-In-Reply-To: <200803022011.50976.rjw@sisk.pl>
-Message-ID: <Pine.LNX.4.44L0.0803022152270.6168-100000@netrider.rowland.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Sun, 2 Mar 2008 23:02:11 -0500
+To: htejun@gmail.com
+Cc: tomof@acm.org, jens.axboe@oracle.com,
+       James.Bottomley@HansenPartnership.com, efault@gmx.de,
+       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       linux-ide@vger.kernel.org, linux-scsi@vger.kernel.org,
+       jgarzik@pobox.com, fujita.tomonori@lab.ntt.co.jp
+Subject: Re: [PATCH] block: fix residual byte count handling
+From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+In-Reply-To: <47CB6508.3040206@gmail.com>
+References: <47C8F4FC.1040505@gmail.com>
+	<20080302235223X.tomof@acm.org>
+	<47CB6508.3040206@gmail.com>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Message-Id: <20080303125940T.fujita.tomonori@lab.ntt.co.jp>
+Date: Mon, 03 Mar 2008 12:59:40 +0900
+X-Dispatcher: imput version 20040704(IM147)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2 Mar 2008, Rafael J. Wysocki wrote:
+On Mon, 03 Mar 2008 11:40:08 +0900
+Tejun Heo <htejun@gmail.com> wrote:
 
-> Would you agree, however, that the driver should be prepared for its
-> ->resume() being called right after ->suspend() and the ->suspend() repeated
-> immediately after that?  This is not a trivial change too ...
-
-This is now a moot point, but I'll answer it anyway...
-
-Drivers should not depend on any particular time interval between their 
-suspend and resume methods being called.  It should be okay to call one 
-and then the other a microsecond later, or 100 days later.  The driver 
-shouldn't know or care.  I doubt that many drivers do.
-
-> > I admit these failures will be very rare, since they depend on a race
-> > with a small window.  Here's a compromise: I'll agree to let these
-> > registrations fail if you'll agree to add "prevent_new_children" and
-> > "allow_new_children" methods along with the new pm_ops patch you and
-> > Alex have prepared.  Then drivers and subsystems can implement the
-> > methods later on, after which they won't have to worry about spurious
-> > registration failures.
-> 
-> I'm fine with that, although I'd call the new methods ->begin() and ->end() or
-> something like this, since they may generally be used for other purposes
-> too.
-
-"begin_sleep" and "end_sleep" are less ambiguous.
-
-I was just thinking the same thing.  For instance, plenty of drivers
-register children as part of their probe method, so the begin_sleep
-method should prevent subsystems from probing the device.  (Not to
-mention that it's kind of awkward for a driver to probe a suspended
-device.)
-
-> > The prevent_new_children methods should be called in a separate initial
-> > forward pass through the dpm_active list -- rather like the reverted
-> > lock_all_devices() routine.  Similarly for the allow_new_children 
-> > methods (a final backward pass like unlock_all_devices()).
-> 
-> Agreed.
-
-After more thought, I'm not so sure about this.  It might be a good
-idea to call the begin_sleep method just before the suspend method (or
-any of its variants: freeze, hibernate, prethaw, etc.) and call the
-end_sleep method just after the resume method.  This minimizes the time
-drivers will spend in a peculiar non-hotplug-aware state, although it 
-means that begin_sleep would have to be idempotent.
-
-It also allows sophisticated drivers to do all their processing in the
-begin_sleep (and end_sleep) method: both preventing new child
-registrations and powering down the device.  At the moment I'm not sure
-whether this would turn out to be a good strategy, but it might.
-
-Alternatively, some subsystems might want to stop all child
-registrations right at the beginning of the sleep transition.  This
-would amount to blocking the kernel thread responsible for those
-registrations when the sleep begins -- in other words, making that
-thread freezable!
-
-> > The PM notifier messages can serve as a "prevent new children" 
-> > announcement to prevent registration of devices with no parent.
-
-This isn't quite so simple either.  A notifier isn't good enough
-because it doesn't provide any synchronization.  On the other hand, how
-many devices ever get registered without a parent?  Does this happen at
-all after system startup?  Maybe when a loadable module for a new bus
-type initializes...  We could block module loading at the start of a
-sleep transition, if necessary.
-
-> > > > There must some strange interactions going on.  For instance, what if a
-> > > > device sends a remote wakeup request before the system is fully asleep?
-> > > 
-> > > On the systems I'm talking about there are some devices referred to by the
-> > > ACPI _PTS method, so they must be on line whey this method is being executed.
-> > > Since we don't know a priori what devices they are, we must put all devices on
-> > > line (into the full power state) before executing _PTS.
-> 
-> Well, "must" is too strong here ...
-> 
-> > Um.  Nobody has mentioned this before.  Are you saying that a disk 
-> > drive (for example) which has been spun down and put in a low-power 
-> > runtime-PM state must be spun up again before the system can suspend?
-> 
-> On the systems in question (some NVidia chipsets for K8) USB controllers have
-> to be in the full power state before executing _PTS.
-
-Fortunately that won't cause any problems for some time to come.  
-There are no current plans for doing runtime PM of PCI-based USB
-controllers.  This may change eventually, but not for a while.
-
-> IMO these systems are just badly designed and we can blacklist or something
->  like this.  It also is against the ACPI 2.0 spec, although it's compliant
-> with ACPI 1.0 .
-
-Or have a "no runtime PM" quirk for the devices in question.
-
-> > > Below is the current version of the patch for handling device registrations
-> > > in the PM core.  In this version, the new registrations are failed if done too
-> > > late (or too early) and the locks are not held during the entire suspend/resume
-> > > cycle.
+> FUJITA Tomonori wrote:
+> > sum(sg) == rq->data_len is already broken; sg sends such requests
+> > (though it would be nice if it doesn't).
 > > 
-> > Actually you can simplify the whole thing by getting rid of 
-> > dev->power.lock entirely.  Protect the "sleeping" flag by dpm_list_mtx.
+> > I've not followed the earlier discussion (because I thought the drain
+> > buffer stuff affected only libata but seems it doesn't ...). Why did
+> > we need to change the meaning of rq->data_len?
 > 
-> Then, if a child registration occurs while suspend_device(parent) is being
-> run, dpm_active will be in a wrong order, unless suspend_device(parent) returns
-> an error (which, BTW, also imposes a new rule on drivers).
+> At this point, it's not clear what the original meaning of rq->data_len
+> is because before moving alignment and padding to block layer,
+> rq->data_len equaled both the requested data length and the length of sg
+> list.  AFAIK, it's SCSI midlayer which makes sg list and data length
+> mismatch not block layer.
+> 
+> From the POV of the block layer, as now it might extend the sg list, it
+> has to decide what rq->data_len means in this case - the requested
+> transfer length from userland or the length of mapped sg list.
 
-Sorry, I don't follow you.
+Yeah. It meant the requested transfer length from userland in the past
+and I think that chaning to the length of mapped sg list doesn't make
+anything simpler.
 
-I meant doing something approximately like this:
 
-	mutex_lock(&dpm_list_mtx);
-	while (!list_is_empty(&dpm_active)) {
-		dev = dpm_active.prev;
-		dev->power.sleeping = true;
-		mutex_unlock(&dpm_list_mtx);
-		error = suspend_device(dev);
-		mutex_lock(&dpm_list_mtx);
-		...
-	}
+> I think that currently the biggest problem is that drivers which don't
+> require request size adjustment are getting it because alignment setting
+> doesn't distinguish between start address alignment and size alignment.
+> For drivers which don't require data size adjustment from block layer,
+> data_len or raw_data_len doesn't matter.  They're equal anyway.  I'm
+> prepping a patch for this now.
+> 
+> For drivers which do require request size adjustments, I think it's
+> better to keep rq->data_len in line with the size of mapped sg list.
+> The rationales are...
+> 
+> - Those are dumb controllers which want to see requests which meet
+> certain size requirements and they're likely to care more about actual
+> data buffer size than user requested buffer size.  IOW, they wanna see
+> sizes which meet certain requirements, so give them those values.
 
-and make device_pm_add() fail if dev->parent->power.sleeping is true.
-This will do what you want, right?
+The drivers care about the actual data buffer size.
 
-With the begin_sleep method call added it gets a little more
-complicated, since you have to reacquire dpm_list_mtx after calling the
-begin_sleep method and before setting dev->power.sleeping to true, in
-order to make sure that dev is still the last entry on dpm_active.  
-But it's quite doable.
+The dumb controllers drivers can get what they want to use
+rq->extra_len or walk through the sg list.
 
-(BTW, I wonder if it's a good idea for device_add() to call 
-device_pm_add() before calling bus_add_device().  If a suspend occurs 
-in between, we could end up in a strange situation with a driver being 
-asked to suspend a device before that device has been fully registered 
--- in fact the registration might still fail.)
 
-> I'm not sure the "GONE" state willl really be necessary.
+> - I think bugs caused by using raw_data_len instead of data_len are more
+> subtle than the other way around.  Using data_len instead of
+> raw_data_len usually affects the application layer while using
+> raw_data_len instead of data_len affects the DMA engine and transport layer.
 
-I'm not sure either.  You can get the same effect by checking 
-list_empty(&dev->power.entry).
+If we add extra_len, we can get what raw_data_len and data_len
+provide.
 
-> Well, we can add new callbacks for notifying drivers of an impending suspend.
-> In that case, say we add a ->begin() callback for this purpose (in fact that
-> would be two callbacks, ->suspend_begin() and ->hibernate_begin(), but let's
-> simplify things a bit for now), so there are the following questions:
 
-In theory you could even expand it to freeze_begin and prethaw_begin.
+I can't see what changing the meaning of rq->data_len (and
+investigating all the block drivers) gives us.
 
-> * Is it going to return a result?
-> * If it is, should we fail the suspend if an error is returned?
-> * In that case, should the ->suspend() callback return a result?
 
-To be safe, everything should return a result and we should abort the 
-sleep if anything returns an error.
+> > rq->data_len meant the true data length and the patch to change it
+> > doesn't look to make anything simple. Can we revert the meaning of
+> > rq->data_len? I'm not sure that we need to add rq->extra_len but it's
+> > fine as long as it's only for drivers that want to use it.
+> > 
+> > This is only compile tested.
+> 
+> If we're gonna go this way, we'll need blk_rq_total_data_len() and use
+> it for drivers which requires request size adjustments.
 
-It's easier to ignore a return code now than to change a method
-signature later.  :-)
+No problem. It would be much better to add blk_rq_total_data_len
+rather than chainging the meaning of rq->data_len and all the block
+drivers.
 
-> * Perhaps we can require ->suspend() to always succeed after ->begin() has
->   succeeded?
+Here's an updated patch (I forgot to remove the bi_size adjustment in
+blk_rq_map_user in the previous patch). Can we agree on it if we add
+blk_rq_total_data_len()?
 
-No.  Some drivers might implement just one and some drivers just the 
-other.
 
-> OTOH, IMO requiring ->suspend() to return an error if there's been a concurrent
-> child registration and resuming the device if that happens is not a trivial
-> change and it may require as many driver modifications as failing the
-> registration of the child right away.
-
-That's true.  If the driver's author wants to do things that way, he
-can.  For instance, there are several subsystems which will probe for
-new children as part of their resume processing.  So if a child was
-detected just before the system went to sleep and failed to get
-registered, then it will be detected again when the system wakes up and
-now the registration will succeed.
-
-Here's something else to think about.  We might want to allow some 
-devices to be "power-irrelevant".  That is, the device exists in the 
-kernel only as a representation of some software state, not as a 
-physical device.  It doesn't consume power, it doesn't have any state 
-to lose during a sleep, and its driver doesn't implement suspend or 
-resume methods.  For these sorts of devices, we might allow 
-device_add() to skip calling device_pm_add() altogether.  USB 
-interfaces are a little like this, as are SCSI hosts and MMC hosts.
-
-Alan Stern
-
+diff --git a/block/blk-core.c b/block/blk-core.c
+index 775c851..bfec406 100644
+--- a/block/blk-core.c
++++ b/block/blk-core.c
+@@ -127,7 +127,6 @@ void rq_init(struct request_queue *q, struct request *rq)
+ 	rq->nr_hw_segments = 0;
+ 	rq->ioprio = 0;
+ 	rq->special = NULL;
+-	rq->raw_data_len = 0;
+ 	rq->buffer = NULL;
+ 	rq->tag = -1;
+ 	rq->errors = 0;
+@@ -135,6 +134,7 @@ void rq_init(struct request_queue *q, struct request *rq)
+ 	rq->cmd_len = 0;
+ 	memset(rq->cmd, 0, sizeof(rq->cmd));
+ 	rq->data_len = 0;
++	rq->extra_len = 0;
+ 	rq->sense_len = 0;
+ 	rq->data = NULL;
+ 	rq->sense = NULL;
+@@ -2016,7 +2016,6 @@ void blk_rq_bio_prep(struct request_queue *q, struct request *rq,
+ 	rq->hard_cur_sectors = rq->current_nr_sectors;
+ 	rq->hard_nr_sectors = rq->nr_sectors = bio_sectors(bio);
+ 	rq->buffer = bio_data(bio);
+-	rq->raw_data_len = bio->bi_size;
+ 	rq->data_len = bio->bi_size;
+ 
+ 	rq->bio = rq->biotail = bio;
+diff --git a/block/blk-map.c b/block/blk-map.c
+index 09f7fd0..f559832 100644
+--- a/block/blk-map.c
++++ b/block/blk-map.c
+@@ -19,7 +19,6 @@ int blk_rq_append_bio(struct request_queue *q, struct request *rq,
+ 		rq->biotail->bi_next = bio;
+ 		rq->biotail = bio;
+ 
+-		rq->raw_data_len += bio->bi_size;
+ 		rq->data_len += bio->bi_size;
+ 	}
+ 	return 0;
+@@ -151,11 +150,8 @@ int blk_rq_map_user(struct request_queue *q, struct request *rq,
+ 	 */
+ 	if (len & queue_dma_alignment(q)) {
+ 		unsigned int pad_len = (queue_dma_alignment(q) & ~len) + 1;
+-		struct bio *bio = rq->biotail;
+ 
+-		bio->bi_io_vec[bio->bi_vcnt - 1].bv_len += pad_len;
+-		bio->bi_size += pad_len;
+-		rq->data_len += pad_len;
++		rq->extra_len += pad_len;
+ 	}
+ 
+ 	rq->buffer = rq->data = NULL;
+diff --git a/block/blk-merge.c b/block/blk-merge.c
+index 7506c4f..0f58616 100644
+--- a/block/blk-merge.c
++++ b/block/blk-merge.c
+@@ -231,7 +231,7 @@ new_segment:
+ 			    ((unsigned long)q->dma_drain_buffer) &
+ 			    (PAGE_SIZE - 1));
+ 		nsegs++;
+-		rq->data_len += q->dma_drain_size;
++		rq->extra_len += q->dma_drain_size;
+ 	}
+ 
+ 	if (sg)
+diff --git a/block/bsg.c b/block/bsg.c
+index 7f3c095..8917c51 100644
+--- a/block/bsg.c
++++ b/block/bsg.c
+@@ -437,14 +437,14 @@ static int blk_complete_sgv4_hdr_rq(struct request *rq, struct sg_io_v4 *hdr,
+ 	}
+ 
+ 	if (rq->next_rq) {
+-		hdr->dout_resid = rq->raw_data_len;
+-		hdr->din_resid = rq->next_rq->raw_data_len;
++		hdr->dout_resid = rq->data_len;
++		hdr->din_resid = rq->next_rq->data_len;
+ 		blk_rq_unmap_user(bidi_bio);
+ 		blk_put_request(rq->next_rq);
+ 	} else if (rq_data_dir(rq) == READ)
+-		hdr->din_resid = rq->raw_data_len;
++		hdr->din_resid = rq->data_len;
+ 	else
+-		hdr->dout_resid = rq->raw_data_len;
++		hdr->dout_resid = rq->data_len;
+ 
+ 	/*
+ 	 * If the request generated a negative error number, return it
+diff --git a/block/scsi_ioctl.c b/block/scsi_ioctl.c
+index e993cac..a2c3a93 100644
+--- a/block/scsi_ioctl.c
++++ b/block/scsi_ioctl.c
+@@ -266,7 +266,7 @@ static int blk_complete_sghdr_rq(struct request *rq, struct sg_io_hdr *hdr,
+ 	hdr->info = 0;
+ 	if (hdr->masked_status || hdr->host_status || hdr->driver_status)
+ 		hdr->info |= SG_INFO_CHECK;
+-	hdr->resid = rq->raw_data_len;
++	hdr->resid = rq->data_len;
+ 	hdr->sb_len_wr = 0;
+ 
+ 	if (rq->sense_len && hdr->sbp) {
+@@ -528,8 +528,8 @@ static int __blk_send_generic(struct request_queue *q, struct gendisk *bd_disk,
+ 	rq = blk_get_request(q, WRITE, __GFP_WAIT);
+ 	rq->cmd_type = REQ_TYPE_BLOCK_PC;
+ 	rq->data = NULL;
+-	rq->raw_data_len = 0;
+ 	rq->data_len = 0;
++	rq->extra_len = 0;
+ 	rq->timeout = BLK_DEFAULT_SG_TIMEOUT;
+ 	memset(rq->cmd, 0, sizeof(rq->cmd));
+ 	rq->cmd[0] = cmd;
+diff --git a/drivers/ata/libata-scsi.c b/drivers/ata/libata-scsi.c
+index 7b1f1ee..fe47922 100644
+--- a/drivers/ata/libata-scsi.c
++++ b/drivers/ata/libata-scsi.c
+@@ -2538,7 +2538,7 @@ static unsigned int atapi_xlat(struct ata_queued_cmd *qc)
+ 	}
+ 
+ 	qc->tf.command = ATA_CMD_PACKET;
+-	qc->nbytes = scsi_bufflen(scmd);
++	qc->nbytes = scsi_bufflen(scmd) + scmd->request->extra_len;
+ 
+ 	/* check whether ATAPI DMA is safe */
+ 	if (!using_pio && ata_check_atapi_dma(qc))
+@@ -2549,7 +2549,7 @@ static unsigned int atapi_xlat(struct ata_queued_cmd *qc)
+ 	 * want to set it properly, and for DMA where it is
+ 	 * effectively meaningless.
+ 	 */
+-	nbytes = min(scmd->request->raw_data_len, (unsigned int)63 * 1024);
++	nbytes = min(scmd->request->data_len, (unsigned int)63 * 1024);
+ 
+ 	/* Most ATAPI devices which honor transfer chunk size don't
+ 	 * behave according to the spec when odd chunk size which
+@@ -2875,7 +2875,7 @@ static unsigned int ata_scsi_pass_thru(struct ata_queued_cmd *qc)
+ 	 * TODO: find out if we need to do more here to
+ 	 *       cover scatter/gather case.
+ 	 */
+-	qc->nbytes = scsi_bufflen(scmd);
++	qc->nbytes = scsi_bufflen(scmd) + scmd->request->extra_len;
+ 
+ 	/* request result TF and be quiet about device error */
+ 	qc->flags |= ATA_QCFLAG_RESULT_TF | ATA_QCFLAG_QUIET;
+diff --git a/include/linux/blkdev.h b/include/linux/blkdev.h
+index 6fe67d1..b72526c 100644
+--- a/include/linux/blkdev.h
++++ b/include/linux/blkdev.h
+@@ -216,8 +216,8 @@ struct request {
+ 	unsigned int cmd_len;
+ 	unsigned char cmd[BLK_MAX_CDB];
+ 
+-	unsigned int raw_data_len;
+ 	unsigned int data_len;
++	unsigned int extra_len;	/* length of alignment and padding */
+ 	unsigned int sense_len;
+ 	void *data;
+ 	void *sense;
