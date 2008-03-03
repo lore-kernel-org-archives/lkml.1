@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761455AbYCCDem@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760978AbYCCDjS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761455AbYCCDem (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 2 Mar 2008 22:34:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756559AbYCCDeb
+	id S1760978AbYCCDjS (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 2 Mar 2008 22:39:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756559AbYCCDjI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 2 Mar 2008 22:34:31 -0500
-Received: from mx2.suse.de ([195.135.220.15]:38102 "EHLO mx2.suse.de"
+	Sun, 2 Mar 2008 22:39:08 -0500
+Received: from ns.suse.de ([195.135.220.2]:37113 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756831AbYCCDea (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 2 Mar 2008 22:34:30 -0500
-Date: Mon, 3 Mar 2008 04:34:28 +0100
+	id S1752785AbYCCDjF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 2 Mar 2008 22:39:05 -0500
+Date: Mon, 3 Mar 2008 04:39:04 +0100
 From: Nick Piggin <npiggin@suse.de>
 To: Andrea Arcangeli <andrea@qumranet.com>
 Cc: Jack Steiner <steiner@sgi.com>, akpm@linux-foundation.org,
@@ -21,7 +21,7 @@ Cc: Jack Steiner <steiner@sgi.com>, akpm@linux-foundation.org,
        linux-kernel@vger.kernel.org, linux-mm@kvack.org,
        daniel.blueman@quadrics.com, Christoph Lameter <clameter@sgi.com>
 Subject: Re: [PATCH] mmu notifiers #v8
-Message-ID: <20080303033428.GD3301@wotan.suse.de>
+Message-ID: <20080303033903.GE3301@wotan.suse.de>
 References: <20080219084357.GA22249@wotan.suse.de> <20080219135851.GI7128@v2.random> <20080219231157.GC18912@wotan.suse.de> <20080220010941.GR7128@v2.random> <20080220103942.GU7128@v2.random> <20080221045430.GC15215@wotan.suse.de> <20080221144023.GC9427@v2.random> <20080221161028.GA14220@sgi.com> <20080227192610.GF28483@v2.random> <20080302155457.GK8091@v2.random>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -35,41 +35,36 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 On Sun, Mar 02, 2008 at 04:54:57PM +0100, Andrea Arcangeli wrote:
 > Difference between #v7 and #v8:
 
-This one on top of the previous patch
+Here is just a couple of checkpatch fixes on top of the last patches.
 
-[patch] mmu-v8: typesafe
-
-Move definition of struct mmu_notifier and struct mmu_notifier_ops under
-CONFIG_MMU_NOTIFIER to ensure they doesn't get dereferenced when they
-don't make sense.
-
-Signed-off-by: Nick Piggin <npiggin@suse.de>
----
 Index: linux-2.6/include/linux/mmu_notifier.h
 ===================================================================
 --- linux-2.6.orig/include/linux/mmu_notifier.h
 +++ linux-2.6/include/linux/mmu_notifier.h
-@@ -3,8 +3,12 @@
- 
- #include <linux/list.h>
- #include <linux/spinlock.h>
-+#include <linux/mm_types.h>
- 
- struct mmu_notifier;
-+struct mmu_notifier_ops;
-+
-+#ifdef CONFIG_MMU_NOTIFIER
- 
- struct mmu_notifier_ops {
- 	/*
-@@ -53,10 +57,6 @@ struct mmu_notifier {
- 	const struct mmu_notifier_ops *ops;
- };
- 
--#ifdef CONFIG_MMU_NOTIFIER
--
--#include <linux/mm_types.h>
--
- static inline int mm_has_notifiers(struct mm_struct *mm)
- {
- 	return unlikely(!hlist_empty(&mm->mmu_notifier_list));
+@@ -46,7 +46,7 @@ struct mmu_notifier_ops {
+ 	 */
+ 	void (*invalidate_range_begin)(struct mmu_notifier *mn,
+ 				       struct mm_struct *mm,
+-				       unsigned long start, unsigned long end);       
++				       unsigned long start, unsigned long end);
+ 	void (*invalidate_range_end)(struct mmu_notifier *mn,
+ 				     struct mm_struct *mm,
+ 				     unsigned long start, unsigned long end);
+@@ -137,7 +137,7 @@ static inline void mmu_notifier_mm_init(
+ #define ptep_clear_flush_notify(__vma, __address, __ptep)		\
+ ({									\
+ 	pte_t __pte;							\
+-	struct vm_area_struct * ___vma = __vma;				\
++	struct vm_area_struct *___vma = __vma;				\
+ 	unsigned long ___address = __address;				\
+ 	__pte = ptep_clear_flush(___vma, ___address, __ptep);		\
+ 	mmu_notifier_invalidate_page(___vma->vm_mm, ___address);	\
+@@ -147,7 +147,7 @@ static inline void mmu_notifier_mm_init(
+ #define ptep_clear_flush_young_notify(__vma, __address, __ptep)		\
+ ({									\
+ 	int __young;							\
+-	struct vm_area_struct * ___vma = __vma;				\
++	struct vm_area_struct *___vma = __vma;				\
+ 	unsigned long ___address = __address;				\
+ 	__young = ptep_clear_flush_young(___vma, ___address, __ptep);	\
+ 	__young |= mmu_notifier_clear_flush_young(___vma->vm_mm,	\
