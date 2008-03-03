@@ -1,81 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762628AbYCCLAT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762218AbYCCLC7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762628AbYCCLAT (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Mar 2008 06:00:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752505AbYCCLAA
+	id S1762218AbYCCLC7 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Mar 2008 06:02:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753292AbYCCLCw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Mar 2008 06:00:00 -0500
-Received: from smtp2.sssup.it ([193.205.80.100]:42513 "EHLO smpt2.sssup.it"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753951AbYCCK77 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Mar 2008 05:59:59 -0500
-Date: Mon, 3 Mar 2008 11:21:56 +0100
-From: Fabio Checconi <fchecconi@gmail.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Arjan van de Ven <arjan@linux.intel.com>,
-       Gabriel C <nix.or.die@googlemail.com>,
-       Laurent Riffard <laurent.riffard@free.fr>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Stuart Bennett <sb476@cam.ac.uk>, Len Brown <lenb@kernel.org>,
-       tglx@linutronix.de, mingo@redhat.com
-Subject: Re: 2.6.25-rc2-mm1: WARNING at arch/x86/mm/ioremap.c:129
-Message-ID: <20080303102156.GA79304@gandalf.sssup.it>
-Mail-Followup-To: Ingo Molnar <mingo@elte.hu>,
-	Arjan van de Ven <arjan@linux.intel.com>,
-	Gabriel C <nix.or.die@googlemail.com>,
-	Laurent Riffard <laurent.riffard@free.fr>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	linux-kernel@vger.kernel.org, Stuart Bennett <sb476@cam.ac.uk>,
-	Len Brown <lenb@kernel.org>, tglx@linutronix.de, mingo@redhat.com
-References: <20080216002522.9c4bd0fb.akpm@linux-foundation.org> <47B7553D.5040601@free.fr> <47C0BDE2.4020402@googlemail.com> <47C0DB7D.70407@linux.intel.com> <47C2ED51.4000105@googlemail.com> <47C344E5.5050205@linux.intel.com> <20080302155348.GA74305@gandalf.sssup.it> <47CADC9D.9090403@linux.intel.com> <20080303084611.GA15943@elte.hu>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080303084611.GA15943@elte.hu>
-User-Agent: Mutt/1.4.2.3i
+	Mon, 3 Mar 2008 06:02:52 -0500
+Received: from wa-out-1112.google.com ([209.85.146.182]:28732 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753098AbYCCLCv (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 3 Mar 2008 06:02:51 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding:from;
+        b=FhqIOZxrL+i6Pdck2v8oz+zlro7lWJ53vQNb8VNy4egjoUTxVfudcD82Pm+ObeGCH6KHNeAmrfJMELAYqHck32fGe8r8s9SKBuHFbBMMnEAKWXc/vX2qEEktPNoru+IMRceNTE2ETNtmZyMjh2SZhfbv0klltS98YzX/zL/GZ10=
+Message-ID: <47CBD7E3.4020500@gmail.com>
+Date: Mon, 03 Mar 2008 19:50:11 +0900
+User-Agent: Thunderbird 2.0.0.6 (X11/20071008)
+MIME-Version: 1.0
+To: Rik van Riel <riel@redhat.com>
+CC: linux-kernel@vger.kernel.org,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Lee Schermerhorn <Lee.Schermerhorn@hp.com>, linux-mm@kvack.org
+Subject: Re: [patch 07/21] SEQ replacement for anonymous pages
+References: <20080228192908.126720629@redhat.com> <20080228192928.492644028@redhat.com>
+In-Reply-To: <20080228192928.492644028@redhat.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+From: "barrioskmc@gmail" <minchan.kim@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> From: Ingo Molnar <mingo@elte.hu>
-> Date: Mon, Mar 03, 2008 09:46:11AM +0100
->
-...
-> Subject: x86: warn about RAM pages in ioremap()
-> From: Ingo Molnar <mingo@elte.hu>
-> Date: Mon Mar 03 09:37:41 CET 2008
-> 
-> Signed-off-by: Ingo Molnar <mingo@elte.hu>
-> ---
->  arch/x86/mm/ioremap.c |    6 ++++--
->  1 file changed, 4 insertions(+), 2 deletions(-)
-> 
-> Index: linux-x86.q/arch/x86/mm/ioremap.c
-> ===================================================================
-> --- linux-x86.q.orig/arch/x86/mm/ioremap.c
-> +++ linux-x86.q/arch/x86/mm/ioremap.c
-> @@ -149,9 +149,11 @@ static void __iomem *__ioremap(unsigned 
->  	for (pfn = phys_addr >> PAGE_SHIFT;
->  				(pfn << PAGE_SHIFT) < last_addr; pfn++) {
->  
-> -		if (page_is_ram(pfn) && pfn_valid(pfn) &&
-> -		    !PageReserved(pfn_to_page(pfn)))
-> +		int is_ram = page_is_ram(pfn);
-> +
-> +		if (is_ram && pfn_valid(pfn) && !PageReserved(pfn_to_page(pfn)))
->  			return NULL;
-> +		WARN_ON_ONCE(is_ram);
->  	}
->  
->  	switch (mode) {
+Hi, Rik.
 
-In this way we can emit the warning even for pages that will not
-be mapped, if asked for more than one page (e.g., one page triggers
-the warning, one of the following triggers the return NULL condition,)
-I don't think that would be useful, as the caller will notice the
-error anyway.
+static void shrink_active_list(unsigned long nr_pages, struct zone *zone,
+  				struct scan_control *sc, int priority, int file)
+  {
+-	unsigned long pgmoved;
++	unsigned long pgmoved = 0;
+  	int pgdeactivate = 0;
+  	unsigned long pgscanned;
+  	LIST_HEAD(l_hold);	/* The pages which were snipped off */
+@@ -1058,12 +1058,25 @@ static void shrink_active_list(unsigned
+  		cond_resched();
+  		page = lru_to_page(&l_hold);
+  		list_del(&page->lru);
+-		if (page_referenced(page, 0, sc->mem_cgroup))
+-			lru = LRU_ACTIVE_ANON;
++		if (page_referenced(page, 0, sc->mem_cgroup)) {
++			if (file)
++				/* Referenced file pages stay active. */
++				lru = LRU_ACTIVE_ANON;
++			else
++				/* Anonymous pages always get deactivated. */
++				pgmoved++;
++		}
+  		list_add(&page->lru, &list[lru]);
+  	}
 
-I don't know if it's so important, but while we're at it, please
-consider that, if last_addr % PAGE_SIZE == 0 the for loop exits
-without checking the last pfn, that will be mapped.
+Why do you insert referenced page to LRU_ACTIVE_ANON ?
+I have seen picture in your design document 
+(http://linux-mm.org/PageReplacementDesign)
+If I understand your point well, page referenced is inserted to 
+LRU_ACTIVE_FILE.
 
+What am I missing in your point?
+
+Thanks, barrios
