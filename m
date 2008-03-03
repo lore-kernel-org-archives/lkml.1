@@ -1,50 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757701AbYCCUhv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756589AbYCCUmQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757701AbYCCUhv (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Mar 2008 15:37:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751958AbYCCUhl
+	id S1756589AbYCCUmQ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Mar 2008 15:42:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752367AbYCCUl7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Mar 2008 15:37:41 -0500
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:35972 "EHLO
-	gprs189-60.eurotel.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750771AbYCCUhl (ORCPT
+	Mon, 3 Mar 2008 15:41:59 -0500
+Received: from rv-out-0910.google.com ([209.85.198.191]:23194 "EHLO
+	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751004AbYCCUl5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Mar 2008 15:37:41 -0500
-Date: Mon, 3 Mar 2008 21:38:08 +0100
-From: Pavel Machek <pavel@ucw.cz>
-To: Pierre Ossman <drzeus-list@drzeus.cx>
-Cc: huggie@earth.li, linux-kernel@vger.kernel.org
-Subject: Re: Scheduler broken? sdhci issues with scheduling
-Message-ID: <20080303203808.GH13869@elf.ucw.cz>
-References: <20080229115256.GG24533@paranoidfreak.co.uk> <20080302104031.GB3861@ucw.cz> <20080303204300.69cbe392@mjolnir.drzeus.cx>
+	Mon, 3 Mar 2008 15:41:57 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=X8iJxOhs04EsDBypEMS6ofkqwOLUaDrVBFps88o539AyD/FUKYttIKR1p5ZrxeygnMRpd1RpqLYpLfUWuT9jVFAAti7jdfsqXPstfQkEGHGyEm4aGl7lihZ3/+Y778UCiK8AZ9rRdoLLp9WONQvB8rTv+c4rMLNwZ5pGP9463i8=
+Message-ID: <84144f020803031241l277aa3b8h2fe0714f5765cb49@mail.gmail.com>
+Date: Mon, 3 Mar 2008 22:41:57 +0200
+From: "Pekka Enberg" <penberg@cs.helsinki.fi>
+To: "Nick Piggin" <npiggin@suse.de>
+Subject: Re: [rfc][patch 2/3] slab: introduce SMP alignment
+Cc: "Christoph Lameter" <clameter@sgi.com>, netdev@vger.kernel.org,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       yanmin_zhang@linux.intel.com, "David Miller" <davem@davemloft.net>,
+       "Eric Dumazet" <dada1@cosmosbay.com>
+In-Reply-To: <20080303202411.GH8974@wotan.suse.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20080303204300.69cbe392@mjolnir.drzeus.cx>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.17 (2007-11-01)
+References: <20080303093449.GA15091@wotan.suse.de>
+	 <20080303093529.GB15091@wotan.suse.de>
+	 <Pine.LNX.4.64.0803031104570.6917@schroedinger.engr.sgi.com>
+	 <20080303200355.GB8974@wotan.suse.de>
+	 <Pine.LNX.4.64.0803031208400.16049@schroedinger.engr.sgi.com>
+	 <20080303201211.GE8974@wotan.suse.de>
+	 <Pine.LNX.4.64.0803031216430.3110@schroedinger.engr.sgi.com>
+	 <20080303202411.GH8974@wotan.suse.de>
+X-Google-Sender-Auth: 7c176cfaa44baaad
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon 2008-03-03 20:43:00, Pierre Ossman wrote:
-> On Sun, 2 Mar 2008 11:40:31 +0100
-> Pavel Machek <pavel@ucw.cz> wrote:
-> 
-> > 
-> > Is mmc slow or does it just break down? Slow would be expected, but
-> > breaking down should be fixed in MMC, too...
-> > 
-> 
-> The problem is that the kernel sleeps _less_ than asked for, not more. No hardware can be expected to work if its needed delays aren't respected.
-> 
+On Mon, Mar 3, 2008 at 10:24 PM, Nick Piggin <npiggin@suse.de> wrote:
+>  > Then align the objects at cacheline boundaries by providing a value for
+>  > the align parameter to kmem_cache_create().
+>
+>  max(num_possible_cpus() > 1 ? cache_line_size() : 0, mandatory_alignment)?
+>
+>  Then suppose we want a CONFIG_TINY option to eliminate it?
 
-Oops, that's bad. Can you perhaps create small testcase for
-scheduler/timer people to play with?
-
-Also... you may want to switch timesources. notsc fixed "wait for much
-too long" for me.
-								Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Hmm... Can't we just fix SLAB_HWCACHE_ALIGN in SLUB to follow the
+semantics of SLAB?
