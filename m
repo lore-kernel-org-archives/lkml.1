@@ -1,89 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759498AbYCCCkc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759623AbYCCCnB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759498AbYCCCkc (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 2 Mar 2008 21:40:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755894AbYCCCkW
+	id S1759623AbYCCCnB (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 2 Mar 2008 21:43:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756002AbYCCCmx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 2 Mar 2008 21:40:22 -0500
-Received: from gv-out-0910.google.com ([216.239.58.189]:26521 "EHLO
-	gv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755905AbYCCCkV (ORCPT
+	Sun, 2 Mar 2008 21:42:53 -0500
+Received: from fg-out-1718.google.com ([72.14.220.153]:14767 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756158AbYCCCmw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 2 Mar 2008 21:40:21 -0500
+	Sun, 2 Mar 2008 21:42:52 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
-        b=wIPuXF9Qlzdl4xRBXZNmxuTAyupX9AE3cCt0pG4wPhKff9k+g5680VwOFgK+ProKKlqgwpTY5V1DLKsGidaOR5Nc+NMPe8GHVua3mzxwy9XFj4hignD56Y8o1qas6g5qDYNZqAS5xPzBNpjBrVnGzqd00bjOsY9NbQI4fLewr6U=
-Message-ID: <47CB6508.3040206@gmail.com>
-Date: Mon, 03 Mar 2008 11:40:08 +0900
-From: Tejun Heo <htejun@gmail.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20070801)
+        h=date:from:to:cc:subject:message-id:mime-version:content-type:content-disposition:user-agent;
+        b=w8yfp2gzdjEVwbiKuOofs4ifzLoUA2zSLJ047gbpOfaCJTd43jTHKb4Wb4yIe5Rs+ZiFFiLSFQsXmI+tMUSuJqgYkocXcy6OQypMWtpXfJxkqcSncd5ORMNqYirN5M/fI3d7mS0Keorh28Q7hZgGCOjHwMTcRSkfZMcYtMghsZo=
+Date: Mon, 3 Mar 2008 10:48:45 +0800
+From: Dave Young <hidave.darkstar@gmail.com>
+To: marcel@holtmann.org
+Cc: tglx@linutronix.de, davem@davemloft.net, linux-bluetooth@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: [PATCH] l2cap info_timer delete fix in hci_conn_del
+Message-ID: <20080303024845.GA3197@darkstar.te-china.tietoenator.com>
 MIME-Version: 1.0
-To: FUJITA Tomonori <tomof@acm.org>
-CC: jens.axboe@oracle.com, James.Bottomley@HansenPartnership.com,
-       efault@gmx.de, akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       linux-ide@vger.kernel.org, linux-scsi@vger.kernel.org,
-       jgarzik@pobox.com, fujita.tomonori@lab.ntt.co.jp
-Subject: Re: [PATCH] block: fix residual byte count handling
-References: <1204303656.4003.19.camel@localhost.localdomain>	<20080229201123.GK6704@kernel.dk>	<47C8F4FC.1040505@gmail.com> <20080302235223X.tomof@acm.org>
-In-Reply-To: <20080302235223X.tomof@acm.org>
-X-Enigmail-Version: 0.95.5
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-FUJITA Tomonori wrote:
-> sum(sg) == rq->data_len is already broken; sg sends such requests
-> (though it would be nice if it doesn't).
-> 
-> I've not followed the earlier discussion (because I thought the drain
-> buffer stuff affected only libata but seems it doesn't ...). Why did
-> we need to change the meaning of rq->data_len?
+When the l2cap info_timer is active the info_state will be set to
+L2CAP_INFO_FEAT_MASK_REQ_SENT, and it will be unset after the timer
+is deleted or timeout triggered.
 
-At this point, it's not clear what the original meaning of rq->data_len
-is because before moving alignment and padding to block layer,
-rq->data_len equaled both the requested data length and the length of sg
-list.  AFAIK, it's SCSI midlayer which makes sg list and data length
-mismatch not block layer.
+Here in hci_conn_del only call del_timer_sync when the info_state
+is set to L2CAP_INFO_FEAT_MASK_REQ_SENT.
 
->From the POV of the block layer, as now it might extend the sg list, it
-has to decide what rq->data_len means in this case - the requested
-transfer length from userland or the length of mapped sg list.
+Signed-off-by: Dave Young <hidave.darkstar@gmail.com>
 
-I think that currently the biggest problem is that drivers which don't
-require request size adjustment are getting it because alignment setting
-doesn't distinguish between start address alignment and size alignment.
-For drivers which don't require data size adjustment from block layer,
-data_len or raw_data_len doesn't matter.  They're equal anyway.  I'm
-prepping a patch for this now.
+---
+net/bluetooth/l2cap.c |    3 ++-
+1 file changed, 2 insertions(+), 1 deletion(-)
 
-For drivers which do require request size adjustments, I think it's
-better to keep rq->data_len in line with the size of mapped sg list.
-The rationales are...
-
-- Those are dumb controllers which want to see requests which meet
-certain size requirements and they're likely to care more about actual
-data buffer size than user requested buffer size.  IOW, they wanna see
-sizes which meet certain requirements, so give them those values.
-
-- I think bugs caused by using raw_data_len instead of data_len are more
-subtle than the other way around.  Using data_len instead of
-raw_data_len usually affects the application layer while using
-raw_data_len instead of data_len affects the DMA engine and transport layer.
-
-> rq->data_len meant the true data length and the patch to change it
-> doesn't look to make anything simple. Can we revert the meaning of
-> rq->data_len? I'm not sure that we need to add rq->extra_len but it's
-> fine as long as it's only for drivers that want to use it.
-> 
-> This is only compile tested.
-
-If we're gonna go this way, we'll need blk_rq_total_data_len() and use
-it for drivers which requires request size adjustments.
-
-Thanks.
-
--- 
-tejun
+diff -upr linux/net/bluetooth/l2cap.c linux.new/net/bluetooth/l2cap.c
+--- linux/net/bluetooth/l2cap.c	2008-03-03 10:35:03.000000000 +0800
++++ linux.new/net/bluetooth/l2cap.c	2008-03-03 10:36:34.000000000 +0800
+@@ -417,7 +417,8 @@ static void l2cap_conn_del(struct hci_co
+ 		l2cap_sock_kill(sk);
+ 	}
+ 
+-	del_timer_sync(&conn->info_timer);
++	if (conn->info_state & L2CAP_INFO_FEAT_MASK_REQ_SENT)
++		del_timer_sync(&conn->info_timer);
+ 
+ 	hcon->l2cap_data = NULL;
+ 	kfree(conn);
