@@ -1,175 +1,211 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754124AbYCCNTI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754668AbYCCNVW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754124AbYCCNTI (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Mar 2008 08:19:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751469AbYCCNS4
+	id S1754668AbYCCNVW (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Mar 2008 08:21:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751814AbYCCNVO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Mar 2008 08:18:56 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:42338 "EHLO mx2.mail.elte.hu"
+	Mon, 3 Mar 2008 08:21:14 -0500
+Received: from x346.tv-sign.ru ([89.108.83.215]:43926 "EHLO mail.screens.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751333AbYCCNSz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Mar 2008 08:18:55 -0500
-Date: Mon, 3 Mar 2008 14:18:33 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>
-Subject: [git pull] x86 fixes
-Message-ID: <20080303131833.GA29977@elte.hu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	id S1750915AbYCCNVN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 3 Mar 2008 08:21:13 -0500
+Date: Mon, 3 Mar 2008 16:25:02 +0300
+From: Oleg Nesterov <oleg@tv-sign.ru>
+To: Roland McGrath <roland@redhat.com>
+Cc: Jiri Kosina <jkosina@suse.cz>, Davide Libenzi <davidel@xmailserver.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] [RFC] fix missed SIGCONT cases
+Message-ID: <20080303132502.GA81@tv-sign.ru>
+References: <Pine.LNX.4.64.0802271610330.3391@jikos.suse.cz> <20080227210038.93AFC2700FD@magilla.localdomain> <Pine.LNX.4.64.0802272258150.3391@jikos.suse.cz> <20080228102649.071572700FD@magilla.localdomain> <20080228153043.GA11484@tv-sign.ru> <20080229023902.D93E12700FD@magilla.localdomain> <20080229120101.GA1410@tv-sign.ru> <20080301015956.A0D262700FE@magilla.localdomain> <20080301164102.GA171@tv-sign.ru>
+Mime-Version: 1.0
+Content-Type: multipart/mixed; boundary="ZPt4rx8FFjLCG7dd"
 Content-Disposition: inline
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <20080301164102.GA171@tv-sign.ru>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-Linus, please pull the latest x86 git tree from:
+--ZPt4rx8FFjLCG7dd
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-   git://git.kernel.org/pub/scm/linux/kernel/git/x86/linux-2.6-x86.git
+Actually, it is easy to re-use signal_struct->flags from the very beginning,
+no need to introduce the new flag temporary, see the attached patches. I also
+have a couple of simple cleanups on top of them (use cached ->signal value).
 
-it reverts two recently introduced commits that slipped through and 
-caused boot regressions.
+Perhaps, we can add the new helper which sets SIGNAL_GROUP_EXIT but preserves
+SIGNAL_CLD_MASK, but I don't think this is really needed.
 
-Thanks,
+Oleg.
 
-	Ingo
+--ZPt4rx8FFjLCG7dd
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: attachment; filename="1_SIGCONT_IMPL.patch"
 
------------------->
-Ingo Molnar (1):
-      x86: revert "x86: fix pmd_bad and pud_bad to support huge pages"
-
-Rafael J. Wysocki (1):
-      x86: revert "x86: CPA: avoid split of alias mappings"
-
- arch/x86/mm/pageattr.c       |   21 ++++++++++-----------
- include/asm-x86/pgtable_32.h |    4 +---
- include/asm-x86/pgtable_64.h |    6 ++----
- 3 files changed, 13 insertions(+), 18 deletions(-)
-
-diff --git a/arch/x86/mm/pageattr.c b/arch/x86/mm/pageattr.c
-index 7049294..14e48b5 100644
---- a/arch/x86/mm/pageattr.c
-+++ b/arch/x86/mm/pageattr.c
-@@ -26,7 +26,6 @@ struct cpa_data {
- 	pgprot_t	mask_set;
- 	pgprot_t	mask_clr;
- 	int		numpages;
--	int		processed;
- 	int		flushtlb;
- 	unsigned long	pfn;
- };
-@@ -291,8 +290,8 @@ try_preserve_large_page(pte_t *kpte, unsigned long address,
- 	 */
- 	nextpage_addr = (address + psize) & pmask;
- 	numpages = (nextpage_addr - address) >> PAGE_SHIFT;
--	if (numpages < cpa->processed)
--		cpa->processed = numpages;
-+	if (numpages < cpa->numpages)
-+		cpa->numpages = numpages;
+--- 25/include/linux/sched.h~1_SIGCONT_IMPL	2008-02-17 23:40:09.000000000 +0300
++++ 25/include/linux/sched.h	2008-03-03 13:40:14.000000000 +0300
+@@ -555,6 +555,12 @@ struct signal_struct {
+ #define SIGNAL_STOP_DEQUEUED	0x00000002 /* stop signal dequeued */
+ #define SIGNAL_STOP_CONTINUED	0x00000004 /* SIGCONT since WCONTINUED reap */
+ #define SIGNAL_GROUP_EXIT	0x00000008 /* group exit in progress */
++/*
++ * Pending notifications to parent.
++ */
++#define SIGNAL_CLD_STOPPED	0x00000010
++#define SIGNAL_CLD_CONTINUED	0x00000020
++#define SIGNAL_CLD_MASK		(SIGNAL_CLD_STOPPED|SIGNAL_CLD_CONTINUED)
  
- 	/*
- 	 * We are safe now. Check whether the new pgprot is the same:
-@@ -319,7 +318,7 @@ try_preserve_large_page(pte_t *kpte, unsigned long address,
- 	 */
- 	addr = address + PAGE_SIZE;
- 	pfn++;
--	for (i = 1; i < cpa->processed; i++, addr += PAGE_SIZE, pfn++) {
-+	for (i = 1; i < cpa->numpages; i++, addr += PAGE_SIZE, pfn++) {
- 		pgprot_t chk_prot = static_protections(new_prot, addr, pfn);
- 
- 		if (pgprot_val(chk_prot) != pgprot_val(new_prot))
-@@ -343,7 +342,7 @@ try_preserve_large_page(pte_t *kpte, unsigned long address,
- 	 * that we limited the number of possible pages already to
- 	 * the number of pages in the large page.
- 	 */
--	if (address == (nextpage_addr - psize) && cpa->processed == numpages) {
-+	if (address == (nextpage_addr - psize) && cpa->numpages == numpages) {
- 		/*
- 		 * The address is aligned and the number of pages
- 		 * covers the full page.
-@@ -573,7 +572,7 @@ repeat:
- 			set_pte_atomic(kpte, new_pte);
- 			cpa->flushtlb = 1;
+ /* If true, all threads except ->group_exit_task have pending SIGKILL */
+ static inline int signal_group_exit(const struct signal_struct *sig)
+--- 25/kernel/signal.c~1_SIGCONT_IMPL	2008-02-17 23:40:09.000000000 +0300
++++ 25/kernel/signal.c	2008-03-03 13:51:55.000000000 +0300
+@@ -595,10 +595,8 @@ static void handle_stop_signal(int sig, 
+ 			 * the SIGCHLD was pending on entry to this kill.
+ 			 */
+ 			p->signal->group_stop_count = 0;
+-			p->signal->flags = SIGNAL_STOP_CONTINUED;
+-			spin_unlock(&p->sighand->siglock);
+-			do_notify_parent_cldstop(p, CLD_STOPPED);
+-			spin_lock(&p->sighand->siglock);
++			p->signal->flags = SIGNAL_STOP_CONTINUED |
++						SIGNAL_CLD_STOPPED;
  		}
--		cpa->processed = 1;
-+		cpa->numpages = 1;
- 		return 0;
- 	}
- 
-@@ -584,7 +583,7 @@ repeat:
- 	do_split = try_preserve_large_page(kpte, address, cpa);
- 	/*
- 	 * When the range fits into the existing large page,
--	 * return. cp->processed and cpa->tlbflush have been updated in
-+	 * return. cp->numpages and cpa->tlbflush have been updated in
- 	 * try_large_page:
- 	 */
- 	if (do_split <= 0)
-@@ -663,7 +662,7 @@ static int __change_page_attr_set_clr(struct cpa_data *cpa, int checkalias)
- 		 * Store the remaining nr of pages for the large page
- 		 * preservation check.
+ 		rm_from_queue(SIG_KERNEL_STOP_MASK, &p->signal->shared_pending);
+ 		t = p;
+@@ -635,25 +633,23 @@ static void handle_stop_signal(int sig, 
+ 			 * We were in fact stopped, and are now continued.
+ 			 * Notify the parent with CLD_CONTINUED.
+ 			 */
+-			p->signal->flags = SIGNAL_STOP_CONTINUED;
++			p->signal->flags = SIGNAL_STOP_CONTINUED |
++						SIGNAL_CLD_CONTINUED;
+ 			p->signal->group_exit_code = 0;
+-			spin_unlock(&p->sighand->siglock);
+-			do_notify_parent_cldstop(p, CLD_CONTINUED);
+-			spin_lock(&p->sighand->siglock);
+ 		} else {
+ 			/*
+ 			 * We are not stopped, but there could be a stop
+ 			 * signal in the middle of being processed after
+ 			 * being removed from the queue.  Clear that too.
+ 			 */
+-			p->signal->flags = 0;
++			p->signal->flags &= ~SIGNAL_STOP_DEQUEUED;
+ 		}
+ 	} else if (sig == SIGKILL) {
+ 		/*
+ 		 * Make sure that any pending stop signal already dequeued
+ 		 * is undone by the wakeup for SIGKILL.
  		 */
--		cpa->numpages = cpa->processed = numpages;
-+		cpa->numpages = numpages;
- 
- 		ret = __change_page_attr(cpa, checkalias);
- 		if (ret)
-@@ -680,9 +679,9 @@ static int __change_page_attr_set_clr(struct cpa_data *cpa, int checkalias)
- 		 * CPA operation. Either a large page has been
- 		 * preserved or a single page update happened.
- 		 */
--		BUG_ON(cpa->processed > numpages);
--		numpages -= cpa->processed;
--		cpa->vaddr += cpa->processed * PAGE_SIZE;
-+		BUG_ON(cpa->numpages > numpages);
-+		numpages -= cpa->numpages;
-+		cpa->vaddr += cpa->numpages * PAGE_SIZE;
+-		p->signal->flags = 0;
++		p->signal->flags &= ~SIGNAL_STOP_DEQUEUED;
  	}
- 	return 0;
- }
-diff --git a/include/asm-x86/pgtable_32.h b/include/asm-x86/pgtable_32.h
-index b478efa..a842c72 100644
---- a/include/asm-x86/pgtable_32.h
-+++ b/include/asm-x86/pgtable_32.h
-@@ -91,9 +91,7 @@ extern unsigned long pg0[];
- /* To avoid harmful races, pmd_none(x) should check only the lower when PAE */
- #define pmd_none(x)	(!(unsigned long)pmd_val(x))
- #define pmd_present(x)	(pmd_val(x) & _PAGE_PRESENT)
--#define	pmd_bad(x)	((pmd_val(x) \
--			  & ~(PAGE_MASK | _PAGE_USER | _PAGE_PSE | _PAGE_NX)) \
--			 != _KERNPG_TABLE)
-+#define	pmd_bad(x)	((pmd_val(x) & (~PAGE_MASK & ~_PAGE_USER)) != _KERNPG_TABLE)
- 
- 
- #define pages_to_mb(x) ((x) >> (20-PAGE_SHIFT))
-diff --git a/include/asm-x86/pgtable_64.h b/include/asm-x86/pgtable_64.h
-index 0a92583..0a0b77b 100644
---- a/include/asm-x86/pgtable_64.h
-+++ b/include/asm-x86/pgtable_64.h
-@@ -153,14 +153,12 @@ static inline unsigned long pgd_bad(pgd_t pgd)
- 
- static inline unsigned long pud_bad(pud_t pud)
- {
--	return pud_val(pud) &
--		~(PTE_MASK | _KERNPG_TABLE | _PAGE_USER | _PAGE_PSE | _PAGE_NX);
-+	return pud_val(pud) & ~(PTE_MASK | _KERNPG_TABLE | _PAGE_USER);
  }
  
- static inline unsigned long pmd_bad(pmd_t pmd)
- {
--	return pmd_val(pmd) &
--		~(PTE_MASK | _KERNPG_TABLE | _PAGE_USER | _PAGE_PSE | _PAGE_NX);
-+	return pmd_val(pmd) & ~(PTE_MASK | _KERNPG_TABLE | _PAGE_USER);
- }
+@@ -1761,6 +1757,19 @@ int get_signal_to_deliver(siginfo_t *inf
  
- #define pte_none(x)	(!pte_val(x))
+ relock:
+ 	spin_lock_irq(&current->sighand->siglock);
++
++	if (unlikely(current->signal->flags & SIGNAL_CLD_MASK)) {
++		int why = (current->signal->flags & SIGNAL_STOP_CONTINUED)
++				? CLD_CONTINUED : CLD_STOPPED;
++		current->signal->flags &= ~SIGNAL_CLD_MASK;
++		spin_unlock_irq(&current->sighand->siglock);
++
++		read_lock(&tasklist_lock);
++		do_notify_parent_cldstop(current->group_leader, why);
++		read_unlock(&tasklist_lock);
++		goto relock;
++	}
++
+ 	for (;;) {
+ 		struct k_sigaction *ka;
+ 
+
+--ZPt4rx8FFjLCG7dd
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: attachment; filename="2_HSS_SIMPLIFY.patch"
+
+--- 25/kernel/signal.c~2_HSS_SIMPLIFY	2008-03-03 13:51:55.000000000 +0300
++++ 25/kernel/signal.c	2008-03-03 14:47:39.000000000 +0300
+@@ -577,33 +577,16 @@ static void handle_stop_signal(int sig, 
+ 			t = next_thread(t);
+ 		} while (t != p);
+ 	} else if (sig == SIGCONT) {
++		unsigned int why;
+ 		/*
+ 		 * Remove all stop signals from all queues,
+ 		 * and wake all threads.
+ 		 */
+-		if (unlikely(p->signal->group_stop_count > 0)) {
+-			/*
+-			 * There was a group stop in progress.  We'll
+-			 * pretend it finished before we got here.  We are
+-			 * obliged to report it to the parent: if the
+-			 * SIGSTOP happened "after" this SIGCONT, then it
+-			 * would have cleared this pending SIGCONT.  If it
+-			 * happened "before" this SIGCONT, then the parent
+-			 * got the SIGCHLD about the stop finishing before
+-			 * the continue happened.  We do the notification
+-			 * now, and it's as if the stop had finished and
+-			 * the SIGCHLD was pending on entry to this kill.
+-			 */
+-			p->signal->group_stop_count = 0;
+-			p->signal->flags = SIGNAL_STOP_CONTINUED |
+-						SIGNAL_CLD_STOPPED;
+-		}
+ 		rm_from_queue(SIG_KERNEL_STOP_MASK, &p->signal->shared_pending);
+ 		t = p;
+ 		do {
+ 			unsigned int state;
+ 			rm_from_queue(SIG_KERNEL_STOP_MASK, &t->pending);
+-			
+ 			/*
+ 			 * If there is a handler for SIGCONT, we must make
+ 			 * sure that no thread returns to user mode before
+@@ -613,7 +596,7 @@ static void handle_stop_signal(int sig, 
+ 			 * running the handler.  With the TIF_SIGPENDING
+ 			 * flag set, the thread will pause and acquire the
+ 			 * siglock that we hold now and until we've queued
+-			 * the pending signal. 
++			 * the pending signal.
+ 			 *
+ 			 * Wake up the stopped thread _after_ setting
+ 			 * TIF_SIGPENDING
+@@ -628,13 +611,23 @@ static void handle_stop_signal(int sig, 
+ 			t = next_thread(t);
+ 		} while (t != p);
+ 
+-		if (p->signal->flags & SIGNAL_STOP_STOPPED) {
+-			/*
+-			 * We were in fact stopped, and are now continued.
+-			 * Notify the parent with CLD_CONTINUED.
+-			 */
+-			p->signal->flags = SIGNAL_STOP_CONTINUED |
+-						SIGNAL_CLD_CONTINUED;
++		/*
++		 * Notify the parent with CLD_CONTINUED if we were stopped.
++		 *
++		 * If we were in the middle of a group stop, we pretend it
++		 * was already finished, and then continued. Since SIGCHLD
++		 * doesn't queue we report only CLD_STOPPED, as if the next
++		 * CLD_CONTINUED was dropped.
++		 */
++		why = 0;
++		if (p->signal->flags & SIGNAL_STOP_STOPPED)
++			why |= SIGNAL_CLD_CONTINUED;
++		else if (p->signal->group_stop_count)
++			why |= SIGNAL_CLD_STOPPED;
++
++		if (why) {
++			p->signal->flags = why | SIGNAL_STOP_CONTINUED;
++			p->signal->group_stop_count = 0;
+ 			p->signal->group_exit_code = 0;
+ 		} else {
+ 			/*
+
+--ZPt4rx8FFjLCG7dd--
+
