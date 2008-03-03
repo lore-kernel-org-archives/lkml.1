@@ -1,51 +1,201 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758970AbYCCBD7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757915AbYCCBYI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758970AbYCCBD7 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 2 Mar 2008 20:03:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753141AbYCCBDw
+	id S1757915AbYCCBYI (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 2 Mar 2008 20:24:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754842AbYCCBX4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 2 Mar 2008 20:03:52 -0500
-Received: from relay2.sgi.com ([192.48.171.30]:35109 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752156AbYCCBDv (ORCPT
-	<rfc822;@relay.sgi.com:linux-kernel@vger.kernel.org>);
-	Sun, 2 Mar 2008 20:03:51 -0500
-Message-ID: <47CB4E20.5070808@sgi.com>
-Date: Mon, 03 Mar 2008 12:02:24 +1100
-From: Mark Goodwin <markgw@sgi.com>
-Reply-To: markgw@sgi.com
-Organization: SGI Engineering
-User-Agent: Thunderbird 1.5.0.14 (Windows/20071210)
+	Sun, 2 Mar 2008 20:23:56 -0500
+Received: from mtaout03-winn.ispmail.ntl.com ([81.103.221.49]:10883 "EHLO
+	mtaout03-winn.ispmail.ntl.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754789AbYCCBX4 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 2 Mar 2008 20:23:56 -0500
+Date: Mon, 3 Mar 2008 01:23:49 +0000
+From: Samuel Thibault <samuel.thibault@ens-lyon.org>
+To: torvalds@osdl.org, stable@kernel.org
+Cc: linux-kernel@vger.kernel.org
+Subject: [PATCH,TRIVIAL] Fix default compose table initialization
+Message-ID: <20080303012349.GA12338@implementation>
+Mail-Followup-To: Samuel Thibault <samuel.thibault@ens-lyon.org>,
+	torvalds@osdl.org, stable@kernel.org, linux-kernel@vger.kernel.org
 MIME-Version: 1.0
-To: Eric Sandeen <sandeen@sandeen.net>
-CC: =?ISO-8859-15?Q?Thomas_M=FCller?= <thomas@mathtm.de>, xfs@oss.sgi.com,
-       linux-kernel@vger.kernel.org
-Subject: Re: Kernel oops / XFS filesystem corruption
-References: <47C93C32.40006@mathtm.de> <47C9C44D.8080400@sandeen.net> <47C9F5E9.70703@mathtm.de> <47CA043F.5070202@sandeen.net>
-In-Reply-To: <47CA043F.5070202@sandeen.net>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.12-2006-07-14
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Oddly enough, unsigned int c = '\300'; puts a "negative" value in c, not
+0300...  This fixes the default unicode compose table by using integers
+instead of character constants.
 
+Signed-off-by: Samuel Thibault <samuel.thibault@ens-lyon.org>
 
-Eric Sandeen wrote:
-> Thomas Müller wrote:
->> Eric Sandeen wrote:
->>> Did you also happen to save the xfs_repair output?
->> No, but I made a complete copy of the file system before
->> repairing it, so I can easily recreate it... :)
-> 
-> oh, like a dd image?  great.  You can use xfs_metadump to make a more
-> transportable image... xfs folks might even be able to use that to
-> recreate the oops.
-
-YES PLEASE. See the xfs_metadump man page for instructions. It will
-obfuscate filenames by default (but please only do so if you need to).
-
-Please make it available for Barry, thanks.
-
-Cheers
--- Mark
+--- linux/drivers/char/defkeymap.c_shipped.orig	2008-03-02 22:25:22.000000000 +0000
++++ linux/drivers/char/defkeymap.c_shipped	2008-03-02 22:30:52.000000000 +0000
+@@ -223,40 +223,40 @@
+ };
+ 
+ struct kbdiacruc accent_table[MAX_DIACR] = {
+-	{'`', 'A', '\300'},	{'`', 'a', '\340'},
+-	{'\'', 'A', '\301'},	{'\'', 'a', '\341'},
+-	{'^', 'A', '\302'},	{'^', 'a', '\342'},
+-	{'~', 'A', '\303'},	{'~', 'a', '\343'},
+-	{'"', 'A', '\304'},	{'"', 'a', '\344'},
+-	{'O', 'A', '\305'},	{'o', 'a', '\345'},
+-	{'0', 'A', '\305'},	{'0', 'a', '\345'},
+-	{'A', 'A', '\305'},	{'a', 'a', '\345'},
+-	{'A', 'E', '\306'},	{'a', 'e', '\346'},
+-	{',', 'C', '\307'},	{',', 'c', '\347'},
+-	{'`', 'E', '\310'},	{'`', 'e', '\350'},
+-	{'\'', 'E', '\311'},	{'\'', 'e', '\351'},
+-	{'^', 'E', '\312'},	{'^', 'e', '\352'},
+-	{'"', 'E', '\313'},	{'"', 'e', '\353'},
+-	{'`', 'I', '\314'},	{'`', 'i', '\354'},
+-	{'\'', 'I', '\315'},	{'\'', 'i', '\355'},
+-	{'^', 'I', '\316'},	{'^', 'i', '\356'},
+-	{'"', 'I', '\317'},	{'"', 'i', '\357'},
+-	{'-', 'D', '\320'},	{'-', 'd', '\360'},
+-	{'~', 'N', '\321'},	{'~', 'n', '\361'},
+-	{'`', 'O', '\322'},	{'`', 'o', '\362'},
+-	{'\'', 'O', '\323'},	{'\'', 'o', '\363'},
+-	{'^', 'O', '\324'},	{'^', 'o', '\364'},
+-	{'~', 'O', '\325'},	{'~', 'o', '\365'},
+-	{'"', 'O', '\326'},	{'"', 'o', '\366'},
+-	{'/', 'O', '\330'},	{'/', 'o', '\370'},
+-	{'`', 'U', '\331'},	{'`', 'u', '\371'},
+-	{'\'', 'U', '\332'},	{'\'', 'u', '\372'},
+-	{'^', 'U', '\333'},	{'^', 'u', '\373'},
+-	{'"', 'U', '\334'},	{'"', 'u', '\374'},
+-	{'\'', 'Y', '\335'},	{'\'', 'y', '\375'},
+-	{'T', 'H', '\336'},	{'t', 'h', '\376'},
+-	{'s', 's', '\337'},	{'"', 'y', '\377'},
+-	{'s', 'z', '\337'},	{'i', 'j', '\377'},
++	{'`', 'A', 0300},	{'`', 'a', 0340},
++	{'\'', 'A', 0301},	{'\'', 'a', 0341},
++	{'^', 'A', 0302},	{'^', 'a', 0342},
++	{'~', 'A', 0303},	{'~', 'a', 0343},
++	{'"', 'A', 0304},	{'"', 'a', 0344},
++	{'O', 'A', 0305},	{'o', 'a', 0345},
++	{'0', 'A', 0305},	{'0', 'a', 0345},
++	{'A', 'A', 0305},	{'a', 'a', 0345},
++	{'A', 'E', 0306},	{'a', 'e', 0346},
++	{',', 'C', 0307},	{',', 'c', 0347},
++	{'`', 'E', 0310},	{'`', 'e', 0350},
++	{'\'', 'E', 0311},	{'\'', 'e', 0351},
++	{'^', 'E', 0312},	{'^', 'e', 0352},
++	{'"', 'E', 0313},	{'"', 'e', 0353},
++	{'`', 'I', 0314},	{'`', 'i', 0354},
++	{'\'', 'I', 0315},	{'\'', 'i', 0355},
++	{'^', 'I', 0316},	{'^', 'i', 0356},
++	{'"', 'I', 0317},	{'"', 'i', 0357},
++	{'-', 'D', 0320},	{'-', 'd', 0360},
++	{'~', 'N', 0321},	{'~', 'n', 0361},
++	{'`', 'O', 0322},	{'`', 'o', 0362},
++	{'\'', 'O', 0323},	{'\'', 'o', 0363},
++	{'^', 'O', 0324},	{'^', 'o', 0364},
++	{'~', 'O', 0325},	{'~', 'o', 0365},
++	{'"', 'O', 0326},	{'"', 'o', 0366},
++	{'/', 'O', 0330},	{'/', 'o', 0370},
++	{'`', 'U', 0331},	{'`', 'u', 0371},
++	{'\'', 'U', 0332},	{'\'', 'u', 0372},
++	{'^', 'U', 0333},	{'^', 'u', 0373},
++	{'"', 'U', 0334},	{'"', 'u', 0374},
++	{'\'', 'Y', 0335},	{'\'', 'y', 0375},
++	{'T', 'H', 0336},	{'t', 'h', 0376},
++	{'s', 's', 0337},	{'"', 'y', 0377},
++	{'s', 'z', 0337},	{'i', 'j', 0377},
+ };
+ 
+ unsigned int accent_table_size = 68;
+--- linux/drivers/acorn/char/defkeymap-l7200.c.orig	2008-03-02 22:27:34.000000000 +0000
++++ linux/drivers/acorn/char/defkeymap-l7200.c	2008-03-02 22:30:36.000000000 +0000
+@@ -347,40 +347,40 @@
+ };
+ 
+ struct kbdiacruc accent_table[MAX_DIACR] = {
+-	{'`', 'A', '\300'},	{'`', 'a', '\340'},
+-	{'\'', 'A', '\301'},	{'\'', 'a', '\341'},
+-	{'^', 'A', '\302'},	{'^', 'a', '\342'},
+-	{'~', 'A', '\303'},	{'~', 'a', '\343'},
+-	{'"', 'A', '\304'},	{'"', 'a', '\344'},
+-	{'O', 'A', '\305'},	{'o', 'a', '\345'},
+-	{'0', 'A', '\305'},	{'0', 'a', '\345'},
+-	{'A', 'A', '\305'},	{'a', 'a', '\345'},
+-	{'A', 'E', '\306'},	{'a', 'e', '\346'},
+-	{',', 'C', '\307'},	{',', 'c', '\347'},
+-	{'`', 'E', '\310'},	{'`', 'e', '\350'},
+-	{'\'', 'E', '\311'},	{'\'', 'e', '\351'},
+-	{'^', 'E', '\312'},	{'^', 'e', '\352'},
+-	{'"', 'E', '\313'},	{'"', 'e', '\353'},
+-	{'`', 'I', '\314'},	{'`', 'i', '\354'},
+-	{'\'', 'I', '\315'},	{'\'', 'i', '\355'},
+-	{'^', 'I', '\316'},	{'^', 'i', '\356'},
+-	{'"', 'I', '\317'},	{'"', 'i', '\357'},
+-	{'-', 'D', '\320'},	{'-', 'd', '\360'},
+-	{'~', 'N', '\321'},	{'~', 'n', '\361'},
+-	{'`', 'O', '\322'},	{'`', 'o', '\362'},
+-	{'\'', 'O', '\323'},	{'\'', 'o', '\363'},
+-	{'^', 'O', '\324'},	{'^', 'o', '\364'},
+-	{'~', 'O', '\325'},	{'~', 'o', '\365'},
+-	{'"', 'O', '\326'},	{'"', 'o', '\366'},
+-	{'/', 'O', '\330'},	{'/', 'o', '\370'},
+-	{'`', 'U', '\331'},	{'`', 'u', '\371'},
+-	{'\'', 'U', '\332'},	{'\'', 'u', '\372'},
+-	{'^', 'U', '\333'},	{'^', 'u', '\373'},
+-	{'"', 'U', '\334'},	{'"', 'u', '\374'},
+-	{'\'', 'Y', '\335'},	{'\'', 'y', '\375'},
+-	{'T', 'H', '\336'},	{'t', 'h', '\376'},
+-	{'s', 's', '\337'},	{'"', 'y', '\377'},
+-	{'s', 'z', '\337'},	{'i', 'j', '\377'},
++	{'`', 'A', 0300},	{'`', 'a', 0340},
++	{'\'', 'A', 0301},	{'\'', 'a', 0341},
++	{'^', 'A', 0302},	{'^', 'a', 0342},
++	{'~', 'A', 0303},	{'~', 'a', 0343},
++	{'"', 'A', 0304},	{'"', 'a', 0344},
++	{'O', 'A', 0305},	{'o', 'a', 0345},
++	{'0', 'A', 0305},	{'0', 'a', 0345},
++	{'A', 'A', 0305},	{'a', 'a', 0345},
++	{'A', 'E', 0306},	{'a', 'e', 0346},
++	{',', 'C', 0307},	{',', 'c', 0347},
++	{'`', 'E', 0310},	{'`', 'e', 0350},
++	{'\'', 'E', 0311},	{'\'', 'e', 0351},
++	{'^', 'E', 0312},	{'^', 'e', 0352},
++	{'"', 'E', 0313},	{'"', 'e', 0353},
++	{'`', 'I', 0314},	{'`', 'i', 0354},
++	{'\'', 'I', 0315},	{'\'', 'i', 0355},
++	{'^', 'I', 0316},	{'^', 'i', 0356},
++	{'"', 'I', 0317},	{'"', 'i', 0357},
++	{'-', 'D', 0320},	{'-', 'd', 0360},
++	{'~', 'N', 0321},	{'~', 'n', 0361},
++	{'`', 'O', 0322},	{'`', 'o', 0362},
++	{'\'', 'O', 0323},	{'\'', 'o', 0363},
++	{'^', 'O', 0324},	{'^', 'o', 0364},
++	{'~', 'O', 0325},	{'~', 'o', 0365},
++	{'"', 'O', 0326},	{'"', 'o', 0366},
++	{'/', 'O', 0330},	{'/', 'o', 0370},
++	{'`', 'U', 0331},	{'`', 'u', 0371},
++	{'\'', 'U', 0332},	{'\'', 'u', 0372},
++	{'^', 'U', 0333},	{'^', 'u', 0373},
++	{'"', 'U', 0334},	{'"', 'u', 0374},
++	{'\'', 'Y', 0335},	{'\'', 'y', 0375},
++	{'T', 'H', 0336},	{'t', 'h', 0376},
++	{'s', 's', 0337},	{'"', 'y', 0377},
++	{'s', 'z', 0337},	{'i', 'j', 0377},
+ };
+ 
+ unsigned int accent_table_size = 68;
+--- linux/drivers/s390/char/defkeymap.c.orig	2008-03-02 22:28:27.000000000 +0000
++++ linux/drivers/s390/char/defkeymap.c	2008-03-02 22:30:45.000000000 +0000
+@@ -151,8 +151,8 @@
+ };
+ 
+ struct kbdiacruc accent_table[MAX_DIACR] = {
+-	{'^', 'c', '\003'},	{'^', 'd', '\004'},
+-	{'^', 'z', '\032'},	{'^', '\012', '\000'},
++	{'^', 'c', 0003},	{'^', 'd', 0004},
++	{'^', 'z', 0032},	{'^', 0012', 0000},
+ };
+ 
+ unsigned int accent_table_size = 4;
