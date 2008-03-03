@@ -1,96 +1,155 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757098AbYCCXwk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756501AbYCCXxA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757098AbYCCXwk (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Mar 2008 18:52:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753846AbYCCXvw
+	id S1756501AbYCCXxA (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Mar 2008 18:53:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755530AbYCCXvz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Mar 2008 18:51:52 -0500
-Received: from g1t0029.austin.hp.com ([15.216.28.36]:42932 "EHLO
-	g1t0029.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753409AbYCCXvu (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Mar 2008 18:51:50 -0500
-From: Paul Moore <paul.moore@hp.com>
-Organization: Hewlett-Packard
-To: "Ahmed S. Darwish" <darwish.07@gmail.com>
-Subject: Re: [PATCH 7/9] Audit: internally use the new LSM audit hooks
-Date: Mon, 3 Mar 2008 18:51:41 -0500
-User-Agent: KMail/1.9.7
-Cc: Chris Wright <chrisw@sous-sol.org>, Stephen Smalley <sds@tycho.nsa.gov>,
-       James Morris <jmorris@namei.org>, Eric Paris <eparis@parisplace.org>,
-       Casey Schaufler <casey@schaufler-ca.com>,
-       David Woodhouse <dwmw2@infradead.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, Audit-ML <linux-audit@redhat.com>,
-       LSM-ML <linux-security-module@vger.kernel.org>
-References: <20080301194752.GA19636@ubuntu> <20080301200111.GH19636@ubuntu>
-In-Reply-To: <20080301200111.GH19636@ubuntu>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Mon, 3 Mar 2008 18:51:55 -0500
+Received: from e1.ny.us.ibm.com ([32.97.182.141]:43896 "EHLO e1.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755459AbYCCXvy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 3 Mar 2008 18:51:54 -0500
+Subject: [patch 1/3]  Relay Reset Consumed
+From: "David J. Wilder" <dwilder@us.ibm.com>
+To: linux-kernel@vger.kernel.org, akpm@linux-foundation.org
+Cc: systemtap@sourceware.org
+Content-Type: text/plain
+Date: Mon, 03 Mar 2008 15:51:50 -0800
+Message-Id: <1204588311.32186.7.camel@lc4eb748232119.ibm.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.0.2 (2.0.2-35.0.4.el4) 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200803031851.41978.paul.moore@hp.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday 01 March 2008 3:01:11 pm Ahmed S. Darwish wrote:
-> Convert Audit to use the new LSM Audit hooks instead of
-> the exported SELinux interface.
->
-> Basically, use:
-> security_audit_rule_init
-> secuirty_audit_rule_free
-> security_audit_rule_known
-> security_audit_rule_match
->
-> instad of (respectively) :
-> selinux_audit_rule_init
-> selinux_audit_rule_free
-> audit_rule_has_selinux
-> selinux_audit_rule_match
->
-> Signed-off-by: Casey Schaufler <casey@schaufler-ca.com>
-> Signed-off-by: Ahmed S. Darwish <darwish.07@gmail.com>
-> ---
->
->  audit.c       |    7 ------
->  auditfilter.c |   61
-> ++++++++++++++++------------------------------------------ auditsc.c 
->    |    9 +++-----
->  3 files changed, 22 insertions(+), 55 deletions(-)
+This patch allows relay channels to be reset i.e. unconsumed.
+Basically allows a 'rewind' function for flight-recorder tracing.
 
-For some reason some of your patches are not coming through with correct 
-diffstats (notice the lack of a path relative to the kernel base?).  
-Don't worry too much about it as it's not grounds to reject the patch 
-(at least in my mind) but it's worth looking into on your end for the 
-next time you submit patches.
+Signed-off-by: Tom Zanussi <zanussi@us.ibm.com>
+Signed-off-by: David Wilder <dwilder@us.ibm.com>
+---
+ Documentation/filesystems/relay.txt |   11 ++++++
+ include/linux/relay.h               |    1 +
+ kernel/relay.c                      |   58 ++++++++++++++++++++++++++++++++---
+ 3 files changed, 65 insertions(+), 5 deletions(-)
 
-> Andrew, please atomically merge patch #7 and patch #8. Although
-> a system with patch7 and without patch8 will be compiled fine,
-> the SELinux Audit hooks are not set up yet. This means below
-> audit hooks will point to the dummy hooks instead of SELinux
-> ones even if SELinux is enabled.
->
-> I could not setup the SELinux hooks first cause they have
-> the same name of the old exported SELinux interface with a
-> difference of one parameter.
+diff --git a/Documentation/filesystems/relay.txt b/Documentation/filesystems/relay.txt
+index 094f2d2..1af6d4b 100644
+--- a/Documentation/filesystems/relay.txt
++++ b/Documentation/filesystems/relay.txt
+@@ -161,6 +161,7 @@ TBD(curr. line MT:/API/)
+     relay_close(chan)
+     relay_flush(chan)
+     relay_reset(chan)
++    relay_reset_consumed(chan)
+ 
+   channel management typically called on instigation of userspace:
+ 
+@@ -452,6 +453,16 @@ state without reallocating channel buffer memory or destroying
+ existing mappings.  It should however only be called when it's safe to
+ do so, i.e. when the channel isn't currently being written to.
+ 
++The read(2) implementation always 'consumes' the bytes read,
++i.e. those bytes won't be available again to subsequent reads.
++Certain applications may nonetheless wish to allow the 'consumed' data
++to be re-read; relay_reset_consumed() is provided for that purpose -
++it resets the internal consumed counters for all buffers in the
++channel.  For example, if a first set of reads 'drains' the channel,
++and then relay_reset_consumed() is called, a second set of reads will
++get the exact same data (assuming no new data was written between the
++first set of reads and the second).
++
+ Finally, there are a couple of utility callbacks that can be used for
+ different purposes.  buf_mapped() is called whenever a channel buffer
+ is mmapped from user space and buf_unmapped() is called when it's
+diff --git a/include/linux/relay.h b/include/linux/relay.h
+index 6cd8c44..aca45fa 100644
+--- a/include/linux/relay.h
++++ b/include/linux/relay.h
+@@ -175,6 +175,7 @@ extern void relay_subbufs_consumed(struct rchan *chan,
+ 				   unsigned int cpu,
+ 				   size_t consumed);
+ extern void relay_reset(struct rchan *chan);
++extern void relay_reset_consumed(struct rchan *chan);
+ extern int relay_buf_full(struct rchan_buf *buf);
+ 
+ extern size_t relay_switch_subbuf(struct rchan_buf *buf,
+diff --git a/kernel/relay.c b/kernel/relay.c
+index d080b9d..f9dc539 100644
+--- a/kernel/relay.c
++++ b/kernel/relay.c
+@@ -378,6 +378,57 @@ void relay_reset(struct rchan *chan)
+ }
+ EXPORT_SYMBOL_GPL(relay_reset);
+ 
++/**
++ *	__relay_reset_consumed - reset a channel buffer's consumed count
++ *	@buf: the channel buffer
++ *
++ *	See relay_reset_consumed for description of effect.
++ */
++static void __relay_reset_consumed(struct rchan_buf *buf)
++{
++	size_t n_subbufs = buf->chan->n_subbufs;
++	size_t produced = buf->subbufs_produced;
++	size_t consumed = buf->subbufs_consumed;
++
++	if (produced < n_subbufs)
++		buf->subbufs_consumed = 0;
++	else {
++		consumed = produced - n_subbufs;
++		if (buf->offset)
++			consumed++;
++		buf->subbufs_consumed = consumed;
++	}
++	buf->bytes_consumed = 0;
++}
++
++/**
++ *	relay_reset_consumed - reset the channel's consumed counts
++ *	@chan: the channel
++ *
++ *	This has the effect of making all data previously read (and
++ *	not overwritten by subsequent writes) from a channel available
++ *	for reading again.
++ *
++ *	NOTE: Care should be taken that the channel isn't actually
++ *	being used by anything when this call is made.
++ */
++void relay_reset_consumed(struct rchan *chan)
++{
++	unsigned int i;
++	struct rchan_buf *prev = NULL;
++
++	if (!chan)
++		return;
++
++	for (i = 0; i < NR_CPUS; i++) {
++		if (!chan->buf[i] || chan->buf[i] == prev)
++			break;
++		__relay_reset_consumed(chan->buf[i]);
++		prev = chan->buf[i];
++	}
++}
++EXPORT_SYMBOL_GPL(relay_reset_consumed);
++
+ /*
+  *	relay_open_buf - create a new relay channel buffer
+  *
+@@ -840,11 +891,8 @@ static int relay_file_read_avail(struct rchan_buf *buf, size_t read_pos)
+ 		return 1;
+ 	}
+ 
+-	if (unlikely(produced - consumed >= n_subbufs)) {
+-		consumed = produced - n_subbufs + 1;
+-		buf->subbufs_consumed = consumed;
+-		buf->bytes_consumed = 0;
+-	}
++	if (unlikely(produced - consumed >= n_subbufs))
++		__relay_reset_consumed(buf);
+ 
+ 	produced = (produced % n_subbufs) * subbuf_size + buf->offset;
+ 	consumed = (consumed % n_subbufs) * subbuf_size + buf->bytes_consumed;
 
-In cases like this where you need patches applied atomically to ensure 
-correct operation you can always combine the two patches into one 
-(assuming they are still small enough to be posted, which shouldn't be 
-a problem here).  Small patches are nice and easy to review, but that 
-doesn't mean you have to break everything up if it is awkward.
 
-I've looked over patches #7, #8, and #9 and they look okay to me, but 
-I'm not tagging them 'Reviewed-by' because they go beyond areas of the 
-kernel that I feel comfortable reviewing at this point.  Rest assured 
-there are other on the To/CC line that can help you out (I see James 
-Morris already Ack'd your entire patch set).
-
-Thanks for all your work on this, it's a nice improvement.
-
--- 
-paul moore
-linux security @ hp
