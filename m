@@ -1,112 +1,118 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760296AbYCCRQo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760611AbYCCRRD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760296AbYCCRQo (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Mar 2008 12:16:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755608AbYCCROR
+	id S1760611AbYCCRRD (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Mar 2008 12:17:03 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758640AbYCCROU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Mar 2008 12:14:17 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:35418 "EHLO mx1.redhat.com"
+	Mon, 3 Mar 2008 12:14:20 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:35429 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758556AbYCCROL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Mar 2008 12:14:11 -0500
+	id S1754983AbYCCROS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 3 Mar 2008 12:14:18 -0500
 From: Glauber Costa <gcosta@redhat.com>
 To: linux-kernel@vger.kernel.org
 Cc: akpm@linux-foundation.org, glommer@gmail.com, mingo@elte.hu,
        tglx@linutronix.de, Glauber Costa <gcosta@redhat.com>
-Subject: [PATCH 06/52] merge smp_send_reschedule
-Date: Mon,  3 Mar 2008 14:12:34 -0300
-Message-Id: <1204564400-17636-7-git-send-email-gcosta@redhat.com>
+Subject: [PATCH 08/52] unify __cpu_up.
+Date: Mon,  3 Mar 2008 14:12:36 -0300
+Message-Id: <1204564400-17636-9-git-send-email-gcosta@redhat.com>
 X-Mailer: git-send-email 1.5.3.6
-In-Reply-To: <1204564400-17636-6-git-send-email-gcosta@redhat.com>
+In-Reply-To: <1204564400-17636-8-git-send-email-gcosta@redhat.com>
 References: <1204564400-17636-1-git-send-email-gcosta@redhat.com>
  <1204564400-17636-2-git-send-email-gcosta@redhat.com>
  <1204564400-17636-3-git-send-email-gcosta@redhat.com>
  <1204564400-17636-4-git-send-email-gcosta@redhat.com>
  <1204564400-17636-5-git-send-email-gcosta@redhat.com>
  <1204564400-17636-6-git-send-email-gcosta@redhat.com>
+ <1204564400-17636-7-git-send-email-gcosta@redhat.com>
+ <1204564400-17636-8-git-send-email-gcosta@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-function definition is moved to common header, x86_64 version is now called
-native_smp_send_reschedule
+function definition is moved to common header. x86_64 version
+is now called native_cpu_up
 
 Signed-off-by: Glauber Costa <gcosta@redhat.com>
 ---
- arch/x86/kernel/smp_64.c |    7 +++++--
- include/asm-x86/smp.h    |    5 +++++
- include/asm-x86/smp_32.h |    4 ----
- include/asm-x86/smp_64.h |    2 --
- 4 files changed, 10 insertions(+), 8 deletions(-)
+ arch/x86/kernel/smp_64.c     |    1 +
+ arch/x86/kernel/smpboot_64.c |    2 +-
+ include/asm-x86/smp.h        |    7 +++++++
+ include/asm-x86/smp_32.h     |    5 -----
+ 4 files changed, 9 insertions(+), 6 deletions(-)
 
 diff --git a/arch/x86/kernel/smp_64.c b/arch/x86/kernel/smp_64.c
-index 80dba12..fd18161 100644
+index 225b765..7cc20a3 100644
 --- a/arch/x86/kernel/smp_64.c
 +++ b/arch/x86/kernel/smp_64.c
-@@ -290,8 +290,9 @@ void flush_tlb_all(void)
-  * anything. Worst case is that we lose a reschedule ...
-  */
- 
--void smp_send_reschedule(int cpu)
-+static void native_smp_send_reschedule(int cpu)
- {
-+	WARN_ON(cpu_is_offline(cpu));
- 	send_IPI_mask(cpumask_of_cpu(cpu), RESCHEDULE_VECTOR);
- }
- 
-@@ -528,5 +529,7 @@ asmlinkage void smp_call_function_interrupt(void)
- 	}
- }
- 
--struct smp_ops smp_ops;
-+struct smp_ops smp_ops = {
-+	.smp_send_reschedule = native_smp_send_reschedule,
-+};
+@@ -532,5 +532,6 @@ asmlinkage void smp_call_function_interrupt(void)
+ struct smp_ops smp_ops = {
+ 	.smp_send_reschedule = native_smp_send_reschedule,
+ 	.smp_call_function_mask = native_smp_call_function_mask,
++	.cpu_up = native_cpu_up,
+ };
  EXPORT_SYMBOL_GPL(smp_ops);
+diff --git a/arch/x86/kernel/smpboot_64.c b/arch/x86/kernel/smpboot_64.c
+index 0880f2c..e381fe7 100644
+--- a/arch/x86/kernel/smpboot_64.c
++++ b/arch/x86/kernel/smpboot_64.c
+@@ -929,7 +929,7 @@ void __init smp_prepare_boot_cpu(void)
+ /*
+  * Entry point to boot a CPU.
+  */
+-int __cpuinit __cpu_up(unsigned int cpu)
++int __cpuinit native_cpu_up(unsigned int cpu)
+ {
+ 	int apicid = cpu_present_to_apicid(cpu);
+ 	unsigned long flags;
 diff --git a/include/asm-x86/smp.h b/include/asm-x86/smp.h
-index ee98bee..28f33c0 100644
+index d9782f4..7dd7141 100644
 --- a/include/asm-x86/smp.h
 +++ b/include/asm-x86/smp.h
-@@ -23,6 +23,11 @@ struct smp_ops {
- 
+@@ -24,6 +24,11 @@ struct smp_ops {
  #ifdef CONFIG_SMP
  extern struct smp_ops smp_ops;
-+
-+static inline void smp_send_reschedule(int cpu)
+ 
++static inline int __cpu_up(unsigned int cpu)
 +{
-+	smp_ops.smp_send_reschedule(cpu);
++	return smp_ops.cpu_up(cpu);
 +}
++
+ static inline void smp_send_reschedule(int cpu)
+ {
+ 	smp_ops.smp_send_reschedule(cpu);
+@@ -35,6 +40,8 @@ static inline int smp_call_function_mask(cpumask_t mask,
+ {
+ 	return smp_ops.smp_call_function_mask(mask, func, info, wait);
+ }
++
++int native_cpu_up(unsigned int cpunum);
  #endif
  
  #ifdef CONFIG_X86_32
 diff --git a/include/asm-x86/smp_32.h b/include/asm-x86/smp_32.h
-index 74755e8..c60a3dd 100644
+index d9337ee..a7fab8e 100644
 --- a/include/asm-x86/smp_32.h
 +++ b/include/asm-x86/smp_32.h
-@@ -60,10 +60,6 @@ static inline void smp_send_stop(void)
+@@ -47,10 +47,6 @@ static inline void smp_prepare_cpus(unsigned int max_cpus)
  {
- 	smp_ops.smp_send_stop();
+ 	smp_ops.smp_prepare_cpus(max_cpus);
  }
--static inline void smp_send_reschedule(int cpu)
+-static inline int __cpu_up(unsigned int cpu)
 -{
--	smp_ops.smp_send_reschedule(cpu);
+-	return smp_ops.cpu_up(cpu);
 -}
- static inline int smp_call_function_mask(cpumask_t mask,
- 					 void (*func) (void *info), void *info,
- 					 int wait)
-diff --git a/include/asm-x86/smp_64.h b/include/asm-x86/smp_64.h
-index 284f701..b920458 100644
---- a/include/asm-x86/smp_64.h
-+++ b/include/asm-x86/smp_64.h
-@@ -65,8 +65,6 @@ static inline int num_booting_cpus(void)
- 	return cpus_weight(cpu_callout_map);
- }
+ static inline void smp_cpus_done(unsigned int max_cpus)
+ {
+ 	smp_ops.smp_cpus_done(max_cpus);
+@@ -63,7 +59,6 @@ static inline void smp_send_stop(void)
  
--extern void smp_send_reschedule(int cpu);
--
- #else /* CONFIG_SMP */
+ void native_smp_prepare_boot_cpu(void);
+ void native_smp_prepare_cpus(unsigned int max_cpus);
+-int native_cpu_up(unsigned int cpunum);
+ void native_smp_cpus_done(unsigned int max_cpus);
  
- extern unsigned int boot_cpu_id;
+ #ifndef CONFIG_PARAVIRT
 -- 
 1.5.0.6
 
