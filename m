@@ -1,352 +1,175 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758934AbYCCRnm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757233AbYCCRoJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758934AbYCCRnm (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Mar 2008 12:43:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755847AbYCCRlI
+	id S1757233AbYCCRoJ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Mar 2008 12:44:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755336AbYCCRn3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Mar 2008 12:41:08 -0500
-Received: from rgminet01.oracle.com ([148.87.113.118]:35882 "EHLO
-	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751250AbYCCRlA (ORCPT
+	Mon, 3 Mar 2008 12:43:29 -0500
+Received: from iolanthe.rowland.org ([192.131.102.54]:50002 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1755651AbYCCRnW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Mar 2008 12:41:00 -0500
-Date: Mon, 3 Mar 2008 09:38:51 -0800
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: Rick van Rein <rick@vanrein.org>
-Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2.6.24] mm: BadRAM support for broken memory
-Message-Id: <20080303093851.b9ba55f3.randy.dunlap@oracle.com>
-In-Reply-To: <20080302134221.GA25196@phantom.vanrein.org>
-References: <20080302134221.GA25196@phantom.vanrein.org>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.4.7 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+	Mon, 3 Mar 2008 12:43:22 -0500
+Date: Mon, 3 Mar 2008 12:43:20 -0500 (EST)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+cc: Linux-pm mailing list <linux-pm@lists.linux-foundation.org>,
+       Kernel development list <linux-kernel@vger.kernel.org>,
+       Alexey Starikovskiy <astarikovskiy@suse.de>
+Subject: Re: [linux-pm] Fundamental flaw in system suspend, exposed by freezer
+ removal
+In-Reply-To: <200803031732.52823.rjw@sisk.pl>
+Message-ID: <Pine.LNX.4.44L0.0803031217070.3611-100000@iolanthe.rowland.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2 Mar 2008 13:42:21 +0000 Rick van Rein wrote:
+On Mon, 3 Mar 2008, Rafael J. Wysocki wrote:
 
-> This is the latest version of the BadRAM patch, which makes it possible to
-> run Linux on broken memory.  The patch supports the use of a lesser grade
-> of memory, which could be marketed more cheaply and which would thereby
-> decrease the environmental stress caused by the process of (memory) chip
-> manufacturing.
+> > After more thought, I'm not so sure about this.  It might be a good
+> > idea to call the begin_sleep method just before the suspend method (or
+> > any of its variants: freeze, hibernate, prethaw, etc.) and call the
+> > end_sleep method just after the resume method.  This minimizes the time
+> > drivers will spend in a peculiar non-hotplug-aware state, although it 
+> > means that begin_sleep would have to be idempotent.
+> > 
+> > It also allows sophisticated drivers to do all their processing in the
+> > begin_sleep (and end_sleep) method: both preventing new child
+> > registrations and powering down the device.  At the moment I'm not sure
+> > whether this would turn out to be a good strategy, but it might.
+> 
+> Well, I think there should be a window between ->suspend_begin()
+> and ->suspend() allowing the core to cancel the suspending of given
+> device and to select another one.  For example, if there's a child
+> registration concurrent wrt ->suspend_begin() which completes after
+> ->suspend_begin() has been called, but before ->suspend_begin() has a chance
+> to block it, the core should not call ->suspend() for the device, but select
+> another one (the child).
 
-Patch needs to be made against (i.e., applyable against) the latest
-linus-mainline kernel, not a few-weeks old kernel.
-Of course, you could be lucky and it applies to either one.
+With a sophisticated driver that would never happen, because after
+blocking new child registrations, the driver would check that the
+power.sleeping flag is set in all the children before powering down the 
+device.  But like I said, I'm not sure if this would be a good 
+strategy.
 
-> diff -pruN linux-2.6.24.orig/Documentation/badram.txt linux-2.6.24/Documentation/badram.txt
-> --- linux-2.6.24.orig/Documentation/badram.txt	1969-12-31 19:00:00.000000000 -0500
-> +++ linux-2.6.24/Documentation/badram.txt	2008-02-05 23:29:49.000000000 -0500
-> @@ -0,0 +1,275 @@
-> +INFORMATION ON USING BAD RAM MODULES
-> +====================================
-> +
-> +
-> +Initial checks
-> +       If you experience RAM trouble, first read /usr/src/linux/memory.txt
+(This partly has to do with the requirements for runtime PM.  During a
+runtime suspend the driver does have to check the children's status; it
+can't rely on the PM core.  So if the check has to be done anyway, why
+not also check during a system sleep?)
 
-Incorrect path.  Insert "Documentation/".  But we usually don't include
-the full path (i.e., drop "/usr/src/linux" or say
-"read Documentation/memory.txt in the kernel source tree".
+With non-sophisticated drivers, it definitely could happen that a new
+child is registered concurrently with begin_sleep.  Then the core would
+go back and suspend the child first, as you say.  Eventually the core
+would return to the parent device, at which time it would call the
+parent's begin_sleep method again -- unless we add another flag to
+indicate that it had already been called.
 
-> +       and try out the mem=4M trick to see if at least some initial parts
-> +       of your RAM work well. The BadRAM routines halt the kernel in panic
-> +       if the reserved area of memory (containing kernel stuff) contains
-> +       a faulty address.
-> +
-> +Running a RAM checker
-> +       The memory checker is not built into the kernel, to avoid delays at
-> +       runtime. If you experience problems that may be caused by RAM, run
-> +       a good RAM checker, such as
-> +               http://reality.sgi.com/cbrady_denver/memtest86
-> +       The output of a RAM checker provides addresses that went wrong. In
-> +       the 32 MB chip with 512 faulty bits mentioned above, the errors were
-> +       found in the 8MB-16MB range (the DIMM was in slot #0) at addresses
-> +               xxx42f4
-> +               xxx62f4
-> +               xxxc2f4
-> +               xxxe2f4
-> +       and the error was a "sticky 1 bit", a memory bit that stayed "1" no
-> +       matter what was written to it. The regularity of this pattern
-> +       suggests the death of a buffer at the output stages of a row on one of
-> +       the chips. I expect such regularity to be commonplace. Finding this
-> +       regularity currently is human effort, but it should not be hard to
-> +       alter a RAM checker to capture it in some sort of pattern, possibly
-> +       the BadRAM patterns described below.
-> +
-> +       By the way, if you manage to get hold of memtest86 version 2.3 or
-> +       beyond, you can configure the printing mode to produce BadRAM patterns,
-> +       which find out exactly what you must enter on the LILO: commandline,
+> Of course, it won't be necessary if the ->suspend_begin() methods are called
+> in an initial forward pass through dpm_active.
 
-Drop ":".
+Right.  That would be simpler.
 
-> +       except that you shouldn't mention the added spacing. That means that
-> +       you can skip the following step, which saves you a *lot* of work.
-> +
-> +       Also by the way, if your machine has the ISA memory gap in the 15M-16M
-> +       range unstoppable, Linux can get in trouble. One way of handling that
-> +       situation is by specifying the total memory size to Linux with a boot
-> +       parameter mem=... and then to tell it to treat the 15M-16M range as
-> +       faulty with an additional boot parameter, for instance:
-> +               mem=24M badram=0x00f00000,0xfff00000
-> +       if you installed 24MB of RAM in total.
-> +
-> +
-> +Capturing errors in a pattern
-> +       Instead of manually providing all 512 errors to the kernel, it's nicer
-> +       to generate a pattern. Since the regularity is based on address decoding
-> +       software, which generally takes certain bits into account and ignores
-> +       others, we shall provide a faulty address F, together with a bit mask M
-> +       that specifies which bits must be equal to F. In C code, an address A
-> +       is faulty if and only if
-> +               (F & M) == (A & M)
-> +       or alternately (closer to a hardware implementation):
-> +               ~((F ^ A) & M)
-> +       In the example 32 MB chip, we had the faulty addresses in 8MB-16MB:
-> +               xxx42f4         ....0100....
-> +               xxx62f4         ....0110....
-> +               xxxc2f4         ....1100....
-> +               xxxe2f4         ....1110....
-> +       The second column represents the alternating hex digit in binary form.
-> +       Apperantly, the first and one-but last binary digit can be anything,
+> > (BTW, I wonder if it's a good idea for device_add() to call 
+> > device_pm_add() before calling bus_add_device().  If a suspend occurs 
+> > in between, we could end up in a strange situation with a driver being 
+> > asked to suspend a device before that device has been fully registered 
+> > -- in fact the registration might still fail.)
+> 
+> That's correct.  Perhaps we should change device_add().
 
-          Apparently
-s/one-but last/next to last/ ?
+I had a change like that in my version of the patch.  It's excerpted 
+below.
 
-> +       so the binary mask for that part is 0101. The mask for the part after
-> +       this is 0xfff, and the part before should select anything in the range
-> +       8MB-16MB, or 0x00800000-0x01000000; this is done with a bitmask
-> +       0xff80xxxx. Combining these partial masks, we get:
-> +               F=0x008042f4    M=0xff805fff
-> +       That covers everything for this DIMM; for more complicated failing
-> +       DIMMs, or for a combination of multiple failing DIMMs, it can be
-> +       necessary to set up a number of such F/M pairs.
-> +
-> +Rebooting Linux
-> +       Now that these patterns are known (and double-checked, the calculations
-> +       are highly error-prone... it would be neat to test them in the RAM
-> +       checker...) we simply restart Linux with these F/M pairs as a parameter
+> > > Well, we can add new callbacks for notifying drivers of an impending suspend.
+> > > In that case, say we add a ->begin() callback for this purpose (in fact that
+> > > would be two callbacks, ->suspend_begin() and ->hibernate_begin(), but let's
+> > > simplify things a bit for now), so there are the following questions:
+> > 
+> > In theory you could even expand it to freeze_begin and prethaw_begin.
+> 
+> I meant ->hibernate_begin() as ->freeze_begin() and I don't see any reason why
+> ->prethaw_begin() would be different from it (the difference between ->freeze()
+> and ->prethaw() -- now called ->quiesce(), btw -- is that the former saves
+> device settings and the latter doesn't).
 
-End above sentence with period (".").
+AFAICS there needs to be only one begin_sleep method.  It should apply 
+equally well to suspend, freeze, quiesce, and hibernate.  (But not to 
+suspend_late.)
 
-> +       If you normally boot as follows:
-> +              LILO: linux
-> +       you should now boot with
-> +              LILO: linux badram=0x008042f4,0xff805fff
+> > > * Perhaps we can require ->suspend() to always succeed after ->begin() has
+> > >   succeeded?
+> > 
+> > No.  Some drivers might implement just one and some drivers just the 
+> > other.
+> 
+> I thought ->suspend() would be mandatory, even if it's to be empty.
 
-Does the choice of bootloader matter?
+There's no need for that.  If it isn't implemented, treat it as though 
+it was successful.
 
-> +       or perhaps by mentioning more F/M pairs in an order F0,M0,F1,M1,...
-> +       When you provide an odd number of arguments to badram, the default mask
-> +       0xffffffff (only one address matched) is applied to the pattern.
-> +
-> +       Beware of the commandline length. At least up to LILO version 0.21,
-> +       the commandline is cut off after the 78th character; later versions
-> +       may go as far as the kernel goes, namely 255 characters. In no way is
-> +       it possible to enter more than 10 numbers to the badram boot option.
+But if a driver implements suspend() and leaves begin_sleep() as just a 
+stub (which many drivers might reasonably do, if they never register 
+any children), then the core shouldn't require suspend() to succeed 
+merely because begin_sleep() did.
 
-x86 command line length is now 2048.
-I don't know if bootloaders can handle that.
+And especially not if begin_sleep() is called in a separate pass.
 
-> +       When the kernel now boots, it should not give any trouble with RAM.
-> +       Mind you, this is under the assumption that the kernel and its data
-> +       storage do not overlap an erroneous part. If this happens, and the
-> +       kernel does not choke on it right away, it will stop with a panic.
-> +       You will need to provide a RAM where the initial, say 2MB, is faultless
+> > Here's something else to think about.  We might want to allow some 
+> > devices to be "power-irrelevant".  That is, the device exists in the 
+> > kernel only as a representation of some software state, not as a 
+> > physical device.  It doesn't consume power, it doesn't have any state 
+> > to lose during a sleep, and its driver doesn't implement suspend or 
+> > resume methods.  For these sorts of devices, we might allow 
+> > device_add() to skip calling device_pm_add() altogether.  USB 
+> > interfaces are a little like this, as are SCSI hosts and MMC hosts.
+> 
+> If such devices serve as logical parents of some "real" ones, we should
+> at least mark them as "sleeping" during suspend to protect the dpm_active
+> ordering.
 
-End with period (".").
+They wouldn't have to be marked at all.  They would never get on any of 
+the PM lists, because they would never be passed to device_pm_add().
 
-> +
-> +       Now look up your memory status with
-> +              dmesg | grep ^Memory:
-> +       which prints a single line with information like
-> +               Memory: 158524k/163840k available
-> +                       (940k kernel code,
-> +                       412k reserved,
-> +                       1856k data,
-> +                       60k init,
-> +                       0k highmem,
-> +                       2048k BadRAM)
+The status of such devices is a little peculiar.  For example, consider 
+the MMC subsystem.  There's an MMC controller, generally a platform 
+device.  Its child is an mmc_host device, but the mmc_host methods are 
+called by the platform device's methods -- there is no driver 
+associated with an mmc_host.  At one time the mmc_host was a 
+class_device; that's may explain in part why it works this way.
 
-> +Known Bugs
-> +       LILO is known to cut off commandlines which are too long. For the
-> +       lilo-0.21 distribution, a commandline may not exceed 78 characters,
-> +       while actually, 255 would be possible [on x86, kernel 2.2.16].
-
-Ancient kernel alert.
-
-> +       LILO does _not_ report too-long commandlines, but the error will
-> +       show up as either a panic at boot time, stating
-> +               panic: BadRAM page in initial area
-> +       or the dmesg line starting with Memory: will mention an unpredicted
-> +       number of kilobytes. (Note that the latter number only includes
-> +       errors in accessed memory.)
-> +
-> +Future Possibilities
-> +       It would be possible to use even more of the faulty RAMs by employing
-> +       them for slabs. The smaller allocation granularity of slabs makes it
-> +       possible to throw out just, say, 32 bytes surrounding an error. This
-> +       would mean that the example DIMM only looses 16kB instead of 2MB.
-
-                                                loses
-
-> +       It might even be possible to allocate the slabs in such a way that,
-> +       where possible, the remaining bytes in a slab structure are allocated
-> +       around the error, reducing the RAM loss to 0 in the optimal situation!
-> +
-> +       However, this yield is somewhat faked: It is possible to provide 512
-> +       pages of 32-byte slabs, but it is not certain that anyone would use
-> +       that many 32-byte slabs at any time.
-> +
-> +       A better solution might be to alter the page allocation for a slab to
-> +       have a preference for BadRAM pages, and given those a special treatment.
-> +       This way, the BadRAM would be spread over all the slabs, which seems
-> +       more likely to be a `true' pay-off. This would yield more overhead at
-> +       slab allocation time, but on the other hand, by the nature of slabs,
-> +       such allocations are made as rare as possible, so it might not matter
-> +       that much. I am uncertain where to go.
-> +
-> +       Many suggestions have been made to insert a RAM checker at boot time;
-> +       since this would leave the time to do only very meager checking, it
-> +       is not a reasonable option; we already have a BIOS doing that in most
-> +       systems!
-> +
-> +       It would be interesting to integrate this functionality with the
-> +       self-verifying nature of ECC RAM. These memories can even distinguish
-> +       between recorable and unrecoverable errors! Such memory has been
-
-                  recoverable
-
-> +       handled in older operating systems by `testing' once-failed memory
-> +       blocks for a while, by placing only (reloadable) program code in it.
-> +       Unfortunately, I possess no faulty ECC modules to work this out.
-> +
-
-> diff -pruN linux-2.6.24.orig/Documentation/kernel-parameters.txt linux-2.6.24/Documentation/kernel-parameters.txt
-> --- linux-2.6.24.orig/Documentation/kernel-parameters.txt	2008-01-24 17:58:37.000000000 -0500
-> +++ linux-2.6.24/Documentation/kernel-parameters.txt	2008-02-05 23:33:55.000000000 -0500
-> @@ -322,6 +323,8 @@ and is between 256 and 4096 characters. 
->  
->  	autotest	[IA64]
->  
-> +	badram=		[BADRAM] Avoid allocating faulty RAM addresses.
-
-			See Documentation/badram.txt for parameter details.
-
-> +
->  	baycom_epp=	[HW,AX25]
->  			Format: <io>,<mode>
->  
-> diff -pruN linux-2.6.24.orig/Documentation/memory.txt linux-2.6.24/Documentation/memory.txt
-> --- linux-2.6.24.orig/Documentation/memory.txt	2008-01-24 17:58:37.000000000 -0500
-> +++ linux-2.6.24/Documentation/memory.txt	2008-02-05 23:39:04.000000000 -0500
-> @@ -18,11 +18,22 @@ systems.
->  	   as you add more memory.  Consider exchanging your 
->             motherboard.
->  
-> +	4) A static discharge or production fault causes a RAM module
-> +	  to have (predictable) errors, usually meaning that certain
-> +	  bits cannot be set or reset. Instead of throwing away your
-> +	  RAM module, you may read /usr/src/linux/Documentation/badram.txt
-> +	  to learn how to detect, locate and circuimvent such errors
-
-                                             circumvent
-
-> +	  in your RAM module.
-> +
-> +
-> diff -pruN linux-2.6.24.orig/include/asm-x86/page_32.h linux-2.6.24/include/asm-x86/page_32.h
-> --- linux-2.6.24.orig/include/asm-x86/page_32.h	2008-01-24 17:58:37.000000000 -0500
-> +++ linux-2.6.24/include/asm-x86/page_32.h	2008-02-05 23:43:00.000000000 -0500
-> @@ -189,6 +189,7 @@ extern int page_is_ram(unsigned long pag
->  #define pfn_valid(pfn)		((pfn) < max_mapnr)
->  #endif /* CONFIG_FLATMEM */
->  #define virt_to_page(kaddr)	pfn_to_page(__pa(kaddr) >> PAGE_SHIFT)
-> +#define phys_to_page(x)         pfn_to_page((unsigned long)(x) >> PAGE_SHIFT)
-
-Use tab(s), not spaces.
-
->  
->  #define virt_addr_valid(kaddr)	pfn_valid(__pa(kaddr) >> PAGE_SHIFT)
->  
-> diff -pruN linux-2.6.24.orig/include/asm-x86/page_64.h linux-2.6.24/include/asm-x86/page_64.h
-> --- linux-2.6.24.orig/include/asm-x86/page_64.h	2008-01-24 17:58:37.000000000 -0500
-> +++ linux-2.6.24/include/asm-x86/page_64.h	2008-02-05 23:44:26.000000000 -0500
-> @@ -126,6 +126,7 @@ extern unsigned long __phys_addr(unsigne
->  #endif
->  
->  #define virt_to_page(kaddr)	pfn_to_page(__pa(kaddr) >> PAGE_SHIFT)
-> +#define phys_to_page(x)         pfn_to_page((unsigned long)(x) >> PAGE_SHIFT)
-
-Ditto.
-
->  #define virt_addr_valid(kaddr)	pfn_valid(__pa(kaddr) >> PAGE_SHIFT)
->  #define pfn_to_kaddr(pfn)      __va((pfn) << PAGE_SHIFT)
->  
-> diff -pruN linux-2.6.24.orig/mm/page_alloc.c linux-2.6.24/mm/page_alloc.c
-> --- linux-2.6.24.orig/mm/page_alloc.c	2008-01-24 17:58:37.000000000 -0500
-> +++ linux-2.6.24/mm/page_alloc.c	2008-02-06 00:03:28.000000000 -0500
-> @@ -4378,6 +4381,91 @@ EXPORT_SYMBOL(pfn_to_page);
->  EXPORT_SYMBOL(page_to_pfn);
->  #endif /* CONFIG_OUT_OF_LINE_PFN_TO_PAGE */
->  
-> +
-> +#ifdef CONFIG_BADRAM
-> +
-> +
-> +void __init badram_markpages (int argc, unsigned long *argv) {
-> +       unsigned long addr, mask;
-> +       while (argc-- > 0) {
-> +               addr = *argv++;
-> +               mask = (argc-- > 0) ? *argv++ : ~0L;
-> +               mask |= ~PAGE_MASK;     /* Optimalisation */
-
-                                             Optimisation ?
-
-> +               addr &= mask;           /* Normalisation */
-> +               do {
-> +                       struct page *pg = phys_to_page(addr);
-> +                       printk(KERN_DEBUG "%016lx =%016lx\n",
-> +                                       addr >> PAGE_SHIFT,
-> +                                       (unsigned long)(pg-mem_map));
-> +                       if (PageTestandSetBad (pg))
-> +                               reserve_bootmem (addr, PAGE_SIZE);
-> +               } while (next_masked_address (&addr,mask));
-> +       }
-> +}
-> +
-> +
-> +
-> +static int __init badram_setup (char *str)
-> +{
-> +       unsigned long opts[3];
-> +       BUG_ON(!mem_map);
-> +       printk (KERN_INFO "PAGE_OFFSET=0x%08lx\n", PAGE_OFFSET);
-> +       printk (KERN_INFO "BadRAM option is %s\n", str);
-
-No space after function name (2x).
-
-> +       if (*str++ == '=')
-> +               while ((str = get_longoptions (str, 3, (long *) opts), *opts)) {
-> +                       printk (KERN_INFO "   --> marking 0x%08lx, 0x%08lx  [%ld]\n",
-> +                                       opts[1], opts[2], opts[0]);
-> +                       badram_markpages (*opts, opts+1);
-> +                       if (*opts == 1)
-> +                               break;
-> +               };
-> +       badram_markpages (*badram_custom, badram_custom+1);
-> +       return 0;
-> +}
+Alan Stern
 
 
----
-~Randy
+Index: usb-2.6/drivers/base/core.c
+===================================================================
+--- usb-2.6.orig/drivers/base/core.c
++++ usb-2.6/drivers/base/core.c
+@@ -815,10 +815,12 @@ int device_add(struct device *dev)
+ 	error = dpm_sysfs_add(dev);
+ 	if (error)
+ 		goto PMError;
+-	device_pm_add(dev);
+ 	error = bus_add_device(dev);
+ 	if (error)
+ 		goto BusError;
++	error = device_pm_add(dev);
++	if (error)
++		goto PMAddError;
+ 	kobject_uevent(&dev->kobj, KOBJ_ADD);
+ 	bus_attach_device(dev);
+ 	if (parent)
+@@ -838,8 +840,9 @@ int device_add(struct device *dev)
+  Done:
+ 	put_device(dev);
+ 	return error;
++ PMAddError:
++	bus_remove_device(dev);
+  BusError:
+-	device_pm_remove(dev);
+ 	dpm_sysfs_remove(dev);
+  PMError:
+ 	if (dev->bus)
+
