@@ -1,27 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758258AbYCCUnJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758820AbYCCUpC@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758258AbYCCUnJ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Mar 2008 15:43:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752367AbYCCUm4
+	id S1758820AbYCCUpC (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Mar 2008 15:45:02 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753005AbYCCUox
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Mar 2008 15:42:56 -0500
-Received: from gate.crashing.org ([63.228.1.57]:56373 "EHLO gate.crashing.org"
+	Mon, 3 Mar 2008 15:44:53 -0500
+Received: from gate.crashing.org ([63.228.1.57]:56397 "EHLO gate.crashing.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751052AbYCCUmz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Mar 2008 15:42:55 -0500
-Subject: Re: Weirdness in pci_read_bases()
+	id S1752367AbYCCUow (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 3 Mar 2008 15:44:52 -0500
+Subject: Re: [BUG/RFC/PATCH] drm: Fix for non-coherent DMA PowerPC
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 Reply-To: benh@kernel.crashing.org
-To: Jesse Barnes <jbarnes@virtuousgeek.org>
-Cc: linux-pci@atrey.karlin.mff.cuni.cz,
-       Linux Kernel list <linux-kernel@vger.kernel.org>,
-       Matthew Wilcox <matthew@wil.cx>
-In-Reply-To: <200803031112.27658.jbarnes@virtuousgeek.org>
-References: <1204252667.15052.402.camel@pasglop>
-	 <200803031112.27658.jbarnes@virtuousgeek.org>
+To: Gerhard Pircher <gerhard_pircher@gmx.net>
+Cc: airlied@linux.ie, linux-kernel@vger.kernel.org,
+       dri-devel@lists.sourceforge.net, linuxppc-dev@ozlabs.org
+In-Reply-To: <20080303195117.7040@gmx.net>
+References: <20071125234254.B4405DDE49@ozlabs.org>
+	 <20080302110505.175270@gmx.net> <1204490829.15052.482.camel@pasglop>
+	 <20080302223012.90210@gmx.net> <1204498569.15052.488.camel@pasglop>
+	 <20080303195117.7040@gmx.net>
 Content-Type: text/plain
-Date: Tue, 04 Mar 2008 07:42:34 +1100
-Message-Id: <1204576954.21545.10.camel@pasglop>
+Date: Tue, 04 Mar 2008 07:44:11 +1100
+Message-Id: <1204577051.21545.12.camel@pasglop>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.12.1 
 Content-Transfer-Encoding: 7bit
@@ -30,63 +31,19 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-On Mon, 2008-03-03 at 11:12 -0800, Jesse Barnes wrote:
-> On Thursday, February 28, 2008 6:37 pm Benjamin Herrenschmidt wrote:
-> > Hi !
-> >
-> > There is something dodgy going on in pci_read_bases().
-> >
-> > In addition to the fact (or related to it) that we tend to treat
-> > res->start == 0 as meaning "unassigned" (which at this stage is mostly
-> > incorrect, but let's say I can cope),
-> 
-> Yeah, that sounds like trouble.  I expect this may become a problem even for 
-> PC architectures in the future (IOMMUs on multiple busses for example), so 
-> maybe it makes sense to change the core to not assume 0 == unassigned?
+On Mon, 2008-03-03 at 20:51 +0100, Gerhard Pircher wrote:
+> > Remove the GFP_HIGHMEM from the above. It looks like our cache
+> > flushing isn't going to work for highmem, it would need some
+> > kmap's for that.
 
-Not only iommu's. On lots of platforms, we have the PCI MMIO space
-mapped 1:N, that is, an access at MMIO location N turns into a PCI cycle
-with address 0. So outbound PCI is effectively remapped, thus allowing
-access to things like 0 etc... without punching holes in RAM and without
-other dirty x86-like tricks.
+> Yes, it looks like this was the problem. No kernel oops anymore.
+> The machine locks up anyway (which is a well known hardware problem).
+> It doesn't lock up with CPPIOMode=true, but probably only because the
+> initialization of DRI fails with "BAD cp_mode (f0000000)!".
 
-The main question regarding 0 in a BAR is do we know of devices that
-consider it as "disabled" and don't operate/decode 0 ? (That would be
-gross and out of spec but who knows...)
+Damn, I wonder why you insist trying to make that machine work :-) The
+hardware is just totally busted.
 
-If not, then there is no notion of "unassigned" at all... Anything is
-"assigned", it's just a matter of whether the value we get at boot time
-overlaps with something else or not, or is within the range of the host
-bridge or not.
-
-Unfortunately, while pretty much all architectures have a clear idea of
-what is decoded by a given bridge, and what overlap with others and what
-not, x86 doesn't :-)
-
-But that can be solved, using something akin to IORESOURCE_UNSET, like
-we do on powerpc, generalizing it, and having an x86-specific quirk set
-it on anything that comes up with resource->start == 0.
-
-> But we should never hit the l == 0xffffffff case if it's a memory BAR, since 
-> the low bit will be 0, right?
-
-And for an IO BAR, there's another bit that should be 0, so that's
-simply an impossible value for a BAR.
-
-> I think Grant is probably right that the only time we'd hit this is if the bus 
-> is down and we're getting back all 1s for every read (though that's a PC 
-> specific assumption).
-
-But the next two write/reads for sizing would have worked ? Unlikely...
-I wonder if we can just remove that test completely :-)
-
-> Yeah, it seems like it could be safely removed, but this is an area where we 
-> should probably move slowly (i.e. one, very small change to the probing code 
-> at a time) or it may be difficult to isolate any bugs in the wild.
-
-True.
-
-Cheers,
 Ben.
 
 
