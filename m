@@ -1,51 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761012AbYCCVUp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758125AbYCCVzO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761012AbYCCVUp (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Mar 2008 16:20:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754084AbYCCVUf
+	id S1758125AbYCCVzO (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Mar 2008 16:55:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754065AbYCCVzB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Mar 2008 16:20:35 -0500
-Received: from namei.org ([69.55.235.186]:42034 "EHLO us.intercode.com.au"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753651AbYCCVUe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Mar 2008 16:20:34 -0500
-Date: Tue, 4 Mar 2008 08:18:47 +1100 (EST)
-From: James Morris <jmorris@namei.org>
-X-X-Sender: jmorris@us.intercode.com.au
-To: "Ahmed S. Darwish" <darwish.07@gmail.com>
-cc: Chris Wright <chrisw@sous-sol.org>, Stephen Smalley <sds@tycho.nsa.gov>,
-       Eric Paris <eparis@parisplace.org>,
-       Casey Schaufler <casey@schaufler-ca.com>,
-       David Woodhouse <dwmw2@infradead.org>, Paul Moore <paul.moore@hp.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, Audit-ML <linux-audit@redhat.com>,
-       LSM-ML <linux-security-module@vger.kernel.org>
-Subject: Re: [PATCH 1/9] LSM: Introduce inode_getsecid and ipc_getsecid hooks
-In-Reply-To: <20080301195109.GB19636@ubuntu>
-Message-ID: <Xine.LNX.4.64.0803040818190.8529@us.intercode.com.au>
-References: <20080301194752.GA19636@ubuntu> <20080301195109.GB19636@ubuntu>
+	Mon, 3 Mar 2008 16:55:01 -0500
+Received: from minas.ics.muni.cz ([147.251.4.40]:43070 "EHLO minas.ics.muni.cz"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752777AbYCCVzA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 3 Mar 2008 16:55:00 -0500
+Date: Mon, 3 Mar 2008 22:54:56 +0100
+From: Lukas Hejtmanek <xhejtman@ics.muni.cz>
+To: linux-kernel@vger.kernel.org
+Subject: 2.6.25 possible regression usbfs options ignored?
+Message-ID: <20080303215456.GA7747@ics.muni.cz>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=iso-8859-2
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+X-echelon: NSA, CIA, CI5, MI5, FBI, KGB, BIS, Plutonium, Bin Laden, bomb
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+X-Muni-Spam-TestIP: 81.31.45.161
+X-Muni-Envelope-From: xhejtman@anubis.fi.muni.cz
+X-Muni-Virus-Test: Clean
+X-Greylist: Sender succeeded SMTP AUTH authentication, not delayed by milter-greylist-3.0 (minas.ics.muni.cz [147.251.4.35]); Mon, 03 Mar 2008 22:54:58 +0100 (CET)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 1 Mar 2008, Ahmed S. Darwish wrote:
+Hello,
 
-> Introduce inode_getsecid(inode, secid) and ipc_getsecid(ipcp, secid)
-> LSM hooks. These hooks will be used instead of similar exported 
-> SELinux interfaces.
-> 
-> Let {inode,ipc,task}_getsecid hooks set the secid to 0 by default 
-> if CONFIG_SECURITY is not defined or if the hook is set to 
-> NULL (dummy). This is done to notify the caller that no valid 
-> secid exists.
-> 
-> Signed-off-by: Casey Schaufler <casey@schaufler-ca.com>
-> Signed-off-by: Ahmed S. Darwish <darwish.07@gmail.com>
+I'm using 2.6.25-rc3. It seems that options for usbfs (devgid and devmode) are
+ignored.
 
-Acked-by: James Morris <jmorris@namei.org>
+# mount | grep usbfs
+none on /proc/bus/usb type usbfs (rw,devgid=46,devmode=0664)
+
+/proc/bus/usb# ls -l
+total 0
+dr-xr-xr-x 2 root root 0 2008-03-03 10:41 001
+dr-xr-xr-x 2 root root 0 2008-03-03 10:41 002
+dr-xr-xr-x 2 root root 0 2008-03-03 10:41 003
+dr-xr-xr-x 2 root root 0 2008-03-03 10:41 004
+dr-xr-xr-x 2 root root 0 2008-03-03 10:41 005
+dr-xr-xr-x 2 root root 0 2008-03-03 10:41 006
+dr-xr-xr-x 2 root root 0 2008-03-03 10:41 007
+-r--r--r-- 1 root root 0 2008-03-03 22:30 devices
+
+or am I just someting missing?
 
 -- 
-James Morris
-<jmorris@namei.org>
+Luká¹ Hejtmánek
