@@ -1,68 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754499AbYCCOQH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755158AbYCCOTd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754499AbYCCOQH (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Mar 2008 09:16:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752448AbYCCOPy
+	id S1755158AbYCCOTd (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Mar 2008 09:19:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751894AbYCCOT0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Mar 2008 09:15:54 -0500
-Received: from smtp25.orange.fr ([193.252.22.23]:28675 "EHLO smtp25.orange.fr"
+	Mon, 3 Mar 2008 09:19:26 -0500
+Received: from ns.firmix.at ([62.141.48.66]:5912 "EHLO ns.firmix.at"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752097AbYCCOPx convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Mar 2008 09:15:53 -0500
-X-ME-UUID: 20080303141550287.463B01C000B5@mwinf2557.orange.fr
-Message-ID: <47CC080E.9010203@cosmosbay.com>
-Date: Mon, 03 Mar 2008 15:15:42 +0100
-From: Eric Dumazet <dada1@cosmosbay.com>
-User-Agent: Thunderbird 1.5.0.14 (Windows/20071210)
-MIME-Version: 1.0
-To: Pekka Enberg <penberg@cs.helsinki.fi>
-Cc: Nick Piggin <npiggin@suse.de>, netdev@vger.kernel.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       yanmin_zhang@linux.intel.com, David Miller <davem@davemloft.net>,
-       Christoph Lameter <clameter@engr.sgi.com>
-Subject: Re: [rfc][patch 3/3] use SLAB_ALIGN_SMP
-References: <20080303093449.GA15091@wotan.suse.de>	 <20080303093624.GC15091@wotan.suse.de>	 <47CBCAB0.2040604@cosmosbay.com>	 <20080303124142.GB13138@wotan.suse.de> <47CBF683.10201@cosmosbay.com>	 <20080303134622.GD13138@wotan.suse.de> <84144f020803030553s35a40dd8yf88585ccd5a599fd@mail.gmail.com>
-In-Reply-To: <84144f020803030553s35a40dd8yf88585ccd5a599fd@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 8BIT
+	id S1751490AbYCCOTZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 3 Mar 2008 09:19:25 -0500
+Subject: Re: swap file over jffs2 partition
+From: Bernd Petrovitsch <bernd@firmix.at>
+To: David Newall <davidn@davidnewall.com>
+Cc: Dimitrios Apostolou <jimis@gmx.net>, linux-kernel@vger.kernel.org
+In-Reply-To: <47CAB23C.1010602@davidnewall.com>
+References: <47C772E9.2000000@gmx.net>
+	 <1204276763.18969.10.camel@tara.firmix.at>  <47C84B40.6000501@gmx.net>
+	 <1204458909.4078.30.camel@gimli.at.home> <47CAB23C.1010602@davidnewall.com>
+Content-Type: text/plain
+Organization: Firmix Software GmbH
+Date: Mon, 03 Mar 2008 15:19:09 +0100
+Message-Id: <1204553949.15430.62.camel@tara.firmix.at>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.3 (2.8.3-2.fc6) 
+Content-Transfer-Encoding: 7bit
+X-Firmix-Scanned-By: MIMEDefang 2.56 on ns.firmix.at
+X-Firmix-Spam-Score: -2.331 () AWL,BAYES_00,FORGED_RCVD_HELO,SPF_HELO_PASS,SPF_PASS
+X-Firmix-Spam-Status: No, hits=-2.331 required=5
+X-Spam-Score: -2.331 () AWL,BAYES_00,FORGED_RCVD_HELO,SPF_HELO_PASS,SPF_PASS
+X-Firmix-Envelope-From: <bernd@firmix.at>
+X-Firmix-Envelope-To: <linux-kernel@vger.kernel.org>
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Pekka Enberg a écrit :
-> Hi,
->
-> On Mon, Mar 3, 2008 at 3:46 PM, Nick Piggin <npiggin@suse.de> wrote:
->   
->>  > Maybe we need to use three flags to separate the meanings ?
->>  >
->>  > SLAB_HINT_SMP_ALIGN
->>  > SLAB_HINT_HWCACHE_ALIGN
->>  > SLAB_HWCACHE_ALIGN /* strong requirement that two objects dont share a
->>  > cache line */
->>
->>  Possibly, but I'm beginning to prefer that strong requirements should
->>  request the explicit alignment (they can even use cache_line_size() after
->>  Pekka's patch to make it generic). I don't like how the name implies
->>  that you get a guarantee, however I guess in practice people are using it
->>  more as a hint (or because they vaguely hope it makes their code run
->>  faster :))
->>     
->
-> At least historically SLAB_HWCACHE_ALIGN has been just a hint,
-> although slab tries very hard to satisfy it (see the comments in
-> mm/slab.c). Why do we need stronger guarantees than that, btw?
->
->   
-This reminds me a previous attempt of removing SLAB_HWCACHE_ALIGN
+On Mon, 2008-03-03 at 00:27 +1030, David Newall wrote:
+> Bernd Petrovitsch wrote:
+> > The wear-levelling only makes all erase blocks/chunks/... wear out at
+> > the same rate (at least more or less). It doesn't avoid or reduce
+> > wearing out, it just distributes it.
+> 
+> Surely a unit with one defective block and a squillion good blocks is
+> faulty.  Sure it is.  It has a fault, which is what it means to be
 
-http://kernel.org/pub/linux/kernel/people/christoph/patch-archive/2007/2.6.21-rc6/remove_hwcache_align
+Several are very probably faulty as NAND flashes initially already have
+bad blocks (but there a re some more on that chip to compensate for
+that).
+Even if just 1 of a squillion (erase-)blocks is gone. But that's now and
+only the first. More to follow sooner or later .....
+I don't think that "writing to swap space" is in any way limited or
+minimized but assumes normal harddisks. So it is not like you are
+writing to the flash chip only on "save in some UI or on a firmware
+update.
 
-At that time Christoph didnt took into account the CONFIG_SMP thing 
-(false sharing avoidance), but also that L1_CACHE_SIZE is a compile 
-constant, that can differs with cache_line_size()
+> faulty.  Spread the wear of that one block over all squillion and one
+> blocks and you get a much longer lifetime.  It seems intuitive that
+> distributing wear significantly increases time to failure.
 
+Yes, that's the idea. Nevertheless it places "load" on the flash chips.
 
+Actually I'm curious how fats it is and how well it works (and with
+which flash chips exactly) if one simply tries it out. If it actually
+works.
+
+	Bernd
+-- 
+Firmix Software GmbH                   http://www.firmix.at/
+mobil: +43 664 4416156                 fax: +43 1 7890849-55
+          Embedded Linux Development and Services
 
 
