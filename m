@@ -1,57 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761625AbYCCKBr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760712AbYCCKEN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761625AbYCCKBr (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Mar 2008 05:01:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756391AbYCCKB1
+	id S1760712AbYCCKEN (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Mar 2008 05:04:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754647AbYCCKD6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Mar 2008 05:01:27 -0500
-Received: from E23SMTP06.au.ibm.com ([202.81.18.175]:43903 "EHLO
-	e23smtp06.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753671AbYCCKB0 (ORCPT
+	Mon, 3 Mar 2008 05:03:58 -0500
+Received: from wa-out-1112.google.com ([209.85.146.178]:50091 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753671AbYCCKD5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Mar 2008 05:01:26 -0500
-Message-ID: <47CBCC01.6080504@linux.vnet.ibm.com>
-Date: Mon, 03 Mar 2008 15:29:29 +0530
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-Reply-To: balbir@linux.vnet.ibm.com
-Organization: IBM
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+	Mon, 3 Mar 2008 05:03:57 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=w+OftBqOG0j2+PrOnCRHLPQLaOAbMhEmyOGxn8pRIUxqpFHajlBIGbEFL9Mfp0j6JBoo0EtvAgCKAdxtv+mZz2PYM7L+egqooV759zBl1lG9YFNUODT0xjcWG1L3iEVcMdxEovKZDVwRjURRv4+U9AnVzMC+FBpEfmkV4tZlMP4=
+Message-ID: <cfd18e0f0803030203t5f0105a6m5433f16e6824861a@mail.gmail.com>
+Date: Mon, 3 Mar 2008 11:03:56 +0100
+From: "Michael Kerrisk" <mtk.manpages@googlemail.com>
+To: "Arnd Bergmann" <arnd@arndb.de>
+Subject: Re: SCHED_IDLE documentation
+Cc: "Ingo Molnar" <mingo@elte.hu>, "Christoph Hellwig" <hch@lst.de>,
+       cbe-oss-dev@ozlabs.org, "Jeremy Kerr" <jk@ozlabs.org>,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <200803031031.52335.arnd@arndb.de>
 MIME-Version: 1.0
-To: Paul Menage <menage@google.com>
-CC: serge@hallyn.com, Andrew Morton <akpm@linux-foundation.org>,
-       containers@lists.osdl.org, linux-kernel@vger.kernel.org,
-       a.p.zijlstra@chello.nl, xemul@openvz.org, pj@sgi.com
-Subject: Re: [RFC] Prefixing cgroup generic control filenames with "cgroup."
-References: <6599ad830802281314s25c033d6tc021725ae28aef8d@mail.gmail.com> <20080228132142.4d4b1eef.akpm@linux-foundation.org> <6599ad830802281328q162d0585v3ac6b45a119a4a05@mail.gmail.com> <20080228213319.GC1232@vino.hallyn.com> <6599ad830802281406s512ee32bkeb2b0387a7737a87@mail.gmail.com> <6599ad830803030038p2d81883bu895260a96fedaec6@mail.gmail.com>
-In-Reply-To: <6599ad830803030038p2d81883bu895260a96fedaec6@mail.gmail.com>
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <1203376368.275756.252634247263.1.gpush@pokey>
+	 <cfd18e0f0803030040l667dd2b7v6298e78c5b21bfec@mail.gmail.com>
+	 <20080303092422.GA18281@elte.hu> <200803031031.52335.arnd@arndb.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Paul Menage wrote:
-> On Thu, Feb 28, 2008 at 2:06 PM, Paul Menage <menage@google.com> wrote:
->> On Thu, Feb 28, 2008 at 1:33 PM,  <serge@hallyn.com> wrote:
->>  >
->>  >  You said the set of files belong to cgroup itself is likely to increase
->>  >  - do you have some candidates in mind?
->>
->>  Nothing concrete right now. One example that I already proposed was
->>  the "cgroup.api" file but that's shelved for now, until such time as I
->>  actually propose the binary API that it was intended to help support.
->>
-> 
-> One likely new file that people agreed a while ago could be useful
-> would be a "procs" file, similar to "tasks", but acting (and
-> reporting) on thread groups rather than individual tasks.
-> 
-> Paul
+On Mon, Mar 3, 2008 at 10:31 AM, Arnd Bergmann <arnd@arndb.de> wrote:
+> On Monday 03 March 2008, Ingo Molnar wrote:
+> > > * What's the difference between SCHED_IDLE and SCHED_BATCH?
+> >
+> > SCHED_BATCH can still have nice levels from -20 to +19, it is a modified
+> > SCHED_OTHER/SCHED_NORMAL for "throughput oriented" workloads.
+> >
+> > SCHED_IDLE overrides the nice settings and it means a "super idle"
+> > workload.
+>
+> Does that mean that a SCHED_IDLE task still runs some of the time if
+> you have a CPU hog running on +19, or can any other process starve the
+> SCHED_IDLE task?
 
-Yes, I remember this. This feature would be extremely useful.
+Thanks.  That was going to be my next question!
+
+I'm guessing that SCHED_IDLE doesn't get completely starved by a CPU
+hog running nice +19, but it would still be interesting to know:
+roughly how much of the CPU could the CPU_IDLE process expect to get
+in that case?
+
+> What happens if you have two SCHED_IDLE tasks on a single CPU, do they get
+> equal share, or will they just run as batch jobs?
+
+Also might be useful to add th e answer to this to the man page...
+
+Cheers,
+
+Michael
+
 
 -- 
-	Warm Regards,
-	Balbir Singh
-	Linux Technology Center
-	IBM, ISTL
+Michael Kerrisk
+Maintainer of the Linux man-pages project
+http://www.kernel.org/doc/man-pages/
+Want to report a man-pages bug?  Look here:
+http://www.kernel.org/doc/man-pages/reporting_bugs.html
