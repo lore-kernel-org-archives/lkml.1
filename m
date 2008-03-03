@@ -1,73 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755158AbYCCOTd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754646AbYCCOXP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755158AbYCCOTd (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Mar 2008 09:19:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751894AbYCCOT0
+	id S1754646AbYCCOXP (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Mar 2008 09:23:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752232AbYCCOW6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Mar 2008 09:19:26 -0500
-Received: from ns.firmix.at ([62.141.48.66]:5912 "EHLO ns.firmix.at"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751490AbYCCOTZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Mar 2008 09:19:25 -0500
-Subject: Re: swap file over jffs2 partition
-From: Bernd Petrovitsch <bernd@firmix.at>
-To: David Newall <davidn@davidnewall.com>
-Cc: Dimitrios Apostolou <jimis@gmx.net>, linux-kernel@vger.kernel.org
-In-Reply-To: <47CAB23C.1010602@davidnewall.com>
-References: <47C772E9.2000000@gmx.net>
-	 <1204276763.18969.10.camel@tara.firmix.at>  <47C84B40.6000501@gmx.net>
-	 <1204458909.4078.30.camel@gimli.at.home> <47CAB23C.1010602@davidnewall.com>
-Content-Type: text/plain
-Organization: Firmix Software GmbH
-Date: Mon, 03 Mar 2008 15:19:09 +0100
-Message-Id: <1204553949.15430.62.camel@tara.firmix.at>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.3 (2.8.3-2.fc6) 
+	Mon, 3 Mar 2008 09:22:58 -0500
+Received: from ag-out-0708.google.com ([72.14.246.245]:28693 "EHLO
+	ag-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751995AbYCCOW5 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 3 Mar 2008 09:22:57 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
+        b=Hmw4wLzVkBR8QHq+izZmNXkooaDehlONUXuWwxxYE0Bgh7tb5TU9yHqYPQkLI4MgFSMQMzFRGBLl3s/7NI6u+bHFHGSJ4tlUBO9wFr4yCgSThMraxAgYhmU6nV7Evswaf3ELMsSArPRqfEbFqH1YfSX2ZLAm+vME4scI5WEFzP8=
+Message-ID: <47CC09B6.6090709@gmail.com>
+Date: Mon, 03 Mar 2008 23:22:46 +0900
+From: Tejun Heo <htejun@gmail.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20070801)
+MIME-Version: 1.0
+To: FUJITA Tomonori <tomof@acm.org>
+CC: fujita.tomonori@lab.ntt.co.jp, jens.axboe@oracle.com,
+       James.Bottomley@HansenPartnership.com, efault@gmx.de,
+       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       linux-ide@vger.kernel.org, linux-scsi@vger.kernel.org,
+       jgarzik@pobox.com
+Subject: Re: [PATCH] block: fix residual byte count handling
+References: <47CBFF6F.4060301@gmail.com>	<20080303225024J.tomof@acm.org>	<47CC036C.2060902@gmail.com> <20080303230121M.tomof@acm.org>
+In-Reply-To: <20080303230121M.tomof@acm.org>
+X-Enigmail-Version: 0.95.5
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-Firmix-Scanned-By: MIMEDefang 2.56 on ns.firmix.at
-X-Firmix-Spam-Score: -2.331 () AWL,BAYES_00,FORGED_RCVD_HELO,SPF_HELO_PASS,SPF_PASS
-X-Firmix-Spam-Status: No, hits=-2.331 required=5
-X-Spam-Score: -2.331 () AWL,BAYES_00,FORGED_RCVD_HELO,SPF_HELO_PASS,SPF_PASS
-X-Firmix-Envelope-From: <bernd@firmix.at>
-X-Firmix-Envelope-To: <linux-kernel@vger.kernel.org>
-Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2008-03-03 at 00:27 +1030, David Newall wrote:
-> Bernd Petrovitsch wrote:
-> > The wear-levelling only makes all erase blocks/chunks/... wear out at
-> > the same rate (at least more or less). It doesn't avoid or reduce
-> > wearing out, it just distributes it.
+FUJITA Tomonori wrote:
+>> At the end of blk_rq_map_user() together with data_len / extra_len
+>> mangling or were you talking about James' original patch?
 > 
-> Surely a unit with one defective block and a squillion good blocks is
-> faulty.  Sure it is.  It has a fault, which is what it means to be
+> With my patch, at the end of blk_rq_map_user, we have:
+> 
+> 	if (len & queue_dma_alignment(q)) {
+> 		unsigned int pad_len = (queue_dma_alignment(q) & ~len) + 1;
+> 
+> 		rq->extra_len += pad_len;
+> 	}
+> 
+> 
+> So no change as compared with 2.6.24?
 
-Several are very probably faulty as NAND flashes initially already have
-bad blocks (but there a re some more on that chip to compensate for
-that).
-Even if just 1 of a squillion (erase-)blocks is gone. But that's now and
-only the first. More to follow sooner or later .....
-I don't think that "writing to swap space" is in any way limited or
-minimized but assumes normal harddisks. So it is not like you are
-writing to the flash chip only on "save in some UI or on a firmware
-update.
+Oh.. you killed sg list manipulation.  Many controllers do allow odd
+bytes as the last sg entry but not all.  Also, if you append drain
+buffer after it, it ends up with unaligned sg entry in the middle and
+rq->data_len + rq->extra_len will overrun the sg entry after the drain
+page which is really dangerous.
 
-> faulty.  Spread the wear of that one block over all squillion and one
-> blocks and you get a much longer lifetime.  It seems intuitive that
-> distributing wear significantly increases time to failure.
-
-Yes, that's the idea. Nevertheless it places "load" on the flash chips.
-
-Actually I'm curious how fats it is and how well it works (and with
-which flash chips exactly) if one simply tries it out. If it actually
-works.
-
-	Bernd
 -- 
-Firmix Software GmbH                   http://www.firmix.at/
-mobil: +43 664 4416156                 fax: +43 1 7890849-55
-          Embedded Linux Development and Services
-
-
+tejun
