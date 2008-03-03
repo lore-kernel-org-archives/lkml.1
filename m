@@ -1,271 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756001AbYCCPc4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756418AbYCCPhl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756001AbYCCPc4 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Mar 2008 10:32:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754075AbYCCPcr
+	id S1756418AbYCCPhl (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Mar 2008 10:37:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754029AbYCCPhd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Mar 2008 10:32:47 -0500
-Received: from E23SMTP02.au.ibm.com ([202.81.18.163]:53774 "EHLO
-	e23smtp02.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753986AbYCCPcq (ORCPT
+	Mon, 3 Mar 2008 10:37:33 -0500
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:42879 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753588AbYCCPhc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Mar 2008 10:32:46 -0500
-Date: Mon, 3 Mar 2008 21:01:54 +0530
-From: Gautham R Shenoy <ego@in.ibm.com>
-To: Yi Yang <yi.y.yang@intel.com>
-Cc: Ingo Molnar <mingo@elte.hu>, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org, Oleg Nesterov <oleg@tv-sign.ru>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [BUG 2.6.25-rc3] scheduler/hotplug: some processes are
-	dealocked when cpu is set to offline
-Message-ID: <20080303153154.GA11288@in.ibm.com>
-Reply-To: ego@in.ibm.com
-References: <1204483329.3607.8.camel@yangyi-dev.bj.intel.com>
+	Mon, 3 Mar 2008 10:37:32 -0500
+X-Greylist: delayed 152990 seconds by postgrey-1.27 at vger.kernel.org; Mon, 03 Mar 2008 10:37:32 EST
+Date: Mon, 3 Mar 2008 10:37:29 -0500 (EST)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: Gregory Haskins <ghaskins@novell.com>
+cc: mingo@elte.hu, a.p.zijlstra@chello.nl, tglx@linutronix.de,
+       linux-rt-users@vger.kernel.org, linux-kernel@vger.kernel.org,
+       bill.huey@gmail.com, kevin@hilman.org, cminyard@mvista.com,
+       dsingleton@mvista.com, dwalker@mvista.com, npiggin@suse.de,
+       dsaxena@plexity.net, ak@suse.de, pavel@ucw.cz, acme@redhat.com,
+       gregkh@suse.de, sdietrich@novell.com, pmorreale@novell.com,
+       mkohari@novell.com
+Subject: Re: [(RT RFC) PATCH v2 4/9] optimize rt lock wakeup
+In-Reply-To: <20080225160058.11268.96036.stgit@novell1.haskins.net>
+Message-ID: <Pine.LNX.4.58.0803031036380.18766@gandalf.stny.rr.com>
+References: <20080225155959.11268.35541.stgit@novell1.haskins.net>
+ <20080225160058.11268.96036.stgit@novell1.haskins.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1204483329.3607.8.camel@yangyi-dev.bj.intel.com>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Mar 03, 2008 at 02:42:09AM +0800, Yi Yang wrote:
-> When i run cpu hotplug stress test on a system with 16 logical cpus,
-> some processes are deadlocked, it can be regenerated on 2.6.25-rc2
-> and 2.6.25-rc3.
-> 
-> The kernel thread [watchdog/1] isn't reaped by its parent when cpu #1
-> is set to offline, so that [kstopmachine] sleeps for ever.
-> 
-> After i investigated, debugged and analyzed it, i think it is a scheduler
-> specific issue, i noticed someone submitted a patch which mentioned
-> kthread_should_stop calling rule:
-> 
-> "In order to safely use kthread_stop() for kthread, there is a requirement
-> on how its main loop has to be orginized. Namely, the sequence of
-> events that lead to kthread being blocked (schedule()) has to be
-> ordered as follows:
-> 
->     set_current_state(TASK_INTERRUPTIBLE);
->     if (kthread_should_stop()) break;
->     schedule() or similar.
-> 
-> set_current_state() implies a full memory barrier. kthread_stop()
-> has a matching barrier right after an update of kthread_stop_info.k
-> and before kthread's wakeup."
-> 
-> I don't think it is a good programming paradigm because it will result
-> in some issues very easily, why can't we provide a simple wrapper for it?
-> 
-> This issue seems such one, but i tried to change it to follow this rule but
-> the issue is still there.
-> 
-> Why isn't the kernel thread [watchdog/1] reaped by its parent? its state
-> is TASK_RUNNING with high priority (R< means this), why it isn't done?
-> 
-> Anyone ever met such a problem? Your thought?
 
-Hi Yi,
+On Mon, 25 Feb 2008, Gregory Haskins wrote:
 
-This is indeed strange. I am able to reproduce this problem on my 4-way
-box. From what I see in the past two runs, we're waiting in the
-cpu-hotplug callback path for the watchdog/1 thread to stop.
+> It is redundant to wake the grantee task if it is already running
 
-During cpu-offline, once the cpu goes offline, in the migration_call(), 
-we migrate any tasks associated with the offline cpus
-to some other cpu. This also mean breaking affinity for tasks which were
-affined to the cpu which went down. So watchdog/1 has been migrated to
-some other cpu.
+This is only expensive for your adaptive mutex algorithm, not what is in
+there today. It belongs _after_ the adaptive mutex patch in the series.
 
-However, it remains in R< state and has not executed the
-kthread_should_stop() instruction.
-
-I'm trying to probe further by inserting a few more printk's in there.
-
-Will post the findings in a couple of hours.
-
-Thanks for reporting the problem.
-
-Regards
-gautham.
-
-
-> 
-> 
-> Here is my stress test script, you may try it on SMP platforms (the more
-> number of cpu is ,  the easier it can be regenerated.).
-> 
-> ########################################################################
-> 
-> ####### stresscpus.sh #######
-> 
-> #!/bin/sh
-> 
-> for i in 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15
-> do
->         ./bugexposure.sh $i &
-> done
-> 
-> 
-> ######## bugexposure.sh ###########
-> 
-> #!/bin/bash
-> 
-> main(){
-> 
->     typeset -i CPU=$1
->     ./task.sh > /dev/null&
->     PID=$!
-> 
->     if [ `cat /sys/devices/system/cpu/cpu${CPU}/online` = "0" ]; then
->         echo "1" > /sys/devices/system/cpu/cpu${CPU}/online
->     fi
-> 
->     MASK=$((1<<${CPU}))
-> 
->     `taskset -p ${MASK} ${PID} > /dev/null 2>&1`
-> 
->     echo "0" > /sys/devices/system/cpu/cpu${CPU}/online
-> 
->     echo "1" > /sys/devices/system/cpu/cpu${CPU}/online
-> 
->     disown $PID
->     kill -9 $PID > /dev/null 2>&1
-> 
->     #echo "PASS\n"
-> 
-> }
-> 
-> typeset -i TEST_CPU=$1
-> while true
-> do
->         main $TEST_CPU
-> done
-> 
-> 
-> ###### task.sh ######
-> #!/bin/bash
-> 
-> while :
-> do
->   NOOP=1
-> done
-> 
-> ########################################################################
-> 
-> My tracing and analysis info is below:
-> 
-> # ps aux | grep watchdog
-> root         5  0.0  0.0      0     0 ?        S<   22:26   0:00 [watchdog/0]
-> root         8  0.0  0.0      0     0 ?        R<   22:26   0:00 [watchdog/1]
-> root        11  0.0  0.0      0     0 ?        S<   22:26   0:00 [watchdog/2]
-> root        14  0.0  0.0      0     0 ?        S<   22:26   0:00 [watchdog/3]
-> root        17  0.0  0.0      0     0 ?        S<   22:26   0:00 [watchdog/4]
-> root        20  0.0  0.0      0     0 ?        S<   22:26   0:00 [watchdog/5]
-> root        23  0.0  0.0      0     0 ?        S<   22:26   0:00 [watchdog/6]
-> root        26  0.0  0.0      0     0 ?        S<   22:26   0:00 [watchdog/7]
-> root        29  0.0  0.0      0     0 ?        S<   22:26   0:00 [watchdog/8]
-> root        32  0.0  0.0      0     0 ?        S<   22:26   0:00 [watchdog/9]
-> root        35  0.0  0.0      0     0 ?        S<   22:26   0:00 [watchdog/10]
-> root        38  0.0  0.0      0     0 ?        S<   22:26   0:00 [watchdog/11]
-> root        41  0.0  0.0      0     0 ?        S<   22:26   0:00 [watchdog/12]
-> root        44  0.0  0.0      0     0 ?        S<   22:26   0:00 [watchdog/13]
-> root        50  0.0  0.0      0     0 ?        S<   22:26   0:00 [watchdog/15]
-> root      5641  0.0  0.0  61144   708 pts/0    R+   22:58   0:00 grep watchdog
-> #
-> 
-> # ps aux | grep ksoftirqd
-> root         4  0.0  0.0      0     0 ?        S<   22:26   0:00 [ksoftirqd/0]
-> root        10  0.0  0.0      0     0 ?        S<   22:26   0:00 [ksoftirqd/2]
-> root        13  0.0  0.0      0     0 ?        S<   22:26   0:00 [ksoftirqd/3]
-> root        16  0.0  0.0      0     0 ?        S<   22:26   0:00 [ksoftirqd/4]
-> root        19  0.0  0.0      0     0 ?        S<   22:26   0:00 [ksoftirqd/5]
-> root        22  0.0  0.0      0     0 ?        S<   22:26   0:00 [ksoftirqd/6]
-> root        25  0.0  0.0      0     0 ?        S<   22:26   0:00 [ksoftirqd/7]
-> root        28  0.0  0.0      0     0 ?        S<   22:26   0:00 [ksoftirqd/8]
-> root        31  0.0  0.0      0     0 ?        S<   22:26   0:00 [ksoftirqd/9]
-> root        34  0.0  0.0      0     0 ?        S<   22:26   0:00 [ksoftirqd/10]
-> root        37  0.0  0.0      0     0 ?        S<   22:26   0:00 [ksoftirqd/11]
-> root        40  0.0  0.0      0     0 ?        S<   22:26   0:00 [ksoftirqd/12]
-> root        43  0.0  0.0      0     0 ?        S<   22:26   0:00 [ksoftirqd/13]
-> root        49  0.0  0.0      0     0 ?        S<   22:26   0:00 [ksoftirqd/15]
-> root      5647  0.0  0.0  61144   712 pts/0    R+   23:00   0:00 grep ksoftirqd
-> #
-> 
-> #ps aux
-> ...
-> root      5554  0.0  0.0      0     0 ?        S<   22:42   0:00 [kstopmachine]
-> root      5556  0.0  0.0      0     0 ?        Z<   22:42   0:00 [kstopmachine] <defunct>
-> root      5557  0.0  0.0      0     0 ?        Z<   22:42   0:00 [kstopmachine] <defunct>
-> root      5558  0.0  0.0      0     0 ?        Z<   22:42   0:00 [kstopmachine] <defunct>
-> root      5559  0.0  0.0      0     0 ?        Z<   22:42   0:00 [kstopmachine] <defunct>
-> root      5560  0.0  0.0      0     0 ?        Z<   22:42   0:00 [kstopmachine] <defunct>
-> root      5561  0.0  0.0      0     0 ?        Z<   22:42   0:00 [kstopmachine] <defunct>
-> root      5562  0.0  0.0      0     0 ?        Z<   22:42   0:00 [kstopmachine] <defunct>
-> root      5563  0.0  0.0      0     0 ?        Z<   22:42   0:00 [kstopmachine] <defunct>
-> root      5564  0.0  0.0      0     0 ?        Z<   22:42   0:00 [kstopmachine] <defunct>
-> root      5565  0.0  0.0      0     0 ?        Z<   22:42   0:00 [kstopmachine] <defunct>
-> root      5566  0.0  0.0      0     0 ?        Z<   22:42   0:00 [kstopmachine] <defunct>
-> root      5567  0.0  0.0      0     0 ?        Z<   22:42   0:00 [kstopmachine] <defunct>
-> root      5568  0.0  0.0      0     0 ?        Z<   22:42   0:00 [kstopmachine] <defunct>
-> root      5569  0.0  0.0      0     0 ?        Z<   22:42   0:00 [kstopmachine] <defunct>
-> ...
-> 
-> 
-> [watchdog/1] isn't terminated so that [kstopmachine] will waiting for it
-> for ever, so that "echo 0 > /sys/devices/syste/cpu/cpu1/online" will hang
-> up, so that hotplug spinlock will be holden by it, so that other spinlock
-> contenter will wait for locking it for ever, so that...
-> 
-> These are some softlock detection output:
-> 
-> process 5471 (task.sh) no longer affine to cpu1
-> INFO: task group_balance:51 blocked for more than 120 seconds.
-> "echo 0 > /proc/sys/kernel/hung_task_timeout_secs" disables this message.
-> group_balance D ffff810001011580     0    51      2
->  ffff81027e97fdc0 0000000000000046 ffff81027e97fdd0 ffffffff80472b15
->  0000000000000000 ffff81027e97d280 ffff81027c8bd300 ffff81027e97d5d0
->  0000000080569da0 ffff81027e97d5d0 000000007e97d280 000000010009d366
-> Call Trace:
->  [<ffffffff80472b15>] thread_return+0x3d/0xa2
->  [<ffffffff8023cce5>] lock_timer_base+0x26/0x4b
->  [<ffffffff8047338b>] __mutex_lock_slowpath+0x5c/0x93
->  [<ffffffff80473221>] mutex_lock+0x1a/0x1e
->  [<ffffffff8024f8fd>] get_online_cpus+0x27/0x3e
->  [<ffffffff8022fd04>] load_balance_monitor+0x60/0x375
->  [<ffffffff8022fca4>] load_balance_monitor+0x0/0x375
->  [<ffffffff80245ff6>] kthread+0x47/0x75
->  [<ffffffff802301f0>] schedule_tail+0x28/0x5c
->  [<ffffffff8020cc78>] child_rip+0xa/0x12
->  [<ffffffff80245faf>] kthread+0x0/0x75
->  [<ffffffff8020cc6e>] child_rip+0x0/0x12
-> 
-> INFO: task bugexposure.sh:5462 blocked for more than 120 seconds.
-> "echo 0 > /proc/sys/kernel/hung_task_timeout_secs" disables this message.
-> bugexposure.s D ffff8100010e1580     0  5462      1
->  ffff81026a981c58 0000000000000082 ffff81026a981c68 ffffffff80472b15
->  00000000000004d6 ffff81027c83c920 ffff81027e8bd680 ffff81027c83cc70
->  0000000d7e8bc4c0 ffff81027c83cc70 0000000d00000002 000000010009d809
-> Call Trace:
->  [<ffffffff80472b15>] thread_return+0x3d/0xa2
->  [<ffffffff80314b25>] __next_cpu+0x19/0x28
->  [<ffffffff8022a5d4>] enqueue_rt_entity+0x4e/0xb1
->  [<ffffffff80472f34>] schedule_timeout+0x1e/0xad
->  [<ffffffff802280bf>] enqueue_task+0x4d/0x58
->  [<ffffffff80472ccf>] wait_for_common+0xd5/0x118
->  [<ffffffff8022c31b>] default_wake_function+0x0/0xe
->  [<ffffffff80245c93>] kthread_stop+0x58/0x79
->  [<ffffffff8046fdcf>] cpu_callback+0x189/0x197
->  [<ffffffff8046f59e>] cpu_callback+0x1cf/0x274
->  [<ffffffff8026c07e>] writeback_set_ratelimit+0x19/0x68
->  [<ffffffff8047658b>] notifier_call_chain+0x29/0x4c
->  [<ffffffff8024f74d>] _cpu_down+0x1d6/0x2aa
->  [<ffffffff8024f845>] cpu_down+0x24/0x31
->  [<ffffffff8038fcf4>] store_online+0x29/0x67
->  [<ffffffff802d23e1>] sysfs_write_file+0xd2/0x110
->  [<ffffffff8028db49>] vfs_write+0xad/0x136
->  [<ffffffff8028e086>] sys_write+0x45/0x6e
->  [<ffffffff8020bfd9>] tracesys+0xdc/0xe1
-> 
-
+-- Steve
