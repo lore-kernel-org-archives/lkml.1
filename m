@@ -1,81 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753340AbYCCHq5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755503AbYCCHtF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753340AbYCCHq5 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Mar 2008 02:46:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751250AbYCCHqs
+	id S1755503AbYCCHtF (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Mar 2008 02:49:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751288AbYCCHsv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Mar 2008 02:46:48 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:38318 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751229AbYCCHqr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Mar 2008 02:46:47 -0500
-Date: Mon, 3 Mar 2008 08:46:20 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Arjan van de Ven <arjan@linux.intel.com>
-Cc: torvalds@linux-foundation.org, hans.rosenfeld@amd.com,
-       linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: bisected boot regression post 2.6.25-rc3.. please revert
-Message-ID: <20080303074620.GC5934@elte.hu>
-References: <20080301105646.2c8620d9@laptopd505.fenrus.org>
+	Mon, 3 Mar 2008 02:48:51 -0500
+Received: from neuf-infra-smtp-out-sp604006av.neufgp.fr ([84.96.92.121]:33678
+	"EHLO neuf-infra-smtp-out-sp604006av.neufgp.fr" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751267AbYCCHsv (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 3 Mar 2008 02:48:51 -0500
+Message-ID: <47CBAD4E.7080901@cosmosbay.com>
+Date: Mon, 03 Mar 2008 08:48:30 +0100
+From: Eric Dumazet <dada1@cosmosbay.com>
+User-Agent: Thunderbird 2.0.0.12 (Windows/20080213)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080301105646.2c8620d9@laptopd505.fenrus.org>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+To: Nick Piggin <nickpiggin@yahoo.com.au>
+CC: Christoph Lameter <clameter@sgi.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       "David S. Miller" <davem@davemloft.net>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       linux kernel <linux-kernel@vger.kernel.org>, netdev@vger.kernel.org,
+       "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
+Subject: Re: [PATCH] alloc_percpu() fails to allocate percpu data
+References: <47BDBC23.10605@cosmosbay.com> <200802232023.52352.nickpiggin@yahoo.com.au> <Pine.LNX.4.64.0802271140470.1790@schroedinger.engr.sgi.com> <200803031414.43076.nickpiggin@yahoo.com.au>
+In-Reply-To: <200803031414.43076.nickpiggin@yahoo.com.au>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Arjan van de Ven <arjan@linux.intel.com> wrote:
-
-> Hi Linus, Ingo, Hans,
+Nick Piggin a écrit :
+> On Thursday 28 February 2008 06:44, Christoph Lameter wrote:
+>> On Sat, 23 Feb 2008, Nick Piggin wrote:
+>>> What I don't understand is why the slab allocators have something like
+>>> this in it:
+>>>
+>>>         if ((flags & SLAB_HWCACHE_ALIGN) &&
+>>>                         size > cache_line_size() / 2)
+>>>                 return max_t(unsigned long, align, cache_line_size());
+>>>
+>>> If you ask for HWCACHE_ALIGN, then you should get it. I don't
+>>> understand, why do they think they knows better than the caller?
+>> Tradition.... Its irks me as well.
+>>
+>>> Things like this are just going to lead to very difficult to track
+>>> performance problems. Possibly correctness problems in rare cases.
+>>>
+>>> There could be another flag for "maybe align".
+>> SLAB_HWCACHE_ALIGN *is* effectively a maybe align flag given the above
+>> code.
+>>
+>> If we all agree then we could change this to have must have semantics? It
+>> has the potential of enlarging objects for small caches.
+>>
+>> SLAB_HWCACHE_ALIGN has an effect that varies according to the alignment
+>> requirements of the architecture that the kernel is build on. We may be in
+>> for some surprises if we change this.
 > 
-> Please revert commit cded932b75ab0a5f9181ee3da34a0a488d1a14fd ( x86: 
-> fix pmd_bad and pud_bad to support huge pages ) since it prevents the 
-> kernel to finish booting on my (Penryn based) laptop. The boot stops 
-> right after freeing the init memory. Took a while to bisect (due to it 
-> touching page*.h, which forces a full recompile), but it definitely is 
-> caused by this commit...
+> I think so. If we ask for HWCACHE_ALIGN, it must be for a good reason.
+> If some structures get too bloated for no good reason, then the problem
+> is not with the slab allocator but with the caller asking for
+> HWCACHE_ALIGN.
+> 
 
-hm, lets figure out why this patch breaks your box, ok? We obviously 
-have to revert it if we cannot figure it out, but lets at least try - 
-because the patch itself fixes a real regression and it's not obviously 
-wrong either. I think there might be some bug hiding somewhere that we 
-really want to fix instead of this revert.
+HWCACHE_ALIGN is commonly used, even for large structures, because the 
+processor cache line on x86 is not known at compile time (can go from 32 bytes 
+to 128 bytes).
 
-Could you try to hack up a debug patch perhaps? Uninline the fucntion(s) 
-then add two versions (one is that breaks on your box and one is that 
-works on your box) of this same pmd_bad()/pud_bad() functions and do 
-something like this (pseudocode):
+The problem that above code is trying to address is about small objects.
 
-pmd_bad()
-{
-	if (pmd_bad_working(x) != pmd_bad_broken(x))
-		panic_timeout++;
+Because at the time code using HWCACHE_ALIGN was written, cache line size was 
+32 bytes. Now we have CPU with 128 bytes cache lines, we would waste space if 
+SLAB_HWCACHE_ALIGN was honored for small objects.
 
-	return pmd_bad_working(x);
-}
+Some occurences of SLAB_HWCACHE_ALIGN are certainly not usefull, we should zap 
+them. Last one I removed was the one for "struct flow_cache_entry"  (commit 
+dd5a1843d566911dbb077c4022c4936697495af6 : [IPSEC] flow: reorder "struct 
+flow_cache_entry" and remove SLAB_HWCACHE_ALIGN)
 
-i.e. we actually use the working function so your box should boot up 
-just fine - but we instrument things with the broken function as well 
-and detect the cases where the two values differ. It is an anomaly if 
-either function ever returns true instead of false.
-
-if after bootup you have a non-zero panic_timeout then there is a 
-material difference somewhere. In that case try to stick a dump_stack() 
-into the above case as well - and if the box still boots, send us the 
-stackdumps. (if the box doesnt boot then perhaps the printout itself 
-hangs - in that case try a save_stack_trace() hack and print it out 
-later)
-
-	Ingo
