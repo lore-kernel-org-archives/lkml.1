@@ -1,55 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757830AbYCCPka@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758131AbYCCPlS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757830AbYCCPka (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Mar 2008 10:40:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754648AbYCCPkV
+	id S1758131AbYCCPlS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Mar 2008 10:41:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754792AbYCCPlF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Mar 2008 10:40:21 -0500
-Received: from smtp6.pp.htv.fi ([213.243.153.40]:42697 "EHLO smtp6.pp.htv.fi"
+	Mon, 3 Mar 2008 10:41:05 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:45633 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754618AbYCCPkT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Mar 2008 10:40:19 -0500
-Date: Mon, 3 Mar 2008 17:38:43 +0200
-From: Adrian Bunk <bunk@kernel.org>
-To: Paul Mundt <lethal@linux-sh.org>
-Cc: linux-sh@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: sh sh7710voipgw_defconfig compile error
-Message-ID: <20080303153843.GD26072@cs181133002.pp.htv.fi>
+	id S1754648AbYCCPlE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 3 Mar 2008 10:41:04 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Pavel Machek <pavel@ucw.cz>
+Subject: Re: Regression in 2.6.25-rc3: s2ram segfaults before suspending
+Date: Mon, 3 Mar 2008 16:40:01 +0100
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: "Klaus S. Madsen" <ksm@hjernemadsen.org>,
+       Suspend-devel list <suspend-devel@lists.sourceforge.net>,
+       Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>
+References: <20080228150444.GG17932@hjernemadsen.org> <20080301094525.GQ17932@hjernemadsen.org> <20080303121735.GE28369@elf.ucw.cz>
+In-Reply-To: <20080303121735.GE28369@elf.ucw.cz>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+Message-Id: <200803031640.01885.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-It seems commit 9a7ef6d59f9d4780ff5bc9c4d05266b52dcb9211 broke the 
-support for this board:
+On Monday, 3 of March 2008, Pavel Machek wrote:
+> Hi!
+> 
+> > > > Klaus S. Madsen wrote:
+> > > >> open("/dev/mem", O_RDWR)                = 5
+> > > >> mmap2(NULL, 1282, PROT_READ|PROT_WRITE|PROT_EXEC, MAP_SHARED|MAP_FIXED, 5, 0) = 0
+> > > >> mmap2(0xa0000, 393216, PROT_READ|PROT_WRITE, MAP_SHARED|MAP_FIXED, 5, 0xa0) = 0xa0000
+> > > >                          ^^^^^^^^^^^^^^^^^^^^
+> > > >> close(5)                                = 0
+> > > >> ioperm(0, 0x400, 0x1)                   = 0
+> > > >> iopl(0x3)                               = 0
+> > > >> access("/sys/bus/pci", R_OK)            = 0
+> > > >> write(1, "Calling get_mode\n", 17)      = 17
+> > > >> vm86(0x1, 0xb7f14ccc, 0xb7f14830, 0xc000, 0x18b6 <unfinished ...>
+> > > >> --- SIGSEGV (Segmentation fault) @ 0 (0) ---
+> > > >> +++ killed by SIGSEGV (core dumped) +++
+> > > >
+> > > > This is the VGA BIOS being mapped, it's mapped PROT_READ|PROT_WRITE, but  
+> > > > no PROT_EXEC; if the kernel is NX-capable it *should* segfault trying to 
+> > > > execute out of this area, which is exactly what will happen when vm86 
+> > > > executes INT 10h.
+> > > >
+> > > > If we can find that mmap() in the s2ram source code and add PROT_EXEC 
+> > > > to it, it would be interesting.
+> > > 
+> > > Klaus, could you send your .config as well? Lets make sure that NX is 
+> > > even relevant in this context.
+> > Allright. The mmap in question is in the x86-common.c file in libx86,
+> > and adding PROT_EXEC to it solves the problem.
+> 
+> Ok, sw should probably fix that in s2ram... can you mail a patch to
+> me, and suspend-devel?
+> 
+> > I have attached my .config.
+> > 
+> > The only thing I don't understand is why this is suddenly a problem with
+> > 2.6.25, and not with 2.6.24? Is there a bug in 2.6.24 and previously
+> > that allows real-mode execution of non-executable pages?
+> 
+> It is strange indeed... Should it be traced as an regression?
 
-<--  snip  -->
+I'm tracing it FWIW.  However, it would be good to know if all of the previous
+kernels were buggy and 2.6.25 fixed the problem or it's the other way around.
 
-...
-  CC      arch/sh/boards/renesas/sh7710voipgw/setup.o
-arch/sh/boards/renesas/sh7710voipgw/setup.c:15: error: array type has incomplete element type
-arch/sh/boards/renesas/sh7710voipgw/setup.c:16: error: 'TIMER2_IRQ' undeclared here (not in a function)
-arch/sh/boards/renesas/sh7710voipgw/setup.c:16: error: 'TIMER2_IPR_ADDR' undeclared here (not in a function)
-arch/sh/boards/renesas/sh7710voipgw/setup.c:16: error: 'TIMER2_IPR_POS' undeclared here (not in a function)
-arch/sh/boards/renesas/sh7710voipgw/setup.c:16: error: 'TIMER2_PRIORITY' undeclared here (not in a function)
-arch/sh/boards/renesas/sh7710voipgw/setup.c:17: error: 'WDT_IRQ' undeclared here (not in a function)
-arch/sh/boards/renesas/sh7710voipgw/setup.c:17: error: 'WDT_IPR_ADDR' undeclared here (not in a function)
-arch/sh/boards/renesas/sh7710voipgw/setup.c:17: error: 'WDT_IPR_POS' undeclared here (not in a function)
-arch/sh/boards/renesas/sh7710voipgw/setup.c:17: error: 'WDT_PRIORITY' undeclared here (not in a function)
-...
-
-<--  snip  -->
-
-cu
-Adrian
-
--- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
-
+Thanks,
+Rafael
