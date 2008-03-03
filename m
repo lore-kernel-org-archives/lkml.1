@@ -1,61 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758392AbYCCRkc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760485AbYCCRkw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758392AbYCCRkc (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Mar 2008 12:40:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762787AbYCCRdg
+	id S1760485AbYCCRkw (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Mar 2008 12:40:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756224AbYCCRfl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Mar 2008 12:33:36 -0500
-Received: from smtp-out.google.com ([216.239.45.13]:58499 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1762782AbYCCRde (ORCPT
+	Mon, 3 Mar 2008 12:35:41 -0500
+Received: from wf-out-1314.google.com ([209.85.200.169]:41157 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755556AbYCCRfi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Mar 2008 12:33:34 -0500
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=received:message-id:date:from:to:subject:cc:in-reply-to:
-	mime-version:content-type:content-transfer-encoding:
-	content-disposition:references;
-	b=vyAuQRYKSHHzGB9o4zYU0QzEpWSRfzDzDtFK46KFVg8JJOMq6uwHOmzZPHCB1wrGo
-	dAaBzfSv6iRNvURDkGaIg==
-Message-ID: <da824cf30803030933j5647b0d4k61f6d110ff9f29bb@mail.gmail.com>
-Date: Mon, 3 Mar 2008 09:33:15 -0800
-From: "Grant Grundler" <grundler@google.com>
-To: "Hannes Reinecke" <hare@suse.de>
-Subject: Re: [RFC PATCH 1/3] block: add rq->complete_io hook for request stacking
-Cc: "Kiyoshi Ueda" <k-ueda@ct.jp.nec.com>, jens.axboe@oracle.com,
-       linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
-       dm-devel@redhat.com, j-nomura@ce.jp.nec.com
-In-Reply-To: <47CC2652.1080601@suse.de>
+	Mon, 3 Mar 2008 12:35:38 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=GI4jP/lnDxNbh265uruvykJ389nBOxpyENU/pcURMcJEPZxlTtq3mmE6jsBgYd029opZcSSpj7/Ufgw4N6UHvPwV8Z7ZENsVRkEXn2iiCxjSP5/xiONeRmraMkPX4x0LQvadWh9Ik0NkWhs3Aj3UWf67cdOqIUdND3s+3nhs2HQ=
+Message-ID: <5d6222a80803030935x69fa6e3cv2c6d3afdf9017b98@mail.gmail.com>
+Date: Mon, 3 Mar 2008 14:35:36 -0300
+From: "Glauber Costa" <glommer@gmail.com>
+To: "Ingo Molnar" <mingo@elte.hu>
+Subject: Re: [PATCH 0/52] First attempt at smp integration
+Cc: "Glauber Costa" <gcosta@redhat.com>, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org, tglx@linutronix.de
+In-Reply-To: <20080303172215.GA7918@elte.hu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <20080215.172727.39155014.k-ueda@ct.jp.nec.com>
-	 <47CC2652.1080601@suse.de>
+References: <1204564400-17636-1-git-send-email-gcosta@redhat.com>
+	 <20080303172215.GA7918@elte.hu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Mar 3, 2008 at 8:24 AM, Hannes Reinecke <hare@suse.de> wrote:
-
->  I would rather have rq->complete_io() to be pointing to blk_end_io in the
->  default case, this way rq->complete_io() would always be valid and we
->  would be saving us the if() clause.
-
-This is a good idea. But...
-
-...
->  So when using my proposal this would just become:
+On Mon, Mar 3, 2008 at 2:22 PM, Ingo Molnar <mingo@elte.hu> wrote:
 >
->  {
->     BUG_ON(!rq->complete_io);
+>  * Glauber Costa <gcosta@redhat.com> wrote:
 >
->     return rq->complete_io(rq, error, nr_bytes, 0, NULL);
->  }
+>  > Hi,
+>  >
+>  > This series of patches does a first attempt at smp integration (I call
+>  > it first, although I don't believe it's too far away from a real one).
+>  > The series comprises 52 patches, and the full diffstat says in the
+>  > end:
+>  >
+>  >        34 files changed, 1858 insertions(+), 2344 deletions(-)
+>  >
+>  > smp_32.c and smp_64.c are completely gone. smp.h and smpboot_{32,64}.c
+>  > are not, although substantially reduced. I know that ideally, no
+>  > leftovers are wanted, but the series were already big enough (I tried
+>  > to split the patches as much as I could), so I considered this a good
+>  > cutting point. If this is all agreed upon and merged, I'll start
+>  > looking at the other bits that are left.
+>  >
+>  > All patches are tested is various random x86 subarchitectures, and all
+>  > of them works. The result also boots fine in mine x86_64 and i386
+>  > boxes.
+>
+>  wow, really nice work and the result looks awesome! I'll put this into
+>  x86.git and see how it goes.
+>
+>         Ingo
+>
+Thanks ingo. I'll hook up to the next part as soon as I can.
 
-This "BUG_ON" is also an "if()" clause except
-it will panic. The box will panic if the function
-pointer is a null pointer and it won't be hard to
-sort out why. I suggest omitting the BUG_ON.
 
-thanks,
-grant
+-- 
+Glauber  Costa.
+"Free as in Freedom"
+http://glommer.net
+
+"The less confident you are, the more serious you have to act."
