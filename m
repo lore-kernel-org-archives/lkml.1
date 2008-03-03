@@ -1,103 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757458AbYCCO4E@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758394AbYCCO41@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757458AbYCCO4E (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Mar 2008 09:56:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753788AbYCCOzv
+	id S1758394AbYCCO41 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Mar 2008 09:56:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753788AbYCCO4P
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Mar 2008 09:55:51 -0500
-Received: from smtp6.pp.htv.fi ([213.243.153.40]:39993 "EHLO smtp6.pp.htv.fi"
+	Mon, 3 Mar 2008 09:56:15 -0500
+Received: from pasmtpb.tele.dk ([80.160.77.98]:55697 "EHLO pasmtpB.tele.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754168AbYCCOzu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Mar 2008 09:55:50 -0500
-Date: Mon, 3 Mar 2008 16:54:13 +0200
-From: Adrian Bunk <bunk@stusta.de>
+	id S1755479AbYCCO4N (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 3 Mar 2008 09:56:13 -0500
+Date: Mon, 3 Mar 2008 15:56:23 +0100
+From: Sam Ravnborg <sam@ravnborg.org>
 To: Ingo Molnar <mingo@elte.hu>
-Cc: Sam Ravnborg <sam@ravnborg.org>, Alexey Starikovskiy <aystarik@gmail.com>,
+Cc: Adrian Bunk <bunk@kernel.org>, Alexey Starikovskiy <aystarik@gmail.com>,
        lenb@kernel.org, astarikovskiy@suse.de, linux-acpi@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       Arjan van de Ven <arjan@infradead.org>
-Subject: Re: [2.6 patch] acpi/battery.c: make 2 functions static
-Message-ID: <20080303145413.GA26072@cs181133002.pp.htv.fi>
-References: <20080303091314.GC4457@cs181133002.pp.htv.fi> <20080303091714.GA18250@elte.hu> <20080303093103.GA23651@uranus.ravnborg.org> <20080303103933.GC21190@elte.hu> <20080303113451.GF4457@cs181133002.pp.htv.fi> <20080303114533.GA4183@elte.hu> <20080303120211.GG4457@cs181133002.pp.htv.fi> <20080303121015.GA12660@elte.hu> <20080303122953.GH4457@cs181133002.pp.htv.fi> <20080303125027.GA21577@elte.hu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+       linux-kernel@vger.kernel.org, Arjan van de Ven <arjan@infradead.org>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: [patch] x86: phase out forced inlining
+Message-ID: <20080303145623.GA25697@uranus.ravnborg.org>
+References: <47C99FE1.8080206@gmail.com> <20080301183550.GC25835@cs181133002.pp.htv.fi> <20080303085720.GD15943@elte.hu> <20080303091314.GC4457@cs181133002.pp.htv.fi> <20080303091714.GA18250@elte.hu> <20080303093103.GA23651@uranus.ravnborg.org> <20080303103933.GC21190@elte.hu> <20080303113451.GF4457@cs181133002.pp.htv.fi> <20080303114533.GA4183@elte.hu> <20080303121335.GA15381@elte.hu>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080303125027.GA21577@elte.hu>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+In-Reply-To: <20080303121335.GA15381@elte.hu>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Mar 03, 2008 at 01:50:27PM +0100, Ingo Molnar wrote:
-> 
-> * Adrian Bunk <bunk@kernel.org> wrote:
-> 
-> > I can only repeat that I did state several times on linux-kernel that 
-> > it never worked.
-> > 
-> > If you consider it my fault that noone reads my emails then you are 
-> > right that it's my fault...
-> 
-> well, i'm trying to assume the best, so please explain the following 
-> sequence of events to me:
-> 
-> 1) as you said you knew about this bug - which bug causes more inlining
->    overhead than hundreds of your uninlining patches combined. The bug
->    was introduced ~2 years ago in -mm - before the feature hit mainline
->    in v2.6.16.
+Hi Ingo.
 
-I don't remember having ever said this.
+> Subject: x86: phase out forced inlining
 
-Your choices are:
-[ ] prove your accusation that I said I
-    "knew about this bug before the feature hit mainline"
-[ ] apologize
-[ ] be the firest person ever in my killfile
+Any particular reason you made the patch x86 specific?
 
->...
-> still, while you clearly had interest in this general area of the kernel 
-> (for example you wrote hundreds of tiny uninlining patches that work 
-> towards a similar goal),
+It is preferred to gain this size decrease for other arch too
+and having a single definiton of OPTIMIZE_FOR_SIZE
+would help here.
 
-I'm not sure with whom you confuse me on this one.
-Perhaps with Ilpo?
+We have this for other gcc options already.
 
-I have sending some bigger uninlining patches on my TODO list for quite 
-some time (since this is really the right thing to solve these issues), 
-but I've not yet gotten there.
 
-> but strangely at the same time you neither 
-> fixed, nor properly escallated this _far_ bigger bug that causes +2.3% 
-> of text bloat on x86 [more than 120K of kernel text]. In fact:
-> 
-> - you created bugzillas for far smaller bugs in the past, but you never
->   created a bugzilla for this that i'm aware of.
 
-I'm well aware of the fact that our Bugzilla is mostly a /dev/null for 
-the currently at about 1500 open bugs there.
+> +config OPTIMIZE_INLINING
 
-That's why I tend [1] to only open bugs there for getting them into 
-Rafael's regression lists.
+Other (not all) config options that deal with gcc behaviour are
+named CC_*. But they mostly impact gcc options.
+CC_OPTIMIZE_INLINING would match the naming of CC_OPTIMIZE_SIZE,
+except in the latter OPTIMIZE refer to the -O option.
 
->...
-> - you never said "this is a regression that should be fixed" to any of
->   the regression lists.
+CC_DEFAULT_INLINE may give the right associations?
 
-This isn't a regression.
 
->...
-> 	Ingo
+> +	bool "Allow gcc to uninline functions marked 'inline'"
+> +	default y
+> +	help
+> +	  This option determines if the kernel forces gcc to inline the functions
+> +	  developers have marked 'inline'. Doing so takes away freedom from gcc to
+> +	  do what it thinks is best, which is desirable for the gcc 3.x series of
+> +	  compilers. The gcc 4.x series have a rewritten inlining algorithm and
+> +	  disabling this option will generate a smaller kernel there. Hopefully
+> +	  this algorithm is so good that allowing gcc4 to make the decision can
+> +	  become the default in the future, until then this option is there to
+> +	  test gcc for this.
 
-cu
-Adrian
+Would it be worth here to mention that stuff that really
+needs inlining should use __always_inle and not inline?
 
-[1] there are a few exceptions when I tried opening some bugs there
+> + */
+> +#ifndef CONFIG_OPTIMIZE_INLINING
+> +# define inline		inline		__attribute__((always_inline))
+> +# define __inline__	__inline__	__attribute__((always_inline))
+> +# define __inline	__inline	__attribute__((always_inline))
+> +#endif
 
--- 
+A quick google did not tell me the difference between inline, __inline, __inline__.
+But it turned out the december 2005 thread where there was a lenghty discussion about
+trusting gcc with respect to inlining.
+It is not the subject of this patch but I just wondered why we need all these variants.
 
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
-
+	Sam
