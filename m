@@ -1,125 +1,118 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761325AbYCCJyb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760916AbYCCJz1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761325AbYCCJyb (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Mar 2008 04:54:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759576AbYCCJyS
+	id S1760916AbYCCJz1 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Mar 2008 04:55:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754625AbYCCJzM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Mar 2008 04:54:18 -0500
-Received: from smtp21.orange.fr ([80.12.242.48]:48185 "EHLO smtp21.orange.fr"
+	Mon, 3 Mar 2008 04:55:12 -0500
+Received: from gra-lx1.iram.es ([150.214.224.41]:54829 "EHLO gra-lx1.iram.es"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758980AbYCCJyQ convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Mar 2008 04:54:16 -0500
-X-ME-UUID: 20080303072513503.7AF4D1C00096@mwinf2113.orange.fr
-Message-ID: <47CBCAB0.2040604@cosmosbay.com>
-Date: Mon, 03 Mar 2008 10:53:52 +0100
-From: Eric Dumazet <dada1@cosmosbay.com>
-User-Agent: Thunderbird 1.5.0.14 (Windows/20071210)
+	id S1754482AbYCCJzK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 3 Mar 2008 04:55:10 -0500
+From: Gabriel Paubert <paubert@iram.es>
+Date: Mon, 3 Mar 2008 10:54:43 +0100
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>, linuxppc-dev@ozlabs.org,
+       paulus@samba.org, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] add strncmp to PowerPC
+Message-ID: <20080303095443.GB27105@iram.es>
+References: <1204301097.14759.6.camel@localhost.localdomain> <1204340690.15052.457.camel@pasglop> <Pine.LNX.4.58.0802292250490.21555@gandalf.stny.rr.com>
 MIME-Version: 1.0
-To: Nick Piggin <npiggin@suse.de>
-Cc: netdev@vger.kernel.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       yanmin_zhang@linux.intel.com, David Miller <davem@davemloft.net>,
-       Christoph Lameter <clameter@engr.sgi.com>
-Subject: Re: [rfc][patch 3/3] use SLAB_ALIGN_SMP
-References: <20080303093449.GA15091@wotan.suse.de> <20080303093624.GC15091@wotan.suse.de>
-In-Reply-To: <20080303093624.GC15091@wotan.suse.de>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.58.0802292250490.21555@gandalf.stny.rr.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Nick Piggin a écrit :
-> Use SLAB_SMP_ALIGN in a few places.
->
->   
+On Fri, Feb 29, 2008 at 10:56:45PM -0500, Steven Rostedt wrote:
+> 
+> On Sat, 1 Mar 2008, Benjamin Herrenschmidt wrote:
+> >
+> > Do we have any indication that it performs better than the C one ?
+> 
+> See below.
+> 
+> >
+> > Ben.
+> >
+> 
+> > >
+> > > +_GLOBAL(strncmp)
+> > > +	mtctr	r5
+> > > +	addi	r5,r3,-1
+> > > +	addi	r4,r4,-1
+> > > +1:	lbzu	r3,1(r5)
+> > > +	cmpwi	1,r3,0
+> > > +	lbzu	r0,1(r4)
+> > > +	subf.	r3,r0,r3
+> > > +	beqlr	1
+> > > +	bdnzt	eq,1b
+> > > +	blr
+> > > +
+> 
+> 
+> And here's the objdump of the C version:
+> 
+> 0000000000000080 <.strncmp>:
+>   80:   fb e1 ff f0     std     r31,-16(r1)
+>   84:   f8 21 ff c1     stdu    r1,-64(r1)
+>   88:   7c 69 1b 78     mr      r9,r3
+>   8c:   7c a0 2b 79     mr.     r0,r5
+>   90:   38 60 00 00     li      r3,0
+>   94:   7c 09 03 a6     mtctr   r0
+>   98:   7c 3f 0b 78     mr      r31,r1
+>   9c:   41 82 00 68     beq-    104 <.strncmp+0x84>
+>   a0:   89 69 00 00     lbz     r11,0(r9)
+>   a4:   88 04 00 00     lbz     r0,0(r4)
+>   a8:   7c 00 58 50     subf    r0,r0,r11
+>   ac:   78 00 06 20     clrldi  r0,r0,56
+>   b0:   2f a0 00 00     cmpdi   cr7,r0,0
+>   b4:   7c 00 07 74     extsb   r0,r0
+>   b8:   7c 03 03 78     mr      r3,r0
+>   bc:   40 9e 00 48     bne-    cr7,104 <.strncmp+0x84>
+>   c0:   2f ab 00 00     cmpdi   cr7,r11,0
+>   c4:   41 9e 00 40     beq-    cr7,104 <.strncmp+0x84>
+>   c8:   38 84 00 01     addi    r4,r4,1
+>   cc:   38 69 00 01     addi    r3,r9,1
+>   d0:   42 40 00 30     bdz-    100 <.strncmp+0x80>
+>   d4:   88 03 00 00     lbz     r0,0(r3)
+>   d8:   89 24 00 00     lbz     r9,0(r4)
+>   dc:   38 63 00 01     addi    r3,r3,1
+>   e0:   38 84 00 01     addi    r4,r4,1
+>   e4:   2f 20 00 00     cmpdi   cr6,r0,0
+>   e8:   7c 09 00 50     subf    r0,r9,r0
+>   ec:   78 00 06 20     clrldi  r0,r0,56
+>   f0:   2f a0 00 00     cmpdi   cr7,r0,0
+>   f4:   7c 00 07 74     extsb   r0,r0
+>   f8:   40 9e 00 08     bne-    cr7,100 <.strncmp+0x80>
+>   fc:   40 9a ff d4     bne+    cr6,d0 <.strncmp+0x50>
+>  100:   7c 03 03 78     mr      r3,r0
+>  104:   e8 21 00 00     ld      r1,0(r1)
+>  108:   eb e1 ff f0     ld      r31,-16(r1)
+>  10c:   4e 80 00 20     blr
+> 
+> 
+> I'll let you decide ;-)
+> 
+> Even if it was logically faster (which I still doubt) it's a hell of a lot
+> of cache lines to waste.
 
-I dont understand why you added SLAB_SMP_ALIGN, without removing 
-SLAB_HWCACHE_ALIGN on these places.
+Indeed, but there are some corner cases that the C code handles. Like
+a length of 0 which may lead to infinite loop in the asm code. 
 
-> Signed-off-by: Nick Piggin <npiggin@suse.de>
-> ---
-> Index: linux-2.6/fs/block_dev.c
-> ===================================================================
-> --- linux-2.6.orig/fs/block_dev.c
-> +++ linux-2.6/fs/block_dev.c
-> @@ -332,8 +332,8 @@ void __init bdev_cache_init(void)
->  {
->  	int err;
->  	bdev_cachep = kmem_cache_create("bdev_cache", sizeof(struct bdev_inode),
-> -			0, (SLAB_HWCACHE_ALIGN|SLAB_RECLAIM_ACCOUNT|
-> -				SLAB_MEM_SPREAD|SLAB_PANIC),
-> +			0, (SLAB_HWCACHE_ALIGN|SLAB_SMP_ALIGN|
-> +			SLAB_RECLAIM_ACCOUNT|SLAB_MEM_SPREAD|SLAB_PANIC),
->  			init_once);
->  	err = register_filesystem(&bd_type);
->  	if (err)
-> Index: linux-2.6/kernel/fork.c
-> ===================================================================
-> --- linux-2.6.orig/kernel/fork.c
-> +++ linux-2.6/kernel/fork.c
-> @@ -1547,23 +1547,23 @@ void __init proc_caches_init(void)
->  {
->  	sighand_cachep = kmem_cache_create("sighand_cache",
->  			sizeof(struct sighand_struct), 0,
-> -			SLAB_HWCACHE_ALIGN|SLAB_PANIC|SLAB_DESTROY_BY_RCU,
-> +			SLAB_HWCACHE_ALIGN|SLAB_SMP_ALIGN|SLAB_PANIC|SLAB_DESTROY_BY_RCU,
->  			sighand_ctor);
->  	signal_cachep = kmem_cache_create("signal_cache",
->  			sizeof(struct signal_struct), 0,
-> -			SLAB_HWCACHE_ALIGN|SLAB_PANIC, NULL);
-> +			SLAB_HWCACHE_ALIGN|SLAB_SMP_ALIGN|SLAB_PANIC, NULL);
->  	files_cachep = kmem_cache_create("files_cache",
->  			sizeof(struct files_struct), 0,
-> -			SLAB_HWCACHE_ALIGN|SLAB_PANIC, NULL);
-> +			SLAB_HWCACHE_ALIGN|SLAB_SMP_ALIGN|SLAB_PANIC, NULL);
->  	fs_cachep = kmem_cache_create("fs_cache",
->  			sizeof(struct fs_struct), 0,
-> -			SLAB_HWCACHE_ALIGN|SLAB_PANIC, NULL);
-> +			SLAB_HWCACHE_ALIGN|SLAB_SMP_ALIGN|SLAB_PANIC, NULL);
->  	vm_area_cachep = kmem_cache_create("vm_area_struct",
->  			sizeof(struct vm_area_struct), 0,
->  			SLAB_PANIC, NULL);
->  	mm_cachep = kmem_cache_create("mm_struct",
->  			sizeof(struct mm_struct), ARCH_MIN_MMSTRUCT_ALIGN,
-> -			SLAB_HWCACHE_ALIGN|SLAB_PANIC, NULL);
-> +			SLAB_HWCACHE_ALIGN|SLAB_SMP_ALIGN|SLAB_PANIC, NULL);
->  }
->  
->  /*
-> Index: linux-2.6/kernel/pid.c
-> ===================================================================
-> --- linux-2.6.orig/kernel/pid.c
-> +++ linux-2.6/kernel/pid.c
-> @@ -526,5 +526,5 @@ void __init pidmap_init(void)
->  	atomic_dec(&init_pid_ns.pidmap[0].nr_free);
->  
->  	init_pid_ns.pid_cachep = KMEM_CACHE(pid,
-> -			SLAB_HWCACHE_ALIGN | SLAB_PANIC);
-> +			SLAB_HWCACHE_ALIGN | SLAB_SMP_ALIGN | SLAB_PANIC);
->  }
-> Index: linux-2.6/kernel/user.c
-> ===================================================================
-> --- linux-2.6.orig/kernel/user.c
-> +++ linux-2.6/kernel/user.c
-> @@ -503,7 +503,7 @@ static int __init uid_cache_init(void)
->  	int n;
->  
->  	uid_cachep = kmem_cache_create("uid_cache", sizeof(struct user_struct),
-> -			0, SLAB_HWCACHE_ALIGN|SLAB_PANIC, NULL);
-> +			0, SLAB_HWCACHE_ALIGN|SLAB_SMP_ALIGN|SLAB_PANIC, NULL);
->  
->  	for(n = 0; n < UIDHASH_SZ; ++n)
->  		INIT_HLIST_HEAD(init_user_ns.uidhash_table + n);
-> --
-> To unsubscribe from this list: send the line "unsubscribe netdev" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
->
->
->   
+OTOH, I'm a bit surprised by the extsb instructions in the compiler generated
+code. We don't compile with -fsigned-char, do we? The clrldi
+instructions are also extremely stupid.
 
+Now that I think a bit more about it, I believe that the C version is
+incorrect: the clrldi/extsb dance takes a value between -255 and +255
+and collapses it into the -128 to 127 range, meaning that the return
+value may be wrong if we rely on the sign of the result. So unless I
+miss something, the problem is much more serious than just stupid code
+(I had just a look at the libc version in C and characters are cast to
+unsigned char before the comparison).
 
-
-
+	Regards,
+	Gabriel
