@@ -1,23 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757735AbYCCR0s@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755556AbYCCR1U@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757735AbYCCR0s (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Mar 2008 12:26:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759681AbYCCRPs
+	id S1755556AbYCCR1U (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Mar 2008 12:27:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759785AbYCCRPv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Mar 2008 12:15:48 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:35659 "EHLO mx1.redhat.com"
+	Mon, 3 Mar 2008 12:15:51 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:36399 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754525AbYCCRPq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Mar 2008 12:15:46 -0500
+	id S1759745AbYCCRPt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 3 Mar 2008 12:15:49 -0500
 From: Glauber Costa <gcosta@redhat.com>
 To: linux-kernel@vger.kernel.org
 Cc: akpm@linux-foundation.org, glommer@gmail.com, mingo@elte.hu,
        tglx@linutronix.de, Glauber Costa <gcosta@redhat.com>
-Subject: [PATCH 41/52] move trampoline arrays extern definition to smp.h
-Date: Mon,  3 Mar 2008 14:13:09 -0300
-Message-Id: <1204564400-17636-42-git-send-email-gcosta@redhat.com>
+Subject: [PATCH 44/52] unify setup_trampoline
+Date: Mon,  3 Mar 2008 14:13:12 -0300
+Message-Id: <1204564400-17636-45-git-send-email-gcosta@redhat.com>
 X-Mailer: git-send-email 1.5.3.6
-In-Reply-To: <1204564400-17636-41-git-send-email-gcosta@redhat.com>
+In-Reply-To: <1204564400-17636-44-git-send-email-gcosta@redhat.com>
 References: <1204564400-17636-1-git-send-email-gcosta@redhat.com>
  <1204564400-17636-2-git-send-email-gcosta@redhat.com>
  <1204564400-17636-3-git-send-email-gcosta@redhat.com>
@@ -59,71 +59,193 @@ References: <1204564400-17636-1-git-send-email-gcosta@redhat.com>
  <1204564400-17636-39-git-send-email-gcosta@redhat.com>
  <1204564400-17636-40-git-send-email-gcosta@redhat.com>
  <1204564400-17636-41-git-send-email-gcosta@redhat.com>
+ <1204564400-17636-42-git-send-email-gcosta@redhat.com>
+ <1204564400-17636-43-git-send-email-gcosta@redhat.com>
+ <1204564400-17636-44-git-send-email-gcosta@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-In here, they can serve both architectures
+setup_trampoline() looks very similar between architectures, and this
+patch unifies them. The i386 version allocates bootmem memory, while
+the x86_64 version uses a fixed address.
+
+In this patch, we initialize the global trampoline_base to the x86_64 version,
+and i386 allocation can later override it.
 
 Signed-off-by: Glauber Costa <gcosta@redhat.com>
 ---
- arch/x86/kernel/smpboot_32.c |    6 ------
- arch/x86/kernel/smpboot_64.c |    7 -------
- include/asm-x86/smp.h        |    6 ++++++
- 3 files changed, 6 insertions(+), 13 deletions(-)
+ arch/x86/kernel/smpboot.c    |   33 +++++++++++++++++++++++++++++++++
+ arch/x86/kernel/smpboot_32.c |   29 -----------------------------
+ arch/x86/kernel/smpboot_64.c |   14 --------------
+ include/asm-x86/smp.h        |    4 ++++
+ include/asm-x86/smp_64.h     |    2 --
+ 5 files changed, 37 insertions(+), 45 deletions(-)
 
+diff --git a/arch/x86/kernel/smpboot.c b/arch/x86/kernel/smpboot.c
+index 34c3117..b13b9d5 100644
+--- a/arch/x86/kernel/smpboot.c
++++ b/arch/x86/kernel/smpboot.c
+@@ -3,6 +3,7 @@
+ #include <linux/module.h>
+ #include <linux/sched.h>
+ #include <linux/percpu.h>
++#include <linux/bootmem.h>
+ 
+ #include <asm/nmi.h>
+ #include <asm/irq.h>
+@@ -38,6 +39,9 @@ EXPORT_PER_CPU_SYMBOL(cpu_core_map);
+ DEFINE_PER_CPU_SHARED_ALIGNED(struct cpuinfo_x86, cpu_info);
+ EXPORT_PER_CPU_SYMBOL(cpu_info);
+ 
++/* ready for x86_64, no harm for x86, since it will overwrite after alloc */
++unsigned char *trampoline_base = __va(SMP_TRAMPOLINE_BASE);
++
+ /* representing cpus for which sibling maps can be computed */
+ static cpumask_t cpu_sibling_setup_map;
+ 
+@@ -117,6 +121,35 @@ cpumask_t cpu_coregroup_map(int cpu)
+ 		return c->llc_shared_map;
+ }
+ 
++/*
++ * Currently trivial. Write the real->protected mode
++ * bootstrap into the page concerned. The caller
++ * has made sure it's suitably aligned.
++ */
++
++unsigned long __cpuinit setup_trampoline(void)
++{
++	memcpy(trampoline_base, trampoline_data,
++	       trampoline_end - trampoline_data);
++	return virt_to_phys(trampoline_base);
++}
++
++#ifdef CONFIG_X86_32
++/*
++ * We are called very early to get the low memory for the
++ * SMP bootup trampoline page.
++ */
++void __init smp_alloc_memory(void)
++{
++	trampoline_base = alloc_bootmem_low_pages(PAGE_SIZE);
++	/*
++	 * Has to be in very low memory so we can execute
++	 * real-mode AP code.
++	 */
++	if (__pa(trampoline_base) >= 0x9F000)
++		BUG();
++}
++#endif
+ 
+ #ifdef CONFIG_HOTPLUG_CPU
+ void remove_siblinginfo(int cpu)
 diff --git a/arch/x86/kernel/smpboot_32.c b/arch/x86/kernel/smpboot_32.c
-index 3236e84..a21f254 100644
+index a21f254..ee82659 100644
 --- a/arch/x86/kernel/smpboot_32.c
 +++ b/arch/x86/kernel/smpboot_32.c
-@@ -73,12 +73,6 @@ EXPORT_PER_CPU_SYMBOL(x86_cpu_to_apicid);
+@@ -73,41 +73,12 @@ EXPORT_PER_CPU_SYMBOL(x86_cpu_to_apicid);
  
  u8 apicid_2_node[MAX_APICID];
  
--/*
-- * Trampoline 80x86 program as an array.
-- */
+-static unsigned char *trampoline_base;
 -
--extern const unsigned char trampoline_data [];
--extern const unsigned char trampoline_end  [];
- static unsigned char *trampoline_base;
- 
  static void map_cpu_to_logical_apicid(void);
-diff --git a/arch/x86/kernel/smpboot_64.c b/arch/x86/kernel/smpboot_64.c
-index 0c67e5a..2cc1b8b 100644
---- a/arch/x86/kernel/smpboot_64.c
-+++ b/arch/x86/kernel/smpboot_64.c
-@@ -63,13 +63,6 @@
- /* Set when the idlers are all forked */
- int smp_threads_ready;
  
--/*
-- * Trampoline 80x86 program as an array.
-- */
--
--extern const unsigned char trampoline_data[];
--extern const unsigned char trampoline_end[];
--
- /* State of each CPU */
+ /* State of each CPU. */
  DEFINE_PER_CPU(int, cpu_state) = { 0 };
  
+ /*
+- * Currently trivial. Write the real->protected mode
+- * bootstrap into the page concerned. The caller
+- * has made sure it's suitably aligned.
+- */
+-
+-static unsigned long __cpuinit setup_trampoline(void)
+-{
+-	memcpy(trampoline_base, trampoline_data, trampoline_end - trampoline_data);
+-	return virt_to_phys(trampoline_base);
+-}
+-
+-/*
+- * We are called very early to get the low memory for the
+- * SMP bootup trampoline page.
+- */
+-void __init smp_alloc_memory(void)
+-{
+-	trampoline_base = alloc_bootmem_low_pages(PAGE_SIZE);
+-	/*
+-	 * Has to be in very low memory so we can execute
+-	 * real-mode AP code.
+-	 */
+-	if (__pa(trampoline_base) >= 0x9F000)
+-		BUG();
+-}
+-
+-/*
+  * The bootstrap kernel entry code has set these up. Save them for
+  * a given CPU
+  */
+diff --git a/arch/x86/kernel/smpboot_64.c b/arch/x86/kernel/smpboot_64.c
+index 2cc1b8b..9f4935e 100644
+--- a/arch/x86/kernel/smpboot_64.c
++++ b/arch/x86/kernel/smpboot_64.c
+@@ -85,20 +85,6 @@ struct task_struct *idle_thread_array[NR_CPUS] __cpuinitdata ;
+ #define set_idle_for_cpu(x,p)   (idle_thread_array[(x)] = (p))
+ #endif
+ 
+-
+-/*
+- * Currently trivial. Write the real->protected mode
+- * bootstrap into the page concerned. The caller
+- * has made sure it's suitably aligned.
+- */
+-
+-static unsigned long __cpuinit setup_trampoline(void)
+-{
+-	void *tramp = __va(SMP_TRAMPOLINE_BASE); 
+-	memcpy(tramp, trampoline_data, trampoline_end - trampoline_data);
+-	return virt_to_phys(tramp);
+-}
+-
+ /*
+  * The bootstrap kernel entry code has set these up. Save them for
+  * a given CPU
 diff --git a/include/asm-x86/smp.h b/include/asm-x86/smp.h
-index 27d9f65..b2a1697 100644
+index b2a1697..513c857 100644
 --- a/include/asm-x86/smp.h
 +++ b/include/asm-x86/smp.h
-@@ -9,6 +9,12 @@ extern cpumask_t cpu_callout_map;
- extern int smp_num_siblings;
- extern unsigned int num_processors;
+@@ -14,6 +14,7 @@ extern unsigned int num_processors;
+  */
+ extern const unsigned char trampoline_data [];
+ extern const unsigned char trampoline_end  [];
++extern unsigned char *trampoline_base;
  
-+/*
-+ * Trampoline 80x86 program as an array.
-+ */
-+extern const unsigned char trampoline_data [];
-+extern const unsigned char trampoline_end  [];
-+
  struct smp_ops {
  	void (*smp_prepare_boot_cpu)(void);
- 	void (*smp_prepare_cpus)(unsigned max_cpus);
+@@ -81,6 +82,9 @@ extern void __cpu_die(unsigned int cpu);
+ 
+ extern unsigned disabled_cpus;
+ extern void prefill_possible_map(void);
++
++#define SMP_TRAMPOLINE_BASE 0x6000
++extern unsigned long setup_trampoline(void);
+ #endif
+ 
+ #ifdef CONFIG_X86_32
+diff --git a/include/asm-x86/smp_64.h b/include/asm-x86/smp_64.h
+index d554d7d..394c785 100644
+--- a/include/asm-x86/smp_64.h
++++ b/include/asm-x86/smp_64.h
+@@ -40,8 +40,6 @@ static inline int cpu_present_to_apicid(int mps_cpu)
+ 
+ #ifdef CONFIG_SMP
+ 
+-#define SMP_TRAMPOLINE_BASE 0x6000
+-
+ #define raw_smp_processor_id()	read_pda(cpunumber)
+ #define cpu_physical_id(cpu)	per_cpu(x86_cpu_to_apicid, cpu)
+ 
 -- 
 1.5.0.6
 
