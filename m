@@ -1,75 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759723AbYCCEnS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761992AbYCCEnn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759723AbYCCEnS (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 2 Mar 2008 23:43:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751568AbYCCEnI
+	id S1761992AbYCCEnn (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 2 Mar 2008 23:43:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761309AbYCCEnc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 2 Mar 2008 23:43:08 -0500
-Received: from TYO201.gate.nec.co.jp ([202.32.8.193]:39796 "EHLO
-	tyo201.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751157AbYCCEnG (ORCPT
+	Sun, 2 Mar 2008 23:43:32 -0500
+Received: from terminus.zytor.com ([198.137.202.10]:52277 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751568AbYCCEnb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 2 Mar 2008 23:43:06 -0500
-Message-ID: <47CB81C6.6020402@ak.jp.nec.com>
-Date: Mon, 03 Mar 2008 13:42:46 +0900
-From: Kohei KaiGai <kaigai@ak.jp.nec.com>
-User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
+	Sun, 2 Mar 2008 23:43:31 -0500
+Message-ID: <47CB81EA.8070802@zytor.com>
+Date: Sun, 02 Mar 2008 20:43:22 -0800
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
-To: Valdis.Kletnieks@vt.edu
-CC: greg@kroah.com, morgan@kernel.org, serue@us.ibm.com,
-       linux-security-module@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/3] add a private data field within kobj_attribute structure
- (final#2)
-References: <47C25AE9.7080305@ak.jp.nec.com>            <47C25BD3.3020205@ak.jp.nec.com> <7086.1204177759@turing-police.cc.vt.edu>
-In-Reply-To: <7086.1204177759@turing-police.cc.vt.edu>
+To: Matthew Wilcox <matthew@wil.cx>
+CC: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linux Arch Mailing List <linux-arch@vger.kernel.org>,
+       David Brownell <dbrownell@users.sourceforge.net>
+Subject: Re: [PATCH 1/2] Add C99-style constructor macros for specific-sized
+ integers
+References: <4a8566f54ff84f498c5c0c0340076c296b1840e6@tazenda.hos.anvin.org> <20080303023851.GF24386@parisc-linux.org>
+In-Reply-To: <20080303023851.GF24386@parisc-linux.org>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Valdis.Kletnieks@vt.edu wrote:
-> On Mon, 25 Feb 2008 15:10:27 +0900, Kohei KaiGai said:
->> [PATCH 1/3] add a private data field within kobj_attribute structure.
+Matthew Wilcox wrote:
+> On Sun, Mar 02, 2008 at 04:09:51PM -0800, H. Peter Anvin wrote:
+>> first place.  C99 has macros of the form [U]INT#_C() to construct
+>> numbers of an arbitrary size; this patch creates analogous macros for
+>> the kernel s# and u# types.
 > 
->> diff --git a/Documentation/kobject.txt b/Documentation/kobject.txt
->> index bf3256e..efa5d71 100644
->> --- a/Documentation/kobject.txt
->> +++ b/Documentation/kobject.txt
->> @@ -207,6 +207,12 @@ Both types of attributes used here, with a kobject that has been created
->>  with the kobject_create_and_add(), can be of type kobj_attribute, so no
->>  special custom attribute is needed to be created.
->>
->> +The simple kobj_attribute is prototyped at include/linux/kobject.h, and can
->> +contain your own show()/store() method and private data.
->> +When an attribute is accessed, these methods are invoked with kobject,
->> +kobj_attribute and read/write buffer. The method can refer the private data
->> +via given kobj_attribute, to show/store itself in the text representation.
->> +
->>  See the example module, samples/kobject/kobject-example.c for an
->>  implementation of a simple kobject and attributes.
+> Why put this in asm/types.h instead of, say, linux/types.h?
 > 
-> OK, I'm an idiot, so I re-read this several times, and looked at patch 3/3
-> that added the sample code, and I'm still confoozled.
+
+Because that's where the s* and u* types are defined.
+
+Realistically, those probably could/should be folded into a pair of 
+asm-generic files (for 32 and 64 bits), but that is a separate change.
+
+> I appreciate you have:
 > 
-> Who creates/destroys/manages this "read/write buffer", and/or how does the
-> method know how large a buffer is available, so (for example) it can use the
-> strn* versions of string functions to be sure not to run off the end?  Does
-> this buffer have any lifetime rules attached to it?
+>> +#define S64_C(x) x ## L
+>> +#define U64_C(x) x ## UL
+> 
+> and:
+> 
+>> +#define S64_C(x) x ## LL
+>> +#define U64_C(x) x ## ULL
+> 
+> but can't we use the latter for all arches?
+> 
 
-This "read/write buffer" is managed by sysfs filesystem.
+You really don't want to, as the whole point is that you want it to 
+match what u64/s64 is defined as, in order to avoid spurious warnings.
 
-Sysfs is invoked via kernel VFS subsystem, when user calls read(2) or write(2).
-In the read(2) case, sysfs_read_file() is invoked, allocates a page for buffer,
-and calls the show() method to generate the containts of this pseudo file entry.
-Therefore, show() and store() method does not need to manage this buffer.
-
-When store() method is invoked with data from userspace, sysfs terminate it with
-'\0' implicitly. The size of buffer is also limited to PAGE_SIZE implicitly.
-
-Can you make it clear?
-
-Thanks,
--- 
-OSS Platform Development Division, NEC
-KaiGai Kohei <kaigai@ak.jp.nec.com>
+	-hpa
