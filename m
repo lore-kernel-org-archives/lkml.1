@@ -1,55 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762755AbYCCT3z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762921AbYCCTae@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762755AbYCCT3z (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Mar 2008 14:29:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754205AbYCCT3r
+	id S1762921AbYCCTae (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Mar 2008 14:30:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756193AbYCCTaK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Mar 2008 14:29:47 -0500
-Received: from gv-out-0910.google.com ([216.239.58.191]:59080 "EHLO
-	gv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751015AbYCCT3q (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Mar 2008 14:29:46 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:to:cc:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=dX0ZooOG35U+YUNTzE586RKej7Lk1nXRceyZdsN5bXxJOU9e06WgbPJLoR8Ws6zisEt+FBBmyKat5Oj19IXWGPISznGcXQkdqkQl2c/mHlVNMmvbdYK+aZ2bDmyl0IbZcUBsAjLKj4NRw+MlK1pOA3tDLVR5KJdhd4E2Ck3o8ig=
-Subject: [PATCH] xtensa: replace remaining __FUNCTION__ occurance
-From: Harvey Harrison <harvey.harrison@gmail.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: LKML <linux-kernel@vger.kernel.org>
-Content-Type: text/plain
-Date: Mon, 03 Mar 2008 11:29:41 -0800
-Message-Id: <1204572581.3266.46.camel@brick>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
-Content-Transfer-Encoding: 7bit
+	Mon, 3 Mar 2008 14:30:10 -0500
+Received: from relay2.sgi.com ([192.48.171.30]:53035 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1754205AbYCCTaI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 3 Mar 2008 14:30:08 -0500
+Date: Mon, 3 Mar 2008 11:30:07 -0800 (PST)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Nick Piggin <nickpiggin@yahoo.com.au>
+cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Eric Dumazet <dada1@cosmosbay.com>,
+       "David S. Miller" <davem@davemloft.net>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       linux kernel <linux-kernel@vger.kernel.org>, netdev@vger.kernel.org,
+       "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
+Subject: Re: [PATCH] alloc_percpu() fails to allocate percpu data
+In-Reply-To: <200803031414.43076.nickpiggin@yahoo.com.au>
+Message-ID: <Pine.LNX.4.64.0803031129330.7275@schroedinger.engr.sgi.com>
+References: <47BDBC23.10605@cosmosbay.com> <200802232023.52352.nickpiggin@yahoo.com.au>
+ <Pine.LNX.4.64.0802271140470.1790@schroedinger.engr.sgi.com>
+ <200803031414.43076.nickpiggin@yahoo.com.au>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-__FUNCTION__ is gcc-specific, use __func__
+On Mon, 3 Mar 2008, Nick Piggin wrote:
 
-Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
----
- arch/xtensa/kernel/irq.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+> I think so. If we ask for HWCACHE_ALIGN, it must be for a good reason.
+> If some structures get too bloated for no good reason, then the problem
+> is not with the slab allocator but with the caller asking for
+> HWCACHE_ALIGN.
 
-diff --git a/arch/xtensa/kernel/irq.c b/arch/xtensa/kernel/irq.c
-index c9ea73b..5fbcde5 100644
---- a/arch/xtensa/kernel/irq.c
-+++ b/arch/xtensa/kernel/irq.c
-@@ -48,7 +48,7 @@ asmlinkage void do_IRQ(int irq, struct pt_regs *regs)
- 
- 	if (irq >= NR_IRQS) {
- 		printk(KERN_EMERG "%s: cannot handle IRQ %d\n",
--				__FUNCTION__, irq);
-+				__func__, irq);
- 	}
- 
- 	irq_enter();
--- 
-1.5.4.3.500.g83a2c
-
-
+Right. There should only be a few select users of this strange flag. 
+Otherwise if a certain alignment is wanted specify it in the alignment 
+parameter passed to kmem_cache_create.
 
