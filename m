@@ -1,68 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752672AbYCCMvK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756029AbYCCMv0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752672AbYCCMvK (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Mar 2008 07:51:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754284AbYCCMue
+	id S1756029AbYCCMv0 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Mar 2008 07:51:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754327AbYCCMuy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Mar 2008 07:50:34 -0500
-Received: from perninha.conectiva.com.br ([200.140.247.100]:49503 "EHLO
-	perninha.conectiva.com.br" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753272AbYCCMuY (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Mar 2008 07:50:24 -0500
-Date: Mon, 3 Mar 2008 09:50:15 -0300
-From: "Luiz Fernando N. Capitulino" <lcapitulino@mandriva.com.br>
-To: serge@hallyn.com
-Cc: lkml <linux-kernel@vger.kernel.org>, linux-security-module@vger.kernel.org,
-       Andrew Morgan <morgan@kernel.org>, Stephen Smalley <sds@epoch.ncsc.mil>,
-       Mike Galbraith <efault@gmx.de>, buraphalinuxserver@gmail.com,
-       elendil@planet.nl, stable@kernel.org
-Subject: Re: [PATCH 1/1] file capabilities: remove cap_task_kill()
-Message-ID: <20080303095015.6725686f@mandriva.com.br>
-In-Reply-To: <20080229212634.GA7278@vino.hallyn.com>
-References: <20080228173817.GA32661@vino.hallyn.com>
-	<20080229174007.0a934cc6@mandriva.com.br>
-	<20080229212634.GA7278@vino.hallyn.com>
-Organization: Mandriva
-X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.8; i586-mandriva-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Mon, 3 Mar 2008 07:50:54 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:53448 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754312AbYCCMuq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 3 Mar 2008 07:50:46 -0500
+Date: Mon, 3 Mar 2008 13:50:27 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Adrian Bunk <bunk@kernel.org>
+Cc: Sam Ravnborg <sam@ravnborg.org>, Alexey Starikovskiy <aystarik@gmail.com>,
+       lenb@kernel.org, astarikovskiy@suse.de, linux-acpi@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       Arjan van de Ven <arjan@infradead.org>
+Subject: Re: [2.6 patch] acpi/battery.c: make 2 functions static
+Message-ID: <20080303125027.GA21577@elte.hu>
+References: <20080303085720.GD15943@elte.hu> <20080303091314.GC4457@cs181133002.pp.htv.fi> <20080303091714.GA18250@elte.hu> <20080303093103.GA23651@uranus.ravnborg.org> <20080303103933.GC21190@elte.hu> <20080303113451.GF4457@cs181133002.pp.htv.fi> <20080303114533.GA4183@elte.hu> <20080303120211.GG4457@cs181133002.pp.htv.fi> <20080303121015.GA12660@elte.hu> <20080303122953.GH4457@cs181133002.pp.htv.fi>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080303122953.GH4457@cs181133002.pp.htv.fi>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Em Fri, 29 Feb 2008 15:26:34 -0600
-serge@hallyn.com escreveu:
 
-| Quoting Luiz Fernando N. Capitulino (lcapitulino@mandriva.com.br):
-| > Em Thu, 28 Feb 2008 11:38:17 -0600
-| > serge@hallyn.com escreveu:
-| > 
-| > | The original justification for cap_task_kill() was as follows:
-| > | 
-| > | 	check_kill_permission() does appropriate uid equivalence checks.
-| > | 	However with file capabilities it becomes possible for an
-| > | 	unprivileged user to execute a file with file capabilities
-| > | 	resulting in a more privileged task with the same uid.
-| > | 
-| > | However now that cap_task_kill() always returns 0 (permission
-| > | granted) when p->uid==current->uid, the whole hook is worthless,
-| > | and only likely to create more subtle problems in the corner cases
-| > | where it might still be called but return -EPERM.  Those cases
-| > | are basically when uids are different but euid/suid is equivalent
-| > | as per the check in check_kill_permission().
-| > | 
-| > | This patch removes cap_task_kill().
-| > 
-| >  2.6.24 seems to have the same bug, what about a rediff for it and
-| > submit the patch to -stable team?
-| 
-| Luiz, could you confirm that the below works?
+* Adrian Bunk <bunk@kernel.org> wrote:
 
- Yes, it does.
+> I can only repeat that I did state several times on linux-kernel that 
+> it never worked.
+> 
+> If you consider it my fault that noone reads my emails then you are 
+> right that it's my fault...
 
- Thanks.
+well, i'm trying to assume the best, so please explain the following 
+sequence of events to me:
 
--- 
-Luiz Fernando N. Capitulino
+1) as you said you knew about this bug - which bug causes more inlining
+   overhead than hundreds of your uninlining patches combined. The bug
+   was introduced ~2 years ago in -mm - before the feature hit mainline
+   in v2.6.16.
+
+2) the fix was really trivial and the intention of the feature was well 
+   understood - but the feature stayed as a NOP in the upstream kernel 
+   for 2 years.
+
+still, while you clearly had interest in this general area of the kernel 
+(for example you wrote hundreds of tiny uninlining patches that work 
+towards a similar goal), but strangely at the same time you neither 
+fixed, nor properly escallated this _far_ bigger bug that causes +2.3% 
+of text bloat on x86 [more than 120K of kernel text]. In fact:
+
+- you created bugzillas for far smaller bugs in the past, but you never
+  created a bugzilla for this that i'm aware of.
+
+- you never directly raised this issue with us: "look guys, this thing
+  really is broken - please reply to me with a fix".
+
+- you never said "this is a regression that should be fixed" to any of
+  the regression lists.
+
+in other words: for about two years you knew about a bug that should 
+have been fixed the day after it got introduced.
+
+i obviously cannot know what your intentions were with this conduct, so 
+i'm eagerly awaiting your explanation for it. Thanks,
+
+	Ingo
