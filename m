@@ -1,70 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752736AbYCCLqt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751525AbYCCLrG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752736AbYCCLqt (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Mar 2008 06:46:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751233AbYCCLqk
+	id S1751525AbYCCLrG (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Mar 2008 06:47:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751418AbYCCLqn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Mar 2008 06:46:40 -0500
-Received: from caramon.arm.linux.org.uk ([78.32.30.218]:37155 "EHLO
-	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751039AbYCCLqj (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Mar 2008 06:46:39 -0500
-Date: Mon, 3 Mar 2008 11:43:10 +0000
-From: Russell King <rmk+lkml@arm.linux.org.uk>
-To: David Howells <dhowells@redhat.com>
-Cc: "H. Peter Anvin" <hpa@zytor.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linux Arch Mailing List <linux-arch@vger.kernel.org>,
-       David Brownell <dbrownell@users.sourceforge.net>
-Subject: Re: [PATCH 1/2] Add C99-style constructor macros for specific-sized integers
-Message-ID: <20080303114310.GA28139@flint.arm.linux.org.uk>
-Mail-Followup-To: David Howells <dhowells@redhat.com>,
-	"H. Peter Anvin" <hpa@zytor.com>,
-	Linus Torvalds <torvalds@linux-foundation.org>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-	Linux Arch Mailing List <linux-arch@vger.kernel.org>,
-	David Brownell <dbrownell@users.sourceforge.net>
-References: <4a8566f54ff84f498c5c0c0340076c296b1840e6@tazenda.hos.anvin.org> <8260.1204541852@redhat.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Mon, 3 Mar 2008 06:46:43 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:43579 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751341AbYCCLqm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 3 Mar 2008 06:46:42 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: "Francis Moreau" <francis.moro@gmail.com>
+Subject: Re: linux-v2.6.25-rc3 issue: nvidiafb: cannot ioremap FB base
+Date: Mon, 3 Mar 2008 12:45:50 +0100
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: linux-kernel@vger.kernel.org, "Thomas Gleixner" <tglx@linutronix.de>,
+       mingo@elte.hu, "Andrew Morton" <akpm@linux-foundation.org>
+References: <38b2ab8a0802280607h46a89f04wdd190a7c87571668@mail.gmail.com> <200803022039.51634.rjw@sisk.pl> <38b2ab8a0803030006m577304c1wcb57b32e62da6170@mail.gmail.com>
+In-Reply-To: <38b2ab8a0803030006m577304c1wcb57b32e62da6170@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <8260.1204541852@redhat.com>
-User-Agent: Mutt/1.4.2.1i
+Message-Id: <200803031245.50967.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Mar 03, 2008 at 10:57:32AM +0000, David Howells wrote:
-> H. Peter Anvin <hpa@zytor.com> wrote:
+On Monday, 3 of March 2008, Francis Moreau wrote:
+> On Sun, Mar 2, 2008 at 8:39 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> > On Saturday, 1 of March 2008, Francis Moreau wrote:
+> >  > Ok,
+> >  >
+> >  > After spending (too much) time to bisect this, I found that the looser
+> >  > commit is:
+> >  >
+> >  > c31c7d4844ea4817692ae16bf70f9c96c05a50eb
+> >  > [ x86: CPA, fix alias checks ]
+> >
+> >  Please add yourself to the CC list of the Bugzilla entry at:
+> >  http://bugzilla.kernel.org/show_bug.cgi?id=10140
+> >
 > 
-> > +#define S8_C(x)	 x
-> > +#define U8_C(x)  x ## U
-> > +#define S16_C(x) x
-> > +#define U16_C(x) x ## U
-> > +#define S32_C(x) x
-> > +#define U32_C(x) x ## U
-> > +#define S64_C(x) x ## LL
-> > +#define U64_C(x) x ## ULL
-> 
-> And #if defined(__ASSEMBLY__), just splat x through as is.
+> OK, done.
 
-We already have something like this on ARM - include/asm-arm/memory.h
+Thanks.
 
-/*
- * Allow for constants defined here to be used from assembly code
- * by prepending the UL suffix only with actual C code compilation.
- */
-#ifndef __ASSEMBLY__
-#define UL(x) (x##UL)
-#else
-#define UL(x) (x)
-#endif
+The commit that causes the breakage is going to be reverted.
 
--- 
-Russell King
- Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
- maintainer of:
+Rafael
