@@ -1,101 +1,155 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759236AbYCCRYQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759254AbYCCRY5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759236AbYCCRYQ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Mar 2008 12:24:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758957AbYCCRPf
+	id S1759254AbYCCRY5 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Mar 2008 12:24:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759421AbYCCRPi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Mar 2008 12:15:35 -0500
-Received: from fk-out-0910.google.com ([209.85.128.191]:60251 "EHLO
-	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757920AbYCCRPb (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Mar 2008 12:15:31 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=b7k7JJQzalypsyypb3sNeML05Z0iKwKqlP+zjckxedcC2wLKPIn6wrDHiEEV56FFyf4WWcNHoaPf16xUA4csfTVDySIE394dQGXBa8fkrmk0DwaEyQjTngamfhzH6gbxni6a4OdN7UI73xnNffUocv0gRGo3Bg86AUbHZb6kPEY=
-Message-ID: <29495f1d0803030915u19d99fc0nb4a706a9c8e85b59@mail.gmail.com>
-Date: Mon, 3 Mar 2008 09:15:22 -0800
-From: "Nish Aravamudan" <nish.aravamudan@gmail.com>
-To: "Arjan van de Ven" <arjan@linux.intel.com>
-Subject: Re: bisected boot regression post 2.6.25-rc3.. please revert
-Cc: mingo@elte.hu, torvalds@linux-foundation.org, hans.rosenfeld@amd.com,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <20080301105646.2c8620d9@laptopd505.fenrus.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20080301105646.2c8620d9@laptopd505.fenrus.org>
+	Mon, 3 Mar 2008 12:15:38 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:35618 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1759109AbYCCRPg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 3 Mar 2008 12:15:36 -0500
+From: Glauber Costa <gcosta@redhat.com>
+To: linux-kernel@vger.kernel.org
+Cc: akpm@linux-foundation.org, glommer@gmail.com, mingo@elte.hu,
+       tglx@linutronix.de, Glauber Costa <gcosta@redhat.com>
+Subject: [PATCH 35/52] move cpu_coregroup_map to common file
+Date: Mon,  3 Mar 2008 14:13:03 -0300
+Message-Id: <1204564400-17636-36-git-send-email-gcosta@redhat.com>
+X-Mailer: git-send-email 1.5.3.6
+In-Reply-To: <1204564400-17636-35-git-send-email-gcosta@redhat.com>
+References: <1204564400-17636-1-git-send-email-gcosta@redhat.com>
+ <1204564400-17636-2-git-send-email-gcosta@redhat.com>
+ <1204564400-17636-3-git-send-email-gcosta@redhat.com>
+ <1204564400-17636-4-git-send-email-gcosta@redhat.com>
+ <1204564400-17636-5-git-send-email-gcosta@redhat.com>
+ <1204564400-17636-6-git-send-email-gcosta@redhat.com>
+ <1204564400-17636-7-git-send-email-gcosta@redhat.com>
+ <1204564400-17636-8-git-send-email-gcosta@redhat.com>
+ <1204564400-17636-9-git-send-email-gcosta@redhat.com>
+ <1204564400-17636-10-git-send-email-gcosta@redhat.com>
+ <1204564400-17636-11-git-send-email-gcosta@redhat.com>
+ <1204564400-17636-12-git-send-email-gcosta@redhat.com>
+ <1204564400-17636-13-git-send-email-gcosta@redhat.com>
+ <1204564400-17636-14-git-send-email-gcosta@redhat.com>
+ <1204564400-17636-15-git-send-email-gcosta@redhat.com>
+ <1204564400-17636-16-git-send-email-gcosta@redhat.com>
+ <1204564400-17636-17-git-send-email-gcosta@redhat.com>
+ <1204564400-17636-18-git-send-email-gcosta@redhat.com>
+ <1204564400-17636-19-git-send-email-gcosta@redhat.com>
+ <1204564400-17636-20-git-send-email-gcosta@redhat.com>
+ <1204564400-17636-21-git-send-email-gcosta@redhat.com>
+ <1204564400-17636-22-git-send-email-gcosta@redhat.com>
+ <1204564400-17636-23-git-send-email-gcosta@redhat.com>
+ <1204564400-17636-24-git-send-email-gcosta@redhat.com>
+ <1204564400-17636-25-git-send-email-gcosta@redhat.com>
+ <1204564400-17636-26-git-send-email-gcosta@redhat.com>
+ <1204564400-17636-27-git-send-email-gcosta@redhat.com>
+ <1204564400-17636-28-git-send-email-gcosta@redhat.com>
+ <1204564400-17636-29-git-send-email-gcosta@redhat.com>
+ <1204564400-17636-30-git-send-email-gcosta@redhat.com>
+ <1204564400-17636-31-git-send-email-gcosta@redhat.com>
+ <1204564400-17636-32-git-send-email-gcosta@redhat.com>
+ <1204564400-17636-33-git-send-email-gcosta@redhat.com>
+ <1204564400-17636-34-git-send-email-gcosta@redhat.com>
+ <1204564400-17636-35-git-send-email-gcosta@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 3/1/08, Arjan van de Ven <arjan@linux.intel.com> wrote:
-> Hi Linus, Ingo, Hans,
->
->  Please revert commit cded932b75ab0a5f9181ee3da34a0a488d1a14fd
->  ( x86: fix pmd_bad and pud_bad to support huge pages )
->  since it prevents the kernel to finish booting on my (Penryn based)
->  laptop. The boot stops right after freeing the init memory.
->  Took a while to bisect (due to it touching page*.h, which forces a
->  full recompile), but it definitely is caused by this commit...
->
->  Please revert.
->
->
->
->  [arjan@localhost linux.trees.git]$ git-bisect good
->  cded932b75ab0a5f9181ee3da34a0a488d1a14fd is first bad commit
->  commit cded932b75ab0a5f9181ee3da34a0a488d1a14fd
->  Author: Hans Rosenfeld <hans.rosenfeld@amd.com>
->  Date:   Mon Feb 18 18:10:47 2008 +0100
->
->     x86: fix pmd_bad and pud_bad to support huge pages
->
->     I recently stumbled upon a problem in the support for huge pages. If a
->     program using huge pages does not explicitly unmap them, they remain
->     mapped (and therefore, are lost) after the program exits.
->
->     I observed that the free huge page count in /proc/meminfo decreased when
->     running my program, and it did not increase after the program exited.
->     After running the program a few times, no more huge pages could be
->     allocated.
->
->     The reason for this seems to be that the x86 pmd_bad and pud_bad
->     consider pmd/pud entries having the PSE bit set invalid. I think there
->     is nothing wrong with this bit being set, it just indicates that the
->     lowest level of translation has been reached. This bit has to be (and
->     is) checked after the basic validity of the entry has been checked, like
->     in this fragment from follow_page() in mm/memory.c:
->
->       if (pmd_none(*pmd) || unlikely(pmd_bad(*pmd)))
->               goto no_page_table;
->
->       if (pmd_huge(*pmd)) {
->               BUG_ON(flags & FOLL_GET);
->               page = follow_huge_pmd(mm, address, pmd, flags & FOLL_WRITE);
->               goto out;
->       }
->
->     Note that this code currently doesn't work as intended if the pmd refers
->     to a huge page, the pmd_huge() check can not be reached if the page is
->     huge.
->
->     Extending pmd_bad() (and, for future 1GB page support, pud_bad()) to
->     allow for the PSE bit being set fixes this. For similar reasons,
->     allowing the NX bit being set is necessary, too. I have seen huge pages
->     having the NX bit set in their pmd entry, which would cause the same
->     problem.
->
->     Signed-Off-By: Hans Rosenfeld <hans.rosenfeld@amd.com>
->     Signed-off-by: Ingo Molnar <mingo@elte.hu>
+it is equal between architectures
 
-Hrm, not that I necessarily have the right to ask for this, but
-shouldn't hugepage related patches at least be cc'd to linux-mm? it
-seems this went via LKML to the x86 tree? There are a few of us that
-work on hugepages that would have seen this there, but it got lost in
-the noise (for me) on LKML.
+Signed-off-by: Glauber Costa <gcosta@redhat.com>
+---
+ arch/x86/kernel/smpboot.c    |   16 ++++++++++++++++
+ arch/x86/kernel/smpboot_32.c |   14 --------------
+ arch/x86/kernel/smpboot_64.c |   14 --------------
+ 3 files changed, 16 insertions(+), 28 deletions(-)
 
-Thanks,
-Nish
+diff --git a/arch/x86/kernel/smpboot.c b/arch/x86/kernel/smpboot.c
+index d774520..644e609 100644
+--- a/arch/x86/kernel/smpboot.c
++++ b/arch/x86/kernel/smpboot.c
+@@ -1,6 +1,7 @@
+ #include <linux/init.h>
+ #include <linux/smp.h>
+ #include <linux/module.h>
++#include <linux/sched.h>
+ 
+ /* Number of siblings per CPU package */
+ int smp_num_siblings = 1;
+@@ -95,6 +96,21 @@ void __cpuinit set_cpu_sibling_map(int cpu)
+ 	}
+ }
+ 
++/* maps the cpu to the sched domain representing multi-core */
++cpumask_t cpu_coregroup_map(int cpu)
++{
++	struct cpuinfo_x86 *c = &cpu_data(cpu);
++	/*
++	 * For perf, we return last level cache shared map.
++	 * And for power savings, we return cpu_core_map
++	 */
++	if (sched_mc_power_savings || sched_smt_power_savings)
++		return per_cpu(cpu_core_map, cpu);
++	else
++		return c->llc_shared_map;
++}
++
++
+ #ifdef CONFIG_HOTPLUG_CPU
+ void remove_siblinginfo(int cpu)
+ {
+diff --git a/arch/x86/kernel/smpboot_32.c b/arch/x86/kernel/smpboot_32.c
+index 322f466..a58ca7f 100644
+--- a/arch/x86/kernel/smpboot_32.c
++++ b/arch/x86/kernel/smpboot_32.c
+@@ -260,20 +260,6 @@ static void __cpuinit smp_callin(void)
+ 
+ static int cpucount;
+ 
+-/* maps the cpu to the sched domain representing multi-core */
+-cpumask_t cpu_coregroup_map(int cpu)
+-{
+-	struct cpuinfo_x86 *c = &cpu_data(cpu);
+-	/*
+-	 * For perf, we return last level cache shared map.
+-	 * And for power savings, we return cpu_core_map
+-	 */
+-	if (sched_mc_power_savings || sched_smt_power_savings)
+-		return per_cpu(cpu_core_map, cpu);
+-	else
+-		return c->llc_shared_map;
+-}
+-
+ /*
+  * Activate a secondary processor.
+  */
+diff --git a/arch/x86/kernel/smpboot_64.c b/arch/x86/kernel/smpboot_64.c
+index 329f9c5..1a59240 100644
+--- a/arch/x86/kernel/smpboot_64.c
++++ b/arch/x86/kernel/smpboot_64.c
+@@ -211,20 +211,6 @@ void __cpuinit smp_callin(void)
+ 	cpu_set(cpuid, cpu_callin_map);
+ }
+ 
+-/* maps the cpu to the sched domain representing multi-core */
+-cpumask_t cpu_coregroup_map(int cpu)
+-{
+-	struct cpuinfo_x86 *c = &cpu_data(cpu);
+-	/*
+-	 * For perf, we return last level cache shared map.
+-	 * And for power savings, we return cpu_core_map
+-	 */
+-	if (sched_mc_power_savings || sched_smt_power_savings)
+-		return per_cpu(cpu_core_map, cpu);
+-	else
+-		return c->llc_shared_map;
+-}
+-
+ /*
+  * Setup code on secondary processor (after comming out of the trampoline)
+  */
+-- 
+1.5.0.6
+
