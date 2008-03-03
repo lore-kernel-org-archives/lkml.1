@@ -1,27 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758691AbYCCJNb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759076AbYCCJOj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758691AbYCCJNb (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Mar 2008 04:13:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753840AbYCCJNY
+	id S1759076AbYCCJOj (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Mar 2008 04:14:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753277AbYCCJOb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Mar 2008 04:13:24 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:57739 "EHLO mx2.mail.elte.hu"
+	Mon, 3 Mar 2008 04:14:31 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:34810 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753595AbYCCJNX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Mar 2008 04:13:23 -0500
-Date: Mon, 3 Mar 2008 10:13:04 +0100
+	id S1752663AbYCCJOa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 3 Mar 2008 04:14:30 -0500
+Date: Mon, 3 Mar 2008 10:14:16 +0100
 From: Ingo Molnar <mingo@elte.hu>
-To: Arjan van de Ven <arjan@linux.intel.com>
-Cc: torvalds@linux-foundation.org, hans.rosenfeld@amd.com,
-       linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: bisected boot regression post 2.6.25-rc3.. please revert
-Message-ID: <20080303091304.GA17911@elte.hu>
-References: <20080301105646.2c8620d9@laptopd505.fenrus.org> <20080303074620.GC5934@elte.hu>
+To: Suresh Siddha <suresh.b.siddha@intel.com>
+Cc: hpa@zytor.com, tglx@linutronix.de, andi@firstfloor.org, hch@infradead.org,
+       linux-kernel@vger.kernel.org, Arjan van de Ven <arjan@linux.intel.com>
+Subject: Re: [patch 1/2] x86, fpu: split FPU state from task struct - v2
+Message-ID: <20080303091416.GA18078@elte.hu>
+References: <20080301005141.997705000@linux-os.sc.intel.com> <20080303085000.GB15943@elte.hu>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080303074620.GC5934@elte.hu>
+In-Reply-To: <20080303085000.GB15943@elte.hu>
 User-Agent: Mutt/1.5.17 (2007-11-01)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -38,57 +37,34 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 * Ingo Molnar <mingo@elte.hu> wrote:
 
-> Could you try to hack up a debug patch perhaps? Uninline the 
-> fucntion(s) then add two versions (one is that breaks on your box and 
-> one is that works on your box) of this same pmd_bad()/pud_bad() 
-> functions and do something like this (pseudocode):
+> > 2) allocate the right size for the actual cpu rather than 512 bytes 
+> > always. Patches enabling xsave/xrstor support (coming shortly) will 
+> > take advantage of this.
+> 
+> thanks, i've applied your two patches to x86.git#testing.
 
-i.e. something like the (tested) patch below. It is not clear whether 
-your testcase is on 32-bit or 64-bit - so i went for the more likely 
-32-bit case first.
+hm, qa immediately got problems with it:
+
+[   20.054821] BUG: sleeping function called from invalid context at mm/slab.c:3055
+[   20.057253] in_atomic():0, irqs_disabled():1
+[   20.057253] no locks held by awk/1294.
+[   20.057253] irq event stamp: 5745
+[   20.057253] hardirqs last  enabled at (5745): [<ffffffff8079aaf0>] trace_hardirqs_on_thunk+0x35/0x3a
+[   20.057253] hardirqs last disabled at (5744): [<ffffffff8079ab2a>] trace_hardirqs_off_thunk+0x35/0x37
+[   20.057253] softirqs last  enabled at (0): [<ffffffff80237800>] copy_process+0x310/0x16b0
+[   20.057253] softirqs last disabled at (0): [<0000000000000000>] 0x0
+[   20.057253] Pid: 1294, comm: awk Not tainted 2.6.25-rc3 #2
+[   20.057253] 
+[   20.057253] Call Trace:
+[   20.057253]  [<ffffffff8025bfb0>] ? print_irqtrace_events+0x110/0x120
+[   20.057253]  [<ffffffff80230de5>] __might_sleep+0xe5/0x110
+[   20.057253]  [<ffffffff802a9c53>] kmem_cache_alloc+0xe3/0x100
+[   20.057253]  [<ffffffff80213f84>] init_fpu+0x94/0xf0
+[   20.057253]  [<ffffffff8020e6d8>] math_state_restore+0x58/0x70
+[   20.057253]  [<ffffffff8079bb39>] error_exit+0x0/0xb8
+[   20.057253] 
+[   35.722463] device: 'vcs1': device_add
+
+that's a non-atomic alloc in an atomic (irqs off) section ...
 
 	Ingo
-
------------------->
-Subject: x86: patches/x86-debug-bad-page.patch
-From: Ingo Molnar <mingo@elte.hu>
-Date: Mon Mar 03 09:53:17 CET 2008
-
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
----
- arch/x86/mm/pgtable_32.c     |    7 +++++++
- include/asm-x86/pgtable_32.h |    6 +++++-
- 2 files changed, 12 insertions(+), 1 deletion(-)
-
-Index: linux-x86.q/arch/x86/mm/pgtable_32.c
-===================================================================
---- linux-x86.q.orig/arch/x86/mm/pgtable_32.c
-+++ linux-x86.q/arch/x86/mm/pgtable_32.c
-@@ -381,3 +381,10 @@ void __pmd_free_tlb(struct mmu_gather *t
- }
- 
- #endif
-+
-+int pmd_bad(pmd_t pmd)
-+{
-+	WARN_ON_ONCE(pmd_bad_v1(pmd) != pmd_bad_v2(pmd));
-+
-+	return pmd_bad_v1(pmd);
-+}
-Index: linux-x86.q/include/asm-x86/pgtable_32.h
-===================================================================
---- linux-x86.q.orig/include/asm-x86/pgtable_32.h
-+++ linux-x86.q/include/asm-x86/pgtable_32.h
-@@ -92,7 +92,11 @@ extern unsigned long pg0[];
- /* To avoid harmful races, pmd_none(x) should check only the lower when PAE */
- #define pmd_none(x)	(!(unsigned long)pmd_val(x))
- #define pmd_present(x)	(pmd_val(x) & _PAGE_PRESENT)
--#define	pmd_bad(x)	((pmd_val(x) \
-+
-+extern int pmd_bad(pmd_t pmd);
-+
-+#define pmd_bad_v1(x)	((pmd_val(x) & (~PAGE_MASK & ~_PAGE_USER)) != _KERNPG_TABLE)
-+#define	pmd_bad_v2(x)	((pmd_val(x) \
- 			  & ~(PAGE_MASK | _PAGE_USER | _PAGE_PSE | _PAGE_NX)) \
- 			 != _KERNPG_TABLE)
- 
