@@ -1,75 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757127AbYCCIu3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757604AbYCCIyR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757127AbYCCIu3 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Mar 2008 03:50:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753292AbYCCIuV
+	id S1757604AbYCCIyR (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Mar 2008 03:54:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753548AbYCCIyA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Mar 2008 03:50:21 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:33167 "EHLO mx2.mail.elte.hu"
+	Mon, 3 Mar 2008 03:54:00 -0500
+Received: from sacred.ru ([62.205.161.221]:46513 "EHLO sacred.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752646AbYCCIuU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Mar 2008 03:50:20 -0500
-Date: Mon, 3 Mar 2008 09:50:00 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Suresh Siddha <suresh.b.siddha@intel.com>
-Cc: hpa@zytor.com, tglx@linutronix.de, andi@firstfloor.org, hch@infradead.org,
-       linux-kernel@vger.kernel.org, Arjan van de Ven <arjan@linux.intel.com>
-Subject: Re: [patch 1/2] x86, fpu: split FPU state from task struct - v2
-Message-ID: <20080303085000.GB15943@elte.hu>
-References: <20080301005141.997705000@linux-os.sc.intel.com>
+	id S1753505AbYCCIx7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 3 Mar 2008 03:53:59 -0500
+Message-ID: <47CBBC61.1010605@openvz.org>
+Date: Mon, 03 Mar 2008 11:52:49 +0300
+From: Pavel Emelyanov <xemul@openvz.org>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080213)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080301005141.997705000@linux-os.sc.intel.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       David Miller <davem@davemloft.net>,
+       Alexey Dobriyan <adobriyan@openvz.org>,
+       Linux Netdev List <netdev@vger.kernel.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 0/2] Fix /proc/net in presence of net namespaces
+References: <47C6D743.1050802@openvz.org>	<m1y794514k.fsf@ebiederm.dsl.xmission.com> <47C7B779.808@openvz.org> <m1ve453lkp.fsf@ebiederm.dsl.xmission.com>
+In-Reply-To: <m1ve453lkp.fsf@ebiederm.dsl.xmission.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-Greylist: Sender succeeded SMTP AUTH authentication, not delayed by milter-greylist-3.0 (sacred.ru [62.205.161.221]); Mon, 03 Mar 2008 11:52:44 +0300 (MSK)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Suresh Siddha <suresh.b.siddha@intel.com> wrote:
-
-> Split the FPU save area from the task struct. This allows easy 
-> migration of FPU context, and it's generally cleaner. It also allows 
-> the following two optimizations:
+Eric W. Biederman wrote:
+> Pavel Emelyanov <xemul@openvz.org> writes:
 > 
-> 1) only allocate when the application actually uses FPU, so in the 
-> first lazy FPU trap. This could save memory for non-fpu using apps. 
-> Next patch does this lazy allocation.
+>> I could use the struct net pointer values (obtained with sprintf(id, "%p", net))
+>> instead, but exporting internal kernel addresses seemed even uglier.
 > 
-> 2) allocate the right size for the actual cpu rather than 512 bytes 
-> always. Patches enabling xsave/xrstor support (coming shortly) will 
-> take advantage of this.
+> Agreed.
+> 
+>>> Can you try this approach by capturing a struct pid instead of an id
+>>> in a new global namespace? 
+>> This is a bad approach. When task, that created the namespace dies, his
+>> pid is removed from the pidmap and can be reused, so we can get another
+>> net with the same id.
+> 
+> It takes a little updating of how we use pids.  The easiest method
+> is to add an extra counter.  So we know when someone besides the hash
+> chains is using the pid as an id.  However it might make sense to actually
+> have a net namespace pointer in the pid.
 
-thanks, i've applied your two patches to x86.git#testing.
+No, please, no. I'm strongly opposed to making pids provide identification
+for anything we need in the kernel.
 
-the #ifdefs are still a bit ugly:
+>> This net's id is not supposed to be used to address any net in the kernel.
+>> And I see no problems with migration - you can change the net's id safely
+>> during checkpoint/restart - tasks will always see this one via the /proc/net
+>> symlink, which is dynamic.
+> 
+> So you are really talking about a hidden id.  There are just enough
+> ways for something like that to slip out I'm not especially
+> comfortable with the idea.
+> 
+> I really think we need something clean that we can live with, and be
+> proud of.  However we implement the enhancement to /proc/net this has
+> to be maintained for decades.
+> 
+> Eric
+> 
 
-> +#ifndef arch_task_cache_init
-> +#define arch_task_cache_init()
-> +#endif
-
-use a __weak alias instead. (that way if an architecture defines the 
-function, that function takes over automatically at link time, without 
-any #ifdef complications)
-
-> +#ifndef arch_dup_task_struct
-> +static inline int arch_dup_task_struct(struct task_struct *dst,
-> +				       struct task_struct *src)
-> +{
-> +	*dst = *src;
-> +	return 0;
-> +}
-> +#endif
-
-ditto.
-
-	Ingo
