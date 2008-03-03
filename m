@@ -1,23 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1750913AbYCCR2N@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762539AbYCCR2b@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750913AbYCCR2N (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Mar 2008 12:28:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759926AbYCCRPz
+	id S1762539AbYCCR2b (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Mar 2008 12:28:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759959AbYCCRP5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Mar 2008 12:15:55 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:36420 "EHLO mx1.redhat.com"
+	Mon, 3 Mar 2008 12:15:57 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:36429 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759905AbYCCRPx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Mar 2008 12:15:53 -0500
+	id S1759936AbYCCRPz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 3 Mar 2008 12:15:55 -0500
 From: Glauber Costa <gcosta@redhat.com>
 To: linux-kernel@vger.kernel.org
 Cc: akpm@linux-foundation.org, glommer@gmail.com, mingo@elte.hu,
        tglx@linutronix.de, Glauber Costa <gcosta@redhat.com>
-Subject: [PATCH 45/52] use wait_for_init_deassert in x86_64
-Date: Mon,  3 Mar 2008 14:13:13 -0300
-Message-Id: <1204564400-17636-46-git-send-email-gcosta@redhat.com>
+Subject: [PATCH 42/52] adapt voyager's trampoline_base
+Date: Mon,  3 Mar 2008 14:13:10 -0300
+Message-Id: <1204564400-17636-43-git-send-email-gcosta@redhat.com>
 X-Mailer: git-send-email 1.5.3.6
-In-Reply-To: <1204564400-17636-45-git-send-email-gcosta@redhat.com>
+In-Reply-To: <1204564400-17636-42-git-send-email-gcosta@redhat.com>
 References: <1204564400-17636-1-git-send-email-gcosta@redhat.com>
  <1204564400-17636-2-git-send-email-gcosta@redhat.com>
  <1204564400-17636-3-git-send-email-gcosta@redhat.com>
@@ -60,49 +60,53 @@ References: <1204564400-17636-1-git-send-email-gcosta@redhat.com>
  <1204564400-17636-40-git-send-email-gcosta@redhat.com>
  <1204564400-17636-41-git-send-email-gcosta@redhat.com>
  <1204564400-17636-42-git-send-email-gcosta@redhat.com>
- <1204564400-17636-43-git-send-email-gcosta@redhat.com>
- <1204564400-17636-44-git-send-email-gcosta@redhat.com>
- <1204564400-17636-45-git-send-email-gcosta@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-wraps the busy loop for wait_for_init_deasserted() in a function,
-so smp_callin in x86_64 looks like more i386
+Change voyager's trampoline base to unsigned char *
+instead of u32. This way, it won't conflict with
+the other architectures when including smp.h
 
 Signed-off-by: Glauber Costa <gcosta@redhat.com>
 ---
- arch/x86/kernel/smpboot_64.c |   10 ++++++++--
- 1 files changed, 8 insertions(+), 2 deletions(-)
+ arch/x86/mach-voyager/voyager_smp.c |    8 ++++----
+ 1 files changed, 4 insertions(+), 4 deletions(-)
 
-diff --git a/arch/x86/kernel/smpboot_64.c b/arch/x86/kernel/smpboot_64.c
-index 9f4935e..4f6d976 100644
---- a/arch/x86/kernel/smpboot_64.c
-+++ b/arch/x86/kernel/smpboot_64.c
-@@ -100,6 +100,13 @@ static void __cpuinit smp_store_cpu_info(int id)
- 	print_cpu_info(c);
+diff --git a/arch/x86/mach-voyager/voyager_smp.c b/arch/x86/mach-voyager/voyager_smp.c
+index 0b3f52a..0ab236e 100644
+--- a/arch/x86/mach-voyager/voyager_smp.c
++++ b/arch/x86/mach-voyager/voyager_smp.c
+@@ -210,7 +210,7 @@ static int cpucount = 0;
+ /* steal a page from the bottom of memory for the trampoline and
+  * squirrel its address away here.  This will be in kernel virtual
+  * space */
+-static __u32 trampoline_base;
++unsigned char *trampoline_base;
+ 
+ /* The per cpu profile stuff - used in smp_local_timer_interrupt */
+ static DEFINE_PER_CPU(int, prof_multiplier) = 1;
+@@ -435,9 +435,9 @@ static __u32 __init setup_trampoline(void)
+ 	extern const __u8 trampoline_end[];
+ 	extern const __u8 trampoline_data[];
+ 
+-	memcpy((__u8 *) trampoline_base, trampoline_data,
++	memcpy(trampoline_base, trampoline_data,
+ 	       trampoline_end - trampoline_data);
+-	return virt_to_phys((__u8 *) trampoline_base);
++	return virt_to_phys(trampoline_base);
  }
  
-+static inline void wait_for_init_deassert(atomic_t *deassert)
-+{
-+	while (!atomic_read(deassert))
-+		cpu_relax();
-+	return;
-+}
-+
- static atomic_t init_deasserted __cpuinitdata;
- 
- /*
-@@ -117,8 +124,7 @@ void __cpuinit smp_callin(void)
- 	 * our local APIC.  We have to wait for the IPI or we'll
- 	 * lock up on an APIC access.
- 	 */
--	while (!atomic_read(&init_deasserted))
--		cpu_relax();
-+	wait_for_init_deassert(&init_deasserted);
- 
- 	/*
- 	 * (This works even if the APIC is not enabled.)
+ /* Routine initially called when a non-boot CPU is brought online */
+@@ -1166,7 +1166,7 @@ void flush_tlb_all(void)
+  * is sorted out */
+ void __init smp_alloc_memory(void)
+ {
+-	trampoline_base = (__u32) alloc_bootmem_low_pages(PAGE_SIZE);
++	trampoline_base = alloc_bootmem_low_pages(PAGE_SIZE);
+ 	if (__pa(trampoline_base) >= 0x93000)
+ 		BUG();
+ }
 -- 
 1.5.0.6
 
