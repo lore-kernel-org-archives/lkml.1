@@ -1,68 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932546AbYCDSmb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765846AbYCDSpH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932546AbYCDSmb (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Mar 2008 13:42:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763828AbYCDSmV
+	id S1765846AbYCDSpH (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Mar 2008 13:45:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761448AbYCDSo4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Mar 2008 13:42:21 -0500
-Received: from rv-out-0910.google.com ([209.85.198.185]:18197 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759454AbYCDSmU (ORCPT
+	Tue, 4 Mar 2008 13:44:56 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:48075 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1760462AbYCDSoy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Mar 2008 13:42:20 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=XPAq1QjQfvnybGAW6CtedMpLRmdkEiyuTjqE9ytQBigKqXx7RLboAurvF66mYpEN8Rp05Doc2vlUkDlobyD7YFkuSmDZGdSSlWkvINhHH7Nin3ITPjiHr38bwiYZxKjM0WytMjQ7LECKLQLrSjS1xYc+EtnaCGJ1xeAbgPJkKWQ=
-Message-ID: <57e2b00803041042k67f7b1c6ge8da83efaf1aa9f6@mail.gmail.com>
-Date: Tue, 4 Mar 2008 18:42:19 +0000
-From: "Byron Bradley" <byron.bbradley@gmail.com>
-To: "Mark Lord" <liml@rtr.ca>
-Subject: Re: Sata-MV, Intergated Sata Device Support
-Cc: saeed <saeed@marvell.com>, "Jeff Garzik" <jeff@garzik.org>,
-       linux-ide@vger.kernel.org, jon@ngndg.com,
-       LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <47C43655.1050907@rtr.ca>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Tue, 4 Mar 2008 13:44:54 -0500
+Date: Tue, 4 Mar 2008 10:43:12 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Greg KH <gregkh@suse.de>, "Zhang, Rui" <rui.zhang@intel.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>, kay.sievers@vrfy.org,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Alexey Dobriyan <adobriyan@sw.ru>, dm-devel@redhat.com
+Subject: Re: 2.6.25-rc regression: kernel panic on boot
+Message-Id: <20080304104312.457ba3a8.akpm@linux-foundation.org>
+In-Reply-To: <20080304135447.GD32383@elte.hu>
+References: <1204500349.10256.171.camel@acpi-hp-zz.sh.intel.com>
+	<20080303224259.GA27008@suse.de>
+	<20080304135447.GD32383@elte.hu>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <1176673884.5109.30.camel@Desktop> <47C35203.20402@garzik.org>
-	 <47C3585D.8070701@rtr.ca> <47C35A85.3020307@garzik.org>
-	 <alpine.DEB.0.99.0802260024400.22022@ubuntu-saeed.il.marvell.com>
-	 <47C43655.1050907@rtr.ca>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Feb 26, 2008 at 3:55 PM, Mark Lord <liml@rtr.ca> wrote:
-> saeed wrote:
->  >
->  > On Mon, 25 Feb 2008, Jeff Garzik wrote:
->  >
->  >>> ...
->  >>>
->  >>> Saeed:  isn't this what your SOC patches already implemented for us?
->  >>> As near as I can tell, sata_mv now already has support for the 60x1C0.
->  >> Saeed's stuff didn't support PCI though, and Jon Li is definitely talking
->  >> about PCI...
->  > yes, my patch added support for the SoC sata like in the 5182, and this
->  > is what Jon Li was concerned about. he mentioneded the 60x1C0 pci device
->  > just to suggest to use it's code for the SoC sata as it is very similar.
->  ..
->
->  I don't think I understand your english there.
->
->  Does the current sata_mv driver work as-is with the chipset this person wants?
->  If not, then exactly what has to change to make it work?
+On Tue, 4 Mar 2008 14:54:47 +0100 Ingo Molnar <mingo@elte.hu> wrote:
 
-Jon Li was one of the people who started porting Linux to the Marvell
-Orion 88F5182 before Marvell did it. sata_mv does now work on the
-device Jon was talking about. When this was sent I think we were
-unsure whether it could work over PCI or just the system bus which
-probably confused things a little.
+> * Greg KH <gregkh@suse.de> wrote:
+> 
+> > On Mon, Mar 03, 2008 at 07:25:49AM +0800, Zhang, Rui wrote:
+> > > Hi, all,
+> > > 
+> > > kernel panic on boot when I try to run 2.6.25-rc1 and later, but 2.6.24-rc8 boots okay.
+> > > The result of git-bisect shows that
+> > > edfaa7c36574f1bf09c65ad602412db9da5f96bf is first bad commit.
+> > > 
+> > > The git-bisect-result and the dmesg log when the kernel panic are 
+> > > attached. Any help on this please? :)
+> > 
+> > Are you using LVM?  If so, please either upgrade your userspace/initrd 
+> > stuff, or enable CONFIG_SYSFS_DEPCRECATED
+> 
+> we _really_ must handle this differently and this _is_ a regression that 
+> multiple people have spent hours on bisecting already ...
+> 
+> So "enable CONFIG_SYSFS_DEPCRECATED" is _NOT_ the right answer, and this 
+> has been pointed out to you in the past.
 
-Cheers,
-
--- 
-Byron Bradley
+Isn't the device-mapper kernel code capable of detecting the older userspace
+version and loudly warning about it?  That at least would prevent us from
+wasting lots of people's time like this.
