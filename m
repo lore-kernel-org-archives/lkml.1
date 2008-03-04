@@ -1,93 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763002AbYCDDrS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760668AbYCDDwD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763002AbYCDDrS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Mar 2008 22:47:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757877AbYCDDrG
+	id S1760668AbYCDDwD (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Mar 2008 22:52:03 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754772AbYCDDvx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Mar 2008 22:47:06 -0500
-Received: from ti-out-0910.google.com ([209.85.142.184]:29736 "EHLO
-	ti-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756849AbYCDDrE (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Mar 2008 22:47:04 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=IL5T+Y28eSrwaC/+mvmgVkouzOCkNuQA7Nm/y1LdyBobOJo8rESeR0RJu+GA/4fqfu7fWhYd6+xAoEVk2vRXDVKmRZ64vWSkYV/jxwyJ/49RVRAEVTe3tdQOQWW3w3gq/r2MoRxaqjy7U+GyTihun0l3dX1LegpmvTzY3+eSvtg=
-Message-ID: <37219a840803031947t31c3b302iaa00526f3c0a82c8@mail.gmail.com>
-Date: Mon, 3 Mar 2008 22:47:01 -0500
-From: "Michael Krufky" <mkrufky@linuxtv.org>
-To: "Harvey Harrison" <harvey.harrison@gmail.com>
-Subject: Re: [v4l-dvb-maintainer] [PATCH] media: replace remaining __FUNCTION__ occurences
-Cc: "Mauro Carvalho Chehab" <mchehab@infradead.org>,
-       "v4l-dvb-maintainer@linuxtv.org" <v4l-dvb-maintainer@linuxtv.org>,
+	Mon, 3 Mar 2008 22:51:53 -0500
+Received: from ozlabs.org ([203.10.76.45]:60300 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753170AbYCDDvx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 3 Mar 2008 22:51:53 -0500
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: "Jike Song" <albcamus@gmail.com>
+Subject: Re: Module loading/unloading and "The Stop Machine"
+Date: Tue, 4 Mar 2008 14:51:09 +1100
+User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
+Cc: "Max Krasnyansky" <maxk@qualcomm.com>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
        LKML <linux-kernel@vger.kernel.org>,
-       "Andrew Morton" <akpm@linux-foundation.org>
-In-Reply-To: <1204601394.22933.99.camel@brick>
+       "Linus Torvalds" <torvalds@linux-foundation.org>
+References: <47ABC08C.8010101@qualcomm.com> <df9815e70802132102v7eb7d8e9k4d6b21ffa6325d0d@mail.gmail.com>
+In-Reply-To: <df9815e70802132102v7eb7d8e9k4d6b21ffa6325d0d@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <1204588990.22933.28.camel@brick>
-	 <37219a840803031928l79395c78ka64192f4a9f61744@mail.gmail.com>
-	 <1204601394.22933.99.camel@brick>
-X-Google-Sender-Auth: 1ead83c2615e3497
+Message-Id: <200803041451.10312.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Mar 3, 2008 at 10:29 PM, Harvey Harrison
-<harvey.harrison@gmail.com> wrote:
+On Thursday 14 February 2008 16:02:06 Jike Song wrote:
+> On 2/8/08, Max Krasnyansky <maxk@qualcomm.com> wrote:
+> > Hi Rusty,
+> >
+> > I was hopping you could answer a couple of questions about module
+> > loading/unloading and the stop machine.
 >
-> On Mon, 2008-03-03 at 22:28 -0500, Michael Krufky wrote:
->  > On Mon, Mar 3, 2008 at 7:03 PM, Harvey Harrison
->  > <harvey.harrison@gmail.com> wrote:
->  > > __FUNCTION__ is gcc-specific, use __func__
->  > >
->  > >  Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
->  > >   162 files changed, 892 insertions(+), 892 deletions(-)
->  >
->  >
->  > If we apply this, can it be broken down into several smaller patches?
->  > I am in the midst of a large overhaul of the tuning subsystem, and if
->  > this all gets applied at once, it will wreck havoc on my pending
->  > changesets.
->  >
->  > Other than that, I'm fine with this change if that's what we're doing
->  > across the rest of the kernel...  Would just be easier to deal with if
->  > it could be further broken down by subdirectory.
->
->  No worries on my part, point me at what tree you'd like it against, and
->  how you'd like it broken up.  Or just give me a shout when it is most
->  convenient to send an update.
+> I'm curious to know why it is called `stop machine', which is a queer
+> name without any relationship with its function.
 
-OK...  The v4l-dvb development tree is located on linuxtv.org...
-Patches should be generated against the master repository, located
-here:
+Hi Jike,
 
-http://linuxtv.org/hg/v4l-dvb
+   I'm surprised.. stunned even, to hear you say this.  stop_machine stops the 
+machine: every CPU is frozen with interrupts disabled.  I am having trouble 
+thinking of a better name.
 
+  "schedule_a_thread_on_every_cpu_and_then_disable_interrupts" is a little 
+long, and describes the implementation not the effect.
 
-As far as breaking up the patch, it would be most convenient for me if
-you could break it down such that it is separated by subdirectory, ie:
+  "run_and_make_sure_no_cpus_have_preempt_disabled" also fails the "will Linus 
+flame me?" test, I think.
 
-media/video/cx88/*.[ch]
-media/video/saa7134/*.[ch]
-media/video/*.[ch]
-media/dvb/flexcop/*.[ch]
-media/dvb/frontends/*.[ch]
+  "freeze_machine" has connotations of the freezer, which is completely 
+different from this.  "do_machine" is shorter, but sounds vaguely naughty.
 
-etc... you get the idea --
+> Regards,
+> Jike
 
-There's no need to blast all of those patches onto the mailing lists
--- if you put them all into a tar.gz and email them to me privately,
-then I'll push them into my mercurial tree and ask Mauro to merge them
-into the master devel branch...  They'll most likely end up going to
-2.6.26
+Perhaps you were angling for "jike_machine"?  It's kind of catchy, but I don't 
+think that patch will be accepted even if you pushed it as a git tree.
 
-Having them broken down by directory will allow me to merge them in
-without conflicting with other pending changesets.
-
-Regards,
-
-Mike
+Cheers,
+Rusty.
