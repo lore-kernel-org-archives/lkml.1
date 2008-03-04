@@ -1,67 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758794AbYCDSOi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763659AbYCDSPW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758794AbYCDSOi (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Mar 2008 13:14:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760598AbYCDSOV
+	id S1763659AbYCDSPW (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Mar 2008 13:15:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757488AbYCDSPA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Mar 2008 13:14:21 -0500
-Received: from wa-out-1112.google.com ([209.85.146.182]:2027 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758094AbYCDSOT (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Mar 2008 13:14:19 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:to:cc:in-reply-to:references:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=I+njmYtxvCelOpNuFu5oXPW/C1x57wnr1xLM+W15UMnPEb3y6lNdI5thWCL9n6IGiiXJMkD8gJw60T2Gs5BPWWz7TMyYx6mqpBeRm7e7bVYMzvrCjdH2XCVVxSukwWIEX/2PCuClIVxNMLqAmHhyvjcddBfJINAItIqS9+uU7Tc=
-Subject: Re: [patch] x86: phase out forced inlining
-From: Harvey Harrison <harvey.harrison@gmail.com>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: Ingo Molnar <mingo@elte.hu>, Sam Ravnborg <sam@ravnborg.org>,
-       Adrian Bunk <bunk@kernel.org>, Alexey Starikovskiy <aystarik@gmail.com>,
-       lenb@kernel.org, astarikovskiy@suse.de, linux-acpi@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Arjan van de Ven <arjan@infradead.org>,
-       Thomas Gleixner <tglx@linutronix.de>
-In-Reply-To: <47CD9060.9000708@zytor.com>
-References: <20080301183550.GC25835@cs181133002.pp.htv.fi>
-	 <20080303085720.GD15943@elte.hu>
-	 <20080303091314.GC4457@cs181133002.pp.htv.fi>
-	 <20080303091714.GA18250@elte.hu>
-	 <20080303093103.GA23651@uranus.ravnborg.org>
-	 <20080303103933.GC21190@elte.hu>
-	 <20080303113451.GF4457@cs181133002.pp.htv.fi>
-	 <20080303114533.GA4183@elte.hu> <20080303121335.GA15381@elte.hu>
-	 <20080303145623.GA25697@uranus.ravnborg.org>
-	 <20080304164605.GA16379@elte.hu> <1204654039.5698.13.camel@brick>
-	 <47CD9060.9000708@zytor.com>
-Content-Type: text/plain
-Date: Tue, 04 Mar 2008 10:14:13 -0800
-Message-Id: <1204654453.5698.17.camel@brick>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
-Content-Transfer-Encoding: 7bit
+	Tue, 4 Mar 2008 13:15:00 -0500
+Received: from brick.kernel.dk ([87.55.233.238]:17337 "EHLO kernel.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752080AbYCDSO7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 4 Mar 2008 13:14:59 -0500
+Date: Tue, 4 Mar 2008 19:14:54 +0100
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Randy Dunlap <randy.dunlap@oracle.com>
+Cc: "Miller, Mike (OS Dev)" <Mike.Miller@hp.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       ISS StorageDev <iss_storagedev@hp.com>
+Subject: Re: 2.6.25-rc3-mm1 (CCISS)
+Message-ID: <20080304181453.GO6704@kernel.dk>
+References: <20080304011928.e8c82c0c.akpm@linux-foundation.org> <20080304084557.357972a3.randy.dunlap@oracle.com> <DEE40752C8AF224BB890E455C7B8E0FE042B764935@G6W0268.americas.hpqcorp.net> <47CD8391.2040101@oracle.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <47CD8391.2040101@oracle.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2008-03-04 at 10:09 -0800, H. Peter Anvin wrote:
-> Harvey Harrison wrote:
-> > 
-> >>  __inline__  : 1380
-> > 
-> > Lots of them in include/asm-*...not sure if there is a reason for this.
-> > 
+On Tue, Mar 04 2008, Randy Dunlap wrote:
+> Miller, Mike (OS Dev) wrote:
+> >Randy wrote:
+> >>On Tue, 4 Mar 2008 01:19:28 -0800 Andrew Morton wrote:
+> >>
+> >>>
+> >>ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.25-r
+> >>>c3/2.6.25-rc3-mm1/
+> >>With
+> >>CONFIG_BLK_CPQ_DA=m
+> >>CONFIG_BLK_CPQ_CISS_DA=m
+> >># CONFIG_CISS_SCSI_TAPE is not set
+> >>
+> >>I'm getting
+> >>In file included from drivers/block/cciss.c:230:
+> >>drivers/block/cciss_scsi.c:1498:38: error: macro parameters
+> >>must be comma-separated
+> >>drivers/block/cciss.c: In function 'cciss_seq_show_header':
+> >>drivers/block/cciss.c:271: error: implicit declaration of
+> >>function 'cciss_seq_tape_report'
+> >>drivers/block/cciss.c: In function 'cciss_proc_write':
+> >>drivers/block/cciss.c:392: error: implicit declaration of
+> >>function 'cciss_engage_scsi'
+> >>make[2]: *** [drivers/block/cciss.o] Error 1
+> >>make[1]: *** [drivers/block] Error 2
+> >>make[1]: *** Waiting for unfinished jobs....
+> >>
+> >>---
+> >Randy,
+> >It looks like you have the original broken patch. I resubmitted and I 
+> >think Jens picked up the fixed patch but I don't know where it is...  :(
 > 
-> Preferred form for code that's exported to userspace (since gcc 
-> complains with -ansi -pedantic otherwise.)
+> s/you/latest -mm/
 > 
+> I thought that this had been fixed, but I can't find it either... :(
+> 
+> Jens, did you queue a patch for this?
 
-Figured it would be something like that.  Would it be reasonable to move
-towards eliminating __inline?
+I did, here:
 
-Also, since the exported headers already go through unifdef, could we
-move to using inline everywhere in the kernel and add a processing step
-to make it __inline__ in the exported headers?
+http://git.kernel.dk/?p=linux-2.6-block.git;a=commit;h=89b6e743788516491846724d7ef89bcac7ac9c99
 
-Harvey
+-- 
+Jens Axboe
 
