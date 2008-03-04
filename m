@@ -1,58 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764380AbYCDMnR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758125AbYCDMoA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764380AbYCDMnR (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Mar 2008 07:43:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755957AbYCDMnB
+	id S1758125AbYCDMoA (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Mar 2008 07:44:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759299AbYCDMnp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Mar 2008 07:43:01 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:50807 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752795AbYCDMnB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Mar 2008 07:43:01 -0500
-Date: Tue, 4 Mar 2008 13:42:41 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: "Klaus S. Madsen" <ksm@hjernemadsen.org>
-Cc: Pavel Machek <pavel@ucw.cz>,
-       Suspend-devel list <suspend-devel@lists.sourceforge.net>,
-       "H. Peter Anvin" <hpa@zytor.com>, LKML <linux-kernel@vger.kernel.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, Thomas Gleixner <tglx@linutronix.de>,
-       Matthew Garrett <mjg59@srcf.ucam.org>
-Subject: Re: Regression in 2.6.25-rc3: s2ram segfaults before suspending
-Message-ID: <20080304124241.GD29777@elte.hu>
-References: <20080228194920.GJ17932@hjernemadsen.org> <47C739A6.5020608@zytor.com> <20080229070028.GK17932@hjernemadsen.org> <47C873AA.6040305@zytor.com> <20080229212654.GL27212@elte.hu> <20080301094525.GQ17932@hjernemadsen.org> <20080303121735.GE28369@elf.ucw.cz> <20080303151155.GT17932@hjernemadsen.org> <20080303174858.GB25496@elte.hu> <20080303205227.GU17932@hjernemadsen.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080303205227.GU17932@hjernemadsen.org>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Tue, 4 Mar 2008 07:43:45 -0500
+Received: from mail.gmx.net ([213.165.64.20]:44127 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1755957AbYCDMno (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 4 Mar 2008 07:43:44 -0500
+X-Authenticated: #14349625
+X-Provags-ID: V01U2FsdGVkX1+XSH01Kn+X3G3uHr1eSL1sn1sW2HY6oVyaJSCX4W
+	7UU1ibi0VlMjmk
+Subject: Re: [PATCH] block: fix residual byte count handling
+From: Mike Galbraith <efault@gmx.de>
+To: Jens Axboe <jens.axboe@oracle.com>
+Cc: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>, htejun@gmail.com,
+       tomof@acm.org, James.Bottomley@HansenPartnership.com,
+       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       linux-ide@vger.kernel.org, linux-scsi@vger.kernel.org,
+       jgarzik@pobox.com, bzolnier@gmail.com
+In-Reply-To: <20080304123939.GM6704@kernel.dk>
+References: <20080304175302T.fujita.tomonori@lab.ntt.co.jp>
+	 <20080304085944.GG6704@kernel.dk>
+	 <20080304180648W.fujita.tomonori@lab.ntt.co.jp>
+	 <20080304182228Z.fujita.tomonori@lab.ntt.co.jp>
+	 <20080304093536.GH6704@kernel.dk>
+	 <1204634238.5997.5.camel@homer.simson.net>
+	 <20080304123939.GM6704@kernel.dk>
+Content-Type: text/plain
+Date: Tue, 04 Mar 2008 13:43:39 +0100
+Message-Id: <1204634619.17258.0.camel@homer.simson.net>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.0 
+Content-Transfer-Encoding: 7bit
+X-Y-GMX-Trusted: 0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Klaus S. Madsen <ksm@hjernemadsen.org> wrote:
+On Tue, 2008-03-04 at 13:39 +0100, Jens Axboe wrote:
+> On Tue, Mar 04 2008, Mike Galbraith wrote:
+> > 
+> > On Tue, 2008-03-04 at 10:35 +0100, Jens Axboe wrote:
+> > 
+> > > Looks excellent to me, has a variant of this been tested as OK by the
+> > > users reporting the regression?
+> > 
+> > K3b burning seems to be a nogo here.  This is git pulled this morning
+> > though, so it's a somewhat different tree than previously tested fwtw.
+> 
+> can you please try git as of this morning without any patches applied,
+> and then pull
+> 
+> git://git.kernel.dk/linux-2.6-block.git for-linus
+> 
+> into that and see if that works?
 
-> > are you sure you ID-ed the right commit that broke things?
->
-> I can't be sure. It was my third attempt, and there seems to be some 
-> sort of Makefile trouble in that area, which causes the problem to 
-> appear and disappear at random, unless I do a make clean && make. But 
-> the triggering commit was found with make clean && make, and I made 
-> sure that reverting the resulting commit did actually solve the 
-> problem...
+I'll give it a shot in a bit.
 
-btw., even if it turns out to be the wrong commit, you sure poked in the 
-right general area. This is one of the reoccuring problems with git 
-bisection: a small mistake near the end of a long bisection session can 
-point to the wrong commit. Especially with more sporadic failure modes 
-it can be quite a challenge.
+	-Mike
 
-	Ingo
