@@ -1,46 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763371AbYCDEK4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763693AbYCDEL0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763371AbYCDEK4 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Mar 2008 23:10:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756416AbYCDEKq
+	id S1763693AbYCDEL0 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Mar 2008 23:11:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756984AbYCDELP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Mar 2008 23:10:46 -0500
-Received: from namei.org ([69.55.235.186]:52651 "EHLO us.intercode.com.au"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753028AbYCDEKp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Mar 2008 23:10:45 -0500
-Date: Tue, 4 Mar 2008 15:09:09 +1100 (EST)
-From: James Morris <jmorris@namei.org>
-X-X-Sender: jmorris@us.intercode.com.au
-To: "Ahmed S. Darwish" <darwish.07@gmail.com>
-cc: Paul Moore <paul.moore@hp.com>, Chris Wright <chrisw@sous-sol.org>,
-       Stephen Smalley <sds@tycho.nsa.gov>, Eric Paris <eparis@parisplace.org>,
-       Casey Schaufler <casey@schaufler-ca.com>,
-       David Woodhouse <dwmw2@infradead.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, Audit-ML <linux-audit@redhat.com>,
-       LSM-ML <linux-security-module@vger.kernel.org>
-Subject: Re: [PATCH 7/9] Audit: internally use the new LSM audit hooks
-In-Reply-To: <20080304033109.GA28637@ubuntu>
-Message-ID: <Xine.LNX.4.64.0803041508060.8815@us.intercode.com.au>
-References: <20080301194752.GA19636@ubuntu> <20080301200111.GH19636@ubuntu>
- <200803031851.41978.paul.moore@hp.com> <20080304033109.GA28637@ubuntu>
+	Mon, 3 Mar 2008 23:11:15 -0500
+Received: from wolverine02.qualcomm.com ([199.106.114.251]:25944 "EHLO
+	wolverine02.qualcomm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756416AbYCDELO (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 3 Mar 2008 23:11:14 -0500
+X-IronPort-AV: E=McAfee;i="5200,2160,5243"; a="888980"
+Message-ID: <47CCCBDE.6040609@qualcomm.com>
+Date: Mon, 03 Mar 2008 20:11:10 -0800
+From: Max Krasnyansky <maxk@qualcomm.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Rusty Russell <rusty@rustcorp.com.au>
+CC: Ingo Molnar <mingo@elte.hu>, Jason Baron <jbaron@redhat.com>,
+       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>
+Subject: Re: [patch 1/2] add ALL_CPUS option to stop_machine_run()
+References: <20080202210828.840735763@polymtl.ca> <200803031512.51656.rusty@rustcorp.com.au> <47CC983C.8050000@qualcomm.com> <200803041336.56524.rusty@rustcorp.com.au>
+In-Reply-To: <200803041336.56524.rusty@rustcorp.com.au>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 4 Mar 2008, Ahmed S. Darwish wrote:
-
-> Yes, it's something weird. I've generated all of those diffstats (including
-> the right ones) in the same way. Luckily the problem is reproduceable,
-> I'll check the latest upstream diffstat version and see what happens.
-
-git-format-patch should "just work".
 
 
+Rusty Russell wrote:
+> On Tuesday 04 March 2008 11:30:52 Max Krasnyanskiy wrote:
+>> Great. I might get some time later this week to think about this some more
+>> and try things out. So if you have ideas/suggestions let me know.
+> 
+> Hmm, might be worth making stop_machine_run take a cpumask: I balked at it 
+> originally, but introducing a section special case crosses the line I think.
 
--- 
-James Morris
-<jmorris@namei.org>
+Are you talking about a mask of which CPUs to stop  ?
+That's essentially what I did with the cpu_isolated_map. But as Ingo and
+others pointed out it's the wrong thing to do.
+Or did you mean something else ?
+
+Max
