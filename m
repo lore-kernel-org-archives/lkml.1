@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764371AbYCDSy6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932914AbYCDSzp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764371AbYCDSy6 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Mar 2008 13:54:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932647AbYCDSyB
+	id S932914AbYCDSzp (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Mar 2008 13:55:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932648AbYCDSyD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Mar 2008 13:54:01 -0500
-Received: from x346.tv-sign.ru ([89.108.83.215]:40641 "EHLO mail.screens.ru"
+	Tue, 4 Mar 2008 13:54:03 -0500
+Received: from x346.tv-sign.ru ([89.108.83.215]:40640 "EHLO mail.screens.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932637AbYCDSx7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S932639AbYCDSx7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 4 Mar 2008 13:53:59 -0500
-Date: Tue, 4 Mar 2008 21:57:47 +0300
+Date: Tue, 4 Mar 2008 21:57:46 +0300
 From: Oleg Nesterov <oleg@tv-sign.ru>
 To: Andrew Morton <akpm@linux-foundation.org>,
        Roland McGrath <roland@redhat.com>
 Cc: Jiri Kosina <jkosina@suse.cz>, linux-kernel@vger.kernel.org
-Subject: [PATCH 2/3] handle_stop_signal: use the cached p->signal value
-Message-ID: <20080304185747.GA8488@tv-sign.ru>
+Subject: [PATCH 1/3] handle_stop_signal: unify partial/full stop handling
+Message-ID: <20080304185746.GA8485@tv-sign.ru>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
@@ -24,94 +24,91 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Cache the value of p->signal, and change the code to use while_each_thread()
-helper.
+(on top of "[RFC,PATCH 1/2] signals: re-assign CLD_CONTINUED notification from the sender to reciever")
+
+Now that handle_stop_signal() doesn't drop ->siglock, we can't see both
+->group_stop_count && SIGNAL_STOP_STOPPED. Merge two "if" branches.
+
+As Roland pointed out, we never actually needed 2 do_notify_parent_cldstop()
+calls.
 
 Signed-off-by: Oleg Nesterov <oleg@tv-sign.ru>
 
---- 25/kernel/signal.c~3_HSS_CACHE_SIGNAL	2008-03-03 17:08:31.000000000 +0300
-+++ 25/kernel/signal.c	2008-03-04 21:10:22.000000000 +0300
-@@ -559,9 +559,10 @@ static void do_notify_parent_cldstop(str
-  */
- static void handle_stop_signal(int sig, struct task_struct *p)
- {
-+	struct signal_struct *signal = p->signal;
- 	struct task_struct *t;
- 
--	if (p->signal->flags & SIGNAL_GROUP_EXIT)
-+	if (signal->flags & SIGNAL_GROUP_EXIT)
- 		/*
- 		 * The process is in the middle of dying already.
- 		 */
-@@ -571,19 +572,18 @@ static void handle_stop_signal(int sig, 
- 		/*
- 		 * This is a stop signal.  Remove SIGCONT from all queues.
- 		 */
--		rm_from_queue(sigmask(SIGCONT), &p->signal->shared_pending);
-+		rm_from_queue(sigmask(SIGCONT), &signal->shared_pending);
- 		t = p;
- 		do {
- 			rm_from_queue(sigmask(SIGCONT), &t->pending);
--			t = next_thread(t);
--		} while (t != p);
-+		} while_each_thread(p, t);
+--- 25/kernel/signal.c~2_HSS_SIMPLIFY	2008-03-03 17:06:53.000000000 +0300
++++ 25/kernel/signal.c	2008-03-03 17:08:31.000000000 +0300
+@@ -578,33 +578,16 @@ static void handle_stop_signal(int sig, 
+ 			t = next_thread(t);
+ 		} while (t != p);
  	} else if (sig == SIGCONT) {
- 		unsigned int why;
++		unsigned int why;
  		/*
  		 * Remove all stop signals from all queues,
  		 * and wake all threads.
  		 */
--		rm_from_queue(SIG_KERNEL_STOP_MASK, &p->signal->shared_pending);
-+		rm_from_queue(SIG_KERNEL_STOP_MASK, &signal->shared_pending);
+-		if (unlikely(p->signal->group_stop_count > 0)) {
+-			/*
+-			 * There was a group stop in progress.  We'll
+-			 * pretend it finished before we got here.  We are
+-			 * obliged to report it to the parent: if the
+-			 * SIGSTOP happened "after" this SIGCONT, then it
+-			 * would have cleared this pending SIGCONT.  If it
+-			 * happened "before" this SIGCONT, then the parent
+-			 * got the SIGCHLD about the stop finishing before
+-			 * the continue happened.  We do the notification
+-			 * now, and it's as if the stop had finished and
+-			 * the SIGCHLD was pending on entry to this kill.
+-			 */
+-			p->signal->group_stop_count = 0;
+-			p->signal->flags = SIGNAL_STOP_CONTINUED |
+-						SIGNAL_CLD_STOPPED;
+-		}
+ 		rm_from_queue(SIG_KERNEL_STOP_MASK, &p->signal->shared_pending);
  		t = p;
  		do {
  			unsigned int state;
-@@ -608,9 +608,7 @@ static void handle_stop_signal(int sig, 
- 				state |= TASK_INTERRUPTIBLE;
- 			}
- 			wake_up_state(t, state);
--
--			t = next_thread(t);
--		} while (t != p);
-+		} while_each_thread(p, t);
+ 			rm_from_queue(SIG_KERNEL_STOP_MASK, &t->pending);
+-			
+ 			/*
+ 			 * If there is a handler for SIGCONT, we must make
+ 			 * sure that no thread returns to user mode before
+@@ -614,7 +597,7 @@ static void handle_stop_signal(int sig, 
+ 			 * running the handler.  With the TIF_SIGPENDING
+ 			 * flag set, the thread will pause and acquire the
+ 			 * siglock that we hold now and until we've queued
+-			 * the pending signal. 
++			 * the pending signal.
+ 			 *
+ 			 * Wake up the stopped thread _after_ setting
+ 			 * TIF_SIGPENDING
+@@ -629,13 +612,23 @@ static void handle_stop_signal(int sig, 
+ 			t = next_thread(t);
+ 		} while (t != p);
  
- 		/*
- 		 * Notify the parent with CLD_CONTINUED if we were stopped.
-@@ -621,29 +619,29 @@ static void handle_stop_signal(int sig, 
- 		 * CLD_CONTINUED was dropped.
- 		 */
- 		why = 0;
--		if (p->signal->flags & SIGNAL_STOP_STOPPED)
-+		if (signal->flags & SIGNAL_STOP_STOPPED)
- 			why |= SIGNAL_CLD_CONTINUED;
--		else if (p->signal->group_stop_count)
-+		else if (signal->group_stop_count)
- 			why |= SIGNAL_CLD_STOPPED;
- 
- 		if (why) {
--			p->signal->flags = why | SIGNAL_STOP_CONTINUED;
--			p->signal->group_stop_count = 0;
--			p->signal->group_exit_code = 0;
-+			signal->flags = why | SIGNAL_STOP_CONTINUED;
-+			signal->group_stop_count = 0;
-+			signal->group_exit_code = 0;
+-		if (p->signal->flags & SIGNAL_STOP_STOPPED) {
+-			/*
+-			 * We were in fact stopped, and are now continued.
+-			 * Notify the parent with CLD_CONTINUED.
+-			 */
+-			p->signal->flags = SIGNAL_STOP_CONTINUED |
+-						SIGNAL_CLD_CONTINUED;
++		/*
++		 * Notify the parent with CLD_CONTINUED if we were stopped.
++		 *
++		 * If we were in the middle of a group stop, we pretend it
++		 * was already finished, and then continued. Since SIGCHLD
++		 * doesn't queue we report only CLD_STOPPED, as if the next
++		 * CLD_CONTINUED was dropped.
++		 */
++		why = 0;
++		if (p->signal->flags & SIGNAL_STOP_STOPPED)
++			why |= SIGNAL_CLD_CONTINUED;
++		else if (p->signal->group_stop_count)
++			why |= SIGNAL_CLD_STOPPED;
++
++		if (why) {
++			p->signal->flags = why | SIGNAL_STOP_CONTINUED;
++			p->signal->group_stop_count = 0;
+ 			p->signal->group_exit_code = 0;
  		} else {
  			/*
- 			 * We are not stopped, but there could be a stop
- 			 * signal in the middle of being processed after
- 			 * being removed from the queue.  Clear that too.
- 			 */
--			p->signal->flags &= ~SIGNAL_STOP_DEQUEUED;
-+			signal->flags &= ~SIGNAL_STOP_DEQUEUED;
- 		}
- 	} else if (sig == SIGKILL) {
- 		/*
- 		 * Make sure that any pending stop signal already dequeued
- 		 * is undone by the wakeup for SIGKILL.
- 		 */
--		p->signal->flags &= ~SIGNAL_STOP_DEQUEUED;
-+		signal->flags &= ~SIGNAL_STOP_DEQUEUED;
- 	}
- }
- 
 
