@@ -1,81 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763803AbYCDHlJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759741AbYCDHsp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763803AbYCDHlJ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Mar 2008 02:41:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753317AbYCDHkx
+	id S1759741AbYCDHsp (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Mar 2008 02:48:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754016AbYCDHsc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Mar 2008 02:40:53 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:35369 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752699AbYCDHkw (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Mar 2008 02:40:52 -0500
-Date: Mon, 3 Mar 2008 23:40:17 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Komuro <komurojun-mbn@nifty.com>
-Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Subject: Re: [BUG  kernel 2.6.25-rc3  IPV6]  ping6 -I eth0 ff02::1 causes
- system hang.
-Message-Id: <20080303234017.60dee072.akpm@linux-foundation.org>
-In-Reply-To: <20080302210716.69727582.komurojun-mbn@nifty.com>
-References: <20071006132601.f944f461.komurojun@nifty.com>
-	<20071014073658.d4352b8c.komurojun@nifty.com>
-	<20080302210716.69727582.komurojun-mbn@nifty.com>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 4 Mar 2008 02:48:32 -0500
+Received: from ns1.suse.de ([195.135.220.2]:47737 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752958AbYCDHsb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 4 Mar 2008 02:48:31 -0500
+Message-ID: <47CCFECC.8040709@suse.de>
+Date: Tue, 04 Mar 2008 08:48:28 +0100
+From: Hannes Reinecke <hare@suse.de>
+User-Agent: Thunderbird 1.5 (X11/20060317)
+MIME-Version: 1.0
+To: Boaz Harrosh <bharrosh@panasas.com>
+Cc: Matthew Wilcox <matthew@wil.cx>,
+       James Bottomley <James.Bottomley@HansenPartnership.com>,
+       Sergio Luis <sergio@larces.uece.br>, linux-scsi@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] 2.6.25-rc1-git2: GDT SCSI: change drivers/scsi/gdth.c
+ into using pci_get device
+References: <47B1ADCE.40202@larces.uece.br> <1202833354.3137.19.camel@localhost.localdomain> <47B1CF45.5070407@panasas.com> <47B23033.1080100@larces.uece.br> <1202861823.3137.170.camel@localhost.localdomain> <47B2B101.3090106@panasas.com> <20080216163756.GG7657@parisc-linux.org> <47B80E65.7090504@panasas.com>
+In-Reply-To: <47B80E65.7090504@panasas.com>
+X-Enigmail-Version: 0.94.0.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2 Mar 2008 21:07:16 +0900 Komuro <komurojun-mbn@nifty.com> wrote:
-
-> Hi,
+Boaz Harrosh wrote:
+> On Sat, Feb 16 2008 at 18:37 +0200, Matthew Wilcox <matthew@wil.cx> wrote:
+>> On Wed, Feb 13, 2008 at 10:57:37AM +0200, Boaz Harrosh wrote:
+>>> I still don't have a card for testing myself. Again anyone
+>>> wants to send me a card. Intel people anybody home?
+>> Apparently Intel sold this line of cards to Adaptec.  The copyright
+>> notice in the file backs this up:
+>>
+>>  * Copyright (C) 1995-06 ICP vortex GmbH, Achim Leubner                 *
+>>  * Copyright (C) 2002-04 Intel Corporation                              *
+>>  * Copyright (C) 2003-06 Adaptec Inc.                                   *
+>>  * <achim_leubner@adaptec.com>                                          *
+>>
 > 
-> On kernel 2.6.25-rc3, IPV6 multicast ping causes system hang
-> after sending several multicast ping packet.
+> OK I never got this guy to ping back. CCing support@adaptec.com.
 > 
-> >ping6 -I eth0 ff02::1 
+> Who is the right contact person, regarding the HW that is supported
+> by the gdth driver? Form what we see in driver commit logs (above), 
+> it was transfered to  Adaptec from Intel in 2003. Is that still so?
 > 
-> This problem does not happen on kernel 2.6.24.
-> (does not depend on NIC)
-> 
+Yes, apparently. But gdth is the driver for the rather old ICP Vortex
+range; most of which are driven by aacraid nowadays.
+I thought I had one of these beasts; will check.
 
-Let's cc the netdev list..
+But yes, this is Adaptec. Unless the person is Mark Salyzyn or Luben
+it's quite tricky to excite any response.
 
-I tried it with 2.6.25-rc3-mm1 and got:
+Cheers,
 
-t61p:/home/akpm> ping6 -I eth0 ff02::1 
-PING ff02::1(ff02::1) from fe80::215:58ff:fec6:dc4b eth0: 56 data bytes
-64 bytes from fe80::215:58ff:fec6:dc4b: icmp_seq=1 ttl=64 time=0.059 ms
-64 bytes from fe80::219:d1ff:fe04:8f42: icmp_seq=1 ttl=64 time=1.74 ms (DUP!)
-64 bytes from fe80::214:51ff:fe67:55ef: icmp_seq=1 ttl=64 time=2.42 ms (DUP!)
-64 bytes from fe80::202:b3ff:fe8f:a731: icmp_seq=1 ttl=64 time=4.72 ms (DUP!)
-64 bytes from fe80::211:24ff:fe71:cbe4: icmp_seq=1 ttl=64 time=451 ms (DUP!)
-64 bytes from fe80::215:58ff:fec6:dc4b: icmp_seq=2 ttl=64 time=0.090 ms
-64 bytes from fe80::202:b3ff:fe8f:a731: icmp_seq=2 ttl=64 time=0.499 ms (DUP!)
-64 bytes from fe80::214:51ff:fe67:55ef: icmp_seq=2 ttl=64 time=0.542 ms (DUP!)
-64 bytes from fe80::219:d1ff:fe04:8f42: icmp_seq=2 ttl=64 time=0.576 ms (DUP!)
-64 bytes from fe80::211:24ff:fe71:cbe4: icmp_seq=2 ttl=64 time=0.609 ms (DUP!)
-64 bytes from fe80::215:58ff:fec6:dc4b: icmp_seq=3 ttl=64 time=0.086 ms
-64 bytes from fe80::202:b3ff:fe8f:a731: icmp_seq=3 ttl=64 time=0.484 ms (DUP!)
-64 bytes from fe80::214:51ff:fe67:55ef: icmp_seq=3 ttl=64 time=0.527 ms (DUP!)
-64 bytes from fe80::219:d1ff:fe04:8f42: icmp_seq=3 ttl=64 time=0.561 ms (DUP!)
-64 bytes from fe80::211:24ff:fe71:cbe4: icmp_seq=3 ttl=64 time=0.595 ms (DUP!)
-64 bytes from fe80::215:58ff:fec6:dc4b: icmp_seq=4 ttl=64 time=0.084 ms
-64 bytes from fe80::202:b3ff:fe8f:a731: icmp_seq=4 ttl=64 time=0.314 ms (DUP!)
-64 bytes from fe80::214:51ff:fe67:55ef: icmp_seq=4 ttl=64 time=0.352 ms (DUP!)
-64 bytes from fe80::211:24ff:fe71:cbe4: icmp_seq=4 ttl=64 time=0.386 ms (DUP!)
-64 bytes from fe80::219:d1ff:fe04:8f42: icmp_seq=4 ttl=64 time=0.420 ms (DUP!)
-64 bytes from fe80::215:58ff:fec6:dc4b: icmp_seq=5 ttl=64 time=0.106 ms
-64 bytes from fe80::202:b3ff:fe8f:a731: icmp_seq=5 ttl=64 time=0.551 ms (DUP!)
-64 bytes from fe80::214:51ff:fe67:55ef: icmp_seq=5 ttl=64 time=0.593 ms (DUP!)
-64 bytes from fe80::219:d1ff:fe04:8f42: icmp_seq=5 ttl=64 time=0.627 ms (DUP!)
-64 bytes from fe80::211:24ff:fe71:cbe4: icmp_seq=5 ttl=64 time=0.661 ms (DUP!)
-^C
---- ff02::1 ping statistics ---
-5 packets transmitted, 5 received, +20 duplicates, 0% packet loss, time 3999ms
-rtt min/avg/max/mdev = 0.059/18.754/451.249/88.287 ms
-
-
+Hannes
+-- 
+Dr. Hannes Reinecke		      zSeries & Storage
+hare@suse.de			      +49 911 74053 688
+SUSE LINUX Products GmbH, Maxfeldstr. 5, 90409 Nürnberg
+GF: Markus Rex, HRB 16746 (AG Nürnberg)
