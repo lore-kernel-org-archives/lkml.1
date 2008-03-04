@@ -1,56 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762959AbYCDHLm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763298AbYCDHNy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762959AbYCDHLm (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Mar 2008 02:11:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756365AbYCDHLe
+	id S1763298AbYCDHNy (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Mar 2008 02:13:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756717AbYCDHNr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Mar 2008 02:11:34 -0500
-Received: from el-out-1112.google.com ([209.85.162.178]:16547 "EHLO
-	el-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756056AbYCDHLd (ORCPT
+	Tue, 4 Mar 2008 02:13:47 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:46947 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756428AbYCDHNq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Mar 2008 02:11:33 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:cc:mime-version:content-type:content-transfer-encoding:content-disposition:x-google-sender-auth;
-        b=xawC9EycfQGQZq9cdrnSMjcg2JeTR/JfgKLmlcNYqRXAo0OpZXt5zcWIpGSli0tsCxZ7A9ypDbThMa6xeBN0VDmjg2vEbx/upIkqHlKHQjx1+VOpBe2K3EibON0ZZsaN3bon0g1490Xj27OfYrrUb6PARCRL4dzRCjIQDqgqaBk=
-Message-ID: <76366b180803032311g40593189o47f727e4bba52c43@mail.gmail.com>
-Date: Tue, 4 Mar 2008 02:11:31 -0500
-From: "Andrew Paprocki" <andrew@ishiboo.com>
-To: linux-kernel@vger.kernel.org
-Subject: Geode LX800 hanging at boot in vesa_store_edid() w/ CONFIG_FIRMWARE_EDID=y
-Cc: "Jordan Crouse" <jordan.crouse@amd.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Tue, 4 Mar 2008 02:13:46 -0500
+Date: Mon, 3 Mar 2008 23:13:32 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] uart_get_baud_rate: stop mangling termios
+Message-Id: <20080303231332.a960132c.akpm@linux-foundation.org>
+In-Reply-To: <20080220204406.1d5f74bc@core>
+References: <20080220204406.1d5f74bc@core>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-X-Google-Sender-Auth: c7eb74a86eace047
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I have a LX800 board which hangs at boot time *only* if no monitor is
-plugged into the VGA port. It hangs for about 20 minutes and then
-continues booting.  If a monitor is plugged into the system while it
-is hung, it recovers after a few minutes and continues booting.  I
-added puts() debugging in the kernel main() and it is hanging in
-vesa_store_edid() in the first asm() call:
+On Wed, 20 Feb 2008 20:44:06 +0000 Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
 
-        /* Note: The VBE DDC spec is different from the main VESA spec;
-           we genuinely have to assume all registers are destroyed here. */
+> Russell King noticed this one: We have to avoid replacing B0 when we pick
+> a baud rate for a "hung up" port. Ugly but the proper fix is in the tty
+> layer and means changing the tty<->serial interfaces so we will defer
+> that for now.
+> 
+> Signed-off-by: Alan Cox <alan@redhat.com>
+> 
+> diff -u --new-file --recursive --exclude-from /usr/src/exclude linux.vanilla-2.6.25-rc2-mm1/drivers/serial/serial_core.c linux-2.6.25-rc2-mm1/drivers/serial/serial_core.c
+> --- linux.vanilla-2.6.25-rc2-mm1/drivers/serial/serial_core.c	2008-02-19 11:03:01.000000000 +0000
+> +++ linux-2.6.25-rc2-mm1/drivers/serial/serial_core.c	2008-02-20 16:22:49.000000000 +0000
+> @@ -329,13 +329,15 @@
+>   *	If it's still invalid, we try 9600 baud.
+>   *
+>   *	Update the @termios structure to reflect the baud rate
+> - *	we're actually going to be using.
+> + *	we're actually going to be using. Don't do this for the case
+> + *	where B0 is requested ("hang up").
+>   */
+>  unsigned int
+>  uart_get_baud_rate(struct uart_port *port, struct ktermios *termios,
+>  		   struct ktermios *old, unsigned int min, unsigned int max)
+>  {
+>  	unsigned int try, baud, altbaud = 38400;
+> +	int hung_up;
+>  	upf_t flags = port->flags & UPF_SPD_MASK;
+>  
+>  	if (flags == UPF_SPD_HI)
+> @@ -360,8 +362,10 @@
+>  		/*
+>  		 * Special case: B0 rate.
+>  		 */
+> -		if (baud == 0)
+> +		if (baud == 0) {
+> +			hung_up = 1;
+>  			baud = 9600;
+> +		}
+>  
+>  		if (baud >= min && baud <= max)
+>  			return baud;
+> @@ -373,7 +377,9 @@
+>  		termios->c_cflag &= ~CBAUD;
+>  		if (old) {
+>  			baud = tty_termios_baud_rate(old);
+> -			tty_termios_encode_baud_rate(termios, baud, baud);
+> +			if (!hung_up)
+> +				tty_termios_encode_baud_rate(termios,
+> +								baud, baud);
+>  			old = NULL;
+>  			continue;
+>  		}
+> @@ -382,7 +388,8 @@
+>  		 * As a last resort, if the quotient is zero,
+>  		 * default to 9600 bps
+>  		 */
+> -		tty_termios_encode_baud_rate(termios, 9600, 9600);
+> +		if (!hung_up)
+> +			tty_termios_encode_baud_rate(termios, 9600, 9600);
+>  	}
+>  
+>  	return 0;
 
-        asm("pushw %%es; movw %2,%%es; "INT10"; popw %%es"
-            : "+a" (ax), "+b" (bx)
-            :  "c" (cx), "D" (di)
-            : "esi");
+drivers/serial/serial_core.c: In function 'uart_get_baud_rate':
+drivers/serial/serial_core.c:340: warning: 'hung_up' may be used uninitialized in this function
 
-After waiting for a really long time, this int10 finishes and it
-executes the second asm() call which returns right away.  I never
-tried booting the system without a head, so I never noticed this
-problem before.  Does this point to some kind of BIOS bug?  The system
-boots fine when CONFIG_FIRMWARE_EDID is disabled (I'm not even sure if
-it should have been enabled in the first place), but I want to make
-sure the manufacturer is alerted if there is a BIOS problem.
+It isn't completely obvious that this is a falsie.
 
-Thanks,
--Andrew
