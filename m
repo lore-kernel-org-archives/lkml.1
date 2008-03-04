@@ -1,124 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933779AbYCDWvf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933920AbYCDW51@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933779AbYCDWvf (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Mar 2008 17:51:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755466AbYCDWvX
+	id S933920AbYCDW51 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Mar 2008 17:57:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752324AbYCDW5S
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Mar 2008 17:51:23 -0500
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:34753 "EHLO
-	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754573AbYCDWvW (ORCPT
+	Tue, 4 Mar 2008 17:57:18 -0500
+Received: from ug-out-1314.google.com ([66.249.92.168]:28125 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757437AbYCDW5R (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Mar 2008 17:51:22 -0500
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: Pavel Emelyanov <xemul@openvz.org>
-Cc: serge@hallyn.com, Andrew Morton <akpm@linux-foundation.org>,
-       David Miller <davem@davemloft.net>,
-       Alexey Dobriyan <adobriyan@openvz.org>,
-       Linux Netdev List <netdev@vger.kernel.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 0/2] Fix /proc/net in presence of net namespaces
-References: <47C6D743.1050802@openvz.org>
-	<m1y794514k.fsf@ebiederm.dsl.xmission.com>
-	<20080228211720.GA1232@vino.hallyn.com>
-	<m1k5ko4sfi.fsf@ebiederm.dsl.xmission.com>
-	<47C7BB1B.9060906@openvz.org>
-	<m1zlth3m5f.fsf@ebiederm.dsl.xmission.com>
-	<47CBBFBC.3010607@openvz.org>
-Date: Tue, 04 Mar 2008 15:49:11 -0700
-In-Reply-To: <47CBBFBC.3010607@openvz.org> (Pavel Emelyanov's message of "Mon,
-	03 Mar 2008 12:07:08 +0300")
-Message-ID: <m1ejaq2jh4.fsf@ebiederm.dsl.xmission.com>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+	Tue, 4 Mar 2008 17:57:17 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
+        b=dkrjTgCdURx9UdQAgEik0m8RhKq7tCQTZrHVnlYR5XefOMKMnUx1DEQjvULp0GuZsVV5PJCfmDjXfvty8RpJQIHQ2PJNNW91/d3a7VurW8vPDW+35KemLVGYie5eyWR8wmf/VJPCJb4CnBIYtTZSk6cKfNSQ1FCzNEUbthcfy5s=
+Message-ID: <47CDD3F9.7070801@gmail.com>
+Date: Tue, 04 Mar 2008 23:58:01 +0100
+From: Jiri Slaby <jirislaby@gmail.com>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080213)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+To: Harvey Harrison <harvey.harrison@gmail.com>
+CC: Russell King <rmk@arm.linux.org.uk>, Andi Kleen <ak@suse.de>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [JANITOR-PATCH] rtc: switch to unlocked_ioctl
+References: <1204664803.5698.27.camel@brick>
+In-Reply-To: <1204664803.5698.27.camel@brick>
+X-Enigmail-Version: 0.95.5
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Pavel Emelyanov <xemul@openvz.org> writes:
+Harvey Harrison napsal(a):
+> Make the lock/unlock_kernel explicit.
+> 
+> Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
+> ---
+>  arch/arm/common/rtctime.c |    7 ++++---
+>  1 files changed, 4 insertions(+), 3 deletions(-)
+> 
+> diff --git a/arch/arm/common/rtctime.c b/arch/arm/common/rtctime.c
+> index f53bca4..2062f92 100644
+> --- a/arch/arm/common/rtctime.c
+> +++ b/arch/arm/common/rtctime.c
+> @@ -173,8 +173,7 @@ static unsigned int rtc_poll(struct file *file, poll_table *wait)
+>  	return data != 0 ? POLLIN | POLLRDNORM : 0;
+>  }
+>  
+> -static int rtc_ioctl(struct inode *inode, struct file *file, unsigned int cmd,
+> -		     unsigned long arg)
+> +static int rtc_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
 
->>>> - Have readdir and lookup filter the directory entries by the pid
->>>>   namespace of the proc mount.
->>> So, how are you going to filter the lookup? The problem I see - you have
->>> a process that opened the /proc/.netns/X directory (he onws that namespace)
->>> and the other one trying to do the same. The VFS layer finds the hashed
->>> dentry corresponding to this /proc/.netns/X. The only way you can prevent
->>> VFS from giving one to the second task is to override .d_revalidate method 
->>> and drop that dentry....
->>>
->>> But we've already tried to walk this way with no luck.
->> 
->> I meant a per mount filtering.  Exactly like we do for the pids now.
->
-> We (me) do not perform any "filtering" in /proc. I just make /proc play 
-> the VFS rules - one super-block one tree of dentries.
-
-Exactly.  For different super blocks we return a different set of
-processes and a different set of numbers of those processes.  If you
-do use ids that do not live in a namespace I agree you do not need to
-do different things for different mounts, but that seems ugly and
-problematic.
-
->>>> If we make namespaces show up anywhere besides under
->>>> "/proc/<pid>/task/<tid>/" we have to do something like this, and pids
->>>> are largely designed for this kind of use.
->>> Proc consists of two parts - the <pid>-s one with generated-on-the-fly
->>> entries and the static one that is represented by proc_dir_entry tree.
->>> Do you propose to mix those two?
->> 
->> Yes.  Because the static entries are beginning to depend on process
->> specific attributes.  We have already started with /proc/mounts.
->
-> /proc/<pid>/mounts is not represented with any proc_dir_entry, but
-> what you're proposing with /proc/<pid>/net seems like doing this
-> representation.
-
-Yes.  I am talking about placing things represented with a
-prod_dir_entry and having them show up under a hierarchy not
-represented with proc_dir_entries under /proc/<pid>.
-
-As that is clean, worked well for /proc/mounts, does not
-require ids at all, and is essentially the optimal form
-for monitoring processes.
-
-/proc/mounts used to have a proc_dir_entry.  When it was reimplemented
-to be per fs namespace that was removed.
-
->>>> just need a non-global id for our directory entries so we don't paint
->>>> ourselves into a corner.
->>> What namespace do you mean by "non-global"?
->> 
->> The best is an id I can take with me when I migrate from machine A
->> to machine B.  An id in some namespace or a form that doesn't need
->> an id at all is the core requirement.
->
-> If we're OK in having a /proc/netns/<xxx> for each namespace, then
-> this <xxx> is an id, regardless whatever it is - a pre-generated 
-> number, a pointer, etc.
->
-> That said, your only wish is to make this <xxx> be preservable across 
-> migration, right?
-
-No, that is not my only wish.
-
-- I wish for a clean maintainable interface.
-- I wish for an interface that we can use for monitoring programs like
-  top and ps.
-- I wish for an interface that is migration safe.
-
-It is my opinion that using an id is simply an optimization to reduce
-the number of cached proc dentries.
-
-I gave a full run down of what I wish and the reasons for it earlier
-in this thread. I have not seen you respond to that message.
-
-Currently I am NOT ok having a /proc/netns/<xxx>. It appears to be
-a contentious premature optimization.
-
-VFS clean, maintainable, and usable for monitoring is
-/proc/<pid>/task/<tid>/net.
-
-We can always figure out how to optimize that form later.
-
-Eric
+long? I guess you need to get a cross-compiler...
