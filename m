@@ -1,43 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764183AbYCDVUm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764525AbYCDVVP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764183AbYCDVUm (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Mar 2008 16:20:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760088AbYCDVTx
+	id S1764525AbYCDVVP (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Mar 2008 16:21:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757849AbYCDVUz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Mar 2008 16:19:53 -0500
-Received: from ug-out-1314.google.com ([66.249.92.170]:19943 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757506AbYCDVTq (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Mar 2008 16:19:46 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-disposition:message-id:content-type:content-transfer-encoding;
-        b=JZ5Lq2LmUB3ORgKwJBB7aCdeajcj/UH7zJXDOYYg8PIPeW/qQMZarmxVjQ43dlna7O2TATOMziq3y4JQwoHndAwBHKxyyL4E5timR6C6Ms44msCnBr9WRdLNaFgFJcJf6J0xBCF6F9KuwMjuEnS6Wob5Di+OA/8WFC1stynPF2I=
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: Harvey Harrison <harvey.harrison@gmail.com>
-Subject: Re: [PATCH 09/14] ide: replace remaining __FUNCTION__ occurrences
-Date: Tue, 4 Mar 2008 22:25:31 +0100
-User-Agent: KMail/1.9.6 (enterprise 0.20071204.744707)
-Cc: linux-ide <linux-ide@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-References: <ff8fd021606e7a6f03e9c274230cfcf64eade6d2.1204599636.git.harvey.harrison@gmail.com> <1204600190.22933.89.camel@brick>
-In-Reply-To: <1204600190.22933.89.camel@brick>
+	Tue, 4 Mar 2008 16:20:55 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:38283 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1759997AbYCDVUy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 4 Mar 2008 16:20:54 -0500
+Date: Tue, 4 Mar 2008 22:20:23 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Pavel Roskin <proski@gnu.org>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>, Zan Lynx <zlynx@acm.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Jon Masters <jcm@jonmasters.org>, Rusty Russell <rusty@rustcorp.com.au>,
+       Greg Kroah-Hartman <gregkh@suse.de>
+Subject: Re: [PATCH 2.6.25] module: allow ndiswrapper to use GPL-only
+	symbols
+Message-ID: <20080304212023.GD31546@elte.hu>
+References: <1204305609.21719.16.camel@dv> <alpine.LFD.1.00.0802290929590.17889@woody.linux-foundation.org> <1204313978.2316.8.camel@dv> <20080229211513.GI27212@elte.hu> <1204324265.2316.70.camel@dv> <20080303105752.GA23594@elte.hu> <20080304003723.z79pcavdk4wgoc44@webmail.spamcop.net> <20080304125744.GF29777@elte.hu> <alpine.LFD.1.00.0803040907420.12253@woody.linux-foundation.org> <1204652732.2312.18.camel@dv>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200803042225.31306.bzolnier@gmail.com>
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
+In-Reply-To: <1204652732.2312.18.camel@dv>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 04 March 2008, Harvey Harrison wrote:
-> __FUNCTION__ is gcc-specific, use __func__
+
+* Pavel Roskin <proski@gnu.org> wrote:
+
+> To recap:
 > 
-> Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
+> 1) USB API
+> 2) Workqueue API (there is a hackish replacement in ndiswrapper)
+> 3) task_nice(), but I have a trivial workaround for that.
 
-applied
+task_nice() - it's trivial so feel free to send a patch that turns it 
+into EXPORT_SYMBOL().
 
-[ I fixed checkpatch.pl errors in ide-lib.c and ppc/mpc8xx.c while at it ]
+	Ingo
