@@ -1,51 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765748AbYCDVZ3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765967AbYCDV0f@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765748AbYCDVZ3 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Mar 2008 16:25:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760071AbYCDVZF
+	id S1765967AbYCDV0f (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Mar 2008 16:26:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758757AbYCDV0Y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Mar 2008 16:25:05 -0500
-Received: from terminus.zytor.com ([198.137.202.10]:40708 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759945AbYCDVZD (ORCPT
+	Tue, 4 Mar 2008 16:26:24 -0500
+Received: from agminet01.oracle.com ([141.146.126.228]:64672 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756660AbYCDV0X (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Mar 2008 16:25:03 -0500
-Message-ID: <47CDBE09.3060000@zytor.com>
-Date: Tue, 04 Mar 2008 13:24:25 -0800
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
-MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Hugh Dickins <hugh@veritas.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] x86: a P4 is a P6 not an i486
-References: <Pine.LNX.4.64.0803041929230.14934@blonde.site> <20080304210111.GB31546@elte.hu>
-In-Reply-To: <20080304210111.GB31546@elte.hu>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Tue, 4 Mar 2008 16:26:23 -0500
+Date: Tue, 4 Mar 2008 13:26:05 -0800
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, ericvh@gmail.com
+Subject: Re: 2.6.25-rc3-mm1 (9p docs)
+Message-Id: <20080304132605.13d8114a.randy.dunlap@oracle.com>
+In-Reply-To: <20080304011928.e8c82c0c.akpm@linux-foundation.org>
+References: <20080304011928.e8c82c0c.akpm@linux-foundation.org>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.4.7 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
-> * Hugh Dickins <hugh@veritas.com> wrote:
+On Tue, 4 Mar 2008 01:19:28 -0800 Andrew Morton wrote:
+
 > 
->> P4 has been coming out as CPU_FAMILY=4 instead of 6: fix MPENTIUM4 
->> typo.
-> 
-> thanks Hugh, applied.
-> 
-> 	Ingo
+> ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.25-rc3/2.6.25-rc3-mm1/
 
-The patch is correct, obviously; the comment is not: the real comment 
-should be:
 
-Enable the use of P6 NOPs on Pentium 4
+"make htmldocs" gives me:
 
-The CPU_FAMILY field is really the minimum CPU family that can boot the 
-kernel (that's why there is no 5; we don't have any i586 family 
-dependencies not encoded by CPUID bits.)
+  HOSTCC  scripts/basic/fixdep
+  HOSTCC  scripts/basic/docproc
+make[1]: *** No rule to make target `Documentation/DocBook/9p-overview.eps', needed by `Documentation/DocBook/9p.xml'.  Stop.
+make: *** [htmldocs] Error 2
 
-	-hpa
+
+Are we missing the .eps and .png files?
+
+---
+~Randy
