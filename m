@@ -1,33 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763947AbYCDIkA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763828AbYCDIkc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763947AbYCDIkA (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Mar 2008 03:40:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763183AbYCDIjT
+	id S1763828AbYCDIkc (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Mar 2008 03:40:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757844AbYCDIkE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Mar 2008 03:39:19 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:47661 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1763128AbYCDIjS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Mar 2008 03:39:18 -0500
+	Tue, 4 Mar 2008 03:40:04 -0500
+Received: from einhorn.in-berlin.de ([192.109.42.8]:34517 "EHLO
+	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1763548AbYCDIkB (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 4 Mar 2008 03:40:01 -0500
+X-Envelope-From: stefanr@s5r6.in-berlin.de
+Message-ID: <47CD0AD7.9080700@s5r6.in-berlin.de>
+Date: Tue, 04 Mar 2008 09:39:51 +0100
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.12) Gecko/20080219 SeaMonkey/1.1.8
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+To: Greg KH <gregkh@suse.de>
+CC: Kristian H?gsberg <krh@bitplanet.net>,
+       linux1394-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] firewire: reread config ROM when device reset the bus
+References: <tkrat.c6610a8633fe0e41@s5r6.in-berlin.de>	<tkrat.da30e6f15a74e036@s5r6.in-berlin.de>	<59ad55d30803030817l6fce6716x2a97cc809b15b234@mail.gmail.com>	<47CC2C95.1050205@s5r6.in-berlin.de>	<59ad55d30803030928t47ab84ebs1f37434d6558b72e@mail.gmail.com>	<47CC3C48.1020306@s5r6.in-berlin.de>	<47CC44DB.1060203@s5r6.in-berlin.de> <20080304055448.GB15566@suse.de>
+In-Reply-To: <20080304055448.GB15566@suse.de>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-From: Roland McGrath <roland@redhat.com>
-To: Oleg Nesterov <oleg@tv-sign.ru>
-X-Fcc: ~/Mail/linus
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] document de_thread() with exit_notify() connection
-In-Reply-To: Oleg Nesterov's message of  Monday, 3 March 2008 07:17:55 +0300 <20080303041755.GA18920@tv-sign.ru>
-References: <20080303041755.GA18920@tv-sign.ru>
-X-Windows: a mistake carried out to perfection.
-Message-Id: <20080304083847.BD60627010A@magilla.localdomain>
-Date: Tue,  4 Mar 2008 00:38:47 -0800 (PST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-It's better than nothing!  I'd still like to revisit the whole MT exec
-picture when we can.
+Greg KH wrote:
+> Ah, semaphore fun in the device.  If at all
+> possible, use your own, not the driver core as the locking there is a
+> bit "odd" as you have seen.  I think Alan Stern has some patches pending
+> to mess with it all to try to make it sane during the suspend/resume
+> path.
 
-Thanks,
-Roland
+OK, I will redo it so that I don't have to assume anything about 
+driver-core internal locking.  Thanks,
+-- 
+Stefan Richter
+-=====-==--- --== --=--
+http://arcgraph.de/sr/
