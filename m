@@ -1,81 +1,127 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933329AbYCDUTZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933635AbYCDUVA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933329AbYCDUTZ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Mar 2008 15:19:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759151AbYCDUTP
+	id S933635AbYCDUVA (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Mar 2008 15:21:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750810AbYCDUUr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Mar 2008 15:19:15 -0500
-Received: from mail.work.de ([212.12.32.20]:54495 "EHLO mail.work.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758412AbYCDUTP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Mar 2008 15:19:15 -0500
-Message-ID: <47CDAEBA.6010102@linuxtv.org>
-Date: Wed, 05 Mar 2008 00:19:06 +0400
-From: Manu Abraham <manu@linuxtv.org>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080213)
-MIME-Version: 1.0
-To: Mauro Carvalho Chehab <mchehab@infradead.org>
-CC: Michael Krufky <mkrufky@linuxtv.org>,
-       Harvey Harrison <harvey.harrison@gmail.com>,
-       "v4l-dvb-maintainer@linuxtv.org" <v4l-dvb-maintainer@linuxtv.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [v4l-dvb-maintainer] [PATCH] media: replace remaining __FUNCTION__
- occurences
-References: <1204588990.22933.28.camel@brick>	<37219a840803031928l79395c78ka64192f4a9f61744@mail.gmail.com>	<47CCDB5F.1040007@gmail.com>	<47CCEE63.80103@linuxtv.org>	<47CD256B.2070305@linuxtv.org> <20080304105024.0873ad72@gaivota>
-In-Reply-To: <20080304105024.0873ad72@gaivota>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Tue, 4 Mar 2008 15:20:47 -0500
+Received: from g1t0027.austin.hp.com ([15.216.28.34]:41003 "EHLO
+	g1t0027.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751319AbYCDUUq (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 4 Mar 2008 15:20:46 -0500
+Subject: [PATCH] 2.6.25-rc3-mm1 - Mempolicy - update stale documentation
+	and comments
+From: Lee Schermerhorn <Lee.Schermerhorn@hp.com>
+To: Paul Jackson <pj@sgi.com>, akpm@linux-foundation.org
+Cc: Mel Gorman <mel@csn.ul.ie>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, rientjes@google.com, nacc@us.ibm.com,
+       kamezawa.hiroyu@jp.fujitsu.com, clameter@sgi.com,
+       Eric Whitney <eric.whitney@hp.com>
+In-Reply-To: <20080228230140.321581a4.pj@sgi.com>
+References: <20071109143226.23540.12907.sendpatchset@skynet.skynet.ie>
+	 <20071109143406.23540.41284.sendpatchset@skynet.skynet.ie>
+	 <20080228230140.321581a4.pj@sgi.com>
+Content-Type: text/plain
+Organization: HP/OSLO
+Date: Tue, 04 Mar 2008 15:20:56 -0500
+Message-Id: <1204662057.5338.104.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.6.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mauro Carvalho Chehab wrote:
-> On Tue, 04 Mar 2008 14:33:15 +0400
-> Manu Abraham <manu@linuxtv.org> wrote:
+Was Re: [PATCH 5/6] Filter based on a nodemask as well as a gfp_mask
+
+On Thu, 2008-02-28 at 23:01 -0600, Paul Jackson wrote:
+> Mel wrote:
+> > A positive benefit of
+> > this is that allocations using MPOL_BIND now use the local-node-ordered
+> > zonelist instead of a custom node-id-ordered zonelist.
 > 
->> Michael Krufky wrote:
->>> Manu Abraham wrote:
->>>> Michael Krufky wrote:
->>>>> On Mon, Mar 3, 2008 at 7:03 PM, Harvey Harrison
->>>>> <harvey.harrison@gmail.com> wrote:
->>>>>> __FUNCTION__ is gcc-specific, use __func__
->>>>>>
->>>>>>  Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
->>>>>>   162 files changed, 892 insertions(+), 892 deletions(-)
->>>>> If we apply this, can it be broken down into several smaller patches?
->>>>> I am in the midst of a large overhaul of the tuning subsystem, and if
->>>>> this all gets applied at once, it will wreck havoc on my pending
->>>>> changesets.
->>>> Please make sure your changes don't conflict with the multiproto tree
->>>> changes.
->>>>
->>>> Regards,
->>>> Manu
->>> Manu,
->>>
->>> Does that mean that you plan to merge multiproto soon?  If that's the
->> I hope to do so, unless there aren't any significant issues. The 
->> multiproto tree is at
->> http://jusst.de/hg/multiproto.
->>
->> (There's hell a lot of reviewing and testing going on by the testers on 
->> the linux-dvb
->> ML, but you might additionally like to check whether any of your devices 
->> have any
->> side effects)
+> Could you update the now obsolete documentation (perhaps just delete
+> the no longer correct remark):
 > 
-> Maybe the better would be if we merge from multiproto. Then, Harvey can safely
-> generate the __FUNCTION__ changesets.
+> Documentation/vm/numa_memory_policy.txt:
 > 
-> Manu,
+>         MPOL_BIND:  This mode specifies that memory must come from the
+>         set of nodes specified by the policy.
 > 
-> Can I merge it?
+>             The memory policy APIs do not specify an order in which the nodes
+>             will be searched.  However, unlike "local allocation", the Bind
+>             policy does not consider the distance between the nodes.  Rather,
+>             allocations will fallback to the nodes specified by the policy in
+>             order of numeric node id.  Like everything in Linux, this is subject
+>             to change.
 > 
 
+How's this:
 
-If you meant to merge the multiproto tree, Not yet.
+PATCH Mempolicy:  update documentation and comments
 
-Regards,
-Manu
+Address stale comments and numa_memory_policy.txt discussion
+based on Mel Gorman's changes to page allocation zonelist handling.
+
+Specifically:  mpol_free() and mpol_copy() no longer need to deal
+with a custom zonelist for MPOL_BIND policy, and MPOL_BIND now
+allocates memory from the nearest node with available memory in the
+specified nodemask.
+
+In "fixing" the mpol_free() and mpol_copy() comments in mempolicy.h,
+I wanted to replace them with something, rather than just deleting
+them.  So, I described the reference counting.  Not directly related
+to the zonelist changes, but useful, IMO.
+
+Signed-off-by:  Lee Schermerhorn <lee.schermerhorn@hp.com>
+
+ Documentation/vm/numa_memory_policy.txt |   11 +++--------
+ include/linux/mempolicy.h               |    8 +++++---
+ 2 files changed, 8 insertions(+), 11 deletions(-)
+
+Index: linux-2.6.25-rc3-mm1/Documentation/vm/numa_memory_policy.txt
+===================================================================
+--- linux-2.6.25-rc3-mm1.orig/Documentation/vm/numa_memory_policy.txt	2008-01-24 17:58:37.000000000 -0500
++++ linux-2.6.25-rc3-mm1/Documentation/vm/numa_memory_policy.txt	2008-03-04 14:44:51.000000000 -0500
+@@ -182,14 +182,9 @@ Components of Memory Policies
+ 	    The Default mode does not use the optional set of nodes.
+ 
+ 	MPOL_BIND:  This mode specifies that memory must come from the
+-	set of nodes specified by the policy.
+-
+-	    The memory policy APIs do not specify an order in which the nodes
+-	    will be searched.  However, unlike "local allocation", the Bind
+-	    policy does not consider the distance between the nodes.  Rather,
+-	    allocations will fallback to the nodes specified by the policy in
+-	    order of numeric node id.  Like everything in Linux, this is subject
+-	    to change.
++	set of nodes specified by the policy.  Memory will be allocated from
++	the node in the set with sufficient free memory that is closest to
++	the node where the allocation takes place.
+ 
+ 	MPOL_PREFERRED:  This mode specifies that the allocation should be
+ 	attempted from the single node specified in the policy.  If that
+Index: linux-2.6.25-rc3-mm1/include/linux/mempolicy.h
+===================================================================
+--- linux-2.6.25-rc3-mm1.orig/include/linux/mempolicy.h	2008-03-04 14:19:06.000000000 -0500
++++ linux-2.6.25-rc3-mm1/include/linux/mempolicy.h	2008-03-04 14:38:29.000000000 -0500
+@@ -54,11 +54,13 @@ struct mm_struct;
+  * mmap_sem.
+  *
+  * Freeing policy:
+- * When policy is MPOL_BIND v.zonelist is kmalloc'ed and must be kfree'd.
+- * All other policies don't have any external state. mpol_free() handles this.
++ * Mempolicy objects are reference counted.  A mempolicy will be freed when
++ * mpol_free() decrements the reference count to zero.
+  *
+  * Copying policy objects:
+- * For MPOL_BIND the zonelist must be always duplicated. mpol_clone() does this.
++ * mpol_copy() allocates a new mempolicy and copies the specified mempolicy
++ * to the new storage.  The reference count of the new object is initialized
++ * to 1, representing the caller of mpol_copy().
+  */
+ struct mempolicy {
+ 	atomic_t refcnt;
+
 
