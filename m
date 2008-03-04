@@ -1,63 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759547AbYCDVM2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761411AbYCDVOG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759547AbYCDVM2 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Mar 2008 16:12:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752938AbYCDVMS
+	id S1761411AbYCDVOG (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Mar 2008 16:14:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755824AbYCDVNm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Mar 2008 16:12:18 -0500
-Received: from brick.kernel.dk ([87.55.233.238]:19864 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752644AbYCDVMS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Mar 2008 16:12:18 -0500
-Date: Tue, 4 Mar 2008 22:12:12 +0100
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Alexey Starikovskiy <aystarik@gmail.com>
-Cc: Lukas Hejtmanek <xhejtman@ics.muni.cz>,
-       Henrique de Moraes Holschuh <hmh@hmh.eng.br>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, linux-kernel@vger.kernel.org,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       Len Brown <lenb@kernel.org>
-Subject: Re: 2.6.25-rc2 Regression Thinkpad acpi
-Message-ID: <20080304211212.GD6704@kernel.dk>
-References: <20080225093914.GB4375@ics.muni.cz> <200802251247.30605.rjw@sisk.pl> <20080225200354.GE16513@khazad-dum.debian.net> <20080225204951.GB4432@ics.muni.cz> <20080225210113.GF16513@khazad-dum.debian.net> <20080225220720.GA4523@ics.muni.cz> <20080225230035.GA14503@khazad-dum.debian.net> <20080226184937.GA4280@ics.muni.cz> <20080304194513.GY6704@kernel.dk> <47CDBA74.5080304@gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <47CDBA74.5080304@gmail.com>
+	Tue, 4 Mar 2008 16:13:42 -0500
+Received: from smtp-out01.alice-dsl.net ([88.44.60.11]:55782 "EHLO
+	smtp-out01.alice-dsl.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755596AbYCDVNk (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 4 Mar 2008 16:13:40 -0500
+From: Andi Kleen <andi@firstfloor.org>
+Message-Id: <200803041013.139953228@firstfloor.org>
+To: tglx@linutronix.de, linux-kernel@vger.kernel.org
+Subject: [PATCH REPOST] [1/3] Don't set up early exception handlers for external interrupts
+Date: Tue,  4 Mar 2008 22:13:30 +0100 (CET)
+X-OriginalArrivalTime: 04 Mar 2008 21:07:00.0752 (UTC) FILETIME=[B0633100:01C87E3B]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Mar 05 2008, Alexey Starikovskiy wrote:
-> Jens Axboe wrote:
-> >On Tue, Feb 26 2008, Lukas Hejtmanek wrote:
-> >  
-> >>On Mon, Feb 25, 2008 at 08:00:35PM -0300, Henrique de Moraes Holschuh 
-> >>wrote:
-> >>    
-> >>>On Mon, 25 Feb 2008, Lukas Hejtmanek wrote:
-> >>>      
-> >>>>volume keys work. But anything through acpid does not. Even AC/battery 
-> >>>>switch
-> >>>>is not signalized. So the bug may be somewhere else?
-> >>>>        
-> >>>Yeah, there is an EC-related regression in 2.6.25-rc3 that bites your
-> >>>thinkpad.  I don't have a link to it right now, but if you look for the
-> >>>messages to LKML on the last 48h, you will find it.
-> >>>      
-> >>this one fixes all my troubles with thinkpad hotkeys in rc3.
-> >>http://lkml.org/lkml/2008/2/25/400
-> >>    
-> >
-> >Ping - is anyone sending this upstream? Would be nice to have my x60
-> >usable for -rc4 at least.
-> >
-> >  
-> Please take a look at patches in #10100.
 
-Can you be more specific (eg if you want me to test any/all of them, let
-me know)?
+All of early setup runs with interrupts disabled, so there is no 
+need to set up early exception handlers for vectors >= 32
 
--- 
-Jens Axboe
+That saves some text size
 
+Signed-off-by: Andi Kleen <ak@suse.de>
+
+---
+ arch/x86/kernel/head64.c  |    2 +-
+ arch/x86/kernel/head_64.S |    6 ++----
+ include/asm-x86/segment.h |    3 ++-
+ 3 files changed, 5 insertions(+), 6 deletions(-)
+
+Index: linux/arch/x86/kernel/head64.c
+===================================================================
+--- linux.orig/arch/x86/kernel/head64.c
++++ linux/arch/x86/kernel/head64.c
+@@ -91,7 +91,7 @@ void __init x86_64_start_kernel(char * r
+ 	/* Cleanup the over mapped high alias */
+ 	cleanup_highmap();
+ 
+-	for (i = 0; i < IDT_ENTRIES; i++) {
++	for (i = 0; i < NUM_EXCEPTION_VECTORS; i++) {
+ #ifdef CONFIG_EARLY_PRINTK
+ 		set_intr_gate(i, &early_idt_handlers[i]);
+ #else
+Index: linux/include/asm-x86/segment.h
+===================================================================
+--- linux.orig/include/asm-x86/segment.h
++++ linux/include/asm-x86/segment.h
+@@ -191,13 +191,14 @@
+ #define SEGMENT_TI_MASK		0x4
+ 
+ #define IDT_ENTRIES 256
++#define NUM_EXCEPTION_VECTORS 32
+ #define GDT_SIZE (GDT_ENTRIES * 8)
+ #define GDT_ENTRY_TLS_ENTRIES 3
+ #define TLS_SIZE (GDT_ENTRY_TLS_ENTRIES * 8)
+ 
+ #ifdef __KERNEL__
+ #ifndef __ASSEMBLY__
+-extern const char early_idt_handlers[IDT_ENTRIES][10];
++extern const char early_idt_handlers[NUM_EXCEPTION_VECTORS][10];
+ #endif
+ #endif
+ 
+Index: linux/arch/x86/kernel/head_64.S
+===================================================================
+--- linux.orig/arch/x86/kernel/head_64.S
++++ linux/arch/x86/kernel/head_64.S
+@@ -278,10 +278,8 @@ bad_address:
+ 
+ 	.globl early_idt_handlers
+ early_idt_handlers:
+-	early_idt_tramp 0, 63
+-	early_idt_tramp 64, 127
+-	early_idt_tramp 128, 191
+-	early_idt_tramp 192, 255
++	.set maxe,NUM_EXCEPTION_VECTORS-1
++	early_idt_tramp 0,maxe
+ #endif
+ 
+ ENTRY(early_idt_handler)
