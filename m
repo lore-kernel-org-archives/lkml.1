@@ -1,108 +1,124 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758786AbYCDAsl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757744AbYCDBCB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758786AbYCDAsl (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Mar 2008 19:48:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751385AbYCDAsb
+	id S1757744AbYCDBCB (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Mar 2008 20:02:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753495AbYCDBBy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Mar 2008 19:48:31 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:45286 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751158AbYCDAsa (ORCPT
+	Mon, 3 Mar 2008 20:01:54 -0500
+Received: from wf-out-1314.google.com ([209.85.200.174]:55960 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751945AbYCDBBx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Mar 2008 19:48:30 -0500
-Date: Mon, 3 Mar 2008 16:43:59 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Ed Tomlinson <edt@aei.ca>
-Cc: davem@davemloft.net, linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Subject: Re: Panic 2.6.24-3 Unable to handle kernel paging request
-Message-Id: <20080303164359.2506fef1.akpm@linux-foundation.org>
-In-Reply-To: <200803031934.51944.edt@aei.ca>
-References: <200803010902.47997.edt@aei.ca>
-	<200803031934.51944.edt@aei.ca>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Mon, 3 Mar 2008 20:01:53 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:references;
+        b=SUolaSOVuMlRlnDzW9DOVQxkV5IaYozckGsGLeApVbQG57ysGiTo5UlpyRqrWC1MrByt42sEizooQ1p5508NqabBq4oUP1xi/eJBy0gzFy4AsO/zE5U2Hywz09Tm/QwpWUKpDI/j1DkXyp+7/pstyD6DTmA/o+uaLwukfzz7VPc=
+Message-ID: <804dabb00803031701g368a7082q248cc2b05e762fa1@mail.gmail.com>
+Date: Tue, 4 Mar 2008 09:01:51 +0800
+From: "Peter Teoh" <htmldeveloper@gmail.com>
+To: "Bartlomiej Zolnierkiewicz" <bzolnier@gmail.com>
+Subject: Re: ide_register_hw(): buggy code
+Cc: "Adrian Bunk" <bunk@kernel.org>, linux-ide@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <200803032329.32020.bzolnier@gmail.com>
+MIME-Version: 1.0
+Content-Type: multipart/mixed; 
+	boundary="----=_Part_13841_10618570.1204592511459"
+References: <20080302151924.GJ25835@cs181133002.pp.htv.fi>
+	 <804dabb00803030803v1dbbb33fh6779b8c4d072a908@mail.gmail.com>
+	 <200803032329.32020.bzolnier@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 3 Mar 2008 19:34:51 -0500
-Ed Tomlinson <edt@aei.ca> wrote:
+------=_Part_13841_10618570.1204592511459
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-> On March 1, 2008, Ed Tomlinson wrote:
-> 
-> Andrew,
-> 
-> Is there anyone else I should be copying on this? 
-> 
+On Tue, Mar 4, 2008 at 6:29 AM, Bartlomiej Zolnierkiewicz
+<bzolnier@gmail.com> wrote:
+>
+>  Hi,
+>
+>
+>  On Monday 03 March 2008, Peter Teoh wrote:
+>  > On Sun, Mar 2, 2008 at 11:19 PM, Adrian Bunk <bunk@kernel.org> wrote:
+>  > > The Coverity checker spotted the following bogus change to
+>  > >  ide_register_hw() in commit 9e016a719209d95338e314b46c3012cc7feaaeec:
+>  > >
+>  > >  <--  snip  -->
+>  > >
+>  > >  ...
+>  > >  +               hwif = ide_deprecated_find_port(hw->io_ports[IDE_DATA_OFFSET]);
+>  > >  +               index = hwif->index;
+>  > >  +               if (hwif)
+>  > >  +                       goto found;
+>  > >                 for (index = 0; index < MAX_HWIFS; index++)
+>  > >  ...
+>  > >
+>  > >  <--  snip  -->
+>  > >
+>  > >  It's impossible to reach the for() loop without Oopsing before.
+>
+>  [ iff free hwif is not found (unlikely case) ]
+>
+>
+>  > >  Can you either fix this for 2.6.25 or push your patch that removes
+>  > >  ide_register_hw() for 2.6.25?
+>  > >
+>  >
+>  > My question is:
+>  >
+>  > a.   why is "retry=1", and then the do while loop always end up the
+>  > loop being one round executed only?   Why not just remove the while
+>  > loop entirely?
+>
+>  the whole ide_register_hw() is already gone in IDE tree
+>  (these patches are scheduled for 2.6.26)
+>
+>
+>  > b.   not sure if your statement above implied this, but checking for
+>  > hwif!=0 should be before index.  ???
+>  >
+>  > c.   "index = hwif->index;" should not be there, but after "found".
+>  > Is that correct?
+>
+>  Yes, could you please re-do your patch to contain:
+>
+>  - only 'hwif->index' change
+>  - proper patch description
+>  - Signed-off-by: line
+>
+>  so I could merge it?
 
-netdev@vger.kernel.org!
 
-> > I have been seeing these since I installed 2.6.24.   Previous kernels (up to 2.6.23-5) have been ok.   Using the .24 kernels I get 
-> > from a minute to a few days of uptime.  Any ideas on what might be causing this?  
-> > 
-> > TIA,
-> > Ed Tomlinson
-> > 
-> > (2.6.24-gentoo-r2 + 2.6.24-3 patchset)
-> > grover login: [72899.939987] Unable to handle kernel paging request at 000000620000005e RIP: 
-> > [72899.953805]  [<000000620000005e>]
-> > [72899.971089] PGD 48cfa067 PUD 0 
-> > [72899.980552] Oops: 0010 [1] PREEMPT 
-> > [72899.991054] CPU 0 
-> > [72899.997110] Modules linked in: radeon ipv6 af_packet rfcomm l2cap snd_pcm_oss snd_mixer_oss snd_seq_dummy snd_seq_oss snd_seq_midi_event snd_seq snd_seq_device xfs hci_usb bluetooth usbhid pl2303 usbserial usbmouse ohci_hcd ehci_hcd video1394 w83627hf hwmon_vid i2c_nforce2 forcedeth sr_mod cdrom sbp2 radeonfb fb_ddc i2c_algo_bit i2c_core ohci1394 ieee1394 snd_intel8x0 snd_ac97_codec ac97_bus snd_pcm thermal processor snd_timer snd button soundcore snd_page_alloc parport_pc parport psmouse pcspkr evdev k8temp hwmon floppy rtc unix
-> > [72900.139457] Pid: 0, comm: swapper Not tainted 2.6.24-gentoo-r2-crc #2
-> > [72900.158744] RIP: 0010:[<000000620000005e>]  [<000000620000005e>]
-> > [72900.176758] RSP: 0018:ffffffff8062cbb8  EFLAGS: 00010202
-> > [72900.192666] RAX: 000000620000005e RBX: 0000000000000002 RCX: 0000000000000136
-> > [72900.214034] RDX: 0000000000000011 RSI: ffffffff8062cbf0 RDI: ffff810044e90100
-> > [72900.235400] RBP: ffffffff8062cc90 R08: ffff810044e90100 R09: ffffffff80672000
-> > [72900.256768] R10: 0000000000000103 R11: 0000000000000001 R12: ffff810044e90138
-> > [72900.278136] R13: 0000000000000002 R14: 0000000000000000 R15: ffff810044e90100
-> > [72900.299504] FS:  00002af955fe21d0(0000) GS:ffffffff805ed000(0000) knlGS:00000000f7d1c6c0
-> > [72900.323731] CS:  0010 DS: 0018 ES: 0018 CR0: 000000008005003b
-> > [72900.340939] CR2: 000000620000005e CR3: 000000004b2cc000 CR4: 00000000000006e0
-> > [72900.362306] DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
-> > [72900.383673] DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
-> > [72900.405042] Process swapper (pid: 0, threadinfo ffffffff805f6000, task ffffffff805ac360)
-> > [72900.429268] Stack:  ffffffff80476f61 ffffffff8062cbd0 0000000080227f4d ffffffff8062cbf0
-> > [72900.453443]  ffffffff80242fb1 ffff810002186fc0 ffff8100021857a8 0000000000000000
-> > [72900.475720]  0207a8c000000000 000000005b025257 0000000000000000 0000000000000000
-> > [72900.497425] Call Trace:
-> > [72900.505301]  <IRQ>  [<ffffffff80476f61>] __xfrm_policy_check+0x461/0x5b0
-> > [72900.525426]  [<ffffffff80242fb1>] autoremove_wake_function+0x11/0x40
-> > [72900.544455]  [<ffffffff80228a84>] __wake_up+0x84/0x90
-> > [72900.559579]  [<ffffffff8045d51a>] __udp4_lib_lookup+0x10a/0x160
-> > [72900.577309]  [<ffffffff8045e6b6>] __udp4_lib_rcv+0x6a6/0x8a0
-> > [72900.594257]  [<ffffffff80261ed0>] mempool_free+0x30/0xe0
-> > [72900.610165]  [<ffffffff802b2c5b>] bio_free+0x3b/0x50
-> > [72900.625035]  [<ffffffff80225be0>] __enqueue_entity+0x80/0x90
-> > [72900.641984]  [<ffffffff8045e8c5>] udp_rcv+0x15/0x20
-> > [72900.656592]  [<ffffffff8043aecb>] ip_local_deliver_finish+0xbb/0x230
-> > [72900.675619]  [<ffffffff8043b49b>] ip_local_deliver+0x3b/0x90
-> > [72900.692569]  [<ffffffff8043abb4>] ip_rcv_finish+0x124/0x380
-> > [72900.709256]  [<ffffffff80227f5b>] wake_up_state+0xb/0x10
-> > [72900.725164]  [<ffffffff80237dad>] signal_wake_up+0x1d/0x20
-> > [72900.741593]  [<ffffffff8043b372>] ip_rcv+0x1b2/0x2a0
-> > [72900.756463]  [<ffffffff80416740>] netif_receive_skb+0x250/0x4b0
-> > [72900.774192]  [<ffffffff80418ec5>] process_backlog+0x75/0xe0
-> > [72900.790883]  [<ffffffff8813cbb2>] :forcedeth:nv_alloc_rx+0xc2/0x1c0
-> > [72900.809647]  [<ffffffff80418a12>] net_rx_action+0x152/0x240
-> > [72900.826337]  [<ffffffff8023249a>] __do_softirq+0x5a/0xc0
-> > [72900.842245]  [<ffffffff8020c89c>] call_softirq+0x1c/0x30
-> > [72900.858152]  [<ffffffff8020da9d>] do_softirq+0x3d/0x90
-> > [72900.873542]  [<ffffffff802323c8>] irq_exit+0x88/0xa0
-> > [72900.888410]  [<ffffffff8020de52>] do_IRQ+0x62/0xc0
-> > [72900.902759]  [<ffffffff8020c0c1>] ret_from_intr+0x0/0xa
-> > [72900.918405]  <EOI>  [<ffffffff8024c99d>] tick_nohz_stop_sched_tick+0x1ad/0x2b0
-> > [72900.940062]  [<ffffffff8020a7e0>] poll_idle+0x0/0x10
-> > [72900.954929]  [<ffffffff8020a8aa>] cpu_idle+0x2a/0x90
-> > [72900.969798]  [<ffffffff8047ea79>] rest_init+0x69/0x70
-> > [72900.984930]  [<ffffffff805f9aaa>] start_kernel+0x25a/0x2a0
-> > [72901.001356]  [<ffffffff805f9107>] _sinittext+0x107/0x110
+Description:
 
-That's a bit cryptic.  Does it happen in 2.6.25-rc3?  If so, that kernel
-has extra info about the trace reliability.  Also, disbling
-CONFIG_FRAME_POINTER _should_ give a clean trace.
+Relocating the index to come after finding the hwif pointer.
 
+Thanks.
+
+-- 
+Regards,
+Peter Teoh
+
+------=_Part_13841_10618570.1204592511459
+Content-Type: text/x-patch; name=relocating_deriving_index.patch
+Content-Transfer-Encoding: base64
+X-Attachment-Id: f_fddrmdxt0
+Content-Disposition: attachment; filename=relocating_deriving_index.patch
+
+U2lnbmVkLW9mZi1ieTogUGV0ZXIgVGVvaCA8aHRtbGRldmVsb3BlckBnbWFpbC5jb20+CgotLS0g
+ZHJpdmVycy9pZGUvaWRlLmMub3JpZwkyMDA4LTAzLTA0IDA4OjI2OjExLjAwMDAwMDAwMCArMDgw
+MAorKysgZHJpdmVycy9pZGUvaWRlLmMJMjAwOC0wMy0wNCAwOTowNzo0NC4wMDAwMDAwMDAgKzA4
+MDAKQEAgLTY2Nyw3ICs2NjcsNiBAQCBpbnQgaWRlX3JlZ2lzdGVyX2h3KGh3X3JlZ3NfdCAqaHcs
+IHZvaWQgCiAKIAlkbyB7CiAJCWh3aWYgPSBpZGVfZGVwcmVjYXRlZF9maW5kX3BvcnQoaHctPmlv
+X3BvcnRzW0lERV9EQVRBX09GRlNFVF0pOwotCQlpbmRleCA9IGh3aWYtPmluZGV4OwogCQlpZiAo
+aHdpZikKIAkJCWdvdG8gZm91bmQ7CiAJCWZvciAoaW5kZXggPSAwOyBpbmRleCA8IE1BWF9IV0lG
+UzsgaW5kZXgrKykKQEAgLTY3NSw2ICs2NzQsNyBAQCBpbnQgaWRlX3JlZ2lzdGVyX2h3KGh3X3Jl
+Z3NfdCAqaHcsIHZvaWQgCiAJfSB3aGlsZSAocmV0cnktLSk7CiAJcmV0dXJuIC0xOwogZm91bmQ6
+CisJaW5kZXggPSBod2lmLT5pbmRleDsKIAlpZiAoaHdpZi0+cHJlc2VudCkKIAkJaWRlX3VucmVn
+aXN0ZXIoaW5kZXgsIDAsIDEpOwogCWVsc2UgaWYgKCFod2lmLT5ob2xkKQo=
+------=_Part_13841_10618570.1204592511459--
