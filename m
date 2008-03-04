@@ -1,50 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764278AbYCDRVa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765190AbYCDRWo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764278AbYCDRVa (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Mar 2008 12:21:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760821AbYCDRVL
+	id S1765190AbYCDRWo (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Mar 2008 12:22:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764862AbYCDRWS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Mar 2008 12:21:11 -0500
-Received: from cardassian3.kabelfoon.nl ([62.45.45.105]:58094 "EHLO
-	cardassian.kabelfoon.nl" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751717AbYCDRVJ (ORCPT
+	Tue, 4 Mar 2008 12:22:18 -0500
+Received: from sd-green-dreamhost-133.dreamhost.com ([208.97.187.133]:38338
+	"EHLO webmail1.sd.dreamhost.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1763722AbYCDRWR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Mar 2008 12:21:09 -0500
-X-Greylist: delayed 1205 seconds by postgrey-1.27 at vger.kernel.org; Tue, 04 Mar 2008 12:21:09 EST
-Message-ID: <47CD804C.8010606@caiway.nl>
-Date: Tue, 04 Mar 2008 18:01:00 +0100
-From: Jan Evert van Grootheest <j.e.van.grootheest@caiway.nl>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080227)
+	Tue, 4 Mar 2008 12:22:17 -0500
+X-Greylist: delayed 441 seconds by postgrey-1.27 at vger.kernel.org; Tue, 04 Mar 2008 12:22:17 EST
+Message-ID: <26349.208.97.187.133.1204650893.squirrel@mail.losgandia.com>
+Date: Tue, 4 Mar 2008 09:14:53 -0800 (PST)
+Subject: PROBLEM: NUDAM (USB-485) nowaday not detected by pl2303 module
+From: rafa400@losgandia.com
+To: linux-kernel@vger.kernel.org
+User-Agent: SquirrelMail/1.4.10a
 MIME-Version: 1.0
-To: R H <robheilman@gmail.com>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: March 2008: Current state of oops/crash dumps
-References: <a67db0c60803040835g78a5476dkdcefcd66fc696527@mail.gmail.com>
-In-Reply-To: <a67db0c60803040835g78a5476dkdcefcd66fc696527@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-R H wrote:
-> There is a lot of information on the web about Linux and oops/crash
-> dumps.  Some positive, some quite negative.  There are lots of pages
-> about tools, patches, best practices, etc.  The problem is that they
-> all seem to be out of date.  I think the latest patch I have seen
-> available was for 2.6.10.  All this data begs the question:
->
-> What is the current state and roadmap for Linux kernel oops/crash dump
-> capabilities?
->   
-I'm sure that you've been looking at the Documentation/ tree
-in the kernel sources? You should've come across netconsole
-then. It will do just about the same as a serial console except
-that it uses the network.
-With newer kernels I don't think there's much need for
-patches or tools. Although there are some things that you can
-do to improve the stack traces (configure frame pointers, for
-example).
+[1.] new NUDAM (USB-485) converter not recogniced by pl2303. Little change
+required.
+[2.] Until now NUDAM USB to RS-485/422 RS232 converter was detected by USB
+system and pl2303 module working fine in my Debian as /dev/ttyUSB0
 
--- Jan Evert
+# dmesg
+....
+usb 5-1.3: new full speed USB device using ehci_hcd and address 17
+usb 5-1.3: configuration #1 chosen from 1 choice
+pl2303 5-1.3:1.0: pl2303 converter detected
+usb 5-1.3: pl2303 converter now attached to ttyUSB0
+
+# lsusb
+Bus 005 Device 017: ID 067b:2303 Prolific Technology, Inc. PL2303 Serial Port
+
+ They changed USB ID and now its like:
+
+# lsusb
+Bus 005 Device 016: ID 0b63:6530 ADLink Technology, Inc.
+
+but this ID is not detected by PD2303 module.
+a little change in pl2303 solve the problem
+
+[3.] pl2303 NUDAM USB 485
+[4.] Linux version 2.6.24-nudam (2.6.24-4) (root@rp022) (gcc version 4.2.3
+20080114 (prerelease) (Debian 4.2.2-7)) #1 SMP Mon Mar 3 12:02:41 CET 2008
+[5.] not required
+[6.] not required
+[7.] not required
+[X.] Other notes, patches, fixes, workarounds:
+I made the tribial changes in:
+
+drivers/usb/serial/pl2303.c
+drivers/usb/serial/pl2303.h
+
+adding de new USB ID 0b63:6530 to the existing arrays as needed
+recompile kernel, etc,etc.
+and it works fine again.
+
+Please include this in newer versions if it is possible.
+
+Rafael Gandia-Castello
 
