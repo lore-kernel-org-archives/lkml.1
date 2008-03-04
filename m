@@ -1,46 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933586AbYCDUie@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765705AbYCDUjQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933586AbYCDUie (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Mar 2008 15:38:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756903AbYCDUiY
+	id S1765705AbYCDUjQ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Mar 2008 15:39:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756351AbYCDUiw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Mar 2008 15:38:24 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:45950 "EHLO mx1.redhat.com"
+	Tue, 4 Mar 2008 15:38:52 -0500
+Received: from mx2.suse.de ([195.135.220.15]:46503 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756528AbYCDUiX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Mar 2008 15:38:23 -0500
-Date: Tue, 4 Mar 2008 15:38:00 -0500
-From: Rik van Riel <riel@redhat.com>
-To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Cc: kosaki.motohiro@jp.fujitsu.com, Andy Whitcroft <apw@shadowen.org>,
-       linux-kernel@vger.kernel.org,
-       Lee Schermerhorn <Lee.Schermerhorn@hp.com>, linux-mm@kvack.org
-Subject: Re: [patch 03/21] use an array for the LRU pagevecs
-Message-ID: <20080304153800.4cadcc93@cuia.boston.redhat.com>
-In-Reply-To: <20080304200209.1EAB.KOSAKI.MOTOHIRO@jp.fujitsu.com>
-References: <20080229154056.GF28849@shadowen.org>
-	<20080301153941.528A.KOSAKI.MOTOHIRO@jp.fujitsu.com>
-	<20080304200209.1EAB.KOSAKI.MOTOHIRO@jp.fujitsu.com>
-Organization: Red Hat, Inc
-X-Mailer: Claws Mail 3.1.0 (GTK+ 2.12.1; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	id S933751AbYCDUir (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 4 Mar 2008 15:38:47 -0500
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: "Pekka Enberg" <penberg@cs.helsinki.fi>, torvalds@linux-foundation.org,
+       linux-kernel@vger.kernel.org, mingo@elte.hu, vegard.nossum@gmail.com
+Subject: Re: Google's Summer of Code?
+From: Andi Kleen <andi@firstfloor.org>
+References: <84144f020803041045i70bbb05l6983bd14c5bcc91a@mail.gmail.com>
+	<alpine.LFD.1.00.0803041127290.12253@woody.linux-foundation.org>
+	<84144f020803041155k222c13ecu13c8c9534ced87e5@mail.gmail.com>
+	<20080304121339.a3b2483f.akpm@linux-foundation.org>
+Date: Tue, 04 Mar 2008 21:38:46 +0100
+In-Reply-To: <20080304121339.a3b2483f.akpm@linux-foundation.org> (Andrew Morton's message of "Tue\, 4 Mar 2008 12\:13\:39 -0800")
+Message-ID: <p73hcfm5ind.fsf@bingen.suse.de>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.1 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 04 Mar 2008 20:04:05 +0900
-KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com> wrote:
+Andrew Morton <akpm@linux-foundation.org> writes:
 
-> Hi Rik
-> 
-> this is fixed patch of Andy Whitcroft's point out.
-> (at least, I hope it)
+> On Tue, 4 Mar 2008 21:55:14 +0200
+> "Pekka Enberg" <penberg@cs.helsinki.fi> wrote:
+>
+>> I am also wondering if such a high profile
+>> project as the kernel can get away with not having a "project ideas"
+>> list which would make things real easy for the administrator(s)...
+>
+> http://kernelnewbies.org/KernelProjects
+>
+> There are surely many more things we could put there.
+>
+> I receive a dribble of emails about the setrlimit64/getrlimit64 one, so
+> people are looking at it, and are looking to do work.  (I haven't usefully
+> responded to those emails, btw - am not sure how my name got on that one -
+> probably Ulrich would be better).
 
-Applied, except for the documentation to ____pagevec_lru_add, since
-that function should, IMHO, probably stay internal to the VM and not
-be exposed in documentation.
+http://marc.info/?l=linux-kernel&m=119981029708530&w=2
 
--- 
-All Rights Reversed
+is also a candidate. There are still quite a lot of unconverted 
+drivers over.
+
+-Andi
