@@ -1,29 +1,30 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762101AbYCDDNv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763215AbYCDDPH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762101AbYCDDNv (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Mar 2008 22:13:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755450AbYCDDKW
+	id S1763215AbYCDDPH (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Mar 2008 22:15:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759172AbYCDDKc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Mar 2008 22:10:22 -0500
-Received: from gv-out-0910.google.com ([216.239.58.184]:38307 "EHLO
-	gv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757715AbYCDDKC (ORCPT
+	Mon, 3 Mar 2008 22:10:32 -0500
+Received: from ti-out-0910.google.com ([209.85.142.186]:20759 "EHLO
+	ti-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758179AbYCDDKF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Mar 2008 22:10:02 -0500
+	Mon, 3 Mar 2008 22:10:05 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=subject:from:to:cc:in-reply-to:references:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=x9bbLj3HdtgiSuFztrXJxSVP48anY/S2bR34f0YNT+Z4HSmQrW+moZIPyMB0RIK04qEgilczOn6r4klnWPumxQgfFP+YOdNyOlPDqkwkBZ6mBrs6w2jIw1FGf8gJlykfjMeRTgRLZFCLHyJqe/y+RsK3V3tAxBBejXl0PpXoEL4=
-Subject: [PATCH 09/14] ide: replace remaining __FUNCTION__ occurrences
+        b=TE60R7UxOoryxjVt/5A6JzxjIop9MxiBvp+qdUybgs0yRTewG271C+bl9Eie0aFzU+MPMC+xv+eKgJesq06EbA7zKFBRF3+QC2i45Uerc/aAP1sbWombClMA5Ou8o6utISBG+MPva3CD3bc1VsZuI0rjUrKnrvYs2dz5CgzzZ2E=
+Subject: [PATCH 11/14] drivers/parisc: replace remaining __FUNCTION__
+	occurrences
 From: Harvey Harrison <harvey.harrison@gmail.com>
-To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Cc: linux-ide <linux-ide@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>,
+To: Kyle McMartin <kyle@mcmartin.ca>,
        Andrew Morton <akpm@linux-foundation.org>
+Cc: LKML <linux-kernel@vger.kernel.org>
 In-Reply-To: <ff8fd021606e7a6f03e9c274230cfcf64eade6d2.1204599636.git.harvey.harrison@gmail.com>
 References: <ff8fd021606e7a6f03e9c274230cfcf64eade6d2.1204599636.git.harvey.harrison@gmail.com>
 Content-Type: text/plain
-Date: Mon, 03 Mar 2008 19:09:50 -0800
-Message-Id: <1204600190.22933.89.camel@brick>
+Date: Mon, 03 Mar 2008 19:09:51 -0800
+Message-Id: <1204600191.22933.91.camel@brick>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.12.1 
 Content-Transfer-Encoding: 7bit
@@ -35,560 +36,600 @@ __FUNCTION__ is gcc-specific, use __func__
 
 Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
 ---
- drivers/ide/ide-acpi.c         |   12 ++++++------
- drivers/ide/ide-cd.c           |   12 ++++++------
- drivers/ide/ide-dma.c          |    2 +-
- drivers/ide/ide-lib.c          |    2 +-
- drivers/ide/ide-probe.c        |    2 +-
- drivers/ide/ide-proc.c         |    6 +++---
- drivers/ide/ide-scan-pci.c     |    2 +-
- drivers/ide/ide-taskfile.c     |   12 ++++++------
- drivers/ide/legacy/ht6560b.c   |    4 ++--
- drivers/ide/mips/au1xxx-ide.c  |    8 ++++----
- drivers/ide/pci/cmd640.c       |    2 +-
- drivers/ide/pci/hpt366.c       |    4 ++--
- drivers/ide/pci/pdc202xx_new.c |    2 +-
- drivers/ide/pci/scc_pata.c     |    2 +-
- drivers/ide/pci/sgiioc4.c      |   26 +++++++++++++-------------
- drivers/ide/pci/siimage.c      |    2 +-
- drivers/ide/pci/sl82c105.c     |    4 ++--
- drivers/ide/ppc/mpc8xx.c       |    2 +-
- 18 files changed, 53 insertions(+), 53 deletions(-)
+ drivers/parisc/asp.c       |    2 +-
+ drivers/parisc/ccio-dma.c  |   36 ++++++++++++++++++------------------
+ drivers/parisc/dino.c      |   14 +++++++-------
+ drivers/parisc/gsc.c       |    4 ++--
+ drivers/parisc/lasi.c      |    2 +-
+ drivers/parisc/lba_pci.c   |   22 +++++++++++-----------
+ drivers/parisc/led.c       |    2 +-
+ drivers/parisc/sba_iommu.c |   42 +++++++++++++++++++++---------------------
+ drivers/parisc/wax.c       |    2 +-
+ 9 files changed, 63 insertions(+), 63 deletions(-)
 
-diff --git a/drivers/ide/ide-acpi.c b/drivers/ide/ide-acpi.c
-index e07b189..3e0745b 100644
---- a/drivers/ide/ide-acpi.c
-+++ b/drivers/ide/ide-acpi.c
-@@ -55,7 +55,7 @@ struct ide_acpi_hwif_link {
- /* note: adds function name and KERN_DEBUG */
- #ifdef DEBUGGING
- #define DEBPRINT(fmt, args...)	\
--		printk(KERN_DEBUG "%s: " fmt, __FUNCTION__, ## args)
-+		printk(KERN_DEBUG "%s: " fmt, __func__, ## args)
- #else
- #define DEBPRINT(fmt, args...)	do {} while (0)
- #endif	/* DEBUGGING */
-@@ -309,7 +309,7 @@ static int do_drive_get_GTF(ide_drive_t *drive,
- 	if (ACPI_FAILURE(status)) {
- 		printk(KERN_DEBUG
- 		       "%s: Run _GTF error: status = 0x%x\n",
--		       __FUNCTION__, status);
-+		       __func__, status);
+diff --git a/drivers/parisc/asp.c b/drivers/parisc/asp.c
+index 558420b..8213691 100644
+--- a/drivers/parisc/asp.c
++++ b/drivers/parisc/asp.c
+@@ -88,7 +88,7 @@ asp_init_chip(struct parisc_device *dev)
+ 	ret = -EBUSY;
+ 	dev->irq = gsc_claim_irq(&gsc_irq, ASP_GSC_IRQ);
+ 	if (dev->irq < 0) {
+-		printk(KERN_ERR "%s(): cannot get GSC irq\n", __FUNCTION__);
++		printk(KERN_ERR "%s(): cannot get GSC irq\n", __func__);
  		goto out;
  	}
  
-@@ -335,7 +335,7 @@ static int do_drive_get_GTF(ide_drive_t *drive,
- 	    out_obj->buffer.length % REGS_PER_GTF) {
- 		printk(KERN_ERR
- 		       "%s: unexpected GTF length (%d) or addr (0x%p)\n",
--		       __FUNCTION__, out_obj->buffer.length,
-+		       __func__, out_obj->buffer.length,
- 		       out_obj->buffer.pointer);
- 		err = -ENOENT;
- 		kfree(output.pointer);
-@@ -384,7 +384,7 @@ static int taskfile_load_raw(ide_drive_t *drive,
- 	err = ide_no_data_taskfile(drive, &args);
- 	if (err)
- 		printk(KERN_ERR "%s: ide_no_data_taskfile failed: %u\n",
--		       __FUNCTION__, err);
-+		       __func__, err);
+diff --git a/drivers/parisc/ccio-dma.c b/drivers/parisc/ccio-dma.c
+index d08b284..89105d0 100644
+--- a/drivers/parisc/ccio-dma.c
++++ b/drivers/parisc/ccio-dma.c
+@@ -353,7 +353,7 @@ ccio_alloc_range(struct ioc *ioc, size_t size)
+ 	BUG_ON((pages_needed * IOVP_SIZE) > DMA_CHUNK_SIZE);
+      
+ 	DBG_RES("%s() size: %d pages_needed %d\n", 
+-		__FUNCTION__, size, pages_needed);
++		__func__, size, pages_needed);
  
- 	return err;
- }
-@@ -422,7 +422,7 @@ static int do_drive_set_taskfiles(ide_drive_t *drive,
- 
- 	if (gtf_length % REGS_PER_GTF) {
- 		printk(KERN_ERR "%s: unexpected GTF length (%d)\n",
--		       __FUNCTION__, gtf_length);
-+		       __func__, gtf_length);
- 		goto out;
- 	}
- 
-@@ -547,7 +547,7 @@ void ide_acpi_get_timing(ide_hwif_t *hwif)
- 		printk(KERN_ERR
- 			"%s: unexpected _GTM length (0x%x)[should be 0x%zx] or "
- 			"addr (0x%p)\n",
--			__FUNCTION__, out_obj->buffer.length,
-+			__func__, out_obj->buffer.length,
- 			sizeof(struct GTM_buffer), out_obj->buffer.pointer);
- 		return;
- 	}
-diff --git a/drivers/ide/ide-cd.c b/drivers/ide/ide-cd.c
-index c8d0e87..ad480b0 100644
---- a/drivers/ide/ide-cd.c
-+++ b/drivers/ide/ide-cd.c
-@@ -685,7 +685,7 @@ static int ide_cd_check_ireason(ide_drive_t *drive, struct request *rq,
- 
- 		/* Whoops... */
- 		printk(KERN_ERR "%s: %s: wrong transfer direction!\n",
--				drive->name, __FUNCTION__);
-+				drive->name, __func__);
- 
- 		xf = rw ? hwif->atapi_output_bytes : hwif->atapi_input_bytes;
- 		ide_cd_pad_transfer(drive, xf, len);
-@@ -698,7 +698,7 @@ static int ide_cd_check_ireason(ide_drive_t *drive, struct request *rq,
- 	} else {
- 		/* Drive wants a command packet, or invalid ireason... */
- 		printk(KERN_ERR "%s: %s: bad interrupt reason 0x%02x\n",
--				drive->name, __FUNCTION__, ireason);
-+				drive->name, __func__, ireason);
- 	}
- 
- 	if (rq->cmd_type == REQ_TYPE_ATA_PC)
-@@ -720,7 +720,7 @@ static int ide_cd_check_transfer_size(ide_drive_t *drive, int len)
- 		return 0;
- 
- 	printk(KERN_ERR "%s: %s: Bad transfer size %d\n",
--			drive->name, __FUNCTION__, len);
-+			drive->name, __func__, len);
- 
- 	if (cd->cd_flags & IDE_CD_FLAG_LIMIT_NFRAMES)
- 		printk(KERN_ERR "  This drive is not supported by "
-@@ -824,7 +824,7 @@ static ide_startstop_t cdrom_start_rw_cont(ide_drive_t *drive)
- 			if (rq->current_nr_sectors !=
- 			    bio_cur_sectors(rq->bio)) {
- 				printk(KERN_ERR "%s: %s: buffer botch (%u)\n",
--						drive->name, __FUNCTION__,
-+						drive->name, __func__,
- 						rq->current_nr_sectors);
- 				cdrom_end_request(drive, 0);
- 				return ide_stopped;
-@@ -1055,7 +1055,7 @@ static ide_startstop_t cdrom_newpc_intr(ide_drive_t *drive)
- 			if (rq->current_nr_sectors > 0) {
- 				printk(KERN_ERR "%s: %s: data underrun "
- 						"(%d blocks)\n",
--						drive->name, __FUNCTION__,
-+						drive->name, __func__,
- 						rq->current_nr_sectors);
- 				if (!write)
- 					rq->cmd_flags |= REQ_FAILED;
-@@ -2032,7 +2032,7 @@ static void ide_cd_release(struct kref *kref)
- 	kfree(info->toc);
- 	if (devinfo->handle == drive && unregister_cdrom(devinfo))
- 		printk(KERN_ERR "%s: %s failed to unregister device from the cdrom "
--				"driver.\n", __FUNCTION__, drive->name);
-+				"driver.\n", __func__, drive->name);
- 	drive->dsc_overlap = 0;
- 	drive->driver_data = NULL;
- 	blk_queue_prep_rq(drive->queue, NULL);
-diff --git a/drivers/ide/ide-dma.c b/drivers/ide/ide-dma.c
-index 2de99e4..01b0c6e 100644
---- a/drivers/ide/ide-dma.c
-+++ b/drivers/ide/ide-dma.c
-@@ -542,7 +542,7 @@ static int __ide_dma_test_irq(ide_drive_t *drive)
- 		return 1;
- 	if (!drive->waiting_for_dma)
- 		printk(KERN_WARNING "%s: (%s) called while not waiting\n",
--			drive->name, __FUNCTION__);
-+			drive->name, __func__);
- 	return 0;
- }
- #else
-diff --git a/drivers/ide/ide-lib.c b/drivers/ide/ide-lib.c
-index 29e2c97..c1a0992 100644
---- a/drivers/ide/ide-lib.c
-+++ b/drivers/ide/ide-lib.c
-@@ -85,7 +85,7 @@ static u8 ide_rate_filter(ide_drive_t *drive, u8 speed)
- 			mode = XFER_PIO_4;
- 	}
- 
--//	printk("%s: mode 0x%02x, speed 0x%02x\n", __FUNCTION__, mode, speed);
-+//	printk("%s: mode 0x%02x, speed 0x%02x\n", __func__, mode, speed);
- 
- 	return min(speed, mode);
- }
-diff --git a/drivers/ide/ide-probe.c b/drivers/ide/ide-probe.c
-index 194ecb0..534dea4 100644
---- a/drivers/ide/ide-probe.c
-+++ b/drivers/ide/ide-probe.c
-@@ -641,7 +641,7 @@ static void ide_register_port(ide_hwif_t *hwif)
- 	ret = device_register(&hwif->gendev);
- 	if (ret < 0)
- 		printk(KERN_WARNING "IDE: %s: device_register error: %d\n",
--			__FUNCTION__, ret);
-+			__func__, ret);
- }
- 
- /**
-diff --git a/drivers/ide/ide-proc.c b/drivers/ide/ide-proc.c
-index bab88ca..91d2c71 100644
---- a/drivers/ide/ide-proc.c
-+++ b/drivers/ide/ide-proc.c
-@@ -601,14 +601,14 @@ static int ide_replace_subdriver(ide_drive_t *drive, const char *driver)
- 	err = device_attach(dev);
- 	if (err < 0)
- 		printk(KERN_WARNING "IDE: %s: device_attach error: %d\n",
--			__FUNCTION__, err);
-+			__func__, err);
- 	drive->driver_req[0] = 0;
- 	if (dev->driver == NULL) {
- 		err = device_attach(dev);
- 		if (err < 0)
- 			printk(KERN_WARNING
- 				"IDE: %s: device_attach(2) error: %d\n",
--				__FUNCTION__, err);
-+				__func__, err);
- 	}
- 	if (dev->driver && !strcmp(dev->driver->name, driver))
- 		ret = 0;
-@@ -840,7 +840,7 @@ static int ide_drivers_show(struct seq_file *s, void *p)
- 	err = bus_for_each_drv(&ide_bus_type, NULL, s, proc_print_driver);
- 	if (err < 0)
- 		printk(KERN_WARNING "IDE: %s: bus_for_each_drv error: %d\n",
--			__FUNCTION__, err);
-+			__func__, err);
- 	return 0;
- }
- 
-diff --git a/drivers/ide/ide-scan-pci.c b/drivers/ide/ide-scan-pci.c
-index 93d2e41..527e50e 100644
---- a/drivers/ide/ide-scan-pci.c
-+++ b/drivers/ide/ide-scan-pci.c
-@@ -107,7 +107,7 @@ static int __init ide_scan_pcibus(void)
- 		if (__pci_register_driver(d, d->driver.owner,
- 					  d->driver.mod_name))
- 			printk(KERN_ERR "%s: failed to register %s driver\n",
--					__FUNCTION__, d->driver.mod_name);
-+					__func__, d->driver.mod_name);
- 	}
- 
- 	return 0;
-diff --git a/drivers/ide/ide-taskfile.c b/drivers/ide/ide-taskfile.c
-index 0518a2e..b1d72b4 100644
---- a/drivers/ide/ide-taskfile.c
-+++ b/drivers/ide/ide-taskfile.c
-@@ -434,7 +434,7 @@ static ide_startstop_t task_in_intr(ide_drive_t *drive)
- 	/* new way for dealing with premature shared PCI interrupts */
- 	if (!OK_STAT(stat, DRQ_STAT, BAD_R_STAT)) {
- 		if (stat & (ERR_STAT | DRQ_STAT))
--			return task_error(drive, rq, __FUNCTION__, stat);
-+			return task_error(drive, rq, __func__, stat);
- 		/* No data yet, so wait for another IRQ. */
- 		ide_set_handler(drive, &task_in_intr, WAIT_WORSTCASE, NULL);
- 		return ide_started;
-@@ -446,7 +446,7 @@ static ide_startstop_t task_in_intr(ide_drive_t *drive)
- 	if (!hwif->nleft) {
- 		stat = wait_drive_not_busy(drive);
- 		if (!OK_STAT(stat, 0, BAD_STAT))
--			return task_error(drive, rq, __FUNCTION__, stat);
-+			return task_error(drive, rq, __func__, stat);
- 		task_end_request(drive, rq, stat);
- 		return ide_stopped;
- 	}
-@@ -467,11 +467,11 @@ static ide_startstop_t task_out_intr (ide_drive_t *drive)
- 	u8 stat = ide_read_status(drive);
- 
- 	if (!OK_STAT(stat, DRIVE_READY, drive->bad_wstat))
--		return task_error(drive, rq, __FUNCTION__, stat);
-+		return task_error(drive, rq, __func__, stat);
- 
- 	/* Deal with unexpected ATA data phase. */
- 	if (((stat & DRQ_STAT) == 0) ^ !hwif->nleft)
--		return task_error(drive, rq, __FUNCTION__, stat);
-+		return task_error(drive, rq, __func__, stat);
- 
- 	if (!hwif->nleft) {
- 		task_end_request(drive, rq, stat);
-@@ -654,7 +654,7 @@ int ide_taskfile_ioctl (ide_drive_t *drive, unsigned int cmd, unsigned long arg)
- 				/* (hs): give up if multcount is not set */
- 				printk(KERN_ERR "%s: %s Multimode Write " \
- 					"multcount is not set\n",
--					drive->name, __FUNCTION__);
-+					drive->name, __func__);
- 				err = -EPERM;
- 				goto abort;
- 			}
-@@ -671,7 +671,7 @@ int ide_taskfile_ioctl (ide_drive_t *drive, unsigned int cmd, unsigned long arg)
- 				/* (hs): give up if multcount is not set */
- 				printk(KERN_ERR "%s: %s Multimode Read failure " \
- 					"multcount is not set\n",
--					drive->name, __FUNCTION__);
-+					drive->name, __func__);
- 				err = -EPERM;
- 				goto abort;
- 			}
-diff --git a/drivers/ide/legacy/ht6560b.c b/drivers/ide/legacy/ht6560b.c
-index 78ca68e..86e85c1 100644
---- a/drivers/ide/legacy/ht6560b.c
-+++ b/drivers/ide/legacy/ht6560b.c
-@@ -348,12 +348,12 @@ static int __init ht6560b_init(void)
- 
- 	if (!request_region(HT_CONFIG_PORT, 1, hwif->name)) {
- 		printk(KERN_NOTICE "%s: HT_CONFIG_PORT not found\n",
--			__FUNCTION__);
-+			__func__);
- 		return -ENODEV;
- 	}
- 
- 	if (!try_to_init_ht6560b()) {
--		printk(KERN_NOTICE "%s: HBA not found\n", __FUNCTION__);
-+		printk(KERN_NOTICE "%s: HBA not found\n", __func__);
- 		goto release_region;
- 	}
- 
-diff --git a/drivers/ide/mips/au1xxx-ide.c b/drivers/ide/mips/au1xxx-ide.c
-index 0f4bf5d..6c207ff 100644
---- a/drivers/ide/mips/au1xxx-ide.c
-+++ b/drivers/ide/mips/au1xxx-ide.c
-@@ -66,7 +66,7 @@ void auide_insw(unsigned long port, void *addr, u32 count)
- 
- 	if(!put_dest_flags(ahwif->rx_chan, (void*)addr, count << 1, 
- 			   DDMA_FLAGS_NOIE)) {
--		printk(KERN_ERR "%s failed %d\n", __FUNCTION__, __LINE__);
-+		printk(KERN_ERR "%s failed %d\n", __func__, __LINE__);
- 		return;
- 	}
- 	ctp = *((chan_tab_t **)ahwif->rx_chan);
-@@ -84,7 +84,7 @@ void auide_outsw(unsigned long port, void *addr, u32 count)
- 
- 	if(!put_source_flags(ahwif->tx_chan, (void*)addr,
- 			     count << 1, DDMA_FLAGS_NOIE)) {
--		printk(KERN_ERR "%s failed %d\n", __FUNCTION__, __LINE__);
-+		printk(KERN_ERR "%s failed %d\n", __func__, __LINE__);
- 		return;
- 	}
- 	ctp = *((chan_tab_t **)ahwif->tx_chan);
-@@ -255,7 +255,7 @@ static int auide_build_dmatable(ide_drive_t *drive)
- 						     (void*) sg_virt(sg),
- 						     tc, flags)) { 
- 					printk(KERN_ERR "%s failed %d\n", 
--					       __FUNCTION__, __LINE__);
-+					       __func__, __LINE__);
- 				}
- 			} else 
- 			{
-@@ -263,7 +263,7 @@ static int auide_build_dmatable(ide_drive_t *drive)
- 						   (void*) sg_virt(sg),
- 						   tc, flags)) { 
- 					printk(KERN_ERR "%s failed %d\n", 
--					       __FUNCTION__, __LINE__);
-+					       __func__, __LINE__);
- 				}
- 			}
- 
-diff --git a/drivers/ide/pci/cmd640.c b/drivers/ide/pci/cmd640.c
-index ec66798..1bf98a0 100644
---- a/drivers/ide/pci/cmd640.c
-+++ b/drivers/ide/pci/cmd640.c
-@@ -632,7 +632,7 @@ static void cmd640_set_pio_mode(ide_drive_t *drive, const u8 pio)
- 	while (drive != cmd_drives[index]) {
- 		if (++index > 3) {
- 			printk(KERN_ERR "%s: bad news in %s\n",
--					drive->name, __FUNCTION__);
-+					drive->name, __func__);
- 			return;
- 		}
- 	}
-diff --git a/drivers/ide/pci/hpt366.c b/drivers/ide/pci/hpt366.c
-index 6357bb6..28c671b 100644
---- a/drivers/ide/pci/hpt366.c
-+++ b/drivers/ide/pci/hpt366.c
-@@ -776,7 +776,7 @@ static void hpt366_dma_lost_irq(ide_drive_t *drive)
- 	pci_read_config_byte(dev, 0x52, &mcr3);
- 	pci_read_config_byte(dev, 0x5a, &scr1);
- 	printk("%s: (%s)  mcr1=0x%02x, mcr3=0x%02x, scr1=0x%02x\n",
--		drive->name, __FUNCTION__, mcr1, mcr3, scr1);
-+		drive->name, __func__, mcr1, mcr3, scr1);
- 	if (scr1 & 0x10)
- 		pci_write_config_byte(dev, 0x5a, scr1 & ~0x10);
- 	ide_dma_lost_irq(drive);
-@@ -858,7 +858,7 @@ static int hpt374_ide_dma_test_irq(ide_drive_t *drive)
- 
- 	if (!drive->waiting_for_dma)
- 		printk(KERN_WARNING "%s: (%s) called while not waiting\n",
--				drive->name, __FUNCTION__);
-+				drive->name, __func__);
- 	return 0;
- }
- 
-diff --git a/drivers/ide/pci/pdc202xx_new.c b/drivers/ide/pci/pdc202xx_new.c
-index 1c8cb77..3cb73f7 100644
---- a/drivers/ide/pci/pdc202xx_new.c
-+++ b/drivers/ide/pci/pdc202xx_new.c
-@@ -34,7 +34,7 @@
- #undef DEBUG
- 
- #ifdef DEBUG
--#define DBG(fmt, args...) printk("%s: " fmt, __FUNCTION__, ## args)
-+#define DBG(fmt, args...) printk("%s: " fmt, __func__, ## args)
- #else
- #define DBG(fmt, args...)
+ 	/*
+ 	** "seek and ye shall find"...praying never hurts either...
+@@ -386,16 +386,16 @@ ccio_alloc_range(struct ioc *ioc, size_t size)
  #endif
-diff --git a/drivers/ide/pci/scc_pata.c b/drivers/ide/pci/scc_pata.c
-index 238e3e1..58a1195 100644
---- a/drivers/ide/pci/scc_pata.c
-+++ b/drivers/ide/pci/scc_pata.c
-@@ -447,7 +447,7 @@ static int scc_dma_test_irq(ide_drive_t *drive)
+ 	} else {
+ 		panic("%s: %s() Too many pages to map. pages_needed: %u\n",
+-		       __FILE__,  __FUNCTION__, pages_needed);
++		       __FILE__,  __func__, pages_needed);
+ 	}
  
- 	if (!drive->waiting_for_dma)
- 		printk(KERN_WARNING "%s: (%s) called while not waiting\n",
--			drive->name, __FUNCTION__);
-+			drive->name, __func__);
- 	return 0;
+ 	panic("%s: %s() I/O MMU is out of mapping resources.\n", __FILE__,
+-	      __FUNCTION__);
++	      __func__);
+ 	
+ resource_found:
+ 	
+ 	DBG_RES("%s() res_idx %d res_hint: %d\n",
+-		__FUNCTION__, res_idx, ioc->res_hint);
++		__func__, res_idx, ioc->res_hint);
+ 
+ #ifdef CCIO_SEARCH_TIME
+ 	{
+@@ -441,7 +441,7 @@ ccio_free_range(struct ioc *ioc, dma_addr_t iova, unsigned long pages_mapped)
+ 	BUG_ON(pages_mapped > BITS_PER_LONG);
+ 
+ 	DBG_RES("%s():  res_idx: %d pages_mapped %d\n", 
+-		__FUNCTION__, res_idx, pages_mapped);
++		__func__, res_idx, pages_mapped);
+ 
+ #ifdef CCIO_MAP_STATS
+ 	ioc->used_pages -= pages_mapped;
+@@ -465,7 +465,7 @@ ccio_free_range(struct ioc *ioc, dma_addr_t iova, unsigned long pages_mapped)
+ #endif
+ 	} else {
+ 		panic("%s:%s() Too many pages to unmap.\n", __FILE__,
+-		      __FUNCTION__);
++		      __func__);
+ 	}
  }
  
-diff --git a/drivers/ide/pci/sgiioc4.c b/drivers/ide/pci/sgiioc4.c
-index 0546264..2a4483b 100644
---- a/drivers/ide/pci/sgiioc4.c
-+++ b/drivers/ide/pci/sgiioc4.c
-@@ -171,10 +171,10 @@ sgiioc4_clearirq(ide_drive_t * drive)
- 			printk(KERN_ERR
- 			       "%s(%s) : PCI Bus Error when doing DMA:"
- 				   " status-cmd reg is 0x%x\n",
--			       __FUNCTION__, drive->name, pci_stat_cmd_reg);
-+			       __func__, drive->name, pci_stat_cmd_reg);
- 			printk(KERN_ERR
- 			       "%s(%s) : PCI Error Address is 0x%x%x\n",
--			       __FUNCTION__, drive->name,
-+			       __func__, drive->name,
- 			       pci_err_addr_high, pci_err_addr_low);
- 			/* Clear the PCI Error indicator */
- 			pci_write_config_dword(dev, PCI_COMMAND, 0x00000146);
-@@ -233,7 +233,7 @@ sgiioc4_ide_dma_end(ide_drive_t * drive)
- 		printk(KERN_ERR
- 		       "%s(%s): IOC4 DMA STOP bit is still 1 :"
- 		       "ioc4_dma_reg 0x%x\n",
--		       __FUNCTION__, drive->name, ioc4_dma);
-+		       __func__, drive->name, ioc4_dma);
- 		dma_stat = 1;
+@@ -766,7 +766,7 @@ ccio_map_single(struct device *dev, void *addr, size_t size,
+ 	pdir_start = &(ioc->pdir_base[idx]);
+ 
+ 	DBG_RUN("%s() 0x%p -> 0x%lx size: %0x%x\n",
+-		__FUNCTION__, addr, (long)iovp | offset, size);
++		__func__, addr, (long)iovp | offset, size);
+ 
+ 	/* If not cacheline aligned, force SAFE_DMA on the whole mess */
+ 	if((size % L1_CACHE_BYTES) || ((unsigned long)addr % L1_CACHE_BYTES))
+@@ -811,7 +811,7 @@ ccio_unmap_single(struct device *dev, dma_addr_t iova, size_t size,
+ 	ioc = GET_IOC(dev);
+ 
+ 	DBG_RUN("%s() iovp 0x%lx/%x\n",
+-		__FUNCTION__, (long)iova, size);
++		__func__, (long)iova, size);
+ 
+ 	iova ^= offset;        /* clear offset bits */
+ 	size += offset;
+@@ -913,7 +913,7 @@ ccio_map_sg(struct device *dev, struct scatterlist *sglist, int nents,
+ 	BUG_ON(!dev);
+ 	ioc = GET_IOC(dev);
+ 	
+-	DBG_RUN_SG("%s() START %d entries\n", __FUNCTION__, nents);
++	DBG_RUN_SG("%s() START %d entries\n", __func__, nents);
+ 
+ 	/* Fast path single entry scatterlists. */
+ 	if (nents == 1) {
+@@ -957,7 +957,7 @@ ccio_map_sg(struct device *dev, struct scatterlist *sglist, int nents,
+ 
+ 	BUG_ON(coalesced != filled);
+ 
+-	DBG_RUN_SG("%s() DONE %d mappings\n", __FUNCTION__, filled);
++	DBG_RUN_SG("%s() DONE %d mappings\n", __func__, filled);
+ 
+ 	for (i = 0; i < filled; i++)
+ 		current_len += sg_dma_len(sglist + i);
+@@ -986,7 +986,7 @@ ccio_unmap_sg(struct device *dev, struct scatterlist *sglist, int nents,
+ 	ioc = GET_IOC(dev);
+ 
+ 	DBG_RUN_SG("%s() START %d entries,  %08lx,%x\n",
+-		__FUNCTION__, nents, sg_virt_addr(sglist), sglist->length);
++		__func__, nents, sg_virt_addr(sglist), sglist->length);
+ 
+ #ifdef CCIO_MAP_STATS
+ 	ioc->usg_calls++;
+@@ -1002,7 +1002,7 @@ ccio_unmap_sg(struct device *dev, struct scatterlist *sglist, int nents,
+ 		++sglist;
  	}
  
-@@ -252,7 +252,7 @@ sgiioc4_ide_dma_end(ide_drive_t * drive)
- 		udelay(1);
- 	}
- 	if (!valid) {
--		printk(KERN_ERR "%s(%s) : DMA incomplete\n", __FUNCTION__,
-+		printk(KERN_ERR "%s(%s) : DMA incomplete\n", __func__,
- 		       drive->name);
- 		dma_stat = 1;
- 	}
-@@ -265,7 +265,7 @@ sgiioc4_ide_dma_end(ide_drive_t * drive)
- 			printk(KERN_ERR
- 			       "%s(%s): WARNING!! byte_count_dev %d "
- 			       "!= byte_count_mem %d\n",
--			       __FUNCTION__, drive->name, bc_dev, bc_mem);
-+			       __func__, drive->name, bc_dev, bc_mem);
- 		}
- 	}
+-	DBG_RUN_SG("%s() DONE (nents %d)\n", __FUNCTION__, nents);
++	DBG_RUN_SG("%s() DONE (nents %d)\n", __func__, nents);
+ }
  
-@@ -344,7 +344,7 @@ ide_dma_sgiioc4(ide_hwif_t * hwif, unsigned long dma_base)
- 		printk(KERN_ERR
- 		       "%s(%s) -- ERROR, Addresses 0x%p to 0x%p "
- 		       "ALREADY in use\n",
--		       __FUNCTION__, hwif->name, (void *) dma_base,
-+		       __func__, hwif->name, (void *) dma_base,
- 		       (void *) dma_base + num_ports - 1);
- 		return -1;
+ static struct hppa_dma_ops ccio_ops = {
+@@ -1216,7 +1216,7 @@ static int
+ ccio_get_iotlb_size(struct parisc_device *dev)
+ {
+ 	if (dev->spa_shift == 0) {
+-		panic("%s() : Can't determine I/O TLB size.\n", __FUNCTION__);
++		panic("%s() : Can't determine I/O TLB size.\n", __func__);
  	}
-@@ -353,7 +353,7 @@ ide_dma_sgiioc4(ide_hwif_t * hwif, unsigned long dma_base)
- 	if (virt_dma_base == NULL) {
- 		printk(KERN_ERR
- 		       "%s(%s) -- ERROR, Unable to map addresses 0x%lx to 0x%lx\n",
--		       __FUNCTION__, hwif->name, dma_base, dma_base + num_ports - 1);
-+		       __func__, hwif->name, dma_base, dma_base + num_ports - 1);
- 		goto dma_remap_failure;
+ 	return (1 << dev->spa_shift);
+ }
+@@ -1306,7 +1306,7 @@ ccio_ioc_init(struct ioc *ioc)
+ 	BUG_ON((1 << get_order(ioc->pdir_size)) != (ioc->pdir_size >> PAGE_SHIFT));
+ 
+ 	DBG_INIT("%s() hpa 0x%p mem %luMB IOV %dMB (%d bits)\n",
+-			__FUNCTION__, ioc->ioc_regs,
++			__func__, ioc->ioc_regs,
+ 			(unsigned long) num_physpages >> (20 - PAGE_SHIFT),
+ 			iova_space_size>>20,
+ 			iov_order + PAGE_SHIFT);
+@@ -1314,7 +1314,7 @@ ccio_ioc_init(struct ioc *ioc)
+ 	ioc->pdir_base = (u64 *)__get_free_pages(GFP_KERNEL, 
+ 						 get_order(ioc->pdir_size));
+ 	if(NULL == ioc->pdir_base) {
+-		panic("%s() could not allocate I/O Page Table\n", __FUNCTION__);
++		panic("%s() could not allocate I/O Page Table\n", __func__);
  	}
- 	hwif->dma_base = (unsigned long) virt_dma_base;
-@@ -379,7 +379,7 @@ ide_dma_sgiioc4(ide_hwif_t * hwif, unsigned long dma_base)
- 			    hwif->dmatable_cpu, hwif->dmatable_dma);
- 	printk(KERN_INFO
- 	       "%s() -- Error! Unable to allocate DMA Maps for drive %s\n",
--	       __FUNCTION__, hwif->name);
-+	       __func__, hwif->name);
- 	printk(KERN_INFO
- 	       "Changing from DMA to PIO mode for Drive %s\n", hwif->name);
+ 	memset(ioc->pdir_base, 0, ioc->pdir_size);
  
-@@ -407,14 +407,14 @@ sgiioc4_configure_for_dma(int dma_direction, ide_drive_t * drive)
- 	if (ioc4_dma & IOC4_S_DMA_ACTIVE) {
- 		printk(KERN_WARNING
- 			"%s(%s):Warning!! DMA from previous transfer was still active\n",
--		       __FUNCTION__, drive->name);
-+		       __func__, drive->name);
- 		writel(IOC4_S_DMA_STOP, (void __iomem *)ioc4_dma_addr);
- 		ioc4_dma = sgiioc4_ide_dma_stop(hwif, dma_base);
+@@ -1323,12 +1323,12 @@ ccio_ioc_init(struct ioc *ioc)
  
- 		if (ioc4_dma & IOC4_S_DMA_STOP)
- 			printk(KERN_ERR
- 			       "%s(%s) : IOC4 Dma STOP bit is still 1\n",
--			       __FUNCTION__, drive->name);
-+			       __func__, drive->name);
+ 	/* resource map size dictated by pdir_size */
+  	ioc->res_size = (ioc->pdir_size / sizeof(u64)) >> 3;
+-	DBG_INIT("%s() res_size 0x%x\n", __FUNCTION__, ioc->res_size);
++	DBG_INIT("%s() res_size 0x%x\n", __func__, ioc->res_size);
+ 	
+ 	ioc->res_map = (u8 *)__get_free_pages(GFP_KERNEL, 
+ 					      get_order(ioc->res_size));
+ 	if(NULL == ioc->res_map) {
+-		panic("%s() could not allocate resource map\n", __FUNCTION__);
++		panic("%s() could not allocate resource map\n", __func__);
  	}
+ 	memset(ioc->res_map, 0, ioc->res_size);
  
- 	ioc4_dma = readl((void __iomem *)ioc4_dma_addr);
-@@ -422,14 +422,14 @@ sgiioc4_configure_for_dma(int dma_direction, ide_drive_t * drive)
- 		printk(KERN_WARNING
- 		       "%s(%s) : Warning!! - DMA Error during Previous"
- 		       " transfer | status 0x%x\n",
--		       __FUNCTION__, drive->name, ioc4_dma);
-+		       __func__, drive->name, ioc4_dma);
- 		writel(IOC4_S_DMA_STOP, (void __iomem *)ioc4_dma_addr);
- 		ioc4_dma = sgiioc4_ide_dma_stop(hwif, dma_base);
- 
- 		if (ioc4_dma & IOC4_S_DMA_STOP)
- 			printk(KERN_ERR
- 			       "%s(%s) : IOC4 DMA STOP bit is still 1\n",
--			       __FUNCTION__, drive->name);
-+			       __func__, drive->name);
+@@ -1400,7 +1400,7 @@ ccio_init_resource(struct resource *res, char *name, void __iomem *ioaddr)
+ 	result = insert_resource(&iomem_resource, res);
+ 	if (result < 0) {
+ 		printk(KERN_ERR "%s() failed to claim CCIO bus address space (%08lx,%08lx)\n", 
+-	 		__FUNCTION__, res->start, res->end);
++	 		__func__, res->start, res->end);
  	}
+ }
  
- 	/* Address of the Scatter Gather List */
-@@ -630,7 +630,7 @@ sgiioc4_ide_setup_pci_device(struct pci_dev *dev)
- 		printk(KERN_ERR
- 			"%s : %s -- ERROR, Addresses "
- 			"0x%p to 0x%p ALREADY in use\n",
--		       __FUNCTION__, hwif->name, (void *) cmd_phys_base,
-+		       __func__, hwif->name, (void *) cmd_phys_base,
- 		       (void *) cmd_phys_base + IOC4_CMD_CTL_BLK_SIZE);
- 		return -ENOMEM;
+diff --git a/drivers/parisc/dino.c b/drivers/parisc/dino.c
+index 03c763c..6e2db86 100644
+--- a/drivers/parisc/dino.c
++++ b/drivers/parisc/dino.c
+@@ -180,7 +180,7 @@ static int dino_cfg_read(struct pci_bus *bus, unsigned int devfn, int where,
+ 	void __iomem *base_addr = d->hba.base_addr;
+ 	unsigned long flags;
+ 
+-	DBG("%s: %p, %d, %d, %d\n", __FUNCTION__, base_addr, devfn, where,
++	DBG("%s: %p, %d, %d, %d\n", __func__, base_addr, devfn, where,
+ 									size);
+ 	spin_lock_irqsave(&d->dinosaur_pen, flags);
+ 
+@@ -215,7 +215,7 @@ static int dino_cfg_write(struct pci_bus *bus, unsigned int devfn, int where,
+ 	void __iomem *base_addr = d->hba.base_addr;
+ 	unsigned long flags;
+ 
+-	DBG("%s: %p, %d, %d, %d\n", __FUNCTION__, base_addr, devfn, where,
++	DBG("%s: %p, %d, %d, %d\n", __func__, base_addr, devfn, where,
+ 									size);
+ 	spin_lock_irqsave(&d->dinosaur_pen, flags);
+ 
+@@ -301,7 +301,7 @@ static void dino_disable_irq(unsigned int irq)
+ 	struct dino_device *dino_dev = irq_desc[irq].chip_data;
+ 	int local_irq = gsc_find_local_irq(irq, dino_dev->global_irq, DINO_LOCAL_IRQS);
+ 
+-	DBG(KERN_WARNING "%s(0x%p, %d)\n", __FUNCTION__, dino_dev, irq);
++	DBG(KERN_WARNING "%s(0x%p, %d)\n", __func__, dino_dev, irq);
+ 
+ 	/* Clear the matching bit in the IMR register */
+ 	dino_dev->imr &= ~(DINO_MASK_IRQ(local_irq));
+@@ -314,7 +314,7 @@ static void dino_enable_irq(unsigned int irq)
+ 	int local_irq = gsc_find_local_irq(irq, dino_dev->global_irq, DINO_LOCAL_IRQS);
+ 	u32 tmp;
+ 
+-	DBG(KERN_WARNING "%s(0x%p, %d)\n", __FUNCTION__, dino_dev, irq);
++	DBG(KERN_WARNING "%s(0x%p, %d)\n", __func__, dino_dev, irq);
+ 
+ 	/*
+ 	** clear pending IRQ bits
+@@ -340,7 +340,7 @@ static void dino_enable_irq(unsigned int irq)
+ 	tmp = __raw_readl(dino_dev->hba.base_addr+DINO_ILR);
+ 	if (tmp & DINO_MASK_IRQ(local_irq)) {
+ 		DBG(KERN_WARNING "%s(): IRQ asserted! (ILR 0x%x)\n",
+-				__FUNCTION__, tmp);
++				__func__, tmp);
+ 		gsc_writel(dino_dev->txn_data, dino_dev->txn_addr);
  	}
-diff --git a/drivers/ide/pci/siimage.c b/drivers/ide/pci/siimage.c
-index cc4be96..178ea68 100644
---- a/drivers/ide/pci/siimage.c
-+++ b/drivers/ide/pci/siimage.c
-@@ -347,7 +347,7 @@ static int siimage_mmio_ide_dma_test_irq (ide_drive_t *drive)
- 			printk(KERN_WARNING "%s: sata_error = 0x%08x, "
- 				"watchdog = %d, %s\n",
- 				drive->name, sata_error, watchdog,
+ }
+@@ -388,7 +388,7 @@ ilr_again:
+ 		int local_irq = __ffs(mask);
+ 		int irq = dino_dev->global_irq[local_irq];
+ 		DBG(KERN_DEBUG "%s(%d, %p) mask 0x%x\n",
+-			__FUNCTION__, irq, intr_dev, mask);
++			__func__, irq, intr_dev, mask);
+ 		__do_IRQ(irq);
+ 		mask &= ~(1 << local_irq);
+ 	} while (mask);
+@@ -567,7 +567,7 @@ dino_fixup_bus(struct pci_bus *bus)
+ 	int port_base = HBA_PORT_BASE(dino_dev->hba.hba_num);
+ 
+ 	DBG(KERN_WARNING "%s(0x%p) bus %d platform_data 0x%p\n",
+-	    __FUNCTION__, bus, bus->secondary, 
++	    __func__, bus, bus->secondary, 
+ 	    bus->bridge->platform_data);
+ 
+ 	/* Firmware doesn't set up card-mode dino, so we have to */
+diff --git a/drivers/parisc/gsc.c b/drivers/parisc/gsc.c
+index 1b3e3fd..f7d088b 100644
+--- a/drivers/parisc/gsc.c
++++ b/drivers/parisc/gsc.c
+@@ -112,7 +112,7 @@ static void gsc_asic_disable_irq(unsigned int irq)
+ 	int local_irq = gsc_find_local_irq(irq, irq_dev->global_irq, 32);
+ 	u32 imr;
+ 
+-	DEBPRINTK(KERN_DEBUG "%s(%d) %s: IMR 0x%x\n", __FUNCTION__, irq,
++	DEBPRINTK(KERN_DEBUG "%s(%d) %s: IMR 0x%x\n", __func__, irq,
+ 			irq_dev->name, imr);
+ 
+ 	/* Disable the IRQ line by clearing the bit in the IMR */
+@@ -127,7 +127,7 @@ static void gsc_asic_enable_irq(unsigned int irq)
+ 	int local_irq = gsc_find_local_irq(irq, irq_dev->global_irq, 32);
+ 	u32 imr;
+ 
+-	DEBPRINTK(KERN_DEBUG "%s(%d) %s: IMR 0x%x\n", __FUNCTION__, irq,
++	DEBPRINTK(KERN_DEBUG "%s(%d) %s: IMR 0x%x\n", __func__, irq,
+ 			irq_dev->name, imr);
+ 
+ 	/* Enable the IRQ line by setting the bit in the IMR */
+diff --git a/drivers/parisc/lasi.c b/drivers/parisc/lasi.c
+index cb3d281..bee5100 100644
+--- a/drivers/parisc/lasi.c
++++ b/drivers/parisc/lasi.c
+@@ -193,7 +193,7 @@ lasi_init_chip(struct parisc_device *dev)
+ 	dev->irq = gsc_alloc_irq(&gsc_irq);
+ 	if (dev->irq < 0) {
+ 		printk(KERN_ERR "%s(): cannot get GSC irq\n",
 -				__FUNCTION__);
 +				__func__);
+ 		kfree(lasi);
+ 		return -EBUSY;
+ 	}
+diff --git a/drivers/parisc/lba_pci.c b/drivers/parisc/lba_pci.c
+index 66ce610..a28c894 100644
+--- a/drivers/parisc/lba_pci.c
++++ b/drivers/parisc/lba_pci.c
+@@ -377,12 +377,12 @@ static int elroy_cfg_read(struct pci_bus *bus, unsigned int devfn, int pos, int
+ 		/* original - Generate config cycle on broken elroy
+ 		  with risk we will miss PCI bus errors. */
+ 		*data = lba_rd_cfg(d, tok, pos, size);
+-		DBG_CFG("%s(%x+%2x) -> 0x%x (a)\n", __FUNCTION__, tok, pos, *data);
++		DBG_CFG("%s(%x+%2x) -> 0x%x (a)\n", __func__, tok, pos, *data);
+ 		return 0;
+ 	}
  
- 		} else {
- 			watchdog = (ext_stat & 0x8000) ? 1 : 0;
-diff --git a/drivers/ide/pci/sl82c105.c b/drivers/ide/pci/sl82c105.c
-index ee261ae..9f758e6 100644
---- a/drivers/ide/pci/sl82c105.c
-+++ b/drivers/ide/pci/sl82c105.c
-@@ -179,7 +179,7 @@ static void sl82c105_dma_start(ide_drive_t *drive)
- 	struct pci_dev *dev	= to_pci_dev(hwif->dev);
- 	int reg 		= 0x44 + drive->dn * 4;
- 
--	DBG(("%s(drive:%s)\n", __FUNCTION__, drive->name));
-+	DBG(("%s(drive:%s)\n", __func__, drive->name));
- 
- 	pci_write_config_word(dev, reg, drive->drive_data >> 16);
- 
-@@ -203,7 +203,7 @@ static int sl82c105_dma_end(ide_drive_t *drive)
- 	int reg 		= 0x44 + drive->dn * 4;
- 	int ret;
- 
--	DBG(("%s(drive:%s)\n", __FUNCTION__, drive->name));
-+	DBG(("%s(drive:%s)\n", __func__, drive->name));
- 
- 	ret = __ide_dma_end(drive);
- 
-diff --git a/drivers/ide/ppc/mpc8xx.c b/drivers/ide/ppc/mpc8xx.c
-index 38fbfb8..60a1756 100644
---- a/drivers/ide/ppc/mpc8xx.c
-+++ b/drivers/ide/ppc/mpc8xx.c
-@@ -468,7 +468,7 @@ static void m8xx_ide_set_pio_mode(ide_drive_t *drive, const u8 pio)
- #elif defined(CONFIG_IDE_EXT_DIRECT)
- 
- 	printk("%s[%d] %s: not implemented yet!\n",
--		__FILE__,__LINE__,__FUNCTION__);
-+		__FILE__,__LINE__,__func__);
- #endif /* defined(CONFIG_IDE_8xx_PCCARD) || defined(CONFIG_IDE_8xx_PCMCIA */
+ 	if (LBA_SKIP_PROBE(d) && !lba_device_present(bus->secondary, devfn, d)) {
+-		DBG_CFG("%s(%x+%2x) -> -1 (b)\n", __FUNCTION__, tok, pos);
++		DBG_CFG("%s(%x+%2x) -> -1 (b)\n", __func__, tok, pos);
+ 		/* either don't want to look or know device isn't present. */
+ 		*data = ~0U;
+ 		return(0);
+@@ -398,7 +398,7 @@ static int elroy_cfg_read(struct pci_bus *bus, unsigned int devfn, int pos, int
+ 	case 2: *data = READ_REG16(data_reg + (pos & 2)); break;
+ 	case 4: *data = READ_REG32(data_reg); break;
+ 	}
+-	DBG_CFG("%s(%x+%2x) -> 0x%x (c)\n", __FUNCTION__, tok, pos, *data);
++	DBG_CFG("%s(%x+%2x) -> 0x%x (c)\n", __func__, tok, pos, *data);
+ 	return 0;
  }
  
+@@ -441,16 +441,16 @@ static int elroy_cfg_write(struct pci_bus *bus, unsigned int devfn, int pos, int
+ 	if (!LBA_SKIP_PROBE(d)) {
+ 		/* Original Workaround */
+ 		lba_wr_cfg(d, tok, pos, (u32) data, size);
+-		DBG_CFG("%s(%x+%2x) = 0x%x (a)\n", __FUNCTION__, tok, pos,data);
++		DBG_CFG("%s(%x+%2x) = 0x%x (a)\n", __func__, tok, pos,data);
+ 		return 0;
+ 	}
+ 
+ 	if (LBA_SKIP_PROBE(d) && (!lba_device_present(bus->secondary, devfn, d))) {
+-		DBG_CFG("%s(%x+%2x) = 0x%x (b)\n", __FUNCTION__, tok, pos,data);
++		DBG_CFG("%s(%x+%2x) = 0x%x (b)\n", __func__, tok, pos,data);
+ 		return 1; /* New Workaround */
+ 	}
+ 
+-	DBG_CFG("%s(%x+%2x) = 0x%x (c)\n", __FUNCTION__, tok, pos, data);
++	DBG_CFG("%s(%x+%2x) = 0x%x (c)\n", __func__, tok, pos, data);
+ 
+ 	/* Basic Algorithm */
+ 	LBA_CFG_ADDR_SETUP(d, tok | pos);
+@@ -521,7 +521,7 @@ static int mercury_cfg_write(struct pci_bus *bus, unsigned int devfn, int pos, i
+ 	if ((pos > 255) || (devfn > 255))
+ 		return -EINVAL;
+ 
+-	DBG_CFG("%s(%x+%2x) <- 0x%x (c)\n", __FUNCTION__, tok, pos, data);
++	DBG_CFG("%s(%x+%2x) <- 0x%x (c)\n", __func__, tok, pos, data);
+ 
+ 	LBA_CFG_TR4_ADDR_SETUP(d, tok | pos);
+ 	switch(size) {
+@@ -890,7 +890,7 @@ LBA_PORT_IN(32, 0)
+ #define LBA_PORT_OUT(size, mask) \
+ static void lba_astro_out##size (struct pci_hba_data *d, u16 addr, u##size val) \
+ { \
+-	DBG_PORT("%s(0x%p, 0x%x, 0x%x)\n", __FUNCTION__, d, addr, val); \
++	DBG_PORT("%s(0x%p, 0x%x, 0x%x)\n", __func__, d, addr, val); \
+ 	WRITE_REG##size(val, astro_iop_base + addr); \
+ 	if (LBA_DEV(d)->hw_rev < 3) \
+ 		lba_t32 = READ_U32(d->base_addr + LBA_FUNC_ID); \
+@@ -932,7 +932,7 @@ static struct pci_port_ops lba_astro_port_ops = {
+ static u##size lba_pat_in##size (struct pci_hba_data *l, u16 addr) \
+ { \
+ 	u##size t; \
+-	DBG_PORT("%s(0x%p, 0x%x) ->", __FUNCTION__, l, addr); \
++	DBG_PORT("%s(0x%p, 0x%x) ->", __func__, l, addr); \
+ 	t = READ_REG##size(PIOP_TO_GMMIO(LBA_DEV(l), addr)); \
+ 	DBG_PORT(" 0x%x\n", t); \
+ 	return (t); \
+@@ -948,7 +948,7 @@ LBA_PORT_IN(32, 0)
+ static void lba_pat_out##size (struct pci_hba_data *l, u16 addr, u##size val) \
+ { \
+ 	void __iomem *where = PIOP_TO_GMMIO(LBA_DEV(l), addr); \
+-	DBG_PORT("%s(0x%p, 0x%x, 0x%x)\n", __FUNCTION__, l, addr, val); \
++	DBG_PORT("%s(0x%p, 0x%x, 0x%x)\n", __func__, l, addr, val); \
+ 	WRITE_REG##size(val, where); \
+ 	/* flush the I/O down to the elroy at least */ \
+ 	lba_t32 = READ_U32(l->base_addr + LBA_FUNC_ID); \
+@@ -1584,7 +1584,7 @@ void lba_set_iregs(struct parisc_device *lba, u32 ibase, u32 imask)
+ 	WARN_ON((ibase & 0x001fffff) != 0);
+ 	WARN_ON((imask & 0x001fffff) != 0);
+ 	
+-	DBG("%s() ibase 0x%x imask 0x%x\n", __FUNCTION__, ibase, imask);
++	DBG("%s() ibase 0x%x imask 0x%x\n", __func__, ibase, imask);
+ 	WRITE_REG32( imask, base_addr + LBA_IMASK);
+ 	WRITE_REG32( ibase, base_addr + LBA_IBASE);
+ 	iounmap(base_addr);
+diff --git a/drivers/parisc/led.c b/drivers/parisc/led.c
+index 703b85e..f9b1266 100644
+--- a/drivers/parisc/led.c
++++ b/drivers/parisc/led.c
+@@ -569,7 +569,7 @@ int __init register_led_driver(int model, unsigned long cmd_reg, unsigned long d
+ 
+ 	default:
+ 		printk(KERN_ERR "%s: Wrong LCD/LED model %d !\n",
+-		       __FUNCTION__, lcd_info.model);
++		       __func__, lcd_info.model);
+ 		return 1;
+ 	}
+ 	
+diff --git a/drivers/parisc/sba_iommu.c b/drivers/parisc/sba_iommu.c
+index d06627c..520589c 100644
+--- a/drivers/parisc/sba_iommu.c
++++ b/drivers/parisc/sba_iommu.c
+@@ -360,7 +360,7 @@ sba_search_bitmap(struct ioc *ioc, unsigned long bits_wanted)
+ 		}
+ 		mask = RESMAP_MASK(bits_wanted) >> bitshiftcnt;
+ 
+-		DBG_RES("%s() o %ld %p", __FUNCTION__, o, res_ptr);
++		DBG_RES("%s() o %ld %p", __func__, o, res_ptr);
+ 		while(res_ptr < res_end)
+ 		{ 
+ 			DBG_RES("    %p %lx %lx\n", res_ptr, mask, *res_ptr);
+@@ -428,7 +428,7 @@ sba_alloc_range(struct ioc *ioc, size_t size)
+ #endif
+ 
+ 	DBG_RES("%s(%x) %d -> %lx hint %x/%x\n",
+-		__FUNCTION__, size, pages_needed, pide,
++		__func__, size, pages_needed, pide,
+ 		(uint) ((unsigned long) ioc->res_hint - (unsigned long) ioc->res_map),
+ 		ioc->res_bitshift );
+ 
+@@ -471,7 +471,7 @@ sba_free_range(struct ioc *ioc, dma_addr_t iova, size_t size)
+ 	unsigned long m = RESMAP_MASK(bits_not_wanted) >> (pide & (BITS_PER_LONG - 1));
+ 
+ 	DBG_RES("%s( ,%x,%x) %x/%lx %x %p %lx\n",
+-		__FUNCTION__, (uint) iova, size,
++		__func__, (uint) iova, size,
+ 		bits_not_wanted, m, pide, res_ptr, *res_ptr);
+ 
+ #ifdef SBA_COLLECT_STATS
+@@ -714,7 +714,7 @@ sba_map_single(struct device *dev, void *addr, size_t size,
+ 	iovp = (dma_addr_t) pide << IOVP_SHIFT;
+ 
+ 	DBG_RUN("%s() 0x%p -> 0x%lx\n",
+-		__FUNCTION__, addr, (long) iovp | offset);
++		__func__, addr, (long) iovp | offset);
+ 
+ 	pdir_start = &(ioc->pdir_base[pide]);
+ 
+@@ -772,7 +772,7 @@ sba_unmap_single(struct device *dev, dma_addr_t iova, size_t size,
+ 	unsigned long flags; 
+ 	dma_addr_t offset;
+ 
+-	DBG_RUN("%s() iovp 0x%lx/%x\n", __FUNCTION__, (long) iova, size);
++	DBG_RUN("%s() iovp 0x%lx/%x\n", __func__, (long) iova, size);
+ 
+ 	ioc = GET_IOC(dev);
+ 	offset = iova & ~IOVP_MASK;
+@@ -911,7 +911,7 @@ sba_map_sg(struct device *dev, struct scatterlist *sglist, int nents,
+ 	int coalesced, filled = 0;
+ 	unsigned long flags;
+ 
+-	DBG_RUN_SG("%s() START %d entries\n", __FUNCTION__, nents);
++	DBG_RUN_SG("%s() START %d entries\n", __func__, nents);
+ 
+ 	ioc = GET_IOC(dev);
+ 
+@@ -972,7 +972,7 @@ sba_map_sg(struct device *dev, struct scatterlist *sglist, int nents,
+ 
+ 	spin_unlock_irqrestore(&ioc->res_lock, flags);
+ 
+-	DBG_RUN_SG("%s() DONE %d mappings\n", __FUNCTION__, filled);
++	DBG_RUN_SG("%s() DONE %d mappings\n", __func__, filled);
+ 
+ 	return filled;
+ }
+@@ -997,7 +997,7 @@ sba_unmap_sg(struct device *dev, struct scatterlist *sglist, int nents,
+ #endif
+ 
+ 	DBG_RUN_SG("%s() START %d entries,  %p,%x\n",
+-		__FUNCTION__, nents, sg_virt_addr(sglist), sglist->length);
++		__func__, nents, sg_virt_addr(sglist), sglist->length);
+ 
+ 	ioc = GET_IOC(dev);
+ 
+@@ -1021,7 +1021,7 @@ sba_unmap_sg(struct device *dev, struct scatterlist *sglist, int nents,
+ 		++sglist;
+ 	}
+ 
+-	DBG_RUN_SG("%s() DONE (nents %d)\n", __FUNCTION__,  nents);
++	DBG_RUN_SG("%s() DONE (nents %d)\n", __func__,  nents);
+ 
+ #ifdef ASSERT_PDIR_SANITY
+ 	spin_lock_irqsave(&ioc->res_lock, flags);
+@@ -1092,7 +1092,7 @@ sba_alloc_pdir(unsigned int pdir_size)
+ 	pdir_base = __get_free_pages(GFP_KERNEL, pdir_order);
+ 	if (NULL == (void *) pdir_base)	{
+ 		panic("%s() could not allocate I/O Page Table\n",
+-			__FUNCTION__);
++			__func__);
+ 	}
+ 
+ 	/* If this is not PA8700 (PCX-W2)
+@@ -1235,7 +1235,7 @@ sba_ioc_init_pluto(struct parisc_device *sba, struct ioc *ioc, int ioc_num)
+ 	ioc->pdir_size = (iova_space_size / IOVP_SIZE) * sizeof(u64);
+ 
+ 	DBG_INIT("%s() hpa 0x%p IOV %dMB (%d bits)\n",
+-		__FUNCTION__, ioc->ioc_hpa, iova_space_size >> 20,
++		__func__, ioc->ioc_hpa, iova_space_size >> 20,
+ 		iov_order + PAGE_SHIFT);
+ 
+ 	ioc->pdir_base = (void *) __get_free_pages(GFP_KERNEL,
+@@ -1246,7 +1246,7 @@ sba_ioc_init_pluto(struct parisc_device *sba, struct ioc *ioc, int ioc_num)
+ 	memset(ioc->pdir_base, 0, ioc->pdir_size);
+ 
+ 	DBG_INIT("%s() pdir %p size %x\n",
+-			__FUNCTION__, ioc->pdir_base, ioc->pdir_size);
++			__func__, ioc->pdir_base, ioc->pdir_size);
+ 
+ #ifdef SBA_HINT_SUPPORT
+ 	ioc->hint_shift_pdir = iov_order + PAGE_SHIFT;
+@@ -1328,7 +1328,7 @@ sba_ioc_init_pluto(struct parisc_device *sba, struct ioc *ioc, int ioc_num)
+ 
+ 	if (agp_found && sba_reserve_agpgart) {
+ 		printk(KERN_INFO "%s: reserving %dMb of IOVA space for agpgart\n",
+-		       __FUNCTION__, (iova_space_size/2) >> 20);
++		       __func__, (iova_space_size/2) >> 20);
+ 		ioc->pdir_size /= 2;
+ 		ioc->pdir_base[PDIR_INDEX(iova_space_size/2)] = SBA_AGPGART_COOKIE;
+ 	}
+@@ -1380,7 +1380,7 @@ sba_ioc_init(struct parisc_device *sba, struct ioc *ioc, int ioc_num)
+ 	ioc->pdir_size = pdir_size = (iova_space_size/IOVP_SIZE) * sizeof(u64);
+ 
+ 	DBG_INIT("%s() hpa 0x%lx mem %ldMB IOV %dMB (%d bits)\n",
+-			__FUNCTION__,
++			__func__,
+ 			ioc->ioc_hpa,
+ 			(unsigned long) num_physpages >> (20 - PAGE_SHIFT),
+ 			iova_space_size>>20,
+@@ -1389,7 +1389,7 @@ sba_ioc_init(struct parisc_device *sba, struct ioc *ioc, int ioc_num)
+ 	ioc->pdir_base = sba_alloc_pdir(pdir_size);
+ 
+ 	DBG_INIT("%s() pdir %p size %x\n",
+-			__FUNCTION__, ioc->pdir_base, pdir_size);
++			__func__, ioc->pdir_base, pdir_size);
+ 
+ #ifdef SBA_HINT_SUPPORT
+ 	/* FIXME : DMA HINTs not used */
+@@ -1417,7 +1417,7 @@ sba_ioc_init(struct parisc_device *sba, struct ioc *ioc, int ioc_num)
+ #endif
+ 
+ 	DBG_INIT("%s() IOV base 0x%lx mask 0x%0lx\n",
+-		__FUNCTION__, ioc->ibase, ioc->imask);
++		__func__, ioc->ibase, ioc->imask);
+ 
+ 	/*
+ 	** FIXME: Hint registers are programmed with default hint
+@@ -1444,7 +1444,7 @@ sba_ioc_init(struct parisc_device *sba, struct ioc *ioc, int ioc_num)
+ 
+ 	ioc->ibase = 0; /* used by SBA_IOVA and related macros */	
+ 
+-	DBG_INIT("%s() DONE\n", __FUNCTION__);
++	DBG_INIT("%s() DONE\n", __func__);
+ }
+ 
+
+@@ -1518,7 +1518,7 @@ printk("sba_hw_init(): mem_boot 0x%x 0x%x 0x%x 0x%x\n", PAGE0->mem_boot.hpa,
+ 	if (!IS_PLUTO(sba_dev->dev)) {
+ 		ioc_ctl = READ_REG(sba_dev->sba_hpa+IOC_CTRL);
+ 		DBG_INIT("%s() hpa 0x%lx ioc_ctl 0x%Lx ->",
+-			__FUNCTION__, sba_dev->sba_hpa, ioc_ctl);
++			__func__, sba_dev->sba_hpa, ioc_ctl);
+ 		ioc_ctl &= ~(IOC_CTRL_RM | IOC_CTRL_NC | IOC_CTRL_CE);
+ 		ioc_ctl |= IOC_CTRL_DD | IOC_CTRL_D4 | IOC_CTRL_TC;
+ 			/* j6700 v1.6 firmware sets 0x294f */
+@@ -1649,7 +1649,7 @@ sba_common_init(struct sba_device *sba_dev)
+ 
+ 		res_size >>= 3;  /* convert bit count to byte count */
+ 		DBG_INIT("%s() res_size 0x%x\n",
+-			__FUNCTION__, res_size);
++			__func__, res_size);
+ 
+ 		sba_dev->ioc[i].res_size = res_size;
+ 		sba_dev->ioc[i].res_map = (char *) __get_free_pages(GFP_KERNEL, get_order(res_size));
+@@ -1662,7 +1662,7 @@ sba_common_init(struct sba_device *sba_dev)
+ 		if (NULL == sba_dev->ioc[i].res_map)
+ 		{
+ 			panic("%s:%s() could not allocate resource map\n",
+-			      __FILE__, __FUNCTION__ );
++			      __FILE__, __func__ );
+ 		}
+ 
+ 		memset(sba_dev->ioc[i].res_map, 0, res_size);
+@@ -1699,7 +1699,7 @@ sba_common_init(struct sba_device *sba_dev)
+ #endif
+ 
+ 		DBG_INIT("%s() %d res_map %x %p\n",
+-			__FUNCTION__, i, res_size, sba_dev->ioc[i].res_map);
++			__func__, i, res_size, sba_dev->ioc[i].res_map);
+ 	}
+ 
+ 	spin_lock_init(&sba_dev->sba_lock);
+diff --git a/drivers/parisc/wax.c b/drivers/parisc/wax.c
+index 813c2c2..892a83b 100644
+--- a/drivers/parisc/wax.c
++++ b/drivers/parisc/wax.c
+@@ -93,7 +93,7 @@ wax_init_chip(struct parisc_device *dev)
+ 	dev->irq = gsc_claim_irq(&gsc_irq, WAX_GSC_IRQ);
+ 	if (dev->irq < 0) {
+ 		printk(KERN_ERR "%s(): cannot get GSC irq\n",
+-				__FUNCTION__);
++				__func__);
+ 		kfree(wax);
+ 		return -EBUSY;
+ 	}
 -- 
 1.5.4.3.500.g83a2c
 
