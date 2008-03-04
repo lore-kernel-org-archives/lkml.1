@@ -1,30 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757654AbYCDDL7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761561AbYCDDMe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757654AbYCDDL7 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Mar 2008 22:11:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757649AbYCDDKB
+	id S1761561AbYCDDMe (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Mar 2008 22:12:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758850AbYCDDKL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Mar 2008 22:10:01 -0500
-Received: from wa-out-1112.google.com ([209.85.146.176]:12131 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755173AbYCDDJz (ORCPT
+	Mon, 3 Mar 2008 22:10:11 -0500
+Received: from ti-out-0910.google.com ([209.85.142.186]:20759 "EHLO
+	ti-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755194AbYCDDJ5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Mar 2008 22:09:55 -0500
+	Mon, 3 Mar 2008 22:09:57 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=subject:from:to:cc:in-reply-to:references:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=KMucP1L2bV8io3tFULkaYYBvtabdZ2cf1ehXB3Da0nAX469V3b7QWwAtwp8Dqga3xAEBu52tNeCOu6mIOA1ayDQrDcBmG0GJGsoc83bFsRTuW0h0roG8Sjw0K2JdLfwRtBsjkVFkLivNlg+LP+IScYX29ts1cZU9VhrXBbeoF6Y=
-Subject: [PATCH 06/14] drivers/s390: replace remaining __FUNCTION__
-	occurrences
+        b=L/auElQst82W7Gy2inu6bZZ+xTi0IEv1NYqad5V3Sitd21c/zXVRO+EE1x6rxy+TFBqQ1cXHgFgaqEFm6ihy2AQ1BwDyhknju2G9ebu9dIEwGuIosfTU8w8U37GXrX2nt7zDhejtshUsX3RN4ucLfg4oMLtUTvYP32U9j+j/NXs=
+Subject: [PATCH 05/14] pci: replace remaining __FUNCTION__ occurrences
 From: Harvey Harrison <harvey.harrison@gmail.com>
-To: Martin Schwidefsky <schwidefsky@de.ibm.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: LKML <linux-kernel@vger.kernel.org>
 In-Reply-To: <ff8fd021606e7a6f03e9c274230cfcf64eade6d2.1204599636.git.harvey.harrison@gmail.com>
 References: <ff8fd021606e7a6f03e9c274230cfcf64eade6d2.1204599636.git.harvey.harrison@gmail.com>
 Content-Type: text/plain
-Date: Mon, 03 Mar 2008 19:09:47 -0800
-Message-Id: <1204600187.22933.86.camel@brick>
+Date: Mon, 03 Mar 2008 19:09:46 -0800
+Message-Id: <1204600186.22933.85.camel@brick>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.12.1 
 Content-Transfer-Encoding: 7bit
@@ -36,2523 +34,3923 @@ __FUNCTION__ is gcc-specific, use __func__
 
 Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
 ---
- drivers/s390/block/dasd.c        |    4 +-
- drivers/s390/char/tape_34xx.c    |    2 +-
- drivers/s390/char/vmwatchdog.c   |    4 +-
- drivers/s390/char/zcore.c        |    2 +-
- drivers/s390/cio/device_status.c |    2 +-
- drivers/s390/crypto/zcrypt_api.h |    8 +-
- drivers/s390/net/claw.c          |  344 +++++++++++++++++++-------------------
- drivers/s390/net/ctcmain.c       |  112 ++++++------
- drivers/s390/net/netiucv.c       |   96 ++++++------
- drivers/s390/s390mach.c          |    8 +-
- drivers/s390/scsi/zfcp_def.h     |    2 +-
- 11 files changed, 292 insertions(+), 292 deletions(-)
+ drivers/pci/hotplug/acpi_pcihp.c        |   24 +++---
+ drivers/pci/hotplug/acpiphp_core.c      |   18 ++--
+ drivers/pci/hotplug/acpiphp_glue.c      |   38 ++++----
+ drivers/pci/hotplug/acpiphp_ibm.c       |   36 ++++----
+ drivers/pci/hotplug/cpci_hotplug_core.c |   60 +++++++-------
+ drivers/pci/hotplug/cpci_hotplug_pci.c  |   10 +-
+ drivers/pci/hotplug/cpqphp.h            |    6 +-
+ drivers/pci/hotplug/cpqphp_core.c       |   38 ++++----
+ drivers/pci/hotplug/cpqphp_ctrl.c       |   64 +++++++-------
+ drivers/pci/hotplug/cpqphp_nvram.c      |    2 +-
+ drivers/pci/hotplug/cpqphp_pci.c        |    8 +-
+ drivers/pci/hotplug/fakephp.c           |    2 +-
+ drivers/pci/hotplug/ibmphp_core.c       |   24 +++---
+ drivers/pci/hotplug/ibmphp_ebda.c       |   92 ++++++++++----------
+ drivers/pci/hotplug/ibmphp_hpc.c        |   68 +++++++-------
+ drivers/pci/hotplug/ibmphp_pci.c        |   18 ++--
+ drivers/pci/hotplug/ibmphp_res.c        |   12 ++--
+ drivers/pci/hotplug/pci_hotplug_core.c  |    2 +-
+ drivers/pci/hotplug/pciehp.h            |    2 +-
+ drivers/pci/hotplug/pciehp_core.c       |   32 ++++----
+ drivers/pci/hotplug/pciehp_ctrl.c       |   34 ++++----
+ drivers/pci/hotplug/pciehp_hpc.c        |  144 +++++++++++++++---------------
+ drivers/pci/hotplug/pciehp_pci.c        |    8 +-
+ drivers/pci/hotplug/pcihp_skeleton.c    |   18 ++--
+ drivers/pci/hotplug/rpadlpar_core.c     |   20 ++--
+ drivers/pci/hotplug/rpaphp_core.c       |    6 +-
+ drivers/pci/hotplug/rpaphp_pci.c        |   14 ++--
+ drivers/pci/hotplug/rpaphp_slot.c       |    6 +-
+ drivers/pci/hotplug/sgi_hotplug.c       |    8 +-
+ drivers/pci/hotplug/shpchp.h            |    6 +-
+ drivers/pci/hotplug/shpchp_core.c       |   26 +++---
+ drivers/pci/hotplug/shpchp_ctrl.c       |   46 +++++-----
+ drivers/pci/hotplug/shpchp_hpc.c        |   64 +++++++-------
+ drivers/pci/hotplug/shpchp_pci.c        |    4 +-
+ drivers/pci/pci.c                       |    2 +-
+ drivers/pci/pcie/aer/aerdrv.c           |    4 +-
+ drivers/pci/pcie/aer/aerdrv_core.c      |    2 +-
+ drivers/pci/pcie/portdrv_core.c         |    4 +-
+ drivers/pci/pcie/portdrv_pci.c          |    2 +-
+ 39 files changed, 487 insertions(+), 487 deletions(-)
 
-diff --git a/drivers/s390/block/dasd.c b/drivers/s390/block/dasd.c
-index ccf46c9..530cfeb 100644
---- a/drivers/s390/block/dasd.c
-+++ b/drivers/s390/block/dasd.c
-@@ -980,12 +980,12 @@ void dasd_int_handler(struct ccw_device *cdev, unsigned long intparm,
- 			break;
- 		case -ETIMEDOUT:
- 			printk(KERN_WARNING"%s(%s): request timed out\n",
--			       __FUNCTION__, cdev->dev.bus_id);
-+			       __func__, cdev->dev.bus_id);
- 			//FIXME - dasd uses own timeout interface...
+diff --git a/drivers/pci/hotplug/acpi_pcihp.c b/drivers/pci/hotplug/acpi_pcihp.c
+index 270a33c..f8c187a 100644
+--- a/drivers/pci/hotplug/acpi_pcihp.c
++++ b/drivers/pci/hotplug/acpi_pcihp.c
+@@ -36,7 +36,7 @@
+ 
+ #define MY_NAME	"acpi_pcihp"
+ 
+-#define dbg(fmt, arg...) do { if (debug_acpi) printk(KERN_DEBUG "%s: %s: " fmt , MY_NAME , __FUNCTION__ , ## arg); } while (0)
++#define dbg(fmt, arg...) do { if (debug_acpi) printk(KERN_DEBUG "%s: %s: " fmt , MY_NAME , __func__ , ## arg); } while (0)
+ #define err(format, arg...) printk(KERN_ERR "%s: " format , MY_NAME , ## arg)
+ #define info(format, arg...) printk(KERN_INFO "%s: " format , MY_NAME , ## arg)
+ #define warn(format, arg...) printk(KERN_WARNING "%s: " format , MY_NAME , ## arg)
+@@ -71,7 +71,7 @@ decode_type0_hpx_record(union acpi_object *record, struct hotplug_params *hpx)
+ 	default:
+ 		printk(KERN_WARNING
+ 		       "%s: Type 0 Revision %d record not supported\n",
+-		       __FUNCTION__, revision);
++		       __func__, revision);
+ 		return AE_ERROR;
+ 	}
+ 	return AE_OK;
+@@ -100,7 +100,7 @@ decode_type1_hpx_record(union acpi_object *record, struct hotplug_params *hpx)
+ 	default:
+ 		printk(KERN_WARNING
+ 		       "%s: Type 1 Revision %d record not supported\n",
+-		       __FUNCTION__, revision);
++		       __func__, revision);
+ 		return AE_ERROR;
+ 	}
+ 	return AE_OK;
+@@ -142,7 +142,7 @@ decode_type2_hpx_record(union acpi_object *record, struct hotplug_params *hpx)
+ 	default:
+ 		printk(KERN_WARNING
+ 		       "%s: Type 2 Revision %d record not supported\n",
+-		       __FUNCTION__, revision);
++		       __func__, revision);
+ 		return AE_ERROR;
+ 	}
+ 	return AE_OK;
+@@ -203,7 +203,7 @@ acpi_run_hpx(acpi_handle handle, struct hotplug_params *hpx)
  			break;
  		default:
- 			printk(KERN_WARNING"%s(%s): unknown error %ld\n",
--			       __FUNCTION__, cdev->dev.bus_id, PTR_ERR(irb));
-+			       __func__, cdev->dev.bus_id, PTR_ERR(irb));
+ 			printk(KERN_ERR "%s: Type %d record not supported\n",
+-			       __FUNCTION__, type);
++			       __func__, type);
+ 			status = AE_ERROR;
+ 			goto exit;
  		}
- 		return;
- 	}
-diff --git a/drivers/s390/char/tape_34xx.c b/drivers/s390/char/tape_34xx.c
-index 5b47e9c..874adf3 100644
---- a/drivers/s390/char/tape_34xx.c
-+++ b/drivers/s390/char/tape_34xx.c
-@@ -394,7 +394,7 @@ tape_34xx_unit_check(struct tape_device *device, struct tape_request *request,
- 			return tape_34xx_erp_failed(request, -ENOSPC);
+@@ -235,7 +235,7 @@ acpi_run_hpp(acpi_handle handle, struct hotplug_params *hpp)
+ 		ret_buf.pointer = kmalloc (ret_buf.length, GFP_KERNEL);
+ 		if (!ret_buf.pointer) {
+ 			printk(KERN_ERR "%s:%s alloc for _HPP fail\n",
+-				__FUNCTION__, (char *)string.pointer);
++				__func__, (char *)string.pointer);
+ 			kfree(string.pointer);
+ 			return AE_NO_MEMORY;
+ 		}
+@@ -245,7 +245,7 @@ acpi_run_hpp(acpi_handle handle, struct hotplug_params *hpp)
+ 			break;
+ 	default:
+ 		if (ACPI_FAILURE(status)) {
+-			pr_debug("%s:%s _HPP fail=0x%x\n", __FUNCTION__,
++			pr_debug("%s:%s _HPP fail=0x%x\n", __func__,
+ 				(char *)string.pointer, status);
+ 			kfree(string.pointer);
+ 			return status;
+@@ -254,7 +254,7 @@ acpi_run_hpp(acpi_handle handle, struct hotplug_params *hpp)
+ 
+ 	ext_obj = (union acpi_object *) ret_buf.pointer;
+ 	if (ext_obj->type != ACPI_TYPE_PACKAGE) {
+-		printk(KERN_ERR "%s:%s _HPP obj not a package\n", __FUNCTION__,
++		printk(KERN_ERR "%s:%s _HPP obj not a package\n", __func__,
+ 				(char *)string.pointer);
+ 		status = AE_ERROR;
+ 		goto free_and_return;
+@@ -270,7 +270,7 @@ acpi_run_hpp(acpi_handle handle, struct hotplug_params *hpp)
+ 			break;
  		default:
- 			PRINT_ERR("Invalid op in %s:%i\n",
--				  __FUNCTION__, __LINE__);
-+				  __func__, __LINE__);
- 			return tape_34xx_erp_failed(request, 0);
+ 			printk(KERN_ERR "%s:%s _HPP obj type incorrect\n",
+-				__FUNCTION__, (char *)string.pointer);
++				__func__, (char *)string.pointer);
+ 			status = AE_ERROR;
+ 			goto free_and_return;
+ 		}
+@@ -311,12 +311,12 @@ acpi_status acpi_run_oshp(acpi_handle handle)
+ 	if (ACPI_FAILURE(status))
+ 		if (status != AE_NOT_FOUND)
+ 			printk(KERN_ERR "%s:%s OSHP fails=0x%x\n",
+-			       __FUNCTION__, (char *)string.pointer, status);
++			       __func__, (char *)string.pointer, status);
+ 		else
+ 			dbg("%s:%s OSHP not found\n",
+-			    __FUNCTION__, (char *)string.pointer);
++			    __func__, (char *)string.pointer);
+ 	else
+-		pr_debug("%s:%s OSHP passes\n", __FUNCTION__,
++		pr_debug("%s:%s OSHP passes\n", __func__,
+ 			(char *)string.pointer);
+ 
+ 	kfree(string.pointer);
+diff --git a/drivers/pci/hotplug/acpiphp_core.c b/drivers/pci/hotplug/acpiphp_core.c
+index 9279d5b..7af68ba 100644
+--- a/drivers/pci/hotplug/acpiphp_core.c
++++ b/drivers/pci/hotplug/acpiphp_core.c
+@@ -138,7 +138,7 @@ static int enable_slot(struct hotplug_slot *hotplug_slot)
+ {
+ 	struct slot *slot = hotplug_slot->private;
+ 
+-	dbg("%s - physical_slot = %s\n", __FUNCTION__, hotplug_slot->name);
++	dbg("%s - physical_slot = %s\n", __func__, hotplug_slot->name);
+ 
+ 	/* enable the specified slot */
+ 	return acpiphp_enable_slot(slot->acpi_slot);
+@@ -156,7 +156,7 @@ static int disable_slot(struct hotplug_slot *hotplug_slot)
+ 	struct slot *slot = hotplug_slot->private;
+ 	int retval;
+ 
+-	dbg("%s - physical_slot = %s\n", __FUNCTION__, hotplug_slot->name);
++	dbg("%s - physical_slot = %s\n", __func__, hotplug_slot->name);
+ 
+ 	/* disable the specified slot */
+ 	retval = acpiphp_disable_slot(slot->acpi_slot);
+@@ -179,7 +179,7 @@ static int disable_slot(struct hotplug_slot *hotplug_slot)
+  {
+ 	int retval = -ENODEV;
+ 
+- 	dbg("%s - physical_slot = %s\n", __FUNCTION__, hotplug_slot->name);
++ 	dbg("%s - physical_slot = %s\n", __func__, hotplug_slot->name);
+  
+ 	if (attention_info && try_module_get(attention_info->owner)) {
+ 		retval = attention_info->set_attn(hotplug_slot, status);
+@@ -202,7 +202,7 @@ static int get_power_status(struct hotplug_slot *hotplug_slot, u8 *value)
+ {
+ 	struct slot *slot = hotplug_slot->private;
+ 
+-	dbg("%s - physical_slot = %s\n", __FUNCTION__, hotplug_slot->name);
++	dbg("%s - physical_slot = %s\n", __func__, hotplug_slot->name);
+ 
+ 	*value = acpiphp_get_power_status(slot->acpi_slot);
+ 
+@@ -224,7 +224,7 @@ static int get_attention_status(struct hotplug_slot *hotplug_slot, u8 *value)
+ {
+ 	int retval = -EINVAL;
+ 
+-	dbg("%s - physical_slot = %s\n", __FUNCTION__, hotplug_slot->name);
++	dbg("%s - physical_slot = %s\n", __func__, hotplug_slot->name);
+ 
+ 	if (attention_info && try_module_get(attention_info->owner)) {
+ 		retval = attention_info->get_attn(hotplug_slot, value);
+@@ -247,7 +247,7 @@ static int get_latch_status(struct hotplug_slot *hotplug_slot, u8 *value)
+ {
+ 	struct slot *slot = hotplug_slot->private;
+ 
+-	dbg("%s - physical_slot = %s\n", __FUNCTION__, hotplug_slot->name);
++	dbg("%s - physical_slot = %s\n", __func__, hotplug_slot->name);
+ 
+ 	*value = acpiphp_get_latch_status(slot->acpi_slot);
+ 
+@@ -267,7 +267,7 @@ static int get_adapter_status(struct hotplug_slot *hotplug_slot, u8 *value)
+ {
+ 	struct slot *slot = hotplug_slot->private;
+ 
+-	dbg("%s - physical_slot = %s\n", __FUNCTION__, hotplug_slot->name);
++	dbg("%s - physical_slot = %s\n", __func__, hotplug_slot->name);
+ 
+ 	*value = acpiphp_get_adapter_status(slot->acpi_slot);
+ 
+@@ -284,7 +284,7 @@ static int get_address(struct hotplug_slot *hotplug_slot, u32 *value)
+ {
+ 	struct slot *slot = hotplug_slot->private;
+ 
+-	dbg("%s - physical_slot = %s\n", __FUNCTION__, hotplug_slot->name);
++	dbg("%s - physical_slot = %s\n", __func__, hotplug_slot->name);
+ 
+ 	*value = acpiphp_get_address(slot->acpi_slot);
+ 
+@@ -318,7 +318,7 @@ static void release_slot(struct hotplug_slot *hotplug_slot)
+ {
+ 	struct slot *slot = hotplug_slot->private;
+ 
+-	dbg("%s - physical_slot = %s\n", __FUNCTION__, hotplug_slot->name);
++	dbg("%s - physical_slot = %s\n", __func__, hotplug_slot->name);
+ 
+ 	kfree(slot->hotplug_slot);
+ 	kfree(slot);
+diff --git a/drivers/pci/hotplug/acpiphp_glue.c b/drivers/pci/hotplug/acpiphp_glue.c
+index cf22f9e..fa801c1 100644
+--- a/drivers/pci/hotplug/acpiphp_glue.c
++++ b/drivers/pci/hotplug/acpiphp_glue.c
+@@ -352,7 +352,7 @@ static void decode_hpp(struct acpiphp_bridge *bridge)
+ 		/* use default numbers */
+ 		printk(KERN_WARNING
+ 		       "%s: Could not get hotplug parameters. Use defaults\n",
+-		       __FUNCTION__);
++		       __func__);
+ 		bridge->hpp.t0 = &bridge->hpp.type0_data;
+ 		bridge->hpp.t0->revision = 0;
+ 		bridge->hpp.t0->cache_line_size = 0x10;
+@@ -534,7 +534,7 @@ find_p2p_bridge(acpi_handle handle, u32 lvl, void *context, void **rv)
+ 
+ 	status = acpi_evaluate_integer(handle, "_ADR", NULL, &tmp);
+ 	if (ACPI_FAILURE(status)) {
+-		dbg("%s: _ADR evaluation failure\n", __FUNCTION__);
++		dbg("%s: _ADR evaluation failure\n", __func__);
+ 		return AE_OK;
+ 	}
+ 
+@@ -578,7 +578,7 @@ static int add_bridge(acpi_handle handle)
+ 	if (ACPI_SUCCESS(status)) {
+ 		status = acpi_evaluate_integer(handle, "_STA", NULL, &tmp);
+ 		if (ACPI_FAILURE(status)) {
+-			dbg("%s: _STA evaluation failure\n", __FUNCTION__);
++			dbg("%s: _STA evaluation failure\n", __func__);
+ 			return 0;
+ 		}
+ 		if ((tmp & ACPI_STA_FUNCTIONING) == 0)
+@@ -928,10 +928,10 @@ static int power_on_slot(struct acpiphp_slot *slot)
+ 		func = list_entry(l, struct acpiphp_func, sibling);
+ 
+ 		if (func->flags & FUNC_HAS_PS0) {
+-			dbg("%s: executing _PS0\n", __FUNCTION__);
++			dbg("%s: executing _PS0\n", __func__);
+ 			status = acpi_evaluate_object(func->handle, "_PS0", NULL, NULL);
+ 			if (ACPI_FAILURE(status)) {
+-				warn("%s: _PS0 failed\n", __FUNCTION__);
++				warn("%s: _PS0 failed\n", __func__);
+ 				retval = -1;
+ 				goto err_exit;
+ 			} else
+@@ -966,7 +966,7 @@ static int power_off_slot(struct acpiphp_slot *slot)
+ 		if (func->flags & FUNC_HAS_PS3) {
+ 			status = acpi_evaluate_object(func->handle, "_PS3", NULL, NULL);
+ 			if (ACPI_FAILURE(status)) {
+-				warn("%s: _PS3 failed\n", __FUNCTION__);
++				warn("%s: _PS3 failed\n", __func__);
+ 				retval = -1;
+ 				goto err_exit;
+ 			} else
+@@ -1300,7 +1300,7 @@ int acpiphp_eject_slot(struct acpiphp_slot *slot)
+ 
+ 			status = acpi_evaluate_object(func->handle, "_EJ0", &arg_list, NULL);
+ 			if (ACPI_FAILURE(status)) {
+-				warn("%s: _EJ0 failed\n", __FUNCTION__);
++				warn("%s: _EJ0 failed\n", __func__);
+ 				return -1;
+ 			} else
+ 				break;
+@@ -1349,7 +1349,7 @@ static int acpiphp_check_bridge(struct acpiphp_bridge *bridge)
  		}
  	}
-diff --git a/drivers/s390/char/vmwatchdog.c b/drivers/s390/char/vmwatchdog.c
-index 6f40fac..19f8389 100644
---- a/drivers/s390/char/vmwatchdog.c
-+++ b/drivers/s390/char/vmwatchdog.c
-@@ -96,7 +96,7 @@ static int vmwdt_keepalive(void)
  
- 	if (ret) {
- 		printk(KERN_WARNING "%s: problem setting interval %d, "
--			"cmd %s\n", __FUNCTION__, vmwdt_interval,
-+			"cmd %s\n", __func__, vmwdt_interval,
- 			vmwdt_cmd);
+-	dbg("%s: %d enabled, %d disabled\n", __FUNCTION__, enabled, disabled);
++	dbg("%s: %d enabled, %d disabled\n", __func__, enabled, disabled);
+ 
+  err_exit:
+ 	return retval;
+@@ -1527,7 +1527,7 @@ check_sub_bridges(acpi_handle handle, u32 lvl, void *context, void **rv)
+ 	if (bridge) {
+ 		acpi_get_name(handle, ACPI_FULL_PATHNAME, &buffer);
+ 		dbg("%s: re-enumerating slots under %s\n",
+-			__FUNCTION__, objname);
++			__func__, objname);
+ 		acpiphp_check_bridge(bridge);
  	}
- 	return ret;
-@@ -107,7 +107,7 @@ static int vmwdt_disable(void)
- 	int ret = __diag288(wdt_cancel, 0, "", 0);
- 	if (ret) {
- 		printk(KERN_WARNING "%s: problem disabling watchdog\n",
--			__FUNCTION__);
-+			__func__);
+ 	return AE_OK ;
+@@ -1572,10 +1572,10 @@ static void handle_hotplug_event_bridge(acpi_handle handle, u32 type, void *cont
+ 	switch (type) {
+ 	case ACPI_NOTIFY_BUS_CHECK:
+ 		/* bus re-enumerate */
+-		dbg("%s: Bus check notify on %s\n", __FUNCTION__, objname);
++		dbg("%s: Bus check notify on %s\n", __func__, objname);
+ 		if (bridge) {
+ 			dbg("%s: re-enumerating slots under %s\n",
+-				__FUNCTION__, objname);
++				__func__, objname);
+ 			acpiphp_check_bridge(bridge);
+ 		}
+ 		if (num_sub_bridges)
+@@ -1585,18 +1585,18 @@ static void handle_hotplug_event_bridge(acpi_handle handle, u32 type, void *cont
+ 
+ 	case ACPI_NOTIFY_DEVICE_CHECK:
+ 		/* device check */
+-		dbg("%s: Device check notify on %s\n", __FUNCTION__, objname);
++		dbg("%s: Device check notify on %s\n", __func__, objname);
+ 		acpiphp_check_bridge(bridge);
+ 		break;
+ 
+ 	case ACPI_NOTIFY_DEVICE_WAKE:
+ 		/* wake event */
+-		dbg("%s: Device wake notify on %s\n", __FUNCTION__, objname);
++		dbg("%s: Device wake notify on %s\n", __func__, objname);
+ 		break;
+ 
+ 	case ACPI_NOTIFY_EJECT_REQUEST:
+ 		/* request device eject */
+-		dbg("%s: Device eject notify on %s\n", __FUNCTION__, objname);
++		dbg("%s: Device eject notify on %s\n", __func__, objname);
+ 		if ((bridge->type != BRIDGE_TYPE_HOST) &&
+ 		    (bridge->flags & BRIDGE_HAS_EJ0)) {
+ 			struct acpiphp_slot *slot;
+@@ -1649,24 +1649,24 @@ static void handle_hotplug_event_func(acpi_handle handle, u32 type, void *contex
+ 	switch (type) {
+ 	case ACPI_NOTIFY_BUS_CHECK:
+ 		/* bus re-enumerate */
+-		dbg("%s: Bus check notify on %s\n", __FUNCTION__, objname);
++		dbg("%s: Bus check notify on %s\n", __func__, objname);
+ 		acpiphp_enable_slot(func->slot);
+ 		break;
+ 
+ 	case ACPI_NOTIFY_DEVICE_CHECK:
+ 		/* device check : re-enumerate from parent bus */
+-		dbg("%s: Device check notify on %s\n", __FUNCTION__, objname);
++		dbg("%s: Device check notify on %s\n", __func__, objname);
+ 		acpiphp_check_bridge(func->slot->bridge);
+ 		break;
+ 
+ 	case ACPI_NOTIFY_DEVICE_WAKE:
+ 		/* wake event */
+-		dbg("%s: Device wake notify on %s\n", __FUNCTION__, objname);
++		dbg("%s: Device wake notify on %s\n", __func__, objname);
+ 		break;
+ 
+ 	case ACPI_NOTIFY_EJECT_REQUEST:
+ 		/* request device eject */
+-		dbg("%s: Device eject notify on %s\n", __FUNCTION__, objname);
++		dbg("%s: Device eject notify on %s\n", __func__, objname);
+ 		if (!(acpiphp_disable_slot(func->slot)))
+ 			acpiphp_eject_slot(func->slot);
+ 		break;
+@@ -1796,7 +1796,7 @@ int acpiphp_enable_slot(struct acpiphp_slot *slot)
+ 		if (retval)
+ 			power_off_slot(slot);
+ 	} else {
+-		dbg("%s: Slot status is not ACPI_STA_ALL\n", __FUNCTION__);
++		dbg("%s: Slot status is not ACPI_STA_ALL\n", __func__);
+ 		power_off_slot(slot);
  	}
- 	return ret;
- }
-diff --git a/drivers/s390/char/zcore.c b/drivers/s390/char/zcore.c
-index f523501..bbbd14e 100644
---- a/drivers/s390/char/zcore.c
-+++ b/drivers/s390/char/zcore.c
-@@ -224,7 +224,7 @@ static int __init init_cpu_info(enum arch_id arch)
  
- 	sa = kmalloc(sizeof(*sa), GFP_KERNEL);
- 	if (!sa) {
--		ERROR_MSG("kmalloc failed: %s: %i\n",__FUNCTION__, __LINE__);
-+		ERROR_MSG("kmalloc failed: %s: %i\n",__func__, __LINE__);
- 		return -ENOMEM;
+diff --git a/drivers/pci/hotplug/acpiphp_ibm.c b/drivers/pci/hotplug/acpiphp_ibm.c
+index b0a22b9..ede9051 100644
+--- a/drivers/pci/hotplug/acpiphp_ibm.c
++++ b/drivers/pci/hotplug/acpiphp_ibm.c
+@@ -186,7 +186,7 @@ static int ibm_set_attention_status(struct hotplug_slot *slot, u8 status)
+ 
+ 	ibm_slot = ibm_slot_from_id(hpslot_to_sun(slot));
+ 
+-	dbg("%s: set slot %d (%d) attention status to %d\n", __FUNCTION__,
++	dbg("%s: set slot %d (%d) attention status to %d\n", __func__,
+ 			ibm_slot->slot.slot_num, ibm_slot->slot.slot_id,
+ 			(status ? 1 : 0));
+ 
+@@ -231,7 +231,7 @@ static int ibm_get_attention_status(struct hotplug_slot *slot, u8 *status)
+ 	else
+ 		*status = 0;
+ 
+-	dbg("%s: get slot %d (%d) attention status is %d\n", __FUNCTION__,
++	dbg("%s: get slot %d (%d) attention status is %d\n", __func__,
+ 			ibm_slot->slot.slot_num, ibm_slot->slot.slot_id,
+ 			*status);
+ 
+@@ -263,10 +263,10 @@ static void ibm_handle_events(acpi_handle handle, u32 event, void *context)
+ 	u8 subevent = event & 0xf0;
+ 	struct notification *note = context;
+ 
+-	dbg("%s: Received notification %02x\n", __FUNCTION__, event);
++	dbg("%s: Received notification %02x\n", __func__, event);
+ 
+ 	if (subevent == 0x80) {
+-		dbg("%s: generationg bus event\n", __FUNCTION__);
++		dbg("%s: generationg bus event\n", __func__);
+ 		acpi_bus_generate_proc_event(note->device, note->event, detail);
+ 		acpi_bus_generate_netlink_event(note->device->pnp.device_class,
+ 						  note->device->dev.bus_id,
+@@ -299,7 +299,7 @@ static int ibm_get_table_from_acpi(char **bufp)
+ 
+ 	status = acpi_evaluate_object(ibm_acpi_handle, "APCI", NULL, &buffer);
+ 	if (ACPI_FAILURE(status)) {
+-		err("%s:  APCI evaluation failed\n", __FUNCTION__);
++		err("%s:  APCI evaluation failed\n", __func__);
+ 		return -ENODEV;
  	}
- 	if (memcpy_hsa_kernel(sa, sys_info.sa_base, sys_info.sa_size) < 0) {
-diff --git a/drivers/s390/cio/device_status.c b/drivers/s390/cio/device_status.c
-index ebe0848..f0d3336 100644
---- a/drivers/s390/cio/device_status.c
-+++ b/drivers/s390/cio/device_status.c
-@@ -62,7 +62,7 @@ ccw_device_path_notoper(struct ccw_device *cdev)
- 	stsch (sch->schid, &sch->schib);
  
- 	CIO_MSG_EVENT(0, "%s(0.%x.%04x) - path(s) %02x are "
--		      "not operational \n", __FUNCTION__,
-+		      "not operational \n", __func__,
- 		      sch->schid.ssid, sch->schid.sch_no,
- 		      sch->schib.pmcw.pnom);
- 
-diff --git a/drivers/s390/crypto/zcrypt_api.h b/drivers/s390/crypto/zcrypt_api.h
-index de4877e..d7cdf3c 100644
---- a/drivers/s390/crypto/zcrypt_api.h
-+++ b/drivers/s390/crypto/zcrypt_api.h
-@@ -43,17 +43,17 @@
- #define DEV_NAME	"zcrypt"
- 
- #define PRINTK(fmt, args...) \
--	printk(KERN_DEBUG DEV_NAME ": %s -> " fmt, __FUNCTION__ , ## args)
-+	printk(KERN_DEBUG DEV_NAME ": %s -> " fmt, __func__ , ## args)
- #define PRINTKN(fmt, args...) \
- 	printk(KERN_DEBUG DEV_NAME ": " fmt, ## args)
- #define PRINTKW(fmt, args...) \
--	printk(KERN_WARNING DEV_NAME ": %s -> " fmt, __FUNCTION__ , ## args)
-+	printk(KERN_WARNING DEV_NAME ": %s -> " fmt, __func__ , ## args)
- #define PRINTKC(fmt, args...) \
--	printk(KERN_CRIT DEV_NAME ": %s -> " fmt, __FUNCTION__ , ## args)
-+	printk(KERN_CRIT DEV_NAME ": %s -> " fmt, __func__ , ## args)
- 
- #ifdef ZCRYPT_DEBUG
- #define PDEBUG(fmt, args...) \
--	printk(KERN_DEBUG DEV_NAME ": %s -> " fmt, __FUNCTION__ , ## args)
-+	printk(KERN_DEBUG DEV_NAME ": %s -> " fmt, __func__ , ## args)
- #else
- #define PDEBUG(fmt, args...) do {} while (0)
- #endif
-diff --git a/drivers/s390/net/claw.c b/drivers/s390/net/claw.c
-index d8a5c22..085b1e3 100644
---- a/drivers/s390/net/claw.c
-+++ b/drivers/s390/net/claw.c
-@@ -299,7 +299,7 @@ claw_probe(struct ccwgroup_device *cgdev)
- 	struct claw_privbk *privptr=NULL;
- 
- #ifdef FUNCTRACE
--	printk(KERN_INFO "%s Enter\n",__FUNCTION__);
-+	printk(KERN_INFO "%s Enter\n",__func__);
- #endif
- 	CLAW_DBF_TEXT(2,setup,"probe");
- 	if (!get_device(&cgdev->dev))
-@@ -313,7 +313,7 @@ claw_probe(struct ccwgroup_device *cgdev)
- 		probe_error(cgdev);
- 		put_device(&cgdev->dev);
- 		printk(KERN_WARNING "Out of memory %s %s Exit Line %d \n",
--			cgdev->cdev[0]->dev.bus_id,__FUNCTION__,__LINE__);
-+			cgdev->cdev[0]->dev.bus_id,__func__,__LINE__);
- 		CLAW_DBF_TEXT_(2,setup,"probex%d",-ENOMEM);
- 		return -ENOMEM;
+@@ -307,13 +307,13 @@ static int ibm_get_table_from_acpi(char **bufp)
+ 	if (!(package) ||
+ 			(package->type != ACPI_TYPE_PACKAGE) ||
+ 			!(package->package.elements)) {
+-		err("%s:  Invalid APCI object\n", __FUNCTION__);
++		err("%s:  Invalid APCI object\n", __func__);
+ 		goto read_table_done;
  	}
-@@ -323,7 +323,7 @@ claw_probe(struct ccwgroup_device *cgdev)
-                 probe_error(cgdev);
- 		put_device(&cgdev->dev);
- 		printk(KERN_WARNING "Out of memory %s %s Exit Line %d \n",
--			cgdev->cdev[0]->dev.bus_id,__FUNCTION__,__LINE__);
-+			cgdev->cdev[0]->dev.bus_id,__func__,__LINE__);
- 		CLAW_DBF_TEXT_(2,setup,"probex%d",-ENOMEM);
-                 return -ENOMEM;
-         }
-@@ -340,7 +340,7 @@ claw_probe(struct ccwgroup_device *cgdev)
- 		probe_error(cgdev);
- 		put_device(&cgdev->dev);
- 		printk(KERN_WARNING "add_files failed %s %s Exit Line %d \n",
--			cgdev->cdev[0]->dev.bus_id,__FUNCTION__,__LINE__);
-+			cgdev->cdev[0]->dev.bus_id,__func__,__LINE__);
- 		CLAW_DBF_TEXT_(2,setup,"probex%d",rc);
- 		return rc;
+ 
+ 	for(size = 0, i = 0; i < package->package.count; i++) {
+ 		if (package->package.elements[i].type != ACPI_TYPE_BUFFER) {
+-			err("%s:  Invalid APCI element %d\n", __FUNCTION__, i);
++			err("%s:  Invalid APCI element %d\n", __func__, i);
+ 			goto read_table_done;
+ 		}
+ 		size += package->package.elements[i].buffer.length;
+@@ -324,7 +324,7 @@ static int ibm_get_table_from_acpi(char **bufp)
+ 
+ 	lbuf = kzalloc(size, GFP_KERNEL);
+ 	dbg("%s: element count: %i, ASL table size: %i, &table = 0x%p\n",
+-			__FUNCTION__, package->package.count, size, lbuf);
++			__func__, package->package.count, size, lbuf);
+ 
+ 	if (lbuf) {
+ 		*bufp = lbuf;
+@@ -368,7 +368,7 @@ static ssize_t ibm_read_apci_table(struct kobject *kobj,
+ 	int bytes_read = -EINVAL;
+ 	char *table = NULL;
+ 	
+-	dbg("%s: pos = %d, size = %zd\n", __FUNCTION__, (int)pos, size);
++	dbg("%s: pos = %d, size = %zd\n", __func__, (int)pos, size);
+ 
+ 	if (pos == 0) {
+ 		bytes_read = ibm_get_table_from_acpi(&table);
+@@ -402,7 +402,7 @@ static acpi_status __init ibm_find_acpi_device(acpi_handle handle,
+ 	status = acpi_get_object_info(handle, &info_buffer);
+ 	if (ACPI_FAILURE(status)) {
+ 		err("%s:  Failed to get device information status=0x%x\n",
+-			__FUNCTION__, status);
++			__func__, status);
+ 		return retval;
  	}
-@@ -351,7 +351,7 @@ claw_probe(struct ccwgroup_device *cgdev)
- 	cgdev->dev.driver_data = privptr;
- #ifdef FUNCTRACE
-         printk(KERN_INFO "claw:%s exit on line %d, "
--		"rc = 0\n",__FUNCTION__,__LINE__);
-+		"rc = 0\n",__func__,__LINE__);
- #endif
- 	CLAW_DBF_TEXT(2,setup,"prbext 0");
+ 	info = info_buffer.pointer;
+@@ -432,18 +432,18 @@ static int __init ibm_acpiphp_init(void)
+ 	struct acpi_device *device;
+ 	struct kobject *sysdir = &pci_hotplug_slots_kset->kobj;
  
-@@ -371,7 +371,7 @@ claw_tx(struct sk_buff *skb, struct net_device *dev)
-         struct chbk *p_ch;
+-	dbg("%s\n", __FUNCTION__);
++	dbg("%s\n", __func__);
  
- #ifdef FUNCTRACE
--        printk(KERN_INFO "%s:%s enter\n",dev->name,__FUNCTION__);
-+        printk(KERN_INFO "%s:%s enter\n",dev->name,__func__);
- #endif
- 	CLAW_DBF_TEXT(4,trace,"claw_tx");
-         p_ch=&privptr->channel[WRITE];
-@@ -381,7 +381,7 @@ claw_tx(struct sk_buff *skb, struct net_device *dev)
-                 privptr->stats.tx_dropped++;
- #ifdef FUNCTRACE
-                 printk(KERN_INFO "%s: %s() exit on line %d, rc = EIO\n",
--			dev->name,__FUNCTION__, __LINE__);
-+			dev->name,__func__, __LINE__);
- #endif
- 		CLAW_DBF_TEXT_(2,trace,"clawtx%d",-EIO);
-                 return -EIO;
-@@ -398,7 +398,7 @@ claw_tx(struct sk_buff *skb, struct net_device *dev)
-         spin_unlock_irqrestore(get_ccwdev_lock(p_ch->cdev), saveflags);
- #ifdef FUNCTRACE
-         printk(KERN_INFO "%s:%s exit on line %d, rc = %d\n",
--		dev->name, __FUNCTION__, __LINE__, rc);
-+		dev->name, __func__, __LINE__, rc);
- #endif
- 	CLAW_DBF_TEXT_(4,trace,"clawtx%d",rc);
-         return rc;
-@@ -460,7 +460,7 @@ claw_pack_skb(struct claw_privbk *privptr)
- #ifdef IOTRACE
- 		printk(KERN_INFO "%s: %s() Packed %d len %d\n",
- 			p_env->ndev->name,
--			__FUNCTION__,pkt_cnt,new_skb->len);
-+			__func__,pkt_cnt,new_skb->len);
- #endif
+ 	if (acpi_walk_namespace(ACPI_TYPE_DEVICE, ACPI_ROOT_OBJECT,
+ 			ACPI_UINT32_MAX, ibm_find_acpi_device,
+ 			&ibm_acpi_handle, NULL) != FOUND_APCI) {
+-		err("%s: acpi_walk_namespace failed\n", __FUNCTION__);
++		err("%s: acpi_walk_namespace failed\n", __func__);
+ 		retval = -ENODEV;
+ 		goto init_return;
  	}
- 	CLAW_DBF_TEXT(4,trace,"PackSKBx");
-@@ -478,7 +478,7 @@ claw_change_mtu(struct net_device *dev, int new_mtu)
- 	struct claw_privbk  *privptr=dev->priv;
- 	int buff_size;
- #ifdef FUNCTRACE
--        printk(KERN_INFO "%s:%s Enter  \n",dev->name,__FUNCTION__);
-+        printk(KERN_INFO "%s:%s Enter  \n",dev->name,__func__);
- #endif
- #ifdef DEBUGMSG
-         printk(KERN_INFO "variable dev =\n");
-@@ -491,14 +491,14 @@ claw_change_mtu(struct net_device *dev, int new_mtu)
- #ifdef FUNCTRACE
-                 printk(KERN_INFO "%s:%s Exit on line %d, rc=EINVAL\n",
- 		dev->name,
--		__FUNCTION__, __LINE__);
-+		__func__, __LINE__);
- #endif
-                 return -EINVAL;
-         }
-         dev->mtu = new_mtu;
- #ifdef FUNCTRACE
-         printk(KERN_INFO "%s:%s Exit on line %d\n",dev->name,
--	__FUNCTION__, __LINE__);
-+	__func__, __LINE__);
- #endif
-         return 0;
- }  /*   end of claw_change_mtu */
-@@ -522,7 +522,7 @@ claw_open(struct net_device *dev)
-         struct ccwbk *p_buf;
- 
- #ifdef FUNCTRACE
--        printk(KERN_INFO "%s:%s Enter  \n",dev->name,__FUNCTION__);
-+        printk(KERN_INFO "%s:%s Enter  \n",dev->name,__func__);
- #endif
- 	CLAW_DBF_TEXT(4,trace,"open");
- 	if (!dev || (dev->name[0] == 0x00)) {
-@@ -537,7 +537,7 @@ claw_open(struct net_device *dev)
-         	if (rc) {
-                 	printk(KERN_INFO "%s:%s Exit on line %d, rc=ENOMEM\n",
- 			dev->name,
--			__FUNCTION__, __LINE__);
-+			__func__, __LINE__);
- 			CLAW_DBF_TEXT(2,trace,"openmem");
-                 	return -ENOMEM;
-         	}
-@@ -661,7 +661,7 @@ claw_open(struct net_device *dev)
-                 claw_clear_busy(dev);
- #ifdef FUNCTRACE
-                 printk(KERN_INFO "%s:%s Exit on line %d, rc=EIO\n",
--		dev->name,__FUNCTION__,__LINE__);
-+		dev->name,__func__,__LINE__);
- #endif
- 		CLAW_DBF_TEXT(2,trace,"open EIO");
-                 return -EIO;
-@@ -673,7 +673,7 @@ claw_open(struct net_device *dev)
- 
- #ifdef FUNCTRACE
-         printk(KERN_INFO "%s:%s Exit on line %d, rc=0\n",
--		dev->name,__FUNCTION__,__LINE__);
-+		dev->name,__func__,__LINE__);
- #endif
- 	CLAW_DBF_TEXT(4,trace,"openok");
-         return 0;
-@@ -696,7 +696,7 @@ claw_irq_handler(struct ccw_device *cdev,
- 
-
- #ifdef FUNCTRACE
--        printk(KERN_INFO "%s enter  \n",__FUNCTION__);
-+        printk(KERN_INFO "%s enter  \n",__func__);
- #endif
- 	CLAW_DBF_TEXT(4,trace,"clawirq");
-         /* Bypass all 'unsolicited interrupts' */
-@@ -706,7 +706,7 @@ claw_irq_handler(struct ccw_device *cdev,
-                         cdev->dev.bus_id,irb->scsw.cstat, irb->scsw.dstat);
- #ifdef FUNCTRACE
-                 printk(KERN_INFO "claw: %s() "
--			"exit on line %d\n",__FUNCTION__,__LINE__);
-+			"exit on line %d\n",__func__,__LINE__);
- #endif
- 		CLAW_DBF_TEXT(2,trace,"badirq");
-                 return;
-@@ -752,7 +752,7 @@ claw_irq_handler(struct ccw_device *cdev,
- #endif
- #ifdef FUNCTRACE
- 		printk(KERN_INFO "%s:%s Exit on line %d\n",
--		dev->name,__FUNCTION__,__LINE__);
-+		dev->name,__func__,__LINE__);
- #endif
- 		CLAW_DBF_TEXT(2,trace,"chanchk");
-                 /* return; */
-@@ -777,7 +777,7 @@ claw_irq_handler(struct ccw_device *cdev,
- 	     		(SCSW_STCTL_ALERT_STATUS | SCSW_STCTL_STATUS_PEND)))) {
- #ifdef FUNCTRACE
-                                 printk(KERN_INFO "%s:%s Exit on line %d\n",
--					dev->name,__FUNCTION__,__LINE__);
-+					dev->name,__func__,__LINE__);
- #endif
-                                 return;
-                         }
-@@ -788,7 +788,7 @@ claw_irq_handler(struct ccw_device *cdev,
- #endif
- #ifdef FUNCTRACE
-                         printk(KERN_INFO "%s:%s Exit on line %d\n",
--				dev->name,__FUNCTION__,__LINE__);
-+				dev->name,__func__,__LINE__);
- #endif
- 			CLAW_DBF_TEXT(4,trace,"stop");
-                         return;
-@@ -804,7 +804,7 @@ claw_irq_handler(struct ccw_device *cdev,
- 	     		(SCSW_STCTL_ALERT_STATUS | SCSW_STCTL_STATUS_PEND)))) {
- #ifdef FUNCTRACE
- 				printk(KERN_INFO "%s:%s Exit on line %d\n",
--					dev->name,__FUNCTION__,__LINE__);
-+					dev->name,__func__,__LINE__);
- #endif
- 				CLAW_DBF_TEXT(4,trace,"haltio");
-                                 return;
-@@ -838,7 +838,7 @@ claw_irq_handler(struct ccw_device *cdev,
- #endif
- #ifdef FUNCTRACE
-                         printk(KERN_INFO "%s:%s Exit on line %d\n",
--				dev->name,__FUNCTION__,__LINE__);
-+				dev->name,__func__,__LINE__);
- #endif
- 			CLAW_DBF_TEXT(4,trace,"haltio");
-                         return;
-@@ -858,7 +858,7 @@ claw_irq_handler(struct ccw_device *cdev,
-                                 }
- #ifdef FUNCTRACE
- 				printk(KERN_INFO "%s:%s Exit on line %d\n",
--					dev->name,__FUNCTION__,__LINE__);
-+					dev->name,__func__,__LINE__);
- #endif
- 					CLAW_DBF_TEXT(4,trace,"notrdy");
-                                         return;
-@@ -874,7 +874,7 @@ claw_irq_handler(struct ccw_device *cdev,
- 				}
- #ifdef FUNCTRACE
- 				printk(KERN_INFO "%s:%s Exit on line %d\n",
--					dev->name,__FUNCTION__,__LINE__);
-+					dev->name,__func__,__LINE__);
- #endif
- 				CLAW_DBF_TEXT(4,trace,"PCI_read");
-                                 return;
-@@ -885,7 +885,7 @@ claw_irq_handler(struct ccw_device *cdev,
- 	     		 (SCSW_STCTL_ALERT_STATUS | SCSW_STCTL_STATUS_PEND)))) {
- #ifdef FUNCTRACE
- 				printk(KERN_INFO "%s:%s Exit on line %d\n",
--					dev->name,__FUNCTION__,__LINE__);
-+					dev->name,__func__,__LINE__);
- #endif
- 				CLAW_DBF_TEXT(4,trace,"SPend_rd");
-                                 return;
-@@ -906,7 +906,7 @@ claw_irq_handler(struct ccw_device *cdev,
- #endif
- #ifdef FUNCTRACE
- 			printk(KERN_INFO "%s:%s Exit on line %d\n",
--				dev->name,__FUNCTION__,__LINE__);
-+				dev->name,__func__,__LINE__);
- #endif
- 			CLAW_DBF_TEXT(4,trace,"RdIRQXit");
-                         return;
-@@ -929,7 +929,7 @@ claw_irq_handler(struct ccw_device *cdev,
-                                 }
- #ifdef FUNCTRACE
- 				printk(KERN_INFO "%s:%s Exit on line %d\n",
--					dev->name,__FUNCTION__,__LINE__);
-+					dev->name,__func__,__LINE__);
- #endif
- 				CLAW_DBF_TEXT(4,trace,"rstrtwrt");
-                                 return;
-@@ -946,7 +946,7 @@ claw_irq_handler(struct ccw_device *cdev,
- 	     		(SCSW_STCTL_ALERT_STATUS | SCSW_STCTL_STATUS_PEND)))) {
- #ifdef FUNCTRACE
- 				printk(KERN_INFO "%s:%s Exit on line %d\n",
--					dev->name,__FUNCTION__,__LINE__);
-+					dev->name,__func__,__LINE__);
- #endif
- 				CLAW_DBF_TEXT(4,trace,"writeUE");
-                                 return;
-@@ -969,7 +969,7 @@ claw_irq_handler(struct ccw_device *cdev,
- #endif
- #ifdef FUNCTRACE
- 			printk(KERN_INFO "%s:%s Exit on line %d\n",
--				dev->name,__FUNCTION__,__LINE__);
-+				dev->name,__func__,__LINE__);
- #endif
- 			CLAW_DBF_TEXT(4,trace,"StWtExit");
-                         return;
-@@ -978,7 +978,7 @@ claw_irq_handler(struct ccw_device *cdev,
- 				"state=%d\n",dev->name,p_ch->claw_state);
- #ifdef FUNCTRACE
- 			printk(KERN_INFO "%s:%s Exit on line %d\n",
--				dev->name,__FUNCTION__,__LINE__);
-+				dev->name,__func__,__LINE__);
- #endif
- 			CLAW_DBF_TEXT(2,trace,"badIRQ");
-                         return;
-@@ -1001,7 +1001,7 @@ claw_irq_tasklet ( unsigned long data )
- 	p_ch = (struct chbk *) data;
-         dev = (struct net_device *)p_ch->ndev;
- #ifdef FUNCTRACE
--        printk(KERN_INFO "%s:%s Enter  \n",dev->name,__FUNCTION__);
-+        printk(KERN_INFO "%s:%s Enter  \n",dev->name,__func__);
- #endif
- #ifdef DEBUGMSG
-         printk(KERN_INFO "%s: variable p_ch =\n",dev->name);
-@@ -1021,7 +1021,7 @@ claw_irq_tasklet ( unsigned long data )
- 	CLAW_DBF_TEXT(4,trace,"TskletXt");
- #ifdef FUNCTRACE
- 	printk(KERN_INFO "%s:%s Exit on line %d\n",
--		dev->name,__FUNCTION__,__LINE__);
-+		dev->name,__func__,__LINE__);
- #endif
-         return;
- }       /*    end of claw_irq_bh    */
-@@ -1048,7 +1048,7 @@ claw_release(struct net_device *dev)
-         if (!privptr)
-                 return 0;
- #ifdef FUNCTRACE
--        printk(KERN_INFO "%s:%s Enter  \n",dev->name,__FUNCTION__);
-+        printk(KERN_INFO "%s:%s Enter  \n",dev->name,__func__);
- #endif
- 	CLAW_DBF_TEXT(4,trace,"release");
- #ifdef DEBUGMSG
-@@ -1090,7 +1090,7 @@ claw_release(struct net_device *dev)
- 	if(privptr->buffs_alloc != 1) {
- #ifdef FUNCTRACE
- 	printk(KERN_INFO "%s:%s Exit on line %d\n",
--		dev->name,__FUNCTION__,__LINE__);
-+		dev->name,__func__,__LINE__);
- #endif
- 		CLAW_DBF_TEXT(4,trace,"none2fre");
- 		return 0;
-@@ -1171,7 +1171,7 @@ claw_release(struct net_device *dev)
-         }
- #ifdef FUNCTRACE
- 	printk(KERN_INFO "%s:%s Exit on line %d\n",
--		dev->name,__FUNCTION__,__LINE__);
-+		dev->name,__func__,__LINE__);
- #endif
- 	CLAW_DBF_TEXT(4,trace,"rlsexit");
-         return 0;
-@@ -1192,7 +1192,7 @@ claw_write_retry ( struct chbk *p_ch )
- 
-
- #ifdef FUNCTRACE
--        printk(KERN_INFO "%s:%s Enter\n",dev->name,__FUNCTION__);
-+        printk(KERN_INFO "%s:%s Enter\n",dev->name,__func__);
-         printk(KERN_INFO "claw: variable p_ch =\n");
-         dumpit((char *) p_ch, sizeof(struct chbk));
- #endif
-@@ -1200,20 +1200,20 @@ claw_write_retry ( struct chbk *p_ch )
-         if (p_ch->claw_state == CLAW_STOP) {
- #ifdef FUNCTRACE
- 		printk(KERN_INFO "%s:%s Exit on line %d\n",
--			dev->name,__FUNCTION__,__LINE__);
-+			dev->name,__func__,__LINE__);
- #endif
-         	return;
-         }
- #ifdef DEBUGMSG
-         printk( KERN_INFO "%s:%s  state-%02x\n" ,
- 		dev->name,
--		__FUNCTION__,
-+		__func__,
- 		p_ch->claw_state);
- #endif
- 	claw_strt_out_IO( dev );
- #ifdef FUNCTRACE
- 	printk(KERN_INFO "%s:%s Exit on line %d\n",
--		dev->name,__FUNCTION__,__LINE__);
-+		dev->name,__func__,__LINE__);
- #endif
- 	CLAW_DBF_TEXT(4,trace,"rtry_xit");
-         return;
-@@ -1235,7 +1235,7 @@ claw_write_next ( struct chbk * p_ch )
- 	int	rc;
- 
- #ifdef FUNCTRACE
--        printk(KERN_INFO "%s:%s Enter  \n",p_ch->ndev->name,__FUNCTION__);
-+        printk(KERN_INFO "%s:%s Enter  \n",p_ch->ndev->name,__func__);
-         printk(KERN_INFO "%s: variable p_ch =\n",p_ch->ndev->name);
-         dumpit((char *) p_ch, sizeof(struct chbk));
- #endif
-@@ -1262,7 +1262,7 @@ claw_write_next ( struct chbk * p_ch )
- 
- #ifdef FUNCTRACE
- 	printk(KERN_INFO "%s:%s Exit on line %d\n",
--		dev->name,__FUNCTION__,__LINE__);
-+		dev->name,__func__,__LINE__);
- #endif
-         return;
- }      /* end of claw_write_next      */
-@@ -1276,7 +1276,7 @@ static void
- claw_timer ( struct chbk * p_ch )
- {
- #ifdef FUNCTRACE
--        printk(KERN_INFO "%s:%s Entry\n",p_ch->ndev->name,__FUNCTION__);
-+        printk(KERN_INFO "%s:%s Entry\n",p_ch->ndev->name,__func__);
-         printk(KERN_INFO "%s: variable p_ch =\n",p_ch->ndev->name);
-         dumpit((char *) p_ch, sizeof(struct chbk));
- #endif
-@@ -1285,7 +1285,7 @@ claw_timer ( struct chbk * p_ch )
-         wake_up(&p_ch->wait);
- #ifdef FUNCTRACE
- 	printk(KERN_INFO "%s:%s Exit on line %d\n",
--		p_ch->ndev->name,__FUNCTION__,__LINE__);
-+		p_ch->ndev->name,__func__,__LINE__);
- #endif
-         return;
- }      /* end of claw_timer  */
-@@ -1312,7 +1312,7 @@ pages_to_order_of_mag(int num_of_pages)
- 	int	order_of_mag=1;		/* assume 2 pages */
- 	int	nump=2;
- #ifdef FUNCTRACE
--        printk(KERN_INFO "%s Enter pages = %d \n",__FUNCTION__,num_of_pages);
-+        printk(KERN_INFO "%s Enter pages = %d \n",__func__,num_of_pages);
- #endif
- 	CLAW_DBF_TEXT_(5,trace,"pages%d",num_of_pages);
- 	if (num_of_pages == 1)   {return 0; }  /* magnitude of 0 = 1 page */
-@@ -1327,7 +1327,7 @@ pages_to_order_of_mag(int num_of_pages)
- 	if (order_of_mag > 9) { order_of_mag = 9; }  /* I know it's paranoid */
- #ifdef FUNCTRACE
-         printk(KERN_INFO "%s Exit on line %d, order = %d\n",
--	__FUNCTION__,__LINE__, order_of_mag);
-+	__func__,__LINE__, order_of_mag);
- #endif
- 	CLAW_DBF_TEXT_(5,trace,"mag%d",order_of_mag);
- 	return order_of_mag;
-@@ -1349,7 +1349,7 @@ add_claw_reads(struct net_device *dev, struct ccwbk* p_first,
-         struct ccwbk*  p_buf;
- #endif
- #ifdef FUNCTRACE
--        printk(KERN_INFO "%s:%s Enter  \n",dev->name,__FUNCTION__);
-+        printk(KERN_INFO "%s:%s Enter  \n",dev->name,__func__);
- #endif
- #ifdef DEBUGMSG
-         printk(KERN_INFO "dev\n");
-@@ -1369,7 +1369,7 @@ add_claw_reads(struct net_device *dev, struct ccwbk* p_first,
-         if ( p_first==NULL) {
- #ifdef FUNCTRACE
- 		printk(KERN_INFO "%s:%s Exit on line %d\n",
--			dev->name,__FUNCTION__,__LINE__);
-+			dev->name,__func__,__LINE__);
- #endif
- 		CLAW_DBF_TEXT(4,trace,"addexit");
-                 return 0;
-@@ -1400,9 +1400,9 @@ add_claw_reads(struct net_device *dev, struct ccwbk* p_first,
-         if ( privptr-> p_read_active_first ==NULL ) {
- #ifdef DEBUGMSG
-                 printk(KERN_INFO "%s:%s p_read_active_first == NULL \n",
--			dev->name,__FUNCTION__);
-+			dev->name,__func__);
-                 printk(KERN_INFO "%s:%s Read active first/last changed \n",
--			dev->name,__FUNCTION__);
-+			dev->name,__func__);
- #endif
-                 privptr-> p_read_active_first= p_first;  /*    set new first */
-                 privptr-> p_read_active_last = p_last;   /*    set new last  */
-@@ -1411,7 +1411,7 @@ add_claw_reads(struct net_device *dev, struct ccwbk* p_first,
- 
- #ifdef DEBUGMSG
-                 printk(KERN_INFO "%s:%s Read in progress \n",
--		dev->name,__FUNCTION__);
-+		dev->name,__func__);
- #endif
-                 /* set up TIC ccw  */
-                 temp_ccw.cda= (__u32)__pa(&p_first->read);
-@@ -1450,15 +1450,15 @@ add_claw_reads(struct net_device *dev, struct ccwbk* p_first,
-                 privptr->p_read_active_last=p_last;
-         } /* end of if ( privptr-> p_read_active_first ==NULL)  */
- #ifdef IOTRACE
--        printk(KERN_INFO "%s:%s  dump p_last CCW BK \n",dev->name,__FUNCTION__);
-+        printk(KERN_INFO "%s:%s  dump p_last CCW BK \n",dev->name,__func__);
-         dumpit((char *)p_last, sizeof(struct ccwbk));
--        printk(KERN_INFO "%s:%s  dump p_end CCW BK \n",dev->name,__FUNCTION__);
-+        printk(KERN_INFO "%s:%s  dump p_end CCW BK \n",dev->name,__func__);
-         dumpit((char *)p_end, sizeof(struct endccw));
- 
--        printk(KERN_INFO "%s:%s dump p_first CCW BK \n",dev->name,__FUNCTION__);
-+        printk(KERN_INFO "%s:%s dump p_first CCW BK \n",dev->name,__func__);
-         dumpit((char *)p_first, sizeof(struct ccwbk));
-         printk(KERN_INFO "%s:%s Dump Active CCW chain \n",
--		dev->name,__FUNCTION__);
-+		dev->name,__func__);
-         p_buf=privptr->p_read_active_first;
-         while (p_buf!=NULL) {
-                 dumpit((char *)p_buf, sizeof(struct ccwbk));
-@@ -1467,7 +1467,7 @@ add_claw_reads(struct net_device *dev, struct ccwbk* p_first,
- #endif
- #ifdef FUNCTRACE
- 	printk(KERN_INFO "%s:%s Exit on line %d\n",
--		dev->name,__FUNCTION__,__LINE__);
-+		dev->name,__func__,__LINE__);
- #endif
- 	CLAW_DBF_TEXT(4,trace,"addexit");
-         return 0;
-@@ -1483,7 +1483,7 @@ ccw_check_return_code(struct ccw_device *cdev, int return_code)
- {
- #ifdef FUNCTRACE
-         printk(KERN_INFO "%s: %s() > enter  \n",
--		cdev->dev.bus_id,__FUNCTION__);
-+		cdev->dev.bus_id,__func__);
- #endif
- 	CLAW_DBF_TEXT(4,trace,"ccwret");
- #ifdef DEBUGMSG
-@@ -1516,7 +1516,7 @@ ccw_check_return_code(struct ccw_device *cdev, int return_code)
-         }
- #ifdef FUNCTRACE
-         printk(KERN_INFO "%s: %s() > exit on line %d\n",
--		cdev->dev.bus_id,__FUNCTION__,__LINE__);
-+		cdev->dev.bus_id,__func__,__LINE__);
- #endif
- 	CLAW_DBF_TEXT(4,trace,"ccwret");
- }    /*    end of ccw_check_return_code   */
-@@ -1531,7 +1531,7 @@ ccw_check_unit_check(struct chbk * p_ch, unsigned char sense )
- 	struct net_device *dev = p_ch->ndev;
- 
- #ifdef FUNCTRACE
--        printk(KERN_INFO "%s: %s() > enter\n",dev->name,__FUNCTION__);
-+        printk(KERN_INFO "%s: %s() > enter\n",dev->name,__func__);
- #endif
- #ifdef DEBUGMSG
-         printk(KERN_INFO "%s: variable dev =\n",dev->name);
-@@ -1578,7 +1578,7 @@ ccw_check_unit_check(struct chbk * p_ch, unsigned char sense )
- 
- #ifdef FUNCTRACE
-         printk(KERN_INFO "%s: %s() exit on line %d\n",
--		dev->name,__FUNCTION__,__LINE__);
-+		dev->name,__func__,__LINE__);
- #endif
- }   /*    end of ccw_check_unit_check    */
- 
-@@ -1706,7 +1706,7 @@ find_link(struct net_device *dev, char *host_name, char *ws_name )
- 	int    rc=0;
- 
- #ifdef FUNCTRACE
--        printk(KERN_INFO "%s:%s > enter  \n",dev->name,__FUNCTION__);
-+        printk(KERN_INFO "%s:%s > enter  \n",dev->name,__func__);
- #endif
- 	CLAW_DBF_TEXT(2,setup,"findlink");
- #ifdef DEBUGMSG
-@@ -1739,7 +1739,7 @@ find_link(struct net_device *dev, char *host_name, char *ws_name )
- 
- #ifdef FUNCTRACE
-         printk(KERN_INFO "%s:%s Exit on line %d\n",
--		dev->name,__FUNCTION__,__LINE__);
-+		dev->name,__func__,__LINE__);
- #endif
-         return 0;
- }    /*    end of find_link    */
-@@ -1773,7 +1773,7 @@ claw_hw_tx(struct sk_buff *skb, struct net_device *dev, long linkid)
-         struct ccwbk                   *p_buf;
- #endif
- #ifdef FUNCTRACE
--        printk(KERN_INFO "%s: %s() > enter\n",dev->name,__FUNCTION__);
-+        printk(KERN_INFO "%s: %s() > enter\n",dev->name,__func__);
- #endif
- 	CLAW_DBF_TEXT(4,trace,"hw_tx");
- #ifdef DEBUGMSG
-@@ -1787,7 +1787,7 @@ claw_hw_tx(struct sk_buff *skb, struct net_device *dev, long linkid)
-         p_ch=(struct chbk *)&privptr->channel[WRITE];
- 	p_env =privptr->p_env;
- #ifdef IOTRACE
--        printk(KERN_INFO "%s: %s() dump sk_buff  \n",dev->name,__FUNCTION__);
-+        printk(KERN_INFO "%s: %s() dump sk_buff  \n",dev->name,__func__);
-         dumpit((char *)skb ,sizeof(struct sk_buff));
- #endif
- 	claw_free_wrt_buf(dev);	/* Clean up free chain if posible */
-@@ -1877,7 +1877,7 @@ claw_hw_tx(struct sk_buff *skb, struct net_device *dev, long linkid)
-         while (len_of_data > 0) {
- #ifdef DEBUGMSG
-                 printk(KERN_INFO "%s: %s() length-of-data is %ld \n",
--			dev->name ,__FUNCTION__,len_of_data);
-+			dev->name ,__func__,len_of_data);
-                 dumpit((char *)pDataAddress ,64);
- #endif
-                 p_this_ccw=privptr->p_write_free_chain;  /* get a block */
-@@ -1913,7 +1913,7 @@ claw_hw_tx(struct sk_buff *skb, struct net_device *dev, long linkid)
-                 p_last_ccw=p_this_ccw;      /* save new last block */
- #ifdef IOTRACE
- 		printk(KERN_INFO "%s: %s() > CCW and Buffer %ld bytes long \n",
--			dev->name,__FUNCTION__,bytesInThisBuffer);
-+			dev->name,__func__,bytesInThisBuffer);
-                 dumpit((char *)p_this_ccw, sizeof(struct ccwbk));
-                 dumpit((char *)p_this_ccw->p_buffer, 64);
- #endif
-@@ -1998,7 +1998,7 @@ claw_hw_tx(struct sk_buff *skb, struct net_device *dev, long linkid)
- 
- #ifdef IOTRACE
-         printk(KERN_INFO "%s: %s() >  Dump Active CCW chain \n",
--		dev->name,__FUNCTION__);
-+		dev->name,__func__);
-         p_buf=privptr->p_write_active_first;
-         while (p_buf!=NULL) {
-                 dumpit((char *)p_buf, sizeof(struct ccwbk));
-@@ -2018,7 +2018,7 @@ claw_hw_tx(struct sk_buff *skb, struct net_device *dev, long linkid)
-         /*      if write free count is zero , set NOBUFFER       */
- #ifdef DEBUGMSG
-         printk(KERN_INFO "%s: %s() > free_count is %d\n",
--		dev->name,__FUNCTION__,
-+		dev->name,__func__,
- 		(int) privptr->write_free_count );
- #endif
- 	if (privptr->write_free_count==0) {
-@@ -2029,7 +2029,7 @@ Done2:
- Done:
- #ifdef FUNCTRACE
-         printk(KERN_INFO "%s: %s() > exit on line %d, rc = %d \n",
--		dev->name,__FUNCTION__,__LINE__, rc);
-+		dev->name,__func__,__LINE__, rc);
- #endif
- 	return(rc);
- }    /*    end of claw_hw_tx    */
-@@ -2063,7 +2063,7 @@ init_ccw_bk(struct net_device *dev)
-         addr_t   real_TIC_address;
-         int i,j;
- #ifdef FUNCTRACE
--        printk(KERN_INFO "%s: %s() enter  \n",dev->name,__FUNCTION__);
-+        printk(KERN_INFO "%s: %s() enter  \n",dev->name,__func__);
- #endif
- 	CLAW_DBF_TEXT(4,trace,"init_ccw");
- #ifdef DEBUGMSG
-@@ -2097,15 +2097,15 @@ init_ccw_bk(struct net_device *dev)
- #ifdef DEBUGMSG
-         printk(KERN_INFO "%s: %s() "
- 		"ccw_blocks_required=%d\n",
--		dev->name,__FUNCTION__,
-+		dev->name,__func__,
- 		ccw_blocks_required);
-         printk(KERN_INFO "%s: %s() "
- 		"PAGE_SIZE=0x%x\n",
--		dev->name,__FUNCTION__,
-+		dev->name,__func__,
- 		(unsigned int)PAGE_SIZE);
-         printk(KERN_INFO "%s: %s() > "
- 		"PAGE_MASK=0x%x\n",
--		dev->name,__FUNCTION__,
-+		dev->name,__func__,
- 		(unsigned int)PAGE_MASK);
- #endif
-         /*
-@@ -2117,10 +2117,10 @@ init_ccw_bk(struct net_device *dev)
- 
- #ifdef DEBUGMSG
-         printk(KERN_INFO "%s: %s() > ccw_blocks_perpage=%d\n",
--		dev->name,__FUNCTION__,
-+		dev->name,__func__,
- 		ccw_blocks_perpage);
-         printk(KERN_INFO "%s: %s() > ccw_pages_required=%d\n",
--		dev->name,__FUNCTION__,
-+		dev->name,__func__,
- 		ccw_pages_required);
- #endif
-         /*
-@@ -2156,29 +2156,29 @@ init_ccw_bk(struct net_device *dev)
- #ifdef DEBUGMSG
-         if (privptr->p_env->read_size < PAGE_SIZE) {
-             printk(KERN_INFO "%s: %s() reads_perpage=%d\n",
--	    	dev->name,__FUNCTION__,
-+	    	dev->name,__func__,
- 		claw_reads_perpage);
-         }
-         else {
-             printk(KERN_INFO "%s: %s() pages_perread=%d\n",
--	    	dev->name,__FUNCTION__,
-+	    	dev->name,__func__,
- 		privptr->p_buff_pages_perread);
-         }
-         printk(KERN_INFO "%s: %s() read_pages=%d\n",
--		dev->name,__FUNCTION__,
-+		dev->name,__func__,
- 		claw_read_pages);
-         if (privptr->p_env->write_size < PAGE_SIZE) {
-             printk(KERN_INFO "%s: %s() writes_perpage=%d\n",
--	    	dev->name,__FUNCTION__,
-+	    	dev->name,__func__,
- 		claw_writes_perpage);
-         }
-         else {
-             printk(KERN_INFO "%s: %s() pages_perwrite=%d\n",
--	    	dev->name,__FUNCTION__,
-+	    	dev->name,__func__,
- 		privptr->p_buff_pages_perwrite);
-         }
-         printk(KERN_INFO "%s: %s() write_pages=%d\n",
--		dev->name,__FUNCTION__,
-+		dev->name,__func__,
- 		claw_write_pages);
- #endif
- 
-@@ -2194,12 +2194,12 @@ init_ccw_bk(struct net_device *dev)
-                         printk(KERN_INFO "%s: %s()  "
- 				"__get_free_pages for CCWs failed : "
- 				"pages is %d\n",
--                                dev->name,__FUNCTION__,
-+                                dev->name,__func__,
- 				ccw_pages_required );
- #ifdef FUNCTRACE
-                         printk(KERN_INFO "%s: %s() > "
- 				"exit on line %d, rc = ENOMEM\n",
--				dev->name,__FUNCTION__,
-+				dev->name,__func__,
- 				 __LINE__);
- #endif
-                         return -ENOMEM;
-@@ -2218,7 +2218,7 @@ init_ccw_bk(struct net_device *dev)
-         /*                              Initialize ending CCW block       */
- #ifdef DEBUGMSG
-         printk(KERN_INFO "%s: %s() begin initialize ending CCW blocks\n",
--		dev->name,__FUNCTION__);
-+		dev->name,__func__);
- #endif
- 
-         p_endccw=privptr->p_end_ccw;
-@@ -2276,7 +2276,7 @@ init_ccw_bk(struct net_device *dev)
- 
- #ifdef IOTRACE
-         printk(KERN_INFO "%s: %s() dump claw ending CCW BK \n",
--		dev->name,__FUNCTION__);
-+		dev->name,__func__);
-         dumpit((char *)p_endccw, sizeof(struct endccw));
- #endif
- 
-@@ -2287,7 +2287,7 @@ init_ccw_bk(struct net_device *dev)
- 
- #ifdef DEBUGMSG
-         printk(KERN_INFO "%s: %s()  Begin build a chain of CCW buffer \n",
--		dev->name,__FUNCTION__);
-+		dev->name,__func__);
- #endif
-         p_buff=privptr->p_buff_ccw;
- 
-@@ -2306,7 +2306,7 @@ init_ccw_bk(struct net_device *dev)
- #ifdef DEBUGMSG
-         printk(KERN_INFO "%s: %s() "
- 		"End build a chain of CCW buffer \n",
--			dev->name,__FUNCTION__);
-+			dev->name,__func__);
-         p_buf=p_free_chain;
-         while (p_buf!=NULL) {
-                 dumpit((char *)p_buf, sizeof(struct ccwbk));
-@@ -2321,7 +2321,7 @@ init_ccw_bk(struct net_device *dev)
- #ifdef DEBUGMSG
-         printk(KERN_INFO "%s: %s() "
- 		"Begin initialize ClawSignalBlock \n",
--		dev->name,__FUNCTION__);
-+		dev->name,__func__);
- #endif
-         if (privptr->p_claw_signal_blk==NULL) {
-                 privptr->p_claw_signal_blk=p_free_chain;
-@@ -2334,7 +2334,7 @@ init_ccw_bk(struct net_device *dev)
- #ifdef DEBUGMSG
-         printk(KERN_INFO "%s: %s() >  End initialize "
- 	 	"ClawSignalBlock\n",
--		dev->name,__FUNCTION__);
-+		dev->name,__func__);
-         dumpit((char *)privptr->p_claw_signal_blk, sizeof(struct ccwbk));
- #endif
- 
-@@ -2349,14 +2349,14 @@ init_ccw_bk(struct net_device *dev)
-                 if (privptr->p_buff_write==NULL) {
-                         printk(KERN_INFO "%s: %s() __get_free_pages for write"
- 				" bufs failed : get is for %d pages\n",
--                                dev->name,__FUNCTION__,claw_write_pages );
-+                                dev->name,__func__,claw_write_pages );
-                         free_pages((unsigned long)privptr->p_buff_ccw,
- 			   (int)pages_to_order_of_mag(privptr->p_buff_ccw_num));
-                         privptr->p_buff_ccw=NULL;
- #ifdef FUNCTRACE
-                         printk(KERN_INFO "%s: %s() > exit on line %d,"
- 			 	"rc = ENOMEM\n",
--				dev->name,__FUNCTION__,__LINE__);
-+				dev->name,__func__,__LINE__);
- #endif
-                         return -ENOMEM;
-                 }
-@@ -2369,7 +2369,7 @@ init_ccw_bk(struct net_device *dev)
- 			ccw_pages_required * PAGE_SIZE);
- #ifdef DEBUGMSG
-                 printk(KERN_INFO "%s: %s() Begin build claw write free "
--			"chain \n",dev->name,__FUNCTION__);
-+			"chain \n",dev->name,__func__);
- #endif
-                 privptr->p_write_free_chain=NULL;
- 
-@@ -2409,14 +2409,14 @@ init_ccw_bk(struct net_device *dev)
- #ifdef IOTRACE
-                    printk(KERN_INFO "%s:%s __get_free_pages "
- 		    "for writes buf: get for %d pages\n",
--		    dev->name,__FUNCTION__,
-+		    dev->name,__func__,
- 		    privptr->p_buff_pages_perwrite);
- #endif
-                    if (p_buff==NULL) {
- 			printk(KERN_INFO "%s:%s __get_free_pages "
- 			 	"for writes buf failed : get is for %d pages\n",
- 				dev->name,
--				__FUNCTION__,
-+				__func__,
- 				privptr->p_buff_pages_perwrite );
-                         free_pages((unsigned long)privptr->p_buff_ccw,
- 			      (int)pages_to_order_of_mag(
-@@ -2433,7 +2433,7 @@ init_ccw_bk(struct net_device *dev)
- #ifdef FUNCTRACE
-                         printk(KERN_INFO "%s: %s exit on line %d, rc = ENOMEM\n",
- 			dev->name,
--			__FUNCTION__,
-+			__func__,
- 			__LINE__);
- #endif
-                         return -ENOMEM;
-@@ -2466,7 +2466,7 @@ init_ccw_bk(struct net_device *dev)
- 
- #ifdef DEBUGMSG
-         printk(KERN_INFO "%s:%s  End build claw write free chain \n",
--	dev->name,__FUNCTION__);
-+	dev->name,__func__);
-         p_buf=privptr->p_write_free_chain;
-         while (p_buf!=NULL) {
-                 dumpit((char *)p_buf, sizeof(struct ccwbk));
-@@ -2485,7 +2485,7 @@ init_ccw_bk(struct net_device *dev)
-                         printk(KERN_INFO "%s: %s() "
- 			 	"__get_free_pages for read buf failed : "
- 			 	"get is for %d pages\n",
--                                dev->name,__FUNCTION__,claw_read_pages );
-+                                dev->name,__func__,claw_read_pages );
-                         free_pages((unsigned long)privptr->p_buff_ccw,
- 				(int)pages_to_order_of_mag(
- 					privptr->p_buff_ccw_num));
-@@ -2497,7 +2497,7 @@ init_ccw_bk(struct net_device *dev)
-                         privptr->p_buff_write=NULL;
- #ifdef FUNCTRACE
-                         printk(KERN_INFO "%s: %s() > exit on line %d, rc ="
--				" ENOMEM\n",dev->name,__FUNCTION__,__LINE__);
-+				" ENOMEM\n",dev->name,__func__,__LINE__);
- #endif
-                         return -ENOMEM;
-                 }
-@@ -2509,7 +2509,7 @@ init_ccw_bk(struct net_device *dev)
-                 */
- #ifdef DEBUGMSG
-                 printk(KERN_INFO "%s: %s() Begin build claw read free chain \n",
--			dev->name,__FUNCTION__);
-+			dev->name,__func__);
- #endif
-                 p_buff=privptr->p_buff_read;
-                 for (i=0 ; i< privptr->p_env->read_buffers ; i++) {
-@@ -2590,7 +2590,7 @@ init_ccw_bk(struct net_device *dev)
- 
- #ifdef DEBUGMSG
-         printk(KERN_INFO "%s: %s() Begin build claw read free chain \n",
--		dev->name,__FUNCTION__);
-+		dev->name,__func__);
- #endif
-                 for (i=0 ; i< privptr->p_env->read_buffers ; i++) {
-                         p_buff = (void *)__get_free_pages(__GFP_DMA,
-@@ -2598,7 +2598,7 @@ init_ccw_bk(struct net_device *dev)
-                         if (p_buff==NULL) {
-                                 printk(KERN_INFO "%s: %s() __get_free_pages for read "
- 					"buf failed : get is for %d pages\n",
--					dev->name,__FUNCTION__,
-+					dev->name,__func__,
-                                         privptr->p_buff_pages_perread );
-                                 free_pages((unsigned long)privptr->p_buff_ccw,
- 					(int)pages_to_order_of_mag(privptr->p_buff_ccw_num));
-@@ -2622,7 +2622,7 @@ init_ccw_bk(struct net_device *dev)
-                                 privptr->p_buff_write=NULL;
- #ifdef FUNCTRACE
-                                 printk(KERN_INFO "%s: %s() exit on line %d, rc = ENOMEM\n",
--					dev->name,__FUNCTION__,
-+					dev->name,__func__,
- 					__LINE__);
- #endif
-                                 return -ENOMEM;
-@@ -2695,7 +2695,7 @@ init_ccw_bk(struct net_device *dev)
-         }       /*  pBuffread = NULL */
- #ifdef DEBUGMSG
-         printk(KERN_INFO "%s: %s() >  End build claw read free chain \n",
--		dev->name,__FUNCTION__);
-+		dev->name,__func__);
-         p_buf=p_first_CCWB;
-         while (p_buf!=NULL) {
-                 dumpit((char *)p_buf, sizeof(struct ccwbk));
-@@ -2707,7 +2707,7 @@ init_ccw_bk(struct net_device *dev)
- 	privptr->buffs_alloc = 1;
- #ifdef FUNCTRACE
-         printk(KERN_INFO "%s: %s() exit on line %d\n",
--		dev->name,__FUNCTION__,__LINE__);
-+		dev->name,__func__,__LINE__);
- #endif
-         return 0;
- }    /*    end of init_ccw_bk */
-@@ -2723,11 +2723,11 @@ probe_error( struct ccwgroup_device *cgdev)
- {
-   struct claw_privbk *privptr;
- #ifdef FUNCTRACE
--        printk(KERN_INFO "%s enter  \n",__FUNCTION__);
-+        printk(KERN_INFO "%s enter  \n",__func__);
- #endif
- 	CLAW_DBF_TEXT(4,trace,"proberr");
- #ifdef DEBUGMSG
--        printk(KERN_INFO "%s variable cgdev =\n",__FUNCTION__);
-+        printk(KERN_INFO "%s variable cgdev =\n",__func__);
-         dumpit((char *) cgdev, sizeof(struct ccwgroup_device));
- #endif
-         privptr=(struct claw_privbk *)cgdev->dev.driver_data;
-@@ -2741,7 +2741,7 @@ probe_error( struct ccwgroup_device *cgdev)
-         }
- #ifdef FUNCTRACE
-         printk(KERN_INFO "%s > exit on line %d\n",
--		 __FUNCTION__,__LINE__);
-+		 __func__,__LINE__);
- #endif
- 
-         return;
-@@ -2772,7 +2772,7 @@ claw_process_control( struct net_device *dev, struct ccwbk * p_ccw)
-         struct chbk *p_ch = NULL;
- #ifdef FUNCTRACE
-         printk(KERN_INFO "%s: %s() > enter  \n",
--		dev->name,__FUNCTION__);
-+		dev->name,__func__);
- #endif
- 	CLAW_DBF_TEXT(2,setup,"clw_cntl");
- #ifdef DEBUGMSG
-@@ -2794,7 +2794,7 @@ claw_process_control( struct net_device *dev, struct ccwbk * p_ccw)
- #ifdef FUNCTRACE
-                 printk(KERN_INFO "%s: %s() > "
- 			"exit on line %d, rc=0\n",
--			dev->name,__FUNCTION__,__LINE__);
-+			dev->name,__func__,__LINE__);
- #endif
-                 return 0;
-         }
-@@ -3057,7 +3057,7 @@ claw_process_control( struct net_device *dev, struct ccwbk * p_ccw)
- 
- #ifdef FUNCTRACE
-         printk(KERN_INFO "%s: %s() exit on line %d, rc = 0\n",
--		dev->name,__FUNCTION__,__LINE__);
-+		dev->name,__func__,__LINE__);
- #endif
- 
-         return 0;
-@@ -3080,7 +3080,7 @@ claw_send_control(struct net_device *dev, __u8 type, __u8 link,
-         struct sk_buff 			*skb;
- 
- #ifdef FUNCTRACE
--        printk(KERN_INFO "%s:%s > enter  \n",dev->name,__FUNCTION__);
-+        printk(KERN_INFO "%s:%s > enter  \n",dev->name,__func__);
- #endif
- 	CLAW_DBF_TEXT(2,setup,"sndcntl");
- #ifdef DEBUGMSG
-@@ -3143,10 +3143,10 @@ claw_send_control(struct net_device *dev, __u8 type, __u8 link,
-         skb = dev_alloc_skb(sizeof(struct clawctl));
-         if (!skb) {
-                 printk(  "%s:%s low on mem, returning...\n",
--			dev->name,__FUNCTION__);
-+			dev->name,__func__);
- #ifdef DEBUG
-                 printk(KERN_INFO "%s:%s Exit, rc = ENOMEM\n",
--			dev->name,__FUNCTION__);
-+			dev->name,__func__);
- #endif
-                 return -ENOMEM;
-         }
-@@ -3162,7 +3162,7 @@ claw_send_control(struct net_device *dev, __u8 type, __u8 link,
-         	claw_hw_tx(skb, dev, 0);
- #ifdef FUNCTRACE
-         printk(KERN_INFO "%s:%s Exit on line %d\n",
--		dev->name,__FUNCTION__,__LINE__);
-+		dev->name,__func__,__LINE__);
- #endif
- 
-         return 0;
-@@ -3180,7 +3180,7 @@ claw_snd_conn_req(struct net_device *dev, __u8 link)
-         struct clawctl 	   *p_ctl;
- 
- #ifdef FUNCTRACE
--        printk(KERN_INFO "%s:%s Enter  \n",dev->name,__FUNCTION__);
-+        printk(KERN_INFO "%s:%s Enter  \n",dev->name,__func__);
- #endif
- 	CLAW_DBF_TEXT(2,setup,"snd_conn");
- #ifdef  DEBUGMSG
-@@ -3193,7 +3193,7 @@ claw_snd_conn_req(struct net_device *dev, __u8 link)
-         if ( privptr->system_validate_comp==0x00 ) {
- #ifdef FUNCTRACE
-                 printk(KERN_INFO "%s:%s Exit on line %d, rc = 1\n",
--			dev->name,__FUNCTION__,__LINE__);
-+			dev->name,__func__,__LINE__);
- #endif
-                 return rc;
-         }
-@@ -3209,7 +3209,7 @@ claw_snd_conn_req(struct net_device *dev, __u8 link)
-        			HOST_APPL_NAME, privptr->p_env->api_type);
- #ifdef FUNCTRACE
-         printk(KERN_INFO "%s:%s Exit on line %d, rc = %d\n",
--		dev->name,__FUNCTION__,__LINE__, rc);
-+		dev->name,__func__,__LINE__, rc);
- #endif
-         return rc;
- 
-@@ -3228,7 +3228,7 @@ claw_snd_disc(struct net_device *dev, struct clawctl * p_ctl)
-         struct conncmd *  p_connect;
- 
- #ifdef FUNCTRACE
--        printk(KERN_INFO "%s:%s Enter\n",dev->name,__FUNCTION__);
-+        printk(KERN_INFO "%s:%s Enter\n",dev->name,__func__);
- #endif
- 	CLAW_DBF_TEXT(2,setup,"snd_dsc");
- #ifdef  DEBUGMSG
-@@ -3244,7 +3244,7 @@ claw_snd_disc(struct net_device *dev, struct clawctl * p_ctl)
-                 p_connect->host_name, p_connect->WS_name);
- #ifdef FUNCTRACE
-         printk(KERN_INFO "%s:%s Exit on line %d, rc = %d\n",
--		dev->name,__FUNCTION__, __LINE__, rc);
-+		dev->name,__func__, __LINE__, rc);
- #endif
-         return rc;
- }     /*   end of claw_snd_disc    */
-@@ -3265,7 +3265,7 @@ claw_snd_sys_validate_rsp(struct net_device *dev,
- 
- #ifdef FUNCTRACE
-         printk(KERN_INFO "%s:%s Enter\n",
--		dev->name,__FUNCTION__);
-+		dev->name,__func__);
- #endif
- 	CLAW_DBF_TEXT(2,setup,"chkresp");
- #ifdef DEBUGMSG
-@@ -3285,7 +3285,7 @@ claw_snd_sys_validate_rsp(struct net_device *dev,
- 		p_env->adapter_name  );
- #ifdef FUNCTRACE
-         printk(KERN_INFO "%s:%s Exit on line %d, rc = %d\n",
--		dev->name,__FUNCTION__,__LINE__, rc);
-+		dev->name,__func__,__LINE__, rc);
- #endif
-         return rc;
- }     /*    end of claw_snd_sys_validate_rsp    */
-@@ -3301,7 +3301,7 @@ claw_strt_conn_req(struct net_device *dev )
-         int rc;
- 
- #ifdef FUNCTRACE
--        printk(KERN_INFO "%s:%s Enter\n",dev->name,__FUNCTION__);
-+        printk(KERN_INFO "%s:%s Enter\n",dev->name,__func__);
- #endif
- 	CLAW_DBF_TEXT(2,setup,"conn_req");
- #ifdef DEBUGMSG
-@@ -3311,7 +3311,7 @@ claw_strt_conn_req(struct net_device *dev )
-         rc=claw_snd_conn_req(dev, 1);
- #ifdef FUNCTRACE
-         printk(KERN_INFO "%s:%s Exit on line %d, rc = %d\n",
--		dev->name,__FUNCTION__,__LINE__, rc);
-+		dev->name,__func__,__LINE__, rc);
- #endif
-         return rc;
- }    /*   end of claw_strt_conn_req   */
-@@ -3327,13 +3327,13 @@ net_device_stats *claw_stats(struct net_device *dev)
- {
-         struct claw_privbk *privptr;
- #ifdef FUNCTRACE
--        printk(KERN_INFO "%s:%s Enter\n",dev->name,__FUNCTION__);
-+        printk(KERN_INFO "%s:%s Enter\n",dev->name,__func__);
- #endif
- 	CLAW_DBF_TEXT(4,trace,"stats");
-         privptr = dev->priv;
- #ifdef FUNCTRACE
-         printk(KERN_INFO "%s:%s Exit on line %d\n",
--		dev->name,__FUNCTION__,__LINE__);
-+		dev->name,__func__,__LINE__);
- #endif
-         return &privptr->stats;
- }     /*   end of claw_stats   */
-@@ -3366,7 +3366,7 @@ unpack_read(struct net_device *dev )
- 	int     p=0;
- 
- #ifdef FUNCTRACE
--        printk(KERN_INFO "%s:%s enter  \n",dev->name,__FUNCTION__);
-+        printk(KERN_INFO "%s:%s enter  \n",dev->name,__func__);
- #endif
- 	CLAW_DBF_TEXT(4,trace,"unpkread");
-         p_first_ccw=NULL;
-@@ -3408,7 +3408,7 @@ unpack_read(struct net_device *dev )
-                 if ((p_this_ccw->header.opcode & MORE_to_COME_FLAG)!=0) {
- #ifdef DEBUGMSG
-                         printk(KERN_INFO "%s: %s > More_to_come is ON\n",
--			dev->name,__FUNCTION__);
-+			dev->name,__func__);
- #endif
-                         mtc_this_frm=1;
-                         if (p_this_ccw->header.length!=
-@@ -3435,7 +3435,7 @@ unpack_read(struct net_device *dev )
- #ifdef DEBUGMSG
-                         printk(KERN_INFO "%s:%s goto next "
- 				"frame from MoretoComeSkip \n",
--				dev->name,__FUNCTION__);
-+				dev->name,__func__);
- #endif
-                         goto NextFrame;
-                 }
-@@ -3445,7 +3445,7 @@ unpack_read(struct net_device *dev )
- #ifdef DEBUGMSG
-                         printk(KERN_INFO "%s:%s goto next "
- 				"frame from claw_process_control \n",
--				dev->name,__FUNCTION__);
-+				dev->name,__func__);
- #endif
- 			CLAW_DBF_TEXT(4,trace,"UnpkCntl");
-                         goto NextFrame;
-@@ -3468,7 +3468,7 @@ unpack_next:
-                 if (privptr->mtc_logical_link<0) {
- #ifdef DEBUGMSG
-                 printk(KERN_INFO "%s: %s mtc_logical_link < 0  \n",
--			dev->name,__FUNCTION__);
-+			dev->name,__func__);
- #endif
- 
-                 /*
-@@ -3487,7 +3487,7 @@ unpack_next:
-                         printk(KERN_INFO "%s: %s > goto next "
- 				"frame from MoretoComeSkip \n",
- 				dev->name,
+-	dbg("%s: found IBM aPCI device\n", __FUNCTION__);
++	dbg("%s: found IBM aPCI device\n", __func__);
+ 	if (acpi_bus_get_device(ibm_acpi_handle, &device)) {
+-		err("%s: acpi_bus_get_device failed\n", __FUNCTION__);
++		err("%s: acpi_bus_get_device failed\n", __func__);
+ 		retval = -ENODEV;
+ 		goto init_return;
+ 	}
+@@ -458,7 +458,7 @@ static int __init ibm_acpiphp_init(void)
+ 			&ibm_note);
+ 	if (ACPI_FAILURE(status)) {
+ 		err("%s: Failed to register notification handler\n",
 -				__FUNCTION__);
 +				__func__);
-                         printk(KERN_INFO "      bytes_to_mov %d > (MAX_ENVELOPE_"
- 				"SIZE-privptr->mtc_offset %d)\n",
- 				bytes_to_mov,(MAX_ENVELOPE_SIZE- privptr->mtc_offset));
-@@ -3505,13 +3505,13 @@ unpack_next:
+ 		retval = -EBUSY;
+ 		goto init_cleanup;
+ 	}
+@@ -479,17 +479,17 @@ static void __exit ibm_acpiphp_exit(void)
+ 	acpi_status status;
+ 	struct kobject *sysdir = &pci_hotplug_slots_kset->kobj;
+ 
+-	dbg("%s\n", __FUNCTION__);
++	dbg("%s\n", __func__);
+ 
+ 	if (acpiphp_unregister_attention(&ibm_attention_info))
+-		err("%s: attention info deregistration failed", __FUNCTION__);
++		err("%s: attention info deregistration failed", __func__);
+ 
+ 	status = acpi_remove_notify_handler(
+ 			   ibm_acpi_handle,
+ 			   ACPI_DEVICE_NOTIFY,
+ 			   ibm_handle_events);
+ 	if (ACPI_FAILURE(status))
+-		err("%s: Notification handler removal failed\n", __FUNCTION__);
++		err("%s: Notification handler removal failed\n", __func__);
+ 	/* remove the /sys entries */
+ 	sysfs_remove_bin_file(sysdir, &ibm_apci_table_attr);
+ }
+diff --git a/drivers/pci/hotplug/cpci_hotplug_core.c b/drivers/pci/hotplug/cpci_hotplug_core.c
+index ed4d44e..d8a6b80 100644
+--- a/drivers/pci/hotplug/cpci_hotplug_core.c
++++ b/drivers/pci/hotplug/cpci_hotplug_core.c
+@@ -108,7 +108,7 @@ enable_slot(struct hotplug_slot *hotplug_slot)
+ 	struct slot *slot = hotplug_slot->private;
+ 	int retval = 0;
+ 
+-	dbg("%s - physical_slot = %s", __FUNCTION__, hotplug_slot->name);
++	dbg("%s - physical_slot = %s", __func__, hotplug_slot->name);
+ 
+ 	if (controller->ops->set_power)
+ 		retval = controller->ops->set_power(slot, 1);
+@@ -121,25 +121,25 @@ disable_slot(struct hotplug_slot *hotplug_slot)
+ 	struct slot *slot = hotplug_slot->private;
+ 	int retval = 0;
+ 
+-	dbg("%s - physical_slot = %s", __FUNCTION__, hotplug_slot->name);
++	dbg("%s - physical_slot = %s", __func__, hotplug_slot->name);
+ 
+ 	down_write(&list_rwsem);
+ 
+ 	/* Unconfigure device */
+ 	dbg("%s - unconfiguring slot %s",
+-	    __FUNCTION__, slot->hotplug_slot->name);
++	    __func__, slot->hotplug_slot->name);
+ 	if ((retval = cpci_unconfigure_slot(slot))) {
+ 		err("%s - could not unconfigure slot %s",
+-		    __FUNCTION__, slot->hotplug_slot->name);
++		    __func__, slot->hotplug_slot->name);
+ 		goto disable_error;
+ 	}
+ 	dbg("%s - finished unconfiguring slot %s",
+-	    __FUNCTION__, slot->hotplug_slot->name);
++	    __func__, slot->hotplug_slot->name);
+ 
+ 	/* Clear EXT (by setting it) */
+ 	if (cpci_clear_ext(slot)) {
+ 		err("%s - could not clear EXT for slot %s",
+-		    __FUNCTION__, slot->hotplug_slot->name);
++		    __func__, slot->hotplug_slot->name);
+ 		retval = -ENODEV;
+ 		goto disable_error;
+ 	}
+@@ -372,7 +372,7 @@ init_slots(int clear_ins)
+ 	struct slot *slot;
+ 	struct pci_dev* dev;
+ 
+-	dbg("%s - enter", __FUNCTION__);
++	dbg("%s - enter", __func__);
+ 	down_read(&list_rwsem);
+ 	if (!slots) {
+ 		up_read(&list_rwsem);
+@@ -380,10 +380,10 @@ init_slots(int clear_ins)
+ 	}
+ 	list_for_each_entry(slot, &slot_list, slot_list) {
+ 		dbg("%s - looking at slot %s",
+-		    __FUNCTION__, slot->hotplug_slot->name);
++		    __func__, slot->hotplug_slot->name);
+ 		if (clear_ins && cpci_check_and_clear_ins(slot))
+ 			dbg("%s - cleared INS for slot %s",
+-			    __FUNCTION__, slot->hotplug_slot->name);
++			    __func__, slot->hotplug_slot->name);
+ 		dev = pci_get_slot(slot->bus, PCI_DEVFN(slot->number, 0));
+ 		if (dev) {
+ 			if (update_adapter_status(slot->hotplug_slot, 1))
+@@ -394,7 +394,7 @@ init_slots(int clear_ins)
  		}
- #ifdef DEBUGMSG
-                 printk(KERN_INFO "%s: %s() received data \n",
--			dev->name,__FUNCTION__);
-+			dev->name,__func__);
- 		if (p_env->packing == DO_PACKED)
- 			dumpit((char *)p_packd+sizeof(struct clawph),32);
- 		else
- 	                dumpit((char *)p_this_ccw->p_buffer, 32);
- 		printk(KERN_INFO "%s: %s() bytelength %d \n",
--			dev->name,__FUNCTION__,bytes_to_mov);
-+			dev->name,__func__,bytes_to_mov);
- #endif
-                 if (mtc_this_frm==0) {
-                         len_of_data=privptr->mtc_offset+bytes_to_mov;
-@@ -3530,13 +3530,13 @@ unpack_next:
- #ifdef DEBUGMSG
-                                 printk(KERN_INFO "%s: %s() netif_"
- 					"rx(skb) completed \n",
--					dev->name,__FUNCTION__);
-+					dev->name,__func__);
- #endif
-                         }
-                         else {
-                                 privptr->stats.rx_dropped++;
-                                 printk(KERN_WARNING "%s: %s() low on memory\n",
--				dev->name,__FUNCTION__);
-+				dev->name,__func__);
-                         }
-                         privptr->mtc_offset=0;
-                         privptr->mtc_logical_link=-1;
-@@ -3575,10 +3575,10 @@ NextFrame:
- 
- #ifdef IOTRACE
-         printk(KERN_INFO "%s:%s processed frame is %d \n",
--		dev->name,__FUNCTION__,i);
-+		dev->name,__func__,i);
-         printk(KERN_INFO "%s:%s  F:%lx L:%lx\n",
- 		dev->name,
--		__FUNCTION__,
-+		__func__,
- 		(unsigned long)p_first_ccw,
- 		(unsigned long)p_last_ccw);
- #endif
-@@ -3588,7 +3588,7 @@ NextFrame:
-         claw_strt_read(dev, LOCK_YES);
- #ifdef FUNCTRACE
-         printk(KERN_INFO "%s: %s exit on line %d\n",
--		dev->name, __FUNCTION__, __LINE__);
-+		dev->name, __func__, __LINE__);
- #endif
-         return;
- }     /*  end of unpack_read   */
-@@ -3610,7 +3610,7 @@ claw_strt_read (struct net_device *dev, int lock )
-         p_ch=&privptr->channel[READ];
- 
- #ifdef FUNCTRACE
--        printk(KERN_INFO "%s:%s Enter  \n",dev->name,__FUNCTION__);
-+        printk(KERN_INFO "%s:%s Enter  \n",dev->name,__func__);
-         printk(KERN_INFO "%s: variable lock = %d, dev =\n",dev->name, lock);
-         dumpit((char *) dev, sizeof(struct net_device));
- #endif
-@@ -3626,7 +3626,7 @@ claw_strt_read (struct net_device *dev, int lock )
-         }
- #ifdef DEBUGMSG
-         printk(KERN_INFO "%s:%s state-%02x\n" ,
--		dev->name,__FUNCTION__, p_ch->claw_state);
-+		dev->name,__func__, p_ch->claw_state);
- #endif
-         if (lock==LOCK_YES) {
-                 spin_lock_irqsave(get_ccwdev_lock(p_ch->cdev), saveflags);
-@@ -3634,7 +3634,7 @@ claw_strt_read (struct net_device *dev, int lock )
-         if (test_and_set_bit(0, (void *)&p_ch->IO_active) == 0) {
- #ifdef DEBUGMSG
-                 printk(KERN_INFO "%s: HOT READ started in %s\n" ,
--			dev->name,__FUNCTION__);
-+			dev->name,__func__);
-                 p_clawh=(struct clawh *)privptr->p_claw_signal_blk;
-                 dumpit((char *)&p_clawh->flag , 1);
- #endif
-@@ -3650,7 +3650,7 @@ claw_strt_read (struct net_device *dev, int lock )
- 	else {
- #ifdef DEBUGMSG
- 		printk(KERN_INFO "%s: No READ started by %s() In progress\n" ,
--			dev->name,__FUNCTION__);
-+			dev->name,__func__);
- #endif
- 		CLAW_DBF_TEXT(2,trace,"ReadAct");
  	}
-@@ -3660,7 +3660,7 @@ claw_strt_read (struct net_device *dev, int lock )
-         }
- #ifdef FUNCTRACE
-         printk(KERN_INFO "%s:%s Exit on line %d\n",
--		dev->name,__FUNCTION__,__LINE__);
-+		dev->name,__func__,__LINE__);
- #endif
- 	CLAW_DBF_TEXT(4,trace,"StRdExit");
-         return;
-@@ -3681,7 +3681,7 @@ claw_strt_out_IO( struct net_device *dev )
-         struct ccwbk   	*p_first_ccw;
- 
- #ifdef FUNCTRACE
--        printk(KERN_INFO "%s:%s Enter\n",dev->name,__FUNCTION__);
-+        printk(KERN_INFO "%s:%s Enter\n",dev->name,__func__);
- #endif
- 	if (!dev) {
- 		return;
-@@ -3691,7 +3691,7 @@ claw_strt_out_IO( struct net_device *dev )
- 
- #ifdef DEBUGMSG
-         printk(KERN_INFO "%s:%s state-%02x\n" ,
--		dev->name,__FUNCTION__,p_ch->claw_state);
-+		dev->name,__func__,p_ch->claw_state);
- #endif
-         CLAW_DBF_TEXT(4,trace,"strt_io");
-         p_first_ccw=privptr->p_write_active_first;
-@@ -3701,14 +3701,14 @@ claw_strt_out_IO( struct net_device *dev )
-         if (p_first_ccw == NULL) {
- #ifdef FUNCTRACE
-                 printk(KERN_INFO "%s:%s Exit on line %d\n",
--			dev->name,__FUNCTION__,__LINE__);
-+			dev->name,__func__,__LINE__);
- #endif
-                 return;
-         }
-         if (test_and_set_bit(0, (void *)&p_ch->IO_active) == 0) {
-                 parm = (unsigned long) p_ch;
- #ifdef DEBUGMSG
--                printk(KERN_INFO "%s:%s do_io \n" ,dev->name,__FUNCTION__);
-+                printk(KERN_INFO "%s:%s do_io \n" ,dev->name,__func__);
-                 dumpit((char *)p_first_ccw, sizeof(struct ccwbk));
- #endif
- 		CLAW_DBF_TEXT(2,trace,"StWrtIO");
-@@ -3721,7 +3721,7 @@ claw_strt_out_IO( struct net_device *dev )
-         dev->trans_start = jiffies;
- #ifdef FUNCTRACE
- 	printk(KERN_INFO "%s:%s Exit on line %d\n",
--		dev->name,__FUNCTION__,__LINE__);
-+		dev->name,__func__,__LINE__);
- #endif
- 
-         return;
-@@ -3745,7 +3745,7 @@ claw_free_wrt_buf( struct net_device *dev )
-         struct ccwbk*p_buf;
- #endif
- #ifdef FUNCTRACE
--        printk(KERN_INFO "%s:%s Enter\n",dev->name,__FUNCTION__);
-+        printk(KERN_INFO "%s:%s Enter\n",dev->name,__func__);
-         printk(KERN_INFO "%s: free count = %d  variable dev =\n",
- 		dev->name,privptr->write_free_count);
- #endif
-@@ -3798,7 +3798,7 @@ claw_free_wrt_buf( struct net_device *dev )
-                 privptr->p_write_active_last=NULL;
- #ifdef DEBUGMSG
-                 printk(KERN_INFO "%s:%s p_write_"
--			"active_first==NULL\n",dev->name,__FUNCTION__);
-+			"active_first==NULL\n",dev->name,__func__);
- #endif
-         }
- #ifdef IOTRACE
-@@ -3819,7 +3819,7 @@ claw_free_wrt_buf( struct net_device *dev )
- 	CLAW_DBF_TEXT_(4,trace,"FWC=%d",privptr->write_free_count);
- #ifdef FUNCTRACE
-         printk(KERN_INFO "%s:%s Exit on line %d free_count =%d\n",
--		dev->name,__FUNCTION__, __LINE__,privptr->write_free_count);
-+		dev->name,__func__, __LINE__,privptr->write_free_count);
- #endif
-         return;
- }
-@@ -3833,7 +3833,7 @@ claw_free_netdevice(struct net_device * dev, int free_dev)
- {
- 	struct claw_privbk *privptr;
- #ifdef FUNCTRACE
--        printk(KERN_INFO "%s:%s Enter\n",dev->name,__FUNCTION__);
-+        printk(KERN_INFO "%s:%s Enter\n",dev->name,__func__);
- #endif
- 	CLAW_DBF_TEXT(2,setup,"free_dev");
- 
-@@ -3854,7 +3854,7 @@ claw_free_netdevice(struct net_device * dev, int free_dev)
- #endif
- 	CLAW_DBF_TEXT(2,setup,"feee_ok");
- #ifdef FUNCTRACE
--        printk(KERN_INFO "%s:%s Exit\n",dev->name,__FUNCTION__);
-+        printk(KERN_INFO "%s:%s Exit\n",dev->name,__func__);
- #endif
- }
- 
-@@ -3867,13 +3867,13 @@ static void
- claw_init_netdevice(struct net_device * dev)
- {
- #ifdef FUNCTRACE
--        printk(KERN_INFO "%s:%s Enter\n",dev->name,__FUNCTION__);
-+        printk(KERN_INFO "%s:%s Enter\n",dev->name,__func__);
- #endif
- 	CLAW_DBF_TEXT(2,setup,"init_dev");
- 	CLAW_DBF_TEXT_(2,setup,"%s",dev->name);
- 	if (!dev) {
-         printk(KERN_WARNING "claw:%s BAD Device exit line %d\n",
--		__FUNCTION__,__LINE__);
-+		__func__,__LINE__);
- 		CLAW_DBF_TEXT(2,setup,"baddev");
- 		return;
- 	}
-@@ -3889,7 +3889,7 @@ claw_init_netdevice(struct net_device * dev)
- 	dev->tx_queue_len = 1300;
- 	dev->flags = IFF_POINTOPOINT | IFF_NOARP;
- #ifdef FUNCTRACE
--        printk(KERN_INFO "%s:%s Exit\n",dev->name,__FUNCTION__);
-+        printk(KERN_INFO "%s:%s Exit\n",dev->name,__func__);
- #endif
- 	CLAW_DBF_TEXT(2,setup,"initok");
- 	return;
-@@ -3909,7 +3909,7 @@ add_channel(struct ccw_device *cdev,int i,struct claw_privbk *privptr)
- 	struct ccw_dev_id dev_id;
- 
- #ifdef FUNCTRACE
--        printk(KERN_INFO "%s:%s Enter\n",cdev->dev.bus_id,__FUNCTION__);
-+        printk(KERN_INFO "%s:%s Enter\n",cdev->dev.bus_id,__func__);
- #endif
- 	CLAW_DBF_TEXT_(2,setup,"%s",cdev->dev.bus_id);
- 	privptr->channel[i].flag  = i+1;   /* Read is 1 Write is 2 */
-@@ -3920,16 +3920,16 @@ add_channel(struct ccw_device *cdev,int i,struct claw_privbk *privptr)
- 	p_ch->devno = dev_id.devno;
- 	if ((p_ch->irb = kzalloc(sizeof (struct irb),GFP_KERNEL)) == NULL) {
- 		printk(KERN_WARNING "%s Out of memory in %s for irb\n",
--			p_ch->id,__FUNCTION__);
-+			p_ch->id,__func__);
- #ifdef FUNCTRACE
-         	printk(KERN_INFO "%s:%s Exit on line %d\n",
--			p_ch->id,__FUNCTION__,__LINE__);
-+			p_ch->id,__func__,__LINE__);
- #endif
- 		return -ENOMEM;
- 	}
- #ifdef FUNCTRACE
-         	printk(KERN_INFO "%s:%s Exit on line %d\n",
--			cdev->dev.bus_id,__FUNCTION__,__LINE__);
-+			cdev->dev.bus_id,__func__,__LINE__);
- #endif
+ 	up_read(&list_rwsem);
+-	dbg("%s - exit", __FUNCTION__);
++	dbg("%s - exit", __func__);
  	return 0;
  }
-@@ -3952,7 +3952,7 @@ claw_new_device(struct ccwgroup_device *cgdev)
- 	int ret;
- 	struct ccw_dev_id dev_id;
  
--	pr_debug("%s() called\n", __FUNCTION__);
-+	pr_debug("%s() called\n", __func__);
- 	printk(KERN_INFO "claw: add for %s\n",cgdev->cdev[READ]->dev.bus_id);
- 	CLAW_DBF_TEXT(2,setup,"new_dev");
- 	privptr = cgdev->dev.driver_data;
-@@ -3990,7 +3990,7 @@ claw_new_device(struct ccwgroup_device *cgdev)
+@@ -415,7 +415,7 @@ check_slots(void)
+ 	extracted = inserted = 0;
+ 	list_for_each_entry(slot, &slot_list, slot_list) {
+ 		dbg("%s - looking at slot %s",
+-		    __FUNCTION__, slot->hotplug_slot->name);
++		    __func__, slot->hotplug_slot->name);
+ 		if (cpci_check_and_clear_ins(slot)) {
+ 			/*
+ 			 * Some broken hardware (e.g. PLX 9054AB) asserts
+@@ -430,28 +430,28 @@ check_slots(void)
+ 
+ 			/* Process insertion */
+ 			dbg("%s - slot %s inserted",
+-			    __FUNCTION__, slot->hotplug_slot->name);
++			    __func__, slot->hotplug_slot->name);
+ 
+ 			/* GSM, debug */
+ 			hs_csr = cpci_get_hs_csr(slot);
+ 			dbg("%s - slot %s HS_CSR (1) = %04x",
+-			    __FUNCTION__, slot->hotplug_slot->name, hs_csr);
++			    __func__, slot->hotplug_slot->name, hs_csr);
+ 
+ 			/* Configure device */
+ 			dbg("%s - configuring slot %s",
+-			    __FUNCTION__, slot->hotplug_slot->name);
++			    __func__, slot->hotplug_slot->name);
+ 			if (cpci_configure_slot(slot)) {
+ 				err("%s - could not configure slot %s",
+-				    __FUNCTION__, slot->hotplug_slot->name);
++				    __func__, slot->hotplug_slot->name);
+ 				continue;
+ 			}
+ 			dbg("%s - finished configuring slot %s",
+-			    __FUNCTION__, slot->hotplug_slot->name);
++			    __func__, slot->hotplug_slot->name);
+ 
+ 			/* GSM, debug */
+ 			hs_csr = cpci_get_hs_csr(slot);
+ 			dbg("%s - slot %s HS_CSR (2) = %04x",
+-			    __FUNCTION__, slot->hotplug_slot->name, hs_csr);
++			    __func__, slot->hotplug_slot->name, hs_csr);
+ 
+ 			if (update_latch_status(slot->hotplug_slot, 1))
+ 				warn("failure to update latch file");
+@@ -464,18 +464,18 @@ check_slots(void)
+ 			/* GSM, debug */
+ 			hs_csr = cpci_get_hs_csr(slot);
+ 			dbg("%s - slot %s HS_CSR (3) = %04x",
+-			    __FUNCTION__, slot->hotplug_slot->name, hs_csr);
++			    __func__, slot->hotplug_slot->name, hs_csr);
+ 
+ 			inserted++;
+ 		} else if (cpci_check_ext(slot)) {
+ 			/* Process extraction request */
+ 			dbg("%s - slot %s extracted",
+-			    __FUNCTION__, slot->hotplug_slot->name);
++			    __func__, slot->hotplug_slot->name);
+ 
+ 			/* GSM, debug */
+ 			hs_csr = cpci_get_hs_csr(slot);
+ 			dbg("%s - slot %s HS_CSR = %04x",
+-			    __FUNCTION__, slot->hotplug_slot->name, hs_csr);
++			    __func__, slot->hotplug_slot->name, hs_csr);
+ 
+ 			if (!slot->extracting) {
+ 				if (update_latch_status(slot->hotplug_slot, 0)) {
+@@ -519,7 +519,7 @@ event_thread(void *data)
+ {
+ 	int rc;
+ 
+-	dbg("%s - event thread started", __FUNCTION__);
++	dbg("%s - event thread started", __func__);
+ 	while (1) {
+ 		dbg("event thread sleeping");
+ 		set_current_state(TASK_INTERRUPTIBLE);
+@@ -532,7 +532,7 @@ event_thread(void *data)
+ 				/* Give userspace a chance to handle extraction */
+ 				msleep(500);
+ 			} else if (rc < 0) {
+-				dbg("%s - error checking slots", __FUNCTION__);
++				dbg("%s - error checking slots", __func__);
+ 				thread_finished = 1;
+ 				goto out;
+ 			}
+@@ -541,7 +541,7 @@ event_thread(void *data)
+ 			break;
+ 
+ 		/* Re-enable ENUM# interrupt */
+-		dbg("%s - re-enabling irq", __FUNCTION__);
++		dbg("%s - re-enabling irq", __func__);
+ 		controller->ops->enable_irq();
  	}
- 	dev = alloc_netdev(0,"claw%d",claw_init_netdevice);
+  out:
+@@ -564,7 +564,7 @@ poll_thread(void *data)
+ 					/* Give userspace a chance to handle extraction */
+ 					msleep(500);
+ 				} else if (rc < 0) {
+-					dbg("%s - error checking slots", __FUNCTION__);
++					dbg("%s - error checking slots", __func__);
+ 					thread_finished = 1;
+ 					goto out;
+ 				}
+@@ -621,7 +621,7 @@ cpci_hp_register_controller(struct cpci_hp_controller *new_controller)
+ 			status = -ENODEV;
+ 		}
+ 		dbg("%s - acquired controller irq %d",
+-		    __FUNCTION__, new_controller->irq);
++		    __func__, new_controller->irq);
+ 	}
+ 	if (!status)
+ 		controller = new_controller;
+@@ -673,7 +673,7 @@ cpci_hp_start(void)
+ 	static int first = 1;
+ 	int status;
+ 
+-	dbg("%s - enter", __FUNCTION__);
++	dbg("%s - enter", __func__);
+ 	if (!controller)
+ 		return -ENODEV;
+ 
+@@ -693,14 +693,14 @@ cpci_hp_start(void)
+ 	status = cpci_start_thread();
+ 	if (status)
+ 		return status;
+-	dbg("%s - thread started", __FUNCTION__);
++	dbg("%s - thread started", __func__);
+ 
+ 	if (controller->irq) {
+ 		/* Start enum interrupt processing */
+-		dbg("%s - enabling irq", __FUNCTION__);
++		dbg("%s - enabling irq", __func__);
+ 		controller->ops->enable_irq();
+ 	}
+-	dbg("%s - exit", __FUNCTION__);
++	dbg("%s - exit", __func__);
+ 	return 0;
+ }
+ 
+@@ -711,7 +711,7 @@ cpci_hp_stop(void)
+ 		return -ENODEV;
+ 	if (controller->irq) {
+ 		/* Stop enum interrupt processing */
+-		dbg("%s - disabling irq", __FUNCTION__);
++		dbg("%s - disabling irq", __func__);
+ 		controller->ops->disable_irq();
+ 	}
+ 	cpci_stop_thread();
+diff --git a/drivers/pci/hotplug/cpci_hotplug_pci.c b/drivers/pci/hotplug/cpci_hotplug_pci.c
+index 5e9be44..ea72f03 100644
+--- a/drivers/pci/hotplug/cpci_hotplug_pci.c
++++ b/drivers/pci/hotplug/cpci_hotplug_pci.c
+@@ -255,7 +255,7 @@ int cpci_configure_slot(struct slot* slot)
+ 	struct pci_bus *parent;
+ 	int fn;
+ 
+-	dbg("%s - enter", __FUNCTION__);
++	dbg("%s - enter", __func__);
+ 
+ 	if (slot->dev == NULL) {
+ 		dbg("pci_dev null, finding %02x:%02x:%x",
+@@ -273,7 +273,7 @@ int cpci_configure_slot(struct slot* slot)
+ 		 * we will only call this case when lookup fails.
+ 		 */
+ 		n = pci_scan_slot(slot->bus, slot->devfn);
+-		dbg("%s: pci_scan_slot returned %d", __FUNCTION__, n);
++		dbg("%s: pci_scan_slot returned %d", __func__, n);
+ 		slot->dev = pci_get_slot(slot->bus, slot->devfn);
+ 		if (slot->dev == NULL) {
+ 			err("Could not find PCI device for slot %02x", slot->number);
+@@ -322,7 +322,7 @@ int cpci_configure_slot(struct slot* slot)
+ 	pci_bus_add_devices(parent);
+ 	pci_enable_bridges(parent);
+ 
+-	dbg("%s - exit", __FUNCTION__);
++	dbg("%s - exit", __func__);
+ 	return 0;
+ }
+ 
+@@ -331,7 +331,7 @@ int cpci_unconfigure_slot(struct slot* slot)
+ 	int i;
+ 	struct pci_dev *dev;
+ 
+-	dbg("%s - enter", __FUNCTION__);
++	dbg("%s - enter", __func__);
+ 	if (!slot->dev) {
+ 		err("No device for slot %02x\n", slot->number);
+ 		return -ENODEV;
+@@ -348,6 +348,6 @@ int cpci_unconfigure_slot(struct slot* slot)
+ 	pci_dev_put(slot->dev);
+ 	slot->dev = NULL;
+ 
+-	dbg("%s - exit", __FUNCTION__);
++	dbg("%s - exit", __func__);
+ 	return 0;
+ }
+diff --git a/drivers/pci/hotplug/cpqphp.h b/drivers/pci/hotplug/cpqphp.h
+index 298ad7f..b1decfa 100644
+--- a/drivers/pci/hotplug/cpqphp.h
++++ b/drivers/pci/hotplug/cpqphp.h
+@@ -674,7 +674,7 @@ static inline int cpq_get_latch_status(struct controller *ctrl, struct slot *slo
+ 
+ 	hp_slot = slot->device - ctrl->slot_device_offset;
+ 	dbg("%s: slot->device = %d, ctrl->slot_device_offset = %d \n",
+-	    __FUNCTION__, slot->device, ctrl->slot_device_offset);
++	    __func__, slot->device, ctrl->slot_device_offset);
+ 
+ 	status = (readl(ctrl->hpc_reg + INT_INPUT_CLEAR) & (0x01L << hp_slot));
+ 
+@@ -709,7 +709,7 @@ static inline int wait_for_ctrl_irq(struct controller *ctrl)
+         DECLARE_WAITQUEUE(wait, current);
+ 	int retval = 0;
+ 
+-	dbg("%s - start\n", __FUNCTION__);
++	dbg("%s - start\n", __func__);
+ 	add_wait_queue(&ctrl->queue, &wait);
+ 	/* Sleep for up to 1 second to wait for the LED to change. */
+ 	msleep_interruptible(1000);
+@@ -717,7 +717,7 @@ static inline int wait_for_ctrl_irq(struct controller *ctrl)
+ 	if (signal_pending(current))
+ 		retval =  -EINTR;
+ 
+-	dbg("%s - end\n", __FUNCTION__);
++	dbg("%s - end\n", __func__);
+ 	return retval;
+ }
+ 
+diff --git a/drivers/pci/hotplug/cpqphp_core.c b/drivers/pci/hotplug/cpqphp_core.c
+index 7417887..36b115b 100644
+--- a/drivers/pci/hotplug/cpqphp_core.c
++++ b/drivers/pci/hotplug/cpqphp_core.c
+@@ -315,7 +315,7 @@ static void release_slot(struct hotplug_slot *hotplug_slot)
+ {
+ 	struct slot *slot = hotplug_slot->private;
+ 
+-	dbg("%s - physical_slot = %s\n", __FUNCTION__, hotplug_slot->name);
++	dbg("%s - physical_slot = %s\n", __func__, hotplug_slot->name);
+ 
+ 	kfree(slot->hotplug_slot->info);
+ 	kfree(slot->hotplug_slot->name);
+@@ -338,7 +338,7 @@ static int ctrl_slot_setup(struct controller *ctrl,
+ 	void __iomem *slot_entry= NULL;
+ 	int result = -ENOMEM;
+ 
+-	dbg("%s\n", __FUNCTION__);
++	dbg("%s\n", __func__);
+ 
+ 	tempdword = readl(ctrl->hpc_reg + INT_INPUT_CLEAR);
+ 
+@@ -513,7 +513,7 @@ get_slot_mapping(struct pci_bus *bus, u8 bus_num, u8 dev_num, u8 *slot)
+ 
+ 	u8 tbus, tdevice, tslot, bridgeSlot;
+ 
+-	dbg("%s: %p, %d, %d, %p\n", __FUNCTION__, bus, bus_num, dev_num, slot);
++	dbg("%s: %p, %d, %d, %p\n", __func__, bus, bus_num, dev_num, slot);
+ 
+ 	bridgeSlot = 0xFF;
+ 
+@@ -636,7 +636,7 @@ static int set_attention_status (struct hotplug_slot *hotplug_slot, u8 status)
+ 	u8 device;
+ 	u8 function;
+ 
+-	dbg("%s - physical_slot = %s\n", __FUNCTION__, hotplug_slot->name);
++	dbg("%s - physical_slot = %s\n", __func__, hotplug_slot->name);
+ 
+ 	if (cpqhp_get_bus_dev(ctrl, &bus, &devfn, slot->number) == -1)
+ 		return -ENODEV;
+@@ -663,7 +663,7 @@ static int process_SI(struct hotplug_slot *hotplug_slot)
+ 	u8 device;
+ 	u8 function;
+ 
+-	dbg("%s - physical_slot = %s\n", __FUNCTION__, hotplug_slot->name);
++	dbg("%s - physical_slot = %s\n", __func__, hotplug_slot->name);
+ 
+ 	if (cpqhp_get_bus_dev(ctrl, &bus, &devfn, slot->number) == -1)
+ 		return -ENODEV;
+@@ -695,7 +695,7 @@ static int process_SS(struct hotplug_slot *hotplug_slot)
+ 	u8 device;
+ 	u8 function;
+ 
+-	dbg("%s - physical_slot = %s\n", __FUNCTION__, hotplug_slot->name);
++	dbg("%s - physical_slot = %s\n", __func__, hotplug_slot->name);
+ 
+ 	if (cpqhp_get_bus_dev(ctrl, &bus, &devfn, slot->number) == -1)
+ 		return -ENODEV;
+@@ -708,7 +708,7 @@ static int process_SS(struct hotplug_slot *hotplug_slot)
+ 	if (!slot_func)
+ 		return -ENODEV;
+ 
+-	dbg("In %s, slot_func = %p, ctrl = %p\n", __FUNCTION__, slot_func, ctrl);
++	dbg("In %s, slot_func = %p, ctrl = %p\n", __func__, slot_func, ctrl);
+ 	return cpqhp_process_SS(ctrl, slot_func);
+ }
+ 
+@@ -718,7 +718,7 @@ static int hardware_test(struct hotplug_slot *hotplug_slot, u32 value)
+ 	struct slot *slot = hotplug_slot->private;
+ 	struct controller *ctrl = slot->ctrl;
+ 
+-	dbg("%s - physical_slot = %s\n", __FUNCTION__, hotplug_slot->name);
++	dbg("%s - physical_slot = %s\n", __func__, hotplug_slot->name);
+ 
+ 	return cpqhp_hardware_test(ctrl, value);	
+ }
+@@ -729,7 +729,7 @@ static int get_power_status(struct hotplug_slot *hotplug_slot, u8 *value)
+ 	struct slot *slot = hotplug_slot->private;
+ 	struct controller *ctrl = slot->ctrl;
+ 
+-	dbg("%s - physical_slot = %s\n", __FUNCTION__, hotplug_slot->name);
++	dbg("%s - physical_slot = %s\n", __func__, hotplug_slot->name);
+ 
+ 	*value = get_slot_enabled(ctrl, slot);
+ 	return 0;
+@@ -740,7 +740,7 @@ static int get_attention_status(struct hotplug_slot *hotplug_slot, u8 *value)
+ 	struct slot *slot = hotplug_slot->private;
+ 	struct controller *ctrl = slot->ctrl;
+ 	
+-	dbg("%s - physical_slot = %s\n", __FUNCTION__, hotplug_slot->name);
++	dbg("%s - physical_slot = %s\n", __func__, hotplug_slot->name);
+ 
+ 	*value = cpq_get_attention_status(ctrl, slot);
+ 	return 0;
+@@ -751,7 +751,7 @@ static int get_latch_status(struct hotplug_slot *hotplug_slot, u8 *value)
+ 	struct slot *slot = hotplug_slot->private;
+ 	struct controller *ctrl = slot->ctrl;
+ 
+-	dbg("%s - physical_slot = %s\n", __FUNCTION__, hotplug_slot->name);
++	dbg("%s - physical_slot = %s\n", __func__, hotplug_slot->name);
+ 
+ 	*value = cpq_get_latch_status(ctrl, slot);
+ 
+@@ -763,7 +763,7 @@ static int get_adapter_status(struct hotplug_slot *hotplug_slot, u8 *value)
+ 	struct slot *slot = hotplug_slot->private;
+ 	struct controller *ctrl = slot->ctrl;
+ 
+-	dbg("%s - physical_slot = %s\n", __FUNCTION__, hotplug_slot->name);
++	dbg("%s - physical_slot = %s\n", __func__, hotplug_slot->name);
+ 
+ 	*value = get_presence_status(ctrl, slot);
+ 
+@@ -775,7 +775,7 @@ static int get_max_bus_speed (struct hotplug_slot *hotplug_slot, enum pci_bus_sp
+ 	struct slot *slot = hotplug_slot->private;
+ 	struct controller *ctrl = slot->ctrl;
+ 
+-	dbg("%s - physical_slot = %s\n", __FUNCTION__, hotplug_slot->name);
++	dbg("%s - physical_slot = %s\n", __func__, hotplug_slot->name);
+ 
+ 	*value = ctrl->speed_capability;
+ 
+@@ -787,7 +787,7 @@ static int get_cur_bus_speed (struct hotplug_slot *hotplug_slot, enum pci_bus_sp
+ 	struct slot *slot = hotplug_slot->private;
+ 	struct controller *ctrl = slot->ctrl;
+ 
+-	dbg("%s - physical_slot = %s\n", __FUNCTION__, hotplug_slot->name);
++	dbg("%s - physical_slot = %s\n", __func__, hotplug_slot->name);
+ 
+ 	*value = ctrl->speed;
+ 
+@@ -841,7 +841,7 @@ static int cpqhpc_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
+ 		// TODO: This code can be made to support non-Compaq or Intel subsystem IDs
+ 		rc = pci_read_config_word(pdev, PCI_SUBSYSTEM_VENDOR_ID, &subsystem_vid);
+ 		if (rc) {
+-			err("%s : pci_read_config_word failed\n", __FUNCTION__);
++			err("%s : pci_read_config_word failed\n", __func__);
+ 			goto err_disable_device;
+ 		}
+ 		dbg("Subsystem Vendor ID: %x\n", subsystem_vid);
+@@ -853,14 +853,14 @@ static int cpqhpc_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
+ 
+ 		ctrl = kzalloc(sizeof(struct controller), GFP_KERNEL);
+ 		if (!ctrl) {
+-			err("%s : out of memory\n", __FUNCTION__);
++			err("%s : out of memory\n", __func__);
+ 			rc = -ENOMEM;
+ 			goto err_disable_device;
+ 		}
+ 
+ 		rc = pci_read_config_word(pdev, PCI_SUBSYSTEM_ID, &subsystem_deviceid);
+ 		if (rc) {
+-			err("%s : pci_read_config_word failed\n", __FUNCTION__);
++			err("%s : pci_read_config_word failed\n", __func__);
+ 			goto err_free_ctrl;
+ 		}
+ 
+@@ -1142,7 +1142,7 @@ static int cpqhpc_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
+ 	rc = cpqhp_save_config(ctrl, ctrl->bus, readb(ctrl->hpc_reg + SLOT_MASK));
+ 	if (rc) {
+ 		err("%s: unable to save PCI configuration data, error %d\n",
+-				__FUNCTION__, rc);
++				__func__, rc);
+ 		goto err_iounmap;
+ 	}
+ 
+@@ -1180,7 +1180,7 @@ static int cpqhpc_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
+ 	if (rc) {
+ 		err(msg_initialization_err, 6);
+ 		err("%s: unable to save PCI configuration data, error %d\n",
+-			__FUNCTION__, rc);
++			__func__, rc);
+ 		goto err_iounmap;
+ 	}
+ 	
+diff --git a/drivers/pci/hotplug/cpqphp_ctrl.c b/drivers/pci/hotplug/cpqphp_ctrl.c
+index 4018420..ef041ca 100644
+--- a/drivers/pci/hotplug/cpqphp_ctrl.c
++++ b/drivers/pci/hotplug/cpqphp_ctrl.c
+@@ -737,12 +737,12 @@ static struct pci_resource *get_resource(struct pci_resource **head, u32 size)
+ 
+ 	for (node = *head; node; node = node->next) {
+ 		dbg("%s: req_size =%x node=%p, base=%x, length=%x\n",
+-		    __FUNCTION__, size, node, node->base, node->length);
++		    __func__, size, node, node->base, node->length);
+ 		if (node->length < size)
+ 			continue;
+ 
+ 		if (node->base & (size - 1)) {
+-			dbg("%s: not aligned\n", __FUNCTION__);
++			dbg("%s: not aligned\n", __func__);
+ 			/* this one isn't base aligned properly
+ 			 * so we'll make a new entry and split it up */
+ 			temp_dword = (node->base | (size-1)) + 1;
+@@ -767,7 +767,7 @@ static struct pci_resource *get_resource(struct pci_resource **head, u32 size)
+ 
+ 		/* Don't need to check if too small since we already did */
+ 		if (node->length > size) {
+-			dbg("%s: too big\n", __FUNCTION__);
++			dbg("%s: too big\n", __func__);
+ 			/* this one is longer than we need
+ 			 * so we'll make a new entry and split it up */
+ 			split_node = kmalloc(sizeof(*split_node), GFP_KERNEL);
+@@ -784,7 +784,7 @@ static struct pci_resource *get_resource(struct pci_resource **head, u32 size)
+ 			node->next = split_node;
+ 		}  /* End of too big on top end */
+ 
+-		dbg("%s: got one!!!\n", __FUNCTION__);
++		dbg("%s: got one!!!\n", __func__);
+ 		/* If we got here, then it is the right size
+ 		 * Now take it out of the list */
+ 		if (*head == node) {
+@@ -819,7 +819,7 @@ int cpqhp_resource_sort_and_combine(struct pci_resource **head)
+ 	struct pci_resource *node2;
+ 	int out_of_order = 1;
+ 
+-	dbg("%s: head = %p, *head = %p\n", __FUNCTION__, head, *head);
++	dbg("%s: head = %p, *head = %p\n", __func__, head, *head);
+ 
+ 	if (!(*head))
+ 		return 1;
+@@ -907,7 +907,7 @@ irqreturn_t cpqhp_ctrl_intr(int IRQ, void *data)
+ 		/* Read to clear posted writes */
+ 		misc = readw(ctrl->hpc_reg + MISC);
+ 
+-		dbg ("%s - waking up\n", __FUNCTION__);
++		dbg ("%s - waking up\n", __func__);
+ 		wake_up_interruptible(&ctrl->queue);
+ 	}
+ 
+@@ -1421,7 +1421,7 @@ static u32 board_added(struct pci_func *func, struct controller *ctrl)
+ 
+ 	hp_slot = func->device - ctrl->slot_device_offset;
+ 	dbg("%s: func->device, slot_offset, hp_slot = %d, %d ,%d\n",
+-	    __FUNCTION__, func->device, ctrl->slot_device_offset, hp_slot);
++	    __func__, func->device, ctrl->slot_device_offset, hp_slot);
+ 
+ 	mutex_lock(&ctrl->crit_sect);
+ 
+@@ -1466,55 +1466,55 @@ static u32 board_added(struct pci_func *func, struct controller *ctrl)
+ 
+ 	/* turn on board and blink green LED */
+ 
+-	dbg("%s: before down\n", __FUNCTION__);
++	dbg("%s: before down\n", __func__);
+ 	mutex_lock(&ctrl->crit_sect);
+-	dbg("%s: after down\n", __FUNCTION__);
++	dbg("%s: after down\n", __func__);
+ 
+-	dbg("%s: before slot_enable\n", __FUNCTION__);
++	dbg("%s: before slot_enable\n", __func__);
+ 	slot_enable (ctrl, hp_slot);
+ 
+-	dbg("%s: before green_LED_blink\n", __FUNCTION__);
++	dbg("%s: before green_LED_blink\n", __func__);
+ 	green_LED_blink (ctrl, hp_slot);
+ 
+-	dbg("%s: before amber_LED_blink\n", __FUNCTION__);
++	dbg("%s: before amber_LED_blink\n", __func__);
+ 	amber_LED_off (ctrl, hp_slot);
+ 
+-	dbg("%s: before set_SOGO\n", __FUNCTION__);
++	dbg("%s: before set_SOGO\n", __func__);
+ 	set_SOGO(ctrl);
+ 
+ 	/* Wait for SOBS to be unset */
+-	dbg("%s: before wait_for_ctrl_irq\n", __FUNCTION__);
++	dbg("%s: before wait_for_ctrl_irq\n", __func__);
+ 	wait_for_ctrl_irq (ctrl);
+-	dbg("%s: after wait_for_ctrl_irq\n", __FUNCTION__);
++	dbg("%s: after wait_for_ctrl_irq\n", __func__);
+ 
+-	dbg("%s: before up\n", __FUNCTION__);
++	dbg("%s: before up\n", __func__);
+ 	mutex_unlock(&ctrl->crit_sect);
+-	dbg("%s: after up\n", __FUNCTION__);
++	dbg("%s: after up\n", __func__);
+ 
+ 	/* Wait for ~1 second because of hot plug spec */
+-	dbg("%s: before long_delay\n", __FUNCTION__);
++	dbg("%s: before long_delay\n", __func__);
+ 	long_delay(1*HZ);
+-	dbg("%s: after long_delay\n", __FUNCTION__);
++	dbg("%s: after long_delay\n", __func__);
+ 
+-	dbg("%s: func status = %x\n", __FUNCTION__, func->status);
++	dbg("%s: func status = %x\n", __func__, func->status);
+ 	/* Check for a power fault */
+ 	if (func->status == 0xFF) {
+ 		/* power fault occurred, but it was benign */
+ 		temp_register = 0xFFFFFFFF;
+-		dbg("%s: temp register set to %x by power fault\n", __FUNCTION__, temp_register);
++		dbg("%s: temp register set to %x by power fault\n", __func__, temp_register);
+ 		rc = POWER_FAILURE;
+ 		func->status = 0;
+ 	} else {
+ 		/* Get vendor/device ID u32 */
+ 		ctrl->pci_bus->number = func->bus;
+ 		rc = pci_bus_read_config_dword (ctrl->pci_bus, PCI_DEVFN(func->device, func->function), PCI_VENDOR_ID, &temp_register);
+-		dbg("%s: pci_read_config_dword returns %d\n", __FUNCTION__, rc);
+-		dbg("%s: temp_register is %x\n", __FUNCTION__, temp_register);
++		dbg("%s: pci_read_config_dword returns %d\n", __func__, rc);
++		dbg("%s: temp_register is %x\n", __func__, temp_register);
+ 
+ 		if (rc != 0) {
+ 			/* Something's wrong here */
+ 			temp_register = 0xFFFFFFFF;
+-			dbg("%s: temp register set to %x by error\n", __FUNCTION__, temp_register);
++			dbg("%s: temp register set to %x by error\n", __func__, temp_register);
+ 		}
+ 		/* Preset return code.  It will be changed later if things go okay. */
+ 		rc = NO_ADAPTER_PRESENT;
+@@ -1530,7 +1530,7 @@ static u32 board_added(struct pci_func *func, struct controller *ctrl)
+ 
+ 		rc = configure_new_device(ctrl, func, 0, &res_lists);
+ 
+-		dbg("%s: back from configure_new_device\n", __FUNCTION__);
++		dbg("%s: back from configure_new_device\n", __func__);
+ 		ctrl->io_head = res_lists.io_head;
+ 		ctrl->mem_head = res_lists.mem_head;
+ 		ctrl->p_mem_head = res_lists.p_mem_head;
+@@ -1566,7 +1566,7 @@ static u32 board_added(struct pci_func *func, struct controller *ctrl)
+ 
+ 		/* next, we will instantiate the linux pci_dev structures (with
+ 		 * appropriate driver notification, if already present) */
+-		dbg("%s: configure linux pci_dev structure\n", __FUNCTION__);
++		dbg("%s: configure linux pci_dev structure\n", __func__);
+ 		index = 0;
+ 		do {
+ 			new_slot = cpqhp_slot_find(ctrl->bus, func->device, index++);
+@@ -1628,7 +1628,7 @@ static u32 remove_board(struct pci_func * func, u32 replace_flag, struct control
+ 	device = func->device;
+ 
+ 	hp_slot = func->device - ctrl->slot_device_offset;
+-	dbg("In %s, hp_slot = %d\n", __FUNCTION__, hp_slot);
++	dbg("In %s, hp_slot = %d\n", __func__, hp_slot);
+ 
+ 	/* When we get here, it is safe to change base address registers.
+ 	 * We will attempt to save the base address register lengths */
+@@ -1928,7 +1928,7 @@ void cpqhp_pushbutton_thread(unsigned long slot)
+ 		func = cpqhp_slot_find(p_slot->bus, p_slot->device, 0);
+ 		dbg("In power_down_board, func = %p, ctrl = %p\n", func, ctrl);
+ 		if (!func) {
+-			dbg("Error! func NULL in %s\n", __FUNCTION__);
++			dbg("Error! func NULL in %s\n", __func__);
+ 			return ;
+ 		}
+ 
+@@ -1950,7 +1950,7 @@ void cpqhp_pushbutton_thread(unsigned long slot)
+ 		func = cpqhp_slot_find(p_slot->bus, p_slot->device, 0);
+ 		dbg("In add_board, func = %p, ctrl = %p\n", func, ctrl);
+ 		if (!func) {
+-			dbg("Error! func NULL in %s\n", __FUNCTION__);
++			dbg("Error! func NULL in %s\n", __func__);
+ 			return ;
+ 		}
+ 
+@@ -2058,7 +2058,7 @@ int cpqhp_process_SI(struct controller *ctrl, struct pci_func *func)
+ 	}
+ 
+ 	if (rc) {
+-		dbg("%s: rc = %d\n", __FUNCTION__, rc);
++		dbg("%s: rc = %d\n", __func__, rc);
+ 	}
+ 
+ 	if (p_slot)
+@@ -2269,12 +2269,12 @@ static u32 configure_new_device(struct controller * ctrl, struct pci_func * func
+ 
+ 	new_slot = func;
+ 
+-	dbg("%s\n", __FUNCTION__);
++	dbg("%s\n", __func__);
+ 	/* Check for Multi-function device */
+ 	ctrl->pci_bus->number = func->bus;
+ 	rc = pci_bus_read_config_byte (ctrl->pci_bus, PCI_DEVFN(func->device, func->function), 0x0E, &temp_byte);
+ 	if (rc) {
+-		dbg("%s: rc = %d\n", __FUNCTION__, rc);
++		dbg("%s: rc = %d\n", __func__, rc);
+ 		return rc;
+ 	}
+ 
+diff --git a/drivers/pci/hotplug/cpqphp_nvram.c b/drivers/pci/hotplug/cpqphp_nvram.c
+index ae5e974..cb17488 100644
+--- a/drivers/pci/hotplug/cpqphp_nvram.c
++++ b/drivers/pci/hotplug/cpqphp_nvram.c
+@@ -160,7 +160,7 @@ static int check_for_compaq_ROM (void __iomem *rom_start)
+ 	    (temp6 == 'Q')) {
+ 		result = 1;
+ 	}
+-	dbg ("%s - returned %d\n", __FUNCTION__, result);
++	dbg ("%s - returned %d\n", __func__, result);
+ 	return result;
+ }
+ 
+diff --git a/drivers/pci/hotplug/cpqphp_pci.c b/drivers/pci/hotplug/cpqphp_pci.c
+index 3f6cd20..0902193 100644
+--- a/drivers/pci/hotplug/cpqphp_pci.c
++++ b/drivers/pci/hotplug/cpqphp_pci.c
+@@ -120,7 +120,7 @@ int cpqhp_unconfigure_device(struct pci_func* func)
+ {
+ 	int j;
+ 	
+-	dbg("%s: bus/dev/func = %x/%x/%x\n", __FUNCTION__, func->bus, func->device, func->function);
++	dbg("%s: bus/dev/func = %x/%x/%x\n", __func__, func->bus, func->device, func->function);
+ 
+ 	for (j=0; j<8 ; j++) {
+ 		struct pci_dev* temp = pci_find_slot(func->bus, PCI_DEVFN(func->device, j));
+@@ -170,11 +170,11 @@ int cpqhp_set_irq (u8 bus_num, u8 dev_num, u8 int_pin, u8 irq_num)
+ 		fakedev->bus = fakebus;
+ 		fakebus->number = bus_num;
+ 		dbg("%s: dev %d, bus %d, pin %d, num %d\n",
+-		    __FUNCTION__, dev_num, bus_num, int_pin, irq_num);
++		    __func__, dev_num, bus_num, int_pin, irq_num);
+ 		rc = pcibios_set_irq_routing(fakedev, int_pin - 0x0a, irq_num);
+ 		kfree(fakedev);
+ 		kfree(fakebus);
+-		dbg("%s: rc %d\n", __FUNCTION__, rc);
++		dbg("%s: rc %d\n", __func__, rc);
+ 		if (!rc)
+ 			return !rc;
+ 
+@@ -1423,7 +1423,7 @@ int cpqhp_return_board_resources(struct pci_func * func, struct resource_lists *
+ 	int rc = 0;
+ 	struct pci_resource *node;
+ 	struct pci_resource *t_node;
+-	dbg("%s\n", __FUNCTION__);
++	dbg("%s\n", __func__);
+ 
+ 	if (!func)
+ 		return 1;
+diff --git a/drivers/pci/hotplug/fakephp.c b/drivers/pci/hotplug/fakephp.c
+index 94b6401..984d21b 100644
+--- a/drivers/pci/hotplug/fakephp.c
++++ b/drivers/pci/hotplug/fakephp.c
+@@ -320,7 +320,7 @@ static int disable_slot(struct hotplug_slot *slot)
+ 		return -ENODEV;
+ 	dslot = slot->private;
+ 
+-	dbg("%s - physical_slot = %s\n", __FUNCTION__, slot->name);
++	dbg("%s - physical_slot = %s\n", __func__, slot->name);
+ 
+ 	/* don't disable bridged devices just yet, we can't handle them easily... */
+ 	if (dslot->dev->subordinate) {
+diff --git a/drivers/pci/hotplug/ibmphp_core.c b/drivers/pci/hotplug/ibmphp_core.c
+index 87b6b8b..cc5dce2 100644
+--- a/drivers/pci/hotplug/ibmphp_core.c
++++ b/drivers/pci/hotplug/ibmphp_core.c
+@@ -395,7 +395,7 @@ static int get_max_bus_speed(struct hotplug_slot *hotplug_slot, enum pci_bus_spe
+ 	struct slot *pslot;
+ 	u8 mode = 0;
+ 
+-	debug("%s - Entry hotplug_slot[%p] pvalue[%p]\n", __FUNCTION__,
++	debug("%s - Entry hotplug_slot[%p] pvalue[%p]\n", __func__,
+ 		hotplug_slot, value);
+ 
+ 	ibmphp_lock_operations();
+@@ -425,7 +425,7 @@ static int get_max_bus_speed(struct hotplug_slot *hotplug_slot, enum pci_bus_spe
+ 	}
+ 
+ 	ibmphp_unlock_operations();
+-	debug("%s - Exit rc[%d] value[%x]\n", __FUNCTION__, rc, *value);
++	debug("%s - Exit rc[%d] value[%x]\n", __func__, rc, *value);
+ 	return rc;
+ }
+ 
+@@ -435,7 +435,7 @@ static int get_cur_bus_speed(struct hotplug_slot *hotplug_slot, enum pci_bus_spe
+ 	struct slot *pslot;
+ 	u8 mode = 0;
+ 
+-	debug("%s - Entry hotplug_slot[%p] pvalue[%p]\n", __FUNCTION__,
++	debug("%s - Entry hotplug_slot[%p] pvalue[%p]\n", __func__,
+ 		hotplug_slot, value);
+ 
+ 	ibmphp_lock_operations();
+@@ -471,7 +471,7 @@ static int get_cur_bus_speed(struct hotplug_slot *hotplug_slot, enum pci_bus_spe
+ 	}
+ 
+ 	ibmphp_unlock_operations();
+-	debug("%s - Exit rc[%d] value[%x]\n", __FUNCTION__, rc, *value);
++	debug("%s - Exit rc[%d] value[%x]\n", __func__, rc, *value);
+ 	return rc;
+ }
+ 
+@@ -741,13 +741,13 @@ static void free_slots(void)
+ 	struct list_head * tmp;
+ 	struct list_head * next;
+ 
+-	debug("%s -- enter\n", __FUNCTION__);
++	debug("%s -- enter\n", __func__);
+ 
+ 	list_for_each_safe(tmp, next, &ibmphp_slot_head) {
+ 		slot_cur = list_entry(tmp, struct slot, ibm_slot_list);
+ 		pci_hp_deregister(slot_cur->hotplug_slot);
+ 	}
+-	debug("%s -- exit\n", __FUNCTION__);
++	debug("%s -- exit\n", __func__);
+ }
+ 
+ static void ibm_unconfigure_device(struct pci_func *func)
+@@ -755,7 +755,7 @@ static void ibm_unconfigure_device(struct pci_func *func)
+ 	struct pci_dev *temp;
+ 	u8 j;
+ 
+-	debug("inside %s\n", __FUNCTION__);
++	debug("inside %s\n", __func__);
+ 	debug("func->device = %x, func->function = %x\n",
+ 					func->device, func->function);
+ 	debug("func->device << 3 | 0x0  = %x\n", func->device << 3 | 0x0);
+@@ -786,13 +786,13 @@ static u8 bus_structure_fixup(u8 busno)
+ 
+ 	bus = kmalloc(sizeof(*bus), GFP_KERNEL);
+ 	if (!bus) {
+-		err("%s - out of memory\n", __FUNCTION__);
++		err("%s - out of memory\n", __func__);
+ 		return 1;
+ 	}
+ 	dev = kmalloc(sizeof(*dev), GFP_KERNEL);
  	if (!dev) {
--		printk(KERN_WARNING "%s:alloc_netdev failed\n",__FUNCTION__);
-+		printk(KERN_WARNING "%s:alloc_netdev failed\n",__func__);
+ 		kfree(bus);
+-		err("%s - out of memory\n", __FUNCTION__);
++		err("%s - out of memory\n", __func__);
+ 		return 1;
+ 	}
+ 
+@@ -803,7 +803,7 @@ static u8 bus_structure_fixup(u8 busno)
+ 		if (!pci_read_config_word(dev, PCI_VENDOR_ID, &l) &&
+ 					(l != 0x0000) && (l != 0xffff)) {
+ 			debug("%s - Inside bus_struture_fixup()\n",
+-							__FUNCTION__);
++							__func__);
+ 			pci_scan_bus(busno, ibmphp_pci_bus->ops, NULL);
+ 			break;
+ 		}
+@@ -900,7 +900,7 @@ static int set_bus(struct slot * slot_cur)
+ 	        { },
+ 	};	
+ 
+-	debug("%s - entry slot # %d\n", __FUNCTION__, slot_cur->number);
++	debug("%s - entry slot # %d\n", __func__, slot_cur->number);
+ 	if (SET_BUS_STATUS(slot_cur->ctrl) && is_bus_empty(slot_cur)) {
+ 		rc = slot_update(&slot_cur);
+ 		if (rc)
+@@ -975,7 +975,7 @@ static int set_bus(struct slot * slot_cur)
+ 	/* This is for x440, once Brandon fixes the firmware, 
+ 	will not need this delay */
+ 	msleep(1000);
+-	debug("%s -Exit\n", __FUNCTION__);
++	debug("%s -Exit\n", __func__);
+ 	return 0;
+ }
+ 
+diff --git a/drivers/pci/hotplug/ibmphp_ebda.c b/drivers/pci/hotplug/ibmphp_ebda.c
+index 600ed7b..c4eec77 100644
+--- a/drivers/pci/hotplug/ibmphp_ebda.c
++++ b/drivers/pci/hotplug/ibmphp_ebda.c
+@@ -127,18 +127,18 @@ static void __init print_bus_info (void)
+ 	
+ 	list_for_each (ptr1, &bus_info_head) {
+ 		ptr = list_entry (ptr1, struct bus_info, bus_info_list);
+-		debug ("%s - slot_min = %x\n", __FUNCTION__, ptr->slot_min);
+-		debug ("%s - slot_max = %x\n", __FUNCTION__, ptr->slot_max);
+-		debug ("%s - slot_count = %x\n", __FUNCTION__, ptr->slot_count);
+-		debug ("%s - bus# = %x\n", __FUNCTION__, ptr->busno);
+-		debug ("%s - current_speed = %x\n", __FUNCTION__, ptr->current_speed);
+-		debug ("%s - controller_id = %x\n", __FUNCTION__, ptr->controller_id);
++		debug ("%s - slot_min = %x\n", __func__, ptr->slot_min);
++		debug ("%s - slot_max = %x\n", __func__, ptr->slot_max);
++		debug ("%s - slot_count = %x\n", __func__, ptr->slot_count);
++		debug ("%s - bus# = %x\n", __func__, ptr->busno);
++		debug ("%s - current_speed = %x\n", __func__, ptr->current_speed);
++		debug ("%s - controller_id = %x\n", __func__, ptr->controller_id);
+ 		
+-		debug ("%s - slots_at_33_conv = %x\n", __FUNCTION__, ptr->slots_at_33_conv);
+-		debug ("%s - slots_at_66_conv = %x\n", __FUNCTION__, ptr->slots_at_66_conv);
+-		debug ("%s - slots_at_66_pcix = %x\n", __FUNCTION__, ptr->slots_at_66_pcix);
+-		debug ("%s - slots_at_100_pcix = %x\n", __FUNCTION__, ptr->slots_at_100_pcix);
+-		debug ("%s - slots_at_133_pcix = %x\n", __FUNCTION__, ptr->slots_at_133_pcix);
++		debug ("%s - slots_at_33_conv = %x\n", __func__, ptr->slots_at_33_conv);
++		debug ("%s - slots_at_66_conv = %x\n", __func__, ptr->slots_at_66_conv);
++		debug ("%s - slots_at_66_pcix = %x\n", __func__, ptr->slots_at_66_pcix);
++		debug ("%s - slots_at_100_pcix = %x\n", __func__, ptr->slots_at_100_pcix);
++		debug ("%s - slots_at_133_pcix = %x\n", __func__, ptr->slots_at_133_pcix);
+ 
+ 	}
+ }
+@@ -150,12 +150,12 @@ static void print_lo_info (void)
+ 	debug ("print_lo_info ----\n");	
+ 	list_for_each (ptr1, &rio_lo_head) {
+ 		ptr = list_entry (ptr1, struct rio_detail, rio_detail_list);
+-		debug ("%s - rio_node_id = %x\n", __FUNCTION__, ptr->rio_node_id);
+-		debug ("%s - rio_type = %x\n", __FUNCTION__, ptr->rio_type);
+-		debug ("%s - owner_id = %x\n", __FUNCTION__, ptr->owner_id);
+-		debug ("%s - first_slot_num = %x\n", __FUNCTION__, ptr->first_slot_num);
+-		debug ("%s - wpindex = %x\n", __FUNCTION__, ptr->wpindex);
+-		debug ("%s - chassis_num = %x\n", __FUNCTION__, ptr->chassis_num);
++		debug ("%s - rio_node_id = %x\n", __func__, ptr->rio_node_id);
++		debug ("%s - rio_type = %x\n", __func__, ptr->rio_type);
++		debug ("%s - owner_id = %x\n", __func__, ptr->owner_id);
++		debug ("%s - first_slot_num = %x\n", __func__, ptr->first_slot_num);
++		debug ("%s - wpindex = %x\n", __func__, ptr->wpindex);
++		debug ("%s - chassis_num = %x\n", __func__, ptr->chassis_num);
+ 
+ 	}
+ }
+@@ -164,15 +164,15 @@ static void print_vg_info (void)
+ {
+ 	struct rio_detail *ptr;
+ 	struct list_head *ptr1;
+-	debug ("%s ---\n", __FUNCTION__);
++	debug ("%s ---\n", __func__);
+ 	list_for_each (ptr1, &rio_vg_head) {
+ 		ptr = list_entry (ptr1, struct rio_detail, rio_detail_list);
+-		debug ("%s - rio_node_id = %x\n", __FUNCTION__, ptr->rio_node_id);
+-		debug ("%s - rio_type = %x\n", __FUNCTION__, ptr->rio_type);
+-		debug ("%s - owner_id = %x\n", __FUNCTION__, ptr->owner_id);
+-		debug ("%s - first_slot_num = %x\n", __FUNCTION__, ptr->first_slot_num);
+-		debug ("%s - wpindex = %x\n", __FUNCTION__, ptr->wpindex);
+-		debug ("%s - chassis_num = %x\n", __FUNCTION__, ptr->chassis_num);
++		debug ("%s - rio_node_id = %x\n", __func__, ptr->rio_node_id);
++		debug ("%s - rio_type = %x\n", __func__, ptr->rio_type);
++		debug ("%s - owner_id = %x\n", __func__, ptr->owner_id);
++		debug ("%s - first_slot_num = %x\n", __func__, ptr->first_slot_num);
++		debug ("%s - wpindex = %x\n", __func__, ptr->wpindex);
++		debug ("%s - chassis_num = %x\n", __func__, ptr->chassis_num);
+ 
+ 	}
+ }
+@@ -185,7 +185,7 @@ static void __init print_ebda_pci_rsrc (void)
+ 	list_for_each (ptr1, &ibmphp_ebda_pci_rsrc_head) {
+ 		ptr = list_entry (ptr1, struct ebda_pci_rsrc, ebda_pci_rsrc_list);
+ 		debug ("%s - rsrc type: %x bus#: %x dev_func: %x start addr: %x end addr: %x\n", 
+-			__FUNCTION__, ptr->rsrc_type ,ptr->bus_num, ptr->dev_fun,ptr->start_addr, ptr->end_addr);
++			__func__, ptr->rsrc_type ,ptr->bus_num, ptr->dev_fun,ptr->start_addr, ptr->end_addr);
+ 	}
+ }
+ 
+@@ -196,7 +196,7 @@ static void __init print_ibm_slot (void)
+ 
+ 	list_for_each (ptr1, &ibmphp_slot_head) {
+ 		ptr = list_entry (ptr1, struct slot, ibm_slot_list);
+-		debug ("%s - slot_number: %x\n", __FUNCTION__, ptr->number); 
++		debug ("%s - slot_number: %x\n", __func__, ptr->number); 
+ 	}
+ }
+ 
+@@ -204,13 +204,13 @@ static void __init print_opt_vg (void)
+ {
+ 	struct opt_rio *ptr;
+ 	struct list_head *ptr1;
+-	debug ("%s ---\n", __FUNCTION__);
++	debug ("%s ---\n", __func__);
+ 	list_for_each (ptr1, &opt_vg_head) {
+ 		ptr = list_entry (ptr1, struct opt_rio, opt_rio_list);
+-		debug ("%s - rio_type %x\n", __FUNCTION__, ptr->rio_type); 
+-		debug ("%s - chassis_num: %x\n", __FUNCTION__, ptr->chassis_num); 
+-		debug ("%s - first_slot_num: %x\n", __FUNCTION__, ptr->first_slot_num); 
+-		debug ("%s - middle_num: %x\n", __FUNCTION__, ptr->middle_num); 
++		debug ("%s - rio_type %x\n", __func__, ptr->rio_type); 
++		debug ("%s - chassis_num: %x\n", __func__, ptr->chassis_num); 
++		debug ("%s - first_slot_num: %x\n", __func__, ptr->first_slot_num); 
++		debug ("%s - middle_num: %x\n", __func__, ptr->middle_num); 
+ 	}
+ }
+ 
+@@ -225,35 +225,35 @@ static void __init print_ebda_hpc (void)
+ 		hpc_ptr = list_entry (ptr1, struct controller, ebda_hpc_list); 
+ 
+ 		for (index = 0; index < hpc_ptr->slot_count; index++) {
+-			debug ("%s - physical slot#: %x\n", __FUNCTION__, hpc_ptr->slots[index].slot_num);
+-			debug ("%s - pci bus# of the slot: %x\n", __FUNCTION__, hpc_ptr->slots[index].slot_bus_num);
+-			debug ("%s - index into ctlr addr: %x\n", __FUNCTION__, hpc_ptr->slots[index].ctl_index);
+-			debug ("%s - cap of the slot: %x\n", __FUNCTION__, hpc_ptr->slots[index].slot_cap);
++			debug ("%s - physical slot#: %x\n", __func__, hpc_ptr->slots[index].slot_num);
++			debug ("%s - pci bus# of the slot: %x\n", __func__, hpc_ptr->slots[index].slot_bus_num);
++			debug ("%s - index into ctlr addr: %x\n", __func__, hpc_ptr->slots[index].ctl_index);
++			debug ("%s - cap of the slot: %x\n", __func__, hpc_ptr->slots[index].slot_cap);
+ 		}
+ 
+ 		for (index = 0; index < hpc_ptr->bus_count; index++) {
+-			debug ("%s - bus# of each bus controlled by this ctlr: %x\n", __FUNCTION__, hpc_ptr->buses[index].bus_num);
++			debug ("%s - bus# of each bus controlled by this ctlr: %x\n", __func__, hpc_ptr->buses[index].bus_num);
+ 		}
+ 
+-		debug ("%s - type of hpc: %x\n", __FUNCTION__, hpc_ptr->ctlr_type);
++		debug ("%s - type of hpc: %x\n", __func__, hpc_ptr->ctlr_type);
+ 		switch (hpc_ptr->ctlr_type) {
+ 		case 1:
+-			debug ("%s - bus: %x\n", __FUNCTION__, hpc_ptr->u.pci_ctlr.bus);
+-			debug ("%s - dev_fun: %x\n", __FUNCTION__, hpc_ptr->u.pci_ctlr.dev_fun);
+-			debug ("%s - irq: %x\n", __FUNCTION__, hpc_ptr->irq);
++			debug ("%s - bus: %x\n", __func__, hpc_ptr->u.pci_ctlr.bus);
++			debug ("%s - dev_fun: %x\n", __func__, hpc_ptr->u.pci_ctlr.dev_fun);
++			debug ("%s - irq: %x\n", __func__, hpc_ptr->irq);
+ 			break;
+ 
+ 		case 0:
+-			debug ("%s - io_start: %x\n", __FUNCTION__, hpc_ptr->u.isa_ctlr.io_start);
+-			debug ("%s - io_end: %x\n", __FUNCTION__, hpc_ptr->u.isa_ctlr.io_end);
+-			debug ("%s - irq: %x\n", __FUNCTION__, hpc_ptr->irq);
++			debug ("%s - io_start: %x\n", __func__, hpc_ptr->u.isa_ctlr.io_start);
++			debug ("%s - io_end: %x\n", __func__, hpc_ptr->u.isa_ctlr.io_end);
++			debug ("%s - irq: %x\n", __func__, hpc_ptr->irq);
+ 			break;
+ 
+ 		case 2:
+ 		case 4:
+-			debug ("%s - wpegbbar: %lx\n", __FUNCTION__, hpc_ptr->u.wpeg_ctlr.wpegbbar);
+-			debug ("%s - i2c_addr: %x\n", __FUNCTION__, hpc_ptr->u.wpeg_ctlr.i2c_addr);
+-			debug ("%s - irq: %x\n", __FUNCTION__, hpc_ptr->irq);
++			debug ("%s - wpegbbar: %lx\n", __func__, hpc_ptr->u.wpeg_ctlr.wpegbbar);
++			debug ("%s - i2c_addr: %x\n", __func__, hpc_ptr->u.wpeg_ctlr.i2c_addr);
++			debug ("%s - irq: %x\n", __func__, hpc_ptr->irq);
+ 			break;
+ 		}
+ 	}
+diff --git a/drivers/pci/hotplug/ibmphp_hpc.c b/drivers/pci/hotplug/ibmphp_hpc.c
+index c31e7bf..83f337c 100644
+--- a/drivers/pci/hotplug/ibmphp_hpc.c
++++ b/drivers/pci/hotplug/ibmphp_hpc.c
+@@ -129,14 +129,14 @@ static int hpc_wait_ctlr_notworking (int, struct controller *, void __iomem *, u
+ *---------------------------------------------------------------------*/
+ void __init ibmphp_hpc_initvars (void)
+ {
+-	debug ("%s - Entry\n", __FUNCTION__);
++	debug ("%s - Entry\n", __func__);
+ 
+ 	mutex_init(&sem_hpcaccess);
+ 	init_MUTEX (&semOperations);
+ 	init_MUTEX_LOCKED (&sem_exit);
+ 	to_debug = 0;
+ 
+-	debug ("%s - Exit\n", __FUNCTION__);
++	debug ("%s - Exit\n", __func__);
+ }
+ 
+ /*----------------------------------------------------------------------
+@@ -154,7 +154,7 @@ static u8 i2c_ctrl_read (struct controller *ctlr_ptr, void __iomem *WPGBbar, u8
+ 	unsigned long ultemp;
+ 	unsigned long data;	// actual data HILO format
+ 
+-	debug_polling ("%s - Entry WPGBbar[%p] index[%x] \n", __FUNCTION__, WPGBbar, index);
++	debug_polling ("%s - Entry WPGBbar[%p] index[%x] \n", __func__, WPGBbar, index);
+ 
+ 	//--------------------------------------------------------------------
+ 	// READ - step 1
+@@ -213,7 +213,7 @@ static u8 i2c_ctrl_read (struct controller *ctlr_ptr, void __iomem *WPGBbar, u8
+ 		i--;
+ 	}
+ 	if (i == 0) {
+-		debug ("%s - Error : WPG timeout\n", __FUNCTION__);
++		debug ("%s - Error : WPG timeout\n", __func__);
+ 		return HPC_ERROR;
+ 	}
+ 	//--------------------------------------------------------------------
+@@ -241,7 +241,7 @@ static u8 i2c_ctrl_read (struct controller *ctlr_ptr, void __iomem *WPGBbar, u8
+ 
+ 	status = (u8) data;
+ 
+-	debug_polling ("%s - Exit index[%x] status[%x]\n", __FUNCTION__, index, status);
++	debug_polling ("%s - Exit index[%x] status[%x]\n", __func__, index, status);
+ 
+ 	return (status);
+ }
+@@ -262,7 +262,7 @@ static u8 i2c_ctrl_write (struct controller *ctlr_ptr, void __iomem *WPGBbar, u8
+ 	unsigned long data;	// actual data HILO format
+ 	int i;
+ 
+-	debug_polling ("%s - Entry WPGBbar[%p] index[%x] cmd[%x]\n", __FUNCTION__, WPGBbar, index, cmd);
++	debug_polling ("%s - Entry WPGBbar[%p] index[%x] cmd[%x]\n", __func__, WPGBbar, index, cmd);
+ 
+ 	rc = 0;
+ 	//--------------------------------------------------------------------
+@@ -324,7 +324,7 @@ static u8 i2c_ctrl_write (struct controller *ctlr_ptr, void __iomem *WPGBbar, u8
+ 		i--;
+ 	}
+ 	if (i == 0) {
+-		debug ("%s - Exit Error:WPG timeout\n", __FUNCTION__);
++		debug ("%s - Exit Error:WPG timeout\n", __func__);
+ 		rc = HPC_ERROR;
+ 	}
+ 
+@@ -345,7 +345,7 @@ static u8 i2c_ctrl_write (struct controller *ctlr_ptr, void __iomem *WPGBbar, u8
+ 		rc = HPC_ERROR;
+ 	}
+ 
+-	debug_polling ("%s Exit rc[%x]\n", __FUNCTION__, rc);
++	debug_polling ("%s Exit rc[%x]\n", __func__, rc);
+ 	return (rc);
+ }
+ 
+@@ -541,12 +541,12 @@ int ibmphp_hpc_readslot (struct slot * pslot, u8 cmd, u8 * pstatus)
+ 	int rc = 0;
+ 	int busindex;
+ 
+-	debug_polling ("%s - Entry pslot[%p] cmd[%x] pstatus[%p]\n", __FUNCTION__, pslot, cmd, pstatus);
++	debug_polling ("%s - Entry pslot[%p] cmd[%x] pstatus[%p]\n", __func__, pslot, cmd, pstatus);
+ 
+ 	if ((pslot == NULL)
+ 	    || ((pstatus == NULL) && (cmd != READ_ALLSTAT) && (cmd != READ_BUSSTATUS))) {
+ 		rc = -EINVAL;
+-		err ("%s - Error invalid pointer, rc[%d]\n", __FUNCTION__, rc);
++		err ("%s - Error invalid pointer, rc[%d]\n", __func__, rc);
+ 		return rc;
+ 	}
+ 
+@@ -554,7 +554,7 @@ int ibmphp_hpc_readslot (struct slot * pslot, u8 cmd, u8 * pstatus)
+ 		busindex = ibmphp_get_bus_index (pslot->bus);
+ 		if (busindex < 0) {
+ 			rc = -EINVAL;
+-			err ("%s - Exit Error:invalid bus, rc[%d]\n", __FUNCTION__, rc);
++			err ("%s - Exit Error:invalid bus, rc[%d]\n", __func__, rc);
+ 			return rc;
+ 		} else
+ 			index = (u8) busindex;
+@@ -565,7 +565,7 @@ int ibmphp_hpc_readslot (struct slot * pslot, u8 cmd, u8 * pstatus)
+ 
+ 	if (index == HPC_ERROR) {
+ 		rc = -EINVAL;
+-		err ("%s - Exit Error:invalid index, rc[%d]\n", __FUNCTION__, rc);
++		err ("%s - Exit Error:invalid index, rc[%d]\n", __func__, rc);
+ 		return rc;
+ 	}
+ 
+@@ -641,7 +641,7 @@ int ibmphp_hpc_readslot (struct slot * pslot, u8 cmd, u8 * pstatus)
+ 						    ctrl_read (ctlr_ptr, wpg_bbar,
+ 								index + WPG_1ST_EXTSLOT_INDEX);
+ 				} else {
+-					err ("%s - Error ctrl_read failed\n", __FUNCTION__);
++					err ("%s - Error ctrl_read failed\n", __func__);
+ 					rc = -EINVAL;
+ 					break;
+ 				}
+@@ -662,7 +662,7 @@ int ibmphp_hpc_readslot (struct slot * pslot, u8 cmd, u8 * pstatus)
+ 	
+ 	free_hpc_access ();
+ 
+-	debug_polling ("%s - Exit rc[%d]\n", __FUNCTION__, rc);
++	debug_polling ("%s - Exit rc[%d]\n", __func__, rc);
+ 	return rc;
+ }
+ 
+@@ -681,10 +681,10 @@ int ibmphp_hpc_writeslot (struct slot * pslot, u8 cmd)
+ 	int rc = 0;
+ 	int timeout;
+ 
+-	debug_polling ("%s - Entry pslot[%p] cmd[%x]\n", __FUNCTION__, pslot, cmd);
++	debug_polling ("%s - Entry pslot[%p] cmd[%x]\n", __func__, pslot, cmd);
+ 	if (pslot == NULL) {
+ 		rc = -EINVAL;
+-		err ("%s - Error Exit rc[%d]\n", __FUNCTION__, rc);
++		err ("%s - Error Exit rc[%d]\n", __func__, rc);
+ 		return rc;
+ 	}
+ 
+@@ -694,7 +694,7 @@ int ibmphp_hpc_writeslot (struct slot * pslot, u8 cmd)
+ 		busindex = ibmphp_get_bus_index (pslot->bus);
+ 		if (busindex < 0) {
+ 			rc = -EINVAL;
+-			err ("%s - Exit Error:invalid bus, rc[%d]\n", __FUNCTION__, rc);
++			err ("%s - Exit Error:invalid bus, rc[%d]\n", __func__, rc);
+ 			return rc;
+ 		} else
+ 			index = (u8) busindex;
+@@ -705,7 +705,7 @@ int ibmphp_hpc_writeslot (struct slot * pslot, u8 cmd)
+ 
+ 	if (index == HPC_ERROR) {
+ 		rc = -EINVAL;
+-		err ("%s - Error Exit rc[%d]\n", __FUNCTION__, rc);
++		err ("%s - Error Exit rc[%d]\n", __func__, rc);
+ 		return rc;
+ 	}
+ 
+@@ -719,7 +719,7 @@ int ibmphp_hpc_writeslot (struct slot * pslot, u8 cmd)
+ 	if ((ctlr_ptr->ctlr_type == 2) || (ctlr_ptr->ctlr_type == 4)) {
+ 		wpg_bbar = ioremap (ctlr_ptr->u.wpeg_ctlr.wpegbbar, WPG_I2C_IOREMAP_SIZE);
+ 
+-		debug ("%s - ctlr id[%x] physical[%lx] logical[%lx] i2c[%x]\n", __FUNCTION__,
++		debug ("%s - ctlr id[%x] physical[%lx] logical[%lx] i2c[%x]\n", __func__,
+ 		ctlr_ptr->ctlr_id, (ulong) (ctlr_ptr->u.wpeg_ctlr.wpegbbar), (ulong) wpg_bbar,
+ 		ctlr_ptr->u.wpeg_ctlr.i2c_addr);
+ 	}
+@@ -750,7 +750,7 @@ int ibmphp_hpc_writeslot (struct slot * pslot, u8 cmd)
+ 				msleep(1000);
+ 				if (timeout < 1) {
+ 					done = 1;
+-					err ("%s - Error command complete timeout\n", __FUNCTION__);
++					err ("%s - Error command complete timeout\n", __func__);
+ 					rc = -EFAULT;
+ 				} else
+ 					timeout--;
+@@ -765,7 +765,7 @@ int ibmphp_hpc_writeslot (struct slot * pslot, u8 cmd)
+ 		iounmap (wpg_bbar);
+ 	free_hpc_access ();
+ 
+-	debug_polling ("%s - Exit rc[%d]\n", __FUNCTION__, rc);
++	debug_polling ("%s - Exit rc[%d]\n", __func__, rc);
+ 	return rc;
+ }
+ 
+@@ -803,10 +803,10 @@ void ibmphp_lock_operations (void)
+ *---------------------------------------------------------------------*/
+ void ibmphp_unlock_operations (void)
+ {
+-	debug ("%s - Entry\n", __FUNCTION__);
++	debug ("%s - Entry\n", __func__);
+ 	up (&semOperations);
+ 	to_debug = 0;
+-	debug ("%s - Exit\n", __FUNCTION__);
++	debug ("%s - Exit\n", __func__);
+ }
+ 
+ /*----------------------------------------------------------------------
+@@ -827,7 +827,7 @@ static int poll_hpc(void *data)
+ 	int poll_count = 0;
+ 	u8 ctrl_count = 0x00;
+ 
+-	debug ("%s - Entry\n", __FUNCTION__);
++	debug ("%s - Entry\n", __func__);
+ 
+ 	while (!kthread_should_stop()) {
+ 		/* try to get the lock to do some kind of hardware access */
+@@ -907,7 +907,7 @@ static int poll_hpc(void *data)
+ 		msleep(100);
+ 	}
+ 	up (&sem_exit);
+-	debug ("%s - Exit\n", __FUNCTION__);
++	debug ("%s - Exit\n", __func__);
+ 	return 0;
+ }
+ 
+@@ -999,7 +999,7 @@ static int process_changeinstatus (struct slot *pslot, struct slot *poldslot)
+ 		ibmphp_update_slot_info (pslot);
+ 	}
+ 
+-	debug ("%s - Exit rc[%d] disable[%x] update[%x]\n", __FUNCTION__, rc, disable, update);
++	debug ("%s - Exit rc[%d] disable[%x] update[%x]\n", __func__, rc, disable, update);
+ 
+ 	return rc;
+ }
+@@ -1021,7 +1021,7 @@ static int process_changeinlatch (u8 old, u8 new, struct controller *ctrl)
+ 	u8 mask;
+ 	int rc = 0;
+ 
+-	debug ("%s - Entry old[%x], new[%x]\n", __FUNCTION__, old, new);
++	debug ("%s - Entry old[%x], new[%x]\n", __func__, old, new);
+ 	// bit 0 reserved, 0 is LSB, check bit 1-6 for 6 slots
+ 
+ 	for (i = ctrl->starting_slot_num; i <= ctrl->ending_slot_num; i++) {
+@@ -1031,15 +1031,15 @@ static int process_changeinlatch (u8 old, u8 new, struct controller *ctrl)
+ 			if (pslot) {
+ 				memcpy ((void *) &myslot, (void *) pslot, sizeof (struct slot));
+ 				rc = ibmphp_hpc_readslot (pslot, READ_ALLSTAT, NULL);
+-				debug ("%s - call process_changeinstatus for slot[%d]\n", __FUNCTION__, i);
++				debug ("%s - call process_changeinstatus for slot[%d]\n", __func__, i);
+ 				process_changeinstatus (pslot, &myslot);
+ 			} else {
+ 				rc = -EINVAL;
+-				err ("%s - Error bad pointer for slot[%d]\n", __FUNCTION__, i);
++				err ("%s - Error bad pointer for slot[%d]\n", __func__, i);
+ 			}
+ 		}
+ 	}
+-	debug ("%s - Exit rc[%d]\n", __FUNCTION__, rc);
++	debug ("%s - Exit rc[%d]\n", __func__, rc);
+ 	return rc;
+ }
+ 
+@@ -1050,11 +1050,11 @@ static int process_changeinlatch (u8 old, u8 new, struct controller *ctrl)
+ *---------------------------------------------------------------------*/
+ int __init ibmphp_hpc_start_poll_thread (void)
+ {
+-	debug ("%s - Entry\n", __FUNCTION__);
++	debug ("%s - Entry\n", __func__);
+ 
+ 	ibmphp_poll_thread = kthread_run(poll_hpc, NULL, "hpc_poll");
+ 	if (IS_ERR(ibmphp_poll_thread)) {
+-		err ("%s - Error, thread not started\n", __FUNCTION__);
++		err ("%s - Error, thread not started\n", __func__);
+ 		return PTR_ERR(ibmphp_poll_thread);
+ 	}
+ 	return 0;
+@@ -1067,7 +1067,7 @@ int __init ibmphp_hpc_start_poll_thread (void)
+ *---------------------------------------------------------------------*/
+ void __exit ibmphp_hpc_stop_poll_thread (void)
+ {
+-	debug ("%s - Entry\n", __FUNCTION__);
++	debug ("%s - Entry\n", __func__);
+ 
+ 	kthread_stop(ibmphp_poll_thread);
+ 	debug ("before locking operations \n");
+@@ -1088,7 +1088,7 @@ void __exit ibmphp_hpc_stop_poll_thread (void)
+ 	up (&sem_exit);
+ 	debug ("after sem exit up\n");
+ 
+-	debug ("%s - Exit\n", __FUNCTION__);
++	debug ("%s - Exit\n", __func__);
+ }
+ 
+ /*----------------------------------------------------------------------
+diff --git a/drivers/pci/hotplug/ibmphp_pci.c b/drivers/pci/hotplug/ibmphp_pci.c
+index d8f05d7..7b09e16 100644
+--- a/drivers/pci/hotplug/ibmphp_pci.c
++++ b/drivers/pci/hotplug/ibmphp_pci.c
+@@ -364,7 +364,7 @@ static int configure_device (struct pci_func *func)
+ 	struct resource_node *pfmem[6];
+ 	unsigned int devfn;
+ 
+-	debug ("%s - inside\n", __FUNCTION__);
++	debug ("%s - inside\n", __func__);
+ 
+ 	devfn = PCI_DEVFN(func->device, func->function);
+ 	ibmphp_pci_bus->number = func->busno;
+@@ -595,7 +595,7 @@ static int configure_bridge (struct pci_func **func_passed, u8 slotno)
+ 	u8 irq;
+ 	int retval;
+ 
+-	debug ("%s - enter\n", __FUNCTION__);
++	debug ("%s - enter\n", __func__);
+ 
+ 	devfn = PCI_DEVFN(func->function, func->device);
+ 	ibmphp_pci_bus->number = func->busno;
+@@ -1234,7 +1234,7 @@ static int unconfigure_boot_device (u8 busno, u8 device, u8 function)
+ 	u32 tmp_address;
+ 	unsigned int devfn;
+ 
+-	debug ("%s - enter\n", __FUNCTION__);
++	debug ("%s - enter\n", __func__);
+ 
+ 	bus = ibmphp_find_res_bus (busno);
+ 	if (!bus) {
+@@ -1351,7 +1351,7 @@ static int unconfigure_boot_bridge (u8 busno, u8 device, u8 function)
+ 	bus_no = (int) busno;
+ 	debug ("busno is %x\n", busno);
+ 	pci_bus_read_config_byte (ibmphp_pci_bus, devfn, PCI_PRIMARY_BUS, &pri_number);
+-	debug ("%s - busno = %x, primary_number = %x\n", __FUNCTION__, busno, pri_number);
++	debug ("%s - busno = %x, primary_number = %x\n", __func__, busno, pri_number);
+ 
+ 	pci_bus_read_config_byte (ibmphp_pci_bus, devfn, PCI_SECONDARY_BUS, &sec_number);
+ 	debug ("sec_number is %x\n", sec_number);
+@@ -1437,7 +1437,7 @@ static int unconfigure_boot_bridge (u8 busno, u8 device, u8 function)
+ 			}
+ 		}	/* end of mem */
+ 	}	/* end of for */
+-	debug ("%s - exiting, returning success\n", __FUNCTION__);
++	debug ("%s - exiting, returning success\n", __func__);
+ 	return 0;
+ }
+ 
+@@ -1453,7 +1453,7 @@ static int unconfigure_boot_card (struct slot *slot_cur)
+ 	unsigned int devfn;
+ 	u8 valid_device = 0x00; /* To see if we are ever able to find valid device and read it */
+ 
+-	debug ("%s - enter\n", __FUNCTION__);
++	debug ("%s - enter\n", __func__);
+ 
+ 	device = slot_cur->device;
+ 	busno = slot_cur->bus;
+@@ -1470,7 +1470,7 @@ static int unconfigure_boot_card (struct slot *slot_cur)
+ 			/* found correct device!!! */
+ 			++valid_device;
+ 
+-			debug ("%s - found correct device\n", __FUNCTION__);
++			debug ("%s - found correct device\n", __func__);
+ 
+ 			/* header: x x x x x x x x
+ 			 *         | |___________|=> 1=PPB bridge, 0=normal device, 2=CardBus Bridge
+@@ -1573,7 +1573,7 @@ int ibmphp_unconfigure_card (struct slot **slot_cur, int the_end)
+ 	struct pci_func *cur_func = NULL;
+ 	struct pci_func *temp_func;
+ 
+-	debug ("%s - enter\n", __FUNCTION__);
++	debug ("%s - enter\n", __func__);
+ 
+ 	if (!the_end) {
+ 		/* Need to unconfigure the card */
+@@ -1624,7 +1624,7 @@ int ibmphp_unconfigure_card (struct slot **slot_cur, int the_end)
+ 
+ 	sl->func = NULL;
+ 	*slot_cur = sl;
+-	debug ("%s - exit\n", __FUNCTION__);
++	debug ("%s - exit\n", __func__);
+ 	return 0;
+ }
+ 
+diff --git a/drivers/pci/hotplug/ibmphp_res.c b/drivers/pci/hotplug/ibmphp_res.c
+index 5636b1a..ec73294 100644
+--- a/drivers/pci/hotplug/ibmphp_res.c
++++ b/drivers/pci/hotplug/ibmphp_res.c
+@@ -563,7 +563,7 @@ static void fix_resources (struct bus_node *bus_cur)
+ 	struct range_node *range;
+ 	struct resource_node *res;
+ 
+-	debug ("%s - bus_cur->busno = %d\n", __FUNCTION__, bus_cur->busno);
++	debug ("%s - bus_cur->busno = %d\n", __func__, bus_cur->busno);
+ 
+ 	if (bus_cur->needIOUpdate) {
+ 		res = bus_cur->firstIO;
+@@ -599,7 +599,7 @@ int ibmphp_add_resource (struct resource_node *res)
+ 	struct range_node *range_cur = NULL;
+ 	struct resource_node *res_start = NULL;
+ 
+-	debug ("%s - enter\n", __FUNCTION__);
++	debug ("%s - enter\n", __func__);
+ 
+ 	if (!res) {
+ 		err ("NULL passed to add\n");
+@@ -762,7 +762,7 @@ int ibmphp_add_resource (struct resource_node *res)
+ 		}
+ 	}
+ 
+-	debug ("%s - exit\n", __FUNCTION__);
++	debug ("%s - exit\n", __func__);
+ 	return 0;
+ }
+ 
+@@ -1001,7 +1001,7 @@ int ibmphp_check_resource (struct resource_node *res, u8 bridge)
+ 		return -EINVAL;
+ 	}
+ 
+-	debug ("%s - enter\n", __FUNCTION__);
++	debug ("%s - enter\n", __func__);
+ 	debug ("bus_cur->busno is %d\n", bus_cur->busno);
+ 
+ 	/* This is a quick fix to not mess up with the code very much.  i.e.,
+@@ -1029,7 +1029,7 @@ int ibmphp_check_resource (struct resource_node *res, u8 bridge)
+ 
+ 	while (res_cur) {
+ 		range = find_range (bus_cur, res_cur);
+-		debug ("%s - rangeno = %d\n", __FUNCTION__, res_cur->rangeno);
++		debug ("%s - rangeno = %d\n", __func__, res_cur->rangeno);
+ 
+ 		if (!range) {
+ 			err ("no range for the device exists... bailing out...\n");
+@@ -1942,7 +1942,7 @@ static int __init update_bridge_ranges (struct bus_node **bus)
+ 		return -ENODEV;
+ 	ibmphp_pci_bus->number = bus_cur->busno;
+ 
+-	debug ("inside %s\n", __FUNCTION__);
++	debug ("inside %s\n", __func__);
+ 	debug ("bus_cur->busno = %x\n", bus_cur->busno);
+ 
+ 	for (device = 0; device < 32; device++) {
+diff --git a/drivers/pci/hotplug/pci_hotplug_core.c b/drivers/pci/hotplug/pci_hotplug_core.c
+index dd59a05..925ba16 100644
+--- a/drivers/pci/hotplug/pci_hotplug_core.c
++++ b/drivers/pci/hotplug/pci_hotplug_core.c
+@@ -43,7 +43,7 @@
+ 
+ #define MY_NAME	"pci_hotplug"
+ 
+-#define dbg(fmt, arg...) do { if (debug) printk(KERN_DEBUG "%s: %s: " fmt , MY_NAME , __FUNCTION__ , ## arg); } while (0)
++#define dbg(fmt, arg...) do { if (debug) printk(KERN_DEBUG "%s: %s: " fmt , MY_NAME , __func__ , ## arg); } while (0)
+ #define err(format, arg...) printk(KERN_ERR "%s: " format , MY_NAME , ## arg)
+ #define info(format, arg...) printk(KERN_INFO "%s: " format , MY_NAME , ## arg)
+ #define warn(format, arg...) printk(KERN_WARNING "%s: " format , MY_NAME , ## arg)
+diff --git a/drivers/pci/hotplug/pciehp.h b/drivers/pci/hotplug/pciehp.h
+index ca656b2..f14267e 100644
+--- a/drivers/pci/hotplug/pciehp.h
++++ b/drivers/pci/hotplug/pciehp.h
+@@ -168,7 +168,7 @@ static inline struct slot *pciehp_find_slot(struct controller *ctrl, u8 device)
+ 			return slot;
+ 	}
+ 
+-	err("%s: slot (device=0x%x) not found\n", __FUNCTION__, device);
++	err("%s: slot (device=0x%x) not found\n", __func__, device);
+ 	return NULL;
+ }
+ 
+diff --git a/drivers/pci/hotplug/pciehp_core.c b/drivers/pci/hotplug/pciehp_core.c
+index 7f4836b..b5cfaa3 100644
+--- a/drivers/pci/hotplug/pciehp_core.c
++++ b/drivers/pci/hotplug/pciehp_core.c
+@@ -184,7 +184,7 @@ static void release_slot(struct hotplug_slot *hotplug_slot)
+ {
+ 	struct slot *slot = hotplug_slot->private;
+ 
+-	dbg("%s - physical_slot = %s\n", __FUNCTION__, hotplug_slot->name);
++	dbg("%s - physical_slot = %s\n", __func__, hotplug_slot->name);
+ 
+ 	kfree(slot->hotplug_slot->info);
+ 	kfree(slot->hotplug_slot);
+@@ -301,7 +301,7 @@ static int set_attention_status(struct hotplug_slot *hotplug_slot, u8 status)
+ {
+ 	struct slot *slot = hotplug_slot->private;
+ 
+-	dbg("%s - physical_slot = %s\n", __FUNCTION__, hotplug_slot->name);
++	dbg("%s - physical_slot = %s\n", __func__, hotplug_slot->name);
+ 
+ 	hotplug_slot->info->attention_status = status;
+ 
+@@ -316,7 +316,7 @@ static int enable_slot(struct hotplug_slot *hotplug_slot)
+ {
+ 	struct slot *slot = hotplug_slot->private;
+ 
+-	dbg("%s - physical_slot = %s\n", __FUNCTION__, hotplug_slot->name);
++	dbg("%s - physical_slot = %s\n", __func__, hotplug_slot->name);
+ 
+ 	return pciehp_sysfs_enable_slot(slot);
+ }
+@@ -326,7 +326,7 @@ static int disable_slot(struct hotplug_slot *hotplug_slot)
+ {
+ 	struct slot *slot = hotplug_slot->private;
+ 
+-	dbg("%s - physical_slot = %s\n", __FUNCTION__, hotplug_slot->name);
++	dbg("%s - physical_slot = %s\n", __func__, hotplug_slot->name);
+ 
+ 	return pciehp_sysfs_disable_slot(slot);
+ }
+@@ -336,7 +336,7 @@ static int get_power_status(struct hotplug_slot *hotplug_slot, u8 *value)
+ 	struct slot *slot = hotplug_slot->private;
+ 	int retval;
+ 
+-	dbg("%s - physical_slot = %s\n", __FUNCTION__, hotplug_slot->name);
++	dbg("%s - physical_slot = %s\n", __func__, hotplug_slot->name);
+ 
+ 	retval = slot->hpc_ops->get_power_status(slot, value);
+ 	if (retval < 0)
+@@ -350,7 +350,7 @@ static int get_attention_status(struct hotplug_slot *hotplug_slot, u8 *value)
+ 	struct slot *slot = hotplug_slot->private;
+ 	int retval;
+ 
+-	dbg("%s - physical_slot = %s\n", __FUNCTION__, hotplug_slot->name);
++	dbg("%s - physical_slot = %s\n", __func__, hotplug_slot->name);
+ 
+ 	retval = slot->hpc_ops->get_attention_status(slot, value);
+ 	if (retval < 0)
+@@ -364,7 +364,7 @@ static int get_latch_status(struct hotplug_slot *hotplug_slot, u8 *value)
+ 	struct slot *slot = hotplug_slot->private;
+ 	int retval;
+ 
+-	dbg("%s - physical_slot = %s\n", __FUNCTION__, hotplug_slot->name);
++	dbg("%s - physical_slot = %s\n", __func__, hotplug_slot->name);
+ 
+ 	retval = slot->hpc_ops->get_latch_status(slot, value);
+ 	if (retval < 0)
+@@ -378,7 +378,7 @@ static int get_adapter_status(struct hotplug_slot *hotplug_slot, u8 *value)
+ 	struct slot *slot = hotplug_slot->private;
+ 	int retval;
+ 
+-	dbg("%s - physical_slot = %s\n", __FUNCTION__, hotplug_slot->name);
++	dbg("%s - physical_slot = %s\n", __func__, hotplug_slot->name);
+ 
+ 	retval = slot->hpc_ops->get_adapter_status(slot, value);
+ 	if (retval < 0)
+@@ -392,7 +392,7 @@ static int get_address(struct hotplug_slot *hotplug_slot, u32 *value)
+ 	struct slot *slot = hotplug_slot->private;
+ 	struct pci_bus *bus = slot->ctrl->pci_dev->subordinate;
+ 
+-	dbg("%s - physical_slot = %s\n", __FUNCTION__, hotplug_slot->name);
++	dbg("%s - physical_slot = %s\n", __func__, hotplug_slot->name);
+ 
+ 	*value = (pci_domain_nr(bus) << 16) | (slot->bus << 8) | slot->device;
+ 
+@@ -404,7 +404,7 @@ static int get_max_bus_speed(struct hotplug_slot *hotplug_slot, enum pci_bus_spe
+ 	struct slot *slot = hotplug_slot->private;
+ 	int retval;
+ 
+-	dbg("%s - physical_slot = %s\n", __FUNCTION__, hotplug_slot->name);
++	dbg("%s - physical_slot = %s\n", __func__, hotplug_slot->name);
+ 
+ 	retval = slot->hpc_ops->get_max_bus_speed(slot, value);
+ 	if (retval < 0)
+@@ -418,7 +418,7 @@ static int get_cur_bus_speed(struct hotplug_slot *hotplug_slot, enum pci_bus_spe
+ 	struct slot *slot = hotplug_slot->private;
+ 	int retval;
+ 
+-	dbg("%s - physical_slot = %s\n", __FUNCTION__, hotplug_slot->name);
++	dbg("%s - physical_slot = %s\n", __func__, hotplug_slot->name);
+ 
+ 	retval = slot->hpc_ops->get_cur_bus_speed(slot, value);
+ 	if (retval < 0)
+@@ -437,7 +437,7 @@ static int pciehp_probe(struct pcie_device *dev, const struct pcie_port_service_
+ 
+ 	ctrl = kzalloc(sizeof(*ctrl), GFP_KERNEL);
+ 	if (!ctrl) {
+-		err("%s : out of memory\n", __FUNCTION__);
++		err("%s : out of memory\n", __func__);
+ 		goto err_out_none;
+ 	}
+ 	INIT_LIST_HEAD(&ctrl->slot_list);
+@@ -454,7 +454,7 @@ static int pciehp_probe(struct pcie_device *dev, const struct pcie_port_service_
+ 	pci_set_drvdata(pdev, ctrl);
+ 
+ 	dbg("%s: ctrl bus=0x%x, device=%x, function=%x, irq=%x\n",
+-	    __FUNCTION__, pdev->bus->number, PCI_SLOT(pdev->devfn),
++	    __func__, pdev->bus->number, PCI_SLOT(pdev->devfn),
+ 	    PCI_FUNC(pdev->devfn), pdev->irq);
+ 
+ 	/* Setup the slot information structures */
+@@ -503,13 +503,13 @@ static void pciehp_remove (struct pcie_device *dev)
+ #ifdef CONFIG_PM
+ static int pciehp_suspend (struct pcie_device *dev, pm_message_t state)
+ {
+-	printk("%s ENTRY\n", __FUNCTION__);
++	printk("%s ENTRY\n", __func__);
+ 	return 0;
+ }
+ 
+ static int pciehp_resume (struct pcie_device *dev)
+ {
+-	printk("%s ENTRY\n", __FUNCTION__);
++	printk("%s ENTRY\n", __func__);
+ 	if (pciehp_force) {
+ 		struct pci_dev *pdev = dev->port;
+ 		struct controller *ctrl = pci_get_drvdata(pdev);
+@@ -563,7 +563,7 @@ static int __init pcied_init(void)
+  	dbg("pcie_port_service_register = %d\n", retval);
+   	info(DRIVER_DESC " version: " DRIVER_VERSION "\n");
+  	if (retval)
+-		dbg("%s: Failure to register service\n", __FUNCTION__);
++		dbg("%s: Failure to register service\n", __func__);
+ 	return retval;
+ }
+ 
+diff --git a/drivers/pci/hotplug/pciehp_ctrl.c b/drivers/pci/hotplug/pciehp_ctrl.c
+index b23061c..0c481f7 100644
+--- a/drivers/pci/hotplug/pciehp_ctrl.c
++++ b/drivers/pci/hotplug/pciehp_ctrl.c
+@@ -181,7 +181,7 @@ static void set_slot_off(struct controller *ctrl, struct slot * pslot)
+ 	if (POWER_CTRL(ctrl->ctrlcap)) {
+ 		if (pslot->hpc_ops->power_off_slot(pslot)) {
+ 			err("%s: Issue of Slot Power Off command failed\n",
+-			    __FUNCTION__);
++			    __func__);
+ 			return;
+ 		}
+ 	}
+@@ -192,7 +192,7 @@ static void set_slot_off(struct controller *ctrl, struct slot * pslot)
+ 	if (ATTN_LED(ctrl->ctrlcap)) {
+ 		if (pslot->hpc_ops->set_attention_status(pslot, 1)) {
+ 			err("%s: Issue of Set Attention Led command failed\n",
+-			    __FUNCTION__);
++			    __func__);
+ 			return;
+ 		}
+ 	}
+@@ -211,7 +211,7 @@ static int board_added(struct slot *p_slot)
+ 	struct controller *ctrl = p_slot->ctrl;
+ 
+ 	dbg("%s: slot device, slot offset, hp slot = %d, %d ,%d\n",
+-			__FUNCTION__, p_slot->device,
++			__func__, p_slot->device,
+ 			ctrl->slot_device_offset, p_slot->hp_slot);
+ 
+ 	if (POWER_CTRL(ctrl->ctrlcap)) {
+@@ -230,14 +230,14 @@ static int board_added(struct slot *p_slot)
+ 	/* Check link training status */
+ 	retval = p_slot->hpc_ops->check_lnk_status(ctrl);
+ 	if (retval) {
+-		err("%s: Failed to check link status\n", __FUNCTION__);
++		err("%s: Failed to check link status\n", __func__);
+ 		set_slot_off(ctrl, p_slot);
+ 		return retval;
+ 	}
+ 
+ 	/* Check for a power fault */
+ 	if (p_slot->hpc_ops->query_power_fault(p_slot)) {
+-		dbg("%s: power fault detected\n", __FUNCTION__);
++		dbg("%s: power fault detected\n", __func__);
+ 		retval = POWER_FAILURE;
+ 		goto err_exit;
+ 	}
+@@ -277,14 +277,14 @@ static int remove_board(struct slot *p_slot)
+ 	if (retval)
+ 		return retval;
+ 
+-	dbg("In %s, hp_slot = %d\n", __FUNCTION__, p_slot->hp_slot);
++	dbg("In %s, hp_slot = %d\n", __func__, p_slot->hp_slot);
+ 
+ 	if (POWER_CTRL(ctrl->ctrlcap)) {
+ 		/* power off slot */
+ 		retval = p_slot->hpc_ops->power_off_slot(p_slot);
+ 		if (retval) {
+ 			err("%s: Issue of Slot Disable command failed\n",
+-			    __FUNCTION__);
++			    __func__);
+ 			return retval;
+ 		}
+ 	}
+@@ -319,7 +319,7 @@ static void pciehp_power_thread(struct work_struct *work)
+ 	case POWEROFF_STATE:
+ 		mutex_unlock(&p_slot->lock);
+ 		dbg("%s: disabling bus:device(%x:%x)\n",
+-		    __FUNCTION__, p_slot->bus, p_slot->device);
++		    __func__, p_slot->bus, p_slot->device);
+ 		pciehp_disable_slot(p_slot);
+ 		mutex_lock(&p_slot->lock);
+ 		p_slot->state = STATIC_STATE;
+@@ -347,7 +347,7 @@ void pciehp_queue_pushbutton_work(struct work_struct *work)
+ 
+ 	info = kmalloc(sizeof(*info), GFP_KERNEL);
+ 	if (!info) {
+-		err("%s: Cannot allocate memory\n", __FUNCTION__);
++		err("%s: Cannot allocate memory\n", __func__);
+ 		return;
+ 	}
+ 	info->p_slot = p_slot;
+@@ -424,7 +424,7 @@ static void handle_button_press_event(struct slot *p_slot)
+ 		 * expires to cancel hot-add or hot-remove
+ 		 */
+ 		info("Button cancel on Slot(%s)\n", p_slot->name);
+-		dbg("%s: button cancel\n", __FUNCTION__);
++		dbg("%s: button cancel\n", __func__);
+ 		cancel_delayed_work(&p_slot->work);
+ 		if (p_slot->state == BLINKINGOFF_STATE) {
+ 			if (PWR_LED(ctrl->ctrlcap))
+@@ -465,7 +465,7 @@ static void handle_surprise_event(struct slot *p_slot)
+ 
+ 	info = kmalloc(sizeof(*info), GFP_KERNEL);
+ 	if (!info) {
+-		err("%s: Cannot allocate memory\n", __FUNCTION__);
++		err("%s: Cannot allocate memory\n", __func__);
+ 		return;
+ 	}
+ 	info->p_slot = p_slot;
+@@ -526,7 +526,7 @@ int pciehp_enable_slot(struct slot *p_slot)
+ 
+ 	rc = p_slot->hpc_ops->get_adapter_status(p_slot, &getstatus);
+ 	if (rc || !getstatus) {
+-		info("%s: no adapter on slot(%s)\n", __FUNCTION__,
++		info("%s: no adapter on slot(%s)\n", __func__,
+ 		     p_slot->name);
+ 		mutex_unlock(&p_slot->ctrl->crit_sect);
+ 		return -ENODEV;
+@@ -534,7 +534,7 @@ int pciehp_enable_slot(struct slot *p_slot)
+ 	if (MRL_SENS(p_slot->ctrl->ctrlcap)) {
+ 		rc = p_slot->hpc_ops->get_latch_status(p_slot, &getstatus);
+ 		if (rc || getstatus) {
+-			info("%s: latch open on slot(%s)\n", __FUNCTION__,
++			info("%s: latch open on slot(%s)\n", __func__,
+ 			     p_slot->name);
+ 			mutex_unlock(&p_slot->ctrl->crit_sect);
+ 			return -ENODEV;
+@@ -544,7 +544,7 @@ int pciehp_enable_slot(struct slot *p_slot)
+ 	if (POWER_CTRL(p_slot->ctrl->ctrlcap)) {
+ 		rc = p_slot->hpc_ops->get_power_status(p_slot, &getstatus);
+ 		if (rc || getstatus) {
+-			info("%s: already enabled on slot(%s)\n", __FUNCTION__,
++			info("%s: already enabled on slot(%s)\n", __func__,
+ 			     p_slot->name);
+ 			mutex_unlock(&p_slot->ctrl->crit_sect);
+ 			return -EINVAL;
+@@ -579,7 +579,7 @@ int pciehp_disable_slot(struct slot *p_slot)
+ 	if (!HP_SUPR_RM(p_slot->ctrl->ctrlcap)) {
+ 		ret = p_slot->hpc_ops->get_adapter_status(p_slot, &getstatus);
+ 		if (ret || !getstatus) {
+-			info("%s: no adapter on slot(%s)\n", __FUNCTION__,
++			info("%s: no adapter on slot(%s)\n", __func__,
+ 			     p_slot->name);
+ 			mutex_unlock(&p_slot->ctrl->crit_sect);
+ 			return -ENODEV;
+@@ -589,7 +589,7 @@ int pciehp_disable_slot(struct slot *p_slot)
+ 	if (MRL_SENS(p_slot->ctrl->ctrlcap)) {
+ 		ret = p_slot->hpc_ops->get_latch_status(p_slot, &getstatus);
+ 		if (ret || getstatus) {
+-			info("%s: latch open on slot(%s)\n", __FUNCTION__,
++			info("%s: latch open on slot(%s)\n", __func__,
+ 			     p_slot->name);
+ 			mutex_unlock(&p_slot->ctrl->crit_sect);
+ 			return -ENODEV;
+@@ -599,7 +599,7 @@ int pciehp_disable_slot(struct slot *p_slot)
+ 	if (POWER_CTRL(p_slot->ctrl->ctrlcap)) {
+ 		ret = p_slot->hpc_ops->get_power_status(p_slot, &getstatus);
+ 		if (ret || !getstatus) {
+-			info("%s: already disabled slot(%s)\n", __FUNCTION__,
++			info("%s: already disabled slot(%s)\n", __func__,
+ 			     p_slot->name);
+ 			mutex_unlock(&p_slot->ctrl->crit_sect);
+ 			return -EINVAL;
+diff --git a/drivers/pci/hotplug/pciehp_hpc.c b/drivers/pci/hotplug/pciehp_hpc.c
+index 6eba9b2..91304b7 100644
+--- a/drivers/pci/hotplug/pciehp_hpc.c
++++ b/drivers/pci/hotplug/pciehp_hpc.c
+@@ -258,7 +258,7 @@ static int pcie_write_cmd(struct slot *slot, u16 cmd, u16 mask)
+ 
+ 	retval = pciehp_readw(ctrl, SLOTSTATUS, &slot_status);
+ 	if (retval) {
+-		err("%s: Cannot read SLOTSTATUS register\n", __FUNCTION__);
++		err("%s: Cannot read SLOTSTATUS register\n", __func__);
  		goto out;
  	}
- 	dev->priv = privptr;
-@@ -4065,7 +4065,7 @@ claw_shutdown_device(struct ccwgroup_device *cgdev)
- 	struct net_device *ndev;
- 	int	ret;
  
--	pr_debug("%s() called\n", __FUNCTION__);
-+	pr_debug("%s() called\n", __func__);
- 	CLAW_DBF_TEXT_(2,setup,"%s",cgdev->dev.bus_id);
- 	priv = cgdev->dev.driver_data;
- 	if (!priv)
-@@ -4095,15 +4095,15 @@ claw_remove_device(struct ccwgroup_device *cgdev)
- {
- 	struct claw_privbk *priv;
- 
--	pr_debug("%s() called\n", __FUNCTION__);
-+	pr_debug("%s() called\n", __func__);
- 	CLAW_DBF_TEXT_(2,setup,"%s",cgdev->dev.bus_id);
- 	priv = cgdev->dev.driver_data;
- 	if (!priv) {
--		printk(KERN_WARNING "claw: %s() no Priv exiting\n",__FUNCTION__);
-+		printk(KERN_WARNING "claw: %s() no Priv exiting\n",__func__);
- 		return;
+@@ -267,13 +267,13 @@ static int pcie_write_cmd(struct slot *slot, u16 cmd, u16 mask)
+ 		   proceed forward to issue the next command according
+ 		   to spec.  Just print out the error message */
+ 		dbg("%s: CMD_COMPLETED not clear after 1 sec.\n",
+-		    __FUNCTION__);
++		    __func__);
  	}
- 	printk(KERN_INFO "claw: %s() called %s will be removed.\n",
--			__FUNCTION__,cgdev->cdev[0]->dev.bus_id);
-+			__func__,cgdev->cdev[0]->dev.bus_id);
- 	if (cgdev->state == CCWGROUP_ONLINE)
- 		claw_shutdown_device(cgdev);
- 	claw_remove_files(&cgdev->dev);
-@@ -4346,7 +4346,7 @@ static struct attribute_group claw_attr_group = {
- static int
- claw_add_files(struct device *dev)
- {
--	pr_debug("%s() called\n", __FUNCTION__);
-+	pr_debug("%s() called\n", __func__);
- 	CLAW_DBF_TEXT(2,setup,"add_file");
- 	return sysfs_create_group(&dev->kobj, &claw_attr_group);
- }
-@@ -4354,7 +4354,7 @@ claw_add_files(struct device *dev)
- static void
- claw_remove_files(struct device *dev)
- {
--	pr_debug("%s() called\n", __FUNCTION__);
-+	pr_debug("%s() called\n", __func__);
- 	CLAW_DBF_TEXT(2,setup,"rem_file");
- 	sysfs_remove_group(&dev->kobj, &claw_attr_group);
- }
-@@ -4385,12 +4385,12 @@ claw_init(void)
- 	printk(KERN_INFO "claw: starting driver\n");
  
- #ifdef FUNCTRACE
--        printk(KERN_INFO "claw: %s() enter \n",__FUNCTION__);
-+        printk(KERN_INFO "claw: %s() enter \n",__func__);
- #endif
- 	ret = claw_register_debug_facility();
- 	if (ret) {
- 		printk(KERN_WARNING "claw: %s() debug_register failed %d\n",
--			__FUNCTION__,ret);
-+			__func__,ret);
- 		return ret;
+ 	spin_lock_irqsave(&ctrl->lock, flags);
+ 	retval = pciehp_readw(ctrl, SLOTCTRL, &slot_ctrl);
+ 	if (retval) {
+-		err("%s: Cannot read SLOTCTRL register\n", __FUNCTION__);
++		err("%s: Cannot read SLOTCTRL register\n", __func__);
+ 		goto out_spin_unlock;
  	}
- 	CLAW_DBF_TEXT(2,setup,"init_mod");
-@@ -4398,10 +4398,10 @@ claw_init(void)
- 	if (ret) {
- 		claw_unregister_debug_facility();
- 		printk(KERN_WARNING "claw; %s() cu3088 register failed %d\n",
--			__FUNCTION__,ret);
-+			__func__,ret);
+ 
+@@ -283,7 +283,7 @@ static int pcie_write_cmd(struct slot *slot, u16 cmd, u16 mask)
+ 	ctrl->cmd_busy = 1;
+ 	retval = pciehp_writew(ctrl, SLOTCTRL, slot_ctrl);
+ 	if (retval)
+-		err("%s: Cannot write to SLOTCTRL register\n", __FUNCTION__);
++		err("%s: Cannot write to SLOTCTRL register\n", __func__);
+ 
+  out_spin_unlock:
+ 	spin_unlock_irqrestore(&ctrl->lock, flags);
+@@ -305,14 +305,14 @@ static int hpc_check_lnk_status(struct controller *ctrl)
+ 
+ 	retval = pciehp_readw(ctrl, LNKSTATUS, &lnk_status);
+ 	if (retval) {
+-		err("%s: Cannot read LNKSTATUS register\n", __FUNCTION__);
++		err("%s: Cannot read LNKSTATUS register\n", __func__);
+ 		return retval;
  	}
- #ifdef FUNCTRACE
--        printk(KERN_INFO "claw: %s() exit \n",__FUNCTION__);
-+        printk(KERN_INFO "claw: %s() exit \n",__func__);
- #endif
- 	return ret;
+ 
+-	dbg("%s: lnk_status = %x\n", __FUNCTION__, lnk_status);
++	dbg("%s: lnk_status = %x\n", __func__, lnk_status);
+ 	if ( (lnk_status & LNK_TRN) || (lnk_status & LNK_TRN_ERR) ||
+ 		!(lnk_status & NEG_LINK_WD)) {
+-		err("%s : Link Training Error occurs \n", __FUNCTION__);
++		err("%s : Link Training Error occurs \n", __func__);
+ 		retval = -1;
+ 		return retval;
+ 	}
+@@ -329,12 +329,12 @@ static int hpc_get_attention_status(struct slot *slot, u8 *status)
+ 
+ 	retval = pciehp_readw(ctrl, SLOTCTRL, &slot_ctrl);
+ 	if (retval) {
+-		err("%s: Cannot read SLOTCTRL register\n", __FUNCTION__);
++		err("%s: Cannot read SLOTCTRL register\n", __func__);
+ 		return retval;
+ 	}
+ 
+ 	dbg("%s: SLOTCTRL %x, value read %x\n",
+-	    __FUNCTION__, ctrl->cap_base + SLOTCTRL, slot_ctrl);
++	    __func__, ctrl->cap_base + SLOTCTRL, slot_ctrl);
+ 
+ 	atten_led_state = (slot_ctrl & ATTN_LED_CTRL) >> 6;
+ 
+@@ -368,11 +368,11 @@ static int hpc_get_power_status(struct slot *slot, u8 *status)
+ 
+ 	retval = pciehp_readw(ctrl, SLOTCTRL, &slot_ctrl);
+ 	if (retval) {
+-		err("%s: Cannot read SLOTCTRL register\n", __FUNCTION__);
++		err("%s: Cannot read SLOTCTRL register\n", __func__);
+ 		return retval;
+ 	}
+ 	dbg("%s: SLOTCTRL %x value read %x\n",
+-	    __FUNCTION__, ctrl->cap_base + SLOTCTRL, slot_ctrl);
++	    __func__, ctrl->cap_base + SLOTCTRL, slot_ctrl);
+ 
+ 	pwr_state = (slot_ctrl & PWR_CTRL) >> 10;
+ 
+@@ -399,7 +399,7 @@ static int hpc_get_latch_status(struct slot *slot, u8 *status)
+ 
+ 	retval = pciehp_readw(ctrl, SLOTSTATUS, &slot_status);
+ 	if (retval) {
+-		err("%s: Cannot read SLOTSTATUS register\n", __FUNCTION__);
++		err("%s: Cannot read SLOTSTATUS register\n", __func__);
+ 		return retval;
+ 	}
+ 
+@@ -417,7 +417,7 @@ static int hpc_get_adapter_status(struct slot *slot, u8 *status)
+ 
+ 	retval = pciehp_readw(ctrl, SLOTSTATUS, &slot_status);
+ 	if (retval) {
+-		err("%s: Cannot read SLOTSTATUS register\n", __FUNCTION__);
++		err("%s: Cannot read SLOTSTATUS register\n", __func__);
+ 		return retval;
+ 	}
+ 	card_state = (u8)((slot_status & PRSN_STATE) >> 6);
+@@ -435,7 +435,7 @@ static int hpc_query_power_fault(struct slot *slot)
+ 
+ 	retval = pciehp_readw(ctrl, SLOTSTATUS, &slot_status);
+ 	if (retval) {
+-		err("%s: Cannot check for power fault\n", __FUNCTION__);
++		err("%s: Cannot check for power fault\n", __func__);
+ 		return retval;
+ 	}
+ 	pwr_fault = (u8)((slot_status & PWR_FAULT_DETECTED) >> 1);
+@@ -451,7 +451,7 @@ static int hpc_get_emi_status(struct slot *slot, u8 *status)
+ 
+ 	retval = pciehp_readw(ctrl, SLOTSTATUS, &slot_status);
+ 	if (retval) {
+-		err("%s : Cannot check EMI status\n", __FUNCTION__);
++		err("%s : Cannot check EMI status\n", __func__);
+ 		return retval;
+ 	}
+ 	*status = (slot_status & EMI_STATE) >> EMI_STATUS_BIT;
+@@ -506,7 +506,7 @@ static int hpc_set_attention_status(struct slot *slot, u8 value)
+ 
+ 	rc = pcie_write_cmd(slot, slot_cmd, cmd_mask);
+ 	dbg("%s: SLOTCTRL %x write cmd %x\n",
+-	    __FUNCTION__, ctrl->cap_base + SLOTCTRL, slot_cmd);
++	    __func__, ctrl->cap_base + SLOTCTRL, slot_cmd);
+ 
+ 	return rc;
  }
-diff --git a/drivers/s390/net/ctcmain.c b/drivers/s390/net/ctcmain.c
-index 77a5031..aacfb15 100644
---- a/drivers/s390/net/ctcmain.c
-+++ b/drivers/s390/net/ctcmain.c
-@@ -375,7 +375,7 @@ ctc_unpack_skb(struct channel *ch, struct sk_buff *pskb)
- 	struct ctc_priv *privptr = (struct ctc_priv *) dev->priv;
- 	__u16 len = *((__u16 *) pskb->data);
- 
--	DBF_TEXT(trace, 4, __FUNCTION__);
-+	DBF_TEXT(trace, 4, __func__);
- 	skb_put(pskb, 2 + LL_HEADER_LENGTH);
- 	skb_pull(pskb, 2);
- 	pskb->dev = dev;
-@@ -515,7 +515,7 @@ ctc_unpack_skb(struct channel *ch, struct sk_buff *pskb)
- static void
- ccw_check_return_code(struct channel *ch, int return_code, char *msg)
- {
--	DBF_TEXT(trace, 5, __FUNCTION__);
-+	DBF_TEXT(trace, 5, __func__);
- 	switch (return_code) {
- 		case 0:
- 			fsm_event(ch->fsm, CH_EVENT_IO_SUCCESS, ch);
-@@ -550,7 +550,7 @@ ccw_check_return_code(struct channel *ch, int return_code, char *msg)
- static void
- ccw_unit_check(struct channel *ch, unsigned char sense)
- {
--	DBF_TEXT(trace, 5, __FUNCTION__);
-+	DBF_TEXT(trace, 5, __func__);
- 	if (sense & SNS0_INTERVENTION_REQ) {
- 		if (sense & 0x01) {
- 			ctc_pr_debug("%s: Interface disc. or Sel. reset "
-@@ -595,7 +595,7 @@ ctc_purge_skb_queue(struct sk_buff_head *q)
- {
- 	struct sk_buff *skb;
- 
--	DBF_TEXT(trace, 5, __FUNCTION__);
-+	DBF_TEXT(trace, 5, __func__);
- 
- 	while ((skb = skb_dequeue(q))) {
- 		atomic_dec(&skb->users);
-@@ -606,7 +606,7 @@ ctc_purge_skb_queue(struct sk_buff_head *q)
- static int
- ctc_checkalloc_buffer(struct channel *ch, int warn)
- {
--	DBF_TEXT(trace, 5, __FUNCTION__);
-+	DBF_TEXT(trace, 5, __func__);
- 	if ((ch->trans_skb == NULL) ||
- 	    (ch->flags & CHANNEL_FLAGS_BUFSIZE_CHANGED)) {
- 		if (ch->trans_skb != NULL)
-@@ -676,7 +676,7 @@ ch_action_txdone(fsm_instance * fi, int event, void *arg)
- 	unsigned long duration;
- 	struct timespec done_stamp = current_kernel_time();
- 
--	DBF_TEXT(trace, 4, __FUNCTION__);
-+	DBF_TEXT(trace, 4, __func__);
- 
- 	duration =
- 	    (done_stamp.tv_sec - ch->prof.send_stamp.tv_sec) * 1000000 +
-@@ -761,7 +761,7 @@ ch_action_txidle(fsm_instance * fi, int event, void *arg)
- {
- 	struct channel *ch = (struct channel *) arg;
- 
--	DBF_TEXT(trace, 4, __FUNCTION__);
-+	DBF_TEXT(trace, 4, __func__);
- 	fsm_deltimer(&ch->timer);
- 	fsm_newstate(fi, CH_STATE_TXIDLE);
- 	fsm_event(((struct ctc_priv *) ch->netdev->priv)->fsm, DEV_EVENT_TXUP,
-@@ -788,7 +788,7 @@ ch_action_rx(fsm_instance * fi, int event, void *arg)
- 	int check_len;
- 	int rc;
- 
--	DBF_TEXT(trace, 4, __FUNCTION__);
-+	DBF_TEXT(trace, 4, __func__);
- 	fsm_deltimer(&ch->timer);
- 	if (len < 8) {
- 		ctc_pr_debug("%s: got packet with length %d < 8\n",
-@@ -860,7 +860,7 @@ ch_action_firstio(fsm_instance * fi, int event, void *arg)
- 	struct channel *ch = (struct channel *) arg;
- 	int rc;
- 
--	DBF_TEXT(trace, 4, __FUNCTION__);
-+	DBF_TEXT(trace, 4, __func__);
- 
- 	if (fsm_getstate(fi) == CH_STATE_TXIDLE)
- 		ctc_pr_debug("%s: remote side issued READ?, init ...\n", ch->id);
-@@ -936,7 +936,7 @@ ch_action_rxidle(fsm_instance * fi, int event, void *arg)
- 	__u16 buflen;
- 	int rc;
- 
--	DBF_TEXT(trace, 4, __FUNCTION__);
-+	DBF_TEXT(trace, 4, __func__);
- 	fsm_deltimer(&ch->timer);
- 	buflen = *((__u16 *) ch->trans_skb->data);
- #ifdef DEBUG
-@@ -976,7 +976,7 @@ ch_action_setmode(fsm_instance * fi, int event, void *arg)
- 	int rc;
- 	unsigned long saveflags;
- 
--	DBF_TEXT(trace, 4, __FUNCTION__);
-+	DBF_TEXT(trace, 4, __func__);
- 	fsm_deltimer(&ch->timer);
- 	fsm_addtimer(&ch->timer, CTC_TIMEOUT_5SEC, CH_EVENT_TIMER, ch);
- 	fsm_newstate(fi, CH_STATE_SETUPWAIT);
-@@ -1010,7 +1010,7 @@ ch_action_start(fsm_instance * fi, int event, void *arg)
- 	int rc;
- 	struct net_device *dev;
- 
--	DBF_TEXT(trace, 4, __FUNCTION__);
-+	DBF_TEXT(trace, 4, __func__);
- 	if (ch == NULL) {
- 		ctc_pr_warn("ch_action_start ch=NULL\n");
- 		return;
-@@ -1090,7 +1090,7 @@ ch_action_haltio(fsm_instance * fi, int event, void *arg)
- 	int rc;
- 	int oldstate;
- 
--	DBF_TEXT(trace, 3, __FUNCTION__);
-+	DBF_TEXT(trace, 3, __func__);
- 	fsm_deltimer(&ch->timer);
- 	fsm_addtimer(&ch->timer, CTC_TIMEOUT_5SEC, CH_EVENT_TIMER, ch);
- 	saveflags = 0;	/* avoids comp warning with
-@@ -1125,7 +1125,7 @@ ch_action_stopped(fsm_instance * fi, int event, void *arg)
- 	struct channel *ch = (struct channel *) arg;
- 	struct net_device *dev = ch->netdev;
- 
--	DBF_TEXT(trace, 3, __FUNCTION__);
-+	DBF_TEXT(trace, 3, __func__);
- 	fsm_deltimer(&ch->timer);
- 	fsm_newstate(fi, CH_STATE_STOPPED);
- 	if (ch->trans_skb != NULL) {
-@@ -1177,7 +1177,7 @@ ch_action_fail(fsm_instance * fi, int event, void *arg)
- 	struct channel *ch = (struct channel *) arg;
- 	struct net_device *dev = ch->netdev;
- 
--	DBF_TEXT(trace, 3, __FUNCTION__);
-+	DBF_TEXT(trace, 3, __func__);
- 	fsm_deltimer(&ch->timer);
- 	fsm_newstate(fi, CH_STATE_NOTOP);
- 	if (CHANNEL_DIRECTION(ch->flags) == READ) {
-@@ -1208,7 +1208,7 @@ ch_action_setuperr(fsm_instance * fi, int event, void *arg)
- 	struct channel *ch = (struct channel *) arg;
- 	struct net_device *dev = ch->netdev;
- 
--	DBF_TEXT(setup, 3, __FUNCTION__);
-+	DBF_TEXT(setup, 3, __func__);
- 	/**
- 	 * Special case: Got UC_RCRESET on setmode.
- 	 * This means that remote side isn't setup. In this case
-@@ -1261,7 +1261,7 @@ ch_action_restart(fsm_instance * fi, int event, void *arg)
- 	struct channel *ch = (struct channel *) arg;
- 	struct net_device *dev = ch->netdev;
- 
--	DBF_TEXT(trace, 3, __FUNCTION__);
-+	DBF_TEXT(trace, 3, __func__);
- 	fsm_deltimer(&ch->timer);
- 	ctc_pr_debug("%s: %s channel restart\n", dev->name,
- 		     (CHANNEL_DIRECTION(ch->flags) == READ) ? "RX" : "TX");
-@@ -1298,7 +1298,7 @@ ch_action_rxiniterr(fsm_instance * fi, int event, void *arg)
- 	struct channel *ch = (struct channel *) arg;
- 	struct net_device *dev = ch->netdev;
- 
--	DBF_TEXT(setup, 3, __FUNCTION__);
-+	DBF_TEXT(setup, 3, __func__);
- 	if (event == CH_EVENT_TIMER) {
- 		fsm_deltimer(&ch->timer);
- 		ctc_pr_debug("%s: Timeout during RX init handshake\n", dev->name);
-@@ -1327,7 +1327,7 @@ ch_action_rxinitfail(fsm_instance * fi, int event, void *arg)
- 	struct channel *ch = (struct channel *) arg;
- 	struct net_device *dev = ch->netdev;
- 
--	DBF_TEXT(setup, 3, __FUNCTION__);
-+	DBF_TEXT(setup, 3, __func__);
- 	fsm_newstate(fi, CH_STATE_RXERR);
- 	ctc_pr_warn("%s: RX initialization failed\n", dev->name);
- 	ctc_pr_warn("%s: RX <-> RX connection detected\n", dev->name);
-@@ -1348,7 +1348,7 @@ ch_action_rxdisc(fsm_instance * fi, int event, void *arg)
- 	struct channel *ch2;
- 	struct net_device *dev = ch->netdev;
- 
--	DBF_TEXT(trace, 3, __FUNCTION__);
-+	DBF_TEXT(trace, 3, __func__);
- 	fsm_deltimer(&ch->timer);
- 	ctc_pr_debug("%s: Got remote disconnect, re-initializing ...\n",
- 		     dev->name);
-@@ -1380,7 +1380,7 @@ ch_action_txiniterr(fsm_instance * fi, int event, void *arg)
- 	struct channel *ch = (struct channel *) arg;
- 	struct net_device *dev = ch->netdev;
- 
--	DBF_TEXT(setup, 2, __FUNCTION__);
-+	DBF_TEXT(setup, 2, __func__);
- 	if (event == CH_EVENT_TIMER) {
- 		fsm_deltimer(&ch->timer);
- 		ctc_pr_debug("%s: Timeout during TX init handshake\n", dev->name);
-@@ -1409,7 +1409,7 @@ ch_action_txretry(fsm_instance * fi, int event, void *arg)
- 	struct net_device *dev = ch->netdev;
- 	unsigned long saveflags;
- 
--	DBF_TEXT(trace, 4, __FUNCTION__);
-+	DBF_TEXT(trace, 4, __func__);
- 	fsm_deltimer(&ch->timer);
- 	if (ch->retry++ > 3) {
- 		ctc_pr_debug("%s: TX retry failed, restarting channel\n",
-@@ -1469,7 +1469,7 @@ ch_action_iofatal(fsm_instance * fi, int event, void *arg)
- 	struct channel *ch = (struct channel *) arg;
- 	struct net_device *dev = ch->netdev;
- 
--	DBF_TEXT(trace, 3, __FUNCTION__);
-+	DBF_TEXT(trace, 3, __func__);
- 	fsm_deltimer(&ch->timer);
- 	if (CHANNEL_DIRECTION(ch->flags) == READ) {
- 		ctc_pr_debug("%s: RX I/O error\n", dev->name);
-@@ -1491,7 +1491,7 @@ ch_action_reinit(fsm_instance *fi, int event, void *arg)
-  	struct net_device *dev = ch->netdev;
-  	struct ctc_priv *privptr = dev->priv;
- 
--	DBF_TEXT(trace, 4, __FUNCTION__);
-+	DBF_TEXT(trace, 4, __func__);
-  	ch_action_iofatal(fi, event, arg);
-  	fsm_addtimer(&privptr->restart_timer, 1000, DEV_EVENT_RESTART, dev);
- }
-@@ -1641,7 +1641,7 @@ add_channel(struct ccw_device *cdev, enum channel_types type)
- 	struct channel **c = &channels;
- 	struct channel *ch;
- 
--	DBF_TEXT(trace, 2, __FUNCTION__);
-+	DBF_TEXT(trace, 2, __func__);
- 	ch = kzalloc(sizeof(struct channel), GFP_KERNEL);
- 	if (!ch) {
- 		ctc_pr_warn("ctc: Out of memory in add_channel\n");
-@@ -1747,7 +1747,7 @@ channel_remove(struct channel *ch)
- {
- 	struct channel **c = &channels;
- 
--	DBF_TEXT(trace, 2, __FUNCTION__);
-+	DBF_TEXT(trace, 2, __func__);
- 	if (ch == NULL)
- 		return;
- 
-@@ -1786,7 +1786,7 @@ channel_get(enum channel_types type, char *id, int direction)
- {
- 	struct channel *ch = channels;
- 
--	DBF_TEXT(trace, 3, __FUNCTION__);
-+	DBF_TEXT(trace, 3, __func__);
- #ifdef DEBUG
- 	ctc_pr_debug("ctc: %s(): searching for ch with id %s and type %d\n",
- 		     __func__, id, type);
-@@ -1882,7 +1882,7 @@ ctc_irq_handler(struct ccw_device *cdev, unsigned long intparm, struct irb *irb)
- 	struct net_device *dev;
- 	struct ctc_priv *priv;
- 
--	DBF_TEXT(trace, 5, __FUNCTION__);
-+	DBF_TEXT(trace, 5, __func__);
- 	if (__ctc_check_irb_error(cdev, irb))
- 		return;
- 
-@@ -1976,7 +1976,7 @@ dev_action_start(fsm_instance * fi, int event, void *arg)
- 	struct ctc_priv *privptr = dev->priv;
- 	int direction;
- 
--	DBF_TEXT(setup, 3, __FUNCTION__);
-+	DBF_TEXT(setup, 3, __func__);
- 	fsm_deltimer(&privptr->restart_timer);
- 	fsm_newstate(fi, DEV_STATE_STARTWAIT_RXTX);
- 	for (direction = READ; direction <= WRITE; direction++) {
-@@ -1999,7 +1999,7 @@ dev_action_stop(fsm_instance * fi, int event, void *arg)
- 	struct ctc_priv *privptr = dev->priv;
- 	int direction;
- 
--	DBF_TEXT(trace, 3, __FUNCTION__);
-+	DBF_TEXT(trace, 3, __func__);
- 	fsm_newstate(fi, DEV_STATE_STOPWAIT_RXTX);
- 	for (direction = READ; direction <= WRITE; direction++) {
- 		struct channel *ch = privptr->channel[direction];
-@@ -2012,7 +2012,7 @@ dev_action_restart(fsm_instance *fi, int event, void *arg)
- 	struct net_device *dev = (struct net_device *)arg;
- 	struct ctc_priv *privptr = dev->priv;
- 
--	DBF_TEXT(trace, 3, __FUNCTION__);
-+	DBF_TEXT(trace, 3, __func__);
- 	ctc_pr_debug("%s: Restarting\n", dev->name);
- 	dev_action_stop(fi, event, arg);
- 	fsm_event(privptr->fsm, DEV_EVENT_STOP, dev);
-@@ -2033,7 +2033,7 @@ dev_action_chup(fsm_instance * fi, int event, void *arg)
- {
- 	struct net_device *dev = (struct net_device *) arg;
- 
--	DBF_TEXT(trace, 3, __FUNCTION__);
-+	DBF_TEXT(trace, 3, __func__);
- 	switch (fsm_getstate(fi)) {
- 		case DEV_STATE_STARTWAIT_RXTX:
- 			if (event == DEV_EVENT_RXUP)
-@@ -2080,7 +2080,7 @@ static void
- dev_action_chdown(fsm_instance * fi, int event, void *arg)
- {
- 
--	DBF_TEXT(trace, 3, __FUNCTION__);
-+	DBF_TEXT(trace, 3, __func__);
- 	switch (fsm_getstate(fi)) {
- 		case DEV_STATE_RUNNING:
- 			if (event == DEV_EVENT_TXDOWN)
-@@ -2180,7 +2180,7 @@ transmit_skb(struct channel *ch, struct sk_buff *skb)
- 	struct ll_header header;
- 	int rc = 0;
- 
--	DBF_TEXT(trace, 5, __FUNCTION__);
-+	DBF_TEXT(trace, 5, __func__);
- 	/* we need to acquire the lock for testing the state
- 	 * otherwise we can have an IRQ changing the state to
- 	 * TXIDLE after the test but before acquiring the lock.
-@@ -2327,7 +2327,7 @@ transmit_skb(struct channel *ch, struct sk_buff *skb)
- static int
- ctc_open(struct net_device * dev)
- {
--	DBF_TEXT(trace, 5, __FUNCTION__);
-+	DBF_TEXT(trace, 5, __func__);
- 	fsm_event(((struct ctc_priv *) dev->priv)->fsm, DEV_EVENT_START, dev);
- 	return 0;
- }
-@@ -2343,7 +2343,7 @@ ctc_open(struct net_device * dev)
- static int
- ctc_close(struct net_device * dev)
- {
--	DBF_TEXT(trace, 5, __FUNCTION__);
-+	DBF_TEXT(trace, 5, __func__);
- 	fsm_event(((struct ctc_priv *) dev->priv)->fsm, DEV_EVENT_STOP, dev);
- 	return 0;
- }
-@@ -2365,7 +2365,7 @@ ctc_tx(struct sk_buff *skb, struct net_device * dev)
- 	int rc = 0;
- 	struct ctc_priv *privptr = (struct ctc_priv *) dev->priv;
- 
--	DBF_TEXT(trace, 5, __FUNCTION__);
-+	DBF_TEXT(trace, 5, __func__);
- 	/**
- 	 * Some sanity checks ...
- 	 */
-@@ -2420,7 +2420,7 @@ ctc_change_mtu(struct net_device * dev, int new_mtu)
- {
- 	struct ctc_priv *privptr = (struct ctc_priv *) dev->priv;
- 
--	DBF_TEXT(trace, 3, __FUNCTION__);
-+	DBF_TEXT(trace, 3, __func__);
- 	if ((new_mtu < 576) || (new_mtu > 65527) ||
- 	    (new_mtu > (privptr->channel[READ]->max_bufsize -
- 			LL_HEADER_LENGTH - 2)))
-@@ -2467,7 +2467,7 @@ buffer_write(struct device *dev, struct device_attribute *attr, const char *buf,
- 	int bs1;
- 	char buffer[16];
- 
--	DBF_TEXT(trace, 3, __FUNCTION__);
-+	DBF_TEXT(trace, 3, __func__);
- 	DBF_TEXT(trace, 3, buf);
- 	priv = dev->driver_data;
- 	if (!priv) {
-@@ -2519,7 +2519,7 @@ loglevel_write(struct device *dev, struct device_attribute *attr, const char *bu
- {
- 	int ll1;
- 
--	DBF_TEXT(trace, 5, __FUNCTION__);
-+	DBF_TEXT(trace, 5, __func__);
- 	sscanf(buf, "%i", &ll1);
- 
- 	if ((ll1 > CTC_LOGLEVEL_MAX) || (ll1 < 0))
-@@ -2534,7 +2534,7 @@ ctc_print_statistics(struct ctc_priv *priv)
- 	char *sbuf;
- 	char *p;
- 
--	DBF_TEXT(trace, 4, __FUNCTION__);
-+	DBF_TEXT(trace, 4, __func__);
- 	if (!priv)
- 		return;
- 	sbuf = kmalloc(2048, GFP_KERNEL);
-@@ -2642,8 +2642,8 @@ ctc_proto_store(struct device *dev, struct device_attribute *attr, const char *b
- 	struct ctc_priv *priv;
- 	int value;
- 
--	DBF_TEXT(trace, 3, __FUNCTION__);
--	pr_debug("%s() called\n", __FUNCTION__);
-+	DBF_TEXT(trace, 3, __func__);
-+	pr_debug("%s() called\n", __func__);
- 
- 	priv = dev->driver_data;
- 	if (!priv)
-@@ -2714,7 +2714,7 @@ ctc_remove_attributes(struct device *dev)
- static int
- ctc_add_files(struct device *dev)
- {
--	pr_debug("%s() called\n", __FUNCTION__);
-+	pr_debug("%s() called\n", __func__);
- 
- 	return sysfs_create_group(&dev->kobj, &ctc_attr_group);
- }
-@@ -2722,7 +2722,7 @@ ctc_add_files(struct device *dev)
- static void
- ctc_remove_files(struct device *dev)
- {
--	pr_debug("%s() called\n", __FUNCTION__);
-+	pr_debug("%s() called\n", __func__);
- 
- 	sysfs_remove_group(&dev->kobj, &ctc_attr_group);
- }
-@@ -2742,8 +2742,8 @@ ctc_probe_device(struct ccwgroup_device *cgdev)
- 	int rc;
- 	char buffer[16];
- 
--	pr_debug("%s() called\n", __FUNCTION__);
--	DBF_TEXT(setup, 3, __FUNCTION__);
-+	pr_debug("%s() called\n", __func__);
-+	DBF_TEXT(setup, 3, __func__);
- 
- 	if (!get_device(&cgdev->dev))
- 		return -ENODEV;
-@@ -2788,7 +2788,7 @@ ctc_probe_device(struct ccwgroup_device *cgdev)
-  */
- void ctc_init_netdevice(struct net_device * dev)
- {
--	DBF_TEXT(setup, 3, __FUNCTION__);
-+	DBF_TEXT(setup, 3, __func__);
- 
- 	if (dev->mtu == 0)
- 		dev->mtu = CTC_BUFSIZE_DEFAULT - LL_HEADER_LENGTH - 2;
-@@ -2825,8 +2825,8 @@ ctc_new_device(struct ccwgroup_device *cgdev)
- 	int ret;
- 	char buffer[16];
- 
--	pr_debug("%s() called\n", __FUNCTION__);
--	DBF_TEXT(setup, 3, __FUNCTION__);
-+	pr_debug("%s() called\n", __func__);
-+	DBF_TEXT(setup, 3, __func__);
- 
- 	privptr = cgdev->dev.driver_data;
- 	if (!privptr)
-@@ -2933,8 +2933,8 @@ ctc_shutdown_device(struct ccwgroup_device *cgdev)
- 	struct ctc_priv *priv;
- 	struct net_device *ndev;
- 
--	DBF_TEXT(setup, 3, __FUNCTION__);
--	pr_debug("%s() called\n", __FUNCTION__);
-+	DBF_TEXT(setup, 3, __func__);
-+	pr_debug("%s() called\n", __func__);
- 
-
- 	priv = cgdev->dev.driver_data;
-@@ -2983,8 +2983,8 @@ ctc_remove_device(struct ccwgroup_device *cgdev)
- {
- 	struct ctc_priv *priv;
- 
--	pr_debug("%s() called\n", __FUNCTION__);
--	DBF_TEXT(setup, 3, __FUNCTION__);
-+	pr_debug("%s() called\n", __func__);
-+	DBF_TEXT(setup, 3, __func__);
- 
- 	priv = cgdev->dev.driver_data;
- 	if (!priv)
-@@ -3021,7 +3021,7 @@ static struct ccwgroup_driver ctc_group_driver = {
- static void __exit
- ctc_exit(void)
- {
--	DBF_TEXT(setup, 3, __FUNCTION__);
-+	DBF_TEXT(setup, 3, __func__);
- 	unregister_cu3088_discipline(&ctc_group_driver);
- 	ctc_unregister_dbf_views();
- 	ctc_pr_info("CTC driver unloaded\n");
-@@ -3040,7 +3040,7 @@ ctc_init(void)
- 
- 	loglevel = CTC_LOGLEVEL_DEFAULT;
- 
--	DBF_TEXT(setup, 3, __FUNCTION__);
-+	DBF_TEXT(setup, 3, __func__);
- 
- 	print_banner();
- 
-diff --git a/drivers/s390/net/netiucv.c b/drivers/s390/net/netiucv.c
-index 874a199..5c2ca56 100644
---- a/drivers/s390/net/netiucv.c
-+++ b/drivers/s390/net/netiucv.c
-@@ -670,7 +670,7 @@ static void conn_action_rx(fsm_instance *fi, int event, void *arg)
- 	struct netiucv_priv *privptr = netdev_priv(conn->netdev);
- 	int rc;
- 
--	IUCV_DBF_TEXT(trace, 4, __FUNCTION__);
-+	IUCV_DBF_TEXT(trace, 4, __func__);
- 
- 	if (!conn->netdev) {
- 		iucv_message_reject(conn->path, msg);
-@@ -718,7 +718,7 @@ static void conn_action_txdone(fsm_instance *fi, int event, void *arg)
- 	struct ll_header header;
- 	int rc;
- 
--	IUCV_DBF_TEXT(trace, 4, __FUNCTION__);
-+	IUCV_DBF_TEXT(trace, 4, __func__);
- 
- 	if (conn && conn->netdev)
- 		privptr = netdev_priv(conn->netdev);
-@@ -799,7 +799,7 @@ static void conn_action_connaccept(fsm_instance *fi, int event, void *arg)
- 	struct netiucv_priv *privptr = netdev_priv(netdev);
- 	int rc;
- 
--	IUCV_DBF_TEXT(trace, 3, __FUNCTION__);
-+	IUCV_DBF_TEXT(trace, 3, __func__);
- 
- 	conn->path = path;
- 	path->msglim = NETIUCV_QUEUELEN_DEFAULT;
-@@ -821,7 +821,7 @@ static void conn_action_connreject(fsm_instance *fi, int event, void *arg)
- 	struct iucv_event *ev = arg;
- 	struct iucv_path *path = ev->data;
- 
--	IUCV_DBF_TEXT(trace, 3, __FUNCTION__);
-+	IUCV_DBF_TEXT(trace, 3, __func__);
- 	iucv_path_sever(path, NULL);
+@@ -527,7 +527,7 @@ static void hpc_set_green_led_on(struct slot *slot)
+ 	pcie_write_cmd(slot, slot_cmd, cmd_mask);
+ 
+ 	dbg("%s: SLOTCTRL %x write cmd %x\n",
+-	    __FUNCTION__, ctrl->cap_base + SLOTCTRL, slot_cmd);
++	    __func__, ctrl->cap_base + SLOTCTRL, slot_cmd);
  }
  
-@@ -831,7 +831,7 @@ static void conn_action_connack(fsm_instance *fi, int event, void *arg)
- 	struct net_device *netdev = conn->netdev;
- 	struct netiucv_priv *privptr = netdev_priv(netdev);
+ static void hpc_set_green_led_off(struct slot *slot)
+@@ -545,7 +545,7 @@ static void hpc_set_green_led_off(struct slot *slot)
  
--	IUCV_DBF_TEXT(trace, 3, __FUNCTION__);
-+	IUCV_DBF_TEXT(trace, 3, __func__);
- 	fsm_deltimer(&conn->timer);
- 	fsm_newstate(fi, CONN_STATE_IDLE);
- 	netdev->tx_queue_len = conn->path->msglim;
-@@ -842,7 +842,7 @@ static void conn_action_conntimsev(fsm_instance *fi, int event, void *arg)
- {
- 	struct iucv_connection *conn = arg;
- 
--	IUCV_DBF_TEXT(trace, 3, __FUNCTION__);
-+	IUCV_DBF_TEXT(trace, 3, __func__);
- 	fsm_deltimer(&conn->timer);
- 	iucv_path_sever(conn->path, NULL);
- 	fsm_newstate(fi, CONN_STATE_STARTWAIT);
-@@ -854,7 +854,7 @@ static void conn_action_connsever(fsm_instance *fi, int event, void *arg)
- 	struct net_device *netdev = conn->netdev;
- 	struct netiucv_priv *privptr = netdev_priv(netdev);
- 
--	IUCV_DBF_TEXT(trace, 3, __FUNCTION__);
-+	IUCV_DBF_TEXT(trace, 3, __func__);
- 
- 	fsm_deltimer(&conn->timer);
- 	iucv_path_sever(conn->path, NULL);
-@@ -870,7 +870,7 @@ static void conn_action_start(fsm_instance *fi, int event, void *arg)
- 	struct iucv_connection *conn = arg;
- 	int rc;
- 
--	IUCV_DBF_TEXT(trace, 3, __FUNCTION__);
-+	IUCV_DBF_TEXT(trace, 3, __func__);
- 
- 	fsm_newstate(fi, CONN_STATE_STARTWAIT);
- 	PRINT_DEBUG("%s('%s'): connecting ...\n",
-@@ -948,7 +948,7 @@ static void conn_action_stop(fsm_instance *fi, int event, void *arg)
- 	struct net_device *netdev = conn->netdev;
- 	struct netiucv_priv *privptr = netdev_priv(netdev);
- 
--	IUCV_DBF_TEXT(trace, 3, __FUNCTION__);
-+	IUCV_DBF_TEXT(trace, 3, __func__);
- 
- 	fsm_deltimer(&conn->timer);
- 	fsm_newstate(fi, CONN_STATE_STOPPED);
-@@ -1024,7 +1024,7 @@ static void dev_action_start(fsm_instance *fi, int event, void *arg)
- 	struct net_device   *dev = arg;
- 	struct netiucv_priv *privptr = netdev_priv(dev);
- 
--	IUCV_DBF_TEXT(trace, 3, __FUNCTION__);
-+	IUCV_DBF_TEXT(trace, 3, __func__);
- 
- 	fsm_newstate(fi, DEV_STATE_STARTWAIT);
- 	fsm_event(privptr->conn->fsm, CONN_EVENT_START, privptr->conn);
-@@ -1044,7 +1044,7 @@ dev_action_stop(fsm_instance *fi, int event, void *arg)
- 	struct netiucv_priv *privptr = netdev_priv(dev);
- 	struct iucv_event   ev;
- 
--	IUCV_DBF_TEXT(trace, 3, __FUNCTION__);
-+	IUCV_DBF_TEXT(trace, 3, __func__);
- 
- 	ev.conn = privptr->conn;
- 
-@@ -1066,7 +1066,7 @@ dev_action_connup(fsm_instance *fi, int event, void *arg)
- 	struct net_device   *dev = arg;
- 	struct netiucv_priv *privptr = netdev_priv(dev);
- 
--	IUCV_DBF_TEXT(trace, 3, __FUNCTION__);
-+	IUCV_DBF_TEXT(trace, 3, __func__);
- 
- 	switch (fsm_getstate(fi)) {
- 		case DEV_STATE_STARTWAIT:
-@@ -1097,7 +1097,7 @@ dev_action_connup(fsm_instance *fi, int event, void *arg)
- static void
- dev_action_conndown(fsm_instance *fi, int event, void *arg)
- {
--	IUCV_DBF_TEXT(trace, 3, __FUNCTION__);
-+	IUCV_DBF_TEXT(trace, 3, __func__);
- 
- 	switch (fsm_getstate(fi)) {
- 		case DEV_STATE_RUNNING:
-@@ -1288,7 +1288,7 @@ static int netiucv_tx(struct sk_buff *skb, struct net_device *dev)
- 	struct netiucv_priv *privptr = netdev_priv(dev);
- 	int rc;
- 
--	IUCV_DBF_TEXT(trace, 4, __FUNCTION__);
-+	IUCV_DBF_TEXT(trace, 4, __func__);
- 	/**
- 	 * Some sanity checks ...
- 	 */
-@@ -1344,7 +1344,7 @@ static struct net_device_stats *netiucv_stats (struct net_device * dev)
- {
- 	struct netiucv_priv *priv = netdev_priv(dev);
- 
--	IUCV_DBF_TEXT(trace, 5, __FUNCTION__);
-+	IUCV_DBF_TEXT(trace, 5, __func__);
- 	return &priv->stats;
+ 	pcie_write_cmd(slot, slot_cmd, cmd_mask);
+ 	dbg("%s: SLOTCTRL %x write cmd %x\n",
+-	    __FUNCTION__, ctrl->cap_base + SLOTCTRL, slot_cmd);
++	    __func__, ctrl->cap_base + SLOTCTRL, slot_cmd);
  }
  
-@@ -1360,7 +1360,7 @@ static struct net_device_stats *netiucv_stats (struct net_device * dev)
-  */
- static int netiucv_change_mtu(struct net_device * dev, int new_mtu)
- {
--	IUCV_DBF_TEXT(trace, 3, __FUNCTION__);
-+	IUCV_DBF_TEXT(trace, 3, __func__);
- 	if (new_mtu < 576 || new_mtu > NETIUCV_MTU_MAX) {
- 		IUCV_DBF_TEXT(setup, 2, "given MTU out of valid range\n");
- 		return -EINVAL;
-@@ -1378,7 +1378,7 @@ static ssize_t user_show(struct device *dev, struct device_attribute *attr,
- {
- 	struct netiucv_priv *priv = dev->driver_data;
+ static void hpc_set_green_led_blink(struct slot *slot)
+@@ -564,7 +564,7 @@ static void hpc_set_green_led_blink(struct slot *slot)
+ 	pcie_write_cmd(slot, slot_cmd, cmd_mask);
  
--	IUCV_DBF_TEXT(trace, 5, __FUNCTION__);
-+	IUCV_DBF_TEXT(trace, 5, __func__);
- 	return sprintf(buf, "%s\n", netiucv_printname(priv->conn->userid));
+ 	dbg("%s: SLOTCTRL %x write cmd %x\n",
+-	    __FUNCTION__, ctrl->cap_base + SLOTCTRL, slot_cmd);
++	    __func__, ctrl->cap_base + SLOTCTRL, slot_cmd);
  }
  
-@@ -1393,7 +1393,7 @@ static ssize_t user_write(struct device *dev, struct device_attribute *attr,
- 	int 	i;
- 	struct iucv_connection *cp;
+ static void hpc_release_ctlr(struct controller *ctrl)
+@@ -590,12 +590,12 @@ static int hpc_power_on_slot(struct slot * slot)
+ 	u16 slot_status;
+ 	int retval = 0;
  
--	IUCV_DBF_TEXT(trace, 3, __FUNCTION__);
-+	IUCV_DBF_TEXT(trace, 3, __func__);
- 	if (count > 9) {
- 		PRINT_WARN("netiucv: username too long (%d)!\n", (int) count);
- 		IUCV_DBF_TEXT_(setup, 2,
-@@ -1449,7 +1449,7 @@ static ssize_t buffer_show (struct device *dev, struct device_attribute *attr,
- 			    char *buf)
- {	struct netiucv_priv *priv = dev->driver_data;
+-	dbg("%s: slot->hp_slot %x\n", __FUNCTION__, slot->hp_slot);
++	dbg("%s: slot->hp_slot %x\n", __func__, slot->hp_slot);
  
--	IUCV_DBF_TEXT(trace, 5, __FUNCTION__);
-+	IUCV_DBF_TEXT(trace, 5, __func__);
- 	return sprintf(buf, "%d\n", priv->conn->max_buffsize);
+ 	/* Clear sticky power-fault bit from previous power failures */
+ 	retval = pciehp_readw(ctrl, SLOTSTATUS, &slot_status);
+ 	if (retval) {
+-		err("%s: Cannot read SLOTSTATUS register\n", __FUNCTION__);
++		err("%s: Cannot read SLOTSTATUS register\n", __func__);
+ 		return retval;
+ 	}
+ 	slot_status &= PWR_FAULT_DETECTED;
+@@ -603,7 +603,7 @@ static int hpc_power_on_slot(struct slot * slot)
+ 		retval = pciehp_writew(ctrl, SLOTSTATUS, slot_status);
+ 		if (retval) {
+ 			err("%s: Cannot write to SLOTSTATUS register\n",
+-			    __FUNCTION__);
++			    __func__);
+ 			return retval;
+ 		}
+ 	}
+@@ -627,11 +627,11 @@ static int hpc_power_on_slot(struct slot * slot)
+ 	retval = pcie_write_cmd(slot, slot_cmd, cmd_mask);
+ 
+ 	if (retval) {
+-		err("%s: Write %x command failed!\n", __FUNCTION__, slot_cmd);
++		err("%s: Write %x command failed!\n", __func__, slot_cmd);
+ 		return -1;
+ 	}
+ 	dbg("%s: SLOTCTRL %x write cmd %x\n",
+-	    __FUNCTION__, ctrl->cap_base + SLOTCTRL, slot_cmd);
++	    __func__, ctrl->cap_base + SLOTCTRL, slot_cmd);
+ 
+ 	return retval;
  }
+@@ -677,7 +677,7 @@ static int hpc_power_off_slot(struct slot * slot)
+ 	int retval = 0;
+ 	int changed;
  
-@@ -1461,7 +1461,7 @@ static ssize_t buffer_write (struct device *dev, struct device_attribute *attr,
- 	char         *e;
- 	int          bs1;
+-	dbg("%s: slot->hp_slot %x\n", __FUNCTION__, slot->hp_slot);
++	dbg("%s: slot->hp_slot %x\n", __func__, slot->hp_slot);
  
--	IUCV_DBF_TEXT(trace, 3, __FUNCTION__);
-+	IUCV_DBF_TEXT(trace, 3, __func__);
- 	if (count >= 39)
- 		return -EINVAL;
+ 	/*
+ 	 * Set Bad DLLP Mask bit in Correctable Error Mask
+@@ -710,11 +710,11 @@ static int hpc_power_off_slot(struct slot * slot)
  
-@@ -1513,7 +1513,7 @@ static ssize_t dev_fsm_show (struct device *dev, struct device_attribute *attr,
- {
- 	struct netiucv_priv *priv = dev->driver_data;
+ 	retval = pcie_write_cmd(slot, slot_cmd, cmd_mask);
+ 	if (retval) {
+-		err("%s: Write command failed!\n", __FUNCTION__);
++		err("%s: Write command failed!\n", __func__);
+ 		return -1;
+ 	}
+ 	dbg("%s: SLOTCTRL %x write cmd %x\n",
+-	    __FUNCTION__, ctrl->cap_base + SLOTCTRL, slot_cmd);
++	    __func__, ctrl->cap_base + SLOTCTRL, slot_cmd);
  
--	IUCV_DBF_TEXT(trace, 5, __FUNCTION__);
-+	IUCV_DBF_TEXT(trace, 5, __func__);
- 	return sprintf(buf, "%s\n", fsm_getstate_str(priv->fsm));
- }
+ 	/*
+ 	 * After turning power off, we must wait for at least 1 second
+@@ -740,7 +740,7 @@ static irqreturn_t pcie_isr(int irq, void *dev_id)
  
-@@ -1524,7 +1524,7 @@ static ssize_t conn_fsm_show (struct device *dev,
- {
- 	struct netiucv_priv *priv = dev->driver_data;
- 
--	IUCV_DBF_TEXT(trace, 5, __FUNCTION__);
-+	IUCV_DBF_TEXT(trace, 5, __func__);
- 	return sprintf(buf, "%s\n", fsm_getstate_str(priv->conn->fsm));
- }
- 
-@@ -1535,7 +1535,7 @@ static ssize_t maxmulti_show (struct device *dev,
- {
- 	struct netiucv_priv *priv = dev->driver_data;
- 
--	IUCV_DBF_TEXT(trace, 5, __FUNCTION__);
-+	IUCV_DBF_TEXT(trace, 5, __func__);
- 	return sprintf(buf, "%ld\n", priv->conn->prof.maxmulti);
- }
- 
-@@ -1545,7 +1545,7 @@ static ssize_t maxmulti_write (struct device *dev,
- {
- 	struct netiucv_priv *priv = dev->driver_data;
- 
--	IUCV_DBF_TEXT(trace, 4, __FUNCTION__);
-+	IUCV_DBF_TEXT(trace, 4, __func__);
- 	priv->conn->prof.maxmulti = 0;
- 	return count;
- }
-@@ -1557,7 +1557,7 @@ static ssize_t maxcq_show (struct device *dev, struct device_attribute *attr,
- {
- 	struct netiucv_priv *priv = dev->driver_data;
- 
--	IUCV_DBF_TEXT(trace, 5, __FUNCTION__);
-+	IUCV_DBF_TEXT(trace, 5, __func__);
- 	return sprintf(buf, "%ld\n", priv->conn->prof.maxcqueue);
- }
- 
-@@ -1566,7 +1566,7 @@ static ssize_t maxcq_write (struct device *dev, struct device_attribute *attr,
- {
- 	struct netiucv_priv *priv = dev->driver_data;
- 
--	IUCV_DBF_TEXT(trace, 4, __FUNCTION__);
-+	IUCV_DBF_TEXT(trace, 4, __func__);
- 	priv->conn->prof.maxcqueue = 0;
- 	return count;
- }
-@@ -1578,7 +1578,7 @@ static ssize_t sdoio_show (struct device *dev, struct device_attribute *attr,
- {
- 	struct netiucv_priv *priv = dev->driver_data;
- 
--	IUCV_DBF_TEXT(trace, 5, __FUNCTION__);
-+	IUCV_DBF_TEXT(trace, 5, __func__);
- 	return sprintf(buf, "%ld\n", priv->conn->prof.doios_single);
- }
- 
-@@ -1587,7 +1587,7 @@ static ssize_t sdoio_write (struct device *dev, struct device_attribute *attr,
- {
- 	struct netiucv_priv *priv = dev->driver_data;
- 
--	IUCV_DBF_TEXT(trace, 4, __FUNCTION__);
-+	IUCV_DBF_TEXT(trace, 4, __func__);
- 	priv->conn->prof.doios_single = 0;
- 	return count;
- }
-@@ -1599,7 +1599,7 @@ static ssize_t mdoio_show (struct device *dev, struct device_attribute *attr,
- {
- 	struct netiucv_priv *priv = dev->driver_data;
- 
--	IUCV_DBF_TEXT(trace, 5, __FUNCTION__);
-+	IUCV_DBF_TEXT(trace, 5, __func__);
- 	return sprintf(buf, "%ld\n", priv->conn->prof.doios_multi);
- }
- 
-@@ -1608,7 +1608,7 @@ static ssize_t mdoio_write (struct device *dev, struct device_attribute *attr,
- {
- 	struct netiucv_priv *priv = dev->driver_data;
- 
--	IUCV_DBF_TEXT(trace, 5, __FUNCTION__);
-+	IUCV_DBF_TEXT(trace, 5, __func__);
- 	priv->conn->prof.doios_multi = 0;
- 	return count;
- }
-@@ -1620,7 +1620,7 @@ static ssize_t txlen_show (struct device *dev, struct device_attribute *attr,
- {
- 	struct netiucv_priv *priv = dev->driver_data;
- 
--	IUCV_DBF_TEXT(trace, 5, __FUNCTION__);
-+	IUCV_DBF_TEXT(trace, 5, __func__);
- 	return sprintf(buf, "%ld\n", priv->conn->prof.txlen);
- }
- 
-@@ -1629,7 +1629,7 @@ static ssize_t txlen_write (struct device *dev, struct device_attribute *attr,
- {
- 	struct netiucv_priv *priv = dev->driver_data;
- 
--	IUCV_DBF_TEXT(trace, 4, __FUNCTION__);
-+	IUCV_DBF_TEXT(trace, 4, __func__);
- 	priv->conn->prof.txlen = 0;
- 	return count;
- }
-@@ -1641,7 +1641,7 @@ static ssize_t txtime_show (struct device *dev, struct device_attribute *attr,
- {
- 	struct netiucv_priv *priv = dev->driver_data;
- 
--	IUCV_DBF_TEXT(trace, 5, __FUNCTION__);
-+	IUCV_DBF_TEXT(trace, 5, __func__);
- 	return sprintf(buf, "%ld\n", priv->conn->prof.tx_time);
- }
- 
-@@ -1650,7 +1650,7 @@ static ssize_t txtime_write (struct device *dev, struct device_attribute *attr,
- {
- 	struct netiucv_priv *priv = dev->driver_data;
- 
--	IUCV_DBF_TEXT(trace, 4, __FUNCTION__);
-+	IUCV_DBF_TEXT(trace, 4, __func__);
- 	priv->conn->prof.tx_time = 0;
- 	return count;
- }
-@@ -1662,7 +1662,7 @@ static ssize_t txpend_show (struct device *dev, struct device_attribute *attr,
- {
- 	struct netiucv_priv *priv = dev->driver_data;
- 
--	IUCV_DBF_TEXT(trace, 5, __FUNCTION__);
-+	IUCV_DBF_TEXT(trace, 5, __func__);
- 	return sprintf(buf, "%ld\n", priv->conn->prof.tx_pending);
- }
- 
-@@ -1671,7 +1671,7 @@ static ssize_t txpend_write (struct device *dev, struct device_attribute *attr,
- {
- 	struct netiucv_priv *priv = dev->driver_data;
- 
--	IUCV_DBF_TEXT(trace, 4, __FUNCTION__);
-+	IUCV_DBF_TEXT(trace, 4, __func__);
- 	priv->conn->prof.tx_pending = 0;
- 	return count;
- }
-@@ -1683,7 +1683,7 @@ static ssize_t txmpnd_show (struct device *dev, struct device_attribute *attr,
- {
- 	struct netiucv_priv *priv = dev->driver_data;
- 
--	IUCV_DBF_TEXT(trace, 5, __FUNCTION__);
-+	IUCV_DBF_TEXT(trace, 5, __func__);
- 	return sprintf(buf, "%ld\n", priv->conn->prof.tx_max_pending);
- }
- 
-@@ -1692,7 +1692,7 @@ static ssize_t txmpnd_write (struct device *dev, struct device_attribute *attr,
- {
- 	struct netiucv_priv *priv = dev->driver_data;
- 
--	IUCV_DBF_TEXT(trace, 4, __FUNCTION__);
-+	IUCV_DBF_TEXT(trace, 4, __func__);
- 	priv->conn->prof.tx_max_pending = 0;
- 	return count;
- }
-@@ -1732,7 +1732,7 @@ static int netiucv_add_files(struct device *dev)
- {
- 	int ret;
- 
--	IUCV_DBF_TEXT(trace, 3, __FUNCTION__);
-+	IUCV_DBF_TEXT(trace, 3, __func__);
- 	ret = sysfs_create_group(&dev->kobj, &netiucv_attr_group);
- 	if (ret)
- 		return ret;
-@@ -1744,7 +1744,7 @@ static int netiucv_add_files(struct device *dev)
- 
- static void netiucv_remove_files(struct device *dev)
- {
--	IUCV_DBF_TEXT(trace, 3, __FUNCTION__);
-+	IUCV_DBF_TEXT(trace, 3, __func__);
- 	sysfs_remove_group(&dev->kobj, &netiucv_stat_attr_group);
- 	sysfs_remove_group(&dev->kobj, &netiucv_attr_group);
- }
-@@ -1756,7 +1756,7 @@ static int netiucv_register_device(struct net_device *ndev)
- 	int ret;
- 
-
--	IUCV_DBF_TEXT(trace, 3, __FUNCTION__);
-+	IUCV_DBF_TEXT(trace, 3, __func__);
- 
- 	if (dev) {
- 		snprintf(dev->bus_id, BUS_ID_SIZE, "net%s", ndev->name);
-@@ -1792,7 +1792,7 @@ out_unreg:
- 
- static void netiucv_unregister_device(struct device *dev)
- {
--	IUCV_DBF_TEXT(trace, 3, __FUNCTION__);
-+	IUCV_DBF_TEXT(trace, 3, __func__);
- 	netiucv_remove_files(dev);
- 	device_unregister(dev);
- }
-@@ -1857,7 +1857,7 @@ out:
-  */
- static void netiucv_remove_connection(struct iucv_connection *conn)
- {
--	IUCV_DBF_TEXT(trace, 3, __FUNCTION__);
-+	IUCV_DBF_TEXT(trace, 3, __func__);
- 	write_lock_bh(&iucv_connection_rwlock);
- 	list_del_init(&conn->list);
- 	write_unlock_bh(&iucv_connection_rwlock);
-@@ -1881,7 +1881,7 @@ static void netiucv_free_netdevice(struct net_device *dev)
- {
- 	struct netiucv_priv *privptr = netdev_priv(dev);
- 
--	IUCV_DBF_TEXT(trace, 3, __FUNCTION__);
-+	IUCV_DBF_TEXT(trace, 3, __func__);
- 
- 	if (!dev)
- 		return;
-@@ -1963,7 +1963,7 @@ static ssize_t conn_write(struct device_driver *drv,
- 	struct netiucv_priv *priv;
- 	struct iucv_connection *cp;
- 
--	IUCV_DBF_TEXT(trace, 3, __FUNCTION__);
-+	IUCV_DBF_TEXT(trace, 3, __func__);
- 	if (count>9) {
- 		PRINT_WARN("netiucv: username too long (%d)!\n", (int)count);
- 		IUCV_DBF_TEXT(setup, 2, "conn_write: too long\n");
-@@ -2048,7 +2048,7 @@ static ssize_t remove_write (struct device_driver *drv,
- 	const char *p;
-         int i;
- 
--        IUCV_DBF_TEXT(trace, 3, __FUNCTION__);
-+        IUCV_DBF_TEXT(trace, 3, __func__);
- 
-         if (count >= IFNAMSIZ)
-                 count = IFNAMSIZ - 1;;
-@@ -2116,7 +2116,7 @@ static void __exit netiucv_exit(void)
- 	struct netiucv_priv *priv;
- 	struct device *dev;
- 
--	IUCV_DBF_TEXT(trace, 3, __FUNCTION__);
-+	IUCV_DBF_TEXT(trace, 3, __func__);
- 	while (!list_empty(&iucv_connection_list)) {
- 		cp = list_entry(iucv_connection_list.next,
- 				struct iucv_connection, list);
-@@ -2146,7 +2146,7 @@ static int __init netiucv_init(void)
- 	rc = iucv_register(&netiucv_handler, 1);
- 	if (rc)
- 		goto out_dbf;
--	IUCV_DBF_TEXT(trace, 3, __FUNCTION__);
-+	IUCV_DBF_TEXT(trace, 3, __func__);
- 	netiucv_driver.groups = netiucv_drv_attr_groups;
- 	rc = driver_register(&netiucv_driver);
+ 	rc = pciehp_readw(ctrl, SLOTSTATUS, &slot_status);
  	if (rc) {
-diff --git a/drivers/s390/s390mach.c b/drivers/s390/s390mach.c
-index 644a06e..4d4b542 100644
---- a/drivers/s390/s390mach.c
-+++ b/drivers/s390/s390mach.c
-@@ -59,15 +59,15 @@ repeat:
+-		err("%s: Cannot read SLOTSTATUS register\n", __FUNCTION__);
++		err("%s: Cannot read SLOTSTATUS register\n", __func__);
+ 		return IRQ_NONE;
+ 	}
  
- 			printk(KERN_WARNING"%s: Code does not support more "
- 			       "than two chained crws; please report to "
--			       "linux390@de.ibm.com!\n", __FUNCTION__);
-+			       "linux390@de.ibm.com!\n", __func__);
- 			ccode = stcrw(&tmp_crw);
- 			printk(KERN_WARNING"%s: crw reports slct=%d, oflw=%d, "
- 			       "chn=%d, rsc=%X, anc=%d, erc=%X, rsid=%X\n",
--			       __FUNCTION__, tmp_crw.slct, tmp_crw.oflw,
-+			       __func__, tmp_crw.slct, tmp_crw.oflw,
- 			       tmp_crw.chn, tmp_crw.rsc, tmp_crw.anc,
- 			       tmp_crw.erc, tmp_crw.rsid);
- 			printk(KERN_WARNING"%s: This was crw number %x in the "
--			       "chain\n", __FUNCTION__, chain);
-+			       "chain\n", __func__, chain);
- 			if (ccode != 0)
- 				break;
- 			chain = tmp_crw.chn ? chain + 1 : 0;
-@@ -83,7 +83,7 @@ repeat:
- 		       crw[chain].rsid);
- 		/* Check for overflows. */
- 		if (crw[chain].oflw) {
--			pr_debug("%s: crw overflow detected!\n", __FUNCTION__);
-+			pr_debug("%s: crw overflow detected!\n", __func__);
- 			css_schedule_eval_all();
- 			chain = 0;
+@@ -753,26 +753,26 @@ static irqreturn_t pcie_isr(int irq, void *dev_id)
+ 	if ( !intr_loc )
+ 		return IRQ_NONE;
+ 
+-	dbg("%s: intr_loc %x\n", __FUNCTION__, intr_loc);
++	dbg("%s: intr_loc %x\n", __func__, intr_loc);
+ 	/* Mask Hot-plug Interrupt Enable */
+ 	if (!pciehp_poll_mode) {
+ 		spin_lock_irqsave(&ctrl->lock, flags);
+ 		rc = pciehp_readw(ctrl, SLOTCTRL, &temp_word);
+ 		if (rc) {
+ 			err("%s: Cannot read SLOT_CTRL register\n",
+-			    __FUNCTION__);
++			    __func__);
+ 			spin_unlock_irqrestore(&ctrl->lock, flags);
+ 			return IRQ_NONE;
+ 		}
+ 
+ 		dbg("%s: pciehp_readw(SLOTCTRL) with value %x\n",
+-		    __FUNCTION__, temp_word);
++		    __func__, temp_word);
+ 		temp_word = (temp_word & ~HP_INTR_ENABLE &
+ 			     ~CMD_CMPL_INTR_ENABLE) | 0x00;
+ 		rc = pciehp_writew(ctrl, SLOTCTRL, temp_word);
+ 		if (rc) {
+ 			err("%s: Cannot write to SLOTCTRL register\n",
+-			    __FUNCTION__);
++			    __func__);
+ 			spin_unlock_irqrestore(&ctrl->lock, flags);
+ 			return IRQ_NONE;
+ 		}
+@@ -781,18 +781,18 @@ static irqreturn_t pcie_isr(int irq, void *dev_id)
+ 		rc = pciehp_readw(ctrl, SLOTSTATUS, &slot_status);
+ 		if (rc) {
+ 			err("%s: Cannot read SLOT_STATUS register\n",
+-			    __FUNCTION__);
++			    __func__);
+ 			return IRQ_NONE;
+ 		}
+ 		dbg("%s: pciehp_readw(SLOTSTATUS) with value %x\n",
+-		    __FUNCTION__, slot_status);
++		    __func__, slot_status);
+ 
+ 		/* Clear command complete interrupt caused by this write */
+ 		temp_word = 0x1f;
+ 		rc = pciehp_writew(ctrl, SLOTSTATUS, temp_word);
+ 		if (rc) {
+ 			err("%s: Cannot write to SLOTSTATUS register\n",
+-			    __FUNCTION__);
++			    __func__);
+ 			return IRQ_NONE;
+ 		}
+ 	}
+@@ -821,7 +821,7 @@ static irqreturn_t pcie_isr(int irq, void *dev_id)
+ 	temp_word = 0x1F;
+ 	rc = pciehp_writew(ctrl, SLOTSTATUS, temp_word);
+ 	if (rc) {
+-		err("%s: Cannot write to SLOTSTATUS register\n", __FUNCTION__);
++		err("%s: Cannot write to SLOTSTATUS register\n", __func__);
+ 		return IRQ_NONE;
+ 	}
+ 	/* Unmask Hot-plug Interrupt Enable */
+@@ -830,18 +830,18 @@ static irqreturn_t pcie_isr(int irq, void *dev_id)
+ 		rc = pciehp_readw(ctrl, SLOTCTRL, &temp_word);
+ 		if (rc) {
+ 			err("%s: Cannot read SLOTCTRL register\n",
+-			    __FUNCTION__);
++			    __func__);
+ 			spin_unlock_irqrestore(&ctrl->lock, flags);
+ 			return IRQ_NONE;
+ 		}
+ 
+-		dbg("%s: Unmask Hot-plug Interrupt Enable\n", __FUNCTION__);
++		dbg("%s: Unmask Hot-plug Interrupt Enable\n", __func__);
+ 		temp_word = (temp_word & ~HP_INTR_ENABLE) | HP_INTR_ENABLE;
+ 
+ 		rc = pciehp_writew(ctrl, SLOTCTRL, temp_word);
+ 		if (rc) {
+ 			err("%s: Cannot write to SLOTCTRL register\n",
+-			    __FUNCTION__);
++			    __func__);
+ 			spin_unlock_irqrestore(&ctrl->lock, flags);
+ 			return IRQ_NONE;
+ 		}
+@@ -850,7 +850,7 @@ static irqreturn_t pcie_isr(int irq, void *dev_id)
+ 		rc = pciehp_readw(ctrl, SLOTSTATUS, &slot_status);
+ 		if (rc) {
+ 			err("%s: Cannot read SLOT_STATUS register\n",
+-			    __FUNCTION__);
++			    __func__);
+ 			return IRQ_NONE;
+ 		}
+ 
+@@ -859,11 +859,11 @@ static irqreturn_t pcie_isr(int irq, void *dev_id)
+ 		rc = pciehp_writew(ctrl, SLOTSTATUS, temp_word);
+ 		if (rc) {
+ 			err("%s: Cannot write to SLOTSTATUS failed\n",
+-			    __FUNCTION__);
++			    __func__);
+ 			return IRQ_NONE;
+ 		}
+ 		dbg("%s: pciehp_writew(SLOTSTATUS) with value %x\n",
+-		    __FUNCTION__, temp_word);
++		    __func__, temp_word);
+ 	}
+ 
+ 	return IRQ_HANDLED;
+@@ -878,7 +878,7 @@ static int hpc_get_max_lnk_speed(struct slot *slot, enum pci_bus_speed *value)
+ 
+ 	retval = pciehp_readl(ctrl, LNKCAP, &lnk_cap);
+ 	if (retval) {
+-		err("%s: Cannot read LNKCAP register\n", __FUNCTION__);
++		err("%s: Cannot read LNKCAP register\n", __func__);
+ 		return retval;
+ 	}
+ 
+@@ -907,7 +907,7 @@ static int hpc_get_max_lnk_width(struct slot *slot,
+ 
+ 	retval = pciehp_readl(ctrl, LNKCAP, &lnk_cap);
+ 	if (retval) {
+-		err("%s: Cannot read LNKCAP register\n", __FUNCTION__);
++		err("%s: Cannot read LNKCAP register\n", __func__);
+ 		return retval;
+ 	}
+ 
+@@ -956,7 +956,7 @@ static int hpc_get_cur_lnk_speed(struct slot *slot, enum pci_bus_speed *value)
+ 
+ 	retval = pciehp_readw(ctrl, LNKSTATUS, &lnk_status);
+ 	if (retval) {
+-		err("%s: Cannot read LNKSTATUS register\n", __FUNCTION__);
++		err("%s: Cannot read LNKSTATUS register\n", __func__);
+ 		return retval;
+ 	}
+ 
+@@ -985,7 +985,7 @@ static int hpc_get_cur_lnk_width(struct slot *slot,
+ 
+ 	retval = pciehp_readw(ctrl, LNKSTATUS, &lnk_status);
+ 	if (retval) {
+-		err("%s: Cannot read LNKSTATUS register\n", __FUNCTION__);
++		err("%s: Cannot read LNKSTATUS register\n", __func__);
+ 		return retval;
+ 	}
+ 
+@@ -1129,38 +1129,38 @@ static int pcie_init_hardware_part1(struct controller *ctrl,
+ 
+ 	rc = pciehp_readl(ctrl, SLOTCAP, &slot_cap);
+ 	if (rc) {
+-		err("%s: Cannot read SLOTCAP register\n", __FUNCTION__);
++		err("%s: Cannot read SLOTCAP register\n", __func__);
+ 		return -1;
+ 	}
+ 
+ 	/* Mask Hot-plug Interrupt Enable */
+ 	rc = pciehp_readw(ctrl, SLOTCTRL, &temp_word);
+ 	if (rc) {
+-		err("%s: Cannot read SLOTCTRL register\n", __FUNCTION__);
++		err("%s: Cannot read SLOTCTRL register\n", __func__);
+ 		return -1;
+ 	}
+ 
+ 	dbg("%s: SLOTCTRL %x value read %x\n",
+-	    __FUNCTION__, ctrl->cap_base + SLOTCTRL, temp_word);
++	    __func__, ctrl->cap_base + SLOTCTRL, temp_word);
+ 	temp_word = (temp_word & ~HP_INTR_ENABLE & ~CMD_CMPL_INTR_ENABLE) |
+ 		0x00;
+ 
+ 	rc = pciehp_writew(ctrl, SLOTCTRL, temp_word);
+ 	if (rc) {
+-		err("%s: Cannot write to SLOTCTRL register\n", __FUNCTION__);
++		err("%s: Cannot write to SLOTCTRL register\n", __func__);
+ 		return -1;
+ 	}
+ 
+ 	rc = pciehp_readw(ctrl, SLOTSTATUS, &slot_status);
+ 	if (rc) {
+-		err("%s: Cannot read SLOTSTATUS register\n", __FUNCTION__);
++		err("%s: Cannot read SLOTSTATUS register\n", __func__);
+ 		return -1;
+ 	}
+ 
+ 	temp_word = 0x1F; /* Clear all events */
+ 	rc = pciehp_writew(ctrl, SLOTSTATUS, temp_word);
+ 	if (rc) {
+-		err("%s: Cannot write to SLOTSTATUS register\n", __FUNCTION__);
++		err("%s: Cannot write to SLOTSTATUS register\n", __func__);
+ 		return -1;
+ 	}
+ 	return 0;
+@@ -1176,7 +1176,7 @@ int pcie_init_hardware_part2(struct controller *ctrl, struct pcie_device *dev)
+ 
+ 	rc = pciehp_readw(ctrl, SLOTCTRL, &temp_word);
+ 	if (rc) {
+-		err("%s: Cannot read SLOTCTRL register\n", __FUNCTION__);
++		err("%s: Cannot read SLOTCTRL register\n", __func__);
+ 		goto abort;
+ 	}
+ 
+@@ -1184,7 +1184,7 @@ int pcie_init_hardware_part2(struct controller *ctrl, struct pcie_device *dev)
+ 
+ 	rc = pciehp_readl(ctrl, SLOTCAP, &slot_cap);
+ 	if (rc) {
+-		err("%s: Cannot read SLOTCAP register\n", __FUNCTION__);
++		err("%s: Cannot read SLOTCAP register\n", __func__);
+ 		goto abort;
+ 	}
+ 
+@@ -1211,19 +1211,19 @@ int pcie_init_hardware_part2(struct controller *ctrl, struct pcie_device *dev)
+ 	 */
+ 	rc = pciehp_writew(ctrl, SLOTCTRL, temp_word);
+ 	if (rc) {
+-		err("%s: Cannot write to SLOTCTRL register\n", __FUNCTION__);
++		err("%s: Cannot write to SLOTCTRL register\n", __func__);
+ 		goto abort;
+ 	}
+ 	rc = pciehp_readw(ctrl, SLOTSTATUS, &slot_status);
+ 	if (rc) {
+-		err("%s: Cannot read SLOTSTATUS register\n", __FUNCTION__);
++		err("%s: Cannot read SLOTSTATUS register\n", __func__);
+ 		goto abort_disable_intr;
+ 	}
+ 
+ 	temp_word =  0x1F; /* Clear all events */
+ 	rc = pciehp_writew(ctrl, SLOTSTATUS, temp_word);
+ 	if (rc) {
+-		err("%s: Cannot write to SLOTSTATUS register\n", __FUNCTION__);
++		err("%s: Cannot write to SLOTSTATUS register\n", __func__);
+ 		goto abort_disable_intr;
+ 	}
+ 
+@@ -1246,7 +1246,7 @@ abort_disable_intr:
+ 		rc = pciehp_writew(ctrl, SLOTCTRL, temp_word);
+ 	}
+ 	if (rc)
+-		err("%s : disabling interrupts failed\n", __FUNCTION__);
++		err("%s : disabling interrupts failed\n", __func__);
+ abort:
+ 	return -1;
+ }
+@@ -1264,62 +1264,62 @@ int pcie_init(struct controller *ctrl, struct pcie_device *dev)
+ 	ctrl->pci_dev = pdev;	/* save pci_dev in context */
+ 
+ 	dbg("%s: hotplug controller vendor id 0x%x device id 0x%x\n",
+-			__FUNCTION__, pdev->vendor, pdev->device);
++			__func__, pdev->vendor, pdev->device);
+ 
+ 	cap_base = pci_find_capability(pdev, PCI_CAP_ID_EXP);
+ 	if (cap_base == 0) {
+-		dbg("%s: Can't find PCI_CAP_ID_EXP (0x10)\n", __FUNCTION__);
++		dbg("%s: Can't find PCI_CAP_ID_EXP (0x10)\n", __func__);
+ 		goto abort;
+ 	}
+ 
+ 	ctrl->cap_base = cap_base;
+ 
+-	dbg("%s: pcie_cap_base %x\n", __FUNCTION__, cap_base);
++	dbg("%s: pcie_cap_base %x\n", __func__, cap_base);
+ 
+ 	rc = pciehp_readw(ctrl, CAPREG, &cap_reg);
+ 	if (rc) {
+-		err("%s: Cannot read CAPREG register\n", __FUNCTION__);
++		err("%s: Cannot read CAPREG register\n", __func__);
+ 		goto abort;
+ 	}
+ 	dbg("%s: CAPREG offset %x cap_reg %x\n",
+-	    __FUNCTION__, ctrl->cap_base + CAPREG, cap_reg);
++	    __func__, ctrl->cap_base + CAPREG, cap_reg);
+ 
+ 	if (((cap_reg & SLOT_IMPL) == 0) ||
+ 	    (((cap_reg & DEV_PORT_TYPE) != 0x0040)
+ 		&& ((cap_reg & DEV_PORT_TYPE) != 0x0060))) {
+ 		dbg("%s : This is not a root port or the port is not "
+-		    "connected to a slot\n", __FUNCTION__);
++		    "connected to a slot\n", __func__);
+ 		goto abort;
+ 	}
+ 
+ 	rc = pciehp_readl(ctrl, SLOTCAP, &slot_cap);
+ 	if (rc) {
+-		err("%s: Cannot read SLOTCAP register\n", __FUNCTION__);
++		err("%s: Cannot read SLOTCAP register\n", __func__);
+ 		goto abort;
+ 	}
+ 	dbg("%s: SLOTCAP offset %x slot_cap %x\n",
+-	    __FUNCTION__, ctrl->cap_base + SLOTCAP, slot_cap);
++	    __func__, ctrl->cap_base + SLOTCAP, slot_cap);
+ 
+ 	if (!(slot_cap & HP_CAP)) {
+-		dbg("%s : This slot is not hot-plug capable\n", __FUNCTION__);
++		dbg("%s : This slot is not hot-plug capable\n", __func__);
+ 		goto abort;
+ 	}
+ 	/* For debugging purpose */
+ 	rc = pciehp_readw(ctrl, SLOTSTATUS, &slot_status);
+ 	if (rc) {
+-		err("%s: Cannot read SLOTSTATUS register\n", __FUNCTION__);
++		err("%s: Cannot read SLOTSTATUS register\n", __func__);
+ 		goto abort;
+ 	}
+ 	dbg("%s: SLOTSTATUS offset %x slot_status %x\n",
+-	    __FUNCTION__, ctrl->cap_base + SLOTSTATUS, slot_status);
++	    __func__, ctrl->cap_base + SLOTSTATUS, slot_status);
+ 
+ 	rc = pciehp_readw(ctrl, SLOTCTRL, &slot_ctrl);
+ 	if (rc) {
+-		err("%s: Cannot read SLOTCTRL register\n", __FUNCTION__);
++		err("%s: Cannot read SLOTCTRL register\n", __func__);
+ 		goto abort;
+ 	}
+ 	dbg("%s: SLOTCTRL offset %x slot_ctrl %x\n",
+-	    __FUNCTION__, ctrl->cap_base + SLOTCTRL, slot_ctrl);
++	    __func__, ctrl->cap_base + SLOTCTRL, slot_ctrl);
+ 
+ 	for (rc = 0; rc < DEVICE_COUNT_RESOURCE; rc++)
+ 		if (pci_resource_len(pdev, rc) > 0)
+@@ -1357,7 +1357,7 @@ int pcie_init(struct controller *ctrl, struct pcie_device *dev)
+ 		rc = request_irq(ctrl->pci_dev->irq, pcie_isr, IRQF_SHARED,
+ 				 MY_NAME, (void *)ctrl);
+ 		dbg("%s: request_irq %d for hpc%d (returns %d)\n",
+-		    __FUNCTION__, ctrl->pci_dev->irq,
++		    __func__, ctrl->pci_dev->irq,
+ 		    atomic_read(&pciehp_num_controllers), rc);
+ 		if (rc) {
+ 			err("Can't get irq %d for the hotplug controller\n",
+diff --git a/drivers/pci/hotplug/pciehp_pci.c b/drivers/pci/hotplug/pciehp_pci.c
+index dd50713..7386a34 100644
+--- a/drivers/pci/hotplug/pciehp_pci.c
++++ b/drivers/pci/hotplug/pciehp_pci.c
+@@ -40,7 +40,7 @@ static void program_hpp_type0(struct pci_dev *dev, struct hpp_type0 *hpp)
+ 
+ 	if (hpp->revision > 1) {
+ 		printk(KERN_WARNING "%s: Rev.%d type0 record not supported\n",
+-		       __FUNCTION__, hpp->revision);
++		       __func__, hpp->revision);
+ 		return;
+ 	}
+ 
+@@ -82,7 +82,7 @@ static void program_hpp_type2(struct pci_dev *dev, struct hpp_type2 *hpp)
+ 
+ 	if (hpp->revision > 1) {
+ 		printk(KERN_WARNING "%s: Rev.%d type2 record not supported\n",
+-		       __FUNCTION__, hpp->revision);
++		       __func__, hpp->revision);
+ 		return;
+ 	}
+ 
+@@ -150,7 +150,7 @@ static void program_fw_provided_values(struct pci_dev *dev)
+ 
+ 	if (pciehp_get_hp_params_from_firmware(dev, &hpp)) {
+ 		printk(KERN_WARNING "%s: Could not get hotplug parameters\n",
+-		       __FUNCTION__);
++		       __func__);
+ 		return;
+ 	}
+ 
+@@ -245,7 +245,7 @@ int pciehp_unconfigure_device(struct slot *p_slot)
+ 	struct pci_bus *parent = p_slot->ctrl->pci_dev->subordinate;
+ 	u16 command;
+ 
+-	dbg("%s: bus/dev = %x/%x\n", __FUNCTION__, p_slot->bus,
++	dbg("%s: bus/dev = %x/%x\n", __func__, p_slot->bus,
+ 				p_slot->device);
+ 	ret = p_slot->hpc_ops->get_adapter_status(p_slot, &presence);
+ 	if (ret)
+diff --git a/drivers/pci/hotplug/pcihp_skeleton.c b/drivers/pci/hotplug/pcihp_skeleton.c
+index 50bcd3f..e3dd6cf 100644
+--- a/drivers/pci/hotplug/pcihp_skeleton.c
++++ b/drivers/pci/hotplug/pcihp_skeleton.c
+@@ -98,7 +98,7 @@ static int enable_slot(struct hotplug_slot *hotplug_slot)
+ 	struct slot *slot = hotplug_slot->private;
+ 	int retval = 0;
+ 
+-	dbg("%s - physical_slot = %s\n", __FUNCTION__, hotplug_slot->name);
++	dbg("%s - physical_slot = %s\n", __func__, hotplug_slot->name);
+ 
+ 	/*
+ 	 * Fill in code here to enable the specified slot
+@@ -112,7 +112,7 @@ static int disable_slot(struct hotplug_slot *hotplug_slot)
+ 	struct slot *slot = hotplug_slot->private;
+ 	int retval = 0;
+ 
+-	dbg("%s - physical_slot = %s\n", __FUNCTION__, hotplug_slot->name);
++	dbg("%s - physical_slot = %s\n", __func__, hotplug_slot->name);
+ 
+ 	/*
+ 	 * Fill in code here to disable the specified slot
+@@ -126,7 +126,7 @@ static int set_attention_status(struct hotplug_slot *hotplug_slot, u8 status)
+ 	struct slot *slot = hotplug_slot->private;
+ 	int retval = 0;
+ 
+-	dbg("%s - physical_slot = %s\n", __FUNCTION__, hotplug_slot->name);
++	dbg("%s - physical_slot = %s\n", __func__, hotplug_slot->name);
+ 
+ 	switch (status) {
+ 		case 0:
+@@ -151,7 +151,7 @@ static int hardware_test(struct hotplug_slot *hotplug_slot, u32 value)
+ 	struct slot *slot = hotplug_slot->private;
+ 	int retval = 0;
+ 
+-	dbg("%s - physical_slot = %s\n", __FUNCTION__, hotplug_slot->name);
++	dbg("%s - physical_slot = %s\n", __func__, hotplug_slot->name);
+ 
+ 	switch (value) {
+ 		case 0:
+@@ -170,7 +170,7 @@ static int get_power_status(struct hotplug_slot *hotplug_slot, u8 *value)
+ 	struct slot *slot = hotplug_slot->private;
+ 	int retval = 0;
+ 
+-	dbg("%s - physical_slot = %s\n", __FUNCTION__, hotplug_slot->name);
++	dbg("%s - physical_slot = %s\n", __func__, hotplug_slot->name);
+ 
+ 	/*
+ 	 * Fill in logic to get the current power status of the specific
+@@ -185,7 +185,7 @@ static int get_attention_status(struct hotplug_slot *hotplug_slot, u8 *value)
+ 	struct slot *slot = hotplug_slot->private;
+ 	int retval = 0;
+ 
+-	dbg("%s - physical_slot = %s\n", __FUNCTION__, hotplug_slot->name);
++	dbg("%s - physical_slot = %s\n", __func__, hotplug_slot->name);
+ 
+ 	/*
+ 	 * Fill in logic to get the current attention status of the specific
+@@ -200,7 +200,7 @@ static int get_latch_status(struct hotplug_slot *hotplug_slot, u8 *value)
+ 	struct slot *slot = hotplug_slot->private;
+ 	int retval = 0;
+ 
+-	dbg("%s - physical_slot = %s\n", __FUNCTION__, hotplug_slot->name);
++	dbg("%s - physical_slot = %s\n", __func__, hotplug_slot->name);
+ 
+ 	/*
+ 	 * Fill in logic to get the current latch status of the specific
+@@ -215,7 +215,7 @@ static int get_adapter_status(struct hotplug_slot *hotplug_slot, u8 *value)
+ 	struct slot *slot = hotplug_slot->private;
+ 	int retval = 0;
+ 
+-	dbg("%s - physical_slot = %s\n", __FUNCTION__, hotplug_slot->name);
++	dbg("%s - physical_slot = %s\n", __func__, hotplug_slot->name);
+ 
+ 	/*
+ 	 * Fill in logic to get the current adapter status of the specific
+@@ -229,7 +229,7 @@ static void release_slot(struct hotplug_slot *hotplug_slot)
+ {
+ 	struct slot *slot = hotplug_slot->private;
+ 
+-	dbg("%s - physical_slot = %s\n", __FUNCTION__, hotplug_slot->name);
++	dbg("%s - physical_slot = %s\n", __func__, hotplug_slot->name);
+ 	kfree(slot->hotplug_slot->info);
+ 	kfree(slot->hotplug_slot);
+ 	kfree(slot);
+diff --git a/drivers/pci/hotplug/rpadlpar_core.c b/drivers/pci/hotplug/rpadlpar_core.c
+index 191954b..9c2a22f 100644
+--- a/drivers/pci/hotplug/rpadlpar_core.c
++++ b/drivers/pci/hotplug/rpadlpar_core.c
+@@ -147,7 +147,7 @@ static void dlpar_pci_add_bus(struct device_node *dn)
+ 	dev = of_create_pci_dev(dn, phb->bus, pdn->devfn);
+ 	if (!dev) {
+ 		printk(KERN_ERR "%s: failed to create pci dev for %s\n",
+-				__FUNCTION__, dn->full_name);
++				__func__, dn->full_name);
+ 		return;
+ 	}
+ 
+@@ -183,21 +183,21 @@ static int dlpar_add_pci_slot(char *drc_name, struct device_node *dn)
+ 	dev = dlpar_find_new_dev(phb->bus, dn);
+ 
+ 	if (!dev) {
+-		printk(KERN_ERR "%s: unable to add bus %s\n", __FUNCTION__,
++		printk(KERN_ERR "%s: unable to add bus %s\n", __func__,
+ 			drc_name);
+ 		return -EIO;
+ 	}
+ 
+ 	if (dev->hdr_type != PCI_HEADER_TYPE_BRIDGE) {
+ 		printk(KERN_ERR "%s: unexpected header type %d, unable to add bus %s\n",
+-			__FUNCTION__, dev->hdr_type, drc_name);
++			__func__, dev->hdr_type, drc_name);
+ 		return -EIO;
+ 	}
+ 
+ 	/* Add hotplug slot */
+ 	if (rpaphp_add_slot(dn)) {
+ 		printk(KERN_ERR "%s: unable to add hotplug slot %s\n",
+-			__FUNCTION__, drc_name);
++			__func__, drc_name);
+ 		return -EIO;
+ 	}
+ 	return 0;
+@@ -239,7 +239,7 @@ static int dlpar_remove_phb(char *drc_name, struct device_node *dn)
+ 		if (rpaphp_deregister_slot(slot)) {
+ 			printk(KERN_ERR
+ 				"%s: unable to remove hotplug slot %s\n",
+-				__FUNCTION__, drc_name);
++				__func__, drc_name);
+ 			return -EIO;
+ 		}
+ 	}
+@@ -270,7 +270,7 @@ static int dlpar_add_phb(char *drc_name, struct device_node *dn)
+ 
+ 	if (rpaphp_add_slot(dn)) {
+ 		printk(KERN_ERR "%s: unable to add hotplug slot %s\n",
+-			__FUNCTION__, drc_name);
++			__func__, drc_name);
+ 		return -EIO;
+ 	}
+ 	return 0;
+@@ -284,7 +284,7 @@ static int dlpar_add_vio_slot(char *drc_name, struct device_node *dn)
+ 	if (!vio_register_device_node(dn)) {
+ 		printk(KERN_ERR
+ 			"%s: failed to register vio node %s\n",
+-			__FUNCTION__, drc_name);
++			__func__, drc_name);
+ 		return -EIO;
+ 	}
+ 	return 0;
+@@ -384,7 +384,7 @@ int dlpar_remove_pci_slot(char *drc_name, struct device_node *dn)
+ 		if (rpaphp_deregister_slot(slot)) {
+ 			printk(KERN_ERR
+ 				"%s: unable to remove hotplug slot %s\n",
+-				__FUNCTION__, drc_name);
++				__func__, drc_name);
+ 			return -EIO;
+ 		}
+ 	} else
+@@ -392,7 +392,7 @@ int dlpar_remove_pci_slot(char *drc_name, struct device_node *dn)
+ 
+ 	if (pcibios_unmap_io_space(bus)) {
+ 		printk(KERN_ERR "%s: failed to unmap bus range\n",
+-			__FUNCTION__);
++			__func__);
+ 		return -ERANGE;
+ 	}
+ 
+@@ -458,7 +458,7 @@ int __init rpadlpar_io_init(void)
+ 
+ 	if (!is_dlpar_capable()) {
+ 		printk(KERN_WARNING "%s: partition not DLPAR capable\n",
+-			__FUNCTION__);
++			__func__);
+ 		return -EPERM;
+ 	}
+ 
+diff --git a/drivers/pci/hotplug/rpaphp_core.c b/drivers/pci/hotplug/rpaphp_core.c
+index 58f1a99..1f84f40 100644
+--- a/drivers/pci/hotplug/rpaphp_core.c
++++ b/drivers/pci/hotplug/rpaphp_core.c
+@@ -317,7 +317,7 @@ int rpaphp_add_slot(struct device_node *dn)
+ 	if (!is_php_dn(dn, &indexes, &names, &types, &power_domains))
+ 		return 0;
+ 
+-	dbg("Entry %s: dn->full_name=%s\n", __FUNCTION__, dn->full_name);
++	dbg("Entry %s: dn->full_name=%s\n", __func__, dn->full_name);
+ 
+ 	/* register PCI devices */
+ 	name = (char *) &names[1];
+@@ -343,7 +343,7 @@ int rpaphp_add_slot(struct device_node *dn)
+ 		name += strlen(name) + 1;
+ 		type += strlen(type) + 1;
+ 	}
+-	dbg("%s - Exit: rc[%d]\n", __FUNCTION__, retval);
++	dbg("%s - Exit: rc[%d]\n", __func__, retval);
+ 
+ 	/* XXX FIXME: reports a failure only if last entry in loop failed */
+ 	return retval;
+@@ -404,7 +404,7 @@ static int enable_slot(struct hotplug_slot *hotplug_slot)
+ 	} else if (state == EMPTY) {
+ 		slot->state = EMPTY;
+ 	} else {
+-		err("%s: slot[%s] is in invalid state\n", __FUNCTION__, slot->name);
++		err("%s: slot[%s] is in invalid state\n", __func__, slot->name);
+ 		slot->state = NOT_VALID;
+ 		return -EINVAL;
+ 	}
+diff --git a/drivers/pci/hotplug/rpaphp_pci.c b/drivers/pci/hotplug/rpaphp_pci.c
+index 6571e9b..5acfd4f 100644
+--- a/drivers/pci/hotplug/rpaphp_pci.c
++++ b/drivers/pci/hotplug/rpaphp_pci.c
+@@ -42,7 +42,7 @@ int rpaphp_get_sensor_state(struct slot *slot, int *state)
+ 	if (rc < 0) {
+ 		if (rc == -EFAULT || rc == -EEXIST) {
+ 			dbg("%s: slot must be power up to get sensor-state\n",
+-			    __FUNCTION__);
++			    __func__);
+ 
+ 			/* some slots have to be powered up 
+ 			 * before get-sensor will succeed.
+@@ -51,15 +51,15 @@ int rpaphp_get_sensor_state(struct slot *slot, int *state)
+ 						  &setlevel);
+ 			if (rc < 0) {
+ 				dbg("%s: power on slot[%s] failed rc=%d.\n",
+-				    __FUNCTION__, slot->name, rc);
++				    __func__, slot->name, rc);
+ 			} else {
+ 				rc = rtas_get_sensor(DR_ENTITY_SENSE,
+ 						     slot->index, state);
+ 			}
+ 		} else if (rc == -ENODEV)
+-			info("%s: slot is unusable\n", __FUNCTION__);
++			info("%s: slot is unusable\n", __func__);
+ 		else
+-			err("%s failed to get sensor state\n", __FUNCTION__);
++			err("%s failed to get sensor state\n", __func__);
+ 	}
+ 	return rc;
+ }
+@@ -95,7 +95,7 @@ int rpaphp_enable_slot(struct slot *slot)
+ 
+ 	bus = pcibios_find_pci_bus(slot->dn);
+ 	if (!bus) {
+-		err("%s: no pci_bus for dn %s\n", __FUNCTION__, slot->dn->full_name);
++		err("%s: no pci_bus for dn %s\n", __func__, slot->dn->full_name);
+ 		return -EINVAL;
+ 	}
+ 
+@@ -111,7 +111,7 @@ int rpaphp_enable_slot(struct slot *slot)
+ 		/* non-empty slot has to have child */
+ 		if (!slot->dn->child) {
+ 			err("%s: slot[%s]'s device_node doesn't have child for adapter\n",
+-			    __FUNCTION__, slot->name);
++			    __func__, slot->name);
+ 			return -EINVAL;
+ 		}
+ 
+@@ -125,7 +125,7 @@ int rpaphp_enable_slot(struct slot *slot)
+ 
+ 		if (debug) {
+ 			struct pci_dev *dev;
+-			dbg("%s: pci_devs of slot[%s]\n", __FUNCTION__, slot->dn->full_name);
++			dbg("%s: pci_devs of slot[%s]\n", __func__, slot->dn->full_name);
+ 			list_for_each_entry (dev, &bus->devices, bus_list)
+ 				dbg("\t%s\n", pci_name(dev));
+ 		}
+diff --git a/drivers/pci/hotplug/rpaphp_slot.c b/drivers/pci/hotplug/rpaphp_slot.c
+index 8ad3deb..eab96f8 100644
+--- a/drivers/pci/hotplug/rpaphp_slot.c
++++ b/drivers/pci/hotplug/rpaphp_slot.c
+@@ -131,7 +131,7 @@ int rpaphp_deregister_slot(struct slot *slot)
+ 	struct hotplug_slot *php_slot = slot->hotplug_slot;
+ 
+ 	 dbg("%s - Entry: deregistering slot=%s\n",
+-		__FUNCTION__, slot->name);
++		__func__, slot->name);
+ 
+ 	list_del(&slot->rpaphp_slot_list);
+ 	
+@@ -142,7 +142,7 @@ int rpaphp_deregister_slot(struct slot *slot)
+ 	if (retval)
+ 		err("Problem unregistering a slot %s\n", slot->name);
+ 
+-	dbg("%s - Exit: rc[%d]\n", __FUNCTION__, retval);
++	dbg("%s - Exit: rc[%d]\n", __func__, retval);
+ 	return retval;
+ }
+ EXPORT_SYMBOL_GPL(rpaphp_deregister_slot);
+@@ -153,7 +153,7 @@ int rpaphp_register_slot(struct slot *slot)
+ 	int retval;
+ 
+ 	dbg("%s registering slot:path[%s] index[%x], name[%s] pdomain[%x] type[%d]\n", 
+-		__FUNCTION__, slot->dn->full_name, slot->index, slot->name, 
++		__func__, slot->dn->full_name, slot->index, slot->name, 
+ 		slot->power_domain, slot->type);
+ 
+ 	/* should not try to register the same slot twice */
+diff --git a/drivers/pci/hotplug/sgi_hotplug.c b/drivers/pci/hotplug/sgi_hotplug.c
+index ef07c36..2fe37cd 100644
+--- a/drivers/pci/hotplug/sgi_hotplug.c
++++ b/drivers/pci/hotplug/sgi_hotplug.c
+@@ -367,7 +367,7 @@ static int enable_slot(struct hotplug_slot *bss_hotplug_slot)
+ 		ret = acpi_load_table((struct acpi_table_header *)ssdt);
+ 		if (ACPI_FAILURE(ret)) {
+ 			printk(KERN_ERR "%s: acpi_load_table failed (0x%x)\n",
+-			       __FUNCTION__, ret);
++			       __func__, ret);
+ 			/* try to continue on */
+ 		}
+ 	}
+@@ -459,7 +459,7 @@ static int enable_slot(struct hotplug_slot *bss_hotplug_slot)
+ 				if (ACPI_FAILURE(ret)) {
+ 					printk(KERN_ERR "%s: acpi_bus_add "
+ 					       "failed (0x%x) for slot %d "
+-					       "func %d\n", __FUNCTION__,
++					       "func %d\n", __func__,
+ 					       ret, (int)(adr>>16),
+ 					       (int)(adr&0xffff));
+ 					/* try to continue on */
+@@ -570,7 +570,7 @@ static int disable_slot(struct hotplug_slot *bss_hotplug_slot)
+ 		if (ACPI_FAILURE(ret)) {
+ 			printk(KERN_ERR "%s: acpi_unload_table_id "
+ 			       "failed (0x%x) for id %d\n",
+-			       __FUNCTION__, ret, ssdt_id);
++			       __func__, ret, ssdt_id);
+ 			/* try to continue on */
+ 		}
+ 	}
+@@ -689,7 +689,7 @@ static int sn_pci_hotplug_init(void)
+ 
+ 	if (!sn_prom_feature_available(PRF_HOTPLUG_SUPPORT)) {
+ 		printk(KERN_ERR "%s: PROM version does not support hotplug.\n",
+-		       __FUNCTION__);
++		       __func__);
+ 		return -EPERM;
+ 	}
+ 
+diff --git a/drivers/pci/hotplug/shpchp.h b/drivers/pci/hotplug/shpchp.h
+index 37ed088..f66e8d6 100644
+--- a/drivers/pci/hotplug/shpchp.h
++++ b/drivers/pci/hotplug/shpchp.h
+@@ -234,7 +234,7 @@ static inline struct slot *shpchp_find_slot(struct controller *ctrl, u8 device)
+ 			return slot;
+ 	}
+ 
+-	err("%s: slot (device=0x%x) not found\n", __FUNCTION__, device);
++	err("%s: slot (device=0x%x) not found\n", __func__, device);
+ 	return NULL;
+ }
+ 
+@@ -268,7 +268,7 @@ static inline void amd_pogo_errata_restore_misc_reg(struct slot *p_slot)
+ 	pci_read_config_dword(p_slot->ctrl->pci_dev, PCIX_MISC_BRIDGE_ERRORS_OFFSET, &pcix_bridge_errors_reg);
+ 	perr_set = pcix_bridge_errors_reg & PERR_OBSERVED_MASK;
+ 	if (perr_set) {
+-		dbg ("%s  W1C: Bridge_Errors[ PERR_OBSERVED = %08X]\n",__FUNCTION__ , perr_set);
++		dbg ("%s  W1C: Bridge_Errors[ PERR_OBSERVED = %08X]\n",__func__ , perr_set);
+ 
+ 		pci_write_config_dword(p_slot->ctrl->pci_dev, PCIX_MISC_BRIDGE_ERRORS_OFFSET, perr_set);
+ 	}
+@@ -277,7 +277,7 @@ static inline void amd_pogo_errata_restore_misc_reg(struct slot *p_slot)
+ 	pci_read_config_dword(p_slot->ctrl->pci_dev, PCIX_MEM_BASE_LIMIT_OFFSET, &pcix_mem_base_reg);
+ 	rse_set = pcix_mem_base_reg & RSE_MASK;
+ 	if (rse_set) {
+-		dbg ("%s  W1C: Memory_Base_Limit[ RSE ]\n",__FUNCTION__ );
++		dbg ("%s  W1C: Memory_Base_Limit[ RSE ]\n",__func__ );
+ 
+ 		pci_write_config_dword(p_slot->ctrl->pci_dev, PCIX_MEM_BASE_LIMIT_OFFSET, rse_set);
+ 	}
+diff --git a/drivers/pci/hotplug/shpchp_core.c b/drivers/pci/hotplug/shpchp_core.c
+index 80dec97..43816d4 100644
+--- a/drivers/pci/hotplug/shpchp_core.c
++++ b/drivers/pci/hotplug/shpchp_core.c
+@@ -91,7 +91,7 @@ static void release_slot(struct hotplug_slot *hotplug_slot)
+ {
+ 	struct slot *slot = hotplug_slot->private;
+ 
+-	dbg("%s - physical_slot = %s\n", __FUNCTION__, hotplug_slot->name);
++	dbg("%s - physical_slot = %s\n", __func__, hotplug_slot->name);
+ 
+ 	kfree(slot->hotplug_slot->info);
+ 	kfree(slot->hotplug_slot);
+@@ -195,7 +195,7 @@ static int set_attention_status (struct hotplug_slot *hotplug_slot, u8 status)
+ {
+ 	struct slot *slot = get_slot(hotplug_slot);
+ 
+-	dbg("%s - physical_slot = %s\n", __FUNCTION__, hotplug_slot->name);
++	dbg("%s - physical_slot = %s\n", __func__, hotplug_slot->name);
+ 
+ 	hotplug_slot->info->attention_status = status;
+ 	slot->hpc_ops->set_attention_status(slot, status);
+@@ -207,7 +207,7 @@ static int enable_slot (struct hotplug_slot *hotplug_slot)
+ {
+ 	struct slot *slot = get_slot(hotplug_slot);
+ 
+-	dbg("%s - physical_slot = %s\n", __FUNCTION__, hotplug_slot->name);
++	dbg("%s - physical_slot = %s\n", __func__, hotplug_slot->name);
+ 
+ 	return shpchp_sysfs_enable_slot(slot);
+ }
+@@ -216,7 +216,7 @@ static int disable_slot (struct hotplug_slot *hotplug_slot)
+ {
+ 	struct slot *slot = get_slot(hotplug_slot);
+ 
+-	dbg("%s - physical_slot = %s\n", __FUNCTION__, hotplug_slot->name);
++	dbg("%s - physical_slot = %s\n", __func__, hotplug_slot->name);
+ 
+ 	return shpchp_sysfs_disable_slot(slot);
+ }
+@@ -226,7 +226,7 @@ static int get_power_status (struct hotplug_slot *hotplug_slot, u8 *value)
+ 	struct slot *slot = get_slot(hotplug_slot);
+ 	int retval;
+ 
+-	dbg("%s - physical_slot = %s\n", __FUNCTION__, hotplug_slot->name);
++	dbg("%s - physical_slot = %s\n", __func__, hotplug_slot->name);
+ 
+ 	retval = slot->hpc_ops->get_power_status(slot, value);
+ 	if (retval < 0)
+@@ -240,7 +240,7 @@ static int get_attention_status (struct hotplug_slot *hotplug_slot, u8 *value)
+ 	struct slot *slot = get_slot(hotplug_slot);
+ 	int retval;
+ 
+-	dbg("%s - physical_slot = %s\n", __FUNCTION__, hotplug_slot->name);
++	dbg("%s - physical_slot = %s\n", __func__, hotplug_slot->name);
+ 
+ 	retval = slot->hpc_ops->get_attention_status(slot, value);
+ 	if (retval < 0)
+@@ -254,7 +254,7 @@ static int get_latch_status (struct hotplug_slot *hotplug_slot, u8 *value)
+ 	struct slot *slot = get_slot(hotplug_slot);
+ 	int retval;
+ 
+-	dbg("%s - physical_slot = %s\n", __FUNCTION__, hotplug_slot->name);
++	dbg("%s - physical_slot = %s\n", __func__, hotplug_slot->name);
+ 
+ 	retval = slot->hpc_ops->get_latch_status(slot, value);
+ 	if (retval < 0)
+@@ -268,7 +268,7 @@ static int get_adapter_status (struct hotplug_slot *hotplug_slot, u8 *value)
+ 	struct slot *slot = get_slot(hotplug_slot);
+ 	int retval;
+ 
+-	dbg("%s - physical_slot = %s\n", __FUNCTION__, hotplug_slot->name);
++	dbg("%s - physical_slot = %s\n", __func__, hotplug_slot->name);
+ 
+ 	retval = slot->hpc_ops->get_adapter_status(slot, value);
+ 	if (retval < 0)
+@@ -282,7 +282,7 @@ static int get_address (struct hotplug_slot *hotplug_slot, u32 *value)
+ 	struct slot *slot = get_slot(hotplug_slot);
+ 	struct pci_bus *bus = slot->ctrl->pci_dev->subordinate;
+ 
+-	dbg("%s - physical_slot = %s\n", __FUNCTION__, hotplug_slot->name);
++	dbg("%s - physical_slot = %s\n", __func__, hotplug_slot->name);
+ 
+ 	*value = (pci_domain_nr(bus) << 16) | (slot->bus << 8) | slot->device;
+ 
+@@ -294,7 +294,7 @@ static int get_max_bus_speed (struct hotplug_slot *hotplug_slot, enum pci_bus_sp
+ 	struct slot *slot = get_slot(hotplug_slot);
+ 	int retval;
+ 
+-	dbg("%s - physical_slot = %s\n", __FUNCTION__, hotplug_slot->name);
++	dbg("%s - physical_slot = %s\n", __func__, hotplug_slot->name);
+ 
+ 	retval = slot->hpc_ops->get_max_bus_speed(slot, value);
+ 	if (retval < 0)
+@@ -308,7 +308,7 @@ static int get_cur_bus_speed (struct hotplug_slot *hotplug_slot, enum pci_bus_sp
+ 	struct slot *slot = get_slot(hotplug_slot);
+ 	int retval;
+ 
+-	dbg("%s - physical_slot = %s\n", __FUNCTION__, hotplug_slot->name);
++	dbg("%s - physical_slot = %s\n", __func__, hotplug_slot->name);
+ 
+ 	retval = slot->hpc_ops->get_cur_bus_speed(slot, value);
+ 	if (retval < 0)
+@@ -338,7 +338,7 @@ static int shpc_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
+ 
+ 	ctrl = kzalloc(sizeof(*ctrl), GFP_KERNEL);
+ 	if (!ctrl) {
+-		err("%s : out of memory\n", __FUNCTION__);
++		err("%s : out of memory\n", __func__);
+ 		goto err_out_none;
+ 	}
+ 	INIT_LIST_HEAD(&ctrl->slot_list);
+@@ -402,7 +402,7 @@ static int __init shpcd_init(void)
+ 	int retval = 0;
+ 
+ 	retval = pci_register_driver(&shpc_driver);
+-	dbg("%s: pci_register_driver = %d\n", __FUNCTION__, retval);
++	dbg("%s: pci_register_driver = %d\n", __func__, retval);
+ 	info(DRIVER_DESC " version: " DRIVER_VERSION "\n");
+ 	return retval;
+ }
+diff --git a/drivers/pci/hotplug/shpchp_ctrl.c b/drivers/pci/hotplug/shpchp_ctrl.c
+index eb5cac6..dfb5393 100644
+--- a/drivers/pci/hotplug/shpchp_ctrl.c
++++ b/drivers/pci/hotplug/shpchp_ctrl.c
+@@ -91,7 +91,7 @@ u8 shpchp_handle_switch_change(u8 hp_slot, struct controller *ctrl)
+ 	p_slot = shpchp_find_slot(ctrl, hp_slot + ctrl->slot_device_offset);
+ 	p_slot->hpc_ops->get_adapter_status(p_slot, &(p_slot->presence_save));
+ 	p_slot->hpc_ops->get_latch_status(p_slot, &getstatus);
+-	dbg("%s: Card present %x Power status %x\n", __FUNCTION__,
++	dbg("%s: Card present %x Power status %x\n", __func__,
+ 		p_slot->presence_save, p_slot->pwr_save);
+ 
+ 	if (getstatus) {
+@@ -191,10 +191,10 @@ static int change_bus_speed(struct controller *ctrl, struct slot *p_slot,
+ {
+ 	int rc = 0;
+ 
+-	dbg("%s: change to speed %d\n", __FUNCTION__, speed);
++	dbg("%s: change to speed %d\n", __func__, speed);
+ 	if ((rc = p_slot->hpc_ops->set_bus_speed_mode(p_slot, speed))) {
+ 		err("%s: Issue of set bus speed mode command failed\n",
+-		    __FUNCTION__);
++		    __func__);
+ 		return WRONG_BUS_FREQUENCY;
+ 	}
+ 	return rc;
+@@ -213,7 +213,7 @@ static int fix_bus_speed(struct controller *ctrl, struct slot *pslot,
+ 	if (flag) {
+ 		if (asp < bsp) {
+ 			err("%s: speed of bus %x and adapter %x mismatch\n",
+-			    __FUNCTION__, bsp, asp);
++			    __func__, bsp, asp);
+ 			rc = WRONG_BUS_FREQUENCY;
+ 		}
+ 		return rc;
+@@ -247,13 +247,13 @@ static int board_added(struct slot *p_slot)
+ 	hp_slot = p_slot->device - ctrl->slot_device_offset;
+ 
+ 	dbg("%s: p_slot->device, slot_offset, hp_slot = %d, %d ,%d\n",
+-			__FUNCTION__, p_slot->device,
++			__func__, p_slot->device,
+ 			ctrl->slot_device_offset, hp_slot);
+ 
+ 	/* Power on slot without connecting to bus */
+ 	rc = p_slot->hpc_ops->power_on_slot(p_slot);
+ 	if (rc) {
+-		err("%s: Failed to power on slot\n", __FUNCTION__);
++		err("%s: Failed to power on slot\n", __func__);
+ 		return -1;
+ 	}
+ 
+@@ -262,13 +262,13 @@ static int board_added(struct slot *p_slot)
+ 			return WRONG_BUS_FREQUENCY;
+ 
+ 		if ((rc = p_slot->hpc_ops->set_bus_speed_mode(p_slot, PCI_SPEED_33MHz))) {
+-			err("%s: Issue of set bus speed mode command failed\n", __FUNCTION__);
++			err("%s: Issue of set bus speed mode command failed\n", __func__);
+ 			return WRONG_BUS_FREQUENCY;
+ 		}
+ 
+ 		/* turn on board, blink green LED, turn off Amber LED */
+ 		if ((rc = p_slot->hpc_ops->slot_enable(p_slot))) {
+-			err("%s: Issue of Slot Enable command failed\n", __FUNCTION__);
++			err("%s: Issue of Slot Enable command failed\n", __func__);
+ 			return rc;
+ 		}
+ 	}
+@@ -276,19 +276,19 @@ static int board_added(struct slot *p_slot)
+ 	rc = p_slot->hpc_ops->get_adapter_speed(p_slot, &asp);
+ 	if (rc) {
+ 		err("%s: Can't get adapter speed or bus mode mismatch\n",
+-		    __FUNCTION__);
++		    __func__);
+ 		return WRONG_BUS_FREQUENCY;
+ 	}
+ 
+ 	rc = p_slot->hpc_ops->get_cur_bus_speed(p_slot, &bsp);
+ 	if (rc) {
+-		err("%s: Can't get bus operation speed\n", __FUNCTION__);
++		err("%s: Can't get bus operation speed\n", __func__);
+ 		return WRONG_BUS_FREQUENCY;
+ 	}
+ 
+ 	rc = p_slot->hpc_ops->get_max_bus_speed(p_slot, &msp);
+ 	if (rc) {
+-		err("%s: Can't get max bus operation speed\n", __FUNCTION__);
++		err("%s: Can't get max bus operation speed\n", __func__);
+ 		msp = bsp;
+ 	}
+ 
+@@ -297,7 +297,7 @@ static int board_added(struct slot *p_slot)
+ 		slots_not_empty = 1;
+ 
+ 	dbg("%s: slots_not_empty %d, adapter_speed %d, bus_speed %d, "
+-	    "max_bus_speed %d\n", __FUNCTION__, slots_not_empty, asp,
++	    "max_bus_speed %d\n", __func__, slots_not_empty, asp,
+ 	    bsp, msp);
+ 
+ 	rc = fix_bus_speed(ctrl, p_slot, slots_not_empty, asp, bsp, msp);
+@@ -306,18 +306,18 @@ static int board_added(struct slot *p_slot)
+ 
+ 	/* turn on board, blink green LED, turn off Amber LED */
+ 	if ((rc = p_slot->hpc_ops->slot_enable(p_slot))) {
+-		err("%s: Issue of Slot Enable command failed\n", __FUNCTION__);
++		err("%s: Issue of Slot Enable command failed\n", __func__);
+ 		return rc;
+ 	}
+ 
+ 	/* Wait for ~1 second */
+ 	msleep(1000);
+ 
+-	dbg("%s: slot status = %x\n", __FUNCTION__, p_slot->status);
++	dbg("%s: slot status = %x\n", __func__, p_slot->status);
+ 	/* Check for a power fault */
+ 	if (p_slot->status == 0xFF) {
+ 		/* power fault occurred, but it was benign */
+-		dbg("%s: power fault\n", __FUNCTION__);
++		dbg("%s: power fault\n", __func__);
+ 		rc = POWER_FAILURE;
+ 		p_slot->status = 0;
+ 		goto err_exit;
+@@ -341,7 +341,7 @@ err_exit:
+ 	/* turn off slot, turn on Amber LED, turn off Green LED */
+ 	rc = p_slot->hpc_ops->slot_disable(p_slot);
+ 	if (rc) {
+-		err("%s: Issue of Slot Disable command failed\n", __FUNCTION__);
++		err("%s: Issue of Slot Disable command failed\n", __func__);
+ 		return rc;
+ 	}
+ 
+@@ -365,7 +365,7 @@ static int remove_board(struct slot *p_slot)
+ 	hp_slot = p_slot->device - ctrl->slot_device_offset;
+ 	p_slot = shpchp_find_slot(ctrl, hp_slot + ctrl->slot_device_offset);
+ 
+-	dbg("In %s, hp_slot = %d\n", __FUNCTION__, hp_slot);
++	dbg("In %s, hp_slot = %d\n", __func__, hp_slot);
+ 
+ 	/* Change status to shutdown */
+ 	if (p_slot->is_a_board)
+@@ -374,13 +374,13 @@ static int remove_board(struct slot *p_slot)
+ 	/* turn off slot, turn on Amber LED, turn off Green LED */
+ 	rc = p_slot->hpc_ops->slot_disable(p_slot);
+ 	if (rc) {
+-		err("%s: Issue of Slot Disable command failed\n", __FUNCTION__);
++		err("%s: Issue of Slot Disable command failed\n", __func__);
+ 		return rc;
+ 	}
+ 
+ 	rc = p_slot->hpc_ops->set_attention_status(p_slot, 0);
+ 	if (rc) {
+-		err("%s: Issue of Set Attention command failed\n", __FUNCTION__);
++		err("%s: Issue of Set Attention command failed\n", __func__);
+ 		return rc;
+ 	}
+ 
+@@ -439,7 +439,7 @@ void shpchp_queue_pushbutton_work(struct work_struct *work)
+ 
+ 	info = kmalloc(sizeof(*info), GFP_KERNEL);
+ 	if (!info) {
+-		err("%s: Cannot allocate memory\n", __FUNCTION__);
++		err("%s: Cannot allocate memory\n", __func__);
+ 		return;
+ 	}
+ 	info->p_slot = p_slot;
+@@ -513,7 +513,7 @@ static void handle_button_press_event(struct slot *p_slot)
+ 		 * expires to cancel hot-add or hot-remove
+ 		 */
+ 		info("Button cancel on Slot(%s)\n", p_slot->name);
+-		dbg("%s: button cancel\n", __FUNCTION__);
++		dbg("%s: button cancel\n", __func__);
+ 		cancel_delayed_work(&p_slot->work);
+ 		if (p_slot->state == BLINKINGOFF_STATE)
+ 			p_slot->hpc_ops->green_led_on(p_slot);
+@@ -551,7 +551,7 @@ static void interrupt_event_handler(struct work_struct *work)
+ 		handle_button_press_event(p_slot);
+ 		break;
+ 	case INT_POWER_FAULT:
+-		dbg("%s: power fault\n", __FUNCTION__);
++		dbg("%s: power fault\n", __func__);
+ 		p_slot->hpc_ops->set_attention_status(p_slot, 1);
+ 		p_slot->hpc_ops->green_led_off(p_slot);
+ 		break;
+@@ -593,7 +593,7 @@ static int shpchp_enable_slot (struct slot *p_slot)
+ 	/* We have to save the presence info for these slots */
+ 	p_slot->hpc_ops->get_adapter_status(p_slot, &(p_slot->presence_save));
+ 	p_slot->hpc_ops->get_power_status(p_slot, &(p_slot->pwr_save));
+-	dbg("%s: p_slot->pwr_save %x\n", __FUNCTION__, p_slot->pwr_save);
++	dbg("%s: p_slot->pwr_save %x\n", __func__, p_slot->pwr_save);
+ 	p_slot->hpc_ops->get_latch_status(p_slot, &getstatus);
+ 
+ 	if(((p_slot->ctrl->pci_dev->vendor == PCI_VENDOR_ID_AMD) ||
+diff --git a/drivers/pci/hotplug/shpchp_hpc.c b/drivers/pci/hotplug/shpchp_hpc.c
+index e8aa138..7d770b2 100644
+--- a/drivers/pci/hotplug/shpchp_hpc.c
++++ b/drivers/pci/hotplug/shpchp_hpc.c
+@@ -321,14 +321,14 @@ static int shpc_write_cmd(struct slot *slot, u8 t_slot, u8 cmd)
+ 	if (!shpc_poll_ctrl_busy(ctrl)) {
+ 		/* After 1 sec and and the controller is still busy */
+ 		err("%s : Controller is still busy after 1 sec.\n",
+-		    __FUNCTION__);
++		    __func__);
+ 		retval = -EBUSY;
+ 		goto out;
+ 	}
+ 
+ 	++t_slot;
+ 	temp_word =  (t_slot << 8) | (cmd & 0xFF);
+-	dbg("%s: t_slot %x cmd %x\n", __FUNCTION__, t_slot, cmd);
++	dbg("%s: t_slot %x cmd %x\n", __func__, t_slot, cmd);
+ 
+ 	/* To make sure the Controller Busy bit is 0 before we send out the
+ 	 * command.
+@@ -345,7 +345,7 @@ static int shpc_write_cmd(struct slot *slot, u8 t_slot, u8 cmd)
+ 	cmd_status = hpc_check_cmd_status(slot->ctrl);
+ 	if (cmd_status) {
+ 		err("%s: Failed to issued command 0x%x (error code = %d)\n",
+-		    __FUNCTION__, cmd, cmd_status);
++		    __func__, cmd, cmd_status);
+ 		retval = -EIO;
+ 	}
+  out:
+@@ -364,15 +364,15 @@ static int hpc_check_cmd_status(struct controller *ctrl)
+ 		break;
+ 	case 1:
+ 		retval = SWITCH_OPEN;
+-		err("%s: Switch opened!\n", __FUNCTION__);
++		err("%s: Switch opened!\n", __func__);
+ 		break;
+ 	case 2:
+ 		retval = INVALID_CMD;
+-		err("%s: Invalid HPC command!\n", __FUNCTION__);
++		err("%s: Invalid HPC command!\n", __func__);
+ 		break;
+ 	case 4:
+ 		retval = INVALID_SPEED_MODE;
+-		err("%s: Invalid bus speed/mode!\n", __FUNCTION__);
++		err("%s: Invalid bus speed/mode!\n", __func__);
+ 		break;
+ 	default:
+ 		retval = cmd_status;
+@@ -484,7 +484,7 @@ static int hpc_get_adapter_speed(struct slot *slot, enum pci_bus_speed *value)
+ 	}
+ 
+ 	dbg("%s: slot_reg = %x, pcix_cap = %x, m66_cap = %x\n",
+-	    __FUNCTION__, slot_reg, pcix_cap, m66_cap);
++	    __func__, slot_reg, pcix_cap, m66_cap);
+ 
+ 	switch (pcix_cap) {
+ 	case 0x0:
+@@ -629,7 +629,7 @@ static int hpc_power_on_slot(struct slot * slot)
+ 
+ 	retval = shpc_write_cmd(slot, slot->hp_slot, SET_SLOT_PWR);
+ 	if (retval)
+-		err("%s: Write command failed!\n", __FUNCTION__);
++		err("%s: Write command failed!\n", __func__);
+ 
+ 	return retval;
+ }
+@@ -642,7 +642,7 @@ static int hpc_slot_enable(struct slot * slot)
+ 	retval = shpc_write_cmd(slot, slot->hp_slot,
+ 			SET_SLOT_ENABLE | SET_PWR_BLINK | SET_ATTN_OFF);
+ 	if (retval)
+-		err("%s: Write command failed!\n", __FUNCTION__);
++		err("%s: Write command failed!\n", __func__);
+ 
+ 	return retval;
+ }
+@@ -655,7 +655,7 @@ static int hpc_slot_disable(struct slot * slot)
+ 	retval = shpc_write_cmd(slot, slot->hp_slot,
+ 			SET_SLOT_DISABLE | SET_PWR_OFF | SET_ATTN_ON);
+ 	if (retval)
+-		err("%s: Write command failed!\n", __FUNCTION__);
++		err("%s: Write command failed!\n", __func__);
+ 
+ 	return retval;
+ }
+@@ -719,7 +719,7 @@ static int hpc_set_bus_speed_mode(struct slot * slot, enum pci_bus_speed value)
+ 
+ 	retval = shpc_write_cmd(slot, 0, cmd);
+ 	if (retval)
+-		err("%s: Write command failed!\n", __FUNCTION__);
++		err("%s: Write command failed!\n", __func__);
+ 
+ 	return retval;
+ }
+@@ -735,7 +735,7 @@ static irqreturn_t shpc_isr(int irq, void *dev_id)
+ 	if (!intr_loc)
+ 		return IRQ_NONE;
+ 
+-	dbg("%s: intr_loc = %x\n",__FUNCTION__, intr_loc);
++	dbg("%s: intr_loc = %x\n",__func__, intr_loc);
+ 
+ 	if(!shpchp_poll_mode) {
+ 		/*
+@@ -748,7 +748,7 @@ static irqreturn_t shpc_isr(int irq, void *dev_id)
+ 		shpc_writel(ctrl, SERR_INTR_ENABLE, serr_int);
+ 
+ 		intr_loc2 = shpc_readl(ctrl, INTR_LOC);
+-		dbg("%s: intr_loc2 = %x\n",__FUNCTION__, intr_loc2);
++		dbg("%s: intr_loc2 = %x\n",__func__, intr_loc2);
+ 	}
+ 
+ 	if (intr_loc & CMD_INTR_PENDING) {
+@@ -774,7 +774,7 @@ static irqreturn_t shpc_isr(int irq, void *dev_id)
+ 
+ 		slot_reg = shpc_readl(ctrl, SLOT_REG(hp_slot));
+ 		dbg("%s: Slot %x with intr, slot register = %x\n",
+-		    __FUNCTION__, hp_slot, slot_reg);
++		    __func__, hp_slot, slot_reg);
+ 
+ 		if (slot_reg & MRL_CHANGE_DETECTED)
+ 			shpchp_handle_switch_change(hp_slot, ctrl);
+@@ -958,33 +958,33 @@ int shpc_init(struct controller *ctrl, struct pci_dev *pdev)
+ 	} else {
+ 		ctrl->cap_offset = pci_find_capability(pdev, PCI_CAP_ID_SHPC);
+ 		if (!ctrl->cap_offset) {
+-			err("%s : cap_offset == 0\n", __FUNCTION__);
++			err("%s : cap_offset == 0\n", __func__);
+ 			goto abort;
+ 		}
+-		dbg("%s: cap_offset = %x\n", __FUNCTION__, ctrl->cap_offset);
++		dbg("%s: cap_offset = %x\n", __func__, ctrl->cap_offset);
+ 
+ 		rc = shpc_indirect_read(ctrl, 0, &shpc_base_offset);
+ 		if (rc) {
+-			err("%s: cannot read base_offset\n", __FUNCTION__);
++			err("%s: cannot read base_offset\n", __func__);
+ 			goto abort;
+ 		}
+ 
+ 		rc = shpc_indirect_read(ctrl, 3, &tempdword);
+ 		if (rc) {
+-			err("%s: cannot read slot config\n", __FUNCTION__);
++			err("%s: cannot read slot config\n", __func__);
+ 			goto abort;
+ 		}
+ 		num_slots = tempdword & SLOT_NUM;
+-		dbg("%s: num_slots (indirect) %x\n", __FUNCTION__, num_slots);
++		dbg("%s: num_slots (indirect) %x\n", __func__, num_slots);
+ 
+ 		for (i = 0; i < 9 + num_slots; i++) {
+ 			rc = shpc_indirect_read(ctrl, i, &tempdword);
+ 			if (rc) {
+ 				err("%s: cannot read creg (index = %d)\n",
+-				    __FUNCTION__, i);
++				    __func__, i);
+ 				goto abort;
+ 			}
+-			dbg("%s: offset %d: value %x\n", __FUNCTION__,i,
++			dbg("%s: offset %d: value %x\n", __func__,i,
+ 					tempdword);
+ 		}
+ 
+@@ -998,25 +998,25 @@ int shpc_init(struct controller *ctrl, struct pci_dev *pdev)
+ 
+ 	rc = pci_enable_device(pdev);
+ 	if (rc) {
+-		err("%s: pci_enable_device failed\n", __FUNCTION__);
++		err("%s: pci_enable_device failed\n", __func__);
+ 		goto abort;
+ 	}
+ 
+ 	if (!request_mem_region(ctrl->mmio_base, ctrl->mmio_size, MY_NAME)) {
+-		err("%s: cannot reserve MMIO region\n", __FUNCTION__);
++		err("%s: cannot reserve MMIO region\n", __func__);
+ 		rc = -1;
+ 		goto abort;
+ 	}
+ 
+ 	ctrl->creg = ioremap(ctrl->mmio_base, ctrl->mmio_size);
+ 	if (!ctrl->creg) {
+-		err("%s: cannot remap MMIO region %lx @ %lx\n", __FUNCTION__,
++		err("%s: cannot remap MMIO region %lx @ %lx\n", __func__,
+ 		    ctrl->mmio_size, ctrl->mmio_base);
+ 		release_mem_region(ctrl->mmio_base, ctrl->mmio_size);
+ 		rc = -1;
+ 		goto abort;
+ 	}
+-	dbg("%s: ctrl->creg %p\n", __FUNCTION__, ctrl->creg);
++	dbg("%s: ctrl->creg %p\n", __func__, ctrl->creg);
+ 
+ 	mutex_init(&ctrl->crit_sect);
+ 	mutex_init(&ctrl->cmd_lock);
+@@ -1035,20 +1035,20 @@ int shpc_init(struct controller *ctrl, struct pci_dev *pdev)
+ 
+ 	/* Mask Global Interrupt Mask & Command Complete Interrupt Mask */
+ 	tempdword = shpc_readl(ctrl, SERR_INTR_ENABLE);
+-	dbg("%s: SERR_INTR_ENABLE = %x\n", __FUNCTION__, tempdword);
++	dbg("%s: SERR_INTR_ENABLE = %x\n", __func__, tempdword);
+ 	tempdword |= (GLOBAL_INTR_MASK  | GLOBAL_SERR_MASK |
+ 		      COMMAND_INTR_MASK | ARBITER_SERR_MASK);
+ 	tempdword &= ~SERR_INTR_RSVDZ_MASK;
+ 	shpc_writel(ctrl, SERR_INTR_ENABLE, tempdword);
+ 	tempdword = shpc_readl(ctrl, SERR_INTR_ENABLE);
+-	dbg("%s: SERR_INTR_ENABLE = %x\n", __FUNCTION__, tempdword);
++	dbg("%s: SERR_INTR_ENABLE = %x\n", __func__, tempdword);
+ 
+ 	/* Mask the MRL sensor SERR Mask of individual slot in
+ 	 * Slot SERR-INT Mask & clear all the existing event if any
+ 	 */
+ 	for (hp_slot = 0; hp_slot < ctrl->num_slots; hp_slot++) {
+ 		slot_reg = shpc_readl(ctrl, SLOT_REG(hp_slot));
+-		dbg("%s: Default Logical Slot Register %d value %x\n", __FUNCTION__,
++		dbg("%s: Default Logical Slot Register %d value %x\n", __func__,
+ 			hp_slot, slot_reg);
+ 		slot_reg |= (PRSNT_CHANGE_INTR_MASK | ISO_PFAULT_INTR_MASK |
+ 			     BUTTON_PRESS_INTR_MASK | MRL_CHANGE_INTR_MASK |
+@@ -1073,7 +1073,7 @@ int shpc_init(struct controller *ctrl, struct pci_dev *pdev)
+ 		rc = request_irq(ctrl->pci_dev->irq, shpc_isr, IRQF_SHARED,
+ 				 MY_NAME, (void *)ctrl);
+ 		dbg("%s: request_irq %d for hpc%d (returns %d)\n",
+-		    __FUNCTION__, ctrl->pci_dev->irq,
++		    __func__, ctrl->pci_dev->irq,
+ 		    atomic_read(&shpchp_num_controllers), rc);
+ 		if (rc) {
+ 			err("Can't get irq %d for the hotplug controller\n",
+@@ -1081,7 +1081,7 @@ int shpc_init(struct controller *ctrl, struct pci_dev *pdev)
+ 			goto abort_iounmap;
+ 		}
+ 	}
+-	dbg("%s: HPC at b:d:f:irq=0x%x:%x:%x:%x\n", __FUNCTION__,
++	dbg("%s: HPC at b:d:f:irq=0x%x:%x:%x:%x\n", __func__,
+ 			pdev->bus->number, PCI_SLOT(pdev->devfn),
+ 			PCI_FUNC(pdev->devfn), pdev->irq);
+ 	get_hp_hw_control_from_firmware(pdev);
+@@ -1103,7 +1103,7 @@ int shpc_init(struct controller *ctrl, struct pci_dev *pdev)
+ 	 */
+ 	for (hp_slot = 0; hp_slot < ctrl->num_slots; hp_slot++) {
+ 		slot_reg = shpc_readl(ctrl, SLOT_REG(hp_slot));
+-		dbg("%s: Default Logical Slot Register %d value %x\n", __FUNCTION__,
++		dbg("%s: Default Logical Slot Register %d value %x\n", __func__,
+ 			hp_slot, slot_reg);
+ 		slot_reg &= ~(PRSNT_CHANGE_INTR_MASK | ISO_PFAULT_INTR_MASK |
+ 			      BUTTON_PRESS_INTR_MASK | MRL_CHANGE_INTR_MASK |
+@@ -1117,7 +1117,7 @@ int shpc_init(struct controller *ctrl, struct pci_dev *pdev)
+ 			       SERR_INTR_RSVDZ_MASK);
+ 		shpc_writel(ctrl, SERR_INTR_ENABLE, tempdword);
+ 		tempdword = shpc_readl(ctrl, SERR_INTR_ENABLE);
+-		dbg("%s: SERR_INTR_ENABLE = %x\n", __FUNCTION__, tempdword);
++		dbg("%s: SERR_INTR_ENABLE = %x\n", __func__, tempdword);
+ 	}
+ 
+ 	return 0;
+diff --git a/drivers/pci/hotplug/shpchp_pci.c b/drivers/pci/hotplug/shpchp_pci.c
+index 0a6b25e..47d7cdf 100644
+--- a/drivers/pci/hotplug/shpchp_pci.c
++++ b/drivers/pci/hotplug/shpchp_pci.c
+@@ -51,7 +51,7 @@ static void program_fw_provided_values(struct pci_dev *dev)
+ 	    !hpp.t0 || (hpp.t0->revision > 1)) {
+ 		printk(KERN_WARNING
+ 		       "%s: Could not get hotplug parameters. Use defaults\n",
+-		       __FUNCTION__);
++		       __func__);
+ 		hpp.t0 = &hpp.type0_data;
+ 		hpp.t0->revision = 0;
+ 		hpp.t0->cache_line_size = 8;
+@@ -169,7 +169,7 @@ int shpchp_unconfigure_device(struct slot *p_slot)
+ 	u8 bctl = 0;
+ 	struct pci_bus *parent = p_slot->ctrl->pci_dev->subordinate;
+ 
+-	dbg("%s: bus/dev = %x/%x\n", __FUNCTION__, p_slot->bus, p_slot->device);
++	dbg("%s: bus/dev = %x/%x\n", __func__, p_slot->bus, p_slot->device);
+ 
+ 	for (j=0; j<8 ; j++) {
+ 		struct pci_dev* temp = pci_get_slot(parent,
+diff --git a/drivers/pci/pci.c b/drivers/pci/pci.c
+index 183fdda..2de449c 100644
+--- a/drivers/pci/pci.c
++++ b/drivers/pci/pci.c
+@@ -442,7 +442,7 @@ pci_set_power_state(struct pci_dev *dev, pci_power_t state)
+ 	 */
+ 	if (state != PCI_D0 && dev->current_state > state) {
+ 		printk(KERN_ERR "%s(): %s: state=%d, current state=%d\n",
+-			__FUNCTION__, pci_name(dev), state, dev->current_state);
++			__func__, pci_name(dev), state, dev->current_state);
+ 		return -EINVAL;
+ 	} else if (dev->current_state == state)
+ 		return 0;        /* we're already there */
+diff --git a/drivers/pci/pcie/aer/aerdrv.c b/drivers/pci/pcie/aer/aerdrv.c
+index 7a62f7d..07c3bdb 100644
+--- a/drivers/pci/pcie/aer/aerdrv.c
++++ b/drivers/pci/pcie/aer/aerdrv.c
+@@ -220,7 +220,7 @@ static int __devinit aer_probe (struct pcie_device *dev,
+ 	/* Alloc rpc data structure */
+ 	if (!(rpc = aer_alloc_rpc(dev))) {
+ 		printk(KERN_DEBUG "%s: Alloc rpc fails on PCIE device[%s]\n",
+-			__FUNCTION__, device->bus_id);
++			__func__, device->bus_id);
+ 		aer_remove(dev);
+ 		return -ENOMEM;
+ 	}
+@@ -229,7 +229,7 @@ static int __devinit aer_probe (struct pcie_device *dev,
+ 	if ((status = request_irq(dev->irq, aer_irq, IRQF_SHARED, "aerdrv",
+ 				dev))) {
+ 		printk(KERN_DEBUG "%s: Request ISR fails on PCIE device[%s]\n",
+-			__FUNCTION__, device->bus_id);
++			__func__, device->bus_id);
+ 		aer_remove(dev);
+ 		return status;
+ 	}
+diff --git a/drivers/pci/pcie/aer/aerdrv_core.c b/drivers/pci/pcie/aer/aerdrv_core.c
+index 3c0d8d1..989df8a 100644
+--- a/drivers/pci/pcie/aer/aerdrv_core.c
++++ b/drivers/pci/pcie/aer/aerdrv_core.c
+@@ -689,7 +689,7 @@ static void aer_isr_one_error(struct pcie_device *p_device,
+ 			e_info.flags |= AER_MULTI_ERROR_VALID_FLAG;
+ 		if (!(s_device = find_source_device(p_device->port, id))) {
+ 			printk(KERN_DEBUG "%s->can't find device of ID%04x\n",
+-				__FUNCTION__, id);
++				__func__, id);
  			continue;
-diff --git a/drivers/s390/scsi/zfcp_def.h b/drivers/s390/scsi/zfcp_def.h
-index 9e9f6c1..45a7cd9 100644
---- a/drivers/s390/scsi/zfcp_def.h
-+++ b/drivers/s390/scsi/zfcp_def.h
-@@ -539,7 +539,7 @@ struct zfcp_rc_entry {
- 
- /* logging routine for zfcp */
- #define _ZFCP_LOG(fmt, args...) \
--	printk(KERN_ERR ZFCP_NAME": %s(%d): " fmt, __FUNCTION__, \
-+	printk(KERN_ERR ZFCP_NAME": %s(%d): " fmt, __func__, \
- 	       __LINE__ , ##args)
- 
- #define ZFCP_LOG(level, fmt, args...) \
+ 		}
+ 		if (get_device_error_info(to_pci_dev(s_device), &e_info) ==
+diff --git a/drivers/pci/pcie/portdrv_core.c b/drivers/pci/pcie/portdrv_core.c
+index 23d9eb0..fb0abfa 100644
+--- a/drivers/pci/pcie/portdrv_core.c
++++ b/drivers/pci/pcie/portdrv_core.c
+@@ -150,7 +150,7 @@ static int assign_interrupt_mode(struct pci_dev *dev, int *vectors, int mask)
+ 	if (pos) {
+ 		struct msix_entry msix_entries[PCIE_PORT_DEVICE_MAXSERVICES] = 
+ 			{{0, 0}, {0, 1}, {0, 2}, {0, 3}};
+-		printk("%s Found MSIX capability\n", __FUNCTION__);
++		printk("%s Found MSIX capability\n", __func__);
+ 		status = pci_enable_msix(dev, msix_entries, nvec);
+ 		if (!status) {
+ 			int j = 0;
+@@ -165,7 +165,7 @@ static int assign_interrupt_mode(struct pci_dev *dev, int *vectors, int mask)
+ 	if (status) {
+ 		pos = pci_find_capability(dev, PCI_CAP_ID_MSI);
+ 		if (pos) {
+-			printk("%s Found MSI capability\n", __FUNCTION__);
++			printk("%s Found MSI capability\n", __func__);
+ 			status = pci_enable_msi(dev);
+ 			if (!status) {
+ 				interrupt_mode = PCIE_PORT_MSI_MODE;
+diff --git a/drivers/pci/pcie/portdrv_pci.c b/drivers/pci/pcie/portdrv_pci.c
+index 26057f9..51d1632 100644
+--- a/drivers/pci/pcie/portdrv_pci.c
++++ b/drivers/pci/pcie/portdrv_pci.c
+@@ -93,7 +93,7 @@ static int __devinit pcie_portdrv_probe (struct pci_dev *dev,
+         if (!dev->irq && dev->pin) {
+ 		printk(KERN_WARNING 
+ 		"%s->Dev[%04x:%04x] has invalid IRQ. Check vendor BIOS\n", 
+-		__FUNCTION__, dev->vendor, dev->device);
++		__func__, dev->vendor, dev->device);
+ 	}
+ 	if (pcie_port_device_register(dev)) {
+ 		pci_disable_device(dev);
 -- 
 1.5.4.3.500.g83a2c
 
