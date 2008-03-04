@@ -1,57 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935582AbYCDXey@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935014AbYCDXeO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935582AbYCDXey (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Mar 2008 18:34:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934973AbYCDXbm
+	id S935014AbYCDXeO (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Mar 2008 18:34:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934665AbYCDXbA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Mar 2008 18:31:42 -0500
-Received: from cavan.codon.org.uk ([78.32.9.130]:40476 "EHLO
-	vavatch.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756341AbYCDXbk (ORCPT
+	Tue, 4 Mar 2008 18:31:00 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:37411 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S934261AbYCDXa6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Mar 2008 18:31:40 -0500
-Date: Tue, 4 Mar 2008 23:30:27 +0000
-From: Matthew Garrett <mjg59@srcf.ucam.org>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: Jeremy Fitzhardinge <jeremy@goop.org>, Ingo Molnar <mingo@elte.hu>,
-       "Klaus S. Madsen" <ksm@hjernemadsen.org>, Pavel Machek <pavel@ucw.cz>,
-       Suspend-devel list <suspend-devel@lists.sourceforge.net>,
-       LKML <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Arjan van de Ven <arjan@infradead.org>
-Message-ID: <20080304233027.GA15302@srcf.ucam.org>
-References: <47C873AA.6040305@zytor.com> <20080229212654.GL27212@elte.hu> <20080301094525.GQ17932@hjernemadsen.org> <20080303121735.GE28369@elf.ucw.cz> <20080303151155.GT17932@hjernemadsen.org> <20080303174858.GB25496@elte.hu> <20080303205227.GU17932@hjernemadsen.org> <20080304123602.GC29777@elte.hu> <47CDD480.7000802@goop.org> <47CDD715.3010905@zytor.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <47CDD715.3010905@zytor.com>
-User-Agent: Mutt/1.5.12-2006-07-14
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: mjg59@codon.org.uk
-Subject: Re: Regression in 2.6.25-rc3: s2ram segfaults before suspending
-X-SA-Exim-Version: 4.2.1 (built Tue, 20 Jun 2006 01:35:45 +0000)
-X-SA-Exim-Scanned: Yes (on vavatch.codon.org.uk)
+	Tue, 4 Mar 2008 18:30:58 -0500
+Subject: Re: [RFC] Notifier for Externally Mapped Memory (EMM)
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Christoph Lameter <clameter@sgi.com>
+Cc: Andrea Arcangeli <andrea@qumranet.com>, Jack Steiner <steiner@sgi.com>,
+       Nick Piggin <npiggin@suse.de>, akpm@linux-foundation.org,
+       Robin Holt <holt@sgi.com>, Avi Kivity <avi@qumranet.com>,
+       kvm-devel@lists.sourceforge.net, general@lists.openfabrics.org,
+       Steve Wise <swise@opengridcomputing.com>,
+       Roland Dreier <rdreier@cisco.com>, Kanoj Sarcar <kanojsarcar@yahoo.com>,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       daniel.blueman@quadrics.com
+In-Reply-To: <1204673100.6241.59.camel@lappy>
+References: <20080221144023.GC9427@v2.random>
+	 <20080221161028.GA14220@sgi.com> <20080227192610.GF28483@v2.random>
+	 <20080302155457.GK8091@v2.random> <20080303213707.GA8091@v2.random>
+	 <20080303220502.GA5301@v2.random> <47CC9B57.5050402@qumranet.com>
+	 <Pine.LNX.4.64.0803032327470.9642@schroedinger.engr.sgi.com>
+	 <20080304133020.GC5301@v2.random>
+	 <Pine.LNX.4.64.0803041059110.13957@schroedinger.engr.sgi.com>
+	 <20080304222030.GB8951@v2.random>
+	 <Pine.LNX.4.64.0803041422070.20821@schroedinger.engr.sgi.com>
+	 <1204670529.6241.52.camel@lappy>
+	 <Pine.LNX.4.64.0803041511080.21441@schroedinger.engr.sgi.com>
+	 <1204673100.6241.59.camel@lappy>
+Content-Type: text/plain
+Date: Wed, 05 Mar 2008 00:30:40 +0100
+Message-Id: <1204673440.6241.61.camel@lappy>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.21.90 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Mar 04, 2008 at 03:11:17PM -0800, H. Peter Anvin wrote:
-> Jeremy Fitzhardinge wrote:
-> >>
-> >>PAE activates NX on 32-bit. So we probably had an NX regression that 
-> >>got fixed by the side-effects of one of the unifications. Does it 
-> >>start working if you disable NX via the noexec=off boot option?
-> >
-> >What's the state of play here?  Is upshot that this change fixed a bug 
-> >which broke s2ram, or caused a bug which broke s2ram?
-> >
-> 
-> As far as I can tell, this change fixed a bug, and the fact that the bug 
-> was fixed triggered a s2ram bug.
 
-Strictly a libx86 bug, so I'll try to get an updated version uploaded in 
-the near future. This won't hit x86_64 users, since the code is run 
-through x86emu rather than executed directly.
+FWIW, I'll cut the kvm and openfabrics lists from any future posts.
+I'm getting tired of the bounces.
 
--- 
-Matthew Garrett | mjg59@srcf.ucam.org
