@@ -1,69 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760636AbYCDJoW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760752AbYCDJrE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760636AbYCDJoW (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Mar 2008 04:44:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754732AbYCDJoN
+	id S1760752AbYCDJrE (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Mar 2008 04:47:04 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754732AbYCDJqu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Mar 2008 04:44:13 -0500
-Received: from smtp121.sbc.mail.sp1.yahoo.com ([69.147.64.94]:20683 "HELO
-	smtp121.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1752939AbYCDJoM (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Mar 2008 04:44:12 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=ynhSYSN/veyW1ZNwxggZiuvIyI/pyL8rKbETqdEZWt2l9lBkyyVyW9U02XR13VDORNpHmYKe7lFwpM5WH97rQPamc8ytypYHwaPoftZOaZM/SLcchYFmwfyZb/Yj+5tEQAlknNhEMNnldnP27Q6ajriEOqJuMNB7C7Hb33AgE2o=  ;
-X-YMail-OSG: B1ck0GAVM1mBVfmNibH0dO0Heig8XDSIXF.vI1caSNfu0g2C3klLEyk3jSqvnn2.hMqK25isLA--
-X-Yahoo-Newman-Property: ymail-3
-From: David Brownell <david-b@pacbell.net>
-To: Pierre Ossman <drzeus-mmc@drzeus.cx>
-Subject: Re: Bugs in MMC [was: [Bug 10030] Suspend doesn't work when SD card is inserted]
-Date: Tue, 4 Mar 2008 01:44:09 -0800
-User-Agent: KMail/1.9.6
-Cc: Alan Stern <stern@rowland.harvard.edu>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       pm list <linux-pm@lists.linux-foundation.org>,
-       Zdenek Kabelac <zdenek.kabelac@gmail.com>,
-       Kernel development list <linux-kernel@vger.kernel.org>
-References: <200802241500.41969.rjw@sisk.pl> <200803031359.38263.david-b@pacbell.net> <20080304070357.61ee825b@mjolnir.drzeus.cx>
-In-Reply-To: <20080304070357.61ee825b@mjolnir.drzeus.cx>
+	Tue, 4 Mar 2008 04:46:50 -0500
+Received: from brick.kernel.dk ([87.55.233.238]:11869 "EHLO kernel.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754531AbYCDJqt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 4 Mar 2008 04:46:49 -0500
+Date: Tue, 4 Mar 2008 10:46:46 +0100
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Tejun Heo <htejun@gmail.com>
+Cc: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>, tomof@acm.org,
+       James.Bottomley@HansenPartnership.com, efault@gmx.de,
+       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       linux-ide@vger.kernel.org, linux-scsi@vger.kernel.org,
+       jgarzik@pobox.com, bzolnier@gmail.com
+Subject: Re: [PATCH] block: fix residual byte count handling
+Message-ID: <20080304094646.GI6704@kernel.dk>
+References: <20080304175302T.fujita.tomonori@lab.ntt.co.jp> <20080304085944.GG6704@kernel.dk> <20080304180648W.fujita.tomonori@lab.ntt.co.jp> <20080304182228Z.fujita.tomonori@lab.ntt.co.jp> <20080304093536.GH6704@kernel.dk> <47CD18F5.4050705@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200803040144.09601.david-b@pacbell.net>
+In-Reply-To: <47CD18F5.4050705@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 03 March 2008, Pierre Ossman wrote:
-> On Mon, 3 Mar 2008 13:59:37 -0800
-> David Brownell <david-b@pacbell.net> wrote:
+On Tue, Mar 04 2008, Tejun Heo wrote:
+> Jens Axboe wrote:
+> > Looks excellent to me, has a variant of this been tested as OK by the
+> > users reporting the regression?
 > 
-> > 
-> > Card insert/remove events can be system wake events though.  Which
-> > makes that restriction impractical.
+> Yeah, the other version which added extra_len to data_len has been
+> verified to work.  The only difference is now libata is adding
+> extra_len, so this one should be safe.
 
-This part seems to be ignored by your comment ... wake events.
+Great, since we all agree, I'll merge it up and pass it on.
 
+-- 
+Jens Axboe
 
-> > I think hosts need to be able to call mmc_detect_change() as soon as
-> > they see a stable signal.  The MMC core can hold off handling that
-> > for a while, if it needs to wait until the code walking the device
-> > tree gets around to resuming that host.  It's a lot more natural to
-> > hold off such stuff one time there than in N host drivers; especially
-> > since the MMC core already has such hold-off code.
-> > 
-> 
-> That actually sorts itself out as the MMC core reprobes on wakeup, but
-> I see your point. Right now things will work peachy if the controllers
-> just make sure to disable their card detection logic before telling the
-> core to suspend.   
-
-That is, the MMC core doesn't understand wakeup events.
-
-Or, as pointed out elsewhere, well-behaved MMC hosts ... which don't
-need either such reprobing or the associated remove-on-suspend.
-
-- Dave
