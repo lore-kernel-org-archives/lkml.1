@@ -1,83 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765488AbYCDVYm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765748AbYCDVZ3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765488AbYCDVYm (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Mar 2008 16:24:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760842AbYCDVY1
+	id S1765748AbYCDVZ3 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Mar 2008 16:25:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760071AbYCDVZF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Mar 2008 16:24:27 -0500
-Received: from ug-out-1314.google.com ([66.249.92.175]:33265 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760832AbYCDVYZ (ORCPT
+	Tue, 4 Mar 2008 16:25:05 -0500
+Received: from terminus.zytor.com ([198.137.202.10]:40708 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759945AbYCDVZD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Mar 2008 16:24:25 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
-        b=uluBft12pcOSPe0PfPIjsIJImiTq7elrgu0e5l45AljJBCjPzyWChFsWSfZji3cej7OZdtbaIE7vxQJerg1ytU/8RkZLnwGDghqfJf6HLagVMb1orxrGWKywlvY8Y+CuGBXd348gyufVgtO9jhClxvh4nDz4HZM5hbeqNlhKBFk=
-Message-ID: <47CDBE11.4010900@gmail.com>
-Date: Wed, 05 Mar 2008 00:24:33 +0300
-From: Alexey Starikovskiy <aystarik@gmail.com>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080227)
+	Tue, 4 Mar 2008 16:25:03 -0500
+Message-ID: <47CDBE09.3060000@zytor.com>
+Date: Tue, 04 Mar 2008 13:24:25 -0800
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
 MIME-Version: 1.0
-To: Jens Axboe <jens.axboe@oracle.com>
-CC: Lukas Hejtmanek <xhejtman@ics.muni.cz>,
-       Henrique de Moraes Holschuh <hmh@hmh.eng.br>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, linux-kernel@vger.kernel.org,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       Len Brown <lenb@kernel.org>
-Subject: Re: 2.6.25-rc2 Regression Thinkpad acpi
-References: <20080225093914.GB4375@ics.muni.cz> <200802251247.30605.rjw@sisk.pl> <20080225200354.GE16513@khazad-dum.debian.net> <20080225204951.GB4432@ics.muni.cz> <20080225210113.GF16513@khazad-dum.debian.net> <20080225220720.GA4523@ics.muni.cz> <20080225230035.GA14503@khazad-dum.debian.net> <20080226184937.GA4280@ics.muni.cz> <20080304194513.GY6704@kernel.dk> <47CDBA74.5080304@gmail.com> <20080304211212.GD6704@kernel.dk>
-In-Reply-To: <20080304211212.GD6704@kernel.dk>
+To: Ingo Molnar <mingo@elte.hu>
+CC: Hugh Dickins <hugh@veritas.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] x86: a P4 is a P6 not an i486
+References: <Pine.LNX.4.64.0803041929230.14934@blonde.site> <20080304210111.GB31546@elte.hu>
+In-Reply-To: <20080304210111.GB31546@elte.hu>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jens Axboe wrote:
-> On Wed, Mar 05 2008, Alexey Starikovskiy wrote:
->   
->> Jens Axboe wrote:
->>     
->>> On Tue, Feb 26 2008, Lukas Hejtmanek wrote:
->>>  
->>>       
->>>> On Mon, Feb 25, 2008 at 08:00:35PM -0300, Henrique de Moraes Holschuh 
->>>> wrote:
->>>>    
->>>>         
->>>>> On Mon, 25 Feb 2008, Lukas Hejtmanek wrote:
->>>>>      
->>>>>           
->>>>>> volume keys work. But anything through acpid does not. Even AC/battery 
->>>>>> switch
->>>>>> is not signalized. So the bug may be somewhere else?
->>>>>>        
->>>>>>             
->>>>> Yeah, there is an EC-related regression in 2.6.25-rc3 that bites your
->>>>> thinkpad.  I don't have a link to it right now, but if you look for the
->>>>> messages to LKML on the last 48h, you will find it.
->>>>>      
->>>>>           
->>>> this one fixes all my troubles with thinkpad hotkeys in rc3.
->>>> http://lkml.org/lkml/2008/2/25/400
->>>>    
->>>>         
->>> Ping - is anyone sending this upstream? Would be nice to have my x60
->>> usable for -rc4 at least.
->>>
->>>  
->>>       
->> Please take a look at patches in #10100.
->>     
->
-> Can you be more specific (eg if you want me to test any/all of them, let
-> me know)?
->
->   
-Patch from comment #3 is in -mm at the moment, and has good chance to 
-appear in linus tree.
-I am trying to invent something less crufty along the lines of comment 
-#4, but not succeeded yet.
+Ingo Molnar wrote:
+> * Hugh Dickins <hugh@veritas.com> wrote:
+> 
+>> P4 has been coming out as CPU_FAMILY=4 instead of 6: fix MPENTIUM4 
+>> typo.
+> 
+> thanks Hugh, applied.
+> 
+> 	Ingo
 
+The patch is correct, obviously; the comment is not: the real comment 
+should be:
 
+Enable the use of P6 NOPs on Pentium 4
+
+The CPU_FAMILY field is really the minimum CPU family that can boot the 
+kernel (that's why there is no 5; we don't have any i586 family 
+dependencies not encoded by CPUID bits.)
+
+	-hpa
