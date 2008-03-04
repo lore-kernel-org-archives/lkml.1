@@ -1,108 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932388AbYCDQjO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932471AbYCDQjl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932388AbYCDQjO (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Mar 2008 11:39:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765706AbYCDQeA
+	id S932471AbYCDQjl (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Mar 2008 11:39:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765725AbYCDQfv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Mar 2008 11:34:00 -0500
-Received: from e28smtp06.in.ibm.com ([59.145.155.6]:46306 "EHLO
-	e28esmtp06.in.ibm.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1765683AbYCDQdz (ORCPT
+	Tue, 4 Mar 2008 11:35:51 -0500
+Received: from rv-out-0910.google.com ([209.85.198.190]:28739 "EHLO
+	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1765445AbYCDQfs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Mar 2008 11:33:55 -0500
-Date: Tue, 4 Mar 2008 22:03:39 +0530
-From: Dhaval Giani <dhaval@linux.vnet.ibm.com>
-To: Alexey Dobriyan <adobriyan@sw.ru>
-Cc: Holger Kiehl <Holger.Kiehl@dwd.de>, linux-kernel@vger.kernel.org,
-       vatsa@linux.vnet.ibm.com, mingo@elte.hu, gregkh@suse.de
-Subject: Re: sysfs: duplicate filename '74' can not be created
-Message-ID: <20080304163339.GA11160@linux.vnet.ibm.com>
-Reply-To: Dhaval Giani <dhaval@linux.vnet.ibm.com>
-References: <20080304160940.GC19059@localhost.sw.ru>
+	Tue, 4 Mar 2008 11:35:48 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
+        b=MC/1mLxUu5JdHp56D8cGHsxtocOXk23W1+kNY7+vjuJbWgNPlCrA5Q7ZTCkpZiGW1WNs0zAhD6iL/q1tdyn8nqHJ4fF9OBR2rw7y4McXqrhNpc0+NktcPM+Z+5oc1x0F21fm6vvQraZP9yABlZaNsrwqyXRthESJNkfKZkuzFow=
+Message-ID: <a67db0c60803040835g78a5476dkdcefcd66fc696527@mail.gmail.com>
+Date: Tue, 4 Mar 2008 11:35:46 -0500
+From: "R H" <robheilman@gmail.com>
+To: linux-kernel@vger.kernel.org
+Subject: March 2008: Current state of oops/crash dumps
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20080304160940.GC19059@localhost.sw.ru>
-User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Mar 04, 2008 at 07:09:40PM +0300, Alexey Dobriyan wrote:
-> [Cc'ing /sys/kernel/uids guys]
-> 
+There is a lot of information on the web about Linux and oops/crash
+dumps.  Some positive, some quite negative.  There are lots of pages
+about tools, patches, best practices, etc.  The problem is that they
+all seem to be out of date.  I think the latest patch I have seen
+available was for 2.6.10.  All this data begs the question:
 
-[Also adding gregkh to the cc :)]
+What is the current state and roadmap for Linux kernel oops/crash dump
+capabilities?
 
-> > Mar  3 13:50:01 helena kernel: sysfs: duplicate filename '74' can not be created
-> > Mar  3 13:50:01 helena kernel: WARNING: at fs/sysfs/dir.c:424 sysfs_add_one()
-> > Mar  3 13:50:01 helena kernel: Pid: 21911, comm: sshd Not tainted 2.6.24.3 #1
-> 
-> I see only one suspicious place: KOBJ_ADD is sent even if sysfs file
-> creation failed and kobject is happily removed. But this almost
-> certainly separate bug.
-> 
-> 
-> 
-> You can try this debugging patch. Post several first consecutive messages.
-> [crosses fingers]
-> 
-> --- a/kernel/user.c
-> +++ b/kernel/user.c
-> @@ -179,8 +179,11 @@ static int user_kobject_create(struct user_struct *up)
->  		goto done;
-> 
->  	error = sysfs_create_file(kobj, &up->user_attr.attr);
-> -	if (error)
-> +	if (error) {
-> +		printk("%s: %p->uid = %d\n", __func__, up, up->uid);
-> +		WARN_ON(1);
->  		kobject_del(kobj);
-> +	}
-> 
->  	kobject_uevent(kobj, KOBJ_ADD);
-> 
-> @@ -363,6 +366,7 @@ struct user_struct * alloc_uid(struct user_namespace *ns, uid_t uid)
->  		}
-> 
->  		if (sched_create_user(new) < 0) {
-> +			WARN_ON(1);
->  			key_put(new->uid_keyring);
->  			key_put(new->session_keyring);
->  			kmem_cache_free(uid_cachep, new);
-> @@ -371,6 +375,7 @@ struct user_struct * alloc_uid(struct user_namespace *ns, uid_t uid)
->  		}
-> 
->  		if (user_kobject_create(new)) {
-> +			WARN_ON(1);
->  			sched_destroy_user(new);
->  			key_put(new->uid_keyring);
->  			key_put(new->session_keyring);
-> @@ -386,6 +391,10 @@ struct user_struct * alloc_uid(struct user_namespace *ns, uid_t uid)
->  		spin_lock_irq(&uidhash_lock);
->  		up = uid_hash_find(uid, hashent);
->  		if (up) {
-> +#ifdef CONFIG_FAIR_USER_SCHED
-> +			printk("%s: %p->uid = %d\n", __func__, up, up->uid);
-> +			WARN_ON(1);
-> +#endif
->  			/* This case is not possible when CONFIG_FAIR_USER_SCHED
->  			 * is defined, since we serialize alloc_uid() using
->  			 * uids_mutex. Hence no need to call
-> diff --git a/kernel/user_namespace.c b/kernel/user_namespace.c
-> index 7af90fc..3479c55 100644
-> --- a/kernel/user_namespace.c
-> +++ b/kernel/user_namespace.c
-> @@ -32,6 +32,8 @@ static struct user_namespace *clone_user_ns(struct user_namespace *old_ns)
->  	struct user_struct *new_user;
->  	int n;
-> 
-> +	printk("%s: ENTER\n", __func__);
-> +
->  	ns = kmalloc(sizeof(struct user_namespace), GFP_KERNEL);
->  	if (!ns)
->  		return ERR_PTR(-ENOMEM);
+I ask this because it has always been of interest, a "barb" from the
+"true unix" zealots, and more importantly I have a machine or two that
+keeps panicing.  While I know I can setup a serial output to capture
+said oops, the hardware I am using is not very conducive to such a
+setup in our environment.  (Blades requiring front side dongles in a
+very tight cage provided by our colo)
 
--- 
-regards,
-Dhaval
+The FAQ for this mailing list even states that x86 hardware is not
+conducive to collecting crash dumps.  The FreeBSD camp seems to think
+otherwise.  What are they doing that is so unique?  I spent some
+midnight oil last night reading about their boot process.  While I am
+certainly in a little deeper than my knowledge base, I didn't see
+anything that seems groundbreaking in their boot/hardware management
+process that should allow them to collect/dump data on a x86 platform
+during a oops.  Am I missing something?
+
+If this is covered somewhere please do whack me with a link or at
+least a search phrase.  I have spent many hours both recently and over
+the last couple years crawling the search engines with no real success
+of which to speak.
