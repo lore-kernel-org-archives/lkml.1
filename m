@@ -1,156 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933071AbYCDUax@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765692AbYCDUb1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933071AbYCDUax (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Mar 2008 15:30:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758765AbYCDUal
+	id S1765692AbYCDUb1 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Mar 2008 15:31:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763233AbYCDUaq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Mar 2008 15:30:41 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:33441
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1757328AbYCDUak (ORCPT
+	Tue, 4 Mar 2008 15:30:46 -0500
+Received: from smtp116.sbc.mail.sp1.yahoo.com ([69.147.64.89]:36208 "HELO
+	smtp116.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1761520AbYCDUao (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Mar 2008 15:30:40 -0500
-Date: Tue, 04 Mar 2008 12:30:31 -0800 (PST)
-Message-Id: <20080304.123031.242861949.davem@davemloft.net>
-To: mingo@elte.hu
-Cc: akpm@linux-foundation.org, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org, shemminger@linux-foundation.org,
-       rjw@sisk.pl
-Subject: Re: [patch] mark netconsole broken
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20080304080644.GC2947@elte.hu>
-References: <20080206011643.d9021649.akpm@linux-foundation.org>
-	<20080303210540.cea55e13.akpm@linux-foundation.org>
-	<20080304080644.GC2947@elte.hu>
-X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Tue, 4 Mar 2008 15:30:44 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=pacbell.net;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=J4MdnNp8LI3H3GQ6V6sMbwVPN//etO6UObH86q5a908xwSL1tpwTBOvLPhjBtkSF077+2eQAGjBb804lP7Y2RqFZTpe4/Cu+C7P7syO9If9mqW3GRTbsq7uTPaT3V/IBxXvNO81oKEDVKWplzJoOM8b/0w6ChDlDHUjQvTwEsZA=  ;
+X-YMail-OSG: idGQ6V0VM1krBBdwbjAg7FVycArsBFWfMf1b3MEvyns7rs8cJeXrVEPiFUPQfPc2J0D_X9guvQ--
+X-Yahoo-Newman-Property: ymail-3
+From: David Brownell <david-b@pacbell.net>
+To: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: Bugs in MMC [was: [Bug 10030] Suspend doesn't work when SD card is inserted]
+Date: Tue, 4 Mar 2008 12:30:41 -0800
+User-Agent: KMail/1.9.6
+Cc: Pierre Ossman <drzeus-mmc@drzeus.cx>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       pm list <linux-pm@lists.linux-foundation.org>,
+       Zdenek Kabelac <zdenek.kabelac@gmail.com>,
+       Kernel development list <linux-kernel@vger.kernel.org>
+References: <Pine.LNX.4.44L0.0803041447090.15190-100000@iolanthe.rowland.org>
+In-Reply-To: <Pine.LNX.4.44L0.0803041447090.15190-100000@iolanthe.rowland.org>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="us-ascii"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200803041230.42152.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Ingo Molnar <mingo@elte.hu>
-Date: Tue, 4 Mar 2008 09:06:44 +0100
+On Tuesday 04 March 2008, Alan Stern wrote:
+> On Tue, 4 Mar 2008, David Brownell wrote:
+> 
+> > > I don't understand this comment.  Suppose a card was inserted while the 
+> > > system was hibernating.  If the core didn't reprobe, when would that 
+> > > card be discovered?
+> > 
+> > The host controller would tell the core to check for a card, exactly
+> > like it does at all other times.
+> 
+> But how would the host controller know to do that?  Isn't card 
+> insertion detection often driven by interrupts?  If a card is 
+> inserted while the computer is off, no interrupt will be generated.
 
-> i'd suggest the patch below, to mark it broken.
+I'm talking about Real Suspend States (tm), not hibernation.
+The systems in question tend to not support hibernation.
 
-Why bother when we know what the bug is and can fix it? :-)
+In particular:  system sleep states where IRQs work ... that's a
+common way for non-x86 platforms to work.
 
-commit d9452e9f81e997cbd0c9bface8d2c2a4b064cc3e
-Author: David S. Miller <davem@davemloft.net>
-Date:   Tue Mar 4 12:28:49 2008 -0800
 
-    [NETPOLL]: Revert two bogus cleanups that broke netconsole.
-    
-    Based upon a report by Andrew Morton and code analysis done
-    by Jarek Poplawski.
-    
-    This reverts 33f807ba0d9259e7c75c7a2ce8bd2787e5b540c7 ("[NETPOLL]:
-    Kill NETPOLL_RX_DROP, set but never tested.")  and
-    c7b6ea24b43afb5749cb704e143df19d70e23dea ("[NETPOLL]: Don't need
-    rx_flags.").
-    
-    The rx_flags did get tested for zero vs. non-zero and therefore we do
-    need those tests and that code which sets NETPOLL_RX_DROP et al.
-    
-    Signed-off-by: David S. Miller <davem@davemloft.net>
+> > That's the natural alternative to having the MMC core assume that card
+> > detection was broken in low power states, so that the core needed to
+> > forcibly remove the cards before suspend, and reprobe during resume
+> > processing.
+> 
+> Is that the assumption the MMC core was really making?  Are you sure it 
+> wasn't assuming something else (perhaps equally as bad)?
 
-diff --git a/include/linux/netpoll.h b/include/linux/netpoll.h
-index a0525a1..e3d7959 100644
---- a/include/linux/netpoll.h
-+++ b/include/linux/netpoll.h
-@@ -25,6 +25,7 @@ struct netpoll {
- 
- struct netpoll_info {
- 	atomic_t refcnt;
-+	int rx_flags;
- 	spinlock_t rx_lock;
- 	struct netpoll *rx_np; /* netpoll that registered an rx_hook */
- 	struct sk_buff_head arp_tx; /* list of arp requests to reply to */
-@@ -50,12 +51,12 @@ static inline int netpoll_rx(struct sk_buff *skb)
- 	unsigned long flags;
- 	int ret = 0;
- 
--	if (!npinfo || !npinfo->rx_np)
-+	if (!npinfo || (!npinfo->rx_np && !npinfo->rx_flags))
- 		return 0;
- 
- 	spin_lock_irqsave(&npinfo->rx_lock, flags);
--	/* check rx_np again with the lock held */
--	if (npinfo->rx_np && __netpoll_rx(skb))
-+	/* check rx_flags again with the lock held */
-+	if (npinfo->rx_flags && __netpoll_rx(skb))
- 		ret = 1;
- 	spin_unlock_irqrestore(&npinfo->rx_lock, flags);
- 
-diff --git a/net/core/netpoll.c b/net/core/netpoll.c
-index 6faa128..4b7e756 100644
---- a/net/core/netpoll.c
-+++ b/net/core/netpoll.c
-@@ -39,6 +39,8 @@ static struct sk_buff_head skb_pool;
- static atomic_t trapped;
- 
- #define USEC_PER_POLL	50
-+#define NETPOLL_RX_ENABLED  1
-+#define NETPOLL_RX_DROP     2
- 
- #define MAX_SKB_SIZE \
- 		(MAX_UDP_CHUNK + sizeof(struct udphdr) + \
-@@ -126,11 +128,13 @@ static int poll_one_napi(struct netpoll_info *npinfo,
- 	if (!test_bit(NAPI_STATE_SCHED, &napi->state))
- 		return budget;
- 
-+	npinfo->rx_flags |= NETPOLL_RX_DROP;
- 	atomic_inc(&trapped);
- 
- 	work = napi->poll(napi, budget);
- 
- 	atomic_dec(&trapped);
-+	npinfo->rx_flags &= ~NETPOLL_RX_DROP;
- 
- 	return budget - work;
- }
-@@ -472,7 +476,7 @@ int __netpoll_rx(struct sk_buff *skb)
- 	if (skb->dev->type != ARPHRD_ETHER)
- 		goto out;
- 
--	/* if receive ARP during middle of NAPI poll, then queue */
-+	/* check if netpoll clients need ARP */
- 	if (skb->protocol == htons(ETH_P_ARP) &&
- 	    atomic_read(&trapped)) {
- 		skb_queue_tail(&npi->arp_tx, skb);
-@@ -534,9 +538,6 @@ int __netpoll_rx(struct sk_buff *skb)
- 	return 1;
- 
- out:
--	/* If packet received while already in poll then just
--	 * silently drop.
--	 */
- 	if (atomic_read(&trapped)) {
- 		kfree_skb(skb);
- 		return 1;
-@@ -675,6 +676,7 @@ int netpoll_setup(struct netpoll *np)
- 			goto release;
- 		}
- 
-+		npinfo->rx_flags = 0;
- 		npinfo->rx_np = NULL;
- 
- 		spin_lock_init(&npinfo->rx_lock);
-@@ -756,6 +758,7 @@ int netpoll_setup(struct netpoll *np)
- 
- 	if (np->rx_hook) {
- 		spin_lock_irqsave(&npinfo->rx_lock, flags);
-+		npinfo->rx_flags |= NETPOLL_RX_ENABLED;
- 		npinfo->rx_np = np;
- 		spin_unlock_irqrestore(&npinfo->rx_lock, flags);
- 	}
-@@ -797,6 +800,7 @@ void netpoll_cleanup(struct netpoll *np)
- 			if (npinfo->rx_np == np) {
- 				spin_lock_irqsave(&npinfo->rx_lock, flags);
- 				npinfo->rx_np = NULL;
-+				npinfo->rx_flags &= ~NETPOLL_RX_ENABLED;
- 				spin_unlock_irqrestore(&npinfo->rx_lock, flags);
- 			}
- 
+On the systems I was looking at, that assumption seems equivalent to
+what the latest MMC core is assuming.  (I think this came as part of
+the rewrite/refactoring a while back.)  But since the assumptions aren't
+documented as such, you could say all guesses are equal.  ;)
+
+
+> > Having the MMC core make such needless assumptions can cause problems
+> > for the upper layers, including filesystems.
+> 
+> What's wrong with a superfluous probe at resume time, besides the waste 
+> of a few milliseconds?
+
+I'm more concerned with the undesirable removal of devices at suspend
+time ... ones with mounted filesystems etc.
+
+- Dave
+
