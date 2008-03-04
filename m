@@ -1,64 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760563AbYCDLYT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762685AbYCDL1W@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760563AbYCDLYT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Mar 2008 06:24:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756094AbYCDLYC
+	id S1762685AbYCDL1W (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Mar 2008 06:27:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751528AbYCDL1P
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Mar 2008 06:24:02 -0500
-Received: from gir.skynet.ie ([193.1.99.77]:43685 "EHLO gir.skynet.ie"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756072AbYCDLYB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Mar 2008 06:24:01 -0500
-Date: Tue, 4 Mar 2008 11:23:59 +0000 (GMT)
-From: Dave Airlie <airlied@linux.ie>
-X-X-Sender: airlied@skynet.skynet.ie
-To: Jonathan McDowell <noodles@earth.li>
-cc: Andrew Morton <akpm@linux-foundation.org>, xorg-driver-ati@lists.x.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: 2.6.25-rc3 + RS690 + DRM + xf86-video-ati hang
-In-Reply-To: <20080304085155.GX9009@earth.li>
-Message-ID: <alpine.DEB.0.82.0803041120400.24971@skynet.skynet.ie>
-References: <20080301193511.GP9009@earth.li> <20080303224830.28e98b2b.akpm@linux-foundation.org>
- <alpine.DEB.0.82.0803040816180.24971@skynet.skynet.ie>
- <20080304085155.GX9009@earth.li>
+	Tue, 4 Mar 2008 06:27:15 -0500
+Received: from wf-out-1314.google.com ([209.85.200.169]:41064 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751140AbYCDL1O (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 4 Mar 2008 06:27:14 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=ObFT+sNCxvxaZtIYeLs4mn8v5Wm3Yi0oAgkpb1dxdIdNpt9jVITohoBeh/i2O1KWWUAR85HtHTWkt5BN+q/iAeHajMSJ/v0RXZIsfcnn9IK6eN5HUTZ/Lm7ZBg9I3k+FEteKozjkZ8qnBLx/G7X7Cobbg1hZxmE27CTfMYqbALA=
+Message-ID: <8bd0f97a0803040327i522e2291j7e8149f7eb5a152f@mail.gmail.com>
+Date: Tue, 4 Mar 2008 06:27:13 -0500
+From: "Mike Frysinger" <vapier.adi@gmail.com>
+To: "Hirofumi Nakagawa" <hnakagawa@miraclelinux.com>
+Subject: Re: [PATCH] Remove duplicated unlikely() at IS_ERR()
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <47CD0DD7.8010306@miraclelinux.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <47CD0582.4080407@miraclelinux.com>
+	 <47CD0DD7.8010306@miraclelinux.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> 
-> Is xf86-driver-ati 6.8.0 not a proper release? I'm pretty sure the
-> combination of that, 2.6.25-rc3 and CONFIG_DRM_RADEON causes my machine
-> to become unresponsive. I only tried a git build of the driver after the
-> released version was causing issues.
+On Tue, Mar 4, 2008 at 3:52 AM, Hirofumi Nakagawa
+<hnakagawa@miraclelinux.com> wrote:
+> From 3fd86d4898df10ee0b8884b5a31a512cb90f3362 Mon Sep 17 00:00:00 2001
+>  Some drivers have duplicated unlikely() macros.
+>  IS_ERR() already has unlikely() in itself.
+>  This patch cleans up such pointless codes although there is no real
+>  effect on the kernel's behaviour.
+>
+>   drivers/rtc/rtc-bfin.c          |    2 +-
 
-Yes we made a mistake with 6.8.0 enabling DRI on rs680 chips before we 
-knew it worked for everyone, I may be still able to fix this in the kernel 
-but there is a good chance that it'll require a 6.8.1 userspace, I can't 
-do anything else about it..
+thanks, the Blackfin bit looks good to me
 
-Jonathan I appreciate the bug report, I'm more saying to Andrew that 
-getting DRI right on new chipsets is non-trivial as there are lot of 
-configurations we can't test until we actually push the code to users.. 
-and in this case you are one of those..
-
-you might try setting the VRAM in your BIOS to 128MB instead of Auto and 
-seeing it helps..
-
-I'll be trying to fix the problem properly quite soon.
-
-The correct workaround is to add Option "DRI" "Off" to xorg.conf or for me 
-to travel back in time and unrelease 6.8.0. Removing the kernel DRI 
-support will just break lots of working systems.
-
-Dave.
-
- > 
-> Replacing 2.6.25-rc3 with 2.6.24 (still with CONFIG_DRM_RADEON enabled)
-> results in a machine that boots to GDM successfully. Likewise if I
-> disable CONFIG_DRM_RADEON in 2.6.25-rc3 the machine boots to GDM ok.
-> 
-> J.
-> 
-> 
+Signed-off-by: Mike Frysinger <vapier@gentoo.org>
+-mike
