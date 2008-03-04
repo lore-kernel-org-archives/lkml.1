@@ -1,50 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764429AbYCDMqB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763287AbYCDMvv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764429AbYCDMqB (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Mar 2008 07:46:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760409AbYCDMpr
+	id S1763287AbYCDMvv (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Mar 2008 07:51:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752843AbYCDMvm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Mar 2008 07:45:47 -0500
-Received: from mail.gmx.net ([213.165.64.20]:37520 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1751749AbYCDMpq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Mar 2008 07:45:46 -0500
-X-Authenticated: #14349625
-X-Provags-ID: V01U2FsdGVkX18FtCght7AFmDiqhJY+Hf1+d/ONnl54Trjtoxnz0S
-	wTVl6GO6vU+FT0
-Subject: Re: [PATCH] block: fix residual byte count handling
-From: Mike Galbraith <efault@gmx.de>
-To: Tejun Heo <htejun@gmail.com>
-Cc: Jens Axboe <jens.axboe@oracle.com>,
-       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>, tomof@acm.org,
-       James.Bottomley@HansenPartnership.com, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org,
-       linux-scsi@vger.kernel.org, jgarzik@pobox.com, bzolnier@gmail.com
-In-Reply-To: <47CD4355.4050401@gmail.com>
-References: <20080304175302T.fujita.tomonori@lab.ntt.co.jp>
-	 <20080304085944.GG6704@kernel.dk>
-	 <20080304180648W.fujita.tomonori@lab.ntt.co.jp>
-	 <20080304182228Z.fujita.tomonori@lab.ntt.co.jp>
-	 <20080304093536.GH6704@kernel.dk>
-	 <1204634238.5997.5.camel@homer.simson.net>  <47CD4355.4050401@gmail.com>
-Content-Type: text/plain
-Date: Tue, 04 Mar 2008 13:45:41 +0100
-Message-Id: <1204634741.17258.3.camel@homer.simson.net>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.0 
+	Tue, 4 Mar 2008 07:51:42 -0500
+Received: from rv-out-0910.google.com ([209.85.198.187]:49713 "EHLO
+	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752590AbYCDMvl (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 4 Mar 2008 07:51:41 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=YHkhW9wEBLxlkeeE1sgq/r4ySduValoq4n/mspTgQkotbYaj8UmtJA7ahfbuEecZmxj7rXZWgENiAlEJ+pQ4UuxQG1oYBqYKD1Fw0E03IeGKusVBKe04iC6UDVK34sod8Faqt83oNAoQh0goqNHsjPeweYWPp0d8CsJ00iLGBYA=
+Message-ID: <84144f020803040451u562eb378h2d6c2378d1b174fe@mail.gmail.com>
+Date: Tue, 4 Mar 2008 14:51:40 +0200
+From: "Pekka Enberg" <penberg@cs.helsinki.fi>
+To: "Jiri Slaby" <jirislaby@gmail.com>
+Subject: Re: [2.6.25-rc2-mm1] Oops in __kmalloc
+Cc: "Andrew Morton" <akpm@linux-foundation.org>,
+       "Linux kernel mailing list" <linux-kernel@vger.kernel.org>,
+       linux-ext4@vger.kernel.org, "Jan Sonnek" <xsonnek@fi.muni.cz>,
+       "Christoph Lameter" <clameter@sgi.com>
+In-Reply-To: <47CD2753.5050905@gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-Y-GMX-Trusted: 0
+Content-Disposition: inline
+References: <47C42DDF.3060506@gmail.com>
+	 <20080226100913.9412b41c.akpm@linux-foundation.org>
+	 <47CD2753.5050905@gmail.com>
+X-Google-Sender-Auth: f584a06f4b084b26
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, Mar 4, 2008 at 12:41 PM, Jiri Slaby <jirislaby@gmail.com> wrote:
+>  >> while booting up a notebook on 32 bit, this oopses appeared on the console
+>  >> after ext3 fsck:
+>  >> http://www.fi.muni.cz/~xslaby/sklad/mem_oops/
+>  >>
+>  >> It's 2.6.25-rc2-mm1, I can't find similar reports, is this known or hardware
+>  >> issue (unlikely, 2.6.24.2 seems to be OK)?
+>  >
+>  > I don't recall seeing a similar report and yes, it'll be a kernel bug.
+>  >
+>  > We've fixed a few things and it could be that this will just go away in
+>  > next -mm.  If it doesn't, a bisection search would be good, thanks.
+>
+>  Well, next -mm is out. Could you test, Jan? [our -mm git is up-to-date]
 
-On Tue, 2008-03-04 at 21:40 +0900, Tejun Heo wrote:
+I don't see your config but if you have CONFIG_SLUB enabled, this is
+probably the same problem as:
 
-> Aiee... device going down after timing out on READ_DISC_INFO.  That's
-> gruesome.  Can you please try the other patches?
+http://bugzilla.kernel.org/show_bug.cgi?id=10015
 
-I tried your last yesterday, and k3b worked fine.
+which is fixed since 2.6.25-rc2 in mainline.
 
-	-Mike
-
+                              Pekka
