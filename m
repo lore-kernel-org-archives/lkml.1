@@ -1,60 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932093AbYCDUKn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933535AbYCDUOV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932093AbYCDUKn (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Mar 2008 15:10:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765576AbYCDUKJ
+	id S933535AbYCDUOV (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Mar 2008 15:14:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751722AbYCDUOM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Mar 2008 15:10:09 -0500
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:1792 "EHLO spitz.ucw.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1764584AbYCDUKI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Mar 2008 15:10:08 -0500
-Date: Tue, 4 Mar 2008 21:07:01 +0100
-From: Pavel Machek <pavel@ucw.cz>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Michael Kerrisk <michael.kerrisk@googlemail.com>, aaw <aaw@google.com>,
-       Andrew Morton <akpm@linux-foundation.org>, michael.kerrisk@gmail.com,
-       carlos@codesourcery.com, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       linux-kernel <linux-kernel@vger.kernel.org>, drepper@redhat.com,
-       mtk.manpages@gmail.com
-Subject: Re: [RFC/PATCH] RLIMIT_ARG_MAX
-Message-ID: <20080304200701.GA5599@ucw.cz>
-References: <1204119455.6242.403.camel@lappy> <alpine.LFD.1.00.0802290801290.17889@woody.linux-foundation.org> <c49095e30802290858t42eb8a61ua0ed73e27971bc77@mail.gmail.com> <alpine.LFD.1.00.0802290907480.17889@woody.linux-foundation.org> <1204305488.6243.113.camel@lappy> <alpine.LFD.1.00.0802290928200.17889@woody.linux-foundation.org>
+	Tue, 4 Mar 2008 15:14:12 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:36162 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1761217AbYCDUOL (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 4 Mar 2008 15:14:11 -0500
+Date: Tue, 4 Mar 2008 12:13:39 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: "Pekka Enberg" <penberg@cs.helsinki.fi>
+Cc: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org, mingo@elte.hu,
+       vegard.nossum@gmail.com
+Subject: Re: Google's Summer of Code?
+Message-Id: <20080304121339.a3b2483f.akpm@linux-foundation.org>
+In-Reply-To: <84144f020803041155k222c13ecu13c8c9534ced87e5@mail.gmail.com>
+References: <84144f020803041045i70bbb05l6983bd14c5bcc91a@mail.gmail.com>
+	<alpine.LFD.1.00.0803041127290.12253@woody.linux-foundation.org>
+	<84144f020803041155k222c13ecu13c8c9534ced87e5@mail.gmail.com>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.1.00.0802290928200.17889@woody.linux-foundation.org>
-User-Agent: Mutt/1.5.9i
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri 2008-02-29 09:29:19, Linus Torvalds wrote:
-> 
-> 
-> On Fri, 29 Feb 2008, Peter Zijlstra wrote:
-> >
-> > > ... and what's the point? We've never had it before, nobody has ever cared, 
-> > > and the whole notion is just stupid. Why would we want to limit it? The 
-> > > only thing that the kernel *cares* about is the stack size - any other 
-> > > size limits are always going to be arbitrary.
-> > 
-> > Well, don't think of limiting it, but querying the limit.
-> > 
-> > Programs like xargs would need to know how much to stuff into argv
-> > before starting a new invocation.
-> 
-> But they already can't really do that. More importantly, isn't it better 
-> to just use the whole stack size then (or just return "stack size / 4" or 
-> whatever)?
+On Tue, 4 Mar 2008 21:55:14 +0200
+"Pekka Enberg" <penberg@cs.helsinki.fi> wrote:
 
-Using whole stack smells like a security problem to me.
+> I am also wondering if such a high profile
+> project as the kernel can get away with not having a "project ideas"
+> list which would make things real easy for the administrator(s)...
 
-...pass so much parameters that passwd dies on stack shortage. Make
-sure passwd grabbed some system-wide lock before dying.
+http://kernelnewbies.org/KernelProjects
 
-						Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+There are surely many more things we could put there.
+
+I receive a dribble of emails about the setrlimit64/getrlimit64 one, so
+people are looking at it, and are looking to do work.  (I haven't usefully
+responded to those emails, btw - am not sure how my name got on that one -
+probably Ulrich would be better).
+
+
