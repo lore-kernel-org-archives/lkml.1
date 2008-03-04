@@ -1,61 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763758AbYCDVhy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761040AbYCDVoX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763758AbYCDVhy (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Mar 2008 16:37:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751295AbYCDVho
+	id S1761040AbYCDVoX (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Mar 2008 16:44:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753053AbYCDVoA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Mar 2008 16:37:44 -0500
-Received: from vs147137.vserver.de ([62.75.147.137]:56468 "EHLO
-	vs147137.vserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751004AbYCDVhn (ORCPT
+	Tue, 4 Mar 2008 16:44:00 -0500
+Received: from el-out-1112.google.com ([209.85.162.178]:46727 "EHLO
+	el-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753921AbYCDVn7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Mar 2008 16:37:43 -0500
-X-Greylist: delayed 1704 seconds by postgrey-1.27 at vger.kernel.org; Tue, 04 Mar 2008 16:37:43 EST
-DomainKey-Signature: a=rsa-sha1; c=nofws; d=cryonet.de; h=message-id:date:
-	from:reply-to:mime-version:to:cc:subject:content-type:
-	content-transfer-encoding; q=dns; s=cryonet; b=we6JmvGJlFEMYXaNo
-	Bl9bd4/bxPpN8ur05WXOxvtTj/iDzw6jcBenD4Mh5VGlqOluV20VH4WaOYpnKVwt
-	R867AJpq5l04FHOD4zsL73QTBxYK15+9FuwfOsV/hOesUbSNPo3+cgk3via7Tlo9
-	wKz0/MvtEJQA8/Dppv1I7vMafw=
-Message-ID: <47CDBA77.2010707@cryonet.de>
-Date: Tue, 04 Mar 2008 22:09:11 +0100
-From: Sven Andersen <s.andersen@cryonet.de>
-Reply-To: s.andersen@cryonet.de
-User-Agent: Thunderbird 2.0.0.12 (X11/20080227)
+	Tue, 4 Mar 2008 16:43:59 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=TjQ1kRwVHt/k82BrkZCl5fdE8gat8sR56W2lgH3VvZxfdhNL8SoUOl2xVsVIznymj22bduDz7/z5QkhMqt9HJleGLm/AbttBCHT7pwozLD46aFR7fxwEvKkHTFyZkiUtVfem/ESbivKE3ENt/cKNuYYsox0xQxHUICSv+C8vLeA=
+Message-ID: <a4e6962a0803041343w31b1a05bj8bb782f7c3ed9596@mail.gmail.com>
+Date: Tue, 4 Mar 2008 15:43:55 -0600
+From: "Eric Van Hensbergen" <ericvh@gmail.com>
+To: "Randy Dunlap" <randy.dunlap@oracle.com>
+Subject: Re: 2.6.25-rc3-mm1 (9p docs)
+Cc: "Andrew Morton" <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+In-Reply-To: <20080304132605.13d8114a.randy.dunlap@oracle.com>
 MIME-Version: 1.0
-To: gregkh@suse.de
-Cc: linux-kernel@vger.kernel.org, linux-usb-devel@lists.sourceforge.net,
-       linux-usb-users@lists.sourceforge.net, stable@kernel.org
-Subject: [PATCH] USB: ftdi_sio - really enable EM1010PC
-X-Enigmail-Version: 0.95.2
-Content-Type: text/plain; charset=ISO-8859-15
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20080304011928.e8c82c0c.akpm@linux-foundation.org>
+	 <20080304132605.13d8114a.randy.dunlap@oracle.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Add EM1010PC to ftdi_sio.c
+On Tue, Mar 4, 2008 at 3:26 PM, Randy Dunlap <randy.dunlap@oracle.com> wrote:
+> On Tue, 4 Mar 2008 01:19:28 -0800 Andrew Morton wrote:
+>
+>  >
+>  > ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.25-rc3/2.6.25-rc3-mm1/
+>
+>
+>  "make htmldocs" gives me:
+>
+>   HOSTCC  scripts/basic/fixdep
+>   HOSTCC  scripts/basic/docproc
+>  make[1]: *** No rule to make target `Documentation/DocBook/9p-overview.eps', needed by `Documentation/DocBook/9p.xml'.  Stop.
+>  make: *** [htmldocs] Error 2
+>
+>
+>  Are we missing the .eps and .png files?
+>
 
-Signed-off-by: Sven Andersen <s.andersen@cryonet.de>
----
+Actually looks like we are missing a .fig (which generates the .eps or
+.png as appropriate) and the template file.
+Ugh, sorry, I must have messed up the patch.  I'll fix it in my tree tonight.
 
-Peter Stark submitted a patch for enabling multiple ELV-devices
-and adding the EM1010PC to ftdi_sio which has already been applied.
-For some reason this line got lost somewhere.
-
-As Peters patch went into 2.6.24-stable this might be applicable
-there too.
-
-diff --git a/drivers/usb/serial/ftdi_sio.c b/drivers/usb/serial/ftdi_sio.c
-index 76db2fe..90a398b 100644
---- a/drivers/usb/serial/ftdi_sio.c
-+++ b/drivers/usb/serial/ftdi_sio.c
-@@ -274,6 +274,7 @@ static struct usb_device_id id_table_combined [] = {
- 	{ USB_DEVICE(FTDI_VID, FTDI_ELV_FS20SIG_PID) },
- 	{ USB_DEVICE(FTDI_VID, FTDI_ELV_WS300PC_PID) },
- 	{ USB_DEVICE(FTDI_VID, FTDI_ELV_FHZ1300PC_PID) },
-+	{ USB_DEVICE(FTDI_VID, FTDI_ELV_EM1010PC_PID) },
- 	{ USB_DEVICE(FTDI_VID, FTDI_ELV_WS500_PID) },
- 	{ USB_DEVICE(FTDI_VID, LINX_SDMUSBQSS_PID) },
- 	{ USB_DEVICE(FTDI_VID, LINX_MASTERDEVEL2_PID) },
-
+                -eric
