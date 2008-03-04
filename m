@@ -1,47 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763465AbYCDBiL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763465AbYCDBnT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763465AbYCDBiL (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Mar 2008 20:38:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756197AbYCDBh4
+	id S1763465AbYCDBnT (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Mar 2008 20:43:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756272AbYCDBnH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Mar 2008 20:37:56 -0500
-Received: from ozlabs.org ([203.10.76.45]:41111 "EHLO ozlabs.org"
+	Mon, 3 Mar 2008 20:43:07 -0500
+Received: from mga11.intel.com ([192.55.52.93]:28436 "EHLO mga11.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755651AbYCDBh4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Mar 2008 20:37:56 -0500
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: "Ahmed S. Darwish" <darwish.07@gmail.com>
-Subject: Re: [PATCH] lguest: Accept guest _PAGE_PWT page table entries
-Date: Tue, 4 Mar 2008 12:37:09 +1100
-User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
-Cc: Ingo Molnar <mingo@elte.hu>, Suresh Siddha <suresh.b.siddha@intel.com>,
-       Thomas Gleixner <tglx@linutronix.de>, lguest@ozlabs.org,
-       linux-kernel@vger.kernel.org
-References: <20080206232134.GB6450@ubuntu> <20080206235923.GA19843@elte.hu> <20080207005120.GA5751@ubuntu>
-In-Reply-To: <20080207005120.GA5751@ubuntu>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+	id S1756372AbYCDBnH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 3 Mar 2008 20:43:07 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.25,441,1199692800"; 
+   d="scan'208";a="303462585"
+Date: Mon, 3 Mar 2008 17:43:06 -0800
+From: Suresh Siddha <suresh.b.siddha@intel.com>
+To: Christoph Hellwig <hch@infradead.org>
+Cc: Suresh Siddha <suresh.b.siddha@intel.com>, mingo@elte.hu, hpa@zytor.com,
+       tglx@linutronix.de, andi@firstfloor.org, linux-kernel@vger.kernel.org,
+       Arjan van de Ven <arjan@linux.intel.com>
+Subject: Re: [patch 2/2] x86, fpu: lazy allocation of FPU area - v3
+Message-ID: <20080304014306.GC28006@linux-os.sc.intel.com>
+References: <20080303230335.892214000@linux-os.sc.intel.com> <20080303230336.042604000@linux-os.sc.intel.com> <20080304012012.GB22431@infradead.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200803041237.10195.rusty@rustcorp.com.au>
+In-Reply-To: <20080304012012.GB22431@infradead.org>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 07 February 2008 11:51:20 Ahmed S. Darwish wrote:
-> On Thu, Feb 07, 2008 at 12:59:23AM +0100, Ingo Molnar wrote:
-> > yes, should be safe. Could you send a patch so that others can apply it
-> > too?
->
-> Ofcourse :) :
->
-> Accept guest _PAGE_PWT page table entries, otherwise lguest will
-> always fail with a "bad page table entry" message.
->
-> Signed-off-by: Ahmed S. Darwish <darwish.07@gmail.com>
+On Mon, Mar 03, 2008 at 08:20:12PM -0500, Christoph Hellwig wrote:
+> On Mon, Mar 03, 2008 at 03:02:46PM -0800, Suresh Siddha wrote:
+> > +	/*
+> > +	 * Memory allocation at the first usage of the FPU and other state.
+> > +	 */
+> > +	if (!tsk->thread.xstate)
+> > +		tsk->thread.xstate = kmem_cache_alloc(task_xstate_cachep, GFP_KERNEL);
+> 
+> Please don't do over 80 char lines.
 
-Thanks for tracking this Ahmed, and thanks to Ingo for pushing it upstream.
+Ok.
 
-Cheers,
-Rusty.
+>  Also don't we need some kind of error handling here?
+
+Currently it uses SLAB_PANIC.
+
+thanks,
+suresh
