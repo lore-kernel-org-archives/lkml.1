@@ -1,71 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932259AbYCDQr5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765903AbYCDQs0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932259AbYCDQr5 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Mar 2008 11:47:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756222AbYCDQrq
+	id S1765903AbYCDQs0 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Mar 2008 11:48:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932328AbYCDQr5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Mar 2008 11:47:46 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:47421 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757491AbYCDQrp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Mar 2008 11:47:45 -0500
-Date: Tue, 4 Mar 2008 17:47:32 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: Rick van Rein <rick@vanrein.org>, linux-kernel@vger.kernel.org,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [PATCH 2.6.24] mm: BadRAM support for broken memory
-Message-ID: <20080304164732.GB16379@elte.hu>
-References: <20080302134221.GA25196@phantom.vanrein.org> <20080303082238.GB13580@elte.hu> <47CC3005.5090706@zytor.com> <20080304133028.GC32383@elte.hu> <47CD78F0.2060802@zytor.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <47CD78F0.2060802@zytor.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Tue, 4 Mar 2008 11:47:57 -0500
+Received: from rgminet01.oracle.com ([148.87.113.118]:52866 "EHLO
+	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932259AbYCDQr4 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 4 Mar 2008 11:47:56 -0500
+Date: Tue, 4 Mar 2008 08:45:57 -0800
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, mike.miller@hp.com, iss_storagedev@hp.com
+Subject: Re: 2.6.25-rc3-mm1 (CCISS)
+Message-Id: <20080304084557.357972a3.randy.dunlap@oracle.com>
+In-Reply-To: <20080304011928.e8c82c0c.akpm@linux-foundation.org>
+References: <20080304011928.e8c82c0c.akpm@linux-foundation.org>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.4.7 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, 4 Mar 2008 01:19:28 -0800 Andrew Morton wrote:
 
-* H. Peter Anvin <hpa@zytor.com> wrote:
+> 
+> ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.25-rc3/2.6.25-rc3-mm1/
 
->>>>
->>> How is this different from:
->>>
->>> 	memmap=<size>$<len>
->>>
->>> ... ?
->>
->> it's the inverse? When we identify bad areas of RAM, we really want to 
->> "punch holes" into the existing memory map. So 'badram=' or 'excludemem=' 
->> would be nicer and easier to use.
->>
->> Or extend 'memmap=' with an inverse parameter: memmap=!0x10000000$1M would 
->> exclude a 1MB region at 256MB physical.
->>
->
-> My understanding is that the $-form (as opposed to the @-form or 
-> #-form) is exactly that:
->
->         memmap=nn[KMG]$ss[KMG]
->                         [KNL,ACPI] Mark specific memory as reserved.
->                         Region of memory to be used, from ss to ss+nn.
->
-> "Reserved" usually means "don't use as either memory or free address 
-> space".
+With
+CONFIG_BLK_CPQ_DA=m
+CONFIG_BLK_CPQ_CISS_DA=m
+# CONFIG_CISS_SCSI_TAPE is not set
 
-ah - thanks - didnt know that!
+I'm getting
+In file included from drivers/block/cciss.c:230:
+drivers/block/cciss_scsi.c:1498:38: error: macro parameters must be comma-separated
+drivers/block/cciss.c: In function 'cciss_seq_show_header':
+drivers/block/cciss.c:271: error: implicit declaration of function 'cciss_seq_tape_report'
+drivers/block/cciss.c: In function 'cciss_proc_write':
+drivers/block/cciss.c:392: error: implicit declaration of function 'cciss_engage_scsi'
+make[2]: *** [drivers/block/cciss.o] Error 1
+make[1]: *** [drivers/block] Error 2
+make[1]: *** Waiting for unfinished jobs....
 
-i guess there might still be badram syntax details that might be worth 
-merging, but "memmap=" looks a lot more complete than what i thought it 
-to be.
-
-	Ingo
+---
+~Randy
