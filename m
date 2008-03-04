@@ -1,98 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761802AbYCDRfd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759686AbYCDRi3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761802AbYCDRfd (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Mar 2008 12:35:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756163AbYCDRez
+	id S1759686AbYCDRi3 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Mar 2008 12:38:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751481AbYCDRiU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Mar 2008 12:34:55 -0500
-Received: from smtp-out01.alice-dsl.net ([88.44.60.11]:40641 "EHLO
-	smtp-out01.alice-dsl.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753827AbYCDRew (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Mar 2008 12:34:52 -0500
-From: Andi Kleen <andi@firstfloor.org>
-References: <20080304634.504158800@firstfloor.org>
-In-Reply-To: <20080304634.504158800@firstfloor.org>
-To: linux-kernel@vger.kernel.org, netdev@vger.kernel.org, tglx@linutronix.de
-Subject: [PATCH] [2/2] srandom32 fixes
-Message-Id: <20080304173449.8BAD21B4199@basil.firstfloor.org>
-Date: Tue,  4 Mar 2008 18:34:49 +0100 (CET)
-X-OriginalArrivalTime: 04 Mar 2008 17:28:20.0221 (UTC) FILETIME=[23F10AD0:01C87E1D]
+	Tue, 4 Mar 2008 12:38:20 -0500
+Received: from ns.suse.de ([195.135.220.2]:50317 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750808AbYCDRiT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 4 Mar 2008 12:38:19 -0500
+Date: Tue, 4 Mar 2008 09:38:40 -0800
+From: Greg KH <gregkh@suse.de>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Ingo Molnar <mingo@elte.hu>, Pavel Roskin <proski@gnu.org>,
+       Zan Lynx <zlynx@acm.org>, linux-kernel <linux-kernel@vger.kernel.org>,
+       Jon Masters <jcm@jonmasters.org>, Rusty Russell <rusty@rustcorp.com.au>
+Subject: Re: [PATCH 2.6.25] module: allow ndiswrapper to use GPL-only
+	symbols
+Message-ID: <20080304173840.GA16165@suse.de>
+References: <alpine.LFD.1.00.0802290906520.17889@woody.linux-foundation.org> <1204305609.21719.16.camel@dv> <alpine.LFD.1.00.0802290929590.17889@woody.linux-foundation.org> <1204313978.2316.8.camel@dv> <20080229211513.GI27212@elte.hu> <1204324265.2316.70.camel@dv> <20080303105752.GA23594@elte.hu> <20080304003723.z79pcavdk4wgoc44@webmail.spamcop.net> <20080304125744.GF29777@elte.hu> <alpine.LFD.1.00.0803040907420.12253@woody.linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.1.00.0803040907420.12253@woody.linux-foundation.org>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, Mar 04, 2008 at 09:19:36AM -0800, Linus Torvalds wrote:
+> Quite frankly, my position on this has always been that the GPLv2 
+> explicitly covers _derived_ works only, and that very obviously a Windows 
+> driver isn't a derived work of the kernel. So as far as I'm concerned, 
+> ndiswrapper may be distasteful froma technical and support angle, but not 
+> against the license.
 
-- Rename it to a different name because it does something quite
-different from a traditional user land srandom32 -- it doesn't
-reset state but just adds to it.
+I think ndiswrapper is a great hack from a technical point-of-view.  But
+yes, I also do not think it is a violation of the GPLv2 for the same
+reasons you do.
 
-- Let it update the state of all CPUs. The network stack goes
-into pains to feed the current IP addresses in, but it is not very
-effective if that is only done for some random CPU instead of all.
-So change it to feed bits into all CPUs.  I decided to do that lockless 
-because well somewhat random results are ok.
+> So I'm personally perfectly happy to say that we should revert that commit 
+> 0aa5bd52d0c49ca56d24584c646e6544ccbb3dc9, but what I've wanted to hear 
+> from the very beginning was simply to get a list of symbols that currently 
+> clash, and hear from the people who maintain the symbols whether they 
+> really meant for that commit to be valid.
+> 
+> That's the only issue here. Not whether ndiswrapper could do a part of its 
+> job in user space (because the answer to that latter question is: no. 
+> Everything is "possible", of course, but realistically, that's simply not 
+> going to happen).
+> 
+> It sounds like there aren't that many symbols affected at the core: the 
+> workqueue stuff certainly isn't worth bothering about. The USB things that 
+> ndiswrapper wants is much more involved, and more likely to have issues, 
+> but I'm cc'ing Greg here to see.
 
-Signed-off-by: Andi Kleen <ak@suse.de>
-Index: linux/include/linux/random.h
-===================================================================
---- linux.orig/include/linux/random.h
-+++ linux/include/linux/random.h
-@@ -70,7 +70,7 @@ unsigned int get_random_int(void);
- unsigned long randomize_range(unsigned long start, unsigned long end, unsigned long len);
- 
- u32 random32(void);
--void srandom32(u32 seed);
-+void random32_add_bits(u32 seed);
- 
- #endif /* __KERNEL___ */
- 
-Index: linux/lib/random32.c
-===================================================================
---- linux.orig/lib/random32.c
-+++ linux/lib/random32.c
-@@ -93,19 +93,24 @@ u32 random32(void)
- EXPORT_SYMBOL(random32);
- 
- /**
-- *	srandom32 - add entropy to pseudo random number generator
-+ *	random32_add_bits - add entropy to pseudo random number generator
-  *	@seed: seed value
-  *
-  *	Add some additional seeding to the random32() pool.
-- *	Note: this pool is per cpu so it only affects current CPU.
-  */
--void srandom32(u32 entropy)
-+void random32_add_bits(u32 entropy)
- {
--	struct rnd_state *state = &get_cpu_var(net_rand_state);
--	__set_random32(state, state->s1 ^ entropy);
--	put_cpu_var(state);
-+	int i;
-+	/*
-+	 * No locking on the CPUs, but then somewhat random results are, well,
-+	 * expected.
-+	 */
-+	for_each_possible_cpu (i) {
-+		struct rnd_state *state = &per_cpu(net_rand_state, i);
-+		__set_random32(state, state->s1 ^ entropy);
-+	}
- }
--EXPORT_SYMBOL(srandom32);
-+EXPORT_SYMBOL(random32_add_bits);
- 
- /*
-  *	Generate some initially weak seeding values to allow
-Index: linux/include/linux/net.h
-===================================================================
---- linux.orig/include/linux/net.h
-+++ linux/include/linux/net.h
-@@ -213,7 +213,7 @@ extern struct socket *sockfd_lookup(int 
- extern int	     net_ratelimit(void);
- 
- #define net_random()		random32()
--#define net_srandom(seed)	srandom32((__force u32)seed)
-+#define net_srandom(seed)	random32_add_bits((__force u32)seed)
- 
- extern int   	     kernel_sendmsg(struct socket *sock, struct msghdr *msg,
- 				    struct kvec *vec, size_t num, size_t len);
+I have no objection to reverting that patch to have nidiswrapper access
+to those symbols, especially as that is really the only way they will be
+able to control USB devices (as you state, doing a network driver in
+userspace doesn't really make sense.)
+
+thanks,
+
+greg k-h
