@@ -1,83 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934263AbYCDXpt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934559AbYCDXrA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934263AbYCDXpt (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Mar 2008 18:45:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759708AbYCDXpg
+	id S934559AbYCDXrA (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Mar 2008 18:47:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761679AbYCDXqt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Mar 2008 18:45:36 -0500
-Received: from nwd2mail10.analog.com ([137.71.25.55]:14381 "EHLO
-	nwd2mail10.analog.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759014AbYCDXpf (ORCPT
+	Tue, 4 Mar 2008 18:46:49 -0500
+Received: from g5t0006.atlanta.hp.com ([15.192.0.43]:26343 "EHLO
+	g5t0006.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757011AbYCDXqr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Mar 2008 18:45:35 -0500
-X-IronPort-AV: E=Sophos;i="4.25,444,1199682000"; 
-   d="scan'208";a="63635832"
-From: Robin Getz <rgetz@blackfin.uclinux.org>
-Organization: Blackfin uClinux org
-To: rusty@rustcorp.com.au, "Andrew Morton" <akpm@linux-foundation.org>
-Subject: PATCH [1/1]: Don't return symbol lables in init sections after they have been freed
-Date: Tue, 4 Mar 2008 18:47:15 -0500
-User-Agent: KMail/1.9.5
-Cc: "LKML" <linux-kernel@vger.kernel.org>
+	Tue, 4 Mar 2008 18:46:47 -0500
+Date: Tue, 4 Mar 2008 16:46:46 -0700
+From: Alex Chiang <achiang@hp.com>
+To: Greg KH <gregkh@suse.de>
+Cc: Matthew Wilcox <matthew@wil.cx>, Gary Hade <garyhade@us.ibm.com>,
+       kaneshige.kenji@jp.fujitsu.com, warthog19@eaglescrag.net,
+       kristen.c.accardi@intel.com, rick.jones2@hp.com,
+       linux-kernel@vger.kernel.org, linux-pci@atrey.karlin.mff.cuni.cz,
+       linux-acpi@vger.kernel.org
+Subject: Re: [PATCH 4/4] ACPI PCI slot detection driver
+Message-ID: <20080304234646.GH3694@ldl.fc.hp.com>
+Mail-Followup-To: Alex Chiang <achiang@hp.com>,
+	Greg KH <gregkh@suse.de>, Matthew Wilcox <matthew@wil.cx>,
+	Gary Hade <garyhade@us.ibm.com>, kaneshige.kenji@jp.fujitsu.com,
+	warthog19@eaglescrag.net, kristen.c.accardi@intel.com,
+	rick.jones2@hp.com, linux-kernel@vger.kernel.org,
+	linux-pci@atrey.karlin.mff.cuni.cz, linux-acpi@vger.kernel.org
+References: <20080229002341.GA21420@ldl.fc.hp.com> <20080229002938.GE21420@ldl.fc.hp.com> <20080301052542.GD19353@suse.de> <20080301144307.GD24386@parisc-linux.org> <20080304054927.GA15566@suse.de> <20080304225830.GC3694@ldl.fc.hp.com> <20080304231525.GA25125@suse.de>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Message-Id: <200803041847.15884.rgetz@blackfin.uclinux.org>
-X-OriginalArrivalTime: 04 Mar 2008 23:45:33.0011 (UTC) FILETIME=[D622BA30:01C87E51]
+In-Reply-To: <20080304231525.GA25125@suse.de>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Robin Getz <rgetz@blackfin.uclinux.org>
+Hi Greg, all,
 
-Today, when module names are looked up, we do not qualify them (check to see 
-if the init section is still active or not). This can lead to problems when 
-kernel modules get loaded into the same address that the kernel init section 
-(or other module's init section was at). We sometimes return the old / no 
-lomnger there 
+* Greg KH <gregkh@suse.de>:
+> On Tue, Mar 04, 2008 at 03:58:30PM -0700, Alex Chiang wrote:
+> 
+> > Again, I'm thinking more exposure in linux-next might be a
+> > reasonable way for us to figure out how bad (or good) the
+> > situation might really be out there.
+> 
+> Ok, care to resend them with the requested updates?
 
-This leads to bogus OOPS messages, and developers wasting their time looking 
-for problems (in the kernel init section) where there are none (since it was 
-a module).
+Thanks, I need to review my patch that touches SGI after thinking
+about Prarit's comment some more.
 
-This patch qualifies the addresses, to make sure the addresses are still valid 
-before label/offset.
+Look for v8 of series to come out later (and please ignore that
+stray patch I sent out a few minutes ago with subject [PATCH 3/4,
+v8]).
 
-Signed-off-by: Robin Getz <rgetz@blackfin.uclinux.org>
+Thanks.
 
----
+/ac
 
- linux-2.6.x/kernel/kallsyms.c |    3 ++-
- linux-2.6.x/kernel/module.c   |    3 ++-
- 2 files changed, 4 insertions(+), 2 deletions(-)
-
-Index: linux-2.6.x/kernel/kallsyms.c
-===================================================================
---- linux-2.6.x/kernel/kallsyms.c	(revision 4212)
-+++ linux-2.6.x/kernel/kallsyms.c	(working copy)
-@@ -42,7 +42,8 @@
- 
- static inline int is_kernel_inittext(unsigned long addr)
- {
--	if (addr >= (unsigned long)_sinittext
-+	if (system_state == SYSTEM_BOOTING
-+	    && addr >= (unsigned long)_sinittext
- 	    && addr <= (unsigned long)_einittext)
- 		return 1;
- 	return 0;
-Index: linux-2.6.x/kernel/module.c
-===================================================================
---- linux-2.6.x/kernel/module.c	(revision 4212)
-+++ linux-2.6.x/kernel/module.c	(working copy)
-@@ -2121,7 +2121,8 @@
- 	struct module *mod;
- 
- 	list_for_each_entry(mod, &modules, list) {
--		if (within(addr, mod->module_init, mod->init_size)
-+		if ((within(addr, mod->module_init, mod->init_size)
-+		     && mod->state == MODULE_STATE_COMING)
- 		    || within(addr, mod->module_core, mod->core_size)) {
- 			if (modname)
- 				*modname = mod->name;
