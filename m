@@ -1,29 +1,29 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757932AbYCDCCz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758517AbYCDCDS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757932AbYCDCCz (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Mar 2008 21:02:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754506AbYCDCBQ
+	id S1758517AbYCDCDS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Mar 2008 21:03:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754689AbYCDCBR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Mar 2008 21:01:16 -0500
-Received: from wa-out-1112.google.com ([209.85.146.176]:10568 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752948AbYCDCBK (ORCPT
+	Mon, 3 Mar 2008 21:01:17 -0500
+Received: from gv-out-0910.google.com ([216.239.58.191]:14526 "EHLO
+	gv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752271AbYCDCBK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Mon, 3 Mar 2008 21:01:10 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=subject:from:to:cc:in-reply-to:references:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=DM1uS87OE2eWoRtpb7g6T1oco0Ihg7eSJV7RWBu0yoRzxk3q0AHo4EWN6/oedHlH1vTl5d6C6YB3RP/gtGQV03qN1pCUmuAYhQWzr6e9EYBT1FKg4n5H5OXdjoaS6hGdxEfpg6HX/D8pUDpotk2mh+16/ZipDsL6jYSzk2jukR0=
-Subject: [PATCH 07/13] cifs: replace remaining __FUNCTION__ occurrences
+        b=UClLfACSCvEY/LN+Zlfur1FllFOmzy0IJNwVgW46Kn6KMP3FleGjIZxQfTTrVrlowVunp056HSshs++CIyZOtIFdzS9M6tu5U2eIKpXHVVgUFj33vGrI9khjwZaCuzBQZRFaEpRFSu1ARGt80JerlZnjqf+6Tvnot2kMwB7ETXE=
+Subject: [PATCH 05/13] xfs: replace remaining __FUNCTION__ occurrences
 From: Harvey Harrison <harvey.harrison@gmail.com>
-To: Steve French <smfrench@gmail.com>
+To: Christoph Hellwig <hch@lst.de>, xfs <xfs-masters@oss.sgi.com>
 Cc: Andrew Morton <akpm@linux-foundation.org>,
        LKML <linux-kernel@vger.kernel.org>
 In-Reply-To: <de3bbd22cbe7683747f9244f3dd3e433bee28842.1204595498.git.harvey.harrison@gmail.com>
 References: <de3bbd22cbe7683747f9244f3dd3e433bee28842.1204595498.git.harvey.harrison@gmail.com>
 Content-Type: text/plain
-Date: Mon, 03 Mar 2008 18:01:03 -0800
-Message-Id: <1204596063.22933.59.camel@brick>
+Date: Mon, 03 Mar 2008 18:01:01 -0800
+Message-Id: <1204596061.22933.57.camel@brick>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.12.1 
 Content-Transfer-Encoding: 7bit
@@ -35,143 +35,302 @@ __FUNCTION__ is gcc-specific, use __func__
 
 Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
 ---
- fs/cifs/cifs_dfs_ref.c |   18 +++++++++---------
- fs/cifs/cifsproto.h    |    4 ++--
- fs/cifs/dns_resolve.c  |    8 ++++----
- 3 files changed, 15 insertions(+), 15 deletions(-)
+ fs/xfs/linux-2.6/kmem.c      |    6 +++---
+ fs/xfs/linux-2.6/xfs_buf.c   |    6 +++---
+ fs/xfs/linux-2.6/xfs_super.c |    2 +-
+ fs/xfs/linux-2.6/xfs_vnode.h |    4 ++--
+ fs/xfs/xfs_alloc.c           |   18 +++++++++---------
+ fs/xfs/xfs_bmap.c            |   18 +++++++++---------
+ fs/xfs/xfs_bmap.h            |    2 +-
+ fs/xfs/xfs_bmap_btree.c      |   16 ++++++++--------
+ fs/xfs/xfs_filestream.c      |    2 +-
+ fs/xfs/xfs_log.c             |    2 +-
+ fs/xfs/xfs_log_recover.c     |    4 ++--
+ fs/xfs/xfs_trans_ail.c       |    2 +-
+ 12 files changed, 41 insertions(+), 41 deletions(-)
 
-diff --git a/fs/cifs/cifs_dfs_ref.c b/fs/cifs/cifs_dfs_ref.c
-index 6ad4475..0be8359 100644
---- a/fs/cifs/cifs_dfs_ref.c
-+++ b/fs/cifs/cifs_dfs_ref.c
-@@ -74,7 +74,7 @@ static char *cifs_get_share_name(const char *node_name)
- 	pSep = memchr(UNC+2, '\\', len-2);
- 	if (!pSep) {
- 		cERROR(1, ("%s: no server name end in node name: %s",
--			__FUNCTION__, node_name));
-+			__func__, node_name));
- 		kfree(UNC);
- 		return NULL;
+diff --git a/fs/xfs/linux-2.6/kmem.c b/fs/xfs/linux-2.6/kmem.c
+index e040f1c..9b1bb17 100644
+--- a/fs/xfs/linux-2.6/kmem.c
++++ b/fs/xfs/linux-2.6/kmem.c
+@@ -37,7 +37,7 @@ kmem_alloc(size_t size, unsigned int __nocast flags)
+ #ifdef DEBUG
+ 	if (unlikely(!(flags & KM_LARGE) && (size > PAGE_SIZE))) {
+ 		printk(KERN_WARNING "Large %s attempt, size=%ld\n",
+-			__FUNCTION__, (long)size);
++			__func__, (long)size);
+ 		dump_stack();
  	}
-@@ -84,7 +84,7 @@ static char *cifs_get_share_name(const char *node_name)
- 	pSep = memchr(UNC+(pSep-UNC), '\\', len-(pSep-UNC));
- 	if (!pSep) {
- 		cERROR(1, ("%s:2 cant find share name in node name: %s",
--			__FUNCTION__, node_name));
-+			__func__, node_name));
- 		kfree(UNC);
- 		return NULL;
- 	}
-@@ -127,7 +127,7 @@ static char *compose_mount_options(const char *sb_mountdata,
- 	rc = dns_resolve_server_name_to_ip(*devname, &srvIP);
- 	if (rc != 0) {
- 		cERROR(1, ("%s: Failed to resolve server part of %s to IP",
--			  __FUNCTION__, *devname));
-+			  __func__, *devname));
- 		mountdata = ERR_PTR(rc);
- 		goto compose_mount_options_out;
- 	}
-@@ -181,8 +181,8 @@ static char *compose_mount_options(const char *sb_mountdata,
+ #endif
+@@ -52,7 +52,7 @@ kmem_alloc(size_t size, unsigned int __nocast flags)
+ 		if (!(++retries % 100))
+ 			printk(KERN_ERR "XFS: possible memory allocation "
+ 					"deadlock in %s (mode:0x%x)\n",
+-					__FUNCTION__, lflags);
++					__func__, lflags);
+ 		congestion_wait(WRITE, HZ/50);
+ 	} while (1);
+ }
+@@ -129,7 +129,7 @@ kmem_zone_alloc(kmem_zone_t *zone, unsigned int __nocast flags)
+ 		if (!(++retries % 100))
+ 			printk(KERN_ERR "XFS: possible memory allocation "
+ 					"deadlock in %s (mode:0x%x)\n",
+-					__FUNCTION__, lflags);
++					__func__, lflags);
+ 		congestion_wait(WRITE, HZ/50);
+ 	} while (1);
+ }
+diff --git a/fs/xfs/linux-2.6/xfs_buf.c b/fs/xfs/linux-2.6/xfs_buf.c
+index e347bfd..142ddbe 100644
+--- a/fs/xfs/linux-2.6/xfs_buf.c
++++ b/fs/xfs/linux-2.6/xfs_buf.c
+@@ -400,7 +400,7 @@ _xfs_buf_lookup_pages(
+ 				printk(KERN_ERR
+ 					"XFS: possible memory allocation "
+ 					"deadlock in %s (mode:0x%x)\n",
+-					__FUNCTION__, gfp_mask);
++					__func__, gfp_mask);
+ 
+ 			XFS_STATS_INC(xb_page_retries);
+ 			xfsbufd_wakeup(0, gfp_mask);
+@@ -598,7 +598,7 @@ xfs_buf_get_flags(
+ 		error = _xfs_buf_map_pages(bp, flags);
+ 		if (unlikely(error)) {
+ 			printk(KERN_WARNING "%s: failed to map pages\n",
+-					__FUNCTION__);
++					__func__);
+ 			goto no_buffer;
  		}
  	}
+@@ -778,7 +778,7 @@ xfs_buf_get_noaddr(
+ 	error = _xfs_buf_map_pages(bp, XBF_MAPPED);
+ 	if (unlikely(error)) {
+ 		printk(KERN_WARNING "%s: failed to map pages\n",
+-				__FUNCTION__);
++				__func__);
+ 		goto fail_free_mem;
+ 	}
  
--	/*cFYI(1,("%s: parent mountdata: %s", __FUNCTION__,sb_mountdata));*/
--	/*cFYI(1, ("%s: submount mountdata: %s", __FUNCTION__, mountdata ));*/
-+	/*cFYI(1,("%s: parent mountdata: %s", __func__,sb_mountdata));*/
-+	/*cFYI(1, ("%s: submount mountdata: %s", __func__, mountdata ));*/
+diff --git a/fs/xfs/linux-2.6/xfs_super.c b/fs/xfs/linux-2.6/xfs_super.c
+index 8831d95..a21bb40 100644
+--- a/fs/xfs/linux-2.6/xfs_super.c
++++ b/fs/xfs/linux-2.6/xfs_super.c
+@@ -934,7 +934,7 @@ xfs_fs_clear_inode(
+ 		xfs_inactive(ip);
+ 		xfs_iflags_clear(ip, XFS_IMODIFIED);
+ 		if (xfs_reclaim(ip))
+-			panic("%s: cannot reclaim 0x%p\n", __FUNCTION__, inode);
++			panic("%s: cannot reclaim 0x%p\n", __func__, inode);
+ 	}
  
- compose_mount_options_out:
- 	kfree(srvIP);
-@@ -302,7 +302,7 @@ cifs_dfs_follow_mountpoint(struct dentry *dentry, struct nameidata *nd)
- 	int rc = 0;
- 	struct vfsmount *mnt = ERR_PTR(-ENOENT);
+ 	ASSERT(XFS_I(inode) == NULL);
+diff --git a/fs/xfs/linux-2.6/xfs_vnode.h b/fs/xfs/linux-2.6/xfs_vnode.h
+index b5ea418..46d8237 100644
+--- a/fs/xfs/linux-2.6/xfs_vnode.h
++++ b/fs/xfs/linux-2.6/xfs_vnode.h
+@@ -303,9 +303,9 @@ extern void xfs_itrace_hold(struct xfs_inode *, char *, int, inst_t *);
+ extern void _xfs_itrace_ref(struct xfs_inode *, char *, int, inst_t *);
+ extern void xfs_itrace_rele(struct xfs_inode *, char *, int, inst_t *);
+ #define xfs_itrace_entry(ip)	\
+-	_xfs_itrace_entry(ip, __FUNCTION__, (inst_t *)__return_address)
++	_xfs_itrace_entry(ip, __func__, (inst_t *)__return_address)
+ #define xfs_itrace_exit(ip)	\
+-	_xfs_itrace_exit(ip, __FUNCTION__, (inst_t *)__return_address)
++	_xfs_itrace_exit(ip, __func__, (inst_t *)__return_address)
+ #define xfs_itrace_exit_tag(ip, tag)	\
+ 	_xfs_itrace_exit(ip, tag, (inst_t *)__return_address)
+ #define xfs_itrace_ref(ip)	\
+diff --git a/fs/xfs/xfs_alloc.c b/fs/xfs/xfs_alloc.c
+index bdbfbbe..bd5c017 100644
+--- a/fs/xfs/xfs_alloc.c
++++ b/fs/xfs/xfs_alloc.c
+@@ -55,17 +55,17 @@ xfs_alloc_search_busy(xfs_trans_t *tp,
+ ktrace_t *xfs_alloc_trace_buf;
  
--	cFYI(1, ("in %s", __FUNCTION__));
-+	cFYI(1, ("in %s", __func__));
- 	BUG_ON(IS_ROOT(dentry));
+ #define	TRACE_ALLOC(s,a)	\
+-	xfs_alloc_trace_alloc(__FUNCTION__, s, a, __LINE__)
++	xfs_alloc_trace_alloc(__func__, s, a, __LINE__)
+ #define	TRACE_FREE(s,a,b,x,f)	\
+-	xfs_alloc_trace_free(__FUNCTION__, s, mp, a, b, x, f, __LINE__)
++	xfs_alloc_trace_free(__func__, s, mp, a, b, x, f, __LINE__)
+ #define	TRACE_MODAGF(s,a,f)	\
+-	xfs_alloc_trace_modagf(__FUNCTION__, s, mp, a, f, __LINE__)
+-#define	TRACE_BUSY(__FUNCTION__,s,ag,agb,l,sl,tp)	\
+-	xfs_alloc_trace_busy(__FUNCTION__, s, mp, ag, agb, l, sl, tp, XFS_ALLOC_KTRACE_BUSY, __LINE__)
+-#define	TRACE_UNBUSY(__FUNCTION__,s,ag,sl,tp)	\
+-	xfs_alloc_trace_busy(__FUNCTION__, s, mp, ag, -1, -1, sl, tp, XFS_ALLOC_KTRACE_UNBUSY, __LINE__)
+-#define	TRACE_BUSYSEARCH(__FUNCTION__,s,ag,agb,l,sl,tp)	\
+-	xfs_alloc_trace_busy(__FUNCTION__, s, mp, ag, agb, l, sl, tp, XFS_ALLOC_KTRACE_BUSYSEARCH, __LINE__)
++	xfs_alloc_trace_modagf(__func__, s, mp, a, f, __LINE__)
++#define	TRACE_BUSY(__func__,s,ag,agb,l,sl,tp)	\
++	xfs_alloc_trace_busy(__func__, s, mp, ag, agb, l, sl, tp, XFS_ALLOC_KTRACE_BUSY, __LINE__)
++#define	TRACE_UNBUSY(__func__,s,ag,sl,tp)	\
++	xfs_alloc_trace_busy(__func__, s, mp, ag, -1, -1, sl, tp, XFS_ALLOC_KTRACE_UNBUSY, __LINE__)
++#define	TRACE_BUSYSEARCH(__func__,s,ag,agb,l,sl,tp)	\
++	xfs_alloc_trace_busy(__func__, s, mp, ag, agb, l, sl, tp, XFS_ALLOC_KTRACE_BUSYSEARCH, __LINE__)
+ #else
+ #define	TRACE_ALLOC(s,a)
+ #define	TRACE_FREE(s,a,b,x,f)
+diff --git a/fs/xfs/xfs_bmap.c b/fs/xfs/xfs_bmap.c
+index 1c0a5a5..798e276 100644
+--- a/fs/xfs/xfs_bmap.c
++++ b/fs/xfs/xfs_bmap.c
+@@ -323,13 +323,13 @@ xfs_bmap_trace_pre_update(
+ 	int		whichfork);	/* data or attr fork */
  
- 	xid = GetXid();
-@@ -336,7 +336,7 @@ cifs_dfs_follow_mountpoint(struct dentry *dentry, struct nameidata *nd)
- 			len = strlen(referrals[i].node_name);
- 			if (len < 2) {
- 				cERROR(1, ("%s: Net Address path too short: %s",
--					__FUNCTION__, referrals[i].node_name));
-+					__func__, referrals[i].node_name));
- 				rc = -EINVAL;
- 				goto out_err;
+ #define	XFS_BMAP_TRACE_DELETE(d,ip,i,c,w)	\
+-	xfs_bmap_trace_delete(__FUNCTION__,d,ip,i,c,w)
++	xfs_bmap_trace_delete(__func__,d,ip,i,c,w)
+ #define	XFS_BMAP_TRACE_INSERT(d,ip,i,c,r1,r2,w)	\
+-	xfs_bmap_trace_insert(__FUNCTION__,d,ip,i,c,r1,r2,w)
++	xfs_bmap_trace_insert(__func__,d,ip,i,c,r1,r2,w)
+ #define	XFS_BMAP_TRACE_POST_UPDATE(d,ip,i,w)	\
+-	xfs_bmap_trace_post_update(__FUNCTION__,d,ip,i,w)
++	xfs_bmap_trace_post_update(__func__,d,ip,i,w)
+ #define	XFS_BMAP_TRACE_PRE_UPDATE(d,ip,i,w)	\
+-	xfs_bmap_trace_pre_update(__FUNCTION__,d,ip,i,w)
++	xfs_bmap_trace_pre_update(__func__,d,ip,i,w)
+ #else
+ #define	XFS_BMAP_TRACE_DELETE(d,ip,i,c,w)
+ #define	XFS_BMAP_TRACE_INSERT(d,ip,i,c,r1,r2,w)
+@@ -6162,10 +6162,10 @@ xfs_check_block(
  			}
-@@ -344,7 +344,7 @@ cifs_dfs_follow_mountpoint(struct dentry *dentry, struct nameidata *nd)
- 						nd->path.dentry,
- 						referrals[i].node_name);
- 			cFYI(1, ("%s: cifs_dfs_do_refmount:%s , mnt:%p",
--					 __FUNCTION__,
-+					 __func__,
- 					referrals[i].node_name, mnt));
- 
- 			/* complete mount procedure if we accured submount */
-@@ -365,7 +365,7 @@ out:
- 	FreeXid(xid);
- 	free_dfs_info_array(referrals, num_referrals);
- 	kfree(full_path);
--	cFYI(1, ("leaving %s" , __FUNCTION__));
-+	cFYI(1, ("leaving %s" , __func__));
- 	return ERR_PTR(rc);
- out_err:
- 	path_put(&nd->path);
-diff --git a/fs/cifs/cifsproto.h b/fs/cifs/cifsproto.h
-index 2f09f56..00d8615 100644
---- a/fs/cifs/cifsproto.h
-+++ b/fs/cifs/cifsproto.h
-@@ -39,8 +39,8 @@ extern int smb_send(struct socket *, struct smb_hdr *,
- 			unsigned int /* length */ , struct sockaddr *);
- extern unsigned int _GetXid(void);
- extern void _FreeXid(unsigned int);
--#define GetXid() (int)_GetXid(); cFYI(1,("CIFS VFS: in %s as Xid: %d with uid: %d",__FUNCTION__, xid,current->fsuid));
--#define FreeXid(curr_xid) {_FreeXid(curr_xid); cFYI(1,("CIFS VFS: leaving %s (xid = %d) rc = %d",__FUNCTION__,curr_xid,(int)rc));}
-+#define GetXid() (int)_GetXid(); cFYI(1,("CIFS VFS: in %s as Xid: %d with uid: %d",__func__, xid,current->fsuid));
-+#define FreeXid(curr_xid) {_FreeXid(curr_xid); cFYI(1,("CIFS VFS: leaving %s (xid = %d) rc = %d",__func__,curr_xid,(int)rc));}
- extern char *build_path_from_dentry(struct dentry *);
- extern char *build_wildcard_path_from_dentry(struct dentry *direntry);
- /* extern void renew_parental_timestamps(struct dentry *direntry);*/
-diff --git a/fs/cifs/dns_resolve.c b/fs/cifs/dns_resolve.c
-index ef7f438..7cc86c4 100644
---- a/fs/cifs/dns_resolve.c
-+++ b/fs/cifs/dns_resolve.c
-@@ -77,14 +77,14 @@ dns_resolve_server_name_to_ip(const char *unc, char **ip_addr)
- 	/* search for server name delimiter */
- 	len = strlen(unc);
- 	if (len < 3) {
--		cFYI(1, ("%s: unc is too short: %s", __FUNCTION__, unc));
-+		cFYI(1, ("%s: unc is too short: %s", __func__, unc));
- 		return -EINVAL;
- 	}
- 	len -= 2;
- 	name = memchr(unc+2, '\\', len);
- 	if (!name) {
- 		cFYI(1, ("%s: probably server name is whole unc: %s",
--					__FUNCTION__, unc));
-+					__func__, unc));
- 	} else {
- 		len = (name - unc) - 2/* leading // */;
- 	}
-@@ -104,7 +104,7 @@ dns_resolve_server_name_to_ip(const char *unc, char **ip_addr)
- 		if (*ip_addr) {
- 			memcpy(*ip_addr, rkey->payload.data, len);
- 			(*ip_addr)[len] = '\0';
--			cFYI(1, ("%s: resolved: %s to %s", __FUNCTION__,
-+			cFYI(1, ("%s: resolved: %s to %s", __func__,
- 					rkey->description,
- 					*ip_addr
- 				));
-@@ -114,7 +114,7 @@ dns_resolve_server_name_to_ip(const char *unc, char **ip_addr)
+ 			if (*thispa == *pp) {
+ 				cmn_err(CE_WARN, "%s: thispa(%d) == pp(%d) %Ld",
+-					__FUNCTION__, j, i,
++					__func__, j, i,
+ 					(unsigned long long)be64_to_cpu(*thispa));
+ 				panic("%s: ptrs are equal in node\n",
+-					__FUNCTION__);
++					__func__);
+ 			}
  		}
- 		key_put(rkey);
- 	} else {
--		cERROR(1, ("%s: unable to resolve: %s", __FUNCTION__, name));
-+		cERROR(1, ("%s: unable to resolve: %s", __func__, name));
+ 	}
+@@ -6325,13 +6325,13 @@ xfs_bmap_check_leaf_extents(
+ 	return;
+ 
+ error0:
+-	cmn_err(CE_WARN, "%s: at error0", __FUNCTION__);
++	cmn_err(CE_WARN, "%s: at error0", __func__);
+ 	if (bp_release)
+ 		xfs_trans_brelse(NULL, bp);
+ error_norelse:
+ 	cmn_err(CE_WARN, "%s: BAD after btree leaves for %d extents",
+-		__FUNCTION__, i);
+-	panic("%s: CORRUPTED BTREE OR SOMETHING", __FUNCTION__);
++		__func__, i);
++	panic("%s: CORRUPTED BTREE OR SOMETHING", __func__);
+ 	return;
+ }
+ #endif
+diff --git a/fs/xfs/xfs_bmap.h b/fs/xfs/xfs_bmap.h
+index 87224b7..6ff70cd 100644
+--- a/fs/xfs/xfs_bmap.h
++++ b/fs/xfs/xfs_bmap.h
+@@ -151,7 +151,7 @@ xfs_bmap_trace_exlist(
+ 	xfs_extnum_t		cnt,		/* count of entries in list */
+ 	int			whichfork);	/* data or attr fork */
+ #define	XFS_BMAP_TRACE_EXLIST(ip,c,w)	\
+-	xfs_bmap_trace_exlist(__FUNCTION__,ip,c,w)
++	xfs_bmap_trace_exlist(__func__,ip,c,w)
+ #else
+ #define	XFS_BMAP_TRACE_EXLIST(ip,c,w)
+ #endif
+diff --git a/fs/xfs/xfs_bmap_btree.c b/fs/xfs/xfs_bmap_btree.c
+index bd18987..f155c21 100644
+--- a/fs/xfs/xfs_bmap_btree.c
++++ b/fs/xfs/xfs_bmap_btree.c
+@@ -275,21 +275,21 @@ xfs_bmbt_trace_cursor(
+ }
+ 
+ #define	XFS_BMBT_TRACE_ARGBI(c,b,i)	\
+-	xfs_bmbt_trace_argbi(__FUNCTION__, c, b, i, __LINE__)
++	xfs_bmbt_trace_argbi(__func__, c, b, i, __LINE__)
+ #define	XFS_BMBT_TRACE_ARGBII(c,b,i,j)	\
+-	xfs_bmbt_trace_argbii(__FUNCTION__, c, b, i, j, __LINE__)
++	xfs_bmbt_trace_argbii(__func__, c, b, i, j, __LINE__)
+ #define	XFS_BMBT_TRACE_ARGFFFI(c,o,b,i,j)	\
+-	xfs_bmbt_trace_argfffi(__FUNCTION__, c, o, b, i, j, __LINE__)
++	xfs_bmbt_trace_argfffi(__func__, c, o, b, i, j, __LINE__)
+ #define	XFS_BMBT_TRACE_ARGI(c,i)	\
+-	xfs_bmbt_trace_argi(__FUNCTION__, c, i, __LINE__)
++	xfs_bmbt_trace_argi(__func__, c, i, __LINE__)
+ #define	XFS_BMBT_TRACE_ARGIFK(c,i,f,s)	\
+-	xfs_bmbt_trace_argifk(__FUNCTION__, c, i, f, s, __LINE__)
++	xfs_bmbt_trace_argifk(__func__, c, i, f, s, __LINE__)
+ #define	XFS_BMBT_TRACE_ARGIFR(c,i,f,r)	\
+-	xfs_bmbt_trace_argifr(__FUNCTION__, c, i, f, r, __LINE__)
++	xfs_bmbt_trace_argifr(__func__, c, i, f, r, __LINE__)
+ #define	XFS_BMBT_TRACE_ARGIK(c,i,k)	\
+-	xfs_bmbt_trace_argik(__FUNCTION__, c, i, k, __LINE__)
++	xfs_bmbt_trace_argik(__func__, c, i, k, __LINE__)
+ #define	XFS_BMBT_TRACE_CURSOR(c,s)	\
+-	xfs_bmbt_trace_cursor(__FUNCTION__, c, s, __LINE__)
++	xfs_bmbt_trace_cursor(__func__, c, s, __LINE__)
+ #else
+ #define	XFS_BMBT_TRACE_ARGBI(c,b,i)
+ #define	XFS_BMBT_TRACE_ARGBII(c,b,i,j)
+diff --git a/fs/xfs/xfs_filestream.c b/fs/xfs/xfs_filestream.c
+index eb03eab..3f3785b 100644
+--- a/fs/xfs/xfs_filestream.c
++++ b/fs/xfs/xfs_filestream.c
+@@ -73,7 +73,7 @@ xfs_filestreams_trace(
+ #define TRACE4(mp,t,a0,a1,a2,a3)	TRACE6(mp,t,a0,a1,a2,a3,0,0)
+ #define TRACE5(mp,t,a0,a1,a2,a3,a4)	TRACE6(mp,t,a0,a1,a2,a3,a4,0)
+ #define TRACE6(mp,t,a0,a1,a2,a3,a4,a5) \
+-	xfs_filestreams_trace(mp, t, __FUNCTION__, __LINE__, \
++	xfs_filestreams_trace(mp, t, __func__, __LINE__, \
+ 				(__psunsigned_t)a0, (__psunsigned_t)a1, \
+ 				(__psunsigned_t)a2, (__psunsigned_t)a3, \
+ 				(__psunsigned_t)a4, (__psunsigned_t)a5)
+diff --git a/fs/xfs/xfs_log.c b/fs/xfs/xfs_log.c
+index a75edca..a2f2928 100644
+--- a/fs/xfs/xfs_log.c
++++ b/fs/xfs/xfs_log.c
+@@ -2241,7 +2241,7 @@ xlog_state_do_callback(
+ 			repeats = 0;
+ 			xfs_fs_cmn_err(CE_WARN, log->l_mp,
+ 				"%s: possible infinite loop (%d iterations)",
+-				__FUNCTION__, flushcnt);
++				__func__, flushcnt);
+ 		}
+ 	} while (!ioerrors && loopdidcallbacks);
+ 
+diff --git a/fs/xfs/xfs_log_recover.c b/fs/xfs/xfs_log_recover.c
+index b82d5d4..003785d 100644
+--- a/fs/xfs/xfs_log_recover.c
++++ b/fs/xfs/xfs_log_recover.c
+@@ -191,7 +191,7 @@ xlog_header_check_dump(
+ {
+ 	int			b;
+ 
+-	cmn_err(CE_DEBUG, "%s:  SB : uuid = ", __FUNCTION__);
++	cmn_err(CE_DEBUG, "%s:  SB : uuid = ", __func__);
+ 	for (b = 0; b < 16; b++)
+ 		cmn_err(CE_DEBUG, "%02x", ((uchar_t *)&mp->m_sb.sb_uuid)[b]);
+ 	cmn_err(CE_DEBUG, ", fmt = %d\n", XLOG_FMT);
+@@ -3445,7 +3445,7 @@ xlog_valid_rec_header(
+ 	    (!rhead->h_version ||
+ 	    (be32_to_cpu(rhead->h_version) & (~XLOG_VERSION_OKBITS))))) {
+ 		xlog_warn("XFS: %s: unrecognised log version (%d).",
+-			__FUNCTION__, be32_to_cpu(rhead->h_version));
++			__func__, be32_to_cpu(rhead->h_version));
+ 		return XFS_ERROR(EIO);
  	}
  
- 	kfree(name);
+diff --git a/fs/xfs/xfs_trans_ail.c b/fs/xfs/xfs_trans_ail.c
+index 4d6330e..9982d1a 100644
+--- a/fs/xfs/xfs_trans_ail.c
++++ b/fs/xfs/xfs_trans_ail.c
+@@ -437,7 +437,7 @@ xfs_trans_delete_ail(
+ 		else {
+ 			xfs_cmn_err(XFS_PTAG_AILDELETE, CE_ALERT, mp,
+ 		"%s: attempting to delete a log item that is not in the AIL",
+-					__FUNCTION__);
++					__func__);
+ 			spin_unlock(&mp->m_ail_lock);
+ 			xfs_force_shutdown(mp, SHUTDOWN_CORRUPT_INCORE);
+ 		}
 -- 
 1.5.4.3.500.g83a2c
 
