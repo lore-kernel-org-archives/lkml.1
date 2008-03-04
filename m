@@ -1,47 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765164AbYCDQHj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765215AbYCDQK2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765164AbYCDQHj (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Mar 2008 11:07:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762461AbYCDQHb
+	id S1765215AbYCDQK2 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Mar 2008 11:10:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760300AbYCDQKU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Mar 2008 11:07:31 -0500
-Received: from gw.goop.org ([64.81.55.164]:35747 "EHLO mail.goop.org"
+	Tue, 4 Mar 2008 11:10:20 -0500
+Received: from mailhub.sw.ru ([195.214.232.25]:3415 "EHLO relay.sw.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754909AbYCDQHa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Mar 2008 11:07:30 -0500
-Message-ID: <47CD7290.1040907@goop.org>
-Date: Tue, 04 Mar 2008 08:02:24 -0800
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
-MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Mark McLoughlin <markmc@redhat.com>, Ian Campbell <ijc@hellion.org.uk>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       Alexander van Heukelum <heukelum@mailshack.com>,
-       Alexander van Heukelum <heukelum@fastmail.fm>, Andi Kleen <ak@suse.de>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [RFC] use realmode code to reserve end-of-conventional-memory
- to 1MB
-References: <20080225170134.GA15839@elte.hu> <20080225180750.GA31054@mailshack.com> <20080228131341.GA25213@mailshack.com> <20080228132822.GA25278@mailshack.com> <1204233131.28798.12.camel@cthulhu.hellion.org.uk> <47C72432.3010606@zytor.com> <1204240609.28798.33.camel@cthulhu.hellion.org.uk> <1204630906.16613.4.camel@muff> <20080304143324.GA2713@elte.hu> <47CD672C.1040406@goop.org> <20080304152540.GC6449@elte.hu>
-In-Reply-To: <20080304152540.GC6449@elte.hu>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	id S1756713AbYCDQKT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 4 Mar 2008 11:10:19 -0500
+Date: Tue, 4 Mar 2008 19:09:40 +0300
+From: Alexey Dobriyan <adobriyan@sw.ru>
+To: Holger Kiehl <Holger.Kiehl@dwd.de>
+Cc: linux-kernel@vger.kernel.org, dhaval@linux.vnet.ibm.com,
+       vatsa@linux.vnet.ibm.com, mingo@elte.hu
+Subject: Re: sysfs: duplicate filename '74' can not be created
+Message-ID: <20080304160940.GC19059@localhost.sw.ru>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
->> I think it was a side effect of all the early_ioremap work, which 
->> changed the order in which things happened at boot time.
->>     
->
-> which commits do you mean in particular?
+[Cc'ing /sys/kernel/uids guys]
 
-Good question.  It might have been cpa as well.  I'd have to look 
-through to confirm the theory, but I think Xen got broken for other 
-reasons around there, so simple bisect wouldn't be enough to identify 
-the problem.
+> Mar  3 13:50:01 helena kernel: sysfs: duplicate filename '74' can not be created
+> Mar  3 13:50:01 helena kernel: WARNING: at fs/sysfs/dir.c:424 sysfs_add_one()
+> Mar  3 13:50:01 helena kernel: Pid: 21911, comm: sshd Not tainted 2.6.24.3 #1
 
-    J
+I see only one suspicious place: KOBJ_ADD is sent even if sysfs file
+creation failed and kobject is happily removed. But this almost
+certainly separate bug.
+
+
+
+You can try this debugging patch. Post several first consecutive messages.
+[crosses fingers]
+
+--- a/kernel/user.c
++++ b/kernel/user.c
+@@ -179,8 +179,11 @@ static int user_kobject_create(struct user_struct *up)
+ 		goto done;
+ 
+ 	error = sysfs_create_file(kobj, &up->user_attr.attr);
+-	if (error)
++	if (error) {
++		printk("%s: %p->uid = %d\n", __func__, up, up->uid);
++		WARN_ON(1);
+ 		kobject_del(kobj);
++	}
+ 
+ 	kobject_uevent(kobj, KOBJ_ADD);
+ 
+@@ -363,6 +366,7 @@ struct user_struct * alloc_uid(struct user_namespace *ns, uid_t uid)
+ 		}
+ 
+ 		if (sched_create_user(new) < 0) {
++			WARN_ON(1);
+ 			key_put(new->uid_keyring);
+ 			key_put(new->session_keyring);
+ 			kmem_cache_free(uid_cachep, new);
+@@ -371,6 +375,7 @@ struct user_struct * alloc_uid(struct user_namespace *ns, uid_t uid)
+ 		}
+ 
+ 		if (user_kobject_create(new)) {
++			WARN_ON(1);
+ 			sched_destroy_user(new);
+ 			key_put(new->uid_keyring);
+ 			key_put(new->session_keyring);
+@@ -386,6 +391,10 @@ struct user_struct * alloc_uid(struct user_namespace *ns, uid_t uid)
+ 		spin_lock_irq(&uidhash_lock);
+ 		up = uid_hash_find(uid, hashent);
+ 		if (up) {
++#ifdef CONFIG_FAIR_USER_SCHED
++			printk("%s: %p->uid = %d\n", __func__, up, up->uid);
++			WARN_ON(1);
++#endif
+ 			/* This case is not possible when CONFIG_FAIR_USER_SCHED
+ 			 * is defined, since we serialize alloc_uid() using
+ 			 * uids_mutex. Hence no need to call
+diff --git a/kernel/user_namespace.c b/kernel/user_namespace.c
+index 7af90fc..3479c55 100644
+--- a/kernel/user_namespace.c
++++ b/kernel/user_namespace.c
+@@ -32,6 +32,8 @@ static struct user_namespace *clone_user_ns(struct user_namespace *old_ns)
+ 	struct user_struct *new_user;
+ 	int n;
+ 
++	printk("%s: ENTER\n", __func__);
++
+ 	ns = kmalloc(sizeof(struct user_namespace), GFP_KERNEL);
+ 	if (!ns)
+ 		return ERR_PTR(-ENOMEM);
+
