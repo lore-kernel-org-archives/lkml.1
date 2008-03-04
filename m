@@ -1,112 +1,127 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932870AbYCDSti@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764278AbYCDSx5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932870AbYCDSti (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Mar 2008 13:49:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760821AbYCDStY
+	id S1764278AbYCDSx5 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Mar 2008 13:53:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757787AbYCDSxq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Mar 2008 13:49:24 -0500
-Received: from mail.gmx.net ([213.165.64.20]:60485 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1762807AbYCDStW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Mar 2008 13:49:22 -0500
-X-Authenticated: #14349625
-X-Provags-ID: V01U2FsdGVkX18vD+xXTxEvc+G0G26fdtPi79ZbijpQ80Uc7PJUDc
-	bzeEBsubcjdFqB
-Subject: Re: [PATCH] block: fix residual byte count handling
-From: Mike Galbraith <efault@gmx.de>
-To: Jens Axboe <jens.axboe@oracle.com>
-Cc: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>, htejun@gmail.com,
-       tomof@acm.org, James.Bottomley@HansenPartnership.com,
-       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       linux-ide@vger.kernel.org, linux-scsi@vger.kernel.org,
-       jgarzik@pobox.com, bzolnier@gmail.com
-In-Reply-To: <20080304184534.GR6704@kernel.dk>
-References: <20080304182228Z.fujita.tomonori@lab.ntt.co.jp>
-	 <20080304093536.GH6704@kernel.dk>
-	 <1204634238.5997.5.camel@homer.simson.net>
-	 <20080304123939.GM6704@kernel.dk>
-	 <1204634619.17258.0.camel@homer.simson.net>
-	 <1204635515.17258.12.camel@homer.simson.net>
-	 <20080304130307.GN6704@kernel.dk>
-	 <1204640722.5783.10.camel@homer.simson.net>
-	 <20080304181736.GP6704@kernel.dk>
-	 <1204655711.19496.10.camel@homer.simson.net>
-	 <20080304184534.GR6704@kernel.dk>
+	Tue, 4 Mar 2008 13:53:46 -0500
+Received: from g5t0009.atlanta.hp.com ([15.192.0.46]:39977 "EHLO
+	g5t0009.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752072AbYCDSxp (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 4 Mar 2008 13:53:45 -0500
+Subject: [BUG FIX] Fix mempolicy reference counting bugs
+From: Lee Schermerhorn <Lee.Schermerhorn@hp.com>
+To: linux-kernel <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>, Greg KH <gregkh@suse.de>
+Cc: ak@suse.de, clameter@sgi.com, mel@csn.ul.ie, linux-mm@kvack.org,
+       rientjes@google.com, eric.whitney@hp.com
 Content-Type: text/plain
-Date: Tue, 04 Mar 2008 19:49:15 +0100
-Message-Id: <1204656555.6598.4.camel@homer.simson.net>
+Organization: HP/OSLO
+Date: Tue, 04 Mar 2008 13:53:56 -0500
+Message-Id: <1204656837.5338.89.camel@localhost>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.12.0 
+X-Mailer: Evolution 2.6.1 
 Content-Transfer-Encoding: 7bit
-X-Y-GMX-Trusted: 0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+[BUG FIX] Fix mempolicy reference counting bugs
 
-On Tue, 2008-03-04 at 19:45 +0100, Jens Axboe wrote:
+This patch address 3 known bugs in the current memory policy
+reference counting method.  I have a series of patches to
+rework the reference counting to reduce overhead in the
+allocation path. However, that series will require testing
+in -mm once I repost it.
 
-> > It says cc66b4512cae8df4ed1635483210aabf7690ec27... kewpie doll?
-> 
-> That looks right, then perhaps there's still an issue there :/
-> Logs?
+I'm making this patch available for the current upstream
+[2.6.25-rc3] pending submittal and acceptance of the rework.
+Note that these bugs exist back to 2.6.23, so this patch
+may be a candidate for the stable tree.
 
-Tejuns patchlet (below) fixed it here.
+Problem description:
 
-Date:	Wed, 05 Mar 2008 01:42:45 +0900
-From:	Tejun Heo <htejun@gmail.com>
-To:	FUJITA Tomonori <tomof@acm.org>
-CC:	efault@gmx.de, jens.axboe@oracle.com, fujita.tomonori@lab.ntt.co.jp, James.Bottomley@HansenPartnership.com, akpm@linux-foundation.org, linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org, linux-scsi@vger.kernel.org, jgarzik@pobox.com, bzolnier@gmail.com
-Subject: Re: [PATCH] block: fix residual byte count handling
+1) alloc_page_vma() does not release the extra reference
+   taken for vma/shared mempolicy when the mode ==
+   MPOL_INTERLEAVE.  This can result in leaking mempolicy
+   structures.  This is probably occurring, but not being
+   noticed.
 
-Tejun Heo wrote:
-> Tejun Heo wrote:
->> FUJITA Tomonori wrote:
->>>> Aiee... device going down after timing out on READ_DISC_INFO.  That's
->>>> gruesome.  Can you please try the other patches?
->>> Tejun, I thought that libata needs a fix for sum(sg) != rq->data_len. No?
->> The extra_len you added to qc->nbytes should be it.  The only other
->> place to pay attention is the ATAPI transfer chunk size and your patch
->> seems to get it right.
->>
->>> Now Jens' git tree should work with all the non libata stuff, ide,
->>> firewire, bsg, etc. But I'm not sure about libata.
->> With the second patch, all others should be fine no matter what.  I'll
->> go check libata part again.
-> 
-> I can reproduce the problem here and it's very weird.  I'll report back
-> when I know more.
+   Fix:  add the conditional release of the reference.
 
-Okay, I got it.  Heh, it turns out SCSI and/or block layer is not
-ready for rq->data_len != sum(sg).  When adjusted command completes,
-SCSI midlayer completes the command with rq->data_len for PC commands
-which eventually ends up in __end_that_request_first().  As there are
-extra sg area left after completing rq->data_len, blk layer says so to
-SCSI layer and SCSI layer retries the command only with the appended
-area.
+2) hugezonelist unconditionally releases a reference on
+   the mempolicy when mode == MPOL_INTERLEAVE.  This can
+   result in decrementing the reference count for system
+   default policy [should have no ill effect] or premature
+   freeing of task policy.  If this occurred, the next
+   allocation using task mempolicy would use the freed
+   structure and probably BUG out.
 
-The following patch gets the writing going.  I really think it's a
-serious mistake to break rq->data_len == sum(sg).  If we break
-rq->data_len == requested size, the worst bugs are giving wrong size
-when issuing commands to application layer of devices which is
-relatively easy to spot and not all that command anyway.  Breaking
-rq->data_len == sum(sg), bugs will be in internal mechanics, DMA
-engine programming and transport layer.  Oh well...
+   Fix:  add the necessary check to the release.
 
-diff --git a/drivers/scsi/scsi.c b/drivers/scsi/scsi.c
-index fecba05..32439ac 100644
---- a/drivers/scsi/scsi.c
-+++ b/drivers/scsi/scsi.c
-@@ -757,7 +757,7 @@ void scsi_finish_command(struct scsi_cmnd *cmd)
- 				"Notifying upper driver of completion "
- 				"(result %x)\n", cmd->result));
+3) The current reference counting method assumes that
+   vma 'get_policy()' methods automatically add an extra
+   reference a non-NULL returned mempolicy.  This is true
+   for shmem_get_policy() used by tmpfs mappings, including
+   regular page shm segments.  However, SHM_HUGETLB shm's,
+   backed by hugetlbfs, just use the vma policy without the
+   extra reference.  This results in freeing of the vma
+   policy on the first allocation, with reuse of the freed
+   mempolicy structure on subsequent allocations.
+
+   Fix:  Rather than add another condition to the 
+   conditional reference release, which occur in the allocation
+   path, just add a reference when returning the vma policy in 
+   shm_get_policy() to match the assumptions.
+
+Signed-off-by:  Lee Schermerhorn <lee.schermerhorn@hp.com>
+
+ ipc/shm.c      |    5 +++--
+ mm/mempolicy.c |    7 ++++++-
+ 2 files changed, 9 insertions(+), 3 deletions(-)
+
+Index: linux-2.6.25-rc3/mm/mempolicy.c
+===================================================================
+--- linux-2.6.25-rc3.orig/mm/mempolicy.c	2008-02-29 12:32:47.000000000 -0500
++++ linux-2.6.25-rc3/mm/mempolicy.c	2008-02-29 12:32:48.000000000 -0500
+@@ -1296,7 +1296,9 @@ struct zonelist *huge_zonelist(struct vm
+ 		unsigned nid;
  
--	good_bytes = scsi_bufflen(cmd);
-+	good_bytes = scsi_bufflen(cmd) + cmd->request->data_len;
-         if (cmd->request->cmd_type != REQ_TYPE_BLOCK_PC) {
- 		drv = scsi_cmd_to_driver(cmd);
- 		if (drv->done)
-
-
+ 		nid = interleave_nid(pol, vma, addr, HPAGE_SHIFT);
+-		__mpol_free(pol);		/* finished with pol */
++		if (unlikely(pol != &default_policy &&
++				pol != current->mempolicy))
++			__mpol_free(pol);	/* finished with pol */
+ 		return NODE_DATA(nid)->node_zonelists + gfp_zone(gfp_flags);
+ 	}
+ 
+@@ -1360,6 +1362,9 @@ alloc_page_vma(gfp_t gfp, struct vm_area
+ 		unsigned nid;
+ 
+ 		nid = interleave_nid(pol, vma, addr, PAGE_SHIFT);
++		if (unlikely(pol != &default_policy &&
++				pol != current->mempolicy))
++			__mpol_free(pol);	/* finished with pol */
+ 		return alloc_page_interleave(gfp, 0, nid);
+ 	}
+ 	zl = zonelist_policy(gfp, pol);
+Index: linux-2.6.25-rc3/ipc/shm.c
+===================================================================
+--- linux-2.6.25-rc3.orig/ipc/shm.c	2008-02-29 12:32:47.000000000 -0500
++++ linux-2.6.25-rc3/ipc/shm.c	2008-02-29 12:34:37.000000000 -0500
+@@ -271,9 +271,10 @@ static struct mempolicy *shm_get_policy(
+ 
+ 	if (sfd->vm_ops->get_policy)
+ 		pol = sfd->vm_ops->get_policy(vma, addr);
+-	else if (vma->vm_policy)
++	else if (vma->vm_policy) {
+ 		pol = vma->vm_policy;
+-	else
++		mpol_get(pol);	/* get_vma_policy() expects this */
++	} else
+ 		pol = current->mempolicy;
+ 	return pol;
+ }
 
 
