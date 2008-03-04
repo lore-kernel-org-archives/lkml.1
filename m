@@ -1,88 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762843AbYCDHAd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762543AbYCDHDf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762843AbYCDHAd (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Mar 2008 02:00:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752057AbYCDHAZ
+	id S1762543AbYCDHDf (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Mar 2008 02:03:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755640AbYCDHDZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Mar 2008 02:00:25 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:43146 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754103AbYCDHAY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Mar 2008 02:00:24 -0500
+	Tue, 4 Mar 2008 02:03:25 -0500
+Received: from parabel.levigo.net ([62.206.214.16]:35985 "EHLO
+	parabel.matrix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754579AbYCDHDY (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 4 Mar 2008 02:03:24 -0500
+Message-ID: <47CCF42F.3090306@gdsys.de>
+Date: Tue, 04 Mar 2008 08:03:11 +0100
+From: Dirk Eibach <eibach@gdsys.de>
+User-Agent: Mozilla-Thunderbird 2.0.0.9 (X11/20080110)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+To: greg@kroah.com
+Cc: Alan Stern <stern@rowland.harvard.edu>, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org, apw@shadowen.org,
+       linux-usb@vger.kernel.org
+References: <20080303162827.GB11592@kroah.com>
+In-Reply-To: <20080303162827.GB11592@kroah.com>
+Subject: Re: [PATCH] usb: add sysfs configuration interface for CP2101
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-From: Roland McGrath <roland@redhat.com>
-To: Frank Mayhar <fmayhar@google.com>
-X-Fcc: ~/Mail/linus
-Cc: parag.warudkar@gmail.com,
-       Alejandro Riveira =?ISO-8859-1?Q?Fern=E1ndez?= 
-	<ariveira@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       bugme-daemon@bugzilla.kernel.org, linux-kernel@vger.kernel.org,
-       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       Jakub Jelinek <jakub@redhat.com>
-Subject: Re: [Bugme-new] [Bug 9906] New: Weird hang with NPTL and SIGPROF.
-In-Reply-To: Frank Mayhar's message of  Friday, 29 February 2008 11:55:04 -0800 <1204314904.4850.23.camel@peace.smo.corp.google.com>
-References: <bug-9906-10286@http.bugzilla.kernel.org/>
-	<20080206165045.89b809cc.akpm@linux-foundation.org>
-	<1202345893.8525.33.camel@peace.smo.corp.google.com>
-	<alpine.LRH.1.00.0802062148480.7445@mini.warudkars.net>
-	<20080207162203.3e3cf5ab@Varda>
-	<alpine.LRH.1.00.0802071040010.29320@mini.warudkars.net>
-	<alpine.LRH.1.00.0802071054160.29320@mini.warudkars.net>
-	<20080207165455.04ec490b@Varda>
-	<alpine.LRH.1.00.0802071100230.29369@mini.warudkars.net>
-	<alpine.LRH.1.00.0802071153130.15220@mini.warudkars.net>
-	<1204314904.4850.23.camel@peace.smo.corp.google.com>
-X-Shopping-List: (1) Global defusers
-   (2) Hectic lubricating approval distenders
-   (3) Coughing neglect logs
-   (4) Periodical chowder carrion
-   (5) Erroneous detection indigestion
-Message-Id: <20080304070016.903E127010A@magilla.localdomain>
-Date: Mon,  3 Mar 2008 23:00:16 -0800 (PST)
+X-AntiVirus: checked by AntiVir MailGate (version: 2.0.2-5; AVE: 7.6.0.73; VDF: 7.0.2.225; host: mailrelay)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Thanks for the detailed explanation and for bringing this to my attention.
+greg@kroah.com wrote:
+> On Mon, Mar 03, 2008 at 10:07:41AM -0500, Alan Stern wrote:
+>> On Mon, 3 Mar 2008, Dirk Eibach wrote:
+>>
+>>> From: Dirk Eibach <eibach@gdsys.de>
+>>>
+>>> The usb configuration data for the Silabs CP2101 usb to uart bridge 
+>>> controller can be customized:
+>>> - Vendor ID
+>>> - Product ID
+>>> - Power Descriptor
+>>> - Release Number
+>>> - Serial Number
+>>> - Product Description String
+>>>
+>>> Silabs provides a windows-only tool to do that.
+>>> Since we use linux-only machines in our production-environment, we have no 
+>>> proper way to customize the chips for our purpose.
+>>> So I added sysfs configuration support to the linux driver.
+>> Surely this sort of thing is better done in userspace, with libusb.
+> 
+> I agree, any reason why you have not tried that?  Adding files like
+> "vendor_id" to an interface directory in sysfs could cause a lot of
+> people to get very confused, very quickly :)
 
-This is a problem we knew about when I first implemented posix-cpu-timers
-and process-wide SIGPROF/SIGVTALRM.  I'm a little surprised it took this
-long to become a problem in practice.  I originally expected to have to
-revisit it sooner than this, but I certainly haven't thought about it for
-quite some time.  I'd guess that HZ=1000 becoming common is what did it.
+Greg, any reason why you didn't suggest using libusb in your first mail ;) ?
 
-The obvious implementation for the process-wide clocks is to have the
-tick interrupt increment shared utime/stime/sched_time fields in
-signal_struct as well as the private task_struct fields.  The all-threads
-totals accumulate in the signal_struct fields, which would be atomic_t.
-It's then trivial for the timer expiry checks to compare against those
-totals.
+I have not used libusb yet, but looking at the api it seems to be just what I need. I had heard about libusb before, but never really had a look at it. So thanks for your advice, Alan. I will implement this stuff in userspace.
 
-The concern I had about this was multiple CPUs competing for the
-signal_struct fields.  (That is, several CPUs all running threads in the
-same process.)  If the ticks on each CPU are even close to synchronized,
-then every single time all those CPUs will do an atomic_add on the same
-word.  I'm not any kind of expert on SMP and cache effects, but I know
-this is bad.  However bad it is, it's that bad all the time and however
-few threads (down to 2) it's that bad for that many CPUs.
+On the other hand it would a little bit sad, if Silabs windows tool would stay the only way to setup for all other people. I cannot see how I could spread the userspace tool the way it would be spread if it was in the kernel. 
+Maybe someone has an idea on that.
 
-The implementation we have instead is obviously dismal for large numbers
-of threads.  I always figured we'd replace that with something based on
-more sophisticated thinking about the CPU-clash issue.  
+So, sorry for the noise guys.
 
-I don't entirely follow your description of your patch.  It sounds like it
-should be two patches, though.  The second of those patches (workqueue)
-sounds like it could be an appropriate generic cleanup, or like it could
-be a complication that might be unnecessary if we get a really good
-solution to main issue.  
-
-The first patch I'm not sure whether I understand what you said or not.
-Can you elaborate?  Or just post the unfinished patch as illustration,
-marking it as not for submission until you've finished.
+Cheers
+Dirk
 
 
-Thanks,
-Roland
+
