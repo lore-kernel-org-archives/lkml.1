@@ -1,55 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933179AbYCDUCw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933620AbYCDUDU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933179AbYCDUCw (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Mar 2008 15:02:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755840AbYCDUCm
+	id S933620AbYCDUDU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Mar 2008 15:03:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932768AbYCDUCu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Mar 2008 15:02:42 -0500
-Received: from outbound-mail-141.bluehost.com ([67.222.38.31]:60433 "HELO
-	outbound-mail-141.bluehost.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1753962AbYCDUCl (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Mar 2008 15:02:41 -0500
-From: Jesse Barnes <jbarnes@virtuousgeek.org>
-To: Greg KH <gregkh@suse.de>
-Subject: Re: [PATCH 4/4] ACPI PCI slot detection driver
-Date: Tue, 4 Mar 2008 12:02:09 -0800
-User-Agent: KMail/1.9.6 (enterprise 0.20071204.744707)
-Cc: Matthew Wilcox <matthew@wil.cx>, Alex Chiang <achiang@hp.com>,
-       Gary Hade <garyhade@us.ibm.com>, kaneshige.kenji@jp.fujitsu.com,
-       warthog19@eaglescrag.net, kristen.c.accardi@intel.com,
-       rick.jones2@hp.com, linux-kernel@vger.kernel.org,
-       linux-pci@atrey.karlin.mff.cuni.cz, linux-acpi@vger.kernel.org
-References: <20080229002341.GA21420@ldl.fc.hp.com> <200803041018.29035.jbarnes@virtuousgeek.org> <20080304193036.GB5534@suse.de>
-In-Reply-To: <20080304193036.GB5534@suse.de>
+	Tue, 4 Mar 2008 15:02:50 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:42285 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932323AbYCDUCs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 4 Mar 2008 15:02:48 -0500
+Message-ID: <47CDAACE.3090203@ce.jp.nec.com>
+Date: Tue, 04 Mar 2008 15:02:22 -0500
+From: "Jun'ichi Nomura" <j-nomura@ce.jp.nec.com>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: Hannes Reinecke <hare@suse.de>
+CC: Kiyoshi Ueda <k-ueda@ct.jp.nec.com>, jens.axboe@oracle.com,
+       linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
+       dm-devel@redhat.com, michaelc@cs.wisc.edu
+Subject: Re: [RFC PATCH 1/3] block: add rq->complete_io hook for request stacking
+References: <20080215.172727.39155014.k-ueda@ct.jp.nec.com>	<47CC2652.1080601@suse.de> <20080303.140427.39152329.k-ueda@ct.jp.nec.com> <47CD03DE.3010703@suse.de>
+In-Reply-To: <47CD03DE.3010703@suse.de>
+Content-Type: text/plain; charset=ISO-2022-JP
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200803041202.09702.jbarnes@virtuousgeek.org>
-X-Identified-User: {642:box128.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.27.49 authed with jbarnes@virtuousgeek.org}
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday, March 04, 2008 11:30 am Greg KH wrote:
-> bad data is worse.
+Hi Hannes,
 
-But we don't want to throw the baby out with the bathwater; assuming there are 
-lots of machines out there with good data (I really hope that's the case), 
-this feature seems like a really good idea.
+Hannes Reinecke wrote:
+> Kiyoshi Ueda wrote:
+>> I'm thinking about an idea come from Mike and Jens after the session
+>> at LSF'08:
+>>   o stacking driver clones both bio and request and uses
+>>     bio->bi_end_io and rq->end_io
+>>   o stacking driver uses blk_complete_request() in rq->end_io
+>>     so that stacking driver can work without queue lock
+>> With this idea, we don't need to add the new hook to request,
+>> and we can use request stacking on drivers using __blk_end_request().
+>>
+> Huh? I can't really imagine how this should work. If you start using
+> bio->bi_end_io() for stacking usage you'll end up with doing weird thing
+> with the bios ... Can you elaborate a bit more here?
 
-> And then there's the machines with duplicate slot names, how does this
-> code handle PCI slots with that?  I think some of the IBM machines had
-> non-hotplug slots named the same as the hotplug slots, right?
->
-> This stuff needs a _lot_ of testing on a lot of different machines, and
-> a sane way to fall-back if there are errors to ensure that working
-> machines don't break.
+Cloned bio's bi_end_io() can check the error.
 
-Yeah, I think a good fallback is important.  Might be good to have a blacklist 
-along with a heuristic for detecting duplicate slot names...  Anyway, yeah, 
-testing will be huge here.
+For successful I/O, it calls something equivalent to
+end_that_request_first() for the original request,
+that may eventually complete the original bio and
+notify the submitter.
 
-Jesse
+For error, it can decide not to complete the original bio
+and record the error information.
+
+When the clone request is finally completed and rq->end_io() is
+called, stacking driver can check the recorded error information
+and decide whether it should take any action or just complete
+the original request by blk_complete_request().
+
+Thanks,
+-- 
+Jun'ichi Nomura, NEC Corporation of America
