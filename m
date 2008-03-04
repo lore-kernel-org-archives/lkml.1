@@ -1,63 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934064AbYCDXBp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934145AbYCDXCf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934064AbYCDXBp (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Mar 2008 18:01:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765930AbYCDXBe
+	id S934145AbYCDXCf (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Mar 2008 18:02:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933031AbYCDXCG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Mar 2008 18:01:34 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:54541 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1765405AbYCDXBd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Mar 2008 18:01:33 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Ingo Molnar <mingo@elte.hu>
-Subject: Re: 2.6.25-rc3-git3: Reported regressions from 2.6.24
-Date: Wed, 5 Mar 2008 00:00:26 +0100
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: Pavel Machek <pavel@ucw.cz>, LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Adrian Bunk <bunk@kernel.org>, Lukas Hejtmanek <xhejtman@ics.muni.cz>
-References: <200803030316.07165.rjw@sisk.pl> <20080304111715.GB23227@elf.ucw.cz> <20080304135932.GF32383@elte.hu>
-In-Reply-To: <20080304135932.GF32383@elte.hu>
+	Tue, 4 Mar 2008 18:02:06 -0500
+Received: from ug-out-1314.google.com ([66.249.92.170]:45137 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1765930AbYCDXCC (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 4 Mar 2008 18:02:02 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-disposition:message-id:content-type:content-transfer-encoding;
+        b=Ac1PJ+A6T98+M5+BgSdoocopOZ+w1+0FfjwYDkeXmtmWsVIQ/O8w9bf/pvBS6wAYnxfu9eLjsyhP5jzfqQAwX9A3KueV8z+NyrQTjKlaR604RjI1cRp7nPlBkg/o5rAZfLfRzeApRF5qB029bwVVpNfZXyEnSmKRleSgWcb0bXI=
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+To: Anders Eriksson <aeriksson@fastmail.fm>
+Subject: Re: -rc3 regression (was Re: 2.6.25-rc2 + smartd = hang )
+Date: Wed, 5 Mar 2008 00:13:39 +0100
+User-Agent: KMail/1.9.6 (enterprise 0.20071204.744707)
+Cc: Jeff Garzik <jeff@garzik.org>, linux-kernel@vger.kernel.org,
+       Linux IDE mailing list <linux-ide@vger.kernel.org>,
+       Jens Axboe <jens.axboe@oracle.com>
+References: <20080222165122.8D2BB93C12F@tippex.mynet.homeunix.org> <20080304095701.DDF762DC027@tippex.mynet.homeunix.org> <200803042346.21403.bzolnier@gmail.com>
+In-Reply-To: <200803042346.21403.bzolnier@gmail.com>
 MIME-Version: 1.0
+Content-Disposition: inline
+Message-Id: <200803050013.39247.bzolnier@gmail.com>
 Content-Type: text/plain;
   charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200803050000.27897.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday, 4 of March 2008, Ingo Molnar wrote:
-> 
-> * Pavel Machek <pavel@ucw.cz> wrote:
-> 
-> > > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=10012
-> > > Subject		: 2.6.24-git4+ regression
-> > 
-> > Better  description would be "interactivity problems in -git4+".
-> > 
-> > > Submitter	: Lukas Hejtmanek <xhejtman@ics.muni.cz>
-> > > Date		: 2008-01-30 14:56
-> > > References	: http://lkml.org/lkml/2008/1/30/254
-> > > Handled-By	: Ingo Molnar <mingo@elte.hu>
-> > > 		  Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>
-> > 
-> > And he has GROUP_SCHED enabled, that is known broken. 
-> 
-> this should all be fixed in sched-devel.git (via a revert):
-> 
->   http://people.redhat.com/mingo/sched-devel.git/README
-> 
-> it's lined up for upstream pull.
+On Tuesday 04 March 2008, Bartlomiej Zolnierkiewicz wrote:
 
-Is it:
+> I must admit that after auditing the patch & code for n-th time I still fail
+> to see the source of the problem (especialy now that the theory about exposing
+> races in the tuning code has also failed) as the _only_ changes introduced by
+> the guilty commit are that we are using different rq->cmd_type and testing for
+> rq->special instead of rq->buffer but both should be NULL. [ as it can be seen
+> be looking at ide_cmd_ioctl(), execute_drive_cmd() and ide_end_drive_cmd() ]
+> 
+> If anybody has some ideas on what could be wrong please help, in the meantime
+> I'm going to take a look at smartd code...
 
-commit 62fb185130e4d420f71a30ff59d8b16b74ef5d2b
-Author: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Date:   Mon Feb 25 17:34:02 2008 +0100
+This is getting more interesting as smartd doesn't seem to be using "empty"
+HDIO_DRIVE_CMD requests at all!
 
-    sched: revert load_balance_monitor() changes
+[ IOW the guilty commit should have zero influence on smartd. ]
 
+Anders, could you send me ide-taskfile.s (make drivers/ide/ide-taskfile.s)
+from before and after the commit?  Maybe it is simply a compiler bug...
+
+Thanks.
+Bart
