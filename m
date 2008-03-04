@@ -1,48 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933535AbYCDUOV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933750AbYCDUOr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933535AbYCDUOV (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Mar 2008 15:14:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751722AbYCDUOM
+	id S933750AbYCDUOr (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Mar 2008 15:14:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932463AbYCDUOR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Mar 2008 15:14:12 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:36162 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1761217AbYCDUOL (ORCPT
+	Tue, 4 Mar 2008 15:14:17 -0500
+Received: from smtpauth13.prod.mesa1.secureserver.net ([64.202.165.37]:56096
+	"HELO smtpauth13.prod.mesa1.secureserver.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S932645AbYCDUOQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Mar 2008 15:14:11 -0500
-Date: Tue, 4 Mar 2008 12:13:39 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: "Pekka Enberg" <penberg@cs.helsinki.fi>
-Cc: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org, mingo@elte.hu,
-       vegard.nossum@gmail.com
-Subject: Re: Google's Summer of Code?
-Message-Id: <20080304121339.a3b2483f.akpm@linux-foundation.org>
-In-Reply-To: <84144f020803041155k222c13ecu13c8c9534ced87e5@mail.gmail.com>
-References: <84144f020803041045i70bbb05l6983bd14c5bcc91a@mail.gmail.com>
-	<alpine.LFD.1.00.0803041127290.12253@woody.linux-foundation.org>
-	<84144f020803041155k222c13ecu13c8c9534ced87e5@mail.gmail.com>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 4 Mar 2008 15:14:16 -0500
+Message-ID: <47CDAC9D.6020505@seclark.us>
+Date: Tue, 04 Mar 2008 15:10:05 -0500
+From: Stephen Clark <Stephen.Clark@seclark.us>
+Reply-To: Stephen.Clark@seclark.us
+User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
+MIME-Version: 1.0
+To: linux-kernel <linux-kernel@vger.kernel.org>
+Subject: iTCO watchdog timer
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 4 Mar 2008 21:55:14 +0200
-"Pekka Enberg" <penberg@cs.helsinki.fi> wrote:
+Hello,
 
-> I am also wondering if such a high profile
-> project as the kernel can get away with not having a "project ideas"
-> list which would make things real easy for the administrator(s)...
+I have new Intel DG33FB mainboard.
 
-http://kernelnewbies.org/KernelProjects
 
-There are surely many more things we could put there.
+Mar  2 20:47:19 joker1 kernel: iTCO_vendor_support: vendor-support=0
+Mar  2 20:47:19 joker1 kernel: iTCO_wdt: Intel TCO WatchDog Timer Driver 
+v1.02 (26-Jul-2007)
+Mar  2 20:47:19 joker1 kernel: iTCO_wdt: Found a ICH9DH TCO device 
+(Version=2, TCOBASE=0x0460)
+Mar  2 20:47:19 joker1 kernel: iTCO_wdt: initialized. heartbeat=30 sec 
+(nowayout=0)
+...
+Mar  4 14:22:59 joker1 kernel: iTCO_wdt: Unexpected close, not stopping 
+watchdog!
 
-I receive a dribble of emails about the setrlimit64/getrlimit64 one, so
-people are looking at it, and are looking to do work.  (I haven't usefully
-responded to those emails, btw - am not sure how my name got on that one -
-probably Ulrich would be better).
+
+I start watchdog.c and then kill it expecting the system to reboot - but 
+it doesn't.
+
+Isn't this how it is supposed to work?
+
+Linux version 2.6.23.15-137.fc8
+
+
+Thanks,
+Steve
+
+
+-- 
+
+"They that give up essential liberty to obtain temporary safety, 
+deserve neither liberty nor safety."  (Ben Franklin)
+
+"The course of history shows that as a government grows, liberty 
+decreases."  (Thomas Jefferson)
+
 
 
