@@ -1,69 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760059AbYCDEBV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762466AbYCDEDg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760059AbYCDEBV (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Mar 2008 23:01:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751803AbYCDEBI
+	id S1762466AbYCDEDg (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Mar 2008 23:03:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753028AbYCDED1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Mar 2008 23:01:08 -0500
-Received: from testure.choralone.org ([194.9.77.134]:33154 "EHLO
-	testure.choralone.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752928AbYCDEBH (ORCPT
+	Mon, 3 Mar 2008 23:03:27 -0500
+Received: from E23SMTP01.au.ibm.com ([202.81.18.162]:46869 "EHLO
+	e23smtp01.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751803AbYCDED0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Mar 2008 23:01:07 -0500
-Date: Mon, 3 Mar 2008 23:00:48 -0500
-From: Dave Jones <davej@codemonkey.org.uk>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: Alan Stern <stern@rowland.harvard.edu>,
-       "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>,
-       Pierre Ossman <drzeus-list@drzeus.cx>,
-       LKML <linux-kernel@vger.kernel.org>, Adam Belay <abelay@novell.com>,
-       Lee Revell <rlrevell@joe-job.com>, linux-pm@lists.linux-foundation.org
-Subject: Re: [linux-pm] [PATCH] cpuidle: avoid singing capacitors
-Message-ID: <20080304040048.GA31562@codemonkey.org.uk>
-Mail-Followup-To: Dave Jones <davej@codemonkey.org.uk>,
-	Andi Kleen <andi@firstfloor.org>,
-	Alan Stern <stern@rowland.harvard.edu>,
-	"Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>,
-	Pierre Ossman <drzeus-list@drzeus.cx>,
-	LKML <linux-kernel@vger.kernel.org>, Adam Belay <abelay@novell.com>,
-	Lee Revell <rlrevell@joe-job.com>,
-	linux-pm@lists.linux-foundation.org
-References: <924EFEDD5F540B4284297C4DC59F3DEEA2E8B2@orsmsx423.amr.corp.intel.com> <Pine.LNX.4.44L0.0803031804330.8280-100000@iolanthe.rowland.org> <20080303231033.GB15255@one.firstfloor.org>
+	Mon, 3 Mar 2008 23:03:26 -0500
+Message-ID: <47CCC9F6.1080601@linux.vnet.ibm.com>
+Date: Tue, 04 Mar 2008 09:33:02 +0530
+From: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+User-Agent: Thunderbird 1.5.0.14pre (X11/20071023)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080303231033.GB15255@one.firstfloor.org>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+To: Pekka Enberg <penberg@cs.helsinki.fi>
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-ext4@vger.kernel.org, Andy Whitcroft <apw@shadowen.org>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>,
+       Christoph Lameter <clameter@sgi.com>, linux-mm@kvack.org
+Subject: Re: [BUG] Linux 2.6.25-rc2 - Kernel Ooops while running dbench
+References: <alpine.LFD.1.00.0802151302210.9496@woody.linux-foundation.org> <47B6784E.2090401@linux.vnet.ibm.com> <20080218045954.50503fb1.akpm@linux-foundation.org> <84144f020803030351l2042e9aaqe656ad1610e5efc5@mail.gmail.com>
+In-Reply-To: <84144f020803030351l2042e9aaqe656ad1610e5efc5@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Mar 04, 2008 at 12:10:33AM +0100, Andi Kleen wrote:
- > On Mon, Mar 03, 2008 at 06:05:35PM -0500, Alan Stern wrote:
- > > On Mon, 3 Mar 2008, Pallipadi, Venkatesh wrote:
- > > 
- > > > But, with this patch:
- > > > - we are penalizing good hardware and making them less power efficient
- > > > to match the bad ones.
- > > > - There may also be server systems which first may not have these sort
- > > > of power fluctuations and even when buggy and have this noise, system
- > > > may be in some corner of some lab with fans making more noise than the
- > > > capacitors.
- > > 
- > > Can you make it configurable through sysfs?  
- > 
- > It already is, through a writable module_parm() 
- > 
- > > Default to disabled, but 
- > > allow the user to turn it on if the machine makes too much noise.
- > 
- > 99+% of the users wouldn't be able to figure that out.
+Pekka Enberg wrote:
+> On Sat, 16 Feb 2008 11:14:46 +0530 Kamalesh Babulal
+> <kamalesh@linux.vnet.ibm.com> wrote:
+>>  > The 2.6.25-rc2 kernel oopses while running dbench on ext3 filesystem
+>>  > mounted with mount -o data=writeback,nobh option on the x86_64 box
+>>  >
+>>  > BUG: unable to handle kernel NULL pointer dereference at 0000000000000000
+>>  > IP: [<ffffffff80274972>] kmem_cache_alloc+0x3a/0x6c
+>>  > PGD 1f6860067 PUD 1f5d64067 PMD 0
+>>  > Oops: 0000 [1] SMP
+>>  > CPU 3
+>>  > Modules linked in:
+>>  > Pid: 4271, comm: dbench Not tainted 2.6.25-rc2-autotest #1
+>>  > RIP: 0010:[<ffffffff80274972>]  [<ffffffff80274972>] kmem_cache_alloc+0x3a/0x6c
+>>  > RSP: 0000:ffff8101fb041dc8  EFLAGS: 00010246
+>>  > RAX: 0000000000000000 RBX: ffff810180033c00 RCX: ffffffff8027b269
+>>  > RDX: 0000000000000000 RSI: 00000000000080d0 RDI: ffffffff80632d70
+>>  > RBP: 00000000000080d0 R08: 0000000000000001 R09: 0000000000000000
+>>  > R10: ffff8101feb36e50 R11: 0000000000000190 R12: 0000000000000001
+>>  > R13: 0000000000000000 R14: ffff8101f8f38000 R15: 00000000ffffff9c
+>>  > FS:  0000000000000000(0000) GS:ffff8101fff0f000(0063) knlGS:00000000f7e41460
+>>  > CS:  0010 DS: 002b ES: 002b CR0: 0000000080050033
+>>  > CR2: 0000000000000000 CR3: 00000001f5620000 CR4: 00000000000006e0
+>>  > DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
+>>  > DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
+>>  > Process dbench (pid: 4271, threadinfo ffff8101fb040000, task ffff8101fb180000)
+>>  > Stack:  0000000000000001 ffff8101fb041ea8 0000000000000001 ffffffff8027b269
+>>  >  ffff8101fb041ea8 ffffffff80281fe8 0000000000000001 0000000000000000
+>>  >  ffff8101fb041ea8 00000000ffffff9c 000000000000000b 0000000000000001
+>>  > Call Trace:
+>>  >  [<ffffffff8027b269>] get_empty_filp+0x55/0xf9
+>>  >  [<ffffffff80281fe8>] __path_lookup_intent_open+0x22/0x8f
+>>  >  [<ffffffff80282853>] open_namei+0x86/0x5a7
+>>  >  [<ffffffff8027d019>] vfs_stat_fd+0x3c/0x4a
+>>  >  [<ffffffff80279ab1>] do_filp_open+0x1c/0x3d
+>>  >  [<ffffffff80279c2c>] get_unused_fd_flags+0x79/0x111
+>>  >  [<ffffffff80279dce>] do_sys_open+0x46/0xca
+>>  >  [<ffffffff80221c82>] ia32_sysret+0x0/0xa
+> 
+> On Mon, Feb 18, 2008 at 2:59 PM, Andrew Morton
+> <akpm@linux-foundation.org> wrote:
+>>  Looks to me like we broke slab.  Christoph is offline until the 27th..
+> 
+> This is probably fixed by:
+> 
+> http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commitdiff;h=00e962c5408b9f2d0bebd2308673fe982cb9a5fe
+> 
+> As this is on the regression list, Kamalesh, can you please confirm
+> it's fixed now?
+> 
+>                              Pekka
 
-99+% of users don't have singing capacitors. (Or don't care enough to complain)
-For those that do can't figure out what to do from google,
-we have a documentation problem.
-
-	Dave 
+Thanks, I tested the 2.6.25-rc3-git4 kernel and the oops is not reproducible. This commit seems to fix the kernel oops.
 
 -- 
-http://www.codemonkey.org.uk
+Thanks & Regards,
+Kamalesh Babulal,
+Linux Technology Center,
+IBM, ISTL.
