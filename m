@@ -1,73 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762313AbYCDKhx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761190AbYCDKkv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762313AbYCDKhx (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Mar 2008 05:37:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752473AbYCDKhp
+	id S1761190AbYCDKkv (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Mar 2008 05:40:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755847AbYCDKkn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Mar 2008 05:37:45 -0500
-Received: from chilli.pcug.org.au ([203.10.76.44]:43138 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752493AbYCDKho (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Mar 2008 05:37:44 -0500
-Date: Tue, 4 Mar 2008 21:37:35 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Zhang Wei <wei.zhang@freescale.com>
-Cc: mporter@kernel.crashing.org, galak@kernel.crashing.org,
-       linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 11/17] Add memory mapping driver to RapidIO.
-Message-Id: <20080304213735.c77d6203.sfr@canb.auug.org.au>
-In-Reply-To: <1204648202-5495-11-git-send-email-wei.zhang@freescale.com>
-References: <1204648202-5495-1-git-send-email-wei.zhang@freescale.com>
-	<1204648202-5495-2-git-send-email-wei.zhang@freescale.com>
-	<1204648202-5495-3-git-send-email-wei.zhang@freescale.com>
-	<1204648202-5495-4-git-send-email-wei.zhang@freescale.com>
-	<1204648202-5495-5-git-send-email-wei.zhang@freescale.com>
-	<1204648202-5495-6-git-send-email-wei.zhang@freescale.com>
-	<1204648202-5495-7-git-send-email-wei.zhang@freescale.com>
-	<1204648202-5495-8-git-send-email-wei.zhang@freescale.com>
-	<1204648202-5495-9-git-send-email-wei.zhang@freescale.com>
-	<1204648202-5495-10-git-send-email-wei.zhang@freescale.com>
-	<1204648202-5495-11-git-send-email-wei.zhang@freescale.com>
-X-Mailer: Sylpheed 2.5.0beta1 (GTK+ 2.12.8; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Tue__4_Mar_2008_21_37_35_+1100_FheMB3dhap5LZ3AQ"
+	Tue, 4 Mar 2008 05:40:43 -0500
+Received: from ug-out-1314.google.com ([66.249.92.172]:1080 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752395AbYCDKkm (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 4 Mar 2008 05:40:42 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
+        b=w/B+uVWLcfY1sK3J1dVbWax7ZTkcm3d+WLjxN3CbIxnoprFd0z09TEqouLeTQ6r6CvmeCnrSnsc6pau6VvubB5/PBHu8V7qrG+wtGK1jmf2V+SSQBDN9Mt54V1mzqnYmODNgi4fYbu7gD/zp//r5lCjMPLx+eDyxVCQ+QCwjK1w=
+Message-ID: <47CD2753.5050905@gmail.com>
+Date: Tue, 04 Mar 2008 11:41:23 +0100
+From: Jiri Slaby <jirislaby@gmail.com>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080213)
+MIME-Version: 1.0
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: Linux kernel mailing list <linux-kernel@vger.kernel.org>,
+       linux-ext4@vger.kernel.org, Jan Sonnek <xsonnek@fi.muni.cz>
+Subject: Re: [2.6.25-rc2-mm1] Oops in __kmalloc
+References: <47C42DDF.3060506@gmail.com> <20080226100913.9412b41c.akpm@linux-foundation.org>
+In-Reply-To: <20080226100913.9412b41c.akpm@linux-foundation.org>
+X-Enigmail-Version: 0.95.5
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Tue__4_Mar_2008_21_37_35_+1100_FheMB3dhap5LZ3AQ
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Andrew Morton napsal(a):
+> On Tue, 26 Feb 2008 16:18:55 +0100 Jiri Slaby <jirislaby@gmail.com> wrote:
+> 
+>> Hi,
+>>
+>> while booting up a notebook on 32 bit, this oopses appeared on the console
+>> after ext3 fsck:
+>> http://www.fi.muni.cz/~xslaby/sklad/mem_oops/
+>>
+>> It's 2.6.25-rc2-mm1, I can't find similar reports, is this known or hardware
+>> issue (unlikely, 2.6.24.2 seems to be OK)?
+> 
+> I don't recall seeing a similar report and yes, it'll be a kernel bug.
+> 
+> We've fixed a few things and it could be that this will just go away in
+> next -mm.  If it doesn't, a bisection search would be good, thanks.
 
-On Wed,  5 Mar 2008 00:29:56 +0800 Zhang Wei <wei.zhang@freescale.com> wrot=
-e:
->
-> +	if (!(rmem->virt =3D dma_alloc_coherent(NULL, rmem->size,
-> +				&rmem->iores.start, GFP_KERNEL))) {
-
-Please separate assignments from tests.
-
-> +	if ((ret =3D rio_space_claim(rmem))) {
-
-Again.
-
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Tue__4_Mar_2008_21_37_35_+1100_FheMB3dhap5LZ3AQ
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD4DBQFHzSZ2TgG2atn1QN8RAnAsAJiQG3hR7uCh1Y4iGrLhErKAVMDqAKCD0cmO
-pKPSvpjjc2hhaiTqYlLTuA==
-=ed+Y
------END PGP SIGNATURE-----
-
---Signature=_Tue__4_Mar_2008_21_37_35_+1100_FheMB3dhap5LZ3AQ--
+Well, next -mm is out. Could you test, Jan? [our -mm git is up-to-date]
