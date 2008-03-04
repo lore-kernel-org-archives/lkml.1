@@ -1,270 +1,216 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934075AbYCDXOF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934839AbYCDXOj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934075AbYCDXOF (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Mar 2008 18:14:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933485AbYCDXC7
+	id S934839AbYCDXOj (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Mar 2008 18:14:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934103AbYCDXDB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Mar 2008 18:02:59 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:44801 "EHLO mx1.redhat.com"
+	Tue, 4 Mar 2008 18:03:01 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:44802 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S934077AbYCDXCr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Mar 2008 18:02:47 -0500
-Message-Id: <20080304225227.719024903@redhat.com>
+	id S934022AbYCDXCs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 4 Mar 2008 18:02:48 -0500
+Message-Id: <20080304225227.847718844@redhat.com>
 References: <20080304225157.573336066@redhat.com>
 User-Agent: quilt/0.46-1
-Date: Tue, 04 Mar 2008 17:52:12 -0500
+Date: Tue, 04 Mar 2008 17:52:14 -0500
 From: Rik van Riel <riel@redhat.com>
 To: linux-kernel@vger.kernel.org
 Cc: linux-mm@kvack.org, KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
        Lee Schermerhorn <Lee.Schermerhorn@hp.com>,
        Lee Schermerhorn <lee.schermerhorn@hp.com>
-Subject: [patch 15/20] SHM_LOCKED pages are nonreclaimable
-Content-Disposition: inline; filename=noreclaim-03-SHM_LOCKed-pages-are-nonreclaimable.patch
+Subject: [patch 17/20] mlock vma pages under mmap_sem held for read
+Content-Disposition: inline; filename=noreclaim-04.1a-lock-vma-pages-under-read-lock.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 V2 -> V3:
-+ rebase to 23-mm1 atop RvR's split LRU series.
-+ Use scan_mapping_noreclaim_page() on unlock.  See below.
++ rebase to 23-mm1 atop RvR's split lru series [no change]
++ fix function return types [void -> int] to fix build when
+  not configured.
 
-V1 -> V2:
-+  modify to use reworked 'scan_all_zones_noreclaim_pages()'
-   See 'TODO' below - still pending.
+New in V2.
 
-While working with Nick Piggin's mlock patches, I noticed that
-shmem segments locked via shmctl(SHM_LOCKED) were not being handled.
-SHM_LOCKed pages work like ramdisk pages--the writeback function
-just redirties the page so that it can't be reclaimed.  Deal with
-these using the same approach as for ram disk pages.
+We need to hold the mmap_sem for write to initiatate mlock()/munlock()
+because we may need to merge/split vmas.  However, this can lead to
+very long lock hold times attempting to fault in a large memory region
+to mlock it into memory.   This can hold off other faults against the
+mm [multithreaded tasks] and other scans of the mm, such as via /proc.
+To alleviate this, downgrade the mmap_sem to read mode during the 
+population of the region for locking.  This is especially the case 
+if we need to reclaim memory to lock down the region.  We [probably?]
+don't need to do this for unlocking as all of the pages should be
+resident--they're already mlocked.
 
-Use the AS_NORECLAIM flag to mark address_space of SHM_LOCKed
-shared memory regions as non-reclaimable.  Then these pages
-will be culled off the normal LRU lists during vmscan.
+Now, the caller's of the mlock functions [mlock_fixup() and 
+mlock_vma_pages_range()] expect the mmap_sem to be returned in write
+mode.  Changing all callers appears to be way too much effort at this
+point.  So, restore write mode before returning.  Note that this opens
+a window where the mmap list could change in a multithreaded process.
+So, at least for mlock_fixup(), where we could be called in a loop over
+multiple vmas, we check that a vma still exists at the start address
+and that vma still covers the page range [start,end).  If not, we return
+an error, -EAGAIN, and let the caller deal with it.
 
-Add new wrapper function to clear the mapping's noreclaim state
-when/if shared memory segment is munlocked.
+Return -EAGAIN from mlock_vma_pages_range() function and mlock_fixup()
+if the vma at 'start' disappears or changes so that the page range
+[start,end) is no longer contained in the vma.  Again, let the caller
+deal with it.  Looks like only sys_remap_file_pages() [via mmap_region()]
+should actually care.
 
-Add 'scan_mapping_noreclaim_page()' to mm/vmscan.c to scan all
-pages in the shmem segment's mapping [struct address_space] for
-reclaimability now that they're no longer locked.  If so, move
-them to the appropriate zone lru list.
-
-Changes depend on [CONFIG_]NORECLAIM_LRU.
+With this patch, I no longer see processes like ps(1) blocked for seconds
+or minutes at a time waiting for a large [multiple gigabyte] region to be
+locked down.  
 
 Signed-off-by:  Lee Schermerhorn <lee.schermerhorn@hp.com>
 Signed-off-by:  Rik van Riel <riel@redhat.com>
 
-Index: linux-2.6.25-rc3-mm1/mm/shmem.c
+Index: linux-2.6.25-rc3-mm1/mm/mlock.c
 ===================================================================
---- linux-2.6.25-rc3-mm1.orig/mm/shmem.c	2008-03-04 15:30:02.000000000 -0500
-+++ linux-2.6.25-rc3-mm1/mm/shmem.c	2008-03-04 16:15:27.000000000 -0500
-@@ -1528,10 +1528,13 @@ int shmem_lock(struct file *file, int lo
- 		if (!user_shm_lock(inode->i_size, user))
- 			goto out_nomem;
- 		info->flags |= VM_LOCKED;
-+		mapping_set_noreclaim(file->f_mapping);
- 	}
- 	if (!lock && (info->flags & VM_LOCKED) && user) {
- 		user_shm_unlock(inode->i_size, user);
- 		info->flags &= ~VM_LOCKED;
-+		mapping_clear_noreclaim(file->f_mapping);
-+		scan_mapping_noreclaim_pages(file->f_mapping);
- 	}
- 	retval = 0;
- out_nomem:
-Index: linux-2.6.25-rc3-mm1/include/linux/pagemap.h
-===================================================================
---- linux-2.6.25-rc3-mm1.orig/include/linux/pagemap.h	2008-03-04 16:15:25.000000000 -0500
-+++ linux-2.6.25-rc3-mm1/include/linux/pagemap.h	2008-03-04 16:15:27.000000000 -0500
-@@ -38,14 +38,20 @@ static inline void mapping_set_noreclaim
- 	set_bit(AS_NORECLAIM, &mapping->flags);
- }
- 
-+static inline void mapping_clear_noreclaim(struct address_space *mapping)
-+{
-+	clear_bit(AS_NORECLAIM, &mapping->flags);
-+}
-+
- static inline int mapping_non_reclaimable(struct address_space *mapping)
- {
--	if (mapping && (mapping->flags & AS_NORECLAIM))
--		return 1;
-+	if (mapping)
-+		return test_bit(AS_NORECLAIM, &mapping->flags);
- 	return 0;
- }
- #else
- static inline void mapping_set_noreclaim(struct address_space *mapping) { }
-+static inline void mapping_clear_noreclaim(struct address_space *mapping) { }
- static inline int mapping_non_reclaimable(struct address_space *mapping)
- {
- 	return 0;
-Index: linux-2.6.25-rc3-mm1/mm/vmscan.c
-===================================================================
---- linux-2.6.25-rc3-mm1.orig/mm/vmscan.c	2008-03-04 16:15:25.000000000 -0500
-+++ linux-2.6.25-rc3-mm1/mm/vmscan.c	2008-03-04 16:15:27.000000000 -0500
-@@ -2300,6 +2300,35 @@ int page_reclaimable(struct page *page, 
- 	return 1;
+--- linux-2.6.25-rc3-mm1.orig/mm/mlock.c	2008-03-04 16:19:46.000000000 -0500
++++ linux-2.6.25-rc3-mm1/mm/mlock.c	2008-03-04 17:29:19.000000000 -0500
+@@ -199,6 +199,37 @@ int __mlock_vma_pages_range(struct vm_ar
+ 	return ret;
  }
  
 +/**
-+ * check_move_noreclaim_page - check page for reclaimability and move to appropriate zone lru list
-+ * @page: page to check reclaimability and move to appropriate lru list
-+ * @zone: zone page is in
++ * mlock_vma_pages_range - lock the pages of a VMA in memory
++ * @vma: vm area to mlock into memory
++ * @start: start address in @vma of range to mlock,
++ * @end: end address in @vma of range
 + *
-+ * Checks a page for reclaimability and moves the page to the appropriate
-+ * zone lru list.
++ * Called with current->mm->mmap_sem held write locked.  Downgrade to read
++ * for faulting in pages.  This can take a looong time for large segments.
 + *
-+ * Restrictions: zone->lru_lock must be held, page must be on LRU and must
-+ * have PageNoreclaim set.
++ * We need to restore the mmap_sem to write locked because our callers'
++ * callers expect this.	 However, because the mmap could have changed
++ * [in a multi-threaded process], we need to recheck.
 + */
-+static void check_move_noreclaim_page(struct page *page, struct zone *zone)
++int mlock_vma_pages_range(struct vm_area_struct *vma,
++			unsigned long start, unsigned long end)
 +{
++	struct mm_struct *mm = vma->vm_mm;
 +
-+	ClearPageNoreclaim(page); /* for page_reclaimable() */
-+	if (page_reclaimable(page, NULL)) {
-+		enum lru_list l = LRU_INACTIVE_ANON + page_file_cache(page);
-+		__dec_zone_state(zone, NR_NORECLAIM);
-+		list_move(&page->lru, &zone->list[l]);
-+		__inc_zone_state(zone, NR_INACTIVE_ANON + l);
-+	} else {
-+		/*
-+		 * rotate noreclaim list
-+		 */
-+		SetPageNoreclaim(page);
-+		list_move(&page->lru, &zone->list[LRU_NORECLAIM]);
-+	}
++	downgrade_write(&mm->mmap_sem);
++	__mlock_vma_pages_range(vma, start, end);
++
++	up_read(&mm->mmap_sem);
++	/* vma can change or disappear */
++	down_write(&mm->mmap_sem);
++	vma = find_vma(mm, start);
++	/* non-NULL vma must contain @start, but need to check @end */
++	if (!vma ||  end > vma->vm_end)
++		return -EAGAIN;
++	return 0;
 +}
 +
- /**
-  * scan_zone_noreclaim_pages - check noreclaim list for reclaimable pages
-  * @zone - zone of which to scan the noreclaim list
-@@ -2314,8 +2343,6 @@ int page_reclaimable(struct page *page, 
- void scan_zone_noreclaim_pages(struct zone *zone)
- {
- 	struct list_head *l_noreclaim = &zone->list[LRU_NORECLAIM];
--	struct list_head *l_inactive_anon  = &zone->list[LRU_INACTIVE_ANON];
--	struct list_head *l_inactive_file  = &zone->list[LRU_INACTIVE_FILE];
- 	unsigned long scan;
- 	unsigned long nr_to_scan = zone_page_state(zone, NR_NORECLAIM);
+ #else /* CONFIG_NORECLAIM_MLOCK */
  
-@@ -2327,26 +2354,15 @@ void scan_zone_noreclaim_pages(struct zo
- 		for (scan = 0;  scan < batch_size; scan++) {
- 			struct page* page = lru_to_page(l_noreclaim);
- 
--			if (unlikely(!PageLRU(page) || !PageNoreclaim(page)))
-+			if (TestSetPageLocked(page))
- 				continue;
- 
- 			prefetchw_prev_lru_page(page, l_noreclaim, flags);
- 
--			ClearPageNoreclaim(page); /* for page_reclaimable() */
--			if (page_reclaimable(page, NULL)) {
--				__dec_zone_state(zone, NR_NORECLAIM);
--				if (page_file_cache(page)) {
--					list_move(&page->lru, l_inactive_file);
--					__inc_zone_state(zone, NR_INACTIVE_FILE);
--				} else {
--					list_move(&page->lru, l_inactive_anon);
--					__inc_zone_state(zone, NR_INACTIVE_ANON);
--				}
--			} else {
--				SetPageNoreclaim(page);
--				list_move(&page->lru, l_noreclaim);
--			}
-+			if (likely(PageLRU(page) && PageNoreclaim(page)))
-+				check_move_noreclaim_page(page, zone);
- 
-+			unlock_page(page);
- 		}
- 		spin_unlock_irq(&zone->lru_lock);
- 
-@@ -2375,6 +2391,62 @@ void scan_all_zones_noreclaim_pages(void
- 	}
- }
- 
-+/**
-+ * scan_mapping_noreclaim_pages - scan an address space for reclaimable pages
-+ * @mapping: struct address_space to scan for reclaimable pages
-+ *
-+ * Scan all pages in mapping.  Check non-reclaimable pages for
-+ * reclaimability and move them to the appropriate zone lru list.
-+ */
-+void scan_mapping_noreclaim_pages(struct address_space *mapping)
-+{
-+	pgoff_t next = 0;
-+	pgoff_t end   = i_size_read(mapping->host);
-+	struct zone *zone;
-+	struct pagevec pvec;
-+
-+	if (mapping->nrpages == 0)
-+		return;
-+
-+	pagevec_init(&pvec, 0);
-+	while (next < end &&
-+		pagevec_lookup(&pvec, mapping, next, PAGEVEC_SIZE)) {
-+		int i;
-+
-+		zone = NULL;
-+
-+		for (i = 0; i < pagevec_count(&pvec); i++) {
-+			struct page *page = pvec.pages[i];
-+			pgoff_t page_index = page->index;
-+			struct zone *pagezone = page_zone(page);
-+
-+			if (page_index > next)
-+				next = page_index;
-+			next++;
-+
-+			if (TestSetPageLocked(page))
-+				continue;
-+
-+			if (pagezone != zone) {
-+				if (zone)
-+					spin_unlock(&zone->lru_lock);
-+				zone = pagezone;
-+				spin_lock(&zone->lru_lock);
-+			}
-+
-+			if (PageLRU(page) && PageNoreclaim(page))
-+				check_move_noreclaim_page(page, zone);
-+
-+			unlock_page(page);
-+
-+		}
-+		if (zone)
-+			spin_unlock(&zone->lru_lock);
-+		pagevec_release(&pvec);
-+	}
-+
-+}
-+
  /*
-  * scan_noreclaim_pages [vm] sysctl handler.  On demand re-scan of
-  * all nodes' noreclaim lists for reclaimable pages
-Index: linux-2.6.25-rc3-mm1/include/linux/swap.h
+@@ -265,14 +296,38 @@ success:
+ 	mm->locked_vm += nr_pages;
+ 
+ 	/*
+-	 * vm_flags is protected by the mmap_sem held in write mode.
++	 * vm_flags is protected by the mmap_sem held for write.
+ 	 * It's okay if try_to_unmap_one unmaps a page just after we
+ 	 * set VM_LOCKED, __mlock_vma_pages_range will bring it back.
+ 	 */
+ 	vma->vm_flags = newflags;
+ 
++	/*
++	 * mmap_sem is currently held for write.  If we're locking pages,
++	 * downgrade the write lock to a read lock so that other faults,
++	 * mmap scans, ... while we fault in all pages.
++	 */
++	if (lock)
++		downgrade_write(&mm->mmap_sem);
++
+ 	__mlock_vma_pages_range(vma, start, end);
+ 
++	if (lock) {
++		/*
++		 * Need to reacquire mmap sem in write mode, as our callers
++		 * expect this.  We have no support for atomically upgrading
++		 * a sem to write, so we need to check for ranges while sem
++		 * is unlocked.
++		 */
++		up_read(&mm->mmap_sem);
++		/* vma can change or disappear */
++		down_write(&mm->mmap_sem);
++		*prev = find_vma(mm, start);
++		/* non-NULL *prev must contain @start, but need to check @end */
++		if (!(*prev) || end > (*prev)->vm_end)
++			ret = -EAGAIN;
++	}
++
+ out:
+ 	if (ret == -ENOMEM)
+ 		ret = -EAGAIN;
+Index: linux-2.6.25-rc3-mm1/mm/internal.h
 ===================================================================
---- linux-2.6.25-rc3-mm1.orig/include/linux/swap.h	2008-03-04 16:14:53.000000000 -0500
-+++ linux-2.6.25-rc3-mm1/include/linux/swap.h	2008-03-04 16:15:27.000000000 -0500
-@@ -247,6 +247,7 @@ static inline int zone_reclaim(struct zo
- extern int page_reclaimable(struct page *page, struct vm_area_struct *vma);
- extern void scan_zone_noreclaim_pages(struct zone *);
- extern void scan_all_zones_noreclaim_pages(void);
-+extern void scan_mapping_noreclaim_pages(struct address_space *);
- extern unsigned long scan_noreclaim_pages;
- extern int scan_noreclaim_handler(struct ctl_table *, int, struct file *,
- 					void __user *, size_t *, loff_t *);
-@@ -260,6 +261,9 @@ static inline int page_reclaimable(struc
- }
- static inline void scan_zone_noreclaim_pages(struct zone *z) { }
- static inline void scan_all_zones_noreclaim_pages(void) { }
-+static inline void scan_mapping_noreclaim_pages(struct address_space *mapping)
-+{
-+}
- static inline int scan_noreclaim_register_node(struct node *node)
+--- linux-2.6.25-rc3-mm1.orig/mm/internal.h	2008-03-04 16:19:46.000000000 -0500
++++ linux-2.6.25-rc3-mm1/mm/internal.h	2008-03-04 17:29:19.000000000 -0500
+@@ -61,24 +61,21 @@ extern int __mlock_vma_pages_range(struc
+ /*
+  * mlock all pages in this vma range.  For mmap()/mremap()/...
+  */
+-static inline void mlock_vma_pages_range(struct vm_area_struct *vma,
+-			unsigned long start, unsigned long end)
+-{
+-	__mlock_vma_pages_range(vma, start, end);
+-}
++extern int mlock_vma_pages_range(struct vm_area_struct *vma,
++			unsigned long start, unsigned long end);
+ 
+ /*
+  * munlock range of pages.   For munmap() and exit().
+  * Always called to operate on a full vma that is being unmapped.
+  */
+-static inline void munlock_vma_pages_range(struct vm_area_struct *vma,
++static inline int munlock_vma_pages_range(struct vm_area_struct *vma,
+ 			unsigned long start, unsigned long end)
  {
- 	return 0;
+ // TODO:  verify my assumption.  Should we just drop the start/end args?
+ 	VM_BUG_ON(start != vma->vm_start || end != vma->vm_end);
+ 
+ 	vma->vm_flags &= ~VM_LOCKED;
+-	__mlock_vma_pages_range(vma, start, end);
++	return __mlock_vma_pages_range(vma, start, end);
+ }
+ 
+ extern void clear_page_mlock(struct page *page);
+@@ -90,10 +87,10 @@ static inline int is_mlocked_vma(struct 
+ }
+ static inline void clear_page_mlock(struct page *page) { }
+ static inline void mlock_vma_page(struct page *page) { }
+-static inline void mlock_vma_pages_range(struct vm_area_struct *vma,
+-			unsigned long start, unsigned long end) { }
+-static inline void munlock_vma_pages_range(struct vm_area_struct *vma,
+-			unsigned long start, unsigned long end) { }
++static inline int mlock_vma_pages_range(struct vm_area_struct *vma,
++			unsigned long start, unsigned long end) { return 0; }
++static inline int munlock_vma_pages_range(struct vm_area_struct *vma,
++			unsigned long start, unsigned long end) { return 0; }
+ 
+ #endif /* CONFIG_NORECLAIM_MLOCK */
+ 
+Index: linux-2.6.25-rc3-mm1/mm/mmap.c
+===================================================================
+--- linux-2.6.25-rc3-mm1.orig/mm/mmap.c	2008-03-04 17:29:19.000000000 -0500
++++ linux-2.6.25-rc3-mm1/mm/mmap.c	2008-03-04 17:30:00.000000000 -0500
+@@ -2007,8 +2007,9 @@ unsigned long do_brk(unsigned long addr,
+ 		return -ENOMEM;
+ 
+ 	/* Can we just expand an old private anonymous mapping? */
+-	if (vma_merge(mm, prev, addr, addr + len, flags,
+-					NULL, NULL, pgoff, NULL))
++	vma = vma_merge(mm, prev, addr, addr + len, flags,
++					NULL, NULL, pgoff, NULL);
++	if (vma)
+ 		goto out;
+ 
+ 	/*
 
 -- 
 All Rights Reversed
