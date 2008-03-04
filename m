@@ -1,51 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765967AbYCDV0f@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764851AbYCDV2q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765967AbYCDV0f (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Mar 2008 16:26:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758757AbYCDV0Y
+	id S1764851AbYCDV2q (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Mar 2008 16:28:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755184AbYCDV2h
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Mar 2008 16:26:24 -0500
-Received: from agminet01.oracle.com ([141.146.126.228]:64672 "EHLO
-	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756660AbYCDV0X (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Mar 2008 16:26:23 -0500
-Date: Tue, 4 Mar 2008 13:26:05 -0800
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, ericvh@gmail.com
-Subject: Re: 2.6.25-rc3-mm1 (9p docs)
-Message-Id: <20080304132605.13d8114a.randy.dunlap@oracle.com>
-In-Reply-To: <20080304011928.e8c82c0c.akpm@linux-foundation.org>
-References: <20080304011928.e8c82c0c.akpm@linux-foundation.org>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.4.7 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+	Tue, 4 Mar 2008 16:28:37 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:33797 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754230AbYCDV2g (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 4 Mar 2008 16:28:36 -0500
+Date: Tue, 4 Mar 2008 22:28:21 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Cc: "H. Peter Anvin" <hpa@zytor.com>, Andi Kleen <ak@suse.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: preempt bug in set_pmd_pfn?
+Message-ID: <20080304212821.GB8944@elte.hu>
+References: <47CDBB87.8090906@goop.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <47CDBB87.8090906@goop.org>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.1
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.1 required=5.9 tests=BAYES_05 autolearn=no SpamAssassin version=3.2.3
+	-1.1 BAYES_05               BODY: Bayesian spam probability is 1 to 5%
+	[score: 0.0370]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 4 Mar 2008 01:19:28 -0800 Andrew Morton wrote:
 
-> 
-> ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.25-rc3/2.6.25-rc3-mm1/
+* Jeremy Fitzhardinge <jeremy@goop.org> wrote:
 
+> I think set_pmd_pfn, which is only called by __set_fixmap, might have 
+> a preempt bug in it.
 
-"make htmldocs" gives me:
+yes, and we had similar preemption bugs in the past. I guess most places 
+are either infrequent or have some natural atomicity anyway. Wanna send 
+a patch?
 
-  HOSTCC  scripts/basic/fixdep
-  HOSTCC  scripts/basic/docproc
-make[1]: *** No rule to make target `Documentation/DocBook/9p-overview.eps', needed by `Documentation/DocBook/9p.xml'.  Stop.
-make: *** [htmldocs] Error 2
-
-
-Are we missing the .eps and .png files?
-
----
-~Randy
+	Ingo
