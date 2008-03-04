@@ -1,104 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935058AbYCDXR7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935018AbYCDXSe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935058AbYCDXR7 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Mar 2008 18:17:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934861AbYCDXOv
+	id S935018AbYCDXSe (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Mar 2008 18:18:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934869AbYCDXPi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Mar 2008 18:14:51 -0500
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:54122 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S934860AbYCDXOu (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Mar 2008 18:14:50 -0500
-Date: Tue, 4 Mar 2008 15:14:42 -0800 (PST)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-cc: Andrea Arcangeli <andrea@qumranet.com>, Jack Steiner <steiner@sgi.com>,
-       Nick Piggin <npiggin@suse.de>, akpm@linux-foundation.org,
-       Robin Holt <holt@sgi.com>, Avi Kivity <avi@qumranet.com>,
-       kvm-devel@lists.sourceforge.net, general@lists.openfabrics.org,
-       Steve Wise <swise@opengridcomputing.com>,
-       Roland Dreier <rdreier@cisco.com>, Kanoj Sarcar <kanojsarcar@yahoo.com>,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       daniel.blueman@quadrics.com
-Subject: Re: [RFC] Notifier for Externally Mapped Memory (EMM)
-In-Reply-To: <1204670529.6241.52.camel@lappy>
-Message-ID: <Pine.LNX.4.64.0803041511080.21441@schroedinger.engr.sgi.com>
-References: <20080221144023.GC9427@v2.random>  <20080221161028.GA14220@sgi.com>
- <20080227192610.GF28483@v2.random>  <20080302155457.GK8091@v2.random>
- <20080303213707.GA8091@v2.random>  <20080303220502.GA5301@v2.random>
- <47CC9B57.5050402@qumranet.com>  <Pine.LNX.4.64.0803032327470.9642@schroedinger.engr.sgi.com>
-  <20080304133020.GC5301@v2.random>  <Pine.LNX.4.64.0803041059110.13957@schroedinger.engr.sgi.com>
-  <20080304222030.GB8951@v2.random>  <Pine.LNX.4.64.0803041422070.20821@schroedinger.engr.sgi.com>
- <1204670529.6241.52.camel@lappy>
+	Tue, 4 Mar 2008 18:15:38 -0500
+Received: from ns2.suse.de ([195.135.220.15]:42564 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S934823AbYCDXPg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 4 Mar 2008 18:15:36 -0500
+Date: Tue, 4 Mar 2008 15:15:09 -0800
+From: Greg KH <gregkh@suse.de>
+To: Linus Torvalds <torvalds@osdl.org>, Andrew Morton <akpm@osdl.org>
+Cc: linux-kernel@vger.kernel.org, linux-pci@atrey.karlin.mff.cuni.cz,
+       pcihpd-discuss@lists.sourceforge.net
+Subject: [GIT PATCH] PCI fixes for 2.6.25-rc3 git tree
+Message-ID: <20080304231509.GA3073@suse.de>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 4 Mar 2008, Peter Zijlstra wrote:
+Here are some PCI patches against your 2.6.25-rc3 git tree.
 
-> 
-> On Tue, 2008-03-04 at 14:35 -0800, Christoph Lameter wrote:
-> 
-> > RCU means that the callbacks occur in an atomic context.
-> 
-> Not really, if it requires moving the VM locks to sleepable locks under
-> a .config option, I think its also fair to require PREEMPT_RCU.
+Some more quirk fixups, a pci hotplug fix, and hopefully the final
+section mismatch fixup.  I've also added the DECLARE_PCI_DEVICE_TABLE
+macro so that other driver authors can start converting their code over
+easier.
 
-Which would make the patchset pretty complex. RCU is not needed with a 
-single linked list. Linked list operations can exploit atomic pointer 
-updates and we only tear down the list when a single execution thread 
-remains.
+Please pull from:
+	master.kernel.org:/pub/scm/linux/kernel/git/gregkh/pci-2.6.git/
+
+A lot of these patches have been in the -mm tree for a while, as well as
+-next.
+
+The full patches will be sent to the linux-pci mailing list, if anyone
+wants to see them.
+
+thanks,
+
+greg k-h
 
 
-Having said that: Here a couple of updates to address Andrea's complaint 
-that we not check the referenced bit from the external mapper when the 
-rerferences bit is set on an OS pte.
+-------------
 
-Plus two barriers to ensure that a new emm notifier object becomes
-visible before the base pointer is updated.
+ Documentation/pci.txt                  |    6 +++-
+ drivers/pci/bus.c                      |   10 ++++---
+ drivers/pci/hotplug-pci.c              |    2 +-
+ drivers/pci/hotplug/acpiphp_glue.c     |    2 +-
+ drivers/pci/hotplug/cpci_hotplug_pci.c |    2 +-
+ drivers/pci/hotplug/pciehp_hpc.c       |    5 ++-
+ drivers/pci/hotplug/pciehp_pci.c       |    2 +-
+ drivers/pci/hotplug/shpchp_pci.c       |    2 +-
+ drivers/pci/probe.c                    |    8 +++---
+ drivers/pci/quirks.c                   |   41 ++++++-------------------------
+ include/linux/pci.h                    |   10 +++++++
+ 11 files changed, 40 insertions(+), 50 deletions(-)
 
-Signed-off-by: Christoph Lameter <clameter@sgi.com>
+---------------
 
----
- mm/rmap.c |   10 ++++++----
- 1 file changed, 6 insertions(+), 4 deletions(-)
+Bjorn Helgaas (2):
+      PCI: use dev_printk in quirk messages
+      PCI: consolidate duplicated MSI enable functions
 
-Index: linux-2.6/mm/rmap.c
-===================================================================
---- linux-2.6.orig/mm/rmap.c	2008-03-04 14:36:36.321922321 -0800
-+++ linux-2.6/mm/rmap.c	2008-03-04 15:10:46.159429369 -0800
-@@ -298,10 +298,10 @@ static int page_referenced_one(struct pa
- 
- 	(*mapcount)--;
- 	pte_unmap_unlock(pte, ptl);
--	if (!referenced)
--		/* rmap lock held */
--		referenced = emm_notify(mm, emm_referenced,
--					address, address + PAGE_SIZE);
-+
-+	/* rmap lock held */
-+	if (emm_notify(mm, emm_referenced, address, address + PAGE_SIZE))
-+			referenced = 1;
- out:
- 	return referenced;
- }
-@@ -1057,6 +1057,7 @@ EXPORT_SYMBOL_GPL(emm_notifier_release);
- void emm_notifier_register(struct emm_notifier *e, struct mm_struct *mm)
- {
- 	e->next = mm->emm_notifier;
-+	smp_wmb();
- 	mm->emm_notifier = e;
- }
- EXPORT_SYMBOL_GPL(emm_notifier_register);
-@@ -1069,6 +1070,7 @@ int __emm_notify(struct mm_struct *mm, e
- 	int x;
- 
- 	while (e) {
-+		smp_rmb();
- 		if (e->func) {
- 			x = e->func(e, mm, op, start, end);
- 			if (x)
+Greg Kroah-Hartman (1):
+      PCI: fix up error messages for pci_bus registering
+
+Jonas Bonn (1):
+      PCI: Add DECLARE_PCI_DEVICE_TABLE macro
+
+Kenji Kaneshige (1):
+      pci: hotplug: pciehp: fix error code path in hpc_power_off_slot
+
+Sam Ravnborg (1):
+      PCI: fix section mismatch warning in pci_scan_child_bus
+
