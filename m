@@ -1,81 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761008AbYCDVHZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757195AbYCDVJT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761008AbYCDVHZ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Mar 2008 16:07:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755830AbYCDVHM
+	id S1757195AbYCDVJT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Mar 2008 16:09:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752480AbYCDVJB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Mar 2008 16:07:12 -0500
-Received: from gv-out-0910.google.com ([216.239.58.189]:63531 "EHLO
-	gv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755283AbYCDVHL (ORCPT
+	Tue, 4 Mar 2008 16:09:01 -0500
+Received: from ug-out-1314.google.com ([66.249.92.175]:44994 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751687AbYCDVI7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Mar 2008 16:07:11 -0500
+	Tue, 4 Mar 2008 16:08:59 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=subject:from:to:cc:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=Gl60NAEbDPsPyvI7bE+hhbMrIJg/ko4EdehlqRxyWFuQA05VKvbCrd1DfMTSfe7Ue3AEr0tRWbe5x05F/Y6782UaEx7bMpwP0HmtV3klz429Oc8RMXshQAprIcHXkzQOE5SsqqAm8DAH2GDUx6RSbV5b9KXIiUUZ+zVq1RMWV7I=
-Subject: [JANITOR-PATCH] rtc: switch to unlocked_ioctl
-From: Harvey Harrison <harvey.harrison@gmail.com>
-To: Russell King <rmk@arm.linux.org.uk>, Andi Kleen <ak@suse.de>
-Cc: LKML <linux-kernel@vger.kernel.org>
-Content-Type: text/plain
-Date: Tue, 04 Mar 2008 13:06:43 -0800
-Message-Id: <1204664803.5698.27.camel@brick>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
+        b=lStoRpjjcbIAZeNXD2Lps/Z6uL8Ej9KMOyugQjOdDYcV84ezLnus3ZkXXR/D+sJSrwq0TYG+1GT5zYZvXzrngkFzoxLyoWlIsU+Z55vWBeGDp57WJahCrrd0DIDDCCacyHfCO6X1qUQAhYbHnkbk85QZ5oKXctYZ+ZoUZbae1Xk=
+Message-ID: <47CDBA74.5080304@gmail.com>
+Date: Wed, 05 Mar 2008 00:09:08 +0300
+From: Alexey Starikovskiy <aystarik@gmail.com>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080227)
+MIME-Version: 1.0
+To: Jens Axboe <jens.axboe@oracle.com>
+CC: Lukas Hejtmanek <xhejtman@ics.muni.cz>,
+       Henrique de Moraes Holschuh <hmh@hmh.eng.br>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, linux-kernel@vger.kernel.org,
+       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+       Len Brown <lenb@kernel.org>
+Subject: Re: 2.6.25-rc2 Regression Thinkpad acpi
+References: <20080225093914.GB4375@ics.muni.cz> <200802251247.30605.rjw@sisk.pl> <20080225200354.GE16513@khazad-dum.debian.net> <20080225204951.GB4432@ics.muni.cz> <20080225210113.GF16513@khazad-dum.debian.net> <20080225220720.GA4523@ics.muni.cz> <20080225230035.GA14503@khazad-dum.debian.net> <20080226184937.GA4280@ics.muni.cz> <20080304194513.GY6704@kernel.dk>
+In-Reply-To: <20080304194513.GY6704@kernel.dk>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Make the lock/unlock_kernel explicit.
+Jens Axboe wrote:
+> On Tue, Feb 26 2008, Lukas Hejtmanek wrote:
+>   
+>> On Mon, Feb 25, 2008 at 08:00:35PM -0300, Henrique de Moraes Holschuh wrote:
+>>     
+>>> On Mon, 25 Feb 2008, Lukas Hejtmanek wrote:
+>>>       
+>>>> volume keys work. But anything through acpid does not. Even AC/battery switch
+>>>> is not signalized. So the bug may be somewhere else?
+>>>>         
+>>> Yeah, there is an EC-related regression in 2.6.25-rc3 that bites your
+>>> thinkpad.  I don't have a link to it right now, but if you look for the
+>>> messages to LKML on the last 48h, you will find it.
+>>>       
+>> this one fixes all my troubles with thinkpad hotkeys in rc3.
+>> http://lkml.org/lkml/2008/2/25/400
+>>     
+>
+> Ping - is anyone sending this upstream? Would be nice to have my x60
+> usable for -rc4 at least.
+>
+>   
+Please take a look at patches in #10100.
 
-Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
----
- arch/arm/common/rtctime.c |    7 ++++---
- 1 files changed, 4 insertions(+), 3 deletions(-)
-
-diff --git a/arch/arm/common/rtctime.c b/arch/arm/common/rtctime.c
-index f53bca4..2062f92 100644
---- a/arch/arm/common/rtctime.c
-+++ b/arch/arm/common/rtctime.c
-@@ -173,8 +173,7 @@ static unsigned int rtc_poll(struct file *file, poll_table *wait)
- 	return data != 0 ? POLLIN | POLLRDNORM : 0;
- }
- 
--static int rtc_ioctl(struct inode *inode, struct file *file, unsigned int cmd,
--		     unsigned long arg)
-+static int rtc_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
- {
- 	struct rtc_ops *ops = file->private_data;
- 	struct rtc_time tm;
-@@ -182,6 +181,7 @@ static int rtc_ioctl(struct inode *inode, struct file *file, unsigned int cmd,
- 	void __user *uarg = (void __user *)arg;
- 	int ret = -EINVAL;
- 
-+	lock_kernel();
- 	switch (cmd) {
- 	case RTC_ALM_READ:
- 		ret = rtc_arm_read_alarm(ops, &alrm);
-@@ -276,6 +276,7 @@ static int rtc_ioctl(struct inode *inode, struct file *file, unsigned int cmd,
- 			ret = ops->ioctl(cmd, arg);
- 		break;
- 	}
-+	unlock_kernel();
- 	return ret;
- }
- 
-@@ -333,7 +334,7 @@ static const struct file_operations rtc_fops = {
- 	.llseek		= no_llseek,
- 	.read		= rtc_read,
- 	.poll		= rtc_poll,
--	.ioctl		= rtc_ioctl,
-+	.unlocked_ioctl	= rtc_ioctl,
- 	.open		= rtc_open,
- 	.release	= rtc_release,
- 	.fasync		= rtc_fasync,
--- 
-1.5.4.3.500.g83a2c
+Alex.
 
 
 
