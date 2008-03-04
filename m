@@ -1,82 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932457AbYCEAQn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934541AbYCEARP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932457AbYCEAQn (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Mar 2008 19:16:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754901AbYCEAQ1
+	id S934541AbYCEARP (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Mar 2008 19:17:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763011AbYCEAQb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Mar 2008 19:16:27 -0500
-Received: from ns2.suse.de ([195.135.220.15]:47586 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753197AbYCEAQ0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Mar 2008 19:16:26 -0500
-Date: Wed, 5 Mar 2008 01:16:21 +0100
-From: Nick Piggin <npiggin@suse.de>
-To: Christoph Lameter <clameter@sgi.com>
-Cc: netdev@vger.kernel.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       yanmin_zhang@linux.intel.com, David Miller <davem@davemloft.net>,
-       Eric Dumazet <dada1@cosmosbay.com>
-Subject: Re: [rfc][patch 2/3] slab: introduce SMP alignment
-Message-ID: <20080305001621.GC1510@wotan.suse.de>
-References: <20080303093449.GA15091@wotan.suse.de> <20080303093529.GB15091@wotan.suse.de> <Pine.LNX.4.64.0803031104570.6917@schroedinger.engr.sgi.com> <20080303200355.GB8974@wotan.suse.de> <Pine.LNX.4.64.0803031208400.16049@schroedinger.engr.sgi.com> <20080303201211.GE8974@wotan.suse.de> <Pine.LNX.4.64.0803031216430.3110@schroedinger.engr.sgi.com> <20080303202411.GH8974@wotan.suse.de> <Pine.LNX.4.64.0803031327330.4375@schroedinger.engr.sgi.com>
+	Tue, 4 Mar 2008 19:16:31 -0500
+Received: from utter.chaos.org.uk ([193.201.201.153]:57036 "EHLO
+	utter.chaos.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758652AbYCEAQ3 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 4 Mar 2008 19:16:29 -0500
+X-Greylist: delayed 2611 seconds by postgrey-1.27 at vger.kernel.org; Tue, 04 Mar 2008 19:16:29 EST
+Subject: Re: [patch] Re: using long instead of atomic_t when only set/read
+	is required
+From: Peter Hartley <pdh@utter.chaos.org.uk>
+To: linux-kernel@vger.kernel.org, Pavel Machek <pavel@ucw.cz>
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Alan Stern <stern@rowland.harvard.edu>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@osdl.org>,
+       Zdenek Kabelac <zdenek.kabelac@gmail.com>, davem@davemloft.net,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, Pierre Ossman <drzeus-mmc@drzeus.cx>
+In-Reply-To: <20080303172410.GA13869@elf.ucw.cz>
+References: <20080225090316.GA420@elf.ucw.cz>
+	 <Pine.LNX.4.44L0.0802250943410.3549-100000@iolanthe.rowland.org>
+	 <20080303120842.GA28369@elf.ucw.cz> <20080303154831.22a4eb14@core>
+	 <20080303172410.GA13869@elf.ucw.cz>
+Content-Type: text/plain
+Date: Tue, 04 Mar 2008 23:32:52 +0000
+Message-Id: <1204673572.1020.12.camel@amd64.pyotr.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0803031327330.4375@schroedinger.engr.sgi.com>
-User-Agent: Mutt/1.5.9i
+X-Mailer: Evolution 2.12.2 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Mar 03, 2008 at 01:31:14PM -0800, Christoph Lameter wrote:
-> On Mon, 3 Mar 2008, Nick Piggin wrote:
+On Mon, 2008-03-03 at 18:24 +0100, Pavel Machek wrote:
+> Ok, I can understand the gcc side. But do we actually run on an
+> architecture where
 > 
-> > On Mon, Mar 03, 2008 at 12:17:20PM -0800, Christoph Lameter wrote:
-> > > On Mon, 3 Mar 2008, Nick Piggin wrote:
-> > > 
-> > > > > You want two ways of specifying alignments?
-> > > > 
-> > > > I want a way to ask for SMP friendly allocation.
-> > > 
-> > > Then align the objects at cacheline boundaries by providing a value for 
-> > > the align parameter to kmem_cache_create().
-> > 
-> > max(num_possible_cpus() > 1 ? cache_line_size() : 0, mandatory_alignment)?
+> long *x;
 > 
-> The mandatory alignment is applied anyways. You do not need to max() on 
-> that.
-
-No that's the caller's required alignment.
-
- 
-> One could simply specify cache_line_size() with Pekka's patch. 
-> cache_line_size() could default to 0 if !SMP.
-
-That's totally wrong and stupid.
-
- 
-> > Then suppose we want a CONFIG_TINY option to eliminate it?
+> *x = 0;
 > 
-> No slab allocator supports that right now.
-
-That's way I said suppose we want it. Which is not unreasonable.
-
-
-> However, SLOB in the past has 
-> ignored the alignment in order to reduce memory use. So maybe Matt wants 
-> to introduce this?
+> racing with 
 > 
-> > And maybe the VSMP guys will want to blow this out to their internode
-> > alignment?
-> > 
-> > max(!CONFIG_TINY && num_possible_cpus() > 1 ? (is_vsmp ? internode_alignemnt : cache_line_size()) : 0, mandatory_alignment)
+> *x = 0x12345678;
 > 
-> No the slab allocators were optimized for VSMP so that the 
-> internode_alignment is not necessary there. That was actually one of the 
-> requirements that triggered the slab numa work.
+> can produce
+> 
+> *x == 0x12340000;
+> 
+> or something like that? I'm told RCU relies on architectures not doing
+> this, and I'd like to get this clarified.
 
-What do you mean internode_alignment is not necessary there? This is
-about memory returned by the allocator to the caller, and the caller
-does not want any false sharing of the cacheline on SMP systems. How
-can internode alignemnt be not necessary?
+ARM6, ARM7500 and similar do exactly this for short (and unsigned
+short), although not for int, long, or pointers:
+
+> struct foo { short b; short c; };
+> void baa(struct foo *f, short cc) { f->c = cc; }
+
+becomes (arm-linux-gcc -mcpu=arm6):
+
+> baa:
+>	mov	r3, r1, lsr #8
+>	strb	r3, [r0, #3]
+>	strb	r1, [r0, #2]
+>	mov	pc, lr
+
+note the two single-byte stores, as ARM6 didn't have the "store
+halfword" instruction.
+
+So I think Alan Stern's
+"For all properly-aligned pointer and integral types other than long
+long..."
+should be amended to
+"For all properly-aligned pointer and integral types other than short or
+long long..."
+
+	Peter
+
 
