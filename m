@@ -1,40 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760529AbYCDE1H@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759302AbYCDEmr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760529AbYCDE1H (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Mar 2008 23:27:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751196AbYCDE0u
+	id S1759302AbYCDEmr (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Mar 2008 23:42:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751352AbYCDEmh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Mar 2008 23:26:50 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:60571 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751146AbYCDE0t (ORCPT
+	Mon, 3 Mar 2008 23:42:37 -0500
+Received: from nf-out-0910.google.com ([64.233.182.190]:51318 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751351AbYCDEmg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Mar 2008 23:26:49 -0500
-Date: Mon, 3 Mar 2008 20:25:55 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Ondrej Zary <linux@rainbow-software.org>
-Cc: Jeff Garzik <jeff@garzik.org>, netdev@vger.kernel.org,
-       Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] [resend] 3c509: convert to isa_driver and pnp_driver v5
-Message-Id: <20080303202555.3bb63526.akpm@linux-foundation.org>
-In-Reply-To: <200802171202.27747.linux@rainbow-software.org>
-References: <200801312012.43447.linux@rainbow-software.org>
-	<200802021925.36552.linux@rainbow-software.org>
-	<47A4D791.3050700@garzik.org>
-	<200802171202.27747.linux@rainbow-software.org>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Mon, 3 Mar 2008 23:42:36 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=eX7W+lmntOSLqQS5vLTE2UtEAocqQbe0q7+ZqIaC4oMwwOIAmcY+jJzUHbhsC7TX28ZxgpAFxChtjTmPisCnzGyELBAasi6G5fnKsA1eQ5J/HBnnPepzsLLBYN+GHs0ga48zd5Wx7ePfeHitCvoHUgjPofu2tc5Tfl4VGObZID4=
+Message-ID: <524f69650803032042rab309f3nd5c2d52d312fb3c5@mail.gmail.com>
+Date: Mon, 3 Mar 2008 22:42:34 -0600
+From: "Steve French" <smfrench@gmail.com>
+Subject: Re: kernel.org git tree corrupt?
+Cc: git@vger.kernel.org, lkml <linux-kernel@vger.kernel.org>
+In-Reply-To: <alpine.LFD.1.00.0803030800460.17889@woody.linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <524f69650803020749o469f2e48l125a55267b0b5d13@mail.gmail.com>
+	 <alpine.LFD.1.00.0803021302070.17889@woody.linux-foundation.org>
+	 <524f69650803021943i33ce6ddbo309f118cd0a77ac9@mail.gmail.com>
+	 <alpine.LFD.1.00.0803030800460.17889@woody.linux-foundation.org>
+To: unlisted-recipients:; (no To-header on input)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 17 Feb 2008 12:02:25 +0100 Ondrej Zary <linux@rainbow-software.org> wrote:
+On Mon, Mar 3, 2008 at 10:21 AM, Linus Torvalds
+<torvalds@linux-foundation.org> wrote:
+>
+>  On Sun, 2 Mar 2008, Steve French wrote:
+>  > Now "git branch -a" shows
+>  > * master
+>  >   origin/master
+>  >
+>  > It is missing "origin/HEAD"
+>
+>  Ahh, yeah, my bad. The origin/HEAD thing will be created if you use either
+>  clone or "git remote add -m master" to create the remote. But when I asked
+>  you to do it by just editing the config file, you now have to create that
+>  HEAD pointer manually too.
+>
+>  You can do
+>
+>         git symbolic-ref refs/remotes/origin/HEAD refs/remotes/origin/master
+>
+>  to create the thing (it just creates a symbolic ref from the origin/HEAD
+Worked.
 
-> this patch converts 3c509 driver to isa_driver and pnp_driver.
+Shaggy pointed me to the git-request-pull script which is
+easier than the previous scripts I used and now works fine on
+the cifs-2.6.git tree so will send merge request.
 
-alpha allmodconfig:
 
-drivers/net/3c509.c:494: error: 'el3_suspend' undeclared here (not in a function)
-drivers/net/3c509.c:495: error: 'el3_resume' undeclared here (not in a function)
+-- 
+Thanks,
+
+Steve
