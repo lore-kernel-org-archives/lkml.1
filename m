@@ -1,43 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762315AbYCDPF0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760188AbYCDPF4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762315AbYCDPF0 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Mar 2008 10:05:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756863AbYCDPFN
+	id S1760188AbYCDPF4 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Mar 2008 10:05:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757612AbYCDPFq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Mar 2008 10:05:13 -0500
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:1757 "EHLO spitz.ucw.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1750941AbYCDPFM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Mar 2008 10:05:12 -0500
-Date: Tue, 4 Mar 2008 16:05:01 +0100
-From: Pavel Machek <pavel@ucw.cz>
-To: Rick van Rein <rick@vanrein.org>
-Cc: Ingo Molnar <mingo@elte.hu>, devzero@web.de, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2.6.24] mm: BadRAM support for broken memory
-Message-ID: <20080304150501.GA5310@ucw.cz>
-References: <182234194@web.de> <20080304132724.GB32383@elte.hu> <20080304134322.GA19237@phantom.vanrein.org>
+	Tue, 4 Mar 2008 10:05:46 -0500
+Received: from g4t0016.houston.hp.com ([15.201.24.19]:37645 "EHLO
+	g4t0016.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757497AbYCDPFp (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 4 Mar 2008 10:05:45 -0500
+Subject: Re: [patch 12/21] No Reclaim LRU Infrastructure
+From: Lee Schermerhorn <Lee.Schermerhorn@hp.com>
+To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Cc: Rik van Riel <riel@redhat.com>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org
+In-Reply-To: <20080304192441.1EA2.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+References: <20080228192908.126720629@redhat.com>
+	 <20080228192929.031646681@redhat.com>
+	 <20080304192441.1EA2.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+Content-Type: text/plain
+Organization: HP/OSLO
+Date: Tue, 04 Mar 2008 10:05:58 -0500
+Message-Id: <1204643158.5338.5.camel@localhost>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080304134322.GA19237@phantom.vanrein.org>
-User-Agent: Mutt/1.5.9i
+X-Mailer: Evolution 2.6.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-> > Please send a patch :-)
+On Tue, 2008-03-04 at 19:46 +0900, KOSAKI Motohiro wrote:
+> Hi
 > 
-> I've been reluctant to quickly mend things because it could lead to
-> unstable code.  The patch that I am presenting is mature code, with the
-> possible exception of the somewhat newer 64-bit code.  If this list has
-> a preference for less mature code that is hardly field-tested, I could
-> of course tailor to that.
+> sorry for late review.
+> 
+> > 
+> > Index: linux-2.6.25-rc2-mm1/mm/Kconfig
+> > ===================================================================
+> > --- linux-2.6.25-rc2-mm1.orig/mm/Kconfig	2008-02-19 16:23:09.000000000 -0500
+> > +++ linux-2.6.25-rc2-mm1/mm/Kconfig	2008-02-28 11:05:04.000000000 -0500
+> > @@ -193,3 +193,13 @@ config NR_QUICK
+> >  config VIRT_TO_BUS
+> >  	def_bool y
+> >  	depends on !ARCH_NO_VIRT_TO_BUS
+> > +
+> > +config NORECLAIM
+> > +	bool "Track non-reclaimable pages (EXPERIMENTAL; 64BIT only)"
+> > +	depends on EXPERIMENTAL && 64BIT
+> 
+> as far as I remembered, somebody said CONFIG_NORECLAIM is easy confusable.
+> may be..
+> 
+> IMHO insert "lru" word is better.
+> example,
+> 
+> config NORECLAIM_LRU
+> 	bool "Zone LRU of track non-reclaimable pages (EXPERIMENTAL; 64BIT only)"
+> 	depends on EXPERIMENTAL && 64BIT
 
-Clean/small/simple is preferable to 'has been stable for 7 years',
-yes.
+OK.  But, I'd suggest the 'bool' description be something like:
 
+config NORECLAIM_LRU
+	bool "Add LRU list to track non-reclaimable pages (EXPERIMENTAL; 64BIT only)"
 
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+> 
+> 
+> > @@ -356,8 +380,10 @@ void release_pages(struct page **pages, 
+> >  				zone = pagezone;
+> >  				spin_lock_irqsave(&zone->lru_lock, flags);
+> >  			}
+> > -			VM_BUG_ON(!PageLRU(page));
+> > -			__ClearPageLRU(page);
+> > +			is_lru_page = PageLRU(page);
+> > +			VM_BUG_ON(!(is_lru_page));
+> > +			if (is_lru_page)
+> > +				__ClearPageLRU(page);
+> >  			del_page_from_lru(zone, page);
+> >  		}
+> 
+> it seems unnecessary change??
+
+Hmmm.  Not sure what I was thinking here.  Might be a relic of some
+previous debug instrumentation.  Guess I don't have any problem with
+removing this change.
+
+Lee
+
