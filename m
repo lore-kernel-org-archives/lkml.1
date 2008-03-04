@@ -1,96 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760965AbYCDLQ7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760563AbYCDLYT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760965AbYCDLQ7 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Mar 2008 06:16:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754218AbYCDLQv
+	id S1760563AbYCDLYT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Mar 2008 06:24:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756094AbYCDLYC
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Mar 2008 06:16:51 -0500
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:56968 "EHLO
-	gprs189-60.eurotel.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753672AbYCDLQv (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Mar 2008 06:16:51 -0500
-Date: Tue, 4 Mar 2008 12:17:15 +0100
-From: Pavel Machek <pavel@ucw.cz>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Adrian Bunk <bunk@kernel.org>
-Subject: Re: 2.6.25-rc3-git3: Reported regressions from 2.6.24
-Message-ID: <20080304111715.GB23227@elf.ucw.cz>
-References: <200803030316.07165.rjw@sisk.pl>
+	Tue, 4 Mar 2008 06:24:02 -0500
+Received: from gir.skynet.ie ([193.1.99.77]:43685 "EHLO gir.skynet.ie"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756072AbYCDLYB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 4 Mar 2008 06:24:01 -0500
+Date: Tue, 4 Mar 2008 11:23:59 +0000 (GMT)
+From: Dave Airlie <airlied@linux.ie>
+X-X-Sender: airlied@skynet.skynet.ie
+To: Jonathan McDowell <noodles@earth.li>
+cc: Andrew Morton <akpm@linux-foundation.org>, xorg-driver-ati@lists.x.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: 2.6.25-rc3 + RS690 + DRM + xf86-video-ati hang
+In-Reply-To: <20080304085155.GX9009@earth.li>
+Message-ID: <alpine.DEB.0.82.0803041120400.24971@skynet.skynet.ie>
+References: <20080301193511.GP9009@earth.li> <20080303224830.28e98b2b.akpm@linux-foundation.org>
+ <alpine.DEB.0.82.0803040816180.24971@skynet.skynet.ie>
+ <20080304085155.GX9009@earth.li>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <200803030316.07165.rjw@sisk.pl>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.17 (2007-11-01)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon 2008-03-03 03:16:06, Rafael J. Wysocki wrote:
-> This message contains a list of some regressions from 2.6.24 reported since
-> 2.6.25-rc1 was released, for which there are no fixes in the mainline I know
-> of.  If any of them have been fixed already, please let me know.
 > 
-> If you know of any other unresolved regressions from 2.6.24, please let me know
-> either and I'll add them to the list.  Also, please let me know if any of the
-> entries below are invalid.
+> Is xf86-driver-ati 6.8.0 not a proper release? I'm pretty sure the
+> combination of that, 2.6.25-rc3 and CONFIG_DRM_RADEON causes my machine
+> to become unresponsive. I only tried a git build of the driver after the
+> released version was causing issues.
+
+Yes we made a mistake with 6.8.0 enabling DRI on rs680 chips before we 
+knew it worked for everyone, I may be still able to fix this in the kernel 
+but there is a good chance that it'll require a 6.8.1 userspace, I can't 
+do anything else about it..
+
+Jonathan I appreciate the bug report, I'm more saying to Andrew that 
+getting DRI right on new chipsets is non-trivial as there are lot of 
+configurations we can't test until we actually push the code to users.. 
+and in this case you are one of those..
+
+you might try setting the VRAM in your BIOS to 128MB instead of Auto and 
+seeing it helps..
+
+I'll be trying to fix the problem properly quite soon.
+
+The correct workaround is to add Option "DRI" "Off" to xorg.conf or for me 
+to travel back in time and unrelease 6.8.0. Removing the kernel DRI 
+support will just break lots of working systems.
+
+Dave.
+
+ > 
+> Replacing 2.6.25-rc3 with 2.6.24 (still with CONFIG_DRM_RADEON enabled)
+> results in a machine that boots to GDM successfully. Likewise if I
+> disable CONFIG_DRM_RADEON in 2.6.25-rc3 the machine boots to GDM ok.
+> 
+> J.
 > 
 > 
-> Listed regressions statistics:
-> 
->   Date          Total  Pending  Unresolved
->   ----------------------------------------
->   2008-03-03      115       65          49
->   2008-02-25       90       51          39
->   2008-02-17       61       45          37
-
-
-> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=9995
-> Subject		: 2.6.25-rc1 regression - backlight controlls do not work - ThinkPad T61
-> Submitter	: Lukas Hejtmanek <xhejtman@fi.muni.cz>
-> Date		: 2008-02-15 04:51
-> Handled-By	: Zhang Rui <rui.zhang@intel.com>
-
-Actually, I see this one too. Witch 2.6.25-rc3, brightness keys just
-do not work. I can still control brightness if I load acpi video
-module and do 
-
-root@amd:/sys/class/backlight/acpi_video0# echo 1 > brightness 
-
-.
-
-
-> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=10012
-> Subject		: 2.6.24-git4+ regression
-
-Better  description would be "interactivity problems in -git4+".
-
-> Submitter	: Lukas Hejtmanek <xhejtman@ics.muni.cz>
-> Date		: 2008-01-30 14:56
-> References	: http://lkml.org/lkml/2008/1/30/254
-> Handled-By	: Ingo Molnar <mingo@elte.hu>
-> 		  Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>
-
-And he has GROUP_SCHED enabled, that is known broken. 
-
-> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=10022
-> Subject		: [2.6.25-rc1] jerky mouse cursor and randoooom key repeats
-> Submitter	: Frans Pop <elendil@planet.nl>
-> Date		: 2008-02-13 09:41
-> References	: http://lkml.org/lkml/2008/2/13/82
-> 		  http://lkml.org/lkml/2008/2/16/17
-> Handled-By	: Jiri Kosina <jkosina@suse.cz>
-> 		  Mike Galbraith <efault@gmx.de>
-
-This is duplicate of 10012.
-
-									Pavel
-
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
