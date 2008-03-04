@@ -1,63 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935226AbYCDXWq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935207AbYCDXXb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935226AbYCDXWq (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Mar 2008 18:22:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934849AbYCDXP4
+	id S935207AbYCDXXb (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Mar 2008 18:23:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934163AbYCDXSv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Mar 2008 18:15:56 -0500
-Received: from ns2.g-housing.de ([81.169.133.75]:37105 "EHLO mail.g-house.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S934041AbYCDXPx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Mar 2008 18:15:53 -0500
-Date: Wed, 5 Mar 2008 00:15:31 +0100 (CET)
-From: Christian Kujau <lists@nerdbynature.de>
-X-X-Sender: evil@sheep.housecafe.de
-To: David Brownell <david-b@pacbell.net>
-cc: Alan Stern <stern@rowland.harvard.edu>,
-       LKML <linux-kernel@vger.kernel.org>, 0x0007@gmail.com,
-       USB list <linux-usb@vger.kernel.org>
-Subject: Re: WARNING: at drivers/usb/host/ehci-hcd.c:287
-In-Reply-To: <200803041401.41880.david-b@pacbell.net>
-Message-ID: <alpine.DEB.1.00.0803050012090.5974@sheep.housecafe.de>
-References: <Pine.LNX.4.44L0.0803041553320.15986-100000@iolanthe.rowland.org> <200803041401.41880.david-b@pacbell.net>
-User-Agent: Alpine 1.00 (DEB 882 2007-12-20)
+	Tue, 4 Mar 2008 18:18:51 -0500
+Received: from terminus.zytor.com ([198.137.202.10]:42210 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S934062AbYCDXSt (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 4 Mar 2008 18:18:49 -0500
+Message-ID: <47CDD715.3010905@zytor.com>
+Date: Tue, 04 Mar 2008 15:11:17 -0800
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; format=flowed; charset=US-ASCII
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+CC: Ingo Molnar <mingo@elte.hu>, "Klaus S. Madsen" <ksm@hjernemadsen.org>,
+       Pavel Machek <pavel@ucw.cz>,
+       Suspend-devel list <suspend-devel@lists.sourceforge.net>,
+       LKML <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Matthew Garrett <mjg59@srcf.ucam.org>,
+       Arjan van de Ven <arjan@infradead.org>
+Subject: Re: Regression in 2.6.25-rc3: s2ram segfaults before suspending
+References: <20080228194920.GJ17932@hjernemadsen.org> <47C739A6.5020608@zytor.com> <20080229070028.GK17932@hjernemadsen.org> <47C873AA.6040305@zytor.com> <20080229212654.GL27212@elte.hu> <20080301094525.GQ17932@hjernemadsen.org> <20080303121735.GE28369@elf.ucw.cz> <20080303151155.GT17932@hjernemadsen.org> <20080303174858.GB25496@elte.hu> <20080303205227.GU17932@hjernemadsen.org> <20080304123602.GC29777@elte.hu> <47CDD480.7000802@goop.org>
+In-Reply-To: <47CDD480.7000802@goop.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 4 Mar 2008, David Brownell wrote:
->>> Or bettter yet, just removing it entirely.  ISTR doing that in some
->>> patches I've not yet sent for merging, and expect that's what my
->>> preferred fix will be ...
+Jeremy Fitzhardinge wrote:
 >>
->> But removing the WARN_ON won't fix the problem.
->
-> It fully resolves the $SUBJECT problem.  :)
+>> PAE activates NX on 32-bit. So we probably had an NX regression that 
+>> got fixed by the side-effects of one of the unifications. Does it 
+>> start working if you disable NX via the noexec=off boot option?
+> 
+> What's the state of play here?  Is upshot that this change fixed a bug 
+> which broke s2ram, or caused a bug which broke s2ram?
+> 
 
-...and if it's a safe thing to do, I'm happy with it. I really have no 
-clue why shutting up a WARN_ON has no (future) implications but if you 
-say so I trust you :)
+As far as I can tell, this change fixed a bug, and the fact that the bug 
+was fixed triggered a s2ram bug.
 
-So now we're down to just:
-
---- linux-2.6/drivers/usb/host/ehci-hcd.c	2008-03-05 00:08:33.000000000 +0100
-+++ linux-2.6/drivers/usb/host/ehci-hcd.c.edited	2008-03-05 00:09:45.000000000 +0100
-@@ -284,7 +284,6 @@ static void ehci_iaa_watchdog(unsigned l
-  	u32			status, cmd;
-
-  	spin_lock_irqsave (&ehci->lock, flags);
--	WARN_ON(!ehci->reclaim);
-
-  	status = ehci_readl(ehci, &ehci->regs->status);
-  	cmd = ehci_readl(ehci, &ehci->regs->command);
-
-Right?
-
-Thank you both for looking into this issue,
-Christian.
--- 
-BOFH excuse #285:
-
-Telecommunications is upgrading.
+	-hpa
