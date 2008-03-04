@@ -1,85 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757355AbYCDOXW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753114AbYCDOYV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757355AbYCDOXW (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Mar 2008 09:23:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752134AbYCDOXK
+	id S1753114AbYCDOYV (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Mar 2008 09:24:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752134AbYCDOYN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Mar 2008 09:23:10 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:37006 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751296AbYCDOXI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Mar 2008 09:23:08 -0500
-Date: Tue, 4 Mar 2008 15:22:48 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Adrian Bunk <bunk@kernel.org>
-Cc: Sam Ravnborg <sam@ravnborg.org>, Alexey Starikovskiy <aystarik@gmail.com>,
-       lenb@kernel.org, astarikovskiy@suse.de, linux-acpi@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       Arjan van de Ven <arjan@infradead.org>
-Subject: Re: [2.6 patch] acpi/battery.c: make 2 functions static
-Message-ID: <20080304142248.GA2201@elte.hu>
-References: <20080303103933.GC21190@elte.hu> <20080303113451.GF4457@cs181133002.pp.htv.fi> <20080303114533.GA4183@elte.hu> <20080303120211.GG4457@cs181133002.pp.htv.fi> <20080303121015.GA12660@elte.hu> <20080303122953.GH4457@cs181133002.pp.htv.fi> <20080303125027.GA21577@elte.hu> <20080303145413.GA26072@cs181133002.pp.htv.fi> <20080304131600.GG29777@elte.hu> <20080304134701.GA20278@cs181133002.pp.htv.fi>
+	Tue, 4 Mar 2008 09:24:13 -0500
+Received: from spirit.analogic.com ([204.178.40.4]:1623 "EHLO
+	spirit.analogic.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752194AbYCDOYM convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 4 Mar 2008 09:24:12 -0500
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080304134701.GA20278@cs181133002.pp.htv.fi>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+X-OriginalArrivalTime: 04 Mar 2008 14:21:31.0293 (UTC) FILETIME=[0AE65CD0:01C87E03]
+Content-class: urn:content-classes:message
+Subject: Re: 64-bit AMD panic
+Date: Tue, 4 Mar 2008 09:21:15 -0500
+Message-ID: <Pine.LNX.4.61.0803040909100.10064@chaos.analogic.com>
+In-Reply-To: <9a8748490803031611m4ad2cd7dr16e30e7cb003c05f@mail.gmail.com>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: 64-bit AMD panic
+Thread-Index: Ach+AwrvvEVw6rY1Sa+QJ8cH1JOODQ==
+References: <Pine.LNX.4.61.0803031205030.5874@chaos.analogic.com> <alpine.DEB.1.00.0803031942040.5974@sheep.housecafe.de> <20080303162246.3f33ee24@cuia.boston.redhat.com> <Pine.LNX.4.61.0803031704290.7011@chaos.analogic.com> <9a8748490803031611m4ad2cd7dr16e30e7cb003c05f@mail.gmail.com>
+From: "linux-os (Dick Johnson)" <linux-os@analogic.com>
+To: "Jesper Juhl" <jesper.juhl@gmail.com>
+Cc: "Rik van Riel" <riel@redhat.com>,
+       "Christian Kujau" <lists@nerdbynature.de>,
+       "Linux kernel" <linux-kernel@vger.kernel.org>
+Reply-To: "linux-os (Dick Johnson)" <linux-os@analogic.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Adrian Bunk <bunk@kernel.org> wrote:
+On Mon, 3 Mar 2008, Jesper Juhl wrote:
 
-> On Tue, Mar 04, 2008 at 02:16:00PM +0100, Ingo Molnar wrote:
-> > 
-> > * Adrian Bunk <bunk@stusta.de> wrote:
-> > 
-> > > > well, i'm trying to assume the best, so please explain the following 
-> > > > sequence of events to me:
-> > > > 
-> > > > 1) as you said you knew about this bug - which bug causes more inlining
-> > > >    overhead than hundreds of your uninlining patches combined. The bug
-> > > >    was introduced ~2 years ago in -mm - before the feature hit mainline
-> > > >    in v2.6.16.
-> > > 
-> > > I don't remember having ever said this.
-> > > 
-> > > Your choices are:
-> > > [ ] prove your accusation that I said I
-> > >     "knew about this bug before the feature hit mainline"
-> > > [ ] apologize
-> > > [ ] be the firest person ever in my killfile
-> > 
-> > Adrian, you must be misunderstanding something. Where exactly in the 
-> > above sentences do i assert that you "knew about this bug before the 
-> > feature hit mainline"? I dont say that and cannot say that -
-> 
-> Please explain your statement "before the feature hit mainline in 
-> v2.6.16" in the above sentence of you in a reasonable way other than 
-> that it should say I knew about it before the feature hit mainline.
+> On 03/03/2008, linux-os (Dick Johnson) <linux-os@analogic.com> wrote:
+>>
+> <snip>
+>>
+>> That's the problem trying to support devices in production.
+>>  The last kernel I was able to locate for the x86_64 project
+>>  is linux-2.6.23. Its dates are from late last year so maybe
+>>  it will work!
+>>
+>>  It is now being compiled one one of the target machines.
+>>  If this works, I'll have to find the differences between
+>>  the old and the newer and patch the linux-2.6.11 because
+>>  it is a "certified" kernel, i.e., selected by the FAA and
+>>  determined to be politically correct!
+>
+> So, you take a "certified" kernel, then you patch it, which leaves you
+> with what? Certainly not a certified kernel. You might as well go with
+> the latest 2.6.24.3 sources then...
+>
+>>
+> <snip>
+>>
 
-do you mean this paragraph:
+You are preaching to the choir. When doing government things
+we can't resort to logic, only "rules!" Here's an example
+of why; We decide to use the latest kernel which, BTW, we are
+not allowed to decide that ourselves, we would have to obtain
+a consensus from lots of "interested" people, including the
+people who move equipment into place (will a later kernel
+weigh more? ..They need to know). The process of selecting
+a new kernel could take a year. Then, it needs to be
+re-certified, which could cause a few million dollars (I am
+not kidding...there are people who, working out of their
+YMCA rooms, charge the government $600 / hour for such
+code-reviews, etc).
 
-| 1) as you said you knew about this bug - which bug causes more 
-| inlining overhead than hundreds of your uninlining patches combined. 
-| The bug was introduced ~2 years ago in -mm - before the feature hit 
-| mainline in v2.6.16.
+That's why we almost always try for a "permissive" change.
+In this case, after verifying that the USB works on a
+later kernel (it does), I need to find out what changes
+were made to make it work and I need to incorporate those
+changes into the older driver.
 
-sorry, but i know of no rule of grammar that could read your 
-interpretation into my two sentences.
+Adding insult to injury, I find that the driver was not
+changed much, but the memory allocation scheme for bounce
+buffers. To review this stuff takes a lot of nights and
+weekends because nobody will give me a hint of the changes
+made to make USB work. It's not in any "Changes"
+documentation, but somebody knows --and they aren't
+telling!
 
-(and that's not surprising at all, because i never intended to even 
-suggest that you knew about this breakage "before it went mainline" - 
-why would i even care about such a detail?)
 
-	Ingo
+Cheers,
+Dick Johnson
+Penguin : Linux version 2.6.22.1 on an i686 machine (5588.28 BogoMips).
+My book : http://www.AbominableFirebug.com/
+_
+
+
+****************************************************************
+The information transmitted in this message is confidential and may be privileged.  Any review, retransmission, dissemination, or other use of this information by persons or entities other than the intended recipient is prohibited.  If you are not the intended recipient, please notify Analogic Corporation immediately - by replying to this message or by sending an email to DeliveryErrors@analogic.com - and destroy all copies of this information, including any attachments, without reading or disclosing them.
+
+Thank you.
