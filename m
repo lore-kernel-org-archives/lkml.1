@@ -1,72 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933979AbYCDX2w@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934681AbYCDX32@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933979AbYCDX2w (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Mar 2008 18:28:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934977AbYCDXT0
+	id S934681AbYCDX32 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Mar 2008 18:29:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935266AbYCDXXv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Mar 2008 18:19:26 -0500
-Received: from mail.suse.de ([195.135.220.2]:49242 "EHLO mx1.suse.de"
+	Tue, 4 Mar 2008 18:23:51 -0500
+Received: from c60.cesmail.net ([216.154.195.49]:29424 "EHLO c60.cesmail.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S935026AbYCDXTY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Mar 2008 18:19:24 -0500
-From: Greg Kroah-Hartman <gregkh@suse.de>
-To: linux-kernel@vger.kernel.org
-Cc: Harvey Harrison <harvey.harrison@gmail.com>,
+	id S935205AbYCDXXt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 4 Mar 2008 18:23:49 -0500
+Subject: Re: [PATCH 2.6.25] module: allow ndiswrapper to use GPL-only
+	symbols
+From: Pavel Roskin <proski@gnu.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>, Zan Lynx <zlynx@acm.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Jon Masters <jcm@jonmasters.org>, Rusty Russell <rusty@rustcorp.com.au>,
        Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [PATCH 8/8] debugfs: fix sparse warnings
-Date: Tue,  4 Mar 2008 15:18:52 -0800
-Message-Id: <1204672732-3127-8-git-send-email-gregkh@suse.de>
-X-Mailer: git-send-email 1.5.4.3
-In-Reply-To: <20080304231519.GC3073@suse.de>
-References: <20080304231519.GC3073@suse.de>
+In-Reply-To: <20080304212023.GD31546@elte.hu>
+References: <1204305609.21719.16.camel@dv>
+	 <alpine.LFD.1.00.0802290929590.17889@woody.linux-foundation.org>
+	 <1204313978.2316.8.camel@dv> <20080229211513.GI27212@elte.hu>
+	 <1204324265.2316.70.camel@dv> <20080303105752.GA23594@elte.hu>
+	 <20080304003723.z79pcavdk4wgoc44@webmail.spamcop.net>
+	 <20080304125744.GF29777@elte.hu>
+	 <alpine.LFD.1.00.0803040907420.12253@woody.linux-foundation.org>
+	 <1204652732.2312.18.camel@dv>  <20080304212023.GD31546@elte.hu>
+Content-Type: text/plain
+Date: Tue, 04 Mar 2008 18:23:48 -0500
+Message-Id: <1204673028.3479.21.camel@dv>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.3 (2.12.3-1.fc8) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Harvey Harrison <harvey.harrison@gmail.com>
 
-extern does not belong in C files, move declaration to linux/debugfs.h
-fs/debugfs/file.c:42:30: warning: symbol 'debugfs_file_operations' was not declared. Should it be static?
-fs/debugfs/file.c:54:31: warning: symbol 'debugfs_link_operations' was not declared. Should it be static?
+On Tue, 2008-03-04 at 22:20 +0100, Ingo Molnar wrote:
+> * Pavel Roskin <proski@gnu.org> wrote:
+> 
+> > To recap:
+> > 
+> > 1) USB API
+> > 2) Workqueue API (there is a hackish replacement in ndiswrapper)
+> > 3) task_nice(), but I have a trivial workaround for that.
+> 
+> task_nice() - it's trivial so feel free to send a patch that turns it 
+> into EXPORT_SYMBOL().
 
-Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
-Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
----
- fs/debugfs/inode.c      |    4 ----
- include/linux/debugfs.h |    5 +++++
- 2 files changed, 5 insertions(+), 4 deletions(-)
+The recent discussion makes me nervous about sending any patches of such
+kind.  Instead of getting access task_nice(), ndiswrapper could lose
+access to set_user_nice() or something else.
 
-diff --git a/fs/debugfs/inode.c b/fs/debugfs/inode.c
-index d26e282..e9602d8 100644
---- a/fs/debugfs/inode.c
-+++ b/fs/debugfs/inode.c
-@@ -29,10 +29,6 @@
- 
- #define DEBUGFS_MAGIC	0x64626720
- 
--/* declared over in file.c */
--extern struct file_operations debugfs_file_operations;
--extern struct inode_operations debugfs_link_operations;
--
- static struct vfsmount *debugfs_mount;
- static int debugfs_mount_count;
- 
-diff --git a/include/linux/debugfs.h b/include/linux/debugfs.h
-index f592d6d..7266124 100644
---- a/include/linux/debugfs.h
-+++ b/include/linux/debugfs.h
-@@ -27,6 +27,11 @@ struct debugfs_blob_wrapper {
- };
- 
- #if defined(CONFIG_DEBUG_FS)
-+
-+/* declared over in file.c */
-+extern const struct file_operations debugfs_file_operations;
-+extern const struct inode_operations debugfs_link_operations;
-+
- struct dentry *debugfs_create_file(const char *name, mode_t mode,
- 				   struct dentry *parent, void *data,
- 				   const struct file_operations *fops);
+It's bad already that a mistaken commit has turned into a permanent
+restriction for ndiswrapper after my intervention :-(
+
 -- 
-1.5.4.3
-
+Regards,
+Pavel Roskin
