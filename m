@@ -1,62 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754271AbYCDXaI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934898AbYCDXbj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754271AbYCDXaI (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Mar 2008 18:30:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935255AbYCDXZd
+	id S934898AbYCDXbj (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Mar 2008 18:31:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934400AbYCDX0a
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Mar 2008 18:25:33 -0500
-Received: from chilli.pcug.org.au ([203.10.76.44]:47247 "EHLO smtps.tip.net.au"
+	Tue, 4 Mar 2008 18:26:30 -0500
+Received: from gw.goop.org ([64.81.55.164]:39848 "EHLO mail.goop.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S934957AbYCDXZb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Mar 2008 18:25:31 -0500
-Date: Wed, 5 Mar 2008 10:25:21 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: "Dan Williams" <dan.j.williams@intel.com>
-Cc: "Andrew Morton" <akpm@linux-foundation.org>, linux-next@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: linux-next: Tree for March 4
-Message-Id: <20080305102521.35ac6ce3.sfr@canb.auug.org.au>
-In-Reply-To: <e9c3a7c20803040954i2a8877a2v61079f765ea21fa8@mail.gmail.com>
-References: <20080304223947.375be10b.sfr@canb.auug.org.au>
-	<e9c3a7c20803040954i2a8877a2v61079f765ea21fa8@mail.gmail.com>
-X-Mailer: Sylpheed 2.5.0beta1 (GTK+ 2.12.8; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Wed__5_Mar_2008_10_25_21_+1100_9CWEAccuX8x4/5m1"
+	id S935355AbYCDX03 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 4 Mar 2008 18:26:29 -0500
+Message-ID: <47CDD96C.9020604@goop.org>
+Date: Tue, 04 Mar 2008 15:21:16 -0800
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
+MIME-Version: 1.0
+To: "H. Peter Anvin" <hpa@zytor.com>
+CC: Ingo Molnar <mingo@elte.hu>, "Klaus S. Madsen" <ksm@hjernemadsen.org>,
+       Pavel Machek <pavel@ucw.cz>,
+       Suspend-devel list <suspend-devel@lists.sourceforge.net>,
+       LKML <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Matthew Garrett <mjg59@srcf.ucam.org>,
+       Arjan van de Ven <arjan@infradead.org>
+Subject: Re: Regression in 2.6.25-rc3: s2ram segfaults before suspending
+References: <20080228194920.GJ17932@hjernemadsen.org> <47C739A6.5020608@zytor.com> <20080229070028.GK17932@hjernemadsen.org> <47C873AA.6040305@zytor.com> <20080229212654.GL27212@elte.hu> <20080301094525.GQ17932@hjernemadsen.org> <20080303121735.GE28369@elf.ucw.cz> <20080303151155.GT17932@hjernemadsen.org> <20080303174858.GB25496@elte.hu> <20080303205227.GU17932@hjernemadsen.org> <20080304123602.GC29777@elte.hu> <47CDD480.7000802@goop.org> <47CDD715.3010905@zytor.com>
+In-Reply-To: <47CDD715.3010905@zytor.com>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Wed__5_Mar_2008_10_25_21_+1100_9CWEAccuX8x4/5m1
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+H. Peter Anvin wrote:
+> As far as I can tell, this change fixed a bug, and the fact that the 
+> bug was fixed triggered a s2ram bug. 
 
-Hi Dan,
+OK.  Doesn't surprise me.  There were a few cases of dubious pte 
+handling which could have accidentally lost the NX bit.
 
-On Tue, 4 Mar 2008 10:54:41 -0700 "Dan Williams" <dan.j.williams@intel.com>=
- wrote:
->
-> For linux-next please add:
->=20
->     master.kernel.org:/pub/scm/linux/kernel/git/djbw/async_tx.git next
-
-Added, thanks (though I used git.kernel.org).
-
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-
---Signature=_Wed__5_Mar_2008_10_25_21_+1100_9CWEAccuX8x4/5m1
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQFHzdpoTgG2atn1QN8RAiCxAJ9t1yqUvel9+R97KpfgJbEp0sbMKgCcCS7U
-ANkKRPJWqF1Vr+2NKhn2+z4=
-=l3/w
------END PGP SIGNATURE-----
-
---Signature=_Wed__5_Mar_2008_10_25_21_+1100_9CWEAccuX8x4/5m1--
+    J
