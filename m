@@ -1,63 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761277AbYCDWS7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759578AbYCDWTs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761277AbYCDWS7 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Mar 2008 17:18:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756165AbYCDWSv
+	id S1759578AbYCDWTs (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Mar 2008 17:19:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757962AbYCDWTf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Mar 2008 17:18:51 -0500
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:52976 "EHLO
-	gprs189-60.eurotel.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755342AbYCDWSu (ORCPT
+	Tue, 4 Mar 2008 17:19:35 -0500
+Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:47310 "EHLO
+	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758272AbYCDWTe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Mar 2008 17:18:50 -0500
-Date: Tue, 4 Mar 2008 23:19:20 +0100
-From: Pavel Machek <pavel@ucw.cz>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Roland McGrath <roland@redhat.com>,
+	Tue, 4 Mar 2008 17:19:34 -0500
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: "Serge E. Hallyn" <serue@us.ibm.com>
+Cc: Ian Kent <raven@themaw.net>, Jeff Moyer <jmoyer@redhat.com>,
        Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] freezer vs stopped or traced
-Message-ID: <20080304221920.GB7646@elf.ucw.cz>
-References: <20080304042205.4DA9F2700FB@magilla.localdomain> <200803042302.44828.rjw@sisk.pl>
+       Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       autofs mailing list <autofs@linux.kernel.org>,
+       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
+       Pavel Emelyanov <xemul@openvz.org>
+Subject: Re: [PATCH 3/4] autofs4 - track uid and gid of last mount requestor
+References: <1204179747.3501.21.camel@raven.themaw.net>
+	<20080227223734.caab0165.akpm@linux-foundation.org>
+	<1204182500.3501.49.camel@raven.themaw.net>
+	<20080227232339.af6e904a.akpm@linux-foundation.org>
+	<1204185623.3501.84.camel@raven.themaw.net>
+	<x494pbtxaup.fsf@segfault.boston.devel.redhat.com>
+	<20080228195118.GA16634@sergelap.austin.ibm.com>
+	<1204255932.3969.86.camel@raven.themaw.net>
+	<20080229160921.GA24296@sergelap.ibm.com>
+	<m1bq5y3p2o.fsf@ebiederm.dsl.xmission.com>
+	<20080303152855.GB25643@sergelap.austin.ibm.com>
+Date: Tue, 04 Mar 2008 15:16:34 -0700
+In-Reply-To: <20080303152855.GB25643@sergelap.austin.ibm.com> (Serge
+	E. Hallyn's message of "Mon, 3 Mar 2008 09:28:55 -0600")
+Message-ID: <m1od9u2kzh.fsf@ebiederm.dsl.xmission.com>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200803042302.44828.rjw@sisk.pl>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
+"Serge E. Hallyn" <serue@us.ibm.com> writes:
 
-> > This changes the "freezer" code used by suspend/hibernate in its treatment
-> > of tasks in TASK_STOPPED (job control stop) and TASK_TRACED (ptrace) states.
-> > 
-> > As I understand it, the intent of the "freezer" is to hold all tasks
-> > from doing anything significant.  For this purpose, TASK_STOPPED and
-> > TASK_TRACED are "frozen enough".  It's possible the tasks might resume
-> > from ptrace calls (if the tracer were unfrozen) or from signals
-> > (including ones that could come via timer interrupts, etc).  But this
-> > doesn't matter as long as they quickly block again while "freezing" is
-> > in effect.  Some minor adjustments to the signal.c code make sure that
-> > try_to_freeze() very shortly follows all wakeups from both kinds of
-> > stop.  This lets the freezer code safely leave stopped tasks unmolested.
-> > 
-> > Changing this fixes the longstanding bug of seeing after resuming from
-> > suspend/hibernate your shell report "[1] Stopped" and the like for all
-> > your jobs stopped by ^Z et al, as if you had freshly fg'd and ^Z'd them.
-> > It also removes from the freezer the arcane special case treatment for
-> > ptrace'd tasks, which relied on intimate knowledge of ptrace
-> > internals.
+> Earlier I had thought this could just be done using a special keyring,
+> but atm I'm thinking that would be far uglier than just having a
+> struct pid-like credential proxy in the kernel to pass around in place
+> of uids.
 
-I'm glad someone who actually understands signal code got to look at
-this ;-). The patch looks okay to me, but I can't say I'm too
-qualified in this area.
+I have not looked at many of the implementation possibilities so unfortunately
+I don't know what makes for a good implementation.
 
-...but this is 2.6.26 material, right?
-								Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+What I do know is that uids are serialized in filesystems, and their
+mapping between namespaces is defined by system administrators.
+
+Both of those properties are different from struct pid.  Which means
+a generalized struct user in the kernel can at best hold a cache of the
+mappings.
+
+My preliminary investigations suggested that for the kernel filesystem
+boundary generating a struct user or a struct group just to use for a
+permission check and then to throw it away was wasteful.
+
+However for inkernel entities a struct user sounds practical.
+
+All of which is to say that we can learn lessons from the
+implementation of struct pid but that we also have different
+requirements so we can only use those lessons in a limited fashion.
+
+Eric
