@@ -1,25 +1,36 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759402AbYCDGtU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761287AbYCDGwE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759402AbYCDGtU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Mar 2008 01:49:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753963AbYCDGtH
+	id S1761287AbYCDGwE (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Mar 2008 01:52:04 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753997AbYCDGvy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Mar 2008 01:49:07 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:34401 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753547AbYCDGtG (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Mar 2008 01:49:06 -0500
-Date: Mon, 3 Mar 2008 22:48:30 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Jonathan McDowell <noodles@earth.li>
-Cc: xorg-driver-ati@lists.x.org, linux-kernel@vger.kernel.org,
-       Dave Airlie <airlied@linux.ie>
-Subject: Re: 2.6.25-rc3 + RS690 + DRM + xf86-video-ati hang
-Message-Id: <20080303224830.28e98b2b.akpm@linux-foundation.org>
-In-Reply-To: <20080301193511.GP9009@earth.li>
-References: <20080301193511.GP9009@earth.li>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+	Tue, 4 Mar 2008 01:51:54 -0500
+Received: from relay1.sgi.com ([192.48.171.29]:50830 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753963AbYCDGvx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 4 Mar 2008 01:51:53 -0500
+Date: Tue, 4 Mar 2008 00:51:48 -0600
+From: Paul Jackson <pj@sgi.com>
+To: "Paul Menage" <menage@google.com>
+Cc: a.p.zijlstra@chello.nl, maxk@qualcomm.com, mingo@elte.hu,
+       tglx@linutronix.de, oleg@tv-sign.ru, rostedt@goodmis.org,
+       linux-kernel@vger.kernel.org, rientjes@google.com
+Subject: Re: [RFC/PATCH] cpuset: cpuset irq affinities
+Message-Id: <20080304005148.4e6f1fe8.pj@sgi.com>
+In-Reply-To: <6599ad830803032234v3bce2769l26379ea304fe885@mail.gmail.com>
+References: <20080227222103.673194000@chello.nl>
+	<20080303113621.1dfdda87.pj@sgi.com>
+	<1204567052.6241.4.camel@lappy>
+	<20080303121033.c8c9651c.pj@sgi.com>
+	<6599ad830803031041r6c635141n6520a915f2e1d08@mail.gmail.com>
+	<20080303125253.5d2d580c.pj@sgi.com>
+	<6599ad830803032126m39935eaeu1df67d6263e8e123@mail.gmail.com>
+	<20080304001507.3ddc8f26.pj@sgi.com>
+	<6599ad830803032221j740c9657yec237ebbadbeaeaa@mail.gmail.com>
+	<20080304002651.95089ff1.pj@sgi.com>
+	<6599ad830803032234v3bce2769l26379ea304fe885@mail.gmail.com>
+Organization: SGI
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.12.0; i686-pc-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
@@ -27,35 +38,42 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 1 Mar 2008 19:35:11 +0000 Jonathan McDowell <noodles@earth.li> wrote:
+Paul M wrote:
+> I'm one such user who's been forced to add the mem_hardwall flag to
+> get around the fact that exclusive and hardwall are controlled by the
+> same flag. I keep meaning to send it in as a patch but haven't yet got
+> round to it.
 
-> If I enable CONFIG_DRM_RADEON under 2.6.25-rc3 then starting up
-> X using the xf86-video-ati driver (6.8.0 or latest git) causes the
-> machine to become unresponsive; while it still pings and will accept
-> incoming connections they never actually complete and it's not possible
-> to login over a serial console (the actual video console doesn't display
-> anything and the monitor reports a loss of sync).
-> 
-> Disabling the kernel DRM option results in X running successfully.
-> Likewise 2.6.24 works fine with DRM enabled, presumably because the
-> support for the RS690 was only added in 2.6.25-rc
-> 
-> The last messages from the kernel before it becomes unresponsive are:
-> 
-> [drm] Setting GART location based on new memory map
-> [drm] Loading R300 Microcode
-> [drm] writeback test succeeded in 1 usecs
-> 
-> The motherboard in question is an ASUS M2A-VM HDMI, with the analog VGA
-> output being used. The machine is running an AMD64 with Debian unstable.
-> I have put the output of lspci, a non drm Xorg.log and a drm Xorg.log
-> at:
-> 
-> http://the.earth.li/~noodles/xorg-ati-drm/lspci
-> http://the.earth.li/~noodles/xorg-ati-drm/Xorg.0.log-nodrm
-> http://the.earth.li/~noodles/xorg-ati-drm/Xorg.0.log-drm
-> 
-> If I can provide any more useful information please let me know.
-> 
+I made essentially the same mistake twice in the evolution of cpusets:
+ 1) overloading the cpu_exclusive flag to define sched domains, and
+ 2) overloading the mem_exclusive flag to define memory hardwalls.
 
-Did 2.6.24 work OK with all the same userspace software?
+I eventually reversed (1), with a deliberately incompatible change
+(and you know how I resist those ;), creating a new 'sched_load_balance'
+flag that controls the sched_domain partitioning, and removing any
+affect that the cpu_exclusive flag has on this.
+
+Perhaps the unfortunate interaction of mem_exclusive and hardwall is
+destined to go the same path.  Thought the audience that is currently
+using mem_exclusive for the purpose of hardwall enforcement of kernel
+allocations might be broader than the specialized real-time audience
+that was using cpu_exclusive for dynamic sched domain isolation, and so
+we might not choose to just break compatibility in one shot, but rather
+phase in your new flag, before, perhaps, in a later release, phasing
+out the old hardwall overloading of the mem_exclusive flag.
+
+(My primeval mistake was including the cpu_exclusive and mem_exclusive
+flags in the original cpuset design; those two flags have given me
+nothing but temptation to commit further design errors ;).
+
+
+> Also, if you're using fake numa for memory isolation (which we're
+> experimenting with) then the correlation between cpu placement and
+> memory placement is much much weaker, or non-existent.
+
+That might be a good answer to my asking where the beef was.
+
+-- 
+                  I won't rest till it's the best ...
+                  Programmer, Linux Scalability
+                  Paul Jackson <pj@sgi.com> 1.940.382.4214
