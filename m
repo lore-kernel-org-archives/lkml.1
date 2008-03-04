@@ -1,125 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764484AbYCDNOZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764703AbYCDNQw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764484AbYCDNOZ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Mar 2008 08:14:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758284AbYCDNOO
+	id S1764703AbYCDNQw (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Mar 2008 08:16:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758284AbYCDNQm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Mar 2008 08:14:14 -0500
-Received: from gv-out-0910.google.com ([216.239.58.190]:59911 "EHLO
-	gv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760150AbYCDNON (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Mar 2008 08:14:13 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:to:cc:subject:message-id:mime-version:content-type:content-disposition:user-agent:from;
-        b=D4Ts8ho3jixrL4iqxJCrR9fPEvD/IlCy3PySuO/wmpxEbikZDVKIiKY5qOrehiiPlVTS5yUew2Rt31XRd4+3cy9lNTmgpwpQPA4tfILIkXwK/iUiG9Hjt0nph0Eh1aknmwaOWSewp4fK4xL39ytOYtg5naSVtjacNRR9v3Agsjk=
-Date: Tue, 4 Mar 2008 15:10:55 +0200
-To: Casey Schaufler <casey@schaufler-ca.com>
-Cc: LKML <linux-kernel@vger.kernel.org>, Linus <torvalds@linux-foundation.org>
-Subject: [PATCH BUGFIX -rc3] Smack: Don't register smackfs if we're not
-	loaded
-Message-ID: <20080304131055.GA25577@ubuntu>
+	Tue, 4 Mar 2008 08:16:42 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:45087 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1759379AbYCDNQl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 4 Mar 2008 08:16:41 -0500
+Date: Tue, 4 Mar 2008 14:16:00 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Adrian Bunk <bunk@stusta.de>
+Cc: Sam Ravnborg <sam@ravnborg.org>, Alexey Starikovskiy <aystarik@gmail.com>,
+       lenb@kernel.org, astarikovskiy@suse.de, linux-acpi@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       Arjan van de Ven <arjan@infradead.org>
+Subject: Re: [2.6 patch] acpi/battery.c: make 2 functions static
+Message-ID: <20080304131600.GG29777@elte.hu>
+References: <20080303091714.GA18250@elte.hu> <20080303093103.GA23651@uranus.ravnborg.org> <20080303103933.GC21190@elte.hu> <20080303113451.GF4457@cs181133002.pp.htv.fi> <20080303114533.GA4183@elte.hu> <20080303120211.GG4457@cs181133002.pp.htv.fi> <20080303121015.GA12660@elte.hu> <20080303122953.GH4457@cs181133002.pp.htv.fi> <20080303125027.GA21577@elte.hu> <20080303145413.GA26072@cs181133002.pp.htv.fi>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
-From: "Ahmed S. Darwish" <darwish.07@gmail.com>
+In-Reply-To: <20080303145413.GA26072@cs181133002.pp.htv.fi>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi all,
 
-Smackfs initialization without an enabled Smack leads to
-an early Oops that renders the system unusable.
+* Adrian Bunk <bunk@stusta.de> wrote:
 
-Introduce a global smack_enabled variable that will be used
-to make sure that no smack components will be registered 
-(ala smackfs) if we are not already enabled.
+> > well, i'm trying to assume the best, so please explain the following 
+> > sequence of events to me:
+> > 
+> > 1) as you said you knew about this bug - which bug causes more inlining
+> >    overhead than hundreds of your uninlining patches combined. The bug
+> >    was introduced ~2 years ago in -mm - before the feature hit mainline
+> >    in v2.6.16.
+> 
+> I don't remember having ever said this.
+> 
+> Your choices are:
+> [ ] prove your accusation that I said I
+>     "knew about this bug before the feature hit mainline"
+> [ ] apologize
+> [ ] be the firest person ever in my killfile
 
-Signed-off-by: Ahmed S. Darwish <darwish.07@gmail.com>
----
+Adrian, you must be misunderstanding something. Where exactly in the 
+above sentences do i assert that you "knew about this bug before the 
+feature hit mainline"? I dont say that and cannot say that - and it's 
+rather irrelevant. All i say is that you knew about this bug for a long 
+time.
 
-The Oops is triggered by the security= patch that will be sent
-soon.
+> >...
+> > still, while you clearly had interest in this general area of the kernel 
+> > (for example you wrote hundreds of tiny uninlining patches that work 
+> > towards a similar goal),
+> 
+> I'm not sure with whom you confuse me on this one.
+> Perhaps with Ilpo?
 
-I can't imagine an SELinux guru finding /smackfs instead of 
-his usual /selinuxfs when he hits a tab completion after 's' ;).
-As a bonus, this patch will handle that case too.
+i mean you send tons of trivial patches along the lines of:
 
- smack.h     |    9 +++++++++
- smack_lsm.c |    8 ++++++++
- smackfs.c   |    3 +++
+|  Author: Adrian Bunk <bunk@kernel.org>
+|  Date:   Fri Feb 22 21:58:37 2008 +0200
+|
+|    x86: don't make swapper_pg_pmd global
 
- 3 files changed, 20 insertions(+)
+to reduce size of the kernel. At 50 bytes of image savings a pop, the 
+127,000 bytes savings my patch gives would be equivalent to more than 
+2500 of such patches of yours.
 
-diff --git a/security/smack/smack.h b/security/smack/smack.h
-index a21a0e9..17c55ad 100644
---- a/security/smack/smack.h
-+++ b/security/smack/smack.h
-@@ -18,6 +18,15 @@
- #include <net/netlabel.h>
- 
- /*
-+ * We must not bother the rest of the kernel by exporting our
-+ * own stuff if we are not already enabled. We may not be loaded
-+ * if another or no LSM was chosen on boot.
-+ * Smackfs is currently the only exported component, but this
-+ * may change in the future.
-+ */
-+extern int smack_enabled;
-+
-+/*
-  * Why 23? CIPSO is constrained to 30, so a 32 byte buffer is
-  * bigger than can be used, and 24 is the next lower multiple
-  * of 8, and there are too many issues if there isn't space set
-diff --git a/security/smack/smack_lsm.c b/security/smack/smack_lsm.c
-index 770eb06..6fe7869 100644
---- a/security/smack/smack_lsm.c
-+++ b/security/smack/smack_lsm.c
-@@ -36,6 +36,8 @@
- #define SOCKFS_MAGIC		0x534F434B
- #define TMPFS_MAGIC		0x01021994
- 
-+int smack_enabled;
-+
- /**
-  * smk_fetch - Fetch the smack label from a file.
-  * @ip: a pointer to the inode
-@@ -2589,6 +2591,12 @@ static __init int smack_init(void)
- 	if (register_security(&smack_ops))
- 		panic("smack: Unable to register with kernel.\n");
- 
-+	/*
-+	 * Notify other Smack components that it's now safe to
-+	 * to register themselves.
-+	 */
-+	smack_enabled = 1;
-+
- 	return 0;
- }
- 
-diff --git a/security/smack/smackfs.c b/security/smack/smackfs.c
-index 358c92c..e1687c0 100644
---- a/security/smack/smackfs.c
-+++ b/security/smack/smackfs.c
-@@ -992,6 +992,9 @@ static int __init init_smk_fs(void)
- {
- 	int err;
- 
-+	if (!smack_enabled)
-+		return 0;
-+
- 	err = register_filesystem(&smk_fs_type);
- 	if (!err) {
- 		smackfs_mount = kern_mount(&smk_fs_type);
+In other words: you knew about a bug that would have the same kernel 
+image size reduction equivalent to 2500 of your own tiny patches. Still 
+you didnt feel the need to pursue the issue?
 
--- 
+I'm not sure about you, but that sure looks weird to me, and i'm really 
+curious what your interpretation of it is. (which, AFAICS, you have not 
+offered so far. You have rejected my common-sense explanation of your 
+actions rather forcefully, so logically there must be some other 
+explanation.)
 
-"Better to light a candle, than curse the darkness"
-
-Ahmed S. Darwish
-Homepage: http://darwish.07.googlepages.com
-Blog: http://darwish-07.blogspot.com
-
+	Ingo
