@@ -1,63 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932509AbYCDSgn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932397AbYCDSjY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932509AbYCDSgn (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Mar 2008 13:36:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764092AbYCDSgR
+	id S932397AbYCDSjY (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Mar 2008 13:39:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757843AbYCDSjP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Mar 2008 13:36:17 -0500
-Received: from gv-out-0910.google.com ([216.239.58.189]:3005 "EHLO
-	gv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1763417AbYCDSgN (ORCPT
+	Tue, 4 Mar 2008 13:39:15 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:55279 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755857AbYCDSjO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Mar 2008 13:36:13 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
-        b=ArGQNyfCpevlcZsstkzsjVCqAhNvD7Y5JS4opvZZt2CxP84mt07mVYtJlL4o2Y9z6BDofHLtDwW9AtwhP1zYsBHbR+7Hx+z9Az6lVtR8LxK5snxAmg+tIl5Txn5twttTLvRBOj+CzMkEhLOVBQx9MdhqXbFTrutSODR+xgmuGV8=
-Message-ID: <47CD968B.1070302@gmail.com>
-Date: Wed, 05 Mar 2008 03:35:55 +0900
-From: Tejun Heo <htejun@gmail.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20070801)
-MIME-Version: 1.0
-To: Boaz Harrosh <bharrosh@panasas.com>
-CC: FUJITA Tomonori <tomof@acm.org>, efault@gmx.de, jens.axboe@oracle.com,
-       fujita.tomonori@lab.ntt.co.jp, James.Bottomley@HansenPartnership.com,
-       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       linux-ide@vger.kernel.org, linux-scsi@vger.kernel.org,
-       jgarzik@pobox.com, bzolnier@gmail.com
-Subject: Re: [PATCH] block: fix residual byte count handling
-References: <20080304093536.GH6704@kernel.dk>	<1204634238.5997.5.camel@homer.simson.net>	<47CD4355.4050401@gmail.com> <20080304223006A.tomof@acm.org> <47CD53BA.5040908@gmail.com> <47CD7611.2030606@gmail.com> <47CD7C05.1080707@gmail.com> <47CD9457.3090203@panasas.com>
-In-Reply-To: <47CD9457.3090203@panasas.com>
-X-Enigmail-Version: 0.95.5
-Content-Type: text/plain; charset=ISO-8859-1
+	Tue, 4 Mar 2008 13:39:14 -0500
+Date: Tue, 4 Mar 2008 10:36:36 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+       Andy Whitcroft <apw@shadowen.org>, linux-mm@kvack.org,
+       Pekka Enberg <penberg@cs.helsinki.fi>, Mel Gorman <mel@csn.ul.ie>
+Subject: Re: [BUG] 2.6.25-rc3-mm1 kernel panic while bootup on powerpc ()
+Message-Id: <20080304103636.3e7b8fdd.akpm@linux-foundation.org>
+In-Reply-To: <47CD4AB3.3080409@linux.vnet.ibm.com>
+References: <20080304011928.e8c82c0c.akpm@linux-foundation.org>
+	<47CD4AB3.3080409@linux.vnet.ibm.com>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Boaz Harrosh wrote:
->> -	good_bytes = scsi_bufflen(cmd);
->> +	good_bytes = scsi_bufflen(cmd) + cmd->request->data_len;
+On Tue, 04 Mar 2008 18:42:19 +0530 Kamalesh Babulal <kamalesh@linux.vnet.ibm.com> wrote:
+
+> 3) Third attempt kernel booted up but had the following call trace 264 times while running
+> test
 > 
-> Are you sure? is it not:
-> +	good_bytes = scsi_bufflen(cmd) + cmd->request->extra_len
+> Badness at include/linux/gfp.h:110
+> NIP: c0000000000b4ff0 LR: c0000000000b4fa0 CTR: c00000000019cdb4
+> REGS: c000000009edf250 TRAP: 0700   Not tainted  (2.6.25-rc3-mm1-autotest)
+> MSR: 8000000000029032 <EE,ME,IR,DR>  CR: 22024042  XER: 20000003
+> TASK = c000000009062140[548] 'kjournald' THREAD: c000000009edc000 CPU: 0
+> NIP [c0000000000b4ff0] .get_page_from_freelist+0x29c/0x898
+> LR [c0000000000b4fa0] .get_page_from_freelist+0x24c/0x898
+> Call Trace:
+> [c000000009edf5f0] [c0000000000b56e4] .__alloc_pages_internal+0xf8/0x470
+> [c000000009edf6e0] [c0000000000e0458] .kmem_getpages+0x8c/0x194
+> [c000000009edf770] [c0000000000e1050] .fallback_alloc+0x194/0x254
+> [c000000009edf820] [c0000000000e14b0] .kmem_cache_alloc+0xd8/0x144
+> [c000000009edf8c0] [c0000000001fe0f8] .radix_tree_preload+0x50/0xd4
+> [c000000009edf960] [c0000000000ad048] .add_to_page_cache+0x38/0x12c
+> [c000000009edfa00] [c0000000000ad158] .add_to_page_cache_lru+0x1c/0x4c
+> [c000000009edfa90] [c0000000000add58] .find_or_create_page+0x60/0xa8
+> [c000000009edfb30] [c00000000011e478] .__getblk+0x140/0x310
+> [c000000009edfc00] [c0000000001b78c4] .journal_get_descriptor_buffer+0x44/0xd8
+> [c000000009edfca0] [c0000000001b236c] .journal_commit_transaction+0x948/0x1590
+> [c000000009edfe00] [c0000000001b585c] .kjournald+0xf4/0x2ac
+> [c000000009edff00] [c00000000007ff4c] .kthread+0x84/0xd0
+> [c000000009edff90] [c000000000028900] .kernel_thread+0x4c/0x68
+> Instruction dump:
+> 7dc57378 48009575 60000000 2fa30000 419e0490 56c902d8 3c000018 7dd907b4 
+> 7ad2c7e2 7f890000 7c000026 5400fffe <0b000000> e93e8128 3b000000 80090000 
 
-You're right.  Sorry about the confusion.
+/* Convert GFP flags to their corresponding migrate type */
+static inline int allocflags_to_migratetype(gfp_t gfp_flags)
+{
+        WARN_ON((gfp_flags & GFP_MOVABLE_MASK) == GFP_MOVABLE_MASK);
 
->>          if (cmd->request->cmd_type != REQ_TYPE_BLOCK_PC) {
->>  		drv = scsi_cmd_to_driver(cmd);
->>  		if (drv->done)
->>
->>
-> 
-> I hate this patch. I wish you could maybe take the extra_len into 
-> account inside blk_end_request. The padding should be transparent
-> to all concerned but the requesting LLD and the internals of the
-> block layer. If block layer added padding it should take that into
-> account on completion. My $0.2.
-
-Yeah, I hate it too.  As I've been saying all along, I think it just
-should be rq->data_len.
-
--- 
-tejun
+Mel, Pekka: would you have some head-scratching time for this one please?
