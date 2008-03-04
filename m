@@ -1,398 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757702AbYCDAoc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758786AbYCDAsl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757702AbYCDAoc (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Mar 2008 19:44:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753495AbYCDAoY
+	id S1758786AbYCDAsl (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Mar 2008 19:48:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751385AbYCDAsb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Mar 2008 19:44:24 -0500
-Received: from mis011.exch011.intermedia.net ([64.78.21.10]:21849 "EHLO
-	mis011.exch011.intermedia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753295AbYCDAoX (ORCPT
+	Mon, 3 Mar 2008 19:48:31 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:45286 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751158AbYCDAsa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Mar 2008 19:44:23 -0500
-Message-ID: <47CC9B57.5050402@qumranet.com>
-Date: Tue, 04 Mar 2008 02:44:07 +0200
-From: izik eidus <izike@qumranet.com>
-User-Agent: Thunderbird 2.0.0.12 (Windows/20080213)
-MIME-Version: 1.0
-To: Andrea Arcangeli <andrea@qumranet.com>
-CC: Jack Steiner <steiner@sgi.com>, Nick Piggin <npiggin@suse.de>,
-       akpm@linux-foundation.org, Robin Holt <holt@sgi.com>,
-       Avi Kivity <avi@qumranet.com>, kvm-devel@lists.sourceforge.net,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, general@lists.openfabrics.org,
-       Steve Wise <swise@opengridcomputing.com>,
-       Roland Dreier <rdreier@cisco.com>, Kanoj Sarcar <kanojsarcar@yahoo.com>,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       daniel.blueman@quadrics.com, Christoph Lameter <clameter@sgi.com>
-Subject: Re: [PATCH] KVM swapping with mmu notifiers #v9
-References: <20080219135851.GI7128@v2.random> <20080219231157.GC18912@wotan.suse.de> <20080220010941.GR7128@v2.random> <20080220103942.GU7128@v2.random> <20080221045430.GC15215@wotan.suse.de> <20080221144023.GC9427@v2.random> <20080221161028.GA14220@sgi.com> <20080227192610.GF28483@v2.random> <20080302155457.GK8091@v2.random> <20080303213707.GA8091@v2.random> <20080303220502.GA5301@v2.random>
-In-Reply-To: <20080303220502.GA5301@v2.random>
-Content-Type: text/plain; charset=windows-1255; format=flowed
-Content-Transfer-Encoding: 8bit
-X-OriginalArrivalTime: 04 Mar 2008 00:44:21.0350 (UTC) FILETIME=[E2C6C860:01C87D90]
+	Mon, 3 Mar 2008 19:48:30 -0500
+Date: Mon, 3 Mar 2008 16:43:59 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Ed Tomlinson <edt@aei.ca>
+Cc: davem@davemloft.net, linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+Subject: Re: Panic 2.6.24-3 Unable to handle kernel paging request
+Message-Id: <20080303164359.2506fef1.akpm@linux-foundation.org>
+In-Reply-To: <200803031934.51944.edt@aei.ca>
+References: <200803010902.47997.edt@aei.ca>
+	<200803031934.51944.edt@aei.ca>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-φιθεθ Andrea Arcangeli:
-> Notably the registration now requires the mmap_sem in write mode.
->
-> Signed-off-by: Andrea Arcangeli <andrea@qumranet.com>
->
-> diff --git a/arch/x86/kvm/Kconfig b/arch/x86/kvm/Kconfig
-> index 41962e7..e1287ab 100644
-> --- a/arch/x86/kvm/Kconfig
-> +++ b/arch/x86/kvm/Kconfig
-> @@ -21,6 +21,7 @@ config KVM
->  	tristate "Kernel-based Virtual Machine (KVM) support"
->  	depends on HAVE_KVM && EXPERIMENTAL
->  	select PREEMPT_NOTIFIERS
-> +	select MMU_NOTIFIER
->  	select ANON_INODES
->  	---help---
->  	  Support hosting fully virtualized guest machines using hardware
-> diff --git a/arch/x86/kvm/mmu.c b/arch/x86/kvm/mmu.c
-> index 4583329..4067b0f 100644
-> --- a/arch/x86/kvm/mmu.c
-> +++ b/arch/x86/kvm/mmu.c
-> @@ -642,6 +642,110 @@ static void rmap_write_protect(struct kvm *kvm, u64 gfn)
->  	account_shadowed(kvm, gfn);
->  }
->  
-> +static void kvm_unmap_spte(struct kvm *kvm, u64 *spte)
-> +{
-> +	struct page *page = pfn_to_page((*spte & PT64_BASE_ADDR_MASK) >> PAGE_SHIFT);
-> +	get_page(page);
-> +	rmap_remove(kvm, spte);
-> +	set_shadow_pte(spte, shadow_trap_nonpresent_pte);
-> +	kvm_flush_remote_tlbs(kvm);
-> +	__free_page(page);
->   
+On Mon, 3 Mar 2008 19:34:51 -0500
+Ed Tomlinson <edt@aei.ca> wrote:
 
-i wrote to you about this before (i didnt get answer for this so i write 
-again)
-with large pages support i think we need to use here put_page
+> On March 1, 2008, Ed Tomlinson wrote:
+> 
+> Andrew,
+> 
+> Is there anyone else I should be copying on this? 
+> 
 
-> +}
-> +
-> +static void kvm_unmap_rmapp(struct kvm *kvm, unsigned long *rmapp)
-> +{
-> +	u64 *spte, *curr_spte;
-> +
-> +	spte = rmap_next(kvm, rmapp, NULL);
-> +	while (spte) {
-> +		BUG_ON(!(*spte & PT_PRESENT_MASK));
-> +		rmap_printk("kvm_rmap_unmap_hva: spte %p %llx\n", spte, *spte);
-> +		curr_spte = spte;
-> +		spte = rmap_next(kvm, rmapp, spte);
-> +		kvm_unmap_spte(kvm, curr_spte);
-> +	}
-> +}
-> +
-> +void kvm_unmap_hva(struct kvm *kvm, unsigned long hva)
-> +{
-> +	int i;
-> +
-> +	/*
-> +	 * If mmap_sem isn't taken, we can look the memslots with only
-> +	 * the mmu_lock by skipping over the slots with userspace_addr == 0.
-> +	 */
-> +	spin_lock(&kvm->mmu_lock);
-> +	for (i = 0; i < kvm->nmemslots; i++) {
-> +		struct kvm_memory_slot *memslot = &kvm->memslots[i];
-> +		unsigned long start = memslot->userspace_addr;
-> +		unsigned long end;
-> +
-> +		/* mmu_lock protects userspace_addr */
-> +		if (!start)
-> +			continue;
-> +
-> +		end = start + (memslot->npages << PAGE_SHIFT);
-> +		if (hva >= start && hva < end) {
-> +			gfn_t gfn_offset = (hva - start) >> PAGE_SHIFT;
-> +			kvm_unmap_rmapp(kvm, &memslot->rmap[gfn_offset]);
-> +		}
-> +	}
-> +	spin_unlock(&kvm->mmu_lock);
-> +}
-> +
-> +static int kvm_age_rmapp(struct kvm *kvm, unsigned long *rmapp)
-> +{
-> +	u64 *spte;
-> +	int young = 0;
-> +
-> +	spte = rmap_next(kvm, rmapp, NULL);
-> +	while (spte) {
-> +		int _young;
-> +		u64 _spte = *spte;
-> +		BUG_ON(!(_spte & PT_PRESENT_MASK));
-> +		_young = _spte & PT_ACCESSED_MASK;
-> +		if (_young) {
-> +			young = !!_young;
-> +			set_shadow_pte(spte, _spte & ~PT_ACCESSED_MASK);
-> +		}
-> +		spte = rmap_next(kvm, rmapp, spte);
-> +	}
-> +	return young;
-> +}
-> +
-> +int kvm_age_hva(struct kvm *kvm, unsigned long hva)
-> +{
-> +	int i;
-> +	int young = 0;
-> +
-> +	/*
-> +	 * If mmap_sem isn't taken, we can look the memslots with only
-> +	 * the mmu_lock by skipping over the slots with userspace_addr == 0.
-> +	 */
-> +	spin_lock(&kvm->mmu_lock);
-> +	for (i = 0; i < kvm->nmemslots; i++) {
-> +		struct kvm_memory_slot *memslot = &kvm->memslots[i];
-> +		unsigned long start = memslot->userspace_addr;
-> +		unsigned long end;
-> +
-> +		/* mmu_lock protects userspace_addr */
-> +		if (!start)
-> +			continue;
-> +
-> +		end = start + (memslot->npages << PAGE_SHIFT);
-> +		if (hva >= start && hva < end) {
-> +			gfn_t gfn_offset = (hva - start) >> PAGE_SHIFT;
-> +			young |= kvm_age_rmapp(kvm, &memslot->rmap[gfn_offset]);
-> +		}
-> +	}
-> +	spin_unlock(&kvm->mmu_lock);
-> +
-> +	if (young)
-> +		kvm_flush_remote_tlbs(kvm);
-> +
-> +	return young;
-> +}
-> +
->  #ifdef MMU_DEBUG
->  static int is_empty_shadow_page(u64 *spt)
->  {
-> diff --git a/arch/x86/kvm/paging_tmpl.h b/arch/x86/kvm/paging_tmpl.h
-> index 17f9d16..b014b19 100644
-> --- a/arch/x86/kvm/paging_tmpl.h
-> +++ b/arch/x86/kvm/paging_tmpl.h
-> @@ -380,6 +380,7 @@ static int FNAME(page_fault)(struct kvm_vcpu *vcpu, gva_t addr,
->  	int r;
->  	struct page *page;
->  	int largepage = 0;
-> +	unsigned mmu_seq;
->  
->  	pgprintk("%s: addr %lx err %x\n", __FUNCTION__, addr, error_code);
->  	kvm_mmu_audit(vcpu, "pre page fault");
-> @@ -415,6 +416,7 @@ static int FNAME(page_fault)(struct kvm_vcpu *vcpu, gva_t addr,
->  			largepage = 1;
->  		}
->  	}
-> +	mmu_seq = read_seqbegin(&vcpu->kvm->arch.mmu_notifier_invalidate_lock);
->  	page = gfn_to_page(vcpu->kvm, walker.gfn);
->  	up_read(&current->mm->mmap_sem);
->  
-> @@ -440,6 +442,15 @@ static int FNAME(page_fault)(struct kvm_vcpu *vcpu, gva_t addr,
->  	++vcpu->stat.pf_fixed;
->  	kvm_mmu_audit(vcpu, "post page fault (fixed)");
->  	spin_unlock(&vcpu->kvm->mmu_lock);
-> +
-> +	if (read_seqretry(&vcpu->kvm->arch.mmu_notifier_invalidate_lock, mmu_seq)) {
-> +		down_read(&current->mm->mmap_sem);
-> +		if (page != gfn_to_page(vcpu->kvm, walker.gfn))
-> +			BUG();
-> +		up_read(&current->mm->mmap_sem);
-> +		kvm_release_page_clean(page);
-> +	}
-> +
->  	up_read(&vcpu->kvm->slots_lock);
->  
->  	return write_pt;
-> diff --git a/arch/x86/kvm/x86.c b/arch/x86/kvm/x86.c
-> index 6f09840..1dfb1c9 100644
-> --- a/arch/x86/kvm/x86.c
-> +++ b/arch/x86/kvm/x86.c
-> @@ -25,6 +25,7 @@
->  #include <linux/module.h>
->  #include <linux/mman.h>
->  #include <linux/highmem.h>
-> +#include <linux/mmu_notifier.h>
->  
->  #include <asm/uaccess.h>
->  #include <asm/msr.h>
-> @@ -3319,6 +3320,48 @@ void kvm_arch_vcpu_uninit(struct kvm_vcpu *vcpu)
->  	free_page((unsigned long)vcpu->arch.pio_data);
->  }
->  
-> +static inline struct kvm *mmu_notifier_to_kvm(struct mmu_notifier *mn)
-> +{
-> +	struct kvm_arch *kvm_arch;
-> +	kvm_arch = container_of(mn, struct kvm_arch, mmu_notifier);
-> +	return container_of(kvm_arch, struct kvm, arch);
-> +}
-> +
-> +void kvm_mmu_notifier_invalidate_page(struct mmu_notifier *mn,
-> +				      struct mm_struct *mm,
-> +				      unsigned long address)
-> +{
-> +	struct kvm *kvm = mmu_notifier_to_kvm(mn);
-> +	BUG_ON(mm != kvm->mm);
-> +	write_seqlock(&kvm->arch.mmu_notifier_invalidate_lock);
-> +	kvm_unmap_hva(kvm, address);
-> +	write_sequnlock(&kvm->arch.mmu_notifier_invalidate_lock);
-> +}
-> +
-> +void kvm_mmu_notifier_invalidate_range_end(struct mmu_notifier *mn,
-> +					   struct mm_struct *mm,
-> +					   unsigned long start,
-> +					   unsigned long end)
-> +{
-> +	for (; start < end; start += PAGE_SIZE)
-> +		kvm_mmu_notifier_invalidate_page(mn, mm, start);
-> +}
-> +
-> +int kvm_mmu_notifier_clear_flush_young(struct mmu_notifier *mn,
-> +				       struct mm_struct *mm,
-> +				       unsigned long address)
-> +{
-> +	struct kvm *kvm = mmu_notifier_to_kvm(mn);
-> +	BUG_ON(mm != kvm->mm);
-> +	return kvm_age_hva(kvm, address);
-> +}
-> +
-> +static const struct mmu_notifier_ops kvm_mmu_notifier_ops = {
-> +	.invalidate_page	= kvm_mmu_notifier_invalidate_page,
-> +	.invalidate_range_end	= kvm_mmu_notifier_invalidate_range_end,
-> +	.clear_flush_young	= kvm_mmu_notifier_clear_flush_young,
-> +};
-> +
->  struct  kvm *kvm_arch_create_vm(void)
->  {
->  	struct kvm *kvm = kzalloc(sizeof(struct kvm), GFP_KERNEL);
-> @@ -3328,6 +3371,12 @@ struct  kvm *kvm_arch_create_vm(void)
->  
->  	INIT_LIST_HEAD(&kvm->arch.active_mmu_pages);
->  
-> +	kvm->arch.mmu_notifier.ops = &kvm_mmu_notifier_ops;
-> +	down_write(&current->mm->mmap_sem);
-> +	mmu_notifier_register(&kvm->arch.mmu_notifier, current->mm);
-> +	up_write(&current->mm->mmap_sem);
-> +	seqlock_init(&kvm->arch.mmu_notifier_invalidate_lock);
-> +
->  	return kvm;
->  }
->  
-> diff --git a/include/asm-x86/kvm_host.h b/include/asm-x86/kvm_host.h
-> index 024b57c..305b7c3 100644
-> --- a/include/asm-x86/kvm_host.h
-> +++ b/include/asm-x86/kvm_host.h
-> @@ -13,6 +13,7 @@
->  
->  #include <linux/types.h>
->  #include <linux/mm.h>
-> +#include <linux/mmu_notifier.h>
->  
->  #include <linux/kvm.h>
->  #include <linux/kvm_para.h>
-> @@ -303,6 +304,9 @@ struct kvm_arch{
->  	struct page *apic_access_page;
->  
->  	gpa_t wall_clock;
-> +
-> +	struct mmu_notifier mmu_notifier;
-> +	seqlock_t mmu_notifier_invalidate_lock;
->  };
->  
->  struct kvm_vm_stat {
-> @@ -422,6 +426,8 @@ int kvm_mmu_create(struct kvm_vcpu *vcpu);
->  int kvm_mmu_setup(struct kvm_vcpu *vcpu);
->  void kvm_mmu_set_nonpresent_ptes(u64 trap_pte, u64 notrap_pte);
->  
-> +void kvm_unmap_hva(struct kvm *kvm, unsigned long hva);
-> +int kvm_age_hva(struct kvm *kvm, unsigned long hva);
->  int kvm_mmu_reset_context(struct kvm_vcpu *vcpu);
->  void kvm_mmu_slot_remove_write_access(struct kvm *kvm, int slot);
->  void kvm_mmu_zap_all(struct kvm *kvm);
->
->
-> As usual memslot browsing with mmu_lock.
->
-> Signed-off-by: Andrea Arcangeli <andrea@qumranet.com>
->
-> diff --git a/arch/x86/kvm/x86.c b/arch/x86/kvm/x86.c
-> index 6f09840..a519fd8 100644
-> --- a/arch/x86/kvm/x86.c
-> +++ b/arch/x86/kvm/x86.c
-> @@ -3379,16 +3379,23 @@ int kvm_arch_set_memory_region(struct kvm *kvm,
->  	 */
->  	if (!user_alloc) {
->  		if (npages && !old.rmap) {
-> +			unsigned long userspace_addr;
-> +
->  			down_write(&current->mm->mmap_sem);
-> -			memslot->userspace_addr = do_mmap(NULL, 0,
-> -						     npages * PAGE_SIZE,
-> -						     PROT_READ | PROT_WRITE,
-> -						     MAP_SHARED | MAP_ANONYMOUS,
-> -						     0);
-> +			userspace_addr = do_mmap(NULL, 0,
-> +						 npages * PAGE_SIZE,
-> +						 PROT_READ | PROT_WRITE,
-> +						 MAP_SHARED | MAP_ANONYMOUS,
-> +						 0);
->  			up_write(&current->mm->mmap_sem);
->  
-> -			if (IS_ERR((void *)memslot->userspace_addr))
-> -				return PTR_ERR((void *)memslot->userspace_addr);
-> +			if (IS_ERR((void *)userspace_addr))
-> +				return PTR_ERR((void *)userspace_addr);
-> +
-> +			/* set userspace_addr atomically for kvm_hva_to_rmapp */
-> +			spin_lock(&kvm->mmu_lock);
-> +			memslot->userspace_addr = userspace_addr;
-> +			spin_unlock(&kvm->mmu_lock);
->  		} else {
->  			if (!old.user_alloc && old.rmap) {
->  				int ret;
-> diff --git a/virt/kvm/kvm_main.c b/virt/kvm/kvm_main.c
-> index 30bf832..8f3b6d6 100644
-> --- a/virt/kvm/kvm_main.c
-> +++ b/virt/kvm/kvm_main.c
-> @@ -326,7 +326,15 @@ int __kvm_set_memory_region(struct kvm *kvm,
->  		memset(new.rmap, 0, npages * sizeof(*new.rmap));
->  
->  		new.user_alloc = user_alloc;
-> -		new.userspace_addr = mem->userspace_addr;
-> +		/*
-> +		 * hva_to_rmmap() serialzies with the mmu_lock and to be
-> +		 * safe it has to ignore memslots with !user_alloc &&
-> +		 * !userspace_addr.
-> +		 */
-> +		if (user_alloc)
-> +			new.userspace_addr = mem->userspace_addr;
-> +		else
-> +			new.userspace_addr = 0;
->  	}
->  	if (npages && !new.lpage_info) {
->  		int largepages = npages / KVM_PAGES_PER_HPAGE;
-> @@ -355,14 +363,18 @@ int __kvm_set_memory_region(struct kvm *kvm,
->  		memset(new.dirty_bitmap, 0, dirty_bytes);
->  	}
->  
-> +	spin_lock(&kvm->mmu_lock);
->  	if (mem->slot >= kvm->nmemslots)
->  		kvm->nmemslots = mem->slot + 1;
->  
->  	*memslot = new;
-> +	spin_unlock(&kvm->mmu_lock);
->  
->  	r = kvm_arch_set_memory_region(kvm, mem, old, user_alloc);
->  	if (r) {
-> +		spin_lock(&kvm->mmu_lock);
->  		*memslot = old;
-> +		spin_unlock(&kvm->mmu_lock);
->  		goto out_free;
->  	}
->  
->   
+netdev@vger.kernel.org!
+
+> > I have been seeing these since I installed 2.6.24.   Previous kernels (up to 2.6.23-5) have been ok.   Using the .24 kernels I get 
+> > from a minute to a few days of uptime.  Any ideas on what might be causing this?  
+> > 
+> > TIA,
+> > Ed Tomlinson
+> > 
+> > (2.6.24-gentoo-r2 + 2.6.24-3 patchset)
+> > grover login: [72899.939987] Unable to handle kernel paging request at 000000620000005e RIP: 
+> > [72899.953805]  [<000000620000005e>]
+> > [72899.971089] PGD 48cfa067 PUD 0 
+> > [72899.980552] Oops: 0010 [1] PREEMPT 
+> > [72899.991054] CPU 0 
+> > [72899.997110] Modules linked in: radeon ipv6 af_packet rfcomm l2cap snd_pcm_oss snd_mixer_oss snd_seq_dummy snd_seq_oss snd_seq_midi_event snd_seq snd_seq_device xfs hci_usb bluetooth usbhid pl2303 usbserial usbmouse ohci_hcd ehci_hcd video1394 w83627hf hwmon_vid i2c_nforce2 forcedeth sr_mod cdrom sbp2 radeonfb fb_ddc i2c_algo_bit i2c_core ohci1394 ieee1394 snd_intel8x0 snd_ac97_codec ac97_bus snd_pcm thermal processor snd_timer snd button soundcore snd_page_alloc parport_pc parport psmouse pcspkr evdev k8temp hwmon floppy rtc unix
+> > [72900.139457] Pid: 0, comm: swapper Not tainted 2.6.24-gentoo-r2-crc #2
+> > [72900.158744] RIP: 0010:[<000000620000005e>]  [<000000620000005e>]
+> > [72900.176758] RSP: 0018:ffffffff8062cbb8  EFLAGS: 00010202
+> > [72900.192666] RAX: 000000620000005e RBX: 0000000000000002 RCX: 0000000000000136
+> > [72900.214034] RDX: 0000000000000011 RSI: ffffffff8062cbf0 RDI: ffff810044e90100
+> > [72900.235400] RBP: ffffffff8062cc90 R08: ffff810044e90100 R09: ffffffff80672000
+> > [72900.256768] R10: 0000000000000103 R11: 0000000000000001 R12: ffff810044e90138
+> > [72900.278136] R13: 0000000000000002 R14: 0000000000000000 R15: ffff810044e90100
+> > [72900.299504] FS:  00002af955fe21d0(0000) GS:ffffffff805ed000(0000) knlGS:00000000f7d1c6c0
+> > [72900.323731] CS:  0010 DS: 0018 ES: 0018 CR0: 000000008005003b
+> > [72900.340939] CR2: 000000620000005e CR3: 000000004b2cc000 CR4: 00000000000006e0
+> > [72900.362306] DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
+> > [72900.383673] DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
+> > [72900.405042] Process swapper (pid: 0, threadinfo ffffffff805f6000, task ffffffff805ac360)
+> > [72900.429268] Stack:  ffffffff80476f61 ffffffff8062cbd0 0000000080227f4d ffffffff8062cbf0
+> > [72900.453443]  ffffffff80242fb1 ffff810002186fc0 ffff8100021857a8 0000000000000000
+> > [72900.475720]  0207a8c000000000 000000005b025257 0000000000000000 0000000000000000
+> > [72900.497425] Call Trace:
+> > [72900.505301]  <IRQ>  [<ffffffff80476f61>] __xfrm_policy_check+0x461/0x5b0
+> > [72900.525426]  [<ffffffff80242fb1>] autoremove_wake_function+0x11/0x40
+> > [72900.544455]  [<ffffffff80228a84>] __wake_up+0x84/0x90
+> > [72900.559579]  [<ffffffff8045d51a>] __udp4_lib_lookup+0x10a/0x160
+> > [72900.577309]  [<ffffffff8045e6b6>] __udp4_lib_rcv+0x6a6/0x8a0
+> > [72900.594257]  [<ffffffff80261ed0>] mempool_free+0x30/0xe0
+> > [72900.610165]  [<ffffffff802b2c5b>] bio_free+0x3b/0x50
+> > [72900.625035]  [<ffffffff80225be0>] __enqueue_entity+0x80/0x90
+> > [72900.641984]  [<ffffffff8045e8c5>] udp_rcv+0x15/0x20
+> > [72900.656592]  [<ffffffff8043aecb>] ip_local_deliver_finish+0xbb/0x230
+> > [72900.675619]  [<ffffffff8043b49b>] ip_local_deliver+0x3b/0x90
+> > [72900.692569]  [<ffffffff8043abb4>] ip_rcv_finish+0x124/0x380
+> > [72900.709256]  [<ffffffff80227f5b>] wake_up_state+0xb/0x10
+> > [72900.725164]  [<ffffffff80237dad>] signal_wake_up+0x1d/0x20
+> > [72900.741593]  [<ffffffff8043b372>] ip_rcv+0x1b2/0x2a0
+> > [72900.756463]  [<ffffffff80416740>] netif_receive_skb+0x250/0x4b0
+> > [72900.774192]  [<ffffffff80418ec5>] process_backlog+0x75/0xe0
+> > [72900.790883]  [<ffffffff8813cbb2>] :forcedeth:nv_alloc_rx+0xc2/0x1c0
+> > [72900.809647]  [<ffffffff80418a12>] net_rx_action+0x152/0x240
+> > [72900.826337]  [<ffffffff8023249a>] __do_softirq+0x5a/0xc0
+> > [72900.842245]  [<ffffffff8020c89c>] call_softirq+0x1c/0x30
+> > [72900.858152]  [<ffffffff8020da9d>] do_softirq+0x3d/0x90
+> > [72900.873542]  [<ffffffff802323c8>] irq_exit+0x88/0xa0
+> > [72900.888410]  [<ffffffff8020de52>] do_IRQ+0x62/0xc0
+> > [72900.902759]  [<ffffffff8020c0c1>] ret_from_intr+0x0/0xa
+> > [72900.918405]  <EOI>  [<ffffffff8024c99d>] tick_nohz_stop_sched_tick+0x1ad/0x2b0
+> > [72900.940062]  [<ffffffff8020a7e0>] poll_idle+0x0/0x10
+> > [72900.954929]  [<ffffffff8020a8aa>] cpu_idle+0x2a/0x90
+> > [72900.969798]  [<ffffffff8047ea79>] rest_init+0x69/0x70
+> > [72900.984930]  [<ffffffff805f9aaa>] start_kernel+0x25a/0x2a0
+> > [72901.001356]  [<ffffffff805f9107>] _sinittext+0x107/0x110
+
+That's a bit cryptic.  Does it happen in 2.6.25-rc3?  If so, that kernel
+has extra info about the trace reliability.  Also, disbling
+CONFIG_FRAME_POINTER _should_ give a clean trace.
 
