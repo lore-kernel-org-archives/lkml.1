@@ -1,75 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762966AbYCDGyf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761536AbYCDG7U@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762966AbYCDGyf (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Mar 2008 01:54:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754287AbYCDGyY
+	id S1761536AbYCDG7U (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Mar 2008 01:59:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754455AbYCDG7M
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Mar 2008 01:54:24 -0500
-Received: from wa-out-1112.google.com ([209.85.146.181]:15438 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753319AbYCDGyX (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Mar 2008 01:54:23 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:to:cc:in-reply-to:references:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=dmGzs1qQsXFGgMqgMlLDtKTSkoIWEFO5thMSI9FsP86OVjSl2lAJ9SwQMj2Da+l6w2vUwVYd5ia55fsw9QFlEi1sthd/hthwdxHQJAmFr1x4IbDkTQ+9HKNYlE1eq2y9NeOwHKqazTfoFGfHanYFdFJZX9R22H22XJkwbd+PtRI=
-Subject: Re: [v4l-dvb-maintainer] [PATCH] media: replace
-	remaining	__FUNCTION__ occurences
-From: Harvey Harrison <harvey.harrison@gmail.com>
-To: Michael Krufky <mkrufky@linuxtv.org>
-Cc: Manu Abraham <abraham.manu@gmail.com>,
-       "v4l-dvb-maintainer@linuxtv.org" <v4l-dvb-maintainer@linuxtv.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Mauro Carvalho Chehab <mchehab@infradead.org>
-In-Reply-To: <47CCEE63.80103@linuxtv.org>
-References: <1204588990.22933.28.camel@brick>
-	 <37219a840803031928l79395c78ka64192f4a9f61744@mail.gmail.com>
-	 <47CCDB5F.1040007@gmail.com>  <47CCEE63.80103@linuxtv.org>
-Content-Type: text/plain
-Date: Mon, 03 Mar 2008 22:54:21 -0800
-Message-Id: <1204613661.22933.110.camel@brick>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
-Content-Transfer-Encoding: 7bit
+	Tue, 4 Mar 2008 01:59:12 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:51938 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753997AbYCDG7M (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 4 Mar 2008 01:59:12 -0500
+Date: Tue, 4 Mar 2008 07:58:53 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Segher Boessenkool <segher@kernel.crashing.org>
+Cc: Arjan van de Ven <arjan@linux.intel.com>, hans.rosenfeld@amd.com,
+       torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
+       "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: bisected boot regression post 2.6.25-rc3.. please revert
+Message-ID: <20080304065853.GB32287@elte.hu>
+References: <20080301105646.2c8620d9@laptopd505.fenrus.org> <20080303074620.GC5934@elte.hu> <20080303091304.GA17911@elte.hu> <47CC2A3D.1000307@linux.intel.com> <20080303174009.GA19131@elte.hu> <47CC451A.2060501@linux.intel.com> <962471e5d2b8c88858dd5e0f50269751@kernel.crashing.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <962471e5d2b8c88858dd5e0f50269751@kernel.crashing.org>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2008-03-04 at 01:38 -0500, Michael Krufky wrote:
-> Manu Abraham wrote:
-> > Michael Krufky wrote:
-> >> On Mon, Mar 3, 2008 at 7:03 PM, Harvey Harrison
-> >> <harvey.harrison@gmail.com> wrote:
-> >>> __FUNCTION__ is gcc-specific, use __func__
-> >>>
-> >>>  Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
-> >>>   162 files changed, 892 insertions(+), 892 deletions(-)
-> >>
-> >>
-> >> If we apply this, can it be broken down into several smaller patches?
-> >> I am in the midst of a large overhaul of the tuning subsystem, and if
-> >> this all gets applied at once, it will wreck havoc on my pending
-> >> changesets.
-> >
-> > Please make sure your changes don't conflict with the multiproto tree
-> > changes.
-> >
-> > Regards,
-> > Manu
-> Manu,
-> 
-> Does that mean that you plan to merge multiproto soon?  If that's the
-> case, then we'd be better off if you give Harvey an "exclude list" of
-> files he should stay away from.  He can regenerate patches to those
-> files after multiproto is merged.
-> 
 
-Or just apply it after both of you have merged and ignore any conflicts,
-I can come back to it at a later time (2.6.26-rc1 maybe?).
+* Segher Boessenkool <segher@kernel.crashing.org> wrote:
 
-Cheers,
+> so (on 32-bit) ~_PAGE_PSE is ~0x80L is 0xffffff7f, which when cast to 
+> 64-bit is 0x00000000ffffff7f, so in
+>
+> 	(~PAGE_MASK & ~_PAGE_USER & ~_PAGE_PSE & ~_PAGE_NX)
+>
+> all the high bits are lost, while the original
+>
+> 	~(PAGE_MASK | _PAGE_USER | _PAGE_PSE | _PAGE_NX)
+>
+> works as intended, since the bit inversion is done on a 64-bit number.
 
-Harvey
+but we really are interested in the low bits here (lets ignore the NX 
+bit for now) and the patch has been in the queue for a long time (more 
+than a month), so if there was a trivial mask mixup problem it would 
+have shown on the first day. So i suspect some gcc bug instead - and 
+certainly the colorful mixture of types and signs in this expression 
+might have surprised a new version of gcc somewhere.
 
+	Ingo
