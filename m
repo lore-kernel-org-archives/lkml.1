@@ -1,126 +1,135 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756241AbYCDJKY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758556AbYCDJLw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756241AbYCDJKY (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Mar 2008 04:10:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753230AbYCDJKD
+	id S1758556AbYCDJLw (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Mar 2008 04:11:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753703AbYCDJLd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Mar 2008 04:10:03 -0500
-Received: from E23SMTP01.au.ibm.com ([202.81.18.162]:57462 "EHLO
-	e23smtp01.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751662AbYCDJJ6 (ORCPT
+	Tue, 4 Mar 2008 04:11:33 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:49059 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752193AbYCDJLa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Mar 2008 04:09:58 -0500
-Date: Tue, 4 Mar 2008 14:39:33 +0530
-From: Gautham R Shenoy <ego@in.ibm.com>
-To: Yi Yang <yi.y.yang@intel.com>
-Cc: Ingo Molnar <mingo@elte.hu>, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org, Oleg Nesterov <oleg@tv-sign.ru>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [BUG 2.6.25-rc3] scheduler/hotplug: some processes are
-	dealocked when cpu is set to offline
-Message-ID: <20080304090933.GA8997@in.ibm.com>
-Reply-To: ego@in.ibm.com
-References: <1204483329.3607.8.camel@yangyi-dev.bj.intel.com> <20080303153154.GA11288@in.ibm.com> <1204555505.3842.4.camel@yangyi-dev.bj.intel.com> <20080304052613.GA28632@in.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080304052613.GA28632@in.ibm.com>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+	Tue, 4 Mar 2008 04:11:30 -0500
+Date: Tue, 4 Mar 2008 01:10:50 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Jarek Poplawski <jarkao2@gmail.com>
+Cc: netdev@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
+       linux-kernel@vger.kernel.org,
+       Stephen Hemminger <shemminger@linux-foundation.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: locking api self-test hanging
+Message-Id: <20080304011050.74f30dd3.akpm@linux-foundation.org>
+In-Reply-To: <20080304084024.GA3980@ff.dom.local>
+References: <20080303210540.cea55e13.akpm@linux-foundation.org>
+	<20080304084024.GA3980@ff.dom.local>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Mar 04, 2008 at 10:56:13AM +0530, Gautham R Shenoy wrote:
-> On Mon, Mar 03, 2008 at 10:45:04PM +0800, Yi Yang wrote:
-> > On Mon, 2008-03-03 at 21:01 +0530, Gautham R Shenoy wrote:
-> > > > This issue seems such one, but i tried to change it to follow this rule but
-> > > > the issue is still there.
-> > > > 
-> > > > Why isn't the kernel thread [watchdog/1] reaped by its parent? its state
-> > > > is TASK_RUNNING with high priority (R< means this), why it isn't done?
-> > > > 
-> > > > Anyone ever met such a problem? Your thought?
-> > > 
-> > > Hi Yi,
-> > > 
-> > > This is indeed strange. I am able to reproduce this problem on my 4-way
-> > > box. From what I see in the past two runs, we're waiting in the
-> > > cpu-hotplug callback path for the watchdog/1 thread to stop.
-> > > 
-> > > During cpu-offline, once the cpu goes offline, in the migration_call(), 
-> > > we migrate any tasks associated with the offline cpus
-> > > to some other cpu. This also mean breaking affinity for tasks which were
-> > > affined to the cpu which went down. So watchdog/1 has been migrated to
-> > > some other cpu.
-> > No, [watchdog/1] is just for CPU #1, if CPU #1 has been offline, it
-> > should be killed but not migrated to other CPU because other CPU has
-> > such a kthread.
-> 
-> Yes, it is killed once it gets a chance to run *after* cpu goes offline.
-> The moment it runs on some other cpu, it will see the kthread_should_stop()
-> because in the cpu-hotplug callback path we've issues a 
-> kthread_stop(watchdog/1)
-> 
-> Again, we can argue that we could issue a kthread_stop() 
-> in CPU_DOWN_PREPARE, rather than in CPU_DEAD and restart 
-> it in CPU_DOWN_FAILED if the cpu-hotplug operation does fail.
-> 
-> > 
-> > Maybe migration_call was doing such a bad thing. :-)
-> 
-> Nope, from what I see migration call is not having any problems. It is
-> behaving the way it is supposed to behave :)
-> 
-> The other observation I noted was the WARN_ON_ONCE() in hrtick() [1]
-> that I am consistently hitting after the first cpu goes offline.
-> 
-> So at times, the callback thread is blocked on kthread_stop(k) in
-> softlockup.c, while other time, it was blocked in
-> cleanup_workqueue_threads() in workqueue.c. 
+On Tue, 4 Mar 2008 08:40:24 +0000 Jarek Poplawski <jarkao2@gmail.com> wrote:
 
-This is the hung_task_timeout message after a couple of cpu-offlines.
+> On 04-03-2008 06:05, Andrew Morton wrote:
+> ...
+> >>>> And I've fully bisected this hang twice and both times came up with
+> >>>>
+> >>>> commit 33f807ba0d9259e7c75c7a2ce8bd2787e5b540c7
+> >>>> Author: Stephen Hemminger <shemminger@linux-foundation.org>
+> >>>> Date:   Mon Nov 19 19:24:52 2007 -0800
+> >>>>
+> >>>>     [NETPOLL]: Kill NETPOLL_RX_DROP, set but never tested.
+> >>>>
+> >>>> which is stupid because that patch doesn't do anything.
+> 
+> ...or maybe apparently doesn't do anything?
+> 
+> @@ -128,13 +127,11 @@ static int poll_one_napi(struct netpoll_info *npinfo,
+>         if (!test_bit(NAPI_STATE_SCHED, &napi->state))
+>                 return budget;
+>  
+> -       npinfo->rx_flags |= NETPOLL_RX_DROP;
+> 
+> 
+> But in a next patch we can see:
+> 
+> @@ -51,12 +50,12 @@ static inline int netpoll_rx(struct sk_buff *skb)
+>         unsigned long flags;
+>         int ret = 0;
+>  
+> -       if (!npinfo || (!npinfo->rx_np && !npinfo->rx_flags))
+> +       if (!npinfo || !npinfo->rx_np)
+> 
+> So, it seems rx_flags could have been tested here for NETPOLL_RX_DROP
+> yet?
+> 
 
-This is on 2.6.25-rc3.
+Oh damn.  I bisected this three times and the second two times both landed on
+this:
 
-INFO: task bash:4467 blocked for more than 120 seconds.
-"echo 0 > /proc/sys/kernel/hung_task_timeout_secs" disables this message.
-       f3701dd0 00000046 f796aac0 f796aac0 f796abf8 cc434b80 00000000 f41ee940 
-       0180b046 0000026e 00000016 00000000 00000008 f796b080 f796aac0 00000002 
-       7fffffff 7fffffff f3701e1c f3701df8 c04e033a f3701e1c f3701dec c0139dec 
-Call Trace:
- [<c04e033a>] schedule_timeout+0x16/0x8b
- [<c0139dec>] ? trace_hardirqs_on+0xe9/0x111
- [<c04e01c9>] wait_for_common+0xcf/0x12e
- [<c011a3f0>] ? default_wake_function+0x0/0xd
- [<c04e02aa>] wait_for_completion+0x12/0x14
- [<c012ccbb>] flush_cpu_workqueue+0x50/0x66
- [<c012cd28>] ? wq_barrier_func+0x0/0xd
- [<c012cd14>] cleanup_workqueue_thread+0x43/0x57
- [<c04c6f87>] workqueue_cpu_callback+0x8e/0xbd
- [<c04e3975>] notifier_call_chain+0x2b/0x4a
- [<c0132e9d>] __raw_notifier_call_chain+0xe/0x10
- [<c0132eab>] raw_notifier_call_chain+0xc/0xe
- [<c013e054>] _cpu_down+0x150/0x1ec
- [<c013e133>] cpu_down+0x23/0x30
- [<c02e3897>] store_online+0x27/0x5a
- [<c02e3870>] ? store_online+0x0/0x5a
- [<c02e09d8>] sysdev_store+0x20/0x25
- [<c0196d2d>] sysfs_write_file+0xad/0xdf
- [<c0196c80>] ? sysfs_write_file+0x0/0xdf
- [<c0163da9>] vfs_write+0x8c/0x108
- [<c0164333>] sys_write+0x3b/0x60
- [<c01049da>] sysenter_past_esp+0x5f/0xa5
- =======================
-3 locks held by bash/4467:
- #0:  (&buffer->mutex){--..}, at: [<c0196ca5>] sysfs_write_file+0x25/0xdf
- #1:  (cpu_add_remove_lock){--..}, at: [<c013e10e>] cpu_maps_update_begin+0xf/0x11
- #2:  (cpu_hotplug_lock){----}, at: [<c013df5b>] _cpu_down+0x57/0x1ec
 
-So it's not just a not reaping of watchdog thread issue.
+commit 33f807ba0d9259e7c75c7a2ce8bd2787e5b540c7
+Author: Stephen Hemminger <shemminger@linux-foundation.org>
+Date:   Mon Nov 19 19:24:52 2007 -0800
 
-I doubt it's due to some locking dependency since we have lockdep checks
-in the workqueue code before we flush the cpu_workqueue.
+    [NETPOLL]: Kill NETPOLL_RX_DROP, set but never tested.
+    
+    Signed-off-by: Stephen Hemminger <shemminger@linux-foundation.org>
+    Signed-off-by: David S. Miller <davem@davemloft.net>
 
---
-Thanks and Regards
-gautham
+diff --git a/net/core/netpoll.c b/net/core/netpoll.c
+index cf6acd3..9e3aea0 100644
+--- a/net/core/netpoll.c
++++ b/net/core/netpoll.c
+@@ -40,7 +40,6 @@ static atomic_t trapped;
+ 
+ #define USEC_PER_POLL	50
+ #define NETPOLL_RX_ENABLED  1
+-#define NETPOLL_RX_DROP     2
+ 
+ #define MAX_SKB_SIZE \
+ 		(MAX_UDP_CHUNK + sizeof(struct udphdr) + \
+@@ -128,13 +127,11 @@ static int poll_one_napi(struct netpoll_info *npinfo,
+ 	if (!test_bit(NAPI_STATE_SCHED, &napi->state))
+ 		return budget;
+ 
+-	npinfo->rx_flags |= NETPOLL_RX_DROP;
+ 	atomic_inc(&trapped);
+ 
+ 	work = napi->poll(napi, budget);
+ 
+ 	atomic_dec(&trapped);
+-	npinfo->rx_flags &= ~NETPOLL_RX_DROP;
+ 
+ 	return budget - work;
+ }
+@@ -475,7 +472,7 @@ int __netpoll_rx(struct sk_buff *skb)
+ 	if (skb->dev->type != ARPHRD_ETHER)
+ 		goto out;
+ 
+-	/* check if netpoll clients need ARP */
++	/* if receive ARP during middle of NAPI poll, then queue */
+ 	if (skb->protocol == htons(ETH_P_ARP) &&
+ 	    atomic_read(&trapped)) {
+ 		skb_queue_tail(&npi->arp_tx, skb);
+@@ -537,6 +534,9 @@ int __netpoll_rx(struct sk_buff *skb)
+ 	return 1;
+ 
+ out:
++	/* If packet received while already in poll then just
++	 * silently drop.
++	 */
+ 	if (atomic_read(&trapped)) {
+ 		kfree_skb(skb);
+ 		return 1;
+
+and I stupidly assumed that it couldn't be this commit because it was a
+no-op.  I didn't think to look for an _impicit_ test of NETPOLL_RX_DROP
+such as the one above.  That's pretty poor style IMO :(
+
+
+That bisecting took me several hours and at the time I hoped that it would
+receive a more-than-zero response.  btw.
+
