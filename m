@@ -1,45 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762303AbYCDVBE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764072AbYCDVBo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762303AbYCDVBE (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Mar 2008 16:01:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755642AbYCDVAw
+	id S1764072AbYCDVBo (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Mar 2008 16:01:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756500AbYCDVBf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Mar 2008 16:00:52 -0500
-Received: from iolanthe.rowland.org ([192.131.102.54]:49114 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1753932AbYCDVAw (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Mar 2008 16:00:52 -0500
-Date: Tue, 4 Mar 2008 16:00:51 -0500 (EST)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: David Brownell <david-b@pacbell.net>
-cc: Pierre Ossman <drzeus-mmc@drzeus.cx>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       pm list <linux-pm@lists.linux-foundation.org>,
-       Zdenek Kabelac <zdenek.kabelac@gmail.com>,
-       Kernel development list <linux-kernel@vger.kernel.org>
-Subject: Re: Bugs in MMC [was: [Bug 10030] Suspend doesn't work when SD card
- is inserted]
-In-Reply-To: <200803041230.42152.david-b@pacbell.net>
-Message-ID: <Pine.LNX.4.44L0.0803041558070.15986-100000@iolanthe.rowland.org>
+	Tue, 4 Mar 2008 16:01:35 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:56771 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755406AbYCDVBe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 4 Mar 2008 16:01:34 -0500
+Date: Tue, 4 Mar 2008 22:01:11 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Hugh Dickins <hugh@veritas.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] x86: a P4 is a P6 not an i486
+Message-ID: <20080304210111.GB31546@elte.hu>
+References: <Pine.LNX.4.64.0803041929230.14934@blonde.site>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0803041929230.14934@blonde.site>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -0.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-0.5 required=5.9 tests=BAYES_20 autolearn=no SpamAssassin version=3.2.3
+	-0.5 BAYES_20               BODY: Bayesian spam probability is 5 to 20%
+	[score: 0.1086]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 4 Mar 2008, David Brownell wrote:
 
-> > What's wrong with a superfluous probe at resume time, besides the waste 
-> > of a few milliseconds?
-> 
-> I'm more concerned with the undesirable removal of devices at suspend
-> time ... ones with mounted filesystems etc.
+* Hugh Dickins <hugh@veritas.com> wrote:
 
-On that we can agree.  The removal is done if the host doesn't define a 
-resume method.  There doesn't seem to be any point to that, given that 
-the probing during resume will determine whether a card has in fact 
-been removed.
+> P4 has been coming out as CPU_FAMILY=4 instead of 6: fix MPENTIUM4 
+> typo.
 
-Alan Stern
+thanks Hugh, applied.
 
+	Ingo
