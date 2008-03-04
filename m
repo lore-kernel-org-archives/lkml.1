@@ -1,99 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933967AbYCDXT3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934280AbYCDXVB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933967AbYCDXT3 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Mar 2008 18:19:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934896AbYCDXPm
+	id S934280AbYCDXVB (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Mar 2008 18:21:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934900AbYCDXPy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Mar 2008 18:15:42 -0500
-Received: from ns2.suse.de ([195.135.220.15]:42569 "EHLO mx2.suse.de"
+	Tue, 4 Mar 2008 18:15:54 -0500
+Received: from mx2.suse.de ([195.135.220.15]:42596 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S934870AbYCDXPj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Mar 2008 18:15:39 -0500
-Date: Tue, 4 Mar 2008 15:15:14 -0800
+	id S934894AbYCDXPu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 4 Mar 2008 18:15:50 -0500
+Date: Tue, 4 Mar 2008 15:15:25 -0800
 From: Greg KH <gregkh@suse.de>
-To: Linus Torvalds <torvalds@osdl.org>, Andrew Morton <akpm@osdl.org>
-Cc: linux-kernel@vger.kernel.org, linux-usb@vger.kernel.org
-Subject: [GIT PATCH] USB fixes for 2.6.25-rc3 git
-Message-ID: <20080304231514.GB3073@suse.de>
+To: Alex Chiang <achiang@hp.com>, Matthew Wilcox <matthew@wil.cx>,
+       Gary Hade <garyhade@us.ibm.com>, kaneshige.kenji@jp.fujitsu.com,
+       warthog19@eaglescrag.net, kristen.c.accardi@intel.com,
+       rick.jones2@hp.com, linux-kernel@vger.kernel.org,
+       linux-pci@atrey.karlin.mff.cuni.cz, linux-acpi@vger.kernel.org
+Subject: Re: [PATCH 4/4] ACPI PCI slot detection driver
+Message-ID: <20080304231525.GA25125@suse.de>
+References: <20080229002341.GA21420@ldl.fc.hp.com> <20080229002938.GE21420@ldl.fc.hp.com> <20080301052542.GD19353@suse.de> <20080301144307.GD24386@parisc-linux.org> <20080304054927.GA15566@suse.de> <20080304225830.GC3694@ldl.fc.hp.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=unknown-8bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
+In-Reply-To: <20080304225830.GC3694@ldl.fc.hp.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Here are some USB fixes against your 2.6.25-rc3 git tree.
+On Tue, Mar 04, 2008 at 03:58:30PM -0700, Alex Chiang wrote:
+> * Greg KH <gregkh@suse.de>:
+> > On Sat, Mar 01, 2008 at 07:43:07AM -0700, Matthew Wilcox wrote:
+> > > On Fri, Feb 29, 2008 at 09:25:42PM -0800, Greg KH wrote:
+> > > > What is the guarantee that the names of these slots are correct
+> 
+> No guarantee there. We report whatever firmware tells us.
+> 
+> > > > and do not happen to be the same as the hotpluggable ones?
+> 
+> Stronger guarantee here, since both pci_slot and <foo>hp driver
+> will be getting the name of the slot from the same place.
+> 
+> > > That would be a bug -- and yes, bugs happen, and we have to deal with
+> > > them.
+> > 
+> > My main concern is that BIOS vendors will not fix these bugs, as no
+> > other OS cares/does this kind of thing today.  The ammount of bad
+> > information out there might be quite large, and I think this was
+> > confirmed by some initial testing of IBM systems, right?
+> 
+> We saw problems on Fujitsu machines, where they return an error
+> code when the _SUN method is called on a slot that exists in the
+> namespace but isn't actually present.
+> 
+> After discussing with Kenji-san about specs, we came to the
+> agreement that he was ok with this behavior because he had the
+> option to not load pci_slot on his machines.
+> 
+> I agree that there might be lots of buggy firmwares out there,
+> but we won't know for certain until we get some exposure. And I
+> think the upside is worth it.
+> 
+> Kristen suggested the linux-next tree. That sounds viable to
+> me...
+> 
+> > > > Why show this information on machines that can not do
+> > > > anything with these slots at all?  Will that not just
+> > > > confuse people?
+> > > 
+> > > Only for people who think that /sys/bus/pci/slots/ is for
+> > > hotpluggable slots only.  There is plenty of useful
+> > > information available for slots that aren't hotpluggable (eg
+> > > bus address, speed, width, error status).
+> > 
+> > Can the userspace tools that are using the existing directories
+> > thinking that only hotplug slots are there, handle
+> > "non-hotplug" slots showing up in this location?
+> 
+> Of course we shouldn't break userspace, no one wants that. But
+> nothing about that name (/sys/bus/pci/slots/) implies "hotplug
+> only", and we have no idea how big the problem might be.
 
-It includes:
-	- more device id updates
-	- quirk file cleanup
-	- minor bugfixes for host controllers
-	- other minor fixes
+But that is what the current code does, so I know a lot of userspace
+programs assume that all slots there are valid hotplug slots.
 
-Please pull from:
-	master.kernel.org:/pub/scm/linux/kernel/git/gregkh/usb-2.6.git/
+I know I sure don't want to go fix up a lot of horrible Java
+closed-source code in IBM's huge system management toolkits :(
 
-A lot of these patches have been in the -mm tree for a while, as well as
--next.
+> Again, I'm thinking more exposure in linux-next might be a
+> reasonable way for us to figure out how bad (or good) the
+> situation might really be out there.
 
-The full patches will be sent to the linux-usb mailing list (note the
-address change), if anyone wants to see them.
+Ok, care to resend them with the requested updates?
 
 thanks,
 
 greg k-h
-
-------------
-
- drivers/usb/core/Kconfig        |    9 ++--
- drivers/usb/core/quirks.c       |   21 +++++----
- drivers/usb/gadget/printer.c    |    1 -
- drivers/usb/gadget/pxa2xx_udc.c |   88 ++++++++++++++++++++++-----------------
- drivers/usb/gadget/pxa2xx_udc.h |    4 +-
- drivers/usb/host/ehci-q.c       |    2 +-
- drivers/usb/host/isp116x-hcd.c  |   15 +++----
- drivers/usb/host/isp116x.h      |    1 -
- drivers/usb/serial/ftdi_sio.c   |   25 +++++++++++
- drivers/usb/serial/ftdi_sio.h   |    7 +++
- drivers/usb/serial/mos7840.c    |   15 ++++++-
- drivers/usb/serial/option.c     |    4 ++
- drivers/usb/storage/protocol.c  |    2 +-
- include/linux/usb.h             |    3 +-
- 14 files changed, 129 insertions(+), 68 deletions(-)
-
----------------
-
-Alan Stern (3):
-      USB: update Kconfig entry for USB_SUSPEND
-      USB: spruce up the device blacklist
-      usb-storage: update earlier scatter-gather bug fix
-
-Anti Sullin (1):
-      USB: isp116x: fix enumeration on boot
-
-Daniel Kozák (1):
-      USB: Add support for AXESSTEL MV110H CDMA modem
-
-David Ludlow (1):
-      usb: Add support for the mos7820/7840-based B&B USB/RS485 converter to mos7840.c
-
-Dmitry Baryshkov (1):
-      USB: pxa2xx_udc: fix misuse of clock enable/disable calls
-
-Kevin Vance (1):
-      USB: ftdi_sio: Workaround for broken Matrix Orbital serial port
-
-Lei Ming (1):
-      USB: fix comment of struct usb_interface
-
-Misha Zhilin (1):
-      USB: ehci: handle large bulk URBs correctly (again)
-
-Sven Andersen (1):
-      USB: ftdi_sio - really enable EM1010PC
-
-Tony Jones (1):
-      USB: remove incorrect struct class_device from the printer gadget
-
