@@ -1,71 +1,169 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758538AbYCDMFG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757121AbYCDMHe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758538AbYCDMFG (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Mar 2008 07:05:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751490AbYCDMEv
+	id S1757121AbYCDMHe (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Mar 2008 07:07:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751466AbYCDMH0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Mar 2008 07:04:51 -0500
-Received: from bzq-219-195-70.pop.bezeqint.net ([62.219.195.70]:36150 "EHLO
-	bh-buildlin2.bhalevy.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751921AbYCDMEu (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Mar 2008 07:04:50 -0500
-Message-ID: <47CD3AC8.6020300@panasas.com>
-Date: Tue, 04 Mar 2008 14:04:24 +0200
-From: Boaz Harrosh <bharrosh@panasas.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
+	Tue, 4 Mar 2008 07:07:26 -0500
+Received: from fwil.voltaire.com ([193.47.165.2]:48122 "EHLO exil.voltaire.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751295AbYCDMHZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 4 Mar 2008 07:07:25 -0500
+Message-ID: <47CD3B7A.2010106@voltaire.com>
+Date: Tue, 04 Mar 2008 14:07:22 +0200
+From: Erez Zilber <erezz@voltaire.com>
+User-Agent: Thunderbird 1.5.0.10 (Windows/20070221)
 MIME-Version: 1.0
-To: Hannes Reinecke <hare@suse.de>, Christoph Hellwig <hch@infradead.org>
-CC: Matthew Wilcox <matthew@wil.cx>,
-       James Bottomley <James.Bottomley@HansenPartnership.com>,
-       Sergio Luis <sergio@larces.uece.br>, linux-scsi@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>,
-       Luben Tuikov <luben_tuikov@adaptec.com>
-Subject: Re: [PATCH] 2.6.25-rc1-git2: GDT SCSI: change drivers/scsi/gdth.c
- into using pci_get device
-References: <47B1ADCE.40202@larces.uece.br> <1202833354.3137.19.camel@localhost.localdomain> <47B1CF45.5070407@panasas.com> <47B23033.1080100@larces.uece.br> <1202861823.3137.170.camel@localhost.localdomain> <47B2B101.3090106@panasas.com> <20080216163756.GG7657@parisc-linux.org> <47B80E65.7090504@panasas.com> <47CCFECC.8040709@suse.de>
-In-Reply-To: <47CCFECC.8040709@suse.de>
+To: Arne Redlich <arne.redlich@xiranet.com>
+CC: Roland Dreier <rolandd@cisco.com>,
+       ofa-general <general@lists.openfabrics.org>,
+       lkml <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 1/2] IB/iSER: fix list iteration bug
+References: <877igkxffl.fsf@confield.dd.xiranet.com>
+In-Reply-To: <877igkxffl.fsf@confield.dd.xiranet.com>
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 04 Mar 2008 12:07:23.0154 (UTC) FILETIME=[4DD5CF20:01C87DF0]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Mar 04 2008 at 9:48 +0200, Hannes Reinecke <hare@suse.de> wrote:
-> Boaz Harrosh wrote:
->> On Sat, Feb 16 2008 at 18:37 +0200, Matthew Wilcox <matthew@wil.cx> wrote:
->>> On Wed, Feb 13, 2008 at 10:57:37AM +0200, Boaz Harrosh wrote:
->>>> I still don't have a card for testing myself. Again anyone
->>>> wants to send me a card. Intel people anybody home?
->>> Apparently Intel sold this line of cards to Adaptec.  The copyright
->>> notice in the file backs this up:
->>>
->>>  * Copyright (C) 1995-06 ICP vortex GmbH, Achim Leubner                 *
->>>  * Copyright (C) 2002-04 Intel Corporation                              *
->>>  * Copyright (C) 2003-06 Adaptec Inc.                                   *
->>>  * <achim_leubner@adaptec.com>                                          *
->>>
->> OK I never got this guy to ping back. CCing support@adaptec.com.
->>
->> Who is the right contact person, regarding the HW that is supported
->> by the gdth driver? Form what we see in driver commit logs (above), 
->> it was transfered to  Adaptec from Intel in 2003. Is that still so?
->>
-> Yes, apparently. But gdth is the driver for the rather old ICP Vortex
-> range; most of which are driven by aacraid nowadays.
-> I thought I had one of these beasts; will check.
+Arne Redlich wrote:
+> The iteration through the list of "iser_device"s during device
+> lookup/creation is broken - it might result in an infinite loop if more
+> than 1 HCA is used with iSER. Use list_for_each_entry() instead of the
+> custom, flawed list iteration code.
 > 
-> But yes, this is Adaptec. Unless the person is Mark Salyzyn or Luben
-> it's quite tricky to excite any response.
+> Signed-off-by: Arne Redlich <arne.redlich@xiranet.com>
+> ---
+>  drivers/infiniband/ulp/iser/iser_verbs.c |   36 ++++++++++++-----------------
+>  1 files changed, 15 insertions(+), 21 deletions(-)
 > 
-> Cheers,
-> 
-> Hannes
+> diff --git a/drivers/infiniband/ulp/iser/iser_verbs.c b/drivers/infiniband/ulp/iser/iser_verbs.c
+> index 714b8db..1c0f968 100644
+> --- a/drivers/infiniband/ulp/iser/iser_verbs.c
+> +++ b/drivers/infiniband/ulp/iser/iser_verbs.c
+> @@ -237,33 +237,27 @@ static int iser_free_ib_conn_res(struct iser_conn *ib_conn)
+>  static
+>  struct iser_device *iser_device_find_by_ib_device(struct rdma_cm_id *cma_id)
+>  {
+> -	struct list_head    *p_list;
+> -	struct iser_device  *device = NULL;
+> +	struct iser_device *device;
+>  
+>  	mutex_lock(&ig.device_list_mutex);
+>  
+> -	p_list = ig.device_list.next;
+> -	while (p_list != &ig.device_list) {
+> -		device = list_entry(p_list, struct iser_device, ig_list);
+> -		/* find if there's a match using the node GUID */
+> +	list_for_each_entry(device, &ig.device_list, ig_list)
 
-Thanks Hannes.
+I've just added the original comments that are missing in your patch.
 
-I never got any response. I guess I'm not important enough.
-Christoph said he has a card, that he'll send once he gets
-to it. I'll wait for his card. I gave up on the Adaptec guys.
+>  		if (device->ib_device->node_guid == cma_id->device->node_guid)
+> -			break;
+> -	}
+> -
+> -	if (device == NULL) {
+> -		device = kzalloc(sizeof *device, GFP_KERNEL);
+> -		if (device == NULL)
+>  			goto out;
+> -		/* assign this device to the device */
+> -		device->ib_device = cma_id->device;
+> -		/* init the device and link it into ig device list */
+> -		if (iser_create_device_ib_res(device)) {
+> -			kfree(device);
+> -			device = NULL;
+> -			goto out;
+> -		}
+> -		list_add(&device->ig_list, &ig.device_list);
+> +
+> +	device = kzalloc(sizeof *device, GFP_KERNEL);
+> +	if (device == NULL)
+> +		goto out;
+> +
+> +	device->ib_device = cma_id->device;
+> +	/* init the device and link it into ig device list */
+> +	if (iser_create_device_ib_res(device)) {
+> +		kfree(device);
+> +		device = NULL;
+> +		goto out;
+>  	}
+> +	list_add(&device->ig_list, &ig.device_list);
+> +
+>  out:
+>  	BUG_ON(device == NULL);
+>  	device->refcount++;
 
-Boaz
+The iteration through the list of "iser_device"s during device
+lookup/creation is broken - it might result in an infinite loop if more
+than 1 HCA is used with iSER. Use list_for_each_entry() instead of the
+custom, flawed list iteration code.
+
+Signed-off-by: Arne Redlich <arne.redlich@xiranet.com>
+Signed-off-by: Erez Zilber <erezz@voltaire.com>
+---
+ drivers/infiniband/ulp/iser/iser_verbs.c |   36 +++++++++++++----------------
+ 1 files changed, 16 insertions(+), 20 deletions(-)
+
+diff --git a/drivers/infiniband/ulp/iser/iser_verbs.c b/drivers/infiniband/ulp/iser/iser_verbs.c
+index 714b8db..768ba69 100644
+--- a/drivers/infiniband/ulp/iser/iser_verbs.c
++++ b/drivers/infiniband/ulp/iser/iser_verbs.c
+@@ -237,33 +237,29 @@ static int iser_free_ib_conn_res(struct iser_conn *ib_conn)
+ static
+ struct iser_device *iser_device_find_by_ib_device(struct rdma_cm_id *cma_id)
+ {
+-	struct list_head    *p_list;
+-	struct iser_device  *device = NULL;
++	struct iser_device *device;
+ 
+ 	mutex_lock(&ig.device_list_mutex);
+ 
+-	p_list = ig.device_list.next;
+-	while (p_list != &ig.device_list) {
+-		device = list_entry(p_list, struct iser_device, ig_list);
++	list_for_each_entry(device, &ig.device_list, ig_list)
+ 		/* find if there's a match using the node GUID */
+ 		if (device->ib_device->node_guid == cma_id->device->node_guid)
+-			break;
+-	}
+-
+-	if (device == NULL) {
+-		device = kzalloc(sizeof *device, GFP_KERNEL);
+-		if (device == NULL)
+ 			goto out;
+-		/* assign this device to the device */
+-		device->ib_device = cma_id->device;
+-		/* init the device and link it into ig device list */
+-		if (iser_create_device_ib_res(device)) {
+-			kfree(device);
+-			device = NULL;
+-			goto out;
+-		}
+-		list_add(&device->ig_list, &ig.device_list);
++
++	device = kzalloc(sizeof *device, GFP_KERNEL);
++	if (device == NULL)
++		goto out;
++
++	/* assign this device to the device */
++	device->ib_device = cma_id->device;
++	/* init the device and link it into ig device list */
++	if (iser_create_device_ib_res(device)) {
++		kfree(device);
++		device = NULL;
++		goto out;
+ 	}
++	list_add(&device->ig_list, &ig.device_list);
++
+ out:
+ 	BUG_ON(device == NULL);
+ 	device->refcount++;
+-- 
+1.5.3.6
+
+
+I agree with your patch. It seems that we forgot to add something like p_list=p_list->next. Anyway, using list_for_each_entry is better than what we had.
+
