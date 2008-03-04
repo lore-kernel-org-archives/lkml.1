@@ -1,78 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758096AbYCDJuV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762422AbYCDJuo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758096AbYCDJuV (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Mar 2008 04:50:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753975AbYCDJuD
+	id S1762422AbYCDJuo (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Mar 2008 04:50:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756363AbYCDJuL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Mar 2008 04:50:03 -0500
-Received: from E23SMTP04.au.ibm.com ([202.81.18.173]:55985 "EHLO
-	e23smtp04.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753263AbYCDJuB (ORCPT
+	Tue, 4 Mar 2008 04:50:11 -0500
+Received: from tama555.ecl.ntt.co.jp ([129.60.39.106]:44197 "EHLO
+	tama555.ecl.ntt.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755487AbYCDJuH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Mar 2008 04:50:01 -0500
-Date: Tue, 4 Mar 2008 15:19:44 +0530
-From: Dhaval Giani <dhaval@linux.vnet.ibm.com>
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>, Ingo Molnar <mingo@elte.hu>,
-       Sudhir Kumar <skumar@linux.vnet.ibm.com>,
-       Balbir Singh <balbir@in.ibm.com>,
-       Aneesh Kumar KV <aneesh.kumar@linux.vnet.ibm.com>,
-       lkml <linux-kernel@vger.kernel.org>, vgoyal@redhat.com,
-       serue@us.ibm.com, menage@google.com
-Subject: Re: [RFC, PATCH 1/2] sched: change the fairness model of the CFS
-	group scheduler
-Message-ID: <20080304094944.GB3730@linux.vnet.ibm.com>
-Reply-To: Dhaval Giani <dhaval@linux.vnet.ibm.com>
-References: <20080225141504.GA27746@linux.vnet.ibm.com> <20080225141604.GA29213@linux.vnet.ibm.com> <1204227768.6243.42.camel@lappy> <20080229090400.GD15328@linux.vnet.ibm.com> <1204281475.6243.73.camel@lappy>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1204281475.6243.73.camel@lappy>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+	Tue, 4 Mar 2008 04:50:07 -0500
+To: htejun@gmail.com
+Cc: tomof@acm.org, jens.axboe@oracle.com, fujita.tomonori@lab.ntt.co.jp,
+       James.Bottomley@HansenPartnership.com, efault@gmx.de,
+       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       linux-ide@vger.kernel.org, linux-scsi@vger.kernel.org,
+       jgarzik@pobox.com, bzolnier@gmail.com
+Subject: Re: [PATCH] block: fix residual byte count handling
+From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+In-Reply-To: <47CCB4D8.8090600@gmail.com>
+References: <47CC7F3D.4010605@gmail.com>
+	<20080304111056X.tomof@acm.org>
+	<47CCB4D8.8090600@gmail.com>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Message-Id: <20080304175302T.fujita.tomonori@lab.ntt.co.jp>
+Date: Tue, 04 Mar 2008 17:53:02 +0900
+X-Dispatcher: imput version 20040704(IM147)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Feb 29, 2008 at 11:37:55AM +0100, Peter Zijlstra wrote:
-> 
-> On Fri, 2008-02-29 at 14:34 +0530, Dhaval Giani wrote:
-> 
-> > > > +#elif defined CONFIG_USER_SCHED
-> > > > +		/*
-> > > > +		 * In case of task-groups formed thr' the user id of tasks,
-> > > > +		 * init_task_group represents tasks belonging to root user.
-> > > > +		 * Hence it forms a sibling of all subsequent groups formed.
-> > > > +		 * In this case, init_task_group gets only a fraction of overall
-> > > > +		 * system cpu resource, based on the weight assigned to root
-> > > > +		 * user's cpu share (INIT_TASK_GROUP_LOAD). This is accomplished
-> > > > +		 * by letting tasks of init_task_group sit in a separate cfs_rq
-> > > > +		 * (init_cfs_rq) and having one entity represent this group of
-> > > > +		 * tasks in rq->cfs (i.e init_task_group->se[] != NULL).
-> > > > +		 */
-> > > >  		init_tg_cfs_entry(rq, &init_task_group,
-> > > >  				&per_cpu(init_cfs_rq, i),
-> > > >  				&per_cpu(init_sched_entity, i), i, 1);
-> > > 
-> > > But I fail to parse this lengthy comment. What does it do:
-> > > 
-> > >     init_group
-> > >    /     |    \
-> > > uid-0 uid-1000 uid-n
-> > > 
-> > > or does it blend uid-0 into the init_group?
-> > > 
+On Tue, 04 Mar 2008 11:32:56 +0900
+Tejun Heo <htejun@gmail.com> wrote:
+
+> FUJITA Tomonori wrote:
+> >> Yeah, libata did its own padding and needed to add draining.  Private
+> >> implementation was complex as hell and James suggested moving them to
+> >> block layer.  Are you suggesting moving them back to drivers?
 > > 
-> > It blends uid-0 (root) into init_group.
+> > No, I'm not. I've been working on the IOMMUs to remove such
+> > workarounds in LLDs.
+> > 
+> > What drivers need to do on this is just adding a padding length, that
+> > is, drivers don't need to change the structure of the sg list (like
+> > splitting a sg entry), right? And it doesn't break the SAS drivers
+> > that support SATAPI, does it?
+> > 
+> > But I agree that drivers want to get a complete sglist so I'm fine
+> > with adjusting sglist entries in the block layer with your secode
+> > patch (separate out padding from alignment). As we discussed, I'm fine
+> > with breaking sum(sg) == rq->data_len as long as rq->data_len means
+> > the true data length.
 > 
-> Any particular reason why? It seems to me uid-0 should be treated like
-> any other uid.
+> As long as the second patch is in, what value rq->data_len indicates
+> doesn't matter to drivers which don't use explicit padding or draining,
+> so the situation is much more controlled.  I don't care which value
+> rq->data_len would indicate.  I'd prefer it equal sum(sg) as that value
+> is what IDE and libata which will be the major users of padding and/or
+> draining expect in rq->data_len but fixing up that shouldn't be too
+> difficult.  I guess this can be determined by Jens.  If Jens likes
+> rq->data_len to contain requested transfer size, I'll post updated patches.
+
+OK, I prefer rq->data_len means the true data length though you prefer
+rq->data_len means the allocated buffer length (the true data length
+plus padding and drain). We agree on other things. We can live with
+either way.
+
+Jens, what's your preference?
+
+
+> >>>> buffer after it, it ends up with unaligned sg entry in the middle and
+> >>>> rq->data_len + rq->extra_len will overrun the sg entry after the drain
+> >>>> page which is really dangerous.
+> >>> The drivers know that they use drain buffer. They can take care about
+> >>> themselves on this too. If we want to do explicitly, we could have
+> >>> rq->pad_len and rq->drain_len instead of rq->extra_len, though I think
+> >>> that we are fine without these values because these drivers already
+> >>> tell the block layer what they want and know that the block layer
+> >>> gives it.
+> >> So, if a driver has requested aligning and draining, the driver should
+> >> extend the sg entry before the last one by the alignment if draining was
+> >> used for the request and extent the last sg if the draining wasn't used.
+> >>  I'd rather just implement them in the drivers.
+> > 
+> > The block layer extends the sg entry? The drivers just adjust
+> > sg->length?
 > 
+> Still, do you really wanna force such things into low level drivers?
+> That will be one extremely fragile API and will be really difficult to
+> tell when things go wrong.
 
-Ah, I misunderstood your question. We have not changed anything for UID
-scheduling as no task can (should) exist at the root level (init_group).
-Your initial figure is right, sorry for the confusion.
-
-Thanks,
--- 
-regards,
-Dhaval
+No, I don't, as I explained above. As long as rq->data_len means the
+true data length, I'm fine. I knew that James' drain buffer patch
+breaks rq->data_len == sum(sg). I don't care about it. I can
+understand that drivers wants to a perfect sglist.
