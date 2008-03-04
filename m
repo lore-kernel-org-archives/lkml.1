@@ -1,29 +1,29 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756996AbYCDDLG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758762AbYCDDLh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756996AbYCDDLG (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Mar 2008 22:11:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755405AbYCDDJz
+	id S1758762AbYCDDLh (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Mar 2008 22:11:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755461AbYCDDJ5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Mar 2008 22:09:55 -0500
-Received: from wa-out-1112.google.com ([209.85.146.178]:10535 "EHLO
+	Mon, 3 Mar 2008 22:09:57 -0500
+Received: from wa-out-1112.google.com ([209.85.146.177]:11850 "EHLO
 	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754684AbYCDDJt (ORCPT
+	with ESMTP id S1754817AbYCDDJw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Mar 2008 22:09:49 -0500
+	Mon, 3 Mar 2008 22:09:52 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=subject:from:to:cc:in-reply-to:references:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=fvP+u5mlKVR1YJi8dNOCoELZAezPc7+HuPV+xsZno5NRGzJkR3A8bXq3Ju9H6VLxzjrMagzzNx+oU8lrcQG99wBiq00DA6Fd+dhdkIl7ISZ988abnTxujWv+GvRE7mJFqBrqi5zMLavZ3bJsXpFCKuo75ca1YwDzqiUYZfNzTv4=
-Subject: [PATCH 03/14] input: replace remaining __FUNCTION__ occurrences
+        b=UX17oejaK4YkWQe/0L5NGe+FMB/jqFlCI5ewhQq2pZHkbwBYPMPfNs5XQsDfBm+hNim9K42ViPPh4eqJZfpT7+9txbwvYsJsbUjVcPNIEFC+RHRvtqOiBv9YW7w39/RnnO1bd5LlNXz+dbbV6ykOADqh9WQ8hh5BkXMT3uyivhQ=
+Subject: [PATCH 04/14] i2c: replace remaining __FUNCTION__ occurrences
 From: Harvey Harrison <harvey.harrison@gmail.com>
-To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+To: Jean Delvare <khali@linux-fr.org>
 Cc: Andrew Morton <akpm@linux-foundation.org>,
        LKML <linux-kernel@vger.kernel.org>
 In-Reply-To: <ff8fd021606e7a6f03e9c274230cfcf64eade6d2.1204599636.git.harvey.harrison@gmail.com>
 References: <ff8fd021606e7a6f03e9c274230cfcf64eade6d2.1204599636.git.harvey.harrison@gmail.com>
 Content-Type: text/plain
-Date: Mon, 03 Mar 2008 19:09:43 -0800
-Message-Id: <1204600183.22933.83.camel@brick>
+Date: Mon, 03 Mar 2008 19:09:44 -0800
+Message-Id: <1204600184.22933.84.camel@brick>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.12.1 
 Content-Transfer-Encoding: 7bit
@@ -35,673 +35,431 @@ __FUNCTION__ is gcc-specific, use __func__
 
 Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
 ---
- drivers/input/joystick/iforce/iforce-usb.c |    6 +++---
- drivers/input/joystick/xpad.c              |   12 ++++++------
- drivers/input/keyboard/lkkbd.c             |    6 +++---
- drivers/input/misc/ati_remote.c            |   18 +++++++++---------
- drivers/input/misc/ati_remote2.c           |   18 +++++++++---------
- drivers/input/misc/keyspan_remote.c        |   20 ++++++++++----------
- drivers/input/misc/powermate.c             |    6 +++---
- drivers/input/misc/yealink.c               |   12 ++++++------
- drivers/input/mouse/appletouch.c           |    8 ++++----
- drivers/input/tablet/acecad.c              |    4 ++--
- drivers/input/tablet/aiptek.c              |    6 +++---
- drivers/input/tablet/kbtab.c               |    6 +++---
- drivers/input/tablet/wacom_sys.c           |    6 +++---
- drivers/input/touchscreen/usbtouchscreen.c |   22 +++++++++++-----------
- 14 files changed, 75 insertions(+), 75 deletions(-)
+ drivers/i2c/busses/i2c-davinci.c |    6 ++--
+ drivers/i2c/busses/i2c-pmcmsp.c  |    4 +-
+ drivers/i2c/busses/i2c-pnx.c     |   44 +++++++++++++++++++-------------------
+ drivers/i2c/busses/i2c-pxa.c     |    2 +-
+ drivers/i2c/busses/i2c-s3c2410.c |    4 +-
+ drivers/i2c/chips/isp1301_omap.c |   28 ++++++++++++------------
+ drivers/i2c/i2c-core.c           |    2 +-
+ 7 files changed, 45 insertions(+), 45 deletions(-)
 
-diff --git a/drivers/input/joystick/iforce/iforce-usb.c b/drivers/input/joystick/iforce/iforce-usb.c
-index 1457b73..e9bba5f 100644
---- a/drivers/input/joystick/iforce/iforce-usb.c
-+++ b/drivers/input/joystick/iforce/iforce-usb.c
-@@ -89,10 +89,10 @@ static void iforce_usb_irq(struct urb *urb)
- 	case -ESHUTDOWN:
- 		/* this urb is terminated, clean up */
- 		dbg("%s - urb shutting down with status: %d",
--		    __FUNCTION__, urb->status);
-+		    __func__, urb->status);
- 		return;
- 	default:
--		dbg("%s - urb has status of: %d", __FUNCTION__, urb->status);
-+		dbg("%s - urb has status of: %d", __func__, urb->status);
- 		goto exit;
+diff --git a/drivers/i2c/busses/i2c-davinci.c b/drivers/i2c/busses/i2c-davinci.c
+index cce5a61..89c697d 100644
+--- a/drivers/i2c/busses/i2c-davinci.c
++++ b/drivers/i2c/busses/i2c-davinci.c
+@@ -328,7 +328,7 @@ i2c_davinci_xfer(struct i2c_adapter *adap, struct i2c_msg msgs[], int num)
+ 	int i;
+ 	int ret;
+ 
+-	dev_dbg(dev->dev, "%s: msgs: %d\n", __FUNCTION__, num);
++	dev_dbg(dev->dev, "%s: msgs: %d\n", __func__, num);
+ 
+ 	ret = i2c_davinci_wait_bus_not_busy(dev, 1);
+ 	if (ret < 0) {
+@@ -342,7 +342,7 @@ i2c_davinci_xfer(struct i2c_adapter *adap, struct i2c_msg msgs[], int num)
+ 			return ret;
  	}
  
-@@ -103,7 +103,7 @@ exit:
- 	status = usb_submit_urb (urb, GFP_ATOMIC);
- 	if (status)
- 		err ("%s - usb_submit_urb failed with result %d",
--		     __FUNCTION__, status);
-+		     __func__, status);
+-	dev_dbg(dev->dev, "%s:%d ret: %d\n", __FUNCTION__, __LINE__, ret);
++	dev_dbg(dev->dev, "%s:%d ret: %d\n", __func__, __LINE__, ret);
+ 
+ 	return num;
  }
+@@ -364,7 +364,7 @@ static irqreturn_t i2c_davinci_isr(int this_irq, void *dev_id)
+ 	u16 w;
  
- static void iforce_usb_out(struct urb *urb)
-diff --git a/drivers/input/joystick/xpad.c b/drivers/input/joystick/xpad.c
-index 0380597..8c9486e 100644
---- a/drivers/input/joystick/xpad.c
-+++ b/drivers/input/joystick/xpad.c
-@@ -350,11 +350,11 @@ static void xpad_irq_in(struct urb *urb)
- 	case -ESHUTDOWN:
- 		/* this urb is terminated, clean up */
- 		dbg("%s - urb shutting down with status: %d",
--			__FUNCTION__, urb->status);
-+			__func__, urb->status);
- 		return;
- 	default:
- 		dbg("%s - nonzero urb status received: %d",
--			__FUNCTION__, urb->status);
-+			__func__, urb->status);
- 		goto exit;
- 	}
- 
-@@ -367,7 +367,7 @@ exit:
- 	retval = usb_submit_urb (urb, GFP_ATOMIC);
- 	if (retval)
- 		err ("%s - usb_submit_urb failed with result %d",
--		     __FUNCTION__, retval);
-+		     __func__, retval);
- }
- 
- #if defined(CONFIG_JOYSTICK_XPAD_FF) || defined(CONFIG_JOYSTICK_XPAD_LEDS)
-@@ -384,11 +384,11 @@ static void xpad_irq_out(struct urb *urb)
- 		case -ESHUTDOWN:
- 			/* this urb is terminated, clean up */
- 			dbg("%s - urb shutting down with status: %d",
--				__FUNCTION__, urb->status);
-+				__func__, urb->status);
- 			return;
- 		default:
- 			dbg("%s - nonzero urb status received: %d",
--				__FUNCTION__, urb->status);
-+				__func__, urb->status);
- 			goto exit;
- 	}
- 
-@@ -396,7 +396,7 @@ exit:
- 	retval = usb_submit_urb(urb, GFP_ATOMIC);
- 	if (retval)
- 		err("%s - usb_submit_urb failed with result %d",
--		    __FUNCTION__, retval);
-+		    __func__, retval);
- }
- 
- static int xpad_init_output(struct usb_interface *intf, struct usb_xpad *xpad)
-diff --git a/drivers/input/keyboard/lkkbd.c b/drivers/input/keyboard/lkkbd.c
-index 32e2c26..4730ef3 100644
---- a/drivers/input/keyboard/lkkbd.c
-+++ b/drivers/input/keyboard/lkkbd.c
-@@ -538,11 +538,11 @@ lkkbd_event (struct input_dev *dev, unsigned int type, unsigned int code,
- 			switch (code) {
- 				case SND_CLICK:
- 					if (value == 0) {
--						DBG ("%s: Deactivating key clicks\n", __FUNCTION__);
-+						DBG ("%s: Deactivating key clicks\n", __func__);
- 						lk->serio->write (lk->serio, LK_CMD_DISABLE_KEYCLICK);
- 						lk->serio->write (lk->serio, LK_CMD_DISABLE_CTRCLICK);
- 					} else {
--						DBG ("%s: Activating key clicks\n", __FUNCTION__);
-+						DBG ("%s: Activating key clicks\n", __func__);
- 						lk->serio->write (lk->serio, LK_CMD_ENABLE_KEYCLICK);
- 						lk->serio->write (lk->serio, volume_to_hw (lk->keyclick_volume));
- 						lk->serio->write (lk->serio, LK_CMD_ENABLE_CTRCLICK);
-@@ -560,7 +560,7 @@ lkkbd_event (struct input_dev *dev, unsigned int type, unsigned int code,
- 
- 		default:
- 			printk (KERN_ERR "%s (): Got unknown type %d, code %d, value %d\n",
--					__FUNCTION__, type, code, value);
-+					__func__, type, code, value);
- 	}
- 
- 	return -1;
-diff --git a/drivers/input/misc/ati_remote.c b/drivers/input/misc/ati_remote.c
-index f3b86c2..debfc1a 100644
---- a/drivers/input/misc/ati_remote.c
-+++ b/drivers/input/misc/ati_remote.c
-@@ -330,7 +330,7 @@ static int ati_remote_open(struct input_dev *inputdev)
- 	ati_remote->irq_urb->dev = ati_remote->udev;
- 	if (usb_submit_urb(ati_remote->irq_urb, GFP_KERNEL)) {
- 		dev_err(&ati_remote->interface->dev,
--			"%s: usb_submit_urb failed!\n", __FUNCTION__);
-+			"%s: usb_submit_urb failed!\n", __func__);
- 		return -EIO;
- 	}
- 
-@@ -356,7 +356,7 @@ static void ati_remote_irq_out(struct urb *urb)
- 
- 	if (urb->status) {
- 		dev_dbg(&ati_remote->interface->dev, "%s: status %d\n",
--			__FUNCTION__, urb->status);
-+			__func__, urb->status);
- 		return;
- 	}
- 
-@@ -601,17 +601,17 @@ static void ati_remote_irq_in(struct urb *urb)
- 	case -ENOENT:
- 	case -ESHUTDOWN:
- 		dev_dbg(&ati_remote->interface->dev, "%s: urb error status, unlink? \n",
+ 	while ((stat = davinci_i2c_read_reg(dev, DAVINCI_I2C_IVR_REG))) {
+-		dev_dbg(dev->dev, "%s: stat=0x%x\n", __FUNCTION__, stat);
++		dev_dbg(dev->dev, "%s: stat=0x%x\n", __func__, stat);
+ 		if (count++ == 100) {
+ 			dev_warn(dev->dev, "Too much work in one IRQ\n");
+ 			break;
+diff --git a/drivers/i2c/busses/i2c-pmcmsp.c b/drivers/i2c/busses/i2c-pmcmsp.c
+index b03af56..9ea0f8a 100644
+--- a/drivers/i2c/busses/i2c-pmcmsp.c
++++ b/drivers/i2c/busses/i2c-pmcmsp.c
+@@ -467,7 +467,7 @@ static enum pmcmsptwi_xfer_result pmcmsptwi_xfer_cmd(
+ 	    (cmd->read_len == 0 || cmd->write_len == 0))) {
+ 		dev_err(&pmcmsptwi_adapter.dev,
+ 			"%s: Cannot transfer less than 1 byte\n",
 -			__FUNCTION__);
 +			__func__);
- 		return;
- 	default:		/* error */
- 		dev_dbg(&ati_remote->interface->dev, "%s: Nonzero urb status %d\n",
--			__FUNCTION__, urb->status);
-+			__func__, urb->status);
+ 		return -EINVAL;
  	}
  
- 	retval = usb_submit_urb(urb, GFP_ATOMIC);
- 	if (retval)
- 		dev_err(&ati_remote->interface->dev, "%s: usb_submit_urb()=%d\n",
--			__FUNCTION__, retval);
-+			__func__, retval);
- }
- 
- /*
-@@ -734,7 +734,7 @@ static int ati_remote_probe(struct usb_interface *interface, const struct usb_de
- 	int err = -ENOMEM;
- 
- 	if (iface_host->desc.bNumEndpoints != 2) {
--		err("%s: Unexpected desc.bNumEndpoints\n", __FUNCTION__);
-+		err("%s: Unexpected desc.bNumEndpoints\n", __func__);
- 		return -ENODEV;
+@@ -475,7 +475,7 @@ static enum pmcmsptwi_xfer_result pmcmsptwi_xfer_cmd(
+ 	    cmd->write_len > MSP_MAX_BYTES_PER_RW) {
+ 		dev_err(&pmcmsptwi_adapter.dev,
+ 			"%s: Cannot transfer more than %d bytes\n",
+-			__FUNCTION__, MSP_MAX_BYTES_PER_RW);
++			__func__, MSP_MAX_BYTES_PER_RW);
+ 		return -EINVAL;
  	}
  
-@@ -742,11 +742,11 @@ static int ati_remote_probe(struct usb_interface *interface, const struct usb_de
- 	endpoint_out = &iface_host->endpoint[1].desc;
- 
- 	if (!usb_endpoint_is_int_in(endpoint_in)) {
--		err("%s: Unexpected endpoint_in\n", __FUNCTION__);
-+		err("%s: Unexpected endpoint_in\n", __func__);
- 		return -ENODEV;
- 	}
- 	if (le16_to_cpu(endpoint_in->wMaxPacketSize) == 0) {
--		err("%s: endpoint_in message size==0? \n", __FUNCTION__);
-+		err("%s: endpoint_in message size==0? \n", __func__);
- 		return -ENODEV;
- 	}
- 
-@@ -814,7 +814,7 @@ static void ati_remote_disconnect(struct usb_interface *interface)
- 	ati_remote = usb_get_intfdata(interface);
- 	usb_set_intfdata(interface, NULL);
- 	if (!ati_remote) {
--		warn("%s - null device?\n", __FUNCTION__);
-+		warn("%s - null device?\n", __func__);
- 		return;
- 	}
- 
-diff --git a/drivers/input/misc/ati_remote2.c b/drivers/input/misc/ati_remote2.c
-index f2709b8..a7fabaf 100644
---- a/drivers/input/misc/ati_remote2.c
-+++ b/drivers/input/misc/ati_remote2.c
-@@ -137,14 +137,14 @@ static int ati_remote2_open(struct input_dev *idev)
- 	r = usb_submit_urb(ar2->urb[0], GFP_KERNEL);
- 	if (r) {
- 		dev_err(&ar2->intf[0]->dev,
--			"%s: usb_submit_urb() = %d\n", __FUNCTION__, r);
-+			"%s: usb_submit_urb() = %d\n", __func__, r);
- 		return r;
- 	}
- 	r = usb_submit_urb(ar2->urb[1], GFP_KERNEL);
- 	if (r) {
- 		usb_kill_urb(ar2->urb[0]);
- 		dev_err(&ar2->intf[1]->dev,
--			"%s: usb_submit_urb() = %d\n", __FUNCTION__, r);
-+			"%s: usb_submit_urb() = %d\n", __func__, r);
- 		return r;
- 	}
- 
-@@ -294,17 +294,17 @@ static void ati_remote2_complete_mouse(struct urb *urb)
- 	case -ECONNRESET:
- 	case -ESHUTDOWN:
- 		dev_dbg(&ar2->intf[0]->dev,
--			"%s(): urb status = %d\n", __FUNCTION__, urb->status);
-+			"%s(): urb status = %d\n", __func__, urb->status);
- 		return;
- 	default:
- 		dev_err(&ar2->intf[0]->dev,
--			"%s(): urb status = %d\n", __FUNCTION__, urb->status);
-+			"%s(): urb status = %d\n", __func__, urb->status);
- 	}
- 
- 	r = usb_submit_urb(urb, GFP_ATOMIC);
- 	if (r)
- 		dev_err(&ar2->intf[0]->dev,
--			"%s(): usb_submit_urb() = %d\n", __FUNCTION__, r);
-+			"%s(): usb_submit_urb() = %d\n", __func__, r);
- }
- 
- static void ati_remote2_complete_key(struct urb *urb)
-@@ -321,17 +321,17 @@ static void ati_remote2_complete_key(struct urb *urb)
- 	case -ECONNRESET:
- 	case -ESHUTDOWN:
- 		dev_dbg(&ar2->intf[1]->dev,
--			"%s(): urb status = %d\n", __FUNCTION__, urb->status);
-+			"%s(): urb status = %d\n", __func__, urb->status);
- 		return;
- 	default:
- 		dev_err(&ar2->intf[1]->dev,
--			"%s(): urb status = %d\n", __FUNCTION__, urb->status);
-+			"%s(): urb status = %d\n", __func__, urb->status);
- 	}
- 
- 	r = usb_submit_urb(urb, GFP_ATOMIC);
- 	if (r)
- 		dev_err(&ar2->intf[1]->dev,
--			"%s(): usb_submit_urb() = %d\n", __FUNCTION__, r);
-+			"%s(): usb_submit_urb() = %d\n", __func__, r);
- }
- 
- static int ati_remote2_input_init(struct ati_remote2 *ar2)
-@@ -438,7 +438,7 @@ static int ati_remote2_setup(struct ati_remote2 *ar2)
- 			    channel, 0x0, NULL, 0, USB_CTRL_SET_TIMEOUT);
- 	if (r) {
- 		dev_err(&ar2->udev->dev, "%s - failed to set channel due to error: %d\n",
--			__FUNCTION__, r);
-+			__func__, r);
- 		return r;
- 	}
- 
-diff --git a/drivers/input/misc/keyspan_remote.c b/drivers/input/misc/keyspan_remote.c
-index 952938a..86afdd1 100644
---- a/drivers/input/misc/keyspan_remote.c
-+++ b/drivers/input/misc/keyspan_remote.c
-@@ -159,7 +159,7 @@ static int keyspan_load_tester(struct usb_keyspan* dev, int bits_needed)
- 	if (dev->data.pos >= dev->data.len) {
- 		dev_dbg(&dev->udev->dev,
- 			"%s - Error ran out of data. pos: %d, len: %d\n",
--			__FUNCTION__, dev->data.pos, dev->data.len);
-+			__func__, dev->data.pos, dev->data.len);
- 		return -1;
- 	}
- 
-@@ -267,7 +267,7 @@ static void keyspan_check_data(struct usb_keyspan *remote)
- 				remote->data.tester = remote->data.tester >> 6;
- 				remote->data.bits_left -= 6;
- 			} else {
--				err("%s - Unknown sequence found in system data.\n", __FUNCTION__);
-+				err("%s - Unknown sequence found in system data.\n", __func__);
- 				remote->stage = 0;
- 				return;
- 			}
-@@ -286,7 +286,7 @@ static void keyspan_check_data(struct usb_keyspan *remote)
- 				remote->data.tester = remote->data.tester >> 6;
- 				remote->data.bits_left -= 6;
- 			} else {
--				err("%s - Unknown sequence found in button data.\n", __FUNCTION__);
-+				err("%s - Unknown sequence found in button data.\n", __func__);
- 				remote->stage = 0;
- 				return;
- 			}
-@@ -302,7 +302,7 @@ static void keyspan_check_data(struct usb_keyspan *remote)
- 			remote->data.tester = remote->data.tester >> 6;
- 			remote->data.bits_left -= 6;
- 		} else {
--			err("%s - Error in message, invalid toggle.\n", __FUNCTION__);
-+			err("%s - Error in message, invalid toggle.\n", __func__);
- 			remote->stage = 0;
- 			return;
- 		}
-@@ -317,7 +317,7 @@ static void keyspan_check_data(struct usb_keyspan *remote)
- 
- 		dev_dbg(&remote->udev->dev,
- 			"%s found valid message: system: %d, button: %d, toggle: %d\n",
--			__FUNCTION__, message.system, message.button, message.toggle);
-+			__func__, message.system, message.button, message.toggle);
- 
- 		if (message.toggle != remote->toggle) {
- 			keyspan_report_button(remote, message.button, 1);
-@@ -341,7 +341,7 @@ static int keyspan_setup(struct usb_device* dev)
- 				 0x11, 0x40, 0x5601, 0x0, NULL, 0, 0);
- 	if (retval) {
- 		dev_dbg(&dev->dev, "%s - failed to set bit rate due to error: %d\n",
--			__FUNCTION__, retval);
-+			__func__, retval);
- 		return(retval);
- 	}
- 
-@@ -349,7 +349,7 @@ static int keyspan_setup(struct usb_device* dev)
- 				 0x44, 0x40, 0x0, 0x0, NULL, 0, 0);
- 	if (retval) {
- 		dev_dbg(&dev->dev, "%s - failed to set resume sensitivity due to error: %d\n",
--			__FUNCTION__, retval);
-+			__func__, retval);
- 		return(retval);
- 	}
- 
-@@ -357,11 +357,11 @@ static int keyspan_setup(struct usb_device* dev)
- 				 0x22, 0x40, 0x0, 0x0, NULL, 0, 0);
- 	if (retval) {
- 		dev_dbg(&dev->dev, "%s - failed to turn receive on due to error: %d\n",
--			__FUNCTION__, retval);
-+			__func__, retval);
- 		return(retval);
- 	}
- 
--	dev_dbg(&dev->dev, "%s - Setup complete.\n", __FUNCTION__);
-+	dev_dbg(&dev->dev, "%s - Setup complete.\n", __func__);
- 	return(retval);
- }
- 
-@@ -397,7 +397,7 @@ static void keyspan_irq_recv(struct urb *urb)
- resubmit:
- 	retval = usb_submit_urb(urb, GFP_ATOMIC);
- 	if (retval)
--		err ("%s - usb_submit_urb failed with result: %d", __FUNCTION__, retval);
-+		err ("%s - usb_submit_urb failed with result: %d", __func__, retval);
- }
- 
- static int keyspan_open(struct input_dev *dev)
-diff --git a/drivers/input/misc/powermate.c b/drivers/input/misc/powermate.c
-index 7a7b8c7..a53c488 100644
---- a/drivers/input/misc/powermate.c
-+++ b/drivers/input/misc/powermate.c
-@@ -96,10 +96,10 @@ static void powermate_irq(struct urb *urb)
- 	case -ENOENT:
- 	case -ESHUTDOWN:
- 		/* this urb is terminated, clean up */
--		dbg("%s - urb shutting down with status: %d", __FUNCTION__, urb->status);
-+		dbg("%s - urb shutting down with status: %d", __func__, urb->status);
- 		return;
- 	default:
--		dbg("%s - nonzero urb status received: %d", __FUNCTION__, urb->status);
-+		dbg("%s - nonzero urb status received: %d", __func__, urb->status);
- 		goto exit;
- 	}
- 
-@@ -112,7 +112,7 @@ exit:
- 	retval = usb_submit_urb (urb, GFP_ATOMIC);
- 	if (retval)
- 		err ("%s - usb_submit_urb failed with result %d",
--		     __FUNCTION__, retval);
-+		     __func__, retval);
- }
- 
- /* Decide if we need to issue a control message and do so. Must be called with pm->lock taken */
-diff --git a/drivers/input/misc/yealink.c b/drivers/input/misc/yealink.c
-index 46279ef..8a949e7 100644
---- a/drivers/input/misc/yealink.c
-+++ b/drivers/input/misc/yealink.c
-@@ -427,7 +427,7 @@ static void urb_irq_callback(struct urb *urb)
- 	int ret;
- 
- 	if (urb->status)
--		err("%s - urb status %d", __FUNCTION__, urb->status);
-+		err("%s - urb status %d", __func__, urb->status);
- 
- 	switch (yld->irq_data->cmd) {
- 	case CMD_KEYPRESS:
-@@ -449,7 +449,7 @@ static void urb_irq_callback(struct urb *urb)
- 
- 	ret = usb_submit_urb(yld->urb_ctl, GFP_ATOMIC);
- 	if (ret)
--		err("%s - usb_submit_urb failed %d", __FUNCTION__, ret);
-+		err("%s - usb_submit_urb failed %d", __func__, ret);
- }
- 
- static void urb_ctl_callback(struct urb *urb)
-@@ -458,7 +458,7 @@ static void urb_ctl_callback(struct urb *urb)
- 	int ret;
- 
- 	if (urb->status)
--		err("%s - urb status %d", __FUNCTION__, urb->status);
-+		err("%s - urb status %d", __func__, urb->status);
- 
- 	switch (yld->ctl_data->cmd) {
- 	case CMD_KEYPRESS:
-@@ -473,7 +473,7 @@ static void urb_ctl_callback(struct urb *urb)
- 	}
- 
- 	if (ret)
--		err("%s - usb_submit_urb failed %d", __FUNCTION__, ret);
-+		err("%s - usb_submit_urb failed %d", __func__, ret);
- }
- 
- /*******************************************************************************
-@@ -505,7 +505,7 @@ static int input_open(struct input_dev *dev)
- 	struct yealink_dev *yld = input_get_drvdata(dev);
- 	int i, ret;
- 
--	dbg("%s", __FUNCTION__);
-+	dbg("%s", __func__);
- 
- 	/* force updates to device */
- 	for (i = 0; i<sizeof(yld->master); i++)
-@@ -521,7 +521,7 @@ static int input_open(struct input_dev *dev)
- 	yld->ctl_data->sum	= 0x100-CMD_INIT-10;
- 	if ((ret = usb_submit_urb(yld->urb_ctl, GFP_KERNEL)) != 0) {
- 		dbg("%s - usb_submit_urb failed with result %d",
--		     __FUNCTION__, ret);
-+		     __func__, ret);
- 		return ret;
- 	}
- 	return 0;
-diff --git a/drivers/input/mouse/appletouch.c b/drivers/input/mouse/appletouch.c
-index b4423a4..1970f88 100644
---- a/drivers/input/mouse/appletouch.c
-+++ b/drivers/input/mouse/appletouch.c
-@@ -276,7 +276,7 @@ static void atp_reinit(struct work_struct *work)
- 	retval = usb_submit_urb(dev->urb, GFP_ATOMIC);
- 	if (retval) {
- 		err("%s - usb_submit_urb failed with result %d",
--		    __FUNCTION__, retval);
-+		    __func__, retval);
- 	}
- }
- 
-@@ -368,11 +368,11 @@ static void atp_complete(struct urb* urb)
- 	case -ESHUTDOWN:
- 		/* This urb is terminated, clean up */
- 		dbg("%s - urb shutting down with status: %d",
--		    __FUNCTION__, urb->status);
-+		    __func__, urb->status);
- 		return;
- 	default:
- 		dbg("%s - nonzero urb status received: %d",
--		    __FUNCTION__, urb->status);
-+		    __func__, urb->status);
- 		goto exit;
- 	}
- 
-@@ -554,7 +554,7 @@ exit:
- 	retval = usb_submit_urb(dev->urb, GFP_ATOMIC);
- 	if (retval) {
- 		err("%s - usb_submit_urb failed with result %d",
--		    __FUNCTION__, retval);
-+		    __func__, retval);
- 	}
- }
- 
-diff --git a/drivers/input/tablet/acecad.c b/drivers/input/tablet/acecad.c
-index b973d0e..570e0e8 100644
---- a/drivers/input/tablet/acecad.c
-+++ b/drivers/input/tablet/acecad.c
-@@ -73,10 +73,10 @@ static void usb_acecad_irq(struct urb *urb)
- 		case -ENOENT:
- 		case -ESHUTDOWN:
- 			/* this urb is terminated, clean up */
--			dbg("%s - urb shutting down with status: %d", __FUNCTION__, urb->status);
-+			dbg("%s - urb shutting down with status: %d", __func__, urb->status);
- 			return;
- 		default:
--			dbg("%s - nonzero urb status received: %d", __FUNCTION__, urb->status);
-+			dbg("%s - nonzero urb status received: %d", __func__, urb->status);
- 			goto resubmit;
- 	}
- 
-diff --git a/drivers/input/tablet/aiptek.c b/drivers/input/tablet/aiptek.c
-index 94683f5..39a748d 100644
---- a/drivers/input/tablet/aiptek.c
-+++ b/drivers/input/tablet/aiptek.c
-@@ -448,12 +448,12 @@ static void aiptek_irq(struct urb *urb)
- 	case -ESHUTDOWN:
- 		/* This urb is terminated, clean up */
- 		dbg("%s - urb shutting down with status: %d",
--		    __FUNCTION__, urb->status);
-+		    __func__, urb->status);
- 		return;
- 
- 	default:
- 		dbg("%s - nonzero urb status received: %d",
--		    __FUNCTION__, urb->status);
-+		    __func__, urb->status);
- 		goto exit;
- 	}
- 
-@@ -812,7 +812,7 @@ exit:
- 	retval = usb_submit_urb(urb, GFP_ATOMIC);
- 	if (retval != 0) {
- 		err("%s - usb_submit_urb failed with result %d",
--		    __FUNCTION__, retval);
-+		    __func__, retval);
- 	}
- }
- 
-diff --git a/drivers/input/tablet/kbtab.c b/drivers/input/tablet/kbtab.c
-index 1182fc1..8c620bc 100644
---- a/drivers/input/tablet/kbtab.c
-+++ b/drivers/input/tablet/kbtab.c
-@@ -56,10 +56,10 @@ static void kbtab_irq(struct urb *urb)
- 	case -ENOENT:
- 	case -ESHUTDOWN:
- 		/* this urb is terminated, clean up */
--		dbg("%s - urb shutting down with status: %d", __FUNCTION__, urb->status);
-+		dbg("%s - urb shutting down with status: %d", __func__, urb->status);
- 		return;
- 	default:
--		dbg("%s - nonzero urb status received: %d", __FUNCTION__, urb->status);
-+		dbg("%s - nonzero urb status received: %d", __func__, urb->status);
- 		goto exit;
- 	}
- 
-@@ -88,7 +88,7 @@ static void kbtab_irq(struct urb *urb)
- 	retval = usb_submit_urb (urb, GFP_ATOMIC);
- 	if (retval)
- 		err ("%s - usb_submit_urb failed with result %d",
--		     __FUNCTION__, retval);
-+		     __func__, retval);
- }
- 
- static struct usb_device_id kbtab_ids[] = {
-diff --git a/drivers/input/tablet/wacom_sys.c b/drivers/input/tablet/wacom_sys.c
-index d64b1ea..008106f 100644
---- a/drivers/input/tablet/wacom_sys.c
-+++ b/drivers/input/tablet/wacom_sys.c
-@@ -56,10 +56,10 @@ static void wacom_sys_irq(struct urb *urb)
- 	case -ENOENT:
- 	case -ESHUTDOWN:
- 		/* this urb is terminated, clean up */
--		dbg("%s - urb shutting down with status: %d", __FUNCTION__, urb->status);
-+		dbg("%s - urb shutting down with status: %d", __func__, urb->status);
- 		return;
- 	default:
--		dbg("%s - nonzero urb status received: %d", __FUNCTION__, urb->status);
-+		dbg("%s - nonzero urb status received: %d", __func__, urb->status);
- 		goto exit;
- 	}
- 
-@@ -73,7 +73,7 @@ static void wacom_sys_irq(struct urb *urb)
- 	retval = usb_submit_urb (urb, GFP_ATOMIC);
- 	if (retval)
- 		err ("%s - usb_submit_urb failed with result %d",
--		     __FUNCTION__, retval);
-+		     __func__, retval);
- }
- 
- void wacom_report_key(void *wcombo, unsigned int key_type, int key_data)
-diff --git a/drivers/input/touchscreen/usbtouchscreen.c b/drivers/input/touchscreen/usbtouchscreen.c
-index 63f9664..1690a5c 100644
---- a/drivers/input/touchscreen/usbtouchscreen.c
-+++ b/drivers/input/touchscreen/usbtouchscreen.c
-@@ -262,7 +262,7 @@ static int mtouch_init(struct usbtouch_usb *usbtouch)
- 	                      USB_DIR_OUT | USB_TYPE_VENDOR | USB_RECIP_DEVICE,
- 	                      1, 0, NULL, 0, USB_CTRL_SET_TIMEOUT);
- 	dbg("%s - usb_control_msg - MTOUCHUSB_RESET - bytes|err: %d",
--	    __FUNCTION__, ret);
-+	    __func__, ret);
- 	if (ret < 0)
- 		return ret;
- 	msleep(150);
-@@ -273,7 +273,7 @@ static int mtouch_init(struct usbtouch_usb *usbtouch)
- 				      USB_DIR_OUT | USB_TYPE_VENDOR | USB_RECIP_DEVICE,
- 				      1, 1, NULL, 0, USB_CTRL_SET_TIMEOUT);
- 		dbg("%s - usb_control_msg - MTOUCHUSB_ASYNC_REPORT - bytes|err: %d",
--		    __FUNCTION__, ret);
-+		    __func__, ret);
- 		if (ret >= 0)
- 			break;
- 		if (ret != -EPIPE)
-@@ -786,18 +786,18 @@ static void usbtouch_irq(struct urb *urb)
- 	case -ETIME:
- 		/* this urb is timing out */
- 		dbg("%s - urb timed out - was the device unplugged?",
--		    __FUNCTION__);
-+		    __func__);
- 		return;
- 	case -ECONNRESET:
- 	case -ENOENT:
- 	case -ESHUTDOWN:
- 		/* this urb is terminated, clean up */
- 		dbg("%s - urb shutting down with status: %d",
--		    __FUNCTION__, urb->status);
-+		    __func__, urb->status);
- 		return;
- 	default:
- 		dbg("%s - nonzero urb status received: %d",
--		    __FUNCTION__, urb->status);
-+		    __func__, urb->status);
- 		goto exit;
- 	}
- 
-@@ -807,7 +807,7 @@ exit:
- 	retval = usb_submit_urb(urb, GFP_ATOMIC);
- 	if (retval)
- 		err("%s - usb_submit_urb failed with result: %d",
--		    __FUNCTION__, retval);
-+		    __func__, retval);
- }
- 
- static int usbtouch_open(struct input_dev *input)
-@@ -876,7 +876,7 @@ static int usbtouch_probe(struct usb_interface *intf,
- 
- 	usbtouch->irq = usb_alloc_urb(0, GFP_KERNEL);
- 	if (!usbtouch->irq) {
--		dbg("%s - usb_alloc_urb failed: usbtouch->irq", __FUNCTION__);
-+		dbg("%s - usb_alloc_urb failed: usbtouch->irq", __func__);
- 		goto out_free_buffers;
- 	}
- 
-@@ -932,14 +932,14 @@ static int usbtouch_probe(struct usb_interface *intf,
- 	if (type->init) {
- 		err = type->init(usbtouch);
- 		if (err) {
--			dbg("%s - type->init() failed, err: %d", __FUNCTION__, err);
-+			dbg("%s - type->init() failed, err: %d", __func__, err);
- 			goto out_free_buffers;
- 		}
- 	}
- 
- 	err = input_register_device(usbtouch->input);
- 	if (err) {
--		dbg("%s - input_register_device failed, err: %d", __FUNCTION__, err);
-+		dbg("%s - input_register_device failed, err: %d", __func__, err);
- 		goto out_free_buffers;
- 	}
- 
-@@ -959,12 +959,12 @@ static void usbtouch_disconnect(struct usb_interface *intf)
+diff --git a/drivers/i2c/busses/i2c-pnx.c b/drivers/i2c/busses/i2c-pnx.c
+index f8d0dff..6695d59 100644
+--- a/drivers/i2c/busses/i2c-pnx.c
++++ b/drivers/i2c/busses/i2c-pnx.c
+@@ -76,7 +76,7 @@ static int i2c_pnx_start(unsigned char slave_addr, struct i2c_adapter *adap)
  {
- 	struct usbtouch_usb *usbtouch = usb_get_intfdata(intf);
+ 	struct i2c_pnx_algo_data *alg_data = adap->algo_data;
  
--	dbg("%s - called", __FUNCTION__);
-+	dbg("%s - called", __func__);
+-	dev_dbg(&adap->dev, "%s(): addr 0x%x mode %d\n", __FUNCTION__,
++	dev_dbg(&adap->dev, "%s(): addr 0x%x mode %d\n", __func__,
+ 		slave_addr, alg_data->mif.mode);
  
- 	if (!usbtouch)
- 		return;
+ 	/* Check for 7 bit slave addresses only */
+@@ -110,14 +110,14 @@ static int i2c_pnx_start(unsigned char slave_addr, struct i2c_adapter *adap)
+ 	iowrite32(ioread32(I2C_REG_STS(alg_data)) | mstatus_tdi | mstatus_afi,
+ 		  I2C_REG_STS(alg_data));
  
--	dbg("%s - usbtouch is initialized, cleaning up", __FUNCTION__);
-+	dbg("%s - usbtouch is initialized, cleaning up", __func__);
- 	usb_set_intfdata(intf, NULL);
- 	usb_kill_urb(usbtouch->irq);
- 	input_unregister_device(usbtouch->input);
+-	dev_dbg(&adap->dev, "%s(): sending %#x\n", __FUNCTION__,
++	dev_dbg(&adap->dev, "%s(): sending %#x\n", __func__,
+ 		(slave_addr << 1) | start_bit | alg_data->mif.mode);
+ 
+ 	/* Write the slave address, START bit and R/W bit */
+ 	iowrite32((slave_addr << 1) | start_bit | alg_data->mif.mode,
+ 		  I2C_REG_TX(alg_data));
+ 
+-	dev_dbg(&adap->dev, "%s(): exit\n", __FUNCTION__);
++	dev_dbg(&adap->dev, "%s(): exit\n", __func__);
+ 
+ 	return 0;
+ }
+@@ -135,7 +135,7 @@ static void i2c_pnx_stop(struct i2c_adapter *adap)
+ 	long timeout = 1000;
+ 
+ 	dev_dbg(&adap->dev, "%s(): entering: stat = %04x.\n",
+-		__FUNCTION__, ioread32(I2C_REG_STS(alg_data)));
++		__func__, ioread32(I2C_REG_STS(alg_data)));
+ 
+ 	/* Write a STOP bit to TX FIFO */
+ 	iowrite32(0xff | stop_bit, I2C_REG_TX(alg_data));
+@@ -149,7 +149,7 @@ static void i2c_pnx_stop(struct i2c_adapter *adap)
+ 	}
+ 
+ 	dev_dbg(&adap->dev, "%s(): exiting: stat = %04x.\n",
+-		__FUNCTION__, ioread32(I2C_REG_STS(alg_data)));
++		__func__, ioread32(I2C_REG_STS(alg_data)));
+ }
+ 
+ /**
+@@ -164,7 +164,7 @@ static int i2c_pnx_master_xmit(struct i2c_adapter *adap)
+ 	u32 val;
+ 
+ 	dev_dbg(&adap->dev, "%s(): entering: stat = %04x.\n",
+-		__FUNCTION__, ioread32(I2C_REG_STS(alg_data)));
++		__func__, ioread32(I2C_REG_STS(alg_data)));
+ 
+ 	if (alg_data->mif.len > 0) {
+ 		/* We still have something to talk about... */
+@@ -179,7 +179,7 @@ static int i2c_pnx_master_xmit(struct i2c_adapter *adap)
+ 		alg_data->mif.len--;
+ 		iowrite32(val, I2C_REG_TX(alg_data));
+ 
+-		dev_dbg(&adap->dev, "%s(): xmit %#x [%d]\n", __FUNCTION__,
++		dev_dbg(&adap->dev, "%s(): xmit %#x [%d]\n", __func__,
+ 			val, alg_data->mif.len + 1);
+ 
+ 		if (alg_data->mif.len == 0) {
+@@ -197,7 +197,7 @@ static int i2c_pnx_master_xmit(struct i2c_adapter *adap)
+ 			del_timer_sync(&alg_data->mif.timer);
+ 
+ 			dev_dbg(&adap->dev, "%s(): Waking up xfer routine.\n",
+-				__FUNCTION__);
++				__func__);
+ 
+ 			complete(&alg_data->mif.complete);
+ 		}
+@@ -213,13 +213,13 @@ static int i2c_pnx_master_xmit(struct i2c_adapter *adap)
+ 		/* Stop timer. */
+ 		del_timer_sync(&alg_data->mif.timer);
+ 		dev_dbg(&adap->dev, "%s(): Waking up xfer routine after "
+-			"zero-xfer.\n", __FUNCTION__);
++			"zero-xfer.\n", __func__);
+ 
+ 		complete(&alg_data->mif.complete);
+ 	}
+ 
+ 	dev_dbg(&adap->dev, "%s(): exiting: stat = %04x.\n",
+-		__FUNCTION__, ioread32(I2C_REG_STS(alg_data)));
++		__func__, ioread32(I2C_REG_STS(alg_data)));
+ 
+ 	return 0;
+ }
+@@ -237,14 +237,14 @@ static int i2c_pnx_master_rcv(struct i2c_adapter *adap)
+ 	u32 ctl = 0;
+ 
+ 	dev_dbg(&adap->dev, "%s(): entering: stat = %04x.\n",
+-		__FUNCTION__, ioread32(I2C_REG_STS(alg_data)));
++		__func__, ioread32(I2C_REG_STS(alg_data)));
+ 
+ 	/* Check, whether there is already data,
+ 	 * or we didn't 'ask' for it yet.
+ 	 */
+ 	if (ioread32(I2C_REG_STS(alg_data)) & mstatus_rfe) {
+ 		dev_dbg(&adap->dev, "%s(): Write dummy data to fill "
+-			"Rx-fifo...\n", __FUNCTION__);
++			"Rx-fifo...\n", __func__);
+ 
+ 		if (alg_data->mif.len == 1) {
+ 			/* Last byte, do not acknowledge next rcv. */
+@@ -276,7 +276,7 @@ static int i2c_pnx_master_rcv(struct i2c_adapter *adap)
+ 	if (alg_data->mif.len > 0) {
+ 		val = ioread32(I2C_REG_RX(alg_data));
+ 		*alg_data->mif.buf++ = (u8) (val & 0xff);
+-		dev_dbg(&adap->dev, "%s(): rcv 0x%x [%d]\n", __FUNCTION__, val,
++		dev_dbg(&adap->dev, "%s(): rcv 0x%x [%d]\n", __func__, val,
+ 			alg_data->mif.len);
+ 
+ 		alg_data->mif.len--;
+@@ -300,7 +300,7 @@ static int i2c_pnx_master_rcv(struct i2c_adapter *adap)
+ 	}
+ 
+ 	dev_dbg(&adap->dev, "%s(): exiting: stat = %04x.\n",
+-		__FUNCTION__, ioread32(I2C_REG_STS(alg_data)));
++		__func__, ioread32(I2C_REG_STS(alg_data)));
+ 
+ 	return 0;
+ }
+@@ -312,7 +312,7 @@ static irqreturn_t i2c_pnx_interrupt(int irq, void *dev_id)
+ 	struct i2c_pnx_algo_data *alg_data = adap->algo_data;
+ 
+ 	dev_dbg(&adap->dev, "%s(): mstat = %x mctrl = %x, mode = %d\n",
+-		__FUNCTION__,
++		__func__,
+ 		ioread32(I2C_REG_STS(alg_data)),
+ 		ioread32(I2C_REG_CTL(alg_data)),
+ 		alg_data->mif.mode);
+@@ -336,7 +336,7 @@ static irqreturn_t i2c_pnx_interrupt(int irq, void *dev_id)
+ 		/* Slave did not acknowledge, generate a STOP */
+ 		dev_dbg(&adap->dev, "%s(): "
+ 			"Slave did not acknowledge, generating a STOP.\n",
+-			__FUNCTION__);
++			__func__);
+ 		i2c_pnx_stop(adap);
+ 
+ 		/* Disable master interrupts. */
+@@ -375,7 +375,7 @@ static irqreturn_t i2c_pnx_interrupt(int irq, void *dev_id)
+ 	iowrite32(stat | mstatus_tdi | mstatus_afi, I2C_REG_STS(alg_data));
+ 
+ 	dev_dbg(&adap->dev, "%s(): exiting, stat = %x ctrl = %x.\n",
+-		 __FUNCTION__, ioread32(I2C_REG_STS(alg_data)),
++		 __func__, ioread32(I2C_REG_STS(alg_data)),
+ 		 ioread32(I2C_REG_CTL(alg_data)));
+ 
+ 	return IRQ_HANDLED;
+@@ -447,7 +447,7 @@ i2c_pnx_xfer(struct i2c_adapter *adap, struct i2c_msg *msgs, int num)
+ 	u32 stat = ioread32(I2C_REG_STS(alg_data));
+ 
+ 	dev_dbg(&adap->dev, "%s(): entering: %d messages, stat = %04x.\n",
+-		__FUNCTION__, num, ioread32(I2C_REG_STS(alg_data)));
++		__func__, num, ioread32(I2C_REG_STS(alg_data)));
+ 
+ 	bus_reset_if_active(adap);
+ 
+@@ -473,7 +473,7 @@ i2c_pnx_xfer(struct i2c_adapter *adap, struct i2c_msg *msgs, int num)
+ 		alg_data->mif.ret = 0;
+ 		alg_data->last = (i == num - 1);
+ 
+-		dev_dbg(&adap->dev, "%s(): mode %d, %d bytes\n", __FUNCTION__,
++		dev_dbg(&adap->dev, "%s(): mode %d, %d bytes\n", __func__,
+ 			alg_data->mif.mode,
+ 			alg_data->mif.len);
+ 
+@@ -498,7 +498,7 @@ i2c_pnx_xfer(struct i2c_adapter *adap, struct i2c_msg *msgs, int num)
+ 		if (!(rc = alg_data->mif.ret))
+ 			completed++;
+ 		dev_dbg(&adap->dev, "%s(): Complete, return code = %d.\n",
+-			__FUNCTION__, rc);
++			__func__, rc);
+ 
+ 		/* Clear TDI and AFI bits in case they are set. */
+ 		if ((stat = ioread32(I2C_REG_STS(alg_data))) & mstatus_tdi) {
+@@ -522,7 +522,7 @@ i2c_pnx_xfer(struct i2c_adapter *adap, struct i2c_msg *msgs, int num)
+ 	alg_data->mif.len = 0;
+ 
+ 	dev_dbg(&adap->dev, "%s(): exiting, stat = %x\n",
+-		__FUNCTION__, ioread32(I2C_REG_STS(alg_data)));
++		__func__, ioread32(I2C_REG_STS(alg_data)));
+ 
+ 	if (completed != num)
+ 		return ((rc < 0) ? rc : -EREMOTEIO);
+@@ -563,7 +563,7 @@ static int __devinit i2c_pnx_probe(struct platform_device *pdev)
+ 
+ 	if (!i2c_pnx || !i2c_pnx->adapter) {
+ 		dev_err(&pdev->dev, "%s: no platform data supplied\n",
+-		       __FUNCTION__);
++		       __func__);
+ 		ret = -EINVAL;
+ 		goto out;
+ 	}
+diff --git a/drivers/i2c/busses/i2c-pxa.c b/drivers/i2c/busses/i2c-pxa.c
+index 2d2087a..43fef50 100644
+--- a/drivers/i2c/busses/i2c-pxa.c
++++ b/drivers/i2c/busses/i2c-pxa.c
+@@ -154,7 +154,7 @@ static void i2c_pxa_show_state(struct pxa_i2c *i2c, int lno, const char *fname)
+ 		readl(_ISR(i2c)), readl(_ICR(i2c)), readl(_IBMR(i2c)));
+ }
+ 
+-#define show_state(i2c) i2c_pxa_show_state(i2c, __LINE__, __FUNCTION__)
++#define show_state(i2c) i2c_pxa_show_state(i2c, __LINE__, __func__)
+ #else
+ #define i2c_debug	0
+ 
+diff --git a/drivers/i2c/busses/i2c-s3c2410.c b/drivers/i2c/busses/i2c-s3c2410.c
+index c44ada5..5ece33e 100644
+--- a/drivers/i2c/busses/i2c-s3c2410.c
++++ b/drivers/i2c/busses/i2c-s3c2410.c
+@@ -276,12 +276,12 @@ static int i2s_s3c_irq_nextbyte(struct s3c24xx_i2c *i2c, unsigned long iicstat)
+ 	switch (i2c->state) {
+ 
+ 	case STATE_IDLE:
+-		dev_err(i2c->dev, "%s: called in STATE_IDLE\n", __FUNCTION__);
++		dev_err(i2c->dev, "%s: called in STATE_IDLE\n", __func__);
+ 		goto out;
+ 		break;
+ 
+ 	case STATE_STOP:
+-		dev_err(i2c->dev, "%s: called in STATE_STOP\n", __FUNCTION__);
++		dev_err(i2c->dev, "%s: called in STATE_STOP\n", __func__);
+ 		s3c24xx_i2c_disable_irq(i2c);		
+ 		goto out_ack;
+ 
+diff --git a/drivers/i2c/chips/isp1301_omap.c b/drivers/i2c/chips/isp1301_omap.c
+index 2a31601..b1b45dd 100644
+--- a/drivers/i2c/chips/isp1301_omap.c
++++ b/drivers/i2c/chips/isp1301_omap.c
+@@ -658,7 +658,7 @@ pulldown:
+ 		OTG_CTRL_REG |= OTG_PULLUP;
+ 	}
+ 
+-	check_state(isp, __FUNCTION__);
++	check_state(isp, __func__);
+ 	dump_regs(isp, "otg->isp1301");
+ }
+ 
+@@ -782,7 +782,7 @@ static irqreturn_t omap_otg_irq(int irq, void *_isp)
+ 		if (otg_ctrl & OTG_DRIVER_SEL) {
+ 			switch (isp->otg.state) {
+ 			case OTG_STATE_A_IDLE:
+-				b_idle(isp, __FUNCTION__);
++				b_idle(isp, __func__);
+ 				break;
+ 			default:
+ 				break;
+@@ -826,7 +826,7 @@ static irqreturn_t omap_otg_irq(int irq, void *_isp)
+ 						isp->otg.host->otg_port);
+ 	}
+ 
+-	check_state(isp, __FUNCTION__);
++	check_state(isp, __func__);
+ 	return ret;
+ }
+ 
+@@ -837,7 +837,7 @@ static int otg_init(struct isp1301 *isp)
+ 	if (!otg_dev)
+ 		return -ENODEV;
+ 
+-	dump_regs(isp, __FUNCTION__);
++	dump_regs(isp, __func__);
+ 	/* some of these values are board-specific... */
+ 	OTG_SYSCON_2_REG |= OTG_EN
+ 		/* for B-device: */
+@@ -853,9 +853,9 @@ static int otg_init(struct isp1301 *isp)
+ 	update_otg1(isp, isp1301_get_u8(isp, ISP1301_INTERRUPT_SOURCE));
+ 	update_otg2(isp, isp1301_get_u8(isp, ISP1301_OTG_STATUS));
+ 
+-	check_state(isp, __FUNCTION__);
++	check_state(isp, __func__);
+ 	pr_debug("otg: %s, %s %06x\n",
+-			state_name(isp), __FUNCTION__, OTG_CTRL_REG);
++			state_name(isp), __func__, OTG_CTRL_REG);
+ 
+ 	OTG_IRQ_EN_REG = DRIVER_SWITCH | OPRT_CHG
+ 			| B_SRP_TMROUT | B_HNP_FAIL
+@@ -1041,11 +1041,11 @@ static void isp_update_otg(struct isp1301 *isp, u8 stat)
+ 						OTG1_DP_PULLDOWN);
+ 			isp1301_clear_bits(isp, ISP1301_OTG_CONTROL_1,
+ 						OTG1_DP_PULLUP);
+-			dump_regs(isp, __FUNCTION__);
++			dump_regs(isp, __func__);
+ #endif
+ 			/* FALLTHROUGH */
+ 		case OTG_STATE_B_SRP_INIT:
+-			b_idle(isp, __FUNCTION__);
++			b_idle(isp, __func__);
+ 			OTG_CTRL_REG &= OTG_CTRL_REG & OTG_XCEIV_OUTPUTS;
+ 			/* FALLTHROUGH */
+ 		case OTG_STATE_B_IDLE:
+@@ -1077,7 +1077,7 @@ static void isp_update_otg(struct isp1301 *isp, u8 stat)
+ 	 */
+ 	update_otg1(isp, isp_stat);
+ 	update_otg2(isp, isp_bstat);
+-	check_state(isp, __FUNCTION__);
++	check_state(isp, __func__);
+ #endif
+ 
+ 	dump_regs(isp, "isp1301->otg");
+@@ -1310,7 +1310,7 @@ isp1301_set_host(struct otg_transceiver *otg, struct usb_bus *host)
+ 	 */
+ 	isp1301_set_bits(isp, ISP1301_OTG_CONTROL_1, OTG1_VBUS_DRV);
+ 
+-	dump_regs(isp, __FUNCTION__);
++	dump_regs(isp, __func__);
+ 
+ 	return 0;
+ 
+@@ -1365,7 +1365,7 @@ isp1301_set_peripheral(struct otg_transceiver *otg, struct usb_gadget *gadget)
+ 	isp1301_set_bits(isp, ISP1301_INTERRUPT_FALLING,
+ 		INTR_VBUS_VLD);
+ 	dev_info(&isp->client.dev, "B-Peripheral sessions ok\n");
+-	dump_regs(isp, __FUNCTION__);
++	dump_regs(isp, __func__);
+ 
+ 	/* If this has a Mini-AB connector, this mode is highly
+ 	 * nonstandard ... but can be handy for testing, so long
+@@ -1416,7 +1416,7 @@ isp1301_start_srp(struct otg_transceiver *dev)
+ 
+ 	pr_debug("otg: SRP, %s ... %06x\n", state_name(isp), OTG_CTRL_REG);
+ #ifdef	CONFIG_USB_OTG
+-	check_state(isp, __FUNCTION__);
++	check_state(isp, __func__);
+ #endif
+ 	return 0;
+ }
+@@ -1463,7 +1463,7 @@ isp1301_start_hnp(struct otg_transceiver *dev)
+ 	}
+ 	pr_debug("otg: HNP %s, %06x ...\n",
+ 		state_name(isp), OTG_CTRL_REG);
+-	check_state(isp, __FUNCTION__);
++	check_state(isp, __func__);
+ 	return 0;
+ #else
+ 	/* srp-only */
+@@ -1601,7 +1601,7 @@ fail2:
+ 	update_otg2(isp, isp1301_get_u8(isp, ISP1301_OTG_STATUS));
+ #endif
+ 
+-	dump_regs(isp, __FUNCTION__);
++	dump_regs(isp, __func__);
+ 
+ #ifdef	VERBOSE
+ 	mod_timer(&isp->timer, jiffies + TIMER_JIFFIES);
+diff --git a/drivers/i2c/i2c-core.c b/drivers/i2c/i2c-core.c
+index 96da22e..6cb4502 100644
+--- a/drivers/i2c/i2c-core.c
++++ b/drivers/i2c/i2c-core.c
+@@ -1502,7 +1502,7 @@ static s32 i2c_smbus_xfer_emulated(struct i2c_adapter * adapter, u16 addr,
+ 		read_write = I2C_SMBUS_READ;
+ 		if (data->block[0] > I2C_SMBUS_BLOCK_MAX) {
+ 			dev_err(&adapter->dev, "%s called with invalid "
+-				"block proc call size (%d)\n", __FUNCTION__,
++				"block proc call size (%d)\n", __func__,
+ 				data->block[0]);
+ 			return -1;
+ 		}
 -- 
 1.5.4.3.500.g83a2c
 
