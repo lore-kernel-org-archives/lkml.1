@@ -1,77 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935169AbYCDXWM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935226AbYCDXWq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935169AbYCDXWM (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Mar 2008 18:22:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934894AbYCDXPz
+	id S935226AbYCDXWq (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Mar 2008 18:22:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934849AbYCDXP4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Mar 2008 18:15:55 -0500
-Received: from cantor.suse.de ([195.135.220.2]:48856 "EHLO mx1.suse.de"
+	Tue, 4 Mar 2008 18:15:56 -0500
+Received: from ns2.g-housing.de ([81.169.133.75]:37105 "EHLO mail.g-house.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S934865AbYCDXPo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Mar 2008 18:15:44 -0500
-Date: Tue, 4 Mar 2008 15:15:19 -0800
-From: Greg KH <gregkh@suse.de>
-To: Linus Torvalds <torvalds@osdl.org>, Andrew Morton <akpm@osdl.org>
-Cc: linux-kernel@vger.kernel.org
-Subject: [GIT PATCH] driver core fixes against 2.6.25-rc3 git
-Message-ID: <20080304231519.GC3073@suse.de>
+	id S934041AbYCDXPx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 4 Mar 2008 18:15:53 -0500
+Date: Wed, 5 Mar 2008 00:15:31 +0100 (CET)
+From: Christian Kujau <lists@nerdbynature.de>
+X-X-Sender: evil@sheep.housecafe.de
+To: David Brownell <david-b@pacbell.net>
+cc: Alan Stern <stern@rowland.harvard.edu>,
+       LKML <linux-kernel@vger.kernel.org>, 0x0007@gmail.com,
+       USB list <linux-usb@vger.kernel.org>
+Subject: Re: WARNING: at drivers/usb/host/ehci-hcd.c:287
+In-Reply-To: <200803041401.41880.david-b@pacbell.net>
+Message-ID: <alpine.DEB.1.00.0803050012090.5974@sheep.housecafe.de>
+References: <Pine.LNX.4.44L0.0803041553320.15986-100000@iolanthe.rowland.org> <200803041401.41880.david-b@pacbell.net>
+User-Agent: Alpine 1.00 (DEB 882 2007-12-20)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.16 (2007-06-09)
+Content-Type: TEXT/PLAIN; format=flowed; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Here are a few driver core fixes against your current git tree that fix some
-more problems that have cropped up:
-	- suspend/resume bugfixes
-	- ksets were not getting properly initialized
-	- CONFIG_SYSFS_DEPRECATED was catching people with old userspace
-	  versions of LVM now that the block core is changed to use
-	  struct device.
-	- other driver core bugs on error paths.
+On Tue, 4 Mar 2008, David Brownell wrote:
+>>> Or bettter yet, just removing it entirely.  ISTR doing that in some
+>>> patches I've not yet sent for merging, and expect that's what my
+>>> preferred fix will be ...
+>>
+>> But removing the WARN_ON won't fix the problem.
+>
+> It fully resolves the $SUBJECT problem.  :)
 
-Please pull from:
-	master.kernel.org:/pub/scm/linux/kernel/git/gregkh/driver-2.6.git/
+...and if it's a safe thing to do, I'm happy with it. I really have no 
+clue why shutting up a WARN_ON has no (future) implications but if you 
+say so I trust you :)
 
-Patches will be sent as a follow-on to this message to lkml for people
-to see.
+So now we're down to just:
 
-thanks,
+--- linux-2.6/drivers/usb/host/ehci-hcd.c	2008-03-05 00:08:33.000000000 +0100
++++ linux-2.6/drivers/usb/host/ehci-hcd.c.edited	2008-03-05 00:09:45.000000000 +0100
+@@ -284,7 +284,6 @@ static void ehci_iaa_watchdog(unsigned l
+  	u32			status, cmd;
 
-greg k-h
+  	spin_lock_irqsave (&ehci->lock, flags);
+-	WARN_ON(!ehci->reclaim);
 
-------------
+  	status = ehci_readl(ehci, &ehci->regs->status);
+  	cmd = ehci_readl(ehci, &ehci->regs->command);
 
- drivers/base/core.c       |   14 +-----
- drivers/base/power/main.c |  108 +++++++--------------------------------------
- drivers/usb/core/usb.c    |    2 +-
- fs/debugfs/inode.c        |    4 --
- include/linux/debugfs.h   |    5 ++
- init/Kconfig              |   11 +++-
- lib/kobject.c             |   11 ++---
- 7 files changed, 39 insertions(+), 116 deletions(-)
+Right?
 
----------------
+Thank you both for looking into this issue,
+Christian.
+-- 
+BOFH excuse #285:
 
-Alan Stern (1):
-      PM: fix new mutex-locking bug in the PM core
-
-Cornelia Huck (1):
-      Driver core: Fix cleanup when failing device_add().
-
-Greg Kroah-Hartman (2):
-      driver core: fix up Kconfig text for CONFIG_SYSFS_DEPRECATED
-      kobject: properly initialize ksets
-
-Harvey Harrison (1):
-      debugfs: fix sparse warnings
-
-Ingo Molnar (1):
-      sysfs: CONFIG_SYSFS_DEPRECATED fix
-
-Rafael J. Wysocki (2):
-      PM: Do not acquire device semaphores upfront during suspend
-      driver core: Remove dpm_sysfs_remove() from error path of device_add()
-
+Telecommunications is upgrading.
