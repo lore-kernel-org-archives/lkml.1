@@ -1,54 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765295AbYCDSc6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758329AbYCDSeS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765295AbYCDSc6 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Mar 2008 13:32:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754641AbYCDSct
+	id S1758329AbYCDSeS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Mar 2008 13:34:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758778AbYCDSdy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Mar 2008 13:32:49 -0500
-Received: from one.firstfloor.org ([213.235.205.2]:54053 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754447AbYCDSct (ORCPT
+	Tue, 4 Mar 2008 13:33:54 -0500
+Received: from wa-out-1112.google.com ([209.85.146.181]:4443 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754641AbYCDSdw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Mar 2008 13:32:49 -0500
-Date: Tue, 4 Mar 2008 19:34:06 +0100
-From: Andi Kleen <andi@firstfloor.org>
-To: Pierre Ossman <drzeus-list@drzeus.cx>
-Cc: Andi Kleen <andi@firstfloor.org>,
-       "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>,
-       Dave Jones <davej@codemonkey.org.uk>,
-       Alan Stern <stern@rowland.harvard.edu>,
-       LKML <linux-kernel@vger.kernel.org>, Adam Belay <abelay@novell.com>,
-       Lee Revell <rlrevell@joe-job.com>, linux-pm@lists.linux-foundation.org,
-       Pavel Machek <pavel@ucw.cz>
-Subject: Re: [linux-pm] [PATCH] cpuidle: avoid singing capacitors
-Message-ID: <20080304183406.GC27332@one.firstfloor.org>
-References: <924EFEDD5F540B4284297C4DC59F3DEEA2E8B2@orsmsx423.amr.corp.intel.com> <Pine.LNX.4.44L0.0803031804330.8280-100000@iolanthe.rowland.org> <20080303231033.GB15255@one.firstfloor.org> <20080304040048.GA31562@codemonkey.org.uk> <20080304071423.0e6b71c1@mjolnir.drzeus.cx> <20080304181924.70aaf8c1@mjolnir.drzeus.cx> <20080304172918.GA27332@one.firstfloor.org> <20080304183032.17084e39@mjolnir.drzeus.cx> <20080304174315.GB27332@one.firstfloor.org> <20080304190446.775165e3@mjolnir.drzeus.cx>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080304190446.775165e3@mjolnir.drzeus.cx>
-User-Agent: Mutt/1.4.2.1i
+	Tue, 4 Mar 2008 13:33:52 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
+        b=rU6dTR6LoOiN4iFJi7RdKsVnxN+ThBu7Gm+uNqRkOhodSLHGeYzOAOgwLf4qWjPlACG/kKe22ice+8ODdM6mfDXrfMbK+kl1nrm4yf8uRwef7fq+QuKM9lflnGjIH1ZU6QYyRQCWsHcts6p+7KFNsbirDNLu9l4mAD2GkHYMD9M=
+Message-ID: <47CD9602.4060104@gmail.com>
+Date: Wed, 05 Mar 2008 03:33:38 +0900
+From: Tejun Heo <htejun@gmail.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20070801)
+MIME-Version: 1.0
+To: James Bottomley <James.Bottomley@HansenPartnership.com>
+CC: FUJITA Tomonori <tomof@acm.org>, efault@gmx.de, jens.axboe@oracle.com,
+       fujita.tomonori@lab.ntt.co.jp, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org,
+       linux-scsi@vger.kernel.org, jgarzik@pobox.com, bzolnier@gmail.com
+Subject: Re: [PATCH] block: fix residual byte count handling
+References: <20080304093536.GH6704@kernel.dk>	 <1204634238.5997.5.camel@homer.simson.net>	<47CD4355.4050401@gmail.com>	 <20080304223006A.tomof@acm.org> <47CD53BA.5040908@gmail.com>	 <47CD7611.2030606@gmail.com>  <47CD7C05.1080707@gmail.com> <1204655271.3091.58.camel@localhost.localdomain>
+In-Reply-To: <1204655271.3091.58.camel@localhost.localdomain>
+X-Enigmail-Version: 0.95.5
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Mar 04, 2008 at 07:04:46PM +0100, Pierre Ossman wrote:
-> On Tue, 4 Mar 2008 18:43:15 +0100
-> Andi Kleen <andi@firstfloor.org> wrote:
+James Bottomley wrote:
+> On Wed, 2008-03-05 at 01:42 +0900, Tejun Heo wrote:
+>> Tejun Heo wrote:
+>>> Tejun Heo wrote:
+>>>> FUJITA Tomonori wrote:
+>>>>>> Aiee... device going down after timing out on READ_DISC_INFO.  That's
+>>>>>> gruesome.  Can you please try the other patches?
+>>>>> Tejun, I thought that libata needs a fix for sum(sg) != rq->data_len. No?
+>>>> The extra_len you added to qc->nbytes should be it.  The only other
+>>>> place to pay attention is the ATAPI transfer chunk size and your patch
+>>>> seems to get it right.
+>>>>
+>>>>> Now Jens' git tree should work with all the non libata stuff, ide,
+>>>>> firewire, bsg, etc. But I'm not sure about libata.
+>>>> With the second patch, all others should be fine no matter what.  I'll
+>>>> go check libata part again.
+>>> I can reproduce the problem here and it's very weird.  I'll report back
+>>> when I know more.
+>> Okay, I got it.  Heh, it turns out SCSI and/or block layer is not
+>> ready for rq->data_len != sum(sg).  When adjusted command completes,
+>> SCSI midlayer completes the command with rq->data_len for PC commands
+>> which eventually ends up in __end_that_request_first().  As there are
+>> extra sg area left after completing rq->data_len, blk layer says so to
+>> SCSI layer and SCSI layer retries the command only with the appended
+>> area.
+>>
+>> The following patch gets the writing going.  I really think it's a
+>> serious mistake to break rq->data_len == sum(sg).  If we break
+>> rq->data_len == requested size, the worst bugs are giving wrong size
+>> when issuing commands to application layer of devices which is
+>> relatively easy to spot and not all that command anyway.  Breaking
+>> rq->data_len == sum(sg), bugs will be in internal mechanics, DMA
+>> engine programming and transport layer.  Oh well...
+>>
+>> diff --git a/drivers/scsi/scsi.c b/drivers/scsi/scsi.c
+>> index fecba05..32439ac 100644
+>> --- a/drivers/scsi/scsi.c
+>> +++ b/drivers/scsi/scsi.c
+>> @@ -757,7 +757,7 @@ void scsi_finish_command(struct scsi_cmnd *cmd)
+>>  				"Notifying upper driver of completion "
+>>  				"(result %x)\n", cmd->result));
+>>  
+>> -	good_bytes = scsi_bufflen(cmd);
+>> +	good_bytes = scsi_bufflen(cmd) + cmd->request->data_len;
 > 
-> > > And how can I tell if this handler has run? Not that it really matters I guess, as I don't think running it from the cpuidle governor is very sane.
-> >  
-> > After irq_enter->tick_nohz_update_jiffies() 
-> > 
-> > You might need a new callback into the idle governours for this though.
-> > 
-> 
-> I don't think I quite see the point. If we can't force an update, then
-> it doesn't really help us knowing if the jiffies value is stale or not.
+> This doesn't look right.  scsi_bufflen(cmd) is req->data_len for PC
+> commands ... did you mean to add extra_len here?
 
-What do you mean with force an update? The system always does an 
-jiffies update automatically after idle wakeup. It's just that if you add 
-code to the code path that uses jiffies you have to make sure it is after the 
-standard update, otherwise you'll see a stale value.
+Yeap, sorry about the confusion.  Adding two times data_len accidentally
+worked tho.  :-)
 
--Andi
+-- 
+tejun
