@@ -1,45 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759306AbYCDGc4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758653AbYCDGeU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759306AbYCDGc4 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Mar 2008 01:32:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752084AbYCDGcs
+	id S1758653AbYCDGeU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Mar 2008 01:34:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753143AbYCDGeL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Mar 2008 01:32:48 -0500
-Received: from smtp.nokia.com ([192.100.122.230]:65350 "EHLO
-	mgw-mx03.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751787AbYCDGcs convert rfc822-to-8bit (ORCPT
+	Tue, 4 Mar 2008 01:34:11 -0500
+Received: from smtp-out.google.com ([216.239.45.13]:40397 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752913AbYCDGeK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Mar 2008 01:32:48 -0500
-Subject: Re: [2.6 patch] mtd/ubi/vtbl.c: fix memory leak
-From: Artem Bityutskiy <dedekind@infradead.org>
-Reply-To: dedekind@infradead.org
-To: Adrian Bunk <bunk@kernel.org>
-Cc: Artem Bityutskiy <Artem.Bityutskiy@nokia.com>,
-       linux-mtd@lists.infradead.org, linux-kernel@vger.kernel.org
-In-Reply-To: <20080303180752.GK26072@cs181133002.pp.htv.fi>
-References: <20080303180752.GK26072@cs181133002.pp.htv.fi>
-Content-Type: text/plain; charset=utf-8
-Date: Tue, 04 Mar 2008 08:27:33 +0200
-Message-Id: <1204612053.23706.13.camel@sauron>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 (2.12.3-1.fc8) 
-Content-Transfer-Encoding: 8BIT
-X-OriginalArrivalTime: 04 Mar 2008 06:32:25.0348 (UTC) FILETIME=[829BFC40:01C87DC1]
-X-Nokia-AV: Clean
+	Tue, 4 Mar 2008 01:34:10 -0500
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=received:message-id:date:from:to:subject:cc:in-reply-to:
+	mime-version:content-type:content-transfer-encoding:
+	content-disposition:references;
+	b=v6EIBYiyhzNniW3rfYyEB/UcYkDgwQpQFkQQcJppZ5rWPwGouaFpSBZtFeZXoW+2e
+	EizwoCiLEgSIkkKYb2Pmw==
+Message-ID: <6599ad830803032234v3bce2769l26379ea304fe885@mail.gmail.com>
+Date: Mon, 3 Mar 2008 22:34:02 -0800
+From: "Paul Menage" <menage@google.com>
+To: "Paul Jackson" <pj@sgi.com>
+Subject: Re: [RFC/PATCH] cpuset: cpuset irq affinities
+Cc: a.p.zijlstra@chello.nl, maxk@qualcomm.com, mingo@elte.hu,
+       tglx@linutronix.de, oleg@tv-sign.ru, rostedt@goodmis.org,
+       linux-kernel@vger.kernel.org, rientjes@google.com
+In-Reply-To: <20080304002651.95089ff1.pj@sgi.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20080227222103.673194000@chello.nl>
+	 <20080303113621.1dfdda87.pj@sgi.com> <1204567052.6241.4.camel@lappy>
+	 <20080303121033.c8c9651c.pj@sgi.com>
+	 <6599ad830803031041r6c635141n6520a915f2e1d08@mail.gmail.com>
+	 <20080303125253.5d2d580c.pj@sgi.com>
+	 <6599ad830803032126m39935eaeu1df67d6263e8e123@mail.gmail.com>
+	 <20080304001507.3ddc8f26.pj@sgi.com>
+	 <6599ad830803032221j740c9657yec237ebbadbeaeaa@mail.gmail.com>
+	 <20080304002651.95089ff1.pj@sgi.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2008-03-03 at 20:07 +0200, Adrian Bunk wrote:
-> This patch fixes a memory leak introduced by commit 
-> 4ccf8cffa963c7b5bdc6d455ea9417084ee49aa8 and spotted by the Coverity 
-> checker.
-> 
-> Signed-off-by: Adrian Bunk <bunk@kernel.org>
+On Mon, Mar 3, 2008 at 10:26 PM, Paul Jackson <pj@sgi.com> wrote:
+> Paul M wrote:
+>  > Except that this isn't currently possible if you're also trying to do
+>  > memory hardwalling on those cpusets, since then sibling cpusets can't
+>  > share memory nodes.
+>
+>  Yes, there would be interactions, on both the CPU and Memory side with
+>  some second order mechanisms (hardwalls and sched domains.)
+>
+>  Still, I ask, where's the beef -- the real users?
+>
 
-Good catch, thank you!
+I'm one such user who's been forced to add the mem_hardwall flag to
+get around the fact that exclusive and hardwall are controlled by the
+same flag. I keep meaning to send it in as a patch but haven't yet got
+round to it.
 
--- 
-Best regards,
-Artem Bityutskiy (Битюцкий Артём)
+Also, if you're using fake numa for memory isolation (which we're
+experimenting with) then the correlation between cpu placement and
+memory placement is much much weaker, or non-existent.
 
+Paul
