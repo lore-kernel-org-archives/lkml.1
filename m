@@ -1,45 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756962AbYCDCgR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757808AbYCDCht@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756962AbYCDCgR (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Mar 2008 21:36:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752742AbYCDCf7
+	id S1757808AbYCDCht (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Mar 2008 21:37:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753021AbYCDChl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Mar 2008 21:35:59 -0500
-Received: from ozlabs.org ([203.10.76.45]:34060 "EHLO ozlabs.org"
+	Mon, 3 Mar 2008 21:37:41 -0500
+Received: from ozlabs.org ([203.10.76.45]:43064 "EHLO ozlabs.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753021AbYCDCf6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Mar 2008 21:35:58 -0500
+	id S1752747AbYCDChk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 3 Mar 2008 21:37:40 -0500
 From: Rusty Russell <rusty@rustcorp.com.au>
-To: Adrian Bunk <bunk@kernel.org>
-Subject: Re: [BUILD_FAILURE] 2.6.24-git18 build fails section type conflict psmouse-base
-Date: Tue, 4 Mar 2008 13:35:04 +1100
+To: Max Krasnyanskiy <maxk@qualcomm.com>
+Subject: Re: [patch 1/2] add ALL_CPUS option to stop_machine_run()
+Date: Tue, 4 Mar 2008 13:36:56 +1100
 User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
-Cc: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>,
-       LKML <linux-kernel@vger.kernel.org>, linux-input@vger.kernel.org,
-       Andy Whitcroft <apw@shadowen.org>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>,
-       Ivan Kokshaysky <ink@jurassic.park.msu.ru>
-References: <47AC2FDB.7080104@linux.vnet.ibm.com> <200803031535.17644.rusty@rustcorp.com.au> <20080303081345.GA4457@cs181133002.pp.htv.fi>
-In-Reply-To: <20080303081345.GA4457@cs181133002.pp.htv.fi>
+Cc: Ingo Molnar <mingo@elte.hu>, Jason Baron <jbaron@redhat.com>,
+       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>
+References: <20080202210828.840735763@polymtl.ca> <200803031512.51656.rusty@rustcorp.com.au> <47CC983C.8050000@qualcomm.com>
+In-Reply-To: <47CC983C.8050000@qualcomm.com>
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="utf-8"
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200803041335.05144.rusty@rustcorp.com.au>
+Message-Id: <200803041336.56524.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 03 March 2008 19:13:45 Adrian Bunk wrote:
-> On Mon, Mar 03, 2008 at 03:35:16PM +1100, Rusty Russell wrote:
-> > Erk... This is horrible, and arguably something gcc should try to deal
-> > with. How about we just drop the const and add a comment, rather than
-> > breaking one arch at a time?
->
-> We should have caught all architectures having problems, and a slightly
-> improved patch is now in Linus' tree.
+On Tuesday 04 March 2008 11:30:52 Max Krasnyanskiy wrote:
+> Great. I might get some time later this week to think about this some more
+> and try things out. So if you have ideas/suggestions let me know.
 
-Yes, thanks, I saw it later on in the thread.  'Tis still horrible tho :)
+Hmm, might be worth making stop_machine_run take a cpumask: I balked at it 
+originally, but introducing a section special case crosses the line I think.
 
+Thanks,
 Rusty.
