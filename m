@@ -1,88 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932712AbYCDSqw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932749AbYCDSrY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932712AbYCDSqw (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Mar 2008 13:46:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932629AbYCDSpp
+	id S932749AbYCDSrY (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Mar 2008 13:47:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932666AbYCDSqM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Mar 2008 13:45:45 -0500
-Received: from brick.kernel.dk ([87.55.233.238]:16158 "EHLO kernel.dk"
+	Tue, 4 Mar 2008 13:46:12 -0500
+Received: from brick.kernel.dk ([87.55.233.238]:16172 "EHLO kernel.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932622AbYCDSpk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Mar 2008 13:45:40 -0500
-Date: Tue, 4 Mar 2008 19:45:34 +0100
+	id S932663AbYCDSqK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 4 Mar 2008 13:46:10 -0500
+Date: Tue, 4 Mar 2008 19:46:05 +0100
 From: Jens Axboe <jens.axboe@oracle.com>
-To: Mike Galbraith <efault@gmx.de>
-Cc: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>, htejun@gmail.com,
-       tomof@acm.org, James.Bottomley@HansenPartnership.com,
-       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+To: James Bottomley <James.Bottomley@HansenPartnership.com>
+Cc: Mike Galbraith <efault@gmx.de>,
+       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>, htejun@gmail.com,
+       tomof@acm.org, akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
        linux-ide@vger.kernel.org, linux-scsi@vger.kernel.org,
        jgarzik@pobox.com, bzolnier@gmail.com
 Subject: Re: [PATCH] block: fix residual byte count handling
-Message-ID: <20080304184534.GR6704@kernel.dk>
-References: <20080304182228Z.fujita.tomonori@lab.ntt.co.jp> <20080304093536.GH6704@kernel.dk> <1204634238.5997.5.camel@homer.simson.net> <20080304123939.GM6704@kernel.dk> <1204634619.17258.0.camel@homer.simson.net> <1204635515.17258.12.camel@homer.simson.net> <20080304130307.GN6704@kernel.dk> <1204640722.5783.10.camel@homer.simson.net> <20080304181736.GP6704@kernel.dk> <1204655711.19496.10.camel@homer.simson.net>
+Message-ID: <20080304184605.GS6704@kernel.dk>
+References: <20080304175302T.fujita.tomonori@lab.ntt.co.jp> <20080304085944.GG6704@kernel.dk> <20080304180648W.fujita.tomonori@lab.ntt.co.jp> <20080304182228Z.fujita.tomonori@lab.ntt.co.jp> <20080304093536.GH6704@kernel.dk> <1204634238.5997.5.camel@homer.simson.net> <20080304123939.GM6704@kernel.dk> <1204646695.3091.14.camel@localhost.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1204655711.19496.10.camel@homer.simson.net>
+In-Reply-To: <1204646695.3091.14.camel@localhost.localdomain>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Mar 04 2008, Mike Galbraith wrote:
-> 
-> On Tue, 2008-03-04 at 19:17 +0100, Jens Axboe wrote:
+On Tue, Mar 04 2008, James Bottomley wrote:
+> On Tue, 2008-03-04 at 13:39 +0100, Jens Axboe wrote:
 > > On Tue, Mar 04 2008, Mike Galbraith wrote:
 > > > 
-> > > On Tue, 2008-03-04 at 14:03 +0100, Jens Axboe wrote:
+> > > On Tue, 2008-03-04 at 10:35 +0100, Jens Axboe wrote:
 > > > 
-> > > > Re-read my original mail! It states that you should just pull:
-> > > > 
-> > > > git://git.kernel.dk/linux-2.6-block.git for-linus
-> > > > 
-> > > > into your linus branch, or just create a test branch off linus' master
-> > > > and pull into that. IOW, it's the for-linus branch that you should pull,
-> > > > nothing else.
+> > > > Looks excellent to me, has a variant of this been tested as OK by the
+> > > > users reporting the regression?
 > > > 
-> > > Well, I had a good reason.  You know how to un-pull, I know how to
-> > > un-remote to get back to pristine after I'm done testing... guaranteed
-> > > without whimpering pathetically on the git list ;-)
+> > > K3b burning seems to be a nogo here.  This is git pulled this morning
+> > > though, so it's a somewhat different tree than previously tested fwtw.
 > > 
-> > OK, if you're on master, it's pretty easy:
+> > can you please try git as of this morning without any patches applied,
+> > and then pull
 > > 
-> > $ git branch test-branch
-> > $ git checkout test-branch
-> > $ git pull git://git.kernel.dk/linux-2.6-block.git for-linus
+> > git://git.kernel.dk/linux-2.6-block.git for-linus
 > > 
-> > [build, boot, test]
-> > $ git checkout master
-> > $ git branch -D test-branch
+> > into that and see if that works?
 > 
-> Hm, that's simple enough.  I'll do this for the edification.  Thanks.
-> Maybe some day, I'll cease to be so paranoid that my test setup may
-> become compromised.  (at which time...)
-> 
-> > > Anyway, I checked out the one with the big-fat-hint in it's name
-> > > (block-for-linus/for-linus).
-> > > Same error.  Git this morning with patches...
-> > > 	restore_meaning_of_data_len.diff
-> > > 	seperate_out_padding_from_alignment.diff
-> > > ...reverted restored me to the originally reported k3b error, nothing
-> > > new noted.
-> > > 
-> > > If I tested the wrong branch, whack me upside the head, and I'll follow
-> > > your pull destructions, and figure out how to un-pull later.
-> > 
-> > for-linus is the right branch, but I'm just a little worried that you
-> > didn't test what you think you tested. What does cat .git/HEAD say? If
-> > that is a ref to a file (eg refs/heads/master), what does that file
-> > contain?
-> 
-> That wouldn't surprise me one bit.  (ergo...)
-> 
-> It says cc66b4512cae8df4ed1635483210aabf7690ec27... kewpie doll?
+> Works for me with the SAS SMP handler.  Both input request and output
+> response frame sizes are picked up and returned with the correct
+> residues.
 
-That looks right, then perhaps there's still an issue there :/
-Logs?
+Goodie, now we just need to figure out why it doesn't work for Mike
+yet...
 
 -- 
 Jens Axboe
