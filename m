@@ -1,54 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933929AbYCDWm6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933882AbYCDWpP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933929AbYCDWm6 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Mar 2008 17:42:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763288AbYCDWmc
+	id S933882AbYCDWpP (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Mar 2008 17:45:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754284AbYCDWox
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Mar 2008 17:42:32 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:55023 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1762452AbYCDWmb (ORCPT
+	Tue, 4 Mar 2008 17:44:53 -0500
+Received: from 209-198-142-2-host.prismnet.net ([209.198.142.2]:57851 "EHLO
+	smtp.opengridcomputing.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754081AbYCDWow (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Mar 2008 17:42:31 -0500
-Subject: Re: [RFC] Notifier for Externally Mapped Memory (EMM)
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Christoph Lameter <clameter@sgi.com>
-Cc: Andrea Arcangeli <andrea@qumranet.com>, Jack Steiner <steiner@sgi.com>,
-       Nick Piggin <npiggin@suse.de>, akpm@linux-foundation.org,
-       Robin Holt <holt@sgi.com>, Avi Kivity <avi@qumranet.com>,
-       kvm-devel@lists.sourceforge.net, general@lists.openfabrics.org,
-       Steve Wise <swise@opengridcomputing.com>,
-       Roland Dreier <rdreier@cisco.com>, Kanoj Sarcar <kanojsarcar@yahoo.com>,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       daniel.blueman@quadrics.com
-In-Reply-To: <Pine.LNX.4.64.0803041422070.20821@schroedinger.engr.sgi.com>
-References: <20080221144023.GC9427@v2.random>
-	 <20080221161028.GA14220@sgi.com> <20080227192610.GF28483@v2.random>
-	 <20080302155457.GK8091@v2.random> <20080303213707.GA8091@v2.random>
-	 <20080303220502.GA5301@v2.random> <47CC9B57.5050402@qumranet.com>
-	 <Pine.LNX.4.64.0803032327470.9642@schroedinger.engr.sgi.com>
-	 <20080304133020.GC5301@v2.random>
-	 <Pine.LNX.4.64.0803041059110.13957@schroedinger.engr.sgi.com>
-	 <20080304222030.GB8951@v2.random>
-	 <Pine.LNX.4.64.0803041422070.20821@schroedinger.engr.sgi.com>
-Content-Type: text/plain
-Date: Tue, 04 Mar 2008 23:42:09 +0100
-Message-Id: <1204670529.6241.52.camel@lappy>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.21.90 
-Content-Transfer-Encoding: 7bit
+	Tue, 4 Mar 2008 17:44:52 -0500
+From: Steve Wise <swise@opengridcomputing.com>
+Subject: [PATCH 2.6.25] RDMA/IWCM: don't access the cm_id after dereferencing it.
+Date: Tue, 04 Mar 2008 16:44:52 -0600
+To: rdreier@cisco.com, sean.hefty@intel.com
+Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       general@lists.openfabrics.org
+Message-Id: <20080304224451.8548.33855.stgit@dell3.ogc.int>
+Content-Type: text/plain; charset=utf-8; format=fixed
+Content-Transfer-Encoding: 8bit
+User-Agent: StGIT/0.10
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-On Tue, 2008-03-04 at 14:35 -0800, Christoph Lameter wrote:
+RDMA/IWCM: don't access the cm_id after dereferencing it.
 
-> RCU means that the callbacks occur in an atomic context.
+cm_work_handler() can access cm_id_priv after it was potentially freed
+by iwch_deref_id().  The fix is to note whether IWCM_F_CALLBACK_DESTROY
+is set before dereferencing.  Then if it was set, free the cm_id on
+this thread.
 
-Not really, if it requires moving the VM locks to sleepable locks under
-a .config option, I think its also fair to require PREEMPT_RCU.
+Signed-off-by: Steve Wise <swise@opengridcomputing.com>
+---
 
-OTOH, if you want to unconditionally move the VM locks to sleepable
-locks you have a point.
+ drivers/infiniband/core/iwcm.c |    5 +++--
+ 1 files changed, 3 insertions(+), 2 deletions(-)
 
+diff --git a/drivers/infiniband/core/iwcm.c b/drivers/infiniband/core/iwcm.c
+index 223b1aa..81c9195 100644
+--- a/drivers/infiniband/core/iwcm.c
++++ b/drivers/infiniband/core/iwcm.c
+@@ -839,6 +839,7 @@ static void cm_work_handler(struct work_struct *_work)
+ 	unsigned long flags;
+ 	int empty;
+ 	int ret = 0;
++	int destroy_id;
+ 
+ 	spin_lock_irqsave(&cm_id_priv->lock, flags);
+ 	empty = list_empty(&cm_id_priv->work_list);
+@@ -857,9 +858,9 @@ static void cm_work_handler(struct work_struct *_work)
+ 			destroy_cm_id(&cm_id_priv->id);
+ 		}
+ 		BUG_ON(atomic_read(&cm_id_priv->refcount)==0);
++		destroy_id = test_bit(IWCM_F_CALLBACK_DESTROY, &cm_id_priv->flags);
+ 		if (iwcm_deref_id(cm_id_priv)) {
+-			if (test_bit(IWCM_F_CALLBACK_DESTROY,
+-				     &cm_id_priv->flags)) {
++			if (destroy_id) {
+ 				BUG_ON(!list_empty(&cm_id_priv->work_list));
+ 				free_cm_id(cm_id_priv);
+ 			}
