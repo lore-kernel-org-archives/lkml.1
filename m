@@ -1,116 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934307AbYCDXR1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935058AbYCDXR7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934307AbYCDXR1 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Mar 2008 18:17:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934608AbYCDXJm
+	id S935058AbYCDXR7 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Mar 2008 18:17:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934861AbYCDXOv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Mar 2008 18:09:42 -0500
-Received: from g5t0008.atlanta.hp.com ([15.192.0.45]:44904 "EHLO
-	g5t0008.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S934563AbYCDXJj (ORCPT
+	Tue, 4 Mar 2008 18:14:51 -0500
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:54122 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S934860AbYCDXOu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Mar 2008 18:09:39 -0500
-Date: Tue, 4 Mar 2008 16:09:37 -0700
-From: Alex Chiang <achiang@hp.com>
-To: Greg KH <gregkh@suse.de>
-Cc: Jesse Barnes <jbarnes@virtuousgeek.org>, Matthew Wilcox <matthew@wil.cx>,
-       Gary Hade <garyhade@us.ibm.com>, kaneshige.kenji@jp.fujitsu.com,
-       warthog19@eaglescrag.net, kristen.c.accardi@intel.com,
-       rick.jones2@hp.com, linux-kernel@vger.kernel.org,
-       linux-pci@atrey.karlin.mff.cuni.cz, linux-acpi@vger.kernel.org
-Subject: Re: [PATCH 4/4] ACPI PCI slot detection driver
-Message-ID: <20080304230937.GD3694@ldl.fc.hp.com>
-Mail-Followup-To: Alex Chiang <achiang@hp.com>,
-	Greg KH <gregkh@suse.de>, Jesse Barnes <jbarnes@virtuousgeek.org>,
-	Matthew Wilcox <matthew@wil.cx>, Gary Hade <garyhade@us.ibm.com>,
-	kaneshige.kenji@jp.fujitsu.com, warthog19@eaglescrag.net,
-	kristen.c.accardi@intel.com, rick.jones2@hp.com,
-	linux-kernel@vger.kernel.org, linux-pci@atrey.karlin.mff.cuni.cz,
-	linux-acpi@vger.kernel.org
-References: <20080229002341.GA21420@ldl.fc.hp.com> <20080301144307.GD24386@parisc-linux.org> <20080304054927.GA15566@suse.de> <200803041018.29035.jbarnes@virtuousgeek.org> <20080304193036.GB5534@suse.de>
+	Tue, 4 Mar 2008 18:14:50 -0500
+Date: Tue, 4 Mar 2008 15:14:42 -0800 (PST)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+cc: Andrea Arcangeli <andrea@qumranet.com>, Jack Steiner <steiner@sgi.com>,
+       Nick Piggin <npiggin@suse.de>, akpm@linux-foundation.org,
+       Robin Holt <holt@sgi.com>, Avi Kivity <avi@qumranet.com>,
+       kvm-devel@lists.sourceforge.net, general@lists.openfabrics.org,
+       Steve Wise <swise@opengridcomputing.com>,
+       Roland Dreier <rdreier@cisco.com>, Kanoj Sarcar <kanojsarcar@yahoo.com>,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       daniel.blueman@quadrics.com
+Subject: Re: [RFC] Notifier for Externally Mapped Memory (EMM)
+In-Reply-To: <1204670529.6241.52.camel@lappy>
+Message-ID: <Pine.LNX.4.64.0803041511080.21441@schroedinger.engr.sgi.com>
+References: <20080221144023.GC9427@v2.random>  <20080221161028.GA14220@sgi.com>
+ <20080227192610.GF28483@v2.random>  <20080302155457.GK8091@v2.random>
+ <20080303213707.GA8091@v2.random>  <20080303220502.GA5301@v2.random>
+ <47CC9B57.5050402@qumranet.com>  <Pine.LNX.4.64.0803032327470.9642@schroedinger.engr.sgi.com>
+  <20080304133020.GC5301@v2.random>  <Pine.LNX.4.64.0803041059110.13957@schroedinger.engr.sgi.com>
+  <20080304222030.GB8951@v2.random>  <Pine.LNX.4.64.0803041422070.20821@schroedinger.engr.sgi.com>
+ <1204670529.6241.52.camel@lappy>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080304193036.GB5534@suse.de>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Greg KH <gregkh@suse.de>:
-> On Tue, Mar 04, 2008 at 10:18:28AM -0800, Jesse Barnes wrote:
-> > On Monday, March 03, 2008 9:49 pm Greg KH wrote:
-> > > On Sat, Mar 01, 2008 at 07:43:07AM -0700, Matthew Wilcox wrote:
-> > > > On Fri, Feb 29, 2008 at 09:25:42PM -0800, Greg KH wrote:
-> > > > > What is the guarantee that the names of these slots are correct and do
-> > > > > not happen to be the same as the hotpluggable ones?
-> > > >
-> > > > That would be a bug -- and yes, bugs happen, and we have to deal with
-> > > > them.
-> > >
-> > > My main concern is that BIOS vendors will not fix these bugs, as no
-> > > other OS cares/does this kind of thing today.  The ammount of bad
-> > > information out there might be quite large, and I think this was
-> > > confirmed by some initial testing of IBM systems, right?
-> > 
-> > Yeah, but there's a flip side to this too:  if no one uses the data, no one 
-> > will complain when it's wrong.  If Linux starts making it easy to see this 
-> > stuff, there's a chance system vendors will start taking an extra 5 min. 
-> > before shipment to make sure that the BIOS info is up to date...
-> > 
-> > OTOH, I'm not sure which is worse, bad data or no data.
+On Tue, 4 Mar 2008, Peter Zijlstra wrote:
+
 > 
-> bad data is worse.
+> On Tue, 2008-03-04 at 14:35 -0800, Christoph Lameter wrote:
 > 
-> And then there's the machines with duplicate slot names, how does this
-> code handle PCI slots with that?  I think some of the IBM machines had
-> non-hotplug slots named the same as the hotplug slots, right?
-
-At one point, I had some code in there to stick the names of the
-slots into a linked list and walk through it to try and detect
-duplicate slot names, but after a few iterations, the cases I was
-dealing with, it turned out to be easier to refcount them.
-
-[my machines did not have colliding names between hp and non-hp
-slots, it was more like seeing the same SxFy object appear
-multiple times in the namespace and trying to create them
-multiple times.]
-
-It wasn't the IBM machine that was breaking; it was Fujitsu. They
-were returning an error code (the numerical value 1023) when I
-called the _SUN method on a slot object that existed in the ACPI
-namespace but was not present (as reported by the _STA method).
-
-By the time I got that error report, I'd already dropped the
-duplicate name detection code, and was letting the kobject
-infrastructure warn about duplicate names because for my test
-cases, refcounting was a better solution.
-
-[Kenji-san from Fujitsu seemed to be ok with the progress I'd
-made at the time, he can speak up if he's changed his mind ;)]
-
-But even that is not the error case you're describing, where
-there is clear name collision of two physical slots in the
-machine, one being hotplug, the other non-hotplug.
-
-Maybe I would have to add some duplicate name detection code back
-in there but...
-
-> This stuff needs a _lot_ of testing on a lot of different
-> machines, and a sane way to fall-back if there are errors to
-> ensure that working machines don't break.
+> > RCU means that the callbacks occur in an atomic context.
 > 
-> And then there's the issue with userspace programs only expecting
-> hotplugable slots in the slots/ directory...
+> Not really, if it requires moving the VM locks to sleepable locks under
+> a .config option, I think its also fair to require PREEMPT_RCU.
 
-Yes -- totally agreed. And I'd like to see actual examples of
-name collisions or userspace breakage to get a better idea of how
-to handle real world problems rather than writing some crummy
-code based on what my limited imagination can think of.
+Which would make the patchset pretty complex. RCU is not needed with a 
+single linked list. Linked list operations can exploit atomic pointer 
+updates and we only tear down the list when a single execution thread 
+remains.
 
-So how to get this test coverage? -mm? linux-next?
 
-Thanks.
+Having said that: Here a couple of updates to address Andrea's complaint 
+that we not check the referenced bit from the external mapper when the 
+rerferences bit is set on an OS pte.
 
-/ac
+Plus two barriers to ensure that a new emm notifier object becomes
+visible before the base pointer is updated.
 
+Signed-off-by: Christoph Lameter <clameter@sgi.com>
+
+---
+ mm/rmap.c |   10 ++++++----
+ 1 file changed, 6 insertions(+), 4 deletions(-)
+
+Index: linux-2.6/mm/rmap.c
+===================================================================
+--- linux-2.6.orig/mm/rmap.c	2008-03-04 14:36:36.321922321 -0800
++++ linux-2.6/mm/rmap.c	2008-03-04 15:10:46.159429369 -0800
+@@ -298,10 +298,10 @@ static int page_referenced_one(struct pa
+ 
+ 	(*mapcount)--;
+ 	pte_unmap_unlock(pte, ptl);
+-	if (!referenced)
+-		/* rmap lock held */
+-		referenced = emm_notify(mm, emm_referenced,
+-					address, address + PAGE_SIZE);
++
++	/* rmap lock held */
++	if (emm_notify(mm, emm_referenced, address, address + PAGE_SIZE))
++			referenced = 1;
+ out:
+ 	return referenced;
+ }
+@@ -1057,6 +1057,7 @@ EXPORT_SYMBOL_GPL(emm_notifier_release);
+ void emm_notifier_register(struct emm_notifier *e, struct mm_struct *mm)
+ {
+ 	e->next = mm->emm_notifier;
++	smp_wmb();
+ 	mm->emm_notifier = e;
+ }
+ EXPORT_SYMBOL_GPL(emm_notifier_register);
+@@ -1069,6 +1070,7 @@ int __emm_notify(struct mm_struct *mm, e
+ 	int x;
+ 
+ 	while (e) {
++		smp_rmb();
+ 		if (e->func) {
+ 			x = e->func(e, mm, op, start, end);
+ 			if (x)
