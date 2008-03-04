@@ -1,60 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762115AbYCDB3c@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763069AbYCDBar@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762115AbYCDB3c (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Mar 2008 20:29:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755651AbYCDB3W
+	id S1763069AbYCDBar (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Mar 2008 20:30:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755651AbYCDBai
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Mar 2008 20:29:22 -0500
-Received: from smtp117.sbc.mail.sp1.yahoo.com ([69.147.64.90]:47971 "HELO
-	smtp117.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1755550AbYCDB3V (ORCPT
+	Mon, 3 Mar 2008 20:30:38 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:37823 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755550AbYCDBah (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Mar 2008 20:29:21 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=IygLSCPR3IobrgonCa/4hKmey2ts/MB7jGmCOZp7NxceK7dOM5JX0DQTubBKWW1gJ6xajyJIT5aJ7V95esyc+ju4QGFlkU+tmx7FVUpD6Gq1x6BXikPxbp0qabdvbxy6wcJlr+RBFS6CdS7wNVX+icHwHmINSUj5dQYjcxOYUr4=  ;
-X-YMail-OSG: zrGodwsVM1mfUxy3xGdYifEMbHQlS563js8pe7vGnxpmrvvE0aEXNAdItWgbcS_x5IneroQK7Q--
-X-Yahoo-Newman-Property: ymail-3
-From: David Brownell <david-b@pacbell.net>
-To: "Bosko Radivojevic" <bosko.radivojevic@gmail.com>
-Subject: Re: High resolution timers on AT91SAM926x
-Date: Mon, 3 Mar 2008 17:29:18 -0800
-User-Agent: KMail/1.9.6
-Cc: lkml <linux-kernel@vger.kernel.org>, linux-rt-users@vger.kernel.org,
-       tglx@linutronix.de
-References: <200803011457.40857.david-b@pacbell.net> <200803031039.57909.david-b@pacbell.net> <d6c8ef150803031342r567aab86x776dc2a8b73714b6@mail.gmail.com>
-In-Reply-To: <d6c8ef150803031342r567aab86x776dc2a8b73714b6@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
+	Mon, 3 Mar 2008 20:30:37 -0500
+Date: Mon, 3 Mar 2008 17:30:11 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: travis@sgi.com, mingo@elte.hu, tglx@linutronix.de, ak@suse.de,
+       clameter@sgi.com, steiner@sgi.com, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org
+Subject: Re: [PATCH 2/2] x86_64: Cleanup non-smp usage of cpu maps v3
+Message-Id: <20080303173011.b0d9a89d.akpm@linux-foundation.org>
+In-Reply-To: <20080303170235.4334e841.akpm@linux-foundation.org>
+References: <20080219203335.866324000@polaris-admin.engr.sgi.com>
+	<20080219203336.177905000@polaris-admin.engr.sgi.com>
+	<20080303170235.4334e841.akpm@linux-foundation.org>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200803031729.19264.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 03 March 2008, Bosko Radivojevic wrote:
-> I had CONFIG_ATMEL_TCLIB enabled, but not TCB_CLKSRC and
-> TCB_CLKSRC_BLOCK=0. With all those options, I finally have HRT
-> functionality. But, strange thing is that jitter of my little example
-> (get time, sleep 1ms, get time, show the difference) is around 250us.
-> Maybe this is normal for this architecture?
+On Mon, 3 Mar 2008 17:02:35 -0800
+Andrew Morton <akpm@linux-foundation.org> wrote:
 
-I have no idea why that would be.  Maybe you can find out.  :)
+> I was unable to bisect it more finely than this:
+> 
+> init-move-setup-of-nr_cpu_ids-to-as-early-as-possible-v3.patch
+> generic-percpu-infrastructure-to-rebase-the-per-cpu-area-to-zero-v3.patch OK
+> x86_64-fold-pda-into-per-cpu-area-v3.patch
+> x86_64-fold-pda-into-per-cpu-area-v3-fix.patch				
+> x86_64-cleanup-non-smp-usage-of-cpu-maps-v3.patch			BAD
+> 
+> because when x86_64-cleanup-non-smp-usage-of-cpu-maps-v3.patch was removed
+> the machine hung quite early, when playing around with TSC calibration I
+> think.
+
+This just happened again with the patches dropped, so it is a separate bug -
+just another regression.
 
 
-> System is (as noted on rt.wik site) very slow with NO_HZ option enabled.
+I now recall that it has been happening on every fifth-odd boot for a few
+weeks now.  The machine prints
 
-It doesn't exactly say *why* or compare to other arm926ejs
-chips ... 
+Time: tsc clocksource has been installed
 
-Could the 64-bit math (ktime stuff) be a factor there?  Your
-board probably only runs at 95 (or-so) bogomips after all.
+then five instances of "system 00:01: iomem range 0x...", then it hangs. 
+ie: it never prints "system 00:01: iomem range 0xfe600000-0xfe6fffff has
+been reserved" from http://userweb.kernel.org/~akpm/dmesg-akpm2.txt.
 
-And is that just a NO_HZ issue, or generically an issue when
-oneshot timer modes are in heavy use?
+It may have some correlation with whether the machine was booted via
+poweron versus `reboot -f', dunno.
 
-- Dave
- 
