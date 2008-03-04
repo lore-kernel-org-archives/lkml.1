@@ -1,203 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934350AbYCDXEs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760892AbYCDXF3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934350AbYCDXEs (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Mar 2008 18:04:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934037AbYCDXCj
+	id S1760892AbYCDXF3 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Mar 2008 18:05:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933916AbYCDXCk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Mar 2008 18:02:39 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:44746 "EHLO mx1.redhat.com"
+	Tue, 4 Mar 2008 18:02:40 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:44765 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S934129AbYCDXC2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Mar 2008 18:02:28 -0500
-Message-Id: <20080304225227.067561310@redhat.com>
+	id S933978AbYCDXCc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 4 Mar 2008 18:02:32 -0500
+Message-Id: <20080304225227.395329993@redhat.com>
 References: <20080304225157.573336066@redhat.com>
 User-Agent: quilt/0.46-1
-Date: Tue, 04 Mar 2008 17:52:02 -0500
+Date: Tue, 04 Mar 2008 17:52:07 -0500
 From: Rik van Riel <riel@redhat.com>
 To: linux-kernel@vger.kernel.org
 Cc: linux-mm@kvack.org, KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Lee Schermerhorn <Lee.Schermerhorn@hp.com>,
-       Lee Schermerhorn <lee.schermerhorn@hp.com>
-Subject: [patch 05/20] define page_file_cache() function
-Content-Disposition: inline; filename=rvr-01-linux-2.6-page_file_cache.patch
+       Lee Schermerhorn <Lee.Schermerhorn@hp.com>
+Subject: [patch 10/20] more aggressively use lumpy reclaim
+Content-Disposition: inline; filename=lumpy-reclaim-lower-order.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Define page_file_cache() function to answer the question:
-	is page backed by a file?
+During an AIM7 run on a 16GB system, fork started failing around
+32000 threads, despite the system having plenty of free swap and
+15GB of pageable memory.
 
-Originally part of Rik van Riel's split-lru patch.  Extracted
-to make available for other, independent reclaim patches.
+If normal pageout does not result in contiguous free pages for
+kernel stacks, fall back to lumpy reclaim instead of failing fork
+or doing excessive pageout IO.
 
-Moved inline function to linux/mm_inline.h where it will
-be needed by subsequent "split LRU" and "noreclaim" patches.  
+I do not know whether this change is needed due to the extreme
+stress test or because the inactive list is a smaller fraction
+of system memory on huge systems.
 
-Unfortunately this needs to use a page flag, since the
-PG_swapbacked state needs to be preserved all the way
-to the point where the page is last removed from the
-LRU.  Trying to derive the status from other info in
-the page resulted in wrong VM statistics in earlier
-split VM patchsets.
+Signed-off-by: Rik van Riel <riel@redhat.com>
 
-
-Signed-off-by:  Rik van Riel <riel@redhat.com>
-Signed-off-by:  Lee Schermerhorn <lee.schermerhorn@hp.com>
-
-
-Index: linux-2.6.25-rc3-mm1/include/linux/mm_inline.h
+Index: linux-2.6.25-rc3-mm1/mm/vmscan.c
 ===================================================================
---- linux-2.6.25-rc3-mm1.orig/include/linux/mm_inline.h	2008-03-04 14:59:31.000000000 -0500
-+++ linux-2.6.25-rc3-mm1/include/linux/mm_inline.h	2008-03-04 15:30:02.000000000 -0500
-@@ -1,3 +1,26 @@
-+#ifndef LINUX_MM_INLINE_H
-+#define LINUX_MM_INLINE_H
-+
-+/**
-+ * page_file_cache - should the page be on a file LRU or anon LRU?
-+ * @page: the page to test
-+ *
-+ * Returns !0 if @page is page cache page backed by a regular filesystem,
-+ * or 0 if @page is anonymous, tmpfs or otherwise ram or swap backed.
-+ *
-+ * We would like to get this info without a page flag, but the state
-+ * needs to survive until the page is last deleted from the LRU, which
-+ * could be as far down as __page_cache_release.
-+ */
-+static inline int page_file_cache(struct page *page)
-+{
-+	if (PageSwapBacked(page))
-+		return 0;
-+
-+	/* The page is page cache backed by a normal filesystem. */
-+	return 2;
-+}
-+
- static inline void
- add_page_to_lru_list(struct zone *zone, struct page *page, enum lru_list l)
+--- linux-2.6.25-rc3-mm1.orig/mm/vmscan.c	2008-03-04 15:46:01.000000000 -0500
++++ linux-2.6.25-rc3-mm1/mm/vmscan.c	2008-03-04 15:46:47.000000000 -0500
+@@ -874,7 +874,8 @@ int isolate_lru_page(struct page *page)
+  * of reclaimed pages
+  */
+ static unsigned long shrink_inactive_list(unsigned long max_scan,
+-			struct zone *zone, struct scan_control *sc, int file)
++			struct zone *zone, struct scan_control *sc,
++			int priority, int file)
  {
-@@ -49,3 +72,4 @@ del_page_from_lru(struct zone *zone, str
- 	__dec_zone_state(zone, NR_INACTIVE + l);
+ 	LIST_HEAD(page_list);
+ 	struct pagevec pvec;
+@@ -892,8 +893,19 @@ static unsigned long shrink_inactive_lis
+ 		unsigned long nr_freed;
+ 		unsigned long nr_active;
+ 		unsigned int count[NR_LRU_LISTS] = { 0, };
+-		int mode = (sc->order > PAGE_ALLOC_COSTLY_ORDER) ?
+-					ISOLATE_BOTH : ISOLATE_INACTIVE;
++		int mode = ISOLATE_INACTIVE;
++
++		/*
++		 * If we need a large contiguous chunk of memory, or have
++		 * trouble getting a small set of contiguous pages, we
++		 * will reclaim both active and inactive pages.
++		 *
++		 * We use the same threshold as pageout congestion_wait below.
++		 */
++		if (sc->order > PAGE_ALLOC_COSTLY_ORDER)
++			mode = ISOLATE_BOTH;
++		else if (sc->order && priority < DEF_PRIORITY - 2)
++			mode = ISOLATE_BOTH;
+ 
+ 		nr_taken = sc->isolate_pages(sc->swap_cluster_max,
+ 			     &page_list, &nr_scan, sc->order, mode,
+@@ -1178,7 +1190,7 @@ static unsigned long shrink_list(enum lr
+ 		shrink_active_list(nr_to_scan, zone, sc, priority, file);
+ 		return 0;
+ 	}
+-	return shrink_inactive_list(nr_to_scan, zone, sc, file);
++	return shrink_inactive_list(nr_to_scan, zone, sc, priority, file);
  }
  
-+#endif
-Index: linux-2.6.25-rc3-mm1/mm/shmem.c
-===================================================================
---- linux-2.6.25-rc3-mm1.orig/mm/shmem.c	2008-03-04 14:12:52.000000000 -0500
-+++ linux-2.6.25-rc3-mm1/mm/shmem.c	2008-03-04 15:30:02.000000000 -0500
-@@ -1437,6 +1437,7 @@ repeat:
- 				goto failed;
- 			}
- 
-+			SetPageSwapBacked(filepage);
- 			spin_lock(&info->lock);
- 			entry = shmem_swp_alloc(info, idx, sgp);
- 			if (IS_ERR(entry))
-Index: linux-2.6.25-rc3-mm1/include/linux/page-flags.h
-===================================================================
---- linux-2.6.25-rc3-mm1.orig/include/linux/page-flags.h	2008-03-04 14:12:40.000000000 -0500
-+++ linux-2.6.25-rc3-mm1/include/linux/page-flags.h	2008-03-04 15:30:02.000000000 -0500
-@@ -89,6 +89,7 @@
- #define PG_mappedtodisk		16	/* Has blocks allocated on-disk */
- #define PG_reclaim		17	/* To be reclaimed asap */
- #define PG_buddy		19	/* Page is free, on buddy lists */
-+#define PG_swapbacked		20	/* Page is backed by RAM/swap */
- 
- /* PG_readahead is only used for file reads; PG_reclaim is only for writes */
- #define PG_readahead		PG_reclaim /* Reminder to do async read-ahead */
-@@ -252,6 +253,10 @@ static inline void SetPageUptodate(struc
- #define ClearPageReclaim(page)	clear_bit(PG_reclaim, &(page)->flags)
- #define TestClearPageReclaim(page) test_and_clear_bit(PG_reclaim, &(page)->flags)
- 
-+#define PageSwapBacked(page)	test_bit(PG_swapbacked, &(page)->flags)
-+#define SetPageSwapBacked(page)	set_bit(PG_swapbacked, &(page)->flags)
-+#define __ClearPageSwapBacked(page)	__clear_bit(PG_swapbacked, &(page)->flags)
-+
- #define PageCompound(page)	test_bit(PG_compound, &(page)->flags)
- #define __SetPageCompound(page)	__set_bit(PG_compound, &(page)->flags)
- #define __ClearPageCompound(page) __clear_bit(PG_compound, &(page)->flags)
-Index: linux-2.6.25-rc3-mm1/mm/memory.c
-===================================================================
---- linux-2.6.25-rc3-mm1.orig/mm/memory.c	2008-03-04 14:12:52.000000000 -0500
-+++ linux-2.6.25-rc3-mm1/mm/memory.c	2008-03-04 15:30:02.000000000 -0500
-@@ -1677,6 +1677,7 @@ gotten:
- 		ptep_clear_flush(vma, address, page_table);
- 		set_pte_at(mm, address, page_table, entry);
- 		update_mmu_cache(vma, address, entry);
-+		SetPageSwapBacked(new_page);
- 		lru_cache_add_active(new_page);
- 		page_add_new_anon_rmap(new_page, vma, address);
- 
-@@ -2145,6 +2146,7 @@ static int do_anonymous_page(struct mm_s
- 	if (!pte_none(*page_table))
- 		goto release;
- 	inc_mm_counter(mm, anon_rss);
-+	SetPageSwapBacked(page);
- 	lru_cache_add_active(page);
- 	page_add_new_anon_rmap(page, vma, address);
- 	set_pte_at(mm, address, page_table, entry);
-@@ -2288,6 +2290,7 @@ static int __do_fault(struct mm_struct *
- 		set_pte_at(mm, address, page_table, entry);
- 		if (anon) {
-                         inc_mm_counter(mm, anon_rss);
-+			SetPageSwapBacked(page);
-                         lru_cache_add_active(page);
-                         page_add_new_anon_rmap(page, vma, address);
- 		} else {
-Index: linux-2.6.25-rc3-mm1/mm/swap_state.c
-===================================================================
---- linux-2.6.25-rc3-mm1.orig/mm/swap_state.c	2008-03-04 14:12:40.000000000 -0500
-+++ linux-2.6.25-rc3-mm1/mm/swap_state.c	2008-03-04 15:30:02.000000000 -0500
-@@ -82,6 +82,7 @@ int add_to_swap_cache(struct page *page,
- 		if (!error) {
- 			page_cache_get(page);
- 			SetPageSwapCache(page);
-+			SetPageSwapBacked(page);
- 			set_page_private(page, entry.val);
- 			total_swapcache_pages++;
- 			__inc_zone_page_state(page, NR_FILE_PAGES);
-Index: linux-2.6.25-rc3-mm1/mm/migrate.c
-===================================================================
---- linux-2.6.25-rc3-mm1.orig/mm/migrate.c	2008-03-04 15:26:18.000000000 -0500
-+++ linux-2.6.25-rc3-mm1/mm/migrate.c	2008-03-04 15:30:02.000000000 -0500
-@@ -547,6 +547,8 @@ static int move_to_new_page(struct page 
- 	/* Prepare mapping for the new page.*/
- 	newpage->index = page->index;
- 	newpage->mapping = page->mapping;
-+	if (PageSwapBacked(page))
-+		SetPageSwapBacked(newpage);
- 
- 	mapping = page_mapping(page);
- 	if (!mapping)
-Index: linux-2.6.25-rc3-mm1/mm/page_alloc.c
-===================================================================
---- linux-2.6.25-rc3-mm1.orig/mm/page_alloc.c	2008-03-04 14:59:31.000000000 -0500
-+++ linux-2.6.25-rc3-mm1/mm/page_alloc.c	2008-03-04 15:30:02.000000000 -0500
-@@ -260,6 +260,7 @@ static void bad_page(struct page *page)
- 			1 << PG_slab    |
- 			1 << PG_swapcache |
- 			1 << PG_writeback |
-+			1 << PG_swapbacked |
- 			1 << PG_buddy );
- 	set_page_count(page, 0);
- 	reset_page_mapcount(page);
-@@ -493,6 +494,8 @@ static inline int free_pages_check(struc
- 		bad_page(page);
- 	if (PageDirty(page))
- 		__ClearPageDirty(page);
-+	if (PageSwapBacked(page))
-+		__ClearPageSwapBacked(page);
- 	/*
- 	 * For now, we report if PG_reserved was found set, but do not
- 	 * clear it, and do not free the page.  But we shall soon need
-@@ -640,6 +643,7 @@ static int prep_new_page(struct page *pa
- 			1 << PG_swapcache |
- 			1 << PG_writeback |
- 			1 << PG_reserved |
-+			1 << PG_swapbacked |
- 			1 << PG_buddy ))))
- 		bad_page(page);
- 
+ /*
 
 -- 
 All Rights Reversed
