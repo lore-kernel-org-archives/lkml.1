@@ -1,136 +1,110 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764587AbYCDQ7x@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762184AbYCDRDU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764587AbYCDQ7x (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Mar 2008 11:59:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751960AbYCDQ7p
+	id S1762184AbYCDRDU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Mar 2008 12:03:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752177AbYCDRDL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Mar 2008 11:59:45 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:48802 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751800AbYCDQ7p (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Mar 2008 11:59:45 -0500
-Date: Tue, 4 Mar 2008 17:59:28 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>
-Subject: [git pull] x86 fixes
-Message-ID: <20080304165928.GA17474@elte.hu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Tue, 4 Mar 2008 12:03:11 -0500
+Received: from rtsoft3.corbina.net ([85.21.88.6]:4629 "EHLO
+	buildserver.ru.mvista.com" rhost-flags-OK-FAIL-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1751960AbYCDRDK (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 4 Mar 2008 12:03:10 -0500
+Date: Tue, 4 Mar 2008 20:03:07 +0300
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+To: David Brownell <dbrownell@users.sourceforge.net>
+Cc: linux-kernel@vger.kernel.org
+Subject: [PATCH] gpiolib: implement dynamic base allocation
+Message-ID: <20080304170307.GA29979@localhost.localdomain>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=utf8
 Content-Disposition: inline
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+If gpio_chip->base is negative during registration, gpiolib requests
+dynamic base allocation. This is useful for devices being registered
+at run-time (in contrast to platform devices).
 
-Linus, please pull the latest x86 fixes git tree from:
+Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
+---
+ drivers/gpio/gpiolib.c |   42 ++++++++++++++++++++++++++++++++++++------
+ 1 files changed, 36 insertions(+), 6 deletions(-)
 
-   git://git.kernel.org/pub/scm/linux/kernel/git/x86/linux-2.6-x86.git for-linus
-
-Thanks,
-
-	Ingo
-
------------------->
-Ian Campbell (1):
-      x86/xen: fix DomU boot problem
-
-Suresh Siddha (1):
-      x86, i387: fix ptrace leakage using init_fpu()
-
-Yinghai Lu (1):
-      x86: not set node to cpu_to_node if the node is not online
-
- arch/x86/kernel/i387.c |    8 ++++----
- arch/x86/mm/numa_64.c  |    8 ++++++--
- arch/x86/xen/setup.c   |    3 ++-
- 3 files changed, 12 insertions(+), 7 deletions(-)
-
-diff --git a/arch/x86/kernel/i387.c b/arch/x86/kernel/i387.c
-index 763dfc4..60fe801 100644
---- a/arch/x86/kernel/i387.c
-+++ b/arch/x86/kernel/i387.c
-@@ -132,7 +132,7 @@ int xfpregs_get(struct task_struct *target, const struct user_regset *regset,
- 	if (!cpu_has_fxsr)
- 		return -ENODEV;
+diff --git a/drivers/gpio/gpiolib.c b/drivers/gpio/gpiolib.c
+index d8db2f8..1d25104 100644
+--- a/drivers/gpio/gpiolib.c
++++ b/drivers/gpio/gpiolib.c
+@@ -77,6 +77,32 @@ static inline struct gpio_chip *gpio_to_chip(unsigned gpio)
+ 	return gpio_desc[gpio].chip;
+ }
  
--	unlazy_fpu(target);
-+	init_fpu(target);
++static int gpiochip_find_base(int ngpio)
++{
++	int i;
++	int spare = 0;
++	int next_base = 0;
++	int base = -ENOSPC;
++
++	for (i = 0; i < ARCH_NR_GPIOS; i++) {
++		struct gpio_chip *c = gpio_desc[i].chip;
++
++		if (!c) {
++			spare++;
++			if (spare == ngpio) {
++				base = next_base;
++				break;
++			}
++		} else {
++			spare = 0;
++			i += c->ngpio;
++			next_base = i;
++		}
++	}
++
++	return base;
++}
++
+ /**
+  * gpiochip_add() - register a gpio_chip
+  * @chip: the chip to register, with chip->base initialized
+@@ -92,17 +118,21 @@ int gpiochip_add(struct gpio_chip *chip)
+ 	int		status = 0;
+ 	unsigned	id;
  
- 	return user_regset_copyout(&pos, &count, &kbuf, &ubuf,
- 				   &target->thread.i387.fxsave, 0, -1);
-@@ -147,7 +147,7 @@ int xfpregs_set(struct task_struct *target, const struct user_regset *regset,
- 	if (!cpu_has_fxsr)
- 		return -ENODEV;
- 
--	unlazy_fpu(target);
-+	init_fpu(target);
- 	set_stopped_child_used_math(target);
- 
- 	ret = user_regset_copyin(&pos, &count, &kbuf, &ubuf,
-@@ -307,7 +307,7 @@ int fpregs_get(struct task_struct *target, const struct user_regset *regset,
- 	if (!HAVE_HWFP)
- 		return fpregs_soft_get(target, regset, pos, count, kbuf, ubuf);
- 
--	unlazy_fpu(target);
-+	init_fpu(target);
- 
- 	if (!cpu_has_fxsr)
- 		return user_regset_copyout(&pos, &count, &kbuf, &ubuf,
-@@ -332,7 +332,7 @@ int fpregs_set(struct task_struct *target, const struct user_regset *regset,
- 	if (!HAVE_HWFP)
- 		return fpregs_soft_set(target, regset, pos, count, kbuf, ubuf);
- 
--	unlazy_fpu(target);
-+	init_fpu(target);
- 	set_stopped_child_used_math(target);
- 
- 	if (!cpu_has_fxsr)
-diff --git a/arch/x86/mm/numa_64.c b/arch/x86/mm/numa_64.c
-index 59898fb..8ccfee1 100644
---- a/arch/x86/mm/numa_64.c
-+++ b/arch/x86/mm/numa_64.c
-@@ -622,13 +622,17 @@ void __init init_cpu_to_node(void)
- 	int i;
- 
- 	for (i = 0; i < NR_CPUS; i++) {
-+		int node;
- 		u16 apicid = x86_cpu_to_apicid_init[i];
- 
- 		if (apicid == BAD_APICID)
- 			continue;
--		if (apicid_to_node[apicid] == NUMA_NO_NODE)
-+		node = apicid_to_node[apicid];
-+		if (node == NUMA_NO_NODE)
- 			continue;
--		numa_set_node(i, apicid_to_node[apicid]);
-+		if (!node_online(node))
-+			continue;
-+		numa_set_node(i, node);
+-	/* NOTE chip->base negative is reserved to mean a request for
+-	 * dynamic allocation.  We don't currently support that.
+-	 */
+-
+-	if (chip->base < 0 || (chip->base  + chip->ngpio) >= ARCH_NR_GPIOS) {
++	if (chip->base >= 0 && chip->base + chip->ngpio >= ARCH_NR_GPIOS) {
+ 		status = -EINVAL;
+ 		goto fail;
  	}
- }
  
-diff --git a/arch/x86/xen/setup.c b/arch/x86/xen/setup.c
-index 3bad477..2341492 100644
---- a/arch/x86/xen/setup.c
-+++ b/arch/x86/xen/setup.c
-@@ -38,7 +38,8 @@ char * __init xen_memory_setup(void)
- 	unsigned long max_pfn = xen_start_info->nr_pages;
+ 	spin_lock_irqsave(&gpio_lock, flags);
  
- 	e820.nr_map = 0;
--	add_memory_region(0, PFN_PHYS(max_pfn), E820_RAM);
-+	add_memory_region(0, LOWMEMSIZE(), E820_RAM);
-+	add_memory_region(HIGH_MEMORY, PFN_PHYS(max_pfn)-HIGH_MEMORY, E820_RAM);
- 
- 	return "Xen";
- }
++	if (chip->base < 0) {
++		chip->base = gpiochip_find_base(chip->ngpio);
++		if (chip->base < 0) {
++			status = chip->base;
++			goto fail_unlock;
++		}
++	}
++
+ 	/* these GPIO numbers must not be managed by another gpio_chip */
+ 	for (id = chip->base; id < chip->base + chip->ngpio; id++) {
+ 		if (gpio_desc[id].chip != NULL) {
+@@ -116,7 +146,7 @@ int gpiochip_add(struct gpio_chip *chip)
+ 			gpio_desc[id].flags = 0;
+ 		}
+ 	}
+-
++fail_unlock:
+ 	spin_unlock_irqrestore(&gpio_lock, flags);
+ fail:
+ 	/* failures here can mean systems won't boot... */
+-- 
+1.5.2.2
