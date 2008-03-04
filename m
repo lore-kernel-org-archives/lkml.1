@@ -1,60 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757228AbYCDFyV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758655AbYCDFyl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757228AbYCDFyV (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Mar 2008 00:54:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753085AbYCDFxu
+	id S1758655AbYCDFyl (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Mar 2008 00:54:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755575AbYCDFx4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Mar 2008 00:53:50 -0500
-Received: from mx1.suse.de ([195.135.220.2]:34191 "EHLO mx1.suse.de"
+	Tue, 4 Mar 2008 00:53:56 -0500
+Received: from cantor2.suse.de ([195.135.220.15]:42362 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752865AbYCDFxt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Mar 2008 00:53:49 -0500
-Date: Mon, 3 Mar 2008 21:54:48 -0800
+	id S1754287AbYCDFxy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 4 Mar 2008 00:53:54 -0500
+Date: Mon, 3 Mar 2008 21:56:03 -0800
 From: Greg KH <gregkh@suse.de>
-To: Stefan Richter <stefanr@s5r6.in-berlin.de>
-Cc: Kristian H?gsberg <krh@bitplanet.net>,
-       linux1394-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] firewire: reread config ROM when device reset the bus
-Message-ID: <20080304055448.GB15566@suse.de>
-References: <tkrat.c6610a8633fe0e41@s5r6.in-berlin.de> <tkrat.da30e6f15a74e036@s5r6.in-berlin.de> <59ad55d30803030817l6fce6716x2a97cc809b15b234@mail.gmail.com> <47CC2C95.1050205@s5r6.in-berlin.de> <59ad55d30803030928t47ab84ebs1f37434d6558b72e@mail.gmail.com> <47CC3C48.1020306@s5r6.in-berlin.de> <47CC44DB.1060203@s5r6.in-berlin.de>
+To: Alex Chiang <achiang@hp.com>, Gary Hade <garyhade@us.ibm.com>,
+       kaneshige.kenji@jp.fujitsu.com, warthog19@eaglescrag.net,
+       Matthew Wilcox <matthew@wil.cx>, kristen.c.accardi@intel.com,
+       rick.jones2@hp.com, linux-kernel@vger.kernel.org,
+       linux-pci@atrey.karlin.mff.cuni.cz, linux-acpi@vger.kernel.org
+Subject: Re: [PATCH 0/4, v7] PCI, ACPI: Physical PCI slot objects
+Message-ID: <20080304055603.GC15566@suse.de>
+References: <20080229002341.GA21420@ldl.fc.hp.com> <20080301051247.GB19353@suse.de> <20080303233556.GA3694@ldl.fc.hp.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <47CC44DB.1060203@s5r6.in-berlin.de>
+In-Reply-To: <20080303233556.GA3694@ldl.fc.hp.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Mar 03, 2008 at 07:35:07PM +0100, Stefan Richter wrote:
-> I wrote:
->>> On Mon, Mar 3, 2008 at 11:51 AM, Stefan Richter
->>> <stefanr@s5r6.in-berlin.de> wrote:
-> [...rewriting data of a device with children devices whose driver probe 
-> accesses these data...]
->>>>  Maybe I should rather use fw-device.c::idr_rwsem instead of device.sem,
->>>>  to have better control over who takes the mutex when.  Could also be a
->>>>  new dedicated mutex but we don't want to end up with too many of  
->>>> them...
-> [...]
->> Ah, wait, there is a 3rd reader: sbp2_probe's sbp2_scan_unit_dir.  So, 
->> using dev->sem is actually the nicest way for now.
->
-> Or not.  The necessary protection for this and other driver->probe()s would 
-> be the device->parent.sem, not the device->sem itself.  There seem to be 
-> several ways how a driver probe may be entered (adding a device when the 
-> driver is already there; attaching a driver when the device is already 
-> there...) and I am not sure whether all these paths take the 
-> device->parent.sem around the probe.  It doesn't seem to be always the 
-> case.
->
-> Greg, can you comment on this?
+On Mon, Mar 03, 2008 at 04:35:56PM -0700, Alex Chiang wrote:
+> * Greg KH <gregkh@suse.de>:
+> > On Thu, Feb 28, 2008 at 05:23:41PM -0700, Alex Chiang wrote:
+> > > 
+> > > I did turn on kobject debugging, and all seems well except for
+> > > one little thing. I based my module (pci_slot) on acpiphp, and
+> > > the kobject system complains:
+> > > 
+> > > kobject: 'acpiphp' (a00000020476aed0): does not have a release()
+> > > function, it is broken and must be fixed.
+> > > 
+> > > kobject: 'pci_slot' (a000000204791e50): does not have a release()
+> > > function, it is broken and must be fixed.
+> > > 
+> > > Not quite sure what to do about these yet, but since no one has
+> > > fixed acpiphp yet, I'm thinking that I can't be *too* wrong. :)
+> > 
+> > Um, the obvious solution of providing a release function for these
+> > kobjects is somehow not correct?
+> > 
+> > Please do that, otherwise the code is wrong (and yes, acpiphp might be
+> > wrong as well, I haven't seen that report yet.)
+> 
+> Hrm, maybe this is a false alarm? Those messages appear when
+> doing an rmmod <foo>. Turns out you get those messages for lots
+> of modules, for instance, uhci_ucd:
 
-Hm, comment on what?  Ah, semaphore fun in the device.  If at all
-possible, use your own, not the driver core as the locking there is a
-bit "odd" as you have seen.  I think Alan Stern has some patches pending
-to mess with it all to try to make it sane during the suspend/resume
-path.
+No, they are correct, and need to be fixed.
+
+> kobject: 'uhci_hcd' (a00000020427c8d0): kobject_cleanup
+> kobject: 'uhci_hcd' (a00000020427c8d0): does not have a release() function, it is broken and must be fixed.
+> kobject: 'uhci_hcd' (a00000020427c8d0): auto cleanup 'remove' event
+> kobject: 'uhci_hcd' (a00000020427c8d0): kobject_uevent_env
+> kobject: 'uhci_hcd' (a00000020427c8d0): fill_kobj_path: path = '/module/uhci_hcd'
+> kobject: 'uhci_hcd' (a00000020427c8d0): auto cleanup kobject_del
+> kobject: 'uhci_hcd': free name
+> 
+> Are you saying that modules that call module_init/module_exit are
+> supposed to supply a release() function?
+
+No, the module core needs to do this, as that is the owner of this
+kobject, not the module author.
+
+I'll add it to my todo list :(
 
 thanks,
 
