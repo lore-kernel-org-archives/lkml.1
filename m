@@ -1,86 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933340AbYCDWmf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933929AbYCDWm6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933340AbYCDWmf (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Mar 2008 17:42:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759493AbYCDWmZ
+	id S933929AbYCDWm6 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Mar 2008 17:42:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763288AbYCDWmc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Mar 2008 17:42:25 -0500
-Received: from smtp5.pp.htv.fi ([213.243.153.39]:46292 "EHLO smtp5.pp.htv.fi"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759365AbYCDWmY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Mar 2008 17:42:24 -0500
-Date: Wed, 5 Mar 2008 00:39:58 +0200
-From: Adrian Bunk <adrian.bunk@movial.fi>
-To: Paul Mundt <lethal@linux-sh.org>
-Cc: linux-sh@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [2.6 patch] sh_ksyms_32.c update for gcc 4.3
-Message-ID: <20080304223958.GA2136@cs181133002.pp.htv.fi>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+	Tue, 4 Mar 2008 17:42:32 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:55023 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1762452AbYCDWmb (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 4 Mar 2008 17:42:31 -0500
+Subject: Re: [RFC] Notifier for Externally Mapped Memory (EMM)
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Christoph Lameter <clameter@sgi.com>
+Cc: Andrea Arcangeli <andrea@qumranet.com>, Jack Steiner <steiner@sgi.com>,
+       Nick Piggin <npiggin@suse.de>, akpm@linux-foundation.org,
+       Robin Holt <holt@sgi.com>, Avi Kivity <avi@qumranet.com>,
+       kvm-devel@lists.sourceforge.net, general@lists.openfabrics.org,
+       Steve Wise <swise@opengridcomputing.com>,
+       Roland Dreier <rdreier@cisco.com>, Kanoj Sarcar <kanojsarcar@yahoo.com>,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       daniel.blueman@quadrics.com
+In-Reply-To: <Pine.LNX.4.64.0803041422070.20821@schroedinger.engr.sgi.com>
+References: <20080221144023.GC9427@v2.random>
+	 <20080221161028.GA14220@sgi.com> <20080227192610.GF28483@v2.random>
+	 <20080302155457.GK8091@v2.random> <20080303213707.GA8091@v2.random>
+	 <20080303220502.GA5301@v2.random> <47CC9B57.5050402@qumranet.com>
+	 <Pine.LNX.4.64.0803032327470.9642@schroedinger.engr.sgi.com>
+	 <20080304133020.GC5301@v2.random>
+	 <Pine.LNX.4.64.0803041059110.13957@schroedinger.engr.sgi.com>
+	 <20080304222030.GB8951@v2.random>
+	 <Pine.LNX.4.64.0803041422070.20821@schroedinger.engr.sgi.com>
+Content-Type: text/plain
+Date: Tue, 04 Mar 2008 23:42:09 +0100
+Message-Id: <1204670529.6241.52.camel@lappy>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.21.90 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch fixes the following build error with landisk_defconfig when 
-using gcc 4.3:
 
-<--  snip  -->
+On Tue, 2008-03-04 at 14:35 -0800, Christoph Lameter wrote:
 
-...
-  MODPOST 50 modules
-ERROR: "__udivsi3_i4i" [net/sunrpc/sunrpc.ko] undefined!
-ERROR: "__udivsi3_i4i" [net/appletalk/appletalk.ko] undefined!
-ERROR: "__udivsi3_i4i" [fs/ufs/ufs.ko] undefined!
-ERROR: "__udivsi3_i4i" [fs/ntfs/ntfs.ko] undefined!
-ERROR: "__sdivsi3_i4i" [fs/ntfs/ntfs.ko] undefined!
-ERROR: "__udivsi3_i4i" [fs/nfsd/nfsd.ko] undefined!
-ERROR: "__sdivsi3_i4i" [fs/nfsd/nfsd.ko] undefined!
-ERROR: "__udivsi3_i4i" [fs/nfs/nfs.ko] undefined!
-ERROR: "__udivsi3_i4i" [fs/lockd/lockd.ko] undefined!
-ERROR: "__udivsi3_i4i" [drivers/usb/storage/usb-storage.ko] undefined!
-ERROR: "__sdivsi3_i4i" [drivers/usb/serial/pl2303.ko] undefined!
-ERROR: "__udivsi3_i4i" [drivers/usb/serial/pl2303.ko] undefined!
-ERROR: "__sdivsi3_i4i" [drivers/usb/serial/ftdi_sio.ko] undefined!
-ERROR: "__udivsi3_i4i" [drivers/usb/misc/sisusbvga/sisusbvga.ko] undefined!
-ERROR: "__sdivsi3_i4i" [drivers/usb/misc/sisusbvga/sisusbvga.ko] undefined!
-ERROR: "__udivsi3_i4i" [drivers/media/video/v4l1-compat.ko] undefined!
-ERROR: "__sdivsi3_i4i" [drivers/media/video/v4l1-compat.ko] undefined!
-ERROR: "__sdivsi3_i4i" [drivers/media/video/usbvideo/vicam.ko] undefined!
-ERROR: "__udivsi3_i4i" [drivers/media/video/usbvideo/usbvideo.ko] undefined!
-ERROR: "__sdivsi3_i4i" [drivers/media/video/usbvideo/usbvideo.ko] undefined!
-ERROR: "__udivsi3_i4i" [drivers/media/video/sn9c102/sn9c102.ko] undefined!
-ERROR: "__sdivsi3_i4i" [drivers/media/video/sn9c102/sn9c102.ko] undefined!
-ERROR: "__sdivsi3_i4i" [drivers/media/video/se401.ko] undefined!
-ERROR: "__sdivsi3_i4i" [drivers/media/video/pwc/pwc.ko] undefined!
-ERROR: "__udivsi3_i4i" [drivers/md/raid0.ko] undefined!
-ERROR: "__udivsi3_i4i" [drivers/md/md-mod.ko] undefined!
-ERROR: "__sdivsi3_i4i" [drivers/md/md-mod.ko] undefined!
-ERROR: "__udivsi3_i4i" [drivers/md/linear.ko] undefined!
-ERROR: "__sdivsi3_i4i" [drivers/hid/usbhid/usbhid.ko] undefined!
-make[2]: *** [__modpost] Error 1
+> RCU means that the callbacks occur in an atomic context.
 
-<--  snip  -->
+Not really, if it requires moving the VM locks to sleepable locks under
+a .config option, I think its also fair to require PREEMPT_RCU.
 
-Signed-off-by: Adrian Bunk <adrian.bunk@movial.fi>
-
----
-d8726fd3d9224aaf1000054f32438f03d6e1a915 foobar
-diff --git a/arch/sh/kernel/sh_ksyms_32.c b/arch/sh/kernel/sh_ksyms_32.c
-index e1a6de9..a12f115 100644
---- a/arch/sh/kernel/sh_ksyms_32.c
-+++ b/arch/sh/kernel/sh_ksyms_32.c
-@@ -111,9 +111,9 @@ DECLARE_EXPORT(__movmem_i4_even);
- DECLARE_EXPORT(__movmem_i4_odd);
- DECLARE_EXPORT(__movmemSI12_i4);
- 
--#if (__GNUC_MINOR__ == 2 || defined(__GNUC_STM_RELEASE__))
-+#if (__GNUC_MINOR__ >= 2 || defined(__GNUC_STM_RELEASE__))
- /*
-- * GCC 4.2 emits these for division, as do GCC 4.1.x versions of the ST
-+ * GCC >= 4.2 emits these for division, as do GCC 4.1.x versions of the ST
-  * compiler which include backported patches.
-  */
- DECLARE_EXPORT(__sdivsi3_i4i);
+OTOH, if you want to unconditionally move the VM locks to sleepable
+locks you have a point.
 
