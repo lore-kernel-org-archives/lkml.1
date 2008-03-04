@@ -1,79 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761287AbYCDGwE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762153AbYCDGxf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761287AbYCDGwE (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Mar 2008 01:52:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753997AbYCDGvy
+	id S1762153AbYCDGxf (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Mar 2008 01:53:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754133AbYCDGx1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Mar 2008 01:51:54 -0500
-Received: from relay1.sgi.com ([192.48.171.29]:50830 "EHLO relay.sgi.com"
+	Tue, 4 Mar 2008 01:53:27 -0500
+Received: from rex.snapgear.com ([203.143.235.140]:38402 "EHLO snapgear.com"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753963AbYCDGvx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Mar 2008 01:51:53 -0500
-Date: Tue, 4 Mar 2008 00:51:48 -0600
-From: Paul Jackson <pj@sgi.com>
-To: "Paul Menage" <menage@google.com>
-Cc: a.p.zijlstra@chello.nl, maxk@qualcomm.com, mingo@elte.hu,
-       tglx@linutronix.de, oleg@tv-sign.ru, rostedt@goodmis.org,
-       linux-kernel@vger.kernel.org, rientjes@google.com
-Subject: Re: [RFC/PATCH] cpuset: cpuset irq affinities
-Message-Id: <20080304005148.4e6f1fe8.pj@sgi.com>
-In-Reply-To: <6599ad830803032234v3bce2769l26379ea304fe885@mail.gmail.com>
-References: <20080227222103.673194000@chello.nl>
-	<20080303113621.1dfdda87.pj@sgi.com>
-	<1204567052.6241.4.camel@lappy>
-	<20080303121033.c8c9651c.pj@sgi.com>
-	<6599ad830803031041r6c635141n6520a915f2e1d08@mail.gmail.com>
-	<20080303125253.5d2d580c.pj@sgi.com>
-	<6599ad830803032126m39935eaeu1df67d6263e8e123@mail.gmail.com>
-	<20080304001507.3ddc8f26.pj@sgi.com>
-	<6599ad830803032221j740c9657yec237ebbadbeaeaa@mail.gmail.com>
-	<20080304002651.95089ff1.pj@sgi.com>
-	<6599ad830803032234v3bce2769l26379ea304fe885@mail.gmail.com>
-Organization: SGI
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.12.0; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	id S1754061AbYCDGx0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 4 Mar 2008 01:53:26 -0500
+Date: Tue, 4 Mar 2008 16:52:01 +1000
+From: Greg Ungerer <gerg@snapgear.com>
+Message-Id: <200803040652.m246q1SH012800@goober>
+To: torvalds@linux-foundation.org
+Subject: [M68KNOMMU]: fix fec driver interrupt races
+Cc: gerg@uclinux.org, linux-kernel@vger.kernel.org
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Paul M wrote:
-> I'm one such user who's been forced to add the mem_hardwall flag to
-> get around the fact that exclusive and hardwall are controlled by the
-> same flag. I keep meaning to send it in as a patch but haven't yet got
-> round to it.
+The FEC driver has a common interrupt handler for all interrupt event
+types. It is raised on a number of distinct interrupt vectors.
+This handler can't be re-entered while processing an interrupt, so
+make sure all requested vectors are flagged as IRQF_DISABLED.
 
-I made essentially the same mistake twice in the evolution of cpusets:
- 1) overloading the cpu_exclusive flag to define sched domains, and
- 2) overloading the mem_exclusive flag to define memory hardwalls.
+Signed-off-by: Greg Ungerer <gerg@uclinux.org>
+---
 
-I eventually reversed (1), with a deliberately incompatible change
-(and you know how I resist those ;), creating a new 'sched_load_balance'
-flag that controls the sched_domain partitioning, and removing any
-affect that the cpu_exclusive flag has on this.
-
-Perhaps the unfortunate interaction of mem_exclusive and hardwall is
-destined to go the same path.  Thought the audience that is currently
-using mem_exclusive for the purpose of hardwall enforcement of kernel
-allocations might be broader than the specialized real-time audience
-that was using cpu_exclusive for dynamic sched domain isolation, and so
-we might not choose to just break compatibility in one shot, but rather
-phase in your new flag, before, perhaps, in a later release, phasing
-out the old hardwall overloading of the mem_exclusive flag.
-
-(My primeval mistake was including the cpu_exclusive and mem_exclusive
-flags in the original cpuset design; those two flags have given me
-nothing but temptation to commit further design errors ;).
-
-
-> Also, if you're using fake numa for memory isolation (which we're
-> experimenting with) then the correlation between cpu placement and
-> memory placement is much much weaker, or non-existent.
-
-That might be a good answer to my asking where the beef was.
-
--- 
-                  I won't rest till it's the best ...
-                  Programmer, Linux Scalability
-                  Paul Jackson <pj@sgi.com> 1.940.382.4214
+diff -Naurp linux-2.6.25-rc3/drivers/net/fec.c linux-2.6.25-rc3.foo/drivers/net/fec.c
+--- linux-2.6.25-rc3/drivers/net/fec.c	2008-01-25 08:58:37.000000000 +1000
++++ linux-2.6.25-rc3.foo/drivers/net/fec.c	2008-03-04 16:38:31.000000000 +1000
+@@ -1253,7 +1253,7 @@ static void __inline__ fec_request_intrs
+ 
+ 	/* Setup interrupt handlers. */
+ 	for (idp = id; idp->name; idp++) {
+-		if (request_irq(idp->irq, idp->handler, 0, idp->name, dev) != 0)
++		if (request_irq(idp->irq, idp->handler, IRQF_DISABLED, idp->name, dev) != 0)
+ 			printk("FEC: Could not allocate %s IRQ(%d)!\n", idp->name, idp->irq);
+ 	}
+ 
+@@ -1382,7 +1382,7 @@ static void __inline__ fec_request_intrs
+ 
+ 	/* Setup interrupt handlers. */
+ 	for (idp = id; idp->name; idp++) {
+-		if (request_irq(b+idp->irq, fec_enet_interrupt, 0, idp->name, dev) != 0)
++		if (request_irq(b+idp->irq, fec_enet_interrupt, IRQF_DISABLED, idp->name, dev) != 0)
+ 			printk("FEC: Could not allocate %s IRQ(%d)!\n", idp->name, b+idp->irq);
+ 	}
+ 
+@@ -1553,7 +1553,7 @@ static void __inline__ fec_request_intrs
+ 
+ 	/* Setup interrupt handlers. */
+ 	for (idp = id; idp->name; idp++) {
+-		if (request_irq(b+idp->irq,fec_enet_interrupt,0,idp->name,dev)!=0)
++		if (request_irq(b+idp->irq, fec_enet_interrupt, IRQF_DISABLED, idp->name,dev) != 0)
+ 			printk("FEC: Could not allocate %s IRQ(%d)!\n", idp->name, b+idp->irq);
+ 	}
+ 
+@@ -1680,7 +1680,7 @@ static void __inline__ fec_request_intrs
+ 
+ 	/* Setup interrupt handlers. */
+ 	for (idp = id; idp->name; idp++) {
+-		if (request_irq(b+idp->irq,fec_enet_interrupt,0,idp->name,dev)!=0)
++		if (request_irq(b+idp->irq, fec_enet_interrupt, IRQF_DISABLED, idp->name,dev) != 0)
+ 			printk("FEC: Could not allocate %s IRQ(%d)!\n",
+ 				idp->name, b+idp->irq);
+ 	}
