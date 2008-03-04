@@ -1,81 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757452AbYCDUsJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758231AbYCDUvV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757452AbYCDUsJ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Mar 2008 15:48:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752472AbYCDUry
+	id S1758231AbYCDUvV (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Mar 2008 15:51:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753837AbYCDUvK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Mar 2008 15:47:54 -0500
-Received: from smtp115.sbc.mail.sp1.yahoo.com ([69.147.64.88]:36799 "HELO
-	smtp115.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751680AbYCDUrx (ORCPT
+	Tue, 4 Mar 2008 15:51:10 -0500
+Received: from smtp119.sbc.mail.sp1.yahoo.com ([69.147.64.92]:27323 "HELO
+	smtp119.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1752472AbYCDUvJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Mar 2008 15:47:53 -0500
+	Tue, 4 Mar 2008 15:51:09 -0500
 DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
   s=s1024; d=pacbell.net;
   h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=uP9Tz7hbAcGN4wKtGP0/x/XT7aK4X3sffl6s7XpD3m/QEZ+Cc+KslzE0cJfFVK2G0+vhcSgI7aOBNfx71HgGTVn2kmuEc4L0Pa02PRdvDH5uW1RV2hHlLsjHCZd1GeyFSGAiIy17K9zBXn0wHVQMdFI49L6ne+SgEoMDmdOJtdw=  ;
-X-YMail-OSG: k27yn68VM1kPKfisuLxGKY7N0k8ls7e892V6elXtocLu5Ic97MizPN7ezSsjPAXb79.wiFHqUw--
+  b=Eq7IfJmIR6eLTUgOS/kn6tVuCAufdHuaUYnl08k/MbfKwelPsDy8DDRBdaYCfpXNlMw7rNJ6H5vgKiQUaEvyN5stZEUyJLFx2engEIGRQxYAKJpjgh3paxRr+LvITht4yn9eWtEvbUZQbw3LV/DFjiZK/xJSlUZAnnB44uriD9E=  ;
+X-YMail-OSG: Z2QwtvUVM1mpchUtstRabrO6raNHpx26.LQtlgJ3spkVBNWOX.Fac6Q.dyEJEOVQxzPph8gJEA--
 X-Yahoo-Newman-Property: ymail-3
 From: David Brownell <david-b@pacbell.net>
-To: "Remy Bohmer" <linux@bohmer.net>
-Subject: Re: [PATCH] atmel_tc clocksource/clockevent code
-Date: Tue, 4 Mar 2008 12:47:50 -0800
+To: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: WARNING: at drivers/usb/host/ehci-hcd.c:287
+Date: Tue, 4 Mar 2008 12:51:06 -0800
 User-Agent: KMail/1.9.6
-Cc: "Haavard Skinnemoen" <hskinnemoen@atmel.com>, akpm@linux-foundation.org,
-       LKML <linux-kernel@vger.kernel.org>,
-       "David Brownell" <dbrownell@users.sourceforge.net>,
-       "Nicolas Ferre" <nicolas.ferre@rfo.atmel.com>,
-       "Andrew Victor" <linux@maxim.org.za>,
-       "john stultz" <johnstul@us.ibm.com>,
-       "Thomas Gleixner" <tglx@linutronix.de>
-References: <1204636061-6275-1-git-send-email-hskinnemoen@atmel.com> <1204636061-6275-2-git-send-email-hskinnemoen@atmel.com> <3efb10970803041142l4a03dbb9uf11651d4cc7dde96@mail.gmail.com>
-In-Reply-To: <3efb10970803041142l4a03dbb9uf11651d4cc7dde96@mail.gmail.com>
+Cc: Christian Kujau <lists@nerdbynature.de>,
+       LKML <linux-kernel@vger.kernel.org>, 0x0007@gmail.com,
+       USB list <linux-usb@vger.kernel.org>
+References: <Pine.LNX.4.44L0.0803041118100.4039-100000@iolanthe.rowland.org>
+In-Reply-To: <Pine.LNX.4.44L0.0803041118100.4039-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8bit
 Content-Disposition: inline
-Message-Id: <200803041247.50877.david-b@pacbell.net>
+Message-Id: <200803041251.06725.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 04 March 2008, Remy Bohmer wrote:
-> >  +/* For now, we always use the 32K clock ... this optimizes for NO_HZ,
-> >  + * because using one of the divided clocks would usually mean the
-> >  + * tick rate can never be less than several dozen Hz (vs 0.5 Hz).
-> >  + *
-> >  + * A divided clock could be good for high resolution timers, since
-> >  + * 30.5 usec resolution can seem "low".
+On Tuesday 04 March 2008, Alan Stern wrote:
+> Dave, it seems to me that this must be an example of a race between the 
+> iaa watchdog timer expiring and end_unlink_async() running.  It's not 
+> good enough for end_unlink_async() to call iaa_watchdog_done(), because 
+> on an SMP system the timer may already have fired and the watchdog 
+> routine may be spinning on ehci->lock.
+
+Right.
+
+
+> How about replacing the
 > 
-> I want to comment on that.
->
-> I noticed that on rm9200 the timer interrupt handler itself can cost
-> about 50us to more than 100usec in itself (measured through ETM
-> trace), combined with a worst case interrupt latency of about 75us.
+>         WARN_ON(!ehci->reclaim);
 
-Could you elaborate on where that 50-100 usec gets spent?  Does
-the same issue happpen with the $SUBJECT patch (if you tweak the
-clocksource ratings to use its clockevents on rm9200)?
-
-I'd not think the timer IRQ logic accounts for much of that time,
-and the rest of the instruction cycles would seem to be either
-in genirq or gentime.  Unless the issue is that accessing that
-particular hardware is slow, with clockdomain crossing etc ...
-or that AT91 has way too many handlers sitting on IRQ-1.
-
-If it's a gentime or genirq issue, that's somewhat amenable to
-fixing ... and it would also impact the $SUBJECT patch both on
-other AT91 ARM9 cores and on the AVR32 AP7 cores.
-
-
-> So, a higher resolution than 30usec is useless on these cores, and
-> setting timers on a frequency that high will just choke the processor
-> in only handling timers...
-
-Should the min_delta_ns be increased in at91rm9200_time.c then?
-Right now, as you probably recall, it's at the lowest value
-needed for correctness:  a smidgeon over two ticks (~ 72 nsec).
+Or bettter yet, just removing it entirely.  ISTR doing that in some
+patches I've not yet sent for merging, and expect that's what my
+preferred fix will be ...
 
 - Dave
-
