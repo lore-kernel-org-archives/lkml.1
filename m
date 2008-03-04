@@ -1,147 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763497AbYCDO5T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763870AbYCDPCo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763497AbYCDO5T (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Mar 2008 09:57:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755998AbYCDO5L
+	id S1763870AbYCDPCo (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Mar 2008 10:02:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757241AbYCDPCf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Mar 2008 09:57:11 -0500
-Received: from x346.tv-sign.ru ([89.108.83.215]:34642 "EHLO mail.screens.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755810AbYCDO5J (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Mar 2008 09:57:09 -0500
-Date: Tue, 4 Mar 2008 18:01:07 +0300
-From: Oleg Nesterov <oleg@tv-sign.ru>
-To: Gautham R Shenoy <ego@in.ibm.com>
-Cc: Yi Yang <yi.y.yang@intel.com>, Ingo Molnar <mingo@elte.hu>,
-       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [BUG 2.6.25-rc3] scheduler/hotplug: some processes are dealocked when cpu is set to offline
-Message-ID: <20080304150107.GA564@tv-sign.ru>
-References: <1204483329.3607.8.camel@yangyi-dev.bj.intel.com> <20080303153154.GA11288@in.ibm.com> <1204555505.3842.4.camel@yangyi-dev.bj.intel.com> <20080304052613.GA28632@in.ibm.com>
-Mime-Version: 1.0
+	Tue, 4 Mar 2008 10:02:35 -0500
+Received: from palinux.external.hp.com ([192.25.206.14]:57639 "EHLO
+	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756727AbYCDPCf (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 4 Mar 2008 10:02:35 -0500
+Date: Tue, 4 Mar 2008 08:02:13 -0700
+From: Matthew Wilcox <matthew@wil.cx>
+To: Andrew Morton <akpm@osdl.org>, Linus Torvalds <torvalds@osdl.org>
+Cc: linux-kernel@vger.kernel.org
+Subject: [PATCH] Make Andrew's life easier
+Message-ID: <20080304150213.GI24386@parisc-linux.org>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080304052613.GA28632@in.ibm.com>
-User-Agent: Mutt/1.5.11
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 03/04, Gautham R Shenoy wrote:
->
-> So at times, the callback thread is blocked on kthread_stop(k) in
-> softlockup.c, while other time, it was blocked in
-> cleanup_workqueue_threads() in workqueue.c. 
 
->From another message:
->
-> However, it remains in R< state
+Andrew recently complained that feature-removal-schedule.txt is always
+generating conflicts.  The reason is clear; everybody adds to the
+bottom of the file.  The solution he proposed is to place entries at
+random places in the file.  However, we can make the tools work for
+us here quite simply by adding a separator at the bottom of the file.
+Then diff produces a patch which contains no meaningful context and
+patch will happily put new entries into the file in a random order.
+Unfortunately, git-cherry-pick won't, but I don't think Andrew uses it,
+so he'll be happy anyway.
 
-What about cwq->thread? Was it TASK_RUNNING too?
+This will fail if people subsequently fail to add a separator at the
+bottom of a file.  But then those people can be legitimately grumped at.
 
-Perhaps, for some reason the task can't get CPU after migrating from
-the now dead CPU.
+Signed-off-by: Matthew Wilcox <willy@linux.intel.com>
 
-I can't reproduce this problem on my one cpu P4-ht, perhaps you can
-try something like the untested/uncompiled patch below?
-
-Oleg.
-
---- include/linux/sched.h	2008-02-15 16:59:17.000000000 +0300
-+++ include/linux/sched.h	2008-03-04 17:44:53.136738605 +0300
-@@ -1121,6 +1121,7 @@ struct task_struct {
- /* hung task detection */
- 	unsigned long last_switch_timestamp;
- 	unsigned long last_switch_count;
-+	unsigned long xxx;
- #endif
- /* CPU-specific state of this task */
- 	struct thread_struct thread;
---- kernel/fork.c	2008-02-15 16:59:17.000000000 +0300
-+++ kernel/fork.c	2008-03-04 17:45:14.773033839 +0300
-@@ -1097,6 +1097,7 @@ static struct task_struct *copy_process(
- #ifdef CONFIG_DETECT_SOFTLOCKUP
- 	p->last_switch_count = 0;
- 	p->last_switch_timestamp = 0;
-+	p->xxx = 0;
- #endif
- 
- #ifdef CONFIG_TASK_XACCT
---- kernel/sched.c	2008-02-15 16:59:17.000000000 +0300
-+++ kernel/sched.c	2008-03-04 17:48:42.308798646 +0300
-@@ -1291,6 +1291,7 @@ static void enqueue_task(struct rq *rq, 
- 	sched_info_queued(p);
- 	p->sched_class->enqueue_task(rq, p, wakeup);
- 	p->se.on_rq = 1;
-+	p->xxx = jiffies | 1;
- }
- 
- static void dequeue_task(struct rq *rq, struct task_struct *p, int sleep)
-@@ -3944,6 +3945,8 @@ need_resched_nonpreemptible:
- 	preempt_enable_no_resched();
- 	if (unlikely(test_thread_flag(TIF_NEED_RESCHED)))
- 		goto need_resched;
+diff --git a/Documentation/feature-removal-schedule.txt b/Documentation/feature-removal-schedule.txt
+index c1d1fd0..325e5b4 100644
+--- a/Documentation/feature-removal-schedule.txt
++++ b/Documentation/feature-removal-schedule.txt
+@@ -328,3 +328,6 @@ Why:	Not used in-tree. The current out-of-tree users used it to
+ 	code / infrastructure should be in the kernel and not in some
+ 	out-of-tree driver.
+ Who:	Thomas Gleixner <tglx@linutronix.de>
 +
-+	current->xxx = 0;
- }
- EXPORT_SYMBOL(schedule);
- 
---- kernel/softlockup.c	2008-02-15 16:59:17.000000000 +0300
-+++ kernel/softlockup.c	2008-03-04 17:49:05.584414763 +0300
-@@ -174,6 +174,27 @@ static void check_hung_task(struct task_
- 	touch_nmi_watchdog();
- }
- 
-+static void check_running_task(struct task_struct *t, unsigned long now)
-+{
-+	if (!sysctl_hung_task_timeout_secs)
-+		return;
++---------------------------
 +
-+	if (time_before(now, t->xxx + HZ * sysctl_hung_task_timeout_secs)
-+		return;
-+
-+	printk(KERN_ERR "INFO: task %s:%d can't get CPU for more than "
-+			"%ld seconds.\n", t->comm, t->pid,
-+			sysctl_hung_task_timeout_secs);
-+
-+	if (!cpus_intersects(t->cpus_allowed, cpu_online_map))
-+		printk(KERN_ERR "bad ->cpus_allowed\n");
-+	if (!cpu_online(task_cpu(t)))
-+		printk(KERN_ERR "bad ->cpu\n");
-+
-+	sched_show_task(t);
-+	touch_nmi_watchdog();
-+}
-+
- /*
-  * Check whether a TASK_UNINTERRUPTIBLE does not get woken up for
-  * a really long time (120 seconds). If that happens, print out
-@@ -183,6 +204,7 @@ static void check_hung_uninterruptible_t
- {
- 	int max_count = sysctl_hung_task_check_count;
- 	unsigned long now = get_timestamp(this_cpu);
-+	unsigned long jiff = jiffies;
- 	struct task_struct *g, *t;
- 
- 	/*
-@@ -192,15 +214,17 @@ static void check_hung_uninterruptible_t
- 	if ((tainted & TAINT_DIE) || did_panic)
- 		return;
- 
--	read_lock(&tasklist_lock);
-+	rcu_read_lock();
- 	do_each_thread(g, t) {
- 		if (!--max_count)
- 			goto unlock;
- 		if (t->state & TASK_UNINTERRUPTIBLE)
- 			check_hung_task(t, now);
-+		if (!t->xxx)
-+			check_running_task(t, jiff);
- 	} while_each_thread(g, t);
-  unlock:
--	read_unlock(&tasklist_lock);
-+	rcu_read_unlock();
- }
- 
- /*
 
+-- 
+Intel are signing my paycheques ... these opinions are still mine
+"Bill, look, we understand that you're interested in selling us this
+operating system, but compare it to ours.  We can't possibly take such
+a retrograde step."
