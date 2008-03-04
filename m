@@ -1,58 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763382AbYCDS0I@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765720AbYCDS0l@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763382AbYCDS0I (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Mar 2008 13:26:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932218AbYCDSZp
+	id S1765720AbYCDS0l (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Mar 2008 13:26:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762670AbYCDS0W
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Mar 2008 13:25:45 -0500
-Received: from outbound-mail-122.bluehost.com ([67.222.38.22]:47453 "HELO
-	outbound-mail-122.bluehost.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S932206AbYCDSZo (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Mar 2008 13:25:44 -0500
-X-Greylist: delayed 400 seconds by postgrey-1.27 at vger.kernel.org; Tue, 04 Mar 2008 13:25:43 EST
-From: Jesse Barnes <jbarnes@virtuousgeek.org>
-To: Greg KH <gregkh@suse.de>
-Subject: Re: [PATCH 4/4] ACPI PCI slot detection driver
-Date: Tue, 4 Mar 2008 10:18:28 -0800
-User-Agent: KMail/1.9.6 (enterprise 0.20071204.744707)
-Cc: Matthew Wilcox <matthew@wil.cx>, Alex Chiang <achiang@hp.com>,
-       Gary Hade <garyhade@us.ibm.com>, kaneshige.kenji@jp.fujitsu.com,
-       warthog19@eaglescrag.net, kristen.c.accardi@intel.com,
-       rick.jones2@hp.com, linux-kernel@vger.kernel.org,
-       linux-pci@atrey.karlin.mff.cuni.cz, linux-acpi@vger.kernel.org
-References: <20080229002341.GA21420@ldl.fc.hp.com> <20080301144307.GD24386@parisc-linux.org> <20080304054927.GA15566@suse.de>
-In-Reply-To: <20080304054927.GA15566@suse.de>
+	Tue, 4 Mar 2008 13:26:22 -0500
+Received: from rtr.ca ([76.10.145.34]:3323 "EHLO mail.rtr.ca"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756819AbYCDS0U (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 4 Mar 2008 13:26:20 -0500
+Message-ID: <47CD944A.2090903@rtr.ca>
+Date: Tue, 04 Mar 2008 13:26:18 -0500
+From: Mark Lord <liml@rtr.ca>
+Organization: Real-Time Remedies Inc.
+User-Agent: Thunderbird 2.0.0.12 (X11/20080213)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: saeed <saeed@marvell.com>
+Cc: Jeff Garzik <jeff@garzik.org>, linux-ide@vger.kernel.org, jon@ngndg.com,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: Sata-MV, Intergated Sata Device Support
+References: <1176673884.5109.30.camel@Desktop> <47C35203.20402@garzik.org> <47C3585D.8070701@rtr.ca> <47C35A85.3020307@garzik.org> <alpine.DEB.0.99.0802260024400.22022@ubuntu-saeed.il.marvell.com> <47C43655.1050907@rtr.ca>
+In-Reply-To: <47C43655.1050907@rtr.ca>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200803041018.29035.jbarnes@virtuousgeek.org>
-X-Identified-User: {642:box128.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.27.49 authed with jbarnes@virtuousgeek.org}
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday, March 03, 2008 9:49 pm Greg KH wrote:
-> On Sat, Mar 01, 2008 at 07:43:07AM -0700, Matthew Wilcox wrote:
-> > On Fri, Feb 29, 2008 at 09:25:42PM -0800, Greg KH wrote:
-> > > What is the guarantee that the names of these slots are correct and do
-> > > not happen to be the same as the hotpluggable ones?
-> >
-> > That would be a bug -- and yes, bugs happen, and we have to deal with
-> > them.
->
-> My main concern is that BIOS vendors will not fix these bugs, as no
-> other OS cares/does this kind of thing today.  The ammount of bad
-> information out there might be quite large, and I think this was
-> confirmed by some initial testing of IBM systems, right?
+Mark Lord wrote:
+> saeed wrote:
+>>
+>> On Mon, 25 Feb 2008, Jeff Garzik wrote:
+>>
+>>>> ...
+>>>>
+>>>> Saeed:  isn't this what your SOC patches already implemented for us?
+>>>> As near as I can tell, sata_mv now already has support for the 60x1C0.
+>>> Saeed's stuff didn't support PCI though, and Jon Li is definitely 
+>>> talking
+>>> about PCI...
+>> yes, my patch added support for the SoC sata like in the 5182, and 
+>> this is what Jon Li was concerned about. he mentioneded the 60x1C0 pci 
+>> device just to suggest to use it's code for the SoC sata as it is very 
+>> similar.
+> ..
+> 
+> I don't think I understand your english there.
+> 
+> Does the current sata_mv driver work as-is with the chipset this person wants?
+> If not, then exactly what has to change to make it work?
+..
 
-Yeah, but there's a flip side to this too:  if no one uses the data, no one 
-will complain when it's wrong.  If Linux starts making it easy to see this 
-stuff, there's a chance system vendors will start taking an extra 5 min. 
-before shipment to make sure that the BIOS info is up to date...
-
-OTOH, I'm not sure which is worse, bad data or no data.
-
-Jesse
+Saeed ??
