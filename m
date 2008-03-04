@@ -1,53 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758294AbYCDVLW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759547AbYCDVM2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758294AbYCDVLW (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Mar 2008 16:11:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752644AbYCDVLM
+	id S1759547AbYCDVM2 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Mar 2008 16:12:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752938AbYCDVMS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Mar 2008 16:11:12 -0500
-Received: from web36610.mail.mud.yahoo.com ([209.191.85.27]:42924 "HELO
-	web36610.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1752480AbYCDVLM (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Mar 2008 16:11:12 -0500
-X-YMail-OSG: D4qlOiEVM1nauiSFeyCH4AcClqljgfLvWGAKfD8Lhq6Y7hHkNsZG2lXK.vQWQgfctgoEX3LqWQ--
-X-Mailer: YahooMailRC/902.35 YahooMailWebService/0.7.162
-Date: Tue, 4 Mar 2008 13:11:10 -0800 (PST)
-From: Casey Schaufler <casey@schaufler-ca.com>
-Subject: Re: Google's Summer of Code?
-To: Avi Kivity <avi@qumranet.com>, Pekka Enberg <penberg@cs.helsinki.fi>
-Cc: Linux kernel mailing list <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Ingo Molnar <mingo@elte.hu>, Vegard Nossum <vegard.nossum@gmail.com>
+	Tue, 4 Mar 2008 16:12:18 -0500
+Received: from brick.kernel.dk ([87.55.233.238]:19864 "EHLO kernel.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752644AbYCDVMS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 4 Mar 2008 16:12:18 -0500
+Date: Tue, 4 Mar 2008 22:12:12 +0100
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Alexey Starikovskiy <aystarik@gmail.com>
+Cc: Lukas Hejtmanek <xhejtman@ics.muni.cz>,
+       Henrique de Moraes Holschuh <hmh@hmh.eng.br>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, linux-kernel@vger.kernel.org,
+       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+       Len Brown <lenb@kernel.org>
+Subject: Re: 2.6.25-rc2 Regression Thinkpad acpi
+Message-ID: <20080304211212.GD6704@kernel.dk>
+References: <20080225093914.GB4375@ics.muni.cz> <200802251247.30605.rjw@sisk.pl> <20080225200354.GE16513@khazad-dum.debian.net> <20080225204951.GB4432@ics.muni.cz> <20080225210113.GF16513@khazad-dum.debian.net> <20080225220720.GA4523@ics.muni.cz> <20080225230035.GA14503@khazad-dum.debian.net> <20080226184937.GA4280@ics.muni.cz> <20080304194513.GY6704@kernel.dk> <47CDBA74.5080304@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Message-ID: <976160.25536.qm@web36610.mail.mud.yahoo.com>
+Content-Disposition: inline
+In-Reply-To: <47CDBA74.5080304@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
------ Original Message ----
-> From: Avi Kivity <avi@qumranet.com>
-> To: Pekka Enberg <penberg@cs.helsinki.fi>
-> Cc: Linux kernel mailing list <linux-kernel@vger.kernel.org>; Andrew Morton <akpm@linux-foundation.org>; Linus Torvalds <torvalds@linux-foundation.org>; Ingo Molnar <mingo@elte.hu>; Vegard Nossum <vegard.nossum@gmail.com>
-> Sent: Tuesday, March 4, 2008 12:51:00 PM
-> Subject: Re: Google's Summer of Code?
-> 
-> Pekka Enberg wrote:
-> > Hi all,
+On Wed, Mar 05 2008, Alexey Starikovskiy wrote:
+> Jens Axboe wrote:
+> >On Tue, Feb 26 2008, Lukas Hejtmanek wrote:
+> >  
+> >>On Mon, Feb 25, 2008 at 08:00:35PM -0300, Henrique de Moraes Holschuh 
+> >>wrote:
+> >>    
+> >>>On Mon, 25 Feb 2008, Lukas Hejtmanek wrote:
+> >>>      
+> >>>>volume keys work. But anything through acpid does not. Even AC/battery 
+> >>>>switch
+> >>>>is not signalized. So the bug may be somewhere else?
+> >>>>        
+> >>>Yeah, there is an EC-related regression in 2.6.25-rc3 that bites your
+> >>>thinkpad.  I don't have a link to it right now, but if you look for the
+> >>>messages to LKML on the last 48h, you will find it.
+> >>>      
+> >>this one fixes all my troubles with thinkpad hotkeys in rc3.
+> >>http://lkml.org/lkml/2008/2/25/400
+> >>    
 > >
-> > Are there any plans to send an application of Linux kernel as a mentor
-> > organization for Google's Summer of Code this year? I think there are
-> > probably a lot of students interested in hacking on the kernel. And
-> > no, I am not volunteering to send that application but I would be
-> > interested in being a mentor.
-> > 
-> 
-> kvm will apply, and though some of the work will be in userspace, we'd 
-> like to have kernel contributions as well.
+> >Ping - is anyone sending this upstream? Would be nice to have my x60
+> >usable for -rc4 at least.
+> >
+> >  
+> Please take a look at patches in #10100.
 
-As will Smack, the mandatory access control model of the future,
- 
-Casey Schaufler
-casey@schaufler-ca.com 
+Can you be more specific (eg if you want me to test any/all of them, let
+me know)?
+
+-- 
+Jens Axboe
+
