@@ -1,87 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933765AbYCDUPq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933329AbYCDUTZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933765AbYCDUPq (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Mar 2008 15:15:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751722AbYCDUPf
+	id S933329AbYCDUTZ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Mar 2008 15:19:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759151AbYCDUTP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Mar 2008 15:15:35 -0500
-Received: from mga03.intel.com ([143.182.124.21]:50013 "EHLO mga03.intel.com"
+	Tue, 4 Mar 2008 15:19:15 -0500
+Received: from mail.work.de ([212.12.32.20]:54495 "EHLO mail.work.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760269AbYCDUPe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Mar 2008 15:15:34 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.25,444,1199692800"; 
-   d="scan'208";a="214820347"
-Date: Tue, 4 Mar 2008 12:12:35 -0800
-From: Kristen Carlson Accardi <kristen.c.accardi@intel.com>
-To: Greg KH <gregkh@suse.de>
-Cc: Jesse Barnes <jbarnes@virtuousgeek.org>, Matthew Wilcox <matthew@wil.cx>,
-       Alex Chiang <achiang@hp.com>, Gary Hade <garyhade@us.ibm.com>,
-       kaneshige.kenji@jp.fujitsu.com, warthog19@eaglescrag.net,
-       rick.jones2@hp.com, linux-kernel@vger.kernel.org,
-       linux-pci@atrey.karlin.mff.cuni.cz, linux-acpi@vger.kernel.org
-Subject: Re: [PATCH 4/4] ACPI PCI slot detection driver
-Message-ID: <20080304121235.468756d6@appleyard>
-In-Reply-To: <20080304193036.GB5534@suse.de>
-References: <20080229002341.GA21420@ldl.fc.hp.com>
-	<20080301144307.GD24386@parisc-linux.org>
-	<20080304054927.GA15566@suse.de>
-	<200803041018.29035.jbarnes@virtuousgeek.org>
-	<20080304193036.GB5534@suse.de>
-Reply-To: kristen.c.accardi@intel.com
-X-Mailer: Claws Mail 3.3.0 (GTK+ 2.12.5; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	id S1758412AbYCDUTP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 4 Mar 2008 15:19:15 -0500
+Message-ID: <47CDAEBA.6010102@linuxtv.org>
+Date: Wed, 05 Mar 2008 00:19:06 +0400
+From: Manu Abraham <manu@linuxtv.org>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080213)
+MIME-Version: 1.0
+To: Mauro Carvalho Chehab <mchehab@infradead.org>
+CC: Michael Krufky <mkrufky@linuxtv.org>,
+       Harvey Harrison <harvey.harrison@gmail.com>,
+       "v4l-dvb-maintainer@linuxtv.org" <v4l-dvb-maintainer@linuxtv.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [v4l-dvb-maintainer] [PATCH] media: replace remaining __FUNCTION__
+ occurences
+References: <1204588990.22933.28.camel@brick>	<37219a840803031928l79395c78ka64192f4a9f61744@mail.gmail.com>	<47CCDB5F.1040007@gmail.com>	<47CCEE63.80103@linuxtv.org>	<47CD256B.2070305@linuxtv.org> <20080304105024.0873ad72@gaivota>
+In-Reply-To: <20080304105024.0873ad72@gaivota>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 4 Mar 2008 11:30:36 -0800
-Greg KH <gregkh@suse.de> wrote:
-
-> On Tue, Mar 04, 2008 at 10:18:28AM -0800, Jesse Barnes wrote:
-> > On Monday, March 03, 2008 9:49 pm Greg KH wrote:
-> > > On Sat, Mar 01, 2008 at 07:43:07AM -0700, Matthew Wilcox wrote:
-> > > > On Fri, Feb 29, 2008 at 09:25:42PM -0800, Greg KH wrote:
-> > > > > What is the guarantee that the names of these slots are
-> > > > > correct and do not happen to be the same as the hotpluggable
-> > > > > ones?
-> > > >
-> > > > That would be a bug -- and yes, bugs happen, and we have to
-> > > > deal with them.
-> > >
-> > > My main concern is that BIOS vendors will not fix these bugs, as
-> > > no other OS cares/does this kind of thing today.  The ammount of
-> > > bad information out there might be quite large, and I think this
-> > > was confirmed by some initial testing of IBM systems, right?
-> > 
-> > Yeah, but there's a flip side to this too:  if no one uses the
-> > data, no one will complain when it's wrong.  If Linux starts making
-> > it easy to see this stuff, there's a chance system vendors will
-> > start taking an extra 5 min. before shipment to make sure that the
-> > BIOS info is up to date...
-> > 
-> > OTOH, I'm not sure which is worse, bad data or no data.
+Mauro Carvalho Chehab wrote:
+> On Tue, 04 Mar 2008 14:33:15 +0400
+> Manu Abraham <manu@linuxtv.org> wrote:
 > 
-> bad data is worse.
+>> Michael Krufky wrote:
+>>> Manu Abraham wrote:
+>>>> Michael Krufky wrote:
+>>>>> On Mon, Mar 3, 2008 at 7:03 PM, Harvey Harrison
+>>>>> <harvey.harrison@gmail.com> wrote:
+>>>>>> __FUNCTION__ is gcc-specific, use __func__
+>>>>>>
+>>>>>>  Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
+>>>>>>   162 files changed, 892 insertions(+), 892 deletions(-)
+>>>>> If we apply this, can it be broken down into several smaller patches?
+>>>>> I am in the midst of a large overhaul of the tuning subsystem, and if
+>>>>> this all gets applied at once, it will wreck havoc on my pending
+>>>>> changesets.
+>>>> Please make sure your changes don't conflict with the multiproto tree
+>>>> changes.
+>>>>
+>>>> Regards,
+>>>> Manu
+>>> Manu,
+>>>
+>>> Does that mean that you plan to merge multiproto soon?  If that's the
+>> I hope to do so, unless there aren't any significant issues. The 
+>> multiproto tree is at
+>> http://jusst.de/hg/multiproto.
+>>
+>> (There's hell a lot of reviewing and testing going on by the testers on 
+>> the linux-dvb
+>> ML, but you might additionally like to check whether any of your devices 
+>> have any
+>> side effects)
 > 
-> And then there's the machines with duplicate slot names, how does this
-> code handle PCI slots with that?  I think some of the IBM machines had
-> non-hotplug slots named the same as the hotplug slots, right?
+> Maybe the better would be if we merge from multiproto. Then, Harvey can safely
+> generate the __FUNCTION__ changesets.
 > 
-> This stuff needs a _lot_ of testing on a lot of different machines,
-> and a sane way to fall-back if there are errors to ensure that working
-> machines don't break.
+> Manu,
 > 
-> And then there's the issue with userspace programs only expecting
-> hotplugable slots in the slots/ directory...
-> 
-> thanks,
-> 
-> greg k-h
+> Can I merge it?
 > 
 
-I too worry about interaction with other vendor's machines, so maybe we
-should make it easier to test by putting this series into linux-next?
+
+If you meant to merge the multiproto tree, Not yet.
+
+Regards,
+Manu
 
