@@ -1,74 +1,156 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932789AbYCDU1W@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933071AbYCDUax@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932789AbYCDU1W (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Mar 2008 15:27:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760056AbYCDU1H
+	id S933071AbYCDUax (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Mar 2008 15:30:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758765AbYCDUal
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Mar 2008 15:27:07 -0500
-Received: from iolanthe.rowland.org ([192.131.102.54]:53146 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1759704AbYCDU1G (ORCPT
+	Tue, 4 Mar 2008 15:30:41 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:33441
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1757328AbYCDUak (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Mar 2008 15:27:06 -0500
-Date: Tue, 4 Mar 2008 15:27:04 -0500 (EST)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: Christian Kujau <lists@nerdbynature.de>
-cc: David Brownell <david-b@pacbell.net>, LKML <linux-kernel@vger.kernel.org>,
-       <0x0007@gmail.com>, USB list <linux-usb@vger.kernel.org>
-Subject: Re: WARNING: at drivers/usb/host/ehci-hcd.c:287
-In-Reply-To: <alpine.DEB.1.00.0803041948230.5974@sheep.housecafe.de>
-Message-ID: <Pine.LNX.4.44L0.0803041525570.15190-100000@iolanthe.rowland.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Tue, 4 Mar 2008 15:30:40 -0500
+Date: Tue, 04 Mar 2008 12:30:31 -0800 (PST)
+Message-Id: <20080304.123031.242861949.davem@davemloft.net>
+To: mingo@elte.hu
+Cc: akpm@linux-foundation.org, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org, shemminger@linux-foundation.org,
+       rjw@sisk.pl
+Subject: Re: [patch] mark netconsole broken
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20080304080644.GC2947@elte.hu>
+References: <20080206011643.d9021649.akpm@linux-foundation.org>
+	<20080303210540.cea55e13.akpm@linux-foundation.org>
+	<20080304080644.GC2947@elte.hu>
+X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 4 Mar 2008, Christian Kujau wrote:
+From: Ingo Molnar <mingo@elte.hu>
+Date: Tue, 4 Mar 2008 09:06:44 +0100
 
-> I'm not sure, but do you mean:
-> 
-> --- linux-2.6/drivers/usb/host/ehci-hcd.c	2008-02-24 22:25:54.000000000 +0100
-> +++ linux-2.6/drivers/usb/host/ehci-hcd.c.edited	2008-03-04 19:46:13.000000000 +0100
-> @@ -284,7 +284,10 @@ static void ehci_iaa_watchdog(unsigned l
->   	u32			status, cmd;
-> 
->   	spin_lock_irqsave (&ehci->lock, flags);
-> -	WARN_ON(!ehci->reclaim);
-> +	if (unlikely(!ehci->reclaim ||
-> +			!HC_IS_RUNNING(ehci_to_hcd(ehci)->state) ||
-> +			timer_pending(&ehci->iaa_watchdog))
-> +	goto done;
-> 
->   	status = ehci_readl(ehci, &ehci->regs->status);
->   	cmd = ehci_readl(ehci, &ehci->regs->command);
+> i'd suggest the patch below, to mark it broken.
 
-Almost.  I meant:
+Why bother when we know what the bug is and can fix it? :-)
 
-Index: usb-2.6/drivers/usb/host/ehci-hcd.c
-===================================================================
---- usb-2.6.orig/drivers/usb/host/ehci-hcd.c
-+++ usb-2.6/drivers/usb/host/ehci-hcd.c
-@@ -260,7 +260,10 @@ static void ehci_iaa_watchdog(unsigned l
- 	u32			status, cmd;
+commit d9452e9f81e997cbd0c9bface8d2c2a4b064cc3e
+Author: David S. Miller <davem@davemloft.net>
+Date:   Tue Mar 4 12:28:49 2008 -0800
+
+    [NETPOLL]: Revert two bogus cleanups that broke netconsole.
+    
+    Based upon a report by Andrew Morton and code analysis done
+    by Jarek Poplawski.
+    
+    This reverts 33f807ba0d9259e7c75c7a2ce8bd2787e5b540c7 ("[NETPOLL]:
+    Kill NETPOLL_RX_DROP, set but never tested.")  and
+    c7b6ea24b43afb5749cb704e143df19d70e23dea ("[NETPOLL]: Don't need
+    rx_flags.").
+    
+    The rx_flags did get tested for zero vs. non-zero and therefore we do
+    need those tests and that code which sets NETPOLL_RX_DROP et al.
+    
+    Signed-off-by: David S. Miller <davem@davemloft.net>
+
+diff --git a/include/linux/netpoll.h b/include/linux/netpoll.h
+index a0525a1..e3d7959 100644
+--- a/include/linux/netpoll.h
++++ b/include/linux/netpoll.h
+@@ -25,6 +25,7 @@ struct netpoll {
  
- 	spin_lock_irqsave (&ehci->lock, flags);
--	WARN_ON(!ehci->reclaim);
-+	if (unlikely(!ehci->reclaim ||
-+			!HC_IS_RUNNING(ehci_to_hcd(ehci)->state) ||
-+			timer_pending(&ehci->iaa_watchdog))
-+		goto done;
+ struct netpoll_info {
+ 	atomic_t refcnt;
++	int rx_flags;
+ 	spinlock_t rx_lock;
+ 	struct netpoll *rx_np; /* netpoll that registered an rx_hook */
+ 	struct sk_buff_head arp_tx; /* list of arp requests to reply to */
+@@ -50,12 +51,12 @@ static inline int netpoll_rx(struct sk_buff *skb)
+ 	unsigned long flags;
+ 	int ret = 0;
  
- 	status = ehci_readl(ehci, &ehci->regs->status);
- 	cmd = ehci_readl(ehci, &ehci->regs->command);
-@@ -276,7 +279,7 @@ static void ehci_iaa_watchdog(unsigned l
- 		ehci_writel(ehci, cmd & ~CMD_IAAD, &ehci->regs->command);
- 		end_unlink_async(ehci);
- 	}
--
-+ done:
- 	spin_unlock_irqrestore(&ehci->lock, flags);
+-	if (!npinfo || !npinfo->rx_np)
++	if (!npinfo || (!npinfo->rx_np && !npinfo->rx_flags))
+ 		return 0;
+ 
+ 	spin_lock_irqsave(&npinfo->rx_lock, flags);
+-	/* check rx_np again with the lock held */
+-	if (npinfo->rx_np && __netpoll_rx(skb))
++	/* check rx_flags again with the lock held */
++	if (npinfo->rx_flags && __netpoll_rx(skb))
+ 		ret = 1;
+ 	spin_unlock_irqrestore(&npinfo->rx_lock, flags);
+ 
+diff --git a/net/core/netpoll.c b/net/core/netpoll.c
+index 6faa128..4b7e756 100644
+--- a/net/core/netpoll.c
++++ b/net/core/netpoll.c
+@@ -39,6 +39,8 @@ static struct sk_buff_head skb_pool;
+ static atomic_t trapped;
+ 
+ #define USEC_PER_POLL	50
++#define NETPOLL_RX_ENABLED  1
++#define NETPOLL_RX_DROP     2
+ 
+ #define MAX_SKB_SIZE \
+ 		(MAX_UDP_CHUNK + sizeof(struct udphdr) + \
+@@ -126,11 +128,13 @@ static int poll_one_napi(struct netpoll_info *npinfo,
+ 	if (!test_bit(NAPI_STATE_SCHED, &napi->state))
+ 		return budget;
+ 
++	npinfo->rx_flags |= NETPOLL_RX_DROP;
+ 	atomic_inc(&trapped);
+ 
+ 	work = napi->poll(napi, budget);
+ 
+ 	atomic_dec(&trapped);
++	npinfo->rx_flags &= ~NETPOLL_RX_DROP;
+ 
+ 	return budget - work;
  }
+@@ -472,7 +476,7 @@ int __netpoll_rx(struct sk_buff *skb)
+ 	if (skb->dev->type != ARPHRD_ETHER)
+ 		goto out;
  
-
+-	/* if receive ARP during middle of NAPI poll, then queue */
++	/* check if netpoll clients need ARP */
+ 	if (skb->protocol == htons(ETH_P_ARP) &&
+ 	    atomic_read(&trapped)) {
+ 		skb_queue_tail(&npi->arp_tx, skb);
+@@ -534,9 +538,6 @@ int __netpoll_rx(struct sk_buff *skb)
+ 	return 1;
+ 
+ out:
+-	/* If packet received while already in poll then just
+-	 * silently drop.
+-	 */
+ 	if (atomic_read(&trapped)) {
+ 		kfree_skb(skb);
+ 		return 1;
+@@ -675,6 +676,7 @@ int netpoll_setup(struct netpoll *np)
+ 			goto release;
+ 		}
+ 
++		npinfo->rx_flags = 0;
+ 		npinfo->rx_np = NULL;
+ 
+ 		spin_lock_init(&npinfo->rx_lock);
+@@ -756,6 +758,7 @@ int netpoll_setup(struct netpoll *np)
+ 
+ 	if (np->rx_hook) {
+ 		spin_lock_irqsave(&npinfo->rx_lock, flags);
++		npinfo->rx_flags |= NETPOLL_RX_ENABLED;
+ 		npinfo->rx_np = np;
+ 		spin_unlock_irqrestore(&npinfo->rx_lock, flags);
+ 	}
+@@ -797,6 +800,7 @@ void netpoll_cleanup(struct netpoll *np)
+ 			if (npinfo->rx_np == np) {
+ 				spin_lock_irqsave(&npinfo->rx_lock, flags);
+ 				npinfo->rx_np = NULL;
++				npinfo->rx_flags &= ~NETPOLL_RX_ENABLED;
+ 				spin_unlock_irqrestore(&npinfo->rx_lock, flags);
+ 			}
+ 
