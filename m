@@ -1,68 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762153AbYCDGxf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762822AbYCDGxx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762153AbYCDGxf (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Mar 2008 01:53:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754133AbYCDGx1
+	id S1762822AbYCDGxx (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Mar 2008 01:53:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757584AbYCDGxb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Mar 2008 01:53:27 -0500
-Received: from rex.snapgear.com ([203.143.235.140]:38402 "EHLO snapgear.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1754061AbYCDGx0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Mar 2008 01:53:26 -0500
-Date: Tue, 4 Mar 2008 16:52:01 +1000
-From: Greg Ungerer <gerg@snapgear.com>
-Message-Id: <200803040652.m246q1SH012800@goober>
-To: torvalds@linux-foundation.org
-Subject: [M68KNOMMU]: fix fec driver interrupt races
-Cc: gerg@uclinux.org, linux-kernel@vger.kernel.org
+	Tue, 4 Mar 2008 01:53:31 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:53367 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756726AbYCDGxa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 4 Mar 2008 01:53:30 -0500
+Date: Tue, 4 Mar 2008 07:53:05 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Arjan van de Ven <arjan@linux.intel.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>, hans.rosenfeld@amd.com,
+       linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: bisected boot regression post 2.6.25-rc3.. please revert
+Message-ID: <20080304065305.GA32287@elte.hu>
+References: <20080301105646.2c8620d9@laptopd505.fenrus.org> <20080303074620.GC5934@elte.hu> <20080303091304.GA17911@elte.hu> <47CC2A3D.1000307@linux.intel.com> <20080303174009.GA19131@elte.hu> <47CC451A.2060501@linux.intel.com> <alpine.LFD.1.00.0803031042230.17889@woody.linux-foundation.org> <47CC74E6.60306@linux.intel.com> <47CCA03D.9040007@linux.intel.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <47CCA03D.9040007@linux.intel.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The FEC driver has a common interrupt handler for all interrupt event
-types. It is raised on a number of distinct interrupt vectors.
-This handler can't be re-entered while processing an interrupt, so
-make sure all requested vectors are flagged as IRQF_DISABLED.
 
-Signed-off-by: Greg Ungerer <gerg@uclinux.org>
----
+* Arjan van de Ven <arjan@linux.intel.com> wrote:
 
-diff -Naurp linux-2.6.25-rc3/drivers/net/fec.c linux-2.6.25-rc3.foo/drivers/net/fec.c
---- linux-2.6.25-rc3/drivers/net/fec.c	2008-01-25 08:58:37.000000000 +1000
-+++ linux-2.6.25-rc3.foo/drivers/net/fec.c	2008-03-04 16:38:31.000000000 +1000
-@@ -1253,7 +1253,7 @@ static void __inline__ fec_request_intrs
- 
- 	/* Setup interrupt handlers. */
- 	for (idp = id; idp->name; idp++) {
--		if (request_irq(idp->irq, idp->handler, 0, idp->name, dev) != 0)
-+		if (request_irq(idp->irq, idp->handler, IRQF_DISABLED, idp->name, dev) != 0)
- 			printk("FEC: Could not allocate %s IRQ(%d)!\n", idp->name, idp->irq);
- 	}
- 
-@@ -1382,7 +1382,7 @@ static void __inline__ fec_request_intrs
- 
- 	/* Setup interrupt handlers. */
- 	for (idp = id; idp->name; idp++) {
--		if (request_irq(b+idp->irq, fec_enet_interrupt, 0, idp->name, dev) != 0)
-+		if (request_irq(b+idp->irq, fec_enet_interrupt, IRQF_DISABLED, idp->name, dev) != 0)
- 			printk("FEC: Could not allocate %s IRQ(%d)!\n", idp->name, b+idp->irq);
- 	}
- 
-@@ -1553,7 +1553,7 @@ static void __inline__ fec_request_intrs
- 
- 	/* Setup interrupt handlers. */
- 	for (idp = id; idp->name; idp++) {
--		if (request_irq(b+idp->irq,fec_enet_interrupt,0,idp->name,dev)!=0)
-+		if (request_irq(b+idp->irq, fec_enet_interrupt, IRQF_DISABLED, idp->name,dev) != 0)
- 			printk("FEC: Could not allocate %s IRQ(%d)!\n", idp->name, b+idp->irq);
- 	}
- 
-@@ -1680,7 +1680,7 @@ static void __inline__ fec_request_intrs
- 
- 	/* Setup interrupt handlers. */
- 	for (idp = id; idp->name; idp++) {
--		if (request_irq(b+idp->irq,fec_enet_interrupt,0,idp->name,dev)!=0)
-+		if (request_irq(b+idp->irq, fec_enet_interrupt, IRQF_DISABLED, idp->name,dev) != 0)
- 			printk("FEC: Could not allocate %s IRQ(%d)!\n",
- 				idp->name, b+idp->irq);
- 	}
+>> I'm staring at the disassembly and it's quite different but 
+>> follow_page() is rather large; trying to make a smaller testcase now
+>
+> sadly a more isolated testcase doesn't show the same behavior yet; so 
+> it's some fun interaction ;(
+>
+> more staring at the assembly for me
+
+could you post the "bad" and the "good" disassembled functions, and the 
+specific gcc version string?
+
+	Ingo
