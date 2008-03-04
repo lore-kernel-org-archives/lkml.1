@@ -1,130 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764803AbYCDNV7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758016AbYCDN1u@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764803AbYCDNV7 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Mar 2008 08:21:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754210AbYCDNVt
+	id S1758016AbYCDN1u (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Mar 2008 08:27:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751287AbYCDN1m
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Mar 2008 08:21:49 -0500
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:59541 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755321AbYCDNVs (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Mar 2008 08:21:48 -0500
-Message-ID: <47CD4CE9.9060901@sgi.com>
-Date: Tue, 04 Mar 2008 05:21:45 -0800
-From: Mike Travis <travis@sgi.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
+	Tue, 4 Mar 2008 08:27:42 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:56970 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750995AbYCDN1l (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 4 Mar 2008 08:27:41 -0500
+Date: Tue, 4 Mar 2008 14:27:24 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: devzero@web.de
+Cc: pavel@ucw.cz, linux-kernel@vger.kernel.org, rick@vanrein.org
+Subject: Re: [PATCH 2.6.24] mm: BadRAM support for broken memory
+Message-ID: <20080304132724.GB32383@elte.hu>
+References: <182234194@web.de>
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: mingo@elte.hu, tglx@linutronix.de, ak@suse.de, clameter@sgi.com,
-       steiner@sgi.com, linux-kernel@vger.kernel.org, linux-mm@kvack.org
-Subject: Re: [PATCH 2/2] x86_64: Cleanup non-smp usage of cpu maps v3
-References: <20080219203335.866324000@polaris-admin.engr.sgi.com>	<20080219203336.177905000@polaris-admin.engr.sgi.com> <20080303170235.4334e841.akpm@linux-foundation.org>
-In-Reply-To: <20080303170235.4334e841.akpm@linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <182234194@web.de>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-Thanks Andrew for catching this, I'll take a look.  Our "big box amd" system still has
-a failing serial port, so I haven't been able to remotely test on it.
+* devzero@web.de <devzero@web.de> wrote:
 
-Regards,
-Mike
+> >What is wrong with mem=exactmap?
+> 
+> probably no ordinary user knows how to use it instead of badram?
+> http://lists.opensuse.org/opensuse/2007-04/msg00501.html
+> 
+> someone please show us how to use that instead of badram or how this 
+> can replace what badram does.
 
-Andrew Morton wrote:
-> On Tue, 19 Feb 2008 12:33:37 -0800
-> Mike Travis <travis@sgi.com> wrote:
-> 
->> Cleanup references to the early cpu maps for the non-SMP configuration
->> and remove some functions called for SMP configurations only.
->>
->> Based on git://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux-2.6.git
->>
-> 
-> My 8-way x86_64 box is crashing with this patch series applied.
-> 
-> Quite late in boot, when modules are being loaded:
-> 
-> 
-> SELinux: initialized (dev rootfs, type rootfs), uses genfs_contexts
-> SELinux: initialized (dev sysfs, type sysfs), uses genfs_contexts
-> SELinux: policy loaded with handle_unknown=deny
-> type=1403 audit(1204590434.779:3): policy loaded auid=4294967295 ses=4294967295
-> BUG: unable to handle kernel paging request at ffff80ff81959078
-> IP: [<ffffffff8025062d>] sys_init_module+0x135e/0x1a24
-> PGD 0 
-> Oops: 0002 [1] SMP 
-> last sysfs file: /sys/devices/pnp0/00:17/id
-> CPU 7 
-> Modules linked in: dm_mirror dm_multipath dm_mod sbs sbshc dock battery ac parport_pc lp parport snd_hda_intel snd_seq_dummy snd_seq_oss snd_seq_midi_event floppy snd_seq snd_seq_device snd_pcm_oss sg snd_mixer_oss snd_pcm serio_raw ide_cd_mod cdrom snd_timer shpchp snd soundcore snd_page_alloc button pcspkr i2c_i801 i2c_core ehci_hcd ohci_hcd uhci_hcd
-> Pid: 2969, comm: modprobe Not tainted 2.6.25-rc3-mm1 #9
-> RIP: 0010:[<ffffffff8025062d>]  [<ffffffff8025062d>] sys_init_module+0x135e/0x1a24
-> RSP: 0018:ffff81025a50de08  EFLAGS: 00010287
-> RAX: ffff810001004000 RBX: 000000000000001c RCX: 000000000000001c
-> RDX: 0000000000000000 RSI: ffffc20001b281b0 RDI: ffff80ff81959078
-> RBP: ffffc20001b281b0 R08: 0000000000000000 R09: ffffc20001e8d800
-> R10: ffffc20001e6d818 R11: 0000000000000002 R12: ffffffffa0300900
-> R13: ffffc20001e6cfd8 R14: ffffffff80955078 R15: ffffc20001af3000
-> FS:  00007f50a14066f0(0000) GS:ffff81000107b000(0000) knlGS:0000000000000000
-> CS:  0010 DS: 0000 ES: 0000 CR0: 000000008005003b
-> CR2: ffff80ff81959078 CR3: 000000025b565000 CR4: 00000000000006e0
-> DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
-> DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
-> Process modprobe (pid: 2969, threadinfo ffff81025a50c000, task ffff81025dbbf380)
-> Stack:  0000000000000000 00000000006180e0 ffffc20001e6dd98 ffffc20001e6d7d8
->  ffffc20001e6dd58 ffff81025b4f2e20 ffffc200021aef80 0000000000000036
->  0000000f00000000 0000000a00000000 0000000d00000011 0000000000000000
-> Call Trace:
->  [<ffffffff80454696>] ? neigh_lookup+0x0/0xc0
->  [<ffffffff80310ca7>] ? selinux_file_permission+0x54/0x127
->  [<ffffffff8028cc93>] ? vfs_read+0xa8/0x131
->  [<ffffffff8020bceb>] ? system_call_after_swapgs+0x7b/0x80
-> 
-> 
-> Code: 48 8b 58 20 48 8b 68 10 e8 ad 1b 0e 00 eb 2d 48 8b 05 70 56 5f 00 49 63 d0 4c 89 f7 fc 48 89 ee 48 89 d9 48 8b 04 d0 48 03 78 08 <f3> a4 48 c7 c6 40 d7 96 80 44 89 c7 e8 98 1b 0e 00 3d fe 00 00 
-> RIP  [<ffffffff8025062d>] sys_init_module+0x135e/0x1a24
->  RSP <ffff81025a50de08>
-> CR2: ffff80ff81959078
-> ---[ end trace d72a6bcf35cfd5e6 ]---
-> 
-> 
-> 
-> 
-> In percpu_modcopy():
-> 
-> (gdb) l *0xffffffff8025062d
-> 0xffffffff8025062d is in sys_init_module (kernel/module.c:436).
-> 431     static void percpu_modcopy(void *pcpudest, const void *from, unsigned long size)
-> 432     {
-> 433             int cpu;
-> 434     
-> 435             for_each_possible_cpu(cpu)
-> 436                     memcpy(pcpudest + per_cpu_offset(cpu), from, size);
-> 437     }
-> 438     
-> 439     static int percpu_modinit(void)
-> 440     {
-> 
-> 
-> Full boot log: http://userweb.kernel.org/~akpm/dmesg-akpm2.txt
-> 
-> .config: http://userweb.kernel.org/~akpm/config-akpm2.txt
-> 
-> 
-> I was unable to bisect it more finely than this:
-> 
-> init-move-setup-of-nr_cpu_ids-to-as-early-as-possible-v3.patch
-> generic-percpu-infrastructure-to-rebase-the-per-cpu-area-to-zero-v3.patch OK
-> x86_64-fold-pda-into-per-cpu-area-v3.patch
-> x86_64-fold-pda-into-per-cpu-area-v3-fix.patch				
-> x86_64-cleanup-non-smp-usage-of-cpu-maps-v3.patch			BAD
-> 
-> because when x86_64-cleanup-non-smp-usage-of-cpu-maps-v3.patch was removed
-> the machine hung quite early, when playing around with TSC calibration I
-> think.
-> 
-> I'll drop 'em.
+as i said it in another reply to this thread, it would be perfectly 
+acceptable for upstream to merge an easier to use boot option - be that 
+badmem=addr$size or excludemem=addr$size. Please send a patch :-)
 
+	Ingo
