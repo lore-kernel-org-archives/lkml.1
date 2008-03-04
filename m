@@ -1,59 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761536AbYCDG7U@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762843AbYCDHAd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761536AbYCDG7U (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Mar 2008 01:59:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754455AbYCDG7M
+	id S1762843AbYCDHAd (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Mar 2008 02:00:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752057AbYCDHAZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Mar 2008 01:59:12 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:51938 "EHLO mx3.mail.elte.hu"
+	Tue, 4 Mar 2008 02:00:25 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:43146 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753997AbYCDG7M (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Mar 2008 01:59:12 -0500
-Date: Tue, 4 Mar 2008 07:58:53 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Segher Boessenkool <segher@kernel.crashing.org>
-Cc: Arjan van de Ven <arjan@linux.intel.com>, hans.rosenfeld@amd.com,
-       torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
-       "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: bisected boot regression post 2.6.25-rc3.. please revert
-Message-ID: <20080304065853.GB32287@elte.hu>
-References: <20080301105646.2c8620d9@laptopd505.fenrus.org> <20080303074620.GC5934@elte.hu> <20080303091304.GA17911@elte.hu> <47CC2A3D.1000307@linux.intel.com> <20080303174009.GA19131@elte.hu> <47CC451A.2060501@linux.intel.com> <962471e5d2b8c88858dd5e0f50269751@kernel.crashing.org>
+	id S1754103AbYCDHAY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 4 Mar 2008 02:00:24 -0500
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <962471e5d2b8c88858dd5e0f50269751@kernel.crashing.org>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Content-Transfer-Encoding: 7bit
+From: Roland McGrath <roland@redhat.com>
+To: Frank Mayhar <fmayhar@google.com>
+X-Fcc: ~/Mail/linus
+Cc: parag.warudkar@gmail.com,
+       Alejandro Riveira =?ISO-8859-1?Q?Fern=E1ndez?= 
+	<ariveira@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       bugme-daemon@bugzilla.kernel.org, linux-kernel@vger.kernel.org,
+       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       Jakub Jelinek <jakub@redhat.com>
+Subject: Re: [Bugme-new] [Bug 9906] New: Weird hang with NPTL and SIGPROF.
+In-Reply-To: Frank Mayhar's message of  Friday, 29 February 2008 11:55:04 -0800 <1204314904.4850.23.camel@peace.smo.corp.google.com>
+References: <bug-9906-10286@http.bugzilla.kernel.org/>
+	<20080206165045.89b809cc.akpm@linux-foundation.org>
+	<1202345893.8525.33.camel@peace.smo.corp.google.com>
+	<alpine.LRH.1.00.0802062148480.7445@mini.warudkars.net>
+	<20080207162203.3e3cf5ab@Varda>
+	<alpine.LRH.1.00.0802071040010.29320@mini.warudkars.net>
+	<alpine.LRH.1.00.0802071054160.29320@mini.warudkars.net>
+	<20080207165455.04ec490b@Varda>
+	<alpine.LRH.1.00.0802071100230.29369@mini.warudkars.net>
+	<alpine.LRH.1.00.0802071153130.15220@mini.warudkars.net>
+	<1204314904.4850.23.camel@peace.smo.corp.google.com>
+X-Shopping-List: (1) Global defusers
+   (2) Hectic lubricating approval distenders
+   (3) Coughing neglect logs
+   (4) Periodical chowder carrion
+   (5) Erroneous detection indigestion
+Message-Id: <20080304070016.903E127010A@magilla.localdomain>
+Date: Mon,  3 Mar 2008 23:00:16 -0800 (PST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Thanks for the detailed explanation and for bringing this to my attention.
 
-* Segher Boessenkool <segher@kernel.crashing.org> wrote:
+This is a problem we knew about when I first implemented posix-cpu-timers
+and process-wide SIGPROF/SIGVTALRM.  I'm a little surprised it took this
+long to become a problem in practice.  I originally expected to have to
+revisit it sooner than this, but I certainly haven't thought about it for
+quite some time.  I'd guess that HZ=1000 becoming common is what did it.
 
-> so (on 32-bit) ~_PAGE_PSE is ~0x80L is 0xffffff7f, which when cast to 
-> 64-bit is 0x00000000ffffff7f, so in
->
-> 	(~PAGE_MASK & ~_PAGE_USER & ~_PAGE_PSE & ~_PAGE_NX)
->
-> all the high bits are lost, while the original
->
-> 	~(PAGE_MASK | _PAGE_USER | _PAGE_PSE | _PAGE_NX)
->
-> works as intended, since the bit inversion is done on a 64-bit number.
+The obvious implementation for the process-wide clocks is to have the
+tick interrupt increment shared utime/stime/sched_time fields in
+signal_struct as well as the private task_struct fields.  The all-threads
+totals accumulate in the signal_struct fields, which would be atomic_t.
+It's then trivial for the timer expiry checks to compare against those
+totals.
 
-but we really are interested in the low bits here (lets ignore the NX 
-bit for now) and the patch has been in the queue for a long time (more 
-than a month), so if there was a trivial mask mixup problem it would 
-have shown on the first day. So i suspect some gcc bug instead - and 
-certainly the colorful mixture of types and signs in this expression 
-might have surprised a new version of gcc somewhere.
+The concern I had about this was multiple CPUs competing for the
+signal_struct fields.  (That is, several CPUs all running threads in the
+same process.)  If the ticks on each CPU are even close to synchronized,
+then every single time all those CPUs will do an atomic_add on the same
+word.  I'm not any kind of expert on SMP and cache effects, but I know
+this is bad.  However bad it is, it's that bad all the time and however
+few threads (down to 2) it's that bad for that many CPUs.
 
-	Ingo
+The implementation we have instead is obviously dismal for large numbers
+of threads.  I always figured we'd replace that with something based on
+more sophisticated thinking about the CPU-clash issue.  
+
+I don't entirely follow your description of your patch.  It sounds like it
+should be two patches, though.  The second of those patches (workqueue)
+sounds like it could be an appropriate generic cleanup, or like it could
+be a complication that might be unnecessary if we get a really good
+solution to main issue.  
+
+The first patch I'm not sure whether I understand what you said or not.
+Can you elaborate?  Or just post the unfinished patch as illustration,
+marking it as not for submission until you've finished.
+
+
+Thanks,
+Roland
