@@ -1,239 +1,143 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765663AbYCDQfm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765915AbYCDQgS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765663AbYCDQfm (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Mar 2008 11:35:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765125AbYCDQar
+	id S1765915AbYCDQgS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Mar 2008 11:36:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764916AbYCDQat
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Mar 2008 11:30:47 -0500
-Received: from pecan.exetel.com.au ([220.233.0.17]:48612 "EHLO
+	Tue, 4 Mar 2008 11:30:49 -0500
+Received: from pecan.exetel.com.au ([220.233.0.17]:48613 "EHLO
 	smtp.po.exetel.com.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1765016AbYCDQao (ORCPT
+	with ESMTP id S1765348AbYCDQar (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Mar 2008 11:30:44 -0500
+	Tue, 4 Mar 2008 11:30:47 -0500
 From: oakad@exemail.com.au
 To: linux-kernel@vger.kernel.org
 Cc: akpm@linux-foundation.org, Alex Dubov <oakad@yahoo.com>
-Subject: [PATCH 11/11] memstick: add support for JMicron jmb38x MemoryStick host controller
-Date: Wed,  5 Mar 2008 03:02:28 +1100
-Message-Id: <1204646548-27466-12-git-send-email-oakad@exemail.com.au>
+Subject: [PATCH 05/11] tifm: fix the MemoryStick host fifo handling code
+Date: Wed,  5 Mar 2008 03:02:22 +1100
+Message-Id: <1204646548-27466-6-git-send-email-oakad@exemail.com.au>
 X-Mailer: git-send-email 1.5.3.6
-In-Reply-To: <1204646548-27466-11-git-send-email-oakad@exemail.com.au>
+In-Reply-To: <1204646548-27466-5-git-send-email-oakad@exemail.com.au>
 References: <1204646548-27466-1-git-send-email-oakad@exemail.com.au>
  <1204646548-27466-2-git-send-email-oakad@exemail.com.au>
  <1204646548-27466-3-git-send-email-oakad@exemail.com.au>
  <1204646548-27466-4-git-send-email-oakad@exemail.com.au>
  <1204646548-27466-5-git-send-email-oakad@exemail.com.au>
- <1204646548-27466-6-git-send-email-oakad@exemail.com.au>
- <1204646548-27466-7-git-send-email-oakad@exemail.com.au>
- <1204646548-27466-8-git-send-email-oakad@exemail.com.au>
- <1204646548-27466-9-git-send-email-oakad@exemail.com.au>
- <1204646548-27466-10-git-send-email-oakad@exemail.com.au>
- <1204646548-27466-11-git-send-email-oakad@exemail.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Alex Dubov <oakad@yahoo.com>
 
+Additional input received from JMicron on MemoryStick host interfaces
+showed that some assumtions in fifo handling code were incorrect. This
+patch also fixes data corruption used to occure during PIO transfers.
+
 Signed-off-by: Alex Dubov <oakad@yahoo.com>
 ---
- drivers/memstick/Kconfig          |    2 +-
- drivers/memstick/host/Kconfig     |   10 +
- drivers/memstick/host/Makefile    |    6 +-
- drivers/memstick/host/jmb38x_ms.c |  945 +++++++++++++++++++++++++++++++++++++
- include/linux/pci_ids.h           |    1 +
- 5 files changed, 960 insertions(+), 4 deletions(-)
- create mode 100644 drivers/memstick/host/jmb38x_ms.c
+ drivers/memstick/host/tifm_ms.c |  524 ++++++++++++++++++++-------------------
+ include/linux/tifm.h            |    2 +-
+ 2 files changed, 264 insertions(+), 262 deletions(-)
 
-diff --git a/drivers/memstick/Kconfig b/drivers/memstick/Kconfig
-index 1093fdb..f0ca41c 100644
---- a/drivers/memstick/Kconfig
-+++ b/drivers/memstick/Kconfig
-@@ -8,7 +8,7 @@ menuconfig MEMSTICK
- 	  Sony MemoryStick is a proprietary storage/extension card protocol.
+diff --git a/drivers/memstick/host/tifm_ms.c b/drivers/memstick/host/tifm_ms.c
+index c62e709..b88f5b3 100644
+--- a/drivers/memstick/host/tifm_ms.c
++++ b/drivers/memstick/host/tifm_ms.c
+@@ -24,275 +24,289 @@
+ static int no_dma;
+ module_param(no_dma, bool, 0644);
  
- 	  If you want MemoryStick support, you should say Y here and also
--	  to the specific driver for your MMC interface.
-+	  to the specific driver for your MemoryStick interface.
- 
- if MEMSTICK
- 
-diff --git a/drivers/memstick/host/Kconfig b/drivers/memstick/host/Kconfig
-index c002fcc..4ce5c8d 100644
---- a/drivers/memstick/host/Kconfig
-+++ b/drivers/memstick/host/Kconfig
-@@ -20,3 +20,13 @@ config MEMSTICK_TIFM_MS
-           To compile this driver as a module, choose M here: the
- 	  module will be called tifm_ms.
- 
-+config MEMSTICK_JMICRON_38X
-+	tristate "JMicron JMB38X MemoryStick interface support (EXPERIMENTAL)"
-+	depends on EXPERIMENTAL && PCI
-+
-+	help
-+	  Say Y here if you want to be able to access MemoryStick cards with
-+	  the JMicron(R) JMB38X MemoryStick card reader.
-+
-+          To compile this driver as a module, choose M here: the
-+	  module will be called jmb38x_ms.
-diff --git a/drivers/memstick/host/Makefile b/drivers/memstick/host/Makefile
-index ee66638..12530e4 100644
---- a/drivers/memstick/host/Makefile
-+++ b/drivers/memstick/host/Makefile
-@@ -3,8 +3,8 @@
- #
- 
- ifeq ($(CONFIG_MEMSTICK_DEBUG),y)
--	EXTRA_CFLAGS		+= -DDEBUG
-+	EXTRA_CFLAGS			+= -DDEBUG
- endif
- 
--obj-$(CONFIG_MEMSTICK_TIFM_MS)	+= tifm_ms.o
+-#define TIFM_MS_TIMEOUT      0x00100
+-#define TIFM_MS_BADCRC       0x00200
+-#define TIFM_MS_EOTPC        0x01000
+-#define TIFM_MS_INT          0x02000
 -
-+obj-$(CONFIG_MEMSTICK_TIFM_MS)		+= tifm_ms.o
-+obj-$(CONFIG_MEMSTICK_JMICRON_38X)	+= jmb38x_ms.o
-diff --git a/drivers/memstick/host/jmb38x_ms.c b/drivers/memstick/host/jmb38x_ms.c
-new file mode 100644
-index 0000000..03fe878
---- /dev/null
-+++ b/drivers/memstick/host/jmb38x_ms.c
-@@ -0,0 +1,945 @@
+-/* The meaning of the bit majority in this constant is unknown. */
+-#define TIFM_MS_SERIAL       0x04010
 +/*
-+ *  jmb38x_ms.c - JMicron jmb38x MemoryStick card reader
-+ *
-+ *  Copyright (C) 2008 Alex Dubov <oakad@yahoo.com>
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License version 2 as
-+ * published by the Free Software Foundation.
-+ *
++ * Some control bits of TIFM appear to conform to Sony's reference design,
++ * so I'm just assuming they all are.
 + */
+ 
+-#define TIFM_MS_SYS_LATCH    0x00100
+-#define TIFM_MS_SYS_NOT_RDY  0x00800
+-#define TIFM_MS_SYS_DATA     0x10000
++#define TIFM_MS_STAT_DRQ     0x04000
++#define TIFM_MS_STAT_MSINT   0x02000
++#define TIFM_MS_STAT_RDY     0x01000
++#define TIFM_MS_STAT_CRC     0x00200
++#define TIFM_MS_STAT_TOE     0x00100
++#define TIFM_MS_STAT_EMP     0x00020
++#define TIFM_MS_STAT_FUL     0x00010
++#define TIFM_MS_STAT_CED     0x00008
++#define TIFM_MS_STAT_ERR     0x00004
++#define TIFM_MS_STAT_BRQ     0x00002
++#define TIFM_MS_STAT_CNK     0x00001
 +
-+#include <linux/spinlock.h>
-+#include <linux/interrupt.h>
-+#include <linux/pci.h>
-+#include <linux/delay.h>
-+#include <linux/highmem.h>
-+#include <linux/memstick.h>
++#define TIFM_MS_SYS_DMA      0x10000
++#define TIFM_MS_SYS_RESET    0x08000
++#define TIFM_MS_SYS_SRAC     0x04000
++#define TIFM_MS_SYS_INTEN    0x02000
++#define TIFM_MS_SYS_NOCRC    0x01000
++#define TIFM_MS_SYS_INTCLR   0x00800
++#define TIFM_MS_SYS_MSIEN    0x00400
++#define TIFM_MS_SYS_FCLR     0x00200
++#define TIFM_MS_SYS_FDIR     0x00100
++#define TIFM_MS_SYS_DAM      0x00080
++#define TIFM_MS_SYS_DRM      0x00040
++#define TIFM_MS_SYS_DRQSL    0x00020
++#define TIFM_MS_SYS_REI      0x00010
++#define TIFM_MS_SYS_REO      0x00008
++#define TIFM_MS_SYS_BSY_MASK 0x00007
 +
-+#define DRIVER_NAME "jmb38x_ms"
-+
-+static int no_dma;
-+module_param(no_dma, bool, 0644);
-+
-+enum {
-+	DMA_ADDRESS       = 0x00,
-+	BLOCK             = 0x04,
-+	DMA_CONTROL       = 0x08,
-+	TPC_P0            = 0x0c,
-+	TPC_P1            = 0x10,
-+	TPC               = 0x14,
-+	HOST_CONTROL      = 0x18,
-+	DATA              = 0x1c,
-+	STATUS            = 0x20,
-+	INT_STATUS        = 0x24,
-+	INT_STATUS_ENABLE = 0x28,
-+	INT_SIGNAL_ENABLE = 0x2c,
-+	TIMER             = 0x30,
-+	TIMER_CONTROL     = 0x34,
-+	PAD_OUTPUT_ENABLE = 0x38,
-+	PAD_PU_PD         = 0x3c,
-+	CLOCK_DELAY       = 0x40,
-+	ADMA_ADDRESS      = 0x44,
-+	CLOCK_CONTROL     = 0x48,
-+	LED_CONTROL       = 0x4c,
-+	VERSION           = 0x50
-+};
-+
-+struct jmb38x_ms_host {
-+	struct jmb38x_ms        *chip;
-+	void __iomem            *addr;
-+	spinlock_t              lock;
-+	int                     id;
-+	char                    host_id[DEVICE_ID_SIZE];
-+	int                     irq;
-+	unsigned int            block_pos;
-+	unsigned long           timeout_jiffies;
++#define TIFM_MS_SYS_FIFO     (TIFM_MS_SYS_INTEN | TIFM_MS_SYS_MSIEN \
++			      | TIFM_MS_SYS_FCLR | TIFM_MS_SYS_BSY_MASK)
+ 
+ /* Hardware flags */
+ enum {
+-	CMD_READY  = 0x0001,
+-	FIFO_READY = 0x0002,
+-	CARD_READY = 0x0004,
+-	DATA_CARRY = 0x0008
++	CMD_READY  = 0x01,
++	FIFO_READY = 0x02,
++	CARD_INT   = 0x04
+ };
+ 
+ struct tifm_ms {
+ 	struct tifm_dev         *dev;
+-	unsigned short          eject:1,
+-				no_dma:1;
+-	unsigned short          cmd_flags;
 +	struct timer_list       timer;
 +	struct memstick_request *req;
+ 	unsigned int            mode_mask;
+ 	unsigned int            block_pos;
+ 	unsigned long           timeout_jiffies;
+-
+-	struct timer_list       timer;
+-	struct memstick_request *req;
 +	unsigned char           eject:1,
 +				use_dma:1;
 +	unsigned char           cmd_flags;
 +	unsigned char           io_pos;
-+	unsigned int            io_word[2];
-+};
-+
-+struct jmb38x_ms {
-+	struct pci_dev        *pdev;
-+	int                   host_cnt;
-+	struct memstick_host  *hosts[];
-+};
-+
-+#define BLOCK_COUNT_MASK       0xffff0000
-+#define BLOCK_SIZE_MASK        0x00000fff
-+
-+#define DMA_CONTROL_ENABLE     0x00000001
-+
-+#define TPC_DATA_SEL           0x00008000
-+#define TPC_DIR                0x00004000
-+#define TPC_WAIT_INT           0x00002000
-+#define TPC_GET_INT            0x00000800
-+#define TPC_CODE_SZ_MASK       0x00000700
-+#define TPC_DATA_SZ_MASK       0x00000007
-+
-+#define HOST_CONTROL_RESET_REQ 0x00008000
-+#define HOST_CONTROL_REI       0x00004000
-+#define HOST_CONTROL_LED       0x00000400
-+#define HOST_CONTROL_FAST_CLK  0x00000200
-+#define HOST_CONTROL_RESET     0x00000100
-+#define HOST_CONTROL_POWER_EN  0x00000080
-+#define HOST_CONTROL_CLOCK_EN  0x00000040
-+#define HOST_CONTROL_IF_SHIFT  4
-+
-+#define HOST_CONTROL_IF_SERIAL 0x0
-+#define HOST_CONTROL_IF_PAR4   0x1
-+#define HOST_CONTROL_IF_PAR8   0x3
-+
-+#define STATUS_HAS_MEDIA        0x00000400
-+#define STATUS_FIFO_EMPTY       0x00000200
-+#define STATUS_FIFO_FULL        0x00000100
-+
-+#define INT_STATUS_TPC_ERR      0x00080000
-+#define INT_STATUS_CRC_ERR      0x00040000
-+#define INT_STATUS_TIMER_TO     0x00020000
-+#define INT_STATUS_HSK_TO       0x00010000
-+#define INT_STATUS_ANY_ERR      0x00008000
-+#define INT_STATUS_FIFO_WRDY    0x00000080
-+#define INT_STATUS_FIFO_RRDY    0x00000040
-+#define INT_STATUS_MEDIA_OUT    0x00000010
-+#define INT_STATUS_MEDIA_IN     0x00000008
-+#define INT_STATUS_DMA_BOUNDARY 0x00000004
-+#define INT_STATUS_EOTRAN       0x00000002
-+#define INT_STATUS_EOTPC        0x00000001
-+
-+#define INT_STATUS_ALL          0x000f801f
-+
-+#define PAD_OUTPUT_ENABLE_MS  0x0F3F
-+
-+#define PAD_PU_PD_OFF         0x7FFF0000
-+#define PAD_PU_PD_ON_MS_SOCK0 0x5f8f0000
-+#define PAD_PU_PD_ON_MS_SOCK1 0x0f0f0000
-+
-+enum {
-+	CMD_READY    = 0x01,
-+	FIFO_READY   = 0x02,
-+	REG_DATA     = 0x04,
-+	AUTO_GET_INT = 0x08
-+};
-+
-+static unsigned int jmb38x_ms_read_data(struct jmb38x_ms_host *host,
-+					unsigned char *buf, unsigned int length)
-+{
+ 	unsigned int            io_word;
+ };
+ 
+-static void tifm_ms_read_fifo(struct tifm_ms *host, unsigned int fifo_offset,
+-			      struct page *pg, unsigned int page_off,
+-			      unsigned int length)
++static unsigned int tifm_ms_read_data(struct tifm_ms *host,
++				      unsigned char *buf, unsigned int length)
+ {
+ 	struct tifm_dev *sock = host->dev;
+-	unsigned int cnt = 0, off = 0;
+-	unsigned char *buf = kmap_atomic(pg, KM_BIO_DST_IRQ) + page_off;
 +	unsigned int off = 0;
 +
 +	while (host->io_pos && length) {
-+		buf[off++] = host->io_word[0] & 0xff;
-+		host->io_word[0] >>= 8;
++		buf[off++] = host->io_word & 0xff;
++		host->io_word >>= 8;
 +		length--;
 +		host->io_pos--;
 +	}
@@ -241,143 +145,182 @@ index 0000000..03fe878
 +	if (!length)
 +		return off;
 +
-+	while (!(STATUS_FIFO_EMPTY & readl(host->addr + STATUS))) {
++	while (!(TIFM_MS_STAT_EMP & readl(sock->addr + SOCK_MS_STATUS))) {
 +		if (length < 4)
 +			break;
-+		*(unsigned int *)(buf + off) = __raw_readl(host->addr + DATA);
++		*(unsigned int *)(buf + off) = __raw_readl(sock->addr
++							   + SOCK_MS_DATA);
 +		length -= 4;
 +		off += 4;
 +	}
-+
+ 
+-	if (host->cmd_flags & DATA_CARRY) {
+-		while ((fifo_offset & 3) && length) {
 +	if (length
-+	    && !(STATUS_FIFO_EMPTY & readl(host->addr + STATUS))) {
-+		host->io_word[0] = readl(host->addr + DATA);
++	    && !(TIFM_MS_STAT_EMP & readl(sock->addr + SOCK_MS_STATUS))) {
++		host->io_word = readl(sock->addr + SOCK_MS_DATA);
 +		for (host->io_pos = 4; host->io_pos; --host->io_pos) {
-+			buf[off++] = host->io_word[0] & 0xff;
-+			host->io_word[0] >>= 8;
-+			length--;
+ 			buf[off++] = host->io_word & 0xff;
+ 			host->io_word >>= 8;
+ 			length--;
+-			fifo_offset++;
 +			if (!length)
 +				break;
-+		}
-+	}
-+
+ 		}
+-		if (!(fifo_offset & 3))
+-			host->cmd_flags &= ~DATA_CARRY;
+-		if (!length)
+-			return;
+ 	}
+ 
+-	do {
+-		host->io_word = readl(sock->addr + SOCK_FIFO_ACCESS
+-				      + fifo_offset);
+-		cnt = 4;
+-		while (length && cnt) {
+-			buf[off++] = (host->io_word >> 8) & 0xff;
+-			cnt--;
+-			length--;
+-		}
+-		fifo_offset += 4 - cnt;
+-	} while (length);
+-
+-	if (cnt)
+-		host->cmd_flags |= DATA_CARRY;
+-
+-	kunmap_atomic(buf - page_off, KM_BIO_DST_IRQ);
 +	return off;
-+}
-+
-+static unsigned int jmb38x_ms_read_reg_data(struct jmb38x_ms_host *host,
-+					    unsigned char *buf,
-+					    unsigned int length)
-+{
+ }
+ 
+-static void tifm_ms_write_fifo(struct tifm_ms *host, unsigned int fifo_offset,
+-			       struct page *pg, unsigned int page_off,
+-			       unsigned int length)
++static unsigned int tifm_ms_write_data(struct tifm_ms *host,
++				       unsigned char *buf, unsigned int length)
+ {
+ 	struct tifm_dev *sock = host->dev;
+-	unsigned int cnt = 0, off = 0;
+-	unsigned char *buf = kmap_atomic(pg, KM_BIO_SRC_IRQ) + page_off;
 +	unsigned int off = 0;
-+
-+	while (host->io_pos > 4 && length) {
-+		buf[off++] = host->io_word[0] & 0xff;
-+		host->io_word[0] >>= 8;
-+		length--;
-+		host->io_pos--;
-+	}
-+
-+	if (!length)
-+		return off;
-+
-+	while (host->io_pos && length) {
-+		buf[off++] = host->io_word[1] & 0xff;
-+		host->io_word[1] >>= 8;
-+		length--;
-+		host->io_pos--;
-+	}
-+
-+	return off;
-+}
-+
-+static unsigned int jmb38x_ms_write_data(struct jmb38x_ms_host *host,
-+					 unsigned char *buf,
-+					 unsigned int length)
-+{
-+	unsigned int off = 0;
-+
+ 
+-	if (host->cmd_flags & DATA_CARRY) {
+-		while (fifo_offset & 3) {
+-			host->io_word |= buf[off++] << (8 * (fifo_offset & 3));
 +	if (host->io_pos) {
 +		while (host->io_pos < 4 && length) {
-+			host->io_word[0] |=  buf[off++] << (host->io_pos * 8);
++			host->io_word |=  buf[off++] << (host->io_pos * 8);
 +			host->io_pos++;
-+			length--;
-+		}
-+	}
-+
+ 			length--;
+-			fifo_offset++;
+-		}
+-		if (!(fifo_offset & 3)) {
+-			writel(host->io_word, sock->addr + SOCK_FIFO_ACCESS
+-			       + fifo_offset - 4);
+-
+-			host->cmd_flags &= ~DATA_CARRY;
+ 		}
+-		if (!length)
+-			return;
+ 	}
+ 
+-	do {
+-		cnt = 4;
 +	if (host->io_pos == 4
-+	    && !(STATUS_FIFO_FULL & readl(host->addr + STATUS))) {
-+		writel(host->io_word[0], host->addr + DATA);
++	    && !(TIFM_MS_STAT_FUL & readl(sock->addr + SOCK_MS_STATUS))) {
++		writel(TIFM_MS_SYS_FDIR | readl(sock->addr + SOCK_MS_SYSTEM),
++		       sock->addr + SOCK_MS_SYSTEM);
++		writel(host->io_word, sock->addr + SOCK_MS_DATA);
 +		host->io_pos = 0;
-+		host->io_word[0] = 0;
+ 		host->io_word = 0;
+-		while (length && cnt) {
+-			host->io_word |= buf[off++] << (4 - cnt);
+-			cnt--;
+-			length--;
+-		}
+-		fifo_offset += 4 - cnt;
+-		if (!cnt)
+-			writel(host->io_word, sock->addr + SOCK_FIFO_ACCESS
+-					      + fifo_offset - 4);
+-
+-	} while (length);
+-
+-	if (cnt)
+-		host->cmd_flags |= DATA_CARRY;
 +	} else if (host->io_pos) {
 +		return off;
 +	}
-+
+ 
+-	kunmap_atomic(buf - page_off, KM_BIO_SRC_IRQ);
+-}
 +	if (!length)
 +		return off;
-+
-+	while (!(STATUS_FIFO_FULL & readl(host->addr + STATUS))) {
+ 
+-static void tifm_ms_move_block(struct tifm_ms *host, unsigned int length)
+-{
+-	unsigned int t_size;
+-	unsigned int off = host->req->sg.offset + host->block_pos;
+-	unsigned int p_off, p_cnt;
+-	struct page *pg;
+-	unsigned long flags;
++	while (!(TIFM_MS_STAT_FUL & readl(sock->addr + SOCK_MS_STATUS))) {
 +		if (length < 4)
 +			break;
-+
++		writel(TIFM_MS_SYS_FDIR | readl(sock->addr + SOCK_MS_SYSTEM),
++		       sock->addr + SOCK_MS_SYSTEM);
 +		__raw_writel(*(unsigned int *)(buf + off),
-+			     host->addr + DATA);
++			     sock->addr + SOCK_MS_DATA);
 +		length -= 4;
 +		off += 4;
 +	}
-+
+ 
+-	dev_dbg(&host->dev->dev, "moving block\n");
+-	local_irq_save(flags);
+-	t_size = length;
+-	while (t_size) {
+-		pg = nth_page(sg_page(&host->req->sg), off >> PAGE_SHIFT);
+-		p_off = offset_in_page(off);
+-		p_cnt = PAGE_SIZE - p_off;
+-		p_cnt = min(p_cnt, t_size);
 +	switch (length) {
 +	case 3:
-+		host->io_word[0] |= buf[off + 2] << 16;
++		host->io_word |= buf[off + 2] << 16;
 +		host->io_pos++;
 +	case 2:
-+		host->io_word[0] |= buf[off + 1] << 8;
++		host->io_word |= buf[off + 1] << 8;
 +		host->io_pos++;
 +	case 1:
-+		host->io_word[0] |= buf[off];
++		host->io_word |= buf[off];
 +		host->io_pos++;
 +	}
-+
+ 
+-		if (host->req->data_dir == WRITE)
+-			tifm_ms_write_fifo(host, length - t_size,
+-					   pg, p_off, p_cnt);
+-		else
+-			tifm_ms_read_fifo(host, length - t_size,
+-					  pg, p_off, p_cnt);
 +	off += host->io_pos;
-+
+ 
+-		t_size -= p_cnt;
+-	}
+-	local_irq_restore(flags);
 +	return off;
-+}
-+
-+static unsigned int jmb38x_ms_write_reg_data(struct jmb38x_ms_host *host,
-+					     unsigned char *buf,
-+					     unsigned int length)
-+{
-+	unsigned int off = 0;
-+
-+	while (host->io_pos < 4 && length) {
-+		host->io_word[0] &= ~(0xff << (host->io_pos * 8));
-+		host->io_word[0] |=  buf[off++] << (host->io_pos * 8);
-+		host->io_pos++;
-+		length--;
-+	}
-+
-+	if (!length)
-+		return off;
-+
-+	while (host->io_pos < 8 && length) {
-+		host->io_word[1] &= ~(0xff << (host->io_pos * 8));
-+		host->io_word[1] |=  buf[off++] << (host->io_pos * 8);
-+		host->io_pos++;
-+		length--;
-+	}
-+
-+	return off;
-+}
-+
-+static int jmb38x_ms_transfer_data(struct jmb38x_ms_host *host)
-+{
+ }
+ 
+-static int tifm_ms_transfer_data(struct tifm_ms *host, int skip)
++static unsigned int tifm_ms_transfer_data(struct tifm_ms *host)
+ {
+ 	struct tifm_dev *sock = host->dev;
+-	unsigned int length = host->req->sg.length - host->block_pos;
 +	unsigned int length;
 +	unsigned int off;
 +	unsigned int t_size, p_off, p_cnt;
 +	unsigned char *buf;
 +	struct page *pg;
 +	unsigned long flags = 0;
-+
+ 
+-	if (!length)
+-		return 1;
 +	if (host->req->long_data) {
 +		length = host->req->sg.length - host->block_pos;
 +		off = host->req->sg.offset + host->block_pos;
@@ -385,6 +328,8 @@ index 0000000..03fe878
 +		length = host->req->data_len - host->block_pos;
 +		off = 0;
 +	}
++	dev_dbg(&sock->dev, "fifo data transfer, %d, %d\n", length,
++		host->block_pos);
 +
 +	while (length) {
 +		if (host->req->long_data) {
@@ -400,661 +345,420 @@ index 0000000..03fe878
 +			buf = host->req->data + host->block_pos;
 +			p_cnt = host->req->data_len - host->block_pos;
 +		}
-+
-+		if (host->req->data_dir == WRITE)
-+			t_size = !(host->cmd_flags & REG_DATA)
-+				 ? jmb38x_ms_write_data(host, buf, p_cnt)
-+				 : jmb38x_ms_write_reg_data(host, buf, p_cnt);
-+		else
-+			t_size = !(host->cmd_flags & REG_DATA)
-+				 ? jmb38x_ms_read_data(host, buf, p_cnt)
-+				 : jmb38x_ms_read_reg_data(host, buf, p_cnt);
-+
+ 
+-	if (length > TIFM_FIFO_SIZE)
+-		length = TIFM_FIFO_SIZE;
++		t_size = host->req->data_dir == WRITE
++			 ? tifm_ms_write_data(host, buf, p_cnt)
++			 : tifm_ms_read_data(host, buf, p_cnt);
+ 
+-	if (!skip) {
+-		tifm_ms_move_block(host, length);
+-		host->block_pos += length;
+-	}
 +		if (host->req->long_data) {
 +			kunmap_atomic(buf - p_off, KM_BIO_SRC_IRQ);
 +			local_irq_restore(flags);
 +		}
-+
+ 
+-	if ((host->req->data_dir == READ)
+-	    && (host->block_pos == host->req->sg.length))
+-		return 1;
 +		if (!t_size)
 +			break;
 +		host->block_pos += t_size;
 +		length -= t_size;
 +		off += t_size;
 +	}
-+
-+	if (!length && host->req->data_dir == WRITE) {
-+		if (host->cmd_flags & REG_DATA) {
-+			writel(host->io_word[0], host->addr + TPC_P0);
-+			writel(host->io_word[1], host->addr + TPC_P1);
-+		} else if (host->io_pos) {
-+			writel(host->io_word[0], host->addr + DATA);
+ 
+-	writel(ilog2(length) - 2, sock->addr + SOCK_FIFO_PAGE_SIZE);
+-	if (host->req->data_dir == WRITE)
+-		writel((1 << 8) | TIFM_DMA_TX, sock->addr + SOCK_DMA_CONTROL);
+-	else
+-		writel((1 << 8), sock->addr + SOCK_DMA_CONTROL);
++	dev_dbg(&sock->dev, "fifo data transfer, %d remaining\n", length);
++	if (!length && (host->req->data_dir == WRITE)) {
++		if (host->io_pos) {
++			writel(TIFM_MS_SYS_FDIR
++			       | readl(sock->addr + SOCK_MS_SYSTEM),
++			       sock->addr + SOCK_MS_SYSTEM);
++			writel(host->io_word, sock->addr + SOCK_MS_DATA);
 +		}
++		writel(TIFM_MS_SYS_FDIR
++		       | readl(sock->addr + SOCK_MS_SYSTEM),
++		       sock->addr + SOCK_MS_SYSTEM);
++		writel(0, sock->addr + SOCK_MS_DATA);
++	} else {
++		readl(sock->addr + SOCK_MS_DATA);
 +	}
-+
+ 
+-	return 0;
 +	return length;
-+}
-+
-+static int jmb38x_ms_issue_cmd(struct memstick_host *msh)
-+{
-+	struct jmb38x_ms_host *host = memstick_priv(msh);
-+	unsigned char *data;
-+	unsigned int data_len, cmd, t_val;
-+
-+	if (!(STATUS_HAS_MEDIA & readl(host->addr + STATUS))) {
-+		dev_dbg(msh->cdev.dev, "no media status\n");
-+		host->req->error = -ETIME;
-+		return host->req->error;
-+	}
-+
-+	dev_dbg(msh->cdev.dev, "control %08x\n",
-+		readl(host->addr + HOST_CONTROL));
-+	dev_dbg(msh->cdev.dev, "status %08x\n", readl(host->addr + INT_STATUS));
-+	dev_dbg(msh->cdev.dev, "hstatus %08x\n", readl(host->addr + STATUS));
-+
-+	host->cmd_flags = 0;
+ }
+ 
+ static int tifm_ms_issue_cmd(struct tifm_ms *host)
+ {
+ 	struct tifm_dev *sock = host->dev;
+ 	unsigned char *data;
+-	unsigned int data_len = 0, cmd = 0, cmd_mask = 0, cnt, tval = 0;
++	unsigned int data_len, cmd, sys_param;
+ 
+ 	host->cmd_flags = 0;
 +	host->block_pos = 0;
 +	host->io_pos = 0;
-+	host->io_word[0] = 0;
-+	host->io_word[1] = 0;
-+
-+	cmd = host->req->tpc << 16;
-+	cmd |= TPC_DATA_SEL;
-+
-+	if (host->req->data_dir == READ)
-+		cmd |= TPC_DIR;
-+	if (host->req->need_card_int)
-+		cmd |= TPC_WAIT_INT;
-+	if (host->req->get_int_reg)
-+		cmd |= TPC_GET_INT;
-+
++	host->io_word = 0;
++	host->cmd_flags = 0;
+ 
+-	if (host->req->long_data) {
+-		if (!host->no_dma) {
+-			if (1 != tifm_map_sg(sock, &host->req->sg, 1,
+-					     host->req->data_dir == READ
+-					     ? PCI_DMA_FROMDEVICE
+-					     : PCI_DMA_TODEVICE)) {
+-				host->req->error = -ENOMEM;
+-				return host->req->error;
+-			}
+-			data_len = sg_dma_len(&host->req->sg);
+-		} else
+-			data_len = host->req->sg.length;
+-
+-		writel(TIFM_FIFO_INT_SETALL,
+-		       sock->addr + SOCK_DMA_FIFO_INT_ENABLE_CLEAR);
+-		writel(TIFM_FIFO_ENABLE,
+-		       sock->addr + SOCK_FIFO_CONTROL);
+-		writel(TIFM_FIFO_INTMASK,
+-		       sock->addr + SOCK_DMA_FIFO_INT_ENABLE_SET);
 +	data = host->req->data;
-+
+ 
+-		if (!host->no_dma) {
+-			writel(ilog2(data_len) - 2,
+-			       sock->addr + SOCK_FIFO_PAGE_SIZE);
+-			writel(sg_dma_address(&host->req->sg),
+-			       sock->addr + SOCK_DMA_ADDRESS);
+-			if (host->req->data_dir == WRITE)
+-				writel((1 << 8) | TIFM_DMA_TX | TIFM_DMA_EN,
+-				       sock->addr + SOCK_DMA_CONTROL);
+-			else
+-				writel((1 << 8) | TIFM_DMA_EN,
+-				       sock->addr + SOCK_DMA_CONTROL);
+-		} else {
+-			tifm_ms_transfer_data(host,
+-					      host->req->data_dir == READ);
+-		}
 +	host->use_dma = !no_dma;
-+
+ 
+-		cmd_mask = readl(sock->addr + SOCK_MS_SYSTEM);
+-		cmd_mask |= TIFM_MS_SYS_DATA | TIFM_MS_SYS_NOT_RDY;
+-		writel(cmd_mask, sock->addr + SOCK_MS_SYSTEM);
 +	if (host->req->long_data) {
 +		data_len = host->req->sg.length;
-+	} else {
-+		data_len = host->req->data_len;
++		if (!is_power_of_2(data_len))
++			host->use_dma = 0;
+ 	} else {
+-		data = host->req->data;
+ 		data_len = host->req->data_len;
 +		host->use_dma = 0;
 +	}
-+
-+	if (data_len <= 8) {
-+		cmd &= ~(TPC_DATA_SEL | 0xf);
-+		host->cmd_flags |= REG_DATA;
-+		cmd |= data_len & 0xf;
-+		host->use_dma = 0;
-+	}
+ 
+-		cmd_mask = host->mode_mask | 0x2607; /* unknown constant */
+-
+-		if (host->req->data_dir == WRITE) {
+-			cmd_mask |= TIFM_MS_SYS_LATCH;
+-			writel(cmd_mask, sock->addr + SOCK_MS_SYSTEM);
+-			for (cnt = 0; (data_len - cnt) >= 4; cnt += 4) {
+-				writel(TIFM_MS_SYS_LATCH
+-				       | readl(sock->addr + SOCK_MS_SYSTEM),
+-				       sock->addr + SOCK_MS_SYSTEM);
+-				__raw_writel(*(unsigned int *)(data + cnt),
+-					     sock->addr + SOCK_MS_DATA);
+-				dev_dbg(&sock->dev, "writing %x\n",
+-					*(int *)(data + cnt));
+-			}
+-			switch (data_len - cnt) {
+-			case 3:
+-				tval |= data[cnt + 2] << 16;
+-			case 2:
+-				tval |= data[cnt + 1] << 8;
+-			case 1:
+-				tval |= data[cnt];
+-				writel(TIFM_MS_SYS_LATCH
+-				       | readl(sock->addr + SOCK_MS_SYSTEM),
+-				       sock->addr + SOCK_MS_SYSTEM);
+-				writel(tval, sock->addr + SOCK_MS_DATA);
+-				dev_dbg(&sock->dev, "writing %x\n", tval);
+-			}
++	writel(TIFM_FIFO_INT_SETALL,
++	       sock->addr + SOCK_DMA_FIFO_INT_ENABLE_CLEAR);
++	writel(TIFM_FIFO_ENABLE,
++	       sock->addr + SOCK_FIFO_CONTROL);
 +
 +	if (host->use_dma) {
-+		if (1 != pci_map_sg(host->chip->pdev, &host->req->sg, 1,
-+				    host->req->data_dir == READ
-+				    ? PCI_DMA_FROMDEVICE
-+				    : PCI_DMA_TODEVICE)) {
++		if (1 != tifm_map_sg(sock, &host->req->sg, 1,
++				     host->req->data_dir == READ
++				     ? PCI_DMA_FROMDEVICE
++				     : PCI_DMA_TODEVICE)) {
 +			host->req->error = -ENOMEM;
 +			return host->req->error;
 +		}
 +		data_len = sg_dma_len(&host->req->sg);
-+		writel(sg_dma_address(&host->req->sg),
-+		       host->addr + DMA_ADDRESS);
-+		writel(((1 << 16) & BLOCK_COUNT_MASK)
-+		       | (data_len & BLOCK_SIZE_MASK),
-+		       host->addr + BLOCK);
-+		writel(DMA_CONTROL_ENABLE, host->addr + DMA_CONTROL);
-+	} else if (!(host->cmd_flags & REG_DATA)) {
-+		writel(((1 << 16) & BLOCK_COUNT_MASK)
-+		       | (data_len & BLOCK_SIZE_MASK),
-+		       host->addr + BLOCK);
-+			t_val = readl(host->addr + INT_STATUS_ENABLE);
-+			t_val |= host->req->data_dir == READ
-+				 ? INT_STATUS_FIFO_RRDY
-+				 : INT_STATUS_FIFO_WRDY;
-+
-+			writel(t_val, host->addr + INT_STATUS_ENABLE);
-+			writel(t_val, host->addr + INT_SIGNAL_ENABLE);
-+	} else {
-+		cmd &= ~(TPC_DATA_SEL | 0xf);
-+		host->cmd_flags |= REG_DATA;
-+		cmd |= data_len & 0xf;
-+
-+		if (host->req->data_dir == WRITE) {
-+			jmb38x_ms_transfer_data(host);
-+			writel(host->io_word[0], host->addr + TPC_P0);
-+			writel(host->io_word[1], host->addr + TPC_P1);
-+		}
-+	}
-+
-+	mod_timer(&host->timer, jiffies + host->timeout_jiffies);
-+	writel(HOST_CONTROL_LED | readl(host->addr + HOST_CONTROL),
-+	       host->addr + HOST_CONTROL);
-+	host->req->error = 0;
-+
-+	writel(cmd, host->addr + TPC);
-+	dev_dbg(msh->cdev.dev, "executing TPC %08x, len %x\n", cmd, data_len);
-+
-+	return 0;
-+}
-+
-+static void jmb38x_ms_complete_cmd(struct memstick_host *msh, int last)
-+{
-+	struct jmb38x_ms_host *host = memstick_priv(msh);
-+	unsigned int t_val = 0;
-+	int rc;
-+
-+	del_timer(&host->timer);
-+
-+	dev_dbg(msh->cdev.dev, "c control %08x\n",
-+		readl(host->addr + HOST_CONTROL));
-+	dev_dbg(msh->cdev.dev, "c status %08x\n",
-+		readl(host->addr + INT_STATUS));
-+	dev_dbg(msh->cdev.dev, "c hstatus %08x\n", readl(host->addr + STATUS));
-+
-+	if (host->req->get_int_reg) {
-+		t_val = readl(host->addr + TPC_P0);
-+		host->req->int_reg = (t_val & 0xff);
-+	}
-+
-+	if (host->use_dma) {
-+		writel(0, host->addr + DMA_CONTROL);
-+		pci_unmap_sg(host->chip->pdev, &host->req->sg, 1,
-+			     host->req->data_dir == READ
-+			     ? PCI_DMA_FROMDEVICE : PCI_DMA_TODEVICE);
-+	} else {
-+		t_val = readl(host->addr + INT_STATUS_ENABLE);
-+		if (host->req->data_dir == READ)
-+			t_val &= ~INT_STATUS_FIFO_RRDY;
-+		else
-+			t_val &= ~INT_STATUS_FIFO_WRDY;
-+
-+		writel(t_val, host->addr + INT_STATUS_ENABLE);
-+		writel(t_val, host->addr + INT_SIGNAL_ENABLE);
-+	}
-+
-+	writel((~HOST_CONTROL_LED) & readl(host->addr + HOST_CONTROL),
-+	       host->addr + HOST_CONTROL);
-+
-+	if (!last) {
-+		do {
-+			rc = memstick_next_req(msh, &host->req);
-+		} while (!rc && jmb38x_ms_issue_cmd(msh));
-+	} else {
-+		do {
-+			rc = memstick_next_req(msh, &host->req);
-+			if (!rc)
-+				host->req->error = -ETIME;
-+		} while (!rc);
-+	}
-+}
-+
-+static irqreturn_t jmb38x_ms_isr(int irq, void *dev_id)
-+{
-+	struct memstick_host *msh = dev_id;
-+	struct jmb38x_ms_host *host = memstick_priv(msh);
-+	unsigned int irq_status;
-+
-+	spin_lock(&host->lock);
-+	irq_status = readl(host->addr + INT_STATUS);
-+	dev_dbg(&host->chip->pdev->dev, "irq_status = %08x\n", irq_status);
-+	if (irq_status == 0 || irq_status == (~0)) {
-+		spin_unlock(&host->lock);
-+		return IRQ_NONE;
-+	}
-+
-+	if (host->req) {
-+		if (irq_status & INT_STATUS_ANY_ERR) {
-+			if (irq_status & INT_STATUS_CRC_ERR)
-+				host->req->error = -EILSEQ;
-+			else
-+				host->req->error = -ETIME;
-+		} else {
-+			if (host->use_dma) {
-+				if (irq_status & INT_STATUS_EOTRAN)
-+					host->cmd_flags |= FIFO_READY;
-+			} else {
-+				if (irq_status & (INT_STATUS_FIFO_RRDY
-+						  | INT_STATUS_FIFO_WRDY))
-+					jmb38x_ms_transfer_data(host);
-+
-+				if (irq_status & INT_STATUS_EOTRAN) {
-+					jmb38x_ms_transfer_data(host);
-+					host->cmd_flags |= FIFO_READY;
-+				}
-+			}
-+
-+			if (irq_status & INT_STATUS_EOTPC) {
-+				host->cmd_flags |= CMD_READY;
-+				if (host->cmd_flags & REG_DATA) {
-+					if (host->req->data_dir == READ) {
-+						host->io_word[0]
-+							= readl(host->addr
-+								+ TPC_P0);
-+						host->io_word[1]
-+							= readl(host->addr
-+								+ TPC_P1);
-+						host->io_pos = 8;
-+
-+						jmb38x_ms_transfer_data(host);
-+					}
-+					host->cmd_flags |= FIFO_READY;
-+				}
-+			}
-+		}
-+	}
-+
-+	if (irq_status & (INT_STATUS_MEDIA_IN | INT_STATUS_MEDIA_OUT)) {
-+		dev_dbg(&host->chip->pdev->dev, "media changed\n");
-+		memstick_detect_change(msh);
-+	}
-+
-+	writel(irq_status, host->addr + INT_STATUS);
-+
-+	if (host->req
-+	    && (((host->cmd_flags & CMD_READY)
-+		 && (host->cmd_flags & FIFO_READY))
-+		|| host->req->error))
-+		jmb38x_ms_complete_cmd(msh, 0);
-+
-+	spin_unlock(&host->lock);
-+	return IRQ_HANDLED;
-+}
-+
-+static void jmb38x_ms_abort(unsigned long data)
-+{
-+	struct memstick_host *msh = (struct memstick_host *)data;
-+	struct jmb38x_ms_host *host = memstick_priv(msh);
-+	unsigned long flags;
-+
-+	dev_dbg(&host->chip->pdev->dev, "abort\n");
-+	spin_lock_irqsave(&host->lock, flags);
-+	if (host->req) {
-+		host->req->error = -ETIME;
-+		jmb38x_ms_complete_cmd(msh, 0);
-+	}
-+	spin_unlock_irqrestore(&host->lock, flags);
-+}
-+
-+static void jmb38x_ms_request(struct memstick_host *msh)
-+{
-+	struct jmb38x_ms_host *host = memstick_priv(msh);
-+	unsigned long flags;
-+	int rc;
-+
-+	spin_lock_irqsave(&host->lock, flags);
-+	if (host->req) {
-+		spin_unlock_irqrestore(&host->lock, flags);
-+		BUG();
-+		return;
-+	}
-+
-+	do {
-+		rc = memstick_next_req(msh, &host->req);
-+	} while (!rc && jmb38x_ms_issue_cmd(msh));
-+	spin_unlock_irqrestore(&host->lock, flags);
-+}
-+
-+static void jmb38x_ms_reset(struct jmb38x_ms_host *host)
-+{
-+	unsigned int host_ctl = readl(host->addr + HOST_CONTROL);
-+
-+	writel(host_ctl | HOST_CONTROL_RESET_REQ | HOST_CONTROL_RESET,
-+	       host->addr + HOST_CONTROL);
-+
-+	while (HOST_CONTROL_RESET_REQ
-+	       & (host_ctl = readl(host->addr + HOST_CONTROL))) {
-+		ndelay(100);
-+		dev_dbg(&host->chip->pdev->dev, "reset\n");
-+	}
-+
-+	writel(INT_STATUS_ALL, host->addr + INT_STATUS_ENABLE);
-+	writel(INT_STATUS_ALL, host->addr + INT_SIGNAL_ENABLE);
-+
-+	dev_dbg(&host->chip->pdev->dev, "reset\n");
-+}
-+
-+static void jmb38x_ms_set_param(struct memstick_host *msh,
-+				enum memstick_param param,
-+				int value)
-+{
-+	struct jmb38x_ms_host *host = memstick_priv(msh);
-+	unsigned int host_ctl;
-+	unsigned long flags;
-+
-+	spin_lock_irqsave(&host->lock, flags);
-+
-+	switch (param) {
-+	case MEMSTICK_POWER:
-+		if (value == MEMSTICK_POWER_ON) {
-+			jmb38x_ms_reset(host);
-+
-+			writel(host->id ? PAD_PU_PD_ON_MS_SOCK1
-+					  : PAD_PU_PD_ON_MS_SOCK0,
-+			       host->addr + PAD_PU_PD);
-+
-+			writel(PAD_OUTPUT_ENABLE_MS,
-+			       host->addr + PAD_OUTPUT_ENABLE);
-+
-+			host_ctl = readl(host->addr + HOST_CONTROL);
-+			host_ctl |= 7;
-+			writel(host_ctl | (HOST_CONTROL_POWER_EN
-+					   | HOST_CONTROL_CLOCK_EN),
-+			       host->addr + HOST_CONTROL);
-+
-+			dev_dbg(&host->chip->pdev->dev, "power on\n");
-+		} else if (value == MEMSTICK_POWER_OFF) {
-+			writel(readl(host->addr + HOST_CONTROL)
-+			       & ~(HOST_CONTROL_POWER_EN
-+				   | HOST_CONTROL_CLOCK_EN),
-+			       host->addr +  HOST_CONTROL);
-+			writel(0, host->addr + PAD_OUTPUT_ENABLE);
-+			writel(PAD_PU_PD_OFF, host->addr + PAD_PU_PD);
-+			dev_dbg(&host->chip->pdev->dev, "power off\n");
-+		}
-+		break;
-+	case MEMSTICK_INTERFACE:
-+		/* jmb38x_ms_reset(host); */
-+
-+		host_ctl = readl(host->addr + HOST_CONTROL);
-+		host_ctl &= ~(3 << HOST_CONTROL_IF_SHIFT);
-+		/* host_ctl |= 7; */
-+
-+		if (value == MEMSTICK_SERIAL) {
-+			host_ctl &= ~HOST_CONTROL_FAST_CLK;
-+			host_ctl |= HOST_CONTROL_IF_SERIAL
-+				    << HOST_CONTROL_IF_SHIFT;
-+			host_ctl |= HOST_CONTROL_REI;
-+			writel(0, host->addr + CLOCK_DELAY);
-+		} else if (value == MEMSTICK_PAR4) {
-+			host_ctl |= HOST_CONTROL_FAST_CLK;
-+			host_ctl |= HOST_CONTROL_IF_PAR4
-+				    << HOST_CONTROL_IF_SHIFT;
-+			host_ctl &= ~HOST_CONTROL_REI;
-+			writel(4, host->addr + CLOCK_DELAY);
-+		} else if (value == MEMSTICK_PAR8) {
-+			host_ctl |= HOST_CONTROL_FAST_CLK;
-+			host_ctl |= HOST_CONTROL_IF_PAR8
-+				    << HOST_CONTROL_IF_SHIFT;
-+			host_ctl &= ~HOST_CONTROL_REI;
-+			writel(4, host->addr + CLOCK_DELAY);
-+		}
-+		writel(host_ctl, host->addr + HOST_CONTROL);
-+		break;
-+	};
-+
-+	spin_unlock_irqrestore(&host->lock, flags);
-+}
-+
-+#ifdef CONFIG_PM
-+
-+static int jmb38x_ms_suspend(struct pci_dev *dev, pm_message_t state)
-+{
-+	struct jmb38x_ms *jm = pci_get_drvdata(dev);
-+	int cnt;
-+
-+	for (cnt = 0; cnt < jm->host_cnt; ++cnt) {
-+		if (!jm->hosts[cnt])
-+			break;
-+		memstick_suspend_host(jm->hosts[cnt]);
-+	}
-+
-+	pci_save_state(dev);
-+	pci_enable_wake(dev, pci_choose_state(dev, state), 0);
-+	pci_disable_device(dev);
-+	pci_set_power_state(dev, pci_choose_state(dev, state));
-+	return 0;
-+}
-+
-+static int jmb38x_ms_resume(struct pci_dev *dev)
-+{
-+	struct jmb38x_ms *jm = pci_get_drvdata(dev);
-+	int rc;
-+
-+	pci_set_power_state(dev, PCI_D0);
-+	pci_restore_state(dev);
-+	rc = pci_enable_device(dev);
-+	if (rc)
-+		return rc;
-+	pci_set_master(dev);
-+
-+	pci_read_config_dword(dev, 0xac, &rc);
-+	pci_write_config_dword(dev, 0xac, rc | 0x00470000);
-+
-+	for (rc = 0; rc < jm->host_cnt; ++rc) {
-+		if (!jm->hosts[rc])
-+			break;
-+		memstick_resume_host(jm->hosts[rc]);
-+		memstick_detect_change(jm->hosts[rc]);
-+	}
-+
-+	return 0;
-+}
-+
-+#else
-+
-+#define jmb38x_ms_suspend NULL
-+#define jmb38x_ms_resume NULL
-+
-+#endif /* CONFIG_PM */
-+
-+static int jmb38x_ms_count_slots(struct pci_dev *pdev)
-+{
-+	int cnt, rc = 0;
-+
-+	for (cnt = 0; cnt < PCI_ROM_RESOURCE; ++cnt) {
-+		if (!(IORESOURCE_MEM & pci_resource_flags(pdev, cnt)))
-+			break;
-+
-+		if (256 != pci_resource_len(pdev, cnt))
-+			break;
-+
-+		++rc;
-+	}
-+	return rc;
-+}
-+
-+static struct memstick_host *jmb38x_ms_alloc_host(struct jmb38x_ms *jm, int cnt)
-+{
-+	struct memstick_host *msh;
-+	struct jmb38x_ms_host *host;
-+
-+	msh = memstick_alloc_host(sizeof(struct jmb38x_ms_host),
-+				  &jm->pdev->dev);
-+	if (!msh)
-+		return NULL;
-+
-+	host = memstick_priv(msh);
-+	host->chip = jm;
-+	host->addr = ioremap(pci_resource_start(jm->pdev, cnt),
-+			     pci_resource_len(jm->pdev, cnt));
-+	if (!host->addr)
-+		goto err_out_free;
-+
-+	spin_lock_init(&host->lock);
-+	host->id = cnt;
-+	snprintf(host->host_id, DEVICE_ID_SIZE, DRIVER_NAME ":slot%d",
-+		 host->id);
-+	host->irq = jm->pdev->irq;
-+	host->timeout_jiffies = msecs_to_jiffies(4000);
-+	msh->request = jmb38x_ms_request;
-+	msh->set_param = jmb38x_ms_set_param;
-+	/*
-+	msh->caps = MEMSTICK_CAP_AUTO_GET_INT | MEMSTICK_CAP_PAR4
-+		    | MEMSTICK_CAP_PAR8;
-+	*/
-+	msh->caps = MEMSTICK_CAP_PAR4 | MEMSTICK_CAP_PAR8;
-+
-+	setup_timer(&host->timer, jmb38x_ms_abort, (unsigned long)msh);
-+
-+	if (!request_irq(host->irq, jmb38x_ms_isr, IRQF_SHARED, host->host_id,
-+			 msh))
-+		return msh;
-+
-+	iounmap(host->addr);
-+err_out_free:
-+	kfree(msh);
-+	return NULL;
-+}
-+
-+static void jmb38x_ms_free_host(struct memstick_host *msh)
-+{
-+	struct jmb38x_ms_host *host = memstick_priv(msh);
-+
-+	free_irq(host->irq, msh);
-+	iounmap(host->addr);
-+	memstick_free_host(msh);
-+}
-+
-+static int jmb38x_ms_probe(struct pci_dev *pdev,
-+			   const struct pci_device_id *dev_id)
-+{
-+	struct jmb38x_ms *jm;
-+	int pci_dev_busy = 0;
-+	int rc, cnt;
-+
-+	rc = pci_set_dma_mask(pdev, DMA_32BIT_MASK);
-+	if (rc)
-+		return rc;
-+
-+	rc = pci_enable_device(pdev);
-+	if (rc)
-+		return rc;
-+
-+	pci_set_master(pdev);
-+
-+	rc = pci_request_regions(pdev, DRIVER_NAME);
-+	if (rc) {
-+		pci_dev_busy = 1;
-+		goto err_out;
-+	}
-+
-+	pci_read_config_dword(pdev, 0xac, &rc);
-+	pci_write_config_dword(pdev, 0xac, rc | 0x00470000);
-+
-+	cnt = jmb38x_ms_count_slots(pdev);
-+	if (!cnt) {
-+		rc = -ENODEV;
-+		pci_dev_busy = 1;
-+		goto err_out;
-+	}
-+
-+	jm = kzalloc(sizeof(struct jmb38x_ms)
-+		     + cnt * sizeof(struct memstick_host *), GFP_KERNEL);
-+	if (!jm) {
-+		rc = -ENOMEM;
-+		goto err_out_int;
-+	}
-+
-+	jm->pdev = pdev;
-+	jm->host_cnt = cnt;
-+	pci_set_drvdata(pdev, jm);
-+
-+	for (cnt = 0; cnt < jm->host_cnt; ++cnt) {
-+		jm->hosts[cnt] = jmb38x_ms_alloc_host(jm, cnt);
-+		if (!jm->hosts[cnt])
-+			break;
-+
-+		rc = memstick_add_host(jm->hosts[cnt]);
-+
-+		if (rc) {
-+			jmb38x_ms_free_host(jm->hosts[cnt]);
-+			jm->hosts[cnt] = NULL;
-+			break;
-+		}
-+	}
-+
-+	if (cnt)
-+		return 0;
-+
-+	rc = -ENODEV;
-+
-+	pci_set_drvdata(pdev, NULL);
-+	kfree(jm);
-+err_out_int:
-+	pci_release_regions(pdev);
-+err_out:
-+	if (!pci_dev_busy)
-+		pci_disable_device(pdev);
-+	return rc;
-+}
-+
-+static void jmb38x_ms_remove(struct pci_dev *dev)
-+{
-+	struct jmb38x_ms *jm = pci_get_drvdata(dev);
-+	struct jmb38x_ms_host *host;
-+	int cnt;
-+	unsigned long flags;
-+
-+	for (cnt = 0; cnt < jm->host_cnt; ++cnt) {
-+		if (!jm->hosts[cnt])
-+			break;
-+
-+		host = memstick_priv(jm->hosts[cnt]);
-+
-+		writel(0, host->addr + INT_SIGNAL_ENABLE);
-+		writel(0, host->addr + INT_STATUS_ENABLE);
-+		mmiowb();
-+		dev_dbg(&jm->pdev->dev, "interrupts off\n");
-+		spin_lock_irqsave(&host->lock, flags);
-+		if (host->req) {
-+			host->req->error = -ETIME;
-+			jmb38x_ms_complete_cmd(jm->hosts[cnt], 1);
-+		}
-+		spin_unlock_irqrestore(&host->lock, flags);
-+
-+		memstick_remove_host(jm->hosts[cnt]);
-+		dev_dbg(&jm->pdev->dev, "host removed\n");
-+
-+		jmb38x_ms_free_host(jm->hosts[cnt]);
-+	}
-+
-+	pci_set_drvdata(dev, NULL);
-+	pci_release_regions(dev);
-+	pci_disable_device(dev);
-+	kfree(jm);
-+}
-+
-+static struct pci_device_id jmb38x_ms_id_tbl [] = {
-+	{ PCI_VENDOR_ID_JMICRON, PCI_DEVICE_ID_JMICRON_JMB38X_MS, PCI_ANY_ID,
-+	  PCI_ANY_ID, 0, 0, 0 },
-+	{ }
-+};
-+
-+static struct pci_driver jmb38x_ms_driver = {
-+	.name = DRIVER_NAME,
-+	.id_table = jmb38x_ms_id_tbl,
-+	.probe = jmb38x_ms_probe,
-+	.remove = jmb38x_ms_remove,
-+	.suspend = jmb38x_ms_suspend,
-+	.resume = jmb38x_ms_resume
-+};
-+
-+static int __init jmb38x_ms_init(void)
-+{
-+	return pci_register_driver(&jmb38x_ms_driver);
-+}
-+
-+static void __exit jmb38x_ms_exit(void)
-+{
-+	pci_unregister_driver(&jmb38x_ms_driver);
-+}
-+
-+MODULE_AUTHOR("Alex Dubov");
-+MODULE_DESCRIPTION("JMicron jmb38x MemoryStick driver");
-+MODULE_LICENSE("GPL");
-+MODULE_DEVICE_TABLE(pci, jmb38x_ms_id_tbl);
-+
-+module_init(jmb38x_ms_init);
-+module_exit(jmb38x_ms_exit);
-diff --git a/include/linux/pci_ids.h b/include/linux/pci_ids.h
-index effdb55..70eb3c8 100644
---- a/include/linux/pci_ids.h
-+++ b/include/linux/pci_ids.h
-@@ -2184,6 +2184,7 @@
- #define PCI_DEVICE_ID_JMICRON_JMB366	0x2366
- #define PCI_DEVICE_ID_JMICRON_JMB368	0x2368
- #define PCI_DEVICE_ID_JMICRON_JMB38X_SD	0x2381
-+#define PCI_DEVICE_ID_JMICRON_JMB38X_MS	0x2383
  
- #define PCI_VENDOR_ID_KORENIX		0x1982
- #define PCI_DEVICE_ID_KORENIX_JETCARDF0	0x1600
+-			writel(TIFM_MS_SYS_LATCH
+-			       | readl(sock->addr + SOCK_MS_SYSTEM),
+-			       sock->addr + SOCK_MS_SYSTEM);
+-			writel(0, sock->addr + SOCK_MS_DATA);
+-			dev_dbg(&sock->dev, "writing %x\n", 0);
++		writel(ilog2(data_len) - 2,
++		       sock->addr + SOCK_FIFO_PAGE_SIZE);
++		writel(TIFM_FIFO_INTMASK,
++		       sock->addr + SOCK_DMA_FIFO_INT_ENABLE_SET);
++		sys_param = TIFM_DMA_EN | (1 << 8);
++		if (host->req->data_dir == WRITE)
++			sys_param |= TIFM_DMA_TX;
+ 
+-		} else
+-			writel(cmd_mask, sock->addr + SOCK_MS_SYSTEM);
++		writel(TIFM_FIFO_INTMASK,
++		       sock->addr + SOCK_DMA_FIFO_INT_ENABLE_SET);
+ 
+-		cmd_mask = readl(sock->addr + SOCK_MS_SYSTEM);
+-		cmd_mask &= ~TIFM_MS_SYS_DATA;
+-		cmd_mask |= TIFM_MS_SYS_NOT_RDY;
+-		dev_dbg(&sock->dev, "mask %x\n", cmd_mask);
+-		writel(cmd_mask, sock->addr + SOCK_MS_SYSTEM);
++		writel(sg_dma_address(&host->req->sg),
++		       sock->addr + SOCK_DMA_ADDRESS);
++		writel(sys_param, sock->addr + SOCK_DMA_CONTROL);
++	} else {
++		writel(host->mode_mask | TIFM_MS_SYS_FIFO,
++		       sock->addr + SOCK_MS_SYSTEM);
++
++		writel(TIFM_FIFO_MORE,
++		       sock->addr + SOCK_DMA_FIFO_INT_ENABLE_SET);
+ 	}
+ 
+ 	mod_timer(&host->timer, jiffies + host->timeout_jiffies);
+@@ -300,11 +314,21 @@ static int tifm_ms_issue_cmd(struct tifm_ms *host)
+ 	       sock->addr + SOCK_CONTROL);
+ 	host->req->error = 0;
+ 
++	sys_param = readl(sock->addr + SOCK_MS_SYSTEM);
++	sys_param |= TIFM_MS_SYS_INTCLR;
++
++	if (host->use_dma)
++		sys_param |= TIFM_MS_SYS_DMA;
++	else
++		sys_param &= ~TIFM_MS_SYS_DMA;
++
++	writel(sys_param, sock->addr + SOCK_MS_SYSTEM);
++
+ 	cmd = (host->req->tpc & 0xf) << 12;
+ 	cmd |= data_len;
+ 	writel(cmd, sock->addr + SOCK_MS_COMMAND);
+ 
+-	dev_dbg(&sock->dev, "executing TPC %x, %x\n", cmd, cmd_mask);
++	dev_dbg(&sock->dev, "executing TPC %x, %x\n", cmd, sys_param);
+ 	return 0;
+ }
+ 
+@@ -312,47 +336,20 @@ static void tifm_ms_complete_cmd(struct tifm_ms *host)
+ {
+ 	struct tifm_dev *sock = host->dev;
+ 	struct memstick_host *msh = tifm_get_drvdata(sock);
+-	unsigned int tval = 0, data_len;
+-	unsigned char *data;
+ 	int rc;
+ 
+ 	del_timer(&host->timer);
+-	if (host->req->long_data) {
+-		if (!host->no_dma)
+-			tifm_unmap_sg(sock, &host->req->sg, 1,
+-				      host->req->data_dir == READ
+-				      ? PCI_DMA_FROMDEVICE
+-				      : PCI_DMA_TODEVICE);
+-	} else {
+-		writel(~TIFM_MS_SYS_DATA & readl(sock->addr + SOCK_MS_SYSTEM),
+-		       sock->addr + SOCK_MS_SYSTEM);
+-
+-		data = host->req->data;
+-		data_len = host->req->data_len;
+ 
+-		if (host->req->data_dir == READ) {
+-			for (rc = 0; (data_len - rc) >= 4; rc += 4)
+-				*(int *)(data + rc)
+-					= __raw_readl(sock->addr
+-						      + SOCK_MS_DATA);
+-
+-			if (data_len - rc)
+-				tval = readl(sock->addr + SOCK_MS_DATA);
+-			switch (data_len - rc) {
+-			case 3:
+-				data[rc + 2] = (tval >> 16) & 0xff;
+-			case 2:
+-				data[rc + 1] = (tval >> 8) & 0xff;
+-			case 1:
+-				data[rc] = tval & 0xff;
+-			}
+-			readl(sock->addr + SOCK_MS_DATA);
+-		}
+-	}
++	if (host->use_dma)
++		tifm_unmap_sg(sock, &host->req->sg, 1,
++			      host->req->data_dir == READ
++			      ? PCI_DMA_FROMDEVICE
++			      : PCI_DMA_TODEVICE);
+ 
+ 	writel((~TIFM_CTRL_LED) & readl(sock->addr + SOCK_CONTROL),
+ 	       sock->addr + SOCK_CONTROL);
+ 
++	dev_dbg(&sock->dev, "TPC complete\n");
+ 	do {
+ 		rc = memstick_next_req(msh, &host->req);
+ 	} while (!rc && tifm_ms_issue_cmd(host));
+@@ -363,11 +360,10 @@ static int tifm_ms_check_status(struct tifm_ms *host)
+ 	if (!host->req->error) {
+ 		if (!(host->cmd_flags & CMD_READY))
+ 			return 1;
+-		if (host->req->long_data
+-		    && !(host->cmd_flags & FIFO_READY))
++		if (!(host->cmd_flags & FIFO_READY))
+ 			return 1;
+ 		if (host->req->need_card_int
+-		    && !(host->cmd_flags & CARD_READY))
++		    && !(host->cmd_flags & CARD_INT))
+ 			return 1;
+ 	}
+ 	return 0;
+@@ -377,18 +373,24 @@ static int tifm_ms_check_status(struct tifm_ms *host)
+ static void tifm_ms_data_event(struct tifm_dev *sock)
+ {
+ 	struct tifm_ms *host;
+-	unsigned int fifo_status = 0;
++	unsigned int fifo_status = 0, host_status = 0;
+ 	int rc = 1;
+ 
+ 	spin_lock(&sock->lock);
+ 	host = memstick_priv((struct memstick_host *)tifm_get_drvdata(sock));
+ 	fifo_status = readl(sock->addr + SOCK_DMA_FIFO_STATUS);
+-	dev_dbg(&sock->dev, "data event: fifo_status %x, flags %x\n",
+-		fifo_status, host->cmd_flags);
++	host_status = readl(sock->addr + SOCK_MS_STATUS);
++	dev_dbg(&sock->dev,
++		"data event: fifo_status %x, host_status %x, flags %x\n",
++		fifo_status, host_status, host->cmd_flags);
+ 
+ 	if (host->req) {
+-		if (fifo_status & TIFM_FIFO_READY) {
+-			if (!host->no_dma || tifm_ms_transfer_data(host, 0)) {
++		if (host->use_dma && (fifo_status & 1)) {
++			host->cmd_flags |= FIFO_READY;
++			rc = tifm_ms_check_status(host);
++		}
++		if (!host->use_dma && (fifo_status & TIFM_FIFO_MORE)) {
++			if (!tifm_ms_transfer_data(host)) {
+ 				host->cmd_flags |= FIFO_READY;
+ 				rc = tifm_ms_check_status(host);
+ 			}
+@@ -417,9 +419,9 @@ static void tifm_ms_card_event(struct tifm_dev *sock)
+ 		host_status, host->cmd_flags);
+ 
+ 	if (host->req) {
+-		if (host_status & TIFM_MS_TIMEOUT)
++		if (host_status & TIFM_MS_STAT_TOE)
+ 			host->req->error = -ETIME;
+-		else if (host_status & TIFM_MS_BADCRC)
++		else if (host_status & TIFM_MS_STAT_CRC)
+ 			host->req->error = -EILSEQ;
+ 
+ 		if (host->req->error) {
+@@ -428,18 +430,17 @@ static void tifm_ms_card_event(struct tifm_dev *sock)
+ 			writel(TIFM_DMA_RESET, sock->addr + SOCK_DMA_CONTROL);
+ 		}
+ 
+-		if (host_status & TIFM_MS_EOTPC)
++		if (host_status & TIFM_MS_STAT_RDY)
+ 			host->cmd_flags |= CMD_READY;
+-		if (host_status & TIFM_MS_INT)
+-			host->cmd_flags |= CARD_READY;
++
++		if (host_status & TIFM_MS_STAT_MSINT)
++			host->cmd_flags |= CARD_INT;
+ 
+ 		rc = tifm_ms_check_status(host);
+ 
+ 	}
+ 
+-	writel(TIFM_MS_SYS_NOT_RDY | readl(sock->addr + SOCK_MS_SYSTEM),
+-	       sock->addr + SOCK_MS_SYSTEM);
+-	writel((~TIFM_MS_SYS_DATA) & readl(sock->addr + SOCK_MS_SYSTEM),
++	writel(TIFM_MS_SYS_INTCLR | readl(sock->addr + SOCK_MS_SYSTEM),
+ 	       sock->addr + SOCK_MS_SYSTEM);
+ 
+ 	if (!rc)
+@@ -499,7 +500,7 @@ static void tifm_ms_set_param(struct memstick_host *msh,
+ 		break;
+ 	case MEMSTICK_INTERFACE:
+ 		if (value == MEMSTICK_SERIAL) {
+-			host->mode_mask = TIFM_MS_SERIAL;
++			host->mode_mask = TIFM_MS_SYS_SRAC | TIFM_MS_SYS_REI;
+ 			writel((~TIFM_CTRL_FAST_CLK)
+ 			       & readl(sock->addr + SOCK_CONTROL),
+ 			       sock->addr + SOCK_CONTROL);
+@@ -535,9 +536,10 @@ static int tifm_ms_initialize_host(struct tifm_ms *host)
+ 	struct tifm_dev *sock = host->dev;
+ 	struct memstick_host *msh = tifm_get_drvdata(sock);
+ 
+-	host->mode_mask = TIFM_MS_SERIAL;
+-	writel(0x8000, sock->addr + SOCK_MS_SYSTEM);
+-	writel(0x0200 | TIFM_MS_SYS_NOT_RDY, sock->addr + SOCK_MS_SYSTEM);
++	host->mode_mask = TIFM_MS_SYS_SRAC | TIFM_MS_SYS_REI;
++	writel(TIFM_MS_SYS_RESET, sock->addr + SOCK_MS_SYSTEM);
++	writel(TIFM_MS_SYS_FCLR | TIFM_MS_SYS_INTCLR,
++	       sock->addr + SOCK_MS_SYSTEM);
+ 	writel(0xffffffff, sock->addr + SOCK_MS_STATUS);
+ 	if (tifm_has_ms_pif(sock))
+ 		msh->caps |= MEMSTICK_CAP_PAR4;
+@@ -566,7 +568,6 @@ static int tifm_ms_probe(struct tifm_dev *sock)
+ 	tifm_set_drvdata(sock, msh);
+ 	host->dev = sock;
+ 	host->timeout_jiffies = msecs_to_jiffies(1000);
+-	host->no_dma = no_dma;
+ 
+ 	setup_timer(&host->timer, tifm_ms_abort, (unsigned long)host);
+ 
+@@ -599,7 +600,7 @@ static void tifm_ms_remove(struct tifm_dev *sock)
+ 		writel(TIFM_FIFO_INT_SETALL,
+ 		       sock->addr + SOCK_DMA_FIFO_INT_ENABLE_CLEAR);
+ 		writel(TIFM_DMA_RESET, sock->addr + SOCK_DMA_CONTROL);
+-		if (host->req->long_data && !host->no_dma)
++		if (host->use_dma)
+ 			tifm_unmap_sg(sock, &host->req->sg, 1,
+ 				      host->req->data_dir == READ
+ 				      ? PCI_DMA_TODEVICE
+@@ -616,7 +617,8 @@ static void tifm_ms_remove(struct tifm_dev *sock)
+ 
+ 	memstick_remove_host(msh);
+ 
+-	writel(0x0200 | TIFM_MS_SYS_NOT_RDY, sock->addr + SOCK_MS_SYSTEM);
++	writel(TIFM_MS_SYS_FCLR | TIFM_MS_SYS_INTCLR,
++	       sock->addr + SOCK_MS_SYSTEM);
+ 	writel(0xffffffff, sock->addr + SOCK_MS_STATUS);
+ 
+ 	memstick_free_host(msh);
+diff --git a/include/linux/tifm.h b/include/linux/tifm.h
+index da76ed8..848c0f3 100644
+--- a/include/linux/tifm.h
++++ b/include/linux/tifm.h
+@@ -70,9 +70,9 @@ enum {
+ 
+ #define TIFM_FIFO_ENABLE          0x00000001
+ #define TIFM_FIFO_READY           0x00000001
++#define TIFM_FIFO_MORE            0x00000008
+ #define TIFM_FIFO_INT_SETALL      0x0000ffff
+ #define TIFM_FIFO_INTMASK         0x00000005
+-#define TIFM_FIFO_SIZE            0x00000200
+ 
+ #define TIFM_DMA_RESET            0x00000002
+ #define TIFM_DMA_TX               0x00008000
 -- 
 1.5.3.6
 
