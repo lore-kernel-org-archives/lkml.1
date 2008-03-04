@@ -1,128 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764372AbYCDWdP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933663AbYCDWeV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764372AbYCDWdP (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Mar 2008 17:33:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757618AbYCDWcz
+	id S933663AbYCDWeV (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Mar 2008 17:34:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751196AbYCDWeM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Mar 2008 17:32:55 -0500
-Received: from ug-out-1314.google.com ([66.249.92.170]:10554 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757315AbYCDWcy (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Mar 2008 17:32:54 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-disposition:message-id:content-type:content-transfer-encoding;
-        b=YDmxBTJDOyFsgo+5ofQnZlZdgjAVs+NISiTOK5jDgzzcao3wbZQHVH8pXcoQsNwhYll1LJzfQyA6X1cycVU22F6EY5hKGtQcGhbMkn+TwlvHl/IDMPuGqdhW4KAgLJUq5REd5FdkCDEcmU4zXZHr2jBZbHRz57VeiiM9uc/tJLE=
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: Anders Eriksson <aeriksson@fastmail.fm>
-Subject: Re: -rc3 regression (was Re: 2.6.25-rc2 + smartd = hang )
-Date: Tue, 4 Mar 2008 23:46:21 +0100
-User-Agent: KMail/1.9.6 (enterprise 0.20071204.744707)
-Cc: Jeff Garzik <jeff@garzik.org>, linux-kernel@vger.kernel.org,
-       Linux IDE mailing list <linux-ide@vger.kernel.org>,
-       Jens Axboe <jens.axboe@oracle.com>
-References: <20080222165122.8D2BB93C12F@tippex.mynet.homeunix.org> <200803040133.07736.bzolnier@gmail.com> <20080304095701.DDF762DC027@tippex.mynet.homeunix.org>
-In-Reply-To: <20080304095701.DDF762DC027@tippex.mynet.homeunix.org>
+	Tue, 4 Mar 2008 17:34:12 -0500
+Received: from th5.kapitza.ras.ru ([83.149.229.88]:44995 "EHLO ari.home"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1750696AbYCDWeK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 4 Mar 2008 17:34:10 -0500
+X-Greylist: delayed 414 seconds by postgrey-1.27 at vger.kernel.org; Tue, 04 Mar 2008 17:34:10 EST
+Date: Wed, 5 Mar 2008 01:27:30 +0300 (MSK)
+From: "Lev A. Melnikovsky" <melnikovsky@mail.ru>
+To: linux-kernel@vger.kernel.org
+Subject: ehci-hcd affects hda speed
+Message-ID: <alpine.LFD.1.00.0803050036210.31935@nev.ubzr>
+User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
 MIME-Version: 1.0
-Content-Disposition: inline
-Message-Id: <200803042346.21403.bzolnier@gmail.com>
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; format=flowed; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
 Hi,
 
-On Tuesday 04 March 2008, Anders Eriksson wrote:
-> 
-> bzolnier@gmail.com said:
-> >> On Tuesday 04 March 2008, Bartlomiej Zolnierkiewicz wrote:
-> >> Untested patch which may help in case that set_pio_mode() raced with
-> >> the queueing of the special request and block layer doesn't call
-> >> ->request_fn_proc again if we were preempted previously (if PREEMPT=y).
-> 
-> > I need some sleep...  this patch is not going to help (though disabling
-> > PREEMPT may be worth a try).  Sorry for the confusion.
-> 
-> Ok, I'll drop the patch and, recompile without PREEMPT.
-> 
-> 
-> bzolnier@gmail.com said:
-> > If the patch doesn't help could you try removing smartd from system startup
-> > and see if it could be run later from the command line? 
-> 
-> That's how I executed during the bisect. It works as a charm without smartd. 
-> The moment I run it, boink, the first accessed hd freezed up. The other ones 
-> are usable for a while, though the system tend to lock solid after a while.
+I have recently installed a VT6212L-based PCI USB controller into my old 
+rock-stable P3B-F computer just to discover that, even being idle, it 
+significantly slows down main PATA hard drive. I have found an earlier 
+thread with similar (?) problem (archived at http://marc.info/?t=111749614000002&r=1&w=2 )
+but it provides no solution. Can this behaviour be explained? Can it be fixed?
 
-Thanks, this (and no success with PREEMPT_NONE) changes the perspective a bit.
+There's one thing that makes me optimistic: USB traffic _speeds_up_ hda. 
+That is hdparm gives ~20% improvement in buffered reads if a USB flash is 
+inserted and another xterm simultaneously runs
+# dd if=/dev/sda of=/dev/null bs=1024
 
-Could you set your kernel tree to the guilty commit
-34f5d5ae35240a11846875d76eb935875ab0c366:
+Here's what I see:
 
-diff --git a/drivers/ide/ide-disk.c b/drivers/ide/ide-disk.c
-index 027bf43..717e114 100644
---- a/drivers/ide/ide-disk.c
-+++ b/drivers/ide/ide-disk.c
-@@ -620,8 +620,10 @@ static int set_multcount(ide_drive_t *drive, int arg)
+------------------------------------------------------------------------------
+# hdparm -t -T /dev/hda
+ 	/dev/hda:
+ 	 Timing cached reads:   312 MB in  2.01 seconds = 155.60 MB/sec
+ 	 Timing buffered disk reads:   88 MB in  3.06 seconds =  28.77 MB/sec
+# modprobe ehci-hcd
+# hdparm -t -T /dev/hda
+ 	/dev/hda:
+ 	 Timing cached reads:   274 MB in  2.01 seconds = 136.58 MB/sec
+ 	 Timing buffered disk reads:   44 MB in  3.10 seconds =  14.20 MB/sec
+# rmmod ehci-hcd
+# hdparm -t -T /dev/hda
+ 	/dev/hda:
+ 	 Timing cached reads:   286 MB in  2.01 seconds = 142.48 MB/sec
+ 	 Timing buffered disk reads:   90 MB in  3.06 seconds =  29.44 MB/sec
+------------------------------------------------------------------------------
 
-        if (drive->special.b.set_multmode)
-                return -EBUSY;
-+
-        ide_init_drive_cmd (&rq);
--       rq.cmd_type = REQ_TYPE_ATA_CMD;
-+       rq.cmd_type = REQ_TYPE_ATA_TASKFILE;
-+
-        drive->mult_req = arg;
-        drive->special.b.set_multmode = 1;
-        (void) ide_do_drive_cmd (drive, &rq, ide_wait);
-diff --git a/drivers/ide/ide-taskfile.c b/drivers/ide/ide-taskfile.c
-index b8c7e81..9404650 100644
---- a/drivers/ide/ide-taskfile.c
-+++ b/drivers/ide/ide-taskfile.c
-@@ -781,7 +781,7 @@ int ide_cmd_ioctl (ide_drive_t *drive, unsigned int cmd, uns
-                struct request rq;
+And here's what I have (kernel 2.6.24.3):
 
-                ide_init_drive_cmd(&rq);
--               rq.cmd_type = REQ_TYPE_ATA_CMD;
-+               rq.cmd_type = REQ_TYPE_ATA_TASKFILE;
+------------------------------------------------------------------------------
+#lspci -v
 
-                return ide_do_drive_cmd(drive, &rq, ide_wait);
-        }
-diff --git a/drivers/ide/ide.c b/drivers/ide/ide.c
-index 446b128..97894ab 100644
---- a/drivers/ide/ide.c
-+++ b/drivers/ide/ide.c
-@@ -880,7 +880,7 @@ int set_pio_mode(ide_drive_t *drive, int arg)
-                return -EBUSY;
+00:09.0 USB Controller: VIA Technologies, Inc. VT82xxxxx UHCI USB 1.1 Controller (rev 62) (prog-if 00 [UHCI])
+         Subsystem: VIA Technologies, Inc. VT82xxxxx UHCI USB 1.1 Controller
+         Flags: medium devsel, IRQ 5
+         I/O ports at d000 [size=32]
+         Capabilities: [80] Power Management version 2
 
-        ide_init_drive_cmd(&rq);
--       rq.cmd_type = REQ_TYPE_ATA_CMD;
-+       rq.cmd_type = REQ_TYPE_ATA_TASKFILE;
+00:09.1 USB Controller: VIA Technologies, Inc. VT82xxxxx UHCI USB 1.1 Controller (rev 62) (prog-if 00 [UHCI])
+         Subsystem: VIA Technologies, Inc. VT82xxxxx UHCI USB 1.1 Controller
+         Flags: medium devsel, IRQ 9
+         I/O ports at b800 [size=32]
+         Capabilities: [80] Power Management version 2
 
-        drive->tune_req = (u8) arg;
-        drive->special.b.set_tune = 1;
+00:09.2 USB Controller: VIA Technologies, Inc. USB 2.0 (rev 65) (prog-if 20 [EHCI])
+         Subsystem: VIA Technologies, Inc. USB 2.0
+         Flags: bus master, medium devsel, latency 32, IRQ 11
+         Memory at d3800000 (32-bit, non-prefetchable) [size=256]
+         Capabilities: [80] Power Management version 2
 
-and see if manually reverting only ide-taskfile.c change fixes the problem
-(so we know that we are looking at the right place).
+# cat /proc/interrupts
+            CPU0
+   0:  100814528    XT-PIC-XT        timer
+   1:       4057    XT-PIC-XT        i8042
+   2:          0    XT-PIC-XT        cascade
+   3:       1013    XT-PIC-XT
+   4:          2    XT-PIC-XT
+   5:    7165568    XT-PIC-XT        bttv0, FM801, uhci_hcd:usb2, uhci_hcd:usb3
+   8:   25956003    XT-PIC-XT
+   9:     661413    XT-PIC-XT        eth1, uhci_hcd:usb4
+  10:          4    XT-PIC-XT
+  11:   13526145    XT-PIC-XT        eth0, ehci_hcd:usb1
+  12:    1068179    XT-PIC-XT        i8042
+  14:     710123    XT-PIC-XT        ide0
+  15:       4365    XT-PIC-XT        ide1
+NMI:          0   Non-maskable interrupts
+TRM:          0   Thermal event interrupts
+SPU:          0   Spurious interrupts
+ERR:          0
+------------------------------------------------------------------------------
 
-Also Alt-SysRq-T output for the hang would probably be very useful to tell
-what is going on, maybe it is possible to still get it before system fully
-stops?
+Please let me know if I missed something important.
 
-I must admit that after auditing the patch & code for n-th time I still fail
-to see the source of the problem (especialy now that the theory about exposing
-races in the tuning code has also failed) as the _only_ changes introduced by
-the guilty commit are that we are using different rq->cmd_type and testing for
-rq->special instead of rq->buffer but both should be NULL. [ as it can be seen
-be looking at ide_cmd_ioctl(), execute_drive_cmd() and ide_end_drive_cmd() ]
-
-If anybody has some ideas on what could be wrong please help, in the meantime
-I'm going to take a look at smartd code...
-
-Thanks,
-Bart
+Thanks
+-L
