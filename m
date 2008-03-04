@@ -1,48 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935207AbYCDXXb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935294AbYCDXYD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935207AbYCDXXb (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Mar 2008 18:23:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934163AbYCDXSv
+	id S935294AbYCDXYD (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Mar 2008 18:24:03 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935009AbYCDXS6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Mar 2008 18:18:51 -0500
-Received: from terminus.zytor.com ([198.137.202.10]:42210 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S934062AbYCDXSt (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Mar 2008 18:18:49 -0500
-Message-ID: <47CDD715.3010905@zytor.com>
-Date: Tue, 04 Mar 2008 15:11:17 -0800
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
-MIME-Version: 1.0
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-CC: Ingo Molnar <mingo@elte.hu>, "Klaus S. Madsen" <ksm@hjernemadsen.org>,
-       Pavel Machek <pavel@ucw.cz>,
-       Suspend-devel list <suspend-devel@lists.sourceforge.net>,
-       LKML <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Matthew Garrett <mjg59@srcf.ucam.org>,
-       Arjan van de Ven <arjan@infradead.org>
-Subject: Re: Regression in 2.6.25-rc3: s2ram segfaults before suspending
-References: <20080228194920.GJ17932@hjernemadsen.org> <47C739A6.5020608@zytor.com> <20080229070028.GK17932@hjernemadsen.org> <47C873AA.6040305@zytor.com> <20080229212654.GL27212@elte.hu> <20080301094525.GQ17932@hjernemadsen.org> <20080303121735.GE28369@elf.ucw.cz> <20080303151155.GT17932@hjernemadsen.org> <20080303174858.GB25496@elte.hu> <20080303205227.GU17932@hjernemadsen.org> <20080304123602.GC29777@elte.hu> <47CDD480.7000802@goop.org>
-In-Reply-To: <47CDD480.7000802@goop.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Tue, 4 Mar 2008 18:18:58 -0500
+Received: from ns2.suse.de ([195.135.220.15]:42775 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S934251AbYCDXS4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 4 Mar 2008 18:18:56 -0500
+From: Greg Kroah-Hartman <gregkh@suse.de>
+To: linux-kernel@vger.kernel.org
+Cc: Greg Kroah-Hartman <gregkh@suse.de>, Kay Sievers <kay.sievers@vrfy.org>,
+       Jiri Slaby <jslaby@suse.cz>
+Subject: [PATCH 1/8] driver core: fix up Kconfig text for CONFIG_SYSFS_DEPRECATED
+Date: Tue,  4 Mar 2008 15:18:45 -0800
+Message-Id: <1204672732-3127-1-git-send-email-gregkh@suse.de>
+X-Mailer: git-send-email 1.5.4.3
+In-Reply-To: <20080304231519.GC3073@suse.de>
+References: <20080304231519.GC3073@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jeremy Fitzhardinge wrote:
->>
->> PAE activates NX on 32-bit. So we probably had an NX regression that 
->> got fixed by the side-effects of one of the unifications. Does it 
->> start working if you disable NX via the noexec=off boot option?
-> 
-> What's the state of play here?  Is upshot that this change fixed a bug 
-> which broke s2ram, or caused a bug which broke s2ram?
-> 
+As things get moved into this config option, the hard date of 2006 does
+not work anymore, so update the text to be more descriptive.
 
-As far as I can tell, this change fixed a bug, and the fact that the bug 
-was fixed triggered a s2ram bug.
+Cc: Kay Sievers <kay.sievers@vrfy.org>
+Cc: Jiri Slaby <jslaby@suse.cz>
+Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+---
+ init/Kconfig |    7 ++++---
+ 1 files changed, 4 insertions(+), 3 deletions(-)
 
-	-hpa
+diff --git a/init/Kconfig b/init/Kconfig
+index f698a5a..e6606e6 100644
+--- a/init/Kconfig
++++ b/init/Kconfig
+@@ -382,10 +382,11 @@ config SYSFS_DEPRECATED
+ 
+ 	  If enabled, this option will also move any device structures
+ 	  that belong to a class, back into the /sys/class hierarchy, in
+-	  order to support older versions of udev.
++	  order to support older versions of udev and some userspace
++	  programs.
+ 
+-	  If you are using a distro that was released in 2006 or later,
+-	  it should be safe to say N here.
++	  If you are using a distro with the most recent userspace
++	  packages, it should be safe to say N here.
+ 
+ config CGROUP_MEM_CONT
+ 	bool "Memory controller for cgroups"
+-- 
+1.5.4.3
+
