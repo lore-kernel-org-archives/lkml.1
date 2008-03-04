@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763060AbYCDAIr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762717AbYCDAJR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763060AbYCDAIr (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Mar 2008 19:08:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754089AbYCDAHi
+	id S1762717AbYCDAJR (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Mar 2008 19:09:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754540AbYCDAHi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
 	Mon, 3 Mar 2008 19:07:38 -0500
-Received: from relay2.sgi.com ([192.48.171.30]:47564 "EHLO relay.sgi.com"
+Received: from relay1.sgi.com ([192.48.171.29]:40095 "EHLO relay.sgi.com"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752372AbYCDAHf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1752760AbYCDAHf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Mon, 3 Mar 2008 19:07:35 -0500
-Message-Id: <20080304000733.017773882@sgi.com>
+Message-Id: <20080304000733.487348652@sgi.com>
 References: <20080304000452.514878384@sgi.com>
 User-Agent: quilt/0.46-1
-Date: Mon, 03 Mar 2008 16:04:56 -0800
+Date: Mon, 03 Mar 2008 16:04:58 -0800
 From: Christoph Lameter <clameter@sgi.com>
 To: Andrew Morton <akpm@linux-foundation.org>
 Cc: linux-kernel@vger.kernel.org
@@ -22,56 +22,51 @@ Cc: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
 Cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
 Cc: Rik van Riel <riel@redhat.com>
 Cc: linux-mm@kvack.org
-Subject: [rfc 04/10] Pageflags: Use proper page flag functions in Xen
-Content-Disposition: inline; filename=xen
+Subject: [rfc 06/10] Sparsemem: Vmemmap does not need section bits
+Content-Disposition: inline; filename=sparsemem_vmemmap_does_not_need_section_flags
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Xen uses bitops to manipulate page flags. Make it use proper page flag
-functions.
+Sparsemem vmemmap does not need any section bits. This patch has
+the effect of reducing the number of bits used in page->flags
+by at least 6.
 
 Signed-off-by: Christoph Lameter <clameter@sgi.com>
 
 ---
- arch/x86/xen/mmu.c         |    4 ++--
- include/linux/page-flags.h |    2 +-
- 2 files changed, 3 insertions(+), 3 deletions(-)
+ include/linux/mm.h |   11 +++++++----
+ 1 file changed, 7 insertions(+), 4 deletions(-)
 
-Index: linux-2.6/arch/x86/xen/mmu.c
+Index: linux-2.6/include/linux/mm.h
 ===================================================================
---- linux-2.6.orig/arch/x86/xen/mmu.c	2008-03-03 15:45:09.207335791 -0800
-+++ linux-2.6/arch/x86/xen/mmu.c	2008-03-03 15:48:09.469801962 -0800
-@@ -425,7 +425,7 @@ static void xen_do_pin(unsigned level, u
+--- linux-2.6.orig/include/linux/mm.h	2008-03-03 15:45:07.047305876 -0800
++++ linux-2.6/include/linux/mm.h	2008-03-03 15:49:04.686432973 -0800
+@@ -390,11 +390,11 @@ static inline void set_compound_order(st
+  * we have run out of space and have to fall back to an
+  * alternate (slower) way of determining the node.
+  *
+- *        No sparsemem: |       NODE     | ZONE | ... | FLAGS |
+- * with space for node: | SECTION | NODE | ZONE | ... | FLAGS |
+- *   no space for node: | SECTION |     ZONE    | ... | FLAGS |
++ * No sparsemem or sparsemem vmemmap: |       NODE     | ZONE | ... | FLAGS |
++ * classic sparse with space for node:| SECTION | NODE | ZONE | ... | FLAGS |
++ * classic sparse no space for node:  | SECTION |     ZONE    | ... | FLAGS |
+  */
+-#ifdef CONFIG_SPARSEMEM
++#if defined(CONFIG_SPARSEMEM) && !defined(CONFIG_SPARSEMEM_VMEMMAP)
+ #define SECTIONS_WIDTH		SECTIONS_SHIFT
+ #else
+ #define SECTIONS_WIDTH		0
+@@ -405,6 +405,9 @@ static inline void set_compound_order(st
+ #if SECTIONS_WIDTH+ZONES_WIDTH+NODES_SHIFT <= FLAGS_RESERVED
+ #define NODES_WIDTH		NODES_SHIFT
+ #else
++#ifdef CONFIG_SPARSEMEM_VMEMMAP
++#error "Vmemmap: No space for nodes field in page flags"
++#endif
+ #define NODES_WIDTH		0
+ #endif
  
- static int pin_page(struct page *page, enum pt_level level)
- {
--	unsigned pgfl = test_and_set_bit(PG_pinned, &page->flags);
-+	unsigned pgfl = TestSetPagePinned(page);
- 	int flush;
- 
- 	if (pgfl)
-@@ -506,7 +506,7 @@ void __init xen_mark_init_mm_pinned(void
- 
- static int unpin_page(struct page *page, enum pt_level level)
- {
--	unsigned pgfl = test_and_clear_bit(PG_pinned, &page->flags);
-+	unsigned pgfl = TestClearPagePinned(page);
- 
- 	if (pgfl && !PageHighMem(page)) {
- 		void *pt = lowmem_page_address(page);
-Index: linux-2.6/include/linux/page-flags.h
-===================================================================
---- linux-2.6.orig/include/linux/page-flags.h	2008-03-03 15:46:15.848254180 -0800
-+++ linux-2.6/include/linux/page-flags.h	2008-03-03 15:48:09.469801962 -0800
-@@ -155,7 +155,7 @@ PAGEFLAG(LRU, lru) __CLEARPAGEFLAG(LRU, 
- PAGEFLAG(Active, active) __CLEARPAGEFLAG(Active, active)
- __PAGEFLAG(Slab, slab)
- PAGEFLAG(Checked, checked)		/* Used by some filesystems */
--PAGEFLAG(Pinned, pinned)		/* Xen pinned pagetable */
-+PAGEFLAG(Pinned, pinned) TESTSCFLAG(Pinned, pinned) /* Xen pagetable */
- PAGEFLAG(Reserved, reserved) __CLEARPAGEFLAG(Reserved, reserved)
- PAGEFLAG(Private, private) __CLEARPAGEFLAG(Private, private)
- 	__SETPAGEFLAG(Private, private)
 
 -- 
