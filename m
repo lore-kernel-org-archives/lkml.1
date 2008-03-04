@@ -1,74 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764107AbYCDMgm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762906AbYCDMhk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764107AbYCDMgm (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Mar 2008 07:36:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753943AbYCDMgc
+	id S1762906AbYCDMhk (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Mar 2008 07:37:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758646AbYCDMh1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Mar 2008 07:36:32 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:47954 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753169AbYCDMgb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Mar 2008 07:36:31 -0500
-Date: Tue, 4 Mar 2008 13:36:02 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: "Klaus S. Madsen" <ksm@hjernemadsen.org>
-Cc: Pavel Machek <pavel@ucw.cz>,
-       Suspend-devel list <suspend-devel@lists.sourceforge.net>,
-       "H. Peter Anvin" <hpa@zytor.com>, LKML <linux-kernel@vger.kernel.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, Thomas Gleixner <tglx@linutronix.de>,
-       Matthew Garrett <mjg59@srcf.ucam.org>,
-       Jeremy Fitzhardinge <jeremy@goop.org>,
-       Arjan van de Ven <arjan@infradead.org>
-Subject: Re: Regression in 2.6.25-rc3: s2ram segfaults before suspending
-Message-ID: <20080304123602.GC29777@elte.hu>
-References: <20080228194920.GJ17932@hjernemadsen.org> <47C739A6.5020608@zytor.com> <20080229070028.GK17932@hjernemadsen.org> <47C873AA.6040305@zytor.com> <20080229212654.GL27212@elte.hu> <20080301094525.GQ17932@hjernemadsen.org> <20080303121735.GE28369@elf.ucw.cz> <20080303151155.GT17932@hjernemadsen.org> <20080303174858.GB25496@elte.hu> <20080303205227.GU17932@hjernemadsen.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080303205227.GU17932@hjernemadsen.org>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Tue, 4 Mar 2008 07:37:27 -0500
+Received: from mail.gmx.net ([213.165.64.20]:37046 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1758922AbYCDMhY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 4 Mar 2008 07:37:24 -0500
+X-Authenticated: #14349625
+X-Provags-ID: V01U2FsdGVkX191SV1zyaV1ocbFhoJXHZPiU9bAONLgK3SqgUFOws
+	ToL7JH/x9dYpBT
+Subject: Re: [PATCH] block: fix residual byte count handling
+From: Mike Galbraith <efault@gmx.de>
+To: Jens Axboe <jens.axboe@oracle.com>
+Cc: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>, htejun@gmail.com,
+       tomof@acm.org, James.Bottomley@HansenPartnership.com,
+       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       linux-ide@vger.kernel.org, linux-scsi@vger.kernel.org,
+       jgarzik@pobox.com, bzolnier@gmail.com
+In-Reply-To: <20080304093536.GH6704@kernel.dk>
+References: <20080304175302T.fujita.tomonori@lab.ntt.co.jp>
+	 <20080304085944.GG6704@kernel.dk>
+	 <20080304180648W.fujita.tomonori@lab.ntt.co.jp>
+	 <20080304182228Z.fujita.tomonori@lab.ntt.co.jp>
+	 <20080304093536.GH6704@kernel.dk>
+Content-Type: text/plain
+Date: Tue, 04 Mar 2008 13:37:18 +0100
+Message-Id: <1204634238.5997.5.camel@homer.simson.net>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.0 
+Content-Transfer-Encoding: 7bit
+X-Y-GMX-Trusted: 0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Klaus S. Madsen <ksm@hjernemadsen.org> wrote:
+On Tue, 2008-03-04 at 10:35 +0100, Jens Axboe wrote:
 
-> So while I'm fairly confident in that I bisected correctly, the number 
-> of attempts I had to go through to get a reliable result, and the fact 
-> that I cannot make the problem go away by reverting the current code 
-> to something similar, counts quite a lot against me.
-> 
-> However I'm 100% confident that the problem appears between 
-> cf8fa920cb4271f17e0265c863d64bea1b31941a and 
-> 925596a017bbd045ff711b778256f459e50a119, which is something like 16 
-> commits. I have been at both points in the tree at least 2 times, and 
-> confirmed that cf8fa920cb4271f17e0265c863d64bea1b31941a worked for me, 
-> and 925596a017bbd045ff711b778256f459e50a119 didn't.
+> Looks excellent to me, has a variant of this been tested as OK by the
+> users reporting the regression?
 
-my guess would be that it's this commit that causes it:
+K3b burning seems to be a nogo here.  This is git pulled this morning
+though, so it's a somewhat different tree than previously tested fwtw.
 
-| commit 6c3866558213ff706d8331053386915371ad63ec
-| Author: Jeremy Fitzhardinge <jeremy@goop.org>
-| Date:   Wed Jan 30 13:32:55 2008 +0100
-|
-|    x86: move all asm/pgtable constants into one place
+[  136.440021] ata1.01: exception Emask 0x0 SAct 0x0 SErr 0x0 action 0x2 frozen
+[  136.440043] ata1.01: cmd a0/00:00:00:00:00/00:00:00:00:00/b0 tag 0
+[  136.440045]          cdb 51 00 00 00 00 00 00 00  02 00 00 00 00 00 00 00
+[  136.440047]          res 58/00:02:00:02:00/00:00:00:00:00/b0 Emask 0x2 (HSM violation)
+[  136.440053] ata1.01: status: { DRDY DRQ }
+[  136.440086] ata1: soft resetting link
+[  165.327627] ata1.01: qc timeout (cmd 0xa1)
+[  165.327627] ata1.01: failed to IDENTIFY (I/O error, err_mask=0x4)
+[  165.327627] ata1.01: revalidation failed (errno=-5)
+[  165.327627] ata1: failed to recover some devices, retrying in 5 secs
+[  177.272373] ata1: port is slow to respond, please be patient (Status 0x80)
+[  180.388879] ata1: device not ready (errno=-16), forcing hardreset
+[  180.388879] ata1: soft resetting link
+[  210.832471] ata1.01: qc timeout (cmd 0xa1)
+[  210.832471] ata1.01: failed to IDENTIFY (I/O error, err_mask=0x4)
+[  210.832471] ata1.01: revalidation failed (errno=-5)
+[  210.832471] ata1: failed to recover some devices, retrying in 5 secs
+[  223.392899] ata1: port is slow to respond, please be patient (Status 0x80)
+[  225.920376] ata1: device not ready (errno=-16), forcing hardreset
+[  225.920376] ata1: soft resetting link
+[  256.542565] ata1.01: qc timeout (cmd 0xa1)
+[  256.542565] ata1.01: failed to IDENTIFY (I/O error, err_mask=0x4)
+[  256.542565] ata1.01: revalidation failed (errno=-5)
+[  256.542565] ata1.01: disabled
+[  259.995199] ata1.00: failed to IDENTIFY (I/O error, err_mask=0x40)
+[  259.995214] ata1.00: revalidation failed (errno=-5)
+[  259.995219] ata1: failed to recover some devices, retrying in 5 secs
+[  265.047502] ata1: soft resetting link
+[  262.397570] ata1.00: limited to UDMA/33 due to 40-wire cable
+[  262.420039] ata1.00: configured for UDMA/33
+[  262.420039] sr 0:0:1:0: [sr0] Result: hostbyte=DID_OK driverbyte=DRIVER_SENSE,SUGGEST_OK
+[  262.420039] sr 0:0:1:0: [sr0] Sense Key : Aborted Command [current] [descriptor]
+[  262.420039] Descriptor sense data with sense descriptors (in hex):
+[  262.420039]         72 0b 47 00 00 00 00 0e 09 0c 00 00 00 02 00 00 
+[  262.420039]         00 02 00 00 b0 58 
+[  262.420039] sr 0:0:1:0: [sr0] Add. Sense: Scsi parity error
+[  262.420039] ata1: EH complete
+[  262.420257] sd 0:0:0:0: [sda] 312581808 512-byte hardware sectors (160042 MB)
+[  262.420320] sd 0:0:0:0: [sda] Write Protect is off
+[  262.420326] sd 0:0:0:0: [sda] Mode Sense: 00 3a 00 00
+[  262.420390] sd 0:0:0:0: [sda] Write cache: enabled, read cache: enabled, doesn't support DPO or FUA
 
-> But I'm a bit puzzled by the fact that I'm aparently the only one how 
-> have encountered the problem? Maybe it's only a problem if one also 
-> uses PAE? (Thats just a wild guess to explain why I'm the only one 
-> seeing this).
 
-PAE activates NX on 32-bit. So we probably had an NX regression that got 
-fixed by the side-effects of one of the unifications. Does it start 
-working if you disable NX via the noexec=off boot option?
 
-	Ingo
