@@ -1,113 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933480AbYCDUWj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933792AbYCDUXk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933480AbYCDUWj (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Mar 2008 15:22:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763259AbYCDUW2
+	id S933792AbYCDUXk (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Mar 2008 15:23:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763672AbYCDUX2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Mar 2008 15:22:28 -0500
-Received: from py-out-1112.google.com ([64.233.166.178]:11727 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752519AbYCDUW0 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Mar 2008 15:22:26 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=rcQXdAVAdH5sSC/zqMyQmvya51UC8bnv21Sof9W2+jnMo5wMnGIkidNxdm3G6d+kXEIQ8g5xvUlgpe4fFZt99x1tsJP/qxQR9/Y74KoiRGV6HGPauhu4VQYfupONfetv0IeouhW29Y3m99KdGClVgX8LiJYXr3cpTzYEOAxuDZo=
-Message-ID: <3efb10970803041222j61fd8d28k5cef0994b9bd6f12@mail.gmail.com>
-Date: Tue, 4 Mar 2008 21:22:24 +0100
-From: "Remy Bohmer" <linux@bohmer.net>
-To: "David Brownell" <david-b@pacbell.net>,
-       "Bosko Radivojevic" <bosko.radivojevic@gmail.com>
-Subject: Re: High resolution timers on AT91SAM926x
-Cc: lkml <linux-kernel@vger.kernel.org>, linux-rt-users@vger.kernel.org,
-       tglx@linutronix.de
-In-Reply-To: <200803031729.19264.david-b@pacbell.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Tue, 4 Mar 2008 15:23:28 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:35381 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1762925AbYCDUX1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 4 Mar 2008 15:23:27 -0500
+Date: Tue, 4 Mar 2008 15:23:03 -0500
+From: Rik van Riel <riel@redhat.com>
+To: "Alexey Zaytsev" <alexey.zaytsev@gmail.com>
+Cc: "Pekka Enberg" <penberg@cs.helsinki.fi>,
+       "Linus Torvalds" <torvalds@linux-foundation.org>,
+       "Linux kernel mailing list" <linux-kernel@vger.kernel.org>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "Ingo Molnar" <mingo@elte.hu>,
+       "Vegard Nossum" <vegard.nossum@gmail.com>
+Subject: Re: Google's Summer of Code?
+Message-ID: <20080304152303.2a041814@cuia.boston.redhat.com>
+In-Reply-To: <f19298770803041205i21a0c6d2mdf712b52cb00cfd5@mail.gmail.com>
+References: <84144f020803041045i70bbb05l6983bd14c5bcc91a@mail.gmail.com>
+	<alpine.LFD.1.00.0803041127290.12253@woody.linux-foundation.org>
+	<84144f020803041155k222c13ecu13c8c9534ced87e5@mail.gmail.com>
+	<f19298770803041205i21a0c6d2mdf712b52cb00cfd5@mail.gmail.com>
+Organization: Red Hat, Inc
+X-Mailer: Claws Mail 3.1.0 (GTK+ 2.12.1; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <200803011457.40857.david-b@pacbell.net>
-	 <200803031039.57909.david-b@pacbell.net>
-	 <d6c8ef150803031342r567aab86x776dc2a8b73714b6@mail.gmail.com>
-	 <200803031729.19264.david-b@pacbell.net>
-X-Google-Sender-Auth: a139399f2ed671d4
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello Bosko/Dave,
+On Tue, 4 Mar 2008 23:05:34 +0300
+"Alexey Zaytsev" <alexey.zaytsev@gmail.com> wrote:
+> On Tue, Mar 4, 2008 at 10:55 PM, Pekka Enberg <penberg@cs.helsinki.fi> wrote:
+> >  On Tue, 4 Mar 2008, Pekka Enberg wrote:
+> >  >  > Are there any plans to send an application of Linux kernel as a mentor
+> >  >  > organization for Google's Summer of Code this year? I think there are
+> >  >  > probably a lot of students interested in hacking on the kernel. And
+> >  >  > no, I am not volunteering to send that application but I would be
+> >  >  > interested in being a mentor.
+> >
+> >
+> > On Tue, Mar 4, 2008 at 9:35 PM, Linus Torvalds
+> >  <torvalds@linux-foundation.org> wrote:
+> >  >  We haven't done it before (afaik), and I don't think we've had anybody
+> >  >  sign up to suggest a project and mentor it. It's probably worth talking to
+> >  >  people in other projects that have done the gsoc thing before.
 
-> On Monday 03 March 2008, Bosko Radivojevic wrote:
->
-> > I had CONFIG_ATMEL_TCLIB enabled, but not TCB_CLKSRC and
->  > TCB_CLKSRC_BLOCK=0. With all those options, I finally have HRT
->  > functionality. But, strange thing is that jitter of my little example
->  > (get time, sleep 1ms, get time, show the difference) is around 250us.
->  > Maybe this is normal for this architecture?
-> I have no idea why that would be.  Maybe you can find out.  :)
+Actually, I have a list of possible projects online already:
 
-These are normal figures for this core, on preempt-rt.
-You are talking about jitter on timers. While on preempt-rt the worst
-case latency of scheduling a RT-thread is about 300us, 250us is thus
-quite normal, and actually quite good... (the kernel-mainline average
-latency is better, but worst-case is unbound)
-(Note: The 300 us seem to be caused by something in the networking
-layer, without network I noticed worst case latencies about 150us, but
-NO guarantee here)
+http://kernelnewbies.org/KernelProjects
 
-But, besides the worst-case schedule latency; the interrupt handler is
-shared with the handler of the DBGU. There are patches available to
-split the interrupt handler, this will make this behavior somewhat
-better, but do not expect miracles here.
+The list is on a wiki and "unfiltered", so we may need to look into the
+quality of the proposals a bit more before Summer of Code, and/or accept
+proposals by the Summer of Code volunteers and help them make sure their
+proposals are useful.
 
-I stopped using HRT on these cores and preempt-RT for quite some time
-now (several months), because the smaller timer granularity will allow
-applications to make timers elapse on sub-millisec intervals, where
-each interval generates a interrupt handling cycle of about 50 -
->100us, especially if different applications use periodic timers which
-are out of sync.
-This will become visible as extreme CPU-load figures on applications
-with 1 ms timers.
-13-15% CPU load on a application with just 1 single 1 ms timer is
-quite normal...
+> Maybe the Kernelnewbies should stand up as the mentoring organisation?
 
-FWIW: For getting the most accurate realtime response for periodic
-timers, I used a TC block to generate a periodic interrupt, that only
-needs to wake up a RT-thread. This way the OS-timer framework can be
-used for non-RT stuff, and/or slow timers. This is much less heavy on
-this core, and gives much better/deterministic RT results.
-(This is not what I prefer to do, but these cores are just not that
-fast as multi-gigahertz X86 PCs ;-)) )
+Kernelnewbies is just a community of people, without much organization.
 
+However, I would be happy to coordinate a group of mentors for Linux
+kernel Summer of Code as well as be a mentor for the kernel subsystems
+that I know something about.
 
-Kind Regards,
+If we can find mentors to cover most of the kernel (volunteers? anyone?),
+we can do a good enough job of mentoring the students that we could sign
+up for Summer of Code.
 
-Remy
+Summer of Code could also be a good way to get some kernel related work
+done, for example LTP tests for kernel subsystems that do not have a
+test suite yet.  Maybe not the most interesting work, but it can be very
+educational as well as useful - that and $5000 may be enough to motivate
+students to get some of this "boring work" done :)
 
->
->
->
->  > System is (as noted on rt.wik site) very slow with NO_HZ option enabled.
->
->
-> It doesn't exactly say *why* or compare to other arm926ejs
->  chips ...
->
->  Could the 64-bit math (ktime stuff) be a factor there?  Your
->  board probably only runs at 95 (or-so) bogomips after all.
->
->  And is that just a NO_HZ issue, or generically an issue when
->  oneshot timer modes are in heavy use?
->
->  - Dave
->
->
->  --
->  To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
->
-> the body of a message to majordomo@vger.kernel.org
->  More majordomo info at  http://vger.kernel.org/majordomo-info.html
->
-> Please read the FAQ at  http://www.tux.org/lkml/
->
+-- 
+All Rights Reversed
