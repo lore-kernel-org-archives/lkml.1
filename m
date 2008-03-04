@@ -1,58 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756055AbYCDGFf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756776AbYCDGJS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756055AbYCDGFf (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Mar 2008 01:05:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751562AbYCDGFZ
+	id S1756776AbYCDGJS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Mar 2008 01:09:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751562AbYCDGI7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Mar 2008 01:05:25 -0500
-Received: from gateway.drzeus.cx ([85.8.24.16]:33588 "EHLO smtp.drzeus.cx"
+	Tue, 4 Mar 2008 01:08:59 -0500
+Received: from mail.suse.de ([195.135.220.2]:35840 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751162AbYCDGFY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Mar 2008 01:05:24 -0500
-Date: Tue, 4 Mar 2008 07:03:57 +0100
-From: Pierre Ossman <drzeus-mmc@drzeus.cx>
-To: David Brownell <david-b@pacbell.net>
-Cc: Alan Stern <stern@rowland.harvard.edu>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       pm list <linux-pm@lists.linux-foundation.org>,
-       Zdenek Kabelac <zdenek.kabelac@gmail.com>,
-       Kernel development list <linux-kernel@vger.kernel.org>
-Subject: Re: Bugs in MMC [was: [Bug 10030] Suspend doesn't work when SD card
- is inserted]
-Message-ID: <20080304070357.61ee825b@mjolnir.drzeus.cx>
-In-Reply-To: <200803031359.38263.david-b@pacbell.net>
-References: <200802241500.41969.rjw@sisk.pl>
-	<Pine.LNX.4.44L0.0802240941440.29504-100000@netrider.rowland.org>
-	<20080225184102.0a2e2bb5@mjolnir.drzeus.cx>
-	<200803031359.38263.david-b@pacbell.net>
-X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.8; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	id S1751337AbYCDGI6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 4 Mar 2008 01:08:58 -0500
+From: Neil Brown <neilb@suse.de>
+To: Andre Noll <maan@systemlinux.org>
+Date: Tue, 4 Mar 2008 17:08:50 +1100
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+Message-ID: <18380.59250.90214.461186@notabene.brown>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-raid@vger.kernel.org,
+       linux-kernel@vger.kernel.org, "K.Tanaka" <k-tanaka@ce.jp.nec.com>
+Subject: Re: [PATCH 001 of 9] md: Fix deadlock in md/raid1 and md/raid10 when handling a read error.
+In-Reply-To: message from Andre Noll on Monday March 3
+References: <20080303111240.23302.patches@notabene>
+	<1080303001705.23577@suse.de>
+	<20080303155449.GA32242@skl-net.de>
+X-Mailer: VM 7.19 under Emacs 21.4.1
+X-face: [Gw_3E*Gng}4rRrKRYotwlE?.2|**#s9D<ml'fY1Vw+@XfR[fRCsUoP?K6bt3YD\ui5Fh?f
+	LONpR';(ql)VM_TQ/<l_^D3~B:z$\YC7gUCuC=sYm/80G=$tt"98mr8(l))QzVKCk$6~gldn~*FK9x
+	8`;pM{3S8679sP+MbP,72<3_PIH-$I&iaiIb|hV1d%cYg))BmI)AZ
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 3 Mar 2008 13:59:37 -0800
-David Brownell <david-b@pacbell.net> wrote:
+On Monday March 3, maan@systemlinux.org wrote:
+> On 11:17, NeilBrown wrote:
+> 
+> > So we create a new function 'flush_pending_writes' to give that attention,
+> > and call it in freeze_array to be sure that we aren't waiting on raid1d.
+> 
+> Two minor remarks:
+
+Thanks for looking.
 
 > 
-> Card insert/remove events can be system wake events though.  Which
-> makes that restriction impractical.
+> Do we really need to take the spin lock in the common case where
+> conf->pending_bio_list.head is NULL? If not, the above could be
+> optimized to the slightly faster and better readable
 > 
-> I think hosts need to be able to call mmc_detect_change() as soon as
-> they see a stable signal.  The MMC core can hold off handling that
-> for a while, if it needs to wait until the code walking the device
-> tree gets around to resuming that host.  It's a lot more natural to
-> hold off such stuff one time there than in N host drivers; especially
-> since the MMC core already has such hold-off code.
+> 	struct bio *bio;
 > 
+> 	if (!conf->pending_bio_list.head)
+> 		return 0;
+> 	spin_lock_irq(&conf->device_lock);
+> 	bio = bio_list_get(&conf->pending_bio_list);
+> 	...
+> 	spin_unlock_irq(&conf->device_lock);
+> 	return 1;
 
-That actually sorts itself out as the MMC core reprobes on wakeup, but I see your point. Right now things will work peachy if the controllers just make sure to disable their card detection logic before telling the core to suspend.
+Maybe... If I write a memory location inside a spinlock, then after
+the spinlock is dropped, I read that location on a different CPU,
+am I always guaranteed to see the new value? or do I need some sort of
+memory barrier?
+If I could be clear on that (and memory-barriers.txt isn't
+helping... maybe if I read it 7 more times) then we probably could
+make the change you suggest.
+???
 
-Rgds
--- 
-     -- Pierre Ossman
+> 
+> 
+> > diff .prev/drivers/md/raid1.c ./drivers/md/raid1.c
+> > --- .prev/drivers/md/raid1.c	2008-02-22 15:45:35.000000000 +1100
+> > +++ ./drivers/md/raid1.c	2008-02-22 15:45:35.000000000 +1100
+> > @@ -592,6 +592,37 @@ static int raid1_congested(void *data, i
+> >  }
+> >  
+> >  
+> > +static int flush_pending_writes(conf_t *conf)
+> > +{
+> 
+> [snip]
+> 
+> Any chance to avoid this code duplication?
 
-  Linux kernel, MMC maintainer        http://www.kernel.org
-  PulseAudio, core developer          http://pulseaudio.org
-  rdesktop, core developer          http://www.rdesktop.org
+Not really.
+The "conf_t" in each case is a very different conf_t that just happens
+to have the same name and some common fields.
+There is actually quite a lot of structural similarity between raid1
+and raid10, but I don't think there is much to be gained by trying to
+share code there.
+
+Thanks,
+NeilBrown
