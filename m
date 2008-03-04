@@ -1,85 +1,133 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765692AbYCDUb1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764209AbYCDUc0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765692AbYCDUb1 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Mar 2008 15:31:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763233AbYCDUaq
+	id S1764209AbYCDUc0 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Mar 2008 15:32:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762804AbYCDUb6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Mar 2008 15:30:46 -0500
-Received: from smtp116.sbc.mail.sp1.yahoo.com ([69.147.64.89]:36208 "HELO
-	smtp116.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1761520AbYCDUao (ORCPT
+	Tue, 4 Mar 2008 15:31:58 -0500
+Received: from e31.co.us.ibm.com ([32.97.110.149]:34070 "EHLO
+	e31.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756322AbYCDUb4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Mar 2008 15:30:44 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=J4MdnNp8LI3H3GQ6V6sMbwVPN//etO6UObH86q5a908xwSL1tpwTBOvLPhjBtkSF077+2eQAGjBb804lP7Y2RqFZTpe4/Cu+C7P7syO9If9mqW3GRTbsq7uTPaT3V/IBxXvNO81oKEDVKWplzJoOM8b/0w6ChDlDHUjQvTwEsZA=  ;
-X-YMail-OSG: idGQ6V0VM1krBBdwbjAg7FVycArsBFWfMf1b3MEvyns7rs8cJeXrVEPiFUPQfPc2J0D_X9guvQ--
-X-Yahoo-Newman-Property: ymail-3
-From: David Brownell <david-b@pacbell.net>
-To: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: Bugs in MMC [was: [Bug 10030] Suspend doesn't work when SD card is inserted]
-Date: Tue, 4 Mar 2008 12:30:41 -0800
-User-Agent: KMail/1.9.6
-Cc: Pierre Ossman <drzeus-mmc@drzeus.cx>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       pm list <linux-pm@lists.linux-foundation.org>,
-       Zdenek Kabelac <zdenek.kabelac@gmail.com>,
-       Kernel development list <linux-kernel@vger.kernel.org>
-References: <Pine.LNX.4.44L0.0803041447090.15190-100000@iolanthe.rowland.org>
-In-Reply-To: <Pine.LNX.4.44L0.0803041447090.15190-100000@iolanthe.rowland.org>
+	Tue, 4 Mar 2008 15:31:56 -0500
+Date: Tue, 4 Mar 2008 12:22:07 -0800
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: linux-kernel@vger.kernel.org, linux-rt-users@vger.kernel.org
+Cc: ego@in.ibm.com, Ingo Molnar <mingo@elte.hu>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Dipankar Sarma <dipankar@in.ibm.com>, Ted Tso <tytso@us.ibm.com>,
+       dvhltc@us.ibm.com, Oleg Nesterov <oleg@tv-sign.ru>,
+       Andrew Morton <akpm@linux-foundation.org>, bunk@kernel.org,
+       Josh Triplett <josh@freedesktop.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, zippel@linux-m68k.org
+Subject: [PATCH] move PREEMPT_RCU config option back under PREEMPT
+Message-ID: <20080304202207.GA10926@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <20071213170348.GA25981@in.ibm.com> <20071213171658.GE25981@in.ibm.com> <200802290534.57040.zippel@linux-m68k.org> <20080229045328.GA18687@linux.vnet.ibm.com> <Pine.LNX.4.64.0802291330590.2723@scrub.home> <20080301193903.GC15887@linux.vnet.ibm.com> <Pine.LNX.4.64.0803020404040.2723@scrub.home> <20080303185511.GE12453@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200803041230.42152.david-b@pacbell.net>
+In-Reply-To: <20080303185511.GE12453@linux.vnet.ibm.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 04 March 2008, Alan Stern wrote:
-> On Tue, 4 Mar 2008, David Brownell wrote:
-> 
-> > > I don't understand this comment.  Suppose a card was inserted while the 
-> > > system was hibernating.  If the core didn't reprobe, when would that 
-> > > card be discovered?
-> > 
-> > The host controller would tell the core to check for a card, exactly
-> > like it does at all other times.
-> 
-> But how would the host controller know to do that?  Isn't card 
-> insertion detection often driven by interrupts?  If a card is 
-> inserted while the computer is off, no interrupt will be generated.
+Hello!
 
-I'm talking about Real Suspend States (tm), not hibernation.
-The systems in question tend to not support hibernation.
+The original preemptible-RCU patch put the choice between classic and
+preemptible RCU into kernel/Kconfig.preempt, which resulted in build
+failures on machines not supporting CONFIG_PREEMPT.  This choice was
+therefore moved to init/Kconfig, which worked, but placed the choice
+between classic and preemptible RCU at the top level, a very obtuse choice
+indeed.  This patch changes from the Kconfig "choice" mechanism to a pair
+of booleans, only one of which (CONFIG_PREEMPT_RCU) is user-visible,
+and is located in kernel/Kconfig.preempt, where one would expect it
+to be.  The other (CONFIG_CLASSIC_RCU) is in init/Kconfig so that it
+is available to all architectures, hopefully avoiding build breakage.
+Thanks to Roman Zippel for suggesting this approach.
 
-In particular:  system sleep states where IRQs work ... that's a
-common way for non-x86 platforms to work.
+I have tested this, but sadly do not have access to a machine that does
+not support CONFIG_PREEMPT.  However, I did edit my config in an attempt
+to simulate this situation.
 
+Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
+---
 
-> > That's the natural alternative to having the MMC core assume that card
-> > detection was broken in low power states, so that the core needed to
-> > forcibly remove the cards before suspend, and reprobe during resume
-> > processing.
-> 
-> Is that the assumption the MMC core was really making?  Are you sure it 
-> wasn't assuming something else (perhaps equally as bad)?
+ init/Kconfig           |   34 +++-------------------------------
+ kernel/Kconfig.preempt |   15 +++++++++++++++
+ 2 files changed, 18 insertions(+), 31 deletions(-)
 
-On the systems I was looking at, that assumption seems equivalent to
-what the latest MMC core is assuming.  (I think this came as part of
-the rewrite/refactoring a while back.)  But since the assumptions aren't
-documented as such, you could say all guesses are equal.  ;)
-
-
-> > Having the MMC core make such needless assumptions can cause problems
-> > for the upper layers, including filesystems.
-> 
-> What's wrong with a superfluous probe at resume time, besides the waste 
-> of a few milliseconds?
-
-I'm more concerned with the undesirable removal of devices at suspend
-time ... ones with mounted filesystems etc.
-
-- Dave
-
+diff -urpNa -X dontdiff linux-2.6.25-rc3/init/Kconfig linux-2.6.25-rc3-preempt_rcu/init/Kconfig
+--- linux-2.6.25-rc3/init/Kconfig	2008-02-26 16:58:42.000000000 -0800
++++ linux-2.6.25-rc3-preempt_rcu/init/Kconfig	2008-03-01 11:30:59.000000000 -0800
+@@ -860,38 +860,10 @@ source "block/Kconfig"
+ config PREEMPT_NOTIFIERS
+ 	bool
+ 
+-choice
+-	prompt "RCU implementation type:"
+-	default CLASSIC_RCU
+-	help
+-	  This allows you to choose either the classic RCU implementation
+-	  that is designed for best read-side performance on non-realtime
+-	  systems, or the preemptible RCU implementation for best latency
+-	  on realtime systems.  Note that some kernel preemption modes
+-	  will restrict your choice.
+-
+-	  Select the default if you are unsure.
+-
+ config CLASSIC_RCU
+-	bool "Classic RCU"
++	def_bool !PREEMPT_RCU
+ 	help
+ 	  This option selects the classic RCU implementation that is
+ 	  designed for best read-side performance on non-realtime
+-	  systems.
+-
+-	  Say Y if you are unsure.
+-
+-config PREEMPT_RCU
+-	bool "Preemptible RCU"
+-	depends on PREEMPT
+-	help
+-	  This option reduces the latency of the kernel by making certain
+-	  RCU sections preemptible. Normally RCU code is non-preemptible, if
+-	  this option is selected then read-only RCU sections become
+-	  preemptible. This helps latency, but may expose bugs due to
+-	  now-naive assumptions about each RCU read-side critical section
+-	  remaining on a given CPU through its execution.
+-
+-	  Say N if you are unsure.
+-
+-endchoice
++	  systems.  Classic RCU is the default.  Note that the
++	  PREEMPT_RCU symbol is used to select/deselect this option.
+diff -urpNa -X dontdiff linux-2.6.25-rc3/kernel/Kconfig.preempt linux-2.6.25-rc3-preempt_rcu/kernel/Kconfig.preempt
+--- linux-2.6.25-rc3/kernel/Kconfig.preempt	2008-02-26 16:58:42.000000000 -0800
++++ linux-2.6.25-rc3-preempt_rcu/kernel/Kconfig.preempt	2008-03-01 11:35:39.000000000 -0800
+@@ -52,8 +52,23 @@ config PREEMPT
+ 
+ endchoice
+ 
++config PREEMPT_RCU
++	bool "Preemptible RCU"
++	depends on PREEMPT
++	default n
++	help
++	  This option reduces the latency of the kernel by making certain
++	  RCU sections preemptible. Normally RCU code is non-preemptible, if
++	  this option is selected then read-only RCU sections become
++	  preemptible. This helps latency, but may expose bugs due to
++	  now-naive assumptions about each RCU read-side critical section
++	  remaining on a given CPU through its execution.
++
++	  Say N if you are unsure.
++
+ config RCU_TRACE
+ 	bool "Enable tracing for RCU - currently stats in debugfs"
++	depends on PREEMPT_RCU
+ 	select DEBUG_FS
+ 	default y
+ 	help
