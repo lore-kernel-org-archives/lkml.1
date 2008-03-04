@@ -1,73 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933686AbYCDUGw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932093AbYCDUKn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933686AbYCDUGw (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Mar 2008 15:06:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762417AbYCDUGl
+	id S932093AbYCDUKn (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Mar 2008 15:10:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765576AbYCDUKJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Mar 2008 15:06:41 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:40782 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1758683AbYCDUGk (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Mar 2008 15:06:40 -0500
-Date: Tue, 4 Mar 2008 12:04:50 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Greg KH <gregkh@suse.de>
-cc: Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       "Zhang, Rui" <rui.zhang@intel.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>, kay.sievers@vrfy.org,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, Alexey Dobriyan <adobriyan@sw.ru>,
-       dm-devel@redhat.com
-Subject: Re: 2.6.25-rc regression: kernel panic on boot
-In-Reply-To: <20080304193348.GC5534@suse.de>
-Message-ID: <alpine.LFD.1.00.0803041200390.12253@woody.linux-foundation.org>
-References: <1204500349.10256.171.camel@acpi-hp-zz.sh.intel.com> <20080303224259.GA27008@suse.de> <20080304135447.GD32383@elte.hu> <20080304104312.457ba3a8.akpm@linux-foundation.org> <20080304193348.GC5534@suse.de>
-User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Tue, 4 Mar 2008 15:10:09 -0500
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:1792 "EHLO spitz.ucw.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1764584AbYCDUKI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 4 Mar 2008 15:10:08 -0500
+Date: Tue, 4 Mar 2008 21:07:01 +0100
+From: Pavel Machek <pavel@ucw.cz>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Michael Kerrisk <michael.kerrisk@googlemail.com>, aaw <aaw@google.com>,
+       Andrew Morton <akpm@linux-foundation.org>, michael.kerrisk@gmail.com,
+       carlos@codesourcery.com, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       linux-kernel <linux-kernel@vger.kernel.org>, drepper@redhat.com,
+       mtk.manpages@gmail.com
+Subject: Re: [RFC/PATCH] RLIMIT_ARG_MAX
+Message-ID: <20080304200701.GA5599@ucw.cz>
+References: <1204119455.6242.403.camel@lappy> <alpine.LFD.1.00.0802290801290.17889@woody.linux-foundation.org> <c49095e30802290858t42eb8a61ua0ed73e27971bc77@mail.gmail.com> <alpine.LFD.1.00.0802290907480.17889@woody.linux-foundation.org> <1204305488.6243.113.camel@lappy> <alpine.LFD.1.00.0802290928200.17889@woody.linux-foundation.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.1.00.0802290928200.17889@woody.linux-foundation.org>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Tue, 4 Mar 2008, Greg KH wrote:
+On Fri 2008-02-29 09:29:19, Linus Torvalds wrote:
 > 
-> I have a patch queued up to change the wording of this config entry to
-> not say 2006, as that's not true anymore, and it should hopefully fix
-> some of the confusion here.
+> 
+> On Fri, 29 Feb 2008, Peter Zijlstra wrote:
+> >
+> > > ... and what's the point? We've never had it before, nobody has ever cared, 
+> > > and the whole notion is just stupid. Why would we want to limit it? The 
+> > > only thing that the kernel *cares* about is the stack size - any other 
+> > > size limits are always going to be arbitrary.
+> > 
+> > Well, don't think of limiting it, but querying the limit.
+> > 
+> > Programs like xargs would need to know how much to stuff into argv
+> > before starting a new invocation.
+> 
+> But they already can't really do that. More importantly, isn't it better 
+> to just use the whole stack size then (or just return "stack size / 4" or 
+> whatever)?
 
-Well, I think some of the confusion is simply from people who already 
-turned it off *before* (without problems), and now just do "make 
-oldconfig" or otherwise just keep it off, and it causes problems for them.
+Using whole stack smells like a security problem to me.
 
-Updating the help text won't do squat, because those people won't be 
-reading it - maybe they read it back when it was a new option (and it 
-worked for them), but not any more.
+...pass so much parameters that passwd dies on stack shortage. Make
+sure passwd grabbed some system-wide lock before dying.
 
-So I would almost suggest we simply force the option back on for now. 
-Then, in 2.6.26, we can make it a question again, and by that time, people 
-will have it as 'y' in their config files and will now have the option to 
-turn it off again.
-
-In other words, how about just this diff?
-
-		Linus
-
----
- init/Kconfig |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
-
-diff --git a/init/Kconfig b/init/Kconfig
-index f698a5a..a36e2e2 100644
---- a/init/Kconfig
-+++ b/init/Kconfig
-@@ -367,7 +367,7 @@ config RESOURCE_COUNTERS
- 	depends on CGROUPS
- 
- config SYSFS_DEPRECATED
--	bool "Create deprecated sysfs files"
-+	bool "Create deprecated sysfs files" if EMBEDDED
- 	depends on SYSFS
- 	default y
- 	help
+						Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
