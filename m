@@ -1,98 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762422AbYCDJuo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757164AbYCDJvK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762422AbYCDJuo (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Mar 2008 04:50:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756363AbYCDJuL
+	id S1757164AbYCDJvK (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Mar 2008 04:51:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759170AbYCDJuU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Mar 2008 04:50:11 -0500
-Received: from tama555.ecl.ntt.co.jp ([129.60.39.106]:44197 "EHLO
-	tama555.ecl.ntt.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755487AbYCDJuH (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Mar 2008 04:50:07 -0500
-To: htejun@gmail.com
-Cc: tomof@acm.org, jens.axboe@oracle.com, fujita.tomonori@lab.ntt.co.jp,
-       James.Bottomley@HansenPartnership.com, efault@gmx.de,
-       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       linux-ide@vger.kernel.org, linux-scsi@vger.kernel.org,
-       jgarzik@pobox.com, bzolnier@gmail.com
-Subject: Re: [PATCH] block: fix residual byte count handling
-From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-In-Reply-To: <47CCB4D8.8090600@gmail.com>
-References: <47CC7F3D.4010605@gmail.com>
-	<20080304111056X.tomof@acm.org>
-	<47CCB4D8.8090600@gmail.com>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-Id: <20080304175302T.fujita.tomonori@lab.ntt.co.jp>
-Date: Tue, 04 Mar 2008 17:53:02 +0900
-X-Dispatcher: imput version 20040704(IM147)
+	Tue, 4 Mar 2008 04:50:20 -0500
+Received: from ns1.suse.de ([195.135.220.2]:41460 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756926AbYCDJuN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 4 Mar 2008 04:50:13 -0500
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Ingo Molnar <mingo@elte.hu>, Adrian Bunk <bunk@kernel.org>,
+       Sam Ravnborg <sam@ravnborg.org>,
+       Alexey Starikovskiy <aystarik@gmail.com>, lenb@kernel.org,
+       astarikovskiy@suse.de, linux-acpi@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Arjan van de Ven <arjan@infradead.org>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: [patch] x86: phase out forced inlining
+From: Andi Kleen <andi@firstfloor.org>
+References: <20080301183550.GC25835@cs181133002.pp.htv.fi>
+	<20080303085720.GD15943@elte.hu>
+	<20080303091314.GC4457@cs181133002.pp.htv.fi>
+	<20080303091714.GA18250@elte.hu>
+	<20080303093103.GA23651@uranus.ravnborg.org>
+	<20080303103933.GC21190@elte.hu>
+	<20080303113451.GF4457@cs181133002.pp.htv.fi>
+	<20080303114533.GA4183@elte.hu> <20080303121335.GA15381@elte.hu>
+	<20080303224231.86c22ed0.akpm@linux-foundation.org>
+	<20080304073248.GA2947@elte.hu>
+	<20080304000031.49b558b8.akpm@linux-foundation.org>
+Date: Tue, 04 Mar 2008 10:50:11 +0100
+In-Reply-To: <20080304000031.49b558b8.akpm@linux-foundation.org> (Andrew Morton's message of "Tue\, 4 Mar 2008 00\:00\:31 -0800")
+Message-ID: <p73prua6coc.fsf@bingen.suse.de>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.1 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 04 Mar 2008 11:32:56 +0900
-Tejun Heo <htejun@gmail.com> wrote:
+Andrew Morton <akpm@linux-foundation.org> writes:
+>
+> This was 2.5.x - you'll need to look in the historical-git tree.
+>
+> Here it is:
+>
+>
+>
+> : commit 4507a6a59cfc6997e532cd812a8bd244181e6205
+> : Author: akpm <akpm>
+> : Date:   Tue Mar 11 07:42:00 2003 +0000
+> : 
+> :     [PATCH] work around gcc-3.x inlining bugs
+> :     
+> :     Force inlining even when gcc-3.x is too confused to do it for us.
 
-> FUJITA Tomonori wrote:
-> >> Yeah, libata did its own padding and needed to add draining.  Private
-> >> implementation was complex as hell and James suggested moving them to
-> >> block layer.  Are you suggesting moving them back to drivers?
-> > 
-> > No, I'm not. I've been working on the IOMMUs to remove such
-> > workarounds in LLDs.
-> > 
-> > What drivers need to do on this is just adding a padding length, that
-> > is, drivers don't need to change the structure of the sg list (like
-> > splitting a sg entry), right? And it doesn't break the SAS drivers
-> > that support SATAPI, does it?
-> > 
-> > But I agree that drivers want to get a complete sglist so I'm fine
-> > with adjusting sglist entries in the block layer with your secode
-> > patch (separate out padding from alignment). As we discussed, I'm fine
-> > with breaking sum(sg) == rq->data_len as long as rq->data_len means
-> > the true data length.
-> 
-> As long as the second patch is in, what value rq->data_len indicates
-> doesn't matter to drivers which don't use explicit padding or draining,
-> so the situation is much more controlled.  I don't care which value
-> rq->data_len would indicate.  I'd prefer it equal sum(sg) as that value
-> is what IDE and libata which will be the major users of padding and/or
-> draining expect in rq->data_len but fixing up that shouldn't be too
-> difficult.  I guess this can be determined by Jens.  If Jens likes
-> rq->data_len to contain requested transfer size, I'll post updated patches.
+I think these old inlining bugs were just caused by missing __always_inline
+(e.g. in the vsyscall code which requires forced inlining or in copy_*_user)
+AFAIK these all have __always_inline these days and if any are still missing these
+are easy to change over as needed.
 
-OK, I prefer rq->data_len means the true data length though you prefer
-rq->data_len means the allocated buffer length (the true data length
-plus padding and drain). We agree on other things. We can live with
-either way.
+So Ingo's change is likely ok.
 
-Jens, what's your preference?
-
-
-> >>>> buffer after it, it ends up with unaligned sg entry in the middle and
-> >>>> rq->data_len + rq->extra_len will overrun the sg entry after the drain
-> >>>> page which is really dangerous.
-> >>> The drivers know that they use drain buffer. They can take care about
-> >>> themselves on this too. If we want to do explicitly, we could have
-> >>> rq->pad_len and rq->drain_len instead of rq->extra_len, though I think
-> >>> that we are fine without these values because these drivers already
-> >>> tell the block layer what they want and know that the block layer
-> >>> gives it.
-> >> So, if a driver has requested aligning and draining, the driver should
-> >> extend the sg entry before the last one by the alignment if draining was
-> >> used for the request and extent the last sg if the draining wasn't used.
-> >>  I'd rather just implement them in the drivers.
-> > 
-> > The block layer extends the sg entry? The drivers just adjust
-> > sg->length?
-> 
-> Still, do you really wanna force such things into low level drivers?
-> That will be one extremely fragile API and will be really difficult to
-> tell when things go wrong.
-
-No, I don't, as I explained above. As long as rq->data_len means the
-true data length, I'm fine. I knew that James' drain buffer patch
-breaks rq->data_len == sum(sg). I don't care about it. I can
-understand that drivers wants to a perfect sglist.
+-Andi
+ 
