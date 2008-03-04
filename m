@@ -1,59 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932550AbYCDTvs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765701AbYCDTwa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932550AbYCDTvs (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Mar 2008 14:51:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752077AbYCDTvk
+	id S1765701AbYCDTwa (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Mar 2008 14:52:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755650AbYCDTwV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Mar 2008 14:51:40 -0500
-Received: from iolanthe.rowland.org ([192.131.102.54]:56678 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1750912AbYCDTvj (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Mar 2008 14:51:39 -0500
-Date: Tue, 4 Mar 2008 14:51:38 -0500 (EST)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: David Brownell <david-b@pacbell.net>
-cc: Pierre Ossman <drzeus-mmc@drzeus.cx>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       pm list <linux-pm@lists.linux-foundation.org>,
-       Zdenek Kabelac <zdenek.kabelac@gmail.com>,
-       Kernel development list <linux-kernel@vger.kernel.org>
-Subject: Re: Bugs in MMC [was: [Bug 10030] Suspend doesn't work when SD card
- is inserted]
-In-Reply-To: <200803041053.44909.david-b@pacbell.net>
-Message-ID: <Pine.LNX.4.44L0.0803041447090.15190-100000@iolanthe.rowland.org>
+	Tue, 4 Mar 2008 14:52:21 -0500
+Received: from mail.suse.de ([195.135.220.2]:44866 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751986AbYCDTwT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 4 Mar 2008 14:52:19 -0500
+Date: Tue, 4 Mar 2008 11:24:36 -0800
+From: Greg KH <gregkh@suse.de>
+To: Dhaval Giani <dhaval@linux.vnet.ibm.com>
+Cc: Alexey Dobriyan <adobriyan@sw.ru>, Holger Kiehl <Holger.Kiehl@dwd.de>,
+       linux-kernel@vger.kernel.org, vatsa@linux.vnet.ibm.com, mingo@elte.hu
+Subject: Re: sysfs: duplicate filename '74' can not be created
+Message-ID: <20080304192435.GA5525@suse.de>
+References: <20080304160940.GC19059@localhost.sw.ru> <20080304163339.GA11160@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080304163339.GA11160@linux.vnet.ibm.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 4 Mar 2008, David Brownell wrote:
-
-> > I don't understand this comment.  Suppose a card was inserted while the 
-> > system was hibernating.  If the core didn't reprobe, when would that 
-> > card be discovered?
+On Tue, Mar 04, 2008 at 10:03:39PM +0530, Dhaval Giani wrote:
+> On Tue, Mar 04, 2008 at 07:09:40PM +0300, Alexey Dobriyan wrote:
+> > [Cc'ing /sys/kernel/uids guys]
+> > 
 > 
-> The host controller would tell the core to check for a card, exactly
-> like it does at all other times.
+> [Also adding gregkh to the cc :)]
+> 
+> > > Mar  3 13:50:01 helena kernel: sysfs: duplicate filename '74' can not be created
+> > > Mar  3 13:50:01 helena kernel: WARNING: at fs/sysfs/dir.c:424 sysfs_add_one()
+> > > Mar  3 13:50:01 helena kernel: Pid: 21911, comm: sshd Not tainted 2.6.24.3 #1
 
-But how would the host controller know to do that?  Isn't card 
-insertion detection often driven by interrupts?  If a card is 
-inserted while the computer is off, no interrupt will be generated.
+What kernel version is this?  2.6.24 had lots of "issues" with the uids
+code, I'm amazed it worked at all :)
 
-> That's the natural alternative to having the MMC core assume that card
-> detection was broken in low power states, so that the core needed to
-> forcibly remove the cards before suspend, and reprobe during resume
-> processing.
+2.6.25-rc should have this all fixed up, if not, please let me know.
 
-Is that the assumption the MMC core was really making?  Are you sure it 
-wasn't assuming something else (perhaps equally as bad)?
+thanks,
 
-> Having the MMC core make such needless assumptions can cause problems
-> for the upper layers, including filesystems.
-
-What's wrong with a superfluous probe at resume time, besides the waste 
-of a few milliseconds?
-
-Alan Stern
-
+greg k-h
