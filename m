@@ -1,98 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934280AbYCDXVB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935169AbYCDXWM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934280AbYCDXVB (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Mar 2008 18:21:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934900AbYCDXPy
+	id S935169AbYCDXWM (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Mar 2008 18:22:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934894AbYCDXPz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Mar 2008 18:15:54 -0500
-Received: from mx2.suse.de ([195.135.220.15]:42596 "EHLO mx2.suse.de"
+	Tue, 4 Mar 2008 18:15:55 -0500
+Received: from cantor.suse.de ([195.135.220.2]:48856 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S934894AbYCDXPu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Mar 2008 18:15:50 -0500
-Date: Tue, 4 Mar 2008 15:15:25 -0800
+	id S934865AbYCDXPo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 4 Mar 2008 18:15:44 -0500
+Date: Tue, 4 Mar 2008 15:15:19 -0800
 From: Greg KH <gregkh@suse.de>
-To: Alex Chiang <achiang@hp.com>, Matthew Wilcox <matthew@wil.cx>,
-       Gary Hade <garyhade@us.ibm.com>, kaneshige.kenji@jp.fujitsu.com,
-       warthog19@eaglescrag.net, kristen.c.accardi@intel.com,
-       rick.jones2@hp.com, linux-kernel@vger.kernel.org,
-       linux-pci@atrey.karlin.mff.cuni.cz, linux-acpi@vger.kernel.org
-Subject: Re: [PATCH 4/4] ACPI PCI slot detection driver
-Message-ID: <20080304231525.GA25125@suse.de>
-References: <20080229002341.GA21420@ldl.fc.hp.com> <20080229002938.GE21420@ldl.fc.hp.com> <20080301052542.GD19353@suse.de> <20080301144307.GD24386@parisc-linux.org> <20080304054927.GA15566@suse.de> <20080304225830.GC3694@ldl.fc.hp.com>
+To: Linus Torvalds <torvalds@osdl.org>, Andrew Morton <akpm@osdl.org>
+Cc: linux-kernel@vger.kernel.org
+Subject: [GIT PATCH] driver core fixes against 2.6.25-rc3 git
+Message-ID: <20080304231519.GC3073@suse.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080304225830.GC3694@ldl.fc.hp.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Mar 04, 2008 at 03:58:30PM -0700, Alex Chiang wrote:
-> * Greg KH <gregkh@suse.de>:
-> > On Sat, Mar 01, 2008 at 07:43:07AM -0700, Matthew Wilcox wrote:
-> > > On Fri, Feb 29, 2008 at 09:25:42PM -0800, Greg KH wrote:
-> > > > What is the guarantee that the names of these slots are correct
-> 
-> No guarantee there. We report whatever firmware tells us.
-> 
-> > > > and do not happen to be the same as the hotpluggable ones?
-> 
-> Stronger guarantee here, since both pci_slot and <foo>hp driver
-> will be getting the name of the slot from the same place.
-> 
-> > > That would be a bug -- and yes, bugs happen, and we have to deal with
-> > > them.
-> > 
-> > My main concern is that BIOS vendors will not fix these bugs, as no
-> > other OS cares/does this kind of thing today.  The ammount of bad
-> > information out there might be quite large, and I think this was
-> > confirmed by some initial testing of IBM systems, right?
-> 
-> We saw problems on Fujitsu machines, where they return an error
-> code when the _SUN method is called on a slot that exists in the
-> namespace but isn't actually present.
-> 
-> After discussing with Kenji-san about specs, we came to the
-> agreement that he was ok with this behavior because he had the
-> option to not load pci_slot on his machines.
-> 
-> I agree that there might be lots of buggy firmwares out there,
-> but we won't know for certain until we get some exposure. And I
-> think the upside is worth it.
-> 
-> Kristen suggested the linux-next tree. That sounds viable to
-> me...
-> 
-> > > > Why show this information on machines that can not do
-> > > > anything with these slots at all?  Will that not just
-> > > > confuse people?
-> > > 
-> > > Only for people who think that /sys/bus/pci/slots/ is for
-> > > hotpluggable slots only.  There is plenty of useful
-> > > information available for slots that aren't hotpluggable (eg
-> > > bus address, speed, width, error status).
-> > 
-> > Can the userspace tools that are using the existing directories
-> > thinking that only hotplug slots are there, handle
-> > "non-hotplug" slots showing up in this location?
-> 
-> Of course we shouldn't break userspace, no one wants that. But
-> nothing about that name (/sys/bus/pci/slots/) implies "hotplug
-> only", and we have no idea how big the problem might be.
+Here are a few driver core fixes against your current git tree that fix some
+more problems that have cropped up:
+	- suspend/resume bugfixes
+	- ksets were not getting properly initialized
+	- CONFIG_SYSFS_DEPRECATED was catching people with old userspace
+	  versions of LVM now that the block core is changed to use
+	  struct device.
+	- other driver core bugs on error paths.
 
-But that is what the current code does, so I know a lot of userspace
-programs assume that all slots there are valid hotplug slots.
+Please pull from:
+	master.kernel.org:/pub/scm/linux/kernel/git/gregkh/driver-2.6.git/
 
-I know I sure don't want to go fix up a lot of horrible Java
-closed-source code in IBM's huge system management toolkits :(
-
-> Again, I'm thinking more exposure in linux-next might be a
-> reasonable way for us to figure out how bad (or good) the
-> situation might really be out there.
-
-Ok, care to resend them with the requested updates?
+Patches will be sent as a follow-on to this message to lkml for people
+to see.
 
 thanks,
 
 greg k-h
+
+------------
+
+ drivers/base/core.c       |   14 +-----
+ drivers/base/power/main.c |  108 +++++++--------------------------------------
+ drivers/usb/core/usb.c    |    2 +-
+ fs/debugfs/inode.c        |    4 --
+ include/linux/debugfs.h   |    5 ++
+ init/Kconfig              |   11 +++-
+ lib/kobject.c             |   11 ++---
+ 7 files changed, 39 insertions(+), 116 deletions(-)
+
+---------------
+
+Alan Stern (1):
+      PM: fix new mutex-locking bug in the PM core
+
+Cornelia Huck (1):
+      Driver core: Fix cleanup when failing device_add().
+
+Greg Kroah-Hartman (2):
+      driver core: fix up Kconfig text for CONFIG_SYSFS_DEPRECATED
+      kobject: properly initialize ksets
+
+Harvey Harrison (1):
+      debugfs: fix sparse warnings
+
+Ingo Molnar (1):
+      sysfs: CONFIG_SYSFS_DEPRECATED fix
+
+Rafael J. Wysocki (2):
+      PM: Do not acquire device semaphores upfront during suspend
+      driver core: Remove dpm_sysfs_remove() from error path of device_add()
+
