@@ -1,282 +1,121 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934308AbYCDXMr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934730AbYCDXNe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934308AbYCDXMr (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Mar 2008 18:12:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934155AbYCDXC5
+	id S934730AbYCDXNe (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Mar 2008 18:13:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934113AbYCDXC6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Mar 2008 18:02:57 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:44796 "EHLO mx1.redhat.com"
+	Tue, 4 Mar 2008 18:02:58 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:44798 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S934095AbYCDXCo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Mar 2008 18:02:44 -0500
-Message-Id: <20080304225227.267783056@redhat.com>
+	id S934129AbYCDXCr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 4 Mar 2008 18:02:47 -0500
+Message-Id: <20080304225228.035563249@redhat.com>
 References: <20080304225157.573336066@redhat.com>
 User-Agent: quilt/0.46-1
-Date: Tue, 04 Mar 2008 17:52:05 -0500
+Date: Tue, 04 Mar 2008 17:52:17 -0500
 From: Rik van Riel <riel@redhat.com>
 To: linux-kernel@vger.kernel.org
 Cc: linux-mm@kvack.org, KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Lee Schermerhorn <Lee.Schermerhorn@hp.com>
-Subject: [patch 08/20] add some sanity checks to get_scan_ratio
-Content-Disposition: inline; filename=rvr-04-linux-2.6-scan-ratio-fixes.patch
+       Lee Schermerhorn <Lee.Schermerhorn@hp.com>,
+       Lee Schermerhorn <lee.schermerhorn@hp.com>
+Subject: [patch 20/20] cull non-reclaimable anon pages from the LRU at fault time
+Content-Disposition: inline; filename=noreclaim-07-cull-nonreclaimable-anon-pages-in-fault-path.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The access ratio based scan rate determination in get_scan_ratio
-works ok in most situations, but needs to be corrected in some
-corner cases:
-- if we run out of swap space, do not bother scanning the anon LRUs
-- if we have already freed all of the page cache, we need to scan
-  the anon LRUs
-- restore the *actual* access ratio based scan rate algorithm, the
-  previous versions of this patch series had the wrong version
-- scale the number of pages added to zone->nr_scan[l]
+V2 -> V3:
++ rebase to 23-mm1 atop RvR's split lru series.
 
-Signed-off-by: Rik van Riel <riel@redhat.com>
+V1 -> V2:
++  no changes
 
-Index: linux-2.6.25-rc3-mm1/mm/vmscan.c
+Optional part of "noreclaim infrastructure"
+
+In the fault paths that install new anonymous pages, check whether
+the page is reclaimable or not using lru_cache_add_active_or_noreclaim().
+If the page is reclaimable, just add it to the active lru list [via
+the pagevec cache], else add it to the noreclaim list.  
+
+This "proactive" culling in the fault path mimics the handling of
+mlocked pages in Nick Piggin's series to keep mlocked pages off
+the lru lists.
+
+Notes:
+
+1) This patch is optional--e.g., if one is concerned about the
+   additional test in the fault path.  We can defer the moving of
+   nonreclaimable pages until when vmscan [shrink_*_list()]
+   encounters them.  Vmscan will only need to handle such pages
+   once.
+
+2) I moved the call to page_add_new_anon_rmap() to before the test
+   for page_reclaimable() and thus before the calls to
+   lru_cache_add_{active|noreclaim}(), so that page_reclaimable()
+   could recognize the page as anon.
+   TBD:   I think this reordering is OK, but the previous order may
+   have existed to close some obscure race?
+
+3) The 'vma' argument to page_reclaimable() is require to notice that
+   we're faulting a page into an mlock()ed vma w/o having to scan the
+   page's rmap in the fault path.   Culling mlock()ed anon pages is
+   currently the only reason for this patch.
+
+Signed-off-by:  Lee Schermerhorn <lee.schermerhorn@hp.com>
+Signed-off-by:  Rik van Riel <riel@redhat.com>
+
+Index: linux-2.6.25-rc3-mm1/mm/memory.c
 ===================================================================
---- linux-2.6.25-rc3-mm1.orig/mm/vmscan.c	2008-03-04 15:41:36.000000000 -0500
-+++ linux-2.6.25-rc3-mm1/mm/vmscan.c	2008-03-04 15:46:01.000000000 -0500
-@@ -910,8 +910,13 @@ static unsigned long shrink_inactive_lis
- 		__mod_zone_page_state(zone, NR_INACTIVE_ANON,
- 						-count[LRU_INACTIVE_ANON]);
+--- linux-2.6.25-rc3-mm1.orig/mm/memory.c	2008-03-04 15:30:20.000000000 -0500
++++ linux-2.6.25-rc3-mm1/mm/memory.c	2008-03-04 16:22:58.000000000 -0500
+@@ -1678,7 +1678,7 @@ gotten:
+ 		set_pte_at(mm, address, page_table, entry);
+ 		update_mmu_cache(vma, address, entry);
+ 		SetPageSwapBacked(new_page);
+-		lru_cache_add_active_anon(new_page);
++		lru_cache_add_active_or_noreclaim(new_page, vma);
+ 		page_add_new_anon_rmap(new_page, vma, address);
  
--		if (scan_global_lru(sc))
-+		if (scan_global_lru(sc)) {
- 			zone->pages_scanned += nr_scan;
-+			zone->recent_scanned_anon += count[LRU_ACTIVE_ANON] +
-+						     count[LRU_INACTIVE_ANON];
-+			zone->recent_scanned_file += count[LRU_ACTIVE_FILE] +
-+						     count[LRU_INACTIVE_FILE];
-+		}
- 		spin_unlock_irq(&zone->lru_lock);
+ 		/* Free the old page.. */
+@@ -2147,7 +2147,7 @@ static int do_anonymous_page(struct mm_s
+ 		goto release;
+ 	inc_mm_counter(mm, anon_rss);
+ 	SetPageSwapBacked(page);
+-	lru_cache_add_active_anon(page);
++	lru_cache_add_active_or_noreclaim(page, vma);
+ 	page_add_new_anon_rmap(page, vma, address);
+ 	set_pte_at(mm, address, page_table, entry);
  
- 		nr_scanned += nr_scan;
-@@ -961,11 +966,13 @@ static unsigned long shrink_inactive_lis
- 			VM_BUG_ON(PageLRU(page));
- 			SetPageLRU(page);
- 			list_del(&page->lru);
--			if (page_file_cache(page)) {
-+			if (page_file_cache(page))
- 				lru += LRU_FILE;
--				zone->recent_rotated_file++;
--			} else {
--				zone->recent_rotated_anon++;
-+			if (scan_global_lru(sc)) {
-+				if (page_file_cache(page))
-+					zone->recent_rotated_file++;
-+				else
-+					zone->recent_rotated_anon++;
- 			}
- 			if (PageActive(page))
- 				lru += LRU_ACTIVE;
-@@ -1044,8 +1051,13 @@ static void shrink_active_list(unsigned 
- 	 * zone->pages_scanned is used for detect zone's oom
- 	 * mem_cgroup remembers nr_scan by itself.
- 	 */
--	if (scan_global_lru(sc))
-+	if (scan_global_lru(sc)) {
- 		zone->pages_scanned += pgscanned;
-+		if (file)
-+			zone->recent_scanned_file += pgscanned;
-+		else
-+			zone->recent_scanned_anon += pgscanned;
-+	}
- 
- 	if (file)
- 		__mod_zone_page_state(zone, NR_ACTIVE_FILE, -pgmoved);
-@@ -1182,9 +1194,8 @@ static unsigned long shrink_list(enum lr
- static void get_scan_ratio(struct zone *zone, struct scan_control * sc,
- 					unsigned long *percent)
- {
--	unsigned long anon, file;
-+	unsigned long anon, file, free;
- 	unsigned long anon_prio, file_prio;
--	unsigned long rotate_sum;
- 	unsigned long ap, fp;
- 
- 	anon  = zone_page_state(zone, NR_ACTIVE_ANON) +
-@@ -1192,15 +1203,19 @@ static void get_scan_ratio(struct zone *
- 	file  = zone_page_state(zone, NR_ACTIVE_FILE) +
- 		zone_page_state(zone, NR_INACTIVE_FILE);
- 
--	rotate_sum = zone->recent_rotated_file + zone->recent_rotated_anon;
--
- 	/* Keep a floating average of RECENT references. */
--	if (unlikely(rotate_sum > min(anon, file))) {
-+	if (unlikely(zone->recent_scanned_anon > anon / zone->inactive_ratio)) {
- 		spin_lock_irq(&zone->lru_lock);
--		zone->recent_rotated_file /= 2;
-+		zone->recent_scanned_anon /= 2;
- 		zone->recent_rotated_anon /= 2;
- 		spin_unlock_irq(&zone->lru_lock);
--		rotate_sum /= 2;
-+	}
-+
-+	if (unlikely(zone->recent_scanned_file > file / 4)) {
-+		spin_lock_irq(&zone->lru_lock);
-+		zone->recent_scanned_file /= 2;
-+		zone->recent_rotated_file /= 2;
-+		spin_unlock_irq(&zone->lru_lock);
- 	}
- 
- 	/*
-@@ -1213,23 +1228,33 @@ static void get_scan_ratio(struct zone *
- 	/*
- 	 *                  anon       recent_rotated_anon
- 	 * %anon = 100 * ----------- / ------------------- * IO cost
--	 *               anon + file       rotate_sum
-+	 *               anon + file   recent_scanned_anon
- 	 */
--	ap = (anon_prio * anon) / (anon + file + 1);
--	ap *= rotate_sum / (zone->recent_rotated_anon + 1);
--	if (ap == 0)
--		ap = 1;
--	else if (ap > 100)
--		ap = 100;
--	percent[0] = ap;
--
--	fp = (file_prio * file) / (anon + file + 1);
--	fp *= rotate_sum / (zone->recent_rotated_file + 1);
--	if (fp == 0)
--		fp = 1;
--	else if (fp > 100)
--		fp = 100;
--	percent[1] = fp;
-+	ap = (anon_prio + 1) * (zone->recent_scanned_anon + 1);
-+	ap /= zone->recent_rotated_anon + 1;
-+
-+	fp = (file_prio + 1) * (zone->recent_scanned_file + 1);
-+	fp /= zone->recent_rotated_file + 1;
-+
-+	/* Normalize to percentages */
-+	percent[0] = 100 * ap / (ap + fp + 1);
-+	percent[1] = 100 - percent[0];
-+
-+	free = zone_page_state(zone, NR_FREE_PAGES);
-+
-+	/*
-+	 * If we have no swap space, do not bother scanning anon pages.
-+	 */
-+	if (nr_swap_pages <= 0) {
-+		percent[0] = 0;
-+		percent[1] = 100;
-+	}
-+	/*
-+	 * If we already freed most file pages, scan the anon pages
-+	 * regardless of the page access ratios or swappiness setting.
-+	 */
-+	else if (file + free <= zone->pages_high)
-+		percent[0] = 100;
- }
- 
- 
-@@ -1250,13 +1275,17 @@ static unsigned long shrink_zone(int pri
- 	for_each_lru(l) {
- 		if (scan_global_lru(sc)) {
- 			int file = is_file_lru(l);
-+			int scan;
+@@ -2289,10 +2289,10 @@ static int __do_fault(struct mm_struct *
+ 			entry = maybe_mkwrite(pte_mkdirty(entry), vma);
+ 		set_pte_at(mm, address, page_table, entry);
+ 		if (anon) {
+-                        inc_mm_counter(mm, anon_rss);
++			inc_mm_counter(mm, anon_rss);
+ 			SetPageSwapBacked(page);
+-                        lru_cache_add_active_anon(page);
+-                        page_add_new_anon_rmap(page, vma, address);
++			lru_cache_add_active_or_noreclaim(page, vma);
++			page_add_new_anon_rmap(page, vma, address);
+ 		} else {
+ 			inc_mm_counter(mm, file_rss);
+ 			page_add_file_rmap(page);
+Index: linux-2.6.25-rc3-mm1/mm/swap_state.c
+===================================================================
+--- linux-2.6.25-rc3-mm1.orig/mm/swap_state.c	2008-03-04 15:46:42.000000000 -0500
++++ linux-2.6.25-rc3-mm1/mm/swap_state.c	2008-03-04 16:22:58.000000000 -0500
+@@ -300,7 +300,10 @@ struct page *read_swap_cache_async(swp_e
  			/*
- 			 * Add one to nr_to_scan just to make sure that the
--			 * kernel will slowly sift through the active list.
-+			 * kernel will slowly sift through each list.
+ 			 * Initiate read into locked page and return.
  			 */
--			zone->nr_scan[l] += (zone_page_state(zone,
--				NR_INACTIVE_ANON + l) >> priority) + 1;
--			nr[l] = zone->nr_scan[l] * percent[file] / 100;
-+			scan = zone_page_state(zone, NR_INACTIVE_ANON + l);
-+			scan >>= priority;
-+			scan = (scan * percent[file]) / 100;
-+
-+			zone->nr_scan[l] += scan + 1;
-+			nr[l] = zone->nr_scan[l];
- 			if (nr[l] >= sc->swap_cluster_max)
- 				zone->nr_scan[l] = 0;
- 			else
-@@ -1273,7 +1302,7 @@ static unsigned long shrink_zone(int pri
- 	}
- 
- 	while (nr[LRU_INACTIVE_ANON] || nr[LRU_ACTIVE_FILE] ||
--						 nr[LRU_INACTIVE_FILE]) {
-+					nr[LRU_INACTIVE_FILE]) {
- 		for_each_lru(l) {
- 			if (nr[l]) {
- 				nr_to_scan = min(nr[l],
-@@ -1286,6 +1315,14 @@ static unsigned long shrink_zone(int pri
+-			lru_cache_add_anon(new_page);
++			if (!page_reclaimable(new_page, vma))
++				lru_cache_add_noreclaim(new_page);
++			else
++				lru_cache_add_anon(new_page);
+ 			swap_readpage(NULL, new_page);
+ 			return new_page;
  		}
- 	}
- 
-+	/*
-+	 * Even if we did not try to evict anon pages at all, we want to
-+	 * rebalance the anon lru active/inactive ratio.
-+	 */
-+	if (scan_global_lru(sc) && inactive_anon_low(zone))
-+		shrink_list(NR_ACTIVE_ANON, SWAP_CLUSTER_MAX, zone, sc,
-+								priority);
-+
- 	throttle_vm_writeout(sc->gfp_mask);
- 	return nr_reclaimed;
- }
-Index: linux-2.6.25-rc3-mm1/include/linux/mmzone.h
-===================================================================
---- linux-2.6.25-rc3-mm1.orig/include/linux/mmzone.h	2008-03-04 15:39:31.000000000 -0500
-+++ linux-2.6.25-rc3-mm1/include/linux/mmzone.h	2008-03-04 15:43:07.000000000 -0500
-@@ -296,6 +296,8 @@ struct zone {
- 
- 	unsigned long		recent_rotated_anon;
- 	unsigned long		recent_rotated_file;
-+	unsigned long		recent_scanned_anon;
-+	unsigned long		recent_scanned_file;
- 
- 	unsigned long		pages_scanned;	   /* since last reclaim */
- 	unsigned long		flags;		   /* zone flags, see below */
-Index: linux-2.6.25-rc3-mm1/mm/page_alloc.c
-===================================================================
---- linux-2.6.25-rc3-mm1.orig/mm/page_alloc.c	2008-03-04 15:39:31.000000000 -0500
-+++ linux-2.6.25-rc3-mm1/mm/page_alloc.c	2008-03-04 15:43:07.000000000 -0500
-@@ -3485,7 +3485,8 @@ static void __paginginit free_area_init_
- 		}
- 		zone->recent_rotated_anon = 0;
- 		zone->recent_rotated_file = 0;
--//TODO recent_scanned_* ???
-+		zone->recent_scanned_anon = 0;
-+		zone->recent_scanned_file = 0;
- 		zap_zone_vm_stats(zone);
- 		zone->flags = 0;
- 		if (!size)
-Index: linux-2.6.25-rc3-mm1/mm/swap.c
-===================================================================
---- linux-2.6.25-rc3-mm1.orig/mm/swap.c	2008-03-04 15:30:20.000000000 -0500
-+++ linux-2.6.25-rc3-mm1/mm/swap.c	2008-03-04 15:44:35.000000000 -0500
-@@ -190,8 +190,8 @@ void activate_page(struct page *page)
- 
- 	spin_lock_irq(&zone->lru_lock);
- 	if (PageLRU(page) && !PageActive(page)) {
--		int lru = LRU_BASE;
--		lru += page_file_cache(page);
-+		int file = page_file_cache(page);
-+		int lru = LRU_BASE + file;
- 		del_page_from_lru_list(zone, page, lru);
- 
- 		SetPageActive(page);
-@@ -199,6 +199,15 @@ void activate_page(struct page *page)
- 		add_page_to_lru_list(zone, page, lru);
- 		__count_vm_event(PGACTIVATE);
- 		mem_cgroup_move_lists(page, true);
-+
-+		if (file) {
-+			zone->recent_scanned_file++;
-+			zone->recent_rotated_file++;
-+		} else {
-+			/* Can this happen?  Maybe through tmpfs... */
-+			zone->recent_scanned_anon++;
-+			zone->recent_rotated_anon++;
-+		}
- 	}
- 	spin_unlock_irq(&zone->lru_lock);
- }
 
 -- 
 All Rights Reversed
