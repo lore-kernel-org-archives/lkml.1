@@ -1,92 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756776AbYCDGJS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756783AbYCDGP2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756776AbYCDGJS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Mar 2008 01:09:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751562AbYCDGI7
+	id S1756783AbYCDGP2 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Mar 2008 01:15:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751749AbYCDGPQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Mar 2008 01:08:59 -0500
-Received: from mail.suse.de ([195.135.220.2]:35840 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751337AbYCDGI6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Mar 2008 01:08:58 -0500
-From: Neil Brown <neilb@suse.de>
-To: Andre Noll <maan@systemlinux.org>
-Date: Tue, 4 Mar 2008 17:08:50 +1100
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Tue, 4 Mar 2008 01:15:16 -0500
+Received: from relay1.sgi.com ([192.48.171.29]:40245 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1750704AbYCDGPP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 4 Mar 2008 01:15:15 -0500
+Date: Tue, 4 Mar 2008 00:15:07 -0600
+From: Paul Jackson <pj@sgi.com>
+To: "Paul Menage" <menage@google.com>
+Cc: a.p.zijlstra@chello.nl, maxk@qualcomm.com, mingo@elte.hu,
+       tglx@linutronix.de, oleg@tv-sign.ru, rostedt@goodmis.org,
+       linux-kernel@vger.kernel.org, rientjes@google.com
+Subject: Re: [RFC/PATCH] cpuset: cpuset irq affinities
+Message-Id: <20080304001507.3ddc8f26.pj@sgi.com>
+In-Reply-To: <6599ad830803032126m39935eaeu1df67d6263e8e123@mail.gmail.com>
+References: <20080227222103.673194000@chello.nl>
+	<47C87084.3090208@qualcomm.com>
+	<1204318980.6243.133.camel@lappy>
+	<47C8771C.1070001@qualcomm.com>
+	<1204545445.11412.6.camel@twins>
+	<20080303113621.1dfdda87.pj@sgi.com>
+	<1204567052.6241.4.camel@lappy>
+	<20080303121033.c8c9651c.pj@sgi.com>
+	<6599ad830803031041r6c635141n6520a915f2e1d08@mail.gmail.com>
+	<20080303125253.5d2d580c.pj@sgi.com>
+	<6599ad830803032126m39935eaeu1df67d6263e8e123@mail.gmail.com>
+Organization: SGI
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.12.0; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Message-ID: <18380.59250.90214.461186@notabene.brown>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-raid@vger.kernel.org,
-       linux-kernel@vger.kernel.org, "K.Tanaka" <k-tanaka@ce.jp.nec.com>
-Subject: Re: [PATCH 001 of 9] md: Fix deadlock in md/raid1 and md/raid10 when handling a read error.
-In-Reply-To: message from Andre Noll on Monday March 3
-References: <20080303111240.23302.patches@notabene>
-	<1080303001705.23577@suse.de>
-	<20080303155449.GA32242@skl-net.de>
-X-Mailer: VM 7.19 under Emacs 21.4.1
-X-face: [Gw_3E*Gng}4rRrKRYotwlE?.2|**#s9D<ml'fY1Vw+@XfR[fRCsUoP?K6bt3YD\ui5Fh?f
-	LONpR';(ql)VM_TQ/<l_^D3~B:z$\YC7gUCuC=sYm/80G=$tt"98mr8(l))QzVKCk$6~gldn~*FK9x
-	8`;pM{3S8679sP+MbP,72<3_PIH-$I&iaiIb|hV1d%cYg))BmI)AZ
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday March 3, maan@systemlinux.org wrote:
-> On 11:17, NeilBrown wrote:
-> 
-> > So we create a new function 'flush_pending_writes' to give that attention,
-> > and call it in freeze_array to be sure that we aren't waiting on raid1d.
-> 
-> Two minor remarks:
+Paul M wrote:
+> One of the arguments that you posted against his proposal was that
+> this would break due to the memory overlap requirements of
+> mem_exclusive cpusets.
 
-Thanks for looking.
+There were three concerns I had with his proposal -- (1) it conflicted
+with memory placement, (2) it conflicted with cpu placement (sched
+domain definition) and (3) it broke the conventional cpuset hierarchy
+configuration on which users have come to depend.
 
-> 
-> Do we really need to take the spin lock in the common case where
-> conf->pending_bio_list.head is NULL? If not, the above could be
-> optimized to the slightly faster and better readable
-> 
-> 	struct bio *bio;
-> 
-> 	if (!conf->pending_bio_list.head)
-> 		return 0;
-> 	spin_lock_irq(&conf->device_lock);
-> 	bio = bio_list_get(&conf->pending_bio_list);
-> 	...
-> 	spin_unlock_irq(&conf->device_lock);
-> 	return 1;
+Separating cpus and memory as distinct cgroup subsystems wouldn't help
+much; there's still (2) and (3).  And in the legacy /dev/cpuset
+interface, cpus and memory remain together, whether or not cgroups
+enables them to be separate.
 
-Maybe... If I write a memory location inside a spinlock, then after
-the spinlock is dropped, I read that location on a different CPU,
-am I always guaranteed to see the new value? or do I need some sort of
-memory barrier?
-If I could be clear on that (and memory-barriers.txt isn't
-helping... maybe if I read it 7 more times) then we probably could
-make the change you suggest.
-???
 
-> 
-> 
-> > diff .prev/drivers/md/raid1.c ./drivers/md/raid1.c
-> > --- .prev/drivers/md/raid1.c	2008-02-22 15:45:35.000000000 +1100
-> > +++ ./drivers/md/raid1.c	2008-02-22 15:45:35.000000000 +1100
-> > @@ -592,6 +592,37 @@ static int raid1_congested(void *data, i
-> >  }
-> >  
-> >  
-> > +static int flush_pending_writes(conf_t *conf)
-> > +{
-> 
-> [snip]
-> 
-> Any chance to avoid this code duplication?
+> I'm sure if cpusets were being developed today on top of cgroups,
+> rather than being its inspiration, there would be no good reason to
+> have the memory mask assignment and the cpu mask assignment be part of
+> the same subsystem 
 
-Not really.
-The "conf_t" in each case is a very different conf_t that just happens
-to have the same name and some common fields.
-There is actually quite a lot of structural similarity between raid1
-and raid10, but I don't think there is much to be gained by trying to
-share code there.
+Perhaps ... though they work together rather well in practice, perhaps
+because CPUs and memory banks usually are physically associated;
+selecting which CPUs to use and which memory banks to use really is not
+an independent choice, on most hardware.
 
-Thanks,
-NeilBrown
+Now however the shoe is on the other foot.  Is there a good reason to
+separate them ... an actual would-be user, or actual problems inflicted
+on current users due to the lack of this split?
+
+If there's just a rare occassion such an independently split CPU and
+Memory hiearchy, one can still use the current combined cpuset
+implementation, just with a less natural cpuset hierarchy (more leaf
+node cpusets, representing the cross product of interesting CPU subsets
+and interesting memory node subsets.)  If some specified users start
+doing this routinely, then that gets sufficiently cumbersome that it's
+worth trying to remedy.
+
+As usual, I seem to be counseling resisting adding code, complexity and
+incompatible change, without actual need, beyond just increased
+conceptual sophistication.
+
+-- 
+                  I won't rest till it's the best ...
+                  Programmer, Linux Scalability
+                  Paul Jackson <pj@sgi.com> 1.940.382.4214
