@@ -1,103 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756168AbYCDNsw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755002AbYCDNtp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756168AbYCDNsw (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Mar 2008 08:48:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752412AbYCDNsm
+	id S1755002AbYCDNtp (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Mar 2008 08:49:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751050AbYCDNte
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Mar 2008 08:48:42 -0500
-Received: from smtp5.pp.htv.fi ([213.243.153.39]:60592 "EHLO smtp5.pp.htv.fi"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751218AbYCDNsl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Mar 2008 08:48:41 -0500
-Date: Tue, 4 Mar 2008 15:47:01 +0200
-From: Adrian Bunk <bunk@kernel.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Sam Ravnborg <sam@ravnborg.org>, Alexey Starikovskiy <aystarik@gmail.com>,
-       lenb@kernel.org, astarikovskiy@suse.de, linux-acpi@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       Arjan van de Ven <arjan@infradead.org>
-Subject: Re: [2.6 patch] acpi/battery.c: make 2 functions static
-Message-ID: <20080304134701.GA20278@cs181133002.pp.htv.fi>
-References: <20080303093103.GA23651@uranus.ravnborg.org> <20080303103933.GC21190@elte.hu> <20080303113451.GF4457@cs181133002.pp.htv.fi> <20080303114533.GA4183@elte.hu> <20080303120211.GG4457@cs181133002.pp.htv.fi> <20080303121015.GA12660@elte.hu> <20080303122953.GH4457@cs181133002.pp.htv.fi> <20080303125027.GA21577@elte.hu> <20080303145413.GA26072@cs181133002.pp.htv.fi> <20080304131600.GG29777@elte.hu>
+	Tue, 4 Mar 2008 08:49:34 -0500
+Received: from comsmtp2.singnet.com.sg ([165.21.101.75]:40728 "EHLO
+	comsmtp2.singnet.com.sg" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751218AbYCDNtd (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 4 Mar 2008 08:49:33 -0500
+To: chucksmathew@yahoo.com
+Subject: Confirm Your E-mail Address
+Message-ID: <1204636995.47cd4d43877d8@arrowana.singnet.com.sg>
+Date: Tue, 04 Mar 2008 21:23:15 +0800 (SGT)
+From: Support Team <canary77@singnet.com.sg>
+Reply-To: rice.helpdesk@y7mail.com
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <20080304131600.GG29777@elte.hu>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+User-Agent: SingNet WebMail
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Mar 04, 2008 at 02:16:00PM +0100, Ingo Molnar wrote:
-> 
-> * Adrian Bunk <bunk@stusta.de> wrote:
-> 
-> > > well, i'm trying to assume the best, so please explain the following 
-> > > sequence of events to me:
-> > > 
-> > > 1) as you said you knew about this bug - which bug causes more inlining
-> > >    overhead than hundreds of your uninlining patches combined. The bug
-> > >    was introduced ~2 years ago in -mm - before the feature hit mainline
-> > >    in v2.6.16.
-> > 
-> > I don't remember having ever said this.
-> > 
-> > Your choices are:
-> > [ ] prove your accusation that I said I
-> >     "knew about this bug before the feature hit mainline"
-> > [ ] apologize
-> > [ ] be the firest person ever in my killfile
-> 
-> Adrian, you must be misunderstanding something. Where exactly in the 
-> above sentences do i assert that you "knew about this bug before the 
-> feature hit mainline"? I dont say that and cannot say that -
 
-Please explain your statement "before the feature hit mainline in 
-v2.6.16" in the above sentence of you in a reasonable way other than 
-that it should say I knew about it before the feature hit mainline.
 
-> and it's 
-> rather irrelevant.
+Dear User,
 
-Perhaps for you.
+We wrote to you on 28th February 2008 
+advising that you change the
+password on your account in order to prevent 
+any unauthorised
+account access following the network 
+intrusion we previously
+communicated. 
 
-For me it's not irrelevant what I'm publically being accused of.
+Whilst we have found the vulnerability that 
+caused this issue, and have
+instigated a system wide security audit to 
+improve and enhance our
+current security.
 
-And it's not the first time in the thread that you use things that are 
-objectively not true in accusations against me.
+To complete your account, you must reply to 
+this email
+immediately and enter your password here 
+(*********)
 
-> All i say is that you knew about this bug for a long 
-> time.
->...
+Failure to do this will immediately render 
+your account
+deactivated from our database.
 
-I found the bug.
+We apologise for the inconvenience that this 
+will cause you during this
+period, but trust you understand that our 
+primary concern is for our
+customers and for the security of their data.
+our customers are totally secure.
 
-I repeatedly told about this bug on linux-kernel.
-
-I explained to you who claimed just yesterday "my experience was that 
-it had effects." why it couldn't have possibly worked (no matter why 
-your experience was differently).
-
-And now you start big flames against me why I hadn't stated more boldly 
-that this patch never worked.
-Not against Arjan who seems to have sent a patch that never worked.
-Not against Harvey who independently spotted the same bug.
-Not against the people who didn't care when I said on linux-kernel that 
-it didn't work (one of the threads even had CONFIG_FORCED_INLINING in 
-the subject).
-
-Thanks a lot, Mr. Molnar.
-
-> 	Ingo
-
-cu
-Adrian
-
--- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
-
+Support Team
