@@ -1,85 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935055AbYCDX4R@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935201AbYCDX4v@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935055AbYCDX4R (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Mar 2008 18:56:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934743AbYCDXzR
+	id S935201AbYCDX4v (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Mar 2008 18:56:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934223AbYCDXz6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Mar 2008 18:55:17 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:54846 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S934394AbYCDXzO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Mar 2008 18:55:14 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Peter Hartley <pdh@utter.chaos.org.uk>
-Subject: Re: [patch] Re: using long instead of atomic_t when only set/read is required
-Date: Wed, 5 Mar 2008 00:54:03 +0100
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: linux-kernel@vger.kernel.org, Pavel Machek <pavel@ucw.cz>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Alan Stern <stern@rowland.harvard.edu>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@osdl.org>,
-       Zdenek Kabelac <zdenek.kabelac@gmail.com>, davem@davemloft.net,
-       Pierre Ossman <drzeus-mmc@drzeus.cx>,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-References: <20080225090316.GA420@elf.ucw.cz> <20080303172410.GA13869@elf.ucw.cz> <1204673572.1020.12.camel@amd64.pyotr.org>
-In-Reply-To: <1204673572.1020.12.camel@amd64.pyotr.org>
+	Tue, 4 Mar 2008 18:55:58 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:37277 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S934990AbYCDXz5 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 4 Mar 2008 18:55:57 -0500
+Date: Tue, 4 Mar 2008 15:52:14 -0800
+From: Greg KH <greg@kroah.com>
+To: rafa400@losgandia.com
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: PROBLEM: NUDAM (USB-485) nowaday not detected by pl2303 module
+Message-ID: <20080304235214.GC3773@kroah.com>
+References: <26349.208.97.187.133.1204650893.squirrel@mail.losgandia.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200803050054.04930.rjw@sisk.pl>
+In-Reply-To: <26349.208.97.187.133.1204650893.squirrel@mail.losgandia.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday, 5 of March 2008, Peter Hartley wrote:
-> On Mon, 2008-03-03 at 18:24 +0100, Pavel Machek wrote:
-> > Ok, I can understand the gcc side. But do we actually run on an
-> > architecture where
-> > 
-> > long *x;
-> > 
-> > *x = 0;
-> > 
-> > racing with 
-> > 
-> > *x = 0x12345678;
-> > 
-> > can produce
-> > 
-> > *x == 0x12340000;
-> > 
-> > or something like that? I'm told RCU relies on architectures not doing
-> > this, and I'd like to get this clarified.
+On Tue, Mar 04, 2008 at 09:14:53AM -0800, rafa400@losgandia.com wrote:
+> [1.] new NUDAM (USB-485) converter not recogniced by pl2303. Little change
+> required.
+> [2.] Until now NUDAM USB to RS-485/422 RS232 converter was detected by USB
+> system and pl2303 module working fine in my Debian as /dev/ttyUSB0
 > 
-> ARM6, ARM7500 and similar do exactly this for short (and unsigned
-> short), although not for int, long, or pointers:
+> # dmesg
+> ....
+> usb 5-1.3: new full speed USB device using ehci_hcd and address 17
+> usb 5-1.3: configuration #1 chosen from 1 choice
+> pl2303 5-1.3:1.0: pl2303 converter detected
+> usb 5-1.3: pl2303 converter now attached to ttyUSB0
 > 
-> > struct foo { short b; short c; };
-> > void baa(struct foo *f, short cc) { f->c = cc; }
+> # lsusb
+> Bus 005 Device 017: ID 067b:2303 Prolific Technology, Inc. PL2303 Serial Port
 > 
-> becomes (arm-linux-gcc -mcpu=arm6):
+>  They changed USB ID and now its like:
 > 
-> > baa:
-> >	mov	r3, r1, lsr #8
-> >	strb	r3, [r0, #3]
-> >	strb	r1, [r0, #2]
-> >	mov	pc, lr
+> # lsusb
+> Bus 005 Device 016: ID 0b63:6530 ADLink Technology, Inc.
 > 
-> note the two single-byte stores, as ARM6 didn't have the "store
-> halfword" instruction.
-> 
-> So I think Alan Stern's
-> "For all properly-aligned pointer and integral types other than long
-> long..."
-> should be amended to
-> "For all properly-aligned pointer and integral types other than short or
-> long long..."
+> but this ID is not detected by PD2303 module.
+> a little change in pl2303 solve the problem
 
-Well, perhaps it's sufficient to document just pointers?  In fact this is what
-RCU relies on.
+Are you sure that the chip is still a pl2303 device?  If so, can you
+send us a patch for this device id as per the
+Documentation/SubmittingPatches directions?
 
-Thanks,
-Rafael
+thanks,
+
+greg k-h
