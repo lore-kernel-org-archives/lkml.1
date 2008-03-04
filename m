@@ -1,74 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760822AbYCDRpU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761885AbYCDRpj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760822AbYCDRpU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Mar 2008 12:45:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753549AbYCDRpH
+	id S1761885AbYCDRpj (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Mar 2008 12:45:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757823AbYCDRpQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Mar 2008 12:45:07 -0500
-Received: from web36606.mail.mud.yahoo.com ([209.191.85.23]:36832 "HELO
-	web36606.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751123AbYCDRpG (ORCPT
+	Tue, 4 Mar 2008 12:45:16 -0500
+Received: from smtp-102-tuesday.nerim.net ([62.4.16.102]:51823 "EHLO
+	kraid.nerim.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754641AbYCDRpP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Mar 2008 12:45:06 -0500
-X-YMail-OSG: NOWqJxsVM1msUqW10wQtWhTZruDc.BFZ_mlENTVlAXZzKVOe2IYhBzvlvsCfK87oLcdY1ixXrw--
-X-Mailer: YahooMailRC/902.35 YahooMailWebService/0.7.162
-Date: Tue, 4 Mar 2008 09:45:04 -0800 (PST)
-From: Casey Schaufler <casey@schaufler-ca.com>
-Subject: Re: [PATCH BUGFIX -rc3] Smack: Don't register smackfs if we're not loaded
-To: Linus Torvalds <torvalds@linux-foundation.org>,
-       "Ahmed S. Darwish" <darwish.07@gmail.com>
-Cc: LKML <linux-kernel@vger.kernel.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <521493.30745.qm@web36606.mail.mud.yahoo.com>
+	Tue, 4 Mar 2008 12:45:15 -0500
+Date: Tue, 4 Mar 2008 18:45:12 +0100
+From: Jean Delvare <khali@linux-fr.org>
+To: Linux I2C <i2c@lm-sensors.org>, LKML <linux-kernel@vger.kernel.org>
+Subject: Wanted: i2c subsystem co-maintainer
+Message-ID: <20080304184512.3f78d296@hyperion.delvare>
+X-Mailer: Sylpheed-Claws 2.5.5 (GTK+ 2.10.6; x86_64-suse-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
------ Original Message ----
-> From: Linus Torvalds <torvalds@linux-foundation.org>
-> To: Ahmed S. Darwish <darwish.07@gmail.com>
-> Cc: Casey Schaufler <casey@schaufler-ca.com>; LKML <linux-kernel@vger.kernel.org>
-> Sent: Tuesday, March 4, 2008 9:21:19 AM
-> Subject: Re: [PATCH BUGFIX -rc3] Smack: Don't register smackfs if we're not loaded
-> 
-> 
-> 
-> On Tue, 4 Mar 2008, Ahmed S. Darwish wrote:
-> > 
-> > Smackfs initialization without an enabled Smack leads to
-> > an early Oops that renders the system unusable.
-> 
-> I really think this is bogus. Global enables like this are just wrong, and 
-> a sign that something else bad is going on.
-> 
-> What is the oops? Why does it happen?
+Hi all,
 
-A kernel that is built with both SELinux and Smack contains
-all of the components for both, including smackfs. If SELinux
-is chosen as the module to be used and smackfs is initialized
-the oops occurs because the Smack initialization that smackfs
-depends on has not been done.
+I have a hard time maintaining the i2c subsystem alone. New drivers
+and, more importantly, subsystem evolutions are submitted much faster
+than I can review and merge them. I am hearing complaints about this.
+It has been lasting for a while now and it doesn't seem like the
+situation is going to improve. Thus, I think it would be better if
+someone was co-maintaining the i2c subsystem with me.
 
-One solution would be to tighten the smackfs code so that it
-handles the uninitialized LSM case properly.
+So, if anyone is interested in co-maintaining the i2c subsystem with
+me, please let me know. The ideal candidate would come from the
+embedded world, as I have absolutely no experience with this myself and
+most of the new drivers are for embedded devices, and should have
+contributed to the kernel in a significant way already.
 
-Another would be to set up Kconfig as to make SELinux and Smack
-mutually exclusive, although I really don't know how well that
-would go over in testing circles because "config all on" becomes
-ambiguous.
-
-A third would be to provide for stacking, but I assume that's
-beyond the scope of this exercise.
-
-So I think that fixing up smackfs is the right choice at this point.
-
-> 
-> 
-> Linus
-
-
-
- 
-Casey Schaufler
-casey@schaufler-ca.com 
+Thanks,
+-- 
+Jean Delvare
