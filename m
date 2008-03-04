@@ -1,169 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757121AbYCDMHe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764097AbYCDMHy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757121AbYCDMHe (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Mar 2008 07:07:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751466AbYCDMH0
+	id S1764097AbYCDMHy (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Mar 2008 07:07:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762411AbYCDMHm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Mar 2008 07:07:26 -0500
-Received: from fwil.voltaire.com ([193.47.165.2]:48122 "EHLO exil.voltaire.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751295AbYCDMHZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Mar 2008 07:07:25 -0500
-Message-ID: <47CD3B7A.2010106@voltaire.com>
-Date: Tue, 04 Mar 2008 14:07:22 +0200
-From: Erez Zilber <erezz@voltaire.com>
-User-Agent: Thunderbird 1.5.0.10 (Windows/20070221)
+	Tue, 4 Mar 2008 07:07:42 -0500
+Received: from ozlabs.org ([203.10.76.45]:40383 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1762397AbYCDMHl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 4 Mar 2008 07:07:41 -0500
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: Ingo Molnar <mingo@elte.hu>
+Subject: Re: [BUG + PATCH/Bugfix] x86/lguest: fix pgdir pmd index calculation
+Date: Tue, 4 Mar 2008 23:06:57 +1100
+User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
+Cc: "Ahmed S. Darwish" <darwish.07@gmail.com>,
+       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
+       "H. Peter Anvin" <hpa@zytor.com>, LKML <linux-kernel@vger.kernel.org>,
+       lguest@ozlabs.org, akpm <akpm@linux-foundation.org>,
+       Jeremy Fitzhardinge <jeremy@xensource.com>
+References: <20080224155515.GA24831@ubuntu> <20080229003224.GA18821@ubuntu> <20080229195838.GB21494@elte.hu>
+In-Reply-To: <20080229195838.GB21494@elte.hu>
 MIME-Version: 1.0
-To: Arne Redlich <arne.redlich@xiranet.com>
-CC: Roland Dreier <rolandd@cisco.com>,
-       ofa-general <general@lists.openfabrics.org>,
-       lkml <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 1/2] IB/iSER: fix list iteration bug
-References: <877igkxffl.fsf@confield.dd.xiranet.com>
-In-Reply-To: <877igkxffl.fsf@confield.dd.xiranet.com>
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 04 Mar 2008 12:07:23.0154 (UTC) FILETIME=[4DD5CF20:01C87DF0]
+Content-Disposition: inline
+Message-Id: <200803042306.58400.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Arne Redlich wrote:
-> The iteration through the list of "iser_device"s during device
-> lookup/creation is broken - it might result in an infinite loop if more
-> than 1 HCA is used with iSER. Use list_for_each_entry() instead of the
-> custom, flawed list iteration code.
-> 
-> Signed-off-by: Arne Redlich <arne.redlich@xiranet.com>
-> ---
->  drivers/infiniband/ulp/iser/iser_verbs.c |   36 ++++++++++++-----------------
->  1 files changed, 15 insertions(+), 21 deletions(-)
-> 
-> diff --git a/drivers/infiniband/ulp/iser/iser_verbs.c b/drivers/infiniband/ulp/iser/iser_verbs.c
-> index 714b8db..1c0f968 100644
-> --- a/drivers/infiniband/ulp/iser/iser_verbs.c
-> +++ b/drivers/infiniband/ulp/iser/iser_verbs.c
-> @@ -237,33 +237,27 @@ static int iser_free_ib_conn_res(struct iser_conn *ib_conn)
->  static
->  struct iser_device *iser_device_find_by_ib_device(struct rdma_cm_id *cma_id)
->  {
-> -	struct list_head    *p_list;
-> -	struct iser_device  *device = NULL;
-> +	struct iser_device *device;
->  
->  	mutex_lock(&ig.device_list_mutex);
->  
-> -	p_list = ig.device_list.next;
-> -	while (p_list != &ig.device_list) {
-> -		device = list_entry(p_list, struct iser_device, ig_list);
-> -		/* find if there's a match using the node GUID */
-> +	list_for_each_entry(device, &ig.device_list, ig_list)
+On Saturday 01 March 2008 06:58:38 Ingo Molnar wrote:
+> * Ahmed S. Darwish <darwish.07@gmail.com> wrote:
+> > On the lguest _guest_ side, 'cpu_has_tsc' is _always_ false (due to
+> > lguest using his own clocksource ?), thus a guest with a pentium+ cpu
+> > always panics with:
+>
+> does the "RDTSC" instruction work in an lguest guest? If not, then the
+> lguest kernel is correct in not exposing it - and then the solution is
+> to build a non-TSC guest kernel. Does the patch below help?
+>
+> but if the RDTSC instruction does work in an lguest guest, then the
+> proper approach would be to expose it in the CPU features.
 
-I've just added the original comments that are missing in your patch.
+Yes, and after some investigation, I came up with two patches.  I'll queue 
+both to you if that's ok, since they're dependent.
 
->  		if (device->ib_device->node_guid == cma_id->device->node_guid)
-> -			break;
-> -	}
-> -
-> -	if (device == NULL) {
-> -		device = kzalloc(sizeof *device, GFP_KERNEL);
-> -		if (device == NULL)
->  			goto out;
-> -		/* assign this device to the device */
-> -		device->ib_device = cma_id->device;
-> -		/* init the device and link it into ig device list */
-> -		if (iser_create_device_ib_res(device)) {
-> -			kfree(device);
-> -			device = NULL;
-> -			goto out;
-> -		}
-> -		list_add(&device->ig_list, &ig.device_list);
-> +
-> +	device = kzalloc(sizeof *device, GFP_KERNEL);
-> +	if (device == NULL)
-> +		goto out;
-> +
-> +	device->ib_device = cma_id->device;
-> +	/* init the device and link it into ig device list */
-> +	if (iser_create_device_ib_res(device)) {
-> +		kfree(device);
-> +		device = NULL;
-> +		goto out;
->  	}
-> +	list_add(&device->ig_list, &ig.device_list);
-> +
->  out:
->  	BUG_ON(device == NULL);
->  	device->refcount++;
+When lguest was being developed we didn't have a get_tsc_khz hook, so I had to 
+kill the TSC cpuid bit.  Nowdays, the code can actually be much more natural: 
+the Host tells us the cpu khz, and if it's zero, we fall back to the 
+dumb "lguest" clock.
 
-The iteration through the list of "iser_device"s during device
-lookup/creation is broken - it might result in an infinite loop if more
-than 1 HCA is used with iSER. Use list_for_each_entry() instead of the
-custom, flawed list iteration code.
-
-Signed-off-by: Arne Redlich <arne.redlich@xiranet.com>
-Signed-off-by: Erez Zilber <erezz@voltaire.com>
----
- drivers/infiniband/ulp/iser/iser_verbs.c |   36 +++++++++++++----------------
- 1 files changed, 16 insertions(+), 20 deletions(-)
-
-diff --git a/drivers/infiniband/ulp/iser/iser_verbs.c b/drivers/infiniband/ulp/iser/iser_verbs.c
-index 714b8db..768ba69 100644
---- a/drivers/infiniband/ulp/iser/iser_verbs.c
-+++ b/drivers/infiniband/ulp/iser/iser_verbs.c
-@@ -237,33 +237,29 @@ static int iser_free_ib_conn_res(struct iser_conn *ib_conn)
- static
- struct iser_device *iser_device_find_by_ib_device(struct rdma_cm_id *cma_id)
- {
--	struct list_head    *p_list;
--	struct iser_device  *device = NULL;
-+	struct iser_device *device;
- 
- 	mutex_lock(&ig.device_list_mutex);
- 
--	p_list = ig.device_list.next;
--	while (p_list != &ig.device_list) {
--		device = list_entry(p_list, struct iser_device, ig_list);
-+	list_for_each_entry(device, &ig.device_list, ig_list)
- 		/* find if there's a match using the node GUID */
- 		if (device->ib_device->node_guid == cma_id->device->node_guid)
--			break;
--	}
--
--	if (device == NULL) {
--		device = kzalloc(sizeof *device, GFP_KERNEL);
--		if (device == NULL)
- 			goto out;
--		/* assign this device to the device */
--		device->ib_device = cma_id->device;
--		/* init the device and link it into ig device list */
--		if (iser_create_device_ib_res(device)) {
--			kfree(device);
--			device = NULL;
--			goto out;
--		}
--		list_add(&device->ig_list, &ig.device_list);
-+
-+	device = kzalloc(sizeof *device, GFP_KERNEL);
-+	if (device == NULL)
-+		goto out;
-+
-+	/* assign this device to the device */
-+	device->ib_device = cma_id->device;
-+	/* init the device and link it into ig device list */
-+	if (iser_create_device_ib_res(device)) {
-+		kfree(device);
-+		device = NULL;
-+		goto out;
- 	}
-+	list_add(&device->ig_list, &ig.device_list);
-+
- out:
- 	BUG_ON(device == NULL);
- 	device->refcount++;
--- 
-1.5.3.6
-
-
-I agree with your patch. It seems that we forgot to add something like p_list=p_list->next. Anyway, using list_for_each_entry is better than what we had.
-
+Thanks,
+Rusty.
