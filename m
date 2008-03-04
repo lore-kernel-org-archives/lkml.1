@@ -1,58 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935201AbYCDX4v@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934995AbYCDX5c@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935201AbYCDX4v (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Mar 2008 18:56:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934223AbYCDXz6
+	id S934995AbYCDX5c (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Mar 2008 18:57:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934992AbYCDX4B
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Mar 2008 18:55:58 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:37277 "EHLO
+	Tue, 4 Mar 2008 18:56:01 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:37282 "EHLO
 	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S934990AbYCDXz5 (ORCPT
+	with ESMTP id S934698AbYCDX4A (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Mar 2008 18:55:57 -0500
-Date: Tue, 4 Mar 2008 15:52:14 -0800
+	Tue, 4 Mar 2008 18:56:00 -0500
+Date: Tue, 4 Mar 2008 15:55:47 -0800
 From: Greg KH <greg@kroah.com>
-To: rafa400@losgandia.com
+To: Lukas Hejtmanek <xhejtman@ics.muni.cz>, linux-usb@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org
-Subject: Re: PROBLEM: NUDAM (USB-485) nowaday not detected by pl2303 module
-Message-ID: <20080304235214.GC3773@kroah.com>
-References: <26349.208.97.187.133.1204650893.squirrel@mail.losgandia.com>
+Subject: Re: 2.6.25 possible regression usbfs options ignored?
+Message-ID: <20080304235547.GD3773@kroah.com>
+References: <20080303215456.GA7747@ics.muni.cz>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <26349.208.97.187.133.1204650893.squirrel@mail.losgandia.com>
+In-Reply-To: <20080303215456.GA7747@ics.muni.cz>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Mar 04, 2008 at 09:14:53AM -0800, rafa400@losgandia.com wrote:
-> [1.] new NUDAM (USB-485) converter not recogniced by pl2303. Little change
-> required.
-> [2.] Until now NUDAM USB to RS-485/422 RS232 converter was detected by USB
-> system and pl2303 module working fine in my Debian as /dev/ttyUSB0
+On Mon, Mar 03, 2008 at 10:54:56PM +0100, Lukas Hejtmanek wrote:
+> Hello,
 > 
-> # dmesg
-> ....
-> usb 5-1.3: new full speed USB device using ehci_hcd and address 17
-> usb 5-1.3: configuration #1 chosen from 1 choice
-> pl2303 5-1.3:1.0: pl2303 converter detected
-> usb 5-1.3: pl2303 converter now attached to ttyUSB0
+> I'm using 2.6.25-rc3. It seems that options for usbfs (devgid and devmode) are
+> ignored.
 > 
-> # lsusb
-> Bus 005 Device 017: ID 067b:2303 Prolific Technology, Inc. PL2303 Serial Port
+> # mount | grep usbfs
+> none on /proc/bus/usb type usbfs (rw,devgid=46,devmode=0664)
 > 
->  They changed USB ID and now its like:
+> /proc/bus/usb# ls -l
+> total 0
+> dr-xr-xr-x 2 root root 0 2008-03-03 10:41 001
+> dr-xr-xr-x 2 root root 0 2008-03-03 10:41 002
+> dr-xr-xr-x 2 root root 0 2008-03-03 10:41 003
+> dr-xr-xr-x 2 root root 0 2008-03-03 10:41 004
+> dr-xr-xr-x 2 root root 0 2008-03-03 10:41 005
+> dr-xr-xr-x 2 root root 0 2008-03-03 10:41 006
+> dr-xr-xr-x 2 root root 0 2008-03-03 10:41 007
+> -r--r--r-- 1 root root 0 2008-03-03 22:30 devices
 > 
-> # lsusb
-> Bus 005 Device 016: ID 0b63:6530 ADLink Technology, Inc.
-> 
-> but this ID is not detected by PD2303 module.
-> a little change in pl2303 solve the problem
+> or am I just someting missing?
 
-Are you sure that the chip is still a pl2303 device?  If so, can you
-send us a patch for this device id as per the
-Documentation/SubmittingPatches directions?
+ CC:ing the linux-usb mailing list might help out more :)
+
+parsing the options did change a bit in 2.6.25-rc, but I don't think it
+would have changed this.  Can you revert the patch at git id
+2e4f3c02239d4c7c454604715db619bc971b15eb and see if it fixes the problem
+for you or not?
+
+Hm, I see this here as well, not good...
 
 thanks,
 
