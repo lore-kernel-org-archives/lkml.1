@@ -1,26 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757333AbYCDIRe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754498AbYCDIUq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757333AbYCDIRe (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Mar 2008 03:17:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751342AbYCDIRV
+	id S1754498AbYCDIUq (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Mar 2008 03:20:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751460AbYCDIUh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Mar 2008 03:17:21 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:47431 "EHLO mx3.mail.elte.hu"
+	Tue, 4 Mar 2008 03:20:37 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:48302 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750921AbYCDIRV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Mar 2008 03:17:21 -0500
-Date: Tue, 4 Mar 2008 09:16:58 +0100
+	id S1750958AbYCDIUh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 4 Mar 2008 03:20:37 -0500
+Date: Tue, 4 Mar 2008 09:20:22 +0100
 From: Ingo Molnar <mingo@elte.hu>
-To: Harvey Harrison <harvey.harrison@gmail.com>
-Cc: Avi Kivity <avi@qumranet.com>, Thomas Gleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] x86: replace remaining __FUNCTION__ occurances
-Message-ID: <20080304081658.GB5689@elte.hu>
-References: <1204573043.3266.50.camel@brick> <47CC6422.5030806@qumranet.com> <1204577802.22933.6.camel@brick>
+To: Suresh Siddha <suresh.b.siddha@intel.com>
+Cc: Christoph Hellwig <hch@infradead.org>, hpa@zytor.com, tglx@linutronix.de,
+       andi@firstfloor.org, linux-kernel@vger.kernel.org,
+       Arjan van de Ven <arjan@linux.intel.com>
+Subject: Re: [patch 1/2] x86, fpu: split FPU state from task struct - v3
+Message-ID: <20080304082022.GC5689@elte.hu>
+References: <20080303230335.892214000@linux-os.sc.intel.com> <20080304011849.GA22431@infradead.org> <20080304013649.GB28006@linux-os.sc.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1204577802.22933.6.camel@brick>
+In-Reply-To: <20080304013649.GB28006@linux-os.sc.intel.com>
 User-Agent: Mutt/1.5.17 (2007-11-01)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -35,17 +36,15 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Harvey Harrison <harvey.harrison@gmail.com> wrote:
+* Suresh Siddha <suresh.b.siddha@intel.com> wrote:
 
-> > Please send the kvm parts against kvm.git instead of mainline to 
-> > avoid needless merges.
+> > Also this weak linkage stuff creaping in is really ugly.
 > 
-> Sure, I'll send a split out patch against kvm.git
-> 
-> Ingo, do you mind chopping the diff to apply just the x86-specific 
-> stuff or do you want a split patch as well?
+> hmm.. any better suggestion?
 
-no need, i picked up the non-kvm bits. Avi, will you pick up the KVM 
-bits or should Harvey resend?
+i dont find it ugly at all - it's far easier to read than an #ifdef 
+maze. And the fact that it's marked "weak" is enough of a visual warning 
+IMO that this is just default behavior and that the arch might have 
+overriden it.
 
 	Ingo
