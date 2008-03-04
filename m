@@ -1,316 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765332AbYCDRKk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760598AbYCDROB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765332AbYCDRKk (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Mar 2008 12:10:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760852AbYCDRKO
+	id S1760598AbYCDROB (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Mar 2008 12:14:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751582AbYCDRNx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Mar 2008 12:10:14 -0500
-Received: from mail.amln.net ([88.203.210.2]:46799 "EHLO neon.bastun.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760419AbYCDRKL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Mar 2008 12:10:11 -0500
-Message-ID: <47CD83C7.4020206@amln.net>
-Date: Tue, 04 Mar 2008 19:15:51 +0200
-From: Xpl++ <xpl@amln.net>
-User-Agent: Mozilla Thunderbird 1.5.0.14 (Windows/20071210)
+	Tue, 4 Mar 2008 12:13:53 -0500
+Received: from hu-out-0506.google.com ([72.14.214.233]:2055 "EHLO
+	hu-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753840AbYCDRNw (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 4 Mar 2008 12:13:52 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=N1ryUoZ2SkDrMLMiuCzdE+gmNUhfkMW6Yu+y596tQQVkFksw1IPxu/JoHf7Bk+TSYBj7rVLOlrDxG3F/8/PzknKtr2AyHV78Pmb9RgtDlIbvn+wxpIv1AkwAMpSi49O2DYzYhMdU2Eg7vJbX3h/BomNOAoZUMiPiCPgCyYHtuc8=
+Message-ID: <226dee610803040913h4718b61r4310fa78938bc386@mail.gmail.com>
+Date: Tue, 4 Mar 2008 22:43:50 +0530
+From: "JoJo jojo" <onetwojojo@gmail.com>
+To: "Dave Airlie" <airlied@linux.ie>
+Subject: Re: 2.6.25-rc3 + RS690 + DRM + xf86-video-ati hang
+Cc: "Jonathan McDowell" <noodles@earth.li>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       xorg-driver-ati@lists.x.org, linux-kernel@vger.kernel.org
+In-Reply-To: <alpine.DEB.0.82.0803041120400.24971@skynet.skynet.ie>
 MIME-Version: 1.0
-To: Dhaval Giani <dhaval@linux.vnet.ibm.com>
-CC: fedora-devel-list@redhat.com, opensuse-packaging@opensuse.org,
-       lkml <linux-kernel@vger.kernel.org>,
-       containers@lists.linux-foundation.org, Balbir Singh <balbir@in.ibm.com>,
-       menage@google.com, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>,
-       Sudhir Kumar <skumar@linux.vnet.ibm.com>
-Subject: Re: [RFC] libcg: design and plans
-References: <20080304152341.GB5659@linux.vnet.ibm.com>
-In-Reply-To: <20080304152341.GB5659@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20080301193511.GP9009@earth.li>
+	 <20080303224830.28e98b2b.akpm@linux-foundation.org>
+	 <alpine.DEB.0.82.0803040816180.24971@skynet.skynet.ie>
+	 <20080304085155.GX9009@earth.li>
+	 <alpine.DEB.0.82.0803041120400.24971@skynet.skynet.ie>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+Is 128 MB some sort of a sweet spot for ram allocated to gpu  ?
+(hard coded?)
 
-I was wonder if creating such library makes any sense at all, 
-considering the nature of cgroups, the way they work and their possible 
-application?
-It seems to me that any attempt to create a 'simple' API would actualy 
-result in something that will be much harder to use that just making raw 
-mkdir/open/read/write/close operations. Another thing is suggested 
-config for this lib would be more appropriate for a daemon rather than a 
-library.
-In general - cgroup is a very flexible subsystem that can be used in a 
-wide variety of ways and modes and trying to create a universal simple 
-API would more likely result in something hard to manage and work with.
-The idea of having multiple container managers (applications that use 
-libcg) creates a lots of questions and possible issues. Containers are 
-supposed provide a flexible resource management and task grouping 
-ability, which somewhat implies that there cannot be two different 
-resource managers per node without one knowing well the 
-desires/goals/methods of the other and vice versa. And should there be 
-only one manager per node - probably it will be easier for it to use 
-cgroup subsystem directly rather than using a wrapper library?
+First Alex suggested that, & now you.
 
-Regards,
-Peter Litov.
+(asking 'coz i used 256 MB while testing)
 
-Dhaval Giani ??????:
-> Hi,
+-JoJo
+
+On Tue, Mar 4, 2008 at 4:53 PM, Dave Airlie <airlied@linux.ie> wrote:
+> >
+>  > Is xf86-driver-ati 6.8.0 not a proper release? I'm pretty sure the
+>  > combination of that, 2.6.25-rc3 and CONFIG_DRM_RADEON causes my machine
+>  > to become unresponsive. I only tried a git build of the driver after the
+>  > released version was causing issues.
 >
-> We have been working on a library for control groups which would provide
-> simple APIs for programmers to utilize from userspace and make use of
-> control groups.
+>  Yes we made a mistake with 6.8.0 enabling DRI on rs680 chips before we
+>  knew it worked for everyone, I may be still able to fix this in the kernel
+>  but there is a good chance that it'll require a 6.8.1 userspace, I can't
+>  do anything else about it..
 >
-> We are still designing the library and the APIs. I've attached the
-> design (as of now) to get some feedback from the community whether we
-> are heading in the correct direction and what else should be addressed.
+>  Jonathan I appreciate the bug report, I'm more saying to Andrew that
+>  getting DRI right on new chipsets is non-trivial as there are lot of
+>  configurations we can't test until we actually push the code to users..
+>  and in this case you are one of those..
 >
-> We have a project on sourceforge.net at
-> https://sourceforge.net/projects/libcg and the mailing list (cc'd here)
-> can be found at https://lists.sourceforge.net/lists/listinfo/libcg-devel
+>  you might try setting the VRAM in your BIOS to 128MB instead of Auto and
+>  seeing it helps..
 >
-> Thanks,
-> --
+>  I'll be trying to fix the problem properly quite soon.
 >
-> libcg
-> 1. Aims/Requirements
-> 2. Design
-> 3. APIs
-> 4. Configuration Scheme
+>  The correct workaround is to add Option "DRI" "Off" to xorg.conf or for me
+>  to travel back in time and unrelease 6.8.0. Removing the kernel DRI
+>  support will just break lots of working systems.
 >
-> 1. Aims/Requirements
+>  Dave.
 >
-> 1.1 What are Control Groups
 >
-> Control Groups provide a mechanism for aggregating/partitioning sets of
-> tasks, and all their future children, into hierarchical groups with
-> specialized behaviour [1]. It makes use of a filesystem interface.
+>   >
+>  > Replacing 2.6.25-rc3 with 2.6.24 (still with CONFIG_DRM_RADEON enabled)
+>  > results in a machine that boots to GDM successfully. Likewise if I
+>  > disable CONFIG_DRM_RADEON in 2.6.25-rc3 the machine boots to GDM ok.
+>  >
+>  > J.
+>  >
+>  >
 >
-> 1.2 Aims of libcg
 >
-> libcg aims to provide programmers easily usable APIs to use the control
-> group file system. It should satisfy the following requirements
+> _______________________________________________
+>  xorg-driver-ati mailing list
+>  xorg-driver-ati@lists.x.org
+>  http://lists.x.org/mailman/listinfo/xorg-driver-ati
 >
-> 1.2.1. Provide a programmable interface for cgroups
->
-> This should allow applications to create cgroups using something like
-> create_cgroup() as opposed to having to go the whole filesystem route.
->
-> 1.2.2. Provide persistent configuration across reboots
->
-> Control Groups have a lifetime of only one boot cycle. The configuration
-> is lost at reboot. Userspace needs to handle this issue. This is handled
-> by libcg
->
-> 1.2.3. Provide a programmable interface for manipulating configurations
->
-> This should allow libcg to handle changing application requirements. For
-> example, while gaming, you might want to reduce the cpu power of other
-> groups whereas othertimes you would want greater CPU power for those
-> groups.
->
-> 2. Design
->
-> 2.1 Architecture
->
-> 2.1.1 Global overview
->
-> libcg will be consumed in the following fashion
->
-> 			---------------------------
-> 			|      applications	  |
-> 			---------------------------
-> 			|	  libcg		  |
-> 			---------------------------
-> 			|	  kernel	  |
-> 			---------------------------
->
-> A more detailed example would be as follows. Consider various applications
-> running at the same time on a system. A typical system would be running
-> a web browser, a mail client, a media player and office software. libcg
-> could be used to group these applications into various groups and give
-> them various resources. A possible example would be three groups, Internet,
-> Entertainment and Office. A daemon could attach tasks to these groups according
-> to some rules and the adminstrator can control the resources attached to each
-> group via the configuration manager.i
->
-> 	     Internet		          Office	       Entertainment
-> 	----------------------	      --------------		-----------
-> 	| firefox	mutt |	      | openoffice |		| mplayer |
-> 	----------------------	      --------------		-----------
-> 		 \			    |			     /
-> 		  \			    |			    /
-> 		------------------------------------------------------
-> 		|		       Some daemon		     |
-> 		------------------------------------------------------
-> 		|                        libcg	                     |
-> 		------------------------------------------------------
-> 		|                        kernel                      |
-> 		------------------------------------------------------
->
-> 2.1.2
->
-> libcg will consist of two main parts. The configuration manager and the
-> library.
->
-> The configuration manager will used to maintain the configurations, to load
-> and unload the configurations, to set the bootup configurations and so on.
-> This is similar to the network configuration. A configuration file is used
-> to setup the networking at bootup. Similarly a configuration file will be
-> used to setup the default control groups (and maybe the top level control
-> groups) at bootup.
->
-> The administrator can directly access the configuration files, and
-> applications can access it through the library. The configuration manager
-> is used to provide the persistence.
->
-> 	Application		Administrator
-> 	     |			      |
-> 	     V			      |
-> 	library APIs	              |
-> 	      \			     /
-> 	       \		    /
-> 		\		   /
-> 		 V		  V
-> 	     libcg configuration files
-> 			|
-> 			|
-> 			V
-> 	    libcg configuration manager
->
-> The configuration manager has to provide isolation between various users of
-> libcg. That is, if two different users A and B are making use of libcg, then
-> the configuration manager has to ensure that user A does not affect user B's
-> settings/configurations.
->
-> The top level limits and permissions for A and B are to be provided by the
-> administrator. The permissions are filesystem permissions as cgroup is
-> filesystem based.
->
-> With this architecure in mind, we expect two levels of configuration files.
-> One would be the global configuration which the administrator would control
-> and setup the groups, and a local configuration which the group owner will
-> control.
->
-> A simple example could be that the administrator could split the top level
-> according to uid, and then each user could control the resources available
-> to him and group those applications accordingly.
->
-> 				root
-> 				 |
->         -------------------------------------------------
-> 	|						|
-> 	A						B
-> 	|- browsers					|- compilers
-> 	|- games					|- internet
-> 	|- office					|- dev-environment
-> 	|- entertainment				|- others
->
-> In this example, we have an example cgroup filesystem configuration.
->
-> The administrator decides the resources available to "A" and "B". Both "A" and
-> "B" have followed grouping according to their usage. They decide the resources
-> availble to their groups (which is dependent of the resources alloted to them
-> by the adminstrator).
->
-> libcg will be written mainly in C with lex and yacc for parsing the configuration
-> files.
->
-> 3. APIs
->
-> The APIs are envisaged to be of two main types
->
-> 3.1. Manipulating Control Groups
->
-> 3.1.1. Create Control Group: This API is proposed to create control groups.
-> It should take care of the following scenarios
->
-> 3.1.1.1 Create non persistent control groups: These groups should exist
-> for just duration of this run. They should not stick across different sessions.
->
-> 3.1.1.2 Create persistent control groups: These groups should stick across
-> different sessions.
->
-> 3.1.2 Delete Control Group:  This API is proposed to delete control groups.
-> It would have the same scenarios as expected for Create Control Group.
->
-> 3.1.2 Modify Control Group: This API proposed to modify an already
-> existing group's control files. It too should handle the persistence issue
-> as like Create Control Group does.
->
-> More details about configuration are available in sections 2 and 4.
->
-> 3.2. Manipulating Configurations
->
-> 3.2.1. Generate Configuration File: If a cgroup filesystem hierarchy already exists,
-> it should be possible to generate a configuration file which can create it. This
-> is proposed to be provided by this API.
->
-> 3.2.2. Change Configuration File: If one configuration is currently loaded in
-> memory, it is possible for it to be replaced with the new file. This API proposes
-> to implement that.
->
-> 3.2.3. Manipulate Configuration File: This API proposes to allow the configuration
-> file to be modified.
->
-> We should also plan on taking care of statistics once its available in mainline.
->
-> 4. Configuration Scheme
->
-> There are multiple configuration levels. The basic wlm.conf file will provide
-> the mount points and the controller details. This can only be manipulated by
-> the adminstrator. No APIs will be provided to modify this file.
->
-> There will be group specific configuration files as well. The exact details
-> of the same still need to be worked out.
->
-> 4.1. Sample configuration files
->
-> 4.1.1. Sample wlm.conf
->
-> #
-> # controller	file
-> #
->
-> group ca1 {
-> 	perm {
-> 		task {
-> 			uid = balbir;
-> 			gid = cgroup;
-> 		}
-> 		admin {
-> 			uid = root;
-> 			gid = cgroup;
-> 		}
-> 	}
->
-> 	cpu {
-> 		cpu.shares = 500;
-> 	}
-> }
->
-> mount {
-> 	cpu = /container;
-> }
->
-> This is an example of a top level group. The mount{} block is used to provide
-> the mount point of the various controllers. For eg, the cpu controller is
-> mounted at /container. Next we have the group ca1. This is the top level group
-> and its permissions are given by the uid and gid fields for tasks and admin. The
-> next is the individual controller block. For the mount point of cpu, the cpu.shares
-> value is provided. Thus the above file can be represented as the following script
->
-> mkdir /container
-> mount -t cgroup -o cpu none /container
-> mkdir /container/ca1
-> /bin/echo 500 > /container/ca1/cpu.shares
-> chown -R root /container/ca1
-> chgrp -R cgroup /container/ca1
-> chown balbir /container/ca1/tasks
-> chgrp cgroup /container/ca1/tasks
->
-> 5. References
->
-> 1. Documentation/cgroups.txt in kernel sources.
->   
