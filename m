@@ -1,61 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755002AbYCDNtp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759605AbYCDNuq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755002AbYCDNtp (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Mar 2008 08:49:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751050AbYCDNte
+	id S1759605AbYCDNuq (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Mar 2008 08:50:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753094AbYCDNuj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Mar 2008 08:49:34 -0500
-Received: from comsmtp2.singnet.com.sg ([165.21.101.75]:40728 "EHLO
-	comsmtp2.singnet.com.sg" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751218AbYCDNtd (ORCPT
+	Tue, 4 Mar 2008 08:50:39 -0500
+Received: from bombadil.infradead.org ([18.85.46.34]:55312 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751050AbYCDNui (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Mar 2008 08:49:33 -0500
-To: chucksmathew@yahoo.com
-Subject: Confirm Your E-mail Address
-Message-ID: <1204636995.47cd4d43877d8@arrowana.singnet.com.sg>
-Date: Tue, 04 Mar 2008 21:23:15 +0800 (SGT)
-From: Support Team <canary77@singnet.com.sg>
-Reply-To: rice.helpdesk@y7mail.com
-MIME-Version: 1.0
+	Tue, 4 Mar 2008 08:50:38 -0500
+Date: Tue, 4 Mar 2008 10:50:24 -0300
+From: Mauro Carvalho Chehab <mchehab@infradead.org>
+To: Manu Abraham <manu@linuxtv.org>
+Cc: Michael Krufky <mkrufky@linuxtv.org>,
+       Harvey Harrison <harvey.harrison@gmail.com>,
+       "v4l-dvb-maintainer@linuxtv.org" <v4l-dvb-maintainer@linuxtv.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [v4l-dvb-maintainer] [PATCH] media: replace remaining
+ __FUNCTION__ occurences
+Message-ID: <20080304105024.0873ad72@gaivota>
+In-Reply-To: <47CD256B.2070305@linuxtv.org>
+References: <1204588990.22933.28.camel@brick>
+	<37219a840803031928l79395c78ka64192f4a9f61744@mail.gmail.com>
+	<47CCDB5F.1040007@gmail.com>
+	<47CCEE63.80103@linuxtv.org>
+	<47CD256B.2070305@linuxtv.org>
+X-Mailer: Claws Mail 3.3.0 (GTK+ 2.12.8; x86_64-mandriva-linux-gnu)
+Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-User-Agent: SingNet WebMail
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <mchehab@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, 04 Mar 2008 14:33:15 +0400
+Manu Abraham <manu@linuxtv.org> wrote:
 
+> Michael Krufky wrote:
+> > Manu Abraham wrote:
+> >> Michael Krufky wrote:
+> >>> On Mon, Mar 3, 2008 at 7:03 PM, Harvey Harrison
+> >>> <harvey.harrison@gmail.com> wrote:
+> >>>> __FUNCTION__ is gcc-specific, use __func__
+> >>>>
+> >>>>  Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
+> >>>>   162 files changed, 892 insertions(+), 892 deletions(-)
+> >>>
+> >>> If we apply this, can it be broken down into several smaller patches?
+> >>> I am in the midst of a large overhaul of the tuning subsystem, and if
+> >>> this all gets applied at once, it will wreck havoc on my pending
+> >>> changesets.
+> >> Please make sure your changes don't conflict with the multiproto tree
+> >> changes.
+> >>
+> >> Regards,
+> >> Manu
+> > Manu,
+> > 
+> > Does that mean that you plan to merge multiproto soon?  If that's the
+> 
+> I hope to do so, unless there aren't any significant issues. The 
+> multiproto tree is at
+> http://jusst.de/hg/multiproto.
+> 
+> (There's hell a lot of reviewing and testing going on by the testers on 
+> the linux-dvb
+> ML, but you might additionally like to check whether any of your devices 
+> have any
+> side effects)
 
-Dear User,
+Maybe the better would be if we merge from multiproto. Then, Harvey can safely
+generate the __FUNCTION__ changesets.
 
-We wrote to you on 28th February 2008 
-advising that you change the
-password on your account in order to prevent 
-any unauthorised
-account access following the network 
-intrusion we previously
-communicated. 
+Manu,
 
-Whilst we have found the vulnerability that 
-caused this issue, and have
-instigated a system wide security audit to 
-improve and enhance our
-current security.
+Can I merge it?
 
-To complete your account, you must reply to 
-this email
-immediately and enter your password here 
-(*********)
-
-Failure to do this will immediately render 
-your account
-deactivated from our database.
-
-We apologise for the inconvenience that this 
-will cause you during this
-period, but trust you understand that our 
-primary concern is for our
-customers and for the security of their data.
-our customers are totally secure.
-
-Support Team
+Cheers,
+Mauro
