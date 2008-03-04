@@ -1,62 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933254AbYCDTNu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933160AbYCDTOx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933254AbYCDTNu (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Mar 2008 14:13:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933111AbYCDTNh
+	id S933160AbYCDTOx (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Mar 2008 14:14:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765485AbYCDTOl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Mar 2008 14:13:37 -0500
-Received: from smtp115.sbc.mail.sp1.yahoo.com ([69.147.64.88]:28677 "HELO
-	smtp115.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S933105AbYCDTNg (ORCPT
+	Tue, 4 Mar 2008 14:14:41 -0500
+Received: from theia.rz.uni-saarland.de ([134.96.7.31]:13342 "EHLO
+	theia.rz.uni-saarland.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761559AbYCDTOk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Mar 2008 14:13:36 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=A07MBtbiuOMVblEXC996EYHRg/5hHdg2ejQmVcQ+96ILK11sR9dQZIUVyrMvyNCLWYLC5pjcwHY7uLxFbfQ0h4UIdiFhP06Cu7Qvx/apUhbDC2c/sZ4xmN/u83Y3TmmikRc7pFuJS2pWADVUQasHJoqkSIxX2bsKJ+1FQhkCZ9w=  ;
-X-YMail-OSG: pYT_eRoVM1k.at8sXk1.Bm.xDHL6vVMMCOGfM0J.8TcuJYLnSmpSc07WcEMk0IClBgM7fsmZMw--
-X-Yahoo-Newman-Property: ymail-3
-From: David Brownell <david-b@pacbell.net>
-To: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: Bugs in MMC [was: [Bug 10030] Suspend doesn't work when SD card is inserted]
-Date: Tue, 4 Mar 2008 10:53:44 -0800
-User-Agent: KMail/1.9.6
-Cc: Pierre Ossman <drzeus-mmc@drzeus.cx>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       pm list <linux-pm@lists.linux-foundation.org>,
-       Zdenek Kabelac <zdenek.kabelac@gmail.com>,
-       Kernel development list <linux-kernel@vger.kernel.org>
-References: <Pine.LNX.4.44L0.0803041252480.15190-100000@iolanthe.rowland.org>
-In-Reply-To: <Pine.LNX.4.44L0.0803041252480.15190-100000@iolanthe.rowland.org>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+	Tue, 4 Mar 2008 14:14:40 -0500
+Date: Tue, 4 Mar 2008 20:12:28 +0100
+From: Alexander van Heukelum <heukelum@mailshack.com>
+To: Jeremy Fitzhardinge <jeremy@goop.org>, Ingo Molnar <mingo@elte.hu>
+Cc: Alexander van Heukelum <heukelum@fastmail.fm>,
+       Mark McLoughlin <markmc@redhat.com>, Ian Campbell <ijc@hellion.org.uk>,
+       "H. Peter Anvin" <hpa@zytor.com>, Andi Kleen <ak@suse.de>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] reserve end-of-conventional-memory to 1MB, 64-bit, use paravirt_enabled
+Message-ID: <20080304191228.GA12403@mailshack.com>
+References: <20080229114943.GA1909@mailshack.com> <1204305247.2037.2.camel@muff> <1204310323.24514.1239870063@webmail.messagingengine.com> <1204322819.6299.1.camel@muff> <20080301160911.GA13271@mailshack.com> <1204631082.16613.7.camel@muff> <47CD6858.9070603@goop.org> <1204649476.5048.1240509149@webmail.messagingengine.com> <47CD82C5.8060605@goop.org> <20080304185742.GA12193@mailshack.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200803041053.44909.david-b@pacbell.net>
+In-Reply-To: <20080304185742.GA12193@mailshack.com>
+User-Agent: Mutt/1.5.9i
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (theia.rz.uni-saarland.de [134.96.7.31]); Tue, 04 Mar 2008 20:13:27 +0100 (CET)
+X-AntiVirus: checked by AntiVir MailGate (version: 2.1.2-14; AVE: 7.6.0.73; VDF: 7.0.2.231; host: AntiVir1)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 04 March 2008, Alan Stern wrote:
-> On Tue, 4 Mar 2008, David Brownell wrote:
-> 
-> > Or, as pointed out elsewhere, well-behaved MMC hosts ... which don't
-> > need either such reprobing or the associated remove-on-suspend.
-> 
-> I don't understand this comment.  Suppose a card was inserted while the 
-> system was hibernating.  If the core didn't reprobe, when would that 
-> card be discovered?
+Jeremy Fitzhardinge pointed out that looking at the boot_params
+struct to determine if the system is running in a paravirtual
+environment is not reliable for the Xen case, currently. He also
+points out that there already exists a function to determine if
+the system is running in a paravirtual environment. So let's use
+that instead. This gets rid of the preprocessor test too.
 
-The host controller would tell the core to check for a card, exactly
-like it does at all other times.
+Signed-off-by: Alexander van Heukelum <heukelum@fastmail.fm>
 
-That's the natural alternative to having the MMC core assume that card
-detection was broken in low power states, so that the core needed to
-forcibly remove the cards before suspend, and reprobe during resume
-processing.
+---
 
-Having the MMC core make such needless assumptions can cause problems
-for the upper layers, including filesystems.
+Same, for 64 bit.
 
-- Dave
+Greetings,
+	Alexander
 
+diff --git a/arch/x86/kernel/head64.c b/arch/x86/kernel/head64.c
+index 269a6b4..48be76c 100644
+--- a/arch/x86/kernel/head64.c
++++ b/arch/x86/kernel/head64.c
+@@ -72,12 +72,8 @@ static void __init reserve_ebda_region(void)
+ 	/* that area is absent. We'll just have to assume */
+ 	/* that the paravirt case can handle memory setup */
+ 	/* correctly, without our help. */
+-#ifdef CONFIG_PARAVIRT
+-	if ((boot_params.hdr.version >= 0x207) &&
+-			(boot_params.hdr.hardware_subarch != 0)) {
++	if (paravirt_enabled())
+ 		return;
+-	}
+-#endif
+ 
+ 	/* end of low (conventional) memory */
+ 	lowmem = *(unsigned short *)__va(BIOS_LOWMEM_KILOBYTES);
