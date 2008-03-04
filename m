@@ -1,66 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759302AbYCDEmr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759773AbYCDEyz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759302AbYCDEmr (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Mar 2008 23:42:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751352AbYCDEmh
+	id S1759773AbYCDEyz (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Mar 2008 23:54:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751837AbYCDEyq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Mar 2008 23:42:37 -0500
-Received: from nf-out-0910.google.com ([64.233.182.190]:51318 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751351AbYCDEmg (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Mar 2008 23:42:36 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=eX7W+lmntOSLqQS5vLTE2UtEAocqQbe0q7+ZqIaC4oMwwOIAmcY+jJzUHbhsC7TX28ZxgpAFxChtjTmPisCnzGyELBAasi6G5fnKsA1eQ5J/HBnnPepzsLLBYN+GHs0ga48zd5Wx7ePfeHitCvoHUgjPofu2tc5Tfl4VGObZID4=
-Message-ID: <524f69650803032042rab309f3nd5c2d52d312fb3c5@mail.gmail.com>
-Date: Mon, 3 Mar 2008 22:42:34 -0600
-From: "Steve French" <smfrench@gmail.com>
-Subject: Re: kernel.org git tree corrupt?
-Cc: git@vger.kernel.org, lkml <linux-kernel@vger.kernel.org>
-In-Reply-To: <alpine.LFD.1.00.0803030800460.17889@woody.linux-foundation.org>
+	Mon, 3 Mar 2008 23:54:46 -0500
+Received: from ozlabs.org ([203.10.76.45]:53371 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751798AbYCDEyq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 3 Mar 2008 23:54:46 -0500
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: parag.warudkar@gmail.com
+Subject: Re: 2.6.25-rc1: Lguest build failure
+Date: Tue, 4 Mar 2008 15:54:00 +1100
+User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
+Cc: linux-kernel@vger.kernel.org, torvalds@linux-foundation.org
+References: <alpine.LRH.1.00.0802110111270.21195@mini.warudkars.net>
+In-Reply-To: <alpine.LRH.1.00.0802110111270.21195@mini.warudkars.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <524f69650803020749o469f2e48l125a55267b0b5d13@mail.gmail.com>
-	 <alpine.LFD.1.00.0803021302070.17889@woody.linux-foundation.org>
-	 <524f69650803021943i33ce6ddbo309f118cd0a77ac9@mail.gmail.com>
-	 <alpine.LFD.1.00.0803030800460.17889@woody.linux-foundation.org>
-To: unlisted-recipients:; (no To-header on input)
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200803041554.00765.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Mar 3, 2008 at 10:21 AM, Linus Torvalds
-<torvalds@linux-foundation.org> wrote:
+On Monday 11 February 2008 17:15:33 Parag Warudkar wrote:
+> Hi Rusty
 >
->  On Sun, 2 Mar 2008, Steve French wrote:
->  > Now "git branch -a" shows
->  > * master
->  >   origin/master
->  >
->  > It is missing "origin/HEAD"
->
->  Ahh, yeah, my bad. The origin/HEAD thing will be created if you use either
->  clone or "git remote add -m master" to create the remote. But when I asked
->  you to do it by just editing the config file, you now have to create that
->  HEAD pointer manually too.
->
->  You can do
->
->         git symbolic-ref refs/remotes/origin/HEAD refs/remotes/origin/master
->
->  to create the thing (it just creates a symbolic ref from the origin/HEAD
-Worked.
+> Just got this build failure while building -rc1 -
 
-Shaggy pointed me to the git-request-pull script which is
-easier than the previous scripts I used and now works fine on
-the cifs-2.6.git tree so will send merge request.
+Thanks Parag, I've confirmed this is fixed in current Linus tree (with your 
+exact config).
 
-
--- 
-Thanks,
-
-Steve
+Cheers,
+Rusty.
