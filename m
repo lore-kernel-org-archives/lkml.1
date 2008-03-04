@@ -1,244 +1,257 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934492AbYCDXJy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934670AbYCDXKk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934492AbYCDXJy (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Mar 2008 18:09:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934036AbYCDXCw
+	id S934670AbYCDXKk (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Mar 2008 18:10:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934127AbYCDXCx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Mar 2008 18:02:52 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:44755 "EHLO mx1.redhat.com"
+	Tue, 4 Mar 2008 18:02:53 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:44788 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S934127AbYCDXC3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Mar 2008 18:02:29 -0500
-Message-Id: <20080304225227.204361937@redhat.com>
+	id S934132AbYCDXCg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 4 Mar 2008 18:02:36 -0500
+Message-Id: <20080304225227.915245373@redhat.com>
 References: <20080304225157.573336066@redhat.com>
 User-Agent: quilt/0.46-1
-Date: Tue, 04 Mar 2008 17:52:04 -0500
+Date: Tue, 04 Mar 2008 17:52:15 -0500
 From: Rik van Riel <riel@redhat.com>
 To: linux-kernel@vger.kernel.org
 Cc: linux-mm@kvack.org, KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Lee Schermerhorn <Lee.Schermerhorn@hp.com>
-Subject: [patch 07/20] SEQ replacement for anonymous pages
-Content-Disposition: inline; filename=rvr-03-linux-2.6-vm-anon-seq.patch
+       Lee Schermerhorn <Lee.Schermerhorn@hp.com>,
+       Lee Schermerhorn <lee.schermerhorn@hp.com>
+Subject: [patch 18/20] handle mlocked pages during map/unmap and truncate
+Content-Disposition: inline; filename=noreclaim-04.2-move-mlocked-pages-off-the-LRU.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-We avoid evicting and scanning anonymous pages for the most part, but
-under some workloads we can end up with most of memory filled with
-anonymous pages.  At that point, we suddenly need to clear the referenced
-bits on all of memory, which can take ages on very large memory systems.
+V2 -> V3:
++ rebase to 23-mm1 atop RvR's split lru series [no changes]
 
-We can reduce the maximum number of pages that need to be scanned by
-not taking the referenced state into account when deactivating an
-anonymous page.  After all, every anonymous page starts out referenced,
-so why check?
+V1 -> V2:
++  modified mmap.c:mmap_region() to return error if mlock_vma_pages_range()
+   does.  This can only occur if the vma gets removed/changed while
+   we're switching mmap_sem lock modes.   Most callers don't care, but
+   sys_remap_file_pages() appears to.
 
-If an anonymous page gets referenced again before it reaches the end
-of the inactive list, we move it back to the active list.
+Rework of Nick Piggins's "mm: move mlocked pages off the LRU" patch
+-- part 2 0f 2.
 
-To keep the maximum amount of necessary work reasonable, we scale the
-active to inactive ratio with the size of memory, using the formula
-active:inactive ratio = sqrt(memory in GB * 10).
+Remove mlocked pages from the LRU using "NoReclaim infrastructure"
+during mmap()/mremap().  Try to move back to normal LRU lists on
+munmap() when last locked mapping removed.  Removed PageMlocked()
+status when page truncated from file.
 
-Kswapd CPU use now seems to scale by the amount of pageout bandwidth,
-instead of by the amount of memory present in the system.
 
-Signed-off-by: Rik van Riel <riel@redhat.com>
-Reviewed-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Originally Signed-off-by: Nick Piggin <npiggin@suse.de>
+Signed-off-by:  Lee Schermerhorn <lee.schermerhorn@hp.com>
+Signed-off-by:  Rik van Riel <riel@redhat.com>
 
-Index: linux-2.6.25-rc3-mm1/include/linux/mm_inline.h
+Index: linux-2.6.25-rc3-mm1/mm/mmap.c
 ===================================================================
---- linux-2.6.25-rc3-mm1.orig/include/linux/mm_inline.h	2008-03-04 15:30:20.000000000 -0500
-+++ linux-2.6.25-rc3-mm1/include/linux/mm_inline.h	2008-03-04 15:39:31.000000000 -0500
-@@ -97,4 +97,16 @@ del_page_from_lru(struct zone *zone, str
- 	__dec_zone_state(zone, NR_INACTIVE_ANON + l);
- }
+--- linux-2.6.25-rc3-mm1.orig/mm/mmap.c	2008-03-04 17:38:18.000000000 -0500
++++ linux-2.6.25-rc3-mm1/mm/mmap.c	2008-03-04 17:38:20.000000000 -0500
+@@ -32,6 +32,8 @@
+ #include <asm/tlb.h>
+ #include <asm/mmu_context.h>
  
-+static inline int inactive_anon_low(struct zone *zone)
-+{
-+	unsigned long active, inactive;
++#include "internal.h"
 +
-+	active = zone_page_state(zone, NR_ACTIVE_ANON);
-+	inactive = zone_page_state(zone, NR_INACTIVE_ANON);
-+
-+	if (inactive * zone->inactive_ratio < active)
-+		return 1;
-+
-+	return 0;
-+}
+ #ifndef arch_mmap_check
+ #define arch_mmap_check(addr, len, flags)	(0)
  #endif
-Index: linux-2.6.25-rc3-mm1/include/linux/mmzone.h
-===================================================================
---- linux-2.6.25-rc3-mm1.orig/include/linux/mmzone.h	2008-03-04 15:30:20.000000000 -0500
-+++ linux-2.6.25-rc3-mm1/include/linux/mmzone.h	2008-03-04 15:39:31.000000000 -0500
-@@ -318,6 +318,11 @@ struct zone {
- 	 */
- 	int prev_priority;
+@@ -1208,9 +1210,13 @@ out:
+ 	vm_stat_account(mm, vm_flags, file, len >> PAGE_SHIFT);
+ 	if (vm_flags & VM_LOCKED) {
+ 		mm->locked_vm += len >> PAGE_SHIFT;
+-		make_pages_present(addr, addr + len);
+-	}
+-	if ((flags & MAP_POPULATE) && !(flags & MAP_NONBLOCK))
++		/*
++		 * makes pages present; downgrades, drops, requires mmap_sem
++		 */
++		error = mlock_vma_pages_range(vma, addr, addr + len);
++		if (error)
++			return error;	/* vma gone! */
++	} else if ((flags & MAP_POPULATE) && !(flags & MAP_NONBLOCK))
+ 		make_pages_present(addr, addr + len);
+ 	return addr;
  
-+	/*
-+	 * The ratio of active to inactive pages.
-+	 */
-+	unsigned int inactive_ratio;
-+
- 
- 	ZONE_PADDING(_pad2_)
- 	/* Rarely used or read-mostly fields */
-Index: linux-2.6.25-rc3-mm1/mm/page_alloc.c
-===================================================================
---- linux-2.6.25-rc3-mm1.orig/mm/page_alloc.c	2008-03-04 15:30:20.000000000 -0500
-+++ linux-2.6.25-rc3-mm1/mm/page_alloc.c	2008-03-04 15:39:31.000000000 -0500
-@@ -4239,6 +4239,45 @@ void setup_per_zone_pages_min(void)
- 	calculate_totalreserve_pages();
- }
- 
-+/**
-+ * setup_per_zone_inactive_ratio - called when min_free_kbytes changes.
-+ *
-+ * The inactive anon list should be small enough that the VM never has to
-+ * do too much work, but large enough that each inactive page has a chance
-+ * to be referenced again before it is swapped out.
-+ *
-+ * The inactive_anon ratio is the ratio of active to inactive anonymous
-+ * pages.  Ie. a ratio of 3 means 3:1 or 25% of the anonymous pages are
-+ * on the inactive list.
-+ *
-+ * total     return    max
-+ * memory    value     inactive anon
-+ * -------------------------------------
-+ *   10MB       1         5MB
-+ *  100MB       1        50MB
-+ *    1GB       3       250MB
-+ *   10GB      10       0.9GB
-+ *  100GB      31         3GB
-+ *    1TB     101        10GB
-+ *   10TB     320        32GB
-+ */
-+void setup_per_zone_inactive_ratio(void)
-+{
-+	struct zone *zone;
-+
-+	for_each_zone(zone) {
-+		unsigned int gb, ratio;
-+
-+		/* Zone size in gigabytes */
-+		gb = zone->present_pages >> (30 - PAGE_SHIFT);
-+		ratio = int_sqrt(10 * gb);
-+		if (!ratio)
-+			ratio = 1;
-+
-+		zone->inactive_ratio = ratio;
-+	}
-+}
-+
- /*
-  * Initialise min_free_kbytes.
-  *
-@@ -4276,6 +4315,7 @@ static int __init init_per_zone_pages_mi
- 		min_free_kbytes = 65536;
- 	setup_per_zone_pages_min();
- 	setup_per_zone_lowmem_reserve();
-+	setup_per_zone_inactive_ratio();
- 	return 0;
- }
- module_init(init_per_zone_pages_min)
-Index: linux-2.6.25-rc3-mm1/mm/vmscan.c
-===================================================================
---- linux-2.6.25-rc3-mm1.orig/mm/vmscan.c	2008-03-04 15:38:31.000000000 -0500
-+++ linux-2.6.25-rc3-mm1/mm/vmscan.c	2008-03-04 15:41:36.000000000 -0500
-@@ -1025,7 +1025,7 @@ static inline int zone_is_near_oom(struc
- static void shrink_active_list(unsigned long nr_pages, struct zone *zone,
- 			struct scan_control *sc, int priority, int file)
- {
--	unsigned long pgmoved;
-+	unsigned long pgmoved = 0;
- 	int pgdeactivate = 0;
- 	unsigned long pgscanned;
- 	LIST_HEAD(l_hold);	/* The pages which were snipped off */
-@@ -1057,13 +1057,25 @@ static void shrink_active_list(unsigned 
- 		cond_resched();
- 		page = lru_to_page(&l_hold);
- 		list_del(&page->lru);
--		if (page_referenced(page, 0, sc->mem_cgroup))
-+		if (page_referenced(page, 0, sc->mem_cgroup) && file) {
-+			/* Referenced file pages stay active. */
- 			list_add(&page->lru, &l_active);
--		else
-+		} else {
- 			list_add(&page->lru, &l_inactive);
-+			if (!file)
-+				/* Anonymous pages always get deactivated. */
-+				pgmoved++;
-+		}
- 	}
+@@ -1896,6 +1902,18 @@ int do_munmap(struct mm_struct *mm, unsi
+ 	vma = prev? prev->vm_next: mm->mmap;
  
  	/*
-+	 * Count the referenced anon pages as rotated, to balance pageout
-+	 * scan pressure between file and anonymous pages in get_sacn_ratio.
++	 * unlock any mlock()ed ranges before detaching vmas
 +	 */
-+	if (!file)
-+		zone->recent_rotated_anon += pgmoved;
++	if (mm->locked_vm) {
++		struct vm_area_struct *tmp = vma;
++		while (tmp && tmp->vm_start < end) {
++			if (tmp->vm_flags & VM_LOCKED)
++				munlock_vma_pages_all(tmp);
++			tmp = tmp->vm_next;
++		}
++	}
 +
 +	/*
- 	 * Now put the pages back on the appropriate [file or anon] inactive
- 	 * and active lists.
+ 	 * Remove the vma's, and unmap the actual pages
  	 */
-@@ -1146,7 +1158,11 @@ static unsigned long shrink_list(enum lr
- {
- 	int file = is_file_lru(lru);
- 
--	if (lru == LRU_ACTIVE_ANON || lru == LRU_ACTIVE_FILE) {
-+	if (lru == LRU_ACTIVE_FILE) {
-+		shrink_active_list(nr_to_scan, zone, sc, priority, file);
-+		return 0;
-+	}
-+	if (lru == LRU_ACTIVE_ANON && inactive_anon_low(zone)) {
- 		shrink_active_list(nr_to_scan, zone, sc, priority, file);
- 		return 0;
+ 	detach_vmas_to_be_unmapped(mm, vma, prev, end);
+@@ -2032,7 +2050,7 @@ out:
+ 	mm->total_vm += len >> PAGE_SHIFT;
+ 	if (flags & VM_LOCKED) {
+ 		mm->locked_vm += len >> PAGE_SHIFT;
+-		make_pages_present(addr, addr + len);
++		mlock_vma_pages_range(vma, addr, addr + len);
  	}
-@@ -1256,8 +1272,8 @@ static unsigned long shrink_zone(int pri
- 		}
- 	}
- 
--	while (nr[LRU_ACTIVE_ANON] || nr[LRU_INACTIVE_ANON] ||
--				nr[LRU_ACTIVE_FILE] || nr[LRU_INACTIVE_FILE]) {
-+	while (nr[LRU_INACTIVE_ANON] || nr[LRU_ACTIVE_FILE] ||
-+						 nr[LRU_INACTIVE_FILE]) {
- 		for_each_lru(l) {
- 			if (nr[l]) {
- 				nr_to_scan = min(nr[l],
-@@ -1561,6 +1577,14 @@ loop_again:
- 			    priority != DEF_PRIORITY)
- 				continue;
- 
-+			/*
-+			 * Do some background aging of the anon list, to give
-+			 * pages a chance to be referenced before reclaiming.
-+			 */
-+			if (inactive_anon_low(zone))
-+				shrink_active_list(SWAP_CLUSTER_MAX, zone,
-+							&sc, priority, 0);
-+
- 			if (!zone_watermark_ok(zone, order, zone->pages_high,
- 					       0, 0)) {
- 				end_zone = i;
-Index: linux-2.6.25-rc3-mm1/mm/vmstat.c
-===================================================================
---- linux-2.6.25-rc3-mm1.orig/mm/vmstat.c	2008-03-04 15:30:20.000000000 -0500
-+++ linux-2.6.25-rc3-mm1/mm/vmstat.c	2008-03-04 15:39:31.000000000 -0500
-@@ -800,10 +800,12 @@ static void zoneinfo_show_print(struct s
- 	seq_printf(m,
- 		   "\n  all_unreclaimable: %u"
- 		   "\n  prev_priority:     %i"
--		   "\n  start_pfn:         %lu",
-+		   "\n  start_pfn:         %lu"
-+		   "\n  inactive_ratio:    %u",
- 			   zone_is_all_unreclaimable(zone),
- 		   zone->prev_priority,
--		   zone->zone_start_pfn);
-+		   zone->zone_start_pfn,
-+		   zone->inactive_ratio);
- 	seq_putc(m, '\n');
+ 	return addr;
  }
+@@ -2043,13 +2061,25 @@ EXPORT_SYMBOL(do_brk);
+ void exit_mmap(struct mm_struct *mm)
+ {
+ 	struct mmu_gather *tlb;
+-	struct vm_area_struct *vma = mm->mmap;
++	struct vm_area_struct *vma;
+ 	unsigned long nr_accounted = 0;
+ 	unsigned long end;
+ 
+ 	/* mm's last user has gone, and its about to be pulled down */
+ 	arch_exit_mmap(mm);
+ 
++	if (mm->locked_vm) {
++		vma = mm->mmap;
++		while (vma) {
++			if (vma->vm_flags & VM_LOCKED)
++				munlock_vma_pages_all(vma);
++			vma = vma->vm_next;
++		}
++	}
++
++	vma = mm->mmap;
++
++
+ 	lru_add_drain();
+ 	flush_cache_mm(mm);
+ 	tlb = tlb_gather_mmu(mm, 1);
+Index: linux-2.6.25-rc3-mm1/mm/mremap.c
+===================================================================
+--- linux-2.6.25-rc3-mm1.orig/mm/mremap.c	2008-03-04 17:37:24.000000000 -0500
++++ linux-2.6.25-rc3-mm1/mm/mremap.c	2008-03-04 17:38:20.000000000 -0500
+@@ -23,6 +23,8 @@
+ #include <asm/cacheflush.h>
+ #include <asm/tlbflush.h>
+ 
++#include "internal.h"
++
+ static pmd_t *get_old_pmd(struct mm_struct *mm, unsigned long addr)
+ {
+ 	pgd_t *pgd;
+@@ -232,8 +234,8 @@ static unsigned long move_vma(struct vm_
+ 	if (vm_flags & VM_LOCKED) {
+ 		mm->locked_vm += new_len >> PAGE_SHIFT;
+ 		if (new_len > old_len)
+-			make_pages_present(new_addr + old_len,
+-					   new_addr + new_len);
++			mlock_vma_pages_range(vma, new_addr + old_len,
++						   new_addr + new_len);
+ 	}
+ 
+ 	return new_addr;
+@@ -373,7 +375,7 @@ unsigned long do_mremap(unsigned long ad
+ 			vm_stat_account(mm, vma->vm_flags, vma->vm_file, pages);
+ 			if (vma->vm_flags & VM_LOCKED) {
+ 				mm->locked_vm += pages;
+-				make_pages_present(addr + old_len,
++				mlock_vma_pages_range(vma, addr + old_len,
+ 						   addr + new_len);
+ 			}
+ 			ret = addr;
+Index: linux-2.6.25-rc3-mm1/mm/vmscan.c
+===================================================================
+--- linux-2.6.25-rc3-mm1.orig/mm/vmscan.c	2008-03-04 17:37:24.000000000 -0500
++++ linux-2.6.25-rc3-mm1/mm/vmscan.c	2008-03-04 17:38:20.000000000 -0500
+@@ -540,6 +540,10 @@ static unsigned long shrink_page_list(st
+ 				goto activate_locked;
+ 			case SWAP_AGAIN:
+ 				goto keep_locked;
++			case SWAP_MLOCK:
++				ClearPageActive(page);
++				SetPageNoreclaim(page);
++				goto keep_locked;	/* to noreclaim list */
+ 			case SWAP_SUCCESS:
+ 				; /* try to free the page below */
+ 			}
+Index: linux-2.6.25-rc3-mm1/mm/truncate.c
+===================================================================
+--- linux-2.6.25-rc3-mm1.orig/mm/truncate.c	2008-03-04 17:37:24.000000000 -0500
++++ linux-2.6.25-rc3-mm1/mm/truncate.c	2008-03-04 17:38:20.000000000 -0500
+@@ -18,6 +18,7 @@
+ #include <linux/task_io_accounting_ops.h>
+ #include <linux/buffer_head.h>	/* grr. try_to_release_page,
+ 				   do_invalidatepage */
++#include "internal.h"
+ 
+ 
+ /**
+@@ -105,6 +106,7 @@ truncate_complete_page(struct address_sp
+ 	cancel_dirty_page(page, page_cache_size(mapping));
+ 
+ 	remove_from_page_cache(page);
++	clear_page_mlock(page);
+ 	ClearPageUptodate(page);
+ 	ClearPageMappedToDisk(page);
+ 	page_cache_release(page);	/* pagecache ref */
+@@ -129,6 +131,7 @@ invalidate_complete_page(struct address_
+ 	if (PagePrivate(page) && !try_to_release_page(page, 0))
+ 		return 0;
+ 
++	clear_page_mlock(page);
+ 	ret = remove_mapping(mapping, page);
+ 
+ 	return ret;
+@@ -355,6 +358,7 @@ invalidate_complete_page2(struct address
+ 	if (PageDirty(page))
+ 		goto failed;
+ 
++	clear_page_mlock(page);
+ 	BUG_ON(PagePrivate(page));
+ 	__remove_from_page_cache(page);
+ 	write_unlock_irq(&mapping->tree_lock);
+Index: linux-2.6.25-rc3-mm1/mm/internal.h
+===================================================================
+--- linux-2.6.25-rc3-mm1.orig/mm/internal.h	2008-03-04 17:38:18.000000000 -0500
++++ linux-2.6.25-rc3-mm1/mm/internal.h	2008-03-04 17:38:20.000000000 -0500
+@@ -65,17 +65,13 @@ extern int mlock_vma_pages_range(struct 
+ 			unsigned long start, unsigned long end);
+ 
+ /*
+- * munlock range of pages.   For munmap() and exit().
++ * munlock range of pages mapped by the vma.   For munmap() and exit().
+  * Always called to operate on a full vma that is being unmapped.
+  */
+-static inline int munlock_vma_pages_range(struct vm_area_struct *vma,
+-			unsigned long start, unsigned long end)
++static inline int munlock_vma_pages_all(struct vm_area_struct *vma)
+ {
+-// TODO:  verify my assumption.  Should we just drop the start/end args?
+-	VM_BUG_ON(start != vma->vm_start || end != vma->vm_end);
+-
+ 	vma->vm_flags &= ~VM_LOCKED;
+-	return __mlock_vma_pages_range(vma, start, end);
++	return __mlock_vma_pages_range(vma, vma->vm_start, vma->vm_end);
+ }
+ 
+ extern void clear_page_mlock(struct page *page);
+@@ -89,8 +85,10 @@ static inline void clear_page_mlock(stru
+ static inline void mlock_vma_page(struct page *page) { }
+ static inline int mlock_vma_pages_range(struct vm_area_struct *vma,
+ 			unsigned long start, unsigned long end) { return 0; }
+-static inline int munlock_vma_pages_range(struct vm_area_struct *vma,
+-			unsigned long start, unsigned long end) { return 0; }
++static inline int munlock_vma_pages_all(struct vm_area_struct *vma)
++{
++	return 0;
++}
+ 
+ #endif /* CONFIG_NORECLAIM_MLOCK */
  
 
 -- 
