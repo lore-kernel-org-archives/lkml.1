@@ -1,60 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764140AbYCDMyq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764446AbYCDMz7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764140AbYCDMyq (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Mar 2008 07:54:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756923AbYCDMyf
+	id S1764446AbYCDMz7 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Mar 2008 07:55:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756831AbYCDMzu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Mar 2008 07:54:35 -0500
-Received: from ug-out-1314.google.com ([66.249.92.175]:32138 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752843AbYCDMye (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Mar 2008 07:54:34 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
-        b=XMJogCBZYaqCgRCdW6bjklLydS9jU2Qt9+h2UPDrxPwqe7n1DJsx0jJ/3i/DALGPVfzN1wjM3MSKbAbd9xkvVVGcPVlkmMqPpRieBpMQQPW7g7PqADiZDOAsPM4L5VCqEbIMngS/XMNPYsAksxO5lUsHCbrNBaFb7PonwOAwEmQ=
-Message-ID: <47CD46B5.7050509@gmail.com>
-Date: Tue, 04 Mar 2008 13:55:17 +0100
-From: Jiri Slaby <jirislaby@gmail.com>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080213)
+	Tue, 4 Mar 2008 07:55:50 -0500
+Received: from ozlabs.org ([203.10.76.45]:59923 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752111AbYCDMzt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 4 Mar 2008 07:55:49 -0500
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: "Ahmed S. Darwish" <darwish.07@gmail.com>
+Subject: Re: [BUG + PATCH/Bugfix] x86/lguest: fix pgdir pmd index calculation
+Date: Tue, 4 Mar 2008 23:55:10 +1100
+User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
+Cc: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
+       "H. Peter Anvin" <hpa@zytor.com>, LKML <linux-kernel@vger.kernel.org>,
+       lguest@ozlabs.org, akpm <akpm@linux-foundation.org>
+References: <20080224155515.GA24831@ubuntu>
+In-Reply-To: <20080224155515.GA24831@ubuntu>
 MIME-Version: 1.0
-To: Pekka Enberg <penberg@cs.helsinki.fi>
-CC: Andrew Morton <akpm@linux-foundation.org>,
-       Linux kernel mailing list <linux-kernel@vger.kernel.org>,
-       linux-ext4@vger.kernel.org, Jan Sonnek <xsonnek@fi.muni.cz>,
-       Christoph Lameter <clameter@sgi.com>
-Subject: Re: [2.6.25-rc2-mm1] Oops in __kmalloc
-References: <47C42DDF.3060506@gmail.com>	 <20080226100913.9412b41c.akpm@linux-foundation.org>	 <47CD2753.5050905@gmail.com> <84144f020803040451u562eb378h2d6c2378d1b174fe@mail.gmail.com>
-In-Reply-To: <84144f020803040451u562eb378h2d6c2378d1b174fe@mail.gmail.com>
-X-Enigmail-Version: 0.95.5
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200803042355.10960.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Pekka Enberg napsal(a):
-> On Tue, Mar 4, 2008 at 12:41 PM, Jiri Slaby <jirislaby@gmail.com> wrote:
->>  >> while booting up a notebook on 32 bit, this oopses appeared on the console
->>  >> after ext3 fsck:
->>  >> http://www.fi.muni.cz/~xslaby/sklad/mem_oops/
->>  >>
->>  >> It's 2.6.25-rc2-mm1, I can't find similar reports, is this known or hardware
->>  >> issue (unlikely, 2.6.24.2 seems to be OK)?
->>  >
->>  > I don't recall seeing a similar report and yes, it'll be a kernel bug.
->>  >
->>  > We've fixed a few things and it could be that this will just go away in
->>  > next -mm.  If it doesn't, a bisection search would be good, thanks.
->>
->>  Well, next -mm is out. Could you test, Jan? [our -mm git is up-to-date]
-> 
-> I don't see your config but if you have CONFIG_SLUB enabled, this is
-> probably the same problem as:
-> 
-> http://bugzilla.kernel.org/show_bug.cgi?id=10015
-> 
-> which is fixed since 2.6.25-rc2 in mainline.
+On Monday 25 February 2008 02:55:15 Ahmed S. Darwish wrote:
+> Hi all,
+>
+> Beginning from commits close to v2.6.25-rc2, running lguest always oopses
+> the host kernel. Oops is at [1].
 
-Yeah, slub armed. We'll see. Thanks.
+OK, whatever the guest does should not break the host.  So your patch can't be
+the whole solution.
+
+> static void lguest_set_pmd(pmd_t *pmdp, pmd_t pmdval)
+> {
+> 	*pmdp = pmdval;
+> 	lazy_hcall(LHCALL_SET_PMD, __pa(pmdp)&PAGE_MASK,
+> 		   (__pa(pmdp)&(PAGE_SIZE-1))/4, 0);
+> }
+>
+> The first hcall parameter is global pgdir which looks fine. The second
+> parameter is the pmd index in the pgdir which is suspectful.
+>
+> AFAIK, calculating the index of pmd does not need a divisoin over four.
+> Removing the division made lguest work fine again . Patch is at [2].
+
+Each pmd is 4 bytes long, so the divide by 4 gives the index into the (top
+level) page. ie. a number in the range 0 to 1023.
+
+Indeed, here's the correct fix.  Does it work for you?
+
+==
+Revert 1ce70c4fac3c3954bd48c035f448793867592bc0, fix real problem.
+
+Ahmed managed to crash the Host in release_pgd(), which cannot be a Guest
+bug, and indeed it wasn't.
+
+The bug was that handing a 0 as the address of the toplevel page table
+being manipulated can cause the lookup code in find_pgdir() to return
+an uninitialized cache entry (we shadow up to 4 top level page tables
+for each Guest).
+
+Commit 37cc8d7f963ba2deec29c9b68716944516a3244f introduced this
+behaviour in the Guest, uncovering the bug.
+
+The patch which he submitted (which removed the /4 from the index
+calculation) simply ensured that these high-indexed entries hit the
+early exit path of guest_set_pmd().  But you get lots of segfaults in
+guest userspace as the PMDs aren't being updated.
+
+Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
+
+diff -r 26838579cab1 arch/x86/lguest/boot.c
+--- a/arch/x86/lguest/boot.c	Tue Mar 04 22:55:11 2008 +1100
++++ b/arch/x86/lguest/boot.c	Tue Mar 04 23:43:10 2008 +1100
+@@ -480,7 +480,7 @@ static void lguest_set_pmd(pmd_t *pmdp, 
+ {
+ 	*pmdp = pmdval;
+ 	lazy_hcall(LHCALL_SET_PMD, __pa(pmdp)&PAGE_MASK,
+-		   (__pa(pmdp)&(PAGE_SIZE-1)), 0);
++		   (__pa(pmdp)&(PAGE_SIZE-1))/4, 0);
+ }
+ 
+ /* There are a couple of legacy places where the kernel sets a PTE, but we
+diff -r 26838579cab1 drivers/lguest/page_tables.c
+--- a/drivers/lguest/page_tables.c	Tue Mar 04 22:55:11 2008 +1100
++++ b/drivers/lguest/page_tables.c	Tue Mar 04 23:43:10 2008 +1100
+@@ -391,7 +391,7 @@ static unsigned int find_pgdir(struct lg
+ {
+ 	unsigned int i;
+ 	for (i = 0; i < ARRAY_SIZE(lg->pgdirs); i++)
+-		if (lg->pgdirs[i].gpgdir == pgtable)
++		if (lg->pgdirs[i].pgdir && lg->pgdirs[i].gpgdir == pgtable)
+ 			break;
+ 	return i;
+ }
