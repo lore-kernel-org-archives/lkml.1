@@ -1,93 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757003AbYCDJf6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757613AbYCDJjX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757003AbYCDJf6 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Mar 2008 04:35:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753502AbYCDJfn
+	id S1757613AbYCDJjX (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Mar 2008 04:39:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752669AbYCDJjO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Mar 2008 04:35:43 -0500
-Received: from brick.kernel.dk ([87.55.233.238]:29007 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752655AbYCDJfk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Mar 2008 04:35:40 -0500
-Date: Tue, 4 Mar 2008 10:35:37 +0100
-From: Jens Axboe <jens.axboe@oracle.com>
-To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-Cc: htejun@gmail.com, tomof@acm.org, James.Bottomley@HansenPartnership.com,
-       efault@gmx.de, akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       linux-ide@vger.kernel.org, linux-scsi@vger.kernel.org,
-       jgarzik@pobox.com, bzolnier@gmail.com
-Subject: Re: [PATCH] block: fix residual byte count handling
-Message-ID: <20080304093536.GH6704@kernel.dk>
-References: <20080304175302T.fujita.tomonori@lab.ntt.co.jp> <20080304085944.GG6704@kernel.dk> <20080304180648W.fujita.tomonori@lab.ntt.co.jp> <20080304182228Z.fujita.tomonori@lab.ntt.co.jp>
-MIME-Version: 1.0
+	Tue, 4 Mar 2008 04:39:14 -0500
+Received: from one.firstfloor.org ([213.235.205.2]:51655 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751381AbYCDJjM (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 4 Mar 2008 04:39:12 -0500
+Date: Tue, 4 Mar 2008 10:40:28 +0100
+From: Andi Kleen <andi@firstfloor.org>
+To: Dave Jones <davej@codemonkey.org.uk>, Andi Kleen <andi@firstfloor.org>,
+       Alan Stern <stern@rowland.harvard.edu>,
+       "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>,
+       Pierre Ossman <drzeus-list@drzeus.cx>,
+       LKML <linux-kernel@vger.kernel.org>, Adam Belay <abelay@novell.com>,
+       Lee Revell <rlrevell@joe-job.com>, linux-pm@lists.linux-foundation.org
+Subject: Re: [linux-pm] [PATCH] cpuidle: avoid singing capacitors
+Message-ID: <20080304094028.GC15255@one.firstfloor.org>
+References: <924EFEDD5F540B4284297C4DC59F3DEEA2E8B2@orsmsx423.amr.corp.intel.com> <Pine.LNX.4.44L0.0803031804330.8280-100000@iolanthe.rowland.org> <20080303231033.GB15255@one.firstfloor.org> <20080304040048.GA31562@codemonkey.org.uk>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080304182228Z.fujita.tomonori@lab.ntt.co.jp>
+In-Reply-To: <20080304040048.GA31562@codemonkey.org.uk>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Mar 04 2008, FUJITA Tomonori wrote:
-> On Tue, 04 Mar 2008 18:06:48 +0900
-> FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp> wrote:
+On Mon, Mar 03, 2008 at 11:00:48PM -0500, Dave Jones wrote:
+> On Tue, Mar 04, 2008 at 12:10:33AM +0100, Andi Kleen wrote:
+>  > On Mon, Mar 03, 2008 at 06:05:35PM -0500, Alan Stern wrote:
+>  > > On Mon, 3 Mar 2008, Pallipadi, Venkatesh wrote:
+>  > > 
+>  > > > But, with this patch:
+>  > > > - we are penalizing good hardware and making them less power efficient
+>  > > > to match the bad ones.
+>  > > > - There may also be server systems which first may not have these sort
+>  > > > of power fluctuations and even when buggy and have this noise, system
+>  > > > may be in some corner of some lab with fans making more noise than the
+>  > > > capacitors.
+>  > > 
+>  > > Can you make it configurable through sysfs?  
+>  > 
+>  > It already is, through a writable module_parm() 
+>  > 
+>  > > Default to disabled, but 
+>  > > allow the user to turn it on if the machine makes too much noise.
+>  > 
+>  > 99+% of the users wouldn't be able to figure that out.
 > 
-> > On Tue, 4 Mar 2008 09:59:46 +0100
-> > Jens Axboe <jens.axboe@oracle.com> wrote:
-> > 
-> > > On Tue, Mar 04 2008, FUJITA Tomonori wrote:
-> > > > On Tue, 04 Mar 2008 11:32:56 +0900
-> > > > Tejun Heo <htejun@gmail.com> wrote:
-> > > > 
-> > > > > FUJITA Tomonori wrote:
-> > > > > >> Yeah, libata did its own padding and needed to add draining.  Private
-> > > > > >> implementation was complex as hell and James suggested moving them to
-> > > > > >> block layer.  Are you suggesting moving them back to drivers?
-> > > > > > 
-> > > > > > No, I'm not. I've been working on the IOMMUs to remove such
-> > > > > > workarounds in LLDs.
-> > > > > > 
-> > > > > > What drivers need to do on this is just adding a padding length, that
-> > > > > > is, drivers don't need to change the structure of the sg list (like
-> > > > > > splitting a sg entry), right? And it doesn't break the SAS drivers
-> > > > > > that support SATAPI, does it?
-> > > > > > 
-> > > > > > But I agree that drivers want to get a complete sglist so I'm fine
-> > > > > > with adjusting sglist entries in the block layer with your secode
-> > > > > > patch (separate out padding from alignment). As we discussed, I'm fine
-> > > > > > with breaking sum(sg) == rq->data_len as long as rq->data_len means
-> > > > > > the true data length.
-> > > > > 
-> > > > > As long as the second patch is in, what value rq->data_len indicates
-> > > > > doesn't matter to drivers which don't use explicit padding or draining,
-> > > > > so the situation is much more controlled.  I don't care which value
-> > > > > rq->data_len would indicate.  I'd prefer it equal sum(sg) as that value
-> > > > > is what IDE and libata which will be the major users of padding and/or
-> > > > > draining expect in rq->data_len but fixing up that shouldn't be too
-> > > > > difficult.  I guess this can be determined by Jens.  If Jens likes
-> > > > > rq->data_len to contain requested transfer size, I'll post updated patches.
-> > > > 
-> > > > OK, I prefer rq->data_len means the true data length though you prefer
-> > > > rq->data_len means the allocated buffer length (the true data length
-> > > > plus padding and drain). We agree on other things. We can live with
-> > > > either way.
-> > > > 
-> > > > Jens, what's your preference?
-> > > 
-> > > I completely agree with you, ->data_len meaning true data length is way
-> > > cleaner imho. Only the driver should care for the padded length, all
-> > > other parts of the kernel only need to know what they actually got.
-> > 
-> > OK, now we can fix the whole SG_IO (and bsg handler) mess.
-> > 
-> > Here's my patch with a proper description. which several people have
-> > already tested (thanks!). Then we need an updated version of Tejun's
-> > separate out padding from alignment patch.
-> 
-> OK, I've updated his patch. Tejun, can you audit this?
+> 99+% of users don't have singing capacitors. (Or don't care enough to complain)
+> For those that do can't figure out what to do from google,
+> we have a documentation problem.
 
-Looks excellent to me, has a variant of this been tested as OK by the
-users reporting the regression?
+The big question is if there is a measurable difference in power consumption
+from a reasonable default value.  I doubt it actually. The normal rule
+of thumb is that if you average sleeps are long enough (and they still
+stay this way even with the patch enabled) you're doing ok. If there is 
+no or not significant penalty there is no reason to not enable it by default.
 
--- 
-Jens Axboe
-
+-Andi
