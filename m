@@ -1,49 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760627AbYCDG2p@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759306AbYCDGc4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760627AbYCDG2p (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Mar 2008 01:28:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753161AbYCDG2h
+	id S1759306AbYCDGc4 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Mar 2008 01:32:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752084AbYCDGcs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Mar 2008 01:28:37 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:60346 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753102AbYCDG2h (ORCPT
+	Tue, 4 Mar 2008 01:32:48 -0500
+Received: from smtp.nokia.com ([192.100.122.230]:65350 "EHLO
+	mgw-mx03.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751787AbYCDGcs convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Mar 2008 01:28:37 -0500
-Date: Mon, 3 Mar 2008 22:23:21 -0800
-From: Greg KH <greg@kroah.com>
-To: Yinghai Lu <yhlu.kernel@gmail.com>
-Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] x86 pci: remove checking type for mmconfig probe v2
-Message-ID: <20080304062321.GB16019@kroah.com>
-References: <200802271639.52958.yinghai.lu@sun.com> <200802282356.50496.yinghai.lu@sun.com> <20080301060236.GE20032@kroah.com> <86802c440803010036u2cb89a30h2adb90b3ee497cfc@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <86802c440803010036u2cb89a30h2adb90b3ee497cfc@mail.gmail.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+	Tue, 4 Mar 2008 01:32:48 -0500
+Subject: Re: [2.6 patch] mtd/ubi/vtbl.c: fix memory leak
+From: Artem Bityutskiy <dedekind@infradead.org>
+Reply-To: dedekind@infradead.org
+To: Adrian Bunk <bunk@kernel.org>
+Cc: Artem Bityutskiy <Artem.Bityutskiy@nokia.com>,
+       linux-mtd@lists.infradead.org, linux-kernel@vger.kernel.org
+In-Reply-To: <20080303180752.GK26072@cs181133002.pp.htv.fi>
+References: <20080303180752.GK26072@cs181133002.pp.htv.fi>
+Content-Type: text/plain; charset=utf-8
+Date: Tue, 04 Mar 2008 08:27:33 +0200
+Message-Id: <1204612053.23706.13.camel@sauron>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.3 (2.12.3-1.fc8) 
+Content-Transfer-Encoding: 8BIT
+X-OriginalArrivalTime: 04 Mar 2008 06:32:25.0348 (UTC) FILETIME=[829BFC40:01C87DC1]
+X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Mar 01, 2008 at 12:36:50AM -0800, Yinghai Lu wrote:
-> On Fri, Feb 29, 2008 at 10:02 PM, Greg KH <greg@kroah.com> wrote:
-> > On Thu, Feb 28, 2008 at 11:56:50PM -0800, Yinghai Lu wrote:
-> >  >
-> >  > doesn't need to check if it is type1 or type2. we can use raw_pci_ops dirctly.
-> >
-> >  Why?  is this because the ops are already set up?  It would be nice to
-> >  add the "why this change is necessary and/or possible now" for the
-> >  changelog.
-> yes.
-> raw_pci_ops got assigned when check direct_type1 and direct_type2.
-> and could used in hostbridge check to get MMCONF base.
+On Mon, 2008-03-03 at 20:07 +0200, Adrian Bunk wrote:
+> This patch fixes a memory leak introduced by commit 
+> 4ccf8cffa963c7b5bdc6d455ea9417084ee49aa8 and spotted by the Coverity 
+> checker.
 > 
-> make mmconfig probe clean
-> with checking if raw_pci_ops is assigned instead of passing type or
-> checking type.
+> Signed-off-by: Adrian Bunk <bunk@kernel.org>
 
-Ah, ok, that makes sense, thanks.
+Good catch, thank you!
 
-greg k-h
+-- 
+Best regards,
+Artem Bityutskiy (Битюцкий Артём)
+
