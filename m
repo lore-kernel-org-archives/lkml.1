@@ -1,93 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758646AbYCDJnP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760636AbYCDJoW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758646AbYCDJnP (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Mar 2008 04:43:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752029AbYCDJm6
+	id S1760636AbYCDJoW (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Mar 2008 04:44:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754732AbYCDJoN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Mar 2008 04:42:58 -0500
-Received: from mga01.intel.com ([192.55.52.88]:24870 "EHLO mga01.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752301AbYCDJm4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Mar 2008 04:42:56 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.25,443,1199692800"; 
-   d="scan'208";a="528359217"
-Subject: Re: [BUG 2.6.25-rc3] scheduler/hotplug: some processes are
-	dealocked when cpu is set to offline
-From: Yi Yang <yi.y.yang@intel.com>
-Reply-To: yi.y.yang@intel.com
-To: ego@in.ibm.com
-Cc: Ingo Molnar <mingo@elte.hu>, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org, Oleg Nesterov <oleg@tv-sign.ru>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, Thomas Gleixner <tglx@linutronix.de>
-In-Reply-To: <20080304090933.GA8997@in.ibm.com>
-References: <1204483329.3607.8.camel@yangyi-dev.bj.intel.com>
-	 <20080303153154.GA11288@in.ibm.com>
-	 <1204555505.3842.4.camel@yangyi-dev.bj.intel.com>
-	 <20080304052613.GA28632@in.ibm.com>  <20080304090933.GA8997@in.ibm.com>
-Content-Type: text/plain
-Organization: Intel
-Date: Tue, 04 Mar 2008 05:56:02 +0800
-Message-Id: <1204581362.3842.34.camel@yangyi-dev.bj.intel.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 (2.10.1-4.fc7) 
+	Tue, 4 Mar 2008 04:44:13 -0500
+Received: from smtp121.sbc.mail.sp1.yahoo.com ([69.147.64.94]:20683 "HELO
+	smtp121.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1752939AbYCDJoM (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 4 Mar 2008 04:44:12 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=pacbell.net;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=ynhSYSN/veyW1ZNwxggZiuvIyI/pyL8rKbETqdEZWt2l9lBkyyVyW9U02XR13VDORNpHmYKe7lFwpM5WH97rQPamc8ytypYHwaPoftZOaZM/SLcchYFmwfyZb/Yj+5tEQAlknNhEMNnldnP27Q6ajriEOqJuMNB7C7Hb33AgE2o=  ;
+X-YMail-OSG: B1ck0GAVM1mBVfmNibH0dO0Heig8XDSIXF.vI1caSNfu0g2C3klLEyk3jSqvnn2.hMqK25isLA--
+X-Yahoo-Newman-Property: ymail-3
+From: David Brownell <david-b@pacbell.net>
+To: Pierre Ossman <drzeus-mmc@drzeus.cx>
+Subject: Re: Bugs in MMC [was: [Bug 10030] Suspend doesn't work when SD card is inserted]
+Date: Tue, 4 Mar 2008 01:44:09 -0800
+User-Agent: KMail/1.9.6
+Cc: Alan Stern <stern@rowland.harvard.edu>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       pm list <linux-pm@lists.linux-foundation.org>,
+       Zdenek Kabelac <zdenek.kabelac@gmail.com>,
+       Kernel development list <linux-kernel@vger.kernel.org>
+References: <200802241500.41969.rjw@sisk.pl> <200803031359.38263.david-b@pacbell.net> <20080304070357.61ee825b@mjolnir.drzeus.cx>
+In-Reply-To: <20080304070357.61ee825b@mjolnir.drzeus.cx>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="us-ascii"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200803040144.09601.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> This is the hung_task_timeout message after a couple of cpu-offlines.
+On Monday 03 March 2008, Pierre Ossman wrote:
+> On Mon, 3 Mar 2008 13:59:37 -0800
+> David Brownell <david-b@pacbell.net> wrote:
 > 
-> This is on 2.6.25-rc3.
-> 
-> INFO: task bash:4467 blocked for more than 120 seconds.
-> "echo 0 > /proc/sys/kernel/hung_task_timeout_secs" disables this message.
->        f3701dd0 00000046 f796aac0 f796aac0 f796abf8 cc434b80 00000000 f41ee940 
->        0180b046 0000026e 00000016 00000000 00000008 f796b080 f796aac0 00000002 
->        7fffffff 7fffffff f3701e1c f3701df8 c04e033a f3701e1c f3701dec c0139dec 
-> Call Trace:
->  [<c04e033a>] schedule_timeout+0x16/0x8b
->  [<c0139dec>] ? trace_hardirqs_on+0xe9/0x111
->  [<c04e01c9>] wait_for_common+0xcf/0x12e
->  [<c011a3f0>] ? default_wake_function+0x0/0xd
->  [<c04e02aa>] wait_for_completion+0x12/0x14
->  [<c012ccbb>] flush_cpu_workqueue+0x50/0x66
->  [<c012cd28>] ? wq_barrier_func+0x0/0xd
->  [<c012cd14>] cleanup_workqueue_thread+0x43/0x57
->  [<c04c6f87>] workqueue_cpu_callback+0x8e/0xbd
->  [<c04e3975>] notifier_call_chain+0x2b/0x4a
->  [<c0132e9d>] __raw_notifier_call_chain+0xe/0x10
->  [<c0132eab>] raw_notifier_call_chain+0xc/0xe
->  [<c013e054>] _cpu_down+0x150/0x1ec
->  [<c013e133>] cpu_down+0x23/0x30
->  [<c02e3897>] store_online+0x27/0x5a
->  [<c02e3870>] ? store_online+0x0/0x5a
->  [<c02e09d8>] sysdev_store+0x20/0x25
->  [<c0196d2d>] sysfs_write_file+0xad/0xdf
->  [<c0196c80>] ? sysfs_write_file+0x0/0xdf
->  [<c0163da9>] vfs_write+0x8c/0x108
->  [<c0164333>] sys_write+0x3b/0x60
->  [<c01049da>] sysenter_past_esp+0x5f/0xa5
->  =======================
-> 3 locks held by bash/4467:
->  #0:  (&buffer->mutex){--..}, at: [<c0196ca5>] sysfs_write_file+0x25/0xdf
->  #1:  (cpu_add_remove_lock){--..}, at: [<c013e10e>] cpu_maps_update_begin+0xf/0x11
->  #2:  (cpu_hotplug_lock){----}, at: [<c013df5b>] _cpu_down+0x57/0x1ec
-> 
-> So it's not just a not reaping of watchdog thread issue.
-> 
-> I doubt it's due to some locking dependency since we have lockdep checks
-> in the workqueue code before we flush the cpu_workqueue.
-You may "echo 1 > /proc/sys/kernel/sysrq" and "echo t
-> /proc/sysrq-trigger", then check dmesg info, you can get
-[watchdog/#]'s call stack which could give out where it is currently.
+> > 
+> > Card insert/remove events can be system wake events though.  Which
+> > makes that restriction impractical.
 
-On my machine, that indicated [watchdog/1] is calling
-sched_setscheduler. I doubt it is being killed before it is started and
-woken up, this may result in some synchronization issues.
+This part seems to be ignored by your comment ... wake events.
 
+
+> > I think hosts need to be able to call mmc_detect_change() as soon as
+> > they see a stable signal.  The MMC core can hold off handling that
+> > for a while, if it needs to wait until the code walking the device
+> > tree gets around to resuming that host.  It's a lot more natural to
+> > hold off such stuff one time there than in N host drivers; especially
+> > since the MMC core already has such hold-off code.
+> > 
 > 
-> --
-> Thanks and Regards
-> gautham
+> That actually sorts itself out as the MMC core reprobes on wakeup, but
+> I see your point. Right now things will work peachy if the controllers
+> just make sure to disable their card detection logic before telling the
+> core to suspend.   
 
+That is, the MMC core doesn't understand wakeup events.
+
+Or, as pointed out elsewhere, well-behaved MMC hosts ... which don't
+need either such reprobing or the associated remove-on-suspend.
+
+- Dave
