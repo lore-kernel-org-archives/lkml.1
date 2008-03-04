@@ -1,141 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763760AbYCDALu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763681AbYCDAMM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763760AbYCDALu (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Mar 2008 19:11:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756551AbYCDAHm
+	id S1763681AbYCDAMM (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Mar 2008 19:12:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763736AbYCDALr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Mar 2008 19:07:42 -0500
-Received: from relay1.sgi.com ([192.48.171.29]:40107 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753536AbYCDAHg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Mar 2008 19:07:36 -0500
-Message-Id: <20080304000733.688496611@sgi.com>
-References: <20080304000452.514878384@sgi.com>
-User-Agent: quilt/0.46-1
-Date: Mon, 03 Mar 2008 16:04:59 -0800
-From: Christoph Lameter <clameter@sgi.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, Sam Ravnborg <sam@ravnborg.org>
-Cc: Mel Gorman <mel@csn.ul.ie>
-Cc: apw@shadowen.org
-Cc: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Cc: Rik van Riel <riel@redhat.com>
-Cc: linux-mm@kvack.org
-Subject: [rfc 07/10] Kbuild: Create a way to create preprocessor constants from C expressions
-Content-Disposition: inline; filename=kbuild_cpp_export
+	Mon, 3 Mar 2008 19:11:47 -0500
+Received: from gv-out-0910.google.com ([216.239.58.184]:36275 "EHLO
+	gv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1763715AbYCDALo (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 3 Mar 2008 19:11:44 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=YHVsn9CcLrvEUSLGjQjzvoLz2Lq89Bumph2ldBcccx1lP/+gyHfrB76uckSbHn6z7kaUxLiO85L9/Qw6sXdJYvdrYa83SZynq2j2XhJLzhLN/735A9dl44nvYYXOb+uMayoOTHBEP4M1qpkK4fnUtRciXE57mAz9p20dwzn4ZlM=
+Message-ID: <9a8748490803031611m4ad2cd7dr16e30e7cb003c05f@mail.gmail.com>
+Date: Tue, 4 Mar 2008 01:11:41 +0100
+From: "Jesper Juhl" <jesper.juhl@gmail.com>
+To: "linux-os (Dick Johnson)" <linux-os@analogic.com>
+Subject: Re: 64-bit AMD panic
+Cc: "Rik van Riel" <riel@redhat.com>,
+       "Christian Kujau" <lists@nerdbynature.de>,
+       "Linux kernel" <linux-kernel@vger.kernel.org>
+In-Reply-To: <Pine.LNX.4.61.0803031704290.7011@chaos.analogic.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <Pine.LNX.4.61.0803031205030.5874@chaos.analogic.com>
+	 <alpine.DEB.1.00.0803031942040.5974@sheep.housecafe.de>
+	 <20080303162246.3f33ee24@cuia.boston.redhat.com>
+	 <Pine.LNX.4.61.0803031704290.7011@chaos.analogic.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The use of enums create constants that are not available to the preprocessor
-when building the kernel (f.e. MAX_NR_ZONES).
+On 03/03/2008, linux-os (Dick Johnson) <linux-os@analogic.com> wrote:
+>
+<snip>
+>
+> That's the problem trying to support devices in production.
+>  The last kernel I was able to locate for the x86_64 project
+>  is linux-2.6.23. Its dates are from late last year so maybe
+>  it will work!
+>
+>  It is now being compiled one one of the target machines.
+>  If this works, I'll have to find the differences between
+>  the old and the newer and patch the linux-2.6.11 because
+>  it is a "certified" kernel, i.e., selected by the FAA and
+>  determined to be politically correct!
 
-Arch code already has a way to export constants calculated to the
-preprocessor through the asm-offsets.c file. Generate something
-similar for the core kernel through kbuild.
+So, you take a "certified" kernel, then you patch it, which leaves you
+with what? Certainly not a certified kernel. You might as well go with
+the latest 2.6.24.3 sources then...
 
-Cc: Sam Ravnborg <sam@ravnborg.org>
-Signed-off-by: Christoph Lameter <clameter@sgi.com>
-
----
- Kbuild                 |   31 +++++++++++++++++++++++++++++--
- include/linux/bounds.h |   10 ++++++++++
- kernel/bounds.c        |   16 ++++++++++++++++
- 3 files changed, 55 insertions(+), 2 deletions(-)
-
-Index: linux-2.6/Kbuild
-===================================================================
---- linux-2.6.orig/Kbuild	2008-02-29 19:27:40.000000000 -0800
-+++ linux-2.6/Kbuild	2008-02-29 19:29:38.000000000 -0800
-@@ -9,9 +9,10 @@
- #
- 
- offsets-file := include/asm-$(SRCARCH)/asm-offsets.h
-+bounds := include/linux/bounds.h
- 
--always  := $(offsets-file)
--targets := $(offsets-file)
-+always  := $(offsets-file) $(bounds)
-+targets := $(offsets-file) $(bounds)
- targets += arch/$(SRCARCH)/kernel/asm-offsets.s
- clean-files := $(addprefix $(objtree)/,$(targets))
- 
-@@ -39,6 +40,23 @@ define cmd_offsets
- 	 echo "#endif" ) > $@
- endef
- 
-+quiet_cmd_bounds = GEN     $@
-+define cmd_bounds
-+	(set -e; \
-+	 echo "#ifndef __LINUX_BOUNDS_H__"; \
-+	 echo "#define __LINUX_BOUNDS_H__"; \
-+	 echo "/*"; \
-+	 echo " * DO NOT MODIFY."; \
-+	 echo " *"; \
-+	 echo " * This file was generated by Kbuild"; \
-+	 echo " *"; \
-+	 echo " */"; \
-+	 echo ""; \
-+	 sed -ne $(sed-y) $<; \
-+	 echo ""; \
-+	 echo "#endif" ) > $@
-+endef
-+
- # We use internal kbuild rules to avoid the "is up to date" message from make
- arch/$(SRCARCH)/kernel/asm-offsets.s: arch/$(SRCARCH)/kernel/asm-offsets.c FORCE
- 	$(Q)mkdir -p $(dir $@)
-@@ -48,6 +66,15 @@ $(obj)/$(offsets-file): arch/$(SRCARCH)/
- 	$(Q)mkdir -p $(dir $@)
- 	$(call cmd,offsets)
- 
-+# We use internal kbuild rules to avoid the "is up to date" message from make
-+kernel/bounds.s: kernel/bounds.c FORCE
-+	$(Q)mkdir -p $(dir $@)
-+	$(call if_changed_dep,cc_s_c)
-+
-+$(obj)/$(bounds): kernel/bounds.s Kbuild
-+	$(Q)mkdir -p $(dir $@)
-+	$(call cmd,bounds)
-+
- #####
- # 2) Check for missing system calls
- #
-Index: linux-2.6/kernel/bounds.c
-===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6/kernel/bounds.c	2008-02-29 19:29:38.000000000 -0800
-@@ -0,0 +1,16 @@
-+/*
-+ * Generate definitions needed by the preprocessor.
-+ * This code generates raw asm output which is post-processed
-+ * to extract and format the required data.
-+ */
-+
-+#include <linux/mm.h>
-+
-+#define DEFINE(sym, val) \
-+        asm volatile("\n->" #sym " %0 " #val : : "i" (val))
-+
-+#define BLANK() asm volatile("\n->" : : )
-+
-+void foo(void)
-+{
-+}
-Index: linux-2.6/include/linux/bounds.h
-===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6/include/linux/bounds.h	2008-02-29 19:29:50.000000000 -0800
-@@ -0,0 +1,10 @@
-+#ifndef __LINUX_BOUNDS_H__
-+#define __LINUX_BOUNDS_H__
-+/*
-+ * DO NOT MODIFY.
-+ *
-+ * This file was generated by Kbuild
-+ *
-+ */
-+
-+#endif
+>
+<snip>
+>
 
 -- 
+Jesper Juhl <jesper.juhl@gmail.com>
+Don't top-post  http://www.catb.org/~esr/jargon/html/T/top-post.html
+Plain text mails only, please      http://www.expita.com/nomime.html
