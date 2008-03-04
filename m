@@ -1,27 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761720AbYCDJQW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759383AbYCDJT4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761720AbYCDJQW (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Mar 2008 04:16:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753954AbYCDJQK
+	id S1759383AbYCDJT4 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Mar 2008 04:19:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754054AbYCDJTm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Mar 2008 04:16:10 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:46420 "EHLO
+	Tue, 4 Mar 2008 04:19:42 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:37120 "EHLO
 	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752489AbYCDJQI (ORCPT
+	by vger.kernel.org with ESMTP id S1753740AbYCDJTl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Mar 2008 04:16:08 -0500
-Date: Tue, 4 Mar 2008 01:15:21 -0800
+	Tue, 4 Mar 2008 04:19:41 -0500
+Date: Tue, 4 Mar 2008 01:19:05 -0800
 From: Andrew Morton <akpm@linux-foundation.org>
-To: schwidefsky@de.ibm.com
-Cc: Harvey Harrison <harvey.harrison@gmail.com>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 06/14] drivers/s390: replace remaining __FUNCTION__
- occurrences
-Message-Id: <20080304011521.98a20055.akpm@linux-foundation.org>
-In-Reply-To: <1204620907.1278.7.camel@localhost>
-References: <ff8fd021606e7a6f03e9c274230cfcf64eade6d2.1204599636.git.harvey.harrison@gmail.com>
-	<1204600187.22933.86.camel@brick>
-	<1204620907.1278.7.camel@localhost>
+To: Ralf Baechle <ralf@linux-mips.org>
+Cc: linux-wireless@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux-mips@linux-mips.org
+Subject: Re: drivers/net/wireless/b43legacy/ on mips
+Message-Id: <20080304011905.22e6e6d9.akpm@linux-foundation.org>
+In-Reply-To: <20080304090220.GA2875@linux-mips.org>
+References: <20080303233651.82c592a4.akpm@linux-foundation.org>
+	<20080304090220.GA2875@linux-mips.org>
 X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
@@ -30,34 +28,62 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 04 Mar 2008 09:55:07 +0100 Martin Schwidefsky <schwidefsky@de.ibm.com> wrote:
+On Tue, 4 Mar 2008 09:02:20 +0000 Ralf Baechle <ralf@linux-mips.org> wrote:
 
-> On Mon, 2008-03-03 at 19:09 -0800, Harvey Harrison wrote:
-> > __FUNCTION__ is gcc-specific, use __func__
+> On Mon, Mar 03, 2008 at 11:36:51PM -0800, Andrew Morton wrote:
+> 
+> > ERROR: "__ucmpdi2" [drivers/net/wireless/b43legacy/b43legacy.ko] undefined!
+> > ERROR: "__ucmpdi2" [drivers/net/wireless/b43/b43.ko] undefined!
 > > 
-> > Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
-> > ---
-> >  drivers/s390/block/dasd.c        |    4 +-
-> >  drivers/s390/char/tape_34xx.c    |    2 +-
-> >  drivers/s390/char/vmwatchdog.c   |    4 +-
-> >  drivers/s390/char/zcore.c        |    2 +-
-> >  drivers/s390/cio/device_status.c |    2 +-
-> >  drivers/s390/crypto/zcrypt_api.h |    8 +-
-> >  drivers/s390/net/claw.c          |  344 +++++++++++++++++++-------------------
-> >  drivers/s390/net/ctcmain.c       |  112 ++++++------
-> >  drivers/s390/net/netiucv.c       |   96 ++++++------
-> >  drivers/s390/s390mach.c          |    8 +-
-> >  drivers/s390/scsi/zfcp_def.h     |    2 +-
-> >  11 files changed, 292 insertions(+), 292 deletions(-)
+> > int b43legacy_dma_init(struct b43legacy_wldev *dev)
+> > {
+> >         struct b43legacy_dma *dma = &dev->dma;
+> >         struct b43legacy_dmaring *ring;
+> >         int err;
+> >         u64 dmamask;
+> >         enum b43legacy_dmatype type;
+> > 
+> >         dmamask = supported_dma_mask(dev);
+> >         switch (dmamask) {
+> >         default:
+> >                 B43legacy_WARN_ON(1);
+> >         case DMA_30BIT_MASK:
+> >                 type = B43legacy_DMA_30BIT;
+> >                 break;
+> >         case DMA_32BIT_MASK:
+> >                 type = B43legacy_DMA_32BIT;
+> >                 break;
+> >         case DMA_64BIT_MASK:
+> >                 type = B43legacy_DMA_64BIT;
+> >                 break;
+> >         }
+> > 
+> > because some versions of gcc emit a __ucmpdi2 call for switch statements. 
 > 
-> Urgh, is this really necessary? The linux kernel is always compiled with
-> gcc for s390. Yes __func__ is a bit shorter and maybe even looks nicer
-> than __FUNCTION__ but is it really worth the trouble ? 
+> Was this when optimizing for size btw?
+
+mips allmodconfig.  So: yes.
+
+>  It seems gcc is emitting alot more
+> calls to libgcc when optimizing for size.
 > 
+> > It might be fixable by switching to an open-coded if/compare/else sequence.
+> 
+> It was just a EXPORT_SYMBOL(__ucmpdi2) missing.
 
-That's what everyone is asking ;)
+doh.
 
-Unfortunately, __func__ is preferred and __FUNCTION__ is deprecated.  So
-the patch converts your code from "wrong" to "right".  Even though it was
-only a teeny bit wrong.
+> > Or maybe my mips compiler (gcc-3.4.5) is just too old..
+> 
+> I'm trying to keep the tools requirements the same as for x86.  So for
+> 32-bit kernels gcc 3.2 is the minimum but 3.2 is broken beyond recovery
+> for 64-bit code so there a minimum of 3.3 is required.
+> 
+> In practive it is ages that I've last seen a compiler older than gcc 3.4
+> being used to build a modern kernel for any architecture and 3.2 and 3.3
+> are a sufficient special case that maybe we should think about deprecating
+> 3.2 and 3.3?
+
+That would make life easier for us.  I don't know what the downstream
+implications would be.  I'd need a new cross-compiler, for a start ;)
 
