@@ -1,75 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764952AbYCDSRz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765685AbYCDSSw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764952AbYCDSRz (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Mar 2008 13:17:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759076AbYCDSRm
+	id S1765685AbYCDSSw (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Mar 2008 13:18:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759454AbYCDSSl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Mar 2008 13:17:42 -0500
-Received: from brick.kernel.dk ([87.55.233.238]:17354 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758733AbYCDSRl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Mar 2008 13:17:41 -0500
-Date: Tue, 4 Mar 2008 19:17:36 +0100
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Mike Galbraith <efault@gmx.de>
-Cc: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>, htejun@gmail.com,
-       tomof@acm.org, James.Bottomley@HansenPartnership.com,
-       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       linux-ide@vger.kernel.org, linux-scsi@vger.kernel.org,
-       jgarzik@pobox.com, bzolnier@gmail.com
-Subject: Re: [PATCH] block: fix residual byte count handling
-Message-ID: <20080304181736.GP6704@kernel.dk>
-References: <20080304085944.GG6704@kernel.dk> <20080304180648W.fujita.tomonori@lab.ntt.co.jp> <20080304182228Z.fujita.tomonori@lab.ntt.co.jp> <20080304093536.GH6704@kernel.dk> <1204634238.5997.5.camel@homer.simson.net> <20080304123939.GM6704@kernel.dk> <1204634619.17258.0.camel@homer.simson.net> <1204635515.17258.12.camel@homer.simson.net> <20080304130307.GN6704@kernel.dk> <1204640722.5783.10.camel@homer.simson.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1204640722.5783.10.camel@homer.simson.net>
+	Tue, 4 Mar 2008 13:18:41 -0500
+Received: from el-out-1112.google.com ([209.85.162.179]:62998 "EHLO
+	el-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757988AbYCDSSk (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 4 Mar 2008 13:18:40 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=subject:from:to:cc:in-reply-to:references:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
+        b=aR0pgqp1RmOQd7LD0MswPcdyBeFn9F0wFPJELisgyCSI/uwyMRa9mfe/eff3Y3Wk8VdJjkf9UaGSF0cq3e/Eo590JZbrhm1CQ7s22bQs9g7/GFSeX/nxfrRQBY3tS8qwBr1Aw8unh6yEPnZhccM8TjsdL8NGdHW8n65k3IthMpU=
+Subject: Re: [patch] x86: phase out forced inlining
+From: Harvey Harrison <harvey.harrison@gmail.com>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Sam Ravnborg <sam@ravnborg.org>,
+       Adrian Bunk <bunk@kernel.org>, Alexey Starikovskiy <aystarik@gmail.com>,
+       lenb@kernel.org, astarikovskiy@suse.de, linux-acpi@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Arjan van de Ven <arjan@infradead.org>,
+       Thomas Gleixner <tglx@linutronix.de>
+In-Reply-To: <47CD9060.9000708@zytor.com>
+References: <20080301183550.GC25835@cs181133002.pp.htv.fi>
+	 <20080303085720.GD15943@elte.hu>
+	 <20080303091314.GC4457@cs181133002.pp.htv.fi>
+	 <20080303091714.GA18250@elte.hu>
+	 <20080303093103.GA23651@uranus.ravnborg.org>
+	 <20080303103933.GC21190@elte.hu>
+	 <20080303113451.GF4457@cs181133002.pp.htv.fi>
+	 <20080303114533.GA4183@elte.hu> <20080303121335.GA15381@elte.hu>
+	 <20080303145623.GA25697@uranus.ravnborg.org>
+	 <20080304164605.GA16379@elte.hu> <1204654039.5698.13.camel@brick>
+	 <47CD9060.9000708@zytor.com>
+Content-Type: text/plain
+Date: Tue, 04 Mar 2008 10:18:37 -0800
+Message-Id: <1204654717.5698.18.camel@brick>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Mar 04 2008, Mike Galbraith wrote:
-> 
-> On Tue, 2008-03-04 at 14:03 +0100, Jens Axboe wrote:
-> 
-> > Re-read my original mail! It states that you should just pull:
+
+On Tue, 2008-03-04 at 10:09 -0800, H. Peter Anvin wrote:
+> Harvey Harrison wrote:
+> > On Tue, 2008-03-04 at 17:46 +0100, Ingo Molnar wrote:
+> >> * Sam Ravnborg <sam@ravnborg.org> wrote:
 > > 
-> > git://git.kernel.dk/linux-2.6-block.git for-linus
+> >> i dont know why they there are so many variants, but all of them seem to 
+> >> be used throughout the kernel:
+> >>
+> >>    inline    : 25648
 > > 
-> > into your linus branch, or just create a test branch off linus' master
-> > and pull into that. IOW, it's the for-linus branch that you should pull,
-> > nothing else.
+> > I'll assume this is the preferred way of saying it.
+> > 
+> >>  __inline__  : 1380
+> > 
+> > Lots of them in include/asm-*...not sure if there is a reason for this.
+> > 
 > 
-> Well, I had a good reason.  You know how to un-pull, I know how to
-> un-remote to get back to pristine after I'm done testing... guaranteed
-> without whimpering pathetically on the git list ;-)
-
-OK, if you're on master, it's pretty easy:
-
-$ git branch test-branch
-$ git checkout test-branch
-$ git pull git://git.kernel.dk/linux-2.6-block.git for-linus
-
-[build, boot, test]
-$ git checkout master
-$ git branch -D test-branch
-
-> Anyway, I checked out the one with the big-fat-hint in it's name
-> (block-for-linus/for-linus).
-> Same error.  Git this morning with patches...
-> 	restore_meaning_of_data_len.diff
-> 	seperate_out_padding_from_alignment.diff
-> ...reverted restored me to the originally reported k3b error, nothing
-> new noted.
+> Preferred form for code that's exported to userspace (since gcc 
+> complains with -ansi -pedantic otherwise.)
 > 
-> If I tested the wrong branch, whack me upside the head, and I'll follow
-> your pull destructions, and figure out how to un-pull later.
-
-for-linus is the right branch, but I'm just a little worried that you
-didn't test what you think you tested. What does cat .git/HEAD say? If
-that is a ref to a file (eg refs/heads/master), what does that file
-contain?
-
--- 
-Jens Axboe
+> 	-hpa
 
