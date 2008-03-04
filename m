@@ -1,48 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763208AbYCDUyi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762950AbYCDUzq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763208AbYCDUyi (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Mar 2008 15:54:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757220AbYCDUyP
+	id S1762950AbYCDUzq (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Mar 2008 15:55:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756603AbYCDUz1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Mar 2008 15:54:15 -0500
-Received: from bzq-179-150-194.static.bezeqint.net ([212.179.150.194]:46827
-	"EHLO il.qumranet.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756652AbYCDUyO (ORCPT
+	Tue, 4 Mar 2008 15:55:27 -0500
+Received: from mail-out.m-online.net ([212.18.0.9]:56251 "EHLO
+	mail-out.m-online.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757220AbYCDUzZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Mar 2008 15:54:14 -0500
-Message-ID: <47CDB634.40808@qumranet.com>
-Date: Tue, 04 Mar 2008 22:51:00 +0200
-From: Avi Kivity <avi@qumranet.com>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
+	Tue, 4 Mar 2008 15:55:25 -0500
+X-Auth-Info: J4+cdsWHMYhX0UqxHVYwe8oPjmqvM8ztboeMruj4W34=
+X-Auth-Info: J4+cdsWHMYhX0UqxHVYwe8oPjmqvM8ztboeMruj4W34=
+X-Auth-Info: J4+cdsWHMYhX0UqxHVYwe8oPjmqvM8ztboeMruj4W34=
+X-Auth-Info: J4+cdsWHMYhX0UqxHVYwe8oPjmqvM8ztboeMruj4W34=
+X-Auth-Info: J4+cdsWHMYhX0UqxHVYwe8oPjmqvM8ztboeMruj4W34=
+X-Auth-Info: J4+cdsWHMYhX0UqxHVYwe8oPjmqvM8ztboeMruj4W34=
+Message-ID: <47CDB737.8090300@grandegger.com>
+Date: Tue, 04 Mar 2008 21:55:19 +0100
+From: Wolfgang Grandegger <wg@grandegger.com>
+User-Agent: Thunderbird 1.5.0.12 (X11/20071019)
 MIME-Version: 1.0
-To: Pekka Enberg <penberg@cs.helsinki.fi>
-CC: Linux kernel mailing list <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Ingo Molnar <mingo@elte.hu>, Vegard Nossum <vegard.nossum@gmail.com>
-Subject: Re: Google's Summer of Code?
-References: <84144f020803041045i70bbb05l6983bd14c5bcc91a@mail.gmail.com>
-In-Reply-To: <84144f020803041045i70bbb05l6983bd14c5bcc91a@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Remy Bohmer <linux@bohmer.net>
+CC: David Brownell <david-b@pacbell.net>,
+       Bosko Radivojevic <bosko.radivojevic@gmail.com>,
+       lkml <linux-kernel@vger.kernel.org>, linux-rt-users@vger.kernel.org,
+       tglx@linutronix.de
+Subject: Re: High resolution timers on AT91SAM926x
+References: <200803011457.40857.david-b@pacbell.net>	 <200803031039.57909.david-b@pacbell.net>	 <d6c8ef150803031342r567aab86x776dc2a8b73714b6@mail.gmail.com>	 <200803031729.19264.david-b@pacbell.net> <3efb10970803041222j61fd8d28k5cef0994b9bd6f12@mail.gmail.com>
+In-Reply-To: <3efb10970803041222j61fd8d28k5cef0994b9bd6f12@mail.gmail.com>
+X-Enigmail-Version: 0.94.4.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0rc1 (firebolt.argo.co.il [0.0.0.0]); Tue, 04 Mar 2008 22:51:00 +0200 (IST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Pekka Enberg wrote:
-> Hi all,
->
-> Are there any plans to send an application of Linux kernel as a mentor
-> organization for Google's Summer of Code this year? I think there are
-> probably a lot of students interested in hacking on the kernel. And
-> no, I am not volunteering to send that application but I would be
-> interested in being a mentor.
->   
+Remy Bohmer wrote:
+> Hello Bosko/Dave,
+> 
+>> On Monday 03 March 2008, Bosko Radivojevic wrote:
+>>
+>>> I had CONFIG_ATMEL_TCLIB enabled, but not TCB_CLKSRC and
+>>  > TCB_CLKSRC_BLOCK=0. With all those options, I finally have HRT
+>>  > functionality. But, strange thing is that jitter of my little example
+>>  > (get time, sleep 1ms, get time, show the difference) is around 250us.
+>>  > Maybe this is normal for this architecture?
+>> I have no idea why that would be.  Maybe you can find out.  :)
+> 
+> These are normal figures for this core, on preempt-rt.
+> You are talking about jitter on timers. While on preempt-rt the worst
+> case latency of scheduling a RT-thread is about 300us, 250us is thus
+> quite normal, and actually quite good... (the kernel-mainline average
+> latency is better, but worst-case is unbound)
+> (Note: The 300 us seem to be caused by something in the networking
+> layer, without network I noticed worst case latencies about 150us, but
+> NO guarantee here)
 
-kvm will apply, and though some of the work will be in userspace, we'd 
-like to have kernel contributions as well.
+This confirms our observation with PowerPC MPC5200 boards (running at
+400 MHz). Without networking, the worst case latency measured with
+cyclictest does not exceed 100 us. With networking, and especially with
+the NFS file-system, latencies go up to 170 us. I also measured external
+interrupt latencies with an external log system using GPIO pins but was
+unable to achieve latencies below 1ms. This needs more debugging.
 
--- 
-Do not meddle in the internals of kernels, for they are subtle and quick to panic.
-
+Wolfgang.
