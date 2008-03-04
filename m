@@ -1,83 +1,306 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751656AbYCDI1P@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754762AbYCDIay@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751656AbYCDI1P (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Mar 2008 03:27:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751817AbYCDI05
+	id S1754762AbYCDIay (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Mar 2008 03:30:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750853AbYCDIan
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Mar 2008 03:26:57 -0500
-Received: from pasmtpb.tele.dk ([80.160.77.98]:33479 "EHLO pasmtpB.tele.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751427AbYCDI04 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Mar 2008 03:26:56 -0500
-Date: Tue, 4 Mar 2008 09:03:59 +0100
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Ingo Molnar <mingo@elte.hu>, Adrian Bunk <bunk@kernel.org>,
-       Alexey Starikovskiy <aystarik@gmail.com>, lenb@kernel.org,
-       astarikovskiy@suse.de, linux-acpi@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Arjan van de Ven <arjan@infradead.org>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: [patch] x86: phase out forced inlining
-Message-ID: <20080304080335.GA5776@uranus.ravnborg.org>
-References: <20080301183550.GC25835@cs181133002.pp.htv.fi> <20080303085720.GD15943@elte.hu> <20080303091314.GC4457@cs181133002.pp.htv.fi> <20080303091714.GA18250@elte.hu> <20080303093103.GA23651@uranus.ravnborg.org> <20080303103933.GC21190@elte.hu> <20080303113451.GF4457@cs181133002.pp.htv.fi> <20080303114533.GA4183@elte.hu> <20080303121335.GA15381@elte.hu> <20080303224231.86c22ed0.akpm@linux-foundation.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080303224231.86c22ed0.akpm@linux-foundation.org>
-User-Agent: Mutt/1.4.2.1i
+	Tue, 4 Mar 2008 03:30:43 -0500
+Received: from de01egw01.freescale.net ([192.88.165.102]:46021 "EHLO
+	de01egw01.freescale.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750802AbYCDIam (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 4 Mar 2008 03:30:42 -0500
+From: Zhang Wei <wei.zhang@freescale.com>
+To: mporter@kernel.crashing.org, galak@kernel.crashing.org
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+       Zhang Wei <wei.zhang@freescale.com>
+Subject: [PATCH 05/17] Add OF-tree support to RapidIO controller driver.
+Date: Wed,  5 Mar 2008 00:29:50 +0800
+Message-Id: <1204648202-5495-5-git-send-email-wei.zhang@freescale.com>
+X-Mailer: git-send-email 1.5.4
+In-Reply-To: <1204648202-5495-4-git-send-email-wei.zhang@freescale.com>
+References: <1204648202-5495-1-git-send-email-wei.zhang@freescale.com>
+ <1204648202-5495-2-git-send-email-wei.zhang@freescale.com>
+ <1204648202-5495-3-git-send-email-wei.zhang@freescale.com>
+ <1204648202-5495-4-git-send-email-wei.zhang@freescale.com>
+X-OriginalArrivalTime: 04 Mar 2008 08:30:34.0688 (UTC) FILETIME=[042F6C00:01C87DD2]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Mar 03, 2008 at 10:42:31PM -0800, Andrew Morton wrote:
-> On Mon, 3 Mar 2008 13:13:35 +0100 Ingo Molnar <mingo@elte.hu> wrote:
-> 
-> > +config OPTIMIZE_INLINING
-> > +	bool "Allow gcc to uninline functions marked 'inline'"
-> > +	default y
-> > +	help
-> > +	  This option determines if the kernel forces gcc to inline the functions
-> > +	  developers have marked 'inline'. Doing so takes away freedom from gcc to
-> > +	  do what it thinks is best, which is desirable for the gcc 3.x series of
-> > +	  compilers. The gcc 4.x series have a rewritten inlining algorithm and
-> > +	  disabling this option will generate a smaller kernel there. Hopefully
-> > +	  this algorithm is so good that allowing gcc4 to make the decision can
-> > +	  become the default in the future, until then this option is there to
-> > +	  test gcc for this.
-> 
-> urgh.  This will cause whatever problem
-> 4507a6a59cfc6997e532cd812a8bd244181e6205 fixed five years ago to resurface
-> for incautious gcc-3.x users.
-> 
-> I'd suggest that this
-> 
-> > +#ifndef CONFIG_OPTIMIZE_INLINING
-> 
-> become something along the lines of
-> 
-> > +#ifndef CONFIG_OPTIMIZE_INLINING && (__GNUC__ > 3)
-> 
-> It would be nice to be able to feed the gcc version into the Kconfig logic,
-> really..
-We can do this using a few environment options.
+Signed-off-by: Zhang Wei <wei.zhang@freescale.com>
+---
+ arch/powerpc/kernel/Makefile  |    1 -
+ arch/powerpc/kernel/rio.c     |   52 -------------------
+ arch/powerpc/sysdev/fsl_rio.c |  110 ++++++++++++++++++++++++++++++++++++++---
+ arch/powerpc/sysdev/fsl_rio.h |   20 -------
+ 4 files changed, 102 insertions(+), 81 deletions(-)
+ delete mode 100644 arch/powerpc/kernel/rio.c
+ delete mode 100644 arch/powerpc/sysdev/fsl_rio.h
 
-Somewhere in a Makefile:
-export CC_MAJOR=`magic`
-export CC_MINOR=`more magic`
+diff --git a/arch/powerpc/kernel/Makefile b/arch/powerpc/kernel/Makefile
+index 0662ae4..52d5f35 100644
+--- a/arch/powerpc/kernel/Makefile
++++ b/arch/powerpc/kernel/Makefile
+@@ -72,7 +72,6 @@ pci64-$(CONFIG_PPC64)		+= pci_dn.o isa-bridge.o
+ obj-$(CONFIG_PCI)		+= pci_$(CONFIG_WORD_SIZE).o $(pci64-y) \
+ 				   pci-common.o
+ obj-$(CONFIG_PCI_MSI)		+= msi.o
+-obj-$(CONFIG_RAPIDIO)		+= rio.o
+ obj-$(CONFIG_KEXEC)		+= machine_kexec.o crash.o \
+ 				   machine_kexec_$(CONFIG_WORD_SIZE).o
+ obj-$(CONFIG_AUDIT)		+= audit.o
+diff --git a/arch/powerpc/kernel/rio.c b/arch/powerpc/kernel/rio.c
+deleted file mode 100644
+index 29487fe..0000000
+--- a/arch/powerpc/kernel/rio.c
++++ /dev/null
+@@ -1,52 +0,0 @@
+-/*
+- * RapidIO PPC32 support
+- *
+- * Copyright 2005 MontaVista Software, Inc.
+- * Matt Porter <mporter@kernel.crashing.org>
+- *
+- * This program is free software; you can redistribute  it and/or modify it
+- * under  the terms of  the GNU General  Public License as published by the
+- * Free Software Foundation;  either version 2 of the  License, or (at your
+- * option) any later version.
+- */
+-
+-#include <linux/init.h>
+-#include <linux/kernel.h>
+-#include <linux/rio.h>
+-
+-#include <asm/rio.h>
+-
+-/**
+- * platform_rio_init - Do platform specific RIO init
+- *
+- * Any platform specific initialization of RapdIO
+- * hardware is done here as well as registration
+- * of any active master ports in the system.
+- */
+-void __attribute__ ((weak))
+-    platform_rio_init(void)
+-{
+-	printk(KERN_WARNING "RIO: No platform_rio_init() present\n");
+-}
+-
+-/**
+- * ppc_rio_init - Do PPC32 RIO init
+- *
+- * Calls platform-specific RIO init code and then calls
+- * rio_init_mports() to initialize any master ports that
+- * have been registered with the RIO subsystem.
+- */
+-static int __init ppc_rio_init(void)
+-{
+-	printk(KERN_INFO "RIO: RapidIO init\n");
+-
+-	/* Platform specific initialization */
+-	platform_rio_init();
+-
+-	/* Enumerate all registered ports */
+-	rio_init_mports();
+-
+-	return 0;
+-}
+-
+-subsys_initcall(ppc_rio_init);
+diff --git a/arch/powerpc/sysdev/fsl_rio.c b/arch/powerpc/sysdev/fsl_rio.c
+index 7eb6263..5c9af4f 100644
+--- a/arch/powerpc/sysdev/fsl_rio.c
++++ b/arch/powerpc/sysdev/fsl_rio.c
+@@ -20,6 +20,7 @@
+ #include <linux/interrupt.h>
+ #include <linux/rio.h>
+ #include <linux/rio_drv.h>
++#include <linux/of_platform.h>
+ 
+ #include <asm/io.h>
+ 
+@@ -28,7 +29,6 @@
+ #define IRQ_RIO_TX(m)		(((struct rio_priv *)(m->priv))->txirq)
+ #define IRQ_RIO_RX(m)		(((struct rio_priv *)(m->priv))->rxirq)
+ 
+-#define RIO_REGS_BASE		(CCSRBAR + 0xc0000)
+ #define RIO_ATMU_REGS_OFFSET	0x10c00
+ #define RIO_MSG_REGS_OFFSET	0x11000
+ #define RIO_MAINT_WIN_SIZE	0x400000
+@@ -908,19 +908,66 @@ __setup("riohdid=", fsl_rio_get_cmdline);
+ 
+ /**
+  * fsl_rio_setup - Setup MPC85xx RapidIO interface
+- * @law_start: Starting physical address of RapidIO LAW
+- * @law_size: Size of RapidIO LAW
++ * @fsl_rio_setup - Setup Freescale PowerPC RapidIO interface
+  *
+  * Initializes MPC85xx RapidIO hardware interface, configures
+  * master port with system-specific info, and registers the
+  * master port with the RapidIO subsystem.
+  */
+-void fsl_rio_setup(int law_start, int law_size)
++int fsl_rio_setup(struct of_device *dev)
+ {
+ 	struct rio_ops *ops;
+ 	struct rio_mport *port;
+-	struct rio_priv *priv = NULL;
+-	int rc;
++	struct rio_priv *priv;
++	int rc = 0;
++	const u32 *dt_range, *cell;
++	struct resource regs;
++	int rlen;
++	u64 law_start, law_size;
++	int paw, aw, sw;
++
++	if (!dev->node) {
++		dev_err(&dev->dev, "Device OF-Node is NULL");
++		return -EFAULT;
++	}
++
++	rc = of_address_to_resource(dev->node, 0, &regs);
++	if (rc) {
++		dev_err(&dev->dev, "Can't get %s property 'reg'\n",
++				dev->node->full_name);
++		return -EFAULT;
++	}
++	dev_info(&dev->dev, "Of-device full name %s\n", dev->node->full_name);
++	dev_info(&dev->dev, "Regs start 0x%08x size 0x%08x\n",	regs.start,
++						regs.end - regs.start + 1);
++
++	dt_range = of_get_property(dev->node, "ranges", &rlen);
++	if (!dt_range) {
++		dev_err(&dev->dev, "Can't get %s property 'ranges'\n",
++				dev->node->full_name);
++		return -EFAULT;
++	}
++
++	/* Get node address wide */
++	cell = of_get_property(dev->node, "#address-cells", NULL);
++	if (cell)
++		aw = *cell;
++	else
++		aw = of_n_addr_cells(dev->node);
++	/* Get node size wide */
++	cell = of_get_property(dev->node, "#size-cells", NULL);
++	if (cell)
++		sw = *cell;
++	else
++		sw = of_n_size_cells(dev->node);
++	/* Get parent address wide wide */
++	paw = of_n_addr_cells(dev->node);
++
++	law_start = of_read_number(dt_range + aw, paw);
++	law_size = of_read_number(dt_range + aw + paw, sw);
++
++	dev_info(&dev->dev, "LAW start 0x%016llx, size 0x%016llx.\n",
++			law_start, law_size);
+ 
+ 	ops = kmalloc(sizeof(struct rio_ops), GFP_KERNEL);
+ 	ops->lcread = fsl_local_config_read;
+@@ -945,6 +992,12 @@ void fsl_rio_setup(int law_start, int law_size)
+ 	port->iores.end = law_start + law_size;
+ 	port->iores.flags = IORESOURCE_MEM;
+ 
++	priv->bellirq = irq_of_parse_and_map(dev->node, 2);
++	priv->txirq = irq_of_parse_and_map(dev->node, 3);
++	priv->rxirq = irq_of_parse_and_map(dev->node, 4);
++	dev_info(&dev->dev, "bellirq: %d, txirq: %d, rxirq %d\n", priv->bellirq,
++				priv->txirq, priv->rxirq);
++
+ 	rio_init_dbell_res(&port->riores[RIO_DOORBELL_RESOURCE], 0, 0xffff);
+ 	rio_init_mbox_res(&port->riores[RIO_INB_MBOX_RESOURCE], 0, 0);
+ 	rio_init_mbox_res(&port->riores[RIO_OUTB_MBOX_RESOURCE], 0, 0);
+@@ -956,7 +1009,7 @@ void fsl_rio_setup(int law_start, int law_size)
+ 	port->priv = priv;
+ 	rio_register_mport(port);
+ 
+-	priv->regs_win = (u32) ioremap(RIO_REGS_BASE, 0x20000);
++	priv->regs_win = (u32) ioremap(regs.start, regs.end - regs.start + 1);
+ 	priv->atmu_regs = (struct rio_atmu_regs *)(priv->regs_win
+ 					+ RIO_ATMU_REGS_OFFSET);
+ 	priv->maint_atmu_regs = priv->atmu_regs + 1;
+@@ -974,10 +1027,51 @@ void fsl_rio_setup(int law_start, int law_size)
+ 	out_be32(&priv->dbell_atmu_regs->rowar, 0x8004200b);
+ 	fsl_rio_doorbell_init(port);
+ 
+-	return;
++	return 0;
+ err:
+ 	if (priv)
+ 		iounmap(priv->regs_win);
++	kfree(ops);
+ 	kfree(priv);
+ 	kfree(port);
++	return rc;
+ }
++
++/* The probe function for RapidIO peer-to-peer network.
++ */
++static int __devinit fsl_of_rio_rpn_probe(struct of_device *dev,
++				     const struct of_device_id *match)
++{
++	int rc;
++	printk(KERN_INFO "Setting up RapidIO peer-to-peer network %s\n",
++			dev->node->full_name);
++
++	rc = fsl_rio_setup(dev);
++	if (rc)
++		goto out;
++
++	/* Enumerate all registered ports */
++	rc = rio_init_mports();
++out:
++	return rc;
++};
++
++static struct of_device_id fsl_of_rio_rpn_ids[] = {
++	{
++		.compatible = "fsl,rapidio-delta",
++	},
++	{},
++};
++
++static struct of_platform_driver fsl_of_rio_rpn_driver = {
++	.name = "fsl-of-rio",
++	.match_table = fsl_of_rio_rpn_ids,
++	.probe = fsl_of_rio_rpn_probe,
++};
++
++static __init int fsl_of_rio_rpn_init(void)
++{
++	return of_register_platform_driver(&fsl_of_rio_rpn_driver);
++}
++
++subsys_initcall(fsl_of_rio_rpn_init);
+diff --git a/arch/powerpc/sysdev/fsl_rio.h b/arch/powerpc/sysdev/fsl_rio.h
+deleted file mode 100644
+index 6d3ff30..0000000
+--- a/arch/powerpc/sysdev/fsl_rio.h
++++ /dev/null
+@@ -1,20 +0,0 @@
+-/*
+- * MPC85xx RapidIO definitions
+- *
+- * Copyright 2005 MontaVista Software, Inc.
+- * Matt Porter <mporter@kernel.crashing.org>
+- *
+- * This program is free software; you can redistribute  it and/or modify it
+- * under  the terms of  the GNU General  Public License as published by the
+- * Free Software Foundation;  either version 2 of the  License, or (at your
+- * option) any later version.
+- */
+-
+-#ifndef __PPC_SYSLIB_PPC85XX_RIO_H
+-#define __PPC_SYSLIB_PPC85XX_RIO_H
+-
+-#include <linux/init.h>
+-
+-extern void mpc85xx_rio_setup(int law_start, int law_size);
+-
+-#endif				/* __PPC_SYSLIB_PPC85XX_RIO_H */
+-- 
+1.5.4
 
-And in a Kconfig file:
-
-config CC_MAJOR
-	string
-	option env=CC_MAJOR
-
-
-And then we can do:
-config CC_DEFAULT_INLINE
-	bool "Force inline of functions annotated inline"
-	default y if CC_MAJOR = 04
-
-Shall I try to cook up a patch for this?
-[I may get access to my dev box tonight - cannot promise..]
-
-	Sam
