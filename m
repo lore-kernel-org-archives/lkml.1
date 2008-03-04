@@ -1,71 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759578AbYCDWTs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764949AbYCDWUv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759578AbYCDWTs (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Mar 2008 17:19:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757962AbYCDWTf
+	id S1764949AbYCDWUv (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Mar 2008 17:20:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757315AbYCDWUj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Mar 2008 17:19:35 -0500
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:47310 "EHLO
-	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758272AbYCDWTe (ORCPT
+	Tue, 4 Mar 2008 17:20:39 -0500
+Received: from host36-195-149-62.serverdedicati.aruba.it ([62.149.195.36]:55114
+	"EHLO mx.cpushare.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757274AbYCDWUi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Mar 2008 17:19:34 -0500
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: "Serge E. Hallyn" <serue@us.ibm.com>
-Cc: Ian Kent <raven@themaw.net>, Jeff Moyer <jmoyer@redhat.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       autofs mailing list <autofs@linux.kernel.org>,
-       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
-       Pavel Emelyanov <xemul@openvz.org>
-Subject: Re: [PATCH 3/4] autofs4 - track uid and gid of last mount requestor
-References: <1204179747.3501.21.camel@raven.themaw.net>
-	<20080227223734.caab0165.akpm@linux-foundation.org>
-	<1204182500.3501.49.camel@raven.themaw.net>
-	<20080227232339.af6e904a.akpm@linux-foundation.org>
-	<1204185623.3501.84.camel@raven.themaw.net>
-	<x494pbtxaup.fsf@segfault.boston.devel.redhat.com>
-	<20080228195118.GA16634@sergelap.austin.ibm.com>
-	<1204255932.3969.86.camel@raven.themaw.net>
-	<20080229160921.GA24296@sergelap.ibm.com>
-	<m1bq5y3p2o.fsf@ebiederm.dsl.xmission.com>
-	<20080303152855.GB25643@sergelap.austin.ibm.com>
-Date: Tue, 04 Mar 2008 15:16:34 -0700
-In-Reply-To: <20080303152855.GB25643@sergelap.austin.ibm.com> (Serge
-	E. Hallyn's message of "Mon, 3 Mar 2008 09:28:55 -0600")
-Message-ID: <m1od9u2kzh.fsf@ebiederm.dsl.xmission.com>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+	Tue, 4 Mar 2008 17:20:38 -0500
+Date: Tue, 4 Mar 2008 23:20:30 +0100
+From: Andrea Arcangeli <andrea@qumranet.com>
+To: Christoph Lameter <clameter@sgi.com>
+Cc: Jack Steiner <steiner@sgi.com>, Nick Piggin <npiggin@suse.de>,
+       akpm@linux-foundation.org, Robin Holt <holt@sgi.com>,
+       Avi Kivity <avi@qumranet.com>, kvm-devel@lists.sourceforge.net,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, general@lists.openfabrics.org,
+       Steve Wise <swise@opengridcomputing.com>,
+       Roland Dreier <rdreier@cisco.com>, Kanoj Sarcar <kanojsarcar@yahoo.com>,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       daniel.blueman@quadrics.com
+Subject: Re: [RFC] Notifier for Externally Mapped Memory (EMM)
+Message-ID: <20080304222030.GB8951@v2.random>
+References: <20080221144023.GC9427@v2.random> <20080221161028.GA14220@sgi.com> <20080227192610.GF28483@v2.random> <20080302155457.GK8091@v2.random> <20080303213707.GA8091@v2.random> <20080303220502.GA5301@v2.random> <47CC9B57.5050402@qumranet.com> <Pine.LNX.4.64.0803032327470.9642@schroedinger.engr.sgi.com> <20080304133020.GC5301@v2.random> <Pine.LNX.4.64.0803041059110.13957@schroedinger.engr.sgi.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0803041059110.13957@schroedinger.engr.sgi.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-"Serge E. Hallyn" <serue@us.ibm.com> writes:
+On Tue, Mar 04, 2008 at 11:00:31AM -0800, Christoph Lameter wrote:
+> But as you pointed out before that path is a slow path anyways. Its rarely 
 
-> Earlier I had thought this could just be done using a special keyring,
-> but atm I'm thinking that would be far uglier than just having a
-> struct pid-like credential proxy in the kernel to pass around in place
-> of uids.
+It's a slow path but I don't see why you think two hooks are better
+than one, when only one is necessary.
 
-I have not looked at many of the implementation possibilities so unfortunately
-I don't know what makes for a good implementation.
+I once ripped invalidate_page while working on #v8 but then I
+reintroduced it because I thought reducing the total number of hooks
+was beneficial to the core linux VM (even if only a
+microoptimization, I sure agree about that, but it's trivial to add
+one hook instead of two hooks there, so a microoptimization was worth
+it IMHO).
 
-What I do know is that uids are serialized in filesystems, and their
-mapping between namespaces is defined by system administrators.
+Your API is also too restrictive, if we'll happen to need one more
+method that doesn't take just (start,end) we'll have to cause all
+drivers to have significant changes instead of one-liners to use
+whatever new feature.
 
-Both of those properties are different from struct pid.  Which means
-a generalized struct user in the kernel can at best hold a cache of the
-mappings.
+> taken. Having a single eviction callback simplifies design.
 
-My preliminary investigations suggested that for the kernel filesystem
-boundary generating a struct user or a struct group just to use for a
-permission check and then to throw it away was wasteful.
+IMHO the design is actually same and I don't understand why you
+rewrote it once more time in a less flexibile way (on a style side
+you're not even using hlist), dropping RCU (not sure how you replace
+it with), etc....
 
-However for inkernel entities a struct user sounds practical.
+Your implementation has the same bug you had in your first V1, see how
+you're not clearing the spte young bits if the pte young bit is
+set. Once you fix that, your change in the ptep_clear_flush_young path
+will look remarkably similar to the patch I posted incremental with
+#v8 to make ->clear_flush_young sleep capable...
 
-All of which is to say that we can learn lessons from the
-implementation of struct pid but that we also have different
-requirements so we can only use those lessons in a limited fashion.
+Converging in a single design is great, but it'd be nice if we could
+converge into a single implementation, and my last patch doesn't have
+any bug and I think it's quite nicer too (also including Nick cleanup
+work) but then I may be biased ;).
 
-Eric
+But as usual I'm entirely satisfied by your brand new EMM Notifier to
+be merged and all perfecting work done on my MMU notifier patch over
+the weeks by multiple developers (including you) to be dropped for
+good, as long as we can enable the new advanced KVM features in
+2.6.25.
