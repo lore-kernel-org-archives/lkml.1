@@ -1,61 +1,118 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934681AbYCDX32@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934493AbYCDXax@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934681AbYCDX32 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Mar 2008 18:29:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935266AbYCDXXv
+	id S934493AbYCDXax (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Mar 2008 18:30:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935308AbYCDXZn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Mar 2008 18:23:51 -0500
-Received: from c60.cesmail.net ([216.154.195.49]:29424 "EHLO c60.cesmail.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S935205AbYCDXXt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Mar 2008 18:23:49 -0500
-Subject: Re: [PATCH 2.6.25] module: allow ndiswrapper to use GPL-only
-	symbols
-From: Pavel Roskin <proski@gnu.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>, Zan Lynx <zlynx@acm.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Jon Masters <jcm@jonmasters.org>, Rusty Russell <rusty@rustcorp.com.au>,
-       Greg Kroah-Hartman <gregkh@suse.de>
-In-Reply-To: <20080304212023.GD31546@elte.hu>
-References: <1204305609.21719.16.camel@dv>
-	 <alpine.LFD.1.00.0802290929590.17889@woody.linux-foundation.org>
-	 <1204313978.2316.8.camel@dv> <20080229211513.GI27212@elte.hu>
-	 <1204324265.2316.70.camel@dv> <20080303105752.GA23594@elte.hu>
-	 <20080304003723.z79pcavdk4wgoc44@webmail.spamcop.net>
-	 <20080304125744.GF29777@elte.hu>
-	 <alpine.LFD.1.00.0803040907420.12253@woody.linux-foundation.org>
-	 <1204652732.2312.18.camel@dv>  <20080304212023.GD31546@elte.hu>
+	Tue, 4 Mar 2008 18:25:43 -0500
+Received: from bombadil.infradead.org ([18.85.46.34]:35335 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S935001AbYCDXZh (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 4 Mar 2008 18:25:37 -0500
+Subject: Re: [RFC] Notifier for Externally Mapped Memory (EMM)
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Christoph Lameter <clameter@sgi.com>
+Cc: Andrea Arcangeli <andrea@qumranet.com>, Jack Steiner <steiner@sgi.com>,
+       Nick Piggin <npiggin@suse.de>, akpm@linux-foundation.org,
+       Robin Holt <holt@sgi.com>, Avi Kivity <avi@qumranet.com>,
+       kvm-devel@lists.sourceforge.net, general@lists.openfabrics.org,
+       Steve Wise <swise@opengridcomputing.com>,
+       Roland Dreier <rdreier@cisco.com>, Kanoj Sarcar <kanojsarcar@yahoo.com>,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       daniel.blueman@quadrics.com
+In-Reply-To: <Pine.LNX.4.64.0803041511080.21441@schroedinger.engr.sgi.com>
+References: <20080221144023.GC9427@v2.random>
+	 <20080221161028.GA14220@sgi.com> <20080227192610.GF28483@v2.random>
+	 <20080302155457.GK8091@v2.random> <20080303213707.GA8091@v2.random>
+	 <20080303220502.GA5301@v2.random> <47CC9B57.5050402@qumranet.com>
+	 <Pine.LNX.4.64.0803032327470.9642@schroedinger.engr.sgi.com>
+	 <20080304133020.GC5301@v2.random>
+	 <Pine.LNX.4.64.0803041059110.13957@schroedinger.engr.sgi.com>
+	 <20080304222030.GB8951@v2.random>
+	 <Pine.LNX.4.64.0803041422070.20821@schroedinger.engr.sgi.com>
+	 <1204670529.6241.52.camel@lappy>
+	 <Pine.LNX.4.64.0803041511080.21441@schroedinger.engr.sgi.com>
 Content-Type: text/plain
-Date: Tue, 04 Mar 2008 18:23:48 -0500
-Message-Id: <1204673028.3479.21.camel@dv>
+Date: Wed, 05 Mar 2008 00:25:00 +0100
+Message-Id: <1204673100.6241.59.camel@lappy>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 (2.12.3-1.fc8) 
+X-Mailer: Evolution 2.21.90 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-On Tue, 2008-03-04 at 22:20 +0100, Ingo Molnar wrote:
-> * Pavel Roskin <proski@gnu.org> wrote:
+On Tue, 2008-03-04 at 15:14 -0800, Christoph Lameter wrote:
+> On Tue, 4 Mar 2008, Peter Zijlstra wrote:
 > 
-> > To recap:
 > > 
-> > 1) USB API
-> > 2) Workqueue API (there is a hackish replacement in ndiswrapper)
-> > 3) task_nice(), but I have a trivial workaround for that.
+> > On Tue, 2008-03-04 at 14:35 -0800, Christoph Lameter wrote:
+> > 
+> > > RCU means that the callbacks occur in an atomic context.
+> > 
+> > Not really, if it requires moving the VM locks to sleepable locks under
+> > a .config option, I think its also fair to require PREEMPT_RCU.
 > 
-> task_nice() - it's trivial so feel free to send a patch that turns it 
-> into EXPORT_SYMBOL().
+> Which would make the patchset pretty complex. RCU is not needed with a 
+> single linked list. Linked list operations can exploit atomic pointer 
+> updates and we only tear down the list when a single execution thread 
+> remains.
 
-The recent discussion makes me nervous about sending any patches of such
-kind.  Instead of getting access task_nice(), ndiswrapper could lose
-access to set_user_nice() or something else.
+OK, that constraint on removal makes it work.
 
-It's bad already that a mistaken commit has turned into a permanent
-restriction for ndiswrapper after my intervention :-(
+> Having said that: Here a couple of updates to address Andrea's complaint 
+> that we not check the referenced bit from the external mapper when the 
+> rerferences bit is set on an OS pte.
+> 
+> Plus two barriers to ensure that a new emm notifier object becomes
+> visible before the base pointer is updated.
+> 
+> Signed-off-by: Christoph Lameter <clameter@sgi.com>
+> 
+> ---
+>  mm/rmap.c |   10 ++++++----
+>  1 file changed, 6 insertions(+), 4 deletions(-)
+> 
+> Index: linux-2.6/mm/rmap.c
+> ===================================================================
+> --- linux-2.6.orig/mm/rmap.c	2008-03-04 14:36:36.321922321 -0800
+> +++ linux-2.6/mm/rmap.c	2008-03-04 15:10:46.159429369 -0800
+> @@ -298,10 +298,10 @@ static int page_referenced_one(struct pa
+>  
+>  	(*mapcount)--;
+>  	pte_unmap_unlock(pte, ptl);
+> -	if (!referenced)
+> -		/* rmap lock held */
+> -		referenced = emm_notify(mm, emm_referenced,
+> -					address, address + PAGE_SIZE);
+> +
+> +	/* rmap lock held */
+> +	if (emm_notify(mm, emm_referenced, address, address + PAGE_SIZE))
+> +			referenced = 1;
 
--- 
-Regards,
-Pavel Roskin
+referenced++; seems more in-style with the rest of that code..
+
+>  out:
+>  	return referenced;
+>  }
+> @@ -1057,6 +1057,7 @@ EXPORT_SYMBOL_GPL(emm_notifier_release);
+>  void emm_notifier_register(struct emm_notifier *e, struct mm_struct *mm)
+>  {
+>  	e->next = mm->emm_notifier;
+> +	smp_wmb();
+>  	mm->emm_notifier = e;
+>  }
+>  EXPORT_SYMBOL_GPL(emm_notifier_register);
+> @@ -1069,6 +1070,7 @@ int __emm_notify(struct mm_struct *mm, e
+>  	int x;
+>  
+>  	while (e) {
+> +		smp_rmb();
+>  		if (e->func) {
+>  			x = e->func(e, mm, op, start, end);
+>  			if (x)
+
+We generally require comments around barriers..
+
