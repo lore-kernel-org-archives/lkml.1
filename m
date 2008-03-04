@@ -1,47 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765701AbYCDTwa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932733AbYCDTxJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765701AbYCDTwa (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Mar 2008 14:52:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755650AbYCDTwV
+	id S932733AbYCDTxJ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Mar 2008 14:53:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755650AbYCDTwq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Mar 2008 14:52:21 -0500
-Received: from mail.suse.de ([195.135.220.2]:44866 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751986AbYCDTwT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Mar 2008 14:52:19 -0500
-Date: Tue, 4 Mar 2008 11:24:36 -0800
-From: Greg KH <gregkh@suse.de>
-To: Dhaval Giani <dhaval@linux.vnet.ibm.com>
-Cc: Alexey Dobriyan <adobriyan@sw.ru>, Holger Kiehl <Holger.Kiehl@dwd.de>,
-       linux-kernel@vger.kernel.org, vatsa@linux.vnet.ibm.com, mingo@elte.hu
-Subject: Re: sysfs: duplicate filename '74' can not be created
-Message-ID: <20080304192435.GA5525@suse.de>
-References: <20080304160940.GC19059@localhost.sw.ru> <20080304163339.GA11160@linux.vnet.ibm.com>
+	Tue, 4 Mar 2008 14:52:46 -0500
+Received: from wolverine02.qualcomm.com ([199.106.114.251]:26193 "EHLO
+	wolverine02.qualcomm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752077AbYCDTwo (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 4 Mar 2008 14:52:44 -0500
+X-IronPort-AV: E=McAfee;i="5200,2160,5244"; a="902359"
+Message-ID: <47CDA885.3000103@qualcomm.com>
+Date: Tue, 04 Mar 2008 11:52:37 -0800
+From: Max Krasnyanskiy <maxk@qualcomm.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080304163339.GA11160@linux.vnet.ibm.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+CC: Paul Jackson <pj@sgi.com>, mingo@elte.hu, tglx@linutronix.de,
+       oleg@tv-sign.ru, rostedt@goodmis.org, linux-kernel@vger.kernel.org,
+       rientjes@google.com
+Subject: Re: [RFC/PATCH] cpuset: cpuset irq affinities
+References: <20080227222103.673194000@chello.nl>	 <1204311351.6243.130.camel@lappy> <20080229190223.GA17820@elte.hu>	 <47C87084.3090208@qualcomm.com> <1204318980.6243.133.camel@lappy>	 <47C8771C.1070001@qualcomm.com> <1204545445.11412.6.camel@twins>	 <20080303113621.1dfdda87.pj@sgi.com> <1204567052.6241.4.camel@lappy>	 <20080303121033.c8c9651c.pj@sgi.com> <1204568316.8514.18.camel@twins>	 <20080304013534.4e51ae48.pj@sgi.com> <1204628762.6241.46.camel@lappy>
+In-Reply-To: <1204628762.6241.46.camel@lappy>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Mar 04, 2008 at 10:03:39PM +0530, Dhaval Giani wrote:
-> On Tue, Mar 04, 2008 at 07:09:40PM +0300, Alexey Dobriyan wrote:
-> > [Cc'ing /sys/kernel/uids guys]
-> > 
+Peter Zijlstra wrote:
+> On Tue, 2008-03-04 at 01:35 -0600, Paul Jackson wrote:
+>> Peter wrote:
+>>> OK, understood, I'll try and come up with yet another scheme :-)
+>> Would your per-cpuset 'irqs' file work if, unlike pids in the 'tasks' file,
+>> we allowed the same irq to be listed in multiple 'irqs' files?
 > 
-> [Also adding gregkh to the cc :)]
+> I did think of that, but that seems rather awkward. For one, how would
+> you remove an irq from a cpuset?
 > 
-> > > Mar  3 13:50:01 helena kernel: sysfs: duplicate filename '74' can not be created
-> > > Mar  3 13:50:01 helena kernel: WARNING: at fs/sysfs/dir.c:424 sysfs_add_one()
-> > > Mar  3 13:50:01 helena kernel: Pid: 21911, comm: sshd Not tainted 2.6.24.3 #1
+> Secondly, the beauty of the current solution is that we use
+> irq_desc->cs->cpus_allowed, if it were in multiple sets, we'd have to
+> iterate a list, and cpus_or() the bunch.
+> 
+Yeah, that would definitely be awkward.
 
-What kernel version is this?  2.6.24 had lots of "issues" with the uids
-code, I'm amazed it worked at all :)
-
-2.6.25-rc should have this all fixed up, if not, please let me know.
-
-thanks,
-
-greg k-h
+Max
