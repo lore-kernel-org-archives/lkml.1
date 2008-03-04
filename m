@@ -1,269 +1,112 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932829AbYCDSsl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932870AbYCDSti@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932829AbYCDSsl (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Mar 2008 13:48:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765530AbYCDSsX
+	id S932870AbYCDSti (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Mar 2008 13:49:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760821AbYCDStY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Mar 2008 13:48:23 -0500
-Received: from rgminet01.oracle.com ([148.87.113.118]:57027 "EHLO
-	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1765519AbYCDSsW (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Mar 2008 13:48:22 -0500
-Date: Tue, 4 Mar 2008 10:46:41 -0800
-From: Mark Fasheh <mark.fasheh@oracle.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       ocfs2-devel@oss.oracle.com
-Subject: [git patches] ocfs2 fixes
-Message-ID: <20080304184641.GK9349@ca-server1.us.oracle.com>
-Reply-To: Mark Fasheh <mark.fasheh@oracle.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Organization: Oracle Corporation
-User-Agent: Mutt/1.5.16 (2007-06-11)
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+	Tue, 4 Mar 2008 13:49:24 -0500
+Received: from mail.gmx.net ([213.165.64.20]:60485 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1762807AbYCDStW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 4 Mar 2008 13:49:22 -0500
+X-Authenticated: #14349625
+X-Provags-ID: V01U2FsdGVkX18vD+xXTxEvc+G0G26fdtPi79ZbijpQ80Uc7PJUDc
+	bzeEBsubcjdFqB
+Subject: Re: [PATCH] block: fix residual byte count handling
+From: Mike Galbraith <efault@gmx.de>
+To: Jens Axboe <jens.axboe@oracle.com>
+Cc: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>, htejun@gmail.com,
+       tomof@acm.org, James.Bottomley@HansenPartnership.com,
+       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       linux-ide@vger.kernel.org, linux-scsi@vger.kernel.org,
+       jgarzik@pobox.com, bzolnier@gmail.com
+In-Reply-To: <20080304184534.GR6704@kernel.dk>
+References: <20080304182228Z.fujita.tomonori@lab.ntt.co.jp>
+	 <20080304093536.GH6704@kernel.dk>
+	 <1204634238.5997.5.camel@homer.simson.net>
+	 <20080304123939.GM6704@kernel.dk>
+	 <1204634619.17258.0.camel@homer.simson.net>
+	 <1204635515.17258.12.camel@homer.simson.net>
+	 <20080304130307.GN6704@kernel.dk>
+	 <1204640722.5783.10.camel@homer.simson.net>
+	 <20080304181736.GP6704@kernel.dk>
+	 <1204655711.19496.10.camel@homer.simson.net>
+	 <20080304184534.GR6704@kernel.dk>
+Content-Type: text/plain
+Date: Tue, 04 Mar 2008 19:49:15 +0100
+Message-Id: <1204656555.6598.4.camel@homer.simson.net>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.0 
+Content-Transfer-Encoding: 7bit
+X-Y-GMX-Trusted: 0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Linus,
 
-Here are some Ocfs2 fixes and minor cleanups for 2.6.24-rc4.
+On Tue, 2008-03-04 at 19:45 +0100, Jens Axboe wrote:
 
-Full patch attached since this is all pretty small.
-	--Mark
+> > It says cc66b4512cae8df4ed1635483210aabf7690ec27... kewpie doll?
+> 
+> That looks right, then perhaps there's still an issue there :/
+> Logs?
+
+Tejuns patchlet (below) fixed it here.
+
+Date:	Wed, 05 Mar 2008 01:42:45 +0900
+From:	Tejun Heo <htejun@gmail.com>
+To:	FUJITA Tomonori <tomof@acm.org>
+CC:	efault@gmx.de, jens.axboe@oracle.com, fujita.tomonori@lab.ntt.co.jp, James.Bottomley@HansenPartnership.com, akpm@linux-foundation.org, linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org, linux-scsi@vger.kernel.org, jgarzik@pobox.com, bzolnier@gmail.com
+Subject: Re: [PATCH] block: fix residual byte count handling
+
+Tejun Heo wrote:
+> Tejun Heo wrote:
+>> FUJITA Tomonori wrote:
+>>>> Aiee... device going down after timing out on READ_DISC_INFO.  That's
+>>>> gruesome.  Can you please try the other patches?
+>>> Tejun, I thought that libata needs a fix for sum(sg) != rq->data_len. No?
+>> The extra_len you added to qc->nbytes should be it.  The only other
+>> place to pay attention is the ATAPI transfer chunk size and your patch
+>> seems to get it right.
+>>
+>>> Now Jens' git tree should work with all the non libata stuff, ide,
+>>> firewire, bsg, etc. But I'm not sure about libata.
+>> With the second patch, all others should be fine no matter what.  I'll
+>> go check libata part again.
+> 
+> I can reproduce the problem here and it's very weird.  I'll report back
+> when I know more.
+
+Okay, I got it.  Heh, it turns out SCSI and/or block layer is not
+ready for rq->data_len != sum(sg).  When adjusted command completes,
+SCSI midlayer completes the command with rq->data_len for PC commands
+which eventually ends up in __end_that_request_first().  As there are
+extra sg area left after completing rq->data_len, blk layer says so to
+SCSI layer and SCSI layer retries the command only with the appended
+area.
+
+The following patch gets the writing going.  I really think it's a
+serious mistake to break rq->data_len == sum(sg).  If we break
+rq->data_len == requested size, the worst bugs are giving wrong size
+when issuing commands to application layer of devices which is
+relatively easy to spot and not all that command anyway.  Breaking
+rq->data_len == sum(sg), bugs will be in internal mechanics, DMA
+engine programming and transport layer.  Oh well...
+
+diff --git a/drivers/scsi/scsi.c b/drivers/scsi/scsi.c
+index fecba05..32439ac 100644
+--- a/drivers/scsi/scsi.c
++++ b/drivers/scsi/scsi.c
+@@ -757,7 +757,7 @@ void scsi_finish_command(struct scsi_cmnd *cmd)
+ 				"Notifying upper driver of completion "
+ 				"(result %x)\n", cmd->result));
+ 
+-	good_bytes = scsi_bufflen(cmd);
++	good_bytes = scsi_bufflen(cmd) + cmd->request->data_len;
+         if (cmd->request->cmd_type != REQ_TYPE_BLOCK_PC) {
+ 		drv = scsi_cmd_to_driver(cmd);
+ 		if (drv->done)
 
 
-Please pull from 'upstream-linus' branch of
-git://git.kernel.org/pub/scm/linux/kernel/git/mfasheh/ocfs2.git upstream-linus
 
-to receive the following updates:
 
- fs/ocfs2/aops.c          |    2 +-
- fs/ocfs2/dir.c           |    5 ++---
- fs/ocfs2/dlm/dlmmaster.c |    6 +++---
- fs/ocfs2/dlmglue.c       |    8 ++++----
- fs/ocfs2/dlmglue.h       |    2 --
- fs/ocfs2/heartbeat.c     |   26 +++++++++++++-------------
- fs/ocfs2/heartbeat.h     |    5 -----
- fs/ocfs2/localalloc.c    |    6 +-----
- 8 files changed, 24 insertions(+), 36 deletions(-)
-
-Adrian Bunk (3):
-      [2.6 patch] fs/ocfs2/: possible cleanups
-      [2.6 patch] make ocfs2_downconvert_thread() static
-      [2.6 patch] ocfs2: make dlm_do_assert_master() static
-
-Julia Lawall (1):
-      fs/ocfs2/aops.c: Correct use of ! and &
-
-Marcin Slusarz (1):
-      ocfs2: le*_add_cpu conversion
-
-Mark Fasheh (1):
-      ocfs2: Fix writeout in ocfs2_data_convert_worker()
-
-Sunil Mushran (1):
-      ocfs2: Enable localalloc for local mounts
-
-diff --git a/fs/ocfs2/aops.c b/fs/ocfs2/aops.c
-index 8224312..90383ed 100644
---- a/fs/ocfs2/aops.c
-+++ b/fs/ocfs2/aops.c
-@@ -257,7 +257,7 @@ static int ocfs2_readpage_inline(struct inode *inode, struct page *page)
- 	struct ocfs2_super *osb = OCFS2_SB(inode->i_sb);
- 
- 	BUG_ON(!PageLocked(page));
--	BUG_ON(!OCFS2_I(inode)->ip_dyn_features & OCFS2_INLINE_DATA_FL);
-+	BUG_ON(!(OCFS2_I(inode)->ip_dyn_features & OCFS2_INLINE_DATA_FL));
- 
- 	ret = ocfs2_read_block(osb, OCFS2_I(inode)->ip_blkno, &di_bh,
- 			       OCFS2_BH_CACHED, inode);
-diff --git a/fs/ocfs2/dir.c b/fs/ocfs2/dir.c
-index e280833..8a18758 100644
---- a/fs/ocfs2/dir.c
-+++ b/fs/ocfs2/dir.c
-@@ -390,9 +390,8 @@ static int __ocfs2_delete_entry(handle_t *handle, struct inode *dir,
- 				goto bail;
- 			}
- 			if (pde)
--				pde->rec_len =
--					cpu_to_le16(le16_to_cpu(pde->rec_len) +
--						    le16_to_cpu(de->rec_len));
-+				le16_add_cpu(&pde->rec_len,
-+						le16_to_cpu(de->rec_len));
- 			else
- 				de->inode = 0;
- 			dir->i_version++;
-diff --git a/fs/ocfs2/dlm/dlmmaster.c b/fs/ocfs2/dlm/dlmmaster.c
-index a54d33d..c92d1b1 100644
---- a/fs/ocfs2/dlm/dlmmaster.c
-+++ b/fs/ocfs2/dlm/dlmmaster.c
-@@ -1695,9 +1695,9 @@ send_response:
-  * can periodically run all locks owned by this node
-  * and re-assert across the cluster...
-  */
--int dlm_do_assert_master(struct dlm_ctxt *dlm,
--			 struct dlm_lock_resource *res,
--			 void *nodemap, u32 flags)
-+static int dlm_do_assert_master(struct dlm_ctxt *dlm,
-+				struct dlm_lock_resource *res,
-+				void *nodemap, u32 flags)
- {
- 	struct dlm_assert_master assert;
- 	int to, tmpret;
-diff --git a/fs/ocfs2/dlmglue.c b/fs/ocfs2/dlmglue.c
-index 351130c..f779430 100644
---- a/fs/ocfs2/dlmglue.c
-+++ b/fs/ocfs2/dlmglue.c
-@@ -3042,7 +3042,7 @@ static int ocfs2_data_convert_worker(struct ocfs2_lock_res *lockres,
-        	inode = ocfs2_lock_res_inode(lockres);
- 	mapping = inode->i_mapping;
- 
--	if (S_ISREG(inode->i_mode))
-+	if (!S_ISREG(inode->i_mode))
- 		goto out;
- 
- 	/*
-@@ -3219,8 +3219,8 @@ static int ocfs2_dentry_convert_worker(struct ocfs2_lock_res *lockres,
- 	return UNBLOCK_CONTINUE_POST;
- }
- 
--void ocfs2_process_blocked_lock(struct ocfs2_super *osb,
--				struct ocfs2_lock_res *lockres)
-+static void ocfs2_process_blocked_lock(struct ocfs2_super *osb,
-+				       struct ocfs2_lock_res *lockres)
- {
- 	int status;
- 	struct ocfs2_unblock_ctl ctl = {0, 0,};
-@@ -3356,7 +3356,7 @@ static int ocfs2_downconvert_thread_should_wake(struct ocfs2_super *osb)
- 	return should_wake;
- }
- 
--int ocfs2_downconvert_thread(void *arg)
-+static int ocfs2_downconvert_thread(void *arg)
- {
- 	int status = 0;
- 	struct ocfs2_super *osb = arg;
-diff --git a/fs/ocfs2/dlmglue.h b/fs/ocfs2/dlmglue.h
-index 1d5b069..e3cf902 100644
---- a/fs/ocfs2/dlmglue.h
-+++ b/fs/ocfs2/dlmglue.h
-@@ -109,8 +109,6 @@ void ocfs2_simple_drop_lockres(struct ocfs2_super *osb,
- 			       struct ocfs2_lock_res *lockres);
- 
- /* for the downconvert thread */
--void ocfs2_process_blocked_lock(struct ocfs2_super *osb,
--				struct ocfs2_lock_res *lockres);
- void ocfs2_wake_downconvert_thread(struct ocfs2_super *osb);
- 
- struct ocfs2_dlm_debug *ocfs2_new_dlm_debug(void);
-diff --git a/fs/ocfs2/heartbeat.c b/fs/ocfs2/heartbeat.c
-index c0efd94..0758daf 100644
---- a/fs/ocfs2/heartbeat.c
-+++ b/fs/ocfs2/heartbeat.c
-@@ -49,10 +49,15 @@ static inline void __ocfs2_node_map_set_bit(struct ocfs2_node_map *map,
- static inline void __ocfs2_node_map_clear_bit(struct ocfs2_node_map *map,
- 					      int bit);
- static inline int __ocfs2_node_map_is_empty(struct ocfs2_node_map *map);
--static void __ocfs2_node_map_dup(struct ocfs2_node_map *target,
--				 struct ocfs2_node_map *from);
--static void __ocfs2_node_map_set(struct ocfs2_node_map *target,
--				 struct ocfs2_node_map *from);
-+
-+/* special case -1 for now
-+ * TODO: should *really* make sure the calling func never passes -1!!  */
-+static void ocfs2_node_map_init(struct ocfs2_node_map *map)
-+{
-+	map->num_nodes = OCFS2_NODE_MAP_MAX_NODES;
-+	memset(map->map, 0, BITS_TO_LONGS(OCFS2_NODE_MAP_MAX_NODES) *
-+	       sizeof(unsigned long));
-+}
- 
- void ocfs2_init_node_maps(struct ocfs2_super *osb)
- {
-@@ -136,15 +141,6 @@ void ocfs2_stop_heartbeat(struct ocfs2_super *osb)
- 		mlog_errno(ret);
- }
- 
--/* special case -1 for now
-- * TODO: should *really* make sure the calling func never passes -1!!  */
--void ocfs2_node_map_init(struct ocfs2_node_map *map)
--{
--	map->num_nodes = OCFS2_NODE_MAP_MAX_NODES;
--	memset(map->map, 0, BITS_TO_LONGS(OCFS2_NODE_MAP_MAX_NODES) *
--	       sizeof(unsigned long));
--}
--
- static inline void __ocfs2_node_map_set_bit(struct ocfs2_node_map *map,
- 					    int bit)
- {
-@@ -216,6 +212,8 @@ int ocfs2_node_map_is_empty(struct ocfs2_super *osb,
- 	return ret;
- }
- 
-+#if 0
-+
- static void __ocfs2_node_map_dup(struct ocfs2_node_map *target,
- 				 struct ocfs2_node_map *from)
- {
-@@ -254,6 +252,8 @@ static void __ocfs2_node_map_set(struct ocfs2_node_map *target,
- 		target->map[i] = from->map[i];
- }
- 
-+#endif  /*  0  */
-+
- /* Returns whether the recovery bit was actually set - it may not be
-  * if a node is still marked as needing recovery */
- int ocfs2_recovery_map_set(struct ocfs2_super *osb,
-diff --git a/fs/ocfs2/heartbeat.h b/fs/ocfs2/heartbeat.h
-index 5685921..eac63ae 100644
---- a/fs/ocfs2/heartbeat.h
-+++ b/fs/ocfs2/heartbeat.h
-@@ -33,7 +33,6 @@ void ocfs2_stop_heartbeat(struct ocfs2_super *osb);
- 
- /* node map functions - used to keep track of mounted and in-recovery
-  * nodes. */
--void ocfs2_node_map_init(struct ocfs2_node_map *map);
- int ocfs2_node_map_is_empty(struct ocfs2_super *osb,
- 			    struct ocfs2_node_map *map);
- void ocfs2_node_map_set_bit(struct ocfs2_super *osb,
-@@ -57,9 +56,5 @@ int ocfs2_recovery_map_set(struct ocfs2_super *osb,
- 			   int num);
- void ocfs2_recovery_map_clear(struct ocfs2_super *osb,
- 			      int num);
--/* returns 1 if bit is the only bit set in target, 0 otherwise */
--int ocfs2_node_map_is_only(struct ocfs2_super *osb,
--			   struct ocfs2_node_map *target,
--			   int bit);
- 
- #endif /* OCFS2_HEARTBEAT_H */
-diff --git a/fs/ocfs2/localalloc.c b/fs/ocfs2/localalloc.c
-index add1ffd..ab83fd5 100644
---- a/fs/ocfs2/localalloc.c
-+++ b/fs/ocfs2/localalloc.c
-@@ -120,9 +120,6 @@ int ocfs2_load_local_alloc(struct ocfs2_super *osb)
- 
- 	mlog_entry_void();
- 
--	if (ocfs2_mount_local(osb))
--		goto bail;
--
- 	if (osb->local_alloc_size == 0)
- 		goto bail;
- 
-@@ -588,8 +585,7 @@ int ocfs2_claim_local_alloc_bits(struct ocfs2_super *osb,
- 	while(bits_wanted--)
- 		ocfs2_set_bit(start++, bitmap);
- 
--	alloc->id1.bitmap1.i_used = cpu_to_le32(*num_bits +
--				le32_to_cpu(alloc->id1.bitmap1.i_used));
-+	le32_add_cpu(&alloc->id1.bitmap1.i_used, *num_bits);
- 
- 	status = ocfs2_journal_dirty(handle, osb->local_alloc_bh);
- 	if (status < 0) {
