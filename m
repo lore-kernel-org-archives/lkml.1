@@ -1,25 +1,29 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764036AbYCDOHA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757355AbYCDOXW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764036AbYCDOHA (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Mar 2008 09:07:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763976AbYCDOGQ
+	id S1757355AbYCDOXW (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Mar 2008 09:23:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752134AbYCDOXK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Mar 2008 09:06:16 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:47043 "EHLO mx3.mail.elte.hu"
+	Tue, 4 Mar 2008 09:23:10 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:37006 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1763964AbYCDOGO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Mar 2008 09:06:14 -0500
-Date: Tue, 4 Mar 2008 15:06:04 +0100
+	id S1751296AbYCDOXI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 4 Mar 2008 09:23:08 -0500
+Date: Tue, 4 Mar 2008 15:22:48 +0100
 From: Ingo Molnar <mingo@elte.hu>
-To: Rick van Rein <rick@vanrein.org>
-Cc: devzero@web.de, pavel@ucw.cz, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2.6.24] mm: BadRAM support for broken memory
-Message-ID: <20080304140604.GG32383@elte.hu>
-References: <182234194@web.de> <20080304132724.GB32383@elte.hu> <20080304134322.GA19237@phantom.vanrein.org>
+To: Adrian Bunk <bunk@kernel.org>
+Cc: Sam Ravnborg <sam@ravnborg.org>, Alexey Starikovskiy <aystarik@gmail.com>,
+       lenb@kernel.org, astarikovskiy@suse.de, linux-acpi@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       Arjan van de Ven <arjan@infradead.org>
+Subject: Re: [2.6 patch] acpi/battery.c: make 2 functions static
+Message-ID: <20080304142248.GA2201@elte.hu>
+References: <20080303103933.GC21190@elte.hu> <20080303113451.GF4457@cs181133002.pp.htv.fi> <20080303114533.GA4183@elte.hu> <20080303120211.GG4457@cs181133002.pp.htv.fi> <20080303121015.GA12660@elte.hu> <20080303122953.GH4457@cs181133002.pp.htv.fi> <20080303125027.GA21577@elte.hu> <20080303145413.GA26072@cs181133002.pp.htv.fi> <20080304131600.GG29777@elte.hu> <20080304134701.GA20278@cs181133002.pp.htv.fi>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080304134322.GA19237@phantom.vanrein.org>
+In-Reply-To: <20080304134701.GA20278@cs181133002.pp.htv.fi>
 User-Agent: Mutt/1.5.17 (2007-11-01)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -34,30 +38,48 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Rick van Rein <rick@vanrein.org> wrote:
+* Adrian Bunk <bunk@kernel.org> wrote:
 
-> > as i said it in another reply to this thread, it would be perfectly 
-> > acceptable for upstream to merge an easier to use boot option - be 
-> > that badmem=addr$size or excludemem=addr$size.
+> On Tue, Mar 04, 2008 at 02:16:00PM +0100, Ingo Molnar wrote:
+> > 
+> > * Adrian Bunk <bunk@stusta.de> wrote:
+> > 
+> > > > well, i'm trying to assume the best, so please explain the following 
+> > > > sequence of events to me:
+> > > > 
+> > > > 1) as you said you knew about this bug - which bug causes more inlining
+> > > >    overhead than hundreds of your uninlining patches combined. The bug
+> > > >    was introduced ~2 years ago in -mm - before the feature hit mainline
+> > > >    in v2.6.16.
+> > > 
+> > > I don't remember having ever said this.
+> > > 
+> > > Your choices are:
+> > > [ ] prove your accusation that I said I
+> > >     "knew about this bug before the feature hit mainline"
+> > > [ ] apologize
+> > > [ ] be the firest person ever in my killfile
+> > 
+> > Adrian, you must be misunderstanding something. Where exactly in the 
+> > above sentences do i assert that you "knew about this bug before the 
+> > feature hit mainline"? I dont say that and cannot say that -
 > 
-> I'm not sure if that is an optimal replacement of BadRAM at all.
-> 
-> Broken memories usually manifest themselves as a column or row in a 
-> DIMM that stopped working.  So there is a pattern in the memory that 
-> is to be excluded, and I'm not wholly sure that combines well with the 
-> excludemem mechanism.  (I will look into it to be sure.)  I hope to 
-> know after the weekend if the patterns that I am talking about can be 
-> turned into to a cosmetic boot option.
+> Please explain your statement "before the feature hit mainline in 
+> v2.6.16" in the above sentence of you in a reasonable way other than 
+> that it should say I knew about it before the feature hit mainline.
 
-feel free to extend the "excludemem=" mechanism to support the full 
-range of "badram=" configuration methods. As long as you are able to 
-feed it into an e820 table (which is not trivial at all), it's the right 
-thing to do and it would be mainstream acceptable.
+do you mean this paragraph:
 
-and i wouldnt mind the "badmem=" option either - because you already 
-have users of that facility and it's intuitively named as well - as long 
-as it's cleanly fed into the e820 space. I.e. it would all look and 
-behave the same way towards users as the BadMem patch does - with a 
-different internal approach.
+| 1) as you said you knew about this bug - which bug causes more 
+| inlining overhead than hundreds of your uninlining patches combined. 
+| The bug was introduced ~2 years ago in -mm - before the feature hit 
+| mainline in v2.6.16.
+
+sorry, but i know of no rule of grammar that could read your 
+interpretation into my two sentences.
+
+(and that's not surprising at all, because i never intended to even 
+suggest that you knew about this breakage "before it went mainline" - 
+why would i even care about such a detail?)
 
 	Ingo
