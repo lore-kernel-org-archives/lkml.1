@@ -1,79 +1,269 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932797AbYCDSr6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932829AbYCDSsl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932797AbYCDSr6 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Mar 2008 13:47:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765510AbYCDSrj
+	id S932829AbYCDSsl (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Mar 2008 13:48:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765530AbYCDSsX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Mar 2008 13:47:39 -0500
-Received: from rv-out-0910.google.com ([209.85.198.184]:29565 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1763782AbYCDSri (ORCPT
+	Tue, 4 Mar 2008 13:48:23 -0500
+Received: from rgminet01.oracle.com ([148.87.113.118]:57027 "EHLO
+	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1765519AbYCDSsW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Mar 2008 13:47:38 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=iX5ySpkCggEMzNKV27bntRZ39fFUV0UuCjNfDuym0frhi9SS6JeXa7CPExFLHjaNxg1SRaExLsIBHDOjpnSQnsvNyAHPrU4QC4t0YJfNFo53I02o3lfjBuaWmOFFeIvI4jTZ4Q2wPPmo8P9zrPx4Rsu9/HzLoFsREipIzqbqtJg=
-Message-ID: <84144f020803041047k7d9d6d5ai10e3f0dac3ca2aeb@mail.gmail.com>
-Date: Tue, 4 Mar 2008 20:47:37 +0200
-From: "Pekka Enberg" <penberg@cs.helsinki.fi>
-To: "Andrew Morton" <akpm@linux-foundation.org>
-Subject: Re: [BUG] 2.6.25-rc3-mm1 kernel panic while bootup on powerpc ()
-Cc: "Kamalesh Babulal" <kamalesh@linux.vnet.ibm.com>,
-       linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-       "Andy Whitcroft" <apw@shadowen.org>, linux-mm@kvack.org,
-       "Mel Gorman" <mel@csn.ul.ie>
-In-Reply-To: <20080304103636.3e7b8fdd.akpm@linux-foundation.org>
+	Tue, 4 Mar 2008 13:48:22 -0500
+Date: Tue, 4 Mar 2008 10:46:41 -0800
+From: Mark Fasheh <mark.fasheh@oracle.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       ocfs2-devel@oss.oracle.com
+Subject: [git patches] ocfs2 fixes
+Message-ID: <20080304184641.GK9349@ca-server1.us.oracle.com>
+Reply-To: Mark Fasheh <mark.fasheh@oracle.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <20080304011928.e8c82c0c.akpm@linux-foundation.org>
-	 <47CD4AB3.3080409@linux.vnet.ibm.com>
-	 <20080304103636.3e7b8fdd.akpm@linux-foundation.org>
-X-Google-Sender-Auth: 9bb4002672ee2f97
+Organization: Oracle Corporation
+User-Agent: Mutt/1.5.16 (2007-06-11)
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 04 Mar 2008 18:42:19 +0530 Kamalesh Babulal
-<kamalesh@linux.vnet.ibm.com> wrote:
->  > 3) Third attempt kernel booted up but had the following call trace 264 times while running
->  > test
->  >
->  > Badness at include/linux/gfp.h:110
->  > NIP: c0000000000b4ff0 LR: c0000000000b4fa0 CTR: c00000000019cdb4
->  > REGS: c000000009edf250 TRAP: 0700   Not tainted  (2.6.25-rc3-mm1-autotest)
->  > MSR: 8000000000029032 <EE,ME,IR,DR>  CR: 22024042  XER: 20000003
->  > TASK = c000000009062140[548] 'kjournald' THREAD: c000000009edc000 CPU: 0
->  > NIP [c0000000000b4ff0] .get_page_from_freelist+0x29c/0x898
->  > LR [c0000000000b4fa0] .get_page_from_freelist+0x24c/0x898
->  > Call Trace:
->  > [c000000009edf5f0] [c0000000000b56e4] .__alloc_pages_internal+0xf8/0x470
->  > [c000000009edf6e0] [c0000000000e0458] .kmem_getpages+0x8c/0x194
->  > [c000000009edf770] [c0000000000e1050] .fallback_alloc+0x194/0x254
->  > [c000000009edf820] [c0000000000e14b0] .kmem_cache_alloc+0xd8/0x144
->  > [c000000009edf8c0] [c0000000001fe0f8] .radix_tree_preload+0x50/0xd4
->  > [c000000009edf960] [c0000000000ad048] .add_to_page_cache+0x38/0x12c
->  > [c000000009edfa00] [c0000000000ad158] .add_to_page_cache_lru+0x1c/0x4c
->  > [c000000009edfa90] [c0000000000add58] .find_or_create_page+0x60/0xa8
->  > [c000000009edfb30] [c00000000011e478] .__getblk+0x140/0x310
->  > [c000000009edfc00] [c0000000001b78c4] .journal_get_descriptor_buffer+0x44/0xd8
->  > [c000000009edfca0] [c0000000001b236c] .journal_commit_transaction+0x948/0x1590
->  > [c000000009edfe00] [c0000000001b585c] .kjournald+0xf4/0x2ac
->  > [c000000009edff00] [c00000000007ff4c] .kthread+0x84/0xd0
->  > [c000000009edff90] [c000000000028900] .kernel_thread+0x4c/0x68
->  > Instruction dump:
->  > 7dc57378 48009575 60000000 2fa30000 419e0490 56c902d8 3c000018 7dd907b4
->  > 7ad2c7e2 7f890000 7c000026 5400fffe <0b000000> e93e8128 3b000000 80090000
+Hi Linus,
 
-On Tue, Mar 4, 2008 at 8:36 PM, Andrew Morton
-<akpm@linux-foundation.org> wrote:
->  /* Convert GFP flags to their corresponding migrate type */
->  static inline int allocflags_to_migratetype(gfp_t gfp_flags)
->  {
->         WARN_ON((gfp_flags & GFP_MOVABLE_MASK) == GFP_MOVABLE_MASK);
->
->  Mel, Pekka: would you have some head-scratching time for this one please?
+Here are some Ocfs2 fixes and minor cleanups for 2.6.24-rc4.
 
-Sure. Just to double-check, this is with SLAB, right? Do you see this with SLUB?
+Full patch attached since this is all pretty small.
+	--Mark
+
+
+Please pull from 'upstream-linus' branch of
+git://git.kernel.org/pub/scm/linux/kernel/git/mfasheh/ocfs2.git upstream-linus
+
+to receive the following updates:
+
+ fs/ocfs2/aops.c          |    2 +-
+ fs/ocfs2/dir.c           |    5 ++---
+ fs/ocfs2/dlm/dlmmaster.c |    6 +++---
+ fs/ocfs2/dlmglue.c       |    8 ++++----
+ fs/ocfs2/dlmglue.h       |    2 --
+ fs/ocfs2/heartbeat.c     |   26 +++++++++++++-------------
+ fs/ocfs2/heartbeat.h     |    5 -----
+ fs/ocfs2/localalloc.c    |    6 +-----
+ 8 files changed, 24 insertions(+), 36 deletions(-)
+
+Adrian Bunk (3):
+      [2.6 patch] fs/ocfs2/: possible cleanups
+      [2.6 patch] make ocfs2_downconvert_thread() static
+      [2.6 patch] ocfs2: make dlm_do_assert_master() static
+
+Julia Lawall (1):
+      fs/ocfs2/aops.c: Correct use of ! and &
+
+Marcin Slusarz (1):
+      ocfs2: le*_add_cpu conversion
+
+Mark Fasheh (1):
+      ocfs2: Fix writeout in ocfs2_data_convert_worker()
+
+Sunil Mushran (1):
+      ocfs2: Enable localalloc for local mounts
+
+diff --git a/fs/ocfs2/aops.c b/fs/ocfs2/aops.c
+index 8224312..90383ed 100644
+--- a/fs/ocfs2/aops.c
++++ b/fs/ocfs2/aops.c
+@@ -257,7 +257,7 @@ static int ocfs2_readpage_inline(struct inode *inode, struct page *page)
+ 	struct ocfs2_super *osb = OCFS2_SB(inode->i_sb);
+ 
+ 	BUG_ON(!PageLocked(page));
+-	BUG_ON(!OCFS2_I(inode)->ip_dyn_features & OCFS2_INLINE_DATA_FL);
++	BUG_ON(!(OCFS2_I(inode)->ip_dyn_features & OCFS2_INLINE_DATA_FL));
+ 
+ 	ret = ocfs2_read_block(osb, OCFS2_I(inode)->ip_blkno, &di_bh,
+ 			       OCFS2_BH_CACHED, inode);
+diff --git a/fs/ocfs2/dir.c b/fs/ocfs2/dir.c
+index e280833..8a18758 100644
+--- a/fs/ocfs2/dir.c
++++ b/fs/ocfs2/dir.c
+@@ -390,9 +390,8 @@ static int __ocfs2_delete_entry(handle_t *handle, struct inode *dir,
+ 				goto bail;
+ 			}
+ 			if (pde)
+-				pde->rec_len =
+-					cpu_to_le16(le16_to_cpu(pde->rec_len) +
+-						    le16_to_cpu(de->rec_len));
++				le16_add_cpu(&pde->rec_len,
++						le16_to_cpu(de->rec_len));
+ 			else
+ 				de->inode = 0;
+ 			dir->i_version++;
+diff --git a/fs/ocfs2/dlm/dlmmaster.c b/fs/ocfs2/dlm/dlmmaster.c
+index a54d33d..c92d1b1 100644
+--- a/fs/ocfs2/dlm/dlmmaster.c
++++ b/fs/ocfs2/dlm/dlmmaster.c
+@@ -1695,9 +1695,9 @@ send_response:
+  * can periodically run all locks owned by this node
+  * and re-assert across the cluster...
+  */
+-int dlm_do_assert_master(struct dlm_ctxt *dlm,
+-			 struct dlm_lock_resource *res,
+-			 void *nodemap, u32 flags)
++static int dlm_do_assert_master(struct dlm_ctxt *dlm,
++				struct dlm_lock_resource *res,
++				void *nodemap, u32 flags)
+ {
+ 	struct dlm_assert_master assert;
+ 	int to, tmpret;
+diff --git a/fs/ocfs2/dlmglue.c b/fs/ocfs2/dlmglue.c
+index 351130c..f779430 100644
+--- a/fs/ocfs2/dlmglue.c
++++ b/fs/ocfs2/dlmglue.c
+@@ -3042,7 +3042,7 @@ static int ocfs2_data_convert_worker(struct ocfs2_lock_res *lockres,
+        	inode = ocfs2_lock_res_inode(lockres);
+ 	mapping = inode->i_mapping;
+ 
+-	if (S_ISREG(inode->i_mode))
++	if (!S_ISREG(inode->i_mode))
+ 		goto out;
+ 
+ 	/*
+@@ -3219,8 +3219,8 @@ static int ocfs2_dentry_convert_worker(struct ocfs2_lock_res *lockres,
+ 	return UNBLOCK_CONTINUE_POST;
+ }
+ 
+-void ocfs2_process_blocked_lock(struct ocfs2_super *osb,
+-				struct ocfs2_lock_res *lockres)
++static void ocfs2_process_blocked_lock(struct ocfs2_super *osb,
++				       struct ocfs2_lock_res *lockres)
+ {
+ 	int status;
+ 	struct ocfs2_unblock_ctl ctl = {0, 0,};
+@@ -3356,7 +3356,7 @@ static int ocfs2_downconvert_thread_should_wake(struct ocfs2_super *osb)
+ 	return should_wake;
+ }
+ 
+-int ocfs2_downconvert_thread(void *arg)
++static int ocfs2_downconvert_thread(void *arg)
+ {
+ 	int status = 0;
+ 	struct ocfs2_super *osb = arg;
+diff --git a/fs/ocfs2/dlmglue.h b/fs/ocfs2/dlmglue.h
+index 1d5b069..e3cf902 100644
+--- a/fs/ocfs2/dlmglue.h
++++ b/fs/ocfs2/dlmglue.h
+@@ -109,8 +109,6 @@ void ocfs2_simple_drop_lockres(struct ocfs2_super *osb,
+ 			       struct ocfs2_lock_res *lockres);
+ 
+ /* for the downconvert thread */
+-void ocfs2_process_blocked_lock(struct ocfs2_super *osb,
+-				struct ocfs2_lock_res *lockres);
+ void ocfs2_wake_downconvert_thread(struct ocfs2_super *osb);
+ 
+ struct ocfs2_dlm_debug *ocfs2_new_dlm_debug(void);
+diff --git a/fs/ocfs2/heartbeat.c b/fs/ocfs2/heartbeat.c
+index c0efd94..0758daf 100644
+--- a/fs/ocfs2/heartbeat.c
++++ b/fs/ocfs2/heartbeat.c
+@@ -49,10 +49,15 @@ static inline void __ocfs2_node_map_set_bit(struct ocfs2_node_map *map,
+ static inline void __ocfs2_node_map_clear_bit(struct ocfs2_node_map *map,
+ 					      int bit);
+ static inline int __ocfs2_node_map_is_empty(struct ocfs2_node_map *map);
+-static void __ocfs2_node_map_dup(struct ocfs2_node_map *target,
+-				 struct ocfs2_node_map *from);
+-static void __ocfs2_node_map_set(struct ocfs2_node_map *target,
+-				 struct ocfs2_node_map *from);
++
++/* special case -1 for now
++ * TODO: should *really* make sure the calling func never passes -1!!  */
++static void ocfs2_node_map_init(struct ocfs2_node_map *map)
++{
++	map->num_nodes = OCFS2_NODE_MAP_MAX_NODES;
++	memset(map->map, 0, BITS_TO_LONGS(OCFS2_NODE_MAP_MAX_NODES) *
++	       sizeof(unsigned long));
++}
+ 
+ void ocfs2_init_node_maps(struct ocfs2_super *osb)
+ {
+@@ -136,15 +141,6 @@ void ocfs2_stop_heartbeat(struct ocfs2_super *osb)
+ 		mlog_errno(ret);
+ }
+ 
+-/* special case -1 for now
+- * TODO: should *really* make sure the calling func never passes -1!!  */
+-void ocfs2_node_map_init(struct ocfs2_node_map *map)
+-{
+-	map->num_nodes = OCFS2_NODE_MAP_MAX_NODES;
+-	memset(map->map, 0, BITS_TO_LONGS(OCFS2_NODE_MAP_MAX_NODES) *
+-	       sizeof(unsigned long));
+-}
+-
+ static inline void __ocfs2_node_map_set_bit(struct ocfs2_node_map *map,
+ 					    int bit)
+ {
+@@ -216,6 +212,8 @@ int ocfs2_node_map_is_empty(struct ocfs2_super *osb,
+ 	return ret;
+ }
+ 
++#if 0
++
+ static void __ocfs2_node_map_dup(struct ocfs2_node_map *target,
+ 				 struct ocfs2_node_map *from)
+ {
+@@ -254,6 +252,8 @@ static void __ocfs2_node_map_set(struct ocfs2_node_map *target,
+ 		target->map[i] = from->map[i];
+ }
+ 
++#endif  /*  0  */
++
+ /* Returns whether the recovery bit was actually set - it may not be
+  * if a node is still marked as needing recovery */
+ int ocfs2_recovery_map_set(struct ocfs2_super *osb,
+diff --git a/fs/ocfs2/heartbeat.h b/fs/ocfs2/heartbeat.h
+index 5685921..eac63ae 100644
+--- a/fs/ocfs2/heartbeat.h
++++ b/fs/ocfs2/heartbeat.h
+@@ -33,7 +33,6 @@ void ocfs2_stop_heartbeat(struct ocfs2_super *osb);
+ 
+ /* node map functions - used to keep track of mounted and in-recovery
+  * nodes. */
+-void ocfs2_node_map_init(struct ocfs2_node_map *map);
+ int ocfs2_node_map_is_empty(struct ocfs2_super *osb,
+ 			    struct ocfs2_node_map *map);
+ void ocfs2_node_map_set_bit(struct ocfs2_super *osb,
+@@ -57,9 +56,5 @@ int ocfs2_recovery_map_set(struct ocfs2_super *osb,
+ 			   int num);
+ void ocfs2_recovery_map_clear(struct ocfs2_super *osb,
+ 			      int num);
+-/* returns 1 if bit is the only bit set in target, 0 otherwise */
+-int ocfs2_node_map_is_only(struct ocfs2_super *osb,
+-			   struct ocfs2_node_map *target,
+-			   int bit);
+ 
+ #endif /* OCFS2_HEARTBEAT_H */
+diff --git a/fs/ocfs2/localalloc.c b/fs/ocfs2/localalloc.c
+index add1ffd..ab83fd5 100644
+--- a/fs/ocfs2/localalloc.c
++++ b/fs/ocfs2/localalloc.c
+@@ -120,9 +120,6 @@ int ocfs2_load_local_alloc(struct ocfs2_super *osb)
+ 
+ 	mlog_entry_void();
+ 
+-	if (ocfs2_mount_local(osb))
+-		goto bail;
+-
+ 	if (osb->local_alloc_size == 0)
+ 		goto bail;
+ 
+@@ -588,8 +585,7 @@ int ocfs2_claim_local_alloc_bits(struct ocfs2_super *osb,
+ 	while(bits_wanted--)
+ 		ocfs2_set_bit(start++, bitmap);
+ 
+-	alloc->id1.bitmap1.i_used = cpu_to_le32(*num_bits +
+-				le32_to_cpu(alloc->id1.bitmap1.i_used));
++	le32_add_cpu(&alloc->id1.bitmap1.i_used, *num_bits);
+ 
+ 	status = ocfs2_journal_dirty(handle, osb->local_alloc_bh);
+ 	if (status < 0) {
