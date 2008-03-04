@@ -1,88 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762736AbYCDPNg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764183AbYCDPPB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762736AbYCDPNg (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Mar 2008 10:13:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757395AbYCDPN0
+	id S1764183AbYCDPPB (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Mar 2008 10:15:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757845AbYCDPOw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Mar 2008 10:13:26 -0500
-Received: from mtaout03-winn.ispmail.ntl.com ([81.103.221.49]:30703 "EHLO
-	mtaout03-winn.ispmail.ntl.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756251AbYCDPNZ (ORCPT
+	Tue, 4 Mar 2008 10:14:52 -0500
+Received: from nf-out-0910.google.com ([64.233.182.191]:64572 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757395AbYCDPOw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Mar 2008 10:13:25 -0500
-From: Ian Campbell <ijc@hellion.org.uk>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Mark McLoughlin <markmc@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>,
-       Alexander van Heukelum <heukelum@mailshack.com>,
-       Alexander van Heukelum <heukelum@fastmail.fm>, Andi Kleen <ak@suse.de>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Jeremy Fitzhardinge <jeremy@goop.org>,
-       LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <20080304143324.GA2713@elte.hu>
-References: <47C22568.1010405@zytor.com>
-	 <1203958478.20033.1239002461@webmail.messagingengine.com>
-	 <20080225170134.GA15839@elte.hu> <20080225180750.GA31054@mailshack.com>
-	 <20080228131341.GA25213@mailshack.com>
-	 <20080228132822.GA25278@mailshack.com>
-	 <1204233131.28798.12.camel@cthulhu.hellion.org.uk>
-	 <47C72432.3010606@zytor.com>
-	 <1204240609.28798.33.camel@cthulhu.hellion.org.uk>
-	 <1204630906.16613.4.camel@muff>  <20080304143324.GA2713@elte.hu>
-Content-Type: text/plain
-Date: Tue, 04 Mar 2008 15:12:57 +0000
-Message-Id: <1204643577.3483.121.camel@zakaz.uk.xensource.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 
-Content-Transfer-Encoding: 7bit
-X-SA-Exim-Connect-IP: 217.46.209.99
-X-SA-Exim-Mail-From: ijc@hellion.org.uk
-Subject: Re: [RFC] use realmode code to reserve end-of-conventional-memory
-	to 1MB
-X-SA-Exim-Version: 4.2.1 (built Tue, 09 Jan 2007 17:23:22 +0000)
-X-SA-Exim-Scanned: Yes (on hopkins.hellion.org.uk)
+	Tue, 4 Mar 2008 10:14:52 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent:from;
+        b=qin/+eahXRvah4uGvFs1bFGnGcr1Fi7ZORtWo2rh+JGwFv5boQ2EE1YoEHQzBHkeypgTUbiF7EMkuFDNYIMj9UVohzG5nAdEiZxyLOIx5um+yUm0g9euBsQw2A0g9kk9a06jtWeCRG3ETDwnt00oPCCXWtgQ631mVSBO5b2b9O8=
+Date: Tue, 4 Mar 2008 17:11:39 +0200
+To: Rusty Russell <rusty@rustcorp.com.au>
+Cc: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
+       "H. Peter Anvin" <hpa@zytor.com>, LKML <linux-kernel@vger.kernel.org>,
+       lguest@ozlabs.org, akpm <akpm@linux-foundation.org>
+Subject: Re: [BUG + PATCH/Bugfix] x86/lguest: fix pgdir pmd index
+	calculation
+Message-ID: <20080304151139.GA29618@ubuntu>
+References: <20080224155515.GA24831@ubuntu> <200803042355.10960.rusty@rustcorp.com.au>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200803042355.10960.rusty@rustcorp.com.au>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+From: "Ahmed S. Darwish" <darwish.07@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-On Tue, 2008-03-04 at 15:33 +0100, Ingo Molnar wrote:
-> * Mark McLoughlin <markmc@redhat.com> wrote:
+On Tue, Mar 04, 2008 at 11:55:10PM +1100, Rusty Russell wrote:
+> On Monday 25 February 2008 02:55:15 Ahmed S. Darwish wrote:
+> > Hi all,
+> >
+> > Beginning from commits close to v2.6.25-rc2, running lguest always oopses
+> > the host kernel. Oops is at [1].
 > 
-> > > The patch below seems like the right thing to do. It certainly boots 
-> > > in a domU without the DMI problem (without any of the other related 
-> > > patches such as Alexander's).
-> > 
-> > Yep, this patch on its own fixes 2.6.25-rc3 DomU boot for me here.
+> OK, whatever the guest does should not break the host.  So your patch can't be
+> the whole solution.
 > 
-> thanks - i picked it up for v2.6.25 merging.
+> > static void lguest_set_pmd(pmd_t *pmdp, pmd_t pmdval)
+> > {
+> > 	*pmdp = pmdval;
+> > 	lazy_hcall(LHCALL_SET_PMD, __pa(pmdp)&PAGE_MASK,
+> > 		   (__pa(pmdp)&(PAGE_SIZE-1))/4, 0);
+> > }
+> >
+> > The first hcall parameter is global pgdir which looks fine. The second
+> > parameter is the pmd index in the pgdir which is suspectful.
+> >
+> > AFAIK, calculating the index of pmd does not need a divisoin over four.
+> > Removing the division made lguest work fine again . Patch is at [2].
+> 
+> Each pmd is 4 bytes long, so the divide by 4 gives the index into the (top
+> level) page. ie. a number in the range 0 to 1023.
+> 
 
-Thanks, I'd been planning to resend once I got the ddcprobe thing sorted
-but I've been a bit snowed under (deadlines :-|). This patch is
-independently correct though and turns the ddcprobe failure from a domU
-kernel crash into a userspace hang.
+aha, now it's clear. 
 
-ddcprobe hangs because the page at pfn 0 is comprised entirely 0xc2
-bytes (the Xen memory scrub poison value -- I'm running a debug
-hypervisor) which causes lrmi to try and jump to 0xc2c2*16+0xc2c2 to
-implement int $0xXX. gdb won't let me actually examine that address for
-some reason so I don't actually know what it's hitting to cause the
-loop/hang but no good can come of jumping to that address in any case...
+>
+> Indeed, here's the correct fix.  Does it work for you?
+> 
 
-Sanest solution seems to me to be to explicitly zero PFN 0 -- I have a
-patch I just haven't had a chance to clean it up for submission yet.
+Yes it does (after removing the unrelated TSC-if-pentium+ checks). 
 
-> i'm wondering, what triggered this bug, and why didnt we have these 
-> problems in the past?
-
-Did someone make the boot allocator start at the bottom instead of the
-top of memory or something?
-
-Ian.
+Thank you
 
 -- 
-Ian Campbell
-Current Noise: Nile - Even The Gods Must Die
 
-There is a natural hootchy-kootchy to a goldfish.
-		-- Walt Disney
+"Better to light a candle, than curse the darkness"
+
+Ahmed S. Darwish
+Homepage: http://darwish.07.googlepages.com
+Blog: http://darwish-07.blogspot.com
 
