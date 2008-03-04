@@ -1,77 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765445AbYCDQai@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765506AbYCDQbM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765445AbYCDQai (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Mar 2008 11:30:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765125AbYCDQaB
+	id S1765506AbYCDQbM (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Mar 2008 11:31:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764847AbYCDQaH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Mar 2008 11:30:01 -0500
-Received: from iolanthe.rowland.org ([192.131.102.54]:56789 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1765203AbYCDQ37 (ORCPT
+	Tue, 4 Mar 2008 11:30:07 -0500
+Received: from terminus.zytor.com ([198.137.202.10]:40167 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1765203AbYCDQaC (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Mar 2008 11:29:59 -0500
-Date: Tue, 4 Mar 2008 11:29:58 -0500 (EST)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: David Brownell <david-b@pacbell.net>,
-       Christian Kujau <lists@nerdbynature.de>
-cc: LKML <linux-kernel@vger.kernel.org>, <0x0007@gmail.com>,
-       USB list <linux-usb@vger.kernel.org>
-Subject: Re: WARNING: at drivers/usb/host/ehci-hcd.c:287
-In-Reply-To: <alpine.DEB.1.00.0803032330190.5974@sheep.housecafe.de>
-Message-ID: <Pine.LNX.4.44L0.0803041118100.4039-100000@iolanthe.rowland.org>
+	Tue, 4 Mar 2008 11:30:02 -0500
+Message-ID: <47CD78F0.2060802@zytor.com>
+Date: Tue, 04 Mar 2008 08:29:36 -0800
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Ingo Molnar <mingo@elte.hu>
+CC: Rick van Rein <rick@vanrein.org>, linux-kernel@vger.kernel.org,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [PATCH 2.6.24] mm: BadRAM support for broken memory
+References: <20080302134221.GA25196@phantom.vanrein.org> <20080303082238.GB13580@elte.hu> <47CC3005.5090706@zytor.com> <20080304133028.GC32383@elte.hu>
+In-Reply-To: <20080304133028.GC32383@elte.hu>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 3 Mar 2008, Christian Kujau wrote:
-
-> On Mon, 3 Mar 2008, Christian Kujau wrote:
-> > after upgrading to 2.6.25-rc3, kern.log shows:
-> >
-> > [ 1535.884848] ------------[ cut here ]------------
-> > [ 1535.884855] WARNING: at drivers/usb/host/ehci-hcd.c:287
+Ingo Molnar wrote:
+>>>
+>> How is this different from:
+>>
+>> 	memmap=<size>$<len>
+>>
+>> ... ?
 > 
-> Hm, after ~24h of uptime, this message appeared 25 times already.
-> The WLAN USB device was used the whole time, the usb-storage module
-> was hardly used over the day:
+> it's the inverse? When we identify bad areas of RAM, we really want to 
+> "punch holes" into the existing memory map. So 'badram=' or 
+> 'excludemem=' would be nicer and easier to use.
 > 
-> # grep usb /proc/interrupts
->   10:   10693403    XT-PIC-XT        ohci_hcd:usb3, eth0
->   11:   10270770    XT-PIC-XT        sym53c8xx, ehci_hcd:usb1
->   12:         91    XT-PIC-XT        ohci_hcd:usb2
+> Or extend 'memmap=' with an inverse parameter: memmap=!0x10000000$1M 
+> would exclude a 1MB region at 256MB physical.
 > 
-> I even tried to trigger the system freeze[0] by using usb-storage
-> and reading a lot from it, but no freeze, and the message could
-> not be triggered either - they pop up every now and then, but too often, 
-> IMHO.
-> 
-> Can anybody shed some light on this?
 
-Dave, it seems to me that this must be an example of a race between the 
-iaa watchdog timer expiring and end_unlink_async() running.  It's not 
-good enough for end_unlink_async() to call iaa_watchdog_done(), because 
-on an SMP system the timer may already have fired and the watchdog 
-routine may be spinning on ehci->lock.
+My understanding is that the $-form (as opposed to the @-form or #-form) 
+is exactly that:
 
-It's even worse, because end_unlink_async() can call 
-start_unlink_async().  If that happens, the watchdog routine will think 
-the timer has expired when in fact it has just been restarted.
+         memmap=nn[KMG]$ss[KMG]
+                         [KNL,ACPI] Mark specific memory as reserved.
+                         Region of memory to be used, from ss to ss+nn.
 
-How about replacing the
+"Reserved" usually means "don't use as either memory or free address space".
 
-	WARN_ON(!ehci->reclaim);
-
-line in ehci_iaa_watchdog() with
-
-	if (unlikely(!ehci->reclaim || 
-			!HC_IS_RUNNING(ehci_to_hcd(ehci)->state) ||
-			timer_pending(&ehci->iaa_watchdog))
-		goto done;
-
-where "done:" is added just before the spin_unlock_irqrestore?
-
-Alan Stern
-
+	-hpa
