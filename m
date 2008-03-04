@@ -1,54 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760232AbYCDG1Q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760627AbYCDG2p@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760232AbYCDG1Q (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Mar 2008 01:27:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752724AbYCDG06
+	id S1760627AbYCDG2p (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Mar 2008 01:28:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753161AbYCDG2h
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Mar 2008 01:26:58 -0500
-Received: from relay2.sgi.com ([192.48.171.30]:46515 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751316AbYCDG05 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Mar 2008 01:26:57 -0500
-Date: Tue, 4 Mar 2008 00:26:51 -0600
-From: Paul Jackson <pj@sgi.com>
-To: "Paul Menage" <menage@google.com>
-Cc: a.p.zijlstra@chello.nl, maxk@qualcomm.com, mingo@elte.hu,
-       tglx@linutronix.de, oleg@tv-sign.ru, rostedt@goodmis.org,
-       linux-kernel@vger.kernel.org, rientjes@google.com
-Subject: Re: [RFC/PATCH] cpuset: cpuset irq affinities
-Message-Id: <20080304002651.95089ff1.pj@sgi.com>
-In-Reply-To: <6599ad830803032221j740c9657yec237ebbadbeaeaa@mail.gmail.com>
-References: <20080227222103.673194000@chello.nl>
-	<47C8771C.1070001@qualcomm.com>
-	<1204545445.11412.6.camel@twins>
-	<20080303113621.1dfdda87.pj@sgi.com>
-	<1204567052.6241.4.camel@lappy>
-	<20080303121033.c8c9651c.pj@sgi.com>
-	<6599ad830803031041r6c635141n6520a915f2e1d08@mail.gmail.com>
-	<20080303125253.5d2d580c.pj@sgi.com>
-	<6599ad830803032126m39935eaeu1df67d6263e8e123@mail.gmail.com>
-	<20080304001507.3ddc8f26.pj@sgi.com>
-	<6599ad830803032221j740c9657yec237ebbadbeaeaa@mail.gmail.com>
-Organization: SGI
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.12.0; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 4 Mar 2008 01:28:37 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:60346 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753102AbYCDG2h (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 4 Mar 2008 01:28:37 -0500
+Date: Mon, 3 Mar 2008 22:23:21 -0800
+From: Greg KH <greg@kroah.com>
+To: Yinghai Lu <yhlu.kernel@gmail.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] x86 pci: remove checking type for mmconfig probe v2
+Message-ID: <20080304062321.GB16019@kroah.com>
+References: <200802271639.52958.yinghai.lu@sun.com> <200802282356.50496.yinghai.lu@sun.com> <20080301060236.GE20032@kroah.com> <86802c440803010036u2cb89a30h2adb90b3ee497cfc@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <86802c440803010036u2cb89a30h2adb90b3ee497cfc@mail.gmail.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Paul M wrote:
-> Except that this isn't currently possible if you're also trying to do
-> memory hardwalling on those cpusets, since then sibling cpusets can't
-> share memory nodes.
- 
-Yes, there would be interactions, on both the CPU and Memory side with
-some second order mechanisms (hardwalls and sched domains.)
+On Sat, Mar 01, 2008 at 12:36:50AM -0800, Yinghai Lu wrote:
+> On Fri, Feb 29, 2008 at 10:02 PM, Greg KH <greg@kroah.com> wrote:
+> > On Thu, Feb 28, 2008 at 11:56:50PM -0800, Yinghai Lu wrote:
+> >  >
+> >  > doesn't need to check if it is type1 or type2. we can use raw_pci_ops dirctly.
+> >
+> >  Why?  is this because the ops are already set up?  It would be nice to
+> >  add the "why this change is necessary and/or possible now" for the
+> >  changelog.
+> yes.
+> raw_pci_ops got assigned when check direct_type1 and direct_type2.
+> and could used in hostbridge check to get MMCONF base.
+> 
+> make mmconfig probe clean
+> with checking if raw_pci_ops is assigned instead of passing type or
+> checking type.
 
-Still, I ask, where's the beef -- the real users?
+Ah, ok, that makes sense, thanks.
 
--- 
-                  I won't rest till it's the best ...
-                  Programmer, Linux Scalability
-                  Paul Jackson <pj@sgi.com> 1.940.382.4214
+greg k-h
