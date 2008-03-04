@@ -1,132 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758659AbYCDGRi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756219AbYCDGWA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758659AbYCDGRi (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Mar 2008 01:17:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751717AbYCDGRa
+	id S1756219AbYCDGWA (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Mar 2008 01:22:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750771AbYCDGVw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Mar 2008 01:17:30 -0500
-Received: from tomts40.bellnexxia.net ([209.226.175.97]:51997 "EHLO
-	tomts40-srv.bellnexxia.net" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1751162AbYCDGR3 (ORCPT
+	Tue, 4 Mar 2008 01:21:52 -0500
+Received: from smtp-out.google.com ([216.239.33.17]:3956 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750695AbYCDGVv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Mar 2008 01:17:29 -0500
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: Ao8CADp3zEdMQWoK/2dsb2JhbACBVpBrmn2BfA
-Date: Tue, 4 Mar 2008 01:17:21 -0500
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtml.ca>
-To: Christoph Lameter <clameter@sgi.com>
-Cc: Eric Dumazet <dada1@cosmosbay.com>, Pekka Enberg <penberg@cs.helsinki.fi>,
-       Torsten Kaiser <just.for.lkml@googlemail.com>,
-       Ingo Molnar <mingo@elte.hu>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: [PATCH] Slub Freeoffset check overflow (updated)
-Message-ID: <20080304061721.GA27279@Krystal>
-References: <Pine.LNX.4.64.0802271532580.14380@schroedinger.engr.sgi.com> <20080228055510.GA9026@Krystal> <Pine.LNX.4.64.0802281054230.29191@schroedinger.engr.sgi.com> <20080228232507.GB20319@Krystal> <Pine.LNX.4.64.0802281648510.1954@schroedinger.engr.sgi.com> <20080229015621.GB32200@Krystal> <Pine.LNX.4.64.0802281812290.3159@schroedinger.engr.sgi.com> <20080229033255.GA2200@Krystal> <Pine.LNX.4.64.0802282107090.5947@schroedinger.engr.sgi.com> <20080229132848.GA10565@Krystal>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Tue, 4 Mar 2008 01:21:51 -0500
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=received:message-id:date:from:to:subject:cc:in-reply-to:
+	mime-version:content-type:content-transfer-encoding:
+	content-disposition:references;
+	b=w7GNmSGThntilw+U+r+U6nYVqyvBTDCxKajfKHaHusBvYoiLuvX33J14Cmb95ZqL7
+	tBH3YHDBXgGxI0DAcvEVQ==
+Message-ID: <6599ad830803032221j740c9657yec237ebbadbeaeaa@mail.gmail.com>
+Date: Mon, 3 Mar 2008 22:21:41 -0800
+From: "Paul Menage" <menage@google.com>
+To: "Paul Jackson" <pj@sgi.com>
+Subject: Re: [RFC/PATCH] cpuset: cpuset irq affinities
+Cc: a.p.zijlstra@chello.nl, maxk@qualcomm.com, mingo@elte.hu,
+       tglx@linutronix.de, oleg@tv-sign.ru, rostedt@goodmis.org,
+       linux-kernel@vger.kernel.org, rientjes@google.com
+In-Reply-To: <20080304001507.3ddc8f26.pj@sgi.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20080229132848.GA10565@Krystal>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 01:04:54 up 4 days,  2:15,  5 users,  load average: 0.14, 0.41,
-	0.37
-User-Agent: Mutt/1.5.16 (2007-06-11)
+References: <20080227222103.673194000@chello.nl>
+	 <47C8771C.1070001@qualcomm.com> <1204545445.11412.6.camel@twins>
+	 <20080303113621.1dfdda87.pj@sgi.com> <1204567052.6241.4.camel@lappy>
+	 <20080303121033.c8c9651c.pj@sgi.com>
+	 <6599ad830803031041r6c635141n6520a915f2e1d08@mail.gmail.com>
+	 <20080303125253.5d2d580c.pj@sgi.com>
+	 <6599ad830803032126m39935eaeu1df67d6263e8e123@mail.gmail.com>
+	 <20080304001507.3ddc8f26.pj@sgi.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Check for overflow of the freeoffset version number.
+On Mon, Mar 3, 2008 at 10:15 PM, Paul Jackson <pj@sgi.com> wrote:
+>  implementation, just with a less natural cpuset hierarchy (more leaf
+>  node cpusets, representing the cross product of interesting CPU subsets
+>  and interesting memory node subsets.)
 
-I just thought adding this check in CONFIG_SLUB_DEBUG makes sense. It's
-really unlikely that enough interrupt handlers will nest over the slub
-fast path, and each of them do about a million alloc/free on 32 bits or
-a huge amount of alloc/free on 64 bits, but just in case, it seems good
-to warn if we detect we are half-way to a version overflow.
+Except that this isn't currently possible if you're also trying to do
+memory hardwalling on those cpusets, since then sibling cpusets can't
+share memory nodes.
 
-Changelog :
-- Mask out the LSB because of alloc fast path. See comment in source.
+Having said that, this bit of the problem can be fixed without
+splitting cpus/mems, by my other earlier proposal of adding a separate
+"mem_hardwall" flag that can enable the hardwall behaviour without the
+exclusive behaviour. (i.e. hardwall behaviour occurs if mem_exclusive
+|| mem_hardwall)
 
-Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
----
- mm/slub.c |   40 ++++++++++++++++++++++++++++++++++------
- 1 file changed, 34 insertions(+), 6 deletions(-)
-
-Index: linux-2.6-lttng/mm/slub.c
-===================================================================
---- linux-2.6-lttng.orig/mm/slub.c	2008-03-04 00:59:01.000000000 -0500
-+++ linux-2.6-lttng/mm/slub.c	2008-03-04 01:03:44.000000000 -0500
-@@ -1660,7 +1660,7 @@ static __always_inline void *slab_alloc(
-  */
- 
- #ifdef SLUB_FASTPATH
--	unsigned long freeoffset, newoffset;
-+	unsigned long freeoffset, newoffset, resoffset;
- 
- 	c = get_cpu_slab(s, raw_smp_processor_id());
- 	do {
-@@ -1682,8 +1682,22 @@ static __always_inline void *slab_alloc(
- 		newoffset = freeoffset;
- 		newoffset &= ~c->off_mask;
- 		newoffset |= (unsigned long)object[c->offset] & c->off_mask;
--	} while (cmpxchg_local(&c->freeoffset, freeoffset, newoffset)
--			!= freeoffset);
-+		resoffset = cmpxchg_local(&c->freeoffset, freeoffset,
-+				newoffset);
-+#ifdef CONFIG_SLUB_DEBUG
-+		/*
-+		 * Just to be paranoid : warn if we detect that enough free or
-+		 * slow paths nested on top of us to get the counter to go
-+		 * half-way to overflow. That would be insane to do that much
-+		 * allocations/free in interrupt handers, but check it anyway.
-+		 * Mask out the LSBs because alloc fast path does not increment
-+		 * the sequence number, which may cause the overall values to go
-+		 * backward.
-+		 */
-+		WARN_ON((resoffset & ~c->off_mask)
-+			- (freeoffset & ~c->off_mask) > -1UL >> 1);
-+#endif
-+	} while (resoffset != freeoffset);
- #else
- 	unsigned long flags;
- 
-@@ -1822,7 +1836,7 @@ static __always_inline void slab_free(st
- 	struct kmem_cache_cpu *c;
- 
- #ifdef SLUB_FASTPATH
--	unsigned long freeoffset, newoffset;
-+	unsigned long freeoffset, newoffset, resoffset;
- 
- 	c = get_cpu_slab(s, raw_smp_processor_id());
- 	debug_check_no_locks_freed(object, s->objsize);
-@@ -1850,8 +1864,22 @@ static __always_inline void slab_free(st
- 		newoffset = freeoffset + c->off_mask + 1;
- 		newoffset &= ~c->off_mask;
- 		newoffset |= (unsigned long)object & c->off_mask;
--	} while (cmpxchg_local(&c->freeoffset, freeoffset, newoffset)
--			!= freeoffset);
-+		resoffset = cmpxchg_local(&c->freeoffset, freeoffset,
-+				newoffset);
-+#ifdef CONFIG_SLUB_DEBUG
-+		/*
-+		 * Just to be paranoid : warn if we detect that enough free or
-+		 * slow paths nested on top of us to get the counter to go
-+		 * half-way to overflow. That would be insane to do that much
-+		 * allocations/free in interrupt handers, but check it anyway.
-+		 * Mask out the LSBs because alloc fast path does not increment
-+		 * the sequence number, which may cause the overall values to go
-+		 * backward.
-+		 */
-+		WARN_ON((resoffset & ~c->off_mask)
-+			- (freeoffset & ~c->off_mask) > -1UL >> 1);
-+#endif
-+	} while (resoffset != freeoffset);
- #else
- 	unsigned long flags;
- 
--- 
-Mathieu Desnoyers
-Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+Paul
