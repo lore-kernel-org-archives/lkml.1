@@ -1,55 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764397AbYCDP0p@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763910AbYCDP1N@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764397AbYCDP0p (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Mar 2008 10:26:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761313AbYCDP0R
+	id S1763910AbYCDP1N (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Mar 2008 10:27:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764854AbYCDP00
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Mar 2008 10:26:17 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:50125 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760394AbYCDP0O (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Mar 2008 10:26:14 -0500
-Date: Tue, 4 Mar 2008 16:25:40 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: Mark McLoughlin <markmc@redhat.com>, Ian Campbell <ijc@hellion.org.uk>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       Alexander van Heukelum <heukelum@mailshack.com>,
-       Alexander van Heukelum <heukelum@fastmail.fm>, Andi Kleen <ak@suse.de>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [RFC] use realmode code to reserve end-of-conventional-memory
-	to 1MB
-Message-ID: <20080304152540.GC6449@elte.hu>
-References: <20080225170134.GA15839@elte.hu> <20080225180750.GA31054@mailshack.com> <20080228131341.GA25213@mailshack.com> <20080228132822.GA25278@mailshack.com> <1204233131.28798.12.camel@cthulhu.hellion.org.uk> <47C72432.3010606@zytor.com> <1204240609.28798.33.camel@cthulhu.hellion.org.uk> <1204630906.16613.4.camel@muff> <20080304143324.GA2713@elte.hu> <47CD672C.1040406@goop.org>
-MIME-Version: 1.0
+	Tue, 4 Mar 2008 10:26:26 -0500
+Received: from ch-smtp02.sth.basefarm.net ([80.76.149.213]:51810 "EHLO
+	ch-smtp02.sth.basefarm.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1764846AbYCDP0Z (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 4 Mar 2008 10:26:25 -0500
+X-Mailer: exmh version 2.7.2 04/02/2003 (gentoo 2.7.2) with nmh-1.2
+To: Anders Eriksson <aeriksson@fastmail.fm>
+cc: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
+       Jeff Garzik <jeff@garzik.org>, linux-kernel@vger.kernel.org,
+       Linux IDE mailing list <linux-ide@vger.kernel.org>,
+       Jens Axboe <jens.axboe@oracle.com>
+Subject: Re: -rc3 regression (was Re: 2.6.25-rc2 + smartd = hang ) 
+In-reply-to: <20080304095701.DDF762DC027@tippex.mynet.homeunix.org> 
+References: <20080222165122.8D2BB93C12F@tippex.mynet.homeunix.org> <20080228143854.6350093C855@tippex.mynet.homeunix.org> <200803040116.42764.bzolnier@gmail.com> <200803040133.07736.bzolnier@gmail.com> <20080304095701.DDF762DC027@tippex.mynet.homeunix.org>
+Comments: In-reply-to Anders Eriksson <aeriksson@fastmail.fm>
+   message dated "Tue, 04 Mar 2008 10:57:01 +0100."
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <47CD672C.1040406@goop.org>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Date: Tue, 04 Mar 2008 16:25:32 +0100
+From: Anders Eriksson <aeriksson@fastmail.fm>
+Message-Id: <20080304152532.C06932DC027@tippex.mynet.homeunix.org>
+X-Originating-IP: 83.252.237.4
+X-Scan-Result: No virus found in message 1JWZ24-0002e4-8S.
+X-Scan-Signature: ch-smtp02.sth.basefarm.net 1JWZ24-0002e4-8S 1e0483ce07a6f643a64abe6053527481
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Jeremy Fitzhardinge <jeremy@goop.org> wrote:
+aeriksson@fastmail.fm said:
+>> I need some sleep...  this patch is not going to help (though disabling
+>> PREEMPT may be worth a try).  Sorry for the confusion.
 
-> Ingo Molnar wrote:
->> i'm wondering, what triggered this bug, and why didnt we have these 
->> problems in the past?
->
-> I think it was a side effect of all the early_ioremap work, which 
-> changed the order in which things happened at boot time.
+> Ok, I'll drop the patch and, recompile without PREEMPT. 
 
-which commits do you mean in particular?
+Tested with PREEMPT_NONE. No change.
 
-	Ingo
+/A
+
 
