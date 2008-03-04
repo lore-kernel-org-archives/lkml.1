@@ -1,28 +1,29 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758594AbYCDDMz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763330AbYCDDOM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758594AbYCDDMz (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Mar 2008 22:12:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758901AbYCDDKP
+	id S1763330AbYCDDOM (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Mar 2008 22:14:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757747AbYCDDKZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Mar 2008 22:10:15 -0500
+	Mon, 3 Mar 2008 22:10:25 -0500
 Received: from gv-out-0910.google.com ([216.239.58.190]:39909 "EHLO
 	gv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755658AbYCDDJ7 (ORCPT
+	with ESMTP id S1757839AbYCDDKC (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Mar 2008 22:09:59 -0500
+	Mon, 3 Mar 2008 22:10:02 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=subject:from:to:cc:in-reply-to:references:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=C30BVgr3yO5VLvJnK+4Aj38PsZwEPyrWrG3PnMDy0b3/wgq6aXTprlyQN7ZKFB2QVs1ivFBPfrGsBSx3frXD9w/i8rVzv2ajgcFlTw2+ME5gzT5Vba6b+XqFrs8Samh5dYP5GpYxK9bj4q1cttK0G1DZQkM3ObnUJEWtkaDM5mA=
-Subject: [PATCH 07/14] isdn: replace remaining __FUNCTION__ occurrences
+        b=XrE6Ggd/xevseUtdKe0tK7l802yIyqL+to8H2HDO9VdB7Z17jUKK1UlLD6MsjVtak+MUhzi4znL29ckqhT6ke6RPTznxYxg8Y6UkqOOSPA1U+Drj67zSblneJhNdn+SSCA5V0rLF+pwHxCNrdaE8MOdJ09IC9uRwwLcFisVIjfI=
+Subject: [PATCH 10/14] serial: replace remaining __FUNCTION__ occurrences
 From: Harvey Harrison <harvey.harrison@gmail.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: LKML <linux-kernel@vger.kernel.org>
+To: Russell King <rmk@arm.linux.org.uk>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>
 In-Reply-To: <ff8fd021606e7a6f03e9c274230cfcf64eade6d2.1204599636.git.harvey.harrison@gmail.com>
 References: <ff8fd021606e7a6f03e9c274230cfcf64eade6d2.1204599636.git.harvey.harrison@gmail.com>
 Content-Type: text/plain
-Date: Mon, 03 Mar 2008 19:09:48 -0800
-Message-Id: <1204600188.22933.87.camel@brick>
+Date: Mon, 03 Mar 2008 19:09:50 -0800
+Message-Id: <1204600191.22933.90.camel@brick>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.12.1 
 Content-Transfer-Encoding: 7bit
@@ -34,554 +35,553 @@ __FUNCTION__ is gcc-specific, use __func__
 
 Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
 ---
- drivers/isdn/capi/capidrv.c         |    4 ++--
- drivers/isdn/capi/capilib.c         |    2 +-
- drivers/isdn/capi/kcapi.c           |    4 ++--
- drivers/isdn/capi/kcapi.h           |    2 +-
- drivers/isdn/hisax/asuscom.c        |    2 +-
- drivers/isdn/hisax/avm_pci.c        |    2 +-
- drivers/isdn/hisax/diva.c           |    2 +-
- drivers/isdn/hisax/elsa.c           |    2 +-
- drivers/isdn/hisax/hfc_sx.c         |    2 +-
- drivers/isdn/hisax/hfc_usb.c        |    6 +++---
- drivers/isdn/hisax/hfcscard.c       |    2 +-
- drivers/isdn/hisax/hisax_debug.h    |    6 +++---
- drivers/isdn/hisax/hisax_fcpcipnp.c |    2 +-
- drivers/isdn/hisax/ix1_micro.c      |    2 +-
- drivers/isdn/hisax/niccy.c          |    2 +-
- drivers/isdn/hisax/sedlbauer.c      |    2 +-
- drivers/isdn/hisax/st5481.h         |   10 +++++-----
- drivers/isdn/hisax/teles3.c         |    2 +-
- drivers/isdn/i4l/isdn_common.c      |    2 +-
- drivers/isdn/i4l/isdn_net.h         |    6 +++---
- drivers/isdn/i4l/isdn_ppp.c         |   32 ++++++++++++++++----------------
- drivers/isdn/i4l/isdn_tty.c         |    6 +++---
- 22 files changed, 51 insertions(+), 51 deletions(-)
+ drivers/serial/68360serial.c            |    4 +-
+ drivers/serial/8250_early.c             |    2 +-
+ drivers/serial/bfin_5xx.c               |    4 +-
+ drivers/serial/cpm_uart/cpm_uart_core.c |    2 +-
+ drivers/serial/crisv10.c                |    8 +++---
+ drivers/serial/ioc3_serial.c            |   36 +++++++++++++++---------------
+ drivers/serial/ioc4_serial.c            |   32 +++++++++++++-------------
+ drivers/serial/s3c2410.c                |    6 ++--
+ drivers/serial/sa1100.c                 |    4 +-
+ drivers/serial/sh-sci.c                 |    2 +-
+ drivers/serial/sn_console.c             |    2 +-
+ drivers/serial/uartlite.c               |    2 +-
+ drivers/serial/ucc_uart.c               |    4 +-
+ 13 files changed, 54 insertions(+), 54 deletions(-)
 
-diff --git a/drivers/isdn/capi/capidrv.c b/drivers/isdn/capi/capidrv.c
-index cb42b69..36784eb 100644
---- a/drivers/isdn/capi/capidrv.c
-+++ b/drivers/isdn/capi/capidrv.c
-@@ -1388,12 +1388,12 @@ static void capidrv_recv_message(struct capi20_appl *ap, struct sk_buff *skb)
- 		_cdebbuf *cdb = capi_cmsg2str(&s_cmsg);
+diff --git a/drivers/serial/68360serial.c b/drivers/serial/68360serial.c
+index 2aa6bfe..1a0c363 100644
+--- a/drivers/serial/68360serial.c
++++ b/drivers/serial/68360serial.c
+@@ -1245,7 +1245,7 @@ static int rs_360_tiocmget(struct tty_struct *tty, struct file *file)
+ #ifdef modem_control
+ 	unsigned char control, status;
  
- 		if (cdb) {
--			printk(KERN_DEBUG "%s: applid=%d %s\n", __FUNCTION__,
-+			printk(KERN_DEBUG "%s: applid=%d %s\n", __func__,
- 				ap->applid, cdb->buf);
- 			cdebbuf_free(cdb);
- 		} else
- 			printk(KERN_DEBUG "%s: applid=%d %s not traced\n",
--				__FUNCTION__, ap->applid,
-+				__func__, ap->applid,
- 				capi_cmd2str(s_cmsg.Command, s_cmsg.Subcommand));
- 	}
- 	if (s_cmsg.Command == CAPI_DATA_B3
-diff --git a/drivers/isdn/capi/capilib.c b/drivers/isdn/capi/capilib.c
-index 68409d9..fed2a58 100644
---- a/drivers/isdn/capi/capilib.c
-+++ b/drivers/isdn/capi/capilib.c
-@@ -4,7 +4,7 @@
- #include <linux/isdn/capilli.h>
+-	if (serial_paranoia_check(info, tty->name, __FUNCTION__))
++	if (serial_paranoia_check(info, tty->name, __func__))
+ 		return -ENODEV;
  
- #define DBG(format, arg...) do { \
--printk(KERN_DEBUG "%s: " format "\n" , __FUNCTION__ , ## arg); \
-+printk(KERN_DEBUG "%s: " format "\n" , __func__ , ## arg); \
- } while (0)
+ 	if (tty->flags & (1 << TTY_IO_ERROR))
+@@ -1276,7 +1276,7 @@ static int rs_360_tiocmset(struct tty_struct *tty, struct file *file,
+ 	ser_info_t *info = (ser_info_t *)tty->driver_data;
+  	unsigned int arg;
  
- struct capilib_msgidqueue {
-diff --git a/drivers/isdn/capi/kcapi.c b/drivers/isdn/capi/kcapi.c
-index f555318..5b333ad 100644
---- a/drivers/isdn/capi/kcapi.c
-+++ b/drivers/isdn/capi/kcapi.c
-@@ -154,7 +154,7 @@ static void register_appl(struct capi_ctr *card, u16 applid, capi_register_param
- 	if (card)
- 		card->register_appl(card, applid, rparam);
- 	else
--		printk(KERN_WARNING "%s: cannot get card resources\n", __FUNCTION__);
-+		printk(KERN_WARNING "%s: cannot get card resources\n", __func__);
- }
+-	if (serial_paranoia_check(info, tty->name, __FUNCTION__))
++	if (serial_paranoia_check(info, tty->name, __func__))
+ 		return -ENODEV;
  
-
-@@ -178,7 +178,7 @@ static void notify_up(u32 contr)
- 	        printk(KERN_DEBUG "kcapi: notify up contr %d\n", contr);
- 	}
- 	if (!card) {
--		printk(KERN_WARNING "%s: invalid contr %d\n", __FUNCTION__, contr);
-+		printk(KERN_WARNING "%s: invalid contr %d\n", __func__, contr);
- 		return;
- 	}
- 	for (applid = 1; applid <= CAPI_MAXAPPL; applid++) {
-diff --git a/drivers/isdn/capi/kcapi.h b/drivers/isdn/capi/kcapi.h
-index 1cb2c40..244711f 100644
---- a/drivers/isdn/capi/kcapi.h
-+++ b/drivers/isdn/capi/kcapi.h
-@@ -17,7 +17,7 @@
- 
- #ifdef KCAPI_DEBUG
- #define DBG(format, arg...) do { \
--printk(KERN_DEBUG "%s: " format "\n" , __FUNCTION__ , ## arg); \
-+printk(KERN_DEBUG "%s: " format "\n" , __func__ , ## arg); \
- } while (0)
- #else
- #define DBG(format, arg...) /* */
-diff --git a/drivers/isdn/hisax/asuscom.c b/drivers/isdn/hisax/asuscom.c
-index 61e69e9..88aaa55 100644
---- a/drivers/isdn/hisax/asuscom.c
-+++ b/drivers/isdn/hisax/asuscom.c
-@@ -346,7 +346,7 @@ setup_asuscom(struct IsdnCard *card)
- 					err = pnp_activate_dev(pnp_d);
- 					if (err<0) {
- 						printk(KERN_WARNING "%s: pnp_activate_dev ret(%d)\n",
--							__FUNCTION__, err);
-+							__func__, err);
- 						return(0);
- 					}
- 					card->para[1] = pnp_port_start(pnp_d, 0);
-diff --git a/drivers/isdn/hisax/avm_pci.c b/drivers/isdn/hisax/avm_pci.c
-index 0f1db1f..7cabc5a 100644
---- a/drivers/isdn/hisax/avm_pci.c
-+++ b/drivers/isdn/hisax/avm_pci.c
-@@ -797,7 +797,7 @@ static int __devinit avm_pnp_setup(struct IsdnCardState *cs)
- 			err = pnp_activate_dev(pnp_avm_d);
- 			if (err<0) {
- 				printk(KERN_WARNING "%s: pnp_activate_dev ret(%d)\n",
--					__FUNCTION__, err);
-+					__func__, err);
- 				return(0);
- 			}
- 			cs->hw.avm.cfg_reg =
-diff --git a/drivers/isdn/hisax/diva.c b/drivers/isdn/hisax/diva.c
-index 2d67085..018bd29 100644
---- a/drivers/isdn/hisax/diva.c
-+++ b/drivers/isdn/hisax/diva.c
-@@ -1088,7 +1088,7 @@ static int __devinit setup_diva_isapnp(struct IsdnCard *card)
- 				err = pnp_activate_dev(pnp_d);
- 				if (err<0) {
- 					printk(KERN_WARNING "%s: pnp_activate_dev ret(%d)\n",
--						__FUNCTION__, err);
-+						__func__, err);
- 					return(0);
- 				}
- 				card->para[1] = pnp_port_start(pnp_d, 0);
-diff --git a/drivers/isdn/hisax/elsa.c b/drivers/isdn/hisax/elsa.c
-index d272d8c..343835f 100644
---- a/drivers/isdn/hisax/elsa.c
-+++ b/drivers/isdn/hisax/elsa.c
-@@ -937,7 +937,7 @@ setup_elsa_isapnp(struct IsdnCard *card)
- 					err = pnp_activate_dev(pnp_d);
- 					if (err<0) {
- 						printk(KERN_WARNING "%s: pnp_activate_dev ret(%d)\n",
--							__FUNCTION__, err);
-+							__func__, err);
- 						return(0);
- 					}
- 					card->para[1] = pnp_port_start(pnp_d, 0);
-diff --git a/drivers/isdn/hisax/hfc_sx.c b/drivers/isdn/hisax/hfc_sx.c
-index 05482d2..0bb9d26 100644
---- a/drivers/isdn/hisax/hfc_sx.c
-+++ b/drivers/isdn/hisax/hfc_sx.c
-@@ -1419,7 +1419,7 @@ setup_hfcsx(struct IsdnCard *card)
- 					err = pnp_activate_dev(pnp_d);
- 					if (err<0) {
- 						printk(KERN_WARNING "%s: pnp_activate_dev ret(%d)\n",
--							__FUNCTION__, err);
-+							__func__, err);
- 						return(0);
- 					}
- 					card->para[1] = pnp_port_start(pnp_d, 0);
-diff --git a/drivers/isdn/hisax/hfc_usb.c b/drivers/isdn/hisax/hfc_usb.c
-index 98b0149..8df889b 100644
---- a/drivers/isdn/hisax/hfc_usb.c
-+++ b/drivers/isdn/hisax/hfc_usb.c
-@@ -905,7 +905,7 @@ rx_int_complete(struct urb *urb)
- 	if (status) {
- 		printk(KERN_INFO
- 		       "HFC-S USB: %s error resubmitting URB fifo(%d)\n",
--		       __FUNCTION__, fifon);
-+		       __func__, fifon);
- 	}
- }
- 
-@@ -1543,14 +1543,14 @@ hfc_usb_disconnect(struct usb_interface *intf)
- 				stop_isoc_chain(&context->fifos[i]);
- 				DBG(HFCUSB_DBG_INIT,
- 				    "HFC-S USB: %s stopping ISOC chain Fifo(%i)",
--				    __FUNCTION__, i);
-+				    __func__, i);
- 			}
- 		} else {
- 			if (context->fifos[i].active > 0) {
- 				context->fifos[i].active = 0;
- 				DBG(HFCUSB_DBG_INIT,
- 				    "HFC-S USB: %s unlinking URB for Fifo(%i)",
--				    __FUNCTION__, i);
-+				    __func__, i);
- 			}
- 			usb_kill_urb(context->fifos[i].urb);
- 			usb_free_urb(context->fifos[i].urb);
-diff --git a/drivers/isdn/hisax/hfcscard.c b/drivers/isdn/hisax/hfcscard.c
-index 909d670..cf08266 100644
---- a/drivers/isdn/hisax/hfcscard.c
-+++ b/drivers/isdn/hisax/hfcscard.c
-@@ -193,7 +193,7 @@ setup_hfcs(struct IsdnCard *card)
- 					err = pnp_activate_dev(pnp_d);
- 					if (err<0) {
- 						printk(KERN_WARNING "%s: pnp_activate_dev ret(%d)\n",
--							__FUNCTION__, err);
-+							__func__, err);
- 						return(0);
- 					}
- 					card->para[1] = pnp_port_start(pnp_d, 0);
-diff --git a/drivers/isdn/hisax/hisax_debug.h b/drivers/isdn/hisax/hisax_debug.h
-index ceafecd..5ed3b1c 100644
---- a/drivers/isdn/hisax/hisax_debug.h
-+++ b/drivers/isdn/hisax/hisax_debug.h
-@@ -27,14 +27,14 @@
- 
- #define DBG(level, format, arg...) do { \
- if (level & __debug_variable) \
--printk(KERN_DEBUG "%s: " format "\n" , __FUNCTION__ , ## arg); \
-+printk(KERN_DEBUG "%s: " format "\n" , __func__ , ## arg); \
- } while (0)
- 
- #define DBG_PACKET(level,data,count) \
--  if (level & __debug_variable) dump_packet(__FUNCTION__,data,count)
-+  if (level & __debug_variable) dump_packet(__func__,data,count)
- 
- #define DBG_SKB(level,skb) \
--  if ((level & __debug_variable) && skb) dump_packet(__FUNCTION__,skb->data,skb->len)
-+  if ((level & __debug_variable) && skb) dump_packet(__func__,skb->data,skb->len)
- 
-
- static void __attribute__((unused))
-diff --git a/drivers/isdn/hisax/hisax_fcpcipnp.c b/drivers/isdn/hisax/hisax_fcpcipnp.c
-index 7993e01..f9cfb3a 100644
---- a/drivers/isdn/hisax/hisax_fcpcipnp.c
-+++ b/drivers/isdn/hisax/hisax_fcpcipnp.c
-@@ -935,7 +935,7 @@ static int __devinit fcpnp_probe(struct pnp_dev *pdev, const struct pnp_device_i
- 	pnp_disable_dev(pdev);
- 	retval = pnp_activate_dev(pdev);
- 	if (retval < 0) {
--		printk(KERN_WARNING "%s: pnp_activate_dev(%s) ret(%d)\n", __FUNCTION__,
-+		printk(KERN_WARNING "%s: pnp_activate_dev(%s) ret(%d)\n", __func__,
- 			(char *)dev_id->driver_data, retval);
- 		goto err_free;
- 	}
-diff --git a/drivers/isdn/hisax/ix1_micro.c b/drivers/isdn/hisax/ix1_micro.c
-index 252d79d..b80d972 100644
---- a/drivers/isdn/hisax/ix1_micro.c
-+++ b/drivers/isdn/hisax/ix1_micro.c
-@@ -253,7 +253,7 @@ setup_ix1micro(struct IsdnCard *card)
- 					err = pnp_activate_dev(pnp_d);
- 					if (err<0) {
- 						printk(KERN_WARNING "%s: pnp_activate_dev ret(%d)\n",
--							__FUNCTION__, err);
-+							__func__, err);
- 						return(0);
- 					}
- 					card->para[1] = pnp_port_start(pnp_d, 0);
-diff --git a/drivers/isdn/hisax/niccy.c b/drivers/isdn/hisax/niccy.c
-index bd99211..f6c3d25 100644
---- a/drivers/isdn/hisax/niccy.c
-+++ b/drivers/isdn/hisax/niccy.c
-@@ -256,7 +256,7 @@ int __devinit setup_niccy(struct IsdnCard *card)
- 			err = pnp_activate_dev(pnp_d);
- 			if (err < 0) {
- 				printk(KERN_WARNING "%s: pnp_activate_dev "
--					"ret(%d)\n", __FUNCTION__, err);
-+					"ret(%d)\n", __func__, err);
- 				return 0;
- 			}
- 			card->para[1] = pnp_port_start(pnp_d, 0);
-diff --git a/drivers/isdn/hisax/sedlbauer.c b/drivers/isdn/hisax/sedlbauer.c
-index 95425f3..a10dfa8 100644
---- a/drivers/isdn/hisax/sedlbauer.c
-+++ b/drivers/isdn/hisax/sedlbauer.c
-@@ -555,7 +555,7 @@ setup_sedlbauer_isapnp(struct IsdnCard *card, int *bytecnt)
- 				err = pnp_activate_dev(pnp_d);
- 				if (err<0) {
- 					printk(KERN_WARNING "%s: pnp_activate_dev ret(%d)\n",
--						__FUNCTION__, err);
-+						__func__, err);
- 					return(0);
- 				}
- 				card->para[1] = pnp_port_start(pnp_d, 0);
-diff --git a/drivers/isdn/hisax/st5481.h b/drivers/isdn/hisax/st5481.h
-index 04416ba..2044e71 100644
---- a/drivers/isdn/hisax/st5481.h
-+++ b/drivers/isdn/hisax/st5481.h
-@@ -218,13 +218,13 @@ enum {
- #define L1_EVENT_COUNT (EV_TIMER3 + 1)
- 
- #define ERR(format, arg...) \
--printk(KERN_ERR "%s:%s: " format "\n" , __FILE__,  __FUNCTION__ , ## arg)
-+printk(KERN_ERR "%s:%s: " format "\n" , __FILE__,  __func__ , ## arg)
- 
- #define WARN(format, arg...) \
--printk(KERN_WARNING "%s:%s: " format "\n" , __FILE__,  __FUNCTION__ , ## arg)
-+printk(KERN_WARNING "%s:%s: " format "\n" , __FILE__,  __func__ , ## arg)
- 
- #define INFO(format, arg...) \
--printk(KERN_INFO "%s:%s: " format "\n" , __FILE__,  __FUNCTION__ , ## arg)
-+printk(KERN_INFO "%s:%s: " format "\n" , __FILE__,  __func__ , ## arg)
- 
- #include "isdnhdlc.h"
- #include "fsm.h"
-@@ -406,7 +406,7 @@ struct st5481_adapter {
- 
- /*
-  * Submit an URB with error reporting. This is a macro so
-- * the __FUNCTION__ returns the caller function name.
-+ * the __func__ returns the caller function name.
-  */
- #define SUBMIT_URB(urb, mem_flags) \
- ({ \
-@@ -470,7 +470,7 @@ extern int st5481_debug;
- #ifdef CONFIG_HISAX_DEBUG
- 
- #define DBG_ISO_PACKET(level,urb) \
--  if (level & __debug_variable) dump_iso_packet(__FUNCTION__,urb)
-+  if (level & __debug_variable) dump_iso_packet(__func__,urb)
- 
- static void __attribute__((unused))
- dump_iso_packet(const char *name, struct urb *urb)
-diff --git a/drivers/isdn/hisax/teles3.c b/drivers/isdn/hisax/teles3.c
-index 6a5e379..5dc9f1a 100644
---- a/drivers/isdn/hisax/teles3.c
-+++ b/drivers/isdn/hisax/teles3.c
-@@ -301,7 +301,7 @@ setup_teles3(struct IsdnCard *card)
- 					err = pnp_activate_dev(pnp_d);
- 					if (err<0) {
- 						printk(KERN_WARNING "%s: pnp_activate_dev ret(%d)\n",
--							__FUNCTION__, err);
-+							__func__, err);
- 						return(0);
- 					}
- 					card->para[3] = pnp_port_start(pnp_d, 2);
-diff --git a/drivers/isdn/i4l/isdn_common.c b/drivers/isdn/i4l/isdn_common.c
-index 9cef6fc..bd78019 100644
---- a/drivers/isdn/i4l/isdn_common.c
-+++ b/drivers/isdn/i4l/isdn_common.c
-@@ -1924,7 +1924,7 @@ isdn_free_channel(int di, int ch, int usage)
- 
- 	if ((di < 0) || (ch < 0)) {
- 		printk(KERN_WARNING "%s: called with invalid drv(%d) or channel(%d)\n",
--			__FUNCTION__, di, ch);
-+			__func__, di, ch);
- 		return;
- 	}
- 	for (i = 0; i < ISDN_MAX_CHANNELS; i++)
-diff --git a/drivers/isdn/i4l/isdn_net.h b/drivers/isdn/i4l/isdn_net.h
-index bc2f0dd..be49497 100644
---- a/drivers/isdn/i4l/isdn_net.h
-+++ b/drivers/isdn/i4l/isdn_net.h
-@@ -108,7 +108,7 @@ static __inline__ void isdn_net_add_to_bundle(isdn_net_dev *nd, isdn_net_local *
- 
- 	lp = nd->queue;
- //	printk(KERN_DEBUG "%s: lp:%s(%p) nlp:%s(%p) last(%p)\n",
--//		__FUNCTION__, lp->name, lp, nlp->name, nlp, lp->last);
-+//		__func__, lp->name, lp, nlp->name, nlp, lp->last);
- 	nlp->last = lp->last;
- 	lp->last->next = nlp;
- 	lp->last = nlp;
-@@ -129,7 +129,7 @@ static __inline__ void isdn_net_rm_from_bundle(isdn_net_local *lp)
- 		master_lp = (isdn_net_local *) lp->master->priv;
- 
- //	printk(KERN_DEBUG "%s: lp:%s(%p) mlp:%s(%p) last(%p) next(%p) mndq(%p)\n",
--//		__FUNCTION__, lp->name, lp, master_lp->name, master_lp, lp->last, lp->next, master_lp->netdev->queue);
-+//		__func__, lp->name, lp, master_lp->name, master_lp, lp->last, lp->next, master_lp->netdev->queue);
- 	spin_lock_irqsave(&master_lp->netdev->queue_lock, flags);
- 	lp->last->next = lp->next;
- 	lp->next->last = lp->last;
-@@ -141,7 +141,7 @@ static __inline__ void isdn_net_rm_from_bundle(isdn_net_local *lp)
- 	}
- 	lp->next = lp->last = lp;	/* (re)set own pointers */
- //	printk(KERN_DEBUG "%s: mndq(%p)\n",
--//		__FUNCTION__, master_lp->netdev->queue);
-+//		__func__, master_lp->netdev->queue);
- 	spin_unlock_irqrestore(&master_lp->netdev->queue_lock, flags);
- }
- 
-diff --git a/drivers/isdn/i4l/isdn_ppp.c b/drivers/isdn/i4l/isdn_ppp.c
-index 9f5fe37..127cfda 100644
---- a/drivers/isdn/i4l/isdn_ppp.c
-+++ b/drivers/isdn/i4l/isdn_ppp.c
-@@ -110,7 +110,7 @@ isdn_ppp_free(isdn_net_local * lp)
- 
- 	if (lp->ppp_slot < 0 || lp->ppp_slot >= ISDN_MAX_CHANNELS) {
- 		printk(KERN_ERR "%s: ppp_slot(%d) out of range\n",
--			__FUNCTION__, lp->ppp_slot);
-+			__func__, lp->ppp_slot);
- 		return 0;
- 	}
- 
-@@ -127,7 +127,7 @@ isdn_ppp_free(isdn_net_local * lp)
- #endif /* CONFIG_ISDN_MPP */
- 	if (lp->ppp_slot < 0 || lp->ppp_slot >= ISDN_MAX_CHANNELS) {
- 		printk(KERN_ERR "%s: ppp_slot(%d) now invalid\n",
--			__FUNCTION__, lp->ppp_slot);
-+			__func__, lp->ppp_slot);
- 		return 0;
- 	}
- 	is = ippp_table[lp->ppp_slot];
-@@ -226,7 +226,7 @@ isdn_ppp_wakeup_daemon(isdn_net_local * lp)
- {
- 	if (lp->ppp_slot < 0 || lp->ppp_slot >= ISDN_MAX_CHANNELS) {
- 		printk(KERN_ERR "%s: ppp_slot(%d) out of range\n",
--			__FUNCTION__, lp->ppp_slot);
-+			__func__, lp->ppp_slot);
- 		return;
- 	}
- 	ippp_table[lp->ppp_slot]->state = IPPP_OPEN | IPPP_CONNECT | IPPP_NOBLOCK;
-@@ -245,7 +245,7 @@ isdn_ppp_closewait(int slot)
- 
- 	if (slot < 0 || slot >= ISDN_MAX_CHANNELS) {
- 		printk(KERN_ERR "%s: slot(%d) out of range\n",
--			__FUNCTION__, slot);
-+			__func__, slot);
- 		return 0;
- 	}
- 	is = ippp_table[slot];
-@@ -343,7 +343,7 @@ isdn_ppp_release(int min, struct file *file)
- 	is = file->private_data;
- 
- 	if (!is) {
--		printk(KERN_ERR "%s: no file->private_data\n", __FUNCTION__);
-+		printk(KERN_ERR "%s: no file->private_data\n", __func__);
- 		return;
- 	}
- 	if (is->debug & 0x1)
-@@ -353,7 +353,7 @@ isdn_ppp_release(int min, struct file *file)
- 		isdn_net_dev *p = is->lp->netdev;
- 
- 		if (!p) {
--			printk(KERN_ERR "%s: no lp->netdev\n", __FUNCTION__);
-+			printk(KERN_ERR "%s: no lp->netdev\n", __func__);
- 			return;
+ 	if (tty->flags & (1 << TTY_IO_ERROR))
+diff --git a/drivers/serial/8250_early.c b/drivers/serial/8250_early.c
+index 38776e8..cd89870 100644
+--- a/drivers/serial/8250_early.c
++++ b/drivers/serial/8250_early.c
+@@ -156,7 +156,7 @@ static int __init parse_options(struct early_serial8250_device *device,
+ 		port->membase = ioremap(port->mapbase, 64);
+ 		if (!port->membase) {
+ 			printk(KERN_ERR "%s: Couldn't ioremap 0x%llx\n",
+-				__FUNCTION__,
++				__func__,
+ 			       (unsigned long long)port->mapbase);
+ 			return -ENOMEM;
  		}
- 		is->state &= ~IPPP_CONNECT;	/* -> effect: no call of wakeup */
-@@ -1080,7 +1080,7 @@ isdn_ppp_push_higher(isdn_net_dev * net_dev, isdn_net_local * lp, struct sk_buff
- 				printk(KERN_DEBUG "isdn_ppp: VJC_UNCOMP\n");
- 			if (net_dev->local->ppp_slot < 0) {
- 				printk(KERN_ERR "%s: net_dev->local->ppp_slot(%d) out of range\n",
--					__FUNCTION__, net_dev->local->ppp_slot);
-+					__func__, net_dev->local->ppp_slot);
- 				goto drop_packet;
- 			}
- 			if (slhc_remember(ippp_table[net_dev->local->ppp_slot]->slcomp, skb->data, skb->len) <= 0) {
-@@ -1107,7 +1107,7 @@ isdn_ppp_push_higher(isdn_net_dev * net_dev, isdn_net_local * lp, struct sk_buff
- 							  skb_old->len);
- 				if (net_dev->local->ppp_slot < 0) {
- 					printk(KERN_ERR "%s: net_dev->local->ppp_slot(%d) out of range\n",
--						__FUNCTION__, net_dev->local->ppp_slot);
-+						__func__, net_dev->local->ppp_slot);
- 					goto drop_packet;
- 				}
- 				pkt_len = slhc_uncompress(ippp_table[net_dev->local->ppp_slot]->slcomp,
-@@ -1553,7 +1553,7 @@ static int isdn_ppp_mp_init( isdn_net_local * lp, ippp_bundle * add_to )
- 
- 	if (lp->ppp_slot < 0) {
- 		printk(KERN_ERR "%s: lp->ppp_slot(%d) out of range\n",
--			__FUNCTION__, lp->ppp_slot);
-+			__func__, lp->ppp_slot);
- 		return(-EINVAL);
+diff --git a/drivers/serial/bfin_5xx.c b/drivers/serial/bfin_5xx.c
+index 0aa345b..16c8ae1 100644
+--- a/drivers/serial/bfin_5xx.c
++++ b/drivers/serial/bfin_5xx.c
+@@ -766,7 +766,7 @@ bfin_serial_set_termios(struct uart_port *port, struct ktermios *termios,
+ 		break;
+ 	default:
+ 		printk(KERN_ERR "%s: word lengh not supported\n",
+-			__FUNCTION__);
++			__func__);
  	}
  
-@@ -1604,7 +1604,7 @@ static void isdn_ppp_mp_receive(isdn_net_dev * net_dev, isdn_net_local * lp,
- 	slot = lp->ppp_slot;
- 	if (slot < 0 || slot >= ISDN_MAX_CHANNELS) {
- 		printk(KERN_ERR "%s: lp->ppp_slot(%d)\n",
--			__FUNCTION__, lp->ppp_slot);
-+			__func__, lp->ppp_slot);
- 		stats->frame_drops++;
- 		dev_kfree_skb(skb);
- 		spin_unlock_irqrestore(&mp->lock, flags);
-@@ -1641,7 +1641,7 @@ static void isdn_ppp_mp_receive(isdn_net_dev * net_dev, isdn_net_local * lp,
- 		slot = lpq->ppp_slot;
- 		if (slot < 0 || slot >= ISDN_MAX_CHANNELS) {
- 			printk(KERN_ERR "%s: lpq->ppp_slot(%d)\n",
--				__FUNCTION__, lpq->ppp_slot);
-+				__func__, lpq->ppp_slot);
+ 	if (termios->c_cflag & CSTOPB)
+@@ -1012,7 +1012,7 @@ bfin_serial_console_get_options(struct bfin_serial_port *uart, int *baud,
+ 
+ 		*baud = get_sclk() / (16*(dll | dlh << 8));
+ 	}
+-	pr_debug("%s:baud = %d, parity = %c, bits= %d\n", __FUNCTION__, *baud, *parity, *bits);
++	pr_debug("%s:baud = %d, parity = %c, bits= %d\n", __func__, *baud, *parity, *bits);
+ }
+ #endif
+ 
+diff --git a/drivers/serial/cpm_uart/cpm_uart_core.c b/drivers/serial/cpm_uart/cpm_uart_core.c
+index 236af9d..ca96ce5 100644
+--- a/drivers/serial/cpm_uart/cpm_uart_core.c
++++ b/drivers/serial/cpm_uart/cpm_uart_core.c
+@@ -1118,7 +1118,7 @@ int cpm_uart_drv_get_platform_data(struct platform_device *pdev, int is_con)
+ 
+ 	line = cpm_uart_id2nr(idx);
+ 	if(line < 0) {
+-		printk(KERN_ERR"%s(): port %d is not registered", __FUNCTION__, idx);
++		printk(KERN_ERR"%s(): port %d is not registered", __func__, idx);
+ 		return -EINVAL;
+ 	}
+ 
+diff --git a/drivers/serial/crisv10.c b/drivers/serial/crisv10.c
+index 383c4e6..0385c5b 100644
+--- a/drivers/serial/crisv10.c
++++ b/drivers/serial/crisv10.c
+@@ -1788,7 +1788,7 @@ static unsigned int handle_descr_data(struct e100_serial *info,
+ 
+ 	if (info->recv_cnt + recvl > 65536) {
+ 		printk(KERN_CRIT
+-		       "%s: Too much pending incoming serial data! Dropping %u bytes.\n", __FUNCTION__, recvl);
++		       "%s: Too much pending incoming serial data! Dropping %u bytes.\n", __func__, recvl);
+ 		return 0;
+ 	}
+ 
+@@ -1801,7 +1801,7 @@ static unsigned int handle_descr_data(struct e100_serial *info,
+ 	append_recv_buffer(info, buffer);
+ 
+ 	if (!(buffer = alloc_recv_buffer(SERIAL_DESCR_BUF_SIZE)))
+-		panic("%s: Failed to allocate memory for receive buffer!\n", __FUNCTION__);
++		panic("%s: Failed to allocate memory for receive buffer!\n", __func__);
+ 
+ 	descr->buf = virt_to_phys(buffer->buffer);
+ 
+@@ -1925,7 +1925,7 @@ static int start_recv_dma(struct e100_serial *info)
+ 	/* Set up the receiving descriptors */
+ 	for (i = 0; i < SERIAL_RECV_DESCRIPTORS; i++) {
+ 		if (!(buffer = alloc_recv_buffer(SERIAL_DESCR_BUF_SIZE)))
+-			panic("%s: Failed to allocate memory for receive buffer!\n", __FUNCTION__);
++			panic("%s: Failed to allocate memory for receive buffer!\n", __func__);
+ 
+ 		descr[i].ctrl = d_int;
+ 		descr[i].buf = virt_to_phys(buffer->buffer);
+@@ -4513,7 +4513,7 @@ rs_init(void)
+ 
+ 	if (request_irq(SERIAL_IRQ_NBR, ser_interrupt,
+ 			IRQF_SHARED | IRQF_DISABLED, "serial ", driver))
+-		panic("%s: Failed to request irq8", __FUNCTION__);
++		panic("%s: Failed to request irq8", __func__);
+ 
+ #endif
+ #endif /* CONFIG_SVINTO_SIM */
+diff --git a/drivers/serial/ioc3_serial.c b/drivers/serial/ioc3_serial.c
+index 168073f..4f1af71 100644
+--- a/drivers/serial/ioc3_serial.c
++++ b/drivers/serial/ioc3_serial.c
+@@ -52,7 +52,7 @@ static unsigned int Submodule_slot;
+ #define DPRINT_CONFIG(_x...)	;
+ //#define DPRINT_CONFIG(_x...)  printk _x
+ #define NOT_PROGRESS()	;
+-//#define NOT_PROGRESS()	printk("%s : fails %d\n", __FUNCTION__, __LINE__)
++//#define NOT_PROGRESS()	printk("%s : fails %d\n", __func__, __LINE__)
+ 
+ /* number of characters we want to transmit to the lower level at a time */
+ #define MAX_CHARS		256
+@@ -445,7 +445,7 @@ static int inline port_init(struct ioc3_port *port)
+ 		sbbr_h = &idd->vma->sbbr_h;
+ 		ring_pci_addr = (unsigned long __iomem)port->ip_dma_ringbuf;
+ 		DPRINT_CONFIG(("%s: ring_pci_addr 0x%p\n",
+-			       __FUNCTION__, (void *)ring_pci_addr));
++			       __func__, (void *)ring_pci_addr));
+ 
+ 		writel((unsigned int)((uint64_t) ring_pci_addr >> 32), sbbr_h);
+ 		writel((unsigned int)ring_pci_addr | BUF_SIZE_BIT, sbbr_l);
+@@ -593,7 +593,7 @@ config_port(struct ioc3_port *port,
+ 
+ 	DPRINT_CONFIG(("%s: line %d baud %d byte_size %d stop %d parenb %d "
+ 			"parodd %d\n",
+-		       __FUNCTION__, ((struct uart_port *)port->ip_port)->line,
++		       __func__, ((struct uart_port *)port->ip_port)->line,
+ 			baud, byte_size, stop_bits, parenb, parodd));
+ 
+ 	if (set_baud(port, baud))
+@@ -871,14 +871,14 @@ static int ioc3_set_proto(struct ioc3_port *port, int proto)
+ 	default:
+ 	case PROTO_RS232:
+ 		/* Clear the appropriate GIO pin */
+-		DPRINT_CONFIG(("%s: rs232\n", __FUNCTION__));
++		DPRINT_CONFIG(("%s: rs232\n", __func__));
+ 		writel(0, (&port->ip_idd->vma->gppr[0]
+ 					+ hooks->rs422_select_pin));
+ 		break;
+ 
+ 	case PROTO_RS422:
+ 		/* Set the appropriate GIO pin */
+-		DPRINT_CONFIG(("%s: rs422\n", __FUNCTION__));
++		DPRINT_CONFIG(("%s: rs422\n", __func__));
+ 		writel(1, (&port->ip_idd->vma->gppr[0]
+ 					+ hooks->rs422_select_pin));
+ 		break;
+@@ -988,7 +988,7 @@ ioc3_change_speed(struct uart_port *the_port,
+ 	}
+ 	baud = uart_get_baud_rate(the_port, new_termios, old_termios,
+ 				  MIN_BAUD_SUPPORTED, MAX_BAUD_SUPPORTED);
+-	DPRINT_CONFIG(("%s: returned baud %d for line %d\n", __FUNCTION__, baud,
++	DPRINT_CONFIG(("%s: returned baud %d for line %d\n", __func__, baud,
+ 				the_port->line));
+ 
+ 	if (!the_port->fifosize)
+@@ -1026,7 +1026,7 @@ ioc3_change_speed(struct uart_port *the_port,
+ 	DPRINT_CONFIG(("%s : port 0x%p line %d cflag 0%o "
+ 		       "config_port(baud %d data %d stop %d penable %d "
+ 			" parity %d), notification 0x%x\n",
+-		       __FUNCTION__, (void *)port, the_port->line, cflag, baud,
++		       __func__, (void *)port, the_port->line, cflag, baud,
+ 		       new_data, new_stop, new_parity_enable, new_parity,
+ 		       the_port->ignore_status_mask));
+ 
+@@ -1919,7 +1919,7 @@ static inline int ioc3_serial_core_attach( struct ioc3_submodule *is,
+ 	struct pci_dev *pdev = idd->pdev;
+ 
+ 	DPRINT_CONFIG(("%s: attach pdev 0x%p - card_ptr 0x%p\n",
+-		       __FUNCTION__, pdev, (void *)card_ptr));
++		       __func__, pdev, (void *)card_ptr));
+ 
+ 	if (!card_ptr)
+ 		return -ENODEV;
+@@ -1933,7 +1933,7 @@ static inline int ioc3_serial_core_attach( struct ioc3_submodule *is,
+ 		port->ip_port = the_port;
+ 
+ 		DPRINT_CONFIG(("%s: attach the_port 0x%p / port 0x%p [%d/%d]\n",
+-			__FUNCTION__, (void *)the_port, (void *)port,
++			__func__, (void *)the_port, (void *)port,
+ 				phys_port, ii));
+ 
+ 		/* membase, iobase and mapbase just need to be non-0 */
+@@ -1950,7 +1950,7 @@ static inline int ioc3_serial_core_attach( struct ioc3_submodule *is,
+ 		if (uart_add_one_port(&ioc3_uart, the_port) < 0) {
+ 			printk(KERN_WARNING
+ 		          "%s: unable to add port %d bus %d\n",
+-			       __FUNCTION__, the_port->line, pdev->bus->number);
++			       __func__, the_port->line, pdev->bus->number);
  		} else {
- 			u32 lls = ippp_table[slot]->last_link_seqno;
- 			if (MP_LT(lls, minseq))
-@@ -1875,7 +1875,7 @@ void isdn_ppp_mp_reassembly( isdn_net_dev * net_dev, isdn_net_local * lp,
+ 			DPRINT_CONFIG(("IOC3 serial port %d irq %d bus %d\n",
+ 		          the_port->line, the_port->irq, pdev->bus->number));
+@@ -2017,7 +2017,7 @@ ioc3uart_probe(struct ioc3_submodule *is, struct ioc3_driver_data *idd)
+ 	struct ioc3_port *ports[PORTS_PER_CARD];
+ 	int phys_port;
  
- 	if (lp->ppp_slot < 0 || lp->ppp_slot >= ISDN_MAX_CHANNELS) {
- 		printk(KERN_ERR "%s: lp->ppp_slot(%d) out of range\n",
--			__FUNCTION__, lp->ppp_slot);
-+			__func__, lp->ppp_slot);
- 		return;
- 	}
- 	if( MP_FLAGS(from) == (MP_BEGIN_FRAG | MP_END_FRAG) ) {
-@@ -2655,7 +2655,7 @@ static void isdn_ppp_receive_ccp(isdn_net_dev *net_dev, isdn_net_local *lp,
- 		lp->ppp_slot);
- 	if (lp->ppp_slot < 0 || lp->ppp_slot >= ISDN_MAX_CHANNELS) {
- 		printk(KERN_ERR "%s: lp->ppp_slot(%d) out of range\n",
--			__FUNCTION__, lp->ppp_slot);
-+			__func__, lp->ppp_slot);
- 		return;
- 	}
- 	is = ippp_table[lp->ppp_slot];
-@@ -2665,7 +2665,7 @@ static void isdn_ppp_receive_ccp(isdn_net_dev *net_dev, isdn_net_local *lp,
- 		int slot = ((isdn_net_local *) (lp->master->priv))->ppp_slot;
- 		if (slot < 0 || slot >= ISDN_MAX_CHANNELS) {
- 			printk(KERN_ERR "%s: slot(%d) out of range\n",
--				__FUNCTION__, slot);
-+				__func__, slot);
- 			return;
- 		}	
- 		mis = ippp_table[slot];
-@@ -2829,7 +2829,7 @@ static void isdn_ppp_send_ccp(isdn_net_dev *net_dev, isdn_net_local *lp, struct
- 		return;
- 	if (slot < 0 || slot >= ISDN_MAX_CHANNELS) {
- 		printk(KERN_ERR "%s: lp->ppp_slot(%d) out of range\n",
--			__FUNCTION__, slot);
-+			__func__, slot);
- 		return;
- 	}	
- 	is = ippp_table[slot];
-@@ -2852,7 +2852,7 @@ static void isdn_ppp_send_ccp(isdn_net_dev *net_dev, isdn_net_local *lp, struct
- 		slot = ((isdn_net_local *) (lp->master->priv))->ppp_slot;
- 		if (slot < 0 || slot >= ISDN_MAX_CHANNELS) {
- 			printk(KERN_ERR "%s: slot(%d) out of range\n",
--				__FUNCTION__, slot);
-+				__func__, slot);
- 			return;
- 		}	
- 		mis = ippp_table[slot];
-diff --git a/drivers/isdn/i4l/isdn_tty.c b/drivers/isdn/i4l/isdn_tty.c
-index 133eb18..8af0df1 100644
---- a/drivers/isdn/i4l/isdn_tty.c
-+++ b/drivers/isdn/i4l/isdn_tty.c
-@@ -1347,7 +1347,7 @@ isdn_tty_tiocmget(struct tty_struct *tty, struct file *file)
- 	modem_info *info = (modem_info *) tty->driver_data;
- 	u_char control, status;
+-	DPRINT_CONFIG(("%s (0x%p, 0x%p)\n", __FUNCTION__, is, idd));
++	DPRINT_CONFIG(("%s (0x%p, 0x%p)\n", __func__, is, idd));
  
--	if (isdn_tty_paranoia_check(info, tty->name, __FUNCTION__))
-+	if (isdn_tty_paranoia_check(info, tty->name, __func__))
+ 	card_ptr = kzalloc(sizeof(struct ioc3_card), GFP_KERNEL);
+ 	if (!card_ptr) {
+@@ -2067,7 +2067,7 @@ ioc3uart_probe(struct ioc3_submodule *is, struct ioc3_driver_data *idd)
+ 
+ 			DPRINT_CONFIG(("%s : Port A ip_serial_regs 0x%p "
+ 				       "ip_uart_regs 0x%p\n",
+-				       __FUNCTION__,
++				       __func__,
+ 				       (void *)port->ip_serial_regs,
+ 				       (void *)port->ip_uart_regs));
+ 
+@@ -2082,7 +2082,7 @@ ioc3uart_probe(struct ioc3_submodule *is, struct ioc3_driver_data *idd)
+ 			DPRINT_CONFIG(("%s : Port A ip_cpu_ringbuf 0x%p "
+ 				       "ip_dma_ringbuf 0x%p, ip_inring 0x%p "
+ 					"ip_outring 0x%p\n",
+-				       __FUNCTION__,
++				       __func__,
+ 				       (void *)port->ip_cpu_ringbuf,
+ 				       (void *)port->ip_dma_ringbuf,
+ 				       (void *)port->ip_inring,
+@@ -2094,7 +2094,7 @@ ioc3uart_probe(struct ioc3_submodule *is, struct ioc3_driver_data *idd)
+ 
+ 			DPRINT_CONFIG(("%s : Port B ip_serial_regs 0x%p "
+ 				       "ip_uart_regs 0x%p\n",
+-				       __FUNCTION__,
++				       __func__,
+ 				       (void *)port->ip_serial_regs,
+ 				       (void *)port->ip_uart_regs));
+ 
+@@ -2108,7 +2108,7 @@ ioc3uart_probe(struct ioc3_submodule *is, struct ioc3_driver_data *idd)
+ 			DPRINT_CONFIG(("%s : Port B ip_cpu_ringbuf 0x%p "
+ 				       "ip_dma_ringbuf 0x%p, ip_inring 0x%p "
+ 					"ip_outring 0x%p\n",
+-				       __FUNCTION__,
++				       __func__,
+ 				       (void *)port->ip_cpu_ringbuf,
+ 				       (void *)port->ip_dma_ringbuf,
+ 				       (void *)port->ip_inring,
+@@ -2116,7 +2116,7 @@ ioc3uart_probe(struct ioc3_submodule *is, struct ioc3_driver_data *idd)
+ 		}
+ 
+ 		DPRINT_CONFIG(("%s : port %d [addr 0x%p] card_ptr 0x%p",
+-			       __FUNCTION__,
++			       __func__,
+ 			       phys_port, (void *)port, (void *)card_ptr));
+ 		DPRINT_CONFIG((" ip_serial_regs 0x%p ip_uart_regs 0x%p\n",
+ 			       (void *)port->ip_serial_regs,
+@@ -2127,7 +2127,7 @@ ioc3uart_probe(struct ioc3_submodule *is, struct ioc3_driver_data *idd)
+ 
+ 		DPRINT_CONFIG(("%s: phys_port %d port 0x%p inring 0x%p "
+ 			       "outring 0x%p\n",
+-			       __FUNCTION__,
++			       __func__,
+ 			       phys_port, (void *)port,
+ 			       (void *)port->ip_inring,
+ 			       (void *)port->ip_outring));
+@@ -2170,7 +2170,7 @@ static int __devinit ioc3uart_init(void)
+ 	if ((ret = uart_register_driver(&ioc3_uart)) < 0) {
+ 		printk(KERN_WARNING
+ 		       "%s: Couldn't register IOC3 uart serial driver\n",
+-		       __FUNCTION__);
++		       __func__);
+ 		return ret;
+ 	}
+ 	ret = ioc3_register_submodule(&ioc3uart_submodule);
+diff --git a/drivers/serial/ioc4_serial.c b/drivers/serial/ioc4_serial.c
+index 0c17938..49b8a82 100644
+--- a/drivers/serial/ioc4_serial.c
++++ b/drivers/serial/ioc4_serial.c
+@@ -889,7 +889,7 @@ static int inline port_init(struct ioc4_port *port)
+ 
+ 		ring_pci_addr = (unsigned long __iomem)port->ip_dma_ringbuf;
+ 		DPRINT_CONFIG(("%s: ring_pci_addr 0x%lx\n",
+-					__FUNCTION__, ring_pci_addr));
++					__func__, ring_pci_addr));
+ 
+ 		writel((unsigned int)((uint64_t)ring_pci_addr >> 32), sbbr_h);
+ 		writel((unsigned int)ring_pci_addr | IOC4_BUF_SIZE_BIT, sbbr_l);
+@@ -1028,7 +1028,7 @@ static irqreturn_t ioc4_intr(int irq, void *arg)
+ 		spin_lock_irqsave(&soft->is_ir_lock, flag);
+ 		printk ("%s : %d : mem 0x%p sio_ir 0x%x sio_ies 0x%x "
+ 				"other_ir 0x%x other_ies 0x%x mask 0x%x\n",
+-		     __FUNCTION__, __LINE__,
++		     __func__, __LINE__,
+ 		     (void *)mem, readl(&mem->sio_ir.raw),
+ 		     readl(&mem->sio_ies.raw),
+ 		     readl(&mem->other_ir.raw),
+@@ -1155,14 +1155,14 @@ static int inline ioc4_attach_local(struct ioc4_driver_data *idd)
+ 				(TOTAL_RING_BUF_SIZE - 1)) == 0));
+ 			DPRINT_CONFIG(("%s : ip_cpu_ringbuf 0x%p "
+ 						"ip_dma_ringbuf 0x%p\n",
+-					__FUNCTION__,
++					__func__,
+ 					(void *)port->ip_cpu_ringbuf,
+ 					(void *)port->ip_dma_ringbuf));
+ 			port->ip_inring = RING(port, RX_0_OR_2);
+ 			port->ip_outring = RING(port, TX_0_OR_2);
+ 		}
+ 		DPRINT_CONFIG(("%s : port %d [addr 0x%p] control 0x%p",
+-				__FUNCTION__,
++				__func__,
+ 				port_number, (void *)port, (void *)control));
+ 		DPRINT_CONFIG((" ip_serial_regs 0x%p ip_uart_regs 0x%p\n",
+ 				(void *)port->ip_serial_regs,
+@@ -1173,7 +1173,7 @@ static int inline ioc4_attach_local(struct ioc4_driver_data *idd)
+ 
+ 		DPRINT_CONFIG(("%s: port_number %d port 0x%p inring 0x%p "
+ 						"outring 0x%p\n",
+-				__FUNCTION__,
++				__func__,
+ 				port_number, (void *)port,
+ 				(void *)port->ip_inring,
+ 				(void *)port->ip_outring));
+@@ -1317,7 +1317,7 @@ config_port(struct ioc4_port *port,
+ 	int spiniter = 0;
+ 
+ 	DPRINT_CONFIG(("%s: baud %d byte_size %d stop %d parenb %d parodd %d\n",
+-		__FUNCTION__, baud, byte_size, stop_bits, parenb, parodd));
++		__func__, baud, byte_size, stop_bits, parenb, parodd));
+ 
+ 	if (set_baud(port, baud))
+ 		return 1;
+@@ -1725,7 +1725,7 @@ ioc4_change_speed(struct uart_port *the_port,
+ 	}
+ 	baud = uart_get_baud_rate(the_port, new_termios, old_termios,
+ 				MIN_BAUD_SUPPORTED, MAX_BAUD_SUPPORTED);
+-	DPRINT_CONFIG(("%s: returned baud %d\n", __FUNCTION__, baud));
++	DPRINT_CONFIG(("%s: returned baud %d\n", __func__, baud));
+ 
+ 	/* default is 9600 */
+ 	if (!baud)
+@@ -1765,7 +1765,7 @@ ioc4_change_speed(struct uart_port *the_port,
+ 	DPRINT_CONFIG(("%s : port 0x%p cflag 0%o "
+ 		"config_port(baud %d data %d stop %d p enable %d parity %d),"
+ 		" notification 0x%x\n",
+-	     __FUNCTION__, (void *)port, cflag, baud, new_data, new_stop,
++	     __func__, (void *)port, cflag, baud, new_data, new_stop,
+ 	     new_parity_enable, new_parity, the_port->ignore_status_mask));
+ 
+ 	if ((config_port(port, baud,		/* baud */
+@@ -2715,7 +2715,7 @@ ioc4_serial_core_attach(struct pci_dev *pdev, int port_type)
+ 
+
+ 	DPRINT_CONFIG(("%s: attach pdev 0x%p - control 0x%p\n",
+-			__FUNCTION__, pdev, (void *)control));
++			__func__, pdev, (void *)control));
+ 
+ 	if (!control)
  		return -ENODEV;
- 	if (tty->flags & (1 << TTY_IO_ERROR))
- 		return -EIO;
-@@ -1372,7 +1372,7 @@ isdn_tty_tiocmset(struct tty_struct *tty, struct file *file,
+@@ -2734,7 +2734,7 @@ ioc4_serial_core_attach(struct pci_dev *pdev, int port_type)
+ 		port->ip_all_ports[port_type_idx] = the_port;
+ 
+ 		DPRINT_CONFIG(("%s: attach the_port 0x%p / port 0x%p : type %s\n",
+-				__FUNCTION__, (void *)the_port,
++				__func__, (void *)the_port,
+ 				(void *)port,
+ 				port_type == PROTO_RS232 ? "rs232" : "rs422"));
+ 
+@@ -2752,7 +2752,7 @@ ioc4_serial_core_attach(struct pci_dev *pdev, int port_type)
+ 		if (uart_add_one_port(u_driver, the_port) < 0) {
+ 			printk(KERN_WARNING
+ 		           "%s: unable to add port %d bus %d\n",
+-			       __FUNCTION__, the_port->line, pdev->bus->number);
++			       __func__, the_port->line, pdev->bus->number);
+ 		} else {
+ 			DPRINT_CONFIG(
+ 			    ("IOC4 serial port %d irq = %d, bus %d\n",
+@@ -2777,7 +2777,7 @@ ioc4_serial_attach_one(struct ioc4_driver_data *idd)
+ 	int ret = 0;
+ 
+
+-	DPRINT_CONFIG(("%s (0x%p, 0x%p)\n", __FUNCTION__, idd->idd_pdev,
++	DPRINT_CONFIG(("%s (0x%p, 0x%p)\n", __func__, idd->idd_pdev,
+ 							idd->idd_pci_id));
+ 
+ 	/* PCI-RT does not bring out serial connections.
+@@ -2806,7 +2806,7 @@ ioc4_serial_attach_one(struct ioc4_driver_data *idd)
+ 		goto out2;
+ 	}
+ 	DPRINT_CONFIG(("%s : mem 0x%p, serial 0x%p\n",
+-				__FUNCTION__, (void *)idd->idd_misc_regs,
++				__func__, (void *)idd->idd_misc_regs,
+ 				(void *)serial));
+ 
+ 	/* Get memory for the new card */
+@@ -2858,7 +2858,7 @@ ioc4_serial_attach_one(struct ioc4_driver_data *idd)
+ 	} else {
+ 		printk(KERN_WARNING
+ 		    "%s : request_irq fails for IRQ 0x%x\n ",
+-			__FUNCTION__, idd->idd_pdev->irq);
++			__func__, idd->idd_pdev->irq);
+ 	}
+ 	ret = ioc4_attach_local(idd);
+ 	if (ret)
+@@ -2911,13 +2911,13 @@ int ioc4_serial_init(void)
+ 	if ((ret = uart_register_driver(&ioc4_uart_rs232)) < 0) {
+ 		printk(KERN_WARNING
+ 			"%s: Couldn't register rs232 IOC4 serial driver\n",
+-			__FUNCTION__);
++			__func__);
+ 		return ret;
+ 	}
+ 	if ((ret = uart_register_driver(&ioc4_uart_rs422)) < 0) {
+ 		printk(KERN_WARNING
+ 			"%s: Couldn't register rs422 IOC4 serial driver\n",
+-			__FUNCTION__);
++			__func__);
+ 		return ret;
+ 	}
+ 
+diff --git a/drivers/serial/s3c2410.c b/drivers/serial/s3c2410.c
+index 45de193..7131e68 100644
+--- a/drivers/serial/s3c2410.c
++++ b/drivers/serial/s3c2410.c
+@@ -1093,13 +1093,13 @@ static int s3c24xx_serial_probe(struct platform_device *dev,
+ 	ourport = &s3c24xx_serial_ports[probe_index];
+ 	probe_index++;
+ 
+-	dbg("%s: initialising port %p...\n", __FUNCTION__, ourport);
++	dbg("%s: initialising port %p...\n", __func__, ourport);
+ 
+ 	ret = s3c24xx_serial_init_port(ourport, info, dev);
+ 	if (ret < 0)
+ 		goto probe_err;
+ 
+-	dbg("%s: adding port\n", __FUNCTION__);
++	dbg("%s: adding port\n", __func__);
+ 	uart_add_one_port(&s3c24xx_uart_drv, &ourport->port);
+ 	platform_set_drvdata(dev, &ourport->port);
+ 
+@@ -1584,7 +1584,7 @@ static int s3c2412_serial_resetport(struct uart_port *port,
+ 	unsigned long ucon = rd_regl(port, S3C2410_UCON);
+ 
+ 	dbg("%s: port=%p (%08lx), cfg=%p\n",
+-	    __FUNCTION__, port, port->mapbase, cfg);
++	    __func__, port, port->mapbase, cfg);
+ 
+ 	/* ensure we don't change the clock settings... */
+ 
+diff --git a/drivers/serial/sa1100.c b/drivers/serial/sa1100.c
+index 58a83c2..066587e 100644
+--- a/drivers/serial/sa1100.c
++++ b/drivers/serial/sa1100.c
+@@ -655,7 +655,7 @@ void __init sa1100_register_uart_fns(struct sa1100_port_fns *fns)
+ void __init sa1100_register_uart(int idx, int port)
  {
- 	modem_info *info = (modem_info *) tty->driver_data;
- 
--	if (isdn_tty_paranoia_check(info, tty->name, __FUNCTION__))
-+	if (isdn_tty_paranoia_check(info, tty->name, __func__))
- 		return -ENODEV;
- 	if (tty->flags & (1 << TTY_IO_ERROR))
- 		return -EIO;
-@@ -1608,7 +1608,7 @@ isdn_tty_open(struct tty_struct *tty, struct file *filp)
- 	if (isdn_tty_paranoia_check(info, tty->name, "isdn_tty_open"))
- 		return -ENODEV;
- 	if (!try_module_get(info->owner)) {
--		printk(KERN_WARNING "%s: cannot reserve module\n", __FUNCTION__);
-+		printk(KERN_WARNING "%s: cannot reserve module\n", __func__);
- 		return -ENODEV;
+ 	if (idx >= NR_PORTS) {
+-		printk(KERN_ERR "%s: bad index number %d\n", __FUNCTION__, idx);
++		printk(KERN_ERR "%s: bad index number %d\n", __func__, idx);
+ 		return;
  	}
- #ifdef ISDN_DEBUG_MODEM_OPEN
+ 
+@@ -682,7 +682,7 @@ void __init sa1100_register_uart(int idx, int port)
+ 		break;
+ 
+ 	default:
+-		printk(KERN_ERR "%s: bad port number %d\n", __FUNCTION__, port);
++		printk(KERN_ERR "%s: bad port number %d\n", __func__, port);
+ 	}
+ }
+ 
+diff --git a/drivers/serial/sh-sci.c b/drivers/serial/sh-sci.c
+index a8c116b..ed8ab28 100644
+--- a/drivers/serial/sh-sci.c
++++ b/drivers/serial/sh-sci.c
+@@ -850,7 +850,7 @@ static int sci_notifier(struct notifier_block *self,
+ 
+ 		printk(KERN_INFO "%s: got a postchange notification "
+ 		       "for cpu %d (old %d, new %d)\n",
+-		       __FUNCTION__, freqs->cpu, freqs->old, freqs->new);
++		       __func__, freqs->cpu, freqs->old, freqs->new);
+ 	}
+ 
+ 	return NOTIFY_OK;
+diff --git a/drivers/serial/sn_console.c b/drivers/serial/sn_console.c
+index 41fc612..019da2e 100644
+--- a/drivers/serial/sn_console.c
++++ b/drivers/serial/sn_console.c
+@@ -839,7 +839,7 @@ static int __init sn_sal_module_init(void)
+ 
+ 	if (uart_add_one_port(&sal_console_uart, &sal_console_port.sc_port) < 0) {
+ 		/* error - not sure what I'd do - so I'll do nothing */
+-		printk(KERN_ERR "%s: unable to add port\n", __FUNCTION__);
++		printk(KERN_ERR "%s: unable to add port\n", __func__);
+ 	}
+ 
+ 	/* when this driver is compiled in, the console initialization
+diff --git a/drivers/serial/uartlite.c b/drivers/serial/uartlite.c
+index 4e06ab6..91c17c4 100644
+--- a/drivers/serial/uartlite.c
++++ b/drivers/serial/uartlite.c
+@@ -581,7 +581,7 @@ ulite_of_probe(struct of_device *op, const struct of_device_id *match)
+ 	const unsigned int *id;
+ 	int irq, rc;
+ 
+-	dev_dbg(&op->dev, "%s(%p, %p)\n", __FUNCTION__, op, match);
++	dev_dbg(&op->dev, "%s(%p, %p)\n", __func__, op, match);
+ 
+ 	rc = of_address_to_resource(op->node, 0, &res);
+ 	if (rc) {
+diff --git a/drivers/serial/ucc_uart.c b/drivers/serial/ucc_uart.c
+index e0994f0..56fe947 100644
+--- a/drivers/serial/ucc_uart.c
++++ b/drivers/serial/ucc_uart.c
+@@ -215,7 +215,7 @@ static inline dma_addr_t cpu2qe_addr(void *addr, struct uart_qe_port *qe_port)
+ 		return qe_port->bd_dma_addr + (addr - qe_port->bd_virt);
+ 
+ 	/* something nasty happened */
+-	printk(KERN_ERR "%s: addr=%p\n", __FUNCTION__, addr);
++	printk(KERN_ERR "%s: addr=%p\n", __func__, addr);
+ 	BUG();
+ 	return 0;
+ }
+@@ -234,7 +234,7 @@ static inline void *qe2cpu_addr(dma_addr_t addr, struct uart_qe_port *qe_port)
+ 		return qe_port->bd_virt + (addr - qe_port->bd_dma_addr);
+ 
+ 	/* something nasty happened */
+-	printk(KERN_ERR "%s: addr=%x\n", __FUNCTION__, addr);
++	printk(KERN_ERR "%s: addr=%x\n", __func__, addr);
+ 	BUG();
+ 	return NULL;
+ }
 -- 
 1.5.4.3.500.g83a2c
 
