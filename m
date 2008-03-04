@@ -1,48 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932733AbYCDTxJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933388AbYCDTxt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932733AbYCDTxJ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Mar 2008 14:53:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755650AbYCDTwq
+	id S933388AbYCDTxt (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Mar 2008 14:53:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757284AbYCDTwt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Mar 2008 14:52:46 -0500
-Received: from wolverine02.qualcomm.com ([199.106.114.251]:26193 "EHLO
-	wolverine02.qualcomm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752077AbYCDTwo (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Mar 2008 14:52:44 -0500
-X-IronPort-AV: E=McAfee;i="5200,2160,5244"; a="902359"
-Message-ID: <47CDA885.3000103@qualcomm.com>
-Date: Tue, 04 Mar 2008 11:52:37 -0800
-From: Max Krasnyanskiy <maxk@qualcomm.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+	Tue, 4 Mar 2008 14:52:49 -0500
+Received: from mx2.suse.de ([195.135.220.15]:39180 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758635AbYCDTwr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 4 Mar 2008 14:52:47 -0500
+Date: Tue, 4 Mar 2008 11:30:36 -0800
+From: Greg KH <gregkh@suse.de>
+To: Jesse Barnes <jbarnes@virtuousgeek.org>
+Cc: Matthew Wilcox <matthew@wil.cx>, Alex Chiang <achiang@hp.com>,
+       Gary Hade <garyhade@us.ibm.com>, kaneshige.kenji@jp.fujitsu.com,
+       warthog19@eaglescrag.net, kristen.c.accardi@intel.com,
+       rick.jones2@hp.com, linux-kernel@vger.kernel.org,
+       linux-pci@atrey.karlin.mff.cuni.cz, linux-acpi@vger.kernel.org
+Subject: Re: [PATCH 4/4] ACPI PCI slot detection driver
+Message-ID: <20080304193036.GB5534@suse.de>
+References: <20080229002341.GA21420@ldl.fc.hp.com> <20080301144307.GD24386@parisc-linux.org> <20080304054927.GA15566@suse.de> <200803041018.29035.jbarnes@virtuousgeek.org>
 MIME-Version: 1.0
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-CC: Paul Jackson <pj@sgi.com>, mingo@elte.hu, tglx@linutronix.de,
-       oleg@tv-sign.ru, rostedt@goodmis.org, linux-kernel@vger.kernel.org,
-       rientjes@google.com
-Subject: Re: [RFC/PATCH] cpuset: cpuset irq affinities
-References: <20080227222103.673194000@chello.nl>	 <1204311351.6243.130.camel@lappy> <20080229190223.GA17820@elte.hu>	 <47C87084.3090208@qualcomm.com> <1204318980.6243.133.camel@lappy>	 <47C8771C.1070001@qualcomm.com> <1204545445.11412.6.camel@twins>	 <20080303113621.1dfdda87.pj@sgi.com> <1204567052.6241.4.camel@lappy>	 <20080303121033.c8c9651c.pj@sgi.com> <1204568316.8514.18.camel@twins>	 <20080304013534.4e51ae48.pj@sgi.com> <1204628762.6241.46.camel@lappy>
-In-Reply-To: <1204628762.6241.46.camel@lappy>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200803041018.29035.jbarnes@virtuousgeek.org>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Peter Zijlstra wrote:
-> On Tue, 2008-03-04 at 01:35 -0600, Paul Jackson wrote:
->> Peter wrote:
->>> OK, understood, I'll try and come up with yet another scheme :-)
->> Would your per-cpuset 'irqs' file work if, unlike pids in the 'tasks' file,
->> we allowed the same irq to be listed in multiple 'irqs' files?
+On Tue, Mar 04, 2008 at 10:18:28AM -0800, Jesse Barnes wrote:
+> On Monday, March 03, 2008 9:49 pm Greg KH wrote:
+> > On Sat, Mar 01, 2008 at 07:43:07AM -0700, Matthew Wilcox wrote:
+> > > On Fri, Feb 29, 2008 at 09:25:42PM -0800, Greg KH wrote:
+> > > > What is the guarantee that the names of these slots are correct and do
+> > > > not happen to be the same as the hotpluggable ones?
+> > >
+> > > That would be a bug -- and yes, bugs happen, and we have to deal with
+> > > them.
+> >
+> > My main concern is that BIOS vendors will not fix these bugs, as no
+> > other OS cares/does this kind of thing today.  The ammount of bad
+> > information out there might be quite large, and I think this was
+> > confirmed by some initial testing of IBM systems, right?
 > 
-> I did think of that, but that seems rather awkward. For one, how would
-> you remove an irq from a cpuset?
+> Yeah, but there's a flip side to this too:  if no one uses the data, no one 
+> will complain when it's wrong.  If Linux starts making it easy to see this 
+> stuff, there's a chance system vendors will start taking an extra 5 min. 
+> before shipment to make sure that the BIOS info is up to date...
 > 
-> Secondly, the beauty of the current solution is that we use
-> irq_desc->cs->cpus_allowed, if it were in multiple sets, we'd have to
-> iterate a list, and cpus_or() the bunch.
-> 
-Yeah, that would definitely be awkward.
+> OTOH, I'm not sure which is worse, bad data or no data.
 
-Max
+bad data is worse.
+
+And then there's the machines with duplicate slot names, how does this
+code handle PCI slots with that?  I think some of the IBM machines had
+non-hotplug slots named the same as the hotplug slots, right?
+
+This stuff needs a _lot_ of testing on a lot of different machines, and
+a sane way to fall-back if there are errors to ensure that working
+machines don't break.
+
+And then there's the issue with userspace programs only expecting
+hotplugable slots in the slots/ directory...
+
+thanks,
+
+greg k-h
