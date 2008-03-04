@@ -1,65 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762850AbYCDBV4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759492AbYCDB2R@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762850AbYCDBV4 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Mar 2008 20:21:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755616AbYCDBVr
+	id S1759492AbYCDB2R (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Mar 2008 20:28:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755550AbYCDB2A
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Mar 2008 20:21:47 -0500
-Received: from ozlabs.org ([203.10.76.45]:41137 "EHLO ozlabs.org"
+	Mon, 3 Mar 2008 20:28:00 -0500
+Received: from cantor2.suse.de ([195.135.220.15]:51699 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754414AbYCDBVq convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Mar 2008 20:21:46 -0500
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: Andi Kleen <andi@firstfloor.org>
-Subject: Re: Module loading/unloading and "The Stop Machine"
-Date: Tue, 4 Mar 2008 12:21:05 +1100
-User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
-Cc: Max Krasnyanskiy <maxk@qualcomm.com>, Tejun Heo <htejun@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Kathy Staples <kathy.staples@au1.ibm.com>
-References: <47ABC08C.8010101@qualcomm.com> <47BE29A0.6040409@qualcomm.com> <p73prup8awh.fsf@bingen.suse.de>
-In-Reply-To: <p73prup8awh.fsf@bingen.suse.de>
+	id S1755127AbYCDB17 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 3 Mar 2008 20:27:59 -0500
+To: Christoph Lameter <clameter@sgi.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: [rfc 10/10] Pageflags: Land grab
+From: Andi Kleen <andi@firstfloor.org>
+References: <20080304000452.514878384@sgi.com>
+	<20080304000734.383475547@sgi.com>
+Date: Tue, 04 Mar 2008 02:27:55 +0100
+In-Reply-To: <20080304000734.383475547@sgi.com> (Christoph Lameter's message of "Mon\, 03 Mar 2008 16\:05\:02 -0800")
+Message-ID: <p73tzjn5ld0.fsf@bingen.suse.de>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.1 (gnu/linux)
 MIME-Version: 1.0
-Content-Disposition: inline
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-Message-Id: <200803041221.05434.rusty@rustcorp.com.au>
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 22 February 2008 22:53:50 Andi Kleen wrote:
-> Max Krasnyanskiy <maxk@qualcomm.com> writes:
-> > static struct module *load_module(void __user *umod,
-> >                                  unsigned long len,
-> >                                  const char __user *uargs)
-> > {
-> >      ...
-> >
-> >      /* Now sew it into the lists so we can get lockdep and oops
-> >         * info during argument parsing.  Noone should access us, since
-> >         * strong_try_module_get() will fail. */
-> >        stop_machine_run(__link_module, mod, NR_CPUS);
-> >      ...
-> > }
+Christoph Lameter <clameter@sgi.com> writes:
 >
-> Wow you found some really bad code. I bet it wouldn't be that
-> difficult to fix the code to allow oops safe list insertion
-> without using the big stop machine overkill hammer.
+> The page flags situation becomes very tight. The remaining 6 bits must then
+> be used as section ids. Via a lookup table we can determine the node ids from
+> the section id. So it would work.
+>
+> However, we would have no page flags left. Any additional page flag will
+> reduce the number of available sparsemem sections to half.
 
-Yes it's overkill and it's becoming more noticable with larger machines.  
-(Also, stop_machine is heavier than it should be, Kathy is working on fixing 
-that though).
+I have an upcoming, soon to be posted, project that needs one page
+flag on 32bit and two on 64bit. I would request that you leave
+at least that many over.
 
-Most obvious is to add __ "lockless, but I'm in trouble anyway" accessors, but 
-last I looked they'd have to be plumbed through a fair bit of code.
-
->From a quick reading of the code, a lockless add is possible, but it's fragile 
-if one of the readers does something more complex in future.
-
-Thanks,
-Rusty.
-
+-Andi
