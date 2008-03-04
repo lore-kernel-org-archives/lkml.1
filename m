@@ -1,54 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763557AbYCDKa3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763693AbYCDKcw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763557AbYCDKa3 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Mar 2008 05:30:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756098AbYCDKaN
+	id S1763693AbYCDKcw (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Mar 2008 05:32:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754812AbYCDKco
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Mar 2008 05:30:13 -0500
-Received: from jenny.ondioline.org ([66.220.1.122]:57440 "EHLO
-	jenny.ondioline.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756231AbYCDKaM (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Mar 2008 05:30:12 -0500
-From: Paul Collins <paul@burly.ondioline.org>
-To: Avi Kivity <avi@qumranet.com>
-Cc: linux-kernel@vger.kernel.org, kvm-devel@lists.sourceforge.net
-Subject: Re: [kvm-devel] 11s softlockup and hang with kvm on 2.6.24.3
-References: <873ar6rhq3.fsf@burly.wgtn.ondioline.org>
-	<47CD1634.6030901@qumranet.com>
-Date: Tue, 04 Mar 2008 23:27:18 +1300
-In-Reply-To: <47CD1634.6030901@qumranet.com> (Avi Kivity's message of "Tue, 04
-	Mar 2008 11:28:20 +0200")
-Message-ID: <87y78ypywp.fsf@burly.wgtn.ondioline.org>
-User-Agent: Gnus/5.110007 (No Gnus v0.7) Emacs/23.0.60 (gnu/linux)
+	Tue, 4 Mar 2008 05:32:44 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:36489 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755482AbYCDKco (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 4 Mar 2008 05:32:44 -0500
+Date: Tue, 4 Mar 2008 11:32:20 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Suresh Siddha <suresh.b.siddha@intel.com>
+Cc: Christoph Hellwig <hch@infradead.org>, hpa@zytor.com, tglx@linutronix.de,
+       andi@firstfloor.org, linux-kernel@vger.kernel.org,
+       Arjan van de Ven <arjan@linux.intel.com>
+Subject: Re: [patch 2/2] x86, fpu: lazy allocation of FPU area - v3
+Message-ID: <20080304103220.GA17621@elte.hu>
+References: <20080303230335.892214000@linux-os.sc.intel.com> <20080303230336.042604000@linux-os.sc.intel.com> <20080304012012.GB22431@infradead.org> <20080304014306.GC28006@linux-os.sc.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080304014306.GC28006@linux-os.sc.intel.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Avi Kivity <avi@qumranet.com> writes:
 
-> Paul Collins wrote:
->> Running kvm 62 on 2.6.24.3 (the extraversion is reported due to a local
->> patch to vfat) I just got a couple of soft lockups and a hang.  I was
->> installing FreeBSD 7 at the time.
->>
->> Mar  4 21:20:13 burly kernel: Call Trace:
->> Mar  4 21:20:13 burly kernel:  [<ffffffff8024b60e>] hrtimer_try_to_cancel+0x67/0x70
->> Mar  4 21:20:13 burly kernel:  [<ffffffff8024b629>] hrtimer_cancel+0x12/0x16
->> Mar  4 21:20:13 burly kernel:  [<ffffffff8024b623>] hrtimer_cancel+0xc/0x16
->> Mar  4 21:20:13 burly kernel:  [<ffffffff880fc9cd>] :kvm:kvm_migrate_apic_timer+0x19/0x2e
->
-> Can you reproduce and send the output of sysrq-t?  Looks like the
-> timer callback is stuck.
+* Suresh Siddha <suresh.b.siddha@intel.com> wrote:
 
-I'll give it a lash.
+> On Mon, Mar 03, 2008 at 08:20:12PM -0500, Christoph Hellwig wrote:
+> > On Mon, Mar 03, 2008 at 03:02:46PM -0800, Suresh Siddha wrote:
+> > > +	/*
+> > > +	 * Memory allocation at the first usage of the FPU and other state.
+> > > +	 */
+> > > +	if (!tsk->thread.xstate)
+> > > +		tsk->thread.xstate = kmem_cache_alloc(task_xstate_cachep, GFP_KERNEL);
+> >
+> >  Also don't we need some kind of error handling here?
+> 
+> Currently it uses SLAB_PANIC.
 
-I was able to complete the installation with kvm 62 on 2.6.25-rc3-369-g976dde0.
+but SLAB_PANIC only covers kmem_cache_create() failures. 
 
--- 
-Paul Collins
-Wellington, New Zealand
+kmem_cache_alloc() can fail (return NULL) and not handling it is a bug.
 
-Dag vijandelijk luchtschip de huismeester is dood
+	Ingo
