@@ -1,101 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933263AbYCDS7m@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933230AbYCDTAu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933263AbYCDS7m (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Mar 2008 13:59:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760787AbYCDS7a
+	id S933230AbYCDTAu (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Mar 2008 14:00:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762468AbYCDTAi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Mar 2008 13:59:30 -0500
-Received: from triton.rz.uni-saarland.de ([134.96.7.25]:12467 "EHLO
-	triton.rz.uni-saarland.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759867AbYCDS73 (ORCPT
+	Tue, 4 Mar 2008 14:00:38 -0500
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:43966 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1762605AbYCDTAh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Mar 2008 13:59:29 -0500
-Date: Tue, 4 Mar 2008 19:57:42 +0100
-From: Alexander van Heukelum <heukelum@mailshack.com>
-To: Jeremy Fitzhardinge <jeremy@goop.org>, Ingo Molnar <mingo@elte.hu>
-Cc: Alexander van Heukelum <heukelum@fastmail.fm>,
-       Mark McLoughlin <markmc@redhat.com>, Ian Campbell <ijc@hellion.org.uk>,
-       "H. Peter Anvin" <hpa@zytor.com>, Andi Kleen <ak@suse.de>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] reserve end-of-conventional-memory to 1MB, 32-bit, use paravirt_enabled
-Message-ID: <20080304185742.GA12193@mailshack.com>
-References: <1204232996.28798.8.camel@cthulhu.hellion.org.uk> <20080229114943.GA1909@mailshack.com> <1204305247.2037.2.camel@muff> <1204310323.24514.1239870063@webmail.messagingengine.com> <1204322819.6299.1.camel@muff> <20080301160911.GA13271@mailshack.com> <1204631082.16613.7.camel@muff> <47CD6858.9070603@goop.org> <1204649476.5048.1240509149@webmail.messagingengine.com> <47CD82C5.8060605@goop.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <47CD82C5.8060605@goop.org>
-User-Agent: Mutt/1.5.9i
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (triton.rz.uni-saarland.de [134.96.7.25]); Tue, 04 Mar 2008 19:58:27 +0100 (CET)
-X-AntiVirus: checked by AntiVir MailGate (version: 2.1.2-14; AVE: 7.6.0.73; VDF: 7.0.2.231; host: AntiVir3)
+	Tue, 4 Mar 2008 14:00:37 -0500
+Date: Tue, 4 Mar 2008 11:00:31 -0800 (PST)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Andrea Arcangeli <andrea@qumranet.com>
+cc: Jack Steiner <steiner@sgi.com>, Nick Piggin <npiggin@suse.de>,
+       akpm@linux-foundation.org, Robin Holt <holt@sgi.com>,
+       Avi Kivity <avi@qumranet.com>, kvm-devel@lists.sourceforge.net,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, general@lists.openfabrics.org,
+       Steve Wise <swise@opengridcomputing.com>,
+       Roland Dreier <rdreier@cisco.com>, Kanoj Sarcar <kanojsarcar@yahoo.com>,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       daniel.blueman@quadrics.com
+Subject: Re: [RFC] Notifier for Externally Mapped Memory (EMM)
+In-Reply-To: <20080304133020.GC5301@v2.random>
+Message-ID: <Pine.LNX.4.64.0803041059110.13957@schroedinger.engr.sgi.com>
+References: <20080220103942.GU7128@v2.random> <20080221045430.GC15215@wotan.suse.de>
+ <20080221144023.GC9427@v2.random> <20080221161028.GA14220@sgi.com>
+ <20080227192610.GF28483@v2.random> <20080302155457.GK8091@v2.random>
+ <20080303213707.GA8091@v2.random> <20080303220502.GA5301@v2.random>
+ <47CC9B57.5050402@qumranet.com> <Pine.LNX.4.64.0803032327470.9642@schroedinger.engr.sgi.com>
+ <20080304133020.GC5301@v2.random>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jeremy Fitzhardinge pointed out that looking at the boot_params
-struct to determine if the system is running in a paravirtual
-environment is not reliable for the Xen case, currently. He also
-points out that there already exists a function to determine if
-the system is running in a paravirtual environment. So let's use
-that instead. This gets rid of the preprocessor test too.
+On Tue, 4 Mar 2008, Andrea Arcangeli wrote:
 
-Signed-off-by: Alexander van Heukelum <heukelum@fastmail.fm>
+> When working with single pages it's more efficient and preferable to
+> call invalidate_page and only later release the VM reference on the
+> page.
 
----
+But as you pointed out before that path is a slow path anyways. Its rarely 
+taken. Having a single eviction callback simplifies design.
 
-On Tue, Mar 04, 2008 at 09:11:33AM -0800, Jeremy Fitzhardinge wrote:
-> Alexander van Heukelum wrote:
-> >On Tue, 04 Mar 2008 07:18:48 -0800, "Jeremy Fitzhardinge"
-> ><jeremy@goop.org> said:
-> >>Yes, is_paravirt() already exists for this purpose.
-> >
-> >Hi,
-> >
-> >If it exists, it is well-hidden. A grep for is_paravirt on the testing
-> >tree turns up nothing. Did you get the name right?
-> >  
-> 
-> Nope.  paravirt_enabled().
-
-Duh, I should have been able to find that :-/. Thanks for the pointer.
-
-> Just because something is paravirtualized and uses a non-PC 
-> hardware_subarch doesn't mean this stuff isn't present.  Even the 
-> paravirt_enabled() test isn't accurate, because the environment may 
-> still choose to emulate these things (or in the Xen dom0 case, it may 
-> directly expose the real hardware).
-
-paravirt_enabled() returns 0 if CONFIG_PARAVIRT is not set, or if a
-paravirt-enabled kernel is run on bare hardware: dom0. If that is right,
-then it is exactly what is needed.
-
-Greetings,
-	Alexander
-
-diff --git a/arch/x86/kernel/setup_32.c b/arch/x86/kernel/setup_32.c
-index 20e537b..f595d7b 100644
---- a/arch/x86/kernel/setup_32.c
-+++ b/arch/x86/kernel/setup_32.c
-@@ -64,6 +64,7 @@
- #include <setup_arch.h>
- #include <bios_ebda.h>
- #include <asm/cacheflush.h>
-+#include <asm/processor.h>
+Plus the device driver can still check if the mapping was of PAGE_SIZE and 
+then implement its own optimization.
  
- /* This value is set up by the early boot code to point to the value
-    immediately after the boot time page tables.  It contains a *physical*
-@@ -408,12 +409,8 @@ static void __init reserve_ebda_region(void)
- 	/* that area is absent. We'll just have to assume */
- 	/* that the paravirt case can handle memory setup */
- 	/* correctly, without our help. */
--#ifdef CONFIG_PARAVIRT
--	if ((boot_params.hdr.version >= 0x207) &&
--			(boot_params.hdr.hardware_subarch != 0)) {
-+	if (paravirt_enabled())
- 		return;
--	}
--#endif
- 
- 	/* end of low (conventional) memory */
- 	lowmem = *(unsigned short *)__va(BIOS_LOWMEM_KILOBYTES);
-
