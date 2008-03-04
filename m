@@ -1,46 +1,147 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762418AbYCDOyd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763497AbYCDO5T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762418AbYCDOyd (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Mar 2008 09:54:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755810AbYCDOyY
+	id S1763497AbYCDO5T (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Mar 2008 09:57:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755998AbYCDO5L
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Mar 2008 09:54:24 -0500
-Received: from viefep32-int.chello.at ([62.179.121.50]:45220 "EHLO
-	viefep32-int.chello.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755451AbYCDOyY (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Mar 2008 09:54:24 -0500
-Message-ID: <47CD6296.90303@trash.net>
-Date: Tue, 04 Mar 2008 15:54:14 +0100
-From: Patrick McHardy <kaber@trash.net>
-User-Agent: Mozilla-Thunderbird 2.0.0.6 (X11/20071008)
-MIME-Version: 1.0
-To: Jan Engelhardt <jengelh@computergmbh.de>
-CC: Netfilter Developer Mailing List 
-	<netfilter-devel@vger.kernel.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [announce] Xtables, Xtables-addons 1.5.2
-References: <Pine.LNX.4.64.0803040519150.7660@fbirervta.pbzchgretzou.qr>
-In-Reply-To: <Pine.LNX.4.64.0803040519150.7660@fbirervta.pbzchgretzou.qr>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
-Content-Transfer-Encoding: 8bit
+	Tue, 4 Mar 2008 09:57:11 -0500
+Received: from x346.tv-sign.ru ([89.108.83.215]:34642 "EHLO mail.screens.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755810AbYCDO5J (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 4 Mar 2008 09:57:09 -0500
+Date: Tue, 4 Mar 2008 18:01:07 +0300
+From: Oleg Nesterov <oleg@tv-sign.ru>
+To: Gautham R Shenoy <ego@in.ibm.com>
+Cc: Yi Yang <yi.y.yang@intel.com>, Ingo Molnar <mingo@elte.hu>,
+       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [BUG 2.6.25-rc3] scheduler/hotplug: some processes are dealocked when cpu is set to offline
+Message-ID: <20080304150107.GA564@tv-sign.ru>
+References: <1204483329.3607.8.camel@yangyi-dev.bj.intel.com> <20080303153154.GA11288@in.ibm.com> <1204555505.3842.4.camel@yangyi-dev.bj.intel.com> <20080304052613.GA28632@in.ibm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080304052613.GA28632@in.ibm.com>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jan Engelhardt wrote:
-> Hello everyone,
-> 
-> 
-> I have released Xtables 1.5.2, which is a package of my ongoing
-> iptables development. It contains a few patches that make it easier
-> to build (no kernel source required¹!), and... see shortlog below. I
-> just rebased it on top of the new converted-from-svn iptables git
-> tree (which still needs to be officially embraced..); once that
-> happens it will hopefully merge.  Still, it is stable and can replace
-> an older iptables package.
+On 03/04, Gautham R Shenoy wrote:
+>
+> So at times, the callback thread is blocked on kthread_stop(k) in
+> softlockup.c, while other time, it was blocked in
+> cleanup_workqueue_threads() in workqueue.c. 
 
+>From another message:
+>
+> However, it remains in R< state
 
-It would be a lot better if you would post your patches
-instead publishing your own versions of iptables.
+What about cwq->thread? Was it TASK_RUNNING too?
+
+Perhaps, for some reason the task can't get CPU after migrating from
+the now dead CPU.
+
+I can't reproduce this problem on my one cpu P4-ht, perhaps you can
+try something like the untested/uncompiled patch below?
+
+Oleg.
+
+--- include/linux/sched.h	2008-02-15 16:59:17.000000000 +0300
++++ include/linux/sched.h	2008-03-04 17:44:53.136738605 +0300
+@@ -1121,6 +1121,7 @@ struct task_struct {
+ /* hung task detection */
+ 	unsigned long last_switch_timestamp;
+ 	unsigned long last_switch_count;
++	unsigned long xxx;
+ #endif
+ /* CPU-specific state of this task */
+ 	struct thread_struct thread;
+--- kernel/fork.c	2008-02-15 16:59:17.000000000 +0300
++++ kernel/fork.c	2008-03-04 17:45:14.773033839 +0300
+@@ -1097,6 +1097,7 @@ static struct task_struct *copy_process(
+ #ifdef CONFIG_DETECT_SOFTLOCKUP
+ 	p->last_switch_count = 0;
+ 	p->last_switch_timestamp = 0;
++	p->xxx = 0;
+ #endif
+ 
+ #ifdef CONFIG_TASK_XACCT
+--- kernel/sched.c	2008-02-15 16:59:17.000000000 +0300
++++ kernel/sched.c	2008-03-04 17:48:42.308798646 +0300
+@@ -1291,6 +1291,7 @@ static void enqueue_task(struct rq *rq, 
+ 	sched_info_queued(p);
+ 	p->sched_class->enqueue_task(rq, p, wakeup);
+ 	p->se.on_rq = 1;
++	p->xxx = jiffies | 1;
+ }
+ 
+ static void dequeue_task(struct rq *rq, struct task_struct *p, int sleep)
+@@ -3944,6 +3945,8 @@ need_resched_nonpreemptible:
+ 	preempt_enable_no_resched();
+ 	if (unlikely(test_thread_flag(TIF_NEED_RESCHED)))
+ 		goto need_resched;
++
++	current->xxx = 0;
+ }
+ EXPORT_SYMBOL(schedule);
+ 
+--- kernel/softlockup.c	2008-02-15 16:59:17.000000000 +0300
++++ kernel/softlockup.c	2008-03-04 17:49:05.584414763 +0300
+@@ -174,6 +174,27 @@ static void check_hung_task(struct task_
+ 	touch_nmi_watchdog();
+ }
+ 
++static void check_running_task(struct task_struct *t, unsigned long now)
++{
++	if (!sysctl_hung_task_timeout_secs)
++		return;
++
++	if (time_before(now, t->xxx + HZ * sysctl_hung_task_timeout_secs)
++		return;
++
++	printk(KERN_ERR "INFO: task %s:%d can't get CPU for more than "
++			"%ld seconds.\n", t->comm, t->pid,
++			sysctl_hung_task_timeout_secs);
++
++	if (!cpus_intersects(t->cpus_allowed, cpu_online_map))
++		printk(KERN_ERR "bad ->cpus_allowed\n");
++	if (!cpu_online(task_cpu(t)))
++		printk(KERN_ERR "bad ->cpu\n");
++
++	sched_show_task(t);
++	touch_nmi_watchdog();
++}
++
+ /*
+  * Check whether a TASK_UNINTERRUPTIBLE does not get woken up for
+  * a really long time (120 seconds). If that happens, print out
+@@ -183,6 +204,7 @@ static void check_hung_uninterruptible_t
+ {
+ 	int max_count = sysctl_hung_task_check_count;
+ 	unsigned long now = get_timestamp(this_cpu);
++	unsigned long jiff = jiffies;
+ 	struct task_struct *g, *t;
+ 
+ 	/*
+@@ -192,15 +214,17 @@ static void check_hung_uninterruptible_t
+ 	if ((tainted & TAINT_DIE) || did_panic)
+ 		return;
+ 
+-	read_lock(&tasklist_lock);
++	rcu_read_lock();
+ 	do_each_thread(g, t) {
+ 		if (!--max_count)
+ 			goto unlock;
+ 		if (t->state & TASK_UNINTERRUPTIBLE)
+ 			check_hung_task(t, now);
++		if (!t->xxx)
++			check_running_task(t, jiff);
+ 	} while_each_thread(g, t);
+  unlock:
+-	read_unlock(&tasklist_lock);
++	rcu_read_unlock();
+ }
+ 
+ /*
 
