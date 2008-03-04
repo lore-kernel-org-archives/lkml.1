@@ -1,73 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764081AbYCDVu1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764446AbYCDVxx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764081AbYCDVu1 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Mar 2008 16:50:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752956AbYCDVuI
+	id S1764446AbYCDVxx (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Mar 2008 16:53:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752795AbYCDVxp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Mar 2008 16:50:08 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:34189 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752586AbYCDVuG (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Mar 2008 16:50:06 -0500
-Date: Tue, 4 Mar 2008 13:49:31 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: rafa400@losgandia.com
-Cc: linux-kernel@vger.kernel.org, linux-usb@vger.kernel.org
-Subject: Re: PROBLEM: NUDAM (USB-485) nowaday not detected by pl2303 module
-Message-Id: <20080304134931.e72a3479.akpm@linux-foundation.org>
-In-Reply-To: <26349.208.97.187.133.1204650893.squirrel@mail.losgandia.com>
-References: <26349.208.97.187.133.1204650893.squirrel@mail.losgandia.com>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+	Tue, 4 Mar 2008 16:53:45 -0500
+Received: from e1.ny.us.ibm.com ([32.97.182.141]:42377 "EHLO e1.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751921AbYCDVxo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 4 Mar 2008 16:53:44 -0500
+Subject: Re: [BUG] 2.6.25-rc3-mm1 kernel bug while running libhugetlbfs
+From: Adam Litke <agl@us.ibm.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>,
+       linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org, apw@shadowen.org,
+       balbir@linux.vnet.ibm.com
+In-Reply-To: <20080304115158.505f33eb.akpm@linux-foundation.org>
+References: <20080304011928.e8c82c0c.akpm@linux-foundation.org>
+	 <47CDA0F1.9030908@linux.vnet.ibm.com>
+	 <20080304115158.505f33eb.akpm@linux-foundation.org>
+Content-Type: text/plain
+Organization: IBM
+Date: Tue, 04 Mar 2008 16:01:29 -0600
+Message-Id: <1204668089.14779.92.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.12.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 4 Mar 2008 09:14:53 -0800 (PST)
-rafa400@losgandia.com wrote:
+On Tue, 2008-03-04 at 11:51 -0800, Andrew Morton wrote:
+> hugetlb-correct-page-count-for-surplus-huge-pages.patch adds:
+> 
+>         if (page) {
+>                 /*
+>                  * This page is now managed by the hugetlb allocator and has
+>                  * no users -- drop the buddy allocator's reference.
+>                  */
+>                 int page_count = put_page_testzero(page);
+>                 BUG_ON(page_count != 0);
+> 
+> 
 
-> [1.] new NUDAM (USB-485) converter not recogniced by pl2303. Little change
-> required.
-> [2.] Until now NUDAM USB to RS-485/422 RS232 converter was detected by USB
-> system and pl2303 module working fine in my Debian as /dev/ttyUSB0
-> 
-> # dmesg
-> ....
-> usb 5-1.3: new full speed USB device using ehci_hcd and address 17
-> usb 5-1.3: configuration #1 chosen from 1 choice
-> pl2303 5-1.3:1.0: pl2303 converter detected
-> usb 5-1.3: pl2303 converter now attached to ttyUSB0
-> 
-> # lsusb
-> Bus 005 Device 017: ID 067b:2303 Prolific Technology, Inc. PL2303 Serial Port
-> 
->  They changed USB ID and now its like:
-> 
-> # lsusb
-> Bus 005 Device 016: ID 0b63:6530 ADLink Technology, Inc.
-> 
-> but this ID is not detected by PD2303 module.
-> a little change in pl2303 solve the problem
-> 
-> [3.] pl2303 NUDAM USB 485
-> [4.] Linux version 2.6.24-nudam (2.6.24-4) (root@rp022) (gcc version 4.2.3
-> 20080114 (prerelease) (Debian 4.2.2-7)) #1 SMP Mon Mar 3 12:02:41 CET 2008
-> [5.] not required
-> [6.] not required
-> [7.] not required
-> [X.] Other notes, patches, fixes, workarounds:
-> I made the tribial changes in:
-> 
-> drivers/usb/serial/pl2303.c
-> drivers/usb/serial/pl2303.h
-> 
-> adding de new USB ID 0b63:6530 to the existing arrays as needed
-> recompile kernel, etc,etc.
-> and it works fine again.
-> 
-> Please include this in newer versions if it is possible.
+Ugh I got bitten by put_page_testzero().  When it returns 1, the page
+count is zero (not the page count).
 
-Please just send us the patch.
+My initial version had a BUG_ON() with side-effects.  When a reviewer
+pointed it out, I thought I could fix the patch up on its way out the
+door.  I have self-administered my punishment.  This patch will fix it:
+
+Signed-off-by: Adam Litke <agl@us.ibm.com>
+
+--- mm/hugetlb.c.orig	2008-03-04 13:36:30.000000000 -0800
++++ mm/hugetlb.c	2008-03-04 13:39:30.000000000 -0800
+@@ -291,8 +291,8 @@ static struct page *alloc_buddy_huge_pag
+ 		 * This page is now managed by the hugetlb allocator and has
+ 		 * no users -- drop the buddy allocator's reference.
+ 		 */
+-		int page_count = put_page_testzero(page);
+-		BUG_ON(page_count != 0);
++		put_page_testzero(page);
++		VM_BUG_ON(page_count(page));
+ 		nid = page_to_nid(page);
+ 		set_compound_page_dtor(page, free_huge_page);
+ 		/*
+ 
+-- 
+Adam Litke - (agl at us.ibm.com)
+IBM Linux Technology Center
+
