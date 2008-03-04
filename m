@@ -1,65 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760668AbYCDDwD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760059AbYCDEBV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760668AbYCDDwD (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Mar 2008 22:52:03 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754772AbYCDDvx
+	id S1760059AbYCDEBV (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Mar 2008 23:01:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751803AbYCDEBI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Mar 2008 22:51:53 -0500
-Received: from ozlabs.org ([203.10.76.45]:60300 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753170AbYCDDvx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Mar 2008 22:51:53 -0500
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: "Jike Song" <albcamus@gmail.com>
-Subject: Re: Module loading/unloading and "The Stop Machine"
-Date: Tue, 4 Mar 2008 14:51:09 +1100
-User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
-Cc: "Max Krasnyansky" <maxk@qualcomm.com>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       "Linus Torvalds" <torvalds@linux-foundation.org>
-References: <47ABC08C.8010101@qualcomm.com> <df9815e70802132102v7eb7d8e9k4d6b21ffa6325d0d@mail.gmail.com>
-In-Reply-To: <df9815e70802132102v7eb7d8e9k4d6b21ffa6325d0d@mail.gmail.com>
+	Mon, 3 Mar 2008 23:01:08 -0500
+Received: from testure.choralone.org ([194.9.77.134]:33154 "EHLO
+	testure.choralone.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752928AbYCDEBH (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 3 Mar 2008 23:01:07 -0500
+Date: Mon, 3 Mar 2008 23:00:48 -0500
+From: Dave Jones <davej@codemonkey.org.uk>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: Alan Stern <stern@rowland.harvard.edu>,
+       "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>,
+       Pierre Ossman <drzeus-list@drzeus.cx>,
+       LKML <linux-kernel@vger.kernel.org>, Adam Belay <abelay@novell.com>,
+       Lee Revell <rlrevell@joe-job.com>, linux-pm@lists.linux-foundation.org
+Subject: Re: [linux-pm] [PATCH] cpuidle: avoid singing capacitors
+Message-ID: <20080304040048.GA31562@codemonkey.org.uk>
+Mail-Followup-To: Dave Jones <davej@codemonkey.org.uk>,
+	Andi Kleen <andi@firstfloor.org>,
+	Alan Stern <stern@rowland.harvard.edu>,
+	"Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>,
+	Pierre Ossman <drzeus-list@drzeus.cx>,
+	LKML <linux-kernel@vger.kernel.org>, Adam Belay <abelay@novell.com>,
+	Lee Revell <rlrevell@joe-job.com>,
+	linux-pm@lists.linux-foundation.org
+References: <924EFEDD5F540B4284297C4DC59F3DEEA2E8B2@orsmsx423.amr.corp.intel.com> <Pine.LNX.4.44L0.0803031804330.8280-100000@iolanthe.rowland.org> <20080303231033.GB15255@one.firstfloor.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200803041451.10312.rusty@rustcorp.com.au>
+In-Reply-To: <20080303231033.GB15255@one.firstfloor.org>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 14 February 2008 16:02:06 Jike Song wrote:
-> On 2/8/08, Max Krasnyansky <maxk@qualcomm.com> wrote:
-> > Hi Rusty,
-> >
-> > I was hopping you could answer a couple of questions about module
-> > loading/unloading and the stop machine.
->
-> I'm curious to know why it is called `stop machine', which is a queer
-> name without any relationship with its function.
+On Tue, Mar 04, 2008 at 12:10:33AM +0100, Andi Kleen wrote:
+ > On Mon, Mar 03, 2008 at 06:05:35PM -0500, Alan Stern wrote:
+ > > On Mon, 3 Mar 2008, Pallipadi, Venkatesh wrote:
+ > > 
+ > > > But, with this patch:
+ > > > - we are penalizing good hardware and making them less power efficient
+ > > > to match the bad ones.
+ > > > - There may also be server systems which first may not have these sort
+ > > > of power fluctuations and even when buggy and have this noise, system
+ > > > may be in some corner of some lab with fans making more noise than the
+ > > > capacitors.
+ > > 
+ > > Can you make it configurable through sysfs?  
+ > 
+ > It already is, through a writable module_parm() 
+ > 
+ > > Default to disabled, but 
+ > > allow the user to turn it on if the machine makes too much noise.
+ > 
+ > 99+% of the users wouldn't be able to figure that out.
 
-Hi Jike,
+99+% of users don't have singing capacitors. (Or don't care enough to complain)
+For those that do can't figure out what to do from google,
+we have a documentation problem.
 
-   I'm surprised.. stunned even, to hear you say this.  stop_machine stops the 
-machine: every CPU is frozen with interrupts disabled.  I am having trouble 
-thinking of a better name.
+	Dave 
 
-  "schedule_a_thread_on_every_cpu_and_then_disable_interrupts" is a little 
-long, and describes the implementation not the effect.
-
-  "run_and_make_sure_no_cpus_have_preempt_disabled" also fails the "will Linus 
-flame me?" test, I think.
-
-  "freeze_machine" has connotations of the freezer, which is completely 
-different from this.  "do_machine" is shorter, but sounds vaguely naughty.
-
-> Regards,
-> Jike
-
-Perhaps you were angling for "jike_machine"?  It's kind of catchy, but I don't 
-think that patch will be accepted even if you pushed it as a git tree.
-
-Cheers,
-Rusty.
+-- 
+http://www.codemonkey.org.uk
