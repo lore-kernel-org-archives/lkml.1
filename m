@@ -1,69 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761370AbYCDRy5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763715AbYCDR4k@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761370AbYCDRy5 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Mar 2008 12:54:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756255AbYCDRyq
+	id S1763715AbYCDR4k (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Mar 2008 12:56:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755251AbYCDR4a
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Mar 2008 12:54:46 -0500
-Received: from gv-out-0910.google.com ([216.239.58.188]:47940 "EHLO
-	gv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755174AbYCDRyp (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Mar 2008 12:54:45 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=qvlevgvhOk6TP3Qlg5X7j98yuHbA9PEVzN7QGmYQfU55frx2m959nAHSDaGIqbttRT2ozCGn0qthLaQJe4x+xJbvGQ2Nmktar6aEo8OoxIRplawXdj7tkKNVuhrqiCeTqz9BF6xKhMTEjUnpujaEH3EzBiDVUZwiiBFH0JMyjDQ=
-Message-ID: <e9c3a7c20803040954i2a8877a2v61079f765ea21fa8@mail.gmail.com>
-Date: Tue, 4 Mar 2008 10:54:41 -0700
-From: "Dan Williams" <dan.j.williams@intel.com>
-To: "Stephen Rothwell" <sfr@canb.auug.org.au>,
-       "Andrew Morton" <akpm@linux-foundation.org>
-Subject: Re: linux-next: Tree for March 4
-Cc: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <20080304223947.375be10b.sfr@canb.auug.org.au>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Tue, 4 Mar 2008 12:56:30 -0500
+Received: from mga02.intel.com ([134.134.136.20]:48105 "EHLO mga02.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754672AbYCDR4a (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 4 Mar 2008 12:56:30 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.25,444,1199692800"; 
+   d="scan'208";a="260796909"
+Date: Tue, 4 Mar 2008 09:55:28 -0800
+From: Suresh Siddha <suresh.b.siddha@intel.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Suresh Siddha <suresh.b.siddha@intel.com>,
+       Christoph Hellwig <hch@infradead.org>, hpa@zytor.com,
+       tglx@linutronix.de, andi@firstfloor.org, linux-kernel@vger.kernel.org,
+       Arjan van de Ven <arjan@linux.intel.com>
+Subject: Re: [patch 2/2] x86, fpu: lazy allocation of FPU area - v3
+Message-ID: <20080304175528.GD28006@linux-os.sc.intel.com>
+References: <20080303230335.892214000@linux-os.sc.intel.com> <20080303230336.042604000@linux-os.sc.intel.com> <20080304012012.GB22431@infradead.org> <20080304014306.GC28006@linux-os.sc.intel.com> <20080304103220.GA17621@elte.hu>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <20080304223947.375be10b.sfr@canb.auug.org.au>
-X-Google-Sender-Auth: d7bd321f8cafaa12
+In-Reply-To: <20080304103220.GA17621@elte.hu>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Mar 4, 2008 at 4:39 AM, Stephen Rothwell <sfr@canb.auug.org.au> wrote:
->  We are up to 40 trees, more are welcome (even if they are currently
->  empty).  The influx of new trees has been underwhelming.  Thanks to those
->  who have contributed, and to those who haven't, please do.
->
+On Tue, Mar 04, 2008 at 11:32:20AM +0100, Ingo Molnar wrote:
+> 
+> * Suresh Siddha <suresh.b.siddha@intel.com> wrote:
+> 
+> > On Mon, Mar 03, 2008 at 08:20:12PM -0500, Christoph Hellwig wrote:
+> > > On Mon, Mar 03, 2008 at 03:02:46PM -0800, Suresh Siddha wrote:
+> > > > +	/*
+> > > > +	 * Memory allocation at the first usage of the FPU and other state.
+> > > > +	 */
+> > > > +	if (!tsk->thread.xstate)
+> > > > +		tsk->thread.xstate = kmem_cache_alloc(task_xstate_cachep, GFP_KERNEL);
+> > >
+> > >  Also don't we need some kind of error handling here?
+> > 
+> > Currently it uses SLAB_PANIC.
+> 
+> but SLAB_PANIC only covers kmem_cache_create() failures. 
+> 
+> kmem_cache_alloc() can fail (return NULL) and not handling it is a bug.
 
-Hello Stephen, Andrew,
-
-I have recently moved the async_tx git tree to kernel.org.
-
-For linux-next please add:
-
-    master.kernel.org:/pub/scm/linux/kernel/git/djbw/async_tx.git next
-
-For -mm please replace the 'git-md-accel' url with the following, it
-should also be renamed to 'git-async-tx' as anything that impacts MD
-will go through Neil.
-
-    master.kernel.org:/pub/scm/linux/kernel/git/djbw/async_tx.git upstream
-
-Currently both trees contain the following:
-Dan Williams (7):
-      fsldma: do not cleanup descriptors in hardirq context
-      dmaengine: fix sparse warning
-      ioat: fix 'ack' handling, driver must ensure that 'ack' is zero
-      async_tx: checkpatch says s/__FUNCTION__/__func__/g
-      async_tx: fix multiple dependency submission
-      async_tx: kill ->device_dependency_added
-      iop-adma: remove the workaround for missed interrupts on iop3xx
-
-Zhang Wei (1):
-      dmaengine: add driver for Freescale MPC85xx DMA controller
-
-Regards,
-Dan
+oops. you are correct. Will send a sigsegv in the failure case then. Thanks.
