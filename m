@@ -1,99 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758814AbYCDVo7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762929AbYCDVsE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758814AbYCDVo7 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Mar 2008 16:44:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751295AbYCDVom
+	id S1762929AbYCDVsE (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Mar 2008 16:48:04 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752956AbYCDVrw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Mar 2008 16:44:42 -0500
-Received: from sovereign.computergmbh.de ([85.214.69.204]:43680 "EHLO
-	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751839AbYCDVol (ORCPT
+	Tue, 4 Mar 2008 16:47:52 -0500
+Received: from smtp101.sbc.mail.re2.yahoo.com ([68.142.229.104]:33741 "HELO
+	smtp101.sbc.mail.re2.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1752586AbYCDVrw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Mar 2008 16:44:41 -0500
-Date: Tue, 4 Mar 2008 22:44:39 +0100 (CET)
-From: Jan Engelhardt <jengelh@computergmbh.de>
-To: sam@ravnborg.org
-cc: Andrew Morton <akpm@linux-foundation.org>,
-       Pekka Enberg <penberg@cs.helsinki.fi>, torvalds@linux-foundation.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, mingo@elte.hu,
-       vegard.nossum@gmail.com
-Subject: kernelprojects::menuconfig [was:Re: Google's Summer of Code?]
-In-Reply-To: <20080304121339.a3b2483f.akpm@linux-foundation.org>
-Message-ID: <Pine.LNX.4.64.0803042216030.7660@fbirervta.pbzchgretzou.qr>
-References: <84144f020803041045i70bbb05l6983bd14c5bcc91a@mail.gmail.com>
- <alpine.LFD.1.00.0803041127290.12253@woody.linux-foundation.org>
- <84144f020803041155k222c13ecu13c8c9534ced87e5@mail.gmail.com>
- <20080304121339.a3b2483f.akpm@linux-foundation.org>
+	Tue, 4 Mar 2008 16:47:52 -0500
+X-YMail-OSG: xUlTmdYVM1mmFxjqn.xJyLD9EI4cKVWAPktdD24RJA9U8XKmEzLKqrfDN.HFt4S.ljRG40PVn3PTSNzTybHImi1jchT.2YYWDAHtVDh94kC99nZatCFJYA--
+X-Yahoo-Newman-Property: ymail-3
+Date: Tue, 4 Mar 2008 15:45:00 -0600
+From: serge@hallyn.com
+To: "Leibowitz, Michael" <michael.leibowitz@intel.com>
+Cc: serge@hallyn.com, linux-kernel@vger.kernel.org
+Subject: Re: CLONE_NEWNS and bind mounts to make "chroot" jail
+Message-ID: <20080304214500.GA7035@vino.hallyn.com>
+References: <645B0EE4078B7C49A6C12F5E7B3B6C2603D3D607@orsmsx418.amr.corp.intel.com> <20080302022655.GA28450@vino.hallyn.com> <645B0EE4078B7C49A6C12F5E7B3B6C2603D3D7BF@orsmsx418.amr.corp.intel.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <645B0EE4078B7C49A6C12F5E7B3B6C2603D3D7BF@orsmsx418.amr.corp.intel.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Sam,
+Quoting Leibowitz, Michael (michael.leibowitz@intel.com):
+> If I understand correctly, the following should accomplish what I'm
+> looking for.  However, pivot_root gives me EBUSY.  I played around with
+> moving the mount --bind /jail /jail to before the unshared, as well as
+> making old_root a bind mount to itself.  However, pivot_root always
+> seems to fail.  Is there something obvious that I'm doing wrong?  The
 
+Yes, you
+	cd /jail
+	mount --bind /jail /jail
+	pivot_root . old_root
 
-On Mar 4 2008 12:13, Andrew Morton wrote:
->"Pekka Enberg" <penberg@cs.helsinki.fi> wrote:
->
->> I am also wondering if such a high profile
->> project as the kernel can get away with not having a "project ideas"
->> list which would make things real easy for the administrator(s)...
->
->http://kernelnewbies.org/KernelProjects
->
+but . is now mounted over.
 
-["""Update menuconfig to a modern ncurses look & feel
+-serge
 
-htop, aptitude, tig and other ncurses based programs has a more modern 
-and effective look&feel than current menuconfig. Rip out all the 
-lxdialog stuff and replace it with a ncurses based frontend that looks 
-better and has more functionality."""]
-
-
-I remember the last discussion about it, and I am still kinda in the 
-position of "really?". I find the current menuconfig interface 
-perfectable suitable.
-
-I could not relate how menuconfig should look htop-style, because htop, 
-for the most use, is just one screen with a process overview and a 
-rather spartan "menu", should one decide to change some configuration 
-options. Essentially it is a 4-column expand-to-the-right menu. No idea 
-how to put it better.
-
-aptitude. I only seen it very briefly since I do not use Debian. I can 
-probably say the package selection in the OpenSolaris initial installer 
-is similar, in other words, _all_ CONFIG options are listed in 
-tree-style fashion in one window...
-
-	> [ ] feature1
-	  [ ] . . . feature2
-	  [ ] . . . feature3
-        > [ ] feature99
-
-something like that. Anyway, I dislike the tree (expandable and 
-contractable at will at the > points) — menuconfig seems superior
-since, after entering a new submenu, just the options inside it are
-displayed and nothing around it.
-
-Then there are splitscreen approaches like qconfig/xconfig do, 
-and I think I would not like that either for menuconfig; moving between 
-two panels (one: the menu selection as a tree, the other: options for 
-this submenu) is, kinda confusing in a text environment.
-
-Of course there is a plus point for the tree-in-one (aptitude) approach 
-in that searching for options/features is easier. The current menuconfig 
-has a limited search function, for example, it will not take you to the 
-option you searched but return to the menu you started the search from. 
-Which means you have to repeatedly search for the option because you 
-cannot remember the menus you have to go through to reach the option.
-
-My stance: remain with the current menuconfig, and improve on the 
-search(-and-jump) function.
-
-Awaiting your counter-arguments and -opinions please.
-
-
-thanks,
-Jan
+> following is my test code (error checking has been removed for clarity,
+> except for pivot_root).  
+> 
+>   char *newargv[]= { "sh", NULL };
+> 
+>   chdir("/jail");
+>   unshare(CLONE_NEWNS));
+>   mount("/jail", "/jail", NULL, MS_BIND, NULL));
+>   mount("/bin", "bin", NULL, MS_BIND, NULL));
+>   mount("/usr", "usr", NULL, MS_BIND, NULL));
+>   mount("/lib", "lib", NULL, MS_BIND, NULL));
+>   if (pivot_root(".", "old_root")) perror("pivot_root . old_root");
+>   exec("./bash-static"); /* copied to /jail prior to running */
+> 
+> Thanks. 
+> 
+> >Serge replies:
+>  [snip...snip]
+> >Try a few more things.  Since you had entered /jail, you can view '/'
+> by
+> >looking at .. .  But if you look at /, you dereference your
+> >task->fsroot.  You never changed that, so it points to the original
+> >mount.  If however you 'ls ..', you should see your 'jail' directory.
+> >However it won't have the /bin and /lib mounted because you didn't
+> >	mount --rbind /jail /
+> >What you really want to do is
+> >	mount --bind /jail /jail
+> >to make sure it's a mountpoint, then set up the new /jail using bind
+> >mounts like you're doing (and likely some rbinds in some places), then
+> >use pivot_root() to change your root.  Then umount2("/old_root",
+> >MNT_DETACH).
+> >
+> >-serge
+> 
+> --
+> Michael Leibowitz
+> Software Engineer, UMG
+> Intel Corporation
+> michael.leibowitz at intel.com
+> 
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
