@@ -1,97 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933072AbYCEXD5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932642AbYCEXEc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933072AbYCEXD5 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Mar 2008 18:03:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763690AbYCEW6x
+	id S932642AbYCEXEc (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Mar 2008 18:04:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765006AbYCEW7R
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Mar 2008 17:58:53 -0500
-Received: from atlas.xpertsoft.com ([67.15.226.2]:39767 "EHLO atlas.dri.pt"
+	Wed, 5 Mar 2008 17:59:17 -0500
+Received: from gra-lx1.iram.es ([150.214.224.41]:35956 "EHLO gra-lx1.iram.es"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932106AbYCEW6w (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Mar 2008 17:58:52 -0500
-Subject: [Fwd: Re: Dell OptiPlex 320 - Core 2 Duo]
-From: Nuno Tavares <nuno.tavares@dri.pt>
-To: linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=UTF-8
-Date: Wed, 05 Mar 2008 22:57:11 +0000
-Message-Id: <1204757831.6067.12.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.3 (2.8.3-2.fc6) 
-Content-Transfer-Encoding: 8bit
+	id S932451AbYCEW7O (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 5 Mar 2008 17:59:14 -0500
+From: Gabriel Paubert <paubert@iram.es>
+Date: Wed, 5 Mar 2008 23:59:02 +0100
+To: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Cc: Jarod Wilson <jwilson@redhat.com>, benh@kernel.crashing.org,
+       Kristian Hoegsberg <krh@bitplanet.net>, linux-kernel@vger.kernel.org,
+       linuxppc-dev@ozlabs.org, sparclinux@vger.kernel.org,
+       linux1394-devel@lists.sourceforge.net, Sam Ravnborg <sam@ravnborg.org>,
+       Harvey Harrison <harvey.harrison@gmail.com>
+Subject: Re: [PATCH 1/2] firewire: endianess fix
+Message-ID: <20080305225902.GA27985@iram.es>
+References: <20080220220326.GA22328@uranus.ravnborg.org> <200802272221.38985.jwilson@redhat.com> <1204179959.15052.372.camel@pasglop> <200802281342.06493.jwilson@redhat.com> <1204241162.15052.393.camel@pasglop> <47C79CB1.6050104@redhat.com> <20080303091927.GA27105@iram.es> <47CC0C95.1030709@s5r6.in-berlin.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <47CC0C95.1030709@s5r6.in-berlin.de>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I now notice this hasn't been CC'ed to the list. Apologies to all.
+On Mon, Mar 03, 2008 at 03:35:01PM +0100, Stefan Richter wrote:
+> Gabriel Paubert wrote:
+> > I have a Pismo which I use on a virtually
+> > daily basis (and about to remove the last remnants of MacOS on it). 
+> > However I have disabled Firewire because it would not sleep and wake 
+> > up properly. 
+> > 
+> > I can test it on Wednesday with a 5GB fireflly disk from 2001.
+> > 
+> > Please tell me which configuration options I need to set for
+> > Firewire (which stack, etc...).
+> 
+> Config options of the new stack:
+> FIREWIRE=m
+> FIREWIRE_OHCI=m
+> FIREWIRE_SBP2=m
+> 
+> Config options of the old stack:
+> IEEE1394=m
+> IEEE1394_OHCI1394=m
+> IEEE1394_SBP2=m
+> and if desired also the other drivers for raw userspace access,
+> isochronous I/O (alias video1394 even though it can also be used for
+> other purposes), DV I/O, and IPv4 over 1394.
+> 
+> The two SBP2 drivers also need SCSI and BLK_DEV_SD a.k.a. SCSI disk
+> support or/and BLK_DEV_SR a.k.a. SCSI CDROM support.
+> 
+> You can also set the options to Y but I find loadable and hence
+> unloadable modules more practical... 'cause I unload and reload them all
+> the time.  :-)
 
--NT
+Indeed, although this machine typically had non-modular kernels, I
+compiled one for these tests.
 
------- Mensagem Reencaminhada ------
-> Assunto: Re: Dell OptiPlex 320 - Core 2 Duo
-> Data: Wed, 05 Mar 2008 22:49:18 +0000
-> 
-> Lennart, those options came from the SuSE installer, I guess. It wasn't
-> me installing the machine, and I have no idea why the guy doing it
-> whould add so many. I also found it strange, but since it's a Failsafe,
-> and SuSE is not my favourite dist, I just left it alone. My first tests
-> were done removing several of those (those that, to my knowledge, didn't
-> make sense, like: acpi=off, apm=off, mce=off, maxcpus=0, probably
-> pci=..).
-> 
-> Actually, the default boots to the not-failsafe:
-> 
-> kernel /boot/vmlinuz-2.6.22.5-23-default
-> root=/dev/disk/by-id/scsi-SATA_WDC_WD800JD-75M_WD-WMAM9TA95509-part2
-> apm=off acpi=off mce=off barrier=off ide=nodma idewait=50 i8042.nomux
-> psmouse.proto=bare irqpoll pci=nommconf   resume=/dev/sda1 splash=silent
-> showopts
-> 
-> Both share lots of options, anyway. I wonder what "irqpoll" does, though
-> (it's probably related with "Misrouted IRQ fixup and polling support
-> enabled" dmesg)... I just lack the opportunity to test all the
-> combinations (the machine is remote)..
-> 
-> Even if the model is not the same as described, Optiplex has a nice
-> (not!) history of problems:
-> 
->  http://www.suseforums.net/index.php?showtopic=34172
-> 
->  http://suseroot.com/blog/blog.php?postid=74
-> 
-> I forgot to mention that this last time I tried the combinations: 
-> * acpi=on + pci=nomsi
-> * acpi=on + pci=routeirq
-> 
-> -NT
-> 
-> 
-> Qua, 2008-03-05 às 16:39 -0500, Lennart Sorensen escreveu:
-> [...]
-> > > kernel /boot/vmlinuz-2.6.22.5-23-default
-> > > root=/dev/disk/by-id/scsi-SATA_WDC_WD800JD-75M_WD-WMAM9TA95509-part2
-> > > showopts ide=nodma apm=off noresume noapic pci=route edd=off 3
-> 
-> [errata: it's pci=routeirq, obviously]
-> 
-> > > It didn't help. The boot stops at the line PCI: xxxxxx something. I'll
-> > > try to try the BIOS update issue. I'll report back later.
-> > 
-> > Well most of the options seem like a bad idea in general.
-> > 
-> > ide=nodma, noapic and maxcpus I just can't imagine why would be listed
-> > there.  Usually you add an option if it solves a problem, you don't add
-> > all of the possible options.  Multi processor requires some of those
-> > features, and disabling dma on ide makes no sense unless you are using a
-> > very broken ide drive.
-> > 
-> > Who added all those options and why?
-> > 
-> > --
-> > Len Sorensen
-> > 
--- 
-Nuno Tavares
-DRI, Consultoria Informática
-Telef: +351 936 184 086
+For now I have only tested the new stack with a 6 year old 1.8" disk
+and everything works, including suspend to RAM. The kernel is 2.6.25-rc4
+plus additional pull from linux1394-2.6.git: 2.6.25-rc4-00032-g8d36ba4.
 
+Thanks a lot.
 
+	Regards,
+	Gabriel
+
+P.S: it seems that something broke in the APM emulation around rc2
+on this machine, battery level reads at -1% from /proc/apm.
+> Caveats:
+>   - You could build and install both stacks but should then blacklist
+>     at least one of ohci1394 or firewire-ohci.  Better keep it simple
+>     and install only one of the stacks at a time.
+>   - We still have a serious use-after-free bug in the new stack.  This
+>     may lead to kernel panic if the kernel was build with (slab? or
+>     page allocation?) debugging enabled.
+> Users of IP over 1394 and pro/semipro audio still need the old stack.
+> Users of video should stick with the stack which their distribution has
+> enabled because our support in the lowlevel libraries libraw1394 and
+> libdc1394 to switch between the stacks is not quite comfortable yet.
+> 
+> Suspend (to RAM) and resume worked for me [TM] when I last tested them
+> with each stack.  I tested i586/APM, x86-64/ACPI, and last weekend ppc32
+> on 1st generation PowerBook G4.  I haven't tested hibernate (to disk)
+> and restore yet.
+
+I have never used suspend to disk on this machine. Suspend to RAM
+failed when ieee1394 was loaded (or built-in) since 2.6.22 or so. 
+
+For now I have only tested the new stack with a 6 year old 1.8" disk
+and everything works, including suspend to RAM. The kernel is 2.6.25-rc4
+plus additional pull from linux1394-2.6.git: 2.6.25-rc4-00032-g8d36ba4.
+
+Thanks a lot.
+
+	Regards,
+	Gabriel
+
+P.S: it seems that something broke in the APM emulation around rc2
+on this machine, battery level reads at -1% from /proc/apm.
