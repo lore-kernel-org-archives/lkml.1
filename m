@@ -1,56 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762588AbYCEVmq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761728AbYCEVn0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762588AbYCEVmq (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Mar 2008 16:42:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755689AbYCEVmg
+	id S1761728AbYCEVn0 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Mar 2008 16:43:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760081AbYCEVnJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Mar 2008 16:42:36 -0500
-Received: from e4.ny.us.ibm.com ([32.97.182.144]:52445 "EHLO e4.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755652AbYCEVmf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Mar 2008 16:42:35 -0500
-Subject: Re: [PATCH 5/9] jfs: replace __inline with inline
-From: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
-To: Harvey Harrison <harvey.harrison@gmail.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <1204679838.5698.71.camel@brick>
-References: <1204679838.5698.71.camel@brick>
-Content-Type: text/plain
-Date: Wed, 05 Mar 2008 21:42:29 +0000
-Message-Id: <1204753349.8446.25.camel@norville.austin.ibm.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.2 
+	Wed, 5 Mar 2008 16:43:09 -0500
+Received: from terminus.zytor.com ([198.137.202.10]:48106 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758805AbYCEVnI (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 5 Mar 2008 16:43:08 -0500
+Message-ID: <47CF11D6.7070901@zytor.com>
+Date: Wed, 05 Mar 2008 13:34:14 -0800
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
+MIME-Version: 1.0
+To: Richard Guenther <richard.guenther@gmail.com>
+CC: Joe Buck <Joe.Buck@synopsys.com>, Michael Matz <matz@suse.de>,
+       Jan Hubicka <hubicka@ucw.cz>, Aurelien Jarno <aurelien@aurel32.net>,
+       linux-kernel@vger.kernel.org, gcc@gcc.gnu.org
+Subject: Re: RELEASE BLOCKER: Linux doesn't follow x86/x86-64 ABI wrt direction
+ flag
+References: <20080305153020.GA24631@volta.aurel32.net>	 <47CEC3AA.6080709@zytor.com> <20080305195834.GA17267@synopsys.com>	 <20080305202319.GA17053@volta.aurel32.net>	 <Pine.LNX.4.64.0803052133400.20583@wotan.suse.de>	 <20080305204234.GB17267@synopsys.com>	 <20080305204945.GB14011@atrey.karlin.mff.cuni.cz>	 <Pine.LNX.4.64.0803052158270.20583@wotan.suse.de>	 <20080305212005.GC17267@synopsys.com> <84fc9c000803051332q2f2eedeej7d3c0509e698cabf@mail.gmail.com>
+In-Reply-To: <84fc9c000803051332q2f2eedeej7d3c0509e698cabf@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I've added this to the jfs git tree.
-
-Thanks,
-Shaggy
-
-On Tue, 2008-03-04 at 17:17 -0800, Harvey Harrison wrote:
-> Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
-> ---
->  fs/jfs/jfs_dmap.h |    2 +-
->  1 files changed, 1 insertions(+), 1 deletions(-)
+Richard Guenther wrote:
 > 
-> diff --git a/fs/jfs/jfs_dmap.h b/fs/jfs/jfs_dmap.h
-> index 11e6d47..1a6eb41 100644
-> --- a/fs/jfs/jfs_dmap.h
-> +++ b/fs/jfs/jfs_dmap.h
-> @@ -61,7 +61,7 @@
->   * determine the maximum free string for four (lower level) nodes
->   * of the tree.
->   */
-> -static __inline signed char TREEMAX(signed char *cp)
-> +static inline signed char TREEMAX(signed char *cp)
->  {
->  	signed char tmp1, tmp2;
->  
--- 
-David Kleikamp
-IBM Linux Technology Center
+> We didn't yet run into this issue and build openSUSE with 4.3 since more than
+> three month.
+> 
 
+Well, how often do you take a trap inside an overlapping memmove()?
+
+	-hpa
