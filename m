@@ -1,129 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759147AbYCEUwT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760887AbYCEUwk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759147AbYCEUwT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Mar 2008 15:52:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755084AbYCEUwF
+	id S1760887AbYCEUwk (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Mar 2008 15:52:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759891AbYCEUw0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Mar 2008 15:52:05 -0500
-Received: from ns1.siteground211.com ([209.62.36.12]:53439 "EHLO
-	serv01.siteground211.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754636AbYCEUwD (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Mar 2008 15:52:03 -0500
-Date: Wed, 5 Mar 2008 22:54:09 +0200
-From: Felipe Balbi <me@felipebalbi.com>
-To: Pierre Ossman <drzeus-list@drzeus.cx>
-Cc: Carlos Aguiar <carlos.aguiar@indt.org.br>,
-       Tony Lindgren <tony@atomide.com>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 05/18] MMC: OMAP: Introduce new multislot structure and
-	change driver to use it
-Message-ID: <20080305205408.GA16229@kedavra.cpe.vivax.com.br>
-Reply-To: me@felipebalbi.com
-References: <479E27EB.3040502@indt.org.br> <20080207183744.1491c995@poseidon.drzeus.cx>
+	Wed, 5 Mar 2008 15:52:26 -0500
+Received: from hall.aurel32.net ([88.191.38.19]:46629 "EHLO hall.aurel32.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755177AbYCEUwZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 5 Mar 2008 15:52:25 -0500
+Message-ID: <47CF07FE.10200@aurel32.net>
+Date: Wed, 05 Mar 2008 21:52:14 +0100
+From: Aurelien Jarno <aurelien@aurel32.net>
+User-Agent: Mozilla-Thunderbird 2.0.0.9 (X11/20080109)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080207183744.1491c995@poseidon.drzeus.cx>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
-X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
-X-AntiAbuse: Primary Hostname - serv01.siteground211.com
-X-AntiAbuse: Original Domain - vger.kernel.org
-X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
-X-AntiAbuse: Sender Address Domain - felipebalbi.com
+To: "H. Peter Anvin" <hpa@zytor.com>
+CC: Michael Matz <matz@suse.de>, Joe Buck <Joe.Buck@synopsys.COM>,
+       linux-kernel@vger.kernel.org, gcc@gcc.gnu.org
+Subject: Re: Linux doesn't follow x86/x86-64 ABI wrt direction flag
+References: <20080305153020.GA24631@volta.aurel32.net> <47CEC3AA.6080709@zytor.com> <20080305195834.GA17267@synopsys.com> <20080305202319.GA17053@volta.aurel32.net> <Pine.LNX.4.64.0803052133400.20583@wotan.suse.de> <47CF0627.2070200@zytor.com>
+In-Reply-To: <47CF0627.2070200@zytor.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Feb 07, 2008 at 06:37:44PM +0100, Pierre Ossman wrote:
-> On Mon, 28 Jan 2008 15:07:23 -0400
-> Carlos Aguiar <carlos.aguiar@indt.org.br> wrote:
+H. Peter Anvin a écrit :
+> Michael Matz wrote:
+>> Hi,
+>>
+>> On Wed, 5 Mar 2008, Aurelien Jarno wrote:
+>>
+>>>> So I think gcc at least needs an *option* to revert to the old
+>>>> behavior,
+>>>> and there's a good argument to make it the default for now, at least
+>>>> for
+>>>> x86/x86-64 on Linux.
+>>> And for other kernels. I tested OpenBSD 4.1, FreeBSD 6.3, NetBSD 4.0,
+>>> they have the same behaviour as Linux, that is they don't clear DF
+>>> before calling the signal handler.
+>>
+>> Sigh.  We could perhaps insert a cld for all functions which can be
+>> recognized as possible signal handlers and call other unknown or
+>> string functions.  But it's probably even faster to emit cld in front
+>> of the inline copies of mem functions again :-(
+>>
 > 
-> > From: Juha Yrjola <juha.yrjola@solidboot.com>
-> > 
-> > Introduce new MMC multislot structure and change driver to use it.
-> > 
-> > Note that MMC clocking is now enabled in mmc_omap_select_slot()
-> > and disabled in mmc_omap_release_slot().
-> > 
-> > Signed-off-by: Juha Yrjola <juha.yrjola@solidboot.com>
-> > Signed-off-by: Jarkko Lavinen <jarkko.lavinen@nokia.com>
-> > Signed-off-by: Carlos Eduardo Aguiar <carlos.aguiar@indt.org.br>
-> > Signed-off-by: Tony Lindgren <tony@atomide.com>
-> > ---
+> Well, there is a (slight) difference: you know that a called function
+> will not clobber your DF state; it's only the entry condition which is
+> imprecise.
 > 
-> I still think this muxed mmc host thing is a bad idea, but it's your nightmare...
+> The best would be if this could be controlled by a flag, which we can
+> flip once kernel fixes has been around for long enough.
 
-Not nightmare. OMAP1/2 have mmc/sd/sdio controller supporting one or
-more mmc cards sharing the same bus.
+I have to agree there. Whatever the decision that gcc will take,
+distributions will reenable the old behaviour for some time for to allow
+upgrades from a previous version.
 
-> 
-> > +
-> > +/* Access to the R/O switch is required for production testing
-> > + * purposes. */
-> > +static ssize_t
-> > +mmc_omap_show_ro(struct device *dev, struct device_attribute *attr, char *buf)
-> > +{
-> > +	struct mmc_host *mmc = container_of(dev, struct mmc_host, class_dev);
-> > +	struct mmc_omap_slot *slot = mmc_priv(mmc);
-> > +
-> > +	return sprintf(buf, "%d\n", slot->pdata->get_ro(mmc_dev(mmc),
-> > +							slot->id));
-> > +}
-> > +
-> > +static DEVICE_ATTR(ro, S_IRUGO, mmc_omap_show_ro, NULL);
-> > +
-> 
-> This is unrelated to the slot stuff and should be in its own patch. Also, it should probably be in the core, not a driver.
-> 
-> > +
-> > +	mmc->caps = MMC_CAP_MULTIWRITE | MMC_CAP_MMC_HIGHSPEED |
-> > +		    MMC_CAP_SD_HIGHSPEED;
-> 
-> This is also unrelated. From what I've seen, the OMAP is a SD controller and does not support high speed MMC. The fact that you also conditionally set the max frequency later also suggests that this code is entirely incorrect.
-> 
+Providing a flag to switch the behaviour (whatever the default
+behaviour) will help a lot.
 
-Not true. I can't show you not even parts of the technical documentation
-but OMAP has mmc/sd/sdio controller. On OMAP1/2 it handles several mmc
-cards sharing the same bus.
-
-And that's what mmc multislot is doing. Probably it still needs some
-tweks though. But that's up to Carlos.
-
-> > +
-> > +	r = mmc_add_host(mmc);
-> > +	if (r < 0)
-> > +		return r;
-> > +
-> > +	if (slot->pdata->name != NULL) {
-> > +		r = device_create_file(&mmc->class_dev,
-> > +					&dev_attr_slot_name);
-> > +		if (r < 0)
-> > +			goto err_remove_host;
-> > +	}
-> > +
-> > +	if (slot->pdata->get_ro != NULL) {
-> > +		r = device_create_file(&mmc->class_dev,
-> > +					&dev_attr_ro);
-> > +	}
-> > +
-> 
-> You have a bit of a race here with userspace in case you use the uevent to trigger things.
-> 
-> -- 
->      -- Pierre Ossman
-> 
->   Linux kernel, MMC maintainer        http://www.kernel.org
->   PulseAudio, core developer          http://pulseaudio.org
->   rdesktop, core developer          http://www.rdesktop.org
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
 
 -- 
-Best Regards,
-
-Felipe Balbi
-me@felipebalbi.com
-http://blog.felipebalbi.com
+  .''`.  Aurelien Jarno	            | GPG: 1024D/F1BCDB73
+ : :' :  Debian developer           | Electrical Engineer
+ `. `'   aurel32@debian.org         | aurelien@aurel32.net
+   `-    people.debian.org/~aurel32 | www.aurel32.net
