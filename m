@@ -1,69 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764880AbYCEWo0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763374AbYCEWq0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764880AbYCEWo0 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Mar 2008 17:44:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758765AbYCEWnu
+	id S1763374AbYCEWq0 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Mar 2008 17:46:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758143AbYCEWqQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Mar 2008 17:43:50 -0500
-Received: from x346.tv-sign.ru ([89.108.83.215]:54933 "EHLO mail.screens.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758419AbYCEWnt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Mar 2008 17:43:49 -0500
-Date: Thu, 6 Mar 2008 01:43:21 +0300
-From: Oleg Nesterov <oleg@tv-sign.ru>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Ingo Molnar <mingo@elte.hu>, Roland McGrath <roland@redhat.com>,
-       linux-kernel@vger.kernel.org
-Subject: [RFC,PATCH 2/2] __group_complete_signal: fix? signal load-balancing
-Message-ID: <20080305224321.GA6345@tv-sign.ru>
+	Wed, 5 Mar 2008 17:46:16 -0500
+Received: from us02smtp1.synopsys.com ([198.182.60.75]:38778 "EHLO
+	vaxjo.synopsys.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752402AbYCEWqP (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 5 Mar 2008 17:46:15 -0500
+X-Greylist: delayed 534 seconds by postgrey-1.27 at vger.kernel.org; Wed, 05 Mar 2008 17:46:15 EST
+Date: Wed, 5 Mar 2008 14:37:13 -0800
+From: Joe Buck <Joe.Buck@synopsys.COM>
+To: David Miller <davem@davemloft.net>
+Cc: richard.guenther@gmail.com, hpa@zytor.com, matz@suse.de, hubicka@ucw.cz,
+       aurelien@aurel32.net, linux-kernel@vger.kernel.org, gcc@gcc.gnu.org
+Subject: Re: RELEASE BLOCKER: Linux doesn't follow x86/x86-64 ABI wrt direction flag
+Message-ID: <20080305223713.GF17267@synopsys.com>
+References: <84fc9c000803051332q2f2eedeej7d3c0509e698cabf@mail.gmail.com> <47CF11D6.7070901@zytor.com> <84fc9c000803051340i13559c63tcf56eb828d000802@mail.gmail.com> <20080305.141622.80343656.davem@davemloft.net>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-User-Agent: Mutt/1.5.11
+In-Reply-To: <20080305.141622.80343656.davem@davemloft.net>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The patch needs an ack, probably I just misunderstood the comments.
+On Wed, Mar 05, 2008 at 02:16:22PM -0800, David Miller wrote:
+> From: "Richard Guenther" <richard.guenther@gmail.com>
+> Date: Wed, 5 Mar 2008 22:40:59 +0100
+> 
+> > Right.  So this problem is over-exaggerated.  It's not like
+> > "any binary you create on that system will be broken on any
+> > other existing system."
+> 
+> I will be sure to hunt you down to help debug when someone reports
+> that once every few weeks their multi-day simulation gives incorrect
+> results :-)
+> 
+> This is one of those cases where the bug is going to be a huge
+> issue to people who actually hit it, and since we know about the
+> problem, knowingly shipping something in that state is unforgivable.
 
-Suppose that the main thread blocks the signal. In that case
-__group_complete_signal() tries to find another thread starting from
-signal->curr_target.
+In this case, it appears that the 4.3.0 tarballs already hit the
+servers before the issue was discovered.
 
-The comment says about load-balancing, but this is not what happens?
-Suppose that wants_signal(signal->curr_target) == T. In that case we
-always choose the same ->curr_target thread. Isn't it better to try
-to "spread" the signals over the thread group?
-
-With this patch we are trying to find another suitable thread starting
-from next_thread(signal->curr_target), thus distributing the load over
-the whole thread group.
-
-Bad idea? If not, probably we can also remove the "if (wants_signal())"
-at the top of __group_complete_signal() ?
-
-Signed-off-by: Oleg Nesterov <oleg@tv-sign.ru>
-
---- 25/kernel/signal.c~4_GCS_BALANCE	2008-03-06 01:07:55.000000000 +0300
-+++ 25/kernel/signal.c	2008-03-06 01:34:57.000000000 +0300
-@@ -863,13 +863,14 @@ __group_complete_signal(int sig, struct 
- 		/*
- 		 * Otherwise try to find a suitable thread.
- 		 */
--		t = signal->curr_target;
--		if (t == NULL)
--			/* restart balancing at this thread */
--			t = signal->curr_target = p;
-+		if (!signal->curr_target)
-+			signal->curr_target = p;
- 
--		while (!wants_signal(sig, t)) {
-+		for (t = signal->curr_target ;; ) {
- 			t = next_thread(t);
-+			if (wants_signal(sig, t))
-+				break;
-+
- 			if (t == signal->curr_target)
- 				/*
- 				 * No thread needs to be woken.
-
+It's not the end of the world; quite often .0 releases have some issue,
+and we can patch the 4_3 branch and recommend that the patch be used.
