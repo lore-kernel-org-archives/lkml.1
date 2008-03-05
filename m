@@ -1,63 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761286AbYCEVh4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762043AbYCEVjb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761286AbYCEVh4 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Mar 2008 16:37:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753608AbYCEVhs
+	id S1762043AbYCEVjb (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Mar 2008 16:39:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753601AbYCEVjT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Mar 2008 16:37:48 -0500
-Received: from extu-mxob-1.symantec.com ([216.10.194.28]:43158 "EHLO
-	extu-mxob-1.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752036AbYCEVhr (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Mar 2008 16:37:47 -0500
-Date: Wed, 5 Mar 2008 21:36:37 +0000 (GMT)
-From: Hugh Dickins <hugh@veritas.com>
-X-X-Sender: hugh@blonde.site
-To: Pavel Machek <pavel@ucw.cz>
-cc: Christian Kujau <lists@nerdbynature.de>,
-       kernel list <linux-kernel@vger.kernel.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: 2.6.25-rc3: 34TB vmalloc total -- overflow in /proc/meminfo?
-In-Reply-To: <20080305212139.GA31999@elf.ucw.cz>
-Message-ID: <Pine.LNX.4.64.0803052127380.5344@blonde.site>
-References: <20080305090610.GA30024@atrey.karlin.mff.cuni.cz>
- <alpine.DEB.1.00.0803052038410.8658@sheep.housecafe.de>
- <Pine.LNX.4.64.0803052045430.821@blonde.site> <20080305212139.GA31999@elf.ucw.cz>
+	Wed, 5 Mar 2008 16:39:19 -0500
+Received: from mga02.intel.com ([134.134.136.20]:10654 "EHLO mga02.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753374AbYCEVjS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 5 Mar 2008 16:39:18 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.25,452,1199692800"; 
+   d="scan'208";a="261002674"
+Message-ID: <47CF11F4.6030207@intel.com>
+Date: Wed, 05 Mar 2008 13:34:44 -0800
+From: "Kok, Auke" <auke-jan.h.kok@intel.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071125)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Todd Tomaino <ttomaino@rivulet.com>
+CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       NetDev <netdev@vger.kernel.org>
+Subject: Re: E1000:   e1000_update_stats()
+References: <67F3071335CB9945A6047FE06957E0240D6D94CE93@exchange.rivulet.com>
+In-Reply-To: <67F3071335CB9945A6047FE06957E0240D6D94CE93@exchange.rivulet.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 05 Mar 2008 21:35:02.0165 (UTC) FILETIME=[C5003450:01C87F08]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 5 Mar 2008, Pavel Machek wrote:
-> > > > CommitLimit:   4132360 kB
-> > > > Committed_AS:    27684 kB
-> > > > VmallocTotal: 34359738367 kB
-> > > > VmallocUsed:     18112 kB
-> > > > VmallocChunk: 34359720115 kB
-> > 
-> > I don't see what Pavel's issue is with this: it's simply a fact that
-> > with a 64-bit kernel, we've lots of virtual address space to spare
-> > for vmalloc.  What would be surprising is for VmallocUsed to get up
-> > as high as that.
+
+[ Adding netdev@vger.kernel.org !]
+
+Todd Tomaino wrote:
 > 
-> Hmm... ok, I see, I thought "clearly this overflowed somewhere", and I
-
-The (mis)alignment does makes it look that way,
-but no, it's not an overflow in this case.
-
-> was wrong, it is expected result.
+> I have been having trouble with interrupt latencies.  While profiling my system, I measured the e1000_update_stats() function disabling interrupts for roughly 100 usec.  For my application, this long of a delay results in data loss.  The e1000_update_stats() function is broken down into 3 main operations:
 > 
-> Still.... what is 34TB of vmalloc space good for when we can only ever
-> allocate 4GB (because that is how much physical memory we have?)? To
-> prevent fragmentation? 
+> 1. acquire spinlock
+> 2. read registers & update adapter->stat counters
+> 3. update OS adapter->net_stats statistics
+> 4. update phy stats.
+> 5. release spinlock.
+> 
+> On my system I measured 57 usec to perform operations #2 and #3, and 52 usec to perform operation #4.
+> 
+> Reading the comments in the code it appeared that updating adapter->net_stats and adapter->stat required interrupts to be turned off to prevent the e1000_adjust_tbi_stats() function from modifying these structures from interrupt context.  In order to reduce the amount of time spent with interrupts disabled I separated the register reads from updating adapter->stat counters.  The register reads take up the bulk of the 57 usec and shouldn't require protection (I could be wrong).  The new operation looks like this and reduces the amount of time spent with interrupts turned off by 1/2:
+> 
+> 1. read registers
+> 2. acquire spinlock
+> 3. update adapter->stat counters
+> 4. update OS adapter->net_stats statistics
+> 5. update phy stats.
+> 6. release spinlock.
+> 
+> 
+> It seemed like a bad idea to attempt to move the phy reads out of the spin locked code area.
+> 
+> These changes have greatly reduced my interrupt latency, but are there any negative side effects that could be caused??
 
-Well, what else would you want to use that space for?  If there were
-a compelling reason to tune it according to how much physical memory
-you have (and you're right, that we want a good surplus of address
-space so as to avoid silly limitations by fragmentation), I guess
-that could have been done.  But why bother if there's no reason?
+not per se, I think you did the right thing here. I think it might even be safe to
+move the PHY reads outside the spinlock area, and this is certainly something I
+would like to try.
 
-It's a hard life, there's just too much room to spare in 64-bit ;)
+would you care to send an RFC patch to netdev@vger.kernel.org?
 
-Hugh
+Also, I notice you are using an old driver/kernel. care to retest against the
+latest git trees?
+
+I'll certainly take your suggestion and have it tested.
+
+Auke
