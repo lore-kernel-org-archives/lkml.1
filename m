@@ -1,56 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765673AbYCEAZE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933013AbYCEA0j@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765673AbYCEAZE (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Mar 2008 19:25:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755746AbYCEAYu
+	id S933013AbYCEA0j (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Mar 2008 19:26:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756986AbYCEA0a
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Mar 2008 19:24:50 -0500
-Received: from gw.goop.org ([64.81.55.164]:38212 "EHLO mail.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757835AbYCEAYt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Mar 2008 19:24:49 -0500
-Message-ID: <47CDE718.9090302@goop.org>
-Date: Tue, 04 Mar 2008 16:19:36 -0800
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
+	Tue, 4 Mar 2008 19:26:30 -0500
+Received: from e34.co.us.ibm.com ([32.97.110.152]:39430 "EHLO
+	e34.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753063AbYCEA03 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 4 Mar 2008 19:26:29 -0500
+Date: Tue, 4 Mar 2008 16:26:26 -0800
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Peter Hartley <pdh@utter.chaos.org.uk>, linux-kernel@vger.kernel.org,
+       Pavel Machek <pavel@ucw.cz>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Alan Stern <stern@rowland.harvard.edu>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@osdl.org>,
+       Zdenek Kabelac <zdenek.kabelac@gmail.com>, davem@davemloft.net,
+       Pierre Ossman <drzeus-mmc@drzeus.cx>
+Subject: Re: [patch] Re: using long instead of atomic_t when only set/read is required
+Message-ID: <20080305002626.GD9517@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <20080225090316.GA420@elf.ucw.cz> <20080303172410.GA13869@elf.ucw.cz> <1204673572.1020.12.camel@amd64.pyotr.org> <200803050054.04930.rjw@sisk.pl>
 MIME-Version: 1.0
-To: Andi Kleen <ak@suse.de>
-CC: Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: preempt bug in set_pmd_pfn?
-References: <47CDBB87.8090906@goop.org> <200803050106.31609.ak@suse.de> <47CDE42F.8080400@goop.org> <200803050116.46119.ak@suse.de>
-In-Reply-To: <200803050116.46119.ak@suse.de>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200803050054.04930.rjw@sisk.pl>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andi Kleen wrote:
-> On Wednesday 05 March 2008 01:07:11 Jeremy Fitzhardinge wrote:
->   
->> Andi Kleen wrote:
->>     
->>>> Won't this leave a stale tlb on the old processor?
->>>>     
->>>>         
->>> __set_fixmap should be only used in early boot, so it's always
->>> on CPU 0
->>>       
->> vdso32-setup.c:map_compat_vdso() uses it to create the compat vdso 
->> mapping, which typically happens on the first execve(),
->>     
->
-> First execve for 32bit binaries?
->   
+On Wed, Mar 05, 2008 at 12:54:03AM +0100, Rafael J. Wysocki wrote:
+> On Wednesday, 5 of March 2008, Peter Hartley wrote:
+> > On Mon, 2008-03-03 at 18:24 +0100, Pavel Machek wrote:
+> > > Ok, I can understand the gcc side. But do we actually run on an
+> > > architecture where
+> > > 
+> > > long *x;
+> > > 
+> > > *x = 0;
+> > > 
+> > > racing with 
+> > > 
+> > > *x = 0x12345678;
+> > > 
+> > > can produce
+> > > 
+> > > *x == 0x12340000;
+> > > 
+> > > or something like that? I'm told RCU relies on architectures not doing
+> > > this, and I'd like to get this clarified.
+> > 
+> > ARM6, ARM7500 and similar do exactly this for short (and unsigned
+> > short), although not for int, long, or pointers:
+> > 
+> > > struct foo { short b; short c; };
+> > > void baa(struct foo *f, short cc) { f->c = cc; }
+> > 
+> > becomes (arm-linux-gcc -mcpu=arm6):
+> > 
+> > > baa:
+> > >	mov	r3, r1, lsr #8
+> > >	strb	r3, [r0, #3]
+> > >	strb	r1, [r0, #2]
+> > >	mov	pc, lr
+> > 
+> > note the two single-byte stores, as ARM6 didn't have the "store
+> > halfword" instruction.
+> > 
+> > So I think Alan Stern's
+> > "For all properly-aligned pointer and integral types other than long
+> > long..."
+> > should be amended to
+> > "For all properly-aligned pointer and integral types other than short or
+> > long long..."
+> 
+> Well, perhaps it's sufficient to document just pointers?  In fact this is what
+> RCU relies on.
 
-Yes, 32-bit kernel.
+One can do RCU on array indexes (ints/longs) as well as pointers, so we
+need to keep "integral" in there.
 
-> Anyways __set_fixmap is __init and at the first  execve (unless you have initramfs) 
-> init.text should be already freed.
-
-No, its not __init.  If it were I don't think there would have been much 
-booting going on for the last few months.
-
-    J
+							Thanx, Paul
