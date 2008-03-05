@@ -1,57 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757966AbYCESoQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758490AbYCESsp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757966AbYCESoQ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Mar 2008 13:44:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752902AbYCESn6
+	id S1758490AbYCESsp (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Mar 2008 13:48:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752902AbYCESsh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Mar 2008 13:43:58 -0500
-Received: from smtp-out0.tiscali.nl ([195.241.79.175]:42727 "EHLO
-	smtp-out0.tiscali.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752790AbYCESn5 (ORCPT
+	Wed, 5 Mar 2008 13:48:37 -0500
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:33545 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752790AbYCESsg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Mar 2008 13:43:57 -0500
-Message-ID: <47CEE9E2.6040303@tiscali.nl>
-Date: Wed, 05 Mar 2008 19:43:46 +0100
-From: Roel Kluin <12o3l@tiscali.nl>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
+	Wed, 5 Mar 2008 13:48:36 -0500
+Date: Wed, 5 Mar 2008 10:48:24 -0800 (PST)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Nick Piggin <npiggin@suse.de>
+cc: Andrea Arcangeli <andrea@qumranet.com>, Jack Steiner <steiner@sgi.com>,
+       akpm@linux-foundation.org, Robin Holt <holt@sgi.com>,
+       Avi Kivity <avi@qumranet.com>, Izik Eidus <izike@qumranet.com>,
+       kvm-devel@lists.sourceforge.net,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, general@lists.openfabrics.org,
+       Steve Wise <swise@opengridcomputing.com>,
+       Roland Dreier <rdreier@cisco.com>, Kanoj Sarcar <kanojsarcar@yahoo.com>,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       daniel.blueman@quadrics.com
+Subject: Re: [PATCH] mmu notifiers #v8
+In-Reply-To: <20080305003722.GG1510@wotan.suse.de>
+Message-ID: <Pine.LNX.4.64.0803051048100.29794@schroedinger.engr.sgi.com>
+References: <20080219231157.GC18912@wotan.suse.de> <20080220010941.GR7128@v2.random>
+ <20080220103942.GU7128@v2.random> <20080221045430.GC15215@wotan.suse.de>
+ <20080221144023.GC9427@v2.random> <20080221161028.GA14220@sgi.com>
+ <20080227192610.GF28483@v2.random> <20080302155457.GK8091@v2.random>
+ <20080303032934.GA3301@wotan.suse.de> <Pine.LNX.4.64.0803031058230.6917@schroedinger.engr.sgi.com>
+ <20080305003722.GG1510@wotan.suse.de>
 MIME-Version: 1.0
-To: Joe Perches <joe@perches.com>
-CC: mchehab@infradead.org, v4l-dvb-maintainer@linuxtv.org,
-       video4linux-list@redhat.com, lkml <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] em28xx-core.c: add missing parentheses in	em28xx_write_ac97()
-References: <47CEDE8D.7090707@tiscali.nl> <1204740974.17370.29.camel@localhost>
-In-Reply-To: <1204740974.17370.29.camel@localhost>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Joe Perches wrote:
+On Wed, 5 Mar 2008, Nick Piggin wrote:
 
->> -		if (!((u8) ret) & 0x01)
->> +		if (!(((u8) ret) & 0x01))
-> 
-> I think it'd be clearer without the cast to (u8)
-> which is then implicit cast back to int anyway
-> 
-> 	if (!(ret & 1))
+> Um, it's bound to the *Linux page tables*, yes. And I have no idea why
+> you would use the paravirt ops for this.
 
-ok.
----
+paravirt ops allows interception of page table operations?
 
-Signed-off-by: Roel Kluin <12o3l@tiscali.nl>
----
-diff --git a/drivers/media/video/em28xx/em28xx-core.c b/drivers/media/video/em28xx/em28xx-core.c
-index 7d1537c..c797472 100644
---- a/drivers/media/video/em28xx/em28xx-core.c
-+++ b/drivers/media/video/em28xx/em28xx-core.c
-@@ -267,7 +267,7 @@ static int em28xx_write_ac97(struct em28xx *dev, u8 reg, u8 *val)
- 	for (i = 0; i < 10; i++) {
- 		if ((ret = em28xx_read_reg(dev, AC97BUSY_REG)) < 0)
- 			return ret;
--		if (!((u8) ret) & 0x01)
-+		if (!(ret & 1))
- 			return 0;
- 		msleep(5);
- 	}
