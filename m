@@ -1,58 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934390AbYCEAab@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932620AbYCEAc0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934390AbYCEAab (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Mar 2008 19:30:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760456AbYCEAaQ
+	id S932620AbYCEAc0 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Mar 2008 19:32:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758100AbYCEAcR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Mar 2008 19:30:16 -0500
-Received: from smtp124.sbc.mail.sp1.yahoo.com ([69.147.64.97]:25040 "HELO
-	smtp124.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1758100AbYCEAaP (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Mar 2008 19:30:15 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=m9uTj0thrwus9M2gH/xbfJXmaB/JFBn1bnnLB2C1XrJ75GzYW7Eabfbmx+AtZLX6zMEe2VsNUwmFqQh8n3K+O0LoKst7bICyDisT1uw0C9IRD8MU8vvrHoZzEGPNc7Ans1UDJXnVDffghnYRPbDp60TE7lQQw/Sc7li5Z5wIks8=  ;
-X-YMail-OSG: PY_918gVM1m0q74r6mI7d2Aw5dpPbWGTqmv5s55UuMROqTVcIoEFlrQsaoPWVS57HwF72_jiWA--
-X-Yahoo-Newman-Property: ymail-3
-From: David Brownell <david-b@pacbell.net>
-To: Christian Kujau <lists@nerdbynature.de>
-Subject: Re: WARNING: at drivers/usb/host/ehci-hcd.c:287
-Date: Tue, 4 Mar 2008 16:30:11 -0800
-User-Agent: KMail/1.9.6
-Cc: Alan Stern <stern@rowland.harvard.edu>,
-       LKML <linux-kernel@vger.kernel.org>, 0x0007@gmail.com,
-       USB list <linux-usb@vger.kernel.org>
-References: <Pine.LNX.4.44L0.0803041553320.15986-100000@iolanthe.rowland.org> <200803041401.41880.david-b@pacbell.net> <alpine.DEB.1.00.0803050012090.5974@sheep.housecafe.de>
-In-Reply-To: <alpine.DEB.1.00.0803050012090.5974@sheep.housecafe.de>
+	Tue, 4 Mar 2008 19:32:17 -0500
+Received: from saeurebad.de ([85.214.36.134]:45649 "EHLO saeurebad.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754397AbYCEAcQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 4 Mar 2008 19:32:16 -0500
+From: Johannes Weiner <hannes@saeurebad.de>
+To: Rik van Riel <riel@redhat.com>
+Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Lee Schermerhorn <Lee.Schermerhorn@hp.com>,
+       Christoph Lameter <clameter@sgi.com>
+Subject: Re: [patch 02/20] Use an indexed array for LRU variables
+References: <20080304225157.573336066@redhat.com>
+	<20080304225226.653954413@redhat.com>
+Date: Wed, 05 Mar 2008 01:31:10 +0100
+In-Reply-To: <20080304225226.653954413@redhat.com> (Rik van Riel's message of
+	"Tue, 04 Mar 2008 17:51:59 -0500")
+Message-ID: <87lk4yc8q9.fsf@saeurebad.de>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200803041630.11832.david-b@pacbell.net>
+Content-Type: text/plain; charset=us-ascii
+X-Bogosity: Ham, tests=bogofilter, spamicity=0.000000, version=1.1.3
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 04 March 2008, Christian Kujau wrote:
-> On Tue, 4 Mar 2008, David Brownell wrote:
-> >>> Or bettter yet, just removing it entirely.  ISTR doing that in some
-> >>> patches I've not yet sent for merging, and expect that's what my
-> >>> preferred fix will be ...
-> >>
-> >> But removing the WARN_ON won't fix the problem.
-> >
-> > It fully resolves the $SUBJECT problem.  :)
-> 
-> ...and if it's a safe thing to do, I'm happy with it. I really have no 
-> clue why shutting up a WARN_ON has no (future) implications but if you 
-> say so I trust you :)
+Hi Rik,
 
-Carrying that WARN_ON forward was inappropriate, so
-removing it is a safe thing to do.
+Rik van Riel <riel@redhat.com> writes:
 
-There are other lurking issues though.
+> Index: linux-2.6.25-rc3-mm1/include/linux/mmzone.h
+> ===================================================================
+> --- linux-2.6.25-rc3-mm1.orig/include/linux/mmzone.h	2008-03-04 14:12:52.000000000 -0500
+> +++ linux-2.6.25-rc3-mm1/include/linux/mmzone.h	2008-03-04 14:59:31.000000000 -0500
+> @@ -80,8 +80,8 @@ struct zone_padding {
+>  enum zone_stat_item {
+>  	/* First 128 byte cacheline (assuming 64 bit words) */
+>  	NR_FREE_PAGES,
+> -	NR_INACTIVE,
+> -	NR_ACTIVE,
+> +	NR_INACTIVE,	/* must match order of LRU_[IN]ACTIVE */
+> +	NR_ACTIVE,	/*  "     "     "   "       "         */
+>  	NR_ANON_PAGES,	/* Mapped anonymous pages */
+>  	NR_FILE_MAPPED,	/* pagecache pages mapped into pagetables.
+>  			   only modified from process context */
+> @@ -105,6 +105,13 @@ enum zone_stat_item {
+>  #endif
+>  	NR_VM_ZONE_STAT_ITEMS };
 
-- Dave
+How about a #define LRU_STAT_BASE NR_INACTIVE ...
+
+> Index: linux-2.6.25-rc3-mm1/include/linux/mm_inline.h
+> ===================================================================
+> --- linux-2.6.25-rc3-mm1.orig/include/linux/mm_inline.h	2007-07-08 19:32:17.000000000 -0400
+> +++ linux-2.6.25-rc3-mm1/include/linux/mm_inline.h	2008-03-04 14:59:31.000000000 -0500
+> @@ -1,40 +1,51 @@
+>  static inline void
+> +add_page_to_lru_list(struct zone *zone, struct page *page, enum lru_list l)
+> +{
+> +	list_add(&page->lru, &zone->list[l]);
+> +	__inc_zone_state(zone, NR_INACTIVE + l);
+
+... in order to avoid using NR_INACTIVE in places like this?
+
+(LRU_STAT_BASE is a bad name, I apologize)
+
+Or perhaps a macro lru_stat (it's getting worse...) that yields the zone
+stat index corresponding to the lru list type?  I think this would
+increase readability.
+
+	Hannes
