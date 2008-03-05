@@ -1,54 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764080AbYCEHkD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764339AbYCEHlT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764080AbYCEHkD (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Mar 2008 02:40:03 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755228AbYCEHjv
+	id S1764339AbYCEHlT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Mar 2008 02:41:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754856AbYCEHlD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Mar 2008 02:39:51 -0500
-Received: from pasmtpb.tele.dk ([80.160.77.98]:38252 "EHLO pasmtpB.tele.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755202AbYCEHju (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Mar 2008 02:39:50 -0500
-Date: Wed, 5 Mar 2008 08:40:04 +0100
-From: Sam Ravnborg <sam@ravnborg.org>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Randy Dunlap <randy.dunlap@oracle.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: 2.6.25-rc3-mm1 (wakeup)
-Message-ID: <20080305074004.GA15400@uranus.ravnborg.org>
-References: <20080304011928.e8c82c0c.akpm@linux-foundation.org> <20080304122414.f4b7e7f7.randy.dunlap@oracle.com> <200803042333.13300.rjw@sisk.pl>
+	Wed, 5 Mar 2008 02:41:03 -0500
+Received: from wa-out-1112.google.com ([209.85.146.181]:60391 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754714AbYCEHlB (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 5 Mar 2008 02:41:01 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=subject:from:to:cc:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
+        b=EZpNgyYujlB5RDRBs8kSxZ7zm5A+6QDOsm9PvYI3KWpas3EX07rnM4R+RfBMoVft5Cs5tN57lJjGxybeOUO4yE5lmFlleif7HUHXnOzjbyOSc2vXw60qjX7ZB6ljM0SZooDoTrmlwPE8vk/P9DT2/PN0HHlZA3NI8Y9rmz1F334=
+Subject: [PATCH 1/3] scsi: st.c make class attributes static
+From: Harvey Harrison <harvey.harrison@gmail.com>
+To: James Bottomley <James.Bottomley@HansenPartnership.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Content-Type: text/plain
+Date: Tue, 04 Mar 2008 23:40:55 -0800
+Message-Id: <1204702855.17484.18.camel@brick>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200803042333.13300.rjw@sisk.pl>
-User-Agent: Mutt/1.4.2.1i
+X-Mailer: Evolution 2.12.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Mar 04, 2008 at 11:33:12PM +0100, Rafael J. Wysocki wrote:
-> On Tuesday, 4 of March 2008, Randy Dunlap wrote:
-> > On Tue, 4 Mar 2008 01:19:28 -0800 Andrew Morton wrote:
-> > 
-> > > 
-> > > ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.25-rc3/2.6.25-rc3-mm1/
-> > 
-> > Both x86_64 and i386 builds throw these messages at me:
-> > 
-> >   LD      arch/x86/kernel/acpi/realmode/wakeup.elf
-> > ld: warning: dot moved backwards before `.text'
-> > ld: warning: dot moved backwards before `.text'
-> > ld: warning: dot moved backwards before `.text'
-> >   OBJCOPY arch/x86/kernel/acpi/realmode/wakeup.bin
-> 
-> I think I saw something like this on a system with an "older" toolchain.
-> I'm not seeing it on openSUSE 10.3, though (using gcc 4.2.1).
-> 
-> Added CCs to the experts. 
-Google turned up this post:
-http://sourceware.org/ml/binutils/2006-08/msg00235.html
+Fixes sparse warnings:
+drivers/scsi/st.c:4299:1: warning: symbol 'class_device_attr_defined' was not declared. Should it be static?
+drivers/scsi/st.c:4310:1: warning: symbol 'class_device_attr_default_blksize' was not declared. Should it be static?
+drivers/scsi/st.c:4323:1: warning: symbol 'class_device_attr_default_density' was not declared. Should it be static?
+drivers/scsi/st.c:4334:1: warning: symbol 'class_device_attr_default_compression' was not declared. Should it be static?
 
-I have no time to dig more into it the next days.
+Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
+---
+ drivers/scsi/st.c |    8 ++++----
+ 1 files changed, 4 insertions(+), 4 deletions(-)
 
-	Sam
+diff --git a/drivers/scsi/st.c b/drivers/scsi/st.c
+index 0a52d9d..9778ab7 100644
+--- a/drivers/scsi/st.c
++++ b/drivers/scsi/st.c
+@@ -4296,7 +4296,7 @@ static ssize_t st_defined_show(struct class_device *class_dev, char *buf)
+ 	return l;
+ }
+ 
+-CLASS_DEVICE_ATTR(defined, S_IRUGO, st_defined_show, NULL);
++static CLASS_DEVICE_ATTR(defined, S_IRUGO, st_defined_show, NULL);
+ 
+ static ssize_t st_defblk_show(struct class_device *class_dev, char *buf)
+ {
+@@ -4307,7 +4307,7 @@ static ssize_t st_defblk_show(struct class_device *class_dev, char *buf)
+ 	return l;
+ }
+ 
+-CLASS_DEVICE_ATTR(default_blksize, S_IRUGO, st_defblk_show, NULL);
++static CLASS_DEVICE_ATTR(default_blksize, S_IRUGO, st_defblk_show, NULL);
+ 
+ static ssize_t st_defdensity_show(struct class_device *class_dev, char *buf)
+ {
+@@ -4320,7 +4320,7 @@ static ssize_t st_defdensity_show(struct class_device *class_dev, char *buf)
+ 	return l;
+ }
+ 
+-CLASS_DEVICE_ATTR(default_density, S_IRUGO, st_defdensity_show, NULL);
++static CLASS_DEVICE_ATTR(default_density, S_IRUGO, st_defdensity_show, NULL);
+ 
+ static ssize_t st_defcompression_show(struct class_device *class_dev, char *buf)
+ {
+@@ -4331,7 +4331,7 @@ static ssize_t st_defcompression_show(struct class_device *class_dev, char *buf)
+ 	return l;
+ }
+ 
+-CLASS_DEVICE_ATTR(default_compression, S_IRUGO, st_defcompression_show, NULL);
++static CLASS_DEVICE_ATTR(default_compression, S_IRUGO, st_defcompression_show, NULL);
+ 
+ static int do_create_class_files(struct scsi_tape *STp, int dev_num, int mode)
+ {
+-- 
+1.5.4.GIT
+
+
