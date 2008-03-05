@@ -1,62 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759860AbYCECIb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763445AbYCECKo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759860AbYCECIb (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Mar 2008 21:08:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752958AbYCECIT
+	id S1763445AbYCECKo (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Mar 2008 21:10:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752484AbYCECKJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Mar 2008 21:08:19 -0500
-Received: from scrub.xs4all.nl ([194.109.195.176]:50249 "EHLO scrub.xs4all.nl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753361AbYCECIS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Mar 2008 21:08:18 -0500
-Date: Wed, 5 Mar 2008 03:06:32 +0100 (CET)
-From: Roman Zippel <zippel@linux-m68k.org>
-X-X-Sender: roman@scrub.home
-To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-cc: Steven Rostedt <rostedt@goodmis.org>, linux-kernel@vger.kernel.org,
-       linux-rt-users@vger.kernel.org, ego@in.ibm.com,
-       Ingo Molnar <mingo@elte.hu>, Dipankar Sarma <dipankar@in.ibm.com>,
-       Ted Tso <tytso@us.ibm.com>, dvhltc@us.ibm.com,
-       Oleg Nesterov <oleg@tv-sign.ru>,
-       Andrew Morton <akpm@linux-foundation.org>, bunk@kernel.org,
-       Josh Triplett <josh@freedesktop.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: Re: [PATCH] move PREEMPT_RCU config option back under PREEMPT
-In-Reply-To: <20080305005816.GG9517@linux.vnet.ibm.com>
-Message-ID: <Pine.LNX.4.64.0803050305210.2723@scrub.home>
-References: <20071213170348.GA25981@in.ibm.com> <20071213171658.GE25981@in.ibm.com>
- <200802290534.57040.zippel@linux-m68k.org> <20080229045328.GA18687@linux.vnet.ibm.com>
- <Pine.LNX.4.64.0802291330590.2723@scrub.home> <20080301193903.GC15887@linux.vnet.ibm.com>
- <Pine.LNX.4.64.0803020404040.2723@scrub.home> <20080303185511.GE12453@linux.vnet.ibm.com>
- <20080304202207.GA10926@linux.vnet.ibm.com> <Pine.LNX.4.58.0803041553240.11062@gandalf.stny.rr.com>
- <20080305005816.GG9517@linux.vnet.ibm.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Tue, 4 Mar 2008 21:10:09 -0500
+Received: from mga05.intel.com ([192.55.52.89]:41352 "EHLO
+	fmsmga101.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752061AbYCECKH (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 4 Mar 2008 21:10:07 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.25,444,1199692800"; 
+   d="scan'208";a="528833188"
+Subject: Re: 2.6.25-rc3-git3: Reported regressions from 2.6.24
+From: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
+To: Dhaval Giani <dhaval@linux.vnet.ibm.com>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Adrian Bunk <bunk@kernel.org>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>,
+       Balbir Singh <balbir@in.ibm.com>, Ingo Molnar <mingo@elte.hu>
+In-Reply-To: <20080304112741.GA13428@linux.vnet.ibm.com>
+References: <200803030316.07165.rjw@sisk.pl>
+	 <20080304112741.GA13428@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=utf-8
+Date: Wed, 05 Mar 2008 10:06:22 +0800
+Message-Id: <1204682782.3248.189.camel@ymzhang>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.9.2 (2.9.2-2.fc7) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
-
-On Tue, 4 Mar 2008, Paul E. McKenney wrote:
-
-> > > -	bool "Classic RCU"
-> > > +	def_bool !PREEMPT_RCU
-> > >  	help
-> > >  	  This option selects the classic RCU implementation that is
-> > >  	  designed for best read-side performance on non-realtime
-> > > -	  systems.
-> > > -
-> > > -	  Say Y if you are unsure.
-> > > -
+On Tue, 2008-03-04 at 16:57 +0530, Dhaval Giani wrote:
 > > 
-> > You can get rid of the "help" part since it isn't visible to users.
-> 
-> So how about if I replace it with comment lines (starting with "#",
-> not with "comment")?
+> > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=9978
+> > Subject		: 2.6.25-rc1: volanoMark 45% regression
+> > Submitter	: Zhang, Yanmin <yanmin_zhang@linux.intel.com>
+> > Date		: 2008-02-13 10:30
+> > References	: http://lkml.org/lkml/2008/2/13/128
+> > Handled-By	: Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>
+> > 		  Balbir Singh <balbir@linux.vnet.ibm.com>
+>  
+> Peter's revert of the load balance patches should fix this one. Yanmin,
+> could you please confirm if the patch at
+> http://lkml.org/lkml/2008/2/25/202 helps?
+I tested it against 2.6.25-rc3 on my 16-core tigerton machine. It really improves
+volano result although it doesn't recover all the result.
+Comparing with 2.6.24, without the patch, volanoMark has about 50% regression
+with 2.6.25-rc3. With the patch, volanoMark has about 15% regression.
 
-Actually xconfig can display this text, so using the help like this is 
-fine.
+-yanmin
 
-bye, Roman
+
