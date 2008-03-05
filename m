@@ -1,53 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759848AbYCEXw6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762074AbYCEXxZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759848AbYCEXw6 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Mar 2008 18:52:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756833AbYCEXws
+	id S1762074AbYCEXxZ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Mar 2008 18:53:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756833AbYCEXxH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Mar 2008 18:52:48 -0500
-Received: from minas.ics.muni.cz ([147.251.4.40]:42340 "EHLO minas.ics.muni.cz"
+	Wed, 5 Mar 2008 18:53:07 -0500
+Received: from x346.tv-sign.ru ([89.108.83.215]:60254 "EHLO mail.screens.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755237AbYCEXwr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Mar 2008 18:52:47 -0500
-X-Greylist: delayed 1784 seconds by postgrey-1.27 at vger.kernel.org; Wed, 05 Mar 2008 18:52:47 EST
-Date: Thu, 6 Mar 2008 00:22:57 +0100
-From: Lukas Hejtmanek <xhejtman@ics.muni.cz>
-To: Greg KH <greg@kroah.com>
-Cc: linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: 2.6.25 possible regression usbfs options ignored?
-Message-ID: <20080305232256.GA25019@ics.muni.cz>
-References: <20080303215456.GA7747@ics.muni.cz> <20080305000326.GA4230@kroah.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-2
+	id S1760508AbYCEXxG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 5 Mar 2008 18:53:06 -0500
+Date: Thu, 6 Mar 2008 02:52:37 +0300
+From: Oleg Nesterov <oleg@tv-sign.ru>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Pavel Emelyanov <xemul@openvz.org>, Roland McGrath <roland@redhat.com>,
+       Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH -mm 2/2] send_sigqueue: don't forget about handle_stop_signal()
+Message-ID: <20080305235237.GA6366@tv-sign.ru>
+References: <20080305215314.GA3821@tv-sign.ru>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20080305000326.GA4230@kroah.com>
-X-echelon: NSA, CIA, CI5, MI5, FBI, KGB, BIS, Plutonium, Bin Laden, bomb
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
-X-Muni-Spam-TestIP: 81.31.45.161
-X-Muni-Envelope-From: xhejtman@anubis.ics.muni.cz
-X-Muni-Virus-Test: Clean
-X-Greylist: Sender succeeded SMTP AUTH authentication, not delayed by milter-greylist-3.0 (minas.ics.muni.cz [147.251.4.35]); Thu, 06 Mar 2008 00:22:56 +0100 (CET)
+In-Reply-To: <20080305215314.GA3821@tv-sign.ru>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Mar 04, 2008 at 04:03:26PM -0800, Greg KH wrote:
-> Wait, look in the directory for the devices, that is what you are
-> setting the option for:
-> 	$ ls -l /proc/bus/usb/001/
-> 	total 0
-> 	-rw-rw-r-- 1 root usb 43 Mar  4 13:29 001
-> 	-rw-rw-r-- 1 root usb 59 Mar  4 13:29 004
-> 	-rw-rw-r-- 1 root usb 52 Mar  4 13:29 007
-> 	$ mount | grep usb
-> 	usbfs on /proc/bus/usb type usbfs (rw,noexec,nosuid,devmode=0664,devgid=85)
+On 03/06, Oleg Nesterov wrote:
+>
+> (on top of Pavel's signals-consolidate-send_sigqueue-and-send_group_sigqueue.patch)
 > 
-> So I think everything is just fine, right?
+> send_group_sigqueue() calls handle_stop_signal(), send_sigqueue() doesn't.
+> This is not consistent and in fact I'd say this is (minor) bug.
+> 
+> Move handle_stop_signal() from send_group_sigqueue() to do_send_sigqueue(),
+> the latter is called by send_sigqueue() too.
 
-yes, it's my fault. My usb camera is not working anyway as gthumb now access
-/dev/bus/usb/ instead of /proc/bus/usb and there are still wrong permissions in
-/dev/bus/usb but it is udev issue. thanks.
+Sorry for the noise, but I forgot to mention that this patch of course depends
+on signals-re-assign-cld_continued-notification-from-the-sender-to-reciever.patch
 
--- 
-Luká¹ Hejtmánek
+Oleg.
+
