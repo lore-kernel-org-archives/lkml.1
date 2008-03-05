@@ -1,49 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761463AbYCEXrT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759949AbYCEXuE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761463AbYCEXrT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Mar 2008 18:47:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757808AbYCEXrI
+	id S1759949AbYCEXuE (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Mar 2008 18:50:04 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755812AbYCEXtw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Mar 2008 18:47:08 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:43528 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757559AbYCEXrH (ORCPT
+	Wed, 5 Mar 2008 18:49:52 -0500
+Received: from smtp1.dnsmadeeasy.com ([205.234.170.144]:44160 "EHLO
+	smtp1.dnsmadeeasy.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755786AbYCEXtw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Mar 2008 18:47:07 -0500
-Date: Wed, 5 Mar 2008 15:46:53 -0800
-From: Greg KH <greg@kroah.com>
-To: Adrian McMenamin <lkmladrian@gmail.com>
-Cc: LKML <linux-kernel@vger.kernel.org>, linux-sh <linux-sh@vger.kernel.org>
-Subject: Re: Behaviour of device_register
-Message-ID: <20080305234653.GA5904@kroah.com>
-References: <8b67d60803051525g3aca775dmc14d1c2450b34168@mail.gmail.com>
+	Wed, 5 Mar 2008 18:49:52 -0500
+X-Greylist: delayed 1684 seconds by postgrey-1.27 at vger.kernel.org; Wed, 05 Mar 2008 18:49:52 EST
+X-Authenticated-Name: js.dnsmadeeasy
+X-Transit-System: In case of SPAM please contact abuse@dnsmadeeasy.com
+Message-ID: <47CF2B07.2050503@avtrex.com>
+Date: Wed, 05 Mar 2008 15:21:43 -0800
+From: David Daney <ddaney@avtrex.com>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <8b67d60803051525g3aca775dmc14d1c2450b34168@mail.gmail.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+To: Olivier Galibert <galibert@pobox.com>, Michael Matz <matz@suse.de>,
+       Joe Buck <Joe.Buck@synopsys.COM>, Jan Hubicka <hubicka@ucw.cz>,
+       Aurelien Jarno <aurelien@aurel32.net>, "H. Peter Anvin" <hpa@zytor.com>,
+       linux-kernel@vger.kernel.org, gcc@gcc.gnu.org
+Subject: Re: RELEASE BLOCKER: Linux doesn't follow x86/x86-64 ABI wrt direction
+  flag
+References: <20080305153020.GA24631@volta.aurel32.net> <47CEC3AA.6080709@zytor.com> <20080305195834.GA17267@synopsys.com> <20080305202319.GA17053@volta.aurel32.net> <Pine.LNX.4.64.0803052133400.20583@wotan.suse.de> <20080305204234.GB17267@synopsys.com> <20080305204945.GB14011@atrey.karlin.mff.cuni.cz> <Pine.LNX.4.64.0803052158270.20583@wotan.suse.de> <20080305212005.GC17267@synopsys.com> <Pine.LNX.4.64.0803052241170.20583@wotan.suse.de> <20080305231712.GC2649@dspnet.fr.eu.org>
+In-Reply-To: <20080305231712.GC2649@dspnet.fr.eu.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 05 Mar 2008 23:21:44.0909 (UTC) FILETIME=[AD5567D0:01C87F17]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Mar 05, 2008 at 11:25:48PM +0000, Adrian McMenamin wrote:
-> The observed behaviour for me is that it appears to be blocking the
-> vblank interrupt on my box (or more accurately stopping the workqueue
-> that the interrupt handler calls from running). And without the vblank
-> my bus won't process dma and so therefore the attempt to register the
-> device in question fails.
+Olivier Galibert wrote:
+> On Wed, Mar 05, 2008 at 10:43:33PM +0100, Michael Matz wrote:
+>> FWIW I don't think it's a release blocker for 4.3.0.  The error is arcane 
+>> and happens seldomly if at all.  And only on unfixed kernels.  A program 
+>> needs to do std explicitely, which most don't do _and_ get hit by a signal 
+>> while begin in a std region.  This happens so seldom that it didn't occur 
+>> in building the next openSuSE 11.0, and it continually builds packages 
+>> with 4.3 since months.
 > 
-> But I can see no reason from a glance over the code why that (vblanks
-> being blocked) would be the case - have I missed something and the
-> vblanks will be blocked, or should I be looking elsewhere for the root
-> cause of this problem?
+> How would you know whether it has happened?
+> 
 
-device_register(), on it's own, does not touch any hardware, nor prevent
-anything else in the kernel from happening.
+The same way you do with other bugs: You would observe unexpected behavior.
 
-So I think you need to look elsewhere, like into the bus that is doing
-the device_register() call :)
+In this case probably either corrupted memory or a SIGSEGV.
 
-good luck,
-
-greg k-h
+David Daney
