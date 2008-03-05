@@ -1,84 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755524AbYCEPAg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756053AbYCEPBc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755524AbYCEPAg (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Mar 2008 10:00:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752348AbYCEPAX
+	id S1756053AbYCEPBc (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Mar 2008 10:01:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752739AbYCEPBW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Mar 2008 10:00:23 -0500
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:59379 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752249AbYCEPAW (ORCPT
+	Wed, 5 Mar 2008 10:01:22 -0500
+Received: from ip32-53-209-87.adsl2.versatel.nl ([87.209.53.32]:58541 "EHLO
+	the-village.bc.nu" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752397AbYCEPBV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Mar 2008 10:00:22 -0500
-Subject: [PATCH -v2] balance RT task resched only on runqueue
-From: Steven Rostedt <rostedt@goodmis.org>
-To: LKML <linux-kernel@vger.kernel.org>
-Cc: Ingo Molnar <mingo@elte.hu>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Sripathi Kodi <sripathik@in.ibm.com>,
-       Gregory Haskins <ghaskins@novell.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>
-In-Reply-To: <1204728101.5241.12.camel@localhost.localdomain>
-References: <1204728101.5241.12.camel@localhost.localdomain>
-Content-Type: text/plain
-Date: Wed, 05 Mar 2008 10:00:12 -0500
-Message-Id: <1204729212.5241.16.camel@localhost.localdomain>
+	Wed, 5 Mar 2008 10:01:21 -0500
+X-Greylist: delayed 9725 seconds by postgrey-1.27 at vger.kernel.org; Wed, 05 Mar 2008 10:01:20 EST
+Date: Wed, 5 Mar 2008 11:56:10 +0000
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>, jeff@garzik.org,
+       linux-ide@vger.kernel.org, alan@redhat.com,
+       linux-kernel@vger.kernel.org
+Subject: Re: [patch 3/3] pata: "I do not think it means, what you think it
+ means."
+Message-ID: <20080305115610.397b3ea3@the-village.bc.nu>
+In-Reply-To: <20080304173058.7679b7c8.akpm@linux-foundation.org>
+References: <200803042316.m24NGI7k002489@imap1.linux-foundation.org>
+	<200803050234.40594.bzolnier@gmail.com>
+	<20080304173058.7679b7c8.akpm@linux-foundation.org>
+X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.5; i386-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
 Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[
-  Update: I didn't like the task_rq(p), so I changed the test to be
-  rq->curr == p. No need to resched if the p isn't running. And
-  I think this is a bit cleaner.
-]
 
-In the RT kernel we discovered a place that can reschedule a task
-without holding the tasks runqueue lock.  This was caused by the RT
-balancing code that pulls RT tasks to the current run queue and will
-reschedule the current task.
+> I didn't know any of that.  The changelog might have been kinda fun, but
+> given that it failed to tell us that the patch fixes data-corruption
+> errors, the changelog was excrutiatingly bad.
 
-There's a slight chance that the pulling of the RT tasks will release
-the current runqueue's lock and retake it (in the double_lock_balance).
-During this time that the runqueue is released, the current task can
-migrate to another runqueue.
+I have no reason/evidence to believe it fixes data corruption errors of
+any kind. For the specific combinations of device it should simply avoid
+a long pause, complaints and a switch to lower speeds.
 
-In the prio_changed_rt code, after the pull, if the current task is of
-lesser priority than one of the RT tasks pulled, resched_task is called
-on the current task. If the current task had migrated in that small
-window, resched_task will be called without holding the runqueue lock
-for the runqueue that the task is on.
-
-This race condition also exists in the mainline kernel and this patch
-adds a check to make sure the task hasn't migrated before calling
-resched_task.
-
-Signed-off-by: Steven Rostedt <srostedt@redhat.com>
----
- kernel/sched_rt.c |    6 ++++--
- 1 file changed, 4 insertions(+), 2 deletions(-)
-
-Index: linux-compile.git/kernel/sched_rt.c
-===================================================================
---- linux-compile.git.orig/kernel/sched_rt.c	2008-03-05 09:31:22.000000000 -0500
-+++ linux-compile.git/kernel/sched_rt.c	2008-03-05 09:53:00.000000000 -0500
-@@ -1107,9 +1107,11 @@ static void prio_changed_rt(struct rq *r
- 			pull_rt_task(rq);
- 		/*
- 		 * If there's a higher priority task waiting to run
--		 * then reschedule.
-+		 * then reschedule. Note, the above pull_rt_task
-+		 * can release the rq lock and p could migrate.
-+		 * Only reschedule if p is still on the same runqueue.
- 		 */
--		if (p->prio > rq->rt.highest_prio)
-+		if (p->prio > rq->rt.highest_prio && rq->curr == p)
- 			resched_task(p);
- #else
- 		/* For UP simply resched on drop of prio */
-
-
+The ATA disk case with serverworks (which is a potential corruptor) was
+always correctly handled.
