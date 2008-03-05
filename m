@@ -1,88 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760840AbYCET2y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761527AbYCETab@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760840AbYCET2y (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Mar 2008 14:28:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756333AbYCET2n
+	id S1761527AbYCETab (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Mar 2008 14:30:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751519AbYCETaW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Mar 2008 14:28:43 -0500
-Received: from smtp-out2.tiscali.nl ([195.241.79.177]:43599 "EHLO
-	smtp-out2.tiscali.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756422AbYCET2l (ORCPT
+	Wed, 5 Mar 2008 14:30:22 -0500
+Received: from smtp.innovsys.com ([66.115.232.196]:2296 "EHLO
+	mail.innovsys.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751355AbYCETaV convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Mar 2008 14:28:41 -0500
-Message-ID: <47CEF462.8060607@tiscali.nl>
-Date: Wed, 05 Mar 2008 20:28:34 +0100
-From: Roel Kluin <12o3l@tiscali.nl>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
+	Wed, 5 Mar 2008 14:30:21 -0500
+X-Greylist: delayed 975 seconds by postgrey-1.27 at vger.kernel.org; Wed, 05 Mar 2008 14:30:21 EST
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-To: Jeff Garzik <jeff@garzik.org>
-CC: linux-scsi@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] mvsas: fill in error info record bits
-References: <20080305190304.GA13286@havoc.gtf.org>
-In-Reply-To: <20080305190304.GA13286@havoc.gtf.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Subject: pdflush weirdness
+Date: Wed, 5 Mar 2008 13:13:59 -0600
+Message-ID: <DCEAAC0833DD314AB0B58112AD99B93B0414B825@ismail.innsys.innovsys.com>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: pdflush weirdness
+Thread-Index: Ach+9RC5dcfRHbYZQk20HZe3VnGxgQ==
+From: "Rune Torgersen" <runet@innovsys.com>
+To: <linuxppc-dev@ozlabs.org>, <linux-kernel@vger.kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jeff Garzik wrote:
-> This describes the first dword of struct mvs_err_info, two-dword error
-> information record that is returned when RXQ_ERR bit is asserted.
-> 
-> These bits are necessary for proper error handling.
-> 
-> Signed-off-by: Jeff Garzik <jgarzik@redhat.com>
-> ---
-> diff --git a/drivers/scsi/mvsas.c b/drivers/scsi/mvsas.c
-> index d4a6ac3..ec4dda0 100644
-> --- a/drivers/scsi/mvsas.c
-> +++ b/drivers/scsi/mvsas.c
-> @@ -511,7 +511,35 @@ enum status_buffer {
->  };
->  
->  enum error_info_rec {
-> -	CMD_ISS_STPD	=  (1U << 31),	/* Cmd Issue Stopped */
-> +	CMD_ISS_STPD	= (1U << 31),	/* Cmd Issue Stopped */
-> +	CMD_PI_ERR	= (1U << 30),	/* Protection info error.  see flags2 */
-> +	RSP_OVER	= (1U << 29),	/* rsp buffer overflow */
-> +	RETRY_LIM	= (1U << 28),	/* FIS/frame retry limit exceeded */
-> +	UNK_FIS		= (1U << 27),	/* unknown FIS */
-> +	DMA_TERM	= (1U << 26),	/* DMA terminate primitive rx'd */
-> +	SYNC_ERR	= (1U << 25),	/* SYNC rx'd during frame xmit */
-> +	TFILE_ERR	= (1U << 24),	/* SATA taskfile Error bit set */
-> +	R_ERR		= (1U << 23),	/* SATA returned R_ERR prim */
-> +	RD_OFS		= (1U << 20),	/* Read DATA frame invalid offset *?
+Hi
 
-there is a question mark instead of a slash in the line above.
-also I noted 1U << 22 to 1U << 21 were missing. was that intended?
+While trying to find what is causing some hickups on our Freescale 8280
+based system 
+(ppc 603e core), i've found that pdflush is causing us some grief.
 
-> +	XFER_RDY_OFS	= (1U << 19),	/* XFER_RDY offset error */
-> +	UNEXP_XFER_RDY	= (1U << 18),	/* unexpected XFER_RDY error */
-> +	DATA_OVER_UNDER	= (1U << 16),	/* data overflow/underflow */
-> +	INTERLOCK	= (1U << 15),	/* interlock error */
-> +	NAK		= (1U << 14),	/* NAK rx'd */
-> +	ACK_NAK_TO	= (1U << 13),	/* ACK/NAK timeout */
-> +	CXN_CLOSED	= (1U << 12),	/* cxn closed w/out ack/nak */
-> +	OPEN_TO		= (1U << 11),	/* I_T nexus lost, open cxn timeout */
-> +	PATH_BLOCKED	= (1U << 10),	/* I_T nexus lost, pathway blocked */
-> +	NO_DEST		= (1U << 9),	/* I_T nexus lost, no destination */
-> +	STP_RES_BSY	= (1U << 8),	/* STP resources busy */
-> +	BREAK		= (1U << 7),	/* break received */
-> +	BAD_DEST	= (1U << 6),	/* bad destination */
-> +	BAD_PROTO	= (1U << 5),	/* protocol not supported */
-> +	BAD_RATE	= (1U << 4),	/* cxn rate not supported */
-> +	WRONG_DEST	= (1U << 3),	/* wrong destination error */
-> +	CREDIT_TO	= (1U << 2),	/* credit timeout */
-> +	WDOG_TO		= (1U << 1),	/* watchdog timeout */
-> +	BUF_PAR		= (1U << 0),	/* buffer parity error */
->  };
->  
->  struct mvs_chip_info {
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
-> 
+The system is runnign at 450MHz, have 1GB of memory, and we see the same
+
+issue on 2.6.18 (arch/ppc) and 2.6.24.3 (arch/powerpc)
+Filesystem is ext3, but we also see it using ext2. (have not tried any
+other 
+fs, but suspect the same result)
+Disk is a SATAII Hitachi drive connected to a SiliconImage 3124
+controller.
+
+Basically we have a testprogram that (re)writes a 80k file to a random
+directory.
+There are 50000 target directories.
+Directory tree has 5000 top level directories, and 10 direcories under
+each one.
+
+Average opens take around 100ms
+Average writes take 2ms
+Average close/fflush takes mostly 2ms but also a significant number
+around 100ms.
+
+Once in a while (sometimes 30seconds sometimes longer) a open or a close
+takes 2-3 seconds.
+
+if I disable pdflush (echo 0 > /proc/sys/vm/dirty_writeback_centisecs) I
+see no accesses 
+larger than 400 ms, and most writes/closes are 10ms. 
+Opens stay at 100ms (expected as seek time of hd comes into play)
+
+When the pdflush delays occur, the whole system seems to be
+unresponsive.
+
+If we have the same number of direcories, but only access a subset of
+2-300 of the directories,
+we never see this happening. (Max time is then comparable to pdflush
+off)
+
+The system is basically a voicemail storage system, and this causes us
+problems, as it causes 
+several second long timeouts in processing.
+
+1) Is there any reason that we cannot run with pdflush permanetly
+disabled (probably a bad idea...)
+2) Are there any thing we can tune to make the system NOT have these
+hickups?
+
+I've also been trying to get PREEMPT_RT patches to work on our 2.6.24
+kernel, but it blows up when doing the first diskaccess.
+(getting a BUG_ON in rtmutex.c, line 691)
 
