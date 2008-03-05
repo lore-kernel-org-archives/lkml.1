@@ -1,81 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932228AbYCEXAs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763542AbYCEXBX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932228AbYCEXAs (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Mar 2008 18:00:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765550AbYCEWyr
+	id S1763542AbYCEXBX (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Mar 2008 18:01:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765558AbYCEWyw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Mar 2008 17:54:47 -0500
-Received: from ug-out-1314.google.com ([66.249.92.171]:64506 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1765538AbYCEWyp (ORCPT
+	Wed, 5 Mar 2008 17:54:52 -0500
+Received: from rex.snapgear.com ([203.143.235.140]:58333 "EHLO
+	cyberguard.com.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1764955AbYCEWyu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Mar 2008 17:54:45 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:subject:user-agent:references:in-reply-to:mime-version:content-disposition:date:content-type:content-transfer-encoding:message-id;
-        b=aX3ZPTePTUERT1FHzcS/PUpsU0VLi5+CbX6tFR8qdzQt/94eUfQpq0w75K5imnyV4FGQ6xEuv3m1xk1HrMjkqfeiJIt3LKMD5shBFF2Qmdqv8ifuLUMOXa0JCzI3J/oiALCZy0c89tNnYn7zQVCpGUVs4xjNg78vLcbTBhVrd2o=
-From: Pawel Plociennik <paplociennik@gmail.com>
-To: Pavel Machek <pavel@ucw.cz>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] chroot= as a new kernel parameter
-User-Agent: KMail/1.9.5
-References: <200803011409.59526.paplociennik@gmail.com> <200803050838.03452.paplociennik@gmail.com> <3d8471ca0803050523r2a55c91em68021a7b078ef48c@mail.gmail.com>
-In-Reply-To: <3d8471ca0803050523r2a55c91em68021a7b078ef48c@mail.gmail.com>
+	Wed, 5 Mar 2008 17:54:50 -0500
+Message-ID: <47CF24B7.7050104@snapgear.com>
+Date: Thu, 06 Mar 2008 08:54:47 +1000
+From: Greg Ungerer <gerg@snapgear.com>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070301)
 MIME-Version: 1.0
-Content-Disposition: inline
-Date: Wed, 5 Mar 2008 23:54:32 -0500
-Content-Type: text/plain;
-  charset="utf-8"
+To: Jeff Garzik <jeff@garzik.org>
+CC: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org
+Subject: Re: [M68KNOMMU]: fix fec driver interrupt races
+References: <200803040652.m246q1SH012800@goober> <47CE851E.4000401@garzik.org>
+In-Reply-To: <47CE851E.4000401@garzik.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Message-Id: <200803052354.32191.paplociennik@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Andrew and other *real* hackers,
+Hi Jeff,
 
-I have sent a *last* version of a patch which it has added a new kernel parameter chroot=
-It were discusioned a *long time* on a lkml so I hope that it will has been applied.
+Jeff Garzik wrote:
+> Greg Ungerer wrote:
+>> The FEC driver has a common interrupt handler for all interrupt event
+>> types. It is raised on a number of distinct interrupt vectors.
+>> This handler can't be re-entered while processing an interrupt, so
+>> make sure all requested vectors are flagged as IRQF_DISABLED.
+>>
+>> Signed-off-by: Greg Ungerer <gerg@uclinux.org>
+> 
+> NAK -- add spinlocks to your interrupt handling like you are supposed to
 
-Thanks,
-Pawel 
+A better fix is to use the separate vectors, avoiding spinlocks
+in most cases. But this is a simple immediate fix for 2.6.25.
+The better solution is being worked on, but it needs some
+reasonable testing before it is ready for inclusion, and that
+won't be till post 2.6.25.
 
-Acked-by: Pavel Machek <pavel@suse.cz>
-Signed-off-by: Pawel Plociennik <paplociennik@gmail.com>
+(This is a regression, fixes in the m68knommu interrupt subsystem
+exposed this).
 
----
-diff -urp linux-2.6.24-orig/Documentation/kernel-parameters.txt linux-2.6.24/Documentation/kernel-parameters.txt
---- linux-2.6.24-orig/Documentation/kernel-parameters.txt	2008-02-25 20:53:26.000000000 -0500
-+++ linux-2.6.24/Documentation/kernel-parameters.txt	2008-03-04 09:51:52.000000000 -0500
-@@ -381,6 +381,8 @@ and is between 256 and 4096 characters. 
- 			Value can be changed at runtime via
- 				/selinux/checkreqprot.
- 	
-+	chroot=		[KNL] change a root for init process.
-+
- 	clock=		[BUGS=X86-32, HW] gettimeofday clocksource override.
- 			[Deprecated]
- 			Forces specified clocksource (if available) to be used
-diff -urp linux-2.6.24-orig/init/main.c linux-2.6.24/init/main.c
---- linux-2.6.24-orig/init/main.c	2008-03-01 12:58:37.000000000 -0500
-+++ linux-2.6.24/init/main.c	2008-03-05 15:08:20.000000000 -0500
-@@ -755,8 +755,20 @@ static void __init do_pre_smp_initcalls(
- 		spawn_softlockup_task();
- }
- 
-+static void *chroot_str;
-+static int __init chroot_setup(char *str)
-+{
-+	chroot_str = str;
-+	return 1;
-+}
-+__setup("chroot=", chroot_setup);
-+
- static void run_init_process(char *init_filename)
- {
-+	if (chroot_str)
-+		if (sys_chroot(chroot_str) < 0)
-+			panic("chroot=%s failed\n", chroot_str);
-+
- 	argv_init[0] = init_filename;
- 	kernel_execve(init_filename, argv_init, envp_init);
- }
+Regards
+Greg
+
+
+
+------------------------------------------------------------------------
+Greg Ungerer  --  Chief Software Dude       EMAIL:     gerg@snapgear.com
+Secure Computing Corporation                PHONE:       +61 7 3435 2888
+825 Stanley St,                             FAX:         +61 7 3891 3630
+Woolloongabba, QLD, 4102, Australia         WEB: http://www.SnapGear.com
