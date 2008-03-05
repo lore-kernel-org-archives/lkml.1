@@ -1,119 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764277AbYCEJoF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764440AbYCEJr0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764277AbYCEJoF (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Mar 2008 04:44:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758546AbYCEJnv
+	id S1764440AbYCEJr0 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Mar 2008 04:47:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758175AbYCEJrR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Mar 2008 04:43:51 -0500
-Received: from sacred.ru ([62.205.161.221]:40617 "EHLO sacred.ru"
+	Wed, 5 Mar 2008 04:47:17 -0500
+Received: from chilli.pcug.org.au ([203.10.76.44]:38841 "EHLO smtps.tip.net.au"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752200AbYCEJnt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Mar 2008 04:43:49 -0500
-Message-ID: <47CE6B4C.4010009@openvz.org>
-Date: Wed, 05 Mar 2008 12:43:40 +0300
-From: Pavel Emelyanov <xemul@openvz.org>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080213)
-MIME-Version: 1.0
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-CC: serge@hallyn.com, Alexey Dobriyan <adobriyan@openvz.org>,
-       Linux Netdev List <netdev@vger.kernel.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 0/2] Fix /proc/net in presence of net namespaces
-References: <47C6D743.1050802@openvz.org>	<m1y794514k.fsf@ebiederm.dsl.xmission.com>	<20080228211720.GA1232@vino.hallyn.com>	<m1k5ko4sfi.fsf@ebiederm.dsl.xmission.com>	<47C7BB1B.9060906@openvz.org>	<m1zlth3m5f.fsf@ebiederm.dsl.xmission.com>	<47CBBFBC.3010607@openvz.org> <m1ejaq2jh4.fsf@ebiederm.dsl.xmission.com>
-In-Reply-To: <m1ejaq2jh4.fsf@ebiederm.dsl.xmission.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-Greylist: Sender succeeded SMTP AUTH authentication, not delayed by milter-greylist-3.0 (sacred.ru [62.205.161.221]); Wed, 05 Mar 2008 12:43:37 +0300 (MSK)
+	id S1757339AbYCEJrP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 5 Mar 2008 04:47:15 -0500
+Date: Wed, 5 Mar 2008 20:47:08 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: linux-next@vger.kernel.org
+Cc: LKML <linux-kernel@vger.kernel.org>
+Subject: linux-next: Tree for March 5
+Message-Id: <20080305204708.6834c627.sfr@canb.auug.org.au>
+X-Mailer: Sylpheed 2.5.0beta1 (GTK+ 2.12.8; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Wed__5_Mar_2008_20_47_08_+1100_ICg_luPe6qrWB_Fh"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Eric W. Biederman wrote:
-> Pavel Emelyanov <xemul@openvz.org> writes:
-> 
->>>>> - Have readdir and lookup filter the directory entries by the pid
->>>>>   namespace of the proc mount.
->>>> So, how are you going to filter the lookup? The problem I see - you have
->>>> a process that opened the /proc/.netns/X directory (he onws that namespace)
->>>> and the other one trying to do the same. The VFS layer finds the hashed
->>>> dentry corresponding to this /proc/.netns/X. The only way you can prevent
->>>> VFS from giving one to the second task is to override .d_revalidate method 
->>>> and drop that dentry....
->>>>
->>>> But we've already tried to walk this way with no luck.
->>> I meant a per mount filtering.  Exactly like we do for the pids now.
->> We (me) do not perform any "filtering" in /proc. I just make /proc play 
->> the VFS rules - one super-block one tree of dentries.
-> 
-> Exactly.  For different super blocks we return a different set of
-> processes and a different set of numbers of those processes.  If you
-> do use ids that do not live in a namespace I agree you do not need to
-> do different things for different mounts, but that seems ugly and
-> problematic.
-> 
->>>>> If we make namespaces show up anywhere besides under
->>>>> "/proc/<pid>/task/<tid>/" we have to do something like this, and pids
->>>>> are largely designed for this kind of use.
->>>> Proc consists of two parts - the <pid>-s one with generated-on-the-fly
->>>> entries and the static one that is represented by proc_dir_entry tree.
->>>> Do you propose to mix those two?
->>> Yes.  Because the static entries are beginning to depend on process
->>> specific attributes.  We have already started with /proc/mounts.
->> /proc/<pid>/mounts is not represented with any proc_dir_entry, but
->> what you're proposing with /proc/<pid>/net seems like doing this
->> representation.
-> 
-> Yes.  I am talking about placing things represented with a
-> prod_dir_entry and having them show up under a hierarchy not
-> represented with proc_dir_entries under /proc/<pid>.
-> 
-> As that is clean, worked well for /proc/mounts, does not
-> require ids at all, and is essentially the optimal form
-> for monitoring processes.
-> 
-> /proc/mounts used to have a proc_dir_entry.  When it was reimplemented
-> to be per fs namespace that was removed.
-> 
->>>>> just need a non-global id for our directory entries so we don't paint
->>>>> ourselves into a corner.
->>>> What namespace do you mean by "non-global"?
->>> The best is an id I can take with me when I migrate from machine A
->>> to machine B.  An id in some namespace or a form that doesn't need
->>> an id at all is the core requirement.
->> If we're OK in having a /proc/netns/<xxx> for each namespace, then
->> this <xxx> is an id, regardless whatever it is - a pre-generated 
->> number, a pointer, etc.
->>
->> That said, your only wish is to make this <xxx> be preservable across 
->> migration, right?
-> 
-> No, that is not my only wish.
-> 
-> - I wish for a clean maintainable interface.
-> - I wish for an interface that we can use for monitoring programs like
->   top and ps.
-> - I wish for an interface that is migration safe.
-> 
-> It is my opinion that using an id is simply an optimization to reduce
-> the number of cached proc dentries.
-> 
-> I gave a full run down of what I wish and the reasons for it earlier
-> in this thread. I have not seen you respond to that message.
+--Signature=_Wed__5_Mar_2008_20_47_08_+1100_ICg_luPe6qrWB_Fh
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-I took you opinion, expressed in this letter, into account.
+Hi all,
 
-> Currently I am NOT ok having a /proc/netns/<xxx>. It appears to be
-> a contentious premature optimization.
+I have created today's linux-next tree at
+git://git.kernel.org/pub/scm/linux/kernel/git/sfr/linux-next.git.
 
-Have you changed your mind suddenly? 
-You told opposite less than a week ago.
+You can see which trees have been included by looking in the Next/Trees
+file in the source.  There are also quilt-import.log and merge.log files
+in the Next directory.  Between each merge, the tree was built with
+allmodconfig for both powerpc and x86_64.
 
-> VFS clean, maintainable, and usable for monitoring is
-> /proc/<pid>/task/<tid>/net.
+There was one quilt import problem, a few merge conflicts (trivial) and a
+couple of build breaks.  I have notified the appropriate people.
 
-Why not /proc/pid/net? Are we ever going to move threads in namespace?
+We are up to 42 trees, more are welcome (even if they are currently
+empty).  The influx of new trees has been underwhelming.  Thanks to those
+who have contributed, and to those who haven't, please do.
 
-> We can always figure out how to optimize that form later.
-> 
-> Eric
-> 
+Status of my local build tests is at
+http://kisskb.ellerman.id.au/kisskb/branch/9/.  If maintainers want to
+give advice about cross compilers/configs that work, we are always open
+to add more builds.
+
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+
+--Signature=_Wed__5_Mar_2008_20_47_08_+1100_ICg_luPe6qrWB_Fh
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQFHzmwhTgG2atn1QN8RAio7AJ9exPvAa6zkGQWNoY26seDMI4z1DACgkwSU
+A4NcDo4mY6EJimkG4DKW22U=
+=YNfW
+-----END PGP SIGNATURE-----
+
+--Signature=_Wed__5_Mar_2008_20_47_08_+1100_ICg_luPe6qrWB_Fh--
