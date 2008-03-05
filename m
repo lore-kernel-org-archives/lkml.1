@@ -1,168 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760013AbYCERvo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762000AbYCERwG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760013AbYCERvo (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Mar 2008 12:51:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752363AbYCERve
+	id S1762000AbYCERwG (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Mar 2008 12:52:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760949AbYCERvu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Mar 2008 12:51:34 -0500
-Received: from sacred.ru ([62.205.161.221]:54543 "EHLO sacred.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751357AbYCERvd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Mar 2008 12:51:33 -0500
-Message-ID: <47CEDA64.1070506@openvz.org>
-Date: Wed, 05 Mar 2008 20:37:40 +0300
-From: Pavel Emelyanov <xemul@openvz.org>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080213)
+	Wed, 5 Mar 2008 12:51:50 -0500
+Received: from nwd2mail11.analog.com ([137.71.25.57]:55979 "EHLO
+	nwd2mail11.analog.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758038AbYCERvt (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 5 Mar 2008 12:51:49 -0500
+X-IronPort-AV: E=Sophos;i="4.25,451,1199682000"; 
+   d="scan'208";a="49634830"
+From: Robin Getz <rgetz@blackfin.uclinux.org>
+Organization: Blackfin uClinux org
+To: "Rusty Russell" <rusty@rustcorp.com.au>
+Subject: Re: PATCH [1/1]: Don't return symbol lables in init sections after they have been freed
+Date: Wed, 5 Mar 2008 12:53:27 -0500
+User-Agent: KMail/1.9.5
+Cc: "Andrew Morton" <akpm@linux-foundation.org>,
+       "LKML" <linux-kernel@vger.kernel.org>
+References: <200803041847.15884.rgetz@blackfin.uclinux.org> <200803051243.26732.rusty@rustcorp.com.au>
+In-Reply-To: <200803051243.26732.rusty@rustcorp.com.au>
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Paul Menage <menage@google.com>,
-       Sukadev Bhattiprolu <sukadev@us.ibm.com>,
-       Serge Hallyn <serue@us.ibm.com>
-Subject: [PATCH 5/9] Make use of permissions, returned by kobj_lookup
-References: <47CED717.60406@openvz.org>
-In-Reply-To: <47CED717.60406@openvz.org>
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
-X-Greylist: Sender succeeded SMTP AUTH authentication, not delayed by milter-greylist-3.0 (sacred.ru [62.205.161.221]); Wed, 05 Mar 2008 20:37:32 +0300 (MSK)
+Content-Disposition: inline
+Message-Id: <200803051253.28761.rgetz@blackfin.uclinux.org>
+X-OriginalArrivalTime: 05 Mar 2008 17:51:47.0626 (UTC) FILETIME=[953BC0A0:01C87EE9]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Now check the requesting permissions against the granted
-(with the dev_t-to-kobj map) ones.
+On Tue 4 Mar 2008 20:43, Rusty Russell pondered:
+> On Wednesday 05 March 2008 10:47:15 Robin Getz wrote:
+> > From: Robin Getz <rgetz@blackfin.uclinux.org>
+> >
+> > Today, when module names are looked up, we do not qualify them (check to
+> > see if the init section is still active or not). This can lead to problems
+> > when kernel modules get loaded into the same address that the kernel init
+> > section (or other module's init section was at). We sometimes return the
+> > old / no lomnger there
+> >
+> > This leads to bogus OOPS messages, and developers wasting their time
+> > looking for problems (in the kernel init section) where there are none
+> > (since it was a module).
+> 
+> Hi Robin,
+> 
+>     This is a great explanation, with only one problem: it isn't true.  
 
-The tricky place is chrdev_open - it caches the struct cdev
-on inode and thus, we have to perform lookup each time
-if we are in a restricted mapping.
+I can replicate this on 2.6.24.3 (at least on noMMU) in the kernel init 
+section. 
 
-The task_cdev_map and task_bdev_map provide the map which
-the current task is in, but now they just return NULL, which
-means, that the task is not in any.
+> mod->init_size is set to zero after init.
 
-Signed-off-by: Pavel Emelyanov <xemul@openvz.org>
+So, I have seen the problem on the init section, and suspected it could happen 
+on module init, but it looks like I missed that portion of the code - sorry.
 
----
- block/genhd.c               |    8 +++++++-
- fs/block_dev.c              |    8 ++++++++
- fs/char_dev.c               |   18 ++++++++++++++++--
- include/linux/devscontrol.h |   12 ++++++++++++
- 4 files changed, 43 insertions(+), 3 deletions(-)
- create mode 100644 include/linux/devscontrol.h
+>     As to the actual patch, your kallsyms.c patch matches 
+> a2da4052f1df6bc77749f84496fe731ab8b458f7's change to extable.c: please 
+> resubmit with just that one. 
 
-diff --git a/block/genhd.c b/block/genhd.c
-index 1d1d0f2..a619158 100644
---- a/block/genhd.c
-+++ b/block/genhd.c
-@@ -8,6 +8,7 @@
- #include <linux/kdev_t.h>
- #include <linux/kernel.h>
- #include <linux/blkdev.h>
-+#include <linux/devscontrol.h>
- #include <linux/init.h>
- #include <linux/spinlock.h>
- #include <linux/seq_file.h>
-@@ -212,10 +213,15 @@ void unlink_gendisk(struct gendisk *disk)
-  */
- struct gendisk *get_gendisk(dev_t devt, mode_t *mode, int *part)
- {
-+	struct kobj_map *map;
- 	struct kobject *kobj;
- 	struct device *dev;
- 
--	kobj = kobj_lookup(bdev_map, devt, mode, part);
-+	map = task_bdev_map(current);
-+	if (map == NULL)
-+		map = bdev_map;
-+
-+	kobj = kobj_lookup(map, devt, mode, part);
- 	if (kobj == NULL)
- 		return NULL;
- 
-diff --git a/fs/block_dev.c b/fs/block_dev.c
-index 00dda91..34dc607 100644
---- a/fs/block_dev.c
-+++ b/fs/block_dev.c
-@@ -945,6 +945,14 @@ static int do_open(struct block_device *bdev, struct file *file, int for_part)
- 		bdput(bdev);
- 		return ret;
- 	}
-+
-+	if ((file->f_mode & mode) != file->f_mode) {
-+		unlock_kernel();
-+		bdput(bdev);
-+		put_disk(disk);
-+		return -EACCES;
-+	}
-+
- 	owner = disk->fops->owner;
- 
- 	mutex_lock_nested(&bdev->bd_mutex, for_part);
-diff --git a/fs/char_dev.c b/fs/char_dev.c
-index dceb579..d042446 100644
---- a/fs/char_dev.c
-+++ b/fs/char_dev.c
-@@ -22,6 +22,8 @@
- #include <linux/mutex.h>
- #include <linux/backing-dev.h>
- 
-+#include <linux/devscontrol.h>
-+
- #ifdef CONFIG_KMOD
- #include <linux/kmod.h>
- #endif
-@@ -361,19 +363,31 @@ static int chrdev_open(struct inode *inode, struct file *filp)
- 	struct cdev *p;
- 	struct cdev *new = NULL;
- 	int ret = 0;
-+	struct kobj_map *map;
-+
-+	map = task_cdev_map(current);
-+	if (map == NULL)
-+		map = cdev_map;
- 
- 	spin_lock(&cdev_lock);
- 	p = inode->i_cdev;
--	if (!p) {
-+	if (!p || map != cdev_map) {
- 		struct kobject *kobj;
- 		int idx;
- 		mode_t mode;
- 
- 		spin_unlock(&cdev_lock);
--		kobj = kobj_lookup(cdev_map, inode->i_rdev, &mode, &idx);
-+		kobj = kobj_lookup(map, inode->i_rdev, &mode, &idx);
- 		if (!kobj)
- 			return -ENXIO;
- 		new = container_of(kobj, struct cdev, kobj);
-+		BUG_ON(p != NULL && p != new);
-+
-+		if ((filp->f_mode & mode) != filp->f_mode) {
-+			cdev_put(new);
-+			return -EACCES;
-+		}
-+
- 		spin_lock(&cdev_lock);
- 		p = inode->i_cdev;
- 		if (!p) {
-diff --git a/include/linux/devscontrol.h b/include/linux/devscontrol.h
-new file mode 100644
-index 0000000..04c168b
---- /dev/null
-+++ b/include/linux/devscontrol.h
-@@ -0,0 +1,12 @@
-+#ifndef __DEVS_CONTROL_H__
-+#define __DEVS_CONTROL_H__
-+static inline struct kobj_map *task_cdev_map(struct task_struct *tsk)
-+{
-+	return NULL;
-+}
-+
-+static inline struct kobj_map *task_bdev_map(struct task_struct *tsk)
-+{
-+	return NULL;
-+}
-+#endif
--- 
-1.5.3.4
+Will do.
 
+> For bonus points, look at combining the 
+> extable and kallsyms logic so we don't diverge in future...
+
+Let me see what I can do. 
