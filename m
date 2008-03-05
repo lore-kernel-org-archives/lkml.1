@@ -1,107 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764083AbYCEM3S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932772AbYCEM3q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764083AbYCEM3S (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Mar 2008 07:29:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756727AbYCEM25
+	id S932772AbYCEM3q (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Mar 2008 07:29:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762171AbYCEM3K
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Mar 2008 07:28:57 -0500
-Received: from mail.gmx.net ([213.165.64.20]:33928 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1755888AbYCEM24 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Mar 2008 07:28:56 -0500
-X-Authenticated: #14349625
-X-Provags-ID: V01U2FsdGVkX1875GwhHc47bHRYF0j/BQUYZM1zJCmiGUK/U2EyYK
-	kC/uL8mzssIX1S
-Subject: Re: [PATCH] blk: missing add of padded bytes to io completion byte
-	count
-From: Mike Galbraith <efault@gmx.de>
-To: Boaz Harrosh <bharrosh@panasas.com>
-Cc: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
-       Tejun Heo <htejun@gmail.com>, jens.axboe@oracle.com,
-       James.Bottomley@HansenPartnership.com, tomof@acm.org,
-       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       linux-ide@vger.kernel.org, linux-scsi@vger.kernel.org,
-       jgarzik@pobox.com, bzolnier@gmail.com
-In-Reply-To: <47CE72EF.7050302@panasas.com>
-References: <47CD7C05.1080707@gmail.com>	<20080305041914V.tomof@acm.org>
-	 <47CDDC31.4070806@gmail.com>
-	 <20080305092619Y.fujita.tomonori@lab.ntt.co.jp>
-	 <47CE72EF.7050302@panasas.com>
-Content-Type: text/plain
-Date: Wed, 05 Mar 2008 13:28:50 +0100
-Message-Id: <1204720130.8022.1.camel@homer.simson.net>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.0 
+	Wed, 5 Mar 2008 07:29:10 -0500
+Received: from queueout04-winn.ispmail.ntl.com ([81.103.221.58]:51890 "EHLO
+	queueout04-winn.ispmail.ntl.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1757442AbYCEM3D (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 5 Mar 2008 07:29:03 -0500
+Message-ID: <47CE8E68.5060701@knosof.co.uk>
+Date: Wed, 05 Mar 2008 12:13:28 +0000
+From: Derek M Jones <derek@knosof.co.uk>
+Organization: Knowledge Software, Ltd
+User-Agent: Thunderbird 2.0.0.9 (Windows/20071031)
+MIME-Version: 1.0
+To: Ingo Molnar <mingo@elte.hu>
+CC: Harvey Harrison <harvey.harrison@gmail.com>,
+       Christopher Li <sparse@chrisli.org>, Julia Lawall <julia@diku.dk>,
+       yi.zhu@intel.com, linux-wireless@vger.kernel.org,
+       ipw3945-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org,
+       kernel-janitors@vger.kernel.org, Alexander Viro <viro@ftp.linux.org.uk>,
+       linux-sparse@vger.kernel.org, Josh Triplett <josh@freedesktop.org>
+Subject: Re: [PATCH 6/9] drivers/net/wireless/iwlwifi/iwl-4965.c: Correct
+ use of ! and &
+References: <Pine.LNX.4.64.0802262143570.18200@ask.diku.dk> <20080305063842.GA24495@elte.hu> <70318cbf0803042249j57d7f3a3j7666961a9132b10b@mail.gmail.com> <20080305070201.GA32434@elte.hu> <1204700995.17484.7.camel@brick> <20080305081904.GA17789@elte.hu>
+In-Reply-To: <20080305081904.GA17789@elte.hu>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-X-Y-GMX-Trusted: 0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+All,
 
-On Wed, 2008-03-05 at 12:16 +0200, Boaz Harrosh wrote:
-
-> Please test it solves the CD burning problem.
-
-Works for me.
-
-	-Mike
-
-> (The patch includes the revert of commit e97a294e)
-> ---
-> From: Boaz Harrosh <bharrosh@panasas.com>
-> Date: Wed, 5 Mar 2008 12:07:12 +0200
-> Subject: [PATCH] blk: missing add of padded bytes to io completion byte count
+>>> i think there might be similar patterns: "x & !y", "!x | y", "x | !y" ?
+>>>
+>> Well, (!x & y) and (!x | y) are probably the two that might have been 
+>> intended otherwise.  (x & !y), (x | !y) are probably ok.
 > 
-> the commit e97a294ef6938512b655b1abf17656cf2b26f709 was very wrong. This is
-> because scsi-ml supports the ability to split a request into smaller chunks,
-> in which case scsi_bufflen() is smaller then request length. Then at completion
-> time the remainder can be issued as a new scsi command. In that case the above
-> commit is a data corruption.
+> i think the proper intention in the latter cases is (x & ~y) and
+> (x | ~y).
 > 
-> Also in this fix all users of block layer are taken care of, and not only
-> scsi devices.
-> 
-> Signed-off-by: Boaz Harrosh <bharrosh@panasas.com>
-> Signed-off-by: Benny Halevy <bhalevy@panasas.com>
-> ---
->  block/blk-core.c    |    4 ++++
->  drivers/scsi/scsi.c |    2 +-
->  2 files changed, 5 insertions(+), 1 deletions(-)
-> 
-> diff --git a/block/blk-core.c b/block/blk-core.c
-> index 2a438a9..37fcccc 100644
-> --- a/block/blk-core.c
-> +++ b/block/blk-core.c
-> @@ -1549,6 +1549,9 @@ static int __end_that_request_first(struct request *req, int error,
->  			     nr_bytes >> 9, req->sector);
->  	}
->  
-> +	if (nr_bytes >= blk_rq_bytes(req))
-> +		nr_bytes += req->extra_len;
-> +
->  	total_bytes = bio_nbytes = 0;
->  	while ((bio = req->bio) != NULL) {
->  		int nbytes;
-> @@ -1616,6 +1619,7 @@ static int __end_that_request_first(struct request *req, int error,
->  	if (!req->bio)
->  		return 0;
->  
-> +	BUG_ON(total_bytes >= blk_rq_bytes(req));
->  	/*
->  	 * if the request wasn't completed, update state
->  	 */
-> diff --git a/drivers/scsi/scsi.c b/drivers/scsi/scsi.c
-> index e5c6f6a..fecba05 100644
-> --- a/drivers/scsi/scsi.c
-> +++ b/drivers/scsi/scsi.c
-> @@ -757,7 +757,7 @@ void scsi_finish_command(struct scsi_cmnd *cmd)
->  				"Notifying upper driver of completion "
->  				"(result %x)\n", cmd->result));
->  
-> -	good_bytes = scsi_bufflen(cmd) + cmd->request->extra_len;
-> +	good_bytes = scsi_bufflen(cmd);
->          if (cmd->request->cmd_type != REQ_TYPE_BLOCK_PC) {
->  		drv = scsi_cmd_to_driver(cmd);
->  		if (drv->done)
+> My strong bet is that in 99% of the cases they are real bugs and && or 
+> || was intended.
 
+Developer knowledge of operator precedence and the issue of what
+they intended to write are interesting topics.  Some experimental
+work is described in (binary operators only I'm afraid):
+
+www.knosof.co.uk/cbook/accu06a.pdf
+www.knosof.co.uk/cbook/accu07a.pdf
+
+The ACCU 2006 experiment provides evidence that developer knowledge
+is proportional to the number of occurrences of a construct in
+source code, it also shows a stunningly high percentage of incorrect
+answers.
+
+The ACCU 2007 experiment provides evidence that the names of the
+operands has a significant impact on operator precedence choice.
+
+I wonder what kind of names are used as the operand of unary
+operators?
+
+I would expect the ~ operator to have a bitwise name, but the
+! operator might have an arithmetic or bitwise name.
+
+-- 
+Derek M. Jones                              tel: +44 (0) 1252 520 667
+Knowledge Software Ltd                      mailto:derek@knosof.co.uk
+Applications Standards Conformance Testing    http://www.knosof.co.uk
