@@ -1,63 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764204AbYCEA2k@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934390AbYCEAab@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764204AbYCEA2k (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Mar 2008 19:28:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760558AbYCEA2Y
+	id S934390AbYCEAab (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Mar 2008 19:30:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760456AbYCEAaQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Mar 2008 19:28:24 -0500
-Received: from mail.suse.de ([195.135.220.2]:55908 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760125AbYCEA2X (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Mar 2008 19:28:23 -0500
-Date: Wed, 5 Mar 2008 01:28:21 +0100
-From: Nick Piggin <npiggin@suse.de>
-To: Pekka Enberg <penberg@cs.helsinki.fi>
-Cc: Christoph Lameter <clameter@sgi.com>, netdev@vger.kernel.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       yanmin_zhang@linux.intel.com, David Miller <davem@davemloft.net>,
-       Eric Dumazet <dada1@cosmosbay.com>
-Subject: Re: [rfc][patch 1/3] slub: fix small HWCACHE_ALIGN alignment
-Message-ID: <20080305002821.GD1510@wotan.suse.de>
-References: <20080303093449.GA15091@wotan.suse.de> <Pine.LNX.4.64.0803031107130.6917@schroedinger.engr.sgi.com> <20080303200613.GC8974@wotan.suse.de> <Pine.LNX.4.64.0803031209570.16049@schroedinger.engr.sgi.com> <20080303201701.GF8974@wotan.suse.de> <Pine.LNX.4.64.0803031315160.4131@schroedinger.engr.sgi.com> <84144f020803031330i2c0ea1f6kc5b02c8b26145797@mail.gmail.com> <Pine.LNX.4.64.0803031331340.4375@schroedinger.engr.sgi.com> <47CC6F30.50802@cs.helsinki.fi>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Tue, 4 Mar 2008 19:30:16 -0500
+Received: from smtp124.sbc.mail.sp1.yahoo.com ([69.147.64.97]:25040 "HELO
+	smtp124.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1758100AbYCEAaP (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 4 Mar 2008 19:30:15 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=pacbell.net;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=m9uTj0thrwus9M2gH/xbfJXmaB/JFBn1bnnLB2C1XrJ75GzYW7Eabfbmx+AtZLX6zMEe2VsNUwmFqQh8n3K+O0LoKst7bICyDisT1uw0C9IRD8MU8vvrHoZzEGPNc7Ans1UDJXnVDffghnYRPbDp60TE7lQQw/Sc7li5Z5wIks8=  ;
+X-YMail-OSG: PY_918gVM1m0q74r6mI7d2Aw5dpPbWGTqmv5s55UuMROqTVcIoEFlrQsaoPWVS57HwF72_jiWA--
+X-Yahoo-Newman-Property: ymail-3
+From: David Brownell <david-b@pacbell.net>
+To: Christian Kujau <lists@nerdbynature.de>
+Subject: Re: WARNING: at drivers/usb/host/ehci-hcd.c:287
+Date: Tue, 4 Mar 2008 16:30:11 -0800
+User-Agent: KMail/1.9.6
+Cc: Alan Stern <stern@rowland.harvard.edu>,
+       LKML <linux-kernel@vger.kernel.org>, 0x0007@gmail.com,
+       USB list <linux-usb@vger.kernel.org>
+References: <Pine.LNX.4.44L0.0803041553320.15986-100000@iolanthe.rowland.org> <200803041401.41880.david-b@pacbell.net> <alpine.DEB.1.00.0803050012090.5974@sheep.housecafe.de>
+In-Reply-To: <alpine.DEB.1.00.0803050012090.5974@sheep.housecafe.de>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <47CC6F30.50802@cs.helsinki.fi>
-User-Agent: Mutt/1.5.9i
+Message-Id: <200803041630.11832.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Mar 03, 2008 at 11:35:44PM +0200, Pekka Enberg wrote:
-> Hi,
-> 
-> Christoph Lameter wrote:
-> >Well the guarantee can only be exploited if you would check the cacheline 
-> >sizes and the object size from the code that creates the slab cache. 
-> >Basically you would have to guestimate what the slab allocator is doing.
+On Tuesday 04 March 2008, Christian Kujau wrote:
+> On Tue, 4 Mar 2008, David Brownell wrote:
+> >>> Or bettter yet, just removing it entirely.  ISTR doing that in some
+> >>> patches I've not yet sent for merging, and expect that's what my
+> >>> preferred fix will be ...
+> >>
+> >> But removing the WARN_ON won't fix the problem.
 > >
-> >So the guarantee is basically meaningless. If the object is larger than a 
-> >cacheline then this will never work.
+> > It fully resolves the $SUBJECT problem.  :)
 > 
-> Yes, I know that. That's why I am asking why this matters. If there's 
-> some sort of regression because SLUB does HWCACHE_ALIGN bit differently, 
-> we need to fix that.
+> ...and if it's a safe thing to do, I'm happy with it. I really have no 
+> clue why shutting up a WARN_ON has no (future) implications but if you 
+> say so I trust you :)
 
-It started out as a SLUB regression that was exposing poor code in the
-percpu allocator due to different SLUB kmalloc alignments. That prompted
-some further investigation about the alignment handling in the
-allocators and showed up this problem with SLUB's HWCACHE_ALIGN. While
-I don't know of a regression caused by it as such, it is totally
-unreasonable to just change the semantics of it (seemingly for no good
-reason). It is used quite a bit in networking for one, and those guys
-count every single cache miss in their fastpaths.
+Carrying that WARN_ON forward was inappropriate, so
+removing it is a safe thing to do.
 
+There are other lurking issues though.
 
-> Not that it necessarily means we have to change 
-> HWCACHE_ALIGN but I am assuming Nick has some reason why he wants to 
-> introduce the SMP alignment flag.
-
-The SMP flag was just an RFC. I think some people (like Christoph) were
-being confused about the HWCACHE_ALIGN flag being for avoiding false
-sharing on SMP systems. It would actually be also generally useful to
-have the SMP flag (eg. see the sites I added it to in patch #3).
+- Dave
