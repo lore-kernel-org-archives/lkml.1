@@ -1,56 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756195AbYCESKl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756935AbYCESOp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756195AbYCESKl (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Mar 2008 13:10:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751655AbYCESKb
+	id S1756935AbYCESOp (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Mar 2008 13:14:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751648AbYCESOg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Mar 2008 13:10:31 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:41036 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751623AbYCESKa (ORCPT
+	Wed, 5 Mar 2008 13:14:36 -0500
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:60124 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751351AbYCESOf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Mar 2008 13:10:30 -0500
-Date: Wed, 5 Mar 2008 10:10:15 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Paul Jackson <pj@sgi.com>
-Cc: menage@google.com, linux-kernel@vger.kernel.org, linux-mm@kvack.org
-Subject: Re: [PATCH 0/2] Cpuset hardwall flag:  Introduction
-Message-Id: <20080305101015.cdff44f2.akpm@linux-foundation.org>
-In-Reply-To: <20080305062318.3c7538c3.pj@sgi.com>
-References: <20080305075237.608599000@menage.corp.google.com>
-	<20080305062318.3c7538c3.pj@sgi.com>
-X-Mailer: Sylpheed 2.3.1 (GTK+ 2.10.11; x86_64-redhat-linux-gnu)
+	Wed, 5 Mar 2008 13:14:35 -0500
+From: akepner@sgi.com
+Date: Wed, 5 Mar 2008 10:13:07 -0800
+To: James Bottomley <James.Bottomley@HansenPartnership.com>
+Cc: Grant Grundler <grundler@parisc-linux.org>,
+       Michael Ellerman <michael@ellerman.id.au>,
+       Tony Luck <tony.luck@intel.com>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>, Jes Sorensen <jes@sgi.com>,
+       Randy Dunlap <randy.dunlap@oracle.com>,
+       Roland Dreier <rdreier@cisco.com>, David Miller <davem@davemloft.net>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/3 v3] dma: document dma_{un}map_{single|sg}_attrs() interface
+Message-ID: <20080305181307.GR17802@sgi.com>
+References: <20080228032448.GS11012@sgi.com> <dc1166600802281845t1613beedj7a285399a21cd@mail.gmail.com> <20080229182504.GA18102@colo.lackof.org> <1204310276.4003.48.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1204310276.4003.48.camel@localhost.localdomain>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 5 Mar 2008 06:23:18 -0600 Paul Jackson <pj@sgi.com> wrote:
+On Fri, Feb 29, 2008 at 12:37:56PM -0600, James Bottomley wrote:
+> ....
+> To be honest, I still don't like the name.  SYNC_ON_WRITE is the SN2
+> implementation.  What it's actually doing is implementing strict
+> ordering semantics.  I think it should really be
+> DMA_ATTR_STRICT_ORDERING (with a corresponding
+> DMA_ATTR_RELAXED_ORDERING)....
 
-> Paul M wrote:
-> > Currently the cpusets mem_exclusive flag is overloaded to mean both
-> > "no-overlapping" and "no GFP_KERNEL allocations outside this cpuset".
-> > 
-> > These patches add a new mem_hardwall flag with just the allocation
-> > restriction part of the mem_exclusive semantics, without breaking
-> > backwards-compatibility for those who continue to use just
-> > mem_exclusive.
-> 
-> ... too bad this nice comment wasn't included in PATCH 2/2, so that
-> it would automatically make it into the record of history - the source
-> control log message (as best I understand how Andrew's tools work,
-> comments off in their own, codeless patch "PATCH 0/N" don't make
-> it to the source control log, except when Andrew chooses to make a
-> special effort.)
+I've been thinking about a new name, but don't like 
+DMA_ATTR_STRICT_ORDERING. 
 
-I make that special effort almost 100% of the time.  The changelog for the
-first patch becomes:
+What I'm trying to do is to establish order (across 
+a NUMA fabric) of DMA to different memory regions, i.e., 
+DMA to memory region A forces all outstanding DMA (to 
+memory regions B, C,....) to complete first.
 
+DMA_ATTR_STRICT_ORDERING sounds like a PCI thing to me, 
+and this is a NUMA interconnect thing.
 
-<text from [0/n]>
+-- 
+Arthur
 
-This patch:
-
-<text from [1/n]>
