@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761360AbYCEIew@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764139AbYCEIg0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761360AbYCEIew (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Mar 2008 03:34:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753947AbYCEIeo
+	id S1764139AbYCEIg0 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Mar 2008 03:36:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754506AbYCEIgS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Mar 2008 03:34:44 -0500
-Received: from public.id2-vpn.continvity.gns.novell.com ([195.33.99.129]:10524
+	Wed, 5 Mar 2008 03:36:18 -0500
+Received: from public.id2-vpn.continvity.gns.novell.com ([195.33.99.129]:10589
 	"EHLO public.id2-vpn.continvity.gns.novell.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752762AbYCEIeo convert rfc822-to-8bit
+	by vger.kernel.org with ESMTP id S1753947AbYCEIgR convert rfc822-to-8bit
 	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Mar 2008 03:34:44 -0500
-Message-Id: <47CE6952.76E4.0078.0@novell.com>
+	Wed, 5 Mar 2008 03:36:17 -0500
+Message-Id: <47CE69B0.76E4.0078.0@novell.com>
 X-Mailer: Novell GroupWise Internet Agent 7.0.3 Beta 
-Date: Wed, 05 Mar 2008 08:35:14 +0000
+Date: Wed, 05 Mar 2008 08:36:48 +0000
 From: "Jan Beulich" <jbeulich@novell.com>
 To: <mingo@elte.hu>, <tglx@linutronix.de>, <hpa@zytor.com>
 Cc: <linux-kernel@vger.kernel.org>
-Subject: [PATCH] i386: fix merge mistake in i387.c
+Subject: [PATCH] x86: fix typo(?) in step.c
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 8BIT
@@ -25,27 +25,34 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-convert_fxsr_to_user() in 2.6.24's i387_32.c did this, and
-convert_to_fxsr() also does the inverse, so I assume it's an oversight
-that it is no longer being done.
+TIF_DEBUGCTLMSR has no meaning in the actual MSR...
 
 Signed-off-by: Jan Beulich <jbeulich@novell.com>
 
 ---
- arch/x86/kernel/i387.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ arch/x86/kernel/step.c |    4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
---- linux-2.6.25-rc4/arch/x86/kernel/i387.c	2008-03-05 09:26:15.000000000 +0100
-+++ 2.6.25-rc4-i386-fpu-fop/arch/x86/kernel/i387.c	2008-03-04 09:03:19.000000000 +0100
-@@ -261,7 +261,7 @@ static void convert_from_fxsr(struct use
- 	}
- #else
- 	env->fip = fxsave->fip;
--	env->fcs = fxsave->fcs;
-+	env->fcs = (u16) fxsave->fcs | ((u32) fxsave->fop << 16);
- 	env->foo = fxsave->foo;
- 	env->fos = fxsave->fos;
- #endif
+--- linux-2.6.25-rc4/arch/x86/kernel/step.c	2008-03-05 09:26:15.000000000 +0100
++++ 2.6.25-rc4-x86-step-typo/arch/x86/kernel/step.c	2008-03-04 10:15:40.000000000 +0100
+@@ -166,7 +166,7 @@ static void enable_step(struct task_stru
+ 				  child->thread.debugctlmsr | DEBUGCTLMSR_BTF);
+ 	} else {
+ 	    write_debugctlmsr(child,
+-			      child->thread.debugctlmsr & ~TIF_DEBUGCTLMSR);
++			      child->thread.debugctlmsr & ~DEBUGCTLMSR_BTF);
+ 
+ 	    if (!child->thread.debugctlmsr)
+ 		    clear_tsk_thread_flag(child, TIF_DEBUGCTLMSR);
+@@ -189,7 +189,7 @@ void user_disable_single_step(struct tas
+ 	 * Make sure block stepping (BTF) is disabled.
+ 	 */
+ 	write_debugctlmsr(child,
+-			  child->thread.debugctlmsr & ~TIF_DEBUGCTLMSR);
++			  child->thread.debugctlmsr & ~DEBUGCTLMSR_BTF);
+ 
+ 	if (!child->thread.debugctlmsr)
+ 		clear_tsk_thread_flag(child, TIF_DEBUGCTLMSR);
 
 
 
