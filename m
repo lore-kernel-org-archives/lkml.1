@@ -1,50 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933473AbYCEMoY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765526AbYCEMsO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933473AbYCEMoY (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Mar 2008 07:44:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757426AbYCEMoQ
+	id S1765526AbYCEMsO (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Mar 2008 07:48:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757426AbYCEMr7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Mar 2008 07:44:16 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:48577 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754478AbYCEMoP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Mar 2008 07:44:15 -0500
-Date: Wed, 5 Mar 2008 13:43:48 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Paul Jackson <pj@sgi.com>
-Cc: a.p.zijlstra@chello.nl, maxk@qualcomm.com, tglx@linutronix.de,
-       oleg@tv-sign.ru, rostedt@goodmis.org, linux-kernel@vger.kernel.org,
-       rientjes@google.com
-Subject: Re: [RFC/PATCH] cpuset: cpuset irq affinities
-Message-ID: <20080305124348.GB2365@elte.hu>
-References: <1204567052.6241.4.camel@lappy> <20080303121033.c8c9651c.pj@sgi.com> <1204568316.8514.18.camel@twins> <20080304013534.4e51ae48.pj@sgi.com> <1204628762.6241.46.camel@lappy> <47CDA885.3000103@qualcomm.com> <20080304191159.a02be58b.pj@sgi.com> <1204706272.6241.79.camel@lappy> <20080305085019.GA24097@elte.hu> <20080305063518.69d03de1.pj@sgi.com>
+	Wed, 5 Mar 2008 07:47:59 -0500
+Received: from ug-out-1314.google.com ([66.249.92.171]:46545 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755847AbYCEMr6 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 5 Mar 2008 07:47:58 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent:from;
+        b=v2nQGsYR8RNKT5ElDSIK6NpTtIpXKKf+HEt4uaQBpWrw+z6p5LPLDTY1maJE6E0DQXFGRp0Fq86eWMiMhMLCHvGaVA+bqE+T0cpyAXsZiB3BP6aS+iqUAMHSm7/gb1YdkX6OEz42KW45LcL+JO1cERE/TkZBnVoTzK3gjGvT2z0=
+Date: Wed, 5 Mar 2008 14:44:45 +0200
+To: Casey Schaufler <casey@schaufler-ca.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Stephen Smalley <sds@tycho.nsa.gov>, James Morris <jmorris@namei.org>,
+       Eric Paris <eparis@parisplace.org>, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH BUGFIX -rc3] Smack: Don't register smackfs if we're not
+	loaded
+Message-ID: <20080305124445.GA19549@ubuntu>
+References: <521493.30745.qm@web36606.mail.mud.yahoo.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080305063518.69d03de1.pj@sgi.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <521493.30745.qm@web36606.mail.mud.yahoo.com>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+From: "Ahmed S. Darwish" <darwish.07@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Paul Jackson <pj@sgi.com> wrote:
-
-> > i always thought that cpusets should boot up with some meaningful 
-> > default set that people could play with.
+On Tue, Mar 04, 2008 at 09:45:04AM -0800, Casey Schaufler wrote:
+> ----- Original Message ----
+> > From: Linus Torvalds <torvalds@linux-foundation.org>
+> > To: Ahmed S. Darwish <darwish.07@gmail.com>
+> > Cc: Casey Schaufler <casey@schaufler-ca.com>; LKML <linux-kernel@vger.kernel.org>
+> > Sent: Tuesday, March 4, 2008 9:21:19 AM
+> > Subject: Re: [PATCH BUGFIX -rc3] Smack: Don't register smackfs if we're not loaded
+> > 
+> > 
+> > 
+> > On Tue, 4 Mar 2008, Ahmed S. Darwish wrote:
+> > > 
+> > > Smackfs initialization without an enabled Smack leads to
+> > > an early Oops that renders the system unusable.
+> > 
+> > I really think this is bogus. Global enables like this are just wrong, and 
+> > a sign that something else bad is going on.
+> > 
+> > What is the oops? Why does it happen?
+...
 > 
-> They do ... you just have to mount cpusets to see it ;).
+> One solution would be to tighten the smackfs code so that it
+> handles the uninitialized LSM case properly.
+> 
 
-the root cpuset is special as it is the root of the tree. You cannot 
-shrink it in practice (in a meaningful way) because then you cannot have 
-children outside of its scope.
+IMHO no smackfs code should ever execute if smack isn't loaded.
 
-	Ingo
+This means catching it from the very fist step where it registers
+itself in init_smk_fs instead of doing several if(we're enabled) cases
+in the code path.
+
+The solution should be a _general_ solution, _not_ a SMACK one cause 
+SELinux sufferes from exactly the same problem.
+
+a.k.a:
+
+LSMs need a scalable way to know if they're enabled that makes 
+everyone happy ( especially Linus ;) ).
+
+Regads to all,
+
+-- 
+
+"Better to light a candle, than curse the darkness"
+
+Ahmed S. Darwish
+Homepage: http://darwish.07.googlepages.com
+Blog: http://darwish-07.blogspot.com
+
