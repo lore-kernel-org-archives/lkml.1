@@ -1,74 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756481AbYCEQ1V@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757461AbYCEQ27@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756481AbYCEQ1V (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Mar 2008 11:27:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752734AbYCEQ1H
+	id S1757461AbYCEQ27 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Mar 2008 11:28:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752997AbYCEQ2u
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Mar 2008 11:27:07 -0500
-Received: from iolanthe.rowland.org ([192.131.102.54]:41649 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1752632AbYCEQ1E (ORCPT
+	Wed, 5 Mar 2008 11:28:50 -0500
+Received: from n27.bullet.mail.mud.yahoo.com ([68.142.200.142]:24599 "HELO
+	n27.bullet.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1752734AbYCEQ2t (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Mar 2008 11:27:04 -0500
-Date: Wed, 5 Mar 2008 11:27:03 -0500 (EST)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-cc: pm list <linux-pm@lists.linux-foundation.org>,
-       Alexey Starikovskiy <astarikovskiy@suse.de>,
-       Pavel Machek <pavel@ucw.cz>, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [RFC][PATCH] PM: Make PM core handle device registrations
- concurrent with suspend/hibernation
-In-Reply-To: <200803050215.31195.rjw@sisk.pl>
-Message-ID: <Pine.LNX.4.44L0.0803051118060.4750-100000@iolanthe.rowland.org>
+	Wed, 5 Mar 2008 11:28:49 -0500
+X-Yahoo-Newman-Id: 326801.61768.bm@omp423.mail.mud.yahoo.com
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com.au;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Disposition:Message-Id:Content-Type:Content-Transfer-Encoding;
+  b=kX64GnDytLvxQKQZVIZK1O/y3s7PrAQtmS6IDpF37R/Ki89jhABXroght6AXs36jI1xg6YzO8jaBnwuHMPatQFvoFy/h4RL/OIIg1rjG6pyQmITqo3odFFM7CqC4tlFC15MWLKn1rdaaDqMG24vSNO5YNPOoUHPDGP78q9Ncqjo=  ;
+X-YMail-OSG: mJXmu0IVM1lw5akcMvAOn6xK1Yr9TcPODPJUf0cVK67bBG3EVYI6g..Z6MjBwN4dyRudZs23fQ--
+X-Yahoo-Newman-Property: ymail-3
+From: Nick Piggin <nickpiggin@yahoo.com.au>
+To: Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [patch 1/5] vmalloc: do not check for freed locks on user maps
+Date: Thu, 6 Mar 2008 03:28:19 +1100
+User-Agent: KMail/1.9.5
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>, Greg KH <greg@kroah.com>,
+       Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@elte.hu>
+References: <20080305154829.185609547@linutronix.de> <20080305155117.447021903@linutronix.de>
+In-Reply-To: <20080305155117.447021903@linutronix.de>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Disposition: inline
+Message-Id: <200803060328.20349.nickpiggin@yahoo.com.au>
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 5 Mar 2008, Rafael J. Wysocki wrote:
+On Thursday 06 March 2008 03:03, Thomas Gleixner wrote: 
+> User maps do not contain kernel internal objects. No need to check
+> them.
 
-> -void device_pm_add(struct device *dev)
-> +int device_pm_add(struct device *dev)
->  {
-> +	int error = 0;
-> +
->  	pr_debug("PM: Adding info for %s:%s\n",
->  		 dev->bus ? dev->bus->name : "No Bus",
->  		 kobject_name(&dev->kobj));
->  	mutex_lock(&dpm_list_mtx);
-> -	list_add_tail(&dev->power.entry, &dpm_active);
-> +	if (dev->parent && dev->parent->power.sleeping) {
-> +		WARN_ON(true);
+Why not? Depends on your definition of kernel internal... and
+objects ;)
 
-I would prefer to put a dev_warn() line here, so that people reading
-the kernel log can easily tell which device caused the problem and what
-sort of problem it is.  Something like this:
+Drivers could create and manage some objects in this vmalloc
+area. They are no longer internal if you map them to userspace,
+but I still don't think you want to vunmap it until those
+object lifetimes are finished.
 
-		dev_warn(dev, "device added while parent %s is asleep\n",
-				dev->parent->bus_id);
-		WARN_ON(true);
 
-> @@ -426,6 +406,12 @@ static int dpm_suspend(pm_message_t stat
->  		struct list_head *entry = dpm_active.prev;
->  		struct device *dev = to_device(entry);
->  
-> +		if (dev->parent && dev->parent->power.sleeping) {
-> +			WARN_ON(true);
-> +			error = -EAGAIN;
-> +			break;
-
-Again, a dev_warn() would be appropriate.
-
-And you might consider taking out the "error = -EAGAIN" and the
-"break".  When this occurs it doesn't mean that devices were suspended
-in the wrong order; it means that the ordering of the parent pointers
-fails to match the ordering of dpm_active.  The only way for this to
-happen is if the parent pointers are messed up by device_move() --
-dpm_active will still be correct.
-
-The rest of the patch looks fine.
-
-Alan Stern
+> Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
+> Acked-by: Ingo Molnar <mingo@elte.hu>
+> ---
+>  mm/vmalloc.c |    3 ++-
+>  1 file changed, 2 insertions(+), 1 deletion(-)
+>
+> Index: linux-2.6/mm/vmalloc.c
+> ===================================================================
+> --- linux-2.6.orig/mm/vmalloc.c
+> +++ linux-2.6/mm/vmalloc.c
+> @@ -382,7 +382,8 @@ static void __vunmap(const void *addr, i
+>  		return;
+>  	}
+>
+> -	debug_check_no_locks_freed(addr, area->size);
+> +	if (!(area->flags & VM_USERMAP))
+> +		debug_check_no_locks_freed(addr, area->size);
+>
+>  	if (deallocate_pages) {
+>  		int i;
 
