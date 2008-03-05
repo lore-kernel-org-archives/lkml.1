@@ -1,38 +1,34 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759975AbYCEQfU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757773AbYCEQkN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759975AbYCEQfU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Mar 2008 11:35:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754985AbYCEQfD
+	id S1757773AbYCEQkN (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Mar 2008 11:40:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754700AbYCEQkA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Mar 2008 11:35:03 -0500
-Received: from khc.piap.pl ([195.187.100.11]:46035 "EHLO khc.piap.pl"
+	Wed, 5 Mar 2008 11:40:00 -0500
+Received: from vena.lwn.net ([206.168.112.25]:49244 "EHLO vena.lwn.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754787AbYCEQfB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Mar 2008 11:35:01 -0500
-To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Andrew Morton <akpm@linux-foundation.org>, jeff@garzik.org,
-       linux-ide@vger.kernel.org, alan@redhat.com,
-       linux-kernel@vger.kernel.org
-Subject: Re: [patch 3/3] pata: "I do not think it means, what you think it means."
-References: <200803042316.m24NGI7k002489@imap1.linux-foundation.org>
-	<20080304173058.7679b7c8.akpm@linux-foundation.org>
-	<20080305115610.397b3ea3@the-village.bc.nu>
-	<200803051421.14167.bzolnier@gmail.com>
-From: Krzysztof Halasa <khc@pm.waw.pl>
-Date: Wed, 05 Mar 2008 17:34:58 +0100
-In-Reply-To: <200803051421.14167.bzolnier@gmail.com> (Bartlomiej Zolnierkiewicz's message of "Wed\, 5 Mar 2008 14\:21\:13 +0100")
-Message-ID: <m3ir015du5.fsf@maximus.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	id S1754282AbYCEQj7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 5 Mar 2008 11:39:59 -0500
+To: device-mapper development <dm-devel@redhat.com>
+Cc: Daniel Phillips <phillips@phunq.net>, linux-kernel@vger.kernel.org
+Subject: Re: [RFC] An alternative interface to device mapper 
+From: corbet@lwn.net (Jonathan Corbet)
+In-reply-to: Your message of "Wed, 05 Mar 2008 01:29:42 PST."
+             <200803050129.43172.phillips@phunq.net> 
+Date: Wed, 05 Mar 2008 09:39:59 -0700
+Message-ID: <22778.1204735199@vena.lwn.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Bartlomiej Zolnierkiewicz <bzolnier@gmail.com> writes:
+Hey, Daniel,
 
-> IBM-DTLA-307030 is on the blacklist....
+> In more detail: ddlink is a generic pipe-like interface for controlling 
+> device drivers.
 
-Any still in use? Surpised.
--- 
-Krzysztof Halasa
+I'm not in a position to say much about the wider picture at the moment,
+but one quibble comes immediately to mind: why do you create yet another
+communication path into the kernel rather than using netlink, which is
+already there and used in a number of other contexts?
+
+jon
