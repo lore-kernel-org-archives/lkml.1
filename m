@@ -1,58 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756481AbYCEQFT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760020AbYCEQFs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756481AbYCEQFT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Mar 2008 11:05:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759376AbYCEQEt
+	id S1760020AbYCEQFs (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Mar 2008 11:05:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756096AbYCEQFM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Mar 2008 11:04:49 -0500
-Received: from www.tglx.de ([62.245.132.106]:49805 "EHLO www.tglx.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755699AbYCEQEr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Mar 2008 11:04:47 -0500
-Message-Id: <20080305155117.486097492@linutronix.de>
-References: <20080305154829.185609547@linutronix.de>
-User-Agent: quilt/0.46-1
-Date: Wed, 05 Mar 2008 16:03:46 -0000
-From: Thomas Gleixner <tglx@linutronix.de>
-To: LKML <linux-kernel@vger.kernel.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Greg KH <greg@kroah.com>,
-       Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@elte.hu>
-Subject: [patch 2/5] slab: add a flag to prevent debug_free checks on a
-	kmem_cache
-Content-Disposition: inline; filename=add-slab-flag-to-avoid-debug-checks.patch
+	Wed, 5 Mar 2008 11:05:12 -0500
+Received: from terminus.zytor.com ([198.137.202.10]:43756 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756173AbYCEQFK (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 5 Mar 2008 11:05:10 -0500
+Message-ID: <47CEC3AA.6080709@zytor.com>
+Date: Wed, 05 Mar 2008 08:00:42 -0800
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
+MIME-Version: 1.0
+To: Aurelien Jarno <aurelien@aurel32.net>, linux-kernel@vger.kernel.org,
+       gcc@gcc.gnu.org
+Subject: Re: Linux doesn't follow x86/x86-64 ABI wrt direction flag
+References: <20080305153020.GA24631@volta.aurel32.net>
+In-Reply-To: <20080305153020.GA24631@volta.aurel32.net>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a preperatory patch for the debugobjects infrastructure. The
-flag prevents debug_free checks on kmem_caches. This is necessary to
-avoid resursive calls into a debug mechanism which uses a kmem_cache
-itself.
+Aurelien Jarno wrote:
+> Hi all,
+> 
+> Since version 4.3, gcc changed its behaviour concerning the x86/x86-64 
+> ABI and the direction flag, that is it now assumes that the direction 
+> flag is cleared at the entry of a function and it doesn't clear once 
+> more if needed.
+> 
+> This causes some problems with the Linux kernel which does not clear
+> the direction flag when entering a signal handler. The small code below
+> (for x86-64) demonstrates that. 
+> 
+> If the signal handler is using code that need the direction flag cleared
+> (for example bzero() or memset()), the code is incorrectly executed.
+> 
+> I guess this has to be fixed on the kernel side, but also gcc-4.3 could
+> revert back to the old behaviour, that is clearing the direction flag
+> when entering a routine that touches it until most people are running a
+> fixed kernel.
+> 
 
-Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
-Acked-by: Ingo Molnar <mingo@elte.hu>
----
- include/linux/slab.h |    7 +++++++
- 1 file changed, 7 insertions(+)
+Linux should definitely follow the ABI.  This is a bug, and a pretty 
+serious such.
 
-Index: linux-2.6/include/linux/slab.h
-===================================================================
---- linux-2.6.orig/include/linux/slab.h
-+++ linux-2.6/include/linux/slab.h
-@@ -29,6 +29,13 @@
- #define SLAB_MEM_SPREAD		0x00100000UL	/* Spread some memory over cpuset */
- #define SLAB_TRACE		0x00200000UL	/* Trace allocations and frees */
- 
-+/* Flag to prevent checks on free */
-+#ifdef CONFIG_DEBUG_OBJECTS
-+# define SLAB_DEBUG_OBJECTS	0x00400000UL
-+#else
-+# define SLAB_DEBUG_OBJECTS	0x00000000UL
-+#endif
-+
- /* The following flags affect the page allocator grouping pages by mobility */
- #define SLAB_RECLAIM_ACCOUNT	0x00020000UL		/* Objects are reclaimable */
- #define SLAB_TEMPORARY		SLAB_RECLAIM_ACCOUNT	/* Objects are short-lived */
-
--- 
-
+	-hpa
