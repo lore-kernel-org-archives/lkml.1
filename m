@@ -1,121 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760516AbYCEIio@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763202AbYCEImS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760516AbYCEIio (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Mar 2008 03:38:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755394AbYCEIie
+	id S1763202AbYCEImS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Mar 2008 03:42:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756715AbYCEImI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Mar 2008 03:38:34 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:33346 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755127AbYCEIid (ORCPT
+	Wed, 5 Mar 2008 03:42:08 -0500
+Received: from gateway.drzeus.cx ([85.8.24.16]:38725 "EHLO smtp.drzeus.cx"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756309AbYCEImH convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Mar 2008 03:38:33 -0500
-Subject: Re: [RFC/PATCH] cpuset: cpuset irq affinities
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Paul Jackson <pj@sgi.com>
-Cc: Max Krasnyanskiy <maxk@qualcomm.com>, mingo@elte.hu, tglx@linutronix.de,
-       oleg@tv-sign.ru, rostedt@goodmis.org, linux-kernel@vger.kernel.org,
-       rientjes@google.com
-In-Reply-To: <20080304191159.a02be58b.pj@sgi.com>
-References: <20080227222103.673194000@chello.nl>
-	 <1204311351.6243.130.camel@lappy> <20080229190223.GA17820@elte.hu>
-	 <47C87084.3090208@qualcomm.com> <1204318980.6243.133.camel@lappy>
-	 <47C8771C.1070001@qualcomm.com> <1204545445.11412.6.camel@twins>
-	 <20080303113621.1dfdda87.pj@sgi.com> <1204567052.6241.4.camel@lappy>
-	 <20080303121033.c8c9651c.pj@sgi.com> <1204568316.8514.18.camel@twins>
-	 <20080304013534.4e51ae48.pj@sgi.com> <1204628762.6241.46.camel@lappy>
-	 <47CDA885.3000103@qualcomm.com>  <20080304191159.a02be58b.pj@sgi.com>
-Content-Type: text/plain
-Date: Wed, 05 Mar 2008 09:37:52 +0100
-Message-Id: <1204706272.6241.79.camel@lappy>
+	Wed, 5 Mar 2008 03:42:07 -0500
+Date: Wed, 5 Mar 2008 09:40:23 +0100
+From: Pierre Ossman <drzeus-list@drzeus.cx>
+To: Pierre Ossman <drzeus-list@drzeus.cx>
+Cc: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>,
+       "Dave Jones" <davej@codemonkey.org.uk>,
+       "Andi Kleen" <andi@firstfloor.org>,
+       "Alan Stern" <stern@rowland.harvard.edu>,
+       "LKML" <linux-kernel@vger.kernel.org>, "Adam Belay" <abelay@novell.com>,
+       "Lee Revell" <rlrevell@joe-job.com>,
+       linux-pm@lists.linux-foundation.org, "Pavel  Machek" <pavel@ucw.cz>
+Subject: Re: [linux-pm] [PATCH] cpuidle: avoid singing capacitors
+Message-ID: <20080305094023.6486ebdf@mjolnir.drzeus.cx>
+In-Reply-To: <20080305070201.0d16cd40@mjolnir.drzeus.cx>
+References: <924EFEDD5F540B4284297C4DC59F3DEEA2E8B2@orsmsx423.amr.corp.intel.com>
+	<Pine.LNX.4.44L0.0803031804330.8280-100000@iolanthe.rowland.org>
+	<20080303231033.GB15255@one.firstfloor.org>
+	<20080304040048.GA31562@codemonkey.org.uk>
+	<20080304071423.0e6b71c1@mjolnir.drzeus.cx>
+	<20080304181924.70aaf8c1@mjolnir.drzeus.cx>
+	<924EFEDD5F540B4284297C4DC59F3DEEA77031@orsmsx423.amr.corp.intel.com>
+	<20080305070201.0d16cd40@mjolnir.drzeus.cx>
+X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.8; i386-redhat-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.21.90 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, 5 Mar 2008 07:02:01 +0100
+Pierre Ossman <drzeus-list@drzeus.cx> wrote:
 
-On Tue, 2008-03-04 at 19:11 -0600, Paul Jackson wrote:
-> Max K wrote:
-> > Yeah, that would definitely be awkward.
 > 
-> Yeah - agreed - awkward.
+> I tried using predicted_us and last_measured_us, and those didn't work (see the #if 0 code in my last patch). And since cpuidle_get_last_residency() is part of predicted_us, I don't think it is reporting useful values.
 > 
-> Forget that idea (allowing the same irq in multiple 'irqs' files.)
-> 
-> It seems to me that we get into trouble trying to cram that 'system'
-> cpuset into the cpuset hierarchy, where that system cpuset is there to
-> hold a list of irqs, but is only partially a good fit for the existing
-> cpuset hierarchy.
-> 
-> Could this irq configuration be partly a system-wide configuration
-> decision (which irqs are 'system' irqs), and partly a per-cpuset
-> decision -- which cpusets (such as a real-time one) want to disable
-> the usual system irqs that everyone else gets.
-> 
-> The cpuset portion of this should take only a single per-cpuset Boolean
-> flag -- which if set True (1), asks the system to "please leave my CPUs
-> off the list of CPUs receiving the usual system irqs."
-> 
-> Then the list of "usual system irqs" would be established in some /proc
-> or /sys configuration.  Such irqs would be able to go to any CPUs
-> except those CPUs which found themselves in a cpuset with the above
-> per-cpuset Boolean flag set True (1).
 
-How about we make this in-kernel boot set, that by default contains all
-IRQs, all unbounded kthreads and all of user-space.
+I take this back. They might be working just fine. It seems I've been looking at a too small piece of the puzzle. This machine has a dual core processor, and the governors control each core independently. Unfortunately it's the power fluctuations of the entire socket that causes noise, not just each processor.
 
-To be compatible with your existing clients you only need to move all
-the IRQs to the root domain.
+So I need to build some global algorithm instead of one per core. Ideas are welcome.
 
-(Upgrading a kernel would require distributing some new userspace
-anyway, right? - and we could offer a .config option to disable the boot
-set for those who do upgrade kernels without upgrading user-space).
+>From what I can tell, disabling one core makes the noise go away. So I guess both cores need to go into C3 (or perhaps one C2 and one C3) at the same time to cause the problem. I'm not 100% sure of this as the damn noise comes and goes, but I've been running for an hour or so now with one core disabled and without my anti-noise patch.
 
-Then, once you want to make use of the new features, you have to update
-your batch scheduler to only make use of load_balance and not
-cpus_exclusive (as they're only interested in sched_domains, right?)
+Rgds
+-- 
+     -- Pierre Ossman
 
-So if you want to do IRQ isolation and batch scheduling on the same
-machine (as is not possible now) you need to update userspace as said
-before; so that it allows for the overlapping cpuset.
-
-For example, on a 32 cpu machine:
-
-/cgroup/boot 0-1 (kthreads - initial userspace)
-/cgroup/irqs 0-27 (most irqs)
-/cgroup/batch_A 2-5
-/cgroup/batch_B 6-13
-/cgroup/another_big_app 14-27
-/cgroup/RT-domain 28-31 (my special irq)
-
-So by providing a .config option for strict backward compatibility, a
-simple way for runtime compatibility (moving all IRQs to the root) which
-should be easy to do if the kernel upgrade is accompanied by a (limited)
-user-space upgrade.
-
-And once all the features need to be used together (something that is
-now not possible - so new usage) then the code that relies on
-cpus_exclusive to create sched_domains needs to be changed to use
-load_balance instead.
-
-Does that sound like a feasible plan?
-
-> How does all this interact with /proc/irq/N/smp_affinity?
-
-Much the same way the cpuset cpus_allowed interacts with a task's
-cpus_allowed. That is, cs->cpus_allowed is a mask on top of the provided
-affinity.
-
-If for some reason the cs->cpus_allowed changes in such a way that the
-user-specified mask becomes empty (irq->cpus_allowed & cs->cpus_allowed
-== 0), then print a message and set it to the full mask
-(irq->cpus_allowed = cs->cpus_allowed).
-
-If for some reason the cs->cpus_allowed changes in such a way that the
-mask is physically impossible (set_irq_affinity(cs->cpus_allowed)
-fails), then print a message and move the IRQ to the parent set.
-
-
-
+  Linux kernel, MMC maintainer        http://www.kernel.org
+  PulseAudio, core developer          http://pulseaudio.org
+  rdesktop, core developer          http://www.rdesktop.org
