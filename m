@@ -1,69 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760887AbYCEUwk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759357AbYCEU44@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760887AbYCEUwk (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Mar 2008 15:52:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759891AbYCEUw0
+	id S1759357AbYCEU44 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Mar 2008 15:56:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755515AbYCEU4p
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Mar 2008 15:52:26 -0500
-Received: from hall.aurel32.net ([88.191.38.19]:46629 "EHLO hall.aurel32.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755177AbYCEUwZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Mar 2008 15:52:25 -0500
-Message-ID: <47CF07FE.10200@aurel32.net>
-Date: Wed, 05 Mar 2008 21:52:14 +0100
-From: Aurelien Jarno <aurelien@aurel32.net>
-User-Agent: Mozilla-Thunderbird 2.0.0.9 (X11/20080109)
+	Wed, 5 Mar 2008 15:56:45 -0500
+Received: from relay1.sgi.com ([192.48.171.29]:59522 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1755267AbYCEU4o (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 5 Mar 2008 15:56:44 -0500
+Date: Wed, 5 Mar 2008 12:56:33 -0800 (PST)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Nick Piggin <npiggin@suse.de>
+cc: Pekka Enberg <penberg@cs.helsinki.fi>, netdev@vger.kernel.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       yanmin_zhang@linux.intel.com, David Miller <davem@davemloft.net>,
+       Eric Dumazet <dada1@cosmosbay.com>
+Subject: Re: [rfc][patch 1/3] slub: fix small HWCACHE_ALIGN alignment
+In-Reply-To: <20080305002821.GD1510@wotan.suse.de>
+Message-ID: <Pine.LNX.4.64.0803051254570.30742@schroedinger.engr.sgi.com>
+References: <20080303093449.GA15091@wotan.suse.de>
+ <Pine.LNX.4.64.0803031107130.6917@schroedinger.engr.sgi.com>
+ <20080303200613.GC8974@wotan.suse.de> <Pine.LNX.4.64.0803031209570.16049@schroedinger.engr.sgi.com>
+ <20080303201701.GF8974@wotan.suse.de> <Pine.LNX.4.64.0803031315160.4131@schroedinger.engr.sgi.com>
+ <84144f020803031330i2c0ea1f6kc5b02c8b26145797@mail.gmail.com>
+ <Pine.LNX.4.64.0803031331340.4375@schroedinger.engr.sgi.com>
+ <47CC6F30.50802@cs.helsinki.fi> <20080305002821.GD1510@wotan.suse.de>
 MIME-Version: 1.0
-To: "H. Peter Anvin" <hpa@zytor.com>
-CC: Michael Matz <matz@suse.de>, Joe Buck <Joe.Buck@synopsys.COM>,
-       linux-kernel@vger.kernel.org, gcc@gcc.gnu.org
-Subject: Re: Linux doesn't follow x86/x86-64 ABI wrt direction flag
-References: <20080305153020.GA24631@volta.aurel32.net> <47CEC3AA.6080709@zytor.com> <20080305195834.GA17267@synopsys.com> <20080305202319.GA17053@volta.aurel32.net> <Pine.LNX.4.64.0803052133400.20583@wotan.suse.de> <47CF0627.2070200@zytor.com>
-In-Reply-To: <47CF0627.2070200@zytor.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-H. Peter Anvin a écrit :
-> Michael Matz wrote:
->> Hi,
->>
->> On Wed, 5 Mar 2008, Aurelien Jarno wrote:
->>
->>>> So I think gcc at least needs an *option* to revert to the old
->>>> behavior,
->>>> and there's a good argument to make it the default for now, at least
->>>> for
->>>> x86/x86-64 on Linux.
->>> And for other kernels. I tested OpenBSD 4.1, FreeBSD 6.3, NetBSD 4.0,
->>> they have the same behaviour as Linux, that is they don't clear DF
->>> before calling the signal handler.
->>
->> Sigh.  We could perhaps insert a cld for all functions which can be
->> recognized as possible signal handlers and call other unknown or
->> string functions.  But it's probably even faster to emit cld in front
->> of the inline copies of mem functions again :-(
->>
-> 
-> Well, there is a (slight) difference: you know that a called function
-> will not clobber your DF state; it's only the entry condition which is
-> imprecise.
-> 
-> The best would be if this could be controlled by a flag, which we can
-> flip once kernel fixes has been around for long enough.
+On Wed, 5 Mar 2008, Nick Piggin wrote:
 
-I have to agree there. Whatever the decision that gcc will take,
-distributions will reenable the old behaviour for some time for to allow
-upgrades from a previous version.
+> It started out as a SLUB regression that was exposing poor code in the
+> percpu allocator due to different SLUB kmalloc alignments. That prompted
 
-Providing a flag to switch the behaviour (whatever the default
-behaviour) will help a lot.
+That was due to SLUB's support for smaller allocation sizes. AFAICT has 
+nothing to do with alignment.
 
+> The SMP flag was just an RFC. I think some people (like Christoph) were
+> being confused about the HWCACHE_ALIGN flag being for avoiding false
+> sharing on SMP systems. It would actually be also generally useful to
+> have the SMP flag (eg. see the sites I added it to in patch #3).
 
--- 
-  .''`.  Aurelien Jarno	            | GPG: 1024D/F1BCDB73
- : :' :  Debian developer           | Electrical Engineer
- `. `'   aurel32@debian.org         | aurelien@aurel32.net
-   `-    people.debian.org/~aurel32 | www.aurel32.net
+Hmmm. We could define a global constant for that? Determine it on bootup 
+and then pass it as an alignment parameter?
+ 
