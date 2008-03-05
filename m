@@ -1,65 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757497AbYCEFSf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758059AbYCEF0b@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757497AbYCEFSf (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Mar 2008 00:18:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751668AbYCEFSY
+	id S1758059AbYCEF0b (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Mar 2008 00:26:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752098AbYCEF0V
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Mar 2008 00:18:24 -0500
-Received: from mga10.intel.com ([192.55.52.92]:41612 "EHLO
-	fmsmga102.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751518AbYCEFSY (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Mar 2008 00:18:24 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.25,448,1199692800"; 
-   d="scan'208";a="528900977"
-Subject: Re: 2.6.25-rc3-git3: Reported regressions from 2.6.24
-From: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
-To: balbir@linux.vnet.ibm.com
-Cc: Dhaval Giani <dhaval@linux.vnet.ibm.com>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Adrian Bunk <bunk@kernel.org>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>,
-       Balbir Singh <balbir@in.ibm.com>, Ingo Molnar <mingo@elte.hu>
-In-Reply-To: <47CE183C.7040105@linux.vnet.ibm.com>
-References: <200803030316.07165.rjw@sisk.pl>
-	 <20080304112741.GA13428@linux.vnet.ibm.com>
-	 <1204682782.3248.189.camel@ymzhang>  <47CE183C.7040105@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=utf-8
-Date: Wed, 05 Mar 2008 13:15:54 +0800
-Message-Id: <1204694154.3248.194.camel@ymzhang>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.9.2 (2.9.2-2.fc7) 
+	Wed, 5 Mar 2008 00:26:21 -0500
+Received: from gate.crashing.org ([63.228.1.57]:39050 "EHLO gate.crashing.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752091AbYCEF0V (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 5 Mar 2008 00:26:21 -0500
+In-Reply-To: <18382.7074.69060.661720@cargo.ozlabs.ibm.com>
+References: <1204301097.14759.6.camel@localhost.localdomain> <1204340690.15052.457.camel@pasglop> <18382.7074.69060.661720@cargo.ozlabs.ibm.com>
+Mime-Version: 1.0 (Apple Message framework v623)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <d495403c2b5f700be085c965746cd211@kernel.crashing.org>
 Content-Transfer-Encoding: 7bit
+Cc: benh@kernel.crashing.org, LKML <linux-kernel@vger.kernel.org>,
+       linuxppc-dev@ozlabs.org, Steven Rostedt <rostedt@goodmis.org>
+From: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [PATCH] add strncmp to PowerPC
+Date: Wed, 5 Mar 2008 06:26:06 +0100
+To: Paul Mackerras <paulus@samba.org>
+X-Mailer: Apple Mail (2.623)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2008-03-05 at 09:19 +0530, Balbir Singh wrote:
-> Zhang, Yanmin wrote:
-> > On Tue, 2008-03-04 at 16:57 +0530, Dhaval Giani wrote:
-> >>> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=9978
-> >>> Subject		: 2.6.25-rc1: volanoMark 45% regression
-> >>> Submitter	: Zhang, Yanmin <yanmin_zhang@linux.intel.com>
-> >>> Date		: 2008-02-13 10:30
-> >>> References	: http://lkml.org/lkml/2008/2/13/128
-> >>> Handled-By	: Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>
-> >>> 		  Balbir Singh <balbir@linux.vnet.ibm.com>
-> >>  
-> >> Peter's revert of the load balance patches should fix this one. Yanmin,
-> >> could you please confirm if the patch at
-> >> http://lkml.org/lkml/2008/2/25/202 helps?
-> > I tested it against 2.6.25-rc3 on my 16-core tigerton machine. It really improves
-> > volano result although it doesn't recover all the result.
-> > Comparing with 2.6.24, without the patch, volanoMark has about 50% regression
-> > with 2.6.25-rc3. With the patch, volanoMark has about 15% regression.
-> > 
-> 
-> Have you had a chance to git-bisect the culprit after the revert?
-How to bisect it if the reverted patch is submitted after the culprit patch?
+>> Do we have any indication that it performs better than the C one ?
+>
+> I would expect it to, given that the assembler one has two branches in
+> the per-byte loop compared to 3 in the C version.
 
--yanmin
+But really, does it matter for strncmp() in the kernel?
 
+Anyway, this asm code has bugs, as do both the current C version in the
+kernel, and the code I posted.  We need to do better :-)
+
+
+Segher
 
