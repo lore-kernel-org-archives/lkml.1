@@ -1,68 +1,186 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764363AbYCEFy1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762050AbYCEF4a@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764363AbYCEFy1 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Mar 2008 00:54:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761512AbYCEFvA
+	id S1762050AbYCEF4a (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Mar 2008 00:56:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753215AbYCEF4U
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Mar 2008 00:51:00 -0500
-Received: from py-out-1112.google.com ([64.233.166.179]:16938 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1762297AbYCEFu5 (ORCPT
+	Wed, 5 Mar 2008 00:56:20 -0500
+Received: from smtp-out.google.com ([216.239.45.13]:2241 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753122AbYCEF4T (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Mar 2008 00:50:57 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:user-agent:mime-version:to:subject:content-type:content-transfer-encoding:from;
-        b=PaIFaV834mJSSN80orW0TwKuXHwphJHfS0YhBSFohLx1yyqeqWju+KGeEgdulLHm4FHq9u479oypOoiUp90/PsB4Fr8kkm2gPWdaoyHNTkBM9ND0ovpxIsY0dMDpvXqhMLqyEtBgqkutsaQ8sHVHdZ0izkcX3zA6tbqot8beKFQ=
-Message-ID: <47CE34C5.6010805@watson.wustl.edu>
-Date: Tue, 04 Mar 2008 23:51:01 -0600
-User-Agent: Thunderbird 2.0.0.6 (X11/20071022)
+	Wed, 5 Mar 2008 00:56:19 -0500
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=received:message-id:date:from:to:subject:cc:in-reply-to:
+	mime-version:content-type:content-transfer-encoding:
+	content-disposition:references;
+	b=D8ZicPqOcTvn2gZlxxzsA9260vFeJCJLdlpldKyjytpQTp4bePuZSn+L+s/40Q3z+
+	BVU0MB8fSp/bW6455+MGw==
+Message-ID: <6599ad830803042156y5a28978fi995eb9050f8f5320@mail.gmail.com>
+Date: Tue, 4 Mar 2008 21:56:13 -0800
+From: "Paul Menage" <menage@google.com>
+To: "Kazunaga Ikeno" <k-ikeno@ak.jp.nec.com>,
+       "Dhaval Giani" <dhaval@linux.vnet.ibm.com>
+Subject: Re: [RFC][PATCH 0/1]a new optional function for task assignment to cgroup
+Cc: containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org
+In-Reply-To: <47CE322A.9060907@ak.jp.nec.com>
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org,
-       trivial@kernel.org, Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH 11/11] /drivers/net/82596.c replaced init_module&cleanup_module
- with module_init&module_exit
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-From: Jon Schindler <jkschind@gmail.com>
+Content-Disposition: inline
+References: <47CE322A.9060907@ak.jp.nec.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Replaced init_module and cleanup_module with static functions and module_init/module_exit.
+Hi Kazunaga,
 
-Signed-off-by: Jon Schindler <jkschind@gmail.com>
----
-diff --git a/drivers/net/82596.c b/drivers/net/82596.c
-index 2797da7..344308a 100644
---- a/drivers/net/82596.c
-+++ b/drivers/net/82596.c
-@@ -1567,7 +1567,7 @@ static int debug = -1;
- module_param(debug, int, 0);
- MODULE_PARM_DESC(debug, "i82596 debug mask");
- 
--int __init init_module(void)
-+static int __init i82596_module_init(void)
- {
- 	if (debug >= 0)
- 		i596_debug = debug;
-@@ -1576,8 +1576,9 @@ int __init init_module(void)
- 		return PTR_ERR(dev_82596);
- 	return 0;
- }
-+module_init(i82596_module_init);
- 
--void __exit cleanup_module(void)
-+static void __exit i82596_module_exit(void)
- {
- 	unregister_netdev(dev_82596);
- #ifdef __mc68000__
-@@ -1595,7 +1596,7 @@ void __exit cleanup_module(void)
- #endif
- 	free_netdev(dev_82596);
- }
--
-+module_exit(i82596_module_exit);
- #endif				/* MODULE */
- 
- /*
+On Tue, Mar 4, 2008 at 9:39 PM, Kazunaga Ikeno <k-ikeno@ak.jp.nec.com> wrote:
+> Hi -
+>
+>  This is a patch of a new optional function for task assignment to cgroup, RFC.
+>
+>
+>  == Purpose =================================================
+>
+>  To provide the function that leads a task, corresponding to the conditions specified
+>  beforehand, to a specific cgroup directory.
+>
+
+This is something that's been discussed before, originally as part of
+CKRM with a complex rule engine in the kernel space.
+
+Basically, the general agreement was that it's a case where a simple
+API is going to be too simple for the majority of users, and a complex
+API that satisfies everyone is going to be too messy/heavyweight.
+
+This is something that can be done in a userspace daemon via the
+process events connector - when you get a PROC_EVENT_UID event, you
+can move the process into the appropriate cgroup (you may also need to
+check any recently-forked children). This also gives you more
+flexibility than you can have in the kernel - you can base your
+decision on more complex factors than simply the uid of the process.
+
+Dhaval Giani had a prototype implementation of such a daemon.
+
+Paul
+
+>
+>  == Description =============================================
+>
+>  This patch provides the function that leads a task, corresponding to the conditions
+>  specified beforehand, to a specific cgroup directory.
+>
+>  Currently, this patch uses user-id as a condition to lead a task. On its I/F,
+>  specifies user-id of a task and a cgroup directory.
+>
+>  The task set to specified user-id will automatically lead to the cgroup directory.
+>  (it is attached to specific cgroup)
+>
+>  This function makes possible to attach a task to cgroup automatically when
+>  specific user logs in, also to attach a task of a service which is set to
+>  specific effective user-id to specific cgroup mechanically.
+>
+>  This function is just option, all the functions of cgroup are the same.
+>  Also the migration of a task between cgroup directories can do by rewriting pid
+>  of a control tasks file, including a task leading by this option.
+>
+>  It is able to enter two or more set of user-id and cgroup directory.
+>  Specified cgroup directory may be the same or that may not be.
+>  But it's not able to enter same user-id to plural cgroup directories to lead.
+>
+>
+>  == Interface ===============================================
+>
+>    /lead_option  -  control file of this option
+>
+>  [example for reading a configuration]
+>
+>        # cat /cgroup/lead_option
+>
+>        uid:202        leadto:/cpuset/bar_cg
+>        uid:201        leadto:/cpuset/foo_cg
+>
+>       * nothing appears before assignment.
+>
+>  [example for adding an entry]
+>  - To lead a task(uid 201) to /cgroup/foo_cg
+>
+>        # echo uid:201 leadto:/cpuset/foo_cg > /cpuset/lead_option
+>
+>        * set a uid of task and cgroup dirctory to lead.
+>        * Remake an entry uid to cgroup directory if set uid already exists.
+>
+>  [example for delete an entry]
+>  - To delete an entry of uid
+>
+>        # echo uid:201 > /cpuset/lead_option
+>
+>        * To delete a registration, omit "leadto:" token.
+>
+>
+>  == Operation example (chronological order) ==================
+>
+>  The follows is an example of the operation.
+>
+>  # ############################
+>  # # Various confirmation before testing
+>  # ############################
+>  # id
+>  uid=0(root) gid=0(root) groups=0(root)
+>  # df /cpuset
+>  Filesystem           1K-blocks      Used Available Use% Mounted on
+>  none                         0         0         0   -  /cpuset
+>  # more /proc/self/cgroup
+>  cpuset:/
+>  # id foo
+>  uid=201(foo) gid=100(users) groups=100(users)
+>  # id bar
+>  uid=202(foo) gid=100(users) groups=100(users)
+>  # ############################
+>  # # Add an entry of user foo,bar
+>  # ############################
+>  # echo uid:201 leadto:/cpuset/foo_cg > /cpuset/lead_option
+>  # echo uid:202 leadto:/cpuset/bar_cg > /cpuset/lead_option
+>  # more /cpuset/lead_option
+>  uid:202        leadto:/cpuset/bar_cg
+>  uid:201        leadto:/cpuset/foo_cg
+>  # ############################
+>  # # Confirmation of the assignment of user foo,bar - (1)
+>  # ############################
+>  # su - foo
+>  $ more /proc/$$/cgroup
+>  cpuset:/foo_cg
+>  $ more /proc/self/cgroup
+>  cpuset:/foo_cg
+>  $ su bar --command "more /proc/self/cgroup"
+>  cpuset:/bar_cg
+>  $ exit
+>  # ############################
+>  # # Delete an entry of user foo,bar
+>  # ############################
+>  # echo uid:201 > /cpuset/lead_option
+>  # echo uid:202 > /cpuset/lead_option
+>  # more /cpuset/lead_option
+>  # ############################
+>  # # Confirmation of the assignment of user foo,bar - (2)
+>  # ############################
+>  # su - foo
+>  $ more /proc/$$/cgroup
+>  cpuset:/
+>  $ su bar --command "more /proc/self/cgroup"
+>  cpuset:/
+>  $
+>
+>
+>  Thanks,
+>  - Kazunaga Ikeno.
+>
+>
+>
+>  --
+>  To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+>  the body of a message to majordomo@vger.kernel.org
+>  More majordomo info at  http://vger.kernel.org/majordomo-info.html
+>  Please read the FAQ at  http://www.tux.org/lkml/
+>
