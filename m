@@ -1,94 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932165AbYCEIO1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762513AbYCEITo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932165AbYCEIO1 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Mar 2008 03:14:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755988AbYCEIOR
+	id S1762513AbYCEITo (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Mar 2008 03:19:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756680AbYCEITd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Mar 2008 03:14:17 -0500
-Received: from tama555.ecl.ntt.co.jp ([129.60.39.106]:41759 "EHLO
-	tama555.ecl.ntt.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753689AbYCEIOQ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Mar 2008 03:14:16 -0500
-To: akpm@linux-foundation.org, torvalds@linux-foundation.org
-Cc: rth@twiddle.net, ink@jurassic.park.msu.ru, kyle@parisc-linux.org,
-       matthew@wil.cx, grundler@parisc-linux.org, linux-kernel@vger.kernel.org
-Subject: Re: Linux 2.6.25-rc4
-From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-In-Reply-To: <alpine.LFD.1.00.0803042044460.12253@woody.linux-foundation.org>
-References: <alpine.LFD.1.00.0803042044460.12253@woody.linux-foundation.org>
-Mime-Version: 1.0
-Content-Type: Text/Plain;
-	charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-Id: <20080305170930C.fujita.tomonori@lab.ntt.co.jp>
-Date: Wed, 05 Mar 2008 17:09:30 +0900
-X-Dispatcher: imput version 20040704(IM147)
+	Wed, 5 Mar 2008 03:19:33 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:55008 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755988AbYCEITc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 5 Mar 2008 03:19:32 -0500
+Date: Wed, 5 Mar 2008 09:19:05 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Harvey Harrison <harvey.harrison@gmail.com>
+Cc: Christopher Li <sparse@chrisli.org>, Julia Lawall <julia@diku.dk>,
+       yi.zhu@intel.com, linux-wireless@vger.kernel.org,
+       ipw3945-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org,
+       kernel-janitors@vger.kernel.org, Alexander Viro <viro@ftp.linux.org.uk>,
+       linux-sparse@vger.kernel.org, Josh Triplett <josh@freedesktop.org>
+Subject: Re: [PATCH 6/9] drivers/net/wireless/iwlwifi/iwl-4965.c: Correct
+	use of ! and &
+Message-ID: <20080305081904.GA17789@elte.hu>
+References: <Pine.LNX.4.64.0802262143570.18200@ask.diku.dk> <20080305063842.GA24495@elte.hu> <70318cbf0803042249j57d7f3a3j7666961a9132b10b@mail.gmail.com> <20080305070201.GA32434@elte.hu> <1204700995.17484.7.camel@brick>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1204700995.17484.7.camel@brick>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 4 Mar 2008 21:03:44 -0800 (PST)
-Linus Torvalds <torvalds@linux-foundation.org> wrote:
 
+* Harvey Harrison <harvey.harrison@gmail.com> wrote:
+
+> > Al's patch is:
+> > 
+> > +                       if (op == '&' && expr->left->type == EXPR_PREOP &&
+> > +                           expr->left->op == '!')
+> > +                               warning(expr->pos, "dubious: !x & y");
+> > 
+> > i think there might be similar patterns: "x & !y", "!x | y", "x | !y" ?
+> > 
 > 
-> It's a few days late, but I was waiting for some updates for some of the 
-> most annoying regressions until releasing it, so the end result is 
-> hopefully more useful as a result.
+> Well, (!x & y) and (!x | y) are probably the two that might have been 
+> intended otherwise.  (x & !y), (x | !y) are probably ok.
 
-Ah, the IOMMU patches (alpha and parisc) that I submitted for -mm have
-been merged somehow.
+i think the proper intention in the latter cases is (x & ~y) and
+(x | ~y).
 
-The parisc patches were tested but probably the alpha patches not.
+My strong bet is that in 99% of the cases they are real bugs and && or 
+|| was intended.
 
-Here's a patch for 32bits arch parisc.
-
-=
-From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-Subject: [PATCH] parisc: fix IOMMU's device boundary overflow bug on 32bits arch
-
-On 32bits boxes, boundary_size becomes zero due to a overflow and we
-hit BUG_ON in iommu_is_span_boundary.
-
-Signed-off-by: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-Cc: Kyle McMartin <kyle@parisc-linux.org>
-Cc: Matthew Wilcox <matthew@wil.cx>
-Cc: Grant Grundler <grundler@parisc-linux.org>
----
- drivers/parisc/ccio-dma.c  |    4 ++--
- drivers/parisc/sba_iommu.c |    4 ++--
- 2 files changed, 4 insertions(+), 4 deletions(-)
-
-diff --git a/drivers/parisc/ccio-dma.c b/drivers/parisc/ccio-dma.c
-index 60d338c..62db3c3 100644
---- a/drivers/parisc/ccio-dma.c
-+++ b/drivers/parisc/ccio-dma.c
-@@ -366,8 +366,8 @@ ccio_alloc_range(struct ioc *ioc, struct device *dev, size_t size)
- 	** ggg sacrifices another 710 to the computer gods.
- 	*/
- 
--	boundary_size = ALIGN(dma_get_seg_boundary(dev) + 1, 1 << IOVP_SHIFT);
--	boundary_size >>= IOVP_SHIFT;
-+	boundary_size = ALIGN((unsigned long long)dma_get_seg_boundary(dev) + 1,
-+			      1ULL << IOVP_SHIFT) >> IOVP_SHIFT;
- 
- 	if (pages_needed <= 8) {
- 		/*
-diff --git a/drivers/parisc/sba_iommu.c b/drivers/parisc/sba_iommu.c
-index e834127..bdbe780 100644
---- a/drivers/parisc/sba_iommu.c
-+++ b/drivers/parisc/sba_iommu.c
-@@ -341,8 +341,8 @@ sba_search_bitmap(struct ioc *ioc, struct device *dev,
- 	unsigned long shift;
- 	int ret;
- 
--	boundary_size = ALIGN(dma_get_seg_boundary(dev) + 1, 1 << IOVP_SHIFT);
--	boundary_size >>= IOVP_SHIFT;
-+	boundary_size = ALIGN((unsigned long long)dma_get_seg_boundary(dev) + 1,
-+			      1ULL << IOVP_SHIFT) >> IOVP_SHIFT;
- 
- #if defined(ZX1_SUPPORT)
- 	BUG_ON(ioc->ibase & ~IOVP_MASK);
--- 
-1.5.3.7
-
+	Ingo
