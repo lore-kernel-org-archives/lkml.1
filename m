@@ -1,106 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761527AbYCEQ4e@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761873AbYCEQ4w@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761527AbYCEQ4e (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Mar 2008 11:56:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756744AbYCEQ4R
+	id S1761873AbYCEQ4w (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Mar 2008 11:56:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761323AbYCEQ4T
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Mar 2008 11:56:17 -0500
-Received: from ug-out-1314.google.com ([66.249.92.172]:21153 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761302AbYCEQ4O (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Mar 2008 11:56:14 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=FvDsvX+Q68SWGZ35y1LAVB48FETqAaHQEz1208yFxeTbuzQxBA6uzPvtTraCVhmzTXlPGcA3mHRrqr09GgPCw0JlQm7ABnsXc3box5FDQwKlFXHbZkhSaI1zFxhfjKGfgMTipBZnUUqQD6k0GzYa8s085BF/UiNfr+0KUTk9NGI=
-Message-ID: <6dc9ffc80803050856l1f69d262he3115fffa0df5fbe@mail.gmail.com>
-Date: Wed, 5 Mar 2008 08:56:11 -0800
-From: "H.J. Lu" <hjl.tools@gmail.com>
-To: "Aurelien Jarno" <aurelien@aurel32.net>, linux-kernel@vger.kernel.org,
-       gcc@gcc.gnu.org
-Subject: Re: Linux doesn't follow x86/x86-64 ABI wrt direction flag
-In-Reply-To: <20080305153020.GA24631@volta.aurel32.net>
+	Wed, 5 Mar 2008 11:56:19 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:48343 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1761322AbYCEQ4P (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 5 Mar 2008 11:56:15 -0500
+Date: Wed, 5 Mar 2008 13:53:20 -0300
+From: Eduardo Habkost <ehabkost@redhat.com>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: Ian Campbell <ijc@hellion.org.uk>,
+       Alexander van Heukelum <heukelum@mailshack.com>,
+       Ingo Molnar <mingo@elte.hu>,
+       Alexander van Heukelum <heukelum@fastmail.fm>, Andi Kleen <ak@suse.de>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Jeremy Fitzhardinge <jeremy@goop.org>,
+       Mark McLoughlin <markmc@redhat.com>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [RFC] use realmode code to reserve end-of-conventional-memory
+	to 1MB
+Message-ID: <20080305165320.GJ20230@blackpad>
+References: <1203958478.20033.1239002461@webmail.messagingengine.com> <20080225170134.GA15839@elte.hu> <20080225180750.GA31054@mailshack.com> <20080228131341.GA25213@mailshack.com> <20080228132822.GA25278@mailshack.com> <1204233131.28798.12.camel@cthulhu.hellion.org.uk> <47C72432.3010606@zytor.com> <1204240609.28798.33.camel@cthulhu.hellion.org.uk> <20080305155930.GI20230@blackpad> <47CEC561.6050008@zytor.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <20080305153020.GA24631@volta.aurel32.net>
+In-Reply-To: <47CEC561.6050008@zytor.com>
+X-Fnord: you can see the fnord
+User-Agent: Mutt/1.5.14 (2007-02-12)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Wed, Mar 05, 2008 at 08:08:01AM -0800, H. Peter Anvin wrote:
+> Eduardo Habkost wrote:
+> >>
+> >>diff --git a/arch/x86/xen/setup.c b/arch/x86/xen/setup.c
+> >>index 3bad477..2341492 100644
+> >>--- a/arch/x86/xen/setup.c
+> >>+++ b/arch/x86/xen/setup.c
+> >>@@ -38,7 +38,8 @@ char * __init xen_memory_setup(void)
+> >> 	unsigned long max_pfn = xen_start_info->nr_pages;
+> >> 
+> >> 	e820.nr_map = 0;
+> >>-	add_memory_region(0, PFN_PHYS(max_pfn), E820_RAM);
+> >>+	add_memory_region(0, LOWMEMSIZE(), E820_RAM);
+> >>+	add_memory_region(HIGH_MEMORY, PFN_PHYS(max_pfn)-HIGH_MEMORY, 
+> >>E820_RAM);
+> >
+> >Won't this waste 300+ KB of Perfectly Good RAM? Or I understood it
+> >incorrectly?
+> >
+> >I am aware that it would take more work to tell all kernel code that it
+> >shouldn't look for BIOS data on this region when running as a domU guest,
+> >but it seems that it would be a better solution.
+> >
+> 
+> No, the right thing is for Xen to not try to map RAM in this area.
 
-According to i386 psABI,
+Why? If the Xen host is telling us there is valid RAM in this area,
+why can't we use it?
 
----
-The direction flag must be set "forward" direction before entry and
-upon exit from
-a function.
----
+Existing Xen hosts use those physical address ranges for RAM. We can't
+fix this on the e820 map on the guest side without making otherwise-valid
+RAM unused.
 
-So, asm statement should make sure that the direction flag is cleared before
-function returns and kernel should make sure that the direction flag is cleared
-when calling a signal handler.
-
-H.J.
-On Wed, Mar 5, 2008 at 7:30 AM, Aurelien Jarno <aurelien@aurel32.net> wrote:
-> Hi all,
->
->  Since version 4.3, gcc changed its behaviour concerning the x86/x86-64
->  ABI and the direction flag, that is it now assumes that the direction
->  flag is cleared at the entry of a function and it doesn't clear once
->  more if needed.
->
->  This causes some problems with the Linux kernel which does not clear
->  the direction flag when entering a signal handler. The small code below
->  (for x86-64) demonstrates that.
->
->  If the signal handler is using code that need the direction flag cleared
->  (for example bzero() or memset()), the code is incorrectly executed.
->
->  I guess this has to be fixed on the kernel side, but also gcc-4.3 could
->  revert back to the old behaviour, that is clearing the direction flag
->  when entering a routine that touches it until most people are running a
->  fixed kernel.
->
->  Kind regards,
->  Aurelien
->
->  [1] http://gcc.gnu.org/gcc-4.3/changes.html
->
->
->  #include <stdint.h>
->  #include <stdlib.h>
->  #include <stdio.h>
->  #include <signal.h>
->
->  void handler(int signal) {
->         uint64_t rflags;
->
->         asm volatile("pushfq ; popq %0" : "=g" (rflags));
->
->         if (rflags & (1 << 10))
->                 printf("DF = 1\n");
->         else
->                 printf("DF = 0\n");
->  }
->
->  int main() {
->         signal(SIGUSR1, handler);
->
->         while(1)
->         {
->                 asm volatile("std\r\n");
->         }
->
->         return 0;
->  }
->
->  --
->   .''`.  Aurelien Jarno             | GPG: 1024D/F1BCDB73
->   : :' :  Debian developer           | Electrical Engineer
->   `. `'   aurel32@debian.org         | aurelien@aurel32.net
->    `-    people.debian.org/~aurel32 | www.aurel32.net
->
+-- 
+Eduardo
