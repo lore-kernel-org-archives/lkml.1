@@ -1,61 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763202AbYCEImS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760730AbYCEIrr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763202AbYCEImS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Mar 2008 03:42:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756715AbYCEImI
+	id S1760730AbYCEIrr (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Mar 2008 03:47:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752927AbYCEIrg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Mar 2008 03:42:08 -0500
-Received: from gateway.drzeus.cx ([85.8.24.16]:38725 "EHLO smtp.drzeus.cx"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756309AbYCEImH convert rfc822-to-8bit (ORCPT
+	Wed, 5 Mar 2008 03:47:36 -0500
+Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:37709 "EHLO
+	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750797AbYCEIrf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Mar 2008 03:42:07 -0500
-Date: Wed, 5 Mar 2008 09:40:23 +0100
-From: Pierre Ossman <drzeus-list@drzeus.cx>
-To: Pierre Ossman <drzeus-list@drzeus.cx>
-Cc: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>,
-       "Dave Jones" <davej@codemonkey.org.uk>,
-       "Andi Kleen" <andi@firstfloor.org>,
-       "Alan Stern" <stern@rowland.harvard.edu>,
-       "LKML" <linux-kernel@vger.kernel.org>, "Adam Belay" <abelay@novell.com>,
-       "Lee Revell" <rlrevell@joe-job.com>,
-       linux-pm@lists.linux-foundation.org, "Pavel  Machek" <pavel@ucw.cz>
-Subject: Re: [linux-pm] [PATCH] cpuidle: avoid singing capacitors
-Message-ID: <20080305094023.6486ebdf@mjolnir.drzeus.cx>
-In-Reply-To: <20080305070201.0d16cd40@mjolnir.drzeus.cx>
-References: <924EFEDD5F540B4284297C4DC59F3DEEA2E8B2@orsmsx423.amr.corp.intel.com>
-	<Pine.LNX.4.44L0.0803031804330.8280-100000@iolanthe.rowland.org>
-	<20080303231033.GB15255@one.firstfloor.org>
-	<20080304040048.GA31562@codemonkey.org.uk>
-	<20080304071423.0e6b71c1@mjolnir.drzeus.cx>
-	<20080304181924.70aaf8c1@mjolnir.drzeus.cx>
-	<924EFEDD5F540B4284297C4DC59F3DEEA77031@orsmsx423.amr.corp.intel.com>
-	<20080305070201.0d16cd40@mjolnir.drzeus.cx>
-X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.8; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 8BIT
+	Wed, 5 Mar 2008 03:47:35 -0500
+Message-ID: <47CE5D41.3010506@cn.fujitsu.com>
+Date: Wed, 05 Mar 2008 17:43:45 +0900
+From: Li Zefan <lizf@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
+MIME-Version: 1.0
+To: menage@google.com
+CC: pj@sgi.com, akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org
+Subject: Re: [PATCH 1/2] Cpuset hardwall flag:  Switch cpusets to use the
+ bulk cgroup_add_files() API
+References: <20080305075237.608599000@menage.corp.google.com> <20080305080000.270536000@menage.corp.google.com>
+In-Reply-To: <20080305080000.270536000@menage.corp.google.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 5 Mar 2008 07:02:01 +0100
-Pierre Ossman <drzeus-list@drzeus.cx> wrote:
-
+menage@google.com wrote:
+> This change tidies up the cpusets control file definitions, and
+> reduces the amount of boilerplate required to add/change control files
+> in the future.
 > 
-> I tried using predicted_us and last_measured_us, and those didn't work (see the #if 0 code in my last patch). And since cpuidle_get_last_residency() is part of predicted_us, I don't think it is reporting useful values.
+> Signed-off-by: Paul Menage <menage@google.com>
 > 
 
-I take this back. They might be working just fine. It seems I've been looking at a too small piece of the puzzle. This machine has a dual core processor, and the governors control each core independently. Unfortunately it's the power fluctuations of the entire socket that causes noise, not just each processor.
+Actually I've done this cleanup but don't have time to post the
+patch. :)
 
-So I need to build some global algorithm instead of one per core. Ideas are welcome.
-
->From what I can tell, disabling one core makes the noise go away. So I guess both cores need to go into C3 (or perhaps one C2 and one C3) at the same time to cause the problem. I'm not 100% sure of this as the damn noise comes and goes, but I've been running for an hour or so now with one core disabled and without my anti-noise patch.
-
-Rgds
--- 
-     -- Pierre Ossman
-
-  Linux kernel, MMC maintainer        http://www.kernel.org
-  PulseAudio, core developer          http://pulseaudio.org
-  rdesktop, core developer          http://www.rdesktop.org
+Reviewed-by: Li Zefan <lizf@cn.fujitsu.com>
