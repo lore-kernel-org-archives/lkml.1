@@ -1,410 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758394AbYCEQHA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760969AbYCEQHk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758394AbYCEQHA (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Mar 2008 11:07:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759824AbYCEQF2
+	id S1760969AbYCEQHk (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Mar 2008 11:07:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760483AbYCEQGg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Mar 2008 11:05:28 -0500
-Received: from www.tglx.de ([62.245.132.106]:49861 "EHLO www.tglx.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756449AbYCEQFU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Mar 2008 11:05:20 -0500
-Message-Id: <20080305155117.567966119@linutronix.de>
-References: <20080305154829.185609547@linutronix.de>
-User-Agent: quilt/0.46-1
-Date: Wed, 05 Mar 2008 16:04:02 -0000
-From: Thomas Gleixner <tglx@linutronix.de>
-To: LKML <linux-kernel@vger.kernel.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Greg KH <greg@kroah.com>,
-       Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@elte.hu>
-Subject: [patch 4/5] debugobjects: add documentation
-Content-Disposition: inline; filename=debugobjects-deocumentation.patch
+	Wed, 5 Mar 2008 11:06:36 -0500
+Received: from terminus.zytor.com ([198.137.202.10]:43764 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760439AbYCEQGe (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 5 Mar 2008 11:06:34 -0500
+Message-ID: <47CEC408.2070604@zytor.com>
+Date: Wed, 05 Mar 2008 08:02:16 -0800
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
+MIME-Version: 1.0
+To: Ingo Molnar <mingo@elte.hu>
+CC: Stephan Diestelhorst <langer_mann@web.de>, davej@codemonkey.org.uk,
+       cpufreq@lists.linux.org.uk, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/1] Speedfreq-SMI call clobbers ECX
+References: <200803051559.09962.langer_mann@web.de> <20080305153520.GB19300@elte.hu>
+In-Reply-To: <20080305153520.GB19300@elte.hu>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Add a DocBook for debugobjects.
+Ingo Molnar wrote:
+> * Stephan Diestelhorst <langer_mann@web.de> wrote:
+> 
+>> @@ -184,7 +184,7 @@ static void speedstep_set_state (unsigne
+>>  		__asm__ __volatile__(
+>>  			"movl $0, %%edi\n"
+>>  			"out %%al, (%%dx)\n"
+>> -			: "=b" (new_state), "=D" (result)
+>> +			: "=b" (new_state), "=D" (result), "=c" (ecx_clobber)
+>>  			: "a" (command), "b" (function), "c" (state), "d" (smi_port), "S" (0)
+>>  			);
+> 
+> stupid suggestion: why not do a pusha/popa around those instructions, to 
+> make sure everything is restored? This isnt a fastpath and being 
+> conservative about SMI side-effects cannot hurt ...
+> 
 
-Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
-Acked-by: Ingo Molnar <mingo@elte.hu>
----
- Documentation/DocBook/Makefile          |    3 
- Documentation/DocBook/debugobjects.tmpl |  354 ++++++++++++++++++++++++++++++++
- 2 files changed, 356 insertions(+), 1 deletion(-)
+You can't pusha/popa if you expect a result.  You can, of course, push 
+and pop individual registers.
 
-Index: linux-2.6/Documentation/DocBook/Makefile
-===================================================================
---- linux-2.6.orig/Documentation/DocBook/Makefile
-+++ linux-2.6/Documentation/DocBook/Makefile
-@@ -11,7 +11,8 @@ DOCBOOKS := wanbook.xml z8530book.xml mc
- 	    procfs-guide.xml writing_usb_driver.xml networking.xml \
- 	    kernel-api.xml filesystems.xml lsm.xml usb.xml \
- 	    gadget.xml libata.xml mtdnand.xml librs.xml rapidio.xml \
--	    genericirq.xml s390-drivers.xml uio-howto.xml scsi.xml
-+	    genericirq.xml s390-drivers.xml uio-howto.xml scsi.xml \
-+	    debugobjects.xml
- 
- ###
- # The build process is as follows (targets):
-Index: linux-2.6/Documentation/DocBook/debugobjects.tmpl
-===================================================================
---- /dev/null
-+++ linux-2.6/Documentation/DocBook/debugobjects.tmpl
-@@ -0,0 +1,354 @@
-+<?xml version="1.0" encoding="UTF-8"?>
-+<!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.1.2//EN"
-+	"http://www.oasis-open.org/docbook/xml/4.1.2/docbookx.dtd" []>
-+
-+<book id="debog-objects-guide">
-+ <bookinfo>
-+  <title>Debug objects life time</title>
-+
-+  <authorgroup>
-+   <author>
-+    <firstname>Thomas</firstname>
-+    <surname>Gleixner</surname>
-+    <affiliation>
-+     <address>
-+      <email>tglx@linutronix.de</email>
-+     </address>
-+    </affiliation>
-+   </author>
-+  </authorgroup>
-+
-+  <copyright>
-+   <year>2008</year>
-+   <holder>Thomas Gleixner</holder>
-+  </copyright>
-+
-+  <legalnotice>
-+   <para>
-+     This documentation is free software; you can redistribute
-+     it and/or modify it under the terms of the GNU General Public
-+     License version 2 as published by the Free Software Foundation.
-+   </para>
-+
-+   <para>
-+     This program is distributed in the hope that it will be
-+     useful, but WITHOUT ANY WARRANTY; without even the implied
-+     warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
-+     See the GNU General Public License for more details.
-+   </para>
-+
-+   <para>
-+     You should have received a copy of the GNU General Public
-+     License along with this program; if not, write to the Free
-+     Software Foundation, Inc., 59 Temple Place, Suite 330, Boston,
-+     MA 02111-1307 USA
-+   </para>
-+
-+   <para>
-+     For more details see the file COPYING in the source
-+     distribution of Linux.
-+   </para>
-+  </legalnotice>
-+ </bookinfo>
-+
-+<toc></toc>
-+
-+  <chapter id="intro">
-+    <title>Introduction</title>
-+    <para>
-+      debugobjects is a generic infrastructure to track the life time
-+      of kernel objects and validate the operation on those.
-+    </para>
-+    <para>
-+      debugobjects is useful to check for the following error patterns:
-+	<itemizedlist>
-+	  <listitem><para>Activtation of uninitialized objects</para></listitem>
-+	  <listitem><para>Initialization of active objects</para></listitem>
-+	  <listitem><para>Usage of freed/destroyed objects</para></listitem>
-+	</itemizedlist>
-+    </para>
-+    <para>
-+      debugobjects is not changing the data structure of the real
-+      object so it can be compiled in with a minimal runtime impact
-+      and enabled on demand with a kernel command line option.
-+    </para>
-+  </chapter>
-+
-+  <chapter id="howto">
-+    <title>Howto use debugobjects</title>
-+    <para>
-+      A kernel subsystem needs to provide a data structure which
-+      describes the object type and add calls into the debug code at
-+      appropriate places. The data structure to describe the object
-+      type needs at minimum the name of the object type. Optional
-+      functions can and should be provided to fixup detected problems
-+      so the kernel can continue to work and the debug information can
-+      be retrieved from a alive system instead of hard core debugging
-+      with serial consoles and stack trace transscripts from the
-+      monitor.
-+    </para>
-+    <para>
-+      The debug calls provided by debugobjects are:
-+      <itemizedlist>
-+	<listitem><para>debug_object_init</para></listitem>
-+	<listitem><para>debug_object_activate</para></listitem>
-+	<listitem><para>debug_object_deactivate</para></listitem>
-+	<listitem><para>debug_object_destroy</para></listitem>
-+	<listitem><para>debug_object_free</para></listitem>
-+      </itemizedlist>
-+      Each of these functions takes the address of the real object and
-+      a pointer to the object type specific debug description
-+      structure.
-+    </para>
-+    <para>
-+      Each detected error is reported in the statistics and a limited
-+      number of errors is printk'ed including a full stack trace.
-+    </para>
-+    <para>
-+      The statistics are available via debugfs/debug_objects/stats.
-+      They provide information about the number of warnings and the
-+      number of successful fixups along with information about the
-+      usage of the internal tracking objects and the state of the
-+      internal tracking objects pool.
-+    </para>
-+  </chapter>
-+  <chapter id="debugfunctions">
-+    <title>Debug functions</title>
-+    <sect1 id="prototypes">
-+      <title>Debug object function reference</title>
-+!Elib/debugobjects.c
-+    </sect1>
-+    <sect1 id="debug_object_init">
-+      <title>debug_object_init</title>
-+      <para>
-+	This function is called whenever the initialization function
-+	of a real object is called.
-+      </para>
-+      <para>
-+	When the real object is already tracked by debugobjects it is
-+	checked, whether the object can be initialized.  Initializing
-+	is not allowed for active and destroyed objects. When
-+	debugobjects detects an error, then it calls the fixup_init
-+	function of the object type description structure if provided
-+	by the caller. The fixup function can correct the problem
-+	before the real initialization of the object happens. E.g. it
-+	can deactivate an active object in order to prevent damage to
-+	the subsystem.
-+      </para>
-+      <para>
-+	When the real object is not yet tracked by debugobjects
-+	debugobjects allocates a tracker object for the real object
-+	and sets the tracker object state to ODEBUG_STATE_INIT.
-+      </para>
-+    </sect1>
-+
-+    <sect1 id="debug_object_activate">
-+      <title>debug_object_activate</title>
-+      <para>
-+	This function is called whenever the activation function of a
-+	real object is called.
-+      </para>
-+      <para>
-+	When the real object is already tracked by debugobjects it is
-+	checked, whether the object can be activated.  Activating is
-+	not allowed for active and destroyed objects. When
-+	debugobjects detects an error, then it calls the
-+	fixup_activate function of the object type description
-+	structure if provided by the caller. The fixup function can
-+	correct the problem before the real activation of the object
-+	happens. E.g. it can deactivate an active object in order to
-+	prevent damage to the subsystem.
-+      </para>
-+      <para>
-+	When the real object is not yet tracked by debugobjects then
-+	the fixup_activate function is called if available.  This is
-+	necessary to allow the legit activation of statically
-+	allocated and initialized objects. The fixup function checks
-+	whether the object is valid and calls the debug_objects_init()
-+	function to initialize the tracking of this object.
-+      </para>
-+      <para>
-+	When the activation is legit, then the state of the associated
-+	tracker object is set to ODEBUG_STATE_ACTIVE.
-+      </para>
-+    </sect1>
-+
-+    <sect1 id="debug_object_deactivate">
-+      <title>debug_object_deactivate</title>
-+      <para>
-+	This function is called whenever the deactivation function of
-+	a real object is called.
-+      </para>
-+      <para>
-+	When the real object is tracked by debugobjects it is checked,
-+	whether the object can be deactivated. Deactivating is not
-+	allowed for untracked or destroyed objects.
-+      </para>
-+      <para>
-+	When the deactivation is legit, then the state of the
-+	associated tracker object is set to ODEBUG_STATE_INACTIVE.
-+      </para>
-+    </sect1>
-+
-+    <sect1 id="debug_object_destroy">
-+      <title>debug_object_destroy</title>
-+      <para>
-+	This function is called to mark an object destroyed. This is
-+	useful to prevent the usage of invalid objects, which are
-+	still available in memory: either statically allocated objects
-+	or objects which are freed later.
-+      </para>
-+      <para>
-+	When the real object is tracked by debugobjects it is checked,
-+	whether the object can be destroyed. Destruction is not
-+	allowed for active and destroyed objects. When debugobjects
-+	detects an error, then it calls the fixup_destroy function of
-+	the object type description structure if provided by the
-+	caller. The fixup function can correct the problem before the
-+	real destruction of the object happens. E.g. it can deactivate
-+	an active object in order to prevent damage to the subsystem.
-+      </para>
-+      <para>
-+	When the destruction is legit, then the state of the
-+	associated tracker object is set to ODEBUG_STATE_DESTROYED.
-+      </para>
-+    </sect1>
-+
-+    <sect1 id="debug_object_free">
-+      <title>debug_object_free</title>
-+      <para>
-+	This function is called before an object is freed.
-+      </para>
-+      <para>
-+	When the real object is tracked by debugobjects it is checked,
-+	whether the object can be freed. Free is not allowed for
-+	active objects. When debugobjects detects an error, then it
-+	calls the fixup_free function of the object type description
-+	structure if provided by the caller. The fixup function can
-+	correct the problem before the real free of the object
-+	happens. E.g. it can deactivate an active object in order to
-+	prevent damage to the subsystem.
-+      </para>
-+      <para>
-+	Note that debug_object_free removes the object from the
-+	tracker. Later usage of the object is detected by the other
-+	debug checks.
-+      </para>
-+    </sect1>
-+  </chapter>
-+  <chapter id="fixupfunctions">
-+    <title>Fixup functions</title>
-+    <sect1 id="debug_obj_descr">
-+      <title>Debug object type description structure</title>
-+!Iinclude/linux/debugobjects.h
-+    </sect1>
-+    <sect1 id="fixup_init">
-+      <title>fixup_init</title>
-+      <para>
-+	This function is called from the debug code whenever a problem
-+	in debug_object_init is detected. The function takes the
-+	address of the object and the state which is currently
-+	recorded in the tracker.
-+      </para>
-+      <para>
-+	Called from debug_object_init when the object state is:
-+	<itemizedlist>
-+	  <listitem><para>ODEBUG_STATE_ACTIVE</para></listitem>
-+	</itemizedlist>
-+      </para>
-+      <para>
-+	The function returns "1" then the fixup was successful,
-+	otherwise "0". The return value is used to update the
-+	statistics.
-+      </para>
-+      <para>
-+	Note, that the function needs to call the debug_object_init()
-+	function again, after the damage has been repaired in order to
-+	keep the state consistent.
-+      </para>
-+    </sect1>
-+
-+    <sect1 id="fixup_activate">
-+      <title>fixup_activate</title>
-+      <para>
-+	This function is called from the debug code whenever a problem
-+	in debug_object_activate is detected.
-+      </para>
-+      <para>
-+	Called from debug_object_activate when the object state is:
-+	<itemizedlist>
-+	  <listitem><para>ODEBUG_STATE_NOTAVAILABLE</para></listitem>
-+	  <listitem><para>ODEBUG_STATE_ACTIVE</para></listitem>
-+	</itemizedlist>
-+      </para>
-+      <para>
-+	The function returns "1" then the fixup was successful,
-+	otherwise "0". The return value is used to update the
-+	statistics.
-+      </para>
-+      <para>
-+	Note, that the function needs to call the debug_object_activate()
-+	function again, after the damage has been repaired in order to
-+	keep the state consistent.
-+      </para>
-+      <para>
-+	The activation of statically initialized objects is a special
-+	case. When debug_object_activate() has no tracked object for
-+	this object address then fixup_activate() is called with
-+	object state ODEBUG_STATE_NOTAVAILABLE. The fixup function
-+	needs to check whether this is a legit case of a statically
-+	initialized object or not. In case it is it calls
-+	debug_object_init() and debug_object_activate() to make the
-+	object known to the tracker and marked active. In this case
-+	the function should return "0" because this is not a real
-+	fixup.
-+      </para>
-+    </sect1>
-+
-+    <sect1 id="fixup_destroy">
-+      <title>fixup_destroy</title>
-+      <para>
-+	This function is called from the debug code whenever a problem
-+	in debug_object_destroy is detected.
-+      </para>
-+      <para>
-+	Called from debug_object_destroy when the object state is:
-+	<itemizedlist>
-+	  <listitem><para>ODEBUG_STATE_ACTIVE</para></listitem>
-+	</itemizedlist>
-+      </para>
-+      <para>
-+	The function returns "1" then the fixup was successful,
-+	otherwise "0". The return value is used to update the
-+	statistics.
-+      </para>
-+    </sect1>
-+    <sect1 id="fixup_free">
-+      <title>fixup_free</title>
-+      <para>
-+	This function is called from the debug code whenever a problem
-+	in debug_object_free is detected. Further it can be called
-+	from the debug checks in k/v free, when an active object is
-+	detected from the debug_check_no_obj_freed() sanity checks.
-+      </para>
-+      <para>
-+	Called from debug_object_free() or debug_check_no_obj_freed()
-+	when the object state is:
-+	<itemizedlist>
-+	  <listitem><para>ODEBUG_STATE_ACTIVE</para></listitem>
-+	</itemizedlist>
-+      </para>
-+      <para>
-+	The function returns "1" then the fixup was successful,
-+	otherwise "0". The return value is used to update the
-+	statistics.
-+      </para>
-+    </sect1>
-+  </chapter>
-+  <chapter id="bugs">
-+    <title>Known Bugs And Assumptions</title>
-+    <para>
-+	None (knock on wood).
-+    </para>
-+  </chapter>
-+</book>
+It's also kind of odd to do "movl $0,%%edi" instead of just setting EDI 
+as an input.
 
--- 
-
+	-hpa
