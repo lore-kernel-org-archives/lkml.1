@@ -1,46 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751184AbYCEFEe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756887AbYCEFNX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751184AbYCEFEe (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Mar 2008 00:04:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750828AbYCEFEN
+	id S1756887AbYCEFNX (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Mar 2008 00:13:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751518AbYCEFNM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Mar 2008 00:04:13 -0500
-Received: from rv-out-0910.google.com ([209.85.198.187]:38699 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756616AbYCEFEM (ORCPT
+	Wed, 5 Mar 2008 00:13:12 -0500
+Received: from bzq-179-150-194.static.bezeqint.net ([212.179.150.194]:53838
+	"EHLO il.qumranet.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750931AbYCEFNL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Mar 2008 00:04:12 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:mime-version:content-type:content-transfer-encoding:content-disposition;
-        b=c+ZkX+7hWIVqLcuOjJy333Q2OPK3C81zA0FZm0uaEWdQzCIPhOzl+VESAZt0UNHJXsN0wBNll6C2llzxnZaU8lGoN26FKGRvXZtxiOn4UT73K+qmdVTNUKYsVC5CaKRqa9KxfqyGASyjdHI+YFtBIhjO22jZI6VkVbFa7H/UUDA=
-Message-ID: <86802c440803042104p77f44d5fnd4aeb86e21ec8c66@mail.gmail.com>
-Date: Tue, 4 Mar 2008 21:04:09 -0800
-From: "Yinghai Lu" <yhlu.kernel@gmail.com>
-To: "Ingo Molnar" <mingo@elte.hu>, "Andrew Morton" <akpm@linux-foundation.org>,
-       "Greg KH" <gregkh@suse.de>
-Subject: x86_64: set cfg_size for AMD Family 10h in case MMCONFIG should be material for 2.6.25
-Cc: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
+	Wed, 5 Mar 2008 00:13:11 -0500
+Message-ID: <47CE2B23.6010505@qumranet.com>
+Date: Wed, 05 Mar 2008 07:09:55 +0200
+From: Avi Kivity <avi@qumranet.com>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+CC: Christoph Lameter <clameter@sgi.com>,
+       Andrea Arcangeli <andrea@qumranet.com>, Jack Steiner <steiner@sgi.com>,
+       Nick Piggin <npiggin@suse.de>, akpm@linux-foundation.org,
+       Robin Holt <holt@sgi.com>, kvm-devel@lists.sourceforge.net,
+       general@lists.openfabrics.org, Steve Wise <swise@opengridcomputing.com>,
+       Roland Dreier <rdreier@cisco.com>, Kanoj Sarcar <kanojsarcar@yahoo.com>,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       daniel.blueman@quadrics.com
+Subject: Re: [RFC] Notifier for Externally Mapped Memory (EMM)
+References: <20080221144023.GC9427@v2.random>	 <20080221161028.GA14220@sgi.com> <20080227192610.GF28483@v2.random>	 <20080302155457.GK8091@v2.random> <20080303213707.GA8091@v2.random>	 <20080303220502.GA5301@v2.random> <47CC9B57.5050402@qumranet.com>	 <Pine.LNX.4.64.0803032327470.9642@schroedinger.engr.sgi.com>	 <20080304133020.GC5301@v2.random>	 <Pine.LNX.4.64.0803041059110.13957@schroedinger.engr.sgi.com>	 <20080304222030.GB8951@v2.random>	 <Pine.LNX.4.64.0803041422070.20821@schroedinger.engr.sgi.com> <1204670529.6241.52.camel@lappy>
+In-Reply-To: <1204670529.6241.52.camel@lappy>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0rc1 (firebolt.argo.co.il [0.0.0.0]); Wed, 05 Mar 2008 07:09:55 +0200 (IST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo/greg,
+Peter Zijlstra wrote:
+> On Tue, 2008-03-04 at 14:35 -0800, Christoph Lameter wrote:
+>
+>   
+>> RCU means that the callbacks occur in an atomic context.
+>>     
+>
+> Not really, if it requires moving the VM locks to sleepable locks under
+> a .config option, I think its also fair to require PREEMPT_RCU.
+>
+> OTOH, if you want to unconditionally move the VM locks to sleepable
+> locks you have a point.
+>   
 
-one patch in x86.git#testing
+Isn't that out of the question for .25?
 
-    x86_64: set cfg_size for AMD Family 10h in case MMCONFIG
+I really wish we can get the atomic variant in now, and add on 
+sleepability in .26, updating users if necessary.
 
-    reuse pci_cfg_space_size but skip check pci express and pci-x CAP ID.
+-- 
+Do not meddle in the internals of kernels, for they are subtle and quick to panic.
 
-should be get into 2.6.25. instead of waiting for 2.6.26
-
-it just one quirk to update AMD fam10h cfg_size if MMCONFIG is there.
-
-otherwise lspci -vvxxxx still report 512 for those NB.
-
-YH
