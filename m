@@ -1,60 +1,180 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763771AbYCEHCw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763976AbYCEHD2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763771AbYCEHCw (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Mar 2008 02:02:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759107AbYCEHCl
+	id S1763976AbYCEHD2 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Mar 2008 02:03:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751270AbYCEHDM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Mar 2008 02:02:41 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:55926 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758104AbYCEHCj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Mar 2008 02:02:39 -0500
-Date: Wed, 5 Mar 2008 08:02:02 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Christopher Li <sparse@chrisli.org>
-Cc: Julia Lawall <julia@diku.dk>, yi.zhu@intel.com,
-       linux-wireless@vger.kernel.org, ipw3945-devel@lists.sourceforge.net,
-       linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org,
-       Harvey Harrison <harvey.harrison@gmail.com>,
-       Alexander Viro <viro@ftp.linux.org.uk>, linux-sparse@vger.kernel.org,
-       Josh Triplett <josh@freedesktop.org>
-Subject: Re: [PATCH 6/9] drivers/net/wireless/iwlwifi/iwl-4965.c: Correct
-	use of ! and &
-Message-ID: <20080305070201.GA32434@elte.hu>
-References: <Pine.LNX.4.64.0802262143570.18200@ask.diku.dk> <20080305063842.GA24495@elte.hu> <70318cbf0803042249j57d7f3a3j7666961a9132b10b@mail.gmail.com>
+	Wed, 5 Mar 2008 02:03:12 -0500
+Received: from TYO201.gate.nec.co.jp ([202.32.8.193]:36911 "EHLO
+	tyo201.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750853AbYCEHDL (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 5 Mar 2008 02:03:11 -0500
+From: "Kazunaga Ikeno" <k-ikeno@ak.jp.nec.com>
+To: "'Paul Menage'" <menage@google.com>,
+       "'Dhaval Giani'" <dhaval@linux.vnet.ibm.com>
+Cc: <containers@lists.linux-foundation.org>, <linux-kernel@vger.kernel.org>
+References: <47CE322A.9060907@ak.jp.nec.com> <6599ad830803042156y5a28978fi995eb9050f8f5320@mail.gmail.com>
+Subject: RE: [RFC][PATCH 0/1]a new optional function for task assignment to cgroup
+Date: Wed, 5 Mar 2008 16:02:17 +0900
+Message-Id: <000801c87e8e$d95e2260$cc7d220a@kid0000>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <70318cbf0803042249j57d7f3a3j7666961a9132b10b@mail.gmail.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0001]
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+X-Mailer: Microsoft Office Outlook 11
+Thread-Index: Ach+haVaUQkRg8BcR8uJ4KhxRtbdkAACOtgA
+X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.3198
+In-Reply-To: <6599ad830803042156y5a28978fi995eb9050f8f5320@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Paul Menage wrote:
+> This is something that's been discussed before, originally as part of
+> CKRM with a complex rule engine in the kernel space.
+> 
+> Basically, the general agreement was that it's a case where a simple
+> API is going to be too simple for the majority of users, and a complex
+> API that satisfies everyone is going to be too messy/heavyweight.
+> 
+> This is something that can be done in a userspace daemon via the
+> process events connector - when you get a PROC_EVENT_UID event, you
+> can move the process into the appropriate cgroup (you may also need to
+> check any recently-forked children). This also gives you more
+> flexibility than you can have in the kernel - you can base your
+> decision on more complex factors than simply the uid of the process.
+> 
+> Dhaval Giani had a prototype implementation of such a daemon.
 
-* Christopher Li <sparse@chrisli.org> wrote:
+Paul - 
 
-> I think Al Viro has sent a patch to linux-sparse with subject "[PATCH 
-> 3/3] catch !x & y brainos" does exactly that.
+Thank you for your comment.
+Because it was the almost same timing, I did not notice about Dhaval Giani's plan. 
+I will investigate it.
 
-ah - nice :-)
+- Kazunaga Ikeno.
 
-/me checks the linux-sparse archive
+> 
+> Paul
+> 
+> >
+> >  == Description =============================================
+> >
+> >  This patch provides the function that leads a task, corresponding to the conditions
+> >  specified beforehand, to a specific cgroup directory.
+> >
+> >  Currently, this patch uses user-id as a condition to lead a task. On its I/F,
+> >  specifies user-id of a task and a cgroup directory.
+> >
+> >  The task set to specified user-id will automatically lead to the cgroup directory.
+> >  (it is attached to specific cgroup)
+> >
+> >  This function makes possible to attach a task to cgroup automatically when
+> >  specific user logs in, also to attach a task of a service which is set to
+> >  specific effective user-id to specific cgroup mechanically.
+> >
+> >  This function is just option, all the functions of cgroup are the same.
+> >  Also the migration of a task between cgroup directories can do by rewriting pid
+> >  of a control tasks file, including a task leading by this option.
+> >
+> >  It is able to enter two or more set of user-id and cgroup directory.
+> >  Specified cgroup directory may be the same or that may not be.
+> >  But it's not able to enter same user-id to plural cgroup directories to lead.
+> >
+> >
+> >  == Interface ===============================================
+> >
+> >    /lead_option  -  control file of this option
+> >
+> >  [example for reading a configuration]
+> >
+> >        # cat /cgroup/lead_option
+> >
+> >        uid:202        leadto:/cpuset/bar_cg
+> >        uid:201        leadto:/cpuset/foo_cg
+> >
+> >       * nothing appears before assignment.
+> >
+> >  [example for adding an entry]
+> >  - To lead a task(uid 201) to /cgroup/foo_cg
+> >
+> >        # echo uid:201 leadto:/cpuset/foo_cg > /cpuset/lead_option
+> >
+> >        * set a uid of task and cgroup dirctory to lead.
+> >        * Remake an entry uid to cgroup directory if set uid already exists.
+> >
+> >  [example for delete an entry]
+> >  - To delete an entry of uid
+> >
+> >        # echo uid:201 > /cpuset/lead_option
+> >
+> >        * To delete a registration, omit "leadto:" token.
+> >
+> >
+> >  == Operation example (chronological order) ==================
+> >
+> >  The follows is an example of the operation.
+> >
+> >  # ############################
+> >  # # Various confirmation before testing
+> >  # ############################
+> >  # id
+> >  uid=0(root) gid=0(root) groups=0(root)
+> >  # df /cpuset
+> >  Filesystem           1K-blocks      Used Available Use% Mounted on
+> >  none                         0         0         0   -  /cpuset
+> >  # more /proc/self/cgroup
+> >  cpuset:/
+> >  # id foo
+> >  uid=201(foo) gid=100(users) groups=100(users)
+> >  # id bar
+> >  uid=202(foo) gid=100(users) groups=100(users)
+> >  # ############################
+> >  # # Add an entry of user foo,bar
+> >  # ############################
+> >  # echo uid:201 leadto:/cpuset/foo_cg > /cpuset/lead_option
+> >  # echo uid:202 leadto:/cpuset/bar_cg > /cpuset/lead_option
+> >  # more /cpuset/lead_option
+> >  uid:202        leadto:/cpuset/bar_cg
+> >  uid:201        leadto:/cpuset/foo_cg
+> >  # ############################
+> >  # # Confirmation of the assignment of user foo,bar - (1)
+> >  # ############################
+> >  # su - foo
+> >  $ more /proc/$$/cgroup
+> >  cpuset:/foo_cg
+> >  $ more /proc/self/cgroup
+> >  cpuset:/foo_cg
+> >  $ su bar --command "more /proc/self/cgroup"
+> >  cpuset:/bar_cg
+> >  $ exit
+> >  # ############################
+> >  # # Delete an entry of user foo,bar
+> >  # ############################
+> >  # echo uid:201 > /cpuset/lead_option
+> >  # echo uid:202 > /cpuset/lead_option
+> >  # more /cpuset/lead_option
+> >  # ############################
+> >  # # Confirmation of the assignment of user foo,bar - (2)
+> >  # ############################
+> >  # su - foo
+> >  $ more /proc/$$/cgroup
+> >  cpuset:/
+> >  $ su bar --command "more /proc/self/cgroup"
+> >  cpuset:/
+> >  $
+> >
+> >
+> >  Thanks,
+> >  - Kazunaga Ikeno.
+> >
+> >
+> >
+> >  --
+> >  To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> >  the body of a message to majordomo@vger.kernel.org
+> >  More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> >  Please read the FAQ at  http://www.tux.org/lkml/
+> >
 
-Al's patch is:
-
-+                       if (op == '&' && expr->left->type == EXPR_PREOP &&
-+                           expr->left->op == '!')
-+                               warning(expr->pos, "dubious: !x & y");
-
-i think there might be similar patterns: "x & !y", "!x | y", "x | !y" ?
-
-	Ingo
