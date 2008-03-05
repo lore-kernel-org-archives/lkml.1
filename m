@@ -1,40 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761370AbYCERH6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759261AbYCEROJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761370AbYCERH6 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Mar 2008 12:07:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760251AbYCERHq
+	id S1759261AbYCEROJ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Mar 2008 12:14:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750960AbYCERNy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Mar 2008 12:07:46 -0500
-Received: from web52009.mail.re2.yahoo.com ([206.190.48.58]:41119 "HELO
-	web52009.mail.re2.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1754689AbYCERHp (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Mar 2008 12:07:45 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com;
-  h=X-YMail-OSG:Received:X-Mailer:Date:From:Subject:To:MIME-Version:Content-Type:Message-ID;
-  b=3e0jh4dnVy4tQTVQEqQCg5syHHj+jxveRxouZrCjNkarHI6zJGMSMSOJU9inCmK84/IkU9f1A36mgD+4gYsRMk62Lt9S6sbOVJiQ5OXc74VCyBJZuWOjZUPNHxWd2umY8yCXZF6oFueHwqTCmJlghBx5xWx0bunMPgsBg/nK9no=;
-X-YMail-OSG: JDd5XC8VM1kY3Mx8j4qzmme_aiCgwZGIxW3KBzHn4pQP7Owij6lBGovEGGZRHTXW.cDRvIHsCFrrMvihqiaRRKsoL7.B8iVx06X2G0w4l6irHvRcV_URTlAJkQU_KWLvK3hal3JiabT.OhQ-
-X-Mailer: YahooMailRC/902.35 YahooMailWebService/0.7.162
-Date: Wed, 5 Mar 2008 09:07:43 -0800 (PST)
-From: Matti Linnanvuori <mattilinnanvuori@yahoo.com>
-Subject: Re: [patch] Re: using long instead of atomic_t when only set/read is required
-To: linux-kernel@vger.kernel.org
+	Wed, 5 Mar 2008 12:13:54 -0500
+Received: from sabe.cs.wisc.edu ([128.105.6.20]:53689 "EHLO sabe.cs.wisc.edu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750740AbYCERNx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 5 Mar 2008 12:13:53 -0500
+Message-ID: <47CED4C4.80008@cs.wisc.edu>
+Date: Wed, 05 Mar 2008 11:13:40 -0600
+From: Mike Christie <michaelc@cs.wisc.edu>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <64659.5446.qm@web52009.mail.re2.yahoo.com>
+To: James Bottomley <James.Bottomley@HansenPartnership.com>
+CC: Mark Hounschell <dmarkh@cfl.rr.com>, markh@compro.net,
+       linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Tony Battersby <tonyb@cybernetics.com>
+Subject: Re: New 2.6.24.2 SG_IO SCSI problems
+References: <47BD9588.9080803@compro.net> <47BEFD4B.9060803@cs.wisc.edu>	 <47BEFF5F.9020002@cs.wisc.edu> <47BF0CE2.306@compro.net>	 <47BF40D7.5050301@compro.net> <47BF4BD0.7080008@cs.wisc.edu>	 <47CE8AEA.1060209@cfl.rr.com> <1204731854.3047.20.camel@localhost.localdomain>
+In-Reply-To: <1204731854.3047.20.camel@localhost.localdomain>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2008-03-03 at 18:24 +0100, Pavel Machek wrote:
-> "For all properly-aligned pointer and integral types other than short or
-> long long..."
+James Bottomley wrote:
+> On Wed, 2008-03-05 at 06:58 -0500, Mark Hounschell wrote:
+>> Mike Christie wrote:
+>>> Mark Hounschell wrote:
+>>>> Mark Hounschell wrote:
+>>>>> Mike Christie wrote:
+>>>>>> Mike Christie wrote:
+>>>>>>> Mark Hounschell wrote:
+>>>>>>>> I seem to have run into some sort of regression in the SG_IO
+>>>>>>>> interface of 2.6.24.2. I have an application that up until 2.6.24
+>>>>>>>> worked fine. The 2.6.23.16 kernel works fine.
+>>>>>>>>
+>>>>>>>> During reads I get these kernel messages. Writes and other functions
+>>>>>>>> _seem_ OK. Actually basic
+>>>>>>>> reads  are working. Its with large BC reads using an io_vec list that
+>>>>>>>> the problem shows up.
+>>>>>>>>
+>>>>>>> Are you doing SG_IO to the sg device (/dev/sg*) or to the block device
+>>>>>>> (/dev/sdX)?
+>>>>>> If you are doing SG_IO to the sg device, then I know of one regression
+>>>>>> (well not regression exactly, but I fixed a bug but the patch got
+>>>>>> partially overwritten by another patch and that caused a new bug). Both
+>>>>>> bugs are fixed in 2.6.25-rc2. Could you try that out if you are doing
+>>>>>> SG_IO to the sg device.
+>>>>>>
+>>>>> Yes, I'm using /dev/sg*. And yes again I'll checkout 2.6.25-rc2 ASIC.
+>>>>>
+>>>>> Thanks
+>>>>> Mark
+>>>>> -
+>>>>  
+>>>> 2.6.25-rc2 does fix the problem I'm having. I don't suppose there is a
+>>>> patch
+>>>> lying around for 2.6.24.2??
+>>>>
+>>> I attached a backport of the patch from Tony (added as cc) that is in
+>>> 2.6.25-rc2. Could you try it out against 2.6.24.2 just to make sure it
+>>> was this patch, then we can send it to stable.
+>>>
+>>> Mark Hounschell wrote:
+>>>
+>>> Sorry it took so long. This does fix my problem. I hope it's not to
+>>> late for 2.6.24.3
+>>>
+>> Backport
+>> 76d78300a6eb8b7f08e47703b7e68a659ffc2053
+>> to 2.6.24
+> 
+> Erm, I think you mean:
 
-As far as I know, Linux kernel supports Alpha that does not have atomic
-updates of integral types with less than 32 bits.
+You are right.
 
+> 
+> commit 4d2de3a50ce19af2008a90636436a1bf5b3b697b
+> Author: Tony Battersby <tonyb@cybernetics.com>
+> Date:   Tue Feb 5 10:36:10 2008 -0500
+> 
+>     [SCSI] fix BUG when sum(scatterlist) > bufflen
+> 
+> I can send it ... I thought the error was introduced post 2.6.24, but it
+> was actually in 2.6.24-rc1
+> 
 
-      ____________________________________________________________________________________
-Looking for last minute shopping deals?  
-Find them fast with Yahoo! Search.  http://tools.search.yahoo.com/newsearch/category.php?category=shopping
+Ok thanks.
