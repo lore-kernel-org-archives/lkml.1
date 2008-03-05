@@ -1,51 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763392AbYCEI4T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761672AbYCEI7u@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763392AbYCEI4T (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Mar 2008 03:56:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758183AbYCEI4A
+	id S1761672AbYCEI7u (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Mar 2008 03:59:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753664AbYCEI7m
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Mar 2008 03:56:00 -0500
-Received: from mgw1.diku.dk ([130.225.96.91]:37555 "EHLO mgw1.diku.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751843AbYCEIz7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Mar 2008 03:55:59 -0500
-Date: Wed, 5 Mar 2008 09:55:49 +0100 (CET)
-From: Julia Lawall <julia@diku.dk>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Christopher Li <sparse@chrisli.org>, yi.zhu@intel.com,
-       linux-wireless@vger.kernel.org, ipw3945-devel@lists.sourceforge.net,
-       linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org,
-       Harvey Harrison <harvey.harrison@gmail.com>,
-       Alexander Viro <viro@ftp.linux.org.uk>, linux-sparse@vger.kernel.org,
-       Josh Triplett <josh@freedesktop.org>
-Subject: Re: [PATCH 6/9] drivers/net/wireless/iwlwifi/iwl-4965.c: Correct
- use of ! and &
-In-Reply-To: <20080305070201.GA32434@elte.hu>
-Message-ID: <Pine.LNX.4.64.0803050951550.28021@ask.diku.dk>
-References: <Pine.LNX.4.64.0802262143570.18200@ask.diku.dk>
- <20080305063842.GA24495@elte.hu> <70318cbf0803042249j57d7f3a3j7666961a9132b10b@mail.gmail.com>
- <20080305070201.GA32434@elte.hu>
+	Wed, 5 Mar 2008 03:59:42 -0500
+Received: from E23SMTP05.au.ibm.com ([202.81.18.174]:36859 "EHLO
+	e23smtp05.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753260AbYCEI7l (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 5 Mar 2008 03:59:41 -0500
+Date: Wed, 5 Mar 2008 14:29:22 +0530
+From: Dhaval Giani <dhaval@linux.vnet.ibm.com>
+To: Greg KH <gregkh@suse.de>
+Cc: Alexey Dobriyan <adobriyan@sw.ru>, Holger Kiehl <Holger.Kiehl@dwd.de>,
+       linux-kernel@vger.kernel.org, vatsa@linux.vnet.ibm.com, mingo@elte.hu
+Subject: Re: sysfs: duplicate filename '74' can not be created
+Message-ID: <20080305085922.GA8951@linux.vnet.ibm.com>
+Reply-To: Dhaval Giani <dhaval@linux.vnet.ibm.com>
+References: <20080304160940.GC19059@localhost.sw.ru> <20080304163339.GA11160@linux.vnet.ibm.com> <20080304192435.GA5525@suse.de>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080304192435.GA5525@suse.de>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-There are some legitimate uses of !x & y which are actually of the form !x 
-& !y, where x and y are function calls.  That is a not particularly 
-elegant way of getting both x and y to be evaluated and then combining the 
-results using "and".  If such code is considered acceptable, then perhaps 
-the sparse patch should be more complicated.
+On Tue, Mar 04, 2008 at 11:24:36AM -0800, Greg KH wrote:
+> On Tue, Mar 04, 2008 at 10:03:39PM +0530, Dhaval Giani wrote:
+> > On Tue, Mar 04, 2008 at 07:09:40PM +0300, Alexey Dobriyan wrote:
+> > > [Cc'ing /sys/kernel/uids guys]
+> > > 
+> > 
+> > [Also adding gregkh to the cc :)]
+> > 
+> > > > Mar  3 13:50:01 helena kernel: sysfs: duplicate filename '74' can not be created
+> > > > Mar  3 13:50:01 helena kernel: WARNING: at fs/sysfs/dir.c:424 sysfs_add_one()
+> > > > Mar  3 13:50:01 helena kernel: Pid: 21911, comm: sshd Not tainted 2.6.24.3 #1
+> 
+> What kernel version is this?  2.6.24 had lots of "issues" with the uids
+> code, I'm amazed it worked at all :)
+> 
 
-julia
+:). Seems to be a stable series kernel (2.6.24.3). Can you please tell
+me some of the issues, so that I can try to go fix it up.
 
-> Al's patch is:
-> 
-> +                       if (op == '&' && expr->left->type == EXPR_PREOP &&
-> +                           expr->left->op == '!')
-> +                               warning(expr->pos, "dubious: !x & y");
-> 
-> i think there might be similar patterns: "x & !y", "!x | y", "x | !y" ?
-> 
-> 	Ingo
-> 
+thanks,
+-- 
+regards,
+Dhaval
