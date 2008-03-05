@@ -1,49 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762224AbYCERjl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762508AbYCERkE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762224AbYCERjl (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Mar 2008 12:39:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754926AbYCERj3
+	id S1762508AbYCERkE (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Mar 2008 12:40:04 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762155AbYCERji
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Mar 2008 12:39:29 -0500
-Received: from extu-mxob-1.symantec.com ([216.10.194.28]:50170 "EHLO
-	extu-mxob-1.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761907AbYCERj2 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Mar 2008 12:39:28 -0500
-Date: Wed, 5 Mar 2008 17:38:28 +0000 (GMT)
-From: Hugh Dickins <hugh@veritas.com>
-X-X-Sender: hugh@blonde.site
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-cc: Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
-       Andi Kleen <ak@suse.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: preempt bug in set_pmd_pfn?
-In-Reply-To: <47CECEE9.3000801@goop.org>
-Message-ID: <Pine.LNX.4.64.0803051721200.13410@blonde.site>
-References: <47CDBB87.8090906@goop.org> <20080304212821.GB8944@elte.hu>
- <47CDBEDC.1050302@goop.org> <20080305064814.GB28398@elte.hu>
- <Pine.LNX.4.64.0803051407310.22243@blonde.site> <47CECEE9.3000801@goop.org>
+	Wed, 5 Mar 2008 12:39:38 -0500
+Received: from sacred.ru ([62.205.161.221]:35390 "EHLO sacred.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1762112AbYCERjh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 5 Mar 2008 12:39:37 -0500
+Message-ID: <47CED849.9070602@openvz.org>
+Date: Wed, 05 Mar 2008 20:28:41 +0300
+From: Pavel Emelyanov <xemul@openvz.org>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080213)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Paul Menage <menage@google.com>,
+       Sukadev Bhattiprolu <sukadev@us.ibm.com>,
+       Serge Hallyn <serue@us.ibm.com>
+Subject: [PATCH 2/9] Cleanup the get_gendisk() a bit
+References: <47CED717.60406@openvz.org>
+In-Reply-To: <47CED717.60406@openvz.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-Greylist: Sender succeeded SMTP AUTH authentication, not delayed by milter-greylist-3.0 (sacred.ru [62.205.161.221]); Wed, 05 Mar 2008 20:28:32 +0300 (MSK)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 5 Mar 2008, Jeremy Fitzhardinge wrote:
-> 
-> If a thread goes from processor A -> B -> A, where A is first preempted
-> between a pagetable update and a tlb flush, then the second time the thread
-> runs on A may run with a stale tlb (if in the meantime A has either been idle
-> or only running kernel threads).
+The current implementation first converts kobj to device and
+then checks for kobj not to be NULL. This is OK, since the
+converting macros is a container_of one, but this does not
+look very nice. 
 
-Right, thanks, because __flush_tlb_one opts out of the full active_mm
-checking which goes on for userspace mms (which covers, for example,
-the case of preemption before dup_mmap's flush_tlb_mm).
+Besides, I'll have to add some code _before_ the kobj_lookup()
+and thus will have to move the call to kobj_lookup lower.
 
-But is there actually a case where there's a problem?  So far as I can see,
-set_pmd_pfn is there solely for discontig_32's __init remap_numa_kva; and
-set_pte_pfn is there solely for set_fixmap, which operates on a per-cpu
-area of pagetable, which would already be in bigger trouble if preemption
-to another cpu were possible.
+So do this job here to make the further patching cleaner.
 
-Hugh
+Signed-off-by: Pavel Emelyanov <xemul@openvz.org>
+
+---
+ block/genhd.c |   11 ++++++++---
+ 1 files changed, 8 insertions(+), 3 deletions(-)
+
+diff --git a/block/genhd.c b/block/genhd.c
+index e8cf05a..9a7a903 100644
+--- a/block/genhd.c
++++ b/block/genhd.c
+@@ -212,10 +212,15 @@ void unlink_gendisk(struct gendisk *disk)
+  */
+ struct gendisk *get_gendisk(dev_t devt, int *part)
+ {
+-	struct kobject *kobj = kobj_lookup(bdev_map, devt, part);
+-	struct device *dev = kobj_to_dev(kobj);
++	struct kobject *kobj;
++	struct device *dev;
++
++	kobj = kobj_lookup(bdev_map, devt, part);
++	if (kobj == NULL)
++		return NULL;
+ 
+-	return  kobj ? dev_to_disk(dev) : NULL;
++	dev = kobj_to_dev(kobj);
++	return dev_to_disk(dev);
+ }
+ 
+ /*
+-- 
+1.5.3.4
+
