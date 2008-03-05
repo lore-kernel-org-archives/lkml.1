@@ -1,78 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933908AbYCEA2F@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764204AbYCEA2k@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933908AbYCEA2F (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Mar 2008 19:28:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760456AbYCEA1w
+	id S1764204AbYCEA2k (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Mar 2008 19:28:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760558AbYCEA2Y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Mar 2008 19:27:52 -0500
-Received: from tama50.ecl.ntt.co.jp ([129.60.39.147]:50346 "EHLO
-	tama50.ecl.ntt.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759965AbYCEA1u (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Mar 2008 19:27:50 -0500
-To: htejun@gmail.com
-Cc: tomof@acm.org, efault@gmx.de, jens.axboe@oracle.com,
-       fujita.tomonori@lab.ntt.co.jp, James.Bottomley@HansenPartnership.com,
-       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       linux-ide@vger.kernel.org, linux-scsi@vger.kernel.org,
-       jgarzik@pobox.com, bzolnier@gmail.com
-Subject: Re: [PATCH] block: fix residual byte count handling
-From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-In-Reply-To: <47CDDC31.4070806@gmail.com>
-References: <47CD7C05.1080707@gmail.com>
-	<20080305041914V.tomof@acm.org>
-	<47CDDC31.4070806@gmail.com>
+	Tue, 4 Mar 2008 19:28:24 -0500
+Received: from mail.suse.de ([195.135.220.2]:55908 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1760125AbYCEA2X (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 4 Mar 2008 19:28:23 -0500
+Date: Wed, 5 Mar 2008 01:28:21 +0100
+From: Nick Piggin <npiggin@suse.de>
+To: Pekka Enberg <penberg@cs.helsinki.fi>
+Cc: Christoph Lameter <clameter@sgi.com>, netdev@vger.kernel.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       yanmin_zhang@linux.intel.com, David Miller <davem@davemloft.net>,
+       Eric Dumazet <dada1@cosmosbay.com>
+Subject: Re: [rfc][patch 1/3] slub: fix small HWCACHE_ALIGN alignment
+Message-ID: <20080305002821.GD1510@wotan.suse.de>
+References: <20080303093449.GA15091@wotan.suse.de> <Pine.LNX.4.64.0803031107130.6917@schroedinger.engr.sgi.com> <20080303200613.GC8974@wotan.suse.de> <Pine.LNX.4.64.0803031209570.16049@schroedinger.engr.sgi.com> <20080303201701.GF8974@wotan.suse.de> <Pine.LNX.4.64.0803031315160.4131@schroedinger.engr.sgi.com> <84144f020803031330i2c0ea1f6kc5b02c8b26145797@mail.gmail.com> <Pine.LNX.4.64.0803031331340.4375@schroedinger.engr.sgi.com> <47CC6F30.50802@cs.helsinki.fi>
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-Id: <20080305092619Y.fujita.tomonori@lab.ntt.co.jp>
-Date: Wed, 05 Mar 2008 09:26:19 +0900
-X-Dispatcher: imput version 20040704(IM147)
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <47CC6F30.50802@cs.helsinki.fi>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 05 Mar 2008 08:33:05 +0900
-Tejun Heo <htejun@gmail.com> wrote:
-
-> FUJITA Tomonori wrote:
-> > Hmm, does SCSI mid-layer need to care about how many bytes the block
-> > layer allocates? I don't think that extra_len is NOT good_bytes.
-> > 
-> > I think that the block layer had better take care about it (fix
-> > __end_that_request_first?).
+On Mon, Mar 03, 2008 at 11:35:44PM +0200, Pekka Enberg wrote:
+> Hi,
 > 
-> Yeah, probably calling completion functions w/o bytes count is the right
-> thing to do but what I was talking about was what could break when the
-> semantics of rq->data_len changed.  If we keep rq->data_len() ==
-> sum(sg), we keep it business as usual for all the rest except for the
-> device application layer if we don't we do the reverse and SCSI midlayer
-> completion was a good example, I think.
+> Christoph Lameter wrote:
+> >Well the guarantee can only be exploited if you would check the cacheline 
+> >sizes and the object size from the code that creates the slab cache. 
+> >Basically you would have to guestimate what the slab allocator is doing.
+> >
+> >So the guarantee is basically meaningless. If the object is larger than a 
+> >cacheline then this will never work.
+> 
+> Yes, I know that. That's why I am asking why this matters. If there's 
+> some sort of regression because SLUB does HWCACHE_ALIGN bit differently, 
+> we need to fix that.
 
-sglist is a low-level I/O representation for device drivers. SCSI
-midlayer should not care about sglist. We should not fix SCSI midlayer
-for rq->data_len != sum(sg) change (so I can't agree with your
-diagrams in another mail).
-
-When if we change a rule, we need to fix something.
-
-If we keep rq->data_len == sum(sg), we need to fix the device
-application layer. If we keep rq->data_len == the true data length, we
-need to fix the low-level drivers.
-
-Now I'm fine with the commit e97a294ef6938512b655b1abf17656cf2b26f709
-since we are in -rc stages. But I plan to send a patch to revert it
-and fix this issue in the block layer. I'd like to test it in -mm for
-a while.
-
-Only sglist stuff in SCSI midlayer is scsi_req_map_sg now. As you
-know, we really want to remove it.
+It started out as a SLUB regression that was exposing poor code in the
+percpu allocator due to different SLUB kmalloc alignments. That prompted
+some further investigation about the alignment handling in the
+allocators and showed up this problem with SLUB's HWCACHE_ALIGN. While
+I don't know of a regression caused by it as such, it is totally
+unreasonable to just change the semantics of it (seemingly for no good
+reason). It is used quite a bit in networking for one, and those guys
+count every single cache miss in their fastpaths.
 
 
-> Things going the other way is fine with me but I at least want to hear a
-> valid rationale.  Till now all I got is "because that's the true size"
-> which doesn't really make much sense to me.
+> Not that it necessarily means we have to change 
+> HWCACHE_ALIGN but I am assuming Nick has some reason why he wants to 
+> introduce the SMP alignment flag.
 
-Most of users of request structure care about only the real data
-length, don't care about padding and drain length. Why do they bother
-to use a helper function to get the real data length?
+The SMP flag was just an RFC. I think some people (like Christoph) were
+being confused about the HWCACHE_ALIGN flag being for avoiding false
+sharing on SMP systems. It would actually be also generally useful to
+have the SMP flag (eg. see the sites I added it to in patch #3).
