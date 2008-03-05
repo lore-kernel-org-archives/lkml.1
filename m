@@ -1,25 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933225AbYCEMTA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933415AbYCEMTd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933225AbYCEMTA (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Mar 2008 07:19:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753269AbYCEMSh
+	id S933415AbYCEMTd (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Mar 2008 07:19:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932719AbYCEMSr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Mar 2008 07:18:37 -0500
-Received: from srv5.dvmed.net ([207.36.208.214]:51062 "EHLO mail.dvmed.net"
+	Wed, 5 Mar 2008 07:18:47 -0500
+Received: from srv5.dvmed.net ([207.36.208.214]:51069 "EHLO mail.dvmed.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751746AbYCEMSg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Mar 2008 07:18:36 -0500
-Message-ID: <47CE8F90.7060607@pobox.com>
-Date: Wed, 05 Mar 2008 07:18:24 -0500
-From: Jeff Garzik <jgarzik@pobox.com>
+	id S1765844AbYCEMSp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 5 Mar 2008 07:18:45 -0500
+Message-ID: <47CE8F9B.8020003@garzik.org>
+Date: Wed, 05 Mar 2008 07:18:35 -0500
+From: Jeff Garzik <jeff@garzik.org>
 User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
 MIME-Version: 1.0
-To: Adrian Bunk <bunk@kernel.org>
-CC: geert@linux-m68k.org, zippel@linux-m68k.org, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org, linux-m68k@vger.kernel.org
-Subject: Re: [2.6 patch] fix drivers/net/atarilance.c compilation
-References: <20080303213413.GN26072@cs181133002.pp.htv.fi>
-In-Reply-To: <20080303213413.GN26072@cs181133002.pp.htv.fi>
+To: Adrian Bunk <adrian.bunk@movial.fi>
+CC: Olaf Hering <olaf@aepfle.de>, Anton Vorontsov <avorontsov@ru.mvista.com>,
+       Vitaly Bordug <vitb@kernel.crashing.org>,
+       Kumar Gala <galak@kernel.crashing.org>, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org
+Subject: Re: [2.6.25 patch] FIXED_PHY must depend on PHYLIB=y
+References: <200802271158.00453.olaf@aepfle.de> <20080227150754.GA29269@cs181133002.pp.htv.fi>
+In-Reply-To: <20080227150754.GA29269@cs181133002.pp.htv.fi>
 Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
 X-Spam-Score: -4.4 (----)
@@ -30,21 +32,21 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 Adrian Bunk wrote:
-> This patch fixes the following build error:
+> This patch fixes the following build error introduced by commit 
+> a79d8e93d300adb84cccc38ac396cfb118c238ad and reported by Olaf Hering:
 > 
 > <--  snip  -->
 > 
 > ...
->   CC [M]  drivers/net/atarilance.o
-> {standard input}: Assembler messages:
-> {standard input}:406: Error: symbol `Lberr' is already defined
-> {standard input}:460: Error: symbol `Lberr' is already defined
-> make[3]: *** [drivers/net/atarilance.o] Error 1
+>   LD      .tmp_vmlinux1
+> arch/powerpc/sysdev/built-in.o: In function `of_add_fixed_phys':
+> fsl_soc.c:(.init.text+0xd34): undefined reference to `fixed_phy_add'
+> make: *** [.tmp_vmlinux1] Error 1
 > 
-> <--  snip  -->
+> <--   snip  -->
 > 
-> Signed-off-by: Adrian Bunk <bunk@kernel.org>
+> Signed-off-by: Adrian Bunk <adrian.bunk@movial.fi>
 
-applied
+applied (but sad)
 
 
