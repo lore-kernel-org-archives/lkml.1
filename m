@@ -1,58 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756887AbYCEFNX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757497AbYCEFSf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756887AbYCEFNX (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Mar 2008 00:13:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751518AbYCEFNM
+	id S1757497AbYCEFSf (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Mar 2008 00:18:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751668AbYCEFSY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Mar 2008 00:13:12 -0500
-Received: from bzq-179-150-194.static.bezeqint.net ([212.179.150.194]:53838
-	"EHLO il.qumranet.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750931AbYCEFNL (ORCPT
+	Wed, 5 Mar 2008 00:18:24 -0500
+Received: from mga10.intel.com ([192.55.52.92]:41612 "EHLO
+	fmsmga102.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751518AbYCEFSY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Mar 2008 00:13:11 -0500
-Message-ID: <47CE2B23.6010505@qumranet.com>
-Date: Wed, 05 Mar 2008 07:09:55 +0200
-From: Avi Kivity <avi@qumranet.com>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
-MIME-Version: 1.0
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-CC: Christoph Lameter <clameter@sgi.com>,
-       Andrea Arcangeli <andrea@qumranet.com>, Jack Steiner <steiner@sgi.com>,
-       Nick Piggin <npiggin@suse.de>, akpm@linux-foundation.org,
-       Robin Holt <holt@sgi.com>, kvm-devel@lists.sourceforge.net,
-       general@lists.openfabrics.org, Steve Wise <swise@opengridcomputing.com>,
-       Roland Dreier <rdreier@cisco.com>, Kanoj Sarcar <kanojsarcar@yahoo.com>,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       daniel.blueman@quadrics.com
-Subject: Re: [RFC] Notifier for Externally Mapped Memory (EMM)
-References: <20080221144023.GC9427@v2.random>	 <20080221161028.GA14220@sgi.com> <20080227192610.GF28483@v2.random>	 <20080302155457.GK8091@v2.random> <20080303213707.GA8091@v2.random>	 <20080303220502.GA5301@v2.random> <47CC9B57.5050402@qumranet.com>	 <Pine.LNX.4.64.0803032327470.9642@schroedinger.engr.sgi.com>	 <20080304133020.GC5301@v2.random>	 <Pine.LNX.4.64.0803041059110.13957@schroedinger.engr.sgi.com>	 <20080304222030.GB8951@v2.random>	 <Pine.LNX.4.64.0803041422070.20821@schroedinger.engr.sgi.com> <1204670529.6241.52.camel@lappy>
-In-Reply-To: <1204670529.6241.52.camel@lappy>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+	Wed, 5 Mar 2008 00:18:24 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.25,448,1199692800"; 
+   d="scan'208";a="528900977"
+Subject: Re: 2.6.25-rc3-git3: Reported regressions from 2.6.24
+From: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
+To: balbir@linux.vnet.ibm.com
+Cc: Dhaval Giani <dhaval@linux.vnet.ibm.com>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Adrian Bunk <bunk@kernel.org>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>,
+       Balbir Singh <balbir@in.ibm.com>, Ingo Molnar <mingo@elte.hu>
+In-Reply-To: <47CE183C.7040105@linux.vnet.ibm.com>
+References: <200803030316.07165.rjw@sisk.pl>
+	 <20080304112741.GA13428@linux.vnet.ibm.com>
+	 <1204682782.3248.189.camel@ymzhang>  <47CE183C.7040105@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=utf-8
+Date: Wed, 05 Mar 2008 13:15:54 +0800
+Message-Id: <1204694154.3248.194.camel@ymzhang>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.9.2 (2.9.2-2.fc7) 
 Content-Transfer-Encoding: 7bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0rc1 (firebolt.argo.co.il [0.0.0.0]); Wed, 05 Mar 2008 07:09:55 +0200 (IST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Peter Zijlstra wrote:
-> On Tue, 2008-03-04 at 14:35 -0800, Christoph Lameter wrote:
->
->   
->> RCU means that the callbacks occur in an atomic context.
->>     
->
-> Not really, if it requires moving the VM locks to sleepable locks under
-> a .config option, I think its also fair to require PREEMPT_RCU.
->
-> OTOH, if you want to unconditionally move the VM locks to sleepable
-> locks you have a point.
->   
+On Wed, 2008-03-05 at 09:19 +0530, Balbir Singh wrote:
+> Zhang, Yanmin wrote:
+> > On Tue, 2008-03-04 at 16:57 +0530, Dhaval Giani wrote:
+> >>> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=9978
+> >>> Subject		: 2.6.25-rc1: volanoMark 45% regression
+> >>> Submitter	: Zhang, Yanmin <yanmin_zhang@linux.intel.com>
+> >>> Date		: 2008-02-13 10:30
+> >>> References	: http://lkml.org/lkml/2008/2/13/128
+> >>> Handled-By	: Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>
+> >>> 		  Balbir Singh <balbir@linux.vnet.ibm.com>
+> >>  
+> >> Peter's revert of the load balance patches should fix this one. Yanmin,
+> >> could you please confirm if the patch at
+> >> http://lkml.org/lkml/2008/2/25/202 helps?
+> > I tested it against 2.6.25-rc3 on my 16-core tigerton machine. It really improves
+> > volano result although it doesn't recover all the result.
+> > Comparing with 2.6.24, without the patch, volanoMark has about 50% regression
+> > with 2.6.25-rc3. With the patch, volanoMark has about 15% regression.
+> > 
+> 
+> Have you had a chance to git-bisect the culprit after the revert?
+How to bisect it if the reverted patch is submitted after the culprit patch?
 
-Isn't that out of the question for .25?
+-yanmin
 
-I really wish we can get the atomic variant in now, and add on 
-sleepability in .26, updating users if necessary.
-
--- 
-Do not meddle in the internals of kernels, for they are subtle and quick to panic.
 
