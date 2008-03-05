@@ -1,71 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761873AbYCEQ4w@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760814AbYCEQ6f@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761873AbYCEQ4w (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Mar 2008 11:56:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761323AbYCEQ4T
+	id S1760814AbYCEQ6f (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Mar 2008 11:58:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756251AbYCEQ60
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Mar 2008 11:56:19 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:48343 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761322AbYCEQ4P (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Mar 2008 11:56:15 -0500
-Date: Wed, 5 Mar 2008 13:53:20 -0300
-From: Eduardo Habkost <ehabkost@redhat.com>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: Ian Campbell <ijc@hellion.org.uk>,
-       Alexander van Heukelum <heukelum@mailshack.com>,
-       Ingo Molnar <mingo@elte.hu>,
-       Alexander van Heukelum <heukelum@fastmail.fm>, Andi Kleen <ak@suse.de>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Jeremy Fitzhardinge <jeremy@goop.org>,
-       Mark McLoughlin <markmc@redhat.com>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [RFC] use realmode code to reserve end-of-conventional-memory
-	to 1MB
-Message-ID: <20080305165320.GJ20230@blackpad>
-References: <1203958478.20033.1239002461@webmail.messagingengine.com> <20080225170134.GA15839@elte.hu> <20080225180750.GA31054@mailshack.com> <20080228131341.GA25213@mailshack.com> <20080228132822.GA25278@mailshack.com> <1204233131.28798.12.camel@cthulhu.hellion.org.uk> <47C72432.3010606@zytor.com> <1204240609.28798.33.camel@cthulhu.hellion.org.uk> <20080305155930.GI20230@blackpad> <47CEC561.6050008@zytor.com>
+	Wed, 5 Mar 2008 11:58:26 -0500
+Received: from an-out-0708.google.com ([209.85.132.246]:37608 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754214AbYCEQ6Z (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 5 Mar 2008 11:58:25 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent:from;
+        b=VysbMJznH1a8PN2Xxez+GAw3zPB46rgL1RKMVIOodMgVuBqsHoWPfUJwxB6SwwKEbNWoZKZtNBkPKGqJS/A6uooJCgVNjcEa0rv84kitkvUZtioMW+nIWkmulcjCRZl4t5zhJX3jk++qCp5v/yCRnczH70A40Zcq5Vi7ZGMQtJw=
+Date: Wed, 5 Mar 2008 18:55:13 +0200
+To: Casey Schaufler <casey@schaufler-ca.com>
+Cc: Chris Wright <chrisw@sous-sol.org>, Stephen Smalley <sds@tycho.nsa.gov>,
+       James Morris <jmorris@namei.org>, Eric Paris <eparis@parisplace.org>,
+       Paul Moore <paul.moore@hp.com>, Alexey Dobriyan <adobriyan@sw.ru>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus <torvalds@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       LSM-ML <linux-security-module@vger.kernel.org>
+Subject: Re: [PATCH -v7 -rc3] Security: Introduce security= boot parameter
+Message-ID: <20080305165513.GA26419@ubuntu>
+References: <20080305152901.GA26016@ubuntu> <31708.65957.qm@web36611.mail.mud.yahoo.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <47CEC561.6050008@zytor.com>
-X-Fnord: you can see the fnord
-User-Agent: Mutt/1.5.14 (2007-02-12)
+In-Reply-To: <31708.65957.qm@web36611.mail.mud.yahoo.com>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+From: "Ahmed S. Darwish" <darwish.07@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Mar 05, 2008 at 08:08:01AM -0800, H. Peter Anvin wrote:
-> Eduardo Habkost wrote:
-> >>
-> >>diff --git a/arch/x86/xen/setup.c b/arch/x86/xen/setup.c
-> >>index 3bad477..2341492 100644
-> >>--- a/arch/x86/xen/setup.c
-> >>+++ b/arch/x86/xen/setup.c
-> >>@@ -38,7 +38,8 @@ char * __init xen_memory_setup(void)
-> >> 	unsigned long max_pfn = xen_start_info->nr_pages;
-> >> 
-> >> 	e820.nr_map = 0;
-> >>-	add_memory_region(0, PFN_PHYS(max_pfn), E820_RAM);
-> >>+	add_memory_region(0, LOWMEMSIZE(), E820_RAM);
-> >>+	add_memory_region(HIGH_MEMORY, PFN_PHYS(max_pfn)-HIGH_MEMORY, 
-> >>E820_RAM);
-> >
-> >Won't this waste 300+ KB of Perfectly Good RAM? Or I understood it
-> >incorrectly?
-> >
-> >I am aware that it would take more work to tell all kernel code that it
-> >shouldn't look for BIOS data on this region when running as a domU guest,
-> >but it seems that it would be a better solution.
-> >
+Hi Casey,
+
+On Wed, Mar 05, 2008 at 08:33:34AM -0800, Casey Schaufler wrote:
 > 
-> No, the right thing is for Xen to not try to map RAM in this area.
+> --- "Ahmed S. Darwish" <darwish.07@gmail.com> wrote:
+> 
+...
+> > 
+> > Do not let SMACK register smackfs if it was not chosen on
+> > boot. Smackfs assumes that smack hooks are registered and
+> > the initial task security setup (swapper->security) is done.
+> 
+> If the problem with initializing smackfs is because the
+> locks aren't initialized why not leave the lock initializations
+> in smack_init, and have them done before the check to see if the
+> smack LSM is going to get used? Really, we're only talking
+> about the case where a kernel is configured for testing or
+> development purposes, and the lock initialization can't
+> be considered a major impact in any case.
+> 
 
-Why? If the Xen host is telling us there is valid RAM in this area,
-why can't we use it?
+Beside the locking initialization issue, there's the current->security
+issue. smackfs init code code access current->security in 
+smk_unlbl_ambient().
 
-Existing Xen hosts use those physical address ranges for RAM. We can't
-fix this on the e820 map on the guest side without making otherwise-valid
-RAM unused.
+As you know current->security may equal Null (Oops), or point to 
+another LSM structure that preceeded us in registration. 
+
+The locking argument can't be applied here since we may override
+the other LSM tsk->security pointer this time.
+
+Ofcourse all of the above points can be handleded by various
+if(current->security) checks + rechecking the read/write methods
+of each smackfs inode, but below only two lines will fix the 
+problem from its roots ;):
+
++	if (!security_module_enable(&smack_ops))
++		return 0;
+
+Is there a problem in the current approach that I'm not aware of ?
+
+You have your veto in this issue at the end ;)
+
+Thank you,
 
 -- 
-Eduardo
+
+"Better to light a candle, than curse the darkness"
+
+Ahmed S. Darwish
+Homepage: http://darwish.07.googlepages.com
+Blog: http://darwish-07.blogspot.com
+
