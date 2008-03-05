@@ -1,115 +1,364 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764793AbYCEWzW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932151AbYCEW4I@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764793AbYCEWzW (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Mar 2008 17:55:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760059AbYCEWwR
+	id S932151AbYCEW4I (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Mar 2008 17:56:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763803AbYCEWwT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Mar 2008 17:52:17 -0500
-Received: from ug-out-1314.google.com ([66.249.92.174]:55831 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758859AbYCEWwL (ORCPT
+	Wed, 5 Mar 2008 17:52:19 -0500
+Received: from agminet01.oracle.com ([141.146.126.228]:55918 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760015AbYCEWwP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Mar 2008 17:52:11 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:mime-version:content-disposition:message-id:content-type:content-transfer-encoding;
-        b=O85WLabHlioSIf8aTdfEKXXSiASJap81FsKFAv0d8Ia7beowC7cQRdJnHcJp7I1YD2VpZJ/r4187b1XFOT3HGw0j17mlDum3X1Mr3y+Hxaftl/2j9/rcGkUeiG78pkVsG60dcwQEIVTjkBI6M31KsDI9cqjgA3FpDpeiF9auvjc=
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: linux-ide@vger.kernel.org
-Subject: [PATCH 3/3] ide: remove ->cds field from ide_hwif_t
-Date: Thu, 6 Mar 2008 00:02:45 +0100
-User-Agent: KMail/1.9.6 (enterprise 0.20071204.744707)
-Cc: linux-kernel@vger.kernel.org
-MIME-Version: 1.0
-Content-Disposition: inline
-Message-Id: <200803060002.45507.bzolnier@gmail.com>
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+	Wed, 5 Mar 2008 17:52:15 -0500
+From: Joel Becker <joel.becker@oracle.com>
+To: ocfs2-devel@oss.oracle.com
+Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
+Subject: [PATCH 2/7] ocfs2: Make ocfs2_slot_info private.
+Date: Wed,  5 Mar 2008 14:51:59 -0800
+Message-Id: <1204757524-21343-3-git-send-email-joel.becker@oracle.com>
+X-Mailer: git-send-email 1.5.3.4
+In-Reply-To: <1204757524-21343-1-git-send-email-joel.becker@oracle.com>
+References: <1204757524-21343-1-git-send-email-joel.becker@oracle.com>
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Use hwif->name instead of cds->name in ide_allocate_dma_engine().
+Just use osb_lock around the ocfs2_slot_info data.  This allows us to
+take the ocfs2_slot_info structure private in slot_info.c.  All access
+is now via accessors.
 
-* Use pci_name(dev) instead of cds->name in init_dma_pdc202xx().
-
-* Remove no longer needed ->cds field from ide_hwif_t.
-
-There should be no functional changes caused by this patch.
-
-Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+Signed-off-by: Joel Becker <joel.becker@oracle.com>
 ---
- drivers/ide/ide-dma.c          |    2 +-
- drivers/ide/pci/pdc202xx_old.c |    5 +++--
- drivers/ide/setup-pci.c        |    1 -
- include/linux/ide.h            |    2 --
- 4 files changed, 4 insertions(+), 6 deletions(-)
+ fs/ocfs2/journal.c  |   24 +++++++-------
+ fs/ocfs2/ocfs2.h    |    1 +
+ fs/ocfs2/slot_map.c |   81 ++++++++++++++++++++++++++++++++++++---------------
+ fs/ocfs2/slot_map.h |   25 ++-------------
+ 4 files changed, 74 insertions(+), 57 deletions(-)
 
-Index: b/drivers/ide/ide-dma.c
-===================================================================
---- a/drivers/ide/ide-dma.c
-+++ b/drivers/ide/ide-dma.c
-@@ -833,7 +833,7 @@ static int ide_allocate_dma_engine(ide_h
+diff --git a/fs/ocfs2/journal.c b/fs/ocfs2/journal.c
+index c2e654e..ed0c6d0 100644
+--- a/fs/ocfs2/journal.c
++++ b/fs/ocfs2/journal.c
+@@ -1079,7 +1079,6 @@ static int ocfs2_recover_node(struct ocfs2_super *osb,
+ {
+ 	int status = 0;
+ 	int slot_num;
+-	struct ocfs2_slot_info *si = osb->slot_info;
+ 	struct ocfs2_dinode *la_copy = NULL;
+ 	struct ocfs2_dinode *tl_copy = NULL;
+ 
+@@ -1092,8 +1091,8 @@ static int ocfs2_recover_node(struct ocfs2_super *osb,
+ 	 * case we should've called ocfs2_journal_load instead. */
+ 	BUG_ON(osb->node_num == node_num);
+ 
+-	slot_num = ocfs2_node_num_to_slot(si, node_num);
+-	if (slot_num == OCFS2_INVALID_SLOT) {
++	slot_num = ocfs2_node_num_to_slot(osb, node_num);
++	if (slot_num == -ENOENT) {
+ 		status = 0;
+ 		mlog(0, "no slot for this node, so no recovery required.\n");
+ 		goto done;
+@@ -1183,23 +1182,24 @@ bail:
+  * slot info struct has been updated from disk. */
+ int ocfs2_mark_dead_nodes(struct ocfs2_super *osb)
+ {
+-	int status, i, node_num;
+-	struct ocfs2_slot_info *si = osb->slot_info;
++	unsigned int node_num;
++	int status, i;
+ 
+ 	/* This is called with the super block cluster lock, so we
+ 	 * know that the slot map can't change underneath us. */
+ 
+-	spin_lock(&si->si_lock);
+-	for(i = 0; i < si->si_num_slots; i++) {
++	spin_lock(&osb->osb_lock);
++	for (i = 0; i < osb->max_slots; i++) {
+ 		if (i == osb->slot_num)
+ 			continue;
+-		if (ocfs2_is_empty_slot(si, i))
++
++		status = ocfs2_slot_to_node_num_locked(osb, i, &node_num);
++		if (status == -ENOENT)
+ 			continue;
+ 
+-		node_num = si->si_global_node_nums[i];
+ 		if (ocfs2_node_map_test_bit(osb, &osb->recovery_map, node_num))
+ 			continue;
+-		spin_unlock(&si->si_lock);
++		spin_unlock(&osb->osb_lock);
+ 
+ 		/* Ok, we have a slot occupied by another node which
+ 		 * is not in the recovery map. We trylock his journal
+@@ -1215,9 +1215,9 @@ int ocfs2_mark_dead_nodes(struct ocfs2_super *osb)
+ 			goto bail;
+ 		}
+ 
+-		spin_lock(&si->si_lock);
++		spin_lock(&osb->osb_lock);
+ 	}
+-	spin_unlock(&si->si_lock);
++	spin_unlock(&osb->osb_lock);
+ 
+ 	status = 0;
+ bail:
+diff --git a/fs/ocfs2/ocfs2.h b/fs/ocfs2/ocfs2.h
+index 6546cef..ee3f675 100644
+--- a/fs/ocfs2/ocfs2.h
++++ b/fs/ocfs2/ocfs2.h
+@@ -179,6 +179,7 @@ enum ocfs2_mount_options
+ #define OCFS2_DEFAULT_ATIME_QUANTUM	60
+ 
+ struct ocfs2_journal;
++struct ocfs2_slot_info;
+ struct ocfs2_super
+ {
+ 	struct task_struct *commit_task;
+diff --git a/fs/ocfs2/slot_map.c b/fs/ocfs2/slot_map.c
+index f5727b8..762360d 100644
+--- a/fs/ocfs2/slot_map.c
++++ b/fs/ocfs2/slot_map.c
+@@ -42,13 +42,25 @@
+ 
+ #include "buffer_head_io.h"
+ 
++struct ocfs2_slot_info {
++	struct inode *si_inode;
++	struct buffer_head *si_bh;
++	unsigned int si_num_slots;
++	unsigned int si_size;
++	s16 si_global_node_nums[OCFS2_MAX_SLOTS];
++};
++
++
+ static s16 __ocfs2_node_num_to_slot(struct ocfs2_slot_info *si,
+ 				    s16 global);
+ static void __ocfs2_fill_slot(struct ocfs2_slot_info *si,
+ 			      s16 slot_num,
+ 			      s16 node_num);
+ 
+-/* post the slot information on disk into our slot_info struct. */
++/*
++ * Post the slot information on disk into our slot_info struct.
++ * Must be protected by osb_lock.
++ */
+ static void ocfs2_update_slot_info(struct ocfs2_slot_info *si)
+ {
+ 	int i;
+@@ -56,13 +68,10 @@ static void ocfs2_update_slot_info(struct ocfs2_slot_info *si)
+ 
+ 	/* we don't read the slot block here as ocfs2_super_lock
+ 	 * should've made sure we have the most recent copy. */
+-	spin_lock(&si->si_lock);
+ 	disk_info = (__le16 *) si->si_bh->b_data;
+ 
+ 	for (i = 0; i < si->si_size; i++)
+ 		si->si_global_node_nums[i] = le16_to_cpu(disk_info[i]);
+-
+-	spin_unlock(&si->si_lock);
+ }
+ 
+ int ocfs2_refresh_slot_info(struct ocfs2_super *osb)
+@@ -76,8 +85,11 @@ int ocfs2_refresh_slot_info(struct ocfs2_super *osb)
+ 
+ 	bh = si->si_bh;
+ 	ret = ocfs2_read_block(osb, bh->b_blocknr, &bh, 0, si->si_inode);
+-	if (ret == 0)
++	if (ret == 0) {
++		spin_lock(&osb->osb_lock);
+ 		ocfs2_update_slot_info(si);
++		spin_unlock(&osb->osb_lock);
++	}
+ 
+ 	return ret;
+ }
+@@ -90,10 +102,10 @@ static int ocfs2_update_disk_slots(struct ocfs2_super *osb,
+ 	int status, i;
+ 	__le16 *disk_info = (__le16 *) si->si_bh->b_data;
+ 
+-	spin_lock(&si->si_lock);
++	spin_lock(&osb->osb_lock);
+ 	for (i = 0; i < si->si_size; i++)
+ 		disk_info[i] = cpu_to_le16(si->si_global_node_nums[i]);
+-	spin_unlock(&si->si_lock);
++	spin_unlock(&osb->osb_lock);
+ 
+ 	status = ocfs2_write_block(osb, si->si_bh, si->si_inode);
+ 	if (status < 0)
+@@ -119,7 +131,8 @@ static s16 __ocfs2_node_num_to_slot(struct ocfs2_slot_info *si,
+ 	return ret;
+ }
+ 
+-static s16 __ocfs2_find_empty_slot(struct ocfs2_slot_info *si, s16 preferred)
++static s16 __ocfs2_find_empty_slot(struct ocfs2_slot_info *si,
++				   s16 preferred)
+ {
+ 	int i;
+ 	s16 ret = OCFS2_INVALID_SLOT;
+@@ -141,15 +154,36 @@ out:
+ 	return ret;
+ }
+ 
+-s16 ocfs2_node_num_to_slot(struct ocfs2_slot_info *si,
+-			   s16 global)
++int ocfs2_node_num_to_slot(struct ocfs2_super *osb, unsigned int node_num)
+ {
+-	s16 ret;
++	s16 slot;
++	struct ocfs2_slot_info *si = osb->slot_info;
+ 
+-	spin_lock(&si->si_lock);
+-	ret = __ocfs2_node_num_to_slot(si, global);
+-	spin_unlock(&si->si_lock);
+-	return ret;
++	spin_lock(&osb->osb_lock);
++	slot = __ocfs2_node_num_to_slot(si, node_num);
++	spin_unlock(&osb->osb_lock);
++
++	if (slot == OCFS2_INVALID_SLOT)
++		return -ENOENT;
++
++	return slot;
++}
++
++int ocfs2_slot_to_node_num_locked(struct ocfs2_super *osb, int slot_num,
++				  unsigned int *node_num)
++{
++	struct ocfs2_slot_info *si = osb->slot_info;
++
++	assert_spin_locked(&osb->osb_lock);
++
++	BUG_ON(slot_num < 0);
++	BUG_ON(slot_num > osb->max_slots);
++
++	if (si->si_global_node_nums[slot_num] == OCFS2_INVALID_SLOT)
++		return -ENOENT;
++
++	*node_num = si->si_global_node_nums[slot_num];
++	return 0;
+ }
+ 
+ static void __ocfs2_free_slot_info(struct ocfs2_slot_info *si)
+@@ -184,9 +218,9 @@ int ocfs2_clear_slot(struct ocfs2_super *osb, s16 slot_num)
+ 	if (si == NULL)
  		return 0;
  
- 	printk(KERN_ERR "%s: -- Error, unable to allocate DMA table.\n",
--	       hwif->cds->name);
-+			hwif->name);
+-	spin_lock(&si->si_lock);
++	spin_lock(&osb->osb_lock);
+ 	__ocfs2_fill_slot(si, slot_num, OCFS2_INVALID_SLOT);
+-	spin_unlock(&si->si_lock);
++	spin_unlock(&osb->osb_lock);
  
- 	return 1;
+ 	return ocfs2_update_disk_slots(osb, osb->slot_info);
  }
-Index: b/drivers/ide/pci/pdc202xx_old.c
-===================================================================
---- a/drivers/ide/pci/pdc202xx_old.c
-+++ b/drivers/ide/pci/pdc202xx_old.c
-@@ -288,6 +288,7 @@ static void __devinit init_hwif_pdc202xx
+@@ -206,7 +240,6 @@ int ocfs2_init_slot_info(struct ocfs2_super *osb)
+ 		goto bail;
+ 	}
  
- static void __devinit init_dma_pdc202xx(ide_hwif_t *hwif, unsigned long dmabase)
- {
-+	struct pci_dev *dev = to_pci_dev(hwif->dev);
- 	u8 udma_speed_flag = 0, primary_mode = 0, secondary_mode = 0;
+-	spin_lock_init(&si->si_lock);
+ 	si->si_num_slots = osb->max_slots;
+ 	si->si_size = OCFS2_MAX_SLOTS;
  
- 	if (hwif->channel) {
-@@ -300,14 +301,14 @@ static void __devinit init_dma_pdc202xx(
- 	secondary_mode	= inb(dmabase | 0x1b);
- 	printk(KERN_INFO "%s: (U)DMA Burst Bit %sABLED " \
- 		"Primary %s Mode " \
--		"Secondary %s Mode.\n", hwif->cds->name,
-+		"Secondary %s Mode.\n", pci_name(dev),
- 		(udma_speed_flag & 1) ? "EN" : "DIS",
- 		(primary_mode & 1) ? "MASTER" : "PCI",
- 		(secondary_mode & 1) ? "MASTER" : "PCI" );
+@@ -235,7 +268,7 @@ int ocfs2_init_slot_info(struct ocfs2_super *osb)
  
- 	if (!(udma_speed_flag & 1)) {
- 		printk(KERN_INFO "%s: FORCING BURST BIT 0x%02x->0x%02x ",
--			hwif->cds->name, udma_speed_flag,
-+			pci_name(dev), udma_speed_flag,
- 			(udma_speed_flag|1));
- 		outb(udma_speed_flag | 1, dmabase | 0x1f);
- 		printk("%sACTIVE\n", (inb(dmabase | 0x1f) & 1) ? "" : "IN");
-Index: b/drivers/ide/setup-pci.c
-===================================================================
---- a/drivers/ide/setup-pci.c
-+++ b/drivers/ide/setup-pci.c
-@@ -321,7 +321,6 @@ static ide_hwif_t *ide_hwif_configure(st
- 	ide_init_port_hw(hwif, &hw);
+ 	si->si_inode = inode;
+ 	si->si_bh = bh;
+-	osb->slot_info = si;
++	osb->slot_info = (struct ocfs2_slot_info *)si;
+ bail:
+ 	if (status < 0 && si)
+ 		__ocfs2_free_slot_info(si);
+@@ -261,9 +294,9 @@ int ocfs2_find_slot(struct ocfs2_super *osb)
  
- 	hwif->dev = &dev->dev;
--	hwif->cds = d;
+ 	si = osb->slot_info;
  
- 	return hwif;
- }
-Index: b/include/linux/ide.h
-===================================================================
---- a/include/linux/ide.h
-+++ b/include/linux/ide.h
-@@ -447,8 +447,6 @@ typedef struct hwif_s {
++	spin_lock(&osb->osb_lock);
+ 	ocfs2_update_slot_info(si);
  
- 	struct device *dev;
+-	spin_lock(&si->si_lock);
+ 	/* search for ourselves first and take the slot if it already
+ 	 * exists. Perhaps we need to mark this in a variable for our
+ 	 * own journal recovery? Possibly not, though we certainly
+@@ -274,7 +307,7 @@ int ocfs2_find_slot(struct ocfs2_super *osb)
+ 		 * one. */
+ 		slot = __ocfs2_find_empty_slot(si, osb->preferred_slot);
+ 		if (slot == OCFS2_INVALID_SLOT) {
+-			spin_unlock(&si->si_lock);
++			spin_unlock(&osb->osb_lock);
+ 			mlog(ML_ERROR, "no free slots available!\n");
+ 			status = -EINVAL;
+ 			goto bail;
+@@ -285,7 +318,7 @@ int ocfs2_find_slot(struct ocfs2_super *osb)
  
--	const struct ide_port_info *cds;	/* chipset device struct */
+ 	__ocfs2_fill_slot(si, slot, osb->node_num);
+ 	osb->slot_num = slot;
+-	spin_unlock(&si->si_lock);
++	spin_unlock(&osb->osb_lock);
+ 
+ 	mlog(0, "taking node slot %d\n", osb->slot_num);
+ 
+@@ -306,12 +339,12 @@ void ocfs2_put_slot(struct ocfs2_super *osb)
+ 	if (!si)
+ 		return;
+ 
++	spin_lock(&osb->osb_lock);
+ 	ocfs2_update_slot_info(si);
+ 
+-	spin_lock(&si->si_lock);
+ 	__ocfs2_fill_slot(si, osb->slot_num, OCFS2_INVALID_SLOT);
+ 	osb->slot_num = OCFS2_INVALID_SLOT;
+-	spin_unlock(&si->si_lock);
++	spin_unlock(&osb->osb_lock);
+ 
+ 	status = ocfs2_update_disk_slots(osb, si);
+ 	if (status < 0) {
+diff --git a/fs/ocfs2/slot_map.h b/fs/ocfs2/slot_map.h
+index b029ffd..5118e89 100644
+--- a/fs/ocfs2/slot_map.h
++++ b/fs/ocfs2/slot_map.h
+@@ -27,16 +27,6 @@
+ #ifndef SLOTMAP_H
+ #define SLOTMAP_H
+ 
+-struct ocfs2_slot_info {
+-	spinlock_t si_lock;
 -
- 	ide_ack_intr_t *ack_intr;
+-	struct inode *si_inode;
+-	struct buffer_head *si_bh;
+-	unsigned int si_num_slots;
+-	unsigned int si_size;
+-	s16 si_global_node_nums[OCFS2_MAX_SLOTS];
+-};
+-
+ int ocfs2_init_slot_info(struct ocfs2_super *osb);
+ void ocfs2_free_slot_info(struct ocfs2_super *osb);
  
- 	void (*rw_disk)(ide_drive_t *, struct request *);
+@@ -45,17 +35,10 @@ void ocfs2_put_slot(struct ocfs2_super *osb);
+ 
+ int ocfs2_refresh_slot_info(struct ocfs2_super *osb);
+ 
+-s16 ocfs2_node_num_to_slot(struct ocfs2_slot_info *si,
+-			   s16 global);
+-int ocfs2_clear_slot(struct ocfs2_super *osb, s16 slot_num);
++int ocfs2_node_num_to_slot(struct ocfs2_super *osb, unsigned int node_num);
++int ocfs2_slot_to_node_num_locked(struct ocfs2_super *osb, int slot_num,
++				  unsigned int *node_num);
+ 
+-static inline int ocfs2_is_empty_slot(struct ocfs2_slot_info *si,
+-				      int slot_num)
+-{
+-	BUG_ON(slot_num == OCFS2_INVALID_SLOT);
+-	assert_spin_locked(&si->si_lock);
+-
+-	return si->si_global_node_nums[slot_num] == OCFS2_INVALID_SLOT;
+-}
++int ocfs2_clear_slot(struct ocfs2_super *osb, s16 slot_num);
+ 
+ #endif
+-- 
+1.5.3.8
+
