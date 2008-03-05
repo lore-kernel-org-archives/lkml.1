@@ -1,28 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764780AbYCEL3g@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932125AbYCELeQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764780AbYCEL3g (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Mar 2008 06:29:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754133AbYCEL3O
+	id S932125AbYCELeQ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Mar 2008 06:34:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753846AbYCELeA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Mar 2008 06:29:14 -0500
-Received: from srv5.dvmed.net ([207.36.208.214]:48346 "EHLO mail.dvmed.net"
+	Wed, 5 Mar 2008 06:34:00 -0500
+Received: from srv5.dvmed.net ([207.36.208.214]:34387 "EHLO mail.dvmed.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754030AbYCEL3M (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Mar 2008 06:29:12 -0500
-Message-ID: <47CE8405.9000704@garzik.org>
-Date: Wed, 05 Mar 2008 06:29:09 -0500
+	id S1753409AbYCELd7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 5 Mar 2008 06:33:59 -0500
+Message-ID: <47CE851E.4000401@garzik.org>
+Date: Wed, 05 Mar 2008 06:33:50 -0500
 From: Jeff Garzik <jeff@garzik.org>
 User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
 MIME-Version: 1.0
-To: Thomas Klein <osstklei@de.ibm.com>
-CC: Christoph Raisch <raisch@de.ibm.com>,
-       Jan-Bernd Themann <themann@de.ibm.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       linux-ppc <linuxppc-dev@ozlabs.org>, netdev <netdev@vger.kernel.org>,
-       Stefan Roscher <stefan.roscher@de.ibm.com>
-Subject: Re: [PATCH] ehea: Fix missing Kconfig dependency
-References: <200803031352.06322.osstklei@de.ibm.com>
-In-Reply-To: <200803031352.06322.osstklei@de.ibm.com>
+To: Greg Ungerer <gerg@snapgear.com>
+CC: torvalds@linux-foundation.org, gerg@uclinux.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [M68KNOMMU]: fix fec driver interrupt races
+References: <200803040652.m246q1SH012800@goober>
+In-Reply-To: <200803040652.m246q1SH012800@goober>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 X-Spam-Score: -4.4 (----)
@@ -32,24 +29,14 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Thomas Klein wrote:
-> Fixed Kconfig: ehea driver requires sparse mem
+Greg Ungerer wrote:
+> The FEC driver has a common interrupt handler for all interrupt event
+> types. It is raised on a number of distinct interrupt vectors.
+> This handler can't be re-entered while processing an interrupt, so
+> make sure all requested vectors are flagged as IRQF_DISABLED.
 > 
-> Signed-off-by: Thomas Klein <tklein@de.ibm.com>
-> 
-> ---
-> diff -Nurp linux-2.6.25-rc3.org/drivers/net/Kconfig linux-2.6.25-rc3/drivers/net/Kconfig
-> --- linux-2.6.25-rc3.org/drivers/net/Kconfig	2008-02-24 22:25:54.000000000 +0100
-> +++ linux-2.6.25-rc3/drivers/net/Kconfig	2008-03-03 13:36:48.000000000 +0100
-> @@ -2513,7 +2513,7 @@ config CHELSIO_T3
->  
->  config EHEA
->  	tristate "eHEA Ethernet support"
-> -	depends on IBMEBUS && INET
-> +	depends on IBMEBUS && INET && SPARSEMEM
->  	select INET_LRO
->  	---help---
+> Signed-off-by: Greg Ungerer <gerg@uclinux.org>
 
-applied
+NAK -- add spinlocks to your interrupt handling like you are supposed to
 
 
