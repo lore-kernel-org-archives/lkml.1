@@ -1,71 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760606AbYCEQsJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756876AbYCEQuT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760606AbYCEQsJ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Mar 2008 11:48:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756010AbYCEQrz
+	id S1756876AbYCEQuT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Mar 2008 11:50:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754234AbYCEQuE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Mar 2008 11:47:55 -0500
-Received: from 136-022.dsl.labridge.com ([206.117.136.22]:3276 "EHLO
-	mail.perches.com" rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org
-	with ESMTP id S1754509AbYCEQry (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Mar 2008 11:47:54 -0500
-Subject: Re: [PATCH] include/asm-arm - use angle brackets for includes
-From: Joe Perches <joe@perches.com>
-To: Russell King <rmk+kernel@arm.linux.org.uk>,
-       Ben Dooks <ben-linux@fluff.org>
-Cc: Nicolas Pitre <nico@cam.org>, linux-arm-kernel@lists.arm.linux.org.uk,
-       LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <1204677978.5180.90.camel@localhost>
-References: <1204677978.5180.90.camel@localhost>
-Content-Type: text/plain
-Date: Wed, 05 Mar 2008 08:44:13 -0800
-Message-Id: <1204735453.17370.21.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3-1.1mdv2008.0 
-Content-Transfer-Encoding: 7bit
+	Wed, 5 Mar 2008 11:50:04 -0500
+Received: from www.tglx.de ([62.245.132.106]:60458 "EHLO www.tglx.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752075AbYCEQuD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 5 Mar 2008 11:50:03 -0500
+Date: Wed, 5 Mar 2008 17:45:34 +0100 (CET)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Remy Bohmer <linux@bohmer.net>
+cc: David Brownell <david-b@pacbell.net>,
+       Haavard Skinnemoen <hskinnemoen@atmel.com>, akpm@linux-foundation.org,
+       LKML <linux-kernel@vger.kernel.org>,
+       David Brownell <dbrownell@users.sourceforge.net>,
+       Nicolas Ferre <nicolas.ferre@rfo.atmel.com>,
+       Andrew Victor <linux@maxim.org.za>, john stultz <johnstul@us.ibm.com>
+Subject: Re: [PATCH] atmel_tc clocksource/clockevent code
+In-Reply-To: <3efb10970803050317k68da7154w334561cc5efed637@mail.gmail.com>
+Message-ID: <alpine.LFD.1.00.0803051742190.3099@apollo.tec.linutronix.de>
+References: <1204636061-6275-1-git-send-email-hskinnemoen@atmel.com>  <1204636061-6275-2-git-send-email-hskinnemoen@atmel.com>  <3efb10970803041142l4a03dbb9uf11651d4cc7dde96@mail.gmail.com>  <200803041247.50877.david-b@pacbell.net>
+ <3efb10970803050317k68da7154w334561cc5efed637@mail.gmail.com>
+User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Signature too...
+On Wed, 5 Mar 2008, Remy Bohmer wrote:
+> Hello David,
+> 
+> > Could you elaborate on where that 50-100 usec gets spent?
+> 
+> Attached I have put a screendump of my ETM debugger. It shows a
+> complete flow of kernel function-calls of what happens on a timer
+> interrupt. In this example the complete sequence takes about 154 us.
+> Notice that the ETM is non-intrusive, and that the times are real and
+> accurate in this trace. (you can even see the effects of CPU-caches,
+> sometimes the same code just runs faster)
 
-Signed-off-by: Joe Perches <joe@perches.com>
+Is there any chance to convert this to a text table? Following that
+png is pretty hard.
 
- include/asm-arm/plat-s3c/uncompress.h |    4 ++--
- include/asm-arm/proc-fns.h            |    4 ++--
- 2 files changed, 4 insertions(+), 4 deletions(-)
+> So, hires timestamps -> really really welcome.
+> hires timers -> there should be a (configurable) minimal resolution
+> that fits the hardware to not overload the CPU.
 
-diff --git a/include/asm-arm/plat-s3c/uncompress.h b/include/asm-arm/plat-s3c/uncompress.h
-index b5e6208..19b9eda 100644
---- a/include/asm-arm/plat-s3c/uncompress.h
-+++ b/include/asm-arm/plat-s3c/uncompress.h
-@@ -27,8 +27,8 @@ static void arch_detect_cpu(void);
- 
- /* defines for UART registers */
- 
--#include "asm/plat-s3c/regs-serial.h"
--#include "asm/plat-s3c/regs-watchdog.h"
-+#include <asm/plat-s3c/regs-serial.h>
-+#include <asm/plat-s3c/regs-watchdog.h>
- 
- /* working in physical space... */
- #undef S3C2410_WDOGREG
-diff --git a/include/asm-arm/proc-fns.h b/include/asm-arm/proc-fns.h
-index a4ce457..75ec760 100644
---- a/include/asm-arm/proc-fns.h
-+++ b/include/asm-arm/proc-fns.h
-@@ -214,9 +214,9 @@
- #ifndef __ASSEMBLY__
- 
- #ifndef MULTI_CPU
--#include "asm/cpu-single.h"
-+#include <asm/cpu-single.h>
- #else
--#include "asm/cpu-multi32.h"
-+#include <asm/cpu-multi32.h>
- #endif
- 
- #include <asm/memory.h>
+clockevents let you set a minimum delta already. This can be set at
+runtime before registering the device.
 
+Thanks,
 
+	tglx
