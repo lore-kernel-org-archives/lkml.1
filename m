@@ -1,49 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934877AbYCEAMf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932457AbYCEAQn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934877AbYCEAMf (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Mar 2008 19:12:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754482AbYCEAMZ
+	id S932457AbYCEAQn (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Mar 2008 19:16:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754901AbYCEAQ1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Mar 2008 19:12:25 -0500
-Received: from gw.goop.org ([64.81.55.164]:44789 "EHLO mail.goop.org"
+	Tue, 4 Mar 2008 19:16:27 -0500
+Received: from ns2.suse.de ([195.135.220.15]:47586 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753568AbYCEAMZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Mar 2008 19:12:25 -0500
-Message-ID: <47CDE42F.8080400@goop.org>
-Date: Tue, 04 Mar 2008 16:07:11 -0800
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
-MIME-Version: 1.0
-To: Andi Kleen <ak@suse.de>
-CC: Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: preempt bug in set_pmd_pfn?
-References: <47CDBB87.8090906@goop.org> <200803050106.31609.ak@suse.de>
-In-Reply-To: <200803050106.31609.ak@suse.de>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+	id S1753197AbYCEAQ0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 4 Mar 2008 19:16:26 -0500
+Date: Wed, 5 Mar 2008 01:16:21 +0100
+From: Nick Piggin <npiggin@suse.de>
+To: Christoph Lameter <clameter@sgi.com>
+Cc: netdev@vger.kernel.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       yanmin_zhang@linux.intel.com, David Miller <davem@davemloft.net>,
+       Eric Dumazet <dada1@cosmosbay.com>
+Subject: Re: [rfc][patch 2/3] slab: introduce SMP alignment
+Message-ID: <20080305001621.GC1510@wotan.suse.de>
+References: <20080303093449.GA15091@wotan.suse.de> <20080303093529.GB15091@wotan.suse.de> <Pine.LNX.4.64.0803031104570.6917@schroedinger.engr.sgi.com> <20080303200355.GB8974@wotan.suse.de> <Pine.LNX.4.64.0803031208400.16049@schroedinger.engr.sgi.com> <20080303201211.GE8974@wotan.suse.de> <Pine.LNX.4.64.0803031216430.3110@schroedinger.engr.sgi.com> <20080303202411.GH8974@wotan.suse.de> <Pine.LNX.4.64.0803031327330.4375@schroedinger.engr.sgi.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0803031327330.4375@schroedinger.engr.sgi.com>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andi Kleen wrote:
->> Won't this leave a stale tlb on the old processor?
->>     
->
-> __set_fixmap should be only used in early boot, so it's always
-> on CPU 0
+On Mon, Mar 03, 2008 at 01:31:14PM -0800, Christoph Lameter wrote:
+> On Mon, 3 Mar 2008, Nick Piggin wrote:
+> 
+> > On Mon, Mar 03, 2008 at 12:17:20PM -0800, Christoph Lameter wrote:
+> > > On Mon, 3 Mar 2008, Nick Piggin wrote:
+> > > 
+> > > > > You want two ways of specifying alignments?
+> > > > 
+> > > > I want a way to ask for SMP friendly allocation.
+> > > 
+> > > Then align the objects at cacheline boundaries by providing a value for 
+> > > the align parameter to kmem_cache_create().
+> > 
+> > max(num_possible_cpus() > 1 ? cache_line_size() : 0, mandatory_alignment)?
+> 
+> The mandatory alignment is applied anyways. You do not need to max() on 
+> that.
 
-vdso32-setup.c:map_compat_vdso() uses it to create the compat vdso 
-mapping, which typically happens on the first execve(), and could happen 
-if you turn compat vdso off and on during runtime.  (It follows the call 
-with flush_tlb_all(), so there's no risk of stray tlb entries in this case.)
+No that's the caller's required alignment.
 
-But that answers my broader question about how __set_fixmap can get away 
-with just flushing on the current cpu; I'll add a preempt disable 
-bracket to keep everyone happy.
+ 
+> One could simply specify cache_line_size() with Pekka's patch. 
+> cache_line_size() could default to 0 if !SMP.
 
-Any opinions on set_pte_at(&init_mm, ...) without holding any locks?  
-All ok?
+That's totally wrong and stupid.
 
-    J
+ 
+> > Then suppose we want a CONFIG_TINY option to eliminate it?
+> 
+> No slab allocator supports that right now.
+
+That's way I said suppose we want it. Which is not unreasonable.
+
+
+> However, SLOB in the past has 
+> ignored the alignment in order to reduce memory use. So maybe Matt wants 
+> to introduce this?
+> 
+> > And maybe the VSMP guys will want to blow this out to their internode
+> > alignment?
+> > 
+> > max(!CONFIG_TINY && num_possible_cpus() > 1 ? (is_vsmp ? internode_alignemnt : cache_line_size()) : 0, mandatory_alignment)
+> 
+> No the slab allocators were optimized for VSMP so that the 
+> internode_alignment is not necessary there. That was actually one of the 
+> requirements that triggered the slab numa work.
+
+What do you mean internode_alignment is not necessary there? This is
+about memory returned by the allocator to the caller, and the caller
+does not want any false sharing of the cacheline on SMP systems. How
+can internode alignemnt be not necessary?
+
