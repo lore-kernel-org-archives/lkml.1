@@ -1,94 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761376AbYCEG0g@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763193AbYCEG10@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761376AbYCEG0g (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Mar 2008 01:26:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756109AbYCEG00
+	id S1763193AbYCEG10 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Mar 2008 01:27:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762534AbYCEG1J
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Mar 2008 01:26:26 -0500
-Received: from mga01.intel.com ([192.55.52.88]:60368 "EHLO mga01.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754815AbYCEG0Z (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Mar 2008 01:26:25 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.25,448,1199692800"; 
-   d="asc'?scan'208";a="528924926"
-X-MimeOLE: Produced By Microsoft Exchange V6.5
+	Wed, 5 Mar 2008 01:27:09 -0500
+Received: from fwil.voltaire.com ([193.47.165.2]:45633 "EHLO exil.voltaire.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1762472AbYCEG1H (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 5 Mar 2008 01:27:07 -0500
+Message-ID: <47CE3D33.7060805@voltaire.com>
+Date: Wed, 05 Mar 2008 08:26:59 +0200
+From: Erez Zilber <erezz@voltaire.com>
+User-Agent: Thunderbird 1.5.0.10 (Windows/20070221)
 MIME-Version: 1.0
-Content-Type: multipart/signed;
-	micalg=pgp-sha1;
-	protocol="application/pgp-signature";
-	boundary="=-pcy90QeOO67DHgEh5MGa"
-Content-class: urn:content-classes:message
-Subject: Re: CLONE_NEWNS and bind mounts to make "chroot" jail
-Date: Tue, 4 Mar 2008 22:23:28 -0800
-Message-ID: <1204698208.30451.5.camel@mleibowi.jf.intel.com>
-In-Reply-To: <20080304214500.GA7035@vino.hallyn.com>
-X-MS-Has-Attach: yes
-X-MS-TNEF-Correlator: 
-Thread-Topic: CLONE_NEWNS and bind mounts to make "chroot" jail
-thread-index: Ach+idW33Xr79DcqRQa0BhUiGDZlTA==
-References: <645B0EE4078B7C49A6C12F5E7B3B6C2603D3D607@orsmsx418.amr.corp.intel.com> <20080302022655.GA28450@vino.hallyn.com> <645B0EE4078B7C49A6C12F5E7B3B6C2603D3D7BF@orsmsx418.amr.corp.intel.com> <20080304214500.GA7035@vino.hallyn.com>
-From: "Leibowitz, Michael" <michael.leibowitz@intel.com>
-To: <serge@hallyn.com>
-Cc: <linux-kernel@vger.kernel.org>
-X-OriginalArrivalTime: 05 Mar 2008 06:26:24.0638 (UTC) FILETIME=[D605C1E0:01C87E89]
+To: Arne Redlich <arne.redlich@xiranet.com>, Roland Dreier <rolandd@cisco.com>
+CC: ofa-general <general@lists.openfabrics.org>,
+       lkml <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 1/2] IB/iSER: fix list iteration bug
+References: <877igkxffl.fsf@confield.dd.xiranet.com>	<47CD3B7A.2010106@voltaire.com> <878x0yfqe7.fsf@confield.dd.xiranet.com>
+In-Reply-To: <878x0yfqe7.fsf@confield.dd.xiranet.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 05 Mar 2008 06:27:00.0325 (UTC) FILETIME=[EB4B2950:01C87E89]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Arne Redlich wrote:
 
---=-pcy90QeOO67DHgEh5MGa
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+> Erez Zilber <erezz@voltaire.com> writes:
+>
+>   
+>> Arne Redlich wrote:
+>>     
+>>> The iteration through the list of "iser_device"s during device
+>>> lookup/creation is broken - it might result in an infinite loop if more
+>>> than 1 HCA is used with iSER. Use list_for_each_entry() instead of the
+>>> custom, flawed list iteration code.
+>>>
+>>> Signed-off-by: Arne Redlich <arne.redlich@xiranet.com>
+>>> ---
+>>>  drivers/infiniband/ulp/iser/iser_verbs.c |   36 ++++++++++++-----------------
+>>>  1 files changed, 15 insertions(+), 21 deletions(-)
+>>>
+>>> diff --git a/drivers/infiniband/ulp/iser/iser_verbs.c b/drivers/infiniband/ulp/iser/iser_verbs.c
+>>> index 714b8db..1c0f968 100644
+>>> --- a/drivers/infiniband/ulp/iser/iser_verbs.c
+>>> +++ b/drivers/infiniband/ulp/iser/iser_verbs.c
+>>> @@ -237,33 +237,27 @@ static int iser_free_ib_conn_res(struct iser_conn *ib_conn)
+>>>  static
+>>>  struct iser_device *iser_device_find_by_ib_device(struct rdma_cm_id *cma_id)
+>>>  {
+>>> -	struct list_head    *p_list;
+>>> -	struct iser_device  *device = NULL;
+>>> +	struct iser_device *device;
+>>>  
+>>>  	mutex_lock(&ig.device_list_mutex);
+>>>  
+>>> -	p_list = ig.device_list.next;
+>>> -	while (p_list != &ig.device_list) {
+>>> -		device = list_entry(p_list, struct iser_device, ig_list);
+>>> -		/* find if there's a match using the node GUID */
+>>> +	list_for_each_entry(device, &ig.device_list, ig_list)
+>>>       
+>> I've just added the original comments that are missing in your patch.
+>>     
+>
+> Ah well, I probably should've mentioned in the patch description that I
+> intentionally removed those comments as I think they're really
+> redundant, stating the obvious. But of course I won't insist. :)
+>
+> Thanks,
+> Arne
+>   
+OK and thanks for catching the bugs.
 
-I'm not 100% sure if this is what you meant, but I did get the following
-to work:=20
+Roland - will you be able to merge these 2 patches for 2.6.25? Both are
+bug fixes.
 
-chdir("/jail");=20
-unshare(CLONE_NEWNS);
-mount("/jail", "/jail", NULL, MS_BIND, NULL);
-pivot_root("/jail", "/jail/old_root");
-chdir("/");
-mount("/old_root/bin", "bin", NULL, MS_BIND, NULL);
-mount("/old_root/usr", "usr", NULL, MS_BIND, NULL);
-mount("/old_root/lib", "lib", NULL, MS_BIND, NULL);
-umount2("/old_root", MNT_DETACH);
-exec("/busybox");
+Thanks,
+Erez
 
-Thanks for the help. =20
-
-On Tue, 2008-03-04 at 15:45 -0600, serge@hallyn.com wrote:
-> Quoting Leibowitz, Michael (michael.leibowitz@intel.com):
-> Yes, you
-> 	cd /jail
-> 	mount --bind /jail /jail
-> 	pivot_root . old_root
->=20
-> but . is now mounted over.
-> >   char *newargv[]=3D { "sh", NULL };
-> >=20
-> >   chdir("/jail");
-> >   unshare(CLONE_NEWNS));
-> >   mount("/jail", "/jail", NULL, MS_BIND, NULL));
-> >   mount("/bin", "bin", NULL, MS_BIND, NULL));
-> >   mount("/usr", "usr", NULL, MS_BIND, NULL));
-> >   mount("/lib", "lib", NULL, MS_BIND, NULL));
-> >   if (pivot_root(".", "old_root")) perror("pivot_root . old_root");
-> >   exec("./bash-static"); /* copied to /jail prior to running */
-
---=20
-Michael Leibowitz <michael.leibowitz@intel.com>
-
---=-pcy90QeOO67DHgEh5MGa
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQBHzjxghsRWNpQAGLwRAs4JAJ4idSY7jp6CKW2GQGNQTmY9sZsiggCeNgoR
-zPSLgj8xLzPG3L8H1Mzr5B0=
-=pdLl
------END PGP SIGNATURE-----
-
---=-pcy90QeOO67DHgEh5MGa--
