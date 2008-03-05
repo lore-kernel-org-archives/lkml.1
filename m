@@ -1,53 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760398AbYCEQq3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760482AbYCEQrW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760398AbYCEQq3 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Mar 2008 11:46:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756162AbYCEQqQ
+	id S1760482AbYCEQrW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Mar 2008 11:47:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754509AbYCEQrN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Mar 2008 11:46:16 -0500
-Received: from fg-out-1718.google.com ([72.14.220.157]:56336 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751732AbYCEQqN (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Mar 2008 11:46:13 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=cMX8XFVsYVSKWcmS0Qa6ZDs5J+Sc4fILHOGolz+da0ynIVgAonLIy/3ewcyyAQdgF1HYadI6emRoW/typFbfJLk0KnCjfXrkLHxDMvU0sKbRYTCp+qFoZCxTDvpGx6o26Avg2mr9K26ln3VLArGVPbm+uXr7iM7f6px9EK7gSZw=
-Message-ID: <58cb370e0803050846t7dbd65d6ocfec7ca5e93aa6db@mail.gmail.com>
-Date: Wed, 5 Mar 2008 17:46:08 +0100
-From: "Bartlomiej Zolnierkiewicz" <bzolnier@gmail.com>
-To: "Krzysztof Halasa" <khc@pm.waw.pl>
-Subject: Re: [patch 3/3] pata: "I do not think it means, what you think it means."
-Cc: "Alan Cox" <alan@lxorguk.ukuu.org.uk>,
-       "Andrew Morton" <akpm@linux-foundation.org>, jeff@garzik.org,
-       linux-ide@vger.kernel.org, alan@redhat.com,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <m3ir015du5.fsf@maximus.localdomain>
+	Wed, 5 Mar 2008 11:47:13 -0500
+Received: from colo.lackof.org ([198.49.126.79]:32791 "EHLO colo.lackof.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754366AbYCEQrM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 5 Mar 2008 11:47:12 -0500
+Date: Wed, 5 Mar 2008 09:46:59 -0700
+From: Grant Grundler <grundler@parisc-linux.org>
+To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+Cc: akpm@linux-foundation.org, torvalds@linux-foundation.org, rth@twiddle.net,
+       ink@jurassic.park.msu.ru, kyle@parisc-linux.org, matthew@wil.cx,
+       grundler@parisc-linux.org, linux-kernel@vger.kernel.org
+Subject: Re: Linux 2.6.25-rc4
+Message-ID: <20080305164659.GB32538@colo.lackof.org>
+References: <alpine.LFD.1.00.0803042044460.12253@woody.linux-foundation.org> <20080305170930C.fujita.tomonori@lab.ntt.co.jp>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <200803042316.m24NGI7k002489@imap1.linux-foundation.org>
-	 <20080304173058.7679b7c8.akpm@linux-foundation.org>
-	 <20080305115610.397b3ea3@the-village.bc.nu>
-	 <200803051421.14167.bzolnier@gmail.com>
-	 <m3ir015du5.fsf@maximus.localdomain>
+In-Reply-To: <20080305170930C.fujita.tomonori@lab.ntt.co.jp>
+X-Home-Page: http://www.parisc-linux.org/
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Mar 5, 2008 at 5:34 PM, Krzysztof Halasa <khc@pm.waw.pl> wrote:
-> Bartlomiej Zolnierkiewicz <bzolnier@gmail.com> writes:
->
->  > IBM-DTLA-307030 is on the blacklist....
->
->  Any still in use? Surpised.
+On Wed, Mar 05, 2008 at 05:09:30PM +0900, FUJITA Tomonori wrote:
+> On Tue, 4 Mar 2008 21:03:44 -0800 (PST)
+> Linus Torvalds <torvalds@linux-foundation.org> wrote:
+> 
+> > 
+> > It's a few days late, but I was waiting for some updates for some of the 
+> > most annoying regressions until releasing it, so the end result is 
+> > hopefully more useful as a result.
+> 
+> Ah, the IOMMU patches (alpha and parisc) that I submitted for -mm have
+> been merged somehow.
+> 
+> The parisc patches were tested but probably the alpha patches not.
+> 
+> Here's a patch for 32bits arch parisc.
+> 
+> =
+> From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+> Subject: [PATCH] parisc: fix IOMMU's device boundary overflow bug on 32bits arch
+> 
+> On 32bits boxes, boundary_size becomes zero due to a overflow and we
+> hit BUG_ON in iommu_is_span_boundary.
+> 
+> Signed-off-by: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+> Cc: Kyle McMartin <kyle@parisc-linux.org>
+> Cc: Matthew Wilcox <matthew@wil.cx>
+> Cc: Grant Grundler <grundler@parisc-linux.org>
 
-https://bugzilla.redhat.com/show_bug.cgi?id=433557
+Acked-by: Grant Grundler <grundler@parisc-linux.org>
 
-the bug was opened two weeks ago so I assume that the drive is still in use
+thanks,
+grant
 
-[ Actually, I'm not surprised as we are getting patches/reports for much
-  older/buggier hardware...  After all we are doing Linux not some other
-  OS whose every release obsoletes the old hardware. ;-) ]
+> ---
+>  drivers/parisc/ccio-dma.c  |    4 ++--
+>  drivers/parisc/sba_iommu.c |    4 ++--
+>  2 files changed, 4 insertions(+), 4 deletions(-)
+> 
+> diff --git a/drivers/parisc/ccio-dma.c b/drivers/parisc/ccio-dma.c
+> index 60d338c..62db3c3 100644
+> --- a/drivers/parisc/ccio-dma.c
+> +++ b/drivers/parisc/ccio-dma.c
+> @@ -366,8 +366,8 @@ ccio_alloc_range(struct ioc *ioc, struct device *dev, size_t size)
+>  	** ggg sacrifices another 710 to the computer gods.
+>  	*/
+>  
+> -	boundary_size = ALIGN(dma_get_seg_boundary(dev) + 1, 1 << IOVP_SHIFT);
+> -	boundary_size >>= IOVP_SHIFT;
+> +	boundary_size = ALIGN((unsigned long long)dma_get_seg_boundary(dev) + 1,
+> +			      1ULL << IOVP_SHIFT) >> IOVP_SHIFT;
+>  
+>  	if (pages_needed <= 8) {
+>  		/*
+> diff --git a/drivers/parisc/sba_iommu.c b/drivers/parisc/sba_iommu.c
+> index e834127..bdbe780 100644
+> --- a/drivers/parisc/sba_iommu.c
+> +++ b/drivers/parisc/sba_iommu.c
+> @@ -341,8 +341,8 @@ sba_search_bitmap(struct ioc *ioc, struct device *dev,
+>  	unsigned long shift;
+>  	int ret;
+>  
+> -	boundary_size = ALIGN(dma_get_seg_boundary(dev) + 1, 1 << IOVP_SHIFT);
+> -	boundary_size >>= IOVP_SHIFT;
+> +	boundary_size = ALIGN((unsigned long long)dma_get_seg_boundary(dev) + 1,
+> +			      1ULL << IOVP_SHIFT) >> IOVP_SHIFT;
+>  
+>  #if defined(ZX1_SUPPORT)
+>  	BUG_ON(ioc->ibase & ~IOVP_MASK);
+> -- 
+> 1.5.3.7
