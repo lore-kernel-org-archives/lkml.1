@@ -1,54 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754632AbYCEPTU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755764AbYCEPVn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754632AbYCEPTU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Mar 2008 10:19:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752085AbYCEPTF
+	id S1755764AbYCEPVn (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Mar 2008 10:21:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753029AbYCEPVb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Mar 2008 10:19:05 -0500
-Received: from nf-out-0910.google.com ([64.233.182.185]:52131 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751987AbYCEPTC (ORCPT
+	Wed, 5 Mar 2008 10:21:31 -0500
+Received: from accolon.hansenpartnership.com ([76.243.235.52]:48320 "EHLO
+	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752790AbYCEPV3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Mar 2008 10:19:02 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
-        b=xYeHaXdSjXr7SAz7a72DFA4ATrDowdWbiP6XEv+W68tJQSJS5xdVhp6Hha1Al+ENLv3gYk04mO9vS7Q8sgj25wld5HAfNNg//GemA2c0wt2gbLIEC4BU1h4anJmfnLn/X5p1KgPzMWHstJTLeO/BwXhfq3ihltiUwzJdoVVoI/0=
-Message-ID: <47CEB9DE.9060501@gmail.com>
-Date: Wed, 05 Mar 2008 16:18:54 +0100
-From: Jiri Slaby <jirislaby@gmail.com>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080213)
-MIME-Version: 1.0
-To: "Serge E. Hallyn" <serue@us.ibm.com>
-CC: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       "Andrew G. Morgan" <morgan@kernel.org>,
-       James Morris <jmorris@namei.org>, Stephen Smalley <sds@tycho.nsa.gov>,
-       Paul Moore <paul.moore@hp.com>
-Subject: Re: prctl(0x8) -> EINVAL [Was: 2.6.25-rc3-mm1]
-References: <20080304011928.e8c82c0c.akpm@linux-foundation.org> <47CE7B1F.3000208@gmail.com> <20080305140624.GA9128@sergelap.austin.ibm.com>
-In-Reply-To: <20080305140624.GA9128@sergelap.austin.ibm.com>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Wed, 5 Mar 2008 10:21:29 -0500
+Subject: Re: [PATCH] blk: missing add of padded bytes to io completion byte
+	 count
+From: James Bottomley <James.Bottomley@HansenPartnership.com>
+To: Jens Axboe <jens.axboe@oracle.com>
+Cc: Tejun Heo <htejun@gmail.com>, Boaz Harrosh <bharrosh@panasas.com>,
+       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
+       Mike Galbraith <efault@gmx.de>, tomof@acm.org,
+       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       linux-ide@vger.kernel.org, linux-scsi@vger.kernel.org,
+       jgarzik@pobox.com, bzolnier@gmail.com
+In-Reply-To: <20080305135121.GK6704@kernel.dk>
+References: <47CD7C05.1080707@gmail.com> <20080305041914V.tomof@acm.org>
+	 <47CDDC31.4070806@gmail.com>
+	 <20080305092619Y.fujita.tomonori@lab.ntt.co.jp>
+	 <47CE72EF.7050302@panasas.com> <20080305123317.GI6704@kernel.dk>
+	 <47CE9634.6040501@panasas.com> <20080305124857.GJ6704@kernel.dk>
+	 <47CEA40F.6050903@gmail.com>  <20080305135121.GK6704@kernel.dk>
+Content-Type: text/plain
+Date: Wed, 05 Mar 2008 09:21:24 -0600
+Message-Id: <1204730484.3047.10.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.3 (2.12.3-1.fc8) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 03/05/2008 03:06 PM, Serge E. Hallyn wrote:
-> From 4a66f19580489a3ac84f0a145e4585c09e65c88e Mon Sep 17 00:00:00 2001
-> From: Serge E. Hallyn <serue@us.ibm.com>
-> Date: Wed, 5 Mar 2008 06:02:32 -0800
-> Subject: [PATCH 1/1] capabilities: use cap_task_prctl when !CONFIG_SECURITY
+On Wed, 2008-03-05 at 14:51 +0100, Jens Axboe wrote:
+> On Wed, Mar 05 2008, Tejun Heo wrote:
+> > This is getting insanely subtle.  Let's say there's PIO driver which
+> > transfer certain sized chunks at a time and completes request partially
+> > after completing each chunk and the driver uses draining to eat up
+> > whatever excess data, which seems like a legit use case to me.  But it
+> > won't work because __end_that_request_first() will terminate when it
+> > reaches reaches the 'true' transfer size.  That's just broken API.  FWIW,
+> > 
+> > Nacked-by: Tejun Heo <htejun@gmail.com>
 > 
-> capabilities-implement-per-process-securebits.patch introduced
-> cap_task_prctl() and moved the handling of capability-related
-> prctl into it.  So when !CONFIG_SECURITY, the default
-> security_task_prctl() needs to call cap_task_prctl() the way
-> other default hooks call capability helpers when they exist.
+> Yeah, I think I may have gone a bit overboard in applying this so
+> quickly. It's just not a good interface, silently adding the extra
+> length if asked to complete more. It may even happen right now, for a
+> driver that does no padding (it probably wont do any harm here either,
+> but still).
 > 
-> This fixes a slew of userspace breakages when
-> CONFIG_SECURITY=n.
+> I'll try and see if I can come up with something cleaner.
 > 
-> Signed-off-by: Serge E. Hallyn <serue@us.ibm.com>
+> My basic design paradigm for this is that the _driver_ (or mid layer, if
+> SCSI wants to handle it) should care about the padding. So make it easy
+> for them to pad, but have it 'unrolled' by completion time. We should
+> NOT need any extra_len checks or additions in the block/ directory,
+> period.
 
-Tested-by: Jiri Slaby <jirislaby@gmail.com>
+Right, that's why my original proposal was to do nothing for padding
+(other than ensure the driver could adjust the length if it wanted to)
+and to add an extra element always for draining, which the driver could
+ignore.  It basically pushed the use paradigm onto the driver.
+
+If we want the use paradigm shared between block and driver, then I
+think the best approach is to keep all the bios the same (so not adjust
+for padding), but do adjust in the blk_rq_map_sg().  That way we have
+the padding and draining unwind information by comparing with the bio.
+
+For passing on to the driver:  req->data_len still needs to be the input
+(bio) lenght.  req->extra_len can record how much padding and draining
+was added.  The completion length also needs to be in terms of the true
+(bio) length.  Now, here's the subtlety.  Because of the way transfers
+work, we expect the padded length not to contribute to overrun (because
+it represents transfers that were successfully completed at the correct
+length), but we *do* expect drain usage to be recorded as overrun.
+However, if we keep the bios intact, we have all the information to make
+this determination in the block layer at completion time, with the
+expectation that the lower layers report the exact amount they
+transferred.
+
+James
+
+
