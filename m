@@ -1,76 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933988AbYCEAl6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765531AbYCEAoZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933988AbYCEAl6 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Mar 2008 19:41:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760343AbYCEAlc
+	id S1765531AbYCEAoZ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Mar 2008 19:44:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757228AbYCEAoL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Mar 2008 19:41:32 -0500
-Received: from hs-out-0708.google.com ([64.233.178.247]:55905 "EHLO
-	hs-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759624AbYCEAlb (ORCPT
+	Tue, 4 Mar 2008 19:44:11 -0500
+Received: from wa-out-1112.google.com ([209.85.146.180]:8105 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751344AbYCEAoJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Mar 2008 19:41:31 -0500
+	Tue, 4 Mar 2008 19:44:09 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=message-id:date:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding:from;
-        b=Cn8hVdzOn5ZhbVVx52SERE9WOrlwL08rTxBaU6jApu3zULEfpuOcHRpN8wFgFIpUuB5Yo+p5l8OnB1GHWrSED5INjTPoqVg3YU8DYnZaXef7uvk5FaZU9tBLdJOWlNjT9Wi88ldjExbeJSxSuMOx6l0SFCn5z9wd8xaxmSsgTy0=
-Message-ID: <47CDE925.9090503@gmail.com>
-Date: Wed, 05 Mar 2008 09:28:21 +0900
-User-Agent: Thunderbird 2.0.0.6 (X11/20071008)
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
+        b=hGS9/8UHLPct+lVYDTQWLukP7OwpZzCQpldmkMrKdg5yvwpL2srcSgrqQGWStY/HcI6cNhOjQNo2csB/bfUI9TuPTHtgk+fr7nH7VPR8bsIoDYZcXJOF/kGipX613riTY+1FusklaSVG+4MmZGLTU0jzLdn6npAjcRnn/HAPpZo=
+Message-ID: <47CDECD1.6070601@gmail.com>
+Date: Wed, 05 Mar 2008 09:44:01 +0900
+From: Tejun Heo <htejun@gmail.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20070801)
 MIME-Version: 1.0
-To: Rik van Riel <riel@redhat.com>
-CC: linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Lee Schermerhorn <Lee.Schermerhorn@hp.com>
-Subject: Re: [patch 16/20] non-reclaimable mlocked pages
-References: <20080304225157.573336066@redhat.com> <20080304225227.780021971@redhat.com>
-In-Reply-To: <20080304225227.780021971@redhat.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+CC: tomof@acm.org, efault@gmx.de, jens.axboe@oracle.com,
+       James.Bottomley@HansenPartnership.com, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org,
+       linux-scsi@vger.kernel.org, jgarzik@pobox.com, bzolnier@gmail.com
+Subject: Re: [PATCH] block: fix residual byte count handling
+References: <47CD7C05.1080707@gmail.com>	<20080305041914V.tomof@acm.org>	<47CDDC31.4070806@gmail.com> <20080305092619Y.fujita.tomonori@lab.ntt.co.jp>
+In-Reply-To: <20080305092619Y.fujita.tomonori@lab.ntt.co.jp>
+X-Enigmail-Version: 0.95.5
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-From: minchan Kim <minchan.kim@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi, Rik.
+Hello,
 
-There is a some trivial mistake.
-It can cause compile error.
+FUJITA Tomonori wrote:
+> sglist is a low-level I/O representation for device drivers. SCSI
+> midlayer should not care about sglist. We should not fix SCSI midlayer
+> for rq->data_len != sum(sg) change (so I can't agree with your
+> diagrams in another mail).
 
- >@@ -665,7 +677,12 @@ static int prep_new_page(struct page *pa
- >
- > 	page->flags &= ~(1 << PG_uptodate | 1 << PG_error | 1 << PG_readahead |
- > 			1 << PG_referenced | 1 << PG_arch_1 |
- >-			1 << PG_owner_priv_1 | 1 << PG_mappedtodisk);
- >+			1 << PG_owner_priv_1 | 1 << PG_mappedtodisk |
- >+#ifdef CONFIG_NORECLAIM_MLOCK
- >+//TODO take care of it here, for now.
- >+			1 << PG_mlocked
- >+#endif
- >+			);
- > 	set_page_private(page, 0);
- > 	set_page_refcounted(page);
+But that's not the way things currently are.
 
-we need to fix it.
+> When if we change a rule, we need to fix something.
+> 
+> If we keep rq->data_len == sum(sg), we need to fix the device
+> application layer. If we keep rq->data_len == the true data length, we
+> need to fix the low-level drivers.
 
-diff --git a/mm/page_alloc.c b/mm/page_alloc.c
-index 78c3f94..f6d535f 100644
---- a/mm/page_alloc.c
-+++ b/mm/page_alloc.c
-@@ -677,10 +677,10 @@ static int prep_new_page(struct page *page, int 
-order, gfp_t gfp_flags)
+Basically everything under block layer.
 
-   page->flags &= ~(1 << PG_uptodate | 1 << PG_error | 1 << PG_readahead |
-       1 << PG_referenced | 1 << PG_arch_1 |
--     1 << PG_owner_priv_1 | 1 << PG_mappedtodisk |
-+     1 << PG_owner_priv_1 | 1 << PG_mappedtodisk
-  #ifdef CONFIG_NORECLAIM_MLOCK
-  //TODO take care of it here, for now.
--     1 << PG_mlocked
-+     | 1 << PG_mlocked
-  #endif
-       );
-   set_page_private(page, 0);
+> Now I'm fine with the commit e97a294ef6938512b655b1abf17656cf2b26f709
+> since we are in -rc stages. But I plan to send a patch to revert it
+> and fix this issue in the block layer. I'd like to test it in -mm for
+> a while.
+> 
+> Only sglist stuff in SCSI midlayer is scsi_req_map_sg now. As you
+> know, we really want to remove it.
 
-Thanks,
-barrios.
+If the way forward is to make anything but the low level drivers not
+care about sglist, in the long term, the current scheme is fine but I
+still don't think this way of doing things is safe one.  We're affecting
+large portion of code based on what things should be in future not what
+they currently are.
+
+>> Things going the other way is fine with me but I at least want to hear a
+>> valid rationale.  Till now all I got is "because that's the true size"
+>> which doesn't really make much sense to me.
+> 
+> Most of users of request structure care about only the real data
+> length, don't care about padding and drain length. Why do they bother
+> to use a helper function to get the real data length?
+
+I think this is where the difference comes from.  To me it seems
+internal usage seems more wide-spread and more delicate and not too many
+care about the true size and when they do only in well defined places.
+Maybe it comes from the difference between your most and my most.
+
+Thanks.
+
+-- 
+tejun
