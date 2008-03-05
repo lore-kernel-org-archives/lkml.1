@@ -1,82 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755072AbYCEOmy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753968AbYCEOwT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755072AbYCEOmy (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Mar 2008 09:42:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752016AbYCEOmn
+	id S1753968AbYCEOwT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Mar 2008 09:52:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752138AbYCEOv6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Mar 2008 09:42:43 -0500
-Received: from extu-mxob-2.symantec.com ([216.10.194.135]:35562 "EHLO
-	extu-mxob-2.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751370AbYCEOmm (ORCPT
+	Wed, 5 Mar 2008 09:51:58 -0500
+Received: from bzq-219-195-70.pop.bezeqint.net ([62.219.195.70]:59917 "EHLO
+	bh-buildlin2.bhalevy.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752070AbYCEOv5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Mar 2008 09:42:42 -0500
-Date: Wed, 5 Mar 2008 14:29:59 +0000 (GMT)
-From: Hugh Dickins <hugh@veritas.com>
-X-X-Sender: hugh@blonde.site
-To: Ingo Molnar <mingo@elte.hu>
-cc: Jeremy Fitzhardinge <jeremy@goop.org>, "H. Peter Anvin" <hpa@zytor.com>,
-       Andi Kleen <ak@suse.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: preempt bug in set_pmd_pfn?
-In-Reply-To: <20080305064814.GB28398@elte.hu>
-Message-ID: <Pine.LNX.4.64.0803051407310.22243@blonde.site>
-References: <47CDBB87.8090906@goop.org> <20080304212821.GB8944@elte.hu>
- <47CDBEDC.1050302@goop.org> <20080305064814.GB28398@elte.hu>
+	Wed, 5 Mar 2008 09:51:57 -0500
+Message-ID: <47CEB23E.4000809@panasas.com>
+Date: Wed, 05 Mar 2008 16:46:22 +0200
+From: Boaz Harrosh <bharrosh@panasas.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Tejun Heo <htejun@gmail.com>
+CC: Jens Axboe <jens.axboe@oracle.com>,
+       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
+       Mike Galbraith <efault@gmx.de>, James.Bottomley@HansenPartnership.com,
+       tomof@acm.org, akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       linux-ide@vger.kernel.org, linux-scsi@vger.kernel.org,
+       jgarzik@pobox.com, bzolnier@gmail.com
+Subject: Re: [PATCH] blk: missing add of padded bytes to io completion byte
+ count
+References: <47CD7C05.1080707@gmail.com> <20080305041914V.tomof@acm.org> <47CDDC31.4070806@gmail.com> <20080305092619Y.fujita.tomonori@lab.ntt.co.jp> <47CE72EF.7050302@panasas.com> <20080305123317.GI6704@kernel.dk> <47CE9634.6040501@panasas.com> <20080305124857.GJ6704@kernel.dk> <47CEA40F.6050903@gmail.com>
+In-Reply-To: <47CEA40F.6050903@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 5 Mar 2008, Ingo Molnar wrote:
-> * Jeremy Fitzhardinge <jeremy@goop.org> wrote:
-> > Ingo Molnar wrote:
-> >> * Jeremy Fitzhardinge <jeremy@goop.org> wrote:
-> >>   
-> >>> I think set_pmd_pfn, which is only called by __set_fixmap, might have a 
-> >>> preempt bug in it.
-> >>>     
-> >>
-> >> yes, and we had similar preemption bugs in the past. I guess most places 
-> >> are either infrequent or have some natural atomicity anyway. Wanna send a 
-> >> patch?
-> >
-> > Sure.  Should it just disable preemption, or take a lock?  It calls 
-> > set_pte_at without holding any pte locks; that seems to be relatively 
-> > common.  Is it OK when you're operating on init_mm?
+On Wed, Mar 05 2008 at 15:45 +0200, Tejun Heo <htejun@gmail.com> wrote:
+> Hello, Jens, Boaz.
 > 
-> no, it's not OK to modify the kernel pagetable without locking - taking 
-> the pgd_lock should do the trick. Could you send the stacktrace that 
-> shows the place that is preemptible?
+> Jens Axboe wrote:
+>>>>> From: Boaz Harrosh <bharrosh@panasas.com>
+>>>>> Date: Wed, 5 Mar 2008 12:07:12 +0200
+>>>>> Subject: [PATCH] blk: missing add of padded bytes to io completion byte count
+>>>>>
+>>>>> the commit e97a294ef6938512b655b1abf17656cf2b26f709 was very wrong. This is
+>>>>> because scsi-ml supports the ability to split a request into smaller chunks,
+>>>>> in which case scsi_bufflen() is smaller then request length. Then at completion
+>>>>> time the remainder can be issued as a new scsi command. In that case the above
+>>>>> commit is a data corruption.
+> 
+> Thanks for catching the stupidity.  Did it actually happen?  PC commands
+> are not completed in pieces and padding / draining should only happen
+> for those.  qc->extra_len should be zero where commands can be splitted
+> for all current cases.
 
-Please, Ingo, could you give an example of where such additional locking
-is actually necessary?
+So qc->extra_len == 0 and nothing is done in that case.
 
-I ask because I went over those places when splitting the page_table_lock
-for userspace in 2.6.15.  Some things took init_mm.page_table_lock and
-some things didn't, and I concluded that actually none of them needed it.
+> 
+>>>> We needed something for -rc4, so it had to be rushed a bit...
+>>>>
+>>>>> Also in this fix all users of block layer are taken care of, and not only
+>>>>> scsi devices.
+>>>>>
+>>>>> Signed-off-by: Boaz Harrosh <bharrosh@panasas.com>
+>>>>> Signed-off-by: Benny Halevy <bhalevy@panasas.com>
+>>>>> ---
+>>>>>  block/blk-core.c    |    4 ++++
+>>>>>  drivers/scsi/scsi.c |    2 +-
+>>>>>  2 files changed, 5 insertions(+), 1 deletions(-)
+>>>>>
+>>>>> diff --git a/block/blk-core.c b/block/blk-core.c
+>>>>> index 2a438a9..37fcccc 100644
+>>>>> --- a/block/blk-core.c
+>>>>> +++ b/block/blk-core.c
+>>>>> @@ -1549,6 +1549,9 @@ static int __end_that_request_first(struct request *req, int error,
+>>>>>  			     nr_bytes >> 9, req->sector);
+>>>>>  	}
+>>>>>  
+>>>>> +	if (nr_bytes >= blk_rq_bytes(req))
+>>>>> +		nr_bytes += req->extra_len;
+>>>>> +
+> 
+> This is getting insanely subtle.  Let's say there's PIO driver which
+> transfer certain sized chunks at a time and completes request partially
+> after completing each chunk and the driver uses draining to eat up
+> whatever excess data, which seems like a legit use case to me.  But it
+> won't work because __end_that_request_first() will terminate when it
+> reaches reaches the 'true' transfer size.  That's just broken API.  FWIW,
+> 
+> Nacked-by: Tejun Heo <htejun@gmail.com>
+> 
 
-With the userspace pagetables, we need to guard against racing threads
-and vmscan/rmap.  But with the kernel pagetables, we'd already be in
-serious trouble if two cpus could be modifying the same pte at the
-same time - there needs to be other serialization already e.g. vmalloc
-has its own locking for parcelling out areas to different uses, so down
-at the page table level there should be no conflict.
+I don't understand? Drivers can still do that. Do you mean That it wants
+to also complete the draining portion in smaller chunks? I thought the draining
+is always done at once, at most. Is that theoretical or is it so in any of the 
+drivers.
 
-Allocation of new page tables, yes, that needs locking, and does use
-the page_table_lock for kernel space just as for user space.
+Any way Nack from my side on the scsi_finish_command(), it makes too many 
+assumptions that are unchecked anywhere. And it's a terrible layering violation.
+scsi is a pass-threw block device, the fix should be in block or in using device
+drivers (eg libata), that know what is going on.
 
-That was all two years ago, I may have been wrong then, or a lot may
-have changed since.  But I've heard of a grand total of 0 problems
-from not having such locking.
+Any way you are always saying req->data_len == sum(sg) but that  was certainly
+never true for scsi_bufflen() == sum(sg) so leave that alone please.
 
-And on the original topic of flush TLB without preemption disabled:
-again I'm not sure there's a bug there, but it's less clear.  Aren't
-some of those __flush_tlb_ones just unnecessary, we're simply filling
-a previously empty slot?  And if there's a guarantee that preemption
-will itself involve a TLB flush (maybe there's no such guarantee for
-these kernel entries, it's quite a different case from the userspace
-one, and you'll be worrying about the global bit), if, then it'd be
-okay to __flush_tlb_one without disabling preemption.
+Any other block layer fixes are welcome. But for now this is the best fix we have
+that only breaks theoretical, yet to be submitted drivers.
 
-Hugh
+Boaz
