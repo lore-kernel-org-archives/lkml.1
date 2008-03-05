@@ -1,41 +1,36 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933050AbYCEMHc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932826AbYCEMM0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933050AbYCEMHc (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Mar 2008 07:07:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763272AbYCEMHS
+	id S932826AbYCEMM0 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Mar 2008 07:12:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762691AbYCEMMR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Mar 2008 07:07:18 -0500
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:45909 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1763285AbYCEMHR (ORCPT
+	Wed, 5 Mar 2008 07:12:17 -0500
+Received: from hawking.rebel.net.au ([203.20.69.83]:58316 "EHLO
+	hawking.rebel.net.au" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758569AbYCEMMQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Mar 2008 07:07:17 -0500
-Date: Wed, 5 Mar 2008 06:07:14 -0600
-From: Paul Jackson <pj@sgi.com>
-To: menage@google.com
-Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org
-Subject: Re: [PATCH 1/2] Cpuset hardwall flag:  Switch cpusets to use the
- bulk cgroup_add_files() API
-Message-Id: <20080305060714.f49f0d6a.pj@sgi.com>
-In-Reply-To: <20080305080000.270536000@menage.corp.google.com>
-References: <20080305075237.608599000@menage.corp.google.com>
-	<20080305080000.270536000@menage.corp.google.com>
-Organization: SGI
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.12.0; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 5 Mar 2008 07:12:16 -0500
+Message-ID: <47CE8E21.2000309@davidnewall.com>
+Date: Wed, 05 Mar 2008 22:42:17 +1030
+From: David Newall <davidn@davidnewall.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20071022)
+MIME-Version: 1.0
+To: Eric Dumazet <dada1@cosmosbay.com>
+CC: David Miller <davem@davemloft.net>, dmantipov@yandex.ru,
+       linux-kernel@vger.kernel.org
+Subject: Re: Are Linux pipes slower than the FreeBSD ones ?
+References: <1389671204703217@webmail34.yandex.ru> <20080305.000014.245410231.davem@davemloft.net> <47CE6C41.3090303@cosmosbay.com>
+In-Reply-To: <47CE6C41.3090303@cosmosbay.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Paul M wrote:
-> This change tidies up the cpusets control file definitions,
+Eric Dumazet wrote:
+> I tried the 'pipe' prog on a fresh linux-2.6.24.2, on a dual Xeon 5120
+> machine, and we can notice that four cpus are used (but only two
+> threads are running on this benchmark)
 
-Acked-by: Paul Jackson <pj@sgi.com>
-
--- 
-                  I won't rest till it's the best ...
-                  Programmer, Linux Scalability
-                  Paul Jackson <pj@sgi.com> 1.940.382.4214
+Do the threads migrate from CPU to CPU?  That would be sub-optimal,
+wouldn't it?
