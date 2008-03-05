@@ -1,103 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934597AbYCEAEo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935126AbYCEAFa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934597AbYCEAEo (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Mar 2008 19:04:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751803AbYCEAEc
+	id S935126AbYCEAFa (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Mar 2008 19:05:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756239AbYCEAFP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Mar 2008 19:04:32 -0500
-Received: from rgminet01.oracle.com ([148.87.113.118]:51679 "EHLO
-	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755021AbYCEAEb (ORCPT
+	Tue, 4 Mar 2008 19:05:15 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:57491 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756050AbYCEAFN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Mar 2008 19:04:31 -0500
-Date: Tue, 4 Mar 2008 16:03:23 -0800
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: pierre.peiffer@bull.net
-Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2.6.24-mm1 8/8] (resend) IPC: consolidate all
- xxxctl_down() functions
-Message-Id: <20080304160323.bb01246b.randy.dunlap@oracle.com>
-In-Reply-To: <20080212163052.683140178@bull.net>
-References: <20080212161340.200976067@bull.net>
-	<20080212163052.683140178@bull.net>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.4.7 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+	Tue, 4 Mar 2008 19:05:13 -0500
+Date: Tue, 4 Mar 2008 16:05:01 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Robin Getz <rgetz@blackfin.uclinux.org>
+Cc: rusty@rustcorp.com.au, linux-kernel@vger.kernel.org,
+       Greg KH <greg@kroah.com>, Dave Hansen <haveblue@us.ibm.com>
+Subject: Re: PATCH [1/1]: Don't return symbol lables in init sections after
+ they have been freed
+Message-Id: <20080304160501.17d992f0.akpm@linux-foundation.org>
+In-Reply-To: <200803041847.15884.rgetz@blackfin.uclinux.org>
+References: <200803041847.15884.rgetz@blackfin.uclinux.org>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
-kernel-doc here causes a warning in 2.6.25-rc3-mm1:
+On Tue, 4 Mar 2008 18:47:15 -0500
+Robin Getz <rgetz@blackfin.uclinux.org> wrote:
 
-Warning(linux-2.6.25-rc3-mm1//ipc/util.c:845): No description found for parameter 'extrat_perm'
-
-
-
-On Tue, 12 Feb 2008 17:13:48 +0100 pierre.peiffer@bull.net wrote:
-
-> Index: b/ipc/util.c
+> From: Robin Getz <rgetz@blackfin.uclinux.org>
+> 
+> Today, when module names are looked up, we do not qualify them (check to see 
+> if the init section is still active or not). This can lead to problems when 
+> kernel modules get loaded into the same address that the kernel init section 
+> (or other module's init section was at). We sometimes return the old / no 
+> lomnger there 
+> 
+> This leads to bogus OOPS messages, and developers wasting their time looking 
+> for problems (in the kernel init section) where there are none (since it was 
+> a module).
+> 
+> This patch qualifies the addresses, to make sure the addresses are still valid 
+> before label/offset.
+> 
+> Signed-off-by: Robin Getz <rgetz@blackfin.uclinux.org>
+> 
+> ---
+> 
+>  linux-2.6.x/kernel/kallsyms.c |    3 ++-
+>  linux-2.6.x/kernel/module.c   |    3 ++-
+>  2 files changed, 4 insertions(+), 2 deletions(-)
+> 
+> Index: linux-2.6.x/kernel/kallsyms.c
 > ===================================================================
-> --- a/ipc/util.c
-> +++ b/ipc/util.c
-> @@ -824,6 +824,57 @@ void ipc_update_perm(struct ipc64_perm *
->  		| (in->mode & S_IRWXUGO);
->  }
+> --- linux-2.6.x/kernel/kallsyms.c	(revision 4212)
+> +++ linux-2.6.x/kernel/kallsyms.c	(working copy)
+> @@ -42,7 +42,8 @@
 >  
-> +/**
-> + * ipcctl_pre_down - retrieve an ipc and check permissions for some IPC_XXX cmd
-> + * @ids:  the table of ids where to look for the ipc
-> + * @id:   the id of the ipc to retrieve
-> + * @cmd:  the cmd to check
-> + * @perm: the permission to set
-> + * @extra_perm: one extra permission parameter used by msq
-
-change this ^^^^^ or ... (preferably the next changes)
-
-> + *
-> + * This function does some common audit and permissions check for some IPC_XXX
-> + * cmd and is called from semctl_down, shmctl_down and msgctl_down.
-> + * It must be called without any lock held and
-> + *  - retrieves the ipc with the given id in the given table.
-> + *  - performs some audit and permission check, depending on the given cmd
-> + *  - returns the ipc with both ipc and rw_mutex locks held in case of success
-> + *    or an err-code without any lock held otherwise.
-> + */
-> +struct kern_ipc_perm *ipcctl_pre_down(struct ipc_ids *ids, int id, int cmd,
-> +				      struct ipc64_perm *perm, int extrat_perm)
-
-that last parameter and ...
-
-> +{
-...
-> +}
-> +
->  #ifdef __ARCH_WANT_IPC_PARSE_VERSION
->  
->  
-> Index: b/ipc/util.h
+>  static inline int is_kernel_inittext(unsigned long addr)
+>  {
+> -	if (addr >= (unsigned long)_sinittext
+> +	if (system_state == SYSTEM_BOOTING
+> +	    && addr >= (unsigned long)_sinittext
+>  	    && addr <= (unsigned long)_einittext)
+>  		return 1;
+>  	return 0;
+> Index: linux-2.6.x/kernel/module.c
 > ===================================================================
-> --- a/ipc/util.h
-> +++ b/ipc/util.h
-> @@ -113,6 +113,8 @@ struct kern_ipc_perm *ipc_lock(struct ip
->  void kernel_to_ipc64_perm(struct kern_ipc_perm *in, struct ipc64_perm *out);
->  void ipc64_perm_to_ipc_perm(struct ipc64_perm *in, struct ipc_perm *out);
->  void ipc_update_perm(struct ipc64_perm *in, struct kern_ipc_perm *out);
-> +struct kern_ipc_perm *ipcctl_pre_down(struct ipc_ids *ids, int id, int cmd,
-> +				      struct ipc64_perm *perm, int extrat_perm);
-
-that last parameter.
-
+> --- linux-2.6.x/kernel/module.c	(revision 4212)
+> +++ linux-2.6.x/kernel/module.c	(working copy)
+> @@ -2121,7 +2121,8 @@
+>  	struct module *mod;
 >  
->  #if defined(__ia64__) || defined(__x86_64__) || defined(__hppa__) || defined(__XTENSA__)
->    /* On IA-64, we always use the "64-bit version" of the IPC structures.  */ 
+>  	list_for_each_entry(mod, &modules, list) {
+> -		if (within(addr, mod->module_init, mod->init_size)
+> +		if ((within(addr, mod->module_init, mod->init_size)
+> +		     && mod->state == MODULE_STATE_COMING)
+>  		    || within(addr, mod->module_core, mod->core_size)) {
+>  			if (modname)
+>  				*modname = mod->name;
 
+Both of the above additions could do with a comment explaining what's going
+on.
 
----
-~Randy
+The first one perhaps should use the more specific initmem_now_dynamic
+which is added by
+gregkh-driver-warn-when-statically-allocated-kobjects-are-used.patch from
+Greg's driver tree.  If the intent is to merge that - if not perhaps it can
+be split up.
