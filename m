@@ -1,70 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762276AbYCEVxW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763003AbYCEVxz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762276AbYCEVxW (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Mar 2008 16:53:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754853AbYCEVxM
+	id S1763003AbYCEVxz (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Mar 2008 16:53:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755264AbYCEVxq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Mar 2008 16:53:12 -0500
-Received: from hc6521041.dhcp.vt.edu ([198.82.16.65]:53064 "EHLO
+	Wed, 5 Mar 2008 16:53:46 -0500
+Received: from hc6521041.dhcp.vt.edu ([198.82.16.65]:53067 "EHLO
 	hc6521041.dhcp.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754616AbYCEVxL (ORCPT
+	with ESMTP id S1754853AbYCEVxp (ORCPT
 	<RFC822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Mar 2008 16:53:11 -0500
-X-Greylist: delayed 1708 seconds by postgrey-1.27 at vger.kernel.org; Wed, 05 Mar 2008 16:53:10 EST
+	Wed, 5 Mar 2008 16:53:45 -0500
 X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
-To: Greg KH <gregkh@suse.de>
-Cc: linux-kernel@vger.kernel.org, Kay Sievers <kay.sievers@vrfy.org>,
-       Jiri Slaby <jslaby@suse.cz>
-Subject: Re: [PATCH 1/8] driver core: fix up Kconfig text for CONFIG_SYSFS_DEPRECATED
-In-Reply-To: Your message of "Wed, 05 Mar 2008 08:05:55 PST."
-             <20080305160555.GA31159@suse.de>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: 2.6.25-rc3-mm1 - PROFILE_LIKELY redux..
+In-Reply-To: Your message of "Wed, 05 Mar 2008 18:45:13 +0100."
+             <p738x0x5al2.fsf@bingen.suse.de>
 From: Valdis.Kletnieks@vt.edu
-References: <20080304231519.GC3073@suse.de> <1204672732-3127-1-git-send-email-gregkh@suse.de> <18322.1204732693@turing-police.cc.vt.edu>
-            <20080305160555.GA31159@suse.de>
+References: <20080304011928.e8c82c0c.akpm@linux-foundation.org> <4911.1204701694@turing-police.cc.vt.edu>
+            <p738x0x5al2.fsf@bingen.suse.de>
 Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="==_Exmh_1204752271_3329P";
+Content-Type: multipart/signed; boundary="==_Exmh_1204747197_20005P";
 	 micalg=pgp-sha1; protocol="application/pgp-signature"
 Content-Transfer-Encoding: 7bit
-Date: Wed, 05 Mar 2008 16:24:31 -0500
-Message-ID: <5602.1204752271@turing-police.cc.vt.edu>
+Date: Wed, 05 Mar 2008 14:59:57 -0500
+Message-ID: <25220.1204747197@turing-police.cc.vt.edu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---==_Exmh_1204752271_3329P
+--==_Exmh_1204747197_20005P
 Content-Type: text/plain; charset=us-ascii
 
-On Wed, 05 Mar 2008 08:05:55 PST, Greg KH said:
-> On Wed, Mar 05, 2008 at 10:58:13AM -0500, Valdis.Kletnieks@vt.edu wrote:
-> > On Tue, 04 Mar 2008 15:18:45 PST, Greg Kroah-Hartman said:
-> > 
-> > > -	  If you are using a distro that was released in 2006 or later,
-> > > -	  it should be safe to say N here.
-> > > +	  If you are using a distro with the most recent userspace
-> > > +	  packages, it should be safe to say N here.
-> > 
-> > Might want to be a bit more specific here - I *think* udev, lvm, and nash
-> > were the common ones that broke this time around.
+On Wed, 05 Mar 2008 18:45:13 +0100, Andi Kleen said:
+> Valdis.Kletnieks@vt.edu writes:
+> >
+> > So we're in the same 4K as the VDSO64_* values, but some 0x4fe past the
+> > gtod_data.  Anybody got a hint as to what the heck it was doing?
 > 
-> udev did not break, and nash is a shell, so it would have a hard time
-> "breaking" :)
+> Try this patch:
+> 
+> Remove unlikelies in vsyscall path
 
-The problem with nash was that it has some builtins for creating
-entries in /dev (basically, a subset of udev).
+Nope, sorry... same behavior.  Apparently it's a (un)likely someplace
+else...
 
-And you're right, this time was nash, the others were the *last* time
-we busticated /sys. ;)
+I'm trying to figure out what's at 0x9be into the vdso, but not having
+a lot of luck.
 
---==_Exmh_1204752271_3329P
+--==_Exmh_1204747197_20005P
 Content-Type: application/pgp-signature
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1.4.8 (GNU/Linux)
 Comment: Exmh version 2.5 07/13/2001
 
-iD8DBQFHzw+PcC3lWbTT17ARAp33AJ90xi+VT0wVf0ZyE39rOKnJu5uCUgCgtTX/
-zaF307CFWcqXwfx7xhbUyF4=
-=geT6
+iD8DBQFHzvu9cC3lWbTT17ARApNuAJ9uHrq+LCB3NnA7meBe1aMWARZYqQCeLcd4
+3WecDSPTXlLsPRzMQ/ReR6M=
+=glIm
 -----END PGP SIGNATURE-----
 
---==_Exmh_1204752271_3329P--
+--==_Exmh_1204747197_20005P--
