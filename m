@@ -1,65 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757381AbYCEPpb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757262AbYCEPro@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757381AbYCEPpb (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Mar 2008 10:45:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753470AbYCEPpT
+	id S1757262AbYCEPro (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Mar 2008 10:47:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754095AbYCEPrf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Mar 2008 10:45:19 -0500
-Received: from colo.lackof.org ([198.49.126.79]:59761 "EHLO colo.lackof.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752197AbYCEPpS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Mar 2008 10:45:18 -0500
-Date: Wed, 5 Mar 2008 08:45:02 -0700
-From: Grant Grundler <grundler@parisc-linux.org>
-To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-Cc: linux-kernel@vger.kernel.org, linux-parisc@vger.kernel.org, tomof@acm.org,
-       Kyle McMartin <kyle@parisc-linux.org>, Matthew Wilcox <matthew@wil.cx>,
-       Grant Grundler <grundler@parisc-linux.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH -mm 0/3] fix iommu segment boundary problems (parisc)
-Message-ID: <20080305154502.GA32538@colo.lackof.org>
-References: <1204438228-4564-1-git-send-email-fujita.tomonori@lab.ntt.co.jp>
-MIME-Version: 1.0
+	Wed, 5 Mar 2008 10:47:35 -0500
+Received: from one.firstfloor.org ([213.235.205.2]:55629 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754060AbYCEPre (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 5 Mar 2008 10:47:34 -0500
+Date: Wed, 5 Mar 2008 16:48:56 +0100
+From: Andi Kleen <andi@firstfloor.org>
+To: Pierre Ossman <drzeus-list@drzeus.cx>
+Cc: Andi Kleen <andi@firstfloor.org>,
+       "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>,
+       Dave Jones <davej@codemonkey.org.uk>,
+       Alan Stern <stern@rowland.harvard.edu>,
+       LKML <linux-kernel@vger.kernel.org>, Adam Belay <abelay@novell.com>,
+       Lee Revell <rlrevell@joe-job.com>, linux-pm@lists.linux-foundation.org,
+       Pavel Machek <pavel@ucw.cz>
+Subject: Re: [linux-pm] [PATCH] cpuidle: avoid singing capacitors
+Message-ID: <20080305154856.GC553@one.firstfloor.org>
+References: <20080303231033.GB15255@one.firstfloor.org> <20080304040048.GA31562@codemonkey.org.uk> <20080304071423.0e6b71c1@mjolnir.drzeus.cx> <20080304181924.70aaf8c1@mjolnir.drzeus.cx> <20080304172918.GA27332@one.firstfloor.org> <20080304183032.17084e39@mjolnir.drzeus.cx> <20080304174315.GB27332@one.firstfloor.org> <20080304190446.775165e3@mjolnir.drzeus.cx> <20080304183406.GC27332@one.firstfloor.org> <20080305070454.3df78593@mjolnir.drzeus.cx>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1204438228-4564-1-git-send-email-fujita.tomonori@lab.ntt.co.jp>
-X-Home-Page: http://www.parisc-linux.org/
-User-Agent: Mutt/1.5.16 (2007-06-11)
+In-Reply-To: <20080305070454.3df78593@mjolnir.drzeus.cx>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Mar 02, 2008 at 03:10:25PM +0900, FUJITA Tomonori wrote:
-> This patchset is another sequel to my patchset to fix iommu segment
-> boundary problems, IOMMUs allocate memory areas without considering a
-> low level driver's segment boundary limits:
-> 
-> http://www.mail-archive.com/linux-scsi@vger.kernel.org/msg11919.html
-> 
-> This patchset fixes the PARISC IOMMU code (sbc and ccio).
-> 
-> There are three patches in this patchset. The first patch is for the
-> IOMMU helper (lib/iommu-helper.c) to enable PARISC IOMMUs use it.
-> 
-> The second and third patches are for PARISC IOMMUs, the second one is
-> preparation for the third patch, which fixes the IOMMU segment
-> boundary problem.
-> 
-> The third patch assumes that ioc->ibase is on IOVP_SIZE boundary. If
-> not, please let me know. I'll fix the patch.
+On Wed, Mar 05, 2008 at 07:04:54AM +0100, Pierre Ossman wrote:
+> I still don't follow. Perhaps you can express it in pseudo code? If I have a stale value that I cannot refresh, knowing that it is stale doesn't change anything.
 
-Please add
-    Acked-by: Grant Grundler <grundler@parisc-linux.org>
+Start: You discovered at some point where you currently have code a variable 
+is not updated yet.
+Fact: You have some new code that runs before that point
+Information: The variable is updated later eventually in the idle exit path.
+Fact II: You require the variable to be updated in your new code
+Possible solutions: 
+(1) you move your new code in a point of the idle exit path after the variable 
+is updated 
+(2) you move the code that updates the variable earlier before your code
+Solution: I described the first variant which is likely easier.
+How: I told you where it is updated, so that shouldn't be too difficult. 
+Action: Implement solution (1) or (2) 
+Action: Test if it works
+Check: If test succeeded exit 
+Otherwise: Restart at Start
 
-This includes the 4th patch posted on march 3, 2008.
-
-Thanks for posting this series. I've reviewed the code and it looks fine
-to me as well (kyle already acked it).
-
-And thanks to Joel Soete (rubisher) for testing. I tried to test the
-sba_iommu code on my local box but had issues with the unpatched kernel
-(using kyle's parisc-2.6.git tree) that I have yet to resolve (could be
-HW problems).
-
-thanks,
-grant
+-Andi
