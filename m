@@ -1,78 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934347AbYCENH6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933843AbYCENIi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934347AbYCENH6 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Mar 2008 08:07:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933324AbYCENHW
+	id S933843AbYCENIi (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Mar 2008 08:08:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764426AbYCENIR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Mar 2008 08:07:22 -0500
-Received: from srv5.dvmed.net ([207.36.208.214]:44009 "EHLO mail.dvmed.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933044AbYCENHU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Mar 2008 08:07:20 -0500
-Message-ID: <47CE9B03.9040100@garzik.org>
-Date: Wed, 05 Mar 2008 08:07:15 -0500
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
+	Wed, 5 Mar 2008 08:08:17 -0500
+Received: from ug-out-1314.google.com ([66.249.92.175]:50493 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1764440AbYCENIP (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 5 Mar 2008 08:08:15 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-disposition:message-id:content-type:content-transfer-encoding;
+        b=vq8lKejw3hBL5+Bii0IsYcQ7fwikUkn+COWnQYV7RfaCGelagOdLuYxNQoY8K7lybptiM4mx5j7xmFIr12LYhlMMx9RwVsAZYSJQORY05BsICGJdUWgKuvtS33vjfvnVQcFMm/FDXlhymSvKUoTQSGTaR3pn1buebzFPUvm2tHY=
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Subject: Re: [patch 3/3] pata: "I do not think it means, what you think it means."
+Date: Wed, 5 Mar 2008 14:21:13 +0100
+User-Agent: KMail/1.9.6 (enterprise 0.20071204.744707)
+Cc: Andrew Morton <akpm@linux-foundation.org>, jeff@garzik.org,
+       linux-ide@vger.kernel.org, alan@redhat.com,
+       linux-kernel@vger.kernel.org
+References: <200803042316.m24NGI7k002489@imap1.linux-foundation.org> <20080304173058.7679b7c8.akpm@linux-foundation.org> <20080305115610.397b3ea3@the-village.bc.nu>
+In-Reply-To: <20080305115610.397b3ea3@the-village.bc.nu>
 MIME-Version: 1.0
-To: Mark Lord <liml@rtr.ca>
-CC: Byron Bradley <byron.bbradley@gmail.com>, saeed <saeed@marvell.com>,
-       linux-ide@vger.kernel.org, jon@ngndg.com,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: Sata-MV, Intergated Sata Device Support
-References: <1176673884.5109.30.camel@Desktop> <47C35203.20402@garzik.org>	 <47C3585D.8070701@rtr.ca> <47C35A85.3020307@garzik.org>	 <alpine.DEB.0.99.0802260024400.22022@ubuntu-saeed.il.marvell.com>	 <47C43655.1050907@rtr.ca> <57e2b00803041042k67f7b1c6ge8da83efaf1aa9f6@mail.gmail.com> <47CDBCAD.9040303@rtr.ca>
-In-Reply-To: <47CDBCAD.9040303@rtr.ca>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Disposition: inline
+Message-Id: <200803051421.14167.bzolnier@gmail.com>
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.4 (----)
-X-Spam-Report: SpamAssassin version 3.2.3 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mark Lord wrote:
-> Byron Bradley wrote:
->> On Tue, Feb 26, 2008 at 3:55 PM, Mark Lord <liml@rtr.ca> wrote:
->>> saeed wrote:
->>>  >
->>>  > On Mon, 25 Feb 2008, Jeff Garzik wrote:
->>>  >
->>>  >>> ...
->>>  >>>
->>>  >>> Saeed:  isn't this what your SOC patches already implemented for 
->>> us?
->>>  >>> As near as I can tell, sata_mv now already has support for the 
->>> 60x1C0.
->>>  >> Saeed's stuff didn't support PCI though, and Jon Li is definitely 
->>> talking
->>>  >> about PCI...
->>>  > yes, my patch added support for the SoC sata like in the 5182, and 
->>> this
->>>  > is what Jon Li was concerned about. he mentioneded the 60x1C0 pci 
->>> device
->>>  > just to suggest to use it's code for the SoC sata as it is very 
->>> similar.
->>>  ..
->>>
->>>  I don't think I understand your english there.
->>>
->>>  Does the current sata_mv driver work as-is with the chipset this 
->>> person wants?
->>>  If not, then exactly what has to change to make it work?
->>
->> Jon Li was one of the people who started porting Linux to the Marvell
->> Orion 88F5182 before Marvell did it. sata_mv does now work on the
->> device Jon was talking about. When this was sent I think we were
->> unsure whether it could work over PCI or just the system bus which
->> probably confused things a little.
-> ..
+On Wednesday 05 March 2008, Alan Cox wrote:
 > 
-> Thanks for pointing this out.
+> > I didn't know any of that.  The changelog might have been kinda fun, but
+> > given that it failed to tell us that the patch fixes data-corruption
+> > errors, the changelog was excrutiatingly bad.
 > 
-> So, no further action required -- it already works now.
-> 
-> Got that, Jeff?
+> I have no reason/evidence to believe it fixes data corruption errors of
+> any kind. For the specific combinations of device it should simply avoid
+> a long pause, complaints and a switch to lower speeds.
 
-hehe, thanks :)
+http://www.mail-archive.com/linux-ide@vger.kernel.org/msg16599.html
 
+There is strange coincidence with being on the blacklist and FIFO corruption.
 
+https://bugzilla.redhat.com/show_bug.cgi?id=433557
+
+Bugzilla Bug 433557: Data corrupion with Fedora8 on HPT370 disk controller (Abit BX133 mobo)
+
+IBM-DTLA-307030 is on the blacklist....
+
+[ there can be more libata problems involved, anyway FC6 w/IDE works fine ]
+
+> The ATA disk case with serverworks (which is a potential corruptor) was
+> always correctly handled.
+
+for OSB4 yes but...
+
+/* Seagate Barracuda ATA IV Family drives in UDMA mode 5
+ * can overrun their FIFOs when used with the CSB5 */
+
+static const char *csb_bad_ata100[] = {
+
+Thanks,
+Bart
