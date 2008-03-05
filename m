@@ -1,136 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760198AbYCEQNb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756714AbYCEQOP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760198AbYCEQNb (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Mar 2008 11:13:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757786AbYCEQNO
+	id S1756714AbYCEQOP (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Mar 2008 11:14:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758532AbYCEQNy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Mar 2008 11:13:14 -0500
-Received: from mtaout01-winn.ispmail.ntl.com ([81.103.221.47]:49656 "EHLO
-	mtaout01-winn.ispmail.ntl.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1757529AbYCEQNM (ORCPT
+	Wed, 5 Mar 2008 11:13:54 -0500
+Received: from fg-out-1718.google.com ([72.14.220.155]:13674 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755176AbYCEQNw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Mar 2008 11:13:12 -0500
-From: Ian Campbell <ijc@hellion.org.uk>
-To: Mark McLoughlin <markmc@redhat.com>
-Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-       xen-devel@lists.xensource.com, jeremy@goop.org
-In-Reply-To: <1203697218-32064-1-git-send-email-markmc@redhat.com>
-References: <1203697218-32064-1-git-send-email-markmc@redhat.com>
-Content-Type: text/plain
-Date: Wed, 05 Mar 2008 16:12:48 +0000
-Message-Id: <1204733568.6307.14.camel@zakaz.uk.xensource.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 
+	Wed, 5 Mar 2008 11:13:52 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=BeiadAYXI0Np4VFR64t0fK9KHdQTlqnxptaNLBMZeBq+5Mh+Y+Qs/EsweQBP/9aNpz3+G0idJb3LL9VPG/5zXDM4/SM6oMSUGLXX/y5V4RdXVYUWSYtOo+nknuVXGVFJM5BYDHsZZELdYIowO/JQXsRvjEAsCl/tm+NDEm+/Z9A=
+Message-ID: <58cb370e0803050813q6cb1082cy7e540a77993f3dd6@mail.gmail.com>
+Date: Wed, 5 Mar 2008 17:13:49 +0100
+From: "Bartlomiej Zolnierkiewicz" <bzolnier@gmail.com>
+To: "Alan Cox" <alan@lxorguk.ukuu.org.uk>
+Subject: Re: [patch 3/3] pata: "I do not think it means, what you think it means."
+Cc: "Andrew Morton" <akpm@linux-foundation.org>, jeff@garzik.org,
+       linux-ide@vger.kernel.org, alan@redhat.com,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <20080305143949.1f56017c@the-village.bc.nu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-SA-Exim-Connect-IP: 217.46.209.99
-X-SA-Exim-Mail-From: ijc@hellion.org.uk
-Subject: Re: [PATCH] xen: Module autoprobing support for frontend drivers
-X-SA-Exim-Version: 4.2.1 (built Tue, 09 Jan 2007 17:23:22 +0000)
-X-SA-Exim-Scanned: Yes (on hopkins.hellion.org.uk)
+Content-Disposition: inline
+References: <200803042316.m24NGI7k002489@imap1.linux-foundation.org>
+	 <20080304173058.7679b7c8.akpm@linux-foundation.org>
+	 <20080305115610.397b3ea3@the-village.bc.nu>
+	 <200803051421.14167.bzolnier@gmail.com>
+	 <20080305143949.1f56017c@the-village.bc.nu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, Mar 5, 2008 at 3:39 PM, Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
+> > There is strange coincidence with being on the blacklist and FIFO corruption.
+>  >
+>  > https://bugzilla.redhat.com/show_bug.cgi?id=433557
+>  >
+>  > Bugzilla Bug 433557: Data corrupion with Fedora8 on HPT370 disk controller (Abit BX133 mobo)
+>  >
+>  > IBM-DTLA-307030 is on the blacklist....
+>
+>  I wish it was more than a co-incidence but the trace shows it dropped
+>  speed as expected.
 
-On Fri, 2008-02-22 at 16:20 +0000, Mark McLoughlin wrote: 
-> Add module aliases to support autoprobing modules
-> for xen frontend devices.
-> 
-> Signed-off-by: Mark McLoughlin <markmc@redhat.com>
+the trace shows only ST380011A (ata1) dropping speed...
 
-Slightly belated but this looks good to me...
+I would suggest that you ask Wojciech to test the patch
+(unless it has already happend).
 
-Tested-by: Ian Campbell <ijc@hellion.org.uk>
+>  > for OSB4 yes but...
+>  >
+>  > /* Seagate Barracuda ATA IV Family drives in UDMA mode 5
+>  >  * can overrun their FIFOs when used with the CSB5 */
+>
+>  Which gives you a CRC error according to my notes
 
-> ---
->  drivers/block/xen-blkfront.c      |    1 +
->  drivers/net/xen-netfront.c        |    1 +
->  drivers/xen/xenbus/xenbus_probe.c |   27 +++++++++++++++++++++++++--
->  3 files changed, 27 insertions(+), 2 deletions(-)
-> 
-> diff --git a/drivers/block/xen-blkfront.c b/drivers/block/xen-blkfront.c
-> index 9c6f3f9..d0d5a02 100644
-> --- a/drivers/block/xen-blkfront.c
-> +++ b/drivers/block/xen-blkfront.c
-> @@ -998,3 +998,4 @@ module_exit(xlblk_exit);
->  MODULE_DESCRIPTION("Xen virtual block device frontend");
->  MODULE_LICENSE("GPL");
->  MODULE_ALIAS_BLOCKDEV_MAJOR(XENVBD_MAJOR);
-> +MODULE_ALIAS("xen:vbd");
-> diff --git a/drivers/net/xen-netfront.c b/drivers/net/xen-netfront.c
-> index 7483d45..b3fa27e 100644
-> --- a/drivers/net/xen-netfront.c
-> +++ b/drivers/net/xen-netfront.c
-> @@ -1809,3 +1809,4 @@ module_exit(netif_exit);
->  
->  MODULE_DESCRIPTION("Xen virtual network device frontend");
->  MODULE_LICENSE("GPL");
-> +MODULE_ALIAS("xen:vif");
-> diff --git a/drivers/xen/xenbus/xenbus_probe.c b/drivers/xen/xenbus/xenbus_probe.c
-> index 4750de3..336363c 100644
-> --- a/drivers/xen/xenbus/xenbus_probe.c
-> +++ b/drivers/xen/xenbus/xenbus_probe.c
-> @@ -88,6 +88,16 @@ int xenbus_match(struct device *_dev, struct device_driver *_drv)
->  	return match_device(drv->ids, to_xenbus_device(_dev)) != NULL;
->  }
->  
-> +static int xenbus_uevent(struct device *_dev, struct kobj_uevent_env *env)
-> +{
-> +	struct xenbus_device *dev = to_xenbus_device(_dev);
-> +
-> +	if (add_uevent_var(env, "MODALIAS=xen:%s", dev->devicetype))
-> +		return -ENOMEM;
-> +
-> +	return 0;
-> +}
-> +
->  /* device/<type>/<id> => <type>-<id> */
->  static int frontend_bus_id(char bus_id[BUS_ID_SIZE], const char *nodename)
->  {
-> @@ -166,6 +176,7 @@ static struct xen_bus_type xenbus_frontend = {
->  	.bus = {
->  		.name     = "xen",
->  		.match    = xenbus_match,
-> +		.uevent   = xenbus_uevent,
->  		.probe    = xenbus_dev_probe,
->  		.remove   = xenbus_dev_remove,
->  		.shutdown = xenbus_dev_shutdown,
-> @@ -438,6 +449,12 @@ static ssize_t xendev_show_devtype(struct device *dev,
->  }
->  DEVICE_ATTR(devtype, S_IRUSR | S_IRGRP | S_IROTH, xendev_show_devtype, NULL);
->  
-> +static ssize_t xendev_show_modalias(struct device *dev,
-> +				    struct device_attribute *attr, char *buf)
-> +{
-> +	return sprintf(buf, "xen:%s\n", to_xenbus_device(dev)->devicetype);
-> +}
-> +DEVICE_ATTR(modalias, S_IRUSR | S_IRGRP | S_IROTH, xendev_show_modalias, NULL);
->  
->  int xenbus_probe_node(struct xen_bus_type *bus,
->  		      const char *type,
-> @@ -492,10 +509,16 @@ int xenbus_probe_node(struct xen_bus_type *bus,
->  
->  	err = device_create_file(&xendev->dev, &dev_attr_devtype);
->  	if (err)
-> -		goto fail_remove_file;
-> +		goto fail_remove_nodename;
-> +
-> +	err = device_create_file(&xendev->dev, &dev_attr_modalias);
-> +	if (err)
-> +		goto fail_remove_devtype;
->  
->  	return 0;
-> -fail_remove_file:
-> +fail_remove_devtype:
-> +	device_remove_file(&xendev->dev, &dev_attr_devtype);
-> +fail_remove_nodename:
->  	device_remove_file(&xendev->dev, &dev_attr_nodename);
->  fail_unregister:
->  	device_unregister(&xendev->dev);
--- 
-Ian Campbell
+I have no documentation / errata for ServerWorks chipsets (everything is
+NDA-ed) or the hardware in question so I'll trust your opinion on this.
 
-"An entire fraternity of strapping Wall-Street-bound youth.  Hell - this
-is going to be a blood bath!"
-		-- Post Bros. Comics
-
+Thanks,
+Bart
