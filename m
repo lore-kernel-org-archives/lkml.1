@@ -1,83 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932287AbYCEHsW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764559AbYCEHxX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932287AbYCEHsW (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Mar 2008 02:48:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764603AbYCEHsE
+	id S1764559AbYCEHxX (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Mar 2008 02:53:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760236AbYCEHxA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Mar 2008 02:48:04 -0500
-Received: from caramon.arm.linux.org.uk ([78.32.30.218]:53777 "EHLO
-	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761149AbYCEHsB (ORCPT
+	Wed, 5 Mar 2008 02:53:00 -0500
+Received: from e28smtp05.in.ibm.com ([59.145.155.5]:45903 "EHLO
+	e28esmtp05.in.ibm.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1759910AbYCEHw6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Mar 2008 02:48:01 -0500
-Date: Wed, 5 Mar 2008 07:47:23 +0000
-From: Russell King <rmk+lkml@arm.linux.org.uk>
-To: Joe Perches <joe@perches.com>
-Cc: Nicolas Pitre <nico@cam.org>, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] include/asm-arm - use angle brackets for includes
-Message-ID: <20080305074723.GA19674@flint.arm.linux.org.uk>
-References: <1204677978.5180.90.camel@localhost>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1204677978.5180.90.camel@localhost>
-User-Agent: Mutt/1.4.2.1i
+	Wed, 5 Mar 2008 02:52:58 -0500
+Message-ID: <47CE5155.5000009@linux.vnet.ibm.com>
+Date: Wed, 05 Mar 2008 13:22:53 +0530
+From: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+User-Agent: Thunderbird 1.5.0.14ubu (X11/20080227)
+MIME-Version: 1.0
+To: Adam Litke <agl@us.ibm.com>
+CC: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linuxppc-dev@ozlabs.org, apw@shadowen.org, balbir@linux.vnet.ibm.com
+Subject: Re: [BUG] 2.6.25-rc3-mm1 kernel bug while running libhugetlbfs
+References: <20080304011928.e8c82c0c.akpm@linux-foundation.org> <47CDA0F1.9030908@linux.vnet.ibm.com> <20080304115158.505f33eb.akpm@linux-foundation.org> <1204668089.14779.92.camel@localhost.localdomain>
+In-Reply-To: <1204668089.14779.92.camel@localhost.localdomain>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-To: Russell King <rmk+kernel@arm.linux.org.uk>, Nicolas Pitre <nico@cam.org>
-Cc: linux-arm-kernel@lists.arm.linux.org.uk,
-        LKML <linux-kernel@vger.kernel.org>
+Adam Litke wrote:
+> On Tue, 2008-03-04 at 11:51 -0800, Andrew Morton wrote:
+>> hugetlb-correct-page-count-for-surplus-huge-pages.patch adds:
+>>
+>>         if (page) {
+>>                 /*
+>>                  * This page is now managed by the hugetlb allocator and has
+>>                  * no users -- drop the buddy allocator's reference.
+>>                  */
+>>                 int page_count = put_page_testzero(page);
+>>                 BUG_ON(page_count != 0);
+>>
+>>
+> 
+> Ugh I got bitten by put_page_testzero().  When it returns 1, the page
+> count is zero (not the page count).
+> 
+> My initial version had a BUG_ON() with side-effects.  When a reviewer
+> pointed it out, I thought I could fix the patch up on its way out the
+> door.  I have self-administered my punishment.  This patch will fix it:
+Hi Adam,
 
-No idea why you're sending this to Nicolas, yet it touches s3cXXXX stuff
-which is Ben Dooks, who has been omitted from the above.
+Thanks the patch fixes the kernel bug while running the libhugetlbfs test.
 
-On Tue, Mar 04, 2008 at 04:46:18PM -0800, Joe Perches wrote:
-> Signed-off-by: Joe Perches <joe@perches.com
-
-This is not a proper signed off - please use both angle brackets. 8)
+Tested-by: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
 
 > 
-> include/asm-arm/plat-s3c/uncompress.h |    4 ++--
->  include/asm-arm/proc-fns.h            |    4 ++--
->  2 files changed, 4 insertions(+), 4 deletions(-)
+> Signed-off-by: Adam Litke <agl@us.ibm.com>
 > 
-> diff --git a/include/asm-arm/plat-s3c/uncompress.h b/include/asm-arm/plat-s3c/uncompress.h
-> index b5e6208..19b9eda 100644
-> --- a/include/asm-arm/plat-s3c/uncompress.h
-> +++ b/include/asm-arm/plat-s3c/uncompress.h
-> @@ -27,8 +27,8 @@ static void arch_detect_cpu(void);
->  
->  /* defines for UART registers */
->  
-> -#include "asm/plat-s3c/regs-serial.h"
-> -#include "asm/plat-s3c/regs-watchdog.h"
-> +#include <asm/plat-s3c/regs-serial.h>
-> +#include <asm/plat-s3c/regs-watchdog.h>
->  
->  /* working in physical space... */
->  #undef S3C2410_WDOGREG
-> diff --git a/include/asm-arm/proc-fns.h b/include/asm-arm/proc-fns.h
-> index a4ce457..75ec760 100644
-> --- a/include/asm-arm/proc-fns.h
-> +++ b/include/asm-arm/proc-fns.h
-> @@ -214,9 +214,9 @@
->  #ifndef __ASSEMBLY__
->  
->  #ifndef MULTI_CPU
-> -#include "asm/cpu-single.h"
-> +#include <asm/cpu-single.h>
->  #else
-> -#include "asm/cpu-multi32.h"
-> +#include <asm/cpu-multi32.h>
->  #endif
->  
->  #include <asm/memory.h>
+> --- mm/hugetlb.c.orig	2008-03-04 13:36:30.000000000 -0800
+> +++ mm/hugetlb.c	2008-03-04 13:39:30.000000000 -0800
+> @@ -291,8 +291,8 @@ static struct page *alloc_buddy_huge_pag
+>  		 * This page is now managed by the hugetlb allocator and has
+>  		 * no users -- drop the buddy allocator's reference.
+>  		 */
+> -		int page_count = put_page_testzero(page);
+> -		BUG_ON(page_count != 0);
+> +		put_page_testzero(page);
+> +		VM_BUG_ON(page_count(page));
+>  		nid = page_to_nid(page);
+>  		set_compound_page_dtor(page, free_huge_page);
+>  		/*
 > 
-> 
+
 
 -- 
-Russell King
- Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
- maintainer of:
+Thanks & Regards,
+Kamalesh Babulal,
+Linux Technology Center,
+IBM, ISTL.
