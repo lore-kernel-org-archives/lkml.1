@@ -1,60 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932786AbYCEXL5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765606AbYCEXM6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932786AbYCEXL5 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Mar 2008 18:11:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933553AbYCEXJT
+	id S1765606AbYCEXM6 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Mar 2008 18:12:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932236AbYCEXKI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Mar 2008 18:09:19 -0500
-Received: from ik-out-1112.google.com ([66.249.90.176]:52692 "EHLO
-	ik-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933563AbYCEXJS (ORCPT
+	Wed, 5 Mar 2008 18:10:08 -0500
+Received: from n2b.bullet.mail.ac4.yahoo.com ([76.13.13.72]:42066 "HELO
+	n2b.bullet.mail.ac4.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S933190AbYCEXKE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Mar 2008 18:09:18 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent:from;
-        b=oj5r69Z9s8b8q7uH7zCvCzpyTh9LfNo0PLoNoyEUUV1beGtMcxZyV/xsZRuWe4rBBmNnmnCrTYW71F1vkpCS/aY9ydseQ3skW2sp1ewEqHjVNwKg1Tx8mIS/NbwyZLokplhfer5y81lF7HLMTg1T5sJoUnki+VzJ7msFmyjlCkc=
-Date: Thu, 6 Mar 2008 01:06:04 +0200
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: jmorris@namei.org, sds@tycho.nsa.gov, casey@schaufler-ca.com,
-       bunk@kernel.org, chrisw@sous-sol.org, eparis@parisplace.org,
-       adobriyan@sw.ru, linux-kernel@vger.kernel.org,
-       linux-security-module@vger.kernel.org
-Subject: Re: [PATCH -v5 -mm] LSM: Add security= boot parameter
-Message-ID: <20080305230604.GB6746@ubuntu>
-References: <20080302074912.GA3215@ubuntu> <20080302105946.GA6406@ubuntu> <Xine.LNX.4.64.0803031910170.6729@us.intercode.com.au> <20080303153510.GA6963@ubuntu> <1204559642.23738.63.camel@moss-spartans.epoch.ncsc.mil> <20080303212433.GA12998@ubuntu> <Xine.LNX.4.64.0803040906380.21610@us.intercode.com.au> <20080304030407.GA25686@ubuntu> <20080305142948.3d391d84.akpm@linux-foundation.org> <20080305225628.GA6746@ubuntu>
+	Wed, 5 Mar 2008 18:10:04 -0500
+X-Yahoo-Newman-Id: 296803.24042.bm@omp408.mail.mud.yahoo.com
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com.au;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=CnQvBu10DT7wJ28dLuGTR+P+fTV6qSJxMqQlEORNAWOpk/w821Bnv8YdUbC9GjrJ8Zs0s7iekI+ao9m1X5nwS1fdt0PMUnJmT9ePxPaQLF96OCLPTU74pf6+5Mc43jF+O3Upn6Yz+AZivEIzWJKUvHJs4QLiAN42h5LYoC2xUNY=  ;
+X-YMail-OSG: u8m2juwVM1lYccZ5Oa1CbxbJkOFiBD9NEqAxIhikNftOlShH9AAEOkrLD5FPyrYygjOlzmdeFQ--
+X-Yahoo-Newman-Property: ymail-3
+From: Nick Piggin <nickpiggin@yahoo.com.au>
+To: Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [patch 1/5] vmalloc: do not check for freed locks on user maps
+Date: Thu, 6 Mar 2008 09:56:43 +1100
+User-Agent: KMail/1.9.5
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>, Greg KH <greg@kroah.com>,
+       Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@elte.hu>
+References: <20080305154829.185609547@linutronix.de> <200803060328.20349.nickpiggin@yahoo.com.au> <alpine.LFD.1.00.0803051803070.3099@apollo.tec.linutronix.de>
+In-Reply-To: <alpine.LFD.1.00.0803051803070.3099@apollo.tec.linutronix.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20080305225628.GA6746@ubuntu>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
-From: "Ahmed S. Darwish" <darwish.07@gmail.com>
+Message-Id: <200803060956.43671.nickpiggin@yahoo.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Mar 06, 2008 at 12:56:28AM +0200, Ahmed S. Darwish wrote:
-> On Wed, Mar 05, 2008 at 02:29:48PM -0800, Andrew Morton wrote:
-> > On Tue, 4 Mar 2008 05:04:07 +0200
-> > "Ahmed S. Darwish" <darwish.07@gmail.com> wrote:
-> > 
-> > Can chosen_lsm[] be __initdata?
-> > 
-> 
-> You're the expert ;), I don't really understand the difference.
-> 
+On Thursday 06 March 2008 04:20, Thomas Gleixner wrote:
+> On Thu, 6 Mar 2008, Nick Piggin wrote:
+> > On Thursday 06 March 2008 03:03, Thomas Gleixner wrote:
+> > > User maps do not contain kernel internal objects. No need to check
+> > > them.
+> >
+> > Why not? Depends on your definition of kernel internal... and
+> > objects ;)
+> >
+> > Drivers could create and manage some objects in this vmalloc
+> > area. They are no longer internal if you map them to userspace,
+> > but I still don't think you want to vunmap it until those
+> > object lifetimes are finished.
+>
+> Well, in case of the locks I have a hard time to figure out how you
+> use a spinlock/mutex with a user space address. The same applies for
+> timers or other objects used by kernel subsystems. So when the driver
+> writer creates an kernel related object in the vmalloc space, he has
+> to use the kernel mapping which is unmapped separate, right ?
 
-After being a good citizen and reading the comments in init.h, I think
-yes it should be marked so. even though we use it from init_smk_fs
-since init_smk_fs is also marked as __init.
+This is the kernel mapping. The user mapping is unmapped when
+the userspace munmaps.
 
-Thank you,
 
--- 
+> I can see your concern about the infinite stu^H^H^Hcreativity of
+> driver writers, but I prefer not to go down that road and provide
+> debug infrastructure for absurdities.
 
-"Better to light a candle, than curse the darkness"
-
-Ahmed S. Darwish
-Homepage: http://darwish.07.googlepages.com
-Blog: http://darwish-07.blogspot.com
 
