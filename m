@@ -1,87 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933013AbYCEA0j@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933908AbYCEA2F@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933013AbYCEA0j (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Mar 2008 19:26:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756986AbYCEA0a
+	id S933908AbYCEA2F (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Mar 2008 19:28:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760456AbYCEA1w
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Mar 2008 19:26:30 -0500
-Received: from e34.co.us.ibm.com ([32.97.110.152]:39430 "EHLO
-	e34.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753063AbYCEA03 (ORCPT
+	Tue, 4 Mar 2008 19:27:52 -0500
+Received: from tama50.ecl.ntt.co.jp ([129.60.39.147]:50346 "EHLO
+	tama50.ecl.ntt.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759965AbYCEA1u (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Mar 2008 19:26:29 -0500
-Date: Tue, 4 Mar 2008 16:26:26 -0800
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Peter Hartley <pdh@utter.chaos.org.uk>, linux-kernel@vger.kernel.org,
-       Pavel Machek <pavel@ucw.cz>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Alan Stern <stern@rowland.harvard.edu>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@osdl.org>,
-       Zdenek Kabelac <zdenek.kabelac@gmail.com>, davem@davemloft.net,
-       Pierre Ossman <drzeus-mmc@drzeus.cx>
-Subject: Re: [patch] Re: using long instead of atomic_t when only set/read is required
-Message-ID: <20080305002626.GD9517@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <20080225090316.GA420@elf.ucw.cz> <20080303172410.GA13869@elf.ucw.cz> <1204673572.1020.12.camel@amd64.pyotr.org> <200803050054.04930.rjw@sisk.pl>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200803050054.04930.rjw@sisk.pl>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Tue, 4 Mar 2008 19:27:50 -0500
+To: htejun@gmail.com
+Cc: tomof@acm.org, efault@gmx.de, jens.axboe@oracle.com,
+       fujita.tomonori@lab.ntt.co.jp, James.Bottomley@HansenPartnership.com,
+       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       linux-ide@vger.kernel.org, linux-scsi@vger.kernel.org,
+       jgarzik@pobox.com, bzolnier@gmail.com
+Subject: Re: [PATCH] block: fix residual byte count handling
+From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+In-Reply-To: <47CDDC31.4070806@gmail.com>
+References: <47CD7C05.1080707@gmail.com>
+	<20080305041914V.tomof@acm.org>
+	<47CDDC31.4070806@gmail.com>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Message-Id: <20080305092619Y.fujita.tomonori@lab.ntt.co.jp>
+Date: Wed, 05 Mar 2008 09:26:19 +0900
+X-Dispatcher: imput version 20040704(IM147)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Mar 05, 2008 at 12:54:03AM +0100, Rafael J. Wysocki wrote:
-> On Wednesday, 5 of March 2008, Peter Hartley wrote:
-> > On Mon, 2008-03-03 at 18:24 +0100, Pavel Machek wrote:
-> > > Ok, I can understand the gcc side. But do we actually run on an
-> > > architecture where
-> > > 
-> > > long *x;
-> > > 
-> > > *x = 0;
-> > > 
-> > > racing with 
-> > > 
-> > > *x = 0x12345678;
-> > > 
-> > > can produce
-> > > 
-> > > *x == 0x12340000;
-> > > 
-> > > or something like that? I'm told RCU relies on architectures not doing
-> > > this, and I'd like to get this clarified.
+On Wed, 05 Mar 2008 08:33:05 +0900
+Tejun Heo <htejun@gmail.com> wrote:
+
+> FUJITA Tomonori wrote:
+> > Hmm, does SCSI mid-layer need to care about how many bytes the block
+> > layer allocates? I don't think that extra_len is NOT good_bytes.
 > > 
-> > ARM6, ARM7500 and similar do exactly this for short (and unsigned
-> > short), although not for int, long, or pointers:
-> > 
-> > > struct foo { short b; short c; };
-> > > void baa(struct foo *f, short cc) { f->c = cc; }
-> > 
-> > becomes (arm-linux-gcc -mcpu=arm6):
-> > 
-> > > baa:
-> > >	mov	r3, r1, lsr #8
-> > >	strb	r3, [r0, #3]
-> > >	strb	r1, [r0, #2]
-> > >	mov	pc, lr
-> > 
-> > note the two single-byte stores, as ARM6 didn't have the "store
-> > halfword" instruction.
-> > 
-> > So I think Alan Stern's
-> > "For all properly-aligned pointer and integral types other than long
-> > long..."
-> > should be amended to
-> > "For all properly-aligned pointer and integral types other than short or
-> > long long..."
+> > I think that the block layer had better take care about it (fix
+> > __end_that_request_first?).
 > 
-> Well, perhaps it's sufficient to document just pointers?  In fact this is what
-> RCU relies on.
+> Yeah, probably calling completion functions w/o bytes count is the right
+> thing to do but what I was talking about was what could break when the
+> semantics of rq->data_len changed.  If we keep rq->data_len() ==
+> sum(sg), we keep it business as usual for all the rest except for the
+> device application layer if we don't we do the reverse and SCSI midlayer
+> completion was a good example, I think.
 
-One can do RCU on array indexes (ints/longs) as well as pointers, so we
-need to keep "integral" in there.
+sglist is a low-level I/O representation for device drivers. SCSI
+midlayer should not care about sglist. We should not fix SCSI midlayer
+for rq->data_len != sum(sg) change (so I can't agree with your
+diagrams in another mail).
 
-							Thanx, Paul
+When if we change a rule, we need to fix something.
+
+If we keep rq->data_len == sum(sg), we need to fix the device
+application layer. If we keep rq->data_len == the true data length, we
+need to fix the low-level drivers.
+
+Now I'm fine with the commit e97a294ef6938512b655b1abf17656cf2b26f709
+since we are in -rc stages. But I plan to send a patch to revert it
+and fix this issue in the block layer. I'd like to test it in -mm for
+a while.
+
+Only sglist stuff in SCSI midlayer is scsi_req_map_sg now. As you
+know, we really want to remove it.
+
+
+> Things going the other way is fine with me but I at least want to hear a
+> valid rationale.  Till now all I got is "because that's the true size"
+> which doesn't really make much sense to me.
+
+Most of users of request structure care about only the real data
+length, don't care about padding and drain length. Why do they bother
+to use a helper function to get the real data length?
