@@ -1,89 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755764AbYCEPVn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755903AbYCEPZ2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755764AbYCEPVn (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Mar 2008 10:21:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753029AbYCEPVb
+	id S1755903AbYCEPZ2 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Mar 2008 10:25:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752906AbYCEPZR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Mar 2008 10:21:31 -0500
-Received: from accolon.hansenpartnership.com ([76.243.235.52]:48320 "EHLO
-	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752790AbYCEPV3 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Mar 2008 10:21:29 -0500
-Subject: Re: [PATCH] blk: missing add of padded bytes to io completion byte
-	 count
-From: James Bottomley <James.Bottomley@HansenPartnership.com>
-To: Jens Axboe <jens.axboe@oracle.com>
-Cc: Tejun Heo <htejun@gmail.com>, Boaz Harrosh <bharrosh@panasas.com>,
-       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
-       Mike Galbraith <efault@gmx.de>, tomof@acm.org,
-       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       linux-ide@vger.kernel.org, linux-scsi@vger.kernel.org,
-       jgarzik@pobox.com, bzolnier@gmail.com
-In-Reply-To: <20080305135121.GK6704@kernel.dk>
-References: <47CD7C05.1080707@gmail.com> <20080305041914V.tomof@acm.org>
-	 <47CDDC31.4070806@gmail.com>
-	 <20080305092619Y.fujita.tomonori@lab.ntt.co.jp>
-	 <47CE72EF.7050302@panasas.com> <20080305123317.GI6704@kernel.dk>
-	 <47CE9634.6040501@panasas.com> <20080305124857.GJ6704@kernel.dk>
-	 <47CEA40F.6050903@gmail.com>  <20080305135121.GK6704@kernel.dk>
-Content-Type: text/plain
-Date: Wed, 05 Mar 2008 09:21:24 -0600
-Message-Id: <1204730484.3047.10.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 (2.12.3-1.fc8) 
-Content-Transfer-Encoding: 7bit
+	Wed, 5 Mar 2008 10:25:17 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:35773 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752212AbYCEPZP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 5 Mar 2008 10:25:15 -0500
+Date: Wed, 5 Mar 2008 16:24:50 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Sripathi Kodi <sripathik@in.ibm.com>,
+       Gregory Haskins <ghaskins@novell.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>
+Subject: Re: [PATCH] balance RT task resched only on runqueue
+Message-ID: <20080305152450.GA19300@elte.hu>
+References: <1204728101.5241.12.camel@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1204728101.5241.12.camel@localhost.localdomain>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2008-03-05 at 14:51 +0100, Jens Axboe wrote:
-> On Wed, Mar 05 2008, Tejun Heo wrote:
-> > This is getting insanely subtle.  Let's say there's PIO driver which
-> > transfer certain sized chunks at a time and completes request partially
-> > after completing each chunk and the driver uses draining to eat up
-> > whatever excess data, which seems like a legit use case to me.  But it
-> > won't work because __end_that_request_first() will terminate when it
-> > reaches reaches the 'true' transfer size.  That's just broken API.  FWIW,
-> > 
-> > Nacked-by: Tejun Heo <htejun@gmail.com>
+
+* Steven Rostedt <rostedt@goodmis.org> wrote:
+
+> In the RT kernel we discovered a place that can reschedule a task 
+> without holding the tasks runqueue lock.  This was caused by the RT 
+> balancing code that pulls RT tasks to the current run queue and will 
+> reschedule the current task.
 > 
-> Yeah, I think I may have gone a bit overboard in applying this so
-> quickly. It's just not a good interface, silently adding the extra
-> length if asked to complete more. It may even happen right now, for a
-> driver that does no padding (it probably wont do any harm here either,
-> but still).
+> There's a slight chance that the pulling of the RT tasks will release 
+> the current runqueue's lock and retake it (in the 
+> double_lock_balance). During this time that the runqueue is released, 
+> the current task can migrate to another runqueue.
 > 
-> I'll try and see if I can come up with something cleaner.
+> In the prio_changed_rt code, after the pull, if the current task is of 
+> lesser priority than one of the RT tasks pulled, resched_task is 
+> called on the current task. If the current task had migrated in that 
+> small window, resched_task will be called without holding the runqueue 
+> lock for the runqueue that the task is on.
 > 
-> My basic design paradigm for this is that the _driver_ (or mid layer, if
-> SCSI wants to handle it) should care about the padding. So make it easy
-> for them to pad, but have it 'unrolled' by completion time. We should
-> NOT need any extra_len checks or additions in the block/ directory,
-> period.
+> This race condition also exists in the mainline kernel and this patch 
+> adds a check to make sure the task hasn't migrated before calling 
+> resched_task.
 
-Right, that's why my original proposal was to do nothing for padding
-(other than ensure the driver could adjust the length if it wanted to)
-and to add an extra element always for draining, which the driver could
-ignore.  It basically pushed the use paradigm onto the driver.
+thanks Steve, applied.
 
-If we want the use paradigm shared between block and driver, then I
-think the best approach is to keep all the bios the same (so not adjust
-for padding), but do adjust in the blk_rq_map_sg().  That way we have
-the padding and draining unwind information by comparing with the bio.
-
-For passing on to the driver:  req->data_len still needs to be the input
-(bio) lenght.  req->extra_len can record how much padding and draining
-was added.  The completion length also needs to be in terms of the true
-(bio) length.  Now, here's the subtlety.  Because of the way transfers
-work, we expect the padded length not to contribute to overrun (because
-it represents transfers that were successfully completed at the correct
-length), but we *do* expect drain usage to be recorded as overrun.
-However, if we keep the bios intact, we have all the information to make
-this determination in the block layer at completion time, with the
-expectation that the lower layers report the exact amount they
-transferred.
-
-James
-
-
+	Ingo
