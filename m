@@ -1,63 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760332AbYCETCp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756292AbYCETDW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760332AbYCETCp (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Mar 2008 14:02:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755132AbYCETCh
+	id S1756292AbYCETDW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Mar 2008 14:03:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756035AbYCETDI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Mar 2008 14:02:37 -0500
-Received: from outbound-mail-15.bluehost.com ([69.89.18.115]:60595 "HELO
-	outbound-mail-15.bluehost.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1754184AbYCETCg (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Mar 2008 14:02:36 -0500
-From: Jesse Barnes <jbarnes@virtuousgeek.org>
-To: akepner@sgi.com
-Subject: Re: [PATCH 1/3 v3] dma: document dma_{un}map_{single|sg}_attrs() interface
-Date: Wed, 5 Mar 2008 11:02:02 -0800
-User-Agent: KMail/1.9.6 (enterprise 0.20071204.744707)
-Cc: James Bottomley <James.Bottomley@hansenpartnership.com>,
-       Grant Grundler <grundler@parisc-linux.org>,
-       Michael Ellerman <michael@ellerman.id.au>,
-       Tony Luck <tony.luck@intel.com>, Jes Sorensen <jes@sgi.com>,
-       Randy Dunlap <randy.dunlap@oracle.com>,
-       Roland Dreier <rdreier@cisco.com>, David Miller <davem@davemloft.net>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       linux-kernel@vger.kernel.org
-References: <20080228032448.GS11012@sgi.com> <1204310276.4003.48.camel@localhost.localdomain> <20080305181307.GR17802@sgi.com>
-In-Reply-To: <20080305181307.GR17802@sgi.com>
+	Wed, 5 Mar 2008 14:03:08 -0500
+Received: from havoc.gtf.org ([69.61.125.42]:34613 "EHLO havoc.gtf.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754184AbYCETDH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 5 Mar 2008 14:03:07 -0500
+Date: Wed, 5 Mar 2008 14:03:04 -0500
+From: Jeff Garzik <jeff@garzik.org>
+To: linux-scsi@vger.kernel.org
+Cc: LKML <linux-kernel@vger.kernel.org>
+Subject: [PATCH] mvsas: fill in error info record bits
+Message-ID: <20080305190304.GA13286@havoc.gtf.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200803051102.03478.jbarnes@virtuousgeek.org>
-X-Identified-User: {642:box128.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.27.49 authed with jbarnes@virtuousgeek.org}
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday, March 05, 2008 10:13 am akepner@sgi.com wrote:
-> On Fri, Feb 29, 2008 at 12:37:56PM -0600, James Bottomley wrote:
-> > ....
-> > To be honest, I still don't like the name.  SYNC_ON_WRITE is the SN2
-> > implementation.  What it's actually doing is implementing strict
-> > ordering semantics.  I think it should really be
-> > DMA_ATTR_STRICT_ORDERING (with a corresponding
-> > DMA_ATTR_RELAXED_ORDERING)....
->
-> I've been thinking about a new name, but don't like
-> DMA_ATTR_STRICT_ORDERING.
->
-> What I'm trying to do is to establish order (across
-> a NUMA fabric) of DMA to different memory regions, i.e.,
-> DMA to memory region A forces all outstanding DMA (to
-> memory regions B, C,....) to complete first.
->
-> DMA_ATTR_STRICT_ORDERING sounds like a PCI thing to me,
-> and this is a NUMA interconnect thing.
+This describes the first dword of struct mvs_err_info, two-dword error
+information record that is returned when RXQ_ERR bit is asserted.
 
-Well, we used to call it a DMA barrier back in the old days, so 
-DMA_ATTR_BARRIER might work (or DMA_ATTR_INTERCONNECT_BARRIER if you want to 
-be extra clear about what it's doing).
+These bits are necessary for proper error handling.
 
-Jesse
+Signed-off-by: Jeff Garzik <jgarzik@redhat.com>
+---
+diff --git a/drivers/scsi/mvsas.c b/drivers/scsi/mvsas.c
+index d4a6ac3..ec4dda0 100644
+--- a/drivers/scsi/mvsas.c
++++ b/drivers/scsi/mvsas.c
+@@ -511,7 +511,35 @@ enum status_buffer {
+ };
+ 
+ enum error_info_rec {
+-	CMD_ISS_STPD	=  (1U << 31),	/* Cmd Issue Stopped */
++	CMD_ISS_STPD	= (1U << 31),	/* Cmd Issue Stopped */
++	CMD_PI_ERR	= (1U << 30),	/* Protection info error.  see flags2 */
++	RSP_OVER	= (1U << 29),	/* rsp buffer overflow */
++	RETRY_LIM	= (1U << 28),	/* FIS/frame retry limit exceeded */
++	UNK_FIS		= (1U << 27),	/* unknown FIS */
++	DMA_TERM	= (1U << 26),	/* DMA terminate primitive rx'd */
++	SYNC_ERR	= (1U << 25),	/* SYNC rx'd during frame xmit */
++	TFILE_ERR	= (1U << 24),	/* SATA taskfile Error bit set */
++	R_ERR		= (1U << 23),	/* SATA returned R_ERR prim */
++	RD_OFS		= (1U << 20),	/* Read DATA frame invalid offset *?
++	XFER_RDY_OFS	= (1U << 19),	/* XFER_RDY offset error */
++	UNEXP_XFER_RDY	= (1U << 18),	/* unexpected XFER_RDY error */
++	DATA_OVER_UNDER	= (1U << 16),	/* data overflow/underflow */
++	INTERLOCK	= (1U << 15),	/* interlock error */
++	NAK		= (1U << 14),	/* NAK rx'd */
++	ACK_NAK_TO	= (1U << 13),	/* ACK/NAK timeout */
++	CXN_CLOSED	= (1U << 12),	/* cxn closed w/out ack/nak */
++	OPEN_TO		= (1U << 11),	/* I_T nexus lost, open cxn timeout */
++	PATH_BLOCKED	= (1U << 10),	/* I_T nexus lost, pathway blocked */
++	NO_DEST		= (1U << 9),	/* I_T nexus lost, no destination */
++	STP_RES_BSY	= (1U << 8),	/* STP resources busy */
++	BREAK		= (1U << 7),	/* break received */
++	BAD_DEST	= (1U << 6),	/* bad destination */
++	BAD_PROTO	= (1U << 5),	/* protocol not supported */
++	BAD_RATE	= (1U << 4),	/* cxn rate not supported */
++	WRONG_DEST	= (1U << 3),	/* wrong destination error */
++	CREDIT_TO	= (1U << 2),	/* credit timeout */
++	WDOG_TO		= (1U << 1),	/* watchdog timeout */
++	BUF_PAR		= (1U << 0),	/* buffer parity error */
+ };
+ 
+ struct mvs_chip_info {
