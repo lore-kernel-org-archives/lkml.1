@@ -1,142 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761298AbYCERou@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762860AbYCERpi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761298AbYCERou (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Mar 2008 12:44:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762602AbYCERof
+	id S1762860AbYCERpi (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Mar 2008 12:45:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756779AbYCERpR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Mar 2008 12:44:35 -0500
-Received: from sacred.ru ([62.205.161.221]:38092 "EHLO sacred.ru"
+	Wed, 5 Mar 2008 12:45:17 -0500
+Received: from mx1.suse.de ([195.135.220.2]:33227 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757861AbYCERoe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Mar 2008 12:44:34 -0500
-Message-ID: <47CEDBD1.5030307@openvz.org>
-Date: Wed, 05 Mar 2008 20:43:45 +0300
-From: Pavel Emelyanov <xemul@openvz.org>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080213)
+	id S1754513AbYCERpQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 5 Mar 2008 12:45:16 -0500
+To: Valdis.Kletnieks@vt.edu
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: 2.6.25-rc3-mm1 - PROFILE_LIKELY redux..
+From: Andi Kleen <andi@firstfloor.org>
+References: <20080304011928.e8c82c0c.akpm@linux-foundation.org>
+	<4911.1204701694@turing-police.cc.vt.edu>
+Date: Wed, 05 Mar 2008 18:45:13 +0100
+In-Reply-To: <4911.1204701694@turing-police.cc.vt.edu> (Valdis Kletnieks's message of "Wed\, 05 Mar 2008 02\:21\:34 -0500")
+Message-ID: <p738x0x5al2.fsf@bingen.suse.de>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.1 (gnu/linux)
 MIME-Version: 1.0
-To: Pavel Emelyanov <xemul@openvz.org>
-CC: Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Paul Menage <menage@google.com>,
-       Sukadev Bhattiprolu <sukadev@us.ibm.com>,
-       Serge Hallyn <serue@us.ibm.com>
-Subject: [PATCH 7/9] Provide functions to manipulate char device mappings
-References: <47CED717.60406@openvz.org>
-In-Reply-To: <47CED717.60406@openvz.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-Greylist: Sender succeeded SMTP AUTH authentication, not delayed by milter-greylist-3.0 (sacred.ru [62.205.161.221]); Wed, 05 Mar 2008 20:43:36 +0300 (MSK)
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The character devices currently have a global map for
-devices and its own locks and callbacks for devices
-probing. So here are the functions that provide the way
-to play with character devices maps. 
+Valdis.Kletnieks@vt.edu writes:
+>
+> So we're in the same 4K as the VDSO64_* values, but some 0x4fe past the
+> gtod_data.  Anybody got a hint as to what the heck it was doing?
 
-They are cdev_map_init/cdev_map_fini to create/destroy 
-one, cdev_add_to_map/cdev_del_from_map to map/unmap devices,
-and cdev_iterate_map for uniformity.
+Try this patch:
 
-Signed-off-by: Pavel Emelyanov <xemul@openvz.org>
+Remove unlikelies in vsyscall path
 
----
- fs/char_dev.c        |   63 ++++++++++++++++++++++++++++++++++++++++++++++++++
- include/linux/cdev.h |    7 +++++
- 2 files changed, 70 insertions(+), 0 deletions(-)
+Remove unlikely in vsyscall path that conflict with unlikely profiling.
+The unlikelies shouldn't be needed anyways because gcc predicts
+condition leading to early return as unlikely by default and
+for the loops it shouldn't make much difference
 
-diff --git a/fs/char_dev.c b/fs/char_dev.c
-index d042446..7a4c1bd 100644
---- a/fs/char_dev.c
-+++ b/fs/char_dev.c
-@@ -476,6 +476,69 @@ int cdev_add(struct cdev *p, dev_t dev, unsigned count)
- 	return kobj_map(cdev_map, dev, count, NULL, exact_match, exact_lock, p);
- }
+Signed-off-by: Andi Kleen <ak@suse.de>
+
+Index: linux/arch/x86/kernel/vsyscall_64.c
+===================================================================
+--- linux.orig/arch/x86/kernel/vsyscall_64.c
++++ linux/arch/x86/kernel/vsyscall_64.c
+@@ -128,7 +128,7 @@ static __always_inline void do_vgettimeo
+ 		seq = read_seqbegin(&__vsyscall_gtod_data.lock);
  
-+#ifdef CONFIG_CGROUP_DEVS
-+int cdev_add_to_map(struct kobj_map *map, dev_t dev, int all, mode_t mode)
-+{
-+	int tmp;
-+	struct kobject *k;
-+	struct cdev *c;
-+
-+	k = kobj_lookup(cdev_map, dev, NULL, &tmp);
-+	if (k == NULL)
-+		return -ENODEV;
-+
-+	c = container_of(k, struct cdev, kobj);
-+	tmp = kobj_remap(map, dev, mode, all ? MINORMASK : 1, NULL,
-+			exact_match, exact_lock, c);
-+	if (tmp < 0) {
-+		cdev_put(c);
-+		return tmp;
-+	}
-+
-+	return 0;
-+}
-+
-+int cdev_del_from_map(struct kobj_map *map, dev_t dev, int all)
-+{
-+	int tmp;
-+	struct kobject *k;
-+	struct cdev *c;
-+
-+	k = kobj_lookup(map, dev, NULL, &tmp);
-+	if (k == NULL)
-+		return -ENODEV;
-+
-+	c = container_of(k, struct cdev, kobj);
-+	kobj_unmap(map, dev, all ? MINORMASK : 1);
-+
-+	/*
-+	 * one put for the kobj_lookup above and one for
-+	 * the kobj_lookup in cdev_add_to_map
-+	 */
-+	cdev_put(c);
-+	cdev_put(c);
-+	return 0;
-+}
-+
-+void cdev_iterate_map(struct kobj_map *map,
-+		int (*fn)(dev_t, int, mode_t, void *), void *x)
-+{
-+	kobj_map_iterate(map, fn, x);
-+}
-+
-+static struct kobject *base_probe(dev_t dev, int *part, void *data);
-+
-+struct kobj_map *cdev_map_init(void)
-+{
-+	return kobj_map_init(base_probe, &chrdevs_lock);
-+}
-+
-+void cdev_map_fini(struct kobj_map *map)
-+{
-+	kobj_map_fini(map);
-+}
-+#endif
-+
- static void cdev_unmap(dev_t dev, unsigned count)
+ 		vread = __vsyscall_gtod_data.clock.vread;
+-		if (unlikely(!__vsyscall_gtod_data.sysctl_enabled || !vread)) {
++		if (!__vsyscall_gtod_data.sysctl_enabled || !vread) {
+ 			gettimeofday(tv,NULL);
+ 			return;
+ 		}
+@@ -169,7 +169,7 @@ time_t __vsyscall(1) vtime(time_t *t)
  {
- 	kobj_unmap(cdev_map, dev, count);
-diff --git a/include/linux/cdev.h b/include/linux/cdev.h
-index 1e29b13..14d377b 100644
---- a/include/linux/cdev.h
-+++ b/include/linux/cdev.h
-@@ -33,5 +33,12 @@ void cd_forget(struct inode *);
+ 	struct timeval tv;
+ 	time_t result;
+-	if (unlikely(!__vsyscall_gtod_data.sysctl_enabled))
++	if (!__vsyscall_gtod_data.sysctl_enabled)
+ 		return time_syscall(t);
  
- extern struct backing_dev_info directly_mappable_cdev_bdi;
- 
-+struct kobj_map;
-+int cdev_add_to_map(struct kobj_map *map, dev_t dev, int all, mode_t mode);
-+int cdev_del_from_map(struct kobj_map *map, dev_t dev, int all);
-+struct kobj_map *cdev_map_init(void);
-+void cdev_map_fini(struct kobj_map *map);
-+void cdev_iterate_map(struct kobj_map *,
-+		int (*fn)(dev_t, int, mode_t, void *), void *);
- #endif
- #endif
--- 
-1.5.3.4
-
+ 	vgettimeofday(&tv, NULL);
+Index: linux/arch/x86/vdso/vclock_gettime.c
+===================================================================
+--- linux.orig/arch/x86/vdso/vclock_gettime.c
++++ linux/arch/x86/vdso/vclock_gettime.c
+@@ -48,7 +48,7 @@ static noinline int do_realtime(struct t
+ 		ts->tv_sec = gtod->wall_time_sec;
+ 		ts->tv_nsec = gtod->wall_time_nsec;
+ 		ns = vgetns();
+-	} while (unlikely(read_seqretry(&gtod->lock, seq)));
++	} while (read_seqretry(&gtod->lock, seq));
+ 	timespec_add_ns(ts, ns);
+ 	return 0;
+ }
+@@ -77,7 +77,7 @@ static noinline int do_monotonic(struct 
+ 		ns = gtod->wall_time_nsec + vgetns();
+ 		secs += gtod->wall_to_monotonic.tv_sec;
+ 		ns += gtod->wall_to_monotonic.tv_nsec;
+-	} while (unlikely(read_seqretry(&gtod->lock, seq)));
++	} while (read_seqretry(&gtod->lock, seq));
+ 	vset_normalized_timespec(ts, secs, ns);
+ 	return 0;
+ }
+@@ -105,7 +105,7 @@ int __vdso_gettimeofday(struct timeval *
+ 			     sizeof(*tv) != sizeof(struct timespec));
+ 		do_realtime((struct timespec *)tv);
+ 		tv->tv_usec /= 1000;
+-		if (unlikely(tz != NULL)) {
++		if (tz != NULL) {
+ 			/* This relies on gcc inlining the memcpy. We'll notice
+ 			   if it ever fails to do so. */
+ 			memcpy(tz, &gtod->sys_tz, sizeof(struct timezone));
