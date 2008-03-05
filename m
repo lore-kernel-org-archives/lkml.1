@@ -1,39 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763651AbYCEIBW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765680AbYCEIBt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763651AbYCEIBW (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Mar 2008 03:01:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763980AbYCEIAS
+	id S1765680AbYCEIBt (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Mar 2008 03:01:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764156AbYCEIAV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Mar 2008 03:00:18 -0500
-Received: from smtp-out.google.com ([216.239.33.17]:20300 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1763645AbYCEIAR (ORCPT
+	Wed, 5 Mar 2008 03:00:21 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:33911
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1764068AbYCEIAU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Mar 2008 03:00:17 -0500
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=received:message-id:user-agent:date:from:to:cc:subject;
-	b=s3xqV1+F+wQcGhDeS3d+5q4H+xXu13jXK5eI6zeyAlJbX9SnU9Wo/Rv3J6/Rn34Px
-	6/McMpFNfrlwvpI3jyNnA==
-Message-Id: <20080305075237.608599000@menage.corp.google.com>
-User-Agent: quilt/0.45-1
-Date: Tue, 04 Mar 2008 23:52:37 -0800
-From: menage@google.com
-To: pj@sgi.com, akpm@linux-foundation.org
-Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org
-Subject: [PATCH 0/2] Cpuset hardwall flag:  Introduction
+	Wed, 5 Mar 2008 03:00:20 -0500
+Date: Wed, 05 Mar 2008 00:00:14 -0800 (PST)
+Message-Id: <20080305.000014.245410231.davem@davemloft.net>
+To: dmantipov@yandex.ru
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: Are Linux pipes slower than the FreeBSD ones ?
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <1389671204703217@webmail34.yandex.ru>
+References: <1389671204703217@webmail34.yandex.ru>
+X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Currently the cpusets mem_exclusive flag is overloaded to mean both
-"no-overlapping" and "no GFP_KERNEL allocations outside this cpuset".
+From: Antipov Dmitry <dmantipov@yandex.ru>
+Date: Wed, 05 Mar 2008 10:46:57 +0300
 
-These patches add a new mem_hardwall flag with just the allocation
-restriction part of the mem_exclusive semantics, without breaking
-backwards-compatibility for those who continue to use just
-mem_exclusive. Additionally, the cgroup control file registration for
-cpusets is cleaned up to reduce boilerplate.
+> Despite of this obvious fact, recently I've tried to compare pipe
+> performance on Linux and FreeBSD systems. Unfortunately, Linux
+> results are poor - ~2x slower than FreeBSD. The detailed description
+> of the test case, preparation, environment and results are located
+> at http://213.148.29.37/PipeBench, and everyone are pleased to look
+> at, reproduce, criticize, etc.
 
-Signed-off-by: Paul Menage <menage@google.com>
+FreeBSD does page flipping into the pipe receiver, so rerun your test
+case but have either the sender or the receiver make changes to
+their memory buffer in between the read/write calls.
 
---
+FreeBSD's scheme is only good for benchmarks, rather then real life.
+
+
