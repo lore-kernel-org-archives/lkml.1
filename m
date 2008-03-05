@@ -1,31 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760051AbYCEGjb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762892AbYCEGsk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760051AbYCEGjb (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Mar 2008 01:39:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757194AbYCEGjR
+	id S1762892AbYCEGsk (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Mar 2008 01:48:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758125AbYCEGs1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Mar 2008 01:39:17 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:36211 "EHLO mx2.mail.elte.hu"
+	Wed, 5 Mar 2008 01:48:27 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:35064 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755612AbYCEGjP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Mar 2008 01:39:15 -0500
-Date: Wed, 5 Mar 2008 07:38:42 +0100
+	id S1756088AbYCEGs0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 5 Mar 2008 01:48:26 -0500
+Date: Wed, 5 Mar 2008 07:48:14 +0100
 From: Ingo Molnar <mingo@elte.hu>
-To: Julia Lawall <julia@diku.dk>
-Cc: yi.zhu@intel.com, linux-wireless@vger.kernel.org,
-       ipw3945-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org,
-       kernel-janitors@vger.kernel.org,
-       Harvey Harrison <harvey.harrison@gmail.com>,
-       Alexander Viro <viro@ftp.linux.org.uk>, linux-sparse@vger.kernel.org,
-       Josh Triplett <josh@freedesktop.org>
-Subject: Re: [PATCH 6/9] drivers/net/wireless/iwlwifi/iwl-4965.c: Correct
-	use of ! and &
-Message-ID: <20080305063842.GA24495@elte.hu>
-References: <Pine.LNX.4.64.0802262143570.18200@ask.diku.dk>
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Cc: "H. Peter Anvin" <hpa@zytor.com>, Andi Kleen <ak@suse.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: preempt bug in set_pmd_pfn?
+Message-ID: <20080305064814.GB28398@elte.hu>
+References: <47CDBB87.8090906@goop.org> <20080304212821.GB8944@elte.hu> <47CDBEDC.1050302@goop.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0802262143570.18200@ask.diku.dk>
+In-Reply-To: <47CDBEDC.1050302@goop.org>
 User-Agent: Mutt/1.5.17 (2007-11-01)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -40,28 +35,26 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Julia Lawall <julia@diku.dk> wrote:
+* Jeremy Fitzhardinge <jeremy@goop.org> wrote:
 
-> From: Julia Lawall <julia@diku.dk>
-> 
-> In commit e6bafba5b4765a5a252f1b8d31cbf6d2459da337, a bug was fixed 
-> that involved converting !x & y to !(x & y).  The code below shows the 
-> same pattern, and thus should perhaps be fixed in the same way.
+> Ingo Molnar wrote:
+>> * Jeremy Fitzhardinge <jeremy@goop.org> wrote:
+>>
+>>   
+>>> I think set_pmd_pfn, which is only called by __set_fixmap, might have a 
+>>> preempt bug in it.
+>>>     
+>>
+>> yes, and we had similar preemption bugs in the past. I guess most places 
+>> are either infrequent or have some natural atomicity anyway. Wanna send a 
+>> patch?
+>
+> Sure.  Should it just disable preemption, or take a lock?  It calls 
+> set_pte_at without holding any pte locks; that seems to be relatively 
+> common.  Is it OK when you're operating on init_mm?
 
->  	if (sta_ht_inf) {
->  		if ((!sta_ht_inf->ht_supported) ||
-> -		   (!sta_ht_inf->cap & IEEE80211_HT_CAP_SUP_WIDTH))
-> +		   (!(sta_ht_inf->cap & IEEE80211_HT_CAP_SUP_WIDTH)))
->  			return 0;
-
-i'm wondering, could Sparse be extended to check for such patterns? 
-
-People are regularly running "make C=1" and are sending fixes to make 
-entire subsystems sparse-warning-free, so Sparse is a nice mechanism 
-that works and it keeps code clean in the long run.
-
-I dont think the "!X & Y" pattern is ever used legitimately [and even if 
-it were used legitimately, it's easy to avoid the sparse false positive 
-- while in the buggy case we have a clear bug].
+no, it's not OK to modify the kernel pagetable without locking - taking 
+the pgd_lock should do the trick. Could you send the stacktrace that 
+shows the place that is preemptible?
 
 	Ingo
