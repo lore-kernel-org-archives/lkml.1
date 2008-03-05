@@ -1,91 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765152AbYCEKHO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765102AbYCEKRP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765152AbYCEKHO (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Mar 2008 05:07:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759987AbYCEKHB
+	id S1765102AbYCEKRP (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Mar 2008 05:17:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761564AbYCEKRE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Mar 2008 05:07:01 -0500
-Received: from fk-out-0910.google.com ([209.85.128.190]:4132 "EHLO
-	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759696AbYCEKHA (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Mar 2008 05:07:00 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:reply-to:to:cc:in-reply-to:references:content-type:organization:date:message-id:mime-version:x-mailer:content-transfer-encoding:from;
-        b=ZBvmfvs1JEvJshXZ2VS+T1bgRcTWO/RLz9wxcMgQ0XTz0+0GfAhQbScmFopmtk20/k0rJThYn3uU9FnDCfnKOELwSZP/e/7XkQbcBc9bWWs0Dv0PmpURGInlsDpx+MtQ/0RW0PnCzJNqCVtrQhLtzgcyzjPSfvq9epLxHx8myPs=
-Subject: Re: [kvm-devel] [RFC] Notifier for Externally Mapped Memory (EMM)
-Reply-To: dor.laor@qumranet.com
-To: Robin Holt <holt@sgi.com>
-Cc: Avi Kivity <avi@qumranet.com>, Nick Piggin <npiggin@suse.de>,
-       Steve Wise <swise@opengridcomputing.com>,
-       Andrea Arcangeli <andrea@qumranet.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       kvm-devel@lists.sourceforge.net, Kanoj Sarcar <kanojsarcar@yahoo.com>,
-       Roland Dreier <rdreier@cisco.com>, Jack Steiner <steiner@sgi.com>,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       daniel.blueman@quadrics.com, general@lists.openfabrics.org,
-       akpm@linux-foundation.org, Christoph Lameter <clameter@sgi.com>
-In-Reply-To: <20080305094736.GA2013@sgi.com>
-References: <20080303213707.GA8091@v2.random>
-	 <20080303220502.GA5301@v2.random> <47CC9B57.5050402@qumranet.com>
-	 <Pine.LNX.4.64.0803032327470.9642@schroedinger.engr.sgi.com>
-	 <20080304133020.GC5301@v2.random>
-	 <Pine.LNX.4.64.0803041059110.13957@schroedinger.engr.sgi.com>
-	 <20080304222030.GB8951@v2.random>
-	 <Pine.LNX.4.64.0803041422070.20821@schroedinger.engr.sgi.com>
-	 <1204670529.6241.52.camel@lappy> <47CE2B23.6010505@qumranet.com>
-	 <20080305094736.GA2013@sgi.com>
-Content-Type: text/plain
-Organization: Qumranet
-Date: Wed, 05 Mar 2008 12:02:57 +0200
-Message-Id: <1204711377.31109.19.camel@localhost.localdomain>
+	Wed, 5 Mar 2008 05:17:04 -0500
+Received: from mailhub.sw.ru ([195.214.232.25]:30344 "EHLO relay.sw.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1759182AbYCEKRD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 5 Mar 2008 05:17:03 -0500
+Date: Wed, 5 Mar 2008 13:16:17 +0300
+From: Alexey Dobriyan <adobriyan@sw.ru>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Greg KH <gregkh@suse.de>, "Zhang, Rui" <rui.zhang@intel.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>, kay.sievers@vrfy.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: 2.6.25-rc regression: kernel panic on boot
+Message-ID: <20080305101617.GD19059@localhost.sw.ru>
+References: <1204500349.10256.171.camel@acpi-hp-zz.sh.intel.com> <20080303224259.GA27008@suse.de> <20080304135447.GD32383@elte.hu>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 (2.12.3-1.fc8) 
-Content-Transfer-Encoding: 7bit
-From: Dor Laor <dor.laor@gmail.com>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080304135447.GD32383@elte.hu>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-On Wed, 2008-03-05 at 03:47 -0600, Robin Holt wrote:
-> On Wed, Mar 05, 2008 at 07:09:55AM +0200, Avi Kivity wrote:
-> > Isn't that out of the question for .25?
+On Tue, Mar 04, 2008 at 02:54:47PM +0100, Ingo Molnar wrote:
+> CONFIG_SYSFS_DEPRECATED=y changed its meaning recently and causes
+> regressions in working setups that had SYSFS_DEPRECATED disabled.
 > 
-> I keep hearing this mantra.  What is so compelling about the .25
-> release?  When seems to be more important than what.  While I understand
-> product release cycles, etc. and can certainly agree with them. I would
-> like to know with what I am being asked to agree.
-> 
+> so rename it to SYSFS_DEPRECATED_V2 so that testers pick up the new
+> default via 'make oldconfig', even if their old .config's disabled
+> CONFIG_SYSFS_DEPRECATED ...
 
-The main reason is that several kvm exciting features are dependent on
-mmu notifiers:
-- It enables full guest swapping (as opposed to partial today)
-- It enables memory ballooning
-- It enables running Izik Eidus's Kernel Shared Pages module that unify
-  guest pages together.
+It has all the same help text, so people who disabled it in the past
+will disable again!
 
-The patchset is kernel-internal, stable and reviewed. Even if the
-interface will be changed in .26 it won't have noticeable effect.
+> --- linux.orig/init/Kconfig
+> +++ linux/init/Kconfig
+> @@ -367,9 +367,13 @@ config RESOURCE_COUNTERS
+>  	depends on CGROUPS
+>  
+>  config SYSFS_DEPRECATED
+> +	bool
+> +
+> +config SYSFS_DEPRECATED_V2
+>  	bool "Create deprecated sysfs files"
+>  	depends on SYSFS
+>  	default y
+> +	select SYSFS_DEPRECATED
+>  	help
+>  	  This option creates deprecated symlinks such as the
+>  	  "device"-link, the <subsystem>:<name>-link, and the
 
-So since its stable, internal, reviewed, needed to enable important kvm
-features we like to see it in for .25.
-
-Regards,
-Dor
-
-> That said, I agree we should probably finish getting the comments on
-> Andrea's most recent patch, if any, cleared up and put that one in.
-> 
-> Robin
-> 
-> -------------------------------------------------------------------------
-> This SF.net email is sponsored by: Microsoft
-> Defy all challenges. Microsoft(R) Visual Studio 2008.
-> http://clk.atdmt.com/MRT/go/vse0120000070mrt/direct/01/
-> _______________________________________________
-> kvm-devel mailing list
-> kvm-devel@lists.sourceforge.net
-> https://lists.sourceforge.net/lists/listinfo/kvm-devel
+Is anyone aware of a case when turning SYSFS_DEPRECATED back on also
+breaks something? I mean, option can be simply removed and sysfs people
+can finally stop breaking boxes.
 
