@@ -1,69 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933677AbYCEXJ6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933734AbYCEXKl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933677AbYCEXJ6 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Mar 2008 18:09:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933219AbYCEXEv
+	id S933734AbYCEXKl (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Mar 2008 18:10:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932900AbYCEXHo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Mar 2008 18:04:51 -0500
-Received: from smtp6.pp.htv.fi ([213.243.153.40]:44556 "EHLO smtp6.pp.htv.fi"
+	Wed, 5 Mar 2008 18:07:44 -0500
+Received: from mx2.suse.de ([195.135.220.15]:50532 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933214AbYCEXEt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Mar 2008 18:04:49 -0500
-Date: Thu, 6 Mar 2008 01:04:45 +0200
-From: Adrian Bunk <bunk@kernel.org>
-To: Rusty Russell <rusty@rustcorp.com.au>
-Cc: LKML <linux-kernel@vger.kernel.org>, Alexey Dobriyan <adobriyan@gmail.com>
-Subject: Re: [PATCH 2/2] modules: Whine about suspicious return values from
-	module's ->init() hook
-Message-ID: <20080305230445.GB937@cs181133002.pp.htv.fi>
-References: <200803042321.01683.rusty@rustcorp.com.au> <200803042322.26693.rusty@rustcorp.com.au>
+	id S1764972AbYCEXHm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 5 Mar 2008 18:07:42 -0500
+Date: Thu, 6 Mar 2008 00:07:39 +0100 (CET)
+From: Michael Matz <matz@suse.de>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: David Miller <davem@davemloft.net>, richard.guenther@gmail.com,
+       Joe.Buck@synopsys.com, hubicka@ucw.cz, aurelien@aurel32.net,
+       linux-kernel@vger.kernel.org, gcc@gcc.gnu.org
+Subject: Re: RELEASE BLOCKER: Linux doesn't follow x86/x86-64 ABI wrt direction
+ flag
+In-Reply-To: <47CF25A5.5060709@zytor.com>
+Message-ID: <Pine.LNX.4.64.0803060006520.20583@wotan.suse.de>
+References: <84fc9c000803051332q2f2eedeej7d3c0509e698cabf@mail.gmail.com>
+ <47CF11D6.7070901@zytor.com> <84fc9c000803051340i13559c63tcf56eb828d000802@mail.gmail.com>
+ <20080305.141622.80343656.davem@davemloft.net> <Pine.LNX.4.64.0803052341330.20583@wotan.suse.de>
+ <47CF25A5.5060709@zytor.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <200803042322.26693.rusty@rustcorp.com.au>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Mar 04, 2008 at 11:22:26PM +1100, Rusty Russell wrote:
-> Subject: Whine about suspicious return values from module's ->init() hook
-> Date: Mon, 11 Feb 2008 01:09:06 +0300
-> From: Alexey Dobriyan <adobriyan@gmail.com>
+Hi,
+
+On Wed, 5 Mar 2008, H. Peter Anvin wrote:
+
+> Michael Matz wrote:
+> > 
+> > Many bugs are a big issue to people who actually hit them, and we had (and
+> > probably still have) far nastier corner case miscompilations here and there
+> > and nevertheless released.  It never was the end of the world :)
+> > 
 > 
-> Return value convention of module's init functions is 0/-E. Sometimes, e.g.
-> during forward-porting mistakes happen and buggy module created, where result
-> of comparison "workqueue != NULL" is propagated all the way up to
-> sys_init_module. What happens is that some other module created workqueue in
-> question, our module created it again and module was successfully loaded.
-> 
-> Or it could be some other bug.
-> 
-> Let's make such mistakes much more visible. In retrospective, such messages
-> would noticeably shorten some of my head-scratching sessions.
-> 
-> Note, that dump_stack() is just a way to get attention from user.
-> Sample message:
-> 
-> sys_init_module: 'foo'->init suspiciously returned 1, it should follow 0/-E convention
-> sys_init_module: loading module anyway...
->...
+> This is the sort of stuff that security holes are made from.
 
-While I agree with Andrew that a BUG() would not be appropriate here I'm 
-wondering why the module should be loaded?
+For security problems I prefer fixes over work-arounds.  The fix lies in 
+the kernel, the work-around in gcc.
 
-We do know that something in the module is buggy.
 
-And not loading the module also seems to be a good compromise between 
-making the user notice the problem and not doing a panic().
-
-cu
-Adrian
-
--- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
-
+Ciao,
+Michael.
