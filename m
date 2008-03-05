@@ -1,106 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760606AbYCERET@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759839AbYCERHl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760606AbYCERET (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Mar 2008 12:04:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758361AbYCEREF
+	id S1759839AbYCERHl (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Mar 2008 12:07:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754689AbYCERHc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Mar 2008 12:04:05 -0500
-Received: from iolanthe.rowland.org ([192.131.102.54]:60559 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1757682AbYCEREE (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Mar 2008 12:04:04 -0500
-Date: Wed, 5 Mar 2008 12:04:01 -0500 (EST)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: David Brownell <david-b@pacbell.net>
-cc: Andre Tomt <andre@tomt.net>,
-       Kernel development list <linux-kernel@vger.kernel.org>,
-       USB list <linux-usb@vger.kernel.org>
-Subject: Re: USB OOPS 2.6.25-rc2-git1
-In-Reply-To: <200803042015.43165.david-b@pacbell.net>
-Message-ID: <Pine.LNX.4.44L0.0803051145080.4750-100000@iolanthe.rowland.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Wed, 5 Mar 2008 12:07:32 -0500
+Received: from x346.tv-sign.ru ([89.108.83.215]:59458 "EHLO mail.screens.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751079AbYCERHc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 5 Mar 2008 12:07:32 -0500
+Date: Wed, 5 Mar 2008 20:11:09 +0300
+From: Oleg Nesterov <oleg@tv-sign.ru>
+To: Roland McGrath <roland@redhat.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Alan Cox <alan@redhat.com>,
+       Davide Libenzi <davidel@xmailserver.org>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Ingo Molnar <mingo@elte.hu>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 0/3] orphaned pgrp fixes
+Message-ID: <20080305171109.GB6723@tv-sign.ru>
+References: <20080302184430.GA16362@tv-sign.ru> <20080304122654.7313227010A@magilla.localdomain>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080304122654.7313227010A@magilla.localdomain>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 4 Mar 2008, David Brownell wrote:
+On 03/04, Roland McGrath wrote:
+>
+> What seems most pedantically right for this check is:
+> 		is_my_init(p, p->real_parent)
+> i.e.
+> 		if (task_session(p->real_parent) == task_session(p) &&
+> 		    task_pgrp(p->real_parent) != pgrp &&
+> 		    task_tgid_nr_ns(p->real_parent, p->nsproxy->pid_ns) != 1)
+> 			return 0;
+> It's excluded from counting as in your session if you consider to to be init.
 
-> On Thursday 21 February 2008, Alan Stern wrote:
-> >
-> > Okay, so this isn't as bad as it seemed.  I don't have a copy of your 
-> > most recent patch, but it seems clear that the watchdog routine must:
-> > 
-> > 	First remove the circumstances that would cause the controller 
-> > 	to set IAA.  I guess that means clearing IAAD; it's not
-> > 	entirely clear from the spec whether this will do what we 
-> > 	want.
+Yes. Not that I really understand ;) But Eric also suggested to use
+is_container_init().
+
+> The write lock on
+> tasklist_lock strictly serializes all exiting process's calls from
+> exit_notify.  This call is after group_dead hits.  If some other
+> process in the pgrp has ->signal->live > 0 then it has not exited yet
+> and when it does it will do this same check, guaranteed to be after
+> ours, and after our ->signal->live == 0.
+
+Yes. I though about that too. But, unlike ->exit_state, signal->live
+is not protected by tasklist, please see below.
+
+> Since it's after our own
+> group_dead hit, the "ignored_task" check for our own group leader is
+> redundant with that.
+
+Ah, good point. I didn't realize this when I was thinking about using
+signal->live.
+
+So perhaps it's:
 > 
-> The spec says that IAAD gets cleared when IAA is set.  Clearing
-> IAAD should strictly speaking never be needed if IAA is seen ...
-> but my latest patch will do so (on both watchdog and IRQ paths)
-> when it's set.  Call it paranoia.
+> 	do_each_pid_task(pgrp, PIDTYPE_PGID, p) {
+> 		if (task_session(p->real_parent) == task_session(p) &&
+> 		    task_pgrp(p->real_parent) != pgrp &&
+>  		    atomic_read(&p->signal->live) > 0 &&
+> 		    task_tgid_nr_ns(p->real_parent, p->nsproxy->pid_ns) != 1)
+> 			return 0;
+> 	} while_each_pid_task(pgrp, PIDTYPE_PGID, p);
 
-This seems like a good subject to be paranoid about.  :-)
+I am hopeless, I can't understand orphaned pgrps.
 
-> > 	Then clear IAA (if it happens to be set).
-> 
-> Yes; I re-ordered that to read IAAD first, to give more useful
-> diagnostics in case of an extremely belated trigger of IAA
-> that follows reading IAAD.
-> 
->  
-> > This is the only way to avoid the race, and I know that my original
-> > version of the routine does these steps in the wrong order (if at all).  
-> > That should be fixed.
-> 
-> How does the appended patch look?
+But still. Let's suppose that pgrp should be considered as orphaned when
+2 tasks A and B exit. They both exit at the same time and decrement ->live
+down to zero. Now, they both can send SIGHUP to the stopped tasks.
 
-It looks very good.  Do you think there should be an "else" clause for 
-the "if ((status & STS_IAA) || !(cmd & CMD_IAAD))" test?  That's the 
-pathway one would observe with a controller that implements IAA very 
-slowly or not at all.  There doesn't seem to be anything more the HCD 
-can do about it, but you could print a log message.
+No?
 
-> > Given sufficiently bizarre hardware we can't be 
-> > certain that things won't still go wrong on occasion, but this is the
-> > best we can do for now -- weird hardware can be handled as it arises.
-> 
-> The appended patch does include a bit of paranoia around IAA and IAAD;
-> I figure it can't hurt, although at this point I have no particular
-> reason to believe anyone except VIA has bugs in those areas.
+That said. Even if I am right, I agree that the signal->live check is
+better. I like very much the possibility to kill the ugly "ignored_task".
 
-There's still Bugzilla #8692.  That one appears to be an individual
-hardware failure, though, not a systematic bug.
+> Now, about has_stopped_jobs.  It's a waste for it to be a separate loop
+> across the pgrp just after we did one in will_become_orphaned_pgrp.  They
+> should be merged together.
 
-> > The other change to make (which you have already anticipated) is to 
-> > guard against ehci->reclaim == NULL in end_unlink_async().  There's no 
-> > real need for a warning or stack dump; it should just return silently 
-> > when this happens.  If there is a warning, maybe it should be placed at 
-> > the site of the caller (for example, in ehci_irq() when STS_IAA is 
-> > detected).
-> 
-> Yeah, that seems like a better place to do it.  All the other callers
-> guarantee ehci->reclaim is non-null before calling it.  The fact that
-> it happens in this case suggests IAAD and/or IAAD didn't get cleared
-> properly.
+Yes sure. Looking at the code I was surprised why we don't do that.
 
-There is one place where ehci-hcd.c doesn't make that guarantee:
-
-@@ -757,7 +757,7 @@ static void unlink_async (struct ehci_hcd *eh
- static void unlink_async (struct ehci_hcd *ehci, struct ehci_qh *qh)
- {
- 	/* failfast */
--	if (!HC_IS_RUNNING(ehci_to_hcd(ehci)->state))
-+	if (!HC_IS_RUNNING(ehci_to_hcd(ehci)->state) && ehci->reclaim)
- 		end_unlink_async(ehci);
- 
- 	/* if it's not linked then there's nothing to do */
-
-But if you take out the WARN_ON at the start of end_unlink_async then 
-this isn't needed.
-
-Alan Stern
+Oleg.
 
