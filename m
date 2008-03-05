@@ -1,75 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762280AbYCEGPn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761376AbYCEG0g@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762280AbYCEGPn (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Mar 2008 01:15:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755987AbYCEGPe
+	id S1761376AbYCEG0g (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Mar 2008 01:26:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756109AbYCEG00
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Mar 2008 01:15:34 -0500
-Received: from smtp-out.google.com ([216.239.33.17]:16503 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753810AbYCEGPd (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Mar 2008 01:15:33 -0500
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=received:message-id:date:from:to:subject:cc:in-reply-to:
-	mime-version:content-type:content-transfer-encoding:
-	content-disposition:references;
-	b=OsuTg6USxu0RgSy84cjM+lnW1Q4A97WPwvWhIa4JWq0BwcSvZX7PXJEtxzpr68Ugs
-	0eCSvDml5OoSSqnq8YXjg==
-Message-ID: <6599ad830803042215n6aedb3eeub0c037e6a4e7bb34@mail.gmail.com>
-Date: Tue, 4 Mar 2008 22:15:20 -0800
-From: "Paul Menage" <menage@google.com>
-To: "Dhaval Giani" <dhaval@linux.vnet.ibm.com>
-Subject: Re: [RFC] libcg: design and plans
-Cc: fedora-devel-list@redhat.com, opensuse-packaging@opensuse.org,
-       lkml <linux-kernel@vger.kernel.org>,
-       containers@lists.linux-foundation.org,
-       "Balbir Singh" <balbir@in.ibm.com>,
-       "Peter Zijlstra" <a.p.zijlstra@chello.nl>,
-       "Srivatsa Vaddagiri" <vatsa@linux.vnet.ibm.com>,
-       "Sudhir Kumar" <skumar@linux.vnet.ibm.com>
-In-Reply-To: <20080304152341.GB5659@linux.vnet.ibm.com>
+	Wed, 5 Mar 2008 01:26:26 -0500
+Received: from mga01.intel.com ([192.55.52.88]:60368 "EHLO mga01.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754815AbYCEG0Z (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 5 Mar 2008 01:26:25 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.25,448,1199692800"; 
+   d="asc'?scan'208";a="528924926"
+X-MimeOLE: Produced By Microsoft Exchange V6.5
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20080304152341.GB5659@linux.vnet.ibm.com>
+Content-Type: multipart/signed;
+	micalg=pgp-sha1;
+	protocol="application/pgp-signature";
+	boundary="=-pcy90QeOO67DHgEh5MGa"
+Content-class: urn:content-classes:message
+Subject: Re: CLONE_NEWNS and bind mounts to make "chroot" jail
+Date: Tue, 4 Mar 2008 22:23:28 -0800
+Message-ID: <1204698208.30451.5.camel@mleibowi.jf.intel.com>
+In-Reply-To: <20080304214500.GA7035@vino.hallyn.com>
+X-MS-Has-Attach: yes
+X-MS-TNEF-Correlator: 
+Thread-Topic: CLONE_NEWNS and bind mounts to make "chroot" jail
+thread-index: Ach+idW33Xr79DcqRQa0BhUiGDZlTA==
+References: <645B0EE4078B7C49A6C12F5E7B3B6C2603D3D607@orsmsx418.amr.corp.intel.com> <20080302022655.GA28450@vino.hallyn.com> <645B0EE4078B7C49A6C12F5E7B3B6C2603D3D7BF@orsmsx418.amr.corp.intel.com> <20080304214500.GA7035@vino.hallyn.com>
+From: "Leibowitz, Michael" <michael.leibowitz@intel.com>
+To: <serge@hallyn.com>
+Cc: <linux-kernel@vger.kernel.org>
+X-OriginalArrivalTime: 05 Mar 2008 06:26:24.0638 (UTC) FILETIME=[D605C1E0:01C87E89]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Dhaval,
 
-On Tue, Mar 4, 2008 at 7:23 AM, Dhaval Giani <dhaval@linux.vnet.ibm.com> wrote:
-> Hi,
->
->  We have been working on a library for control groups which would provide
->  simple APIs for programmers to utilize from userspace and make use of
->  control groups.
->
->  We are still designing the library and the APIs. I've attached the
->  design (as of now) to get some feedback from the community whether we
->  are heading in the correct direction and what else should be addressed.
+--=-pcy90QeOO67DHgEh5MGa
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-There are a few things that it would be nice to include in such a
-library, if you're going to develop one:
+I'm not 100% sure if this is what you meant, but I did get the following
+to work:=20
 
-- the ability to create abstract groups of processes, and resource
-groups, and have the ability to tie these together arbitrarily. E.g
-you might create abstract groups A, B and C, and be able to say that A
-and B share memory with each other but not with C, and all three
-groups are isolated from each other for CPU. Then libcg would mount
-different resource types in different cgroup hierarchies (you would
-probably tell it ahead of time which combinations of sharing you would
-want, in order that it could minimize the number of mounted
-hierarchies). When you tell libcg to move a process into abstract
-group A, it would move it into the appropriate resource group in each
-hierarchy.
+chdir("/jail");=20
+unshare(CLONE_NEWNS);
+mount("/jail", "/jail", NULL, MS_BIND, NULL);
+pivot_root("/jail", "/jail/old_root");
+chdir("/");
+mount("/old_root/bin", "bin", NULL, MS_BIND, NULL);
+mount("/old_root/usr", "usr", NULL, MS_BIND, NULL);
+mount("/old_root/lib", "lib", NULL, MS_BIND, NULL);
+umount2("/old_root", MNT_DETACH);
+exec("/busybox");
 
-- an interface for gathering usage stats from cgroups.
+Thanks for the help. =20
 
-- support for dynamically migrating processes between groups based on
-process connector events (i.e. a finished version of the daemon that
-you were working on last year)
+On Tue, 2008-03-04 at 15:45 -0600, serge@hallyn.com wrote:
+> Quoting Leibowitz, Michael (michael.leibowitz@intel.com):
+> Yes, you
+> 	cd /jail
+> 	mount --bind /jail /jail
+> 	pivot_root . old_root
+>=20
+> but . is now mounted over.
+> >   char *newargv[]=3D { "sh", NULL };
+> >=20
+> >   chdir("/jail");
+> >   unshare(CLONE_NEWNS));
+> >   mount("/jail", "/jail", NULL, MS_BIND, NULL));
+> >   mount("/bin", "bin", NULL, MS_BIND, NULL));
+> >   mount("/usr", "usr", NULL, MS_BIND, NULL));
+> >   mount("/lib", "lib", NULL, MS_BIND, NULL));
+> >   if (pivot_root(".", "old_root")) perror("pivot_root . old_root");
+> >   exec("./bash-static"); /* copied to /jail prior to running */
 
-Paul
+--=20
+Michael Leibowitz <michael.leibowitz@intel.com>
+
+--=-pcy90QeOO67DHgEh5MGa
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQBHzjxghsRWNpQAGLwRAs4JAJ4idSY7jp6CKW2GQGNQTmY9sZsiggCeNgoR
+zPSLgj8xLzPG3L8H1Mzr5B0=
+=pdLl
+-----END PGP SIGNATURE-----
+
+--=-pcy90QeOO67DHgEh5MGa--
