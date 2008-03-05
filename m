@@ -1,206 +1,138 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758970AbYCETTo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759384AbYCETYQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758970AbYCETTo (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Mar 2008 14:19:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754760AbYCETTe
+	id S1759384AbYCETYQ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Mar 2008 14:24:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754587AbYCETYA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Mar 2008 14:19:34 -0500
-Received: from moutng.kundenserver.de ([212.227.126.187]:54038 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753746AbYCETTd (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Mar 2008 14:19:33 -0500
-Date: Wed, 5 Mar 2008 20:17:11 +0100
-From: Chris Friedhoff <chris@friedhoff.org>
-To: linux-security-module@vger.kernel.org
-Cc: chris@friedhoff.org, serge@hallyn.com, lkml <linux-kernel@vger.kernel.org>,
-       linux-security-module@vger.kernel.org,
-       Andrew Morgan <morgan@kernel.org>, Stephen Smalley <sds@epoch.ncsc.mil>,
-       Mike Galbraith <efault@gmx.de>, buraphalinuxserver@gmail.com,
-       elendil@planet.nl, stable@kernel.org
-Subject: Re: [PATCH 1/1] file capabilities: remove cap_task_kill()
-Message-Id: <20080305201711.8092b852.chris@friedhoff.org>
-In-Reply-To: <20080229212634.GA7278@vino.hallyn.com>
-References: <20080228173817.GA32661@vino.hallyn.com>
-	<20080229174007.0a934cc6@mandriva.com.br>
-	<20080229212634.GA7278@vino.hallyn.com>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.1; i486-slackware-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 5 Mar 2008 14:24:00 -0500
+Received: from phunq.net ([64.81.85.152]:39599 "EHLO moonbase.phunq.net"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753941AbYCETX7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 5 Mar 2008 14:23:59 -0500
+From: Daniel Phillips <phillips@phunq.net>
+To: Jonathan Corbet <corbet@lwn.net>
+Subject: Re: [RFC] An alternative interface to device mapper
+Date: Wed, 5 Mar 2008 11:23:48 -0800
+User-Agent: KMail/1.9.5
+Cc: device-mapper development <dm-devel@redhat.com>,
+       linux-kernel@vger.kernel.org
+References: <22778.1204735199@vena.lwn.net>
+In-Reply-To: <22778.1204735199@vena.lwn.net>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-X-Provags-ID: V01U2FsdGVkX1/xTli8EWurj8RL6IOnNyijbkxSPiwPmJsxLwd
- LbNc1/L25tmrYJF8TsbBtqxR4x265GGspckMaDzbIVWxoF4jfg
- dKU2eLOBEU9CeBXK3x91VLksJUr1zU1
+Content-Disposition: inline
+Message-Id: <200803051123.49078.phillips@phunq.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-It works here against 2.6.24.3.
-Originaly it was a fix - if I recall correctly - to allow a self
-started X to kill completly. This works with the patch.
+On Wednesday 05 March 2008 08:39, Jonathan Corbet wrote:
+> Hey, Daniel,
+> 
+> > In more detail: ddlink is a generic pipe-like interface for controlling 
+> > device drivers.
+> 
+> I'm not in a position to say much about the wider picture at the moment,
+> but one quibble comes immediately to mind: why do you create yet another
+> communication path into the kernel rather than using netlink, which is
+> already there and used in a number of other contexts?
 
-Chris
+Good question.  It is for the same reason that we are moving away from
+unix domain sockets, which also work but are clumsy and force us to
+structure the application in a less than desirable way.  One could equally
+well ask why it was necessary to invent Netlink when unix domain sockets
+already existed.
 
+ddlink is very different from netlink.  Netlink is socket-oriented while
+ddlink is file-oriented.  Compare:
 
-On Fri, 29 Feb 2008 15:26:34 -0600
-serge@hallyn.com wrote:
+ int rc;
+ void *msg_head;
+ /* create the message headers */
+ msg_head = genlmsg_put(skb, pid, seq, type, 0, flags, DOC_EXMPL_C_ECHO, 1);
+ if (msg_head == NULL) {
+     rc = -ENOMEM;
+     goto failure;
+ }
+ /* add a DOC_EXMPL_A_MSG attribute */
+ rc = nla_put_string(skb, DOC_EXMPL_A_MSG, "Generic Netlink Rocks");
+ if (rc != 0)
+     goto failure;
+ /* finalize the message */
+ genlmsg_end(skb, msg_head);
 
-> Quoting Luiz Fernando N. Capitulino (lcapitulino@mandriva.com.br):
-> > Em Thu, 28 Feb 2008 11:38:17 -0600
-> > serge@hallyn.com escreveu:
-> > 
-> > | The original justification for cap_task_kill() was as follows:
-> > | 
-> > | 	check_kill_permission() does appropriate uid equivalence checks.
-> > | 	However with file capabilities it becomes possible for an
-> > | 	unprivileged user to execute a file with file capabilities
-> > | 	resulting in a more privileged task with the same uid.
-> > | 
-> > | However now that cap_task_kill() always returns 0 (permission
-> > | granted) when p->uid==current->uid, the whole hook is worthless,
-> > | and only likely to create more subtle problems in the corner cases
-> > | where it might still be called but return -EPERM.  Those cases
-> > | are basically when uids are different but euid/suid is equivalent
-> > | as per the check in check_kill_permission().
-> > | 
-> > | This patch removes cap_task_kill().
-> > 
-> >  2.6.24 seems to have the same bug, what about a rediff for it and
-> > submit the patch to -stable team?
-> 
-> Luiz, could you confirm that the below works?
-> 
-> thanks,
-> -serge
-> 
-> From c77b7d418933c14707383f06a1da61169e84071b Mon Sep 17 00:00:00 2001
-> From: Serge Hallyn <serge@hallyn.com>
-> Date: Fri, 29 Feb 2008 15:14:57 +0000
-> Subject: [PATCH 1/1] file capabilities: remove cap_task_kill()
-> 
-> The original justification for cap_task_kill() was as follows:
-> 
-> 	check_kill_permission() does appropriate uid equivalence checks.
-> 	However with file capabilities it becomes possible for an
-> 	unprivileged user to execute a file with file capabilities
-> 	resulting in a more privileged task with the same uid.
-> 
-> However now that cap_task_kill() always returns 0 (permission
-> granted) when p->uid==current->uid, the whole hook is worthless,
-> and only likely to create more subtle problems in the corner cases
-> where it might still be called but return -EPERM.  Those cases
-> are basically when uids are different but euid/suid is equivalent
-> as per the check in check_kill_permission().
-> 
-> This patch removes cap_task_kill().
-> 
-> Signed-off-by: Serge Hallyn <serge@hallyn.com>
-> ---
->  include/linux/security.h |    3 +--
->  security/capability.c    |    1 -
->  security/commoncap.c     |   39 ---------------------------------------
->  3 files changed, 1 insertions(+), 42 deletions(-)
-> 
-> diff --git a/include/linux/security.h b/include/linux/security.h
-> index ac05083..d842ee3 100644
-> --- a/include/linux/security.h
-> +++ b/include/linux/security.h
-> @@ -62,7 +62,6 @@ extern int cap_inode_need_killpriv(struct dentry *dentry);
->  extern int cap_inode_killpriv(struct dentry *dentry);
->  extern int cap_task_post_setuid (uid_t old_ruid, uid_t old_euid, uid_t old_suid, int flags);
->  extern void cap_task_reparent_to_init (struct task_struct *p);
-> -extern int cap_task_kill(struct task_struct *p, struct siginfo *info, int sig, u32 secid);
->  extern int cap_task_setscheduler (struct task_struct *p, int policy, struct sched_param *lp);
->  extern int cap_task_setioprio (struct task_struct *p, int ioprio);
->  extern int cap_task_setnice (struct task_struct *p, int nice);
-> @@ -2112,7 +2111,7 @@ static inline int security_task_kill (struct task_struct *p,
->  				      struct siginfo *info, int sig,
->  				      u32 secid)
->  {
-> -	return cap_task_kill(p, info, sig, secid);
-> +	return 0;
->  }
->  
->  static inline int security_task_wait (struct task_struct *p)
-> diff --git a/security/capability.c b/security/capability.c
-> index 9e99f36..2c6e06d 100644
-> --- a/security/capability.c
-> +++ b/security/capability.c
-> @@ -40,7 +40,6 @@ static struct security_operations capability_ops = {
->  	.inode_need_killpriv =		cap_inode_need_killpriv,
->  	.inode_killpriv =		cap_inode_killpriv,
->  
-> -	.task_kill =			cap_task_kill,
->  	.task_setscheduler =		cap_task_setscheduler,
->  	.task_setioprio =		cap_task_setioprio,
->  	.task_setnice =			cap_task_setnice,
-> diff --git a/security/commoncap.c b/security/commoncap.c
-> index ea61bc7..6e9065c 100644
-> --- a/security/commoncap.c
-> +++ b/security/commoncap.c
-> @@ -527,40 +527,6 @@ int cap_task_setnice (struct task_struct *p, int nice)
->  	return cap_safe_nice(p);
->  }
->  
-> -int cap_task_kill(struct task_struct *p, struct siginfo *info,
-> -				int sig, u32 secid)
-> -{
-> -	if (info != SEND_SIG_NOINFO && (is_si_special(info) || SI_FROMKERNEL(info)))
-> -		return 0;
-> -
-> -	/*
-> -	 * Running a setuid root program raises your capabilities.
-> -	 * Killing your own setuid root processes was previously
-> -	 * allowed.
-> -	 * We must preserve legacy signal behavior in this case.
-> -	 */
-> -	if (p->euid == 0 && p->uid == current->uid)
-> -		return 0;
-> -
-> -	/* sigcont is permitted within same session */
-> -	if (sig == SIGCONT && (task_session_nr(current) == task_session_nr(p)))
-> -		return 0;
-> -
-> -	if (secid)
-> -		/*
-> -		 * Signal sent as a particular user.
-> -		 * Capabilities are ignored.  May be wrong, but it's the
-> -		 * only thing we can do at the moment.
-> -		 * Used only by usb drivers?
-> -		 */
-> -		return 0;
-> -	if (cap_issubset(p->cap_permitted, current->cap_permitted))
-> -		return 0;
-> -	if (capable(CAP_KILL))
-> -		return 0;
-> -
-> -	return -EPERM;
-> -}
->  #else
->  int cap_task_setscheduler (struct task_struct *p, int policy,
->  			   struct sched_param *lp)
-> @@ -575,11 +541,6 @@ int cap_task_setnice (struct task_struct *p, int nice)
->  {
->  	return 0;
->  }
-> -int cap_task_kill(struct task_struct *p, struct siginfo *info,
-> -				int sig, u32 secid)
-> -{
-> -	return 0;
-> -}
->  #endif
->  
->  void cap_task_reparent_to_init (struct task_struct *p)
-> -- 
-> 1.5.2.5
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-security-module" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> 
+static void selnl_add_payload(struct nlmsghdr *nlh, int len, int msgtype, void *data)
+{
+        switch (msgtype) {
+        case SELNL_MSG_SETENFORCE: {
+                struct selnl_msg_setenforce *msg = NLMSG_DATA(nlh);
 
+                memset(msg, 0, len);
+                msg->val = *((int *)data);
+                break;
+        }
 
---------------------
-Chris Friedhoff
-chris@friedhoff.org
+        case SELNL_MSG_POLICYLOAD: {
+                struct selnl_msg_policyload *msg = NLMSG_DATA(nlh);
+
+                memset(msg, 0, len);
+                msg->seqno = *((u32 *)data);
+                break;
+        }
+
+        default:
+                BUG();
+        }
+}
+
+or:
+
+static void selnl_notify(int msgtype, void *data)
+{
+        int len;
+        sk_buff_data_t tmp;
+        struct sk_buff *skb;
+        struct nlmsghdr *nlh;
+
+        len = selnl_msglen(msgtype);
+
+        skb = alloc_skb(NLMSG_SPACE(len), GFP_USER);
+        if (!skb)
+                goto oom;
+
+        tmp = skb->tail;
+        nlh = NLMSG_PUT(skb, 0, 0, msgtype, len);
+        selnl_add_payload(nlh, len, msgtype, data);
+        nlh->nlmsg_len = skb->tail - tmp;
+        NETLINK_CB(skb).dst_group = SELNLGRP_AVC;
+        netlink_broadcast(selnl, skb, 0, SELNLGRP_AVC, GFP_USER);
+out:
+        return;
+
+nlmsg_failure:
+        kfree_skb(skb);
+oom:
+        printk(KERN_ERR "SELinux:  OOM in %s\n", __FUNCTION__);
+to:
+
+  ddlink_post(dd, "hello world", sizeof("hello world"));
+
+With netlink, fd creation is tied to the socket api, which makes things
+messier for applications than leaving the method by which an FD is created
+up to the module.  We are moving away from sockets because we don't like
+the connect.  Netlink would fail to get rid of that annoyance.
+
+Netlink imposes its concept of message codes on the application, whether
+or not message codes are appropriate to the problem at hand.  ddlink
+leaves that entirely up to the module, and in fact ddsetup does not use
+message codes because they would make the application code more verbose.
+
+Ddlink does what I want, simply by exposing basic file operations, while
+netlink has all kinds of requirements and diversions not obviously related
+to the problem at hand.  Basically, I found Trond did a better job of
+inventing an interface than the network guys did.  He just did not package
+it up for general use, so I did, and simplified it in the process.
+
+Daniel
