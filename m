@@ -1,147 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760310AbYCEEw3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757854AbYCEEvx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760310AbYCEEw3 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Mar 2008 23:52:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758988AbYCEEwO
+	id S1757854AbYCEEvx (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Mar 2008 23:51:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752615AbYCEEvo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Mar 2008 23:52:14 -0500
-Received: from gate.crashing.org ([63.228.1.57]:46129 "EHLO gate.crashing.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758866AbYCEEv4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Mar 2008 23:51:56 -0500
-Subject: [PATCH] drm: Fix for non-coherent DMA PowerPC
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Reply-To: benh@kernel.crashing.org
-To: airlied <airlied@linux.ie>
-Cc: Linux Kernel list <linux-kernel@vger.kernel.org>,
-       dri-devel <dri-devel@lists.sourceforge.net>
-Content-Type: text/plain
-Date: Wed, 05 Mar 2008 15:51:15 +1100
-Message-Id: <1204692675.21545.156.camel@pasglop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
+	Tue, 4 Mar 2008 23:51:44 -0500
+Received: from E23SMTP04.au.ibm.com ([202.81.18.173]:59815 "EHLO
+	e23smtp04.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751717AbYCEEvn (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 4 Mar 2008 23:51:43 -0500
+Message-ID: <47CE2632.20209@linux.vnet.ibm.com>
+Date: Wed, 05 Mar 2008 10:18:50 +0530
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+Reply-To: balbir@linux.vnet.ibm.com
+Organization: IBM
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+MIME-Version: 1.0
+To: Xpl++ <xpl@amln.net>
+CC: Dhaval Giani <dhaval@linux.vnet.ibm.com>, fedora-devel-list@redhat.com,
+       opensuse-packaging@opensuse.org, lkml <linux-kernel@vger.kernel.org>,
+       containers@lists.linux-foundation.org, Balbir Singh <balbir@in.ibm.com>,
+       menage@google.com, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>,
+       Sudhir Kumar <skumar@linux.vnet.ibm.com>
+Subject: Re: [RFC] libcg: design and plans
+References: <20080304152341.GB5659@linux.vnet.ibm.com> <47CD83C7.4020206@amln.net>
+In-Reply-To: <47CD83C7.4020206@amln.net>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch fixes bits of the DRM so to make the radeon DRI work on
-non-cache coherent PCI DMA variants of the PowerPC processors.
+Xpl++ wrote:
+> Hi,
+> 
+> I was wonder if creating such library makes any sense at all,
+> considering the nature of cgroups, the way they work and their possible
+> application?
+> It seems to me that any attempt to create a 'simple' API would actualy
+> result in something that will be much harder to use that just making raw
+> mkdir/open/read/write/close operations. Another thing is suggested
+> config for this lib would be more appropriate for a daemon rather than a
+> library.
 
-It moves the few places that needs change to wrappers to that
-other architectures with similar issues can easily add their
-own changes to those wrappers, at least until we have more useful
-generic kernel API.
+The configuration file is important, since it allows us two levels of control.
+At one level the system administrator and at the other level applications. Each
+application can maintain it's own hierarchy across reboots.
 
-Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
----
-
-This version of the patch removes the use of GFP_HIGHMEM on powerpc
-as our implementation of some of the DMA mapping ops on non cache
-coherent platforms don't work on highmem.
-
-Index: linux-work/drivers/char/drm/ati_pcigart.c
-===================================================================
---- linux-work.orig/drivers/char/drm/ati_pcigart.c	2008-02-18 10:09:27.000000000 +1100
-+++ linux-work/drivers/char/drm/ati_pcigart.c	2008-03-05 15:42:02.000000000 +1100
-@@ -214,6 +214,12 @@ int drm_ati_pcigart_init(struct drm_devi
- 		}
- 	}
- 
-+	if (gart_info->gart_table_location == DRM_ATI_GART_MAIN)
-+		dma_sync_single_for_device(&dev->pdev->dev,
-+					   bus_address,
-+					   max_pages * sizeof(u32),
-+					   PCI_DMA_TODEVICE);
-+
- 	ret = 1;
- 
- #if defined(__i386__) || defined(__x86_64__)
-Index: linux-work/drivers/char/drm/drm_scatter.c
-===================================================================
---- linux-work.orig/drivers/char/drm/drm_scatter.c	2008-02-18 10:09:27.000000000 +1100
-+++ linux-work/drivers/char/drm/drm_scatter.c	2008-03-05 15:48:55.000000000 +1100
-@@ -36,6 +36,15 @@
- 
- #define DEBUG_SCATTER 0
- 
-+static inline void *drm_vmalloc_dma(unsigned long size)
-+{
-+#if defined(__powerpc__) && defined(CONFIG_NOT_COHERENT_CACHE)
-+	return __vmalloc(size, GFP_KERNEL, PAGE_KERNEL | _PAGE_NO_CACHE);
-+#else
-+	return vmalloc_32(size);
-+#endif
-+}
-+
- void drm_sg_cleanup(struct drm_sg_mem * entry)
- {
- 	struct page *page;
-@@ -104,7 +113,7 @@ int drm_sg_alloc(struct drm_device *dev,
- 	}
- 	memset((void *)entry->busaddr, 0, pages * sizeof(*entry->busaddr));
- 
--	entry->virtual = vmalloc_32(pages << PAGE_SHIFT);
-+	entry->virtual = drm_vmalloc_dma(pages << PAGE_SHIFT);
- 	if (!entry->virtual) {
- 		drm_free(entry->busaddr,
- 			 entry->pages * sizeof(*entry->busaddr), DRM_MEM_PAGES);
-Index: linux-work/drivers/char/drm/drm_vm.c
-===================================================================
---- linux-work.orig/drivers/char/drm/drm_vm.c	2008-02-21 13:34:16.000000000 +1100
-+++ linux-work/drivers/char/drm/drm_vm.c	2008-03-05 15:42:02.000000000 +1100
-@@ -54,13 +54,24 @@ static pgprot_t drm_io_prot(uint32_t map
- 	pgprot_val(tmp) |= _PAGE_NO_CACHE;
- 	if (map_type == _DRM_REGISTERS)
- 		pgprot_val(tmp) |= _PAGE_GUARDED;
--#endif
--#if defined(__ia64__)
-+#elif defined(__ia64__)
- 	if (efi_range_is_wc(vma->vm_start, vma->vm_end -
- 				    vma->vm_start))
- 		tmp = pgprot_writecombine(tmp);
- 	else
- 		tmp = pgprot_noncached(tmp);
-+#elif defined(__sparc__)
-+	tmp = pgprot_noncached(tmp);
-+#endif
-+	return tmp;
-+}
-+
-+static pgprot_t drm_dma_prot(uint32_t map_type, struct vm_area_struct *vma)
-+{
-+	pgprot_t tmp = vm_get_page_prot(vma->vm_flags);
-+
-+#if defined(__powerpc__) && defined(CONFIG_NOT_COHERENT_CACHE)
-+	tmp |= _PAGE_NO_CACHE;
- #endif
- 	return tmp;
- }
-@@ -603,9 +614,6 @@ static int drm_mmap_locked(struct file *
- 		offset = dev->driver->get_reg_ofs(dev);
- 		vma->vm_flags |= VM_IO;	/* not in core dump */
- 		vma->vm_page_prot = drm_io_prot(map->type, vma);
--#ifdef __sparc__
--		vma->vm_page_prot = pgprot_noncached(vma->vm_page_prot);
--#endif
- 		if (io_remap_pfn_range(vma, vma->vm_start,
- 				       (map->offset + offset) >> PAGE_SHIFT,
- 				       vma->vm_end - vma->vm_start,
-@@ -624,6 +632,7 @@ static int drm_mmap_locked(struct file *
- 		    page_to_pfn(virt_to_page(map->handle)),
- 		    vma->vm_end - vma->vm_start, vma->vm_page_prot))
- 			return -EAGAIN;
-+		vma->vm_page_prot = drm_dma_prot(map->type, vma);
- 	/* fall through to _DRM_SHM */
- 	case _DRM_SHM:
- 		vma->vm_ops = &drm_vm_shm_ops;
-@@ -636,6 +645,7 @@ static int drm_mmap_locked(struct file *
- 		vma->vm_ops = &drm_vm_sg_ops;
- 		vma->vm_private_data = (void *)map;
- 		vma->vm_flags |= VM_RESERVED;
-+		vma->vm_page_prot = drm_dma_prot(map->type, vma);
- 		break;
- 	default:
- 		return -EINVAL;	/* This should never happen. */
+We thought of a daemon, but there were several overheads and disadvantages. For
+one, we needed an IPC mechanism to communicate every client request to the
+daemon, the client being the application. The daemon also becomes the single
+point of failure for all applications. Moreover, we want to provide the ability
+to programmatically update the configuration. A daemon, if desired can be built
+on top of the library we propose.
 
 
+> In general - cgroup is a very flexible subsystem that can be used in a
+> wide variety of ways and modes and trying to create a universal simple
+> API would more likely result in something hard to manage and work with.
+
+I agree that cgroups is flexible, but why do you think abstracting common tasks
+amongst applications will be hard to manage and work with? We want to provide
+API that will allow us to fill in parameters and say -- go create this group or
+delete this group.
+
+> The idea of having multiple container managers (applications that use
+> libcg) creates a lots of questions and possible issues. Containers are
+> supposed provide a flexible resource management and task grouping
+> ability, which somewhat implies that there cannot be two different
+> resource managers per node without one knowing well the
+> desires/goals/methods of the other and vice versa.
+
+We don't assume that there cannot be two different resource managers per node.
+We don't enforce any policy, we just allow for easy creation and manipulation of
+control groups hierarchially.
+
+And should there be
+> only one manager per node - probably it will be easier for it to use
+> cgroup subsystem directly rather than using a wrapper library?
+> 
+
+Could you please elaborate, why is it probably easier?
+
+-- 
+	Warm Regards,
+	Balbir Singh
+	Linux Technology Center
+	IBM, ISTL
