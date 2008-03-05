@@ -1,63 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761384AbYCETYf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760840AbYCET2y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761384AbYCETYf (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Mar 2008 14:24:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758563AbYCETYO
+	id S1760840AbYCET2y (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Mar 2008 14:28:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756333AbYCET2n
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Mar 2008 14:24:14 -0500
-Received: from gw.goop.org ([64.81.55.164]:50926 "EHLO mail.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758046AbYCETYN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Mar 2008 14:24:13 -0500
-Message-ID: <47CEF20D.5070608@goop.org>
-Date: Wed, 05 Mar 2008 11:18:37 -0800
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
+	Wed, 5 Mar 2008 14:28:43 -0500
+Received: from smtp-out2.tiscali.nl ([195.241.79.177]:43599 "EHLO
+	smtp-out2.tiscali.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756422AbYCET2l (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 5 Mar 2008 14:28:41 -0500
+Message-ID: <47CEF462.8060607@tiscali.nl>
+Date: Wed, 05 Mar 2008 20:28:34 +0100
+From: Roel Kluin <12o3l@tiscali.nl>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
 MIME-Version: 1.0
-To: Hugh Dickins <hugh@veritas.com>
-CC: Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
-       Andi Kleen <ak@suse.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: preempt bug in set_pmd_pfn?
-References: <47CDBB87.8090906@goop.org> <20080304212821.GB8944@elte.hu> <47CDBEDC.1050302@goop.org> <20080305064814.GB28398@elte.hu> <Pine.LNX.4.64.0803051407310.22243@blonde.site> <47CECEE9.3000801@goop.org> <Pine.LNX.4.64.0803051721200.13410@blonde.site>
-In-Reply-To: <Pine.LNX.4.64.0803051721200.13410@blonde.site>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Jeff Garzik <jeff@garzik.org>
+CC: linux-scsi@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] mvsas: fill in error info record bits
+References: <20080305190304.GA13286@havoc.gtf.org>
+In-Reply-To: <20080305190304.GA13286@havoc.gtf.org>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hugh Dickins wrote:
-> On Wed, 5 Mar 2008, Jeremy Fitzhardinge wrote:
->   
->> If a thread goes from processor A -> B -> A, where A is first preempted
->> between a pagetable update and a tlb flush, then the second time the thread
->> runs on A may run with a stale tlb (if in the meantime A has either been idle
->> or only running kernel threads).
->>     
->
-> Right, thanks, because __flush_tlb_one opts out of the full active_mm
-> checking which goes on for userspace mms (which covers, for example,
-> the case of preemption before dup_mmap's flush_tlb_mm).
->
-> But is there actually a case where there's a problem?  So far as I can see,
-> set_pmd_pfn is there solely for discontig_32's __init remap_numa_kva; and
-> set_pte_pfn is there solely for set_fixmap, which operates on a per-cpu
-> area of pagetable, which would already be in bigger trouble if preemption
-> to another cpu were possible.
+Jeff Garzik wrote:
+> This describes the first dword of struct mvs_err_info, two-dword error
+> information record that is returned when RXQ_ERR bit is asserted.
+> 
+> These bits are necessary for proper error handling.
+> 
+> Signed-off-by: Jeff Garzik <jgarzik@redhat.com>
+> ---
+> diff --git a/drivers/scsi/mvsas.c b/drivers/scsi/mvsas.c
+> index d4a6ac3..ec4dda0 100644
+> --- a/drivers/scsi/mvsas.c
+> +++ b/drivers/scsi/mvsas.c
+> @@ -511,7 +511,35 @@ enum status_buffer {
+>  };
+>  
+>  enum error_info_rec {
+> -	CMD_ISS_STPD	=  (1U << 31),	/* Cmd Issue Stopped */
+> +	CMD_ISS_STPD	= (1U << 31),	/* Cmd Issue Stopped */
+> +	CMD_PI_ERR	= (1U << 30),	/* Protection info error.  see flags2 */
+> +	RSP_OVER	= (1U << 29),	/* rsp buffer overflow */
+> +	RETRY_LIM	= (1U << 28),	/* FIS/frame retry limit exceeded */
+> +	UNK_FIS		= (1U << 27),	/* unknown FIS */
+> +	DMA_TERM	= (1U << 26),	/* DMA terminate primitive rx'd */
+> +	SYNC_ERR	= (1U << 25),	/* SYNC rx'd during frame xmit */
+> +	TFILE_ERR	= (1U << 24),	/* SATA taskfile Error bit set */
+> +	R_ERR		= (1U << 23),	/* SATA returned R_ERR prim */
+> +	RD_OFS		= (1U << 20),	/* Read DATA frame invalid offset *?
 
-Yes, I meant set_pte_pfn; set_pmd_pfn is a typo.
+there is a question mark instead of a slash in the line above.
+also I noted 1U << 22 to 1U << 21 were missing. was that intended?
 
-Fixmap slots are global, not percpu; you may be thinking of kmap_atomic, 
-which reserves percpu fixmap slots for its use.  Most uses of set_fixmap 
-are early in boot, where preemption (or other CPUs) isn't a factor.  The 
-exception is mapping the compat vdso global mapping.   However, that is 
-special-cased anyway, since the set_fixmap is followed by an explicit 
-all-cpu tlb flush.
+> +	XFER_RDY_OFS	= (1U << 19),	/* XFER_RDY offset error */
+> +	UNEXP_XFER_RDY	= (1U << 18),	/* unexpected XFER_RDY error */
+> +	DATA_OVER_UNDER	= (1U << 16),	/* data overflow/underflow */
+> +	INTERLOCK	= (1U << 15),	/* interlock error */
+> +	NAK		= (1U << 14),	/* NAK rx'd */
+> +	ACK_NAK_TO	= (1U << 13),	/* ACK/NAK timeout */
+> +	CXN_CLOSED	= (1U << 12),	/* cxn closed w/out ack/nak */
+> +	OPEN_TO		= (1U << 11),	/* I_T nexus lost, open cxn timeout */
+> +	PATH_BLOCKED	= (1U << 10),	/* I_T nexus lost, pathway blocked */
+> +	NO_DEST		= (1U << 9),	/* I_T nexus lost, no destination */
+> +	STP_RES_BSY	= (1U << 8),	/* STP resources busy */
+> +	BREAK		= (1U << 7),	/* break received */
+> +	BAD_DEST	= (1U << 6),	/* bad destination */
+> +	BAD_PROTO	= (1U << 5),	/* protocol not supported */
+> +	BAD_RATE	= (1U << 4),	/* cxn rate not supported */
+> +	WRONG_DEST	= (1U << 3),	/* wrong destination error */
+> +	CREDIT_TO	= (1U << 2),	/* credit timeout */
+> +	WDOG_TO		= (1U << 1),	/* watchdog timeout */
+> +	BUF_PAR		= (1U << 0),	/* buffer parity error */
+>  };
+>  
+>  struct mvs_chip_info {
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+> 
 
-It seems to me that the correct fix is to just make __set_fixmap disable 
-preemption for its duration; it probably doesn't make much difference 
-for the native case, and it makes Xen happy.
-
-    J
