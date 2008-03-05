@@ -1,21 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765780AbYCEW5N@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1766006AbYCEW5l@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765780AbYCEW5N (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Mar 2008 17:57:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759324AbYCEWwc
+	id S1766006AbYCEW5l (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Mar 2008 17:57:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764693AbYCEWwl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Mar 2008 17:52:32 -0500
-Received: from agminet01.oracle.com ([141.146.126.228]:55939 "EHLO
-	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1763988AbYCEWwT (ORCPT
+	Wed, 5 Mar 2008 17:52:41 -0500
+Received: from rgminet01.oracle.com ([148.87.113.118]:29499 "EHLO
+	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1764560AbYCEWwa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Mar 2008 17:52:19 -0500
+	Wed, 5 Mar 2008 17:52:30 -0500
 From: Joel Becker <joel.becker@oracle.com>
 To: ocfs2-devel@oss.oracle.com
-Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
-Subject: [PATCH 7/7] ocfs2: New slot map format
-Date: Wed,  5 Mar 2008 14:52:04 -0800
-Message-Id: <1204757524-21343-8-git-send-email-joel.becker@oracle.com>
+Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       Mark Fasheh <mark.fasheh@oracle.com>
+Subject: [PATCH 1/7] ocfs2: Move slot map access into slot_map.c
+Date: Wed,  5 Mar 2008 14:51:58 -0800
+Message-Id: <1204757524-21343-2-git-send-email-joel.becker@oracle.com>
 X-Mailer: git-send-email 1.5.3.4
 In-Reply-To: <1204757524-21343-1-git-send-email-joel.becker@oracle.com>
 References: <1204757524-21343-1-git-send-email-joel.becker@oracle.com>
@@ -27,319 +28,229 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The old slot map had a few limitations:
+From: Mark Fasheh <mark.fasheh@oracle.com>
 
-- It was limited to one block, so the maximum slot count was 255.
-- Each slot was signed 16bits, limiting node numbers to INT16_MAX.
-- An empty slot was marked by the magic 0xFFFF (-1).
-
-The new slot map format provides 32bit node numbers (UINT32_MAX), a
-separate space to mark a slot in use, and extra room to grow.  The slot
-map is now bounded by i_size, not a block.
+journal.c and dlmglue.c would refresh the slot map by hand.  Instead, have
+the update and clear functions do the work inside slot_map.c.  The eventual
+result is to make ocfs2_slot_info defined privately in slot_map.c
 
 Signed-off-by: Joel Becker <joel.becker@oracle.com>
 ---
- fs/ocfs2/ocfs2.h    |    7 +++
- fs/ocfs2/ocfs2_fs.h |   31 +++++++++++++-
- fs/ocfs2/slot_map.c |  110 +++++++++++++++++++++++++++++++++++++++++++++------
- 3 files changed, 133 insertions(+), 15 deletions(-)
+ fs/ocfs2/dlmglue.c  |    8 +-----
+ fs/ocfs2/journal.c  |    3 +-
+ fs/ocfs2/slot_map.c |   62 +++++++++++++++++++++++++++++++++++++++-----------
+ fs/ocfs2/slot_map.h |   11 +++-----
+ fs/ocfs2/super.c    |    3 +-
+ 5 files changed, 55 insertions(+), 32 deletions(-)
 
-diff --git a/fs/ocfs2/ocfs2.h b/fs/ocfs2/ocfs2.h
-index 95f783d..f78e9ed 100644
---- a/fs/ocfs2/ocfs2.h
-+++ b/fs/ocfs2/ocfs2.h
-@@ -374,6 +374,13 @@ static inline int ocfs2_mount_local(struct ocfs2_super *osb)
- 	return (osb->s_feature_incompat & OCFS2_FEATURE_INCOMPAT_LOCAL_MOUNT);
- }
+diff --git a/fs/ocfs2/dlmglue.c b/fs/ocfs2/dlmglue.c
+index f779430..33c8a65 100644
+--- a/fs/ocfs2/dlmglue.c
++++ b/fs/ocfs2/dlmglue.c
+@@ -2132,8 +2132,6 @@ int ocfs2_super_lock(struct ocfs2_super *osb,
+ 	int status = 0;
+ 	int level = ex ? LKM_EXMODE : LKM_PRMODE;
+ 	struct ocfs2_lock_res *lockres = &osb->osb_super_lockres;
+-	struct buffer_head *bh;
+-	struct ocfs2_slot_info *si = osb->slot_info;
  
-+static inline int ocfs2_uses_extended_slot_map(struct ocfs2_super *osb)
-+{
-+	return (osb->s_feature_incompat &
-+		OCFS2_FEATURE_INCOMPAT_EXTENDED_SLOT_MAP);
-+}
-+
-+
- #define OCFS2_IS_VALID_DINODE(ptr)					\
- 	(!strcmp((ptr)->i_signature, OCFS2_INODE_SIGNATURE))
+ 	mlog_entry_void();
  
-diff --git a/fs/ocfs2/ocfs2_fs.h b/fs/ocfs2/ocfs2_fs.h
-index 3299116..c495023 100644
---- a/fs/ocfs2/ocfs2_fs.h
-+++ b/fs/ocfs2/ocfs2_fs.h
-@@ -88,7 +88,8 @@
- #define OCFS2_FEATURE_COMPAT_SUPP	OCFS2_FEATURE_COMPAT_BACKUP_SB
- #define OCFS2_FEATURE_INCOMPAT_SUPP	(OCFS2_FEATURE_INCOMPAT_LOCAL_MOUNT \
- 					 | OCFS2_FEATURE_INCOMPAT_SPARSE_ALLOC \
--					 | OCFS2_FEATURE_INCOMPAT_INLINE_DATA)
-+					 | OCFS2_FEATURE_INCOMPAT_INLINE_DATA \
-+					 | OCFS2_FEATURE_INCOMPAT_EXTENDED_SLOT_MAP)
- #define OCFS2_FEATURE_RO_COMPAT_SUPP	OCFS2_FEATURE_RO_COMPAT_UNWRITTEN
+@@ -2159,11 +2157,7 @@ int ocfs2_super_lock(struct ocfs2_super *osb,
+ 		goto bail;
+ 	}
+ 	if (status) {
+-		bh = si->si_bh;
+-		status = ocfs2_read_block(osb, bh->b_blocknr, &bh, 0,
+-					  si->si_inode);
+-		if (status == 0)
+-			ocfs2_update_slot_info(si);
++		status = ocfs2_refresh_slot_info(osb);
  
- /*
-@@ -125,6 +126,10 @@
- /* Support for data packed into inode blocks */
- #define OCFS2_FEATURE_INCOMPAT_INLINE_DATA	0x0040
+ 		ocfs2_complete_lock_res_refresh(lockres, status);
  
-+/* Support for the extended slot map */
-+#define OCFS2_FEATURE_INCOMPAT_EXTENDED_SLOT_MAP 0x100
-+
-+
- /*
-  * backup superblock flag is used to indicate that this volume
-  * has backup superblocks.
-@@ -476,7 +481,8 @@ struct ocfs2_extent_block
+diff --git a/fs/ocfs2/journal.c b/fs/ocfs2/journal.c
+index f31c7e8..c2e654e 100644
+--- a/fs/ocfs2/journal.c
++++ b/fs/ocfs2/journal.c
+@@ -1123,8 +1123,7 @@ static int ocfs2_recover_node(struct ocfs2_super *osb,
  
- /*
-  * On disk slot map for OCFS2.  This defines the contents of the "slot_map"
-- * system file.
-+ * system file.  A slot is valid if it contains a node number >= 0.  The
-+ * value -1 (0xFFFF) is OCFS2_INVALID_SLOT.  This marks a slot empty.
-  */
- struct ocfs2_slot_map {
- /*00*/	__le16 sm_slots[0];
-@@ -486,6 +492,27 @@ struct ocfs2_slot_map {
-  */
- };
+ 	/* Likewise, this would be a strange but ultimately not so
+ 	 * harmful place to get an error... */
+-	ocfs2_clear_slot(si, slot_num);
+-	status = ocfs2_update_disk_slots(osb, si);
++	status = ocfs2_clear_slot(osb, slot_num);
+ 	if (status < 0)
+ 		mlog_errno(status);
  
-+struct ocfs2_extended_slot {
-+/*00*/	__u8	es_valid;
-+	__u8	es_reserved1[3];
-+	__le32	es_node_num;
-+/*10*/
-+};
-+
-+/*
-+ * The extended slot map, used when OCFS2_FEATURE_INCOMPAT_EXTENDED_SLOT_MAP
-+ * is set.  It separates out the valid marker from the node number, and
-+ * has room to grow.  Unlike the old slot map, this format is defined by
-+ * i_size.
-+ */
-+struct ocfs2_slot_map_extended {
-+/*00*/	struct ocfs2_extended_slot se_slots[0];
-+/*
-+ * Actual size is i_size of the slot_map system file.  It should
-+ * match s_max_slots * sizeof(struct ocfs2_extended_slot)
-+ */
-+};
-+
- /*
-  * On disk superblock for OCFS2
-  * Note that it is contained inside an ocfs2_dinode, so all offsets
 diff --git a/fs/ocfs2/slot_map.c b/fs/ocfs2/slot_map.c
-index e7e7a74..63fb1b2 100644
+index 3a50ce5..f5727b8 100644
 --- a/fs/ocfs2/slot_map.c
 +++ b/fs/ocfs2/slot_map.c
-@@ -49,6 +49,8 @@ struct ocfs2_slot {
- };
+@@ -49,7 +49,7 @@ static void __ocfs2_fill_slot(struct ocfs2_slot_info *si,
+ 			      s16 node_num);
  
- struct ocfs2_slot_info {
-+	int si_extended;
-+	int si_slots_per_block;
- 	struct inode *si_inode;
- 	unsigned int si_blocks;
- 	struct buffer_head **si_bh;
-@@ -78,17 +80,37 @@ static void ocfs2_set_slot(struct ocfs2_slot_info *si,
- 	si->si_slots[slot_num].sl_node_num = node_num;
- }
- 
-+/* This version is for the extended slot map */
-+static void ocfs2_update_slot_info_extended(struct ocfs2_slot_info *si)
-+{
-+	int b, i, slotno;
-+	struct ocfs2_slot_map_extended *se;
-+
-+	slotno = 0;
-+	for (b = 0; b < si->si_blocks; b++) {
-+		se = (struct ocfs2_slot_map_extended *)si->si_bh[b]->b_data;
-+		for (i = 0;
-+		     (i < si->si_slots_per_block) &&
-+		     (slotno < si->si_num_slots);
-+		     i++, slotno++) {
-+			if (se->se_slots[i].es_valid)
-+				ocfs2_set_slot(si, slotno,
-+					       le32_to_cpu(se->se_slots[i].es_node_num));
-+			else
-+				ocfs2_invalidate_slot(si, slotno);
-+		}
-+	}
-+}
-+
- /*
-  * Post the slot information on disk into our slot_info struct.
-  * Must be protected by osb_lock.
-  */
--static void ocfs2_update_slot_info(struct ocfs2_slot_info *si)
-+static void ocfs2_update_slot_info_old(struct ocfs2_slot_info *si)
+ /* post the slot information on disk into our slot_info struct. */
+-void ocfs2_update_slot_info(struct ocfs2_slot_info *si)
++static void ocfs2_update_slot_info(struct ocfs2_slot_info *si)
  {
  	int i;
- 	struct ocfs2_slot_map *sm;
- 
--	/* we don't read the slot block here as ocfs2_super_lock
--	 * should've made sure we have the most recent copy. */
- 	sm = (struct ocfs2_slot_map *)si->si_bh[0]->b_data;
- 
- 	for (i = 0; i < si->si_num_slots; i++) {
-@@ -99,6 +121,18 @@ static void ocfs2_update_slot_info(struct ocfs2_slot_info *si)
- 	}
+ 	__le16 *disk_info;
+@@ -65,10 +65,27 @@ void ocfs2_update_slot_info(struct ocfs2_slot_info *si)
+ 	spin_unlock(&si->si_lock);
  }
  
-+static void ocfs2_update_slot_info(struct ocfs2_slot_info *si)
++int ocfs2_refresh_slot_info(struct ocfs2_super *osb)
 +{
-+	/*
-+	 * The slot data will have been refreshed when ocfs2_super_lock
-+	 * was taken.
-+	 */
-+	if (si->si_extended)
-+		ocfs2_update_slot_info_extended(si);
-+	else
-+		ocfs2_update_slot_info_old(si);
-+}
-+
- int ocfs2_refresh_slot_info(struct ocfs2_super *osb)
- {
- 	int ret;
-@@ -131,13 +165,31 @@ int ocfs2_refresh_slot_info(struct ocfs2_super *osb)
- 
- /* post the our slot info stuff into it's destination bh and write it
-  * out. */
--static int ocfs2_update_disk_slots(struct ocfs2_super *osb,
--				   struct ocfs2_slot_info *si)
-+static void ocfs2_update_disk_slot_extended(struct ocfs2_slot_info *si,
-+					    int slot_num,
-+					    struct buffer_head **bh)
-+{
-+	int blkind = slot_num / si->si_slots_per_block;
-+	int slotno = slot_num % si->si_slots_per_block;
-+	struct ocfs2_slot_map_extended *se;
-+
-+	BUG_ON(blkind >= si->si_blocks);
-+
-+	se = (struct ocfs2_slot_map_extended *)si->si_bh[blkind]->b_data;
-+	se->se_slots[slotno].es_valid = si->si_slots[slot_num].sl_valid;
-+	if (si->si_slots[slot_num].sl_valid)
-+		se->se_slots[slotno].es_node_num =
-+			cpu_to_le32(si->si_slots[slot_num].sl_node_num);
-+	*bh = si->si_bh[blkind];
-+}
-+
-+static void ocfs2_update_disk_slot_old(struct ocfs2_slot_info *si,
-+				       int slot_num,
-+				       struct buffer_head **bh)
- {
--	int status, i;
-+	int i;
- 	struct ocfs2_slot_map *sm;
- 
--	spin_lock(&osb->osb_lock);
- 	sm = (struct ocfs2_slot_map *)si->si_bh[0]->b_data;
- 	for (i = 0; i < si->si_num_slots; i++) {
- 		if (si->si_slots[i].sl_valid)
-@@ -146,9 +198,24 @@ static int ocfs2_update_disk_slots(struct ocfs2_super *osb,
- 		else
- 			sm->sm_slots[i] = cpu_to_le16(OCFS2_INVALID_SLOT);
- 	}
-+	*bh = si->si_bh[0];
-+}
-+
-+static int ocfs2_update_disk_slot(struct ocfs2_super *osb,
-+				  struct ocfs2_slot_info *si,
-+				  int slot_num)
-+{
-+	int status;
++	int ret;
++	struct ocfs2_slot_info *si = osb->slot_info;
 +	struct buffer_head *bh;
 +
-+	spin_lock(&osb->osb_lock);
-+	if (si->si_extended)
-+		ocfs2_update_disk_slot_extended(si, slot_num, &bh);
-+	else
-+		ocfs2_update_disk_slot_old(si, slot_num, &bh);
- 	spin_unlock(&osb->osb_lock);
- 
--	status = ocfs2_write_block(osb, si->si_bh[0], si->si_inode);
-+	status = ocfs2_write_block(osb, bh, si->si_inode);
- 	if (status < 0)
- 		mlog_errno(status);
- 
-@@ -165,7 +232,12 @@ static int ocfs2_slot_map_physical_size(struct ocfs2_super *osb,
++	if (si == NULL)
++		return 0;
++
++	bh = si->si_bh;
++	ret = ocfs2_read_block(osb, bh->b_blocknr, &bh, 0, si->si_inode);
++	if (ret == 0)
++		ocfs2_update_slot_info(si);
++
++	return ret;
++}
++
+ /* post the our slot info stuff into it's destination bh and write it
+  * out. */
+-int ocfs2_update_disk_slots(struct ocfs2_super *osb,
+-			    struct ocfs2_slot_info *si)
++static int ocfs2_update_disk_slots(struct ocfs2_super *osb,
++				   struct ocfs2_slot_info *si)
  {
- 	unsigned long long bytes_needed;
- 
--	bytes_needed = osb->max_slots * sizeof(__le16);
-+	if (ocfs2_uses_extended_slot_map(osb)) {
-+		bytes_needed = osb->max_slots *
-+			sizeof(struct ocfs2_extended_slot);
-+	} else {
-+		bytes_needed = osb->max_slots * sizeof(__le16);
-+	}
- 	if (bytes_needed > i_size_read(inode)) {
- 		mlog(ML_ERROR,
- 		     "Slot map file is too small!  (size %llu, needed %llu)\n",
-@@ -279,7 +351,7 @@ int ocfs2_clear_slot(struct ocfs2_super *osb, int slot_num)
- 	ocfs2_invalidate_slot(si, slot_num);
- 	spin_unlock(&osb->osb_lock);
- 
--	return ocfs2_update_disk_slots(osb, osb->slot_info);
-+	return ocfs2_update_disk_slot(osb, osb->slot_info, slot_num);
+ 	int status, i;
+ 	__le16 *disk_info = (__le16 *) si->si_bh->b_data;
+@@ -135,6 +152,19 @@ s16 ocfs2_node_num_to_slot(struct ocfs2_slot_info *si,
+ 	return ret;
  }
  
- static int ocfs2_map_slot_buffers(struct ocfs2_super *osb,
-@@ -301,6 +373,16 @@ static int ocfs2_map_slot_buffers(struct ocfs2_super *osb,
- 	if (!si->si_blocks)
- 		goto bail;
- 
-+	if (si->si_extended)
-+		si->si_slots_per_block =
-+			(osb->sb->s_blocksize /
-+			 sizeof(struct ocfs2_extended_slot));
-+	else
-+		si->si_slots_per_block = osb->sb->s_blocksize / sizeof(__le16);
++static void __ocfs2_free_slot_info(struct ocfs2_slot_info *si)
++{
++	if (si == NULL)
++		return;
 +
-+	/* The size checks above should ensure this */
-+	BUG_ON((osb->max_slots / si->si_slots_per_block) > blocks);
++	if (si->si_inode)
++		iput(si->si_inode);
++	if (si->si_bh)
++		brelse(si->si_bh);
 +
- 	mlog(0, "Slot map needs %u buffers for %llu bytes\n",
- 	     si->si_blocks, bytes);
++	kfree(si);
++}
++
+ static void __ocfs2_fill_slot(struct ocfs2_slot_info *si,
+ 			      s16 slot_num,
+ 			      s16 node_num)
+@@ -147,12 +177,18 @@ static void __ocfs2_fill_slot(struct ocfs2_slot_info *si,
+ 	si->si_global_node_nums[slot_num] = node_num;
+ }
  
-@@ -352,6 +434,7 @@ int ocfs2_init_slot_info(struct ocfs2_super *osb)
- 		goto bail;
+-void ocfs2_clear_slot(struct ocfs2_slot_info *si,
+-		      s16 slot_num)
++int ocfs2_clear_slot(struct ocfs2_super *osb, s16 slot_num)
+ {
++	struct ocfs2_slot_info *si = osb->slot_info;
++
++	if (si == NULL)
++		return 0;
++
+ 	spin_lock(&si->si_lock);
+ 	__ocfs2_fill_slot(si, slot_num, OCFS2_INVALID_SLOT);
+ 	spin_unlock(&si->si_lock);
++
++	return ocfs2_update_disk_slots(osb, osb->slot_info);
+ }
+ 
+ int ocfs2_init_slot_info(struct ocfs2_super *osb)
+@@ -202,18 +238,17 @@ int ocfs2_init_slot_info(struct ocfs2_super *osb)
+ 	osb->slot_info = si;
+ bail:
+ 	if (status < 0 && si)
+-		ocfs2_free_slot_info(si);
++		__ocfs2_free_slot_info(si);
+ 
+ 	return status;
+ }
+ 
+-void ocfs2_free_slot_info(struct ocfs2_slot_info *si)
++void ocfs2_free_slot_info(struct ocfs2_super *osb)
+ {
+-	if (si->si_inode)
+-		iput(si->si_inode);
+-	if (si->si_bh)
+-		brelse(si->si_bh);
+-	kfree(si);
++	struct ocfs2_slot_info *si = osb->slot_info;
++
++	osb->slot_info = NULL;
++	__ocfs2_free_slot_info(si);
+ }
+ 
+ int ocfs2_find_slot(struct ocfs2_super *osb)
+@@ -285,7 +320,6 @@ void ocfs2_put_slot(struct ocfs2_super *osb)
  	}
  
-+	si->si_extended = ocfs2_uses_extended_slot_map(osb);
- 	si->si_num_slots = osb->max_slots;
- 	si->si_slots = (struct ocfs2_slot *)((char *)si +
- 					     sizeof(struct ocfs2_slot_info));
-@@ -425,7 +508,7 @@ int ocfs2_find_slot(struct ocfs2_super *osb)
+ bail:
+-	osb->slot_info = NULL;
+-	ocfs2_free_slot_info(si);
++	ocfs2_free_slot_info(osb);
+ }
  
- 	mlog(0, "taking node slot %d\n", osb->slot_num);
+diff --git a/fs/ocfs2/slot_map.h b/fs/ocfs2/slot_map.h
+index 1025872..b029ffd 100644
+--- a/fs/ocfs2/slot_map.h
++++ b/fs/ocfs2/slot_map.h
+@@ -30,7 +30,7 @@
+ struct ocfs2_slot_info {
+ 	spinlock_t si_lock;
  
--	status = ocfs2_update_disk_slots(osb, si);
-+	status = ocfs2_update_disk_slot(osb, si, osb->slot_num);
- 	if (status < 0)
- 		mlog_errno(status);
+-       	struct inode *si_inode;
++	struct inode *si_inode;
+ 	struct buffer_head *si_bh;
+ 	unsigned int si_num_slots;
+ 	unsigned int si_size;
+@@ -38,19 +38,16 @@ struct ocfs2_slot_info {
+ };
  
-@@ -436,7 +519,7 @@ bail:
+ int ocfs2_init_slot_info(struct ocfs2_super *osb);
+-void ocfs2_free_slot_info(struct ocfs2_slot_info *si);
++void ocfs2_free_slot_info(struct ocfs2_super *osb);
  
- void ocfs2_put_slot(struct ocfs2_super *osb)
- {
--	int status;
-+	int status, slot_num;
- 	struct ocfs2_slot_info *si = osb->slot_info;
+ int ocfs2_find_slot(struct ocfs2_super *osb);
+ void ocfs2_put_slot(struct ocfs2_super *osb);
  
- 	if (!si)
-@@ -445,11 +528,12 @@ void ocfs2_put_slot(struct ocfs2_super *osb)
- 	spin_lock(&osb->osb_lock);
- 	ocfs2_update_slot_info(si);
+-void ocfs2_update_slot_info(struct ocfs2_slot_info *si);
+-int ocfs2_update_disk_slots(struct ocfs2_super *osb,
+-			    struct ocfs2_slot_info *si);
++int ocfs2_refresh_slot_info(struct ocfs2_super *osb);
  
-+	slot_num = osb->slot_num;
- 	ocfs2_invalidate_slot(si, osb->slot_num);
- 	osb->slot_num = OCFS2_INVALID_SLOT;
- 	spin_unlock(&osb->osb_lock);
+ s16 ocfs2_node_num_to_slot(struct ocfs2_slot_info *si,
+ 			   s16 global);
+-void ocfs2_clear_slot(struct ocfs2_slot_info *si,
+-		      s16 slot_num);
++int ocfs2_clear_slot(struct ocfs2_super *osb, s16 slot_num);
  
--	status = ocfs2_update_disk_slots(osb, si);
-+	status = ocfs2_update_disk_slot(osb, si, slot_num);
- 	if (status < 0) {
- 		mlog_errno(status);
- 		goto bail;
+ static inline int ocfs2_is_empty_slot(struct ocfs2_slot_info *si,
+ 				      int slot_num)
+diff --git a/fs/ocfs2/super.c b/fs/ocfs2/super.c
+index bec75af..fad37af 100644
+--- a/fs/ocfs2/super.c
++++ b/fs/ocfs2/super.c
+@@ -1724,8 +1724,7 @@ static void ocfs2_delete_osb(struct ocfs2_super *osb)
+ 
+ 	/* This function assumes that the caller has the main osb resource */
+ 
+-	if (osb->slot_info)
+-		ocfs2_free_slot_info(osb->slot_info);
++	ocfs2_free_slot_info(osb);
+ 
+ 	kfree(osb->osb_orphan_wipes);
+ 	/* FIXME
 -- 
 1.5.3.8
 
