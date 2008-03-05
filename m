@@ -1,84 +1,146 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765526AbYCEMsO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933608AbYCEMtX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765526AbYCEMsO (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Mar 2008 07:48:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757426AbYCEMr7
+	id S933608AbYCEMtX (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Mar 2008 07:49:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759479AbYCEMtD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Mar 2008 07:47:59 -0500
-Received: from ug-out-1314.google.com ([66.249.92.171]:46545 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755847AbYCEMr6 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Mar 2008 07:47:58 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent:from;
-        b=v2nQGsYR8RNKT5ElDSIK6NpTtIpXKKf+HEt4uaQBpWrw+z6p5LPLDTY1maJE6E0DQXFGRp0Fq86eWMiMhMLCHvGaVA+bqE+T0cpyAXsZiB3BP6aS+iqUAMHSm7/gb1YdkX6OEz42KW45LcL+JO1cERE/TkZBnVoTzK3gjGvT2z0=
-Date: Wed, 5 Mar 2008 14:44:45 +0200
-To: Casey Schaufler <casey@schaufler-ca.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Stephen Smalley <sds@tycho.nsa.gov>, James Morris <jmorris@namei.org>,
-       Eric Paris <eparis@parisplace.org>, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH BUGFIX -rc3] Smack: Don't register smackfs if we're not
-	loaded
-Message-ID: <20080305124445.GA19549@ubuntu>
-References: <521493.30745.qm@web36606.mail.mud.yahoo.com>
+	Wed, 5 Mar 2008 07:49:03 -0500
+Received: from brick.kernel.dk ([87.55.233.238]:10144 "EHLO kernel.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757397AbYCEMtA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 5 Mar 2008 07:49:00 -0500
+Date: Wed, 5 Mar 2008 13:48:57 +0100
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Boaz Harrosh <bharrosh@panasas.com>
+Cc: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
+       Tejun Heo <htejun@gmail.com>, Mike Galbraith <efault@gmx.de>,
+       James.Bottomley@HansenPartnership.com, tomof@acm.org,
+       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       linux-ide@vger.kernel.org, linux-scsi@vger.kernel.org,
+       jgarzik@pobox.com, bzolnier@gmail.com
+Subject: Re: [PATCH] blk: missing add of padded bytes to io completion byte  count
+Message-ID: <20080305124857.GJ6704@kernel.dk>
+References: <47CD7C05.1080707@gmail.com> <20080305041914V.tomof@acm.org> <47CDDC31.4070806@gmail.com> <20080305092619Y.fujita.tomonori@lab.ntt.co.jp> <47CE72EF.7050302@panasas.com> <20080305123317.GI6704@kernel.dk> <47CE9634.6040501@panasas.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <521493.30745.qm@web36606.mail.mud.yahoo.com>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
-From: "Ahmed S. Darwish" <darwish.07@gmail.com>
+In-Reply-To: <47CE9634.6040501@panasas.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Mar 04, 2008 at 09:45:04AM -0800, Casey Schaufler wrote:
-> ----- Original Message ----
-> > From: Linus Torvalds <torvalds@linux-foundation.org>
-> > To: Ahmed S. Darwish <darwish.07@gmail.com>
-> > Cc: Casey Schaufler <casey@schaufler-ca.com>; LKML <linux-kernel@vger.kernel.org>
-> > Sent: Tuesday, March 4, 2008 9:21:19 AM
-> > Subject: Re: [PATCH BUGFIX -rc3] Smack: Don't register smackfs if we're not loaded
+On Wed, Mar 05 2008, Boaz Harrosh wrote:
+> On Wed, Mar 05 2008 at 14:33 +0200, Jens Axboe <jens.axboe@oracle.com> wrote:
+> > On Wed, Mar 05 2008, Boaz Harrosh wrote:
+> >> On Wed, Mar 05 2008 at 2:26 +0200, FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp> wrote:
+> >>> On Wed, 05 Mar 2008 08:33:05 +0900
+> >>> Tejun Heo <htejun@gmail.com> wrote:
+> >>>
+> >>>> FUJITA Tomonori wrote:
+> >>>>> Hmm, does SCSI mid-layer need to care about how many bytes the block
+> >>>>> layer allocates? I don't think that extra_len is NOT good_bytes.
+> >>>>>
+> >>>>> I think that the block layer had better take care about it (fix
+> >>>>> __end_that_request_first?).
+> >>>> Yeah, probably calling completion functions w/o bytes count is the right
+> >>>> thing to do but what I was talking about was what could break when the
+> >>>> semantics of rq->data_len changed.  If we keep rq->data_len() ==
+> >>>> sum(sg), we keep it business as usual for all the rest except for the
+> >>>> device application layer if we don't we do the reverse and SCSI midlayer
+> >>>> completion was a good example, I think.
+> >>> sglist is a low-level I/O representation for device drivers. SCSI
+> >>> midlayer should not care about sglist. We should not fix SCSI midlayer
+> >>> for rq->data_len != sum(sg) change (so I can't agree with your
+> >>> diagrams in another mail).
+> >>>
+> >>> When if we change a rule, we need to fix something.
+> >>>
+> >>> If we keep rq->data_len == sum(sg), we need to fix the device
+> >>> application layer. If we keep rq->data_len == the true data length, we
+> >>> need to fix the low-level drivers.
+> >>>
+> >>> Now I'm fine with the commit e97a294ef6938512b655b1abf17656cf2b26f709
+> >>> since we are in -rc stages. But I plan to send a patch to revert it
+> >>> and fix this issue in the block layer. I'd like to test it in -mm for
+> >>> a while.
+> >> No this commit is a serious bug, and the only fix is like you suggested
+> >> in __end_that_request_first. This is because it breaks that scsi-ml loop
+> >> where scsi_bufflen() can be less then blk_rq_bytes(). In that case this 
+> >> commit is a data corruption.
+> >>
+> >>> Only sglist stuff in SCSI midlayer is scsi_req_map_sg now. As you
+> >>> know, we really want to remove it.
+> >>>
+> >>>
+> >>>> Things going the other way is fine with me but I at least want to hear a
+> >>>> valid rationale.  Till now all I got is "because that's the true size"
+> >>>> which doesn't really make much sense to me.
+> >>> Most of users of request structure care about only the real data
+> >>> length, don't care about padding and drain length. Why do they bother
+> >>> to use a helper function to get the real data length?
+> >>> --
+> >> Submitted is the right fix to this problem, as pointed out by TOMO.
+> >> Please test it solves the CD burning problem.
+> >> (The patch includes the revert of commit e97a294e)
+> >> ---
+> >> From: Boaz Harrosh <bharrosh@panasas.com>
+> >> Date: Wed, 5 Mar 2008 12:07:12 +0200
+> >> Subject: [PATCH] blk: missing add of padded bytes to io completion byte count
+> >>
+> >> the commit e97a294ef6938512b655b1abf17656cf2b26f709 was very wrong. This is
+> >> because scsi-ml supports the ability to split a request into smaller chunks,
+> >> in which case scsi_bufflen() is smaller then request length. Then at completion
+> >> time the remainder can be issued as a new scsi command. In that case the above
+> >> commit is a data corruption.
 > > 
+> > We needed something for -rc4, so it had to be rushed a bit...
 > > 
+> >> Also in this fix all users of block layer are taken care of, and not only
+> >> scsi devices.
+> >>
+> >> Signed-off-by: Boaz Harrosh <bharrosh@panasas.com>
+> >> Signed-off-by: Benny Halevy <bhalevy@panasas.com>
+> >> ---
+> >>  block/blk-core.c    |    4 ++++
+> >>  drivers/scsi/scsi.c |    2 +-
+> >>  2 files changed, 5 insertions(+), 1 deletions(-)
+> >>
+> >> diff --git a/block/blk-core.c b/block/blk-core.c
+> >> index 2a438a9..37fcccc 100644
+> >> --- a/block/blk-core.c
+> >> +++ b/block/blk-core.c
+> >> @@ -1549,6 +1549,9 @@ static int __end_that_request_first(struct request *req, int error,
+> >>  			     nr_bytes >> 9, req->sector);
+> >>  	}
+> >>  
+> >> +	if (nr_bytes >= blk_rq_bytes(req))
+> >> +		nr_bytes += req->extra_len;
+> >> +
+> >>  	total_bytes = bio_nbytes = 0;
+> >>  	while ((bio = req->bio) != NULL) {
+> >>  		int nbytes;
+> >> @@ -1616,6 +1619,7 @@ static int __end_that_request_first(struct request *req, int error,
+> >>  	if (!req->bio)
+> >>  		return 0;
+> >>  
+> >> +	BUG_ON(total_bytes >= blk_rq_bytes(req));
 > > 
-> > On Tue, 4 Mar 2008, Ahmed S. Darwish wrote:
-> > > 
-> > > Smackfs initialization without an enabled Smack leads to
-> > > an early Oops that renders the system unusable.
+> > Make that a WARN_ON() first please. It's indeed a bug, but it wont be
+> > critical and it's not fair killing everything since this padding stuff
+> > is so fresh and may still need a tweak or two.
 > > 
-> > I really think this is bogus. Global enables like this are just wrong, and 
-> > a sign that something else bad is going on.
+> > I'd be fine with making it a BUG_ON() post 2.6.25.
 > > 
-> > What is the oops? Why does it happen?
-...
+> Updated, you are absolutely right, thanks.
 > 
-> One solution would be to tighten the smackfs code so that it
-> handles the uninitialized LSM case properly.
-> 
+> Will you commit below patch for 2.6.25? I know that, at the time, I have 
+> seen this scsi-ml-loop in action on a sata drive here in the lab, on an 
+> x86_64 machine. The current solution will silently corrupt data, which 
+> is very hard to find.
 
-IMHO no smackfs code should ever execute if smack isn't loaded.
-
-This means catching it from the very fist step where it registers
-itself in init_smk_fs instead of doing several if(we're enabled) cases
-in the code path.
-
-The solution should be a _general_ solution, _not_ a SMACK one cause 
-SELinux sufferes from exactly the same problem.
-
-a.k.a:
-
-LSMs need a scalable way to know if they're enabled that makes 
-everyone happy ( especially Linus ;) ).
-
-Regads to all,
+Yes, was just hoping you'd resend with the above corrected, so thanks!
+I'll add it to the pending queue for 2.6.25.
 
 -- 
-
-"Better to light a candle, than curse the darkness"
-
-Ahmed S. Darwish
-Homepage: http://darwish.07.googlepages.com
-Blog: http://darwish-07.blogspot.com
+Jens Axboe
 
