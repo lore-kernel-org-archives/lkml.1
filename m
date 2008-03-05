@@ -1,49 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935498AbYCEAIr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935397AbYCEAK3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935498AbYCEAIr (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Mar 2008 19:08:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935400AbYCEAIX
+	id S935397AbYCEAK3 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Mar 2008 19:10:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757835AbYCEAKH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Mar 2008 19:08:23 -0500
-Received: from mail.suse.de ([195.135.220.2]:53993 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1765531AbYCEAIV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Mar 2008 19:08:21 -0500
-Date: Wed, 5 Mar 2008 01:08:20 +0100
-From: Nick Piggin <npiggin@suse.de>
-To: Christoph Lameter <clameter@sgi.com>
-Cc: Pekka Enberg <penberg@cs.helsinki.fi>, netdev@vger.kernel.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       yanmin_zhang@linux.intel.com, David Miller <davem@davemloft.net>,
-       Eric Dumazet <dada1@cosmosbay.com>
+	Tue, 4 Mar 2008 19:10:07 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:56015
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1756551AbYCEAKE (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 4 Mar 2008 19:10:04 -0500
+Date: Tue, 04 Mar 2008 16:10:03 -0800 (PST)
+Message-Id: <20080304.161003.129716254.davem@davemloft.net>
+To: npiggin@suse.de
+Cc: clameter@sgi.com, netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+       yanmin_zhang@linux.intel.com, dada1@cosmosbay.com
 Subject: Re: [rfc][patch 1/3] slub: fix small HWCACHE_ALIGN alignment
-Message-ID: <20080305000820.GB1510@wotan.suse.de>
-References: <20080303093449.GA15091@wotan.suse.de> <Pine.LNX.4.64.0803031107130.6917@schroedinger.engr.sgi.com> <20080303200613.GC8974@wotan.suse.de> <Pine.LNX.4.64.0803031209570.16049@schroedinger.engr.sgi.com> <20080303201701.GF8974@wotan.suse.de> <Pine.LNX.4.64.0803031315160.4131@schroedinger.engr.sgi.com> <84144f020803031330i2c0ea1f6kc5b02c8b26145797@mail.gmail.com> <Pine.LNX.4.64.0803031331340.4375@schroedinger.engr.sgi.com>
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20080305000637.GA1510@wotan.suse.de>
+References: <20080303201701.GF8974@wotan.suse.de>
+	<Pine.LNX.4.64.0803031315160.4131@schroedinger.engr.sgi.com>
+	<20080305000637.GA1510@wotan.suse.de>
+X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0803031331340.4375@schroedinger.engr.sgi.com>
-User-Agent: Mutt/1.5.9i
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Mar 03, 2008 at 01:32:54PM -0800, Christoph Lameter wrote:
-> On Mon, 3 Mar 2008, Pekka Enberg wrote:
-> 
-> > Well, not my definition either but SLAB has guaranteed that for small
-> > objects in the past, so I think Nick has a point here. However, with
-> > all this back and forth, I've lost track why this matters. I suppose
-> > it causes regression on some workload?
-> 
-> Well the guarantee can only be exploited if you would check the cacheline 
-> sizes and the object size from the code that creates the slab cache. 
-> Basically you would have to guestimate what the slab allocator is doing.
-> 
-> So the guarantee is basically meaningless. If the object is larger than a 
-> cacheline then this will never work.
+From: Nick Piggin <npiggin@suse.de>
+Date: Wed, 5 Mar 2008 01:06:37 +0100
 
-Of course it works. It fits the object into the fewest number of cachelines
-possible. If you need to be accessing such objects in a random manner, then
-for highest performance you want to touch as few cachelines as possible.
+> On Mon, Mar 03, 2008 at 01:16:44PM -0800, Christoph Lameter wrote:
+> > On Mon, 3 Mar 2008, Nick Piggin wrote:
+> > 
+> > > > HWCACHE_ALIGN means that you want the object to be aligned at 
+> > > > cacheline boundaries for optimization. Why does crossing cacheline 
+> > > > boundaries matter in this case?
+> > > 
+> > > No, HWCACHE_ALIGN means that you want the object not to cross cacheline
+> > > boundaries for at least cache_line_size() bytes. You invented new
+> > 
+> > Interesting new definition....
+> 
+> Huh?? It is not a new definition, it is exactly what SLAB does. And
+> then you go and do something different and claim that you follow
+> what slab does.
 
+I completely agree with Nick.
