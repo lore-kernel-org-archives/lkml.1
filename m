@@ -1,27 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934830AbYCEBST@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934534AbYCEBSj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934830AbYCEBST (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Mar 2008 20:18:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761131AbYCEBR1
+	id S934534AbYCEBSj (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Mar 2008 20:18:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934356AbYCEBRp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Mar 2008 20:17:27 -0500
-Received: from gv-out-0910.google.com ([216.239.58.188]:28071 "EHLO
-	gv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752634AbYCEBRX (ORCPT
+	Tue, 4 Mar 2008 20:17:45 -0500
+Received: from el-out-1112.google.com ([209.85.162.176]:6506 "EHLO
+	el-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S934340AbYCEBRn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Mar 2008 20:17:23 -0500
+	Tue, 4 Mar 2008 20:17:43 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=subject:from:to:cc:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=t072OQjAjauiPeRqXWyZF9uGnaYcQ85diOk2bhHseIPi2D0F5G6tMnxnwO+kjiaug8E05II5YNAKwr13UxfG1zh8OobZHIqyVOiVf1K4T3WItpUhINDV8H8zcDl9uT0xF2m1lFhoKKrtszQdkN7A1Kgd39VdYo1poXv5lTPL7SU=
-Subject: [PATCH 2/9] mips: replace __inline with inline
+        b=IpV+HviqCYKfZOMYR6LQj9H2hmoqm4Tyv/vMZ/2y4eCMzo6ccFlDUTItB7oD5B2qzj52+1gLPpb44+FfsqSi11Igu0zoJPJIFoJrTwLH8X9NfcK74ZFHC/0YQw36/1x6xGfjLDmIEiyxb7hi8FlmPytz0paqCQIJNRaVI+MKq/0=
+Subject: [PATCH 3/9] isdn: replace __inline with inline
 From: Harvey Harrison <harvey.harrison@gmail.com>
-To: "ralf@linux-mips.org" <ralf@linux-mips.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: LKML <linux-kernel@vger.kernel.org>
 Content-Type: text/plain
-Date: Tue, 04 Mar 2008 17:17:16 -0800
-Message-Id: <1204679837.5698.68.camel@brick>
+Date: Tue, 04 Mar 2008 17:17:17 -0800
+Message-Id: <1204679837.5698.69.camel@brick>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.12.1 
 Content-Transfer-Encoding: 7bit
@@ -31,36 +30,43 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
 ---
- arch/mips/math-emu/ieee754dp.h |    2 +-
- arch/mips/math-emu/ieee754sp.h |    2 +-
- 2 files changed, 2 insertions(+), 2 deletions(-)
+ drivers/isdn/i4l/isdn_common.c |    4 ++--
+ drivers/isdn/i4l/isdn_v110.c   |    2 +-
+ 2 files changed, 3 insertions(+), 3 deletions(-)
 
-diff --git a/arch/mips/math-emu/ieee754dp.h b/arch/mips/math-emu/ieee754dp.h
-index 8977eb5..7627865 100644
---- a/arch/mips/math-emu/ieee754dp.h
-+++ b/arch/mips/math-emu/ieee754dp.h
-@@ -46,7 +46,7 @@
- #define DPDNORMX	DPDNORMx(xm, xe)
- #define DPDNORMY	DPDNORMx(ym, ye)
+diff --git a/drivers/isdn/i4l/isdn_common.c b/drivers/isdn/i4l/isdn_common.c
+index 9cef6fc..d4ad699 100644
+--- a/drivers/isdn/i4l/isdn_common.c
++++ b/drivers/isdn/i4l/isdn_common.c
+@@ -981,13 +981,13 @@ isdn_readbchan_tty(int di, int channel, struct tty_struct *tty, int cisco_hack)
+ }
  
--static __inline ieee754dp builddp(int s, int bx, u64 m)
-+static inline ieee754dp builddp(int s, int bx, u64 m)
+
+-static __inline int
++static inline int
+ isdn_minor2drv(int minor)
  {
- 	ieee754dp r;
+ 	return (dev->drvmap[minor]);
+ }
  
-diff --git a/arch/mips/math-emu/ieee754sp.h b/arch/mips/math-emu/ieee754sp.h
-index 9917c1e..d9e3586 100644
---- a/arch/mips/math-emu/ieee754sp.h
-+++ b/arch/mips/math-emu/ieee754sp.h
-@@ -51,7 +51,7 @@
- #define SPDNORMX	SPDNORMx(xm, xe)
- #define SPDNORMY	SPDNORMx(ym, ye)
- 
--static __inline ieee754sp buildsp(int s, int bx, unsigned m)
-+static inline ieee754sp buildsp(int s, int bx, unsigned m)
+-static __inline int
++static inline int
+ isdn_minor2chan(int minor)
  {
- 	ieee754sp r;
- 
+ 	return (dev->chanmap[minor]);
+diff --git a/drivers/isdn/i4l/isdn_v110.c b/drivers/isdn/i4l/isdn_v110.c
+index 5484d3c..c5d02b6 100644
+--- a/drivers/isdn/i4l/isdn_v110.c
++++ b/drivers/isdn/i4l/isdn_v110.c
+@@ -62,7 +62,7 @@ static unsigned char V110_OffMatrix_38400[] =
+  * and to 67452301 when keylen = 2. This is necessary because ordering on
+  * the isdn line is the other way.
+  */
+-static __inline unsigned char
++static inline unsigned char
+ FlipBits(unsigned char c, int keylen)
+ {
+ 	unsigned char b = c;
 -- 
 1.5.4.3.500.g83a2c
 
