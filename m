@@ -1,58 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764030AbYCEV7e@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763244AbYCEWAr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764030AbYCEV7e (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Mar 2008 16:59:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757804AbYCEV7X
+	id S1763244AbYCEWAr (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Mar 2008 17:00:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763708AbYCEWAb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Mar 2008 16:59:23 -0500
-Received: from cantor2.suse.de ([195.135.220.15]:40687 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760252AbYCEV7W (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Mar 2008 16:59:22 -0500
-Date: Wed, 5 Mar 2008 22:59:21 +0100 (CET)
-From: Michael Matz <matz@suse.de>
-To: Chris Lattner <clattner@apple.com>
-Cc: "H.Peter Anvin" <hpa@zytor.com>,
-       Richard Guenther <richard.guenther@gmail.com>,
-       Joe Buck <Joe.Buck@synopsys.com>, Jan Hubicka <hubicka@ucw.cz>,
-       Aurelien Jarno <aurelien@aurel32.net>, linux-kernel@vger.kernel.org,
-       gcc@gcc.gnu.org
-Subject: Re: RELEASE BLOCKER: Linux doesn't follow x86/x86-64 ABI wrt direction
- flag
-In-Reply-To: <738B72DB-A1D6-43F8-813A-E49688D05771@apple.com>
-Message-ID: <Pine.LNX.4.64.0803052258530.20583@wotan.suse.de>
-References: <20080305153020.GA24631@volta.aurel32.net> <47CEC3AA.6080709@zytor.com>
- <20080305195834.GA17267@synopsys.com> <20080305202319.GA17053@volta.aurel32.net>
- <Pine.LNX.4.64.0803052133400.20583@wotan.suse.de> <20080305204234.GB17267@synopsys.com>
- <20080305204945.GB14011@atrey.karlin.mff.cuni.cz>
- <Pine.LNX.4.64.0803052158270.20583@wotan.suse.de> <20080305212005.GC17267@synopsys.com>
- <84fc9c000803051332q2f2eedeej7d3c0509e698cabf@mail.gmail.com>
- <47CF11D6.7070901@zytor.com> <738B72DB-A1D6-43F8-813A-E49688D05771@apple.com>
+	Wed, 5 Mar 2008 17:00:31 -0500
+Received: from zcars04f.nortel.com ([47.129.242.57]:60532 "EHLO
+	zcars04f.nortel.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1763481AbYCEWAa (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 5 Mar 2008 17:00:30 -0500
+Message-ID: <47CF17F7.4030405@nortel.com>
+Date: Wed, 05 Mar 2008 16:00:23 -0600
+From: "Chris Friesen" <cfriesen@nortel.com>
+User-Agent: Mozilla Thunderbird 1.0.2-6 (X11/20050513)
+X-Accept-Language: en-us, en
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: "Kok, Auke" <auke-jan.h.kok@intel.com>
+CC: Todd Tomaino <ttomaino@rivulet.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: E1000:   e1000_update_stats()
+References: <67F3071335CB9945A6047FE06957E0240D6D94CE93@exchange.rivulet.com> <47CF0F1F.1080402@nortel.com> <47CF136A.8070202@intel.com>
+In-Reply-To: <47CF136A.8070202@intel.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 05 Mar 2008 22:00:25.0804 (UTC) FILETIME=[512910C0:01C87F0C]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+Kok, Auke wrote:
 
-On Wed, 5 Mar 2008, Chris Lattner wrote:
+> the update_stats function is only called every two seconds, and scheduled once. I
+> think that the chance that two of these functions run in contention in the way you
+> point out are practically zero, and if they do then we have much bigger problems
+> than just counters being wrong...
 
-> 
-> On Mar 5, 2008, at 1:34 PM, H. Peter Anvin wrote:
-> 
-> >Richard Guenther wrote:
-> > >We didn't yet run into this issue and build openSUSE with 4.3 since more
-> > >than
-> > >three month.
-> >
-> >Well, how often do you take a trap inside an overlapping memmove()?
-> 
-> How hard is it to change the kernel signal entry path from "pushf" to
-> "pushf;cld"?  Problem solved, no?
+I recently did an investigation that ended up sampling a subset of those 
+stats every millisecond (to get an accurate picture of how many packets 
+were being arriving vs being dropped due to rx_fifo errors over short 
+intervals).  Ultimately it turned out that we had very bursty traffic. 
+So it's not entirely unheard-of to sample at much higher rates.
 
-The problem is with old kernels, which by definition stay unfixed.
+At the very least, if we're going to remove the atomicity of reading 
+registers and updating stats, how about adding a comment to this effect 
+in the code?
 
-
-Ciao,
-Michael.
+Chris
