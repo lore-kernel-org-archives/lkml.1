@@ -1,71 +1,143 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762000AbYCERwG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758602AbYCERyT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762000AbYCERwG (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Mar 2008 12:52:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760949AbYCERvu
+	id S1758602AbYCERyT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Mar 2008 12:54:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753234AbYCERyH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Mar 2008 12:51:50 -0500
-Received: from nwd2mail11.analog.com ([137.71.25.57]:55979 "EHLO
-	nwd2mail11.analog.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758038AbYCERvt (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Mar 2008 12:51:49 -0500
-X-IronPort-AV: E=Sophos;i="4.25,451,1199682000"; 
-   d="scan'208";a="49634830"
-From: Robin Getz <rgetz@blackfin.uclinux.org>
-Organization: Blackfin uClinux org
-To: "Rusty Russell" <rusty@rustcorp.com.au>
-Subject: Re: PATCH [1/1]: Don't return symbol lables in init sections after they have been freed
-Date: Wed, 5 Mar 2008 12:53:27 -0500
-User-Agent: KMail/1.9.5
-Cc: "Andrew Morton" <akpm@linux-foundation.org>,
-       "LKML" <linux-kernel@vger.kernel.org>
-References: <200803041847.15884.rgetz@blackfin.uclinux.org> <200803051243.26732.rusty@rustcorp.com.au>
-In-Reply-To: <200803051243.26732.rusty@rustcorp.com.au>
+	Wed, 5 Mar 2008 12:54:07 -0500
+Received: from sacred.ru ([62.205.161.221]:54973 "EHLO sacred.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752363AbYCERyG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 5 Mar 2008 12:54:06 -0500
+Message-ID: <47CEDC62.5070907@openvz.org>
+Date: Wed, 05 Mar 2008 20:46:10 +0300
+From: Pavel Emelyanov <xemul@openvz.org>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080213)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
+To: Pavel Emelyanov <xemul@openvz.org>
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Paul Menage <menage@google.com>,
+       Sukadev Bhattiprolu <sukadev@us.ibm.com>,
+       Serge Hallyn <serue@us.ibm.com>
+Subject: [PATCH 8/9] Provide functions to manipulate block device mappings
+References: <47CED717.60406@openvz.org>
+In-Reply-To: <47CED717.60406@openvz.org>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200803051253.28761.rgetz@blackfin.uclinux.org>
-X-OriginalArrivalTime: 05 Mar 2008 17:51:47.0626 (UTC) FILETIME=[953BC0A0:01C87EE9]
+X-Greylist: Sender succeeded SMTP AUTH authentication, not delayed by milter-greylist-3.0 (sacred.ru [62.205.161.221]); Wed, 05 Mar 2008 20:46:02 +0300 (MSK)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue 4 Mar 2008 20:43, Rusty Russell pondered:
-> On Wednesday 05 March 2008 10:47:15 Robin Getz wrote:
-> > From: Robin Getz <rgetz@blackfin.uclinux.org>
-> >
-> > Today, when module names are looked up, we do not qualify them (check to
-> > see if the init section is still active or not). This can lead to problems
-> > when kernel modules get loaded into the same address that the kernel init
-> > section (or other module's init section was at). We sometimes return the
-> > old / no lomnger there
-> >
-> > This leads to bogus OOPS messages, and developers wasting their time
-> > looking for problems (in the kernel init section) where there are none
-> > (since it was a module).
-> 
-> Hi Robin,
-> 
->     This is a great explanation, with only one problem: it isn't true.  
+This routines were already done for char devices, these ones
+are for block devices. Everything is the same, but the locks,
+probe and match callbacks and kobj-to-device conversions.
 
-I can replicate this on 2.6.24.3 (at least on noMMU) in the kernel init 
-section. 
+Signed-off-by: Pavel Emelyanov <xemul@openvz.org>
 
-> mod->init_size is set to zero after init.
+---
+ block/genhd.c         |   67 +++++++++++++++++++++++++++++++++++++++++++++++++
+ include/linux/genhd.h |    8 ++++++
+ 2 files changed, 75 insertions(+), 0 deletions(-)
 
-So, I have seen the problem on the init section, and suspected it could happen 
-on module init, but it looks like I missed that portion of the code - sorry.
+diff --git a/block/genhd.c b/block/genhd.c
+index a619158..f407f62 100644
+--- a/block/genhd.c
++++ b/block/genhd.c
+@@ -204,6 +204,73 @@ void unlink_gendisk(struct gendisk *disk)
+ 			      disk->minors);
+ }
+ 
++#ifdef CONFIG_CGROUP_DEVS
++int bdev_add_to_map(struct kobj_map *map, dev_t dev, int all, mode_t mode)
++{
++	int tmp;
++	struct kobject *kobj;
++	struct device *d;
++	struct gendisk *disk;
++
++	kobj = kobj_lookup(bdev_map, dev, NULL, &tmp);
++	if (kobj == NULL)
++		return -ENODEV;
++
++	d = kobj_to_dev(kobj);
++	disk = dev_to_disk(d);
++	tmp = kobj_remap(map, dev, mode, all ? MINORBITS : 1, NULL,
++			exact_match, exact_lock, disk);
++	if (tmp < 0) {
++		put_disk(disk);
++		return tmp;
++	}
++
++	return 0;
++}
++
++int bdev_del_from_map(struct kobj_map *map, dev_t dev, int all)
++{
++	int tmp;
++	struct kobject *kobj;
++	struct device *d;
++	struct gendisk *disk;
++
++	kobj = kobj_lookup(map, dev, NULL, &tmp);
++	if (kobj == NULL)
++		return -ENODEV;
++
++	d = kobj_to_dev(kobj);
++	disk = dev_to_disk(d);
++	kobj_unmap(map, dev, all ? MINORBITS : 1);
++
++	/*
++	 * one put for the kobj_lookup above and one for
++	 * the kobj_lookup in bdev_add_to_map
++	 */
++	put_disk(disk);
++	put_disk(disk);
++	return 0;
++}
++
++void bdev_iterate_map(struct kobj_map *map,
++		int (*fn)(dev_t, int, mode_t, void *), void *x)
++{
++	kobj_map_iterate(map, fn, x);
++}
++
++static struct kobject *base_probe(dev_t devt, int *part, void *data);
++
++struct kobj_map *bdev_map_init(void)
++{
++	return kobj_map_init(base_probe, &block_class_lock);
++}
++
++void bdev_map_fini(struct kobj_map *map)
++{
++	kobj_map_fini(map);
++}
++#endif
++
+ /**
+  * get_gendisk - get partitioning information for a given device
+  * @dev: device to get partitioning information for
+diff --git a/include/linux/genhd.h b/include/linux/genhd.h
+index e09df44..c5483fc 100644
+--- a/include/linux/genhd.h
++++ b/include/linux/genhd.h
+@@ -373,6 +373,14 @@ extern void del_gendisk(struct gendisk *gp);
+ extern void unlink_gendisk(struct gendisk *gp);
+ extern struct gendisk *get_gendisk(dev_t dev, mode_t *mode, int *part);
+ 
++struct kobj_map;
++extern int bdev_add_to_map(struct kobj_map *, dev_t dev, int all, mode_t mode);
++extern int bdev_del_from_map(struct kobj_map *map, dev_t dev, int all);
++extern void bdev_iterate_map(struct kobj_map *map,
++		int (*fn)(dev_t, int, mode_t, void *), void *x);
++extern struct kobj_map *bdev_map_init(void);
++extern void bdev_map_fini(struct kobj_map *map);
++
+ extern void set_device_ro(struct block_device *bdev, int flag);
+ extern void set_disk_ro(struct gendisk *disk, int flag);
+ 
+-- 
+1.5.3.4
 
->     As to the actual patch, your kallsyms.c patch matches 
-> a2da4052f1df6bc77749f84496fe731ab8b458f7's change to extable.c: please 
-> resubmit with just that one. 
-
-Will do.
-
-> For bonus points, look at combining the 
-> extable and kallsyms logic so we don't diverge in future...
-
-Let me see what I can do. 
