@@ -1,347 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933100AbYCEMUr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933701AbYCEMVR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933100AbYCEMUr (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Mar 2008 07:20:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755756AbYCEMU1
+	id S933701AbYCEMVR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Mar 2008 07:21:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764825AbYCEMUe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Mar 2008 07:20:27 -0500
-Received: from sacred.ru ([62.205.161.221]:32966 "EHLO sacred.ru"
+	Wed, 5 Mar 2008 07:20:34 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:57240 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758890AbYCEMUZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Mar 2008 07:20:25 -0500
-Message-ID: <47CE8FF7.7000701@openvz.org>
-Date: Wed, 05 Mar 2008 15:20:07 +0300
-From: Pavel Emelyanov <xemul@openvz.org>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080213)
+	id S1762549AbYCEMUc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 5 Mar 2008 07:20:32 -0500
+Date: Wed, 5 Mar 2008 13:20:10 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Julia Lawall <julia@diku.dk>
+Cc: Christopher Li <sparse@chrisli.org>, yi.zhu@intel.com,
+       linux-wireless@vger.kernel.org, ipw3945-devel@lists.sourceforge.net,
+       linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org,
+       Harvey Harrison <harvey.harrison@gmail.com>,
+       Alexander Viro <viro@ftp.linux.org.uk>, linux-sparse@vger.kernel.org,
+       Josh Triplett <josh@freedesktop.org>
+Subject: Re: [PATCH 6/9] drivers/net/wireless/iwlwifi/iwl-4965.c: Correct
+	use of ! and &
+Message-ID: <20080305122010.GA999@elte.hu>
+References: <Pine.LNX.4.64.0802262143570.18200@ask.diku.dk> <20080305063842.GA24495@elte.hu> <70318cbf0803042249j57d7f3a3j7666961a9132b10b@mail.gmail.com> <20080305070201.GA32434@elte.hu> <Pine.LNX.4.64.0803050951550.28021@ask.diku.dk>
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>,
-       David Miller <davem@davemloft.net>
-CC: Linux Netdev List <netdev@vger.kernel.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Alexey Dobriyan <adobriyan@openvz.org>
-Subject: [PATCH] Make /proc/net a symlink on /proc/self/net
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-Greylist: Sender succeeded SMTP AUTH authentication, not delayed by milter-greylist-3.0 (sacred.ru [62.205.161.221]); Wed, 05 Mar 2008 15:20:03 +0300 (MSK)
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0803050951550.28021@ask.diku.dk>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Current /proc/net is done with so called "shadows", but current
-implementation is broken and has little chances to get fixed.
 
-The problem is that dentries subtree of /proc/net directory has
-fancy revalidation rules to make processes living in different
-net namespaces see different entries in /proc/net subtree, but
-currently, tasks see in the /proc/net subdir the contents of any
-other namespace, depending on who opened the file first.
+* Julia Lawall <julia@diku.dk> wrote:
 
-The proposed fix is to turn /proc/net into a symlink, which points
-to /proc/self/net, which in turn shows what previously was in
-/proc/net - the network-related info, from the net namespace the
-appropriate task lives in.
+> There are some legitimate uses of !x & y which are actually of the 
+> form !x & !y, where x and y are function calls.  That is a not 
+> particularly elegant way of getting both x and y to be evaluated and 
+> then combining the results using "and".  If such code is considered 
+> acceptable, then perhaps the sparse patch should be more complicated.
 
-# ls -l /proc/net
-lrwxrwxrwx  1 root root 8 Mar  5 15:17 /proc/net -> self/net
+i tend to be of the opinion that the details in C source code should be 
+visually obvious and should be heavily simplified down from what is 
+'possible' language-wise - with most deviations and complications that 
+depart from convention considered an error. I'd consider "!fn1() & 
+!fn2()" a borderline coding style violation in any case - and it costs 
+nothing to change it to "!fn1() && !fn2()".
 
-In other words - this behaves like /proc/mounts, but unlike
-"mounts", "net" is not a file, but a directory.
-
-Signed-off-by: Pavel Emelyanov <xemul@openvz.org>
-
----
-
-diff --git a/fs/proc/base.c b/fs/proc/base.c
-index 96ee899..cc43cf0 100644
---- a/fs/proc/base.c
-+++ b/fs/proc/base.c
-@@ -2274,6 +2274,7 @@ static const struct pid_entry tgid_base_stuff[] = {
- 	DIR("task",       S_IRUGO|S_IXUGO, task),
- 	DIR("fd",         S_IRUSR|S_IXUSR, fd),
- 	DIR("fdinfo",     S_IRUSR|S_IXUSR, fdinfo),
-+	DIR("net",        S_IRUGO|S_IXUSR, net),
- 	REG("environ",    S_IRUSR, environ),
- 	INF("auxv",       S_IRUSR, pid_auxv),
- 	ONE("status",     S_IRUGO, pid_status),
-diff --git a/fs/proc/generic.c b/fs/proc/generic.c
-index 68971e6..a36ad3c 100644
---- a/fs/proc/generic.c
-+++ b/fs/proc/generic.c
-@@ -377,15 +377,14 @@ static struct dentry_operations proc_dentry_operations =
-  * Don't create negative dentries here, return -ENOENT by hand
-  * instead.
-  */
--struct dentry *proc_lookup(struct inode * dir, struct dentry *dentry, struct nameidata *nd)
-+struct dentry *proc_lookup_de(struct proc_dir_entry *de, struct inode *dir,
-+		struct dentry *dentry)
- {
- 	struct inode *inode = NULL;
--	struct proc_dir_entry * de;
- 	int error = -ENOENT;
- 
- 	lock_kernel();
- 	spin_lock(&proc_subdir_lock);
--	de = PDE(dir);
- 	if (de) {
- 		for (de = de->subdir; de ; de = de->next) {
- 			if (de->namelen != dentry->d_name.len)
-@@ -393,8 +392,6 @@ struct dentry *proc_lookup(struct inode * dir, struct dentry *dentry, struct nam
- 			if (!memcmp(dentry->d_name.name, de->name, de->namelen)) {
- 				unsigned int ino;
- 
--				if (de->shadow_proc)
--					de = de->shadow_proc(current, de);
- 				ino = de->low_ino;
- 				de_get(de);
- 				spin_unlock(&proc_subdir_lock);
-@@ -417,6 +414,12 @@ out_unlock:
- 	return ERR_PTR(error);
- }
- 
-+struct dentry *proc_lookup(struct inode *dir, struct dentry *dentry,
-+		struct nameidata *nd)
-+{
-+	return proc_lookup_de(PDE(dir), dir, dentry);
-+}
-+
- /*
-  * This returns non-zero if at EOF, so that the /proc
-  * root directory can use this and check if it should
-@@ -426,10 +429,9 @@ out_unlock:
-  * value of the readdir() call, as long as it's non-negative
-  * for success..
-  */
--int proc_readdir(struct file * filp,
--	void * dirent, filldir_t filldir)
-+int proc_readdir_de(struct proc_dir_entry *de, struct file *filp, void *dirent,
-+		filldir_t filldir)
- {
--	struct proc_dir_entry * de;
- 	unsigned int ino;
- 	int i;
- 	struct inode *inode = filp->f_path.dentry->d_inode;
-@@ -438,7 +440,6 @@ int proc_readdir(struct file * filp,
- 	lock_kernel();
- 
- 	ino = inode->i_ino;
--	de = PDE(inode);
- 	if (!de) {
- 		ret = -EINVAL;
- 		goto out;
-@@ -499,6 +500,13 @@ out:	unlock_kernel();
- 	return ret;	
- }
- 
-+int proc_readdir(struct file *filp, void *dirent, filldir_t filldir)
-+{
-+	struct inode *inode = filp->f_path.dentry->d_inode;
-+
-+	return proc_readdir_de(PDE(inode), filp, dirent, filldir);
-+}
-+
- /*
-  * These are the generic /proc directory operations. They
-  * use the in-memory "struct proc_dir_entry" tree to parse
-diff --git a/fs/proc/internal.h b/fs/proc/internal.h
-index 1c81c8f..bc72f5c 100644
---- a/fs/proc/internal.h
-+++ b/fs/proc/internal.h
-@@ -64,6 +64,8 @@ extern const struct file_operations proc_numa_maps_operations;
- extern const struct file_operations proc_smaps_operations;
- extern const struct file_operations proc_clear_refs_operations;
- extern const struct file_operations proc_pagemap_operations;
-+extern const struct file_operations proc_net_operations;
-+extern const struct inode_operations proc_net_inode_operations;
- 
- void free_proc_entry(struct proc_dir_entry *de);
- 
-@@ -83,3 +85,8 @@ static inline int proc_fd(struct inode *inode)
- {
- 	return PROC_I(inode)->fd;
- }
-+
-+struct dentry *proc_lookup_de(struct proc_dir_entry *de, struct inode *ino,
-+		struct dentry *dentry);
-+int proc_readdir_de(struct proc_dir_entry *de, struct file *filp, void *dirent,
-+		filldir_t filldir);
-diff --git a/fs/proc/proc_net.c b/fs/proc/proc_net.c
-index 14e9b5a..3372c2e 100644
---- a/fs/proc/proc_net.c
-+++ b/fs/proc/proc_net.c
-@@ -63,6 +63,63 @@ int seq_release_net(struct inode *ino, struct file *f)
- }
- EXPORT_SYMBOL_GPL(seq_release_net);
- 
-+static struct net *get_proc_task_net(struct inode *dir)
-+{
-+	struct task_struct *task;
-+	struct nsproxy *ns;
-+	struct net *net = NULL;
-+
-+	rcu_read_lock();
-+	task = get_proc_task(dir);
-+	if (task != NULL) {
-+		ns = task_nsproxy(task);
-+		if (ns != NULL)
-+			net = get_net(ns->net_ns);
-+	}
-+	rcu_read_unlock();
-+
-+	return net;
-+}
-+
-+static struct dentry *proc_tgid_net_lookup(struct inode *dir,
-+		struct dentry *dentry, struct nameidata *nd)
-+{
-+	struct dentry *de;
-+	struct net *net;
-+
-+	de = ERR_PTR(-ENOENT);
-+	net = get_proc_task_net(dir);
-+	if (net != NULL) {
-+		de = proc_lookup_de(net->proc_net, dir, dentry);
-+		put_net(net);
-+	}
-+	return de;
-+}
-+
-+const struct inode_operations proc_net_inode_operations = {
-+	.lookup		= proc_tgid_net_lookup,
-+};
-+
-+static int proc_tgid_net_readdir(struct file *filp, void *dirent,
-+		filldir_t filldir)
-+{
-+	int ret;
-+	struct net *net;
-+
-+	ret = -EINVAL;
-+	net = get_proc_task_net(filp->f_path.dentry->d_inode);
-+	if (net != NULL) {
-+		ret = proc_readdir_de(net->proc_net, filp, dirent, filldir);
-+		put_net(net);
-+	}
-+	return ret;
-+}
-+
-+const struct file_operations proc_net_operations = {
-+	.read		= generic_read_dir,
-+	.readdir	= proc_tgid_net_readdir,
-+};
-+
- 
- struct proc_dir_entry *proc_net_fops_create(struct net *net,
- 	const char *name, mode_t mode, const struct file_operations *fops)
-@@ -83,14 +140,6 @@ struct net *get_proc_net(const struct inode *inode)
- }
- EXPORT_SYMBOL_GPL(get_proc_net);
- 
--static struct proc_dir_entry *shadow_pde;
--
--static struct proc_dir_entry *proc_net_shadow(struct task_struct *task,
--						struct proc_dir_entry *de)
--{
--	return task->nsproxy->net_ns->proc_net;
--}
--
- struct proc_dir_entry *proc_net_mkdir(struct net *net, const char *name,
- 		struct proc_dir_entry *parent)
- {
-@@ -104,45 +153,35 @@ EXPORT_SYMBOL_GPL(proc_net_mkdir);
- 
- static __net_init int proc_net_ns_init(struct net *net)
- {
--	struct proc_dir_entry *root, *netd, *net_statd;
-+	struct proc_dir_entry *netd, *net_statd;
- 	int err;
- 
- 	err = -ENOMEM;
--	root = kzalloc(sizeof(*root), GFP_KERNEL);
--	if (!root)
-+	netd = kzalloc(sizeof(*netd), GFP_KERNEL);
-+	if (!netd)
- 		goto out;
- 
--	err = -EEXIST;
--	netd = proc_net_mkdir(net, "net", root);
--	if (!netd)
--		goto free_root;
-+	netd->data = net;
- 
- 	err = -EEXIST;
- 	net_statd = proc_net_mkdir(net, "stat", netd);
- 	if (!net_statd)
- 		goto free_net;
- 
--	root->data = net;
--
--	net->proc_net_root = root;
- 	net->proc_net = netd;
- 	net->proc_net_stat = net_statd;
--	err = 0;
-+	return 0;
- 
-+free_net:
-+	kfree(netd);
- out:
- 	return err;
--free_net:
--	remove_proc_entry("net", root);
--free_root:
--	kfree(root);
--	goto out;
- }
- 
- static __net_exit void proc_net_ns_exit(struct net *net)
- {
- 	remove_proc_entry("stat", net->proc_net);
--	remove_proc_entry("net", net->proc_net_root);
--	kfree(net->proc_net_root);
-+	kfree(net->proc_net);
- }
- 
- static struct pernet_operations __net_initdata proc_net_ns_ops = {
-@@ -152,8 +191,7 @@ static struct pernet_operations __net_initdata proc_net_ns_ops = {
- 
- int __init proc_net_init(void)
- {
--	shadow_pde = proc_mkdir("net", NULL);
--	shadow_pde->shadow_proc = proc_net_shadow;
-+	proc_symlink("net", NULL, "self/net");
- 
- 	return register_pernet_subsys(&proc_net_ns_ops);
- }
-diff --git a/include/linux/proc_fs.h b/include/linux/proc_fs.h
-index d9a9e71..9b6c935 100644
---- a/include/linux/proc_fs.h
-+++ b/include/linux/proc_fs.h
-@@ -50,8 +50,6 @@ typedef	int (read_proc_t)(char *page, char **start, off_t off,
- typedef	int (write_proc_t)(struct file *file, const char __user *buffer,
- 			   unsigned long count, void *data);
- typedef int (get_info_t)(char *, char **, off_t, int);
--typedef struct proc_dir_entry *(shadow_proc_t)(struct task_struct *task,
--						struct proc_dir_entry *pde);
- 
- struct proc_dir_entry {
- 	unsigned int low_ino;
-@@ -82,7 +80,6 @@ struct proc_dir_entry {
- 	int pde_users;	/* number of callers into module in progress */
- 	spinlock_t pde_unload_lock; /* proc_fops checks and pde_users bumps */
- 	struct completion *pde_unload_completion;
--	shadow_proc_t *shadow_proc;
- };
- 
- struct kcore_list {
-diff --git a/include/net/net_namespace.h b/include/net/net_namespace.h
-index 28738b7..923f2b8 100644
---- a/include/net/net_namespace.h
-+++ b/include/net/net_namespace.h
-@@ -31,7 +31,6 @@ struct net {
- 
- 	struct proc_dir_entry 	*proc_net;
- 	struct proc_dir_entry 	*proc_net_stat;
--	struct proc_dir_entry 	*proc_net_root;
- 
- 	struct list_head	sysctl_table_headers;
- 
+	Ingo
