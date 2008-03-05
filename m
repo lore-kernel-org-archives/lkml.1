@@ -1,38 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935316AbYCEAHe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935395AbYCEAIW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935316AbYCEAHe (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Mar 2008 19:07:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935005AbYCEAGi
+	id S935395AbYCEAIW (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Mar 2008 19:08:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762019AbYCEAGm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Mar 2008 19:06:38 -0500
-Received: from ns1.suse.de ([195.135.220.2]:53828 "EHLO mx1.suse.de"
+	Tue, 4 Mar 2008 19:06:42 -0500
+Received: from ns.suse.de ([195.135.220.2]:53841 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S934919AbYCEAGg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Mar 2008 19:06:36 -0500
-From: Andi Kleen <ak@suse.de>
-Organization: SUSE Linux Products GmbH, Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Subject: Re: preempt bug in set_pmd_pfn?
-Date: Wed, 5 Mar 2008 01:06:31 +0100
-User-Agent: KMail/1.9.6
-Cc: Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-References: <47CDBB87.8090906@goop.org>
-In-Reply-To: <47CDBB87.8090906@goop.org>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
+	id S935275AbYCEAGl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 4 Mar 2008 19:06:41 -0500
+Date: Wed, 5 Mar 2008 01:06:37 +0100
+From: Nick Piggin <npiggin@suse.de>
+To: Christoph Lameter <clameter@sgi.com>
+Cc: netdev@vger.kernel.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       yanmin_zhang@linux.intel.com, David Miller <davem@davemloft.net>,
+       Eric Dumazet <dada1@cosmosbay.com>
+Subject: Re: [rfc][patch 1/3] slub: fix small HWCACHE_ALIGN alignment
+Message-ID: <20080305000637.GA1510@wotan.suse.de>
+References: <20080303093449.GA15091@wotan.suse.de> <Pine.LNX.4.64.0803031107130.6917@schroedinger.engr.sgi.com> <20080303200613.GC8974@wotan.suse.de> <Pine.LNX.4.64.0803031209570.16049@schroedinger.engr.sgi.com> <20080303201701.GF8974@wotan.suse.de> <Pine.LNX.4.64.0803031315160.4131@schroedinger.engr.sgi.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200803050106.31609.ak@suse.de>
+In-Reply-To: <Pine.LNX.4.64.0803031315160.4131@schroedinger.engr.sgi.com>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, Mar 03, 2008 at 01:16:44PM -0800, Christoph Lameter wrote:
+> On Mon, 3 Mar 2008, Nick Piggin wrote:
+> 
+> > > HWCACHE_ALIGN means that you want the object to be aligned at 
+> > > cacheline boundaries for optimization. Why does crossing cacheline 
+> > > boundaries matter in this case?
+> > 
+> > No, HWCACHE_ALIGN means that you want the object not to cross cacheline
+> > boundaries for at least cache_line_size() bytes. You invented new
+> 
+> Interesting new definition....
 
-> Won't this leave a stale tlb on the old processor?
+Huh?? It is not a new definition, it is exactly what SLAB does. And
+then you go and do something different and claim that you follow
+what slab does.
 
-__set_fixmap should be only used in early boot, so it's always
-on CPU 0
-
--Andi
