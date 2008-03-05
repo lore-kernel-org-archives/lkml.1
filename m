@@ -1,38 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764983AbYCEHxy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764755AbYCEH5u@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764983AbYCEHxy (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Mar 2008 02:53:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764712AbYCEHxi
+	id S1764755AbYCEH5u (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Mar 2008 02:57:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756192AbYCEH5m
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Mar 2008 02:53:38 -0500
-Received: from webmail34.yandex.ru ([213.180.223.182]:41242 "EHLO
-	webmail34.yandex.ru" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1764663AbYCEHxh (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Mar 2008 02:53:37 -0500
-X-Greylist: delayed 386 seconds by postgrey-1.27 at vger.kernel.org; Wed, 05 Mar 2008 02:53:37 EST
-X-Yandex-Spam: 0
-From: Antipov Dmitry <dmantipov@yandex.ru>
-To: linux-kernel@vger.kernel.org
-Subject: Are Linux pipes slower than the FreeBSD ones ?
-MIME-Version: 1.0
-Message-Id: <1389671204703217@webmail34.yandex.ru>
-Date: Wed, 05 Mar 2008 10:46:57 +0300
-X-Mailer: Yamail [ http://yandex.ru ] 5.0
-Content-Transfer-Encoding: 7bit
-Content-Type: text/plain
+	Wed, 5 Mar 2008 02:57:42 -0500
+Received: from chilli.pcug.org.au ([203.10.76.44]:57590 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755945AbYCEH5l (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 5 Mar 2008 02:57:41 -0500
+Date: Wed, 5 Mar 2008 18:57:30 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Cc: Sam Ravnborg <sam@ravnborg.org>, linux-next@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: linux-next: Tree for March 4
+Message-Id: <20080305185730.fa4389a5.sfr@canb.auug.org.au>
+In-Reply-To: <47CDB8BB.9020909@s5r6.in-berlin.de>
+References: <20080304223947.375be10b.sfr@canb.auug.org.au>
+	<47CDB8BB.9020909@s5r6.in-berlin.de>
+X-Mailer: Sylpheed 2.5.0beta1 (GTK+ 2.12.8; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Wed__5_Mar_2008_18_57_30_+1100_53H2blE3Qg+J_ks_"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello all,
+--Signature=_Wed__5_Mar_2008_18_57_30_+1100_53H2blE3Qg+J_ks_
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-everyone knows that there are three kinds of lies: lies, damned lies, and benchmarks.
-Despite of this obvious fact, recently I've tried to compare pipe performance on
-Linux and FreeBSD systems. Unfortunately, Linux results are poor - ~2x slower than
-FreeBSD. The detailed description of the test case, preparation, environment and
-results are located at http://213.148.29.37/PipeBench, and everyone are pleased to
-look at, reproduce, criticize, etc.
+Hi Stefan, Sam,
 
-Thanks,
-Dmitry
+On Tue, 04 Mar 2008 22:01:47 +0100 Stefan Richter <stefanr@s5r6.in-berlin.d=
+e> wrote:
+>
+> One of them is tests.git's lib/Kconfig.debug.  linux1394-2.6.git's=20
+> commit 523a65f1a7a339e528ca6d6d808516fe195fde03 apparently is the one=20
+> causing it.
+>=20
+> Stephen, should one of me and Sam adjust his -next branch?  (This kind=20
+> of conflict will be trivially avoided in the merge window; so resolving=20
+> it now would mainly mean one manual(?) step less for Stephen.)
+
+I can live with it for a while.
+
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+
+--Signature=_Wed__5_Mar_2008_18_57_30_+1100_53H2blE3Qg+J_ks_
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQFHzlJyTgG2atn1QN8RAuSlAJ9rdSJV2ulUO8Ye8ozbY8H/JC84dgCggxv5
+oFsxMxJ44AEkgc6tMQHEfCo=
+=Rwvt
+-----END PGP SIGNATURE-----
+
+--Signature=_Wed__5_Mar_2008_18_57_30_+1100_53H2blE3Qg+J_ks_--
