@@ -1,125 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759941AbYCERme@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757529AbYCERn3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759941AbYCERme (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Mar 2008 12:42:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752409AbYCERm0
+	id S1757529AbYCERn3 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Mar 2008 12:43:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756201AbYCERnS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Mar 2008 12:42:26 -0500
-Received: from sacred.ru ([62.205.161.221]:37653 "EHLO sacred.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751834AbYCERmZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Mar 2008 12:42:25 -0500
-Message-ID: <47CED93C.5030107@openvz.org>
-Date: Wed, 05 Mar 2008 20:32:44 +0300
-From: Pavel Emelyanov <xemul@openvz.org>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080213)
+	Wed, 5 Mar 2008 12:43:18 -0500
+Received: from web36612.mail.mud.yahoo.com ([209.191.85.29]:28612 "HELO
+	web36612.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1756146AbYCERnR (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 5 Mar 2008 12:43:17 -0500
+X-YMail-OSG: HMSuOSAVM1mxESOjB0KY2McmhhoM3gD3lH89EshR_dNpfEFXT9F2BSj2C.F8Oe7Z3XCHCq1bbw--
+X-RocketYMMF: rancidfat
+Date: Wed, 5 Mar 2008 09:43:16 -0800 (PST)
+From: Casey Schaufler <casey@schaufler-ca.com>
+Reply-To: casey@schaufler-ca.com
+Subject: Re: [PATCH -v7 -rc3] Security: Introduce security= boot parameter
+To: "Ahmed S. Darwish" <darwish.07@gmail.com>,
+       Casey Schaufler <casey@schaufler-ca.com>
+Cc: Chris Wright <chrisw@sous-sol.org>, Stephen Smalley <sds@tycho.nsa.gov>,
+       James Morris <jmorris@namei.org>, Eric Paris <eparis@parisplace.org>,
+       Paul Moore <paul.moore@hp.com>, Alexey Dobriyan <adobriyan@sw.ru>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus <torvalds@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       LSM-ML <linux-security-module@vger.kernel.org>
+In-Reply-To: <20080305165513.GA26419@ubuntu>
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Paul Menage <menage@google.com>,
-       Sukadev Bhattiprolu <sukadev@us.ibm.com>,
-       Serge Hallyn <serue@us.ibm.com>
-Subject: [PATCH 3/9] Add a mode on the struct probe
-References: <47CED717.60406@openvz.org>
-In-Reply-To: <47CED717.60406@openvz.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-Greylist: Sender succeeded SMTP AUTH authentication, not delayed by milter-greylist-3.0 (sacred.ru [62.205.161.221]); Wed, 05 Mar 2008 20:32:35 +0300 (MSK)
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+Message-ID: <406504.13718.qm@web36612.mail.mud.yahoo.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The idea of the set is to make the dev_t to struct kobj map
-be per-cgroup, and provide a permissions for this mapping.
-This mode mask will operate with FMODE_xxx modes.
 
-To achieve this, I add the mode_t mode on the struct probe,
-which sets this mapping, and move the locked part of the 
-kobj_map() into a separate function, which also accepts the 
-mode to be set on the probe.
+--- "Ahmed S. Darwish" <darwish.07@gmail.com> wrote:
 
-By default all the modes are provided for a map.
+> Hi Casey,
+> 
+> On Wed, Mar 05, 2008 at 08:33:34AM -0800, Casey Schaufler wrote:
+> > 
+> > --- "Ahmed S. Darwish" <darwish.07@gmail.com> wrote:
+> > 
+> ...
+> > > 
+> > > Do not let SMACK register smackfs if it was not chosen on
+> > > boot. Smackfs assumes that smack hooks are registered and
+> > > the initial task security setup (swapper->security) is done.
+> > 
+> > If the problem with initializing smackfs is because the
+> > locks aren't initialized why not leave the lock initializations
+> > in smack_init, and have them done before the check to see if the
+> > smack LSM is going to get used? Really, we're only talking
+> > about the case where a kernel is configured for testing or
+> > development purposes, and the lock initialization can't
+> > be considered a major impact in any case.
+> > 
+> 
+> Beside the locking initialization issue, there's the current->security
+> issue. smackfs init code code access current->security in 
+> smk_unlbl_ambient().
+> 
+> As you know current->security may equal Null (Oops), or point to 
+> another LSM structure that preceeded us in registration. 
+> 
+> The locking argument can't be applied here since we may override
+> the other LSM tsk->security pointer this time.
+> 
+> Ofcourse all of the above points can be handleded by various
+> if(current->security) checks + rechecking the read/write methods
+> of each smackfs inode, but below only two lines will fix the 
+> problem from its roots ;):
+> 
+> +	if (!security_module_enable(&smack_ops))
+> +		return 0;
+> 
+> Is there a problem in the current approach that I'm not aware of ?
 
-Signed-off-by: Pavel Emelyanov <xemul@openvz.org>
+No, I made the common mistake of replying before I'd read all the
+day's threads and didn't have all the information that you did.
+Current LSM usage is really unfriendly to multiple "modules". I
+don't see any problems with your current approach now that I've
+dug into the issues a little further.
 
----
- drivers/base/map.c |   31 ++++++++++++++++++++++++++-----
- 1 files changed, 26 insertions(+), 5 deletions(-)
+> You have your veto in this issue at the end ;)
 
-diff --git a/drivers/base/map.c b/drivers/base/map.c
-index 7de565f..c7e28a1 100644
---- a/drivers/base/map.c
-+++ b/drivers/base/map.c
-@@ -15,6 +15,7 @@
- #include <linux/kdev_t.h>
- #include <linux/kobject.h>
- #include <linux/kobj_map.h>
-+#include <linux/fs.h>
- 
- #define KOBJ_MAP_PROBES	255
- 
-@@ -22,6 +23,7 @@ struct kobj_map {
- 	struct probe {
- 		struct probe *next;
- 		dev_t dev;
-+		mode_t mode;
- 		unsigned long range;
- 		struct module *owner;
- 		kobj_probe_t *get;
-@@ -31,9 +33,9 @@ struct kobj_map {
- 	struct mutex *lock;
- };
- 
--int kobj_map(struct kobj_map *domain, dev_t dev, unsigned long range,
--	     struct module *module, kobj_probe_t *probe,
--	     int (*lock)(dev_t, void *), void *data)
-+static int __kobj_map(struct kobj_map *domain, dev_t dev, mode_t mode,
-+		unsigned long range, struct module *module,
-+		kobj_probe_t *probe, int (*lock)(dev_t, void *), void *data)
- {
- 	unsigned n = MAJOR(dev + range - 1) - MAJOR(dev) + 1;
- 	unsigned index = MAJOR(dev);
-@@ -55,8 +57,15 @@ int kobj_map(struct kobj_map *domain, dev_t dev, unsigned long range,
- 		p->dev = dev;
- 		p->range = range;
- 		p->data = data;
-+		/*
-+		 * When opening a device we want to (dis)allow only
-+		 * read or write. But sys_open() can provide more
-+		 * modes like lseek or pread. So, these FMODE-s are
-+		 * always 'on'.
-+		 */
-+		p->mode = mode | FMODE_LSEEK | FMODE_PREAD | FMODE_PWRITE;
- 	}
--	mutex_lock(domain->lock);
-+
- 	for (i = 0, p -= n; i < n; i++, p++, index++) {
- 		struct probe **s = &domain->probes[index % KOBJ_MAP_PROBES];
- 		while (*s && (*s)->range < range)
-@@ -64,10 +73,22 @@ int kobj_map(struct kobj_map *domain, dev_t dev, unsigned long range,
- 		p->next = *s;
- 		*s = p;
- 	}
--	mutex_unlock(domain->lock);
- 	return 0;
- }
- 
-+int kobj_map(struct kobj_map *domain, dev_t dev, unsigned long range,
-+	     struct module *module, kobj_probe_t *probe,
-+	     int (*lock)(dev_t, void *), void *data)
-+{
-+	int err;
-+
-+	mutex_lock(domain->lock);
-+	err = __kobj_map(domain, dev, FMODE_READ | FMODE_WRITE, range,
-+			module, probe, lock, data);
-+	mutex_unlock(domain->lock);
-+	return err;
-+}
-+
- void kobj_unmap(struct kobj_map *domain, dev_t dev, unsigned long range)
- {
- 	unsigned n = MAJOR(dev + range - 1) - MAJOR(dev) + 1;
--- 
-1.5.3.4
+I suppose, although that would be really stoopid when you're
+doing all the hard work. Thank you.
 
+
+Casey Schaufler
+casey@schaufler-ca.com
