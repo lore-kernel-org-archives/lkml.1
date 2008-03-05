@@ -1,66 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933352AbYCEXTH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763445AbYCEXWH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933352AbYCEXTH (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Mar 2008 18:19:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933963AbYCEXRk
+	id S1763445AbYCEXWH (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Mar 2008 18:22:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754182AbYCEXVt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Mar 2008 18:17:40 -0500
-Received: from chilli.pcug.org.au ([203.10.76.44]:51365 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933954AbYCEXRj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Mar 2008 18:17:39 -0500
-Date: Thu, 6 Mar 2008 10:17:22 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Badari Pulavarty <pbadari@gmail.com>, Matthew Wilcox <willy@debian.org>,
-       linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
-Subject: Re: 2.6.25-rc3-mm1 ppc64 boot hang
-Message-Id: <20080306101722.ea2428f3.sfr@canb.auug.org.au>
-In-Reply-To: <20080305135425.c8ebf8e4.akpm@linux-foundation.org>
-References: <20080304011928.e8c82c0c.akpm@linux-foundation.org>
-	<1204752855.7939.42.camel@dyn9047017100.beaverton.ibm.com>
-	<20080305135425.c8ebf8e4.akpm@linux-foundation.org>
-X-Mailer: Sylpheed 2.5.0beta1 (GTK+ 2.12.8; i486-pc-linux-gnu)
+	Wed, 5 Mar 2008 18:21:49 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:51862 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1757261AbYCEXVs (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 5 Mar 2008 18:21:48 -0500
+Date: Wed, 5 Mar 2008 15:21:24 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: oakad@exemail.com.au
+Cc: linux-kernel@vger.kernel.org, Greg KH <greg@kroah.com>
+Subject: Re: MemoryStick driver updates
+Message-Id: <20080305152124.5381de30.akpm@linux-foundation.org>
+In-Reply-To: <1204646548-27466-1-git-send-email-oakad@exemail.com.au>
+References: <1204646548-27466-1-git-send-email-oakad@exemail.com.au>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Thu__6_Mar_2008_10_17_22_+1100_9YzGf63F54Gqejo="
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Thu__6_Mar_2008_10_17_22_+1100_9YzGf63F54Gqejo=
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On Wed,  5 Mar 2008 03:02:17 +1100
+oakad@exemail.com.au wrote:
 
-Hi Andrew,
+> 
+> This patch series consists of the following:
+> 1. Important (data corruption) fix to the tifm memorystick backend
+> 2. Initial commit of JMicron memorystick backend
+> 3. Some additional minor updates, including much better bitfield defines
 
-On Wed, 5 Mar 2008 13:54:25 -0800 Andrew Morton <akpm@linux-foundation.org>=
- wrote:
->
-> The semaphore consolidation code enables interrupts early in boot, when it
-> shouldn't.  This tends to make powerpc blow up.  Could be that this is wh=
-at
-> you're hitting.
->=20
-> Matthew, is this ging to be fixed soon?
+Thanks, I queued these for 2.6.25.
 
-There is a new version of these patches in the current linux-next tree ...
+Greg has a memstick-convert-struct-class_device-to-struct-device.patch at
+http://www.kernel.org/pub/linux/kernel/people/gregkh/gregkh-2.6/gregkh-01-driver-core
+which still applies and compiles on top of these changes, but I didn't of
+course check whether it works at runtime.
 
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
+It would be good if you were to review and runtime-test his patch, if you
+have not yet done so.  Testing next -mm would be a suitable way of doing
+that (it wasn't in 2.6.25-rc3-mm1).
 
---Signature=_Thu__6_Mar_2008_10_17_22_+1100_9YzGf63F54Gqejo=
-Content-Type: application/pgp-signature
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQFHzyoNTgG2atn1QN8RAh3oAJ0ehwJJuuzTm8suvAXRZqm2fTfFiwCeOAGZ
-AwHV7VwMg0KY6ucf3X0OGpo=
-=IdnR
------END PGP SIGNATURE-----
-
---Signature=_Thu__6_Mar_2008_10_17_22_+1100_9YzGf63F54Gqejo=--
