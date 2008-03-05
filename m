@@ -1,91 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757854AbYCEEvx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756034AbYCEFD6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757854AbYCEEvx (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Mar 2008 23:51:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752615AbYCEEvo
+	id S1756034AbYCEFD6 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Mar 2008 00:03:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750828AbYCEFDr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Mar 2008 23:51:44 -0500
-Received: from E23SMTP04.au.ibm.com ([202.81.18.173]:59815 "EHLO
-	e23smtp04.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751717AbYCEEvn (ORCPT
+	Wed, 5 Mar 2008 00:03:47 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:55108 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750707AbYCEFDq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Mar 2008 23:51:43 -0500
-Message-ID: <47CE2632.20209@linux.vnet.ibm.com>
-Date: Wed, 05 Mar 2008 10:18:50 +0530
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-Reply-To: balbir@linux.vnet.ibm.com
-Organization: IBM
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+	Wed, 5 Mar 2008 00:03:46 -0500
+Date: Tue, 4 Mar 2008 21:03:44 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Linux 2.6.25-rc4
+Message-ID: <alpine.LFD.1.00.0803042044460.12253@woody.linux-foundation.org>
+User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
 MIME-Version: 1.0
-To: Xpl++ <xpl@amln.net>
-CC: Dhaval Giani <dhaval@linux.vnet.ibm.com>, fedora-devel-list@redhat.com,
-       opensuse-packaging@opensuse.org, lkml <linux-kernel@vger.kernel.org>,
-       containers@lists.linux-foundation.org, Balbir Singh <balbir@in.ibm.com>,
-       menage@google.com, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>,
-       Sudhir Kumar <skumar@linux.vnet.ibm.com>
-Subject: Re: [RFC] libcg: design and plans
-References: <20080304152341.GB5659@linux.vnet.ibm.com> <47CD83C7.4020206@amln.net>
-In-Reply-To: <47CD83C7.4020206@amln.net>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Xpl++ wrote:
-> Hi,
-> 
-> I was wonder if creating such library makes any sense at all,
-> considering the nature of cgroups, the way they work and their possible
-> application?
-> It seems to me that any attempt to create a 'simple' API would actualy
-> result in something that will be much harder to use that just making raw
-> mkdir/open/read/write/close operations. Another thing is suggested
-> config for this lib would be more appropriate for a daemon rather than a
-> library.
 
-The configuration file is important, since it allows us two levels of control.
-At one level the system administrator and at the other level applications. Each
-application can maintain it's own hierarchy across reboots.
+It's a few days late, but I was waiting for some updates for some of the 
+most annoying regressions until releasing it, so the end result is 
+hopefully more useful as a result.
 
-We thought of a daemon, but there were several overheads and disadvantages. For
-one, we needed an IPC mechanism to communicate every client request to the
-daemon, the client being the application. The daemon also becomes the single
-point of failure for all applications. Moreover, we want to provide the ability
-to programmatically update the configuration. A daemon, if desired can be built
-on top of the library we propose.
+In particular, the block layer changes should hopefully have sorted 
+themselves out, and CD burning etc hopefully works for people again. Same 
+goes for the the scheduler regressions, and a number of annoying boot-time 
+problems.
 
+In short, if you had any issues, please do test, and make sure that the 
+regression list gets updated (whether fixed or not).
 
-> In general - cgroup is a very flexible subsystem that can be used in a
-> wide variety of ways and modes and trying to create a universal simple
-> API would more likely result in something hard to manage and work with.
+The dirstat shows that (as usual) most of the changes are in drivers and 
+arch (~51% and ~17% respectively), with about half the driver updates 
+being in network drivers. Full details for those who care:
 
-I agree that cgroups is flexible, but why do you think abstracting common tasks
-amongst applications will be hard to manage and work with? We want to provide
-API that will allow us to fill in parameters and say -- go create this group or
-delete this group.
+	   2.0% Documentation/
+	   3.6% arch/blackfin/
+	   3.6% arch/cris/
+	   2.3% arch/sparc/kernel/
+	   2.8% arch/x86/
+	  17.3% arch/
+	   2.1% drivers/char/
+	   7.0% drivers/dma/
+	   3.0% drivers/firewire/
+	  24.0% drivers/net/
+	  50.6% drivers/
+	   5.6% fs/cifs/
+	   9.4% fs/
+	   3.6% include/
+	   5.2% kernel/
+	   3.9% mm/
+	   2.5% net/
 
-> The idea of having multiple container managers (applications that use
-> libcg) creates a lots of questions and possible issues. Containers are
-> supposed provide a flexible resource management and task grouping
-> ability, which somewhat implies that there cannot be two different
-> resource managers per node without one knowing well the
-> desires/goals/methods of the other and vice versa.
+but in general, it's really a fair amount of small changes spread all 
+over, with most of the changes being quite small (604 commits, most of 
+them small, with the BNX2X network driver being and the new fsldma driver 
+the only one that got some bigger changes).
 
-We don't assume that there cannot be two different resource managers per node.
-We don't enforce any policy, we just allow for easy creation and manipulation of
-control groups hierarchially.
+So give it all a good testing,
 
-And should there be
-> only one manager per node - probably it will be easier for it to use
-> cgroup subsystem directly rather than using a wrapper library?
-> 
-
-Could you please elaborate, why is it probably easier?
-
--- 
-	Warm Regards,
-	Balbir Singh
-	Linux Technology Center
-	IBM, ISTL
+		Linus
