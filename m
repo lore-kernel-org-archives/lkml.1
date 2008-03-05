@@ -1,52 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758534AbYCEDDY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756383AbYCEDuw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758534AbYCEDDY (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Mar 2008 22:03:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754349AbYCEDDN
+	id S1756383AbYCEDuw (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Mar 2008 22:50:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750946AbYCEDum
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Mar 2008 22:03:13 -0500
-Received: from tama50.ecl.ntt.co.jp ([129.60.39.147]:58142 "EHLO
-	tama50.ecl.ntt.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754044AbYCEDDM (ORCPT
+	Tue, 4 Mar 2008 22:50:42 -0500
+Received: from E23SMTP04.au.ibm.com ([202.81.18.173]:56531 "EHLO
+	e23smtp04.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750755AbYCEDul (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Mar 2008 22:03:12 -0500
-To: rubisher@scarlet.be
-Cc: fujita.tomonori@lab.ntt.co.jp, tomof@acm.org, kyle@mcmartin.ca,
-       linux-kernel@vger.kernel.org, linux-parisc@vger.kernel.org,
-       kyle@parisc-linux.org, matthew@wil.cx, grundler@parisc-linux.org,
-       akpm@linux-foundation.org
-Subject: Re: [PATCH -mm 0/3] fix iommu segment boundary problems (parisc)
-From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-In-Reply-To: <JX7RR7$3528E2939A349F65E12E3F27315EEC50@scarlet.be>
-References: <JX7RR7$3528E2939A349F65E12E3F27315EEC50@scarlet.be>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Tue, 4 Mar 2008 22:50:41 -0500
+Message-ID: <47CE183C.7040105@linux.vnet.ibm.com>
+Date: Wed, 05 Mar 2008 09:19:16 +0530
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+Reply-To: balbir@linux.vnet.ibm.com
+Organization: IBM
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+MIME-Version: 1.0
+To: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
+CC: Dhaval Giani <dhaval@linux.vnet.ibm.com>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Adrian Bunk <bunk@kernel.org>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>,
+       Balbir Singh <balbir@in.ibm.com>, Ingo Molnar <mingo@elte.hu>
+Subject: Re: 2.6.25-rc3-git3: Reported regressions from 2.6.24
+References: <200803030316.07165.rjw@sisk.pl> <20080304112741.GA13428@linux.vnet.ibm.com> <1204682782.3248.189.camel@ymzhang>
+In-Reply-To: <1204682782.3248.189.camel@ymzhang>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-Message-Id: <20080305115641Q.fujita.tomonori@lab.ntt.co.jp>
-Date: Wed, 05 Mar 2008 11:56:41 +0900
-X-Dispatcher: imput version 20040704(IM147)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue,  4 Mar 2008 17:13:55 +0100
-"rubisher" <rubisher@scarlet.be> wrote:
+Zhang, Yanmin wrote:
+> On Tue, 2008-03-04 at 16:57 +0530, Dhaval Giani wrote:
+>>> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=9978
+>>> Subject		: 2.6.25-rc1: volanoMark 45% regression
+>>> Submitter	: Zhang, Yanmin <yanmin_zhang@linux.intel.com>
+>>> Date		: 2008-02-13 10:30
+>>> References	: http://lkml.org/lkml/2008/2/13/128
+>>> Handled-By	: Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>
+>>> 		  Balbir Singh <balbir@linux.vnet.ibm.com>
+>>  
+>> Peter's revert of the load balance patches should fix this one. Yanmin,
+>> could you please confirm if the patch at
+>> http://lkml.org/lkml/2008/2/25/202 helps?
+> I tested it against 2.6.25-rc3 on my 16-core tigerton machine. It really improves
+> volano result although it doesn't recover all the result.
+> Comparing with 2.6.24, without the patch, volanoMark has about 50% regression
+> with 2.6.25-rc3. With the patch, volanoMark has about 15% regression.
+> 
 
-> [snip]
-> > > Can you try the following patch? It's on the top of the patchset.
-> > > 
-> > Good catch: now this first testing system (I mean the b2k) is up and running ;-)
-> > 
-> > I will now try the ccio_dma driver on a d380 ...
-> > 
-> Yes, it works too on a d380 boxe running a 32bit up kernel.
+Have you had a chance to git-bisect the culprit after the revert?
 
-Great, thanks a lot for testing both IOMMUs!
-
-
-> Btw (it was a long time ago), I also resurrect my 64 config for the b2k model
-> and it also works fine.
-
-Nice, and sorry about the bug on 32bits boxes.
-
-Thanks again,
+-- 
+	Warm Regards,
+	Balbir Singh
+	Linux Technology Center
+	IBM, ISTL
