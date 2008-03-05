@@ -1,136 +1,142 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758356AbYCEPjm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756576AbYCEPoa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758356AbYCEPjm (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Mar 2008 10:39:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756913AbYCEPjP
+	id S1756576AbYCEPoa (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Mar 2008 10:44:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752197AbYCEPoT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Mar 2008 10:39:15 -0500
-Received: from E23SMTP01.au.ibm.com ([202.81.18.162]:57595 "EHLO
-	e23smtp01.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754060AbYCEPjN (ORCPT
+	Wed, 5 Mar 2008 10:44:19 -0500
+Received: from accolon.hansenpartnership.com ([76.243.235.52]:33463 "EHLO
+	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751880AbYCEPoR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Mar 2008 10:39:13 -0500
-Date: Wed, 5 Mar 2008 21:08:53 +0530
-From: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
-To: Arjan van de Ven <arjan@infradead.org>
-Cc: discuss@LessWatts.org,
-       Linux-pm mailing list <linux-pm@lists.linux-foundation.org>,
-       Linux Kernel <linux-kernel@vger.kernel.org>,
-       Dipankar Sarma <dipankar@in.ibm.com>, Ingo Molnar <mingo@elte.hu>,
-       venkatesh.pallipadi@intel.com, tglx@linutronix.de,
-       suresh.b.siddha@intel.com, Gautham R Shenoy <ego@in.ibm.com>,
-       Chanda Sethia <chanda.sethia@in.ibm.com>
-Subject: Re: Too many timer interrupts in NO_HZ
-Message-ID: <20080305153853.GK10028@dirshya.in.ibm.com>
-Reply-To: svaidy@linux.vnet.ibm.com
-Mail-Followup-To: Arjan van de Ven <arjan@infradead.org>,
-	discuss@LessWatts.org,
-	Linux-pm mailing list <linux-pm@lists.linux-foundation.org>,
-	Linux Kernel <linux-kernel@vger.kernel.org>,
-	Dipankar Sarma <dipankar@in.ibm.com>, Ingo Molnar <mingo@elte.hu>,
-	venkatesh.pallipadi@intel.com, tglx@linutronix.de,
-	suresh.b.siddha@intel.com, Gautham R Shenoy <ego@in.ibm.com>,
-	Chanda Sethia <chanda.sethia@in.ibm.com>
-References: <20080302194812.GD10028@dirshya.in.ibm.com> <20080302115709.30403490@laptopd505.fenrus.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-In-Reply-To: <20080302115709.30403490@laptopd505.fenrus.org>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+	Wed, 5 Mar 2008 10:44:17 -0500
+Subject: Re: New 2.6.24.2 SG_IO SCSI problems
+From: James Bottomley <James.Bottomley@HansenPartnership.com>
+To: Mark Hounschell <dmarkh@cfl.rr.com>
+Cc: Mike Christie <michaelc@cs.wisc.edu>, markh@compro.net,
+       linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Tony Battersby <tonyb@cybernetics.com>
+In-Reply-To: <47CE8AEA.1060209@cfl.rr.com>
+References: <47BD9588.9080803@compro.net> <47BEFD4B.9060803@cs.wisc.edu>
+	 <47BEFF5F.9020002@cs.wisc.edu> <47BF0CE2.306@compro.net>
+	 <47BF40D7.5050301@compro.net> <47BF4BD0.7080008@cs.wisc.edu>
+	 <47CE8AEA.1060209@cfl.rr.com>
+Content-Type: text/plain
+Date: Wed, 05 Mar 2008 09:44:13 -0600
+Message-Id: <1204731854.3047.20.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.3 (2.12.3-1.fc8) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Arjan van de Ven <arjan@infradead.org> [2008-03-02 11:57:09]:
-
-> On Mon, 3 Mar 2008 01:18:13 +0530
-> Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com> wrote:
+On Wed, 2008-03-05 at 06:58 -0500, Mark Hounschell wrote:
+> Mike Christie wrote:
+> > Mark Hounschell wrote:
+> >> Mark Hounschell wrote:
+> >>> Mike Christie wrote:
+> >>>> Mike Christie wrote:
+> >>>>> Mark Hounschell wrote:
+> >>>>>> I seem to have run into some sort of regression in the SG_IO
+> >>>>>> interface of 2.6.24.2. I have an application that up until 2.6.24
+> >>>>>> worked fine. The 2.6.23.16 kernel works fine.
+> >>>>>>
+> >>>>>> During reads I get these kernel messages. Writes and other functions
+> >>>>>> _seem_ OK. Actually basic
+> >>>>>> reads  are working. Its with large BC reads using an io_vec list that
+> >>>>>> the problem shows up.
+> >>>>>>
+> >>>>> Are you doing SG_IO to the sg device (/dev/sg*) or to the block device
+> >>>>> (/dev/sdX)?
+> >>>> If you are doing SG_IO to the sg device, then I know of one regression
+> >>>> (well not regression exactly, but I fixed a bug but the patch got
+> >>>> partially overwritten by another patch and that caused a new bug). Both
+> >>>> bugs are fixed in 2.6.25-rc2. Could you try that out if you are doing
+> >>>> SG_IO to the sg device.
+> >>>>
+> >>> Yes, I'm using /dev/sg*. And yes again I'll checkout 2.6.25-rc2 ASIC.
+> >>>
+> >>> Thanks
+> >>> Mark
+> >>> -
+> >>  
+> >> 2.6.25-rc2 does fix the problem I'm having. I don't suppose there is a
+> >> patch
+> >> lying around for 2.6.24.2??
+> >>
+> > 
+> > I attached a backport of the patch from Tony (added as cc) that is in
+> > 2.6.25-rc2. Could you try it out against 2.6.24.2 just to make sure it
+> > was this patch, then we can send it to stable.
+> > 
 > 
-> > Hi,
-> > 
-> > I am trying to play around with the tickless kernel and
-> > sched_mc_power_savings tunables to increase the idle duration of the
-> > CPU in an SMP server.  sched_mc_power_savings provides good
-> > consolidation of long running jobs when the system is lightly loaded.
-> > However I am interested to see CPU idle times for couple minutes on
-> > atleast few CPUs in an completely idle SMP system.
-> > 
-> > I have posted related instrumentation results at
-> > http://lkml.org/lkml/2008/1/8/243
-> > 
-> > The experimental setup is identical.  Just that I have tried to
-> > collect more data and also bias the wakeup logic.
-> > 
-> > The kernel is 2.6.25-rc3 with NO_HZ, SCHED_MC, HIGH_RES_TIMERS, and
-> > HPET turned on.
-> > 
-> > I have tried to collect interesting data from tick-sched.c, sched.c
-> > and softirq.c.
-> > 
-> > As suggested by Ingo in the previous thread, I have hacked the sched.c
-> > try_to_wake_up logic so that I can force all wake-ups to happen on
-> > CPU0.  This is just and experiment, in reality we will have to
-> > carefully choose a domain and CPU to bias all wakeups on an idle
-> > system.
+> >Mark Hounschell wrote:
+> >
+> >Sorry it took so long. This does fix my problem. I hope it's not to
+> >late for 2.6.24.3
+> >
+> 
+> Backport
+> 76d78300a6eb8b7f08e47703b7e68a659ffc2053
+> to 2.6.24
+
+Erm, I think you mean:
+
+commit 4d2de3a50ce19af2008a90636436a1bf5b3b697b
+Author: Tony Battersby <tonyb@cybernetics.com>
+Date:   Tue Feb 5 10:36:10 2008 -0500
+
+    [SCSI] fix BUG when sum(scatterlist) > bufflen
+
+I can send it ... I thought the error was introduced post 2.6.24, but it
+was actually in 2.6.24-rc1
+
+James
+
+
+> >From Tony Battersby:
+> 
+> When sending a SCSI command to a tape drive via the SCSI Generic (sg)
+> driver, if the command has a data transfer length more than
+> scatter_elem_sz (32 KB default) and not a multiple of 512, then I either
+> hit BUG_ON(!valid_dma_direction(direction)) in dma_unmap_sg() or else
+> the command never completes (depending on the LLDD).
+> 
+> When constructing scatterlists, the sg driver rounds up the scatterlist
+> element sizes to be a multiple of 512.  This can result in
+> sum(scatterlist lengths) > bufflen.  In this case, scsi_req_map_sg()
+> incorrectly sets bio->bi_size to sum(scatterlist lengths) rather than to
+> bufflen.  When the command completes, req_bio_endio() detects that
+> bio->bi_size != 0, and so it doesn't call bio_endio().  This causes the
+> command to be resubmitted, resulting in BUG_ON or the command never
+> completing.
+> 
+> This patch makes scsi_req_map_sg() set bio->bi_size to bufflen rather
+> than to sum(scatterlist lengths), which fixes the problem.
+> 
+> Signed-off-by: Mike Christie <michaelc@cs.wisc.edu>
+> 
+> --- linux-2.6.24.2/drivers/scsi/scsi_lib.c	2008-02-10 23:51:11.000000000
+> -0600
+> +++ linux-2.6.24.2.work/drivers/scsi/scsi_lib.c	2008-02-22
+> 16:20:09.000000000 -0600
+> @@ -298,7 +298,6 @@ static int scsi_req_map_sg(struct reques
+>  		page = sg_page(sg);
+>  		off = sg->offset;
+>  		len = sg->length;
+> - 		data_len += len;
+> 
+>  		while (len > 0 && data_len > 0) {
+>  			/*
 > 
 > 
-> please show us powertop -d output; that way we can at least see sort of what
-> is going on...
-
-I have some more information on the timer interrupt activities in the
-system.  I have obtained the following trace from irq_exit and local
-timer is the only interrupt on CPUs 1, 2 & 3.
-
-Trace       CPU/function                    Timestamp
-number
-
-U2336208    C1 irq_exit             EXIT  4452403.687322 ms in_intr 0 in_idle 1 need_resched 0 pid 0
-U2336212    C3 irq_exit             EXIT  4452403.722253 ms in_intr 0 in_idle 1 need_resched 0 pid 0
-U2336214    C2 irq_exit             EXIT  4452403.722668 ms in_intr 0 in_idle 1 need_resched 0 pid 0
-
-
-U2336236    C1 irq_exit             EXIT  4452807.345543 ms in_intr 0 in_idle 1 need_resched 0 pid 0
-U2336241    C3 irq_exit             EXIT  4452807.381894 ms in_intr 0 in_idle 1 need_resched 0 pid 0
-U2336242    C2 irq_exit             EXIT  4452807.382144 ms in_intr 0 in_idle 1 need_resched 0 pid 0
-
-
-U2336248    C1 irq_exit             EXIT  4453211.003638 ms in_intr 0 in_idle 1 need_resched 0 pid 0
-U2336253    C3 irq_exit             EXIT  4453211.041529 ms in_intr 0 in_idle 1 need_resched 0 pid 0
-U2336254    C2 irq_exit             EXIT  4453211.041703 ms in_intr 0 in_idle 1 need_resched 0 pid 0
-
-
-U2336260    C1 irq_exit             EXIT  4453614.662043 ms in_intr 0 in_idle 1 need_resched 0 pid 0
-U2336265    C3 irq_exit             EXIT  4453614.701429 ms in_intr 0 in_idle 1 need_resched 0 pid 0
-U2336266    C2 irq_exit             EXIT  4453614.701474 ms in_intr 0 in_idle 1 need_resched 0 pid 0
-
-
-U2336293    C1 irq_exit             EXIT  4454018.320078 ms in_intr 0 in_idle 1 need_resched 0 pid 0
-U2336298    C3 irq_exit             EXIT  4454018.361100 ms in_intr 0 in_idle 1 need_resched 0 pid 0
-U2336299    C2 irq_exit             EXIT  4454018.361142 ms in_intr 0 in_idle 1 need_resched 0 pid 0
-
-
-U2336313    C1 irq_exit             EXIT  4454421.978047 ms in_intr 0 in_idle 1 need_resched 0 pid 0
-U2336318    C2 irq_exit             EXIT  4454422.020756 ms in_intr 0 in_idle 1 need_resched 0 pid 0
-U2336319    C3 irq_exit             EXIT  4454422.020807 ms in_intr 0 in_idle 1 need_resched 0 pid 0
-
-
-U2336357    C1 irq_exit             EXIT  4454825.636341 ms in_intr 0 in_idle 1 need_resched 0 pid 0
-U2336369    C2 irq_exit             EXIT  4454825.681058 ms in_intr 0 in_idle 1 need_resched 0 pid 0
-U2336370    C3 irq_exit             EXIT  4454825.681191 ms in_intr 0 in_idle 1 need_resched 0 pid 0
-
-This is over a short interval where I complain that the tick is not
-really getting stopped.  Actually there is a pattern of 400ms timer
-being programmed.
-
-Apart from these there are 4ms pattern on one of the CPU that is used
-to drive tick_sched_timer.  Most of the missing trace entries are CPU0
-which takes care of all the idle daemon process.
-
-There are wakeups due to kondemand and other kernel threads on CPUs 1,
-2 & 3, but the time is in seconds.
-
-Please help me find the source for this timer.
-
-Thanks,
-Vaidy
+> Did this ever get sent to the stable team?
+> 
+> Regards
+> Mark
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-scsi" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
 
