@@ -1,98 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763808AbYCEVzS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763144AbYCEVzy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763808AbYCEVzS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Mar 2008 16:55:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763008AbYCEVyk
+	id S1763144AbYCEVzy (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Mar 2008 16:55:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755801AbYCEVzL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Mar 2008 16:54:40 -0500
-Received: from asterix.m2000.com ([212.155.102.83]:3149 "EHLO
-	asterix.m2000.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1762767AbYCEVyj (ORCPT
+	Wed, 5 Mar 2008 16:55:11 -0500
+Received: from one.firstfloor.org ([213.235.205.2]:38350 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1763783AbYCEVzJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Mar 2008 16:54:39 -0500
-X-Greylist: delayed 1843 seconds by postgrey-1.27 at vger.kernel.org; Wed, 05 Mar 2008 16:54:38 EST
-Message-ID: <47CF0F4B.60801@m2000.com>
-Date: Wed, 05 Mar 2008 13:23:23 -0800
-From: Adam Schrotenboer <adam@m2000.com>
-User-Agent: Thunderbird 2.0.0.12 (Windows/20080213)
-MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org, linux-nfs@vger.kernel.org
-Cc: Thomas Daniel <tdaniel@m2000.com>, jesper.juhl@gmail.com,
-       Trond.Myklebust@netapp.com, Neil Brown <neilb@suse.de>
-Subject: nfs_update_inode: inode X mode changed, Y to Z [repost with correct
- address]
-X-Enigmail-Version: 0.95.6
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="------------enig05E66CCB86BB1B71C2C40CB6"
-X-Antivirus: avast! (VPS 080305-0, 03/05/2008), Outbound message
-X-Antivirus-Status: Clean
+	Wed, 5 Mar 2008 16:55:09 -0500
+Date: Wed, 5 Mar 2008 22:56:31 +0100
+From: Andi Kleen <andi@firstfloor.org>
+To: Valdis.Kletnieks@vt.edu
+Cc: Andi Kleen <andi@firstfloor.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: 2.6.25-rc3-mm1 - PROFILE_LIKELY redux..
+Message-ID: <20080305215630.GA15653@one.firstfloor.org>
+References: <20080304011928.e8c82c0c.akpm@linux-foundation.org> <4911.1204701694@turing-police.cc.vt.edu> <p738x0x5al2.fsf@bingen.suse.de> <25220.1204747197@turing-police.cc.vt.edu>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <25220.1204747197@turing-police.cc.vt.edu>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enig05E66CCB86BB1B71C2C40CB6
-Content-Type: multipart/mixed;
- boundary="------------050103040301050606010701"
+On Wed, Mar 05, 2008 at 02:59:57PM -0500, Valdis.Kletnieks@vt.edu wrote:
+> On Wed, 05 Mar 2008 18:45:13 +0100, Andi Kleen said:
+> > Valdis.Kletnieks@vt.edu writes:
+> > >
+> > > So we're in the same 4K as the VDSO64_* values, but some 0x4fe past the
+> > > gtod_data.  Anybody got a hint as to what the heck it was doing?
+> > 
+> > Try this patch:
+> > 
+> > Remove unlikelies in vsyscall path
+> 
+> Nope, sorry... same behavior.  Apparently it's a (un)likely someplace
+> else...
+> 
+> I'm trying to figure out what's at 0x9be into the vdso, but not having
+> a lot of luck.
 
-This is a multi-part message in MIME format.
---------------050103040301050606010701
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: quoted-printable
+You can do objdump -Sr on the vdso/vsyscall object files and see
+if there are any external references to unlikely related functions. If yes
+the problem is in that function
 
-      Running SLES 10 on multiple compute nodes, with an OpenSuSE 10.2 NF=
-S
-server, and I am receiving the above log message on a semi-regular basis
-in the NFS client system-logs. When this occurs, one of the users
-receives an error (although there seems to be no way to easily collate
-the users experience with the system log, short of using the timestamp).
-      Sometimes it's "read/write error", sometimes it's more specific
-about something that was a file now being a directory (SVN tends to be
-rather more verbose). Most of the time this is just a nuisance, but at
-times (such as last week or so) it occurs so often that it blocks any
-work getting done.
-
-      The NFS Server is running OpenSuSE 10.2 on a Dell PowerEdge 2900
-with the PERC5/i controller. The NFS Clients are all SLES10 with the
-standard mountoptions, and running in TCP mode (something about UDP +
-NFS + GbE leads to subtle data corruption).
-
-      I have been able to find some references to this problem in Google,=
-
-but no solutions, and no discussion about what the problem stems from,
-nor if any fixes have been attempted.
-
-
-
-
-
---------------050103040301050606010701
-Content-Type: application/pgp-signature;
- name="signature.asc"
-Content-Transfer-Encoding: base64
-Content-Disposition: inline;
- filename="signature.asc"
-
-LS0tLS1CRUdJTiBQR1AgU0lHTkFUVVJFLS0tLS0NClZlcnNpb246IEdudVBHIHYxLjQuNyAo
-TWluZ1czMikNCkNvbW1lbnQ6IFVzaW5nIEdudVBHIHdpdGggTW96aWxsYSAtIGh0dHA6Ly9l
-bmlnbWFpbC5tb3pkZXYub3JnDQoNCmlEOERCUUZIendncnlXWURkdm5HQXJ3UkF2aFZBSjkw
-NXZDMFNRZW1qQ283Y25TK2JjbWw2U2l6SmdDZ2k1QTQNCnJ3R1pRMWd1c1FGckpEVThnZ09r
-WlVBPQ0KPWZiRDYNCi0tLS0tRU5EIFBHUCBTSUdOQVRVUkUtLS0tLQ0KDQo=
---------------050103040301050606010701--
-
---------------enig05E66CCB86BB1B71C2C40CB6
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.7 (MingW32)
-Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
-
-iD8DBQFHzw9LyWYDdvnGArwRAsCuAJwNQTPfntziVsEygVd9Nw0A1X5lTACghrHU
-OvID4tAF2hBVXCJczOJG5iE=
-=6UHB
------END PGP SIGNATURE-----
-
---------------enig05E66CCB86BB1B71C2C40CB6--
+-Andi
