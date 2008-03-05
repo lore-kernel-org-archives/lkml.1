@@ -1,124 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761810AbYCEGKr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762280AbYCEGPn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761810AbYCEGKr (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Mar 2008 01:10:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753215AbYCEGKb
+	id S1762280AbYCEGPn (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Mar 2008 01:15:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755987AbYCEGPe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Mar 2008 01:10:31 -0500
-Received: from 1wt.eu ([62.212.114.60]:2253 "EHLO 1wt.eu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753152AbYCEGK3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Mar 2008 01:10:29 -0500
-Date: Wed, 5 Mar 2008 07:09:28 +0100
-From: Willy Tarreau <w@1wt.eu>
-To: Jan Engelhardt <jengelh@computergmbh.de>
-Cc: sam@ravnborg.org, Andrew Morton <akpm@linux-foundation.org>,
-       Pekka Enberg <penberg@cs.helsinki.fi>, torvalds@linux-foundation.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, mingo@elte.hu,
-       vegard.nossum@gmail.com
-Subject: Re: kernelprojects::menuconfig [was:Re: Google's Summer of Code?]
-Message-ID: <20080305060927.GF8953@1wt.eu>
-References: <84144f020803041045i70bbb05l6983bd14c5bcc91a@mail.gmail.com> <alpine.LFD.1.00.0803041127290.12253@woody.linux-foundation.org> <84144f020803041155k222c13ecu13c8c9534ced87e5@mail.gmail.com> <20080304121339.a3b2483f.akpm@linux-foundation.org> <Pine.LNX.4.64.0803042216030.7660@fbirervta.pbzchgretzou.qr>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+	Wed, 5 Mar 2008 01:15:34 -0500
+Received: from smtp-out.google.com ([216.239.33.17]:16503 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753810AbYCEGPd (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 5 Mar 2008 01:15:33 -0500
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=received:message-id:date:from:to:subject:cc:in-reply-to:
+	mime-version:content-type:content-transfer-encoding:
+	content-disposition:references;
+	b=OsuTg6USxu0RgSy84cjM+lnW1Q4A97WPwvWhIa4JWq0BwcSvZX7PXJEtxzpr68Ugs
+	0eCSvDml5OoSSqnq8YXjg==
+Message-ID: <6599ad830803042215n6aedb3eeub0c037e6a4e7bb34@mail.gmail.com>
+Date: Tue, 4 Mar 2008 22:15:20 -0800
+From: "Paul Menage" <menage@google.com>
+To: "Dhaval Giani" <dhaval@linux.vnet.ibm.com>
+Subject: Re: [RFC] libcg: design and plans
+Cc: fedora-devel-list@redhat.com, opensuse-packaging@opensuse.org,
+       lkml <linux-kernel@vger.kernel.org>,
+       containers@lists.linux-foundation.org,
+       "Balbir Singh" <balbir@in.ibm.com>,
+       "Peter Zijlstra" <a.p.zijlstra@chello.nl>,
+       "Srivatsa Vaddagiri" <vatsa@linux.vnet.ibm.com>,
+       "Sudhir Kumar" <skumar@linux.vnet.ibm.com>
+In-Reply-To: <20080304152341.GB5659@linux.vnet.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <Pine.LNX.4.64.0803042216030.7660@fbirervta.pbzchgretzou.qr>
-User-Agent: Mutt/1.5.11
+References: <20080304152341.GB5659@linux.vnet.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Mar 04, 2008 at 10:44:39PM +0100, Jan Engelhardt wrote:
-> Hi Sam,
-> 
-> 
-> On Mar 4 2008 12:13, Andrew Morton wrote:
-> >"Pekka Enberg" <penberg@cs.helsinki.fi> wrote:
-> >
-> >> I am also wondering if such a high profile
-> >> project as the kernel can get away with not having a "project ideas"
-> >> list which would make things real easy for the administrator(s)...
-> >
-> >http://kernelnewbies.org/KernelProjects
-> >
-> 
-> ["""Update menuconfig to a modern ncurses look & feel
-> 
-> htop, aptitude, tig and other ncurses based programs has a more modern 
-> and effective look&feel than current menuconfig. Rip out all the 
-> lxdialog stuff and replace it with a ncurses based frontend that looks 
-> better and has more functionality."""]
-> 
-> 
-> I remember the last discussion about it, and I am still kinda in the 
-> position of "really?". I find the current menuconfig interface 
-> perfectable suitable.
-> 
-> I could not relate how menuconfig should look htop-style, because htop, 
-> for the most use, is just one screen with a process overview and a 
-> rather spartan "menu", should one decide to change some configuration 
-> options. Essentially it is a 4-column expand-to-the-right menu. No idea 
-> how to put it better.
-> 
-> aptitude. I only seen it very briefly since I do not use Debian. I can 
-> probably say the package selection in the OpenSolaris initial installer 
-> is similar, in other words, _all_ CONFIG options are listed in 
-> tree-style fashion in one window...
-> 
-> 	> [ ] feature1
-> 	  [ ] . . . feature2
-> 	  [ ] . . . feature3
->         > [ ] feature99
-> 
-> something like that. Anyway, I dislike the tree (expandable and 
-> contractable at will at the > points) ??? menuconfig seems superior
-> since, after entering a new submenu, just the options inside it are
-> displayed and nothing around it.
-> 
-> Then there are splitscreen approaches like qconfig/xconfig do, 
-> and I think I would not like that either for menuconfig; moving between 
-> two panels (one: the menu selection as a tree, the other: options for 
-> this submenu) is, kinda confusing in a text environment.
-> 
-> Of course there is a plus point for the tree-in-one (aptitude) approach 
-> in that searching for options/features is easier. The current menuconfig 
-> has a limited search function, for example, it will not take you to the 
-> option you searched but return to the menu you started the search from. 
-> Which means you have to repeatedly search for the option because you 
-> cannot remember the menus you have to go through to reach the option.
-> 
-> My stance: remain with the current menuconfig, and improve on the 
-> search(-and-jump) function.
-> 
-> Awaiting your counter-arguments and -opinions please.
+Hi Dhaval,
 
-100% agreed with you Jan, menuconfig is excellent. I was even thinking
-that it would be really cool if someone could extract Kbuild from the
-kernel and produce an independant framework to make it easier to include
-in other projects. I would really like to be able to launch a "make
-menuconfig" or "make oldconfig" with my own softs, and see only what
-has changed being rebuilt. Think about all the people who get nervous
-when "./configure" does not produce what they want...
+On Tue, Mar 4, 2008 at 7:23 AM, Dhaval Giani <dhaval@linux.vnet.ibm.com> wrote:
+> Hi,
+>
+>  We have been working on a library for control groups which would provide
+>  simple APIs for programmers to utilize from userspace and make use of
+>  control groups.
+>
+>  We are still designing the library and the APIs. I've attached the
+>  design (as of now) to get some feedback from the community whether we
+>  are heading in the correct direction and what else should be addressed.
 
-Another project I was thinking about is a "smart" patch utility. Right
-now, "patch" works line by line. While this may be understandable for
-"patch", it's pretty annoying to see the same behaviour in "merge".
-Why not have a smarter pair of tools which would be able to detect
-changes in consecutive lines, or even merge changes on the same line ?
-merge cannot even merge two changes on consecutive makefile entries
-right now, which has an impact on git's ability to merge changes.
-For instance, as an exercise to teach git to a friend, I used the
-following file :
+There are a few things that it would be nice to include in such a
+library, if you're going to develop one:
 
-a=1
-b=1
-c=1
+- the ability to create abstract groups of processes, and resource
+groups, and have the ability to tie these together arbitrarily. E.g
+you might create abstract groups A, B and C, and be able to say that A
+and B share memory with each other but not with C, and all three
+groups are isolated from each other for CPU. Then libcg would mount
+different resource types in different cgroup hierarchies (you would
+probably tell it ahead of time which combinations of sharing you would
+want, in order that it could minimize the number of mounted
+hierarchies). When you tell libcg to move a process into abstract
+group A, it would move it into the appropriate resource group in each
+hierarchy.
 
-Then, branch b changes b=1 to b=2, and branch c, c=1 to c=2. You cannot
-merge them automatically, which is a shame. So there is room for improvement
-here :-)
+- an interface for gathering usage stats from cgroups.
 
-Regards,
-Willy
+- support for dynamically migrating processes between groups based on
+process connector events (i.e. a finished version of the daemon that
+you were working on last year)
 
+Paul
