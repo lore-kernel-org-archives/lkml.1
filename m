@@ -1,46 +1,119 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932165AbYCEJjl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764277AbYCEJoF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932165AbYCEJjl (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Mar 2008 04:39:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757699AbYCEJjZ
+	id S1764277AbYCEJoF (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Mar 2008 04:44:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758546AbYCEJnv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Mar 2008 04:39:25 -0500
-Received: from atrey.karlin.mff.cuni.cz ([195.113.31.123]:33966 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757416AbYCEJjY (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Mar 2008 04:39:24 -0500
-Date: Wed, 5 Mar 2008 10:39:23 +0100
-From: Pavel Machek <pavel@ucw.cz>
-To: kernel list <linux-kernel@vger.kernel.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: 2.6.25-rc3: 34TB vmalloc total -- overflow in /proc/meminfo?
-Message-ID: <20080305093923.GA2049@atrey.karlin.mff.cuni.cz>
-References: <20080305090610.GA30024@atrey.karlin.mff.cuni.cz> <20080305093610.GA700@atrey.karlin.mff.cuni.cz>
+	Wed, 5 Mar 2008 04:43:51 -0500
+Received: from sacred.ru ([62.205.161.221]:40617 "EHLO sacred.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752200AbYCEJnt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 5 Mar 2008 04:43:49 -0500
+Message-ID: <47CE6B4C.4010009@openvz.org>
+Date: Wed, 05 Mar 2008 12:43:40 +0300
+From: Pavel Emelyanov <xemul@openvz.org>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080213)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080305093610.GA700@atrey.karlin.mff.cuni.cz>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+CC: serge@hallyn.com, Alexey Dobriyan <adobriyan@openvz.org>,
+       Linux Netdev List <netdev@vger.kernel.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 0/2] Fix /proc/net in presence of net namespaces
+References: <47C6D743.1050802@openvz.org>	<m1y794514k.fsf@ebiederm.dsl.xmission.com>	<20080228211720.GA1232@vino.hallyn.com>	<m1k5ko4sfi.fsf@ebiederm.dsl.xmission.com>	<47C7BB1B.9060906@openvz.org>	<m1zlth3m5f.fsf@ebiederm.dsl.xmission.com>	<47CBBFBC.3010607@openvz.org> <m1ejaq2jh4.fsf@ebiederm.dsl.xmission.com>
+In-Reply-To: <m1ejaq2jh4.fsf@ebiederm.dsl.xmission.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-Greylist: Sender succeeded SMTP AUTH authentication, not delayed by milter-greylist-3.0 (sacred.ru [62.205.161.221]); Wed, 05 Mar 2008 12:43:37 +0300 (MSK)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
-
-> > (If I try to suspend to disk, I get a rather nasty oops; goes away
-> > with mem=3G. Related?)
+Eric W. Biederman wrote:
+> Pavel Emelyanov <xemul@openvz.org> writes:
 > 
-> The nasty oops is in swsusp_save+0x298 . 
+>>>>> - Have readdir and lookup filter the directory entries by the pid
+>>>>>   namespace of the proc mount.
+>>>> So, how are you going to filter the lookup? The problem I see - you have
+>>>> a process that opened the /proc/.netns/X directory (he onws that namespace)
+>>>> and the other one trying to do the same. The VFS layer finds the hashed
+>>>> dentry corresponding to this /proc/.netns/X. The only way you can prevent
+>>>> VFS from giving one to the second task is to override .d_revalidate method 
+>>>> and drop that dentry....
+>>>>
+>>>> But we've already tried to walk this way with no luck.
+>>> I meant a per mount filtering.  Exactly like we do for the pids now.
+>> We (me) do not perform any "filtering" in /proc. I just make /proc play 
+>> the VFS rules - one super-block one tree of dentries.
 > 
-> rdx=0xffff810000001008 
-> rdi=0xffff81000c001008
-> rdi=0x0000000131613000
+> Exactly.  For different super blocks we return a different set of
+> processes and a different set of numbers of those processes.  If you
+> do use ids that do not live in a namespace I agree you do not need to
+> do different things for different mounts, but that seems ugly and
+> problematic.
+> 
+>>>>> If we make namespaces show up anywhere besides under
+>>>>> "/proc/<pid>/task/<tid>/" we have to do something like this, and pids
+>>>>> are largely designed for this kind of use.
+>>>> Proc consists of two parts - the <pid>-s one with generated-on-the-fly
+>>>> entries and the static one that is represented by proc_dir_entry tree.
+>>>> Do you propose to mix those two?
+>>> Yes.  Because the static entries are beginning to depend on process
+>>> specific attributes.  We have already started with /proc/mounts.
+>> /proc/<pid>/mounts is not represented with any proc_dir_entry, but
+>> what you're proposing with /proc/<pid>/net seems like doing this
+>> representation.
+> 
+> Yes.  I am talking about placing things represented with a
+> prod_dir_entry and having them show up under a hierarchy not
+> represented with proc_dir_entries under /proc/<pid>.
+> 
+> As that is clean, worked well for /proc/mounts, does not
+> require ids at all, and is essentially the optimal form
+> for monitoring processes.
+> 
+> /proc/mounts used to have a proc_dir_entry.  When it was reimplemented
+> to be per fs namespace that was removed.
+> 
+>>>>> just need a non-global id for our directory entries so we don't paint
+>>>>> ourselves into a corner.
+>>>> What namespace do you mean by "non-global"?
+>>> The best is an id I can take with me when I migrate from machine A
+>>> to machine B.  An id in some namespace or a form that doesn't need
+>>> an id at all is the core requirement.
+>> If we're OK in having a /proc/netns/<xxx> for each namespace, then
+>> this <xxx> is an id, regardless whatever it is - a pre-generated 
+>> number, a pointer, etc.
+>>
+>> That said, your only wish is to make this <xxx> be preservable across 
+>> migration, right?
+> 
+> No, that is not my only wish.
+> 
+> - I wish for a clean maintainable interface.
+> - I wish for an interface that we can use for monitoring programs like
+>   top and ps.
+> - I wish for an interface that is migration safe.
+> 
+> It is my opinion that using an id is simply an optimization to reduce
+> the number of cached proc dentries.
+> 
+> I gave a full run down of what I wish and the reasons for it earlier
+> in this thread. I have not seen you respond to that message.
 
-Rafael, this seems to be similar to some problem you were trying to
-solve... something with numa... I could not find it in
-bugzilla.kernel.org... do you remember details by chance?
-								Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+I took you opinion, expressed in this letter, into account.
+
+> Currently I am NOT ok having a /proc/netns/<xxx>. It appears to be
+> a contentious premature optimization.
+
+Have you changed your mind suddenly? 
+You told opposite less than a week ago.
+
+> VFS clean, maintainable, and usable for monitoring is
+> /proc/<pid>/task/<tid>/net.
+
+Why not /proc/pid/net? Are we ever going to move threads in namespace?
+
+> We can always figure out how to optimize that form later.
+> 
+> Eric
+> 
