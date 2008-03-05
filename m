@@ -1,67 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756034AbYCEFD6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751184AbYCEFEe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756034AbYCEFD6 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Mar 2008 00:03:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750828AbYCEFDr
+	id S1751184AbYCEFEe (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Mar 2008 00:04:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750828AbYCEFEN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Mar 2008 00:03:47 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:55108 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750707AbYCEFDq (ORCPT
+	Wed, 5 Mar 2008 00:04:13 -0500
+Received: from rv-out-0910.google.com ([209.85.198.187]:38699 "EHLO
+	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756616AbYCEFEM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Mar 2008 00:03:46 -0500
-Date: Tue, 4 Mar 2008 21:03:44 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Linux 2.6.25-rc4
-Message-ID: <alpine.LFD.1.00.0803042044460.12253@woody.linux-foundation.org>
-User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
+	Wed, 5 Mar 2008 00:04:12 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:mime-version:content-type:content-transfer-encoding:content-disposition;
+        b=c+ZkX+7hWIVqLcuOjJy333Q2OPK3C81zA0FZm0uaEWdQzCIPhOzl+VESAZt0UNHJXsN0wBNll6C2llzxnZaU8lGoN26FKGRvXZtxiOn4UT73K+qmdVTNUKYsVC5CaKRqa9KxfqyGASyjdHI+YFtBIhjO22jZI6VkVbFa7H/UUDA=
+Message-ID: <86802c440803042104p77f44d5fnd4aeb86e21ec8c66@mail.gmail.com>
+Date: Tue, 4 Mar 2008 21:04:09 -0800
+From: "Yinghai Lu" <yhlu.kernel@gmail.com>
+To: "Ingo Molnar" <mingo@elte.hu>, "Andrew Morton" <akpm@linux-foundation.org>,
+       "Greg KH" <gregkh@suse.de>
+Subject: x86_64: set cfg_size for AMD Family 10h in case MMCONFIG should be material for 2.6.25
+Cc: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Ingo/greg,
 
-It's a few days late, but I was waiting for some updates for some of the 
-most annoying regressions until releasing it, so the end result is 
-hopefully more useful as a result.
+one patch in x86.git#testing
 
-In particular, the block layer changes should hopefully have sorted 
-themselves out, and CD burning etc hopefully works for people again. Same 
-goes for the the scheduler regressions, and a number of annoying boot-time 
-problems.
+    x86_64: set cfg_size for AMD Family 10h in case MMCONFIG
 
-In short, if you had any issues, please do test, and make sure that the 
-regression list gets updated (whether fixed or not).
+    reuse pci_cfg_space_size but skip check pci express and pci-x CAP ID.
 
-The dirstat shows that (as usual) most of the changes are in drivers and 
-arch (~51% and ~17% respectively), with about half the driver updates 
-being in network drivers. Full details for those who care:
+should be get into 2.6.25. instead of waiting for 2.6.26
 
-	   2.0% Documentation/
-	   3.6% arch/blackfin/
-	   3.6% arch/cris/
-	   2.3% arch/sparc/kernel/
-	   2.8% arch/x86/
-	  17.3% arch/
-	   2.1% drivers/char/
-	   7.0% drivers/dma/
-	   3.0% drivers/firewire/
-	  24.0% drivers/net/
-	  50.6% drivers/
-	   5.6% fs/cifs/
-	   9.4% fs/
-	   3.6% include/
-	   5.2% kernel/
-	   3.9% mm/
-	   2.5% net/
+it just one quirk to update AMD fam10h cfg_size if MMCONFIG is there.
 
-but in general, it's really a fair amount of small changes spread all 
-over, with most of the changes being quite small (604 commits, most of 
-them small, with the BNX2X network driver being and the new fsldma driver 
-the only one that got some bigger changes).
+otherwise lspci -vvxxxx still report 512 for those NB.
 
-So give it all a good testing,
-
-		Linus
+YH
