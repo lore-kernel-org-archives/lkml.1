@@ -1,143 +1,136 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757078AbYCEPjY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758356AbYCEPjm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757078AbYCEPjY (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Mar 2008 10:39:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754215AbYCEPjM
+	id S1758356AbYCEPjm (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Mar 2008 10:39:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756913AbYCEPjP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Mar 2008 10:39:12 -0500
-Received: from n2a.bullet.mail.tp2.yahoo.com ([203.188.202.96]:28783 "HELO
-	n2a.bullet.mail.tp2.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1755426AbYCEPjL (ORCPT
+	Wed, 5 Mar 2008 10:39:15 -0500
+Received: from E23SMTP01.au.ibm.com ([202.81.18.162]:57595 "EHLO
+	e23smtp01.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754060AbYCEPjN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Mar 2008 10:39:11 -0500
-X-Yahoo-Newman-Id: 584685.43245.bm@omp423.mail.mud.yahoo.com
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Message-Id;
-  b=PsCQPLcR2JlSryja/l618qnf0XofTPqOJNqHlLIRyopR8nAoy5mEiGjCGo2OkTa3+Jd03PddU6Yh1Nf+0wjgVHf9vRrW8bR/004GfEchrzB3kGDYyDA11T3SzCaaItxB44mzAaJbZSbjb5LejkTw1/RzdpcwG6D8FLoM42YnNeM=  ;
-X-YMail-OSG: EXlO0KkVM1l1JaoNhGnyQbN63NZNFVfs7Iy.gDQF8KIYkINkfnngAshC4e1QiJQR8RY5la0DvxLofbu1PIvB4K3HnrLVgAkGa6krSYy_BxYwNvJHNmw17aw1wIpopsFQsCRQq82fC9lgrWVzvrcEyGug
-X-Yahoo-Newman-Property: ymail-3
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-To: Eric Dumazet <dada1@cosmosbay.com>
-Subject: Re: Are Linux pipes slower than the FreeBSD ones ?
-Date: Thu, 6 Mar 2008 02:38:39 +1100
-User-Agent: KMail/1.9.5
-Cc: David Miller <davem@davemloft.net>, dmantipov@yandex.ru,
-       linux-kernel@vger.kernel.org
-References: <1389671204703217@webmail34.yandex.ru> <200803060120.38032.nickpiggin@yahoo.com.au> <47CEB449.6060204@cosmosbay.com>
-In-Reply-To: <47CEB449.6060204@cosmosbay.com>
+	Wed, 5 Mar 2008 10:39:13 -0500
+Date: Wed, 5 Mar 2008 21:08:53 +0530
+From: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
+To: Arjan van de Ven <arjan@infradead.org>
+Cc: discuss@LessWatts.org,
+       Linux-pm mailing list <linux-pm@lists.linux-foundation.org>,
+       Linux Kernel <linux-kernel@vger.kernel.org>,
+       Dipankar Sarma <dipankar@in.ibm.com>, Ingo Molnar <mingo@elte.hu>,
+       venkatesh.pallipadi@intel.com, tglx@linutronix.de,
+       suresh.b.siddha@intel.com, Gautham R Shenoy <ego@in.ibm.com>,
+       Chanda Sethia <chanda.sethia@in.ibm.com>
+Subject: Re: Too many timer interrupts in NO_HZ
+Message-ID: <20080305153853.GK10028@dirshya.in.ibm.com>
+Reply-To: svaidy@linux.vnet.ibm.com
+Mail-Followup-To: Arjan van de Ven <arjan@infradead.org>,
+	discuss@LessWatts.org,
+	Linux-pm mailing list <linux-pm@lists.linux-foundation.org>,
+	Linux Kernel <linux-kernel@vger.kernel.org>,
+	Dipankar Sarma <dipankar@in.ibm.com>, Ingo Molnar <mingo@elte.hu>,
+	venkatesh.pallipadi@intel.com, tglx@linutronix.de,
+	suresh.b.siddha@intel.com, Gautham R Shenoy <ego@in.ibm.com>,
+	Chanda Sethia <chanda.sethia@in.ibm.com>
+References: <20080302194812.GD10028@dirshya.in.ibm.com> <20080302115709.30403490@laptopd505.fenrus.org>
 MIME-Version: 1.0
-Content-Type: Multipart/Mixed;
-  boundary="Boundary-00=_/5rzHT+0regaSQ3"
-Message-Id: <200803060238.39484.nickpiggin@yahoo.com.au>
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+In-Reply-To: <20080302115709.30403490@laptopd505.fenrus.org>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Boundary-00=_/5rzHT+0regaSQ3
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+* Arjan van de Ven <arjan@infradead.org> [2008-03-02 11:57:09]:
 
-On Thursday 06 March 2008 01:55, Eric Dumazet wrote:
-> Nick Piggin a =E9crit :
-> > On Wednesday 05 March 2008 20:47, Eric Dumazet wrote:
-> >> David Miller a =E9crit :
-> >>> From: Antipov Dmitry <dmantipov@yandex.ru>
-> >>> Date: Wed, 05 Mar 2008 10:46:57 +0300
-> >>>
-> >>>> Despite of this obvious fact, recently I've tried to compare pipe
-> >>>> performance on Linux and FreeBSD systems. Unfortunately, Linux
-> >>>> results are poor - ~2x slower than FreeBSD. The detailed description
-> >>>> of the test case, preparation, environment and results are located
-> >>>> at http://213.148.29.37/PipeBench, and everyone are pleased to look
-> >>>> at, reproduce, criticize, etc.
-> >>>
-> >>> FreeBSD does page flipping into the pipe receiver, so rerun your test
-> >>> case but have either the sender or the receiver make changes to
-> >>> their memory buffer in between the read/write calls.
-> >>>
-> >>> FreeBSD's scheme is only good for benchmarks, rather then real life.
-> >>
-> >> page flipping might explain differences for big transferts, but note t=
-he
-> >> difference with small buffers (64, 128, 256, 512 bytes)
-> >>
-> >> I tried the 'pipe' prog on a fresh linux-2.6.24.2, on a dual Xeon 5120
-> >> machine, and we can notice that four cpus are used (but only two threa=
-ds
-> >> are running on this benchmark)
-> >
-> > One thing to try is pinning both processes on the same CPU. This
-> > may be what the FreeBSD scheduler is preferring to do, and it ends
-> > up being really a tradeoff that helps some workloads and hurts
-> > others. With a very unscientific test with an old kernel, the
-> > pipe.c test gets anywhere from about 1.5 to 3 times faster when
-> > running it as taskset 1 ./pipe
-> >
-> >> # opreport -l /boot/vmlinux-2.6.24.2 |head -n 30
-> >> CPU: Core 2, speed 1866.8 MHz (estimated)
-> >> Counted CPU_CLK_UNHALTED events (Clock cycles when not halted) with a
-> >> unit mask of 0x00 (Unhalted core cycles) count 100000
-> >> samples  %        symbol name
-> >> 52137     9.3521  kunmap_atomic
-> >
-> > I wonder if FreeBSD doesn't allocate their pipe buffers from kernel
-> > addressable memory. We could do this to eliminate the cost completely
-> > on highmem systems (whether it is a good idea I don't know, normally
-> > you'd actually do a bit of work between reading or writing from a
-> > pipe...)
-> >
-> >> 50983     9.1451  mwait_idle_with_hints
-> >> 50448     9.0492  system_call
-> >> 49727     8.9198  task_rq_lock
-> >> 24531     4.4003  pipe_read
-> >> 19820     3.5552  pipe_write
-> >> 16176     2.9016  dnotify_parent
-> >
-> > Just say no to dnotify.
-> >
-> >> 15455     2.7723  file_update_time
-> >
-> > Dumb question: anyone know why pipe.c calls this?
->
-> Because pipe writer calls write() syscall -> file_update_time() in kernel
-> while pipe reader calls read() syscall -> touch_atime() in kernel
+> On Mon, 3 Mar 2008 01:18:13 +0530
+> Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com> wrote:
+> 
+> > Hi,
+> > 
+> > I am trying to play around with the tickless kernel and
+> > sched_mc_power_savings tunables to increase the idle duration of the
+> > CPU in an SMP server.  sched_mc_power_savings provides good
+> > consolidation of long running jobs when the system is lightly loaded.
+> > However I am interested to see CPU idle times for couple minutes on
+> > atleast few CPUs in an completely idle SMP system.
+> > 
+> > I have posted related instrumentation results at
+> > http://lkml.org/lkml/2008/1/8/243
+> > 
+> > The experimental setup is identical.  Just that I have tried to
+> > collect more data and also bias the wakeup logic.
+> > 
+> > The kernel is 2.6.25-rc3 with NO_HZ, SCHED_MC, HIGH_RES_TIMERS, and
+> > HPET turned on.
+> > 
+> > I have tried to collect interesting data from tick-sched.c, sched.c
+> > and softirq.c.
+> > 
+> > As suggested by Ingo in the previous thread, I have hacked the sched.c
+> > try_to_wake_up logic so that I can force all wake-ups to happen on
+> > CPU0.  This is just and experiment, in reality we will have to
+> > carefully choose a domain and CPU to bias all wakeups on an idle
+> > system.
+> 
+> 
+> please show us powertop -d output; that way we can at least see sort of what
+> is going on...
 
-Yeah, but why does the pipe inode need to have its times updated?
-I guess there is some reason... hopefully not C&P related.
+I have some more information on the timer interrupt activities in the
+system.  I have obtained the following trace from irq_exit and local
+timer is the only interrupt on CPUs 1, 2 & 3.
 
---Boundary-00=_/5rzHT+0regaSQ3
-Content-Type: text/x-diff;
-  charset="iso-8859-1";
-  name="fix-pipe.patch"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: attachment;
-	filename="fix-pipe.patch"
+Trace       CPU/function                    Timestamp
+number
 
-Index: linux-2.6/fs/pipe.c
-===================================================================
---- linux-2.6.orig/fs/pipe.c
-+++ linux-2.6/fs/pipe.c
-@@ -385,8 +385,6 @@ redo:
- 		wake_up_interruptible_sync(&pipe->wait);
- 		kill_fasync(&pipe->fasync_writers, SIGIO, POLL_OUT);
- 	}
--	if (ret > 0)
--		file_accessed(filp);
- 	return ret;
- }
- 
-@@ -558,8 +556,6 @@ out:
- 		wake_up_interruptible_sync(&pipe->wait);
- 		kill_fasync(&pipe->fasync_readers, SIGIO, POLL_IN);
- 	}
--	if (ret > 0)
--		file_update_time(filp);
- 	return ret;
- }
- 
+U2336208    C1 irq_exit             EXIT  4452403.687322 ms in_intr 0 in_idle 1 need_resched 0 pid 0
+U2336212    C3 irq_exit             EXIT  4452403.722253 ms in_intr 0 in_idle 1 need_resched 0 pid 0
+U2336214    C2 irq_exit             EXIT  4452403.722668 ms in_intr 0 in_idle 1 need_resched 0 pid 0
 
---Boundary-00=_/5rzHT+0regaSQ3--
+
+U2336236    C1 irq_exit             EXIT  4452807.345543 ms in_intr 0 in_idle 1 need_resched 0 pid 0
+U2336241    C3 irq_exit             EXIT  4452807.381894 ms in_intr 0 in_idle 1 need_resched 0 pid 0
+U2336242    C2 irq_exit             EXIT  4452807.382144 ms in_intr 0 in_idle 1 need_resched 0 pid 0
+
+
+U2336248    C1 irq_exit             EXIT  4453211.003638 ms in_intr 0 in_idle 1 need_resched 0 pid 0
+U2336253    C3 irq_exit             EXIT  4453211.041529 ms in_intr 0 in_idle 1 need_resched 0 pid 0
+U2336254    C2 irq_exit             EXIT  4453211.041703 ms in_intr 0 in_idle 1 need_resched 0 pid 0
+
+
+U2336260    C1 irq_exit             EXIT  4453614.662043 ms in_intr 0 in_idle 1 need_resched 0 pid 0
+U2336265    C3 irq_exit             EXIT  4453614.701429 ms in_intr 0 in_idle 1 need_resched 0 pid 0
+U2336266    C2 irq_exit             EXIT  4453614.701474 ms in_intr 0 in_idle 1 need_resched 0 pid 0
+
+
+U2336293    C1 irq_exit             EXIT  4454018.320078 ms in_intr 0 in_idle 1 need_resched 0 pid 0
+U2336298    C3 irq_exit             EXIT  4454018.361100 ms in_intr 0 in_idle 1 need_resched 0 pid 0
+U2336299    C2 irq_exit             EXIT  4454018.361142 ms in_intr 0 in_idle 1 need_resched 0 pid 0
+
+
+U2336313    C1 irq_exit             EXIT  4454421.978047 ms in_intr 0 in_idle 1 need_resched 0 pid 0
+U2336318    C2 irq_exit             EXIT  4454422.020756 ms in_intr 0 in_idle 1 need_resched 0 pid 0
+U2336319    C3 irq_exit             EXIT  4454422.020807 ms in_intr 0 in_idle 1 need_resched 0 pid 0
+
+
+U2336357    C1 irq_exit             EXIT  4454825.636341 ms in_intr 0 in_idle 1 need_resched 0 pid 0
+U2336369    C2 irq_exit             EXIT  4454825.681058 ms in_intr 0 in_idle 1 need_resched 0 pid 0
+U2336370    C3 irq_exit             EXIT  4454825.681191 ms in_intr 0 in_idle 1 need_resched 0 pid 0
+
+This is over a short interval where I complain that the tick is not
+really getting stopped.  Actually there is a pattern of 400ms timer
+being programmed.
+
+Apart from these there are 4ms pattern on one of the CPU that is used
+to drive tick_sched_timer.  Most of the missing trace entries are CPU0
+which takes care of all the idle daemon process.
+
+There are wakeups due to kondemand and other kernel threads on CPUs 1,
+2 & 3, but the time is in seconds.
+
+Please help me find the source for this timer.
+
+Thanks,
+Vaidy
 
