@@ -1,67 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756714AbYCEQOP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758892AbYCEQQt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756714AbYCEQOP (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Mar 2008 11:14:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758532AbYCEQNy
+	id S1758892AbYCEQQt (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Mar 2008 11:16:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754787AbYCEQQl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Mar 2008 11:13:54 -0500
-Received: from fg-out-1718.google.com ([72.14.220.155]:13674 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755176AbYCEQNw (ORCPT
+	Wed, 5 Mar 2008 11:16:41 -0500
+Received: from mtagate4.de.ibm.com ([195.212.29.153]:14643 "EHLO
+	mtagate4.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751843AbYCEQQj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Mar 2008 11:13:52 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=BeiadAYXI0Np4VFR64t0fK9KHdQTlqnxptaNLBMZeBq+5Mh+Y+Qs/EsweQBP/9aNpz3+G0idJb3LL9VPG/5zXDM4/SM6oMSUGLXX/y5V4RdXVYUWSYtOo+nknuVXGVFJM5BYDHsZZELdYIowO/JQXsRvjEAsCl/tm+NDEm+/Z9A=
-Message-ID: <58cb370e0803050813q6cb1082cy7e540a77993f3dd6@mail.gmail.com>
-Date: Wed, 5 Mar 2008 17:13:49 +0100
-From: "Bartlomiej Zolnierkiewicz" <bzolnier@gmail.com>
-To: "Alan Cox" <alan@lxorguk.ukuu.org.uk>
-Subject: Re: [patch 3/3] pata: "I do not think it means, what you think it means."
-Cc: "Andrew Morton" <akpm@linux-foundation.org>, jeff@garzik.org,
-       linux-ide@vger.kernel.org, alan@redhat.com,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <20080305143949.1f56017c@the-village.bc.nu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Wed, 5 Mar 2008 11:16:39 -0500
+Date: Wed, 5 Mar 2008 17:16:29 +0100
+From: Cornelia Huck <cornelia.huck@de.ibm.com>
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
+       pm list <linux-pm@lists.linux-foundation.org>,
+       Alexey Starikovskiy <astarikovskiy@suse.de>,
+       Pavel Machek <pavel@ucw.cz>, LKML <linux-kernel@vger.kernel.org>,
+       Marcel Holtmann <marcel@holtmann.org>
+Subject: Re: [RFC][PATCH] PM: Make PM core handle device registrations
+ concurrent with suspend/hibernation
+Message-ID: <20080305171629.6853c454@gondolin.boeblingen.de.ibm.com>
+In-Reply-To: <Pine.LNX.4.44L0.0803051050310.4621-100000@iolanthe.rowland.org>
+References: <200803042252.51440.rjw@sisk.pl>
+	<Pine.LNX.4.44L0.0803051050310.4621-100000@iolanthe.rowland.org>
+Organization: IBM Deutschland Entwicklung GmbH Vorsitzender des
+ Aufsichtsrats: Martin Jetter =?ISO-8859-15?Q?Gesch=E4ftsf=FChrung:?=
+ Herbert Kircher Sitz der Gesellschaft: =?ISO-8859-15?Q?B=F6blingen?=
+ Registergericht: Amtsgericht Stuttgart, HRB 243294
+X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.8; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <200803042316.m24NGI7k002489@imap1.linux-foundation.org>
-	 <20080304173058.7679b7c8.akpm@linux-foundation.org>
-	 <20080305115610.397b3ea3@the-village.bc.nu>
-	 <200803051421.14167.bzolnier@gmail.com>
-	 <20080305143949.1f56017c@the-village.bc.nu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Mar 5, 2008 at 3:39 PM, Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
-> > There is strange coincidence with being on the blacklist and FIFO corruption.
->  >
->  > https://bugzilla.redhat.com/show_bug.cgi?id=433557
->  >
->  > Bugzilla Bug 433557: Data corrupion with Fedora8 on HPT370 disk controller (Abit BX133 mobo)
->  >
->  > IBM-DTLA-307030 is on the blacklist....
->
->  I wish it was more than a co-incidence but the trace shows it dropped
->  speed as expected.
+On Wed, 5 Mar 2008 11:03:52 -0500 (EST),
+Alan Stern <stern@rowland.harvard.edu> wrote:
 
-the trace shows only ST380011A (ata1) dropping speed...
+> There might still be logical problems, of course...  We need to add a
+> mechanism for reordering the dpm_active list when device_move() is
+> called.  But first we need to get in touch with the people using
+> device_move() -- basically just Marcel and Cornelia -- and see what
+> sort of mechanism they will need.
 
-I would suggest that you ask Wojciech to test the patch
-(unless it has already happend).
-
->  > for OSB4 yes but...
->  >
->  > /* Seagate Barracuda ATA IV Family drives in UDMA mode 5
->  >  * can overrun their FIFOs when used with the CSB5 */
->
->  Which gives you a CRC error according to my notes
-
-I have no documentation / errata for ServerWorks chipsets (everything is
-NDA-ed) or the hardware in question so I'll trust your opinion on this.
-
-Thanks,
-Bart
+On s390 we currently don't do anything suspend related at all - I'd
+need to think about that. (I use device_move() to reflect topology
+changes on the (virtual) hardware, so I'd guess the "don't suspend
+parent before child rule" should still apply afterwards. But of course,
+that also depends on what we actually need to do on the parent's bus and
+what on the child's bus.)
