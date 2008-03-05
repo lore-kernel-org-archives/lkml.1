@@ -1,122 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757097AbYCEVVQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757847AbYCEVVi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757097AbYCEVVQ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Mar 2008 16:21:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761194AbYCEVUx
+	id S1757847AbYCEVVi (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Mar 2008 16:21:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761593AbYCEVVK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Mar 2008 16:20:53 -0500
-Received: from courier.cs.helsinki.fi ([128.214.9.1]:37159 "EHLO
-	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761042AbYCEVUv (ORCPT
+	Wed, 5 Mar 2008 16:21:10 -0500
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:60371 "EHLO
+	gprs189-60.eurotel.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756742AbYCEVVI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Mar 2008 16:20:51 -0500
-Date: Wed, 5 Mar 2008 23:20:49 +0200 (EET)
-From: Pekka J Enberg <penberg@cs.helsinki.fi>
-To: netfilter-devel@vger.kernel.org
-cc: clameter@sgi.com, joe@perches.com, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org
-Subject: [PATCH] netfilter: replace horrible hack with ksize()
-Message-ID: <Pine.LNX.4.64.0803052319210.15759@sbz-30.cs.Helsinki.FI>
-Mime-Version: 1.0
+	Wed, 5 Mar 2008 16:21:08 -0500
+Date: Wed, 5 Mar 2008 22:21:39 +0100
+From: Pavel Machek <pavel@ucw.cz>
+To: Hugh Dickins <hugh@veritas.com>
+Cc: Christian Kujau <lists@nerdbynature.de>,
+       kernel list <linux-kernel@vger.kernel.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: 2.6.25-rc3: 34TB vmalloc total -- overflow in /proc/meminfo?
+Message-ID: <20080305212139.GA31999@elf.ucw.cz>
+References: <20080305090610.GA30024@atrey.karlin.mff.cuni.cz> <alpine.DEB.1.00.0803052038410.8658@sheep.housecafe.de> <Pine.LNX.4.64.0803052045430.821@blonde.site>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0803052045430.821@blonde.site>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Pekka Enberg <penberg@cs.helsinki.fi>
+Hi!
 
-There's a horrible slab abuse in net/netfilter/nf_conntrack_extend.c that 
-can be replaced with a call to ksize().
+> > > CommitLimit:   4132360 kB
+> > > Committed_AS:    27684 kB
+> > > VmallocTotal: 34359738367 kB
+> > > VmallocUsed:     18112 kB
+> > > VmallocChunk: 34359720115 kB
+> 
+> I don't see what Pavel's issue is with this: it's simply a fact that
+> with a 64-bit kernel, we've lots of virtual address space to spare
+> for vmalloc.  What would be surprising is for VmallocUsed to get up
+> as high as that.
 
-Cc: Christoph Lameter <clameter@sgi.com>
-Signed-off-by: Pekka Enberg <penberg@cs.helsinki.fi>
----
- include/net/netfilter/nf_conntrack_extend.h |    1 -
- net/netfilter/nf_conntrack_extend.c         |   19 +++----------------
- 2 files changed, 3 insertions(+), 17 deletions(-)
+Hmm... ok, I see, I thought "clearly this overflowed somewhere", and I
+was wrong, it is expected result.
 
-Index: linux-2.6/include/net/netfilter/nf_conntrack_extend.h
-===================================================================
---- linux-2.6.orig/include/net/netfilter/nf_conntrack_extend.h
-+++ linux-2.6/include/net/netfilter/nf_conntrack_extend.h
-@@ -17,7 +17,6 @@ enum nf_ct_ext_id
- struct nf_ct_ext {
- 	u8 offset[NF_CT_EXT_NUM];
- 	u8 len;
--	u8 real_len;
- 	char data[0];
- };
- 
-Index: linux-2.6/net/netfilter/nf_conntrack_extend.c
-===================================================================
---- linux-2.6.orig/net/netfilter/nf_conntrack_extend.c
-+++ linux-2.6/net/netfilter/nf_conntrack_extend.c
-@@ -19,14 +19,6 @@
- static struct nf_ct_ext_type *nf_ct_ext_types[NF_CT_EXT_NUM];
- static DEFINE_MUTEX(nf_ct_ext_type_mutex);
- 
--/* Horrible trick to figure out smallest amount worth kmallocing. */
--#define CACHE(x) (x) + 0 *
--enum {
--	NF_CT_EXT_MIN_SIZE =
--#include <linux/kmalloc_sizes.h>
--	1 };
--#undef CACHE
--
- void __nf_ct_ext_destroy(struct nf_conn *ct)
- {
- 	unsigned int i;
-@@ -53,7 +45,7 @@ EXPORT_SYMBOL(__nf_ct_ext_destroy);
- static void *
- nf_ct_ext_create(struct nf_ct_ext **ext, enum nf_ct_ext_id id, gfp_t gfp)
- {
--	unsigned int off, len, real_len;
-+	unsigned int off, len;
- 	struct nf_ct_ext_type *t;
- 
- 	rcu_read_lock();
-@@ -61,16 +53,14 @@ nf_ct_ext_create(struct nf_ct_ext **ext,
- 	BUG_ON(t == NULL);
- 	off = ALIGN(sizeof(struct nf_ct_ext), t->align);
- 	len = off + t->len;
--	real_len = t->alloc_size;
- 	rcu_read_unlock();
- 
--	*ext = kzalloc(real_len, gfp);
-+	*ext = kzalloc(t->alloc_size, gfp);
- 	if (!*ext)
- 		return NULL;
- 
- 	(*ext)->offset[id] = off;
- 	(*ext)->len = len;
--	(*ext)->real_len = real_len;
- 
- 	return (void *)(*ext) + off;
- }
-@@ -95,7 +85,7 @@ void *__nf_ct_ext_add(struct nf_conn *ct
- 	newlen = newoff + t->len;
- 	rcu_read_unlock();
- 
--	if (newlen >= ct->ext->real_len) {
-+	if (newlen >= ksize(ct->ext)) {
- 		new = kmalloc(newlen, gfp);
- 		if (!new)
- 			return NULL;
-@@ -114,7 +104,6 @@ void *__nf_ct_ext_add(struct nf_conn *ct
- 			rcu_read_unlock();
- 		}
- 		kfree(ct->ext);
--		new->real_len = newlen;
- 		ct->ext = new;
- 	}
- 
-@@ -156,8 +145,6 @@ static void update_alloc_size(struct nf_
- 			t1->alloc_size = ALIGN(t1->alloc_size, t2->align)
- 					 + t2->len;
- 		}
--		if (t1->alloc_size < NF_CT_EXT_MIN_SIZE)
--			t1->alloc_size = NF_CT_EXT_MIN_SIZE;
- 	}
- }
- 
+Still.... what is 34TB of vmalloc space good for when we can only ever
+allocate 4GB (because that is how much physical memory we have?)? To
+prevent fragmentation? 
+
+								Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
