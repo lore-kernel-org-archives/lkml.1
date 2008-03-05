@@ -1,78 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759681AbYCEF22@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756747AbYCEFcT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759681AbYCEF22 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Mar 2008 00:28:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752258AbYCEF2R
+	id S1756747AbYCEFcT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Mar 2008 00:32:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751063AbYCEFcJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Mar 2008 00:28:17 -0500
-Received: from E23SMTP06.au.ibm.com ([202.81.18.175]:53239 "EHLO
-	e23smtp06.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751063AbYCEF2P (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Mar 2008 00:28:15 -0500
-Date: Wed, 5 Mar 2008 10:56:31 +0530
-From: Dhaval Giani <dhaval@linux.vnet.ibm.com>
-To: Xpl++ <xpl@amln.net>
-Cc: fedora-devel-list@redhat.com, opensuse-packaging@opensuse.org,
-       lkml <linux-kernel@vger.kernel.org>,
-       containers@lists.linux-foundation.org, Balbir Singh <balbir@in.ibm.com>,
-       menage@google.com, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>,
-       Sudhir Kumar <skumar@linux.vnet.ibm.com>
-Subject: Re: [RFC] libcg: design and plans
-Message-ID: <20080305052631.GA26361@linux.vnet.ibm.com>
-Reply-To: Dhaval Giani <dhaval@linux.vnet.ibm.com>
-References: <20080304152341.GB5659@linux.vnet.ibm.com> <47CD83C7.4020206@amln.net>
+	Wed, 5 Mar 2008 00:32:09 -0500
+Received: from namei.org ([69.55.235.186]:53917 "EHLO us.intercode.com.au"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1750838AbYCEFcI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 5 Mar 2008 00:32:08 -0500
+Date: Wed, 5 Mar 2008 16:29:48 +1100 (EST)
+From: James Morris <jmorris@namei.org>
+X-X-Sender: jmorris@us.intercode.com.au
+To: "Ahmed S. Darwish" <darwish.07@gmail.com>
+cc: Chris Wright <chrisw@sous-sol.org>, Stephen Smalley <sds@tycho.nsa.gov>,
+       Eric Paris <eparis@parisplace.org>,
+       Casey Schaufler <casey@schaufler-ca.com>,
+       David Woodhouse <dwmw2@infradead.org>, Paul Moore <paul.moore@hp.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, Audit-ML <linux-audit@redhat.com>,
+       LSM-ML <linux-security-module@vger.kernel.org>,
+       Al Viro <viro@ftp.linux.org.uk>
+Subject: Re: [PATCH-v2 -mm 0/9] LSM-neutral Audit (SELinux audit separation)
+In-Reply-To: <20080301194752.GA19636@ubuntu>
+Message-ID: <Xine.LNX.4.64.0803051616050.29148@us.intercode.com.au>
+References: <20080301194752.GA19636@ubuntu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <47CD83C7.4020206@amln.net>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Peter,
+On Sat, 1 Mar 2008, Ahmed S. Darwish wrote:
 
-Thanks for your comments.
+> A series of 9 patches to let Audit be LSM netural. This is done 
+> for proper future audit<->SMACK integration which will also be
+> useful for any future LSM.
 
-On Tue, Mar 04, 2008 at 07:15:51PM +0200, Xpl++ wrote:
-> Hi,
->
-> I was wonder if creating such library makes any sense at all, considering 
-> the nature of cgroups, the way they work and their possible application?
-> It seems to me that any attempt to create a 'simple' API would actualy 
-> result in something that will be much harder to use that just making raw 
-> mkdir/open/read/write/close operations.
+I've set up a new tree and added these patches with acks etc. collected 
+so far.  See
 
-These simple APIs are nothing but raw mkdir/open/read/write/close
-operations.
+git://git.kernel.org/pub/scm/linux/kernel/git/jmorris/security-testing-2.6.git#next
 
->  Another thing is suggested config 
-> for this lib would be more appropriate for a daemon rather than a library.
-> In general - cgroup is a very flexible subsystem that can be used in a wide 
-> variety of ways and modes and trying to create a universal simple API would 
-> more likely result in something hard to manage and work with.
-> The idea of having multiple container managers (applications that use 
-> libcg) creates a lots of questions and possible issues. Containers are 
-> supposed provide a flexible resource management and task grouping ability, 
-> which somewhat implies that there cannot be two different resource managers 
-> per node without one knowing well the desires/goals/methods of the other 
-> and vice versa. And should there be only one manager per node - probably it 
-> will be easier for it to use cgroup subsystem directly rather than using a 
-> wrapper library?
+(note that we still need Audit folk to ack patches 7,8 & 9).
 
-I disagree. Allowing multiple resource managers allows more flexibility.
-One thing the configuration subsystem aims to do is to allow permissions
-to the groups. With this happening, a resource manager does not need to
-about the existence of other groups, it can control only the resources
-allotted to it. And since the top level is controlled by the
-administrator, he is aware of the groups and their needs. (I've given an
-example of such a scenario in the document as well).
+This tree is intended for security patches which are not specific to an 
+LSM, to ensure that security patches are being tested & managed together.  
 
-Hope this helps answer your question.
 
-Thanks,
+- James
 -- 
-regards,
-Dhaval
+James Morris
+<jmorris@namei.org>
