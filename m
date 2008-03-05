@@ -1,55 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755623AbYCENy4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755936AbYCENzo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755623AbYCENy4 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Mar 2008 08:54:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754203AbYCENx7
+	id S1755936AbYCENzo (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Mar 2008 08:55:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754558AbYCENyM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Mar 2008 08:53:59 -0500
-Received: from x346.tv-sign.ru ([89.108.83.215]:59963 "EHLO mail.screens.ru"
+	Wed, 5 Mar 2008 08:54:12 -0500
+Received: from smtp2f.orange.fr ([80.12.242.151]:64867 "EHLO smtp2f.orange.fr"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754151AbYCENx5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Mar 2008 08:53:57 -0500
-Date: Wed, 5 Mar 2008 16:53:14 +0300
-From: Oleg Nesterov <oleg@tv-sign.ru>
-To: Gautham R Shenoy <ego@in.ibm.com>
-Cc: Yi Yang <yi.y.yang@intel.com>, Ingo Molnar <mingo@elte.hu>,
-       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [BUG 2.6.25-rc3] scheduler/hotplug: some processes are dealocked when cpu is set to offline
-Message-ID: <20080305135314.GA84@tv-sign.ru>
-References: <1204483329.3607.8.camel@yangyi-dev.bj.intel.com> <20080303153154.GA11288@in.ibm.com> <1204555505.3842.4.camel@yangyi-dev.bj.intel.com> <20080304052613.GA28632@in.ibm.com> <20080304150107.GA564@tv-sign.ru> <20080305100509.GA9265@in.ibm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080305100509.GA9265@in.ibm.com>
-User-Agent: Mutt/1.5.11
+	id S1754526AbYCENyJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 5 Mar 2008 08:54:09 -0500
+X-ME-UUID: 20080305130906964.EB68C70000B6@mwinf2f28.orange.fr
+Message-ID: <47CE9B70.6090707@cosmosbay.com>
+Date: Wed, 05 Mar 2008 14:09:04 +0100
+From: Eric Dumazet <dada1@cosmosbay.com>
+User-Agent: Thunderbird 1.5.0.14 (Windows/20071210)
+MIME-Version: 1.0
+To: Kyle McMartin <kyle@mcmartin.ca>
+Cc: linux kernel <linux-kernel@vger.kernel.org>
+Subject: [RFC] is CONFIG_DEBUG_STACK_USAGE supported on STACK_GROWSUP arches
+  ?
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 03/05, Gautham R Shenoy wrote:
->
-> On Tue, Mar 04, 2008 at 06:01:07PM +0300, Oleg Nesterov wrote:
-> > On 03/04, Gautham R Shenoy wrote:
-> > >
-> > > So at times, the callback thread is blocked on kthread_stop(k) in
-> > > softlockup.c, while other time, it was blocked in
-> > > cleanup_workqueue_threads() in workqueue.c. 
-> > 
-> > >From another message:
-> > >
-> > > However, it remains in R< state
-> > 
-> > What about cwq->thread? Was it TASK_RUNNING too?
-> 
-> No, it was in TASK_UNINTERRUPTIBLE state. The last thing it ever
-> executed was the wait_for_completion in flush_cpu_workqueue()
+Hi Kyle
 
-You misunderstood ;) The task doing _cpu_down() hang in flush_cpu_workqueue(),
-because cwq->thread doesn't want to die. But what was cwq->thread->state?
+I was wondering how following code could work on PARISC :
 
-Could you try the patch? Yi constantly sees the tasks in R< state.
-I am starting to suspect some scheduling issue.
+kernel/sched.c
 
-Oleg.
+#ifdef CONFIG_DEBUG_STACK_USAGE
+        {
+                unsigned long *n = end_of_stack(p);
+                while (!*n)
+                        n++;
+                free = (unsigned long)n - (unsigned long)end_of_stack(p);
+        }
+#endif
+
+
+I am trying to define a bytes_free_in_stack() function, and was about to 
+code something like :
+
+/*
+ * Only called in process context
+ */
+static inline unsigned long bytes_free_in_stack()
+{
+#ifdef CONFIG_STACK_GROWSUP
+   unsigned long free = (unsigned long)end_of_stack(current) - (unsigned 
+long)&free;
+#else
+   unsigned long free = (unsigned long)&free - (unsigned 
+long)end_of_stack(current);
+#endif
+  return free;
+}
+
+but I realize it wont work on PARISC (and more generally on 
+STACK_GROWSUP arches)
+
+Thank you
+Eric
+
+
 
