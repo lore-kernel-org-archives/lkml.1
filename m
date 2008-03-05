@@ -1,46 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762714AbYCEHHn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763059AbYCEHKg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762714AbYCEHHn (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Mar 2008 02:07:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751362AbYCEHHd
+	id S1763059AbYCEHKg (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Mar 2008 02:10:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752679AbYCEHKE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Mar 2008 02:07:33 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:57853 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751218AbYCEHHc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Mar 2008 02:07:32 -0500
-Date: Wed, 5 Mar 2008 08:07:19 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Harvey Harrison <harvey.harrison@gmail.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] x86: pageattr.c fix shadowed variable warning
-Message-ID: <20080305070719.GC32434@elte.hu>
-References: <1204697127.17484.1.camel@brick>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1204697127.17484.1.camel@brick>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Wed, 5 Mar 2008 02:10:04 -0500
+Received: from gv-out-0910.google.com ([216.239.58.189]:21873 "EHLO
+	gv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751886AbYCEHKB (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 5 Mar 2008 02:10:01 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=subject:from:to:cc:in-reply-to:references:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
+        b=Q/IFOBh0elRi+IEfExLfDOM5SNOUbxVXkyqi6eKFAuyKpBdzUFhpFcZgFM1dbIqFnBJp42HnNfcq/gaCe/6kZn2T9DSum2ZBppu26Bzt4N20ZlgohIB66QsmzOmi/9czmfvWANumB39XE7UUSvUvAdrnsHTuUKHzVr3vE4ZS5gc=
+Subject: Re: [PATCH 6/9] drivers/net/wireless/iwlwifi/iwl-4965.c: Correct
+	use of ! and &
+From: Harvey Harrison <harvey.harrison@gmail.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Christopher Li <sparse@chrisli.org>, Julia Lawall <julia@diku.dk>,
+       yi.zhu@intel.com, linux-wireless@vger.kernel.org,
+       ipw3945-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org,
+       kernel-janitors@vger.kernel.org, Alexander Viro <viro@ftp.linux.org.uk>,
+       linux-sparse@vger.kernel.org, Josh Triplett <josh@freedesktop.org>
+In-Reply-To: <20080305070201.GA32434@elte.hu>
+References: <Pine.LNX.4.64.0802262143570.18200@ask.diku.dk>
+	 <20080305063842.GA24495@elte.hu>
+	 <70318cbf0803042249j57d7f3a3j7666961a9132b10b@mail.gmail.com>
+	 <20080305070201.GA32434@elte.hu>
+Content-Type: text/plain
+Date: Tue, 04 Mar 2008 23:09:55 -0800
+Message-Id: <1204700995.17484.7.camel@brick>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, 2008-03-05 at 08:02 +0100, Ingo Molnar wrote:
+> * Christopher Li <sparse@chrisli.org> wrote:
+> 
+> > I think Al Viro has sent a patch to linux-sparse with subject "[PATCH 
+> > 3/3] catch !x & y brainos" does exactly that.
+> 
+> ah - nice :-)
+> 
+> /me checks the linux-sparse archive
+> 
+> Al's patch is:
+> 
+> +                       if (op == '&' && expr->left->type == EXPR_PREOP &&
+> +                           expr->left->op == '!')
+> +                               warning(expr->pos, "dubious: !x & y");
+> 
+> i think there might be similar patterns: "x & !y", "!x | y", "x | !y" ?
+> 
 
-* Harvey Harrison <harvey.harrison@gmail.com> wrote:
+Well, (!x & y) and (!x | y) are probably the two that might have been
+intended otherwise.  (x & !y), (x | !y) are probably ok.
 
-> irqs_disabled() uses flags internally, use _flags to avoid shadowing 
-> code calling into this macro.
+Harvey
 
-thanks Harvey, applied.
-
-	Ingo
