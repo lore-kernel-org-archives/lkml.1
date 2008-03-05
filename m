@@ -1,100 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753543AbYCENvj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753265AbYCENx4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753543AbYCENvj (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Mar 2008 08:51:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751304AbYCENv0
+	id S1753265AbYCENx4 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Mar 2008 08:53:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751219AbYCENxj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Mar 2008 08:51:26 -0500
-Received: from brick.kernel.dk ([87.55.233.238]:2995 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751256AbYCENvZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Mar 2008 08:51:25 -0500
-Date: Wed, 5 Mar 2008 14:51:21 +0100
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Tejun Heo <htejun@gmail.com>
-Cc: Boaz Harrosh <bharrosh@panasas.com>,
-       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
-       Mike Galbraith <efault@gmx.de>, James.Bottomley@HansenPartnership.com,
-       tomof@acm.org, akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       linux-ide@vger.kernel.org, linux-scsi@vger.kernel.org,
-       jgarzik@pobox.com, bzolnier@gmail.com
-Subject: Re: [PATCH] blk: missing add of padded bytes to io completion byte   count
-Message-ID: <20080305135121.GK6704@kernel.dk>
-References: <47CD7C05.1080707@gmail.com> <20080305041914V.tomof@acm.org> <47CDDC31.4070806@gmail.com> <20080305092619Y.fujita.tomonori@lab.ntt.co.jp> <47CE72EF.7050302@panasas.com> <20080305123317.GI6704@kernel.dk> <47CE9634.6040501@panasas.com> <20080305124857.GJ6704@kernel.dk> <47CEA40F.6050903@gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <47CEA40F.6050903@gmail.com>
+	Wed, 5 Mar 2008 08:53:39 -0500
+Received: from moutng.kundenserver.de ([212.227.126.174]:61107 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750965AbYCENxj (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 5 Mar 2008 08:53:39 -0500
+Subject: Re: 2.6.25-rc3-mm1
+From: Kay Sievers <kay.sievers@vrfy.org>
+To: Pavel Emelyanov <xemul@openvz.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Greg KH <gregkh@suse.de>
+In-Reply-To: <47CEA247.1040506@openvz.org>
+References: <20080304011928.e8c82c0c.akpm@linux-foundation.org>
+	 <47CE9A6B.9080006@openvz.org> <1204723866.5212.3.camel@lov.site>
+	 <47CEA247.1040506@openvz.org>
+Content-Type: text/plain
+Date: Wed, 05 Mar 2008 14:54:20 +0100
+Message-Id: <1204725260.5212.8.camel@lov.site>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.21.90 
+Content-Transfer-Encoding: 7bit
+X-Provags-ID: V01U2FsdGVkX19hR6z3Mb7u5kkJDwZ3OQn1lOYWNBORhuXG5hX
+ +1QehUbjRDdg4r341R8x3XDw7ifBCDDBhJ0fnh0xFO7+vaAjjh
+ lCdNyQpeyZWtA5pZwA08v0r3TTWP+XO
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Mar 05 2008, Tejun Heo wrote:
-> Hello, Jens, Boaz.
+On Wed, 2008-03-05 at 16:38 +0300, Pavel Emelyanov wrote:
+> Kay Sievers wrote:
+> > On Wed, 2008-03-05 at 16:04 +0300, Pavel Emelyanov wrote:
+> >> With CONFIG_SYSFS not set got this on boot:
+> >>
+> >> kobject: '<NULL>' (f88774c8): is not initialized, yet kobject_put() is
+> >> ------------[ cut here ]------------
+> >> WARNING: at lib/kobject.c:652 kobject_put+0x29/0x3c()
+> >> Modules linked in: sky2 e1000
+> >> Pid: 1303, comm: modprobe Not tainted 2.6.25-rc3-mm1 #79
+> >>  [<c041855b>] warn_on_slowpath+0x40/0x66
+> >>  [<c041c687>] irq_exit+0x50/0x67
+> >>  [<c040cc70>] smp_apic_timer_interrupt+0x6e/0x7a
+> >>  [<c0403380>] apic_timer_interrupt+0x28/0x30
+> >>  [<c0418e36>] vprintk+0x2b0/0x2df
+> >>  [<c04118e8>] __update_rq_clock+0x1d/0x110
+> >>  [<c0565e43>] schedule_timeout+0x13/0x86
+> >>
+> >>  [<c05656c2>] wait_for_common+0xd1/0x123
+> >>  [<c0418e79>] printk+0x14/0x18
+> >>  [<c04b34bf>] kobject_put+0x29/0x3c
+> >>  [<c0431e39>] free_module+0x2f/0x72
+> >>  [<c04328dd>] sys_init_module+0xa61/0x15d2
+> >>
+> >>  [<c04ba863>] pci_bus_read_config_byte+0x0/0x58
+> >>  [<c0454f87>] vfs_read+0x6c/0x8b
+> >>  [<c0455323>] sys_read+0x3c/0x63
+> >>  [<c04028b2>] sysenter_past_esp+0x5f/0x85
+> >>
+> >>  =======================
+> >> ---[ end trace d50646e8e8e48682 ]---
+> > 
+> > Does this fix it?:
+> > 
+> > http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commitdiff;h=120fc3d77acfd91f3521737a440d42839c475982
 > 
-> Jens Axboe wrote:
-> >>>> From: Boaz Harrosh <bharrosh@panasas.com>
-> >>>> Date: Wed, 5 Mar 2008 12:07:12 +0200
-> >>>> Subject: [PATCH] blk: missing add of padded bytes to io completion byte count
-> >>>>
-> >>>> the commit e97a294ef6938512b655b1abf17656cf2b26f709 was very wrong. This is
-> >>>> because scsi-ml supports the ability to split a request into smaller chunks,
-> >>>> in which case scsi_bufflen() is smaller then request length. Then at completion
-> >>>> time the remainder can be issued as a new scsi command. In that case the above
-> >>>> commit is a data corruption.
-> 
-> Thanks for catching the stupidity.  Did it actually happen?  PC commands
-> are not completed in pieces and padding / draining should only happen
-> for those.  qc->extra_len should be zero where commands can be splitted
-> for all current cases.
-> 
-> >>> We needed something for -rc4, so it had to be rushed a bit...
-> >>>
-> >>>> Also in this fix all users of block layer are taken care of, and not only
-> >>>> scsi devices.
-> >>>>
-> >>>> Signed-off-by: Boaz Harrosh <bharrosh@panasas.com>
-> >>>> Signed-off-by: Benny Halevy <bhalevy@panasas.com>
-> >>>> ---
-> >>>>  block/blk-core.c    |    4 ++++
-> >>>>  drivers/scsi/scsi.c |    2 +-
-> >>>>  2 files changed, 5 insertions(+), 1 deletions(-)
-> >>>>
-> >>>> diff --git a/block/blk-core.c b/block/blk-core.c
-> >>>> index 2a438a9..37fcccc 100644
-> >>>> --- a/block/blk-core.c
-> >>>> +++ b/block/blk-core.c
-> >>>> @@ -1549,6 +1549,9 @@ static int __end_that_request_first(struct request *req, int error,
-> >>>>  			     nr_bytes >> 9, req->sector);
-> >>>>  	}
-> >>>>  
-> >>>> +	if (nr_bytes >= blk_rq_bytes(req))
-> >>>> +		nr_bytes += req->extra_len;
-> >>>> +
-> 
-> This is getting insanely subtle.  Let's say there's PIO driver which
-> transfer certain sized chunks at a time and completes request partially
-> after completing each chunk and the driver uses draining to eat up
-> whatever excess data, which seems like a legit use case to me.  But it
-> won't work because __end_that_request_first() will terminate when it
-> reaches reaches the 'true' transfer size.  That's just broken API.  FWIW,
-> 
-> Nacked-by: Tejun Heo <htejun@gmail.com>
+> This is already in 2.6.25-rc3-mm1, so the answer is "no it does not" :)
 
-Yeah, I think I may have gone a bit overboard in applying this so
-quickly. It's just not a good interface, silently adding the extra
-length if asked to complete more. It may even happen right now, for a
-driver that does no padding (it probably wont do any harm here either,
-but still).
+Ok. Care to enable CONFIG_DEBUG_KOBJECT, and post the part of the log
+that happens right before the WARN()? We might get a hint where to look
+for the stuff that goes wrong.
 
-I'll try and see if I can come up with something cleaner.
-
-My basic design paradigm for this is that the _driver_ (or mid layer, if
-SCSI wants to handle it) should care about the padding. So make it easy
-for them to pad, but have it 'unrolled' by completion time. We should
-NOT need any extra_len checks or additions in the block/ directory,
-period.
-
--- 
-Jens Axboe
+Thanks,
+Kay
 
