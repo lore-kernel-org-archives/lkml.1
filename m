@@ -1,74 +1,152 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932384AbYCEBMo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932967AbYCEBNV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932384AbYCEBMo (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Mar 2008 20:12:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760803AbYCEBMH
+	id S932967AbYCEBNV (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Mar 2008 20:13:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755684AbYCEBMa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Mar 2008 20:12:07 -0500
-Received: from relay2.sgi.com ([192.48.171.30]:40420 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1760419AbYCEBMF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Mar 2008 20:12:05 -0500
-Date: Tue, 4 Mar 2008 19:11:59 -0600
-From: Paul Jackson <pj@sgi.com>
-To: Max Krasnyanskiy <maxk@qualcomm.com>
-Cc: a.p.zijlstra@chello.nl, mingo@elte.hu, tglx@linutronix.de, oleg@tv-sign.ru,
-       rostedt@goodmis.org, linux-kernel@vger.kernel.org, rientjes@google.com
-Subject: Re: [RFC/PATCH] cpuset: cpuset irq affinities
-Message-Id: <20080304191159.a02be58b.pj@sgi.com>
-In-Reply-To: <47CDA885.3000103@qualcomm.com>
-References: <20080227222103.673194000@chello.nl>
-	<1204311351.6243.130.camel@lappy>
-	<20080229190223.GA17820@elte.hu>
-	<47C87084.3090208@qualcomm.com>
-	<1204318980.6243.133.camel@lappy>
-	<47C8771C.1070001@qualcomm.com>
-	<1204545445.11412.6.camel@twins>
-	<20080303113621.1dfdda87.pj@sgi.com>
-	<1204567052.6241.4.camel@lappy>
-	<20080303121033.c8c9651c.pj@sgi.com>
-	<1204568316.8514.18.camel@twins>
-	<20080304013534.4e51ae48.pj@sgi.com>
-	<1204628762.6241.46.camel@lappy>
-	<47CDA885.3000103@qualcomm.com>
-Organization: SGI
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.12.0; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 4 Mar 2008 20:12:30 -0500
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:51125 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751061AbYCEBMW (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 4 Mar 2008 20:12:22 -0500
+Message-ID: <47CDF339.3060304@jp.fujitsu.com>
+Date: Wed, 05 Mar 2008 10:11:21 +0900
+From: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.12 (Windows/20080213)
+MIME-Version: 1.0
+To: Alex Chiang <achiang@hp.com>, Greg KH <gregkh@suse.de>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>,
+       Matthew Wilcox <matthew@wil.cx>, Gary Hade <garyhade@us.ibm.com>,
+       kaneshige.kenji@jp.fujitsu.com, warthog19@eaglescrag.net,
+       kristen.c.accardi@intel.com, rick.jones2@hp.com,
+       linux-kernel@vger.kernel.org, linux-pci@atrey.karlin.mff.cuni.cz,
+       linux-acpi@vger.kernel.org
+Subject: Re: [PATCH 4/4] ACPI PCI slot detection driver
+References: <20080229002341.GA21420@ldl.fc.hp.com> <20080301144307.GD24386@parisc-linux.org> <20080304054927.GA15566@suse.de> <200803041018.29035.jbarnes@virtuousgeek.org> <20080304193036.GB5534@suse.de> <20080304230937.GD3694@ldl.fc.hp.com>
+In-Reply-To: <20080304230937.GD3694@ldl.fc.hp.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Max K wrote:
-> Yeah, that would definitely be awkward.
+Hi Alex-san,
 
-Yeah - agreed - awkward.
+Sorry for the delay in responding.
 
-Forget that idea (allowing the same irq in multiple 'irqs' files.)
+> It wasn't the IBM machine that was breaking; it was Fujitsu. They
+> were returning an error code (the numerical value 1023) when I
+> called the _SUN method on a slot object that existed in the ACPI
+> namespace but was not present (as reported by the _STA method).
+> 
+> By the time I got that error report, I'd already dropped the
+> duplicate name detection code, and was letting the kobject
+> infrastructure warn about duplicate names because for my test
+> cases, refcounting was a better solution.
+> 
+> [Kenji-san from Fujitsu seemed to be ok with the progress I'd
+> made at the time, he can speak up if he's changed his mind ;)]
 
-It seems to me that we get into trouble trying to cram that 'system'
-cpuset into the cpuset hierarchy, where that system cpuset is there to
-hold a list of irqs, but is only partially a good fit for the existing
-cpuset hierarchy.
+Unfortunatelly, I have not tried the new version of slot detection
+driver because of the lack of test environment. Maybe we need more
+several days to wait for test environment. 
 
-Could this irq configuration be partly a system-wide configuration
-decision (which irqs are 'system' irqs), and partly a per-cpuset
-decision -- which cpusets (such as a real-time one) want to disable
-the usual system irqs that everyone else gets.
+BTW, does the new one fixes the issue I reported before? I could not
+find it in the changelog. IIRC, this issue was difficult to solve
+because the root cause of this issue is from the difference of
+interpretation of ACPI spec between HP and Fujitsu (I still don't
+think it's a good idea to evaluate _SUN for the device object whose
+_STA is 0).
 
-The cpuset portion of this should take only a single per-cpuset Boolean
-flag -- which if set True (1), asks the system to "please leave my CPUs
-off the list of CPUs receiving the usual system irqs."
+Anyway, Fujitsu servers which suffer from this issue doesn't need
+the slot detection driver because its PCI slots are all hot-pluggable
+and it already has /sys/bus/pci/slots/XXXX directory for all PCI
+slots. So one of the workaround is to not use slot detection driver.
+But when I tried it before, it was automatically loaded at boot up
+time and then I got strange slot named '1023' and many warning
+messages (stack traces).
 
-Then the list of "usual system irqs" would be established in some /proc
-or /sys configuration.  Such irqs would be able to go to any CPUs
-except those CPUs which found themselves in a cpuset with the above
-per-cpuset Boolean flag set True (1).
+Thanks,
+Kenji Kaneshige
 
-How does all this interact with /proc/irq/N/smp_affinity?
 
--- 
-                  I won't rest till it's the best ...
-                  Programmer, Linux Scalability
-                  Paul Jackson <pj@sgi.com> 1.940.382.4214
+
+Alex Chiang wrote:
+> * Greg KH <gregkh@suse.de>:
+>> On Tue, Mar 04, 2008 at 10:18:28AM -0800, Jesse Barnes wrote:
+>>> On Monday, March 03, 2008 9:49 pm Greg KH wrote:
+>>>> On Sat, Mar 01, 2008 at 07:43:07AM -0700, Matthew Wilcox wrote:
+>>>>> On Fri, Feb 29, 2008 at 09:25:42PM -0800, Greg KH wrote:
+>>>>>> What is the guarantee that the names of these slots are correct and do
+>>>>>> not happen to be the same as the hotpluggable ones?
+>>>>> That would be a bug -- and yes, bugs happen, and we have to deal with
+>>>>> them.
+>>>> My main concern is that BIOS vendors will not fix these bugs, as no
+>>>> other OS cares/does this kind of thing today.  The ammount of bad
+>>>> information out there might be quite large, and I think this was
+>>>> confirmed by some initial testing of IBM systems, right?
+>>> Yeah, but there's a flip side to this too:  if no one uses the data, no one 
+>>> will complain when it's wrong.  If Linux starts making it easy to see this 
+>>> stuff, there's a chance system vendors will start taking an extra 5 min. 
+>>> before shipment to make sure that the BIOS info is up to date...
+>>>
+>>> OTOH, I'm not sure which is worse, bad data or no data.
+>> bad data is worse.
+>>
+>> And then there's the machines with duplicate slot names, how does this
+>> code handle PCI slots with that?  I think some of the IBM machines had
+>> non-hotplug slots named the same as the hotplug slots, right?
+> 
+> At one point, I had some code in there to stick the names of the
+> slots into a linked list and walk through it to try and detect
+> duplicate slot names, but after a few iterations, the cases I was
+> dealing with, it turned out to be easier to refcount them.
+> 
+> [my machines did not have colliding names between hp and non-hp
+> slots, it was more like seeing the same SxFy object appear
+> multiple times in the namespace and trying to create them
+> multiple times.]
+> 
+> It wasn't the IBM machine that was breaking; it was Fujitsu. They
+> were returning an error code (the numerical value 1023) when I
+> called the _SUN method on a slot object that existed in the ACPI
+> namespace but was not present (as reported by the _STA method).
+> 
+> By the time I got that error report, I'd already dropped the
+> duplicate name detection code, and was letting the kobject
+> infrastructure warn about duplicate names because for my test
+> cases, refcounting was a better solution.
+> 
+> [Kenji-san from Fujitsu seemed to be ok with the progress I'd
+> made at the time, he can speak up if he's changed his mind ;)]
+> 
+> But even that is not the error case you're describing, where
+> there is clear name collision of two physical slots in the
+> machine, one being hotplug, the other non-hotplug.
+> 
+> Maybe I would have to add some duplicate name detection code back
+> in there but...
+> 
+>> This stuff needs a _lot_ of testing on a lot of different
+>> machines, and a sane way to fall-back if there are errors to
+>> ensure that working machines don't break.
+>>
+>> And then there's the issue with userspace programs only expecting
+>> hotplugable slots in the slots/ directory...
+> 
+> Yes -- totally agreed. And I'd like to see actual examples of
+> name collisions or userspace breakage to get a better idea of how
+> to handle real world problems rather than writing some crummy
+> code based on what my limited imagination can think of.
+> 
+> So how to get this test coverage? -mm? linux-next?
+> 
+> Thanks.
+> 
+> /ac
+> 
+> 
+> 
+
+
