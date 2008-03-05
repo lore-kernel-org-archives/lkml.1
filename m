@@ -1,61 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758022AbYCEP6b@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757200AbYCEQCf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758022AbYCEP6b (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Mar 2008 10:58:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754632AbYCEP6W
+	id S1757200AbYCEQCf (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Mar 2008 11:02:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754773AbYCEQCZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Mar 2008 10:58:22 -0500
-Received: from hc65212de.dhcp.vt.edu ([198.82.18.222]:39315 "EHLO
-	hc65212de.dhcp.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753583AbYCEP6V (ORCPT
-	<RFC822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Mar 2008 10:58:21 -0500
-X-Greylist: delayed 1594 seconds by postgrey-1.27 at vger.kernel.org; Wed, 05 Mar 2008 10:58:21 EST
-X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
-To: Greg Kroah-Hartman <gregkh@suse.de>
-Cc: linux-kernel@vger.kernel.org, Kay Sievers <kay.sievers@vrfy.org>,
-       Jiri Slaby <jslaby@suse.cz>
-Subject: Re: [PATCH 1/8] driver core: fix up Kconfig text for CONFIG_SYSFS_DEPRECATED
-In-Reply-To: Your message of "Tue, 04 Mar 2008 15:18:45 PST."
-             <1204672732-3127-1-git-send-email-gregkh@suse.de>
-From: Valdis.Kletnieks@vt.edu
-References: <20080304231519.GC3073@suse.de>
-            <1204672732-3127-1-git-send-email-gregkh@suse.de>
-Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="==_Exmh_1204732693_9212P";
-	 micalg=pgp-sha1; protocol="application/pgp-signature"
+	Wed, 5 Mar 2008 11:02:25 -0500
+Received: from n29.bullet.mail.mud.yahoo.com ([68.142.200.152]:38568 "HELO
+	n29.bullet.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1754674AbYCEQCY (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 5 Mar 2008 11:02:24 -0500
+X-Yahoo-Newman-Id: 282562.90815.bm@omp416.mail.mud.yahoo.com
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com.au;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=XpjGMY47icrpf2+ATK5HIOn1SzDfDQN1oOX3QoSAKXySrqHh8P+UA/PElIYd/UpSDRSohf0iNzODje8+te3CCrjHKJ4bEeyrcuGIaOkzu4qheVB7xHJSrJzU1GGLcACzoX6jz2zZvbPzme7m67U6TXhEjFRrAMCBF6ZysEB2W6I=  ;
+X-YMail-OSG: In8m2NUVM1kQ9FU3byAQQgqxuywqKrCyPCr89OBX7k0AGTw41nwIEtdhSKi9Sj.o_HrMXB9dng--
+X-Yahoo-Newman-Property: ymail-3
+From: Nick Piggin <nickpiggin@yahoo.com.au>
+To: "Ray Lee" <ray-lk@madrabbit.org>
+Subject: Re: Are Linux pipes slower than the FreeBSD ones ?
+Date: Thu, 6 Mar 2008 03:02:06 +1100
+User-Agent: KMail/1.9.5
+Cc: "Eric Dumazet" <dada1@cosmosbay.com>, "David Miller" <davem@davemloft.net>,
+       dmantipov@yandex.ru, linux-kernel@vger.kernel.org
+References: <1389671204703217@webmail34.yandex.ru> <200803060238.39484.nickpiggin@yahoo.com.au> <2c0942db0803050755u7e17118h923328fb79ee206b@mail.gmail.com>
+In-Reply-To: <2c0942db0803050755u7e17118h923328fb79ee206b@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Date: Wed, 05 Mar 2008 10:58:13 -0500
-Message-ID: <18322.1204732693@turing-police.cc.vt.edu>
+Content-Disposition: inline
+Message-Id: <200803060302.07084.nickpiggin@yahoo.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---==_Exmh_1204732693_9212P
-Content-Type: text/plain; charset=us-ascii
+On Thursday 06 March 2008 02:55, Ray Lee wrote:
+> On Wed, Mar 5, 2008 at 7:38 AM, Nick Piggin <nickpiggin@yahoo.com.au> wrote:
 
-On Tue, 04 Mar 2008 15:18:45 PST, Greg Kroah-Hartman said:
+> >  Yeah, but why does the pipe inode need to have its times updated?
+> >  I guess there is some reason... hopefully not C&P related.
+>
+> In principle so that the reader or writer can find out the last time
+> the other end did any processing of the pipe. And yeah, for POSIX
+> compliance: "Upon successful completion, pipe() will mark for update
+> the st_atime, st_ctime and st_mtime fields of the pipe. "
 
-> -	  If you are using a distro that was released in 2006 or later,
-> -	  it should be safe to say N here.
-> +	  If you are using a distro with the most recent userspace
-> +	  packages, it should be safe to say N here.
+Thanks.
 
-Might want to be a bit more specific here - I *think* udev, lvm, and nash
-were the common ones that broke this time around.  Speaking of which,
-did anybody rev Documentation/Changes to mention the currently required
-releases of stuff?
+> But it'd be 
+> nice if there were a way to avoid touching it more than once a second
+> (note the 'will mark for update' language). Or if the pipe is a
+> physical FIFO on a noatime filesystem?
 
---==_Exmh_1204732693_9212P
-Content-Type: application/pgp-signature
+I doubt it really matters for anything except this test. I wouldn't
+bother doing anything fancy really. It just caught my eye and I was
+wondering why it was there at all.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.8 (GNU/Linux)
-Comment: Exmh version 2.5 07/13/2001
+Thanks,
+Nick
 
-iD8DBQFHzsMVcC3lWbTT17ARAlr9AJsHbexS5NLSpCPiVAv9ISXPxGcDJQCg+Bbi
-T35IE77whTEy8+rQK/mSbWs=
-=sqme
------END PGP SIGNATURE-----
-
---==_Exmh_1204732693_9212P--
