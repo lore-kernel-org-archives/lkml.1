@@ -1,52 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762088AbYCEIas@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761360AbYCEIew@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762088AbYCEIas (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Mar 2008 03:30:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752681AbYCEIak
+	id S1761360AbYCEIew (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Mar 2008 03:34:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753947AbYCEIeo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Mar 2008 03:30:40 -0500
-Received: from gate.crashing.org ([63.228.1.57]:40898 "EHLO gate.crashing.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752487AbYCEIaj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Mar 2008 03:30:39 -0500
-Subject: Re: [BUG] 2.6.25-rc3-mm1 kernel panic while bootup on powerpc ()
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Reply-To: benh@kernel.crashing.org
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Michael Neuling <mikey@neuling.org>, Matthew Wilcox <willy@debian.org>,
-       linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
-       Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
-In-Reply-To: <20080304103350.12d26560.akpm@linux-foundation.org>
-References: <20080304011928.e8c82c0c.akpm@linux-foundation.org>
-	 <47CD4AB3.3080409@linux.vnet.ibm.com> <20778.1204641656@neuling.org>
-	 <20080304103350.12d26560.akpm@linux-foundation.org>
-Content-Type: text/plain
-Date: Wed, 05 Mar 2008 19:23:40 +1100
-Message-Id: <1204705420.21545.192.camel@pasglop>
+	Wed, 5 Mar 2008 03:34:44 -0500
+Received: from public.id2-vpn.continvity.gns.novell.com ([195.33.99.129]:10524
+	"EHLO public.id2-vpn.continvity.gns.novell.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752762AbYCEIeo convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 5 Mar 2008 03:34:44 -0500
+Message-Id: <47CE6952.76E4.0078.0@novell.com>
+X-Mailer: Novell GroupWise Internet Agent 7.0.3 Beta 
+Date: Wed, 05 Mar 2008 08:35:14 +0000
+From: "Jan Beulich" <jbeulich@novell.com>
+To: <mingo@elte.hu>, <tglx@linutronix.de>, <hpa@zytor.com>
+Cc: <linux-kernel@vger.kernel.org>
+Subject: [PATCH] i386: fix merge mistake in i387.c
 Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+convert_fxsr_to_user() in 2.6.24's i387_32.c did this, and
+convert_to_fxsr() also does the inverse, so I assume it's an oversight
+that it is no longer being done.
 
-On Tue, 2008-03-04 at 10:33 -0800, Andrew Morton wrote:
-> > Are we somehow enabling interrupts before we've setup
-> ppc_md.get_irq?
-> > 
-> 
-> Yes, we are - it's the semaphore rewrite which is doing this in
-> start_kernel().  It's being discussed.
-> 
-> Enabling interrupts too early on powerpc was discovered to be fatal on
-> powerpc years ago.  It looks like that remains the case.
+Signed-off-by: Jan Beulich <jbeulich@novell.com>
 
-Yes, it is and will probably always be. All that semaphore mucking
-around that hard-enables interrupts is just asking for trouble (and on
-more than just powerpc... heh, how do you do if your main interrupt
-controller hasn't even been initialized yet ?)
+---
+ arch/x86/kernel/i387.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-Ben.
+--- linux-2.6.25-rc4/arch/x86/kernel/i387.c	2008-03-05 09:26:15.000000000 +0100
++++ 2.6.25-rc4-i386-fpu-fop/arch/x86/kernel/i387.c	2008-03-04 09:03:19.000000000 +0100
+@@ -261,7 +261,7 @@ static void convert_from_fxsr(struct use
+ 	}
+ #else
+ 	env->fip = fxsave->fip;
+-	env->fcs = fxsave->fcs;
++	env->fcs = (u16) fxsave->fcs | ((u32) fxsave->fop << 16);
+ 	env->foo = fxsave->foo;
+ 	env->fos = fxsave->fos;
+ #endif
+
 
 
