@@ -1,49 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759827AbYCEVft@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761286AbYCEVh4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759827AbYCEVft (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Mar 2008 16:35:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752466AbYCEVfk
+	id S1761286AbYCEVh4 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Mar 2008 16:37:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753608AbYCEVhs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Mar 2008 16:35:40 -0500
-Received: from wf-out-1314.google.com ([209.85.200.172]:63362 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752301AbYCEVfk (ORCPT
+	Wed, 5 Mar 2008 16:37:48 -0500
+Received: from extu-mxob-1.symantec.com ([216.10.194.28]:43158 "EHLO
+	extu-mxob-1.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752036AbYCEVhr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Mar 2008 16:35:40 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=JjSdUbelzxdg7NP1+hqZ60NubZudma/bgqtznIznNjJAzXkZUwYonpplwN9r0TXs601WYmCSemO9kwZTTpIIEOVTRwV/VY8Yxzl5eXjmQ3trAHcYxW9Bl92qcjIQFzHbb1Zgli+RMRW9Vdl0CWSFQF3OmxrtOBitGozG5mB2prk=
-Message-ID: <4d8e3fd30803051335u29f9dc6am8198931b0d424e24@mail.gmail.com>
-Date: Wed, 5 Mar 2008 22:35:37 +0100
-From: "Paolo Ciarrocchi" <paolo.ciarrocchi@gmail.com>
-To: "Roel Kluin" <12o3l@tiscali.nl>
-Subject: Re: [PATCH] checkpatch: take 2 - Make some text more consinstent and informative
-Cc: linux-kernel@vger.kernel.org, apw@shadowen.org
-In-Reply-To: <47CF0F42.6070708@tiscali.nl>
+	Wed, 5 Mar 2008 16:37:47 -0500
+Date: Wed, 5 Mar 2008 21:36:37 +0000 (GMT)
+From: Hugh Dickins <hugh@veritas.com>
+X-X-Sender: hugh@blonde.site
+To: Pavel Machek <pavel@ucw.cz>
+cc: Christian Kujau <lists@nerdbynature.de>,
+       kernel list <linux-kernel@vger.kernel.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: 2.6.25-rc3: 34TB vmalloc total -- overflow in /proc/meminfo?
+In-Reply-To: <20080305212139.GA31999@elf.ucw.cz>
+Message-ID: <Pine.LNX.4.64.0803052127380.5344@blonde.site>
+References: <20080305090610.GA30024@atrey.karlin.mff.cuni.cz>
+ <alpine.DEB.1.00.0803052038410.8658@sheep.housecafe.de>
+ <Pine.LNX.4.64.0803052045430.821@blonde.site> <20080305212139.GA31999@elf.ucw.cz>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <47CF0C30.3060008@gmail.com> <47CF0F42.6070708@tiscali.nl>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Mar 5, 2008 at 10:23 PM, Roel Kluin <12o3l@tiscali.nl> wrote:
-[...]
->  > -                        ERROR("no spaces around that '$op' $at\n" .
->  > $hereptr);
->  > +                        ERROR("space are not required around that '$op'
->
->  "spaces are" or "space is"
+On Wed, 5 Mar 2008, Pavel Machek wrote:
+> > > > CommitLimit:   4132360 kB
+> > > > Committed_AS:    27684 kB
+> > > > VmallocTotal: 34359738367 kB
+> > > > VmallocUsed:     18112 kB
+> > > > VmallocChunk: 34359720115 kB
+> > 
+> > I don't see what Pavel's issue is with this: it's simply a fact that
+> > with a 64-bit kernel, we've lots of virtual address space to spare
+> > for vmalloc.  What would be surprising is for VmallocUsed to get up
+> > as high as that.
+> 
+> Hmm... ok, I see, I thought "clearly this overflowed somewhere", and I
 
-spaces.
-v3 almost ready...
+The (mis)alignment does makes it look that way,
+but no, it's not an overflow in this case.
 
-Thanks.
+> was wrong, it is expected result.
+> 
+> Still.... what is 34TB of vmalloc space good for when we can only ever
+> allocate 4GB (because that is how much physical memory we have?)? To
+> prevent fragmentation? 
 
-Ciao,
--- 
-Paolo
-http://paolo.ciarrocchi.googlepages.com/
+Well, what else would you want to use that space for?  If there were
+a compelling reason to tune it according to how much physical memory
+you have (and you're right, that we want a good surplus of address
+space so as to avoid silly limitations by fragmentation), I guess
+that could have been done.  But why bother if there's no reason?
+
+It's a hard life, there's just too much room to spare in 64-bit ;)
+
+Hugh
