@@ -1,56 +1,160 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760168AbYCETti@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756953AbYCEUDX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760168AbYCETti (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Mar 2008 14:49:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755809AbYCETta
+	id S1756953AbYCEUDX (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Mar 2008 15:03:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752012AbYCEUDO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Mar 2008 14:49:30 -0500
-Received: from ns2.g-housing.de ([81.169.133.75]:58559 "EHLO mail.g-house.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755725AbYCETt3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Mar 2008 14:49:29 -0500
-Date: Wed, 5 Mar 2008 20:49:22 +0100 (CET)
-From: Christian Kujau <lists@nerdbynature.de>
-X-X-Sender: evil@sheep.housecafe.de
-To: Pavel Machek <pavel@ucw.cz>
-cc: kernel list <linux-kernel@vger.kernel.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: 2.6.25-rc3: 34TB vmalloc total -- overflow in /proc/meminfo?
-In-Reply-To: <20080305090610.GA30024@atrey.karlin.mff.cuni.cz>
-Message-ID: <alpine.DEB.1.00.0803052038410.8658@sheep.housecafe.de>
-References: <20080305090610.GA30024@atrey.karlin.mff.cuni.cz>
-User-Agent: Alpine 1.00 (DEB 882 2007-12-20)
+	Wed, 5 Mar 2008 15:03:14 -0500
+Received: from ug-out-1314.google.com ([66.249.92.175]:46728 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751983AbYCEUDN (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 5 Mar 2008 15:03:13 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=t1LwToJHHOzP2j8owMI1atckY5C4SCCsOl/zXDE/bD75vwKabpbpZmqqQNyTRRJSyxq7/ukAtCxRdR840EEB6vFo5A2z7NjId2X2KCdYzAxkolI0lmNSty+Kaj4CYUVGeWUylLW7mnTAJKZKAdIoj0NbuJCNwKbWMo1+ZKme0l8=
+Message-ID: <5a4c581d0803051203s1a0048c2u5f10b3eb442cfafb@mail.gmail.com>
+Date: Wed, 5 Mar 2008 21:03:10 +0100
+From: "Alessandro Suardi" <alessandro.suardi@gmail.com>
+To: "Rene Herman" <rene.herman@keyaccess.nl>
+Subject: Re: ehci-hcd affects hda speed
+Cc: "Lev A. Melnikovsky" <melnikovsky@mail.ru>, linux-kernel@vger.kernel.org,
+       "David Brownell" <david-b@pacbell.net>
+In-Reply-To: <47CEC816.6000808@keyaccess.nl>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <alpine.LFD.1.00.0803050036210.31935@nev.ubzr>
+	 <47CEC816.6000808@keyaccess.nl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 5 Mar 2008, Pavel Machek wrote:
-> CommitLimit:   4132360 kB
-> Committed_AS:    27684 kB
-> VmallocTotal: 34359738367 kB
-> VmallocUsed:     18112 kB
-> VmallocChunk: 34359720115 kB
+On Wed, Mar 5, 2008 at 5:19 PM, Rene Herman <rene.herman@keyaccess.nl> wrote:
+> On 04-03-08 23:27, Lev A. Melnikovsky wrote:
+>
+>  > I have recently installed a VT6212L-based PCI USB controller into my old
+>  > rock-stable P3B-F computer
+>
+>  Uh oh...
+>
+>  > just to discover that, even being idle, it significantly slows down main
+>  > PATA hard drive. I have found an earlier thread with similar (?) problem
+>  > (archived at http://marc.info/?t=111749614000002&r=1&w=2 ) but it
+>  > provides no solution. Can this behaviour be explained? Can it be fixed?
+>
+>  Yes, that one was my same problem. It was diagnosed to the VT6212L doing
+>  decidedly weird things with toggling the Async bit and tying up the bus.
+>  People seemed reluctant to either confirm or deny my suspicion that this was
+>  VIA trying to shine on benchmarks while screwing you over so what exactly
+>  that amounts to I don't know. My own solution has consisted of replacing the
+>  controller with a somewhat slower but decent NEC controller and selling of
+>  the VIA crapware to some unsuspecting poor sod...
+>
+>  > There's one thing that makes me optimistic: USB traffic _speeds_up_ hda.
+>  > That is hdparm gives ~20% improvement in buffered reads if a USB flash
+>  > is inserted and another xterm simultaneously runs
+>  > # dd if=/dev/sda of=/dev/null bs=1024
+>
+>  Sort of interesting. I doubt something can be done about the idle thing
+>  though but David is the person to talk to. Leaving in the rest:
+>
+>  > Here's what I see:
+>  >
+>  > ------------------------------------------------------------------------------
+>  >
+>  > # hdparm -t -T /dev/hda
+>  >     /dev/hda:
+>  >      Timing cached reads:   312 MB in  2.01 seconds = 155.60 MB/sec
+>  >      Timing buffered disk reads:   88 MB in  3.06 seconds =  28.77 MB/sec
+>  > # modprobe ehci-hcd
+>  > # hdparm -t -T /dev/hda
+>  >     /dev/hda:
+>  >      Timing cached reads:   274 MB in  2.01 seconds = 136.58 MB/sec
+>  >      Timing buffered disk reads:   44 MB in  3.10 seconds =  14.20 MB/sec
+>  > # rmmod ehci-hcd
+>  > # hdparm -t -T /dev/hda
+>  >     /dev/hda:
+>  >      Timing cached reads:   286 MB in  2.01 seconds = 142.48 MB/sec
+>  >      Timing buffered disk reads:   90 MB in  3.06 seconds =  29.44 MB/sec
+>  > ------------------------------------------------------------------------------
+>  >
+>  >
+>  > And here's what I have (kernel 2.6.24.3):
+>  >
+>  > ------------------------------------------------------------------------------
+>  >
+>  > #lspci -v
+>  >
+>  > 00:09.0 USB Controller: VIA Technologies, Inc. VT82xxxxx UHCI USB 1.1
+>  > Controller (rev 62) (prog-if 00 [UHCI])
+>  >         Subsystem: VIA Technologies, Inc. VT82xxxxx UHCI USB 1.1 Controller
+>  >         Flags: medium devsel, IRQ 5
+>  >         I/O ports at d000 [size=32]
+>  >         Capabilities: [80] Power Management version 2
+>  >
+>  > 00:09.1 USB Controller: VIA Technologies, Inc. VT82xxxxx UHCI USB 1.1
+>  > Controller (rev 62) (prog-if 00 [UHCI])
+>  >         Subsystem: VIA Technologies, Inc. VT82xxxxx UHCI USB 1.1 Controller
+>  >         Flags: medium devsel, IRQ 9
+>  >         I/O ports at b800 [size=32]
+>  >         Capabilities: [80] Power Management version 2
+>  >
+>  > 00:09.2 USB Controller: VIA Technologies, Inc. USB 2.0 (rev 65) (prog-if
+>  > 20 [EHCI])
+>  >         Subsystem: VIA Technologies, Inc. USB 2.0
+>  >         Flags: bus master, medium devsel, latency 32, IRQ 11
+>  >         Memory at d3800000 (32-bit, non-prefetchable) [size=256]
+>  >         Capabilities: [80] Power Management version 2
+>  >
+>  > # cat /proc/interrupts
+>  >            CPU0
+>  >   0:  100814528    XT-PIC-XT        timer
+>  >   1:       4057    XT-PIC-XT        i8042
+>  >   2:          0    XT-PIC-XT        cascade
+>  >   3:       1013    XT-PIC-XT
+>  >   4:          2    XT-PIC-XT
+>  >   5:    7165568    XT-PIC-XT        bttv0, FM801, uhci_hcd:usb2,
+>  > uhci_hcd:usb3
+>  >   8:   25956003    XT-PIC-XT
+>  >   9:     661413    XT-PIC-XT        eth1, uhci_hcd:usb4
+>  >  10:          4    XT-PIC-XT
+>  >  11:   13526145    XT-PIC-XT        eth0, ehci_hcd:usb1
+>  >  12:    1068179    XT-PIC-XT        i8042
+>  >  14:     710123    XT-PIC-XT        ide0
+>  >  15:       4365    XT-PIC-XT        ide1
+>  > NMI:          0   Non-maskable interrupts
+>  > TRM:          0   Thermal event interrupts
+>  > SPU:          0   Spurious interrupts
+>  > ERR:          0
+>  > ------------------------------------------------------------------------------
+>  >
+>  >
+>  > Please let me know if I missed something important.
+>
+>  Rene.
+>  --
+>  To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+>  the body of a message to majordomo@vger.kernel.org
+>  More majordomo info at  http://vger.kernel.org/majordomo-info.html
+>  Please read the FAQ at  http://www.tux.org/lkml/
+>
 
-out of curiosity: yesterday I've seen a box[0] with ~4 TB Committed_AS:
+I reported this problem well over an year ago, and it was never fixed.
 
-CommitLimit:   3085152 kB
-Committed_AS: 4281048084 kB
-VmallocTotal:   118776 kB
-VmallocUsed:     13772 kB
-VmallocChunk:   103880 kB
+http://lkml.org/lkml/2006/10/29/81
 
-Since it's a rather old kernel (2.6.19.2), I just want to know: could this 
-be related to what you've seen or this completely different (and 
-Committed_AS is just this high because some st00pid app has allocated this 
-much memory but not freed again)?
+That old K7-800 is still serving as my bittorrent 24x7 box, now
+ under the last FC6 kernel released. I plan to upgrade it to
+ Fedora 9 once it's out, and it would be great if a fix to this bug
+ could be found...
 
-Thanks,
-Christian.
+--alessandro
 
-[0] amd64, 32bit kernel, 32bit userland, 4GB RAM
--- 
-BOFH excuse #101:
+ "We act as though comfort and luxury were the chief requirements
+   of life, when all that we need to make us really happy is
+   something to be enthusiastic about."
 
-Collapsed Backbone
+   (Charles Kingsley)
