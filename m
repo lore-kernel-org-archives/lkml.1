@@ -1,74 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762010AbYCEWLq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762781AbYCEWNI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762010AbYCEWLq (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Mar 2008 17:11:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754821AbYCEWLh
+	id S1762781AbYCEWNI (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Mar 2008 17:13:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755829AbYCEWMz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Mar 2008 17:11:37 -0500
-Received: from ns2.g-housing.de ([81.169.133.75]:47703 "EHLO mail.g-house.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753903AbYCEWLg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Mar 2008 17:11:36 -0500
-Date: Wed, 5 Mar 2008 23:11:26 +0100 (CET)
-From: Christian Kujau <lists@nerdbynature.de>
-X-X-Sender: evil@sheep.housecafe.de
-To: Hugh Dickins <hugh@veritas.com>
-cc: Pavel Machek <pavel@ucw.cz>, kernel list <linux-kernel@vger.kernel.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: 2.6.25-rc3: 34TB vmalloc total -- overflow in /proc/meminfo?
-In-Reply-To: <Pine.LNX.4.64.0803052045430.821@blonde.site>
-Message-ID: <alpine.DEB.1.00.0803052301340.8658@sheep.housecafe.de>
-References: <20080305090610.GA30024@atrey.karlin.mff.cuni.cz> <alpine.DEB.1.00.0803052038410.8658@sheep.housecafe.de> <Pine.LNX.4.64.0803052045430.821@blonde.site>
-User-Agent: Alpine 1.00 (DEB 882 2007-12-20)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+	Wed, 5 Mar 2008 17:12:55 -0500
+Received: from us01smtp1.synopsys.com ([198.182.44.79]:47549 "EHLO
+	boden.synopsys.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755619AbYCEWMy (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 5 Mar 2008 17:12:54 -0500
+Date: Wed, 5 Mar 2008 14:12:47 -0800
+From: Joe Buck <Joe.Buck@synopsys.COM>
+To: Michael Matz <matz@suse.de>
+Cc: Jan Hubicka <hubicka@ucw.cz>, Aurelien Jarno <aurelien@aurel32.net>,
+       "H. Peter Anvin" <hpa@zytor.com>, linux-kernel@vger.kernel.org,
+       gcc@gcc.gnu.org
+Subject: Re: RELEASE BLOCKER: Linux doesn't follow x86/x86-64 ABI wrt direction  flag
+Message-ID: <20080305221247.GE17267@synopsys.com>
+References: <20080305153020.GA24631@volta.aurel32.net> <47CEC3AA.6080709@zytor.com> <20080305195834.GA17267@synopsys.com> <20080305202319.GA17053@volta.aurel32.net> <Pine.LNX.4.64.0803052133400.20583@wotan.suse.de> <20080305204234.GB17267@synopsys.com> <20080305204945.GB14011@atrey.karlin.mff.cuni.cz> <Pine.LNX.4.64.0803052158270.20583@wotan.suse.de> <20080305212005.GC17267@synopsys.com> <Pine.LNX.4.64.0803052241170.20583@wotan.suse.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0803052241170.20583@wotan.suse.de>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 5 Mar 2008, Hugh Dickins wrote:
-> I don't see what Pavel's issue is with this: it's simply a fact that
-> with a 64-bit kernel, we've lots of virtual address space to spare
-> for vmalloc.  What would be surprising is for VmallocUsed to get up
-> as high as that.
+On Wed, Mar 05, 2008 at 10:43:33PM +0100, Michael Matz wrote:
+> Hi,
+> 
+> On Wed, 5 Mar 2008, Joe Buck wrote:
+> 
+> > 
+> > 
+> > On Wed, 5 Mar 2008, Jan Hubicka wrote:
+> > > > Linux kernel is disabling red zone and use kernel code model, yet the 
+> > > > ABI is not going to be adjusted for that.
+> > > > 
+> > > > This is resonably easy to fix on kernel side in signal handling, or by
+> > > > removing std usage completely
+> > 
+> > On Wed, Mar 05, 2008 at 10:02:07PM +0100, Michael Matz wrote:
+> > > That is true.  But it requires updating the kernel to a fixed one if you 
+> > > want to run your programs compiled by 4.3 :-/  Not something we'd like to 
+> > > demand.
+> > 
+> > I changed the title just for emphasis.
+> > 
+> > I think that we can't ship 4.3.0 if signal handlers on x86/x86_64
+> > platforms for both Linux and BSD systems will mysteriously (to the users)
+> > fail, and it doesn't matter whose fault it is.
+> 
+> FWIW I don't think it's a release blocker for 4.3.0.  The error is arcane 
+> and happens seldomly if at all.  And only on unfixed kernels.  A program 
+> needs to do std explicitely, which most don't do _and_ get hit by a signal 
+> while begin in a std region.  This happens so seldom that it didn't occur 
+> in building the next openSuSE 11.0, and it continually builds packages 
+> with 4.3 since months.
+> 
+> It should be worked around in 4.3.1 if at all.
 
-OK, thanks for the clarification.
+OK, I suppose that I over-reacted, and it seems that the ship has sailed
+in any case.
 
-> Completely different and much more interesting.
+I agree that it's obscure, and I think that the only reason to worry is
+if it introduces a means of attack, which seems unlikely.
 
-Well, if it's "interesting"...here are some more details from the box:
-
-http://nerdbynature.de/bits/2.6.19.2/
-
-> Unlikely.  Offhand I'm not quite sure that's impossible, but it's far
-> more likely that we've a kernel bug and vm_committed_space has wrapped
-> negative.
-
-Huh. When I first saw this I thought "kernel bug" too, but then read the
-documentation to Committed_AS I thought it's just userspace related...
-
-> Ancient as your kernel is, I don't notice anything in the ChangeLogs
-> since then to say we've fixed a bug of that kind since 2.6.19.
-> Any idea how to reproduce this?
-
-Well, the box is running fine and since it's a production machine I don't 
-intend to reboot the box very often. And since it's really an old kernel 
-(for lkml discussion, that is) I don't intend to debug this one further. 
-I really was only curious if this was userspace related (some app 
-overcommitting) or some kernel weirdness.
-
->  Are you using HugePages at all?
-
-I have:
-
-# CONFIG_HUGETLBFS is not set
-# CONFIG_HUGETLB_PAGE is not set
-
-...was this, what you meant?
-
-Thanks,
-Christian.
--- 
-BOFH excuse #340:
-
-Well fix that in the next (upgrade, update, patch release, service pack).
