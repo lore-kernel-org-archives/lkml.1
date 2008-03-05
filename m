@@ -1,76 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754033AbYCEOlx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755072AbYCEOmy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754033AbYCEOlx (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Mar 2008 09:41:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751370AbYCEOlp
+	id S1755072AbYCEOmy (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Mar 2008 09:42:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752016AbYCEOmn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Mar 2008 09:41:45 -0500
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:34446 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751427AbYCEOlo (ORCPT
+	Wed, 5 Mar 2008 09:42:43 -0500
+Received: from extu-mxob-2.symantec.com ([216.10.194.135]:35562 "EHLO
+	extu-mxob-2.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751370AbYCEOmm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Mar 2008 09:41:44 -0500
-Subject: [PATCH] balance RT task resched only on runqueue
-From: Steven Rostedt <rostedt@goodmis.org>
-To: LKML <linux-kernel@vger.kernel.org>
-Cc: Ingo Molnar <mingo@elte.hu>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Sripathi Kodi <sripathik@in.ibm.com>,
-       Gregory Haskins <ghaskins@novell.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>
-Content-Type: text/plain
-Date: Wed, 05 Mar 2008 09:41:41 -0500
-Message-Id: <1204728101.5241.12.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 
-Content-Transfer-Encoding: 7bit
+	Wed, 5 Mar 2008 09:42:42 -0500
+Date: Wed, 5 Mar 2008 14:29:59 +0000 (GMT)
+From: Hugh Dickins <hugh@veritas.com>
+X-X-Sender: hugh@blonde.site
+To: Ingo Molnar <mingo@elte.hu>
+cc: Jeremy Fitzhardinge <jeremy@goop.org>, "H. Peter Anvin" <hpa@zytor.com>,
+       Andi Kleen <ak@suse.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: preempt bug in set_pmd_pfn?
+In-Reply-To: <20080305064814.GB28398@elte.hu>
+Message-ID: <Pine.LNX.4.64.0803051407310.22243@blonde.site>
+References: <47CDBB87.8090906@goop.org> <20080304212821.GB8944@elte.hu>
+ <47CDBEDC.1050302@goop.org> <20080305064814.GB28398@elte.hu>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-In the RT kernel we discovered a place that can reschedule a task
-without holding the tasks runqueue lock.  This was caused by the RT
-balancing code that pulls RT tasks to the current run queue and will
-reschedule the current task.
+On Wed, 5 Mar 2008, Ingo Molnar wrote:
+> * Jeremy Fitzhardinge <jeremy@goop.org> wrote:
+> > Ingo Molnar wrote:
+> >> * Jeremy Fitzhardinge <jeremy@goop.org> wrote:
+> >>   
+> >>> I think set_pmd_pfn, which is only called by __set_fixmap, might have a 
+> >>> preempt bug in it.
+> >>>     
+> >>
+> >> yes, and we had similar preemption bugs in the past. I guess most places 
+> >> are either infrequent or have some natural atomicity anyway. Wanna send a 
+> >> patch?
+> >
+> > Sure.  Should it just disable preemption, or take a lock?  It calls 
+> > set_pte_at without holding any pte locks; that seems to be relatively 
+> > common.  Is it OK when you're operating on init_mm?
+> 
+> no, it's not OK to modify the kernel pagetable without locking - taking 
+> the pgd_lock should do the trick. Could you send the stacktrace that 
+> shows the place that is preemptible?
 
-There's a slight chance that the pulling of the RT tasks will release
-the current runqueue's lock and retake it (in the double_lock_balance).
-During this time that the runqueue is released, the current task can
-migrate to another runqueue.
+Please, Ingo, could you give an example of where such additional locking
+is actually necessary?
 
-In the prio_changed_rt code, after the pull, if the current task is of
-lesser priority than one of the RT tasks pulled, resched_task is called
-on the current task. If the current task had migrated in that small
-window, resched_task will be called without holding the runqueue lock
-for the runqueue that the task is on.
+I ask because I went over those places when splitting the page_table_lock
+for userspace in 2.6.15.  Some things took init_mm.page_table_lock and
+some things didn't, and I concluded that actually none of them needed it.
 
-This race condition also exists in the mainline kernel and this patch
-adds a check to make sure the task hasn't migrated before calling
-resched_task.
+With the userspace pagetables, we need to guard against racing threads
+and vmscan/rmap.  But with the kernel pagetables, we'd already be in
+serious trouble if two cpus could be modifying the same pte at the
+same time - there needs to be other serialization already e.g. vmalloc
+has its own locking for parcelling out areas to different uses, so down
+at the page table level there should be no conflict.
 
-Signed-off-by: Steven Rostedt <srostedt@redhat.com>
----
- kernel/sched_rt.c |    6 ++++--
- 1 file changed, 4 insertions(+), 2 deletions(-)
+Allocation of new page tables, yes, that needs locking, and does use
+the page_table_lock for kernel space just as for user space.
 
-Index: linux-compile.git/kernel/sched_rt.c
-===================================================================
---- linux-compile.git.orig/kernel/sched_rt.c	2008-03-05 09:07:28.000000000 -0500
-+++ linux-compile.git/kernel/sched_rt.c	2008-03-05 09:18:58.000000000 -0500
-@@ -1107,9 +1107,11 @@ static void prio_changed_rt(struct rq *r
- 			pull_rt_task(rq);
- 		/*
- 		 * If there's a higher priority task waiting to run
--		 * then reschedule.
-+		 * then reschedule. Note, the above pull_rt_task
-+		 * can release the rq lock and p could migrate.
-+		 * Only reschedule if p is still on the same runqueue.
- 		 */
--		if (p->prio > rq->rt.highest_prio)
-+		if (p->prio > rq->rt.highest_prio && task_rq(p) == rq)
- 			resched_task(p);
- #else
- 		/* For UP simply resched on drop of prio */
+That was all two years ago, I may have been wrong then, or a lot may
+have changed since.  But I've heard of a grand total of 0 problems
+from not having such locking.
 
+And on the original topic of flush TLB without preemption disabled:
+again I'm not sure there's a bug there, but it's less clear.  Aren't
+some of those __flush_tlb_ones just unnecessary, we're simply filling
+a previously empty slot?  And if there's a guarantee that preemption
+will itself involve a TLB flush (maybe there's no such guarantee for
+these kernel entries, it's quite a different case from the userspace
+one, and you'll be worrying about the global bit), if, then it'd be
+okay to __flush_tlb_one without disabling preemption.
 
+Hugh
