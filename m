@@ -1,47 +1,144 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765367AbYCEWVt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762607AbYCEW0g@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765367AbYCEWVt (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Mar 2008 17:21:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765227AbYCEWVf
+	id S1762607AbYCEW0g (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Mar 2008 17:26:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752986AbYCEW0Z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Mar 2008 17:21:35 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:51599
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1765203AbYCEWVe (ORCPT
+	Wed, 5 Mar 2008 17:26:25 -0500
+Received: from accolon.hansenpartnership.com ([76.243.235.52]:52696 "EHLO
+	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751647AbYCEW0X (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Mar 2008 17:21:34 -0500
-Date: Wed, 05 Mar 2008 14:21:33 -0800 (PST)
-Message-Id: <20080305.142133.213259829.davem@davemloft.net>
-To: bunk@kernel.org
-Cc: matz@suse.de, clattner@apple.com, hpa@zytor.com,
-       richard.guenther@gmail.com, Joe.Buck@synopsys.com, hubicka@ucw.cz,
-       aurelien@aurel32.net, linux-kernel@vger.kernel.org, gcc@gcc.gnu.org
-Subject: Re: RELEASE BLOCKER: Linux doesn't follow x86/x86-64 ABI wrt
- direction flag
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20080305221303.GA937@cs181133002.pp.htv.fi>
-References: <738B72DB-A1D6-43F8-813A-E49688D05771@apple.com>
-	<Pine.LNX.4.64.0803052258530.20583@wotan.suse.de>
-	<20080305221303.GA937@cs181133002.pp.htv.fi>
-X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+	Wed, 5 Mar 2008 17:26:23 -0500
+Subject: [GIT PATCH] SCSI bug fixes for 2.6.25-rc4
+From: James Bottomley <James.Bottomley@HansenPartnership.com>
+To: Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Cc: linux-scsi <linux-scsi@vger.kernel.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Content-Type: text/plain
+Date: Wed, 05 Mar 2008 16:26:17 -0600
+Message-Id: <1204755977.3047.103.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+X-Mailer: Evolution 2.12.3 (2.12.3-1.fc8) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Adrian Bunk <bunk@kernel.org>
-Date: Thu, 6 Mar 2008 00:13:04 +0200
+Apart from the usual crop of bug fixes, it is hoped that both gdth
+(under all circumstances) and aic94xx (under protocol errors) now work
+after this.
 
-> On Wed, Mar 05, 2008 at 10:59:21PM +0100, Michael Matz wrote:
-> > The problem is with old kernels, which by definition stay unfixed.
-> 
-> Compiling older kernels with new gcc versions has never been supported.
+The patch is available from:
 
-Adrian we're talking about userland binaries compiled by
-gcc-4.3, not the kernel.
+master.kernel.org:/pub/scm/linux/kernel/git/jejb/scsi-rc-fixes-2.6.git
 
-Please follow the discussion if you'd like to contribute.
+The short changelog is:
 
-Thanks.
+Andrew Vasquez (4):
+      qla2xxx: Update version number to 8.02.00-k9.
+      qla2xxx: Correct usage of inconsistent timeout values while issuing ELS co
+      qla2xxx: Correct discrepancies during OVERRUN handling on FWI2-capable car
+      qla2xxx: Correct needless clean-up resets during shutdown.
+
+Boaz Harrosh (2):
+      gdth: fix to internal commands execution
+      gdth: bugfix for the at-exit problems
+
+FUJITA Tomonori (6):
+      tgt: fix build errors when dprintk is defined
+      tgt: set the data length properly
+      tgt: stop zero'ing scsi_cmnd
+      ibmvstgt: set up scsi_host properly before __scsi_alloc_queue
+      ps3rom: disable clustering
+      ps3rom: fix wrong resid calculation bug
+
+James Bottomley (6):
+      aic94xx: fix TMF ascb handling to prevent sequencer panic
+      libsas: misc fixes to the eh path
+      libsas: use the supplied address for SATA devices rather than changing it
+Andrew Vasquez (4):
+      qla2xxx: Update version number to 8.02.00-k9.
+      qla2xxx: Correct usage of inconsistent timeout values while issuing ELS co
+      qla2xxx: Correct discrepancies during OVERRUN handling on FWI2-capable car
+      qla2xxx: Correct needless clean-up resets during shutdown.
+
+Boaz Harrosh (2):
+      gdth: fix to internal commands execution
+      gdth: bugfix for the at-exit problems
+
+FUJITA Tomonori (6):
+      tgt: fix build errors when dprintk is defined
+      tgt: set the data length properly
+      tgt: stop zero'ing scsi_cmnd
+      ibmvstgt: set up scsi_host properly before __scsi_alloc_queue
+      ps3rom: disable clustering
+      ps3rom: fix wrong resid calculation bug
+
+James Bottomley (6):
+      aic94xx: fix TMF ascb handling to prevent sequencer panic
+      libsas: misc fixes to the eh path
+      libsas: use the supplied address for SATA devices rather than changing it
+      aic94xx: plumb in I_T_nexus_reset task management function
+      libsas: export sas_find_local_phy function
+      mvsas: remove execute permission from file
+
+Ke Wei (1):
+      mvsas: fix phy sas address
+
+Krzysztof Oledzki (1):
+      mpt fusion: don't oops if NumPhys==0
+
+Mike Christie (4):
+      iscsi class: regression - fix races with state manipulation and blocking/u
+      qla4xxx: regression - add start scan callout
+      qla4xxx: fix host reset dpc race
+      iscsi regression: check for zero max session cmds
+
+Nick Cheng (1):
+      arcmsr: update version and changelog
+
+Randy Dunlap (2):
+      docbook: fix fusion source files
+      docbook: fix scsi source file
+
+
+And the diffstat:
+
+ Documentation/scsi/ChangeLog.arcmsr |    6 
+ drivers/message/fusion/mptbase.c    |   25 +-
+ drivers/message/fusion/mptsas.c     |    5 
+ drivers/message/fusion/mptscsih.c   |   14 -
+ drivers/scsi/aic94xx/aic94xx.h      |    1 
+ drivers/scsi/aic94xx/aic94xx_hwi.h  |    3 
+ drivers/scsi/aic94xx/aic94xx_init.c |    2 
+ drivers/scsi/aic94xx/aic94xx_task.c |    4 
+ drivers/scsi/aic94xx/aic94xx_tmf.c  |  304 ++++++++++++++++++++++--------------
+ drivers/scsi/arcmsr/arcmsr.h        |    2 
+ drivers/scsi/gdth.c                 |  112 ++++---------
+ drivers/scsi/gdth.h                 |    1 
+ drivers/scsi/ibmvscsi/ibmvstgt.c    |    9 -
+ drivers/scsi/libiscsi.c             |    4 
+ drivers/scsi/libsas/sas_ata.c       |   39 ----
+ drivers/scsi/libsas/sas_port.c      |   11 -
+ drivers/scsi/libsas/sas_scsi_host.c |   34 +---
+ drivers/scsi/mvsas.c                |   11 -
+ drivers/scsi/ps3rom.c               |    4 
+ drivers/scsi/qla2xxx/qla_gs.c       |   10 -
+ drivers/scsi/qla2xxx/qla_init.c     |   11 -
+ drivers/scsi/qla2xxx/qla_isr.c      |    5 
+ drivers/scsi/qla2xxx/qla_mbx.c      |    2 
+ drivers/scsi/qla2xxx/qla_version.h  |    2 
+ drivers/scsi/qla4xxx/ql4_init.c     |    2 
+ drivers/scsi/qla4xxx/ql4_os.c       |   39 ++--
+ drivers/scsi/scsi_scan.c            |    3 
+ drivers/scsi/scsi_tgt_lib.c         |    6 
+ drivers/scsi/scsi_transport_iscsi.c |   78 +++++----
+ include/scsi/libsas.h               |    1 
+ include/scsi/scsi_transport_iscsi.h |    2 
+ 31 files changed, 403 insertions(+), 349 deletions(-)
+
+James
+
+
