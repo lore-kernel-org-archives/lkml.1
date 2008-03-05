@@ -1,81 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754060AbYCEO73@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755524AbYCEPAg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754060AbYCEO73 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Mar 2008 09:59:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751140AbYCEO7Q
+	id S1755524AbYCEPAg (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Mar 2008 10:00:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752348AbYCEPAX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Mar 2008 09:59:16 -0500
-Received: from fmmailgate03.web.de ([217.72.192.234]:45952 "EHLO
-	fmmailgate03.web.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751028AbYCEO7P (ORCPT
+	Wed, 5 Mar 2008 10:00:23 -0500
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:59379 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752249AbYCEPAW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Mar 2008 09:59:15 -0500
-From: Stephan Diestelhorst <langer_mann@web.de>
-To: davej@codemonkey.org.uk
-Subject: [PATCH 1/1] Speedfreq-SMI call clobbers ECX
-Date: Wed, 5 Mar 2008 15:59:09 +0100
-User-Agent: KMail/1.9.6
-Cc: cpufreq@lists.linux.org.uk, linux-kernel@vger.kernel.org
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
+	Wed, 5 Mar 2008 10:00:22 -0500
+Subject: [PATCH -v2] balance RT task resched only on runqueue
+From: Steven Rostedt <rostedt@goodmis.org>
+To: LKML <linux-kernel@vger.kernel.org>
+Cc: Ingo Molnar <mingo@elte.hu>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Sripathi Kodi <sripathik@in.ibm.com>,
+       Gregory Haskins <ghaskins@novell.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>
+In-Reply-To: <1204728101.5241.12.camel@localhost.localdomain>
+References: <1204728101.5241.12.camel@localhost.localdomain>
+Content-Type: text/plain
+Date: Wed, 05 Mar 2008 10:00:12 -0500
+Message-Id: <1204729212.5241.16.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.3 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200803051559.09962.langer_mann@web.de>
-X-Provags-ID: V01U2FsdGVkX18UP78EQR4PDw6OC4kO6Qat2OHtp9dZsLHECySG
-	RjNRVk/M/12zP4vwBJvlU08o8mmXRtSkW9boRhVyzoTutvtOv2
-	7Jl1coZyo=
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Dear Dave,
-  I have found that using SMI to change the cpu's frequency on my DELL 
-Latitude L400 clobbers the ECX register in speedstep_set_state, causing 
-unneccessary retries because the "state" variable has changed silently (GCC 
-assumes it is still present in ECX).
+[
+  Update: I didn't like the task_rq(p), so I changed the test to be
+  rq->curr == p. No need to resched if the p isn't running. And
+  I think this is a bit cleaner.
+]
 
-The patch is simple: Introduce temporary output "clobber_ecx" operand that 
-consumes the clobbered value.
+In the RT kernel we discovered a place that can reschedule a task
+without holding the tasks runqueue lock.  This was caused by the RT
+balancing code that pulls RT tasks to the current run queue and will
+reschedule the current task.
 
-Cheers,
-  Stephan
+There's a slight chance that the pulling of the RT tasks will release
+the current runqueue's lock and retake it (in the double_lock_balance).
+During this time that the runqueue is released, the current task can
+migrate to another runqueue.
 
-Signed-off: Stephan Diestelhorst <stephan.diestelhorst@gmail.com>
+In the prio_changed_rt code, after the pull, if the current task is of
+lesser priority than one of the RT tasks pulled, resched_task is called
+on the current task. If the current task had migrated in that small
+window, resched_task will be called without holding the runqueue lock
+for the runqueue that the task is on.
 
---
+This race condition also exists in the mainline kernel and this patch
+adds a check to make sure the task hasn't migrated before calling
+resched_task.
 
---- linux-2.6.24.3/arch/x86/kernel/cpu/cpufreq/speedstep-smi.c.orig	2008-02-26 
-01:20:20.000000000 +0100
-+++ linux-2.6.24.3/arch/x86/kernel/cpu/cpufreq/speedstep-smi.c	2008-03-05 
-15:56:42.000000000 +0100
-@@ -160,7 +160,7 @@ static int speedstep_get_state (void)
-  */
- static void speedstep_set_state (unsigned int state)
- {
--	unsigned int result = 0, command, new_state;
-+	unsigned int result = 0, command, new_state, ecx_clobber;
- 	unsigned long flags;
- 	unsigned int function=SET_SPEEDSTEP_STATE;
- 	unsigned int retry = 0;
-@@ -184,7 +184,7 @@ static void speedstep_set_state (unsigne
- 		__asm__ __volatile__(
- 			"movl $0, %%edi\n"
- 			"out %%al, (%%dx)\n"
--			: "=b" (new_state), "=D" (result)
-+			: "=b" (new_state), "=D" (result), "=c" (ecx_clobber)
- 			: "a" (command), "b" (function), "c" (state), "d" (smi_port), "S" (0)
- 			);
- 	} while ((new_state != state) && (retry <= SMI_TRIES));
-@@ -195,7 +195,7 @@ static void speedstep_set_state (unsigne
- 	if (new_state == state) {
- 		dprintk("change to %u MHz succeeded after %u tries with result %u\n", 
-(speedstep_freqs[new_state].frequency / 1000), retry, result);
- 	} else {
--		printk(KERN_ERR "cpufreq: change failed with new_state %u and result %u\n", 
-new_state, result);
-+		printk(KERN_ERR "cpufreq: change to state %u failed with new_state %u and 
-result %u\n", state, new_state, result);
- 	}
- 
- 	return;
+Signed-off-by: Steven Rostedt <srostedt@redhat.com>
+---
+ kernel/sched_rt.c |    6 ++++--
+ 1 file changed, 4 insertions(+), 2 deletions(-)
+
+Index: linux-compile.git/kernel/sched_rt.c
+===================================================================
+--- linux-compile.git.orig/kernel/sched_rt.c	2008-03-05 09:31:22.000000000 -0500
++++ linux-compile.git/kernel/sched_rt.c	2008-03-05 09:53:00.000000000 -0500
+@@ -1107,9 +1107,11 @@ static void prio_changed_rt(struct rq *r
+ 			pull_rt_task(rq);
+ 		/*
+ 		 * If there's a higher priority task waiting to run
+-		 * then reschedule.
++		 * then reschedule. Note, the above pull_rt_task
++		 * can release the rq lock and p could migrate.
++		 * Only reschedule if p is still on the same runqueue.
+ 		 */
+-		if (p->prio > rq->rt.highest_prio)
++		if (p->prio > rq->rt.highest_prio && rq->curr == p)
+ 			resched_task(p);
+ #else
+ 		/* For UP simply resched on drop of prio */
+
+
