@@ -1,84 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757283AbYCESej@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758955AbYCESfc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757283AbYCESej (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Mar 2008 13:34:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752201AbYCESe3
+	id S1758955AbYCESfc (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Mar 2008 13:35:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752790AbYCESfQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Mar 2008 13:34:29 -0500
-Received: from threatwall.zlynx.org ([199.45.143.218]:33780 "EHLO zlynx.org"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752082AbYCESe2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Mar 2008 13:34:28 -0500
-Subject: Re: [patch 3/3] pata: "I do not think it means, what you think it
-	means."
-From: Zan Lynx <zlynx@acm.org>
-To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Cc: Krzysztof Halasa <khc@pm.waw.pl>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Andrew Morton <akpm@linux-foundation.org>, jeff@garzik.org,
-       linux-ide@vger.kernel.org, alan@redhat.com,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <58cb370e0803050922p7695771cq393120ed5906efb7@mail.gmail.com>
-References: <200803042316.m24NGI7k002489@imap1.linux-foundation.org>
-	 <20080304173058.7679b7c8.akpm@linux-foundation.org>
-	 <20080305115610.397b3ea3@the-village.bc.nu>
-	 <200803051421.14167.bzolnier@gmail.com>
-	 <m3ir015du5.fsf@maximus.localdomain>
-	 <58cb370e0803050846t7dbd65d6ocfec7ca5e93aa6db@mail.gmail.com>
-	 <m3ejap5cvz.fsf@maximus.localdomain>
-	 <58cb370e0803050922p7695771cq393120ed5906efb7@mail.gmail.com>
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-fbh5dxq7PBazqw0zVNmd"
-Date: Wed, 05 Mar 2008 11:33:53 -0700
-Message-Id: <1204742033.6408.37.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 
-X-Envelope-From: zlynx@acm.org
-X-Spam-Id: 20080305/1JWyR7-0000ok-JF-linux-kernel@vger.kernel.org:zlynx@acm.org:199.45.143.218
+	Wed, 5 Mar 2008 13:35:16 -0500
+Received: from ra.tuxdriver.com ([70.61.120.52]:2754 "EHLO ra.tuxdriver.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752082AbYCESfO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 5 Mar 2008 13:35:14 -0500
+Date: Wed, 5 Mar 2008 13:11:29 -0500
+From: "John W. Linville" <linville@tuxdriver.com>
+To: Randy Dunlap <randy.dunlap@oracle.com>
+Cc: Ivo van Doorn <ivdoorn@gmail.com>, rt2400-devel@lists.sourceforge.net,
+       linux-wireless@vger.kernel.org,
+       Michael =?iso-8859-1?Q?B=FCker?= <m.bueker@berlin.de>,
+       linux-kernel@vger.kernel.org, akpm <akpm@linux-foundation.org>
+Subject: Re: [Rt2400-devel] [PATCH] wireless: rt2x00: fix driver menu
+	indenting
+Message-ID: <20080305181129.GA6663@tuxdriver.com>
+References: <200802091623.06504.m.bueker@berlin.de> <20080210105252.e0a433ee.randy.dunlap@oracle.com> <200802102003.25392.IvDoorn@gmail.com> <20080304220029.1f152f00.randy.dunlap@oracle.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20080304220029.1f152f00.randy.dunlap@oracle.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, Mar 04, 2008 at 10:00:29PM -0800, Randy Dunlap wrote:
+> On Sun, 10 Feb 2008 20:03:25 +0100 Ivo van Doorn wrote:
+> 
+> > On Sunday 10 February 2008, Randy Dunlap wrote:
+> > > On Sat, 9 Feb 2008 16:23:06 +0100 Michael Büker wrote:
+> > > 
+> > > > 2) When selecting "Ralink driver support" (CONFIG_RT2X00), the accompanying 
+> > > > drivers (CONFIG_RT2400PCI, CONFIG_RT61PC, ...) appear unindented. They should 
+> > > > be indented by four spaces.
+> > > 
+> > > Yes, patch is below.
+> > > 
+> > > ---
+> > > From: Randy Dunlap <randy.dunlap@oracle.com>
+> > > 
+> > > Michael Büker <m.bueker@berlin.de> reports that the RT2x00 drivers
+> > > are not indented as they should be, so use proper dependencies to make
+> > > them be indented as expected.
+> > > 
+> > > Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
+> > 
+> > Ack-by: Ivo van Doorn <IvDoorn@gmail.com>
+> > 
+> > ---
+> > John,
+> > Could you push this directly into wireless-2.6 and probably upstream as well.
+> > 
+> > Thanks.
+> > 
+> > Ivo
+> 
+> John, do you have this patch queued somewhere?
 
---=-fbh5dxq7PBazqw0zVNmd
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+It is in net-2.6.26.
 
+commit 0d84d78db5bad848e385cbb1e4ae2ea1f5f27641
+Author: Randy Dunlap <randy.dunlap@oracle.com>
+Date:   Sun Feb 10 10:52:52 2008 -0800
 
-On Wed, 2008-03-05 at 18:22 +0100, Bartlomiej Zolnierkiewicz wrote:
-> On Wed, Mar 5, 2008 at 5:55 PM, Krzysztof Halasa <khc@pm.waw.pl> wrote:
-> > "Bartlomiej Zolnierkiewicz" <bzolnier@gmail.com> writes:
-> >
-> >
-> > > [ Actually, I'm not surprised as we are getting patches/reports for m=
-uch
-> >  >   older/buggier hardware...  After all we are doing Linux not some o=
-ther
-> >  >   OS whose every release obsoletes the old hardware. ;-) ]
-> >
-> >  It isn't just about old/buggy hardware (personally I'm using much
-> >  older items). The DTLA disks had "rather" short MTBF, with something
-> >  like 30% returns in the first year after purchase, according to a
-> >  friendly distributor. Despite firmware upgrades, they were unfixable.
->=20
-> Ah, you meant that it was a DeathStar drive... well, a lucky survivor...
+    wireless: rt2x00: fix driver menu indenting
 
-In my experience what they needed was proper cooling.  I have a 3ware
-RAID-5 array of 4 120 GB DeskStar drives still working.  In a nice RAID
-enclosure with fans, not tucked next to an overclocked video card and
-the power supply.
---=20
-Zan Lynx <zlynx@acm.org>
+    Michael Büker <m.bueker@berlin.de> reports that the RT2x00 drivers
+    are not indented as they should be, so use proper dependencies to make
+    them be indented as expected.
 
---=-fbh5dxq7PBazqw0zVNmd
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
+    Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
+    Ack-by: Ivo van Doorn <IvDoorn@gmail.com>
+    Signed-off-by: John W. Linville <linville@tuxdriver.com>
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.7 (GNU/Linux)
+Hth!
 
-iD8DBQBHzueRolqWs/Y4NLwRAoRlAJ9TsH/GuNS7piBUtbOkcLH0YKnKoACglXYZ
-U7PUdSAr5/DqvfuG4HMMs54=
-=QYWQ
------END PGP SIGNATURE-----
-
---=-fbh5dxq7PBazqw0zVNmd--
-
+John
+-- 
+John W. Linville
+linville@tuxdriver.com
