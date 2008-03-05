@@ -1,44 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765586AbYCELH3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765896AbYCELHy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765586AbYCELH3 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Mar 2008 06:07:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752913AbYCELHK
+	id S1765896AbYCELHy (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Mar 2008 06:07:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764672AbYCELHm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Mar 2008 06:07:10 -0500
-Received: from ch-smtp01.sth.basefarm.net ([80.76.149.212]:35915 "EHLO
-	ch-smtp01.sth.basefarm.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1764723AbYCELHJ (ORCPT
+	Wed, 5 Mar 2008 06:07:42 -0500
+Received: from e28smtp06.in.ibm.com ([59.145.155.6]:34189 "EHLO
+	e28esmtp06.in.ibm.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752913AbYCELHk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Mar 2008 06:07:09 -0500
-X-Mailer: exmh version 2.7.2 04/02/2003 (gentoo 2.7.2) with nmh-1.2
-To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-cc: Anders Eriksson <aeriksson@fastmail.fm>, Jeff Garzik <jeff@garzik.org>,
-       linux-kernel@vger.kernel.org,
-       Linux IDE mailing list <linux-ide@vger.kernel.org>,
-       Jens Axboe <jens.axboe@oracle.com>
-Subject: Re: -rc3 regression (was Re: 2.6.25-rc2 + smartd = hang ) 
-In-reply-to: <200803050013.39247.bzolnier@gmail.com> 
-References: <20080222165122.8D2BB93C12F@tippex.mynet.homeunix.org> <20080304095701.DDF762DC027@tippex.mynet.homeunix.org> <200803042346.21403.bzolnier@gmail.com> <200803050013.39247.bzolnier@gmail.com>
-Comments: In-reply-to Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-   message dated "Wed, 05 Mar 2008 00:13:39 +0100."
-Mime-Version: 1.0
+	Wed, 5 Mar 2008 06:07:40 -0500
+Date: Wed, 5 Mar 2008 16:37:31 +0530
+From: Dhaval Giani <dhaval@linux.vnet.ibm.com>
+To: Paul Menage <menage@google.com>
+Cc: fedora-devel-list@redhat.com, opensuse-packaging@opensuse.org,
+       lkml <linux-kernel@vger.kernel.org>,
+       containers@lists.linux-foundation.org, Balbir Singh <balbir@in.ibm.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>,
+       Sudhir Kumar <skumar@linux.vnet.ibm.com>
+Subject: Re: [RFC] libcg: design and plans
+Message-ID: <20080305110730.GB22217@linux.vnet.ibm.com>
+Reply-To: Dhaval Giani <dhaval@linux.vnet.ibm.com>
+References: <20080304152341.GB5659@linux.vnet.ibm.com> <6599ad830803042215n6aedb3eeub0c037e6a4e7bb34@mail.gmail.com> <20080305103343.GA22217@linux.vnet.ibm.com> <6599ad830803050241k590e4389ud95b9b3ef920f8b6@mail.gmail.com>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Date: Wed, 05 Mar 2008 12:06:42 +0100
-From: Anders Eriksson <aeriksson@fastmail.fm>
-Message-Id: <20080305110642.DF39F93C87D@tippex.mynet.homeunix.org>
-X-Originating-IP: 83.252.237.4
-X-Scan-Result: No virus found in message 1JWrSf-0008Q7-5I.
-X-Scan-Signature: ch-smtp01.sth.basefarm.net 1JWrSf-0008Q7-5I a181e533f19cffe0ff645674d4379569
+Content-Disposition: inline
+In-Reply-To: <6599ad830803050241k590e4389ud95b9b3ef920f8b6@mail.gmail.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, Mar 05, 2008 at 02:41:41AM -0800, Paul Menage wrote:
+> On Wed, Mar 5, 2008 at 2:33 AM, Dhaval Giani <dhaval@linux.vnet.ibm.com> wrote:
+> >
+> >  So there are two different points, /mem and /cpu. /mem has A and C and
+> >  /cpu has A, B and C. A and B of /cpu correspond to A of /mem and the C's
+> >  are the same. With this is mind, if I say a task should move to B in
+> >  /cpu, it should also move to A in /mem?
+> >
+> 
+> Maybe clearer to say that /mem has two cgroups, AB and C. The
+> abstraction provided by libcg would be of three groups, A, B and C.
+> Asking libcg to move a process to abstract group B would result it
+> moving to /mem/AB and /cpu/B
+> 
 
+OK. Hmm, I've not really thought about it. At first thought, it should
+not be very difficult. Only thing I am not sure is the arbitrary
+grouping of the groups (ok, a bit confusing). If that information is
+maintained somewhere, it should be pretty straightforward. (Only thing
+is that I am not sure how it will be done, and where the grouping
+information should be stored. configuration looks like the logical
+place, but I am not sure)
 
-bzolnier@gmail.com said:
-> Anders, could you send me ide-taskfile.s (make drivers/ide/ide-taskfile.s)
-> from before and after the commit?  Maybe it is simply a compiler bug... 
-
-Sending offlist.
-/A
-
+Thanks,
+-- 
+regards,
+Dhaval
