@@ -1,160 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756953AbYCEUDX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755103AbYCEUO2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756953AbYCEUDX (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Mar 2008 15:03:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752012AbYCEUDO
+	id S1755103AbYCEUO2 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Mar 2008 15:14:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752068AbYCEUOS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Mar 2008 15:03:14 -0500
-Received: from ug-out-1314.google.com ([66.249.92.175]:46728 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751983AbYCEUDN (ORCPT
+	Wed, 5 Mar 2008 15:14:18 -0500
+Received: from us01smtp2.synopsys.com ([198.182.44.80]:36136 "EHLO
+	kiruna.synopsys.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752012AbYCEUOS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Mar 2008 15:03:13 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=t1LwToJHHOzP2j8owMI1atckY5C4SCCsOl/zXDE/bD75vwKabpbpZmqqQNyTRRJSyxq7/ukAtCxRdR840EEB6vFo5A2z7NjId2X2KCdYzAxkolI0lmNSty+Kaj4CYUVGeWUylLW7mnTAJKZKAdIoj0NbuJCNwKbWMo1+ZKme0l8=
-Message-ID: <5a4c581d0803051203s1a0048c2u5f10b3eb442cfafb@mail.gmail.com>
-Date: Wed, 5 Mar 2008 21:03:10 +0100
-From: "Alessandro Suardi" <alessandro.suardi@gmail.com>
-To: "Rene Herman" <rene.herman@keyaccess.nl>
-Subject: Re: ehci-hcd affects hda speed
-Cc: "Lev A. Melnikovsky" <melnikovsky@mail.ru>, linux-kernel@vger.kernel.org,
-       "David Brownell" <david-b@pacbell.net>
-In-Reply-To: <47CEC816.6000808@keyaccess.nl>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Wed, 5 Mar 2008 15:14:18 -0500
+X-Greylist: delayed 658 seconds by postgrey-1.27 at vger.kernel.org; Wed, 05 Mar 2008 15:14:18 EST
+Date: Wed, 5 Mar 2008 11:58:34 -0800
+From: Joe Buck <Joe.Buck@synopsys.COM>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: Aurelien Jarno <aurelien@aurel32.net>, linux-kernel@vger.kernel.org,
+       gcc@gcc.gnu.org
+Subject: Re: Linux doesn't follow x86/x86-64 ABI wrt direction flag
+Message-ID: <20080305195834.GA17267@synopsys.com>
+References: <20080305153020.GA24631@volta.aurel32.net> <47CEC3AA.6080709@zytor.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <alpine.LFD.1.00.0803050036210.31935@nev.ubzr>
-	 <47CEC816.6000808@keyaccess.nl>
+In-Reply-To: <47CEC3AA.6080709@zytor.com>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Mar 5, 2008 at 5:19 PM, Rene Herman <rene.herman@keyaccess.nl> wrote:
-> On 04-03-08 23:27, Lev A. Melnikovsky wrote:
->
->  > I have recently installed a VT6212L-based PCI USB controller into my old
->  > rock-stable P3B-F computer
->
->  Uh oh...
->
->  > just to discover that, even being idle, it significantly slows down main
->  > PATA hard drive. I have found an earlier thread with similar (?) problem
->  > (archived at http://marc.info/?t=111749614000002&r=1&w=2 ) but it
->  > provides no solution. Can this behaviour be explained? Can it be fixed?
->
->  Yes, that one was my same problem. It was diagnosed to the VT6212L doing
->  decidedly weird things with toggling the Async bit and tying up the bus.
->  People seemed reluctant to either confirm or deny my suspicion that this was
->  VIA trying to shine on benchmarks while screwing you over so what exactly
->  that amounts to I don't know. My own solution has consisted of replacing the
->  controller with a somewhat slower but decent NEC controller and selling of
->  the VIA crapware to some unsuspecting poor sod...
->
->  > There's one thing that makes me optimistic: USB traffic _speeds_up_ hda.
->  > That is hdparm gives ~20% improvement in buffered reads if a USB flash
->  > is inserted and another xterm simultaneously runs
->  > # dd if=/dev/sda of=/dev/null bs=1024
->
->  Sort of interesting. I doubt something can be done about the idle thing
->  though but David is the person to talk to. Leaving in the rest:
->
->  > Here's what I see:
->  >
->  > ------------------------------------------------------------------------------
->  >
->  > # hdparm -t -T /dev/hda
->  >     /dev/hda:
->  >      Timing cached reads:   312 MB in  2.01 seconds = 155.60 MB/sec
->  >      Timing buffered disk reads:   88 MB in  3.06 seconds =  28.77 MB/sec
->  > # modprobe ehci-hcd
->  > # hdparm -t -T /dev/hda
->  >     /dev/hda:
->  >      Timing cached reads:   274 MB in  2.01 seconds = 136.58 MB/sec
->  >      Timing buffered disk reads:   44 MB in  3.10 seconds =  14.20 MB/sec
->  > # rmmod ehci-hcd
->  > # hdparm -t -T /dev/hda
->  >     /dev/hda:
->  >      Timing cached reads:   286 MB in  2.01 seconds = 142.48 MB/sec
->  >      Timing buffered disk reads:   90 MB in  3.06 seconds =  29.44 MB/sec
->  > ------------------------------------------------------------------------------
->  >
->  >
->  > And here's what I have (kernel 2.6.24.3):
->  >
->  > ------------------------------------------------------------------------------
->  >
->  > #lspci -v
->  >
->  > 00:09.0 USB Controller: VIA Technologies, Inc. VT82xxxxx UHCI USB 1.1
->  > Controller (rev 62) (prog-if 00 [UHCI])
->  >         Subsystem: VIA Technologies, Inc. VT82xxxxx UHCI USB 1.1 Controller
->  >         Flags: medium devsel, IRQ 5
->  >         I/O ports at d000 [size=32]
->  >         Capabilities: [80] Power Management version 2
->  >
->  > 00:09.1 USB Controller: VIA Technologies, Inc. VT82xxxxx UHCI USB 1.1
->  > Controller (rev 62) (prog-if 00 [UHCI])
->  >         Subsystem: VIA Technologies, Inc. VT82xxxxx UHCI USB 1.1 Controller
->  >         Flags: medium devsel, IRQ 9
->  >         I/O ports at b800 [size=32]
->  >         Capabilities: [80] Power Management version 2
->  >
->  > 00:09.2 USB Controller: VIA Technologies, Inc. USB 2.0 (rev 65) (prog-if
->  > 20 [EHCI])
->  >         Subsystem: VIA Technologies, Inc. USB 2.0
->  >         Flags: bus master, medium devsel, latency 32, IRQ 11
->  >         Memory at d3800000 (32-bit, non-prefetchable) [size=256]
->  >         Capabilities: [80] Power Management version 2
->  >
->  > # cat /proc/interrupts
->  >            CPU0
->  >   0:  100814528    XT-PIC-XT        timer
->  >   1:       4057    XT-PIC-XT        i8042
->  >   2:          0    XT-PIC-XT        cascade
->  >   3:       1013    XT-PIC-XT
->  >   4:          2    XT-PIC-XT
->  >   5:    7165568    XT-PIC-XT        bttv0, FM801, uhci_hcd:usb2,
->  > uhci_hcd:usb3
->  >   8:   25956003    XT-PIC-XT
->  >   9:     661413    XT-PIC-XT        eth1, uhci_hcd:usb4
->  >  10:          4    XT-PIC-XT
->  >  11:   13526145    XT-PIC-XT        eth0, ehci_hcd:usb1
->  >  12:    1068179    XT-PIC-XT        i8042
->  >  14:     710123    XT-PIC-XT        ide0
->  >  15:       4365    XT-PIC-XT        ide1
->  > NMI:          0   Non-maskable interrupts
->  > TRM:          0   Thermal event interrupts
->  > SPU:          0   Spurious interrupts
->  > ERR:          0
->  > ------------------------------------------------------------------------------
->  >
->  >
->  > Please let me know if I missed something important.
->
->  Rene.
->  --
->  To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
->  the body of a message to majordomo@vger.kernel.org
->  More majordomo info at  http://vger.kernel.org/majordomo-info.html
->  Please read the FAQ at  http://www.tux.org/lkml/
->
 
-I reported this problem well over an year ago, and it was never fixed.
+Aurelien Jarno wrote:
+> >Since version 4.3, gcc changed its behaviour concerning the x86/x86-64 
+> >ABI and the direction flag, that is it now assumes that the direction 
+> >flag is cleared at the entry of a function and it doesn't clear once 
+> >more if needed.
+> >...
+> >I guess this has to be fixed on the kernel side, but also gcc-4.3 could
+> >revert back to the old behaviour, that is clearing the direction flag
+> >when entering a routine that touches it until most people are running a
+> >fixed kernel.
 
-http://lkml.org/lkml/2006/10/29/81
+On Wed, Mar 05, 2008 at 08:00:42AM -0800, H. Peter Anvin wrote:
+> Linux should definitely follow the ABI.  This is a bug, and a pretty 
+> serious such.
 
-That old K7-800 is still serving as my bittorrent 24x7 box, now
- under the last FC6 kernel released. I plan to upgrade it to
- Fedora 9 once it's out, and it would be great if a fix to this bug
- could be found...
+Unfortunately, there are a lot of kernels out there already with this
+problem, and the symptoms are likely to be subtle.  So even if it is true
+that it is the kernel that is "in the wrong", I think we still are going
+to need to give users a workaround from the gcc side as well.
 
---alessandro
+So I think gcc at least needs an *option* to revert to the old behavior,
+and there's a good argument to make it the default for now, at least for
+x86/x86-64 on Linux.
 
- "We act as though comfort and luxury were the chief requirements
-   of life, when all that we need to make us really happy is
-   something to be enthusiastic about."
 
-   (Charles Kingsley)
+
+
