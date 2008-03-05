@@ -1,88 +1,158 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764998AbYCEXXG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764514AbYCEXZw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764998AbYCEXXG (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Mar 2008 18:23:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762563AbYCEXWA
+	id S1764514AbYCEXZw (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Mar 2008 18:25:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757963AbYCEXZi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Mar 2008 18:22:00 -0500
-Received: from extu-mxob-2.symantec.com ([216.10.194.135]:52618 "EHLO
-	extu-mxob-2.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761908AbYCEXV7 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Mar 2008 18:21:59 -0500
-Date: Wed, 5 Mar 2008 23:21:08 +0000 (GMT)
-From: Hugh Dickins <hugh@veritas.com>
-X-X-Sender: hugh@blonde.site
-To: Christian Kujau <lists@nerdbynature.de>
-cc: Pavel Machek <pavel@ucw.cz>, kernel list <linux-kernel@vger.kernel.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: 2.6.25-rc3: 34TB vmalloc total -- overflow in /proc/meminfo?
-In-Reply-To: <alpine.DEB.1.00.0803052301340.8658@sheep.housecafe.de>
-Message-ID: <Pine.LNX.4.64.0803052303590.16768@blonde.site>
-References: <20080305090610.GA30024@atrey.karlin.mff.cuni.cz>
- <alpine.DEB.1.00.0803052038410.8658@sheep.housecafe.de>
- <Pine.LNX.4.64.0803052045430.821@blonde.site> <alpine.DEB.1.00.0803052301340.8658@sheep.housecafe.de>
+	Wed, 5 Mar 2008 18:25:38 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:33102 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756839AbYCEXZg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 5 Mar 2008 18:25:36 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [RFC][PATCH] PM: Make PM core handle device registrations concurrent with suspend/hibernation
+Date: Thu, 6 Mar 2008 00:24:28 +0100
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: pm list <linux-pm@lists.linux-foundation.org>,
+       Alexey Starikovskiy <astarikovskiy@suse.de>,
+       Pavel Machek <pavel@ucw.cz>, LKML <linux-kernel@vger.kernel.org>
+References: <Pine.LNX.4.44L0.0803051658290.4318-100000@iolanthe.rowland.org>
+In-Reply-To: <Pine.LNX.4.44L0.0803051658290.4318-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200803060024.28850.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 5 Mar 2008, Christian Kujau wrote:
+On Wednesday, 5 of March 2008, Alan Stern wrote:
+> On Wed, 5 Mar 2008, Rafael J. Wysocki wrote:
 > 
-> Well, if it's "interesting"...here are some more details from the box:
+> > On Wednesday, 5 of March 2008, Alan Stern wrote:
+> > > On Wed, 5 Mar 2008, Rafael J. Wysocki wrote:
+> > > 
+> > > > -void device_pm_add(struct device *dev)
+> > > > +int device_pm_add(struct device *dev)
+> > > >  {
+> > > > +	int error = 0;
+> > > > +
+> > > >  	pr_debug("PM: Adding info for %s:%s\n",
+> > > >  		 dev->bus ? dev->bus->name : "No Bus",
+> > > >  		 kobject_name(&dev->kobj));
+> > > >  	mutex_lock(&dpm_list_mtx);
+> > > > -	list_add_tail(&dev->power.entry, &dpm_active);
+> > > > +	if (dev->parent && dev->parent->power.sleeping) {
+> > > > +		WARN_ON(true);
+> > > 
+> > > I would prefer to put a dev_warn() line here, so that people reading
+> > > the kernel log can easily tell which device caused the problem and what
+> > > sort of problem it is.  Something like this:
+> > > 
+> > > 		dev_warn(dev, "device added while parent %s is asleep\n",
+> > > 				dev->parent->bus_id);
+> > > 		WARN_ON(true);
+> > 
+> > Added.
+> > 
+> > > > @@ -426,6 +406,12 @@ static int dpm_suspend(pm_message_t stat
+> > > >  		struct list_head *entry = dpm_active.prev;
+> > > >  		struct device *dev = to_device(entry);
+> > > >  
+> > > > +		if (dev->parent && dev->parent->power.sleeping) {
+> > > > +			WARN_ON(true);
+> > > > +			error = -EAGAIN;
+> > > > +			break;
+> > > 
+> > > Again, a dev_warn() would be appropriate.
+> > 
+> > I chose just "WARN_ON(dev->parent && dev->parent->power.sleeping)",
+> > which is shorter. :-)
+> > 
+> > I don't really expect it to appear and if it's reported, it'll be easy to
+> > figure out everything from the stack trace.
 > 
-> http://nerdbynature.de/bits/2.6.19.2/
+> Okay.
+> 
+> > Revised patch below.
+> 
+> It looks good.  Let's hope it doesn't mess up ACPI too badly...  :-)
+> 
+> Acked-by: Alan Stern <stern@rowland.harvard.edu>
 
-Thanks for putting that together; but I didn't find any clues.
+Thanks!
 
-> 
-> > Unlikely.  Offhand I'm not quite sure that's impossible, but it's far
-> > more likely that we've a kernel bug and vm_committed_space has wrapped
-> > negative.
-> 
-> Huh. When I first saw this I thought "kernel bug" too, but then read the
-> documentation to Committed_AS I thought it's just userspace related...
+Okay, I also have the appended patch on top of this one. :-)
 
-It's pretty sure to be userspace related i.e. kernel bug triggered by
-particular userspace usage; and understandably, the bits you put there
-don't tell me much about what userspace has been up to.  (And don't
-worry, I'm not expecting you to tell me more!  I can't think of
-anything useful to ask about it - it's not a question of what mix
-of apps you have running there, it's a matter of what system calls,
-especially mmaps, they make - I'm not expecting traces of that.)
+Rafael
 
-> 
-> > Ancient as your kernel is, I don't notice anything in the ChangeLogs
-> > since then to say we've fixed a bug of that kind since 2.6.19.
-> > Any idea how to reproduce this?
-> 
-> Well, the box is running fine and since it's a production machine I don't
-> intend to reboot the box very often.
+---
+From: Rafael J. Wysocki <rjw@sisk.pl>
 
-Absolutely.  You mentioned it because it's useful for us to know there's
-such an issue about, to keep our eyes open: thank you for doing so.
-No need for you to go any further out of your way on it.
+Include dpm_sysfs_add() into device_pm_add(), in analogy with
+device_pm_remove(), and modify device_add() to call the latter after
+bus_add_device(), to avoid situations in which the PM core may
+attempt to suspend a device the registration of which has not been
+successful.
 
-> And since it's really an old kernel (for
-> lkml discussion, that is) I don't intend to debug this one further. I really
-> was only curious if this was userspace related (some app overcommitting) or
-> some kernel weirdness.
-> 
-> > Are you using HugePages at all?
-> 
-> I have:
-> 
-> # CONFIG_HUGETLBFS is not set
-> # CONFIG_HUGETLB_PAGE is not set
-> 
-> ...was this, what you meant?
+Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+---
+ drivers/base/core.c       |   15 +++++----------
+ drivers/base/power/main.c |    4 +++-
+ 2 files changed, 8 insertions(+), 11 deletions(-)
 
-Right, I was forgetting that the various "HugePage" lines of /proc/meminfo
-don't even appear when those are configured off, so my question was more
-obscure than I'd intended.  You're not using HugePages at all, so we
-can rule out that line of inquiry - that's helpful, thanks.
-
-I'll keep my eyes open.
-
-Hugh
+Index: linux-2.6/drivers/base/core.c
+===================================================================
+--- linux-2.6.orig/drivers/base/core.c
++++ linux-2.6/drivers/base/core.c
+@@ -812,17 +812,12 @@ int device_add(struct device *dev)
+ 	error = device_add_attrs(dev);
+ 	if (error)
+ 		goto AttrsError;
+-	error = dpm_sysfs_add(dev);
+-	if (error)
+-		goto PMError;
+-	error = device_pm_add(dev);
+-	if (error) {
+-		dpm_sysfs_remove(dev);
+-		goto PMError;
+-	}
+ 	error = bus_add_device(dev);
+ 	if (error)
+ 		goto BusError;
++	error = device_pm_add(dev);
++	if (error)
++		goto PMError;
+ 	kobject_uevent(&dev->kobj, KOBJ_ADD);
+ 	bus_attach_device(dev);
+ 	if (parent)
+@@ -842,9 +837,9 @@ int device_add(struct device *dev)
+  Done:
+ 	put_device(dev);
+ 	return error;
+- BusError:
+-	device_pm_remove(dev);
+  PMError:
++	bus_remove_device(dev);
++ BusError:
+ 	if (dev->bus)
+ 		blocking_notifier_call_chain(&dev->bus->p->bus_notifier,
+ 					     BUS_NOTIFY_DEL_DEVICE, dev);
+Index: linux-2.6/drivers/base/power/main.c
+===================================================================
+--- linux-2.6.orig/drivers/base/power/main.c
++++ linux-2.6/drivers/base/power/main.c
+@@ -75,7 +75,9 @@ int device_pm_add(struct device *dev)
+ 		WARN_ON(true);
+ 		error = -EBUSY;
+ 	} else {
+-		list_add_tail(&dev->power.entry, &dpm_active);
++		error = dpm_sysfs_add(dev);
++		if (!error)
++			list_add_tail(&dev->power.entry, &dpm_active);
+ 	}
+ 	mutex_unlock(&dpm_list_mtx);
+ 	return error;
