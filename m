@@ -1,69 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760953AbYCERPP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759161AbYCERUc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760953AbYCERPP (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Mar 2008 12:15:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756377AbYCERPB
+	id S1759161AbYCERUc (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Mar 2008 12:20:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755587AbYCERUY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Mar 2008 12:15:01 -0500
-Received: from ns.suse.de ([195.135.220.2]:55672 "EHLO mx1.suse.de"
+	Wed, 5 Mar 2008 12:20:24 -0500
+Received: from x346.tv-sign.ru ([89.108.83.215]:42642 "EHLO mail.screens.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750960AbYCERPA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Mar 2008 12:15:00 -0500
-Date: Wed, 5 Mar 2008 09:07:56 -0800
-From: Greg KH <gregkh@suse.de>
-To: Pavel Emelyanov <xemul@openvz.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Kay Sievers <kay.sievers@vrfy.org>
-Subject: Re: 2.6.25-rc3-mm1
-Message-ID: <20080305170756.GA32182@suse.de>
-References: <20080304011928.e8c82c0c.akpm@linux-foundation.org> <47CE9A6B.9080006@openvz.org> <20080305164045.GA31759@suse.de> <47CED174.2080707@openvz.org>
-MIME-Version: 1.0
+	id S1755445AbYCERUX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 5 Mar 2008 12:20:23 -0500
+Date: Wed, 5 Mar 2008 20:24:20 +0300
+From: Oleg Nesterov <oleg@tv-sign.ru>
+To: Roland McGrath <roland@redhat.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2/2] introduce ptrace_reparented() helper
+Message-ID: <20080305172420.GA6751@tv-sign.ru>
+References: <20080303041751.GA18914@tv-sign.ru> <20080303072123.GA25282@tv-sign.ru> <20080305041858.8FBD927010A@magilla.localdomain>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <47CED174.2080707@openvz.org>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+In-Reply-To: <20080305041858.8FBD927010A@magilla.localdomain>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Mar 05, 2008 at 07:59:32PM +0300, Pavel Emelyanov wrote:
-> Greg KH wrote:
-> > On Wed, Mar 05, 2008 at 04:04:43PM +0300, Pavel Emelyanov wrote:
-> >> With CONFIG_SYSFS not set got this on boot:
-> >>
-> >> kobject: '<NULL>' (f88774c8): is not initialized, yet kobject_put() is
-> >> ------------[ cut here ]------------
-> >> WARNING: at lib/kobject.c:652 kobject_put+0x29/0x3c()
-> >> Modules linked in: sky2 e1000
-> >> Pid: 1303, comm: modprobe Not tainted 2.6.25-rc3-mm1 #79
-> >>  [<c041855b>] warn_on_slowpath+0x40/0x66
-> >>  [<c041c687>] irq_exit+0x50/0x67
-> >>  [<c040cc70>] smp_apic_timer_interrupt+0x6e/0x7a
-> >>  [<c0403380>] apic_timer_interrupt+0x28/0x30
-> >>  [<c0418e36>] vprintk+0x2b0/0x2df
-> >>  [<c04118e8>] __update_rq_clock+0x1d/0x110
-> >>  [<c0565e43>] schedule_timeout+0x13/0x86
-> >>
-> >>  [<c05656c2>] wait_for_common+0xd1/0x123
-> >>  [<c0418e79>] printk+0x14/0x18
-> >>  [<c04b34bf>] kobject_put+0x29/0x3c
-> >>  [<c0431e39>] free_module+0x2f/0x72
-> >>  [<c04328dd>] sys_init_module+0xa61/0x15d2
-> >>
-> >>  [<c04ba863>] pci_bus_read_config_byte+0x0/0x58
-> >>  [<c0454f87>] vfs_read+0x6c/0x8b
-> >>  [<c0455323>] sys_read+0x3c/0x63
-> >>  [<c04028b2>] sysenter_past_esp+0x5f/0x85
-> > 
-> > Hm, but with CONFIG_SYSFS set this does not show up?
+On 03/04, Roland McGrath wrote:
+>
+> > Somehow the patch I sent misses the change in ptrace.c, it can use the
+> > new helper too.
 > 
-> Yes, with CONFIG_SYSFS set everything is OK.
+> Actually, my pedantic streak prefers that to be in a separate patch.
+> ...
+> I don't object to the change, but it should be
+> separate so bisect distinguishes it should it ever turn out to
+> matter in some way we are now overlooking. 
 
-Thanks.  Odds are we have some sysfs issue in the module core, that code
-really needs to be refactored, I'll go work on it to see if we can try
-to isolate all of that code into one file, which should help find these
-kinds of things easier.
+OK, agreed, will do.
 
-thanks,
+> I'd even be a
+> little inclined towards:
+> 
+> 	if (child->real_parent == child->parent) {
+> 		BUG_ON(!list_empty(&child->ptrace_list));
+> 		return 0;
+> 	} else {
+> 		BUG_ON(list_empty(&child->ptrace_list));
+> 		return 1;
+> 	}
+> 
+> except of course you couldn't use that in the reparent_thread case.
+                                                ^^^^^^^^^^^^^^^
+I can't believe. You are reading my mind!
 
-greg k-h
+I am planning to do some changes in forget_original_parent (fix 2 very
+old minor bugs and _perhaps_ add some improvement). I hit the minor but
+nasty problem: this open coded __ptrace_unlink() in reparent_thread().
+_This_ is the actual reason for this patch.
+
+So. Would you object if I do
+
+	--- kernel/ptrace.c	2008-03-03 17:01:06.000000000 +0300
+	+++ kernel/ptrace.c	2008-03-05 20:22:44.801142777 +0300
+	@@ -67,11 +67,12 @@ void ptrace_untrace(struct task_struct *
+	  * remove it from the ptrace list.
+	  *
+	  * Must be called with the tasklist lock write-held.
+	+ *
+	+ * Either the caller is ptracer, or the caller is ->real_parent
+	+ * and the child is not traced.
+	  */
+	 void __ptrace_unlink(struct task_struct *child)
+	 {
+	-	BUG_ON(!child->ptrace);
+	-
+		child->ptrace = 0;
+		if (ptrace_reparented(child)) {
+			list_del_init(&child->ptrace_list);
+
+?
+
+Oleg.
+
