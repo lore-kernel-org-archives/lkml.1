@@ -1,49 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752360AbYCENm1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753265AbYCENoA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752360AbYCENm1 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Mar 2008 08:42:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750965AbYCENmR
+	id S1753265AbYCENoA (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Mar 2008 08:44:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750965AbYCENnv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Mar 2008 08:42:17 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:40837 "EHLO mx3.mail.elte.hu"
+	Wed, 5 Mar 2008 08:43:51 -0500
+Received: from gateway.drzeus.cx ([85.8.24.16]:35922 "EHLO smtp.drzeus.cx"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750951AbYCENmQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Mar 2008 08:42:16 -0500
-Date: Wed, 5 Mar 2008 14:41:50 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Jan Beulich <jbeulich@novell.com>, Roland McGrath <roland@redhat.com>
-Cc: tglx@linutronix.de, hpa@zytor.com, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] x86: fix typo(?) in step.c
-Message-ID: <20080305134150.GA16477@elte.hu>
-References: <47CE69B0.76E4.0078.0@novell.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <47CE69B0.76E4.0078.0@novell.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0017]
+	id S1750951AbYCENnu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 5 Mar 2008 08:43:50 -0500
+Date: Wed, 5 Mar 2008 14:42:05 +0100
+From: Pierre Ossman <drzeus-list@drzeus.cx>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>,
+       Dave Jones <davej@codemonkey.org.uk>, Andi Kleen <andi@firstfloor.org>,
+       Alan Stern <stern@rowland.harvard.edu>,
+       LKML <linux-kernel@vger.kernel.org>, Adam Belay <abelay@novell.com>,
+       Lee Revell <rlrevell@joe-job.com>, linux-pm@lists.linux-foundation.org
+Subject: Re: [linux-pm] [PATCH] cpuidle: avoid singing capacitors
+Message-ID: <20080305144205.7a9971bc@mjolnir.drzeus.cx>
+In-Reply-To: <20080305090304.GA10053@elf.ucw.cz>
+References: <924EFEDD5F540B4284297C4DC59F3DEEA2E8B2@orsmsx423.amr.corp.intel.com>
+	<Pine.LNX.4.44L0.0803031804330.8280-100000@iolanthe.rowland.org>
+	<20080303231033.GB15255@one.firstfloor.org>
+	<20080304040048.GA31562@codemonkey.org.uk>
+	<20080304071423.0e6b71c1@mjolnir.drzeus.cx>
+	<20080304181924.70aaf8c1@mjolnir.drzeus.cx>
+	<924EFEDD5F540B4284297C4DC59F3DEEA77031@orsmsx423.amr.corp.intel.com>
+	<20080305070201.0d16cd40@mjolnir.drzeus.cx>
+	<20080305094023.6486ebdf@mjolnir.drzeus.cx>
+	<20080305090304.GA10053@elf.ucw.cz>
+X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.8; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, 5 Mar 2008 10:03:04 +0100
+Pavel Machek <pavel@ucw.cz> wrote:
 
-* Jan Beulich <jbeulich@novell.com> wrote:
+> 
+> Actually, there are more uncertaininties. Suspecting some machines
+> seemed to produce noise whenever they were in low-power state. Not
+> with fluctuations: when I forced them to low-power, it just produced
+> steady beep.
+> 
 
-> TIF_DEBUGCTLMSR has no meaning in the actual MSR...
+Ouch. How do I quickly test that here?
 
-thanks, applied. The effect of this bug is that block-stepping is not 
-disabled ... [~TIF_DEBUGCTLMSR masks out bit 25, while in the MSR we 
-want to mask out bit 1]
+Rgds
+-- 
+     -- Pierre Ossman
 
-Roland - i guess this means block-stepping (a new ptrace feature in .25) 
-is not particularly well-tested. Do you have any standalone testcases 
-that could be run?
-
-	Ingo
+  Linux kernel, MMC maintainer        http://www.kernel.org
+  PulseAudio, core developer          http://pulseaudio.org
+  rdesktop, core developer          http://www.rdesktop.org
