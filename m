@@ -1,138 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759475AbYCFEnZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758955AbYCFEsR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759475AbYCFEnZ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Mar 2008 23:43:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757022AbYCFEnL
+	id S1758955AbYCFEsR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Mar 2008 23:48:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757148AbYCFEsE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Mar 2008 23:43:11 -0500
-Received: from tama555.ecl.ntt.co.jp ([129.60.39.106]:61465 "EHLO
-	tama555.ecl.ntt.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751275AbYCFEnJ (ORCPT
+	Wed, 5 Mar 2008 23:48:04 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:38753
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1754178AbYCFEsD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Mar 2008 23:43:09 -0500
-To: James.Bottomley@HansenPartnership.com
-Cc: jens.axboe@oracle.com, htejun@gmail.com, bharrosh@panasas.com,
-       fujita.tomonori@lab.ntt.co.jp, efault@gmx.de, tomof@acm.org,
-       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       linux-ide@vger.kernel.org, linux-scsi@vger.kernel.org,
-       jgarzik@pobox.com, bzolnier@gmail.com
-Subject: Re: [PATCH] blk: missing add of padded bytes to io completion byte
-	 count
-From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-In-Reply-To: <1204730484.3047.10.camel@localhost.localdomain>
-References: <47CEA40F.6050903@gmail.com>
-	<20080305135121.GK6704@kernel.dk>
-	<1204730484.3047.10.camel@localhost.localdomain>
+	Wed, 5 Mar 2008 23:48:03 -0500
+Date: Wed, 05 Mar 2008 20:47:57 -0800 (PST)
+Message-Id: <20080305.204757.13821992.davem@davemloft.net>
+To: harvey.harrison@gmail.com
+Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+Subject: Re: [PATCH] net: replace remaining __FUNCTION__ occurrences
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <1204773069.14154.58.camel@brick>
+References: <1204575406.3266.55.camel@brick>
+	<20080305.185815.179794444.davem@davemloft.net>
+	<1204773069.14154.58.camel@brick>
+X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
 Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Message-Id: <20080306134146A.fujita.tomonori@lab.ntt.co.jp>
-Date: Thu, 06 Mar 2008 13:41:46 +0900
-X-Dispatcher: imput version 20040704(IM147)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 05 Mar 2008 09:21:24 -0600
-James Bottomley <James.Bottomley@HansenPartnership.com> wrote:
+From: Harvey Harrison <harvey.harrison@gmail.com>
+Date: Wed, 05 Mar 2008 19:11:09 -0800
 
-> On Wed, 2008-03-05 at 14:51 +0100, Jens Axboe wrote:
-> > On Wed, Mar 05 2008, Tejun Heo wrote:
-> > > This is getting insanely subtle.  Let's say there's PIO driver which
-> > > transfer certain sized chunks at a time and completes request partially
-> > > after completing each chunk and the driver uses draining to eat up
-> > > whatever excess data, which seems like a legit use case to me.  But it
-> > > won't work because __end_that_request_first() will terminate when it
-> > > reaches reaches the 'true' transfer size.  That's just broken API.  FWIW,
-> > > 
-> > > Nacked-by: Tejun Heo <htejun@gmail.com>
-> > 
-> > Yeah, I think I may have gone a bit overboard in applying this so
-> > quickly. It's just not a good interface, silently adding the extra
-> > length if asked to complete more. It may even happen right now, for a
-> > driver that does no padding (it probably wont do any harm here either,
-> > but still).
-> > 
-> > I'll try and see if I can come up with something cleaner.
-> > 
-> > My basic design paradigm for this is that the _driver_ (or mid layer, if
-> > SCSI wants to handle it) should care about the padding. So make it easy
-> > for them to pad, but have it 'unrolled' by completion time. We should
-> > NOT need any extra_len checks or additions in the block/ directory,
-> > period.
+> __FUNCTION__ is gcc-specific, use __func__
 > 
-> Right, that's why my original proposal was to do nothing for padding
-> (other than ensure the driver could adjust the length if it wanted to)
-> and to add an extra element always for draining, which the driver could
-> ignore.  It basically pushed the use paradigm onto the driver.
-> 
-> If we want the use paradigm shared between block and driver, then I
-> think the best approach is to keep all the bios the same (so not adjust
-> for padding), but do adjust in the blk_rq_map_sg().  That way we have
-> the padding and draining unwind information by comparing with the bio.
+> Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
 
-Adjusting only sg in blk_rq_map_sg (like drain) looks much
-better. This works with libata for me.
-
-diff --git a/block/blk-map.c b/block/blk-map.c
-index c07d9c8..e949969 100644
---- a/block/blk-map.c
-+++ b/block/blk-map.c
-@@ -140,26 +140,6 @@ int blk_rq_map_user(struct request_queue *q, struct request *rq,
- 		ubuf += ret;
- 	}
- 
--	/*
--	 * __blk_rq_map_user() copies the buffers if starting address
--	 * or length isn't aligned to dma_pad_mask.  As the copied
--	 * buffer is always page aligned, we know that there's enough
--	 * room for padding.  Extend the last bio and update
--	 * rq->data_len accordingly.
--	 *
--	 * On unmap, bio_uncopy_user() will use unmodified
--	 * bio_map_data pointed to by bio->bi_private.
--	 */
--	if (len & q->dma_pad_mask) {
--		unsigned int pad_len = (q->dma_pad_mask & ~len) + 1;
--		struct bio *tail = rq->biotail;
--
--		tail->bi_io_vec[tail->bi_vcnt - 1].bv_len += pad_len;
--		tail->bi_size += pad_len;
--
--		rq->extra_len += pad_len;
--	}
--
- 	rq->buffer = rq->data = NULL;
- 	return 0;
- unmap_rq:
-diff --git a/block/blk-merge.c b/block/blk-merge.c
-index 0f58616..2a81c87 100644
---- a/block/blk-merge.c
-+++ b/block/blk-merge.c
-@@ -220,6 +220,13 @@ new_segment:
- 		bvprv = bvec;
- 	} /* segments in rq */
- 
-+	if (sg && (q->dma_pad_mask & rq->data_len)) {
-+		unsigned int pad_len = (q->dma_pad_mask & ~rq->data_len) + 1;
-+
-+		sg->length += pad_len;
-+		rq->extra_len += pad_len;
-+	}
-+
- 	if (q->dma_drain_size && q->dma_drain_needed(rq)) {
- 		if (rq->cmd_flags & REQ_RW)
- 			memset(q->dma_drain_buffer, 0, q->dma_drain_size);
-diff --git a/drivers/scsi/scsi.c b/drivers/scsi/scsi.c
-index e5c6f6a..fecba05 100644
---- a/drivers/scsi/scsi.c
-+++ b/drivers/scsi/scsi.c
-@@ -757,7 +757,7 @@ void scsi_finish_command(struct scsi_cmnd *cmd)
- 				"Notifying upper driver of completion "
- 				"(result %x)\n", cmd->result));
- 
--	good_bytes = scsi_bufflen(cmd) + cmd->request->extra_len;
-+	good_bytes = scsi_bufflen(cmd);
-         if (cmd->request->cmd_type != REQ_TYPE_BLOCK_PC) {
- 		drv = scsi_cmd_to_driver(cmd);
- 		if (drv->done)
+Applied, thanks Harvey.
