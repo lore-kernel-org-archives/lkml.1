@@ -1,67 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763250AbYCFUQl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762686AbYCFUTg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763250AbYCFUQl (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Mar 2008 15:16:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752130AbYCFUQe
+	id S1762686AbYCFUTg (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Mar 2008 15:19:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751798AbYCFUT2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Mar 2008 15:16:34 -0500
-Received: from lain.randombit.net ([66.179.181.40]:43419 "EHLO
-	mail.randombit.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751163AbYCFUQd (ORCPT
+	Thu, 6 Mar 2008 15:19:28 -0500
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:34785 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751023AbYCFUT1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Mar 2008 15:16:33 -0500
-Date: Thu, 6 Mar 2008 15:16:33 -0500
-From: Jack Lloyd <lloyd@randombit.net>
-To: gcc@gcc.gnu.org, linux-kernel@vger.kernel.org
-Subject: Re: RELEASE BLOCKER: Linux doesn't follow x86/x86-64 ABI wrt direction     flag
-Message-ID: <20080306201633.GM27983@randombit.net>
-Mail-Followup-To: gcc@gcc.gnu.org, linux-kernel@vger.kernel.org
-References: <578FCA7D-D7A6-44F6-9310-4A97C13CDCBE@apple.com> <47CF44E7.3020106@zytor.com> <20080306135139.GA5236@dspnet.fr.eu.org> <47CFF9A3.30309@gnu.org> <20080306141221.GC5236@dspnet.fr.eu.org> <20080306175841.GI17267@synopsys.com> <20080306181029.GA42904@dspnet.fr.eu.org> <47D03440.6090503@gnu.org> <20080306183146.GL27983@randombit.net> <47D0495F.2090109@gnu.org>
+	Thu, 6 Mar 2008 15:19:27 -0500
+Date: Thu, 6 Mar 2008 14:19:23 -0600
+From: Paul Jackson <pj@sgi.com>
+To: David Rientjes <rientjes@google.com>
+Cc: akpm@linux-foundation.org, clameter@sgi.com, Lee.Schermerhorn@hp.com,
+       ak@suse.de, linux-kernel@vger.kernel.org
+Subject: Re: [patch -mm 4/4] mempolicy: remove includes for duplicate
+ headers
+Message-Id: <20080306141923.45ce4214.pj@sgi.com>
+In-Reply-To: <alpine.DEB.1.00.0803061136320.18590@chino.kir.corp.google.com>
+References: <alpine.DEB.1.00.0803061135001.18590@chino.kir.corp.google.com>
+	<alpine.DEB.1.00.0803061135560.18590@chino.kir.corp.google.com>
+	<alpine.DEB.1.00.0803061136160.18590@chino.kir.corp.google.com>
+	<alpine.DEB.1.00.0803061136320.18590@chino.kir.corp.google.com>
+Organization: SGI
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.12.0; i686-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <47D0495F.2090109@gnu.org>
-X-PGP-Fingerprint: 3F69 2E64 6D92 3BBE E7AE 9258 5C0F 96E8 4EC1 6D6B
-X-PGP-Key: http://www.randombit.net/pgpkey.html
-User-Agent: Mutt/1.5.11
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Mar 06, 2008 at 08:43:27PM +0100, Paolo Bonzini wrote:
-> Jack Lloyd wrote:
-> >On Thu, Mar 06, 2008 at 07:13:20PM +0100, Paolo Bonzini wrote:
-> >>A process can send a signal via kill.  IOW, a malicious process can 
-> >>*control when the process would be interrupted* in order to get it into 
-> >>the signal handler with DF=1.
-> >
-> >If the malicious process can send a signal to another process, it
-> >could also ptrace() it. Which is more useful, if you wanted to be
-> >malicious?
+David R wrote:
+> Remove #includes for:
 > 
-> 1) capabilities(7)
+> 	linux/mempolicy.h	(already from linux/migrate.h)
+> 	linux/mm.h		(already from linux/highmem.h)
 
-Ah you are right, I misinterpreted something from the man page
-("non-root processes cannot trace processes that they cannot send
-signals to") to mean something it did not (basically, that CAP_KILL
-implied CAP_SYS_PTRACE, which from reading the kernel source is
-clearly not the case...)
+I didn't see any problem offhand with the other patches 0 to 3 in this
+set, but this patch 4/4 surprises me.
 
-But still: so the threat here is of a malicious process with the
-ability to send arbitrary signals to any process using CAP_KILL (since
-in any other case when a process can send a signal, it can do much
-more damage in other ways), which could leverage that into
-(potentially) uid==0 using misexecuted code in a signal handler.
+Perhaps I'm out of phase with what's customary in the kernel, but I
+prefer directly including whatever headers I explicitly need.
+Depending on some other header to drag in something you have explicit
+need of anyway makes things more fragile.
 
-As a correctness issue, obviously this should be fixed/patched around,
-if feasible. But as a security flaw? I'm not seeing much that is
-compelling.
-
-> 2) sometimes setuid programs send signals (e.g. SIGHUP or SIGUSR1)
-
-I don't understand how this is a problem - unless these setuid
-programs, while not malicious, can be tricked into signalling a
-process they did not intend to. (In which case they already have a
-major bug, df bit being cleared or not).
-
--Jack
+-- 
+                  I won't rest till it's the best ...
+                  Programmer, Linux Scalability
+                  Paul Jackson <pj@sgi.com> 1.940.382.4214
