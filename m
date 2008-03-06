@@ -1,55 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760788AbYCFLhw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761606AbYCFLl5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760788AbYCFLhw (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Mar 2008 06:37:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754371AbYCFLhn
+	id S1761606AbYCFLl5 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Mar 2008 06:41:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753614AbYCFLlu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Mar 2008 06:37:43 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:52833 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754283AbYCFLhm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Mar 2008 06:37:42 -0500
-Date: Thu, 6 Mar 2008 12:37:29 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Chris Wedgwood <cw@f00f.org>
-Cc: Pawel Plociennik <paplociennik@gmail.com>, Pavel Machek <pavel@ucw.cz>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2.6.24] chroot= as a new kernel parameter
-Message-ID: <20080306113729.GA18403@elte.hu>
-References: <200803060001.38432.paplociennik@gmail.com> <20080306103422.GA5511@puku.stupidest.org> <20080306104448.GG13391@elte.hu> <20080306112212.GA9261@puku.stupidest.org>
+	Thu, 6 Mar 2008 06:41:50 -0500
+Received: from smtp-out03.alice-dsl.net ([88.44.63.5]:3339 "EHLO
+	smtp-out03.alice-dsl.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753376AbYCFLlt (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 6 Mar 2008 06:41:49 -0500
+To: "Yinghai Lu" <yhlu.kernel@gmail.com>
+Cc: "Ingo Molnar" <mingo@elte.hu>, "Andrew Morton" <akpm@linux-foundation.org>,
+       "Thomas Gleixner" <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] x86_64: show apicid for cpu in proc
+References: <86802c440803060113s5b09c8b7w3a9da92ca15eff03@mail.gmail.com>
+From: Andi Kleen <andi@firstfloor.org>
+Date: 06 Mar 2008 12:41:46 +0100
+In-Reply-To: <86802c440803060113s5b09c8b7w3a9da92ca15eff03@mail.gmail.com>
+Message-ID: <8763w0gjut.fsf@basil.nowhere.org>
+User-Agent: Gnus/5.09 (Gnus v5.9.0) Emacs/21.3
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080306112212.GA9261@puku.stupidest.org>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0010]
+X-OriginalArrivalTime: 06 Mar 2008 11:35:16.0309 (UTC) FILETIME=[262C1850:01C87F7E]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+"Yinghai Lu" <yhlu.kernel@gmail.com> writes:
 
-* Chris Wedgwood <cw@f00f.org> wrote:
+>  			   cpus_weight(per_cpu(cpu_core_map, cpu)));
+>  		seq_printf(m, "core id\t\t: %d\n", c->cpu_core_id);
+>  		seq_printf(m, "cpu cores\t: %d\n", c->booted_cores);
+> +		seq_printf(m, "apicid\t: %02x\n", c->apicid);
 
-> > But given an existing initrd (which might have come from the distro, 
-> > etc.) i prefer adding boot options instead of modifying the initrd.
-> 
-> I assume this is so you have have /distro1 /distro2 and use your boot
-> option to (help) select which one you boot into?
+Seems a little redundant with the boot log, but ok.
 
-while i have no personal use for chroot=, i generally test distros that 
-way, yes - and i try to keep them as unmodified as possible.
+But it's unclear to the user which apic ID is meant by that. There are
+two different ones. The one in the LAPIC mapping and the one reported by
+CPUID. They are not necessarily the same. I think you should clarify that
+by renaming the field or perhaps report both.
 
-"Use the initrd as an extended boot commandline" is a poor answer IMO. 
-
-_Everything_ we do on the boot commandline that affects user-space can 
-be done in an initrd in theory - but still we have hundreds of boot 
-options.
-
-	Ingo
+-Andi
