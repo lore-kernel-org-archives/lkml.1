@@ -1,105 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936138AbYCFVkJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765326AbYCFVmp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936138AbYCFVkJ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Mar 2008 16:40:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765326AbYCFVju
+	id S1765326AbYCFVmp (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Mar 2008 16:42:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753463AbYCFVmd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Mar 2008 16:39:50 -0500
-Received: from smtp6.pp.htv.fi ([213.243.153.40]:60946 "EHLO smtp6.pp.htv.fi"
+	Thu, 6 Mar 2008 16:42:33 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:54162 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756665AbYCFVjs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Mar 2008 16:39:48 -0500
-Date: Thu, 6 Mar 2008 23:39:38 +0200
-From: Adrian Bunk <bunk@kernel.org>
-To: James Bottomley <James.Bottomley@HansenPartnership.com>
-Cc: Toralf =?utf-8?Q?F=C3=B6rster?= <toralf.foerster@gmx.de>,
-       linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [2.6 patch] SCSI_AIC94XX must depend on SCSI
-Message-ID: <20080306213938.GA1574@cs181133002.pp.htv.fi>
-References: <200803062009.20309.toralf.foerster@gmx.de> <20080306202246.GB5259@cs181133002.pp.htv.fi> <1204835467.3062.42.camel@localhost.localdomain>
+	id S1752587AbYCFVmc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 6 Mar 2008 16:42:32 -0500
+Date: Thu, 6 Mar 2008 22:42:18 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: "H. Peter Anvin" <hpa@zytor.com>,
+       Pawel Plociennik <paplociennik@gmail.com>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2.6.24] chroot= as a new kernel parameter
+Message-ID: <20080306214218.GA886@elte.hu>
+References: <200803060001.38432.paplociennik@gmail.com> <47CF79E4.3030107@zytor.com> <20080306102712.GE13391@elte.hu> <47D00B16.6040004@zytor.com> <20080306212028.GB1747@elf.ucw.cz>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <1204835467.3062.42.camel@localhost.localdomain>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+In-Reply-To: <20080306212028.GB1747@elf.ucw.cz>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Mar 06, 2008 at 02:31:07PM -0600, James Bottomley wrote:
-> On Thu, 2008-03-06 at 22:22 +0200, Adrian Bunk wrote:
-> > This patch fixes the following build error reported by Toralf Förster:
-> > 
-> > <--  snip  -->
-> > 
-> > ...
-> >   MODPOST 243 modules
-> > ERROR: "sas_bios_param" [drivers/scsi/mvsas.ko] undefined!
-> > ERROR: "sas_change_queue_type" [drivers/scsi/mvsas.ko] undefined!
-> > ERROR: "sas_change_queue_depth" [drivers/scsi/mvsas.ko] undefined!
-> > ERROR: "sas_target_destroy" [drivers/scsi/mvsas.ko] undefined!
-> > ERROR: "sas_target_alloc" [drivers/scsi/mvsas.ko] undefined!
-> > ERROR: "sas_slave_destroy" [drivers/scsi/mvsas.ko] undefined!
-> > ERROR: "sas_slave_configure" [drivers/scsi/mvsas.ko] undefined!
-> > ERROR: "sas_eh_bus_reset_handler" [drivers/scsi/mvsas.ko] undefined!
-> > ERROR: "sas_eh_device_reset_handler" [drivers/scsi/mvsas.ko] undefined!
-> > ERROR: "sas_queuecommand" [drivers/scsi/mvsas.ko] undefined!
-> > ERROR: "sas_ioctl" [drivers/scsi/mvsas.ko] undefined!
-> > ERROR: "sas_register_ha" [drivers/scsi/mvsas.ko] undefined!
-> > ERROR: "sas_domain_attach_transport" [drivers/scsi/mvsas.ko] undefined!
-> > ERROR: "sas_ssp_task_response" [drivers/scsi/mvsas.ko] undefined!
-> > ERROR: "sas_slave_alloc" [drivers/scsi/mvsas.ko] undefined!
-> > ERROR: "sas_unregister_ha" [drivers/scsi/mvsas.ko] undefined!
-> > make[1]: *** [__modpost] Error 1
-> > 
-> > <--  snip  -->
-> > 
-> > Signed-off-by: Adrian Bunk <bunk@kernel.org>
-> > 
-> > ---
-> > --- a/drivers/scsi/aic94xx/Kconfig
-> > +++ b/drivers/scsi/aic94xx/Kconfig
-> > @@ -26,7 +26,7 @@
-> >  
-> >  config SCSI_AIC94XX
-> >  	tristate "Adaptec AIC94xx SAS/SATA support"
-> > -	depends on PCI
-> > +	depends on SCSI && PCI
-> >  	select SCSI_SAS_LIBSAS
-> >  	select FW_LOADER
+
+* Pavel Machek <pavel@ucw.cz> wrote:
+
+> No, that will not work, if you don't have libraries at /. This should
+> be exact replacement:
 > 
-> This doesn't look to be a fix for your error: the symbols you've listed
-> as missing are all libsas ones, not core SCSI ones.  Also they're all
-> claiming to be missing from mvsas, not aic94xx.  There's something else
-> about the configuration that produced this error.
+> init=/working_distro/lib/ld-linux.so.2 --library-path 
+> /working_distro/lib /working_distro/usr/sbin/chroot /working_distro/ 
+> /sbin/init
 
-This is the right fix for this bug.
+ouch ...
 
-We have:
-- SCSI=m
-- SCSI_AIC94XX=y
-- SCSI_MVSAS=m
-- SCSI_SAS_LIBSAS=y
+> ...assuming your chroot uses ld-linux.so.2. I believe above is ugly 
+> enough to warrant merge of chroot= option.
+> 
+> ...heck, how many tries would it take to get that right? Is chroot 
+> /usr/sbin or /sbin?
+> 
+> This really should be in kernel, I should not have to partition my
+> disk to get booting to few different distros.
 
-The problem is:
-- SCSI_AIC94XX selects (and requires) SCSI_SAS_LIBSAS
-- SCSI_MVSAS selects (and requires) SCSI_SAS_LIBSAS
-- with SCSI=m a SCSI_SAS_LIBSAS=y is not linked into the kernel
+agreed ...
 
-SCSI_AIC94XX=y also results in the AIC94xx driver not being linked into 
-the kernel here (and that's also fixed by this patch), but this alone 
-wouldn't result in a build bug...
+i really find it so disheartening at times that people fight trivial 
+usability additions tooth and nail in a _9 million lines of code_ kernel 
+with a ... "bloat" argument.
 
-> James
+Lets face it: Linux is _still_ hard and a pain to administer, our kernel 
+boot parameters are ad-hoc, they dont match up to the .config parameters 
+and it is all a total mess. There's absolutely no design behind them 
+(look at all the inconsistent parameter forms for turning off smp, acpi, 
+hpet, nohz, etc.).
 
-cu
-Adrian
+if RAM overhead of a new boot option would really be an issue on smaller 
+setups then the right solution is to make a new .config option that 
+hardcodes a specific command line and _disable_ all the commandline 
+parsing. That would also be a nice security feature for certain setups 
+and would save _a lot more_ RAM than another rejected boot parameter. 
+Really, all the 'bloat' based objections are totally, utterly silly.
 
--- 
+i had a similar experience when i added the relatime boot option:
 
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
+  http://people.redhat.com/mingo/relatime-patches/improve-relatime.patch
 
+Look back the lkml discussion for all the "bloat" and "use /etc/fstab" 
+clowning around that happened when i sent that patch ... and we still 
+have no good configuration vectors to turn atime off. I'd rate it good 
+comedy that happened around that patch: "Kernel hackers shoot in their 
+own foot and are proud of it".
+
+multiple, consistent vectors for configurability are _GOOD_. That was 
+the success story behind Apache. Forcing everyone into a "you must use 
+an initrd for this" idea is 80's thinking and actively harmful to Linux.
+
+	Ingo
