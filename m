@@ -1,26 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765326AbYCFVmp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761463AbYCFVpn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765326AbYCFVmp (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Mar 2008 16:42:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753463AbYCFVmd
+	id S1761463AbYCFVpn (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Mar 2008 16:45:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752162AbYCFVpd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Mar 2008 16:42:33 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:54162 "EHLO mx3.mail.elte.hu"
+	Thu, 6 Mar 2008 16:45:33 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:47851 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752587AbYCFVmc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Mar 2008 16:42:32 -0500
-Date: Thu, 6 Mar 2008 22:42:18 +0100
+	id S1751497AbYCFVpc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 6 Mar 2008 16:45:32 -0500
+Date: Thu, 6 Mar 2008 22:45:16 +0100
 From: Ingo Molnar <mingo@elte.hu>
-To: Pavel Machek <pavel@ucw.cz>
-Cc: "H. Peter Anvin" <hpa@zytor.com>,
-       Pawel Plociennik <paplociennik@gmail.com>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2.6.24] chroot= as a new kernel parameter
-Message-ID: <20080306214218.GA886@elte.hu>
-References: <200803060001.38432.paplociennik@gmail.com> <47CF79E4.3030107@zytor.com> <20080306102712.GE13391@elte.hu> <47D00B16.6040004@zytor.com> <20080306212028.GB1747@elf.ucw.cz>
+To: Pekka Enberg <penberg@cs.helsinki.fi>
+Cc: Jens Osterkamp <Jens.Osterkamp@gmx.de>,
+       Christoph Lameter <clameter@sgi.com>, linux-mm@kvack.org,
+       Linux kernel mailing list <linux-kernel@vger.kernel.org>
+Subject: Re: [BUG] in 2.6.25-rc3 with 64k page size and SLUB_DEBUG_ON
+Message-ID: <20080306214516.GB886@elte.hu>
+References: <200803061447.05797.Jens.Osterkamp@gmx.de> <84144f020803061327r2310b23ew6211bc09f9ba25a3@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080306212028.GB1747@elf.ucw.cz>
+In-Reply-To: <84144f020803061327r2310b23ew6211bc09f9ba25a3@mail.gmail.com>
 User-Agent: Mutt/1.5.17 (2007-11-01)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -35,57 +36,68 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Pavel Machek <pavel@ucw.cz> wrote:
+* Pekka Enberg <penberg@cs.helsinki.fi> wrote:
 
-> No, that will not work, if you don't have libraries at /. This should
-> be exact replacement:
+> >  Mount-cache hash table entries: 4096
+> >  BUG: scheduling while atomic: kthreadd/2/0x00056ef8
+> >  Call Trace:
+> >  [c00000003c187b68] [c00000000000f140] .show_stack+0x70/0x1bc (unreliable)
+> >  [c00000003c187c18] [c000000000052d0c] .__schedule_bug+0x64/0x80
+> >  [c00000003c187ca8] [c00000000036fa84] .schedule+0xc4/0x6b0
+> >  [c00000003c187d98] [c0000000003702d0] .schedule_timeout+0x3c/0xe8
+> >  [c00000003c187e68] [c00000000036f82c] .wait_for_common+0x150/0x22c
+> >  [c00000003c187f28] [c000000000074868] .kthreadd+0x12c/0x1f0
+> >  [c00000003c187fd8] [c000000000024864] .kernel_thread+0x4c/0x68
+> >  ------------[ cut here ]------------
+> >  kernel BUG at /home/auto/jens/kernels/linux-2.6.25-rc3/kernel/sched.c:4532!
+> >  cpu 0x0: Vector: 700 (Program Check) at [c00000003c187bc8]
+> >     pc: c000000000051f8c: .sched_setscheduler+0x5c/0x48c
+> >     lr: c0000000000748b0: .kthreadd+0x174/0x1f0
+> >     sp: c00000003c187e48
+> >    msr: 9000000000029032
+> >   current = 0xc00000007e0808a0
+> >   paca    = 0xc0000000004cf880
+> >     pid   = 2, comm = kthreadd
+> >  kernel BUG at /home/auto/jens/kernels/linux-2.6.25-rc3/kernel/sched.c:4532!
+> >  enter ? for help
+> >  [c00000003c187f28] c0000000000748b0 .kthreadd+0x174/0x1f0
+> >  [c00000003c187fd8] c000000000024864 .kernel_thread+0x4c/0x68
+> >  0:mon>
+> >
+> >  In the code this corresponds to
+> >
+> >  int sched_setscheduler(struct task_struct *p, int policy,
+> >                        struct sched_param *param)
+> >  {
+> >         int retval, oldprio, oldpolicy = -1, on_rq, running;
+> >         unsigned long flags;
+> >         const struct sched_class *prev_class = p->sched_class;
+> >         struct rq *rq;
+> >
+> >         /* may grab non-irq protected spin_locks */
+> >         BUG_ON(in_interrupt());
+> >  recheck:
+> >         /* double check policy once rq lock held */
+> >         if (policy < 0)
+> >                 policy = oldpolicy = p->policy;
+> >         else if (policy != SCHED_FIFO && policy != SCHED_RR &&
+> >                         policy != SCHED_NORMAL && policy != SCHED_BATCH &&
+> >                         policy != SCHED_IDLE)
+> >                 return -EINVAL;
+> >
+> >  With slub_debug=- on the kernel command line, the problem is gone.
+> >  With 4k page size the problem also does not occur.
+> >
+> >  Any ideas on why this occurs and how to debug this further ?
 > 
-> init=/working_distro/lib/ld-linux.so.2 --library-path 
-> /working_distro/lib /working_distro/usr/sbin/chroot /working_distro/ 
-> /sbin/init
+> There's no SLUB in the stack traces. Ingo, any suggestions how to debug this?
 
-ouch ...
+hm, no idea - is this powerpc? It seems to have hit a atomicity check 
+due to:
 
-> ...assuming your chroot uses ld-linux.so.2. I believe above is ugly 
-> enough to warrant merge of chroot= option.
-> 
-> ...heck, how many tries would it take to get that right? Is chroot 
-> /usr/sbin or /sbin?
-> 
-> This really should be in kernel, I should not have to partition my
-> disk to get booting to few different distros.
+> >  BUG: scheduling while atomic: kthreadd/2/0x00056ef8
 
-agreed ...
-
-i really find it so disheartening at times that people fight trivial 
-usability additions tooth and nail in a _9 million lines of code_ kernel 
-with a ... "bloat" argument.
-
-Lets face it: Linux is _still_ hard and a pain to administer, our kernel 
-boot parameters are ad-hoc, they dont match up to the .config parameters 
-and it is all a total mess. There's absolutely no design behind them 
-(look at all the inconsistent parameter forms for turning off smp, acpi, 
-hpet, nohz, etc.).
-
-if RAM overhead of a new boot option would really be an issue on smaller 
-setups then the right solution is to make a new .config option that 
-hardcodes a specific command line and _disable_ all the commandline 
-parsing. That would also be a nice security feature for certain setups 
-and would save _a lot more_ RAM than another rejected boot parameter. 
-Really, all the 'bloat' based objections are totally, utterly silly.
-
-i had a similar experience when i added the relatime boot option:
-
-  http://people.redhat.com/mingo/relatime-patches/improve-relatime.patch
-
-Look back the lkml discussion for all the "bloat" and "use /etc/fstab" 
-clowning around that happened when i sent that patch ... and we still 
-have no good configuration vectors to turn atime off. I'd rate it good 
-comedy that happened around that patch: "Kernel hackers shoot in their 
-own foot and are proud of it".
-
-multiple, consistent vectors for configurability are _GOOD_. That was 
-the success story behind Apache. Forcing everyone into a "you must use 
-an initrd for this" idea is 80's thinking and actively harmful to Linux.
+preempt-count 0x00056ef8 is totally out of whack. Serious memory 
+corruption.
 
 	Ingo
