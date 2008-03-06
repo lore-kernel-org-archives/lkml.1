@@ -1,62 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763230AbYCFR4z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933610AbYCFR5k@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763230AbYCFR4z (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Mar 2008 12:56:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752339AbYCFR4s
+	id S933610AbYCFR5k (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Mar 2008 12:57:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754938AbYCFR5a
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Mar 2008 12:56:48 -0500
-Received: from gv-out-0910.google.com ([216.239.58.188]:57007 "EHLO
-	gv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751012AbYCFR4r (ORCPT
+	Thu, 6 Mar 2008 12:57:30 -0500
+Received: from out3.smtp.messagingengine.com ([66.111.4.27]:56313 "EHLO
+	out3.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752339AbYCFR53 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Mar 2008 12:56:47 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:organization:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
-        b=xBY5qHwWNLC8Z3YFyfHbUKlAmcCy36N3CDvGTdvFmuzQJVbuHMVxzxBdWM8URThQvPpA5PTc3pESyXKvlPwH76Jd1fkHr6FCPqomHmew6aHfJZqxGTANmhFPz787Lw4Ido34vvjyF+UeT8HbuzuW3o3XLwqym9c/i8qHfGXBiiE=
-From: Balaji Rao <balajirrao@gmail.com>
-Organization: National Institute of Technology, Karnataka
-To: Greg KH <gregkh@suse.de>
-Subject: Re: [PATCH] Mark kobjects as unitialized
-Date: Thu, 6 Mar 2008 23:20:50 +0530
-User-Agent: KMail/1.9.6 (enterprise 0.20071012.724442)
-Cc: kvm-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
-References: <200803062223.18857.balajirrao@gmail.com> <20080306170514.GA13839@suse.de>
-In-Reply-To: <20080306170514.GA13839@suse.de>
+	Thu, 6 Mar 2008 12:57:29 -0500
+X-Sasl-enc: s7hrE7CHW6DaBKAOQqwTuPn3YmVpSYyuOBfyINAKWMZe 1204826248
+Message-ID: <47D03086.3000806@imap.cc>
+Date: Thu, 06 Mar 2008 18:57:26 +0100
+From: Tilman Schmidt <tilman@imap.cc>
+Organization: me - organized??
+User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.0; de-AT; rv:1.8.1.12) Gecko/20080201 SeaMonkey/1.1.8 Mnenhy/0.7.5.666
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200803062320.50296.balajirrao@gmail.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+CC: LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Adrian Bunk <bunk@kernel.org>
+Subject: Re: 2.6.25-rc3-git3: Reported regressions from 2.6.24
+References: <200803030316.07165.rjw@sisk.pl>
+In-Reply-To: <200803030316.07165.rjw@sisk.pl>
+X-Enigmail-Version: 0.95.6
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature";
+ boundary="------------enig3A3E5983C337F26F1C18C5CD"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 06 March 2008 10:35:14 pm Greg KH wrote:
-<snip>
-> Where exactly in the code does that happen?  kobjects should not be
-> "reused" as that implies that they are static, and not dynamically
-> allocated, right?
->
-> Which kobject is this?
-Yes, its static. Here's the code from virt/kvm_main.c:1269
+This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
+--------------enig3A3E5983C337F26F1C18C5CD
+Content-Type: text/plain; charset=ISO-8859-2
+Content-Transfer-Encoding: quoted-printable
 
-static struct sys_device kvm_sysdev = {
-        .id = 0,
-        .cls = &kvm_sysdev_class,
-};
+On 03.03.2008 03:16 Rafael J. Wysocki wrote:
 
-this sys_device is being registered/unregistered when kvm-intel is 
-loaded/unloaded.
->
-> Ugh, is this the sys_device stuff?  I hate that code...
->
-Yes it is! But, why do you hate it ?
+> Unresolved regressions
+> ----------------------
 
--- 
-regards,
-balaji rao
-3rd year,
-Dept. of Mechanical Engineering,
-National Institute of Technology, Karnataka
+> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=3D10021
+> Subject		: Linux 2.6.25-rc2 regression: LVM cannot find volume group
+> Submitter	: Tilman Schmidt <tilman@imap.cc>
+> Date		: 2008-02-16 20:14
+> References	: http://lkml.org/lkml/2008/2/16/208
+> Handled-By	: Alan Cox <alan@lxorguk.ukuu.org.uk>
+> 		  Jiri Slaby <jirislaby@gmail.com>
+
+Fixed in 2.6.25-rc4 by the introduction of CONFIG_SYSFS_DEPRECATED_V2.
+
+Thanks,
+Tilman
+
+--=20
+Tilman Schmidt                          E-Mail: tilman@imap.cc
+Bonn, Germany
+Diese Nachricht besteht zu 100% aus wiederverwerteten Bits.
+Unge=F6ffnet mindestens haltbar bis: (siehe R=FCckseite)
+
+
+--------------enig3A3E5983C337F26F1C18C5CD
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.3rc1 (MingW32)
+Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
+
+iD8DBQFH0DCGMdB4Whm86/kRAqG9AJwOQopwi64Q8eVgcIWTeJK8EpcU8QCcCcv1
+EJFdJKwZdLdhOO4TuSDIi5c=
+=poDj
+-----END PGP SIGNATURE-----
+
+--------------enig3A3E5983C337F26F1C18C5CD--
