@@ -1,77 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762990AbYCFT0A@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932290AbYCFT0a@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762990AbYCFT0A (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Mar 2008 14:26:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753211AbYCFTZx
+	id S932290AbYCFT0a (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Mar 2008 14:26:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761464AbYCFT0J
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Mar 2008 14:25:53 -0500
-Received: from e35.co.us.ibm.com ([32.97.110.153]:42486 "EHLO
-	e35.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750823AbYCFTZw (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Mar 2008 14:25:52 -0500
-Subject: Re: [PATCH 1/5] generic __remove_pages() support
-From: Badari Pulavarty <pbadari@us.ibm.com>
-To: Randy Dunlap <randy.dunlap@oracle.com>
-Cc: lkml <linux-kernel@vger.kernel.org>, linuxppc-dev@ozlabs.org,
-       paulus@samba.org, Yasunori Goto <y-goto@jp.fujitsu.com>,
-       Andrew Morton <akpm@linux-foundation.org>
-In-Reply-To: <20080306110847.11d7cb26.randy.dunlap@oracle.com>
-References: <1204829673.7939.59.camel@dyn9047017100.beaverton.ibm.com>
-	 <1204829734.7939.61.camel@dyn9047017100.beaverton.ibm.com>
-	 <20080306110847.11d7cb26.randy.dunlap@oracle.com>
-Content-Type: text/plain
-Date: Thu, 06 Mar 2008 11:29:11 -0800
-Message-Id: <1204831751.6272.6.camel@dyn9047017100.beaverton.ibm.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.0.4 (2.0.4-4) 
+	Thu, 6 Mar 2008 14:26:09 -0500
+Received: from rock.gnat.com ([205.232.38.15]:50157 "EHLO rock.gnat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1764948AbYCFT0I (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 6 Mar 2008 14:26:08 -0500
+Message-ID: <47D0453D.5080501@adacore.com>
+Date: Thu, 06 Mar 2008 14:25:49 -0500
+From: Robert Dewar <dewar@adacore.com>
+User-Agent: Thunderbird 2.0.0.12 (Windows/20080213)
+MIME-Version: 1.0
+To: "H. Peter Anvin" <hpa@zytor.com>
+CC: "H.J. Lu" <hjl.tools@gmail.com>, Jakub Jelinek <jakub@redhat.com>,
+       NightStrike <nightstrike@gmail.com>,
+       Olivier Galibert <galibert@pobox.com>,
+       Chris Lattner <clattner@apple.com>, Michael Matz <matz@suse.de>,
+       Richard Guenther <richard.guenther@gmail.com>,
+       Joe Buck <Joe.Buck@synopsys.com>, Jan Hubicka <hubicka@ucw.cz>,
+       Aurelien Jarno <aurelien@aurel32.net>, linux-kernel@vger.kernel.org,
+       gcc@gcc.gnu.org
+Subject: Re: RELEASE BLOCKER: Linux doesn't follow x86/x86-64 ABI wrt direction
+ flag
+References: <738B72DB-A1D6-43F8-813A-E49688D05771@apple.com> 	 <578FCA7D-D7A6-44F6-9310-4A97C13CDCBE@apple.com> 	 <47CF44E7.3020106@zytor.com> <20080306135139.GA5236@dspnet.fr.eu.org> 	 <b609cb3b0803060737xa0c3c0byb51d51af797eb81f@mail.gmail.com> 	 <6dc9ffc80803060743h502fc96bj6117ef87a8555c3a@mail.gmail.com> 	 <47D012B4.3020104@zytor.com> 	 <20080306162353.GF24887@devserv.devel.redhat.com> 	 <6dc9ffc80803060858i7d4e8b56o99ff8ad301a5cc1a@mail.gmail.com> 	 <47D024AA.9010300@zytor.com> <6dc9ffc80803060914x187049a2hb24ef501baf55601@mail.gmail.com> <47D0275B.4020105@adacore.com> <47D027B5.5030503@zytor.com>
+In-Reply-To: <47D027B5.5030503@zytor.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2008-03-06 at 11:08 -0800, Randy Dunlap wrote:
-> On Thu, 06 Mar 2008 10:55:34 -0800 Badari Pulavarty wrote:
+H. Peter Anvin wrote:
+> Robert Dewar wrote:
+>> H.J. Lu wrote:
+>>
+>>> So that is the bug in the Linux kernel. Since fixing kernel is much 
+>>> easier
+>>> than providing a workaround in compilers, I think kernel should be fixed
+>>> and no need for icc/gcc fix.
+>> Fixing a bug in the Linux kernel is not "much easier". You are taking
+>> a purely engineering viewpoint, but life is not like that. There are
+>> lots of copies of Linux kernels around and in use. The issue is not
+>> fixing the kernel per se, it is propagating that change to all
+>> Linux kernels in use -- THAT'S another matter entirely, and is
+>> far far more difficult than making sure that a kernel fix is
+>> qualified and widely proopagated.
+>>
 > 
-> > Generic helper function to remove section mappings and sysfs entries
-> > for the section of the memory we are removing.  offline_pages() correctly 
-> > adjusted zone and marked the pages reserved.
+> Not really, it's just a matter of time.  Typical distro cycles are on 
+> the order of 3 years.
 > 
-> Such generic (exported, non-static) interfaces could use some
-> (kernel-)docs, please.
+> 	-hpa
 
-Sure. Will do.
-
-> > Issue: If mem_map, usemap allocation could come from different places -
-> > kmalloc, vmalloc, alloc_pages or bootmem. There is no easy way
-> > to find and free up bootmem allocations.
-> > 
-> > Signed-off-by: Badari Pulavarty <pbadari@us.ibm.com>
-> > 
-> > ---
-> >  include/linux/memory_hotplug.h |    4 +++
-> >  mm/memory_hotplug.c            |   44 +++++++++++++++++++++++++++++++++++++++++
-> >  mm/sparse.c                    |   43 +++++++++++++++++++++++++++++++++++++---
-> >  3 files changed, 88 insertions(+), 3 deletions(-)
-> 
-> > Index: linux-2.6.25-rc2/include/linux/memory_hotplug.h
-> > ===================================================================
-> > --- linux-2.6.25-rc2.orig/include/linux/memory_hotplug.h	2008-02-27 12:58:17.000000000 -0800
-> > +++ linux-2.6.25-rc2/include/linux/memory_hotplug.h	2008-02-27 13:00:04.000000000 -0800
-> > @@ -64,6 +65,8 @@ extern int offline_pages(unsigned long, 
-> >  /* reasonably generic interface to expand the physical pages in a zone  */
-> >  extern int __add_pages(struct zone *zone, unsigned long start_pfn,
-> >  	unsigned long nr_pages);
-> > +extern int __remove_pages(struct zone *zone, unsigned long start_pfn,
-> > +	unsigned long nr_pages);
-> >  
-> >  /*
-> >   * Walk thorugh all memory which is registered as resource.
-> 
->            through :)
-
-I will fix that.
-
-Thanks,
-Badari
-
+again, in the real world, there are MANY projects that are nothing
+like this interactive when it comes to moving to new versions of
+operating systems.
