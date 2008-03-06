@@ -1,16 +1,16 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934845AbYCFSzh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935131AbYCFS4F@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934845AbYCFSzh (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Mar 2008 13:55:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756000AbYCFSzL
+	id S935131AbYCFS4F (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Mar 2008 13:56:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758449AbYCFSzs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Mar 2008 13:55:11 -0500
-Received: from e36.co.us.ibm.com ([32.97.110.154]:36084 "EHLO
-	e36.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755889AbYCFSzI (ORCPT
+	Thu, 6 Mar 2008 13:55:48 -0500
+Received: from e31.co.us.ibm.com ([32.97.110.149]:53621 "EHLO
+	e31.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757950AbYCFSzq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Mar 2008 13:55:08 -0500
-Subject: [PATCH 4/5] [PPC] update lmb for hotplug memory add/remove
+	Thu, 6 Mar 2008 13:55:46 -0500
+Subject: [PATCH 5/5] [PPC] provide walk_memory_resource() for ppc
 From: Badari Pulavarty <pbadari@us.ibm.com>
 To: lkml <linux-kernel@vger.kernel.org>
 Cc: linuxppc-dev@ozlabs.org, paulus@samba.org,
@@ -19,8 +19,8 @@ Cc: linuxppc-dev@ozlabs.org, paulus@samba.org,
 In-Reply-To: <1204829673.7939.59.camel@dyn9047017100.beaverton.ibm.com>
 References: <1204829673.7939.59.camel@dyn9047017100.beaverton.ibm.com>
 Content-Type: text/plain
-Date: Thu, 06 Mar 2008 10:58:27 -0800
-Message-Id: <1204829908.6272.2.camel@dyn9047017100.beaverton.ibm.com>
+Date: Thu, 06 Mar 2008 10:59:05 -0800
+Message-Id: <1204829945.6272.4.camel@dyn9047017100.beaverton.ibm.com>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.0.4 (2.0.4-4) 
 Content-Transfer-Encoding: 7bit
@@ -28,236 +28,117 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-ppc kernel maintains information about logical memory blocks in
-lmb.memory structure at the boot time. Its not updated for
-hotplug memory add/remove. hotplug memory notifier for memory
-add/remove now updates lmb.memory.
-
-This information is useful for eHEA driver to find out the memory 
-layout and holes.
-
-NOTE: Calls to lmb_add() and lmb_remove() needs to be serialized by 
-the caller. In this case blocking_notifier_chain(pSeries_reconfig_chain)
-does that.
+Provide walk_memory_resource() for ppc64. PPC maintains 
+logic memory region mapping in lmb.memory structures. Walk
+through these structures and do the callbacks for the
+contiguous chunks.
 
 Signed-off-by: Badari Pulavarty <pbadari@us.ibm.com>
 ---
- arch/powerpc/platforms/pseries/hotplug-memory.c |   43 +++++++++++++++
- include/linux/lmb.h                             |    3 -
- lib/lmb.c                                       |   66 ++++++++++++++++++++----
- 3 files changed, 102 insertions(+), 10 deletions(-)
+ arch/powerpc/mm/mem.c |   30 +++++++++++++++++++++++-------
+ include/linux/lmb.h   |    1 +
+ lib/lmb.c             |   33 +++++++++++++++++++++++++++++++++
+ 3 files changed, 57 insertions(+), 7 deletions(-)
 
 Index: linux-2.6.25-rc3/lib/lmb.c
 ===================================================================
---- linux-2.6.25-rc3.orig/lib/lmb.c	2008-03-05 10:44:29.000000000 -0800
-+++ linux-2.6.25-rc3/lib/lmb.c	2008-03-05 10:44:56.000000000 -0800
-@@ -54,14 +54,13 @@ void lmb_dump_all(void)
- #endif /* DEBUG */
- }
- 
--static unsigned long __init lmb_addrs_overlap(u64 base1,
--		u64 size1, u64 base2, u64 size2)
-+static unsigned long lmb_addrs_overlap(u64 base1, u64 size1, u64 base2,
-+		u64 size2)
- {
- 	return ((base1 < (base2+size2)) && (base2 < (base1+size1)));
- }
- 
--static long __init lmb_addrs_adjacent(u64 base1, u64 size1,
--		u64 base2, u64 size2)
-+static long lmb_addrs_adjacent(u64 base1, u64 size1, u64 base2, u64 size2)
- {
- 	if (base2 == base1 + size1)
- 		return 1;
-@@ -71,7 +70,7 @@ static long __init lmb_addrs_adjacent(u6
+--- linux-2.6.25-rc3.orig/lib/lmb.c	2008-03-05 10:28:55.000000000 -0800
++++ linux-2.6.25-rc3/lib/lmb.c	2008-03-05 10:34:01.000000000 -0800
+@@ -416,3 +416,36 @@ int __init lmb_is_reserved(u64 addr)
+ 	}
  	return 0;
  }
- 
--static long __init lmb_regions_adjacent(struct lmb_region *rgn,
-+static long lmb_regions_adjacent(struct lmb_region *rgn,
- 		unsigned long r1, unsigned long r2)
- {
- 	u64 base1 = rgn->region[r1].base;
-@@ -82,7 +81,7 @@ static long __init lmb_regions_adjacent(
- 	return lmb_addrs_adjacent(base1, size1, base2, size2);
- }
- 
--static void __init lmb_remove_region(struct lmb_region *rgn, unsigned long r)
-+static void lmb_remove_region(struct lmb_region *rgn, unsigned long r)
- {
- 	unsigned long i;
- 
-@@ -94,7 +93,7 @@ static void __init lmb_remove_region(str
- }
- 
- /* Assumption: base addr of region 1 < base addr of region 2 */
--static void __init lmb_coalesce_regions(struct lmb_region *rgn,
-+static void lmb_coalesce_regions(struct lmb_region *rgn,
- 		unsigned long r1, unsigned long r2)
- {
- 	rgn->region[r1].size += rgn->region[r2].size;
-@@ -129,7 +128,7 @@ void __init lmb_analyze(void)
- }
- 
- /* This routine called with relocation disabled. */
--static long __init lmb_add_region(struct lmb_region *rgn, u64 base, u64 size)
-+static long lmb_add_region(struct lmb_region *rgn, u64 base, u64 size)
- {
- 	unsigned long coalesced = 0;
- 	long adjacent, i;
-@@ -195,7 +194,7 @@ static long __init lmb_add_region(struct
- }
- 
- /* This routine may be called with relocation disabled. */
--long __init lmb_add(u64 base, u64 size)
-+long lmb_add(u64 base, u64 size)
- {
- 	struct lmb_region *_rgn = &(lmb.memory);
- 
-@@ -207,6 +206,55 @@ long __init lmb_add(u64 base, u64 size)
- 
- }
- 
-+long lmb_remove(u64 base, u64 size)
++
++/*
++ * Given a <base, len>, find which memory regions belong to this range.
++ * Adjust the request and return a contiguous chunk.
++ */
++int lmb_find(struct lmb_property *res)
 +{
-+	struct lmb_region *rgn = &(lmb.memory);
-+	u64 rgnbegin, rgnend;
-+	u64 end = base + size;
 +	int i;
++	u64 rstart, rend;
 +
-+	rgnbegin = rgnend = 0; /* supress gcc warnings */
++	rstart = res->base;
++	rend = rstart + res->size - 1;
 +
-+	/* Find the region where (base, size) belongs to */
-+	for (i=0; i < rgn->cnt; i++) {
-+		rgnbegin = rgn->region[i].base;
-+		rgnend = rgnbegin + rgn->region[i].size;
++	for (i = 0; i < lmb.memory.cnt; i++) {
++		u64 start = lmb.memory.region[i].base;
++		u64 end = start + lmb.memory.region[i].size - 1;
 +
-+		if ((rgnbegin <= base) && (end <= rgnend))
-+			break;
++		if (start > rend)
++			return -1;
++
++		if ((end >= rstart) && (start < rend)) {
++			/* adjust the request */
++			if (rstart < start)
++				rstart = start;
++			if (rend > end)
++				rend = end;
++			res->base = rstart;
++			res->size = rend - rstart + 1;
++			return 0;
++		}
 +	}
-+
-+	/* Didn't find the region */
-+	if (i == rgn->cnt)
-+		return -1;
-+
-+	/* Check to see if we are removing entire region */
-+	if ((rgnbegin == base) && (rgnend == end)) {
-+		lmb_remove_region(rgn, i);
-+		return 0;
-+	}
-+
-+	/* Check to see if region is matching at the front */
-+	if (rgnbegin == base) {
-+		rgn->region[i].base = end;
-+		rgn->region[i].size -= size;
-+		return 0;
-+	}
-+
-+	/* Check to see if the region is matching at the end */
-+	if (rgnend == end) {
-+		rgn->region[i].size -= size;
-+		return 0;
-+	}
-+
-+	/*
-+	 * We need to split the entry -  adjust the current one to the
-+	 * beginging of the hole and add the region after hole.
-+	 */
-+	rgn->region[i].size = base - rgn->region[i].base;
-+	return lmb_add_region(rgn, end, rgnend - end);
++	return -1;
 +}
-+
- long __init lmb_reserve(u64 base, u64 size)
- {
- 	struct lmb_region *_rgn = &(lmb.reserved);
-Index: linux-2.6.25-rc3/arch/powerpc/platforms/pseries/hotplug-memory.c
+Index: linux-2.6.25-rc3/arch/powerpc/mm/mem.c
 ===================================================================
---- linux-2.6.25-rc3.orig/arch/powerpc/platforms/pseries/hotplug-memory.c	2008-03-05 10:44:51.000000000 -0800
-+++ linux-2.6.25-rc3/arch/powerpc/platforms/pseries/hotplug-memory.c	2008-03-05 10:45:06.000000000 -0800
-@@ -10,6 +10,7 @@
+--- linux-2.6.25-rc3.orig/arch/powerpc/mm/mem.c	2008-03-05 10:14:28.000000000 -0800
++++ linux-2.6.25-rc3/arch/powerpc/mm/mem.c	2008-03-05 10:32:16.000000000 -0800
+@@ -148,19 +148,35 @@ out:
+ 
+ /*
+  * walk_memory_resource() needs to make sure there is no holes in a given
+- * memory range. On PPC64, since this range comes from /sysfs, the range
+- * is guaranteed to be valid, non-overlapping and can not contain any
+- * holes. By the time we get here (memory add or remove), /proc/device-tree
+- * is updated and correct. Only reason we need to check against device-tree
+- * would be if we allow user-land to specify a memory range through a
+- * system call/ioctl etc. instead of doing offline/online through /sysfs.
++ * memory range. PPC64 does not maintain the memory layout in /proc/iomem.
++ * Instead it maintains it in lmb.memory structures. Walk through the
++ * memory regions, find holes and callback for contiguous regions.
   */
- 
- #include <linux/of.h>
-+#include <linux/lmb.h>
- #include <asm/firmware.h>
- #include <asm/machdep.h>
- #include <asm/pSeries_reconfig.h>
-@@ -58,6 +59,11 @@ static int pseries_remove_memory(struct 
- 		return ret;
- 
- 	/*
-+	 * Update memory regions for memory remove
-+	 */
-+	lmb_remove(start_pfn << PAGE_SHIFT, regs[3]);
-+
-+	/*
- 	 * Remove htab bolted mappings for this section of memory
- 	 */
-  	start = (unsigned long)__va(start_pfn << PAGE_SHIFT);
-@@ -65,6 +71,41 @@ static int pseries_remove_memory(struct 
- 	return ret;
- }
- 
-+static int pseries_add_memory(struct device_node *np)
-+{
-+	const char *type;
-+	const unsigned int *my_index;
-+	const unsigned int *regs;
-+	u64 start_pfn;
-+	int ret = -EINVAL;
-+
-+	/*
-+	 * Check to see if we are actually adding memory
-+	 */
-+	type = of_get_property(np, "device_type", NULL);
-+	if (type == NULL || strcmp(type, "memory") != 0)
-+		return 0;
-+
-+	/*
-+	 * Find the memory index and size of the removing section
-+	 */
-+	my_index = of_get_property(np, "ibm,my-drc-index", NULL);
-+	if (!my_index)
-+		return ret;
-+
-+	regs = of_get_property(np, "reg", NULL);
-+	if (!regs)
-+		return ret;
-+
-+	start_pfn = section_nr_to_pfn(*my_index & 0xffff);
-+
-+	/*
-+	 * Update memory region to represent the memory add
-+	 */
-+	lmb_add(start_pfn << PAGE_SHIFT, regs[3]);
-+	return 0;
-+}
-+
- static int pseries_memory_notifier(struct notifier_block *nb,
- 				unsigned long action, void *node)
+ int
+ walk_memory_resource(unsigned long start_pfn, unsigned long nr_pages, void *arg,
+ 			int (*func)(unsigned long, unsigned long, void *))
  {
-@@ -72,6 +113,8 @@ static int pseries_memory_notifier(struc
+-	return  (*func)(start_pfn, nr_pages, arg);
++	struct lmb_property res;
++	unsigned long pfn, len;
++	u64 end;
++	int ret = -1;
++
++	res.base = (u64) start_pfn << PAGE_SHIFT;
++	res.size = (u64) nr_pages << PAGE_SHIFT;
++
++	end = res.base + res.size - 1;
++	while ((res.base < end) && (lmb_find(&res) >= 0)) {
++		pfn = (unsigned long)(res.base >> PAGE_SHIFT);
++		len = (unsigned long)(res.size >> PAGE_SHIFT);
++		ret = (*func)(pfn, len, arg);
++		if (ret)
++			break;
++		res.base += (res.size + 1);
++		res.size = (end - res.base + 1);
++	}
++	return ret;
+ }
++EXPORT_SYMBOL_GPL(walk_memory_resource);
  
- 	switch (action) {
- 	case PSERIES_RECONFIG_ADD:
-+		if (pseries_add_memory(node))
-+			err = NOTIFY_BAD;
- 		break;
- 	case PSERIES_RECONFIG_REMOVE:
- 		if (pseries_remove_memory(node))
+ #endif /* CONFIG_MEMORY_HOTPLUG */
+ 
 Index: linux-2.6.25-rc3/include/linux/lmb.h
 ===================================================================
---- linux-2.6.25-rc3.orig/include/linux/lmb.h	2008-03-05 10:44:29.000000000 -0800
-+++ linux-2.6.25-rc3/include/linux/lmb.h	2008-03-05 10:44:56.000000000 -0800
-@@ -40,7 +40,8 @@ extern struct lmb lmb;
+--- linux-2.6.25-rc3.orig/include/linux/lmb.h	2008-03-05 10:30:06.000000000 -0800
++++ linux-2.6.25-rc3/include/linux/lmb.h	2008-03-05 10:33:12.000000000 -0800
+@@ -52,6 +52,7 @@ extern u64 __init lmb_phys_mem_size(void
+ extern u64 __init lmb_end_of_DRAM(void);
+ extern void __init lmb_enforce_memory_limit(u64 memory_limit);
+ extern int __init lmb_is_reserved(u64 addr);
++extern int lmb_find(struct lmb_property *res);
  
- extern void __init lmb_init(void);
- extern void __init lmb_analyze(void);
--extern long __init lmb_add(u64 base, u64 size);
-+extern long lmb_add(u64 base, u64 size);
-+extern long lmb_remove(u64 base, u64 size);
- extern long __init lmb_reserve(u64 base, u64 size);
- extern u64 __init lmb_alloc(u64 size, u64 align);
- extern u64 __init lmb_alloc_base(u64 size,
+ extern void lmb_dump_all(void);
+ 
 
 
