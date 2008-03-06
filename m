@@ -1,41 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764800AbYCFUk0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934633AbYCFUlj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764800AbYCFUk0 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Mar 2008 15:40:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758346AbYCFUkN
+	id S934633AbYCFUlj (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Mar 2008 15:41:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758704AbYCFUlb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Mar 2008 15:40:13 -0500
-Received: from dell.benran.ru ([83.149.196.126]:49479 "EHLO ari.home"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1757187AbYCFUkL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Mar 2008 15:40:11 -0500
-X-Greylist: delayed 1767 seconds by postgrey-1.27 at vger.kernel.org; Thu, 06 Mar 2008 15:40:11 EST
-Date: Thu, 6 Mar 2008 23:10:56 +0300 (MSK)
-From: "Lev A. Melnikovsky" <melnikovsky@mail.ru>
-To: David Brownell <david-b@pacbell.net>
-cc: Alessandro Suardi <alessandro.suardi@gmail.com>,
-       Rene Herman <rene.herman@keyaccess.nl>, linux-kernel@vger.kernel.org
-Subject: Re: ehci-hcd affects hda speed
-In-Reply-To: <200803051303.46275.david-b@pacbell.net>
-Message-ID: <alpine.LFD.1.00.0803062244010.10693@nev.ubzr>
-References: <alpine.LFD.1.00.0803050036210.31935@nev.ubzr> <47CEC816.6000808@keyaccess.nl> <5a4c581d0803051203s1a0048c2u5f10b3eb442cfafb@mail.gmail.com> <200803051303.46275.david-b@pacbell.net>
-User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
+	Thu, 6 Mar 2008 15:41:31 -0500
+Received: from smtp-out04.alice-dsl.net ([88.44.63.6]:11471 "EHLO
+	smtp-out04.alice-dsl.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758700AbYCFUla (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 6 Mar 2008 15:41:30 -0500
+Date: Thu, 6 Mar 2008 21:41:24 +0100
+From: Andi Kleen <andi@firstfloor.org>
+To: axboe@kernel.dk, linux-kernel@vger.kernel.org
+Subject: [PATCH] Fix memory hotplug and bouncing in block layer
+Message-ID: <20080306204124.GA17154@basil.nowhere.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.13 (2006-08-11)
+X-OriginalArrivalTime: 06 Mar 2008 20:34:54.0270 (UTC) FILETIME=[88F0DDE0:01C87FC9]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David,
+Fix memory hotplug and bouncing in block layer
 
-  On Wed, 5 Mar 2008 at 1:03pm, David Brownell wrote:
+Only noticed this while hacking something else, no test case.
 
-DB> Yeah, nobody who can debug the problem has hardware that ill-behaved.
-DB> It'd be great if someone could chase this down.
-Well, you are right. I do understand how electrons travel through the slot 
-lead, I can even read/write in C/assembly but I have no idea how PCI nor 
-USB buses work. To say truth, I don't really care. If they do, that is... 
-But I can type whatever you ask and can report what I see. Do you need a 
-monkey? Try us :-)
+blk_max_low_pfn is initialized once at bootup by the block layer
+from max_low_pfn. But max_low_pfn is not necessarily constant
+over the runtime of the system when you consider memory hotplug.
+What could happen if that someone adds memory later the block
+layer wouldn't get updated and then start bouncing memory unnecessarily.
 
--L
+Also on 64bit blk_max_low_pfn actually isn't needed because
+it just disables bouncing essentially and there is no highmem.
+And nobody can pass pfns > max_low_pfn to the block layer, 
+because those wouldn't have a struct page and I suspect
+block layer wouldn't be very happy without that.
+
+So set BLK_BOUNCE_HIGH to infinity (-1ULL) on 64bit. That
+avoids the problem of having to update it on memory hotadd.
+
+On 32bit I kept the same behaviour because at least on i386
+memory hotadd only adds HIGHMEM, never lowmem.
+
+BLK_BOUNCE_ANY is always set to infinity on both 32 and 64bit.
+
+Signed-off-by: Andi Kleen <ak@suse.de>
+
+---
+ include/linux/blkdev.h |    7 ++++++-
+ 1 file changed, 6 insertions(+), 1 deletion(-)
+
+Index: linux/include/linux/blkdev.h
+===================================================================
+--- linux.orig/include/linux/blkdev.h
++++ linux/include/linux/blkdev.h
+@@ -532,8 +532,13 @@ extern unsigned long blk_max_low_pfn, bl
+  * BLK_BOUNCE_ANY	: don't bounce anything
+  * BLK_BOUNCE_ISA	: bounce pages above ISA DMA boundary
+  */
++
++#if BITS_PER_LONG == 32
+ #define BLK_BOUNCE_HIGH		((u64)blk_max_low_pfn << PAGE_SHIFT)
+-#define BLK_BOUNCE_ANY		((u64)blk_max_pfn << PAGE_SHIFT)
++#else
++#define BLK_BOUNCE_HIGH		-1ULL
++#endif
++#define BLK_BOUNCE_ANY		(-1ULL)
+ #define BLK_BOUNCE_ISA		(ISA_DMA_THRESHOLD)
+ 
+ /*
