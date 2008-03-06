@@ -1,61 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935252AbYCFSHr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935369AbYCFSIR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935252AbYCFSHr (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Mar 2008 13:07:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935166AbYCFSHe
+	id S935369AbYCFSIR (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Mar 2008 13:08:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935276AbYCFSHw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Mar 2008 13:07:34 -0500
-Received: from mx2.suse.de ([195.135.220.15]:48030 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S935164AbYCFSHc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Mar 2008 13:07:32 -0500
-Date: Thu, 6 Mar 2008 10:05:59 -0800
-From: Greg KH <gregkh@suse.de>
-To: Balaji Rao <balajirrao@gmail.com>
-Cc: kvm-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Mark kobjects as unitialized
-Message-ID: <20080306180559.GA14934@suse.de>
-References: <200803062223.18857.balajirrao@gmail.com> <20080306170514.GA13839@suse.de> <200803062320.50296.balajirrao@gmail.com>
+	Thu, 6 Mar 2008 13:07:52 -0500
+Received: from monty.telenet-ops.be ([195.130.132.56]:44324 "EHLO
+	monty.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S935264AbYCFSHu (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 6 Mar 2008 13:07:50 -0500
+Date: Thu, 6 Mar 2008 19:07:34 +0100 (CET)
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: linux-fbdev-devel@lists.sourceforge.net
+cc: Andrew Morton <akpm@linux-foundation.org>, bryan.wu@analog.com,
+       Randy Dunlap <randy.dunlap@oracle.com>, adaplas@gmail.com,
+       Michael Hennerich <michael.hennerich@analog.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [Linux-fbdev-devel] [PATCH 1/1 try#2] [VIDEO/FRAMEBUFFER]: add
+ BF52x EZkit Display driver
+In-Reply-To: <386072610803060850i2e0b6e35q7e05448d5fd39bca@mail.gmail.com>
+Message-ID: <Pine.LNX.4.64.0803061906210.20407@anakin>
+References: <1201686800-31739-1-git-send-email-bryan.wu@analog.com>
+ <20080130083820.c1bcbc14.randy.dunlap@oracle.com> <1201711783.6463.11.camel@roc-laptop>
+ <20080305230223.920765e9.akpm@linux-foundation.org>
+ <386072610803060850i2e0b6e35q7e05448d5fd39bca@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200803062320.50296.balajirrao@gmail.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Mar 06, 2008 at 11:20:50PM +0530, Balaji Rao wrote:
-> On Thursday 06 March 2008 10:35:14 pm Greg KH wrote:
-> <snip>
-> > Where exactly in the code does that happen?  kobjects should not be
-> > "reused" as that implies that they are static, and not dynamically
-> > allocated, right?
+On Thu, 6 Mar 2008, Bryan Wu wrote:
+> On Wed, Mar 5, 2008 at 11:02 PM, Andrew Morton
+> <akpm@linux-foundation.org> wrote:
+> > On Thu, 31 Jan 2008 00:49:43 +0800 Bryan Wu <bryan.wu@analog.com> wrote:
+> >  > +     fbinfo =
+> >  > +         framebuffer_alloc(sizeof(struct bfin_t350mcqbfb_info), &pdev->dev);
+> >  > +     if (!fbinfo) {
+> >  > +             ret = -ENOMEM;
+> >  > +             goto out2;
+> >  > +     }
+
+    [...]
+
+> >  > +     fbinfo->pseudo_palette = kmalloc(sizeof(u32) * 16, GFP_KERNEL);
+> >  > +     if (!fbinfo->pseudo_palette) {
+> >  > +             printk(KERN_ERR DRIVER_NAME
+> >  > +                    "Fail to allocate pseudo_palette\n");
+> >  > +
+> >  > +             ret = -ENOMEM;
+> >  > +             goto out4;
+> >  > +     }
+> >  > +
+> >  > +     memset(fbinfo->pseudo_palette, 0, sizeof(u32) * 16);
 > >
-> > Which kobject is this?
-> Yes, its static. Here's the code from virt/kvm_main.c:1269
-> 
-> static struct sys_device kvm_sysdev = {
->         .id = 0,
->         .cls = &kvm_sysdev_class,
-> };
-> 
-> this sys_device is being registered/unregistered when kvm-intel is 
-> loaded/unloaded.
-
-Ah, ok.  I'll add this patch then.
-
-> > Ugh, is this the sys_device stuff?  I hate that code...
+> >  You just invented kzalloc!
 > >
-> Yes it is! But, why do you hate it ?
+> 
+> Right
 
-For reasons like this :)
+Alternatively, you could embed the pseudo palette inside struct
+bfin_t350mcqbfb_info, so it's allocated by the framebuffer_alloc() call
+above.
 
-kobjects should not be static.  the sysdevice stuff was a hack when it
-was originally created and never touched since the mid 2.5 days.  It
-needs to be fixed up a lot, and is on my TODO list, slowly getting
-closer to the top...
+Gr{oetje,eeting}s,
 
-thanks,
+						Geert
 
-greg k-h
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
