@@ -1,125 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933174AbYCFVqw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762610AbYCFVu2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933174AbYCFVqw (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Mar 2008 16:46:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752162AbYCFVqn
+	id S1762610AbYCFVu2 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Mar 2008 16:50:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753563AbYCFVuQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Mar 2008 16:46:43 -0500
-Received: from rv-out-0910.google.com ([209.85.198.189]:11865 "EHLO
+	Thu, 6 Mar 2008 16:50:16 -0500
+Received: from rv-out-0910.google.com ([209.85.198.187]:20181 "EHLO
 	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752650AbYCFVqm (ORCPT
+	with ESMTP id S1754742AbYCFVuP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Mar 2008 16:46:42 -0500
+	Thu, 6 Mar 2008 16:50:15 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:mime-version:content-type;
-        b=H6zIwVH0o2/nJ48tu7T2CMnG/SUu0NguJHC4IWyyyvtVeY00fkeVCYbH64yD8n7dqMh0kpnpATbEQDkfOful7sN+wPwFgg59Kqv8/zGLUjxtVfLbpe9oXTDdZB4JM0fz0IAE/IMw0xBrAtUowg2x5YVJw1bDEFuPRLedpXjvjE8=
-Message-ID: <86802c440803061346u350d395djacf5e1aefffb0e4b@mail.gmail.com>
-Date: Thu, 6 Mar 2008 13:46:39 -0800
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=s9QYtZh5ft9yZ6mG2yOlvbDAEBAszCT2EXeXoPga58GaT5BvXejIsOZCPHKLet/ZVg9XH3elLdSCMydYwbjBN8Fcbb3RIecIFeYWHFD8qtkegxKn3/l010MXA/lfPhC8K/hwrrseXrq+EvlQdaKlyO9Vafadm2NiVbceyaEuaSo=
+Message-ID: <86802c440803061350g146a0b27xe358658f3315376@mail.gmail.com>
+Date: Thu, 6 Mar 2008 13:50:14 -0800
 From: "Yinghai Lu" <yhlu.kernel@gmail.com>
-To: "Ingo Molnar" <mingo@elte.hu>, "Andrew Morton" <akpm@linux-foundation.org>,
+To: "Pavel Machek" <pavel@ucw.cz>
+Subject: Re: 2.6.25-rc4: crash on boot when SMP enabled
+Cc: "Ingo Molnar" <mingo@elte.hu>,
+       "kernel list" <linux-kernel@vger.kernel.org>,
        "Thomas Gleixner" <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>, "Andi Kleen" <ak@suse.de>
-Subject: [PATCH] x86: introduce initial apicid
-Cc: "kernel list" <linux-kernel@vger.kernel.org>
+       "H. Peter Anvin" <hpa@zytor.com>
+In-Reply-To: <20080306212419.GA13798@elf.ucw.cz>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; 
-	boundary="----=_Part_24473_31174710.1204839999674"
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20080306102927.GA4434@elf.ucw.cz> <20080306131547.GE21359@elte.hu>
+	 <86802c440803061127s5ca545bch930310a0df6511fc@mail.gmail.com>
+	 <20080306212419.GA13798@elf.ucw.cz>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-------=_Part_24473_31174710.1204839999674
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-
-
-
-------=_Part_24473_31174710.1204839999674
-Content-Type: text/x-patch; name=x86_initial_apicid_x.patch
-Content-Transfer-Encoding: base64
-X-Attachment-Id: f_fdhuwyef0
-Content-Disposition: attachment; filename=x86_initial_apicid_x.patch
-
-W1BBVENIXSB4ODY6IGludHJvZHVjZSBpbml0aWFsIGFwaWNpZAoKc3RvcmUgaW5pdGlhbF9hcGlj
-aWQgZnJvbSBlYXJseSBpZGVudGlmeS4gaXQgaXMgY291bGQgYmUgZGlmZmVyZW50IGZyb20gcGh5
-c19wcm9jX2lkIGxhdGVyCgphbHNvIHByaW50IGl0IG91dCBpbiBwcm9jCgpTaWduZWQtb2ZmLWJ5
-OiBZaW5naGFpIEx1IDx5aGx1Lmtlcm5lbEBnbWFpbC5jb20+CgpJbmRleDogbGludXgtMi42L2Fy
-Y2gveDg2L2tlcm5lbC9jcHUvY29tbW9uLmMKPT09PT09PT09PT09PT09PT09PT09PT09PT09PT09
-PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PQotLS0gbGludXgtMi42Lm9yaWcv
-YXJjaC94ODYva2VybmVsL2NwdS9jb21tb24uYworKysgbGludXgtMi42L2FyY2gveDg2L2tlcm5l
-bC9jcHUvY29tbW9uLmMKQEAgLTM2OSwxMCArMzY5LDEyIEBAIHN0YXRpYyB2b2lkIF9fY3B1aW5p
-dCBnZW5lcmljX2lkZW50aWZ5KHMKIAkJCWlmIChjLT54ODYgPj0gMHg2KQogCQkJCWMtPng4Nl9t
-b2RlbCArPSAoKHRmbXMgPj4gMTYpICYgMHhGKSA8PCA0OwogCQkJYy0+eDg2X21hc2sgPSB0Zm1z
-ICYgMTU7CisJCQljLT5pbml0aWFsX2FwaWNpZCA9IChlYnggPj4gMjQpICYgMHhGRjsKICNpZmRl
-ZiBDT05GSUdfWDg2X0hUCi0JCQljLT5hcGljaWQgPSBwaHlzX3BrZ19pZCgoZWJ4ID4+IDI0KSAm
-IDB4RkYsIDApOworCQkJYy0+YXBpY2lkID0gcGh5c19wa2dfaWQoYy0+aW5pdGlhbF9hcGljaWQs
-IDApOworCQkJYy0+cGh5c19wcm9jX2lkID0gYy0+aW5pdGlhbF9hcGljaWQ7CiAjZWxzZQotCQkJ
-Yy0+YXBpY2lkID0gKGVieCA+PiAyNCkgJiAweEZGOworCQkJYy0+YXBpY2lkID0gYy0+aW5pdGlh
-bF9hcGljaWQ7CiAjZW5kaWYKIAkJCWlmICh0ZXN0X2NwdV9jYXAoYywgWDg2X0ZFQVRVUkVfQ0xG
-TFNIKSkKIAkJCQljLT54ODZfY2xmbHVzaF9zaXplID0gKChlYnggPj4gOCkgJiAweGZmKSAqIDg7
-CkBAIC0zOTUsOSArMzk3LDYgQEAgc3RhdGljIHZvaWQgX19jcHVpbml0IGdlbmVyaWNfaWRlbnRp
-ZnkocwogCQlpbml0X3NjYXR0ZXJlZF9jcHVpZF9mZWF0dXJlcyhjKTsKIAl9CiAKLSNpZmRlZiBD
-T05GSUdfWDg2X0hUCi0JYy0+cGh5c19wcm9jX2lkID0gKGNwdWlkX2VieCgxKSA+PiAyNCkgJiAw
-eGZmOwotI2VuZGlmCiB9CiAKIHN0YXRpYyB2b2lkIF9fY3B1aW5pdCBzcXVhc2hfdGhlX3N0dXBp
-ZF9zZXJpYWxfbnVtYmVyKHN0cnVjdCBjcHVpbmZvX3g4NiAqYykKQEAgLTU1NCw3ICs1NTMsNyBA
-QCB2b2lkIF9fY3B1aW5pdCBkZXRlY3RfaHQoc3RydWN0IGNwdWluZm9fCiAJCX0KIAogCQlpbmRl
-eF9tc2IgPSBnZXRfY291bnRfb3JkZXIoc21wX251bV9zaWJsaW5ncyk7Ci0JCWMtPnBoeXNfcHJv
-Y19pZCA9IHBoeXNfcGtnX2lkKChlYnggPj4gMjQpICYgMHhGRiwgaW5kZXhfbXNiKTsKKwkJYy0+
-cGh5c19wcm9jX2lkID0gcGh5c19wa2dfaWQoYy0+aW5pdGlhbF9hcGljaWQsIGluZGV4X21zYik7
-CiAKIAkJcHJpbnRrKEtFUk5fSU5GTyAgIkNQVTogUGh5c2ljYWwgUHJvY2Vzc29yIElEOiAlZFxu
-IiwKIAkJICAgICAgIGMtPnBoeXNfcHJvY19pZCk7CkBAIC01NjUsNyArNTY0LDcgQEAgdm9pZCBf
-X2NwdWluaXQgZGV0ZWN0X2h0KHN0cnVjdCBjcHVpbmZvXwogCiAJCWNvcmVfYml0cyA9IGdldF9j
-b3VudF9vcmRlcihjLT54ODZfbWF4X2NvcmVzKTsKIAotCQljLT5jcHVfY29yZV9pZCA9IHBoeXNf
-cGtnX2lkKChlYnggPj4gMjQpICYgMHhGRiwgaW5kZXhfbXNiKSAmCisJCWMtPmNwdV9jb3JlX2lk
-ID0gcGh5c19wa2dfaWQoYy0+aW5pdGlhbF9hcGljaWQsIGluZGV4X21zYikgJgogCQkJCQkgICAg
-ICAgKCgxIDw8IGNvcmVfYml0cykgLSAxKTsKIAogCQlpZiAoYy0+eDg2X21heF9jb3JlcyA+IDEp
-CkluZGV4OiBsaW51eC0yLjYvYXJjaC94ODYva2VybmVsL2NwdS9wcm9jLmMKPT09PT09PT09PT09
-PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PQot
-LS0gbGludXgtMi42Lm9yaWcvYXJjaC94ODYva2VybmVsL2NwdS9wcm9jLmMKKysrIGxpbnV4LTIu
-Ni9hcmNoL3g4Ni9rZXJuZWwvY3B1L3Byb2MuYwpAQCAtMTksNiArMTksOCBAQCBzdGF0aWMgdm9p
-ZCBzaG93X2NwdWluZm9fY29yZShzdHJ1Y3Qgc2VxCiAJCQkgICBjcHVzX3dlaWdodChwZXJfY3B1
-KGNwdV9jb3JlX21hcCwgY3B1KSkpOwogCQlzZXFfcHJpbnRmKG0sICJjb3JlIGlkXHRcdDogJWRc
-biIsIGMtPmNwdV9jb3JlX2lkKTsKIAkJc2VxX3ByaW50ZihtLCAiY3B1IGNvcmVzXHQ6ICVkXG4i
-LCBjLT5ib290ZWRfY29yZXMpOworCQlzZXFfcHJpbnRmKG0sICJhcGljaWRcdFx0OiAlZFxuIiwg
-Yy0+YXBpY2lkKTsKKwkJc2VxX3ByaW50ZihtLCAiaW5pdGlhbCBhcGljaWRcdDogJWRcbiIsIGMt
-PmluaXRpYWxfYXBpY2lkKTsKIAl9CiAjZW5kaWYKIH0KQEAgLTYwLDYgKzYyLDcgQEAgc3RhdGlj
-IHZvaWQgc2hvd19jcHVpbmZvX2NvcmUoc3RydWN0IHNlcQogCQlzZXFfcHJpbnRmKG0sICJjb3Jl
-IGlkXHRcdDogJWRcbiIsIGMtPmNwdV9jb3JlX2lkKTsKIAkJc2VxX3ByaW50ZihtLCAiY3B1IGNv
-cmVzXHQ6ICVkXG4iLCBjLT5ib290ZWRfY29yZXMpOwogCQlzZXFfcHJpbnRmKG0sICJhcGljaWRc
-dFx0OiAlZFxuIiwgYy0+YXBpY2lkKTsKKwkJc2VxX3ByaW50ZihtLCAiaW5pdGlhbCBhcGljaWRc
-dDogJWRcbiIsIGMtPmluaXRpYWxfYXBpY2lkKTsKIAl9CiAjZW5kaWYKIH0KSW5kZXg6IGxpbnV4
-LTIuNi9hcmNoL3g4Ni9rZXJuZWwvc2V0dXBfNjQuYwo9PT09PT09PT09PT09PT09PT09PT09PT09
-PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09Ci0tLSBsaW51eC0yLjYu
-b3JpZy9hcmNoL3g4Ni9rZXJuZWwvc2V0dXBfNjQuYworKysgbGludXgtMi42L2FyY2gveDg2L2tl
-cm5lbC9zZXR1cF82NC5jCkBAIC01NjQsOSArNTY0LDkgQEAgc3RhdGljIHZvaWQgX19jcHVpbml0
-IGFtZF9kZXRlY3RfY21wKHN0cgogCWJpdHMgPSBjLT54ODZfY29yZWlkX2JpdHM7CiAKIAkvKiBM
-b3cgb3JkZXIgYml0cyBkZWZpbmUgdGhlIGNvcmUgaWQgKGluZGV4IG9mIGNvcmUgaW4gc29ja2V0
-KSAqLwotCWMtPmNwdV9jb3JlX2lkID0gYy0+cGh5c19wcm9jX2lkICYgKCgxIDw8IGJpdHMpLTEp
-OwotCS8qIENvbnZlcnQgdGhlIEFQSUMgSUQgaW50byB0aGUgc29ja2V0IElEICovCi0JYy0+cGh5
-c19wcm9jX2lkID0gKGMtPmFwaWNpZCAtIGJvb3RfY3B1X2lkKSA+PiBiaXRzOworCWMtPmNwdV9j
-b3JlX2lkID0gYy0+aW5pdGlhbF9hcGljaWQgJiAoKDEgPDwgYml0cyktMSk7CisJLyogQ29udmVy
-dCB0aGUgaW5pdGlhbCBBUElDIElEIGludG8gdGhlIHNvY2tldCBJRCAqLworCWMtPnBoeXNfcHJv
-Y19pZCA9IGMtPmluaXRpYWxfYXBpY2lkID4+IGJpdHM7CiAKICNpZmRlZiBDT05GSUdfTlVNQQog
-CW5vZGUgPSBjLT5waHlzX3Byb2NfaWQ7CkBAIC01ODMsNyArNTgzLDcgQEAgc3RhdGljIHZvaWQg
-X19jcHVpbml0IGFtZF9kZXRlY3RfY21wKHN0cgogCQkgICBJZiB0aGF0IGRvZXNuJ3QgcmVzdWx0
-IGluIGEgdXNhYmxlIG5vZGUgZmFsbCBiYWNrIHRvIHRoZQogCQkgICBwYXRoIGZvciB0aGUgcHJl
-dmlvdXMgY2FzZS4gICovCiAKLQkJaW50IGh0X25vZGVpZCA9IGFwaWNpZCAtIGJvb3RfY3B1X2lk
-OworCQlpbnQgaHRfbm9kZWlkID0gYy0+aW5pdGlhbF9hcGljaWQ7CiAKIAkJaWYgKGh0X25vZGVp
-ZCA+PSAwICYmCiAJCSAgICBhcGljaWRfdG9fbm9kZVtodF9ub2RlaWRdICE9IE5VTUFfTk9fTk9E
-RSkKQEAgLTk0OSw4ICs5NDksOSBAQCBzdGF0aWMgdm9pZCBfX2NwdWluaXQgZWFybHlfaWRlbnRp
-ZnlfY3B1CiAJCWMtPng4NiA9IDQ7CiAJfQogCisJYy0+aW5pdGlhbF9hcGljaWQgPSAoY3B1aWRf
-ZWJ4KDEpID4+IDI0KSAmIDB4ZmY7CiAjaWZkZWYgQ09ORklHX1NNUAotCWMtPnBoeXNfcHJvY19p
-ZCA9IChjcHVpZF9lYngoMSkgPj4gMjQpICYgMHhmZjsKKwljLT5waHlzX3Byb2NfaWQgPSBjLT5p
-bml0aWFsX2FwaWNpZDsKICNlbmRpZgogCS8qIEFNRC1kZWZpbmVkIGZsYWdzOiBsZXZlbCAweDgw
-MDAwMDAxICovCiAJeGx2bCA9IGNwdWlkX2VheCgweDgwMDAwMDAwKTsKSW5kZXg6IGxpbnV4LTIu
-Ni9pbmNsdWRlL2FzbS14ODYvcHJvY2Vzc29yLmgKPT09PT09PT09PT09PT09PT09PT09PT09PT09
-PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PQotLS0gbGludXgtMi42Lm9y
-aWcvaW5jbHVkZS9hc20teDg2L3Byb2Nlc3Nvci5oCisrKyBsaW51eC0yLjYvaW5jbHVkZS9hc20t
-eDg2L3Byb2Nlc3Nvci5oCkBAIC0xMDEsNiArMTAxLDcgQEAgc3RydWN0IGNwdWluZm9feDg2IHsK
-IAkvKiBjcHVpZCByZXR1cm5lZCBtYXggY29yZXMgdmFsdWU6ICovCiAJdTE2CQkJIHg4Nl9tYXhf
-Y29yZXM7CiAJdTE2CQkJYXBpY2lkOworCXUxNgkJCWluaXRpYWxfYXBpY2lkOwogCXUxNgkJCXg4
-Nl9jbGZsdXNoX3NpemU7CiAjaWZkZWYgQ09ORklHX1NNUAogCS8qIG51bWJlciBvZiBjb3JlcyBh
-cyBzZWVuIGJ5IHRoZSBPUzogKi8K
-------=_Part_24473_31174710.1204839999674--
+On Thu, Mar 6, 2008 at 1:24 PM, Pavel Machek <pavel@ucw.cz> wrote:
+> Hi!
+>
+>  > >  > On amd 8-core system, I get crash on boot... Last messages:
+>  > >  >
+>  > >  > Quad-Core AMD Opteron...
+>  > >  > Checking TSC Synchronization [CPU#0 -> CPU#3]: passed
+>  > >  > BUG: unable to handle kernel paging request at 00...005958
+>  > >  > IP: __alloc_pages+0x38
+>  > >  > ...
+>  > >  > Call trace:
+>  > >  > kmem_getpages
+>  > >  > cache_grow
+>  > >  > ____cache_alloc_node
+>  > >  > cpuup_callback
+>  > >  > kmem_cache_alloc_node
+>  > >  > cpuup_callback
+>  > >  > notifier_call_chain
+>  > >  > _cpu_up
+>  > >
+>  > >  could you try latest x86.git:
+>  > >
+>  > >     http://people.redhat.com/mingo/x86.git/README
+>  > >
+>  > >  does it fix it? Could be one of the numa fixes that are queued up.
+>  >
+>
+> > can we have your config and whole bootlog?
+>
+>  Config is attached.
+>
+>  Bootlog is a bit of problem. I can get you whole bootlog with "nosmp",
+>  or maybe some jpg files of the real problem. Which one do you prefer?
+>  ;-).
+boot log for 2.6.24 could be good, if it can boot with that.
