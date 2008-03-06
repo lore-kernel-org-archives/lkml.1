@@ -1,69 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764455AbYCFPnc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932355AbYCFPpS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764455AbYCFPnc (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Mar 2008 10:43:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756507AbYCFPnZ
+	id S932355AbYCFPpS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Mar 2008 10:45:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756507AbYCFPpF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Mar 2008 10:43:25 -0500
-Received: from gv-out-0910.google.com ([216.239.58.186]:14806 "EHLO
-	gv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755942AbYCFPnY (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Mar 2008 10:43:24 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=elluewphmJXrpY+OIi11BoFRbrBFfIsbi428VXKPl7QDPudUyMTLiNoJiHBtZbSqqjR7MrEp5Z85MmuTOZRkh2wzTZUUYox+/sLeLbD34hBKiFqkrbfE0l1ct55o0lGQNNBB3krWJKQhPyOvAvavs6cqMtGjSdevYMZFkxxlxVM=
-Message-ID: <6dc9ffc80803060743h502fc96bj6117ef87a8555c3a@mail.gmail.com>
-Date: Thu, 6 Mar 2008 07:43:16 -0800
-From: "H.J. Lu" <hjl.tools@gmail.com>
-To: NightStrike <nightstrike@gmail.com>
-Subject: Re: RELEASE BLOCKER: Linux doesn't follow x86/x86-64 ABI wrt direction flag
-Cc: "Olivier Galibert" <galibert@pobox.com>, "H. Peter Anvin" <hpa@zytor.com>,
-       "Chris Lattner" <clattner@apple.com>, "Michael Matz" <matz@suse.de>,
-       "Richard Guenther" <richard.guenther@gmail.com>,
-       "Joe Buck" <Joe.Buck@synopsys.com>, "Jan Hubicka" <hubicka@ucw.cz>,
-       "Aurelien Jarno" <aurelien@aurel32.net>, linux-kernel@vger.kernel.org,
-       gcc@gcc.gnu.org
-In-Reply-To: <b609cb3b0803060737xa0c3c0byb51d51af797eb81f@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Thu, 6 Mar 2008 10:45:05 -0500
+Received: from gate.crashing.org ([63.228.1.57]:35215 "EHLO gate.crashing.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758177AbYCFPpE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 6 Mar 2008 10:45:04 -0500
+In-Reply-To: <47CFEE9D.1020300@tiscali.nl>
+References: <47CFEE9D.1020300@tiscali.nl>
+Mime-Version: 1.0 (Apple Message framework v623)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <5adf51cc1df72cfd261e3c6e7bead312@kernel.crashing.org>
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <Pine.LNX.4.64.0803052158270.20583@wotan.suse.de>
-	 <47CF11D6.7070901@zytor.com>
-	 <738B72DB-A1D6-43F8-813A-E49688D05771@apple.com>
-	 <Pine.LNX.4.64.0803052258530.20583@wotan.suse.de>
-	 <2F47E21A-9055-4EC3-99CF-B666BBC045C3@apple.com>
-	 <47CF3F09.4080606@zytor.com>
-	 <578FCA7D-D7A6-44F6-9310-4A97C13CDCBE@apple.com>
-	 <47CF44E7.3020106@zytor.com> <20080306135139.GA5236@dspnet.fr.eu.org>
-	 <b609cb3b0803060737xa0c3c0byb51d51af797eb81f@mail.gmail.com>
+Cc: paulus@samba.org, arnd@arndb.de, linuxppc-dev@ozlabs.org,
+       lkml <linux-kernel@vger.kernel.org>
+From: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [PATCH] PPC: in celleb_show_cpuinfo() convert strncpy(x, y, sizeof(x)) to strlcpy 
+Date: Thu, 6 Mar 2008 16:44:24 +0100
+To: Roel Kluin <12o3l@tiscali.nl>
+X-Mailer: Apple Mail (2.623)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I agree with it. There is no  right or wrong here Let's start from
-scratch and figure out
-what is the best way to handle this, assuming we are defining a new psABI.
+> This patch was not yet tested. Please confirm it's right.
+> ---
+> strncpy does not append '\0' if the length of the source string equals
+> the size parameter, strlcpy does.
 
-H.J.
-On Thu, Mar 6, 2008 at 7:37 AM, NightStrike <nightstrike@gmail.com> wrote:
->
-> On 3/6/08, Olivier Galibert <galibert@pobox.com> wrote:
->  > On Wed, Mar 05, 2008 at 05:12:07PM -0800, H. Peter Anvin wrote:
->  > > It's a kernel bug, and it needs to be fixed.
->  >
->  > I'm not convinced.  It's been that way for 15 years, it's that way in
->  > the BSD kernels, at that point it's a feature.  The bug is in the
->  > documentation, nowhere else.  And in gcc for blindly trusting the
->  > documentation.
->
->  The issue should not be evaluated as: "It's always been that way,
->  therefore, it's right."  Instead, it should be: "What's the right way
->  to do it?"
->
->  You don't just change documentation because no existing code meets the
->  requirement -- UNLESS -- the non-conforming code is actually the right
->  way to do things.
->
+strlcpy() doesn't fill the rest of the array with zeroes, strncpy()
+does.  This could matter (information leak, for example), although
+I doubt it does here.
+
+> -	strncpy(celleb_machine_type, ptr, sizeof(celleb_machine_type));
+> +	strlcpy(celleb_machine_type, ptr, sizeof(celleb_machine_type));
+>  	celleb_machine_type[sizeof(celleb_machine_type)-1] = 0;
+
+That last statement makes the strncpy() case always zero-terminated,
+so this patch isn't necessary.  Oh, and neither the old nor the new
+code handles the case where the string doesn't fit (other than just
+cutting it short); is that the wanted behaviour?
+
+
+Segher
+
