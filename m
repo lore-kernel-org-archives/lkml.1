@@ -1,67 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764774AbYCFNeu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751523AbYCFNgP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764774AbYCFNeu (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Mar 2008 08:34:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934329AbYCFNeR
+	id S1751523AbYCFNgP (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Mar 2008 08:36:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751040AbYCFNfy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Mar 2008 08:34:17 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:45514 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S934324AbYCFNeQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Mar 2008 08:34:16 -0500
-Date: Thu, 6 Mar 2008 14:33:47 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Cc: Jens Axboe <jens.axboe@oracle.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Anders Eriksson <aeriksson@fastmail.fm>
-Subject: Re: Linux 2.6.25-rc4
-Message-ID: <20080306133347.GA23495@elte.hu>
-References: <alpine.LFD.1.00.0803042044460.12253@woody.linux-foundation.org> <20080306090029.GA6215@elte.hu> <20080306125929.GD17940@kernel.dk> <200803061438.22205.bzolnier@gmail.com>
+	Thu, 6 Mar 2008 08:35:54 -0500
+Received: from E23SMTP03.au.ibm.com ([202.81.18.172]:50227 "EHLO
+	e23smtp03.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751032AbYCFNfx (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 6 Mar 2008 08:35:53 -0500
+Message-ID: <47CFF332.4040807@linux.vnet.ibm.com>
+Date: Thu, 06 Mar 2008 19:05:46 +0530
+From: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+User-Agent: Thunderbird 1.5.0.14ubu (X11/20080227)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200803061438.22205.bzolnier@gmail.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+CC: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
+       netdev@vger.kernel.org, Andy Whitcroft <apw@shadowen.org>
+Subject: [BUILD_FAILURE] linux-next: Tree for March 6 build failure
+References: <20080306162606.970aefe1.sfr@canb.auug.org.au>
+In-Reply-To: <20080306162606.970aefe1.sfr@canb.auug.org.au>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+The kernel build fails with error
 
-* Bartlomiej Zolnierkiewicz <bzolnier@gmail.com> wrote:
+net/built-in.o(.toc1+0x2060): undefined reference to `udplite_statistics'
+net/built-in.o(.toc1+0x2100): undefined reference to `udplite_statistics'
+make: *** [.tmp_vmlinux1] Error 1
 
-> The problem looks very similar to the one recently reported by Anders:
-> 
-> http://lkml.org/lkml/2008/2/22/239
-> 
-> "Trying out 2.6.25-rc2 smartd always causes my box to hang. I can 
-> switch vt:s and the keyboard seems to work.
-> 
-> Using sysrq-e I noticed a callpath open -> ext3 -> journals -> 
-> sync_buffer -> io_scheduel -> generic_unplig_device. I'd guess the 
-> open stems from smartd. Removing smartd from the startup, I'm now 
-> using rc2 fine..."
-> 
-> Initially we thought that it is an IDE regression but after some 
-> testing and further investigation it seems that IDE changes just made 
-> it more likely to occur (yesterday it turned out that the kernel with 
-> the "guilty" IDE commit sometimes boots fine).  The issue is easily 
-> reproducible.
-> 
-> PS We've already verified that it is not PREEMPT related or a compiler 
-> bug.
-
-smartd is not active here though - and starting/restarting it doesnt 
-provoke a hang.
-
-	Ingo
+-- 
+Thanks & Regards,
+Kamalesh Babulal,
+Linux Technology Center,
+IBM, ISTL.
