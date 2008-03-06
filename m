@@ -1,103 +1,125 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761463AbYCFVpn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933174AbYCFVqw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761463AbYCFVpn (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Mar 2008 16:45:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752162AbYCFVpd
+	id S933174AbYCFVqw (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Mar 2008 16:46:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752162AbYCFVqn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Mar 2008 16:45:33 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:47851 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751497AbYCFVpc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Mar 2008 16:45:32 -0500
-Date: Thu, 6 Mar 2008 22:45:16 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Pekka Enberg <penberg@cs.helsinki.fi>
-Cc: Jens Osterkamp <Jens.Osterkamp@gmx.de>,
-       Christoph Lameter <clameter@sgi.com>, linux-mm@kvack.org,
-       Linux kernel mailing list <linux-kernel@vger.kernel.org>
-Subject: Re: [BUG] in 2.6.25-rc3 with 64k page size and SLUB_DEBUG_ON
-Message-ID: <20080306214516.GB886@elte.hu>
-References: <200803061447.05797.Jens.Osterkamp@gmx.de> <84144f020803061327r2310b23ew6211bc09f9ba25a3@mail.gmail.com>
+	Thu, 6 Mar 2008 16:46:43 -0500
+Received: from rv-out-0910.google.com ([209.85.198.189]:11865 "EHLO
+	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752650AbYCFVqm (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 6 Mar 2008 16:46:42 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:mime-version:content-type;
+        b=H6zIwVH0o2/nJ48tu7T2CMnG/SUu0NguJHC4IWyyyvtVeY00fkeVCYbH64yD8n7dqMh0kpnpATbEQDkfOful7sN+wPwFgg59Kqv8/zGLUjxtVfLbpe9oXTDdZB4JM0fz0IAE/IMw0xBrAtUowg2x5YVJw1bDEFuPRLedpXjvjE8=
+Message-ID: <86802c440803061346u350d395djacf5e1aefffb0e4b@mail.gmail.com>
+Date: Thu, 6 Mar 2008 13:46:39 -0800
+From: "Yinghai Lu" <yhlu.kernel@gmail.com>
+To: "Ingo Molnar" <mingo@elte.hu>, "Andrew Morton" <akpm@linux-foundation.org>,
+       "Thomas Gleixner" <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>, "Andi Kleen" <ak@suse.de>
+Subject: [PATCH] x86: introduce initial apicid
+Cc: "kernel list" <linux-kernel@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <84144f020803061327r2310b23ew6211bc09f9ba25a3@mail.gmail.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Content-Type: multipart/mixed; 
+	boundary="----=_Part_24473_31174710.1204839999674"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+------=_Part_24473_31174710.1204839999674
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-* Pekka Enberg <penberg@cs.helsinki.fi> wrote:
 
-> >  Mount-cache hash table entries: 4096
-> >  BUG: scheduling while atomic: kthreadd/2/0x00056ef8
-> >  Call Trace:
-> >  [c00000003c187b68] [c00000000000f140] .show_stack+0x70/0x1bc (unreliable)
-> >  [c00000003c187c18] [c000000000052d0c] .__schedule_bug+0x64/0x80
-> >  [c00000003c187ca8] [c00000000036fa84] .schedule+0xc4/0x6b0
-> >  [c00000003c187d98] [c0000000003702d0] .schedule_timeout+0x3c/0xe8
-> >  [c00000003c187e68] [c00000000036f82c] .wait_for_common+0x150/0x22c
-> >  [c00000003c187f28] [c000000000074868] .kthreadd+0x12c/0x1f0
-> >  [c00000003c187fd8] [c000000000024864] .kernel_thread+0x4c/0x68
-> >  ------------[ cut here ]------------
-> >  kernel BUG at /home/auto/jens/kernels/linux-2.6.25-rc3/kernel/sched.c:4532!
-> >  cpu 0x0: Vector: 700 (Program Check) at [c00000003c187bc8]
-> >     pc: c000000000051f8c: .sched_setscheduler+0x5c/0x48c
-> >     lr: c0000000000748b0: .kthreadd+0x174/0x1f0
-> >     sp: c00000003c187e48
-> >    msr: 9000000000029032
-> >   current = 0xc00000007e0808a0
-> >   paca    = 0xc0000000004cf880
-> >     pid   = 2, comm = kthreadd
-> >  kernel BUG at /home/auto/jens/kernels/linux-2.6.25-rc3/kernel/sched.c:4532!
-> >  enter ? for help
-> >  [c00000003c187f28] c0000000000748b0 .kthreadd+0x174/0x1f0
-> >  [c00000003c187fd8] c000000000024864 .kernel_thread+0x4c/0x68
-> >  0:mon>
-> >
-> >  In the code this corresponds to
-> >
-> >  int sched_setscheduler(struct task_struct *p, int policy,
-> >                        struct sched_param *param)
-> >  {
-> >         int retval, oldprio, oldpolicy = -1, on_rq, running;
-> >         unsigned long flags;
-> >         const struct sched_class *prev_class = p->sched_class;
-> >         struct rq *rq;
-> >
-> >         /* may grab non-irq protected spin_locks */
-> >         BUG_ON(in_interrupt());
-> >  recheck:
-> >         /* double check policy once rq lock held */
-> >         if (policy < 0)
-> >                 policy = oldpolicy = p->policy;
-> >         else if (policy != SCHED_FIFO && policy != SCHED_RR &&
-> >                         policy != SCHED_NORMAL && policy != SCHED_BATCH &&
-> >                         policy != SCHED_IDLE)
-> >                 return -EINVAL;
-> >
-> >  With slub_debug=- on the kernel command line, the problem is gone.
-> >  With 4k page size the problem also does not occur.
-> >
-> >  Any ideas on why this occurs and how to debug this further ?
-> 
-> There's no SLUB in the stack traces. Ingo, any suggestions how to debug this?
 
-hm, no idea - is this powerpc? It seems to have hit a atomicity check 
-due to:
+------=_Part_24473_31174710.1204839999674
+Content-Type: text/x-patch; name=x86_initial_apicid_x.patch
+Content-Transfer-Encoding: base64
+X-Attachment-Id: f_fdhuwyef0
+Content-Disposition: attachment; filename=x86_initial_apicid_x.patch
 
-> >  BUG: scheduling while atomic: kthreadd/2/0x00056ef8
-
-preempt-count 0x00056ef8 is totally out of whack. Serious memory 
-corruption.
-
-	Ingo
+W1BBVENIXSB4ODY6IGludHJvZHVjZSBpbml0aWFsIGFwaWNpZAoKc3RvcmUgaW5pdGlhbF9hcGlj
+aWQgZnJvbSBlYXJseSBpZGVudGlmeS4gaXQgaXMgY291bGQgYmUgZGlmZmVyZW50IGZyb20gcGh5
+c19wcm9jX2lkIGxhdGVyCgphbHNvIHByaW50IGl0IG91dCBpbiBwcm9jCgpTaWduZWQtb2ZmLWJ5
+OiBZaW5naGFpIEx1IDx5aGx1Lmtlcm5lbEBnbWFpbC5jb20+CgpJbmRleDogbGludXgtMi42L2Fy
+Y2gveDg2L2tlcm5lbC9jcHUvY29tbW9uLmMKPT09PT09PT09PT09PT09PT09PT09PT09PT09PT09
+PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PQotLS0gbGludXgtMi42Lm9yaWcv
+YXJjaC94ODYva2VybmVsL2NwdS9jb21tb24uYworKysgbGludXgtMi42L2FyY2gveDg2L2tlcm5l
+bC9jcHUvY29tbW9uLmMKQEAgLTM2OSwxMCArMzY5LDEyIEBAIHN0YXRpYyB2b2lkIF9fY3B1aW5p
+dCBnZW5lcmljX2lkZW50aWZ5KHMKIAkJCWlmIChjLT54ODYgPj0gMHg2KQogCQkJCWMtPng4Nl9t
+b2RlbCArPSAoKHRmbXMgPj4gMTYpICYgMHhGKSA8PCA0OwogCQkJYy0+eDg2X21hc2sgPSB0Zm1z
+ICYgMTU7CisJCQljLT5pbml0aWFsX2FwaWNpZCA9IChlYnggPj4gMjQpICYgMHhGRjsKICNpZmRl
+ZiBDT05GSUdfWDg2X0hUCi0JCQljLT5hcGljaWQgPSBwaHlzX3BrZ19pZCgoZWJ4ID4+IDI0KSAm
+IDB4RkYsIDApOworCQkJYy0+YXBpY2lkID0gcGh5c19wa2dfaWQoYy0+aW5pdGlhbF9hcGljaWQs
+IDApOworCQkJYy0+cGh5c19wcm9jX2lkID0gYy0+aW5pdGlhbF9hcGljaWQ7CiAjZWxzZQotCQkJ
+Yy0+YXBpY2lkID0gKGVieCA+PiAyNCkgJiAweEZGOworCQkJYy0+YXBpY2lkID0gYy0+aW5pdGlh
+bF9hcGljaWQ7CiAjZW5kaWYKIAkJCWlmICh0ZXN0X2NwdV9jYXAoYywgWDg2X0ZFQVRVUkVfQ0xG
+TFNIKSkKIAkJCQljLT54ODZfY2xmbHVzaF9zaXplID0gKChlYnggPj4gOCkgJiAweGZmKSAqIDg7
+CkBAIC0zOTUsOSArMzk3LDYgQEAgc3RhdGljIHZvaWQgX19jcHVpbml0IGdlbmVyaWNfaWRlbnRp
+ZnkocwogCQlpbml0X3NjYXR0ZXJlZF9jcHVpZF9mZWF0dXJlcyhjKTsKIAl9CiAKLSNpZmRlZiBD
+T05GSUdfWDg2X0hUCi0JYy0+cGh5c19wcm9jX2lkID0gKGNwdWlkX2VieCgxKSA+PiAyNCkgJiAw
+eGZmOwotI2VuZGlmCiB9CiAKIHN0YXRpYyB2b2lkIF9fY3B1aW5pdCBzcXVhc2hfdGhlX3N0dXBp
+ZF9zZXJpYWxfbnVtYmVyKHN0cnVjdCBjcHVpbmZvX3g4NiAqYykKQEAgLTU1NCw3ICs1NTMsNyBA
+QCB2b2lkIF9fY3B1aW5pdCBkZXRlY3RfaHQoc3RydWN0IGNwdWluZm9fCiAJCX0KIAogCQlpbmRl
+eF9tc2IgPSBnZXRfY291bnRfb3JkZXIoc21wX251bV9zaWJsaW5ncyk7Ci0JCWMtPnBoeXNfcHJv
+Y19pZCA9IHBoeXNfcGtnX2lkKChlYnggPj4gMjQpICYgMHhGRiwgaW5kZXhfbXNiKTsKKwkJYy0+
+cGh5c19wcm9jX2lkID0gcGh5c19wa2dfaWQoYy0+aW5pdGlhbF9hcGljaWQsIGluZGV4X21zYik7
+CiAKIAkJcHJpbnRrKEtFUk5fSU5GTyAgIkNQVTogUGh5c2ljYWwgUHJvY2Vzc29yIElEOiAlZFxu
+IiwKIAkJICAgICAgIGMtPnBoeXNfcHJvY19pZCk7CkBAIC01NjUsNyArNTY0LDcgQEAgdm9pZCBf
+X2NwdWluaXQgZGV0ZWN0X2h0KHN0cnVjdCBjcHVpbmZvXwogCiAJCWNvcmVfYml0cyA9IGdldF9j
+b3VudF9vcmRlcihjLT54ODZfbWF4X2NvcmVzKTsKIAotCQljLT5jcHVfY29yZV9pZCA9IHBoeXNf
+cGtnX2lkKChlYnggPj4gMjQpICYgMHhGRiwgaW5kZXhfbXNiKSAmCisJCWMtPmNwdV9jb3JlX2lk
+ID0gcGh5c19wa2dfaWQoYy0+aW5pdGlhbF9hcGljaWQsIGluZGV4X21zYikgJgogCQkJCQkgICAg
+ICAgKCgxIDw8IGNvcmVfYml0cykgLSAxKTsKIAogCQlpZiAoYy0+eDg2X21heF9jb3JlcyA+IDEp
+CkluZGV4OiBsaW51eC0yLjYvYXJjaC94ODYva2VybmVsL2NwdS9wcm9jLmMKPT09PT09PT09PT09
+PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PQot
+LS0gbGludXgtMi42Lm9yaWcvYXJjaC94ODYva2VybmVsL2NwdS9wcm9jLmMKKysrIGxpbnV4LTIu
+Ni9hcmNoL3g4Ni9rZXJuZWwvY3B1L3Byb2MuYwpAQCAtMTksNiArMTksOCBAQCBzdGF0aWMgdm9p
+ZCBzaG93X2NwdWluZm9fY29yZShzdHJ1Y3Qgc2VxCiAJCQkgICBjcHVzX3dlaWdodChwZXJfY3B1
+KGNwdV9jb3JlX21hcCwgY3B1KSkpOwogCQlzZXFfcHJpbnRmKG0sICJjb3JlIGlkXHRcdDogJWRc
+biIsIGMtPmNwdV9jb3JlX2lkKTsKIAkJc2VxX3ByaW50ZihtLCAiY3B1IGNvcmVzXHQ6ICVkXG4i
+LCBjLT5ib290ZWRfY29yZXMpOworCQlzZXFfcHJpbnRmKG0sICJhcGljaWRcdFx0OiAlZFxuIiwg
+Yy0+YXBpY2lkKTsKKwkJc2VxX3ByaW50ZihtLCAiaW5pdGlhbCBhcGljaWRcdDogJWRcbiIsIGMt
+PmluaXRpYWxfYXBpY2lkKTsKIAl9CiAjZW5kaWYKIH0KQEAgLTYwLDYgKzYyLDcgQEAgc3RhdGlj
+IHZvaWQgc2hvd19jcHVpbmZvX2NvcmUoc3RydWN0IHNlcQogCQlzZXFfcHJpbnRmKG0sICJjb3Jl
+IGlkXHRcdDogJWRcbiIsIGMtPmNwdV9jb3JlX2lkKTsKIAkJc2VxX3ByaW50ZihtLCAiY3B1IGNv
+cmVzXHQ6ICVkXG4iLCBjLT5ib290ZWRfY29yZXMpOwogCQlzZXFfcHJpbnRmKG0sICJhcGljaWRc
+dFx0OiAlZFxuIiwgYy0+YXBpY2lkKTsKKwkJc2VxX3ByaW50ZihtLCAiaW5pdGlhbCBhcGljaWRc
+dDogJWRcbiIsIGMtPmluaXRpYWxfYXBpY2lkKTsKIAl9CiAjZW5kaWYKIH0KSW5kZXg6IGxpbnV4
+LTIuNi9hcmNoL3g4Ni9rZXJuZWwvc2V0dXBfNjQuYwo9PT09PT09PT09PT09PT09PT09PT09PT09
+PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09Ci0tLSBsaW51eC0yLjYu
+b3JpZy9hcmNoL3g4Ni9rZXJuZWwvc2V0dXBfNjQuYworKysgbGludXgtMi42L2FyY2gveDg2L2tl
+cm5lbC9zZXR1cF82NC5jCkBAIC01NjQsOSArNTY0LDkgQEAgc3RhdGljIHZvaWQgX19jcHVpbml0
+IGFtZF9kZXRlY3RfY21wKHN0cgogCWJpdHMgPSBjLT54ODZfY29yZWlkX2JpdHM7CiAKIAkvKiBM
+b3cgb3JkZXIgYml0cyBkZWZpbmUgdGhlIGNvcmUgaWQgKGluZGV4IG9mIGNvcmUgaW4gc29ja2V0
+KSAqLwotCWMtPmNwdV9jb3JlX2lkID0gYy0+cGh5c19wcm9jX2lkICYgKCgxIDw8IGJpdHMpLTEp
+OwotCS8qIENvbnZlcnQgdGhlIEFQSUMgSUQgaW50byB0aGUgc29ja2V0IElEICovCi0JYy0+cGh5
+c19wcm9jX2lkID0gKGMtPmFwaWNpZCAtIGJvb3RfY3B1X2lkKSA+PiBiaXRzOworCWMtPmNwdV9j
+b3JlX2lkID0gYy0+aW5pdGlhbF9hcGljaWQgJiAoKDEgPDwgYml0cyktMSk7CisJLyogQ29udmVy
+dCB0aGUgaW5pdGlhbCBBUElDIElEIGludG8gdGhlIHNvY2tldCBJRCAqLworCWMtPnBoeXNfcHJv
+Y19pZCA9IGMtPmluaXRpYWxfYXBpY2lkID4+IGJpdHM7CiAKICNpZmRlZiBDT05GSUdfTlVNQQog
+CW5vZGUgPSBjLT5waHlzX3Byb2NfaWQ7CkBAIC01ODMsNyArNTgzLDcgQEAgc3RhdGljIHZvaWQg
+X19jcHVpbml0IGFtZF9kZXRlY3RfY21wKHN0cgogCQkgICBJZiB0aGF0IGRvZXNuJ3QgcmVzdWx0
+IGluIGEgdXNhYmxlIG5vZGUgZmFsbCBiYWNrIHRvIHRoZQogCQkgICBwYXRoIGZvciB0aGUgcHJl
+dmlvdXMgY2FzZS4gICovCiAKLQkJaW50IGh0X25vZGVpZCA9IGFwaWNpZCAtIGJvb3RfY3B1X2lk
+OworCQlpbnQgaHRfbm9kZWlkID0gYy0+aW5pdGlhbF9hcGljaWQ7CiAKIAkJaWYgKGh0X25vZGVp
+ZCA+PSAwICYmCiAJCSAgICBhcGljaWRfdG9fbm9kZVtodF9ub2RlaWRdICE9IE5VTUFfTk9fTk9E
+RSkKQEAgLTk0OSw4ICs5NDksOSBAQCBzdGF0aWMgdm9pZCBfX2NwdWluaXQgZWFybHlfaWRlbnRp
+ZnlfY3B1CiAJCWMtPng4NiA9IDQ7CiAJfQogCisJYy0+aW5pdGlhbF9hcGljaWQgPSAoY3B1aWRf
+ZWJ4KDEpID4+IDI0KSAmIDB4ZmY7CiAjaWZkZWYgQ09ORklHX1NNUAotCWMtPnBoeXNfcHJvY19p
+ZCA9IChjcHVpZF9lYngoMSkgPj4gMjQpICYgMHhmZjsKKwljLT5waHlzX3Byb2NfaWQgPSBjLT5p
+bml0aWFsX2FwaWNpZDsKICNlbmRpZgogCS8qIEFNRC1kZWZpbmVkIGZsYWdzOiBsZXZlbCAweDgw
+MDAwMDAxICovCiAJeGx2bCA9IGNwdWlkX2VheCgweDgwMDAwMDAwKTsKSW5kZXg6IGxpbnV4LTIu
+Ni9pbmNsdWRlL2FzbS14ODYvcHJvY2Vzc29yLmgKPT09PT09PT09PT09PT09PT09PT09PT09PT09
+PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PQotLS0gbGludXgtMi42Lm9y
+aWcvaW5jbHVkZS9hc20teDg2L3Byb2Nlc3Nvci5oCisrKyBsaW51eC0yLjYvaW5jbHVkZS9hc20t
+eDg2L3Byb2Nlc3Nvci5oCkBAIC0xMDEsNiArMTAxLDcgQEAgc3RydWN0IGNwdWluZm9feDg2IHsK
+IAkvKiBjcHVpZCByZXR1cm5lZCBtYXggY29yZXMgdmFsdWU6ICovCiAJdTE2CQkJIHg4Nl9tYXhf
+Y29yZXM7CiAJdTE2CQkJYXBpY2lkOworCXUxNgkJCWluaXRpYWxfYXBpY2lkOwogCXUxNgkJCXg4
+Nl9jbGZsdXNoX3NpemU7CiAjaWZkZWYgQ09ORklHX1NNUAogCS8qIG51bWJlciBvZiBjb3JlcyBh
+cyBzZWVuIGJ5IHRoZSBPUzogKi8K
+------=_Part_24473_31174710.1204839999674--
