@@ -1,104 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765062AbYCFSJM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935440AbYCFSIj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765062AbYCFSJM (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Mar 2008 13:09:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935450AbYCFSIl
-	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Mar 2008 13:08:41 -0500
-Received: from mga11.intel.com ([192.55.52.93]:15640 "EHLO mga11.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S935439AbYCFSIj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S935440AbYCFSIj (ORCPT <rfc822;w@1wt.eu>);
 	Thu, 6 Mar 2008 13:08:39 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.25,457,1199692800"; 
-   d="scan'208";a="304152092"
-Message-ID: <47D032FA.9000909@intel.com>
-Date: Thu, 06 Mar 2008 10:07:54 -0800
-From: "Kok, Auke" <auke-jan.h.kok@intel.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071125)
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935343AbYCFSIJ
+	(ORCPT <rfc822;linux-kernel-outgoing>);
+	Thu, 6 Mar 2008 13:08:09 -0500
+Received: from miranda.se.axis.com ([193.13.178.8]:45994 "EHLO
+	miranda.se.axis.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S935339AbYCFSIH (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 6 Mar 2008 13:08:07 -0500
+Date: Thu, 6 Mar 2008 19:08:04 +0100
+From: Jesper Nilsson <jesper.nilsson@axis.com>
+To: Julia Lawall <julia@diku.dk>
+Cc: mikael.starvik@axis.com, dev-etrax@axis.com, linux-kernel@vger.kernel.org,
+       kernel-janitors@vger.kernel.org
+Subject: Re: [PATCH] arch/cris: Use mutex_unlock rather than spin_unlock
+Message-ID: <20080306180804.GJ27716@axis.com>
+References: <Pine.LNX.4.58.0803061823370.1669@pc-041.diku.dk>
 MIME-Version: 1.0
-To: Joe Perches <joe@perches.com>
-CC: Julia Lawall <julia@diku.dk>, e1000-devel@lists.sourceforge.net,
-       xfs-masters <xfs-masters@oss.sgi.com>, kernel-janitors@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [E1000-devel] [PATCH] drivers/net: convert & to &&
-References: <Pine.LNX.4.58.0803061841000.1669@pc-041.diku.dk> <1204826347.5541.20.camel@localhost>
-In-Reply-To: <1204826347.5541.20.camel@localhost>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 06 Mar 2008 18:07:55.0638 (UTC) FILETIME=[00A06960:01C87FB5]
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.58.0803061823370.1669@pc-041.diku.dk>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Joe Perches wrote:
-> On Thu, 2008-03-06 at 18:41 +0100, Julia Lawall wrote:
->> diff -u -p a/drivers/net/e1000/e1000_main.c b/drivers/net/e1000/e1000_main.c
->> --- a/drivers/net/e1000/e1000_main.c	2008-02-20 22:09:26.000000000 +0100
->> +++ b/drivers/net/e1000/e1000_main.c	2008-03-06 17:30:20.000000000 +0100
->> @@ -3872,10 +3872,12 @@ e1000_intr_msi(int irq, void *data)
->>  	adapter->total_tx_packets = 0;
->>  	adapter->total_rx_packets = 0;
->>
->> -	for (i = 0; i < E1000_MAX_INTR; i++)
->> -		if (unlikely(!adapter->clean_rx(adapter, adapter->rx_ring) &
->> -		   !e1000_clean_tx_irq(adapter, adapter->tx_ring)))
->> +	for (i = 0; i < E1000_MAX_INTR; i++) {
->> +		boolean_t c1 = adapter->clean_rx(adapter, adapter->rx_ring);
->> +		boolean_t c2 = e1000_clean_tx_irq(adapter, adapter->tx_ring);
->> +		if (unlikely(!c1 && !c2))
->>  			break;
->> +	}
+On Thu, Mar 06, 2008 at 06:24:05PM +0100, Julia Lawall wrote:
+> From: Julia Lawall <julia@diku.dk>
 > 
-> Perhaps also a s/boolean_t/bool/g kernel wide?
-
-send me a patch for e1000 and for ixgb and I'll happily apply those :)
-
-(which, BTW also could use the uint32_t -> u32 (etc) changes... while you're at it)
-
-Auke
-
-
+> It looks at least odd to apply spin_unlock to a mutex.
 > 
-> $ grep -wrl boolean_t *
+> The semantic patch that makes this change is as follows:
+> (http://www.emn.fr/x-info/coccinelle/)
 > 
-> drivers/net/e1000/e1000.h
-> drivers/net/e1000/e1000_ethtool.c
-> drivers/net/e1000/e1000_hw.c
-> drivers/net/e1000/e1000_hw.h
-> drivers/net/e1000/e1000_main.c
-> drivers/net/e1000/e1000_osdep.h
-> drivers/net/ixgb/ixgb.h
-> drivers/net/ixgb/ixgb_ee.c
-> drivers/net/ixgb/ixgb_ee.h
-> drivers/net/ixgb/ixgb_ethtool.c
-> drivers/net/ixgb/ixgb_hw.c
-> drivers/net/ixgb/ixgb_hw.h
-> drivers/net/ixgb/ixgb_main.c
-> drivers/net/ixgb/ixgb_osdep.h
-> fs/xfs/quota/xfs_dquot.c
-> fs/xfs/quota/xfs_qm.c
-> fs/xfs/quota/xfs_qm.h
-> fs/xfs/quota/xfs_qm_syscalls.c
-> fs/xfs/quota/xfs_trans_dquot.c
-> fs/xfs/xfs_ialloc.c
-> fs/xfs/xfs_ialloc.h
-> fs/xfs/xfs_inode.c
-> fs/xfs/xfs_inode.h
-> fs/xfs/xfs_log.c
-> fs/xfs/xfs_vfsops.c
-> fs/xfs/xfs_utils.c
-> fs/xfs/xfs_types.h
-> fs/xfs/xfs_vnodeops.c
+> // <smpl>
+> @def@
+> declarer DEFINE_MUTEX;
+> identifier m;
+> @@
 > 
+> DEFINE_MUTEX(m);
 > 
+> @@
+> identifier def.m;
+> @@
 > 
-> -------------------------------------------------------------------------
-> This SF.net email is sponsored by: Microsoft
-> Defy all challenges. Microsoft(R) Visual Studio 2008.
-> http://clk.atdmt.com/MRT/go/vse0120000070mrt/direct/01/
-> _______________________________________________
-> E1000-devel mailing list
-> E1000-devel@lists.sourceforge.net
-> https://lists.sourceforge.net/lists/listinfo/e1000-devel
+> (
+> - spin_lock(&m)
+> + mutex_lock(&m)
+> |
+> - spin_unlock(&m)
+> + mutex_unlock(&m)
+> )
+> // </smpl>
+> 
+> Signed-off-by: Julia Lawall <julia@diku.dk>
+> 
+> ---
+>  arch/cris/arch-v10/drivers/pcf8563.c |    2 +-
+>  arch/cris/arch-v32/drivers/pcf8563.c |    2 +-
+>  2 files changed, 2 insertions(+), 2 deletions(-)
+> 
+> diff -u -p a/arch/cris/arch-v10/drivers/pcf8563.c b/arch/cris/arch-v10/drivers/pcf8563.c
+> --- a/arch/cris/arch-v10/drivers/pcf8563.c 2008-02-10 22:34:04.000000000 +0100
+> +++ b/arch/cris/arch-v10/drivers/pcf8563.c 2008-03-05 22:06:18.000000000 +0100
+> @@ -233,7 +233,7 @@ int pcf8563_ioctl(struct inode *inode, s
+> 
+>  		if (copy_to_user((struct rtc_time *) arg, &tm,
+>  				 sizeof tm)) {
+> -			spin_unlock(&rtc_lock);
+> +			mutex_unlock(&rtc_lock);
+>  			return -EFAULT;
+>  		}
+> 
+> diff -u -p a/arch/cris/arch-v32/drivers/pcf8563.c b/arch/cris/arch-v32/drivers/pcf8563.c
+> --- a/arch/cris/arch-v32/drivers/pcf8563.c 2008-02-10 22:34:04.000000000 +0100
+> +++ b/arch/cris/arch-v32/drivers/pcf8563.c 2008-03-05 22:06:18.000000000 +0100
+> @@ -229,7 +229,7 @@ int pcf8563_ioctl(struct inode *inode, s
+> 
+>  		if (copy_to_user((struct rtc_time *) arg, &tm,
+>  				 sizeof tm)) {
+> -			spin_unlock(&rtc_lock);
+> +			mutex_unlock(&rtc_lock);
+>  			return -EFAULT;
+>  		}
+> 
 
+Quite correct, I'll add it to my queue.
+
+Thanks,
+
+/^JN - Jesper Nilsson
+--
+               Jesper Nilsson -- jesper.nilsson@axis.com
