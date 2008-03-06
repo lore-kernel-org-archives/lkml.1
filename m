@@ -1,92 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762813AbYCFV0V@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933969AbYCFV1t@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762813AbYCFV0V (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Mar 2008 16:26:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752674AbYCFV0G
+	id S933969AbYCFV1t (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Mar 2008 16:27:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755357AbYCFV1l
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Mar 2008 16:26:06 -0500
-Received: from smtp.seznam.cz ([77.75.72.43]:42420 "HELO smtp.seznam.cz"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1752626AbYCFV0F (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Mar 2008 16:26:05 -0500
-From: "Frantisek Rysanek" <Frantisek.Rysanek@post.cz>
-To: linux-kernel@vger.kernel.org
-Date: Thu, 06 Mar 2008 22:25:59 +0100
+	Thu, 6 Mar 2008 16:27:41 -0500
+Received: from rn-out-0910.google.com ([64.233.170.186]:40773 "EHLO
+	rn-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755199AbYCFV1j (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 6 Mar 2008 16:27:39 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=BkeFa5qXIcn9UOUEm9avefFGcFUo59/SnaURNtI4HeW4cGyhq0MYB939hjoQV1faftvw+YXAp8oUq8vnpBE2jMyKKa71PX+y5nRpNo1puN02j4SW33R+LrLePWG2AuHzrCgDqQsfmB0r71OWZX7oOirvEWTRyaff129yTQL1eDA=
+Message-ID: <84144f020803061327r2310b23ew6211bc09f9ba25a3@mail.gmail.com>
+Date: Thu, 6 Mar 2008 23:27:37 +0200
+From: "Pekka Enberg" <penberg@cs.helsinki.fi>
+To: "Jens Osterkamp" <Jens.Osterkamp@gmx.de>
+Subject: Re: [BUG] in 2.6.25-rc3 with 64k page size and SLUB_DEBUG_ON
+Cc: "Christoph Lameter" <clameter@sgi.com>, linux-mm@kvack.org,
+       "Ingo Molnar" <mingo@elte.hu>,
+       "Linux kernel mailing list" <linux-kernel@vger.kernel.org>
+In-Reply-To: <200803061447.05797.Jens.Osterkamp@gmx.de>
 MIME-Version: 1.0
-Subject: block layer / FS question: x86_32bit with LBD, 20 TB RAID volume => funny issues
-Message-ID: <47D06F77.29711.A05566EC@Frantisek.Rysanek.post.cz>
-X-mailer: Pegasus Mail for Windows (4.41)
-Content-type: text/plain; charset=US-ASCII
-Content-transfer-encoding: 7BIT
-Content-description: Mail message body
-X-Smtpd: 1.0.32@12660
-X-Seznam-User: frantisek.rysanek@post.cz
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <200803061447.05797.Jens.Osterkamp@gmx.de>
+X-Google-Sender-Auth: 6d5e95780f3957e8
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Dear everyone,
+Hi,
 
-I've got another silly question, rather vaguely formulated...
+On Thu, Mar 6, 2008 at 3:47 PM, Jens Osterkamp <Jens.Osterkamp@gmx.de> wrote:
+>  when booting 2.6.25-rc3 on powerpc64 with SLUB_DEBUG_ON and 64k page size, it drops into xmon
+>  during boot with the following :
+>
+>  Console: colour dummy device 80x25
+>  Dentry cache hash table entries: 262144 (order: 5, 2097152 bytes)
+>  Inode-cache hash table entries: 131072 (order: 4, 1048576 bytes)
+>  freeing bootmem node 0
+>  freeing bootmem node 1
+>  Memory: 2037184k/2097152k available (4864k kernel code, 59968k reserved, 768k data, 419k bss, 384k init)
+>  SLUB: Genslabs=17, HWalign=128, Order=0-2, MinObjects=8, CPUs=4, Nodes=16
+>  Mount-cache hash table entries: 4096
+>  BUG: scheduling while atomic: kthreadd/2/0x00056ef8
+>  Call Trace:
+>  [c00000003c187b68] [c00000000000f140] .show_stack+0x70/0x1bc (unreliable)
+>  [c00000003c187c18] [c000000000052d0c] .__schedule_bug+0x64/0x80
+>  [c00000003c187ca8] [c00000000036fa84] .schedule+0xc4/0x6b0
+>  [c00000003c187d98] [c0000000003702d0] .schedule_timeout+0x3c/0xe8
+>  [c00000003c187e68] [c00000000036f82c] .wait_for_common+0x150/0x22c
+>  [c00000003c187f28] [c000000000074868] .kthreadd+0x12c/0x1f0
+>  [c00000003c187fd8] [c000000000024864] .kernel_thread+0x4c/0x68
+>  ------------[ cut here ]------------
+>  kernel BUG at /home/auto/jens/kernels/linux-2.6.25-rc3/kernel/sched.c:4532!
+>  cpu 0x0: Vector: 700 (Program Check) at [c00000003c187bc8]
+>     pc: c000000000051f8c: .sched_setscheduler+0x5c/0x48c
+>     lr: c0000000000748b0: .kthreadd+0x174/0x1f0
+>     sp: c00000003c187e48
+>    msr: 9000000000029032
+>   current = 0xc00000007e0808a0
+>   paca    = 0xc0000000004cf880
+>     pid   = 2, comm = kthreadd
+>  kernel BUG at /home/auto/jens/kernels/linux-2.6.25-rc3/kernel/sched.c:4532!
+>  enter ? for help
+>  [c00000003c187f28] c0000000000748b0 .kthreadd+0x174/0x1f0
+>  [c00000003c187fd8] c000000000024864 .kernel_thread+0x4c/0x68
+>  0:mon>
+>
+>  In the code this corresponds to
+>
+>  int sched_setscheduler(struct task_struct *p, int policy,
+>                        struct sched_param *param)
+>  {
+>         int retval, oldprio, oldpolicy = -1, on_rq, running;
+>         unsigned long flags;
+>         const struct sched_class *prev_class = p->sched_class;
+>         struct rq *rq;
+>
+>         /* may grab non-irq protected spin_locks */
+>         BUG_ON(in_interrupt());
+>  recheck:
+>         /* double check policy once rq lock held */
+>         if (policy < 0)
+>                 policy = oldpolicy = p->policy;
+>         else if (policy != SCHED_FIFO && policy != SCHED_RR &&
+>                         policy != SCHED_NORMAL && policy != SCHED_BATCH &&
+>                         policy != SCHED_IDLE)
+>                 return -EINVAL;
+>
+>  With slub_debug=- on the kernel command line, the problem is gone.
+>  With 4k page size the problem also does not occur.
+>
+>  Any ideas on why this occurs and how to debug this further ?
 
-I have a homebrew Fedora 5 - based live CD with some basic system 
-utilities and FS support, that I'm using to test various sorts of 
-hardware and subsystems. Call it hardware debugging, in a PC hardware 
-assembly shop...
-Today I have "external storage" under the magnifier glass.
-
-In the past, the biggest block devices I've met so far have been some 
-14TB RAID volumes (16x 1TB disk in RAID 6). These are connected to 
-the host PC via a SCSI/SAS/FC HBA, and essentially appear as a single 
-huge SCSI disk. Such RAID units work pretty fine against Linux, 
-preferably using LBA64/CDB16. Abnormal sector sizes are less 
-appropriate, but also seem to work with some FS.
-
-A few days ago, I've had my first opportunity to put my hands on a 
-24bay RAID unit - configured for RAID 60, that's 20 TB of space in a 
-single chunk. I know that RAID units capable of this sort of capacity 
-have been on the market for some time now, so I was somewhat 
-surprised to discover that there are pending issues against Linux...
-
-The block device is detected/reported just fine.
-I didn't even try Ext3, I know it's not appropriate for this sort of 
-capacity. I've tried Reiser3, and already mkfs.reiserfs (user-space 
-util) refused to create such a big FS. Then I tried XFS. The user-
-space mkfs.xfs had no objections - so far so good. But when I tried 
-to mount the volume thus created, the kernel-space XFS driver 
-(including the one in 2.6.24.2) refused to mount the FS, complaining 
-about the FS being too big to be mounted on this platform.
-
-Okay, those are FS quirks, some of them even implied by the spec 
-(=RTFM) or at least located in user space. Hang on a second,
-there's more.
-
-If I try 
-  dd if=/dev/zero of=/dev/sda bs=4096
-it never runs until the very end. It always seems to hang somewhere 
-halfway through, sometimes at 7 TB, sometimes at 4 TB... it's weird.
-The dd process stays alive, but data transfer stops (as seen in 
-iostat and by the RAID unit's LED's), and the write() or whatever 
-syscall inside dd just keeps sleeping blocked forever. The RAID seems 
-perfectly happy, there are no timeout messages from the SCSI layer. 
-If I terminate the dd process (CTRL+C) and start it again, everything 
-looks perfectly allright again.
-
-I also have a simple test app that runs in a loop, reading a whole 
-raw block device (/dev/sda) from start to end. It open()s the device 
-node with O_LARGEFILE and just read()s 64kB chunks until EOF.
-This one always terminates halfway through, and the cause seems to be 
-that the read() call returns EINVAL.
-
-
-So far I've been using kernels compiled for 32bit mode x86.
-Obviously I have LBD support enabled, and it's always worked 
-flawlessly. Would it be any help if I switched to 64bit mode?
-My machines have been capable of that for a few years now, but so far 
-I had no reason to switch, as the memory capacities installed hardly 
-ever reached 4 GB...
-
-Any ideas would be welcome :-)
-
-Frank Rysanek
-
+There's no SLUB in the stack traces. Ingo, any suggestions how to debug this?
