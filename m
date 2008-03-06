@@ -1,57 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762661AbYCFIif@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761898AbYCFIk2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762661AbYCFIif (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Mar 2008 03:38:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752240AbYCFIiY
+	id S1761898AbYCFIk2 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Mar 2008 03:40:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753320AbYCFIkM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Mar 2008 03:38:24 -0500
-Received: from fmmailgate01.web.de ([217.72.192.221]:40105 "EHLO
-	fmmailgate01.web.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752236AbYCFIiX (ORCPT
+	Thu, 6 Mar 2008 03:40:12 -0500
+Received: from gv-out-0910.google.com ([216.239.58.188]:8968 "EHLO
+	gv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751655AbYCFIkK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Mar 2008 03:38:23 -0500
-From: Stephan Diestelhorst <langer_mann@web.de>
-To: Ingo Molnar <mingo@elte.hu>
-Subject: Re: [PATCH 1/1] Speedfreq-SMI call clobbers ECX
-Date: Thu, 6 Mar 2008 09:38:19 +0100
-User-Agent: KMail/1.9.6
-Cc: davej@codemonkey.org.uk, cpufreq@lists.linux.org.uk,
-       linux-kernel@vger.kernel.org
-References: <200803051559.09962.langer_mann@web.de> <20080305153520.GB19300@elte.hu>
-In-Reply-To: <20080305153520.GB19300@elte.hu>
+	Thu, 6 Mar 2008 03:40:10 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
+        b=KEIuk6LCRxV12RFyQiRWUTe7GdIlgQRyl+5W+cM5wKmRBoVSKnej1WSMAjKUKPR4yrwW6VZyqEUFbLqLxVGAU8DjGSEiX/N1yNnB/KeWpOVJV/6MYnPVY0VTnRJNzSSr1V3DOXIF9xTDOw+sZuDyltywMDg3h02zZ0SFl4IKWw0=
+Message-ID: <47CFADDF.20200@gmail.com>
+Date: Thu, 06 Mar 2008 17:39:59 +0900
+From: Tejun Heo <htejun@gmail.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20070801)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+CC: Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-kernel@vger.kernel.org,
+       Jeff Garzik <jeff@garzik.org>, linux-ide@vger.kernel.org
+Subject: Re: Unknown SATA PIIX PCI device ID 0x29b6
+References: <Pine.LNX.4.64.0802282306190.10087@axis700.grange> <20080228225603.2764bfd1@core> <Pine.LNX.4.64.0802290010320.10498@axis700.grange>
+In-Reply-To: <Pine.LNX.4.64.0802290010320.10498@axis700.grange>
+X-Enigmail-Version: 0.95.5
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200803060938.20944.langer_mann@web.de>
-X-Provags-ID: V01U2FsdGVkX18NmgsmDi6lZUS2QqvauxJzK/3JJdkaHWBP/ctK
-	tJPVYMfbv40p6ZwgVaorIJZNCRhAuGkIMlR5SlgU44nJg+15DG
-	EO9VhI0mg=
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On, March 5th 2008 16:35:20 Ingo Molnar wrote:
-> * Stephan Diestelhorst <langer_mann@web.de> wrote:
-> > @@ -184,7 +184,7 @@ static void speedstep_set_state (unsigne
-> >  		__asm__ __volatile__(
-> >  			"movl $0, %%edi\n"
-> >  			"out %%al, (%%dx)\n"
-> > -			: "=b" (new_state), "=D" (result)
-> > +			: "=b" (new_state), "=D" (result), "=c" (ecx_clobber)
-> >
-> >  			: "a" (command), "b" (function), "c" (state), "d" (smi_port),
-> >  			: "S" (0)
-> >
-> >  			);
->
-> stupid suggestion: why not do a pusha/popa around those
-> instructions, to make sure everything is restored? This isnt a
-> fastpath and being conservative about SMI side-effects cannot hurt
+Guennadi Liakhovetski wrote:
+> Indeed! It was in "IDE" mode, and 2 out of the 3 chips were handled by the 
+> piix driver (btw, why did Intel put 3 different SATA controllers on one 
+> board?). I switched it to AHCI mode (the third possibility is RAID) and 
+> indeed a kernel with (only) ahci driver managed to bring them up! 
+> Although, the eSATA link was "slow to respond":
+> 
+> ata4: port is slow to respond, please be patient (Status 0x80)
+> ata4: softreset failed (device not ready)
+> ata4: port is slow to respond, please be patient (Status 0x80)
+> ata4: softreset failed (device not ready)
+> ata4: port is slow to respond, please be patient (Status 0x80)
+> ata4: SATA link up 3.0 Gbps (SStatus 123 SControl 300)
+> ata4.00: ATA-7: WDC WD1600BB-00RDA0, 20.00K20, max UDMA/100
+> ata4.00: 312581808 sectors, multi 16: LBA48
+> ata4.00: applying bridge limits
+> ata4.00: configured for UDMA/100
+> 
+> but then it did manage it. Is such a delay normal?
 
-That sounds like a sane thing to do to me. Should I provide a 'patch'? 
-Or leave that (and the decision about it) to the maintainer?
+If you hotplugged it, sometimes drives don't respond too well and takes
+a few retries to talk to it.  How long did the whole thing take?  And is
+it always like that?
 
-Regards,
-  Stephan
+> One more question, what do UDMA numbers mean in SATA context? The internal 
+> SATA disk is "ata1.00: configured for UDMA/133", but should be SATA-2.
+
+1.00 is port 1 device 00 and UDMA numbers don't mean much to SATA devices.
+
+Thanks.
+
+-- 
+tejun
