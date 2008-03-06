@@ -1,60 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933297AbYCFDVH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765979AbYCFD0E@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933297AbYCFDVH (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Mar 2008 22:21:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754894AbYCFDUy
+	id S1765979AbYCFD0E (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Mar 2008 22:26:04 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760453AbYCFDZx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Mar 2008 22:20:54 -0500
-Received: from ti-out-0910.google.com ([209.85.142.188]:45011 "EHLO
-	ti-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754081AbYCFDUx (ORCPT
+	Wed, 5 Mar 2008 22:25:53 -0500
+Received: from qb-out-0506.google.com ([72.14.204.236]:21949 "EHLO
+	qb-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759691AbYCFDZw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Mar 2008 22:20:53 -0500
+	Wed, 5 Mar 2008 22:25:52 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=QLsSdyvnuzYE4JU/1CxHs5qmFeekaphqCkJJIjketxZvZv0SeFbG9yfVSvJJCmy/+/Hbih46iDAJBc3tIuM5KJXLlwdbWFOm1+d22ZYwXhMty4smrYb7A5nA2yb0h+S/GPkhPKzI84ChqUZS6wC1+VS/OOByYOMqVb+unm4sgrM=
-Message-ID: <a8e1da0803051920t586c7fbapadda70ae895f8893@mail.gmail.com>
-Date: Thu, 6 Mar 2008 11:20:49 +0800
-From: "Dave Young" <hidave.darkstar@gmail.com>
-To: paulmck@linux.vnet.ibm.com
-Subject: Re: 2.6.25-rc4 rcupreempt.h WARNINGs while suspend/resume
-Cc: "Jike Song" <albcamus@gmail.com>,
-       "Linux Kernel" <linux-kernel@vger.kernel.org>
-In-Reply-To: <20080306022854.GK8728@linux.vnet.ibm.com>
+        h=message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
+        b=O+uNwY6D0x9eUzAXHgMjxR5MCww4CukoROjBwCRpq5oV9Deyyba6AOpFIdHG7hZ3Ho4st1g87O+7PT5c5Skaf88ZGRmbpPReogOSZXejNq7UE3b+nK7X0m8/+bJTI2UxZrnwlts7arXEuvtbAzol2dSTihFEYk0mk3guy7NAOn8=
+Message-ID: <83a6f01f0803051925y6ba18e30y1fc736970fb1f455@mail.gmail.com>
+Date: Thu, 6 Mar 2008 11:25:39 +0800
+From: "tnmccb rygci" <phssf998525@gmail.com>
+To: a1b2c37476@yahoo.com.tw, oscarche@seed.net.tw, pamelawhite@pchome.com.tw,
+       may930@seed.net.tw, terence-liu65@yahoo.com.tw, ccn3@pchome.com.tw,
+       1e#myriam@taipan.enmech.csiro.au2, loea@pchome.com.tw,
+       seville@pchome.com.tw, abc123587@yahoo.com.tw
+Subject: =?BIG5?B?p0G3UbJNs2a23KFIp9a2aajTa1JjMA==?=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=BIG5
 Content-Disposition: inline
-References: <a8e1da0803042324ndd3873ay61cee6112d9dda9a@mail.gmail.com>
-	 <df9815e70803042335j4ea66028y96d6be21f0970aa1@mail.gmail.com>
-	 <20080305165531.GB8728@linux.vnet.ibm.com>
-	 <df9815e70803051811o4c4a42e0td56cfd32b80c66b2@mail.gmail.com>
-	 <20080306022854.GK8728@linux.vnet.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
+Content-Transfer-Encoding: 8bit
+X-MIME-Autoconverted: from base64 to 8bit by alpha id m263Q7nq014719
 
-On Thu, Mar 6, 2008 at 10:28 AM, Paul E. McKenney
-<paulmck@linux.vnet.ibm.com> wrote:
->
-> On Thu, Mar 06, 2008 at 10:11:26AM +0800, Jike Song wrote:
->  > On Thu, Mar 6, 2008 at 12:55 AM, Paul E. McKenney
->  > <paulmck@linux.vnet.ibm.com> wrote:
->  > >  Could you please try applying Karsten Wiese's patch to see if it
->  > >  fixes the WARNINGs?  See http://lkml.org/lkml/2008/2/26/386 for
->  > >  the patch.
->  > >
->  > >                                                 Thanx, Paul
->  >
->  > Yes, the WARNING disappears with Karsten's patch applied.
->  > Thanks.
-
-Confirmed
-
->
->  Good to hear!!!  I believe that Karsten's patch is on its way in,
->  so hopefully that will clear things up.
->
->                                                 Thanx, Paul
->
+ 5DYDJwl6O    5DYDJwl6O¯S´f¤è®×(1) - ¶®ªê«OÃÒ¦¬¥ó§¨150¸U«Ê/¤ë+hinet10¸Uµo«H¶q/¤Ñ¡G7500¤¸ (¤ëµo«H¶q¶W¹L450¸U«Ê) - ¥u­­10¦W¯S´f¤è®×(2) - ¶®ªê«OÃÒ¦¬¥ó§¨300¸U«Ê/¤ë+hinet20¸Uµo«H¶q/¤Ñ¡G12000¤¸ (¤ëµo«H¶q¶W¹L900¸U«Ê) - ¥u­­10¦W¯S´f¤è®×(3) - ¶®ªê«OÃÒ¦¬¥ó§¨900¸U«Ê/¤ë+hinet100¸Uµo«H¶q/¤Ñ¡G27000¤¸ (¤ëµo«H¶q¶W¹L3900¸U«Ê) - ¥u­­10¦W
+¥Ø«e¥xÆW¨â¤j¥D¬yemail¥Î¤á¬°¶®ªê©Mhinet¨â¤j±Ú¸s¡A¦U¦Û¾Ö¦³¶W¹L¥a¸U¨Ï¥ÎªÌ¡F¦]¦¹¡A¥ô¦óemail¦æ¾P­Y©ñ±ó¥ô¦ó¤@¤è¡A³£±N¿ù¹L²ö¤j°Ó¾÷¡C¦b·~¤º¦P¦æ¤@­P¥u±N¦æ¾P­«ÂI¹ï¶HÂê©w¦b¶®ªê¥Î¤á¡A¦Ó©ñ±ó±¼hinet¨Ï¥ÎªÌ®É¡A¨ä¹ê¬OÅı±z¥¢¥h¤F¥t¤@¥bªº¼s¤j¥«³õ³á¡C§Ú­Ì­º¥ı±À¥X¡u¶R¤@°e¤@¡v¤@ºô¥´ºÉ¤è®×¡A±N¥Ø¼Ğ¡u¦P®É¡vÂê©w¶®ªê»Phinet¥Î¤á¡C±z¥u¶·ªá¤@¼Ëªº¿ú¡A«o¥i¦P®É­İÅU¨â¤j±Ú¸s¡AÅı±zªº¨C¤@¤À¦æ¾P¶O¥Î²£¥Í³Ì·¥­Pªº®ÄªG¡C
+¶R¤@°e¤@¤è®×¸Ô±¡¡G§Y¥I¤@¦¸¿ú¡A§Y¥i¦P®É¨É¦³¶®ªê«OÃÒ¦¬¥ó§¨+hinetµo«H¼Æ¨â­Óµo«H±M®×¡C
+¤£½×¶®ªê¦³¦hÃøµo¡A§Ú­Ìµ¹±zªº©Ó¿Õ´N¬O«OÃÒ¦¬¥ó§¨¡C§Ú­Ì¤]¬O¥ş¥x°ß¤@´£¨Ñ¡y¥Nµo®ÄªG¤£º¡·N«OÃÒ°h¶O¡zªº¦æ¾P·~ªÌ¡C
+¸Ô±¡½Ğ¬¢ -0988106077 ROCK
+ 5DYDJwl6O   5DYDJwl6Oÿôèº{.nÇ+‰·Ÿ®‰­†+%ŠËÿ±éİ¶¥Šwÿº{.nÇ+‰·¥Š{±şG«éÿŠ{ayºÊ‡Ú™ë,j­¢f£¢·hšïêÿ‘êçz_è®(­éšŠİ¢j"ú¶m§ÿÿ¾«şG«éÿ¢¸?™¨è­Ú&£ø§~á¶iO•æ¬z·švØ^¶m§ÿÿÃÿ¶ìÿ¢¸?–I¥
