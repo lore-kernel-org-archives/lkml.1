@@ -1,56 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763361AbYCFK7S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765588AbYCFK7x@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763361AbYCFK7S (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Mar 2008 05:59:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763822AbYCFKz6
+	id S1765588AbYCFK7x (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Mar 2008 05:59:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763868AbYCFK4R
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Mar 2008 05:55:58 -0500
-Received: from mail.southpole.se ([193.12.106.18]:44130 "EHLO
-	mail.southpole.se" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1763685AbYCFKzx (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Mar 2008 05:55:53 -0500
-From: Jonas Bonn <jonas@southpole.se>
-To: jonas@southpole.se, linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       jgarzik@pobox.com
-Subject: [PATCH] net: use DECLARE_PCI_DEVICE_TABLE
-Date: Thu,  6 Mar 2008 11:55:45 +0100
-Message-Id: <1204800947-21569-8-git-send-email-jonas@southpole.se>
-X-Mailer: git-send-email 1.5.4.3
-In-Reply-To: <1204800947-21569-7-git-send-email-jonas@southpole.se>
-References: <>
- <1204800947-21569-1-git-send-email-jonas@southpole.se>
- <1204800947-21569-2-git-send-email-jonas@southpole.se>
- <1204800947-21569-3-git-send-email-jonas@southpole.se>
- <1204800947-21569-4-git-send-email-jonas@southpole.se>
- <1204800947-21569-5-git-send-email-jonas@southpole.se>
- <1204800947-21569-6-git-send-email-jonas@southpole.se>
- <1204800947-21569-7-git-send-email-jonas@southpole.se>
+	Thu, 6 Mar 2008 05:56:17 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:60288 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1763659AbYCFK4P (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 6 Mar 2008 05:56:15 -0500
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+From: Roland McGrath <roland@redhat.com>
+To: Oleg Nesterov <oleg@tv-sign.ru>
+X-Fcc: ~/Mail/linus
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Davide Libenzi <davidel@xmailserver.org>, Ingo Molnar <mingo@elte.hu>,
+       Jiri Kosina <jkosina@suse.cz>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Pavel Emelyanov <xemul@openvz.org>, linux-kernel@vger.kernel.org
+Subject: Re: [RFC,PATCH 2/2] kill_pid_info: don't take now unneeded tasklist_lock
+In-Reply-To: Oleg Nesterov's message of  Tuesday, 4 March 2008 21:57:45 +0300 <20080304185745.GA8482@tv-sign.ru>
+References: <20080304185745.GA8482@tv-sign.ru>
+X-Windows: a terminal disease.
+Message-Id: <20080306105600.48F822700FD@magilla.localdomain>
+Date: Thu,  6 Mar 2008 02:56:00 -0800 (PST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Makes struct pci_device_id array const and moves it to __devinitconst
+A nice payoff for the earlier cleanups.  
+Maybe it even improves parallelism for a real workload someday.
 
-Signed-off-by: Jonas Bonn <jonas@southpole.se>
----
- drivers/net/wan/farsync.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
-
-diff --git a/drivers/net/wan/farsync.c b/drivers/net/wan/farsync.c
-index cf27bf4..db68596 100644
---- a/drivers/net/wan/farsync.c
-+++ b/drivers/net/wan/farsync.c
-@@ -530,7 +530,7 @@ static int fst_debug_mask = { FST_DEBUG };
- /*
-  *      PCI ID lookup table
-  */
--static struct pci_device_id fst_pci_dev_id[] __devinitdata = {
-+static DECLARE_PCI_DEVICE_TABLE(fst_pci_dev_id) = {
- 	{PCI_VENDOR_ID_FARSITE, PCI_DEVICE_ID_FARSITE_T2P, PCI_ANY_ID, 
- 	 PCI_ANY_ID, 0, 0, FST_TYPE_T2P},
- 
--- 
-1.5.4.3
-
-
+Thanks,
+Roland
