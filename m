@@ -1,64 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764821AbYCFLtT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764613AbYCFLvP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764821AbYCFLtT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Mar 2008 06:49:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755317AbYCFLtI
+	id S1764613AbYCFLvP (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Mar 2008 06:51:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758147AbYCFLvA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Mar 2008 06:49:08 -0500
-Received: from wf-out-1314.google.com ([209.85.200.175]:64073 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756590AbYCFLtH (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Mar 2008 06:49:07 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=FZcZKUUdL1RkLI3tzGwW7SfpQe/LUspZ1kBklpOdWl1wzXM/nCPPbZPX36+ofQUI3jVlqkgMOS7YE0idNfEkGU3iSZvKxUSnZq4y/zVvATfMUkscHQ+wdUTQX/SY1Tune2My6XU/F7bXY0TLrV1VX0+ndb/TA67Ke/UGwlZsEeU=
-Message-ID: <5d6222a80803060349g69f570f3j9eaab980d7c58da@mail.gmail.com>
-Date: Thu, 6 Mar 2008 08:49:06 -0300
-From: "Glauber Costa" <glommer@gmail.com>
-To: "Ingo Molnar" <mingo@elte.hu>
-Subject: Re: [PATCH 1/1] export native versions of machine_ops functions
-Cc: "Glauber Costa" <gcosta@redhat.com>, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org, tglx@linutronix.de
-In-Reply-To: <20080306105500.GK13391@elte.hu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <1204739040-18422-1-git-send-email-gcosta@redhat.com>
-	 <20080306105500.GK13391@elte.hu>
+	Thu, 6 Mar 2008 06:51:00 -0500
+Received: from chilli.pcug.org.au ([203.10.76.44]:33974 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755317AbYCFLvA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 6 Mar 2008 06:51:00 -0500
+Date: Thu, 6 Mar 2008 22:50:41 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Andy Whitcroft <apw@shadowen.org>
+Cc: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: linux-next: Tree for March 6
+Message-Id: <20080306225041.03e02d4a.sfr@canb.auug.org.au>
+In-Reply-To: <20080306090734.GJ17931@shadowen.org>
+References: <20080306162606.970aefe1.sfr@canb.auug.org.au>
+	<20080306090734.GJ17931@shadowen.org>
+X-Mailer: Sylpheed 2.5.0beta1 (GTK+ 2.12.8; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Thu__6_Mar_2008_22_50_41_+1100_pYEEZnGOCtjyKET3"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Mar 6, 2008 at 7:55 AM, Ingo Molnar <mingo@elte.hu> wrote:
->
->  * Glauber Costa <gcosta@redhat.com> wrote:
->
->  > People overriding machine_ops provided functions may want to call the
->  > native version after its pre-processing. It already happens for the
->  > smp_ops functions, so I don't see a reason for avoiding it here.
->
->  i'd like to do this only if there are actual users - otherwise we'll get
->  a trickle of "make needlessly global functions static" patches a few
->  weeks later ;-)
->
->         Ingo
->
+--Signature=_Thu__6_Mar_2008_22_50_41_+1100_pYEEZnGOCtjyKET3
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-KVM is a user for that. Because it registers a memory area in which
-the host will be continually writting to (the clock), when it
-shutdown, the host
-have no way to know it has to stop. If you're really shutting down,
-there's no problem. But if you're kexecing, for example, the host will
-keep writting to a random
-memory area after the new kernel installs.
+Hi Andy,
 
+On Thu, 6 Mar 2008 09:07:43 +0000 Andy Whitcroft <apw@shadowen.org> wrote:
+>
+> I presume that when you report a build break here that this was something
+> you fixed and we should not see in the tree you released.  By which I mea=
+n,
+> if any of our builds fail that is not expected and worth reporting.
 
--- 
-Glauber  Costa.
-"Free as in Freedom"
-http://glommer.net
+Correct.  All reports very welcome, thanks.
 
-"The less confident you are, the more serious you have to act."
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Thu__6_Mar_2008_22_50_41_+1100_pYEEZnGOCtjyKET3
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQFHz9qeTgG2atn1QN8RAoaXAJ9moV2u2PNBu5KJNpSYsHghr8f2vQCeJdrZ
+GsGUOlBg3rDcrCHnkNYrp3g=
+=aq9R
+-----END PGP SIGNATURE-----
+
+--Signature=_Thu__6_Mar_2008_22_50_41_+1100_pYEEZnGOCtjyKET3--
