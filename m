@@ -1,50 +1,331 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932774AbYCFMUK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765447AbYCFMWt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932774AbYCFMUK (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Mar 2008 07:20:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757279AbYCFMTw
+	id S1765447AbYCFMWt (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Mar 2008 07:22:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754633AbYCFMWj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Mar 2008 07:19:52 -0500
-Received: from smtp7.yandex.ru ([213.180.200.45]:55337 "EHLO smtp7.yandex.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755472AbYCFMTw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Mar 2008 07:19:52 -0500
-X-Greylist: delayed 507 seconds by postgrey-1.27 at vger.kernel.org; Thu, 06 Mar 2008 07:19:51 EST
-X-Yandex-Spam: 1 
-X-Yandex-Front: smtp7
-X-Yandex-TimeMark: 1204805469
-X-MsgDayCount: 4
-X-Comment: RFC 2476 MSA function at smtp7.yandex.ru logged sender identity as: dmantipov
-Message-ID: <47CFDF55.6030103@yandex.ru>
-Date: Thu, 06 Mar 2008 15:11:01 +0300
-From: Dmitry Antipov <dmantipov@yandex.ru>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
+	Thu, 6 Mar 2008 07:22:39 -0500
+Received: from nf-out-0910.google.com ([64.233.182.191]:61813 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753384AbYCFMWg (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 6 Mar 2008 07:22:36 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:to:cc:subject:message-id:mime-version:content-type:content-disposition:user-agent:from;
+        b=YKvFpDgh8tuP8++nduUKM6PEMrJGHgB8vmtb67qk7rVBYfoITpWCJEpxboV78GCjSJR6YdlfD7hQr83f4CS/Z/XEybIWGxV2xS9FXVSLSoN5SYHzLZGqPdOVZ2YByYi9Mp+f2Mi4SIHXMb19QDfB16a03P2ErIoPYxMcjK8g1iM=
+Date: Thu, 6 Mar 2008 14:19:13 +0200
+To: Chris Wright <chrisw@sous-sol.org>, Stephen Smalley <sds@tycho.nsa.gov>,
+       James Morris <jmorris@namei.org>, Eric Paris <eparis@parisplace.org>,
+       Casey Schaufler <casey@schaufler-ca.com>,
+       Paul Moore <paul.moore@hp.com>, Alexey Dobriyan <adobriyan@sw.ru>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus <torvalds@linux-foundation.org>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       LSM-ML <linux-security-module@vger.kernel.org>
+Subject: [PATCH -v8 -rc3] Security: Introduce security= boot parameter
+Message-ID: <20080306121913.GA8506@ubuntu>
 MIME-Version: 1.0
-To: Nick Piggin <nickpiggin@yahoo.com.au>
-CC: Eric Dumazet <dada1@cosmosbay.com>, David Miller <davem@davemloft.net>,
-       linux-kernel@vger.kernel.org
-Subject: Re: Are Linux pipes slower than the FreeBSD ones ?
-References: <1389671204703217@webmail34.yandex.ru> <20080305.000014.245410231.davem@davemloft.net> <47CE6C41.3090303@cosmosbay.com> <200803060120.38032.nickpiggin@yahoo.com.au>
-In-Reply-To: <200803060120.38032.nickpiggin@yahoo.com.au>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+From: "Ahmed S. Darwish" <darwish.07@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Nick Piggin wrote:
+Hi!,
 
-> One thing to try is pinning both processes on the same CPU. This
-> may be what the FreeBSD scheduler is preferring to do, and it ends
-> up being really a tradeoff that helps some workloads and hurts
-> others. With a very unscientific test with an old kernel, the
-> pipe.c test gets anywhere from about 1.5 to 3 times faster when
-> running it as taskset 1 ./pipe
+[
+    Handle Andrew's concerns:
+    - Use __init and __initdata in appropriate places.
+    - Do not rely upon dummy_ops layout, use C99 initializations.
+    - Use DEFINE_SPINLOCK instead of dynamic initialization.
 
-Sounds interesting. What kernel version did you tried? Can you
-send your .config to me?
+    Create a new thread cause the original became hard to follow.
+]
 
-I've tried this trick on 2.6.25-rc4, and got ~20% more throughput for
-large (> 8K) buffers at the cost of going ~30% down for the small ones.
+-->
 
-Dmitry
+Add the security= boot parameter. This is done to avoid LSM 
+registration clashes in case of more than one bult-in module.
+
+User can choose a security module to enable at boot. If no 
+security= boot parameter is specified, only the first LSM 
+asking for registration will be loaded. An invalid security 
+module name will be treated as if no module has been chosen.
+
+LSM modules must check now if they are allowed to register
+by calling security_module_enable(ops) first. Modify SELinux 
+and SMACK to do so.
+
+Do not let SMACK register smackfs if it was not chosen on
+boot. Smackfs assumes that smack hooks are registered and
+the initial task security setup (swapper->security) is done.
+
+Signed-off-by: Ahmed S. Darwish <darwish.07@gmail.com>
+--- 
+
+ Documentation/kernel-parameters.txt |    6 ++++
+ include/linux/security.h            |   12 +++++++++
+ security/dummy.c                    |    4 ++-
+ security/security.c                 |   45 +++++++++++++++++++++++++++++++++++-
+ security/selinux/hooks.c            |    7 +++++
+ security/smack/smack.h              |    2 +
+ security/smack/smack_lsm.c          |    7 ++++-
+ security/smack/smackfs.c            |   11 ++++++++
+
+ 8 files changed, 90 insertions(+), 4 deletions(-)
+
+diff --git a/Documentation/kernel-parameters.txt b/Documentation/kernel-parameters.txt
+index 9a5b665..64efbdc 100644
+--- a/Documentation/kernel-parameters.txt
++++ b/Documentation/kernel-parameters.txt
+@@ -374,6 +374,12 @@ and is between 256 and 4096 characters. It is defined in the file
+ 			possible to determine what the correct size should be.
+ 			This option provides an override for these situations.
+ 
++	security=	[SECURITY] Choose a security module to enable at boot. 
++			If this boot parameter is not specified, only the first 
++			security module asking for security registration will be
++			loaded. An invalid security module name will be treated
++			as if no module has been chosen.
++
+ 	capability.disable=
+ 			[SECURITY] Disable capabilities.  This would normally
+ 			be used only if an alternative security model is to be
+diff --git a/include/linux/security.h b/include/linux/security.h
+index fe52cde..801c9ad 100644
+--- a/include/linux/security.h
++++ b/include/linux/security.h
+@@ -42,6 +42,9 @@
+ 
+ extern unsigned securebits;
+ 
++/* Maximum number of letters for an LSM name string */
++#define SECURITY_NAME_MAX	10
++
+ struct ctl_table;
+ 
+ /*
+@@ -117,6 +120,12 @@ struct request_sock;
+ /**
+  * struct security_operations - main security structure
+  *
++ * Security module identifier.
++ *
++ * @name:
++ *	A string that acts as a unique identifeir for the LSM with max number
++ *	of characters = SECURITY_NAME_MAX.
++ *
+  * Security hooks for program execution operations.
+  *
+  * @bprm_alloc_security:
+@@ -1207,6 +1216,8 @@ struct request_sock;
+  * This is the main security structure.
+  */
+ struct security_operations {
++	char name[SECURITY_NAME_MAX + 1];
++
+ 	int (*ptrace) (struct task_struct * parent, struct task_struct * child);
+ 	int (*capget) (struct task_struct * target,
+ 		       kernel_cap_t * effective,
+@@ -1466,6 +1477,7 @@ struct security_operations {
+ 
+ /* prototypes */
+ extern int security_init	(void);
++extern int security_module_enable(struct security_operations *ops);
+ extern int register_security	(struct security_operations *ops);
+ extern int mod_reg_security	(const char *name, struct security_operations *ops);
+ extern struct dentry *securityfs_create_file(const char *name, mode_t mode,
+diff --git a/security/dummy.c b/security/dummy.c
+index 649326b..b668fda 100644
+--- a/security/dummy.c
++++ b/security/dummy.c
+@@ -979,7 +979,9 @@ static inline int dummy_key_permission(key_ref_t key_ref,
+ }
+ #endif /* CONFIG_KEYS */
+ 
+-struct security_operations dummy_security_ops;
++struct security_operations dummy_security_ops = { 
++	.name = "dummy", 
++};
+ 
+ #define set_to_dummy_if_null(ops, function)				\
+ 	do {								\
+diff --git a/security/security.c b/security/security.c
+index d15e56c..768f171 100644
+--- a/security/security.c
++++ b/security/security.c
+@@ -17,6 +17,9 @@
+ #include <linux/kernel.h>
+ #include <linux/security.h>
+ 
++/* Boot-time LSM user choice */
++static __initdata DEFINE_SPINLOCK(chosen_lsm_lock);
++static __initdata char chosen_lsm[SECURITY_NAME_MAX + 1];
+ 
+ /* things that live in dummy.c */
+ extern struct security_operations dummy_security_ops;
+@@ -67,13 +70,53 @@ int __init security_init(void)
+ 	return 0;
+ }
+ 
++/* Save user chosen LSM */
++static int __init choose_lsm(char *str)
++{
++	strncpy(chosen_lsm, str, SECURITY_NAME_MAX);
++	return 1;
++}
++__setup("security=", choose_lsm);
++
++/**
++ * security_module_enable - Load given security module on boot ?
++ * @ops: a pointer to the struct security_operations that is to be checked.
++ *
++ * Each LSM must pass this method before registering its own operations
++ * to avoid security registration races. This method may also be used
++ * to check if your LSM is currently loaded.
++ *
++ * Return true if:
++ *	-The passed LSM is the one chosen by user at boot time,
++ *	-or user didsn't specify a specific LSM and we're the first to ask
++ *	 for registeration permissoin,
++ *	-or the passed LSM is currently loaded.
++ * Otherwise, return false.
++ */
++int __init security_module_enable(struct security_operations *ops)
++{
++	int rc = 1;
++
++	spin_lock(&chosen_lsm_lock);
++
++	if (!*chosen_lsm)
++		strncpy(chosen_lsm, ops->name, SECURITY_NAME_MAX);
++	else if (strncmp(ops->name, chosen_lsm, SECURITY_NAME_MAX))
++		rc = 0;
++
++	spin_unlock(&chosen_lsm_lock);
++
++	return rc;
++}
++
+ /**
+  * register_security - registers a security framework with the kernel
+  * @ops: a pointer to the struct security_options that is to be registered
+  *
+  * This function is to allow a security module to register itself with the
+  * kernel security subsystem.  Some rudimentary checking is done on the @ops
+- * value passed to this function.
++ * value passed to this function. You'll need to check first if your LSM
++ * is allowed to register its @ops by calling security_module_enable(@ops).
+  *
+  * If there is already a security module registered with the kernel,
+  * an error will be returned.  Otherwise 0 is returned on success.
+diff --git a/security/selinux/hooks.c b/security/selinux/hooks.c
+index 75c2e99..49709a4 100644
+--- a/security/selinux/hooks.c
++++ b/security/selinux/hooks.c
+@@ -5219,6 +5219,8 @@ static int selinux_key_permission(key_ref_t key_ref,
+ #endif
+ 
+ static struct security_operations selinux_ops = {
++	.name =				"selinux",
++
+ 	.ptrace =			selinux_ptrace,
+ 	.capget =			selinux_capget,
+ 	.capset_check =			selinux_capset_check,
+@@ -5405,6 +5407,11 @@ static __init int selinux_init(void)
+ {
+ 	struct task_security_struct *tsec;
+ 
++	if (!security_module_enable(&selinux_ops)) {
++		selinux_enabled = 0;
++		return 0;
++	}
++
+ 	if (!selinux_enabled) {
+ 		printk(KERN_INFO "SELinux:  Disabled at boot.\n");
+ 		return 0;
+diff --git a/security/smack/smack.h b/security/smack/smack.h
+index a21a0e9..c444f48 100644
+--- a/security/smack/smack.h
++++ b/security/smack/smack.h
+@@ -15,6 +15,7 @@
+ 
+ #include <linux/capability.h>
+ #include <linux/spinlock.h>
++#include <linux/security.h>
+ #include <net/netlabel.h>
+ 
+ /*
+@@ -195,6 +196,7 @@ extern struct smack_known smack_known_star;
+ extern struct smack_known smack_known_unset;
+ 
+ extern struct smk_list_entry *smack_list;
++extern struct security_operations smack_ops;
+ 
+ /*
+  * Stricly for CIPSO level manipulation.
+diff --git a/security/smack/smack_lsm.c b/security/smack/smack_lsm.c
+index 770eb06..afa7967 100644
+--- a/security/smack/smack_lsm.c
++++ b/security/smack/smack_lsm.c
+@@ -2433,7 +2433,9 @@ static void smack_release_secctx(char *secdata, u32 seclen)
+ {
+ }
+ 
+-static struct security_operations smack_ops = {
++struct security_operations smack_ops = {
++	.name =				"smack",
++
+ 	.ptrace = 			smack_ptrace,
+ 	.capget = 			cap_capget,
+ 	.capset_check = 		cap_capset_check,
+@@ -2566,6 +2568,9 @@ static struct security_operations smack_ops = {
+  */
+ static __init int smack_init(void)
+ {
++	if (!security_module_enable(&smack_ops))
++		return 0;
++
+ 	printk(KERN_INFO "Smack:  Initializing.\n");
+ 
+ 	/*
+diff --git a/security/smack/smackfs.c b/security/smack/smackfs.c
+index 358c92c..effd3de 100644
+--- a/security/smack/smackfs.c
++++ b/security/smack/smackfs.c
+@@ -986,12 +986,21 @@ static struct vfsmount *smackfs_mount;
+  *
+  * register the smackfs
+  *
+- * Returns 0 unless the registration fails.
++ * Do not register smackfs if Smack wasn't enabled
++ * on boot. We can not put this method normally under the
++ * smack_init() code path since the security subsystem get
++ * initialized before the vfs caches.
++ *
++ * Returns true if we were not chosen on boot or if
++ * we were chosen and filesystem registration succeeded.
+  */
+ static int __init init_smk_fs(void)
+ {
+ 	int err;
+ 
++	if (!security_module_enable(&smack_ops))
++		return 0;
++
+ 	err = register_filesystem(&smk_fs_type);
+ 	if (!err) {
+ 		smackfs_mount = kern_mount(&smk_fs_type);
+
+
+-- 
+
+"Better to light a candle, than curse the darkness"
+
+Ahmed S. Darwish
+Homepage: http://darwish.07.googlepages.com
+Blog: http://darwish-07.blogspot.com
+
