@@ -1,27 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933607AbYCFCZ6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932453AbYCFC0g@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933607AbYCFCZ6 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Mar 2008 21:25:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758687AbYCFCY6
+	id S932453AbYCFC0g (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Mar 2008 21:26:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759774AbYCFCY7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Mar 2008 21:24:58 -0500
-Received: from wa-out-1112.google.com ([209.85.146.182]:61432 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757745AbYCFCY4 (ORCPT
+	Wed, 5 Mar 2008 21:24:59 -0500
+Received: from rn-out-0910.google.com ([64.233.170.184]:52325 "EHLO
+	rn-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757994AbYCFCY4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 5 Mar 2008 21:24:56 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=subject:from:to:cc:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=oyGfB6E22HEwLRlJDbh2L1Y28arlKwNiQk1CwA3305KNiMAB4Ye0rE8kUeBSSVwjr0X/iK1oRyg33vS4pPMkKxDvOYrOPF624tuQfp3iWZNyQRb2/63qTskrJ856CHr71hz8xK36rnLyA4GVpApqPvPdbyo/72LrE7qqkIT63Ig=
-Subject: [PATCH 03/16] atm: replace remaining __FUNCTION__ occurrences
+        b=LArHfavuYN6uaF5dFFDKm9qawcc03SHwo21V9Wd7SPUycCoD7taUl42dcdWis8GCdIuwVzCnObelU+e9UQNorS8wccrF7kVDPRWFWiD4jFumWBIjDphOIdXeFtMV9sHbRgXi8Z4Cwy10qpoXdagOLcPwQouJDO1oRLJdKBVYncE=
+Subject: [PATCH 02/16] ata: replace remaining __FUNCTION__ occurrences
 From: Harvey Harrison <harvey.harrison@gmail.com>
-To: Chas Williams <chas@cmf.nrl.navy.mil>
-Cc: LKML <linux-kernel@vger.kernel.org>,
+To: Jeff Garzik <jeff@garzik.org>
+Cc: linux-ide <linux-ide@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>,
        Andrew Morton <akpm@linux-foundation.org>
 Content-Type: text/plain
 Date: Wed, 05 Mar 2008 18:24:52 -0800
-Message-Id: <1204770292.14154.39.camel@brick>
+Message-Id: <1204770292.14154.38.camel@brick>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.12.1 
 Content-Transfer-Encoding: 7bit
@@ -33,96 +33,126 @@ __FUNCTION__ is gcc-specific, use __func__
 
 Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
 ---
- drivers/atm/firestream.c |    4 ++--
- drivers/atm/fore200e.c   |    4 ++--
- drivers/atm/idt77252.c   |   12 ++++++------
- 3 files changed, 10 insertions(+), 10 deletions(-)
+ drivers/ata/libata-acpi.c   |    8 ++++----
+ drivers/ata/libata-core.c   |   14 +++++++-------
+ drivers/ata/pata_pdc2027x.c |    2 +-
+ 3 files changed, 12 insertions(+), 12 deletions(-)
 
-diff --git a/drivers/atm/firestream.c b/drivers/atm/firestream.c
-index c662d68..fcf974f 100644
---- a/drivers/atm/firestream.c
-+++ b/drivers/atm/firestream.c
-@@ -331,8 +331,8 @@ module_param(fs_keystream, int, 0);
- #define FS_DEBUG_QSIZE   0x00001000
+diff --git a/drivers/ata/libata-acpi.c b/drivers/ata/libata-acpi.c
+index 9e8ec19..0770cb7 100644
+--- a/drivers/ata/libata-acpi.c
++++ b/drivers/ata/libata-acpi.c
+@@ -382,7 +382,7 @@ static int ata_dev_get_GTF(struct ata_device *dev, struct ata_acpi_gtf **gtf)
  
-
--#define func_enter() fs_dprintk (FS_DEBUG_FLOW, "fs: enter %s\n", __FUNCTION__)
--#define func_exit()  fs_dprintk (FS_DEBUG_FLOW, "fs: exit  %s\n", __FUNCTION__)
-+#define func_enter() fs_dprintk(FS_DEBUG_FLOW, "fs: enter %s\n", __func__)
-+#define func_exit()  fs_dprintk(FS_DEBUG_FLOW, "fs: exit  %s\n", __func__)
+ 	if (ata_msg_probe(ap))
+ 		ata_dev_printk(dev, KERN_DEBUG, "%s: ENTER: port#: %d\n",
+-			       __FUNCTION__, ap->port_no);
++			       __func__, ap->port_no);
  
-
- static struct fs_dev *fs_boards = NULL;
-diff --git a/drivers/atm/fore200e.c b/drivers/atm/fore200e.c
-index f97e050..9427a61 100644
---- a/drivers/atm/fore200e.c
-+++ b/drivers/atm/fore200e.c
-@@ -95,8 +95,8 @@
- #if 1
- #define ASSERT(expr)     if (!(expr)) { \
- 			     printk(FORE200E "assertion failed! %s[%d]: %s\n", \
--				    __FUNCTION__, __LINE__, #expr); \
--			     panic(FORE200E "%s", __FUNCTION__); \
-+				    __func__, __LINE__, #expr); \
-+			     panic(FORE200E "%s", __func__); \
- 			 }
- #else
- #define ASSERT(expr)     do {} while (0)
-diff --git a/drivers/atm/idt77252.c b/drivers/atm/idt77252.c
-index eee54c0..b967919 100644
---- a/drivers/atm/idt77252.c
-+++ b/drivers/atm/idt77252.c
-@@ -555,7 +555,7 @@ idt77252_tx_dump(struct idt77252_dev *card)
- 	struct vc_map *vc;
- 	int i;
- 
--	printk("%s\n", __FUNCTION__);
-+	printk("%s\n", __func__);
- 	for (i = 0; i < card->tct_size; i++) {
- 		vc = card->vcs[i];
- 		if (!vc)
-@@ -1035,7 +1035,7 @@ dequeue_rx(struct idt77252_dev *card, struct rsq_entry *rsqe)
- 	skb = sb_pool_skb(card, le32_to_cpu(rsqe->word_2));
- 	if (skb == NULL) {
- 		printk("%s: NULL skb in %s, rsqe: %08x %08x %08x %08x\n",
--		       card->name, __FUNCTION__,
-+		       card->name, __func__,
- 		       le32_to_cpu(rsqe->word_1), le32_to_cpu(rsqe->word_2),
- 		       le32_to_cpu(rsqe->word_3), le32_to_cpu(rsqe->word_4));
- 		return;
-@@ -1873,7 +1873,7 @@ add_rx_skb(struct idt77252_dev *card, int queue,
- 			return;
- 
- 		if (sb_pool_add(card, skb, queue)) {
--			printk("%s: SB POOL full\n", __FUNCTION__);
-+			printk("%s: SB POOL full\n", __func__);
- 			goto outfree;
- 		}
- 
-@@ -1883,7 +1883,7 @@ add_rx_skb(struct idt77252_dev *card, int queue,
- 		IDT77252_PRV_PADDR(skb) = paddr;
- 
- 		if (push_rx_skb(card, skb, queue)) {
--			printk("%s: FB QUEUE full\n", __FUNCTION__);
-+			printk("%s: FB QUEUE full\n", __func__);
- 			goto outunmap;
- 		}
+ 	/* _GTF has no input parameters */
+ 	status = acpi_evaluate_object(dev->acpi_handle, "_GTF", NULL, &output);
+@@ -402,7 +402,7 @@ static int ata_dev_get_GTF(struct ata_device *dev, struct ata_acpi_gtf **gtf)
+ 		if (ata_msg_probe(ap))
+ 			ata_dev_printk(dev, KERN_DEBUG, "%s: Run _GTF: "
+ 				"length or ptr is NULL (0x%llx, 0x%p)\n",
+-				__FUNCTION__,
++				__func__,
+ 				(unsigned long long)output.length,
+ 				output.pointer);
+ 		rc = -EINVAL;
+@@ -432,7 +432,7 @@ static int ata_dev_get_GTF(struct ata_device *dev, struct ata_acpi_gtf **gtf)
+ 		if (ata_msg_probe(ap))
+ 			ata_dev_printk(dev, KERN_DEBUG,
+ 				       "%s: returning gtf=%p, gtf_count=%d\n",
+-				       __FUNCTION__, *gtf, rc);
++				       __func__, *gtf, rc);
  	}
-@@ -3821,12 +3821,12 @@ static int __init idt77252_init(void)
- {
- 	struct sk_buff *skb;
+ 	return rc;
  
--	printk("%s: at %p\n", __FUNCTION__, idt77252_init);
-+	printk("%s: at %p\n", __func__, idt77252_init);
+@@ -725,7 +725,7 @@ static int ata_acpi_push_id(struct ata_device *dev)
  
- 	if (sizeof(skb->cb) < sizeof(struct atm_skb_data) +
- 			      sizeof(struct idt77252_skb_prv)) {
- 		printk(KERN_ERR "%s: skb->cb is too small (%lu < %lu)\n",
--		       __FUNCTION__, (unsigned long) sizeof(skb->cb),
-+		       __func__, (unsigned long) sizeof(skb->cb),
- 		       (unsigned long) sizeof(struct atm_skb_data) +
- 				       sizeof(struct idt77252_skb_prv));
- 		return -EIO;
+ 	if (ata_msg_probe(ap))
+ 		ata_dev_printk(dev, KERN_DEBUG, "%s: ix = %d, port#: %d\n",
+-			       __FUNCTION__, dev->devno, ap->port_no);
++			       __func__, dev->devno, ap->port_no);
+ 
+ 	/* Give the drive Identify data to the drive via the _SDD method */
+ 	/* _SDD: set up input parameters */
+diff --git a/drivers/ata/libata-core.c b/drivers/ata/libata-core.c
+index 4fbcce7..5310513 100644
+--- a/drivers/ata/libata-core.c
++++ b/drivers/ata/libata-core.c
+@@ -1719,7 +1719,7 @@ void ata_port_flush_task(struct ata_port *ap)
+ 	cancel_rearming_delayed_work(&ap->port_task);
+ 
+ 	if (ata_msg_ctl(ap))
+-		ata_port_printk(ap, KERN_DEBUG, "%s: EXIT\n", __FUNCTION__);
++		ata_port_printk(ap, KERN_DEBUG, "%s: EXIT\n", __func__);
+ }
+ 
+ static void ata_qc_complete_internal(struct ata_queued_cmd *qc)
+@@ -2056,7 +2056,7 @@ int ata_dev_read_id(struct ata_device *dev, unsigned int *p_class,
+ 	int rc;
+ 
+ 	if (ata_msg_ctl(ap))
+-		ata_dev_printk(dev, KERN_DEBUG, "%s: ENTER\n", __FUNCTION__);
++		ata_dev_printk(dev, KERN_DEBUG, "%s: ENTER\n", __func__);
+ 
+ 	ata_dev_select(ap, dev->devno, 1, 1); /* select device 0/1 */
+  retry:
+@@ -2253,12 +2253,12 @@ int ata_dev_configure(struct ata_device *dev)
+ 
+ 	if (!ata_dev_enabled(dev) && ata_msg_info(ap)) {
+ 		ata_dev_printk(dev, KERN_INFO, "%s: ENTER/EXIT -- nodev\n",
+-			       __FUNCTION__);
++			       __func__);
+ 		return 0;
+ 	}
+ 
+ 	if (ata_msg_probe(ap))
+-		ata_dev_printk(dev, KERN_DEBUG, "%s: ENTER\n", __FUNCTION__);
++		ata_dev_printk(dev, KERN_DEBUG, "%s: ENTER\n", __func__);
+ 
+ 	/* set horkage */
+ 	dev->horkage |= ata_dev_blacklisted(dev);
+@@ -2279,7 +2279,7 @@ int ata_dev_configure(struct ata_device *dev)
+ 		ata_dev_printk(dev, KERN_DEBUG,
+ 			       "%s: cfg 49:%04x 82:%04x 83:%04x 84:%04x "
+ 			       "85:%04x 86:%04x 87:%04x 88:%04x\n",
+-			       __FUNCTION__,
++			       __func__,
+ 			       id[49], id[82], id[83], id[84],
+ 			       id[85], id[86], id[87], id[88]);
+ 
+@@ -2511,13 +2511,13 @@ int ata_dev_configure(struct ata_device *dev)
+ 
+ 	if (ata_msg_probe(ap))
+ 		ata_dev_printk(dev, KERN_DEBUG, "%s: EXIT, drv_stat = 0x%x\n",
+-			__FUNCTION__, ata_chk_status(ap));
++			__func__, ata_chk_status(ap));
+ 	return 0;
+ 
+ err_out_nosup:
+ 	if (ata_msg_probe(ap))
+ 		ata_dev_printk(dev, KERN_DEBUG,
+-			       "%s: EXIT, err\n", __FUNCTION__);
++			       "%s: EXIT, err\n", __func__);
+ 	return rc;
+ }
+ 
+diff --git a/drivers/ata/pata_pdc2027x.c b/drivers/ata/pata_pdc2027x.c
+index 028af5d..511c89b 100644
+--- a/drivers/ata/pata_pdc2027x.c
++++ b/drivers/ata/pata_pdc2027x.c
+@@ -39,7 +39,7 @@
+ #undef PDC_DEBUG
+ 
+ #ifdef PDC_DEBUG
+-#define PDPRINTK(fmt, args...) printk(KERN_ERR "%s: " fmt, __FUNCTION__, ## args)
++#define PDPRINTK(fmt, args...) printk(KERN_ERR "%s: " fmt, __func__, ## args)
+ #else
+ #define PDPRINTK(fmt, args...)
+ #endif
 -- 
 1.5.4.GIT
 
