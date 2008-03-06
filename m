@@ -1,27 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934707AbYCFCbl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933546AbYCFCcC@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934707AbYCFCbl (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Mar 2008 21:31:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932524AbYCFCZM
+	id S933546AbYCFCcC (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Mar 2008 21:32:02 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932472AbYCFCZO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Mar 2008 21:25:12 -0500
-Received: from rn-out-0910.google.com ([64.233.170.184]:52325 "EHLO
-	rn-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932168AbYCFCZK (ORCPT
+	Wed, 5 Mar 2008 21:25:14 -0500
+Received: from wa-out-1112.google.com ([209.85.146.178]:63689 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932224AbYCFCZK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 5 Mar 2008 21:25:10 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=subject:from:to:cc:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=LJUEj1NLp8thDzjx2mUc6c4yWvThSvq6NP4dwmL0cCKUo0XP5fx8HxKx6c3gCaZ4euiVN8IY5O2QtFtjR3ClnE8wJTLrqGn7a/78VG/lQBo+dmCbgcjz7TYVPmr9cuYaaNRqfct140KjwAD8OZ6L5eq6dsew13v2Umi/GjeUf34=
-Subject: [PATCH 13/16] watchdog: replace remaining __FUNCTION__ occurrences
+        b=SAC0VswvDGkGnJPPSnVcEkMq/mAWIdBjKTd/H7jrN0hDv4VMdy9zGp2SjjJGemTlk/A4gvv3Jxj7m96dsvmpkWosFTPqYSl8RgyJ9utTXKEVzX2NzJZ7REudwM6teBDXal3b+cEAepyvKCht2alwdWO9w4Sr2i89wJwBv1gPqpM=
+Subject: [PATCH 14/16] spi: replace remaining __FUNCTION__ occurrences
 From: Harvey Harrison <harvey.harrison@gmail.com>
-To: Wim Van Sebroeck <wim@iguana.be>
+To: David Brownell <david-b@pacbell.net>
 Cc: Andrew Morton <akpm@linux-foundation.org>,
        LKML <linux-kernel@vger.kernel.org>
 Content-Type: text/plain
 Date: Wed, 05 Mar 2008 18:24:58 -0800
-Message-Id: <1204770298.14154.49.camel@brick>
+Message-Id: <1204770298.14154.50.camel@brick>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.12.1 
 Content-Transfer-Encoding: 7bit
@@ -33,96 +33,112 @@ __FUNCTION__ is gcc-specific, use __func__
 
 Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
 ---
- drivers/watchdog/machzwd.c     |    2 +-
- drivers/watchdog/pcwd_usb.c    |    4 ++--
- drivers/watchdog/s3c2410_wdt.c |    8 ++++----
- drivers/watchdog/shwdt.c       |    2 +-
- 4 files changed, 8 insertions(+), 8 deletions(-)
+ drivers/spi/omap_uwire.c  |    4 ++--
+ drivers/spi/spi_bitbang.c |    2 +-
+ drivers/spi/spi_mpc83xx.c |    2 +-
+ drivers/spi/spi_s3c24xx.c |    2 +-
+ drivers/spi/xilinx_spi.c  |    8 ++++----
+ 5 files changed, 9 insertions(+), 9 deletions(-)
 
-diff --git a/drivers/watchdog/machzwd.c b/drivers/watchdog/machzwd.c
-index e6e07b4..6905135 100644
---- a/drivers/watchdog/machzwd.c
-+++ b/drivers/watchdog/machzwd.c
-@@ -141,7 +141,7 @@ static unsigned long next_heartbeat = 0;
- #ifndef ZF_DEBUG
- #	define dprintk(format, args...)
- #else
--#	define dprintk(format, args...) printk(KERN_DEBUG PFX ":%s:%d: " format, __FUNCTION__, __LINE__ , ## args)
-+#	define dprintk(format, args...) printk(KERN_DEBUG PFX ":%s:%d: " format, __func__, __LINE__ , ## args)
- #endif
+diff --git a/drivers/spi/omap_uwire.c b/drivers/spi/omap_uwire.c
+index 8245b51..ea18077 100644
+--- a/drivers/spi/omap_uwire.c
++++ b/drivers/spi/omap_uwire.c
+@@ -151,7 +151,7 @@ static int wait_uwire_csr_flag(u16 mask, u16 val, int might_not_catch)
+ 		if (time_after(jiffies, max_jiffies)) {
+ 			printk(KERN_ERR "%s: timeout. reg=%#06x "
+ 					"mask=%#06x val=%#06x\n",
+-			       __FUNCTION__, w, mask, val);
++			       __func__, w, mask, val);
+ 			return -1;
+ 		}
+ 		c++;
+@@ -437,7 +437,7 @@ static int uwire_setup_transfer(struct spi_device *spi, struct spi_transfer *t)
+ 	}
+ 	omap_uwire_configure_mode(spi->chip_select, flags);
+ 	pr_debug("%s: uwire flags %02x, armxor %lu KHz, SCK %lu KHz\n",
+-			__FUNCTION__, flags,
++			__func__, flags,
+ 			clk_get_rate(uwire->ck) / 1000,
+ 			rate / 1000);
+ 	status = 0;
+diff --git a/drivers/spi/spi_bitbang.c b/drivers/spi/spi_bitbang.c
+index f7f8580..061e344 100644
+--- a/drivers/spi/spi_bitbang.c
++++ b/drivers/spi/spi_bitbang.c
+@@ -214,7 +214,7 @@ int spi_bitbang_setup(struct spi_device *spi)
+ 		return retval;
  
-
-diff --git a/drivers/watchdog/pcwd_usb.c b/drivers/watchdog/pcwd_usb.c
-index 0f3fd6c..bf443d0 100644
---- a/drivers/watchdog/pcwd_usb.c
-+++ b/drivers/watchdog/pcwd_usb.c
-@@ -179,11 +179,11 @@ static void usb_pcwd_intr_done(struct urb *urb)
- 	case -ENOENT:
- 	case -ESHUTDOWN:
- 		/* this urb is terminated, clean up */
--		dbg("%s - urb shutting down with status: %d", __FUNCTION__, urb->status);
-+		dbg("%s - urb shutting down with status: %d", __func__, urb->status);
- 		return;
- 	/* -EPIPE:  should clear the halt */
- 	default:		/* error */
--		dbg("%s - nonzero urb status received: %d", __FUNCTION__, urb->status);
-+		dbg("%s - nonzero urb status received: %d", __func__, urb->status);
- 		goto resubmit;
+ 	dev_dbg(&spi->dev, "%s, mode %d, %u bits/w, %u nsec/bit\n",
+-			__FUNCTION__, spi->mode & (SPI_CPOL | SPI_CPHA),
++			__func__, spi->mode & (SPI_CPOL | SPI_CPHA),
+ 			spi->bits_per_word, 2 * cs->nsecs);
+ 
+ 	/* NOTE we _need_ to call chipselect() early, ideally with adapter
+diff --git a/drivers/spi/spi_mpc83xx.c b/drivers/spi/spi_mpc83xx.c
+index 04f7cd9..df9f0d4 100644
+--- a/drivers/spi/spi_mpc83xx.c
++++ b/drivers/spi/spi_mpc83xx.c
+@@ -310,7 +310,7 @@ static int mpc83xx_spi_setup(struct spi_device *spi)
+ 		return retval;
+ 
+ 	dev_dbg(&spi->dev, "%s, mode %d, %u bits/w, %u nsec\n",
+-		__FUNCTION__, spi->mode & (SPI_CPOL | SPI_CPHA),
++		__func__, spi->mode & (SPI_CPOL | SPI_CPHA),
+ 		spi->bits_per_word, 2 * mpc83xx_spi->nsecs);
+ 
+ 	/* NOTE we _need_ to call chipselect() early, ideally with adapter
+diff --git a/drivers/spi/spi_s3c24xx.c b/drivers/spi/spi_s3c24xx.c
+index 6e834b8..4ad5abb 100644
+--- a/drivers/spi/spi_s3c24xx.c
++++ b/drivers/spi/spi_s3c24xx.c
+@@ -169,7 +169,7 @@ static int s3c24xx_spi_setup(struct spi_device *spi)
  	}
  
-diff --git a/drivers/watchdog/s3c2410_wdt.c b/drivers/watchdog/s3c2410_wdt.c
-index 5d1c15f..7645e88 100644
---- a/drivers/watchdog/s3c2410_wdt.c
-+++ b/drivers/watchdog/s3c2410_wdt.c
-@@ -144,7 +144,7 @@ static int s3c2410wdt_start(void)
+ 	dev_dbg(&spi->dev, "%s: mode %d, %u bpw, %d hz\n",
+-		__FUNCTION__, spi->mode, spi->bits_per_word,
++		__func__, spi->mode, spi->bits_per_word,
+ 		spi->max_speed_hz);
+ 
+ 	return 0;
+diff --git a/drivers/spi/xilinx_spi.c b/drivers/spi/xilinx_spi.c
+index 5d04f52..9ba5741 100644
+--- a/drivers/spi/xilinx_spi.c
++++ b/drivers/spi/xilinx_spi.c
+@@ -151,13 +151,13 @@ static int xilinx_spi_setup_transfer(struct spi_device *spi,
+ 	hz = (t) ? t->speed_hz : spi->max_speed_hz;
+ 	if (bits_per_word != 8) {
+ 		dev_err(&spi->dev, "%s, unsupported bits_per_word=%d\n",
+-			__FUNCTION__, bits_per_word);
++			__func__, bits_per_word);
+ 		return -EINVAL;
  	}
  
- 	DBG("%s: wdt_count=0x%08x, wtcon=%08lx\n",
--	    __FUNCTION__, wdt_count, wtcon);
-+	    __func__, wdt_count, wtcon);
- 
- 	writel(wdt_count, wdt_base + S3C2410_WTDAT);
- 	writel(wdt_count, wdt_base + S3C2410_WTCNT);
-@@ -167,7 +167,7 @@ static int s3c2410wdt_set_heartbeat(int timeout)
- 	count = timeout * freq;
- 
- 	DBG("%s: count=%d, timeout=%d, freq=%d\n",
--	    __FUNCTION__, count, timeout, freq);
-+	    __func__, count, timeout, freq);
- 
- 	/* if the count is bigger than the watchdog register,
- 	   then work out what we need to do (and if) we can
-@@ -189,7 +189,7 @@ static int s3c2410wdt_set_heartbeat(int timeout)
- 	tmr_margin = timeout;
- 
- 	DBG("%s: timeout=%d, divisor=%d, count=%d (%08x)\n",
--	    __FUNCTION__, timeout, divisor, count, count/divisor);
-+	    __func__, timeout, divisor, count, count/divisor);
- 
- 	count /= divisor;
- 	wdt_count = count;
-@@ -355,7 +355,7 @@ static int s3c2410wdt_probe(struct platform_device *pdev)
- 	int ret;
- 	int size;
- 
--	DBG("%s: probe=%p\n", __FUNCTION__, pdev);
-+	DBG("%s: probe=%p\n", __func__, pdev);
- 
- 	dev = &pdev->dev;
- 	wdt_dev = &pdev->dev;
-diff --git a/drivers/watchdog/shwdt.c b/drivers/watchdog/shwdt.c
-index 61dde86..1277f7e 100644
---- a/drivers/watchdog/shwdt.c
-+++ b/drivers/watchdog/shwdt.c
-@@ -298,7 +298,7 @@ static int sh_wdt_mmap(struct file *file, struct vm_area_struct *vma)
- 	if (io_remap_pfn_range(vma, vma->vm_start, addr >> PAGE_SHIFT,
- 			       PAGE_SIZE, vma->vm_page_prot)) {
- 		printk(KERN_ERR PFX "%s: io_remap_pfn_range failed\n",
--		       __FUNCTION__);
-+		       __func__);
- 		return -EAGAIN;
+ 	if (hz && xspi->speed_hz > hz) {
+ 		dev_err(&spi->dev, "%s, unsupported clock rate %uHz\n",
+-			__FUNCTION__, hz);
++			__func__, hz);
+ 		return -EINVAL;
  	}
  
+@@ -181,7 +181,7 @@ static int xilinx_spi_setup(struct spi_device *spi)
+ 
+ 	if (spi->mode & ~MODEBITS) {
+ 		dev_err(&spi->dev, "%s, unsupported mode bits %x\n",
+-			__FUNCTION__, spi->mode & ~MODEBITS);
++			__func__, spi->mode & ~MODEBITS);
+ 		return -EINVAL;
+ 	}
+ 
+@@ -190,7 +190,7 @@ static int xilinx_spi_setup(struct spi_device *spi)
+ 		return retval;
+ 
+ 	dev_dbg(&spi->dev, "%s, mode %d, %u bits/w, %u nsec/bit\n",
+-		__FUNCTION__, spi->mode & MODEBITS, spi->bits_per_word, 0);
++		__func__, spi->mode & MODEBITS, spi->bits_per_word, 0);
+ 
+ 	return 0;
+ }
 -- 
 1.5.4.GIT
 
