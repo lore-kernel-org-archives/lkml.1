@@ -1,46 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761606AbYCFLl5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763351AbYCFLnF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761606AbYCFLl5 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Mar 2008 06:41:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753614AbYCFLlu
+	id S1763351AbYCFLnF (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Mar 2008 06:43:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755330AbYCFLmx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Mar 2008 06:41:50 -0500
-Received: from smtp-out03.alice-dsl.net ([88.44.63.5]:3339 "EHLO
-	smtp-out03.alice-dsl.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753376AbYCFLlt (ORCPT
+	Thu, 6 Mar 2008 06:42:53 -0500
+Received: from ecfrec.frec.bull.fr ([129.183.4.8]:37050 "EHLO
+	ecfrec.frec.bull.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753614AbYCFLmx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Mar 2008 06:41:49 -0500
-To: "Yinghai Lu" <yhlu.kernel@gmail.com>
-Cc: "Ingo Molnar" <mingo@elte.hu>, "Andrew Morton" <akpm@linux-foundation.org>,
-       "Thomas Gleixner" <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] x86_64: show apicid for cpu in proc
-References: <86802c440803060113s5b09c8b7w3a9da92ca15eff03@mail.gmail.com>
-From: Andi Kleen <andi@firstfloor.org>
-Date: 06 Mar 2008 12:41:46 +0100
-In-Reply-To: <86802c440803060113s5b09c8b7w3a9da92ca15eff03@mail.gmail.com>
-Message-ID: <8763w0gjut.fsf@basil.nowhere.org>
-User-Agent: Gnus/5.09 (Gnus v5.9.0) Emacs/21.3
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-OriginalArrivalTime: 06 Mar 2008 11:35:16.0309 (UTC) FILETIME=[262C1850:01C87F7E]
+	Thu, 6 Mar 2008 06:42:53 -0500
+Subject: Re: [PATCH] Modify loop device to be able to manage partitions of
+	the disk image
+From: Laurent Vivier <Laurent.Vivier@bull.net>
+To: =?ISO-8859-1?Q?P=E1draig?= Brady <P@draigBrady.com>
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <47CFD6B0.4020602@draigBrady.com>
+References: <1204796612842-git-send-email-Laurent.Vivier@bull.net>
+	 <47CFD6B0.4020602@draigBrady.com>
+Content-Type: text/plain; charset=utf-8
+Organization: Bull S.A.S.
+Date: Thu, 06 Mar 2008 12:45:14 +0100
+Message-Id: <1204803914.4325.16.camel@frecb07144>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.3 
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-"Yinghai Lu" <yhlu.kernel@gmail.com> writes:
 
->  			   cpus_weight(per_cpu(cpu_core_map, cpu)));
->  		seq_printf(m, "core id\t\t: %d\n", c->cpu_core_id);
->  		seq_printf(m, "cpu cores\t: %d\n", c->booted_cores);
-> +		seq_printf(m, "apicid\t: %02x\n", c->apicid);
+Le jeudi 06 mars 2008 à 11:34 +0000, Pádraig Brady a écrit :
+> Laurent Vivier wrote:
+> > This patch allows to use loop device with partitionned disk image.
+> > 
+> > Original behavior of loop is not modified.
+> > 
+> > A new parameter is introduced to define how many partition we want to be
+> > able to manage per loop device. This parameter is "max_part".
+> 
+> I like it!
 
-Seems a little redundant with the boot log, but ok.
+Thanks,
 
-But it's unclear to the user which apic ID is meant by that. There are
-two different ones. The one in the LAPIC mapping and the one reported by
-CPUID. They are not necessarily the same. I think you should clarify that
-by renaming the field or perhaps report both.
+> Shouldn't we set max_part to non zero by default though?
 
--Andi
+Well, the problem is that you modify the default minor number of loop
+device if max_part != 0, so I'm afraid of compatibility problems:
+with max_part=0, loop0 is minor 0, loop1 is minor 1,
+with max_part=63, loop0 is minor 0, loop1 is minor 64, whereas loop0p1
+is minor 1.
+
+> Hopefully I can throw away my loopback partition mounting script soon :)
+> http://www.pixelbeat.org/scripts/lomount.sh
+> 
+> cheers,
+> Pádraig.
+> 
+
+Regards,
+Laurent
+-- 
+----------------- Laurent.Vivier@bull.net  ------------------
+"Programmers who subconsciously view themselves as artists
+ will enjoy what they do and will do it better." D. Knuth
+
