@@ -1,27 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934392AbYCFC24@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934012AbYCFC3g@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934392AbYCFC24 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Mar 2008 21:28:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763627AbYCFCZF
+	id S934012AbYCFC3g (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Mar 2008 21:29:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764159AbYCFCZH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Mar 2008 21:25:05 -0500
-Received: from wa-out-1112.google.com ([209.85.146.182]:61432 "EHLO
+	Wed, 5 Mar 2008 21:25:07 -0500
+Received: from wa-out-1112.google.com ([209.85.146.178]:63689 "EHLO
 	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1762270AbYCFCZB (ORCPT
+	with ESMTP id S1761520AbYCFCZE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Mar 2008 21:25:01 -0500
+	Wed, 5 Mar 2008 21:25:04 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=subject:from:to:cc:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=Hvr+Tr2ZMWkYRs/pI8c3R0NKqTEjyOFjfApxs1RHguFjxndrkj4emFe73wItOFCErHEXh8DTBdXE3OiCepHKf5RtmCWPh0wua3hKzsfi8dzrNT8SXuXkECyNOm2XgCr6udWKrqDQDDRWUVH+Z+upmNfQxUi/SgI0olvT6moRoX0=
-Subject: [PATCH 07/16] ieee1394: replace remaining __FUNCTION__ occurrences
+        b=e9wDthkoyX230nkfnROs3qwZv1WBM/cVIN/yh5nyP8ARRu2MxJCPRh0U2n10GISftBiLfe5XqHW+gPGGop+AxGtTCCVls+3tB9bS6dQ8GAxuMH3LitOWn1EQvjBbjTAOdKPh3UMf1Oi1WTbUM6zGHjbPcWh0fQR3U2XvW1o1Vgk=
+Subject: [PATCH 09/16] mtd: replace remaining __FUNCTION__ occurrences
 From: Harvey Harrison <harvey.harrison@gmail.com>
-To: Stefan Richter <stefanr@s5r6.in-berlin.de>
+To: David Woodhouse <dwmw2@infradead.org>
 Cc: Andrew Morton <akpm@linux-foundation.org>,
        LKML <linux-kernel@vger.kernel.org>
 Content-Type: text/plain
-Date: Wed, 05 Mar 2008 18:24:54 -0800
-Message-Id: <1204770294.14154.43.camel@brick>
+Date: Wed, 05 Mar 2008 18:24:55 -0800
+Message-Id: <1204770296.14154.45.camel@brick>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.12.1 
 Content-Transfer-Encoding: 7bit
@@ -33,148 +33,345 @@ __FUNCTION__ is gcc-specific, use __func__
 
 Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
 ---
- drivers/ieee1394/highlevel.c     |    6 +++---
- drivers/ieee1394/ieee1394_core.c |    2 +-
- drivers/ieee1394/ohci1394.c      |    2 +-
- drivers/ieee1394/pcilynx.c       |   12 ++++++------
- drivers/ieee1394/sbp2.c          |    4 ++--
- 5 files changed, 13 insertions(+), 13 deletions(-)
+ drivers/mtd/chips/cfi_cmdset_0001.c |   12 ++++++------
+ drivers/mtd/chips/cfi_cmdset_0020.c |   12 ++++++------
+ drivers/mtd/devices/lart.c          |   16 ++++++++--------
+ drivers/mtd/devices/m25p80.c        |    8 ++++----
+ drivers/mtd/maps/bast-flash.c       |    4 ++--
+ drivers/mtd/maps/pcmciamtd.c        |    2 +-
+ drivers/mtd/maps/pmcmsp-flash.c     |    2 +-
+ drivers/mtd/maps/tqm8xxl.c          |    6 +++---
+ drivers/mtd/ubi/debug.h             |    2 +-
+ drivers/mtd/ubi/ubi.h               |    4 ++--
+ 10 files changed, 34 insertions(+), 34 deletions(-)
 
-diff --git a/drivers/ieee1394/highlevel.c b/drivers/ieee1394/highlevel.c
-index b642546..fa2bfec 100644
---- a/drivers/ieee1394/highlevel.c
-+++ b/drivers/ieee1394/highlevel.c
-@@ -339,7 +339,7 @@ u64 hpsb_allocate_and_register_addrspace(struct hpsb_highlevel *hl,
- 	if ((alignment & 3) || (alignment > 0x800000000000ULL) ||
- 	    (hweight64(alignment) != 1)) {
- 		HPSB_ERR("%s called with invalid alignment: 0x%048llx",
--			 __FUNCTION__, (unsigned long long)alignment);
-+			 __func__, (unsigned long long)alignment);
- 		return retval;
- 	}
+diff --git a/drivers/mtd/chips/cfi_cmdset_0001.c b/drivers/mtd/chips/cfi_cmdset_0001.c
+index 47794d2..27c8ec1 100644
+--- a/drivers/mtd/chips/cfi_cmdset_0001.c
++++ b/drivers/mtd/chips/cfi_cmdset_0001.c
+@@ -384,7 +384,7 @@ read_pri_intelext(struct map_info *map, __u16 adr)
+ 			if (extp_size > 4096) {
+ 				printk(KERN_ERR
+ 					"%s: cfi_pri_intelext is too fat\n",
+-					__FUNCTION__);
++					__func__);
+ 				return NULL;
+ 			}
+ 			goto again;
+@@ -641,7 +641,7 @@ static int cfi_intelext_partition_fixup(struct mtd_info *mtd,
+ 		if ((1 << partshift) < mtd->erasesize) {
+ 			printk( KERN_ERR
+ 				"%s: bad number of hw partitions (%d)\n",
+-				__FUNCTION__, numparts);
++				__func__, numparts);
+ 			return -EINVAL;
+ 		}
  
-@@ -354,7 +354,7 @@ u64 hpsb_allocate_and_register_addrspace(struct hpsb_highlevel *hl,
- 	if (((start|end) & ~align_mask) || (start >= end) ||
- 	    (end > CSR1212_ALL_SPACE_END)) {
- 		HPSB_ERR("%s called with invalid addresses "
--			 "(start = %012Lx  end = %012Lx)", __FUNCTION__,
-+			 "(start = %012Lx  end = %012Lx)", __func__,
- 			 (unsigned long long)start,(unsigned long long)end);
- 		return retval;
- 	}
-@@ -422,7 +422,7 @@ int hpsb_register_addrspace(struct hpsb_highlevel *hl, struct hpsb_host *host,
+@@ -2013,7 +2013,7 @@ static int cfi_intelext_lock(struct mtd_info *mtd, loff_t ofs, size_t len)
  
- 	if (((start|end) & 3) || (start >= end) ||
- 	    (end > CSR1212_ALL_SPACE_END)) {
--		HPSB_ERR("%s called with invalid addresses", __FUNCTION__);
-+		HPSB_ERR("%s called with invalid addresses", __func__);
- 		return 0;
- 	}
- 
-diff --git a/drivers/ieee1394/ieee1394_core.c b/drivers/ieee1394/ieee1394_core.c
-index 36c747b..942bf1f 100644
---- a/drivers/ieee1394/ieee1394_core.c
-+++ b/drivers/ieee1394/ieee1394_core.c
-@@ -242,7 +242,7 @@ int hpsb_bus_reset(struct hpsb_host *host)
- {
- 	if (host->in_bus_reset) {
- 		HPSB_NOTICE("%s called while bus reset already in progress",
--			    __FUNCTION__);
-+			    __func__);
- 		return 1;
- 	}
- 
-diff --git a/drivers/ieee1394/ohci1394.c b/drivers/ieee1394/ohci1394.c
-index 969de2a..b14e6ea 100644
---- a/drivers/ieee1394/ohci1394.c
-+++ b/drivers/ieee1394/ohci1394.c
-@@ -708,7 +708,7 @@ static void insert_packet(struct ti_ohci *ohci,
-                                 /* FIXME: do something about it */
-                                 PRINT(KERN_ERR,
-                                       "%s: packet data addr: %p size %Zd bytes "
--                                      "cross page boundary", __FUNCTION__,
-+				      "cross page boundary", __func__,
-                                       packet->data, packet->data_size);
-                         }
+ #ifdef DEBUG_LOCK_BITS
+ 	printk(KERN_DEBUG "%s: lock status before, ofs=0x%08llx, len=0x%08X\n",
+-	       __FUNCTION__, ofs, len);
++	       __func__, ofs, len);
+ 	cfi_varsize_frob(mtd, do_printlockstatus_oneblock,
+ 		ofs, len, NULL);
  #endif
-diff --git a/drivers/ieee1394/pcilynx.c b/drivers/ieee1394/pcilynx.c
-index 8af01ab..eb065a4 100644
---- a/drivers/ieee1394/pcilynx.c
-+++ b/drivers/ieee1394/pcilynx.c
-@@ -226,7 +226,7 @@ static int get_phy_reg(struct ti_lynx *lynx, int addr)
-         if (addr > 15) {
-                 PRINT(KERN_ERR, lynx->id,
-                       "%s: PHY register address %d out of range",
--		      __FUNCTION__, addr);
-+		      __func__, addr);
-                 return -1;
-         }
+@@ -2023,7 +2023,7 @@ static int cfi_intelext_lock(struct mtd_info *mtd, loff_t ofs, size_t len)
  
-@@ -238,7 +238,7 @@ static int get_phy_reg(struct ti_lynx *lynx, int addr)
+ #ifdef DEBUG_LOCK_BITS
+ 	printk(KERN_DEBUG "%s: lock status after, ret=%d\n",
+-	       __FUNCTION__, ret);
++	       __func__, ret);
+ 	cfi_varsize_frob(mtd, do_printlockstatus_oneblock,
+ 		ofs, len, NULL);
+ #endif
+@@ -2037,7 +2037,7 @@ static int cfi_intelext_unlock(struct mtd_info *mtd, loff_t ofs, size_t len)
  
-                 if (i > 10000) {
-                         PRINT(KERN_ERR, lynx->id, "%s: runaway loop, aborting",
--			      __FUNCTION__);
-+			      __func__);
-                         retval = -1;
-                         break;
-                 }
-@@ -261,13 +261,13 @@ static int set_phy_reg(struct ti_lynx *lynx, int addr, int val)
+ #ifdef DEBUG_LOCK_BITS
+ 	printk(KERN_DEBUG "%s: lock status before, ofs=0x%08llx, len=0x%08X\n",
+-	       __FUNCTION__, ofs, len);
++	       __func__, ofs, len);
+ 	cfi_varsize_frob(mtd, do_printlockstatus_oneblock,
+ 		ofs, len, NULL);
+ #endif
+@@ -2047,7 +2047,7 @@ static int cfi_intelext_unlock(struct mtd_info *mtd, loff_t ofs, size_t len)
  
-         if (addr > 15) {
-                 PRINT(KERN_ERR, lynx->id,
--                      "%s: PHY register address %d out of range", __FUNCTION__, addr);
-+		      "%s: PHY register address %d out of range", __func__, addr);
-                 return -1;
-         }
+ #ifdef DEBUG_LOCK_BITS
+ 	printk(KERN_DEBUG "%s: lock status after, ret=%d\n",
+-	       __FUNCTION__, ret);
++	       __func__, ret);
+ 	cfi_varsize_frob(mtd, do_printlockstatus_oneblock,
+ 		ofs, len, NULL);
+ #endif
+diff --git a/drivers/mtd/chips/cfi_cmdset_0020.c b/drivers/mtd/chips/cfi_cmdset_0020.c
+index b344ff8..3ede804 100644
+--- a/drivers/mtd/chips/cfi_cmdset_0020.c
++++ b/drivers/mtd/chips/cfi_cmdset_0020.c
+@@ -445,7 +445,7 @@ static inline int do_write_buffer(struct map_info *map, struct flchip *chip,
+  retry:
  
-         if (val > 0xff) {
-                 PRINT(KERN_ERR, lynx->id,
--                      "%s: PHY register value %d out of range", __FUNCTION__, val);
-+		      "%s: PHY register value %d out of range", __func__, val);
-                 return -1;
-         }
+ #ifdef DEBUG_CFI_FEATURES
+-       printk("%s: chip->state[%d]\n", __FUNCTION__, chip->state);
++       printk("%s: chip->state[%d]\n", __func__, chip->state);
+ #endif
+ 	spin_lock_bh(chip->mutex);
  
-@@ -287,7 +287,7 @@ static int sel_phy_reg_page(struct ti_lynx *lynx, int page)
+@@ -463,7 +463,7 @@ static inline int do_write_buffer(struct map_info *map, struct flchip *chip,
+ 		map_write(map, CMD(0x70), cmd_adr);
+                 chip->state = FL_STATUS;
+ #ifdef DEBUG_CFI_FEATURES
+-        printk("%s: 1 status[%x]\n", __FUNCTION__, map_read(map, cmd_adr));
++	printk("%s: 1 status[%x]\n", __func__, map_read(map, cmd_adr));
+ #endif
  
-         if (page > 7) {
-                 PRINT(KERN_ERR, lynx->id,
--                      "%s: PHY page %d out of range", __FUNCTION__, page);
-+		      "%s: PHY page %d out of range", __func__, page);
-                 return -1;
-         }
+ 	case FL_STATUS:
+@@ -591,7 +591,7 @@ static inline int do_write_buffer(struct map_info *map, struct flchip *chip,
+         /* check for errors: 'lock bit', 'VPP', 'dead cell'/'unerased cell' or 'incorrect cmd' -- saw */
+         if (map_word_bitsset(map, status, CMD(0x3a))) {
+ #ifdef DEBUG_CFI_FEATURES
+-		printk("%s: 2 status[%lx]\n", __FUNCTION__, status.x[0]);
++		printk("%s: 2 status[%lx]\n", __func__, status.x[0]);
+ #endif
+ 		/* clear status */
+ 		map_write(map, CMD(0x50), cmd_adr);
+@@ -625,9 +625,9 @@ static int cfi_staa_write_buffers (struct mtd_info *mtd, loff_t to,
+ 	ofs = to  - (chipnum << cfi->chipshift);
  
-@@ -309,7 +309,7 @@ static int sel_phy_reg_port(struct ti_lynx *lynx, int port)
+ #ifdef DEBUG_CFI_FEATURES
+-        printk("%s: map_bankwidth(map)[%x]\n", __FUNCTION__, map_bankwidth(map));
+-        printk("%s: chipnum[%x] wbufsize[%x]\n", __FUNCTION__, chipnum, wbufsize);
+-        printk("%s: ofs[%x] len[%x]\n", __FUNCTION__, ofs, len);
++	printk("%s: map_bankwidth(map)[%x]\n", __func__, map_bankwidth(map));
++	printk("%s: chipnum[%x] wbufsize[%x]\n", __func__, chipnum, wbufsize);
++	printk("%s: ofs[%x] len[%x]\n", __func__, ofs, len);
+ #endif
  
-         if (port > 15) {
-                 PRINT(KERN_ERR, lynx->id,
--                      "%s: PHY port %d out of range", __FUNCTION__, port);
-+		      "%s: PHY port %d out of range", __func__, port);
-                 return -1;
-         }
- 
-diff --git a/drivers/ieee1394/sbp2.c b/drivers/ieee1394/sbp2.c
-index 9e2b196..3d2e17d 100644
---- a/drivers/ieee1394/sbp2.c
-+++ b/drivers/ieee1394/sbp2.c
-@@ -610,7 +610,7 @@ static struct sbp2_command_info *sbp2util_allocate_command_orb(
- 		cmd->Current_SCpnt = Current_SCpnt;
- 		list_add_tail(&cmd->list, &lu->cmd_orb_inuse);
- 	} else
--		SBP2_ERR("%s: no orbs available", __FUNCTION__);
-+		SBP2_ERR("%s: no orbs available", __func__);
- 	spin_unlock_irqrestore(&lu->cmd_orb_lock, flags);
- 	return cmd;
+         /* Write buffer is worth it only if more than one word to write... */
+diff --git a/drivers/mtd/devices/lart.c b/drivers/mtd/devices/lart.c
+index 99fd210..17a075d 100644
+--- a/drivers/mtd/devices/lart.c
++++ b/drivers/mtd/devices/lart.c
+@@ -275,7 +275,7 @@ static __u8 read8 (__u32 offset)
+ {
+    volatile __u8 *data = (__u8 *) (FLASH_OFFSET + offset);
+ #ifdef LART_DEBUG
+-   printk (KERN_DEBUG "%s(): 0x%.8x -> 0x%.2x\n",__FUNCTION__,offset,*data);
++   printk (KERN_DEBUG "%s(): 0x%.8x -> 0x%.2x\n", __func__, offset, *data);
+ #endif
+    return (*data);
  }
-@@ -1289,7 +1289,7 @@ static int sbp2_set_busy_timeout(struct sbp2_lu *lu)
- 
- 	data = cpu_to_be32(SBP2_BUSY_TIMEOUT_VALUE);
- 	if (hpsb_node_write(lu->ne, SBP2_BUSY_TIMEOUT_ADDRESS, &data, 4))
--		SBP2_ERR("%s error", __FUNCTION__);
-+		SBP2_ERR("%s error", __func__);
- 	return 0;
+@@ -284,7 +284,7 @@ static __u32 read32 (__u32 offset)
+ {
+    volatile __u32 *data = (__u32 *) (FLASH_OFFSET + offset);
+ #ifdef LART_DEBUG
+-   printk (KERN_DEBUG "%s(): 0x%.8x -> 0x%.8x\n",__FUNCTION__,offset,*data);
++   printk (KERN_DEBUG "%s(): 0x%.8x -> 0x%.8x\n", __func__, offset, *data);
+ #endif
+    return (*data);
+ }
+@@ -294,7 +294,7 @@ static void write32 (__u32 x,__u32 offset)
+    volatile __u32 *data = (__u32 *) (FLASH_OFFSET + offset);
+    *data = x;
+ #ifdef LART_DEBUG
+-   printk (KERN_DEBUG "%s(): 0x%.8x <- 0x%.8x\n",__FUNCTION__,offset,*data);
++   printk (KERN_DEBUG "%s(): 0x%.8x <- 0x%.8x\n", __func__, offset, *data);
+ #endif
  }
  
+@@ -337,7 +337,7 @@ static inline int erase_block (__u32 offset)
+    __u32 status;
+ 
+ #ifdef LART_DEBUG
+-   printk (KERN_DEBUG "%s(): 0x%.8x\n",__FUNCTION__,offset);
++   printk (KERN_DEBUG "%s(): 0x%.8x\n", __func__, offset);
+ #endif
+ 
+    /* erase and confirm */
+@@ -371,7 +371,7 @@ static int flash_erase (struct mtd_info *mtd,struct erase_info *instr)
+    int i,first;
+ 
+ #ifdef LART_DEBUG
+-   printk (KERN_DEBUG "%s(addr = 0x%.8x, len = %d)\n",__FUNCTION__,instr->addr,instr->len);
++   printk (KERN_DEBUG "%s(addr = 0x%.8x, len = %d)\n", __func__, instr->addr, instr->len);
+ #endif
+ 
+    /* sanity checks */
+@@ -442,7 +442,7 @@ static int flash_erase (struct mtd_info *mtd,struct erase_info *instr)
+ static int flash_read (struct mtd_info *mtd,loff_t from,size_t len,size_t *retlen,u_char *buf)
+ {
+ #ifdef LART_DEBUG
+-   printk (KERN_DEBUG "%s(from = 0x%.8x, len = %d)\n",__FUNCTION__,(__u32) from,len);
++   printk (KERN_DEBUG "%s(from = 0x%.8x, len = %d)\n", __func__, (__u32)from, len);
+ #endif
+ 
+    /* sanity checks */
+@@ -488,7 +488,7 @@ static inline int write_dword (__u32 offset,__u32 x)
+    __u32 status;
+ 
+ #ifdef LART_DEBUG
+-   printk (KERN_DEBUG "%s(): 0x%.8x <- 0x%.8x\n",__FUNCTION__,offset,x);
++   printk (KERN_DEBUG "%s(): 0x%.8x <- 0x%.8x\n", __func__, offset, x);
+ #endif
+ 
+    /* setup writing */
+@@ -524,7 +524,7 @@ static int flash_write (struct mtd_info *mtd,loff_t to,size_t len,size_t *retlen
+    int i,n;
+ 
+ #ifdef LART_DEBUG
+-   printk (KERN_DEBUG "%s(to = 0x%.8x, len = %d)\n",__FUNCTION__,(__u32) to,len);
++   printk (KERN_DEBUG "%s(to = 0x%.8x, len = %d)\n", __func__, (__u32)to, len);
+ #endif
+ 
+    *retlen = 0;
+diff --git a/drivers/mtd/devices/m25p80.c b/drivers/mtd/devices/m25p80.c
+index 98df5bc..60408c9 100644
+--- a/drivers/mtd/devices/m25p80.c
++++ b/drivers/mtd/devices/m25p80.c
+@@ -151,7 +151,7 @@ static int wait_till_ready(struct m25p *flash)
+ static int erase_sector(struct m25p *flash, u32 offset)
+ {
+ 	DEBUG(MTD_DEBUG_LEVEL3, "%s: %s %dKiB at 0x%08x\n",
+-			flash->spi->dev.bus_id, __FUNCTION__,
++			flash->spi->dev.bus_id, __func__,
+ 			flash->mtd.erasesize / 1024, offset);
+ 
+ 	/* Wait until finished previous write command. */
+@@ -188,7 +188,7 @@ static int m25p80_erase(struct mtd_info *mtd, struct erase_info *instr)
+ 	u32 addr,len;
+ 
+ 	DEBUG(MTD_DEBUG_LEVEL2, "%s: %s %s 0x%08x, len %d\n",
+-			flash->spi->dev.bus_id, __FUNCTION__, "at",
++			flash->spi->dev.bus_id, __func__, "at",
+ 			(u32)instr->addr, instr->len);
+ 
+ 	/* sanity checks */
+@@ -240,7 +240,7 @@ static int m25p80_read(struct mtd_info *mtd, loff_t from, size_t len,
+ 	struct spi_message m;
+ 
+ 	DEBUG(MTD_DEBUG_LEVEL2, "%s: %s %s 0x%08x, len %zd\n",
+-			flash->spi->dev.bus_id, __FUNCTION__, "from",
++			flash->spi->dev.bus_id, __func__, "from",
+ 			(u32)from, len);
+ 
+ 	/* sanity checks */
+@@ -308,7 +308,7 @@ static int m25p80_write(struct mtd_info *mtd, loff_t to, size_t len,
+ 	struct spi_message m;
+ 
+ 	DEBUG(MTD_DEBUG_LEVEL2, "%s: %s %s 0x%08x, len %zd\n",
+-			flash->spi->dev.bus_id, __FUNCTION__, "to",
++			flash->spi->dev.bus_id, __func__, "to",
+ 			(u32)to, len);
+ 
+ 	if (retlen)
+diff --git a/drivers/mtd/maps/bast-flash.c b/drivers/mtd/maps/bast-flash.c
+index fc3b267..59fea2a 100644
+--- a/drivers/mtd/maps/bast-flash.c
++++ b/drivers/mtd/maps/bast-flash.c
+@@ -137,7 +137,7 @@ static int bast_flash_probe(struct platform_device *pdev)
+ 	if (info->map.size > AREA_MAXSIZE)
+ 		info->map.size = AREA_MAXSIZE;
+ 
+-	pr_debug("%s: area %08lx, size %ld\n", __FUNCTION__,
++	pr_debug("%s: area %08lx, size %ld\n", __func__,
+ 		 info->map.phys, info->map.size);
+ 
+ 	info->area = request_mem_region(res->start, info->map.size,
+@@ -149,7 +149,7 @@ static int bast_flash_probe(struct platform_device *pdev)
+ 	}
+ 
+ 	info->map.virt = ioremap(res->start, info->map.size);
+-	pr_debug("%s: virt at %08x\n", __FUNCTION__, (int)info->map.virt);
++	pr_debug("%s: virt at %08x\n", __func__, (int)info->map.virt);
+ 
+ 	if (info->map.virt == 0) {
+ 		printk(KERN_ERR PFX "failed to ioremap() region\n");
+diff --git a/drivers/mtd/maps/pcmciamtd.c b/drivers/mtd/maps/pcmciamtd.c
+index eaeb56a..1912d96 100644
+--- a/drivers/mtd/maps/pcmciamtd.c
++++ b/drivers/mtd/maps/pcmciamtd.c
+@@ -33,7 +33,7 @@ MODULE_PARM_DESC(debug, "Set Debug Level 0=quiet, 5=noisy");
+ #undef DEBUG
+ #define DEBUG(n, format, arg...) \
+ 	if (n <= debug) {	 \
+-		printk(KERN_DEBUG __FILE__ ":%s(): " format "\n", __FUNCTION__ , ## arg); \
++		printk(KERN_DEBUG __FILE__ ":%s(): " format "\n", __func__ , ## arg); \
+ 	}
+ 
+ #else
+diff --git a/drivers/mtd/maps/pmcmsp-flash.c b/drivers/mtd/maps/pmcmsp-flash.c
+index 02bde8c..1efeba2 100644
+--- a/drivers/mtd/maps/pmcmsp-flash.c
++++ b/drivers/mtd/maps/pmcmsp-flash.c
+@@ -46,7 +46,7 @@ static struct mtd_partition **msp_parts;
+ static struct map_info *msp_maps;
+ static int fcnt;
+ 
+-#define DEBUG_MARKER printk(KERN_NOTICE "%s[%d]\n",__FUNCTION__,__LINE__)
++#define DEBUG_MARKER printk(KERN_NOTICE "%s[%d]\n", __func__, __LINE__)
+ 
+ int __init init_msp_flash(void)
+ {
+diff --git a/drivers/mtd/maps/tqm8xxl.c b/drivers/mtd/maps/tqm8xxl.c
+index 37e4ded..5217340 100644
+--- a/drivers/mtd/maps/tqm8xxl.c
++++ b/drivers/mtd/maps/tqm8xxl.c
+@@ -124,7 +124,7 @@ int __init init_tqm_mtd(void)
+ 	//request maximum flash size address space
+ 	start_scan_addr = ioremap(flash_addr, flash_size);
+ 	if (!start_scan_addr) {
+-		printk(KERN_WARNING "%s:Failed to ioremap address:0x%x\n", __FUNCTION__, flash_addr);
++		printk(KERN_WARNING "%s:Failed to ioremap address:0x%x\n", __func__, flash_addr);
+ 		return -EIO;
+ 	}
+ 
+@@ -132,7 +132,7 @@ int __init init_tqm_mtd(void)
+ 		if(mtd_size >= flash_size)
+ 			break;
+ 
+-		printk(KERN_INFO "%s: chip probing count %d\n", __FUNCTION__, idx);
++		printk(KERN_INFO "%s: chip probing count %d\n", __func__, idx);
+ 
+ 		map_banks[idx] = kzalloc(sizeof(struct map_info), GFP_KERNEL);
+ 		if(map_banks[idx] == NULL) {
+@@ -178,7 +178,7 @@ int __init init_tqm_mtd(void)
+ 			mtd_size += mtd_banks[idx]->size;
+ 			num_banks++;
+ 
+-			printk(KERN_INFO "%s: bank%d, name:%s, size:%dbytes \n", __FUNCTION__, num_banks,
++			printk(KERN_INFO "%s: bank%d, name:%s, size:%dbytes \n", __func__, num_banks,
+ 			mtd_banks[idx]->name, mtd_banks[idx]->size);
+ 		}
+ 	}
+diff --git a/drivers/mtd/ubi/debug.h b/drivers/mtd/ubi/debug.h
+index 51c40b1..8ac7d87 100644
+--- a/drivers/mtd/ubi/debug.h
++++ b/drivers/mtd/ubi/debug.h
+@@ -41,7 +41,7 @@
+ /* Generic debugging message */
+ #define dbg_msg(fmt, ...)                                    \
+ 	printk(KERN_DEBUG "UBI DBG (pid %d): %s: " fmt "\n", \
+-	       current->pid, __FUNCTION__, ##__VA_ARGS__)
++	       current->pid, __func__, ##__VA_ARGS__)
+ 
+ #define ubi_dbg_dump_stack() dump_stack()
+ 
+diff --git a/drivers/mtd/ubi/ubi.h b/drivers/mtd/ubi/ubi.h
+index 4577106..ce88007 100644
+--- a/drivers/mtd/ubi/ubi.h
++++ b/drivers/mtd/ubi/ubi.h
+@@ -54,10 +54,10 @@
+ #define ubi_msg(fmt, ...) printk(KERN_NOTICE "UBI: " fmt "\n", ##__VA_ARGS__)
+ /* UBI warning messages */
+ #define ubi_warn(fmt, ...) printk(KERN_WARNING "UBI warning: %s: " fmt "\n", \
+-				  __FUNCTION__, ##__VA_ARGS__)
++				  __func__, ##__VA_ARGS__)
+ /* UBI error messages */
+ #define ubi_err(fmt, ...) printk(KERN_ERR "UBI error: %s: " fmt "\n", \
+-				 __FUNCTION__, ##__VA_ARGS__)
++				 __func__, ##__VA_ARGS__)
+ 
+ /* Lowest number PEBs reserved for bad PEB handling */
+ #define MIN_RESEVED_PEBS 2
 -- 
 1.5.4.GIT
 
