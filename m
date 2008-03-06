@@ -1,52 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932437AbYCFKsF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761107AbYCFKvg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932437AbYCFKsF (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Mar 2008 05:48:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932172AbYCFKrr
+	id S1761107AbYCFKvg (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Mar 2008 05:51:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756582AbYCFKv2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Mar 2008 05:47:47 -0500
-Received: from rv-out-0910.google.com ([209.85.198.190]:14718 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932138AbYCFKrp convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Mar 2008 05:47:45 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=message-id:date:from:to:subject:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=SfcSbrumZhu02y8GyCq+OM00SgIwgTGXxbAPQ9o+wJms6o82tyhcQKZzsY/3IZN76tsUizdnMGs7WTXGx5DHzr86W7Mj4PoKyL60XzZQ8f+Bt8KJ3FE6WC9DFSEwdboX1Ks5wmsvTKTrTXCOmzz7ozblpX1Wr29U1B0uhdnpkW0=
-Message-ID: <a72f6a3c0803060247s5203b1f4n39ccf655c351c54d@mail.gmail.com>
-Date: Thu, 6 Mar 2008 10:47:42 +0000
-From: "Jack Harvard" <jack.harvard@googlemail.com>
-To: linux-kernel@vger.kernel.org
-Subject: Fwd: init process failed when booting linux
-In-Reply-To: <81adadb6-afb6-4c75-8da7-b815e2a830fd@59g2000hsb.googlegroups.com>
+	Thu, 6 Mar 2008 05:51:28 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:53895 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756407AbYCFKv1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 6 Mar 2008 05:51:27 -0500
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
-References: <81adadb6-afb6-4c75-8da7-b815e2a830fd@59g2000hsb.googlegroups.com>
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+From: Roland McGrath <roland@redhat.com>
+To: Oleg Nesterov <oleg@tv-sign.ru>
+X-Fcc: ~/Mail/linus
+Cc: Jiri Kosina <jkosina@suse.cz>, Davide Libenzi <davidel@xmailserver.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] [RFC] fix missed SIGCONT cases
+In-Reply-To: Oleg Nesterov's message of  Monday, 3 March 2008 16:25:02 +0300 <20080303132502.GA81@tv-sign.ru>
+References: <Pine.LNX.4.64.0802271610330.3391@jikos.suse.cz>
+	<20080227210038.93AFC2700FD@magilla.localdomain>
+	<Pine.LNX.4.64.0802272258150.3391@jikos.suse.cz>
+	<20080228102649.071572700FD@magilla.localdomain>
+	<20080228153043.GA11484@tv-sign.ru>
+	<20080229023902.D93E12700FD@magilla.localdomain>
+	<20080229120101.GA1410@tv-sign.ru>
+	<20080301015956.A0D262700FE@magilla.localdomain>
+	<20080301164102.GA171@tv-sign.ru>
+	<20080303132502.GA81@tv-sign.ru>
+X-Antipastobozoticataclysm: Bariumenemanilow
+Message-Id: <20080306105043.8FD982700FD@magilla.localdomain>
+Date: Thu,  6 Mar 2008 02:50:43 -0800 (PST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+> Actually, it is easy to re-use signal_struct->flags from the very beginning,
+> no need to introduce the new flag temporary, see the attached patches. I also
+> have a couple of simple cleanups on top of them (use cached ->signal value).
 
- When I was booting my Linux (2.6.17) on my FPGA-prototyped system, the
- init process always failed. Below is the serial console message I've
- got:
+Looks like a good start.
 
- <6>Freeing init memory: 584K
- Freeing init memory: 584K
- ø<6>/init exit code: -14
- /init exit code: -14
- <4>Failed to execute /init
- Failed to execute /init
+> Perhaps, we can add the new helper which sets SIGNAL_GROUP_EXIT but preserves
+> SIGNAL_CLD_MASK, but I don't think this is really needed.
 
- Things went wrong from the third line. I've looked at the
- corresponding linux code, the boot process stopped at a data abort
- exception from address in __arch_clear_user at 0xc012ad44. Any ideas
- on why this is happening and possible ways to fix it would be greatly
- appreciated.
+Actually, I think it is.  This made think of another pedantic concern.
+(Not that I'm sure we get this right now anyway.)
+
+Say a child was previously stopped, parent had seen CLD_STOPPED and done
+WSTOPPED wait.  Now we send SIGCONT followed shortly by SIGTERM (unhandled
+fatal signal).  In the interval before the SIGTERM has yet been dequeued
+(nor SIGKILLs sent to other threads by __group_complete_signal), the parent
+does waitpid(pid, WSTOPPED|WCONTINUED|WEXITED|WNOHANG).  It should see one
+of: WIFSTOPPED (still); WIFSIGNALED (dead); WIFCONTINUED.  Instead, waitpid
+will return 0 (it's running, not stopped, not continued).  This says
+SIGNAL_STOP_CONTINUED ought to function as normal (i.e. WCONTINUED polling)
+until we're actually ready for wait to report the process as dead.
+
+We already break this pedantic nit because flags = SIGNAL_GROUP_EXIT clears
+SIGNAL_STOP_CONTINUED.  But if we clean up all flags usage, I think we
+should make it preserve SIGNAL_STOP_CONTINUED.
+
+I'll admit it's thin since a SIGKILL not yet dequeued or in the middle of
+delivery brings the task to running so WNOHANG wait won't report it as
+still stopped, won't report it for WCONTINUED at all, and won't report it
+as dead yet.  But if we were to make wait key on SIGNAL_STOP_STOPPED, as is
+probably necessary to do WSTOPPED waits for processes with a zombie
+group_leader, then this too could be made consistent.  (Leave the
+SIGNAL_STOP_STOPPED bit set throughout, so WSTOPPED|WNOHANG waits continues
+to report it as stopped until it actually dies.)
+
+> @@ -1761,6 +1757,19 @@ int get_signal_to_deliver(siginfo_t *inf
+>  
+>  relock:
+>  	spin_lock_irq(&current->sighand->siglock);
+> +
+> +	if (unlikely(current->signal->flags & SIGNAL_CLD_MASK)) {
+> +		int why = (current->signal->flags & SIGNAL_STOP_CONTINUED)
+
+This should have a comment before the block.  Explain that it is finishing
+the report set up by handle_stop_signal while we were in TASK_STOPPED in a
+previous iteration here inside get_signal_to_deliver.
 
 
- Jack
+Thanks,
+Roland
