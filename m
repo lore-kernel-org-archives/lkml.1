@@ -1,158 +1,147 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932266AbYCFNoT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764621AbYCFNro@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932266AbYCFNoT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Mar 2008 08:44:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755286AbYCFNoH
+	id S1764621AbYCFNro (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Mar 2008 08:47:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755051AbYCFNrh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Mar 2008 08:44:07 -0500
-Received: from e28smtp02.in.ibm.com ([59.145.155.2]:39556 "EHLO
-	e28esmtp02.in.ibm.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755090AbYCFNoF (ORCPT
+	Thu, 6 Mar 2008 08:47:37 -0500
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:39648 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752264AbYCFNrg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Mar 2008 08:44:05 -0500
-Date: Thu, 6 Mar 2008 19:14:00 +0530
-From: Gautham R Shenoy <ego@in.ibm.com>
-To: Oleg Nesterov <oleg@tv-sign.ru>
-Cc: Yi Yang <yi.y.yang@intel.com>, Ingo Molnar <mingo@elte.hu>,
-       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [BUG 2.6.25-rc3] scheduler/hotplug: some processes are
-	dealocked when cpu is set to offline
-Message-ID: <20080306134400.GA1915@in.ibm.com>
-Reply-To: ego@in.ibm.com
-References: <1204483329.3607.8.camel@yangyi-dev.bj.intel.com> <20080303153154.GA11288@in.ibm.com> <1204555505.3842.4.camel@yangyi-dev.bj.intel.com> <20080304052613.GA28632@in.ibm.com> <20080304150107.GA564@tv-sign.ru>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080304150107.GA564@tv-sign.ru>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+	Thu, 6 Mar 2008 08:47:36 -0500
+Date: Thu, 6 Mar 2008 07:47:29 -0600
+From: Paul Jackson <pj@sgi.com>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: maxk@qualcomm.com, mingo@elte.hu, tglx@linutronix.de, oleg@tv-sign.ru,
+       rostedt@goodmis.org, linux-kernel@vger.kernel.org, rientjes@google.com
+Subject: Re: [RFC/PATCH] cpuset: cpuset irq affinities
+Message-Id: <20080306074729.6233e537.pj@sgi.com>
+In-Reply-To: <1204706272.6241.79.camel@lappy>
+References: <20080227222103.673194000@chello.nl>
+	<1204311351.6243.130.camel@lappy>
+	<20080229190223.GA17820@elte.hu>
+	<47C87084.3090208@qualcomm.com>
+	<1204318980.6243.133.camel@lappy>
+	<47C8771C.1070001@qualcomm.com>
+	<1204545445.11412.6.camel@twins>
+	<20080303113621.1dfdda87.pj@sgi.com>
+	<1204567052.6241.4.camel@lappy>
+	<20080303121033.c8c9651c.pj@sgi.com>
+	<1204568316.8514.18.camel@twins>
+	<20080304013534.4e51ae48.pj@sgi.com>
+	<1204628762.6241.46.camel@lappy>
+	<47CDA885.3000103@qualcomm.com>
+	<20080304191159.a02be58b.pj@sgi.com>
+	<1204706272.6241.79.camel@lappy>
+Organization: SGI
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.12.0; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Mar 04, 2008 at 06:01:07PM +0300, Oleg Nesterov wrote:
-> On 03/04, Gautham R Shenoy wrote:
-> >
-> > So at times, the callback thread is blocked on kthread_stop(k) in
-> > softlockup.c, while other time, it was blocked in
-> > cleanup_workqueue_threads() in workqueue.c. 
-> 
-> >From another message:
-> >
-> > However, it remains in R< state
-> 
-> What about cwq->thread? Was it TASK_RUNNING too?
-> 
-> Perhaps, for some reason the task can't get CPU after migrating from
-> the now dead CPU.
-> 
-> I can't reproduce this problem on my one cpu P4-ht, perhaps you can
-> try something like the untested/uncompiled patch below?
-> 
-> Oleg.
-> 
-> --- include/linux/sched.h	2008-02-15 16:59:17.000000000 +0300
-> +++ include/linux/sched.h	2008-03-04 17:44:53.136738605 +0300
-> @@ -1121,6 +1121,7 @@ struct task_struct {
->  /* hung task detection */
->  	unsigned long last_switch_timestamp;
->  	unsigned long last_switch_count;
-> +	unsigned long xxx;
->  #endif
->  /* CPU-specific state of this task */
->  	struct thread_struct thread;
-> --- kernel/fork.c	2008-02-15 16:59:17.000000000 +0300
-> +++ kernel/fork.c	2008-03-04 17:45:14.773033839 +0300
-> @@ -1097,6 +1097,7 @@ static struct task_struct *copy_process(
->  #ifdef CONFIG_DETECT_SOFTLOCKUP
->  	p->last_switch_count = 0;
->  	p->last_switch_timestamp = 0;
-> +	p->xxx = 0;
->  #endif
-> 
->  #ifdef CONFIG_TASK_XACCT
-> --- kernel/sched.c	2008-02-15 16:59:17.000000000 +0300
-> +++ kernel/sched.c	2008-03-04 17:48:42.308798646 +0300
-> @@ -1291,6 +1291,7 @@ static void enqueue_task(struct rq *rq, 
->  	sched_info_queued(p);
->  	p->sched_class->enqueue_task(rq, p, wakeup);
->  	p->se.on_rq = 1;
-> +	p->xxx = jiffies | 1;
->  }
-> 
->  static void dequeue_task(struct rq *rq, struct task_struct *p, int sleep)
-> @@ -3944,6 +3945,8 @@ need_resched_nonpreemptible:
->  	preempt_enable_no_resched();
->  	if (unlikely(test_thread_flag(TIF_NEED_RESCHED)))
->  		goto need_resched;
-> +
-> +	current->xxx = 0;
->  }
->  EXPORT_SYMBOL(schedule);
-> 
-> --- kernel/softlockup.c	2008-02-15 16:59:17.000000000 +0300
-> +++ kernel/softlockup.c	2008-03-04 17:49:05.584414763 +0300
-> @@ -174,6 +174,27 @@ static void check_hung_task(struct task_
->  	touch_nmi_watchdog();
->  }
-> 
-> +static void check_running_task(struct task_struct *t, unsigned long now)
-> +{
-> +	if (!sysctl_hung_task_timeout_secs)
-> +		return;
-> +
+Peter wrote:
+> How about we make this in-kernel boot set, that by default contains all
+> IRQs, all unbounded kthreads and all of user-space.
 
-This function gets called only when t->xxx == 0,
-so the if below doesn't mean much, does it? :)
+If I understood your proposal, the /cgroup/irq cpuset is rather an
+odd cpuset -- it seems to be just used to place the 'system' irqs on
+the specified CPUs.  This is not the usual use of cpusets, which are
+to associate a set of tasks with some resources.  In your example,
+the 'tasks' file in /cgroup/irqs is probably empty, right?
 
-> +	if (time_before(now, t->xxx + HZ * sysctl_hung_task_timeout_secs)
-> +		return;
-> +
-> +	printk(KERN_ERR "INFO: task %s:%d can't get CPU for more than "
-> +			"%ld seconds.\n", t->comm, t->pid,
-> +			sysctl_hung_task_timeout_secs);
-> +
-> +	if (!cpus_intersects(t->cpus_allowed, cpu_online_map))
-> +		printk(KERN_ERR "bad ->cpus_allowed\n");
-> +	if (!cpu_online(task_cpu(t)))
-> +		printk(KERN_ERR "bad ->cpu\n");
-> +
-> +	sched_show_task(t);
-> +	touch_nmi_watchdog();
-> +}
-> +
->  /*
->   * Check whether a TASK_UNINTERRUPTIBLE does not get woken up for
->   * a really long time (120 seconds). If that happens, print out
-> @@ -183,6 +204,7 @@ static void check_hung_uninterruptible_t
->  {
->  	int max_count = sysctl_hung_task_check_count;
->  	unsigned long now = get_timestamp(this_cpu);
-> +	unsigned long jiff = jiffies;
->  	struct task_struct *g, *t;
+And then you have to argue that certain incompatibilities this
+causes are tolerable:
+
+> (Upgrading a kernel would require distributing some new userspace
+> anyway, right? - and we could offer a .config option to disable the boot
+> set for those who do upgrade kernels without upgrading user-space).
+
+No ... we normally do our best not to force apps to change source
+code, or where possible not even force them to recompile, to run on
+new kernels.
+
+> So by providing a .config option for strict backward compatibility,
+
+That sort of alternative is useless when dealing with the major
+distros.  They choose one config for half or all of their entire
+market (perhaps distinguishing personal PC from server, but no more).
+They enable everything that doesn't break something they care about.
+
+> > How does all this interact with /proc/irq/N/smp_affinity?
 > 
->  	/*
-> @@ -192,15 +214,17 @@ static void check_hung_uninterruptible_t
->  	if ((tainted & TAINT_DIE) || did_panic)
->  		return;
-> 
-> -	read_lock(&tasklist_lock);
-> +	rcu_read_lock();
->  	do_each_thread(g, t) {
->  		if (!--max_count)
->  			goto unlock;
->  		if (t->state & TASK_UNINTERRUPTIBLE)
->  			check_hung_task(t, now);
-> +		if (!t->xxx)
-> +			check_running_task(t, jiff);
->  	} while_each_thread(g, t);
->   unlock:
-> -	read_unlock(&tasklist_lock);
-> +	rcu_read_unlock();
->  }
-> 
->  /*
+> Much the same way the cpuset cpus_allowed interacts with a task's
+> cpus_allowed. That is, cs->cpus_allowed is a mask on top of the provided
+> affinity.
+
+Ok - something like that could be done, if we had to, just as
+a cpusets 'mems' masks mbind and set_mempolicy nodemasks, and
+a cpusets 'cpus' masks sched_setaffinity cpumasks.
+
+Could be ... I suppose ... if we had to ... however ...
+
+
+I suspect that the reason you had the odd /cgroup/irqs cpuset is that
+it wasn't clear what to do with the irqs of cpusets that had both:
+ 1) overlapping cpus, and
+ 2) specified different lists of irqs.
+
+In my view, you are trying to:
+ A] force the <<irq, cpu>, Boolean> mapping into linear lists, and
+ B] then trying to force those linear lists into the cpuset hierarchy.
+
+With each capability that we've added to cpusets, beginning with CPUs
+and Memory Nodes themselves, and more recently with sched_domains,
+I've strived to keep cpusets fully hierarchical and nestable, supporting
+arbitrary combinations of overlapping CPUs and Memory Nodes.
+
+What we have here, in this cpuset-irq proposal, I claim, is another
+example of trying to put in a tree what is essentially flat.
+
+No ... that last paragraph is wrong.  It's worse than that.
+
+The mapping of <cpu, irq> pairs to Boolean ("can we direct this irq
+to this CPU - yes or no?") is not flat; it's a two-dimensional matrix
+of Boolean.
+
+So you're [A] squinting out the left eye, flattening the <irq, cpu> map
+to a linear list; then [B] squinting out the right eye and flattening
+the cpuset hierarchy into a flat world; and then exclaiming "Gee,
+these two worlds have similar shape, so let's join them!"
+
+Why, why, why?  Why such insanity?
+
+What in tarnation are you trying to do, that's painful or impossible
+to do, with what we have now?
+
+The only opportunity I've sensed in all this so far is some sort
+of Karnaugh-map factoring of the <<irq, cpu>, Boolean> matrix, as
+an improved representation of the simple, brute force, low level
+/proc/irq/N/smp_affinity map.  Sets of irqs that held a common
+usage pattern could be named, and sets of CPUs that had similar irq
+needs could be named (or named lists of existing cpusets might be
+a suitable proxy for some, not all, such sets), and then this map
+could be represented using these named sets.  Mind you, I don't see
+that big a gain from presenting a second way of looking at what we
+can already see by the current, simple-minded, way, because the
+elegance of being able to group together common clusters (e.g.,
+the set of CPUs that all get the same set of RealTime IRQ's) of the
+existing smp_affinity map is offset by the added complexities of
+having to deal with two ways of saying the same thing.  But perhaps
+I'm missing some real opportunity here to gain significant leverage
+on some problem.  If that's so, then perhaps some new cgroup would
+be appropriate, representing this new interface, pairing named sets
+of irqs to sets with sets of CPUs.  And perhaps, for -some- system
+configurations, it would make sense to use the cgroup capability
+to mount multiple cgroup subsystems together, in a common mount.
+Perhaps ...  I haven't seen what would be sufficient motivation to
+justify such an effort, but I can imagine that such could succeed,
+if some need, as yet unforseen by myself, existed.
 
 -- 
-Thanks and Regards
-gautham
+                  I won't rest till it's the best ...
+                  Programmer, Linux Scalability
+                  Paul Jackson <pj@sgi.com> 1.940.382.4214
