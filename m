@@ -1,42 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756043AbYCFRTM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758070AbYCFRVf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756043AbYCFRTM (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Mar 2008 12:19:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751908AbYCFRS4
+	id S1758070AbYCFRVf (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Mar 2008 12:21:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751269AbYCFRV2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Mar 2008 12:18:56 -0500
-Received: from de01egw02.freescale.net ([192.88.165.103]:63431 "EHLO
-	de01egw02.freescale.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750881AbYCFRSz (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Mar 2008 12:18:55 -0500
-Date: Thu, 6 Mar 2008 10:05:42 -0600
-From: Scott Wood <scottwood@freescale.com>
-To: Kumar Gala <galak@kernel.crashing.org>
-Cc: Vitaly Bordug <vitb@kernel.crashing.org>,
-       linuxppc-dev <linuxppc-dev@ozlabs.org>,
-       Paul Mackerras <paulus@samba.org>, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [POWERPC] 8xx: fix swap
-Message-ID: <20080306160542.GB958@ld0162-tx32.am.freescale.net>
-References: <20080306135330.6d5462d2@vitb.ru.mvista.com> <7E836D6E-867B-4A35-9B3D-CD1D52E7F2DC@kernel.crashing.org>
+	Thu, 6 Mar 2008 12:21:28 -0500
+Received: from ryu.zarb.org ([212.85.153.228]:55671 "EHLO ryu.zarb.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750815AbYCFRV1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 6 Mar 2008 12:21:27 -0500
+X-Greylist: delayed 940 seconds by postgrey-1.27 at vger.kernel.org; Thu, 06 Mar 2008 12:21:27 EST
+Subject: [PATCH] Add a device link to usbvideo devices, else hal will
+	ignore them
+From: Pascal Terjan <pterjan@mandriva.com>
+To: linux-usb-devel@lists.sourceforge.net, video4linux-list@redhat.com
+Cc: linux-kernel@vger.kernel.org
+Content-Type: text/plain
+Organization: Mandriva
+Date: Thu, 06 Mar 2008 18:05:42 +0100
+Message-Id: <1204823142.7101.1.camel@plop>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <7E836D6E-867B-4A35-9B3D-CD1D52E7F2DC@kernel.crashing.org>
-User-Agent: Mutt/1.4.1i
+X-Mailer: Evolution 2.21.92-2mdv2008.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Mar 06, 2008 at 09:56:58AM -0600, Kumar Gala wrote:
-> On Mar 6, 2008, at 4:53 AM, Vitaly Bordug wrote:
-> > arch/powerpc/kernel/head_8xx.S      |   30 ++++++++++++++++++++++++++ 
-> > +++-
-> > include/asm-powerpc/pgtable-ppc32.h |    8 --------
-> > 2 files changed, 29 insertions(+), 9 deletions(-)
-> 
-> do we need similar fixes to arch/ppc ?
+Signed-off-by: Pascal Terjan <pterjan@mandriva.com>
+---
+ drivers/media/video/usbvideo/usbvideo.c |    9 +++++----
+ 1 files changed, 5 insertions(+), 4 deletions(-)
 
-Yes, a patch was posted a while ago.
+diff --git a/drivers/media/video/usbvideo/usbvideo.c b/drivers/media/video/usbvideo/usbvideo.c
+index fb434b5..5d363be 100644
+--- a/drivers/media/video/usbvideo/usbvideo.c
++++ b/drivers/media/video/usbvideo/usbvideo.c
+@@ -1034,6 +1034,11 @@ int usbvideo_RegisterVideoDevice(struct uvd *uvd)
+ 		info("%s: iface=%d. endpoint=$%02x paletteBits=$%08lx",
+ 		     __FUNCTION__, uvd->iface, uvd->video_endp, uvd->paletteBits);
+ 	}
++	if (uvd->dev == NULL) {
++		err("%s: uvd->dev == NULL", __FUNCTION__);
++		return -EINVAL;
++	}
++	uvd->vdev.dev=&(uvd->dev->dev);
+ 	if (video_register_device(&uvd->vdev, VFL_TYPE_GRABBER, video_nr) == -1) {
+ 		err("%s: video_register_device failed", __FUNCTION__);
+ 		return -EPIPE;
+@@ -1041,10 +1046,6 @@ int usbvideo_RegisterVideoDevice(struct uvd *uvd)
+ 	if (uvd->debug > 1) {
+ 		info("%s: video_register_device() successful", __FUNCTION__);
+ 	}
+-	if (uvd->dev == NULL) {
+-		err("%s: uvd->dev == NULL", __FUNCTION__);
+-		return -EINVAL;
+-	}
+ 
+ 	info("%s on /dev/video%d: canvas=%s videosize=%s",
+ 	     (uvd->handle != NULL) ? uvd->handle->drvName : "???",
+-- 
+1.5.4.3
 
--Scott
