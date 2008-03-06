@@ -1,50 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760912AbYCFGxd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762149AbYCFGzJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760912AbYCFGxd (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Mar 2008 01:53:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751934AbYCFGxX
+	id S1762149AbYCFGzJ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Mar 2008 01:55:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753333AbYCFGy4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Mar 2008 01:53:23 -0500
-Received: from gv-out-0910.google.com ([216.239.58.190]:43415 "EHLO
-	gv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751285AbYCFGxW (ORCPT
+	Thu, 6 Mar 2008 01:54:56 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:43361 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750904AbYCFGyz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Mar 2008 01:53:22 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=qeXzX9IRReEhNVtAOTD179G460tgb3PiUuZWb9XqqmyEnbMrto+m4QzQ2mDTs8so6ZBgv+bY4qUPsMyMPNlcDeaZU4YORxQu/OXLQACojn+qKsZBrIRmNoP3cW/gk+vu2LZ7Ullqiki1h1DG4gWieDM4Iq1X7AescaLgU3j8RWk=
-Message-ID: <e9c3a7c20803052253i61f55ee4k702c9ed961129cf4@mail.gmail.com>
-Date: Wed, 5 Mar 2008 23:53:17 -0700
-From: "Dan Williams" <dan.j.williams@intel.com>
-To: "Harvey Harrison" <harvey.harrison@gmail.com>
-Subject: Re: [PATCH 05/16] iop-adma.c: replace remaining __FUNCTION__ occurrences
-Cc: "Andrew Morton" <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <1204770293.14154.41.camel@brick>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Thu, 6 Mar 2008 01:54:55 -0500
+Date: Wed, 5 Mar 2008 22:54:12 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: spock@gentoo.org, linux-fbdev-devel@lists.sourceforge.net
+Cc: Michal Januszewski <spock@gentoo.org>,
+       linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
+Subject: Re: [Linux-fbdev-devel] [PATCH] uvesafb: don't treat valid modes
+ returned by fb_find_mode() as errors
+Message-Id: <20080305225412.ad1d3bb5.akpm@linux-foundation.org>
+In-Reply-To: <20080127113456.GA17976@spock.one.pl>
+References: <20080127113456.GA17976@spock.one.pl>
+X-Mailer: Sylpheed 2.3.1 (GTK+ 2.10.11; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <1204770293.14154.41.camel@brick>
-X-Google-Sender-Auth: e32b63f8a41569ea
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Mar 5, 2008 at 7:24 PM, Harvey Harrison
-<harvey.harrison@gmail.com> wrote:
-> __FUNCTION__ is gcc-specific, use __func__
->
->  Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
->  ---
->   drivers/dma/iop-adma.c |   32 ++++++++++++++++----------------
->   1 files changed, 16 insertions(+), 16 deletions(-)
->
+On Sun, 27 Jan 2008 12:34:56 +0100 Michal Januszewski <spock@gentoo.org> wrote:
 
-Thanks Harvey,
+> From: Michal Januszewski <spock@gentoo.org>
+> 
+> Don't treat valid modes returned by fb_find_mode() (best-fit modes,
+> default modes or the first valid mode) as errors.
+> 
 
-Applied.
+This changelog is too brief.
 
---
-Dan
+> ---
+> diff --git a/drivers/video/uvesafb.c b/drivers/video/uvesafb.c
+> index a14ef89..fc68b3e 100644
+> --- a/drivers/video/uvesafb.c
+> +++ b/drivers/video/uvesafb.c
+> @@ -885,7 +885,7 @@ static int __devinit uvesafb_vbe_init_mode(struct fb_info *info)
+>  	}
+>  
+>  	/* fb_find_mode() failed */
+> -	if (i == 0 || i >= 3) {
+> +	if (i == 0) {
+>  		info->var.xres = 640;
+>  		info->var.yres = 480;
+>  		mode = (struct fb_videomode *)
+> 
+
+Because I cannot tell what are the consequences of the bug which you're
+fixing, hence I cannot tell whether we need this fix in 2.6.25 or even
+2.6.24.
+
