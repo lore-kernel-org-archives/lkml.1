@@ -1,77 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758367AbYCFKpp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932116AbYCFKro@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758367AbYCFKpp (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Mar 2008 05:45:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757489AbYCFKpZ
+	id S932116AbYCFKro (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Mar 2008 05:47:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756553AbYCFKrf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Mar 2008 05:45:25 -0500
-Received: from mta-1.ms.rz.RWTH-Aachen.DE ([134.130.7.72]:55833 "EHLO
-	mta-1.ms.rz.rwth-aachen.de" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1763263AbYCFKpW (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Mar 2008 05:45:22 -0500
-Date: Thu, 06 Mar 2008 11:46:36 +0100
-From: Arnd Hannemann <hannemann@nets.rwth-aachen.de>
-Subject: Re: [PATCH-RESEND] Removing unneeded statement from tcp_ipv4.c
-In-reply-to: <20080305.190003.22581298.davem@davemloft.net>
-To: David Miller <davem@davemloft.net>
-Cc: ilpo.jarvinen@helsinki.fi, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Message-id: <47CFCB8C.5070801@nets.rwth-aachen.de>
-MIME-version: 1.0
-Content-type: text/plain; charset=us-ascii
-Content-transfer-encoding: 7BIT
-X-IronPort-AV: E=Sophos;i="4.25,455,1199660400";   d="scan'208";a="54411522"
-References: <47CBFBDA.7000801@nets.rwth-aachen.de>
- <Pine.LNX.4.64.0803031603100.28251@kivilampi-30.cs.helsinki.fi>
- <47CC872F.9020202@nets.rwth-aachen.de>
- <20080305.190003.22581298.davem@davemloft.net>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080227)
+	Thu, 6 Mar 2008 05:47:35 -0500
+Received: from www.tglx.de ([62.245.132.106]:37900 "EHLO www.tglx.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755986AbYCFKre (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 6 Mar 2008 05:47:34 -0500
+Date: Thu, 6 Mar 2008 11:47:12 +0100 (CET)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: LKML <linux-kernel@vger.kernel.org>
+cc: David Miller <davem@davemloft.net>
+Subject: Treason uncloaked spams syslog with latest git
+Message-ID: <alpine.LFD.1.00.0803061140380.3099@apollo.tec.linutronix.de>
+User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David Miller schrieb:
-> From: Arnd Hannemann <hannemann@nets.rwth-aachen.de>
-> Date: Tue, 04 Mar 2008 00:18:07 +0100
-> 
->> Avoid setting tstamp_ok because this is done two lines later anyway.
->>
->> Signed-off-by: Arnd Hannemann <hannemann@nets.rwth-aachen.de>
-> 
-> Patch does not apply, your email client has corrupted the
-> patch by turning tabs into spaces etc.
-> 
-Sorry, this one should apply.
+Since I updated one of my compile boxen to latest git I get the syslog
+flooded with:
 
-Avoid setting tstamp_ok because this is done two lines later anyway.
+TCP: Treason uncloaked! Peer 192.168.0.1:10245/56637 shrinks window 2748077551:2748080447. Repaired.
+TCP: Treason uncloaked! Peer 192.168.0.68:10245/39915 shrinks window 2890195332:2890201124. Repaired.
+TCP: Treason uncloaked! Peer 192.168.0.65:10245/46058 shrinks window 2880740873:2880745217. Repaired.
 
-Signed-off-by: Arnd Hannemann <hannemann@nets.rwth-aachen.de>
+This happens _always_ when I compile kernels with distcc or icecc. All
+systems involved run Linux with kernels >= 2.6.23 and are on the same
+network; no routers, firewalls or other fancy stuff.
 
-diff --git a/net/ipv4/tcp_ipv4.c b/net/ipv4/tcp_ipv4.c
-index 00156bf..ecef356 100644
---- a/net/ipv4/tcp_ipv4.c
-+++ b/net/ipv4/tcp_ipv4.c
-@@ -1302,15 +1302,14 @@ int tcp_v4_conn_request(struct sock *sk, struct sk_buff *skb)
- 		tmp_opt.saw_tstamp = 0;
- 	}
+Any idea what's going on here ?
 
--	if (tmp_opt.saw_tstamp && !tmp_opt.rcv_tsval) {
--		/* Some OSes (unknown ones, but I see them on web server, which
--		 * contains information interesting only for windows'
--		 * users) do not send their stamp in SYN. It is easy case.
--		 * We simply do not advertise TS support.
--		 */
-+	/* Some OSes (unknown ones, but I see them on web server, which
-+	 * contains information interesting only for windows'
-+	 * users) do not send their stamp in SYN. It is easy case.
-+	 * We simply do not advertise TS support.
-+	 */
-+	if (tmp_opt.saw_tstamp && !tmp_opt.rcv_tsval)
- 		tmp_opt.saw_tstamp = 0;
--		tmp_opt.tstamp_ok  = 0;
--	}
-+	
- 	tmp_opt.tstamp_ok = tmp_opt.saw_tstamp;
+Thanks,
 
- 	tcp_openreq_init(req, &tmp_opt, skb);
+	tglx
