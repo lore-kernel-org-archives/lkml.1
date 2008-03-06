@@ -1,27 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933331AbYCFC2a@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934392AbYCFC24@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933331AbYCFC2a (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Mar 2008 21:28:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762285AbYCFCZD
+	id S934392AbYCFC24 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Mar 2008 21:28:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763627AbYCFCZF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Mar 2008 21:25:03 -0500
+	Wed, 5 Mar 2008 21:25:05 -0500
 Received: from wa-out-1112.google.com ([209.85.146.182]:61432 "EHLO
 	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761520AbYCFCZA (ORCPT
+	with ESMTP id S1762270AbYCFCZB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Mar 2008 21:25:00 -0500
+	Wed, 5 Mar 2008 21:25:01 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=subject:from:to:cc:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=HVEm4iuAx+aHaLQ2KPtt7aDh+QzKfufZRPUCThuUADXMhXBCdWi4kxPUt9bPdYtiB1mTEvQ5/07Bdf3WWO2YCVqGZdHRSrjEzL+EjSNZzd13aQ0Oq3lfzVxBxXjvxX55eB978Voj5a4ABrB4ZL1IenmXxQoWRt7s9F6NjODpQl0=
-Subject: [PATCH 06/16] firmware: replace remaining __FUNCTION__ occurrences
+        b=Hvr+Tr2ZMWkYRs/pI8c3R0NKqTEjyOFjfApxs1RHguFjxndrkj4emFe73wItOFCErHEXh8DTBdXE3OiCepHKf5RtmCWPh0wua3hKzsfi8dzrNT8SXuXkECyNOm2XgCr6udWKrqDQDDRWUVH+Z+upmNfQxUi/SgI0olvT6moRoX0=
+Subject: [PATCH 07/16] ieee1394: replace remaining __FUNCTION__ occurrences
 From: Harvey Harrison <harvey.harrison@gmail.com>
-To: Doug Warzecha <Douglas_Warzecha@dell.com>
+To: Stefan Richter <stefanr@s5r6.in-berlin.de>
 Cc: Andrew Morton <akpm@linux-foundation.org>,
        LKML <linux-kernel@vger.kernel.org>
 Content-Type: text/plain
 Date: Wed, 05 Mar 2008 18:24:54 -0800
-Message-Id: <1204770294.14154.42.camel@brick>
+Message-Id: <1204770294.14154.43.camel@brick>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.12.1 
 Content-Transfer-Encoding: 7bit
@@ -33,141 +33,147 @@ __FUNCTION__ is gcc-specific, use __func__
 
 Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
 ---
- drivers/firmware/dcdbas.c   |   16 ++++++++--------
- drivers/firmware/dell_rbu.c |   12 ++++++------
- 2 files changed, 14 insertions(+), 14 deletions(-)
+ drivers/ieee1394/highlevel.c     |    6 +++---
+ drivers/ieee1394/ieee1394_core.c |    2 +-
+ drivers/ieee1394/ohci1394.c      |    2 +-
+ drivers/ieee1394/pcilynx.c       |   12 ++++++------
+ drivers/ieee1394/sbp2.c          |    4 ++--
+ 5 files changed, 13 insertions(+), 13 deletions(-)
 
-diff --git a/drivers/firmware/dcdbas.c b/drivers/firmware/dcdbas.c
-index 1636806..ce4f286 100644
---- a/drivers/firmware/dcdbas.c
-+++ b/drivers/firmware/dcdbas.c
-@@ -64,7 +64,7 @@ static void smi_data_buf_free(void)
- 		return;
- 
- 	dev_dbg(&dcdbas_pdev->dev, "%s: phys: %x size: %lu\n",
--		__FUNCTION__, smi_data_buf_phys_addr, smi_data_buf_size);
-+		__func__, smi_data_buf_phys_addr, smi_data_buf_size);
- 
- 	dma_free_coherent(&dcdbas_pdev->dev, smi_data_buf_size, smi_data_buf,
- 			  smi_data_buf_handle);
-@@ -93,7 +93,7 @@ static int smi_data_buf_realloc(unsigned long size)
- 	if (!buf) {
- 		dev_dbg(&dcdbas_pdev->dev,
- 			"%s: failed to allocate memory size %lu\n",
--			__FUNCTION__, size);
-+			__func__, size);
- 		return -ENOMEM;
+diff --git a/drivers/ieee1394/highlevel.c b/drivers/ieee1394/highlevel.c
+index b642546..fa2bfec 100644
+--- a/drivers/ieee1394/highlevel.c
++++ b/drivers/ieee1394/highlevel.c
+@@ -339,7 +339,7 @@ u64 hpsb_allocate_and_register_addrspace(struct hpsb_highlevel *hl,
+ 	if ((alignment & 3) || (alignment > 0x800000000000ULL) ||
+ 	    (hweight64(alignment) != 1)) {
+ 		HPSB_ERR("%s called with invalid alignment: 0x%048llx",
+-			 __FUNCTION__, (unsigned long long)alignment);
++			 __func__, (unsigned long long)alignment);
+ 		return retval;
  	}
- 	/* memory zeroed by dma_alloc_coherent */
-@@ -111,7 +111,7 @@ static int smi_data_buf_realloc(unsigned long size)
- 	smi_data_buf_size = size;
  
- 	dev_dbg(&dcdbas_pdev->dev, "%s: phys: %x size: %lu\n",
--		__FUNCTION__, smi_data_buf_phys_addr, smi_data_buf_size);
-+		__func__, smi_data_buf_phys_addr, smi_data_buf_size);
+@@ -354,7 +354,7 @@ u64 hpsb_allocate_and_register_addrspace(struct hpsb_highlevel *hl,
+ 	if (((start|end) & ~align_mask) || (start >= end) ||
+ 	    (end > CSR1212_ALL_SPACE_END)) {
+ 		HPSB_ERR("%s called with invalid addresses "
+-			 "(start = %012Lx  end = %012Lx)", __FUNCTION__,
++			 "(start = %012Lx  end = %012Lx)", __func__,
+ 			 (unsigned long long)start,(unsigned long long)end);
+ 		return retval;
+ 	}
+@@ -422,7 +422,7 @@ int hpsb_register_addrspace(struct hpsb_highlevel *hl, struct hpsb_host *host,
  
+ 	if (((start|end) & 3) || (start >= end) ||
+ 	    (end > CSR1212_ALL_SPACE_END)) {
+-		HPSB_ERR("%s called with invalid addresses", __FUNCTION__);
++		HPSB_ERR("%s called with invalid addresses", __func__);
+ 		return 0;
+ 	}
+ 
+diff --git a/drivers/ieee1394/ieee1394_core.c b/drivers/ieee1394/ieee1394_core.c
+index 36c747b..942bf1f 100644
+--- a/drivers/ieee1394/ieee1394_core.c
++++ b/drivers/ieee1394/ieee1394_core.c
+@@ -242,7 +242,7 @@ int hpsb_bus_reset(struct hpsb_host *host)
+ {
+ 	if (host->in_bus_reset) {
+ 		HPSB_NOTICE("%s called while bus reset already in progress",
+-			    __FUNCTION__);
++			    __func__);
+ 		return 1;
+ 	}
+ 
+diff --git a/drivers/ieee1394/ohci1394.c b/drivers/ieee1394/ohci1394.c
+index 969de2a..b14e6ea 100644
+--- a/drivers/ieee1394/ohci1394.c
++++ b/drivers/ieee1394/ohci1394.c
+@@ -708,7 +708,7 @@ static void insert_packet(struct ti_ohci *ohci,
+                                 /* FIXME: do something about it */
+                                 PRINT(KERN_ERR,
+                                       "%s: packet data addr: %p size %Zd bytes "
+-                                      "cross page boundary", __FUNCTION__,
++				      "cross page boundary", __func__,
+                                       packet->data, packet->data_size);
+                         }
+ #endif
+diff --git a/drivers/ieee1394/pcilynx.c b/drivers/ieee1394/pcilynx.c
+index 8af01ab..eb065a4 100644
+--- a/drivers/ieee1394/pcilynx.c
++++ b/drivers/ieee1394/pcilynx.c
+@@ -226,7 +226,7 @@ static int get_phy_reg(struct ti_lynx *lynx, int addr)
+         if (addr > 15) {
+                 PRINT(KERN_ERR, lynx->id,
+                       "%s: PHY register address %d out of range",
+-		      __FUNCTION__, addr);
++		      __func__, addr);
+                 return -1;
+         }
+ 
+@@ -238,7 +238,7 @@ static int get_phy_reg(struct ti_lynx *lynx, int addr)
+ 
+                 if (i > 10000) {
+                         PRINT(KERN_ERR, lynx->id, "%s: runaway loop, aborting",
+-			      __FUNCTION__);
++			      __func__);
+                         retval = -1;
+                         break;
+                 }
+@@ -261,13 +261,13 @@ static int set_phy_reg(struct ti_lynx *lynx, int addr, int val)
+ 
+         if (addr > 15) {
+                 PRINT(KERN_ERR, lynx->id,
+-                      "%s: PHY register address %d out of range", __FUNCTION__, addr);
++		      "%s: PHY register address %d out of range", __func__, addr);
+                 return -1;
+         }
+ 
+         if (val > 0xff) {
+                 PRINT(KERN_ERR, lynx->id,
+-                      "%s: PHY register value %d out of range", __FUNCTION__, val);
++		      "%s: PHY register value %d out of range", __func__, val);
+                 return -1;
+         }
+ 
+@@ -287,7 +287,7 @@ static int sel_phy_reg_page(struct ti_lynx *lynx, int page)
+ 
+         if (page > 7) {
+                 PRINT(KERN_ERR, lynx->id,
+-                      "%s: PHY page %d out of range", __FUNCTION__, page);
++		      "%s: PHY page %d out of range", __func__, page);
+                 return -1;
+         }
+ 
+@@ -309,7 +309,7 @@ static int sel_phy_reg_port(struct ti_lynx *lynx, int port)
+ 
+         if (port > 15) {
+                 PRINT(KERN_ERR, lynx->id,
+-                      "%s: PHY port %d out of range", __FUNCTION__, port);
++		      "%s: PHY port %d out of range", __func__, port);
+                 return -1;
+         }
+ 
+diff --git a/drivers/ieee1394/sbp2.c b/drivers/ieee1394/sbp2.c
+index 9e2b196..3d2e17d 100644
+--- a/drivers/ieee1394/sbp2.c
++++ b/drivers/ieee1394/sbp2.c
+@@ -610,7 +610,7 @@ static struct sbp2_command_info *sbp2util_allocate_command_orb(
+ 		cmd->Current_SCpnt = Current_SCpnt;
+ 		list_add_tail(&cmd->list, &lu->cmd_orb_inuse);
+ 	} else
+-		SBP2_ERR("%s: no orbs available", __FUNCTION__);
++		SBP2_ERR("%s: no orbs available", __func__);
+ 	spin_unlock_irqrestore(&lu->cmd_orb_lock, flags);
+ 	return cmd;
+ }
+@@ -1289,7 +1289,7 @@ static int sbp2_set_busy_timeout(struct sbp2_lu *lu)
+ 
+ 	data = cpu_to_be32(SBP2_BUSY_TIMEOUT_VALUE);
+ 	if (hpsb_node_write(lu->ne, SBP2_BUSY_TIMEOUT_ADDRESS, &data, 4))
+-		SBP2_ERR("%s error", __FUNCTION__);
++		SBP2_ERR("%s error", __func__);
  	return 0;
  }
-@@ -259,7 +259,7 @@ static int smi_request(struct smi_cmd *smi_cmd)
- 
- 	if (smi_cmd->magic != SMI_CMD_MAGIC) {
- 		dev_info(&dcdbas_pdev->dev, "%s: invalid magic value\n",
--			 __FUNCTION__);
-+			 __func__);
- 		return -EBADR;
- 	}
- 
-@@ -268,7 +268,7 @@ static int smi_request(struct smi_cmd *smi_cmd)
- 	set_cpus_allowed(current, cpumask_of_cpu(0));
- 	if (smp_processor_id() != 0) {
- 		dev_dbg(&dcdbas_pdev->dev, "%s: failed to get CPU 0\n",
--			__FUNCTION__);
-+			__func__);
- 		ret = -EBUSY;
- 		goto out;
- 	}
-@@ -429,7 +429,7 @@ static int host_control_smi(void)
- 
- 	default:
- 		dev_dbg(&dcdbas_pdev->dev, "%s: invalid SMI type %u\n",
--			__FUNCTION__, host_control_smi_type);
-+			__func__, host_control_smi_type);
- 		return -ENOSYS;
- 	}
- 
-@@ -457,13 +457,13 @@ static void dcdbas_host_control(void)
- 	host_control_action = HC_ACTION_NONE;
- 
- 	if (!smi_data_buf) {
--		dev_dbg(&dcdbas_pdev->dev, "%s: no SMI buffer\n", __FUNCTION__);
-+		dev_dbg(&dcdbas_pdev->dev, "%s: no SMI buffer\n", __func__);
- 		return;
- 	}
- 
- 	if (smi_data_buf_size < sizeof(struct apm_cmd)) {
- 		dev_dbg(&dcdbas_pdev->dev, "%s: SMI buffer too small\n",
--			__FUNCTION__);
-+			__func__);
- 		return;
- 	}
- 
-diff --git a/drivers/firmware/dell_rbu.c b/drivers/firmware/dell_rbu.c
-index 477a3d0..6a8b1e0 100644
---- a/drivers/firmware/dell_rbu.c
-+++ b/drivers/firmware/dell_rbu.c
-@@ -123,7 +123,7 @@ static int create_packet(void *data, size_t length)
- 	if (!newpacket) {
- 		printk(KERN_WARNING
- 			"dell_rbu:%s: failed to allocate new "
--			"packet\n", __FUNCTION__);
-+			"packet\n", __func__);
- 		retval = -ENOMEM;
- 		spin_lock(&rbu_data.lock);
- 		goto out_noalloc;
-@@ -152,7 +152,7 @@ static int create_packet(void *data, size_t length)
- 		printk(KERN_WARNING
- 			"dell_rbu:%s: failed to allocate "
- 			"invalid_addr_packet_array \n",
--			__FUNCTION__);
-+			__func__);
- 		retval = -ENOMEM;
- 		spin_lock(&rbu_data.lock);
- 		goto out_alloc_packet;
-@@ -164,7 +164,7 @@ static int create_packet(void *data, size_t length)
- 		if (!packet_data_temp_buf) {
- 			printk(KERN_WARNING
- 				"dell_rbu:%s: failed to allocate new "
--				"packet\n", __FUNCTION__);
-+				"packet\n", __func__);
- 			retval = -ENOMEM;
- 			spin_lock(&rbu_data.lock);
- 			goto out_alloc_packet_array;
-@@ -416,7 +416,7 @@ static int img_update_realloc(unsigned long size)
- 		 */
- 		if ((size != 0) && (rbu_data.image_update_buffer == NULL)) {
- 			printk(KERN_ERR "dell_rbu:%s: corruption "
--				"check failed\n", __FUNCTION__);
-+				"check failed\n", __func__);
- 			return -EINVAL;
- 		}
- 		/*
-@@ -642,7 +642,7 @@ static ssize_t write_rbu_image_type(struct kobject *kobj,
- 			if (req_firm_rc) {
- 				printk(KERN_ERR
- 					"dell_rbu:%s request_firmware_nowait"
--					" failed %d\n", __FUNCTION__, rc);
-+					" failed %d\n", __func__, rc);
- 				rc = -EIO;
- 			} else
- 				rbu_data.entry_created = 1;
-@@ -718,7 +718,7 @@ static int __init dcdrbu_init(void)
- 	if (IS_ERR(rbu_device)) {
- 		printk(KERN_ERR
- 			"dell_rbu:%s:platform_device_register_simple "
--			"failed\n", __FUNCTION__);
-+			"failed\n", __func__);
- 		return PTR_ERR(rbu_device);
- 	}
  
 -- 
 1.5.4.GIT
