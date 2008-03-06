@@ -1,101 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933969AbYCFV1t@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935222AbYCFV2e@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933969AbYCFV1t (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Mar 2008 16:27:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755357AbYCFV1l
+	id S935222AbYCFV2e (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Mar 2008 16:28:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756521AbYCFV2Y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Mar 2008 16:27:41 -0500
-Received: from rn-out-0910.google.com ([64.233.170.186]:40773 "EHLO
-	rn-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755199AbYCFV1j (ORCPT
+	Thu, 6 Mar 2008 16:28:24 -0500
+Received: from mailrelay002.isp.belgacom.be ([195.238.6.175]:59921 "EHLO
+	mailrelay002.isp.belgacom.be" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1760263AbYCFV2X (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Mar 2008 16:27:39 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=BkeFa5qXIcn9UOUEm9avefFGcFUo59/SnaURNtI4HeW4cGyhq0MYB939hjoQV1faftvw+YXAp8oUq8vnpBE2jMyKKa71PX+y5nRpNo1puN02j4SW33R+LrLePWG2AuHzrCgDqQsfmB0r71OWZX7oOirvEWTRyaff129yTQL1eDA=
-Message-ID: <84144f020803061327r2310b23ew6211bc09f9ba25a3@mail.gmail.com>
-Date: Thu, 6 Mar 2008 23:27:37 +0200
-From: "Pekka Enberg" <penberg@cs.helsinki.fi>
-To: "Jens Osterkamp" <Jens.Osterkamp@gmx.de>
-Subject: Re: [BUG] in 2.6.25-rc3 with 64k page size and SLUB_DEBUG_ON
-Cc: "Christoph Lameter" <clameter@sgi.com>, linux-mm@kvack.org,
-       "Ingo Molnar" <mingo@elte.hu>,
-       "Linux kernel mailing list" <linux-kernel@vger.kernel.org>
-In-Reply-To: <200803061447.05797.Jens.Osterkamp@gmx.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Thu, 6 Mar 2008 16:28:23 -0500
+X-Belgacom-Dynamic: yes
+Date: Thu, 6 Mar 2008 22:28:20 +0100
+From: Wim Van Sebroeck <wim@iguana.be>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Stephen.Clark@seclark.us, linux-kernel@vger.kernel.org
+Subject: Re: iTCO watchdog timer
+Message-ID: <20080306212820.GA2866@infomag.infomag.iguana.be>
+References: <47CDAC9D.6020505@seclark.us> <20080304135548.b7b88ee4.akpm@linux-foundation.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <200803061447.05797.Jens.Osterkamp@gmx.de>
-X-Google-Sender-Auth: 6d5e95780f3957e8
+In-Reply-To: <20080304135548.b7b88ee4.akpm@linux-foundation.org>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+Hi All,
 
-On Thu, Mar 6, 2008 at 3:47 PM, Jens Osterkamp <Jens.Osterkamp@gmx.de> wrote:
->  when booting 2.6.25-rc3 on powerpc64 with SLUB_DEBUG_ON and 64k page size, it drops into xmon
->  during boot with the following :
->
->  Console: colour dummy device 80x25
->  Dentry cache hash table entries: 262144 (order: 5, 2097152 bytes)
->  Inode-cache hash table entries: 131072 (order: 4, 1048576 bytes)
->  freeing bootmem node 0
->  freeing bootmem node 1
->  Memory: 2037184k/2097152k available (4864k kernel code, 59968k reserved, 768k data, 419k bss, 384k init)
->  SLUB: Genslabs=17, HWalign=128, Order=0-2, MinObjects=8, CPUs=4, Nodes=16
->  Mount-cache hash table entries: 4096
->  BUG: scheduling while atomic: kthreadd/2/0x00056ef8
->  Call Trace:
->  [c00000003c187b68] [c00000000000f140] .show_stack+0x70/0x1bc (unreliable)
->  [c00000003c187c18] [c000000000052d0c] .__schedule_bug+0x64/0x80
->  [c00000003c187ca8] [c00000000036fa84] .schedule+0xc4/0x6b0
->  [c00000003c187d98] [c0000000003702d0] .schedule_timeout+0x3c/0xe8
->  [c00000003c187e68] [c00000000036f82c] .wait_for_common+0x150/0x22c
->  [c00000003c187f28] [c000000000074868] .kthreadd+0x12c/0x1f0
->  [c00000003c187fd8] [c000000000024864] .kernel_thread+0x4c/0x68
->  ------------[ cut here ]------------
->  kernel BUG at /home/auto/jens/kernels/linux-2.6.25-rc3/kernel/sched.c:4532!
->  cpu 0x0: Vector: 700 (Program Check) at [c00000003c187bc8]
->     pc: c000000000051f8c: .sched_setscheduler+0x5c/0x48c
->     lr: c0000000000748b0: .kthreadd+0x174/0x1f0
->     sp: c00000003c187e48
->    msr: 9000000000029032
->   current = 0xc00000007e0808a0
->   paca    = 0xc0000000004cf880
->     pid   = 2, comm = kthreadd
->  kernel BUG at /home/auto/jens/kernels/linux-2.6.25-rc3/kernel/sched.c:4532!
->  enter ? for help
->  [c00000003c187f28] c0000000000748b0 .kthreadd+0x174/0x1f0
->  [c00000003c187fd8] c000000000024864 .kernel_thread+0x4c/0x68
->  0:mon>
->
->  In the code this corresponds to
->
->  int sched_setscheduler(struct task_struct *p, int policy,
->                        struct sched_param *param)
->  {
->         int retval, oldprio, oldpolicy = -1, on_rq, running;
->         unsigned long flags;
->         const struct sched_class *prev_class = p->sched_class;
->         struct rq *rq;
->
->         /* may grab non-irq protected spin_locks */
->         BUG_ON(in_interrupt());
->  recheck:
->         /* double check policy once rq lock held */
->         if (policy < 0)
->                 policy = oldpolicy = p->policy;
->         else if (policy != SCHED_FIFO && policy != SCHED_RR &&
->                         policy != SCHED_NORMAL && policy != SCHED_BATCH &&
->                         policy != SCHED_IDLE)
->                 return -EINVAL;
->
->  With slub_debug=- on the kernel command line, the problem is gone.
->  With 4k page size the problem also does not occur.
->
->  Any ideas on why this occurs and how to debug this further ?
+Sorry but it's quite busy at the moment...
 
-There's no SLUB in the stack traces. Ingo, any suggestions how to debug this?
+> > I have new Intel DG33FB mainboard.
+> > 
+> > 
+> > Mar  2 20:47:19 joker1 kernel: iTCO_vendor_support: vendor-support=0
+> > Mar  2 20:47:19 joker1 kernel: iTCO_wdt: Intel TCO WatchDog Timer Driver 
+> > v1.02 (26-Jul-2007)
+> > Mar  2 20:47:19 joker1 kernel: iTCO_wdt: Found a ICH9DH TCO device 
+> > (Version=2, TCOBASE=0x0460)
+> > Mar  2 20:47:19 joker1 kernel: iTCO_wdt: initialized. heartbeat=30 sec 
+> > (nowayout=0)
+> > ...
+> > Mar  4 14:22:59 joker1 kernel: iTCO_wdt: Unexpected close, not stopping 
+> > watchdog!
+> > 
+> > 
+> > I start watchdog.c and then kill it expecting the system to reboot - but 
+> > it doesn't.
+> > 
+> > Isn't this how it is supposed to work?
+
+This is indeed how it should work. It's indeed strange that the system doesn't
+reboot. If I find some time I will give you some test code to run.
+
+Greetings,
+Wim.
+
