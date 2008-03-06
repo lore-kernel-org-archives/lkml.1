@@ -1,72 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933829AbYCFP6n@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933274AbYCFQDz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933829AbYCFP6n (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Mar 2008 10:58:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758472AbYCFP6d
+	id S933274AbYCFQDz (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Mar 2008 11:03:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759294AbYCFQDn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Mar 2008 10:58:33 -0500
-Received: from rtr.ca ([76.10.145.34]:4108 "EHLO mail.rtr.ca"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753352AbYCFP6b (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Mar 2008 10:58:31 -0500
-Message-ID: <47D014A6.9090300@rtr.ca>
-Date: Thu, 06 Mar 2008 10:58:30 -0500
-From: Mark Lord <lkml@rtr.ca>
-Organization: Real-Time Remedies Inc.
-User-Agent: Thunderbird 2.0.0.12 (X11/20080213)
-MIME-Version: 1.0
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Alan Stern <stern@rowland.harvard.edu>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, Pavel Machek <pavel@ucw.cz>,
+	Thu, 6 Mar 2008 11:03:43 -0500
+Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:41874 "EHLO
+	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757452AbYCFQDm (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 6 Mar 2008 11:03:42 -0500
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: Pavel Emelyanov <xemul@openvz.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       David Miller <davem@davemloft.net>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linux Netdev List <netdev@vger.kernel.org>,
        "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Zdenek Kabelac <zdenek.kabelac@gmail.com>, davem@davemloft.net,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, Pierre Ossman <drzeus-mmc@drzeus.cx>,
-       Kernel development list <linux-kernel@vger.kernel.org>,
-       pm list <linux-pm@lists.linux-foundation.org>
-Subject: Re: [patch] Re: using long instead of atomic_t when only set/read
- is required
-References: <Pine.LNX.4.44L0.0803031207120.3611-100000@iolanthe.rowland.org> <alpine.LFD.1.00.0803030921420.17889@woody.linux-foundation.org>
-In-Reply-To: <alpine.LFD.1.00.0803030921420.17889@woody.linux-foundation.org>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+       Christoph Hellwig <hch@infradead.org>
+Subject: Re: [PATCH] Make /proc/net a symlink on /proc/self/net (v2)
+References: <47CFB6CA.8090001@openvz.org>
+Date: Thu, 06 Mar 2008 08:57:41 -0700
+In-Reply-To: <47CFB6CA.8090001@openvz.org> (Pavel Emelyanov's message of "Thu,
+	06 Mar 2008 12:18:02 +0300")
+Message-ID: <m1od9r26bu.fsf@ebiederm.dsl.xmission.com>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus Torvalds wrote:
-> 
-> On Mon, 3 Mar 2008, Alan Stern wrote:
->> Consider a routine like the following:
->>
->> 	static task_struct *the_task;
->>
->> 	void store_task(void)
->> 	{
->> 		the_task = current;
->> 	}
->>
->> Is it possible to say whether readers examining "the_task" are 
->> guaranteed to see a coherent value?
-> 
-> Yes, we do depend on this.  All the RCU stuff (and in general *anything* 
-> that depends on memory ordering as opposed to full locking, and we have 
-> quite a lot of it) is very fundamentally dependent on the fact that things 
-> like pointers get read and written atomically.
-..
+Pavel Emelyanov <xemul@openvz.org> writes:
 
-But also consider something like this:
+> Current /proc/net is done with so called "shadows", but current
+> implementation is broken and has little chances to get fixed.
+>
+> The problem is that dentries subtree of /proc/net directory has
+> fancy revalidation rules to make processes living in different
+> net namespaces see different entries in /proc/net subtree, but
+> currently, tasks see in the /proc/net subdir the contents of any
+> other namespace, depending on who opened the file first.
+>
+> The proposed fix is to turn /proc/net into a symlink, which points
+> to /proc/self/net, which in turn shows what previously was in
+> /proc/net - the network-related info, from the net namespace the
+> appropriate task lives in.
+>
+> # ls -l /proc/net
+> lrwxrwxrwx  1 root root 8 Mar  5 15:17 /proc/net -> self/net
+>
+> In other words - this behaves like /proc/mounts, but unlike
+> "mounts", "net" is not a file, but a directory.
+>
+> Fixed a task_struct leak in get_proc_task_net, pointed out by Paul.
+>
+> Signed-off-by: Pavel Emelyanov <xemul@openvz.org>
 
- 	void store_task(void)
- 	{
- 		*the_task = current;
- 	}
+Before I forget.
 
-In this case, there is no guarantee that the assignment
-can be done atomically on all CPU types.  Some RISC archs
-(eg. MIPS R2xxx) require an (interruptible) instruction pair
-to store values to a potentially unaligned address.
+As a future patch we need to implement a d_revalidate rule for
+/proc/<pid>/task/net that will notice we have unshared a network
+namespace and flush all cached dentries for the old network namespace.
 
-This was a BIG issue on a different system that I once worked on.
+Since unsharing happens rarely if at all this d_revalidate should
+be relatively cheap, and since the change is real and for everyone
+it will not suffer from the inconsistencies that plagued us when
+working with d_revalidate on /proc/net.
 
-Cheers
+Eric
