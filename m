@@ -1,28 +1,33 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932200AbYCFPwZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932847AbYCFPyV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932200AbYCFPwZ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Mar 2008 10:52:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756237AbYCFPwE
+	id S932847AbYCFPyV (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Mar 2008 10:54:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756247AbYCFPyO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Mar 2008 10:52:04 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:32867 "EHLO mx3.mail.elte.hu"
+	Thu, 6 Mar 2008 10:54:14 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:57758 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758910AbYCFPwD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Mar 2008 10:52:03 -0500
-Date: Thu, 6 Mar 2008 16:51:41 +0100
+	id S1759504AbYCFPyN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 6 Mar 2008 10:54:13 -0500
+Date: Thu, 6 Mar 2008 16:52:38 +0100
 From: Ingo Molnar <mingo@elte.hu>
-To: Pavel Machek <pavel@ucw.cz>
-Cc: Suresh Siddha <suresh.b.siddha@intel.com>,
-       Christoph Hellwig <hch@infradead.org>, hpa@zytor.com,
-       tglx@linutronix.de, andi@firstfloor.org, linux-kernel@vger.kernel.org,
-       Arjan van de Ven <arjan@linux.intel.com>
-Subject: Re: [patch 2/2] x86, fpu: lazy allocation of FPU area - v3
-Message-ID: <20080306155141.GA23340@elte.hu>
-References: <20080303230335.892214000@linux-os.sc.intel.com> <20080303230336.042604000@linux-os.sc.intel.com> <20080304012012.GB22431@infradead.org> <20080304014306.GC28006@linux-os.sc.intel.com> <20080304103220.GA17621@elte.hu> <20080304175528.GD28006@linux-os.sc.intel.com> <20080305194705.GA4386@ucw.cz>
+To: pageexec@freemail.hu
+Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+       Srinivasa DS <srinivasa@in.ibm.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       ananth@in.ibm.com, Jim Keniston <jkenisto@us.ibm.com>,
+       srikar@linux.vnet.ibm.com, SystemTAP <systemtap@sources.redhat.com>,
+       Andi Kleen <andi@firstfloor.org>, Thomas Gleixner <tglx@linutronix.de>,
+       Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>,
+       Jeremy Fitzhardinge <jeremy@goop.org>,
+       Arjan van de Ven <arjan@infradead.org>
+Subject: Re: [PATCH] x86 - Enhance DEBUG_RODATA support - alternatives
+Message-ID: <20080306155238.GA24008@elte.hu>
+References: <20080306140105.GC28438@elte.hu> <47D014E1.30964.22A9390F@pageexec.freemail.hu>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080305194705.GA4386@ucw.cz>
+In-Reply-To: <47D014E1.30964.22A9390F@pageexec.freemail.hu>
 User-Agent: Mutt/1.5.17 (2007-11-01)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -37,19 +42,17 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Pavel Machek <pavel@ucw.cz> wrote:
+* pageexec@freemail.hu <pageexec@freemail.hu> wrote:
 
-> > > kmem_cache_alloc() can fail (return NULL) and not handling it is a 
-> > > bug.
-> > 
-> > oops. you are correct. Will send a sigsegv in the failure case then. 
-> > Thanks.
+> > +		vaddr = vmap(pages, nr_pages, VM_MAP, PAGE_KERNEL);
+> > +		WARN_ON(!vaddr);
+> > +		local_irq_save(flags);
+> > +		memcpy(&vaddr[(unsigned long)addr & ~PAGE_MASK], opcode, len);
+> > +		local_irq_restore(flags);
 > 
-> You are introducing possibility of hard to debug error, where previous 
-> code just worked... Does not look like good idea to me.
+> you probably want a BUG_ON instead (or some graceful recovery) else 
+> the NULL deref will trigger with IRQs off...
 
-hm, how does it differ from any other allocation failure? We could fail 
-to allocate a pagetable page. We could fail to allocate the task_struct 
-to begin with.
+agreed - i changed it to BUG_ON() for the time being.
 
 	Ingo
