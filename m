@@ -1,73 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765962AbYCFLPk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761782AbYCFLTW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765962AbYCFLPk (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Mar 2008 06:15:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758950AbYCFLPa
+	id S1761782AbYCFLTW (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Mar 2008 06:19:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758796AbYCFLTH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Mar 2008 06:15:30 -0500
-Received: from E23SMTP06.au.ibm.com ([202.81.18.175]:59361 "EHLO
-	e23smtp06.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758912AbYCFLP3 (ORCPT
+	Thu, 6 Mar 2008 06:19:07 -0500
+Received: from wf-out-1314.google.com ([209.85.200.173]:8322 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755263AbYCFLTG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Mar 2008 06:15:29 -0500
-Date: Thu, 6 Mar 2008 16:45:25 +0530
-From: Gautham R Shenoy <ego@in.ibm.com>
-To: Oleg Nesterov <oleg@tv-sign.ru>
-Cc: Yi Yang <yi.y.yang@intel.com>, Ingo Molnar <mingo@elte.hu>,
-       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [BUG 2.6.25-rc3] scheduler/hotplug: some processes are
-	dealocked when cpu is set to offline
-Message-ID: <20080306111525.GA23865@in.ibm.com>
-Reply-To: ego@in.ibm.com
-References: <1204483329.3607.8.camel@yangyi-dev.bj.intel.com> <20080303153154.GA11288@in.ibm.com> <1204555505.3842.4.camel@yangyi-dev.bj.intel.com> <20080304052613.GA28632@in.ibm.com> <20080304150107.GA564@tv-sign.ru> <20080305100509.GA9265@in.ibm.com> <20080305135314.GA84@tv-sign.ru>
+	Thu, 6 Mar 2008 06:19:06 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=TB8PgAmy+FtpJHTfppumL78WFN75glWRhBuVZuJae+B51cGOD9DStFuJbDQWwLe39xdCFPC/Nsit4GebW3u7Rsw7PMuS9aMcJSijIIsTNWm0THRP93G8aghkXXeHsEc6JbN0Olbg+FAWhR2pO6Md+l8IInAMrOlt0plFV3VsNM8=
+Message-ID: <e9e943910803060319y1f538a68y59bea3fae4b88bb9@mail.gmail.com>
+Date: Thu, 6 Mar 2008 11:19:03 +0000
+From: "Duane Griffin" <duaneg@dghda.com>
+To: "Andreas Dilger" <adilger@sun.com>
+Subject: Re: [RFC, PATCH 6/6] ext3: do not write to the disk when mounting a dirty read-only filesystem
+Cc: linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org,
+       "Theodore Tso" <tytso@mit.edu>, sct@redhat.com,
+       akpm@linux-foundation.org
+In-Reply-To: <20080306071734.GN3616@webber.adilger.int>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20080305135314.GA84@tv-sign.ru>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+References: <a047dfbd7855d5f484ae8a3434f6a073302505be.1204685366.git.duaneg@dghda.com>
+	 <f4577a0cc4262de0fbff02cae3858d2e2edfaaea.1204685366.git.duaneg@dghda.com>
+	 <20080306071734.GN3616@webber.adilger.int>
+X-Google-Sender-Auth: d4f8fac965ee5b9c
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Mar 05, 2008 at 04:53:14PM +0300, Oleg Nesterov wrote:
-> On 03/05, Gautham R Shenoy wrote:
-> >
-> > On Tue, Mar 04, 2008 at 06:01:07PM +0300, Oleg Nesterov wrote:
-> > > On 03/04, Gautham R Shenoy wrote:
-> > > >
-> > > > So at times, the callback thread is blocked on kthread_stop(k) in
-> > > > softlockup.c, while other time, it was blocked in
-> > > > cleanup_workqueue_threads() in workqueue.c. 
-> > > 
-> > > >From another message:
-> > > >
-> > > > However, it remains in R< state
-> > > 
-> > > What about cwq->thread? Was it TASK_RUNNING too?
-> > 
-> > No, it was in TASK_UNINTERRUPTIBLE state. The last thing it ever
-> > executed was the wait_for_completion in flush_cpu_workqueue()
-> 
-> You misunderstood ;) The task doing _cpu_down() hang in flush_cpu_workqueue(),
-> because cwq->thread doesn't want to die. But what was cwq->thread->state?
-> 
+On 06/03/2008, Andreas Dilger <adilger@sun.com> wrote:
+> On Mar 06, 2008  01:59 +0000, Duane Griffin wrote:
+>  > NOTE: For now I'm simply preventing filesystems requiring recovery from being
+>  > remounted read-write. This breaks booting with an uncleanly mounted root
+>  > filesystem!
+>
+> I was going to ask about this - not being able to remount rw is a serious
+> problem because many users have only the root filesystem and this
+> limitation basically prevents this patch from being landable.
 
-Yup, sorry for that stupid reply.
+Yep, I agree. I wanted to post this as an RFC now to get feedback on
+the overall approach. I'll try and get remount support in there ASAP
+and post another version.
 
-> Could you try the patch? Yi constantly sees the tasks in R< state.
-> I am starting to suspect some scheduling issue.
+>  I'd suggest if the filesystem is going to be remounted read/write that
+>  the journal mapping be discarded and the journal replayed.  Depending
+>  on how you do the mapping it may be necessary to invalidate all of the
+>  pages in the cache so that they don't reference the blocks in the journal.
 
-Me too. With your patch applied there were quite a few tasks in the
-running state which didn't get the cpu for more than 120 seconds.
+That was along the lines I was thinking of, too. Thanks for mentioning
+invalidating the page cache -- I'll make sure that doesn't get
+overlooked.
 
-I could be a scheduler problem which CPU-Hotplug is able to catch more
-easily. Will try a git bisect.
+>  Cheers, Andreas
 
-
-> 
-> Oleg.
+Cheers,
+Duane.
 
 -- 
-Thanks and Regards
-gautham
+"I never could learn to drink that blood and call it wine" - Bob Dylan
