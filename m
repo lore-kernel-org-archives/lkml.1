@@ -1,127 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762952AbYCFLsR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764821AbYCFLtT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762952AbYCFLsR (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Mar 2008 06:48:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755317AbYCFLsG
+	id S1764821AbYCFLtT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Mar 2008 06:49:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755317AbYCFLtI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Mar 2008 06:48:06 -0500
-Received: from rtsoft2.corbina.net ([85.21.88.2]:40626 "EHLO
-	vitb.dev.rtsoft.ru" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754987AbYCFLsE (ORCPT
+	Thu, 6 Mar 2008 06:49:08 -0500
+Received: from wf-out-1314.google.com ([209.85.200.175]:64073 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756590AbYCFLtH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Mar 2008 06:48:04 -0500
-X-Greylist: delayed 3210 seconds by postgrey-1.27 at vger.kernel.org; Thu, 06 Mar 2008 06:48:04 EST
-Date: Thu, 6 Mar 2008 13:53:30 +0300
-From: Vitaly Bordug <vitb@kernel.crashing.org>
-To: Paul Mackerras <paulus@samba.org>
-Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: [POWERPC] 8xx: fix swap
-Message-ID: <20080306135330.6d5462d2@vitb.ru.mvista.com>
-X-Mailer: Claws Mail 2.9.1cvs30 (GTK+ 2.6.10; i686-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Thu, 6 Mar 2008 06:49:07 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=FZcZKUUdL1RkLI3tzGwW7SfpQe/LUspZ1kBklpOdWl1wzXM/nCPPbZPX36+ofQUI3jVlqkgMOS7YE0idNfEkGU3iSZvKxUSnZq4y/zVvATfMUkscHQ+wdUTQX/SY1Tune2My6XU/F7bXY0TLrV1VX0+ndb/TA67Ke/UGwlZsEeU=
+Message-ID: <5d6222a80803060349g69f570f3j9eaab980d7c58da@mail.gmail.com>
+Date: Thu, 6 Mar 2008 08:49:06 -0300
+From: "Glauber Costa" <glommer@gmail.com>
+To: "Ingo Molnar" <mingo@elte.hu>
+Subject: Re: [PATCH 1/1] export native versions of machine_ops functions
+Cc: "Glauber Costa" <gcosta@redhat.com>, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org, tglx@linutronix.de
+In-Reply-To: <20080306105500.GK13391@elte.hu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <1204739040-18422-1-git-send-email-gcosta@redhat.com>
+	 <20080306105500.GK13391@elte.hu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This makes swap routines operate correctly on the ppc_8xx based machines.
-Code has been revalidated on mpc885ads (8M sdram) with recent kernel. Based
-on patch from Yuri Tikhonov <yur@emcraft.com> to do the same on arch/ppc
-instance.
+On Thu, Mar 6, 2008 at 7:55 AM, Ingo Molnar <mingo@elte.hu> wrote:
+>
+>  * Glauber Costa <gcosta@redhat.com> wrote:
+>
+>  > People overriding machine_ops provided functions may want to call the
+>  > native version after its pre-processing. It already happens for the
+>  > smp_ops functions, so I don't see a reason for avoiding it here.
+>
+>  i'd like to do this only if there are actual users - otherwise we'll get
+>  a trickle of "make needlessly global functions static" patches a few
+>  weeks later ;-)
+>
+>         Ingo
+>
 
-Recent kernel's size makes swap feature very important on low-memory platforms,
-those are actually non-operable without it.
-
-Signed-off-by: Yuri Tikhonov <yur@emcraft.com>
-Signed-off-by: Vitaly Bordug <vitb@kernel.crashing.org>
----
-
- arch/powerpc/kernel/head_8xx.S      |   30 +++++++++++++++++++++++++++++-
- include/asm-powerpc/pgtable-ppc32.h |    8 --------
- 2 files changed, 29 insertions(+), 9 deletions(-)
-
-diff --git a/arch/powerpc/kernel/head_8xx.S b/arch/powerpc/kernel/head_8xx.S
-index f745839..3c9452d 100644
---- a/arch/powerpc/kernel/head_8xx.S
-+++ b/arch/powerpc/kernel/head_8xx.S
-@@ -332,8 +332,18 @@ InstructionTLBMiss:
- 	mfspr	r11, SPRN_MD_TWC	/* ....and get the pte address */
- 	lwz	r10, 0(r11)	/* Get the pte */
- 
-+#ifdef CONFIG_SWAP
-+	/* do not set the _PAGE_ACCESSED bit of a non-present page */
-+	andi.	r11, r10, _PAGE_PRESENT
-+	beq	4f
-+	ori	r10, r10, _PAGE_ACCESSED
-+	mfspr	r11, SPRN_MD_TWC	/* get the pte address again */
-+	stw	r10, 0(r11)
-+4:
-+#else
- 	ori	r10, r10, _PAGE_ACCESSED
- 	stw	r10, 0(r11)
-+#endif
- 
- 	/* The Linux PTE won't go exactly into the MMU TLB.
- 	 * Software indicator bits 21, 22 and 28 must be clear.
-@@ -398,8 +408,17 @@ DataStoreTLBMiss:
- 	DO_8xx_CPU6(0x3b80, r3)
- 	mtspr	SPRN_MD_TWC, r11
- 
--	mfspr	r11, SPRN_MD_TWC	/* get the pte address again */
-+#ifdef CONFIG_SWAP
-+	/* do not set the _PAGE_ACCESSED bit of a non-present page */
-+	andi.	r11, r10, _PAGE_PRESENT
-+	beq	4f
- 	ori	r10, r10, _PAGE_ACCESSED
-+4:
-+	/* and update pte in table */
-+#else
-+	ori	r10, r10, _PAGE_ACCESSED
-+#endif
-+	mfspr	r11, SPRN_MD_TWC	/* get the pte address again */
- 	stw	r10, 0(r11)
- 
- 	/* The Linux PTE won't go exactly into the MMU TLB.
-@@ -507,7 +526,16 @@ DataTLBError:
- 
- 	/* Update 'changed', among others.
- 	*/
-+#ifdef CONFIG_SWAP
-+	ori	r10, r10, _PAGE_DIRTY|_PAGE_HWWRITE
-+	/* do not set the _PAGE_ACCESSED bit of a non-present page */
-+	andi.	r11, r10, _PAGE_PRESENT
-+	beq	4f
-+	ori	r10, r10, _PAGE_ACCESSED
-+4:
-+#else
- 	ori	r10, r10, _PAGE_DIRTY|_PAGE_ACCESSED|_PAGE_HWWRITE
-+#endif
- 	mfspr	r11, SPRN_MD_TWC		/* Get pte address again */
- 	stw	r10, 0(r11)		/* and update pte in table */
- 
-diff --git a/include/asm-powerpc/pgtable-ppc32.h b/include/asm-powerpc/pgtable-ppc32.h
-index d1332bb..2c79f55 100644
---- a/include/asm-powerpc/pgtable-ppc32.h
-+++ b/include/asm-powerpc/pgtable-ppc32.h
-@@ -339,14 +339,6 @@ extern int icache_44x_need_flush;
- #define _PMD_PAGE_MASK	0x000c
- #define _PMD_PAGE_8M	0x000c
- 
--/*
-- * The 8xx TLB miss handler allegedly sets _PAGE_ACCESSED in the PTE
-- * for an address even if _PAGE_PRESENT is not set, as a performance
-- * optimization.  This is a bug if you ever want to use swap unless
-- * _PAGE_ACCESSED is 2, which it isn't, or unless you have 8xx-specific
-- * definitions for __swp_entry etc. below, which would be gross.
-- *  -- paulus
-- */
- #define _PTE_NONE_MASK _PAGE_ACCESSED
- 
- #else /* CONFIG_6xx */
+KVM is a user for that. Because it registers a memory area in which
+the host will be continually writting to (the clock), when it
+shutdown, the host
+have no way to know it has to stop. If you're really shutting down,
+there's no problem. But if you're kexecing, for example, the host will
+keep writting to a random
+memory area after the new kernel installs.
 
 
 -- 
-Sincerely, 
-Vitaly
+Glauber  Costa.
+"Free as in Freedom"
+http://glommer.net
+
+"The less confident you are, the more serious you have to act."
