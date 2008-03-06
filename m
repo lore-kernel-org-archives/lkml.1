@@ -1,53 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934092AbYCFCLb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933492AbYCFCL5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934092AbYCFCLb (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Mar 2008 21:11:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753940AbYCFCLN
+	id S933492AbYCFCL5 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Mar 2008 21:11:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764816AbYCFCL3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Mar 2008 21:11:13 -0500
-Received: from khc.piap.pl ([195.187.100.11]:33478 "EHLO khc.piap.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752091AbYCFCLL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Mar 2008 21:11:11 -0500
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: Chris Lattner <clattner@apple.com>,
-       Richard Guenther <richard.guenther@gmail.com>,
-       Joe Buck <Joe.Buck@synopsys.com>, Michael Matz <matz@suse.de>,
-       Jan Hubicka <hubicka@ucw.cz>, Aurelien Jarno <aurelien@aurel32.net>,
-       linux-kernel@vger.kernel.org, gcc@gcc.gnu.org
-Subject: Re: RELEASE BLOCKER: Linux doesn't follow x86/x86-64 ABI wrt direction  flag
-References: <20080305153020.GA24631@volta.aurel32.net>
-	<47CEC3AA.6080709@zytor.com> <20080305195834.GA17267@synopsys.com>
-	<20080305202319.GA17053@volta.aurel32.net>
-	<Pine.LNX.4.64.0803052133400.20583@wotan.suse.de>
-	<20080305204234.GB17267@synopsys.com>
-	<20080305204945.GB14011@atrey.karlin.mff.cuni.cz>
-	<Pine.LNX.4.64.0803052158270.20583@wotan.suse.de>
-	<20080305212005.GC17267@synopsys.com>
-	<84fc9c000803051332q2f2eedeej7d3c0509e698cabf@mail.gmail.com>
-	<47CF11D6.7070901@zytor.com>
-	<738B72DB-A1D6-43F8-813A-E49688D05771@apple.com>
-	<47CF1931.2080102@zytor.com>
-From: Krzysztof Halasa <khc@pm.waw.pl>
-Date: Thu, 06 Mar 2008 03:11:10 +0100
-In-Reply-To: <47CF1931.2080102@zytor.com> (H. Peter Anvin's message of "Wed\, 05 Mar 2008 14\:05\:37 -0800")
-Message-ID: <m33ar4bo01.fsf@maximus.localdomain>
+	Wed, 5 Mar 2008 21:11:29 -0500
+Received: from ti-out-0910.google.com ([209.85.142.191]:40188 "EHLO
+	ti-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932805AbYCFCL2 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 5 Mar 2008 21:11:28 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=HgAwINU2Y7gNYkn3UV64UKrR72SVns2ehV0JNCEHxBxRw2tnCsRcnrauJ+KUVdLFONnymr03YAQXa2EQ5YroifC+hW5Nvl7/YQlxJsm5mmYQOfIWXqRhKoQZyPLLk9SGrzaJKI8n179V8pX5jzDOl5S2X2EBZcNgzGlz1icXuYs=
+Message-ID: <df9815e70803051811o4c4a42e0td56cfd32b80c66b2@mail.gmail.com>
+Date: Thu, 6 Mar 2008 10:11:26 +0800
+From: "Jike Song" <albcamus@gmail.com>
+To: paulmck@linux.vnet.ibm.com
+Subject: Re: 2.6.25-rc4 rcupreempt.h WARNINGs while suspend/resume
+Cc: "Dave Young" <hidave.darkstar@gmail.com>,
+       "Linux Kernel" <linux-kernel@vger.kernel.org>
+In-Reply-To: <20080305165531.GB8728@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <a8e1da0803042324ndd3873ay61cee6112d9dda9a@mail.gmail.com>
+	 <df9815e70803042335j4ea66028y96d6be21f0970aa1@mail.gmail.com>
+	 <20080305165531.GB8728@linux.vnet.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-"H. Peter Anvin" <hpa@zytor.com> writes:
-
-> Not quite, but fixing it in the kernel is easy.
+On Thu, Mar 6, 2008 at 12:55 AM, Paul E. McKenney
+<paulmck@linux.vnet.ibm.com> wrote:
+>  Could you please try applying Karsten Wiese's patch to see if it
+>  fixes the WARNINGs?  See http://lkml.org/lkml/2008/2/26/386 for
+>  the patch.
 >
-> Still breaks for running on all old kernels.
+>                                                 Thanx, Paul
 
-Many more things break on old kernels. I guess it's not worse than
-a (local) root exploit, is it?
-
-*-stable and distributions should take care of it, as they do in
-others cases.
--- 
-Krzysztof Halasa
+Yes, the WARNING disappears with Karsten's patch applied.
+Thanks.
