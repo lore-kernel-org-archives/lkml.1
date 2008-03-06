@@ -1,42 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759015AbYCFATx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760757AbYCFAWX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759015AbYCFATx (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Mar 2008 19:19:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752109AbYCFATo
+	id S1760757AbYCFAWX (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Mar 2008 19:22:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753287AbYCFAWJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Mar 2008 19:19:44 -0500
-Received: from hiauly1.hia.nrc.ca ([132.246.100.193]:1385 "EHLO
-	hiauly1.hia.nrc.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752096AbYCFATn (ORCPT
+	Wed, 5 Mar 2008 19:22:09 -0500
+Received: from e35.co.us.ibm.com ([32.97.110.153]:48136 "EHLO
+	e35.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752109AbYCFAWH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Mar 2008 19:19:43 -0500
-Subject: Re: [PATCH -mm 0/3] fix iommu segment boundary problems (parisc)
-To: grundler@parisc-linux.org (Grant Grundler)
-Date: Wed, 5 Mar 2008 19:19:31 -0500 (EST)
-From: "John David Anglin" <dave@hiauly1.hia.nrc.ca>
-Cc: fujita.tomonori@lab.ntt.co.jp, linux-kernel@vger.kernel.org,
-       linux-parisc@vger.kernel.org, tomof@acm.org, kyle@parisc-linux.org,
-       matthew@wil.cx, grundler@parisc-linux.org, akpm@linux-foundation.org
-In-Reply-To: <20080305154502.GA32538@colo.lackof.org> from "Grant Grundler" at Mar 5, 2008 08:45:02 am
-X-Mailer: ELM [version 2.4 PL25]
+	Wed, 5 Mar 2008 19:22:07 -0500
+Date: Wed, 5 Mar 2008 16:22:05 -0800
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+Cc: Pavel Emelyanov <xemul@openvz.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       David Miller <davem@davemloft.net>,
+       Linux Netdev List <netdev@vger.kernel.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Alexey Dobriyan <adobriyan@openvz.org>
+Subject: Re: [PATCH] Make /proc/net a symlink on /proc/self/net
+Message-ID: <20080306002205.GI8728@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <47CE8FF7.7000701@openvz.org> <20080305191501.GF8728@linux.vnet.ibm.com> <m1ablc3eo3.fsf@ebiederm.dsl.xmission.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-Message-Id: <20080306001933.248744E43@hiauly1.hia.nrc.ca>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <m1ablc3eo3.fsf@ebiederm.dsl.xmission.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> And thanks to Joel Soete (rubisher) for testing. I tried to test the
-> sba_iommu code on my local box but had issues with the unpatched kernel
-> (using kyle's parisc-2.6.git tree) that I have yet to resolve (could be
-> HW problems).
+On Wed, Mar 05, 2008 at 04:59:56PM -0700, Eric W. Biederman wrote:
+> >> 
+> >> +static struct net *get_proc_task_net(struct inode *dir)
+> >> +{
+> >> +	struct task_struct *task;
+> >> +	struct nsproxy *ns;
+> >> +	struct net *net = NULL;
+> >> +
+> >> +	rcu_read_lock();
+> >> +	task = get_proc_task(dir);
+> >
+> > This implies a get_task_struct(), as get_proc_task() invokes get_proc_task()
+> > which invokes get_pid_task() which invokes get_task_struct().
+> >
+> > I don't see the corresponding put_task_struct() -- what am I missing here?
+> 
+> You aren't.  However we can easily make this:
+> 	task = pid_task(proc_pid(dir), PIDTYPE_PID);
+> And we won't need to increment the count on the task_struct.
 
-I built two kernels today using kyle's parisc-2.6.git tree (UP 32 bit
-and SMP 64 bit).  Aside from some section mismatch warnings, they both
-seem to work fine.
+That looks like it should do the trick!  And the net_get() below
+will allow you to safely export the "net" pointer out of an RCU
+read-side critical section, so with that change looks good to me!
 
-Dave
--- 
-J. David Anglin                                  dave.anglin@nrc-cnrc.gc.ca
-National Research Council of Canada              (613) 990-0752 (FAX: 952-6602)
+						Thanx, Paul
+
+> Good catch.
+> 
+> >> +	if (task != NULL) {
+> >> +		ns = task_nsproxy(task);
+> >> +		if (ns != NULL)
+> >> +			net = get_net(ns->net_ns);
+> >> +	}
+> >> +	rcu_read_unlock();
+> >> +
+> >> +	return net;
+> >> +}
+> >> +
