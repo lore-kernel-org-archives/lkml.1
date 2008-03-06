@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761434AbYCFBTd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933483AbYCFBUA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761434AbYCFBTd (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Mar 2008 20:19:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762075AbYCFBPT
+	id S933483AbYCFBUA (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Mar 2008 20:20:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762547AbYCFBPW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Mar 2008 20:15:19 -0500
-Received: from rgminet01.oracle.com ([148.87.113.118]:20191 "EHLO
-	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759207AbYCFBPG (ORCPT
+	Wed, 5 Mar 2008 20:15:22 -0500
+Received: from agminet01.oracle.com ([141.146.126.228]:47945 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758677AbYCFBPG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 5 Mar 2008 20:15:06 -0500
 From: Joel Becker <joel.becker@oracle.com>
 To: ocfs2-devel@oss.oracle.com
 Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
        mark.fasheh@oracle.com, teigland@redhat.com
-Subject: [PATCH 04/10] ocfs2: Introduce the DOWN message to ocfs2_control
-Date: Wed,  5 Mar 2008 17:13:52 -0800
-Message-Id: <1204766038-31721-5-git-send-email-joel.becker@oracle.com>
+Subject: [PATCH 02/10] ocfs2: Add the ocfs2_control misc device.
+Date: Wed,  5 Mar 2008 17:13:50 -0800
+Message-Id: <1204766038-31721-3-git-send-email-joel.becker@oracle.com>
 X-Mailer: git-send-email 1.5.3.4
 In-Reply-To: <1204766038-31721-1-git-send-email-joel.becker@oracle.com>
 References: <1204766038-31721-1-git-send-email-joel.becker@oracle.com>
@@ -28,147 +28,219 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-When the control daemon sees a node go down, it sends a DOWN message
-through the ocfs2_control device.
+The ocfs2_control misc device is how a userspace control daemon (controld)
+talks to the filesystem.  Introduce the bare-bones filesystem ops.
 
 Signed-off-by: Joel Becker <joel.becker@oracle.com>
 ---
- fs/ocfs2/stack_user.c |   94 ++++++++++++++++++++++++++++++++++++++++++++++---
- 1 files changed, 89 insertions(+), 5 deletions(-)
+ fs/ocfs2/stack_user.c |  184 ++++++++++++++++++++++++++++++++++++++++++++++++-
+ 1 files changed, 183 insertions(+), 1 deletions(-)
 
 diff --git a/fs/ocfs2/stack_user.c b/fs/ocfs2/stack_user.c
-index ff8d307..a5e58e2 100644
+index 920eb11..fdca5d3 100644
 --- a/fs/ocfs2/stack_user.c
 +++ b/fs/ocfs2/stack_user.c
-@@ -35,9 +35,21 @@
-  * of output is a supported protocol tag.  All protocol tags are a single
-  * character followed by a two hex digit version number.  Currently the
-  * only things supported is T01, for "Text-base version 0x01".  Next, the
-- * client writes the version they would like to use.  If the version tag
-- * written is unknown, -EINVAL is returned.  Once the negotiation is
-- * complete, the client can start sending messages.
-+ * client writes the version they would like to use, including the newline.
-+ * Thus, the protocol tag is 'T01\n'.  If the version tag written is
-+ * unknown, -EINVAL is returned.  Once the negotiation is complete, the
-+ * client can start sending messages.
-+ *
-+ * The T01 protocol only has one message, "DOWN".  It has the following
-+ * syntax:
-+ *
-+ *  DOWN<space><32-char-cap-hex-uuid><space><8-char-hex-nodenum><newline>
-+ *
-+ * eg:
-+ *
-+ *  DOWN 632A924FDD844190BDA93C0DF6B94899 00000001\n
-+ *
-+ * This is 47 characters.
+@@ -18,17 +18,199 @@
   */
  
- /*
-@@ -49,6 +61,11 @@
- #define OCFS2_CONTROL_HANDSHAKE_INVALID		(0)
- #define OCFS2_CONTROL_HANDSHAKE_READ		(1)
- #define OCFS2_CONTROL_HANDSHAKE_VALID		(2)
-+#define OCFS2_CONTROL_MESSAGE_DOWN		"DOWN"
-+#define OCFS2_CONTROL_MESSAGE_DOWN_LEN		4
-+#define OCFS2_CONTROL_MESSAGE_DOWN_TOTAL_LEN	47
-+#define OCFS2_TEXT_UUID_LEN			32
-+#define OCFS2_CONTROL_MESSAGE_NODENUM_LEN	8
+ #include <linux/module.h>
++#include <linux/fs.h>
++#include <linux/miscdevice.h>
++#include <linux/mutex.h>
++#include <linux/reboot.h>
  
- /*
-  * ocfs2_live_connection is refcounted because the filesystem and
-@@ -149,7 +166,7 @@ static void ocfs2_live_connection_drop(struct ocfs2_live_connection *c)
- 	kfree(c);
- }
+ #include "stackglue.h"
  
--static ssize_t ocfs2_control_cfu(char *target, size_t target_len,
-+static ssize_t ocfs2_control_cfu(void *target, size_t target_len,
- 				 const char __user *buf, size_t count)
- {
- 	/* The T01 expects write(2) calls to have exactly one command */
-@@ -185,6 +202,73 @@ static ssize_t ocfs2_control_validate_handshake(struct file *file,
- 	return count;
- }
  
-+static void ocfs2_control_send_down(const char *uuid,
-+				    int nodenum)
+-static int __init user_stack_init(void)
++/*
++ * The control protocol starts with a handshake.  Until the handshake
++ * is complete, the control device will fail all write(2)s.
++ *
++ * The handshake is simple.  First, the client reads until EOF.  Each line
++ * of output is a supported protocol tag.  All protocol tags are a single
++ * character followed by a two hex digit version number.  Currently the
++ * only things supported is T01, for "Text-base version 0x01".  Next, the
++ * client writes the version they would like to use.  If the version tag
++ * written is unknown, -EINVAL is returned.  Once the negotiation is
++ * complete, the client can start sending messages.
++ */
++
++/*
++ * ocfs2_live_connection is refcounted because the filesystem and
++ * miscdevice sides can detach in different order.  Let's just be safe.
++ */
++struct ocfs2_live_connection {
++	struct list_head		oc_list;
++	struct ocfs2_cluster_connection	*oc_conn;
++};
++
++static atomic_t ocfs2_control_opened;
++
++static LIST_HEAD(ocfs2_live_connection_list);
++static DEFINE_MUTEX(ocfs2_control_lock);
++
++static struct ocfs2_live_connection *ocfs2_connection_find(const char *name)
 +{
++	size_t len = strlen(name);
 +	struct ocfs2_live_connection *c;
 +
-+	mutex_lock(&ocfs2_control_lock);
++	BUG_ON(!mutex_is_locked(&ocfs2_control_lock));
 +
-+	c = ocfs2_connection_find(uuid);
-+	if (c) {
-+		BUG_ON(c->oc_conn == NULL);
-+		c->oc_conn->cc_recovery_handler(nodenum,
-+						c->oc_conn->cc_recovery_data);
++	list_for_each_entry(c, &ocfs2_live_connection_list, oc_list) {
++		if ((c->oc_conn->cc_namelen == len) &&
++		    !strncmp(c->oc_conn->cc_name, name, len))
++			return c;
++	}
++
++	return c;
++}
++
++/*
++ * ocfs2_live_connection structures are created underneath the ocfs2
++ * mount path.  Since the VFS prevents multiple calls to
++ * fill_super(), we can't get dupes here.
++ */
++static int ocfs2_live_connection_new(struct ocfs2_cluster_connection *conn,
++				     struct ocfs2_live_connection **c_ret)
++{
++	int rc = 0;
++	struct ocfs2_live_connection *c;
++
++	c = kzalloc(sizeof(struct ocfs2_live_connection), GFP_KERNEL);
++	if (!c)
++		return -ENOMEM;
++
++	mutex_lock(&ocfs2_control_lock);
++	c->oc_conn = conn;
++
++	if (atomic_read(&ocfs2_control_opened))
++		list_add(&c->oc_list, &ocfs2_live_connection_list);
++	else {
++		printk(KERN_ERR
++		       "ocfs2: Userspace control daemon is not present\n");
++		rc = -ESRCH;
 +	}
 +
 +	mutex_unlock(&ocfs2_control_lock);
++
++	if (!rc)
++		*c_ret = c;
++	else
++		kfree(c);
++
++	return rc;
 +}
 +
-+/* DOWN<space><32-char-cap-hex-uuid><space><8-char-hex-nodenum><newline> */
-+struct ocfs2_control_message_down {
-+	char	tag[OCFS2_CONTROL_MESSAGE_DOWN_LEN];
-+	char	space1;
-+	char	uuid[OCFS2_TEXT_UUID_LEN];
-+	char	space2;
-+	char	nodestr[OCFS2_CONTROL_MESSAGE_NODENUM_LEN];
-+	char	newline;
++/*
++ * This function disconnects the cluster connection from ocfs2_control.
++ * Afterwards, userspace can't affect the cluster connection.
++ */
++static void ocfs2_live_connection_drop(struct ocfs2_live_connection *c)
++{
++	mutex_lock(&ocfs2_control_lock);
++	list_del_init(&c->oc_list);
++	c->oc_conn = NULL;
++	mutex_unlock(&ocfs2_control_lock);
++
++	kfree(c);
++}
++
++
++static ssize_t ocfs2_control_write(struct file *file,
++				   const char __user *buf,
++				   size_t count,
++				   loff_t *ppos)
+ {
+ 	return 0;
+ }
+ 
++static ssize_t ocfs2_control_read(struct file *file,
++				  char __user *buf,
++				  size_t count,
++				  loff_t *ppos)
++{
++	return 0;
++}
++
++static int ocfs2_control_release(struct inode *inode, struct file *file)
++{
++	if (atomic_dec_and_test(&ocfs2_control_opened)) {
++		mutex_lock(&ocfs2_control_lock);
++		if (!list_empty(&ocfs2_live_connection_list)) {
++			/* XXX: Do bad things! */
++			printk(KERN_ERR
++			       "ocfs2: Unexpected release of ocfs2_control!\n"
++			       "       Loss of cluster connection requires "
++			       "an emergency restart!\n");
++			emergency_restart();
++		}
++		mutex_unlock(&ocfs2_control_lock);
++	}
++
++	return 0;
++}
++
++static int ocfs2_control_open(struct inode *inode, struct file *file)
++{
++	atomic_inc(&ocfs2_control_opened);
++
++	return 0;
++}
++
++static const struct file_operations ocfs2_control_fops = {
++	.open    = ocfs2_control_open,
++	.release = ocfs2_control_release,
++	.read    = ocfs2_control_read,
++	.write   = ocfs2_control_write,
++	.owner   = THIS_MODULE,
 +};
 +
-+static ssize_t ocfs2_control_message(struct file *file,
-+				     const char __user *buf,
-+				     size_t count)
++struct miscdevice ocfs2_control_device = {
++	.minor		= MISC_DYNAMIC_MINOR,
++	.name		= "ocfs2_control",
++	.fops		= &ocfs2_control_fops,
++};
++
++static int ocfs2_control_init(void)
 +{
-+	ssize_t ret;
-+	char *p = NULL;
-+	long nodenum;
-+	struct ocfs2_control_message_down msg;
++	int rc;
 +
-+	/* Try to catch padding issues */
-+	WARN_ON(offsetof(struct ocfs2_control_message_down, uuid) !=
-+		(sizeof(msg.tag) + sizeof(msg.space1)));
++	atomic_set(&ocfs2_control_opened, 0);
 +
-+	memset(&msg, 0, sizeof(struct ocfs2_control_message_down));
-+	ret = ocfs2_control_cfu(&msg, OCFS2_CONTROL_MESSAGE_DOWN_TOTAL_LEN,
-+				buf, count);
-+	if (ret != count)
-+		return ret;
++	rc = misc_register(&ocfs2_control_device);
++	if (rc)
++		printk(KERN_ERR
++		       "ocfs2: Unable to register ocfs2_control device "
++		       "(errno %d)\n",
++		       -rc);
 +
-+	if (strncmp(msg.tag, OCFS2_CONTROL_MESSAGE_DOWN,
-+		    strlen(OCFS2_CONTROL_MESSAGE_DOWN)))
-+		return -EINVAL;
-+
-+	if ((msg.space1 != ' ') || (msg.space2 != ' ') ||
-+	    (msg.newline != '\n'))
-+		return -EINVAL;
-+	msg.space1 = msg.space2 = msg.newline = '\0';
-+
-+	nodenum = simple_strtol(msg.nodestr, &p, 16);
-+	if (!p || *p)
-+		return -EINVAL;
-+
-+	if ((nodenum == LONG_MIN) || (nodenum == LONG_MAX) ||
-+	    (nodenum > INT_MAX) || (nodenum < 0))
-+		return -ERANGE;
-+
-+	ocfs2_control_send_down(msg.uuid, nodenum);
-+
-+	return count;
++	return rc;
 +}
++
++static void ocfs2_control_exit(void)
++{
++	int rc;
++
++	rc = misc_deregister(&ocfs2_control_device);
++	if (rc)
++		printk(KERN_ERR
++		       "ocfs2: Unable to deregister ocfs2_control device "
++		       "(errno %d)\n",
++		       -rc);
++}
++
++static int __init user_stack_init(void)
++{
++	return ocfs2_control_init();
++}
++
+ static void __exit user_stack_exit(void)
+ {
++	ocfs2_control_exit();
+ }
  
- static ssize_t ocfs2_control_write(struct file *file,
- 				   const char __user *buf,
-@@ -204,7 +288,7 @@ static ssize_t ocfs2_control_write(struct file *file,
- 			break;
- 
- 		case OCFS2_CONTROL_HANDSHAKE_VALID:
--			ret = count;  /* XXX */
-+			ret = ocfs2_control_message(file, buf, count);
- 			break;
- 
- 		default:
+ MODULE_AUTHOR("Oracle");
 -- 
 1.5.3.8
 
