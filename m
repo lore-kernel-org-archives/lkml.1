@@ -1,59 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758168AbYCFRkq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764162AbYCFRl6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758168AbYCFRkq (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Mar 2008 12:40:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751619AbYCFRki
+	id S1764162AbYCFRl6 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Mar 2008 12:41:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751774AbYCFRlr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Mar 2008 12:40:38 -0500
-Received: from iolanthe.rowland.org ([192.131.102.54]:36218 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1751242AbYCFRki (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Mar 2008 12:40:38 -0500
-Date: Thu, 6 Mar 2008 12:40:37 -0500 (EST)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-cc: pm list <linux-pm@lists.linux-foundation.org>,
-       Alexey Starikovskiy <astarikovskiy@suse.de>,
-       Pavel Machek <pavel@ucw.cz>, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [RFC][PATCH] PM: Make PM core handle device registrations
- concurrent with suspend/hibernation
-In-Reply-To: <200803061726.03277.rjw@sisk.pl>
-Message-ID: <Pine.LNX.4.44L0.0803061233460.7892-100000@iolanthe.rowland.org>
+	Thu, 6 Mar 2008 12:41:47 -0500
+Received: from mgw2.diku.dk ([130.225.96.92]:42562 "EHLO mgw2.diku.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751254AbYCFRlq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 6 Mar 2008 12:41:46 -0500
+Date: Thu, 6 Mar 2008 18:41:32 +0100 (MET)
+From: Julia Lawall <julia@diku.dk>
+To: e1000-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org,
+       kernel-janitors@vger.kernel.org
+Subject: [PATCH] drivers/net: convert & to &&
+Message-ID: <Pine.LNX.4.58.0803061841000.1669@pc-041.diku.dk>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 6 Mar 2008, Rafael J. Wysocki wrote:
+From: Julia Lawall <julia@diku.dk>
 
-> > I thought of one more thing you might want to add: device_pm_add() 
-> > doesn't handle the case where dev->parent is NULL.
-> 
-> I'm not sure what you mean.
-> 
-> If dev->parent is NULL, we get into the "successful" branch where the device is
-> added to dpm_active.  Do you think we should add any extra handling of this
-> case?
+The use of & to obtain a conjunction that evaluates both of its arguments
+seems unnecessarily tricky.
 
-If a device is registered after dpm_suspend() has returned, the
-device won't be suspended properly before the system goes to sleep.  
+The semantic match that found this code is as follows:
+(http://www.emn.fr/x-info/coccinelle/)
 
-If the device has a parent then you're okay, because the parent must
-already be suspended and so device_pm_add() will fail.  But if the
-device doesn't have a parent then device_pm_add() will succeed, which
-you don't want.
+// <smpl>
+@@ expression E1, E2; @@
+*  !E1 & !E2
+// </smpl>
 
-> > You could put in that static "all_devices_sleeping" flag, which gets set at
-> > the end of dpm_suspend() and cleared at the start of dpm_resume().
-> 
-> Well, I don't think it's necessary.  dpm_active is empty in that case and
-> we can use the list_empty(&dpm_active) check instead.
+Signed-off-by: Julia Lawall <julia@diku.dk>
 
-What would happen the very first time the system registers a device 
-during startup?
+---
+ drivers/net/e1000/e1000_main.c |   16 ++++++++++------
+ drivers/net/ixgb/ixgb_main.c   |   11 ++++++-----
+ 2 files changed, 16 insertions(+), 11 deletions(-)
 
-Alan Stern
+diff -u -p a/drivers/net/e1000/e1000_main.c b/drivers/net/e1000/e1000_main.c
+--- a/drivers/net/e1000/e1000_main.c	2008-02-20 22:09:26.000000000 +0100
++++ b/drivers/net/e1000/e1000_main.c	2008-03-06 17:30:20.000000000 +0100
+@@ -3872,10 +3872,12 @@ e1000_intr_msi(int irq, void *data)
+ 	adapter->total_tx_packets = 0;
+ 	adapter->total_rx_packets = 0;
 
+-	for (i = 0; i < E1000_MAX_INTR; i++)
+-		if (unlikely(!adapter->clean_rx(adapter, adapter->rx_ring) &
+-		   !e1000_clean_tx_irq(adapter, adapter->tx_ring)))
++	for (i = 0; i < E1000_MAX_INTR; i++) {
++		boolean_t c1 = adapter->clean_rx(adapter, adapter->rx_ring);
++		boolean_t c2 = e1000_clean_tx_irq(adapter, adapter->tx_ring);
++		if (unlikely(!c1 && !c2))
+ 			break;
++	}
+
+ 	if (likely(adapter->itr_setting & 3))
+ 		e1000_set_itr(adapter);
+@@ -3974,10 +3976,12 @@ e1000_intr(int irq, void *data)
+ 	adapter->total_tx_packets = 0;
+ 	adapter->total_rx_packets = 0;
+
+-	for (i = 0; i < E1000_MAX_INTR; i++)
+-		if (unlikely(!adapter->clean_rx(adapter, adapter->rx_ring) &
+-		   !e1000_clean_tx_irq(adapter, adapter->tx_ring)))
++	for (i = 0; i < E1000_MAX_INTR; i++) {
++		boolean_t c1 = adapter->clean_rx(adapter, adapter->rx_ring);
++		boolean_t c2 = e1000_clean_tx_irq(adapter, adapter->tx_ring);
++		if (unlikely(!c1 && !c2))
+ 			break;
++	}
+
+ 	if (likely(adapter->itr_setting & 3))
+ 		e1000_set_itr(adapter);
+diff -u -p a/drivers/net/ixgb/ixgb_main.c b/drivers/net/ixgb/ixgb_main.c
+--- a/drivers/net/ixgb/ixgb_main.c	2008-02-02 16:08:56.000000000 +0100
++++ b/drivers/net/ixgb/ixgb_main.c	2008-03-06 17:33:02.000000000 +0100
+@@ -1769,14 +1769,15 @@ ixgb_intr(int irq, void *data)
+ 		__netif_rx_schedule(netdev, &adapter->napi);
+ 	}
+ #else
+-	/* yes, that is actually a & and it is meant to make sure that
+-	 * every pass through this for loop checks both receive and
++	/* every pass through this for loop checks both receive and
+ 	 * transmit queues for completed descriptors, intended to
+ 	 * avoid starvation issues and assist tx/rx fairness. */
+-	for(i = 0; i < IXGB_MAX_INTR; i++)
+-		if(!ixgb_clean_rx_irq(adapter) &
+-		   !ixgb_clean_tx_irq(adapter))
++	for (i = 0; i < IXGB_MAX_INTR; i++) {
++		boolean_t c1 = ixgb_clean_rx_irq(adapter);
++		boolean_t c2 = ixgb_clean_tx_irq(adapter);
++		if (!c1 && !c2)
+ 			break;
++	}
+ #endif
+ 	return IRQ_HANDLED;
+ }
