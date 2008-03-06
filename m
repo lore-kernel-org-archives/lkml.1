@@ -1,59 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763525AbYCFPIf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763619AbYCFPOv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763525AbYCFPIf (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Mar 2008 10:08:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758565AbYCFPIW
+	id S1763619AbYCFPOv (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Mar 2008 10:14:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759772AbYCFPOl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Mar 2008 10:08:22 -0500
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:55803 "EHLO
-	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755317AbYCFPIV (ORCPT
+	Thu, 6 Mar 2008 10:14:41 -0500
+Received: from zeniv.linux.org.uk ([195.92.253.2]:44371 "EHLO
+	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759506AbYCFPOg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Mar 2008 10:08:21 -0500
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: Pavel Emelyanov <xemul@openvz.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       David Miller <davem@davemloft.net>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linux Netdev List <netdev@vger.kernel.org>,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-Subject: Re: [PATCH] Make /proc/net a symlink on /proc/self/net (v2)
-References: <47CFB6CA.8090001@openvz.org>
-Date: Thu, 06 Mar 2008 08:06:40 -0700
-In-Reply-To: <47CFB6CA.8090001@openvz.org> (Pavel Emelyanov's message of "Thu,
-	06 Mar 2008 12:18:02 +0300")
-Message-ID: <m1tzjj28ov.fsf@ebiederm.dsl.xmission.com>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
-MIME-Version: 1.0
+	Thu, 6 Mar 2008 10:14:36 -0500
+Date: Thu, 6 Mar 2008 15:14:30 +0000
+From: Al Viro <viro@ZenIV.linux.org.uk>
+To: Roland Dreier <rdreier@cisco.com>
+Cc: Christoph Hellwig <hch@lst.de>, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Davide Libenzi <davidel@xmailserver.org>,
+       Avi Kivity <avi@qumranet.com>, kvm-devel@lists.sourceforge.net,
+       akpm@linux-foundation.org
+Subject: Re: [PATCH/RFC 1/2] anon-inodes: Remove fd_install() from anon_inode_getfd()
+Message-ID: <20080306151430.GD27894@ZenIV.linux.org.uk>
+References: <20080225191043.GA32342@lst.de> <adak5kqyzv1.fsf@cisco.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <adak5kqyzv1.fsf@cisco.com>
+User-Agent: Mutt/1.4.2.3i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Pavel Emelyanov <xemul@openvz.org> writes:
+On Wed, Feb 27, 2008 at 11:16:02AM -0800, Roland Dreier wrote:
+> The anonymous inodes interface anon_inode_getfd() calls fd_install()
+> for the newly created fd, which does not work for some use cases where
+> the caller must do futher initialization before exposing the file to
+> userspace.  This is also probably not the safest interface, since the
+> caller must be sure that it is OK if userspace closes the fd before
+> anon_inode_getfd() even returns.
 
-> Current /proc/net is done with so called "shadows", but current
-> implementation is broken and has little chances to get fixed.
->
-> The problem is that dentries subtree of /proc/net directory has
-> fancy revalidation rules to make processes living in different
-> net namespaces see different entries in /proc/net subtree, but
-> currently, tasks see in the /proc/net subdir the contents of any
-> other namespace, depending on who opened the file first.
->
-> The proposed fix is to turn /proc/net into a symlink, which points
-> to /proc/self/net, which in turn shows what previously was in
-> /proc/net - the network-related info, from the net namespace the
-> appropriate task lives in.
->
-> # ls -l /proc/net
-> lrwxrwxrwx  1 root root 8 Mar  5 15:17 /proc/net -> self/net
->
-> In other words - this behaves like /proc/mounts, but unlike
-> "mounts", "net" is not a file, but a directory.
->
-> Fixed a task_struct leak in get_proc_task_net, pointed out by Paul.
->
-> Signed-off-by: Pavel Emelyanov <xemul@openvz.org>
-
-Acked-by: "Eric W. Biederman" <ebiederm@xmission.com>
+IMO that's a bad idea - majority of callers only care about fd and burdening
+them with fd_install() is simply wrong.  Separate helper function...
