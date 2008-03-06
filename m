@@ -1,55 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763840AbYCFL1Z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764622AbYCFL2y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763840AbYCFL1Z (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Mar 2008 06:27:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758797AbYCFL1S
+	id S1764622AbYCFL2y (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Mar 2008 06:28:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755962AbYCFL2q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Mar 2008 06:27:18 -0500
-Received: from ecfrec.frec.bull.fr ([129.183.4.8]:59980 "EHLO
-	ecfrec.frec.bull.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753453AbYCFL1R (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Mar 2008 06:27:17 -0500
-Subject: Re: [PATCH] Modify loop device to be able to manage partitions of
-	the disk image
-From: Laurent Vivier <Laurent.Vivier@bull.net>
-To: Nick Piggin <nickpiggin@yahoo.com.au>
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <200803062156.58230.nickpiggin@yahoo.com.au>
-References: <1204796612842-git-send-email-Laurent.Vivier@bull.net>
-	 <200803062057.50181.nickpiggin@yahoo.com.au>
-	 <1204798585.4325.8.camel@frecb07144>
-	 <200803062156.58230.nickpiggin@yahoo.com.au>
-Content-Type: text/plain; charset=utf-8
-Organization: Bull S.A.S.
-Date: Thu, 06 Mar 2008 12:29:38 +0100
-Message-Id: <1204802978.4325.11.camel@frecb07144>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 
-Content-Transfer-Encoding: 8bit
+	Thu, 6 Mar 2008 06:28:46 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:49166 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755534AbYCFL2q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 6 Mar 2008 06:28:46 -0500
+Date: Thu, 6 Mar 2008 12:28:19 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Roland McGrath <roland@redhat.com>
+Cc: Jan Beulich <jbeulich@novell.com>, tglx@linutronix.de, hpa@zytor.com,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] x86: fix typo(?) in step.c
+Message-ID: <20080306112819.GC17906@elte.hu>
+References: <47CE69B0.76E4.0078.0@novell.com> <20080305134150.GA16477@elte.hu> <20080306075223.BA28B2700FD@magilla.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080306075223.BA28B2700FD@magilla.localdomain>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-Le jeudi 06 mars 2008 à 21:56 +1100, Nick Piggin a écrit :
-> On Thursday 06 March 2008 21:16, Laurent Vivier wrote:
-> > Le jeudi 06 mars 2008 à 20:57 +1100, Nick Piggin a écrit :
-> 
-> > > Do you think we do something similar for drivers/block/brd.c too? I'd
-> > > like to try to maintain parity between them where possible...
-> >
-> > I think it is possible  (I've the same patch for NBD too), but I think
-> > it is completely useless.
-> 
-> It's useful for testing, and for minimising the divergence in the
-> code.
+* Roland McGrath <roland@redhat.com> wrote:
 
-OK, I can try to submit a patch, if you want...
+> The bogon came in commit eee3af4a2c83a97fff107ddc445d9df6fded9ce4, the 
+> introduction of the ptrace BTS stuff.  Sorry I did not scour and cite 
+> every problem in that patch, since I had NAK'd the entire thing as 
+> needing more careful review and incremental introduction after 2.6.25.
 
-Laurent
--- 
------------------ Laurent.Vivier@bull.net  ------------------
-"Programmers who subconsciously view themselves as artists
- will enjoy what they do and will do it better." D. Knuth
+note that in -rc4 all those BTS ptrace extensions are disabled, see:
 
+|   commit b4ef95de00be4c2c30feccf607a45093c8c118b7
+|   Author: Ingo Molnar <mingo@elte.hu>
+|   Date:   Tue Feb 26 09:40:27 2008 +0100
+|
+|     x86: disable BTS ptrace extensions for now
+
+	Ingo
