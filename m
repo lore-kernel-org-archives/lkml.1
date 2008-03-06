@@ -1,84 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934409AbYCFSAb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934916AbYCFSAy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934409AbYCFSAb (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Mar 2008 13:00:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754938AbYCFSAK
+	id S934916AbYCFSAy (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Mar 2008 13:00:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759519AbYCFSAQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Mar 2008 13:00:10 -0500
-Received: from mk-filter-3-a-1.mail.uk.tiscali.com ([212.74.100.54]:38978 "EHLO
-	mk-filter-3-a-4.mail.uk.tiscali.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1754725AbYCFSAH (ORCPT
+	Thu, 6 Mar 2008 13:00:16 -0500
+Received: from 136-022.dsl.labridge.com ([206.117.136.22]:4683 "EHLO
+	mail.perches.com" rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org
+	with ESMTP id S1758419AbYCFSAO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Mar 2008 13:00:07 -0500
-X-Trace: 692958137/mk-filter-3.mail.uk.tiscali.com/B2C/$THROTTLED-DYNAMIC/CUSTOMER-DYNAMIC-IP/81.1.89.66
-X-SBRS: None
-X-RemoteIP: 81.1.89.66
-X-IP-MAIL-FROM: adrian@newgolddream.dyndns.info
-X-IP-BHB: Once
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: Ao8CALK/z0dRAVlC/2dsb2JhbACBVqsJ
-Message-ID: <29795.85.118.17.158.1204825872.squirrel@newgolddream.dyndns.info>
-In-Reply-To: <20080306163032.GA12982@kroah.com>
-References: <8b67d60803051525g3aca775dmc14d1c2450b34168@mail.gmail.com>
-    <20080305234653.GA5904@kroah.com>
-    <8031.85.118.17.158.1204806681.squirrel@newgolddream.dyndns.info>
-    <20080306163032.GA12982@kroah.com>
-Date: Thu, 6 Mar 2008 17:51:12 -0000 (UTC)
-Subject: Re: Behaviour of device_register
-From: "Adrian McMenamin" <adrian@newgolddream.dyndns.info>
-To: "Greg KH" <greg@kroah.com>
-Cc: "Adrian McMenamin" <lkmladrian@gmail.com>,
-       "LKML" <linux-kernel@vger.kernel.org>,
-       "linux-sh" <linux-sh@vger.kernel.org>
-User-Agent: SquirrelMail/1.4.10a
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-X-Priority: 3 (Normal)
-Importance: Normal
+	Thu, 6 Mar 2008 13:00:14 -0500
+Subject: Re: [PATCH] drivers/net: convert & to &&
+From: Joe Perches <joe@perches.com>
+To: Julia Lawall <julia@diku.dk>
+Cc: e1000-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org,
+       kernel-janitors@vger.kernel.org, xfs-masters <xfs-masters@oss.sgi.com>
+In-Reply-To: <Pine.LNX.4.58.0803061841000.1669@pc-041.diku.dk>
+References: <Pine.LNX.4.58.0803061841000.1669@pc-041.diku.dk>
+Content-Type: text/plain
+Date: Thu, 06 Mar 2008 09:59:07 -0800
+Message-Id: <1204826347.5541.20.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.3-1.1mdv2008.0 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, March 6, 2008 4:30 pm, Greg KH wrote:
-> On Thu, Mar 06, 2008 at 12:31:21PM -0000, Adrian McMenamin wrote:
->> On Wed, March 5, 2008 11:46 pm, Greg KH wrote:
->> > On Wed, Mar 05, 2008 at 11:25:48PM +0000, Adrian McMenamin wrote:
->> >> The observed behaviour for me is that it appears to be blocking the
->> >> vblank interrupt on my box (or more accurately stopping the workqueue
->> >> that the interrupt handler calls from running). And without the
->> vblank
->> >> my bus won't process dma and so therefore the attempt to register the
->> >> device in question fails.
->> >>
->> >> But I can see no reason from a glance over the code why that (vblanks
->> >> being blocked) would be the case - have I missed something and the
->> >> vblanks will be blocked, or should I be looking elsewhere for the
->> root
->> >> cause of this problem?
->> >
->> > device_register(), on it's own, does not touch any hardware, nor
->> prevent
->> > anything else in the kernel from happening.
->> >
->> > So I think you need to look elsewhere, like into the bus that is doing
->> > the device_register() call :)
->> >
->>
->>
->> It turns out this is a lock contention issue.
->>
->> The code blocks waiting for a lock that will never be freed.
->
-> The device_register() code blocks?  Or something else?
->
+On Thu, 2008-03-06 at 18:41 +0100, Julia Lawall wrote:
+> diff -u -p a/drivers/net/e1000/e1000_main.c b/drivers/net/e1000/e1000_main.c
+> --- a/drivers/net/e1000/e1000_main.c	2008-02-20 22:09:26.000000000 +0100
+> +++ b/drivers/net/e1000/e1000_main.c	2008-03-06 17:30:20.000000000 +0100
+> @@ -3872,10 +3872,12 @@ e1000_intr_msi(int irq, void *data)
+>  	adapter->total_tx_packets = 0;
+>  	adapter->total_rx_packets = 0;
+> 
+> -	for (i = 0; i < E1000_MAX_INTR; i++)
+> -		if (unlikely(!adapter->clean_rx(adapter, adapter->rx_ring) &
+> -		   !e1000_clean_tx_irq(adapter, adapter->tx_ring)))
+> +	for (i = 0; i < E1000_MAX_INTR; i++) {
+> +		boolean_t c1 = adapter->clean_rx(adapter, adapter->rx_ring);
+> +		boolean_t c2 = e1000_clean_tx_irq(adapter, adapter->tx_ring);
+> +		if (unlikely(!c1 && !c2))
+>  			break;
+> +	}
 
-No my code. The hotplug event results in a message which is stored in a
-linked list which is protected by a lock. To query the device I need to
-queue a message in that linked list which is obviously locked. So
-everything is timed out.
+Perhaps also a s/boolean_t/bool/g kernel wide?
 
-I need to make the device query asychronous from the hotplug. Not perfect,
-but the only memory safe way of doing it I think.
+$ grep -wrl boolean_t *
+
+drivers/net/e1000/e1000.h
+drivers/net/e1000/e1000_ethtool.c
+drivers/net/e1000/e1000_hw.c
+drivers/net/e1000/e1000_hw.h
+drivers/net/e1000/e1000_main.c
+drivers/net/e1000/e1000_osdep.h
+drivers/net/ixgb/ixgb.h
+drivers/net/ixgb/ixgb_ee.c
+drivers/net/ixgb/ixgb_ee.h
+drivers/net/ixgb/ixgb_ethtool.c
+drivers/net/ixgb/ixgb_hw.c
+drivers/net/ixgb/ixgb_hw.h
+drivers/net/ixgb/ixgb_main.c
+drivers/net/ixgb/ixgb_osdep.h
+fs/xfs/quota/xfs_dquot.c
+fs/xfs/quota/xfs_qm.c
+fs/xfs/quota/xfs_qm.h
+fs/xfs/quota/xfs_qm_syscalls.c
+fs/xfs/quota/xfs_trans_dquot.c
+fs/xfs/xfs_ialloc.c
+fs/xfs/xfs_ialloc.h
+fs/xfs/xfs_inode.c
+fs/xfs/xfs_inode.h
+fs/xfs/xfs_log.c
+fs/xfs/xfs_vfsops.c
+fs/xfs/xfs_utils.c
+fs/xfs/xfs_types.h
+fs/xfs/xfs_vnodeops.c
 
 
