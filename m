@@ -1,45 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765044AbYCFBdm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765302AbYCFBiJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765044AbYCFBdm (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Mar 2008 20:33:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758729AbYCFBdb
+	id S1765302AbYCFBiJ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Mar 2008 20:38:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758438AbYCFBhz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Mar 2008 20:33:31 -0500
-Received: from khc.piap.pl ([195.187.100.11]:45930 "EHLO khc.piap.pl"
+	Wed, 5 Mar 2008 20:37:55 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:46517 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758499AbYCFBda (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Mar 2008 20:33:30 -0500
-To: Zan Lynx <zlynx@acm.org>
-Cc: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Andrew Morton <akpm@linux-foundation.org>, jeff@garzik.org,
-       linux-ide@vger.kernel.org, alan@redhat.com,
-       linux-kernel@vger.kernel.org
-Subject: Re: [patch 3/3] pata: "I do not think it means, what you think it means."
-References: <200803042316.m24NGI7k002489@imap1.linux-foundation.org>
-	<20080304173058.7679b7c8.akpm@linux-foundation.org>
-	<20080305115610.397b3ea3@the-village.bc.nu>
-	<200803051421.14167.bzolnier@gmail.com>
-	<m3ir015du5.fsf@maximus.localdomain>
-	<58cb370e0803050846t7dbd65d6ocfec7ca5e93aa6db@mail.gmail.com>
-	<m3ejap5cvz.fsf@maximus.localdomain>
-	<58cb370e0803050922p7695771cq393120ed5906efb7@mail.gmail.com>
-	<1204742033.6408.37.camel@localhost>
-From: Krzysztof Halasa <khc@pm.waw.pl>
-Date: Thu, 06 Mar 2008 02:33:29 +0100
-In-Reply-To: <1204742033.6408.37.camel@localhost> (Zan Lynx's message of "Wed\, 05 Mar 2008 11\:33\:53 -0700")
-Message-ID: <m37iggbpqu.fsf@maximus.localdomain>
+	id S1753563AbYCFBhz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 5 Mar 2008 20:37:55 -0500
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+From: Roland McGrath <roland@redhat.com>
+To: Dave Jones <davej@codemonkey.org.uk>
+X-Fcc: ~/Mail/linus
+Cc: sam@ravnborg.org, Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: rfc: nonint_oldconfig
+In-Reply-To: Dave Jones's message of  Wednesday, 5 March 2008 13:56:30 -0500 <20080305185630.GD16181@codemonkey.org.uk>
+References: <20080305185630.GD16181@codemonkey.org.uk>
+X-Zippy-Says: If I am elected no one will ever have to do their laundry again!
+Message-Id: <20080306013722.4895D2700FD@magilla.localdomain>
+Date: Wed,  5 Mar 2008 17:37:22 -0800 (PST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Zan Lynx <zlynx@acm.org> writes:
+> There's also an additional target that does the same, but
+> ignores any options defined in the local configs that the kernel
+> being configured doesn't know about.
 
-> In my experience what they needed was proper cooling.  I have a 3ware
-> RAID-5 array of 4 120 GB DeskStar drives still working.
+I added this one (loose_nonint_oldconfig target, -B option to conf).
+It is the noninteractive equivalent of taking your old .config after a
+source upgrade, running 'make oldconfig' and hitting return a lot.
+(If options from your old .config went away, you get harmless warnings.
+If new options appeared, you get the defaults for those.)
+That's what I do in my hand builds after a git pull (hit return a lot).
 
-I think the largest "deathstars" (75GXP?) were 75 GB.
--- 
-Krzysztof Halasa
+The benefit of 'make loose_nonint_oldconfig' is it lets me do the same
+thing with scripted rpm builds made from fresh git snapshot code.  These
+builds use a .config chosen for the Fedora production kernel, but a new
+code snapshot (sometimes with and sometimes without the Fedora patches to
+the kernel).  The Fedora patches sometimes add nonstandard config options,
+and the bleeding edge kernel snapshot I try sometimes had added new config
+options that Fedora's kernel configs do not yet set or clear explicitly.
+
+For development, it is very handy to just get a build that approximates the
+Fedora config for the stable kernel but uses the latest development kernel
+source.  99% of the time the default for new options works fine for my
+purposes.  When a new kernel is imported for proper Fedora builds, then
+we'll update the standard configs with tested settings for the new source.
+Having to tweak those every time I want to spin a testing kernel rpm would
+be a waste.
+
+
+Thanks,
+Roland
