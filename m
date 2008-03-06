@@ -1,54 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759300AbYCFUXi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933242AbYCFUZT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759300AbYCFUXi (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Mar 2008 15:23:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764172AbYCFUX0
+	id S933242AbYCFUZT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Mar 2008 15:25:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755088AbYCFUZA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Mar 2008 15:23:26 -0500
-Received: from gra-lx1.iram.es ([150.214.224.41]:58186 "EHLO gra-lx1.iram.es"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754677AbYCFUXY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Mar 2008 15:23:24 -0500
-From: Gabriel Paubert <paubert@iram.es>
-Date: Thu, 6 Mar 2008 21:23:11 +0100
-To: Stefan Richter <stefanr@s5r6.in-berlin.de>
-Cc: Jarod Wilson <jwilson@redhat.com>, benh@kernel.crashing.org,
-       Kristian Hoegsberg <krh@bitplanet.net>, linux-kernel@vger.kernel.org,
-       linuxppc-dev@ozlabs.org, sparclinux@vger.kernel.org,
-       linux1394-devel@lists.sourceforge.net, Sam Ravnborg <sam@ravnborg.org>,
-       Harvey Harrison <harvey.harrison@gmail.com>
-Subject: Re: [PATCH 1/2] firewire: endianess fix
-Message-ID: <20080306202311.GA18925@iram.es>
-References: <20080220220326.GA22328@uranus.ravnborg.org> <200802272221.38985.jwilson@redhat.com> <1204179959.15052.372.camel@pasglop> <200802281342.06493.jwilson@redhat.com> <1204241162.15052.393.camel@pasglop> <47C79CB1.6050104@redhat.com> <20080303091927.GA27105@iram.es> <47CC0C95.1030709@s5r6.in-berlin.de> <20080305225902.GA27985@iram.es> <47CF2C08.5000609@s5r6.in-berlin.de>
-MIME-Version: 1.0
+	Thu, 6 Mar 2008 15:25:00 -0500
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:4011 "EHLO spitz.ucw.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751023AbYCFUY7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 6 Mar 2008 15:24:59 -0500
+Date: Thu, 6 Mar 2008 21:24:47 +0100
+From: Pavel Machek <pavel@ucw.cz>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Suresh Siddha <suresh.b.siddha@intel.com>,
+       Christoph Hellwig <hch@infradead.org>, hpa@zytor.com,
+       tglx@linutronix.de, andi@firstfloor.org, linux-kernel@vger.kernel.org,
+       Arjan van de Ven <arjan@linux.intel.com>
+Subject: Re: [patch 2/2] x86, fpu: lazy allocation of FPU area - v3
+Message-ID: <20080306202446.GA4225@ucw.cz>
+References: <20080303230335.892214000@linux-os.sc.intel.com> <20080303230336.042604000@linux-os.sc.intel.com> <20080304012012.GB22431@infradead.org> <20080304014306.GC28006@linux-os.sc.intel.com> <20080304103220.GA17621@elte.hu> <20080304175528.GD28006@linux-os.sc.intel.com> <20080305194705.GA4386@ucw.cz> <20080306155141.GA23340@elte.hu>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <47CF2C08.5000609@s5r6.in-berlin.de>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <20080306155141.GA23340@elte.hu>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Mar 06, 2008 at 12:26:00AM +0100, Stefan Richter wrote:
-> Gabriel Paubert wrote:
-> >>>I have a Pismo which I use on a virtually
-> >>>daily basis (and about to remove the last remnants of MacOS on it). 
-> >>>However I have disabled Firewire because it would not sleep and wake 
-> >>>up properly. 
-> ...
-> >For now I have only tested the new stack with a 6 year old 1.8" disk
-> >and everything works, including suspend to RAM. The kernel is 2.6.25-rc4
-> >plus additional pull from linux1394-2.6.git: 2.6.25-rc4-00032-g8d36ba4.
+On Thu 2008-03-06 16:51:41, Ingo Molnar wrote:
 > 
-> That's great.  Thanks for testing.
+> * Pavel Machek <pavel@ucw.cz> wrote:
+> 
+> > > > kmem_cache_alloc() can fail (return NULL) and not handling it is a 
+> > > > bug.
+> > > 
+> > > oops. you are correct. Will send a sigsegv in the failure case then. 
+> > > Thanks.
+> > 
+> > You are introducing possibility of hard to debug error, where previous 
+> > code just worked... Does not look like good idea to me.
+> 
+> hm, how does it differ from any other allocation failure? We could fail 
 
-The old stack also works. I forgot to mention that with the new
-stack (not with the old) there is a message when going to sleep:
+Well, we should not be sending SIGSEGV...? SIGBUS would be cleaner, or
+SIGKILL... what happens when userland tries to catch this one?
 
-firewire_ohci: pci_set_power_state failed with -5
-
-but it is harmless, and if I understand correctly due to the 
-fact that the power management on this chip is not implemented 
-through capability fields in the PCI configuration space.
-
-	Gabriel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
