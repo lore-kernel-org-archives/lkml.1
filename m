@@ -1,406 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933880AbYCFBVu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765886AbYCFBWi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933880AbYCFBVu (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Mar 2008 20:21:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763052AbYCFBP1
+	id S1765886AbYCFBWi (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Mar 2008 20:22:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759559AbYCFBQJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Mar 2008 20:15:27 -0500
-Received: from rgminet01.oracle.com ([148.87.113.118]:20186 "EHLO
-	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758845AbYCFBPF (ORCPT
+	Wed, 5 Mar 2008 20:16:09 -0500
+Received: from terminus.zytor.com ([198.137.202.10]:53807 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759943AbYCFBQH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Mar 2008 20:15:05 -0500
-From: Joel Becker <joel.becker@oracle.com>
-To: ocfs2-devel@oss.oracle.com
-Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       mark.fasheh@oracle.com, teigland@redhat.com
-Subject: [PATCH 07/10] ocfs2: add fsdlm to stackglue
-Date: Wed,  5 Mar 2008 17:13:55 -0800
-Message-Id: <1204766038-31721-8-git-send-email-joel.becker@oracle.com>
-X-Mailer: git-send-email 1.5.3.4
-In-Reply-To: <1204766038-31721-1-git-send-email-joel.becker@oracle.com>
-References: <1204766038-31721-1-git-send-email-joel.becker@oracle.com>
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+	Wed, 5 Mar 2008 20:16:07 -0500
+Message-ID: <47CF44E7.3020106@zytor.com>
+Date: Wed, 05 Mar 2008 17:12:07 -0800
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
+MIME-Version: 1.0
+To: Chris Lattner <clattner@apple.com>
+CC: Michael Matz <matz@suse.de>, Richard Guenther <richard.guenther@gmail.com>,
+       Joe Buck <Joe.Buck@synopsys.com>, Jan Hubicka <hubicka@ucw.cz>,
+       Aurelien Jarno <aurelien@aurel32.net>, linux-kernel@vger.kernel.org,
+       gcc@gcc.gnu.org
+Subject: Re: RELEASE BLOCKER: Linux doesn't follow x86/x86-64 ABI wrt direction
+ flag
+References: <20080305153020.GA24631@volta.aurel32.net> <47CEC3AA.6080709@zytor.com> <20080305195834.GA17267@synopsys.com> <20080305202319.GA17053@volta.aurel32.net> <Pine.LNX.4.64.0803052133400.20583@wotan.suse.de> <20080305204234.GB17267@synopsys.com> <20080305204945.GB14011@atrey.karlin.mff.cuni.cz> <Pine.LNX.4.64.0803052158270.20583@wotan.suse.de> <20080305212005.GC17267@synopsys.com> <84fc9c000803051332q2f2eedeej7d3c0509e698cabf@mail.gmail.com> <47CF11D6.7070901@zytor.com> <738B72DB-A1D6-43F8-813A-E49688D05771@apple.com> <Pine.LNX.4.64.0803052258530.20583@wotan.suse.de> <2F47E21A-9055-4EC3-99CF-B666BBC045C3@apple.com> <47CF3F09.4080606@zytor.com> <578FCA7D-D7A6-44F6-9310-4A97C13CDCBE@apple.com>
+In-Reply-To: <578FCA7D-D7A6-44F6-9310-4A97C13CDCBE@apple.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: David Teigland <teigland@redhat.com>
+Chris Lattner wrote:
+>>
+>> Upon return to userspace, the modified state kicks in.  Thus the 
+>> signal handler is entered with DF from userspace at trap time, not DF=0.
+>>
+>> So it's an asynchronous state leak from one piece of userspace to 
+>> another.
+> 
+> Fine, it can happen either way.  In either case, the distro vendor 
+> should fix the the signal handler in the kernels they distribute.  If 
+> you don't do that, you are still leaking information from one piece of 
+> user space code to another, you're just papering over it in a horrible 
+> way :)
+> 
+> GCC defines the direction flag to be clear before inline asm. Enforcing 
+> the semantics you propose would require issuing a cld before every 
+> inline asm, not just before every string operation.
+> 
 
-Add code to use fs/dlm.
+It's a kernel bug, and it needs to be fixed.  The discussion is about 
+what to do in the meantime.
 
-[ Modified to be part of the stack_user module -- Joel ]
+(And yes, you're absolutely right: between global subroutine entry and 
+the first asm or string operation, you'd have to emit cld.)
 
-Signed-off-by: David Teigland <teigland@redhat.com>
-Signed-off-by: Joel Becker <joel.becker@oracle.com>
----
- fs/ocfs2/stack_user.c |  216 ++++++++++++++++++++++++++++++++++++++++++++++++-
- fs/ocfs2/stackglue.c  |   14 +++-
- fs/ocfs2/stackglue.h  |   19 ++++-
- 3 files changed, 243 insertions(+), 6 deletions(-)
-
-diff --git a/fs/ocfs2/stack_user.c b/fs/ocfs2/stack_user.c
-index 9faa678..9cb2015 100644
---- a/fs/ocfs2/stack_user.c
-+++ b/fs/ocfs2/stack_user.c
-@@ -24,6 +24,7 @@
- #include <linux/reboot.h>
- #include <asm/uaccess.h>
- 
-+#include "ocfs2.h"  /* For struct ocfs2_lock_res */
- #include "stackglue.h"
- 
- 
-@@ -152,6 +153,8 @@ union ocfs2_control_message {
- 	struct ocfs2_control_message_down	u_down;
- };
- 
-+static struct ocfs2_stack_plugin user_stack;
-+
- static atomic_t ocfs2_control_opened;
- static int ocfs2_control_this_node = -1;
- static struct ocfs2_protocol_version running_proto;
-@@ -344,6 +347,20 @@ out_unlock:
- 	return rc;
- }
- 
-+static int ocfs2_control_get_this_node(void)
-+{
-+	int rc;
-+
-+	mutex_lock(&ocfs2_control_lock);
-+	if (ocfs2_control_this_node < 0)
-+		rc = -EINVAL;
-+	else
-+		rc = ocfs2_control_this_node;
-+	mutex_unlock(&ocfs2_control_lock);
-+
-+	return rc;
-+}
-+
- static int ocfs2_control_do_setnode_msg(struct file *file,
- 					struct ocfs2_control_message_setn *msg)
- {
-@@ -652,13 +669,210 @@ static void ocfs2_control_exit(void)
- 		       -rc);
- }
- 
-+static struct dlm_lksb *fsdlm_astarg_to_lksb(void *astarg)
-+{
-+	struct ocfs2_lock_res *res = astarg;
-+	return &res->l_lksb.lksb_fsdlm;
-+}
-+
-+static void fsdlm_lock_ast_wrapper(void *astarg)
-+{
-+	struct dlm_lksb *lksb = fsdlm_astarg_to_lksb(astarg);
-+	int status = lksb->sb_status;
-+
-+	BUG_ON(user_stack.sp_proto == NULL);
-+
-+	/*
-+	 * For now we're punting on the issue of other non-standard errors
-+	 * where we can't tell if the unlock_ast or lock_ast should be called.
-+	 * The main "other error" that's possible is EINVAL which means the
-+	 * function was called with invalid args, which shouldn't be possible
-+	 * since the caller here is under our control.  Other non-standard
-+	 * errors probably fall into the same category, or otherwise are fatal
-+	 * which means we can't carry on anyway.
-+	 */
-+
-+	if (status == -DLM_EUNLOCK || status == -DLM_ECANCEL)
-+		user_stack.sp_proto->lp_unlock_ast(astarg, 0);
-+	else
-+		user_stack.sp_proto->lp_lock_ast(astarg);
-+}
-+
-+static void fsdlm_blocking_ast_wrapper(void *astarg, int level)
-+{
-+	BUG_ON(user_stack.sp_proto == NULL);
-+
-+	user_stack.sp_proto->lp_blocking_ast(astarg, level);
-+}
-+
-+static int user_dlm_lock(struct ocfs2_cluster_connection *conn,
-+			 int mode,
-+			 union ocfs2_dlm_lksb *lksb,
-+			 u32 flags,
-+			 void *name,
-+			 unsigned int namelen,
-+			 void *astarg)
-+{
-+	int ret;
-+
-+	if (!lksb->lksb_fsdlm.sb_lvbptr)
-+		lksb->lksb_fsdlm.sb_lvbptr = (char *)lksb +
-+					     sizeof(struct dlm_lksb);
-+
-+	ret = dlm_lock(conn->cc_lockspace, mode, &lksb->lksb_fsdlm,
-+		       flags|DLM_LKF_NODLCKWT, name, namelen, 0,
-+		       fsdlm_lock_ast_wrapper, astarg,
-+		       fsdlm_blocking_ast_wrapper);
-+	return ret;
-+}
-+
-+static int user_dlm_unlock(struct ocfs2_cluster_connection *conn,
-+			   union ocfs2_dlm_lksb *lksb,
-+			   u32 flags,
-+			   void *astarg)
-+{
-+	int ret;
-+
-+	ret = dlm_unlock(conn->cc_lockspace, lksb->lksb_fsdlm.sb_lkid,
-+			 flags, &lksb->lksb_fsdlm, astarg);
-+	return ret;
-+}
-+
-+static int user_dlm_lock_status(union ocfs2_dlm_lksb *lksb)
-+{
-+	return lksb->lksb_fsdlm.sb_status;
-+}
-+
-+static void *user_dlm_lvb(union ocfs2_dlm_lksb *lksb)
-+{
-+	return (void *)(lksb->lksb_fsdlm.sb_lvbptr);
-+}
-+
-+static void user_dlm_dump_lksb(union ocfs2_dlm_lksb *lksb)
-+{
-+}
-+
-+/*
-+ * Compare a requested locking protocol version against the current one.
-+ *
-+ * If the major numbers are different, they are incompatible.
-+ * If the current minor is greater than the request, they are incompatible.
-+ * If the current minor is less than or equal to the request, they are
-+ * compatible, and the requester should run at the current minor version.
-+ */
-+static int fs_protocol_compare(struct ocfs2_protocol_version *existing,
-+			       struct ocfs2_protocol_version *request)
-+{
-+	if (existing->pv_major != request->pv_major)
-+		return 1;
-+
-+	if (existing->pv_minor > request->pv_minor)
-+		return 1;
-+
-+	if (existing->pv_minor < request->pv_minor)
-+		request->pv_minor = existing->pv_minor;
-+
-+	return 0;
-+}
-+
-+static int user_cluster_connect(struct ocfs2_cluster_connection *conn)
-+{
-+	dlm_lockspace_t *fsdlm;
-+	struct ocfs2_live_connection *control;
-+	int rc = 0;
-+
-+	BUG_ON(conn == NULL);
-+
-+	rc = ocfs2_live_connection_new(conn, &control);
-+	if (rc)
-+		goto out;
-+
-+	/*
-+	 * running_proto must have been set before we allowed any mounts
-+	 * to proceed.
-+	 */
-+	if (fs_protocol_compare(&running_proto, &conn->cc_version)) {
-+		printk(KERN_ERR
-+		       "Unable to mount with fs locking protocol version "
-+		       "%u.%u because the userspace control daemon has "
-+		       "negotiated %u.%u\n",
-+		       conn->cc_version.pv_major, conn->cc_version.pv_minor,
-+		       running_proto.pv_major, running_proto.pv_minor);
-+		rc = -EPROTO;
-+		ocfs2_live_connection_drop(control);
-+		goto out;
-+	}
-+
-+	rc = dlm_new_lockspace(conn->cc_name, strlen(conn->cc_name),
-+			       &fsdlm, DLM_LSFL_FS, DLM_LVB_LEN);
-+	if (rc) {
-+		ocfs2_live_connection_drop(control);
-+		goto out;
-+	}
-+
-+	conn->cc_private = control;
-+	conn->cc_lockspace = fsdlm;
-+out:
-+	return rc;
-+}
-+
-+static int user_cluster_disconnect(struct ocfs2_cluster_connection *conn,
-+				   int hangup_pending)
-+{
-+	dlm_release_lockspace(conn->cc_lockspace, 2);
-+	conn->cc_lockspace = NULL;
-+	ocfs2_live_connection_drop(conn->cc_private);
-+	conn->cc_private = NULL;
-+	return 0;
-+}
-+
-+static int user_cluster_this_node(unsigned int *this_node)
-+{
-+	int rc;
-+
-+	rc = ocfs2_control_get_this_node();
-+	if (rc < 0)
-+		return rc;
-+
-+	*this_node = rc;
-+	return 0;
-+}
-+
-+static struct ocfs2_stack_operations user_stack_ops = {
-+	.connect	= user_cluster_connect,
-+	.disconnect	= user_cluster_disconnect,
-+	.this_node	= user_cluster_this_node,
-+	.dlm_lock	= user_dlm_lock,
-+	.dlm_unlock	= user_dlm_unlock,
-+	.lock_status	= user_dlm_lock_status,
-+	.lock_lvb	= user_dlm_lvb,
-+	.dump_lksb	= user_dlm_dump_lksb,
-+};
-+
-+static struct ocfs2_stack_plugin user_stack = {
-+	.sp_name	= "user",
-+	.sp_ops		= &user_stack_ops,
-+	.sp_owner	= THIS_MODULE,
-+};
-+
-+
- static int __init user_stack_init(void)
- {
--	return ocfs2_control_init();
-+	int rc;
-+
-+	rc = ocfs2_control_init();
-+	if (!rc) {
-+		rc = ocfs2_stack_glue_register(&user_stack);
-+		if (rc)
-+			ocfs2_control_exit();
-+	}
-+
-+	return rc;
- }
- 
- static void __exit user_stack_exit(void)
- {
-+	ocfs2_stack_glue_unregister(&user_stack);
- 	ocfs2_control_exit();
- }
- 
-diff --git a/fs/ocfs2/stackglue.c b/fs/ocfs2/stackglue.c
-index bf45d9b..119f60c 100644
---- a/fs/ocfs2/stackglue.c
-+++ b/fs/ocfs2/stackglue.c
-@@ -228,13 +228,20 @@ void ocfs2_stack_glue_set_locking_protocol(struct ocfs2_locking_protocol *proto)
- EXPORT_SYMBOL_GPL(ocfs2_stack_glue_set_locking_protocol);
- 
- 
-+/*
-+ * The ocfs2_dlm_lock() and ocfs2_dlm_unlock() functions take
-+ * "struct ocfs2_lock_res *astarg" instead of "void *astarg" because the
-+ * underlying stack plugins need to pilfer the lksb off of the lock_res.
-+ * If some other structure needs to be passed as an astarg, the plugins
-+ * will need to be given a different avenue to the lksb.
-+ */
- int ocfs2_dlm_lock(struct ocfs2_cluster_connection *conn,
- 		   int mode,
- 		   union ocfs2_dlm_lksb *lksb,
- 		   u32 flags,
- 		   void *name,
- 		   unsigned int namelen,
--		   void *astarg)
-+		   struct ocfs2_lock_res *astarg)
- {
- 	BUG_ON(lproto == NULL);
- 
-@@ -246,7 +253,7 @@ EXPORT_SYMBOL_GPL(ocfs2_dlm_lock);
- int ocfs2_dlm_unlock(struct ocfs2_cluster_connection *conn,
- 		     union ocfs2_dlm_lksb *lksb,
- 		     u32 flags,
--		     void *astarg)
-+		     struct ocfs2_lock_res *astarg)
- {
- 	BUG_ON(lproto == NULL);
- 
-@@ -360,7 +367,8 @@ void ocfs2_cluster_hangup(const char *group, int grouplen)
- 	BUG_ON(group == NULL);
- 	BUG_ON(group[grouplen] != '\0');
- 
--	active_stack->sp_ops->hangup(group, grouplen);
-+	if (active_stack->sp_ops->hangup)
-+		active_stack->sp_ops->hangup(group, grouplen);
- 
- 	/* cluster_disconnect() was called with hangup_pending==1 */
- 	ocfs2_stack_driver_put();
-diff --git a/fs/ocfs2/stackglue.h b/fs/ocfs2/stackglue.h
-index d88bc65..005e4f1 100644
---- a/fs/ocfs2/stackglue.h
-+++ b/fs/ocfs2/stackglue.h
-@@ -26,6 +26,7 @@
- #include <linux/dlmconstants.h>
- 
- #include "dlm/dlmapi.h"
-+#include <linux/dlm.h>
- 
- /*
-  * dlmconstants.h does not have a LOCAL flag.  We hope to remove it
-@@ -60,6 +61,17 @@ struct ocfs2_locking_protocol {
- 	void (*lp_unlock_ast)(void *astarg, int error);
- };
- 
-+
-+/*
-+ * The dlm_lockstatus struct includes lvb space, but the dlm_lksb struct only
-+ * has a pointer to separately allocated lvb space.  This struct exists only to
-+ * include in the lksb union to make space for a combined dlm_lksb and lvb.
-+ */
-+struct fsdlm_lksb_plus_lvb {
-+	struct dlm_lksb lksb;
-+	char lvb[DLM_LVB_LEN];
-+};
-+
- /*
-  * A union of all lock status structures.  We define it here so that the
-  * size of the union is known.  Lock status structures are embedded in
-@@ -67,6 +79,8 @@ struct ocfs2_locking_protocol {
-  */
- union ocfs2_dlm_lksb {
- 	struct dlm_lockstatus lksb_o2dlm;
-+	struct dlm_lksb lksb_fsdlm;
-+	struct fsdlm_lksb_plus_lvb padding;
- };
- 
- /*
-@@ -221,17 +235,18 @@ int ocfs2_cluster_disconnect(struct ocfs2_cluster_connection *conn,
- void ocfs2_cluster_hangup(const char *group, int grouplen);
- int ocfs2_cluster_this_node(unsigned int *node);
- 
-+struct ocfs2_lock_res;
- int ocfs2_dlm_lock(struct ocfs2_cluster_connection *conn,
- 		   int mode,
- 		   union ocfs2_dlm_lksb *lksb,
- 		   u32 flags,
- 		   void *name,
- 		   unsigned int namelen,
--		   void *astarg);
-+		   struct ocfs2_lock_res *astarg);
- int ocfs2_dlm_unlock(struct ocfs2_cluster_connection *conn,
- 		     union ocfs2_dlm_lksb *lksb,
- 		     u32 flags,
--		     void *astarg);
-+		     struct ocfs2_lock_res *astarg);
- 
- int ocfs2_dlm_lock_status(union ocfs2_dlm_lksb *lksb);
- void *ocfs2_dlm_lvb(union ocfs2_dlm_lksb *lksb);
--- 
-1.5.3.8
-
+	-hpa
