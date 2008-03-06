@@ -1,75 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755458AbYCFTNA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765565AbYCFTNf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755458AbYCFTNA (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Mar 2008 14:13:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763092AbYCFTMm
+	id S1765565AbYCFTNf (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Mar 2008 14:13:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763123AbYCFTMo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Mar 2008 14:12:42 -0500
-Received: from agminet01.oracle.com ([141.146.126.228]:15093 "EHLO
-	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755035AbYCFTMk (ORCPT
+	Thu, 6 Mar 2008 14:12:44 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:37255
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1761962AbYCFTMk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Thu, 6 Mar 2008 14:12:40 -0500
-Date: Thu, 6 Mar 2008 11:08:47 -0800
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: Badari Pulavarty <pbadari@us.ibm.com>
-Cc: lkml <linux-kernel@vger.kernel.org>, linuxppc-dev@ozlabs.org,
-       paulus@samba.org, Yasunori Goto <y-goto@jp.fujitsu.com>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH 1/5] generic __remove_pages() support
-Message-Id: <20080306110847.11d7cb26.randy.dunlap@oracle.com>
-In-Reply-To: <1204829734.7939.61.camel@dyn9047017100.beaverton.ibm.com>
-References: <1204829673.7939.59.camel@dyn9047017100.beaverton.ibm.com>
-	<1204829734.7939.61.camel@dyn9047017100.beaverton.ibm.com>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.4.7 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+Date: Thu, 06 Mar 2008 11:12:39 -0800 (PST)
+Message-Id: <20080306.111239.85901884.davem@davemloft.net>
+To: kamalesh@linux.vnet.ibm.com
+Cc: sfr@canb.auug.org.au, linux-next@vger.kernel.org,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org, apw@shadowen.org
+Subject: Re: [BUILD_FAILURE] linux-next: Tree for March 6 build failure
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <47CFF332.4040807@linux.vnet.ibm.com>
+References: <20080306162606.970aefe1.sfr@canb.auug.org.au>
+	<47CFF332.4040807@linux.vnet.ibm.com>
+X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 06 Mar 2008 10:55:34 -0800 Badari Pulavarty wrote:
+From: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+Date: Thu, 06 Mar 2008 19:05:46 +0530
 
-> Generic helper function to remove section mappings and sysfs entries
-> for the section of the memory we are removing.  offline_pages() correctly 
-> adjusted zone and marked the pages reserved.
-
-Such generic (exported, non-static) interfaces could use some
-(kernel-)docs, please.
-
-> Issue: If mem_map, usemap allocation could come from different places -
-> kmalloc, vmalloc, alloc_pages or bootmem. There is no easy way
-> to find and free up bootmem allocations.
+> The kernel build fails with error
 > 
-> Signed-off-by: Badari Pulavarty <pbadari@us.ibm.com>
-> 
-> ---
->  include/linux/memory_hotplug.h |    4 +++
->  mm/memory_hotplug.c            |   44 +++++++++++++++++++++++++++++++++++++++++
->  mm/sparse.c                    |   43 +++++++++++++++++++++++++++++++++++++---
->  3 files changed, 88 insertions(+), 3 deletions(-)
+> net/built-in.o(.toc1+0x2060): undefined reference to `udplite_statistics'
+> net/built-in.o(.toc1+0x2100): undefined reference to `udplite_statistics'
+> make: *** [.tmp_vmlinux1] Error 1
 
-> Index: linux-2.6.25-rc2/include/linux/memory_hotplug.h
-> ===================================================================
-> --- linux-2.6.25-rc2.orig/include/linux/memory_hotplug.h	2008-02-27 12:58:17.000000000 -0800
-> +++ linux-2.6.25-rc2/include/linux/memory_hotplug.h	2008-02-27 13:00:04.000000000 -0800
-> @@ -64,6 +65,8 @@ extern int offline_pages(unsigned long, 
->  /* reasonably generic interface to expand the physical pages in a zone  */
->  extern int __add_pages(struct zone *zone, unsigned long start_pfn,
->  	unsigned long nr_pages);
-> +extern int __remove_pages(struct zone *zone, unsigned long start_pfn,
-> +	unsigned long nr_pages);
->  
->  /*
->   * Walk thorugh all memory which is registered as resource.
+Please provide your .config so that others have a chance
+to reproduce and fix this.
 
-           through :)
-
----
-~Randy
+Thank you.
