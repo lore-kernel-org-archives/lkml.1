@@ -1,27 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933546AbYCFCcC@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933892AbYCFCcm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933546AbYCFCcC (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Mar 2008 21:32:02 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932472AbYCFCZO
+	id S933892AbYCFCcm (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Mar 2008 21:32:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932789AbYCFCZP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Mar 2008 21:25:14 -0500
-Received: from wa-out-1112.google.com ([209.85.146.178]:63689 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932224AbYCFCZK (ORCPT
+	Wed, 5 Mar 2008 21:25:15 -0500
+Received: from gv-out-0910.google.com ([216.239.58.187]:26847 "EHLO
+	gv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932428AbYCFCZN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Mar 2008 21:25:10 -0500
+	Wed, 5 Mar 2008 21:25:13 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=subject:from:to:cc:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=SAC0VswvDGkGnJPPSnVcEkMq/mAWIdBjKTd/H7jrN0hDv4VMdy9zGp2SjjJGemTlk/A4gvv3Jxj7m96dsvmpkWosFTPqYSl8RgyJ9utTXKEVzX2NzJZ7REudwM6teBDXal3b+cEAepyvKCht2alwdWO9w4Sr2i89wJwBv1gPqpM=
-Subject: [PATCH 14/16] spi: replace remaining __FUNCTION__ occurrences
+        b=IYwKK5ND+o9W4zlzPrCoY9bq+vf/ymWdEcj2x5Eyqx2/aO4yKRuGnmDp5NGobo74XRi84zENxPfATcH6hdBSMPfghJ1qVFnmf04Hc5pJ1oDDMixy7hW/AVRXrQk2IzX2XtX54hUYWkF9jpzeLJKpxbcvkCZnEgkQjojmfifOQF8=
+Subject: [PATCH 15/16] power: replace remaining __FUNCTION__ occurrences
 From: Harvey Harrison <harvey.harrison@gmail.com>
-To: David Brownell <david-b@pacbell.net>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: LKML <linux-kernel@vger.kernel.org>
 Content-Type: text/plain
-Date: Wed, 05 Mar 2008 18:24:58 -0800
-Message-Id: <1204770298.14154.50.camel@brick>
+Date: Wed, 05 Mar 2008 18:24:59 -0800
+Message-Id: <1204770299.14154.51.camel@brick>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.12.1 
 Content-Transfer-Encoding: 7bit
@@ -33,112 +32,86 @@ __FUNCTION__ is gcc-specific, use __func__
 
 Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
 ---
- drivers/spi/omap_uwire.c  |    4 ++--
- drivers/spi/spi_bitbang.c |    2 +-
- drivers/spi/spi_mpc83xx.c |    2 +-
- drivers/spi/spi_s3c24xx.c |    2 +-
- drivers/spi/xilinx_spi.c  |    8 ++++----
- 5 files changed, 9 insertions(+), 9 deletions(-)
+ drivers/power/ds2760_battery.c    |    4 ++--
+ drivers/power/power_supply_core.c |    6 +++---
+ drivers/power/power_supply_leds.c |    4 ++--
+ 3 files changed, 7 insertions(+), 7 deletions(-)
 
-diff --git a/drivers/spi/omap_uwire.c b/drivers/spi/omap_uwire.c
-index 8245b51..ea18077 100644
---- a/drivers/spi/omap_uwire.c
-+++ b/drivers/spi/omap_uwire.c
-@@ -151,7 +151,7 @@ static int wait_uwire_csr_flag(u16 mask, u16 val, int might_not_catch)
- 		if (time_after(jiffies, max_jiffies)) {
- 			printk(KERN_ERR "%s: timeout. reg=%#06x "
- 					"mask=%#06x val=%#06x\n",
--			       __FUNCTION__, w, mask, val);
-+			       __func__, w, mask, val);
- 			return -1;
- 		}
- 		c++;
-@@ -437,7 +437,7 @@ static int uwire_setup_transfer(struct spi_device *spi, struct spi_transfer *t)
- 	}
- 	omap_uwire_configure_mode(spi->chip_select, flags);
- 	pr_debug("%s: uwire flags %02x, armxor %lu KHz, SCK %lu KHz\n",
--			__FUNCTION__, flags,
-+			__func__, flags,
- 			clk_get_rate(uwire->ck) / 1000,
- 			rate / 1000);
- 	status = 0;
-diff --git a/drivers/spi/spi_bitbang.c b/drivers/spi/spi_bitbang.c
-index f7f8580..061e344 100644
---- a/drivers/spi/spi_bitbang.c
-+++ b/drivers/spi/spi_bitbang.c
-@@ -214,7 +214,7 @@ int spi_bitbang_setup(struct spi_device *spi)
- 		return retval;
+diff --git a/drivers/power/ds2760_battery.c b/drivers/power/ds2760_battery.c
+index bdb9b72..71be36f 100644
+--- a/drivers/power/ds2760_battery.c
++++ b/drivers/power/ds2760_battery.c
+@@ -262,7 +262,7 @@ static void ds2760_battery_work(struct work_struct *work)
+ 		struct ds2760_device_info, monitor_work.work);
+ 	const int interval = HZ * 60;
  
- 	dev_dbg(&spi->dev, "%s, mode %d, %u bits/w, %u nsec/bit\n",
--			__FUNCTION__, spi->mode & (SPI_CPOL | SPI_CPHA),
-+			__func__, spi->mode & (SPI_CPOL | SPI_CPHA),
- 			spi->bits_per_word, 2 * cs->nsecs);
+-	dev_dbg(di->dev, "%s\n", __FUNCTION__);
++	dev_dbg(di->dev, "%s\n", __func__);
  
- 	/* NOTE we _need_ to call chipselect() early, ideally with adapter
-diff --git a/drivers/spi/spi_mpc83xx.c b/drivers/spi/spi_mpc83xx.c
-index 04f7cd9..df9f0d4 100644
---- a/drivers/spi/spi_mpc83xx.c
-+++ b/drivers/spi/spi_mpc83xx.c
-@@ -310,7 +310,7 @@ static int mpc83xx_spi_setup(struct spi_device *spi)
- 		return retval;
+ 	ds2760_battery_update_status(di);
+ 	queue_delayed_work(di->monitor_wqueue, &di->monitor_work, interval);
+@@ -275,7 +275,7 @@ static void ds2760_battery_external_power_changed(struct power_supply *psy)
+ {
+ 	struct ds2760_device_info *di = to_ds2760_device_info(psy);
  
- 	dev_dbg(&spi->dev, "%s, mode %d, %u bits/w, %u nsec\n",
--		__FUNCTION__, spi->mode & (SPI_CPOL | SPI_CPHA),
-+		__func__, spi->mode & (SPI_CPOL | SPI_CPHA),
- 		spi->bits_per_word, 2 * mpc83xx_spi->nsecs);
+-	dev_dbg(di->dev, "%s\n", __FUNCTION__);
++	dev_dbg(di->dev, "%s\n", __func__);
  
- 	/* NOTE we _need_ to call chipselect() early, ideally with adapter
-diff --git a/drivers/spi/spi_s3c24xx.c b/drivers/spi/spi_s3c24xx.c
-index 6e834b8..4ad5abb 100644
---- a/drivers/spi/spi_s3c24xx.c
-+++ b/drivers/spi/spi_s3c24xx.c
-@@ -169,7 +169,7 @@ static int s3c24xx_spi_setup(struct spi_device *spi)
- 	}
+ 	cancel_delayed_work(&di->monitor_work);
+ 	queue_delayed_work(di->monitor_wqueue, &di->monitor_work, HZ/10);
+diff --git a/drivers/power/power_supply_core.c b/drivers/power/power_supply_core.c
+index 03d6a38..138dd76 100644
+--- a/drivers/power/power_supply_core.c
++++ b/drivers/power/power_supply_core.c
+@@ -39,7 +39,7 @@ static void power_supply_changed_work(struct work_struct *work)
+ 	struct power_supply *psy = container_of(work, struct power_supply,
+ 						changed_work);
  
- 	dev_dbg(&spi->dev, "%s: mode %d, %u bpw, %d hz\n",
--		__FUNCTION__, spi->mode, spi->bits_per_word,
-+		__func__, spi->mode, spi->bits_per_word,
- 		spi->max_speed_hz);
+-	dev_dbg(psy->dev, "%s\n", __FUNCTION__);
++	dev_dbg(psy->dev, "%s\n", __func__);
  
- 	return 0;
-diff --git a/drivers/spi/xilinx_spi.c b/drivers/spi/xilinx_spi.c
-index 5d04f52..9ba5741 100644
---- a/drivers/spi/xilinx_spi.c
-+++ b/drivers/spi/xilinx_spi.c
-@@ -151,13 +151,13 @@ static int xilinx_spi_setup_transfer(struct spi_device *spi,
- 	hz = (t) ? t->speed_hz : spi->max_speed_hz;
- 	if (bits_per_word != 8) {
- 		dev_err(&spi->dev, "%s, unsupported bits_per_word=%d\n",
--			__FUNCTION__, bits_per_word);
-+			__func__, bits_per_word);
- 		return -EINVAL;
- 	}
+ 	class_for_each_device(power_supply_class, psy,
+ 			      __power_supply_changed_work);
+@@ -51,7 +51,7 @@ static void power_supply_changed_work(struct work_struct *work)
  
- 	if (hz && xspi->speed_hz > hz) {
- 		dev_err(&spi->dev, "%s, unsupported clock rate %uHz\n",
--			__FUNCTION__, hz);
-+			__func__, hz);
- 		return -EINVAL;
- 	}
+ void power_supply_changed(struct power_supply *psy)
+ {
+-	dev_dbg(psy->dev, "%s\n", __FUNCTION__);
++	dev_dbg(psy->dev, "%s\n", __func__);
  
-@@ -181,7 +181,7 @@ static int xilinx_spi_setup(struct spi_device *spi)
- 
- 	if (spi->mode & ~MODEBITS) {
- 		dev_err(&spi->dev, "%s, unsupported mode bits %x\n",
--			__FUNCTION__, spi->mode & ~MODEBITS);
-+			__func__, spi->mode & ~MODEBITS);
- 		return -EINVAL;
- 	}
- 
-@@ -190,7 +190,7 @@ static int xilinx_spi_setup(struct spi_device *spi)
- 		return retval;
- 
- 	dev_dbg(&spi->dev, "%s, mode %d, %u bits/w, %u nsec/bit\n",
--		__FUNCTION__, spi->mode & MODEBITS, spi->bits_per_word, 0);
-+		__func__, spi->mode & MODEBITS, spi->bits_per_word, 0);
- 
- 	return 0;
+ 	schedule_work(&psy->changed_work);
  }
+@@ -82,7 +82,7 @@ int power_supply_am_i_supplied(struct power_supply *psy)
+ 	error = class_for_each_device(power_supply_class, psy,
+ 				      __power_supply_am_i_supplied);
+ 
+-	dev_dbg(psy->dev, "%s %d\n", __FUNCTION__, error);
++	dev_dbg(psy->dev, "%s %d\n", __func__, error);
+ 
+ 	return error;
+ }
+diff --git a/drivers/power/power_supply_leds.c b/drivers/power/power_supply_leds.c
+index fa3034f..2dece40 100644
+--- a/drivers/power/power_supply_leds.c
++++ b/drivers/power/power_supply_leds.c
+@@ -24,7 +24,7 @@ static void power_supply_update_bat_leds(struct power_supply *psy)
+ 	if (psy->get_property(psy, POWER_SUPPLY_PROP_STATUS, &status))
+ 		return;
+ 
+-	dev_dbg(psy->dev, "%s %d\n", __FUNCTION__, status.intval);
++	dev_dbg(psy->dev, "%s %d\n", __func__, status.intval);
+ 
+ 	switch (status.intval) {
+ 	case POWER_SUPPLY_STATUS_FULL:
+@@ -101,7 +101,7 @@ static void power_supply_update_gen_leds(struct power_supply *psy)
+ 	if (psy->get_property(psy, POWER_SUPPLY_PROP_ONLINE, &online))
+ 		return;
+ 
+-	dev_dbg(psy->dev, "%s %d\n", __FUNCTION__, online.intval);
++	dev_dbg(psy->dev, "%s %d\n", __func__, online.intval);
+ 
+ 	if (online.intval)
+ 		led_trigger_event(psy->online_trig, LED_FULL);
 -- 
 1.5.4.GIT
 
