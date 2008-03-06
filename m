@@ -1,47 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760704AbYCFGF1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760230AbYCFGML@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760704AbYCFGF1 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Mar 2008 01:05:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752835AbYCFGFJ
+	id S1760230AbYCFGML (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Mar 2008 01:12:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752804AbYCFGL5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Mar 2008 01:05:09 -0500
-Received: from wa-out-1112.google.com ([209.85.146.182]:28683 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752522AbYCFGFI (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Mar 2008 01:05:08 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
-        b=FmscCLSKle13QKxAsd6mkYJMmoQXgjeRrkC7Ng/iiMhg+TCxFem8OH7TF+nLmdYjiG7XmdSHV0oN4RRyUwxF/7J7hNzu02jI9oOnMtNhQrq5a7T0d8WdvL3xv8aVHZGtYk0a/fu/w/lUxwQidyNndMyd+M/vQd5XijdHjXbIX6g=
-Message-ID: <47CF898D.8060902@gmail.com>
-Date: Thu, 06 Mar 2008 15:05:01 +0900
-From: Tejun Heo <htejun@gmail.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20070801)
+	Thu, 6 Mar 2008 01:11:57 -0500
+Received: from ns2.suse.de ([195.135.220.15]:56130 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752536AbYCFGL5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 6 Mar 2008 01:11:57 -0500
+Date: Wed, 5 Mar 2008 22:00:38 -0800
+From: Greg KH <gregkh@suse.de>
+To: Dhaval Giani <dhaval@linux.vnet.ibm.com>
+Cc: Alexey Dobriyan <adobriyan@sw.ru>, Holger Kiehl <Holger.Kiehl@dwd.de>,
+       linux-kernel@vger.kernel.org, vatsa@linux.vnet.ibm.com, mingo@elte.hu
+Subject: Re: sysfs: duplicate filename '74' can not be created
+Message-ID: <20080306060038.GA5574@suse.de>
+References: <20080304160940.GC19059@localhost.sw.ru> <20080304163339.GA11160@linux.vnet.ibm.com> <20080304192435.GA5525@suse.de> <20080305085922.GA8951@linux.vnet.ibm.com>
 MIME-Version: 1.0
-To: Mark Lord <liml@rtr.ca>
-CC: Hugo Mills <hugo-lkml@carfax.org.uk>, linux-kernel@vger.kernel.org,
-       linux-ide@vger.kernel.org
-Subject: Re: Spurious completions during NCQ
-References: <20080215134658.GB27745@vlad.carfax.org.uk> <47B6EE53.1070101@rtr.ca> <47CF878B.8090101@gmail.com>
-In-Reply-To: <47CF878B.8090101@gmail.com>
-X-Enigmail-Version: 0.95.5
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080305085922.GA8951@linux.vnet.ibm.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Tejun Heo wrote:
-> Mark Lord wrote:
->> Tejun, have the spurious completion fixes been backported
->> to 2.6.23 / 2.6.22 yet ?  Those kernels will be in common use
->> for some time to come, and this fix is more or less essential.
+On Wed, Mar 05, 2008 at 02:29:22PM +0530, Dhaval Giani wrote:
+> On Tue, Mar 04, 2008 at 11:24:36AM -0800, Greg KH wrote:
+> > On Tue, Mar 04, 2008 at 10:03:39PM +0530, Dhaval Giani wrote:
+> > > On Tue, Mar 04, 2008 at 07:09:40PM +0300, Alexey Dobriyan wrote:
+> > > > [Cc'ing /sys/kernel/uids guys]
+> > > > 
+> > > 
+> > > [Also adding gregkh to the cc :)]
+> > > 
+> > > > > Mar  3 13:50:01 helena kernel: sysfs: duplicate filename '74' can not be created
+> > > > > Mar  3 13:50:01 helena kernel: WARNING: at fs/sysfs/dir.c:424 sysfs_add_one()
+> > > > > Mar  3 13:50:01 helena kernel: Pid: 21911, comm: sshd Not tainted 2.6.24.3 #1
+> > 
+> > What kernel version is this?  2.6.24 had lots of "issues" with the uids
+> > code, I'm amazed it worked at all :)
+> > 
 > 
-> Not that I know of.  I'm prepping patches now.
-> 
+> :). Seems to be a stable series kernel (2.6.24.3). Can you please tell
+> me some of the issues, so that I can try to go fix it up.
 
-Oh... it already happened in 2.6.22.15 and 2.6.23.10.  Nice.
+Ick, there were a lot of them.  Take a look at the changes to
+kernel/user.c (I think that was the file).  A lot of the work was
+reworking it due to the kobject changes, but at the same time lots of
+code was fixed.
 
--- 
-tejun
+It is a harmless warning, everything should still work properly, right?
+
+thanks,
+
+greg k-h
