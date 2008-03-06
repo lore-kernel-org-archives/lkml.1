@@ -1,37 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759575AbYCFEzL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760281AbYCFE5g@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759575AbYCFEzL (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Mar 2008 23:55:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756436AbYCFEy5
+	id S1760281AbYCFE5g (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Mar 2008 23:57:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757524AbYCFE5W
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Mar 2008 23:54:57 -0500
-Received: from hu-out-0506.google.com ([72.14.214.225]:36300 "EHLO
-	hu-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755651AbYCFEy4 (ORCPT
+	Wed, 5 Mar 2008 23:57:22 -0500
+Received: from tama50.ecl.ntt.co.jp ([129.60.39.147]:57786 "EHLO
+	tama50.ecl.ntt.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755651AbYCFE5V (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Mar 2008 23:54:56 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
-        b=fUoqBqzVBeHPQ2h8kOdnNP+MtDPb5nfcoboY4WY7OeTG4CiLxiFZz2wGzFzOUUgSzAx8cwaikcYyMs3ukoGC/NHChByYuc9mpLyNLdfrOcN1FHHeNUSFgd8d2ZGhEVUcGIoR3eaMRxuyoPLG5YEW/RS4KzJj7H2vbrGZZVWOs5I=
-Message-ID: <853e8bb0803052054r7ae9759cq791ea95cd96e821e@mail.gmail.com>
-Date: Thu, 6 Mar 2008 12:54:43 +0800
-From: "tnzuvr iousw" <fcpbms349162@gmail.com>
-To: a1b2c37476@yahoo.com.tw, timking@pchome.com.tw, panny728@ms18.hinet.net,
-       sane66@pchome.com.tw, deidre@pchome.com.tw, gwochin7@ms22.hinet.net,
-       nyanter@yahoo.com.tw, laurent_brianne@carrefour.com,
-       s0103nt@yahoo.com.tw, chung1@ms42.hinet.net
-Subject: =?BIG5?B?sXqquqZusNOrfq1upFe5cbX4pFe95qfkqka0yyw=?= =?BIG5?B?uvS49KRXveaxerROrW6n5FNCVFOn2q3MSGE=?=
-MIME-Version: 1.0
-Content-Type: text/plain; charset=BIG5
-Content-Disposition: inline
+	Wed, 5 Mar 2008 23:57:21 -0500
+To: htejun@gmail.com
+Cc: fujita.tomonori@lab.ntt.co.jp, tomof@acm.org, efault@gmx.de,
+       jens.axboe@oracle.com, James.Bottomley@HansenPartnership.com,
+       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       linux-ide@vger.kernel.org, linux-scsi@vger.kernel.org,
+       jgarzik@pobox.com, bzolnier@gmail.com
+Subject: Re: [PATCH] block: fix residual byte count handling
+From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+In-Reply-To: <47CDECD1.6070601@gmail.com>
+References: <47CDDC31.4070806@gmail.com>
+	<20080305092619Y.fujita.tomonori@lab.ntt.co.jp>
+	<47CDECD1.6070601@gmail.com>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Message-Id: <20080306135627P.fujita.tomonori@lab.ntt.co.jp>
+Date: Thu, 06 Mar 2008 13:56:27 +0900
+X-Dispatcher: imput version 20040704(IM147)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
-Content-Transfer-Encoding: 8bit
-X-MIME-Autoconverted: from base64 to 8bit by alpha id m264tGnq015574
 
-iMFTmXdQLH1  iMFTmXdQLH1¬İ¨ì§Ú­Ìªº¼s§i¤F¶Ü ?
-¤£¬O§Aªº°Ó«~¤£¦n , ¤£¬O§AªºªA°È¤£¦n ...§A»İ­nªº¥u¬O©e°U§Ú­Ì¥Nµo¶l¥ó¼s§i !
-0988106077 ROCK
-iMFTmXdQLH1 iMFTmXdQLH1ÿôèº{.nÇ+‰·Ÿ®‰­†+%ŠËÿ±éİ¶¥Šwÿº{.nÇ+‰·¥Š{±şG«éÿŠ{ayºÊ‡Ú™ë,j­¢f£¢·hšïêÿ‘êçz_è®(­éšŠİ¢j"ú¶m§ÿÿ¾«şG«éÿ¢¸?™¨è­Ú&£ø§~á¶iO•æ¬z·švØ^¶m§ÿÿÃÿ¶ìÿ¢¸?–I¥
+On Wed, 05 Mar 2008 09:44:01 +0900
+Tejun Heo <htejun@gmail.com> wrote:
+
+> >> Things going the other way is fine with me but I at least want to hear a
+> >> valid rationale.  Till now all I got is "because that's the true size"
+> >> which doesn't really make much sense to me.
+> > 
+> > Most of users of request structure care about only the real data
+> > length, don't care about padding and drain length. Why do they bother
+> > to use a helper function to get the real data length?
+> 
+> I think this is where the difference comes from.  To me it seems
+> internal usage seems more wide-spread and more delicate and not too many
+> care about the true size and when they do only in well defined places.
+> Maybe it comes from the difference between your most and my most.
+
+I don't think that they only in well defined places.
+
+If you see scsi mid-layer (and LLDs), you can find several places that
+use rq->data_len as the true data length.
+
+Breaking rq->data_len == the true data length theoretically
+wrong. Even if it affects only libata now, it will hurt us, I think.
