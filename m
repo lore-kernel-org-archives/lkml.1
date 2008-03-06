@@ -1,46 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765072AbYCFMcJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932456AbYCFMeh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765072AbYCFMcJ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Mar 2008 07:32:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755799AbYCFMbw
+	id S932456AbYCFMeh (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Mar 2008 07:34:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757200AbYCFMe3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Mar 2008 07:31:52 -0500
-Received: from mail.dunaweb.hu ([81.17.184.3]:60363 "EHLO mail.dunaweb.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753866AbYCFMbv convert rfc822-to-8bit (ORCPT
+	Thu, 6 Mar 2008 07:34:29 -0500
+Received: from mk-filter-1-a-1.mail.uk.tiscali.com ([212.74.100.52]:25720 "EHLO
+	mk-filter-1-a-1.mail.uk.tiscali.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754450AbYCFMe2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Mar 2008 07:31:51 -0500
-X-Greylist: delayed 400 seconds by postgrey-1.27 at vger.kernel.org; Thu, 06 Mar 2008 07:31:51 EST
-Message-ID: <47CFE29E.8080107@dunaweb.hu>
-Date: Thu, 06 Mar 2008 13:25:02 +0100
-From: Zoltan Boszormenyi <zboszor@dunaweb.hu>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
+	Thu, 6 Mar 2008 07:34:28 -0500
+X-Trace: 672893876/mk-filter-1.mail.uk.tiscali.com/B2C/$THROTTLED-DYNAMIC/CUSTOMER-DYNAMIC-IP/81.1.89.66
+X-SBRS: None
+X-RemoteIP: 81.1.89.66
+X-IP-MAIL-FROM: adrian@newgolddream.dyndns.info
+X-IP-BHB: Once
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: Ao8CAMJzz0dRAVlC/2dsb2JhbACBVqo0
+Message-ID: <8031.85.118.17.158.1204806681.squirrel@newgolddream.dyndns.info>
+In-Reply-To: <20080305234653.GA5904@kroah.com>
+References: <8b67d60803051525g3aca775dmc14d1c2450b34168@mail.gmail.com>
+    <20080305234653.GA5904@kroah.com>
+Date: Thu, 6 Mar 2008 12:31:21 -0000 (UTC)
+Subject: Re: Behaviour of device_register
+From: "Adrian McMenamin" <adrian@newgolddream.dyndns.info>
+To: "Greg KH" <greg@kroah.com>
+Cc: "Adrian McMenamin" <lkmladrian@gmail.com>,
+       "LKML" <linux-kernel@vger.kernel.org>,
+       "linux-sh" <linux-sh@vger.kernel.org>
+User-Agent: SquirrelMail/1.4.10a
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-Cc: jeff@garzik.org, akpm@linux-foundation.org, hancockr@shaw.ca,
-       prakash@punnoor.de, pchen@nvidia.com, kluo@nvidia.com
-Subject: SWNCQ should be enabled by default
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+X-Priority: 3 (Normal)
+Importance: Normal
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Wed, March 5, 2008 11:46 pm, Greg KH wrote:
+> On Wed, Mar 05, 2008 at 11:25:48PM +0000, Adrian McMenamin wrote:
+>> The observed behaviour for me is that it appears to be blocking the
+>> vblank interrupt on my box (or more accurately stopping the workqueue
+>> that the interrupt handler calls from running). And without the vblank
+>> my bus won't process dma and so therefore the attempt to register the
+>> device in question fails.
+>>
+>> But I can see no reason from a glance over the code why that (vblanks
+>> being blocked) would be the case - have I missed something and the
+>> vblanks will be blocked, or should I be looking elsewhere for the root
+>> cause of this problem?
+>
+> device_register(), on it's own, does not touch any hardware, nor prevent
+> anything else in the kernel from happening.
+>
+> So I think you need to look elsewhere, like into the bus that is doing
+> the device_register() call :)
+>
 
-the patch is already upstream, thanks for that.
-I am using it without any problems. Currently I am
-using kernel-2.6.24.3-12.fc8 from the updates-testing
-repository of Fedora 8. I had to add
 
-options scsi_hostadapter1 swncq=1
-options sata_nv swncq=1
+It turns out this is a lock contention issue.
 
-before upgrading to get it enabled.
-Can we enable it by default for 2.6.25?
-It's completely independent from ADMA and its problems.
-E.g. my machine has 8GB memory now, no problems at all.
-
-Best regards,
-Zoltán Böszörményi
+The code blocks waiting for a lock that will never be freed.
 
