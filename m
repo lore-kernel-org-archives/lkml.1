@@ -1,38 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934281AbYCFC6z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934433AbYCFC7x@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934281AbYCFC6z (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Mar 2008 21:58:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932147AbYCFC6R
+	id S934433AbYCFC7x (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Mar 2008 21:59:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933510AbYCFC7N
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Mar 2008 21:58:17 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:54174
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1765856AbYCFC6Q (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Mar 2008 21:58:16 -0500
-Date: Wed, 05 Mar 2008 18:58:15 -0800 (PST)
-Message-Id: <20080305.185815.179794444.davem@davemloft.net>
-To: harvey.harrison@gmail.com
-Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Subject: Re: [PATCH] net: replace remaining __FUNCTION__ occurances
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <1204575406.3266.55.camel@brick>
-References: <1204575406.3266.55.camel@brick>
-X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+	Wed, 5 Mar 2008 21:59:13 -0500
+Received: from mail.suse.de ([195.135.220.2]:50860 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S934353AbYCFC7K (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 5 Mar 2008 21:59:10 -0500
+Date: Thu, 6 Mar 2008 03:59:08 +0100
+From: Nick Piggin <npiggin@suse.de>
+To: Christoph Lameter <clameter@sgi.com>
+Cc: Andrea Arcangeli <andrea@qumranet.com>, Jack Steiner <steiner@sgi.com>,
+       akpm@linux-foundation.org, Robin Holt <holt@sgi.com>,
+       Avi Kivity <avi@qumranet.com>, Izik Eidus <izike@qumranet.com>,
+       kvm-devel@lists.sourceforge.net,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, general@lists.openfabrics.org,
+       Steve Wise <swise@opengridcomputing.com>,
+       Roland Dreier <rdreier@cisco.com>, Kanoj Sarcar <kanojsarcar@yahoo.com>,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       daniel.blueman@quadrics.com
+Subject: Re: [PATCH] mmu notifiers #v8
+Message-ID: <20080306025908.GC27150@wotan.suse.de>
+References: <20080220103942.GU7128@v2.random> <20080221045430.GC15215@wotan.suse.de> <20080221144023.GC9427@v2.random> <20080221161028.GA14220@sgi.com> <20080227192610.GF28483@v2.random> <20080302155457.GK8091@v2.random> <20080303032934.GA3301@wotan.suse.de> <Pine.LNX.4.64.0803031058230.6917@schroedinger.engr.sgi.com> <20080305003722.GG1510@wotan.suse.de> <Pine.LNX.4.64.0803051048100.29794@schroedinger.engr.sgi.com>
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0803051048100.29794@schroedinger.engr.sgi.com>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Harvey Harrison <harvey.harrison@gmail.com>
-Date: Mon, 03 Mar 2008 12:16:46 -0800
-
-> __FUNCTION__ is gcc-specific, use __func__
+On Wed, Mar 05, 2008 at 10:48:24AM -0800, Christoph Lameter wrote:
+> On Wed, 5 Mar 2008, Nick Piggin wrote:
 > 
-> Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
+> > Um, it's bound to the *Linux page tables*, yes. And I have no idea why
+> > you would use the paravirt ops for this.
+> 
+> paravirt ops allows interception of page table operations?
 
-This doesn't apply cleanly to net-2.6.26 and I don't
-think it's appropriate for 2.6.25 so you'll need to
-respin this patch.
+Maybe possible but it's totally the wrong API for it.
+
