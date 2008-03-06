@@ -1,66 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934308AbYCFCfA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934806AbYCFCfu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934308AbYCFCfA (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Mar 2008 21:35:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934190AbYCFC3r
+	id S934806AbYCFCfu (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Mar 2008 21:35:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934302AbYCFC36
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Mar 2008 21:29:47 -0500
-Received: from web36709.mail.mud.yahoo.com ([209.191.85.43]:47310 "HELO
-	web36709.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S933664AbYCFC3p (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Mar 2008 21:29:45 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com;
-  h=X-YMail-OSG:Received:Date:From:Subject:To:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-ID;
-  b=UiRt6YayvWuIsjHMTemXn1zkWjO891Gh95B5XTBV+bCTpEpCTRrNt2ECFUJ/dqQTKs/0xJR9D12o7A6UrIPFhwcg7K3Y0WZ6yUaEjyK0sFWay54Bakd/3I26H54W/YyHyxiuj4MjZbMUN+wsDXIJ2ch6dtnSAR+cFgZsa3B/LAE=;
-X-YMail-OSG: qL7MBgoVM1mpfPvbtrve79UzZd6Sw2STSFiHuDXMQuYCH0wSmMcl0Av64TS.ThgsshBZs_1fdiep7UNXXnvMPRJqxEAChD_hJKwlk39zgK9DB1oeKg69eupg2gXSoQ--
-Date: Wed, 5 Mar 2008 18:29:43 -0800 (PST)
-From: Alex Dubov <oakad@yahoo.com>
-Subject: Re: [PATCH 11/11] memstick: add support for JMicron jmb38x MemoryStick host controller
-To: Linux kernel mailing list <linux-kernel@vger.kernel.org>
+	Wed, 5 Mar 2008 21:29:58 -0500
+Received: from mail.lang.hm ([64.81.33.126]:40237 "EHLO bifrost.lang.hm"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S934471AbYCFC35 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 5 Mar 2008 21:29:57 -0500
+Date: Wed, 5 Mar 2008 18:31:00 -0800 (PST)
+From: david@lang.hm
+X-X-Sender: dlang@asgard.lang.hm
+To: phillips@phunq.net
+cc: linux-kernel <linux-kernel@vger.kernel.org>
+Subject: [RFC] An alternative interface to device mapper 
+Message-ID: <alpine.DEB.1.00.0803051830290.14137@asgard.lang.hm>
+User-Agent: Alpine 1.00 (DEB 882 2007-12-20)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-Message-ID: <446410.44539.qm@web36709.mail.mud.yahoo.com>
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---- Andrew Morton <akpm@linux-foundation.org> wrote:
+forgive the lack of threading, I missed this yesterday and just found this via 
+the LWN article.
 
-> On Wed,  5 Mar 2008 03:02:28 +1100
-> oakad@exemail.com.au wrote:
-> 
-> > +static void jmb38x_ms_reset(struct jmb38x_ms_host *host)
-> > +{
-> > +	unsigned int host_ctl = readl(host->addr + HOST_CONTROL);
-> > +
-> > +	writel(host_ctl | HOST_CONTROL_RESET_REQ | HOST_CONTROL_RESET,
-> > +	       host->addr + HOST_CONTROL);
-> > +
-> > +	while (HOST_CONTROL_RESET_REQ
-> > +	       & (host_ctl = readl(host->addr + HOST_CONTROL))) {
-> 
-> host_ctl is written to but is not used again.
+I like the general approach that you are taking of simplifying the interface, 
+however in your interest of making it easy to write C code for you are making 
+the new interface difficult to script for. is it really that painful to to make 
+everything file based so that it can be scripted as well?
 
-It was supposed to be used in the dev_dbg printout.
+frankly, most sysadmins do a lot of scripting and almost no C coding, so while 
+a nice C interface is useful for creating tools, a good scripting interface is 
+critical for good, flexible use by sysadmins.
 
-> 
-> > +		ndelay(100);
-> > +		dev_dbg(&host->chip->pdev->dev, "reset\n");
-> > +	}
-> > +
-> > +	writel(INT_STATUS_ALL, host->addr + INT_STATUS_ENABLE);
-> > +	writel(INT_STATUS_ALL, host->addr + INT_SIGNAL_ENABLE);
-> > +
-> > +	dev_dbg(&host->chip->pdev->dev, "reset\n");
-> > +}
-> 
-
-
-
-      ____________________________________________________________________________________
-Be a better friend, newshound, and 
-know-it-all with Yahoo! Mobile.  Try it now.  http://mobile.yahoo.com/;_ylt=Ahu06i62sR8HDtDypao8Wcj9tAcJ 
-
+David Lang
