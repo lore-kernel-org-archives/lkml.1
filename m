@@ -1,367 +1,256 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934548AbYCFQrh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934858AbYCFQvS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934548AbYCFQrh (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Mar 2008 11:47:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757416AbYCFQrV
+	id S934858AbYCFQvS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Mar 2008 11:51:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763098AbYCFQvE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Mar 2008 11:47:21 -0500
-Received: from sacred.ru ([62.205.161.221]:42233 "EHLO sacred.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754426AbYCFQrT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Mar 2008 11:47:19 -0500
-Message-ID: <47D01F98.5010609@openvz.org>
-Date: Thu, 06 Mar 2008 19:45:12 +0300
-From: Pavel Emelyanov <xemul@openvz.org>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080213)
+	Thu, 6 Mar 2008 11:51:04 -0500
+Received: from wx-out-0506.google.com ([66.249.82.229]:47074 "EHLO
+	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1762334AbYCFQvB (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 6 Mar 2008 11:51:01 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=n3xYbhLKvnfKE3pLFm5z56MDhEbqiTkGm601BIi0YCiv59h2XDKn+z6JUOf/YeK9im9Uuy2/nqXscZNvPsfmlRwwNX0QnNtKw9FYc6ug2TVIter9Q6ko7X9a2RVp6/dryTGFdecd4zUl/fXprj/UNe210lygQ0LcC03EKR7W8Gs=
+Message-ID: <386072610803060850i2e0b6e35q7e05448d5fd39bca@mail.gmail.com>
+Date: Thu, 6 Mar 2008 08:50:32 -0800
+From: "Bryan Wu" <cooloney@kernel.org>
+To: "Andrew Morton" <akpm@linux-foundation.org>
+Subject: Re: [Linux-fbdev-devel] [PATCH 1/1 try#2] [VIDEO/FRAMEBUFFER]: add BF52x EZkit Display driver
+Cc: bryan.wu@analog.com, linux-fbdev-devel@lists.sourceforge.net,
+       "Randy Dunlap" <randy.dunlap@oracle.com>,
+       "Michael Hennerich" <michael.hennerich@analog.com>,
+       linux-kernel@vger.kernel.org, adaplas@gmail.com
+In-Reply-To: <20080305230223.920765e9.akpm@linux-foundation.org>
 MIME-Version: 1.0
-To: Stephen Smalley <sds@tycho.nsa.gov>
-CC: Andrew Morton <akpm@linux-foundation.org>,
-       David Miller <davem@davemloft.net>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linux Netdev List <netdev@vger.kernel.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       James Morris <jmorris@namei.org>, Eric Paris <eparis@parisplace.org>
-Subject: Re: [PATCH] Make /proc/net a symlink on /proc/self/net (v2)
-References: <47CFB6CA.8090001@openvz.org> <1204821325.1397.298.camel@moss-spartans.epoch.ncsc.mil>
-In-Reply-To: <1204821325.1397.298.camel@moss-spartans.epoch.ncsc.mil>
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-Greylist: Sender succeeded SMTP AUTH authentication, not delayed by milter-greylist-3.0 (sacred.ru [62.205.161.221]); Thu, 06 Mar 2008 19:45:09 +0300 (MSK)
+Content-Disposition: inline
+References: <1201686800-31739-1-git-send-email-bryan.wu@analog.com>
+	 <20080130083820.c1bcbc14.randy.dunlap@oracle.com>
+	 <1201711783.6463.11.camel@roc-laptop>
+	 <20080305230223.920765e9.akpm@linux-foundation.org>
+X-Google-Sender-Auth: 5047ef958fb7583a
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Stephen Smalley wrote:
-> On Thu, 2008-03-06 at 12:18 +0300, Pavel Emelyanov wrote:
->> Current /proc/net is done with so called "shadows", but current
->> implementation is broken and has little chances to get fixed.
->>
->> The problem is that dentries subtree of /proc/net directory has
->> fancy revalidation rules to make processes living in different
->> net namespaces see different entries in /proc/net subtree, but
->> currently, tasks see in the /proc/net subdir the contents of any
->> other namespace, depending on who opened the file first.
->>
->> The proposed fix is to turn /proc/net into a symlink, which points
->> to /proc/self/net, which in turn shows what previously was in
->> /proc/net - the network-related info, from the net namespace the
->> appropriate task lives in.
->>
->> # ls -l /proc/net
->> lrwxrwxrwx  1 root root 8 Mar  5 15:17 /proc/net -> self/net
->>
->> In other words - this behaves like /proc/mounts, but unlike
->> "mounts", "net" is not a file, but a directory.
->>
->> Fixed a task_struct leak in get_proc_task_net, pointed out by Paul.
-> 
-> Does this break SELinux labeling of /proc/net inodes and thus its access
-> controls on them?
+On Wed, Mar 5, 2008 at 11:02 PM, Andrew Morton
+<akpm@linux-foundation.org> wrote:
+> On Thu, 31 Jan 2008 00:49:43 +0800 Bryan Wu <bryan.wu@analog.com> wrote:
+>  >
+>
+>  bah, January.
+>
+>  I'm trolling the fbdev list only now - I guess I'll slip this one into
+>  2.6.25.
+>
 
-It should not, since the proc_dir_etries are still organized in
-a required hierarchy.
+You finally caught this, -;)
 
->> Signed-off-by: Pavel Emelyanov <xemul@openvz.org>
->>
->> ---
->>
->> diff --git a/fs/proc/base.c b/fs/proc/base.c
->> index 96ee899..cc43cf0 100644
->> --- a/fs/proc/base.c
->> +++ b/fs/proc/base.c
->> @@ -2274,6 +2274,7 @@ static const struct pid_entry tgid_base_stuff[] = {
->>  	DIR("task",       S_IRUGO|S_IXUGO, task),
->>  	DIR("fd",         S_IRUSR|S_IXUSR, fd),
->>  	DIR("fdinfo",     S_IRUSR|S_IXUSR, fdinfo),
->> +	DIR("net",        S_IRUGO|S_IXUSR, net),
->>  	REG("environ",    S_IRUSR, environ),
->>  	INF("auxv",       S_IRUSR, pid_auxv),
->>  	ONE("status",     S_IRUGO, pid_status),
->> diff --git a/fs/proc/generic.c b/fs/proc/generic.c
->> index 68971e6..a36ad3c 100644
->> --- a/fs/proc/generic.c
->> +++ b/fs/proc/generic.c
->> @@ -377,15 +377,14 @@ static struct dentry_operations proc_dentry_operations =
->>   * Don't create negative dentries here, return -ENOENT by hand
->>   * instead.
->>   */
->> -struct dentry *proc_lookup(struct inode * dir, struct dentry *dentry, struct nameidata *nd)
->> +struct dentry *proc_lookup_de(struct proc_dir_entry *de, struct inode *dir,
->> +		struct dentry *dentry)
->>  {
->>  	struct inode *inode = NULL;
->> -	struct proc_dir_entry * de;
->>  	int error = -ENOENT;
->>  
->>  	lock_kernel();
->>  	spin_lock(&proc_subdir_lock);
->> -	de = PDE(dir);
->>  	if (de) {
->>  		for (de = de->subdir; de ; de = de->next) {
->>  			if (de->namelen != dentry->d_name.len)
->> @@ -393,8 +392,6 @@ struct dentry *proc_lookup(struct inode * dir, struct dentry *dentry, struct nam
->>  			if (!memcmp(dentry->d_name.name, de->name, de->namelen)) {
->>  				unsigned int ino;
->>  
->> -				if (de->shadow_proc)
->> -					de = de->shadow_proc(current, de);
->>  				ino = de->low_ino;
->>  				de_get(de);
->>  				spin_unlock(&proc_subdir_lock);
->> @@ -417,6 +414,12 @@ out_unlock:
->>  	return ERR_PTR(error);
->>  }
->>  
->> +struct dentry *proc_lookup(struct inode *dir, struct dentry *dentry,
->> +		struct nameidata *nd)
->> +{
->> +	return proc_lookup_de(PDE(dir), dir, dentry);
->> +}
->> +
->>  /*
->>   * This returns non-zero if at EOF, so that the /proc
->>   * root directory can use this and check if it should
->> @@ -426,10 +429,9 @@ out_unlock:
->>   * value of the readdir() call, as long as it's non-negative
->>   * for success..
->>   */
->> -int proc_readdir(struct file * filp,
->> -	void * dirent, filldir_t filldir)
->> +int proc_readdir_de(struct proc_dir_entry *de, struct file *filp, void *dirent,
->> +		filldir_t filldir)
->>  {
->> -	struct proc_dir_entry * de;
->>  	unsigned int ino;
->>  	int i;
->>  	struct inode *inode = filp->f_path.dentry->d_inode;
->> @@ -438,7 +440,6 @@ int proc_readdir(struct file * filp,
->>  	lock_kernel();
->>  
->>  	ino = inode->i_ino;
->> -	de = PDE(inode);
->>  	if (!de) {
->>  		ret = -EINVAL;
->>  		goto out;
->> @@ -499,6 +500,13 @@ out:	unlock_kernel();
->>  	return ret;	
->>  }
->>  
->> +int proc_readdir(struct file *filp, void *dirent, filldir_t filldir)
->> +{
->> +	struct inode *inode = filp->f_path.dentry->d_inode;
->> +
->> +	return proc_readdir_de(PDE(inode), filp, dirent, filldir);
->> +}
->> +
->>  /*
->>   * These are the generic /proc directory operations. They
->>   * use the in-memory "struct proc_dir_entry" tree to parse
->> diff --git a/fs/proc/internal.h b/fs/proc/internal.h
->> index 1c81c8f..bc72f5c 100644
->> --- a/fs/proc/internal.h
->> +++ b/fs/proc/internal.h
->> @@ -64,6 +64,8 @@ extern const struct file_operations proc_numa_maps_operations;
->>  extern const struct file_operations proc_smaps_operations;
->>  extern const struct file_operations proc_clear_refs_operations;
->>  extern const struct file_operations proc_pagemap_operations;
->> +extern const struct file_operations proc_net_operations;
->> +extern const struct inode_operations proc_net_inode_operations;
->>  
->>  void free_proc_entry(struct proc_dir_entry *de);
->>  
->> @@ -83,3 +85,8 @@ static inline int proc_fd(struct inode *inode)
->>  {
->>  	return PROC_I(inode)->fd;
->>  }
->> +
->> +struct dentry *proc_lookup_de(struct proc_dir_entry *de, struct inode *ino,
->> +		struct dentry *dentry);
->> +int proc_readdir_de(struct proc_dir_entry *de, struct file *filp, void *dirent,
->> +		filldir_t filldir);
->> diff --git a/fs/proc/proc_net.c b/fs/proc/proc_net.c
->> index 14e9b5a..18d413c 100644
->> --- a/fs/proc/proc_net.c
->> +++ b/fs/proc/proc_net.c
->> @@ -63,6 +63,63 @@ int seq_release_net(struct inode *ino, struct file *f)
->>  }
->>  EXPORT_SYMBOL_GPL(seq_release_net);
->>  
->> +static struct net *get_proc_task_net(struct inode *dir)
->> +{
->> +	struct task_struct *task;
->> +	struct nsproxy *ns;
->> +	struct net *net = NULL;
->> +
->> +	rcu_read_lock();
->> +	task = pid_task(proc_pid(dir), PIDTYPE_PID);
->> +	if (task != NULL) {
->> +		ns = task_nsproxy(task);
->> +		if (ns != NULL)
->> +			net = get_net(ns->net_ns);
->> +	}
->> +	rcu_read_unlock();
->> +
->> +	return net;
->> +}
->> +
->> +static struct dentry *proc_tgid_net_lookup(struct inode *dir,
->> +		struct dentry *dentry, struct nameidata *nd)
->> +{
->> +	struct dentry *de;
->> +	struct net *net;
->> +
->> +	de = ERR_PTR(-ENOENT);
->> +	net = get_proc_task_net(dir);
->> +	if (net != NULL) {
->> +		de = proc_lookup_de(net->proc_net, dir, dentry);
->> +		put_net(net);
->> +	}
->> +	return de;
->> +}
->> +
->> +const struct inode_operations proc_net_inode_operations = {
->> +	.lookup		= proc_tgid_net_lookup,
->> +};
->> +
->> +static int proc_tgid_net_readdir(struct file *filp, void *dirent,
->> +		filldir_t filldir)
->> +{
->> +	int ret;
->> +	struct net *net;
->> +
->> +	ret = -EINVAL;
->> +	net = get_proc_task_net(filp->f_path.dentry->d_inode);
->> +	if (net != NULL) {
->> +		ret = proc_readdir_de(net->proc_net, filp, dirent, filldir);
->> +		put_net(net);
->> +	}
->> +	return ret;
->> +}
->> +
->> +const struct file_operations proc_net_operations = {
->> +	.read		= generic_read_dir,
->> +	.readdir	= proc_tgid_net_readdir,
->> +};
->> +
->>  
->>  struct proc_dir_entry *proc_net_fops_create(struct net *net,
->>  	const char *name, mode_t mode, const struct file_operations *fops)
->> @@ -83,14 +140,6 @@ struct net *get_proc_net(const struct inode *inode)
->>  }
->>  EXPORT_SYMBOL_GPL(get_proc_net);
->>  
->> -static struct proc_dir_entry *shadow_pde;
->> -
->> -static struct proc_dir_entry *proc_net_shadow(struct task_struct *task,
->> -						struct proc_dir_entry *de)
->> -{
->> -	return task->nsproxy->net_ns->proc_net;
->> -}
->> -
->>  struct proc_dir_entry *proc_net_mkdir(struct net *net, const char *name,
->>  		struct proc_dir_entry *parent)
->>  {
->> @@ -104,45 +153,35 @@ EXPORT_SYMBOL_GPL(proc_net_mkdir);
->>  
->>  static __net_init int proc_net_ns_init(struct net *net)
->>  {
->> -	struct proc_dir_entry *root, *netd, *net_statd;
->> +	struct proc_dir_entry *netd, *net_statd;
->>  	int err;
->>  
->>  	err = -ENOMEM;
->> -	root = kzalloc(sizeof(*root), GFP_KERNEL);
->> -	if (!root)
->> +	netd = kzalloc(sizeof(*netd), GFP_KERNEL);
->> +	if (!netd)
->>  		goto out;
->>  
->> -	err = -EEXIST;
->> -	netd = proc_net_mkdir(net, "net", root);
->> -	if (!netd)
->> -		goto free_root;
->> +	netd->data = net;
->>  
->>  	err = -EEXIST;
->>  	net_statd = proc_net_mkdir(net, "stat", netd);
->>  	if (!net_statd)
->>  		goto free_net;
->>  
->> -	root->data = net;
->> -
->> -	net->proc_net_root = root;
->>  	net->proc_net = netd;
->>  	net->proc_net_stat = net_statd;
->> -	err = 0;
->> +	return 0;
->>  
->> +free_net:
->> +	kfree(netd);
->>  out:
->>  	return err;
->> -free_net:
->> -	remove_proc_entry("net", root);
->> -free_root:
->> -	kfree(root);
->> -	goto out;
->>  }
->>  
->>  static __net_exit void proc_net_ns_exit(struct net *net)
->>  {
->>  	remove_proc_entry("stat", net->proc_net);
->> -	remove_proc_entry("net", net->proc_net_root);
->> -	kfree(net->proc_net_root);
->> +	kfree(net->proc_net);
->>  }
->>  
->>  static struct pernet_operations __net_initdata proc_net_ns_ops = {
->> @@ -152,8 +191,7 @@ static struct pernet_operations __net_initdata proc_net_ns_ops = {
->>  
->>  int __init proc_net_init(void)
->>  {
->> -	shadow_pde = proc_mkdir("net", NULL);
->> -	shadow_pde->shadow_proc = proc_net_shadow;
->> +	proc_symlink("net", NULL, "self/net");
->>  
->>  	return register_pernet_subsys(&proc_net_ns_ops);
->>  }
->> diff --git a/include/linux/proc_fs.h b/include/linux/proc_fs.h
->> index d9a9e71..9b6c935 100644
->> --- a/include/linux/proc_fs.h
->> +++ b/include/linux/proc_fs.h
->> @@ -50,8 +50,6 @@ typedef	int (read_proc_t)(char *page, char **start, off_t off,
->>  typedef	int (write_proc_t)(struct file *file, const char __user *buffer,
->>  			   unsigned long count, void *data);
->>  typedef int (get_info_t)(char *, char **, off_t, int);
->> -typedef struct proc_dir_entry *(shadow_proc_t)(struct task_struct *task,
->> -						struct proc_dir_entry *pde);
->>  
->>  struct proc_dir_entry {
->>  	unsigned int low_ino;
->> @@ -82,7 +80,6 @@ struct proc_dir_entry {
->>  	int pde_users;	/* number of callers into module in progress */
->>  	spinlock_t pde_unload_lock; /* proc_fops checks and pde_users bumps */
->>  	struct completion *pde_unload_completion;
->> -	shadow_proc_t *shadow_proc;
->>  };
->>  
->>  struct kcore_list {
->> diff --git a/include/net/net_namespace.h b/include/net/net_namespace.h
->> index 28738b7..923f2b8 100644
->> --- a/include/net/net_namespace.h
->> +++ b/include/net/net_namespace.h
->> @@ -31,7 +31,6 @@ struct net {
->>  
->>  	struct proc_dir_entry 	*proc_net;
->>  	struct proc_dir_entry 	*proc_net_stat;
->> -	struct proc_dir_entry 	*proc_net_root;
->>  
->>  	struct list_head	sysctl_table_headers;
->>  
->> --
->> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
->> the body of a message to majordomo@vger.kernel.org
->> More majordomo info at  http://vger.kernel.org/majordomo-info.html
->> Please read the FAQ at  http://www.tux.org/lkml/
+>
+>  > +static int bfin_t350mcqb_request_ports(int action)
+>  > +{
+>  > +     u16 ppi0_req_8[] = {P_PPI0_CLK, P_PPI0_FS1, P_PPI0_FS2,
+>  > +                         P_PPI0_D0, P_PPI0_D1, P_PPI0_D2,
+>  > +                         P_PPI0_D3, P_PPI0_D4, P_PPI0_D5,
+>  > +                         P_PPI0_D6, P_PPI0_D7, 0};
+>
+>  This array will be assembled on the stack at runtime.  If
+>  peripheral_request_list() doesn't alter it then it would be better to
+>  create it at compile-time by adding `static'.
+>
 
+Exactly, I will do it.
+
+>
+>  > +     if (action) {
+>  > +             if (peripheral_request_list(ppi0_req_8, DRIVER_NAME)) {
+>  > +                     printk(KERN_ERR "Requesting Peripherals faild\n");
+>  > +                     return -EFAULT;
+>  > +             }
+>  > +     } else
+>  > +             peripheral_free_list(ppi0_req_8);
+>  > +
+>  > +     return 0;
+>  > +}
+>  > +
+>
+> > +static int bfin_t350mcqb_fb_mmap(struct fb_info *info, struct vm_area_struct *vma)
+>  > +{
+>  > +     struct bfin_t350mcqbfb_info *fbi = info->par;
+>  > +
+>  > +     if (fbi->lq043_mmap)
+>  > +             return -1;
+>  > +
+>  > +     spin_lock(&fbi->lock);
+>  > +     fbi->lq043_mmap = 1;
+>  > +     spin_unlock(&fbi->lock);
+>
+>  the locking here probably doesn't do a lot.
+>
+
+Actually, this locking is necessary here for trying to mmap by two
+application, IMO.
+
+>
+>  > +     vma->vm_start = (unsigned long)(fbi->fb_buffer + ACTIVE_VIDEO_MEM_OFFSET);
+>  > +
+>  > +     vma->vm_end = vma->vm_start + info->fix.smem_len;
+>  > +     /* For those who don't understand how mmap works, go read
+>  > +      *   Documentation/nommu-mmap.txt.
+>  > +      * For those that do, you will know that the VM_MAYSHARE flag
+>  > +      * must be set in the vma->vm_flags structure on noMMU
+>  > +      *   Other flags can be set, and are documented in
+>  > +      *   include/linux/mm.h
+>  > +      */
+>  > +     vma->vm_flags |= VM_MAYSHARE;
+>  > +
+>  > +     return 0;
+>  > +}
+>  > +
+>  > +
+>
+>
+> > +static int __init bfin_t350mcqb_probe(struct platform_device *pdev)
+>  > +{
+>  > +     struct bfin_t350mcqbfb_info *info;
+>  > +     struct fb_info *fbinfo;
+>  > +     int ret;
+>  > +
+>  > +     printk(KERN_INFO DRIVER_NAME ": %dx%d %d-bit RGB FrameBuffer initializing...\n",
+>  > +                                      LCD_X_RES, LCD_Y_RES, LCD_BPP);
+>  > +
+>  > +     if (request_dma(CH_PPI, "CH_PPI") < 0) {
+>  > +             printk(KERN_ERR DRIVER_NAME
+>  > +                    ": couldn't request CH_PPI DMA\n");
+>  > +             ret = -EFAULT;
+>  > +             goto out1;
+>  > +     }
+>  > +
+>  > +     fbinfo =
+>  > +         framebuffer_alloc(sizeof(struct bfin_t350mcqbfb_info), &pdev->dev);
+>  > +     if (!fbinfo) {
+>  > +             ret = -ENOMEM;
+>  > +             goto out2;
+>  > +     }
+>  > +
+>  > +     info = fbinfo->par;
+>  > +     info->fb = fbinfo;
+>  > +     info->dev = &pdev->dev;
+>  > +
+>  > +     platform_set_drvdata(pdev, fbinfo);
+>  > +
+>  > +     strcpy(fbinfo->fix.id, driver_name);
+>  > +
+>  > +     fbinfo->fix.type = FB_TYPE_PACKED_PIXELS;
+>  > +     fbinfo->fix.type_aux = 0;
+>  > +     fbinfo->fix.xpanstep = 0;
+>  > +     fbinfo->fix.ypanstep = 0;
+>  > +     fbinfo->fix.ywrapstep = 0;
+>  > +     fbinfo->fix.accel = FB_ACCEL_NONE;
+>  > +     fbinfo->fix.visual = FB_VISUAL_TRUECOLOR;
+>  > +
+>  > +     fbinfo->var.nonstd = 0;
+>  > +     fbinfo->var.activate = FB_ACTIVATE_NOW;
+>  > +     fbinfo->var.height = -1;
+>  > +     fbinfo->var.width = -1;
+>  > +     fbinfo->var.accel_flags = 0;
+>  > +     fbinfo->var.vmode = FB_VMODE_NONINTERLACED;
+>  > +
+>  > +     fbinfo->var.xres = LCD_X_RES;
+>  > +     fbinfo->var.xres_virtual = LCD_X_RES;
+>  > +     fbinfo->var.yres = LCD_Y_RES;
+>  > +     fbinfo->var.yres_virtual = LCD_Y_RES;
+>  > +     fbinfo->var.bits_per_pixel = LCD_BPP;
+>  > +
+>  > +     fbinfo->var.red.offset = 0;
+>  > +     fbinfo->var.green.offset = 8;
+>  > +     fbinfo->var.blue.offset = 16;
+>  > +     fbinfo->var.transp.offset = 0;
+>  > +     fbinfo->var.red.length = 8;
+>  > +     fbinfo->var.green.length = 8;
+>  > +     fbinfo->var.blue.length = 8;
+>  > +     fbinfo->var.transp.length = 0;
+>  > +     fbinfo->fix.smem_len = LCD_X_RES * LCD_Y_RES * LCD_BPP / 8;
+>  > +
+>  > +     fbinfo->fix.line_length = fbinfo->var.xres_virtual *
+>  > +         fbinfo->var.bits_per_pixel / 8;
+>  > +
+>  > +
+>  > +     fbinfo->fbops = &bfin_t350mcqb_fb_ops;
+>  > +     fbinfo->flags = FBINFO_FLAG_DEFAULT;
+>  > +
+>  > +     info->fb_buffer =
+>  > +         dma_alloc_coherent(NULL, fbinfo->fix.smem_len, &info->dma_handle,
+>  > +                            GFP_KERNEL);
+>  > +
+>  > +     if (NULL == info->fb_buffer) {
+>  > +             printk(KERN_ERR DRIVER_NAME
+>  > +                    ": couldn't allocate dma buffer.\n");
+>  > +             ret = -ENOMEM;
+>  > +             goto out3;
+>  > +     }
+>  > +
+>  > +     memset(info->fb_buffer, 0, fbinfo->fix.smem_len);
+>  > +
+>  > +     fbinfo->screen_base = (void *)info->fb_buffer + ACTIVE_VIDEO_MEM_OFFSET;
+>  > +     fbinfo->fix.smem_start = (int)info->fb_buffer + ACTIVE_VIDEO_MEM_OFFSET;
+>  > +
+>  > +     fbinfo->fbops = &bfin_t350mcqb_fb_ops;
+>  > +
+>  > +     fbinfo->pseudo_palette = kmalloc(sizeof(u32) * 16, GFP_KERNEL);
+>  > +     if (!fbinfo->pseudo_palette) {
+>  > +             printk(KERN_ERR DRIVER_NAME
+>  > +                    "Fail to allocate pseudo_palette\n");
+>  > +
+>  > +             ret = -ENOMEM;
+>  > +             goto out4;
+>  > +     }
+>  > +
+>  > +     memset(fbinfo->pseudo_palette, 0, sizeof(u32) * 16);
+>
+>  You just invented kzalloc!
+>
+
+Right
+
+>
+>
+>  > +     if (fb_alloc_cmap(&fbinfo->cmap, BFIN_LCD_NBR_PALETTE_ENTRIES, 0)
+>  > +         < 0) {
+>  > +             printk(KERN_ERR DRIVER_NAME
+>  > +                    "Fail to allocate colormap (%d entries)\n",
+>  > +                    BFIN_LCD_NBR_PALETTE_ENTRIES);
+>  > +             ret = -EFAULT;
+>  > +             goto out5;
+>  > +     }
+>  > +
+>  > +     if (bfin_t350mcqb_request_ports(1)) {
+>  > +             printk(KERN_ERR DRIVER_NAME ": couldn't request gpio port.\n");
+>  > +             ret = -EFAULT;
+>  > +             goto out6;
+>  > +     }
+>  > +
+>  > +     info->irq = platform_get_irq(pdev, 0);
+>  > +     if (info->irq < 0) {
+>  > +             ret = -EINVAL;
+>  > +             goto out7;
+>  > +     }
+>  > +
+>  > +     if (request_irq(info->irq, (void *)bfin_t350mcqb_irq_error, IRQF_DISABLED,
+>  > +                     "PPI ERROR", info) < 0) {
+>  > +             printk(KERN_ERR DRIVER_NAME
+>  > +                    ": unable to request PPI ERROR IRQ\n");
+>  > +             ret = -EFAULT;
+>
+>  EFAULT?
+>
+
+It should return the request_irq return value and other similar
+function calls should be checked like this,
+right? Michael.
+
+-Bryan
