@@ -1,58 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765631AbYCFMTE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932774AbYCFMUK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765631AbYCFMTE (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Mar 2008 07:19:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755433AbYCFMSy
+	id S932774AbYCFMUK (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Mar 2008 07:20:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757279AbYCFMTw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Mar 2008 07:18:54 -0500
-Received: from bzq-179-150-194.static.bezeqint.net ([212.179.150.194]:59520
-	"EHLO il.qumranet.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753533AbYCFMSx (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Mar 2008 07:18:53 -0500
-Message-ID: <47CFE066.7000902@qumranet.com>
-Date: Thu, 06 Mar 2008 14:15:34 +0200
-From: Avi Kivity <avi@qumranet.com>
+	Thu, 6 Mar 2008 07:19:52 -0500
+Received: from smtp7.yandex.ru ([213.180.200.45]:55337 "EHLO smtp7.yandex.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755472AbYCFMTw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 6 Mar 2008 07:19:52 -0500
+X-Greylist: delayed 507 seconds by postgrey-1.27 at vger.kernel.org; Thu, 06 Mar 2008 07:19:51 EST
+X-Yandex-Spam: 1 
+X-Yandex-Front: smtp7
+X-Yandex-TimeMark: 1204805469
+X-MsgDayCount: 4
+X-Comment: RFC 2476 MSA function at smtp7.yandex.ru logged sender identity as: dmantipov
+Message-ID: <47CFDF55.6030103@yandex.ru>
+Date: Thu, 06 Mar 2008 15:11:01 +0300
+From: Dmitry Antipov <dmantipov@yandex.ru>
 User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Glauber Costa <glommer@gmail.com>, Glauber Costa <gcosta@redhat.com>,
-       linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-       tglx@linutronix.de
-Subject: Re: [PATCH 1/1] export native versions of machine_ops functions
-References: <1204739040-18422-1-git-send-email-gcosta@redhat.com> <20080306105500.GK13391@elte.hu> <5d6222a80803060349g69f570f3j9eaab980d7c58da@mail.gmail.com> <20080306121313.GA19613@elte.hu>
-In-Reply-To: <20080306121313.GA19613@elte.hu>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Nick Piggin <nickpiggin@yahoo.com.au>
+CC: Eric Dumazet <dada1@cosmosbay.com>, David Miller <davem@davemloft.net>,
+       linux-kernel@vger.kernel.org
+Subject: Re: Are Linux pipes slower than the FreeBSD ones ?
+References: <1389671204703217@webmail34.yandex.ru> <20080305.000014.245410231.davem@davemloft.net> <47CE6C41.3090303@cosmosbay.com> <200803060120.38032.nickpiggin@yahoo.com.au>
+In-Reply-To: <200803060120.38032.nickpiggin@yahoo.com.au>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0rc1 (firebolt.argo.co.il [0.0.0.0]); Thu, 06 Mar 2008 14:15:34 +0200 (IST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
-> * Glauber Costa <glommer@gmail.com> wrote:
->
->   
->>>  i'd like to do this only if there are actual users - otherwise 
->>>  we'll get a trickle of "make needlessly global functions static" 
->>>  patches a few weeks later ;-)
->>>       
->> KVM is a user for that. Because it registers a memory area in which 
->> the host will be continually writting to (the clock), when it 
->> shutdown, the host have no way to know it has to stop. If you're 
->> really shutting down, there's no problem. But if you're kexecing, for 
->> example, the host will keep writting to a random memory area after the 
->> new kernel installs.
->>     
->
-> i mean, i agree in general - but KVM is not a user of any of those 
-> currently static functions. So i've applied your patch but lets make 
-> sure those functions really get used :)
->   
+Nick Piggin wrote:
 
-The user will be in my 2.6.26 queue.  Unfortunately it means a 
-dependency between kvm.git and x86.git, again.
+> One thing to try is pinning both processes on the same CPU. This
+> may be what the FreeBSD scheduler is preferring to do, and it ends
+> up being really a tradeoff that helps some workloads and hurts
+> others. With a very unscientific test with an old kernel, the
+> pipe.c test gets anywhere from about 1.5 to 3 times faster when
+> running it as taskset 1 ./pipe
 
--- 
-Do not meddle in the internals of kernels, for they are subtle and quick to panic.
+Sounds interesting. What kernel version did you tried? Can you
+send your .config to me?
 
+I've tried this trick on 2.6.25-rc4, and got ~20% more throughput for
+large (> 8K) buffers at the cost of going ~30% down for the small ones.
+
+Dmitry
