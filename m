@@ -1,162 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760545AbYCFJ5F@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761386AbYCFJ6V@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760545AbYCFJ5F (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Mar 2008 04:57:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753948AbYCFJ4z
+	id S1761386AbYCFJ6V (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Mar 2008 04:58:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753948AbYCFJ6M
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Mar 2008 04:56:55 -0500
-Received: from mu-out-0910.google.com ([209.85.134.184]:37707 "EHLO
-	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753294AbYCFJ4x (ORCPT
+	Thu, 6 Mar 2008 04:58:12 -0500
+Received: from n21.bullet.mail.mud.yahoo.com ([68.142.200.112]:39534 "HELO
+	n21.bullet.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1753843AbYCFJ6L (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Mar 2008 04:56:53 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:cc:subject:date:message-id:x-mailer:sender;
-        b=XWy/83LfgAwJDd8diXwW0olaoCJrolJ9lDkN/rxzuvslVbpBypXsS+AdL+HIMv0vEwOB/DZQFqXSIXkpjIk6knf7XW8JC+jyqfPF9uOjz5MWpMDGLWXOMhjv5vSkLoFutcE5bDF+bKfU+fQz61mPZcUDpQEH+ahpnGhqcDNgyhg=
-From: Peter Korsgaard <jacmet@sunsite.dk>
-To: hpa@zytor.com, linux-kernel@vger.kernel.org
-Cc: Peter Korsgaard <jacmet@sunsite.dk>
-Subject: [PATCH] x86-boot: don't request VBE2 information
-Date: Thu,  6 Mar 2008 10:56:45 +0100
-Message-Id: <1204797405-18059-1-git-send-email-jacmet@sunsite.dk>
-X-Mailer: git-send-email 1.5.4.1
+	Thu, 6 Mar 2008 04:58:11 -0500
+X-Yahoo-Newman-Id: 916082.18187.bm@omp425.mail.mud.yahoo.com
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com.au;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=dLIFNqI42AU8Tlqd5i3PigoAhwLBl8ZqC6Dy9nRftsEl3Ibavg1rWH4J63V+DGZH7rukNFlPcfFKyHRfyAqr0ROub3GZC7apAvvq+xt2uU+8ZCyqAxGmVzhDGkpM+Lqj7H3u7h2DxQ+N8vBv3qQIKX6K0wKDzKPg0UA/fGupdkI=  ;
+X-YMail-OSG: vrowjicVM1lOpxuLp8rSCiopoGGAqVbbl_IyqnUfjPG4VXxh4lYm2AQGhIGZ_XMURj7Xwjj9MQ--
+X-Yahoo-Newman-Property: ymail-3
+From: Nick Piggin <nickpiggin@yahoo.com.au>
+To: Laurent Vivier <Laurent.Vivier@bull.net>
+Subject: Re: [PATCH] Modify loop device to be able to manage partitions of the disk image
+Date: Thu, 6 Mar 2008 20:57:50 +1100
+User-Agent: KMail/1.9.5
+Cc: linux-kernel@vger.kernel.org
+References: <1204796612842-git-send-email-Laurent.Vivier@bull.net>
+In-Reply-To: <1204796612842-git-send-email-Laurent.Vivier@bull.net>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200803062057.50181.nickpiggin@yahoo.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The new x86 setup code (4fd06960f120) broke booting on an old P3/500MHz
-with an onboard Voodoo3 of mine. After debugging it, it turned out
-to be caused by the fact that the vesa probing now asks for VBE2 data.
+On Thursday 06 March 2008 20:43, Laurent Vivier wrote:
+> This patch allows to use loop device with partitionned disk image.
+>
+> Original behavior of loop is not modified.
+>
+> A new parameter is introduced to define how many partition we want to be
+> able to manage per loop device. This parameter is "max_part".
+>
+> For instance, to manage 63 partitions / loop device, we will do:
+> # modprobe max_part=63
+> # ls -l /dev/loop?*
+> brw-rw---- 1 root disk 7,   0 2008-03-05 14:55 /dev/loop0
+> brw-rw---- 1 root disk 7,  64 2008-03-05 14:55 /dev/loop1
+> brw-rw---- 1 root disk 7, 128 2008-03-05 14:55 /dev/loop2
+> brw-rw---- 1 root disk 7, 192 2008-03-05 14:55 /dev/loop3
+> brw-rw---- 1 root disk 7, 256 2008-03-05 14:55 /dev/loop4
+> brw-rw---- 1 root disk 7, 320 2008-03-05 14:55 /dev/loop5
+> brw-rw---- 1 root disk 7, 384 2008-03-05 14:55 /dev/loop6
+> brw-rw---- 1 root disk 7, 448 2008-03-05 14:55 /dev/loop7
+>
+> And to attach a raw partitionned disk image, the original losetup is used:
+>
+> # losetup -f etch.img
+> # ls -l /dev/loop?*
+> brw-rw---- 1 root disk 7,   0 2008-03-05 14:55 /dev/loop0
+> brw-rw---- 1 root disk 7,   1 2008-03-05 14:57 /dev/loop0p1
+> brw-rw---- 1 root disk 7,   2 2008-03-05 14:57 /dev/loop0p2
+> brw-rw---- 1 root disk 7,   5 2008-03-05 14:57 /dev/loop0p5
+> brw-rw---- 1 root disk 7,  64 2008-03-05 14:55 /dev/loop1
+> brw-rw---- 1 root disk 7, 128 2008-03-05 14:55 /dev/loop2
+> brw-rw---- 1 root disk 7, 192 2008-03-05 14:55 /dev/loop3
+> brw-rw---- 1 root disk 7, 256 2008-03-05 14:55 /dev/loop4
+> brw-rw---- 1 root disk 7, 320 2008-03-05 14:55 /dev/loop5
+> brw-rw---- 1 root disk 7, 384 2008-03-05 14:55 /dev/loop6
+> brw-rw---- 1 root disk 7, 448 2008-03-05 14:55 /dev/loop7
+> # mount /dev/loop0p1 /mnt
+> # ls /mnt
+> bench  cdrom  home        lib         mnt   root     srv  usr
+> bin    dev    initrd      lost+found  opt   sbin     sys  var
+> boot   etc    initrd.img  media       proc  selinux  tmp  vmlinuz
+> # umount /mnt
+> # losetup -d /dev/loop0
+>
+> Of course, the same behavior can be done using kpartx on a loop device,
+> but modifying loop avoids to stack several layers of block device (loop +
+> device mapper), this is a very light modification (40% of modifications
+> are to manage the new parameter). Moreover all partition tables known
+> by the kernel are managed (kpartx implements only a subset).
 
-Disassembing the video BIOS shows that it overflows the vesa_general_info
-structure when VBE2 data is requested because the source addresses for the
-information strings which get strcpy'ed to the buffer lie outside the 32K
-BIOS code (and hence contain long sequences of 0xff's).
-
-E.G.:
-
-get_vbe_controller_info:
-00002A9C  60                pushaw
-00002A9D  1E                push ds
-00002A9E  0E                push cs
-00002A9F  1F                pop ds
-00002AA0  2BC9              sub cx,cx
-00002AA2  6626813D56424532  cmp dword [es:di],0x32454256 ; "VBE2"
-00002AAA  7501              jnz .1
-00002AAC  41                inc cx
-.1:
-00002AAD  51                push cx
-00002AAE  B91400            mov cx,0x14
-00002AB1  BED47F            mov si, controller_header
-00002AB4  57                push di
-00002AB5  F3A4              rep movsb ; copy vbe1.2 header
-
-00002AB7  B9EC00            mov cx,0xec
-00002ABA  2AC0              sub al,al
-00002ABC  F3AA              rep stosb ; zero pad remainder
-
-00002ABE  5F                pop di
-00002ABF  E8EB0D            call word get_memory
-00002AC2  C1E002            shl ax,0x2
-00002AC5  26894512          mov [es:di+0x12],ax ; total memory
-00002AC9  26C745040003      mov word [es:di+0x4],0x300 ; VBE version
-00002ACF  268C4D08          mov [es:di+0x8],cs
-00002AD3  268C4D10          mov [es:di+0x10],cs
-00002AD7  59                pop cx
-00002AD8  E361              jcxz .done ; VBE2 requested?
-00002ADA  8D9D0001          lea bx,[di+0x100]
-00002ADE  53                push bx
-00002ADF  87DF              xchg bx,di ; di now points to 2nd half
-00002AE1  26C747140001      mov word [es:bx+0x14],0x100 ; sw rev
-
-00002AE7  26897F06          mov [es:bx+0x6],di		; oem string
-00002AEB  268C4708          mov [es:bx+0x8],es
-00002AEF  BE5280            mov si,0x8052 ; oem string
-00002AF2  E87A1B            call word strcpy
-
-00002AF5  26897F0E          mov [es:bx+0xe],di ; video mode list
-00002AF9  268C4710          mov [es:bx+0x10],es
-00002AFD  B91E00            mov cx,0x1e
-00002B00  BEE87F            mov si,vidmodes
-00002B03  F3A5              rep movsw
-
-00002B05  26897F16          mov [es:bx+0x16],di ; oem vendor
-00002B09  268C4718          mov [es:bx+0x18],es
-00002B0D  BE2480            mov si,0x8024 ; oem vendor
-00002B10  E85C1B            call word strcpy
-
-00002B13  26897F1A          mov [es:bx+0x1a],di ; oem product
-00002B17  268C471C          mov [es:bx+0x1c],es
-00002B1B  BE3880            mov si,0x8038 ; oem product
-00002B1E  E84E1B            call word strcpy
-
-00002B21  26897F1E          mov [es:bx+0x1e],di ; oem product rev
-00002B25  268C4720          mov [es:bx+0x20],es
-00002B29  BE4580            mov si,0x8045 ; oem product rev
-00002B2C  E8401B            call word strcpy
-
-00002B2F  58                pop ax
-00002B30  B90001            mov cx,0x100
-00002B33  2BCF              sub cx,di
-00002B35  03C8              add cx,ax
-00002B37  2AC0              sub al,al
-00002B39  F3AA              rep stosb ; zero pad
-.done:
-00002B3B  1F                pop ds
-00002B3C  61                popaw
-00002B3D  B84F00            mov ax,0x4f
-00002B40  C3                ret
-
-(The full BIOS can be found at http://peter.korsgaard.com/vgabios.bin
-if interested).
-
-The old setup code didn't ask for VBE2 info, and the new code doesn't
-actually do anything with the extra information, so the fix is to simply
-not request it. Other BIOS'es might have the same problem.
-
-Signed-off-by: Peter Korsgaard <jacmet@sunsite.dk>
----
- arch/x86/boot/vesa.h       |    9 +--------
- arch/x86/boot/video-vesa.c |    2 --
- 2 files changed, 1 insertions(+), 10 deletions(-)
-
-diff --git a/arch/x86/boot/vesa.h b/arch/x86/boot/vesa.h
-index ff5b73c..468e444 100644
---- a/arch/x86/boot/vesa.h
-+++ b/arch/x86/boot/vesa.h
-@@ -26,17 +26,10 @@ struct vesa_general_info {
- 	far_ptr video_mode_ptr;	/* 14 */
- 	u16 total_memory;	/* 18 */
- 
--	u16 oem_software_rev;	/* 20 */
--	far_ptr oem_vendor_name_ptr;	/* 22 */
--	far_ptr oem_product_name_ptr;	/* 26 */
--	far_ptr oem_product_rev_ptr;	/* 30 */
--
--	u8 reserved[222];	/* 34 */
--	u8 oem_data[256];	/* 256 */
-+	u8 reserved[236];	/* 20 */
- } __attribute__ ((packed));
- 
- #define VESA_MAGIC ('V' + ('E' << 8) + ('S' << 16) + ('A' << 24))
--#define VBE2_MAGIC ('V' + ('B' << 8) + ('E' << 16) + ('2' << 24))
- 
- struct vesa_mode_info {
- 	u16 mode_attr;		/* 0 */
-diff --git a/arch/x86/boot/video-vesa.c b/arch/x86/boot/video-vesa.c
-index 662dd2f..419b5c2 100644
---- a/arch/x86/boot/video-vesa.c
-+++ b/arch/x86/boot/video-vesa.c
-@@ -37,8 +37,6 @@ static int vesa_probe(void)
- 
- 	video_vesa.modes = GET_HEAP(struct mode_info, 0);
- 
--	vginfo.signature = VBE2_MAGIC;
--
- 	ax = 0x4f00;
- 	di = (size_t)&vginfo;
- 	asm(INT10
--- 
-1.5.4.1
+Do you think we do something similar for drivers/block/brd.c too? I'd
+like to try to maintain parity between them where possible...
 
