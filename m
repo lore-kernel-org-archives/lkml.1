@@ -1,97 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765855AbYCFAqX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764656AbYCFAuU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765855AbYCFAqX (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Mar 2008 19:46:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755581AbYCFAqG
+	id S1764656AbYCFAuU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Mar 2008 19:50:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758499AbYCFAuE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Mar 2008 19:46:06 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:52863 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755572AbYCFAqE (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Mar 2008 19:46:04 -0500
-Date: Wed, 5 Mar 2008 16:44:38 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: benh@kernel.crashing.org
-Cc: mikey@neuling.org, kamalesh@linux.vnet.ibm.com, linuxppc-dev@ozlabs.org,
-       linux-kernel@vger.kernel.org, willy@debian.org
-Subject: Re: [BUG] 2.6.25-rc3-mm1 kernel panic while bootup on powerpc ()
-Message-Id: <20080305164438.fff7bb7c.akpm@linux-foundation.org>
-In-Reply-To: <1204761811.21545.238.camel@pasglop>
-References: <20080304011928.e8c82c0c.akpm@linux-foundation.org>
-	<47CD4AB3.3080409@linux.vnet.ibm.com>
-	<20778.1204641656@neuling.org>
-	<20080304103350.12d26560.akpm@linux-foundation.org>
-	<1204761811.21545.238.camel@pasglop>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 5 Mar 2008 19:50:04 -0500
+Received: from hall.aurel32.net ([88.191.38.19]:38380 "EHLO hall.aurel32.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758175AbYCFAuD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 5 Mar 2008 19:50:03 -0500
+Message-ID: <47CF3F87.3090709@aurel32.net>
+Date: Thu, 06 Mar 2008 01:49:11 +0100
+From: Aurelien Jarno <aurelien@aurel32.net>
+User-Agent: Mozilla-Thunderbird 2.0.0.9 (X11/20080109)
+MIME-Version: 1.0
+To: Chris Lattner <clattner@apple.com>
+CC: Michael Matz <matz@suse.de>, "H.Peter Anvin" <hpa@zytor.com>,
+       Richard Guenther <richard.guenther@gmail.com>,
+       Joe Buck <Joe.Buck@synopsys.com>, Jan Hubicka <hubicka@ucw.cz>,
+       linux-kernel@vger.kernel.org, gcc@gcc.gnu.org
+Subject: Re: RELEASE BLOCKER: Linux doesn't follow x86/x86-64 ABI wrt direction
+ flag
+References: <20080305153020.GA24631@volta.aurel32.net> <47CEC3AA.6080709@zytor.com> <20080305195834.GA17267@synopsys.com> <20080305202319.GA17053@volta.aurel32.net> <Pine.LNX.4.64.0803052133400.20583@wotan.suse.de> <20080305204234.GB17267@synopsys.com> <20080305204945.GB14011@atrey.karlin.mff.cuni.cz> <Pine.LNX.4.64.0803052158270.20583@wotan.suse.de> <20080305212005.GC17267@synopsys.com> <84fc9c000803051332q2f2eedeej7d3c0509e698cabf@mail.gmail.com> <47CF11D6.7070901@zytor.com> <738B72DB-A1D6-43F8-813A-E49688D05771@apple.com> <Pine.LNX.4.64.0803052258530.20583@wotan.suse.de> <2F47E21A-9055-4EC3-99CF-B666BBC045C3@apple.com>
+In-Reply-To: <2F47E21A-9055-4EC3-99CF-B666BBC045C3@apple.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 06 Mar 2008 11:03:31 +1100
-Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
-
+Chris Lattner a écrit :
+>>>> Richard Guenther wrote:
+>>>>> We didn't yet run into this issue and build openSUSE with 4.3 since
+>>>>> more
+>>>>> than
+>>>>> three month.
+>>>>
+>>>> Well, how often do you take a trap inside an overlapping memmove()?
+>>>
+>>> How hard is it to change the kernel signal entry path from "pushf" to
+>>> "pushf;cld"?  Problem solved, no?
+>>
+>> The problem is with old kernels, which by definition stay unfixed.
 > 
-> > Yes, we are - it's the semaphore rewrite which is doing this in
-> > start_kernel().  It's being discussed.
-> > 
-> > Enabling interrupts too early on powerpc was discovered to be fatal on
-> > powerpc years ago.  It looks like that remains the case.
+> My impression was that the problem occurs in GCC compiled code in the
+> kernel itself, not in user space:
 > 
-> Regarding these issues. I could make it non fatal and just WARN_ON,
-> provided that I have a way to differentiate legal vs. illegal calls
-> to local_irq_enable().
+> 1. User space has direction flag set.
+> 2. signal occurs
+> 3. kernel code is entered
+> 4. kernel code does string operation <boom>
 
-And local_irq_restore() and various other things.
+Wrong. Except maybe for the Hurd kernel. For other kernels:
 
-> We already have that function mostly out of
-> line in C code due to our lazy irq disabling scheme, so the overhead of
-> testing some global kernel state would be minimum here.
-> 
-> However, I don't see anything around init/main.c:start_kernel() that I
-> can use. What do you reckon here we should do ? Add some kind of global
-> we set before calling local_irq_enable() ? Or make early_boot_irqs_on()
-> do that generically 
-> 
-> It's currently defined as an empty inline without CONFIG_TRACE_IRQFLAGS
-> but we could make it set a flag instead.
-> 
-> I'm pretty sure other archs have similar problems, especially in the
-> embedded world where you are booted with random junk firmwares that may
-> leave devices, interrupt controllers etc... in random state, and
-> enabling incoming IRQs before the arch code properly initializes the
-> main interrupt controller can be fatal. I know at least of an ARM board
-> I worked on a while ago that had a similar issues.
-> 
-> On ppc32, unfortunately, our local_irq_enable/restore are nice inlines
-> that whack the appropriate MSR bits directly, thus adding a test for a
-> global flag would add some bloat/overhead that I'd like to avoid, at
-> least until we decide to also do lazy disabling on those, if ever...
+  4. signal handler is called
+  5. signal handler does string operation <boom>
 
-I'd have thought that the way to do this would be to add it to lockdep -
-lockdep already has all the infrastructure and code sites to do this.
+The GCC used to compile the kernel doesn't matter. Using gcc 4.3 to
+compile the user code triggers the bug.
 
-Set some special flag saying its-ok-to-enable-interrupts-now and test that
-in lockdep.
-
-akpm:/usr/src/25> grep LOCKDEP arch/powerpc/Kconfig 
-akpm:/usr/src/25> 
-
-losers ;)
-
-Still, doing it for
-
-akpm:/usr/src/25> grep -l LOCKDEP arch/*/Kconfig 
-arch/arm/Kconfig
-arch/avr32/Kconfig
-arch/mips/Kconfig
-arch/s390/Kconfig
-arch/sh/Kconfig
-arch/sparc64/Kconfig
-arch/um/Kconfig
-arch/x86/Kconfig
-
-should give pretty good coverage.
+-- 
+  .''`.  Aurelien Jarno	            | GPG: 1024D/F1BCDB73
+ : :' :  Debian developer           | Electrical Engineer
+ `. `'   aurel32@debian.org         | aurelien@aurel32.net
+   `-    people.debian.org/~aurel32 | www.aurel32.net
