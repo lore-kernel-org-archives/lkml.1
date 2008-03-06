@@ -1,94 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932442AbYCFDPm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933297AbYCFDVH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932442AbYCFDPm (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Mar 2008 22:15:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759672AbYCFDPe
+	id S933297AbYCFDVH (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Mar 2008 22:21:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754894AbYCFDUy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Mar 2008 22:15:34 -0500
-Received: from e1.ny.us.ibm.com ([32.97.182.141]:35361 "EHLO e1.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754081AbYCFDPd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Mar 2008 22:15:33 -0500
-Date: Wed, 5 Mar 2008 21:15:25 -0600
-From: "Serge E. Hallyn" <serue@us.ibm.com>
-To: Greg KH <greg@kroah.com>
-Cc: Pavel Emelyanov <xemul@openvz.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Paul Menage <menage@google.com>,
-       Sukadev Bhattiprolu <sukadev@us.ibm.com>,
-       Serge Hallyn <serue@us.ibm.com>
-Subject: Re: [PATCH 0/9] Devices accessibility control group (v4)
-Message-ID: <20080306031525.GA9070@sergelap.austin.ibm.com>
-References: <47CED717.60406@openvz.org> <20080306015513.GA5359@kroah.com>
+	Wed, 5 Mar 2008 22:20:54 -0500
+Received: from ti-out-0910.google.com ([209.85.142.188]:45011 "EHLO
+	ti-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754081AbYCFDUx (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 5 Mar 2008 22:20:53 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=QLsSdyvnuzYE4JU/1CxHs5qmFeekaphqCkJJIjketxZvZv0SeFbG9yfVSvJJCmy/+/Hbih46iDAJBc3tIuM5KJXLlwdbWFOm1+d22ZYwXhMty4smrYb7A5nA2yb0h+S/GPkhPKzI84ChqUZS6wC1+VS/OOByYOMqVb+unm4sgrM=
+Message-ID: <a8e1da0803051920t586c7fbapadda70ae895f8893@mail.gmail.com>
+Date: Thu, 6 Mar 2008 11:20:49 +0800
+From: "Dave Young" <hidave.darkstar@gmail.com>
+To: paulmck@linux.vnet.ibm.com
+Subject: Re: 2.6.25-rc4 rcupreempt.h WARNINGs while suspend/resume
+Cc: "Jike Song" <albcamus@gmail.com>,
+       "Linux Kernel" <linux-kernel@vger.kernel.org>
+In-Reply-To: <20080306022854.GK8728@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20080306015513.GA5359@kroah.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+References: <a8e1da0803042324ndd3873ay61cee6112d9dda9a@mail.gmail.com>
+	 <df9815e70803042335j4ea66028y96d6be21f0970aa1@mail.gmail.com>
+	 <20080305165531.GB8728@linux.vnet.ibm.com>
+	 <df9815e70803051811o4c4a42e0td56cfd32b80c66b2@mail.gmail.com>
+	 <20080306022854.GK8728@linux.vnet.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Quoting Greg KH (greg@kroah.com):
-> On Wed, Mar 05, 2008 at 08:23:35PM +0300, Pavel Emelyanov wrote:
-> > Changes from v3:
-> > * Ported on 2.6.25-rc3-mm1;
-> > * Re-splitted into smaller pieces;
-> > * Added more comments to tricky places.
-> > 
-> > This controller allows to tune the devices accessibility by tasks,
-> > i.e. grant full access for /dev/null, /dev/zero etc, grant read-only
-> > access to IDE devices and completely hide SCSI disks.
-> 
->  From within the kernel itself?  The kernel should not be keeping track
-> of the mode of devices, that's what the filesystem holding /dev is for.
-> Those modes change all the time depending on the device plugged in, and
-> the user using the "console".  Why should the kernel need to worry about
-> any of this?
+On Thu, Mar 6, 2008 at 10:28 AM, Paul E. McKenney
+<paulmck@linux.vnet.ibm.com> wrote:
+>
+> On Thu, Mar 06, 2008 at 10:11:26AM +0800, Jike Song wrote:
+>  > On Thu, Mar 6, 2008 at 12:55 AM, Paul E. McKenney
+>  > <paulmck@linux.vnet.ibm.com> wrote:
+>  > >  Could you please try applying Karsten Wiese's patch to see if it
+>  > >  fixes the WARNINGs?  See http://lkml.org/lkml/2008/2/26/386 for
+>  > >  the patch.
+>  > >
+>  > >                                                 Thanx, Paul
+>  >
+>  > Yes, the WARNING disappears with Karsten's patch applied.
+>  > Thanks.
 
-These are distinct from the permissions on device files.  No matter what
-the permissions on the device files, a task in a devcg cgroup which
-isn't allowed write to chardev 4:64 will not be able to write to
-/dev/ttyS0.
+Confirmed
 
-The purpose is to prevent a root task from granting itself access to
-certain devices.  Without this, the only option currently is to take
-CAP_MKNOD out of the capability bounding set for a container and make
-sure that /dev is set up right (and enforce nodev for mounts).  In
-itself that doesn't sound so bad and it was my preference at first, but
-the argument is that things like udev should be able to run in a
-container, and will object about not being able to create devices.
-
-> > Tasks still can call mknod to create device files, regardless of
-> > whether the particular device is visible or accessible, but they
-> > may not be able to open it later.
-> > 
-> > This one hides under CONFIG_CGROUP_DEVS option.
-> > 
-> > To play with it - run a standard procedure:
-> > 
-> >  # mount -t container none /cont/devs -o devices
-> >  # mkdir /cont/devs/0
-> >  # echo -n $$ > /cont/devs/0/tasks
-> 
-> What is /cont/ for?
-
-cgroups used to be called containers, so 'cont' is presumably shorthand
-for container.
-
-> > and tune device permissions.
-> 
-> How is this done?
-> 
-> Why would the kernel care about this stuff?
-
-Because there is no way for userspace to restrict a root process in a
-container from accessing whatever devices it wants.
-
-> confused,
-> 
-> greg k-h
-
-thanks,
--serge
+>
+>  Good to hear!!!  I believe that Karsten's patch is on its way in,
+>  so hopefully that will clear things up.
+>
+>                                                 Thanx, Paul
+>
