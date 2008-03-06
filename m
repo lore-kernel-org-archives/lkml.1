@@ -1,89 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935830AbYCFVcj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935995AbYCFVcx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935830AbYCFVcj (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Mar 2008 16:32:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932630AbYCFVcN
+	id S935995AbYCFVcx (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Mar 2008 16:32:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765060AbYCFVcQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Mar 2008 16:32:13 -0500
-Received: from accolon.hansenpartnership.com ([76.243.235.52]:47899 "EHLO
-	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1765080AbYCFVcL (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Mar 2008 16:32:11 -0500
-Subject: Re: [2.6 patch] SCSI_AIC94XX must depend on SCSI
-From: James Bottomley <James.Bottomley@HansenPartnership.com>
-To: "Darrick J. Wong" <djwong@us.ibm.com>
-Cc: Adrian Bunk <bunk@kernel.org>,
-       Toralf =?ISO-8859-1?Q?F=F6rster?= <toralf.foerster@gmx.de>,
-       linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org
-In-Reply-To: <20080306203558.GA7430@tree.beaverton.ibm.com>
-References: <200803062009.20309.toralf.foerster@gmx.de>
-	 <20080306202246.GB5259@cs181133002.pp.htv.fi>
-	 <20080306203558.GA7430@tree.beaverton.ibm.com>
-Content-Type: text/plain; charset=utf-8
-Date: Thu, 06 Mar 2008 15:32:06 -0600
-Message-Id: <1204839126.3062.57.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 (2.12.3-1.fc8) 
-Content-Transfer-Encoding: 8bit
+	Thu, 6 Mar 2008 16:32:16 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:38501 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S933142AbYCFVcO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 6 Mar 2008 16:32:14 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: "Zdenek Kabelac" <zdenek.kabelac@gmail.com>
+Subject: Re: Bugs in MMC [was: [Bug 10030] Suspend doesn't work when SD card is inserted]
+Date: Thu, 6 Mar 2008 22:31:13 +0100
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: "Alan Stern" <stern@rowland.harvard.edu>, "Pavel Machek" <pavel@ucw.cz>,
+       "David Brownell" <david-b@pacbell.net>,
+       "Pierre Ossman" <drzeus-mmc@drzeus.cx>,
+       "pm list" <linux-pm@lists.linux-foundation.org>,
+       "Kernel development list" <linux-kernel@vger.kernel.org>
+References: <20080306155553.GA3908@ucw.cz> <Pine.LNX.4.44L0.0803061528460.9174-100000@iolanthe.rowland.org> <c4e36d110803061253i7f8edd6eu97887d2e628453e2@mail.gmail.com>
+In-Reply-To: <c4e36d110803061253i7f8edd6eu97887d2e628453e2@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200803062231.14773.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2008-03-06 at 12:35 -0800, Darrick J. Wong wrote:
-> On Thu, Mar 06, 2008 at 10:22:46PM +0200, Adrian Bunk wrote:
-> > This patch fixes the following build error reported by Toralf Förster:
-> > 
-> > <--  snip  -->
-> > 
-> > ...
-> >   MODPOST 243 modules
-> > ERROR: "sas_bios_param" [drivers/scsi/mvsas.ko] undefined!
-> 
-> <snip>
-> 
-> > --- a/drivers/scsi/aic94xx/Kconfig
-> > +++ b/drivers/scsi/aic94xx/Kconfig
-> 
-> Maybe I'm missing something here, but how does patching aic94xx Kconfig
-> fix an mvsas build problem?
+On Thursday, 6 of March 2008, Zdenek Kabelac wrote:
+> 2008/3/6, Alan Stern <stern@rowland.harvard.edu>:
+> > On Thu, 6 Mar 2008, Pavel Machek wrote:
+> >
+> >  > On Tue 2008-03-04 16:00:51, Alan Stern wrote:
+> >  > > On Tue, 4 Mar 2008, David Brownell wrote:
+> >  > >
+> >  > > > > What's wrong with a superfluous probe at resume time, besides the waste
+> >  > > > > of a few milliseconds?
+> >  > > >
+> >  > > > I'm more concerned with the undesirable removal of devices at suspend
+> >  > > > time ... ones with mounted filesystems etc.
+> >  > >
+> >  > > On that we can agree.  The removal is done if the host doesn't define a
+> >  > > resume method.  There doesn't seem to be any point to that, given that
+> >  > > the probing during resume will determine whether a card has in fact
+> >  > > been removed.
+> >  >
+> >  > Hmm, if the driver is sleeping too deeply, user might have removed the
+> >  > card and put in different one, without driver noticing. That would be
+> >  > _bad_.
+> >
+> >
+> > Ironically, the very same problem now exists with the USB mass-storage
+> >  driver.  I don't see any way for the driver itself to solve it,
+> >  especially during a hibernation (which can be a _very_ deep sleep).
+> >
+> >  One thing that could be done is for filesystems to verify, after a
+> >  system sleep, that their superblocks haven't changed.  There could
+> >  still be issues with non-mounted partitions, if they have live entries
+> >  in the block cache, but it would be an improvement.
+> >
+> >  Do you know the right people to mention this to?  Anybody in filesystem
+> >  development interested in suspend/hibernation issues?
 
-Actually, it's a dependency chain fault.  The config this was generated
-from has
+I don't really think so (but I may be wrong ...)
 
-CONFIG_SCSI=m
+> IMHO the way would be to try to unmount fs if it's possible - if not -
+> user should be notified on suspend/hibernation that he must preserve
+> media in its place after resume and it should be checked and user
+> should be notified if different devices/fs were find...
 
-CONFIG_SCSI_AIC94XX=y
+This is a very long standing issue which IMO can only be solved by making
+filesystems suspend-aware.
 
-the latter then forces
-
-CONFIG_SCSI_SAS_LIBSAS=y
-
-I think the error reported is wrong: the kernel just should have failed
-to link, since both the built in aic94xx and libsas have scsi
-dependencies.
-
-We have a few other drivers in this category (like ibmvscsi).  The root
-cause seems to be that SCSI_LOWLEVEL doesn't act as a tristate.  I think
-a fix that will prevent all of these issues from recurring is this one.
-
-James
-
-
----
-
-diff --git a/drivers/scsi/Kconfig b/drivers/scsi/Kconfig
-index c46666a..b9d3740 100644
---- a/drivers/scsi/Kconfig
-+++ b/drivers/scsi/Kconfig
-@@ -325,7 +325,7 @@ menuconfig SCSI_LOWLEVEL
- 	depends on SCSI!=n
- 	default y
- 
--if SCSI_LOWLEVEL
-+if SCSI_LOWLEVEL && SCSI
- 
- config ISCSI_TCP
- 	tristate "iSCSI Initiator over TCP/IP"
-
-
+Thanks,
+Rafael
