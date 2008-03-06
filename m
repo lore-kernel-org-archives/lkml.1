@@ -1,58 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760530AbYCFDoM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758225AbYCFEkX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760530AbYCFDoM (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Mar 2008 22:44:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754976AbYCFDn6
+	id S1758225AbYCFEkX (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Mar 2008 23:40:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756855AbYCFEkJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Mar 2008 22:43:58 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:56465 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753619AbYCFDn5 (ORCPT
+	Wed, 5 Mar 2008 23:40:09 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:59680 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756849AbYCFEkH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Mar 2008 22:43:57 -0500
-Date: Wed, 5 Mar 2008 19:42:20 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: "Duane Griffin" <duaneg@dghda.com>
-Cc: linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Theodore Tso <tytso@mit.edu>, sct@redhat.com, adilger@clusterfs.com
-Subject: Re: [RFC, PATCH 0/6] ext3: do not modify data on-disk when mounting
- read-only filesystem
-Message-Id: <20080305194220.f9cce55e.akpm@linux-foundation.org>
-In-Reply-To: <1204768754-29655-1-git-send-email-duaneg@dghda.com>
-References: <1204768754-29655-1-git-send-email-duaneg@dghda.com>
-X-Mailer: Sylpheed 2.3.1 (GTK+ 2.10.11; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 5 Mar 2008 23:40:07 -0500
+Date: Wed, 5 Mar 2008 20:34:27 -0800
+From: Greg KH <greg@kroah.com>
+To: "Serge E. Hallyn" <serue@us.ibm.com>
+Cc: Pavel Emelyanov <xemul@openvz.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Paul Menage <menage@google.com>,
+       Sukadev Bhattiprolu <sukadev@us.ibm.com>
+Subject: Re: [PATCH 0/9] Devices accessibility control group (v4)
+Message-ID: <20080306043427.GA15498@kroah.com>
+References: <47CED717.60406@openvz.org> <20080306015513.GA5359@kroah.com> <20080306031525.GA9070@sergelap.austin.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080306031525.GA9070@sergelap.austin.ibm.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu,  6 Mar 2008 01:59:08 +0000 "Duane Griffin" <duaneg@dghda.com> wrote:
+On Wed, Mar 05, 2008 at 09:15:25PM -0600, Serge E. Hallyn wrote:
+> Quoting Greg KH (greg@kroah.com):
+> > On Wed, Mar 05, 2008 at 08:23:35PM +0300, Pavel Emelyanov wrote:
+> > > Changes from v3:
+> > > * Ported on 2.6.25-rc3-mm1;
+> > > * Re-splitted into smaller pieces;
+> > > * Added more comments to tricky places.
+> > > 
+> > > This controller allows to tune the devices accessibility by tasks,
+> > > i.e. grant full access for /dev/null, /dev/zero etc, grant read-only
+> > > access to IDE devices and completely hide SCSI disks.
+> > 
+> >  From within the kernel itself?  The kernel should not be keeping track
+> > of the mode of devices, that's what the filesystem holding /dev is for.
+> > Those modes change all the time depending on the device plugged in, and
+> > the user using the "console".  Why should the kernel need to worry about
+> > any of this?
+> 
+> These are distinct from the permissions on device files.  No matter what
+> the permissions on the device files, a task in a devcg cgroup which
+> isn't allowed write to chardev 4:64 will not be able to write to
+> /dev/ttyS0.
 
-> At present, as discussed in this LKML thread,
-> http://marc.info/?l=linux-kernel&m=117607695406580, when a dirty ext3
-> filesystem is mounted read-only it writes to the disk while replaying the
-> journal log and cleaning up the orphan list. This behaviour may surprise users
-> and can potentially cause data corruption/loss (e.g. if a system is suspended,
-> booted into a different OS, then resumed).
-> 
-> This patch series attempts to address this by using a block translation table
-> instead of replaying the journal on a read-only filesystem.
-> 
-> Patches 1-3 are independent cleanups/bug-fixes for things I came across while
-> working on this. They could be submitted separately and are not required for
-> following patches.
-> 
-> Patch 4 is a refactoring change that simplifies the code prior to later
-> substantive changes.
-> 
-> Patch 5 introduces the translation table and support for a truly read-only
-> journal into jbd.
-> 
-> Patch 6 uses the facility introduced in patch 5 to add support for true
-> read-only ext3.
+Then why not do that from userspace with a different /dev, or with a
+LSM?
 
-I'll grab the first three for now, thanks.
+> The purpose is to prevent a root task from granting itself access to
+> certain devices.  Without this, the only option currently is to take
+> CAP_MKNOD out of the capability bounding set for a container and make
+> sure that /dev is set up right (and enforce nodev for mounts).  In
+> itself that doesn't sound so bad and it was my preference at first,
 
-Someone(tm) should do the jbd2 versions..
+that would be my preference as well.
+
+> but the argument is that things like udev should be able to run in a
+> container, and will object about not being able to create devices.
+
+No reason you can't modify udev to do something like this.  At the
+worse, just disable udev warning messages, that is pretty trivial to do.
+
+This really makes it seem like this kernel change is not needed at all.
+
+> > > Tasks still can call mknod to create device files, regardless of
+> > > whether the particular device is visible or accessible, but they
+> > > may not be able to open it later.
+> > > 
+> > > This one hides under CONFIG_CGROUP_DEVS option.
+> > > 
+> > > To play with it - run a standard procedure:
+> > > 
+> > >  # mount -t container none /cont/devs -o devices
+> > >  # mkdir /cont/devs/0
+> > >  # echo -n $$ > /cont/devs/0/tasks
+> > 
+> > What is /cont/ for?
+> 
+> cgroups used to be called containers, so 'cont' is presumably shorthand
+> for container.
+> 
+> > > and tune device permissions.
+> > 
+> > How is this done?
+> > 
+> > Why would the kernel care about this stuff?
+> 
+> Because there is no way for userspace to restrict a root process in a
+> container from accessing whatever devices it wants.
+
+LSM does this quite well today, why reinvent the wheel and put wierd
+hooks in other parts of the kernel that do not need them at all?
+
+thanks,
+
+greg k-h
