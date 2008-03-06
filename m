@@ -1,51 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934378AbYCFODm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934683AbYCFOEx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934378AbYCFODm (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Mar 2008 09:03:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755019AbYCFODZ
+	id S934683AbYCFOEx (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Mar 2008 09:04:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934428AbYCFODs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Mar 2008 09:03:25 -0500
-Received: from wr-out-0506.google.com ([64.233.184.229]:30119 "EHLO
-	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754203AbYCFODY (ORCPT
+	Thu, 6 Mar 2008 09:03:48 -0500
+Received: from viefep18-int.chello.at ([213.46.255.22]:9656 "EHLO
+	viefep14-int.chello.at" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S934382AbYCFODn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Mar 2008 09:03:24 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:newsgroups:to:subject:references:in-reply-to:content-type:content-transfer-encoding:sender;
-        b=Dl+guAe/xZrqJm6QdnjPw4CudqMlzGYTCjGqvZKCaK3pzsAyQEDYS6JMJ7v90QOmwAcYyOI38skHZR6lfrRm7xdZM0t6pucFFypn0ZgRLPXPcTJtzPOKrD9L2URfqoX9x7Tg1Cyszz5YbFyzontPs2LEH3x7ElCklXipRXTR2D0=
-Message-ID: <47CFF9A3.30309@gnu.org>
-Date: Thu, 06 Mar 2008 15:03:15 +0100
-From: Paolo Bonzini <bonzini@gnu.org>
-User-Agent: Thunderbird 2.0.0.12 (Macintosh/20080213)
+	Thu, 6 Mar 2008 09:03:43 -0500
+Message-ID: <47CFF9B7.5060803@trash.net>
+Date: Thu, 06 Mar 2008 15:03:35 +0100
+From: Patrick McHardy <kaber@trash.net>
+User-Agent: Mozilla-Thunderbird 2.0.0.6 (X11/20071008)
 MIME-Version: 1.0
-Newsgroups: gmane.linux.kernel,gmane.comp.gcc.devel
-To: Olivier Galibert <galibert@pobox.com>, "H. Peter Anvin" <hpa@zytor.com>,
-       Chris Lattner <clattner@apple.com>, Michael Matz <matz@suse.de>,
-       Richard Guenther <richard.guenther@gmail.com>,
-       Joe Buck <Joe.Buck@synopsys.com>, Jan Hubicka <hubicka@ucw.cz>,
-       Aurelien Jarno <aurelien@aurel32.net>, linux-kernel@vger.kernel.org,
-       gcc@gcc.gnu.org
-Subject: Re: RELEASE BLOCKER: Linux doesn't follow x86/x86-64 ABI wrt direction
-  flag
-References: <Pine.LNX.4.64.0803052158270.20583@wotan.suse.de> <20080305212005.GC17267@synopsys.com> <84fc9c000803051332q2f2eedeej7d3c0509e698cabf@mail.gmail.com> <47CF11D6.7070901@zytor.com> <738B72DB-A1D6-43F8-813A-E49688D05771@apple.com> <Pine.LNX.4.64.0803052258530.20583@wotan.suse.de> <2F47E21A-9055-4EC3-99CF-B666BBC045C3@apple.com> <47CF3F09.4080606@zytor.com> <578FCA7D-D7A6-44F6-9310-4A97C13CDCBE@apple.com> <47CF44E7.3020106@zytor.com> <20080306135139.GA5236@dspnet.fr.eu.org>
-In-Reply-To: <20080306135139.GA5236@dspnet.fr.eu.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Pekka J Enberg <penberg@cs.helsinki.fi>
+CC: netfilter-devel@vger.kernel.org, clameter@sgi.com, joe@perches.com,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       Netfilter Development Mailinglist 
+	<netfilter-devel@vger.kernel.org>
+Subject: Re: [PATCH] netfilter: replace horrible hack with ksize()
+References: <Pine.LNX.4.64.0803052319210.15759@sbz-30.cs.Helsinki.FI>
+In-Reply-To: <Pine.LNX.4.64.0803052319210.15759@sbz-30.cs.Helsinki.FI>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Olivier Galibert wrote:
-> On Wed, Mar 05, 2008 at 05:12:07PM -0800, H. Peter Anvin wrote:
->> It's a kernel bug, and it needs to be fixed.
+Pekka J Enberg wrote:
+> From: Pekka Enberg <penberg@cs.helsinki.fi>
 > 
-> I'm not convinced.  It's been that way for 15 years, it's that way in
-> the BSD kernels, at that point it's a feature.  The bug is in the
-> documentation, nowhere else.  And in gcc for blindly trusting the
-> documentation.
+> There's a horrible slab abuse in net/netfilter/nf_conntrack_extend.c that 
+> can be replaced with a call to ksize().
 
-No, the bug *in the kernel* was already present (if you had a signal 
-raised during a call to memmove).  It's just more visible with GCC 4.3.
+This doesn't look right.
 
-Paolo
+> @@ -95,7 +85,7 @@ void *__nf_ct_ext_add(struct nf_conn *ct
+>  	newlen = newoff + t->len;
+>  	rcu_read_unlock();
+>  
+> -	if (newlen >= ct->ext->real_len) {
+> +	if (newlen >= ksize(ct->ext)) {
+
+
+This needs to look at the currently allocated size, otherwise
+it will always realloc when adding new extensions after having
+used up ksize(ct->ext) space.
+
+>  		new = kmalloc(newlen, gfp);
+
+And this should use ksize(newlen) and store the real length
+in real_len below.
+
+>  		if (!new)
+>  			return NULL;
+> @@ -114,7 +104,6 @@ void *__nf_ct_ext_add(struct nf_conn *ct
+>  			rcu_read_unlock();
+>  		}
+>  		kfree(ct->ext);
+> -		new->real_len = newlen;
+>  		ct->ext = new;
+>  	}
+
