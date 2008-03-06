@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933237AbYCFTCQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934744AbYCFTCi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933237AbYCFTCQ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Mar 2008 14:02:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756681AbYCFTB7
+	id S934744AbYCFTCi (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Mar 2008 14:02:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759534AbYCFTCF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Mar 2008 14:01:59 -0500
-Received: from e34.co.us.ibm.com ([32.97.110.152]:44258 "EHLO
-	e34.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754837AbYCFTB6 (ORCPT
+	Thu, 6 Mar 2008 14:02:05 -0500
+Received: from e36.co.us.ibm.com ([32.97.110.154]:50547 "EHLO
+	e36.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758328AbYCFTCD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Mar 2008 14:01:58 -0500
+	Thu, 6 Mar 2008 14:02:03 -0500
 From: Balbir Singh <balbir@linux.vnet.ibm.com>
 To: Paul Menage <menage@google.com>, Andrew Morton <akpm@linux-foundation.org>,
        Pavel Emelianov <xemul@openvz.org>
@@ -19,124 +19,100 @@ Cc: Hugh Dickins <hugh@veritas.com>, Sudhir Kumar <skumar@linux.vnet.ibm.com>,
        David Rientjes <rientjes@google.com>,
        Balbir Singh <balbir@linux.vnet.ibm.com>,
        KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Date: Fri, 07 Mar 2008 00:29:52 +0530
-Message-Id: <20080306185952.23290.49571.sendpatchset@localhost.localdomain>
-Subject: [PATCH] Add cgroup support for enabling controllers at boot time
+Date: Fri, 07 Mar 2008 00:30:03 +0530
+Message-Id: <20080306190003.23290.19449.sendpatchset@localhost.localdomain>
+In-Reply-To: <20080306185952.23290.49571.sendpatchset@localhost.localdomain>
+References: <20080306185952.23290.49571.sendpatchset@localhost.localdomain>
+Subject: [PATCH] Make memory resource control aware of boot options
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-From: Paul Menage <menage@google.com>
 
-The effects of cgroup_disable=foo are:
+A boot option for the memory controller was discussed on lkml. It is a good
+idea to add it, since it saves memory for people who want to turn off the
+memory controller.
 
-- foo doesn't show up in /proc/cgroups
-- foo isn't auto-mounted if you mount all cgroups in a single hierarchy
-- foo isn't visible as an individually mountable subsystem
+By default the option is on for the following two reasons
 
-As a result there will only ever be one call to foo->create(), at init
-time; all processes will stay in this group, and the group will never
-be mounted on a visible hierarchy. Any additional effects (e.g. not
-allocating metadata) are up to the foo subsystem.
+1. It provides compatibility with the current scheme where the memory
+   controller turns on if the config option is enabled
+2. It allows for wider testing of the memory controller, once the config
+   option is enabled
 
-This doesn't handle early_init subsystems (their "disabled" bit isn't
-set be, but it could easily be extended to do so if any of the early_init
-systems wanted it - I think it would just involve some nastier parameter
-processing since it would occur before the command-line argument parser
-had been run.
+We still allow the create, destroy callbacks to succeed, since they are
+not aware of boot options. We do not populate the directory will
+memory resource controller specific files.
 
-[Balbir added Documentation/kernel-parameters updates]
-
-Signed-off-by: Paul Menage <menage@google.com>
 Signed-off-by: Balbir Singh <balbir@linux.vnet.ibm.com>
 ---
 
- Documentation/kernel-parameters.txt |    4 ++++
- include/linux/cgroup.h              |    1 +
- kernel/cgroup.c                     |   27 +++++++++++++++++++++++++--
- 3 files changed, 30 insertions(+), 2 deletions(-)
+ mm/memcontrol.c |   17 +++++++++++++++++
+ 1 file changed, 17 insertions(+)
 
-diff -puN include/linux/cgroup.h~cgroup_disable include/linux/cgroup.h
---- linux-2.6.25-rc4/include/linux/cgroup.h~cgroup_disable	2008-03-06 12:19:38.000000000 +0530
-+++ linux-2.6.25-rc4-balbir/include/linux/cgroup.h	2008-03-06 12:19:38.000000000 +0530
-@@ -256,6 +256,7 @@ struct cgroup_subsys {
- 	void (*bind)(struct cgroup_subsys *ss, struct cgroup *root);
- 	int subsys_id;
- 	int active;
-+	int disabled;
- 	int early_init;
- #define MAX_CGROUP_TYPE_NAMELEN 32
- 	const char *name;
-diff -puN kernel/cgroup.c~cgroup_disable kernel/cgroup.c
---- linux-2.6.25-rc4/kernel/cgroup.c~cgroup_disable	2008-03-06 12:19:38.000000000 +0530
-+++ linux-2.6.25-rc4-balbir/kernel/cgroup.c	2008-03-06 12:19:38.000000000 +0530
-@@ -782,7 +782,14 @@ static int parse_cgroupfs_options(char *
- 		if (!*token)
- 			return -EINVAL;
- 		if (!strcmp(token, "all")) {
--			opts->subsys_bits = (1 << CGROUP_SUBSYS_COUNT) - 1;
-+			/* Add all non-disabled subsystems */
-+			int i;
-+			opts->subsys_bits = 0;
-+			for (i = 0; i < CGROUP_SUBSYS_COUNT; i++) {
-+				struct cgroup_subsys *ss = subsys[i];
-+				if (!ss->disabled)
-+					opts->subsys_bits |= 1ul << i;
-+			}
- 		} else if (!strcmp(token, "noprefix")) {
- 			set_bit(ROOT_NOPREFIX, &opts->flags);
- 		} else if (!strncmp(token, "release_agent=", 14)) {
-@@ -800,7 +807,8 @@ static int parse_cgroupfs_options(char *
- 			for (i = 0; i < CGROUP_SUBSYS_COUNT; i++) {
- 				ss = subsys[i];
- 				if (!strcmp(token, ss->name)) {
--					set_bit(i, &opts->subsys_bits);
-+					if (!ss->disabled)
-+						set_bit(i, &opts->subsys_bits);
- 					break;
- 				}
- 			}
-@@ -2604,6 +2612,8 @@ static int proc_cgroupstats_show(struct 
- 	mutex_lock(&cgroup_mutex);
- 	for (i = 0; i < CGROUP_SUBSYS_COUNT; i++) {
- 		struct cgroup_subsys *ss = subsys[i];
-+		if (ss->disabled)
-+			continue;
- 		seq_printf(m, "%s\t%lu\t%d\n",
- 			   ss->name, ss->root->subsys_bits,
- 			   ss->root->number_of_cgroups);
-@@ -3010,3 +3020,16 @@ static void cgroup_release_agent(struct 
- 	spin_unlock(&release_list_lock);
- 	mutex_unlock(&cgroup_mutex);
- }
-+
-+static int __init cgroup_disable(char *str)
-+{
-+	int i;
-+	for (i = 0; i < CGROUP_SUBSYS_COUNT; i++) {
-+		struct cgroup_subsys *ss = subsys[i];
-+		if (!strcmp(str, ss->name)) {
-+			ss->disabled = 1;
-+			break;
-+		}
-+	}
-+}
-+__setup("cgroup_disable=", cgroup_disable);
-diff -puN Documentation/kernel-parameters.txt~cgroup_disable Documentation/kernel-parameters.txt
---- linux-2.6.25-rc4/Documentation/kernel-parameters.txt~cgroup_disable	2008-03-06 17:57:32.000000000 +0530
-+++ linux-2.6.25-rc4-balbir/Documentation/kernel-parameters.txt	2008-03-06 18:00:32.000000000 +0530
-@@ -383,6 +383,10 @@ and is between 256 and 4096 characters. 
- 	ccw_timeout_log [S390]
- 			See Documentation/s390/CommonIO for details.
+diff -puN mm/memcontrol.c~memory-controller-add-boot-option mm/memcontrol.c
+--- linux-2.6.25-rc4/mm/memcontrol.c~memory-controller-add-boot-option	2008-03-07 00:14:10.000000000 +0530
++++ linux-2.6.25-rc4-balbir/mm/memcontrol.c	2008-03-07 00:14:10.000000000 +0530
+@@ -533,6 +533,9 @@ static int mem_cgroup_charge_common(stru
+ 	unsigned long nr_retries = MEM_CGROUP_RECLAIM_RETRIES;
+ 	struct mem_cgroup_per_zone *mz;
  
-+	cgroup_disable= [KNL] Enable disable a particular controller
-+			Format: {name of the controller}
-+			See /proc/cgroups for a list of compiled controllers
++	if (mem_cgroup_subsys.disabled)
++		return 0;
 +
- 	checkreqprot	[SELINUX] Set initial checkreqprot flag value.
- 			Format: { "0" | "1" }
- 			See security/selinux/Kconfig help text.
+ 	/*
+ 	 * Should page_cgroup's go to their own slab?
+ 	 * One could optimize the performance of the charging routine
+@@ -665,6 +668,9 @@ void mem_cgroup_uncharge_page(struct pag
+ 	struct mem_cgroup_per_zone *mz;
+ 	unsigned long flags;
+ 
++	if (mem_cgroup_subsys.disabled)
++		return;
++
+ 	/*
+ 	 * Check if our page_cgroup is valid
+ 	 */
+@@ -705,6 +711,9 @@ int mem_cgroup_prepare_migration(struct 
+ {
+ 	struct page_cgroup *pc;
+ 
++	if (mem_cgroup_subsys.disabled)
++		return 0;
++
+ 	lock_page_cgroup(page);
+ 	pc = page_get_page_cgroup(page);
+ 	if (pc)
+@@ -803,6 +812,9 @@ static int mem_cgroup_force_empty(struct
+ 	int ret = -EBUSY;
+ 	int node, zid;
+ 
++	if (mem_cgroup_subsys.disabled)
++		return 0;
++
+ 	css_get(&mem->css);
+ 	/*
+ 	 * page reclaim code (kswapd etc..) will move pages between
+@@ -1053,6 +1065,8 @@ static void mem_cgroup_destroy(struct cg
+ static int mem_cgroup_populate(struct cgroup_subsys *ss,
+ 				struct cgroup *cont)
+ {
++	if (mem_cgroup_subsys.disabled)
++		return 0;
+ 	return cgroup_add_files(cont, ss, mem_cgroup_files,
+ 					ARRAY_SIZE(mem_cgroup_files));
+ }
+@@ -1065,6 +1079,9 @@ static void mem_cgroup_move_task(struct 
+ 	struct mm_struct *mm;
+ 	struct mem_cgroup *mem, *old_mem;
+ 
++	if (mem_cgroup_subsys.disabled)
++		return;
++
+ 	mm = get_task_mm(p);
+ 	if (mm == NULL)
+ 		return;
 _
 
 -- 
