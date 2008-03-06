@@ -1,51 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933242AbYCFUZT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933748AbYCFU04@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933242AbYCFUZT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Mar 2008 15:25:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755088AbYCFUZA
+	id S933748AbYCFU04 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Mar 2008 15:26:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751269AbYCFU0r
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Mar 2008 15:25:00 -0500
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:4011 "EHLO spitz.ucw.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751023AbYCFUY7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Mar 2008 15:24:59 -0500
-Date: Thu, 6 Mar 2008 21:24:47 +0100
-From: Pavel Machek <pavel@ucw.cz>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Suresh Siddha <suresh.b.siddha@intel.com>,
-       Christoph Hellwig <hch@infradead.org>, hpa@zytor.com,
-       tglx@linutronix.de, andi@firstfloor.org, linux-kernel@vger.kernel.org,
-       Arjan van de Ven <arjan@linux.intel.com>
-Subject: Re: [patch 2/2] x86, fpu: lazy allocation of FPU area - v3
-Message-ID: <20080306202446.GA4225@ucw.cz>
-References: <20080303230335.892214000@linux-os.sc.intel.com> <20080303230336.042604000@linux-os.sc.intel.com> <20080304012012.GB22431@infradead.org> <20080304014306.GC28006@linux-os.sc.intel.com> <20080304103220.GA17621@elte.hu> <20080304175528.GD28006@linux-os.sc.intel.com> <20080305194705.GA4386@ucw.cz> <20080306155141.GA23340@elte.hu>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Thu, 6 Mar 2008 15:26:47 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:38203 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751023AbYCFU0r (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 6 Mar 2008 15:26:47 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Tilman Schmidt <tilman@imap.cc>
+Subject: Re: 2.6.25-rc3-git3: Reported regressions from 2.6.24
+Date: Thu, 6 Mar 2008 21:25:53 +0100
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Adrian Bunk <bunk@kernel.org>
+References: <200803030316.07165.rjw@sisk.pl> <47D03086.3000806@imap.cc>
+In-Reply-To: <47D03086.3000806@imap.cc>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20080306155141.GA23340@elte.hu>
-User-Agent: Mutt/1.5.9i
+Message-Id: <200803062125.54364.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu 2008-03-06 16:51:41, Ingo Molnar wrote:
+On Thursday, 6 of March 2008, Tilman Schmidt wrote:
+> On 03.03.2008 03:16 Rafael J. Wysocki wrote:
 > 
-> * Pavel Machek <pavel@ucw.cz> wrote:
+> > Unresolved regressions
+> > ----------------------
 > 
-> > > > kmem_cache_alloc() can fail (return NULL) and not handling it is a 
-> > > > bug.
-> > > 
-> > > oops. you are correct. Will send a sigsegv in the failure case then. 
-> > > Thanks.
-> > 
-> > You are introducing possibility of hard to debug error, where previous 
-> > code just worked... Does not look like good idea to me.
+> > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=10021
+> > Subject		: Linux 2.6.25-rc2 regression: LVM cannot find volume group
+> > Submitter	: Tilman Schmidt <tilman@imap.cc>
+> > Date		: 2008-02-16 20:14
+> > References	: http://lkml.org/lkml/2008/2/16/208
+> > Handled-By	: Alan Cox <alan@lxorguk.ukuu.org.uk>
+> > 		  Jiri Slaby <jirislaby@gmail.com>
 > 
-> hm, how does it differ from any other allocation failure? We could fail 
+> Fixed in 2.6.25-rc4 by the introduction of CONFIG_SYSFS_DEPRECATED_V2.
 
-Well, we should not be sending SIGSEGV...? SIGBUS would be cleaner, or
-SIGKILL... what happens when userland tries to catch this one?
+Already closed.
 
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Thanks,
+Rafael
