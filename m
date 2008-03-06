@@ -1,79 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764950AbYCFUbX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933636AbYCFUdu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764950AbYCFUbX (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Mar 2008 15:31:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752036AbYCFUbN
+	id S933636AbYCFUdu (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Mar 2008 15:33:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755101AbYCFUdm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Mar 2008 15:31:13 -0500
-Received: from accolon.hansenpartnership.com ([76.243.235.52]:59718 "EHLO
-	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751888AbYCFUbM (ORCPT
+	Thu, 6 Mar 2008 15:33:42 -0500
+Received: from iolanthe.rowland.org ([192.131.102.54]:45416 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1752036AbYCFUdm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Mar 2008 15:31:12 -0500
-Subject: Re: [2.6 patch] SCSI_AIC94XX must depend on SCSI
-From: James Bottomley <James.Bottomley@HansenPartnership.com>
-To: Adrian Bunk <bunk@kernel.org>
-Cc: Toralf =?ISO-8859-1?Q?F=F6rster?= <toralf.foerster@gmx.de>,
-       linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org
-In-Reply-To: <20080306202246.GB5259@cs181133002.pp.htv.fi>
-References: <200803062009.20309.toralf.foerster@gmx.de>
-	 <20080306202246.GB5259@cs181133002.pp.htv.fi>
-Content-Type: text/plain; charset=utf-8
-Date: Thu, 06 Mar 2008 14:31:07 -0600
-Message-Id: <1204835467.3062.42.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 (2.12.3-1.fc8) 
-Content-Transfer-Encoding: 8bit
+	Thu, 6 Mar 2008 15:33:42 -0500
+Date: Thu, 6 Mar 2008 15:33:41 -0500 (EST)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: Pavel Machek <pavel@ucw.cz>
+cc: David Brownell <david-b@pacbell.net>, Pierre Ossman <drzeus-mmc@drzeus.cx>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       pm list <linux-pm@lists.linux-foundation.org>,
+       Zdenek Kabelac <zdenek.kabelac@gmail.com>,
+       Kernel development list <linux-kernel@vger.kernel.org>
+Subject: Re: Bugs in MMC [was: [Bug 10030] Suspend doesn't work when SD card
+ is inserted]
+In-Reply-To: <20080306155553.GA3908@ucw.cz>
+Message-ID: <Pine.LNX.4.44L0.0803061528460.9174-100000@iolanthe.rowland.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2008-03-06 at 22:22 +0200, Adrian Bunk wrote:
-> This patch fixes the following build error reported by Toralf Förster:
-> 
-> <--  snip  -->
-> 
-> ...
->   MODPOST 243 modules
-> ERROR: "sas_bios_param" [drivers/scsi/mvsas.ko] undefined!
-> ERROR: "sas_change_queue_type" [drivers/scsi/mvsas.ko] undefined!
-> ERROR: "sas_change_queue_depth" [drivers/scsi/mvsas.ko] undefined!
-> ERROR: "sas_target_destroy" [drivers/scsi/mvsas.ko] undefined!
-> ERROR: "sas_target_alloc" [drivers/scsi/mvsas.ko] undefined!
-> ERROR: "sas_slave_destroy" [drivers/scsi/mvsas.ko] undefined!
-> ERROR: "sas_slave_configure" [drivers/scsi/mvsas.ko] undefined!
-> ERROR: "sas_eh_bus_reset_handler" [drivers/scsi/mvsas.ko] undefined!
-> ERROR: "sas_eh_device_reset_handler" [drivers/scsi/mvsas.ko] undefined!
-> ERROR: "sas_queuecommand" [drivers/scsi/mvsas.ko] undefined!
-> ERROR: "sas_ioctl" [drivers/scsi/mvsas.ko] undefined!
-> ERROR: "sas_register_ha" [drivers/scsi/mvsas.ko] undefined!
-> ERROR: "sas_domain_attach_transport" [drivers/scsi/mvsas.ko] undefined!
-> ERROR: "sas_ssp_task_response" [drivers/scsi/mvsas.ko] undefined!
-> ERROR: "sas_slave_alloc" [drivers/scsi/mvsas.ko] undefined!
-> ERROR: "sas_unregister_ha" [drivers/scsi/mvsas.ko] undefined!
-> make[1]: *** [__modpost] Error 1
-> 
-> <--  snip  -->
-> 
-> Signed-off-by: Adrian Bunk <bunk@kernel.org>
-> 
-> ---
-> --- a/drivers/scsi/aic94xx/Kconfig
-> +++ b/drivers/scsi/aic94xx/Kconfig
-> @@ -26,7 +26,7 @@
->  
->  config SCSI_AIC94XX
->  	tristate "Adaptec AIC94xx SAS/SATA support"
-> -	depends on PCI
-> +	depends on SCSI && PCI
->  	select SCSI_SAS_LIBSAS
->  	select FW_LOADER
+On Thu, 6 Mar 2008, Pavel Machek wrote:
 
-This doesn't look to be a fix for your error: the symbols you've listed
-as missing are all libsas ones, not core SCSI ones.  Also they're all
-claiming to be missing from mvsas, not aic94xx.  There's something else
-about the configuration that produced this error.
+> On Tue 2008-03-04 16:00:51, Alan Stern wrote:
+> > On Tue, 4 Mar 2008, David Brownell wrote:
+> > 
+> > > > What's wrong with a superfluous probe at resume time, besides the waste 
+> > > > of a few milliseconds?
+> > > 
+> > > I'm more concerned with the undesirable removal of devices at suspend
+> > > time ... ones with mounted filesystems etc.
+> > 
+> > On that we can agree.  The removal is done if the host doesn't define a 
+> > resume method.  There doesn't seem to be any point to that, given that 
+> > the probing during resume will determine whether a card has in fact 
+> > been removed.
+> 
+> Hmm, if the driver is sleeping too deeply, user might have removed the
+> card and put in different one, without driver noticing. That would be
+> _bad_.
 
-James
+Ironically, the very same problem now exists with the USB mass-storage 
+driver.  I don't see any way for the driver itself to solve it, 
+especially during a hibernation (which can be a _very_ deep sleep).
 
+One thing that could be done is for filesystems to verify, after a 
+system sleep, that their superblocks haven't changed.  There could 
+still be issues with non-mounted partitions, if they have live entries 
+in the block cache, but it would be an improvement.
+
+Do you know the right people to mention this to?  Anybody in filesystem 
+development interested in suspend/hibernation issues?
+
+Alan Stern
 
