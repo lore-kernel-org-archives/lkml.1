@@ -1,56 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765203AbYCFLOf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765962AbYCFLPk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765203AbYCFLOf (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Mar 2008 06:14:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761132AbYCFLOZ
+	id S1765962AbYCFLPk (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Mar 2008 06:15:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758950AbYCFLPa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Mar 2008 06:14:25 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:42559 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759050AbYCFLOY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Mar 2008 06:14:24 -0500
-Date: Thu, 6 Mar 2008 12:14:08 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Andi Kleen <ak@suse.de>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Pavel Machek <pavel@ucw.cz>,
-       kernel list <linux-kernel@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: 2.6.25-rc3: 34TB vmalloc total -- overflow in /proc/meminfo?
-Message-ID: <20080306111408.GM13391@elte.hu>
-References: <20080305090610.GA30024@atrey.karlin.mff.cuni.cz> <20080305093923.GA2049@atrey.karlin.mff.cuni.cz> <200803052312.37996.rjw@sisk.pl> <200803052331.42193.ak@suse.de>
+	Thu, 6 Mar 2008 06:15:30 -0500
+Received: from E23SMTP06.au.ibm.com ([202.81.18.175]:59361 "EHLO
+	e23smtp06.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758912AbYCFLP3 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 6 Mar 2008 06:15:29 -0500
+Date: Thu, 6 Mar 2008 16:45:25 +0530
+From: Gautham R Shenoy <ego@in.ibm.com>
+To: Oleg Nesterov <oleg@tv-sign.ru>
+Cc: Yi Yang <yi.y.yang@intel.com>, Ingo Molnar <mingo@elte.hu>,
+       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [BUG 2.6.25-rc3] scheduler/hotplug: some processes are
+	dealocked when cpu is set to offline
+Message-ID: <20080306111525.GA23865@in.ibm.com>
+Reply-To: ego@in.ibm.com
+References: <1204483329.3607.8.camel@yangyi-dev.bj.intel.com> <20080303153154.GA11288@in.ibm.com> <1204555505.3842.4.camel@yangyi-dev.bj.intel.com> <20080304052613.GA28632@in.ibm.com> <20080304150107.GA564@tv-sign.ru> <20080305100509.GA9265@in.ibm.com> <20080305135314.GA84@tv-sign.ru>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <200803052331.42193.ak@suse.de>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <20080305135314.GA84@tv-sign.ru>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, Mar 05, 2008 at 04:53:14PM +0300, Oleg Nesterov wrote:
+> On 03/05, Gautham R Shenoy wrote:
+> >
+> > On Tue, Mar 04, 2008 at 06:01:07PM +0300, Oleg Nesterov wrote:
+> > > On 03/04, Gautham R Shenoy wrote:
+> > > >
+> > > > So at times, the callback thread is blocked on kthread_stop(k) in
+> > > > softlockup.c, while other time, it was blocked in
+> > > > cleanup_workqueue_threads() in workqueue.c. 
+> > > 
+> > > >From another message:
+> > > >
+> > > > However, it remains in R< state
+> > > 
+> > > What about cwq->thread? Was it TASK_RUNNING too?
+> > 
+> > No, it was in TASK_UNINTERRUPTIBLE state. The last thing it ever
+> > executed was the wait_for_completion in flush_cpu_workqueue()
+> 
+> You misunderstood ;) The task doing _cpu_down() hang in flush_cpu_workqueue(),
+> because cwq->thread doesn't want to die. But what was cwq->thread->state?
+> 
 
-* Andi Kleen <ak@suse.de> wrote:
+Yup, sorry for that stupid reply.
 
-> Just commenting on the subject. The 34TB are not an over/underflow. 
-> x86-64 simply has so much address space reserved for vmalloc. It 
-> doesn't mean of course that that much could be actually allocated in 
-> real memory.
+> Could you try the patch? Yi constantly sees the tasks in R< state.
+> I am starting to suspect some scheduling issue.
 
-btw., the exact amount of available vmalloc space on 64-bit x86 is 32 TB 
-(32768 GB), or 0x0000200000000000 hexa. (this is still only 0.0002% of 
-the complete 64-bit address space [25% of the 128 TB 64-bit kernel 
-address space] so we've got plenty of room)
+Me too. With your patch applied there were quite a few tasks in the
+running state which didn't get the cpu for more than 120 seconds.
 
-but the first fundamental limit we'll hit on 64-bit is the 32-bit offset 
-limit of binaries - this affects kernel modules, the kernel image, etc. 
-We wont hit that anytime soon, but we'll eventually hit it. (user-space 
-will be the first i guess)
+I could be a scheduler problem which CPU-Hotplug is able to catch more
+easily. Will try a git bisect.
 
-	Ingo
+
+> 
+> Oleg.
+
+-- 
+Thanks and Regards
+gautham
