@@ -1,132 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760271AbYCFVWW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765677AbYCFVXm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760271AbYCFVWW (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Mar 2008 16:22:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752691AbYCFVVz
+	id S1765677AbYCFVXm (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Mar 2008 16:23:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752587AbYCFVXe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Mar 2008 16:21:55 -0500
-Received: from ug-out-1314.google.com ([66.249.92.168]:38442 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752432AbYCFVVx (ORCPT
+	Thu, 6 Mar 2008 16:23:34 -0500
+Received: from smtp121.sbc.mail.sp1.yahoo.com ([69.147.64.94]:27128 "HELO
+	smtp121.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1752691AbYCFVXd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Mar 2008 16:21:53 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-disposition:message-id:content-type:content-transfer-encoding;
-        b=Z6iV0l5avesLwdasRZz5vWN74KgmoJ2a9dh2aTpROdVG9XLdjhc3U50IvCebVAEuufq7JnzCh0k+/NISzG3yZbbVyv7v46IGGUQLPA3M9U92krISxRDK5TbufYWrcVAkqpUqb+JQ4U7F9IF3mjNtsE4Mps+wtmQ+8y45vCBW+MA=
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: walt <w41ter@gmail.com>
-Subject: Re: Commit 9f10d9ee breaks CD mounting/burning
-Date: Thu, 6 Mar 2008 22:35:00 +0100
-User-Agent: KMail/1.9.6 (enterprise 0.20071204.744707)
-Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Borislav Petkov <petkovbb@googlemail.com>
-References: <fqngjf$cjf$1@ger.gmane.org>
-In-Reply-To: <fqngjf$cjf$1@ger.gmane.org>
+	Thu, 6 Mar 2008 16:23:33 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=pacbell.net;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=RrVWizB3SRbPrmqDYFoZ+WACaJueFKtvWjBMulLadY+7LOwPgL9fr2JiqAMec7gkXGc1HoU7dEhPYim2aPdwPZtcx0sBOwOHwa57EvIPnP0X2d4OzeY0r9X6X/HKQVShCkQAPEUgSTL4AuAybfAr5kLhunFju5+bgqi9h/JMALI=  ;
+X-YMail-OSG: uWi7EgQVM1n6995ucbzOY7AtbWAY90Zvd3UsX1p8H2kcRuNb6r2Bgzx7xlz156Ymm7qmr7sbvQ--
+X-Yahoo-Newman-Property: ymail-3
+From: David Brownell <david-b@pacbell.net>
+To: Pierre Ossman <drzeus-mmc@drzeus.cx>
+Subject: Re: Bugs in MMC [was: [Bug 10030] Suspend doesn't work when SD card is inserted]
+Date: Thu, 6 Mar 2008 13:23:29 -0800
+User-Agent: KMail/1.9.6
+Cc: Alan Stern <stern@rowland.harvard.edu>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       pm list <linux-pm@lists.linux-foundation.org>,
+       Zdenek Kabelac <zdenek.kabelac@gmail.com>,
+       Kernel development list <linux-kernel@vger.kernel.org>
+References: <200802241500.41969.rjw@sisk.pl> <200803040144.09601.david-b@pacbell.net> <20080304105841.6c951665@mjolnir.drzeus.cx>
+In-Reply-To: <20080304105841.6c951665@mjolnir.drzeus.cx>
 MIME-Version: 1.0
-Content-Disposition: inline
-Message-Id: <200803062235.00396.bzolnier@gmail.com>
 Content-Type: text/plain;
-  charset="iso-8859-1"
+  charset="us-ascii"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200803061323.30314.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-On Thursday 06 March 2008, walt wrote:
-> Hi Bartolmiej,
+> > > > Card insert/remove events can be system wake events though.  Which
+> > > > makes that restriction impractical.
+> > 
+> > This part seems to be ignored by your comment ... wake events.
 > 
-> For me, this commit causes the problem it's intended to fix:
-> 
-> commit 9f10d9ee0ac6d79d7bc8b9a158bf4a29322d84d3
-> Author: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-> Date:   Tue Feb 26 21:50:35 2008 +0100
-> 
->      ide-cd: fix 'ireason' handling for REQ_TYPE_ATA_PC requests
-> 
->      This fixes some hangs caused by not finishing the transfer before ending
->      the request and also makes use of 'ireason == 1' quirk for spurious IRQs.
-> 
-> When I mount a CD there is a long delay, and I see this error message:
-> 
-> hdc: ide_cd_check_ireason: wrong transfer direction!
-> cdrom: failed setting lba address space
-> hdc: status error: status=0x58 { DriveReady SeekComplete DataRequest }
-> ide: failed opcode was: unknown
-> hdc: drive not ready for command
-> <repeated many times>
-> 
-> When I revert this commit everything works properly again, including
-> CD burning.
-> 
-> Here is the drive info:
-> 
-> hdc: TSSTcorpCD/DVDW SH-S182M, ATAPI CD/DVD-ROM drive
-> hdc: host max PIO5 wanted PIO255(auto-tune) selected PIO4
-> hdc: UDMA/33 mode selected
-> hdc: ATAPI 48X DVD-ROM DVD-R-RAM CD-R/RW drive, 2048kB Cache
-> Uniform CD-ROM driver Revision: 3.20
-> hdc: UDMA/33 mode selected
-> 
-> I'm happy to try patches or supply more info, just let me know
-> what you need.
+> How so? How is a wake caused by the MMC controller different
+> than any other source? 
 
-Does the following patch help?
+They aren't.  Which is part of why the way MMC currently assumes that
+insert/remove events don't work is a problem.
 
-[ Borislav, please take a look and double check that it is OK. ]
 
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Subject: [PATCH] ide-cd: mark REQ_TYPE_ATA_PC write requests with REQ_RW flag
-
-On Thursday 06 March 2008, walt wrote:
-
-> For me, this commit causes the problem it's intended to fix:
+> > That is, the MMC core doesn't understand wakeup events.
+> > 
+> > Or, as pointed out elsewhere, well-behaved MMC hosts ... which don't
+> > need either such reprobing or the associated remove-on-suspend.
 > 
-> commit 9f10d9ee0ac6d79d7bc8b9a158bf4a29322d84d3
-> Author: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-> Date:   Tue Feb 26 21:50:35 2008 +0100
-> 
->      ide-cd: fix 'ireason' handling for REQ_TYPE_ATA_PC requests
-> 
->      This fixes some hangs caused by not finishing the transfer before ending
->      the request and also makes use of 'ireason == 1' quirk for spurious IRQs.
-> 
-> When I mount a CD there is a long delay, and I see this error message:
-> 
-> hdc: ide_cd_check_ireason: wrong transfer direction!
-> cdrom: failed setting lba address space
-> hdc: status error: status=0x58 { DriveReady SeekComplete DataRequest }
-> ide: failed opcode was: unknown
-> hdc: drive not ready for command
-> <repeated many times>
-> 
-> When I revert this commit everything works properly again, including
-> CD burning.
+> You need well behaved _systems_, not just hosts to achieve that
+> guarantee.
 
-It turned out that REQ_TYPE_ATA_PC write requests were not marked as such
-(the previous commit assumed them to be).
+Sure, but a host can't be well behaved all by itself!
 
-Reported-by: walt <w41ter@gmail.com>
-Cc: Borislav Petkov <petkovbb@googlemail.com>
-Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
----
- drivers/ide/ide-cd_ioctl.c |    4 ++++
- 1 file changed, 4 insertions(+)
+And in any case, I had already made clear I was talking
+about _systems_ that behave properly.
 
-Index: b/drivers/ide/ide-cd_ioctl.c
-===================================================================
---- a/drivers/ide/ide-cd_ioctl.c
-+++ b/drivers/ide/ide-cd_ioctl.c
-@@ -457,6 +457,10 @@ int ide_cdrom_packet(struct cdrom_device
- 	   layer. the packet must be complete, as we do not
- 	   touch it at all. */
- 	ide_cd_init_rq(drive, &req);
-+
-+	if (cgc->data_direction == CGC_DATA_WRITE)
-+		req.cmd_flags |= REQ_RW;
-+
- 	memcpy(req.cmd, cgc->cmd, CDROM_PACKET_SIZE);
- 	if (cgc->sense)
- 		memset(cgc->sense, 0, sizeof(struct request_sense));
 
+> SDHCI controllers have the ability to wake up the 
+> system on card removal, but there is zero guarantee that the
+> platform actually wired the controller up in a way that actually
+> allows it to do this. Throw suspend to disk, where the system might
+> completely lose power, into the mix and you're completely screwed.     
+
+I'm talking about generic MMC/SD controllers of the type
+that have been around for years ... on systems which won't
+use hibernation ("suspend to disk"), but do use real system
+sleep states where card detection (by IRQs) works.
+
+ 
+> So for the default behaviour to change, we need one of two things:
+> 
+> - Certainty that removals cannot go unnoticed. (even then, you
+>   also need wakeup latency guarantees) 
+> - Ability to detect a removal after the fact.
+>
+> For the general case, the first one is impossible given todays
+> hardware.
+
+Odd that it's very possible on the systems I mentioned.
+
+
+> The second might be solvable, but noone has done the work.  
+
+I don't know what you mean by "detect a removal after
+the fact", or why it'd be needed if you detected it
+in the first place.
+
+ 
+> (If your complete system can satisfy the first option, feel
+> free to add the "unsafe" option to you defconfig, but that is
+> hardly adequate reason to have it on by default.)  
+
+Thing is, I had also pointed out that it wasn't "unsafe"
+in the least on many systems.
+
+I'll refresh the patch which improves that mechanism and
+updates its description.
+
+- Dave
