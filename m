@@ -1,79 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763440AbYCFIkp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758544AbYCFIoU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763440AbYCFIkp (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Mar 2008 03:40:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762555AbYCFIk3
+	id S1758544AbYCFIoU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Mar 2008 03:44:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755192AbYCFIoL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Mar 2008 03:40:29 -0500
-Received: from sacred.ru ([62.205.161.221]:52313 "EHLO sacred.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760962AbYCFIk1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Mar 2008 03:40:27 -0500
-Message-ID: <47CFADE2.30205@openvz.org>
-Date: Thu, 06 Mar 2008 11:40:02 +0300
-From: Pavel Emelyanov <xemul@openvz.org>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080213)
+	Thu, 6 Mar 2008 03:44:11 -0500
+Received: from smtp-out02.alice-dsl.net ([88.44.60.12]:8484 "EHLO
+	smtp-out02.alice-dsl.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755402AbYCFIoJ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 6 Mar 2008 03:44:09 -0500
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: Richard Guenther <richard.guenther@gmail.com>,
+       Joe Buck <Joe.Buck@synopsys.com>, Michael Matz <matz@suse.de>,
+       Jan Hubicka <hubicka@ucw.cz>, Aurelien Jarno <aurelien@aurel32.net>,
+       linux-kernel@vger.kernel.org, gcc@gcc.gnu.org
+Subject: Re: RELEASE BLOCKER: Linux doesn't follow x86/x86-64 ABI wrt direction  flag
+References: <20080305153020.GA24631@volta.aurel32.net>
+	<47CEC3AA.6080709@zytor.com> <20080305195834.GA17267@synopsys.com>
+	<20080305202319.GA17053@volta.aurel32.net>
+	<Pine.LNX.4.64.0803052133400.20583@wotan.suse.de>
+	<20080305204234.GB17267@synopsys.com>
+	<20080305204945.GB14011@atrey.karlin.mff.cuni.cz>
+	<Pine.LNX.4.64.0803052158270.20583@wotan.suse.de>
+	<20080305212005.GC17267@synopsys.com>
+	<84fc9c000803051332q2f2eedeej7d3c0509e698cabf@mail.gmail.com>
+	<47CF11D6.7070901@zytor.com>
+From: Andi Kleen <andi@firstfloor.org>
+Date: 06 Mar 2008 09:44:05 +0100
+In-Reply-To: <47CF11D6.7070901@zytor.com>
+Message-ID: <87ablcgs2y.fsf@basil.nowhere.org>
+User-Agent: Gnus/5.09 (Gnus v5.9.0) Emacs/21.3
 MIME-Version: 1.0
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-CC: Andrew Morton <akpm@linux-foundation.org>,
-       David Miller <davem@davemloft.net>,
-       Linux Netdev List <netdev@vger.kernel.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Alexey Dobriyan <adobriyan@openvz.org>
-Subject: Re: [PATCH] Make /proc/net a symlink on /proc/self/net
-References: <47CE8FF7.7000701@openvz.org> <m163w03djp.fsf@ebiederm.dsl.xmission.com>
-In-Reply-To: <m163w03djp.fsf@ebiederm.dsl.xmission.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-Greylist: Sender succeeded SMTP AUTH authentication, not delayed by milter-greylist-3.0 (sacred.ru [62.205.161.221]); Thu, 06 Mar 2008 11:39:58 +0300 (MSK)
+Content-Type: text/plain; charset=us-ascii
+X-OriginalArrivalTime: 06 Mar 2008 08:37:36.0001 (UTC) FILETIME=[54222F10:01C87F65]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Eric W. Biederman wrote:
-> Pavel Emelyanov <xemul@openvz.org> writes:
-> 
->> Current /proc/net is done with so called "shadows", but current
->> implementation is broken and has little chances to get fixed.
->>
->> The problem is that dentries subtree of /proc/net directory has
->> fancy revalidation rules to make processes living in different
->> net namespaces see different entries in /proc/net subtree, but
->> currently, tasks see in the /proc/net subdir the contents of any
->> other namespace, depending on who opened the file first.
->>
->> The proposed fix is to turn /proc/net into a symlink, which points
->> to /proc/self/net, which in turn shows what previously was in
->> /proc/net - the network-related info, from the net namespace the
->> appropriate task lives in.
->>
->> # ls -l /proc/net
->> lrwxrwxrwx  1 root root 8 Mar  5 15:17 /proc/net -> self/net
->>
->> In other words - this behaves like /proc/mounts, but unlike
->> "mounts", "net" is not a file, but a directory.
-> 
-> Overall this looks good, thanks.
-> 
-> 
-> As a follow on patch this should be moved from /proc/<pid>/net
-> into /proc/<pid>/task/<tid>/net.
+"H. Peter Anvin" <hpa@zytor.com> writes:
 
-I knew you would request for it :)
-
-> We don't have anything that currently forces network namespaces to be
-> the same between different tasks of the same task group (I just
-> looked), nor do we have a technical reason to require that.
+> Richard Guenther wrote:
+> > We didn't yet run into this issue and build openSUSE with 4.3 since
+> > more than
+> > three month.
+> >
 > 
-> So we should fix our infrastructure to include the companion of
-> /proc/self, a /proc/current (which points at the current task)
-> after which it should be about a two line change to move this
-> from the tgid to the task directory.
+> Well, how often do you take a trap inside an overlapping memmove()?
 
-This is right what I intended to tell you when you would propose
-to tune the /proc/net link. I'm glad hearing, that you already
-agree with that.
+That was the state with older gcc, but with newer gcc it does not necessarily
+reset the flag before the next function call.
 
-> Eric
-> 
+so e.g. if you have
 
+        memmove(...)
+        for (... very long loop .... ) {
+                /* no function calls */
+                /* signals happen */
+        }
+
+the signal could see the direction flag
+
+-Andi
