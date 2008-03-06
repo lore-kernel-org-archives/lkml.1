@@ -1,411 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934954AbYCFCdy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934753AbYCFCec@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934954AbYCFCdy (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Mar 2008 21:33:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933060AbYCFCZZ
+	id S934753AbYCFCec (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Mar 2008 21:34:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934399AbYCFC25
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Mar 2008 21:25:25 -0500
-Received: from rn-out-0910.google.com ([64.233.170.184]:52325 "EHLO
-	rn-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932993AbYCFCZV (ORCPT
+	Wed, 5 Mar 2008 21:28:57 -0500
+Received: from e34.co.us.ibm.com ([32.97.110.152]:40819 "EHLO
+	e34.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S934390AbYCFC24 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Mar 2008 21:25:21 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:to:cc:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=tLDHqYy1hoT0ccyOLj5b4I03GQWqh4Qpap30GgtX0SLB6jDJAkFlh6lXE9nuZdbTFxE+/QvKGSV6bHiX1v/E0HJxsXVEU+5XUSIC1090YIFLxArSwYD9UaS8vgCnsy3RErVBQBth0IdF2plyKNB04YRUTxwinrbJkuekH0DS/sw=
-Subject: [PATCH 10/16] pcmcia: replace remaining __FUNCTION__ occurrences
-From: Harvey Harrison <harvey.harrison@gmail.com>
-To: Russell King <rmk@arm.linux.org.uk>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Content-Type: text/plain
-Date: Wed, 05 Mar 2008 18:24:56 -0800
-Message-Id: <1204770296.14154.46.camel@brick>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
-Content-Transfer-Encoding: 7bit
+	Wed, 5 Mar 2008 21:28:56 -0500
+Date: Wed, 5 Mar 2008 18:28:54 -0800
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: Jike Song <albcamus@gmail.com>
+Cc: Dave Young <hidave.darkstar@gmail.com>,
+       Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: 2.6.25-rc4 rcupreempt.h WARNINGs while suspend/resume
+Message-ID: <20080306022854.GK8728@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <a8e1da0803042324ndd3873ay61cee6112d9dda9a@mail.gmail.com> <df9815e70803042335j4ea66028y96d6be21f0970aa1@mail.gmail.com> <20080305165531.GB8728@linux.vnet.ibm.com> <df9815e70803051811o4c4a42e0td56cfd32b80c66b2@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <df9815e70803051811o4c4a42e0td56cfd32b80c66b2@mail.gmail.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-__FUNCTION__ is gcc-specific, use __func__
+On Thu, Mar 06, 2008 at 10:11:26AM +0800, Jike Song wrote:
+> On Thu, Mar 6, 2008 at 12:55 AM, Paul E. McKenney
+> <paulmck@linux.vnet.ibm.com> wrote:
+> >  Could you please try applying Karsten Wiese's patch to see if it
+> >  fixes the WARNINGs?  See http://lkml.org/lkml/2008/2/26/386 for
+> >  the patch.
+> >
+> >                                                 Thanx, Paul
+> 
+> Yes, the WARNING disappears with Karsten's patch applied.
+> Thanks.
 
-Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
----
- drivers/pcmcia/au1000_db1x00.c     |    6 +++---
- drivers/pcmcia/au1000_pb1x00.c     |   14 +++++++-------
- drivers/pcmcia/au1000_xxs1500.c    |    2 +-
- drivers/pcmcia/omap_cf.c           |    2 +-
- drivers/pcmcia/pxa2xx_lubbock.c    |    8 ++++----
- drivers/pcmcia/pxa2xx_mainstone.c  |    4 ++--
- drivers/pcmcia/sa1100_assabet.c    |    4 ++--
- drivers/pcmcia/sa1100_badge4.c     |    8 ++++----
- drivers/pcmcia/sa1100_cerf.c       |    2 +-
- drivers/pcmcia/sa1100_jornada720.c |    4 ++--
- drivers/pcmcia/sa1100_neponset.c   |    4 ++--
- drivers/pcmcia/sa1100_shannon.c    |    8 ++++----
- drivers/pcmcia/sa1100_simpad.c     |    2 +-
- drivers/pcmcia/soc_common.c        |    2 +-
- 14 files changed, 35 insertions(+), 35 deletions(-)
+Good to hear!!!  I believe that Karsten's patch is on its way in,
+so hopefully that will clear things up.
 
-diff --git a/drivers/pcmcia/au1000_db1x00.c b/drivers/pcmcia/au1000_db1x00.c
-index 74e0515..c78d77f 100644
---- a/drivers/pcmcia/au1000_db1x00.c
-+++ b/drivers/pcmcia/au1000_db1x00.c
-@@ -194,7 +194,7 @@ db1x00_pcmcia_configure_socket(struct au1000_pcmcia_socket *skt, struct socket_s
- 				default:
- 					pwr |= SET_VCC_VPP(0,0,sock);
- 					printk("%s: bad Vcc/Vpp (%d:%d)\n",
--							__FUNCTION__,
-+							__func__,
- 							state->Vcc,
- 							state->Vpp);
- 					break;
-@@ -215,7 +215,7 @@ db1x00_pcmcia_configure_socket(struct au1000_pcmcia_socket *skt, struct socket_s
- 				default:
- 					pwr |= SET_VCC_VPP(0,0,sock);
- 					printk("%s: bad Vcc/Vpp (%d:%d)\n",
--							__FUNCTION__,
-+							__func__,
- 							state->Vcc,
- 							state->Vpp);
- 					break;
-@@ -224,7 +224,7 @@ db1x00_pcmcia_configure_socket(struct au1000_pcmcia_socket *skt, struct socket_s
- 		default: /* what's this ? */
- 			pwr |= SET_VCC_VPP(0,0,sock);
- 			printk(KERN_ERR "%s: bad Vcc %d\n",
--					__FUNCTION__, state->Vcc);
-+					__func__, state->Vcc);
- 			break;
- 	}
- 
-diff --git a/drivers/pcmcia/au1000_pb1x00.c b/drivers/pcmcia/au1000_pb1x00.c
-index 86c0808..2330b90 100644
---- a/drivers/pcmcia/au1000_pb1x00.c
-+++ b/drivers/pcmcia/au1000_pb1x00.c
-@@ -244,7 +244,7 @@ pb1x00_pcmcia_configure_socket(const struct pcmcia_configure *configure)
- 					pcr |= SET_VCC_VPP(VCC_HIZ,VPP_HIZ,
- 							configure->sock);
- 					printk("%s: bad Vcc/Vpp (%d:%d)\n", 
--							__FUNCTION__, 
-+							__func__,
- 							configure->vcc, 
- 							configure->vpp);
- 					break;
-@@ -272,7 +272,7 @@ pb1x00_pcmcia_configure_socket(const struct pcmcia_configure *configure)
- 					pcr |= SET_VCC_VPP(VCC_HIZ,VPP_HIZ,
- 							configure->sock);
- 					printk("%s: bad Vcc/Vpp (%d:%d)\n", 
--							__FUNCTION__, 
-+							__func__,
- 							configure->vcc, 
- 							configure->vpp);
- 					break;
-@@ -300,7 +300,7 @@ pb1x00_pcmcia_configure_socket(const struct pcmcia_configure *configure)
- 					pcr |= SET_VCC_VPP(VCC_HIZ,VPP_HIZ,
- 							configure->sock);
- 					printk("%s: bad Vcc/Vpp (%d:%d)\n", 
--							__FUNCTION__, 
-+							__func__,
- 							configure->vcc, 
- 							configure->vpp);
- 					break;
-@@ -309,7 +309,7 @@ pb1x00_pcmcia_configure_socket(const struct pcmcia_configure *configure)
- 		default: /* what's this ? */
- 			pcr |= SET_VCC_VPP(VCC_HIZ,VPP_HIZ,configure->sock);
- 			printk(KERN_ERR "%s: bad Vcc %d\n", 
--					__FUNCTION__, configure->vcc);
-+					__func__, configure->vcc);
- 			break;
- 	}
- 
-@@ -353,7 +353,7 @@ pb1x00_pcmcia_configure_socket(const struct pcmcia_configure *configure)
- 				default:
- 					pcr |= SET_VCC_VPP(0,0);
- 					printk("%s: bad Vcc/Vpp (%d:%d)\n", 
--							__FUNCTION__, 
-+							__func__,
- 							configure->vcc, 
- 							configure->vpp);
- 					break;
-@@ -374,7 +374,7 @@ pb1x00_pcmcia_configure_socket(const struct pcmcia_configure *configure)
- 				default:
- 					pcr |= SET_VCC_VPP(0,0);
- 					printk("%s: bad Vcc/Vpp (%d:%d)\n", 
--							__FUNCTION__, 
-+							__func__,
- 							configure->vcc, 
- 							configure->vpp);
- 					break;
-@@ -383,7 +383,7 @@ pb1x00_pcmcia_configure_socket(const struct pcmcia_configure *configure)
- 		default: /* what's this ? */
- 			pcr |= SET_VCC_VPP(0,0);
- 			printk(KERN_ERR "%s: bad Vcc %d\n", 
--					__FUNCTION__, configure->vcc);
-+					__func__, configure->vcc);
- 			break;
- 	}
- 
-diff --git a/drivers/pcmcia/au1000_xxs1500.c b/drivers/pcmcia/au1000_xxs1500.c
-index ce9d5c4..08c5b24 100644
---- a/drivers/pcmcia/au1000_xxs1500.c
-+++ b/drivers/pcmcia/au1000_xxs1500.c
-@@ -56,7 +56,7 @@
- #define PCMCIA_IRQ		AU1000_GPIO_4
- 
- #if 0
--#define DEBUG(x,args...)	printk(__FUNCTION__ ": " x,##args)
-+#define DEBUG(x, args...)	printk(__func__ ": " x, ##args)
- #else
- #define DEBUG(x,args...)
- #endif
-diff --git a/drivers/pcmcia/omap_cf.c b/drivers/pcmcia/omap_cf.c
-index 2df216b..5ab3346 100644
---- a/drivers/pcmcia/omap_cf.c
-+++ b/drivers/pcmcia/omap_cf.c
-@@ -153,7 +153,7 @@ omap_cf_set_socket(struct pcmcia_socket *sock, struct socket_state_t *s)
- 
- static int omap_cf_ss_suspend(struct pcmcia_socket *s)
- {
--	pr_debug("%s: %s\n", driver_name, __FUNCTION__);
-+	pr_debug("%s: %s\n", driver_name, __func__);
- 	return omap_cf_set_socket(s, &dead_socket);
- }
- 
-diff --git a/drivers/pcmcia/pxa2xx_lubbock.c b/drivers/pcmcia/pxa2xx_lubbock.c
-index 4a05802..881ec8a 100644
---- a/drivers/pcmcia/pxa2xx_lubbock.c
-+++ b/drivers/pcmcia/pxa2xx_lubbock.c
-@@ -87,7 +87,7 @@ lubbock_pcmcia_configure_socket(struct soc_pcmcia_socket *skt,
- 
- 		default:
- 			printk(KERN_ERR "%s(): unrecognized Vcc %u\n",
--			       __FUNCTION__, state->Vcc);
-+			       __func__, state->Vcc);
- 			ret = -1;
- 		}
- 
-@@ -104,7 +104,7 @@ lubbock_pcmcia_configure_socket(struct soc_pcmcia_socket *skt,
- 				pa_dwr_set |= GPIO_A0;
- 			else {
- 				printk(KERN_ERR "%s(): unrecognized Vpp %u\n",
--				       __FUNCTION__, state->Vpp);
-+				       __func__, state->Vpp);
- 				ret = -1;
- 				break;
- 			}
-@@ -128,14 +128,14 @@ lubbock_pcmcia_configure_socket(struct soc_pcmcia_socket *skt,
- 
- 		default:
- 			printk(KERN_ERR "%s(): unrecognized Vcc %u\n",
--			       __FUNCTION__, state->Vcc);
-+			       __func__, state->Vcc);
- 			ret = -1;
- 			break;
- 		}
- 
- 		if (state->Vpp != state->Vcc && state->Vpp != 0) {
- 			printk(KERN_ERR "%s(): CF slot cannot support Vpp %u\n",
--			       __FUNCTION__, state->Vpp);
-+			       __func__, state->Vpp);
- 			ret = -1;
- 			break;
- 		}
-diff --git a/drivers/pcmcia/pxa2xx_mainstone.c b/drivers/pcmcia/pxa2xx_mainstone.c
-index 6fa5eaa..145b85e 100644
---- a/drivers/pcmcia/pxa2xx_mainstone.c
-+++ b/drivers/pcmcia/pxa2xx_mainstone.c
-@@ -99,7 +99,7 @@ static int mst_pcmcia_configure_socket(struct soc_pcmcia_socket *skt,
- 	case 50: power |= MST_PCMCIA_PWR_VCC_50; break;
- 	default:
- 		 printk(KERN_ERR "%s(): bad Vcc %u\n",
--				 __FUNCTION__, state->Vcc);
-+				 __func__, state->Vcc);
- 		 ret = -1;
- 	}
- 
-@@ -111,7 +111,7 @@ static int mst_pcmcia_configure_socket(struct soc_pcmcia_socket *skt,
- 			  power |= MST_PCMCIA_PWR_VPP_VCC;
- 		  } else {
- 			  printk(KERN_ERR "%s(): bad Vpp %u\n",
--					  __FUNCTION__, state->Vpp);
-+					  __func__, state->Vpp);
- 			  ret = -1;
- 		  }
- 	}
-diff --git a/drivers/pcmcia/sa1100_assabet.c b/drivers/pcmcia/sa1100_assabet.c
-index 7c57fdd..ce133ce 100644
---- a/drivers/pcmcia/sa1100_assabet.c
-+++ b/drivers/pcmcia/sa1100_assabet.c
-@@ -66,14 +66,14 @@ assabet_pcmcia_configure_socket(struct soc_pcmcia_socket *skt, const socket_stat
- 
- 	case 50:
- 		printk(KERN_WARNING "%s(): CS asked for 5V, applying 3.3V...\n",
--			__FUNCTION__);
-+			__func__);
- 
- 	case 33:  /* Can only apply 3.3V to the CF slot. */
- 		mask = ASSABET_BCR_CF_PWR;
- 		break;
- 
- 	default:
--		printk(KERN_ERR "%s(): unrecognized Vcc %u\n", __FUNCTION__,
-+		printk(KERN_ERR "%s(): unrecognized Vcc %u\n", __func__,
- 			state->Vcc);
- 		return -1;
- 	}
-diff --git a/drivers/pcmcia/sa1100_badge4.c b/drivers/pcmcia/sa1100_badge4.c
-index 62bfc75..607c3f3 100644
---- a/drivers/pcmcia/sa1100_badge4.c
-+++ b/drivers/pcmcia/sa1100_badge4.c
-@@ -82,14 +82,14 @@ badge4_pcmcia_configure_socket(struct soc_pcmcia_socket *skt, const socket_state
- 	case 0:
- 		if ((state->Vcc != 0) &&
- 		    (state->Vcc != badge4_pcmvcc)) {
--			complain_about_jumpering(__FUNCTION__, "pcmvcc",
-+			complain_about_jumpering(__func__, "pcmvcc",
- 						 badge4_pcmvcc, state->Vcc);
- 			// Apply power regardless of the jumpering.
- 			// return -1;
- 		}
- 		if ((state->Vpp != 0) &&
- 		    (state->Vpp != badge4_pcmvpp)) {
--			complain_about_jumpering(__FUNCTION__, "pcmvpp",
-+			complain_about_jumpering(__func__, "pcmvpp",
- 						 badge4_pcmvpp, state->Vpp);
- 			return -1;
- 		}
-@@ -98,7 +98,7 @@ badge4_pcmcia_configure_socket(struct soc_pcmcia_socket *skt, const socket_state
- 	case 1:
- 		if ((state->Vcc != 0) &&
- 		    (state->Vcc != badge4_cfvcc)) {
--			complain_about_jumpering(__FUNCTION__, "cfvcc",
-+			complain_about_jumpering(__func__, "cfvcc",
- 						 badge4_cfvcc, state->Vcc);
- 			return -1;
- 		}
-@@ -143,7 +143,7 @@ int pcmcia_badge4_init(struct device *dev)
- 	if (machine_is_badge4()) {
- 		printk(KERN_INFO
- 		       "%s: badge4_pcmvcc=%d, badge4_pcmvpp=%d, badge4_cfvcc=%d\n",
--		       __FUNCTION__,
-+		       __func__,
- 		       badge4_pcmvcc, badge4_pcmvpp, badge4_cfvcc);
- 
- 		ret = sa11xx_drv_pcmcia_probe(dev, &badge4_pcmcia_ops, 0, 2);
-diff --git a/drivers/pcmcia/sa1100_cerf.c b/drivers/pcmcia/sa1100_cerf.c
-index 549a152..7c3951a 100644
---- a/drivers/pcmcia/sa1100_cerf.c
-+++ b/drivers/pcmcia/sa1100_cerf.c
-@@ -63,7 +63,7 @@ cerf_pcmcia_configure_socket(struct soc_pcmcia_socket *skt,
- 
- 	default:
- 		printk(KERN_ERR "%s(): unrecognized Vcc %u\n",
--			__FUNCTION__, state->Vcc);
-+			__func__, state->Vcc);
- 		return -1;
- 	}
- 
-diff --git a/drivers/pcmcia/sa1100_jornada720.c b/drivers/pcmcia/sa1100_jornada720.c
-index 6284c35..2167e67 100644
---- a/drivers/pcmcia/sa1100_jornada720.c
-+++ b/drivers/pcmcia/sa1100_jornada720.c
-@@ -42,7 +42,7 @@ jornada720_pcmcia_configure_socket(struct soc_pcmcia_socket *skt, const socket_s
-   unsigned int pa_dwr_mask, pa_dwr_set;
-   int ret;
- 
--printk("%s(): config socket %d vcc %d vpp %d\n", __FUNCTION__,
-+printk("%s(): config socket %d vcc %d vpp %d\n", __func__,
- 	skt->nr, state->Vcc, state->Vpp);
- 
-   switch (skt->nr) {
-@@ -74,7 +74,7 @@ printk("%s(): config socket %d vcc %d vpp %d\n", __FUNCTION__,
- 
-   if (state->Vpp != state->Vcc && state->Vpp != 0) {
-     printk(KERN_ERR "%s(): slot cannot support VPP %u\n",
--	   __FUNCTION__, state->Vpp);
-+	   __func__, state->Vpp);
-     return -1;
-   }
- 
-diff --git a/drivers/pcmcia/sa1100_neponset.c b/drivers/pcmcia/sa1100_neponset.c
-index 5bc9e95..687492f 100644
---- a/drivers/pcmcia/sa1100_neponset.c
-+++ b/drivers/pcmcia/sa1100_neponset.c
-@@ -59,7 +59,7 @@ neponset_pcmcia_configure_socket(struct soc_pcmcia_socket *skt, const socket_sta
- 			ncr_set = NCR_A0VPP;
- 		else {
- 			printk(KERN_ERR "%s(): unrecognized VPP %u\n",
--			       __FUNCTION__, state->Vpp);
-+			       __func__, state->Vpp);
- 			return -1;
- 		}
- 		break;
-@@ -71,7 +71,7 @@ neponset_pcmcia_configure_socket(struct soc_pcmcia_socket *skt, const socket_sta
- 
- 		if (state->Vpp != state->Vcc && state->Vpp != 0) {
- 			printk(KERN_ERR "%s(): CF slot cannot support VPP %u\n",
--			       __FUNCTION__, state->Vpp);
-+			       __func__, state->Vpp);
- 			return -1;
- 		}
- 		break;
-diff --git a/drivers/pcmcia/sa1100_shannon.c b/drivers/pcmcia/sa1100_shannon.c
-index 9456f54..494912f 100644
---- a/drivers/pcmcia/sa1100_shannon.c
-+++ b/drivers/pcmcia/sa1100_shannon.c
-@@ -73,19 +73,19 @@ shannon_pcmcia_configure_socket(struct soc_pcmcia_socket *skt,
- {
- 	switch (state->Vcc) {
- 	case 0:	/* power off */
--		printk(KERN_WARNING "%s(): CS asked for 0V, still applying 3.3V..\n", __FUNCTION__);
-+		printk(KERN_WARNING "%s(): CS asked for 0V, still applying 3.3V..\n", __func__);
- 		break;
- 	case 50:
--		printk(KERN_WARNING "%s(): CS asked for 5V, applying 3.3V..\n", __FUNCTION__);
-+		printk(KERN_WARNING "%s(): CS asked for 5V, applying 3.3V..\n", __func__);
- 	case 33:
- 		break;
- 	default:
- 		printk(KERN_ERR "%s(): unrecognized Vcc %u\n",
--		       __FUNCTION__, state->Vcc);
-+		       __func__, state->Vcc);
- 		return -1;
- 	}
- 
--	printk(KERN_WARNING "%s(): Warning, Can't perform reset\n", __FUNCTION__);
-+	printk(KERN_WARNING "%s(): Warning, Can't perform reset\n", __func__);
- 	
- 	/* Silently ignore Vpp, output enable, speaker enable. */
- 
-diff --git a/drivers/pcmcia/sa1100_simpad.c b/drivers/pcmcia/sa1100_simpad.c
-index 04d6f7f..42567de 100644
---- a/drivers/pcmcia/sa1100_simpad.c
-+++ b/drivers/pcmcia/sa1100_simpad.c
-@@ -90,7 +90,7 @@ simpad_pcmcia_configure_socket(struct soc_pcmcia_socket *skt,
- 
- 	default:
- 		printk(KERN_ERR "%s(): unrecognized Vcc %u\n",
--			__FUNCTION__, state->Vcc);
-+			__func__, state->Vcc);
- 		clear_cs3_bit(VCC_3V_EN|VCC_5V_EN|EN0|EN1);
- 		local_irq_restore(flags);
- 		return -1;
-diff --git a/drivers/pcmcia/soc_common.c b/drivers/pcmcia/soc_common.c
-index aa7779d..81dfe29 100644
---- a/drivers/pcmcia/soc_common.c
-+++ b/drivers/pcmcia/soc_common.c
-@@ -353,7 +353,7 @@ soc_common_pcmcia_set_io_map(struct pcmcia_socket *sock, struct pccard_io_map *m
- 		(map->flags&MAP_PREFETCH)?"PREFETCH ":"");
- 
- 	if (map->map >= MAX_IO_WIN) {
--		printk(KERN_ERR "%s(): map (%d) out of range\n", __FUNCTION__,
-+		printk(KERN_ERR "%s(): map (%d) out of range\n", __func__,
- 		       map->map);
- 		return -1;
- 	}
--- 
-1.5.4.GIT
-
-
+						Thanx, Paul
