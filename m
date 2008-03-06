@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765456AbYCFAdS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765944AbYCFAdw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765456AbYCFAdS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Mar 2008 19:33:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761758AbYCFA2d
+	id S1765944AbYCFAdw (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Mar 2008 19:33:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761756AbYCFA2b
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Mar 2008 19:28:33 -0500
-Received: from rgminet01.oracle.com ([148.87.113.118]:61346 "EHLO
+	Wed, 5 Mar 2008 19:28:31 -0500
+Received: from rgminet01.oracle.com ([148.87.113.118]:61254 "EHLO
 	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761524AbYCFA21 (ORCPT
+	with ESMTP id S1758929AbYCFA2T (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Mar 2008 19:28:27 -0500
+	Wed, 5 Mar 2008 19:28:19 -0500
 From: Joel Becker <joel.becker@oracle.com>
 To: ocfs2-devel@oss.oracle.com
 Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
        mark.fasheh@oracle.com
-Subject: [PATCH 04/18] ocfs2: Create the lock status block union.
-Date: Wed,  5 Mar 2008 16:27:27 -0800
-Message-Id: <1204763261-28025-5-git-send-email-joel.becker@oracle.com>
+Subject: [PATCH 18/18] ocfs2: Add the 'cluster_stack' sysfs file.
+Date: Wed,  5 Mar 2008 16:27:41 -0800
+Message-Id: <1204763261-28025-19-git-send-email-joel.becker@oracle.com>
 X-Mailer: git-send-email 1.5.3.4
 In-Reply-To: <1204763261-28025-1-git-send-email-joel.becker@oracle.com>
 References: <1204763261-28025-1-git-send-email-joel.becker@oracle.com>
@@ -28,220 +28,255 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Wrap the lock status block (lksb) in a union.  Later we will add a union
-element for the fs/dlm lksb.  Create accessors for the status and lvb
-fields.
+Userspace can now query and specify the cluster stack in use via the
+/sys/fs/ocfs2/cluster_stack file.  By default, it is 'o2cb', which is
+the classic stack.  Thus, old tools that do not know how to modify this
+file will work just fine.  The stack cannot be modified if there is a
+live filesystem.
 
-Other than a debugging function, dlmglue.c does not directly reference
-the o2dlm locking path anymore.
+ocfs2_cluster_connect() now takes the expected cluster stack as an
+argument.  This way, the filesystem and the stack glue ensure they are
+speaking to the same backend.
+
+If the stack is 'o2cb', the o2cb stack plugin is used.  For any other
+value, the fsdlm stack plugin is selected.
 
 Signed-off-by: Joel Becker <joel.becker@oracle.com>
-Signed-off-by: Mark Fasheh <mark.fasheh@oracle.com>
 ---
- fs/ocfs2/dlmglue.c   |   23 +++++++++++++----------
- fs/ocfs2/ocfs2.h     |    5 +++--
- fs/ocfs2/stackglue.c |   29 ++++++++++++++++++++++-------
- fs/ocfs2/stackglue.h |   11 +++++++++--
- 4 files changed, 47 insertions(+), 21 deletions(-)
+ fs/ocfs2/dlmglue.c   |    3 +-
+ fs/ocfs2/stackglue.c |  111 +++++++++++++++++++++++++++++++++++++++++++++-----
+ fs/ocfs2/stackglue.h |    3 +-
+ 3 files changed, 104 insertions(+), 13 deletions(-)
 
 diff --git a/fs/ocfs2/dlmglue.c b/fs/ocfs2/dlmglue.c
-index 12a5213..0053945 100644
+index 71af7d6..737f0b2 100644
 --- a/fs/ocfs2/dlmglue.c
 +++ b/fs/ocfs2/dlmglue.c
-@@ -112,7 +112,8 @@ static void ocfs2_dump_meta_lvb_info(u64 level,
- 				     unsigned int line,
- 				     struct ocfs2_lock_res *lockres)
- {
--	struct ocfs2_meta_lvb *lvb = (struct ocfs2_meta_lvb *) lockres->l_lksb.lvb;
-+	struct ocfs2_meta_lvb *lvb =
-+		(struct ocfs2_meta_lvb *)ocfs2_dlm_lvb(&lockres->l_lksb);
- 
- 	mlog(level, "LVB information for %s (called from %s:%u):\n",
- 	     lockres->l_name, function, line);
-@@ -799,14 +800,14 @@ static void ocfs2_blocking_ast(void *opaque, int level)
- static void ocfs2_locking_ast(void *opaque)
- {
- 	struct ocfs2_lock_res *lockres = opaque;
--	struct dlm_lockstatus *lksb = &lockres->l_lksb;
- 	unsigned long flags;
- 
- 	spin_lock_irqsave(&lockres->l_lock, flags);
- 
--	if (lksb->status != DLM_NORMAL) {
--		mlog(ML_ERROR, "lockres %s: lksb status value of %u!\n",
--		     lockres->l_name, lksb->status);
-+	if (ocfs2_dlm_lock_status(&lockres->l_lksb)) {
-+		mlog(ML_ERROR, "lockres %s: lksb status value of %d!\n",
-+		     lockres->l_name,
-+		     ocfs2_dlm_lock_status(&lockres->l_lksb));
- 		spin_unlock_irqrestore(&lockres->l_lock, flags);
- 		return;
+@@ -2627,7 +2627,8 @@ int ocfs2_dlm_init(struct ocfs2_super *osb)
  	}
-@@ -1634,7 +1635,7 @@ static void __ocfs2_stuff_meta_lvb(struct inode *inode)
  
- 	mlog_entry_void();
- 
--	lvb = (struct ocfs2_meta_lvb *) lockres->l_lksb.lvb;
-+	lvb = (struct ocfs2_meta_lvb *)ocfs2_dlm_lvb(&lockres->l_lksb);
- 
- 	/*
- 	 * Invalidate the LVB of a deleted inode - this way other
-@@ -1686,7 +1687,7 @@ static void ocfs2_refresh_inode_from_lvb(struct inode *inode)
- 
- 	mlog_meta_lvb(0, lockres);
- 
--	lvb = (struct ocfs2_meta_lvb *) lockres->l_lksb.lvb;
-+	lvb = (struct ocfs2_meta_lvb *)ocfs2_dlm_lvb(&lockres->l_lksb);
- 
- 	/* We're safe here without the lockres lock... */
- 	spin_lock(&oi->ip_lock);
-@@ -1721,7 +1722,8 @@ static void ocfs2_refresh_inode_from_lvb(struct inode *inode)
- static inline int ocfs2_meta_lvb_is_trustable(struct inode *inode,
- 					      struct ocfs2_lock_res *lockres)
- {
--	struct ocfs2_meta_lvb *lvb = (struct ocfs2_meta_lvb *) lockres->l_lksb.lvb;
-+	struct ocfs2_meta_lvb *lvb =
-+		(struct ocfs2_meta_lvb *)ocfs2_dlm_lvb(&lockres->l_lksb);
- 
- 	if (lvb->lvb_version == OCFS2_LVB_VERSION
- 	    && be32_to_cpu(lvb->lvb_igeneration) == inode->i_generation)
-@@ -2379,7 +2381,7 @@ static int ocfs2_dlm_seq_show(struct seq_file *m, void *v)
- 		   lockres->l_blocking);
- 
- 	/* Dump the raw LVB */
--	lvb = lockres->l_lksb.lvb;
-+	lvb = ocfs2_dlm_lvb(&lockres->l_lksb);
- 	for(i = 0; i < DLM_LVB_LEN; i++)
- 		seq_printf(m, "0x%x\t", lvb[i]);
- 
-@@ -2692,7 +2694,8 @@ static int ocfs2_drop_lock(struct ocfs2_super *osb,
- 	if (ret) {
- 		ocfs2_log_dlm_error("ocfs2_dlm_unlock", ret, lockres);
- 		mlog(ML_ERROR, "lockres flags: %lu\n", lockres->l_flags);
--		dlm_print_one_lock(lockres->l_lksb.lockid);
-+		/* XXX Need to abstract this */
-+		dlm_print_one_lock(lockres->l_lksb.lksb_o2dlm.lockid);
- 		BUG();
- 	}
- 	mlog(0, "lock %s, successfull return from ocfs2_dlm_unlock\n",
-diff --git a/fs/ocfs2/ocfs2.h b/fs/ocfs2/ocfs2.h
-index f78e9ed..6d7c6d2 100644
---- a/fs/ocfs2/ocfs2.h
-+++ b/fs/ocfs2/ocfs2.h
-@@ -40,7 +40,8 @@
- #include "cluster/heartbeat.h"
- #include "cluster/tcp.h"
- 
--#include "dlm/dlmapi.h"
-+/* For union ocfs2_dlm_lksb */
-+#include "stackglue.h"
- 
- #include "ocfs2_fs.h"
- #include "ocfs2_lockid.h"
-@@ -120,7 +121,7 @@ struct ocfs2_lock_res {
- 	int                      l_level;
- 	unsigned int             l_ro_holders;
- 	unsigned int             l_ex_holders;
--	struct dlm_lockstatus    l_lksb;
-+	union ocfs2_dlm_lksb     l_lksb;
- 
- 	/* used from AST/BAST funcs. */
- 	enum ocfs2_ast_action    l_action;
+ 	/* for now, uuid == domain */
+-	status = ocfs2_cluster_connect(osb->uuid_str,
++	status = ocfs2_cluster_connect(osb->osb_cluster_stack,
++				       osb->uuid_str,
+ 				       strlen(osb->uuid_str),
+ 				       ocfs2_do_node_down, osb,
+ 				       &conn);
 diff --git a/fs/ocfs2/stackglue.c b/fs/ocfs2/stackglue.c
-index 0aec2fc..eb88854 100644
+index 76ae4fc..bf45d9b 100644
 --- a/fs/ocfs2/stackglue.c
 +++ b/fs/ocfs2/stackglue.c
-@@ -199,7 +199,7 @@ static void o2dlm_unlock_ast_wrapper(void *astarg, enum dlm_status status)
+@@ -27,11 +27,17 @@
+ #include <linux/kobject.h>
+ #include <linux/sysfs.h>
  
- int ocfs2_dlm_lock(struct dlm_ctxt *dlm,
- 		   int mode,
--		   struct dlm_lockstatus *lksb,
-+		   union ocfs2_dlm_lksb *lksb,
- 		   u32 flags,
- 		   void *name,
- 		   unsigned int namelen,
-@@ -212,15 +212,16 @@ int ocfs2_dlm_lock(struct dlm_ctxt *dlm,
++#include "ocfs2_fs.h"
++
+ #include "stackglue.h"
  
- 	BUG_ON(lproto == NULL);
++#define OCFS2_STACK_PLUGIN_O2CB		"o2cb"
++#define OCFS2_STACK_PLUGIN_USER		"user"
++
+ static struct ocfs2_locking_protocol *lproto;
+ static DEFINE_SPINLOCK(ocfs2_stack_lock);
+ static LIST_HEAD(ocfs2_stack_list);
++static char cluster_stack_name[OCFS2_STACK_LABEL_LEN + 1];
  
--	status = dlmlock(dlm, o2dlm_mode, lksb, o2dlm_flags, name, namelen,
--		       o2dlm_lock_ast_wrapper, astarg,
--		       o2dlm_blocking_ast_wrapper);
-+	status = dlmlock(dlm, o2dlm_mode, &lksb->lksb_o2dlm, o2dlm_flags,
-+			 name, namelen,
-+			 o2dlm_lock_ast_wrapper, astarg,
-+			 o2dlm_blocking_ast_wrapper);
- 	ret = dlm_status_to_errno(status);
- 	return ret;
+ /*
+  * The stack currently in use.  If not null, active_stack->sp_count > 0,
+@@ -53,26 +59,36 @@ static struct ocfs2_stack_plugin *ocfs2_stack_lookup(const char *name)
+ 	return NULL;
  }
  
- int ocfs2_dlm_unlock(struct dlm_ctxt *dlm,
--		     struct dlm_lockstatus *lksb,
-+		     union ocfs2_dlm_lksb *lksb,
- 		     u32 flags,
- 		     void *astarg)
+-static int ocfs2_stack_driver_request(const char *name)
++static int ocfs2_stack_driver_request(const char *stack_name,
++				      const char *plugin_name)
  {
-@@ -230,12 +231,26 @@ int ocfs2_dlm_unlock(struct dlm_ctxt *dlm,
+ 	int rc;
+ 	struct ocfs2_stack_plugin *p;
  
- 	BUG_ON(lproto == NULL);
+ 	spin_lock(&ocfs2_stack_lock);
  
--	status = dlmunlock(dlm, lksb, o2dlm_flags,
--			 o2dlm_unlock_ast_wrapper, astarg);
-+	status = dlmunlock(dlm, &lksb->lksb_o2dlm, o2dlm_flags,
-+			   o2dlm_unlock_ast_wrapper, astarg);
- 	ret = dlm_status_to_errno(status);
- 	return ret;
++	/*
++	 * If the stack passed by the filesystem isn't the selected one,
++	 * we can't continue.
++	 */
++	if (strcmp(stack_name, cluster_stack_name)) {
++		rc = -EBUSY;
++		goto out;
++	}
++
+ 	if (active_stack) {
+ 		/*
+ 		 * If the active stack isn't the one we want, it cannot
+ 		 * be selected right now.
+ 		 */
+-		if (!strcmp(active_stack->sp_name, name))
++		if (!strcmp(active_stack->sp_name, plugin_name))
+ 			rc = 0;
+ 		else
+ 			rc = -EBUSY;
+ 		goto out;
+ 	}
+ 
+-	p = ocfs2_stack_lookup(name);
++	p = ocfs2_stack_lookup(plugin_name);
+ 	if (!p || !try_module_get(p->sp_owner)) {
+ 		rc = -ENOENT;
+ 		goto out;
+@@ -94,23 +110,42 @@ out:
+  * there is no stack, it tries to load it.  It will fail if the stack still
+  * cannot be found.  It will also fail if a different stack is in use.
+  */
+-static int ocfs2_stack_driver_get(const char *name)
++static int ocfs2_stack_driver_get(const char *stack_name)
+ {
+ 	int rc;
++	char *plugin_name = OCFS2_STACK_PLUGIN_O2CB;
++
++	/*
++	 * Classic stack does not pass in a stack name.  This is
++	 * compatible with older tools as well.
++	 */
++	if (!stack_name || !*stack_name)
++		stack_name = OCFS2_STACK_PLUGIN_O2CB;
++
++	if (strlen(stack_name) != OCFS2_STACK_LABEL_LEN) {
++		printk(KERN_ERR
++		       "ocfs2 passed an invalid cluster stack label: \"%s\"\n",
++		       stack_name);
++		return -EINVAL;
++	}
+ 
+-	rc = ocfs2_stack_driver_request(name);
++	/* Anything that isn't the classic stack is a user stack */
++	if (strcmp(stack_name, OCFS2_STACK_PLUGIN_O2CB))
++		plugin_name = OCFS2_STACK_PLUGIN_USER;
++
++	rc = ocfs2_stack_driver_request(stack_name, plugin_name);
+ 	if (rc == -ENOENT) {
+-		request_module("ocfs2_stack_%s", name);
+-		rc = ocfs2_stack_driver_request(name);
++		request_module("ocfs2_stack_%s", plugin_name);
++		rc = ocfs2_stack_driver_request(stack_name, plugin_name);
+ 	}
+ 
+ 	if (rc == -ENOENT) {
+ 		printk(KERN_ERR
+ 		       "ocfs2: Cluster stack driver \"%s\" cannot be found\n",
+-		       name);
++		       plugin_name);
+ 	} else if (rc == -EBUSY) {
+ 		printk(KERN_ERR
+-		       "ocfs2: A different cluster stack driver is in use\n");
++		       "ocfs2: A different cluster stack is in use\n");
+ 	}
+ 
+ 	return rc;
+@@ -242,7 +277,8 @@ void ocfs2_dlm_dump_lksb(union ocfs2_dlm_lksb *lksb)
  }
+ EXPORT_SYMBOL_GPL(ocfs2_dlm_dump_lksb);
  
-+int ocfs2_dlm_lock_status(union ocfs2_dlm_lksb *lksb)
+-int ocfs2_cluster_connect(const char *group,
++int ocfs2_cluster_connect(const char *stack_name,
++			  const char *group,
+ 			  int grouplen,
+ 			  void (*recovery_handler)(int node_num,
+ 						   void *recovery_data),
+@@ -277,7 +313,7 @@ int ocfs2_cluster_connect(const char *group,
+ 	new_conn->cc_version = lproto->lp_max_version;
+ 
+ 	/* This will pin the stack driver if successful */
+-	rc = ocfs2_stack_driver_get("o2cb");
++	rc = ocfs2_stack_driver_get(stack_name);
+ 	if (rc)
+ 		goto out_free;
+ 
+@@ -416,10 +452,61 @@ static struct kobj_attribute ocfs2_attr_active_cluster_plugin =
+ 	__ATTR(active_cluster_plugin, S_IFREG | S_IRUGO,
+ 	       ocfs2_active_cluster_plugin_show, NULL);
+ 
++static ssize_t ocfs2_cluster_stack_show(struct kobject *kobj,
++					struct kobj_attribute *attr,
++					char *buf)
 +{
-+	return dlm_status_to_errno(lksb->lksb_o2dlm.status);
++	ssize_t ret;
++	spin_lock(&ocfs2_stack_lock);
++	ret = snprintf(buf, PAGE_SIZE, "%s\n", cluster_stack_name);
++	spin_unlock(&ocfs2_stack_lock);
++
++	return ret;
 +}
 +
-+/*
-+ * Why don't we cast to ocfs2_meta_lvb?  The "clean" answer is that we
-+ * don't cast at the glue level.  The real answer is that the header
-+ * ordering is nigh impossible.
-+ */
-+void *ocfs2_dlm_lvb(union ocfs2_dlm_lksb *lksb)
++static ssize_t ocfs2_cluster_stack_store(struct kobject *kobj,
++					 struct kobj_attribute *attr,
++					 const char *buf, size_t count)
 +{
-+	return (void *)(lksb->lksb_o2dlm.lvb);
++	size_t len = count;
++	ssize_t ret;
++
++	if (len == 0)
++		return len;
++
++	if (buf[len - 1] == '\n')
++		len--;
++
++	if ((len != OCFS2_STACK_LABEL_LEN) ||
++	    (strnlen(buf, len) != len))
++		return -EINVAL;
++
++	spin_lock(&ocfs2_stack_lock);
++	if (active_stack) {
++		if (!strncmp(buf, cluster_stack_name, len))
++			ret = count;
++		else
++			ret = -EBUSY;
++	} else {
++		memcpy(cluster_stack_name, buf, len);
++		ret = count;
++	}
++	spin_unlock(&ocfs2_stack_lock);
++
++	return ret;
 +}
- 
- void o2cb_get_stack(struct ocfs2_locking_protocol *proto)
- {
-diff --git a/fs/ocfs2/stackglue.h b/fs/ocfs2/stackglue.h
-index 8ebcfba..3c91e24 100644
---- a/fs/ocfs2/stackglue.h
-+++ b/fs/ocfs2/stackglue.h
-@@ -40,18 +40,25 @@ struct ocfs2_locking_protocol {
- 	void (*lp_unlock_ast)(void *astarg, int error);
++
++
++static struct kobj_attribute ocfs2_attr_cluster_stack =
++	__ATTR(cluster_stack, S_IFREG | S_IRUGO | S_IWUSR,
++	       ocfs2_cluster_stack_show,
++	       ocfs2_cluster_stack_store);
++
+ static struct attribute *ocfs2_attrs[] = {
+ 	&ocfs2_attr_max_locking_protocol.attr,
+ 	&ocfs2_attr_loaded_cluster_plugins.attr,
+ 	&ocfs2_attr_active_cluster_plugin.attr,
++	&ocfs2_attr_cluster_stack.attr,
+ 	NULL,
  };
  
-+union ocfs2_dlm_lksb {
-+	struct dlm_lockstatus lksb_o2dlm;
-+};
-+
- int ocfs2_dlm_lock(struct dlm_ctxt *dlm,
- 		   int mode,
--		   struct dlm_lockstatus *lksb,
-+		   union ocfs2_dlm_lksb *lksb,
- 		   u32 flags,
- 		   void *name,
- 		   unsigned int namelen,
- 		   void *astarg);
- int ocfs2_dlm_unlock(struct dlm_ctxt *dlm,
--		     struct dlm_lockstatus *lksb,
-+		     union ocfs2_dlm_lksb *lksb,
- 		     u32 flags,
- 		     void *astarg);
+@@ -455,6 +542,8 @@ error:
  
-+int ocfs2_dlm_lock_status(union ocfs2_dlm_lksb *lksb);
-+void *ocfs2_dlm_lvb(union ocfs2_dlm_lksb *lksb);
+ static int __init ocfs2_stack_glue_init(void)
+ {
++	strcpy(cluster_stack_name, OCFS2_STACK_PLUGIN_O2CB);
 +
- void o2cb_get_stack(struct ocfs2_locking_protocol *proto);
- void o2cb_put_stack(void);
+ 	return ocfs2_sysfs_init();
+ }
  
+diff --git a/fs/ocfs2/stackglue.h b/fs/ocfs2/stackglue.h
+index c96c8bb..d88bc65 100644
+--- a/fs/ocfs2/stackglue.h
++++ b/fs/ocfs2/stackglue.h
+@@ -209,7 +209,8 @@ struct ocfs2_stack_plugin {
+ 
+ 
+ /* Used by the filesystem */
+-int ocfs2_cluster_connect(const char *group,
++int ocfs2_cluster_connect(const char *stack_name,
++			  const char *group,
+ 			  int grouplen,
+ 			  void (*recovery_handler)(int node_num,
+ 						   void *recovery_data),
 -- 
 1.5.3.8
 
