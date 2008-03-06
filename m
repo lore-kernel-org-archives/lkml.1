@@ -1,53 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764503AbYCFK5f@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764900AbYCFK5y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764503AbYCFK5f (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Mar 2008 05:57:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763793AbYCFKzz
+	id S1764900AbYCFK5y (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Mar 2008 05:57:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763685AbYCFK4A
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Mar 2008 05:55:55 -0500
-Received: from mail.southpole.se ([193.12.106.18]:44125 "EHLO
-	mail.southpole.se" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761727AbYCFKzw (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Mar 2008 05:55:52 -0500
-From: Jonas Bonn <jonas@southpole.se>
-To: jonas@southpole.se, linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       jgarzik@pobox.com
-Subject: [PATCH] net: use DECLARE_PCI_DEVICE_TABLE
-Date: Thu,  6 Mar 2008 11:55:42 +0100
-Message-Id: <1204800947-21569-5-git-send-email-jonas@southpole.se>
-X-Mailer: git-send-email 1.5.4.3
-In-Reply-To: <1204800947-21569-4-git-send-email-jonas@southpole.se>
-References: <>
- <1204800947-21569-1-git-send-email-jonas@southpole.se>
- <1204800947-21569-2-git-send-email-jonas@southpole.se>
- <1204800947-21569-3-git-send-email-jonas@southpole.se>
- <1204800947-21569-4-git-send-email-jonas@southpole.se>
+	Thu, 6 Mar 2008 05:56:00 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:40126 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1763692AbYCFKzx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 6 Mar 2008 05:55:53 -0500
+Date: Thu, 6 Mar 2008 11:55:00 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Glauber Costa <gcosta@redhat.com>
+Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org, glommer@gmail.com,
+       tglx@linutronix.de
+Subject: Re: [PATCH 1/1] export native versions of machine_ops functions
+Message-ID: <20080306105500.GK13391@elte.hu>
+References: <1204739040-18422-1-git-send-email-gcosta@redhat.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1204739040-18422-1-git-send-email-gcosta@redhat.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.1
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.1 required=5.9 tests=BAYES_05 autolearn=no SpamAssassin version=3.2.3
+	-1.1 BAYES_05               BODY: Bayesian spam probability is 1 to 5%
+	[score: 0.0368]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Makes struct pci_device_id array const and moves it to __devinitconst
 
-Signed-off-by: Jonas Bonn <jonas@southpole.se>
----
- drivers/net/wan/pc300_drv.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+* Glauber Costa <gcosta@redhat.com> wrote:
 
-diff --git a/drivers/net/wan/pc300_drv.c b/drivers/net/wan/pc300_drv.c
-index 57914fb..df62fef 100644
---- a/drivers/net/wan/pc300_drv.c
-+++ b/drivers/net/wan/pc300_drv.c
-@@ -252,7 +252,7 @@ static char rcsid[] =
- #undef	PC300_DEBUG_RX
- #undef	PC300_DEBUG_OTHER
- 
--static struct pci_device_id cpc_pci_dev_id[] __devinitdata = {
-+static DECLARE_PCI_DEVICE_TABLE(cpc_pci_dev_id) = {
- 	/* PC300/RSV or PC300/X21, 2 chan */
- 	{0x120e, 0x300, PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0x300},
- 	/* PC300/RSV or PC300/X21, 1 chan */
--- 
-1.5.4.3
+> People overriding machine_ops provided functions may want to call the 
+> native version after its pre-processing. It already happens for the 
+> smp_ops functions, so I don't see a reason for avoiding it here.
 
+i'd like to do this only if there are actual users - otherwise we'll get 
+a trickle of "make needlessly global functions static" patches a few 
+weeks later ;-)
 
+	Ingo
