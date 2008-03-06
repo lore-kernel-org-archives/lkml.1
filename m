@@ -1,86 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932431AbYCFBZA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933067AbYCFB1H@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932431AbYCFBZA (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Mar 2008 20:25:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933364AbYCFBYT
+	id S933067AbYCFB1H (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Mar 2008 20:27:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758301AbYCFB0y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Mar 2008 20:24:19 -0500
-Received: from ug-out-1314.google.com ([66.249.92.174]:51294 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933779AbYCFBYP (ORCPT
+	Wed, 5 Mar 2008 20:26:54 -0500
+Received: from einhorn.in-berlin.de ([192.109.42.8]:58705 "EHLO
+	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754445AbYCFB0y (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Mar 2008 20:24:15 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:reply-to:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
-        b=siYINPtEZKiy2/vQh/l5Mf/g/IDjXj7yAchUa89t2uk36nd6ZsErdLoOZQYtO+LGyL0bWkj6+Dj6tyzWQM+YFwjIYSAKkV+gbkBJ6jIeDgEJLzsfcDOMKkiSf3XV5WtZepmyImipvzPpVZ4SsPm8eEBiYIMFTObWOuiJusyOZZ4=
-Date: Thu, 6 Mar 2008 04:02:24 +0300
-From: Anton Vorontsov <cbouatmailru@gmail.com>
-To: David Brownell <david-b@pacbell.net>
-Cc: Anton Vorontsov <avorontsov@ru.mvista.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] gpiolib: implement dynamic base allocation
-Message-ID: <20080306010224.GA25717@zarina>
-Reply-To: cbouatmailru@gmail.com
-References: <20080304170307.GA29979@localhost.localdomain> <20080305152450.167c9e8c.akpm@linux-foundation.org> <200803051540.57499.david-b@pacbell.net>
+	Wed, 5 Mar 2008 20:26:54 -0500
+X-Envelope-From: stefanr@s5r6.in-berlin.de
+Message-ID: <47CF4801.80307@s5r6.in-berlin.de>
+Date: Thu, 06 Mar 2008 02:25:21 +0100
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.12) Gecko/20080219 SeaMonkey/1.1.8
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf8
-Content-Disposition: inline
-In-Reply-To: <200803051540.57499.david-b@pacbell.net>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+To: Jarod Wilson <jwilson@redhat.com>
+CC: linux1394-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org,
+       =?ISO-8859-1?Q?Kristian_H=F8gsberg?= <krh@bitplanet.net>
+Subject: Re: [PATCH update] firewire: reread config ROM when device reset
+ the bus
+References: <tkrat.c6610a8633fe0e41@s5r6.in-berlin.de>  <tkrat.da30e6f15a74e036@s5r6.in-berlin.de> <59ad55d30803030817l6fce6716x2a97cc809b15b234@mail.gmail.com> <tkrat.5eee3ebd5076fd4a@s5r6.in-berlin.de> <tkrat.55f8e340ac08be4c@s5r6.in-berlin.de> <47CF3290.10404@s5r6.in-berlin.de>
+In-Reply-To: <47CF3290.10404@s5r6.in-berlin.de>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Mar 05, 2008 at 03:40:57PM -0800, David Brownell wrote:
-> On Wednesday 05 March 2008, Andrew Morton wrote:
-> > On Tue, 4 Mar 2008 20:03:07 +0300
-> > Anton Vorontsov <avorontsov@ru.mvista.com> wrote:
-> > 
-> > > If gpio_chip->base is negative during registration, gpiolib requests
-> > > dynamic base allocation. This is useful for devices being registered
-> > > at run-time (in contrast to platform devices).
-> > > 
-> > > Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
-> > > ---
-> > >  drivers/gpio/gpiolib.c |   42 ++++++++++++++++++++++++++++++++++++------
-> > >  1 files changed, 36 insertions(+), 6 deletions(-)
-> > > 
-> > 
-> > This conflicts in non-trivial ways with gpio-define-gpio_is_valid.patch. 
-> > Could you please redo and retest against 2.6.25-rc3-mm1?
-
-No problem, will rebase.
-
-> And when you do that, could you make it assign GPIO numbers from
-> the biggest number on down, instead of from the smallest on up?
+I wrote:
+> I wrote:
+>> When I power the PC down there are lots of messages scrolling by
+>> which look somewhat like lockdep spew.  I can't reproduce this merely by
+>> module unloading though.  So don't put this patch into production yet.
 > 
-> Platforms normally assign those numbers from the bottom up ... so
-> dynamic assignment should try to avoid reusing any numbers that may
-> have been explicitly assigned, but not yet registered.  (Of course,
-> if you can come up with a cleaner solution than that, it'd be great.
-> Maybe platforms should also be able to mark ranges as "in use" as
-> they start up, or something.)
+> /...a few hundreds reboots later.../
+> 
+> No, it is not this patch.  It is something else.  And whatever it is, it 
+> is already present in 2.6.25-rc3.
+> 
+> To reproduce it, I need to plug an SBP-2 device in and out, then shut 
+> the machine down (e.g. shutdown -h now, whereas shutdown -r now does not 
+> seem to trigger the bug).
+...
+> I am now gradually removing debug options from the kernel to see which 
+> debug facility is making the fuzz...
 
-Well, it is also trivial to implement gpiochip_reserve(start, end)
-function that will mark reserved gpio->chip as ERR_PTR(-EACCESS),
-and these ranges will be unavailable for the dynamic allocation.
+It is CONFIG_PROVE_LOCKING (Lock debugging: prove locking correctness).
 
-Then, platforms could do gpiochip_reserve(0, GPIO_ARCH_END).
-I think This is good solution from all and every POV, but this
-needs a bit of platform code assistance.
+At the moment when the machine powers itself off.
 
-What would you choice?
-
-> And please add a pr_debug level message reporting dynamically
-> assigned ranges.  That way, when problems crop up it'll be that
-> much easier to notice what went wrong.
-
-Will do.
-
-Thanks,
-
+What a waste of time.
 -- 
-Anton Vorontsov
-email: cbouatmailru@gmail.com
-irc://irc.freenode.net/bd2
+Stefan Richter
+-=====-==--- --== --==-
+http://arcgraph.de/sr/
