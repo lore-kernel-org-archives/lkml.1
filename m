@@ -1,43 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932915AbYCFLW1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933153AbYCFLX0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932915AbYCFLW1 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Mar 2008 06:22:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758797AbYCFLWT
+	id S933153AbYCFLX0 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Mar 2008 06:23:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761811AbYCFLXS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Mar 2008 06:22:19 -0500
-Received: from smtp120.sbc.mail.sp1.yahoo.com ([69.147.64.93]:41145 "HELO
-	smtp120.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1756971AbYCFLWS (ORCPT
+	Thu, 6 Mar 2008 06:23:18 -0500
+Received: from smtp-out4.blueyonder.co.uk ([195.188.213.7]:34696 "EHLO
+	smtp-out4.blueyonder.co.uk" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754119AbYCFLXQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Mar 2008 06:22:18 -0500
-X-YMail-OSG: APn3s_EVM1mAo9radL1MVXEQgWCR0ac8mTDjuGV.uvSNVoeGB0Hn9OvVPmWxNSq24nMXDjnZQw--
-X-Yahoo-Newman-Property: ymail-3
-Date: Thu, 6 Mar 2008 03:22:12 -0800
-From: Chris Wedgwood <cw@f00f.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Pawel Plociennik <paplociennik@gmail.com>, Pavel Machek <pavel@ucw.cz>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2.6.24] chroot= as a new kernel parameter
-Message-ID: <20080306112212.GA9261@puku.stupidest.org>
-References: <200803060001.38432.paplociennik@gmail.com> <20080306103422.GA5511@puku.stupidest.org> <20080306104448.GG13391@elte.hu>
+	Thu, 6 Mar 2008 06:23:16 -0500
+Message-ID: <47CFD421.4000108@Keehan.net>
+Date: Thu, 06 Mar 2008 11:23:13 +0000
+From: Mike Keehan <Mike@Keehan.net>
+Reply-To: Mike@Keehan.net
+User-Agent: Thunderbird 3.0a1pre (X11/2008030503)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080306104448.GG13391@elte.hu>
+To: Harald Dunkel <harald.dunkel@t-online.de>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: strange behavior on multimedia eject button for cdrom
+References: <47C15020.8040806@t-online.de> <47C7FECD.3040205@Keehan.net> <47CB11FA.60008@t-online.de> <47CC5C47.8050604@Keehan.net> <47CC712F.6040601@t-online.de>
+In-Reply-To: <47CC712F.6040601@t-online.de>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Mar 06, 2008 at 11:44:48AM +0100, Ingo Molnar wrote:
+Harald Dunkel wrote:
+> Hi Mike,
+>
+> Mike Keehan wrote:
+>>
+>> Hi again.
+>>
+>> Ok, I just tried doing the same thing on my M1330. It behaves
+>> differently to yours in that a small section of music repeats again
+>> and again until the disk is ejected, and then carries on (I was using
+>> RealPlayer with a local file as a simple test).
+>>
+>> And it does look like other things stop working while the disk is
+>> ejected - screen updates freeze and network too I think.
+>>
+>
+> Thats exactly what I see, too.
+>
+>
+> Regards
+>
+> Harri
+>
 
-> we can/could do many other boot options via an initrd too.
+Hi Harri.
 
-There has been some talk of this and even an implementation of much of
-it.  I'm not convinced it's a bad idea, I've had to use it myself on
-products where the in-kernel ip auto-configuration doesn't work.
+I've just tried ejecting a CD when the Grub boot menu was counting 
+down, and even that froze until the CD was ejected and the drive motor 
+noises had stopped.  Grub continued the countdown, and then Linux 
+booted OK.
 
-> But given an existing initrd (which might have come from the distro,
-> etc.) i prefer adding boot options instead of modifying the initrd.
+So I think it is a hardware issue with this laptop.
 
-I assume this is so you have have /distro1 /distro2 and use your boot
-option to (help) select which one you boot into?
+Mike.
+
