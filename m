@@ -1,123 +1,138 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759145AbYCFElm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759475AbYCFEnZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759145AbYCFElm (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Mar 2008 23:41:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757022AbYCFEld
+	id S1759475AbYCFEnZ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Mar 2008 23:43:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757022AbYCFEnL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Mar 2008 23:41:33 -0500
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:53000 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756855AbYCFElc (ORCPT
+	Wed, 5 Mar 2008 23:43:11 -0500
+Received: from tama555.ecl.ntt.co.jp ([129.60.39.106]:61465 "EHLO
+	tama555.ecl.ntt.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751275AbYCFEnJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Mar 2008 23:41:32 -0500
-Message-ID: <47CF75F9.1050406@np.css.fujitsu.com>
-Date: Thu, 06 Mar 2008 13:41:29 +0900
-From: Kentaro Makita <k-makita@np.css.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080213)
-MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-Subject: [PATCH][BUGFIX][RFC] fix soft lock up at NFS mount by making limitation
- of dentry_unused
-Content-Type: text/plain; charset=ISO-8859-1
+	Wed, 5 Mar 2008 23:43:09 -0500
+To: James.Bottomley@HansenPartnership.com
+Cc: jens.axboe@oracle.com, htejun@gmail.com, bharrosh@panasas.com,
+       fujita.tomonori@lab.ntt.co.jp, efault@gmx.de, tomof@acm.org,
+       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       linux-ide@vger.kernel.org, linux-scsi@vger.kernel.org,
+       jgarzik@pobox.com, bzolnier@gmail.com
+Subject: Re: [PATCH] blk: missing add of padded bytes to io completion byte
+	 count
+From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+In-Reply-To: <1204730484.3047.10.camel@localhost.localdomain>
+References: <47CEA40F.6050903@gmail.com>
+	<20080305135121.GK6704@kernel.dk>
+	<1204730484.3047.10.camel@localhost.localdomain>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+Message-Id: <20080306134146A.fujita.tomonori@lab.ntt.co.jp>
+Date: Thu, 06 Mar 2008 13:41:46 +0900
+X-Dispatcher: imput version 20040704(IM147)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[Summary]
-  Make a limitation of dentry_unused to avoid soft lock up at NFS mounts
- and remounting any filesystem.
+On Wed, 05 Mar 2008 09:21:24 -0600
+James Bottomley <James.Bottomley@HansenPartnership.com> wrote:
 
-[Descriptions]
-- background
- dentry_unused is a list of dentries which is not in use. This works
- as a cache against not-exisiting files. dentry_unused grows up when
- directories or files are removed. This list can be *verrry* long
- if there is no memory  pressure, because there is no limit.
+> On Wed, 2008-03-05 at 14:51 +0100, Jens Axboe wrote:
+> > On Wed, Mar 05 2008, Tejun Heo wrote:
+> > > This is getting insanely subtle.  Let's say there's PIO driver which
+> > > transfer certain sized chunks at a time and completes request partially
+> > > after completing each chunk and the driver uses draining to eat up
+> > > whatever excess data, which seems like a legit use case to me.  But it
+> > > won't work because __end_that_request_first() will terminate when it
+> > > reaches reaches the 'true' transfer size.  That's just broken API.  FWIW,
+> > > 
+> > > Nacked-by: Tejun Heo <htejun@gmail.com>
+> > 
+> > Yeah, I think I may have gone a bit overboard in applying this so
+> > quickly. It's just not a good interface, silently adding the extra
+> > length if asked to complete more. It may even happen right now, for a
+> > driver that does no padding (it probably wont do any harm here either,
+> > but still).
+> > 
+> > I'll try and see if I can come up with something cleaner.
+> > 
+> > My basic design paradigm for this is that the _driver_ (or mid layer, if
+> > SCSI wants to handle it) should care about the padding. So make it easy
+> > for them to pad, but have it 'unrolled' by completion time. We should
+> > NOT need any extra_len checks or additions in the block/ directory,
+> > period.
+> 
+> Right, that's why my original proposal was to do nothing for padding
+> (other than ensure the driver could adjust the length if it wanted to)
+> and to add an extra element always for draining, which the driver could
+> ignore.  It basically pushed the use paradigm onto the driver.
+> 
+> If we want the use paradigm shared between block and driver, then I
+> think the best approach is to keep all the bios the same (so not adjust
+> for padding), but do adjust in the blk_rq_map_sg().  That way we have
+> the padding and draining unwind information by comparing with the bio.
 
-- what's problem
- When prune_dcache() is called, it scans *all* dentry_unused linearly
- under spin_lock(). This scan costs very much if there are many entries.
- For example, prune_dcache() is called at mounting NFS.
- In our test, when there are 100,000,000 of unused dentries, mounting
- NFS took 1 minutes and almost all user programs hang during it.
+Adjusting only sg in blk_rq_map_sg (like drain) looks much
+better. This works with libata for me.
 
-  100,000,000 is possible number on large systems.
-
- This problem already happend on our system.
- Therefore, we need a limitation of dentry_unused.
-
-- How to fix
- Limit number of unused dentries to suitable value.
-
- Threshold is as follows:
- dentry_unused_ratio: default value is 10000(%). If the amount of
- dentry_unused reaches to 10000% of the amount of dentry_in_use,
- 5% of them are freed.
-
- I feel we need more tests to determine resonable value to any system.
- So, please test.
-
- This patch is based on linux-2.6.25-rc4.
-
--Test Results
-
- Result on 24GB boxes with excessive unused dentries.
-Without patch:
-# cat /proc/sys/fs/dentry-state
-103327453       103313783       45      0       0
-# time mount -t nfs 192.168.0.2:/export /mnt
-real    1m4.698s
-user    0m0.000s
-sys     1m4.672s
-
- With this patch:
-# cat /proc/sys/fs/dentry-state
-118681  117225  45      0       0       0
-# time mount -t nfs 192.168.0.2:/export /mnt
-real    0m0.103s
-user    0m0.004s
-sys     0m0.076s
-
-Tested on Intel Itanium 2 9050 (dualcore) x12 MEM 24GB , kernel-2.6.25-rc4
-I found no peformance regression in my tests.
-
-
-Best Regards,
-Kentaro Makita
-
-Signed-off-by: Kentaro Makita <k-makita@np.css.fujitsu.com>
----
- fs/dcache.c |    7 +++++++
- 1 files changed, 7 insertions(+)
-diff -rupN -X linux-2.6.25-rc4/Documentation/dontdiff linux-2.6.25-rc4/fs/dcache.c linux-2.6.25-rc4mod/fs/dcache.c
---- linux-2.6.25-rc4/fs/dcache.c	2008-03-05 13:33:54.000000000 +0900
-+++ linux-2.6.25-rc4mod/fs/dcache.c	2008-03-05 16:47:18.000000000 +0900
-@@ -42,6 +42,8 @@ __cacheline_aligned_in_smp DEFINE_SEQLOC
-
- EXPORT_SYMBOL(dcache_lock);
-
-+/* threshold to limit dentry_unused */
-+unsigned int dentry_unused_ratio = 10000;
- static struct kmem_cache *dentry_cache __read_mostly;
-
- #define DNAME_INLINE_LEN (sizeof(struct dentry)-offsetof(struct dentry,d_iname))
-@@ -61,6 +63,7 @@ static unsigned int d_hash_mask __read_m
- static unsigned int d_hash_shift __read_mostly;
- static struct hlist_head *dentry_hashtable __read_mostly;
- static LIST_HEAD(dentry_unused);
-+static void prune_dcache(int count, struct super_block *sb);
-
- /* Statistics gathering. */
- struct dentry_stat_t dentry_stat = {
-@@ -214,6 +217,10 @@ repeat:
-   	}
-  	spin_unlock(&dentry->d_lock);
- 	spin_unlock(&dcache_lock);
-+	/* Prune unused dentry over threshold level */
-+	int nr_in_use = (dentry_stat.nr_dentry - dentry_stat.nr_unused);
-+	if (dentry_stat.nr_dentry > nr_in_use * dentry_unused_ratio / 100)
-+		prune_dcache(dentry_stat.nr_unused * 5 / 100 , NULL);
- 	return;
-
- unhash_it:
+diff --git a/block/blk-map.c b/block/blk-map.c
+index c07d9c8..e949969 100644
+--- a/block/blk-map.c
++++ b/block/blk-map.c
+@@ -140,26 +140,6 @@ int blk_rq_map_user(struct request_queue *q, struct request *rq,
+ 		ubuf += ret;
+ 	}
+ 
+-	/*
+-	 * __blk_rq_map_user() copies the buffers if starting address
+-	 * or length isn't aligned to dma_pad_mask.  As the copied
+-	 * buffer is always page aligned, we know that there's enough
+-	 * room for padding.  Extend the last bio and update
+-	 * rq->data_len accordingly.
+-	 *
+-	 * On unmap, bio_uncopy_user() will use unmodified
+-	 * bio_map_data pointed to by bio->bi_private.
+-	 */
+-	if (len & q->dma_pad_mask) {
+-		unsigned int pad_len = (q->dma_pad_mask & ~len) + 1;
+-		struct bio *tail = rq->biotail;
+-
+-		tail->bi_io_vec[tail->bi_vcnt - 1].bv_len += pad_len;
+-		tail->bi_size += pad_len;
+-
+-		rq->extra_len += pad_len;
+-	}
+-
+ 	rq->buffer = rq->data = NULL;
+ 	return 0;
+ unmap_rq:
+diff --git a/block/blk-merge.c b/block/blk-merge.c
+index 0f58616..2a81c87 100644
+--- a/block/blk-merge.c
++++ b/block/blk-merge.c
+@@ -220,6 +220,13 @@ new_segment:
+ 		bvprv = bvec;
+ 	} /* segments in rq */
+ 
++	if (sg && (q->dma_pad_mask & rq->data_len)) {
++		unsigned int pad_len = (q->dma_pad_mask & ~rq->data_len) + 1;
++
++		sg->length += pad_len;
++		rq->extra_len += pad_len;
++	}
++
+ 	if (q->dma_drain_size && q->dma_drain_needed(rq)) {
+ 		if (rq->cmd_flags & REQ_RW)
+ 			memset(q->dma_drain_buffer, 0, q->dma_drain_size);
+diff --git a/drivers/scsi/scsi.c b/drivers/scsi/scsi.c
+index e5c6f6a..fecba05 100644
+--- a/drivers/scsi/scsi.c
++++ b/drivers/scsi/scsi.c
+@@ -757,7 +757,7 @@ void scsi_finish_command(struct scsi_cmnd *cmd)
+ 				"Notifying upper driver of completion "
+ 				"(result %x)\n", cmd->result));
+ 
+-	good_bytes = scsi_bufflen(cmd) + cmd->request->extra_len;
++	good_bytes = scsi_bufflen(cmd);
+         if (cmd->request->cmd_type != REQ_TYPE_BLOCK_PC) {
+ 		drv = scsi_cmd_to_driver(cmd);
+ 		if (drv->done)
