@@ -1,62 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758973AbYCFAQc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759015AbYCFATx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758973AbYCFAQc (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Mar 2008 19:16:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753287AbYCFAQV
+	id S1759015AbYCFATx (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Mar 2008 19:19:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752109AbYCFATo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Mar 2008 19:16:21 -0500
-Received: from moutng.kundenserver.de ([212.227.126.186]:50275 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753107AbYCFAQU (ORCPT
+	Wed, 5 Mar 2008 19:19:44 -0500
+Received: from hiauly1.hia.nrc.ca ([132.246.100.193]:1385 "EHLO
+	hiauly1.hia.nrc.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752096AbYCFATn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Mar 2008 19:16:20 -0500
-From: Bodo Eggert <7eggert@gmx.de>
-Subject: Re: [PATCH] chroot= as a new kernel parameter
-To: Guillaume Chazarain <guichaz@gmail.com>,
-       Pawel Plociennik <paplociennik@gmail.com>, Pavel Machek <pavel@ucw.cz>,
-       linux-kernel@vger.kernel.org
-Reply-To: 7eggert@gmx.de
-Date: Thu, 06 Mar 2008 01:16:11 +0100
-References: <a2zNf-7rl-7@gated-at.bofh.it> <a3k9y-4Cf-35@gated-at.bofh.it> <a3kMn-5Jb-25@gated-at.bofh.it> <a3Wop-6Xn-15@gated-at.bofh.it> <a41Rb-7mN-9@gated-at.bofh.it>
-User-Agent: KNode/0.10.4
+	Wed, 5 Mar 2008 19:19:43 -0500
+Subject: Re: [PATCH -mm 0/3] fix iommu segment boundary problems (parisc)
+To: grundler@parisc-linux.org (Grant Grundler)
+Date: Wed, 5 Mar 2008 19:19:31 -0500 (EST)
+From: "John David Anglin" <dave@hiauly1.hia.nrc.ca>
+Cc: fujita.tomonori@lab.ntt.co.jp, linux-kernel@vger.kernel.org,
+       linux-parisc@vger.kernel.org, tomof@acm.org, kyle@parisc-linux.org,
+       matthew@wil.cx, grundler@parisc-linux.org, akpm@linux-foundation.org
+In-Reply-To: <20080305154502.GA32538@colo.lackof.org> from "Grant Grundler" at Mar 5, 2008 08:45:02 am
+X-Mailer: ELM [version 2.4 PL25]
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7Bit
-Message-Id: <E1JX3mO-0003eX-5W@be1.7eggert.dyndns.org>
-X-be10.7eggert.dyndns.org-MailScanner-Information: See www.mailscanner.info for information
-X-be10.7eggert.dyndns.org-MailScanner: Found to be clean
-X-be10.7eggert.dyndns.org-MailScanner-From: 7eggert@gmx.de
-X-Provags-ID: V01U2FsdGVkX18DGTxcCWkW9CisI/BdgAgD3plkO4Ew74xNsQa
- 4QWzPLLIiAK5jrYZin9xGfRwq9Di3nMCm/rWYdUdiuNcr71BY7
- cHPeJK4WEHyK/+B5jczRA==
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+Message-Id: <20080306001933.248744E43@hiauly1.hia.nrc.ca>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Guillaume Chazarain <guichaz@gmail.com> wrote:
-> On Wed, Mar 5, 2008 at 2:38 PM, Pawel Plociennik <paplociennik@gmail.com>
+> And thanks to Joel Soete (rubisher) for testing. I tried to test the
+> sba_iommu code on my local box but had issues with the unpatched kernel
+> (using kyle's parisc-2.6.git tree) that I have yet to resolve (could be
+> HW problems).
 
->>  At last my patch is as simple as possible and it has *only* a *few lines of
->>  the code* and it can be used as *independent* method to various *hundred*
->>  distroes.
-> 
-> Your method requires a certain kernel, mine does not ;-)
+I built two kernels today using kyle's parisc-2.6.git tree (UP 32 bit
+and SMP 64 bit).  Aside from some section mismatch warnings, they both
+seem to work fine.
 
-Your method requires to type the whole bible on the command line.
-
->>   static void run_init_process(char *init_filename)
->>   {
->>  +       if (chroot_str)
->>  +               if (sys_chroot(chroot_str) < 0)
->>  +                       printk(KERN_WARNING "chroot=%s failed\n",
->>  chroot_str); +
-> 
-> As I said before, this chroot= option can be used for security reason
-> instead of testing purpose, and in this case, continuing booting after
-> a failed chroot sounds like a security issue.
-
-Even if not, continuing on unknown/bad options is a BAD idea. If I made a
-typo in the path, the wrong system would be started, leaving me to choose
-between waiting (felt) five minutes until I can shut it down cleanly or
-to hard reboot and fsck.
-
+Dave
+-- 
+J. David Anglin                                  dave.anglin@nrc-cnrc.gc.ca
+National Research Council of Canada              (613) 990-0752 (FAX: 952-6602)
