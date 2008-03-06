@@ -1,44 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761364AbYCGDXK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760173AbYCGD1d@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761364AbYCGDXK (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Mar 2008 22:23:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756808AbYCGDWx
+	id S1760173AbYCGD1d (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Mar 2008 22:27:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758092AbYCGD0L
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Mar 2008 22:22:53 -0500
-Received: from cantor2.suse.de ([195.135.220.15]:48610 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755473AbYCGDWw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Mar 2008 22:22:52 -0500
-Date: Fri, 7 Mar 2008 04:22:51 +0100
-From: Nick Piggin <npiggin@suse.de>
-To: Christoph Lameter <clameter@sgi.com>
-Cc: David Miller <davem@davemloft.net>, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org, yanmin_zhang@linux.intel.com,
-       dada1@cosmosbay.com
-Subject: Re: [rfc][patch 1/3] slub: fix small HWCACHE_ALIGN alignment
-Message-ID: <20080307032251.GG21185@wotan.suse.de>
-References: <20080304.161003.129716254.davem@davemloft.net> <Pine.LNX.4.64.0803051257030.30742@schroedinger.engr.sgi.com> <20080306025758.GB27150@wotan.suse.de> <Pine.LNX.4.64.0803061453360.16212@schroedinger.engr.sgi.com> <20080307022355.GB21185@wotan.suse.de> <Pine.LNX.4.64.0803061825120.29527@schroedinger.engr.sgi.com> <20080307023223.GD21185@wotan.suse.de> <Pine.LNX.4.64.0803061841220.29959@schroedinger.engr.sgi.com> <20080307031044.GF21185@wotan.suse.de> <Pine.LNX.4.64.0803061916580.30259@schroedinger.engr.sgi.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0803061916580.30259@schroedinger.engr.sgi.com>
-User-Agent: Mutt/1.5.9i
+	Thu, 6 Mar 2008 22:26:11 -0500
+Received: from gateway-1237.mvista.com ([63.81.120.158]:63398 "EHLO
+	dwalker1.mvista.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1757358AbYCGD0D (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 6 Mar 2008 22:26:03 -0500
+Message-Id: <20080307031633.383493280@mvista.com>
+References: <20080307031621.590778480@mvista.com>
+User-Agent: quilt/0.46-1
+Date: Thu, 06 Mar 2008 00:00:03 -0800
+Subject: [PATCH 3/5] net: ehea: locking order correction
+From: Daniel Walker <dwalker@mvista.com>
+To: Jeff Garzik <jeff@garzik.org>
+Cc: Christoph Raisch <raisch@de.ibm.com>,
+       Jan-Bernd Themann <themann@de.ibm.com>,
+       Thomas Klein <tklein@de.ibm.com>, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Mar 06, 2008 at 07:18:54PM -0800, Christoph Lameter wrote:
-> On Fri, 7 Mar 2008, Nick Piggin wrote:
-> 
-> > No, it *is not about avoiding cacheline contention*. As such, the rest
-> > of what you wrote below about smp_align etc is rubbish.
-> > 
-> > Can you actually read what I posted?
-> 
-> I am trying but it barely makes sense. You first state that it 
-> is *not* about avoiding cacheline contention and then argue that it 
-> reduces cacheline contention.
+-- 
+Content-Disposition: inline; filename=net-ehea-correct-locking-order.patch
 
-Where do I argue that it reduces cacheline contention? All arguments
-I made apply to a UP system equally.
+Nested locks always need to be taken in the same order. This change
+factors out the ehea_fw_handles.lock to make the locking order
+consistent.
 
+Signed-off-by: Daniel Walker <dwalker@mvista.com>
+
+---
+ drivers/net/ehea/ehea_main.c |    4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+Index: linux-2.6.24/drivers/net/ehea/ehea_main.c
+===================================================================
+--- linux-2.6.24.orig/drivers/net/ehea/ehea_main.c
++++ linux-2.6.24/drivers/net/ehea/ehea_main.c
+@@ -2567,14 +2567,14 @@ static int ehea_down(struct net_device *
+ 	if (port->state == EHEA_PORT_DOWN)
+ 		return 0;
+ 
++	mutex_lock(&ehea_fw_handles.lock);
++
+ 	down(&ehea_bcmc_regs.lock);
+ 	ehea_drop_multicast_list(dev);
+ 	ehea_broadcast_reg_helper(port, H_DEREG_BCMC);
+ 
+ 	ehea_free_interrupts(dev);
+ 
+-	mutex_lock(&ehea_fw_handles.lock);
+-
+ 	port->state = EHEA_PORT_DOWN;
+ 
+ 	ehea_update_bcmc_registrations();
+
+-- 
