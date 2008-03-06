@@ -1,59 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933067AbYCFB1H@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765044AbYCFBdm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933067AbYCFB1H (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Mar 2008 20:27:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758301AbYCFB0y
+	id S1765044AbYCFBdm (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Mar 2008 20:33:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758729AbYCFBdb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Mar 2008 20:26:54 -0500
-Received: from einhorn.in-berlin.de ([192.109.42.8]:58705 "EHLO
-	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754445AbYCFB0y (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Mar 2008 20:26:54 -0500
-X-Envelope-From: stefanr@s5r6.in-berlin.de
-Message-ID: <47CF4801.80307@s5r6.in-berlin.de>
-Date: Thu, 06 Mar 2008 02:25:21 +0100
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.12) Gecko/20080219 SeaMonkey/1.1.8
+	Wed, 5 Mar 2008 20:33:31 -0500
+Received: from khc.piap.pl ([195.187.100.11]:45930 "EHLO khc.piap.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758499AbYCFBda (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 5 Mar 2008 20:33:30 -0500
+To: Zan Lynx <zlynx@acm.org>
+Cc: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Andrew Morton <akpm@linux-foundation.org>, jeff@garzik.org,
+       linux-ide@vger.kernel.org, alan@redhat.com,
+       linux-kernel@vger.kernel.org
+Subject: Re: [patch 3/3] pata: "I do not think it means, what you think it means."
+References: <200803042316.m24NGI7k002489@imap1.linux-foundation.org>
+	<20080304173058.7679b7c8.akpm@linux-foundation.org>
+	<20080305115610.397b3ea3@the-village.bc.nu>
+	<200803051421.14167.bzolnier@gmail.com>
+	<m3ir015du5.fsf@maximus.localdomain>
+	<58cb370e0803050846t7dbd65d6ocfec7ca5e93aa6db@mail.gmail.com>
+	<m3ejap5cvz.fsf@maximus.localdomain>
+	<58cb370e0803050922p7695771cq393120ed5906efb7@mail.gmail.com>
+	<1204742033.6408.37.camel@localhost>
+From: Krzysztof Halasa <khc@pm.waw.pl>
+Date: Thu, 06 Mar 2008 02:33:29 +0100
+In-Reply-To: <1204742033.6408.37.camel@localhost> (Zan Lynx's message of "Wed\, 05 Mar 2008 11\:33\:53 -0700")
+Message-ID: <m37iggbpqu.fsf@maximus.localdomain>
 MIME-Version: 1.0
-To: Jarod Wilson <jwilson@redhat.com>
-CC: linux1394-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org,
-       =?ISO-8859-1?Q?Kristian_H=F8gsberg?= <krh@bitplanet.net>
-Subject: Re: [PATCH update] firewire: reread config ROM when device reset
- the bus
-References: <tkrat.c6610a8633fe0e41@s5r6.in-berlin.de>  <tkrat.da30e6f15a74e036@s5r6.in-berlin.de> <59ad55d30803030817l6fce6716x2a97cc809b15b234@mail.gmail.com> <tkrat.5eee3ebd5076fd4a@s5r6.in-berlin.de> <tkrat.55f8e340ac08be4c@s5r6.in-berlin.de> <47CF3290.10404@s5r6.in-berlin.de>
-In-Reply-To: <47CF3290.10404@s5r6.in-berlin.de>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I wrote:
-> I wrote:
->> When I power the PC down there are lots of messages scrolling by
->> which look somewhat like lockdep spew.  I can't reproduce this merely by
->> module unloading though.  So don't put this patch into production yet.
-> 
-> /...a few hundreds reboots later.../
-> 
-> No, it is not this patch.  It is something else.  And whatever it is, it 
-> is already present in 2.6.25-rc3.
-> 
-> To reproduce it, I need to plug an SBP-2 device in and out, then shut 
-> the machine down (e.g. shutdown -h now, whereas shutdown -r now does not 
-> seem to trigger the bug).
-...
-> I am now gradually removing debug options from the kernel to see which 
-> debug facility is making the fuzz...
+Zan Lynx <zlynx@acm.org> writes:
 
-It is CONFIG_PROVE_LOCKING (Lock debugging: prove locking correctness).
+> In my experience what they needed was proper cooling.  I have a 3ware
+> RAID-5 array of 4 120 GB DeskStar drives still working.
 
-At the moment when the machine powers itself off.
-
-What a waste of time.
+I think the largest "deathstars" (75GXP?) were 75 GB.
 -- 
-Stefan Richter
--=====-==--- --== --==-
-http://arcgraph.de/sr/
+Krzysztof Halasa
