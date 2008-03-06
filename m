@@ -1,27 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932224AbYCFCbS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934707AbYCFCbl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932224AbYCFCbS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Mar 2008 21:31:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932344AbYCFCZL
+	id S934707AbYCFCbl (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Mar 2008 21:31:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932524AbYCFCZM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Mar 2008 21:25:11 -0500
-Received: from gv-out-0910.google.com ([216.239.58.187]:26847 "EHLO
-	gv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1764884AbYCFCZI (ORCPT
+	Wed, 5 Mar 2008 21:25:12 -0500
+Received: from rn-out-0910.google.com ([64.233.170.184]:52325 "EHLO
+	rn-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932168AbYCFCZK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Mar 2008 21:25:08 -0500
+	Wed, 5 Mar 2008 21:25:10 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=subject:from:to:cc:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=BFKJME7c/vQ7WBgv5VIACCukwTDi3qvoaRHImTtPV/lceyiYHcFLCMGGm+DQnzuGIp9oLVRWHqVaIvhVydzm7bSfHxCRDpQxzi5J/v0ENX639Y/+FbU9qFgqbflsRr1/fNwJjCJ9S/D7X2O1r4sCAnw6U5hGokt9+ayfnRyx7eg=
-Subject: [PATCH 11/16] drivers/misc: replace remaining __FUNCTION__
-	occurrences
+        b=LJUEj1NLp8thDzjx2mUc6c4yWvThSvq6NP4dwmL0cCKUo0XP5fx8HxKx6c3gCaZ4euiVN8IY5O2QtFtjR3ClnE8wJTLrqGn7a/78VG/lQBo+dmCbgcjz7TYVPmr9cuYaaNRqfct140KjwAD8OZ6L5eq6dsew13v2Umi/GjeUf34=
+Subject: [PATCH 13/16] watchdog: replace remaining __FUNCTION__ occurrences
 From: Harvey Harrison <harvey.harrison@gmail.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: LKML <linux-kernel@vger.kernel.org>
+To: Wim Van Sebroeck <wim@iguana.be>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>
 Content-Type: text/plain
-Date: Wed, 05 Mar 2008 18:24:56 -0800
-Message-Id: <1204770297.14154.47.camel@brick>
+Date: Wed, 05 Mar 2008 18:24:58 -0800
+Message-Id: <1204770298.14154.49.camel@brick>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.12.1 
 Content-Transfer-Encoding: 7bit
@@ -33,184 +33,96 @@ __FUNCTION__ is gcc-specific, use __func__
 
 Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
 ---
- drivers/misc/ibmasm/command.c   |    6 +++---
- drivers/misc/ibmasm/heartbeat.c |    6 +++---
- drivers/misc/ioc4.c             |   20 ++++++++++----------
- drivers/misc/sony-laptop.c      |    4 ++--
- 4 files changed, 18 insertions(+), 18 deletions(-)
+ drivers/watchdog/machzwd.c     |    2 +-
+ drivers/watchdog/pcwd_usb.c    |    4 ++--
+ drivers/watchdog/s3c2410_wdt.c |    8 ++++----
+ drivers/watchdog/shwdt.c       |    2 +-
+ 4 files changed, 8 insertions(+), 8 deletions(-)
 
-diff --git a/drivers/misc/ibmasm/command.c b/drivers/misc/ibmasm/command.c
-index 1a0e797..276d3fb 100644
---- a/drivers/misc/ibmasm/command.c
-+++ b/drivers/misc/ibmasm/command.c
-@@ -96,7 +96,7 @@ static inline void do_exec_command(struct service_processor *sp)
- {
- 	char tsbuf[32];
+diff --git a/drivers/watchdog/machzwd.c b/drivers/watchdog/machzwd.c
+index e6e07b4..6905135 100644
+--- a/drivers/watchdog/machzwd.c
++++ b/drivers/watchdog/machzwd.c
+@@ -141,7 +141,7 @@ static unsigned long next_heartbeat = 0;
+ #ifndef ZF_DEBUG
+ #	define dprintk(format, args...)
+ #else
+-#	define dprintk(format, args...) printk(KERN_DEBUG PFX ":%s:%d: " format, __FUNCTION__, __LINE__ , ## args)
++#	define dprintk(format, args...) printk(KERN_DEBUG PFX ":%s:%d: " format, __func__, __LINE__ , ## args)
+ #endif
  
--	dbg("%s:%d at %s\n", __FUNCTION__, __LINE__, get_timestamp(tsbuf));
-+	dbg("%s:%d at %s\n", __func__, __LINE__, get_timestamp(tsbuf));
- 
- 	if (ibmasm_send_i2o_message(sp)) {
- 		sp->current_command->status = IBMASM_CMD_FAILED;
-@@ -119,7 +119,7 @@ void ibmasm_exec_command(struct service_processor *sp, struct command *cmd)
- 	unsigned long flags;
- 	char tsbuf[32];
- 
--	dbg("%s:%d at %s\n", __FUNCTION__, __LINE__, get_timestamp(tsbuf));
-+	dbg("%s:%d at %s\n", __func__, __LINE__, get_timestamp(tsbuf));
- 
- 	spin_lock_irqsave(&sp->lock, flags);
- 
-@@ -139,7 +139,7 @@ static void exec_next_command(struct service_processor *sp)
- 	unsigned long flags;
- 	char tsbuf[32];
- 
--	dbg("%s:%d at %s\n", __FUNCTION__, __LINE__, get_timestamp(tsbuf));
-+	dbg("%s:%d at %s\n", __func__, __LINE__, get_timestamp(tsbuf));
- 
- 	spin_lock_irqsave(&sp->lock, flags);
- 	sp->current_command = dequeue_command(sp);
-diff --git a/drivers/misc/ibmasm/heartbeat.c b/drivers/misc/ibmasm/heartbeat.c
-index 3036e78..1bc4306 100644
---- a/drivers/misc/ibmasm/heartbeat.c
-+++ b/drivers/misc/ibmasm/heartbeat.c
-@@ -75,9 +75,9 @@ void ibmasm_heartbeat_exit(struct service_processor *sp)
- {
- 	char tsbuf[32];
- 
--	dbg("%s:%d at %s\n", __FUNCTION__, __LINE__, get_timestamp(tsbuf));
-+	dbg("%s:%d at %s\n", __func__, __LINE__, get_timestamp(tsbuf));
- 	ibmasm_wait_for_response(sp->heartbeat, IBMASM_CMD_TIMEOUT_NORMAL);
--	dbg("%s:%d at %s\n", __FUNCTION__, __LINE__, get_timestamp(tsbuf));
-+	dbg("%s:%d at %s\n", __func__, __LINE__, get_timestamp(tsbuf));
- 	suspend_heartbeats = 1;
- 	command_put(sp->heartbeat);
- }
-@@ -88,7 +88,7 @@ void ibmasm_receive_heartbeat(struct service_processor *sp,  void *message, size
- 	struct dot_command_header *header = (struct dot_command_header *)cmd->buffer;
- 	char tsbuf[32];
- 
--	dbg("%s:%d at %s\n", __FUNCTION__, __LINE__, get_timestamp(tsbuf));
-+	dbg("%s:%d at %s\n", __func__, __LINE__, get_timestamp(tsbuf));
- 	if (suspend_heartbeats)
+
+diff --git a/drivers/watchdog/pcwd_usb.c b/drivers/watchdog/pcwd_usb.c
+index 0f3fd6c..bf443d0 100644
+--- a/drivers/watchdog/pcwd_usb.c
++++ b/drivers/watchdog/pcwd_usb.c
+@@ -179,11 +179,11 @@ static void usb_pcwd_intr_done(struct urb *urb)
+ 	case -ENOENT:
+ 	case -ESHUTDOWN:
+ 		/* this urb is terminated, clean up */
+-		dbg("%s - urb shutting down with status: %d", __FUNCTION__, urb->status);
++		dbg("%s - urb shutting down with status: %d", __func__, urb->status);
  		return;
+ 	/* -EPIPE:  should clear the halt */
+ 	default:		/* error */
+-		dbg("%s - nonzero urb status received: %d", __FUNCTION__, urb->status);
++		dbg("%s - nonzero urb status received: %d", __func__, urb->status);
+ 		goto resubmit;
+ 	}
  
-diff --git a/drivers/misc/ioc4.c b/drivers/misc/ioc4.c
-index 05172d2..6f76573 100644
---- a/drivers/misc/ioc4.c
-+++ b/drivers/misc/ioc4.c
-@@ -75,7 +75,7 @@ ioc4_register_submodule(struct ioc4_submodule *is)
- 			printk(KERN_WARNING
- 			       "%s: IOC4 submodule %s probe failed "
- 			       "for pci_dev %s",
--			       __FUNCTION__, module_name(is->is_owner),
-+			       __func__, module_name(is->is_owner),
- 			       pci_name(idd->idd_pdev));
- 		}
+diff --git a/drivers/watchdog/s3c2410_wdt.c b/drivers/watchdog/s3c2410_wdt.c
+index 5d1c15f..7645e88 100644
+--- a/drivers/watchdog/s3c2410_wdt.c
++++ b/drivers/watchdog/s3c2410_wdt.c
+@@ -144,7 +144,7 @@ static int s3c2410wdt_start(void)
  	}
-@@ -102,7 +102,7 @@ ioc4_unregister_submodule(struct ioc4_submodule *is)
- 			printk(KERN_WARNING
- 			       "%s: IOC4 submodule %s remove failed "
- 			       "for pci_dev %s.\n",
--			       __FUNCTION__, module_name(is->is_owner),
-+			       __func__, module_name(is->is_owner),
- 			       pci_name(idd->idd_pdev));
- 		}
- 	}
-@@ -282,7 +282,7 @@ ioc4_probe(struct pci_dev *pdev, const struct pci_device_id *pci_id)
- 	if ((ret = pci_enable_device(pdev))) {
- 		printk(KERN_WARNING
- 		       "%s: Failed to enable IOC4 device for pci_dev %s.\n",
--		       __FUNCTION__, pci_name(pdev));
-+		       __func__, pci_name(pdev));
- 		goto out;
- 	}
- 	pci_set_master(pdev);
-@@ -292,7 +292,7 @@ ioc4_probe(struct pci_dev *pdev, const struct pci_device_id *pci_id)
- 	if (!idd) {
- 		printk(KERN_WARNING
- 		       "%s: Failed to allocate IOC4 data for pci_dev %s.\n",
--		       __FUNCTION__, pci_name(pdev));
-+		       __func__, pci_name(pdev));
- 		ret = -ENODEV;
- 		goto out_idd;
- 	}
-@@ -307,7 +307,7 @@ ioc4_probe(struct pci_dev *pdev, const struct pci_device_id *pci_id)
- 		printk(KERN_WARNING
- 		       "%s: Unable to find IOC4 misc resource "
- 		       "for pci_dev %s.\n",
--		       __FUNCTION__, pci_name(idd->idd_pdev));
-+		       __func__, pci_name(idd->idd_pdev));
- 		ret = -ENODEV;
- 		goto out_pci;
- 	}
-@@ -316,7 +316,7 @@ ioc4_probe(struct pci_dev *pdev, const struct pci_device_id *pci_id)
- 		printk(KERN_WARNING
- 		       "%s: Unable to request IOC4 misc region "
- 		       "for pci_dev %s.\n",
--		       __FUNCTION__, pci_name(idd->idd_pdev));
-+		       __func__, pci_name(idd->idd_pdev));
- 		ret = -ENODEV;
- 		goto out_pci;
- 	}
-@@ -326,7 +326,7 @@ ioc4_probe(struct pci_dev *pdev, const struct pci_device_id *pci_id)
- 		printk(KERN_WARNING
- 		       "%s: Unable to remap IOC4 misc region "
- 		       "for pci_dev %s.\n",
--		       __FUNCTION__, pci_name(idd->idd_pdev));
-+		       __func__, pci_name(idd->idd_pdev));
- 		ret = -ENODEV;
- 		goto out_misc_region;
- 	}
-@@ -372,7 +372,7 @@ ioc4_probe(struct pci_dev *pdev, const struct pci_device_id *pci_id)
- 			printk(KERN_WARNING
- 			       "%s: IOC4 submodule 0x%s probe failed "
- 			       "for pci_dev %s.\n",
--			       __FUNCTION__, module_name(is->is_owner),
-+			       __func__, module_name(is->is_owner),
- 			       pci_name(idd->idd_pdev));
- 		}
- 	}
-@@ -406,7 +406,7 @@ ioc4_remove(struct pci_dev *pdev)
- 			printk(KERN_WARNING
- 			       "%s: IOC4 submodule 0x%s remove failed "
- 			       "for pci_dev %s.\n",
--			       __FUNCTION__, module_name(is->is_owner),
-+			       __func__, module_name(is->is_owner),
- 			       pci_name(idd->idd_pdev));
- 		}
- 	}
-@@ -418,7 +418,7 @@ ioc4_remove(struct pci_dev *pdev)
- 		printk(KERN_WARNING
- 		       "%s: Unable to get IOC4 misc mapping for pci_dev %s. "
- 		       "Device removal may be incomplete.\n",
--		       __FUNCTION__, pci_name(idd->idd_pdev));
-+		       __func__, pci_name(idd->idd_pdev));
- 	}
- 	release_mem_region(idd->idd_bar0, sizeof(struct ioc4_misc_regs));
  
-diff --git a/drivers/misc/sony-laptop.c b/drivers/misc/sony-laptop.c
-index 899e3f7..bee6c34 100644
---- a/drivers/misc/sony-laptop.c
-+++ b/drivers/misc/sony-laptop.c
-@@ -961,7 +961,7 @@ static int sony_nc_resume(struct acpi_device *device)
- 		ret = acpi_callsetfunc(sony_nc_acpi_handle, *item->acpiset,
- 				       item->value, NULL);
- 		if (ret < 0) {
--			printk("%s: %d\n", __FUNCTION__, ret);
-+			printk("%s: %d\n", __func__, ret);
- 			break;
- 		}
- 	}
-@@ -1453,7 +1453,7 @@ static struct sonypi_eventtypes type4_events[] = {
- 		udelay(1);						\
- 	if (!n)								\
- 		dprintk("command failed at %s : %s (line %d)\n",	\
--				__FILE__, __FUNCTION__, __LINE__);	\
-+				__FILE__, __func__, __LINE__);	\
- }
+ 	DBG("%s: wdt_count=0x%08x, wtcon=%08lx\n",
+-	    __FUNCTION__, wdt_count, wtcon);
++	    __func__, wdt_count, wtcon);
  
- static u8 sony_pic_call1(u8 dev)
+ 	writel(wdt_count, wdt_base + S3C2410_WTDAT);
+ 	writel(wdt_count, wdt_base + S3C2410_WTCNT);
+@@ -167,7 +167,7 @@ static int s3c2410wdt_set_heartbeat(int timeout)
+ 	count = timeout * freq;
+ 
+ 	DBG("%s: count=%d, timeout=%d, freq=%d\n",
+-	    __FUNCTION__, count, timeout, freq);
++	    __func__, count, timeout, freq);
+ 
+ 	/* if the count is bigger than the watchdog register,
+ 	   then work out what we need to do (and if) we can
+@@ -189,7 +189,7 @@ static int s3c2410wdt_set_heartbeat(int timeout)
+ 	tmr_margin = timeout;
+ 
+ 	DBG("%s: timeout=%d, divisor=%d, count=%d (%08x)\n",
+-	    __FUNCTION__, timeout, divisor, count, count/divisor);
++	    __func__, timeout, divisor, count, count/divisor);
+ 
+ 	count /= divisor;
+ 	wdt_count = count;
+@@ -355,7 +355,7 @@ static int s3c2410wdt_probe(struct platform_device *pdev)
+ 	int ret;
+ 	int size;
+ 
+-	DBG("%s: probe=%p\n", __FUNCTION__, pdev);
++	DBG("%s: probe=%p\n", __func__, pdev);
+ 
+ 	dev = &pdev->dev;
+ 	wdt_dev = &pdev->dev;
+diff --git a/drivers/watchdog/shwdt.c b/drivers/watchdog/shwdt.c
+index 61dde86..1277f7e 100644
+--- a/drivers/watchdog/shwdt.c
++++ b/drivers/watchdog/shwdt.c
+@@ -298,7 +298,7 @@ static int sh_wdt_mmap(struct file *file, struct vm_area_struct *vma)
+ 	if (io_remap_pfn_range(vma, vma->vm_start, addr >> PAGE_SHIFT,
+ 			       PAGE_SIZE, vma->vm_page_prot)) {
+ 		printk(KERN_ERR PFX "%s: io_remap_pfn_range failed\n",
+-		       __FUNCTION__);
++		       __func__);
+ 		return -EAGAIN;
+ 	}
+ 
 -- 
 1.5.4.GIT
 
