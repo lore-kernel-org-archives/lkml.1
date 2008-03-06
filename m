@@ -1,16 +1,16 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763666AbYCFB6J@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763835AbYCFCC5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763666AbYCFB6J (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Mar 2008 20:58:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759115AbYCFB5x
+	id S1763835AbYCFCC5 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Mar 2008 21:02:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753609AbYCFCCs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Mar 2008 20:57:53 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:41784 "EHLO
+	Wed, 5 Mar 2008 21:02:48 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:46210 "EHLO
 	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757592AbYCFB5x (ORCPT
+	with ESMTP id S1757063AbYCFCCr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Mar 2008 20:57:53 -0500
-Date: Wed, 5 Mar 2008 17:55:13 -0800
+	Wed, 5 Mar 2008 21:02:47 -0500
+Date: Wed, 5 Mar 2008 18:02:41 -0800
 From: Greg KH <greg@kroah.com>
 To: Pavel Emelyanov <xemul@openvz.org>
 Cc: Andrew Morton <akpm@linux-foundation.org>,
@@ -18,54 +18,38 @@ Cc: Andrew Morton <akpm@linux-foundation.org>,
        Paul Menage <menage@google.com>,
        Sukadev Bhattiprolu <sukadev@us.ibm.com>,
        Serge Hallyn <serue@us.ibm.com>
-Subject: Re: [PATCH 0/9] Devices accessibility control group (v4)
-Message-ID: <20080306015513.GA5359@kroah.com>
-References: <47CED717.60406@openvz.org>
+Subject: Re: [PATCH 9/9] Devices accessibility control group itself
+Message-ID: <20080306020241.GB5359@kroah.com>
+References: <47CED717.60406@openvz.org> <47CEDCAE.5050303@openvz.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <47CED717.60406@openvz.org>
+In-Reply-To: <47CEDCAE.5050303@openvz.org>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Mar 05, 2008 at 08:23:35PM +0300, Pavel Emelyanov wrote:
-> Changes from v3:
-> * Ported on 2.6.25-rc3-mm1;
-> * Re-splitted into smaller pieces;
-> * Added more comments to tricky places.
+On Wed, Mar 05, 2008 at 08:47:26PM +0300, Pavel Emelyanov wrote:
+> Finally, here's the control group, which makes full use of the
+> interfaces, declared in the previous patches.
 > 
-> This controller allows to tune the devices accessibility by tasks,
-> i.e. grant full access for /dev/null, /dev/zero etc, grant read-only
-> access to IDE devices and completely hide SCSI disks.
-
- From within the kernel itself?  The kernel should not be keeping track
-of the mode of devices, that's what the filesystem holding /dev is for.
-Those modes change all the time depending on the device plugged in, and
-the user using the "console".  Why should the kernel need to worry about
-any of this?
-
-> Tasks still can call mknod to create device files, regardless of
-> whether the particular device is visible or accessible, but they
-> may not be able to open it later.
+> Signed-off-by: Pavel Emelyanov <xemul@openvz.org>
 > 
-> This one hides under CONFIG_CGROUP_DEVS option.
-> 
-> To play with it - run a standard procedure:
-> 
->  # mount -t container none /cont/devs -o devices
->  # mkdir /cont/devs/0
->  # echo -n $$ > /cont/devs/0/tasks
+> ---
+>  Documentation/controllers/devices.txt |   61 +++++++
 
-What is /cont/ for?
+The information here should be in Documentation/ABI/ right?
 
-> and tune device permissions.
+I still don't see how changing these permissions within the kernel is
+going to affect anything outside of it, nor why you want to be tracking
+this within the kernel itself.
 
-How is this done?
+What's wrong with just having different /dev trees for the different
+containers?  That would not require any kernel changes, and you don't
+have to write a tool to be sending these odd "mode settings" into the
+kernel.
 
-Why would the kernel care about this stuff?
-
-confused,
+thanks,
 
 greg k-h
