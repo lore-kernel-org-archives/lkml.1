@@ -1,65 +1,127 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758668AbYCFIgP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757476AbYCFIhS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758668AbYCFIgP (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Mar 2008 03:36:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750724AbYCFIgE
+	id S1757476AbYCFIhS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Mar 2008 03:37:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752075AbYCFIg4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Mar 2008 03:36:04 -0500
-Received: from el-out-1112.google.com ([209.85.162.181]:13578 "EHLO
-	el-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750740AbYCFIgC (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Mar 2008 03:36:02 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=fEKxzLjL2pIQJCJmAa+gwW1Xns4bsgyBi55m2EOAvF6G/gAQFk2BwC42yWGIllXen8tiN7oZ8keL+fypHJn2VXYFDI0dqaiXwcQKMK2/Az6T05Q3O73cjPRhePISOllMqunhQuLNOyQxkZWpIljN0SygE80ob62Qiz7yv6er/rc=
-Message-ID: <84144f020803060036o7373c8fbo8f5fe8475756a33d@mail.gmail.com>
-Date: Thu, 6 Mar 2008 10:36:00 +0200
-From: "Pekka Enberg" <penberg@cs.helsinki.fi>
-To: "Rik van Riel" <riel@redhat.com>
-Subject: Re: Google's Summer of Code?
-Cc: "Alexey Zaytsev" <alexey.zaytsev@gmail.com>,
-       "Linus Torvalds" <torvalds@linux-foundation.org>,
-       "Linux kernel mailing list" <linux-kernel@vger.kernel.org>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "Ingo Molnar" <mingo@elte.hu>,
-       "Vegard Nossum" <vegard.nossum@gmail.com>, tilll.kamppeter@gmail.com
-In-Reply-To: <20080304152303.2a041814@cuia.boston.redhat.com>
+	Thu, 6 Mar 2008 03:36:56 -0500
+Received: from sacred.ru ([62.205.161.221]:47531 "EHLO sacred.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750724AbYCFIgz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 6 Mar 2008 03:36:55 -0500
+Message-ID: <47CFAD06.7020501@openvz.org>
+Date: Thu, 06 Mar 2008 11:36:22 +0300
+From: Pavel Emelyanov <xemul@openvz.org>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080213)
 MIME-Version: 1.0
+To: Greg KH <greg@kroah.com>
+CC: "Serge E. Hallyn" <serue@us.ibm.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Paul Menage <menage@google.com>,
+       Sukadev Bhattiprolu <sukadev@us.ibm.com>
+Subject: Re: [PATCH 0/9] Devices accessibility control group (v4)
+References: <47CED717.60406@openvz.org> <20080306015513.GA5359@kroah.com> <20080306031525.GA9070@sergelap.austin.ibm.com> <20080306043427.GA15498@kroah.com>
+In-Reply-To: <20080306043427.GA15498@kroah.com>
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <84144f020803041045i70bbb05l6983bd14c5bcc91a@mail.gmail.com>
-	 <alpine.LFD.1.00.0803041127290.12253@woody.linux-foundation.org>
-	 <84144f020803041155k222c13ecu13c8c9534ced87e5@mail.gmail.com>
-	 <f19298770803041205i21a0c6d2mdf712b52cb00cfd5@mail.gmail.com>
-	 <20080304152303.2a041814@cuia.boston.redhat.com>
-X-Google-Sender-Auth: 77ae49df21f9098a
+X-Greylist: Sender succeeded SMTP AUTH authentication, not delayed by milter-greylist-3.0 (sacred.ru [62.205.161.221]); Thu, 06 Mar 2008 11:36:19 +0300 (MSK)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi all,
+Greg KH wrote:
+> On Wed, Mar 05, 2008 at 09:15:25PM -0600, Serge E. Hallyn wrote:
+>> Quoting Greg KH (greg@kroah.com):
+>>> On Wed, Mar 05, 2008 at 08:23:35PM +0300, Pavel Emelyanov wrote:
+>>>> Changes from v3:
+>>>> * Ported on 2.6.25-rc3-mm1;
+>>>> * Re-splitted into smaller pieces;
+>>>> * Added more comments to tricky places.
+>>>>
+>>>> This controller allows to tune the devices accessibility by tasks,
+>>>> i.e. grant full access for /dev/null, /dev/zero etc, grant read-only
+>>>> access to IDE devices and completely hide SCSI disks.
+>>>  From within the kernel itself?  The kernel should not be keeping track
+>>> of the mode of devices, that's what the filesystem holding /dev is for.
+>>> Those modes change all the time depending on the device plugged in, and
+>>> the user using the "console".  Why should the kernel need to worry about
+>>> any of this?
+>> These are distinct from the permissions on device files.  No matter what
+>> the permissions on the device files, a task in a devcg cgroup which
+>> isn't allowed write to chardev 4:64 will not be able to write to
+>> /dev/ttyS0.
+> 
+> Then why not do that from userspace with a different /dev, or with a
+> LSM?
 
-On Tue, Mar 4, 2008 at 10:23 PM, Rik van Riel <riel@redhat.com> wrote:
->  Kernelnewbies is just a community of people, without much organization.
->
->  However, I would be happy to coordinate a group of mentors for Linux
->  kernel Summer of Code as well as be a mentor for the kernel subsystems
->  that I know something about.
->
->  If we can find mentors to cover most of the kernel (volunteers? anyone?),
->  we can do a good enough job of mentoring the students that we could sign
->  up for Summer of Code.
+Different dev is not suitable, since task may still call mknod to
+create device it needs and use it. This is not about comfortable
+use, this is about security.
 
-Ok, so we're planning to participate via Linux Foundation. You can add
-your project ideas here:
+LSM approach was proposed, but that required some API to configure
+the permissions. This API done via control groups, so there were no
+difference between this approach and that. Except for this one doesn't
+create one more level of filtering at the top of kobject lookup and
+thus is simpler and faster.
 
-https://www.linux-foundation.org/en/Google_Summer_of_Code
+>> The purpose is to prevent a root task from granting itself access to
+>> certain devices.  Without this, the only option currently is to take
+>> CAP_MKNOD out of the capability bounding set for a container and make
+>> sure that /dev is set up right (and enforce nodev for mounts).  In
+>> itself that doesn't sound so bad and it was my preference at first,
+> 
+> that would be my preference as well.
 
-And sign up as a volunteering mentor here:
+That approach relies on a proper user space setup inside a container, 
+but this creates security holes, since container user may ignore all
+these "requirements".
 
-http://kernelnewbies.org/GoogleSummerOfCodeMentors
+>> but the argument is that things like udev should be able to run in a
+>> container, and will object about not being able to create devices.
+> 
+> No reason you can't modify udev to do something like this.  At the
 
-                                Pekka
+Sure we _can_ modify udev, but the problem is that users of virtualisation
+solutions often (very often) use old software (e.g. set up some out-dated
+distribution inside a container), so trick with modified udev simply won't
+work in many cases.
+
+> worse, just disable udev warning messages, that is pretty trivial to do.
+> 
+> This really makes it seem like this kernel change is not needed at all.
+> 
+>>>> Tasks still can call mknod to create device files, regardless of
+>>>> whether the particular device is visible or accessible, but they
+>>>> may not be able to open it later.
+>>>>
+>>>> This one hides under CONFIG_CGROUP_DEVS option.
+>>>>
+>>>> To play with it - run a standard procedure:
+>>>>
+>>>>  # mount -t container none /cont/devs -o devices
+>>>>  # mkdir /cont/devs/0
+>>>>  # echo -n $$ > /cont/devs/0/tasks
+>>> What is /cont/ for?
+>> cgroups used to be called containers, so 'cont' is presumably shorthand
+>> for container.
+>>
+>>>> and tune device permissions.
+>>> How is this done?
+>>>
+>>> Why would the kernel care about this stuff?
+>> Because there is no way for userspace to restrict a root process in a
+>> container from accessing whatever devices it wants.
+> 
+> LSM does this quite well today, why reinvent the wheel and put wierd
+> hooks in other parts of the kernel that do not need them at all?
+
+These are not hooks actually. I just made kobj_map-s per-group.
+
+> thanks,
+> 
+> greg k-h
+> 
+
+Thanks,
+Pavel
