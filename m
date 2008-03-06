@@ -1,80 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935995AbYCFVcx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935682AbYCFVf2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935995AbYCFVcx (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Mar 2008 16:32:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765060AbYCFVcQ
+	id S935682AbYCFVf2 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Mar 2008 16:35:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760024AbYCFVfS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Mar 2008 16:32:16 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:38501 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933142AbYCFVcO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Mar 2008 16:32:14 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: "Zdenek Kabelac" <zdenek.kabelac@gmail.com>
-Subject: Re: Bugs in MMC [was: [Bug 10030] Suspend doesn't work when SD card is inserted]
-Date: Thu, 6 Mar 2008 22:31:13 +0100
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: "Alan Stern" <stern@rowland.harvard.edu>, "Pavel Machek" <pavel@ucw.cz>,
-       "David Brownell" <david-b@pacbell.net>,
-       "Pierre Ossman" <drzeus-mmc@drzeus.cx>,
-       "pm list" <linux-pm@lists.linux-foundation.org>,
-       "Kernel development list" <linux-kernel@vger.kernel.org>
-References: <20080306155553.GA3908@ucw.cz> <Pine.LNX.4.44L0.0803061528460.9174-100000@iolanthe.rowland.org> <c4e36d110803061253i7f8edd6eu97887d2e628453e2@mail.gmail.com>
-In-Reply-To: <c4e36d110803061253i7f8edd6eu97887d2e628453e2@mail.gmail.com>
+	Thu, 6 Mar 2008 16:35:18 -0500
+Received: from smtpout09-04.prod.mesa1.secureserver.net ([64.202.165.17]:41235
+	"HELO smtpout09.prod.mesa1.secureserver.net" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with SMTP id S1753785AbYCFVfR (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 6 Mar 2008 16:35:17 -0500
+Message-ID: <47D0628E.9030205@seclark.us>
+Date: Thu, 06 Mar 2008 16:30:54 -0500
+From: Stephen Clark <Stephen.Clark@seclark.us>
+Reply-To: Stephen.Clark@seclark.us
+User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: Wim Van Sebroeck <wim@iguana.be>
+CC: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: iTCO watchdog timer
+References: <47CDAC9D.6020505@seclark.us> <20080304135548.b7b88ee4.akpm@linux-foundation.org> <20080306212820.GA2866@infomag.infomag.iguana.be>
+In-Reply-To: <20080306212820.GA2866@infomag.infomag.iguana.be>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200803062231.14773.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday, 6 of March 2008, Zdenek Kabelac wrote:
-> 2008/3/6, Alan Stern <stern@rowland.harvard.edu>:
-> > On Thu, 6 Mar 2008, Pavel Machek wrote:
-> >
-> >  > On Tue 2008-03-04 16:00:51, Alan Stern wrote:
-> >  > > On Tue, 4 Mar 2008, David Brownell wrote:
-> >  > >
-> >  > > > > What's wrong with a superfluous probe at resume time, besides the waste
-> >  > > > > of a few milliseconds?
-> >  > > >
-> >  > > > I'm more concerned with the undesirable removal of devices at suspend
-> >  > > > time ... ones with mounted filesystems etc.
-> >  > >
-> >  > > On that we can agree.  The removal is done if the host doesn't define a
-> >  > > resume method.  There doesn't seem to be any point to that, given that
-> >  > > the probing during resume will determine whether a card has in fact
-> >  > > been removed.
-> >  >
-> >  > Hmm, if the driver is sleeping too deeply, user might have removed the
-> >  > card and put in different one, without driver noticing. That would be
-> >  > _bad_.
-> >
-> >
-> > Ironically, the very same problem now exists with the USB mass-storage
-> >  driver.  I don't see any way for the driver itself to solve it,
-> >  especially during a hibernation (which can be a _very_ deep sleep).
-> >
-> >  One thing that could be done is for filesystems to verify, after a
-> >  system sleep, that their superblocks haven't changed.  There could
-> >  still be issues with non-mounted partitions, if they have live entries
-> >  in the block cache, but it would be an improvement.
-> >
-> >  Do you know the right people to mention this to?  Anybody in filesystem
-> >  development interested in suspend/hibernation issues?
+Wim Van Sebroeck wrote:
+> Hi All,
+>
+> Sorry but it's quite busy at the moment...
+>
+>   
+>>> I have new Intel DG33FB mainboard.
+>>>
+>>>
+>>> Mar  2 20:47:19 joker1 kernel: iTCO_vendor_support: vendor-support=0
+>>> Mar  2 20:47:19 joker1 kernel: iTCO_wdt: Intel TCO WatchDog Timer Driver 
+>>> v1.02 (26-Jul-2007)
+>>> Mar  2 20:47:19 joker1 kernel: iTCO_wdt: Found a ICH9DH TCO device 
+>>> (Version=2, TCOBASE=0x0460)
+>>> Mar  2 20:47:19 joker1 kernel: iTCO_wdt: initialized. heartbeat=30 sec 
+>>> (nowayout=0)
+>>> ...
+>>> Mar  4 14:22:59 joker1 kernel: iTCO_wdt: Unexpected close, not stopping 
+>>> watchdog!
+>>>
+>>>
+>>> I start watchdog.c and then kill it expecting the system to reboot - but 
+>>> it doesn't.
+>>>
+>>> Isn't this how it is supposed to work?
+>>>       
+>
+> This is indeed how it should work. It's indeed strange that the system doesn't
+> reboot. If I find some time I will give you some test code to run.
+>
+> Greetings,
+> Wim.
+>
+>
+>   
+That would be much appreciated. One of the reasons I bought this mother 
+board was the WDT.
 
-I don't really think so (but I may be wrong ...)
+Steve
 
-> IMHO the way would be to try to unmount fs if it's possible - if not -
-> user should be notified on suspend/hibernation that he must preserve
-> media in its place after resume and it should be checked and user
-> should be notified if different devices/fs were find...
+-- 
 
-This is a very long standing issue which IMO can only be solved by making
-filesystems suspend-aware.
+"They that give up essential liberty to obtain temporary safety, 
+deserve neither liberty nor safety."  (Ben Franklin)
 
-Thanks,
-Rafael
+"The course of history shows that as a government grows, liberty 
+decreases."  (Thomas Jefferson)
+
+
+
