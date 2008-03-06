@@ -1,218 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935421AbYCFVcU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935830AbYCFVcj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935421AbYCFVcU (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Mar 2008 16:32:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756862AbYCFVb7
+	id S935830AbYCFVcj (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Mar 2008 16:32:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932630AbYCFVcN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Mar 2008 16:31:59 -0500
-Received: from ns2.suse.de ([195.135.220.15]:59764 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756512AbYCFVb6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Mar 2008 16:31:58 -0500
-Subject: patch nozomi-fix-initialization-and-early-flow-control-access.patch added to gregkh-2.6 tree
-To: fseidel@suse.de, greg@kroah.com, gregkh@suse.de,
-       linux-kernel@vger.kernel.org
-From: <gregkh@suse.de>
-Date: Thu, 06 Mar 2008 13:31:47 -0800
-In-Reply-To: <47D05805.7010003@suse.de>
-Message-ID: <12048391073796@kroah.org>
+	Thu, 6 Mar 2008 16:32:13 -0500
+Received: from accolon.hansenpartnership.com ([76.243.235.52]:47899 "EHLO
+	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1765080AbYCFVcL (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 6 Mar 2008 16:32:11 -0500
+Subject: Re: [2.6 patch] SCSI_AIC94XX must depend on SCSI
+From: James Bottomley <James.Bottomley@HansenPartnership.com>
+To: "Darrick J. Wong" <djwong@us.ibm.com>
+Cc: Adrian Bunk <bunk@kernel.org>,
+       Toralf =?ISO-8859-1?Q?F=F6rster?= <toralf.foerster@gmx.de>,
+       linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org
+In-Reply-To: <20080306203558.GA7430@tree.beaverton.ibm.com>
+References: <200803062009.20309.toralf.foerster@gmx.de>
+	 <20080306202246.GB5259@cs181133002.pp.htv.fi>
+	 <20080306203558.GA7430@tree.beaverton.ibm.com>
+Content-Type: text/plain; charset=utf-8
+Date: Thu, 06 Mar 2008 15:32:06 -0600
+Message-Id: <1204839126.3062.57.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.3 (2.12.3-1.fc8) 
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, 2008-03-06 at 12:35 -0800, Darrick J. Wong wrote:
+> On Thu, Mar 06, 2008 at 10:22:46PM +0200, Adrian Bunk wrote:
+> > This patch fixes the following build error reported by Toralf Förster:
+> > 
+> > <--  snip  -->
+> > 
+> > ...
+> >   MODPOST 243 modules
+> > ERROR: "sas_bios_param" [drivers/scsi/mvsas.ko] undefined!
+> 
+> <snip>
+> 
+> > --- a/drivers/scsi/aic94xx/Kconfig
+> > +++ b/drivers/scsi/aic94xx/Kconfig
+> 
+> Maybe I'm missing something here, but how does patching aic94xx Kconfig
+> fix an mvsas build problem?
 
-This is a note to let you know that I've just added the patch titled
+Actually, it's a dependency chain fault.  The config this was generated
+from has
 
-     Subject: nozomi: fix initialization and early flow control access
+CONFIG_SCSI=m
 
-to my gregkh-2.6 tree.  Its filename is
+CONFIG_SCSI_AIC94XX=y
 
-     nozomi-fix-initialization-and-early-flow-control-access.patch
+the latter then forces
 
-This tree can be found at 
-    http://www.kernel.org/pub/linux/kernel/people/gregkh/gregkh-2.6/patches/
+CONFIG_SCSI_SAS_LIBSAS=y
 
+I think the error reported is wrong: the kernel just should have failed
+to link, since both the built in aic94xx and libsas have scsi
+dependencies.
 
->From fseidel@suse.de  Thu Mar  6 13:20:29 2008
-From: Frank Seidel <fseidel@suse.de>
-Date: Thu, 06 Mar 2008 21:45:57 +0100
-Subject: nozomi: fix initialization and early flow control access
-To: Greg KH <greg@kroah.com>, LKML <linux-kernel@vger.kernel.org>
-Message-ID: <47D05805.7010003@suse.de>
+We have a few other drivers in this category (like ibmvscsi).  The root
+cause seems to be that SCSI_LOWLEVEL doesn't act as a tristate.  I think
+a fix that will prevent all of these issues from recurring is this one.
 
+James
 
-From: Frank Seidel <fseidel@suse.de>
-
-Due to some flaws in the initialization and flow control
-code kernel oopses could be triggered e.g. when accessing
-the card too early after insertion.
-See e.g. kernel.org bug #10077.
-The main part of the fix is a trivial state management
-making sure the card is realy ready to use before allowing
-any access.
-
-Signed-off-by: Frank Seidel <fseidel@suse.de>
-Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/char/nozomi.c |   61 +++++++++++++++++++++++++++++++++++---------------
- 1 file changed, 43 insertions(+), 18 deletions(-)
 
---- a/drivers/char/nozomi.c
-+++ b/drivers/char/nozomi.c
-@@ -190,6 +190,14 @@ enum card_type {
- 	F32_8 = 8192,	/* 3072 bytes downl. + 1024 bytes uplink * 2 -> 8192 */
- };
+diff --git a/drivers/scsi/Kconfig b/drivers/scsi/Kconfig
+index c46666a..b9d3740 100644
+--- a/drivers/scsi/Kconfig
++++ b/drivers/scsi/Kconfig
+@@ -325,7 +325,7 @@ menuconfig SCSI_LOWLEVEL
+ 	depends on SCSI!=n
+ 	default y
  
-+/* Initialization states a card can be in */
-+enum card_state {
-+	NOZOMI_STATE_UKNOWN	= 0,
-+	NOZOMI_STATE_ENABLED	= 1,	/* pci device enabled */
-+	NOZOMI_STATE_ALLOCATED	= 2,	/* config setup done */
-+	NOZOMI_STATE_READY	= 3,	/* flowcontrols received */
-+};
-+
- /* Two different toggle channels exist */
- enum channel_type {
- 	CH_A = 0,
-@@ -385,6 +393,7 @@ struct nozomi {
- 	spinlock_t spin_mutex;	/* secures access to registers and tty */
+-if SCSI_LOWLEVEL
++if SCSI_LOWLEVEL && SCSI
  
- 	unsigned int index_start;
-+	enum card_state state;
- 	u32 open_ttys;
- };
- 
-@@ -686,6 +695,7 @@ static int nozomi_read_config_table(stru
- 		dc->last_ier = dc->last_ier | CTRL_DL;
- 		writew(dc->last_ier, dc->reg_ier);
- 
-+		dc->state = NOZOMI_STATE_ALLOCATED;
- 		dev_info(&dc->pdev->dev, "Initialization OK!\n");
- 		return 1;
- 	}
-@@ -944,6 +954,14 @@ static int receive_flow_control(struct n
- 	case CTRL_APP2:
- 		port = PORT_APP2;
- 		enable_ier = APP2_DL;
-+		if (dc->state == NOZOMI_STATE_ALLOCATED) {
-+			/*
-+			 * After card initialization the flow control
-+			 * received for APP2 is always the last
-+			 */
-+			dc->state = NOZOMI_STATE_READY;
-+			dev_info(&dc->pdev->dev, "Device READY!\n");
-+		}
- 		break;
- 	default:
- 		dev_err(&dc->pdev->dev,
-@@ -1366,22 +1384,12 @@ static int __devinit nozomi_card_init(st
- 
- 	dc->pdev = pdev;
- 
--	/* Find out what card type it is */
--	nozomi_get_card_type(dc);
--
- 	ret = pci_enable_device(dc->pdev);
- 	if (ret) {
- 		dev_err(&pdev->dev, "Failed to enable PCI Device\n");
- 		goto err_free;
- 	}
- 
--	start = pci_resource_start(dc->pdev, 0);
--	if (start == 0) {
--		dev_err(&pdev->dev, "No I/O address for card detected\n");
--		ret = -ENODEV;
--		goto err_disable_device;
--	}
--
- 	ret = pci_request_regions(dc->pdev, NOZOMI_NAME);
- 	if (ret) {
- 		dev_err(&pdev->dev, "I/O address 0x%04x already in use\n",
-@@ -1389,6 +1397,16 @@ static int __devinit nozomi_card_init(st
- 		goto err_disable_device;
- 	}
- 
-+	start = pci_resource_start(dc->pdev, 0);
-+	if (start == 0) {
-+		dev_err(&pdev->dev, "No I/O address for card detected\n");
-+		ret = -ENODEV;
-+		goto err_rel_regs;
-+	}
-+
-+	/* Find out what card type it is */
-+	nozomi_get_card_type(dc);
-+
- 	dc->base_addr = ioremap(start, dc->card_type);
- 	if (!dc->base_addr) {
- 		dev_err(&pdev->dev, "Unable to map card MMIO\n");
-@@ -1425,6 +1443,14 @@ static int __devinit nozomi_card_init(st
- 	dc->index_start = ndev_idx * MAX_PORT;
- 	ndevs[ndev_idx] = dc;
- 
-+	pci_set_drvdata(pdev, dc);
-+
-+	/* Enable RESET interrupt */
-+	dc->last_ier = RESET;
-+	iowrite16(dc->last_ier, dc->reg_ier);
-+
-+	dc->state = NOZOMI_STATE_ENABLED;
-+
- 	for (i = 0; i < MAX_PORT; i++) {
- 		mutex_init(&dc->port[i].tty_sem);
- 		dc->port[i].tty_open_count = 0;
-@@ -1433,12 +1459,6 @@ static int __devinit nozomi_card_init(st
- 							&pdev->dev);
- 	}
- 
--	/* Enable  RESET interrupt. */
--	dc->last_ier = RESET;
--	writew(dc->last_ier, dc->reg_ier);
--
--	pci_set_drvdata(pdev, dc);
--
- 	return 0;
- 
- err_free_sbuf:
-@@ -1553,7 +1573,7 @@ static int ntty_open(struct tty_struct *
- 	struct nozomi *dc = get_dc_by_tty(tty);
- 	unsigned long flags;
- 
--	if (!port || !dc)
-+	if (!port || !dc || dc->state != NOZOMI_STATE_READY)
- 		return -ENODEV;
- 
- 	if (mutex_lock_interruptible(&port->tty_sem))
-@@ -1716,6 +1736,10 @@ static int ntty_tiocmget(struct tty_stru
- static int ntty_tiocmset(struct tty_struct *tty, struct file *file,
- 	unsigned int set, unsigned int clear)
- {
-+	struct nozomi *dc = get_dc_by_tty(tty);
-+	unsigned long flags;
-+
-+	spin_lock_irqsave(&dc->spin_mutex, flags);
- 	if (set & TIOCM_RTS)
- 		set_rts(tty, 1);
- 	else if (clear & TIOCM_RTS)
-@@ -1725,6 +1749,7 @@ static int ntty_tiocmset(struct tty_stru
- 		set_dtr(tty, 1);
- 	else if (clear & TIOCM_DTR)
- 		set_dtr(tty, 0);
-+	spin_unlock_irqrestore(&dc->spin_mutex, flags);
- 
- 	return 0;
- }
-@@ -1762,7 +1787,7 @@ static int ntty_ioctl_tiocgicount(struct
- 	icount.brk = cnow.brk;
- 	icount.buf_overrun = cnow.buf_overrun;
- 
--	return copy_to_user(argp, &icount, sizeof(icount));
-+	return copy_to_user(argp, &icount, sizeof(icount)) ? -EFAULT : 0;
- }
- 
- static int ntty_ioctl(struct tty_struct *tty, struct file *file,
+ config ISCSI_TCP
+ 	tristate "iSCSI Initiator over TCP/IP"
 
 
-Patches currently in gregkh-2.6 which might be from fseidel@suse.de are
-
-driver-core/nozomi-fix-initialization-and-early-flow-control-access.patch
