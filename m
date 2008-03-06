@@ -1,53 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933591AbYCFCt0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932910AbYCFC61@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933591AbYCFCt0 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Mar 2008 21:49:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762832AbYCFCtI
+	id S932910AbYCFC61 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Mar 2008 21:58:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758889AbYCFC6A
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Mar 2008 21:49:08 -0500
-Received: from mx2.suse.de ([195.135.220.15]:42299 "EHLO mx2.suse.de"
+	Wed, 5 Mar 2008 21:58:00 -0500
+Received: from mx1.suse.de ([195.135.220.2]:50807 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755875AbYCFCtH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Mar 2008 21:49:07 -0500
-Date: Thu, 6 Mar 2008 03:49:04 +0100
+	id S1754584AbYCFC57 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 5 Mar 2008 21:57:59 -0500
+Date: Thu, 6 Mar 2008 03:57:58 +0100
 From: Nick Piggin <npiggin@suse.de>
 To: Christoph Lameter <clameter@sgi.com>
-Cc: Pekka Enberg <penberg@cs.helsinki.fi>, netdev@vger.kernel.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       yanmin_zhang@linux.intel.com, David Miller <davem@davemloft.net>,
-       Eric Dumazet <dada1@cosmosbay.com>
+Cc: David Miller <davem@davemloft.net>, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org, yanmin_zhang@linux.intel.com,
+       dada1@cosmosbay.com
 Subject: Re: [rfc][patch 1/3] slub: fix small HWCACHE_ALIGN alignment
-Message-ID: <20080306024904.GA27150@wotan.suse.de>
-References: <Pine.LNX.4.64.0803031107130.6917@schroedinger.engr.sgi.com> <20080303200613.GC8974@wotan.suse.de> <Pine.LNX.4.64.0803031209570.16049@schroedinger.engr.sgi.com> <20080303201701.GF8974@wotan.suse.de> <Pine.LNX.4.64.0803031315160.4131@schroedinger.engr.sgi.com> <84144f020803031330i2c0ea1f6kc5b02c8b26145797@mail.gmail.com> <Pine.LNX.4.64.0803031331340.4375@schroedinger.engr.sgi.com> <47CC6F30.50802@cs.helsinki.fi> <20080305002821.GD1510@wotan.suse.de> <Pine.LNX.4.64.0803051254570.30742@schroedinger.engr.sgi.com>
+Message-ID: <20080306025758.GB27150@wotan.suse.de>
+References: <20080303201701.GF8974@wotan.suse.de> <Pine.LNX.4.64.0803031315160.4131@schroedinger.engr.sgi.com> <20080305000637.GA1510@wotan.suse.de> <20080304.161003.129716254.davem@davemloft.net> <Pine.LNX.4.64.0803051257030.30742@schroedinger.engr.sgi.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0803051254570.30742@schroedinger.engr.sgi.com>
+In-Reply-To: <Pine.LNX.4.64.0803051257030.30742@schroedinger.engr.sgi.com>
 User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Mar 05, 2008 at 12:56:33PM -0800, Christoph Lameter wrote:
-> On Wed, 5 Mar 2008, Nick Piggin wrote:
+On Wed, Mar 05, 2008 at 01:06:30PM -0800, Christoph Lameter wrote:
+> On Tue, 4 Mar 2008, David Miller wrote:
 > 
-> > It started out as a SLUB regression that was exposing poor code in the
-> > percpu allocator due to different SLUB kmalloc alignments. That prompted
+> > > Huh?? It is not a new definition, it is exactly what SLAB does. And
+> > > then you go and do something different and claim that you follow
+> > > what slab does.
+> > 
+> > I completely agree with Nick.
 > 
-> That was due to SLUB's support for smaller allocation sizes. AFAICT has 
-> nothing to do with alignment.
+> So you also want subalignment because of cacheline crossing for 24 byte 
+> slabs? We then only have 2 objects per cacheline instead of 3 but no 
+> crossing anymore.
+> 
+> Well okay if there are multiple requests then lets merge Nick's patch that 
+> does this. Still think that this will do much ...
+> Instead of 170 we will only have 128 objects per slab (64 byte 
+> cacheline).
 
-The smaller sizes meant objects were less often aligned on cacheline
-boundaries.
+That's what callers expect when they pass the HWCACHE flag. Wouldn't it
+be logical to fix the callers if you think it costs too much memory with
+not enough improvement?
 
  
-> > The SMP flag was just an RFC. I think some people (like Christoph) were
-> > being confused about the HWCACHE_ALIGN flag being for avoiding false
-> > sharing on SMP systems. It would actually be also generally useful to
-> > have the SMP flag (eg. see the sites I added it to in patch #3).
+> It will affect the following slab caches (mm) reducing the density of 
+> objects. 
 > 
-> Hmmm. We could define a global constant for that? Determine it on bootup 
-> and then pass it as an alignment parameter?
-  
-We could, but I'd rather just use the flag.
+> scsi_bidi_sdb numa_policy fasync_cache xfs_bmap_free_item xfs_dabuf 
+> fstrm_item dm_target_io
+> 
+> Nothing related to networking....
+
+There looks like definitely some networking slabs that pass the flag
+and can be non-power-of-2. And don't forget cachelines can be anywhere
+up to 256 bytes in size. So yeah it definitely makes sense to merge
+the patch and then examine the callers if you feel strongly about it.
+
 
