@@ -1,27 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932916AbYCFCZR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933607AbYCFCZ6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932916AbYCFCZR (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Mar 2008 21:25:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752481AbYCFCY4
+	id S933607AbYCFCZ6 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Mar 2008 21:25:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758687AbYCFCY6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Mar 2008 21:24:56 -0500
-Received: from gv-out-0910.google.com ([216.239.58.187]:26847 "EHLO
-	gv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757423AbYCFCYz (ORCPT
+	Wed, 5 Mar 2008 21:24:58 -0500
+Received: from wa-out-1112.google.com ([209.85.146.182]:61432 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757745AbYCFCY4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Mar 2008 21:24:55 -0500
+	Wed, 5 Mar 2008 21:24:56 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=subject:from:to:cc:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=icBW3c+cr3/nzEI9M0o3fRI25ZdPV2WI9j6rwNrSMl4WOkOQwGRWrRESSu5kwGb1WmUgMmKTK63qi6lXb8c55kEPEbsLj4I1sXoHOdf/wSYKMshDWFVL58DmXNYoF8/yZ4lAFEZobqGn8mrL0Y3FIUQDq6haGA8ZCLZirT9aBd4=
-Subject: [PATCH 01/16] acpi: replace remaining __FUNCTION__ occurrences
+        b=oyGfB6E22HEwLRlJDbh2L1Y28arlKwNiQk1CwA3305KNiMAB4Ye0rE8kUeBSSVwjr0X/iK1oRyg33vS4pPMkKxDvOYrOPF624tuQfp3iWZNyQRb2/63qTskrJ856CHr71hz8xK36rnLyA4GVpApqPvPdbyo/72LrE7qqkIT63Ig=
+Subject: [PATCH 03/16] atm: replace remaining __FUNCTION__ occurrences
 From: Harvey Harrison <harvey.harrison@gmail.com>
-To: Len Brown <lenb@kernel.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
+To: Chas Williams <chas@cmf.nrl.navy.mil>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
 Content-Type: text/plain
-Date: Wed, 05 Mar 2008 18:24:51 -0800
-Message-Id: <1204770291.14154.37.camel@brick>
+Date: Wed, 05 Mar 2008 18:24:52 -0800
+Message-Id: <1204770292.14154.39.camel@brick>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.12.1 
 Content-Transfer-Encoding: 7bit
@@ -33,78 +33,96 @@ __FUNCTION__ is gcc-specific, use __func__
 
 Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
 ---
- drivers/acpi/bus.c               |    2 +-
- drivers/acpi/scan.c              |    2 +-
- drivers/acpi/sleep/main.c        |    2 +-
- drivers/acpi/utilities/utdebug.c |    2 +-
- drivers/acpi/video.c             |    2 +-
- 5 files changed, 5 insertions(+), 5 deletions(-)
+ drivers/atm/firestream.c |    4 ++--
+ drivers/atm/fore200e.c   |    4 ++--
+ drivers/atm/idt77252.c   |   12 ++++++------
+ 3 files changed, 10 insertions(+), 10 deletions(-)
 
-diff --git a/drivers/acpi/bus.c b/drivers/acpi/bus.c
-index ce3c0a2..5b6760e 100644
---- a/drivers/acpi/bus.c
-+++ b/drivers/acpi/bus.c
-@@ -776,7 +776,7 @@ static int __init acpi_init(void)
+diff --git a/drivers/atm/firestream.c b/drivers/atm/firestream.c
+index c662d68..fcf974f 100644
+--- a/drivers/atm/firestream.c
++++ b/drivers/atm/firestream.c
+@@ -331,8 +331,8 @@ module_param(fs_keystream, int, 0);
+ #define FS_DEBUG_QSIZE   0x00001000
  
- 	acpi_kobj = kobject_create_and_add("acpi", firmware_kobj);
- 	if (!acpi_kobj) {
--		printk(KERN_WARNING "%s: kset create error\n", __FUNCTION__);
-+		printk(KERN_WARNING "%s: kset create error\n", __func__);
- 		acpi_kobj = NULL;
- 	}
+
+-#define func_enter() fs_dprintk (FS_DEBUG_FLOW, "fs: enter %s\n", __FUNCTION__)
+-#define func_exit()  fs_dprintk (FS_DEBUG_FLOW, "fs: exit  %s\n", __FUNCTION__)
++#define func_enter() fs_dprintk(FS_DEBUG_FLOW, "fs: enter %s\n", __func__)
++#define func_exit()  fs_dprintk(FS_DEBUG_FLOW, "fs: exit  %s\n", __func__)
  
-diff --git a/drivers/acpi/scan.c b/drivers/acpi/scan.c
-index 3fac011..b26e301 100644
---- a/drivers/acpi/scan.c
-+++ b/drivers/acpi/scan.c
-@@ -966,7 +966,7 @@ static void acpi_device_set_id(struct acpi_device *device,
- 	case ACPI_BUS_TYPE_DEVICE:
- 		status = acpi_get_object_info(handle, &buffer);
- 		if (ACPI_FAILURE(status)) {
--			printk(KERN_ERR PREFIX "%s: Error reading device info\n", __FUNCTION__);
-+			printk(KERN_ERR PREFIX "%s: Error reading device info\n", __func__);
+
+ static struct fs_dev *fs_boards = NULL;
+diff --git a/drivers/atm/fore200e.c b/drivers/atm/fore200e.c
+index f97e050..9427a61 100644
+--- a/drivers/atm/fore200e.c
++++ b/drivers/atm/fore200e.c
+@@ -95,8 +95,8 @@
+ #if 1
+ #define ASSERT(expr)     if (!(expr)) { \
+ 			     printk(FORE200E "assertion failed! %s[%d]: %s\n", \
+-				    __FUNCTION__, __LINE__, #expr); \
+-			     panic(FORE200E "%s", __FUNCTION__); \
++				    __func__, __LINE__, #expr); \
++			     panic(FORE200E "%s", __func__); \
+ 			 }
+ #else
+ #define ASSERT(expr)     do {} while (0)
+diff --git a/drivers/atm/idt77252.c b/drivers/atm/idt77252.c
+index eee54c0..b967919 100644
+--- a/drivers/atm/idt77252.c
++++ b/drivers/atm/idt77252.c
+@@ -555,7 +555,7 @@ idt77252_tx_dump(struct idt77252_dev *card)
+ 	struct vc_map *vc;
+ 	int i;
+ 
+-	printk("%s\n", __FUNCTION__);
++	printk("%s\n", __func__);
+ 	for (i = 0; i < card->tct_size; i++) {
+ 		vc = card->vcs[i];
+ 		if (!vc)
+@@ -1035,7 +1035,7 @@ dequeue_rx(struct idt77252_dev *card, struct rsq_entry *rsqe)
+ 	skb = sb_pool_skb(card, le32_to_cpu(rsqe->word_2));
+ 	if (skb == NULL) {
+ 		printk("%s: NULL skb in %s, rsqe: %08x %08x %08x %08x\n",
+-		       card->name, __FUNCTION__,
++		       card->name, __func__,
+ 		       le32_to_cpu(rsqe->word_1), le32_to_cpu(rsqe->word_2),
+ 		       le32_to_cpu(rsqe->word_3), le32_to_cpu(rsqe->word_4));
+ 		return;
+@@ -1873,7 +1873,7 @@ add_rx_skb(struct idt77252_dev *card, int queue,
  			return;
+ 
+ 		if (sb_pool_add(card, skb, queue)) {
+-			printk("%s: SB POOL full\n", __FUNCTION__);
++			printk("%s: SB POOL full\n", __func__);
+ 			goto outfree;
  		}
  
-diff --git a/drivers/acpi/sleep/main.c b/drivers/acpi/sleep/main.c
-index 293a1cb..d2f71a5 100644
---- a/drivers/acpi/sleep/main.c
-+++ b/drivers/acpi/sleep/main.c
-@@ -504,7 +504,7 @@ static void acpi_power_off_prepare(void)
- static void acpi_power_off(void)
+@@ -1883,7 +1883,7 @@ add_rx_skb(struct idt77252_dev *card, int queue,
+ 		IDT77252_PRV_PADDR(skb) = paddr;
+ 
+ 		if (push_rx_skb(card, skb, queue)) {
+-			printk("%s: FB QUEUE full\n", __FUNCTION__);
++			printk("%s: FB QUEUE full\n", __func__);
+ 			goto outunmap;
+ 		}
+ 	}
+@@ -3821,12 +3821,12 @@ static int __init idt77252_init(void)
  {
- 	/* acpi_sleep_prepare(ACPI_STATE_S5) should have already been called */
--	printk("%s called\n", __FUNCTION__);
-+	printk("%s called\n", __func__);
- 	local_irq_disable();
- 	acpi_enable_wakeup_device(ACPI_STATE_S5);
- 	acpi_enter_sleep_state(ACPI_STATE_S5);
-diff --git a/drivers/acpi/utilities/utdebug.c b/drivers/acpi/utilities/utdebug.c
-index c7e128e..7361204 100644
---- a/drivers/acpi/utilities/utdebug.c
-+++ b/drivers/acpi/utilities/utdebug.c
-@@ -109,7 +109,7 @@ void acpi_ut_track_stack_ptr(void)
-  * RETURN:      Updated pointer to the function name
-  *
-  * DESCRIPTION: Remove the "Acpi" prefix from the function name, if present.
-- *              This allows compiler macros such as __FUNCTION__ to be used
-+ *              This allows compiler macros such as __func__ to be used
-  *              with no change to the debug output.
-  *
-  ******************************************************************************/
-diff --git a/drivers/acpi/video.c b/drivers/acpi/video.c
-index 12cce69..d64a142 100644
---- a/drivers/acpi/video.c
-+++ b/drivers/acpi/video.c
-@@ -1201,7 +1201,7 @@ static int acpi_video_bus_ROM_seq_show(struct seq_file *seq, void *offset)
- 	if (!video)
- 		goto end;
+ 	struct sk_buff *skb;
  
--	printk(KERN_INFO PREFIX "Please implement %s\n", __FUNCTION__);
-+	printk(KERN_INFO PREFIX "Please implement %s\n", __func__);
- 	seq_printf(seq, "<TODO>\n");
+-	printk("%s: at %p\n", __FUNCTION__, idt77252_init);
++	printk("%s: at %p\n", __func__, idt77252_init);
  
-       end:
+ 	if (sizeof(skb->cb) < sizeof(struct atm_skb_data) +
+ 			      sizeof(struct idt77252_skb_prv)) {
+ 		printk(KERN_ERR "%s: skb->cb is too small (%lu < %lu)\n",
+-		       __FUNCTION__, (unsigned long) sizeof(skb->cb),
++		       __func__, (unsigned long) sizeof(skb->cb),
+ 		       (unsigned long) sizeof(struct atm_skb_data) +
+ 				       sizeof(struct idt77252_skb_prv));
+ 		return -EIO;
 -- 
 1.5.4.GIT
 
