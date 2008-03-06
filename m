@@ -1,56 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934471AbYCFNgd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761308AbYCFNkM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934471AbYCFNgd (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Mar 2008 08:36:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933330AbYCFNgJ
+	id S1761308AbYCFNkM (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Mar 2008 08:40:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751091AbYCFNj6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Mar 2008 08:36:09 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:46399 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932910AbYCFNgI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Mar 2008 08:36:08 -0500
-Date: Thu, 6 Mar 2008 14:35:47 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Florian Fainelli <florian.fainelli@telecomint.eu>
-Cc: linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: [PATCH][x86] rdc321x: remove watchdog file
-Message-ID: <20080306133547.GA23933@elte.hu>
-References: <200802251144.08962.florian.fainelli@telecomint.eu> <20080225105408.GB5648@elte.hu> <200803061424.13024.florian.fainelli@telecomint.eu>
+	Thu, 6 Mar 2008 08:39:58 -0500
+Received: from rv-out-0910.google.com ([209.85.198.186]:33300 "EHLO
+	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750913AbYCFNj5 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 6 Mar 2008 08:39:57 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
+        b=a1DJq3S/AHmbzfij1hjzludMkaVIC6K5ZQJxKz1GPu1IPwO0dDexr+MaVN2xEkcBuJmiXVr2AC3gr9O4SU8dFyNECucMduFe+VKZm0WQ+regbb/OJXoS/zWMig0fBzgTfGxQ9BZTFNtLwR2BRI1+gyWVSlWaR7V07r6LQh5Eo0o=
+Message-ID: <d65f34950803060539y284910bck277310280ef4c009@mail.gmail.com>
+Date: Thu, 6 Mar 2008 19:09:57 +0530
+From: shri <shree0007@gmail.com>
+To: linux-kernel@vger.kernel.org
+Subject: mmc card detection
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <200803061424.13024.florian.fainelli@telecomint.eu>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi,
+   My proto board does not have a mmc card detect line to the mmc controller.
 
-* Florian Fainelli <florian.fainelli@telecomint.eu> wrote:
+   So, I have to insert the card before i insmod the mmc drivers.
+   If i change a card i have to rmmod and insmod the driver.
 
-> Hi Ingo,
-> 
-> Le lundi 25 février 2008, Ingo Molnar a écrit :
-> > thanks, applied. I guess i should push this change upstream only once
-> > the new watchdog driver has been committed to drivers/watchdog/ ?
-> 
-> Can you please trigger the patch now. Wim has accepted the RDC built-in 
-> watchdog driver. See : 
-> http://git.kernel.org/?p=linux/kernel/git/wim/linux-2.6-watchdog-mm.git;a=commit;h=b2de97cf901162e0a5936b2bbdae27ec1e55455d
-> 
-> Thank you very much.
+   I would like to know is there anyway i can make mmc to free up all the
+   resources for the removed card. entries and reinitialise the new
+card inserted if any
+   without rmmod or insmod.
 
-should i do this now, or once Wim's tree has been merged into Linus's 
-tree?
+   I thought of using mmc_remove_host and mmc_add_host in the driver
+which could be triggered by
+   an application through sysfs entry.
 
-	Ingo
+
+   Are the calls mmc_remove_host and mmc_add_host the correct call to
+use in this case?
+
+
+Regards,
+shri
