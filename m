@@ -1,25 +1,30 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764372AbYCFLCm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932828AbYCFLDV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764372AbYCFLCm (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Mar 2008 06:02:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751914AbYCFKzw
+	id S932828AbYCFLDV (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Mar 2008 06:03:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759195AbYCFK4p
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Mar 2008 05:55:52 -0500
-Received: from mail.southpole.se ([193.12.106.18]:44086 "EHLO
+	Thu, 6 Mar 2008 05:56:45 -0500
+Received: from mail.southpole.se ([193.12.106.18]:44124 "EHLO
 	mail.southpole.se" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752218AbYCFKzt (ORCPT
+	with ESMTP id S1759983AbYCFKzv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Mar 2008 05:55:49 -0500
+	Thu, 6 Mar 2008 05:55:51 -0500
 From: Jonas Bonn <jonas@southpole.se>
 To: jonas@southpole.se, linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
        jgarzik@pobox.com
 Subject: [PATCH] net: use DECLARE_PCI_DEVICE_TABLE
-Date: Thu,  6 Mar 2008 11:55:39 +0100
-Message-Id: <1204800947-21569-2-git-send-email-jonas@southpole.se>
+Date: Thu,  6 Mar 2008 11:55:44 +0100
+Message-Id: <1204800947-21569-7-git-send-email-jonas@southpole.se>
 X-Mailer: git-send-email 1.5.4.3
-In-Reply-To: <1204800947-21569-1-git-send-email-jonas@southpole.se>
+In-Reply-To: <1204800947-21569-6-git-send-email-jonas@southpole.se>
 References: <>
  <1204800947-21569-1-git-send-email-jonas@southpole.se>
+ <1204800947-21569-2-git-send-email-jonas@southpole.se>
+ <1204800947-21569-3-git-send-email-jonas@southpole.se>
+ <1204800947-21569-4-git-send-email-jonas@southpole.se>
+ <1204800947-21569-5-git-send-email-jonas@southpole.se>
+ <1204800947-21569-6-git-send-email-jonas@southpole.se>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
@@ -28,22 +33,22 @@ Makes struct pci_device_id array const and moves it to __devinitconst
 
 Signed-off-by: Jonas Bonn <jonas@southpole.se>
 ---
- drivers/net/cassini.c |    2 +-
+ drivers/net/wan/pci200syn.c |    2 +-
  1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/drivers/net/cassini.c b/drivers/net/cassini.c
-index 14299f8..1451533 100644
---- a/drivers/net/cassini.c
-+++ b/drivers/net/cassini.c
-@@ -233,7 +233,7 @@ static u16 link_modes[] __devinitdata = {
- 	CAS_BMCR_SPEED1000|BMCR_FULLDPLX /* 5 : 1000bt full duplex */
- };
+diff --git a/drivers/net/wan/pci200syn.c b/drivers/net/wan/pci200syn.c
+index b595b64..5e2eccd 100644
+--- a/drivers/net/wan/pci200syn.c
++++ b/drivers/net/wan/pci200syn.c
+@@ -445,7 +445,7 @@ static int __devinit pci200_pci_init_one(struct pci_dev *pdev,
  
--static struct pci_device_id cas_pci_tbl[] __devinitdata = {
-+static DECLARE_PCI_DEVICE_TABLE(cas_pci_tbl) = {
- 	{ PCI_VENDOR_ID_SUN, PCI_DEVICE_ID_SUN_CASSINI,
- 	  PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0UL },
- 	{ PCI_VENDOR_ID_NS, PCI_DEVICE_ID_NS_SATURN,
+ 
+ 
+-static struct pci_device_id pci200_pci_tbl[] __devinitdata = {
++static DECLARE_PCI_DEVICE_TABLE(pci200_pci_tbl) = {
+ 	{ PCI_VENDOR_ID_PLX, PCI_DEVICE_ID_PLX_9050, PCI_VENDOR_ID_PLX,
+ 	  PCI_DEVICE_ID_PLX_9050, 0, 0, 0 },
+ 	{ PCI_VENDOR_ID_PLX, PCI_DEVICE_ID_PLX_9050, PCI_VENDOR_ID_PLX,
 -- 
 1.5.4.3
 
