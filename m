@@ -1,47 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762387AbYCFPQt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765645AbYCFPS2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762387AbYCFPQt (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Mar 2008 10:16:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760306AbYCFPQd
+	id S1765645AbYCFPS2 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Mar 2008 10:18:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759107AbYCFPSR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Mar 2008 10:16:33 -0500
-Received: from terminus.zytor.com ([198.137.202.10]:56525 "EHLO
+	Thu, 6 Mar 2008 10:18:17 -0500
+Received: from terminus.zytor.com ([198.137.202.10]:48170 "EHLO
 	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758052AbYCFPQc (ORCPT
+	with ESMTP id S1757839AbYCFPSQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Mar 2008 10:16:32 -0500
-Message-ID: <47D00AC0.8010805@zytor.com>
-Date: Thu, 06 Mar 2008 07:16:16 -0800
+	Thu, 6 Mar 2008 10:18:16 -0500
+Message-ID: <47D00B16.6040004@zytor.com>
+Date: Thu, 06 Mar 2008 07:17:42 -0800
 From: "H. Peter Anvin" <hpa@zytor.com>
 User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
 MIME-Version: 1.0
-To: Peter Korsgaard <jacmet@sunsite.dk>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] x86-boot: don't request VBE2 information
-References: <1204797405-18059-1-git-send-email-jacmet@sunsite.dk>
-In-Reply-To: <1204797405-18059-1-git-send-email-jacmet@sunsite.dk>
+To: Ingo Molnar <mingo@elte.hu>
+CC: Pawel Plociennik <paplociennik@gmail.com>, Pavel Machek <pavel@ucw.cz>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2.6.24] chroot= as a new kernel parameter
+References: <200803060001.38432.paplociennik@gmail.com> <47CF79E4.3030107@zytor.com> <20080306102712.GE13391@elte.hu>
+In-Reply-To: <20080306102712.GE13391@elte.hu>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Peter Korsgaard wrote:
-> The new x86 setup code (4fd06960f120) broke booting on an old P3/500MHz
-> with an onboard Voodoo3 of mine. After debugging it, it turned out
-> to be caused by the fact that the vesa probing now asks for VBE2 data.
+Ingo Molnar wrote:
+> * H. Peter Anvin <hpa@zytor.com> wrote:
 > 
-> Disassembing the video BIOS shows that it overflows the vesa_general_info
-> structure when VBE2 data is requested because the source addresses for the
-> information strings which get strcpy'ed to the buffer lie outside the 32K
-> BIOS code (and hence contain long sequences of 0xff's).
+>> Pawel Plociennik wrote:
+>>> Hi Andrew and other *real* hackers,
+>>>
+>>> I have sent a *last* version of a patch which it has added a new kernel parameter chroot=
+>>> It were discusioned a *long time* on a lkml so I hope that it will has been applied.
+>> It has been discussed and *rejected* a large number of times.
+>>
+>> This is completely useless bloat.
+> 
+> why is it useless? Would it be more acceptable were it made dependent on 
+> a .config option?
 > 
 
-I'm slightly concerned about this, because we *do* use VBE2 data - just 
-not the stuff that this particular BIOS seems to key on (and break.)
+It's useless because it's exactly and trivially replaceable with:
 
-On the other hand, until we get an example on something that breaks with 
-the change, we might as well try it, since we have an example on 
-something that breaks with it.  We should monitor carefully, though.
+	init=/path/to/any/sbin/chroot /newroot /sbin/init
+
+The last thing we want is to pile more stuff into the in-kernel 
+initialization code, and no, making it a config option makes it even worse.
 
 	-hpa
