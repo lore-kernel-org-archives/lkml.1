@@ -1,110 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765685AbYCEW7v@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932228AbYCEXAs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765685AbYCEW7v (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Mar 2008 17:59:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764770AbYCEWws
+	id S932228AbYCEXAs (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Mar 2008 18:00:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765550AbYCEWyr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Mar 2008 17:52:48 -0500
-Received: from rgminet01.oracle.com ([148.87.113.118]:29578 "EHLO
-	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1764619AbYCEWwb (ORCPT
+	Wed, 5 Mar 2008 17:54:47 -0500
+Received: from ug-out-1314.google.com ([66.249.92.171]:64506 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1765538AbYCEWyp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Mar 2008 17:52:31 -0500
-From: Joel Becker <joel.becker@oracle.com>
-To: ocfs2-devel@oss.oracle.com
-Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
-Subject: [PATCH 6/7] ocfs2: Define the contents of the slot_map file.
-Date: Wed,  5 Mar 2008 14:52:03 -0800
-Message-Id: <1204757524-21343-7-git-send-email-joel.becker@oracle.com>
-X-Mailer: git-send-email 1.5.3.4
-In-Reply-To: <1204757524-21343-1-git-send-email-joel.becker@oracle.com>
-References: <1204757524-21343-1-git-send-email-joel.becker@oracle.com>
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+	Wed, 5 Mar 2008 17:54:45 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:subject:user-agent:references:in-reply-to:mime-version:content-disposition:date:content-type:content-transfer-encoding:message-id;
+        b=aX3ZPTePTUERT1FHzcS/PUpsU0VLi5+CbX6tFR8qdzQt/94eUfQpq0w75K5imnyV4FGQ6xEuv3m1xk1HrMjkqfeiJIt3LKMD5shBFF2Qmdqv8ifuLUMOXa0JCzI3J/oiALCZy0c89tNnYn7zQVCpGUVs4xjNg78vLcbTBhVrd2o=
+From: Pawel Plociennik <paplociennik@gmail.com>
+To: Pavel Machek <pavel@ucw.cz>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] chroot= as a new kernel parameter
+User-Agent: KMail/1.9.5
+References: <200803011409.59526.paplociennik@gmail.com> <200803050838.03452.paplociennik@gmail.com> <3d8471ca0803050523r2a55c91em68021a7b078ef48c@mail.gmail.com>
+In-Reply-To: <3d8471ca0803050523r2a55c91em68021a7b078ef48c@mail.gmail.com>
+MIME-Version: 1.0
+Content-Disposition: inline
+Date: Wed, 5 Mar 2008 23:54:32 -0500
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200803052354.32191.paplociennik@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The slot map file is merely an array of __le16.  Wrap it in a structure for
-cleaner reference.
+Hi Andrew and other *real* hackers,
 
-Signed-off-by: Joel Becker <joel.becker@oracle.com>
+I have sent a *last* version of a patch which it has added a new kernel parameter chroot=
+It were discusioned a *long time* on a lkml so I hope that it will has been applied.
+
+Thanks,
+Pawel 
+
+Acked-by: Pavel Machek <pavel@suse.cz>
+Signed-off-by: Pawel Plociennik <paplociennik@gmail.com>
+
 ---
- fs/ocfs2/ocfs2_fs.h |   12 ++++++++++++
- fs/ocfs2/slot_map.c |   15 ++++++++-------
- 2 files changed, 20 insertions(+), 7 deletions(-)
-
-diff --git a/fs/ocfs2/ocfs2_fs.h b/fs/ocfs2/ocfs2_fs.h
-index 3633edd..3299116 100644
---- a/fs/ocfs2/ocfs2_fs.h
-+++ b/fs/ocfs2/ocfs2_fs.h
-@@ -475,6 +475,18 @@ struct ocfs2_extent_block
- };
- 
- /*
-+ * On disk slot map for OCFS2.  This defines the contents of the "slot_map"
-+ * system file.
-+ */
-+struct ocfs2_slot_map {
-+/*00*/	__le16 sm_slots[0];
-+/*
-+ * Actual on-disk size is one block.  OCFS2_MAX_SLOTS is 255,
-+ * 255 * sizeof(__le16) == 512B, within the 512B block minimum blocksize.
-+ */
-+};
+diff -urp linux-2.6.24-orig/Documentation/kernel-parameters.txt linux-2.6.24/Documentation/kernel-parameters.txt
+--- linux-2.6.24-orig/Documentation/kernel-parameters.txt	2008-02-25 20:53:26.000000000 -0500
++++ linux-2.6.24/Documentation/kernel-parameters.txt	2008-03-04 09:51:52.000000000 -0500
+@@ -381,6 +381,8 @@ and is between 256 and 4096 characters. 
+ 			Value can be changed at runtime via
+ 				/selinux/checkreqprot.
+ 	
++	chroot=		[KNL] change a root for init process.
 +
-+/*
-  * On disk superblock for OCFS2
-  * Note that it is contained inside an ocfs2_dinode, so all offsets
-  * are relative to the start of ocfs2_dinode.id2.
-diff --git a/fs/ocfs2/slot_map.c b/fs/ocfs2/slot_map.c
-index 65a61bf..e7e7a74 100644
---- a/fs/ocfs2/slot_map.c
-+++ b/fs/ocfs2/slot_map.c
-@@ -85,17 +85,17 @@ static void ocfs2_set_slot(struct ocfs2_slot_info *si,
- static void ocfs2_update_slot_info(struct ocfs2_slot_info *si)
- {
- 	int i;
--	__le16 *disk_info;
-+	struct ocfs2_slot_map *sm;
- 
- 	/* we don't read the slot block here as ocfs2_super_lock
- 	 * should've made sure we have the most recent copy. */
--	disk_info = (__le16 *) si->si_bh[0]->b_data;
-+	sm = (struct ocfs2_slot_map *)si->si_bh[0]->b_data;
- 
- 	for (i = 0; i < si->si_num_slots; i++) {
--		if (le16_to_cpu(disk_info[i]) == (u16)OCFS2_INVALID_SLOT)
-+		if (le16_to_cpu(sm->sm_slots[i]) == (u16)OCFS2_INVALID_SLOT)
- 			ocfs2_invalidate_slot(si, i);
- 		else
--			ocfs2_set_slot(si, i, le16_to_cpu(disk_info[i]));
-+			ocfs2_set_slot(si, i, le16_to_cpu(sm->sm_slots[i]));
- 	}
+ 	clock=		[BUGS=X86-32, HW] gettimeofday clocksource override.
+ 			[Deprecated]
+ 			Forces specified clocksource (if available) to be used
+diff -urp linux-2.6.24-orig/init/main.c linux-2.6.24/init/main.c
+--- linux-2.6.24-orig/init/main.c	2008-03-01 12:58:37.000000000 -0500
++++ linux-2.6.24/init/main.c	2008-03-05 15:08:20.000000000 -0500
+@@ -755,8 +755,20 @@ static void __init do_pre_smp_initcalls(
+ 		spawn_softlockup_task();
  }
  
-@@ -135,15 +135,16 @@ static int ocfs2_update_disk_slots(struct ocfs2_super *osb,
- 				   struct ocfs2_slot_info *si)
++static void *chroot_str;
++static int __init chroot_setup(char *str)
++{
++	chroot_str = str;
++	return 1;
++}
++__setup("chroot=", chroot_setup);
++
+ static void run_init_process(char *init_filename)
  {
- 	int status, i;
--	__le16 *disk_info = (__le16 *) si->si_bh[0]->b_data;
-+	struct ocfs2_slot_map *sm;
- 
- 	spin_lock(&osb->osb_lock);
-+	sm = (struct ocfs2_slot_map *)si->si_bh[0]->b_data;
- 	for (i = 0; i < si->si_num_slots; i++) {
- 		if (si->si_slots[i].sl_valid)
--			disk_info[i] =
-+			sm->sm_slots[i] =
- 				cpu_to_le16(si->si_slots[i].sl_node_num);
- 		else
--			disk_info[i] = cpu_to_le16(OCFS2_INVALID_SLOT);
-+			sm->sm_slots[i] = cpu_to_le16(OCFS2_INVALID_SLOT);
- 	}
- 	spin_unlock(&osb->osb_lock);
- 
--- 
-1.5.3.8
-
++	if (chroot_str)
++		if (sys_chroot(chroot_str) < 0)
++			panic("chroot=%s failed\n", chroot_str);
++
+ 	argv_init[0] = init_filename;
+ 	kernel_execve(init_filename, argv_init, envp_init);
+ }
