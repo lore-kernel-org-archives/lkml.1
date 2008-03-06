@@ -1,24 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935525AbYCFSN7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935411AbYCFSOk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935525AbYCFSN7 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Mar 2008 13:13:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935750AbYCFSMK
+	id S935411AbYCFSOk (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Mar 2008 13:14:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934811AbYCFSMW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Mar 2008 13:12:10 -0500
-Received: from opensource.wolfsonmicro.com ([80.75.67.52]:37217 "EHLO
+	Thu, 6 Mar 2008 13:12:22 -0500
+Received: from opensource.wolfsonmicro.com ([80.75.67.52]:37220 "EHLO
 	opensource2.wolfsonmicro.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S935745AbYCFSMI (ORCPT
+	by vger.kernel.org with ESMTP id S935770AbYCFSMU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Mar 2008 13:12:08 -0500
-Subject: [UPDATED v3][PATCH 5/7] regulator: sysfs ABI
+	Thu, 6 Mar 2008 13:12:20 -0500
+Subject: [UPDATED v3][PATCH 6/7] regulator: kbuild
 From: Liam Girdwood <lg@opensource.wolfsonmicro.com>
 To: Andrew Morton <akpm@linux-foundation.org>
 Cc: linux-arm-kernel <linux-arm-kernel@lists.arm.linux.org.uk>,
        linux-kernel <linux-kernel@vger.kernel.org>,
        Mark Brown <broonie@opensource.wolfsonmicro.com>
 Content-Type: text/plain
-Date: Thu, 06 Mar 2008 18:12:05 +0000
-Message-Id: <1204827125.15360.151.camel@a10323.wolfsonmicro.main>
+Date: Thu, 06 Mar 2008 18:12:16 +0000
+Message-Id: <1204827137.15360.152.camel@a10323.wolfsonmicro.main>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.8.3 (2.8.3-2.fc6) 
 Content-Transfer-Encoding: 7bit
@@ -26,210 +26,94 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch adds a description of the regulator class sysfs ABI to the
-testing directory.
+This patch adds Makefile and Kconfig for regulator core.
 
 Signed-off-by: Liam Girdwood <lg@opensource.wolfsonmicro.com>
 ---
- Documentation/ABI/testing/sysfs-class-regulator |  187 +++++++++++++++++++++++
- 1 files changed, 187 insertions(+), 0 deletions(-)
- create mode 100644 Documentation/ABI/testing/sysfs-class-regulator
+ drivers/Kconfig            |    2 ++
+ drivers/Makefile           |    1 +
+ drivers/regulator/Kconfig  |   32 ++++++++++++++++++++++++++++++++
+ drivers/regulator/Makefile |    7 +++++++
+ 4 files changed, 42 insertions(+), 0 deletions(-)
+ create mode 100644 drivers/regulator/Kconfig
+ create mode 100644 drivers/regulator/Makefile
 
-diff --git a/Documentation/ABI/testing/sysfs-class-regulator b/Documentation/ABI/testing/sysfs-class-regulator
+diff --git a/drivers/Kconfig b/drivers/Kconfig
+index 3a0e354..9a3aa1c 100644
+--- a/drivers/Kconfig
++++ b/drivers/Kconfig
+@@ -90,6 +90,8 @@ source "drivers/edac/Kconfig"
+ 
+ source "drivers/rtc/Kconfig"
+ 
++source "drivers/regulator/Kconfig"
++
+ source "drivers/dma/Kconfig"
+ 
+ source "drivers/dca/Kconfig"
+diff --git a/drivers/Makefile b/drivers/Makefile
+index e5e394a..4ba0062 100644
+--- a/drivers/Makefile
++++ b/drivers/Makefile
+@@ -86,6 +86,7 @@ obj-y				+= firmware/
+ obj-$(CONFIG_CRYPTO)		+= crypto/
+ obj-$(CONFIG_SUPERH)		+= sh/
+ obj-$(CONFIG_GENERIC_TIME)	+= clocksource/
++obj-$(CONFIG_REGULATOR)	+= regulator/
+ obj-$(CONFIG_DMA_ENGINE)	+= dma/
+ obj-$(CONFIG_DCA)		+= dca/
+ obj-$(CONFIG_HID)		+= hid/
+diff --git a/drivers/regulator/Kconfig b/drivers/regulator/Kconfig
 new file mode 100644
-index 0000000..3fe1f5a
+index 0000000..51b8d06
 --- /dev/null
-+++ b/Documentation/ABI/testing/sysfs-class-regulator
-@@ -0,0 +1,187 @@
-+What:		/sys/class/regulator/.../state
-+Date:		March 2008
-+KernelVersion:	2.6.25
-+Contact:	Liam Girdwood <lg@opensource.wolfsonmicro.com>
-+Description:
-+		Each regulator directory will contain a field called
-+		state. This holds the regulator output state.
++++ b/drivers/regulator/Kconfig
+@@ -0,0 +1,32 @@
++menu "Voltage and Current regulators"
 +
-+		This will be one of the following strings:
++config REGULATOR
++	bool "Voltage and Current Regulator Support"
++	default n
++	help
++	  Generic Voltage and Current Regulator support.
 +
-+		'enabled'
-+		'disabled'
-+		'unknown'
++	  This framework is designed to provide a generic interface to voltage
++	  and current regulators within the Linux kernel. It's intended to
++	  provide voltage and current control to client or consumer drivers and
++	  also provide status information to user space applications through a
++	  sysfs interface.
 +
-+		'enabled' means the regulator output is ON and is supplying
-+		power to the system.
++	  The intention is to allow systems to dynamically control regulator
++	  output in order to save power and prolong battery life. This applies
++	  to both voltage regulators (where voltage output is controllable) and
++	  current sinks (where current output is controllable).
 +
-+		'disabled' means the regulator output is OFF and is not
-+		supplying power to the system..
++	  This framework safely compiles out if not selected so that client
++	  drivers can still be used in systems with no software controllable
++	  regulators.
 +
-+		'unknown' means software cannot determine the state.
++	  If unsure, say no.
 +
-+		NOTE: this field can be used in conjunction with microvolts
-+		and microamps to determine regulator output levels.
++config REGULATOR_DEBUG
++	bool "Regulator debug support"
++	depends on REGULATOR
++	help
++	  Say yes here to enable debugging support.
 +
++endmenu
+diff --git a/drivers/regulator/Makefile b/drivers/regulator/Makefile
+new file mode 100644
+index 0000000..6f3f948
+--- /dev/null
++++ b/drivers/regulator/Makefile
+@@ -0,0 +1,7 @@
++#
++# Makefile for regulator drivers.
++#
 +
-+What:		/sys/class/regulator/.../type
-+Date:		March 2008
-+KernelVersion:	2.6.25
-+Contact:	Liam Girdwood <lg@opensource.wolfsonmicro.com>
-+Description:
-+		Each regulator directory will contain a field called
-+		type. This holds the regulator type.
++obj-$(CONFIG_REGULATOR) += reg-core.o
 +
-+		This will be one of the following strings:
-+
-+		'voltage'
-+		'current'
-+		'unknown'
-+
-+		'voltage' means the regulator output voltage can be controlled
-+		by software.
-+
-+		'current' means the regulator output current limit can be
-+		controlled by software.
-+
-+		'unknown' means software cannot control either voltage or
-+		current limit.
-+
-+
-+What:		/sys/class/regulator/.../microvolts
-+Date:		March 2008
-+KernelVersion:	2.6.25
-+Contact:	Liam Girdwood <lg@opensource.wolfsonmicro.com>
-+Description:
-+		Each regulator directory will contain a field called
-+		microvolts. This holds the regulator output voltage setting
-+		measured in microvolts (i.e. E-6 Volts).
-+
-+		NOTE: This value should not be used to determine the regulator
-+		output voltage level as this value is the same regardless of
-+		whether the regulator is enabled or disabled.
-+
-+
-+What:		/sys/class/regulator/.../microamps
-+Date:		March 2008
-+KernelVersion:	2.6.25
-+Contact:	Liam Girdwood <lg@opensource.wolfsonmicro.com>
-+Description:
-+		Each regulator directory will contain a field called
-+		microamps. This holds the regulator output current limit
-+		setting measured in microamps (i.e. E-6 Amps).
-+
-+		NOTE: This value should not be used to determine the regulator
-+		output current level as this value is the same regardless of
-+		whether the regulator is enabled or disabled.
-+
-+
-+What:		/sys/class/regulator/.../opmode
-+Date:		March 2008
-+KernelVersion:	2.6.25
-+Contact:	Liam Girdwood <lg@opensource.wolfsonmicro.com>
-+Description:
-+		Each regulator directory will contain a field called
-+		opmode. This holds the regulator operating mode setting.
-+
-+		The opmode value can be one of the following strings:
-+
-+		'fast'
-+		'normal'
-+		'idle'
-+		'standby'
-+		'unknown'
-+
-+		The modes are described in include/linux/regulator/regulator.h
-+
-+		NOTE: This value should not be used to determine the regulator
-+		output operating mode as this value is the same regardless of
-+		whether the regulator is enabled or disabled.
-+
-+
-+What:		/sys/class/regulator/.../min_microvolts
-+Date:		March 2008
-+KernelVersion:	2.6.25
-+Contact:	Liam Girdwood <lg@opensource.wolfsonmicro.com>
-+Description:
-+		Each regulator directory will contain a field called
-+		min_microvolts. This holds the minimum safe working regulator
-+		output voltage setting for this domain measured in microvolts.
-+
-+		NOTE: this will return the string 'constraint not defined' if
-+		the power domain has no min microvolts constraint defined by
-+		platform code.
-+
-+
-+What:		/sys/class/regulator/.../max_microvolts
-+Date:		March 2008
-+KernelVersion:	2.6.25
-+Contact:	Liam Girdwood <lg@opensource.wolfsonmicro.com>
-+Description:
-+		Each regulator directory will contain a field called
-+		max_microvolts. This holds the maximum safe working regulator
-+		output voltage setting for this domain measured in microvolts.
-+
-+		NOTE: this will return the string 'constraint not defined' if
-+		the power domain has no max microvolts constraint defined by
-+		platform code.
-+
-+
-+What:		/sys/class/regulator/.../min_microamps
-+Date:		March 2008
-+KernelVersion:	2.6.25
-+Contact:	Liam Girdwood <lg@opensource.wolfsonmicro.com>
-+Description:
-+		Each regulator directory will contain a field called
-+		min_microamps. This holds the minimum safe working regulator
-+		output current limit setting for this domain measured in
-+		microamps.
-+
-+		NOTE: this will return the string 'constraint not defined' if
-+		the power domain has no min microamps constraint defined by
-+		platform code.
-+
-+
-+What:		/sys/class/regulator/.../max_microamps
-+Date:		March 2008
-+KernelVersion:	2.6.25
-+Contact:	Liam Girdwood <lg@opensource.wolfsonmicro.com>
-+Description:
-+		Each regulator directory will contain a field called
-+		max_microamps. This holds the maximum safe working regulator
-+		output current limit setting for this domain measured in
-+		microamps.
-+
-+		NOTE: this will return the string 'constraint not defined' if
-+		the power domain has no max microamps constraint defined by
-+		platform code.
-+
-+
-+What:		/sys/class/regulator/.../num_users
-+Date:		March 2008
-+KernelVersion:	2.6.25
-+Contact:	Liam Girdwood <lg@opensource.wolfsonmicro.com>
-+Description:
-+		Each regulator directory will contain a field called
-+		num_users. This holds the number of consumer devices that
-+		have called regulator_enable() on this regulator.
-+
-+
-+What:		/sys/class/regulator/.../requested_microamps
-+Date:		March 2008
-+KernelVersion:	2.6.25
-+Contact:	Liam Girdwood <lg@opensource.wolfsonmicro.com>
-+Description:
-+		Each regulator directory will contain a field called
-+		requested_microamps. This holds the total requested load
-+		current in microamps for this regulator from all its consumer
-+		devices.
-+
-+
-+What:		/sys/class/regulator/.../parent
-+Date:		March 2008
-+KernelVersion:	2.6.25
-+Contact:	Liam Girdwood <lg@opensource.wolfsonmicro.com>
-+Description:
-+		Some regulator directories will contain a link called parent.
-+		This points to the parent or supply regulator if one exists.
++ccflags-$(CONFIG_REGULATOR_DEBUG) += -DDEBUG
 -- 
 1.5.4.3
-
-
 
