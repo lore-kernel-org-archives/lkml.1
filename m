@@ -1,50 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760954AbYCFR3U@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755368AbYCFRaF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760954AbYCFR3U (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Mar 2008 12:29:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755882AbYCFR2z
+	id S1755368AbYCFRaF (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Mar 2008 12:30:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752498AbYCFR3r
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Mar 2008 12:28:55 -0500
-Received: from terminus.zytor.com ([198.137.202.10]:50322 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755721AbYCFR2y (ORCPT
+	Thu, 6 Mar 2008 12:29:47 -0500
+Received: from hu-out-0506.google.com ([72.14.214.226]:23082 "EHLO
+	hu-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751140AbYCFR3q (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Mar 2008 12:28:54 -0500
-Message-ID: <47D0271F.4070705@zytor.com>
-Date: Thu, 06 Mar 2008 09:17:19 -0800
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
+	Thu, 6 Mar 2008 12:29:46 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=J6qrNRrTKCLul6V1AR5xY3Gebm3QeiS+N4RSLPr2mptJ9ZhuLMP+mxUbQebStLbJ6ZiGbrDqlzmvz5uhB7vo9UidB2X3VHQUd8WopNY00uDai5gDgpEIF3P+a2uAtRESxGh+EdAhXQKzdd6OEQ1qQV90j2cEi1W9UcG42U0zhb8=
+Message-ID: <f24d23310803060929k30f17947mda54a6de2bc294a3@mail.gmail.com>
+Date: Thu, 6 Mar 2008 22:59:44 +0530
+From: "debian developer" <debiandev@gmail.com>
+To: "Stephen Cuppett" <cuppett@gmail.com>
+Subject: Re: Performance versus FreeBSD 7.0
+Cc: linux-kernel@vger.kernel.org, "Ingo Molnar" <mingo@elte.hu>,
+       "Linus Torvalds" <torvalds@linux-foundation.org>
+In-Reply-To: <316a20a40802290538g55c4171y7cdbcb3a9c1d0f1b@mail.gmail.com>
 MIME-Version: 1.0
-To: "H.J. Lu" <hjl.tools@gmail.com>
-CC: Jakub Jelinek <jakub@redhat.com>, NightStrike <nightstrike@gmail.com>,
-       Olivier Galibert <galibert@pobox.com>,
-       Chris Lattner <clattner@apple.com>, Michael Matz <matz@suse.de>,
-       Richard Guenther <richard.guenther@gmail.com>,
-       Joe Buck <Joe.Buck@synopsys.com>, Jan Hubicka <hubicka@ucw.cz>,
-       Aurelien Jarno <aurelien@aurel32.net>, linux-kernel@vger.kernel.org,
-       gcc@gcc.gnu.org
-Subject: Re: RELEASE BLOCKER: Linux doesn't follow x86/x86-64 ABI wrt direction
- flag
-References: <738B72DB-A1D6-43F8-813A-E49688D05771@apple.com>	 <578FCA7D-D7A6-44F6-9310-4A97C13CDCBE@apple.com>	 <47CF44E7.3020106@zytor.com> <20080306135139.GA5236@dspnet.fr.eu.org>	 <b609cb3b0803060737xa0c3c0byb51d51af797eb81f@mail.gmail.com>	 <6dc9ffc80803060743h502fc96bj6117ef87a8555c3a@mail.gmail.com>	 <47D012B4.3020104@zytor.com>	 <20080306162353.GF24887@devserv.devel.redhat.com>	 <6dc9ffc80803060858i7d4e8b56o99ff8ad301a5cc1a@mail.gmail.com>	 <47D024AA.9010300@zytor.com> <6dc9ffc80803060914x187049a2hb24ef501baf55601@mail.gmail.com>
-In-Reply-To: <6dc9ffc80803060914x187049a2hb24ef501baf55601@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <316a20a40802290538g55c4171y7cdbcb3a9c1d0f1b@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-H.J. Lu wrote:
->>
->>  Not a fix, an (optional) workaround for a system bug.
-> 
-> So that is the bug in the Linux kernel. Since fixing kernel is much easier
-> than providing a workaround in compilers, I think kernel should be fixed
-> and no need for icc/gcc fix.
-> 
+On Fri, Feb 29, 2008 at 7:08 PM, Stephen Cuppett <cuppett@gmail.com> wrote:
+> Not lobbing the first artillery shell by any means, but I saw this
+>  bullet on the FreeBSD release announcement:
+>
+>  # Dramatic improvements in performance and SMP scalability shown by
+>  various database and other benchmarks, in some cases showing peak
+>  performance improvements as high as 350% over FreeBSD 6.X under normal
+>  loads and 1500% at high loads. When compared with the best performing
+>  Linux kernel (2.6.22 or 2.6.24) performance is 15% better. Results are
+>  from benchmarks used to analyze and improve system performance,
+>  results with your specific work load may vary. Some of the changes
+>  that contribute to this improvement are:
+>
+>     * The 1:1 libthr threading model is now the default.
+>     * Finer-grained IPC, networking, and scheduler locking.
+>     * A major focus on optimizing the SMP architecture that was put in
+>  place during the 5.x and 6.x branches.
+>
+>  Some benchmarks show linear scaling up to 8 CPUs. Many workloads see a
+>  significant performance improvement with multicore systems.
+>
+>  The whole thing is available at:
+>
+>  http://www.freebsd.org/releases/7.0R/announce.html
+>
+>  However, their site is pretty scant on details about those benchmarks.
+>   Was just curious if anybody on this list had any input or links on
+>  the metrics, the hardware, the workloads, how was Linux or FreeBSD
+>  tuned, knew more information, could point me to the stats....
 
-The problem is, you're going to have to be able to produce binaries 
-compatible with old kernels for a *long* time for come.  Are you 
-honestly saying you'll tell those people "use gcc 4.2 or earlier"?  If 
-so, I think most distros will have to freeze gcc for the next several years.
+The benchmarks are posted here
 
-	-hpa
+http://people.freebsd.org/~kris/scaling/7.0%20Preview.pdf
+
+page no 17-20.
+
+A funny quote on CFS from above (page 19)
+
+"The new CFS scheduler in 2.6.23 is "Completely Fair"...to
+FreeBSD" :)
+
+good to see some competition at last :D
