@@ -1,119 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763920AbYCFRZe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756100AbYCFR24@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763920AbYCFRZe (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Mar 2008 12:25:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751743AbYCFRZQ
+	id S1756100AbYCFR24 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Mar 2008 12:28:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751773AbYCFR2r
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Mar 2008 12:25:16 -0500
-Received: from tomts40.bellnexxia.net ([209.226.175.97]:51602 "EHLO
-	tomts40-srv.bellnexxia.net" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1751660AbYCFRZN (ORCPT
+	Thu, 6 Mar 2008 12:28:47 -0500
+Received: from terminus.zytor.com ([198.137.202.10]:50318 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751743AbYCFR2r (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Mar 2008 12:25:13 -0500
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: Ao8CALy3z0dMQWoK/2dsb2JhbACBVqp6
-Date: Thu, 6 Mar 2008 12:25:09 -0500
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: pageexec@freemail.hu
-Cc: Ingo Molnar <mingo@elte.hu>, Srinivasa DS <srinivasa@in.ibm.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       ananth@in.ibm.com, Jim Keniston <jkenisto@us.ibm.com>,
-       srikar@linux.vnet.ibm.com, SystemTAP <systemtap@sources.redhat.com>,
-       Andi Kleen <andi@firstfloor.org>, Thomas Gleixner <tglx@linutronix.de>,
-       Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>,
-       Jeremy Fitzhardinge <jeremy@goop.org>,
-       Arjan van de Ven <arjan@infradead.org>
-Subject: Re: [PATCH] x86 - Enhance DEBUG_RODATA support - alternatives
-Message-ID: <20080306172509.GA14284@Krystal>
-References: <20080306140105.GC28438@elte.hu> <47D014E1.30964.22A9390F@pageexec.freemail.hu>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Thu, 6 Mar 2008 12:28:47 -0500
+Message-ID: <47D027B5.5030503@zytor.com>
+Date: Thu, 06 Mar 2008 09:19:49 -0800
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
+MIME-Version: 1.0
+To: Robert Dewar <dewar@adacore.com>
+CC: "H.J. Lu" <hjl.tools@gmail.com>, Jakub Jelinek <jakub@redhat.com>,
+       NightStrike <nightstrike@gmail.com>,
+       Olivier Galibert <galibert@pobox.com>,
+       Chris Lattner <clattner@apple.com>, Michael Matz <matz@suse.de>,
+       Richard Guenther <richard.guenther@gmail.com>,
+       Joe Buck <Joe.Buck@synopsys.com>, Jan Hubicka <hubicka@ucw.cz>,
+       Aurelien Jarno <aurelien@aurel32.net>, linux-kernel@vger.kernel.org,
+       gcc@gcc.gnu.org
+Subject: Re: RELEASE BLOCKER: Linux doesn't follow x86/x86-64 ABI wrt direction
+ flag
+References: <738B72DB-A1D6-43F8-813A-E49688D05771@apple.com> 	 <578FCA7D-D7A6-44F6-9310-4A97C13CDCBE@apple.com> 	 <47CF44E7.3020106@zytor.com> <20080306135139.GA5236@dspnet.fr.eu.org> 	 <b609cb3b0803060737xa0c3c0byb51d51af797eb81f@mail.gmail.com> 	 <6dc9ffc80803060743h502fc96bj6117ef87a8555c3a@mail.gmail.com> 	 <47D012B4.3020104@zytor.com> 	 <20080306162353.GF24887@devserv.devel.redhat.com> 	 <6dc9ffc80803060858i7d4e8b56o99ff8ad301a5cc1a@mail.gmail.com> 	 <47D024AA.9010300@zytor.com> <6dc9ffc80803060914x187049a2hb24ef501baf55601@mail.gmail.com> <47D0275B.4020105@adacore.com>
+In-Reply-To: <47D0275B.4020105@adacore.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-In-Reply-To: <47D014E1.30964.22A9390F@pageexec.freemail.hu>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 12:19:39 up 6 days, 13:30,  6 users,  load average: 2.27, 1.28,
-	0.73
-User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* pageexec@freemail.hu (pageexec@freemail.hu) wrote:
-> On 6 Mar 2008 at 15:01, Ingo Molnar wrote:
+Robert Dewar wrote:
+> H.J. Lu wrote:
 > 
-> > +/**
-> > + * text_poke - Update instructions on a live kernel
-> > + * @addr: address to modify
-> > + * @opcode: source of the copy
-> > + * @len: length to copy
-> > + *
-> > + * Only atomic text poke/set should be allowed when not doing early patching.
-> > + * It means the size must be writable atomically and the address must be aligned
-> > + * in a way that permits an atomic write. It also makes sure we fit on a single
-> > + * page.
-> > + */
-> > +void *__kprobes text_poke(void *addr, const void *opcode, size_t len)
-> > +{
-> > +	unsigned long flags;
-> > +	char *vaddr;
-> > +	int nr_pages = 2;
-> > +
-> > +	BUG_ON(len > sizeof(long));
-> > +	BUG_ON((((long)addr + len - 1) & ~(sizeof(long) - 1))
-> > +		- ((long)addr & ~(sizeof(long) - 1)));
-> > +	{
-> > +		struct page *pages[2] = { virt_to_page(addr),
-> > +			virt_to_page(addr + PAGE_SIZE) };
-
-I just want to ask for confirmation about two things :
-
-First, that calling this text_poke implementation to modify text in a
-module won't fail. Is virt_to_page(addr) ok if addr is in a vmalloc'ed
-area ?
-
-Second, that calling virt_to_page(addr + PAGE_SIZE) won't have
-undesirable side-effects if addr happens to be in the last page of an
-allocated range. It should be ok for the core kernel text, because it is
-followed by the kernel rodata, but I am not certain for modules.
-
-If any of these two are not true, then we should add a test for
-
-if (kernel_text_address(addr)) {
-
-around the vmap() allocation and fallback on 
-
-} else
-  vaddr = addr;
-
-in the cases where text_poke is called to modify module code.
-
-Mathieu
-
-> > +		if (!pages[1])
-> > +			nr_pages = 1;
-> > +		vaddr = vmap(pages, nr_pages, VM_MAP, PAGE_KERNEL);
-> > +		WARN_ON(!vaddr);
-> > +		local_irq_save(flags);
-> > +		memcpy(&vaddr[(unsigned long)addr & ~PAGE_MASK], opcode, len);
-> > +		local_irq_restore(flags);
+>> So that is the bug in the Linux kernel. Since fixing kernel is much 
+>> easier
+>> than providing a workaround in compilers, I think kernel should be fixed
+>> and no need for icc/gcc fix.
 > 
-> you probably want a BUG_ON instead (or some graceful recovery) else
-> the NULL deref will trigger with IRQs off...
-> 
-> > +		vunmap(vaddr);
-> > +	}
-> >  	sync_core();
-> >  	/* Could also do a CLFLUSH here to speed up CPU recovery; but
-> >  	   that causes hangs on some VIA CPUs. */
-> > +	return addr;
-> >  }
-> 
+> Fixing a bug in the Linux kernel is not "much easier". You are taking
+> a purely engineering viewpoint, but life is not like that. There are
+> lots of copies of Linux kernels around and in use. The issue is not
+> fixing the kernel per se, it is propagating that change to all
+> Linux kernels in use -- THAT'S another matter entirely, and is
+> far far more difficult than making sure that a kernel fix is
+> qualified and widely proopagated.
 > 
 
--- 
-Mathieu Desnoyers
-Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+Not really, it's just a matter of time.  Typical distro cycles are on 
+the order of 3 years.
+
+	-hpa
