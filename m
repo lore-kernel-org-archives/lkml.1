@@ -1,144 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935131AbYCFS4F@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932259AbYCFS7p@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935131AbYCFS4F (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Mar 2008 13:56:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758449AbYCFSzs
+	id S932259AbYCFS7p (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Mar 2008 13:59:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754379AbYCFS7g
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Mar 2008 13:55:48 -0500
-Received: from e31.co.us.ibm.com ([32.97.110.149]:53621 "EHLO
-	e31.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757950AbYCFSzq (ORCPT
+	Thu, 6 Mar 2008 13:59:36 -0500
+Received: from lain.randombit.net ([66.179.181.40]:37427 "EHLO
+	mail.randombit.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751032AbYCFS7f (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Mar 2008 13:55:46 -0500
-Subject: [PATCH 5/5] [PPC] provide walk_memory_resource() for ppc
-From: Badari Pulavarty <pbadari@us.ibm.com>
-To: lkml <linux-kernel@vger.kernel.org>
-Cc: linuxppc-dev@ozlabs.org, paulus@samba.org,
-       Yasunori Goto <y-goto@jp.fujitsu.com>,
-       Andrew Morton <akpm@linux-foundation.org>
-In-Reply-To: <1204829673.7939.59.camel@dyn9047017100.beaverton.ibm.com>
-References: <1204829673.7939.59.camel@dyn9047017100.beaverton.ibm.com>
-Content-Type: text/plain
-Date: Thu, 06 Mar 2008 10:59:05 -0800
-Message-Id: <1204829945.6272.4.camel@dyn9047017100.beaverton.ibm.com>
+	Thu, 6 Mar 2008 13:59:35 -0500
+X-Greylist: delayed 1671 seconds by postgrey-1.27 at vger.kernel.org; Thu, 06 Mar 2008 13:59:35 EST
+Date: Thu, 6 Mar 2008 13:31:46 -0500
+From: Jack Lloyd <lloyd@randombit.net>
+To: gcc@gcc.gnu.org, linux-kernel@vger.kernel.org
+Subject: Re: RELEASE BLOCKER: Linux doesn't follow x86/x86-64 ABI wrt direction    flag
+Message-ID: <20080306183146.GL27983@randombit.net>
+Mail-Followup-To: gcc@gcc.gnu.org, linux-kernel@vger.kernel.org
+References: <2F47E21A-9055-4EC3-99CF-B666BBC045C3@apple.com> <47CF3F09.4080606@zytor.com> <578FCA7D-D7A6-44F6-9310-4A97C13CDCBE@apple.com> <47CF44E7.3020106@zytor.com> <20080306135139.GA5236@dspnet.fr.eu.org> <47CFF9A3.30309@gnu.org> <20080306141221.GC5236@dspnet.fr.eu.org> <20080306175841.GI17267@synopsys.com> <20080306181029.GA42904@dspnet.fr.eu.org> <47D03440.6090503@gnu.org>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.0.4 (2.0.4-4) 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <47D03440.6090503@gnu.org>
+X-PGP-Fingerprint: 3F69 2E64 6D92 3BBE E7AE 9258 5C0F 96E8 4EC1 6D6B
+X-PGP-Key: http://www.randombit.net/pgpkey.html
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Provide walk_memory_resource() for ppc64. PPC maintains 
-logic memory region mapping in lmb.memory structures. Walk
-through these structures and do the callbacks for the
-contiguous chunks.
+On Thu, Mar 06, 2008 at 07:13:20PM +0100, Paolo Bonzini wrote:
+> A process can send a signal via kill.  IOW, a malicious process can 
+> *control when the process would be interrupted* in order to get it into 
+> the signal handler with DF=1.
 
-Signed-off-by: Badari Pulavarty <pbadari@us.ibm.com>
----
- arch/powerpc/mm/mem.c |   30 +++++++++++++++++++++++-------
- include/linux/lmb.h   |    1 +
- lib/lmb.c             |   33 +++++++++++++++++++++++++++++++++
- 3 files changed, 57 insertions(+), 7 deletions(-)
+If the malicious process can send a signal to another process, it
+could also ptrace() it. Which is more useful, if you wanted to be
+malicious?
 
-Index: linux-2.6.25-rc3/lib/lmb.c
-===================================================================
---- linux-2.6.25-rc3.orig/lib/lmb.c	2008-03-05 10:28:55.000000000 -0800
-+++ linux-2.6.25-rc3/lib/lmb.c	2008-03-05 10:34:01.000000000 -0800
-@@ -416,3 +416,36 @@ int __init lmb_is_reserved(u64 addr)
- 	}
- 	return 0;
- }
-+
-+/*
-+ * Given a <base, len>, find which memory regions belong to this range.
-+ * Adjust the request and return a contiguous chunk.
-+ */
-+int lmb_find(struct lmb_property *res)
-+{
-+	int i;
-+	u64 rstart, rend;
-+
-+	rstart = res->base;
-+	rend = rstart + res->size - 1;
-+
-+	for (i = 0; i < lmb.memory.cnt; i++) {
-+		u64 start = lmb.memory.region[i].base;
-+		u64 end = start + lmb.memory.region[i].size - 1;
-+
-+		if (start > rend)
-+			return -1;
-+
-+		if ((end >= rstart) && (start < rend)) {
-+			/* adjust the request */
-+			if (rstart < start)
-+				rstart = start;
-+			if (rend > end)
-+				rend = end;
-+			res->base = rstart;
-+			res->size = rend - rstart + 1;
-+			return 0;
-+		}
-+	}
-+	return -1;
-+}
-Index: linux-2.6.25-rc3/arch/powerpc/mm/mem.c
-===================================================================
---- linux-2.6.25-rc3.orig/arch/powerpc/mm/mem.c	2008-03-05 10:14:28.000000000 -0800
-+++ linux-2.6.25-rc3/arch/powerpc/mm/mem.c	2008-03-05 10:32:16.000000000 -0800
-@@ -148,19 +148,35 @@ out:
- 
- /*
-  * walk_memory_resource() needs to make sure there is no holes in a given
-- * memory range. On PPC64, since this range comes from /sysfs, the range
-- * is guaranteed to be valid, non-overlapping and can not contain any
-- * holes. By the time we get here (memory add or remove), /proc/device-tree
-- * is updated and correct. Only reason we need to check against device-tree
-- * would be if we allow user-land to specify a memory range through a
-- * system call/ioctl etc. instead of doing offline/online through /sysfs.
-+ * memory range. PPC64 does not maintain the memory layout in /proc/iomem.
-+ * Instead it maintains it in lmb.memory structures. Walk through the
-+ * memory regions, find holes and callback for contiguous regions.
-  */
- int
- walk_memory_resource(unsigned long start_pfn, unsigned long nr_pages, void *arg,
- 			int (*func)(unsigned long, unsigned long, void *))
- {
--	return  (*func)(start_pfn, nr_pages, arg);
-+	struct lmb_property res;
-+	unsigned long pfn, len;
-+	u64 end;
-+	int ret = -1;
-+
-+	res.base = (u64) start_pfn << PAGE_SHIFT;
-+	res.size = (u64) nr_pages << PAGE_SHIFT;
-+
-+	end = res.base + res.size - 1;
-+	while ((res.base < end) && (lmb_find(&res) >= 0)) {
-+		pfn = (unsigned long)(res.base >> PAGE_SHIFT);
-+		len = (unsigned long)(res.size >> PAGE_SHIFT);
-+		ret = (*func)(pfn, len, arg);
-+		if (ret)
-+			break;
-+		res.base += (res.size + 1);
-+		res.size = (end - res.base + 1);
-+	}
-+	return ret;
- }
-+EXPORT_SYMBOL_GPL(walk_memory_resource);
- 
- #endif /* CONFIG_MEMORY_HOTPLUG */
- 
-Index: linux-2.6.25-rc3/include/linux/lmb.h
-===================================================================
---- linux-2.6.25-rc3.orig/include/linux/lmb.h	2008-03-05 10:30:06.000000000 -0800
-+++ linux-2.6.25-rc3/include/linux/lmb.h	2008-03-05 10:33:12.000000000 -0800
-@@ -52,6 +52,7 @@ extern u64 __init lmb_phys_mem_size(void
- extern u64 __init lmb_end_of_DRAM(void);
- extern void __init lmb_enforce_memory_limit(u64 memory_limit);
- extern int __init lmb_is_reserved(u64 addr);
-+extern int lmb_find(struct lmb_property *res);
- 
- extern void lmb_dump_all(void);
- 
-
-
+Jack
