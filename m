@@ -1,556 +1,231 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761555AbYCFXdh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764097AbYCFXeV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761555AbYCFXdh (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Mar 2008 18:33:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757996AbYCFXd1
+	id S1764097AbYCFXeV (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Mar 2008 18:34:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762206AbYCFXeJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Mar 2008 18:33:27 -0500
-Received: from lixom.net ([66.141.50.11]:42769 "EHLO mail.lixom.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755102AbYCFXd0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Mar 2008 18:33:26 -0500
-Date: Thu, 6 Mar 2008 17:39:00 -0600
-From: Olof Johansson <olof@lixom.net>
-To: dan.j.williams@intel.com, shannon.nelson@intel.com
-Cc: linux-kernel@vger.kernel.org, pasemi-linux@ozlabs.org,
-       linuxppc-dev@ozlabs.org, hskinnemoen@atmel.com
-Subject: [PATCH] pasemi_dma: Driver for PA Semi PWRficient on-chip DMA
-	engine
-Message-ID: <20080306233900.GA3969@lixom.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.17 (2007-11-01)
+	Thu, 6 Mar 2008 18:34:09 -0500
+Received: from e36.co.us.ibm.com ([32.97.110.154]:48456 "EHLO
+	e36.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1762194AbYCFXeI (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 6 Mar 2008 18:34:08 -0500
+Subject: Re: [PATCH 1/5] generic __remove_pages() support
+From: Badari Pulavarty <pbadari@us.ibm.com>
+To: Randy Dunlap <randy.dunlap@oracle.com>
+Cc: lkml <linux-kernel@vger.kernel.org>, linuxppc-dev@ozlabs.org,
+       paulus@samba.org, Yasunori Goto <y-goto@jp.fujitsu.com>,
+       Andrew Morton <akpm@linux-foundation.org>
+In-Reply-To: <20080306110847.11d7cb26.randy.dunlap@oracle.com>
+References: <1204829673.7939.59.camel@dyn9047017100.beaverton.ibm.com>
+	 <1204829734.7939.61.camel@dyn9047017100.beaverton.ibm.com>
+	 <20080306110847.11d7cb26.randy.dunlap@oracle.com>
+Content-Type: text/plain
+Date: Thu, 06 Mar 2008 15:37:20 -0800
+Message-Id: <1204846640.6272.21.camel@dyn9047017100.beaverton.ibm.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.0.4 (2.0.4-4) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-pasemi_dma: Driver for PA Semi PWRficient on-chip DMA engine
-    
-First cut at a dma copy offload driver for PA Semi PWRficient. It uses the
-platform-specific functions to allocate channels, etc.
+Here is the latest version, addressing Randy and Dave's comments.
 
-Signed-off-by: Olof Johansson <olof@lixom.net>
+Thanks,
+Badari
 
+Generic helper function to remove section mappings and sysfs entries
+for the section of the memory we are removing.  offline_pages() correctly 
+adjusted zone and marked the pages reserved.
+
+Issue: If mem_map, usemap allocation could come from different places -
+kmalloc, vmalloc, alloc_pages or bootmem. There is no easy way
+to find and free up bootmem allocations.
+
+Signed-off-by: Badari Pulavarty <pbadari@us.ibm.com>
 
 ---
+ include/linux/memory_hotplug.h |    6 +++-
+ mm/memory_hotplug.c            |   55 +++++++++++++++++++++++++++++++++++++++++
+ mm/sparse.c                    |   45 +++++++++++++++++++++++++++++++--
+ 3 files changed, 102 insertions(+), 4 deletions(-)
 
-This has some dependencies on other patches currently queued up in the
-powerpc git trees for 2.6.26. I'd appreciate reviews and acked-bys, but
-it might be easiest to just merge it up the powerpc path due to the
-dependencies.
-
-
--Olof
-
-diff --git a/drivers/dma/Kconfig b/drivers/dma/Kconfig
-index 27340a7..bbeaf10 100644
---- a/drivers/dma/Kconfig
-+++ b/drivers/dma/Kconfig
-@@ -54,6 +54,13 @@ config FSL_DMA_SELFTEST
- 	  Enable the self test for each DMA channel. A self test will be
- 	  performed after the channel probed to ensure the DMA works well.
+Index: linux-2.6.25-rc3.save/mm/memory_hotplug.c
+===================================================================
+--- linux-2.6.25-rc3.save.orig/mm/memory_hotplug.c	2008-03-05 10:44:30.000000000 -0800
++++ linux-2.6.25-rc3.save/mm/memory_hotplug.c	2008-03-06 15:08:45.000000000 -0800
+@@ -102,6 +102,21 @@ static int __add_section(struct zone *zo
+ 	return register_new_memory(__pfn_to_section(phys_start_pfn));
+ }
  
-+config PASEMI_DMA
-+	tristate "PA Semi DMA Engine support"
-+	depends on PPC_PASEMI
-+	select DMA_ENGINE
-+	help
-+	  Enable support for the DMA Engine on PA Semi PWRficient SoCs
-+
- config DMA_ENGINE
- 	bool
- 
-diff --git a/drivers/dma/Makefile b/drivers/dma/Makefile
-index c8036d9..6729959 100644
---- a/drivers/dma/Makefile
-+++ b/drivers/dma/Makefile
-@@ -4,3 +4,4 @@ obj-$(CONFIG_INTEL_IOATDMA) += ioatdma.o
- ioatdma-objs := ioat.o ioat_dma.o ioat_dca.o
- obj-$(CONFIG_INTEL_IOP_ADMA) += iop-adma.o
- obj-$(CONFIG_FSL_DMA) += fsldma.o
-+obj-$(CONFIG_PASEMI_DMA) += pasemi_dma.o
-diff --git a/drivers/dma/pasemi_dma.c b/drivers/dma/pasemi_dma.c
-new file mode 100644
-index 0000000..844ab11
---- /dev/null
-+++ b/drivers/dma/pasemi_dma.c
-@@ -0,0 +1,478 @@
-+/*
-+ * Driver for the PA Semi PWRficient DMA Engine (copy parts)
-+ * Copyright (c) 2007,2008 Olof Johansson, PA Semi, Inc
-+ *
-+ * This program is free software; you can redistribute it and/or modify it
-+ * under the terms and conditions of the GNU General Public License,
-+ * version 2, as published by the Free Software Foundation.
-+ *
-+ * This program is distributed in the hope it will be useful, but WITHOUT
-+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
-+ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
-+ * more details.
-+ *
-+ * You should have received a copy of the GNU General Public License along with
-+ * this program; if not, write to the Free Software Foundation, Inc.,
-+ * 51 Franklin St - Fifth Floor, Boston, MA 02110-1301 USA.
-+ *
-+ */
-+
-+#include <linux/init.h>
-+#include <linux/module.h>
-+#include <linux/pci.h>
-+#include <linux/interrupt.h>
-+#include <linux/dmaengine.h>
-+#include <linux/delay.h>
-+#include <linux/dma-mapping.h>
-+
-+#include <asm/pasemi_dma.h>
-+
-+#define MAX_CH	16
-+#define MAX_XFER 0x40000
-+#define RING_SZ	8192
-+
-+struct pasemi_dma_desc {
-+	u64 src;
-+	u64 dest;
-+	dma_addr_t	src_dma;
-+	dma_addr_t	dest_dma;
-+	size_t len;
-+	struct list_head node;
-+	int tx_cnt;
-+	struct dma_async_tx_descriptor async_tx;
-+	struct pasemi_dma_chan *chan;
-+};
-+
-+struct pasemi_dma_chan {
-+	struct pasemi_dmachan chan;
-+	spinlock_t	   ring_lock;	/* Protects the ring only */
-+	spinlock_t	   desc_lock;	/* Protects the descriptor list */
-+	struct pasemi_dma *dma_dev;
-+	struct pasemi_dma_desc *ring_info[RING_SZ]; /* softc */
-+	unsigned int	   next_to_fill;
-+	unsigned int	   next_to_clean;
-+	struct dma_chan	   common;
-+	struct list_head   free_desc;
-+	int		   desc_count;
-+	int		   in_use;
-+};
-+
-+struct pasemi_dma {
-+	struct pci_dev *pdev;
-+	struct dma_device common;
-+	struct pasemi_dma_chan *chans[MAX_CH];
-+};
-+
-+static unsigned int channels = 4;
-+module_param(channels, uint, S_IRUGO);
-+MODULE_PARM_DESC(channels, "Number of channels for copy (default: 2)");
-+
-+#define to_pasemi_dma_chan(chan) container_of(chan, struct pasemi_dma_chan, \
-+					      common)
-+#define to_pasemi_dma_desc(lh) container_of(lh, struct pasemi_dma_desc, node)
-+#define tx_to_desc_sw(tx) container_of(tx, struct pasemi_dma_desc, async_tx)
-+
-+static void pasemi_dma_clean(struct pasemi_dma_chan *chan)
++static int __remove_section(struct zone *zone, struct mem_section *ms)
 +{
-+	int old, new, i;
-+	unsigned long flags;
-+	struct pasemi_dma_desc *desc;
-+	spin_lock_irqsave(&chan->desc_lock, flags);
++	int ret = -EINVAL;
 +
-+	old = chan->next_to_clean;
-+
-+	new = *chan->chan.status & PAS_STATUS_PCNT_M;
-+	new <<= 2;
-+	new &= (RING_SZ-1);
-+
-+	if (old > new)
-+		new += RING_SZ;
-+
-+	for (i = old; i < new; i += 4) {
-+		if (unlikely(chan->chan.ring_virt[i & (RING_SZ-1)] & XCT_COPY_O))
-+			break;
-+		desc = chan->ring_info[i & (RING_SZ-1)];
-+		list_add_tail(&desc->node, &chan->free_desc);
-+	}
-+
-+	chan->next_to_clean = i & (RING_SZ-1);
-+
-+	spin_unlock_irqrestore(&chan->desc_lock, flags);
-+}
-+
-+static int pasemi_dma_intr(int irq, void *data)
-+{
-+	struct pasemi_dma_chan *chan = data;
-+	unsigned int cmdsta;
-+
-+	cmdsta = pasemi_read_dma_reg(PAS_DMA_TXCHAN_TCMDSTA(chan->chan.chno));
-+
-+	return IRQ_HANDLED;
-+}
-+
-+static int pasemi_dma_alloc_chan_resources(struct dma_chan *chan)
-+{
-+	struct pasemi_dma_chan *ch = to_pasemi_dma_chan(chan);
-+	u32 val;
-+	unsigned int cfg;
-+	int ret, chno;
-+
-+	if (ch->in_use)
-+		return RING_SZ;
-+
-+	spin_lock_init(&ch->ring_lock);
-+	spin_lock_init(&ch->desc_lock);
-+
-+	chno = ch->chan.chno;
-+
-+	ret = pasemi_dma_alloc_ring(&ch->chan, RING_SZ);
-+	if (ret) {
-+		printk(KERN_INFO "pasemi_dma: Failed to allocate descriptor ring: %d\n", ret);
++	if (!valid_section(ms))
 +		return ret;
-+	}
 +
-+	ch->in_use = 1;
++	ret = unregister_memory_section(ms);
++	if (ret)
++		return ret;
 +
-+	/* We can really set CNTTH to anything, since we never
-+	 * re-enable it after the first interrupt at the moment.
++	sparse_remove_one_section(zone, ms);
++	return 0;
++}
++
+ /*
+  * Reasonably generic function for adding memory.  It is
+  * expected that archs that support memory hotplug will
+@@ -135,6 +150,46 @@ int __add_pages(struct zone *zone, unsig
+ }
+ EXPORT_SYMBOL_GPL(__add_pages);
+ 
++/**
++ * __remove_pages() - remove sections of pages from a zone
++ * @zone: zone from which pages need to be removed
++ * @phys_start_pfn: starting pageframe (must be aligned to start of a section)
++ * @nr_pages: number of pages to remove (must be multiple of section size)
++ *
++ * Generic helper function to remove section mappings and sysfs entries
++ * for the section of the memory we are removing. Caller needs to make
++ * sure that pages are marked reserved and zones are adjust properly by
++ * calling offline_pages().
++ */
++int __remove_pages(struct zone *zone, unsigned long phys_start_pfn,
++		 unsigned long nr_pages)
++{
++	unsigned long i, ret = 0;
++	int sections_to_remove;
++	unsigned long flags;
++	struct pglist_data *pgdat = zone->zone_pgdat;
++
++	/*
++	 * We can only remove entire sections
 +	 */
-+	pasemi_write_iob_reg(PAS_IOB_DMA_TXCH_CFG(chno),
-+			     PAS_IOB_DMA_TXCH_CFG_CNTTH(0));
++	BUG_ON(phys_start_pfn & ~PAGE_SECTION_MASK);
++	BUG_ON(nr_pages % PAGES_PER_SECTION);
 +
-+	pasemi_write_iob_reg(PAS_IOB_DMA_TXCH_RESET(chno), 0x30);
++	release_mem_region(phys_start_pfn << PAGE_SHIFT, nr_pages * PAGE_SIZE);
 +
-+	pasemi_write_dma_reg(PAS_DMA_TXCHAN_BASEL(chno),
-+			   PAS_DMA_TXCHAN_BASEL_BRBL(ch->chan.ring_dma));
-+
-+	val = PAS_DMA_TXCHAN_BASEU_BRBH(ch->chan.ring_dma >> 32);
-+	val |= PAS_DMA_TXCHAN_BASEU_SIZ(ch->chan.ring_size >> 3);
-+
-+	pasemi_write_dma_reg(PAS_DMA_TXCHAN_BASEU(chno), val);
-+
-+	cfg = PAS_DMA_TXCHAN_CFG_TY_COPY |
-+	      PAS_DMA_TXCHAN_CFG_UP |
-+	      PAS_DMA_TXCHAN_CFG_LPDQ |
-+	      PAS_DMA_TXCHAN_CFG_LPSQ |
-+	      PAS_DMA_TXCHAN_CFG_WT(4);
-+
-+	pasemi_write_dma_reg(PAS_DMA_TXCHAN_CFG(chno), cfg);
-+
-+	pasemi_dma_start_chan(&ch->chan, PAS_DMA_TXCHAN_TCMDSTA_SZ |
-+			     PAS_DMA_TXCHAN_TCMDSTA_DB |
-+			     PAS_DMA_TXCHAN_TCMDSTA_DE |
-+			     PAS_DMA_TXCHAN_TCMDSTA_DA);
-+
-+	ch->next_to_fill = 0;
-+	ch->next_to_clean = 0;
-+	ch->desc_count = 0;
-+
-+	return ch->chan.ring_size/4;
-+}
-+
-+static void pasemi_dma_free_chan_resources(struct dma_chan *chan)
-+{
-+	struct pasemi_dma_chan *ch = to_pasemi_dma_chan(chan);
-+
-+	if (ch->in_use)
-+		pasemi_dma_free_ring(&ch->chan);
-+
-+	ch->in_use = 0;
-+
-+	return;
-+}
-+
-+static enum dma_status pasemi_dma_is_complete(struct dma_chan *chan,
-+					      dma_cookie_t cookie,
-+					      dma_cookie_t *done,
-+					      dma_cookie_t *used)
-+{
-+	struct pasemi_dma_chan *ch = to_pasemi_dma_chan(chan);
-+	dma_cookie_t clean, fill;
-+	int tries = 1;
-+	enum dma_status ret;
-+
-+	pasemi_dma_clean(ch);
-+
-+	do {
-+		clean = (ch->next_to_clean - 4) & (RING_SZ-1);
-+		fill = (ch->next_to_fill - 1) & (RING_SZ-1) ;
-+
-+		if (done)
-+			*done = clean;
-+		if (used)
-+			*used = fill;
-+
-+		ret = dma_async_is_complete(cookie, clean, fill);
-+	} while (ret != DMA_SUCCESS && --tries);
-+
++	sections_to_remove = nr_pages / PAGES_PER_SECTION;
++	for (i = 0; i < sections_to_remove; i++) {
++		unsigned long pfn = phys_start_pfn + i*PAGES_PER_SECTION;
++		pgdat_resize_lock(pgdat, &flags);
++		ret = __remove_section(zone, __pfn_to_section(pfn));
++		pgdat_resize_unlock(pgdat, &flags);
++		if (ret)
++			break;
++	}
 +	return ret;
 +}
++EXPORT_SYMBOL_GPL(__remove_pages);
 +
-+
-+static void pasemi_dma_issue_pending(struct dma_chan *chan)
+ static void grow_zone_span(struct zone *zone,
+ 		unsigned long start_pfn, unsigned long end_pfn)
+ {
+Index: linux-2.6.25-rc3.save/mm/sparse.c
+===================================================================
+--- linux-2.6.25-rc3.save.orig/mm/sparse.c	2008-03-05 10:44:30.000000000 -0800
++++ linux-2.6.25-rc3.save/mm/sparse.c	2008-03-06 15:15:18.000000000 -0800
+@@ -198,12 +198,13 @@ static unsigned long sparse_encode_mem_m
+ }
+ 
+ /*
+- * We need this if we ever free the mem_maps.  While not implemented yet,
+- * this function is included for parity with its sibling.
++ * Decode mem_map from the coded memmap
+  */
+-static __attribute((unused))
++static
+ struct page *sparse_decode_mem_map(unsigned long coded_mem_map, unsigned long pnum)
+ {
++	/* mask off the extra low bits of information */
++	coded_mem_map &= SECTION_MAP_MASK;
+ 	return ((struct page *)coded_mem_map) + section_nr_to_pfn(pnum);
+ }
+ 
+@@ -363,6 +364,28 @@ static void __kfree_section_memmap(struc
+ }
+ #endif /* CONFIG_SPARSEMEM_VMEMMAP */
+ 
++static void free_section_usemap(struct page *memmap, unsigned long *usemap)
 +{
-+	return;
-+}
++	if (!usemap)
++		return;
 +
-+static void pasemi_dma_dependency_added(struct dma_chan *chan)
-+{
-+	return;
-+}
-+
-+
-+static dma_cookie_t
-+pasemi_tx_submit(struct dma_async_tx_descriptor *tx)
-+{
-+	struct pasemi_dma_desc *desc = tx_to_desc_sw(tx);
-+	struct pasemi_dma_chan *chan = desc->chan;
-+	unsigned long flags;
-+	u64 xct[4], *ring;
-+	int idx, len;
-+
-+	len = desc->len;
-+	if (unlikely(!len)) {
-+		xct[0] = XCT_COPY_DTY_PREF;
-+		len = 1;
-+	} else
-+		xct[0] = 0;
-+
-+	xct[0] |= XCT_COPY_O | XCT_COPY_LLEN(len);
-+	xct[1]  = XCT_PTR_LEN(len) | XCT_PTR_ADDR(desc->dest) | XCT_PTR_T;
-+	xct[2]  = XCT_PTR_LEN(len) | XCT_PTR_ADDR(desc->src);
-+	xct[3]  = 0;
-+
-+	spin_lock_irqsave(&chan->ring_lock, flags);
-+
-+	idx = chan->next_to_fill;
-+
-+	ring = chan->chan.ring_virt;
-+
-+	/* This is where we copy stuff to the ring */
-+
-+	ring[idx & (RING_SZ-1)] = xct[0];
-+	ring[(idx+1) & (RING_SZ-1)] = xct[1];
-+	ring[(idx+2) & (RING_SZ-1)] = xct[2];
-+	ring[(idx+3) & (RING_SZ-1)] = xct[3];
-+
-+	chan->next_to_fill = (chan->next_to_fill + 4) & (RING_SZ-1);
-+
-+	chan->ring_info[idx] = desc;
-+
-+	pasemi_write_dma_reg(PAS_DMA_TXCHAN_INCR(chan->chan.chno), 2);
-+
-+	spin_unlock_irqrestore(&chan->ring_lock, flags);
-+	return idx;
-+}
-+
-+static struct pasemi_dma_desc *
-+pasemi_dma_alloc_descriptor(struct pasemi_dma_chan *ch, gfp_t flags)
-+{
-+	struct pasemi_dma_desc *desc;
-+	struct pasemi_dma *dev;
-+
-+	dev = ch->dma_dev;
-+
-+	desc = kzalloc(sizeof(*desc), flags);
-+	if (unlikely(!desc))
-+		return NULL;
-+
-+	dma_async_tx_descriptor_init(&desc->async_tx, &ch->common);
-+	desc->async_tx.tx_submit = pasemi_tx_submit;
-+	desc->chan = ch;
-+	INIT_LIST_HEAD(&desc->async_tx.tx_list);
-+
-+	return desc;
-+}
-+
-+static struct dma_async_tx_descriptor *
-+pasemi_dma_prep_memcpy(struct dma_chan *chan, dma_addr_t dma_dest,
-+		       dma_addr_t dma_src, size_t len, unsigned long flags)
-+{
-+	struct pasemi_dma_chan *ch = to_pasemi_dma_chan(chan);
-+	struct pasemi_dma_desc *desc;
-+	int retries = 0;
-+
-+	if (len >= MAX_XFER) {
-+		if (printk_ratelimit())
-+			printk(KERN_WARNING "pasemi_dma: Copy request too long (%ld > %d)\n",
-+			       len, MAX_XFER);
-+		return NULL;
++	/*
++	 * Check to see if allocation came from hot-plug-add
++	 */
++	if (PageSlab(virt_to_page(usemap))) {
++		kfree(usemap);
++		if (memmap)
++			__kfree_section_memmap(memmap, PAGES_PER_SECTION);
++		return;
 +	}
 +
-+retry:
-+
-+	spin_lock_bh(&ch->desc_lock);
-+
-+	if (!list_empty(&ch->free_desc)) {
-+		desc = list_entry(ch->free_desc.next, struct pasemi_dma_desc,
-+				  node);
-+		list_del(&desc->node);
-+	} else {
-+		if (ch->desc_count >= (RING_SZ/2)) {
-+			spin_unlock_bh(&ch->desc_lock);
-+			if (!retries++) {
-+				pasemi_dma_clean(ch);
-+				goto retry;
-+			}
-+			return NULL;
-+		}
-+		ch->desc_count++;
-+		/* try to get another desc */
-+		spin_unlock_bh(&ch->desc_lock);
-+		desc = pasemi_dma_alloc_descriptor(ch, GFP_KERNEL);
-+		spin_lock_bh(&ch->desc_lock);
-+		/* will this ever happen? */
-+		BUG_ON(!desc);
-+	}
-+	spin_unlock_bh(&ch->desc_lock);
-+
-+	desc->len = len;
-+	desc->dest = dma_dest;
-+	desc->src = dma_src;
-+
-+	return &desc->async_tx;
++	/*
++	 * TODO: Allocations came from bootmem - how do I free up ?
++	 */
++	printk(KERN_WARNING "Not freeing up allocations from bootmem "
++			"- leaking memory\n");
 +}
 +
-+static int enumerate_dma_channels(struct pasemi_dma *device)
+ /*
+  * returns the number of sections whose mem_maps were properly
+  * set.  If this is <=0, then that means that the passed-in
+@@ -415,4 +438,20 @@ out:
+ 	}
+ 	return ret;
+ }
++
++void sparse_remove_one_section(struct zone *zone, struct mem_section *ms)
 +{
-+	int i, ret;
-+	struct pasemi_dma_chan *ch;
++	struct page *memmap = NULL;
++	unsigned long *usemap = NULL;
 +
-+	device->common.chancnt = channels;
-+
-+	for (i = 0; i < device->common.chancnt; i++) {
-+		ch = pasemi_dma_alloc_chan(TXCHAN, sizeof(*ch),
-+					   offsetof(struct pasemi_dma_chan,
-+						    chan));
-+		ch->dma_dev = device;
-+		ch->common.device = &device->common;
-+		ret = request_irq(ch->chan.irq, &pasemi_dma_intr, IRQF_DISABLED,
-+				  "pasemi_dma", ch);
-+		if (ret) {
-+			printk(KERN_INFO "pasemi_dma: request of irq %d failed: %d\n",
-+			       ch->chan.irq, ret);
-+			return ret;
-+		}
-+		INIT_LIST_HEAD(&ch->free_desc);
-+		list_add_tail(&ch->common.device_node,
-+			      &device->common.channels);
-+	}
-+	return device->common.chancnt;
-+}
-+
-+static int __devinit pasemi_dma_probe(struct pci_dev *pdev,
-+				      const struct pci_device_id *ent)
-+{
-+	int err;
-+	struct pasemi_dma *device;
-+	struct dma_device *dma_dev;
-+
-+	err = pci_enable_device(pdev);
-+	if (err)
-+		goto err_enable_device;
-+
-+	device = kzalloc(sizeof(*device), GFP_KERNEL);
-+	if (!device) {
-+		err = -ENOMEM;
-+		goto err_kzalloc;
++	if (ms->section_mem_map) {
++		usemap = ms->pageblock_flags;
++		memmap = sparse_decode_mem_map(ms->section_mem_map,
++						__section_nr(ms));
++		ms->section_mem_map = 0;
++		ms->pageblock_flags = NULL;
 +	}
 +
-+	device->pdev = pdev;
-+	pci_set_drvdata(pdev, device);
-+
-+	dma_dev = &device->common;
-+
-+	INIT_LIST_HEAD(&dma_dev->channels);
-+	enumerate_dma_channels(device);
-+
-+	dma_cap_set(DMA_MEMCPY, dma_dev->cap_mask);
-+	dma_dev->device_alloc_chan_resources = pasemi_dma_alloc_chan_resources;
-+	dma_dev->device_free_chan_resources = pasemi_dma_free_chan_resources;
-+	dma_dev->device_prep_dma_memcpy = pasemi_dma_prep_memcpy;
-+	dma_dev->device_is_tx_complete = pasemi_dma_is_complete;
-+	dma_dev->device_issue_pending = pasemi_dma_issue_pending;
-+	dma_dev->device_dependency_added = pasemi_dma_dependency_added;
-+	dma_dev->dev = &pdev->dev;
-+
-+	printk(KERN_INFO "PA Semi DMA Engine found, using %d channels for copy\n",
-+		dma_dev->chancnt);
-+
-+	err = dma_async_device_register(dma_dev);
-+
-+	return err;
-+
-+err_kzalloc:
-+	pci_disable_device(pdev);
-+err_enable_device:
-+
-+	printk(KERN_ERR "PA Semi DMA Engine initialization failed\n");
-+
-+	return err;
++	free_section_usemap(memmap, usemap);
 +}
-+
-+static void pasemi_dma_shutdown(struct pci_dev *pdev)
-+{
-+	struct pasemi_dma *device;
-+	device = pci_get_drvdata(pdev);
-+
-+	dma_async_device_unregister(&device->common);
-+}
-+
-+static void __devexit pasemi_dma_remove(struct pci_dev *pdev)
-+{
-+	struct pasemi_dma *device;
-+	struct dma_chan *chan, *_chan;
-+	struct pasemi_dma_chan *pasemi_ch;
-+
-+	device = pci_get_drvdata(pdev);
-+	dma_async_device_unregister(&device->common);
-+
-+	list_for_each_entry_safe(chan, _chan, &device->common.channels,
-+				 device_node) {
-+		pasemi_ch = to_pasemi_dma_chan(chan);
-+		free_irq(pasemi_ch->chan.irq, pasemi_ch);
-+		list_del(&chan->device_node);
-+		pasemi_dma_free_chan(&pasemi_ch->chan);
-+	}
-+
-+	pci_disable_device(pdev);
-+	kfree(device);
-+}
-+
-+static struct pci_device_id pasemi_dma_pci_tbl[] = {
-+	{ PCI_DEVICE(PCI_VENDOR_ID_PASEMI, 0xa007) },
-+	{ }
-+};
-+MODULE_DEVICE_TABLE(pci, pasemi_dma_pci_tbl);
-+
-+static struct pci_driver pasemi_dma_pci_driver = {
-+	.name	= "pasemi_dma",
-+	.id_table = pasemi_dma_pci_tbl,
-+	.probe	= pasemi_dma_probe,
-+	.shutdown = pasemi_dma_shutdown,
-+	.remove	= __devexit_p(pasemi_dma_remove),
-+};
-+
-+
-+static int __init pasemi_dma_init_module(void)
-+{
-+	int err;
-+
-+	err = pasemi_dma_init();
-+	if (err)
-+		return err;
-+
-+	return pci_register_driver(&pasemi_dma_pci_driver);
-+}
-+
-+module_init(pasemi_dma_init_module);
-+
-+static void __exit pasemi_dma_exit_module(void)
-+{
-+	pci_unregister_driver(&pasemi_dma_pci_driver);
-+}
-+
-+module_exit(pasemi_dma_exit_module);
-+MODULE_LICENSE("GPL");
-+MODULE_AUTHOR("Olof Johansson <olof@lixom.net>");
-+MODULE_DESCRIPTION("PA Semi PWRficient DMA Engine driver");
+ #endif
+Index: linux-2.6.25-rc3.save/include/linux/memory_hotplug.h
+===================================================================
+--- linux-2.6.25-rc3.save.orig/include/linux/memory_hotplug.h	2008-03-05 10:44:30.000000000 -0800
++++ linux-2.6.25-rc3.save/include/linux/memory_hotplug.h	2008-03-06 15:02:13.000000000 -0800
+@@ -8,6 +8,7 @@
+ struct page;
+ struct zone;
+ struct pglist_data;
++struct mem_section;
+ 
+ #ifdef CONFIG_MEMORY_HOTPLUG
+ /*
+@@ -64,9 +65,11 @@ extern int offline_pages(unsigned long, 
+ /* reasonably generic interface to expand the physical pages in a zone  */
+ extern int __add_pages(struct zone *zone, unsigned long start_pfn,
+ 	unsigned long nr_pages);
++extern int __remove_pages(struct zone *zone, unsigned long start_pfn,
++	unsigned long nr_pages);
+ 
+ /*
+- * Walk thorugh all memory which is registered as resource.
++ * Walk through all memory which is registered as resource.
+  * arg is (start_pfn, nr_pages, private_arg_pointer)
+  */
+ extern int walk_memory_resource(unsigned long start_pfn,
+@@ -188,5 +191,6 @@ extern int arch_add_memory(int nid, u64 
+ extern int remove_memory(u64 start, u64 size);
+ extern int sparse_add_one_section(struct zone *zone, unsigned long start_pfn,
+ 								int nr_pages);
++extern void sparse_remove_one_section(struct zone *zone, struct mem_section *ms);
+ 
+ #endif /* __LINUX_MEMORY_HOTPLUG_H */
+
+
