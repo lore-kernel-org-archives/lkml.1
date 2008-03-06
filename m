@@ -1,372 +1,188 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761328AbYCFI06@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762143AbYCFI3U@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761328AbYCFI06 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Mar 2008 03:26:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755192AbYCFI0r
+	id S1762143AbYCFI3U (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Mar 2008 03:29:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756854AbYCFI3M
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Mar 2008 03:26:47 -0500
-Received: from sacred.ru ([62.205.161.221]:48062 "EHLO sacred.ru"
+	Thu, 6 Mar 2008 03:29:12 -0500
+Received: from gateway.drzeus.cx ([85.8.24.16]:51052 "EHLO smtp.drzeus.cx"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752942AbYCFI0p (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Mar 2008 03:26:45 -0500
-Message-ID: <47CFAA7F.5000608@openvz.org>
-Date: Thu, 06 Mar 2008 11:25:35 +0300
-From: Pavel Emelyanov <xemul@openvz.org>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080213)
-MIME-Version: 1.0
-To: paulmck@linux.vnet.ibm.com
-CC: Andrew Morton <akpm@linux-foundation.org>,
-       David Miller <davem@davemloft.net>,
-       Linux Netdev List <netdev@vger.kernel.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Alexey Dobriyan <adobriyan@openvz.org>
-Subject: Re: [PATCH] Make /proc/net a symlink on /proc/self/net
-References: <47CE8FF7.7000701@openvz.org> <20080305191501.GF8728@linux.vnet.ibm.com>
-In-Reply-To: <20080305191501.GF8728@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1
+	id S1755668AbYCFI3L (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 6 Mar 2008 03:29:11 -0500
+Date: Thu, 6 Mar 2008 09:27:30 +0100
+From: Pierre Ossman <drzeus-list@drzeus.cx>
+Cc: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>,
+       "Dave Jones" <davej@codemonkey.org.uk>,
+       "Andi Kleen" <andi@firstfloor.org>,
+       "Alan Stern" <stern@rowland.harvard.edu>,
+       "LKML" <linux-kernel@vger.kernel.org>, "Adam Belay" <abelay@novell.com>,
+       "Lee Revell" <rlrevell@joe-job.com>,
+       linux-pm@lists.linux-foundation.org, "Pavel  Machek" <pavel@ucw.cz>
+Subject: Re: [linux-pm] [PATCH] cpuidle: avoid singing capacitors
+Message-ID: <20080306092730.4412d085@mjolnir.drzeus.cx>
+In-Reply-To: <20080305094023.6486ebdf@mjolnir.drzeus.cx>
+References: <924EFEDD5F540B4284297C4DC59F3DEEA2E8B2@orsmsx423.amr.corp.intel.com>
+	<Pine.LNX.4.44L0.0803031804330.8280-100000@iolanthe.rowland.org>
+	<20080303231033.GB15255@one.firstfloor.org>
+	<20080304040048.GA31562@codemonkey.org.uk>
+	<20080304071423.0e6b71c1@mjolnir.drzeus.cx>
+	<20080304181924.70aaf8c1@mjolnir.drzeus.cx>
+	<924EFEDD5F540B4284297C4DC59F3DEEA77031@orsmsx423.amr.corp.intel.com>
+	<20080305070201.0d16cd40@mjolnir.drzeus.cx>
+	<20080305094023.6486ebdf@mjolnir.drzeus.cx>
+X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.8; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-Greylist: Sender succeeded SMTP AUTH authentication, not delayed by milter-greylist-3.0 (sacred.ru [62.205.161.221]); Thu, 06 Mar 2008 11:25:33 +0300 (MSK)
+To: unlisted-recipients:; (no To-header on input)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Paul E. McKenney wrote:
-> On Wed, Mar 05, 2008 at 03:20:07PM +0300, Pavel Emelyanov wrote:
->> Current /proc/net is done with so called "shadows", but current
->> implementation is broken and has little chances to get fixed.
->>
->> The problem is that dentries subtree of /proc/net directory has
->> fancy revalidation rules to make processes living in different
->> net namespaces see different entries in /proc/net subtree, but
->> currently, tasks see in the /proc/net subdir the contents of any
->> other namespace, depending on who opened the file first.
->>
->> The proposed fix is to turn /proc/net into a symlink, which points
->> to /proc/self/net, which in turn shows what previously was in
->> /proc/net - the network-related info, from the net namespace the
->> appropriate task lives in.
->>
->> # ls -l /proc/net
->> lrwxrwxrwx  1 root root 8 Mar  5 15:17 /proc/net -> self/net
->>
->> In other words - this behaves like /proc/mounts, but unlike
->> "mounts", "net" is not a file, but a directory.
-> 
-> One question below for get_proc_task_net() -- I don't see how the
-> reference to a task struct is released.
+On Wed, 5 Mar 2008 09:40:23 +0100
+Pierre Ossman <drzeus-list@drzeus.cx> wrote:
 
-Shame on me :( Thanks Paul, I'll prepare the fixed patch shortly,
-all the more so Eric finally agreed with it...
-
-> 						Thanx, Paul
 > 
->> Signed-off-by: Pavel Emelyanov <xemul@openvz.org>
->>
->> ---
->>
->> diff --git a/fs/proc/base.c b/fs/proc/base.c
->> index 96ee899..cc43cf0 100644
->> --- a/fs/proc/base.c
->> +++ b/fs/proc/base.c
->> @@ -2274,6 +2274,7 @@ static const struct pid_entry tgid_base_stuff[] = {
->>  	DIR("task",       S_IRUGO|S_IXUGO, task),
->>  	DIR("fd",         S_IRUSR|S_IXUSR, fd),
->>  	DIR("fdinfo",     S_IRUSR|S_IXUSR, fdinfo),
->> +	DIR("net",        S_IRUGO|S_IXUSR, net),
->>  	REG("environ",    S_IRUSR, environ),
->>  	INF("auxv",       S_IRUSR, pid_auxv),
->>  	ONE("status",     S_IRUGO, pid_status),
->> diff --git a/fs/proc/generic.c b/fs/proc/generic.c
->> index 68971e6..a36ad3c 100644
->> --- a/fs/proc/generic.c
->> +++ b/fs/proc/generic.c
->> @@ -377,15 +377,14 @@ static struct dentry_operations proc_dentry_operations =
->>   * Don't create negative dentries here, return -ENOENT by hand
->>   * instead.
->>   */
->> -struct dentry *proc_lookup(struct inode * dir, struct dentry *dentry, struct nameidata *nd)
->> +struct dentry *proc_lookup_de(struct proc_dir_entry *de, struct inode *dir,
->> +		struct dentry *dentry)
->>  {
->>  	struct inode *inode = NULL;
->> -	struct proc_dir_entry * de;
->>  	int error = -ENOENT;
->>
->>  	lock_kernel();
->>  	spin_lock(&proc_subdir_lock);
->> -	de = PDE(dir);
->>  	if (de) {
->>  		for (de = de->subdir; de ; de = de->next) {
->>  			if (de->namelen != dentry->d_name.len)
->> @@ -393,8 +392,6 @@ struct dentry *proc_lookup(struct inode * dir, struct dentry *dentry, struct nam
->>  			if (!memcmp(dentry->d_name.name, de->name, de->namelen)) {
->>  				unsigned int ino;
->>
->> -				if (de->shadow_proc)
->> -					de = de->shadow_proc(current, de);
->>  				ino = de->low_ino;
->>  				de_get(de);
->>  				spin_unlock(&proc_subdir_lock);
->> @@ -417,6 +414,12 @@ out_unlock:
->>  	return ERR_PTR(error);
->>  }
->>
->> +struct dentry *proc_lookup(struct inode *dir, struct dentry *dentry,
->> +		struct nameidata *nd)
->> +{
->> +	return proc_lookup_de(PDE(dir), dir, dentry);
->> +}
->> +
->>  /*
->>   * This returns non-zero if at EOF, so that the /proc
->>   * root directory can use this and check if it should
->> @@ -426,10 +429,9 @@ out_unlock:
->>   * value of the readdir() call, as long as it's non-negative
->>   * for success..
->>   */
->> -int proc_readdir(struct file * filp,
->> -	void * dirent, filldir_t filldir)
->> +int proc_readdir_de(struct proc_dir_entry *de, struct file *filp, void *dirent,
->> +		filldir_t filldir)
->>  {
->> -	struct proc_dir_entry * de;
->>  	unsigned int ino;
->>  	int i;
->>  	struct inode *inode = filp->f_path.dentry->d_inode;
->> @@ -438,7 +440,6 @@ int proc_readdir(struct file * filp,
->>  	lock_kernel();
->>
->>  	ino = inode->i_ino;
->> -	de = PDE(inode);
->>  	if (!de) {
->>  		ret = -EINVAL;
->>  		goto out;
->> @@ -499,6 +500,13 @@ out:	unlock_kernel();
->>  	return ret;	
->>  }
->>
->> +int proc_readdir(struct file *filp, void *dirent, filldir_t filldir)
->> +{
->> +	struct inode *inode = filp->f_path.dentry->d_inode;
->> +
->> +	return proc_readdir_de(PDE(inode), filp, dirent, filldir);
->> +}
->> +
->>  /*
->>   * These are the generic /proc directory operations. They
->>   * use the in-memory "struct proc_dir_entry" tree to parse
->> diff --git a/fs/proc/internal.h b/fs/proc/internal.h
->> index 1c81c8f..bc72f5c 100644
->> --- a/fs/proc/internal.h
->> +++ b/fs/proc/internal.h
->> @@ -64,6 +64,8 @@ extern const struct file_operations proc_numa_maps_operations;
->>  extern const struct file_operations proc_smaps_operations;
->>  extern const struct file_operations proc_clear_refs_operations;
->>  extern const struct file_operations proc_pagemap_operations;
->> +extern const struct file_operations proc_net_operations;
->> +extern const struct inode_operations proc_net_inode_operations;
->>
->>  void free_proc_entry(struct proc_dir_entry *de);
->>
->> @@ -83,3 +85,8 @@ static inline int proc_fd(struct inode *inode)
->>  {
->>  	return PROC_I(inode)->fd;
->>  }
->> +
->> +struct dentry *proc_lookup_de(struct proc_dir_entry *de, struct inode *ino,
->> +		struct dentry *dentry);
->> +int proc_readdir_de(struct proc_dir_entry *de, struct file *filp, void *dirent,
->> +		filldir_t filldir);
->> diff --git a/fs/proc/proc_net.c b/fs/proc/proc_net.c
->> index 14e9b5a..3372c2e 100644
->> --- a/fs/proc/proc_net.c
->> +++ b/fs/proc/proc_net.c
->> @@ -63,6 +63,63 @@ int seq_release_net(struct inode *ino, struct file *f)
->>  }
->>  EXPORT_SYMBOL_GPL(seq_release_net);
->>
->> +static struct net *get_proc_task_net(struct inode *dir)
->> +{
->> +	struct task_struct *task;
->> +	struct nsproxy *ns;
->> +	struct net *net = NULL;
->> +
->> +	rcu_read_lock();
->> +	task = get_proc_task(dir);
-> 
-> This implies a get_task_struct(), as get_proc_task() invokes get_proc_task()
-> which invokes get_pid_task() which invokes get_task_struct().
-> 
-> I don't see the corresponding put_task_struct() -- what am I missing here?
-> 
->> +	if (task != NULL) {
->> +		ns = task_nsproxy(task);
->> +		if (ns != NULL)
->> +			net = get_net(ns->net_ns);
->> +	}
->> +	rcu_read_unlock();
->> +
->> +	return net;
->> +}
->> +
->> +static struct dentry *proc_tgid_net_lookup(struct inode *dir,
->> +		struct dentry *dentry, struct nameidata *nd)
->> +{
->> +	struct dentry *de;
->> +	struct net *net;
->> +
->> +	de = ERR_PTR(-ENOENT);
->> +	net = get_proc_task_net(dir);
->> +	if (net != NULL) {
->> +		de = proc_lookup_de(net->proc_net, dir, dentry);
->> +		put_net(net);
->> +	}
->> +	return de;
->> +}
->> +
->> +const struct inode_operations proc_net_inode_operations = {
->> +	.lookup		= proc_tgid_net_lookup,
->> +};
->> +
->> +static int proc_tgid_net_readdir(struct file *filp, void *dirent,
->> +		filldir_t filldir)
->> +{
->> +	int ret;
->> +	struct net *net;
->> +
->> +	ret = -EINVAL;
->> +	net = get_proc_task_net(filp->f_path.dentry->d_inode);
->> +	if (net != NULL) {
->> +		ret = proc_readdir_de(net->proc_net, filp, dirent, filldir);
->> +		put_net(net);
->> +	}
->> +	return ret;
->> +}
->> +
->> +const struct file_operations proc_net_operations = {
->> +	.read		= generic_read_dir,
->> +	.readdir	= proc_tgid_net_readdir,
->> +};
->> +
->>
->>  struct proc_dir_entry *proc_net_fops_create(struct net *net,
->>  	const char *name, mode_t mode, const struct file_operations *fops)
->> @@ -83,14 +140,6 @@ struct net *get_proc_net(const struct inode *inode)
->>  }
->>  EXPORT_SYMBOL_GPL(get_proc_net);
->>
->> -static struct proc_dir_entry *shadow_pde;
->> -
->> -static struct proc_dir_entry *proc_net_shadow(struct task_struct *task,
->> -						struct proc_dir_entry *de)
->> -{
->> -	return task->nsproxy->net_ns->proc_net;
->> -}
->> -
->>  struct proc_dir_entry *proc_net_mkdir(struct net *net, const char *name,
->>  		struct proc_dir_entry *parent)
->>  {
->> @@ -104,45 +153,35 @@ EXPORT_SYMBOL_GPL(proc_net_mkdir);
->>
->>  static __net_init int proc_net_ns_init(struct net *net)
->>  {
->> -	struct proc_dir_entry *root, *netd, *net_statd;
->> +	struct proc_dir_entry *netd, *net_statd;
->>  	int err;
->>
->>  	err = -ENOMEM;
->> -	root = kzalloc(sizeof(*root), GFP_KERNEL);
->> -	if (!root)
->> +	netd = kzalloc(sizeof(*netd), GFP_KERNEL);
->> +	if (!netd)
->>  		goto out;
->>
->> -	err = -EEXIST;
->> -	netd = proc_net_mkdir(net, "net", root);
->> -	if (!netd)
->> -		goto free_root;
->> +	netd->data = net;
->>
->>  	err = -EEXIST;
->>  	net_statd = proc_net_mkdir(net, "stat", netd);
->>  	if (!net_statd)
->>  		goto free_net;
->>
->> -	root->data = net;
->> -
->> -	net->proc_net_root = root;
->>  	net->proc_net = netd;
->>  	net->proc_net_stat = net_statd;
->> -	err = 0;
->> +	return 0;
->>
->> +free_net:
->> +	kfree(netd);
->>  out:
->>  	return err;
->> -free_net:
->> -	remove_proc_entry("net", root);
->> -free_root:
->> -	kfree(root);
->> -	goto out;
->>  }
->>
->>  static __net_exit void proc_net_ns_exit(struct net *net)
->>  {
->>  	remove_proc_entry("stat", net->proc_net);
->> -	remove_proc_entry("net", net->proc_net_root);
->> -	kfree(net->proc_net_root);
->> +	kfree(net->proc_net);
->>  }
->>
->>  static struct pernet_operations __net_initdata proc_net_ns_ops = {
->> @@ -152,8 +191,7 @@ static struct pernet_operations __net_initdata proc_net_ns_ops = {
->>
->>  int __init proc_net_init(void)
->>  {
->> -	shadow_pde = proc_mkdir("net", NULL);
->> -	shadow_pde->shadow_proc = proc_net_shadow;
->> +	proc_symlink("net", NULL, "self/net");
->>
->>  	return register_pernet_subsys(&proc_net_ns_ops);
->>  }
->> diff --git a/include/linux/proc_fs.h b/include/linux/proc_fs.h
->> index d9a9e71..9b6c935 100644
->> --- a/include/linux/proc_fs.h
->> +++ b/include/linux/proc_fs.h
->> @@ -50,8 +50,6 @@ typedef	int (read_proc_t)(char *page, char **start, off_t off,
->>  typedef	int (write_proc_t)(struct file *file, const char __user *buffer,
->>  			   unsigned long count, void *data);
->>  typedef int (get_info_t)(char *, char **, off_t, int);
->> -typedef struct proc_dir_entry *(shadow_proc_t)(struct task_struct *task,
->> -						struct proc_dir_entry *pde);
->>
->>  struct proc_dir_entry {
->>  	unsigned int low_ino;
->> @@ -82,7 +80,6 @@ struct proc_dir_entry {
->>  	int pde_users;	/* number of callers into module in progress */
->>  	spinlock_t pde_unload_lock; /* proc_fops checks and pde_users bumps */
->>  	struct completion *pde_unload_completion;
->> -	shadow_proc_t *shadow_proc;
->>  };
->>
->>  struct kcore_list {
->> diff --git a/include/net/net_namespace.h b/include/net/net_namespace.h
->> index 28738b7..923f2b8 100644
->> --- a/include/net/net_namespace.h
->> +++ b/include/net/net_namespace.h
->> @@ -31,7 +31,6 @@ struct net {
->>
->>  	struct proc_dir_entry 	*proc_net;
->>  	struct proc_dir_entry 	*proc_net_stat;
->> -	struct proc_dir_entry 	*proc_net_root;
->>
->>  	struct list_head	sysctl_table_headers;
->>
->> --
->> To unsubscribe from this list: send the line "unsubscribe netdev" in
->> the body of a message to majordomo@vger.kernel.org
->> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> So I need to build some global algorithm instead of one per core. Ideas are welcome.
 > 
 
+I'm currently trying this variant. No noise yet, but the time spent in C3 seems to take a massive hit. I'll see if I can get around to some kind of power measurement (ideas for doing that in a sane way are still welcome btw).
+
+diff --git a/drivers/cpuidle/governors/menu.c b/drivers/cpuidle/governors/menu.c
+index 78d77c5..960aa39 100644
+--- a/drivers/cpuidle/governors/menu.c
++++ b/drivers/cpuidle/governors/menu.c
+@@ -16,6 +16,11 @@
+ 
+ #define BREAK_FUZZ	4	/* 4 us */
+ 
++static unsigned int min_deep_sleep = 0;
++static unsigned int failed_deep = 0;
++
++static unsigned long global_last_deep;
++
+ struct menu_device {
+ 	int		last_state_idx;
+ 
+@@ -23,6 +28,8 @@ struct menu_device {
+ 	unsigned int	predicted_us;
+ 	unsigned int	last_measured_us;
+ 	unsigned int	elapsed_us;
++
++	unsigned long	last_deep;
+ };
+ 
+ static DEFINE_PER_CPU(struct menu_device, menu_devices);
+@@ -50,9 +57,51 @@ static int menu_select(struct cpuidle_device *dev)
+ 			break;
+ 		if (s->exit_latency > pm_qos_requirement(PM_QOS_CPU_DMA_LATENCY))
+ 			break;
++
++		/*
++		 * In order to avoid the problem of "singing capacitors",
++		 * don't enter a deep sleep for short durations (2 ms seems
++		 * to do the trick). This will, hopefully, keep the problem
++		 * inaudible.
++		 */
++		if (min_deep_sleep && (s->flags & CPUIDLE_FLAG_DEEP)) {
++			if (time_before_eq(jiffies, data->last_deep +
++				HZ * min_deep_sleep / USEC_PER_SEC))
++				break;
++
++			rmb();
++
++			if (time_before_eq(jiffies, global_last_deep +
++				HZ * min_deep_sleep / USEC_PER_SEC))
++				break;
++
++#if 0
++			if (min_deep_sleep > data->expected_us)
++				break;
++			if (min_deep_sleep > cpuidle_get_last_residency(dev))
++				break;
++#endif
++#if 0
++			if (min_deep_sleep > data->predicted_us)
++				break;
++			if (min_deep_sleep > data->last_measured_us)
++				break;
++#endif
++		}
+ 	}
+ 
+ 	data->last_state_idx = i - 1;
++
++	if (dev->states[i - 1].flags & CPUIDLE_FLAG_DEEP) {
++#if 0
++		printk("Sleep interval: %ld jiffies\n",
++			jiffies - data->last_deep);
++#endif
++		data->last_deep = jiffies;
++		global_last_deep = jiffies;
++		wmb();
++	}
++
+ 	return i - 1;
+ }
+ 
+@@ -80,6 +129,15 @@ static void menu_reflect(struct cpuidle_device *dev)
+ 	if (!(target->flags & CPUIDLE_FLAG_TIME_VALID))
+ 		measured_us = USEC_PER_SEC / HZ;
+ 
++	if ((target->flags & CPUIDLE_FLAG_DEEP) &&
++	    (cpuidle_get_last_residency(dev) < min_deep_sleep)) {
++#if 0
++		printk("F: %d / %d,%d\n", cpuidle_get_last_residency(dev),
++			data->expected_us,data->predicted_us);
++#endif
++		failed_deep++;
++	}
++
+ 	/* Predict time remaining until next break event */
+ 	if (measured_us + BREAK_FUZZ < data->expected_us - target->exit_latency) {
+ 		data->predicted_us = max(measured_us, data->last_measured_us);
+@@ -102,7 +160,14 @@ static int menu_enable_device(struct cpuidle_device *dev)
+ {
+ 	struct menu_device *data = &per_cpu(menu_devices, dev->cpu);
+ 
++	printk("Attaching menu governor...\n");
++
+ 	memset(data, 0, sizeof(struct menu_device));
++	/*
++	 * 0 might be slightly ahead of the current jiffies count, so
++	 * it's a bad initial value.
++	 */
++	data->last_deep = jiffies;
+ 
+ 	return 0;
+ }
+@@ -121,6 +186,8 @@ static struct cpuidle_governor menu_governor = {
+  */
+ static int __init init_menu(void)
+ {
++	global_last_deep = jiffies;
++
+ 	return cpuidle_register_governor(&menu_governor);
+ }
+ 
+@@ -132,6 +199,11 @@ static void __exit exit_menu(void)
+ 	cpuidle_unregister_governor(&menu_governor);
+ }
+ 
++module_param(min_deep_sleep, uint, 0644)
++MODULE_PARM_DESC(min_deep_sleep, "min time (us) to spend in deep sleep to avoid noise")
++
++module_param(failed_deep, uint, 0644)
++
+ MODULE_LICENSE("GPL");
+ module_init(init_menu);
+ module_exit(exit_menu);
+
+
+Rgds
+-- 
+     -- Pierre Ossman
+
+  Linux kernel, MMC maintainer        http://www.kernel.org
+  PulseAudio, core developer          http://pulseaudio.org
+  rdesktop, core developer          http://www.rdesktop.org
