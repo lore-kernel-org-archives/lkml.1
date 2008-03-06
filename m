@@ -1,49 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934061AbYCFCKj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934092AbYCFCLb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934061AbYCFCKj (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Mar 2008 21:10:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933953AbYCFCJu
+	id S934092AbYCFCLb (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Mar 2008 21:11:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753940AbYCFCLN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Mar 2008 21:09:50 -0500
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:45138 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932993AbYCFCJs (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Mar 2008 21:09:48 -0500
-Message-ID: <47CF51F6.5030702@jp.fujitsu.com>
-Date: Thu, 06 Mar 2008 11:07:50 +0900
-From: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.12 (Windows/20080213)
+	Wed, 5 Mar 2008 21:11:13 -0500
+Received: from khc.piap.pl ([195.187.100.11]:33478 "EHLO khc.piap.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752091AbYCFCLL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 5 Mar 2008 21:11:11 -0500
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: Chris Lattner <clattner@apple.com>,
+       Richard Guenther <richard.guenther@gmail.com>,
+       Joe Buck <Joe.Buck@synopsys.com>, Michael Matz <matz@suse.de>,
+       Jan Hubicka <hubicka@ucw.cz>, Aurelien Jarno <aurelien@aurel32.net>,
+       linux-kernel@vger.kernel.org, gcc@gcc.gnu.org
+Subject: Re: RELEASE BLOCKER: Linux doesn't follow x86/x86-64 ABI wrt direction  flag
+References: <20080305153020.GA24631@volta.aurel32.net>
+	<47CEC3AA.6080709@zytor.com> <20080305195834.GA17267@synopsys.com>
+	<20080305202319.GA17053@volta.aurel32.net>
+	<Pine.LNX.4.64.0803052133400.20583@wotan.suse.de>
+	<20080305204234.GB17267@synopsys.com>
+	<20080305204945.GB14011@atrey.karlin.mff.cuni.cz>
+	<Pine.LNX.4.64.0803052158270.20583@wotan.suse.de>
+	<20080305212005.GC17267@synopsys.com>
+	<84fc9c000803051332q2f2eedeej7d3c0509e698cabf@mail.gmail.com>
+	<47CF11D6.7070901@zytor.com>
+	<738B72DB-A1D6-43F8-813A-E49688D05771@apple.com>
+	<47CF1931.2080102@zytor.com>
+From: Krzysztof Halasa <khc@pm.waw.pl>
+Date: Thu, 06 Mar 2008 03:11:10 +0100
+In-Reply-To: <47CF1931.2080102@zytor.com> (H. Peter Anvin's message of "Wed\, 05 Mar 2008 14\:05\:37 -0800")
+Message-ID: <m33ar4bo01.fsf@maximus.localdomain>
 MIME-Version: 1.0
-To: Alex Chiang <achiang@hp.com>,
-       Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>,
-       Greg KH <gregkh@suse.de>, Jesse Barnes <jbarnes@virtuousgeek.org>,
-       Matthew Wilcox <matthew@wil.cx>, Gary Hade <garyhade@us.ibm.com>,
-       warthog19@eaglescrag.net, kristen.c.accardi@intel.com,
-       rick.jones2@hp.com, linux-kernel@vger.kernel.org,
-       linux-pci@atrey.karlin.mff.cuni.cz, linux-acpi@vger.kernel.org
-Subject: Re: [PATCH 4/4] ACPI PCI slot detection driver
-References: <20080229002341.GA21420@ldl.fc.hp.com> <20080301144307.GD24386@parisc-linux.org> <20080304054927.GA15566@suse.de> <200803041018.29035.jbarnes@virtuousgeek.org> <20080304193036.GB5534@suse.de> <20080304230937.GD3694@ldl.fc.hp.com> <47CDF339.3060304@jp.fujitsu.com> <20080305202052.GN3694@ldl.fc.hp.com>
-In-Reply-To: <20080305202052.GN3694@ldl.fc.hp.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Alex-san,
+"H. Peter Anvin" <hpa@zytor.com> writes:
 
-> So given that it's two versus one, I modified my
-> drivers/acpi/pci_slot module to consider Fujitsu machines to be a
-> quirk. :)
-> 
-> Can you please test patches 1 and 2 that I sent out as v8 of my
-> series, but replace patch 3 with this patch?
+> Not quite, but fixing it in the kernel is easy.
+>
+> Still breaks for running on all old kernels.
 
-I don't have any better idea than this so far.
-I'll try suggested patch and send feedback as soon as possible.
+Many more things break on old kernels. I guess it's not worse than
+a (local) root exploit, is it?
 
-Thanks,
-Kenji Kaneshige
-
-
+*-stable and distributions should take care of it, as they do in
+others cases.
+-- 
+Krzysztof Halasa
