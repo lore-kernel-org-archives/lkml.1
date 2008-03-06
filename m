@@ -1,133 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761791AbYCGKzw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932084AbYCGLA7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761791AbYCGKzw (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Mar 2008 05:55:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756522AbYCGKzi
+	id S932084AbYCGLA7 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Mar 2008 06:00:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756040AbYCGLAw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Mar 2008 05:55:38 -0500
-Received: from e34.co.us.ibm.com ([32.97.110.152]:56926 "EHLO
-	e34.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755287AbYCGKzg (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Mar 2008 05:55:36 -0500
-Subject: Re: [RFC] JBD ordered mode rewrite
-From: Mingming Cao <cmm@us.ibm.com>
-Reply-To: cmm@us.ibm.com
-To: Jan Kara <jack@suse.cz>
-Cc: linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org
-In-Reply-To: <20080306174209.GA14193@duck.suse.cz>
-References: <20080306174209.GA14193@duck.suse.cz>
+	Fri, 7 Mar 2008 06:00:52 -0500
+Received: from mga02.intel.com ([134.134.136.20]:22208 "EHLO mga02.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754992AbYCGLAv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 7 Mar 2008 06:00:51 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.25,462,1199692800"; 
+   d="scan'208";a="351295245"
+Subject: Re: [BUG 2.6.25-rc3] scheduler/hotplug: some processes are
+	dealocked when cpu is set to offline
+From: Yi Yang <yi.y.yang@intel.com>
+Reply-To: yi.y.yang@intel.com
+To: ego@in.ibm.com
+Cc: Oleg Nesterov <oleg@tv-sign.ru>, Ingo Molnar <mingo@elte.hu>,
+       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, Thomas Gleixner <tglx@linutronix.de>
+In-Reply-To: <20080307105138.GA10576@in.ibm.com>
+References: <1204483329.3607.8.camel@yangyi-dev.bj.intel.com>
+	 <20080303153154.GA11288@in.ibm.com>
+	 <1204555505.3842.4.camel@yangyi-dev.bj.intel.com>
+	 <20080304052613.GA28632@in.ibm.com> <20080304150107.GA564@tv-sign.ru>
+	 <20080306134400.GA1915@in.ibm.com> <20080307025451.GA201@tv-sign.ru>
+	 <20080307091049.GA8827@in.ibm.com>  <20080307105138.GA10576@in.ibm.com>
 Content-Type: text/plain
-Organization: IBM Linux Technology Center
-Date: Fri, 07 Mar 2008 02:55:01 -0800
-Message-Id: <1204887301.3627.25.camel@localhost.localdomain>
+Organization: Intel
+Date: Fri, 07 Mar 2008 07:20:36 +0800
+Message-Id: <1204845636.3842.63.camel@yangyi-dev>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.8.0 (2.8.0-33.el5) 
+X-Mailer: Evolution 2.10.1 (2.10.1-4.fc7) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2008-03-06 at 18:42 +0100, Jan Kara wrote:
->   Hi,
+On Fri, 2008-03-07 at 16:21 +0530, Gautham R Shenoy wrote:
+> On Fri, Mar 07, 2008 at 02:40:49PM +0530, Gautham R Shenoy wrote:
+> > 
+> > > 
+> > > Just to be sure, there were no "bad ->cpu..." messages, yes?
+> > 
+> > Hopefully should be able to catch them now. If yes, it's a problem in
+> > the way we do migration after cpu-hotplug as Yi suggested in an earlier
+> > mail.
+> > 
+> > http://lkml.org/lkml/2008/3/6/437
+> > 
+> > This mail from akpm says the same thing.
 > 
-Hi Jan,
-
->   Below is my rewrite of ordered mode in JBD. Now we don't have a list of
-> data buffers that need syncing on transaction commit but a list of inodes
-> that need writeout during commit. This brings all sorts of advantages such
-> as possibility to get rid of journal heads and buffer heads for data
-> buffers in ordered mode, better ordering of writes on transaction commit,
-> simplification of some JBD code, no more anonymous pages when truncate of
-> data being committed happens. The patch has survived some light testing
-> but it still has some potential of eating your data so beware :) I've run
-> dbench to see whether we didn't decrease performance by different handling
-> of truncate and the throughput I'm getting on my machine is the same (OK,
-> is lower by 0.5%) if I disable the code in truncate waiting for commit to
-> finish... Also the throughput of dbench is about 2% better with my patch
-> than with current JBD.
-
-
-I know ext4 is keep changing that it's a bit hard to create patch
-against ext4, but I feel features like especially rewrite the default
-ordered mode should done in ext4/jbd2. I could port to current ext4 and
-JBD2 if you agrees with this.
-
-Also, would it make sense to create a new ordered mode writepage
-routines, and keep the old ordered mode code there for a while, to allow
-easy comparison? This could a good transition for people to start
-experiment this ordered mode without worrying about put data in danger
-by default.
-
->   Any comments or testing most welcom
-
-[...]
->  /*
->   * Note that we always start a transaction even if we're not journalling
->   * data.  This is to preserve ordering: any hole instantiation within
-> @@ -1465,15 +1444,11 @@ static int journal_dirty_data_fn(handle_t *handle, struct buffer_head *bh)
->   * We don't honour synchronous mounts for writepage().  That would be
->   * disastrous.  Any write() or metadata operation will sync the fs for
->   * us.
-> - *
-> - * AKPM2: if all the page's buffers are mapped to disk and !data=journal,
-> - * we don't need to open a transaction here.
->   */
->  static int ext3_ordered_writepage(struct page *page,
->  				struct writeback_control *wbc)
->  {
->  	struct inode *inode = page->mapping->host;
-> -	struct buffer_head *page_bufs;
->  	handle_t *handle = NULL;
->  	int ret = 0;
->  	int err;
-> @@ -1487,46 +1462,49 @@ static int ext3_ordered_writepage(struct page *page,
->  	if (ext3_journal_current_handle())
->  		goto out_fail;
+> Yup! There are a quite a few "bad->cpu" messages.
+> All of them only for watchdog/1.
 > 
-> -	handle = ext3_journal_start(inode, ext3_writepage_trans_blocks(inode));
-> -
-> -	if (IS_ERR(handle)) {
-> -		ret = PTR_ERR(handle);
-> -		goto out_fail;
-> +	/*
-> +	 * Now there are two different reasons why we can be called:
-> +	 *   1) write out during commit
-> +	 *   2) fsync / writeout to free memory
-> +	 *
-> +	 * In the first case, we just need to write the buffer to disk, in the
-> +	 * second case we may need to do hole filling and attach the inode to
-> +	 * the transaction. Note that even in the first case, we may get an
-> +	 * unmapped buffer (hole fill with data via mmap) but we don't have to
-> +	 * write it - actually, we can't because from a transaction commit we
-> +	 * cannot start a new transaction or we could deadlock.
-> +	 */
-
-
-Any thoughts how to handle the unmapped page under case 1)? Right now I
-see it fails. Your comments here saying that we still have the issue
-that "can't start a new transaction while commiting", but likely, with
-delayed allocation, starting a new transaction could to happen a lot to
-do defered block allocation. 
-
-I really hope this new mode could be easy to add delayed allocation
-support.  Any thoughts that we could workaround the locking in the JBD2
-layer?
-
-
-> +	if (!wbc->skip_unmapped) {
-> +		handle = ext3_journal_start(inode,
-> +				ext3_writepage_trans_blocks(inode));
-> +		if (IS_ERR(handle)) {
-> +			ret = PTR_ERR(handle);
-> +			goto out_fail;
-> +		}
->  	}
-> +	else if (!PageMappedToDisk(page))
-> +		goto out_fail;
+> What surprises me is the fact that the first of  task-hung messages come
+> after 136 successful cpu-hotplug attempts.
 > 
+> To answer Andrew's question, migration_call() *should* ideally be the
+> first notifier called, because it's registered with the priority 10.
+> 
+> Unless there's some change that has recently gone in the
+> notifier_call_chain subsystem that doesn't honour the registration priority
+> anymore, migration_call() will be called first,
+> which means the task affinity for watchdog thread is broken and hence
+> we shouldn't see the message below.
+> 
+> I'll probe to see if there's a change in the call order that's causing
+> this hang.
+I have traced all the cpu callback functions, i ensure migration_call is
+called firstly, i have ever set notifier priority of cpu_callback in
+kernel/softlockup.c to maximum int and check what will happen, the
+result is same.
 
-Thanks & Regards,
-
-Mingming
+> 
+> ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+> INFO: task watchdog/1:10958 can't get CPU for more than 120 seconds.
+> bad ->cpu
+>        f524ffac 00000046 c011befc f5276aa0 f5276bd8 c443db80 00000001 f6130b80 
+>        f524ff94 00000246 c07130f4 03d28000 00000000 f524ff9c c01438ad f524ffac 
+>        00000001 c0143a1f 00000000 f524ffd0 c0143a66 00000001 c0119fea 00000000 
+> Call Trace:
+>  [<c011befc>] ? cpu_clock+0x4e/0x59
+>  [<c01438ad>] ? get_timestamp+0x8/0x11
+>  [<c0143a1f>] ? watchdog+0x0/0x239
+>  [<c0143a66>] watchdog+0x47/0x239
+>  [<c0119fea>] ? complete+0x34/0x3e
+>  [<c0143a1f>] ? watchdog+0x0/0x239
+>  [<c012f797>] kthread+0x3b/0x64
+>  [<c012f75c>] ? kthread+0x0/0x64
+>  [<c01056eb>] kernel_thread_helper+0x7/0x10
+>  =======================
+> ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+> 
+> 
+> 
+> >
+> > >
+> > > Oleg.
+> > 
+> > -- 
+> > Thanks and Regards
+> > gautham
+> 
 
