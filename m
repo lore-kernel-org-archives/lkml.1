@@ -1,56 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935460AbYCFVDr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932950AbYCFVGM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935460AbYCFVDr (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Mar 2008 16:03:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756018AbYCFVDf
+	id S932950AbYCFVGM (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Mar 2008 16:06:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751774AbYCFVFz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Mar 2008 16:03:35 -0500
-Received: from gv-out-0910.google.com ([216.239.58.184]:50718 "EHLO
-	gv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S935900AbYCFVDf (ORCPT
+	Thu, 6 Mar 2008 16:05:55 -0500
+Received: from terminus.zytor.com ([198.137.202.10]:44795 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751911AbYCFVFy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Mar 2008 16:03:35 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-disposition:message-id:content-type:content-transfer-encoding;
-        b=dq39WyFnzK7ORwp0ppA1MnxCEbzbEIwy5G2yFtp1gJrsOwrinIfogG3APi3D3c2rT4VNW3yikWddvOS2tb1bgNzKneA0KBB1T1NQBO9oSYoD3zkiFocJizHuHUPEUHvZo+iKPh6MNHKm/jyOpVcevOEWsq6Sus91qmZ5sqqKlG4=
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: Randy Dunlap <randy.dunlap@oracle.com>
-Subject: Re: 2.6.25-rc3-mm1 (IDE)
-Date: Thu, 6 Mar 2008 22:14:20 +0100
-User-Agent: KMail/1.9.6 (enterprise 0.20071204.744707)
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Stephen Rothwell <sfr@canb.auug.org.au>
-References: <20080304011928.e8c82c0c.akpm@linux-foundation.org> <20080304083534.c936fe57.randy.dunlap@oracle.com>
-In-Reply-To: <20080304083534.c936fe57.randy.dunlap@oracle.com>
+	Thu, 6 Mar 2008 16:05:54 -0500
+Message-ID: <47D05CA0.9080305@zytor.com>
+Date: Thu, 06 Mar 2008 13:05:36 -0800
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
 MIME-Version: 1.0
-Content-Disposition: inline
-Message-Id: <200803062214.21094.bzolnier@gmail.com>
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: Ingo Molnar <mingo@elte.hu>
+CC: Pawel Plociennik <paplociennik@gmail.com>, Pavel Machek <pavel@ucw.cz>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2.6.24] chroot= as a new kernel parameter
+References: <200803060001.38432.paplociennik@gmail.com> <47CF79E4.3030107@zytor.com> <20080306102712.GE13391@elte.hu> <47D00B16.6040004@zytor.com> <20080306205736.GA22756@elte.hu>
+In-Reply-To: <20080306205736.GA22756@elte.hu>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-Hi,
-
-On Tuesday 04 March 2008, Randy Dunlap wrote:
-> On Tue, 4 Mar 2008 01:19:28 -0800 Andrew Morton wrote:
+Ingo Molnar wrote:
+> * H. Peter Anvin <hpa@zytor.com> wrote:
 > 
-> > 
-> > ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.25-rc3/2.6.25-rc3-mm1/
+>> It's useless because it's exactly and trivially replaceable with:
+>>
+>> 	init=/path/to/any/sbin/chroot /newroot /sbin/init
 > 
-> i386 allmodconfig gives me this:
+> ok, i didnt realize that this was possible. Ah ... i see, 
+> init/main.c:init_setup() is special and picks the whole boot parameter 
+> string up to the end, right? So init= is the only multi-parameter 
+> init-parameter.
 > 
-> ERROR: "probe_4drives" [drivers/ide/ide-core.ko] undefined!
 
-It was also reported by Andrew & Stephen but the thing is that it doesn't
-happen here with IDE tree, also it is quite strange that only probe_4drives
-causes error and other probe_* variables don't.
+Actually, any parameters without = get passed as arguments to init.
 
-I think that it is caused by something else in -mm / linux-next...
-
-Thanks,
-Bart
+	-hpa
