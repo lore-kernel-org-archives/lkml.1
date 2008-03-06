@@ -1,57 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936163AbYCFSPf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935464AbYCFSRz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936163AbYCFSPf (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Mar 2008 13:15:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935871AbYCFSN0
+	id S935464AbYCFSRz (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Mar 2008 13:17:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753321AbYCFSRq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Mar 2008 13:13:26 -0500
-Received: from fk-out-0910.google.com ([209.85.128.190]:17660 "EHLO
-	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S935530AbYCFSNY (ORCPT
+	Thu, 6 Mar 2008 13:17:46 -0500
+Received: from g5t0007.atlanta.hp.com ([15.192.0.44]:28348 "EHLO
+	g5t0007.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751098AbYCFSRo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Mar 2008 13:13:24 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding:sender;
-        b=xBL/c/AboQtTNyeccx/4hwDwRo8hHUsiewdEjRt4KhVqa6TuYHbIhP5TUmZ0x6OOjcmUay5q5vsXo1EG5cG69Jf5/NYQOX3dgzOmmx87FStZ7f93xuXUX6rNmdISpcgP/GyjhSzvxv2fMJ5lCBGAG+QNFtCRJc5UksHrMAgK9M0=
-Message-ID: <47D03440.6090503@gnu.org>
-Date: Thu, 06 Mar 2008 19:13:20 +0100
-From: Paolo Bonzini <bonzini@gnu.org>
-User-Agent: Thunderbird 2.0.0.12 (Macintosh/20080213)
-MIME-Version: 1.0
-To: Olivier Galibert <galibert@pobox.com>, Joe Buck <Joe.Buck@synopsys.COM>,
-       Paolo Bonzini <bonzini@gnu.org>, "H. Peter Anvin" <hpa@zytor.com>,
-       Chris Lattner <clattner@apple.com>, Michael Matz <matz@suse.de>,
-       Richard Guenther <richard.guenther@gmail.com>,
-       Jan Hubicka <hubicka@ucw.cz>, Aurelien Jarno <aurelien@aurel32.net>,
-       linux-kernel@vger.kernel.org, gcc@gcc.gnu.org
-Subject: Re: RELEASE BLOCKER: Linux doesn't follow x86/x86-64 ABI wrt direction
-   flag
-References: <738B72DB-A1D6-43F8-813A-E49688D05771@apple.com> <Pine.LNX.4.64.0803052258530.20583@wotan.suse.de> <2F47E21A-9055-4EC3-99CF-B666BBC045C3@apple.com> <47CF3F09.4080606@zytor.com> <578FCA7D-D7A6-44F6-9310-4A97C13CDCBE@apple.com> <47CF44E7.3020106@zytor.com> <20080306135139.GA5236@dspnet.fr.eu.org> <47CFF9A3.30309@gnu.org> <20080306141221.GC5236@dspnet.fr.eu.org> <20080306175841.GI17267@synopsys.com> <20080306181029.GA42904@dspnet.fr.eu.org>
-In-Reply-To: <20080306181029.GA42904@dspnet.fr.eu.org>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Thu, 6 Mar 2008 13:17:44 -0500
+Subject: Re: [BUG] 2.6.25-rc4 hang/softlockups after freeing hugepages
+From: Lee Schermerhorn <Lee.Schermerhorn@hp.com>
+To: Nishanth Aravamudan <nacc@us.ibm.com>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
+       Adam Litke <agl@us.ibm.com>, Andrew Morton <akpm@linux-foundation.org>,
+       Mel Gorman <mel@csn.ul.ie>, Eric Whitney <eric.whitney@hp.com>
+In-Reply-To: <20080306175311.GA14567@us.ibm.com>
+References: <1204824183.5294.62.camel@localhost>
+	 <20080306175311.GA14567@us.ibm.com>
+Content-Type: text/plain
+Organization: HP/OSLO
+Date: Thu, 06 Mar 2008 13:17:52 -0500
+Message-Id: <1204827473.5294.77.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.6.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Olivier Galibert wrote:
-> On Thu, Mar 06, 2008 at 09:58:41AM -0800, Joe Buck wrote:
->> If the kernel allows state to leak from one process to another,
->> for example from a process running as root to a process running as an
->> ordinary user, it's a bug, with possible security implications.
+On Thu, 2008-03-06 at 09:53 -0800, Nishanth Aravamudan wrote:
+> On 06.03.2008 [12:23:03 -0500], Lee Schermerhorn wrote:
+> > Test platform:  HP Proliant DL585 server - 4 socket, dual core AMD with
+> > 32GB memory.
+> > 
+> > I first saw this on 25-rc2-mm1 with Mel's zonelist patches, while
+> > investigating the interaction of hugepages and cpusets.  Thinking that
+> > it might be caused by the zonelist patches, I went back to 25-rc2-mm1
+> > w/o the patches and saw the same thing.  It sometimes takes a while for
+> > the softlockups to start appearing, and I wanted to find a fairly
+> > minimal duplicator.  Meanwhile 25-rc3 and rc4 have come out, so I tried
+> > the latest upstream kernel and see the same thing.
 > 
-> I don't think that it is relevant in your case.  If you have the
-> signal handler in something that does not share the VM with the
-> interrupted thread, you will have a context switch which is supposed
-> to store the direction flag and restore the one from the handling
-> thread.  If you share the VM there is no context switch but you have
-> access to the exact same memory with the exact same rights, making the
-> leak irrelevant.
+> So, does 2.6.25-rc2 show the problem? Or was it something introduced in
+> that -mm which has since gone upstream?
+> 
 
-A process can send a signal via kill.  IOW, a malicious process can 
-*control when the process would be interrupted* in order to get it into 
-the signal handler with DF=1.
+I don't recall that I went back that far.  I'll try Ingo's patch [later,
+after an obligatory meeting...] and let you know.
 
-Paolo
+<snip>
+> > I took a look at the recent hugetlb patches from Adam and Nish, but none
+> > seemed to address this symptom.  I don't think I'm dealing with surplus
+> > pages here.
+> 
+> If /proc/sys/vm/nr_overcommit_hugepages = 0, then no, you're not.
+
+I didn't set that, so it should have been zero.
+
+Lee
+
+
