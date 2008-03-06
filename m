@@ -1,256 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934858AbYCFQvS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933627AbYCFQ7V@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934858AbYCFQvS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Mar 2008 11:51:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763098AbYCFQvE
+	id S933627AbYCFQ7V (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Mar 2008 11:59:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760836AbYCFQ7G
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Mar 2008 11:51:04 -0500
-Received: from wx-out-0506.google.com ([66.249.82.229]:47074 "EHLO
-	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1762334AbYCFQvB (ORCPT
+	Thu, 6 Mar 2008 11:59:06 -0500
+Received: from ug-out-1314.google.com ([66.249.92.173]:54432 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760184AbYCFQ7E (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Mar 2008 11:51:01 -0500
+	Thu, 6 Mar 2008 11:59:04 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=n3xYbhLKvnfKE3pLFm5z56MDhEbqiTkGm601BIi0YCiv59h2XDKn+z6JUOf/YeK9im9Uuy2/nqXscZNvPsfmlRwwNX0QnNtKw9FYc6ug2TVIter9Q6ko7X9a2RVp6/dryTGFdecd4zUl/fXprj/UNe210lygQ0LcC03EKR7W8Gs=
-Message-ID: <386072610803060850i2e0b6e35q7e05448d5fd39bca@mail.gmail.com>
-Date: Thu, 6 Mar 2008 08:50:32 -0800
-From: "Bryan Wu" <cooloney@kernel.org>
-To: "Andrew Morton" <akpm@linux-foundation.org>
-Subject: Re: [Linux-fbdev-devel] [PATCH 1/1 try#2] [VIDEO/FRAMEBUFFER]: add BF52x EZkit Display driver
-Cc: bryan.wu@analog.com, linux-fbdev-devel@lists.sourceforge.net,
-       "Randy Dunlap" <randy.dunlap@oracle.com>,
-       "Michael Hennerich" <michael.hennerich@analog.com>,
-       linux-kernel@vger.kernel.org, adaplas@gmail.com
-In-Reply-To: <20080305230223.920765e9.akpm@linux-foundation.org>
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=Q5ahynXxRaJLqKeubivuvgV1X1VZAum0ECEt8ierrPuvqIi0LB9qBPKpeHIlVndWc3cxDjpfWDAfRG7MWjf4iAdsagEztp+qnKuUs1SX9n2LKD8EsjgCnclQ3IFLj0CniNIs5gxma07I1ChNjY+E/4ul0v7JSPTeyAAe5UELfrk=
+Message-ID: <6dc9ffc80803060858i7d4e8b56o99ff8ad301a5cc1a@mail.gmail.com>
+Date: Thu, 6 Mar 2008 08:58:57 -0800
+From: "H.J. Lu" <hjl.tools@gmail.com>
+To: "Jakub Jelinek" <jakub@redhat.com>
+Subject: Re: RELEASE BLOCKER: Linux doesn't follow x86/x86-64 ABI wrt direction flag
+Cc: "H. Peter Anvin" <hpa@zytor.com>, NightStrike <nightstrike@gmail.com>,
+       "Olivier Galibert" <galibert@pobox.com>,
+       "Chris Lattner" <clattner@apple.com>, "Michael Matz" <matz@suse.de>,
+       "Richard Guenther" <richard.guenther@gmail.com>,
+       "Joe Buck" <Joe.Buck@synopsys.com>, "Jan Hubicka" <hubicka@ucw.cz>,
+       "Aurelien Jarno" <aurelien@aurel32.net>, linux-kernel@vger.kernel.org,
+       gcc@gcc.gnu.org
+In-Reply-To: <20080306162353.GF24887@devserv.devel.redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <1201686800-31739-1-git-send-email-bryan.wu@analog.com>
-	 <20080130083820.c1bcbc14.randy.dunlap@oracle.com>
-	 <1201711783.6463.11.camel@roc-laptop>
-	 <20080305230223.920765e9.akpm@linux-foundation.org>
-X-Google-Sender-Auth: 5047ef958fb7583a
+References: <738B72DB-A1D6-43F8-813A-E49688D05771@apple.com>
+	 <2F47E21A-9055-4EC3-99CF-B666BBC045C3@apple.com>
+	 <47CF3F09.4080606@zytor.com>
+	 <578FCA7D-D7A6-44F6-9310-4A97C13CDCBE@apple.com>
+	 <47CF44E7.3020106@zytor.com> <20080306135139.GA5236@dspnet.fr.eu.org>
+	 <b609cb3b0803060737xa0c3c0byb51d51af797eb81f@mail.gmail.com>
+	 <6dc9ffc80803060743h502fc96bj6117ef87a8555c3a@mail.gmail.com>
+	 <47D012B4.3020104@zytor.com>
+	 <20080306162353.GF24887@devserv.devel.redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Mar 5, 2008 at 11:02 PM, Andrew Morton
-<akpm@linux-foundation.org> wrote:
-> On Thu, 31 Jan 2008 00:49:43 +0800 Bryan Wu <bryan.wu@analog.com> wrote:
->  >
+On Thu, Mar 6, 2008 at 8:23 AM, Jakub Jelinek <jakub@redhat.com> wrote:
+> On Thu, Mar 06, 2008 at 07:50:12AM -0800, H. Peter Anvin wrote:
+>  > H.J. Lu wrote:
+>  > >I agree with it. There is no  right or wrong here Let's start from
+>  > >scratch and figure out
+>  > >what is the best way to handle this, assuming we are defining a new psABI.
 >
->  bah, January.
->
->  I'm trolling the fbdev list only now - I guess I'll slip this one into
->  2.6.25.
->
-
-You finally caught this, -;)
-
->
->  > +static int bfin_t350mcqb_request_ports(int action)
->  > +{
->  > +     u16 ppi0_req_8[] = {P_PPI0_CLK, P_PPI0_FS1, P_PPI0_FS2,
->  > +                         P_PPI0_D0, P_PPI0_D1, P_PPI0_D2,
->  > +                         P_PPI0_D3, P_PPI0_D4, P_PPI0_D5,
->  > +                         P_PPI0_D6, P_PPI0_D7, 0};
->
->  This array will be assembled on the stack at runtime.  If
->  peripheral_request_list() doesn't alter it then it would be better to
->  create it at compile-time by adding `static'.
+>  BTW, just tested icc and icc doesn't generate cld either (so it matches the
+>  new gcc behavior).
+>  char buf1[32], buf2[32];
+>  void bar (void);
+>  void foo (void)
+>  {
+>   __builtin_memset (buf1, 0, 32);
+>   bar ();
+>   __builtin_memset (buf2, 0, 32);
+>  }
 >
 
-Exactly, I will do it.
+Icc follows the psABI. If we are saying icc/gcc 4.3 need a fix, we'd
+better define
+a new psABI first.
 
->
->  > +     if (action) {
->  > +             if (peripheral_request_list(ppi0_req_8, DRIVER_NAME)) {
->  > +                     printk(KERN_ERR "Requesting Peripherals faild\n");
->  > +                     return -EFAULT;
->  > +             }
->  > +     } else
->  > +             peripheral_free_list(ppi0_req_8);
->  > +
->  > +     return 0;
->  > +}
->  > +
->
-> > +static int bfin_t350mcqb_fb_mmap(struct fb_info *info, struct vm_area_struct *vma)
->  > +{
->  > +     struct bfin_t350mcqbfb_info *fbi = info->par;
->  > +
->  > +     if (fbi->lq043_mmap)
->  > +             return -1;
->  > +
->  > +     spin_lock(&fbi->lock);
->  > +     fbi->lq043_mmap = 1;
->  > +     spin_unlock(&fbi->lock);
->
->  the locking here probably doesn't do a lot.
->
-
-Actually, this locking is necessary here for trying to mmap by two
-application, IMO.
-
->
->  > +     vma->vm_start = (unsigned long)(fbi->fb_buffer + ACTIVE_VIDEO_MEM_OFFSET);
->  > +
->  > +     vma->vm_end = vma->vm_start + info->fix.smem_len;
->  > +     /* For those who don't understand how mmap works, go read
->  > +      *   Documentation/nommu-mmap.txt.
->  > +      * For those that do, you will know that the VM_MAYSHARE flag
->  > +      * must be set in the vma->vm_flags structure on noMMU
->  > +      *   Other flags can be set, and are documented in
->  > +      *   include/linux/mm.h
->  > +      */
->  > +     vma->vm_flags |= VM_MAYSHARE;
->  > +
->  > +     return 0;
->  > +}
->  > +
->  > +
->
->
-> > +static int __init bfin_t350mcqb_probe(struct platform_device *pdev)
->  > +{
->  > +     struct bfin_t350mcqbfb_info *info;
->  > +     struct fb_info *fbinfo;
->  > +     int ret;
->  > +
->  > +     printk(KERN_INFO DRIVER_NAME ": %dx%d %d-bit RGB FrameBuffer initializing...\n",
->  > +                                      LCD_X_RES, LCD_Y_RES, LCD_BPP);
->  > +
->  > +     if (request_dma(CH_PPI, "CH_PPI") < 0) {
->  > +             printk(KERN_ERR DRIVER_NAME
->  > +                    ": couldn't request CH_PPI DMA\n");
->  > +             ret = -EFAULT;
->  > +             goto out1;
->  > +     }
->  > +
->  > +     fbinfo =
->  > +         framebuffer_alloc(sizeof(struct bfin_t350mcqbfb_info), &pdev->dev);
->  > +     if (!fbinfo) {
->  > +             ret = -ENOMEM;
->  > +             goto out2;
->  > +     }
->  > +
->  > +     info = fbinfo->par;
->  > +     info->fb = fbinfo;
->  > +     info->dev = &pdev->dev;
->  > +
->  > +     platform_set_drvdata(pdev, fbinfo);
->  > +
->  > +     strcpy(fbinfo->fix.id, driver_name);
->  > +
->  > +     fbinfo->fix.type = FB_TYPE_PACKED_PIXELS;
->  > +     fbinfo->fix.type_aux = 0;
->  > +     fbinfo->fix.xpanstep = 0;
->  > +     fbinfo->fix.ypanstep = 0;
->  > +     fbinfo->fix.ywrapstep = 0;
->  > +     fbinfo->fix.accel = FB_ACCEL_NONE;
->  > +     fbinfo->fix.visual = FB_VISUAL_TRUECOLOR;
->  > +
->  > +     fbinfo->var.nonstd = 0;
->  > +     fbinfo->var.activate = FB_ACTIVATE_NOW;
->  > +     fbinfo->var.height = -1;
->  > +     fbinfo->var.width = -1;
->  > +     fbinfo->var.accel_flags = 0;
->  > +     fbinfo->var.vmode = FB_VMODE_NONINTERLACED;
->  > +
->  > +     fbinfo->var.xres = LCD_X_RES;
->  > +     fbinfo->var.xres_virtual = LCD_X_RES;
->  > +     fbinfo->var.yres = LCD_Y_RES;
->  > +     fbinfo->var.yres_virtual = LCD_Y_RES;
->  > +     fbinfo->var.bits_per_pixel = LCD_BPP;
->  > +
->  > +     fbinfo->var.red.offset = 0;
->  > +     fbinfo->var.green.offset = 8;
->  > +     fbinfo->var.blue.offset = 16;
->  > +     fbinfo->var.transp.offset = 0;
->  > +     fbinfo->var.red.length = 8;
->  > +     fbinfo->var.green.length = 8;
->  > +     fbinfo->var.blue.length = 8;
->  > +     fbinfo->var.transp.length = 0;
->  > +     fbinfo->fix.smem_len = LCD_X_RES * LCD_Y_RES * LCD_BPP / 8;
->  > +
->  > +     fbinfo->fix.line_length = fbinfo->var.xres_virtual *
->  > +         fbinfo->var.bits_per_pixel / 8;
->  > +
->  > +
->  > +     fbinfo->fbops = &bfin_t350mcqb_fb_ops;
->  > +     fbinfo->flags = FBINFO_FLAG_DEFAULT;
->  > +
->  > +     info->fb_buffer =
->  > +         dma_alloc_coherent(NULL, fbinfo->fix.smem_len, &info->dma_handle,
->  > +                            GFP_KERNEL);
->  > +
->  > +     if (NULL == info->fb_buffer) {
->  > +             printk(KERN_ERR DRIVER_NAME
->  > +                    ": couldn't allocate dma buffer.\n");
->  > +             ret = -ENOMEM;
->  > +             goto out3;
->  > +     }
->  > +
->  > +     memset(info->fb_buffer, 0, fbinfo->fix.smem_len);
->  > +
->  > +     fbinfo->screen_base = (void *)info->fb_buffer + ACTIVE_VIDEO_MEM_OFFSET;
->  > +     fbinfo->fix.smem_start = (int)info->fb_buffer + ACTIVE_VIDEO_MEM_OFFSET;
->  > +
->  > +     fbinfo->fbops = &bfin_t350mcqb_fb_ops;
->  > +
->  > +     fbinfo->pseudo_palette = kmalloc(sizeof(u32) * 16, GFP_KERNEL);
->  > +     if (!fbinfo->pseudo_palette) {
->  > +             printk(KERN_ERR DRIVER_NAME
->  > +                    "Fail to allocate pseudo_palette\n");
->  > +
->  > +             ret = -ENOMEM;
->  > +             goto out4;
->  > +     }
->  > +
->  > +     memset(fbinfo->pseudo_palette, 0, sizeof(u32) * 16);
->
->  You just invented kzalloc!
->
-
-Right
-
->
->
->  > +     if (fb_alloc_cmap(&fbinfo->cmap, BFIN_LCD_NBR_PALETTE_ENTRIES, 0)
->  > +         < 0) {
->  > +             printk(KERN_ERR DRIVER_NAME
->  > +                    "Fail to allocate colormap (%d entries)\n",
->  > +                    BFIN_LCD_NBR_PALETTE_ENTRIES);
->  > +             ret = -EFAULT;
->  > +             goto out5;
->  > +     }
->  > +
->  > +     if (bfin_t350mcqb_request_ports(1)) {
->  > +             printk(KERN_ERR DRIVER_NAME ": couldn't request gpio port.\n");
->  > +             ret = -EFAULT;
->  > +             goto out6;
->  > +     }
->  > +
->  > +     info->irq = platform_get_irq(pdev, 0);
->  > +     if (info->irq < 0) {
->  > +             ret = -EINVAL;
->  > +             goto out7;
->  > +     }
->  > +
->  > +     if (request_irq(info->irq, (void *)bfin_t350mcqb_irq_error, IRQF_DISABLED,
->  > +                     "PPI ERROR", info) < 0) {
->  > +             printk(KERN_ERR DRIVER_NAME
->  > +                    ": unable to request PPI ERROR IRQ\n");
->  > +             ret = -EFAULT;
->
->  EFAULT?
->
-
-It should return the request_irq return value and other similar
-function calls should be checked like this,
-right? Michael.
-
--Bryan
+H.J.
