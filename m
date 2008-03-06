@@ -1,76 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932351AbYCFM4G@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765304AbYCFM7o@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932351AbYCFM4G (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Mar 2008 07:56:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751023AbYCFMzy
+	id S1765304AbYCFM7o (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Mar 2008 07:59:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754702AbYCFM7g
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Mar 2008 07:55:54 -0500
-Received: from tomts40.bellnexxia.net ([209.226.175.97]:47054 "EHLO
-	tomts40-srv.bellnexxia.net" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1751846AbYCFMzy (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Mar 2008 07:55:54 -0500
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: Ao8CADh4z0dMQWoK/2dsb2JhbACBVqo5
-Date: Thu, 6 Mar 2008 07:55:51 -0500
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: Srinivasa DS <srinivasa@in.ibm.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       ananth@in.ibm.com, Jim Keniston <jkenisto@us.ibm.com>,
-       srikar@linux.vnet.ibm.com, SystemTAP <systemtap@sources.redhat.com>
-Subject: Re: [BUG] Kprobes fails on 2.6.25-rc3-mm1 (x86) systems, if
-	CONFIG_DEBUG_RODATA is set.
-Message-ID: <20080306125551.GA1597@Krystal>
-References: <200803061811.27555.srinivasa@in.ibm.com>
-Mime-Version: 1.0
+	Thu, 6 Mar 2008 07:59:36 -0500
+Received: from brick.kernel.dk ([87.55.233.238]:9284 "EHLO kernel.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754645AbYCFM7f (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 6 Mar 2008 07:59:35 -0500
+Date: Thu, 6 Mar 2008 13:59:30 +0100
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: Linux 2.6.25-rc4
+Message-ID: <20080306125929.GD17940@kernel.dk>
+References: <alpine.LFD.1.00.0803042044460.12253@woody.linux-foundation.org> <20080306090029.GA6215@elte.hu>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <200803061811.27555.srinivasa@in.ibm.com>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 07:55:11 up 6 days,  9:06,  3 users,  load average: 2.49, 1.67,
-	1.38
-User-Agent: Mutt/1.5.16 (2007-06-11)
+In-Reply-To: <20080306090029.GA6215@elte.hu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Srinivasa DS (srinivasa@in.ibm.com) wrote:
-> Insertion of kprobe module causes oops on 2.6.25-rc3-mm1 (x86) systems if we 
-> enable CONFIG_DEBUG_RODATA.  While registering the probe, memcpy() fails to 
-> copy breakpoint instruction to the instruction address and generates the 
-> oops.
+On Thu, Mar 06 2008, Ingo Molnar wrote:
 > 
-> BUG: unable to handle kernel paging request at ffffffff8047d1a7
-> IP: [<ffffffff8047ff62>] text_poke+0xa/0x10
-> PGD 203067 PUD 207063 PMD 7e191163 PTE 47d161
-> Oops: 0003 [1] PREEMPT SMP
-> ................................................
+> * Linus Torvalds <torvalds@linux-foundation.org> wrote:
 > 
-> This is because, Mathieu's patch (http://lkml.org/lkml/2008/2/2/226) makes 
-> entire text segment as READONLY, if we enable CONFIG_DEBUG_RODATA. 
+> > In particular, the block layer changes should hopefully have sorted 
+> > themselves out, and CD burning etc hopefully works for people again. 
 > 
-> So reverting this patch or new patch, which considers kprobes while deciding  
-> boundary for setting readonly pages might solve the probelm.
+> hm, tonight's randconfig bootrun produced a failing (soft-hung) kernel 
+> after about 120 iterations - and the log i captured _seems_ to indicate 
+> some block IO (or libata) completion weirdness.
 > 
+> unfortunately, it's not readily reproducible, and i triggered it with 
+> about 100 sched.git and 300 x86.git patches applied. BUT, virtually the 
+> same 100+300 patches queue produced a successful 1000+ randconfig 
+> testrun over the last weekend so i'm reasonably sure the regression is 
+> new and came in via upstream. Also, the config is UP (and it's a rather 
+> simple config in other aspects as well), so this must be something 
+> rather fundamental, not an SMP race.
+> 
+> I just spent about an hour trying to figure out a pattern but the bug 
+> just doesnt reproduce after 20 bootup attempts with the same bzImage. 
+> When it hung then it hung for hours, so the condition is permanent.
+> 
+> I've attached the bootup log which includes the SysRq-T output and the 
+> config. The hang seems to occur because an rc.sysinit task is not coming 
+> back from io_schedule():
+> 
+> rc.sysinit    D f75bcc24     0  1922   1893
+>        f761c810 00000086 f75bcd38 f75bcc24 1954bff5 00000015 f7746000 f761c974 
+>        f761c974 f7c17698 c180e7a8 f7747cc4 00000000 f7747ccc c180e7a8 c097bff7 
+>        c01a3acb c097c27d c01a3aa0 f7872a90 00000002 c01a3aa0 f7747e48 c097c2fc 
+> Call Trace:
+>  [<c097bff7>] io_schedule+0x37/0x70
+>  [<c01a3acb>] sync_buffer+0x2b/0x30
+>  [<c097c27d>] __wait_on_bit+0x4d/0x80
+>  [<c01a3aa0>] sync_buffer+0x0/0x30
+>  [<c01a3aa0>] sync_buffer+0x0/0x30
+>  [<c097c2fc>] out_of_line_wait_on_bit+0x4c/0x60
+>  [<c0142340>] wake_bit_function+0x0/0x40
+>  [<c01a3a51>] __wait_on_buffer+0x21/0x30
+>  [<c0209915>] ext3_bread+0x55/0x70
+>  [<c020cff8>] ext3_find_entry+0x258/0x660
+>  [<c03a0026>] avc_has_perm+0x46/0x50
+>  [<c03a0d14>] inode_has_perm+0x44/0x80
+>  [<c020de69>] ext3_lookup+0x29/0xa0
+>  [<c0189f90>] do_lookup+0x130/0x180
+>  [<c018b540>] __link_path_walk+0x340/0xd50
+>  [<c03a0d14>] inode_has_perm+0x44/0x80
+>  [<c018bf8a>] link_path_walk+0x3a/0xa0
+>  [<c016feb4>] __do_fault+0x1a4/0x3d0
+>  [<c018c1b7>] do_path_lookup+0x77/0x210
+>  [<c018cb57>] __user_walk_fd+0x27/0x40
+>  [<c01860d5>] vfs_stat_fd+0x15/0x40
+>  [<c016feb4>] __do_fault+0x1a4/0x3d0
+>  [<c01861ef>] sys_stat64+0xf/0x30
+>  [<c0125a5d>] do_page_fault+0x2ad/0x670
+>  [<c03db6cc>] trace_hardirqs_on_thunk+0xc/0x10
+>  [<c0115a5f>] sysenter_past_esp+0x5f/0x90
+>  =======================
 
-Hi,
+Sorry, I have _no_ ideas on what this could be. We haven't really had
+any related changes in the block layer over that short a time frame. It
+could of course have been introduced earlier, since it seems to be quite
+elusive.
 
-Are you running under Xen, lguest, kvm.. ?
-
-Mathieu
-
-> Thanks
->  Srinivasa DS
->  LTC-IBM
->  
-> 
-> 
-> 
+Presumably any hw issues would get noticed (like missing interrupt) and
+trigger the error handler, so it looks like this IO is still stuck in
+the queue somewhere. That mainly points the finger at AS, but given that
+you cannot reproduce I'm not sure how best to proceed with this...
 
 -- 
-Mathieu Desnoyers
-Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+Jens Axboe
+
