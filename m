@@ -1,49 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932828AbYCFLUx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932915AbYCFLW1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932828AbYCFLUx (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Mar 2008 06:20:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761160AbYCFLUn
+	id S932915AbYCFLW1 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Mar 2008 06:22:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758797AbYCFLWT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Mar 2008 06:20:43 -0500
-Received: from gv-out-0910.google.com ([216.239.58.185]:57083 "EHLO
-	gv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756971AbYCFLUn (ORCPT
+	Thu, 6 Mar 2008 06:22:19 -0500
+Received: from smtp120.sbc.mail.sp1.yahoo.com ([69.147.64.93]:41145 "HELO
+	smtp120.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1756971AbYCFLWS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Mar 2008 06:20:43 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=OHMVj9+w+c0PMEXYjFgimRnCSBYKc1PfSQPcLQcZZe53RcL0OYnxqZ4MK01y3XNXAUcrXFMeV5MXjKhbxbwuH0R+dI00wk8zx2c7fc1SdgcYzgpa4uvPoTk08QwUi2hTHUOVV8f817vd2y4sIFe6HiSTI8+GQJQhHZ0P+aUNWHQ=
-Message-ID: <e9e943910803060320o1992b488h799218cafc5a02be@mail.gmail.com>
-Date: Thu, 6 Mar 2008 11:20:39 +0000
-From: "Duane Griffin" <duaneg@dghda.com>
-To: "Andrew Morton" <akpm@linux-foundation.org>
-Subject: Re: [RFC, PATCH 0/6] ext3: do not modify data on-disk when mounting read-only filesystem
-Cc: linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org,
-       "Theodore Tso" <tytso@mit.edu>, sct@redhat.com, adilger@clusterfs.com
-In-Reply-To: <20080305194220.f9cce55e.akpm@linux-foundation.org>
+	Thu, 6 Mar 2008 06:22:18 -0500
+X-YMail-OSG: APn3s_EVM1mAo9radL1MVXEQgWCR0ac8mTDjuGV.uvSNVoeGB0Hn9OvVPmWxNSq24nMXDjnZQw--
+X-Yahoo-Newman-Property: ymail-3
+Date: Thu, 6 Mar 2008 03:22:12 -0800
+From: Chris Wedgwood <cw@f00f.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Pawel Plociennik <paplociennik@gmail.com>, Pavel Machek <pavel@ucw.cz>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2.6.24] chroot= as a new kernel parameter
+Message-ID: <20080306112212.GA9261@puku.stupidest.org>
+References: <200803060001.38432.paplociennik@gmail.com> <20080306103422.GA5511@puku.stupidest.org> <20080306104448.GG13391@elte.hu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <1204768754-29655-1-git-send-email-duaneg@dghda.com>
-	 <20080305194220.f9cce55e.akpm@linux-foundation.org>
-X-Google-Sender-Auth: a05b6c3a03ca0386
+In-Reply-To: <20080306104448.GG13391@elte.hu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 06/03/2008, Andrew Morton <akpm@linux-foundation.org> wrote:
-> I'll grab the first three for now, thanks.
+On Thu, Mar 06, 2008 at 11:44:48AM +0100, Ingo Molnar wrote:
 
-Great, thanks!
+> we can/could do many other boot options via an initrd too.
 
-> Someone(tm) should do the jbd2 versions..
+There has been some talk of this and even an implementation of much of
+it.  I'm not convinced it's a bad idea, I've had to use it myself on
+products where the in-kernel ip auto-configuration doesn't work.
 
-I'll do them tonight, unless someone beats me to it.
+> But given an existing initrd (which might have come from the distro,
+> etc.) i prefer adding boot options instead of modifying the initrd.
 
-Cheers,
-Duane.
-
--- 
-"I never could learn to drink that blood and call it wine" - Bob Dylan
+I assume this is so you have have /distro1 /distro2 and use your boot
+option to (help) select which one you boot into?
