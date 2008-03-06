@@ -1,51 +1,139 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932565AbYCGDmR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764024AbYCGD0v@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932565AbYCGDmR (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Mar 2008 22:42:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757079AbYCGDmB
+	id S1764024AbYCGD0v (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Mar 2008 22:26:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757775AbYCGD0I
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Mar 2008 22:42:01 -0500
-Received: from gherkin.frus.com ([192.158.254.49]:37441 "EHLO gherkin.frus.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756865AbYCGDmA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Mar 2008 22:42:00 -0500
-Subject: [regression]2.6.25-rc4: boot panic on alpha
-To: linux-kernel@vger.kernel.org
-Date: Thu, 6 Mar 2008 21:41:55 -0600 (CST)
-CC: linux-alpha@vger.kernel.org
-X-Mailer: ELM [version 2.4ME+ PL82 (25)]
-MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Content-Type: text/plain; charset=US-ASCII
-Message-Id: <20080307034155.A8C6EDBA2@gherkin.frus.com>
-From: rct@frus.com (Bob Tracy)
+	Thu, 6 Mar 2008 22:26:08 -0500
+Received: from gateway-1237.mvista.com ([63.81.120.158]:63397 "EHLO
+	dwalker1.mvista.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1757079AbYCGD0D (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 6 Mar 2008 22:26:03 -0500
+Message-Id: <20080307031633.040677497@mvista.com>
+References: <20080307031621.590778480@mvista.com>
+User-Agent: quilt/0.46-1
+Date: Thu, 06 Mar 2008 00:00:02 -0800
+Subject: [PATCH 2/5] net: ehea: ehea_fw_handles semaphore to mutex
+From: Daniel Walker <dwalker@mvista.com>
+To: Jeff Garzik <jeff@garzik.org>
+Cc: Christoph Raisch <raisch@de.ibm.com>,
+       Jan-Bernd Themann <themann@de.ibm.com>,
+       Thomas Klein <tklein@de.ibm.com>, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The regression is relative to 2.6.25-rc1 + timer fixes (added when
-I reported the problems with 2.6.25-rc1 relative to 2.6.24).  I haven't
-tried -rc2 or -rc3.
+-- 
+Content-Disposition: inline; filename=net-ehea-fw_handles-semaphore-to-mutex.patch
 
-Might be related to similar reports I've seen, but wanted to add the
-Alpha platform to the list.  The -rc4 kernel boots, but at some point
-following initialization of the SCSI layer, there's a panic with enough
-diagnostic output that a 50-line screen can't hold it all.  Unfortunately,
-the system logging isn't active, so nothing gets captured.
+Converted the ehea_fw_handles.lock to a mutex.
 
-The panic is completely reproducible.  The "Code" line at the bottom
-of the panic output is
+Signed-off-by: Daniel Walker <dwalker@mvista.com>
 
-44220001 4821f621 4821b681 4821f62b f420004f 00000081 <0000009b> 0066c012
+---
+ drivers/net/ehea/ehea.h      |    2 +-
+ drivers/net/ehea/ehea_main.c |   18 +++++++++---------
+ 2 files changed, 10 insertions(+), 10 deletions(-)
 
-The first line of the "Trace" section is
-
- [<fffffc000031a41f>] iommu_arena_alloc+0x64/0xe0
-
-Platform is an Alpha PWS 433au.  gcc is version 4.1.2 (Debian 4.1.1-21).
+Index: linux-2.6.24/drivers/net/ehea/ehea.h
+===================================================================
+--- linux-2.6.24.orig/drivers/net/ehea/ehea.h
++++ linux-2.6.24/drivers/net/ehea/ehea.h
+@@ -421,7 +421,7 @@ struct ehea_fw_handle_entry {
+ struct ehea_fw_handle_array {
+ 	struct ehea_fw_handle_entry *arr;
+ 	int num_entries;
+-	struct semaphore lock;
++	struct mutex lock;
+ };
+ 
+ struct ehea_bcmc_reg_entry {
+Index: linux-2.6.24/drivers/net/ehea/ehea_main.c
+===================================================================
+--- linux-2.6.24.orig/drivers/net/ehea/ehea_main.c
++++ linux-2.6.24/drivers/net/ehea/ehea_main.c
+@@ -2453,7 +2453,7 @@ static int ehea_up(struct net_device *de
+ 	if (port->state == EHEA_PORT_UP)
+ 		return 0;
+ 
+-	down(&ehea_fw_handles.lock);
++	mutex_lock(&ehea_fw_handles.lock);
+ 
+ 	ret = ehea_port_res_setup(port, port->num_def_qps,
+ 				  port->num_add_tx_qps);
+@@ -2517,7 +2517,7 @@ out:
+ 	up(&ehea_bcmc_regs.lock);
+ 
+ 	ehea_update_firmware_handles();
+-	up(&ehea_fw_handles.lock);
++	mutex_unlock(&ehea_fw_handles.lock);
+ 
+ 	return ret;
+ }
+@@ -2573,7 +2573,7 @@ static int ehea_down(struct net_device *
+ 
+ 	ehea_free_interrupts(dev);
+ 
+-	down(&ehea_fw_handles.lock);
++	mutex_lock(&ehea_fw_handles.lock);
+ 
+ 	port->state = EHEA_PORT_DOWN;
+ 
+@@ -2586,7 +2586,7 @@ static int ehea_down(struct net_device *
+ 			  dev->name, ret);
+ 
+ 	ehea_update_firmware_handles();
+-	up(&ehea_fw_handles.lock);
++	mutex_unlock(&ehea_fw_handles.lock);
+ 
+ 	return ret;
+ }
+@@ -3343,7 +3343,7 @@ static int __devinit ehea_probe_adapter(
+ 		ehea_error("Invalid ibmebus device probed");
+ 		return -EINVAL;
+ 	}
+-	down(&ehea_fw_handles.lock);
++	mutex_lock(&ehea_fw_handles.lock);
+ 
+ 	adapter = kzalloc(sizeof(*adapter), GFP_KERNEL);
+ 	if (!adapter) {
+@@ -3427,7 +3427,7 @@ out_free_ad:
+ 
+ out:
+ 	ehea_update_firmware_handles();
+-	up(&ehea_fw_handles.lock);
++	mutex_unlock(&ehea_fw_handles.lock);
+ 	return ret;
+ }
+ 
+@@ -3446,7 +3446,7 @@ static int __devexit ehea_remove(struct 
+ 
+ 	flush_scheduled_work();
+ 
+-	down(&ehea_fw_handles.lock);
++	mutex_lock(&ehea_fw_handles.lock);
+ 
+ 	ibmebus_free_irq(adapter->neq->attr.ist1, adapter);
+ 	tasklet_kill(&adapter->neq_tasklet);
+@@ -3457,7 +3457,7 @@ static int __devexit ehea_remove(struct 
+ 	kfree(adapter);
+ 
+ 	ehea_update_firmware_handles();
+-	up(&ehea_fw_handles.lock);
++	mutex_unlock(&ehea_fw_handles.lock);
+ 
+ 	return 0;
+ }
+@@ -3544,7 +3544,7 @@ int __init ehea_module_init(void)
+ 	memset(&ehea_fw_handles, 0, sizeof(ehea_fw_handles));
+ 	memset(&ehea_bcmc_regs, 0, sizeof(ehea_bcmc_regs));
+ 
+-	sema_init(&ehea_fw_handles.lock, 1);
++	mutex_init(&ehea_fw_handles.lock);
+ 	sema_init(&ehea_bcmc_regs.lock, 1);
+ 
+ 	ret = check_module_parm();
 
 -- 
-------------------------------------------------------------------------
-Bob Tracy          |  "I was a beta tester for dirt.  They never did
-rct@frus.com       |   get all the bugs out." - Steve McGrew on /.
-------------------------------------------------------------------------
