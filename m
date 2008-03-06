@@ -1,46 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934753AbYCFCec@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934308AbYCFCfA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934753AbYCFCec (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Mar 2008 21:34:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934399AbYCFC25
+	id S934308AbYCFCfA (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Mar 2008 21:35:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934190AbYCFC3r
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Mar 2008 21:28:57 -0500
-Received: from e34.co.us.ibm.com ([32.97.110.152]:40819 "EHLO
-	e34.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S934390AbYCFC24 (ORCPT
+	Wed, 5 Mar 2008 21:29:47 -0500
+Received: from web36709.mail.mud.yahoo.com ([209.191.85.43]:47310 "HELO
+	web36709.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S933664AbYCFC3p (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Mar 2008 21:28:56 -0500
-Date: Wed, 5 Mar 2008 18:28:54 -0800
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Jike Song <albcamus@gmail.com>
-Cc: Dave Young <hidave.darkstar@gmail.com>,
-       Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: 2.6.25-rc4 rcupreempt.h WARNINGs while suspend/resume
-Message-ID: <20080306022854.GK8728@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <a8e1da0803042324ndd3873ay61cee6112d9dda9a@mail.gmail.com> <df9815e70803042335j4ea66028y96d6be21f0970aa1@mail.gmail.com> <20080305165531.GB8728@linux.vnet.ibm.com> <df9815e70803051811o4c4a42e0td56cfd32b80c66b2@mail.gmail.com>
+	Wed, 5 Mar 2008 21:29:45 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com;
+  h=X-YMail-OSG:Received:Date:From:Subject:To:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-ID;
+  b=UiRt6YayvWuIsjHMTemXn1zkWjO891Gh95B5XTBV+bCTpEpCTRrNt2ECFUJ/dqQTKs/0xJR9D12o7A6UrIPFhwcg7K3Y0WZ6yUaEjyK0sFWay54Bakd/3I26H54W/YyHyxiuj4MjZbMUN+wsDXIJ2ch6dtnSAR+cFgZsa3B/LAE=;
+X-YMail-OSG: qL7MBgoVM1mpfPvbtrve79UzZd6Sw2STSFiHuDXMQuYCH0wSmMcl0Av64TS.ThgsshBZs_1fdiep7UNXXnvMPRJqxEAChD_hJKwlk39zgK9DB1oeKg69eupg2gXSoQ--
+Date: Wed, 5 Mar 2008 18:29:43 -0800 (PST)
+From: Alex Dubov <oakad@yahoo.com>
+Subject: Re: [PATCH 11/11] memstick: add support for JMicron jmb38x MemoryStick host controller
+To: Linux kernel mailing list <linux-kernel@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <df9815e70803051811o4c4a42e0td56cfd32b80c66b2@mail.gmail.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+Message-ID: <446410.44539.qm@web36709.mail.mud.yahoo.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Mar 06, 2008 at 10:11:26AM +0800, Jike Song wrote:
-> On Thu, Mar 6, 2008 at 12:55 AM, Paul E. McKenney
-> <paulmck@linux.vnet.ibm.com> wrote:
-> >  Could you please try applying Karsten Wiese's patch to see if it
-> >  fixes the WARNINGs?  See http://lkml.org/lkml/2008/2/26/386 for
-> >  the patch.
-> >
-> >                                                 Thanx, Paul
+--- Andrew Morton <akpm@linux-foundation.org> wrote:
+
+> On Wed,  5 Mar 2008 03:02:28 +1100
+> oakad@exemail.com.au wrote:
 > 
-> Yes, the WARNING disappears with Karsten's patch applied.
-> Thanks.
+> > +static void jmb38x_ms_reset(struct jmb38x_ms_host *host)
+> > +{
+> > +	unsigned int host_ctl = readl(host->addr + HOST_CONTROL);
+> > +
+> > +	writel(host_ctl | HOST_CONTROL_RESET_REQ | HOST_CONTROL_RESET,
+> > +	       host->addr + HOST_CONTROL);
+> > +
+> > +	while (HOST_CONTROL_RESET_REQ
+> > +	       & (host_ctl = readl(host->addr + HOST_CONTROL))) {
+> 
+> host_ctl is written to but is not used again.
 
-Good to hear!!!  I believe that Karsten's patch is on its way in,
-so hopefully that will clear things up.
+It was supposed to be used in the dev_dbg printout.
 
-						Thanx, Paul
+> 
+> > +		ndelay(100);
+> > +		dev_dbg(&host->chip->pdev->dev, "reset\n");
+> > +	}
+> > +
+> > +	writel(INT_STATUS_ALL, host->addr + INT_STATUS_ENABLE);
+> > +	writel(INT_STATUS_ALL, host->addr + INT_SIGNAL_ENABLE);
+> > +
+> > +	dev_dbg(&host->chip->pdev->dev, "reset\n");
+> > +}
+> 
+
+
+
+      ____________________________________________________________________________________
+Be a better friend, newshound, and 
+know-it-all with Yahoo! Mobile.  Try it now.  http://mobile.yahoo.com/;_ylt=Ahu06i62sR8HDtDypao8Wcj9tAcJ 
+
