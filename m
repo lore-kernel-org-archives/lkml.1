@@ -1,16 +1,16 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934610AbYCFSyo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934845AbYCFSzh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934610AbYCFSyo (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Mar 2008 13:54:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755889AbYCFSye
+	id S934845AbYCFSzh (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Mar 2008 13:55:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756000AbYCFSzL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Mar 2008 13:54:34 -0500
-Received: from e32.co.us.ibm.com ([32.97.110.150]:35450 "EHLO
-	e32.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756107AbYCFSyd (ORCPT
+	Thu, 6 Mar 2008 13:55:11 -0500
+Received: from e36.co.us.ibm.com ([32.97.110.154]:36084 "EHLO
+	e36.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755889AbYCFSzI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Mar 2008 13:54:33 -0500
-Subject: [PATCH 3/5] [PPC] hotplug memory notifications for ppc
+	Thu, 6 Mar 2008 13:55:08 -0500
+Subject: [PATCH 4/5] [PPC] update lmb for hotplug memory add/remove
 From: Badari Pulavarty <pbadari@us.ibm.com>
 To: lkml <linux-kernel@vger.kernel.org>
 Cc: linuxppc-dev@ozlabs.org, paulus@samba.org,
@@ -19,8 +19,8 @@ Cc: linuxppc-dev@ozlabs.org, paulus@samba.org,
 In-Reply-To: <1204829673.7939.59.camel@dyn9047017100.beaverton.ibm.com>
 References: <1204829673.7939.59.camel@dyn9047017100.beaverton.ibm.com>
 Content-Type: text/plain
-Date: Thu, 06 Mar 2008 10:57:50 -0800
-Message-Id: <1204829870.6272.0.camel@dyn9047017100.beaverton.ibm.com>
+Date: Thu, 06 Mar 2008 10:58:27 -0800
+Message-Id: <1204829908.6272.2.camel@dyn9047017100.beaverton.ibm.com>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.0.4 (2.0.4-4) 
 Content-Transfer-Encoding: 7bit
@@ -28,51 +28,186 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hotplug memory notifier for ppc64. This gets invoked by writing
-the device-node that needs to be removed to /proc/ppc64/ofdt.
-We need to adjust the sections and remove sysfs entries by
-calling __remove_pages(). Then call arch specific code to
-get rid of htab mappings for the section of memory.
+ppc kernel maintains information about logical memory blocks in
+lmb.memory structure at the boot time. Its not updated for
+hotplug memory add/remove. hotplug memory notifier for memory
+add/remove now updates lmb.memory.
+
+This information is useful for eHEA driver to find out the memory 
+layout and holes.
+
+NOTE: Calls to lmb_add() and lmb_remove() needs to be serialized by 
+the caller. In this case blocking_notifier_chain(pSeries_reconfig_chain)
+does that.
 
 Signed-off-by: Badari Pulavarty <pbadari@us.ibm.com>
-Reviewed-by: Michael Ellerman <michael@ellerman.id.au>
 ---
- arch/powerpc/platforms/pseries/Makefile         |    1 
- arch/powerpc/platforms/pseries/hotplug-memory.c |   98 ++++++++++++++++++++++++
- 2 files changed, 99 insertions(+)
+ arch/powerpc/platforms/pseries/hotplug-memory.c |   43 +++++++++++++++
+ include/linux/lmb.h                             |    3 -
+ lib/lmb.c                                       |   66 ++++++++++++++++++++----
+ 3 files changed, 102 insertions(+), 10 deletions(-)
 
-Index: linux-2.6.25-rc2/arch/powerpc/platforms/pseries/hotplug-memory.c
+Index: linux-2.6.25-rc3/lib/lmb.c
 ===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.25-rc2/arch/powerpc/platforms/pseries/hotplug-memory.c	2008-02-29 09:25:14.000000000 -0800
-@@ -0,0 +1,98 @@
-+/*
-+ * pseries Memory Hotplug infrastructure.
-+ *
-+ * Copyright (C) 2008 Badari Pulavarty, IBM Corporation
-+ *
-+ *      This program is free software; you can redistribute it and/or
-+ *      modify it under the terms of the GNU General Public License
-+ *      as published by the Free Software Foundation; either version
-+ *      2 of the License, or (at your option) any later version.
-+ */
+--- linux-2.6.25-rc3.orig/lib/lmb.c	2008-03-05 10:44:29.000000000 -0800
++++ linux-2.6.25-rc3/lib/lmb.c	2008-03-05 10:44:56.000000000 -0800
+@@ -54,14 +54,13 @@ void lmb_dump_all(void)
+ #endif /* DEBUG */
+ }
+ 
+-static unsigned long __init lmb_addrs_overlap(u64 base1,
+-		u64 size1, u64 base2, u64 size2)
++static unsigned long lmb_addrs_overlap(u64 base1, u64 size1, u64 base2,
++		u64 size2)
+ {
+ 	return ((base1 < (base2+size2)) && (base2 < (base1+size1)));
+ }
+ 
+-static long __init lmb_addrs_adjacent(u64 base1, u64 size1,
+-		u64 base2, u64 size2)
++static long lmb_addrs_adjacent(u64 base1, u64 size1, u64 base2, u64 size2)
+ {
+ 	if (base2 == base1 + size1)
+ 		return 1;
+@@ -71,7 +70,7 @@ static long __init lmb_addrs_adjacent(u6
+ 	return 0;
+ }
+ 
+-static long __init lmb_regions_adjacent(struct lmb_region *rgn,
++static long lmb_regions_adjacent(struct lmb_region *rgn,
+ 		unsigned long r1, unsigned long r2)
+ {
+ 	u64 base1 = rgn->region[r1].base;
+@@ -82,7 +81,7 @@ static long __init lmb_regions_adjacent(
+ 	return lmb_addrs_adjacent(base1, size1, base2, size2);
+ }
+ 
+-static void __init lmb_remove_region(struct lmb_region *rgn, unsigned long r)
++static void lmb_remove_region(struct lmb_region *rgn, unsigned long r)
+ {
+ 	unsigned long i;
+ 
+@@ -94,7 +93,7 @@ static void __init lmb_remove_region(str
+ }
+ 
+ /* Assumption: base addr of region 1 < base addr of region 2 */
+-static void __init lmb_coalesce_regions(struct lmb_region *rgn,
++static void lmb_coalesce_regions(struct lmb_region *rgn,
+ 		unsigned long r1, unsigned long r2)
+ {
+ 	rgn->region[r1].size += rgn->region[r2].size;
+@@ -129,7 +128,7 @@ void __init lmb_analyze(void)
+ }
+ 
+ /* This routine called with relocation disabled. */
+-static long __init lmb_add_region(struct lmb_region *rgn, u64 base, u64 size)
++static long lmb_add_region(struct lmb_region *rgn, u64 base, u64 size)
+ {
+ 	unsigned long coalesced = 0;
+ 	long adjacent, i;
+@@ -195,7 +194,7 @@ static long __init lmb_add_region(struct
+ }
+ 
+ /* This routine may be called with relocation disabled. */
+-long __init lmb_add(u64 base, u64 size)
++long lmb_add(u64 base, u64 size)
+ {
+ 	struct lmb_region *_rgn = &(lmb.memory);
+ 
+@@ -207,6 +206,55 @@ long __init lmb_add(u64 base, u64 size)
+ 
+ }
+ 
++long lmb_remove(u64 base, u64 size)
++{
++	struct lmb_region *rgn = &(lmb.memory);
++	u64 rgnbegin, rgnend;
++	u64 end = base + size;
++	int i;
 +
-+#include <linux/of.h>
-+#include <asm/firmware.h>
-+#include <asm/machdep.h>
-+#include <asm/pSeries_reconfig.h>
++	rgnbegin = rgnend = 0; /* supress gcc warnings */
 +
-+static int pseries_remove_memory(struct device_node *np)
++	/* Find the region where (base, size) belongs to */
++	for (i=0; i < rgn->cnt; i++) {
++		rgnbegin = rgn->region[i].base;
++		rgnend = rgnbegin + rgn->region[i].size;
++
++		if ((rgnbegin <= base) && (end <= rgnend))
++			break;
++	}
++
++	/* Didn't find the region */
++	if (i == rgn->cnt)
++		return -1;
++
++	/* Check to see if we are removing entire region */
++	if ((rgnbegin == base) && (rgnend == end)) {
++		lmb_remove_region(rgn, i);
++		return 0;
++	}
++
++	/* Check to see if region is matching at the front */
++	if (rgnbegin == base) {
++		rgn->region[i].base = end;
++		rgn->region[i].size -= size;
++		return 0;
++	}
++
++	/* Check to see if the region is matching at the end */
++	if (rgnend == end) {
++		rgn->region[i].size -= size;
++		return 0;
++	}
++
++	/*
++	 * We need to split the entry -  adjust the current one to the
++	 * beginging of the hole and add the region after hole.
++	 */
++	rgn->region[i].size = base - rgn->region[i].base;
++	return lmb_add_region(rgn, end, rgnend - end);
++}
++
+ long __init lmb_reserve(u64 base, u64 size)
+ {
+ 	struct lmb_region *_rgn = &(lmb.reserved);
+Index: linux-2.6.25-rc3/arch/powerpc/platforms/pseries/hotplug-memory.c
+===================================================================
+--- linux-2.6.25-rc3.orig/arch/powerpc/platforms/pseries/hotplug-memory.c	2008-03-05 10:44:51.000000000 -0800
++++ linux-2.6.25-rc3/arch/powerpc/platforms/pseries/hotplug-memory.c	2008-03-05 10:45:06.000000000 -0800
+@@ -10,6 +10,7 @@
+  */
+ 
+ #include <linux/of.h>
++#include <linux/lmb.h>
+ #include <asm/firmware.h>
+ #include <asm/machdep.h>
+ #include <asm/pSeries_reconfig.h>
+@@ -58,6 +59,11 @@ static int pseries_remove_memory(struct 
+ 		return ret;
+ 
+ 	/*
++	 * Update memory regions for memory remove
++	 */
++	lmb_remove(start_pfn << PAGE_SHIFT, regs[3]);
++
++	/*
+ 	 * Remove htab bolted mappings for this section of memory
+ 	 */
+  	start = (unsigned long)__va(start_pfn << PAGE_SHIFT);
+@@ -65,6 +71,41 @@ static int pseries_remove_memory(struct 
+ 	return ret;
+ }
+ 
++static int pseries_add_memory(struct device_node *np)
 +{
 +	const char *type;
 +	const unsigned int *my_index;
 +	const unsigned int *regs;
-+	u64 start_pfn, start;
-+	struct zone *zone;
++	u64 start_pfn;
 +	int ret = -EINVAL;
 +
 +	/*
-+	 * Check to see if we are actually removing memory
++	 * Check to see if we are actually adding memory
 +	 */
 +	type = of_get_property(np, "device_type", NULL);
 +	if (type == NULL || strcmp(type, "memory") != 0)
@@ -90,71 +225,39 @@ Index: linux-2.6.25-rc2/arch/powerpc/platforms/pseries/hotplug-memory.c
 +		return ret;
 +
 +	start_pfn = section_nr_to_pfn(*my_index & 0xffff);
-+	zone = page_zone(pfn_to_page(start_pfn));
 +
 +	/*
-+	 * Remove section mappings and sysfs entries for the
-+	 * section of the memory we are removing.
-+	 *
-+	 * NOTE: Ideally, this should be done in generic code like
-+	 * remove_memory(). But remove_memory() gets called by writing
-+	 * to sysfs "state" file and we can't remove sysfs entries
-+	 * while writing to it. So we have to defer it to here.
++	 * Update memory region to represent the memory add
 +	 */
-+	ret = __remove_pages(zone, start_pfn, regs[3] >> PAGE_SHIFT);
-+	if (ret)
-+		return ret;
-+
-+	/*
-+	 * Remove htab bolted mappings for this section of memory
-+	 */
-+ 	start = (unsigned long)__va(start_pfn << PAGE_SHIFT);
-+ 	ret = remove_section_mapping(start, start + regs[3]);
-+	return ret;
-+}
-+
-+static int pseries_memory_notifier(struct notifier_block *nb,
-+				unsigned long action, void *node)
-+{
-+	int err = NOTIFY_OK;
-+
-+	switch (action) {
-+	case PSERIES_RECONFIG_ADD:
-+		break;
-+	case PSERIES_RECONFIG_REMOVE:
-+		if (pseries_remove_memory(node))
-+			err = NOTIFY_BAD;
-+		break;
-+	default:
-+		err = NOTIFY_DONE;
-+		break;
-+	}
-+	return err;
-+}
-+
-+static struct notifier_block pseries_mem_nb = {
-+	.notifier_call = pseries_memory_notifier,
-+};
-+
-+static int __init pseries_memory_hotplug_init(void)
-+{
-+	if (firmware_has_feature(FW_FEATURE_LPAR))
-+		pSeries_reconfig_notifier_register(&pseries_mem_nb);
-+
++	lmb_add(start_pfn << PAGE_SHIFT, regs[3]);
 +	return 0;
 +}
-+machine_device_initcall(pseries, pseries_memory_hotplug_init);
-Index: linux-2.6.25-rc2/arch/powerpc/platforms/pseries/Makefile
++
+ static int pseries_memory_notifier(struct notifier_block *nb,
+ 				unsigned long action, void *node)
+ {
+@@ -72,6 +113,8 @@ static int pseries_memory_notifier(struc
+ 
+ 	switch (action) {
+ 	case PSERIES_RECONFIG_ADD:
++		if (pseries_add_memory(node))
++			err = NOTIFY_BAD;
+ 		break;
+ 	case PSERIES_RECONFIG_REMOVE:
+ 		if (pseries_remove_memory(node))
+Index: linux-2.6.25-rc3/include/linux/lmb.h
 ===================================================================
---- linux-2.6.25-rc2.orig/arch/powerpc/platforms/pseries/Makefile	2008-02-28 08:15:53.000000000 -0800
-+++ linux-2.6.25-rc2/arch/powerpc/platforms/pseries/Makefile	2008-02-28 08:17:57.000000000 -0800
-@@ -14,6 +14,7 @@ obj-$(CONFIG_PCI)	+= pci.o pci_dlpar.o
- obj-$(CONFIG_PCI_MSI)	+= msi.o
+--- linux-2.6.25-rc3.orig/include/linux/lmb.h	2008-03-05 10:44:29.000000000 -0800
++++ linux-2.6.25-rc3/include/linux/lmb.h	2008-03-05 10:44:56.000000000 -0800
+@@ -40,7 +40,8 @@ extern struct lmb lmb;
  
- obj-$(CONFIG_HOTPLUG_CPU)	+= hotplug-cpu.o
-+obj-$(CONFIG_MEMORY_HOTPLUG)	+= hotplug-memory.o
- 
- obj-$(CONFIG_HVC_CONSOLE)	+= hvconsole.o
- obj-$(CONFIG_HVCS)		+= hvcserver.o
+ extern void __init lmb_init(void);
+ extern void __init lmb_analyze(void);
+-extern long __init lmb_add(u64 base, u64 size);
++extern long lmb_add(u64 base, u64 size);
++extern long lmb_remove(u64 base, u64 size);
+ extern long __init lmb_reserve(u64 base, u64 size);
+ extern u64 __init lmb_alloc(u64 size, u64 align);
+ extern u64 __init lmb_alloc_base(u64 size,
 
 
