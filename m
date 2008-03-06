@@ -1,80 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933610AbYCFR5k@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760137AbYCFR7B@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933610AbYCFR5k (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Mar 2008 12:57:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754938AbYCFR5a
+	id S1760137AbYCFR7B (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Mar 2008 12:59:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754938AbYCFR6u
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Mar 2008 12:57:30 -0500
-Received: from out3.smtp.messagingengine.com ([66.111.4.27]:56313 "EHLO
-	out3.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752339AbYCFR53 (ORCPT
+	Thu, 6 Mar 2008 12:58:50 -0500
+Received: from us02smtp1.synopsys.com ([198.182.60.75]:34490 "EHLO
+	vaxjo.synopsys.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754725AbYCFR6u (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Mar 2008 12:57:29 -0500
-X-Sasl-enc: s7hrE7CHW6DaBKAOQqwTuPn3YmVpSYyuOBfyINAKWMZe 1204826248
-Message-ID: <47D03086.3000806@imap.cc>
-Date: Thu, 06 Mar 2008 18:57:26 +0100
-From: Tilman Schmidt <tilman@imap.cc>
-Organization: me - organized??
-User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.0; de-AT; rv:1.8.1.12) Gecko/20080201 SeaMonkey/1.1.8 Mnenhy/0.7.5.666
-MIME-Version: 1.0
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-CC: LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Adrian Bunk <bunk@kernel.org>
-Subject: Re: 2.6.25-rc3-git3: Reported regressions from 2.6.24
-References: <200803030316.07165.rjw@sisk.pl>
-In-Reply-To: <200803030316.07165.rjw@sisk.pl>
-X-Enigmail-Version: 0.95.6
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="------------enig3A3E5983C337F26F1C18C5CD"
+	Thu, 6 Mar 2008 12:58:50 -0500
+Date: Thu, 6 Mar 2008 09:58:41 -0800
+From: Joe Buck <Joe.Buck@synopsys.COM>
+To: Olivier Galibert <galibert@pobox.com>, Paolo Bonzini <bonzini@gnu.org>,
+       "H. Peter Anvin" <hpa@zytor.com>, Chris Lattner <clattner@apple.com>,
+       Michael Matz <matz@suse.de>,
+       Richard Guenther <richard.guenther@gmail.com>,
+       Jan Hubicka <hubicka@ucw.cz>, Aurelien Jarno <aurelien@aurel32.net>,
+       linux-kernel@vger.kernel.org, gcc@gcc.gnu.org
+Subject: Re: RELEASE BLOCKER: Linux doesn't follow x86/x86-64 ABI wrt direction   flag
+Message-ID: <20080306175841.GI17267@synopsys.com>
+References: <47CF11D6.7070901@zytor.com> <738B72DB-A1D6-43F8-813A-E49688D05771@apple.com> <Pine.LNX.4.64.0803052258530.20583@wotan.suse.de> <2F47E21A-9055-4EC3-99CF-B666BBC045C3@apple.com> <47CF3F09.4080606@zytor.com> <578FCA7D-D7A6-44F6-9310-4A97C13CDCBE@apple.com> <47CF44E7.3020106@zytor.com> <20080306135139.GA5236@dspnet.fr.eu.org> <47CFF9A3.30309@gnu.org> <20080306141221.GC5236@dspnet.fr.eu.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080306141221.GC5236@dspnet.fr.eu.org>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enig3A3E5983C337F26F1C18C5CD
-Content-Type: text/plain; charset=ISO-8859-2
-Content-Transfer-Encoding: quoted-printable
+On Thu, Mar 06, 2008 at 03:12:21PM +0100, Olivier Galibert wrote:
+> On Thu, Mar 06, 2008 at 03:03:15PM +0100, Paolo Bonzini wrote:
+> > Olivier Galibert wrote:
+> > >On Wed, Mar 05, 2008 at 05:12:07PM -0800, H. Peter Anvin wrote:
+> > >>It's a kernel bug, and it needs to be fixed.
+> > >
+> > >I'm not convinced.  It's been that way for 15 years, it's that way in
+> > >the BSD kernels, at that point it's a feature.  The bug is in the
+> > >documentation, nowhere else.  And in gcc for blindly trusting the
+> > >documentation.
+> > 
+> > No, the bug *in the kernel* was already present (if you had a signal 
+> > raised during a call to memmove).  It's just more visible with GCC 4.3.
+> 
+> I'm curious, since when paper documentation became the Truth and
+> reality became a bug?
 
-On 03.03.2008 03:16 Rafael J. Wysocki wrote:
+If the kernel allows state to leak from one process to another,
+for example from a process running as root to a process running as an
+ordinary user, it's a bug, with possible security implications.
 
-> Unresolved regressions
-> ----------------------
-
-> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=3D10021
-> Subject		: Linux 2.6.25-rc2 regression: LVM cannot find volume group
-> Submitter	: Tilman Schmidt <tilman@imap.cc>
-> Date		: 2008-02-16 20:14
-> References	: http://lkml.org/lkml/2008/2/16/208
-> Handled-By	: Alan Cox <alan@lxorguk.ukuu.org.uk>
-> 		  Jiri Slaby <jirislaby@gmail.com>
-
-Fixed in 2.6.25-rc4 by the introduction of CONFIG_SYSFS_DEPRECATED_V2.
-
-Thanks,
-Tilman
-
---=20
-Tilman Schmidt                          E-Mail: tilman@imap.cc
-Bonn, Germany
-Diese Nachricht besteht zu 100% aus wiederverwerteten Bits.
-Unge=F6ffnet mindestens haltbar bis: (siehe R=FCckseite)
+In this particular case not much can be communicated through a one-bit
+flag, so it would only be relevant in those situations where you want
+to forbid any communication channels from a given process.  So the
+kernel developers might consider it a trivial bug.  Or, they could just
+fix it, which I understand is the plan.
 
 
---------------enig3A3E5983C337F26F1C18C5CD
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.3rc1 (MingW32)
-Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
-
-iD8DBQFH0DCGMdB4Whm86/kRAqG9AJwOQopwi64Q8eVgcIWTeJK8EpcU8QCcCcv1
-EJFdJKwZdLdhOO4TuSDIi5c=
-=poDj
------END PGP SIGNATURE-----
-
---------------enig3A3E5983C337F26F1C18C5CD--
