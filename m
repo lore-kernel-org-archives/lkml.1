@@ -1,67 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761438AbYCFTEp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762320AbYCFTFd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761438AbYCFTEp (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Mar 2008 14:04:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755932AbYCFTEh
+	id S1762320AbYCFTFd (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Mar 2008 14:05:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759993AbYCFTFU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Mar 2008 14:04:37 -0500
-Received: from mga02.intel.com ([134.134.136.20]:59666 "EHLO mga02.intel.com"
+	Thu, 6 Mar 2008 14:05:20 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:59497 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752981AbYCFTEg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Mar 2008 14:04:36 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.25,457,1199692800"; 
-   d="scan'208";a="261172787"
-Date: Thu, 6 Mar 2008 11:03:31 -0800
-From: Suresh Siddha <suresh.b.siddha@intel.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Suresh Siddha <suresh.b.siddha@intel.com>, hpa@zytor.com,
-       tglx@linutronix.de, andi@firstfloor.org, hch@infradead.org,
-       linux-kernel@vger.kernel.org, Arjan van de Ven <arjan@linux.intel.com>
-Subject: Re: [patch 1/2] x86, fpu: split FPU state from task struct - v4
-Message-ID: <20080306190331.GG28006@linux-os.sc.intel.com>
-References: <20080304234003.603501000@linux-os.sc.intel.com> <20080306121714.GB19613@elte.hu> <20080306151832.GA10092@elte.hu>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	id S1752308AbYCFTFS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 6 Mar 2008 14:05:18 -0500
+From: Josef Bacik <jbacik@redhat.com>
+To: Jan Kara <jack@suse.cz>
+Subject: Re: [RFC] JBD ordered mode rewrite
+Date: Thu, 6 Mar 2008 14:05:03 -0500
+User-Agent: KMail/1.9.9
+Cc: linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org
+References: <20080306174209.GA14193@duck.suse.cz>
+In-Reply-To: <20080306174209.GA14193@duck.suse.cz>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20080306151832.GA10092@elte.hu>
-User-Agent: Mutt/1.4.1i
+Message-Id: <200803061405.03721.jbacik@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Mar 06, 2008 at 04:18:32PM +0100, Ingo Molnar wrote:
-> 
-> > > Split the FPU save area from the task struct. This allows easy 
-> > > migration of FPU context, and it's generally cleaner. It also allows 
-> > > the following two optimizations:
-> 
-> the atomicity bug is still there:
-> 
-> [ 1230.409772] BUG: sleeping function called from invalid context at mm/slab.c:>
-> [ 1230.409772] in_atomic():0, irqs_disabled():1
-> [ 1230.409772] Pid: 1187, comm: awk Not tainted 2.6.25-rc4-sched-devel.git-x86->[ 1230.409772]
-> [ 1230.409772] Call Trace:
-> [ 1230.409772]  [<ffffffff8022255b>] ? do_page_fault+0x3eb/0xa80
-> [ 1230.409772]  [<ffffffff8022c68e>] __might_sleep+0xce/0xf0
-> [ 1230.409772]  [<ffffffff8028c299>] kmem_cache_alloc+0xf9/0x120
-> [ 1230.409772]  [<ffffffff80214338>] init_fpu+0x98/0x100
-> [ 1230.409772]  [<ffffffff8020ec10>] math_state_restore+0x20/0x80
-> [ 1230.409772]  [<ffffffff809b8cc9>] error_exit+0x0/0x60
-> 
-> config and bootlog attached.
+On Thursday 06 March 2008 12:42:09 pm Jan Kara wrote:
+>   Hi,
+>
+>   Below is my rewrite of ordered mode in JBD. Now we don't have a list of
+> data buffers that need syncing on transaction commit but a list of inodes
+> that need writeout during commit. This brings all sorts of advantages such
+> as possibility to get rid of journal heads and buffer heads for data
+> buffers in ordered mode, better ordering of writes on transaction commit,
+> simplification of some JBD code, no more anonymous pages when truncate of
+> data being committed happens. The patch has survived some light testing
+> but it still has some potential of eating your data so beware :) I've run
+> dbench to see whether we didn't decrease performance by different handling
+> of truncate and the throughput I'm getting on my machine is the same (OK,
+> is lower by 0.5%) if I disable the code in truncate waiting for commit to
+> finish... Also the throughput of dbench is about 2% better with my patch
+> than with current JBD.
+>   Any comments or testing most welcome.
+>
+> 									Honza
 
-My bad. I overlooked the fact that exception handling by the processor
-automatically disables interrupts and my tested configs didn't have
-CONFIG_DEBUG_SPINLOCK_SLEEP set. My previous fix took care of only 32bit kernels
-as they were disabling interrupts explicitly for PREEMPT kernels.
+Just one nit, doesn't compile properly when jbd/ext3 are modules :).  Thanks 
+much,
 
-I will post a -v5 fixing this.
-
-> # CONFIG_DEBUG_KERNEL is not set
-
-BTW, In the .config you sent, you don't have CONFIG_DEBUG_SPINLOCK_SLEEP or
-CONFIG_DEBUG_KERNEL set. How come you are seeing those backtraces?
-
-thanks,
-suresh
+Josef
