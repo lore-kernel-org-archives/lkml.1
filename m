@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765528AbYCFMGU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932290AbYCFMGi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765528AbYCFMGU (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Mar 2008 07:06:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752649AbYCFMFp
+	id S932290AbYCFMGi (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Mar 2008 07:06:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753141AbYCFMFq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Mar 2008 07:05:45 -0500
-Received: from 81-174-11-161.static.ngi.it ([81.174.11.161]:51393 "EHLO
+	Thu, 6 Mar 2008 07:05:46 -0500
+Received: from 81-174-11-161.static.ngi.it ([81.174.11.161]:51399 "EHLO
 	mail.enneenne.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752053AbYCFMFn (ORCPT
+	with ESMTP id S1750963AbYCFMFo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Mar 2008 07:05:43 -0500
+	Thu, 6 Mar 2008 07:05:44 -0500
 From: Rodolfo Giometti <giometti@linux.it>
 To: linux-kernel@vger.kernel.org
 Cc: Andrew Morton <akpm@linux-foundation.org>,
@@ -17,252 +17,235 @@ Cc: Andrew Morton <akpm@linux-foundation.org>,
        Sam Ravnborg <sam@ravnborg.org>, Greg KH <greg@kroah.com>,
        Randy Dunlap <randy.dunlap@oracle.com>,
        Rodolfo Giometti <giometti@linux.it>
-Date: Thu,  6 Mar 2008 13:09:04 +0100
-Message-Id: <12048053472063-git-send-email-giometti@linux.it>
+Date: Thu,  6 Mar 2008 13:09:01 +0100
+Message-Id: <12048053471754-git-send-email-giometti@linux.it>
 X-Mailer: git-send-email 1.5.2.5
-In-Reply-To: <12048053473741-git-send-email-giometti@linux.it>
+In-Reply-To: <12048053473401-git-send-email-giometti@linux.it>
 References: <12048053463198-git-send-email-giometti@linux.it>
  <12048053473401-git-send-email-giometti@linux.it>
- <12048053471754-git-send-email-giometti@linux.it>
- <12048053471177-git-send-email-giometti@linux.it>
- <12048053473741-git-send-email-giometti@linux.it>
 X-SA-Exim-Connect-IP: 192.168.32.1
 X-SA-Exim-Mail-From: giometti@enneenne.com
-Subject: [PATCH 5/7] PPS: serial clients support.
+Subject: [PATCH 2/7] PPS: userland header file for PPS API.
 X-SA-Exim-Version: 4.2.1 (built Tue, 09 Jan 2007 17:23:22 +0000)
 X-SA-Exim-Scanned: Yes (on mail.enneenne.com)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Adds support for the PPS sources connected with the CD (Carrier
-Detect) pin of a serial port.
+This patch adds into the PPS's documentation directory a possible
+implementation of the PPS API (RFC 2783) by using the LinuxPPS's char
+devices.
+
+This file is not just an example but it can be used into real
+systems. :)
 
 Signed-off-by: Rodolfo Giometti <giometti@linux.it>
 ---
- drivers/pps/clients/Kconfig  |   10 ++++++
- drivers/serial/8250.c        |    2 +
- drivers/serial/serial_core.c |   71 +++++++++++++++++++++++++++++++++++++++++-
- include/linux/serial_core.h  |   30 ++++++++++++++---
- 4 files changed, 106 insertions(+), 7 deletions(-)
+ Documentation/pps/timepps.h |  195 +++++++++++++++++++++++++++++++++++++++++++
+ 1 files changed, 195 insertions(+), 0 deletions(-)
+ create mode 100644 Documentation/pps/timepps.h
 
-diff --git a/drivers/pps/clients/Kconfig b/drivers/pps/clients/Kconfig
-index 60b83be..517c338 100644
---- a/drivers/pps/clients/Kconfig
-+++ b/drivers/pps/clients/Kconfig
-@@ -15,4 +15,14 @@ config PPS_CLIENT_KTIMER
- 	  This driver can also be built as a module.  If so, the module
- 	  will be called ktimer.ko.
- 
-+comment "UART serial support (forced off)"
-+	depends on ! (SERIAL_CORE != n && !(PPS = m && SERIAL_CORE = y))
+diff --git a/Documentation/pps/timepps.h b/Documentation/pps/timepps.h
+new file mode 100644
+index 0000000..2372949
+--- /dev/null
++++ b/Documentation/pps/timepps.h
+@@ -0,0 +1,195 @@
++/*
++ * timepps.h -- PPS API main header
++ *
++ * Copyright (C) 2005-2007   Rodolfo Giometti <giometti@linux.it>
++ *
++ *   This program is free software; you can redistribute it and/or modify
++ *   it under the terms of the GNU General Public License as published by
++ *   the Free Software Foundation; either version 2 of the License, or
++ *   (at your option) any later version.
++ *
++ *   This program is distributed in the hope that it will be useful,
++ *   but WITHOUT ANY WARRANTY; without even the implied warranty of
++ *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ *   GNU General Public License for more details.
++ *
++ *   You should have received a copy of the GNU General Public License
++ *   along with this program; if not, write to the Free Software
++ *   Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
++ */
 +
-+config PPS_CLIENT_UART
-+	bool "UART serial support"
-+	depends on SERIAL_CORE != n && !(PPS = m && SERIAL_CORE = y)
-+	help
-+	  If you say yes here you get support for a PPS source connected
-+	  with the CD (Carrier Detect) pin of your serial port.
++#ifndef _SYS_TIMEPPS_H_
++#define _SYS_TIMEPPS_H_
 +
- endif
-diff --git a/drivers/serial/8250.c b/drivers/serial/8250.c
-index 77f7a7f..880cbeb 100644
---- a/drivers/serial/8250.c
-+++ b/drivers/serial/8250.c
-@@ -2119,6 +2119,8 @@ serial8250_set_termios(struct uart_port *port, struct ktermios *termios,
- 		up->ier |= UART_IER_MSI;
- 	if (up->capabilities & UART_CAP_UUE)
- 		up->ier |= UART_IER_UUE | UART_IER_RTOIE;
-+	if (up->port.flags & UPF_HARDPPS_CD)
-+		up->ier |= UART_IER_MSI;	/* enable interrupts */
- 
- 	serial_out(up, UART_IER, up->ier);
- 
-diff --git a/drivers/serial/serial_core.c b/drivers/serial/serial_core.c
-index 0f5a179..e35fbef 100644
---- a/drivers/serial/serial_core.c
-+++ b/drivers/serial/serial_core.c
-@@ -33,6 +33,7 @@
- #include <linux/serial.h> /* for serial_state and serial_icounter_struct */
- #include <linux/delay.h>
- #include <linux/mutex.h>
++#include <sys/syscall.h>
++#include <unistd.h>
++#include <errno.h>
 +#include <linux/pps.h>
- 
- #include <asm/irq.h>
- #include <asm/uaccess.h>
-@@ -635,6 +636,54 @@ static int uart_get_info(struct uart_state *state,
- 	return 0;
- }
- 
-+#ifdef CONFIG_PPS_CLIENT_UART
 +
-+static int
-+uart_register_pps_port(struct uart_state *state, struct uart_port *port)
++#define LINUXPPS	1		/* signal we are using LinuxPPS */
++
++/*
++ * New data structures
++ */
++
++struct ntp_fp {
++	unsigned int integral;
++	unsigned int fractional;
++};
++
++union pps_timeu {
++	struct timespec tspec;
++	struct ntp_fp ntpfp;
++	unsigned long longpad[3];
++};
++
++struct pps_info {
++	unsigned long assert_sequence;	/* seq. num. of assert event */
++	unsigned long clear_sequence;	/* seq. num. of clear event */
++	union pps_timeu assert_tu;	/* time of assert event */
++	union pps_timeu clear_tu;	/* time of clear event */
++	int current_mode;		/* current mode bits */
++};
++
++struct pps_params {
++	int api_version;		/* API version # */
++	int mode;			/* mode bits */
++	union pps_timeu assert_off_tu;	/* offset compensation for assert */
++	union pps_timeu clear_off_tu;	/* offset compensation for clear */
++};
++
++typedef int pps_handle_t;		/* represents a PPS source */
++typedef unsigned long pps_seq_t;	/* sequence number */
++typedef struct ntp_fp ntp_fp_t;		/* NTP-compatible time stamp */
++typedef union pps_timeu pps_timeu_t;	/* generic data type for time stamps */
++typedef struct pps_info pps_info_t;
++typedef struct pps_params pps_params_t;
++
++#define assert_timestamp        assert_tu.tspec
++#define clear_timestamp         clear_tu.tspec
++
++#define assert_timestamp_ntpfp  assert_tu.ntpfp
++#define clear_timestamp_ntpfp   clear_tu.ntpfp
++
++#define assert_offset		assert_off_tu.tspec
++#define clear_offset		clear_off_tu.tspec
++
++#define assert_offset_ntpfp     assert_off_tu.ntpfp
++#define clear_offset_ntpfp      clear_off_tu.ntpfp
++
++/*
++ * The PPS API
++ */
++
++static __inline int time_pps_create(int source, pps_handle_t *handle)
 +{
-+	struct tty_driver *drv = port->info->tty->driver;
 +	int ret;
 +
-+	state->pps_info.owner = THIS_MODULE;
-+	state->pps_info.dev = port->dev;
-+	snprintf(state->pps_info.name, PPS_MAX_NAME_LEN, "%s%d",
-+		drv->driver_name, port->line);
-+	snprintf(state->pps_info.path, PPS_MAX_NAME_LEN, "/dev/%s%d",
-+		drv->name, port->line);
-+
-+	state->pps_info.mode = PPS_CAPTUREBOTH | \
-+			PPS_OFFSETASSERT | PPS_OFFSETCLEAR | \
-+			PPS_CANWAIT | PPS_TSFMT_TSPEC;
-+
-+	ret = pps_register_source(&state->pps_info, PPS_CAPTUREBOTH | \
-+				PPS_OFFSETASSERT | PPS_OFFSETCLEAR);
-+	if (ret < 0) {
-+		dev_err(port->dev, "cannot register PPS source \"%s\"\n",
-+						state->pps_info.path);
-+		return ret;
++	if (!handle) {
++		errno = EINVAL;
++		return -1;
 +	}
-+	port->pps_source = ret;
-+	dev_dbg(port->dev, "PPS source #%d \"%s\" added\n",
-+		port->pps_source, state->pps_info.path);
++
++	/* First we check if current device is a PPS valid PPS one...
++	 */
++	ret = ioctl(source, PPS_CHECK);
++	if (ret) {
++		errno = EOPNOTSUPP;
++		return -1;
++	}
++
++	/* ... then since in LinuxPPS there are no differences between a
++	 * "PPS source" and a "PPS handle", we simply return the same value.
++	 */
++	*handle = source;
 +
 +	return 0;
 +}
 +
-+static void
-+uart_unregister_pps_port(struct uart_state *state, struct uart_port *port)
++static __inline int time_pps_destroy(pps_handle_t handle)
 +{
-+	pps_unregister_source(port->pps_source);
-+	dev_dbg(port->dev, "PPS source #%d \"%s\" removed\n",
-+				port->pps_source, state->pps_info.path);
++	return close(handle);
 +}
 +
-+#else
++static __inline int time_pps_getparams(pps_handle_t handle,
++					pps_params_t *ppsparams)
++{
++	int ret;
++	struct pps_kparams __ppsparams;
 +
-+#define uart_register_pps_port(state, port)	do { } while (0)
-+#define uart_unregister_pps_port(state, port)	do { } while (0)
++	ret = ioctl(handle, PPS_GETPARAMS, &__ppsparams);
 +
-+#endif /* CONFIG_PPS_CLIENT_UART */
++	ppsparams->api_version = __ppsparams.api_version;
++	ppsparams->mode = __ppsparams.mode;
++	ppsparams->assert_off_tu.tspec.tv_sec = __ppsparams.assert_off_tu.sec;
++	ppsparams->assert_off_tu.tspec.tv_nsec = __ppsparams.assert_off_tu.nsec;
++	ppsparams->clear_off_tu.tspec.tv_sec = __ppsparams.clear_off_tu.sec;
++	ppsparams->clear_off_tu.tspec.tv_nsec = __ppsparams.clear_off_tu.nsec;
 +
- static int uart_set_info(struct uart_state *state,
- 			 struct serial_struct __user *newinfo)
- {
-@@ -810,11 +859,19 @@ static int uart_set_info(struct uart_state *state,
- 			(port->flags & UPF_LOW_LATENCY) ? 1 : 0;
- 
-  check_and_exit:
-+	/* PPS support enabled/disabled? */
-+	if ((old_flags & UPF_HARDPPS_CD) != (new_flags & UPF_HARDPPS_CD)) {
-+		if (new_flags & UPF_HARDPPS_CD)
-+			uart_register_pps_port(state, port);
-+		else
-+			uart_unregister_pps_port(state, port);
++	return ret;
++}
++
++static __inline int time_pps_setparams(pps_handle_t handle,
++					const pps_params_t *ppsparams)
++{
++	struct pps_kparams __ppsparams;
++
++	__ppsparams.api_version = ppsparams->api_version;
++	__ppsparams.mode = ppsparams->mode;
++	__ppsparams.assert_off_tu.sec = ppsparams->assert_off_tu.tspec.tv_sec;
++	__ppsparams.assert_off_tu.nsec = ppsparams->assert_off_tu.tspec.tv_nsec;
++	__ppsparams.clear_off_tu.sec = ppsparams->clear_off_tu.tspec.tv_sec;
++	__ppsparams.clear_off_tu.nsec = ppsparams->clear_off_tu.tspec.tv_nsec;
++
++	return ioctl(handle, PPS_SETPARAMS, &__ppsparams);
++}
++
++/* Get capabilities for handle */
++static __inline int time_pps_getcap(pps_handle_t handle, int *mode)
++{
++	return ioctl(handle, PPS_GETCAP, mode);
++}
++
++static __inline int time_pps_fetch(pps_handle_t handle, const int tsformat,
++					pps_info_t *ppsinfobuf,
++					const struct timespec *timeout)
++{
++	struct pps_fdata __fdata;
++	int ret;
++
++	/* Sanity checks */
++	if (tsformat != PPS_TSFMT_TSPEC) {
++		errno = EINVAL;
++		return -1;
 +	}
 +
- 	retval = 0;
- 	if (port->type == PORT_UNKNOWN)
- 		goto exit;
- 	if (state->info->flags & UIF_INITIALIZED) {
--		if (((old_flags ^ port->flags) & UPF_SPD_MASK) ||
-+		if (((old_flags ^ port->flags) & (UPF_SPD_MASK|UPF_HARDPPS_CD)) ||
- 		    old_custom_divisor != port->custom_divisor) {
- 			/*
- 			 * If they're setting up a custom divisor or speed,
-@@ -2148,6 +2205,12 @@ uart_configure_port(struct uart_driver *drv, struct uart_state *state,
- 		port->ops->config_port(port, flags);
- 	}
- 
-+	/*
-+	 * Add the PPS support for the current port.
-+	 */
-+	if (port->flags & UPF_HARDPPS_CD)
-+		uart_register_pps_port(state, port);
++	if (timeout) {
++		__fdata.timeout.sec = timeout->tv_sec;
++		__fdata.timeout.nsec = timeout->tv_nsec;
++		__fdata.timeout.flags = ~PPS_TIME_INVALID;
++	} else
++		__fdata.timeout.flags = PPS_TIME_INVALID;
 +
- 	if (port->type != PORT_UNKNOWN) {
- 		unsigned long flags;
- 
-@@ -2405,6 +2468,12 @@ int uart_remove_one_port(struct uart_driver *drv, struct uart_port *port)
- 	mutex_unlock(&state->mutex);
- 
- 	/*
-+	 * Remove PPS support from the current port.
-+	 */
-+	if (port->flags & UPF_HARDPPS_CD)
-+		uart_unregister_pps_port(state, port);
++	ret = ioctl(handle, PPS_FETCH, &__fdata);
 +
-+	/*
- 	 * Remove the devices from the tty layer
- 	 */
- 	tty_unregister_device(drv->tty_driver, port->line);
-diff --git a/include/linux/serial_core.h b/include/linux/serial_core.h
-index 289942f..0f8fbd4 100644
---- a/include/linux/serial_core.h
-+++ b/include/linux/serial_core.h
-@@ -166,6 +166,7 @@
- #include <linux/tty.h>
- #include <linux/mutex.h>
- #include <linux/sysrq.h>
-+#include <linux/pps.h>
- 
- struct uart_port;
- struct uart_info;
-@@ -245,6 +246,9 @@ struct uart_port {
- 	unsigned char		regshift;		/* reg offset shift */
- 	unsigned char		iotype;			/* io access style */
- 	unsigned char		unused1;
-+#ifdef CONFIG_PPS_CLIENT_UART
-+	int			pps_source;		/* PPS source ID */
-+#endif
- 
- #define UPIO_PORT		(0)
- #define UPIO_HUB6		(1)
-@@ -289,7 +293,8 @@ struct uart_port {
- #define UPF_IOREMAP		((__force upf_t) (1 << 31))
- 
- #define UPF_CHANGE_MASK		((__force upf_t) (0x17fff))
--#define UPF_USR_MASK		((__force upf_t) (UPF_SPD_MASK|UPF_LOW_LATENCY))
-+#define UPF_USR_MASK		((__force upf_t) (UPF_SPD_MASK|UPF_LOW_LATENCY\
-+							|UPF_HARDPPS_CD))
- 
- 	unsigned int		mctrl;			/* current modem ctrl settings */
- 	unsigned int		timeout;		/* character-based timeout */
-@@ -322,6 +327,10 @@ struct uart_state {
- 	struct uart_info	*info;
- 	struct uart_port	*port;
- 
-+#ifdef CONFIG_PPS_CLIENT_UART
-+	struct pps_source_info	pps_info;
-+#endif
++	ppsinfobuf->assert_sequence = __fdata.info.assert_sequence;
++	ppsinfobuf->clear_sequence = __fdata.info.clear_sequence;
++	ppsinfobuf->assert_tu.tspec.tv_sec = __fdata.info.assert_tu.sec;
++	ppsinfobuf->assert_tu.tspec.tv_nsec = __fdata.info.assert_tu.nsec;
++	ppsinfobuf->clear_tu.tspec.tv_sec = __fdata.info.clear_tu.sec;
++	ppsinfobuf->clear_tu.tspec.tv_nsec = __fdata.info.clear_tu.nsec;
++	ppsinfobuf->current_mode = __fdata.info.current_mode;
 +
- 	struct mutex		mutex;
- };
- 
-@@ -486,13 +495,22 @@ uart_handle_dcd_change(struct uart_port *port, unsigned int status)
- {
- 	struct uart_info *info = port->info;
- 
--	port->icount.dcd++;
--
--#ifdef CONFIG_HARD_PPS
--	if ((port->flags & UPF_HARDPPS_CD) && status)
--		hardpps();
-+#ifdef CONFIG_PPS_CLIENT_UART
-+	if (port->flags & UPF_HARDPPS_CD) {
-+		if (status) {
-+			pps_event(port->pps_source, PPS_CAPTUREASSERT, port);
-+			dev_dbg(port->dev, "PPS assert at %lu on source #%d\n",
-+				jiffies, port->pps_source);
-+		} else {
-+			pps_event(port->pps_source, PPS_CAPTURECLEAR, port);
-+			dev_dbg(port->dev, "PPS clear at %lu on source #%d\n",
-+				jiffies, port->pps_source);
-+		}
-+	}
- #endif
- 
-+	port->icount.dcd++;
++	return ret;
++}
 +
- 	if (info->flags & UIF_CHECK_CD) {
- 		if (status)
- 			wake_up_interruptible(&info->open_wait);
++static __inline int time_pps_kcbind(pps_handle_t handle,
++					const int kernel_consumer,
++					const int edge, const int tsformat)
++{
++	/* LinuxPPS doesn't implement kernel consumer feature */
++	errno = EOPNOTSUPP;
++	return -1;
++}
++
++#endif				/* _SYS_TIMEPPS_H_ */
 -- 
 1.5.2.5
 
