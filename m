@@ -1,71 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933274AbYCFQDz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932785AbYCFQJo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933274AbYCFQDz (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Mar 2008 11:03:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759294AbYCFQDn
+	id S932785AbYCFQJo (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Mar 2008 11:09:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753352AbYCFQJg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Mar 2008 11:03:43 -0500
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:41874 "EHLO
-	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757452AbYCFQDm (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Mar 2008 11:03:42 -0500
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: Pavel Emelyanov <xemul@openvz.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       David Miller <davem@davemloft.net>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linux Netdev List <netdev@vger.kernel.org>,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       Christoph Hellwig <hch@infradead.org>
-Subject: Re: [PATCH] Make /proc/net a symlink on /proc/self/net (v2)
-References: <47CFB6CA.8090001@openvz.org>
-Date: Thu, 06 Mar 2008 08:57:41 -0700
-In-Reply-To: <47CFB6CA.8090001@openvz.org> (Pavel Emelyanov's message of "Thu,
-	06 Mar 2008 12:18:02 +0300")
-Message-ID: <m1od9r26bu.fsf@ebiederm.dsl.xmission.com>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Thu, 6 Mar 2008 11:09:36 -0500
+Received: from gate.crashing.org ([63.228.1.57]:56459 "EHLO gate.crashing.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754204AbYCFQJg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 6 Mar 2008 11:09:36 -0500
+Date: Thu, 6 Mar 2008 19:09:18 +0300
+From: Vitaly Bordug <vitb@kernel.crashing.org>
+To: Kumar Gala <galak@kernel.crashing.org>
+Cc: Paul Mackerras <paulus@samba.org>, linuxppc-dev <linuxppc-dev@ozlabs.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [POWERPC] 8xx: fix swap
+Message-ID: <20080306190918.04e2cee6@kernel.crashing.org>
+In-Reply-To: <7E836D6E-867B-4A35-9B3D-CD1D52E7F2DC@kernel.crashing.org>
+References: <20080306135330.6d5462d2@vitb.ru.mvista.com>
+	<7E836D6E-867B-4A35-9B3D-CD1D52E7F2DC@kernel.crashing.org>
+X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.5; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Pavel Emelyanov <xemul@openvz.org> writes:
+On Thu, 6 Mar 2008 09:56:58 -0600
+Kumar Gala wrote:
 
-> Current /proc/net is done with so called "shadows", but current
-> implementation is broken and has little chances to get fixed.
->
-> The problem is that dentries subtree of /proc/net directory has
-> fancy revalidation rules to make processes living in different
-> net namespaces see different entries in /proc/net subtree, but
-> currently, tasks see in the /proc/net subdir the contents of any
-> other namespace, depending on who opened the file first.
->
-> The proposed fix is to turn /proc/net into a symlink, which points
-> to /proc/self/net, which in turn shows what previously was in
-> /proc/net - the network-related info, from the net namespace the
-> appropriate task lives in.
->
-> # ls -l /proc/net
-> lrwxrwxrwx  1 root root 8 Mar  5 15:17 /proc/net -> self/net
->
-> In other words - this behaves like /proc/mounts, but unlike
-> "mounts", "net" is not a file, but a directory.
->
-> Fixed a task_struct leak in get_proc_task_net, pointed out by Paul.
->
-> Signed-off-by: Pavel Emelyanov <xemul@openvz.org>
+> 
+> On Mar 6, 2008, at 4:53 AM, Vitaly Bordug wrote:
+> 
+> > This makes swap routines operate correctly on the ppc_8xx based  
+> > machines.
+> > Code has been revalidated on mpc885ads (8M sdram) with recent  
+> > kernel. Based
+> > on patch from Yuri Tikhonov <yur@emcraft.com> to do the same on
+> > arch/ ppc
+> > instance.
+> >
+> > Recent kernel's size makes swap feature very important on
+> > low-memory platforms,
+> > those are actually non-operable without it.
+> >
+> > Signed-off-by: Yuri Tikhonov <yur@emcraft.com>
+> > Signed-off-by: Vitaly Bordug <vitb@kernel.crashing.org>
+> > ---
+> >
+> > arch/powerpc/kernel/head_8xx.S      |   30
+> > ++++++++++++++++++++++++++ +++-
+> > include/asm-powerpc/pgtable-ppc32.h |    8 --------
+> > 2 files changed, 29 insertions(+), 9 deletions(-)
+> 
+> do we need similar fixes to arch/ppc ?
+> 
+there's patch from Yuri that does it for ppc/ - I guess you may just pick it up and place to your tree.
 
-Before I forget.
-
-As a future patch we need to implement a d_revalidate rule for
-/proc/<pid>/task/net that will notice we have unshared a network
-namespace and flush all cached dentries for the old network namespace.
-
-Since unsharing happens rarely if at all this d_revalidate should
-be relatively cheap, and since the change is real and for everyone
-it will not suffer from the inconsistencies that plagued us when
-working with d_revalidate on /proc/net.
-
-Eric
+-- 
+Sincerely, Vitaly
