@@ -1,41 +1,130 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761072AbYCFJPJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761751AbYCFJPu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761072AbYCFJPJ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Mar 2008 04:15:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757235AbYCFJOu
+	id S1761751AbYCFJPu (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Mar 2008 04:15:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757366AbYCFJPf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Mar 2008 04:14:50 -0500
-Received: from caramon.arm.linux.org.uk ([78.32.30.218]:36207 "EHLO
-	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755409AbYCFJOs (ORCPT
+	Thu, 6 Mar 2008 04:15:35 -0500
+Received: from rv-out-0910.google.com ([209.85.198.184]:36568 "EHLO
+	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758132AbYCFJPc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Mar 2008 04:14:48 -0500
-Date: Thu, 6 Mar 2008 09:13:55 +0000
-From: Russell King <rmk+lkml@arm.linux.org.uk>
-To: Joe Perches <joe@perches.com>
-Cc: Ben Dooks <ben-linux@fluff.org>, Nicolas Pitre <nico@cam.org>,
-       linux-arm-kernel@lists.arm.linux.org.uk,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] include/asm-arm - use angle brackets for includes
-Message-ID: <20080306091354.GB21135@flint.arm.linux.org.uk>
-References: <1204677978.5180.90.camel@localhost> <1204735453.17370.21.camel@localhost>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1204735453.17370.21.camel@localhost>
-User-Agent: Mutt/1.4.2.1i
+	Thu, 6 Mar 2008 04:15:32 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:mime-version:content-type;
+        b=MgSsxLqf3PA4+6uEMAatO90gcgSR0u87P/08haCmn4EI9Q/NxDlzxvjmHOqfhHERgZ0Xpj+g5LnICVNBMWIC1IzeDWoUbN+0uT72CxGyPlCKg4zf3ghAW5S7m+p2I0woFDcxBuvfT+kmP7Oc9kz8PK95o1VoOPpVoKx+MgrJYuI=
+Message-ID: <86802c440803060115w72935e08n20c6f68091416801@mail.gmail.com>
+Date: Thu, 6 Mar 2008 01:15:31 -0800
+From: "Yinghai Lu" <yhlu.kernel@gmail.com>
+To: "Ingo Molnar" <mingo@elte.hu>, "Andrew Morton" <akpm@linux-foundation.org>,
+       "Thomas Gleixner" <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>
+Subject: [PATCH] x86_64: double check the multi root bus with fam10h mmconf
+Cc: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
+MIME-Version: 1.0
+Content-Type: multipart/mixed; 
+	boundary="----=_Part_22255_22439725.1204794931820"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Mar 05, 2008 at 08:44:13AM -0800, Joe Perches wrote:
-> Signature too...
-> 
-> Signed-off-by: Joe Perches <joe@perches.com>
+------=_Part_22255_22439725.1204794931820
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-Applied, thanks.
+some bios give same range to mmconf for fam10h msr, and mmio for node/link.
 
--- 
-Russell King
- Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
- maintainer of:
+fam10h msr will overide mmio for node/link.
+so we can not assign range to devices under node/link for unassigned resources.
+
+this patch will take range out from the mmio for node/link
+
+Signed-off-by: Yinghai Lu <yhlu.kernel@gmail.com>
+
+------=_Part_22255_22439725.1204794931820
+Content-Type: text/x-patch; name=multi_root_bus_mmconf.patch
+Content-Transfer-Encoding: base64
+X-Attachment-Id: f_fdh437do0
+Content-Disposition: attachment; filename=multi_root_bus_mmconf.patch
+
+W1BBVENIXSB4ODZfNjQ6IGRvdWJsZSBjaGVjayB0aGUgbXVsdGkgcm9vdCBidXMgd2l0aCBmYW0x
+MGggbW1jb25mCgpzb21lIGJpb3MgZ2l2ZSBzYW1lIHJhbmdlIHRvIG1tY29uZiBmb3IgZmFtMTBo
+IG1zciwgYW5kIG1taW8gZm9yIG5vZGUvbGluay4KCmZhbTEwaCBtc3Igd2lsbCBvdmVyaWRlIG1t
+aW8gZm9yIG5vZGUvbGluay4Kc28gd2UgY2FuIG5vdCBhc3NpZ24gcmFuZ2UgdG8gZGV2aWNlcyB1
+bmRlciBub2RlL2xpbmsgZm9yIHVuYXNzaWduZWQgcmVzb3VyY2VzLgoKdGhpcyBwYXRjaCB3aWxs
+IHRha2UgcmFuZ2Ugb3V0IGZyb20gdGhlIG1taW8gZm9yIG5vZGUvbGluawoKU2lnbmVkLW9mZi1i
+eTogWWluZ2hhaSBMdSA8eWhsdS5rZXJuZWxAZ21haWwuY29tPgoKSW5kZXg6IGxpbnV4LTIuNi9h
+cmNoL3g4Ni9wY2kvazgtYnVzXzY0LmMKPT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09
+PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PQotLS0gbGludXgtMi42Lm9yaWcvYXJj
+aC94ODYvcGNpL2s4LWJ1c182NC5jCisrKyBsaW51eC0yLjYvYXJjaC94ODYvcGNpL2s4LWJ1c182
+NC5jCkBAIC0xOTEsNiArMTkxLDM0IEBAIHN0YXRpYyBzdHJ1Y3QgcGNpX2hvc3RicmlkZ2VfcHJv
+YmUgcGNpX3AKIAl7IDAsIDB4MTgsIFBDSV9WRU5ET1JfSURfQU1ELCAweDEzMDAgfSwKIH07CiAK
+K3N0YXRpYyB1NjQgX19pbml0ZGF0YSBmYW0xMGhfbW1jb25mX3N0YXJ0Oworc3RhdGljIHU2NCBf
+X2luaXRkYXRhIGZhbTEwaF9tbWNvbmZfZW5kOworc3RhdGljIHZvaWQgX19pbml0IGdldF9wY2lf
+bW1jZmdfYW1kX2ZhbTEwaF9yYW5nZSh2b2lkKQoreworCXUzMiBhZGRyZXNzOworCXU2NCBiYXNl
+LCBtc3I7CisJdW5zaWduZWQgc2Vnbl9idXNuX2JpdHM7CisKKwkvKiBhc3N1bWUgYWxsIGNwdXMg
+ZnJvbSBmYW0xMGggaGF2ZSBtbWNvbmYgKi8KKyAgICAgICAgaWYgKGJvb3RfY3B1X2RhdGEueDg2
+IDwgMHgxMCkKKwkJcmV0dXJuOworCisJYWRkcmVzcyA9IE1TUl9GQU0xMEhfTU1JT19DT05GX0JB
+U0U7CisJcmRtc3JsKGFkZHJlc3MsIG1zcik7CisKKwkvKiBtbWNvbmZpZyBpcyBub3QgZW5hYmxl
+ICovCisJaWYgKCEobXNyICYgRkFNMTBIX01NSU9fQ09ORl9FTkFCTEUpKQorCQlyZXR1cm47CisK
+KwliYXNlID0gbXNyICYgKEZBTTEwSF9NTUlPX0NPTkZfQkFTRV9NQVNLPDxGQU0xMEhfTU1JT19D
+T05GX0JBU0VfU0hJRlQpOworCisJc2Vnbl9idXNuX2JpdHMgPSAobXNyID4+IEZBTTEwSF9NTUlP
+X0NPTkZfQlVTUkFOR0VfU0hJRlQpICYKKwkJCSBGQU0xMEhfTU1JT19DT05GX0JVU1JBTkdFX01B
+U0s7CisKKwlmYW0xMGhfbW1jb25mX3N0YXJ0ID0gYmFzZTsKKwlmYW0xMGhfbW1jb25mX2VuZCA9
+IGJhc2UgKyAoMVVMTDw8KHNlZ25fYnVzbl9iaXRzICsgMjApKSAtIDE7Cit9CisKIC8qKgogICog
+ZWFybHlfZmlsbF9tcF9idXNfdG9fbm9kZSgpCiAgKiBjYWxsZWQgYmVmb3JlIHBjaWJpb3Nfc2Nh
+bl9yb290IGFuZCBwY2lfc2Nhbl9idXMKQEAgLTMwNSw2ICszMzMsOCBAQCBzdGF0aWMgaW50IF9f
+aW5pdCBlYXJseV9maWxsX21wX2J1c19pbmZvCiAJCQljb250aW51ZTsgLyogbm90IGZvdW5kICov
+CiAKIAkJaW5mbyA9ICZwY2lfcm9vdF9pbmZvW2pdOworCQlwcmludGsoS0VSTl9ERUJVRyAibm9k
+ZSAlZCBsaW5rICVkOiBpbyBwb3J0IFslbGx4LCAlbGx4XVxuIiwKKwkJICAgICAgIG5vZGUsIGxp
+bmssICh1NjQpc3RhcnQsICh1NjQpZW5kKTsKIAkJdXBkYXRlX3JlcyhpbmZvLCBzdGFydCwgZW5k
+LCBJT1JFU09VUkNFX0lPLCAwKTsKIAkJdXBkYXRlX3JhbmdlKHJhbmdlLCBzdGFydCwgZW5kKTsK
+IAl9CkBAIC0zMjgsOCArMzU4LDcgQEAgc3RhdGljIGludCBfX2luaXQgZWFybHlfZmlsbF9tcF9i
+dXNfaW5mbwogCiAJbWVtc2V0KHJhbmdlLCAwLCBzaXplb2YocmFuZ2UpKTsKIAkvKiAweGZkMDAw
+MDAwMDAtMHhmZmZmZmZmZmZmIGZvciBIVCAqLwotCS8qIDB4ZmMwMDAwMDAwMC0weGZjZmZmZmZm
+ZmYgZm9yIEZhbWlseSAxMGggbW1jb25maWcqLwotCXJhbmdlWzBdLmVuZCA9IDB4ZmJmZmZmZmZm
+ZlVMTDsKKwlyYW5nZVswXS5lbmQgPSAoMHhmZFVMTDw8MzIpIC0gMTsKIAogCS8qIG5lZWQgdG8g
+dGFrZSBvdXQgWzAsIFRPTSkgZm9yIFJBTSovCiAJYWRkcmVzcyA9IE1TUl9LOF9UT1BfTUVNMTsK
+QEAgLTMzOSw2ICszNjgsMTQgQEAgc3RhdGljIGludCBfX2luaXQgZWFybHlfZmlsbF9tcF9idXNf
+aW5mbwogCWlmIChlbmQgPCAoMVVMTDw8MzIpKQogCQl1cGRhdGVfcmFuZ2UocmFuZ2UsIDAsIGVu
+ZCAtIDEpOwogCisJLyogZ2V0IG1tY29uZmlnICovCisJZ2V0X3BjaV9tbWNmZ19hbWRfZmFtMTBo
+X3JhbmdlKCk7CisJLyogbmVlZCB0byB0YWtlIG91dCBtbWNvbmYgcmFuZ2UgKi8KKwlpZiAoZmFt
+MTBoX21tY29uZl9lbmQpIHsKKwkJcHJpbnRrKEtFUk5fREVCVUcgIkZhbSAxMGggbW1jb25mIFsl
+bGx4LCAlbGx4XVxuIiwgZmFtMTBoX21tY29uZl9zdGFydCwgZmFtMTBoX21tY29uZl9lbmQpOwor
+CQl1cGRhdGVfcmFuZ2UocmFuZ2UsIGZhbTEwaF9tbWNvbmZfc3RhcnQsIGZhbTEwaF9tbWNvbmZf
+ZW5kKTsKKwl9CisKIAkvKiBtbWlvIHJlc291cmNlICovCiAJZm9yIChpID0gMDsgaSA8IDg7IGkr
+KykgewogCQlyZWcgPSByZWFkX3BjaV9jb25maWcoYnVzLCBzbG90LCAxLCAweDgwICsgKGkgPDwg
+MykpOwpAQCAtMzY0LDggKzQwMSw1MSBAQCBzdGF0aWMgaW50IF9faW5pdCBlYXJseV9maWxsX21w
+X2J1c19pbmZvCiAJCQljb250aW51ZTsgLyogbm90IGZvdW5kICovCiAKIAkJaW5mbyA9ICZwY2lf
+cm9vdF9pbmZvW2pdOworCisJCXByaW50ayhLRVJOX0RFQlVHICJub2RlICVkIGxpbmsgJWQ6IG1t
+aW8gWyVsbHgsICVsbHhdIiwKKwkJICAgICAgIG5vZGUsIGxpbmssICh1NjQpc3RhcnQsICh1NjQp
+ZW5kKTsKKwkJLyoKKwkJICogc29tZSBzaWNrIGFsbG9jYXRpb24gd291bGQgaGF2ZSByYW5nZSBv
+dmVybGFwIHdpdGggZmFtMTBoCisJCSAqIG1tY29uZiByYW5nZSwgc28gbmVlZCB0byB1cGRhdGUg
+c3RhcnQgYW5kIGVuZC4KKwkJICovCisJCWlmIChmYW0xMGhfbW1jb25mX2VuZCkgeworCQkJaW50
+IGNoYW5nZWQgPSAwOworCQkJdTY0IGVuZHggPSAwOworCQkJaWYgKHN0YXJ0ID49IGZhbTEwaF9t
+bWNvbmZfc3RhcnQgJiYKKwkJCSAgICBzdGFydCA8PSBmYW0xMGhfbW1jb25mX2VuZCkgeworCQkJ
+CXN0YXJ0ID0gZmFtMTBoX21tY29uZl9lbmQgKyAxOworCQkJCWNoYW5nZWQgPSAxOworCQkJfQor
+CisJCQlpZiAoZW5kID49IGZhbTEwaF9tbWNvbmZfc3RhcnQgJiYKKwkJCSAgICBlbmQgPD0gZmFt
+MTBoX21tY29uZl9lbmQpIHsKKwkJCQllbmQgPSBmYW0xMGhfbW1jb25mX3N0YXJ0IC0gMTsKKwkJ
+CQljaGFuZ2VkID0gMTsKKwkJCX0KKworCQkJaWYgKHN0YXJ0IDwgZmFtMTBoX21tY29uZl9zdGFy
+dCAmJgorCQkJICAgIGVuZCA+IGZhbTEwaF9tbWNvbmZfZW5kKSB7CisJCQkJLyogd2UgZ290IGEg
+aG9sZSAqLworCQkJCWVuZHggPSBmYW0xMGhfbW1jb25mX3N0YXJ0IC0gMTsKKwkJCQl1cGRhdGVf
+cmVzKGluZm8sIHN0YXJ0LCBlbmR4LCBJT1JFU09VUkNFX01FTSwgMCk7CisJCQkJdXBkYXRlX3Jh
+bmdlKHJhbmdlLCBzdGFydCwgZW5keCk7CisJCQkJcHJpbnRrKEtFUk5fQ09OVCAiID09PiBbJWxs
+eCwgJWxseF0iLCAodTY0KXN0YXJ0LCBlbmR4KTsKKwkJCQlzdGFydCA9IGZhbTEwaF9tbWNvbmZf
+ZW5kICsgMTsKKwkJCQljaGFuZ2VkID0gMTsKKwkJCX0KKwkJCWlmIChjaGFuZ2VkKSB7CisJCQkJ
+aWYgKHN0YXJ0IDw9IGVuZCkgeworCQkJCQlwcmludGsoS0VSTl9DT05UICIgJXMgWyVsbHgsICVs
+bHhdIiwgZW5keD8iYW5kIjoiPT0+IiwgKHU2NClzdGFydCwgKHU2NCllbmQpOworCQkJCX0gZWxz
+ZSB7CisJCQkJCXByaW50ayhLRVJOX0NPTlQgIiVzXG4iLCBlbmR4PyIiOiIgPT0+IG5vbmUiKTsK
+KwkJCQkJY29udGludWU7CisJCQkJfQorCQkJfQorCQl9CisKIAkJdXBkYXRlX3JlcyhpbmZvLCBz
+dGFydCwgZW5kLCBJT1JFU09VUkNFX01FTSwgMCk7CiAJCXVwZGF0ZV9yYW5nZShyYW5nZSwgc3Rh
+cnQsIGVuZCk7CisJCXByaW50ayhLRVJOX0NPTlQgIlxuIik7CiAJfQogCiAJLyogbmVlZCB0byB0
+YWtlIG91dCBbNEcsIFRPTTIpIGZvciBSQU0qLwpAQCAtMzk4LDExICs0NzgsNiBAQCBzdGF0aWMg
+aW50IF9faW5pdCBlYXJseV9maWxsX21wX2J1c19pbmZvCiAJCQlpZiAoIXJhbmdlW2ldLmVuZCkK
+IAkJCQljb250aW51ZTsKICNpZiAwCi0JCQkvKiBkb24ndCB1c2UgdGhlIG9uZSBzdGFydCBsZXNz
+IHRoYW4gMU0gKi8KLQkJCWlmIChyYW5nZVtpXS5zdGFydCA8IDB4MTAwMDAwKQotCQkJCWNvbnRp
+bnVlOwotI2VuZGlmCi0jaWYgMAogCQkJLyogZG9uJ3QgdXNlIGxhc3Qgb25lIG5lYXIgNEcgKi8K
+IAkJCWlmIChyYW5nZVtpXS5lbmQgPT0gMHhmZmZmZmZmZlVMTCkKIAkJCQljb250aW51ZTsK
+------=_Part_22255_22439725.1204794931820--
