@@ -1,85 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933004AbYCFLDw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933250AbYCFLEZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933004AbYCFLDw (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Mar 2008 06:03:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764267AbYCFK5G
+	id S933250AbYCFLEZ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Mar 2008 06:04:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764491AbYCFK5f
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Mar 2008 05:57:06 -0500
-Received: from hellhawk.shadowen.org ([80.68.90.175]:3552 "EHLO
-	hellhawk.shadowen.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1763426AbYCFK5F (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Mar 2008 05:57:05 -0500
-Date: Thu, 6 Mar 2008 10:56:03 +0000
-From: Andy Whitcroft <apw@shadowen.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: "David J. Wilder" <dwilder@us.ibm.com>, linux-kernel@vger.kernel.org,
-       systemtap@sourceware.org
-Subject: Re: [patch 1/3]  Relay Reset Consumed
-Message-ID: <20080306105603.GC25123@shadowen.org>
-References: <1204588311.32186.7.camel@lc4eb748232119.ibm.com> <20080305141229.d79d846b.akpm@linux-foundation.org>
+	Thu, 6 Mar 2008 05:57:35 -0500
+Received: from n38.bullet.mail.ukl.yahoo.com ([87.248.110.171]:34823 "HELO
+	n38.bullet.mail.ukl.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1763795AbYCFK5e convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 6 Mar 2008 05:57:34 -0500
+X-Yahoo-Newman-Id: 671881.43509.bm@omp417.mail.mud.yahoo.com
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com.au;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=GFzTTr9Q2yBhhROX/SQJddiBzfmXHf9yv1xJicxmZF4FKPTbms8eGPCcGSv8IBHZl99N0vhDpEXgwRS1HsAww13grMH1dybGd9Y76r7xwHsBWN4yp/ef748PnnBTjTDVQzYYCpqS2tw9czAjx1b1LUEXDowZbPd0tvosCwSpobU=  ;
+X-YMail-OSG: EMAQ1sgVM1nWPtWqFXE3HjCm.N20rYTBu8zj6qqLmEUbx2p2Xc3334ptK5SgoqwlixR7CoWjiw--
+X-Yahoo-Newman-Property: ymail-3
+From: Nick Piggin <nickpiggin@yahoo.com.au>
+To: Laurent Vivier <Laurent.Vivier@bull.net>
+Subject: Re: [PATCH] Modify loop device to be able to manage partitions of the disk image
+Date: Thu, 6 Mar 2008 21:56:58 +1100
+User-Agent: KMail/1.9.5
+Cc: linux-kernel@vger.kernel.org
+References: <1204796612842-git-send-email-Laurent.Vivier@bull.net> <200803062057.50181.nickpiggin@yahoo.com.au> <1204798585.4325.8.camel@frecb07144>
+In-Reply-To: <1204798585.4325.8.camel@frecb07144>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 8BIT
 Content-Disposition: inline
-In-Reply-To: <20080305141229.d79d846b.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Message-Id: <200803062156.58230.nickpiggin@yahoo.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Mar 05, 2008 at 02:12:29PM -0800, Andrew Morton wrote:
-> On Mon, 03 Mar 2008 15:51:50 -0800
-> "David J. Wilder" <dwilder@us.ibm.com> wrote:
-> 
-> > This patch allows relay channels to be reset i.e. unconsumed.
-> > Basically allows a 'rewind' function for flight-recorder tracing.
-> > 
-> > +void relay_reset_consumed(struct rchan *chan)
-> > +{
-> > +	unsigned int i;
-> > +	struct rchan_buf *prev = NULL;
-> > +
-> > +	if (!chan)
-> > +		return;
-> > +
-> > +	for (i = 0; i < NR_CPUS; i++) {
-> 
-> Use of NR_CPUS is usually wrong.  In this case it seems you should be using
-> for_each_possible_cpu().
-> 
-> Also the existing usage of NR_CPUS in relay_subbufs_consumed() should be
-> switched to using cpu_possible().
-> 
-> 
-> New usage of NR_CPUS might be checkpatch-worthy, actually:
-> 
-> akpm:/usr/src/25> grep -l '^+.*NR_CPUS' patches/*.patch 
-> patches/ext4-mm-mballoc-core.patch
-> patches/git-kvm.patch
-> patches/git-perfmon.patch
-> patches/relay-reset-consumed.patch
-> patches/x86-andi-git-x86.patch
-> patches/x86-andi-smp-switch-optimize.patch
-> 
-> that's a sample of 1852 patches.
-> 
-> An appropriate warning would be "Usage of NR_CPUS is often wrong - should
-> you be using cpu_possible(), num_possible_cpus(), for_each_possible_cpu(),
-> etc?".
+On Thursday 06 March 2008 21:16, Laurent Vivier wrote:
+> Le jeudi 06 mars 2008 à 20:57 +1100, Nick Piggin a écrit :
 
-That seems reasonable.  If we special case the definitions of NR_CPUS
-and the use of them to define arrays of things both of which appear
-reasonable,
+> > Do you think we do something similar for drivers/block/brd.c too? I'd
+> > like to try to maintain parity between them where possible...
+>
+> I think it is possible  (I've the same patch for NBD too), but I think
+> it is completely useless.
 
-	#define NR_CPUS 10
-	int semid[NR_CPUS];
+It's useful for testing, and for minimising the divergence in the
+code.
 
-then it seems sensible to report this one:
-
-	WARNING: usage of NR_CPUS is often wrong - consider using cpu_possible(), num_possible_cpus(), for_each_possible_cpu(), etc
-	#1: FILE: Z101.c:1:
-	+       for (i = 0; i < NR_CPUS; i++)
-
-This will be in the next push to -mm.
-
--apw
