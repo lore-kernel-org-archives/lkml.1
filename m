@@ -1,147 +1,372 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764621AbYCFNro@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933403AbYCFNtF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764621AbYCFNro (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Mar 2008 08:47:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755051AbYCFNrh
+	id S933403AbYCFNtF (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Mar 2008 08:49:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754488AbYCFNsy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Mar 2008 08:47:37 -0500
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:39648 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752264AbYCFNrg (ORCPT
+	Thu, 6 Mar 2008 08:48:54 -0500
+Received: from tomts25-srv.bellnexxia.net ([209.226.175.188]:48841 "EHLO
+	tomts25-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752264AbYCFNsw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Mar 2008 08:47:36 -0500
-Date: Thu, 6 Mar 2008 07:47:29 -0600
-From: Paul Jackson <pj@sgi.com>
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: maxk@qualcomm.com, mingo@elte.hu, tglx@linutronix.de, oleg@tv-sign.ru,
-       rostedt@goodmis.org, linux-kernel@vger.kernel.org, rientjes@google.com
-Subject: Re: [RFC/PATCH] cpuset: cpuset irq affinities
-Message-Id: <20080306074729.6233e537.pj@sgi.com>
-In-Reply-To: <1204706272.6241.79.camel@lappy>
-References: <20080227222103.673194000@chello.nl>
-	<1204311351.6243.130.camel@lappy>
-	<20080229190223.GA17820@elte.hu>
-	<47C87084.3090208@qualcomm.com>
-	<1204318980.6243.133.camel@lappy>
-	<47C8771C.1070001@qualcomm.com>
-	<1204545445.11412.6.camel@twins>
-	<20080303113621.1dfdda87.pj@sgi.com>
-	<1204567052.6241.4.camel@lappy>
-	<20080303121033.c8c9651c.pj@sgi.com>
-	<1204568316.8514.18.camel@twins>
-	<20080304013534.4e51ae48.pj@sgi.com>
-	<1204628762.6241.46.camel@lappy>
-	<47CDA885.3000103@qualcomm.com>
-	<20080304191159.a02be58b.pj@sgi.com>
-	<1204706272.6241.79.camel@lappy>
-Organization: SGI
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.12.0; i686-pc-linux-gnu)
+	Thu, 6 Mar 2008 08:48:52 -0500
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: Ao8CAN6Ez0dMQWoK/2dsb2JhbACBVqpHggY
+Date: Thu, 6 Mar 2008 08:48:49 -0500
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: Srinivasa DS <srinivasa@in.ibm.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       ananth@in.ibm.com, Jim Keniston <jkenisto@us.ibm.com>,
+       srikar@linux.vnet.ibm.com, SystemTAP <systemtap@sources.redhat.com>,
+       Ingo Molnar <mingo@elte.hu>, Andi Kleen <andi@firstfloor.org>,
+       pageexec@freemail.hu, Thomas Gleixner <tglx@linutronix.de>,
+       Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>,
+       Jeremy Fitzhardinge <jeremy@goop.org>
+Subject: [PATCH] x86 - Enhance DEBUG_RODATA support - alternatives
+Message-ID: <20080306134849.GA4088@Krystal>
+References: <200803061811.27555.srinivasa@in.ibm.com> <20080306125551.GA1597@Krystal> <200803061903.09003.srinivasa@in.ibm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+In-Reply-To: <200803061903.09003.srinivasa@in.ibm.com>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.21.3-grsec (i686)
+X-Uptime: 08:40:17 up 6 days,  9:51,  4 users,  load average: 0.55, 0.76,
+	0.69
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Peter wrote:
-> How about we make this in-kernel boot set, that by default contains all
-> IRQs, all unbounded kthreads and all of user-space.
-
-If I understood your proposal, the /cgroup/irq cpuset is rather an
-odd cpuset -- it seems to be just used to place the 'system' irqs on
-the specified CPUs.  This is not the usual use of cpusets, which are
-to associate a set of tasks with some resources.  In your example,
-the 'tasks' file in /cgroup/irqs is probably empty, right?
-
-And then you have to argue that certain incompatibilities this
-causes are tolerable:
-
-> (Upgrading a kernel would require distributing some new userspace
-> anyway, right? - and we could offer a .config option to disable the boot
-> set for those who do upgrade kernels without upgrading user-space).
-
-No ... we normally do our best not to force apps to change source
-code, or where possible not even force them to recompile, to run on
-new kernels.
-
-> So by providing a .config option for strict backward compatibility,
-
-That sort of alternative is useless when dealing with the major
-distros.  They choose one config for half or all of their entire
-market (perhaps distinguishing personal PC from server, but no more).
-They enable everything that doesn't break something they care about.
-
-> > How does all this interact with /proc/irq/N/smp_affinity?
+* Srinivasa DS (srinivasa@in.ibm.com) wrote:
+> On Thursday 06 March 2008 06:25:51 pm Mathieu Desnoyers wrote:
+> > * Srinivasa DS (srinivasa@in.ibm.com) wrote:
+> > > Insertion of kprobe module causes oops on 2.6.25-rc3-mm1 (x86) systems if
+> > > we enable CONFIG_DEBUG_RODATA.  While registering the probe, memcpy()
+> > > fails to copy breakpoint instruction to the instruction address and
+> > > generates the oops.
+> > >
+> > > BUG: unable to handle kernel paging request at ffffffff8047d1a7
+> > > IP: [<ffffffff8047ff62>] text_poke+0xa/0x10
+> > > PGD 203067 PUD 207063 PMD 7e191163 PTE 47d161
+> > > Oops: 0003 [1] PREEMPT SMP
+> > > ................................................
+> > >
+> > > This is because, Mathieu's patch (http://lkml.org/lkml/2008/2/2/226)
+> > > makes entire text segment as READONLY, if we enable CONFIG_DEBUG_RODATA.
+> > >
+> > > So reverting this patch or new patch, which considers kprobes while
+> > > deciding boundary for setting readonly pages might solve the probelm.
+> >
+> > Hi,
+> >
+> > Are you running under Xen, lguest, kvm.. ?
 > 
-> Much the same way the cpuset cpus_allowed interacts with a task's
-> cpus_allowed. That is, cs->cpus_allowed is a mask on top of the provided
-> affinity.
+> No, on a bare x86_64 system.   That shouldn't matter for this bug, A quick 
+> look at the call path shows me this.
+>      start_kernel()->rest_init()->kernel_init()->init_post()->mark_rodata_ro()
+> 
 
-Ok - something like that could be done, if we had to, just as
-a cpusets 'mems' masks mbind and set_mempolicy nodemasks, and
-a cpusets 'cpus' masks sched_setaffinity cpumasks.
+Hrm, yeah, that's because http://lkml.org/lkml/2008/2/2/227
 
-Could be ... I suppose ... if we had to ... however ...
+x86 - Enhance DEBUG_RODATA support - alternatives
+
+has been pulled out of the x86 tree. It implements the correct text_poke
+required to support this. It's been removed because Xen does not support
+the WP bit in the guest kernels.
+
+Can you try my new replacement implementation ? It creates another
+mapping instead of modifying the WP bit.
 
 
-I suspect that the reason you had the odd /cgroup/irqs cpuset is that
-it wasn't clear what to do with the irqs of cpusets that had both:
- 1) overlapping cpus, and
- 2) specified different lists of irqs.
+x86 - Enhance DEBUG_RODATA support - alternatives
 
-In my view, you are trying to:
- A] force the <<irq, cpu>, Boolean> mapping into linear lists, and
- B] then trying to force those linear lists into the cpuset hierarchy.
+Fix a memcpy that should be a text_poke (in apply_alternatives).
 
-With each capability that we've added to cpusets, beginning with CPUs
-and Memory Nodes themselves, and more recently with sched_domains,
-I've strived to keep cpusets fully hierarchical and nestable, supporting
-arbitrary combinations of overlapping CPUs and Memory Nodes.
+Use kernel_wp_save/kernel_wp_restore in text_poke to support DEBUG_RODATA
+correctly and so the CPU HOTPLUG special case can be removed.
 
-What we have here, in this cpuset-irq proposal, I claim, is another
-example of trying to put in a tree what is essentially flat.
+Add text_poke_early, for alternatives and paravirt boot-time and module load
+time patching.
 
-No ... that last paragraph is wrong.  It's worse than that.
+Changelog:
 
-The mapping of <cpu, irq> pairs to Boolean ("can we direct this irq
-to this CPU - yes or no?") is not flat; it's a two-dimensional matrix
-of Boolean.
+- Fix text_set and text_poke alignment check (mixed up bitwise and and or)
+- Remove text_set
+- Export add_nops, so it can be used by others.
+- Document text_poke_early.
+- Remove clflush, since it breaks some VIA architectures and is not strictly
+  necessary.
+- Add kerneldoc to text_poke and text_poke_early.
+- Create a second vmap instead of using the WP bit to support Xen and VMI.
+- Move local_irq disable within text_poke and text_poke_early to be able to
+  be sleepable in these functions.
 
-So you're [A] squinting out the left eye, flattening the <irq, cpu> map
-to a linear list; then [B] squinting out the right eye and flattening
-the cpuset hierarchy into a flat world; and then exclaiming "Gee,
-these two worlds have similar shape, so let's join them!"
+Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+CC: Andi Kleen <andi@firstfloor.org>
+CC: pageexec@freemail.hu
+CC: Thomas Gleixner <tglx@linutronix.de>
+CC: Ingo Molnar <mingo@redhat.com>
+CC: H. Peter Anvin <hpa@zytor.com>
+CC: Jeremy Fitzhardinge <jeremy@goop.org>
+---
+ arch/x86/kernel/alternative.c |   88 +++++++++++++++++++++++++++++++-----------
+ include/asm-x86/alternative.h |   23 ++++++++++
+ 2 files changed, 87 insertions(+), 24 deletions(-)
 
-Why, why, why?  Why such insanity?
+Index: linux-2.6-lttng/arch/x86/kernel/alternative.c
+===================================================================
+--- linux-2.6-lttng.orig/arch/x86/kernel/alternative.c	2008-03-03 12:29:02.000000000 -0500
++++ linux-2.6-lttng/arch/x86/kernel/alternative.c	2008-03-03 23:59:33.000000000 -0500
+@@ -11,6 +11,8 @@
+ #include <asm/mce.h>
+ #include <asm/nmi.h>
+ #include <asm/vsyscall.h>
++#include <asm/cacheflush.h>
++#include <asm/io.h>
+ 
+ #define MAX_PATCH_LEN (255-1)
+ 
+@@ -173,7 +175,7 @@ static const unsigned char*const * find_
+ #endif /* CONFIG_X86_64 */
+ 
+ /* Use this to add nops to a buffer, then text_poke the whole buffer. */
+-static void add_nops(void *insns, unsigned int len)
++void add_nops(void *insns, unsigned int len)
+ {
+ 	const unsigned char *const *noptable = find_nop_table();
+ 
+@@ -186,6 +188,7 @@ static void add_nops(void *insns, unsign
+ 		len -= noplen;
+ 	}
+ }
++EXPORT_SYMBOL_GPL(add_nops);
+ 
+ extern struct alt_instr __alt_instructions[], __alt_instructions_end[];
+ extern u8 *__smp_locks[], *__smp_locks_end[];
+@@ -219,7 +222,7 @@ void apply_alternatives(struct alt_instr
+ 		memcpy(insnbuf, a->replacement, a->replacementlen);
+ 		add_nops(insnbuf + a->replacementlen,
+ 			 a->instrlen - a->replacementlen);
+-		text_poke(instr, insnbuf, a->instrlen);
++		text_poke_early(instr, insnbuf, a->instrlen);
+ 	}
+ }
+ 
+@@ -280,7 +283,6 @@ void alternatives_smp_module_add(struct 
+ 				 void *text,  void *text_end)
+ {
+ 	struct smp_alt_module *smp;
+-	unsigned long flags;
+ 
+ 	if (noreplace_smp)
+ 		return;
+@@ -306,39 +308,37 @@ void alternatives_smp_module_add(struct 
+ 		__FUNCTION__, smp->locks, smp->locks_end,
+ 		smp->text, smp->text_end, smp->name);
+ 
+-	spin_lock_irqsave(&smp_alt, flags);
++	spin_lock(&smp_alt);
+ 	list_add_tail(&smp->next, &smp_alt_modules);
+ 	if (boot_cpu_has(X86_FEATURE_UP))
+ 		alternatives_smp_unlock(smp->locks, smp->locks_end,
+ 					smp->text, smp->text_end);
+-	spin_unlock_irqrestore(&smp_alt, flags);
++	spin_unlock(&smp_alt);
+ }
+ 
+ void alternatives_smp_module_del(struct module *mod)
+ {
+ 	struct smp_alt_module *item;
+-	unsigned long flags;
+ 
+ 	if (smp_alt_once || noreplace_smp)
+ 		return;
+ 
+-	spin_lock_irqsave(&smp_alt, flags);
++	spin_lock(&smp_alt);
+ 	list_for_each_entry(item, &smp_alt_modules, next) {
+ 		if (mod != item->mod)
+ 			continue;
+ 		list_del(&item->next);
+-		spin_unlock_irqrestore(&smp_alt, flags);
++		spin_unlock(&smp_alt);
+ 		DPRINTK("%s: %s\n", __FUNCTION__, item->name);
+ 		kfree(item);
+ 		return;
+ 	}
+-	spin_unlock_irqrestore(&smp_alt, flags);
++	spin_unlock(&smp_alt);
+ }
+ 
+ void alternatives_smp_switch(int smp)
+ {
+ 	struct smp_alt_module *mod;
+-	unsigned long flags;
+ 
+ #ifdef CONFIG_LOCKDEP
+ 	/*
+@@ -355,7 +355,7 @@ void alternatives_smp_switch(int smp)
+ 		return;
+ 	BUG_ON(!smp && (num_online_cpus() > 1));
+ 
+-	spin_lock_irqsave(&smp_alt, flags);
++	spin_lock(&smp_alt);
+ 
+ 	/*
+ 	 * Avoid unnecessary switches because it forces JIT based VMs to
+@@ -379,7 +379,7 @@ void alternatives_smp_switch(int smp)
+ 						mod->text, mod->text_end);
+ 	}
+ 	smp_mode = smp;
+-	spin_unlock_irqrestore(&smp_alt, flags);
++	spin_unlock(&smp_alt);
+ }
+ 
+ #endif
+@@ -407,7 +407,7 @@ void apply_paravirt(struct paravirt_patc
+ 
+ 		/* Pad the rest with nops */
+ 		add_nops(insnbuf + used, p->len - used);
+-		text_poke(p->instr, insnbuf, p->len);
++		text_poke_early(p->instr, insnbuf, p->len);
+ 	}
+ }
+ extern struct paravirt_patch_site __start_parainstructions[],
+@@ -416,8 +416,6 @@ extern struct paravirt_patch_site __star
+ 
+ void __init alternative_instructions(void)
+ {
+-	unsigned long flags;
+-
+ 	/* The patching is not fully atomic, so try to avoid local interruptions
+ 	   that might execute the to be patched code.
+ 	   Other CPUs are not running. */
+@@ -426,7 +424,6 @@ void __init alternative_instructions(voi
+ 	stop_mce();
+ #endif
+ 
+-	local_irq_save(flags);
+ 	apply_alternatives(__alt_instructions, __alt_instructions_end);
+ 
+ 	/* switch to patch-once-at-boottime-only mode and free the
+@@ -458,7 +455,6 @@ void __init alternative_instructions(voi
+ 	}
+ #endif
+  	apply_paravirt(__parainstructions, __parainstructions_end);
+-	local_irq_restore(flags);
+ 
+ 	if (smp_alt_once)
+ 		free_init_pages("SMP alternatives",
+@@ -471,18 +467,64 @@ void __init alternative_instructions(voi
+ #endif
+ }
+ 
+-/*
+- * Warning:
++/**
++ * text_poke_early - Update instructions on a live kernel at boot time
++ * @addr: address to modify
++ * @opcode: source of the copy
++ * @len: length to copy
++ *
+  * When you use this code to patch more than one byte of an instruction
+  * you need to make sure that other CPUs cannot execute this code in parallel.
+- * Also no thread must be currently preempted in the middle of these instructions.
+- * And on the local CPU you need to be protected again NMI or MCE handlers
+- * seeing an inconsistent instruction while you patch.
++ * Also no thread must be currently preempted in the middle of these
++ * instructions. And on the local CPU you need to be protected again NMI or MCE
++ * handlers seeing an inconsistent instruction while you patch.
+  */
+-void __kprobes text_poke(void *addr, unsigned char *opcode, int len)
++void *text_poke_early(void *addr, const void *opcode, size_t len)
+ {
++	unsigned long flags;
++	local_irq_save(flags);
+ 	memcpy(addr, opcode, len);
++	local_irq_restore(flags);
++	sync_core();
++	/* Could also do a CLFLUSH here to speed up CPU recovery; but
++	   that causes hangs on some VIA CPUs. */
++	return addr;
++}
++
++/**
++ * text_poke - Update instructions on a live kernel
++ * @addr: address to modify
++ * @opcode: source of the copy
++ * @len: length to copy
++ *
++ * Only atomic text poke/set should be allowed when not doing early patching.
++ * It means the size must be writable atomically and the address must be aligned
++ * in a way that permits an atomic write. It also makes sure we fit on a single
++ * page.
++ */
++void *__kprobes text_poke(void *addr, const void *opcode, size_t len)
++{
++	unsigned long flags;
++	char *vaddr;
++	int nr_pages = 2;
++
++	BUG_ON(len > sizeof(long));
++	BUG_ON((((long)addr + len - 1) & ~(sizeof(long) - 1))
++		- ((long)addr & ~(sizeof(long) - 1)));
++	{
++		struct page *pages[2] = { virt_to_page(addr),
++			virt_to_page(addr + PAGE_SIZE) };
++		if (!pages[1])
++			nr_pages = 1;
++		vaddr = vmap(pages, nr_pages, VM_MAP, PAGE_KERNEL);
++		WARN_ON(!vaddr);
++		local_irq_save(flags);
++		memcpy(&vaddr[(unsigned long)addr & ~PAGE_MASK], opcode, len);
++		local_irq_restore(flags);
++		vunmap(vaddr);
++	}
+ 	sync_core();
+ 	/* Could also do a CLFLUSH here to speed up CPU recovery; but
+ 	   that causes hangs on some VIA CPUs. */
++	return addr;
+ }
+Index: linux-2.6-lttng/include/asm-x86/alternative.h
+===================================================================
+--- linux-2.6-lttng.orig/include/asm-x86/alternative.h	2008-03-03 12:29:02.000000000 -0500
++++ linux-2.6-lttng/include/asm-x86/alternative.h	2008-03-03 12:29:53.000000000 -0500
+@@ -156,6 +156,27 @@ apply_paravirt(struct paravirt_patch_sit
+ #define __parainstructions_end	NULL
+ #endif
+ 
+-extern void text_poke(void *addr, unsigned char *opcode, int len);
++extern void add_nops(void *insns, unsigned int len);
++
++/*
++ * Clear and restore the kernel write-protection flag on the local CPU.
++ * Allows the kernel to edit read-only pages.
++ * Side-effect: any interrupt handler running between save and restore will have
++ * the ability to write to read-only pages.
++ *
++ * Warning:
++ * Code patching in the UP case is safe if NMIs and MCE handlers are stopped and
++ * no thread can be preempted in the instructions being modified (no iret to an
++ * invalid instruction possible) or if the instructions are changed from a
++ * consistent state to another consistent state atomically.
++ * More care must be taken when modifying code in the SMP case because of
++ * Intel's errata.
++ * On the local CPU you need to be protected again NMI or MCE handlers seeing an
++ * inconsistent instruction while you patch.
++ * The _early version expects the memory to already be RW.
++ */
++
++extern void *text_poke(void *addr, const void *opcode, size_t len);
++extern void *text_poke_early(void *addr, const void *opcode, size_t len);
+ 
+ #endif /* _ASM_X86_ALTERNATIVE_H */
 
-What in tarnation are you trying to do, that's painful or impossible
-to do, with what we have now?
-
-The only opportunity I've sensed in all this so far is some sort
-of Karnaugh-map factoring of the <<irq, cpu>, Boolean> matrix, as
-an improved representation of the simple, brute force, low level
-/proc/irq/N/smp_affinity map.  Sets of irqs that held a common
-usage pattern could be named, and sets of CPUs that had similar irq
-needs could be named (or named lists of existing cpusets might be
-a suitable proxy for some, not all, such sets), and then this map
-could be represented using these named sets.  Mind you, I don't see
-that big a gain from presenting a second way of looking at what we
-can already see by the current, simple-minded, way, because the
-elegance of being able to group together common clusters (e.g.,
-the set of CPUs that all get the same set of RealTime IRQ's) of the
-existing smp_affinity map is offset by the added complexities of
-having to deal with two ways of saying the same thing.  But perhaps
-I'm missing some real opportunity here to gain significant leverage
-on some problem.  If that's so, then perhaps some new cgroup would
-be appropriate, representing this new interface, pairing named sets
-of irqs to sets with sets of CPUs.  And perhaps, for -some- system
-configurations, it would make sense to use the cgroup capability
-to mount multiple cgroup subsystems together, in a common mount.
-Perhaps ...  I haven't seen what would be sufficient motivation to
-justify such an effort, but I can imagine that such could succeed,
-if some need, as yet unforseen by myself, existed.
 
 -- 
-                  I won't rest till it's the best ...
-                  Programmer, Linux Scalability
-                  Paul Jackson <pj@sgi.com> 1.940.382.4214
+Mathieu Desnoyers
+Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
