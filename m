@@ -1,31 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761045AbYCFMZE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757476AbYCFMZi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761045AbYCFMZE (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Mar 2008 07:25:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753683AbYCFMYt
+	id S1757476AbYCFMZi (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Mar 2008 07:25:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765921AbYCFMZV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Mar 2008 07:24:49 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:34418 "EHLO
+	Thu, 6 Mar 2008 07:25:21 -0500
+Received: from bombadil.infradead.org ([18.85.46.34]:34422 "EHLO
 	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753939AbYCFMYs (ORCPT
+	with ESMTP id S1753683AbYCFMZT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Mar 2008 07:24:48 -0500
-Date: Thu, 6 Mar 2008 07:24:40 -0500
+	Thu, 6 Mar 2008 07:25:19 -0500
+Date: Thu, 6 Mar 2008 07:25:18 -0500
 From: Christoph Hellwig <hch@infradead.org>
-To: Pavel Emelyanov <xemul@openvz.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       David Miller <davem@davemloft.net>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linux Netdev List <netdev@vger.kernel.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-Subject: Re: [PATCH] Make /proc/net a symlink on /proc/self/net (v2)
-Message-ID: <20080306122440.GA28561@infradead.org>
-References: <47CFB6CA.8090001@openvz.org>
+To: Jonas Bonn <jonas@southpole.se>
+Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org, jgarzik@pobox.com
+Subject: Re: struct pci_device_id declaration cleanups
+Message-ID: <20080306122518.GB28561@infradead.org>
+References: <1204800947-21569-1-git-send-email-jonas@southpole.se>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <47CFB6CA.8090001@openvz.org>
+In-Reply-To: <1204800947-21569-1-git-send-email-jonas@southpole.se>
 User-Agent: Mutt/1.5.17 (2007-11-01)
 X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
 	See http://www.infradead.org/rpr.html
@@ -33,20 +28,12 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Mar 06, 2008 at 12:18:02PM +0300, Pavel Emelyanov wrote:
-> Current /proc/net is done with so called "shadows", but current
-> implementation is broken and has little chances to get fixed.
+On Thu, Mar 06, 2008 at 11:55:38AM +0100, Jonas Bonn wrote:
 > 
-> The problem is that dentries subtree of /proc/net directory has
-> fancy revalidation rules to make processes living in different
-> net namespaces see different entries in /proc/net subtree, but
-> currently, tasks see in the /proc/net subdir the contents of any
-> other namespace, depending on who opened the file first.
-> 
-> The proposed fix is to turn /proc/net into a symlink, which points
-> to /proc/self/net, which in turn shows what previously was in
-> /proc/net - the network-related info, from the net namespace the
-> appropriate task lives in.
+> This set of patches applies the macro DECLARE_PCI_DEVICE_TABLE to the 
+> declarations of struct pci_device_id in several network drivers.  The drivers
+> build cleanly with these patches (without any new warnings) on both x86 and 
+> PowerPC.
 
-Yes, that's a much better way to get this functionality.
+Why would we want this macro?  It looks slightly ugly at least..
 
