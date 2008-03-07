@@ -1,56 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755044AbYCGIma@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755044AbYCGIod@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755044AbYCGIma (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Mar 2008 03:42:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757312AbYCGIlQ
+	id S1755044AbYCGIod (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Mar 2008 03:44:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754027AbYCGIoW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Mar 2008 03:41:16 -0500
-Received: from smtp-out.google.com ([216.239.33.17]:3234 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759933AbYCGIlN (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Mar 2008 03:41:13 -0500
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=received:message-id:date:from:to:subject:cc:in-reply-to:
-	mime-version:content-type:content-transfer-encoding:
-	content-disposition:references;
-	b=chULQEL/gdM0DHevO2SLBhPC5YalTvzys2Dk4sdjwVNTeUKT/4qA/kfnV6xqhRMda
-	NbGd1WHgsSWgaJyoj/XBQ==
-Message-ID: <6599ad830803070040i5e54f5f3u9b4c753ac5a87771@mail.gmail.com>
-Date: Fri, 7 Mar 2008 00:40:58 -0800
-From: "Paul Menage" <menage@google.com>
-To: "David Rientjes" <rientjes@google.com>
-Subject: Re: [PATCH] Add cgroup support for enabling controllers at boot time
-Cc: "Balbir Singh" <balbir@linux.vnet.ibm.com>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "Pavel Emelianov" <xemul@openvz.org>, "Hugh Dickins" <hugh@veritas.com>,
-       "Sudhir Kumar" <skumar@linux.vnet.ibm.com>,
-       "YAMAMOTO Takashi" <yamamoto@valinux.co.jp>, lizf@cn.fujitsu.com,
-       linux-kernel@vger.kernel.org, taka@valinux.co.jp, linux-mm@kvack.org,
-       "KAMEZAWA Hiroyuki" <kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <alpine.DEB.1.00.0803062111560.26462@chino.kir.corp.google.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Fri, 7 Mar 2008 03:44:22 -0500
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:3984 "EHLO spitz.ucw.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752080AbYCGIoV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 7 Mar 2008 03:44:21 -0500
+Date: Fri, 7 Mar 2008 09:42:46 +0100
+From: Pavel Machek <pavel@ucw.cz>
+To: Pavel Emelyanov <xemul@openvz.org>
+Cc: Greg KH <greg@kroah.com>, "Serge E. Hallyn" <serue@us.ibm.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Paul Menage <menage@google.com>,
+       Sukadev Bhattiprolu <sukadev@us.ibm.com>
+Subject: Re: [PATCH 0/9] Devices accessibility control group (v4)
+Message-ID: <20080307084245.GA5004@ucw.cz>
+References: <47CED717.60406@openvz.org> <20080306015513.GA5359@kroah.com> <20080306031525.GA9070@sergelap.austin.ibm.com> <20080306043427.GA15498@kroah.com> <47CFAD06.7020501@openvz.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <20080306185952.23290.49571.sendpatchset@localhost.localdomain>
-	 <alpine.DEB.1.00.0803061108370.13110@chino.kir.corp.google.com>
-	 <47D0C76D.8050207@linux.vnet.ibm.com>
-	 <alpine.DEB.1.00.0803062111560.26462@chino.kir.corp.google.com>
+In-Reply-To: <47CFAD06.7020501@openvz.org>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Mar 6, 2008 at 9:14 PM, David Rientjes <rientjes@google.com> wrote:
->
->  Since the command line is logically delimited by spaces, you can
->  accidently disable a subsystem if its name appears in any of your kernel
->  options following your cgroup_disable= option.
+On Thu 2008-03-06 11:36:22, Pavel Emelyanov wrote:
+> Greg KH wrote:
+> > On Wed, Mar 05, 2008 at 09:15:25PM -0600, Serge E. Hallyn wrote:
+> >> Quoting Greg KH (greg@kroah.com):
+> >>> On Wed, Mar 05, 2008 at 08:23:35PM +0300, Pavel Emelyanov wrote:
+> >>>> Changes from v3:
+> >>>> * Ported on 2.6.25-rc3-mm1;
+> >>>> * Re-splitted into smaller pieces;
+> >>>> * Added more comments to tricky places.
+> >>>>
+> >>>> This controller allows to tune the devices accessibility by tasks,
+> >>>> i.e. grant full access for /dev/null, /dev/zero etc, grant read-only
+> >>>> access to IDE devices and completely hide SCSI disks.
+> >>>  From within the kernel itself?  The kernel should not be keeping track
+> >>> of the mode of devices, that's what the filesystem holding /dev is for.
+> >>> Those modes change all the time depending on the device plugged in, and
+> >>> the user using the "console".  Why should the kernel need to worry about
+> >>> any of this?
+> >> These are distinct from the permissions on device files.  No matter what
+> >> the permissions on the device files, a task in a devcg cgroup which
+> >> isn't allowed write to chardev 4:64 will not be able to write to
+> >> /dev/ttyS0.
+> > 
+> > Then why not do that from userspace with a different /dev, or with a
+> > LSM?
+> 
+> Different dev is not suitable, since task may still call mknod to
+> create device it needs and use it. This is not about comfortable
+> use, this is about security.
 
-I think that you're confusing this with things like the very early
-memory init setup parameters, which do operate on the raw commandline.
+And you may still take out mknod capability...
 
-By the time anything is passed to a __setup() function, it's already
-been split into separate strings at space boundaries.
-
-Paul
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
