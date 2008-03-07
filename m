@@ -1,50 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760724AbYCGJqE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761684AbYCGJs7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760724AbYCGJqE (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Mar 2008 04:46:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753375AbYCGJpr
+	id S1761684AbYCGJs7 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Mar 2008 04:48:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756305AbYCGJsp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Mar 2008 04:45:47 -0500
-Received: from topsns2.toshiba-tops.co.jp ([202.230.225.126]:18790 "EHLO
-	topsns2.toshiba-tops.co.jp" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753063AbYCGJpq (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Mar 2008 04:45:46 -0500
-Date: Fri, 07 Mar 2008 18:45:38 +0900 (JST)
-Message-Id: <20080307.184538.00937695.nemoto@toshiba-tops.co.jp>
-To: linux-kernel@vger.kernel.org
-Cc: Hans-Christian Egtvedt <hcegtvedt@atmel.com>,
-       Haavard Skinnemoen <hskinnemoen@atmel.com>,
-       Andrew Victor <avictor.za@gmail.com>
-Subject: [PATCH] at73c213: Fix error checking for clk API.
-From: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
-X-Fingerprint: 6ACA 1623 39BD 9A94 9B1A  B746 CA77 FE94 2874 D52F
-X-Pgp-Public-Key: http://wwwkeys.pgp.net/pks/lookup?op=get&search=0x2874D52F
-X-Mailer: Mew version 5.2 on Emacs 21.4 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Fri, 7 Mar 2008 04:48:45 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:39697 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755725AbYCGJso (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 7 Mar 2008 04:48:44 -0500
+Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
+	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
+	Kingdom.
+	Registered in England and Wales under Company Registration No. 3798903
+From: David Howells <dhowells@redhat.com>
+In-Reply-To: <47CFD7F8.9010903@cse.iitk.ac.in>
+References: <47CFD7F8.9010903@cse.iitk.ac.in>
+To: Arun Raghavan <arunsr@cse.iitk.ac.in>
+Cc: dhowells@redhat.com, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Allow clients to set key perms in key_create_or_update()
+X-Mailer: MH-E 8.0.3+cvs; nmh 1.2-20070115cvs; GNU Emacs 23.0.50
+Date: Fri, 07 Mar 2008 09:48:38 +0000
+Message-ID: <25831.1204883318@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The clk_round_rate() and clk_set_rate() will return int, so not store
-thier return value to unsigned long variable.  This bug hides real
-error on these API.
+Arun Raghavan <arunsr@cse.iitk.ac.in> wrote:
 
-Signed-off-by: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
----
-diff --git a/sound/spi/at73c213.c b/sound/spi/at73c213.c
-index 89d6e9c..d130552 100644
---- a/sound/spi/at73c213.c
-+++ b/sound/spi/at73c213.c
-@@ -133,7 +133,8 @@ static struct snd_pcm_hardware snd_at73c213_playback_hw = {
- static int snd_at73c213_set_bitrate(struct snd_at73c213 *chip)
- {
- 	unsigned long ssc_rate = clk_get_rate(chip->ssc->clk);
--	unsigned long dac_rate_new, ssc_div, status;
-+	unsigned long dac_rate_new, ssc_div;
-+	int status;
- 	unsigned long ssc_div_max, ssc_div_min;
- 	int max_tries;
- 
+> The key_create_or_update() function provided by the keyring code has a default
+> set of permissions that are always applied to the key when created. This might
+> not be desirable to all clients.
+> 
+> Here's a patch that adds a "perm" parameter to the function to address this,
+> which can be set to KEY_PERM_UNDEF to revert to the current behaviour.
+
+I'll get to this shortly.  I'm just creating another keyrings patch, so I'll
+look at yours afterwards.
+
+David
