@@ -1,58 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765942AbYCGUfH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765870AbYCGUg5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765942AbYCGUfH (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Mar 2008 15:35:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761588AbYCGUey
+	id S1765870AbYCGUg5 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Mar 2008 15:36:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761544AbYCGUgt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Mar 2008 15:34:54 -0500
-Received: from fmmailgate05.web.de ([217.72.192.243]:52314 "EHLO
-	fmmailgate05.web.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761722AbYCGUex convert rfc822-to-8bit (ORCPT
+	Fri, 7 Mar 2008 15:36:49 -0500
+Received: from rv-out-0910.google.com ([209.85.198.189]:46020 "EHLO
+	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761423AbYCGUgs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Mar 2008 15:34:53 -0500
-Date: Fri, 07 Mar 2008 21:34:51 +0100
-Message-Id: <187794188@web.de>
+	Fri, 7 Mar 2008 15:36:48 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:mime-version:content-type:content-transfer-encoding:content-disposition;
+        b=Hesg/vHw1GS6pnpU1p1Wq1sD1A9IMp4MBMm8kkqxUbM7jdueEk4WvrCWK8kf5DnlYJBdD/X6A6yZy/Ihk/F6l/q9tnFZxWLENxKlnO9EXpl4LK3wiqt01CTNzbJ9j+sjebNdrVMfCHBOg2BW7LLWfkixXH24EJ05SC1hdd5a8bA=
+Message-ID: <878847400803071236w47178fa4r79f50d537b383843@mail.gmail.com>
+Date: Fri, 7 Mar 2008 21:36:48 +0100
+From: "Pierre Peiffer" <peifferp@gmail.com>
+To: akpm@linux-foundation.org, "Randy Dunlap" <randy.dunlap@oracle.com>
+Subject: [PATCH 2.6.25-rc3-mm1] IPC: fix a kernel-doc warning
+Cc: linux-kernel@vger.kernel.org
 MIME-Version: 1.0
-From: devzero@web.de
-To: Laurent.Vivier@bull.net
-Cc: breeves@redhat.com, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH][v2] Modify loop device to be able to manage partitions
-Organization: http://freemail.web.de/
-X-Provags-Id: V01U2FsdGVkX1+8gaeeBmP2xZyosFs3298eDzkCR20GxAlkqKAkxtV8gTC7F
- KyHwJuA/qZ7zSnQt3WpMOIKhFRLFEZZA/IJCqsEn0sa3+rujKQ=
-Content-Type: text/plain; charset=iso-8859-15
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->Of course, the same behavior can be done using kpartx on a loop device,
->but modifying loop avoids to stack several layers of block device (loop +
->device mapper), this is a very light modification (40% of modifications
->are to manage the new parameter).
+Hi,
 
-iirc, patches like this have been submitted more than once.
-i remember i have seen one floating around years ago.
+This patch fixes this warning produced by kernel-doc (thanks Randy Dunlap):
 
-aside from the fact that using partitions on loop devices is useful - if 
-we had dm-loop (http://sources.redhat.com/lvm2/wiki/DMLoop) in mainline - 
-would using kpartx with that also mean stacking 2 layers of block device ?
+Warning(linux-2.6.25-rc3-mm1//ipc/util.c:845):
+No description found for parameter 'extrat_perm'
 
-personally, i like the kpartx approach. afaik, it`s working good.
+It is due to an inconsistency in a variable name between the C-code and
+the associated comment.
 
-i also like dm-loop, because i think that mapping of files to blockdevices 
-belongs into an appropriate subsystem like device-mapper.
+Signed-off-by: Pierre Peiffer <peifferp@gmail.com>
+---
+ ipc/util.c |    4 ++--
+ ipc/util.h |    2 +-
+ 2 files changed, 3 insertions(+), 3 deletions(-)
 
-maybe some of the dm folks know better or have some real arguments - so i`m 
-adding bryn reeves here. (just noticed that dm-loop disappeared from -mm due 
-to removal of some api change - so it`s a good chance to bring it back into 
-discussion) ;)
+Index: b/ipc/util.c
+===================================================================
+--- a/ipc/util.c
++++ b/ipc/util.c
+@@ -841,7 +841,7 @@
+  *    or an err-code without any lock held otherwise.
+  */
+ struct kern_ipc_perm *ipcctl_pre_down(struct ipc_ids *ids, int id, int cmd,
+-				      struct ipc64_perm *perm, int extrat_perm)
++				      struct ipc64_perm *perm, int extra_perm)
+ {
+ 	struct kern_ipc_perm *ipcp;
+ 	int err;
+@@ -858,7 +858,7 @@
+ 		goto out_unlock;
 
-regards
-roland
+ 	if (cmd == IPC_SET) {
+-		err = audit_ipc_set_perm(extrat_perm, perm->uid,
++		err = audit_ipc_set_perm(extra_perm, perm->uid,
+ 					 perm->gid, perm->mode);
+ 		if (err)
+ 			goto out_unlock;
+Index: b/ipc/util.h
+===================================================================
+--- a/ipc/util.h
++++ b/ipc/util.h
+@@ -114,7 +114,7 @@
+ void ipc64_perm_to_ipc_perm(struct ipc64_perm *in, struct ipc_perm *out);
+ void ipc_update_perm(struct ipc64_perm *in, struct kern_ipc_perm *out);
+ struct kern_ipc_perm *ipcctl_pre_down(struct ipc_ids *ids, int id, int cmd,
+-				      struct ipc64_perm *perm, int extrat_perm);
++				      struct ipc64_perm *perm, int extra_perm);
 
+ #if defined(__ia64__) || defined(__x86_64__) || defined(__hppa__) ||
+defined(__XTENSA__)
+   /* On IA-64, we always use the "64-bit version" of the IPC structures.  */
 
-_______________________________________________________________________
-Jetzt neu! Schützen Sie Ihren PC mit McAfee und WEB.DE. 30 Tage
-kostenlos testen. http://www.pc-sicherheit.web.de/startseite/?mc=022220
-
+-- 
+Pierre
