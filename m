@@ -1,45 +1,131 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760887AbYCGQ5u@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759535AbYCGREu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760887AbYCGQ5u (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Mar 2008 11:57:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756237AbYCGQ5n
+	id S1759535AbYCGREu (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Mar 2008 12:04:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755542AbYCGREk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Mar 2008 11:57:43 -0500
-Received: from gw.goop.org ([64.81.55.164]:38882 "EHLO mail.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752157AbYCGQ5m (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Mar 2008 11:57:42 -0500
-Message-ID: <47D172A2.5000408@goop.org>
-Date: Fri, 07 Mar 2008 08:51:46 -0800
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
+	Fri, 7 Mar 2008 12:04:40 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:53518 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750778AbYCGREk (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 7 Mar 2008 12:04:40 -0500
+Date: Fri, 7 Mar 2008 09:01:04 -0800
+From: Greg KH <greg@kroah.com>
+To: Pavel Emelyanov <xemul@openvz.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       menage@google.com, sukadev@us.ibm.com, serue@us.ibm.com
+Subject: Re: [PATCH 5/9] Make use of permissions, returned by kobj_lookup
+Message-ID: <20080307170104.GA24746@kroah.com>
+References: <47CED717.60406@openvz.org> <47CEDA64.1070506@openvz.org> <20080305171304.f686f6de.akpm@linux-foundation.org> <47D10939.6020806@openvz.org> <20080307013553.7ed35f91.akpm@linux-foundation.org> <47D11068.9010704@openvz.org> <20080307155921.GB28439@kroah.com> <47D16F9B.6050008@openvz.org>
 MIME-Version: 1.0
-To: Tarkan Erimer <tarkan@netone.net.tr>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: [BUG] Linux-2.6.25-rc4 (and also in rc3) Compile Error
-References: <47CE6F66.7020004@netone.net.tr> <47D0895C.5070901@goop.org> <47D0F9D7.8010607@netone.net.tr>
-In-Reply-To: <47D0F9D7.8010607@netone.net.tr>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-9; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <47D16F9B.6050008@openvz.org>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Tarkan Erimer wrote:
-> Jeremy Fitzhardinge wrote:
->>
->> That doesn't make much sense.  Are you compiling with ARCH=xen or 
->> something?  I can't reproduce it here with your .config.
->>
->>    J
->
-> Nope, I just selected the  "Processor type and features -> 
-> Paravirtualized guest support" ( PARAVIRT_GUEST [=y] ) and all the sub 
-> selections under this feature. When I compiled PARAVIRT_GUEST=n, it 
-> compiles without any problem.
+On Fri, Mar 07, 2008 at 07:38:51PM +0300, Pavel Emelyanov wrote:
+> Greg KH wrote:
+> > On Fri, Mar 07, 2008 at 12:52:40PM +0300, Pavel Emelyanov wrote:
+> >> Andrew Morton wrote:
+> >>> On Fri, 07 Mar 2008 12:22:01 +0300 Pavel Emelyanov <xemul@openvz.org> wrote:
+> >>>
+> >>>>> This doesn't include sufficient headers to be compileable.
+> >>>>>
+> >>>>> I'm sure there are lots of headers like this.  But we regularly need
+> >>>>> to fix them.
+> >>>>>
+> >>>> Not sure, whether this is still relevant after Greg's comments, but that's
+> >>>> the -fix patch for this one. (It will cause a conflict with the 9th patch.)
+> >>> Well.  Where do we stand with this?  afaict the state of play is:
+> >>>
+> >>> Greg: do it in udev
+> >>> Pavel: but people want to run old distros in containers
+> >> Actually no.
+> >>
+> >> Greg: Use LSM for this
+> > 
+> > Yes, that is my recommendation.
+> > 
+> >> Pavel: My approach just makes maps per-group, while LSM will
+> >>        bring a new level of filtering/lookup on device open path
+> > 
+> > Huh?  You are still doing that same "filtering/lookup" by modifying the
+> > maps code.  The result should be exactly the same.
+> 
+> No - this lookup was there before to get struct kobject from the dev_t, 
+> I just make it look up in another map.
+> 
+> > Why do you not want to use the LSM interface?  That is exactly what it
+> > is there for, don't go creating new hooks into the kernel for the exact
+> > same functionality.
+> 
+> _No_new_hooks_ - just the map is get from task, not from a static variable.
 
-At what point does it fail?  Is it early in the build, or late?  What's 
-your build command line?
+The new "hook" is that we now have ways of setting different maps, and
+you added a whole infrastructure to set these permissions from
+userspace, as well as track them within the kernel.  That's a security
+policy that you are putting into place within the kernel, just like LSM
+is supposed to be used for.
 
-    J
+> I have basically three objections against LSM.
+> 
+> 1. LSM is not stackable, so loading this tiny module with devices
+>    access rights will block other security modules;
+
+Do you really want to run other LSMs within a containerd kernel?  Is
+that a requirement?  It would seem to run counter to the main goal of
+containers to me.
+
+> 2. Turning CONFIG_SECURITY on immediately causes all the other hooks
+>    to get called. This affects performance on critical paths, like
+>    process creation/destruction, network flow and so on. This impact
+>    is small, but noticeable;
+
+The last time this was brought up, it was not noticable, except for some
+network paths.  And even then, the number was lost in the noise from
+what I saw.  I think with a containered machine, you have bigger things
+to be worried about :)
+
+> 3. With LSM turned on we'll have to "virtualize" it, i.e. make its
+>    work safe in a container. I don't presume to judge how much work
+>    will have to be done in this area, so the result patch would be
+>    even larger and maybe will duplicate functionality, which is currently
+>    in cgroups. OTOH, cgroups already provide the ways to correctly 
+>    delegate proper rights to containers.
+
+No, your lsm would be your "virtualize" policy.  I don't think you would
+have to do any additional work here, but could be wrong.  Would like to
+see the code to prove it.
+
+> > Opening a dev node is not on any "fast path" that you need to be
+> > concerned about a few extra calls within the kernel.
+> > 
+> > And, I think in the end your patch would be much smaller and easier to
+> > understand and review and maintain overall.
+> 
+> Hardly - the largest part of my patch is cgroup manipulations. The part
+> that makes the char and block layers switch to new map ac check the 
+> permissions is 10-20 lines of new code.
+> 
+> But with LSM I will still need this API.
+
+Yes, but your LSM hooks will be smaller than the code modifications to
+the map logic :)
+
+Again, I object to this as you are driving a new security policy
+infrastructure into the device node logic where it does not belong as we
+already have this functionality in the LSM interface today.  Please use
+that one instead and don't clutter up the kernel with "one-off" security
+changes like this one.
+
+Please try the LSM interface and see what happens.  If, after you have
+created a patch, you still have objections, please post it for review
+and I will be glad to revisit my opinion at that time.
+
+thanks,
+
+greg k-h
