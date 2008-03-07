@@ -1,58 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760881AbYCGCRL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762527AbYCGCVU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760881AbYCGCRL (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Mar 2008 21:17:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754453AbYCGCQy
+	id S1762527AbYCGCVU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Mar 2008 21:21:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756865AbYCGCU7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Mar 2008 21:16:54 -0500
-Received: from srv5.dvmed.net ([207.36.208.214]:43016 "EHLO mail.dvmed.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754262AbYCGCQx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Mar 2008 21:16:53 -0500
-Message-ID: <47D0A58D.3050500@garzik.org>
-Date: Thu, 06 Mar 2008 21:16:45 -0500
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
+	Thu, 6 Mar 2008 21:20:59 -0500
+Received: from relay2.sgi.com ([192.48.171.30]:60316 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1756834AbYCGCU6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 6 Mar 2008 21:20:58 -0500
+Date: Thu, 6 Mar 2008 18:20:40 -0800 (PST)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Nick Piggin <npiggin@suse.de>
+cc: Pekka Enberg <penberg@cs.helsinki.fi>, netdev@vger.kernel.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       yanmin_zhang@linux.intel.com, David Miller <davem@davemloft.net>,
+       Eric Dumazet <dada1@cosmosbay.com>
+Subject: Re: [rfc][patch 1/3] slub: fix small HWCACHE_ALIGN alignment
+In-Reply-To: <20080307020443.GA21185@wotan.suse.de>
+Message-ID: <Pine.LNX.4.64.0803061816430.28976@schroedinger.engr.sgi.com>
+References: <Pine.LNX.4.64.0803031209570.16049@schroedinger.engr.sgi.com>
+ <20080303201701.GF8974@wotan.suse.de> <Pine.LNX.4.64.0803031315160.4131@schroedinger.engr.sgi.com>
+ <84144f020803031330i2c0ea1f6kc5b02c8b26145797@mail.gmail.com>
+ <Pine.LNX.4.64.0803031331340.4375@schroedinger.engr.sgi.com>
+ <47CC6F30.50802@cs.helsinki.fi> <20080305002821.GD1510@wotan.suse.de>
+ <Pine.LNX.4.64.0803051254570.30742@schroedinger.engr.sgi.com>
+ <20080306024904.GA27150@wotan.suse.de> <Pine.LNX.4.64.0803061451230.16212@schroedinger.engr.sgi.com>
+ <20080307020443.GA21185@wotan.suse.de>
 MIME-Version: 1.0
-To: Tejun Heo <htejun@gmail.com>
-CC: James Bottomley <James.Bottomley@HansenPartnership.com>,
-       Mark Lord <liml@rtr.ca>, Matthew Wilcox <matthew@wil.cx>,
-       linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: ata_ram driver
-References: <20080222200951.GI16995@parisc-linux.org>	 <47BF3E54.9050609@rtr.ca>  <47CFA9A6.2040506@gmail.com>	 <1204817301.3062.3.camel@localhost.localdomain>	 <47D08478.8010700@gmail.com>	 <1204848119.3062.94.camel@localhost.localdomain>	 <47D08892.3080209@gmail.com> <1204849353.3062.107.camel@localhost.localdomain> <47D08C32.8060907@gmail.com>
-In-Reply-To: <47D08C32.8060907@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.4 (----)
-X-Spam-Report: SpamAssassin version 3.2.3 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.4 points, 5.0 required)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Tejun Heo wrote:
-> James Bottomley wrote:
->>> Yeap, sure.  It's the combination of things that always made me put this
->>> off.  Is there a function I can call to just shutdown the host instead
->>> of destroying it?
->> Not really ... the process of unbinding the ULDs causes their remove
->> methods to call shudown.  It is possible to separate this in the ULDS;
->> but the original design was to make remove and shutdown be similar for
->> the very reason that if you're removing the driver with unflushed data
->> in the cache, we'd really like it flushed (flush is called from
->> shutdown) because you have no way to talk to the device after this
->> without reinserting the driver.
+On Fri, 7 Mar 2008, Nick Piggin wrote:
+
+> > Do you have a case in mind where that would be useful? We had a 
 > 
-> The problem is that libata EH and other stuff aren't ready to let go of
-> the SCSI host up until the last moment and that last moment can't be
-> moved before SCSI host destruction because shutdown sequence (flush and
-> spindown) requires live EH.  I think this can be solved by shooting down
-> individual sdev's instead of destroying the scsi_host.
+> Patch 3/3
 
-I'm curious how the picture would change, if we used a scsi_host for 
-each ata_host.
+Those already have SLAB_HWCACHE_ALIGN.
 
-	Jeff
+The point is to switch off alignment for UP? Cant we do that with 
+SLAB_HWCACHE_ALIGN too since SLOB seemed to work successfully without it 
+in the past?
 
+> > Note that there is also KMEM_CACHE which picks up the alignment from 
+> > the compiler.
+> 
+> Yeah, that's not quite as good either. My allocation flag is dynamic, so
+> it will not bloat things for no reason on UP machines and SMP kernels. 
+> It also aligns to the detected machine cacheline size rather than a
+> compile time constant.
 
-
+Is that really a noteworthy effect?
