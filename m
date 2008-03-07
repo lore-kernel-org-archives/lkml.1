@@ -1,60 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761684AbYCGJhM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760724AbYCGJqE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761684AbYCGJhM (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Mar 2008 04:37:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763381AbYCGJgk
+	id S1760724AbYCGJqE (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Mar 2008 04:46:04 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753375AbYCGJpr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Mar 2008 04:36:40 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:54253 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1763511AbYCGJgg (ORCPT
+	Fri, 7 Mar 2008 04:45:47 -0500
+Received: from topsns2.toshiba-tops.co.jp ([202.230.225.126]:18790 "EHLO
+	topsns2.toshiba-tops.co.jp" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753063AbYCGJpq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Mar 2008 04:36:36 -0500
-Date: Fri, 7 Mar 2008 01:35:53 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Pavel Emelyanov <xemul@openvz.org>
-Cc: linux-kernel@vger.kernel.org, menage@google.com, sukadev@us.ibm.com,
-       serue@us.ibm.com, Greg KH <greg@kroah.com>
-Subject: Re: [PATCH 5/9] Make use of permissions, returned by kobj_lookup
-Message-Id: <20080307013553.7ed35f91.akpm@linux-foundation.org>
-In-Reply-To: <47D10939.6020806@openvz.org>
-References: <47CED717.60406@openvz.org>
-	<47CEDA64.1070506@openvz.org>
-	<20080305171304.f686f6de.akpm@linux-foundation.org>
-	<47D10939.6020806@openvz.org>
-X-Mailer: Sylpheed 2.3.1 (GTK+ 2.10.11; x86_64-redhat-linux-gnu)
+	Fri, 7 Mar 2008 04:45:46 -0500
+Date: Fri, 07 Mar 2008 18:45:38 +0900 (JST)
+Message-Id: <20080307.184538.00937695.nemoto@toshiba-tops.co.jp>
+To: linux-kernel@vger.kernel.org
+Cc: Hans-Christian Egtvedt <hcegtvedt@atmel.com>,
+       Haavard Skinnemoen <hskinnemoen@atmel.com>,
+       Andrew Victor <avictor.za@gmail.com>
+Subject: [PATCH] at73c213: Fix error checking for clk API.
+From: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
+X-Fingerprint: 6ACA 1623 39BD 9A94 9B1A  B746 CA77 FE94 2874 D52F
+X-Pgp-Public-Key: http://wwwkeys.pgp.net/pks/lookup?op=get&search=0x2874D52F
+X-Mailer: Mew version 5.2 on Emacs 21.4 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 07 Mar 2008 12:22:01 +0300 Pavel Emelyanov <xemul@openvz.org> wrote:
+The clk_round_rate() and clk_set_rate() will return int, so not store
+thier return value to unsigned long variable.  This bug hides real
+error on these API.
 
-> > This doesn't include sufficient headers to be compileable.
-> > 
-> > I'm sure there are lots of headers like this.  But we regularly need
-> > to fix them.
-> > 
-> 
-> Not sure, whether this is still relevant after Greg's comments, but that's
-> the -fix patch for this one. (It will cause a conflict with the 9th patch.)
-
-Well.  Where do we stand with this?  afaict the state of play is:
-
-Greg: do it in udev
-Pavel: but people want to run old distros in containers
-
-
-Realistically, when is the mainline kernel likely to have sufficient
-container functionality which is sufficiently well-tested for people to
-actually be able to do that?  And how much longer will it take for that
-kernel.org functionality to propagate out into non-bleeding-edge distros?
-
-Altogether we're looking at one to three years, aren't we?  By then,
-perhaps a lot of "old" distros are already udev-based.
-
-otoh, my experience upgrading old kernels to new udev has not been a
-good one (ie: it didn't work).
-
+Signed-off-by: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
+---
+diff --git a/sound/spi/at73c213.c b/sound/spi/at73c213.c
+index 89d6e9c..d130552 100644
+--- a/sound/spi/at73c213.c
++++ b/sound/spi/at73c213.c
+@@ -133,7 +133,8 @@ static struct snd_pcm_hardware snd_at73c213_playback_hw = {
+ static int snd_at73c213_set_bitrate(struct snd_at73c213 *chip)
+ {
+ 	unsigned long ssc_rate = clk_get_rate(chip->ssc->clk);
+-	unsigned long dac_rate_new, ssc_div, status;
++	unsigned long dac_rate_new, ssc_div;
++	int status;
+ 	unsigned long ssc_div_max, ssc_div_min;
+ 	int max_tries;
+ 
