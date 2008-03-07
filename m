@@ -1,105 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932325AbYCGT2p@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763890AbYCGTbq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932325AbYCGT2p (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Mar 2008 14:28:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756305AbYCGT2b
+	id S1763890AbYCGTbq (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Mar 2008 14:31:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757532AbYCGTbi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Mar 2008 14:28:31 -0500
-Received: from tuxrocks.com ([208.78.103.217]:33185 "EHLO tuxrocks.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1763462AbYCGT2Q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Mar 2008 14:28:16 -0500
-Message-ID: <47D1971A.7070500@tuxrocks.com>
-Date: Fri, 07 Mar 2008 13:27:22 -0600
-From: Frank Sorenson <frank@tuxrocks.com>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
-MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: LKML <linux-kernel@vger.kernel.org>, linux-mm@kvack.org,
-       "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: 2.6.25-rc4 OOMs itself dead on bootup
-References: <47D02940.1030707@tuxrocks.com> <20080306184954.GA15492@elte.hu>
-In-Reply-To: <20080306184954.GA15492@elte.hu>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Fri, 7 Mar 2008 14:31:38 -0500
+Received: from hc65210ec.dhcp.vt.edu ([198.82.16.236]:55756 "EHLO
+	hc65210ec.dhcp.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757337AbYCGTbi (ORCPT
+	<RFC822;linux-kernel@vger.kernel.org>);
+	Fri, 7 Mar 2008 14:31:38 -0500
+X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Ingo Molnar <mingo@elte.hu>
+Subject: Re: 2.6.25-rc3-mm1 - BUG at system shutdown time
+In-Reply-To: Your message of "Fri, 07 Mar 2008 09:34:01 +0100."
+             <alpine.LFD.1.00.0803070931470.3099@apollo.tec.linutronix.de>
+From: Valdis.Kletnieks@vt.edu
+References: <20080304011928.e8c82c0c.akpm@linux-foundation.org> <10815.1204862325@turing-police.cc.vt.edu> <20080306221602.790cd26e.akpm@linux-foundation.org> <4954.1204876349@turing-police.cc.vt.edu> <alpine.LFD.1.00.0803070857360.3099@apollo.tec.linutronix.de> <3450.1204878180@turing-police.cc.vt.edu>
+            <alpine.LFD.1.00.0803070931470.3099@apollo.tec.linutronix.de>
+Mime-Version: 1.0
+Content-Type: multipart/signed; boundary="==_Exmh_1204918220_4026P";
+	 micalg=pgp-sha1; protocol="application/pgp-signature"
 Content-Transfer-Encoding: 7bit
+Date: Fri, 07 Mar 2008 14:30:21 -0500
+Message-ID: <7962.1204918221@turing-police.cc.vt.edu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
------BEGIN PGP SIGNED MESSAGE-----
-Hash: SHA1
+--==_Exmh_1204918220_4026P
+Content-Type: text/plain; charset=us-ascii
 
-Ingo Molnar wrote:
-> * Frank Sorenson <frank@tuxrocks.com> wrote:
-> 
->> 2.6.25-rc4 invokes the oom-killer repeatedly when attempting to boot, 
->> eventually panicing with "Out of memory and no killable processes." 
->> This happens since at least 2.6.25-rc3, but 2.6.24 boots just fine,
->>
->> The system is a Dell Inspiron E1705 running Fedora 8 (x86_64).
->>
->> My .config is at http://tuxrocks.com/tmp/config-2.6.25-rc4, and a 
->> syslog of the system up until the point where it oom-killed syslog 
->> (just before the panic) is at 
->> http://tuxrocks.com/tmp/oom-2.6.25-rc4.txt
-> 
-> i've picked up your .config and enabled a few drivers in it to make it 
-> boot on a testsystem of mine and it doesnt OOM:
-> 
->  20:47:17 up 10 min,  1 user,  load average: 0.01, 0.07, 0.03
->               total       used       free     shared    buffers     cached
->  Mem:       1025768     258544     767224          0      12956     169556
->  -/+ buffers/cache:      76032     949736
->  Swap:      3911816          0    3911816
-> 
-> (config and bootlog from my box attached.)
-> 
-> So it's probably not a .config dependent generic kernel problem, but 
-> probably something specific to your hardware.
-> 
-> Since the first oom happens about 9 minutes into the bootup:
-> 
->  [  569.755853] sh invoked oom-killer: gfp_mask=0x1201d2, order=0, oomkilladj=-17
-> 
-> do you have any chance to log in and capture MM statistics? The 
-> following script will capture a bunch of statistics:
-> 
->  http://people.redhat.com/mingo/cfs-scheduler/tools/cfs-debug-info.sh
-> 
-> and takes less than a minute to run - should be enough time in theory. 
-> If it's possible to run it then send us the output file it produces.
-> 
-> 	Ingo
+On Fri, 07 Mar 2008 09:34:01 +0100, Thomas Gleixner said:
 
-Thank you for the help, and for the time.
+> Yeah. Sorry for making you do useless work. The meat is here:
+> 
+> > > [   74.256373] PGD 203067 PUD 207063 PMD 7e4cc163 PTE 20a161
+> 
+> ----------------------------------------------------------^^^^^^
+> 
+> The PTE has the RW bit cleared, so the fault is not a big surprise.
 
-I did some additional debugging, and I believe you're correct about it
-being specific to my system.  The system seems to run fine until some
-time during the boot.  I booted with "init=/bin/sh" (that's how the
-system stayed up for 9 minutes), then it died when I tried starting
-things up.  I've further narrowed the OOM down to udev (though it's not
-entirely udev's fault, since 2.6.24 runs fine).
+Probably not surprisingly, the quilt bisect says the problem is git-x86,patch.
 
-I ran your debug info tool before killing the box by running
-/sbin/start_udev.  The output of the tool is at
-http://tuxrocks.com/tmp/cfs-debug-info-2008.03.06-14.11.24
+--==_Exmh_1204918220_4026P
+Content-Type: application/pgp-signature
 
-Something is apparently happening between 2.6.24 and 2.6.25-rc[34] which
-causes udev (or something it calls) to behave very badly.
-
-I'll keep looking further into the cause.  Thanks again for the help.
-
-Frank
-- --
-Frank Sorenson - KD7TZK
-Linux Systems Engineer, DSS Engineering, UBS AG
-frank@tuxrocks.com
 -----BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.7 (GNU/Linux)
-Comment: Using GnuPG with Fedora - http://enigmail.mozdev.org
+Version: GnuPG v1.4.8 (GNU/Linux)
+Comment: Exmh version 2.5 07/13/2001
 
-iD8DBQFH0ZcXaI0dwg4A47wRAoy7AJ9ILIlACjitvOpNghRNxmOgiygk1QCfb3Oi
-8Drhxc4Tvu0K+1KD0U6XUOE=
-=SmQj
+iD8DBQFH0ZfMcC3lWbTT17ARAsKuAKDGS21zsd9jcrvq6ckJWi/8sPuonACeNWA/
+cBqlp7cptpfLpwX3Du1YuzE=
+=YOz5
 -----END PGP SIGNATURE-----
+
+--==_Exmh_1204918220_4026P--
