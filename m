@@ -1,84 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764249AbYCGEfm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764722AbYCGEhY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764249AbYCGEfm (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Mar 2008 23:35:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758007AbYCGEfb
+	id S1764722AbYCGEhY (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Mar 2008 23:37:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755384AbYCGEhF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Mar 2008 23:35:31 -0500
-Received: from ti-out-0910.google.com ([209.85.142.185]:44653 "EHLO
-	ti-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755496AbYCGEfa (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Mar 2008 23:35:30 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=pIlrS4KSUvZidO5H4JFz1dLJi45TwCuy3QN0hnY3+1DIijs7F1MX68L5CeEf++KUq1pvRl7NXgPX7hCoxzFf+xqrr2V/Dobov2b+Yx/1gcjehzTviFHsllzDRXTkb17WaF19cykekAQv9hOpZPLWscx0MWzBcMhyS04Uakh/PJs=
-Message-ID: <a8e1da0803062035o318bd843o22b561faa52fd19f@mail.gmail.com>
-Date: Fri, 7 Mar 2008 12:35:26 +0800
-From: "Dave Young" <hidave.darkstar@gmail.com>
-To: paulmck@linux.vnet.ibm.com
-Subject: Re: 2.6.25-rc4 rcupreempt.h WARNINGs while suspend/resume
-Cc: "Jike Song" <albcamus@gmail.com>,
-       "Linux Kernel" <linux-kernel@vger.kernel.org>
-In-Reply-To: <20080307041940.GB19183@linux.vnet.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Thu, 6 Mar 2008 23:37:05 -0500
+Received: from mx2.suse.de ([195.135.220.15]:55604 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758159AbYCGEhE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 6 Mar 2008 23:37:04 -0500
+Date: Fri, 7 Mar 2008 05:37:00 +0100
+From: Nick Piggin <npiggin@suse.de>
+To: Christoph Lameter <clameter@sgi.com>
+Cc: netdev@vger.kernel.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       yanmin_zhang@linux.intel.com, David Miller <davem@davemloft.net>,
+       Eric Dumazet <dada1@cosmosbay.com>
+Subject: Re: [rfc][patch 2/3] slab: introduce SMP alignment
+Message-ID: <20080307043700.GI21185@wotan.suse.de>
+References: <20080303093449.GA15091@wotan.suse.de> <20080303093529.GB15091@wotan.suse.de> <Pine.LNX.4.64.0803031104570.6917@schroedinger.engr.sgi.com> <20080303200355.GB8974@wotan.suse.de> <Pine.LNX.4.64.0803031208400.16049@schroedinger.engr.sgi.com> <20080303201211.GE8974@wotan.suse.de> <Pine.LNX.4.64.0803031216430.3110@schroedinger.engr.sgi.com> <20080303202411.GH8974@wotan.suse.de> <Pine.LNX.4.64.0803031327330.4375@schroedinger.engr.sgi.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <a8e1da0803042324ndd3873ay61cee6112d9dda9a@mail.gmail.com>
-	 <df9815e70803042335j4ea66028y96d6be21f0970aa1@mail.gmail.com>
-	 <20080305165531.GB8728@linux.vnet.ibm.com>
-	 <df9815e70803051811o4c4a42e0td56cfd32b80c66b2@mail.gmail.com>
-	 <20080306022854.GK8728@linux.vnet.ibm.com>
-	 <a8e1da0803051920t586c7fbapadda70ae895f8893@mail.gmail.com>
-	 <a8e1da0803060308o690c1545l1eaffc0c40f2bc7e@mail.gmail.com>
-	 <20080306162724.GA9309@linux.vnet.ibm.com>
-	 <a8e1da0803061907k72785f10t2dcb98ca9829e2d8@mail.gmail.com>
-	 <20080307041940.GB19183@linux.vnet.ibm.com>
+In-Reply-To: <Pine.LNX.4.64.0803031327330.4375@schroedinger.engr.sgi.com>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Mar 7, 2008 at 12:19 PM, Paul E. McKenney
-<paulmck@linux.vnet.ibm.com> wrote:
-> On Fri, Mar 07, 2008 at 11:07:48AM +0800, Dave Young wrote:
->  > On Fri, Mar 7, 2008 at 12:27 AM, Paul E. McKenney
->  > <paulmck@linux.vnet.ibm.com> wrote:
->  > > On Thu, Mar 06, 2008 at 07:08:55PM +0800, Dave Young wrote:
->
-> > >  > My syslog became a 2G size big file yestoday due to the warnings.
->  > >  > How about change the WARN_ON to WARN_ON_ONCE?
->  > >
->  > >  Hello, Dave,
->  > >
->  > >  I might be convinced to make this change for 2.6.26, but the condition
->  > >  that the WARN_ON() is complaining about is quite serious, so I don't
->  > >  want to take a chance on it getting lost in the noise in the 2.6.25
->  > >  series.
->  > >
->  > >  Seem reasonable?
->  >
->  > IMHO, WARN_ON_ONCE is enough for my eyes :)
->
->  I could believe that, but my experience has been that many others
->  need the condition to be obvious...
->
->
->  > >  Better yet, is there some sort of time-limited WARN_ON that kicks out
->  > >  a message at most once per second or some such?  Enough to definitely
->  > >  be noticed, but not enough to bring the machine to its knees?
->  >
->  > Seems there's no such functions/macros, but is is really needed?
->
->  If everyone reports errors when they see isolated WARN_ON()s in their
->  logfiles, then no.  But...
+On Mon, Mar 03, 2008 at 01:31:14PM -0800, Christoph Lameter wrote:
+> On Mon, 3 Mar 2008, Nick Piggin wrote:
+> 
+> > And maybe the VSMP guys will want to blow this out to their internode
+> > alignment?
+> > 
+> > max(!CONFIG_TINY && num_possible_cpus() > 1 ? (is_vsmp ? internode_alignemnt : cache_line_size()) : 0, mandatory_alignment)
+> 
+> No the slab allocators were optimized for VSMP so that the 
+> internode_alignment is not necessary there. That was actually one of the 
+> requirements that triggered the slab numa work.
 
-Ok, I agree with you.
+BTW. can you explain this incredible claim that the slab allocators
+do not need internode_alignment to avoid false sharing of allocated
+objects on VSMP? I don't understand how that would work at all.
 
-Maybe something like WARN_ON_HZ(condition) or
-WARN_ON_PERIOD(condition, period_value)?
-
->
->                                                 Thanx, Paul
->
