@@ -1,129 +1,122 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757064AbYCGGAb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758846AbYCGGB6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757064AbYCGGAb (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Mar 2008 01:00:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751983AbYCGGAT
+	id S1758846AbYCGGB6 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Mar 2008 01:01:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751578AbYCGGBu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Mar 2008 01:00:19 -0500
-Received: from rv-out-0910.google.com ([209.85.198.190]:45871 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751598AbYCGGAR (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Mar 2008 01:00:17 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:mime-version:content-type:content-transfer-encoding:content-disposition;
-        b=r23d/+5W89shSLt9eFvHX6SZo465/Gx99OuuW7Xi9ft7+Pk7n/vZ1MncVCg6Zz+qG1YZ0IppvgLdxs2m4fBYEs0uOg5Ebg8mavDy31y26lTPBF08EwjrsS7U1UxnFwfS5rZjCn5tEXtU85SjwQbaZC20N/ZcqO876sfCwlmUI0k=
-Message-ID: <59fd4ce80803062200n203e5cd7o152be120adbdb717@mail.gmail.com>
-Date: Fri, 7 Mar 2008 15:00:16 +0900
-From: "Jeongdo Son" <sohn9086@gmail.com>
-To: "Peter Korsgaard" <jacmet@sunsite.dk>,
-       "Markus Brunner" <super.firetwister@googlemail.com>
-Subject: [BUG REPORT] smc911x: Auto negotiation NOT supported
-Cc: LKML <linux-kernel@vger.kernel.org>, Linux-SH <linux-sh@vger.kernel.org>
+	Fri, 7 Mar 2008 01:01:50 -0500
+Received: from mail3.ldmi.net ([64.118.147.197]:37075 "EHLO mail.ldmi.net"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751173AbYCGGBt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 7 Mar 2008 01:01:49 -0500
+X-Greylist: delayed 397 seconds by postgrey-1.27 at vger.kernel.org; Fri, 07 Mar 2008 01:01:49 EST
+Message-ID: <47D0D8B5.6050403@m2000.com>
+Date: Thu, 06 Mar 2008 21:55:01 -0800
+From: Adam Schrotenboer <adam@m2000.com>
+User-Agent: Thunderbird 2.0.0.12 (Windows/20080213)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+To: Neil Brown <neilb@suse.de>
+CC: Trond Myklebust <Trond.Myklebust@netapp.com>, linux-kernel@vger.kernel.org,
+       linux-nfs@vger.kernel.org, Thomas Daniel <tdaniel@m2000.com>,
+       jesper.juhl@gmail.com
+Subject: Re: [opensuse] nfs_update_inode: inode X mode changed, Y to Z
+References: <47CF0829.4020502@m2000.com>	<1204752463.5035.34.camel@heimdal.trondhjem.org>	<47CF157B.1010908@m2000.com>	<18383.24847.381754.517731@notabene.brown>	<47CF62C5.7000908@m2000.com> <18384.50909.866848.966192@notabene.brown>
+In-Reply-To: <18384.50909.866848.966192@notabene.brown>
+X-Enigmail-Version: 0.95.6
+Content-Type: multipart/signed; micalg=pgp-ripemd160;
+ protocol="application/pgp-signature";
+ boundary="------------enig8E8E5A3EA856F8C2464125AC"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
+--------------enig8E8E5A3EA856F8C2464125AC
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: quoted-printable
 
-I'm trying to port smc911x driver for a custom sh4 board,
-and I have a problem with static IP adress allocation.
-(It is OK for IP address allocation by DHCP.)
-Here is brief information about the board.
-CPU : SH7780 by Renesas
-Ethernet : LAN9115 by SMSC
-Kernel version : 2.6.24 from www.kernel.org
-Distribution(Userland): BusyBox-1.2.0
+Neil Brown wrote:
+> On Wednesday March 5, adam@m2000.com wrote:
+>  =20
+>> Neil Brown wrote:
+>>    =20
+>>> On Wednesday March 5, adam@m2000.com wrote:
+>>>  =20
+>>> Where :-)
+>>>
+>>> A excerpt from the logs to show actual error messages could be
+>>> helpful.
+>>>
+>>> Thanks,
+>>> NeilBrown
+>>>      =20
+>> sorry, must have missed the paste
+>>
+>> Feb 28 17:27:58 koi kernel: nfs_update_inode: inode 3221350147 mode=20
+>> changed, 0040755 to 0100644
+>> Feb 28 21:57:22 koi kernel: nfs_update_inode: inode 2149056279 mode=20
+>> changed, 0040755 to 0100755
+>> Mar  5 01:43:21 koi kernel: nfs_update_inode: inode 3222473680 mode=20
+>> changed, 0040755 to 0100644
+>> Mar  5 08:52:19 koi kernel: nfs_update_inode: inode 3222473568 mode=20
+>> changed, 0120777 to 0100644
+>> Mar  5 15:00:01 koi kernel: nfs_update_inode: inode 3222473569 mode=20
+>> changed, 0120777 to 0100644
+>> Mar  5 15:00:31 koi kernel: nfs_update_inode: inode 3222473674 mode=20
+>> changed, 0120777 to 0100644
+>> Mar  5 15:00:31 koi kernel: nfs_update_inode: inode 3222473675 mode=20
+>> changed, 0120777 to 0100644
+>> Mar  5 15:00:31 koi kernel: nfs_update_inode: inode 3222473672 mode=20
+>> changed, 0040755 to 0100644
+>> Mar  5 15:00:31 koi kernel: nfs_update_inode: inode 3222473673 mode=20
+>> changed, 0120777 to 0100644
+>>
+>>
+>>    =20
+> Hmmm...
+> Directories and symlinks "changing" to regular files.
+>
+> 32bit inode numbers with the high bit set.
+>
+> Random times, but a burst at 3pm one afternoon.
+>
+> The fact that it happens so rarely make is very hard to collect more
+> data....
+>
+>
+> What happens when a user experiences an error?=20
+well, sometimes it shows up as a read/write error (that is the error=20
+code returned by the application).
+SVN tend to be more verbose (although I have no examples)
+>  What sort of file is
+> the error reported against? =20
+It does not to my knowledge only happen to certain classes of files,=20
+although it does seem to happen most often when lots of files are being=20
+created.
+> Does the file remain inaccessible or does
+> it start working again soon? =20
+No data, maybe Thomas knows something.
+> Is the same file accessible from another
+> client?
+>  =20
+No data, esp as it never happens to me personally.
+> NeilBrown
+>  =20
 
-The problem is that only the first ifup after cold boot succeed.
-Here is the instruction how to reproduce the symptom.
-(smc911x is recognized as eth0 on the board.)
-1. boot up the board, and login.
-2. ifup eth0  (after doing this, ping works)
-3. ifdown eth0
-4. ifup eth0 ("Auto negotiation NOT supported" printed, and ping doesn't works)
-Please refer to the bottom of this mail.
 
-FYI, in the smc911x.h, I modified some macros like the following.
-   #define SMC_USE_SH_DMA    1
-   #define SMC_USE_16BIT         0
-   #define SMC_USE_32BIT         1
 
-There's no change if I turn off SMC_USE_SH_DMA,
-but if I turn on SMC_USE_16BIT instead of SMC_USE_32BIT,
-the driver occurs OOPS.
+--------------enig8E8E5A3EA856F8C2464125AC
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
 
-I hope this is a known(fixed) issue.
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.7 (MingW32)
+Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
 
-Thanks in advance.
-Jeongdo Son
------------------------------------------
-(none) login: root
-login[743]: root login  on `ttySC0'
+iD8DBQFH0Ni1yWYDdvnGArwRA0dRAKCTWA66+XeHuyv5TGOnE3pN/BJlGACdE/kB
+jd/KWte/x/AV6ejLWV07FIM=
+=BDqG
+-----END PGP SIGNATURE-----
 
-~ $ ifup eth0
-eth0: link down
-~ $ eth0: link up, 100Mbps, full-duplex, lpa 0x05E1
-
-~ $ ifconfig
-eth0      Link encap:Ethernet  HWaddr 00:60:CB:1B:02:25
-         inet addr:192.168.40.35  Bcast:192.168.40.255  Mask:255.255.255.0
-         UP BROADCAST RUNNING MULTICAST  MTU:1500  Metric:1
-         RX packets:24 errors:0 dropped:0 overruns:0 frame:0
-         TX packets:0 errors:0 dropped:0 overruns:0 carrier:0
-         collisions:0 txqueuelen:1000
-         RX bytes:3272 (3.1 KiB)  TX bytes:0 (0.0 B)
-         Interrupt:9 DMA chan:ff
-
-~ $ ping 192.168.40.255
-PING 192.168.40.255 (192.168.40.255): 56 data bytes
-64 bytes from 192.168.40.1: icmp_seq=0 ttl=64 time=1.1 ms
-64 bytes from 192.168.40.1: icmp_seq=1 ttl=64 time=0.3 ms
-64 bytes from 192.168.40.1: icmp_seq=2 ttl=64 time=0.4 ms
-64 bytes from 192.168.40.1: icmp_seq=3 ttl=64 time=0.3 ms
-
---- 192.168.40.255 ping statistics ---
-4 packets transmitted, 4 packets received, 0% packet loss
-round-trip min/avg/max = 0.3/0.5/1.1 ms
-~ $ ifdown eth0
-~ $ ifup eth0
-Auto negotiation NOT supported
-~ $ ifconfig
-eth0      Link encap:Ethernet  HWaddr 00:60:CB:1B:02:25
-         inet addr:192.168.40.35  Bcast:192.168.40.255  Mask:255.255.255.0
-         UP BROADCAST MULTICAST  MTU:1500  Metric:1
-         RX packets:65 errors:0 dropped:0 overruns:0 frame:0
-         TX packets:13 errors:0 dropped:0 overruns:0 carrier:0
-         collisions:0 txqueuelen:1000
-         RX bytes:7637 (7.4 KiB)  TX bytes:770 (770.0 B)
-         Interrupt:9 DMA chan:ff
-
-~ $ ping 192.168.40.255
-PING 192.168.40.255 (192.168.40.255): 56 data bytes
-
---- 192.168.40.255 ping statistics ---
-53 packets transmitted, 0 packets received, 100% packet loss
-~ $ ethtool eth0
-Settings for eth0:
-       Supported ports: [ TP MII ]
-       Supported link modes:   10baseT/Half 10baseT/Full
-                               100baseT/Half 100baseT/Full
-       Supports auto-negotiation: Yes
-       Advertised link modes:  10baseT/Half 10baseT/Full
-                               100baseT/Half 100baseT/Full
-       Advertised auto-negotiation: Yes
-       Speed: 100Mb/s
-       Duplex: Full
-       Port: MII
-       PHYAD: 1
-       Transceiver: internal
-       Auto-negotiation: on
-       Current message level: 0x00000004 (4)
-       Link detected: no
-~ $
------------------------------------------
+--------------enig8E8E5A3EA856F8C2464125AC--
