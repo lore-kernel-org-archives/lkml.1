@@ -1,48 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760731AbYCGRlu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761321AbYCGRuc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760731AbYCGRlu (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Mar 2008 12:41:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750963AbYCGRlm
+	id S1761321AbYCGRuc (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Mar 2008 12:50:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758050AbYCGRuW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Mar 2008 12:41:42 -0500
-Received: from one.firstfloor.org ([213.235.205.2]:40813 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756786AbYCGRlm (ORCPT
+	Fri, 7 Mar 2008 12:50:22 -0500
+Received: from host36-195-149-62.serverdedicati.aruba.it ([62.149.195.36]:58887
+	"EHLO mx.cpushare.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754280AbYCGRuW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Mar 2008 12:41:42 -0500
-Date: Fri, 7 Mar 2008 18:43:16 +0100
-From: Andi Kleen <andi@firstfloor.org>
-To: Randy Dunlap <randy.dunlap@oracle.com>
-Cc: Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org
-Subject: Re: [PATCH] [6/13] Core maskable allocator
-Message-ID: <20080307174316.GJ7365@one.firstfloor.org>
-References: <200803071007.493903088@firstfloor.org> <20080307090716.9D3E91B419C@basil.firstfloor.org> <20080307090517.b6b27987.randy.dunlap@oracle.com> <20080307173146.GI7365@one.firstfloor.org> <47D17C4E.9000302@oracle.com>
-Mime-Version: 1.0
+	Fri, 7 Mar 2008 12:50:22 -0500
+Date: Fri, 7 Mar 2008 18:50:19 +0100
+From: Andrea Arcangeli <andrea@qumranet.com>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Christoph Lameter <clameter@sgi.com>, Jack Steiner <steiner@sgi.com>,
+       Nick Piggin <npiggin@suse.de>, akpm@linux-foundation.org,
+       Robin Holt <holt@sgi.com>, Avi Kivity <avi@qumranet.com>,
+       kvm-devel@lists.sourceforge.net, general@lists.openfabrics.org,
+       Steve Wise <swise@opengridcomputing.com>,
+       Roland Dreier <rdreier@cisco.com>, Kanoj Sarcar <kanojsarcar@yahoo.com>,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       daniel.blueman@quadrics.com
+Subject: Re: [PATCH] 3/4 combine RCU with seqlock to allow mmu notifier
+	methods to sleep (#v9 was 1/4)
+Message-ID: <20080307175019.GK24114@v2.random>
+References: <20080303220502.GA5301@v2.random> <47CC9B57.5050402@qumranet.com> <Pine.LNX.4.64.0803032327470.9642@schroedinger.engr.sgi.com> <20080304133020.GC5301@v2.random> <Pine.LNX.4.64.0803041059110.13957@schroedinger.engr.sgi.com> <20080304222030.GB8951@v2.random> <Pine.LNX.4.64.0803041422070.20821@schroedinger.engr.sgi.com> <20080307151722.GD24114@v2.random> <20080307152328.GE24114@v2.random> <1204908762.8514.114.camel@twins>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <47D17C4E.9000302@oracle.com>
-User-Agent: Mutt/1.4.2.1i
+In-Reply-To: <1204908762.8514.114.camel@twins>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Mar 07, 2008 at 09:33:02AM -0800, Randy Dunlap wrote:
-> Andi Kleen wrote:
-> >>>+	maskzone=size[MG] Set size of maskable DMA zone to size.
-> >>>+		 force	Always allocate from the mask zone (for testing)
-> >>                 ^^^^^^^^^^^^^ ??
-> >
-> >What is your question?
+On Fri, Mar 07, 2008 at 05:52:42PM +0100, Peter Zijlstra wrote:
+> hlist_del_rcu(&mn->hlist)
 > 
-> That line seems odd.  Is it correct?
-> Why 2 spaces between force and Always?  Why is Always capitalized?
-> Could one of those words be dropped?  They seem a bit redundant.
+> > +			rcu_read_unlock();
+> 
+> kfree(mn);
+> 
+> >  			young |= mn->ops->clear_flush_young(mn, mm, address);
+> 
+> *BANG*
 
-The option is either maskzone=size[MG] or maskzone=force
-Each followed with a sentence describing them.
+My objective was to allow mmu_notifier_register/unregister to be
+called with the same mmu notifier object, I didn't mean the object
+could have been freed until ->release is called. However you reminded
+me that after unregistering ->release won't be called so unregister
+isn't very useful and I doubt we can keep it ;).
 
-I tried to make this clear by lining them up, but apparently failed.
-You have a preferred way to formatting such multiple choice options?
+In the meantime I've also been thinking that we could need the
+write_seqlock in mmu_notifier_register, to know when to restart the
+loop if somebody does a mmu_notifier_register;
+synchronize_rcu(). Otherwise there's no way to be sure the mmu
+notifier will start firing immediately after synchronize_rcu. I'm
+unsure if it's acceptable that in-progress mmu notifier invocations,
+don't need to notice the fact that somebody did mmu_notifier_register;
+synchronize_rcu. If they don't need to notice, then we can just drop
+unregister and all rcu_read_lock()s instead of adding write_seqlock to
+the register operation.
 
--Andi
+Overall my effort is to try to avoid expand the list walk with
+explicit memory barriers like in EMM while trying to be equally
+efficient.
+
+Another issue is that the _begin/_end logic doesn't provide any
+guarantee that the _begin will start firing before _end, if a kernel
+module is loaded while another cpu is already running inside some
+munmap operation etc.. The KVM usage of mmu notifier has no problem
+with that detail, but KVM doesn't use _begin at all, I wonder if
+others would have problems. This is a kind of a separate problem, but
+quite related to the question if the notifiers must be guaranteed to
+start firing immediately after mmu_notifier_unregister;synchronize_rcu
+or not, that's why I mentioned it here.
+
+Once I get comments on the suggested direction for these details, I'll
+quickly repost a replacement patch for 3/4.
+
+Thanks Peter!
