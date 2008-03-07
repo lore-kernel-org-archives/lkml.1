@@ -1,91 +1,138 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764175AbYCGTRW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764960AbYCGTSE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764175AbYCGTRW (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Mar 2008 14:17:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756345AbYCGTRK
+	id S1764960AbYCGTSE (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Mar 2008 14:18:04 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763547AbYCGTRw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Mar 2008 14:17:10 -0500
-Received: from mga02.intel.com ([134.134.136.20]:61008 "EHLO mga02.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755648AbYCGTRJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Mar 2008 14:17:09 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.25,464,1199692800"; 
-   d="scan'208";a="351515055"
-Date: Fri, 7 Mar 2008 11:14:57 -0800
-From: Suresh Siddha <suresh.b.siddha@intel.com>
-To: Gautham R Shenoy <ego@in.ibm.com>
-Cc: Dmitry Adamushko <dmitry.adamushko@gmail.com>, Ingo Molnar <mingo@elte.hu>,
-       Oleg Nesterov <oleg@tv-sign.ru>, "Yang, Yi Y" <yi.y.yang@intel.com>,
-       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [BUG 2.6.25-rc3] scheduler/hotplug: some processes aredealocked when cpu is set to offline
-Message-ID: <20080307191457.GK28006@linux-os.sc.intel.com>
-References: <1204555505.3842.4.camel@yangyi-dev.bj.intel.com> <20080304052613.GA28632@in.ibm.com> <20080304150107.GA564@tv-sign.ru> <20080306134400.GA1915@in.ibm.com> <20080307025451.GA201@tv-sign.ru> <20080307091049.GA8827@in.ibm.com> <20080307105138.GA10576@in.ibm.com> <b647ffbd0803070502m28355751rd526ed8ca4dd90a@mail.gmail.com> <20080307135537.GB10576@in.ibm.com> <20080307155002.GA22664@in.ibm.com>
+	Fri, 7 Mar 2008 14:17:52 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:43268 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1757948AbYCGTRv (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 7 Mar 2008 14:17:51 -0500
+Date: Fri, 7 Mar 2008 11:16:42 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Matthias Kaehlcke <matthias@kaehlcke.net>
+Cc: linux-pcmcia@lists.infradead.org, nico@cam.org, rmk@arm.linux.org.uk,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] drivers/pcmcia/soc_common.c: convert
+ soc_pcmcia_sockets_lock in a mutex
+Message-Id: <20080307111642.8278142f.akpm@linux-foundation.org>
+In-Reply-To: <20080307183742.GF2783@traven>
+References: <20080307183742.GF2783@traven>
+X-Mailer: Sylpheed 2.3.1 (GTK+ 2.10.11; x86_64-redhat-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080307155002.GA22664@in.ibm.com>
-User-Agent: Mutt/1.4.1i
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Mar 07, 2008 at 07:50:02AM -0800, Gautham R Shenoy wrote:
-> On Fri, Mar 07, 2008 at 07:25:37PM +0530, Gautham R Shenoy wrote:
-> > On Fri, Mar 07, 2008 at 02:02:20PM +0100, Dmitry Adamushko wrote:
-> > > Hi,
-> > >
-> > > 'watchdog' is of SCHED_FIFO class. The standard load-balancer doesn't
-> > > move RT tasks between cpus anymore and there is a special mechanism in
-> > > scher_rt.c instead (I think, it's .25 material).
-> > >
-> > > So I wonder, whether __migrate_task() is still capable of properly
-> > > moving a RT task to another CPU (e.g. for the case when it's in
-> > > TASK_RUNNING state) without breaking something in the rt migration
-> > > mechanism (or whatever else) that would leave us with a runqueue in
-> > > the 'inconsistent' state...
-> > > (I've taken a quick look at the relevant code so can't confirm it yet)
-> > >
-> > > maybe it'd be faster if somebody could do a quick test now with the
-> > > following line commented out in kernel/softlockup.c :: watchdog()
-> > >
-> > > -         sched_setscheduler(current, SCHED_FIFO, &param);
-> >
-> > Commenting out that like seems to work. Passed 500 iterations of
-> > cpu-hotplug without any problems.
+On Fri, 7 Mar 2008 19:37:42 +0100 Matthias Kaehlcke <matthias@kaehlcke.net> wrote:
+
+> drivers/pcmcia/soc_common.c: the semaphore soc_pcmcia_sockets_lock is
+> used as a mutex, convert it to the mutex API
 > 
-> This seems to unearth another problem. After some 850 successful
-> cpu-hotplug iterations I got this message.
-> 
-> ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-> ------------[ cut here ]------------
-> BUG: spinlock recursion on CPU#2, kstopmachine/32521
-> BUG: spinlock lockup on CPU#1, kstopmachine/32517, cc43db80
-> Pid: 32517, comm: kstopmachine Not tainted 2.6.25-rc3 #44
->  [<c0284ebb>] <0>BUG: spinlock lockup on CPU#0, kstopmachine/32520,
-> cc43db80
-> _raw_spin_lock+0xd5/0xf9
->  [<c04e1a33>] <0>BUG: spinlock lockup on CPU#3, kstopmachine/32522,
-> cc43db80
-> _spin_lock+0x20/0x28
-> Pid: 32522, comm: kstopmachine Not tainted 2.6.25-rc3 #44
->  [<c04dfa41>] ?  [<c0284ebb>] schedule+0xb0/0x5ab
->  [<c04dfa41>] schedule+0xb0/0x5ab
-> _raw_spin_lock+0xd5/0xf9
->  [<c04e1d58>] ?  [<c04e1a33>] _spin_unlock_irqrestore+0x36/0x3c
->  [<c0119fdc>] ? _spin_lock+0x20/0x28
->  [<c0119806>] ? complete+0x34/0x3e
->  [<c0143646>] double_lock_balance+0x3a/0x57
->  [<c0119806>] do_stop+0xd4/0xfe
 
-Well, there is another
+I did this yesterday, when I saw it while grepping around due to your other
+patch;)
 
-	sched_setscheduler(p, SCHED_FIFO, &param);
+>  LIST_HEAD(soc_pcmcia_sockets);
+> -DECLARE_MUTEX(soc_pcmcia_sockets_lock);
+> +DEFINE_MUTEX(soc_pcmcia_sockets_lock);
 
-in kernel/stop_machine.c
+I made this static.
 
-Perhaps we need to remove this aswell and try?
+> -extern struct semaphore soc_pcmcia_sockets_lock;
+> +extern struct mutex soc_pcmcia_sockets_lock;
 
-thanks,
-suresh
+And deleted this.
+
+
+ drivers/pcmcia/soc_common.c |   15 ++++++++-------
+ drivers/pcmcia/soc_common.h |    1 -
+ 2 files changed, 8 insertions(+), 8 deletions(-)
+
+diff -puN drivers/pcmcia/soc_common.c~drivers-pcmcia-soc_commonc-convert-soc_pcmcia_sockets_lock-into-a-mutex-and-make-it-static drivers/pcmcia/soc_common.c
+--- a/drivers/pcmcia/soc_common.c~drivers-pcmcia-soc_commonc-convert-soc_pcmcia_sockets_lock-into-a-mutex-and-make-it-static
++++ a/drivers/pcmcia/soc_common.c
+@@ -37,6 +37,7 @@
+ #include <linux/kernel.h>
+ #include <linux/timer.h>
+ #include <linux/mm.h>
++#include <linux/mutex.h>
+ #include <linux/interrupt.h>
+ #include <linux/irq.h>
+ #include <linux/spinlock.h>
+@@ -578,7 +579,7 @@ EXPORT_SYMBOL(soc_pcmcia_enable_irqs);
+ 
+ 
+ LIST_HEAD(soc_pcmcia_sockets);
+-DECLARE_MUTEX(soc_pcmcia_sockets_lock);
++static DEFINE_MUTEX(soc_pcmcia_sockets_lock);
+ 
+ static const char *skt_names[] = {
+ 	"PCMCIA socket 0",
+@@ -601,11 +602,11 @@ soc_pcmcia_notifier(struct notifier_bloc
+ 	struct cpufreq_freqs *freqs = data;
+ 	int ret = 0;
+ 
+-	down(&soc_pcmcia_sockets_lock);
++	mutex_lock(&soc_pcmcia_sockets_lock);
+ 	list_for_each_entry(skt, &soc_pcmcia_sockets, node)
+ 		if ( skt->ops->frequency_change )
+ 			ret += skt->ops->frequency_change(skt, val, freqs);
+-	up(&soc_pcmcia_sockets_lock);
++	mutex_unlock(&soc_pcmcia_sockets_lock);
+ 
+ 	return ret;
+ }
+@@ -642,7 +643,7 @@ int soc_common_drv_pcmcia_probe(struct d
+ 	struct soc_pcmcia_socket *skt;
+ 	int ret, i;
+ 
+-	down(&soc_pcmcia_sockets_lock);
++	mutex_lock(&soc_pcmcia_sockets_lock);
+ 
+ 	sinfo = kzalloc(SKT_DEV_INFO_SIZE(nr), GFP_KERNEL);
+ 	if (!sinfo) {
+@@ -782,7 +783,7 @@ int soc_common_drv_pcmcia_probe(struct d
+ 	kfree(sinfo);
+ 
+  out:
+-	up(&soc_pcmcia_sockets_lock);
++	mutex_unlock(&soc_pcmcia_sockets_lock);
+ 	return ret;
+ }
+ 
+@@ -793,7 +794,7 @@ int soc_common_drv_pcmcia_remove(struct 
+ 
+ 	dev_set_drvdata(dev, NULL);
+ 
+-	down(&soc_pcmcia_sockets_lock);
++	mutex_lock(&soc_pcmcia_sockets_lock);
+ 	for (i = 0; i < sinfo->nskt; i++) {
+ 		struct soc_pcmcia_socket *skt = &sinfo->skt[i];
+ 
+@@ -818,7 +819,7 @@ int soc_common_drv_pcmcia_remove(struct 
+ 	if (list_empty(&soc_pcmcia_sockets))
+ 		soc_pcmcia_cpufreq_unregister();
+ 
+-	up(&soc_pcmcia_sockets_lock);
++	mutex_unlock(&soc_pcmcia_sockets_lock);
+ 
+ 	kfree(sinfo);
+ 
+diff -puN drivers/pcmcia/soc_common.h~drivers-pcmcia-soc_commonc-convert-soc_pcmcia_sockets_lock-into-a-mutex-and-make-it-static drivers/pcmcia/soc_common.h
+--- a/drivers/pcmcia/soc_common.h~drivers-pcmcia-soc_commonc-convert-soc_pcmcia_sockets_lock-into-a-mutex-and-make-it-static
++++ a/drivers/pcmcia/soc_common.h
+@@ -133,7 +133,6 @@ extern void soc_common_pcmcia_get_timing
+ 
+ 
+ extern struct list_head soc_pcmcia_sockets;
+-extern struct semaphore soc_pcmcia_sockets_lock;
+ 
+ extern int soc_common_drv_pcmcia_probe(struct device *dev, struct pcmcia_low_level *ops, int first, int nr);
+ extern int soc_common_drv_pcmcia_remove(struct device *dev);
+_
+
