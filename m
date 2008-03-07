@@ -1,78 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759472AbYCGSCJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758931AbYCGSOX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759472AbYCGSCJ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Mar 2008 13:02:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751537AbYCGSB4
+	id S1758931AbYCGSOX (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Mar 2008 13:14:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754534AbYCGSON
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Mar 2008 13:01:56 -0500
-Received: from viefep32-int.chello.at ([62.179.121.50]:45405 "EHLO
-	viefep32-int.chello.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751295AbYCGSBz (ORCPT
+	Fri, 7 Mar 2008 13:14:13 -0500
+Received: from ti-out-0910.google.com ([209.85.142.190]:28127 "EHLO
+	ti-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754278AbYCGSOL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Mar 2008 13:01:55 -0500
-Subject: Re: [PATCH] 3/4 combine RCU with seqlock to allow mmu notifier
-	methods to sleep (#v9 was 1/4)
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Andrea Arcangeli <andrea@qumranet.com>
-Cc: Christoph Lameter <clameter@sgi.com>, Jack Steiner <steiner@sgi.com>,
-       Nick Piggin <npiggin@suse.de>, akpm@linux-foundation.org,
-       Robin Holt <holt@sgi.com>, Avi Kivity <avi@qumranet.com>,
-       kvm-devel@lists.sourceforge.net, general@lists.openfabrics.org,
-       Steve Wise <swise@opengridcomputing.com>,
-       Roland Dreier <rdreier@cisco.com>, Kanoj Sarcar <kanojsarcar@yahoo.com>,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       daniel.blueman@quadrics.com
-In-Reply-To: <20080307175019.GK24114@v2.random>
-References: <20080303220502.GA5301@v2.random>
-	 <47CC9B57.5050402@qumranet.com>
-	 <Pine.LNX.4.64.0803032327470.9642@schroedinger.engr.sgi.com>
-	 <20080304133020.GC5301@v2.random>
-	 <Pine.LNX.4.64.0803041059110.13957@schroedinger.engr.sgi.com>
-	 <20080304222030.GB8951@v2.random>
-	 <Pine.LNX.4.64.0803041422070.20821@schroedinger.engr.sgi.com>
-	 <20080307151722.GD24114@v2.random> <20080307152328.GE24114@v2.random>
-	 <1204908762.8514.114.camel@twins>  <20080307175019.GK24114@v2.random>
-Content-Type: text/plain
-Date: Fri, 07 Mar 2008 19:01:35 +0100
-Message-Id: <1204912895.8514.120.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.21.92 
+	Fri, 7 Mar 2008 13:14:11 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=vO8Di6y64rvPpPzzCKflgzu/0gO2N3AuySC47524cgBD1SS9F6T57EokEGAtcMPPrrsWX9kwJNBgxch9mvtBsGwarOkvjJS71XICzBUJQLo3YO2wzNdNmAh+r7mJK03EjsKgvfI1rnX7mZYv0e4n7LKaCNjcy84ix0VQCNgGGfo=
+Message-ID: <e9c3a7c20803071014s6388b7b2l12f217bfdff5caa3@mail.gmail.com>
+Date: Fri, 7 Mar 2008 11:14:07 -0700
+From: "Dan Williams" <dan.j.williams@intel.com>
+To: "Herbert Xu" <herbert@gondor.apana.org.au>
+Subject: Re: 2.6.25-rc[1,2]: failed to setup dm-crypt key mapping
+Cc: "Milan Broz" <mbroz@redhat.com>,
+       "Michael S. Tsirkin" <m.s.tsirkin@gmail.com>,
+       "Alasdair G Kergon" <agk@redhat.com>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       dm-crypt@saout.de
+In-Reply-To: <20080222123423.GA12678@gondor.apana.org.au>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <8f53421d0802192343v2267cb66ub579d4503e3b7eb1@mail.gmail.com>
+	 <47BC0DA9.1030607@redhat.com>
+	 <20080220172449.GD27726@gondor.apana.org.au>
+	 <47BC67CE.9070407@redhat.com>
+	 <20080220175819.GA28246@gondor.apana.org.au>
+	 <20080222123423.GA12678@gondor.apana.org.au>
+X-Google-Sender-Auth: 9d1ae26e49c4ce0a
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2008-03-07 at 18:50 +0100, Andrea Arcangeli wrote:
+On Fri, Feb 22, 2008 at 5:34 AM, Herbert Xu <herbert@gondor.apana.org.au> wrote:
+>  Does this patch fix the problem?
+[..]
 
-> Overall my effort is to try to avoid expand the list walk with
-> explicit memory barriers like in EMM while trying to be equally
-> efficient.
+I believe this is in mainline as 76fc60a2 "[CRYPTO] skcipher: Move
+chainiv/seqiv into crypto_blkcipher module".  With a iop13xx_defconfig
+ I get:
 
-I think we can do with a smb_wmb(); like Christoph (and like
-hlist_add_rcu()), but replace the smb_rmb() Christoph has with a
-smp_read_barrier_depends().
+`chainiv_module_exit' referenced in section `.init.text' of
+crypto/built-in.o: defined in discarded section `.exit.text' of
+crypto/built-in.o
+`chainiv_module_exit' referenced in section `__ksymtab_gpl' of
+crypto/built-in.o: defined in discarded section `.exit.text' of
+crypto/built-in.o
+`eseqiv_module_exit' referenced in section `__ksymtab_gpl' of
+crypto/built-in.o: defined in discarded section `.exit.text' of
+crypto/built-in.o
+make: *** [.tmp_vmlinux1] Error 1
 
-That should give much the same results.
+Reverting this (git show 76fc60a2 | patch -p1 -R) gets me back to a
+working build.:
 
-The reason Christoph can do without RCU is because he doesn't allow
-unregister, and as soon as you drop that you'll end up with something
-similar.
+arm-none-linux-gnueabi-gcc --version
+arm-none-linux-gnueabi-gcc (CodeSourcery Sourcery G++ Lite 2007q1-21)
+4.2.0 20070413 (prerelease)
 
-> Another issue is that the _begin/_end logic doesn't provide any
-> guarantee that the _begin will start firing before _end, if a kernel
-> module is loaded while another cpu is already running inside some
-> munmap operation etc.. The KVM usage of mmu notifier has no problem
-> with that detail, but KVM doesn't use _begin at all, I wonder if
-> others would have problems. This is a kind of a separate problem, but
-> quite related to the question if the notifiers must be guaranteed to
-> start firing immediately after mmu_notifier_unregister;synchronize_rcu
-> or not, that's why I mentioned it here.
-
-Curious problem indeed. Would it make sense to require registering these
-MMU notifiers when the process is still single threaded along with the
-requirement that they can never be removed again from a running process?
-
-For KVM this should be quite doable, but I must admit I haven't been
-paying enough attention to know if its possible for these other users.
-
-
+--
+Dan
