@@ -1,41 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932385AbYCGTw1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764950AbYCGTxU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932385AbYCGTw1 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Mar 2008 14:52:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760347AbYCGTwR
+	id S1764950AbYCGTxU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Mar 2008 14:53:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761037AbYCGTw6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Mar 2008 14:52:17 -0500
-Received: from hpsmtp-eml20.KPNXCHANGE.COM ([213.75.38.85]:14826 "EHLO
-	hpsmtp-eml20.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1760260AbYCGTwQ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Mar 2008 14:52:16 -0500
-To: Gerold Jury <gml@inode.at>
-Subject: Re: extra bytes written to SATA DVD drive on kernel 2.6.23 till 2.6.24.2
-Cc: efault@gmx.de, htejun@gmail.com, linux-ide@vger.kernel.org,
-       linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
-       vsu@altlinux.ru
-In-reply-To: <200803072009.22551.gml@inode.at>
-References: <200802252005.22663.gml@inode.at> <200803011329.11315.gml@inode.at> <47D0FF67.8050503@gmail.com> <47D0FF67.8050503@gmail.com> <200803072009.22551.gml@inode.at>
-Message-Id: <E1JXic1-0000Yo-K8@faramir.fjphome.nl>
-From: Frans Pop <elendil@planet.nl>
-Date: Fri, 07 Mar 2008 20:52:13 +0100
-X-OriginalArrivalTime: 07 Mar 2008 19:52:13.0905 (UTC) FILETIME=[BD41EC10:01C8808C]
+	Fri, 7 Mar 2008 14:52:58 -0500
+Received: from www.tglx.de ([62.245.132.106]:44487 "EHLO www.tglx.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756409AbYCGTw4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 7 Mar 2008 14:52:56 -0500
+Date: Fri, 7 Mar 2008 20:52:03 +0100 (CET)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: =?ISO-8859-15?Q?Ilpo_J=E4rvinen?= <ilpo.jarvinen@helsinki.fi>
+cc: LKML <linux-kernel@vger.kernel.org>, David Miller <davem@davemloft.net>,
+       Netdev <netdev@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: Treason uncloaked spams syslog with latest git
+In-Reply-To: <Pine.LNX.4.64.0803071547370.5423@kivilampi-30.cs.helsinki.fi>
+Message-ID: <alpine.LFD.1.00.0803072050410.3099@apollo.tec.linutronix.de>
+References: <alpine.LFD.1.00.0803061140380.3099@apollo.tec.linutronix.de> <20080306153129.e247cd1a.akpm@linux-foundation.org> <Pine.LNX.4.64.0803071547370.5423@kivilampi-30.cs.helsinki.fi>
+User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
+MIME-Version: 1.0
+Content-Type: MULTIPART/MIXED; BOUNDARY="8323328-1261117493-1204919525=:3099"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Gerold Jury wrote:
-> 0001ffe0  e0 ff e1 ff e2 ff e3 ff  e4 ff e5 ff e6 ff e7 ff  |................|
-> 0001fff0  e8 ff e9 ff ea ff eb ff  ec ff ed ff ee ff ef ff  |................|
-> 00020000  2a 00 00 00 00 40 00 00  40 00 00 00 00 40 00 00  |*....@..@....@..|
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
 
-Looks broken here too.
+--8323328-1261117493-1204919525=:3099
+Content-Type: TEXT/PLAIN; charset=ISO-8859-15
+Content-Transfer-Encoding: 8BIT
 
-> 00020010  08 ff 09 ff 0a ff 0b ff  08 ff 09 ff 0a ff 0b ff  |................|
-> 00020020  00 00 01 00 02 00 03 00  04 00 05 00 06 00 07 00  |................|
+On Fri, 7 Mar 2008, Ilpo Järvinen wrote:
+> On Thu, 6 Mar 2008, Andrew Morton wrote:
+> 
+> > On Thu, 6 Mar 2008 11:47:12 +0100 (CET)
+> > Thomas Gleixner <tglx@linutronix.de> wrote:
+> > 
+> > > Since I updated one of my compile boxen to latest git I get the syslog
+> > > flooded with:
+> > > 
+> > > TCP: Treason uncloaked! Peer 192.168.0.1:10245/56637 shrinks window
+> > > 2748077551:2748080447. Repaired.
+> > > TCP: Treason uncloaked! Peer 192.168.0.68:10245/39915 shrinks window
+> > > 2890195332:2890201124. Repaired.
+> > > TCP: Treason uncloaked! Peer 192.168.0.65:10245/46058 shrinks window
+> > > 2880740873:2880745217. Repaired.
+> > > 
+> > > This happens _always_ when I compile kernels with distcc or icecc. All
+> > > systems involved run Linux with kernels >= 2.6.23 and are on the same
+> > > network; no routers, firewalls or other fancy stuff.
+> > > 
+> > > Any idea what's going on here ?
+> > > 
+> > 
+> > (cc netdev)
+> 
+> Could you tcpdump it?
 
-It also seems like part gets repeated after the break in both cases.
+Will do.
+ 
+> I'm not sure which party was updated to git and on which host(s) you do 
+> see them?
 
-Cheers,
-FJP
+The compile machine was updated and I see the messages on that
+machine. No such messages on any machine.
+
+Thanks,
+	tglx
+--8323328-1261117493-1204919525=:3099--
