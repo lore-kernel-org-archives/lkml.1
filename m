@@ -1,66 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757413AbYCGHjh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757975AbYCGHoM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757413AbYCGHjh (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Mar 2008 02:39:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752331AbYCGHj3
+	id S1757975AbYCGHoM (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Mar 2008 02:44:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751578AbYCGHn6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Mar 2008 02:39:29 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:33477 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751584AbYCGHj2 (ORCPT
+	Fri, 7 Mar 2008 02:43:58 -0500
+Received: from rn-out-0910.google.com ([64.233.170.190]:19691 "EHLO
+	rn-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752272AbYCGHn5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Mar 2008 02:39:28 -0500
-Date: Thu, 6 Mar 2008 23:38:04 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Matthias Kaehlcke <matthias@kaehlcke.net>
-Cc: Daniel Walker <dwalker@mvista.com>, linux-pcmcia@lists.infradead.org,
-       linux-kernel@vger.kernel.org, Ralf Baechle <ralf@linux-mips.org>
-Subject: Re: [PATCH] Alchemy Semi Au1000 pcmcia driver: convert
- pcmcia_sockets_lock in a mutex
-Message-Id: <20080306233804.4d13b637.akpm@linux-foundation.org>
-In-Reply-To: <20080307071342.GE2783@traven>
-References: <20080306222246.GD2783@traven>
-	<1204859149.3368.2.camel@localhost.localdomain>
-	<20080307071342.GE2783@traven>
-X-Mailer: Sylpheed 2.3.1 (GTK+ 2.10.11; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Fri, 7 Mar 2008 02:43:57 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=Gjc3s/u9bmFQikgQ4ZOEs6x4ZA/nsI1XJMOdiXfitTy/xnPYMjmeXyXw7GAQhpjU6B2y1v3tOMXkUAyI5XLv2lF46SMtUh4fNpefeMvYw/teVgqUGrBtpm+5uwnjrWD+l4F9Tipw2jX7S6RF4iV64UhRx3bWpPnXzwdcYfKhzI4=
+Message-ID: <a8e1da0803062343j1e9cf911q6c1e75b4cc4736dc@mail.gmail.com>
+Date: Fri, 7 Mar 2008 15:43:53 +0800
+From: "Dave Young" <hidave.darkstar@gmail.com>
+To: paulmck@linux.vnet.ibm.com
+Subject: Re: 2.6.25-rc4 rcupreempt.h WARNINGs while suspend/resume
+Cc: "Jike Song" <albcamus@gmail.com>,
+       "Linux Kernel" <linux-kernel@vger.kernel.org>
+In-Reply-To: <a8e1da0803062331la1f38fei8303a46f9949ca23@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <df9815e70803042335j4ea66028y96d6be21f0970aa1@mail.gmail.com>
+	 <20080306022854.GK8728@linux.vnet.ibm.com>
+	 <a8e1da0803051920t586c7fbapadda70ae895f8893@mail.gmail.com>
+	 <a8e1da0803060308o690c1545l1eaffc0c40f2bc7e@mail.gmail.com>
+	 <20080306162724.GA9309@linux.vnet.ibm.com>
+	 <a8e1da0803061907k72785f10t2dcb98ca9829e2d8@mail.gmail.com>
+	 <20080307041940.GB19183@linux.vnet.ibm.com>
+	 <a8e1da0803062035o318bd843o22b561faa52fd19f@mail.gmail.com>
+	 <20080307065752.GF19183@linux.vnet.ibm.com>
+	 <a8e1da0803062331la1f38fei8303a46f9949ca23@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 7 Mar 2008 08:13:42 +0100 Matthias Kaehlcke <matthias@kaehlcke.net> wrote:
+On Fri, Mar 7, 2008 at 3:31 PM, Dave Young <hidave.darkstar@gmail.com> wrote:
+> On Fri, Mar 7, 2008 at 2:57 PM, Paul E. McKenney
+>
+>
+> <paulmck@linux.vnet.ibm.com> wrote:
+>  >
+>  > On Fri, Mar 07, 2008 at 12:35:26PM +0800, Dave Young wrote:
+>  >  > On Fri, Mar 7, 2008 at 12:19 PM, Paul E. McKenney
+>  >  > <paulmck@linux.vnet.ibm.com> wrote:
+>  >  > > On Fri, Mar 07, 2008 at 11:07:48AM +0800, Dave Young wrote:
+>  >  > >  > On Fri, Mar 7, 2008 at 12:27 AM, Paul E. McKenney
+>  >  > >  > <paulmck@linux.vnet.ibm.com> wrote:
+>  >  > >  > > On Thu, Mar 06, 2008 at 07:08:55PM +0800, Dave Young wrote:
+>  >  > >
+>  >  > > > >  > My syslog became a 2G size big file yestoday due to the warnings.
+>  >  > >  > >  > How about change the WARN_ON to WARN_ON_ONCE?
+>  >  > >  > >
+>  >  > >  > >  Hello, Dave,
+>  >  > >  > >
+>  >  > >  > >  I might be convinced to make this change for 2.6.26, but the condition
+>  >  > >  > >  that the WARN_ON() is complaining about is quite serious, so I don't
+>  >  > >  > >  want to take a chance on it getting lost in the noise in the 2.6.25
+>  >  > >  > >  series.
+>  >  > >  > >
+>  >  > >  > >  Seem reasonable?
+>  >  > >  >
+>  >  > >  > IMHO, WARN_ON_ONCE is enough for my eyes :)
+>  >  > >
+>  >  > >  I could believe that, but my experience has been that many others
+>  >  > >  need the condition to be obvious...
+>  >  > >
+>  >  > >
+>  >  > >  > >  Better yet, is there some sort of time-limited WARN_ON that kicks out
+>  >  > >  > >  a message at most once per second or some such?  Enough to definitely
+>  >  > >  > >  be noticed, but not enough to bring the machine to its knees?
+>  >  > >  >
+>  >  > >  > Seems there's no such functions/macros, but is is really needed?
+>  >  > >
+>  >  > >  If everyone reports errors when they see isolated WARN_ON()s in their
+>  >  > >  logfiles, then no.  But...
+>  >  >
+>  >  > Ok, I agree with you.
+>  >  >
+>  >  > Maybe something like WARN_ON_HZ(condition) or
+>  >  > WARN_ON_PERIOD(condition, period_value)?
+>  >
+>  >  Makes sense to me!  The other benefit of this sort of thing is that
+>  >  it lets you know whether the problem was a one-off or whether it
+>  >  continued happening -- but without too much log bloat.
+>  >
+>  >  I was thinking in terms of once every ten seconds, but am not all
+>  >  that hung up on the exact value of the period.
+>  >
+>  >  Thoughts?
+>
+>  Then, WARN_ON_SECS(condition, seconds) ?
 
-> El Thu, Mar 06, 2008 at 07:05:49PM -0800 Daniel Walker ha dit:
-> 
-> > On Thu, 2008-03-06 at 23:22 +0100, Matthias Kaehlcke wrote:
-> > > Alchemy Semi Au1000 pcmcia driver: The semaphore pcmcia_sockets_lock
-> > > is used as a mutex, convert it to the mutex API
-> > > 
-> > > Signed-off-by: Matthias Kaehlcke <matthias@kaehlcke.net>
-> > > 
-> > 
-> > This doesn't appear to be in patch format .. There no filename at the
-> > top..
-> 
-> somehow i messed it up when adding the patch to the mail. thanks for
-> the pointer, here comes the good one
-> 
-> -- 
-> 
-> Alchemy Semi Au1000 pcmcia driver: The semaphore pcmcia_sockets_lock
-> is used as a mutex, convert it to the mutex API
+Sorry, seconds must be a fixed number here, so your 10 secs maybe
+suitable for it.
 
-OK.
-
-> @@ -71,7 +72,7 @@ extern struct au1000_pcmcia_socket au1000_pcmcia_socket[];
->  u32 *pcmcia_base_vaddrs[2];
->  extern const unsigned long mips_io_port_base;
->  
-> -DECLARE_MUTEX(pcmcia_sockets_lock);
-> +DEFINE_MUTEX(pcmcia_sockets_lock);
-
-I'll make this static while we're in there.
-
-
+>
+>  >
+>  >                                                 Thanx, Paul
+>  >
+>
