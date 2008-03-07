@@ -1,78 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760799AbYCGQhA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761652AbYCGQhz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760799AbYCGQhA (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Mar 2008 11:37:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752010AbYCGQgu
+	id S1761652AbYCGQhz (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Mar 2008 11:37:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756261AbYCGQhq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Mar 2008 11:36:50 -0500
-Received: from e34.co.us.ibm.com ([32.97.110.152]:53414 "EHLO
-	e34.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759259AbYCGQg0 (ORCPT
+	Fri, 7 Mar 2008 11:37:46 -0500
+Received: from fk-out-0910.google.com ([209.85.128.190]:31061 "EHLO
+	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756142AbYCGQhp convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Mar 2008 11:36:26 -0500
-Message-ID: <47D16F05.2030303@us.ibm.com>
-Date: Fri, 07 Mar 2008 08:36:21 -0800
-From: Badari Pulavarty <pbadari@us.ibm.com>
-User-Agent: Thunderbird 2.0.0.12 (Windows/20080213)
+	Fri, 7 Mar 2008 11:37:45 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=content-disposition:from:to:subject:date:user-agent:cc:mime-version:content-type:content-transfer-encoding:message-id;
+        b=rjYljQjAv/ofp/vVtkQh1oZAYuvhbcFDO3ezWmEH4hFAhAaZl+1ALBeSzusB1KU+qT0ujc5VNaiYrNWRcjrdxp/VnYwvETw3dwChDfjKJ5pXhmugGpR4EZU8Lcm/VON+KpmXUHRFgxtBseIPVSGBjcP0qt+6ffr34UDRpLTjMwo=
+Content-Disposition: inline
+From: Oliver Pinter <oliver.pntr@gmail.com>
+To: stable@kernel.org
+Subject: [2.6.24.y stable] ub-fix-up-the-conversion-to-sg_init_table.patch for 2.6.24.y stable-queue
+Date: Fri, 7 Mar 2008 17:36:54 +0100
+User-Agent: KMail/1.9.7
+Cc: linux-kernel@vger.kernel.org
 MIME-Version: 1.0
-To: Yasunori Goto <y-goto@jp.fujitsu.com>
-CC: Dave Hansen <haveblue@us.ibm.com>, lkml <linux-kernel@vger.kernel.org>,
-       linuxppc-dev@ozlabs.org, paulus@samba.org,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH 1/5] generic __remove_pages() support
-References: <1204836859.4772.32.camel@nimitz.home.sr71.net> <1204839763.6272.8.camel@dyn9047017100.beaverton.ibm.com> <20080307102032.A17D.E1E9C6FF@jp.fujitsu.com>
-In-Reply-To: <20080307102032.A17D.E1E9C6FF@jp.fujitsu.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: Text/Plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+Message-Id: <200803071736.54369.oliver.pntr@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Yasunori Goto wrote:
-> Hi Badari-san.
->
->   
->> On Thu, 2008-03-06 at 12:54 -0800, Dave Hansen wrote:
->>     
->>> On Thu, 2008-03-06 at 10:55 -0800, Badari Pulavarty wrote:
->>>       
->>>> +               if (memmap)
->>>> +                       __kfree_section_memmap(memmap, PAGES_PER_SECTION);
->>>> +               return;
->>>> +       }
->>>> +
->>>> +       /*
->>>> +        * Allocations came from bootmem - how do I free up ?
->>>> +        */
->>>> +
->>>>         
->>> Shouldn't we figure this one out before merging?
->>>
->>> I think we at least need a printk() there.
->>>       
->> I can add a printk(). I am hoping Yasunori Goto has something to
->> handle this, before we really merge into mainline.
->>     
->
-> Ah, yes. 
-> I'm making patches for around here. I'm sorry for your waiting.
->
-> BTW, do you hurry for merging your patch? 
-> To be honest, I would like to solve not only here
-> but also some other issues.
-> But, if you hurry, I'll concentrate to solve only this.
->
-> Bye.
->
->   
-I am hoping to get all of this merged into 2.6.26.  Till then I would 
-like this to
-be tested in -mm. I am not in a hurry, but I would like to make sure 
-some one is
-working on the issue. Please let me know, if you have something to test 
-- I will
-be happy to help out.
+hi patch for 2.6.24.y
+---
+>From 541645be8bbb67d39113096263dcf00615d789e3 Mon Sep 17 00:00:00 2001
+From: Pete Zaitcev <zaitcev@redhat.com>
+Date: Sat, 9 Feb 2008 00:10:17 -0800
+Subject: [PATCH] ub: fix up the conversion to sg_init_table()
 
-Thanks,
-Badari
+Signed-off-by: Pete Zaitcev <zaitcev@redhat.com>
+Cc: "Oliver Pinter" <oliver.pntr@gmail.com>
+Cc: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+Cc: Greg KH <greg@kroah.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
 
+diff --git a/drivers/block/ub.c b/drivers/block/ub.c
+index a70c1c2..c452e2d 100644
+--- a/drivers/block/ub.c
++++ b/drivers/block/ub.c
+@@ -657,7 +657,6 @@ static int ub_request_fn_1(struct ub_lun *lun, struct request *rq)
+ 	if ((cmd = ub_get_cmd(lun)) == NULL)
+ 		return -1;
+ 	memset(cmd, 0, sizeof(struct ub_scsi_cmd));
+-	sg_init_table(cmd->sgv, UB_MAX_REQ_SG);
+ 
+ 	blkdev_dequeue_request(rq);
+ 
+@@ -668,6 +667,7 @@ static int ub_request_fn_1(struct ub_lun *lun, struct request *rq)
+ 	/*
+ 	 * get scatterlist from block layer
+ 	 */
++	sg_init_table(&urq->sgv[0], UB_MAX_REQ_SG);
+ 	n_elem = blk_rq_map_sg(lun->disk->queue, rq, &urq->sgv[0]);
+ 	if (n_elem < 0) {
+ 		/* Impossible, because blk_rq_map_sg should not hit ENOMEM. */
+
+---
+thanks,
+Oliver
+
+-------------------------------------------------------
+
+-- 
+thanks,
+Oliver
