@@ -1,96 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760553AbYCGH6f@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760893AbYCGH7W@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760553AbYCGH6f (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Mar 2008 02:58:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756143AbYCGH61
+	id S1760893AbYCGH7W (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Mar 2008 02:59:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757292AbYCGH7D
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Mar 2008 02:58:27 -0500
-Received: from public.id2-vpn.continvity.gns.novell.com ([195.33.99.129]:5726
-	"EHLO public.id2-vpn.continvity.gns.novell.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756003AbYCGH60 convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Mar 2008 02:58:26 -0500
-Message-Id: <47D103D0.76E4.0078.0@novell.com>
-X-Mailer: Novell GroupWise Internet Agent 7.0.3 Beta 
-Date: Fri, 07 Mar 2008 07:58:56 +0000
-From: "Jan Beulich" <jbeulich@novell.com>
-To: "Ingo Molnar" <mingo@elte.hu>
-Cc: "Miguel Boton" <mboton.lkml@gmail.com>,
-       "Thomas Gleixner" <tglx@linutronix.de>, <linux-kernel@vger.kernel.org>,
-       "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: mach_reboot_fixups()
-References: <47D031CD.76E4.0078.0@novell.com>
- <20080306174311.GA23029@elte.hu>
-In-Reply-To: <20080306174311.GA23029@elte.hu>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
+	Fri, 7 Mar 2008 02:59:03 -0500
+Received: from mail.southpole.se ([193.12.106.18]:54807 "EHLO
+	mail.southpole.se" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757622AbYCGH7B (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 7 Mar 2008 02:59:01 -0500
+Message-ID: <47D0F5BE.7010909@southpole.se>
+Date: Fri, 07 Mar 2008 08:58:54 +0100
+From: Jonas Bonn <jonas@southpole.se>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080227)
+MIME-Version: 1.0
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: linux-kernel@vger.kernel.org, netdev@vger.kernel.org, jgarzik@pobox.com,
+       Greg KH <greg@kroah.com>
+Subject: Re: [PATCH] net: use DECLARE_PCI_DEVICE_TABLE
+References: <1204800947-21569-1-git-send-email-jonas@southpole.se>	<1204800947-21569-2-git-send-email-jonas@southpole.se> <20080306154150.0ba906fa.akpm@linux-foundation.org>
+In-Reply-To: <20080306154150.0ba906fa.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->>> Ingo Molnar <mingo@elte.hu> 06.03.08 18:43 >>>
->
->* Jan Beulich <jbeulich@novell.com> wrote:
->
->> Ingo,
->> 
->> was it intentional to remove the call to mach_reboot_fixups() during 
->> the merge of reboot_{32,64}.c? If so, it seems odd that 
->> reboot_fixups_32.c was left in the tree (and there was even stuff 
->> added to it). But it would rather seem that those machines dealt with 
->> in that file would not reboot properly anymore (for one of my boxes I 
->> added an entry in that table to make it boot properly, which is why I 
->> noticed the code not being called anymore)...
->
->good catch Jan! The patch below should fix it.
->
->Can you see any other material difference due to the unification? 
->reboot_mode is now written to 0x472 unconditionally, but we can consider 
->that a bugfix. Otherwise the mode and ordering of reboot sequences seems 
->to be equivalent to me.
+Andrew Morton wrote:
+> Bah.
+> 
+> a) DECLARE_PCI_DEVICE_TABLE is misnamed.  It is used to *define* tables,
+>    not to declare them.  It should be called DEFINE_PCI_DEVICE_TABLE.
+> 
 
-Not exactly - when rebooting through EFI or BIOS, the old code didn't
-go through mach_reboot_fixups(), and I think that is the correct
-behavior (albeit, when the EFI path fell back to the triple fault
-mechanism, it should have honored the fixup logic, and I think it is
-more correct that the new code tries the keyboard method first).
-Perhaps the most reasonable way to go is to honor all reboot=
-settings without using the override code first:
+Fair enough...
 
---- a/arch/x86/kernel/reboot.c
-+++ b/arch/x86/kernel/reboot.c
-@@ -329,6 +329,10 @@ static inline void kb_wait(void)
- 	}
- }
- 
-+void __attribute__((weak)) mach_reboot_fixups(void)
-+{
-+}
-+
- static void native_machine_emergency_restart(void)
- {
- 	int i;
-@@ -337,9 +341,11 @@ static void native_machine_emergency_res
- 	*((unsigned short *)__va(0x472)) = reboot_mode;
- 
- 	for (;;) {
-+
- 		/* Could also try the reset bit in the Hammer NB */
- 		switch (reboot_type) {
- 		case BOOT_KBD:
-+			mach_reboot_fixups(); /* for board specific fixups */
- 			for (i = 0; i < 10; i++) {
- 				kb_wait();
- 				udelay(50);
+> b) It's lame, anyway.  We could implement any number of such helper
+>    thingies, but we choose not to.
+> 
 
-(with the exception that reboot=keyboard will still have the effect
-of honoring the fixups, but I think this is better than further
-complicating the logic).
+When I originally proposed these cleanups, I posted opened-coded 
+versions.  That was deemed to be ugly and using a macro was suggested. 
+So now I've reworked this with a macro, and now the macro is being 
+deemed to be ugly, too!
 
-In case you want to take this,
-Signed-off-by: Jan Beulich <jbeulich@novell.com>
+The point of this exercise wasn't really to do a macro at all; the point 
+was to get these structures marked 'const'  and into __devinitconst 
+where they belong.  Whether the open-coded approach or the macro is the 
+way to go, is all the same to me; any guidance on how to proceed would 
+be appreciated.
 
-Jan
+
 
