@@ -1,56 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764590AbYCGJ2Y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933096AbYCGJ3F@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764590AbYCGJ2Y (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Mar 2008 04:28:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765280AbYCGJRp
+	id S933096AbYCGJ3F (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Mar 2008 04:29:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932091AbYCGJWV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Mar 2008 04:17:45 -0500
-Received: from e28smtp05.in.ibm.com ([59.145.155.5]:41747 "EHLO
-	e28esmtp05.in.ibm.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1763174AbYCGJRl (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Mar 2008 04:17:41 -0500
-Message-ID: <47D107BC.2010809@linux.vnet.ibm.com>
-Date: Fri, 07 Mar 2008 14:45:40 +0530
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-Reply-To: balbir@linux.vnet.ibm.com
-Organization: IBM
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+	Fri, 7 Mar 2008 04:22:21 -0500
+Received: from sacred.ru ([62.205.161.221]:43416 "EHLO sacred.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932449AbYCGJWS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 7 Mar 2008 04:22:18 -0500
+Message-ID: <47D10939.6020806@openvz.org>
+Date: Fri, 07 Mar 2008 12:22:01 +0300
+From: Pavel Emelyanov <xemul@openvz.org>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080213)
 MIME-Version: 1.0
 To: Andrew Morton <akpm@linux-foundation.org>
-CC: Paul Menage <menage@google.com>, Pavel Emelianov <xemul@openvz.org>,
-       Hugh Dickins <hugh@veritas.com>,
-       Sudhir Kumar <skumar@linux.vnet.ibm.com>,
-       YAMAMOTO Takashi <yamamoto@valinux.co.jp>, lizf@cn.fujitsu.com,
-       linux-kernel@vger.kernel.org, taka@valinux.co.jp, linux-mm@kvack.org,
-       David Rientjes <rientjes@google.com>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Subject: Re: [PATCH] Make memory resource control aware of boot options (v2)
-References: <20080307085735.25567.314.sendpatchset@localhost.localdomain> <20080307085746.25567.71595.sendpatchset@localhost.localdomain> <20080307010649.74f51535.akpm@linux-foundation.org> <20080307010819.85b194c9.akpm@linux-foundation.org>
-In-Reply-To: <20080307010819.85b194c9.akpm@linux-foundation.org>
+CC: linux-kernel@vger.kernel.org, menage@google.com, sukadev@us.ibm.com,
+       serue@us.ibm.com
+Subject: Re: [PATCH 5/9] Make use of permissions, returned by kobj_lookup
+References: <47CED717.60406@openvz.org>	<47CEDA64.1070506@openvz.org> <20080305171304.f686f6de.akpm@linux-foundation.org>
+In-Reply-To: <20080305171304.f686f6de.akpm@linux-foundation.org>
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+X-Greylist: Sender succeeded SMTP AUTH authentication, not delayed by milter-greylist-3.0 (sacred.ru [62.205.161.221]); Fri, 07 Mar 2008 12:21:58 +0300 (MSK)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 Andrew Morton wrote:
-> On Fri, 7 Mar 2008 01:06:49 -0800 Andrew Morton <akpm@linux-foundation.org> wrote:
+> On Wed, 05 Mar 2008 20:37:40 +0300
+> Pavel Emelyanov <xemul@openvz.org> wrote:
 > 
->> On Fri, 07 Mar 2008 14:27:46 +0530 Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
->>
->>> +	if (mem_cgroup_subsys.disabled)
->> My copy of `struct cgroup_subsys' doesn't have a .disabled?
->>
+>> diff --git a/include/linux/devscontrol.h b/include/linux/devscontrol.h
+>> new file mode 100644
+>> index 0000000..04c168b
+>> --- /dev/null
+>> +++ b/include/linux/devscontrol.h
+>> @@ -0,0 +1,12 @@
+>> +#ifndef __DEVS_CONTROL_H__
+>> +#define __DEVS_CONTROL_H__
+>> +static inline struct kobj_map *task_cdev_map(struct task_struct *tsk)
+>> +{
+>> +	return NULL;
+>> +}
+>> +
+>> +static inline struct kobj_map *task_bdev_map(struct task_struct *tsk)
+>> +{
+>> +	return NULL;
+>> +}
+>> +#endif
 > 
-> Ah.  You didn't sequence-number the patches, and they arrived out-of-order. 
-> tsk.
+> This doesn't include sufficient headers to be compileable.
+> 
+> I'm sure there are lots of headers like this.  But we regularly need
+> to fix them.
 > 
 
-Oops -- sorry about that.
+Not sure, whether this is still relevant after Greg's comments, but that's
+the -fix patch for this one. (It will cause a conflict with the 9th patch.)
 
--- 
-	Warm Regards,
-	Balbir Singh
-	Linux Technology Center
-	IBM, ISTL
+diff --git a/include/linux/devscontrol.h b/include/linux/devscontrol.h
+index 04c168b..52cac64 100644
+--- a/include/linux/devscontrol.h
++++ b/include/linux/devscontrol.h
+@@ -1,5 +1,8 @@
+ #ifndef __DEVS_CONTROL_H__
+ #define __DEVS_CONTROL_H__
++struct kobj_map;
++struct task_struct;
++
+ static inline struct kobj_map *task_cdev_map(struct task_struct *tsk)
+ {
+ 	return NULL;
