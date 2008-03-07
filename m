@@ -1,179 +1,147 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762125AbYCGToU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762967AbYCGTrj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762125AbYCGToU (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Mar 2008 14:44:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758239AbYCGToF
+	id S1762967AbYCGTrj (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Mar 2008 14:47:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758690AbYCGTrc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Mar 2008 14:44:05 -0500
-Received: from mx2.netapp.com ([216.240.18.37]:37070 "EHLO mx2.netapp.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755855AbYCGToD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Mar 2008 14:44:03 -0500
-X-IronPort-AV: E=Sophos;i="4.25,464,1199692800"; 
-   d="scan'208";a="6430122"
-Subject: [GIT] Please pull NFS client fixes for 2.6.25
-From: Trond Myklebust <Trond.Myklebust@netapp.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-nfs@vger.kernel.org, linux-kernel@vger.kernel.org
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
-Organization: Network Appliance Inc
-Date: Fri, 07 Mar 2008 14:43:58 -0500
-Message-Id: <1204919038.16746.4.camel@heimdal.trondhjem.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
-X-OriginalArrivalTime: 07 Mar 2008 19:44:00.0529 (UTC) FILETIME=[972EB810:01C8808B]
+	Fri, 7 Mar 2008 14:47:32 -0500
+Received: from host36-195-149-62.serverdedicati.aruba.it ([62.149.195.36]:53158
+	"EHLO mx.cpushare.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758239AbYCGTrb (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 7 Mar 2008 14:47:31 -0500
+Date: Fri, 7 Mar 2008 20:47:28 +0100
+From: Andrea Arcangeli <andrea@qumranet.com>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Christoph Lameter <clameter@sgi.com>, Jack Steiner <steiner@sgi.com>,
+       Nick Piggin <npiggin@suse.de>, akpm@linux-foundation.org,
+       Robin Holt <holt@sgi.com>, Avi Kivity <avi@qumranet.com>,
+       kvm-devel@lists.sourceforge.net, general@lists.openfabrics.org,
+       Steve Wise <swise@opengridcomputing.com>,
+       Roland Dreier <rdreier@cisco.com>, Kanoj Sarcar <kanojsarcar@yahoo.com>,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       daniel.blueman@quadrics.com
+Subject: Re: [PATCH] 3/4 combine RCU with seqlock to allow mmu notifier
+	methods to sleep (#v9 was 1/4)
+Message-ID: <20080307194728.GP24114@v2.random>
+References: <20080304133020.GC5301@v2.random> <Pine.LNX.4.64.0803041059110.13957@schroedinger.engr.sgi.com> <20080304222030.GB8951@v2.random> <Pine.LNX.4.64.0803041422070.20821@schroedinger.engr.sgi.com> <20080307151722.GD24114@v2.random> <20080307152328.GE24114@v2.random> <1204908762.8514.114.camel@twins> <20080307175019.GK24114@v2.random> <1204912895.8514.120.camel@twins> <20080307184552.GL24114@v2.random>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080307184552.GL24114@v2.random>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Linus,
+On Fri, Mar 07, 2008 at 07:45:52PM +0100, Andrea Arcangeli wrote:
+> On Fri, Mar 07, 2008 at 07:01:35PM +0100, Peter Zijlstra wrote:
+> > The reason Christoph can do without RCU is because he doesn't allow
+> > unregister, and as soon as you drop that you'll end up with something
+> 
+> Not sure to follow, what do you mean "he doesn't allow"? We'll also
+> have to rip unregister regardless after you pointed out the ->release
+> won't be called after calling my mmu_notifier_unregister in 3/4. If
+> you figured out how to retain mmu_notifier_unregister I'm not seeing
+> it anymore.
 
-Please pull from the "hotfixes" branch of the repository at
+Given I don't see other (buggy ;) ways anymore to retain
+mmu_notifier_unregister, I did like in EMM and I dropped the
+unregister function.
 
-   git pull git://git.linux-nfs.org/projects/trondmy/nfs-2.6.git hotfixes
+To me it looks like this will be enough and equally efficient as the
+expanded version in EMM that is not using the highlevel hlist_rcu
+macros. If you can see any pitfall let me know! Thanks a lot for the
+help.
 
-This will update the following files through the appended changesets.
+------
+This is a replacement for the previously posted 3/4, one of the pieces
+to allow the mmu notifier methods to sleep.
 
-  Cheers,
-    Trond
+Signed-off-by: Andrea Arcangeli <andrea@qumranet.com>
 
-----
- fs/nfs/dir.c                    |    2 ++
- fs/nfs/inode.c                  |    6 ++++--
- fs/nfs/write.c                  |    2 +-
- include/linux/nfs_fs.h          |    1 +
- net/sunrpc/xprtrdma/transport.c |    6 +++++-
- 5 files changed, 13 insertions(+), 4 deletions(-)
-
-commit 4e99a1ff3410c627a428d5ddb6cd2e7bc908a486
-Author: Trond Myklebust <Trond.Myklebust@netapp.com>
-Date:   Thu Mar 6 12:34:59 2008 -0500
-
-    NFS: Fix dentry revalidation for NFSv4 referrals and mountpoint crossings
-    
-    As long as the directory contents haven't changed, we should just let the
-    path walk proceed to cross the mountpoint. Apart from being an optimisation
-    in the case of 'nohide' mountpoint traversals, it also fixes an issue with
-    referrals: referral inodes don't have valid filehandles, so calling
-    nfs_revalidate_inode() on them is a bug.
-    
-    Signed-off-by: Trond Myklebust <Trond.Myklebust@netapp.com>
-
-commit c37dcd334c0b0a46a90cfa13b9f69e2aaa89bc09
-Author: Trond Myklebust <Trond.Myklebust@netapp.com>
-Date:   Thu Mar 6 12:34:50 2008 -0500
-
-    NFS: Fix the fsid revalidation in nfs_update_inode()
-    
-    When we detect that we've crossed a mountpoint on the remote server, we
-    must take care not to use that inode to revalidate the fsid on our
-    current superblock. To do so, we label the inode as a remote mountpoint,
-    and check for that in nfs_update_inode().
-    
-    Signed-off-by: Trond Myklebust <Trond.Myklebust@netapp.com>
-
-commit ee1a2c564f67407947e89f1dac75ac0af0ba88c7
-Author: Tom Talpey <tmt@netapp.com>
-Date:   Wed Feb 27 15:04:26 2008 -0500
-
-    SUNRPC: Fix a nfs4 over rdma transport oops
-    
-    Prevent an RPC oops when freeing a dynamically allocated RDMA
-    buffer, used in certain special-case large metadata operations.
-    
-    Signed-off-by: Tom Talpey <tmt@netapp.com>
-    Signed-off-by: James Lentini <jlentini@netapp.com>
-    Signed-off-by: Trond Myklebust <Trond.Myklebust@netapp.com>
-
-commit af1b8c2ff7c337c4e96db12d6b7b61eaa91aa069
-Author: Trond Myklebust <Trond.Myklebust@netapp.com>
-Date:   Mon Feb 25 15:56:29 2008 -0800
-
-    NFS: Fix an f_mode/f_flags confusion in fs/nfs/write.c
-    
-    O_SYNC is stored in filp->f_flags.
-    Thanks to Al Viro for pointing out the bug.
-    
-    Signed-off-by: Trond Myklebust <Trond.Myklebust@netapp.com>
-
-diff --git a/fs/nfs/dir.c b/fs/nfs/dir.c
-index ae04892..6cea747 100644
---- a/fs/nfs/dir.c
-+++ b/fs/nfs/dir.c
-@@ -710,6 +710,8 @@ int nfs_lookup_verify_inode(struct inode *inode, struct nameidata *nd)
- {
- 	struct nfs_server *server = NFS_SERVER(inode);
+diff --git a/include/linux/mmu_notifier.h b/include/linux/mmu_notifier.h
+--- a/include/linux/mmu_notifier.h
++++ b/include/linux/mmu_notifier.h
+@@ -70,17 +70,6 @@ static inline int mm_has_notifiers(struc
+  */
+ extern void mmu_notifier_register(struct mmu_notifier *mn,
+ 				  struct mm_struct *mm);
+-/*
+- * Must hold the mmap_sem for write.
+- *
+- * RCU is used to traverse the list. A quiescent period needs to pass
+- * before the "struct mmu_notifier" can be freed. Alternatively it
+- * can be synchronously freed inside ->release when the list can't
+- * change anymore and nobody could possibly walk it.
+- */
+-extern void mmu_notifier_unregister(struct mmu_notifier *mn,
+-				    struct mm_struct *mm);
+-
+ extern void __mmu_notifier_release(struct mm_struct *mm);
+ extern int __mmu_notifier_clear_flush_young(struct mm_struct *mm,
+ 					  unsigned long address);
+diff --git a/mm/mmu_notifier.c b/mm/mmu_notifier.c
+--- a/mm/mmu_notifier.c
++++ b/mm/mmu_notifier.c
+@@ -43,12 +43,10 @@ int __mmu_notifier_clear_flush_young(str
+ 	struct hlist_node *n;
+ 	int young = 0;
  
-+	if (test_bit(NFS_INO_MOUNTPOINT, &NFS_I(inode)->flags))
-+		return 0;
- 	if (nd != NULL) {
- 		/* VFS wants an on-the-wire revalidation */
- 		if (nd->flags & LOOKUP_REVAL)
-diff --git a/fs/nfs/inode.c b/fs/nfs/inode.c
-index 966a885..a4c7cf2 100644
---- a/fs/nfs/inode.c
-+++ b/fs/nfs/inode.c
-@@ -299,6 +299,7 @@ nfs_fhget(struct super_block *sb, struct nfs_fh *fh, struct nfs_fattr *fattr)
- 				else
- 					inode->i_op = &nfs_mountpoint_inode_operations;
- 				inode->i_fop = NULL;
-+				set_bit(NFS_INO_MOUNTPOINT, &nfsi->flags);
- 			}
- 		} else if (S_ISLNK(inode->i_mode))
- 			inode->i_op = &nfs_symlink_inode_operations;
-@@ -1003,8 +1004,9 @@ static int nfs_update_inode(struct inode *inode, struct nfs_fattr *fattr)
- 
- 	server = NFS_SERVER(inode);
- 	/* Update the fsid? */
--	if (S_ISDIR(inode->i_mode)
--			&& !nfs_fsid_equal(&server->fsid, &fattr->fsid))
-+	if (S_ISDIR(inode->i_mode) &&
-+			!nfs_fsid_equal(&server->fsid, &fattr->fsid) &&
-+			!test_bit(NFS_INO_MOUNTPOINT, &nfsi->flags))
- 		server->fsid = fattr->fsid;
- 
- 	/*
-diff --git a/fs/nfs/write.c b/fs/nfs/write.c
-index f55c437..80c61fd 100644
---- a/fs/nfs/write.c
-+++ b/fs/nfs/write.c
-@@ -734,7 +734,7 @@ int nfs_updatepage(struct file *file, struct page *page,
- 	 */
- 	if (nfs_write_pageuptodate(page, inode) &&
- 			inode->i_flock == NULL &&
--			!(file->f_mode & O_SYNC)) {
-+			!(file->f_flags & O_SYNC)) {
- 		count = max(count + offset, nfs_page_length(page));
- 		offset = 0;
+-	rcu_read_lock();
+ 	hlist_for_each_entry_rcu(mn, n, &mm->mmu_notifier_list, hlist) {
+ 		if (mn->ops->clear_flush_young)
+ 			young |= mn->ops->clear_flush_young(mn, mm, address);
  	}
-diff --git a/include/linux/nfs_fs.h b/include/linux/nfs_fs.h
-index a69ba80..f4a0e4c 100644
---- a/include/linux/nfs_fs.h
-+++ b/include/linux/nfs_fs.h
-@@ -195,6 +195,7 @@ struct nfs_inode {
- #define NFS_INO_ADVISE_RDPLUS	(1)		/* advise readdirplus */
- #define NFS_INO_STALE		(2)		/* possible stale inode */
- #define NFS_INO_ACL_LRU_SET	(3)		/* Inode is on the LRU list */
-+#define NFS_INO_MOUNTPOINT	(4)		/* inode is remote mountpoint */
+-	rcu_read_unlock();
  
- static inline struct nfs_inode *NFS_I(const struct inode *inode)
- {
-diff --git a/net/sunrpc/xprtrdma/transport.c b/net/sunrpc/xprtrdma/transport.c
-index 02c522c..a564c1a 100644
---- a/net/sunrpc/xprtrdma/transport.c
-+++ b/net/sunrpc/xprtrdma/transport.c
-@@ -614,7 +614,11 @@ xprt_rdma_free(void *buffer)
- 		return;
+ 	return young;
+ }
+@@ -59,12 +57,10 @@ void __mmu_notifier_invalidate_page(stru
+ 	struct mmu_notifier *mn;
+ 	struct hlist_node *n;
  
- 	req = container_of(buffer, struct rpcrdma_req, rl_xdr_buf[0]);
--	r_xprt = container_of(req->rl_buffer, struct rpcrdma_xprt, rx_buf);
-+	if (req->rl_iov.length == 0) {	/* see allocate above */
-+		r_xprt = container_of(((struct rpcrdma_req *) req->rl_buffer)->rl_buffer,
-+				      struct rpcrdma_xprt, rx_buf);
-+	} else
-+		r_xprt = container_of(req->rl_buffer, struct rpcrdma_xprt, rx_buf);
- 	rep = req->rl_reply;
+-	rcu_read_lock();
+ 	hlist_for_each_entry_rcu(mn, n, &mm->mmu_notifier_list, hlist) {
+ 		if (mn->ops->invalidate_page)
+ 			mn->ops->invalidate_page(mn, mm, address);
+ 	}
+-	rcu_read_unlock();
+ }
  
- 	dprintk("RPC:       %s: called on 0x%p%s\n",
-
+ void __mmu_notifier_invalidate_range_begin(struct mm_struct *mm,
+@@ -73,12 +69,10 @@ void __mmu_notifier_invalidate_range_beg
+ 	struct mmu_notifier *mn;
+ 	struct hlist_node *n;
+ 
+-	rcu_read_lock();
+ 	hlist_for_each_entry_rcu(mn, n, &mm->mmu_notifier_list, hlist) {
+ 		if (mn->ops->invalidate_range_begin)
+ 			mn->ops->invalidate_range_begin(mn, mm, start, end);
+ 	}
+-	rcu_read_unlock();
+ }
+ 
+ void __mmu_notifier_invalidate_range_end(struct mm_struct *mm,
+@@ -87,12 +81,10 @@ void __mmu_notifier_invalidate_range_end
+ 	struct mmu_notifier *mn;
+ 	struct hlist_node *n;
+ 
+-	rcu_read_lock();
+ 	hlist_for_each_entry_rcu(mn, n, &mm->mmu_notifier_list, hlist) {
+ 		if (mn->ops->invalidate_range_end)
+ 			mn->ops->invalidate_range_end(mn, mm, start, end);
+ 	}
+-	rcu_read_unlock();
+ }
+ 
+ /*
+@@ -106,9 +98,3 @@ void mmu_notifier_register(struct mmu_no
+ 	hlist_add_head_rcu(&mn->hlist, &mm->mmu_notifier_list);
+ }
+ EXPORT_SYMBOL_GPL(mmu_notifier_register);
+-
+-void mmu_notifier_unregister(struct mmu_notifier *mn, struct mm_struct *mm)
+-{
+-	hlist_del_rcu(&mn->hlist);
+-}
+-EXPORT_SYMBOL_GPL(mmu_notifier_unregister);
