@@ -1,47 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765499AbYCGJTg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765624AbYCGJUV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765499AbYCGJTg (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Mar 2008 04:19:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763107AbYCGJJQ
+	id S1765624AbYCGJUV (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Mar 2008 04:20:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764185AbYCGJL2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Mar 2008 04:09:16 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:39237 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1763553AbYCGJJM (ORCPT
+	Fri, 7 Mar 2008 04:11:28 -0500
+Received: from E23SMTP02.au.ibm.com ([202.81.18.163]:44190 "EHLO
+	e23smtp02.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1763892AbYCGJLX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Mar 2008 04:09:12 -0500
-Date: Fri, 7 Mar 2008 01:08:19 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Balbir Singh <balbir@linux.vnet.ibm.com>, Paul Menage <menage@google.com>,
-       Pavel Emelianov <xemul@openvz.org>, Hugh Dickins <hugh@veritas.com>,
-       Sudhir Kumar <skumar@linux.vnet.ibm.com>,
-       YAMAMOTO Takashi <yamamoto@valinux.co.jp>, lizf@cn.fujitsu.com,
-       linux-kernel@vger.kernel.org, taka@valinux.co.jp, linux-mm@kvack.org,
-       David Rientjes <rientjes@google.com>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Subject: Re: [PATCH] Make memory resource control aware of boot options (v2)
-Message-Id: <20080307010819.85b194c9.akpm@linux-foundation.org>
-In-Reply-To: <20080307010649.74f51535.akpm@linux-foundation.org>
-References: <20080307085735.25567.314.sendpatchset@localhost.localdomain>
-	<20080307085746.25567.71595.sendpatchset@localhost.localdomain>
-	<20080307010649.74f51535.akpm@linux-foundation.org>
-X-Mailer: Sylpheed 2.3.1 (GTK+ 2.10.11; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Fri, 7 Mar 2008 04:11:23 -0500
+Date: Fri, 7 Mar 2008 14:40:49 +0530
+From: Gautham R Shenoy <ego@in.ibm.com>
+To: Oleg Nesterov <oleg@tv-sign.ru>
+Cc: Yi Yang <yi.y.yang@intel.com>, Ingo Molnar <mingo@elte.hu>,
+       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [BUG 2.6.25-rc3] scheduler/hotplug: some processes are
+	dealocked when cpu is set to offline
+Message-ID: <20080307091049.GA8827@in.ibm.com>
+Reply-To: ego@in.ibm.com
+References: <1204483329.3607.8.camel@yangyi-dev.bj.intel.com> <20080303153154.GA11288@in.ibm.com> <1204555505.3842.4.camel@yangyi-dev.bj.intel.com> <20080304052613.GA28632@in.ibm.com> <20080304150107.GA564@tv-sign.ru> <20080306134400.GA1915@in.ibm.com> <20080307025451.GA201@tv-sign.ru>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080307025451.GA201@tv-sign.ru>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 7 Mar 2008 01:06:49 -0800 Andrew Morton <akpm@linux-foundation.org> wrote:
-
-> On Fri, 07 Mar 2008 14:27:46 +0530 Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
+On Fri, Mar 07, 2008 at 05:54:51AM +0300, Oleg Nesterov wrote:
+> On 03/06, Gautham R Shenoy wrote:
+> >
+> > On Tue, Mar 04, 2008 at 06:01:07PM +0300, Oleg Nesterov wrote:
+> > > +static void check_running_task(struct task_struct *t, unsigned long now)
+> > > +{
+> > > +	if (!sysctl_hung_task_timeout_secs)
+> > > +		return;
+> > > +
+> > 
+> > This function gets called only when t->xxx == 0,
+> > so the if below doesn't mean much, does it? :)
+> > 
+> > > +	if (time_before(now, t->xxx + HZ * sysctl_hung_task_timeout_secs)
+> > > +		return;
+> > .......
+> >
+> > > @@ -192,15 +214,17 @@ static void check_hung_uninterruptible_t
+> > >  	if ((tainted & TAINT_DIE) || did_panic)
+> > >  		return;
+> > > 
+> > > -	read_lock(&tasklist_lock);
+> > > +	rcu_read_lock();
+> > >  	do_each_thread(g, t) {
+> > >  		if (!--max_count)
+> > >  			goto unlock;
+> > >  		if (t->state & TASK_UNINTERRUPTIBLE)
+> > >  			check_hung_task(t, now);
+> > > +		if (!t->xxx)
+> > > +			check_running_task(t, jiff);
 > 
-> > +	if (mem_cgroup_subsys.disabled)
+> Of course, the check above should be
 > 
-> My copy of `struct cgroup_subsys' doesn't have a .disabled?
+> 		if (1t->xxx)
+> 			check_running_task(t, jiff);
 > 
+> Thanks!
+> 
+> >From another message,
+> >
+> > Me too. With your patch applied there were quite a few tasks in the
+> > running state which didn't get the cpu for more than 120 seconds.
+> 
+> (I assume you fixed the patch before using it ;)
+No! Conversely, I fixed the patch because I found this behaviour a bit
+odd. Couldn't run the tests again as it was a tad bit late.
 
-Ah.  You didn't sequence-number the patches, and they arrived out-of-order. 
-tsk.
+> 
+> Just to be sure, there were no "bad ->cpu..." messages, yes?
 
+Hopefully should be able to catch them now. If yes, it's a problem in
+the way we do migration after cpu-hotplug as Yi suggested in an earlier
+mail.
+
+http://lkml.org/lkml/2008/3/6/437
+
+This mail from akpm says the same thing.
+
+> 
+> Oleg.
+
+-- 
+Thanks and Regards
+gautham
