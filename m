@@ -1,72 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760940AbYCGO5w@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758690AbYCGPHj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760940AbYCGO5w (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Mar 2008 09:57:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759457AbYCGO5b
+	id S1758690AbYCGPHj (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Mar 2008 10:07:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753601AbYCGPHa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Mar 2008 09:57:31 -0500
-Received: from relay2.sgi.com ([192.48.171.30]:59585 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1758119AbYCGO5T (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Mar 2008 09:57:19 -0500
-Date: Fri, 7 Mar 2008 08:57:03 -0600
-From: Paul Jackson <pj@sgi.com>
-To: "Paul Menage" <menage@google.com>
-Cc: a.p.zijlstra@chello.nl, maxk@qualcomm.com, mingo@elte.hu,
-       tglx@linutronix.de, oleg@tv-sign.ru, rostedt@goodmis.org,
-       linux-kernel@vger.kernel.org, rientjes@google.com
-Subject: Re: [RFC/PATCH] cpuset: cpuset irq affinities
-Message-Id: <20080307085703.123fe896.pj@sgi.com>
-In-Reply-To: <6599ad830803070047l1b108fc5je19791362291018@mail.gmail.com>
-References: <20080227222103.673194000@chello.nl>
-	<20080304013534.4e51ae48.pj@sgi.com>
-	<1204628762.6241.46.camel@lappy>
-	<47CDA885.3000103@qualcomm.com>
-	<20080304191159.a02be58b.pj@sgi.com>
-	<1204706272.6241.79.camel@lappy>
-	<20080306074729.6233e537.pj@sgi.com>
-	<1204816885.6241.265.camel@lappy>
-	<20080306214003.aba81840.pj@sgi.com>
-	<20080307003924.6dcb16a3.pj@sgi.com>
-	<6599ad830803070047l1b108fc5je19791362291018@mail.gmail.com>
-Organization: SGI
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.12.0; i686-pc-linux-gnu)
-Mime-Version: 1.0
+	Fri, 7 Mar 2008 10:07:30 -0500
+Received: from spirit.analogic.com ([204.178.40.4]:1629 "EHLO
+	spirit.analogic.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753184AbYCGPH3 convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 7 Mar 2008 10:07:29 -0500
+MIME-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 7BIT
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+X-OriginalArrivalTime: 07 Mar 2008 15:03:23.0091 (UTC) FILETIME=[63499230:01C88064]
+Content-class: urn:content-classes:message
+Subject: Re: What does a Kernel Error 4 mean?
+Date: Fri, 7 Mar 2008 10:03:18 -0500
+Message-ID: <Pine.LNX.4.61.0803071001280.23974@chaos.analogic.com>
+In-Reply-To: <Pine.LNX.4.64.0803062307170.26142@fbirervta.pbzchgretzou.qr>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: What does a Kernel Error 4 mean?
+Thread-Index: AciAZGNmfHZg5YUJSk6vZTFMS6G2MA==
+References: <521608.73353.qm@web52503.mail.re2.yahoo.com> <Pine.LNX.4.64.0803062307170.26142@fbirervta.pbzchgretzou.qr>
+From: "linux-os (Dick Johnson)" <linux-os@analogic.com>
+To: "Jan Engelhardt" <jengelh@computergmbh.de>
+Cc: "Marc Perkel" <mperkel@yahoo.com>, <linux-kernel@vger.kernel.org>
+Reply-To: "linux-os (Dick Johnson)" <linux-os@analogic.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Paul M wrote:
-> An alternative would be to just have some kind of "irqsets" file in
-> the top-level cpuset directory and let the user write irq group
-> definitions into that file.
 
-Yes, exactly, that's the alternative.
+On Thu, 6 Mar 2008, Jan Engelhardt wrote:
 
-I tried that, in my mind, and got stuck on the complicated syntax that
-would have been needed to represent an arbitrary length array of named
-lists of irqs with each list having a priority attribute.
+>
+> On Mar 6 2008 13:59, Marc Perkel wrote:
+>>
+>> What does a Kernel Error 4 mean? I'm getting this
+>> running 64 bit Exim. Just trying to track it down and
+>> wondering what an "Error 4" is?
+>
+> Full error message please.
+> --
 
-So I went with the separate "irqs.N.name" files, (ab)using the file
-system directory apparatus to handle the "arbitrary length array of
-named" entities aspect, burying the priority attribute (N) in the name,
-and leaving each individual irqs.N.name file only needing to hold a
-single vector of irq numbers.
+Interrupted system call?
+See /usr/include/asm/errno.h. Generally, the kernel
+errors are the negative of the user-mode errno values.
 
-A security conscious sysadmin can even assign different permissions to
-the different irq lists with this.  And updates of one irq list don't
-endanger the other irq lists, thanks to the innate and elaborate
-capabilities in the kernel vfs code to handle concurrent updates to
-separate files correctly and reliably.
 
-This reminds me of the difference between the Windows Registry (one big
-awful file) and the Unix /etc directory (2745 files, on the system
-nearest to my shell prompt.)  Well, in this irq case, the different is not
--that- dramatic, but it is a small echo of such.
+Cheers,
+Dick Johnson
+Penguin : Linux version 2.6.22.1 on an i686 machine (5588.28 BogoMips).
+My book : http://www.AbominableFirebug.com/
+_
 
--- 
-                  I won't rest till it's the best ...
-                  Programmer, Linux Scalability
-                  Paul Jackson <pj@sgi.com> 1.940.382.4214
+
+****************************************************************
+The information transmitted in this message is confidential and may be privileged.  Any review, retransmission, dissemination, or other use of this information by persons or entities other than the intended recipient is prohibited.  If you are not the intended recipient, please notify Analogic Corporation immediately - by replying to this message or by sending an email to DeliveryErrors@analogic.com - and destroy all copies of this information, including any attachments, without reading or disclosing them.
+
+Thank you.
