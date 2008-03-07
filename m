@@ -1,50 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763159AbYCGJgg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761684AbYCGJhM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763159AbYCGJgg (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Mar 2008 04:36:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754903AbYCGJgN
+	id S1761684AbYCGJhM (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Mar 2008 04:37:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763381AbYCGJgk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Mar 2008 04:36:13 -0500
-Received: from rn-out-0910.google.com ([64.233.170.184]:56231 "EHLO
-	rn-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751196AbYCGJgK (ORCPT
+	Fri, 7 Mar 2008 04:36:40 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:54253 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1763511AbYCGJgg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Mar 2008 04:36:10 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=GBg1z4gKii67U+kyA4oQUVCzCYXy3GL+HB/F8o6jUiI2RbGbpFZ1o3EdERNu2g4vDqaUd8djBBFrEf/f2WIkn4iiSYPr1fP/u4sdEx491ei6ksX+xVcFYFImC6iu+AU8GX7qnbUTn5nYCwizBdGb7DhlVugAwHpBB15XCX8NKOc=
-Message-ID: <a8e1da0803070136h2403edb5kad27f148f01b0c41@mail.gmail.com>
-Date: Fri, 7 Mar 2008 17:36:09 +0800
-From: "Dave Young" <hidave.darkstar@gmail.com>
-To: "Andrew Morton" <akpm@linux-foundation.org>
-Subject: Re: [PATCH RFC] add time_after_now and other macros which compare with jiffies
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <20080307012244.ed7625ec.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Fri, 7 Mar 2008 04:36:36 -0500
+Date: Fri, 7 Mar 2008 01:35:53 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Pavel Emelyanov <xemul@openvz.org>
+Cc: linux-kernel@vger.kernel.org, menage@google.com, sukadev@us.ibm.com,
+       serue@us.ibm.com, Greg KH <greg@kroah.com>
+Subject: Re: [PATCH 5/9] Make use of permissions, returned by kobj_lookup
+Message-Id: <20080307013553.7ed35f91.akpm@linux-foundation.org>
+In-Reply-To: <47D10939.6020806@openvz.org>
+References: <47CED717.60406@openvz.org>
+	<47CEDA64.1070506@openvz.org>
+	<20080305171304.f686f6de.akpm@linux-foundation.org>
+	<47D10939.6020806@openvz.org>
+X-Mailer: Sylpheed 2.3.1 (GTK+ 2.10.11; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20080307030901.GA4375@darkstar.te-china.tietoenator.com>
-	 <20080307010228.de6700b5.akpm@linux-foundation.org>
-	 <a8e1da0803070112p6a5e076aw569a50a69de91504@mail.gmail.com>
-	 <20080307012244.ed7625ec.akpm@linux-foundation.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Mar 7, 2008 at 5:22 PM, Andrew Morton <akpm@linux-foundation.org> wrote:
-> On Fri, 7 Mar 2008 17:12:29 +0800 "Dave Young" <hidave.darkstar@gmail.com> wrote:
->
->  > Indeed, I will add proper comment before them.
->
->  Sob.  Of the 809 usages of time_after(), it appears that over 700 are
->  comparing with jiffies.  So with your (good) change, someone will get
->  buried in well-meaning convert-to-time_after_now patches.
+On Fri, 07 Mar 2008 12:22:01 +0300 Pavel Emelyanov <xemul@openvz.org> wrote:
+
+> > This doesn't include sufficient headers to be compileable.
+> > 
+> > I'm sure there are lots of headers like this.  But we regularly need
+> > to fix them.
+> > 
+> 
+> Not sure, whether this is still relevant after Greg's comments, but that's
+> the -fix patch for this one. (It will cause a conflict with the 9th patch.)
+
+Well.  Where do we stand with this?  afaict the state of play is:
+
+Greg: do it in udev
+Pavel: but people want to run old distros in containers
 
 
-Yes, there will be a lot of patches.  Hope I have that time to do some.
+Realistically, when is the mainline kernel likely to have sufficient
+container functionality which is sufficiently well-tested for people to
+actually be able to do that?  And how much longer will it take for that
+kernel.org functionality to propagate out into non-bleeding-edge distros?
 
->
->  I wonder who that might be?
->
+Altogether we're looking at one to three years, aren't we?  By then,
+perhaps a lot of "old" distros are already udev-based.
+
+otoh, my experience upgrading old kernels to new udev has not been a
+good one (ie: it didn't work).
+
