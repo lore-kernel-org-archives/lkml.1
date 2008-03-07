@@ -1,46 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762446AbYCGR5n@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759472AbYCGSCJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762446AbYCGR5n (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Mar 2008 12:57:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752940AbYCGR5g
+	id S1759472AbYCGSCJ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Mar 2008 13:02:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751537AbYCGSB4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Mar 2008 12:57:36 -0500
-Received: from web36608.mail.mud.yahoo.com ([209.191.85.25]:48313 "HELO
-	web36608.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1752212AbYCGR5f (ORCPT
+	Fri, 7 Mar 2008 13:01:56 -0500
+Received: from viefep32-int.chello.at ([62.179.121.50]:45405 "EHLO
+	viefep32-int.chello.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751295AbYCGSBz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Mar 2008 12:57:35 -0500
-X-YMail-OSG: 5.YKI6YVM1mUH1BNVHKvvAQK.Y3OMWRXODx2dDgpiuj1RvT8kbVKFXZCcsCpCki0Shiv17hI2Q--
-X-RocketYMMF: rancidfat
-Date: Fri, 7 Mar 2008 09:57:34 -0800 (PST)
-From: Casey Schaufler <casey@schaufler-ca.com>
-Reply-To: casey@schaufler-ca.com
-Subject: Re: [PATCH 5/9] Make use of permissions, returned by kobj_lookup
-To: "Serge E. Hallyn" <serue@us.ibm.com>, Greg KH <greg@kroah.com>
-Cc: Pavel Emelyanov <xemul@openvz.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       menage@google.com, sukadev@us.ibm.com, serue@us.ibm.com
-In-Reply-To: <20080307173542.GA2552@sergelap.austin.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-Message-ID: <757539.74589.qm@web36608.mail.mud.yahoo.com>
+	Fri, 7 Mar 2008 13:01:55 -0500
+Subject: Re: [PATCH] 3/4 combine RCU with seqlock to allow mmu notifier
+	methods to sleep (#v9 was 1/4)
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Andrea Arcangeli <andrea@qumranet.com>
+Cc: Christoph Lameter <clameter@sgi.com>, Jack Steiner <steiner@sgi.com>,
+       Nick Piggin <npiggin@suse.de>, akpm@linux-foundation.org,
+       Robin Holt <holt@sgi.com>, Avi Kivity <avi@qumranet.com>,
+       kvm-devel@lists.sourceforge.net, general@lists.openfabrics.org,
+       Steve Wise <swise@opengridcomputing.com>,
+       Roland Dreier <rdreier@cisco.com>, Kanoj Sarcar <kanojsarcar@yahoo.com>,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       daniel.blueman@quadrics.com
+In-Reply-To: <20080307175019.GK24114@v2.random>
+References: <20080303220502.GA5301@v2.random>
+	 <47CC9B57.5050402@qumranet.com>
+	 <Pine.LNX.4.64.0803032327470.9642@schroedinger.engr.sgi.com>
+	 <20080304133020.GC5301@v2.random>
+	 <Pine.LNX.4.64.0803041059110.13957@schroedinger.engr.sgi.com>
+	 <20080304222030.GB8951@v2.random>
+	 <Pine.LNX.4.64.0803041422070.20821@schroedinger.engr.sgi.com>
+	 <20080307151722.GD24114@v2.random> <20080307152328.GE24114@v2.random>
+	 <1204908762.8514.114.camel@twins>  <20080307175019.GK24114@v2.random>
+Content-Type: text/plain
+Date: Fri, 07 Mar 2008 19:01:35 +0100
+Message-Id: <1204912895.8514.120.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.21.92 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, 2008-03-07 at 18:50 +0100, Andrea Arcangeli wrote:
 
---- "Serge E. Hallyn" <serue@us.ibm.com> wrote:
+> Overall my effort is to try to avoid expand the list walk with
+> explicit memory barriers like in EMM while trying to be equally
+> efficient.
 
-> ...
-> 
-> Until user namespaces are complete, selinux seems the only good solution
-> to offer isolation.
+I think we can do with a smb_wmb(); like Christoph (and like
+hlist_add_rcu()), but replace the smb_rmb() Christoph has with a
+smp_read_barrier_depends().
 
-Smack does it better and cheaper. (Unless you define good==selinux)
-(insert smiley)
+That should give much the same results.
+
+The reason Christoph can do without RCU is because he doesn't allow
+unregister, and as soon as you drop that you'll end up with something
+similar.
+
+> Another issue is that the _begin/_end logic doesn't provide any
+> guarantee that the _begin will start firing before _end, if a kernel
+> module is loaded while another cpu is already running inside some
+> munmap operation etc.. The KVM usage of mmu notifier has no problem
+> with that detail, but KVM doesn't use _begin at all, I wonder if
+> others would have problems. This is a kind of a separate problem, but
+> quite related to the question if the notifiers must be guaranteed to
+> start firing immediately after mmu_notifier_unregister;synchronize_rcu
+> or not, that's why I mentioned it here.
+
+Curious problem indeed. Would it make sense to require registering these
+MMU notifiers when the process is still single threaded along with the
+requirement that they can never be removed again from a running process?
+
+For KVM this should be quite doable, but I must admit I haven't been
+paying enough attention to know if its possible for these other users.
 
 
-
-Casey Schaufler
-casey@schaufler-ca.com
