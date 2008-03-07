@@ -1,55 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932353AbYCGMeT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932428AbYCGMg4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932353AbYCGMeT (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Mar 2008 07:34:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758547AbYCGMeH
+	id S932428AbYCGMg4 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Mar 2008 07:36:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757331AbYCGMgr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Mar 2008 07:34:07 -0500
-Received: from terminus.zytor.com ([198.137.202.10]:48414 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756710AbYCGMeE (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Mar 2008 07:34:04 -0500
-Message-ID: <47D1352F.6010504@zytor.com>
-Date: Fri, 07 Mar 2008 04:29:35 -0800
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
+	Fri, 7 Mar 2008 07:36:47 -0500
+Received: from gherkin.frus.com ([192.158.254.49]:39956 "EHLO gherkin.frus.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756953AbYCGMgq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 7 Mar 2008 07:36:46 -0500
+Subject: Re: [regression]2.6.25-rc4: boot panic on alpha
+In-Reply-To: <20080307072304.GA25351@elte.hu> "from Ingo Molnar at Mar 7, 2008
+ 08:23:05 am"
+To: Ingo Molnar <mingo@elte.hu>
+Date: Fri, 7 Mar 2008 06:36:44 -0600 (CST)
+CC: Bob Tracy <rct@frus.com>, linux-kernel@vger.kernel.org,
+       linux-alpha@vger.kernel.org,
+       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+X-Mailer: ELM [version 2.4ME+ PL82 (25)]
 MIME-Version: 1.0
-To: Pavel Machek <pavel@ucw.cz>
-CC: Ingo Molnar <mingo@elte.hu>, Suresh Siddha <suresh.b.siddha@intel.com>,
-       Christoph Hellwig <hch@infradead.org>, tglx@linutronix.de,
-       andi@firstfloor.org, linux-kernel@vger.kernel.org,
-       Arjan van de Ven <arjan@linux.intel.com>
-Subject: Re: [patch 2/2] x86, fpu: lazy allocation of FPU area - v3
-References: <20080303230335.892214000@linux-os.sc.intel.com> <20080303230336.042604000@linux-os.sc.intel.com> <20080304012012.GB22431@infradead.org> <20080304014306.GC28006@linux-os.sc.intel.com> <20080304103220.GA17621@elte.hu> <20080304175528.GD28006@linux-os.sc.intel.com> <20080305194705.GA4386@ucw.cz> <20080306155141.GA23340@elte.hu> <20080306202446.GA4225@ucw.cz>
-In-Reply-To: <20080306202446.GA4225@ucw.cz>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=US-ASCII
+Message-Id: <20080307123645.0CB5BDBA2@gherkin.frus.com>
+From: rct@frus.com (Bob Tracy)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Pavel Machek wrote:
-> On Thu 2008-03-06 16:51:41, Ingo Molnar wrote:
->> * Pavel Machek <pavel@ucw.cz> wrote:
->>
->>>>> kmem_cache_alloc() can fail (return NULL) and not handling it is a 
->>>>> bug.
->>>> oops. you are correct. Will send a sigsegv in the failure case then. 
->>>> Thanks.
->>> You are introducing possibility of hard to debug error, where previous 
->>> code just worked... Does not look like good idea to me.
->> hm, how does it differ from any other allocation failure? We could fail 
+Ingo Molnar wrote:
+> Bob, does latest -git boot if you revert these 4 commits:
+
+(FUJITA Tomonori's Alpha IOMMU changes)
+
+I'll get things set up to try that later today...  In the meantime, it
+appears the regression is relative to -rc3: I'm up and running on that
+kernel as I type this.
+
+> * Bob Tracy <rct@frus.com> wrote:
 > 
-> Well, we should not be sending SIGSEGV...? SIGBUS would be cleaner, or
-> SIGKILL... what happens when userland tries to catch this one?
-> 
+> > (panic with 2.6.24-rc4 on Alpha)
+> > The panic is completely reproducible.  The "Code" line at the bottom
+> > of the panic output is
+> > 
+> > 44220001 4821f621 4821b681 4821f62b f420004f 00000081 <0000009b> 0066c012
+> > 
+> > The first line of the "Trace" section is
+> > 
+> >  [<fffffc000031a41f>] iommu_arena_alloc+0x64/0xe0
+> > 
 
-I'm confused...
-
-Normally when we need memory for userspace and can't get it, we put the 
-process to sleep until memory is available.
-
-Why is this different in any way?
-
-	-hpa
+-- 
+------------------------------------------------------------------------
+Bob Tracy          |  "I was a beta tester for dirt.  They never did
+rct@frus.com       |   get all the bugs out." - Steve McGrew on /.
+------------------------------------------------------------------------
