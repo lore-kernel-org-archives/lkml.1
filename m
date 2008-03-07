@@ -1,81 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764121AbYCGBn2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760848AbYCGBx1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764121AbYCGBn2 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Mar 2008 20:43:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753265AbYCGBnR
+	id S1760848AbYCGBx1 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Mar 2008 20:53:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752190AbYCGBxR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Mar 2008 20:43:17 -0500
-Received: from namei.org ([69.55.235.186]:52742 "EHLO us.intercode.com.au"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753124AbYCGBnQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Mar 2008 20:43:16 -0500
-Date: Fri, 7 Mar 2008 12:42:03 +1100 (EST)
-From: James Morris <jmorris@namei.org>
-X-X-Sender: jmorris@us.intercode.com.au
-To: "Ahmed S. Darwish" <darwish.07@gmail.com>
-cc: Chris Wright <chrisw@sous-sol.org>, Stephen Smalley <sds@tycho.nsa.gov>,
-       Eric Paris <eparis@parisplace.org>,
-       Casey Schaufler <casey@schaufler-ca.com>,
-       Paul Moore <paul.moore@hp.com>, Alexey Dobriyan <adobriyan@sw.ru>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus <torvalds@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       LSM-ML <linux-security-module@vger.kernel.org>
-Subject: Re: [PATCH -v8b -rc3] Security: Introduce security= boot parameter
-In-Reply-To: <20080306160910.GA10319@ubuntu>
-Message-ID: <Xine.LNX.4.64.0803071218400.25703@us.intercode.com.au>
-References: <20080306121913.GA8506@ubuntu> <Xine.LNX.4.64.0803070025440.16767@us.intercode.com.au>
- <1865922a0803060632kb63405fj3d255472fb2e555f@mail.gmail.com>
- <Xine.LNX.4.64.0803070159280.8501@us.intercode.com.au> <20080306160910.GA10319@ubuntu>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Thu, 6 Mar 2008 20:53:17 -0500
+Received: from x346.tv-sign.ru ([89.108.83.215]:57572 "EHLO mail.screens.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751941AbYCGBxQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 6 Mar 2008 20:53:16 -0500
+Date: Fri, 7 Mar 2008 04:52:15 +0300
+From: Oleg Nesterov <oleg@tv-sign.ru>
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+Cc: Roland McGrath <roland@redhat.com>,
+       Andrew Morton <akpm@linux-foundation.org>, Alan Cox <alan@redhat.com>,
+       Davide Libenzi <davidel@xmailserver.org>, Ingo Molnar <mingo@elte.hu>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 0/3] orphaned pgrp fixes
+Message-ID: <20080307015215.GA149@tv-sign.ru>
+References: <20080302184430.GA16362@tv-sign.ru> <20080304122654.7313227010A@magilla.localdomain> <20080305171109.GB6723@tv-sign.ru> <m1y78w1wmr.fsf@ebiederm.dsl.xmission.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <m1y78w1wmr.fsf@ebiederm.dsl.xmission.com>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 6 Mar 2008, Ahmed S. Darwish wrote:
+On 03/05, Eric W. Biederman wrote:
+>
+> Oleg Nesterov <oleg@tv-sign.ru> writes:
+> 
+> > I am hopeless, I can't understand orphaned pgrps.
+> 
+> I will give it a quick try.
+> When you login in text mode you get a fresh session (setsid).
+> If you are using job control in your shell each job is assigned
+> a separate process group (setpgrp).
+> 
+> The shell and all process groups are in the same session.
+> 
+> Intuitively a process group is considered orphaned when there is
+> are no processes in the session that know about it and can wake it
+> up.  The goal is to prevent processes that will never wake up if
+> they are stopped with ^Z.
+> 
+> A process is defined as knowing about a process in a process group
+> when it is a parent of that process.
 
-> + * Each LSM must pass this method before registering its own operations
-> + * to avoid security registration races. This method may also be used
-> + * to check if your LSM is currently loaded.
+Thanks Eric. This does help.
 
-The 2nd sentence is no longer correct in general, as the function can only 
-be called during init.  See a fixup patch below.
+Stupid question, just to be sure. Suppose that SIGTSTP was sent by a
+"regular" kill_pid_info() (not by tty or kill_pgrp_info). In that case
+get_signal_to_deliver() still must check is_current_pgrp_orphaned(),
+yes?
 
-Otherwise, looks good!
+> The task_tgid_nr_ns(p->real_parent, p->nsproxy->pid_ns) == 1 check is
+> the proper check, as it handles namespaces properly.  If we need to
+> retain it.
+>
+> I don't believe we need to retain the check for init at all. sysvinit
+> doesn't use that feature and I would be surprised if any other init
+> did.  Except for covering programming bugs which make testing harder
+> I don't see how a version of init could care.
+> 
+> Further as init=/bin/bash is a common idiom for getting into a
+> simplified system and debugging it, there is a case for job control
+> to work properly for init.   Unless I am misreading things the check 
+> for init prevent us from using job control from our first process.
+> Which seems like it would make init=/bin/bash painful if job control
+> was ever enabled.
+>
+> I believe that the only reason with a weird check for init like we are
+> performing that we are POSIX compliant is that our init process can
+> count as a special system process and can escape the definition.
+> 
+> Therefore I think the code would be more maintainable, and the system
+> would be less surprising, and more useful if we removed this special
+> case processing of init altogether.
 
-Acked-by: James Morris <jmorris@namei.org>
+Looks like a nice changelog for the patch ;)
 
-I've applied the patch and a comment fixup to
-git://git.kernel.org/pub/scm/linux/kernel/git/jmorris/security-testing-2.6.git#next
+Oleg.
 
-commit d6bb3bacedb68aa41ea7598e0cf1bef33cebbcc9
-Author: James Morris <jmorris@namei.org>
-Date:   Fri Mar 7 12:23:49 2008 +1100
-
-    security: fix up documentation for security_module_enable
-    
-    security_module_enable() can only be called during kernel init.
-    
-    Signed-off-by: James Morris <jmorris@namei.org>
-
-diff --git a/security/security.c b/security/security.c
-index 4377b00..8aa2f54 100644
---- a/security/security.c
-+++ b/security/security.c
-@@ -83,7 +83,7 @@ __setup("security=", choose_lsm);
-  *
-  * Each LSM must pass this method before registering its own operations
-  * to avoid security registration races. This method may also be used
-- * to check if your LSM is currently loaded.
-+ * to check if your LSM is currently loaded during kernel initialization.
-  *
-  * Return true if:
-  *     -The passed LSM is the one chosen by user at boot time,
-
-
-
-
--- 
-James Morris
-<jmorris@namei.org>
