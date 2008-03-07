@@ -1,50 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763267AbYCGMdR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932353AbYCGMeT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763267AbYCGMdR (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Mar 2008 07:33:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757063AbYCGMdE
+	id S932353AbYCGMeT (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Mar 2008 07:34:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758547AbYCGMeH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Mar 2008 07:33:04 -0500
-Received: from ns2.suse.de ([195.135.220.15]:58048 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756657AbYCGMdD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Mar 2008 07:33:03 -0500
-From: Andreas Schwab <schwab@suse.de>
-To: Laurent Vivier <Laurent.Vivier@bull.net>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH][v2] Modify loop device to be able to manage partitions of the disk image
-References: <12048928601734-git-send-email-Laurent.Vivier@bull.net>
-X-Yow: All I can think of is a platter of organic PRUNE CRISPS being trampled
- by an army of swarthy, Italian LOUNGE SINGERS...
-Date: Fri, 07 Mar 2008 13:33:00 +0100
-In-Reply-To: <12048928601734-git-send-email-Laurent.Vivier@bull.net> (Laurent
-	Vivier's message of "Fri\, 7 Mar 2008 13\:27\:40 +0100")
-Message-ID: <jepru6n283.fsf@sykes.suse.de>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/22.1 (gnu/linux)
+	Fri, 7 Mar 2008 07:34:07 -0500
+Received: from terminus.zytor.com ([198.137.202.10]:48414 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756710AbYCGMeE (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 7 Mar 2008 07:34:04 -0500
+Message-ID: <47D1352F.6010504@zytor.com>
+Date: Fri, 07 Mar 2008 04:29:35 -0800
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: 8bit
+To: Pavel Machek <pavel@ucw.cz>
+CC: Ingo Molnar <mingo@elte.hu>, Suresh Siddha <suresh.b.siddha@intel.com>,
+       Christoph Hellwig <hch@infradead.org>, tglx@linutronix.de,
+       andi@firstfloor.org, linux-kernel@vger.kernel.org,
+       Arjan van de Ven <arjan@linux.intel.com>
+Subject: Re: [patch 2/2] x86, fpu: lazy allocation of FPU area - v3
+References: <20080303230335.892214000@linux-os.sc.intel.com> <20080303230336.042604000@linux-os.sc.intel.com> <20080304012012.GB22431@infradead.org> <20080304014306.GC28006@linux-os.sc.intel.com> <20080304103220.GA17621@elte.hu> <20080304175528.GD28006@linux-os.sc.intel.com> <20080305194705.GA4386@ucw.cz> <20080306155141.GA23340@elte.hu> <20080306202446.GA4225@ucw.cz>
+In-Reply-To: <20080306202446.GA4225@ucw.cz>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Laurent Vivier <Laurent.Vivier@bull.net> writes:
+Pavel Machek wrote:
+> On Thu 2008-03-06 16:51:41, Ingo Molnar wrote:
+>> * Pavel Machek <pavel@ucw.cz> wrote:
+>>
+>>>>> kmem_cache_alloc() can fail (return NULL) and not handling it is a 
+>>>>> bug.
+>>>> oops. you are correct. Will send a sigsegv in the failure case then. 
+>>>> Thanks.
+>>> You are introducing possibility of hard to debug error, where previous 
+>>> code just worked... Does not look like good idea to me.
+>> hm, how does it differ from any other allocation failure? We could fail 
+> 
+> Well, we should not be sending SIGSEGV...? SIGBUS would be cleaner, or
+> SIGKILL... what happens when userland tries to catch this one?
+> 
 
-> +static int __init max_part_setup(char *str)
-> +{
-> +	loop_max_part = simple_strtol(str, NULL, 0);
-> +	if (loop_max_part > (1UL << (MINORBITS - 1))) {
-> +		/* we must keep at least one bit for loop device number */
-> +		printk(KERN_ERR
-> +			"loop: loop_max_part cannot be greater than %d\n",
-> +			1UL << (MINORBITS - 1));
+I'm confused...
 
-Since the argument is of type unsigned long you should use %ld or %lu.
+Normally when we need memory for userspace and can't get it, we put the 
+process to sleep until memory is available.
 
-Andreas.
+Why is this different in any way?
 
--- 
-Andreas Schwab, SuSE Labs, schwab@suse.de
-SuSE Linux Products GmbH, Maxfeldstraße 5, 90409 Nürnberg, Germany
-PGP key fingerprint = 58CA 54C7 6D53 942B 1756  01D3 44D5 214B 8276 4ED5
-"And now for something completely different."
+	-hpa
