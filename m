@@ -1,58 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761392AbYCGWLd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763375AbYCGWLt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761392AbYCGWLd (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Mar 2008 17:11:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751883AbYCGWLY
+	id S1763375AbYCGWLt (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Mar 2008 17:11:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761076AbYCGWLc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Mar 2008 17:11:24 -0500
-Received: from mx1.riseup.net ([204.13.164.18]:42764 "EHLO mx1.riseup.net"
+	Fri, 7 Mar 2008 17:11:32 -0500
+Received: from plexity.net ([206.123.115.38]:33811 "EHLO plexity.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750875AbYCGWLY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Mar 2008 17:11:24 -0500
-Date: Fri, 7 Mar 2008 23:11:17 +0100
-From: Matthias Kaehlcke <matthias@kaehlcke.net>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-pcmcia@lists.infradead.org, nico@cam.org, rmk@arm.linux.org.uk,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] drivers/pcmcia/soc_common.c: convert
-	soc_pcmcia_sockets_lock in a mutex
-Message-ID: <20080307221117.GG2783@traven>
-Mail-Followup-To: Matthias Kaehlcke <matthias@kaehlcke.net>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	linux-pcmcia@lists.infradead.org, nico@cam.org,
-	rmk@arm.linux.org.uk, linux-kernel@vger.kernel.org
-References: <20080307183742.GF2783@traven> <20080307111642.8278142f.akpm@linux-foundation.org>
+	id S1760737AbYCGWLb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 7 Mar 2008 17:11:31 -0500
+X-Greylist: delayed 458 seconds by postgrey-1.27 at vger.kernel.org; Fri, 07 Mar 2008 17:11:31 EST
+Date: Fri, 7 Mar 2008 14:03:52 -0800
+From: Deepak Saxena <dsaxena@plexity.net>
+To: stable@kernel.org
+Cc: linux-kernel@vger.kernel.org
+Subject: [PATCH-stable] Make 2.6.24.y headers_install work again
+Message-ID: <20080307220352.GA10387@plexity.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080307111642.8278142f.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-El Fri, Mar 07, 2008 at 11:16:42AM -0800 Andrew Morton ha dit:
 
-> On Fri, 7 Mar 2008 19:37:42 +0100 Matthias Kaehlcke <matthias@kaehlcke.net> wrote:
-> 
-> > drivers/pcmcia/soc_common.c: the semaphore soc_pcmcia_sockets_lock is
-> > used as a mutex, convert it to the mutex API
-> > 
-> 
-> I did this yesterday, when I saw it while grepping around due to your other
-> patch;)
+This reverts commit 5fb7ba76544d95bfa05199f7394a442de5660be7.
 
-:)
- 
+>git-checkout v2.6.24.3
+HEAD is now at 927684b... Linux 2.6.24.3
+> make ARCH=arm INSTALL_HDR_PATH=/tmp headers_install
+  CHK     include/linux/version.h
+  UPD     include/linux/version.h
+  HOSTCC  scripts/basic/fixdep
+....
+  UNIFDEF include/linux/icmp.h
+  UNIFDEF include/linux/icmpv6.h
+  UNIFDEF include/linux/if_addr.h
+make[2]: *** No rule to make target
+`/home/dsaxena/src/mvista/mvista-git/include/linux/if_addrlabel.h', needed
+by `/tmp/include/linux/if_addrlabel.h'.  Stop.
+make[1]: *** [linux] Error 2
+make: *** [headers_install] Error 2
+
+Commit 5fb7ba76544d95bfa05199f7394a442de5660be7 in the 2.6.24.y git tree
+adds if_addrlabel.h to the sanitized headers, but since this header was 
+not merged into the kernel until 2.6.25-rc1, the change is not needed.
+
+Signed-off-by: Deepak Saxena <dsaxena@mvista.com>
+
+---
+ include/linux/Kbuild |    1 -
+ 1 files changed, 0 insertions(+), 1 deletions(-)
+
+diff --git a/include/linux/Kbuild b/include/linux/Kbuild
+index 4b32bb1..f30fa92 100644
+--- a/include/linux/Kbuild
++++ b/include/linux/Kbuild
+@@ -217,7 +217,6 @@ unifdef-y += i2o-dev.h
+ unifdef-y += icmp.h
+ unifdef-y += icmpv6.h
+ unifdef-y += if_addr.h
+-unifdef-y += if_addrlabel.h
+ unifdef-y += if_arp.h
+ unifdef-y += if_bridge.h
+ unifdef-y += if_ec.h
 -- 
-Matthias Kaehlcke
-Linux System Developer
-Barcelona
+1.5.4.3.24.gabaa.dirty
 
 
- Someone has said that it requires less mental effort to condemn than to think
-                             (Emma Goldman)
-                                                                 .''`.
-    using free software / Debian GNU/Linux | http://debian.org  : :'  :
-                                                                `. `'`
-gpg --keyserver pgp.mit.edu --recv-keys 47D8E5D4                  `-
+-- 
+   _____   __o  Deepak Saxena - Living CarFree and CareFree            (o>
+------    -\<,  Towards Carfree Cities 2008 - www.carfreeportland.org  //\
+ ----- ( )/ ( ) Linux Plumber's Conference - www.linuxplumbersconf.org V_/_
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
