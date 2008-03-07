@@ -1,73 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751981AbYCGCyt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760926AbYCGCzk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751981AbYCGCyt (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Mar 2008 21:54:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751295AbYCGCyj
+	id S1760926AbYCGCzk (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Mar 2008 21:55:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755777AbYCGCzb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Mar 2008 21:54:39 -0500
-Received: from relay2.sgi.com ([192.48.171.30]:50159 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1750771AbYCGCyh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Mar 2008 21:54:37 -0500
-Date: Thu, 6 Mar 2008 18:54:19 -0800 (PST)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Nick Piggin <npiggin@suse.de>
-cc: David Miller <davem@davemloft.net>, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org, yanmin_zhang@linux.intel.com,
-       dada1@cosmosbay.com
-Subject: Re: [rfc][patch 1/3] slub: fix small HWCACHE_ALIGN alignment
-In-Reply-To: <20080307023223.GD21185@wotan.suse.de>
-Message-ID: <Pine.LNX.4.64.0803061841220.29959@schroedinger.engr.sgi.com>
-References: <20080303201701.GF8974@wotan.suse.de>
- <Pine.LNX.4.64.0803031315160.4131@schroedinger.engr.sgi.com>
- <20080305000637.GA1510@wotan.suse.de> <20080304.161003.129716254.davem@davemloft.net>
- <Pine.LNX.4.64.0803051257030.30742@schroedinger.engr.sgi.com>
- <20080306025758.GB27150@wotan.suse.de> <Pine.LNX.4.64.0803061453360.16212@schroedinger.engr.sgi.com>
- <20080307022355.GB21185@wotan.suse.de> <Pine.LNX.4.64.0803061825120.29527@schroedinger.engr.sgi.com>
- <20080307023223.GD21185@wotan.suse.de>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Thu, 6 Mar 2008 21:55:31 -0500
+Received: from x346.tv-sign.ru ([89.108.83.215]:51752 "EHLO mail.screens.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754402AbYCGCzb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 6 Mar 2008 21:55:31 -0500
+Date: Fri, 7 Mar 2008 05:54:51 +0300
+From: Oleg Nesterov <oleg@tv-sign.ru>
+To: Gautham R Shenoy <ego@in.ibm.com>
+Cc: Yi Yang <yi.y.yang@intel.com>, Ingo Molnar <mingo@elte.hu>,
+       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [BUG 2.6.25-rc3] scheduler/hotplug: some processes are dealocked when cpu is set to offline
+Message-ID: <20080307025451.GA201@tv-sign.ru>
+References: <1204483329.3607.8.camel@yangyi-dev.bj.intel.com> <20080303153154.GA11288@in.ibm.com> <1204555505.3842.4.camel@yangyi-dev.bj.intel.com> <20080304052613.GA28632@in.ibm.com> <20080304150107.GA564@tv-sign.ru> <20080306134400.GA1915@in.ibm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080306134400.GA1915@in.ibm.com>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> It doesn't say start of cache line. It says align them *on* cachelines.
-> 2 32 byte objects on a 64 byte cacheline are aligned on the cacheline.
-> 2.67 24 bytes objects on a 64 byte cacheline are not aligned on the
-> cacheline.
+On 03/06, Gautham R Shenoy wrote:
+>
+> On Tue, Mar 04, 2008 at 06:01:07PM +0300, Oleg Nesterov wrote:
+> > +static void check_running_task(struct task_struct *t, unsigned long now)
+> > +{
+> > +	if (!sysctl_hung_task_timeout_secs)
+> > +		return;
+> > +
+> 
+> This function gets called only when t->xxx == 0,
+> so the if below doesn't mean much, does it? :)
+> 
+> > +	if (time_before(now, t->xxx + HZ * sysctl_hung_task_timeout_secs)
+> > +		return;
+> .......
+>
+> > @@ -192,15 +214,17 @@ static void check_hung_uninterruptible_t
+> >  	if ((tainted & TAINT_DIE) || did_panic)
+> >  		return;
+> > 
+> > -	read_lock(&tasklist_lock);
+> > +	rcu_read_lock();
+> >  	do_each_thread(g, t) {
+> >  		if (!--max_count)
+> >  			goto unlock;
+> >  		if (t->state & TASK_UNINTERRUPTIBLE)
+> >  			check_hung_task(t, now);
+> > +		if (!t->xxx)
+> > +			check_running_task(t, jiff);
 
-2 32 byte objects means only one is aligned on a cache line.
+Of course, the check above should be
 
-Certainly cacheline contention is reduced and performance potentially 
-increased if there are less objects in a cacheline.
+		if (1t->xxx)
+			check_running_task(t, jiff);
 
-The same argument can be made of aligning 8 byte objects on 32 byte 
-boundaries. Instead of 8 objects per cacheline you only have two. Why 8?
+Thanks!
 
-Isnt all of this a bit arbitrary and contrary to the intend of avoiding 
-cacheline contention?
+>From another message,
+>
+> Me too. With your patch applied there were quite a few tasks in the
+> running state which didn't get the cpu for more than 120 seconds.
 
-The cleanest solution to this is to specify the alignment for each 
-slabcache if such an alignment is needed. The alignment can be just a 
-global constant or function like cache_line_size(). 
+(I assume you fixed the patch before using it ;)
 
-I.e. define
+Just to be sure, there were no "bad ->cpu..." messages, yes?
 
-	int smp_align;
-
-On bootup check the number of running cpus and then pass smp_align as
-the align parameter (most slabcaches have no other alignment needs, if 
-they do then we can combine these using max).
-
-If we want to do more sophisticated things then lets have function that
-aligns the object on power of two boundaries like SLAB_HWCACHE_ALIGN does
-now:
-
-	sub_cacheline_align(size)
-
-Doing so will make it more transparent as to what is going on and which 
-behavior we want. And we can get rid of SLAB_HWCACHE_ALIGN with the weird
-semantics. Specifying smp_align wil truly always align on a cacheline 
-boundary if we are on an SMP system.
+Oleg.
 
