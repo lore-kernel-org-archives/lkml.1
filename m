@@ -1,49 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756109AbYCGIiY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758764AbYCGIj2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756109AbYCGIiY (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Mar 2008 03:38:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751155AbYCGIiP
+	id S1758764AbYCGIj2 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Mar 2008 03:39:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752279AbYCGIjT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Mar 2008 03:38:15 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:47060 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751144AbYCGIiP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Mar 2008 03:38:15 -0500
-Date: Fri, 7 Mar 2008 09:37:54 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Venki Pallipadi <venkatesh.pallipadi@intel.com>
-Cc: "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
-       arjan@linux.intel.com, linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] Add range_is_allowed() check to mmap of /dev/mem
-Message-ID: <20080307083754.GD12150@elte.hu>
-References: <20080307070147.GA9888@linux-os.sc.intel.com>
+	Fri, 7 Mar 2008 03:39:19 -0500
+Received: from fg-out-1718.google.com ([72.14.220.158]:13948 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751155AbYCGIjS (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 7 Mar 2008 03:39:18 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:subject:content-type;
+        b=MxyH2FLqWZrLda9OmpKOCN6XYmhwUi0Rp5uL95NLgNuBSa/brB7I5AfoQgnoy5017KTur5TlKuTkKka/8Ol+wYGUbLW0IdMzZ2AuzK8xh7RBJRNCFvT8g28wADA1W0RK4iF+uZ/Sbzxgpy/JYK4tXk3alR2JkHUGLBUm/6uFJb8=
+Message-ID: <47D101E0.6040802@gmail.com>
+Date: Fri, 07 Mar 2008 16:50:40 +0800
+From: Peter Teoh <htmldeveloper@gmail.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080307070147.GA9888@linux-os.sc.intel.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.1
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.1 required=5.9 tests=BAYES_05 autolearn=no SpamAssassin version=3.2.3
-	-1.1 BAYES_05               BODY: Bayesian spam probability is 1 to 5%
-	[score: 0.0111]
+To: linux-kernel@vger.kernel.org
+Subject: Removing kernel_thread() from stop_machine.c
+Content-Type: multipart/mixed;
+ boundary="------------070900040103060102020904"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+This is a multi-part message in MIME format.
+--------------070900040103060102020904
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 
-* Venki Pallipadi <venkatesh.pallipadi@intel.com> wrote:
 
-> Earlier patch that introduced CONFIG_NONPROMISC_DEVMEM, did the 
-> range_is_allowed() check only for read and write. Add 
-> range_is_allowed() check to mmap of /dev/mem as well.
-> 
-> Changes the paramaters of range_is_allowed() to pfn and size to handle 
-> more than 32 bits of physical address on 32 bit arch cleanly.
+I replaced the kernel_thread() API in stop_machine.c as per document:   
+Documentation/feature-removal-schedule.txt.
 
-thanks, applied.
+Please comment.
 
-	Ingo
+
+
+
+
+--------------070900040103060102020904
+Content-Type: text/x-patch;
+ name="remove_kernel_thread_stop_machine.patch"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="remove_kernel_thread_stop_machine.patch"
+
+Signed-off-by: Peter Teoh <htmldeveloper@gmail.com>
+
+--- kernel/stop_machine.c.orig	2008-03-07 13:20:00.000000000 +0800
++++ kernel/stop_machine.c	2008-03-07 16:45:30.000000000 +0800
+@@ -9,6 +9,7 @@
+ #include <linux/stop_machine.h>
+ #include <linux/syscalls.h>
+ #include <linux/interrupt.h>
++#include <linux/kthread.h>
+ 
+ #include <asm/atomic.h>
+ #include <asm/semaphore.h>
+@@ -92,6 +93,7 @@ static void stopmachine_set_state(enum s
+ static int stop_machine(void)
+ {
+ 	int i, ret = 0;
++	struct task_struct *task;
+ 
+ 	atomic_set(&stopmachine_thread_ack, 0);
+ 	stopmachine_num_threads = 0;
+@@ -100,7 +102,8 @@ static int stop_machine(void)
+ 	for_each_online_cpu(i) {
+ 		if (i == raw_smp_processor_id())
+ 			continue;
+-		ret = kernel_thread(stopmachine, (void *)(long)i,CLONE_KERNEL);
++		task = kthread_create(stopmachine, (void *)(long)i,"stopmachine");
++		ret = PTR_ERR(task);
+ 		if (ret < 0)
+ 			break;
+ 		stopmachine_num_threads++;
+
+--------------070900040103060102020904--
