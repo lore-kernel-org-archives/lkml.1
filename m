@@ -1,56 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763043AbYCGT2L@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932325AbYCGT2p@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763043AbYCGT2L (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Mar 2008 14:28:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756305AbYCGT1z
+	id S932325AbYCGT2p (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Mar 2008 14:28:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756305AbYCGT2b
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Mar 2008 14:27:55 -0500
-Received: from smtp-out01.alice-dsl.net ([88.44.60.11]:20119 "EHLO
-	smtp-out01.alice-dsl.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755330AbYCGT1z (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Mar 2008 14:27:55 -0500
-To: Chris Snook <csnook@redhat.com>
-Cc: Andrew Buehler <abuehler.kernel@gmail.com>,
-       Frederik Deweerdt <deweerdt@free.fr>, belcampo <belcampo@zonnet.nl>,
-       linux-kernel@vger.kernel.org
-Subject: Re: Hyperthreading performance oddities
-References: <47BE9781.3030304@zonnet.nl> <20080222100630.GE5906@slug>
-	<47D14526.2070103@gmail.com> <47D192BF.5090501@redhat.com>
-From: Andi Kleen <andi@firstfloor.org>
-Date: 07 Mar 2008 20:20:32 +0100
-In-Reply-To: <47D192BF.5090501@redhat.com>
-Message-ID: <87zltae3y7.fsf@basil.nowhere.org>
-User-Agent: Gnus/5.09 (Gnus v5.9.0) Emacs/21.3
+	Fri, 7 Mar 2008 14:28:31 -0500
+Received: from tuxrocks.com ([208.78.103.217]:33185 "EHLO tuxrocks.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1763462AbYCGT2Q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 7 Mar 2008 14:28:16 -0500
+Message-ID: <47D1971A.7070500@tuxrocks.com>
+Date: Fri, 07 Mar 2008 13:27:22 -0600
+From: Frank Sorenson <frank@tuxrocks.com>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-OriginalArrivalTime: 07 Mar 2008 19:14:02.0330 (UTC) FILETIME=[675F53A0:01C88087]
+To: Ingo Molnar <mingo@elte.hu>
+CC: LKML <linux-kernel@vger.kernel.org>, linux-mm@kvack.org,
+       "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: 2.6.25-rc4 OOMs itself dead on bootup
+References: <47D02940.1030707@tuxrocks.com> <20080306184954.GA15492@elte.hu>
+In-Reply-To: <20080306184954.GA15492@elte.hu>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Chris Snook <csnook@redhat.com> writes:
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA1
+
+Ingo Molnar wrote:
+> * Frank Sorenson <frank@tuxrocks.com> wrote:
 > 
-> Turning on hyperthreading effectively halves the amount of cache
-> available for each logical CPU when both are doing work, which can do
-> more harm than good.
+>> 2.6.25-rc4 invokes the oom-killer repeatedly when attempting to boot, 
+>> eventually panicing with "Out of memory and no killable processes." 
+>> This happens since at least 2.6.25-rc3, but 2.6.24 boots just fine,
+>>
+>> The system is a Dell Inspiron E1705 running Fedora 8 (x86_64).
+>>
+>> My .config is at http://tuxrocks.com/tmp/config-2.6.25-rc4, and a 
+>> syslog of the system up until the point where it oom-killed syslog 
+>> (just before the panic) is at 
+>> http://tuxrocks.com/tmp/oom-2.6.25-rc4.txt
+> 
+> i've picked up your .config and enabled a few drivers in it to make it 
+> boot on a testsystem of mine and it doesnt OOM:
+> 
+>  20:47:17 up 10 min,  1 user,  load average: 0.01, 0.07, 0.03
+>               total       used       free     shared    buffers     cached
+>  Mem:       1025768     258544     767224          0      12956     169556
+>  -/+ buffers/cache:      76032     949736
+>  Swap:      3911816          0    3911816
+> 
+> (config and bootlog from my box attached.)
+> 
+> So it's probably not a .config dependent generic kernel problem, but 
+> probably something specific to your hardware.
+> 
+> Since the first oom happens about 9 minutes into the bootup:
+> 
+>  [  569.755853] sh invoked oom-killer: gfp_mask=0x1201d2, order=0, oomkilladj=-17
+> 
+> do you have any chance to log in and capture MM statistics? The 
+> following script will capture a bunch of statistics:
+> 
+>  http://people.redhat.com/mingo/cfs-scheduler/tools/cfs-debug-info.sh
+> 
+> and takes less than a minute to run - should be enough time in theory. 
+> If it's possible to run it then send us the output file it produces.
+> 
+> 	Ingo
 
-When the two cores are in the same address space (as in being two
-threads of the same process) L1 cache will be shared on P4. I think
-for the other cases the cache management is also a little more
-sophisticated than a simple split, depending on which HT generation
-you're talking about (Intel had at least 4 generations out, each with
-improvements over the earlier ones)
+Thank you for the help, and for the time.
 
-BTW your argument would be in theory true also for multi core with
-shared L2 or L3, but even there the CPUs tend to be more sophisticated.
-e.g. Core2 has a mechanism called "adaptive cache" which allows one
-Core to use significantly more of the L2 in some cases.
+I did some additional debugging, and I believe you're correct about it
+being specific to my system.  The system seems to run fine until some
+time during the boot.  I booted with "init=/bin/sh" (that's how the
+system stayed up for 9 minutes), then it died when I tried starting
+things up.  I've further narrowed the OOM down to udev (though it's not
+entirely udev's fault, since 2.6.24 runs fine).
 
->  Number-crunching applications that utilize the
-> cache effectively generally don't benefit from hyperthreading,
-> particularly floating-point-intensive ones.
+I ran your debug info tool before killing the box by running
+/sbin/start_udev.  The output of the tool is at
+http://tuxrocks.com/tmp/cfs-debug-info-2008.03.06-14.11.24
 
-That sounds like a far too broad over generalization to me.
+Something is apparently happening between 2.6.24 and 2.6.25-rc[34] which
+causes udev (or something it calls) to behave very badly.
 
--Andi (who personally always liked HT)
+I'll keep looking further into the cause.  Thanks again for the help.
+
+Frank
+- --
+Frank Sorenson - KD7TZK
+Linux Systems Engineer, DSS Engineering, UBS AG
+frank@tuxrocks.com
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.7 (GNU/Linux)
+Comment: Using GnuPG with Fedora - http://enigmail.mozdev.org
+
+iD8DBQFH0ZcXaI0dwg4A47wRAoy7AJ9ILIlACjitvOpNghRNxmOgiygk1QCfb3Oi
+8Drhxc4Tvu0K+1KD0U6XUOE=
+=SmQj
+-----END PGP SIGNATURE-----
