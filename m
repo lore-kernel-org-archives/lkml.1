@@ -1,48 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933419AbYCGJc3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763159AbYCGJgg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933419AbYCGJc3 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Mar 2008 04:32:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764992AbYCGJaq
+	id S1763159AbYCGJgg (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Mar 2008 04:36:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754903AbYCGJgN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Mar 2008 04:30:46 -0500
-Received: from smtp-out02.alice-dsl.net ([88.44.60.12]:22516 "EHLO
-	smtp-out02.alice-dsl.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1762092AbYCGJan (ORCPT
+	Fri, 7 Mar 2008 04:36:13 -0500
+Received: from rn-out-0910.google.com ([64.233.170.184]:56231 "EHLO
+	rn-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751196AbYCGJgK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Mar 2008 04:30:43 -0500
-To: "Frantisek Rysanek" <Frantisek.Rysanek@post.cz>
+	Fri, 7 Mar 2008 04:36:10 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=GBg1z4gKii67U+kyA4oQUVCzCYXy3GL+HB/F8o6jUiI2RbGbpFZ1o3EdERNu2g4vDqaUd8djBBFrEf/f2WIkn4iiSYPr1fP/u4sdEx491ei6ksX+xVcFYFImC6iu+AU8GX7qnbUTn5nYCwizBdGb7DhlVugAwHpBB15XCX8NKOc=
+Message-ID: <a8e1da0803070136h2403edb5kad27f148f01b0c41@mail.gmail.com>
+Date: Fri, 7 Mar 2008 17:36:09 +0800
+From: "Dave Young" <hidave.darkstar@gmail.com>
+To: "Andrew Morton" <akpm@linux-foundation.org>
+Subject: Re: [PATCH RFC] add time_after_now and other macros which compare with jiffies
 Cc: linux-kernel@vger.kernel.org
-Subject: Re: block layer / FS question: x86_32bit with LBD, 20 TB RAID volume => funny issues
-References: <47D06F77.29711.A05566EC@Frantisek.Rysanek.post.cz>
-	<75b66ecd0803061905n5c06663cv2b75659917461199@mail.gmail.com>
-	<47D0EA6B.18428.A235AEC4@Frantisek.Rysanek.post.cz>
-From: Andi Kleen <andi@firstfloor.org>
-Date: 07 Mar 2008 10:30:40 +0100
-In-Reply-To: <47D0EA6B.18428.A235AEC4@Frantisek.Rysanek.post.cz>
-Message-ID: <87hcfig9tr.fsf@basil.nowhere.org>
-User-Agent: Gnus/5.09 (Gnus v5.9.0) Emacs/21.3
+In-Reply-To: <20080307012244.ed7625ec.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-OriginalArrivalTime: 07 Mar 2008 09:24:10.0371 (UTC) FILETIME=[001EF530:01C88035]
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20080307030901.GA4375@darkstar.te-china.tietoenator.com>
+	 <20080307010228.de6700b5.akpm@linux-foundation.org>
+	 <a8e1da0803070112p6a5e076aw569a50a69de91504@mail.gmail.com>
+	 <20080307012244.ed7625ec.akpm@linux-foundation.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-"Frantisek Rysanek" <Frantisek.Rysanek@post.cz> writes:
+On Fri, Mar 7, 2008 at 5:22 PM, Andrew Morton <akpm@linux-foundation.org> wrote:
+> On Fri, 7 Mar 2008 17:12:29 +0800 "Dave Young" <hidave.darkstar@gmail.com> wrote:
+>
+>  > Indeed, I will add proper comment before them.
+>
+>  Sob.  Of the 809 usages of time_after(), it appears that over 700 are
+>  comparing with jiffies.  So with your (good) change, someone will get
+>  buried in well-meaning convert-to-time_after_now patches.
 
-> On 7 Mar 2008 at 4:05, Lee Revell wrote:
-> > >  I didn't even try Ext3, I know it's not appropriate for this sort of
-> > >  capacity.
-> > 
-> > Where did you get that idea?
-> >
-> Hmm... Google can find sources on the 'net claiming that Ext3 has a 
-> maximum of 2 or 4 TB. Nice to know that I'm wrong, 
 
-You're not wrong (for 4K ext2s). Only ext4 lifted that limit, but it is
-still experimental.
+Yes, there will be a lot of patches.  Hope I have that time to do some.
 
-BTW your problems mostly sound like driver issues. Some drivers 
-(and some controller firmwares) have problems with large block numbers
-
--Andi
+>
+>  I wonder who that might be?
+>
