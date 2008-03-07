@@ -1,58 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763751AbYCGNJ7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764463AbYCGNKj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763751AbYCGNJ7 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Mar 2008 08:09:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757521AbYCGNJu
+	id S1764463AbYCGNKj (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Mar 2008 08:10:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758349AbYCGNJu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
 	Fri, 7 Mar 2008 08:09:50 -0500
-Received: from smtp-out.google.com ([216.239.45.13]:11071 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752061AbYCGNJt (ORCPT
+Received: from mga06.intel.com ([134.134.136.21]:40911 "EHLO
+	orsmga101.jf.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1756529AbYCGNJt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 7 Mar 2008 08:09:49 -0500
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=received:message-id:date:from:to:subject:cc:in-reply-to:
-	mime-version:content-type:content-transfer-encoding:
-	content-disposition:references;
-	b=PAplR5apq+VeIPktO2NxRykN8AAWkcWwSpVtiPTZknLeAg9kP1TArY+9RbDWt72x/
-	HtqxsGfGbt/25/ip0vdLw==
-Message-ID: <6599ad830803070509v1ec83aeet9f63bfd61a00ef19@mail.gmail.com>
-Date: Fri, 7 Mar 2008 05:09:32 -0800
-From: "Paul Menage" <menage@google.com>
-To: balbir@linux.vnet.ibm.com
-Subject: Re: [PATCH] Add cgroup support for enabling controllers at boot time (v2)
-Cc: "Andrew Morton" <akpm@linux-foundation.org>,
-       "Pavel Emelianov" <xemul@openvz.org>, "Hugh Dickins" <hugh@veritas.com>,
-       "Sudhir Kumar" <skumar@linux.vnet.ibm.com>,
-       "YAMAMOTO Takashi" <yamamoto@valinux.co.jp>, lizf@cn.fujitsu.com,
-       linux-kernel@vger.kernel.org, taka@valinux.co.jp, linux-mm@kvack.org,
-       "David Rientjes" <rientjes@google.com>,
-       "KAMEZAWA Hiroyuki" <kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <47D13BF1.1060009@linux.vnet.ibm.com>
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.25,462,1199692800"; 
+   d="scan'208";a="351336277"
+Message-ID: <47D13DEF.6030006@linux.intel.com>
+Date: Fri, 07 Mar 2008 07:06:55 -0600
+From: Arjan van de Ven <arjan@linux.intel.com>
+User-Agent: Thunderbird 2.0.0.12 (Windows/20080213)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+To: "H. Peter Anvin" <hpa@zytor.com>
+CC: Pavel Machek <pavel@ucw.cz>, Ingo Molnar <mingo@elte.hu>,
+       Suresh Siddha <suresh.b.siddha@intel.com>,
+       Christoph Hellwig <hch@infradead.org>, tglx@linutronix.de,
+       andi@firstfloor.org, linux-kernel@vger.kernel.org
+Subject: Re: [patch 2/2] x86, fpu: lazy allocation of FPU area - v3
+References: <20080303230335.892214000@linux-os.sc.intel.com> <20080303230336.042604000@linux-os.sc.intel.com> <20080304012012.GB22431@infradead.org> <20080304014306.GC28006@linux-os.sc.intel.com> <20080304103220.GA17621@elte.hu> <20080304175528.GD28006@linux-os.sc.intel.com> <20080305194705.GA4386@ucw.cz> <20080306155141.GA23340@elte.hu> <20080306202446.GA4225@ucw.cz> <47D1352F.6010504@zytor.com>
+In-Reply-To: <47D1352F.6010504@zytor.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20080307085735.25567.314.sendpatchset@localhost.localdomain>
-	 <6599ad830803070125o1ebfd7d1r728cdadf726ecbe2@mail.gmail.com>
-	 <6599ad830803070426l22d78446t588691dedeeb490b@mail.gmail.com>
-	 <47D13BF1.1060009@linux.vnet.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Mar 7, 2008 at 4:58 AM, Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
->  > Or rather, it's the other way around - cgroup_disable=cpuset will
->  > instead disable the "cpu" subsystem if "cpu" comes before "cpuset" in
->  > the subsystem list.
->  >
->
->  Would it? I must be missing something, since we do a strncmp with ss->name.
->  I would expect that to match whole strings.
->
+H. Peter Anvin wrote:
+> Pavel Machek wrote:
+>> On Thu 2008-03-06 16:51:41, Ingo Molnar wrote:
+>>> * Pavel Machek <pavel@ucw.cz> wrote:
+>>>
+>>>>>> kmem_cache_alloc() can fail (return NULL) and not handling it is a 
+>>>>>> bug.
+>>>>> oops. you are correct. Will send a sigsegv in the failure case 
+>>>>> then. Thanks.
+>>>> You are introducing possibility of hard to debug error, where 
+>>>> previous code just worked... Does not look like good idea to me.
+>>> hm, how does it differ from any other allocation failure? We could fail 
+>>
+>> Well, we should not be sending SIGSEGV...? SIGBUS would be cleaner, or
+>> SIGKILL... what happens when userland tries to catch this one?
+>>
+> 
+> I'm confused...
+> 
+> Normally when we need memory for userspace and can't get it, we put the 
+> process to sleep until memory is available.
 
-No, strncmp only checks the first n characters - so in that case,
-you'd be checking for !strncmp("cpuset", "cpu", 3), which will return
-true
+that's what GFP_KERNEL does
+> 
+> Why is this different in any way?
 
-Paul
+this is just for handling the case where that fails
+(basically near/totally OOM or the case where you get a fatal signal)
+
+maybe we need a GFP_KILLABLE now that we have a TASK_KILLABLE...
+
