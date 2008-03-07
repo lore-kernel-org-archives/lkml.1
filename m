@@ -1,42 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763889AbYCGEFy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763275AbYCGET5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763889AbYCGEFy (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Mar 2008 23:05:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755906AbYCGEFm
+	id S1763275AbYCGET5 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Mar 2008 23:19:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753019AbYCGETs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Mar 2008 23:05:42 -0500
-Received: from mail.suse.de ([195.135.220.2]:34902 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755409AbYCGEFm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Mar 2008 23:05:42 -0500
-Date: Fri, 7 Mar 2008 05:05:40 +0100
-From: Nick Piggin <npiggin@suse.de>
-To: Christoph Lameter <clameter@sgi.com>
-Cc: David Miller <davem@davemloft.net>, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org, yanmin_zhang@linux.intel.com,
-       dada1@cosmosbay.com
-Subject: Re: [rfc][patch 1/3] slub: fix small HWCACHE_ALIGN alignment
-Message-ID: <20080307040540.GH21185@wotan.suse.de>
-References: <20080306025758.GB27150@wotan.suse.de> <Pine.LNX.4.64.0803061453360.16212@schroedinger.engr.sgi.com> <20080307022355.GB21185@wotan.suse.de> <Pine.LNX.4.64.0803061825120.29527@schroedinger.engr.sgi.com> <20080307023223.GD21185@wotan.suse.de> <Pine.LNX.4.64.0803061841220.29959@schroedinger.engr.sgi.com> <20080307031044.GF21185@wotan.suse.de> <Pine.LNX.4.64.0803061916580.30259@schroedinger.engr.sgi.com> <20080307032251.GG21185@wotan.suse.de> <Pine.LNX.4.64.0803061956390.532@schroedinger.engr.sgi.com>
-Mime-Version: 1.0
+	Thu, 6 Mar 2008 23:19:48 -0500
+Received: from e33.co.us.ibm.com ([32.97.110.151]:46451 "EHLO
+	e33.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753950AbYCGETr (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 6 Mar 2008 23:19:47 -0500
+Date: Thu, 6 Mar 2008 20:19:40 -0800
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: Dave Young <hidave.darkstar@gmail.com>
+Cc: Jike Song <albcamus@gmail.com>,
+       Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: 2.6.25-rc4 rcupreempt.h WARNINGs while suspend/resume
+Message-ID: <20080307041940.GB19183@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <a8e1da0803042324ndd3873ay61cee6112d9dda9a@mail.gmail.com> <df9815e70803042335j4ea66028y96d6be21f0970aa1@mail.gmail.com> <20080305165531.GB8728@linux.vnet.ibm.com> <df9815e70803051811o4c4a42e0td56cfd32b80c66b2@mail.gmail.com> <20080306022854.GK8728@linux.vnet.ibm.com> <a8e1da0803051920t586c7fbapadda70ae895f8893@mail.gmail.com> <a8e1da0803060308o690c1545l1eaffc0c40f2bc7e@mail.gmail.com> <20080306162724.GA9309@linux.vnet.ibm.com> <a8e1da0803061907k72785f10t2dcb98ca9829e2d8@mail.gmail.com>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0803061956390.532@schroedinger.engr.sgi.com>
-User-Agent: Mutt/1.5.9i
+In-Reply-To: <a8e1da0803061907k72785f10t2dcb98ca9829e2d8@mail.gmail.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Mar 06, 2008 at 07:58:06PM -0800, Christoph Lameter wrote:
-> On Fri, 7 Mar 2008, Nick Piggin wrote:
+On Fri, Mar 07, 2008 at 11:07:48AM +0800, Dave Young wrote:
+> On Fri, Mar 7, 2008 at 12:27 AM, Paul E. McKenney
+> <paulmck@linux.vnet.ibm.com> wrote:
+> > On Thu, Mar 06, 2008 at 07:08:55PM +0800, Dave Young wrote:
+> >  > My syslog became a 2G size big file yestoday due to the warnings.
+> >  > How about change the WARN_ON to WARN_ON_ONCE?
+> >
+> >  Hello, Dave,
+> >
+> >  I might be convinced to make this change for 2.6.26, but the condition
+> >  that the WARN_ON() is complaining about is quite serious, so I don't
+> >  want to take a chance on it getting lost in the noise in the 2.6.25
+> >  series.
+> >
+> >  Seem reasonable?
 > 
-> > Where do I argue that it reduces cacheline contention? All arguments
-> > I made apply to a UP system equally.
+> IMHO, WARN_ON_ONCE is enough for my eyes :)
+
+I could believe that, but my experience has been that many others
+need the condition to be obvious...
+
+> >  Better yet, is there some sort of time-limited WARN_ON that kicks out
+> >  a message at most once per second or some such?  Enough to definitely
+> >  be noticed, but not enough to bring the machine to its knees?
 > 
-> Huh? I thought you wanted to avoid cacheline alignment on UP to save 
-> memory?
+> Seems there's no such functions/macros, but is is really needed?
 
-We're talking about HWCACHE_ALIGN in this thread. SMP_ALIGN is for
-reducing cacheline contention and that's where you can avoid it on UP.
+If everyone reports errors when they see isolated WARN_ON()s in their
+logfiles, then no.  But...
 
-
+						Thanx, Paul
