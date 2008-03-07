@@ -1,91 +1,122 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762078AbYCGW6O@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762213AbYCGXDJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762078AbYCGW6O (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Mar 2008 17:58:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756901AbYCGW54
+	id S1762213AbYCGXDJ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Mar 2008 18:03:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758290AbYCGXCw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Mar 2008 17:57:56 -0500
-Received: from senator.holtmann.net ([87.106.208.187]:35507 "EHLO
-	mail.holtmann.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757726AbYCGW5z (ORCPT
+	Fri, 7 Mar 2008 18:02:52 -0500
+Received: from rv-out-0910.google.com ([209.85.198.185]:60455 "EHLO
+	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758197AbYCGXCv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Mar 2008 17:57:55 -0500
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Message-Id: <87EF029F-B8F4-4A30-8D43-667AF33D89AD@holtmann.org>
-From: Marcel Holtmann <marcel@holtmann.org>
-To: Karsten Keil <kkeil@suse.de>
-In-Reply-To: <20080307210810.GB671@pingi.kke.suse.de>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Content-Transfer-Encoding: 7bit
-Mime-Version: 1.0 (Apple Message framework v919.2)
-Subject: Re: [PATCH] [BLUETOOTH] Add another Broadcom device
-Date: Fri, 7 Mar 2008 23:57:47 +0100
-References: <20080307201034.GA671@pingi.kke.suse.de> <68E3DB35-04A3-475E-8C3F-B2F48E778487@holtmann.org> <20080307210810.GB671@pingi.kke.suse.de>
-X-Mailer: Apple Mail (2.919.2)
+	Fri, 7 Mar 2008 18:02:51 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:mime-version:content-type;
+        b=c0/JMalDm6VNJopZISLI5AYkQ2OqZZ+hQW7/LzCvVLHzgXFf91AJBj4hSLsVoDrY39KiF9inanvyioRvQIRGUj13JveOC8pBBPfw4HbFjHlCo1BIikCVYQ31Tf7qQdM593KMCApg42h01CdseePsYVGuJVHpluq6iUZpKUIZBIk=
+Message-ID: <86802c440803071502o50a06199i6afeb5996f207c6d@mail.gmail.com>
+Date: Fri, 7 Mar 2008 15:02:50 -0800
+From: "Yinghai Lu" <yhlu.kernel@gmail.com>
+To: "Ingo Molnar" <mingo@elte.hu>, "Andrew Morton" <akpm@linux-foundation.org>,
+       "Thomas Gleixner" <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>, "Andi Kleen" <ak@suse.de>
+Subject: [PATCH] x86_64: reserve dma32 early for gart
+Cc: "kernel list" <linux-kernel@vger.kernel.org>
+MIME-Version: 1.0
+Content-Type: multipart/mixed; 
+	boundary="----=_Part_27684_5657995.1204930970337"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Karsten,
+------=_Part_27684_5657995.1204930970337
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
->>> This patch adds another Broadcom BCM2045 based device to the
->>> blacklist, with these settings the micro dongle works on my system.
->>>
->>> Signed-off-by: Karsten Keil <kkeil@suse.de>
->>> ---
->>> drivers/bluetooth/hci_usb.c |    1 +
->>> 1 files changed, 1 insertions(+), 0 deletions(-)
->>>
->>> diff --git a/drivers/bluetooth/hci_usb.c b/drivers/bluetooth/ 
->>> hci_usb.c
->>> index 372c7ef..f16c94c 100644
->>> --- a/drivers/bluetooth/hci_usb.c
->>> +++ b/drivers/bluetooth/hci_usb.c
->>> @@ -116,6 +116,7 @@ static struct usb_device_id blacklist_ids[] = {
->>> 	{ USB_DEVICE(0x0a5c, 0x2009), .driver_info = HCI_BCM92035 },
->>>
->>> 	/* Broadcom BCM2045 */
->>> +	{ USB_DEVICE(0x0a5c, 0x2039), .driver_info = HCI_RESET |
->>> HCI_WRONG_SCO_MTU },
->>> 	{ USB_DEVICE(0x0a5c, 0x2101), .driver_info = HCI_RESET |
->>> HCI_WRONG_SCO_MTU },
->>
->> before I sign off on this one, can you include the part from /proc/ 
->> bus/
->> usb/devices for this dongle.
->>
->
-> I do not have /proc/bus/usb on this machine, but can give you the  
-> output of
-> lsusb -v
->
-> And it is this device:
-> http://cgi.ebay.de/USB-Bluetooth-Nano-Dongle-Micro-Adapter-Mini-V2-0-EDR_W0QQitemZ270217529196QQihZ017QQcategoryZ79469QQssPageNameZWDVWQQrdZ1QQcmdZViewItem
->
-> It work fine with a BT mouse on my notebook with this patch.
->
->
-> Bus 003 Device 006: ID 0a5c:2039 Broadcom Corp.
-> Device Descriptor:
->  bLength                18
->  bDescriptorType         1
->  bcdUSB               2.00
->  bDeviceClass          224 Wireless
->  bDeviceSubClass         1 Radio Frequency
->  bDeviceProtocol         1 Bluetooth
->  bMaxPacketSize0        64
->  idVendor           0x0a5c Broadcom Corp.
->  idProduct          0x2039
->  bcdDevice            1.00
->  iManufacturer           1 Broadcom Corp
->  iProduct                2 BCM92045B3 ROM
 
-looks good to me.
 
-Acked-by: Marcel Holtmann <marcel@holtmann.org>
+------=_Part_27684_5657995.1204930970337
+Content-Type: text/x-patch; name=x86_64_reserve_dma32_free.patch
+Content-Transfer-Encoding: base64
+X-Attachment-Id: f_fdjd1dmr0
+Content-Disposition: attachment; filename=x86_64_reserve_dma32_free.patch
 
-Regards
-
-Marcel
-
+W1BBVENIXSB4ODZfNjQ6IHJlc2VydmUgZG1hMzIgZWFybHkgZm9yIGdhcnQKCm9uZSBzeXN0ZW0g
+d2l0aCAyNTZnIHdoZW4gbnVtYSBpcyBkaXNhYmxlZCBzYWlkOgoKWW91ciBCSU9TIGRvZXNuJ3Qg
+bGVhdmUgYSBhcGVydHVyZSBtZW1vcnkgaG9sZQpQbGVhc2UgZW5hYmxlIHRoZSBJT01NVSBvcHRp
+b24gaW4gdGhlIEJJT1Mgc2V0dXAKVGhpcyBjb3N0cyB5b3UgNjQgTUIgb2YgUkFNCkNhbm5vdCBh
+bGxvY2F0ZSBhcGVydHVyZSBtZW1vcnkgaG9sZSAoZmZmZjgxMDFjMDAwMDAwMCw2NTUzNkspCktl
+cm5lbCBwYW5pYyAtIG5vdCBzeW5jaW5nOiBOb3QgZW5vdWdoIG1lbW9yeSBmb3IgYXBlcnR1cmUK
+UGlkOiAwLCBjb21tOiBzd2FwcGVyIE5vdCB0YWludGVkIDIuNi4yNS1yYzQteDg2LWxhdGVzdC5n
+aXQgIzMzCgpDYWxsIFRyYWNlOgogWzxmZmZmZmZmZjg0MDM3YzYyPl0gcGFuaWMrMHhiMi8weDE5
+MAogWzxmZmZmZmZmZjg0MDM4MWZjPl0gPyByZWxlYXNlX2NvbnNvbGVfc2VtKzB4N2MvMHgyNTAK
+IFs8ZmZmZmZmZmY4NDdiMTYyOD5dID8gX19hbGxvY19ib290bWVtX25vcGFuaWMrMHg0OC8weDkw
+CiBbPGZmZmZmZmZmODQ3YjBhYzk+XSA/IGZyZWVfYm9vdG1lbSsweDI5LzB4NTAKIFs8ZmZmZmZm
+ZmY4NDdhYzFmNz5dIGdhcnRfaW9tbXVfaG9sZV9pbml0KzB4NWU3LzB4NjgwCiBbPGZmZmZmZmZm
+ODQ3YjI1NWI+XSA/IGFsbG9jX2xhcmdlX3N5c3RlbV9oYXNoKzB4MTZiLzB4MzEwCiBbPGZmZmZm
+ZmZmODQ1MDZhMmY+XSA/IF9ldGV4dCsweDAvMHgxCiBbPGZmZmZmZmZmODQ3YTJlOGM+XSBwY2lf
+aW9tbXVfYWxsb2MrMHgxYy8weDQwCiBbPGZmZmZmZmZmODQ3YWM3OTU+XSBtZW1faW5pdCsweDQ1
+LzB4MWEwCiBbPGZmZmZmZmZmODQ3OWZmMzU+XSBzdGFydF9rZXJuZWwrMHgyOTUvMHgzODAKIFs8
+ZmZmZmZmZmY4NDc5ZjFjMj5dIF9zaW5pdHRleHQrMHgxYzIvMHgyMzAKCnRoZSByb290IGNhdXNl
+IGlzIDogbWVtbWFwIFBNRCBpcyB0b28gYmlnLApbZmZmZmUyMDBlMDYwMDAwMC1mZmZmZTIwMGUw
+N2ZmZmZmXSBQTUQgLT5mZmZmODEzODNjMDAwMDAwIG9uIG5vZGUgMAphbG1vc3QgbmVhciA0Ry4u
+LiwgYW5kIHZtZW1tYXBfYWxsb2NfYmxvY2sgd2lsbCB1c2UgdXAgdGhlIHJhbSB1bmRlciA0Ry4K
+CnNvbHV0aW9uIHdpbGwgYmU6CjEuIG1ha2UgbWVtbWFwIGFsbG9jYXRpb24gZ2V0IG1lbW9yeSBh
+Ym92ZSA0Ry4uLgoyLiByZXNlcnZlIHNvbWUgZG1hMzIgcmFuZ2UgZWFybHkgYmVmb3JlIHdlIHRy
+eSB0byBzZXQgdXAgbWVtbWFwIGZvciBhbGwuCmFuZCByZWxlYXNlIHRoYXQgYmVmb3JlIHBjaV9p
+b21tdV9hbGxvYywgc28gZ2FydCBvciBzd2lvdGxiIGNvdWxkIGdldCBzb21lCnJhbmdlIHVuZGVy
+IDRnIGxpbWl0IGZvciBzdXJlLgoKdGhlIHBhdGNoIGlzIHVzaW5nIG1ldGhvZCAyLgpiZWNhdXNl
+IG1ldGhvZDEgbWF5IG5lZWQgbW9yZSBjb2RlIHRvIGhhbmRsZSBTUEFSU0VNRU0gYW5kIFNQQVNF
+TUVNX1ZNRU1NQVAKCndpbGwgZ2V0CllvdXIgQklPUyBkb2Vzbid0IGxlYXZlIGEgYXBlcnR1cmUg
+bWVtb3J5IGhvbGUKUGxlYXNlIGVuYWJsZSB0aGUgSU9NTVUgb3B0aW9uIGluIHRoZSBCSU9TIHNl
+dHVwClRoaXMgY29zdHMgeW91IDY0IE1CIG9mIFJBTQpNYXBwaW5nIGFwZXJ0dXJlIG92ZXIgNjU1
+MzYgS0Igb2YgUkFNIEAgNDAwMDAwMApNZW1vcnk6IDI2NDI0NTczNmsvMjY4OTU5NzQ0ayBhdmFp
+bGFibGUgKDg0ODRrIGtlcm5lbCBjb2RlLCA0MTg3NDY0ayByZXNlcnZlZCwgNDAwNGsgZGF0YSwg
+NzI0ayBpbml0KQoKU2lnbmVkLW9mZi1ieTogWWluZ2hhaSBMdSA8eWhsdS5rZXJuZWxAZ21haWwu
+Y29tPgoKSW5kZXg6IGxpbnV4LTIuNi9hcmNoL3g4Ni9rZXJuZWwvcGNpLWRtYV82NC5jCj09PT09
+PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09
+PT09PT0KLS0tIGxpbnV4LTIuNi5vcmlnL2FyY2gveDg2L2tlcm5lbC9wY2ktZG1hXzY0LmMKKysr
+IGxpbnV4LTIuNi9hcmNoL3g4Ni9rZXJuZWwvcGNpLWRtYV82NC5jCkBAIC04LDYgKzgsOCBAQAog
+I2luY2x1ZGUgPGxpbnV4L3BjaS5oPgogI2luY2x1ZGUgPGxpbnV4L21vZHVsZS5oPgogI2luY2x1
+ZGUgPGxpbnV4L2RtYXIuaD4KKyNpbmNsdWRlIDxsaW51eC9ib290bWVtLmg+CisjaW5jbHVkZSA8
+YXNtL3Byb3RvLmg+CiAjaW5jbHVkZSA8YXNtL2lvLmg+CiAjaW5jbHVkZSA8YXNtL2dhcnQuaD4K
+ICNpbmNsdWRlIDxhc20vY2FsZ2FyeS5oPgpAQCAtMjg2LDggKzI4OCw1NSBAQCBzdGF0aWMgX19p
+bml0IGludCBpb21tdV9zZXR1cChjaGFyICpwKQogfQogZWFybHlfcGFyYW0oImlvbW11IiwgaW9t
+bXVfc2V0dXApOwogCitzdGF0aWMgX19pbml0ZGF0YSB2b2lkICpkbWEzMl9ib290bWVtX3B0cjsK
+K3N0YXRpYyB1bnNpZ25lZCBsb25nIGRtYTMyX2Jvb3RtZW1fc2l6ZSBfX2luaXRkYXRhID0gKDEy
+OFVMTDw8MjApOworCitzdGF0aWMgaW50IF9faW5pdCBwYXJzZV9kbWEzMl9zaXplX29wdChjaGFy
+ICpwKQoreworCWlmICghcCkKKwkJcmV0dXJuIC1FSU5WQUw7CisJZG1hMzJfYm9vdG1lbV9zaXpl
+ID0gbWVtcGFyc2UocCwgJnApOworCXJldHVybiAwOworfQorZWFybHlfcGFyYW0oImRtYTMyX3Np
+emUiLCBwYXJzZV9kbWEzMl9zaXplX29wdCk7CisKK3ZvaWQgX19pbml0IGRtYTMyX3Jlc2VydmVf
+Ym9vdG1lbSh2b2lkKQoreworCXVuc2lnbmVkIGxvbmcgc2l6ZSwgYWxpZ247CisJaWYgKGVuZF9w
+Zm4gPD0gTUFYX0RNQTMyX1BGTikKKwkJcmV0dXJuOworCisJYWxpZ24gPSA2NFVMTDw8MjA7CisJ
+c2l6ZSA9IHJvdW5kX3VwKGRtYTMyX2Jvb3RtZW1fc2l6ZSwgYWxpZ24pOworCWRtYTMyX2Jvb3Rt
+ZW1fcHRyID0gX19hbGxvY19ib290bWVtX25vcGFuaWMoc2l6ZSwgYWxpZ24sCisJCQkJIF9fcGEo
+TUFYX0RNQV9BRERSRVNTKSk7CisJaWYgKGRtYTMyX2Jvb3RtZW1fcHRyKQorCQlkbWEzMl9ib290
+bWVtX3NpemUgPSBzaXplOworCWVsc2UKKwkJZG1hMzJfYm9vdG1lbV9zaXplID0gMDsKK30KK3N0
+YXRpYyB2b2lkIF9faW5pdCBkbWEzMl9mcmVlX2Jvb3RtZW0odm9pZCkKK3sKKwlpbnQgbm9kZTsK
+KworCWlmIChlbmRfcGZuIDw9IE1BWF9ETUEzMl9QRk4pCisJCXJldHVybjsKKworCWlmICghZG1h
+MzJfYm9vdG1lbV9wdHIpCisJCXJldHVybjsKKworCWZvcl9lYWNoX29ubGluZV9ub2RlKG5vZGUp
+CisJCWZyZWVfYm9vdG1lbV9ub2RlKE5PREVfREFUQShub2RlKSwgX19wYShkbWEzMl9ib290bWVt
+X3B0ciksCisJCQkJICBkbWEzMl9ib290bWVtX3NpemUpOworCisJZG1hMzJfYm9vdG1lbV9wdHIg
+PSBOVUxMOworCWRtYTMyX2Jvb3RtZW1fc2l6ZSA9IDA7Cit9CisKIHZvaWQgX19pbml0IHBjaV9p
+b21tdV9hbGxvYyh2b2lkKQogeworCS8qIGZyZWUgdGhlIHJhbmdlIHNvIGlvbW11IGNvdWxkIGdl
+dCBzb21lIHJhbmdlIGxlc3MgdGhhbiA0RyAqLworCWRtYTMyX2ZyZWVfYm9vdG1lbSgpOwogCS8q
+CiAJICogVGhlIG9yZGVyIG9mIHRoZXNlIGZ1bmN0aW9ucyBpcyBpbXBvcnRhbnQgZm9yCiAJICog
+ZmFsbC1iYWNrL2ZhaWwtb3ZlciByZWFzb25zCkluZGV4OiBsaW51eC0yLjYvYXJjaC94ODYva2Vy
+bmVsL3NldHVwXzY0LmMKPT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09
+PT09PT09PT09PT09PT09PT09PT09PT09PQotLS0gbGludXgtMi42Lm9yaWcvYXJjaC94ODYva2Vy
+bmVsL3NldHVwXzY0LmMKKysrIGxpbnV4LTIuNi9hcmNoL3g4Ni9rZXJuZWwvc2V0dXBfNjQuYwpA
+QCAtNDAxLDYgKzQwMSw4IEBAIHZvaWQgX19pbml0IHNldHVwX2FyY2goY2hhciAqKmNtZGxpbmVf
+cCkKIAogCWVhcmx5X3Jlc190b19ib290bWVtKCk7CiAKKwlkbWEzMl9yZXNlcnZlX2Jvb3RtZW0o
+KTsKKwogI2lmZGVmIENPTkZJR19BQ1BJX1NMRUVQCiAJLyoKIAkgKiBSZXNlcnZlIGxvdyBtZW1v
+cnkgcmVnaW9uIGZvciBzbGVlcCBzdXBwb3J0LgpJbmRleDogbGludXgtMi42L2luY2x1ZGUvYXNt
+LXg4Ni9wY2lfNjQuaAo9PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09
+PT09PT09PT09PT09PT09PT09PT09PT09Ci0tLSBsaW51eC0yLjYub3JpZy9pbmNsdWRlL2FzbS14
+ODYvcGNpXzY0LmgKKysrIGxpbnV4LTIuNi9pbmNsdWRlL2FzbS14ODYvcGNpXzY0LmgKQEAgLTI1
+LDYgKzI1LDcgQEAgZXh0ZXJuIGludCAoKnBjaV9jb25maWdfd3JpdGUpKGludCBzZWcsIAogCiAK
+IAorZXh0ZXJuIHZvaWQgZG1hMzJfcmVzZXJ2ZV9ib290bWVtKHZvaWQpOwogZXh0ZXJuIHZvaWQg
+cGNpX2lvbW11X2FsbG9jKHZvaWQpOwogCiAvKiBUaGUgUENJIGFkZHJlc3Mgc3BhY2UgZG9lcyBl
+cXVhbCB0aGUgcGh5c2ljYWwgbWVtb3J5Cg==
+------=_Part_27684_5657995.1204930970337--
