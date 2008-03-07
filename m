@@ -1,62 +1,131 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764884AbYCGT7y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765388AbYCGUA6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764884AbYCGT7y (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Mar 2008 14:59:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751329AbYCGT7n
+	id S1765388AbYCGUA6 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Mar 2008 15:00:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754196AbYCGUAt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Mar 2008 14:59:43 -0500
-Received: from pat.uio.no ([129.240.10.15]:41596 "EHLO pat.uio.no"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750718AbYCGT7m (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Mar 2008 14:59:42 -0500
-Subject: Re: READDIRPLUS max mount option
-From: Trond Myklebust <trond.myklebust@fys.uio.no>
-To: Kyle Rose <krose@krose.org>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-nfs@vger.kernel.org
-In-Reply-To: <47D1995E.6060501@krose.org>
-References: <47D1995E.6060501@krose.org>
-Content-Type: text/plain
-Date: Fri, 07 Mar 2008 14:59:37 -0500
-Message-Id: <1204919978.16746.12.camel@heimdal.trondhjem.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
-Content-Transfer-Encoding: 7bit
-X-UiO-Resend: resent
-X-UiO-Spam-info: not spam, SpamAssassin (score=0.0, required=5.0, autolearn=disabled, none)
-X-UiO-Scanned: FCF4D5EBB5E690BD5AB7B6C7B17DF302C7104FD6
-X-UiO-SR-test: 9727199A816422BD10417A992997EC09BC228DEB
-X-UiO-SPAM-Test: remote_host: 129.240.10.9 spam_score: 0 maxlevel 200 minaction 2 bait 0 mail/h: 415 total 7289692 max/h 8345 blacklist 0 greylist 0 ratelimit 0
+	Fri, 7 Mar 2008 15:00:49 -0500
+Received: from relay1.sgi.com ([192.48.171.29]:50577 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753950AbYCGUAs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 7 Mar 2008 15:00:48 -0500
+Date: Fri, 7 Mar 2008 12:00:26 -0800 (PST)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Andrea Arcangeli <andrea@qumranet.com>
+cc: Jack Steiner <steiner@sgi.com>, Nick Piggin <npiggin@suse.de>,
+       akpm@linux-foundation.org, Robin Holt <holt@sgi.com>,
+       Avi Kivity <avi@qumranet.com>, kvm-devel@lists.sourceforge.net,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, general@lists.openfabrics.org,
+       Steve Wise <swise@opengridcomputing.com>,
+       Roland Dreier <rdreier@cisco.com>, Kanoj Sarcar <kanojsarcar@yahoo.com>,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       daniel.blueman@quadrics.com
+Subject: Re: [PATCH] 3/4 combine RCU with seqlock to allow mmu notifier
+ methods to sleep (#v9 was 1/4)
+In-Reply-To: <20080307152328.GE24114@v2.random>
+Message-ID: <Pine.LNX.4.64.0803071155100.6815@schroedinger.engr.sgi.com>
+References: <20080302155457.GK8091@v2.random> <20080303213707.GA8091@v2.random>
+ <20080303220502.GA5301@v2.random> <47CC9B57.5050402@qumranet.com>
+ <Pine.LNX.4.64.0803032327470.9642@schroedinger.engr.sgi.com>
+ <20080304133020.GC5301@v2.random> <Pine.LNX.4.64.0803041059110.13957@schroedinger.engr.sgi.com>
+ <20080304222030.GB8951@v2.random> <Pine.LNX.4.64.0803041422070.20821@schroedinger.engr.sgi.com>
+ <20080307151722.GD24114@v2.random> <20080307152328.GE24114@v2.random>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, 7 Mar 2008, Andrea Arcangeli wrote:
 
-On Fri, 2008-03-07 at 14:37 -0500, Kyle Rose wrote:
-> I have a very specific use for an NFS mount over a WAN, and allowing for 
-> much larger expected READDIRPLUS requests actually improves performance 
-> by at least a factor of 10 by eliminating the round-trip latency that 
-> results from the application's single-threaded 
-> readdir/stat/stat/stat/... behavior.  Rather than maintain a hacked 
-> kernel on my end, I'd rather the READDIRPLUS limit be a mount option.  
-> Hence, the following patch.  It defaults to the old behavior 
-> (8*PAGE_SIZE), but with a properly-prepared mount binary will allow the 
-> client to specify a limit.
-> 
-> I'm not subscribed to the list, so please CC me in any relevant discussion.
-> 
-> Kyle
+> This combines the non-sleep-capable RCU locking of #v9 with a seqlock
+> so the mmu notifier fast path will require zero cacheline
+> writes/bouncing while still providing mmu_notifier_unregister and
+> allowing to schedule inside the mmu notifier methods. If we drop
+> mmu_notifier_unregister we can as well drop all seqlock and
+> rcu_read_lock()s. But this locking scheme combination is sexy enough
+> and 100% scalable (the mmu_notifier_list cacheline will be preloaded
+> anyway and that will most certainly include the sequence number value
+> in l1 for free even in Christoph's NUMA systems) so IMHO it worth to
+> keep mmu_notifier_unregister.
 
-(adding cc to linux-nfs@vger.kernel.org)
+Well its adds lots of processing. Not sure if its really worth it. Seems 
+that this scheme cannot work since the existence of the structure passed 
+to the callbacks is not guaranteed since the RCU locks are not held. You 
+need some kind of a refcount to give the existence guarantee.
 
-The binary mount format is frozen forever, so the changes to nfs_mount.h
-and nfs4_mount.h are definitely NACKed.
+> diff --git a/mm/mmu_notifier.c b/mm/mmu_notifier.c
+> --- a/mm/mmu_notifier.c
+> +++ b/mm/mmu_notifier.c
+> @@ -20,7 +20,9 @@ void __mmu_notifier_release(struct mm_st
+>  void __mmu_notifier_release(struct mm_struct *mm)
+>  {
+>  	struct mmu_notifier *mn;
+> +	unsigned seq;
+>  
+> +	seq = read_seqbegin(&mm->mmu_notifier_lock);
+>  	while (unlikely(!hlist_empty(&mm->mmu_notifier_list))) {
+>  		mn = hlist_entry(mm->mmu_notifier_list.first,
+>  				 struct mmu_notifier,
+> @@ -28,6 +30,7 @@ void __mmu_notifier_release(struct mm_st
+>  		hlist_del(&mn->hlist);
+>  		if (mn->ops->release)
+>  			mn->ops->release(mn, mm);
+> +		BUG_ON(read_seqretry(&mm->mmu_notifier_lock, seq));
+>  	}
+>  }
 
-Otherwise, it would be nice to know why this absolutely has to be made a
-mount option rather than just having a system-wide option (either a
-module/boot parameter or a sysctl) to control the behaviour of all
-mounts.
+So this is only for sanity checking? The BUG_ON detects concurrent 
+operations that should not happen? Need a comment here.
 
-Cheers
-  Trond
+
+> @@ -42,11 +45,19 @@ int __mmu_notifier_clear_flush_young(str
+>  	struct mmu_notifier *mn;
+>  	struct hlist_node *n;
+>  	int young = 0;
+> +	unsigned seq;
+>  
+>  	rcu_read_lock();
+> +restart:
+> +	seq = read_seqbegin(&mm->mmu_notifier_lock);
+>  	hlist_for_each_entry_rcu(mn, n, &mm->mmu_notifier_list, hlist) {
+> -		if (mn->ops->clear_flush_young)
+> +		if (mn->ops->clear_flush_young) {
+> +			rcu_read_unlock();
+>  			young |= mn->ops->clear_flush_young(mn, mm, address);
+> +			rcu_read_lock();
+> +		}
+> +		if (read_seqretry(&mm->mmu_notifier_lock, seq))
+> +			goto restart;
+
+Great innovative idea of the seqlock for versioning checks.
+
+>  	}
+>  	rcu_read_unlock();
+>  
+
+Well that gets pretty sophisticated here. If you drop the rcu lock then 
+the entity pointed to by mn can go away right? So how can you pass that 
+structure to clear_flush_young? What is guaranteeing the existence of the 
+structure?
+
+
+> @@ -58,11 +69,19 @@ void __mmu_notifier_invalidate_page(stru
+>  {
+>  	struct mmu_notifier *mn;
+>  	struct hlist_node *n;
+> +	unsigned seq;
+>  
+>  	rcu_read_lock();
+> +restart:
+> +	seq = read_seqbegin(&mm->mmu_notifier_lock);
+>  	hlist_for_each_entry_rcu(mn, n, &mm->mmu_notifier_list, hlist) {
+> -		if (mn->ops->invalidate_page)
+> +		if (mn->ops->invalidate_page) {
+> +			rcu_read_unlock();
+>  			mn->ops->invalidate_page(mn, mm, address);
+
+Ditto structure can vanish since no existence guarantee exists.
+
 
