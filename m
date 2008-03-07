@@ -1,122 +1,111 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762213AbYCGXDJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763583AbYCGXE7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762213AbYCGXDJ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Mar 2008 18:03:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758290AbYCGXCw
+	id S1763583AbYCGXE7 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Mar 2008 18:04:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758406AbYCGXEs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Mar 2008 18:02:52 -0500
-Received: from rv-out-0910.google.com ([209.85.198.185]:60455 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758197AbYCGXCv (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Mar 2008 18:02:51 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:mime-version:content-type;
-        b=c0/JMalDm6VNJopZISLI5AYkQ2OqZZ+hQW7/LzCvVLHzgXFf91AJBj4hSLsVoDrY39KiF9inanvyioRvQIRGUj13JveOC8pBBPfw4HbFjHlCo1BIikCVYQ31Tf7qQdM593KMCApg42h01CdseePsYVGuJVHpluq6iUZpKUIZBIk=
-Message-ID: <86802c440803071502o50a06199i6afeb5996f207c6d@mail.gmail.com>
-Date: Fri, 7 Mar 2008 15:02:50 -0800
-From: "Yinghai Lu" <yhlu.kernel@gmail.com>
-To: "Ingo Molnar" <mingo@elte.hu>, "Andrew Morton" <akpm@linux-foundation.org>,
-       "Thomas Gleixner" <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>, "Andi Kleen" <ak@suse.de>
-Subject: [PATCH] x86_64: reserve dma32 early for gart
-Cc: "kernel list" <linux-kernel@vger.kernel.org>
-MIME-Version: 1.0
-Content-Type: multipart/mixed; 
-	boundary="----=_Part_27684_5657995.1204930970337"
+	Fri, 7 Mar 2008 18:04:48 -0500
+Received: from mga09.intel.com ([134.134.136.24]:48043 "EHLO mga09.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758290AbYCGXEr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 7 Mar 2008 18:04:47 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.25,464,1199692800"; 
+   d="scan'208";a="304490905"
+Date: Fri, 7 Mar 2008 15:01:26 -0800
+From: Suresh Siddha <suresh.b.siddha@intel.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Dmitry Adamushko <dmitry.adamushko@gmail.com>, ego@in.ibm.com,
+       mingo@elte.hu, oleg@tv-sign.ru, yi.y.yang@intel.com,
+       linux-kernel@vger.kernel.org, tglx@linutronix.de
+Subject: Re: [BUG 2.6.25-rc3] scheduler/hotplug: some processes are dealocked when cpu is set to offline
+Message-ID: <20080307230126.GA15909@linux-os.sc.intel.com>
+References: <1204483329.3607.8.camel@yangyi-dev.bj.intel.com> <b647ffbd0803070502m28355751rd526ed8ca4dd90a@mail.gmail.com> <20080307121822.54b8c2fb.akpm@linux-foundation.org> <200803072236.26256.rjw@sisk.pl>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200803072236.26256.rjw@sisk.pl>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-------=_Part_27684_5657995.1204930970337
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+On Fri, Mar 07, 2008 at 10:36:25PM +0100, Rafael J. Wysocki wrote:
+> On Friday, 7 of March 2008, Andrew Morton wrote:
+> > -		sched_setscheduler(p, SCHED_FIFO, &param);
+> > +//		sched_setscheduler(p, SCHED_FIFO, &param);
+> >  		kthread_stop(p);
+> >  		takeover_tasklets(hotcpu);
+> >  		break;
+> > _
+> > 
+> > fixes the wont-power-off regression.
+> > 
+> > But 2.6.24 runs the watchdog threads SCHED_FIFO too.  Are you saying that
+> > it's the migration code which changed? 
+> 
+> Well, that would be a problem for suspend/hibernation if there were SCHED_FIFO
+> non-freezable tasks bound to the nonboot CPUs.  I'm not aware of any, but ...
+> 
+> Also, it should be possible to just offline one or more CPUs using the sysfs
+> interface at any time and what happens if there are any RT tasks bound to these
+> CPUs at that time?  That would be the $subject problem, IMHO.
+> 
+> Anyone who made the change affecting __migrate_task() so it's unable to migrate
+> RT tasks any more should have fixed the CPU hotplug as well.
 
+No. Its not the issue with __migrate_task(). Appended patch fixes my issue.
+Recent RT wakeup balance code changes exposed a bug in migration_call() code
+path.
 
+Andrew, Please check if the appended patch fixes your power-off problem aswell.
 
-------=_Part_27684_5657995.1204930970337
-Content-Type: text/x-patch; name=x86_64_reserve_dma32_free.patch
-Content-Transfer-Encoding: base64
-X-Attachment-Id: f_fdjd1dmr0
-Content-Disposition: attachment; filename=x86_64_reserve_dma32_free.patch
+thanks,
+suresh
+---
 
-W1BBVENIXSB4ODZfNjQ6IHJlc2VydmUgZG1hMzIgZWFybHkgZm9yIGdhcnQKCm9uZSBzeXN0ZW0g
-d2l0aCAyNTZnIHdoZW4gbnVtYSBpcyBkaXNhYmxlZCBzYWlkOgoKWW91ciBCSU9TIGRvZXNuJ3Qg
-bGVhdmUgYSBhcGVydHVyZSBtZW1vcnkgaG9sZQpQbGVhc2UgZW5hYmxlIHRoZSBJT01NVSBvcHRp
-b24gaW4gdGhlIEJJT1Mgc2V0dXAKVGhpcyBjb3N0cyB5b3UgNjQgTUIgb2YgUkFNCkNhbm5vdCBh
-bGxvY2F0ZSBhcGVydHVyZSBtZW1vcnkgaG9sZSAoZmZmZjgxMDFjMDAwMDAwMCw2NTUzNkspCktl
-cm5lbCBwYW5pYyAtIG5vdCBzeW5jaW5nOiBOb3QgZW5vdWdoIG1lbW9yeSBmb3IgYXBlcnR1cmUK
-UGlkOiAwLCBjb21tOiBzd2FwcGVyIE5vdCB0YWludGVkIDIuNi4yNS1yYzQteDg2LWxhdGVzdC5n
-aXQgIzMzCgpDYWxsIFRyYWNlOgogWzxmZmZmZmZmZjg0MDM3YzYyPl0gcGFuaWMrMHhiMi8weDE5
-MAogWzxmZmZmZmZmZjg0MDM4MWZjPl0gPyByZWxlYXNlX2NvbnNvbGVfc2VtKzB4N2MvMHgyNTAK
-IFs8ZmZmZmZmZmY4NDdiMTYyOD5dID8gX19hbGxvY19ib290bWVtX25vcGFuaWMrMHg0OC8weDkw
-CiBbPGZmZmZmZmZmODQ3YjBhYzk+XSA/IGZyZWVfYm9vdG1lbSsweDI5LzB4NTAKIFs8ZmZmZmZm
-ZmY4NDdhYzFmNz5dIGdhcnRfaW9tbXVfaG9sZV9pbml0KzB4NWU3LzB4NjgwCiBbPGZmZmZmZmZm
-ODQ3YjI1NWI+XSA/IGFsbG9jX2xhcmdlX3N5c3RlbV9oYXNoKzB4MTZiLzB4MzEwCiBbPGZmZmZm
-ZmZmODQ1MDZhMmY+XSA/IF9ldGV4dCsweDAvMHgxCiBbPGZmZmZmZmZmODQ3YTJlOGM+XSBwY2lf
-aW9tbXVfYWxsb2MrMHgxYy8weDQwCiBbPGZmZmZmZmZmODQ3YWM3OTU+XSBtZW1faW5pdCsweDQ1
-LzB4MWEwCiBbPGZmZmZmZmZmODQ3OWZmMzU+XSBzdGFydF9rZXJuZWwrMHgyOTUvMHgzODAKIFs8
-ZmZmZmZmZmY4NDc5ZjFjMj5dIF9zaW5pdHRleHQrMHgxYzIvMHgyMzAKCnRoZSByb290IGNhdXNl
-IGlzIDogbWVtbWFwIFBNRCBpcyB0b28gYmlnLApbZmZmZmUyMDBlMDYwMDAwMC1mZmZmZTIwMGUw
-N2ZmZmZmXSBQTUQgLT5mZmZmODEzODNjMDAwMDAwIG9uIG5vZGUgMAphbG1vc3QgbmVhciA0Ry4u
-LiwgYW5kIHZtZW1tYXBfYWxsb2NfYmxvY2sgd2lsbCB1c2UgdXAgdGhlIHJhbSB1bmRlciA0Ry4K
-CnNvbHV0aW9uIHdpbGwgYmU6CjEuIG1ha2UgbWVtbWFwIGFsbG9jYXRpb24gZ2V0IG1lbW9yeSBh
-Ym92ZSA0Ry4uLgoyLiByZXNlcnZlIHNvbWUgZG1hMzIgcmFuZ2UgZWFybHkgYmVmb3JlIHdlIHRy
-eSB0byBzZXQgdXAgbWVtbWFwIGZvciBhbGwuCmFuZCByZWxlYXNlIHRoYXQgYmVmb3JlIHBjaV9p
-b21tdV9hbGxvYywgc28gZ2FydCBvciBzd2lvdGxiIGNvdWxkIGdldCBzb21lCnJhbmdlIHVuZGVy
-IDRnIGxpbWl0IGZvciBzdXJlLgoKdGhlIHBhdGNoIGlzIHVzaW5nIG1ldGhvZCAyLgpiZWNhdXNl
-IG1ldGhvZDEgbWF5IG5lZWQgbW9yZSBjb2RlIHRvIGhhbmRsZSBTUEFSU0VNRU0gYW5kIFNQQVNF
-TUVNX1ZNRU1NQVAKCndpbGwgZ2V0CllvdXIgQklPUyBkb2Vzbid0IGxlYXZlIGEgYXBlcnR1cmUg
-bWVtb3J5IGhvbGUKUGxlYXNlIGVuYWJsZSB0aGUgSU9NTVUgb3B0aW9uIGluIHRoZSBCSU9TIHNl
-dHVwClRoaXMgY29zdHMgeW91IDY0IE1CIG9mIFJBTQpNYXBwaW5nIGFwZXJ0dXJlIG92ZXIgNjU1
-MzYgS0Igb2YgUkFNIEAgNDAwMDAwMApNZW1vcnk6IDI2NDI0NTczNmsvMjY4OTU5NzQ0ayBhdmFp
-bGFibGUgKDg0ODRrIGtlcm5lbCBjb2RlLCA0MTg3NDY0ayByZXNlcnZlZCwgNDAwNGsgZGF0YSwg
-NzI0ayBpbml0KQoKU2lnbmVkLW9mZi1ieTogWWluZ2hhaSBMdSA8eWhsdS5rZXJuZWxAZ21haWwu
-Y29tPgoKSW5kZXg6IGxpbnV4LTIuNi9hcmNoL3g4Ni9rZXJuZWwvcGNpLWRtYV82NC5jCj09PT09
-PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09
-PT09PT0KLS0tIGxpbnV4LTIuNi5vcmlnL2FyY2gveDg2L2tlcm5lbC9wY2ktZG1hXzY0LmMKKysr
-IGxpbnV4LTIuNi9hcmNoL3g4Ni9rZXJuZWwvcGNpLWRtYV82NC5jCkBAIC04LDYgKzgsOCBAQAog
-I2luY2x1ZGUgPGxpbnV4L3BjaS5oPgogI2luY2x1ZGUgPGxpbnV4L21vZHVsZS5oPgogI2luY2x1
-ZGUgPGxpbnV4L2RtYXIuaD4KKyNpbmNsdWRlIDxsaW51eC9ib290bWVtLmg+CisjaW5jbHVkZSA8
-YXNtL3Byb3RvLmg+CiAjaW5jbHVkZSA8YXNtL2lvLmg+CiAjaW5jbHVkZSA8YXNtL2dhcnQuaD4K
-ICNpbmNsdWRlIDxhc20vY2FsZ2FyeS5oPgpAQCAtMjg2LDggKzI4OCw1NSBAQCBzdGF0aWMgX19p
-bml0IGludCBpb21tdV9zZXR1cChjaGFyICpwKQogfQogZWFybHlfcGFyYW0oImlvbW11IiwgaW9t
-bXVfc2V0dXApOwogCitzdGF0aWMgX19pbml0ZGF0YSB2b2lkICpkbWEzMl9ib290bWVtX3B0cjsK
-K3N0YXRpYyB1bnNpZ25lZCBsb25nIGRtYTMyX2Jvb3RtZW1fc2l6ZSBfX2luaXRkYXRhID0gKDEy
-OFVMTDw8MjApOworCitzdGF0aWMgaW50IF9faW5pdCBwYXJzZV9kbWEzMl9zaXplX29wdChjaGFy
-ICpwKQoreworCWlmICghcCkKKwkJcmV0dXJuIC1FSU5WQUw7CisJZG1hMzJfYm9vdG1lbV9zaXpl
-ID0gbWVtcGFyc2UocCwgJnApOworCXJldHVybiAwOworfQorZWFybHlfcGFyYW0oImRtYTMyX3Np
-emUiLCBwYXJzZV9kbWEzMl9zaXplX29wdCk7CisKK3ZvaWQgX19pbml0IGRtYTMyX3Jlc2VydmVf
-Ym9vdG1lbSh2b2lkKQoreworCXVuc2lnbmVkIGxvbmcgc2l6ZSwgYWxpZ247CisJaWYgKGVuZF9w
-Zm4gPD0gTUFYX0RNQTMyX1BGTikKKwkJcmV0dXJuOworCisJYWxpZ24gPSA2NFVMTDw8MjA7CisJ
-c2l6ZSA9IHJvdW5kX3VwKGRtYTMyX2Jvb3RtZW1fc2l6ZSwgYWxpZ24pOworCWRtYTMyX2Jvb3Rt
-ZW1fcHRyID0gX19hbGxvY19ib290bWVtX25vcGFuaWMoc2l6ZSwgYWxpZ24sCisJCQkJIF9fcGEo
-TUFYX0RNQV9BRERSRVNTKSk7CisJaWYgKGRtYTMyX2Jvb3RtZW1fcHRyKQorCQlkbWEzMl9ib290
-bWVtX3NpemUgPSBzaXplOworCWVsc2UKKwkJZG1hMzJfYm9vdG1lbV9zaXplID0gMDsKK30KK3N0
-YXRpYyB2b2lkIF9faW5pdCBkbWEzMl9mcmVlX2Jvb3RtZW0odm9pZCkKK3sKKwlpbnQgbm9kZTsK
-KworCWlmIChlbmRfcGZuIDw9IE1BWF9ETUEzMl9QRk4pCisJCXJldHVybjsKKworCWlmICghZG1h
-MzJfYm9vdG1lbV9wdHIpCisJCXJldHVybjsKKworCWZvcl9lYWNoX29ubGluZV9ub2RlKG5vZGUp
-CisJCWZyZWVfYm9vdG1lbV9ub2RlKE5PREVfREFUQShub2RlKSwgX19wYShkbWEzMl9ib290bWVt
-X3B0ciksCisJCQkJICBkbWEzMl9ib290bWVtX3NpemUpOworCisJZG1hMzJfYm9vdG1lbV9wdHIg
-PSBOVUxMOworCWRtYTMyX2Jvb3RtZW1fc2l6ZSA9IDA7Cit9CisKIHZvaWQgX19pbml0IHBjaV9p
-b21tdV9hbGxvYyh2b2lkKQogeworCS8qIGZyZWUgdGhlIHJhbmdlIHNvIGlvbW11IGNvdWxkIGdl
-dCBzb21lIHJhbmdlIGxlc3MgdGhhbiA0RyAqLworCWRtYTMyX2ZyZWVfYm9vdG1lbSgpOwogCS8q
-CiAJICogVGhlIG9yZGVyIG9mIHRoZXNlIGZ1bmN0aW9ucyBpcyBpbXBvcnRhbnQgZm9yCiAJICog
-ZmFsbC1iYWNrL2ZhaWwtb3ZlciByZWFzb25zCkluZGV4OiBsaW51eC0yLjYvYXJjaC94ODYva2Vy
-bmVsL3NldHVwXzY0LmMKPT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09
-PT09PT09PT09PT09PT09PT09PT09PT09PQotLS0gbGludXgtMi42Lm9yaWcvYXJjaC94ODYva2Vy
-bmVsL3NldHVwXzY0LmMKKysrIGxpbnV4LTIuNi9hcmNoL3g4Ni9rZXJuZWwvc2V0dXBfNjQuYwpA
-QCAtNDAxLDYgKzQwMSw4IEBAIHZvaWQgX19pbml0IHNldHVwX2FyY2goY2hhciAqKmNtZGxpbmVf
-cCkKIAogCWVhcmx5X3Jlc190b19ib290bWVtKCk7CiAKKwlkbWEzMl9yZXNlcnZlX2Jvb3RtZW0o
-KTsKKwogI2lmZGVmIENPTkZJR19BQ1BJX1NMRUVQCiAJLyoKIAkgKiBSZXNlcnZlIGxvdyBtZW1v
-cnkgcmVnaW9uIGZvciBzbGVlcCBzdXBwb3J0LgpJbmRleDogbGludXgtMi42L2luY2x1ZGUvYXNt
-LXg4Ni9wY2lfNjQuaAo9PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09
-PT09PT09PT09PT09PT09PT09PT09PT09Ci0tLSBsaW51eC0yLjYub3JpZy9pbmNsdWRlL2FzbS14
-ODYvcGNpXzY0LmgKKysrIGxpbnV4LTIuNi9pbmNsdWRlL2FzbS14ODYvcGNpXzY0LmgKQEAgLTI1
-LDYgKzI1LDcgQEAgZXh0ZXJuIGludCAoKnBjaV9jb25maWdfd3JpdGUpKGludCBzZWcsIAogCiAK
-IAorZXh0ZXJuIHZvaWQgZG1hMzJfcmVzZXJ2ZV9ib290bWVtKHZvaWQpOwogZXh0ZXJuIHZvaWQg
-cGNpX2lvbW11X2FsbG9jKHZvaWQpOwogCiAvKiBUaGUgUENJIGFkZHJlc3Mgc3BhY2UgZG9lcyBl
-cXVhbCB0aGUgcGh5c2ljYWwgbWVtb3J5Cg==
-------=_Part_27684_5657995.1204930970337--
+Handle the `CPU_DOWN_PREPARE_FROZEN' case in migration_call().
+
+Otherwise, without this, we don't clear the cpu going down in the
+root domains "online" mask. This was causing the RT tasks to be woken
+up on already dead cpus, causing system hangs during standby, shutdown etc.
+
+For example, on my system, this is the failing sequence:
+
+kthread_stop() // coming from the cpu_callback's
+    wake_up_process()
+	sched_class->select_task_rq(); //select_task_rq_rt
+	    find_lowest_rq
+		find_lowest_cpus
+	    	    cpus_and(*lowest_mask, task_rq(task)->rd->online, task->cpus_allowed);
+
+In my case tasks->cpus_allowed is set to cpu_possible_map and because of the
+this bug, rd->online still shows the dead cpu. Resulting in
+find_lowest_rq() return an offlined cpu, because of which RT task gets woken
+up on a DEAD cpu, causing various hangs.
+
+This issue doesn't happen with normal tasks because, the select_task_rq_fair()
+chooses between only two cpu's (the cpu which is waking up the task or last run
+cpu (task_cpu()), kernel hotplug code makes sure that both of which always
+represent the online CPU's).
+
+Why it didn't show up in 2.6.24? Because the new wakeup code is using a
+complex CPU selection logic in select_task_rq_rt() which exposed this
+bug in migration_call()
+
+Signed-off-by: Suresh Siddha <suresh.b.siddha@intel.com>
+---
+
+diff --git a/kernel/sched.c b/kernel/sched.c
+index 52b9867..60550d8 100644
+--- a/kernel/sched.c
++++ b/kernel/sched.c
+@@ -5882,6 +5882,7 @@ migration_call(struct notifier_block *nfb, unsigned long action, void *hcpu)
+ 		break;
+ 
+ 	case CPU_DOWN_PREPARE:
++	case CPU_DOWN_PREPARE_FROZEN:
+ 		/* Update our root-domain */
+ 		rq = cpu_rq(cpu);
+ 		spin_lock_irqsave(&rq->lock, flags);
