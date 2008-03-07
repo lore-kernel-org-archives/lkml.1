@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759589AbYCGJxP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759788AbYCGJ64@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759589AbYCGJxP (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Mar 2008 04:53:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753789AbYCGJw6
+	id S1759788AbYCGJ64 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Mar 2008 04:58:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753700AbYCGJ6p
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Mar 2008 04:52:58 -0500
-Received: from x346.tv-sign.ru ([89.108.83.215]:47512 "EHLO mail.screens.ru"
+	Fri, 7 Mar 2008 04:58:45 -0500
+Received: from x346.tv-sign.ru ([89.108.83.215]:60489 "EHLO mail.screens.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751431AbYCGJw5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Mar 2008 04:52:57 -0500
-Date: Fri, 7 Mar 2008 12:52:14 +0300
+	id S1753453AbYCGJ6p (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 7 Mar 2008 04:58:45 -0500
+Date: Fri, 7 Mar 2008 12:58:13 +0300
 From: Oleg Nesterov <oleg@tv-sign.ru>
-To: apkm@tv-sign.ru
+To: Andrew Morton <akpm@linux-foundation.org>
 Cc: "Eric W. Biederman" <ebiederm@xmission.com>, Ingo Molnar <mingo@elte.hu>,
        Roland McGrath <roland@redhat.com>, linux-kernel@vger.kernel.org
 Subject: [PATCH] signals: do_tkill: don't use tasklist_lock
-Message-ID: <20080307095214.GA8869@tv-sign.ru>
+Message-ID: <20080307095813.GA8894@tv-sign.ru>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
@@ -23,6 +23,8 @@ User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
+
+(sorry to all, re-sending with the correct Andrew's email)
 
 Convert do_tkill() to use rcu_read_lock() + lock_task_sighand() to avoid taking
 tasklist lock.
