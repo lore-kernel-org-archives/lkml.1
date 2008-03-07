@@ -1,144 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932189AbYCGUh7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765542AbYCGUnI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932189AbYCGUh7 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Mar 2008 15:37:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762962AbYCGUhq
+	id S1765542AbYCGUnI (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Mar 2008 15:43:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762087AbYCGUmz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Mar 2008 15:37:46 -0500
-Received: from fg-out-1718.google.com ([72.14.220.152]:63921 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761544AbYCGUho (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Mar 2008 15:37:44 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
-        b=CWvlAYOSEOJROM7op2IqQCUaJSvMDut4/ZG1F9qKM6RlhY6i4Rs/peTLc5Li3lYb28qGYJC1tvwp9WnRaLB9n3yG9aPIoiq2K5q+3SErqhxWkHq8KPQwjGDgHMn+evBXpA2PU8gt1+gJHQWf2o4eabxdy5wVX4pX/Zt/120pgMw=
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: petkovbb@gmail.com
-Subject: Re: Commit 9f10d9ee breaks CD mounting/burning
-Date: Fri, 7 Mar 2008 21:39:43 +0100
-User-Agent: KMail/1.9.9
-Cc: walt <w41ter@gmail.com>, linux-ide@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-References: <200803062235.00396.bzolnier@gmail.com> <20080307054825.GA19778@gollum.tnic>
-In-Reply-To: <20080307054825.GA19778@gollum.tnic>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Fri, 7 Mar 2008 15:42:55 -0500
+Received: from pat.uio.no ([129.240.10.15]:43658 "EHLO pat.uio.no"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1761181AbYCGUmy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 7 Mar 2008 15:42:54 -0500
+Subject: Re: READDIRPLUS max mount option
+From: Trond Myklebust <trond.myklebust@fys.uio.no>
+To: Kyle Rose <krose@krose.org>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-nfs@vger.kernel.org
+In-Reply-To: <47D1A0F5.2070501@krose.org>
+References: <47D1995E.6060501@krose.org>
+	 <1204919978.16746.12.camel@heimdal.trondhjem.org>
+	 <47D1A0F5.2070501@krose.org>
+Content-Type: text/plain
+Date: Fri, 07 Mar 2008 15:42:50 -0500
+Message-Id: <1204922570.16746.37.camel@heimdal.trondhjem.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.1 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200803072139.43167.bzolnier@gmail.com>
+X-UiO-Resend: resent
+X-UiO-Spam-info: not spam, SpamAssassin (score=0.0, required=5.0, autolearn=disabled, none)
+X-UiO-Scanned: 611C71786C1058EEC0E34D09465682D7E6779A81
+X-UiO-SR-test: 91DAC478C284DEFEEB00CAA4EE6AA33A80F06F3C
+X-UiO-SPAM-Test: remote_host: 129.240.10.9 spam_score: 0 maxlevel 200 minaction 2 bait 0 mail/h: 246 total 7289940 max/h 8345 blacklist 0 greylist 0 ratelimit 0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 07 March 2008, Borislav Petkov wrote:
-> On Thu, Mar 06, 2008 at 10:35:00PM +0100, Bartlomiej Zolnierkiewicz wrote:
-> > 
-> > On Thursday 06 March 2008, walt wrote:
-> > > Hi Bartolmiej,
-> > > 
-> > > For me, this commit causes the problem it's intended to fix:
-> > > 
-> > > commit 9f10d9ee0ac6d79d7bc8b9a158bf4a29322d84d3
-> > > Author: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-> > > Date:   Tue Feb 26 21:50:35 2008 +0100
-> > > 
-> > >      ide-cd: fix 'ireason' handling for REQ_TYPE_ATA_PC requests
-> > > 
-> > >      This fixes some hangs caused by not finishing the transfer before ending
-> > >      the request and also makes use of 'ireason == 1' quirk for spurious IRQs.
-> > > 
-> > > When I mount a CD there is a long delay, and I see this error message:
-> > > 
-> > > hdc: ide_cd_check_ireason: wrong transfer direction!
-> > > cdrom: failed setting lba address space
-> > > hdc: status error: status=0x58 { DriveReady SeekComplete DataRequest }
-> > > ide: failed opcode was: unknown
-> > > hdc: drive not ready for command
-> > > <repeated many times>
-> > > 
-> > > When I revert this commit everything works properly again, including
-> > > CD burning.
-> > > 
-> > > Here is the drive info:
-> > > 
-> > > hdc: TSSTcorpCD/DVDW SH-S182M, ATAPI CD/DVD-ROM drive
-> > > hdc: host max PIO5 wanted PIO255(auto-tune) selected PIO4
-> > > hdc: UDMA/33 mode selected
-> > > hdc: ATAPI 48X DVD-ROM DVD-R-RAM CD-R/RW drive, 2048kB Cache
-> > > Uniform CD-ROM driver Revision: 3.20
-> > > hdc: UDMA/33 mode selected
-> > > 
-> > > I'm happy to try patches or supply more info, just let me know
-> > > what you need.
-> > 
-> > Does the following patch help?
-> > 
-> > [ Borislav, please take a look and double check that it is OK. ]
-> > 
-> > From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-> > Subject: [PATCH] ide-cd: mark REQ_TYPE_ATA_PC write requests with REQ_RW flag
-> > 
-> > On Thursday 06 March 2008, walt wrote:
-> > 
-> > > For me, this commit causes the problem it's intended to fix:
-> > > 
-> > > commit 9f10d9ee0ac6d79d7bc8b9a158bf4a29322d84d3
-> > > Author: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-> > > Date:   Tue Feb 26 21:50:35 2008 +0100
-> > > 
-> > >      ide-cd: fix 'ireason' handling for REQ_TYPE_ATA_PC requests
-> > > 
-> > >      This fixes some hangs caused by not finishing the transfer before ending
-> > >      the request and also makes use of 'ireason == 1' quirk for spurious IRQs.
-> > > 
-> > > When I mount a CD there is a long delay, and I see this error message:
-> > > 
-> > > hdc: ide_cd_check_ireason: wrong transfer direction!
-> > > cdrom: failed setting lba address space
-> > > hdc: status error: status=0x58 { DriveReady SeekComplete DataRequest }
-> > > ide: failed opcode was: unknown
-> > > hdc: drive not ready for command
-> > > <repeated many times>
-> > > 
-> > > When I revert this commit everything works properly again, including
-> > > CD burning.
-> > 
-> > It turned out that REQ_TYPE_ATA_PC write requests were not marked as such
-> > (the previous commit assumed them to be).
-> > 
-> > Reported-by: walt <w41ter@gmail.com>
-> > Cc: Borislav Petkov <petkovbb@googlemail.com>
-> > Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-> > ---
-> >  drivers/ide/ide-cd_ioctl.c |    4 ++++
-> >  1 file changed, 4 insertions(+)
-> > 
-> > Index: b/drivers/ide/ide-cd_ioctl.c
-> > ===================================================================
-> > --- a/drivers/ide/ide-cd_ioctl.c
-> > +++ b/drivers/ide/ide-cd_ioctl.c
-> > @@ -457,6 +457,10 @@ int ide_cdrom_packet(struct cdrom_device
-> >  	   layer. the packet must be complete, as we do not
-> >  	   touch it at all. */
-> >  	ide_cd_init_rq(drive, &req);
-> > +
-> > +	if (cgc->data_direction == CGC_DATA_WRITE)
-> > +		req.cmd_flags |= REQ_RW;
-> > +
-> >  	memcpy(req.cmd, cgc->cmd, CDROM_PACKET_SIZE);
-> >  	if (cgc->sense)
-> >  		memset(cgc->sense, 0, sizeof(struct request_sense));
-> 
-> Here's how i understand it (and correct me if i'm wrong):
-> 
-> req.cmd_flags & 0x1 (i.e. the least sig. bit) was remaining unset for write requests
-> and that's why the ireason check in the interrupt handler was failing loudly.
-> This sets it correctly so that rq_data_dir(rq) evaluates to the correct data
-> direction of the request, no?
 
-Yep.
+On Fri, 2008-03-07 at 15:09 -0500, Kyle Rose wrote:
+> > The binary mount format is frozen forever, so the changes to nfs_mount.h
+> > and nfs4_mount.h are definitely NACKed.
+> >   
+> Ah. :-)  So is there no way to add mount options, or is there a 
+> different mechanism today?
 
-Thanks for checking it, I'll push the patch to Linus.
+Newer versions of 'mount' should use the text-based interface.
+
+> > Otherwise, it would be nice to know why this absolutely has to be made a
+> > mount option rather than just having a system-wide option (either a
+> > module/boot parameter or a sysctl) to control the behaviour of all
+> > mounts.
+> >   
+> I mount multiple remote file systems.  Only one of them I own, so I'm 
+> willing to potentially hammer it with huge READDIRPLUS requests, while 
+> the others probably deserve more benign behavior. ;-)
+
+The size of the actual READDIRPLUS requests is completely unaffected by
+your patch. Your change actually means that the client will continue to
+use READDIRPLUS on very large directories instead of falling back to
+readdir.
+The reason for falling back to readdir is that value of readdirplus
+tends to decrease with larger directories as the cost of caching all
+those dentries, attributes and filehandles both on the client and the
+server goes up.
+
+If you want a faster readdir(), you will find that splitting those huge
+directories up into smaller subdirs is an alternative solution that
+tends to scale much better on both client and server.
+
+> In general, I think having system-wide defaults somewhere in proc is 
+> helpful---and certainly superior to a constant in the source---but there 
+> should really be mount-specific overrides wherever the system-wide 
+> default might not be globally appropriate.
+
+Having hundreds of mount options for minor tweaks is not an acceptable
+practice. Each mount option needs to be abundantly justified.
+
+Since we're talking about what is really a quite arbitrary limit, I can
+certainly see an argument for why we might want a way to change it, but
+I'm still not convinced that we need to be setting this parameter at the
+mountpoint level.
+
+Cheers
+  Trond
+
