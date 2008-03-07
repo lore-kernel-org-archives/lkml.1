@@ -1,48 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759115AbYCGIYA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757408AbYCGIZS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759115AbYCGIYA (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Mar 2008 03:24:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750861AbYCGIXs
+	id S1757408AbYCGIZS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Mar 2008 03:25:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752281AbYCGIY7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Mar 2008 03:23:48 -0500
-Received: from smtp115.sbc.mail.sp1.yahoo.com ([69.147.64.88]:25051 "HELO
-	smtp115.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1750923AbYCGIXs (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Mar 2008 03:23:48 -0500
-X-YMail-OSG: ZJFYcpcVM1ltZgcFuzDM4ZRJKR4O8r4byHm6mEqdMHiMazxmh0WTljDehzGgDOY4bf3yFmbvyQ--
-X-Yahoo-Newman-Property: ymail-3
-Date: Fri, 7 Mar 2008 00:23:41 -0800
-From: Chris Wedgwood <cw@f00f.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Pawel Plociennik <paplociennik@gmail.com>, Pavel Machek <pavel@ucw.cz>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2.6.24] chroot= as a new kernel parameter
-Message-ID: <20080307082341.GA8607@puku.stupidest.org>
-References: <200803060001.38432.paplociennik@gmail.com> <20080306103422.GA5511@puku.stupidest.org> <20080306104448.GG13391@elte.hu> <20080306112212.GA9261@puku.stupidest.org> <20080306113729.GA18403@elte.hu>
+	Fri, 7 Mar 2008 03:24:59 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:53811 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752042AbYCGIY6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 7 Mar 2008 03:24:58 -0500
+Date: Fri, 7 Mar 2008 09:24:42 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Jan Beulich <jbeulich@novell.com>
+Cc: Miguel Boton <mboton.lkml@gmail.com>, Thomas Gleixner <tglx@linutronix.de>,
+       linux-kernel@vger.kernel.org, "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: mach_reboot_fixups()
+Message-ID: <20080307082441.GA12150@elte.hu>
+References: <47D031CD.76E4.0078.0@novell.com> <20080306174311.GA23029@elte.hu> <47D103D0.76E4.0078.0@novell.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080306113729.GA18403@elte.hu>
+In-Reply-To: <47D103D0.76E4.0078.0@novell.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Mar 06, 2008 at 12:37:29PM +0100, Ingo Molnar wrote:
 
-> while i have no personal use for chroot=, i generally test distros
-> that way, yes - and i try to keep them as unmodified as possible.
+* Jan Beulich <jbeulich@novell.com> wrote:
 
-It's not clear to me how this would work.
+> Not exactly - when rebooting through EFI or BIOS, the old code didn't 
+> go through mach_reboot_fixups(), and I think that is the correct 
+> behavior (albeit, when the EFI path fell back to the triple fault 
+> mechanism, it should have honored the fixup logic, and I think it is 
+> more correct that the new code tries the keyboard method first). 
+> Perhaps the most reasonable way to go is to honor all reboot= settings 
+> without using the override code first:
 
-If the distro uses an initrd (most do now?) how will this work?  The
-chroot will happen inside the initrd which will then break (because
-/init won't be there).
+>  		case BOOT_KBD:
+> +			mach_reboot_fixups(); /* for board specific fixups */
 
-> _Everything_ we do on the boot commandline that affects user-space
-> can be done in an initrd in theory - but still we have hundreds of
-> boot options.
+ok, agreed.
 
-Precendent alone isn't a good reason to do something, a change should
-have merit of it's own.
+> (with the exception that reboot=keyboard will still have the effect of 
+> honoring the fixups, but I think this is better than further 
+> complicating the logic).
 
+the fixups are really "emergency exceptions" - for (a very low number 
+of) broken boards that just cannot reboot via the default BOOT_KBD 
+method. In that sense it's a small detail how widely we apply the 
+exceptions - those boards probably wont be rebooted via reboot=bios 
+[people only use reboot options when they have trouble rebooting].
+
+> In case you want to take this,
+> Signed-off-by: Jan Beulich <jbeulich@novell.com>
+
+i modified the patch and added your signoff - thanks,
+
+	Ingo
