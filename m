@@ -1,82 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759186AbYCGHYh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757275AbYCGHbV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759186AbYCGHYh (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Mar 2008 02:24:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754515AbYCGHY2
+	id S1757275AbYCGHbV (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Mar 2008 02:31:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751609AbYCGHbI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Mar 2008 02:24:28 -0500
-Received: from dwdmx4.dwd.de ([141.38.3.230]:53124 "EHLO dwdmx4.dwd.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751430AbYCGHY1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Mar 2008 02:24:27 -0500
-Date: Fri, 7 Mar 2008 07:24:17 +0000 (GMT)
-From: Holger Kiehl <Holger.Kiehl@dwd.de>
-X-X-Sender: kiehl@diagnostix.dwd.de
-To: Alexey Dobriyan <adobriyan@sw.ru>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>, dhaval@linux.vnet.ibm.com,
-       vatsa@linux.vnet.ibm.com, mingo@elte.hu, Greg KH <gregkh@suse.de>
-Subject: Re: sysfs: duplicate filename '74' can not be created
-In-Reply-To: <20080304160940.GC19059@localhost.sw.ru>
-Message-ID: <Pine.LNX.4.64.0803070719260.22139@diagnostix.dwd.de>
-References: <20080304160940.GC19059@localhost.sw.ru>
+	Fri, 7 Mar 2008 02:31:08 -0500
+Received: from rn-out-0910.google.com ([64.233.170.187]:63561 "EHLO
+	rn-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751381AbYCGHbG (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 7 Mar 2008 02:31:06 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=mGalW/b2WHiwDctnq8uiE0jpjT2bYT3IFSU+/v0trE98726AuKO4i+x5SW7PQ2tzD97Np7/zFE1xea5Dp7oPA9I2RSN/VTquilIze7jYO2xvRLWZlOX1910SWlpiuZdQwobM0zCr2w9vf1eDw5L3nprLuxychzTgQiJzS4PE3bg=
+Message-ID: <a8e1da0803062331la1f38fei8303a46f9949ca23@mail.gmail.com>
+Date: Fri, 7 Mar 2008 15:31:05 +0800
+From: "Dave Young" <hidave.darkstar@gmail.com>
+To: paulmck@linux.vnet.ibm.com
+Subject: Re: 2.6.25-rc4 rcupreempt.h WARNINGs while suspend/resume
+Cc: "Jike Song" <albcamus@gmail.com>,
+       "Linux Kernel" <linux-kernel@vger.kernel.org>
+In-Reply-To: <20080307065752.GF19183@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <df9815e70803042335j4ea66028y96d6be21f0970aa1@mail.gmail.com>
+	 <df9815e70803051811o4c4a42e0td56cfd32b80c66b2@mail.gmail.com>
+	 <20080306022854.GK8728@linux.vnet.ibm.com>
+	 <a8e1da0803051920t586c7fbapadda70ae895f8893@mail.gmail.com>
+	 <a8e1da0803060308o690c1545l1eaffc0c40f2bc7e@mail.gmail.com>
+	 <20080306162724.GA9309@linux.vnet.ibm.com>
+	 <a8e1da0803061907k72785f10t2dcb98ca9829e2d8@mail.gmail.com>
+	 <20080307041940.GB19183@linux.vnet.ibm.com>
+	 <a8e1da0803062035o318bd843o22b561faa52fd19f@mail.gmail.com>
+	 <20080307065752.GF19183@linux.vnet.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 4 Mar 2008, Alexey Dobriyan wrote:
+On Fri, Mar 7, 2008 at 2:57 PM, Paul E. McKenney
+<paulmck@linux.vnet.ibm.com> wrote:
+>
+> On Fri, Mar 07, 2008 at 12:35:26PM +0800, Dave Young wrote:
+>  > On Fri, Mar 7, 2008 at 12:19 PM, Paul E. McKenney
+>  > <paulmck@linux.vnet.ibm.com> wrote:
+>  > > On Fri, Mar 07, 2008 at 11:07:48AM +0800, Dave Young wrote:
+>  > >  > On Fri, Mar 7, 2008 at 12:27 AM, Paul E. McKenney
+>  > >  > <paulmck@linux.vnet.ibm.com> wrote:
+>  > >  > > On Thu, Mar 06, 2008 at 07:08:55PM +0800, Dave Young wrote:
+>  > >
+>  > > > >  > My syslog became a 2G size big file yestoday due to the warnings.
+>  > >  > >  > How about change the WARN_ON to WARN_ON_ONCE?
+>  > >  > >
+>  > >  > >  Hello, Dave,
+>  > >  > >
+>  > >  > >  I might be convinced to make this change for 2.6.26, but the condition
+>  > >  > >  that the WARN_ON() is complaining about is quite serious, so I don't
+>  > >  > >  want to take a chance on it getting lost in the noise in the 2.6.25
+>  > >  > >  series.
+>  > >  > >
+>  > >  > >  Seem reasonable?
+>  > >  >
+>  > >  > IMHO, WARN_ON_ONCE is enough for my eyes :)
+>  > >
+>  > >  I could believe that, but my experience has been that many others
+>  > >  need the condition to be obvious...
+>  > >
+>  > >
+>  > >  > >  Better yet, is there some sort of time-limited WARN_ON that kicks out
+>  > >  > >  a message at most once per second or some such?  Enough to definitely
+>  > >  > >  be noticed, but not enough to bring the machine to its knees?
+>  > >  >
+>  > >  > Seems there's no such functions/macros, but is is really needed?
+>  > >
+>  > >  If everyone reports errors when they see isolated WARN_ON()s in their
+>  > >  logfiles, then no.  But...
+>  >
+>  > Ok, I agree with you.
+>  >
+>  > Maybe something like WARN_ON_HZ(condition) or
+>  > WARN_ON_PERIOD(condition, period_value)?
+>
+>  Makes sense to me!  The other benefit of this sort of thing is that
+>  it lets you know whether the problem was a one-off or whether it
+>  continued happening -- but without too much log bloat.
+>
+>  I was thinking in terms of once every ten seconds, but am not all
+>  that hung up on the exact value of the period.
+>
+>  Thoughts?
 
-> [Cc'ing /sys/kernel/uids guys]
->
->> Mar  3 13:50:01 helena kernel: sysfs: duplicate filename '74' can not be created
->> Mar  3 13:50:01 helena kernel: WARNING: at fs/sysfs/dir.c:424 sysfs_add_one()
->> Mar  3 13:50:01 helena kernel: Pid: 21911, comm: sshd Not tainted 2.6.24.3 #1
->
-> I see only one suspicious place: KOBJ_ADD is sent even if sysfs file
-> creation failed and kobject is happily removed. But this almost
-> certainly separate bug.
->
->
->
-> You can try this debugging patch. Post several first consecutive messages.
-> [crosses fingers]
->
-Applied the patch and this time it oopsed immediatly. I just got one:
+Then, WARN_ON_SECS(condition, seconds) ?
 
-    Mar  7 07:09:04 helena kernel: general protection fault: 0000 [1] SMP
-    Mar  7 07:09:04 helena kernel: CPU 3
-    Mar  7 07:09:04 helena kernel: Modules linked in: lm85 hwmon_vid i2c_amd756_s4882 bonding nf_conntrack_ftp nf_conntrack_netbios_ns ipt_REJECT nf_conntrack_ipv4 xt_state nf_conntrack xt_tcpudp iptable_filter ip_tables x_tables binfmt_misc video output ac floppy nvram ohci_hcd k8temp i2c_amd756 i2c_core button usbcore
-    Mar  7 07:09:04 helena kernel: Pid: 2983, comm: modprobe Not tainted 2.6.24.3-alexey #3
-    Mar  7 07:09:04 helena kernel: RIP: 0010:[<ffffffff8027931d>]  [<ffffffff8027931d>] __kmalloc_node+0x95/0xc9
-    Mar  7 07:09:04 helena kernel: RSP: 0018:ffff81017d571de8  EFLAGS: 00010046
-    Mar  7 07:09:04 helena kernel: RAX: 0000000000000000 RBX: 00000000000080d0 RCX: ffffffff8026d2b1
-    Mar  7 07:09:04 helena kernel: RDX: ffff007265776f70 RSI: 00000000000080d0 RDI: ffffffff80554e38
-    Mar  7 07:09:04 helena kernel: RBP: ffff810200026800 R08: 00000000005184b0 R09: ffffffff80554e38
-    Mar  7 07:09:04 helena kernel: R10: 0000000000000000 R11: 0000000000000002 R12: 0000000000000286
-    Mar  7 07:09:04 helena kernel: R13: 00000000ffffffff R14: 00000000ffffffff R15: 00000000005184b0
-    Mar  7 07:09:04 helena kernel: FS:  00002b66d114c6f0(0000) GS:ffff81027e30e300(0000) knlGS:0000000000000000
-    Mar  7 07:09:04 helena kernel: CS:  0010 DS: 0000 ES: 0000 CR0: 000000008005003b
-    Mar  7 07:09:04 helena kernel: CR2: 0000003254acc030 CR3: 000000017d530000 CR4: 00000000000006e0
-    Mar  7 07:09:04 helena kernel: DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
-    Mar  7 07:09:04 helena kernel: DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
-    Mar  7 07:09:04 helena kernel: Process modprobe (pid: 2983, threadinfo ffff81017d570000, task ffff81017df3d5c0)
-    Mar  7 07:09:04 helena kernel: Stack:  ffff81027d2fb740 ffffc200017e39a8 ffff81027d2fba00 00000000000000d0
-    Mar  7 07:09:04 helena kernel:  ffffc200017e33e8 ffffffff8026d2b1 0000000000000163 ffffc200017e39a8
-    Mar  7 07:09:04 helena kernel:  0000000000000018 ffffc200017e39a8 0000000000000018 ffffc200017e2f80
-    Mar  7 07:09:04 helena kernel: Call Trace:
-    Mar  7 07:09:04 helena kernel:  [<ffffffff8026d2b1>] __vmalloc_area_node+0x71/0x185
-    Mar  7 07:09:04 helena kernel:  [<ffffffff80248ec0>] sys_init_module+0x94d/0x1872
-    Mar  7 07:09:04 helena kernel:  [<ffffffff8020b61e>] system_call+0x7e/0x83
-    Mar  7 07:09:04 helena kernel:
-    Mar  7 07:09:04 helena kernel:
-    Mar  7 07:09:04 helena kernel: Code: 48 8b 04 c2 48 89 45 00 41 54 9d 31 c0 c1 eb 0f 48 85 d2 0f
-    Mar  7 07:09:04 helena kernel: RIP  [<ffffffff8027931d>] __kmalloc_node+0x95/0xc9
-    Mar  7 07:09:04 helena kernel:  RSP <ffff81017d571de8>
-    Mar  7 07:09:04 helena kernel: ---[ end trace 82b7eaeeb11c3ab5 ]---
-
-After this the system was no longer reachable. Note, as before it always
-happens on CPU3.
-
-Holger
-
+>
+>                                                 Thanx, Paul
+>
