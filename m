@@ -1,52 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762212AbYCGFMM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764372AbYCGFRs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762212AbYCGFMM (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Mar 2008 00:12:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751186AbYCGFL5
+	id S1764372AbYCGFRs (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Mar 2008 00:17:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752555AbYCGFRl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Mar 2008 00:11:57 -0500
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:40716 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1750932AbYCGFL5 (ORCPT
+	Fri, 7 Mar 2008 00:17:41 -0500
+Received: from smtp-out.google.com ([216.239.45.13]:53923 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752364AbYCGFRk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Mar 2008 00:11:57 -0500
-Date: Thu, 6 Mar 2008 21:11:39 -0800 (PST)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Nick Piggin <npiggin@suse.de>
-cc: netdev@vger.kernel.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       yanmin_zhang@linux.intel.com, David Miller <davem@davemloft.net>,
-       Eric Dumazet <dada1@cosmosbay.com>
-Subject: Re: [rfc][patch 2/3] slab: introduce SMP alignment
-In-Reply-To: <20080307043700.GI21185@wotan.suse.de>
-Message-ID: <Pine.LNX.4.64.0803062108210.1143@schroedinger.engr.sgi.com>
-References: <20080303093449.GA15091@wotan.suse.de> <20080303093529.GB15091@wotan.suse.de>
- <Pine.LNX.4.64.0803031104570.6917@schroedinger.engr.sgi.com>
- <20080303200355.GB8974@wotan.suse.de> <Pine.LNX.4.64.0803031208400.16049@schroedinger.engr.sgi.com>
- <20080303201211.GE8974@wotan.suse.de> <Pine.LNX.4.64.0803031216430.3110@schroedinger.engr.sgi.com>
- <20080303202411.GH8974@wotan.suse.de> <Pine.LNX.4.64.0803031327330.4375@schroedinger.engr.sgi.com>
- <20080307043700.GI21185@wotan.suse.de>
+	Fri, 7 Mar 2008 00:17:40 -0500
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=received:date:from:x-x-sender:to:cc:subject:in-reply-to:
+	message-id:references:user-agent:mime-version:content-type;
+	b=hpkK7dyEPN7kNiYxFT6BhiY4122eqxCuvIFX0YKdrCqFDllU2jYSwrmoFUOkig58r
+	QInarBHZbkgFqKZk0wcFw==
+Date: Thu, 6 Mar 2008 21:15:33 -0800 (PST)
+From: David Rientjes <rientjes@google.com>
+X-X-Sender: rientjes@chino.kir.corp.google.com
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+cc: balbir@linux.vnet.ibm.com, Paul Menage <menage@google.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Pavel Emelianov <xemul@openvz.org>, Hugh Dickins <hugh@veritas.com>,
+       Sudhir Kumar <skumar@linux.vnet.ibm.com>,
+       YAMAMOTO Takashi <yamamoto@valinux.co.jp>, lizf@cn.fujitsu.com,
+       linux-kernel@vger.kernel.org, taka@valinux.co.jp, linux-mm@kvack.org
+Subject: Re: [PATCH] Add cgroup support for enabling controllers at boot
+ time
+In-Reply-To: <20080307135839.918a849a.kamezawa.hiroyu@jp.fujitsu.com>
+Message-ID: <alpine.DEB.1.00.0803062115010.26462@chino.kir.corp.google.com>
+References: <20080306185952.23290.49571.sendpatchset@localhost.localdomain> <alpine.DEB.1.00.0803061108370.13110@chino.kir.corp.google.com> <47D0C76D.8050207@linux.vnet.ibm.com> <20080307135839.918a849a.kamezawa.hiroyu@jp.fujitsu.com>
+User-Agent: Alpine 1.00 (DEB 882 2007-12-20)
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 7 Mar 2008, Nick Piggin wrote:
+On Fri, 7 Mar 2008, KAMEZAWA Hiroyuki wrote:
 
-> > No the slab allocators were optimized for VSMP so that the 
-> > internode_alignment is not necessary there. That was actually one of the 
-> > requirements that triggered the slab numa work.
+> > David Rientjes wrote:
+> > > On Fri, 7 Mar 2008, Balbir Singh wrote:
+> > > 
+> > >> @@ -3010,3 +3020,16 @@ static void cgroup_release_agent(struct 
+> > >>  	spin_unlock(&release_list_lock);
+> > >>  	mutex_unlock(&cgroup_mutex);
+> > >>  }
+> > >> +
+> > >> +static int __init cgroup_disable(char *str)
+> > >> +{
+> > >> +	int i;
+> > >> +	for (i = 0; i < CGROUP_SUBSYS_COUNT; i++) {
+> > >> +		struct cgroup_subsys *ss = subsys[i];
+> > >> +		if (!strcmp(str, ss->name)) {
+> > >> +			ss->disabled = 1;
+> > >> +			break;
+> > >> +		}
+> > >> +	}
+> > >> +}
+> > >> +__setup("cgroup_disable=", cgroup_disable);
+> > > 
+> > > This doesn't handle spaces very well, so isn't it possible for the name of 
+> > > a current or future cgroup subsystem to be specified after cgroup_disable= 
+> > > on the command line and have it disabled by accident?
+> > > 
+> > 
+> Hmm, cmdline like
 > 
-> BTW. can you explain this incredible claim that the slab allocators
-> do not need internode_alignment to avoid false sharing of allocated
-> objects on VSMP? I don't understand how that would work at all.
+> cgroup_disable=cpu,memory, ...
+> 
+> should be written as
+> 
+> cgroup_disable=cpu cgroup_disable=memory ....
+> 
 
-The queues are per node which means that pages from which we allocate are 
-distinct per node. As long as processes allocate and free object on a 
-single node all is fine. Problems can arise though if objects are used 
-across node. The earlier incarnation of SLAB had a single global queue for 
-slab pages and objects could be allocated from an arbitrary processor. 
-Objects from the same page were allocated from all processors.
-
+Or just set the first space following cgroup_disable= to '\0' and you're 
+done.  strcmp() will take care of the rest.
