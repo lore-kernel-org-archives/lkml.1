@@ -1,70 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764423AbYCGCZe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761274AbYCGC0I@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764423AbYCGCZe (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Mar 2008 21:25:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757253AbYCGCZU
+	id S1761274AbYCGC0I (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Mar 2008 21:26:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764727AbYCGCZk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Mar 2008 21:25:20 -0500
-Received: from rv-out-0910.google.com ([209.85.198.189]:56688 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752460AbYCGCZS (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Mar 2008 21:25:18 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:mime-version:content-type;
-        b=WWAywG8Gk74jLBr1euiKIWce8sijWFTbhfq1IdzWdrU6QiN2IWwP7dcDTnfsiz/f+nHgjB9NMVSkR5mZw8hrNecVaB9zYR3HvIUBEzowua2adVedS8sdJYDTSo+s2sLhbs2JfMDky703lqCGpPzqVKgnkb+Op5h74tfprdSi6pc=
-Message-ID: <86802c440803061825p5df1cdb7q9655da509ce3ce4a@mail.gmail.com>
-Date: Thu, 6 Mar 2008 18:25:16 -0800
-From: "Yinghai Lu" <yhlu.kernel@gmail.com>
-To: "Ingo Molnar" <mingo@elte.hu>, "Thomas Gleixner" <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>
-Subject: [PATCH] x86_64: tight online check in setup_per_cpu_areas
-Cc: "kernel list" <linux-kernel@vger.kernel.org>
-MIME-Version: 1.0
-Content-Type: multipart/mixed; 
-	boundary="----=_Part_25101_8801941.1204856716953"
+	Thu, 6 Mar 2008 21:25:40 -0500
+Received: from ns2.suse.de ([195.135.220.15]:42865 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757253AbYCGCZj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 6 Mar 2008 21:25:39 -0500
+Date: Fri, 7 Mar 2008 03:25:37 +0100
+From: Nick Piggin <npiggin@suse.de>
+To: Christoph Lameter <clameter@sgi.com>
+Cc: Pekka Enberg <penberg@cs.helsinki.fi>, netdev@vger.kernel.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       yanmin_zhang@linux.intel.com, David Miller <davem@davemloft.net>,
+       Eric Dumazet <dada1@cosmosbay.com>
+Subject: Re: [rfc][patch 1/3] slub: fix small HWCACHE_ALIGN alignment
+Message-ID: <20080307022537.GC21185@wotan.suse.de>
+References: <Pine.LNX.4.64.0803031315160.4131@schroedinger.engr.sgi.com> <84144f020803031330i2c0ea1f6kc5b02c8b26145797@mail.gmail.com> <Pine.LNX.4.64.0803031331340.4375@schroedinger.engr.sgi.com> <47CC6F30.50802@cs.helsinki.fi> <20080305002821.GD1510@wotan.suse.de> <Pine.LNX.4.64.0803051254570.30742@schroedinger.engr.sgi.com> <20080306024904.GA27150@wotan.suse.de> <Pine.LNX.4.64.0803061451230.16212@schroedinger.engr.sgi.com> <20080307020443.GA21185@wotan.suse.de> <Pine.LNX.4.64.0803061816430.28976@schroedinger.engr.sgi.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0803061816430.28976@schroedinger.engr.sgi.com>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-------=_Part_25101_8801941.1204856716953
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+On Thu, Mar 06, 2008 at 06:20:40PM -0800, Christoph Lameter wrote:
+> On Fri, 7 Mar 2008, Nick Piggin wrote:
+> 
+> > > Do you have a case in mind where that would be useful? We had a 
+> > 
+> > Patch 3/3
+> 
+> Those already have SLAB_HWCACHE_ALIGN.
+> 
+> The point is to switch off alignment for UP? Cant we do that with 
+> SLAB_HWCACHE_ALIGN too since SLOB seemed to work successfully without it 
+> in the past?
 
+See my next post to correct your understanding of HWCACHE_ALIGN.
 
+ 
+> > > Note that there is also KMEM_CACHE which picks up the alignment from 
+> > > the compiler.
+> > 
+> > Yeah, that's not quite as good either. My allocation flag is dynamic, so
+> > it will not bloat things for no reason on UP machines and SMP kernels. 
+> > It also aligns to the detected machine cacheline size rather than a
+> > compile time constant.
+> 
+> Is that really a noteworthy effect?
 
-------=_Part_25101_8801941.1204856716953
-Content-Type: text/x-patch; name=x86_64_tight_per_cpu.patch
-Content-Transfer-Encoding: base64
-X-Attachment-Id: f_fdi4l3u70
-Content-Disposition: attachment; filename=x86_64_tight_per_cpu.patch
+Yes.
 
-W1BBVENIXSB4ODZfNjQ6IHRpZ2h0IG9ubGluZSBjaGVjayBpbiBzZXR1cF9wZXJfY3B1X2FyZWFz
-Cgp3aGVuIG51bWEgZGlzYWJsZWQgZ290IGNvbXBpbGUgd2FybmluZzoKYXJjaC94ODYva2VybmVs
-L3NldHVwNjQuYzogSW4gZnVuY3Rpb24g4oCYc2V0dXBfcGVyX2NwdV9hcmVhc+KAmToKYXJjaC94
-ODYva2VybmVsL3NldHVwNjQuYzoxNDc6IHdhcm5pbmc6IHRoZSBhZGRyZXNzIG9mIOKAmGNvbnRp
-Z19wYWdlX2RhdGHigJkgd2lsbCBhbHdheXMgZXZhbHVhdGUgYXMg4oCYdHJ1ZeKAmQoKaXQgc2Vl
-bXMgd2UgbWlzc2VkIGNoZWNraW5nIGlmIHRoZSBub2RlIGlzIG9ubGluZSBiZWZvcmUgd2UgdHJ5
-IHRvIHJlZmVyCiBOT0RFX0RBVEEuCnNvIGZpeCBpdAoKU2lnbmVkLW9mZi1ieTogWWluZ2hhaSBM
-dSA8eWhsdS5rZXJuZWxAZ21haWwuY29tPgoKSW5kZXg6IGxpbnV4LTIuNi9hcmNoL3g4Ni9rZXJu
-ZWwvc2V0dXA2NC5jCj09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09
-PT09PT09PT09PT09PT09PT09PT09PT0KLS0tIGxpbnV4LTIuNi5vcmlnL2FyY2gveDg2L2tlcm5l
-bC9zZXR1cDY0LmMKKysrIGxpbnV4LTIuNi9hcmNoL3g4Ni9rZXJuZWwvc2V0dXA2NC5jCkBAIC0x
-NDMsMTQgKzE0MywxNiBAQCB2b2lkIF9faW5pdCBzZXR1cF9wZXJfY3B1X2FyZWFzKHZvaWQpCiAJ
-cHJpbnRrKEtFUk5fSU5GTyAiUEVSQ1BVOiBBbGxvY2F0aW5nICVsdSBieXRlcyBvZiBwZXIgY3B1
-IGRhdGFcbiIsIHNpemUpOwogCWZvcl9lYWNoX2NwdV9tYXNrIChpLCBjcHVfcG9zc2libGVfbWFw
-KSB7CiAJCWNoYXIgKnB0cjsKKyNpZm5kZWYgQ09ORklHX05FRURfTVVMVElQTEVfTk9ERVMKKwkJ
-cHRyID0gYWxsb2NfYm9vdG1lbV9wYWdlcyhzaXplKTsKKyNlbHNlCisJCWludCBub2RlID0gZWFy
-bHlfY3B1X3RvX25vZGUoaSk7CiAKLQkJaWYgKCFOT0RFX0RBVEEoZWFybHlfY3B1X3RvX25vZGUo
-aSkpKSB7Ci0JCQlwcmludGsoImNwdSB3aXRoIG5vIG5vZGUgJWQsIG51bV9vbmxpbmVfbm9kZXMg
-JWRcbiIsCi0JCQkgICAgICAgaSwgbnVtX29ubGluZV9ub2RlcygpKTsKKwkJaWYgKCFub2RlX29u
-bGluZShub2RlKSB8fCAhTk9ERV9EQVRBKG5vZGUpKQogCQkJcHRyID0gYWxsb2NfYm9vdG1lbV9w
-YWdlcyhzaXplKTsKLQkJfSBlbHNlIHsgCi0JCQlwdHIgPSBhbGxvY19ib290bWVtX3BhZ2VzX25v
-ZGUoTk9ERV9EQVRBKGVhcmx5X2NwdV90b19ub2RlKGkpKSwgc2l6ZSk7Ci0JCX0KKwkJZWxzZQor
-CQkJcHRyID0gYWxsb2NfYm9vdG1lbV9wYWdlc19ub2RlKE5PREVfREFUQShub2RlKSwgc2l6ZSk7
-CisjZW5kaWYKIAkJaWYgKCFwdHIpCiAJCQlwYW5pYygiQ2Fubm90IGFsbG9jYXRlIGNwdSBkYXRh
-IGZvciBDUFUgJWRcbiIsIGkpOwogCQljcHVfcGRhKGkpLT5kYXRhX29mZnNldCA9IHB0ciAtIF9f
-cGVyX2NwdV9zdGFydDsK
-------=_Part_25101_8801941.1204856716953--
