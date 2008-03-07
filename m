@@ -1,47 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765594AbYCGUMn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765422AbYCGUOo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765594AbYCGUMn (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Mar 2008 15:12:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757835AbYCGUMd
+	id S1765422AbYCGUOo (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Mar 2008 15:14:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759678AbYCGUOg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Mar 2008 15:12:33 -0500
-Received: from relay1.sgi.com ([192.48.171.29]:44861 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1754825AbYCGUMd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Mar 2008 15:12:33 -0500
-Date: Fri, 7 Mar 2008 12:12:12 -0800 (PST)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Andrea Arcangeli <andrea@qumranet.com>
-cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, Jack Steiner <steiner@sgi.com>,
-       Nick Piggin <npiggin@suse.de>, akpm@linux-foundation.org,
-       Robin Holt <holt@sgi.com>, Avi Kivity <avi@qumranet.com>,
-       kvm-devel@lists.sourceforge.net, general@lists.openfabrics.org,
-       Steve Wise <swise@opengridcomputing.com>,
-       Roland Dreier <rdreier@cisco.com>, Kanoj Sarcar <kanojsarcar@yahoo.com>,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       daniel.blueman@quadrics.com
-Subject: Re: [PATCH] 3/4 combine RCU with seqlock to allow mmu notifier
- methods to sleep (#v9 was 1/4)
-In-Reply-To: <20080307184552.GL24114@v2.random>
-Message-ID: <Pine.LNX.4.64.0803071211340.6815@schroedinger.engr.sgi.com>
-References: <Pine.LNX.4.64.0803032327470.9642@schroedinger.engr.sgi.com>
- <20080304133020.GC5301@v2.random> <Pine.LNX.4.64.0803041059110.13957@schroedinger.engr.sgi.com>
- <20080304222030.GB8951@v2.random> <Pine.LNX.4.64.0803041422070.20821@schroedinger.engr.sgi.com>
- <20080307151722.GD24114@v2.random> <20080307152328.GE24114@v2.random>
- <1204908762.8514.114.camel@twins> <20080307175019.GK24114@v2.random>
- <1204912895.8514.120.camel@twins> <20080307184552.GL24114@v2.random>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Fri, 7 Mar 2008 15:14:36 -0500
+Received: from x346.tv-sign.ru ([89.108.83.215]:58384 "EHLO mail.screens.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1759552AbYCGUOf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 7 Mar 2008 15:14:35 -0500
+Date: Fri, 7 Mar 2008 23:13:46 +0300
+From: Oleg Nesterov <oleg@tv-sign.ru>
+To: Roland McGrath <roland@redhat.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] signals: do_tkill: don't use tasklist_lock
+Message-ID: <20080307201346.GA107@tv-sign.ru>
+References: <20080307095813.GA8894@tv-sign.ru> <20080307193159.1AFF127010F@magilla.localdomain>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080307193159.1AFF127010F@magilla.localdomain>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 7 Mar 2008, Andrea Arcangeli wrote:
+On 03/07, Roland McGrath wrote:
+> 
+> > Note that we don't return an error if lock_task_sighand() fails, we
+> > pretend the task dies after receiving the signal. Otherwise, we should
+> > fight with the nasty races with mt-exec without having any advantage.
+> 
+> To clarify, this is not a change from the existing behavior.
+> So your change is fine regardless of this issue.
+> 
+> The case you have in mind is that p was the old group_leader
+> being replaced by another thread that exec'd, right?
 
-> PS. this problem I pointed out of _end possibly called before _begin
-> is the same for #v9 and EMM V1 as far as I can tell.
+Yes.
 
-Hmmm.. We could just push that on the driver saying that is has to 
-tolerate it. Otherwise how can we solve this?
+> It is the most obscure of nits, but I think it can be wrong to drop a
+> signal in this case.  If it's a fatal signal (especially SIGKILL),
+> then either the thread group should be killed or the call should
+> return an error.
+
+Yes, we are not consistent here with or without this patch.
+
+Btw, a question: we are buggy or just "not perfect" ? After all, the
+main thread actually exits although this is just linux's implementation
+detail.
+
+> For the exec case, if p->sighand is cleared that means the
+> release_task(leader) call at the end of de_thread started.  So by
+> now, the pid has been transferred to the exec'ing thread.  If we just
+> restart the lookup, it will find the new thread (or not, and we can
+> return -ESRCH).
+
+Yep. kill_pid_info() does exactly this. Initially I was going to repeat
+this logic,
+
+> I'm inclined to do that, but it certainly should be a second patch
+> after this one.
+
+but actually it doesn't buy much here.
+
+Suppose that the main thread is already dead (dequeued SIGKILL), but
+not yet released. This window is not that small. In that window (before
+de_thread() switches pids) any private signal (even SIGKILL) sent to the
+main thread will be silently lost.
+
+To do a proper fix, we should change de_thread() so that the new leader
+also "inherits" old_leader->pending signals.
+
+This is certainly possible as a separate change.
+
+Oleg.
 
