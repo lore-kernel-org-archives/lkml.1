@@ -1,99 +1,212 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762979AbYCGMOj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759982AbYCGMYk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762979AbYCGMOj (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Mar 2008 07:14:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756412AbYCGMOc
+	id S1759982AbYCGMYk (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Mar 2008 07:24:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752091AbYCGMY3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Mar 2008 07:14:32 -0500
-Received: from nat-132.atmel.no ([80.232.32.132]:55579 "EHLO relay.atmel.no"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1750918AbYCGMOb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Mar 2008 07:14:31 -0500
-Message-ID: <47D13185.4080803@atmel.com>
-Date: Fri, 07 Mar 2008 13:13:57 +0100
-From: Hans-Christian Egtvedt <hans-christian.egtvedt@atmel.com>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080227)
-MIME-Version: 1.0
-To: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
-CC: linux-kernel@vger.kernel.org, Hans-Christian Egtvedt <hcegtvedt@atmel.com>,
-       Haavard Skinnemoen <hskinnemoen@atmel.com>,
-       Andrew Victor <avictor.za@gmail.com>
-Subject: Re: [PATCH] at73c213: Monaural support
-References: <20080307.190234.55730878.nemoto@toshiba-tops.co.jp>
-In-Reply-To: <20080307.190234.55730878.nemoto@toshiba-tops.co.jp>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Fri, 7 Mar 2008 07:24:29 -0500
+Received: from ecfrec.frec.bull.fr ([129.183.4.8]:59080 "EHLO
+	ecfrec.frec.bull.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751391AbYCGMY2 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 7 Mar 2008 07:24:28 -0500
+From: Laurent Vivier <Laurent.Vivier@bull.net>
+To: linux-kernel@vger.kernel.org
+Cc: Laurent Vivier <Laurent.Vivier@bull.net>
+Subject: [PATCH][v2] Modify loop device to be able to manage partitions of the disk image
+Date: Fri,  7 Mar 2008 13:27:40 +0100
+Message-Id: <12048928601734-git-send-email-Laurent.Vivier@bull.net>
+X-Mailer: git-send-email 1.5.2.4
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Atsushi Nemoto wrote:
-> This patch add support for monaural playback to at73c213 driver.  The
-> sound will be apear on L-channel.  Tested on AT91SAM9260-EK.
-> 
+This patch allows to use loop device with partitionned disk image.
 
-This works fine for me on AT32AP7000 on STK1000 as well.
+Original behavior of loop is not modified.
 
-Although, I had to use 32 * 1024 buffer_bytes_max and 16 * 1024
-period_bytes_max. Higher buffer_bytes_max resulted in glitching sound
-when only using one channel. Nothing to do with this patch.
+A new parameter is introduced to define how many partition we want to be
+able to manage per loop device. This parameter is "loop_max_part".
 
-> Signed-off-by: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
+For instance, to manage 63 partitions / loop device, we will do:
+# modprobe loop loop_max_part=63
+# ls -l /dev/loop?
+brw-rw---- 1 root disk 7,   0 2008-03-05 14:55 /dev/loop0
+brw-rw---- 1 root disk 7,  64 2008-03-05 14:55 /dev/loop1
+brw-rw---- 1 root disk 7, 128 2008-03-05 14:55 /dev/loop2
+brw-rw---- 1 root disk 7, 192 2008-03-05 14:55 /dev/loop3
+brw-rw---- 1 root disk 7, 256 2008-03-05 14:55 /dev/loop4
+brw-rw---- 1 root disk 7, 320 2008-03-05 14:55 /dev/loop5
+brw-rw---- 1 root disk 7, 384 2008-03-05 14:55 /dev/loop6
+brw-rw---- 1 root disk 7, 448 2008-03-05 14:55 /dev/loop7
 
-Acked-by: Hans-Christian Egtvedt <hans-christian.egtvedt@atmel.com>
+And to attach a raw partitionned disk image, the original losetup is used:
 
-> ---
-> diff --git a/sound/spi/at73c213.c b/sound/spi/at73c213.c
-> index 89d6e9c..a7839cc 100644
-> --- a/sound/spi/at73c213.c
-> +++ b/sound/spi/at73c213.c
-> @@ -118,7 +118,7 @@ static struct snd_pcm_hardware snd_at73c213_playback_hw = {
->  	.rates		= SNDRV_PCM_RATE_CONTINUOUS,
->  	.rate_min	= 8000,  /* Replaced by chip->bitrate later. */
->  	.rate_max	= 50000, /* Replaced by chip->bitrate later. */
-> -	.channels_min	= 2,
-> +	.channels_min	= 1,
->  	.channels_max	= 2,
->  	.buffer_bytes_max = 64 * 1024 - 1,
->  	.period_bytes_min = 512,
-> @@ -228,6 +228,14 @@ static int snd_at73c213_pcm_close(struct snd_pcm_substream *substream)
->  static int snd_at73c213_pcm_hw_params(struct snd_pcm_substream *substream,
->  				 struct snd_pcm_hw_params *hw_params)
->  {
-> +	struct snd_at73c213 *chip = snd_pcm_substream_chip(substream);
-> +	int channels = params_channels(hw_params);
-> +	int val;
-> +
-> +	val = ssc_readl(chip->ssc->regs, TFMR);
-> +	val = SSC_BFINS(TFMR_DATNB, channels - 1, val);
-> +	ssc_writel(chip->ssc->regs, TFMR, val);
-> +
->  	return snd_pcm_lib_malloc_pages(substream,
->  					params_buffer_bytes(hw_params));
->  }
-> @@ -249,10 +257,12 @@ static int snd_at73c213_pcm_prepare(struct snd_pcm_substream *substream)
->  
->  	ssc_writel(chip->ssc->regs, PDC_TPR,
->  			(long)runtime->dma_addr);
-> -	ssc_writel(chip->ssc->regs, PDC_TCR, runtime->period_size * 2);
-> +	ssc_writel(chip->ssc->regs, PDC_TCR,
-> +			runtime->period_size * runtime->channels);
->  	ssc_writel(chip->ssc->regs, PDC_TNPR,
->  			(long)runtime->dma_addr + block_size);
-> -	ssc_writel(chip->ssc->regs, PDC_TNCR, runtime->period_size * 2);
-> +	ssc_writel(chip->ssc->regs, PDC_TNCR,
-> +			runtime->period_size * runtime->channels);
->  
->  	return 0;
->  }
-> @@ -375,7 +385,8 @@ static irqreturn_t snd_at73c213_interrupt(int irq, void *dev_id)
->  
->  		ssc_writel(chip->ssc->regs, PDC_TNPR,
->  				(long)runtime->dma_addr + offset);
-> -		ssc_writel(chip->ssc->regs, PDC_TNCR, runtime->period_size * 2);
-> +		ssc_writel(chip->ssc->regs, PDC_TNCR,
-> +				runtime->period_size * runtime->channels);
->  		retval = IRQ_HANDLED;
->  	}
->  
+# losetup -f etch.img
+EXT3 FS on loop0p1, internal journal
+EXT3-fs: mounted filesystem with ordered data mode.
+loop: module loaded
+ loop0: p1 p2 < p5 >
+# ls -l /dev/loop?*
+brw-rw---- 1 root disk 7,   0 2008-03-05 14:55 /dev/loop0
+brw-rw---- 1 root disk 7,   1 2008-03-05 14:57 /dev/loop0p1
+brw-rw---- 1 root disk 7,   2 2008-03-05 14:57 /dev/loop0p2
+brw-rw---- 1 root disk 7,   5 2008-03-05 14:57 /dev/loop0p5
+brw-rw---- 1 root disk 7,  64 2008-03-05 14:55 /dev/loop1
+brw-rw---- 1 root disk 7, 128 2008-03-05 14:55 /dev/loop2
+brw-rw---- 1 root disk 7, 192 2008-03-05 14:55 /dev/loop3
+brw-rw---- 1 root disk 7, 256 2008-03-05 14:55 /dev/loop4
+brw-rw---- 1 root disk 7, 320 2008-03-05 14:55 /dev/loop5
+brw-rw---- 1 root disk 7, 384 2008-03-05 14:55 /dev/loop6
+brw-rw---- 1 root disk 7, 448 2008-03-05 14:55 /dev/loop7
+# mount /dev/loop0p1 /mnt
+kjournald starting.  Commit interval 5 seconds
+EXT3 FS on loop0p1, internal journal
+EXT3-fs: mounted filesystem with ordered data mode.
+# ls /mnt
+bench  cdrom  home        lib         mnt   root     srv  usr
+bin    dev    initrd      lost+found  opt   sbin     sys  var
+boot   etc    initrd.img  media       proc  selinux  tmp  vmlinuz
+# umount /mnt
+# losetup -d /dev/loop0
+
+Of course, the same behavior can be done using kpartx on a loop device,
+but modifying loop avoids to stack several layers of block device (loop +
+device mapper), this is a very light modification (40% of modifications
+are to manage the new parameter).
+
+Signed-off-by: Laurent Vivier <Laurent.Vivier@bull.net>
+---
+ Documentation/kernel-parameters.txt |    4 +++
+ drivers/block/loop.c                |   39 ++++++++++++++++++++++++++++++----
+ 2 files changed, 38 insertions(+), 5 deletions(-)
+
+diff --git a/Documentation/kernel-parameters.txt b/Documentation/kernel-parameters.txt
+index 9a5b665..7f2fd52 100644
+--- a/Documentation/kernel-parameters.txt
++++ b/Documentation/kernel-parameters.txt
+@@ -1075,6 +1075,10 @@ and is between 256 and 4096 characters. It is defined in the file
+ 			be mounted
+ 			Format: <1-256>
+ 
++	loop_max_part=	[LOOP] Maximum number of partitions per loopback device.
++			Should be greater than 0, the maximum value depends
++			on max_loop.
++
+ 	maxcpus=	[SMP] Maximum number of processors that	an SMP kernel
+ 			should make use of.  maxcpus=n : n >= 0 limits the
+ 			kernel to using 'n' processors.  n=0 is a special case,
+diff --git a/drivers/block/loop.c b/drivers/block/loop.c
+index 91ebb00..84fa98f 100644
+--- a/drivers/block/loop.c
++++ b/drivers/block/loop.c
+@@ -82,6 +82,9 @@
+ static LIST_HEAD(loop_devices);
+ static DEFINE_MUTEX(loop_devices_mutex);
+ 
++static int loop_max_part;
++static int part_shift;
++
+ /*
+  * Transfer functions
+  */
+@@ -692,6 +695,8 @@ static int loop_change_fd(struct loop_device *lo, struct file *lo_file,
+ 		goto out_putf;
+ 
+ 	fput(old_file);
++	if (loop_max_part > 0)
++		ioctl_by_bdev(bdev, BLKRRPART, 0);
+ 	return 0;
+ 
+  out_putf:
+@@ -819,6 +824,8 @@ static int loop_set_fd(struct loop_device *lo, struct file *lo_file,
+ 	}
+ 	lo->lo_state = Lo_bound;
+ 	wake_up_process(lo->lo_thread);
++	if (loop_max_part > 0)
++		ioctl_by_bdev(bdev, BLKRRPART, 0);
+ 	return 0;
+ 
+ out_clr:
+@@ -1360,6 +1367,8 @@ static struct block_device_operations lo_fops = {
+ static int max_loop;
+ module_param(max_loop, int, 0);
+ MODULE_PARM_DESC(max_loop, "Maximum number of loop devices");
++module_param(loop_max_part, int, 0);
++MODULE_PARM_DESC(loop_max_part, "Maximum number of partitions per loop device");
+ MODULE_LICENSE("GPL");
+ MODULE_ALIAS_BLOCKDEV_MAJOR(LOOP_MAJOR);
+ 
+@@ -1412,7 +1421,7 @@ static struct loop_device *loop_alloc(int i)
+ 	if (!lo->lo_queue)
+ 		goto out_free_dev;
+ 
+-	disk = lo->lo_disk = alloc_disk(1);
++	disk = lo->lo_disk = alloc_disk(1 << part_shift);
+ 	if (!disk)
+ 		goto out_free_queue;
+ 
+@@ -1422,7 +1431,7 @@ static struct loop_device *loop_alloc(int i)
+ 	init_waitqueue_head(&lo->lo_event);
+ 	spin_lock_init(&lo->lo_lock);
+ 	disk->major		= LOOP_MAJOR;
+-	disk->first_minor	= i;
++	disk->first_minor	= i << part_shift;
+ 	disk->fops		= &lo_fops;
+ 	disk->private_data	= lo;
+ 	disk->queue		= lo->lo_queue;
+@@ -1502,7 +1511,12 @@ static int __init loop_init(void)
+ 	 *     themselves and have kernel automatically instantiate actual
+ 	 *     device on-demand.
+ 	 */
+-	if (max_loop > 1UL << MINORBITS)
++
++	part_shift = 0;
++	if (loop_max_part > 0)
++		part_shift = fls(loop_max_part);
++
++	if (max_loop > 1UL << (MINORBITS - part_shift))
+ 		return -EINVAL;
+ 
+ 	if (max_loop) {
+@@ -1510,7 +1524,7 @@ static int __init loop_init(void)
+ 		range = max_loop;
+ 	} else {
+ 		nr = 8;
+-		range = 1UL << MINORBITS;
++		range = 1UL << (MINORBITS - part_shift);
+ 	}
+ 
+ 	if (register_blkdev(LOOP_MAJOR, "loop"))
+@@ -1549,7 +1563,7 @@ static void __exit loop_exit(void)
+ 	unsigned long range;
+ 	struct loop_device *lo, *next;
+ 
+-	range = max_loop ? max_loop :  1UL << MINORBITS;
++	range = max_loop ? max_loop :  1UL << (MINORBITS - part_shift);
+ 
+ 	list_for_each_entry_safe(lo, next, &loop_devices, lo_list)
+ 		loop_del_one(lo);
+@@ -1569,4 +1583,19 @@ static int __init max_loop_setup(char *str)
+ }
+ 
+ __setup("max_loop=", max_loop_setup);
++
++static int __init max_part_setup(char *str)
++{
++	loop_max_part = simple_strtol(str, NULL, 0);
++	if (loop_max_part > (1UL << (MINORBITS - 1))) {
++		/* we must keep at least one bit for loop device number */
++		printk(KERN_ERR
++			"loop: loop_max_part cannot be greater than %d\n",
++			1UL << (MINORBITS - 1));
++		return 0;
++	}
++	return 1;
++}
++
++__setup("loop_max_part=", max_part_setup);
+ #endif
+-- 
+1.5.2.4
 
