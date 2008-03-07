@@ -1,87 +1,293 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760731AbYCGP7o@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759960AbYCGQFg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760731AbYCGP7o (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Mar 2008 10:59:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756766AbYCGP7h
+	id S1759960AbYCGQFg (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Mar 2008 11:05:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751979AbYCGQFZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Mar 2008 10:59:37 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:40336 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756085AbYCGP7g (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Mar 2008 10:59:36 -0500
-Date: Fri, 7 Mar 2008 07:59:21 -0800
-From: Greg KH <greg@kroah.com>
-To: Pavel Emelyanov <xemul@openvz.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       menage@google.com, sukadev@us.ibm.com, serue@us.ibm.com
-Subject: Re: [PATCH 5/9] Make use of permissions, returned by kobj_lookup
-Message-ID: <20080307155921.GB28439@kroah.com>
-References: <47CED717.60406@openvz.org> <47CEDA64.1070506@openvz.org> <20080305171304.f686f6de.akpm@linux-foundation.org> <47D10939.6020806@openvz.org> <20080307013553.7ed35f91.akpm@linux-foundation.org> <47D11068.9010704@openvz.org>
+	Fri, 7 Mar 2008 11:05:25 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:50473 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751924AbYCGQFX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 7 Mar 2008 11:05:23 -0500
+Message-ID: <47D166E7.2050803@redhat.com>
+Date: Fri, 07 Mar 2008 11:01:43 -0500
+From: Masami Hiramatsu <mhiramat@redhat.com>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <47D11068.9010704@openvz.org>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+To: Shaohua Li <shaohua.li@intel.com>,
+       Andrew Morton <akpm@linux-foundation.org>
+CC: LKML <linux-kernel@vger.kernel.org>, ia64 <linux-ia64@vger.kernel.org>,
+       "Luck, Tony" <tony.luck@intel.com>,
+       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
+       Jim Keniston <jkenisto@us.ibm.com>,
+       systemtap-ml <systemtap@sources.redhat.com>
+Subject: [PATCH -mm] kprobes: kprobe-booster for ia64
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Mar 07, 2008 at 12:52:40PM +0300, Pavel Emelyanov wrote:
-> Andrew Morton wrote:
-> > On Fri, 07 Mar 2008 12:22:01 +0300 Pavel Emelyanov <xemul@openvz.org> wrote:
-> > 
-> >>> This doesn't include sufficient headers to be compileable.
-> >>>
-> >>> I'm sure there are lots of headers like this.  But we regularly need
-> >>> to fix them.
-> >>>
-> >> Not sure, whether this is still relevant after Greg's comments, but that's
-> >> the -fix patch for this one. (It will cause a conflict with the 9th patch.)
-> > 
-> > Well.  Where do we stand with this?  afaict the state of play is:
-> > 
-> > Greg: do it in udev
-> > Pavel: but people want to run old distros in containers
-> 
-> Actually no.
-> 
-> Greg: Use LSM for this
+From: Masami Hiramatsu <mhiramat@redhat.com>
 
-Yes, that is my recommendation.
+Add kprobe-booster support on ia64.
+Kprobe-booster improve the performance of kprobes by eliminating
+single-step, where possible. Currently, kprobe-booster is
+implemented on x86 and x86-64. This is an ia64 port.
 
-> Pavel: My approach just makes maps per-group, while LSM will
->        bring a new level of filtering/lookup on device open path
+On ia64, kprobe-booster executes a copied bundle directly, instead of
+single stepping. Bundles which have B or X unit and which may cause
+an exception (including break) are not executed directly. And also,
+to prevent hitting break exceptions on the copied bundle, only the
+hindmost kprobe is executed directly if several kprobes share a bundle
+and are placed in different slots.
+Note: set_brl_inst() is used for preparing an instruction buffer(it does
+not modify any active code), so it does not need any atomic operation.
 
-Huh?  You are still doing that same "filtering/lookup" by modifying the
-maps code.  The result should be exactly the same.
+Signed-off-by: Masami Hiramatsu <mhiramat@redhat.com>
+---
+I updated this patch against 2.6.25-rc3-mm1.
+Shaohua, could you review it?
 
-Why do you not want to use the LSM interface?  That is exactly what it
-is there for, don't go creating new hooks into the kernel for the exact
-same functionality.
+ arch/ia64/kernel/kprobes.c |  133 ++++++++++++++++++++++++++++++++++++---------
+ include/asm-ia64/kprobes.h |    7 ++
+ 2 files changed, 113 insertions(+), 27 deletions(-)
 
-Opening a dev node is not on any "fast path" that you need to be
-concerned about a few extra calls within the kernel.
+Index: 2.6.25-rc3-mm1/arch/ia64/kernel/kprobes.c
+===================================================================
+--- 2.6.25-rc3-mm1.orig/arch/ia64/kernel/kprobes.c	2008-03-04 16:22:29.000000000 -0500
++++ 2.6.25-rc3-mm1/arch/ia64/kernel/kprobes.c	2008-03-04 16:22:30.000000000 -0500
+@@ -78,6 +78,20 @@ static enum instruction_type bundle_enco
+   { u, u, u },  			/* 1F */
+ };
 
-And, I think in the end your patch would be much smaller and easier to
-understand and review and maintain overall.
++/* Insert a long branch code */
++static void __kprobes set_brl_inst(void *from, void *to)
++{
++	s64 rel = ((s64) to - (s64) from) >> 4;
++	bundle_t *brl;
++	brl = (bundle_t *) ((u64) from & ~0xf);
++	brl->quad0.template = 0x05;	/* [MLX](stop) */
++	brl->quad0.slot0 = NOP_M_INST;	/* nop.m 0x0 */
++	brl->quad0.slot1_p0 = ((rel >> 20) & 0x7fffffffff) << 2;
++	brl->quad1.slot1_p1 = (((rel >> 20) & 0x7fffffffff) << 2) >> (64 - 46);
++	/* brl.cond.sptk.many.clr rel<<4 (qp=0) */
++	brl->quad1.slot2 = BRL_INST(rel >> 59, rel & 0xfffff);
++}
++
+ /*
+  * In this function we check to see if the instruction
+  * is IP relative instruction and update the kprobe
+@@ -496,6 +510,77 @@ void __kprobes arch_prepare_kretprobe(st
+ 	regs->b0 = ((struct fnptr *)kretprobe_trampoline)->ip;
+ }
 
-> > Realistically, when is the mainline kernel likely to have sufficient
-> > container functionality which is sufficiently well-tested for people to
-> > actually be able to do that?  And how much longer will it take for that
-> > kernel.org functionality to propagate out into non-bleeding-edge distros?
-> 
-> The fact is that we have users of OpenVZ and even Virtuozzo, that still use 
-> redhat-9 as in containers. So even if this is ready in 5 years, there will 
-> always be someone who sets the outdated (by that time) fedora-core-8 and find
-> out, that his udev refuses to work.
++/* Check the instruction in the slot is break */
++static int __kprobes __is_ia64_break_inst(bundle_t *bundle, uint slot)
++{
++	unsigned int major_opcode;
++	unsigned int template = bundle->quad0.template;
++	unsigned long kprobe_inst;
++
++	/* Move to slot 2, if bundle is MLX type and kprobe slot is 1 */
++	if (slot == 1 && bundle_encoding[template][1] == L)
++		slot++;
++
++	/* Get Kprobe probe instruction at given slot*/
++	get_kprobe_inst(bundle, slot, &kprobe_inst, &major_opcode);
++
++	/* For break instruction,
++	 * Bits 37:40 Major opcode to be zero
++	 * Bits 27:32 X6 to be zero
++	 * Bits 32:35 X3 to be zero
++	 */
++	if (major_opcode || ((kprobe_inst >> 27) & 0x1FF)) {
++		/* Not a break instruction */
++		return 0;
++	}
++
++	/* Is a break instruction */
++	return 1;
++}
++
++/*
++ * In this function, we check whether the target bundle modifies IP or
++ * it triggers an exception. If so, it cannot be boostable.
++ */
++static int __kprobes can_boost(bundle_t *bundle, uint slot,
++			       unsigned long bundle_addr)
++{
++	unsigned int template = bundle->quad0.template;
++
++	do {
++		if (search_exception_tables(bundle_addr + slot) ||
++		    __is_ia64_break_inst(bundle, slot))
++			return 0;	/* exception may occur in this bundle*/
++	} while ((++slot) < 3);
++	template &= 0x1e;
++	if (template >= 0x10 /* including B unit */ ||
++	    template == 0x04 /* including X unit */ ||
++	    template == 0x06) /* undefined */
++		return 0;
++
++	return 1;
++}
++
++/* Prepare long jump bundle and disables other boosters if need */
++static void __kprobes prepare_booster(struct kprobe *p)
++{
++	unsigned long addr = (unsigned long)p->addr & ~0xFULL;
++	unsigned int slot = addr & 0xf;
++	struct kprobe *other_kp;
++
++	if (can_boost(&p->ainsn.insn[0].bundle, slot, addr)) {
++		set_brl_inst(&p->ainsn.insn[1].bundle, (bundle_t *)addr + 1);
++		p->ainsn.inst_flag |= INST_FLAG_BOOSTABLE;
++	}
++
++	/* disables boosters in previous slots */
++	for (; addr < (unsigned long)p->addr; addr++) {
++		other_kp = get_kprobe((void *)addr);
++		if (other_kp)
++			other_kp->ainsn.inst_flag &= ~INST_FLAG_BOOSTABLE;
++	}
++}
++
+ int __kprobes arch_prepare_kprobe(struct kprobe *p)
+ {
+ 	unsigned long addr = (unsigned long) p->addr;
+@@ -530,6 +615,8 @@ int __kprobes arch_prepare_kprobe(struct
 
-That's fine, use the LSM interface, no need to change userspace at all.
+ 	prepare_break_inst(template, slot, major_opcode, kprobe_inst, p, qp);
 
-Although I think your requirement of using new kernels on very old
-distros is going to cause you more problems than you realize in the
-end...
++	prepare_booster(p);
++
+ 	return 0;
+ }
 
-thanks,
+@@ -543,7 +630,9 @@ void __kprobes arch_arm_kprobe(struct kp
+ 	src = &p->opcode.bundle;
 
-greg k-h
+ 	flush_icache_range((unsigned long)p->ainsn.insn,
+-			(unsigned long)p->ainsn.insn + sizeof(kprobe_opcode_t));
++			   (unsigned long)p->ainsn.insn +
++			   sizeof(kprobe_opcode_t) * MAX_INSN_SIZE);
++
+ 	switch (p->ainsn.slot) {
+ 		case 0:
+ 			dest->quad0.slot0 = src->quad0.slot0;
+@@ -584,13 +673,13 @@ void __kprobes arch_disarm_kprobe(struct
+ void __kprobes arch_remove_kprobe(struct kprobe *p)
+ {
+ 	mutex_lock(&kprobe_mutex);
+-	free_insn_slot(p->ainsn.insn, 0);
++	free_insn_slot(p->ainsn.insn, p->ainsn.inst_flag & INST_FLAG_BOOSTABLE);
+ 	mutex_unlock(&kprobe_mutex);
+ }
+ /*
+  * We are resuming execution after a single step fault, so the pt_regs
+  * structure reflects the register state after we executed the instruction
+- * located in the kprobe (p->ainsn.insn.bundle).  We still need to adjust
++ * located in the kprobe (p->ainsn.insn->bundle).  We still need to adjust
+  * the ip to point back to the original stack address. To set the IP address
+  * to original stack address, handle the case where we need to fixup the
+  * relative IP address and/or fixup branch register.
+@@ -607,7 +696,7 @@ static void __kprobes resume_execution(s
+ 	if (slot == 1 && bundle_encoding[template][1] == L)
+ 		slot = 2;
+
+-	if (p->ainsn.inst_flag) {
++	if (p->ainsn.inst_flag & ~INST_FLAG_BOOSTABLE) {
+
+ 		if (p->ainsn.inst_flag & INST_FLAG_FIX_RELATIVE_IP_ADDR) {
+ 			/* Fix relative IP address */
+@@ -686,33 +775,12 @@ static void __kprobes prepare_ss(struct
+ static int __kprobes is_ia64_break_inst(struct pt_regs *regs)
+ {
+ 	unsigned int slot = ia64_psr(regs)->ri;
+-	unsigned int template, major_opcode;
+-	unsigned long kprobe_inst;
+ 	unsigned long *kprobe_addr = (unsigned long *)regs->cr_iip;
+ 	bundle_t bundle;
+
+ 	memcpy(&bundle, kprobe_addr, sizeof(bundle_t));
+-	template = bundle.quad0.template;
+-
+-	/* Move to slot 2, if bundle is MLX type and kprobe slot is 1 */
+-	if (slot == 1 && bundle_encoding[template][1] == L)
+-		slot++;
+-
+-	/* Get Kprobe probe instruction at given slot*/
+-	get_kprobe_inst(&bundle, slot, &kprobe_inst, &major_opcode);
+-
+-	/* For break instruction,
+-	 * Bits 37:40 Major opcode to be zero
+-	 * Bits 27:32 X6 to be zero
+-	 * Bits 32:35 X3 to be zero
+-	 */
+-	if (major_opcode || ((kprobe_inst >> 27) & 0x1FF) ) {
+-		/* Not a break instruction */
+-		return 0;
+-	}
+
+-	/* Is a break instruction */
+-	return 1;
++	return __is_ia64_break_inst(&bundle, slot);
+ }
+
+ static int __kprobes pre_kprobes_handler(struct die_args *args)
+@@ -802,6 +870,19 @@ static int __kprobes pre_kprobes_handler
+ 		return 1;
+
+ ss_probe:
++#if !defined(CONFIG_PREEMPT) || defined(CONFIG_PM)
++	if (p->ainsn.inst_flag == INST_FLAG_BOOSTABLE && !p->post_handler) {
++		/* Boost up -- we can execute copied instructions directly */
++		ia64_psr(regs)->ri = p->ainsn.slot;
++		regs->cr_iip = (unsigned long)&p->ainsn.insn->bundle & ~0xFULL;
++		/* turn single stepping off */
++		ia64_psr(regs)->ss = 0;
++
++		reset_current_kprobe();
++		preempt_enable_no_resched();
++		return 1;
++	}
++#endif
+ 	prepare_ss(p, regs);
+ 	kcb->kprobe_status = KPROBE_HIT_SS;
+ 	return 1;
+Index: 2.6.25-rc3-mm1/include/asm-ia64/kprobes.h
+===================================================================
+--- 2.6.25-rc3-mm1.orig/include/asm-ia64/kprobes.h	2008-03-04 16:22:29.000000000 -0500
++++ 2.6.25-rc3-mm1/include/asm-ia64/kprobes.h	2008-03-04 16:22:30.000000000 -0500
+@@ -30,8 +30,12 @@
+ #include <asm/break.h>
+
+ #define __ARCH_WANT_KPROBES_INSN_SLOT
+-#define MAX_INSN_SIZE   1
++#define MAX_INSN_SIZE   2	/* last half is for kprobe-booster */
+ #define BREAK_INST	(long)(__IA64_BREAK_KPROBE << 6)
++#define NOP_M_INST	(long)(1<<27)
++#define BRL_INST(i1, i2) ((long)((0xcL << 37) |	/* brl */ \
++				(0x1L << 12) |	/* many */ \
++				(((i1) & 1) << 36) | ((i2) << 13))) /* imm */
+
+ typedef union cmp_inst {
+ 	struct {
+@@ -112,6 +116,7 @@ struct arch_specific_insn {
+  #define INST_FLAG_FIX_RELATIVE_IP_ADDR		1
+  #define INST_FLAG_FIX_BRANCH_REG		2
+  #define INST_FLAG_BREAK_INST			4
++ #define INST_FLAG_BOOSTABLE			8
+  	unsigned long inst_flag;
+  	unsigned short target_br_reg;
+ 	unsigned short slot;
+-- 
+Masami Hiramatsu
+
+Software Engineer
+Hitachi Computer Products (America) Inc.
+Software Solutions Division
+
+e-mail: mhiramat@redhat.com
