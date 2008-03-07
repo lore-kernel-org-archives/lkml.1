@@ -1,133 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762286AbYCGLxy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763078AbYCGLyl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762286AbYCGLxy (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Mar 2008 06:53:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758520AbYCGLxq
+	id S1763078AbYCGLyl (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Mar 2008 06:54:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758922AbYCGLyc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Mar 2008 06:53:46 -0500
-Received: from gir.skynet.ie ([193.1.99.77]:46530 "EHLO gir.skynet.ie"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757986AbYCGLxp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Mar 2008 06:53:45 -0500
-Date: Fri, 7 Mar 2008 11:53:40 +0000
-From: Mel Gorman <mel@csn.ul.ie>
-To: Lee Schermerhorn <Lee.Schermerhorn@hp.com>
-Cc: Paul Jackson <pj@sgi.com>, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org, rientjes@google.com,
-       nacc@us.ibm.com, kamezawa.hiroyu@jp.fujitsu.com, clameter@sgi.com,
-       Eric Whitney <eric.whitney@hp.com>
-Subject: Re: [PATCH] 2.6.25-rc3-mm1 - Mempolicy - update stale documentation and comments
-Message-ID: <20080307115339.GD26229@csn.ul.ie>
-References: <20071109143226.23540.12907.sendpatchset@skynet.skynet.ie> <20071109143406.23540.41284.sendpatchset@skynet.skynet.ie> <20080228230140.321581a4.pj@sgi.com> <1204662057.5338.104.camel@localhost>
+	Fri, 7 Mar 2008 06:54:32 -0500
+Received: from py-out-1112.google.com ([64.233.166.177]:32933 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758520AbYCGLyb (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 7 Mar 2008 06:54:31 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=htXaezW6b7a2kY2LRY1l1zNPqDreGohPCwgvL2ImQLAOS1hmJFOqpnBVN3xJjK5oodG5aW8xtZmuyNj45l9zW5hSCqBdiAnywl97Arx7qmGAOzeqjs6XEamNxgjF/Q1TQM/jsGe1qyvg5ERwu+mFdvk99QOnwRWDeC7/0BxAjtE=
+Message-ID: <87a5b0800803070354x391ff718u3af9664804526da1@mail.gmail.com>
+Date: Fri, 7 Mar 2008 11:54:28 +0000
+From: "Will Newton" <will.newton@gmail.com>
+To: "Jeongdo Son" <sohn9086@gmail.com>
+Subject: Re: [BUG REPORT] smc911x: Auto negotiation NOT supported
+Cc: LKML <linux-kernel@vger.kernel.org>, Linux-SH <linux-sh@vger.kernel.org>
+In-Reply-To: <59fd4ce80803062200n203e5cd7o152be120adbdb717@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <1204662057.5338.104.camel@localhost>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+References: <59fd4ce80803062200n203e5cd7o152be120adbdb717@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On (04/03/08 15:20), Lee Schermerhorn didst pronounce:
-> Was Re: [PATCH 5/6] Filter based on a nodemask as well as a gfp_mask
-> 
-> On Thu, 2008-02-28 at 23:01 -0600, Paul Jackson wrote:
-> > Mel wrote:
-> > > A positive benefit of
-> > > this is that allocations using MPOL_BIND now use the local-node-ordered
-> > > zonelist instead of a custom node-id-ordered zonelist.
-> > 
-> > Could you update the now obsolete documentation (perhaps just delete
-> > the no longer correct remark):
-> > 
-> > Documentation/vm/numa_memory_policy.txt:
-> > 
-> >         MPOL_BIND:  This mode specifies that memory must come from the
-> >         set of nodes specified by the policy.
-> > 
-> >             The memory policy APIs do not specify an order in which the nodes
-> >             will be searched.  However, unlike "local allocation", the Bind
-> >             policy does not consider the distance between the nodes.  Rather,
-> >             allocations will fallback to the nodes specified by the policy in
-> >             order of numeric node id.  Like everything in Linux, this is subject
-> >             to change.
-> > 
-> 
-> How's this:
-> 
-> PATCH Mempolicy:  update documentation and comments
-> 
-> Address stale comments and numa_memory_policy.txt discussion
-> based on Mel Gorman's changes to page allocation zonelist handling.
-> 
-> Specifically:  mpol_free() and mpol_copy() no longer need to deal
-> with a custom zonelist for MPOL_BIND policy, and MPOL_BIND now
-> allocates memory from the nearest node with available memory in the
-> specified nodemask.
-> 
-> In "fixing" the mpol_free() and mpol_copy() comments in mempolicy.h,
-> I wanted to replace them with something, rather than just deleting
-> them.  So, I described the reference counting.  Not directly related
-> to the zonelist changes, but useful, IMO.
-> 
-> Signed-off-by:  Lee Schermerhorn <lee.schermerhorn@hp.com>
-> 
+On Fri, Mar 7, 2008 at 6:00 AM, Jeongdo Son <sohn9086@gmail.com> wrote:
 
-Looks great.
+>  The problem is that only the first ifup after cold boot succeed.
+>  Here is the instruction how to reproduce the symptom.
+>  (smc911x is recognized as eth0 on the board.)
+>  1. boot up the board, and login.
+>  2. ifup eth0  (after doing this, ping works)
+>  3. ifdown eth0
+>  4. ifup eth0 ("Auto negotiation NOT supported" printed, and ping doesn't works)
+>  Please refer to the bottom of this mail.
 
-Acked-by: Mel Gorman <mel@csn.ul.ie>
-
->  Documentation/vm/numa_memory_policy.txt |   11 +++--------
->  include/linux/mempolicy.h               |    8 +++++---
->  2 files changed, 8 insertions(+), 11 deletions(-)
-> 
-> Index: linux-2.6.25-rc3-mm1/Documentation/vm/numa_memory_policy.txt
-> ===================================================================
-> --- linux-2.6.25-rc3-mm1.orig/Documentation/vm/numa_memory_policy.txt	2008-01-24 17:58:37.000000000 -0500
-> +++ linux-2.6.25-rc3-mm1/Documentation/vm/numa_memory_policy.txt	2008-03-04 14:44:51.000000000 -0500
-> @@ -182,14 +182,9 @@ Components of Memory Policies
->  	    The Default mode does not use the optional set of nodes.
->  
->  	MPOL_BIND:  This mode specifies that memory must come from the
-> -	set of nodes specified by the policy.
-> -
-> -	    The memory policy APIs do not specify an order in which the nodes
-> -	    will be searched.  However, unlike "local allocation", the Bind
-> -	    policy does not consider the distance between the nodes.  Rather,
-> -	    allocations will fallback to the nodes specified by the policy in
-> -	    order of numeric node id.  Like everything in Linux, this is subject
-> -	    to change.
-> +	set of nodes specified by the policy.  Memory will be allocated from
-> +	the node in the set with sufficient free memory that is closest to
-> +	the node where the allocation takes place.
->  
->  	MPOL_PREFERRED:  This mode specifies that the allocation should be
->  	attempted from the single node specified in the policy.  If that
-> Index: linux-2.6.25-rc3-mm1/include/linux/mempolicy.h
-> ===================================================================
-> --- linux-2.6.25-rc3-mm1.orig/include/linux/mempolicy.h	2008-03-04 14:19:06.000000000 -0500
-> +++ linux-2.6.25-rc3-mm1/include/linux/mempolicy.h	2008-03-04 14:38:29.000000000 -0500
-> @@ -54,11 +54,13 @@ struct mm_struct;
->   * mmap_sem.
->   *
->   * Freeing policy:
-> - * When policy is MPOL_BIND v.zonelist is kmalloc'ed and must be kfree'd.
-> - * All other policies don't have any external state. mpol_free() handles this.
-> + * Mempolicy objects are reference counted.  A mempolicy will be freed when
-> + * mpol_free() decrements the reference count to zero.
->   *
->   * Copying policy objects:
-> - * For MPOL_BIND the zonelist must be always duplicated. mpol_clone() does this.
-> + * mpol_copy() allocates a new mempolicy and copies the specified mempolicy
-> + * to the new storage.  The reference count of the new object is initialized
-> + * to 1, representing the caller of mpol_copy().
->   */
->  struct mempolicy {
->  	atomic_t refcnt;
-> 
-> 
-
--- 
-Mel Gorman
-Part-time Phd Student                          Linux Technology Center
-University of Limerick                         IBM Dublin Software Lab
+Are you getting interrupts from the chip? Sounds like it could be you
+have missed and interrupt somewhere - check where your interrupt
+polarities and where you are acking/clearing them down.
