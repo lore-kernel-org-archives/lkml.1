@@ -1,45 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764612AbYCGP2y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764731AbYCGPa0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764612AbYCGP2y (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Mar 2008 10:28:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756044AbYCGP2o
+	id S1764731AbYCGPa0 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Mar 2008 10:30:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751526AbYCGPaE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Mar 2008 10:28:44 -0500
-Received: from nat-132.atmel.no ([80.232.32.132]:54488 "EHLO relay.atmel.no"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753265AbYCGP2n (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Mar 2008 10:28:43 -0500
-Message-ID: <47D15F18.9020600@atmel.com>
-Date: Fri, 07 Mar 2008 16:28:24 +0100
-From: Hans-Christian Egtvedt <hans-christian.egtvedt@atmel.com>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080227)
-MIME-Version: 1.0
-To: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
-CC: linux-kernel@vger.kernel.org, hans-christian.egtvedt@atmel.com,
-       hskinnemoen@atmel.com, avictor.za@gmail.com
-Subject: Re: [PATCH] at73c213: Monaural support
-References: <20080307.190234.55730878.nemoto@toshiba-tops.co.jp>	<47D13185.4080803@atmel.com> <20080308.002557.51867582.anemo@mba.ocn.ne.jp>
-In-Reply-To: <20080308.002557.51867582.anemo@mba.ocn.ne.jp>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Fri, 7 Mar 2008 10:30:04 -0500
+Received: from one.firstfloor.org ([213.235.205.2]:44267 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752768AbYCGPaD (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 7 Mar 2008 10:30:03 -0500
+Date: Fri, 7 Mar 2008 16:31:36 +0100
+From: Andi Kleen <andi@firstfloor.org>
+To: Rene Herman <rene.herman@keyaccess.nl>
+Cc: Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org
+Subject: Re: [PATCH] [0/13] General DMA zone rework
+Message-ID: <20080307153136.GG7365@one.firstfloor.org>
+References: <200803071007.493903088@firstfloor.org> <47D15CDF.5060501@keyaccess.nl> <47D15DA4.2030500@keyaccess.nl>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <47D15DA4.2030500@keyaccess.nl>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Atsushi Nemoto wrote:
-> On Fri, 07 Mar 2008 13:13:57 +0100, Hans-Christian Egtvedt <hans-christian.egtvedt@atmel.com> wrote:
-
->> Although, I had to use 32 * 1024 buffer_bytes_max and 16 * 1024
->> period_bytes_max. Higher buffer_bytes_max resulted in glitching sound
->> when only using one channel. Nothing to do with this patch.
+On Fri, Mar 07, 2008 at 04:22:12PM +0100, Rene Herman wrote:
+> On 07-03-08 16:18, Rene Herman wrote:
 > 
-> Hmm, it sounds strange.  But I still do not understand sound buffer
-> management well...
+> >On 07-03-08 10:07, Andi Kleen wrote:
+> >
+> >>it to any size needed (upto 2GB currently). The default sizing 
+> >>heuristics are for now the same as in the old code: by default
+> >>all free memory below 16MB is put into the pool (in practice that
+> >>is only ~8MB or so usable because the kernel is loaded there too)
+> >
+> >Just a side-comment -- not necessarily, given CONFIG_PHYSICAL_START.
 > 
+> By the way, 1/13 didn't make it to LKML.
 
-Me neither, alsa is a bit big and tons of layer hiding where stuff is 
-actually done. Still unsure what to do about the buffer and period size, 
-but I think setting them to 32k and 16k will work for most people.
+Yes, i was told. Not sure what happened. I'm pretty sure my script
+has posted it. If anybody wants it it's in
+ftp://firstfloor.org/pub/ak/mask/patches/bitops
 
--- 
-HC, which just got a new email address
+-Andi
