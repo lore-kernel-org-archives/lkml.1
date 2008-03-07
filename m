@@ -1,52 +1,133 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764483AbYCGN0e@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764695AbYCGN2f@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764483AbYCGN0e (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Mar 2008 08:26:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760119AbYCGN00
+	id S1764695AbYCGN2f (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Mar 2008 08:28:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757514AbYCGN2Y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Mar 2008 08:26:26 -0500
-Received: from one.firstfloor.org ([213.235.205.2]:42073 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760110AbYCGN0Z (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Mar 2008 08:26:25 -0500
-Date: Fri, 7 Mar 2008 14:27:58 +0100
-From: Andi Kleen <andi@firstfloor.org>
-To: Arjan van de Ven <arjan@linux.intel.com>
-Cc: Andi Kleen <andi@firstfloor.org>, "H. Peter Anvin" <hpa@zytor.com>,
-       Pavel Machek <pavel@ucw.cz>, Ingo Molnar <mingo@elte.hu>,
-       Suresh Siddha <suresh.b.siddha@intel.com>,
-       Christoph Hellwig <hch@infradead.org>, tglx@linutronix.de,
-       linux-kernel@vger.kernel.org
-Subject: Re: [patch 2/2] x86, fpu: lazy allocation of FPU area - v3
-Message-ID: <20080307132758.GF7365@one.firstfloor.org>
-References: <20080304014306.GC28006@linux-os.sc.intel.com> <20080304103220.GA17621@elte.hu> <20080304175528.GD28006@linux-os.sc.intel.com> <20080305194705.GA4386@ucw.cz> <20080306155141.GA23340@elte.hu> <20080306202446.GA4225@ucw.cz> <47D1352F.6010504@zytor.com> <47D13DEF.6030006@linux.intel.com> <20080307131841.GE7365@one.firstfloor.org> <47D1412C.50404@linux.intel.com>
+	Fri, 7 Mar 2008 08:28:24 -0500
+Received: from zombie.ncsc.mil ([144.51.88.131]:38316 "EHLO zombie.ncsc.mil"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751722AbYCGN2X (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 7 Mar 2008 08:28:23 -0500
+Subject: Re: [PATCH] Make /proc/net a symlink on /proc/self/net (v2)
+From: Stephen Smalley <sds@tycho.nsa.gov>
+To: Pavel Emelyanov <xemul@openvz.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       David Miller <davem@davemloft.net>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linux Netdev List <netdev@vger.kernel.org>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       James Morris <jmorris@namei.org>, Eric Paris <eparis@parisplace.org>
+In-Reply-To: <47D12EF8.8010801@openvz.org>
+References: <47CFB6CA.8090001@openvz.org>
+	 <1204821325.1397.298.camel@moss-spartans.epoch.ncsc.mil>
+	 <47D01F98.5010609@openvz.org>
+	 <1204832619.1397.354.camel@moss-spartans.epoch.ncsc.mil>
+	 <47D12EF8.8010801@openvz.org>
+Content-Type: text/plain
+Organization: National Security Agency
+Date: Fri, 07 Mar 2008 08:24:34 -0500
+Message-Id: <1204896274.1397.403.camel@moss-spartans.epoch.ncsc.mil>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <47D1412C.50404@linux.intel.com>
-User-Agent: Mutt/1.4.2.1i
+X-Mailer: Evolution 2.12.3 (2.12.3-1.fc8) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Mar 07, 2008 at 07:20:44AM -0600, Arjan van de Ven wrote:
-> Andi Kleen wrote:
-> >>this is just for handling the case where that fails
-> >>(basically near/totally OOM or the case where you get a fatal signal)
-> >
-> >I didn't think GFP_KERNEL was interruptible by signals...
-> >(although sometimes under oom thrashing I think it would be great if it 
-> >was...) 
+
+On Fri, 2008-03-07 at 15:03 +0300, Pavel Emelyanov wrote:
+> [snip]
 > 
-> we need to make it (or with GFP_KILLABLE); would make total sense...
-> (so yeah it was more wishful thinking than reality)
+> >>> Does this break SELinux labeling of /proc/net inodes and thus its access
+> >>> controls on them?
+> >> It should not, since the proc_dir_etries are still organized in
+> >> a required hierarchy.
+> > 
+> > Unfortunately, it does break selinux labeling of /proc/net inodes.
+> > Easily seen by running ls -ZR /proc/net before and after the patch is
+> > applied and comparing the results.  
+> > 
+> > Also, as a separate issue, a "find /proc/self/net ..." will show that
+> > the hard link count is wrong for it.
+> 
+> Oops... I've checked this thing explicitly before sending, but it looks
+> like I used too old find version. I.e. 4.1.20 worked OK, but 4.2.23
+> reported the nlink discrepancy.
+> 
+> Anyway, this is fixed now (see below). I override the getattr method for
+> /proc/net directory and update one from the net->proc_net entry, which 
+> is calculated correctly.
+> 
+> > Currently the inodes get labeled by selinux_proc_get_sid() by walking up
+> > the proc_dir_entry tree to generate a name and prefix matching that name
+> > in policy.  Before the patch, we'd get names like "//net/tcp", i.e.
+> > relative to the root of proc (the extra leading slash is due to the
+> > earlier proc net rewrite which also broke selinux until we adjusted it
+> > to ignore it).  After the patch, we just get "//tcp", which is ambiguous
+> > since we would also get that for a /proc/tcp inode if one existed.
+> 
+> OK, got it. Is it good if we used to get the //net/tcp, but will /net/tcp
+> (without the double slash)? The patch below does exactly this. It initializes
+> the name for the net->proc_net entry and makes its parent be proc_root.
+> 
+> Can you Ack this patch, so that I can merge it with the original one and 
+> re-post the combined v3?
 
-I think it wouldn't be that difficult for the normal anonymous user allocations
-(standard page fault path), but doing it for everything would be pretty
-hard because you would need to add signal-bail-out paths everywhere. 
+Thanks, ls -ZR /proc/net now yields the same output before and after the
+patch.
 
-But doing it for some simple cases like page fault only would be a nice 
-project for someone, shouldn't be too difficult.
+Acked-by:  Stephen Smalley <sds@tycho.nsa.gov>
 
--Andi
+> 
+> > Not trying to obstruct your proc net improvements, but just want to make
+> > sure that selinux doesn't get broken in the process.
+> 
+> diff --git a/fs/proc/proc_net.c b/fs/proc/proc_net.c
+> index 18d413c..4caa5f7 100644
+> --- a/fs/proc/proc_net.c
+> +++ b/fs/proc/proc_net.c
+> @@ -96,8 +96,27 @@ static struct dentry *proc_tgid_net_lookup(struct inode *dir,
+>  	return de;
+>  }
+>  
+> +static int proc_tgid_net_getattr(struct vfsmount *mnt, struct dentry *dentry,
+> +		struct kstat *stat)
+> +{
+> +	struct inode *inode = dentry->d_inode;
+> +	struct net *net;
+> +
+> +	net = get_proc_task_net(inode);
+> +
+> +	generic_fillattr(inode, stat);
+> +
+> +	if (net != NULL) {
+> +		stat->nlink = net->proc_net->nlink;
+> +		put_net(net);
+> +	}
+> +
+> +	return 0;
+> +}
+> +
+>  const struct inode_operations proc_net_inode_operations = {
+>  	.lookup		= proc_tgid_net_lookup,
+> +	.getattr	= proc_tgid_net_getattr,
+>  };
+>  
+>  static int proc_tgid_net_readdir(struct file *filp, void *dirent,
+> @@ -162,6 +181,10 @@ static __net_init int proc_net_ns_init(struct net *net)
+>  		goto out;
+>  
+>  	netd->data = net;
+> +	netd->nlink = 2;
+> +	netd->name = "net";
+> +	netd->namelen = 3;
+> +	netd->parent = &proc_root;
+>  
+>  	err = -EEXIST;
+>  	net_statd = proc_net_mkdir(net, "stat", netd);
+-- 
+Stephen Smalley
+National Security Agency
+
