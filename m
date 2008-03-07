@@ -1,57 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762033AbYCGSqE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763531AbYCGSr7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762033AbYCGSqE (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Mar 2008 13:46:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757423AbYCGSpz
+	id S1763531AbYCGSr7 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Mar 2008 13:47:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759145AbYCGSrv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Mar 2008 13:45:55 -0500
-Received: from host36-195-149-62.serverdedicati.aruba.it ([62.149.195.36]:41889
-	"EHLO mx.cpushare.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756857AbYCGSpy (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Mar 2008 13:45:54 -0500
-Date: Fri, 7 Mar 2008 19:45:52 +0100
-From: Andrea Arcangeli <andrea@qumranet.com>
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Christoph Lameter <clameter@sgi.com>, Jack Steiner <steiner@sgi.com>,
-       Nick Piggin <npiggin@suse.de>, akpm@linux-foundation.org,
-       Robin Holt <holt@sgi.com>, Avi Kivity <avi@qumranet.com>,
-       kvm-devel@lists.sourceforge.net, general@lists.openfabrics.org,
-       Steve Wise <swise@opengridcomputing.com>,
-       Roland Dreier <rdreier@cisco.com>, Kanoj Sarcar <kanojsarcar@yahoo.com>,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       daniel.blueman@quadrics.com
-Subject: Re: [PATCH] 3/4 combine RCU with seqlock to allow mmu notifier
-	methods to sleep (#v9 was 1/4)
-Message-ID: <20080307184552.GL24114@v2.random>
-References: <Pine.LNX.4.64.0803032327470.9642@schroedinger.engr.sgi.com> <20080304133020.GC5301@v2.random> <Pine.LNX.4.64.0803041059110.13957@schroedinger.engr.sgi.com> <20080304222030.GB8951@v2.random> <Pine.LNX.4.64.0803041422070.20821@schroedinger.engr.sgi.com> <20080307151722.GD24114@v2.random> <20080307152328.GE24114@v2.random> <1204908762.8514.114.camel@twins> <20080307175019.GK24114@v2.random> <1204912895.8514.120.camel@twins>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1204912895.8514.120.camel@twins>
+	Fri, 7 Mar 2008 13:47:51 -0500
+Received: from lx1.pxnet.com ([195.227.45.3]:38314 "EHLO lx1.pxnet.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758266AbYCGSru (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 7 Mar 2008 13:47:50 -0500
+From: Tilman Schmidt <tilman@imap.cc>
+To: Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+CC: Hansjoerg Lipp <hjlipp@web.de>, Karsten Keil <kkeil@suse.de>,
+       Roland Kletzing <devzero@web.de>
+Subject: [PATCH 2.6.25-rc4] gigaset: fix Oops on module unload regression
+Message-Id: <20080307184708.C603F110055@xenon.ts.pxnet.com>
+Date: Fri,  7 Mar 2008 19:47:08 +0100 (CET)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Mar 07, 2008 at 07:01:35PM +0100, Peter Zijlstra wrote:
-> The reason Christoph can do without RCU is because he doesn't allow
-> unregister, and as soon as you drop that you'll end up with something
+The card state mutex was only initialized when a device was connected,
+but used during unload unconditionally, leading to an Oops if a driver
+was loaded and unloaded again without ever connecting a device.
 
-Not sure to follow, what do you mean "he doesn't allow"? We'll also
-have to rip unregister regardless after you pointed out the ->release
-won't be called after calling my mmu_notifier_unregister in 3/4. If
-you figured out how to retain mmu_notifier_unregister I'm not seeing
-it anymore.
+Fix this by initializing the mutex as soon as the structure is allocated.
+Also add a missing mutex unlock revealed in the same execution path.
 
-> Curious problem indeed. Would it make sense to require registering these
-> MMU notifiers when the process is still single threaded along with the
-> requirement that they can never be removed again from a running process?
+Thanks to Roland Kletzing for reporting this problem.
 
-I'm afraid that won't help much (even if the mmu notifiers users could
-cope with that restriction like KVM can) because the VM will run
-concurrently in another CPU despite the task is single threaded. See
-2/4 in try_to_unmap_cluster: _start/end are not only invoked in the
-context of the current task.
+Signed-off-by: Tilman Schmidt <tilman@imap.cc>
+Tested-by: Roland Kletzing <devzero@web.de>
+Cc: Hansjoerg Lipp <hjlipp@web.de>
+Cc: Karsten Keil <kkeil@suse.de>
+---
+This fixes a possible Oops in 2.6.25-rc that was introduced by commit
+e468c04894f36045cf93d1384183a461014b6840 (Gigaset: permit module unload).
+Please merge as a regression fix for 2.6.25.
 
-PS. this problem I pointed out of _end possibly called before _begin
-is the same for #v9 and EMM V1 as far as I can tell.
+ drivers/isdn/gigaset/common.c |    6 ++++--
+ 1 files changed, 4 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/isdn/gigaset/common.c b/drivers/isdn/gigaset/common.c
+index aacedec..827c32c 100644
+--- a/drivers/isdn/gigaset/common.c
++++ b/drivers/isdn/gigaset/common.c
+@@ -637,7 +637,6 @@ struct cardstate *gigaset_initcs(struct gigaset_driver *drv, int channels,
+ 		err("maximum number of devices exceeded");
+ 		return NULL;
+ 	}
+-	mutex_init(&cs->mutex);
+ 
+ 	gig_dbg(DEBUG_INIT, "allocating bcs[0..%d]", channels - 1);
+ 	cs->bcs = kmalloc(channels * sizeof(struct bc_state), GFP_KERNEL);
+@@ -898,8 +897,10 @@ int gigaset_shutdown(struct cardstate *cs)
+ {
+ 	mutex_lock(&cs->mutex);
+ 
+-	if (!(cs->flags & VALID_MINOR))
++	if (!(cs->flags & VALID_MINOR)) {
++		mutex_unlock(&cs->mutex);
+ 		return -1;
++	}
+ 
+ 	cs->waiting = 1;
+ 
+@@ -1086,6 +1087,7 @@ struct gigaset_driver *gigaset_initdriver(unsigned minor, unsigned minors,
+ 		drv->cs[i].driver = drv;
+ 		drv->cs[i].ops = drv->ops;
+ 		drv->cs[i].minor_index = i;
++		mutex_init(&drv->cs[i].mutex);
+ 	}
+ 
+ 	gigaset_if_initdriver(drv, procname, devname);
+-- 
+1.5.4.7.gd8534-dirty
+
