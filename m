@@ -1,57 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758815AbYCGIyV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759709AbYCGI4p@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758815AbYCGIyV (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Mar 2008 03:54:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754344AbYCGIyM
+	id S1759709AbYCGI4p (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Mar 2008 03:56:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754083AbYCGI4g
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Mar 2008 03:54:12 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:60333 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753967AbYCGIyL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Mar 2008 03:54:11 -0500
-Date: Fri, 7 Mar 2008 09:53:41 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Jens Axboe <jens.axboe@oracle.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: Linux 2.6.25-rc4
-Message-ID: <20080307085341.GA23814@elte.hu>
-References: <alpine.LFD.1.00.0803042044460.12253@woody.linux-foundation.org> <20080306090029.GA6215@elte.hu> <20080306125929.GD17940@kernel.dk> <20080306130643.GB21359@elte.hu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080306130643.GB21359@elte.hu>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Fri, 7 Mar 2008 03:56:36 -0500
+Received: from softobject-gw.kiev.ucomline.net ([62.221.40.190]:58993 "EHLO
+	localhost" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753680AbYCGI4f (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 7 Mar 2008 03:56:35 -0500
+X-Greylist: delayed 2856 seconds by postgrey-1.27 at vger.kernel.org; Fri, 07 Mar 2008 03:56:35 EST
+From: Andy Shevchenko <andy@smile.org.ua>
+To: linux-kernel@vger.kernel.org
+Cc: drzeus-list@drzeus.cx, Andy Shevchenko <andy@smile.org.ua>
+Subject: [PATCH] [SDIO] add vendor and product pair for SQN1130
+Date: Fri,  7 Mar 2008 10:08:30 +0200
+Message-Id: <12048773103435-git-send-email-andy@smile.org.ua>
+X-Mailer: git-send-email 1.5.2.5
+In-Reply-To: andy@smile.org.ua
+References: andy@smile.org.ua
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Add the vendor and product ids for Sequans SQN1130 WiMAX chipset.
+---
+ include/linux/mmc/sdio_ids.h |    3 +++
+ 1 files changed, 3 insertions(+), 0 deletions(-)
 
-* Ingo Molnar <mingo@elte.hu> wrote:
+diff --git a/include/linux/mmc/sdio_ids.h b/include/linux/mmc/sdio_ids.h
+index ea1bf5b..d1b9883 100644
+--- a/include/linux/mmc/sdio_ids.h
++++ b/include/linux/mmc/sdio_ids.h
+@@ -26,4 +26,7 @@
+ #define SDIO_VENDOR_ID_MARVELL			0x02df
+ #define SDIO_DEVICE_ID_MARVELL_LIBERTAS		0x9103
+ 
++#define SDIO_VENDOR_ID_SEQUANS			0x039d
++#define SDIO_DEVICE_ID_SEQUANS_SQN1130		0x046a
++
+ #endif
+-- 
+1.5.2.5
 
-> > Presumably any hw issues would get noticed (like missing interrupt) 
-> > and trigger the error handler, so it looks like this IO is still 
-> > stuck in the queue somewhere. That mainly points the finger at AS, 
-> > but given that you cannot reproduce I'm not sure how best to proceed 
-> > with this...
-> 
-> me neither... just wanted to give notice that something's brewing in 
-> this area. Will know more after tonight's qa series i guess, if it 
-> gets above 100 bootups ;-)
-
-no luck - a few hundred successful randconfig bootups overnight (with a 
-rather complex userspace startup to full X plus networking, and the 
-testbox is used via the network to compile the next random kernel as 
-well - etc.) and no failure at all. So there's not much we can do at 
-this point - i'll keep you updated if anything new happens in the tests.
-
-	Ingo
