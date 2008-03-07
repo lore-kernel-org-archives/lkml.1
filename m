@@ -1,72 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763535AbYCGJJG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763730AbYCGJJ4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763535AbYCGJJG (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Mar 2008 04:09:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761567AbYCGJH0
+	id S1763730AbYCGJJ4 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Mar 2008 04:09:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760013AbYCGJH2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Mar 2008 04:07:26 -0500
-Received: from smtp-out01.alice-dsl.net ([88.44.60.11]:48209 "EHLO
-	smtp-out01.alice-dsl.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759175AbYCGJHQ (ORCPT
+	Fri, 7 Mar 2008 04:07:28 -0500
+Received: from smtp-out02.alice-dsl.net ([88.44.60.12]:21250 "EHLO
+	smtp-out02.alice-dsl.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759850AbYCGJHS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Mar 2008 04:07:16 -0500
+	Fri, 7 Mar 2008 04:07:18 -0500
 From: Andi Kleen <andi@firstfloor.org>
 References: <200803071007.493903088@firstfloor.org>
 In-Reply-To: <200803071007.493903088@firstfloor.org>
-To: avi@qumranet.com, linux-kernel@vger.kernel.org, linux-mm@kvack.org
-Subject: [PATCH] [3/13] Make kvm bad_page symbol static
-Message-Id: <20080307090713.90A1C1B419C@basil.firstfloor.org>
-Date: Fri,  7 Mar 2008 10:07:13 +0100 (CET)
-X-OriginalArrivalTime: 07 Mar 2008 09:00:43.0322 (UTC) FILETIME=[B97451A0:01C88031]
+To: linux-kernel@vger.kernel.org, linux-mm@kvack.org
+Subject: [PATCH] [5/13] Add mask allocator statistics to vmstat.[ch]
+Message-Id: <20080307090715.9872F1B419C@basil.firstfloor.org>
+Date: Fri,  7 Mar 2008 10:07:15 +0100 (CET)
+X-OriginalArrivalTime: 07 Mar 2008 09:00:45.0322 (UTC) FILETIME=[BAA57EA0:01C88031]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-Avoids global namespace clash with later patch that exports page_alloc's 
-bad_page. bad_page is not used outside kvm_main.c, so making it static is fine.
+They are a bit on the extensive side now, but I figured out more data
+is better for now.
 
-Cc: avi@qumranet.com
+The actual counts are added in the new files.
 
 Signed-off-by: Andi Kleen <ak@suse.de>
 
 ---
- include/linux/kvm_host.h |    2 --
- virt/kvm/kvm_main.c      |    4 ++--
- 2 files changed, 2 insertions(+), 4 deletions(-)
+ include/linux/vmstat.h |    4 ++++
+ mm/vmstat.c            |   10 ++++++++++
+ 2 files changed, 14 insertions(+)
 
-Index: linux/include/linux/kvm_host.h
+Index: linux/include/linux/vmstat.h
 ===================================================================
---- linux.orig/include/linux/kvm_host.h
-+++ linux/include/linux/kvm_host.h
-@@ -150,8 +150,6 @@ void kvm_exit(void);
- static inline int is_error_hpa(hpa_t hpa) { return hpa >> HPA_MSB; }
- struct page *gva_to_page(struct kvm_vcpu *vcpu, gva_t gva);
- 
--extern struct page *bad_page;
--
- int is_error_page(struct page *page);
- int kvm_is_error_hva(unsigned long addr);
- int kvm_set_memory_region(struct kvm *kvm,
-Index: linux/virt/kvm/kvm_main.c
-===================================================================
---- linux.orig/virt/kvm/kvm_main.c
-+++ linux/virt/kvm/kvm_main.c
-@@ -52,6 +52,8 @@ MODULE_LICENSE("GPL");
- DEFINE_SPINLOCK(kvm_lock);
- LIST_HEAD(vm_list);
- 
-+static struct page *bad_page;
-+
- static cpumask_t cpus_hardware_enabled;
- 
- struct kmem_cache *kvm_vcpu_cache;
-@@ -1271,8 +1273,6 @@ static struct sys_device kvm_sysdev = {
- 	.cls = &kvm_sysdev_class,
+--- linux.orig/include/linux/vmstat.h
++++ linux/include/linux/vmstat.h
+@@ -37,6 +37,10 @@ enum vm_event_item { PGPGIN, PGPGOUT, PS
+ 		FOR_ALL_ZONES(PGSCAN_DIRECT),
+ 		PGINODESTEAL, SLABS_SCANNED, KSWAPD_STEAL, KSWAPD_INODESTEAL,
+ 		PAGEOUTRUN, ALLOCSTALL, PGROTATED,
++#ifdef CONFIG_MASK_ALLOC
++		MASK_ALLOC, MASK_FREE, MASK_BITMAP_SKIP, MASK_WAIT,
++		MASK_HIGHER, MASK_LOW_WASTE, MASK_HIGH_WASTE,
++#endif
+ 		NR_VM_EVENT_ITEMS
  };
  
--struct page *bad_page;
--
- static inline
- struct kvm_vcpu *preempt_notifier_to_vcpu(struct preempt_notifier *pn)
- {
+Index: linux/mm/vmstat.c
+===================================================================
+--- linux.orig/mm/vmstat.c
++++ linux/mm/vmstat.c
+@@ -644,6 +644,16 @@ static const char * const vmstat_text[] 
+ 	"allocstall",
+ 
+ 	"pgrotated",
++
++#ifdef CONFIG_MASK_ALLOC
++	"mask_alloc",
++	"mask_free",
++	"mask_bitmap_skip",
++	"mask_wait",
++	"mask_higher",
++	"mask_low_waste",
++	"mask_high_waste",
++#endif
+ #endif
+ };
+ 
