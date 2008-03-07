@@ -1,62 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762323AbYCGDMS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762106AbYCGDOR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762323AbYCGDMS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Mar 2008 22:12:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755211AbYCGDL7
+	id S1762106AbYCGDOR (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Mar 2008 22:14:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756488AbYCGDOH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Mar 2008 22:11:59 -0500
-Received: from rn-out-0910.google.com ([64.233.170.184]:51824 "EHLO
-	rn-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754602AbYCGDL6 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Mar 2008 22:11:58 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
-        b=nOSJw97SIbz3tVwXYcgcJDSIgOaPB+V1MXwVklTHLxU9uROhpjhsYbf5CtivxvxKfc06rqKDqV2ZkSauiKql8Er1LmHlaUYExxViIaFz88Tpa239mi9cPsrUWUDkA9k7x4IeuhHGIPJm1nVRXCOdJWHG9GLODv47g4dnOGO/taM=
-Message-ID: <47D0B276.1010301@gmail.com>
-Date: Fri, 07 Mar 2008 12:11:50 +0900
-From: Tejun Heo <htejun@gmail.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20070801)
-MIME-Version: 1.0
-To: Jeff Garzik <jeff@garzik.org>,
-       James Bottomley <James.Bottomley@HansenPartnership.com>
-CC: Mark Lord <liml@rtr.ca>, Matthew Wilcox <matthew@wil.cx>,
-       linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [PATCH 2/2] libata: kill SCSI devices before detaching ata_host
-References: <20080222200951.GI16995@parisc-linux.org>	 <47BF3E54.9050609@rtr.ca>  <47CFA9A6.2040506@gmail.com>	 <1204817301.3062.3.camel@localhost.localdomain>	 <47D08478.8010700@gmail.com>	 <1204848119.3062.94.camel@localhost.localdomain>	 <47D08892.3080209@gmail.com>	 <1204849353.3062.107.camel@localhost.localdomain>	 <47D08C32.8060907@gmail.com> <1204850398.3062.111.camel@localhost.localdomain> <47D08FAA.7070001@gmail.com> <47D0B1A4.2040104@gmail.com>
-In-Reply-To: <47D0B1A4.2040104@gmail.com>
-X-Enigmail-Version: 0.95.5
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Thu, 6 Mar 2008 22:14:07 -0500
+Received: from x346.tv-sign.ru ([89.108.83.215]:46568 "EHLO mail.screens.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754196AbYCGDOG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 6 Mar 2008 22:14:06 -0500
+Date: Fri, 7 Mar 2008 06:13:24 +0300
+From: Oleg Nesterov <oleg@tv-sign.ru>
+To: Roland McGrath <roland@redhat.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [RFC,PATCH 2/2] __group_complete_signal: fix? signal load-balancing
+Message-ID: <20080307031324.GA214@tv-sign.ru>
+References: <20080305224321.GA6345@tv-sign.ru> <20080306115710.186322700FD@magilla.localdomain>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080306115710.186322700FD@magilla.localdomain>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Kill SCSI devices before detaching port.  This makes drives properly
-shut down on driver unload.
+On 03/06, Roland McGrath wrote:
+>
+> > The comment says about load-balancing, but this is not what happens?
+> > Suppose that wants_signal(signal->curr_target) == T. In that case we
+> > always choose the same ->curr_target thread. Isn't it better to try
+> > to "spread" the signals over the thread group?
+>
+> The "load balancing" stuff was in the old multithreaded signals code (2.5)
+> from before I rearranged a lot of code to fix the main parts of the MT
+> semantics.  Maybe it was Ingo who originally put that code in?  I moved
+> everything around it to change the deterministic semantics, but I never
+> really gave any thought to the "performance feature".  Perhaps it did
+> something different to begin with and bit-rot made it into the algorithm we
+> have that seems not so optimal .
+>
+> The current behavior hammers all the unblocked signals onto one thread
+> until it's scheduled out.  For getting the signal delivered as quickly as
+> can be, it makes some sense to choose running threads (task_curr) over
+> threads blocked without signals already pending.  So perhaps the same
+> thread that just ran a signal handler (maybe is still setting it up) really
+> is the preferable choice when it's on the CPU--at least in comparison to
+> another candidate thread that is not on a CPU.  But it's not exactly doing
+> "load balancing".  If several threads are running on CPUs, presumably it's
+> intended to spread several near-simultaneous signals across those CPUs.
+>
+> Perhaps Ingo has some thoughts on what the original plan is, or on what
+> desireable performance choices are now.
 
-Signed-off-by: Tejun Heo <htejun@gmail.com>
----
- drivers/ata/libata-core.c |    8 ++++++++
- 1 file changed, 8 insertions(+)
+OK, thanks, please ignore this patch (it was more the question anyway).
 
-Index: work1/drivers/ata/libata-core.c
-===================================================================
---- work1.orig/drivers/ata/libata-core.c
-+++ work1/drivers/ata/libata-core.c
-@@ -7236,6 +7236,14 @@ static void ata_port_detach(struct ata_p
- 	if (!ap->ops->error_handler)
- 		goto skip_eh;
- 
-+	/* First, tell all SCSI devices that we're going down.  Note
-+	 * that there's a small race window here.  Devices which get
-+	 * hotplugged after forget_host but before EH is killed won't
-+	 * get shut down by SCSI layer properly and will miss cache
-+	 * flush and spin down.
-+	 */
-+	scsi_forget_host(ap->scsi_host);
-+
- 	/* tell EH we're leaving & flush EH */
- 	spin_lock_irqsave(ap->lock, flags);
- 	ap->pflags |= ATA_PFLAG_UNLOADING;
+So. currently the meaning of->curr_target is: remember the last thread
+we sent a signal, may help to avoid iterating over the thread group when
+the next signal is sent.
+
+> If we're cleaning up, we can start by getting rid of the NULL check.
+> There's no reason to have it in this hot path.  It should never come
+> up if we make copy_signal initialize sig->curr_target = tsk.
+
+Can't understand why I didn't realize this while reading the code.
+Looks like a reasonable cleanup regardless.
+
+Oleg.
+
