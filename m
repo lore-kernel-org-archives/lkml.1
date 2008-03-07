@@ -1,122 +1,115 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758846AbYCGGB6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758242AbYCGGIg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758846AbYCGGB6 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Mar 2008 01:01:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751578AbYCGGBu
+	id S1758242AbYCGGIg (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Mar 2008 01:08:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753193AbYCGGIK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Mar 2008 01:01:50 -0500
-Received: from mail3.ldmi.net ([64.118.147.197]:37075 "EHLO mail.ldmi.net"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751173AbYCGGBt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Mar 2008 01:01:49 -0500
-X-Greylist: delayed 397 seconds by postgrey-1.27 at vger.kernel.org; Fri, 07 Mar 2008 01:01:49 EST
-Message-ID: <47D0D8B5.6050403@m2000.com>
-Date: Thu, 06 Mar 2008 21:55:01 -0800
-From: Adam Schrotenboer <adam@m2000.com>
-User-Agent: Thunderbird 2.0.0.12 (Windows/20080213)
+	Fri, 7 Mar 2008 01:08:10 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:32909 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752583AbYCGGII (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 7 Mar 2008 01:08:08 -0500
+Date: Thu, 6 Mar 2008 20:58:12 -0800
+From: Greg KH <greg@kroah.com>
+To: Pavel Emelyanov <xemul@openvz.org>
+Cc: "Serge E. Hallyn" <serue@us.ibm.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Paul Menage <menage@google.com>,
+       Sukadev Bhattiprolu <sukadev@us.ibm.com>
+Subject: Re: [PATCH 0/9] Devices accessibility control group (v4)
+Message-ID: <20080307045812.GC913@kroah.com>
+References: <47CED717.60406@openvz.org> <20080306015513.GA5359@kroah.com> <20080306031525.GA9070@sergelap.austin.ibm.com> <20080306043427.GA15498@kroah.com> <47CFAD06.7020501@openvz.org>
 MIME-Version: 1.0
-To: Neil Brown <neilb@suse.de>
-CC: Trond Myklebust <Trond.Myklebust@netapp.com>, linux-kernel@vger.kernel.org,
-       linux-nfs@vger.kernel.org, Thomas Daniel <tdaniel@m2000.com>,
-       jesper.juhl@gmail.com
-Subject: Re: [opensuse] nfs_update_inode: inode X mode changed, Y to Z
-References: <47CF0829.4020502@m2000.com>	<1204752463.5035.34.camel@heimdal.trondhjem.org>	<47CF157B.1010908@m2000.com>	<18383.24847.381754.517731@notabene.brown>	<47CF62C5.7000908@m2000.com> <18384.50909.866848.966192@notabene.brown>
-In-Reply-To: <18384.50909.866848.966192@notabene.brown>
-X-Enigmail-Version: 0.95.6
-Content-Type: multipart/signed; micalg=pgp-ripemd160;
- protocol="application/pgp-signature";
- boundary="------------enig8E8E5A3EA856F8C2464125AC"
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <47CFAD06.7020501@openvz.org>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enig8E8E5A3EA856F8C2464125AC
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: quoted-printable
+On Thu, Mar 06, 2008 at 11:36:22AM +0300, Pavel Emelyanov wrote:
+> Greg KH wrote:
+> > On Wed, Mar 05, 2008 at 09:15:25PM -0600, Serge E. Hallyn wrote:
+> >> Quoting Greg KH (greg@kroah.com):
+> >>> On Wed, Mar 05, 2008 at 08:23:35PM +0300, Pavel Emelyanov wrote:
+> >>>> Changes from v3:
+> >>>> * Ported on 2.6.25-rc3-mm1;
+> >>>> * Re-splitted into smaller pieces;
+> >>>> * Added more comments to tricky places.
+> >>>>
+> >>>> This controller allows to tune the devices accessibility by tasks,
+> >>>> i.e. grant full access for /dev/null, /dev/zero etc, grant read-only
+> >>>> access to IDE devices and completely hide SCSI disks.
+> >>>  From within the kernel itself?  The kernel should not be keeping track
+> >>> of the mode of devices, that's what the filesystem holding /dev is for.
+> >>> Those modes change all the time depending on the device plugged in, and
+> >>> the user using the "console".  Why should the kernel need to worry about
+> >>> any of this?
+> >> These are distinct from the permissions on device files.  No matter what
+> >> the permissions on the device files, a task in a devcg cgroup which
+> >> isn't allowed write to chardev 4:64 will not be able to write to
+> >> /dev/ttyS0.
+> > 
+> > Then why not do that from userspace with a different /dev, or with a
+> > LSM?
+> 
+> Different dev is not suitable, since task may still call mknod to
+> create device it needs and use it. This is not about comfortable
+> use, this is about security.
 
-Neil Brown wrote:
-> On Wednesday March 5, adam@m2000.com wrote:
->  =20
->> Neil Brown wrote:
->>    =20
->>> On Wednesday March 5, adam@m2000.com wrote:
->>>  =20
->>> Where :-)
->>>
->>> A excerpt from the logs to show actual error messages could be
->>> helpful.
->>>
->>> Thanks,
->>> NeilBrown
->>>      =20
->> sorry, must have missed the paste
->>
->> Feb 28 17:27:58 koi kernel: nfs_update_inode: inode 3221350147 mode=20
->> changed, 0040755 to 0100644
->> Feb 28 21:57:22 koi kernel: nfs_update_inode: inode 2149056279 mode=20
->> changed, 0040755 to 0100755
->> Mar  5 01:43:21 koi kernel: nfs_update_inode: inode 3222473680 mode=20
->> changed, 0040755 to 0100644
->> Mar  5 08:52:19 koi kernel: nfs_update_inode: inode 3222473568 mode=20
->> changed, 0120777 to 0100644
->> Mar  5 15:00:01 koi kernel: nfs_update_inode: inode 3222473569 mode=20
->> changed, 0120777 to 0100644
->> Mar  5 15:00:31 koi kernel: nfs_update_inode: inode 3222473674 mode=20
->> changed, 0120777 to 0100644
->> Mar  5 15:00:31 koi kernel: nfs_update_inode: inode 3222473675 mode=20
->> changed, 0120777 to 0100644
->> Mar  5 15:00:31 koi kernel: nfs_update_inode: inode 3222473672 mode=20
->> changed, 0040755 to 0100644
->> Mar  5 15:00:31 koi kernel: nfs_update_inode: inode 3222473673 mode=20
->> changed, 0120777 to 0100644
->>
->>
->>    =20
-> Hmmm...
-> Directories and symlinks "changing" to regular files.
->
-> 32bit inode numbers with the high bit set.
->
-> Random times, but a burst at 3pm one afternoon.
->
-> The fact that it happens so rarely make is very hard to collect more
-> data....
->
->
-> What happens when a user experiences an error?=20
-well, sometimes it shows up as a read/write error (that is the error=20
-code returned by the application).
-SVN tend to be more verbose (although I have no examples)
->  What sort of file is
-> the error reported against? =20
-It does not to my knowledge only happen to certain classes of files,=20
-although it does seem to happen most often when lots of files are being=20
-created.
-> Does the file remain inaccessible or does
-> it start working again soon? =20
-No data, maybe Thomas knows something.
-> Is the same file accessible from another
-> client?
->  =20
-No data, esp as it never happens to me personally.
-> NeilBrown
->  =20
+LSM can control mknod quite well.  And it is _all_ about security, don't
+try to add "security" to some other portion of the kernel that it not
+expecting it :)
 
+> LSM approach was proposed, but that required some API to configure
+> the permissions.
 
+Much like the API you already created to configure the permissions...
 
---------------enig8E8E5A3EA856F8C2464125AC
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
+> This API done via control groups, so there were no
+> difference between this approach and that. Except for this one doesn't
+> create one more level of filtering at the top of kobject lookup and
+> thus is simpler and faster.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.7 (MingW32)
-Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
+How can it be "faster"?  There is no speed problems here.
 
-iD8DBQFH0Ni1yWYDdvnGArwRA0dRAKCTWA66+XeHuyv5TGOnE3pN/BJlGACdE/kB
-jd/KWte/x/AV6ejLWV07FIM=
-=BDqG
------END PGP SIGNATURE-----
+Please use LSM for this, that is what it is explicitly there for.
 
---------------enig8E8E5A3EA856F8C2464125AC--
+> >> The purpose is to prevent a root task from granting itself access to
+> >> certain devices.  Without this, the only option currently is to take
+> >> CAP_MKNOD out of the capability bounding set for a container and make
+> >> sure that /dev is set up right (and enforce nodev for mounts).  In
+> >> itself that doesn't sound so bad and it was my preference at first,
+> > 
+> > that would be my preference as well.
+> 
+> That approach relies on a proper user space setup inside a container, 
+> but this creates security holes, since container user may ignore all
+> these "requirements".
+
+Ok then, use LSM to enforce those requirements, again, that is what it
+is there for.
+
+> >> but the argument is that things like udev should be able to run in a
+> >> container, and will object about not being able to create devices.
+> > 
+> > No reason you can't modify udev to do something like this.  At the
+> 
+> Sure we _can_ modify udev, but the problem is that users of virtualisation
+> solutions often (very often) use old software (e.g. set up some out-dated
+> distribution inside a container), so trick with modified udev simply won't
+> work in many cases.
+
+So the kernel's job is to enforce policy that an old userspace can not
+seem to get straight?  That bit of logic doesn't go over so well...
+
+Andrew, please drop these patches from your tree, this all should be
+done with a simple LSM interface, which would be much smaller and much
+less intrusive than this patchset.
+
+thanks,
+
+greg k-h
