@@ -1,50 +1,117 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762770AbYCGM3Y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763589AbYCGMac@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762770AbYCGM3Y (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Mar 2008 07:29:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754445AbYCGM3R
+	id S1763589AbYCGMac (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Mar 2008 07:30:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757063AbYCGMaU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Mar 2008 07:29:17 -0500
-Received: from terminus.zytor.com ([198.137.202.10]:51790 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753344AbYCGM3Q (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Mar 2008 07:29:16 -0500
-Message-ID: <47D134EC.6050804@zytor.com>
-Date: Fri, 07 Mar 2008 04:28:28 -0800
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
+	Fri, 7 Mar 2008 07:30:20 -0500
+Received: from sacred.ru ([62.205.161.221]:46289 "EHLO sacred.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754445AbYCGMaS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 7 Mar 2008 07:30:18 -0500
+Message-ID: <47D12EF8.8010801@openvz.org>
+Date: Fri, 07 Mar 2008 15:03:04 +0300
+From: Pavel Emelyanov <xemul@openvz.org>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080213)
 MIME-Version: 1.0
-To: Bernd Petrovitsch <bernd@firmix.at>
-CC: Pavel Machek <pavel@ucw.cz>, Ingo Molnar <mingo@elte.hu>,
-       Pawel Plociennik <paplociennik@gmail.com>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2.6.24] chroot= as a new kernel parameter
-References: <200803060001.38432.paplociennik@gmail.com>	 <47CF79E4.3030107@zytor.com> <20080306102712.GE13391@elte.hu>	 <47D00B16.6040004@zytor.com> <20080306212028.GB1747@elf.ucw.cz>	 <47D06265.8030305@zytor.com> <1204886161.15966.17.camel@tara.firmix.at>
-In-Reply-To: <1204886161.15966.17.camel@tara.firmix.at>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Stephen Smalley <sds@tycho.nsa.gov>
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       David Miller <davem@davemloft.net>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linux Netdev List <netdev@vger.kernel.org>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       James Morris <jmorris@namei.org>, Eric Paris <eparis@parisplace.org>
+Subject: Re: [PATCH] Make /proc/net a symlink on /proc/self/net (v2)
+References: <47CFB6CA.8090001@openvz.org>	 <1204821325.1397.298.camel@moss-spartans.epoch.ncsc.mil>	 <47D01F98.5010609@openvz.org> <1204832619.1397.354.camel@moss-spartans.epoch.ncsc.mil>
+In-Reply-To: <1204832619.1397.354.camel@moss-spartans.epoch.ncsc.mil>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+X-Greylist: Sender succeeded SMTP AUTH authentication, not delayed by milter-greylist-3.0 (sacred.ru [62.205.161.221]); Fri, 07 Mar 2008 15:03:03 +0300 (MSK)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Bernd Petrovitsch wrote:
-> On Don, 2008-03-06 at 13:30 -0800, H. Peter Anvin wrote:
->> Pavel Machek wrote:
->>> This really should be in kernel, I should not have to partition my
->>> disk to get booting to few different distros.
->>>
->> Use a small initramfs.  That's the Right Thing to do in the first place.
+[snip]
+
+>>> Does this break SELinux labeling of /proc/net inodes and thus its access
+>>> controls on them?
+>> It should not, since the proc_dir_etries are still organized in
+>> a required hierarchy.
 > 
-> ... or use a statically linked chroot program (not necessarily to be
-> found in /working_distro). Shouldn't be too large anyways ....
+> Unfortunately, it does break selinux labeling of /proc/net inodes.
+> Easily seen by running ls -ZR /proc/net before and after the patch is
+> applied and comparing the results.  
 > 
+> Also, as a separate issue, a "find /proc/self/net ..." will show that
+> the hard link count is wrong for it.
 
-For what it's worth:
+Oops... I've checked this thing explicitly before sending, but it looks
+like I used too old find version. I.e. 4.1.20 worked OK, but 4.2.23
+reported the nlink discrepancy.
 
-: tazenda 102 ; ls -l ~/klibc/klibc/usr/utils/static/chroot
--rwxrwxr-x 1 hpa hpa 8488 2008-03-06 14:04 
-/home/hpa/klibc/klibc/usr/utils/static/chroot*
+Anyway, this is fixed now (see below). I override the getattr method for
+/proc/net directory and update one from the net->proc_net entry, which 
+is calculated correctly.
 
-	(compiled for x86-64)
+> Currently the inodes get labeled by selinux_proc_get_sid() by walking up
+> the proc_dir_entry tree to generate a name and prefix matching that name
+> in policy.  Before the patch, we'd get names like "//net/tcp", i.e.
+> relative to the root of proc (the extra leading slash is due to the
+> earlier proc net rewrite which also broke selinux until we adjusted it
+> to ignore it).  After the patch, we just get "//tcp", which is ambiguous
+> since we would also get that for a /proc/tcp inode if one existed.
 
-	-hpa
+OK, got it. Is it good if we used to get the //net/tcp, but will /net/tcp
+(without the double slash)? The patch below does exactly this. It initializes
+the name for the net->proc_net entry and makes its parent be proc_root.
+
+Can you Ack this patch, so that I can merge it with the original one and 
+re-post the combined v3?
+
+> Not trying to obstruct your proc net improvements, but just want to make
+> sure that selinux doesn't get broken in the process.
+
+diff --git a/fs/proc/proc_net.c b/fs/proc/proc_net.c
+index 18d413c..4caa5f7 100644
+--- a/fs/proc/proc_net.c
++++ b/fs/proc/proc_net.c
+@@ -96,8 +96,27 @@ static struct dentry *proc_tgid_net_lookup(struct inode *dir,
+ 	return de;
+ }
+ 
++static int proc_tgid_net_getattr(struct vfsmount *mnt, struct dentry *dentry,
++		struct kstat *stat)
++{
++	struct inode *inode = dentry->d_inode;
++	struct net *net;
++
++	net = get_proc_task_net(inode);
++
++	generic_fillattr(inode, stat);
++
++	if (net != NULL) {
++		stat->nlink = net->proc_net->nlink;
++		put_net(net);
++	}
++
++	return 0;
++}
++
+ const struct inode_operations proc_net_inode_operations = {
+ 	.lookup		= proc_tgid_net_lookup,
++	.getattr	= proc_tgid_net_getattr,
+ };
+ 
+ static int proc_tgid_net_readdir(struct file *filp, void *dirent,
+@@ -162,6 +181,10 @@ static __net_init int proc_net_ns_init(struct net *net)
+ 		goto out;
+ 
+ 	netd->data = net;
++	netd->nlink = 2;
++	netd->name = "net";
++	netd->namelen = 3;
++	netd->parent = &proc_root;
+ 
+ 	err = -EEXIST;
+ 	net_statd = proc_net_mkdir(net, "stat", netd);
