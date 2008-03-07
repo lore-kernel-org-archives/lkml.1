@@ -1,37 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759569AbYCGXMt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761131AbYCGXU0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759569AbYCGXMt (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Mar 2008 18:12:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752207AbYCGXMi
+	id S1761131AbYCGXU0 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Mar 2008 18:20:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752925AbYCGXUN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Mar 2008 18:12:38 -0500
-Received: from 216-99-217-87.dsl.aracnet.com ([216.99.217.87]:53061 "EHLO
-	sous-sol.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751933AbYCGXMi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Mar 2008 18:12:38 -0500
-Date: Fri, 7 Mar 2008 15:12:22 -0800
-From: Chris Wright <chrisw@sous-sol.org>
-To: Deepak Saxena <dsaxena@plexity.net>
-Cc: stable@kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [stable] [PATCH-stable] Make 2.6.24.y headers_install work
-	again
-Message-ID: <20080307231222.GA4416@sequoia.sous-sol.org>
-References: <20080307220352.GA10387@plexity.net>
+	Fri, 7 Mar 2008 18:20:13 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:39507 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752207AbYCGXUL (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 7 Mar 2008 18:20:11 -0500
+Date: Fri, 7 Mar 2008 15:18:41 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Roland McGrath <roland@redhat.com>
+cc: Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] x86_64 ptrace orig_ax on ia32 task
+In-Reply-To: <20080307225602.6491B26F990@magilla.localdomain>
+Message-ID: <alpine.LFD.1.00.0803071507240.3013@woody.linux-foundation.org>
+References: <20080229035707.EAE862700FD@magilla.localdomain> <20080307225602.6491B26F990@magilla.localdomain>
+User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080307220352.GA10387@plexity.net>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Deepak Saxena (dsaxena@plexity.net) wrote:
+
+On Fri, 7 Mar 2008, Roland McGrath wrote:
 > 
-> This reverts commit 5fb7ba76544d95bfa05199f7394a442de5660be7.
+> This makes 64-bit ptrace calls setting the 64-bit orig_ax field
+> for a 32-bit task sign-extend the low 32 bits up to 64.  This
+> matches what a 64-bit debugger expects when tracing a 32-bit task.
 
-Thanks, it's queued up already.
+Hmm. Why make this conditional on CONFIG_IA32_EMULATION and TIF_IA32?
 
-http://git.kernel.org/?p=linux/kernel/git/stable/stable-queue.git;a=blob_plain;f=queue-2.6.24/revert-net-add-if_addrlabel.h-to-sanitized-headers.patch;h=2b713e6ef3731300a5b62c91ac7bd78993d41bcc
+That field is never really 64-bit anyway. The only allowable values are
+ - system call number (== small positive value)
+ - a small negative number for traps
 
--chris
+So I'd suggest just making it entirely unconditionally just do
+
+	case offsetof(struct user_regs_struct, orig_ax):
+		value = (long) (s32) value;
+		break;
+
+and be done with it. Why have arbitrarily different code on x86 and x86-64 
+when there is no real reason for it?
+
+		Linus
