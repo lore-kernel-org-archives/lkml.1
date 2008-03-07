@@ -1,131 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759535AbYCGREu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761874AbYCGRH2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759535AbYCGREu (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Mar 2008 12:04:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755542AbYCGREk
+	id S1761874AbYCGRH2 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Mar 2008 12:07:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756237AbYCGRHP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Mar 2008 12:04:40 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:53518 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750778AbYCGREk (ORCPT
+	Fri, 7 Mar 2008 12:07:15 -0500
+Received: from agminet01.oracle.com ([141.146.126.228]:28071 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755516AbYCGRHO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Mar 2008 12:04:40 -0500
-Date: Fri, 7 Mar 2008 09:01:04 -0800
-From: Greg KH <greg@kroah.com>
-To: Pavel Emelyanov <xemul@openvz.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       menage@google.com, sukadev@us.ibm.com, serue@us.ibm.com
-Subject: Re: [PATCH 5/9] Make use of permissions, returned by kobj_lookup
-Message-ID: <20080307170104.GA24746@kroah.com>
-References: <47CED717.60406@openvz.org> <47CEDA64.1070506@openvz.org> <20080305171304.f686f6de.akpm@linux-foundation.org> <47D10939.6020806@openvz.org> <20080307013553.7ed35f91.akpm@linux-foundation.org> <47D11068.9010704@openvz.org> <20080307155921.GB28439@kroah.com> <47D16F9B.6050008@openvz.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <47D16F9B.6050008@openvz.org>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+	Fri, 7 Mar 2008 12:07:14 -0500
+Date: Fri, 7 Mar 2008 09:05:17 -0800
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org
+Subject: Re: [PATCH] [6/13] Core maskable allocator
+Message-Id: <20080307090517.b6b27987.randy.dunlap@oracle.com>
+In-Reply-To: <20080307090716.9D3E91B419C@basil.firstfloor.org>
+References: <200803071007.493903088@firstfloor.org>
+	<20080307090716.9D3E91B419C@basil.firstfloor.org>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.4.7 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Mar 07, 2008 at 07:38:51PM +0300, Pavel Emelyanov wrote:
-> Greg KH wrote:
-> > On Fri, Mar 07, 2008 at 12:52:40PM +0300, Pavel Emelyanov wrote:
-> >> Andrew Morton wrote:
-> >>> On Fri, 07 Mar 2008 12:22:01 +0300 Pavel Emelyanov <xemul@openvz.org> wrote:
-> >>>
-> >>>>> This doesn't include sufficient headers to be compileable.
-> >>>>>
-> >>>>> I'm sure there are lots of headers like this.  But we regularly need
-> >>>>> to fix them.
-> >>>>>
-> >>>> Not sure, whether this is still relevant after Greg's comments, but that's
-> >>>> the -fix patch for this one. (It will cause a conflict with the 9th patch.)
-> >>> Well.  Where do we stand with this?  afaict the state of play is:
-> >>>
-> >>> Greg: do it in udev
-> >>> Pavel: but people want to run old distros in containers
-> >> Actually no.
-> >>
-> >> Greg: Use LSM for this
-> > 
-> > Yes, that is my recommendation.
-> > 
-> >> Pavel: My approach just makes maps per-group, while LSM will
-> >>        bring a new level of filtering/lookup on device open path
-> > 
-> > Huh?  You are still doing that same "filtering/lookup" by modifying the
-> > maps code.  The result should be exactly the same.
+On Fri,  7 Mar 2008 10:07:16 +0100 (CET) Andi Kleen wrote:
+
 > 
-> No - this lookup was there before to get struct kobject from the dev_t, 
-> I just make it look up in another map.
-> 
-> > Why do you not want to use the LSM interface?  That is exactly what it
-> > is there for, don't go creating new hooks into the kernel for the exact
-> > same functionality.
-> 
-> _No_new_hooks_ - just the map is get from task, not from a static variable.
+> This is the core code of the maskable allocator. Introduction
+> appended.
 
-The new "hook" is that we now have ways of setting different maps, and
-you added a whole infrastructure to set these permissions from
-userspace, as well as track them within the kernel.  That's a security
-policy that you are putting into place within the kernel, just like LSM
-is supposed to be used for.
+> Index: linux/Documentation/kernel-parameters.txt
+> ===================================================================
+> --- linux.orig/Documentation/kernel-parameters.txt
+> +++ linux/Documentation/kernel-parameters.txt
+> @@ -2116,6 +2116,9 @@ and is between 256 and 4096 characters. 
+>  	norandmaps	Don't use address space randomization
+>  			Equivalent to echo 0 > /proc/sys/kernel/randomize_va_space
+>  
+> +	maskzone=size[MG] Set size of maskable DMA zone to size.
+> +		 force	Always allocate from the mask zone (for testing)
 
-> I have basically three objections against LSM.
-> 
-> 1. LSM is not stackable, so loading this tiny module with devices
->    access rights will block other security modules;
+                 ^^^^^^^^^^^^^ ??
 
-Do you really want to run other LSMs within a containerd kernel?  Is
-that a requirement?  It would seem to run counter to the main goal of
-containers to me.
+> +
+>  ______________________________________________________________________
+>  
+>  TODO:
 
-> 2. Turning CONFIG_SECURITY on immediately causes all the other hooks
->    to get called. This affects performance on critical paths, like
->    process creation/destruction, network flow and so on. This impact
->    is small, but noticeable;
+> Index: linux/Documentation/DocBook/kernel-api.tmpl
+> ===================================================================
+> --- linux.orig/Documentation/DocBook/kernel-api.tmpl
+> +++ linux/Documentation/DocBook/kernel-api.tmpl
+> @@ -164,6 +164,7 @@ X!Ilib/string.c
+>  !Emm/memory.c
+>  !Emm/vmalloc.c
+>  !Imm/page_alloc.c
+> +!Emm/mask-alloc.c
+>  !Emm/mempool.c
+>  !Emm/dmapool.c
+>  !Emm/page-writeback.c
 
-The last time this was brought up, it was not noticable, except for some
-network paths.  And even then, the number was lost in the noise from
-what I saw.  I think with a containered machine, you have bigger things
-to be worried about :)
+Thanks for the kernel-doc annotations.
 
-> 3. With LSM turned on we'll have to "virtualize" it, i.e. make its
->    work safe in a container. I don't presume to judge how much work
->    will have to be done in this area, so the result patch would be
->    even larger and maybe will duplicate functionality, which is currently
->    in cgroups. OTOH, cgroups already provide the ways to correctly 
->    delegate proper rights to containers.
-
-No, your lsm would be your "virtualize" policy.  I don't think you would
-have to do any additional work here, but could be wrong.  Would like to
-see the code to prove it.
-
-> > Opening a dev node is not on any "fast path" that you need to be
-> > concerned about a few extra calls within the kernel.
-> > 
-> > And, I think in the end your patch would be much smaller and easier to
-> > understand and review and maintain overall.
-> 
-> Hardly - the largest part of my patch is cgroup manipulations. The part
-> that makes the char and block layers switch to new map ac check the 
-> permissions is 10-20 lines of new code.
-> 
-> But with LSM I will still need this API.
-
-Yes, but your LSM hooks will be smaller than the code modifications to
-the map logic :)
-
-Again, I object to this as you are driving a new security policy
-infrastructure into the device node logic where it does not belong as we
-already have this functionality in the LSM interface today.  Please use
-that one instead and don't clutter up the kernel with "one-off" security
-changes like this one.
-
-Please try the LSM interface and see what happens.  If, after you have
-created a patch, you still have objections, please post it for review
-and I will be glad to revisit my opinion at that time.
-
-thanks,
-
-greg k-h
+---
+~Randy
