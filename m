@@ -1,67 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765057AbYCGEmU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765627AbYCGEnY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765057AbYCGEmU (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Mar 2008 23:42:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760534AbYCGEmK
+	id S1765627AbYCGEnY (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Mar 2008 23:43:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760320AbYCGEnQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Mar 2008 23:42:10 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:42588 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759056AbYCGEmJ (ORCPT
+	Thu, 6 Mar 2008 23:43:16 -0500
+Received: from E23SMTP04.au.ibm.com ([202.81.18.173]:37536 "EHLO
+	e23smtp04.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760214AbYCGEnO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Mar 2008 23:42:09 -0500
-Date: Thu, 6 Mar 2008 20:39:50 -0800
-From: Greg KH <greg@kroah.com>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Cc: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: linux-next: Tree for March 7
-Message-ID: <20080307043950.GA669@kroah.com>
-References: <20080307141856.b27d1725.sfr@canb.auug.org.au>
+	Thu, 6 Mar 2008 23:43:14 -0500
+Message-ID: <47D0C76D.8050207@linux.vnet.ibm.com>
+Date: Fri, 07 Mar 2008 10:11:17 +0530
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+Reply-To: balbir@linux.vnet.ibm.com
+Organization: IBM
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080307141856.b27d1725.sfr@canb.auug.org.au>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+To: David Rientjes <rientjes@google.com>
+CC: Paul Menage <menage@google.com>, Andrew Morton <akpm@linux-foundation.org>,
+       Pavel Emelianov <xemul@openvz.org>, Hugh Dickins <hugh@veritas.com>,
+       Sudhir Kumar <skumar@linux.vnet.ibm.com>,
+       YAMAMOTO Takashi <yamamoto@valinux.co.jp>, lizf@cn.fujitsu.com,
+       linux-kernel@vger.kernel.org, taka@valinux.co.jp, linux-mm@kvack.org,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Subject: Re: [PATCH] Add cgroup support for enabling controllers at boot time
+References: <20080306185952.23290.49571.sendpatchset@localhost.localdomain> <alpine.DEB.1.00.0803061108370.13110@chino.kir.corp.google.com>
+In-Reply-To: <alpine.DEB.1.00.0803061108370.13110@chino.kir.corp.google.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Mar 07, 2008 at 02:18:56PM +1100, Stephen Rothwell wrote:
-> Hi all,
+David Rientjes wrote:
+> On Fri, 7 Mar 2008, Balbir Singh wrote:
 > 
-> I have created today's linux-next tree at
-> git://git.kernel.org/pub/scm/linux/kernel/git/sfr/linux-next.git
-> (tar balls at
-> http://www.kernel.org/pub/linux/kernel/people/sfr/linux-next/).
+>> @@ -3010,3 +3020,16 @@ static void cgroup_release_agent(struct 
+>>  	spin_unlock(&release_list_lock);
+>>  	mutex_unlock(&cgroup_mutex);
+>>  }
+>> +
+>> +static int __init cgroup_disable(char *str)
+>> +{
+>> +	int i;
+>> +	for (i = 0; i < CGROUP_SUBSYS_COUNT; i++) {
+>> +		struct cgroup_subsys *ss = subsys[i];
+>> +		if (!strcmp(str, ss->name)) {
+>> +			ss->disabled = 1;
+>> +			break;
+>> +		}
+>> +	}
+>> +}
+>> +__setup("cgroup_disable=", cgroup_disable);
 > 
-> You can see which trees have been included by looking in the Next/Trees
-> file in the source.  There are also quilt-import.log and merge.log files
-> in the Next directory.  Between each merge, the tree was built with
-> allmodconfig for both powerpc and x86_64.
+> This doesn't handle spaces very well, so isn't it possible for the name of 
+> a current or future cgroup subsystem to be specified after cgroup_disable= 
+> on the command line and have it disabled by accident?
 > 
-> There were a few merge conflicts (trivial) and one build break.  I have
-> notified the appropriate people.
-> 
-> We are up to 44 trees, more are welcome (even if they are currently
-> empty).  The influx of new trees has been underwhelming.  Thanks to those
-> who have contributed, and to those who haven't, please do.
-> 
-> Status of my local build tests is at
-> http://kisskb.ellerman.id.au/kisskb/branch/9/.  If maintainers want to
-> give advice about cross compilers/configs that work, we are always open
-> to add more builds.  Build results from today on also include the actual
-> compiler version string.
-> 
-> It looks like this one is going to build fail the same way as yesterday's tree:
-> 
-> drivers/usb/core/hub.c:633: error: 'struct usb_device' has no member named 'persist_enabled'
-> drivers/usb/core/hub.c:719: error: 'struct usb_device' has no member named 'reset_resume'
-> 
-> for any config with CONFIG_PM disabled.
 
-I have a patch in my to-apply queue for this, so hopefully it will not
-happen tomorrow :)
+How do you distinguish that from the user wanting to disable the controller on
+purpose? My understanding is that after parsing cgroup_disable=, the rest of the
+text is passed to cgroup_disable to process further. You'll find that all the
+__setup() code in the kernel is implemented this way.
 
-thanks,
+>> diff -puN Documentation/kernel-parameters.txt~cgroup_disable Documentation/kernel-parameters.txt
+>> --- linux-2.6.25-rc4/Documentation/kernel-parameters.txt~cgroup_disable	2008-03-06 17:57:32.000000000 +0530
+>> +++ linux-2.6.25-rc4-balbir/Documentation/kernel-parameters.txt	2008-03-06 18:00:32.000000000 +0530
+>> @@ -383,6 +383,10 @@ and is between 256 and 4096 characters. 
+>>  	ccw_timeout_log [S390]
+>>  			See Documentation/s390/CommonIO for details.
+>>  
+>> +	cgroup_disable= [KNL] Enable disable a particular controller
+>> +			Format: {name of the controller}
+>> +			See /proc/cgroups for a list of compiled controllers
+>> +
+> 
+> This works on multiple controllers, though, if they follow 
+> cgroup_disable=, so the documentation and format should reflect that.
 
-greg k-h
+Absolutely! done.
+
+-- 
+	Warm Regards,
+	Balbir Singh
+	Linux Technology Center
+	IBM, ISTL
