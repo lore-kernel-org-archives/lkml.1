@@ -1,58 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751851AbYCGXoM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756176AbYCGXof@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751851AbYCGXoM (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Mar 2008 18:44:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754275AbYCGXn5
+	id S1756176AbYCGXof (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Mar 2008 18:44:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754179AbYCGXoN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Mar 2008 18:43:57 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:44494 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752424AbYCGXn4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Mar 2008 18:43:56 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [BUG 2.6.25-rc3] scheduler/hotplug: some processes are dealocked when cpu is set to offline
-Date: Sat, 8 Mar 2008 00:43:15 +0100
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: Suresh Siddha <suresh.b.siddha@intel.com>, dmitry.adamushko@gmail.com,
-       ego@in.ibm.com, mingo@elte.hu, oleg@tv-sign.ru, yi.y.yang@intel.com,
-       linux-kernel@vger.kernel.org, tglx@linutronix.de
-References: <1204483329.3607.8.camel@yangyi-dev.bj.intel.com> <20080307230126.GA15909@linux-os.sc.intel.com> <20080307152934.5c4052db.akpm@linux-foundation.org>
-In-Reply-To: <20080307152934.5c4052db.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Fri, 7 Mar 2008 18:44:13 -0500
+Received: from bombadil.infradead.org ([18.85.46.34]:40417 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759611AbYCGXoL (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 7 Mar 2008 18:44:11 -0500
+Subject: Re: headersinstall of kvm.h does not work
+From: David Woodhouse <dwmw2@infradead.org>
+To: Christian Borntraeger <borntraeger@de.ibm.com>
+Cc: Avi Kivity <avi@qumranet.com>, Sam Ravnborg <sam@ravnborg.org>,
+       kvm-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
+In-Reply-To: <200803071326.06682.borntraeger@de.ibm.com>
+References: <200803071326.06682.borntraeger@de.ibm.com>
+Content-Type: text/plain
+Date: Sat, 08 Mar 2008 00:43:38 +0100
+Message-Id: <1204933418.2495.14.camel@shinybook.infradead.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.3 (2.12.3-1.fc8.dwmw2.1) 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200803080043.16817.rjw@sisk.pl>
+X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday, 8 of March 2008, Andrew Morton wrote:
-> On Fri, 7 Mar 2008 15:01:26 -0800
-> Suresh Siddha <suresh.b.siddha@intel.com> wrote:
+
+On Fri, 2008-03-07 at 13:26 +0100, Christian Borntraeger wrote:
+> +unifdef-$(CONFIG_HAVE_KVM) += kvm.h
+>  unifdef-y += llc.h
+>  unifdef-y += loop.h
+> ----snip------
 > 
-> > 
-> > Andrew, Please check if the appended patch fixes your power-off problem aswell.
-> > ...
-> >
-> > --- a/kernel/sched.c
-> > +++ b/kernel/sched.c
-> > @@ -5882,6 +5882,7 @@ migration_call(struct notifier_block *nfb, unsigned long action, void *hcpu)
-> >  		break;
-> >  
-> >  	case CPU_DOWN_PREPARE:
-> > +	case CPU_DOWN_PREPARE_FROZEN:
-> >  		/* Update our root-domain */
-> >  		rq = cpu_rq(cpu);
-> >  		spin_lock_irqsave(&rq->lock, flags);
+> This patch does not work. Kbuild (scripts/Makefile.headersinst) does
+> not check the config file, so kvm.h is never installed.
 > 
-> No, it does not.
+> Sam is there an easy way to allow constructs like
+> "unifdef-$(CONFIG_FOO)"?
 
-Well, this is a bug nevertheless.
+That might be justifiable for HAVE_xxx which is a constant for any given
+architecture -- but I predict that soon as we add such a facility, it
+would get abused for stuff which really _is_ configurable. And that
+would make me sad.
 
-In fact, the frozen bit should only be set during hibernation/suspend and not
-during shutdown ...
+-- 
+dwmw2
 
-So, it looks like disable_nonboot_cpus() needs an extra parameter.
