@@ -1,60 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763890AbYCGTbq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764661AbYCGTc4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763890AbYCGTbq (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Mar 2008 14:31:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757532AbYCGTbi
+	id S1764661AbYCGTc4 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Mar 2008 14:32:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758786AbYCGTct
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Mar 2008 14:31:38 -0500
-Received: from hc65210ec.dhcp.vt.edu ([198.82.16.236]:55756 "EHLO
-	hc65210ec.dhcp.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757337AbYCGTbi (ORCPT
-	<RFC822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Mar 2008 14:31:38 -0500
-X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Ingo Molnar <mingo@elte.hu>
-Subject: Re: 2.6.25-rc3-mm1 - BUG at system shutdown time
-In-Reply-To: Your message of "Fri, 07 Mar 2008 09:34:01 +0100."
-             <alpine.LFD.1.00.0803070931470.3099@apollo.tec.linutronix.de>
-From: Valdis.Kletnieks@vt.edu
-References: <20080304011928.e8c82c0c.akpm@linux-foundation.org> <10815.1204862325@turing-police.cc.vt.edu> <20080306221602.790cd26e.akpm@linux-foundation.org> <4954.1204876349@turing-police.cc.vt.edu> <alpine.LFD.1.00.0803070857360.3099@apollo.tec.linutronix.de> <3450.1204878180@turing-police.cc.vt.edu>
-            <alpine.LFD.1.00.0803070931470.3099@apollo.tec.linutronix.de>
-Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="==_Exmh_1204918220_4026P";
-	 micalg=pgp-sha1; protocol="application/pgp-signature"
+	Fri, 7 Mar 2008 14:32:49 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:33982 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756305AbYCGTcs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 7 Mar 2008 14:32:48 -0500
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Date: Fri, 07 Mar 2008 14:30:21 -0500
-Message-ID: <7962.1204918221@turing-police.cc.vt.edu>
+From: Roland McGrath <roland@redhat.com>
+To: Oleg Nesterov <oleg@tv-sign.ru>
+X-Fcc: ~/Mail/linus
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] signals: do_tkill: don't use tasklist_lock
+In-Reply-To: Oleg Nesterov's message of  Friday, 7 March 2008 12:58:13 +0300 <20080307095813.GA8894@tv-sign.ru>
+References: <20080307095813.GA8894@tv-sign.ru>
+X-Shopping-List: (1) Hazardous acoustic ignition detergents
+   (2) Mesozoic Turkey wine
+   (3) Marxist Convulsion aggressors
+   (4) Rampant carnations
+Message-Id: <20080307193159.1AFF127010F@magilla.localdomain>
+Date: Fri,  7 Mar 2008 11:31:59 -0800 (PST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---==_Exmh_1204918220_4026P
-Content-Type: text/plain; charset=us-ascii
+> Convert do_tkill() to use rcu_read_lock() + lock_task_sighand() to avoid
+> taking tasklist lock.
 
-On Fri, 07 Mar 2008 09:34:01 +0100, Thomas Gleixner said:
+That part looks good.
 
-> Yeah. Sorry for making you do useless work. The meat is here:
-> 
-> > > [   74.256373] PGD 203067 PUD 207063 PMD 7e4cc163 PTE 20a161
-> 
-> ----------------------------------------------------------^^^^^^
-> 
-> The PTE has the RW bit cleared, so the fault is not a big surprise.
+> Note that we don't return an error if lock_task_sighand() fails, we
+> pretend the task dies after receiving the signal. Otherwise, we should
+> fight with the nasty races with mt-exec without having any advantage.
 
-Probably not surprisingly, the quilt bisect says the problem is git-x86,patch.
+To clarify, this is not a change from the existing behavior.
+So your change is fine regardless of this issue.
 
---==_Exmh_1204918220_4026P
-Content-Type: application/pgp-signature
+The case you have in mind is that p was the old group_leader
+being replaced by another thread that exec'd, right?
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.8 (GNU/Linux)
-Comment: Exmh version 2.5 07/13/2001
+It is the most obscure of nits, but I think it can be wrong to drop a
+signal in this case.  If it's a fatal signal (especially SIGKILL),
+then either the thread group should be killed or the call should
+return an error.  
 
-iD8DBQFH0ZfMcC3lWbTT17ARAsKuAKDGS21zsd9jcrvq6ckJWi/8sPuonACeNWA/
-cBqlp7cptpfLpwX3Du1YuzE=
-=YOz5
------END PGP SIGNATURE-----
+For the exec case, if p->sighand is cleared that means the
+release_task(leader) call at the end of de_thread started.  So by
+now, the pid has been transferred to the exec'ing thread.  If we just
+restart the lookup, it will find the new thread (or not, and we can
+return -ESRCH).
 
---==_Exmh_1204918220_4026P--
+I'm inclined to do that, but it certainly should be a second patch
+after this one.
+
+
+Thanks,
+Roland
