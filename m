@@ -1,46 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763818AbYCGTJD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764672AbYCGTJh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763818AbYCGTJD (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Mar 2008 14:09:03 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755605AbYCGTIy
+	id S1764672AbYCGTJh (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Mar 2008 14:09:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762175AbYCGTJX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Mar 2008 14:08:54 -0500
-Received: from pasmtpa.tele.dk ([80.160.77.114]:46234 "EHLO pasmtpA.tele.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754481AbYCGTIx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Mar 2008 14:08:53 -0500
-Date: Fri, 7 Mar 2008 20:09:09 +0100
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org
-Subject: Re: [PATCH] [8/13] Enable the mask allocator for x86
-Message-ID: <20080307190909.GA15512@uranus.ravnborg.org>
-References: <200803071007.493903088@firstfloor.org> <20080307090718.A609E1B419C@basil.firstfloor.org> <20080307183255.GB14779@uranus.ravnborg.org> <20080307190313.GN7365@one.firstfloor.org>
+	Fri, 7 Mar 2008 14:09:23 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:37978
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1755605AbYCGTJW (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 7 Mar 2008 14:09:22 -0500
+Date: Fri, 07 Mar 2008 11:09:22 -0800 (PST)
+Message-Id: <20080307.110922.16187211.davem@davemloft.net>
+To: xemul@openvz.org
+Cc: akpm@linux-foundation.org, ebiederm@xmission.com, sds@tycho.nsa.gov,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       paulmck@linux.vnet.ibm.com
+Subject: Re: [PATCH] Make /proc/net a symlink on /proc/self/net (v3)
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <47D1462F.5060800@openvz.org>
+References: <47D1462F.5060800@openvz.org>
+X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080307190313.GN7365@one.firstfloor.org>
-User-Agent: Mutt/1.4.2.1i
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Mar 07, 2008 at 08:03:13PM +0100, Andi Kleen wrote:
-> On Fri, Mar 07, 2008 at 07:32:55PM +0100, Sam Ravnborg wrote:
-> > On Fri, Mar 07, 2008 at 10:07:18AM +0100, Andi Kleen wrote:
-> > > 
-> > > - Disable old ZONE_DMA
-> > > No fixed size ZONE_DMA now anymore. All existing users of __GFP_DMA rely 
-> > > on the compat call to the maskable allocator in alloc/free_pages
-> > > - Call maskable allocator initialization functions at boot
-> > > - Add TRAD_DMA_MASK for the compat functions 
-> > 
-> > I see TRAD_DMA_MASK used by patch 6 and patch 7, but only here
-> > in this later patch it is defined.
-> > Looks like we have build breakage - but I have not checked it.
-> 
-> It is only used when the architecture defines CONFIG_MASK_ALLOC and
-> that is not done by any until the later patches.
-Understood - I just took a quick look and wanted to let you know.
+From: Pavel Emelyanov <xemul@openvz.org>
+Date: Fri, 07 Mar 2008 16:42:07 +0300
 
-	Sam
+> Current /proc/net is done with so called "shadows", but current
+> implementation is broken and has little chances to get fixed.
+ ...
+
+Applied, thanks Pavel.
+
+I'm travelling so it might take a day or two for me to get this
+to Linus.
