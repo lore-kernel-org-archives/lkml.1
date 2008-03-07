@@ -1,88 +1,153 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761613AbYCGWUI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760995AbYCGWb2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761613AbYCGWUI (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Mar 2008 17:20:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756554AbYCGWTz
+	id S1760995AbYCGWb2 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Mar 2008 17:31:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754825AbYCGWbT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Mar 2008 17:19:55 -0500
-Received: from opensource.wolfsonmicro.com ([80.75.67.52]:36691 "EHLO
-	opensource2.wolfsonmicro.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1754565AbYCGWTy (ORCPT
+	Fri, 7 Mar 2008 17:31:19 -0500
+Received: from fg-out-1718.google.com ([72.14.220.154]:24408 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751774AbYCGWbS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Mar 2008 17:19:54 -0500
-Subject: Re: [UPDATED v3][PATCH 4/7] regulator: framework core
-From: Liam Girdwood <lg@opensource.wolfsonmicro.com>
-To: Greg KH <greg@kroah.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       linux-arm-kernel <linux-arm-kernel@lists.arm.linux.org.uk>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Mark Brown <broonie@opensource.wolfsonmicro.com>
-In-Reply-To: <20080307161012.GC28439@kroah.com>
-References: <1204827115.15360.150.camel@a10323.wolfsonmicro.main>
-	 <20080307161012.GC28439@kroah.com>
-Content-Type: text/plain
-Date: Fri, 07 Mar 2008 22:19:51 +0000
-Message-Id: <1204928391.13653.27.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.3 (2.8.3-2.fc6) 
+	Fri, 7 Mar 2008 17:31:18 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
+        b=YeZgMt8AI67GneH6kLepThzT6P5itrS+BtKn1AxXyQdtkSJklr2rOs9mWskQOF0mb5001slhx58IX5ZfdzTREG/pz4snLOWmq0bhhkYYDtwStqI+nXRiKZtAIVqQ58/ut2a6/+W0c8JkcCswJaXW9+dKmXXp6QsOIPYKXedTRvg=
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+To: petkovbb@gmail.com
+Subject: Re: Commit 9f10d9ee breaks CD mounting/burning
+Date: Fri, 7 Mar 2008 23:45:14 +0100
+User-Agent: KMail/1.9.9
+Cc: walt <w41ter@gmail.com>, linux-ide@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+References: <200803062235.00396.bzolnier@gmail.com> <200803072139.43167.bzolnier@gmail.com> <20080307214934.GB19778@gollum.tnic>
+In-Reply-To: <20080307214934.GB19778@gollum.tnic>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200803072345.15585.bzolnier@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2008-03-07 at 08:10 -0800, Greg KH wrote:
-> On Thu, Mar 06, 2008 at 06:11:54PM +0000, Liam Girdwood wrote:
-
-> > +/**
-> > + * struct regulator_cdev
-> > + *
-> > + * Voltage / Current regulator class device. One for each regulator.
-> > + */
-> > +struct regulator_cdev {
-> > +	struct regulator_desc *desc;
-> > +	int use_count;
-> > +
-> > +	struct list_head list;
-> > +	struct list_head consumer_list;
-> > +	struct blocking_notifier_head notifier;
-> > +	struct mutex mutex; /* consumer lock */
-> > +	struct module *owner;
-> > +	struct class_device cdev;
+On Friday 07 March 2008, Borislav Petkov wrote:
+> On Fri, Mar 07, 2008 at 09:39:43PM +0100, Bartlomiej Zolnierkiewicz wrote:
+> > On Friday 07 March 2008, Borislav Petkov wrote:
+> > > On Thu, Mar 06, 2008 at 10:35:00PM +0100, Bartlomiej Zolnierkiewicz wrote:
+> > > > 
+> > > > On Thursday 06 March 2008, walt wrote:
+> > > > > Hi Bartolmiej,
+> > > > > 
+> > > > > For me, this commit causes the problem it's intended to fix:
+> > > > > 
+> > > > > commit 9f10d9ee0ac6d79d7bc8b9a158bf4a29322d84d3
+> > > > > Author: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+> > > > > Date:   Tue Feb 26 21:50:35 2008 +0100
+> > > > > 
+> > > > >      ide-cd: fix 'ireason' handling for REQ_TYPE_ATA_PC requests
+> > > > > 
+> > > > >      This fixes some hangs caused by not finishing the transfer before ending
+> > > > >      the request and also makes use of 'ireason == 1' quirk for spurious IRQs.
+> > > > > 
+> > > > > When I mount a CD there is a long delay, and I see this error message:
+> > > > > 
+> > > > > hdc: ide_cd_check_ireason: wrong transfer direction!
+> > > > > cdrom: failed setting lba address space
+> > > > > hdc: status error: status=0x58 { DriveReady SeekComplete DataRequest }
+> > > > > ide: failed opcode was: unknown
+> > > > > hdc: drive not ready for command
+> > > > > <repeated many times>
+> > > > > 
+> > > > > When I revert this commit everything works properly again, including
+> > > > > CD burning.
+> > > > > 
+> > > > > Here is the drive info:
+> > > > > 
+> > > > > hdc: TSSTcorpCD/DVDW SH-S182M, ATAPI CD/DVD-ROM drive
+> > > > > hdc: host max PIO5 wanted PIO255(auto-tune) selected PIO4
+> > > > > hdc: UDMA/33 mode selected
+> > > > > hdc: ATAPI 48X DVD-ROM DVD-R-RAM CD-R/RW drive, 2048kB Cache
+> > > > > Uniform CD-ROM driver Revision: 3.20
+> > > > > hdc: UDMA/33 mode selected
+> > > > > 
+> > > > > I'm happy to try patches or supply more info, just let me know
+> > > > > what you need.
+> > > > 
+> > > > Does the following patch help?
+> > > > 
+> > > > [ Borislav, please take a look and double check that it is OK. ]
+> > > > 
+> > > > From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+> > > > Subject: [PATCH] ide-cd: mark REQ_TYPE_ATA_PC write requests with REQ_RW flag
+> > > > 
+> > > > On Thursday 06 March 2008, walt wrote:
+> > > > 
+> > > > > For me, this commit causes the problem it's intended to fix:
+> > > > > 
+> > > > > commit 9f10d9ee0ac6d79d7bc8b9a158bf4a29322d84d3
+> > > > > Author: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+> > > > > Date:   Tue Feb 26 21:50:35 2008 +0100
+> > > > > 
+> > > > >      ide-cd: fix 'ireason' handling for REQ_TYPE_ATA_PC requests
+> > > > > 
+> > > > >      This fixes some hangs caused by not finishing the transfer before ending
+> > > > >      the request and also makes use of 'ireason == 1' quirk for spurious IRQs.
+> > > > > 
+> > > > > When I mount a CD there is a long delay, and I see this error message:
+> > > > > 
+> > > > > hdc: ide_cd_check_ireason: wrong transfer direction!
+> > > > > cdrom: failed setting lba address space
+> > > > > hdc: status error: status=0x58 { DriveReady SeekComplete DataRequest }
+> > > > > ide: failed opcode was: unknown
+> > > > > hdc: drive not ready for command
+> > > > > <repeated many times>
+> > > > > 
+> > > > > When I revert this commit everything works properly again, including
+> > > > > CD burning.
+> > > > 
+> > > > It turned out that REQ_TYPE_ATA_PC write requests were not marked as such
+> > > > (the previous commit assumed them to be).
+> > > > 
+> > > > Reported-by: walt <w41ter@gmail.com>
+> > > > Cc: Borislav Petkov <petkovbb@googlemail.com>
+> > > > Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+> > > > ---
+> > > >  drivers/ide/ide-cd_ioctl.c |    4 ++++
+> > > >  1 file changed, 4 insertions(+)
+> > > > 
+> > > > Index: b/drivers/ide/ide-cd_ioctl.c
+> > > > ===================================================================
+> > > > --- a/drivers/ide/ide-cd_ioctl.c
+> > > > +++ b/drivers/ide/ide-cd_ioctl.c
+> > > > @@ -457,6 +457,10 @@ int ide_cdrom_packet(struct cdrom_device
+> > > >  	   layer. the packet must be complete, as we do not
+> > > >  	   touch it at all. */
+> > > >  	ide_cd_init_rq(drive, &req);
+> > > > +
+> > > > +	if (cgc->data_direction == CGC_DATA_WRITE)
+> > > > +		req.cmd_flags |= REQ_RW;
+> > > > +
+> > > >  	memcpy(req.cmd, cgc->cmd, CDROM_PACKET_SIZE);
+> > > >  	if (cgc->sense)
+> > > >  		memset(cgc->sense, 0, sizeof(struct request_sense));
+> > > 
+> > > Here's how i understand it (and correct me if i'm wrong):
+> > > 
+> > > req.cmd_flags & 0x1 (i.e. the least sig. bit) was remaining unset for write requests
+> > > and that's why the ireason check in the interrupt handler was failing loudly.
+> > > This sets it correctly so that rq_data_dir(rq) evaluates to the correct data
+> > > direction of the request, no?
+> > 
+> > Yep.
+> > 
+> > Thanks for checking it, I'll push the patch to Linus.
 > 
-> Can you change this to use a "struct device" instead?  We are trying to
-> get rid of class_device, and there are only 3 users of it in the kernel
-> today (memorystick, infiniband, and scsi), and I have patches pending to
-> fix all of these.  For 2.6.26 I would like to be rid of it finally.
-> 
-> If you want, I would be glad to fix this up for you, it should be a
-> pretty simple replacement.
-> 
+> Cool, can we close http://bugzilla.kernel.org/show_bug.cgi?id=10185 now?
 
-Yes please. Much appreciated :)
+I suppose that Rafael would prefer to close it when patch hits the mainline.
 
-> > +	struct regulation_constraints *constraints;
-> > +	struct regulator_cdev *parent;	/* for tree */
-> 
-> And if when you convert, you can get rid of this pointer, it would not
-> be needed.
-
-Fwiw, the regulator-parent relationship is established by the platform
-code after the regulator driver has registered all the regulator
-devices. I assume we can just device_move() to re-parent. 
-
-It may also be nice to have a link like /sys/power/regulator
--> /sys/devices/.../regulator 
-
-> 
-> > +	void *reg_data;		/* regulator_cdev data */
-> 
-> Nor would this one.  Actually I don't think you need this one today
-> anyway...
-> 
-
-Agreed, this is just driver_data for the regulator driver.
-
-Many Thanks
-
-Liam
-
+Thanks,
+Bart
