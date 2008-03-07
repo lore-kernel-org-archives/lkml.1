@@ -1,133 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764695AbYCGN2f@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764639AbYCGNbG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764695AbYCGN2f (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Mar 2008 08:28:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757514AbYCGN2Y
+	id S1764639AbYCGNbG (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Mar 2008 08:31:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760327AbYCGNaz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Mar 2008 08:28:24 -0500
-Received: from zombie.ncsc.mil ([144.51.88.131]:38316 "EHLO zombie.ncsc.mil"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751722AbYCGN2X (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Mar 2008 08:28:23 -0500
-Subject: Re: [PATCH] Make /proc/net a symlink on /proc/self/net (v2)
-From: Stephen Smalley <sds@tycho.nsa.gov>
-To: Pavel Emelyanov <xemul@openvz.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       David Miller <davem@davemloft.net>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linux Netdev List <netdev@vger.kernel.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       James Morris <jmorris@namei.org>, Eric Paris <eparis@parisplace.org>
-In-Reply-To: <47D12EF8.8010801@openvz.org>
-References: <47CFB6CA.8090001@openvz.org>
-	 <1204821325.1397.298.camel@moss-spartans.epoch.ncsc.mil>
-	 <47D01F98.5010609@openvz.org>
-	 <1204832619.1397.354.camel@moss-spartans.epoch.ncsc.mil>
-	 <47D12EF8.8010801@openvz.org>
-Content-Type: text/plain
-Organization: National Security Agency
-Date: Fri, 07 Mar 2008 08:24:34 -0500
-Message-Id: <1204896274.1397.403.camel@moss-spartans.epoch.ncsc.mil>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 (2.12.3-1.fc8) 
+	Fri, 7 Mar 2008 08:30:55 -0500
+Received: from e28smtp04.in.ibm.com ([59.145.155.4]:51024 "EHLO
+	e28esmtp04.in.ibm.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1757514AbYCGNay (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 7 Mar 2008 08:30:54 -0500
+Message-ID: <47D1431C.6060107@linux.vnet.ibm.com>
+Date: Fri, 07 Mar 2008 18:59:00 +0530
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+Reply-To: balbir@linux.vnet.ibm.com
+Organization: IBM
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+MIME-Version: 1.0
+To: Paul Menage <menage@google.com>
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       Pavel Emelianov <xemul@openvz.org>, Hugh Dickins <hugh@veritas.com>,
+       Sudhir Kumar <skumar@linux.vnet.ibm.com>,
+       YAMAMOTO Takashi <yamamoto@valinux.co.jp>, lizf@cn.fujitsu.com,
+       linux-kernel@vger.kernel.org, taka@valinux.co.jp, linux-mm@kvack.org,
+       David Rientjes <rientjes@google.com>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Subject: Re: [PATCH] Add cgroup support for enabling controllers at boot time
+ (v2)
+References: <20080307085735.25567.314.sendpatchset@localhost.localdomain> <6599ad830803070125o1ebfd7d1r728cdadf726ecbe2@mail.gmail.com> <6599ad830803070426l22d78446t588691dedeeb490b@mail.gmail.com> <47D13BF1.1060009@linux.vnet.ibm.com> <6599ad830803070509v1ec83aeet9f63bfd61a00ef19@mail.gmail.com>
+In-Reply-To: <6599ad830803070509v1ec83aeet9f63bfd61a00ef19@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Paul Menage wrote:
+> On Fri, Mar 7, 2008 at 4:58 AM, Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
+>>  > Or rather, it's the other way around - cgroup_disable=cpuset will
+>>  > instead disable the "cpu" subsystem if "cpu" comes before "cpuset" in
+>>  > the subsystem list.
+>>  >
+>>
+>>  Would it? I must be missing something, since we do a strncmp with ss->name.
+>>  I would expect that to match whole strings.
+>>
+> 
+> No, strncmp only checks the first n characters - so in that case,
+> you'd be checking for !strncmp("cpuset", "cpu", 3), which will return
+> true
 
-On Fri, 2008-03-07 at 15:03 +0300, Pavel Emelyanov wrote:
-> [snip]
-> 
-> >>> Does this break SELinux labeling of /proc/net inodes and thus its access
-> >>> controls on them?
-> >> It should not, since the proc_dir_etries are still organized in
-> >> a required hierarchy.
-> > 
-> > Unfortunately, it does break selinux labeling of /proc/net inodes.
-> > Easily seen by running ls -ZR /proc/net before and after the patch is
-> > applied and comparing the results.  
-> > 
-> > Also, as a separate issue, a "find /proc/self/net ..." will show that
-> > the hard link count is wrong for it.
-> 
-> Oops... I've checked this thing explicitly before sending, but it looks
-> like I used too old find version. I.e. 4.1.20 worked OK, but 4.2.23
-> reported the nlink discrepancy.
-> 
-> Anyway, this is fixed now (see below). I override the getattr method for
-> /proc/net directory and update one from the net->proc_net entry, which 
-> is calculated correctly.
-> 
-> > Currently the inodes get labeled by selinux_proc_get_sid() by walking up
-> > the proc_dir_entry tree to generate a name and prefix matching that name
-> > in policy.  Before the patch, we'd get names like "//net/tcp", i.e.
-> > relative to the root of proc (the extra leading slash is due to the
-> > earlier proc net rewrite which also broke selinux until we adjusted it
-> > to ignore it).  After the patch, we just get "//tcp", which is ambiguous
-> > since we would also get that for a /proc/tcp inode if one existed.
-> 
-> OK, got it. Is it good if we used to get the //net/tcp, but will /net/tcp
-> (without the double slash)? The patch below does exactly this. It initializes
-> the name for the net->proc_net entry and makes its parent be proc_root.
-> 
-> Can you Ack this patch, so that I can merge it with the original one and 
-> re-post the combined v3?
+Aaah.. I see the problem now.
 
-Thanks, ls -ZR /proc/net now yields the same output before and after the
-patch.
-
-Acked-by:  Stephen Smalley <sds@tycho.nsa.gov>
-
-> 
-> > Not trying to obstruct your proc net improvements, but just want to make
-> > sure that selinux doesn't get broken in the process.
-> 
-> diff --git a/fs/proc/proc_net.c b/fs/proc/proc_net.c
-> index 18d413c..4caa5f7 100644
-> --- a/fs/proc/proc_net.c
-> +++ b/fs/proc/proc_net.c
-> @@ -96,8 +96,27 @@ static struct dentry *proc_tgid_net_lookup(struct inode *dir,
->  	return de;
->  }
->  
-> +static int proc_tgid_net_getattr(struct vfsmount *mnt, struct dentry *dentry,
-> +		struct kstat *stat)
-> +{
-> +	struct inode *inode = dentry->d_inode;
-> +	struct net *net;
-> +
-> +	net = get_proc_task_net(inode);
-> +
-> +	generic_fillattr(inode, stat);
-> +
-> +	if (net != NULL) {
-> +		stat->nlink = net->proc_net->nlink;
-> +		put_net(net);
-> +	}
-> +
-> +	return 0;
-> +}
-> +
->  const struct inode_operations proc_net_inode_operations = {
->  	.lookup		= proc_tgid_net_lookup,
-> +	.getattr	= proc_tgid_net_getattr,
->  };
->  
->  static int proc_tgid_net_readdir(struct file *filp, void *dirent,
-> @@ -162,6 +181,10 @@ static __net_init int proc_net_ns_init(struct net *net)
->  		goto out;
->  
->  	netd->data = net;
-> +	netd->nlink = 2;
-> +	netd->name = "net";
-> +	netd->namelen = 3;
-> +	netd->parent = &proc_root;
->  
->  	err = -EEXIST;
->  	net_statd = proc_net_mkdir(net, "stat", netd);
 -- 
-Stephen Smalley
-National Security Agency
-
+	Warm Regards,
+	Balbir Singh
+	Linux Technology Center
+	IBM, ISTL
