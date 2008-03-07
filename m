@@ -1,58 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764145AbYCGVEX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932361AbYCGVEq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764145AbYCGVEX (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Mar 2008 16:04:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932144AbYCGVEK
+	id S932361AbYCGVEq (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Mar 2008 16:04:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764108AbYCGVEX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Mar 2008 16:04:10 -0500
-Received: from kai.krose.org ([140.186.190.96]:55286 "EHLO mail.krose.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760149AbYCGVEJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Mar 2008 16:04:09 -0500
-Message-ID: <47D1ADC5.1050108@krose.org>
-Date: Fri, 07 Mar 2008 16:04:05 -0500
-From: Kyle Rose <krose@krose.org>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071229)
+	Fri, 7 Mar 2008 16:04:23 -0500
+Received: from fmmailgate04.web.de ([217.72.192.242]:52614 "EHLO
+	fmmailgate04.web.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1763827AbYCGVEW convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 7 Mar 2008 16:04:22 -0500
+Date: Fri, 07 Mar 2008 22:04:20 +0100
+Message-Id: <187865500@web.de>
 MIME-Version: 1.0
-To: Trond Myklebust <trond.myklebust@fys.uio.no>
-CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-nfs@vger.kernel.org
-Subject: Re: READDIRPLUS max mount option
-References: <47D1995E.6060501@krose.org>	 <1204919978.16746.12.camel@heimdal.trondhjem.org>	 <47D1A0F5.2070501@krose.org> <1204922570.16746.37.camel@heimdal.trondhjem.org>
-In-Reply-To: <1204922570.16746.37.camel@heimdal.trondhjem.org>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+From: devzero@web.de
+To: ingo@elte.hu
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2.6.24] chroot= as a new kernel parameter
+Organization: http://freemail.web.de/
+X-Provags-Id: V01U2FsdGVkX19VJty50JRVb/lWRQ13vnmiIeDkYk8LqX7/ubFW1SotnYKvK
+ FrK/SOCrNOnXQIVx2gwUWm3eh+xcKPAezb/hOjy3O3rSp9TWkA=
+Content-Type: text/plain; charset=iso-8859-15
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+>* H. Peter Anvin <hpa@zytor.com> wrote:
+>
+>> It's useless because it's exactly and trivially replaceable with:
+>>
+>>       init=/path/to/any/sbin/chroot /newroot /sbin/init
+>
+>ok, i didnt realize that this was possible. Ah ... i see, 
+>init/main.c:init_setup() is special and picks the whole boot parameter 
+>string up to the end, right? So init= is the only multi-parameter 
+>init-parameter.
+>
+>        Ingo
 
-> The size of the actual READDIRPLUS requests is completely unaffected by
-> your patch. Your change actually means that the client will continue to
-> use READDIRPLUS on very large directories instead of falling back to
-> readdir.
->   
-Sorry to be imprecise.  "Size of request" should be "size of response" 
-or "cost of request".  The meaning is clear, I think.
-> If you want a faster readdir(), you will find that splitting those huge
-> directories up into smaller subdirs is an alternative solution that
-> tends to scale much better on both client and server.
->   
-Agreed that this is probably the least terrible of the available 
-solutions, but in my specific case it requires a more extensive 
-modification to my software than the relatively minor kernel change.
-> Having hundreds of mount options for minor tweaks is not an acceptable
-> practice. Each mount option needs to be abundantly justified.
->   
-Regarding your straw man, nobody's proposing hundreds of mount options.  
-I imagine the effort required to implement each one would keep such a 
-thing from happening. ;-)
-> Since we're talking about what is really a quite arbitrary limit, I can
-> certainly see an argument for why we might want a way to change it, but
-> I'm still not convinced that we need to be setting this parameter at the
-> mountpoint level.
-Fair enough.  A proc entry to alter this globally would be an acceptable 
-compromise for me, even if my local sysadmins might not like it.
+wouldn`t it be useful to add a hint to kernel-parameters.txt ?
 
-Kyle
+
+for now it just reads:
+
+        init=           [KNL]
+                        Format: <full_path>
+                        Run specified binary instead of /sbin/init as init
+                        process.
+
+so, if there is no hint about that specialty (i.e. passing params to init, using for chroot etc..), no user will ever now.....
+
+roland
+_____________________________________________________________________
+Unbegrenzter Speicherplatz für Ihr E-Mail Postfach? Jetzt aktivieren!
+http://freemail.web.de/club/landingpage.htm/?mc=025555
+
