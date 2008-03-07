@@ -1,83 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758764AbYCGIj2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759603AbYCGIkd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758764AbYCGIj2 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Mar 2008 03:39:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752279AbYCGIjT
+	id S1759603AbYCGIkd (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Mar 2008 03:40:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753384AbYCGIkW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Mar 2008 03:39:19 -0500
-Received: from fg-out-1718.google.com ([72.14.220.158]:13948 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751155AbYCGIjS (ORCPT
+	Fri, 7 Mar 2008 03:40:22 -0500
+Received: from el-out-1112.google.com ([209.85.162.181]:46881 "EHLO
+	el-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752373AbYCGIkU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Mar 2008 03:39:18 -0500
+	Fri, 7 Mar 2008 03:40:20 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:subject:content-type;
-        b=MxyH2FLqWZrLda9OmpKOCN6XYmhwUi0Rp5uL95NLgNuBSa/brB7I5AfoQgnoy5017KTur5TlKuTkKka/8Ol+wYGUbLW0IdMzZ2AuzK8xh7RBJRNCFvT8g28wADA1W0RK4iF+uZ/Sbzxgpy/JYK4tXk3alR2JkHUGLBUm/6uFJb8=
-Message-ID: <47D101E0.6040802@gmail.com>
-Date: Fri, 07 Mar 2008 16:50:40 +0800
-From: Peter Teoh <htmldeveloper@gmail.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type;
+        b=QunmHzqdSg2pgUP5ZNNPu2sHpkmMhaFKCSNQX3lPyet9jr+rV+2nqjfozTmSEV7adQaeBYetznk7ePe20LDx4OQQsZWqnnelgfd9j9SkODwFoVQnHDmbdVQ7lKWNIpDGs0H+D1KUGOAgRHHuxUnJPbgwgui3nLjsLdoGPcs00Vo=
+Message-ID: <47D0FF67.8050503@gmail.com>
+Date: Fri, 07 Mar 2008 17:40:07 +0900
+From: Tejun Heo <htejun@gmail.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20070801)
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-Subject: Removing kernel_thread() from stop_machine.c
+To: Gerold Jury <gml@inode.at>
+CC: Sergey Vlasov <vsu@altlinux.ru>, Mike Galbraith <efault@gmx.de>,
+       linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org,
+       linux-scsi@vger.kernel.org
+Subject: Re: extra bytes written to SATA DVD drive on kernel 2.6.23 till 2.6.24.2
+References: <200802252005.22663.gml@inode.at> <200802292259.12047.gml@inode.at> <20080301145354.ca4d4f1a.vsu@altlinux.ru> <200803011329.11315.gml@inode.at>
+In-Reply-To: <200803011329.11315.gml@inode.at>
+X-Enigmail-Version: 0.95.5
 Content-Type: multipart/mixed;
- boundary="------------070900040103060102020904"
+ boundary="------------000506050203060601000100"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 This is a multi-part message in MIME format.
---------------070900040103060102020904
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+--------------000506050203060601000100
+Content-Type: text/plain; charset=utf-8
 Content-Transfer-Encoding: 7bit
 
+Hello,
 
-I replaced the kernel_thread() API in stop_machine.c as per document:   
-Documentation/feature-removal-schedule.txt.
+Gerold Jury wrote:
+> Yes it happens with the DVD+RW (testet with dd now) and with DVD+R
+> 
+> Thank you for the byte interpretation.
+> Now I have a hint where to start with the debugging.
 
-Please comment.
+I've tried to reproduce the problem here but failed.  Can you please try
+the test with the file generated with the attached program?  "genseqfile
+524288 > testfile" will give you 1 meg testfile and it will give us
+better idea how the data is getting corrupted.
 
+Thanks.
 
+-- 
+tejun
 
-
-
---------------070900040103060102020904
-Content-Type: text/x-patch;
- name="remove_kernel_thread_stop_machine.patch"
+--------------000506050203060601000100
+Content-Type: text/x-csrc;
+ name="genseqfile.c"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline;
- filename="remove_kernel_thread_stop_machine.patch"
+ filename="genseqfile.c"
 
-Signed-off-by: Peter Teoh <htmldeveloper@gmail.com>
+#include <unistd.h>
+#include <stdio.h>
 
---- kernel/stop_machine.c.orig	2008-03-07 13:20:00.000000000 +0800
-+++ kernel/stop_machine.c	2008-03-07 16:45:30.000000000 +0800
-@@ -9,6 +9,7 @@
- #include <linux/stop_machine.h>
- #include <linux/syscalls.h>
- #include <linux/interrupt.h>
-+#include <linux/kthread.h>
- 
- #include <asm/atomic.h>
- #include <asm/semaphore.h>
-@@ -92,6 +93,7 @@ static void stopmachine_set_state(enum s
- static int stop_machine(void)
- {
- 	int i, ret = 0;
-+	struct task_struct *task;
- 
- 	atomic_set(&stopmachine_thread_ack, 0);
- 	stopmachine_num_threads = 0;
-@@ -100,7 +102,8 @@ static int stop_machine(void)
- 	for_each_online_cpu(i) {
- 		if (i == raw_smp_processor_id())
- 			continue;
--		ret = kernel_thread(stopmachine, (void *)(long)i,CLONE_KERNEL);
-+		task = kthread_create(stopmachine, (void *)(long)i,"stopmachine");
-+		ret = PTR_ERR(task);
- 		if (ret < 0)
- 			break;
- 		stopmachine_num_threads++;
+int main(int argc, char **argv)
+{
+	unsigned int i;
 
---------------070900040103060102020904--
+	for (i = 0; i < atoi(argv[1]); i++)
+		fwrite(&i, 2, 1, stdout);
+	return 0;
+}
+
+--------------000506050203060601000100--
