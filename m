@@ -1,106 +1,183 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764912AbYCGJQk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765134AbYCGJRT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764912AbYCGJQk (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Mar 2008 04:16:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761681AbYCGJHk
+	id S1765134AbYCGJRT (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Mar 2008 04:17:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762371AbYCGJHl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Mar 2008 04:07:40 -0500
+	Fri, 7 Mar 2008 04:07:41 -0500
 Received: from smtp-out04.alice-dsl.net ([88.44.63.6]:44221 "EHLO
 	smtp-out04.alice-dsl.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761638AbYCGJHh (ORCPT
+	with ESMTP id S1761352AbYCGJHi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Mar 2008 04:07:37 -0500
+	Fri, 7 Mar 2008 04:07:38 -0500
 From: Andi Kleen <andi@firstfloor.org>
 References: <200803071007.493903088@firstfloor.org>
 In-Reply-To: <200803071007.493903088@firstfloor.org>
 To: linux-kernel@vger.kernel.org, linux-mm@kvack.org
-Subject: [PATCH] [7/13] Implement compat hooks for GFP_DMA
-Message-Id: <20080307090717.A146E1B419D@basil.firstfloor.org>
-Date: Fri,  7 Mar 2008 10:07:17 +0100 (CET)
-X-OriginalArrivalTime: 07 Mar 2008 09:00:47.0384 (UTC) FILETIME=[BBE02180:01C88031]
+Subject: [PATCH] [8/13] Enable the mask allocator for x86
+Message-Id: <20080307090718.A609E1B419C@basil.firstfloor.org>
+Date: Fri,  7 Mar 2008 10:07:18 +0100 (CET)
+X-OriginalArrivalTime: 07 Mar 2008 09:00:48.0415 (UTC) FILETIME=[BC7D72F0:01C88031]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-Add code to the normal allocation path to call the mask allocator
-transparently for GFP_DMA allocations.
-
-This is only a temporary measure and will go away as soon as all
-the drivers are converted to use the mask allocator or one
-of its callers (like PCI DMA API) directly.
-
-But currently it is the only sane way to do a bisectable step by 
-step conversion of the GFP_DMA users in tree.
-
-Right now the special pagevec free function won't handle mask allocated
-pages.
+- Disable old ZONE_DMA
+No fixed size ZONE_DMA now anymore. All existing users of __GFP_DMA rely 
+on the compat call to the maskable allocator in alloc/free_pages
+- Call maskable allocator initialization functions at boot
+- Add TRAD_DMA_MASK for the compat functions 
+- Remove dma_reserve call
 
 Signed-off-by: Andi Kleen <ak@suse.de>
 
 ---
- include/linux/page-flags.h |    4 ++++
- mm/page_alloc.c            |   18 ++++++++++++++++++
- 2 files changed, 22 insertions(+)
+ arch/x86/Kconfig           |    4 ++--
+ arch/x86/kernel/setup_32.c |    3 +--
+ arch/x86/kernel/setup_64.c |    1 +
+ arch/x86/mm/discontig_32.c |    2 --
+ arch/x86/mm/init_32.c      |    2 ++
+ arch/x86/mm/init_64.c      |    9 ++-------
+ arch/x86/mm/numa_64.c      |    1 -
+ include/asm-x86/dma.h      |    2 ++
+ 8 files changed, 10 insertions(+), 14 deletions(-)
 
-Index: linux/mm/page_alloc.c
+Index: linux/arch/x86/kernel/setup_64.c
 ===================================================================
---- linux.orig/mm/page_alloc.c
-+++ linux/mm/page_alloc.c
-@@ -499,6 +499,12 @@ static void __free_pages_ok(struct page 
- 	int i;
- 	int reserved = 0;
+--- linux.orig/arch/x86/kernel/setup_64.c
++++ linux/arch/x86/kernel/setup_64.c
+@@ -425,6 +425,7 @@ void __init setup_arch(char **cmdline_p)
+ 	}
+ #endif
+ 	reserve_crashkernel();
++	init_mask_zone(__pa(MAX_DMA_ADDRESS));
+ 	paging_init();
+ 	map_vsyscall();
  
-+	/* Compat code for now. Will go away */
-+	if (unlikely(PageMaskAlloc(page))) {
-+		__free_pages_mask(page, PAGE_SIZE << order);
-+		return;
-+	}
-+
- 	for (i = 0 ; i < (1 << order) ; ++i)
- 		reserved += free_pages_check(page + i, 1 << PG_mask_alloc);
- 	if (reserved)
-@@ -1422,6 +1428,13 @@ __alloc_pages(gfp_t gfp_mask, unsigned i
- 	if (should_fail_alloc_page(gfp_mask, order))
- 		return NULL;
- 
-+#ifdef CONFIG_MASK_ALLOC
-+	/* Compat code for now. Will go away. */
-+	if (unlikely(gfp_mask & GFP_DMA))
-+		return alloc_pages_mask(gfp_mask & ~__GFP_DMA,
-+					PAGE_SIZE << order, TRAD_DMA_MASK);
-+#endif
-+
- restart:
- 	z = zonelist->zones;  /* the list of zones suitable for gfp_mask */
- 
-@@ -1635,6 +1648,11 @@ void __pagevec_free(struct pagevec *pvec
- 
- void __free_pages(struct page *page, unsigned int order)
+Index: linux/arch/x86/kernel/setup_32.c
+===================================================================
+--- linux.orig/arch/x86/kernel/setup_32.c
++++ linux/arch/x86/kernel/setup_32.c
+@@ -438,8 +438,6 @@ void __init zone_sizes_init(void)
  {
-+	/* Compat code for now. Will go away */
-+	if (unlikely(PageMaskAlloc(page))) {
-+		__free_pages_mask(page, PAGE_SIZE << order);
-+		return;
-+	}
- 	if (put_page_testzero(page)) {
- 		if (order == 0)
- 			free_hot_page(page);
-Index: linux/include/linux/page-flags.h
-===================================================================
---- linux.orig/include/linux/page-flags.h
-+++ linux/include/linux/page-flags.h
-@@ -257,9 +257,13 @@ static inline void SetPageUptodate(struc
- #define __SetPageCompound(page)	__set_bit(PG_compound, &(page)->flags)
- #define __ClearPageCompound(page) __clear_bit(PG_compound, &(page)->flags)
+ 	unsigned long max_zone_pfns[MAX_NR_ZONES];
+ 	memset(max_zone_pfns, 0, sizeof(max_zone_pfns));
+-	max_zone_pfns[ZONE_DMA] =
+-		virt_to_phys((char *)MAX_DMA_ADDRESS) >> PAGE_SHIFT;
+ 	max_zone_pfns[ZONE_NORMAL] = max_low_pfn;
+ #ifdef CONFIG_HIGHMEM
+ 	max_zone_pfns[ZONE_HIGHMEM] = highend_pfn;
+@@ -811,6 +809,7 @@ void __init setup_arch(char **cmdline_p)
+ 	 * NOTE: at this point the bootmem allocator is fully available.
+ 	 */
  
-+#ifdef CONFIG_MASK_ALLOC
- #define PageMaskAlloc(page)	test_bit(PG_mask_alloc, &(page)->flags)
- #define __SetPageMaskAlloc(page)	__set_bit(PG_mask_alloc, &(page)->flags)
- #define __ClearPageMaskAlloc(page) __clear_bit(PG_mask_alloc, &(page)->flags)
-+#else
-+#define PageMaskAlloc(page)	0
-+#endif
++	init_mask_zone(__pa(MAX_DMA_ADDRESS));
+ #ifdef CONFIG_BLK_DEV_INITRD
+ 	relocate_initrd();
+ #endif
+Index: linux/arch/x86/mm/init_64.c
+===================================================================
+--- linux.orig/arch/x86/mm/init_64.c
++++ linux/arch/x86/mm/init_64.c
+@@ -50,8 +50,6 @@
+ const struct dma_mapping_ops *dma_ops;
+ EXPORT_SYMBOL(dma_ops);
+ 
+-static unsigned long dma_reserve __initdata;
+-
+ DEFINE_PER_CPU(struct mmu_gather, mmu_gathers);
  
  /*
-  * PG_reclaim is used in combination with PG_compound to mark the
+@@ -451,7 +449,6 @@ void __init paging_init(void)
+ 	unsigned long max_zone_pfns[MAX_NR_ZONES];
+ 
+ 	memset(max_zone_pfns, 0, sizeof(max_zone_pfns));
+-	max_zone_pfns[ZONE_DMA] = MAX_DMA_PFN;
+ 	max_zone_pfns[ZONE_DMA32] = MAX_DMA32_PFN;
+ 	max_zone_pfns[ZONE_NORMAL] = end_pfn;
+ 
+@@ -514,6 +511,8 @@ void __init mem_init(void)
+ 
+ 	pci_iommu_alloc();
+ 
++	prepare_mask_zone();
++
+ 	/* clear_bss() already clear the empty_zero_page */
+ 
+ 	reservedpages = 0;
+@@ -671,10 +670,6 @@ void __init reserve_bootmem_generic(unsi
+ #else
+ 	reserve_bootmem(phys, len, BOOTMEM_DEFAULT);
+ #endif
+-	if (phys+len <= MAX_DMA_PFN*PAGE_SIZE) {
+-		dma_reserve += len / PAGE_SIZE;
+-		set_dma_reserve(dma_reserve);
+-	}
+ }
+ 
+ int kern_addr_valid(unsigned long addr)
+Index: linux/arch/x86/mm/numa_64.c
+===================================================================
+--- linux.orig/arch/x86/mm/numa_64.c
++++ linux/arch/x86/mm/numa_64.c
+@@ -575,7 +575,6 @@ void __init paging_init(void)
+ 	unsigned long max_zone_pfns[MAX_NR_ZONES];
+ 
+ 	memset(max_zone_pfns, 0, sizeof(max_zone_pfns));
+-	max_zone_pfns[ZONE_DMA] = MAX_DMA_PFN;
+ 	max_zone_pfns[ZONE_DMA32] = MAX_DMA32_PFN;
+ 	max_zone_pfns[ZONE_NORMAL] = end_pfn;
+ 
+Index: linux/arch/x86/Kconfig
+===================================================================
+--- linux.orig/arch/x86/Kconfig
++++ linux/arch/x86/Kconfig
+@@ -63,8 +63,8 @@ config FAST_CMPXCHG_LOCAL
+ config MMU
+ 	def_bool y
+ 
+-config ZONE_DMA
+-	def_bool y
++config MASK_ALLOC
++       def_bool y
+ 
+ config QUICKLIST
+ 	def_bool X86_32
+Index: linux/arch/x86/mm/discontig_32.c
+===================================================================
+--- linux.orig/arch/x86/mm/discontig_32.c
++++ linux/arch/x86/mm/discontig_32.c
+@@ -400,8 +400,6 @@ void __init zone_sizes_init(void)
+ 	int nid;
+ 	unsigned long max_zone_pfns[MAX_NR_ZONES];
+ 	memset(max_zone_pfns, 0, sizeof(max_zone_pfns));
+-	max_zone_pfns[ZONE_DMA] =
+-		virt_to_phys((char *)MAX_DMA_ADDRESS) >> PAGE_SHIFT;
+ 	max_zone_pfns[ZONE_NORMAL] = max_low_pfn;
+ #ifdef CONFIG_HIGHMEM
+ 	max_zone_pfns[ZONE_HIGHMEM] = highend_pfn;
+Index: linux/include/asm-x86/dma.h
+===================================================================
+--- linux.orig/include/asm-x86/dma.h
++++ linux/include/asm-x86/dma.h
+@@ -316,4 +316,6 @@ extern int isa_dma_bridge_buggy;
+ #define isa_dma_bridge_buggy	(0)
+ #endif
+ 
++#define TRAD_DMA_MASK 0xffffff /* 16MB, 24bit */
++
+ #endif /* _ASM_X86_DMA_H */
+Index: linux/arch/x86/mm/init_32.c
+===================================================================
+--- linux.orig/arch/x86/mm/init_32.c
++++ linux/arch/x86/mm/init_32.c
+@@ -571,6 +571,8 @@ void __init mem_init(void)
+ 	int codesize, reservedpages, datasize, initsize;
+ 	int tmp, bad_ppro;
+ 
++	prepare_mask_zone();
++
+ #ifdef CONFIG_FLATMEM
+ 	BUG_ON(!mem_map);
+ #endif
