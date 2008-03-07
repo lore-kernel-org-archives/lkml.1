@@ -1,80 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763537AbYCGW5V@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762078AbYCGW6O@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763537AbYCGW5V (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Mar 2008 17:57:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754196AbYCGW44
+	id S1762078AbYCGW6O (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Mar 2008 17:58:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756901AbYCGW54
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Mar 2008 17:56:56 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:51839 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760995AbYCGW4p (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Mar 2008 17:56:45 -0500
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Fri, 7 Mar 2008 17:57:56 -0500
+Received: from senator.holtmann.net ([87.106.208.187]:35507 "EHLO
+	mail.holtmann.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757726AbYCGW5z (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 7 Mar 2008 17:57:55 -0500
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Message-Id: <87EF029F-B8F4-4A30-8D43-667AF33D89AD@holtmann.org>
+From: Marcel Holtmann <marcel@holtmann.org>
+To: Karsten Keil <kkeil@suse.de>
+In-Reply-To: <20080307210810.GB671@pingi.kke.suse.de>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
 Content-Transfer-Encoding: 7bit
-From: Roland McGrath <roland@redhat.com>
-To: Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>
-Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH] x86_64 ptrace orig_ax on ia32 task
-In-Reply-To: Roland McGrath's message of  Thursday, 28 February 2008 19:57:07 -0800 <20080229035707.EAE862700FD@magilla.localdomain>
-X-Fcc: ~/Mail/linus
-References: <20080229035707.EAE862700FD@magilla.localdomain>
-Emacs: more than just a Lisp interpreter, a text editor as well!
-Message-Id: <20080307225602.6491B26F990@magilla.localdomain>
-Date: Fri,  7 Mar 2008 14:56:02 -0800 (PST)
+Mime-Version: 1.0 (Apple Message framework v919.2)
+Subject: Re: [PATCH] [BLUETOOTH] Add another Broadcom device
+Date: Fri, 7 Mar 2008 23:57:47 +0100
+References: <20080307201034.GA671@pingi.kke.suse.de> <68E3DB35-04A3-475E-8C3F-B2F48E778487@holtmann.org> <20080307210810.GB671@pingi.kke.suse.de>
+X-Mailer: Apple Mail (2.919.2)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi Karsten,
 
-This makes 64-bit ptrace calls setting the 64-bit orig_ax field
-for a 32-bit task sign-extend the low 32 bits up to 64.  This
-matches what a 64-bit debugger expects when tracing a 32-bit task.
+>>> This patch adds another Broadcom BCM2045 based device to the
+>>> blacklist, with these settings the micro dongle works on my system.
+>>>
+>>> Signed-off-by: Karsten Keil <kkeil@suse.de>
+>>> ---
+>>> drivers/bluetooth/hci_usb.c |    1 +
+>>> 1 files changed, 1 insertions(+), 0 deletions(-)
+>>>
+>>> diff --git a/drivers/bluetooth/hci_usb.c b/drivers/bluetooth/ 
+>>> hci_usb.c
+>>> index 372c7ef..f16c94c 100644
+>>> --- a/drivers/bluetooth/hci_usb.c
+>>> +++ b/drivers/bluetooth/hci_usb.c
+>>> @@ -116,6 +116,7 @@ static struct usb_device_id blacklist_ids[] = {
+>>> 	{ USB_DEVICE(0x0a5c, 0x2009), .driver_info = HCI_BCM92035 },
+>>>
+>>> 	/* Broadcom BCM2045 */
+>>> +	{ USB_DEVICE(0x0a5c, 0x2039), .driver_info = HCI_RESET |
+>>> HCI_WRONG_SCO_MTU },
+>>> 	{ USB_DEVICE(0x0a5c, 0x2101), .driver_info = HCI_RESET |
+>>> HCI_WRONG_SCO_MTU },
+>>
+>> before I sign off on this one, can you include the part from /proc/ 
+>> bus/
+>> usb/devices for this dongle.
+>>
+>
+> I do not have /proc/bus/usb on this machine, but can give you the  
+> output of
+> lsusb -v
+>
+> And it is this device:
+> http://cgi.ebay.de/USB-Bluetooth-Nano-Dongle-Micro-Adapter-Mini-V2-0-EDR_W0QQitemZ270217529196QQihZ017QQcategoryZ79469QQssPageNameZWDVWQQrdZ1QQcmdZViewItem
+>
+> It work fine with a BT mouse on my notebook with this patch.
+>
+>
+> Bus 003 Device 006: ID 0a5c:2039 Broadcom Corp.
+> Device Descriptor:
+>  bLength                18
+>  bDescriptorType         1
+>  bcdUSB               2.00
+>  bDeviceClass          224 Wireless
+>  bDeviceSubClass         1 Radio Frequency
+>  bDeviceProtocol         1 Bluetooth
+>  bMaxPacketSize0        64
+>  idVendor           0x0a5c Broadcom Corp.
+>  idProduct          0x2039
+>  bcdDevice            1.00
+>  iManufacturer           1 Broadcom Corp
+>  iProduct                2 BCM92045B3 ROM
 
-This follows on my "x86_64 ia32 syscall restart fix".
-This didn't matter until that was fixed.
+looks good to me.
 
-The debugger ignores or zeros the high half of every register slot it
-sets (including the orig_rax pseudo-register) uniformly.  It expects
-that the setting of the low 32 bits always has the same meaning as a
-32-bit debugger setting those same 32 bits with native 32-bit
-facilities.
+Acked-by: Marcel Holtmann <marcel@holtmann.org>
 
-This never arose before because the syscall restart check never
-matched any -ERESTART* values due to lack of sign extension.  Before
-that fix, even 32-bit ptrace setting orig_eax to -1 failed to trigger
-the restart check anyway.  So this was never noticed as a regression
-of 64-bit debuggers vs 32-bit debuggers on the same 64-bit kernel.
+Regards
 
-Signed-off-by: Roland McGrath <roland@redhat.com>
----
- arch/x86/kernel/ptrace.c |   14 ++++++++++++++
- 1 files changed, 14 insertions(+), 0 deletions(-)
+Marcel
 
-diff --git a/arch/x86/kernel/ptrace.c b/arch/x86/kernel/ptrace.c
-index f8eed1b..92b44e1 100644
---- a/arch/x86/kernel/ptrace.c
-+++ b/arch/x86/kernel/ptrace.c
-@@ -322,6 +322,20 @@ static int putreg(struct task_struct *child,
- 	case offsetof(struct user_regs_struct, flags):
- 		return set_flags(child, value);
- 
-+#ifdef CONFIG_IA32_EMULATION
-+	case offsetof(struct user_regs_struct, orig_ax):
-+		/*
-+		 * For a 32-bit task, setting only the low 32 bits and
-+		 * leaving the high bits untouched (all 0) has the same
-+		 * effect as setting those bits via 32-bit ptrace would.
-+		 * This means sign-extending an orig_eax of -1, which
-+		 * here is an orig_rax of (u32)-1.
-+		 */
-+		if (test_tsk_thread_flag(child, TIF_IA32))
-+			value = (long) (s32) value;
-+		break;
-+#endif
-+
- #ifdef CONFIG_X86_64
- 	case offsetof(struct user_regs_struct,fs_base):
- 		if (value >= TASK_SIZE_OF(child))
