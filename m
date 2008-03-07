@@ -1,94 +1,33 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758367AbYCGQVZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759575AbYCGQWx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758367AbYCGQVZ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Mar 2008 11:21:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752831AbYCGQVP
+	id S1759575AbYCGQWx (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Mar 2008 11:22:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753873AbYCGQWp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Mar 2008 11:21:15 -0500
-Received: from jurassic.park.msu.ru ([195.208.223.243]:45619 "EHLO
-	jurassic.park.msu.ru" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752311AbYCGQVP (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Mar 2008 11:21:15 -0500
-Date: Fri, 7 Mar 2008 19:21:16 +0300
-From: Ivan Kokshaysky <ink@jurassic.park.msu.ru>
-To: FUJITA Tomonori <tomof@acm.org>
-Cc: rct@frus.com, mingo@elte.hu, linux-kernel@vger.kernel.org,
-       linux-alpha@vger.kernel.org, fujita.tomonori@lab.ntt.co.jp,
-       akpm@linux-foundation.org
-Subject: Re: [regression]2.6.25-rc4: boot panic on alpha
-Message-ID: <20080307162116.GA18563@jurassic.park.msu.ru>
-References: <20080307072304.GA25351@elte.hu> <20080307123645.0CB5BDBA2@gherkin.frus.com> <20080307141439.GB23178@elte.hu> <20080307235616T.tomof@acm.org>
+	Fri, 7 Mar 2008 11:22:45 -0500
+Received: from mail2.iitk.ac.in ([203.197.196.2]:58514 "EHLO mail2.iitk.ac.in"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754661AbYCGQWo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 7 Mar 2008 11:22:44 -0500
+X-Greylist: delayed 1267 seconds by postgrey-1.27 at vger.kernel.org; Fri, 07 Mar 2008 11:22:44 EST
+Date: Fri, 7 Mar 2008 21:31:35 +0530 (IST)
+From: Arun Raghavan <arun@cse.iitk.ac.in>
+X-X-Sender: arun@peripatetic.hades
+To: David Howells <dhowells@redhat.com>
+cc: Arun Raghavan <arunsr@cse.iitk.ac.in>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Allow clients to set key perms in key_create_or_update()
+In-Reply-To: <29019.1204900172@redhat.com>
+Message-ID: <Pine.LNX.4.64.0803072130210.26764@peripatetic.hades>
+References: <47CFD7F8.9010903@cse.iitk.ac.in> <29019.1204900172@redhat.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080307235616T.tomof@acm.org>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Mar 07, 2008 at 11:56:40PM +0900, FUJITA Tomonori wrote:
-> Very sorry, I probably broke the IOMMU. I don't have the hardware so
-> I've not tested the patches.
+On Fri, 7 Mar 2008, David Howells wrote:
 
-Unfortunately, I was not able to test these patches either, as my
-alpha with iommmu and scsi is disassembled at the moment, thanks to
-dead CPU fan...
+> 
+> Can you provide a signed-off-by line too?
 
-> -	BUG_ON(arena->dma_base & ~PAGE_MASK);
-> +	if (arena->dma_base & ~PAGE_MASK)
-> +		printk("%s %d: %lx\n", __FUNCTION__, __LINE__, arena->dma_base);
-
-arena->dma_base is always properly aligned - it's pretty fundamental thing.
-
->  	base = arena->dma_base >> PAGE_SHIFT;
->  	if (dev)
->  		boundary_size = ALIGN(dma_get_max_seg_size(dev) + 1, PAGE_SIZE)
-				      ^^^^^^^^^^^^^^^^^^^^^^^^^
-Must be dma_get_seg_boundary(dev). Hopefully it's the only typo ;-)
-
-> @@ -152,7 +155,8 @@ iommu_arena_find_pages(struct device *dev, struct pci_iommu_arena *arena,
->  	else
->  		boundary_size = ALIGN(1UL << 32, PAGE_SIZE) >> PAGE_SHIFT;
-
-A bit of abuse of ALIGN() macro, to my taste ;-)
-
-> -	BUG_ON(!is_power_of_2(boundary_size));
-> +	if (!is_power_of_2(boundary_size))
-> +		printk("%s %d: %lx\n", __FUNCTION__, __LINE__, boundary_size);
-
-Perhaps it was that, if the scsi driver set max_seg_size to something
-other than default 65536 (and not a power of two)...
-
-Bob, can you give it a try?
-
-Ivan.
-
-diff --git a/arch/alpha/kernel/pci_iommu.c b/arch/alpha/kernel/pci_iommu.c
-index be6fa10..e07a23f 100644
---- a/arch/alpha/kernel/pci_iommu.c
-+++ b/arch/alpha/kernel/pci_iommu.c
-@@ -144,15 +144,14 @@ iommu_arena_find_pages(struct device *dev, struct pci_iommu_arena *arena,
- 	unsigned long base;
- 	unsigned long boundary_size;
- 
--	BUG_ON(arena->dma_base & ~PAGE_MASK);
- 	base = arena->dma_base >> PAGE_SHIFT;
--	if (dev)
--		boundary_size = ALIGN(dma_get_max_seg_size(dev) + 1, PAGE_SIZE)
--			>> PAGE_SHIFT;
--	else
--		boundary_size = ALIGN(1UL << 32, PAGE_SIZE) >> PAGE_SHIFT;
--
--	BUG_ON(!is_power_of_2(boundary_size));
-+	if (dev) {
-+		boundary_size = dma_get_seg_boundary(dev) + 1;
-+		BUG_ON(!is_power_of_2(boundary_size));
-+		boundary_size >>= PAGE_SHIFT;
-+	} else {
-+		boundary_size = 1UL << (32 - PAGE_SHIFT);
-+	}
- 
- 	/* Search forward for the first mask-aligned sequence of N free ptes */
- 	ptes = arena->ptes;
+Signed-off-by: Arun Raghavan <arunsr@cse.iitk.ac.in>
