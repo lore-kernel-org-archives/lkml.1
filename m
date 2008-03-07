@@ -1,58 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932361AbYCGVEq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932818AbYCGVFp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932361AbYCGVEq (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Mar 2008 16:04:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764108AbYCGVEX
+	id S932818AbYCGVFp (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Mar 2008 16:05:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932403AbYCGVFM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Mar 2008 16:04:23 -0500
-Received: from fmmailgate04.web.de ([217.72.192.242]:52614 "EHLO
-	fmmailgate04.web.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1763827AbYCGVEW convert rfc822-to-8bit (ORCPT
+	Fri, 7 Mar 2008 16:05:12 -0500
+Received: from rn-out-0910.google.com ([64.233.170.191]:7175 "EHLO
+	rn-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932398AbYCGVFK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Mar 2008 16:04:22 -0500
-Date: Fri, 07 Mar 2008 22:04:20 +0100
-Message-Id: <187865500@web.de>
+	Fri, 7 Mar 2008 16:05:10 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:mime-version:content-type:content-transfer-encoding:content-disposition;
+        b=AQqr1DqyRz5v9RBDtT8ULreTibjIkFlgV91kJWVfKiWNc4UFY8IuW/B/0rblitrkHagaw4S3rACag7Mpr++r1L5k0JLuLsNbPd/qPYbX2tQHZINkREEdK+GQmwd6LYocWdacXDfYM4KuAdHgaHaK0j+w1aJO30j02G26NY9ZFY4=
+Message-ID: <7c86c4470803071305t5d4e581fs66e9fe8288d0392@mail.gmail.com>
+Date: Fri, 7 Mar 2008 13:05:07 -0800
+From: "stephane eranian" <eranian@googlemail.com>
+To: linux-kernel@vger.kernel.org
+Subject: [PATCH 0/3] perfmon x86 infrastructure definitions (take 2)
+Cc: "Andrew Morton" <akpm@linux-foundation.org>, ak@suse.de,
+       "Ingo Molnar" <mingo@elte.hu>, tglx@linutronix.de
 MIME-Version: 1.0
-From: devzero@web.de
-To: ingo@elte.hu
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2.6.24] chroot= as a new kernel parameter
-Organization: http://freemail.web.de/
-X-Provags-Id: V01U2FsdGVkX19VJty50JRVb/lWRQ13vnmiIeDkYk8LqX7/ubFW1SotnYKvK
- FrK/SOCrNOnXQIVx2gwUWm3eh+xcKPAezb/hOjy3O3rSp9TWkA=
-Content-Type: text/plain; charset=iso-8859-15
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->* H. Peter Anvin <hpa@zytor.com> wrote:
->
->> It's useless because it's exactly and trivially replaceable with:
->>
->>       init=/path/to/any/sbin/chroot /newroot /sbin/init
->
->ok, i didnt realize that this was possible. Ah ... i see, 
->init/main.c:init_setup() is special and picks the whole boot parameter 
->string up to the end, right? So init= is the only multi-parameter 
->init-parameter.
->
->        Ingo
+Hello,
 
-wouldn`t it be useful to add a hint to kernel-parameters.txt ?
+Take 2: correct titles and no attachment.
 
+Here is a small set of patches for x86. They are used by perfmon
+but they can be applied independently.
 
-for now it just reads:
+patch 1: adds cpu_has_arch_perfmon to cpufeature macros to test for
+architectural perfmon  on Intel processors
+patch 2: adds AMD Northbridge config MSR definition
+patch 3: adds AMD Northbridge PCI Id
 
-        init=           [KNL]
-                        Format: <full_path>
-                        Run specified binary instead of /sbin/init as init
-                        process.
-
-so, if there is no hint about that specialty (i.e. passing params to init, using for chroot etc..), no user will ever now.....
-
-roland
-_____________________________________________________________________
-Unbegrenzter Speicherplatz für Ihr E-Mail Postfach? Jetzt aktivieren!
-http://freemail.web.de/club/landingpage.htm/?mc=025555
-
+Please apply.
+Thanks.
