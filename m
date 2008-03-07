@@ -1,61 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758129AbYCGIfH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756109AbYCGIiY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758129AbYCGIfH (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Mar 2008 03:35:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753162AbYCGIe4
+	id S1756109AbYCGIiY (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Mar 2008 03:38:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751155AbYCGIiP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Mar 2008 03:34:56 -0500
-Received: from www.tglx.de ([62.245.132.106]:39166 "EHLO www.tglx.de"
+	Fri, 7 Mar 2008 03:38:15 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:47060 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751578AbYCGIez (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Mar 2008 03:34:55 -0500
-Date: Fri, 7 Mar 2008 09:34:01 +0100 (CET)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Valdis.Kletnieks@vt.edu
-cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Ingo Molnar <mingo@elte.hu>
-Subject: Re: 2.6.25-rc3-mm1 - BUG at system shutdown time
-In-Reply-To: <3450.1204878180@turing-police.cc.vt.edu>
-Message-ID: <alpine.LFD.1.00.0803070931470.3099@apollo.tec.linutronix.de>
-References: <20080304011928.e8c82c0c.akpm@linux-foundation.org> <10815.1204862325@turing-police.cc.vt.edu> <20080306221602.790cd26e.akpm@linux-foundation.org> <4954.1204876349@turing-police.cc.vt.edu>            <alpine.LFD.1.00.0803070857360.3099@apollo.tec.linutronix.de>
- <3450.1204878180@turing-police.cc.vt.edu>
-User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
+	id S1751144AbYCGIiP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 7 Mar 2008 03:38:15 -0500
+Date: Fri, 7 Mar 2008 09:37:54 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Venki Pallipadi <venkatesh.pallipadi@intel.com>
+Cc: "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
+       arjan@linux.intel.com, linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] Add range_is_allowed() check to mmap of /dev/mem
+Message-ID: <20080307083754.GD12150@elte.hu>
+References: <20080307070147.GA9888@linux-os.sc.intel.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080307070147.GA9888@linux-os.sc.intel.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.1
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.1 required=5.9 tests=BAYES_05 autolearn=no SpamAssassin version=3.2.3
+	-1.1 BAYES_05               BODY: Bayesian spam probability is 1 to 5%
+	[score: 0.0111]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 7 Mar 2008, Valdis.Kletnieks@vt.edu wrote:
 
-> On Fri, 07 Mar 2008 09:06:59 +0100, Thomas Gleixner said:
-> > On Fri, 7 Mar 2008, Valdis.Kletnieks@vt.edu wrote:
-> > > On Thu, 06 Mar 2008 22:16:02 PST, Andrew Morton said:
-> > > > > [   74.254402] CPU 1 is now offline
-> > > > > [   74.255395] SMP alternatives: switching to UP code
-> > > > > [   74.256373] BUG: unable to handle kernel paging request at ffffffff8020a023
-> > 
-> > Can you decode ffffffff8020a023 via addr2line please ?
+* Venki Pallipadi <venkatesh.pallipadi@intel.com> wrote:
+
+> Earlier patch that introduced CONFIG_NONPROMISC_DEVMEM, did the 
+> range_is_allowed() check only for read and write. Add 
+> range_is_allowed() check to mmap of /dev/mem as well.
 > 
-> It's been a long day, and I couldn't get addr2line to work, it kept saying '??:0'.
-> 
-> However, this is in my System.map:
-> 
-> ffffffff8020a000 t poll_idle
-> ffffffff8020a009 t do_nothing
-> ffffffff8020a00f T set_personality_64bit
-> ffffffff8020a041 T release_thread
-> ffffffff8020a07d T arch_randomize_brk
-> 
-> so set_personality_64bit+0x14 or so?
+> Changes the paramaters of range_is_allowed() to pfn and size to handle 
+> more than 32 bits of physical address on 32 bit arch cleanly.
 
-Yeah. Sorry for making you do useless work. The meat is here:
+thanks, applied.
 
-> > [   74.256373] PGD 203067 PUD 207063 PMD 7e4cc163 PTE 20a161
-
-----------------------------------------------------------^^^^^^
-
-The PTE has the RW bit cleared, so the fault is not a big surprise.
-
-Thanks,
-	tglx
+	Ingo
