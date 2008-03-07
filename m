@@ -1,104 +1,37 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761193AbYCGIAd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759543AbYCGIHh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761193AbYCGIAd (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Mar 2008 03:00:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756718AbYCGIAL
+	id S1759543AbYCGIHh (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Mar 2008 03:07:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756862AbYCGIHV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Mar 2008 03:00:11 -0500
-Received: from ns.suse.de ([195.135.220.2]:45411 "EHLO mx1.suse.de"
+	Fri, 7 Mar 2008 03:07:21 -0500
+Received: from www.tglx.de ([62.245.132.106]:50390 "EHLO www.tglx.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755899AbYCGIAJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Mar 2008 03:00:09 -0500
-From: Andreas Jaeger <aj@suse.de>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: Robert Dewar <dewar@adacore.com>, "H.J. Lu" <hjl.tools@gmail.com>,
-       Jakub Jelinek <jakub@redhat.com>, NightStrike <nightstrike@gmail.com>,
-       Olivier Galibert <galibert@pobox.com>,
-       Chris Lattner <clattner@apple.com>, Michael Matz <matz@suse.de>,
-       Richard Guenther <richard.guenther@gmail.com>,
-       Joe Buck <Joe.Buck@synopsys.com>, Jan Hubicka <hubicka@ucw.cz>,
-       Aurelien Jarno <aurelien@aurel32.net>, linux-kernel@vger.kernel.org,
-       gcc@gcc.gnu.org
-Subject: Re: RELEASE BLOCKER: Linux doesn't follow x86/x86-64 ABI wrt direction  flag
-References: <738B72DB-A1D6-43F8-813A-E49688D05771@apple.com>
-	<578FCA7D-D7A6-44F6-9310-4A97C13CDCBE@apple.com>
-	<47CF44E7.3020106@zytor.com> <20080306135139.GA5236@dspnet.fr.eu.org>
-	<b609cb3b0803060737xa0c3c0byb51d51af797eb81f@mail.gmail.com>
-	<6dc9ffc80803060743h502fc96bj6117ef87a8555c3a@mail.gmail.com>
-	<47D012B4.3020104@zytor.com>
-	<20080306162353.GF24887@devserv.devel.redhat.com>
-	<6dc9ffc80803060858i7d4e8b56o99ff8ad301a5cc1a@mail.gmail.com>
-	<47D024AA.9010300@zytor.com>
-	<6dc9ffc80803060914x187049a2hb24ef501baf55601@mail.gmail.com>
-	<47D0275B.4020105@adacore.com> <47D027B5.5030503@zytor.com>
-OpenPGP: id=C272A126; url=http://www.suse.de/~aj/keys.txt
-Mail-Followup-To: "H. Peter Anvin" <hpa@zytor.com>,
-	Robert Dewar <dewar@adacore.com>, "H.J. Lu" <hjl.tools@gmail.com>,
-	Jakub Jelinek <jakub@redhat.com>,
-	NightStrike <nightstrike@gmail.com>,
-	Olivier Galibert <galibert@pobox.com>,
-	Chris Lattner <clattner@apple.com>, Michael Matz <matz@suse.de>,
-	Richard Guenther <richard.guenther@gmail.com>,
-	Joe Buck <Joe.Buck@synopsys.com>, Jan Hubicka <hubicka@ucw.cz>,
-	Aurelien Jarno <aurelien@aurel32.net>, linux-kernel@vger.kernel.org,
-	gcc@gcc.gnu.org
-Date: Fri, 07 Mar 2008 09:00:04 +0100
-In-Reply-To: <47D027B5.5030503@zytor.com> (H. Peter Anvin's message of "Thu,
-	06 Mar 2008 09:19:49 -0800")
-Message-ID: <87bq5rge0r.fsf@suse.de>
-User-Agent: Gnus/5.110007 (No Gnus v0.7) Emacs/22.1 (gnu/linux)
+	id S1756746AbYCGIHU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 7 Mar 2008 03:07:20 -0500
+Date: Fri, 7 Mar 2008 09:06:59 +0100 (CET)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Valdis.Kletnieks@vt.edu
+cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Ingo Molnar <mingo@elte.hu>
+Subject: Re: 2.6.25-rc3-mm1 - BUG at system shutdown time
+In-Reply-To: <4954.1204876349@turing-police.cc.vt.edu>
+Message-ID: <alpine.LFD.1.00.0803070857360.3099@apollo.tec.linutronix.de>
+References: <20080304011928.e8c82c0c.akpm@linux-foundation.org> <10815.1204862325@turing-police.cc.vt.edu>            <20080306221602.790cd26e.akpm@linux-foundation.org> <4954.1204876349@turing-police.cc.vt.edu>
+User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="=-=-=";
-	micalg=pgp-sha1; protocol="application/pgp-signature"
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---=-=-=
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: quoted-printable
+On Fri, 7 Mar 2008, Valdis.Kletnieks@vt.edu wrote:
+> On Thu, 06 Mar 2008 22:16:02 PST, Andrew Morton said:
+> > > [   74.254402] CPU 1 is now offline
+> > > [   74.255395] SMP alternatives: switching to UP code
+> > > [   74.256373] BUG: unable to handle kernel paging request at ffffffff8020a023
 
-"H. Peter Anvin" <hpa@zytor.com> writes:
+Can you decode ffffffff8020a023 via addr2line please ?
 
-> Robert Dewar wrote:
->> H.J. Lu wrote:
->>
->>> So that is the bug in the Linux kernel. Since fixing kernel is much
->>> easier
->>> than providing a workaround in compilers, I think kernel should be fixed
->>> and no need for icc/gcc fix.
->>
->> Fixing a bug in the Linux kernel is not "much easier". You are taking
->> a purely engineering viewpoint, but life is not like that. There are
->> lots of copies of Linux kernels around and in use. The issue is not
->> fixing the kernel per se, it is propagating that change to all
->> Linux kernels in use -- THAT'S another matter entirely, and is
->> far far more difficult than making sure that a kernel fix is
->> qualified and widely proopagated.
->>
->
-> Not really, it's just a matter of time.  Typical distro cycles are on
-> the order of 3 years.
-
-But distros release fixes regularly for their kernels - and adding a fix
-for this issue with their next security update is something that is
-possible for distros (at least for openSUSE ;-),
-
-Andreas
-=2D-=20
- Andreas Jaeger, Director Platform / openSUSE, aj@suse.de
-  SUSE LINUX Products GmbH, GF: Markus Rex, HRB 16746 (AG N=FCrnberg)
-   Maxfeldstr. 5, 90409 N=FCrnberg, Germany
-    GPG fingerprint =3D 93A3 365E CE47 B889 DF7F  FED1 389A 563C C272 A126
-
---=-=-=
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.4-svn0 (GNU/Linux)
-
-iD8DBQFH0PYEOJpWPMJyoSYRAkSvAKCAr0mOBfjKffRq9dVD0LIocNBRCACfZ+lQ
-7ywr/0STXzwzmQouByJZM10=
-=mffS
------END PGP SIGNATURE-----
---=-=-=--
+Thanks,
+	tglx
