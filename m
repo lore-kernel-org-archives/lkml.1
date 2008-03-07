@@ -1,138 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764960AbYCGTSE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763043AbYCGT2L@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764960AbYCGTSE (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Mar 2008 14:18:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763547AbYCGTRw
+	id S1763043AbYCGT2L (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Mar 2008 14:28:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756305AbYCGT1z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Mar 2008 14:17:52 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:43268 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1757948AbYCGTRv (ORCPT
+	Fri, 7 Mar 2008 14:27:55 -0500
+Received: from smtp-out01.alice-dsl.net ([88.44.60.11]:20119 "EHLO
+	smtp-out01.alice-dsl.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755330AbYCGT1z (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Mar 2008 14:17:51 -0500
-Date: Fri, 7 Mar 2008 11:16:42 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Matthias Kaehlcke <matthias@kaehlcke.net>
-Cc: linux-pcmcia@lists.infradead.org, nico@cam.org, rmk@arm.linux.org.uk,
+	Fri, 7 Mar 2008 14:27:55 -0500
+To: Chris Snook <csnook@redhat.com>
+Cc: Andrew Buehler <abuehler.kernel@gmail.com>,
+       Frederik Deweerdt <deweerdt@free.fr>, belcampo <belcampo@zonnet.nl>,
        linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] drivers/pcmcia/soc_common.c: convert
- soc_pcmcia_sockets_lock in a mutex
-Message-Id: <20080307111642.8278142f.akpm@linux-foundation.org>
-In-Reply-To: <20080307183742.GF2783@traven>
-References: <20080307183742.GF2783@traven>
-X-Mailer: Sylpheed 2.3.1 (GTK+ 2.10.11; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Subject: Re: Hyperthreading performance oddities
+References: <47BE9781.3030304@zonnet.nl> <20080222100630.GE5906@slug>
+	<47D14526.2070103@gmail.com> <47D192BF.5090501@redhat.com>
+From: Andi Kleen <andi@firstfloor.org>
+Date: 07 Mar 2008 20:20:32 +0100
+In-Reply-To: <47D192BF.5090501@redhat.com>
+Message-ID: <87zltae3y7.fsf@basil.nowhere.org>
+User-Agent: Gnus/5.09 (Gnus v5.9.0) Emacs/21.3
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+X-OriginalArrivalTime: 07 Mar 2008 19:14:02.0330 (UTC) FILETIME=[675F53A0:01C88087]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 7 Mar 2008 19:37:42 +0100 Matthias Kaehlcke <matthias@kaehlcke.net> wrote:
-
-> drivers/pcmcia/soc_common.c: the semaphore soc_pcmcia_sockets_lock is
-> used as a mutex, convert it to the mutex API
+Chris Snook <csnook@redhat.com> writes:
 > 
+> Turning on hyperthreading effectively halves the amount of cache
+> available for each logical CPU when both are doing work, which can do
+> more harm than good.
 
-I did this yesterday, when I saw it while grepping around due to your other
-patch;)
+When the two cores are in the same address space (as in being two
+threads of the same process) L1 cache will be shared on P4. I think
+for the other cases the cache management is also a little more
+sophisticated than a simple split, depending on which HT generation
+you're talking about (Intel had at least 4 generations out, each with
+improvements over the earlier ones)
 
->  LIST_HEAD(soc_pcmcia_sockets);
-> -DECLARE_MUTEX(soc_pcmcia_sockets_lock);
-> +DEFINE_MUTEX(soc_pcmcia_sockets_lock);
+BTW your argument would be in theory true also for multi core with
+shared L2 or L3, but even there the CPUs tend to be more sophisticated.
+e.g. Core2 has a mechanism called "adaptive cache" which allows one
+Core to use significantly more of the L2 in some cases.
 
-I made this static.
+>  Number-crunching applications that utilize the
+> cache effectively generally don't benefit from hyperthreading,
+> particularly floating-point-intensive ones.
 
-> -extern struct semaphore soc_pcmcia_sockets_lock;
-> +extern struct mutex soc_pcmcia_sockets_lock;
+That sounds like a far too broad over generalization to me.
 
-And deleted this.
-
-
- drivers/pcmcia/soc_common.c |   15 ++++++++-------
- drivers/pcmcia/soc_common.h |    1 -
- 2 files changed, 8 insertions(+), 8 deletions(-)
-
-diff -puN drivers/pcmcia/soc_common.c~drivers-pcmcia-soc_commonc-convert-soc_pcmcia_sockets_lock-into-a-mutex-and-make-it-static drivers/pcmcia/soc_common.c
---- a/drivers/pcmcia/soc_common.c~drivers-pcmcia-soc_commonc-convert-soc_pcmcia_sockets_lock-into-a-mutex-and-make-it-static
-+++ a/drivers/pcmcia/soc_common.c
-@@ -37,6 +37,7 @@
- #include <linux/kernel.h>
- #include <linux/timer.h>
- #include <linux/mm.h>
-+#include <linux/mutex.h>
- #include <linux/interrupt.h>
- #include <linux/irq.h>
- #include <linux/spinlock.h>
-@@ -578,7 +579,7 @@ EXPORT_SYMBOL(soc_pcmcia_enable_irqs);
- 
- 
- LIST_HEAD(soc_pcmcia_sockets);
--DECLARE_MUTEX(soc_pcmcia_sockets_lock);
-+static DEFINE_MUTEX(soc_pcmcia_sockets_lock);
- 
- static const char *skt_names[] = {
- 	"PCMCIA socket 0",
-@@ -601,11 +602,11 @@ soc_pcmcia_notifier(struct notifier_bloc
- 	struct cpufreq_freqs *freqs = data;
- 	int ret = 0;
- 
--	down(&soc_pcmcia_sockets_lock);
-+	mutex_lock(&soc_pcmcia_sockets_lock);
- 	list_for_each_entry(skt, &soc_pcmcia_sockets, node)
- 		if ( skt->ops->frequency_change )
- 			ret += skt->ops->frequency_change(skt, val, freqs);
--	up(&soc_pcmcia_sockets_lock);
-+	mutex_unlock(&soc_pcmcia_sockets_lock);
- 
- 	return ret;
- }
-@@ -642,7 +643,7 @@ int soc_common_drv_pcmcia_probe(struct d
- 	struct soc_pcmcia_socket *skt;
- 	int ret, i;
- 
--	down(&soc_pcmcia_sockets_lock);
-+	mutex_lock(&soc_pcmcia_sockets_lock);
- 
- 	sinfo = kzalloc(SKT_DEV_INFO_SIZE(nr), GFP_KERNEL);
- 	if (!sinfo) {
-@@ -782,7 +783,7 @@ int soc_common_drv_pcmcia_probe(struct d
- 	kfree(sinfo);
- 
-  out:
--	up(&soc_pcmcia_sockets_lock);
-+	mutex_unlock(&soc_pcmcia_sockets_lock);
- 	return ret;
- }
- 
-@@ -793,7 +794,7 @@ int soc_common_drv_pcmcia_remove(struct 
- 
- 	dev_set_drvdata(dev, NULL);
- 
--	down(&soc_pcmcia_sockets_lock);
-+	mutex_lock(&soc_pcmcia_sockets_lock);
- 	for (i = 0; i < sinfo->nskt; i++) {
- 		struct soc_pcmcia_socket *skt = &sinfo->skt[i];
- 
-@@ -818,7 +819,7 @@ int soc_common_drv_pcmcia_remove(struct 
- 	if (list_empty(&soc_pcmcia_sockets))
- 		soc_pcmcia_cpufreq_unregister();
- 
--	up(&soc_pcmcia_sockets_lock);
-+	mutex_unlock(&soc_pcmcia_sockets_lock);
- 
- 	kfree(sinfo);
- 
-diff -puN drivers/pcmcia/soc_common.h~drivers-pcmcia-soc_commonc-convert-soc_pcmcia_sockets_lock-into-a-mutex-and-make-it-static drivers/pcmcia/soc_common.h
---- a/drivers/pcmcia/soc_common.h~drivers-pcmcia-soc_commonc-convert-soc_pcmcia_sockets_lock-into-a-mutex-and-make-it-static
-+++ a/drivers/pcmcia/soc_common.h
-@@ -133,7 +133,6 @@ extern void soc_common_pcmcia_get_timing
- 
- 
- extern struct list_head soc_pcmcia_sockets;
--extern struct semaphore soc_pcmcia_sockets_lock;
- 
- extern int soc_common_drv_pcmcia_probe(struct device *dev, struct pcmcia_low_level *ops, int first, int nr);
- extern int soc_common_drv_pcmcia_remove(struct device *dev);
-_
-
+-Andi (who personally always liked HT)
