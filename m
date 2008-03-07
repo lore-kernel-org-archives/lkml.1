@@ -1,66 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764867AbYCGBh2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765454AbYCGBjN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764867AbYCGBh2 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Mar 2008 20:37:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758184AbYCGBhG
+	id S1765454AbYCGBjN (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Mar 2008 20:39:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759270AbYCGBi4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Mar 2008 20:37:06 -0500
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:58618 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754176AbYCGBhE (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Mar 2008 20:37:04 -0500
-Date: Fri, 07 Mar 2008 10:35:09 +0900
-From: Yasunori Goto <y-goto@jp.fujitsu.com>
-To: Badari Pulavarty <pbadari@us.ibm.com>
-Subject: Re: [PATCH 1/5] generic __remove_pages() support
-Cc: Dave Hansen <haveblue@us.ibm.com>, lkml <linux-kernel@vger.kernel.org>,
-       linuxppc-dev@ozlabs.org, paulus@samba.org,
-       Andrew Morton <akpm@linux-foundation.org>
-In-Reply-To: <1204839763.6272.8.camel@dyn9047017100.beaverton.ibm.com>
-References: <1204836859.4772.32.camel@nimitz.home.sr71.net> <1204839763.6272.8.camel@dyn9047017100.beaverton.ibm.com>
-X-Mailer-Plugin: BkASPil for Becky!2 Ver.2.068
-Message-Id: <20080307102032.A17D.E1E9C6FF@jp.fujitsu.com>
+	Thu, 6 Mar 2008 20:38:56 -0500
+Received: from cn.fujitsu.com ([222.73.24.84]:55793 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1758184AbYCGBiz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 6 Mar 2008 20:38:55 -0500
+Message-ID: <47D09BCA.9050504@cn.fujitsu.com>
+Date: Fri, 07 Mar 2008 09:35:06 +0800
+From: Miao Xie <miaox@cn.fujitsu.com>
+Reply-To: miaox@cn.fujitsu.com
+User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
 MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
+To: Ingo Molnar <mingo@elte.hu>
+CC: linux-kernel@vger.kernel.org
+Subject: [PATCH] sched: fix the wrong time slice value for SCHED_FIFO tasks
+Content-Type: text/plain; charset=GB2312
 Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.45 [ja]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Badari-san.
+Function sys_sched_rr_get_interval returns wrong time slice value for
+SCHED_FIFO tasks. The time slice for SCHED_FIFO tasks should be 0.
 
-> On Thu, 2008-03-06 at 12:54 -0800, Dave Hansen wrote:
-> > On Thu, 2008-03-06 at 10:55 -0800, Badari Pulavarty wrote:
-> > > +               if (memmap)
-> > > +                       __kfree_section_memmap(memmap, PAGES_PER_SECTION);
-> > > +               return;
-> > > +       }
-> > > +
-> > > +       /*
-> > > +        * Allocations came from bootmem - how do I free up ?
-> > > +        */
-> > > +
-> > 
-> > Shouldn't we figure this one out before merging?
-> > 
-> > I think we at least need a printk() there.
-> 
-> I can add a printk(). I am hoping Yasunori Goto has something to
-> handle this, before we really merge into mainline.
+Signed-off-by: Miao Xie <miaox@cn.fujitsu.com>
 
-Ah, yes. 
-I'm making patches for around here. I'm sorry for your waiting.
+---
+ kernel/sched.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-BTW, do you hurry for merging your patch? 
-To be honest, I would like to solve not only here
-but also some other issues.
-But, if you hurry, I'll concentrate to solve only this.
-
-Bye.
-
+diff --git a/kernel/sched.c b/kernel/sched.c
+index dcd553c..870044d 100644
+--- a/kernel/sched.c
++++ b/kernel/sched.c
+@@ -5100,7 +5100,7 @@ long sys_sched_rr_get_interval(pid_t pid, struct timespec __user *interval)
+ 	time_slice = 0;
+ 	if (p->policy == SCHED_RR) {
+ 		time_slice = DEF_TIMESLICE;
+-	} else {
++	} else if (p->policy != SCHED_FIFO) {
+ 		struct sched_entity *se = &p->se;
+ 		unsigned long flags;
+ 		struct rq *rq;
 -- 
-Yasunori Goto 
+1.5.4.rc3
 
 
