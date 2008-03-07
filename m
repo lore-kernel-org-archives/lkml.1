@@ -1,76 +1,213 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760392AbYCGVwU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762728AbYCGVxD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760392AbYCGVwU (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Mar 2008 16:52:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751952AbYCGVwM
+	id S1762728AbYCGVxD (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Mar 2008 16:53:03 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761216AbYCGVws
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Mar 2008 16:52:12 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:34266 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751929AbYCGVwL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Mar 2008 16:52:11 -0500
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-From: Roland McGrath <roland@redhat.com>
-To: Oleg Nesterov <oleg@tv-sign.ru>
-X-Fcc: ~/Mail/linus
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] signals: do_tkill: don't use tasklist_lock
-In-Reply-To: Oleg Nesterov's message of  Saturday, 8 March 2008 00:32:17 +0300 <20080307213217.GA2584@tv-sign.ru>
-References: <20080307095813.GA8894@tv-sign.ru>
-	<20080307193159.1AFF127010F@magilla.localdomain>
-	<20080307201346.GA107@tv-sign.ru>
-	<20080307211955.A876226F990@magilla.localdomain>
-	<20080307213217.GA2584@tv-sign.ru>
-X-Zippy-Says: If I am elected no one will ever have to do their laundry again!
-Message-Id: <20080307215134.6E6BC26F990@magilla.localdomain>
-Date: Fri,  7 Mar 2008 13:51:34 -0800 (PST)
+	Fri, 7 Mar 2008 16:52:48 -0500
+Received: from sca-es-mail-1.Sun.COM ([192.18.43.132]:47215 "EHLO
+	sca-es-mail-1.sun.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760667AbYCGVwr (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 7 Mar 2008 16:52:47 -0500
+Date: Fri, 07 Mar 2008 14:52:38 -0700
+From: Andreas Dilger <adilger@sun.com>
+Subject: Re: [PATCH 1/3] jbd2: eliminate duplicated code in revocation	table
+ init/destroy functions
+In-reply-to: <5e28cd633c71f6354a203a43000cbe5fef045589.1204844851.git.duaneg@dghda.com>
+To: Duane Griffin <duaneg@dghda.com>
+Cc: linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Theodore Tso <tytso@mit.edu>, sct@redhat.com, akpm@linux-foundation.org,
+       adilger@clusterfs.com
+Message-id: <20080307215238.GG1881@webber.adilger.int>
+MIME-version: 1.0
+Content-type: text/plain; charset=us-ascii
+Content-transfer-encoding: 7BIT
+Content-disposition: inline
+X-GPG-Key: 1024D/0D35BED6
+X-GPG-Fingerprint: 7A37 5D79 BF1B CECA D44F  8A29 A488 39F5 0D35 BED6
+References: <5e28cd633c71f6354a203a43000cbe5fef045589.1204844851.git.duaneg@dghda.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > This is the big problem with exec that I've cited before.  It can even
-> > happen with group-wide signals that should be fatal, but avoided the
-> > __group_complete_signal special fatal case.  (e.g. the thread racing with
-> > the exec thread just now unblocked the signal and dequeued it.)  IIRC it
-> > was the biggest reason we wanted to revisit the whole MT exec plan.
+On Mar 07, 2008  01:31 +0000, Duane Griffin wrote:
+> The revocation table initialisation/destruction code is repeated for each of
+> the two revocation tables stored in the journal. Refactoring the duplicated
+> code into functions is tidier, simplifies the logic in initialisation in
+> particular, and slightly reduces the code size.
 > 
-> Oh. Could you clarify? Afaics, currently exec() can't miss the fatal group
-> signal?
+> There should not be any functional change.
 
-It's a while since I thought hard about the exec stuff.  Just now I was
-thinking of one particular scenario.  Perhaps it can't really happen.
-Here it is:
+Duane, thanks for doing the cleanup.  Comments inline.
 
-Threads A and B both block SIGTERM.  An outside process sends SIGTERM,
-so it is queued in shared_pending but noone wakes.
+> Signed-off-by: Duane Griffin <duaneg@dghda.com>
+> ---
+>  fs/jbd2/revoke.c |  125 +++++++++++++++++++++++-------------------------------
+>  1 files changed, 53 insertions(+), 72 deletions(-)
+> 
+> diff --git a/fs/jbd2/revoke.c b/fs/jbd2/revoke.c
+> index df36f42..1bf4c1f 100644
+> --- a/fs/jbd2/revoke.c
+> +++ b/fs/jbd2/revoke.c
+> @@ -196,108 +196,89 @@ void jbd2_journal_destroy_revoke_caches(void)
+>  	jbd2_revoke_table_cache = NULL;
+>  }
+>  
+> -/* Initialise the revoke table for a given journal to a given size. */
+> -
+> -int jbd2_journal_init_revoke(journal_t *journal, int hash_size)
+> +static int jbd2_journal_init_revoke_table(struct jbd2_revoke_table_s *table,
+> +					  int size)
+>  {
 
-A starts an exec.		
+(minor) calling this "hash_size" would be a bit clearer, and more consistent
+with the old code.  Not a reason in itself to redo the patch though.
 
-B unblocks SIGTERM.  
-B enters get_signal_to_deliver, locks, dequeues SIGTERM, unlocks.
-Now B is e.g. just before "current->flags |= PF_SIGNALED;".
+> +	int shift = 0;
+> +	int tmp = size;
+>  
+>  	while((tmp >>= 1UL) != 0UL)
+>  		shift++;
+>  
+> +	table->hash_size = size;
+> +	table->hash_shift = shift;
+> +	table->hash_table = kmalloc(
+> +		size * sizeof(struct list_head), GFP_KERNEL);
 
-A locks.  No group-exit is in yet progress.  
-A does zap_other_threads, and unlocks.
+(style) could fit on a single line by removing one space somewhere, or follow
+code style and move only "GFP_KERNEL" to the second line...
 
-B enters do_group_exit.  A group-exit is in progress, so it just exits.
-SIGTERM is lost.
+> +	if (!table->hash_table)
+>  		return -ENOMEM;
+>  
+> +	for (tmp = 0; tmp < size; tmp++)
+> +		INIT_LIST_HEAD(&table->hash_table[tmp]);
+>  
+> +	return 0;
+> +}
+>  
+> +/* Initialise the revoke table for a given journal to a given size. */
+> +int jbd2_journal_init_revoke(journal_t *journal, int hash_size)
+> +{
+> +	J_ASSERT(journal->j_revoke_table[0] == NULL);
+>  	J_ASSERT(is_power_of_2(hash_size));
+>  
+> +	journal->j_revoke_table[0] = kmem_cache_alloc(
+> +		jbd2_revoke_table_cache, GFP_KERNEL);
 
-So I think it really can happen.  Anyway, this is just one example.
-It's not so hard to think of ways to address this one (though it gets
-nontrivial quick with the coredump case).  But for me it is just an
-example of why we still need to step back and think over the whole
-exec picture.  
+(style) it is preferred to indent continuation lines to the previous '(' like:
 
-As I said, let's not conflate all that with this thread about a
-relatively conservative cleanup.  We can discuss that separately.
-(But I think it might need to wait for a breather and time for
-other dust to settle.)
+	journal->j_revoke_table[0] = kmem_cache_alloc(jbd2_revoke_table_cache,
+						      GFP_KERNEL);
 
+or alternately:
 
-Thanks,
-Roland
+	journal->j_revoke_table[0] =
+		kmem_cache_alloc(jbd2_revoke_table_cache, GFP_KERNEL);
+
+> +	if (!journal->j_revoke_table[0])
+> +		goto failed_alloc1;
+> +	if (jbd2_journal_init_revoke_table(journal->j_revoke_table[0], hash_size))
+
+(style) wrap at 80 columns.
+
+> +		goto failed_init1;
+>  
+> +	journal->j_revoke_table[1] = kmem_cache_alloc(
+> +		jbd2_revoke_table_cache, GFP_KERNEL);
+> +	if (!journal->j_revoke_table[1])
+> +		goto failed_alloc2;
+> +	if (jbd2_journal_init_revoke_table(journal->j_revoke_table[1], hash_size))
+> +		goto failed_init2;
+
+(minor) It appears we could reduce some more code duplication by doing
+the allocation of j_revoke_table[0] and j_revoke_table[1] inside
+journal_init_revoke_table(), passing back the table pointer or NULL on
+failure (-ENOMEM is really the only possible error return code here)?
+
+> +	journal->j_revoke = journal->j_revoke_table[1];
+>  
+>  	spin_lock_init(&journal->j_revoke_lock);
+>  
+>  	return 0;
+>  
+> +failed_init2:
+> +	kmem_cache_free(jbd2_revoke_table_cache, journal->j_revoke_table[1]);
+> +failed_alloc2:
+> +	kfree(journal->j_revoke_table[0]->hash_table);
+> +failed_init1:
+> +	kmem_cache_free(jbd2_revoke_table_cache, journal->j_revoke_table[0]);
+> +failed_alloc1:
+> +	return -ENOMEM;
+
+Doing the table allocation inside journal_init_revoke_table() also
+simplifies cleanup, because we don't need to handle "init" and "alloc"
+failures separately here.
+
+> +static void jbd2_journal_destroy_revoke_table(struct jbd2_revoke_table_s *table)
+>  {
+>  	int i;
+> +	struct list_head *hash_list;
+>  
+> +	for (i = 0; i < table->hash_size; i++) {
+>  		hash_list = &table->hash_table[i];
+> +		J_ASSERT(list_empty(hash_list));
+>  	}
+>  
+>  	kfree(table->hash_table);
+>  	kmem_cache_free(jbd2_revoke_table_cache, table);
+> +}
+
+(minor) This should be moved above journal_init_revoke_table() and be used
+to free the first table if allocation/init of the second table fails.
+That is proper encapsulation of functionality, and by moving the table
+allocation inside journal_init_revoke_table() as previously suggested,
+we never have to handle partially-initialized tables (i.e. alloc, but
+list_heads not init.
+
+Sure, it is a bit more overhead than just freeing the arrays, but
+performance isn't critical if the mount just failed due to ENOMEM,
+and isn't expected to happen very often at all.
+
+> +/* Destroy a journal's revoke table.  The table must already be empty! */
+> +void jbd2_journal_destroy_revoke(journal_t *journal)
+> +{
+> +	if (!journal->j_revoke_table[0])
+>  		return;
+
+(style) empty line here.
+
+> +	jbd2_journal_destroy_revoke_table(journal->j_revoke_table[0]);
+> +	journal->j_revoke = NULL;
+>  
+> +	if (!journal->j_revoke_table[1])
+> +		return;
+> +	jbd2_journal_destroy_revoke_table(journal->j_revoke_table[1]);
+>  	journal->j_revoke = NULL;
+
+(style) I'd probably write this as below, to keep the logic simpler:
+
+	journal->j_revoke = NULL;
+
+	if (journal->j_revoke_table[0])
+		jbd2_journal_destroy_revoke_table(journal->j_revoke_table[0]);
+	if (journal->j_revoke_table[1])
+		jbd2_journal_destroy_revoke_table(journal->j_revoke_table[1]);
+
+Also, we don't really need to set journal->j_revoke = NULL twice.
+
+Same of course applies to both versions of the patch.  Hopefully once ext4
+has had some chance to bake in the kernel (when people start using it after
+the "dev" moniker is removed) and Fedora we can revert back to a single jbd
+code base.  There are no incompatible format changes in jbd2 that would be
+forced upon ext3 by consolidating the code base, it was just split during
+development to avoid destabilizing ext3.
+
+Cheers, Andreas
+--
+Andreas Dilger
+Sr. Staff Engineer, Lustre Group
+Sun Microsystems of Canada, Inc.
+
