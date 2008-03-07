@@ -1,73 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764950AbYCGTxU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765139AbYCGTzQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764950AbYCGTxU (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Mar 2008 14:53:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761037AbYCGTw6
+	id S1765139AbYCGTzQ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Mar 2008 14:55:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761006AbYCGTzA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Mar 2008 14:52:58 -0500
-Received: from www.tglx.de ([62.245.132.106]:44487 "EHLO www.tglx.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756409AbYCGTw4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Mar 2008 14:52:56 -0500
-Date: Fri, 7 Mar 2008 20:52:03 +0100 (CET)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: =?ISO-8859-15?Q?Ilpo_J=E4rvinen?= <ilpo.jarvinen@helsinki.fi>
-cc: LKML <linux-kernel@vger.kernel.org>, David Miller <davem@davemloft.net>,
-       Netdev <netdev@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: Treason uncloaked spams syslog with latest git
-In-Reply-To: <Pine.LNX.4.64.0803071547370.5423@kivilampi-30.cs.helsinki.fi>
-Message-ID: <alpine.LFD.1.00.0803072050410.3099@apollo.tec.linutronix.de>
-References: <alpine.LFD.1.00.0803061140380.3099@apollo.tec.linutronix.de> <20080306153129.e247cd1a.akpm@linux-foundation.org> <Pine.LNX.4.64.0803071547370.5423@kivilampi-30.cs.helsinki.fi>
-User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
+	Fri, 7 Mar 2008 14:55:00 -0500
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:59844 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1760473AbYCGTy7 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 7 Mar 2008 14:54:59 -0500
+Date: Fri, 7 Mar 2008 11:54:32 -0800 (PST)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Andrea Arcangeli <andrea@qumranet.com>
+cc: Jack Steiner <steiner@sgi.com>, Nick Piggin <npiggin@suse.de>,
+       akpm@linux-foundation.org, Robin Holt <holt@sgi.com>,
+       Avi Kivity <avi@qumranet.com>, kvm-devel@lists.sourceforge.net,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, general@lists.openfabrics.org,
+       Steve Wise <swise@opengridcomputing.com>,
+       Roland Dreier <rdreier@cisco.com>, Kanoj Sarcar <kanojsarcar@yahoo.com>,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       daniel.blueman@quadrics.com
+Subject: Re: [PATCH] 2/4 move all invalidate_page outside of PT lock (#v9
+ was 1/4)
+In-Reply-To: <20080307151722.GD24114@v2.random>
+Message-ID: <Pine.LNX.4.64.0803071151140.6815@schroedinger.engr.sgi.com>
+References: <20080227192610.GF28483@v2.random> <20080302155457.GK8091@v2.random>
+ <20080303213707.GA8091@v2.random> <20080303220502.GA5301@v2.random>
+ <47CC9B57.5050402@qumranet.com> <Pine.LNX.4.64.0803032327470.9642@schroedinger.engr.sgi.com>
+ <20080304133020.GC5301@v2.random> <Pine.LNX.4.64.0803041059110.13957@schroedinger.engr.sgi.com>
+ <20080304222030.GB8951@v2.random> <Pine.LNX.4.64.0803041422070.20821@schroedinger.engr.sgi.com>
+ <20080307151722.GD24114@v2.random>
 MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED; BOUNDARY="8323328-1261117493-1204919525=:3099"
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
+On Fri, 7 Mar 2008, Andrea Arcangeli wrote:
 
---8323328-1261117493-1204919525=:3099
-Content-Type: TEXT/PLAIN; charset=ISO-8859-15
-Content-Transfer-Encoding: 8BIT
+> This below simple patch invalidates the "invalidate_page" part, the
+> next patch will invalidate the RCU part, and btw in a way that doesn't
+> forbid unregistering the mmu notifiers at runtime (like your brand new
+> EMM does).
 
-On Fri, 7 Mar 2008, Ilpo Järvinen wrote:
-> On Thu, 6 Mar 2008, Andrew Morton wrote:
-> 
-> > On Thu, 6 Mar 2008 11:47:12 +0100 (CET)
-> > Thomas Gleixner <tglx@linutronix.de> wrote:
-> > 
-> > > Since I updated one of my compile boxen to latest git I get the syslog
-> > > flooded with:
-> > > 
-> > > TCP: Treason uncloaked! Peer 192.168.0.1:10245/56637 shrinks window
-> > > 2748077551:2748080447. Repaired.
-> > > TCP: Treason uncloaked! Peer 192.168.0.68:10245/39915 shrinks window
-> > > 2890195332:2890201124. Repaired.
-> > > TCP: Treason uncloaked! Peer 192.168.0.65:10245/46058 shrinks window
-> > > 2880740873:2880745217. Repaired.
-> > > 
-> > > This happens _always_ when I compile kernels with distcc or icecc. All
-> > > systems involved run Linux with kernels >= 2.6.23 and are on the same
-> > > network; no routers, firewalls or other fancy stuff.
-> > > 
-> > > Any idea what's going on here ?
-> > > 
-> > 
-> > (cc netdev)
-> 
-> Could you tcpdump it?
+Sounds good.
 
-Will do.
- 
-> I'm not sure which party was updated to git and on which host(s) you do 
-> see them?
+> The reason I keep this incremental (unlike your EMM that does
+> everything all at the same time mixed in a single patch) is to
+> decrease the non obviously safe mangling over mm/* during .25. The
+> below patch is simple, but not as obviously safe as
+> s/ptep_clear_flush/ptep_clear_flush_notify/.
 
-The compile machine was updated and I see the messages on that
-machine. No such messages on any machine.
+There was never a chance to merge for .25. Lets drop that and focus on 
+a solution that is good for all.
 
-Thanks,
-	tglx
---8323328-1261117493-1204919525=:3099--
+>  #endif /* _LINUX_MMU_NOTIFIER_H */
+> diff --git a/mm/filemap_xip.c b/mm/filemap_xip.c
+> --- a/mm/filemap_xip.c
+> +++ b/mm/filemap_xip.c
+> @@ -194,11 +194,13 @@ __xip_unmap (struct address_space * mapp
+>  		if (pte) {
+>  			/* Nuke the page table entry. */
+>  			flush_cache_page(vma, address, pte_pfn(*pte));
+> -			pteval = ptep_clear_flush_notify(vma, address, pte);
+> +			pteval = ptep_clear_flush(vma, address, pte);
+>  			page_remove_rmap(page, vma);
+>  			dec_mm_counter(mm, file_rss);
+>  			BUG_ON(pte_dirty(pteval));
+>  			pte_unmap_unlock(pte, ptl);
+> +			/* must invalidate_page _before_ freeing the page */
+> +			mmu_notifier_invalidate_page(mm, address);
+>  			page_cache_release(page);
+>  		}
+>  	}
+
+Ok but we still hold the i_mmap_lock here.
+
+
+> @@ -834,6 +846,8 @@ static void try_to_unmap_cluster(unsigne
+>  	if (!pmd_present(*pmd))
+>  		return;
+>  
+> +	start = address;
+> +	mmu_notifier_invalidate_range_begin(mm, start, end);
+
+Hmmmm.. Okay you going for range invalidate here like EMM but there are 
+still some invalidate_pages() left.
+
