@@ -1,62 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762679AbYCGJFy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762545AbYCGJHm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762679AbYCGJFy (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Mar 2008 04:05:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755721AbYCGJFi
+	id S1762545AbYCGJHm (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Mar 2008 04:07:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755721AbYCGJHM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Mar 2008 04:05:38 -0500
-Received: from smtp-out.google.com ([216.239.45.13]:61899 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750978AbYCGJFg (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Mar 2008 04:05:36 -0500
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=received:date:from:x-x-sender:to:cc:subject:in-reply-to:
-	message-id:references:user-agent:mime-version:content-type;
-	b=wTBC9ctLXcoXeRSlo6tHtK5Ey3f+ipha7li86Gh03rBfKizDUVU8lwiePWzJCmZRr
-	SgmzXfpsLmNfhi5EyG01g==
-Date: Fri, 7 Mar 2008 01:04:12 -0800 (PST)
-From: David Rientjes <rientjes@google.com>
-X-X-Sender: rientjes@chino.kir.corp.google.com
-To: Balbir Singh <balbir@linux.vnet.ibm.com>
-cc: Paul Menage <menage@google.com>, Andrew Morton <akpm@linux-foundation.org>,
-       Pavel Emelianov <xemul@openvz.org>, Hugh Dickins <hugh@veritas.com>,
-       Sudhir Kumar <skumar@linux.vnet.ibm.com>,
-       YAMAMOTO Takashi <yamamoto@valinux.co.jp>, lizf@cn.fujitsu.com,
-       linux-kernel@vger.kernel.org, taka@valinux.co.jp, linux-mm@kvack.org,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       Randy Dunlap <randy.dunlap@oracle.com>
-Subject: Re: [PATCH] Add cgroup support for enabling controllers at boot time
- (v2)
-In-Reply-To: <20080307085735.25567.314.sendpatchset@localhost.localdomain>
-Message-ID: <alpine.DEB.1.00.0803070102020.4693@chino.kir.corp.google.com>
-References: <20080307085735.25567.314.sendpatchset@localhost.localdomain>
-User-Agent: Alpine 1.00 (DEB 882 2007-12-20)
+	Fri, 7 Mar 2008 04:07:12 -0500
+Received: from sacred.ru ([62.205.161.221]:38598 "EHLO sacred.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750978AbYCGJHI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 7 Mar 2008 04:07:08 -0500
+Message-ID: <47D102D6.8070702@openvz.org>
+Date: Fri, 07 Mar 2008 11:54:46 +0300
+From: Pavel Emelyanov <xemul@openvz.org>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080213)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Pavel Machek <pavel@ucw.cz>
+CC: Greg KH <greg@kroah.com>, "Serge E. Hallyn" <serue@us.ibm.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Paul Menage <menage@google.com>,
+       Sukadev Bhattiprolu <sukadev@us.ibm.com>
+Subject: Re: [PATCH 0/9] Devices accessibility control group (v4)
+References: <47CED717.60406@openvz.org> <20080306015513.GA5359@kroah.com> <20080306031525.GA9070@sergelap.austin.ibm.com> <20080306043427.GA15498@kroah.com> <47CFAD06.7020501@openvz.org> <20080307084245.GA5004@ucw.cz>
+In-Reply-To: <20080307084245.GA5004@ucw.cz>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-Greylist: Sender succeeded SMTP AUTH authentication, not delayed by milter-greylist-3.0 (sacred.ru [62.205.161.221]); Fri, 07 Mar 2008 11:54:46 +0300 (MSK)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 7 Mar 2008, Balbir Singh wrote:
+Pavel Machek wrote:
+> On Thu 2008-03-06 11:36:22, Pavel Emelyanov wrote:
+>> Greg KH wrote:
+>>> On Wed, Mar 05, 2008 at 09:15:25PM -0600, Serge E. Hallyn wrote:
+>>>> Quoting Greg KH (greg@kroah.com):
+>>>>> On Wed, Mar 05, 2008 at 08:23:35PM +0300, Pavel Emelyanov wrote:
+>>>>>> Changes from v3:
+>>>>>> * Ported on 2.6.25-rc3-mm1;
+>>>>>> * Re-splitted into smaller pieces;
+>>>>>> * Added more comments to tricky places.
+>>>>>>
+>>>>>> This controller allows to tune the devices accessibility by tasks,
+>>>>>> i.e. grant full access for /dev/null, /dev/zero etc, grant read-only
+>>>>>> access to IDE devices and completely hide SCSI disks.
+>>>>>  From within the kernel itself?  The kernel should not be keeping track
+>>>>> of the mode of devices, that's what the filesystem holding /dev is for.
+>>>>> Those modes change all the time depending on the device plugged in, and
+>>>>> the user using the "console".  Why should the kernel need to worry about
+>>>>> any of this?
+>>>> These are distinct from the permissions on device files.  No matter what
+>>>> the permissions on the device files, a task in a devcg cgroup which
+>>>> isn't allowed write to chardev 4:64 will not be able to write to
+>>>> /dev/ttyS0.
+>>> Then why not do that from userspace with a different /dev, or with a
+>>> LSM?
+>> Different dev is not suitable, since task may still call mknod to
+>> create device it needs and use it. This is not about comfortable
+>> use, this is about security.
+> 
+> And you may still take out mknod capability...
 
-> diff -puN Documentation/kernel-parameters.txt~cgroup_disable Documentation/kernel-parameters.txt
-> --- linux-2.6.25-rc4/Documentation/kernel-parameters.txt~cgroup_disable	2008-03-07 14:26:16.000000000 +0530
-> +++ linux-2.6.25-rc4-balbir/Documentation/kernel-parameters.txt	2008-03-07 14:26:16.000000000 +0530
-> @@ -383,6 +383,10 @@ and is between 256 and 4096 characters. 
->  	ccw_timeout_log [S390]
->  			See Documentation/s390/CommonIO for details.
->  
-> +	cgroup_disable= [KNL] Disable a particular controller
-> +			Format: {name of the controller(s) to disable}
-> +				{Currently supported controllers - "memory"}
-> +
->  	checkreqprot	[SELINUX] Set initial checkreqprot flag value.
->  			Format: { "0" | "1" }
->  			See security/selinux/Kconfig help text.
+Sure we can. In that case we can pre-create only alowed devices for a container
+and be happy, but this is not a flexible way of doing things. The main problem is
+that udev will stop working in such a container. Patching one is not an option
+either, for the reasons I have described before.
 
-It would probably be helpful to mention in the documentation that the 
-names of the subsystems must now be delimited by commas.
+Many virtualization functionality we're submitting can be achieved via proper
+userpace modifications, but we want to be able to run old software (from old
+and even historic distributions) inside containers, so we have to make this
+at the kernel level.
 
- [ I also find it very helpful to add randy.dunlap@oracle.com to the cc
-   list for any patch touching Documentation ]
+Thanks,
+Pavel
