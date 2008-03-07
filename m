@@ -1,61 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761399AbYCGLm5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762582AbYCGLna@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761399AbYCGLm5 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Mar 2008 06:42:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758035AbYCGLmr
+	id S1762582AbYCGLna (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Mar 2008 06:43:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758035AbYCGLnG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Mar 2008 06:42:47 -0500
-Received: from gateway.drzeus.cx ([85.8.24.16]:34780 "EHLO smtp.drzeus.cx"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758004AbYCGLmq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Mar 2008 06:42:46 -0500
-Date: Fri, 7 Mar 2008 12:40:58 +0100
-From: Pierre Ossman <drzeus-list@drzeus.cx>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Andy Shevchenko <andy@smile.org.ua>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] [SDIO] add vendor and product pair for SQN1130
-Message-ID: <20080307124058.052a62ba@mjolnir.drzeus.cx>
-In-Reply-To: <20080307024526.17ff6401.akpm@linux-foundation.org>
-References: <12048773103435-git-send-email-andy@smile.org.ua>
-	<20080307024526.17ff6401.akpm@linux-foundation.org>
-X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.8; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Fri, 7 Mar 2008 06:43:06 -0500
+Received: from outbound-va3.frontbridge.com ([216.32.180.16]:32714 "EHLO
+	outbound2-va3-R.bigfish.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1762085AbYCGLnE (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 7 Mar 2008 06:43:04 -0500
+X-BigFish: VP
+X-MS-Exchange-Organization-Antispam-Report: OrigIP: 163.181.251.8;Service: EHS
+X-WSS-ID: 0JXCZ7D-01-CPC-01
+Date: Fri, 7 Mar 2008 12:42:50 +0100
+From: Robert Richter <robert.richter@amd.com>
+To: stephane eranian <eranian@googlemail.com>
+Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org, ak@suse.de
+Subject: Re: [PATCH 2/3] perfmon x86 infrastructure definitions
+Message-ID: <20080307114249.GA12930@erda.amd.com>
+References: <7c86c4470803062225y4727a19ic321314b292dd874@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <7c86c4470803062225y4727a19ic321314b292dd874@mail.gmail.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
+X-OriginalArrivalTime: 07 Mar 2008 11:42:50.0429 (UTC) FILETIME=[5F430ED0:01C88048]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 7 Mar 2008 02:45:26 -0800
-Andrew Morton <akpm@linux-foundation.org> wrote:
-
-> On Fri,  7 Mar 2008 10:08:30 +0200 Andy Shevchenko <andy@smile.org.ua> wrote:
+On 06.03.08 22:25:26, stephane eranian wrote:
+> adds AMD Northbridge config MSR definition
 > 
-> > Add the vendor and product ids for Sequans SQN1130 WiMAX chipset.
-> > ---
-> >  include/linux/mmc/sdio_ids.h |    3 +++
-> >  1 files changed, 3 insertions(+), 0 deletions(-)
-> > 
-> > diff --git a/include/linux/mmc/sdio_ids.h b/include/linux/mmc/sdio_ids.h
-> > index ea1bf5b..d1b9883 100644
-> > --- a/include/linux/mmc/sdio_ids.h
-> > +++ b/include/linux/mmc/sdio_ids.h
-> > @@ -26,4 +26,7 @@
-> >  #define SDIO_VENDOR_ID_MARVELL			0x02df
-> >  #define SDIO_DEVICE_ID_MARVELL_LIBERTAS		0x9103
-> >  
-> > +#define SDIO_VENDOR_ID_SEQUANS			0x039d
-> > +#define SDIO_DEVICE_ID_SEQUANS_SQN1130		0x046a
-> > +
-> 
-> There's no point in adding these unless there's actually some code there
-> which _uses_ them?
+> Signed-off-by: Stephane Eranian <eranian@gmail.com>
+> Signed-off-by: Robert Richter <robert.richter@amd.com>
 
-Agreed. This is just noise.
+> --- a/include/asm-x86/msr-index.h
+> +++ b/include/asm-x86/msr-index.h
+> @@ -83,6 +83,7 @@
+>  /* AMD64 MSRs. Not complete. See the architecture manual for a more
+>     complete list. */
+>  
+> +#define MSR_AMD64_NB_CFG		0xc001001f
+
+This will probably not be needed after mm config works fine (patches
+from Yinghai Lu). Since the usage of CF8 extended configuration cycles
+is not recommended, the current code to enable IBS interrupts can be
+seen as temporary. I will rework the IBS code so that it uses mm
+config.
+
+-Robert
 
 -- 
-     -- Pierre Ossman
+Advanced Micro Devices, Inc.
+Operating System Research Center
+email: robert.richter@amd.com
 
-  Linux kernel, MMC maintainer        http://www.kernel.org
-  PulseAudio, core developer          http://pulseaudio.org
-  rdesktop, core developer          http://www.rdesktop.org
