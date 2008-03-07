@@ -1,96 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764917AbYCGUdQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765718AbYCGUeR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764917AbYCGUdQ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Mar 2008 15:33:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761033AbYCGUdE
+	id S1765718AbYCGUeR (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Mar 2008 15:34:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761588AbYCGUdz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Mar 2008 15:33:04 -0500
-Received: from ns2.g-housing.de ([81.169.133.75]:60904 "EHLO mail.g-house.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759645AbYCGUdD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Mar 2008 15:33:03 -0500
-Date: Fri, 7 Mar 2008 21:32:57 +0100 (CET)
-From: Christian Kujau <lists@nerdbynature.de>
-X-X-Sender: evil@sheep.housecafe.de
-To: LKML <linux-kernel@vger.kernel.org>
-cc: xfs@oss.sgi.com
-Subject: INFO: task mount:11202 blocked for more than 120 seconds
-Message-ID: <alpine.DEB.1.00.0803072116420.7723@sheep.housecafe.de>
-User-Agent: Alpine 1.00 (DEB 882 2007-12-20)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; format=flowed; charset=US-ASCII
+	Fri, 7 Mar 2008 15:33:55 -0500
+Received: from hpsmtp-eml19.KPNXCHANGE.COM ([213.75.38.84]:52305 "EHLO
+	hpsmtp-eml19.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1761033AbYCGUdy (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 7 Mar 2008 15:33:54 -0500
+To: Frans Pop <elendil@planet.nl>
+Subject: Re: extra bytes written to SATA DVD drive on kernel 2.6.23 till 2.6.24.2
+Cc: efault@gmx.de, gml@inode.at, htejun@gmail.com, linux-ide@vger.kernel.org,
+       linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
+       vsu@altlinux.ru
+In-reply-To: <E1JXic1-0000Yo-K8@faramir.fjphome.nl>
+References: <200802252005.22663.gml@inode.at> <200803011329.11315.gml@inode.at> <47D0FF67.8050503@gmail.com> <47D0FF67.8050503@gmail.com> <200803072009.22551.gml@inode.at> <200803072009.22551.gml@inode.at> <E1JXic1-0000Yo-K8@faramir.fjphome.nl>
+Message-Id: <E1JXjFR-0000wV-Uf@faramir.fjphome.nl>
+From: Frans Pop <elendil@planet.nl>
+Date: Fri, 07 Mar 2008 21:32:57 +0100
+X-OriginalArrivalTime: 07 Mar 2008 20:32:58.0709 (UTC) FILETIME=[6E796850:01C88092]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+Frans Pop wrote:
+> Gerold Jury wrote:
+>> 0001ffe0  e0 ff e1 ff e2 ff e3 ff  e4 ff e5 ff e6 ff e7 ff 
+>> |................|
+>> 0001fff0  e8 ff e9 ff ea ff eb ff  ec ff ed ff ee ff ef ff 
+>> |................|
+>> 00020000  2a 00 00 00 00 40 00 00  40 00 00 00 00 40 00 00 
+>> |*....@..@....@..|
+> 
+> Looks broken here too.
 
-after upgrading from 2.6.24.1 to 2.6.25-rc3, I came across[0]. This 
-warning seems to be gone now. With 2.6.25-rc4 (and the fix from [1])
-the box was running fine for 20 hours or so (doing its usual jobs plus 
-a "make randconfig && make" loop).
+Please ignore. I probably wasn't looking right.
 
-After this, I noticed that /bin/sync would not exit anymore and
-remains stuck in D state. Looking around I noticed that the rsync
-backup jobs (rsync'ing to an xfs partition) from earlier this
-morning did not exit either and hung in D state. With sync hung, the 
-following messages started to appear:
-
-[75377.756985] INFO: task sync:2697 blocked for more than 120 seconds.
-[75377.757579] "echo 0 > /proc/sys/kernel/hung_task_timeout_secs" disables this message.
-[75377.758211] sync          D c013835c     0  2697  16457
-[75377.758216]        f59506c0 00000082 f4c34000 c013835c fffeffff f6c1bcb0 f5dd0000 f4c34000 
-[75377.758223]        c04405d7 f53f7e98 f6c1bcb4 f6c1bcd0 00000000 f6c1bcb0 00000000 f7ca1090 
-[75377.758230]        f4c34000 c044070a f6c1bcd0 f6c1bcd0 f5dd0000 00000001 f6c1bcb0 c044074b 
-[75377.758237] Call Trace:
-[75377.758253]  [<c013835c>] trace_hardirqs_on+0x9c/0x110
-[75377.758269]  [<c04405d7>] rwsem_down_failed_common+0x67/0x150
-[75377.758279]  [<c044070a>] rwsem_down_read_failed+0x1a/0x24
-[75377.758286]  [<c044074b>] call_rwsem_down_read_failed+0x7/0xc
-[75377.758291]  [<c012fd7c>] down_read_nested+0x4c/0x60
-[75377.758295]  [<c027a64b>] xfs_ilock+0x5b/0xb0
-[75377.758301]  [<c027a64b>] xfs_ilock+0x5b/0xb0
-[75377.758306]  [<c029693d>] xfs_sync_inodes+0x3dd/0x6b0
-[75377.758314]  [<c0440b14>] _spin_unlock+0x14/0x20
-[75377.758325]  [<c0296d9b>] xfs_syncsub+0x18b/0x300
-[75377.758330]  [<c0440b14>] _spin_unlock+0x14/0x20
-[75377.758335]  [<c02a7c2b>] xfs_fs_sync_super+0x2b/0xd0
-[75377.758342]  [<c016a124>] sync_filesystems+0xa4/0x100
-[75377.758351]  [<c043fdd8>] down_read+0x38/0x50
-[75377.758356]  [<c016a13f>] sync_filesystems+0xbf/0x100
-[75377.758361]  [<c01872b3>] do_sync+0x33/0x70
-[75377.758366]  [<c0102ed7>] restore_nocheck+0x12/0x15
-[75377.758371]  [<c01872fa>] sys_sync+0xa/0x10
-[75377.758375]  [<c0102dee>] sysenter_past_esp+0x5f/0xa5
-[75377.758402]  =======================
-[75377.758405] 3 locks held by sync/2697:
-[75377.758407]  #0:  (mutex){--..}, at: [<c016a091>] sync_filesystems+0x11/0x100
-[75377.758414]  #1:  (&type->s_umount_key#22){----}, at: [<c016a124>] sync_filesystems+0xa4/0x100
-[75377.758422]  #2:  (&(&ip->i_iolock)->mr_lock){----}, at: [<c027a64b>] xfs_ilock+0x5b/0xb0
-
-
-The box is still up & running, although the load is increasing slightly. 
-I've gathered some details here: http://nerdbynature.de/bits/2.6.25-rc4/
-
-I've searched the archives for this error, but the only thing was
-   * http://lkml.org/lkml/2008/2/12/44
-     [BUG] 2.6.25-rc1-git1 softlockup while bootup on powerpc
-     ...however, I don't get "CPU stuck" messages
-   * http://lkml.org/lkml/2008/1/29/370
-     Re: system hang on latest git
-     ...but calltrace looks a lot different.
-
-Since both mailings are not so current, I'd like to got back to -rc3 and 
-try to reproduce this one.
-
-Do you have any idea what's going on here?
-
-Thanks,
-Christian.
-
-[0] http://lkml.org/lkml/2008/3/2/171
-[1] http://lkml.org/lkml/2008/3/4/634
--- 
-BOFH excuse #158:
-
-Defunct processes
+Sorry for the noise.
