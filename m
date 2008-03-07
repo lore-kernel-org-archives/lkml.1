@@ -1,52 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761838AbYCGSbQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762984AbYCGScr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761838AbYCGSbQ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Mar 2008 13:31:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757618AbYCGSa6
+	id S1762984AbYCGScr (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Mar 2008 13:32:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758644AbYCGSck
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Mar 2008 13:30:58 -0500
-Received: from e1.ny.us.ibm.com ([32.97.182.141]:55114 "EHLO e1.ny.us.ibm.com"
+	Fri, 7 Mar 2008 13:32:40 -0500
+Received: from pasmtpb.tele.dk ([80.160.77.98]:60297 "EHLO pasmtpB.tele.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757037AbYCGSa5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Mar 2008 13:30:57 -0500
-Date: Fri, 7 Mar 2008 12:30:52 -0600
-From: "Serge E. Hallyn" <serue@us.ibm.com>
-To: Casey Schaufler <casey@schaufler-ca.com>
-Cc: "Serge E. Hallyn" <serue@us.ibm.com>, Greg KH <greg@kroah.com>,
-       Pavel Emelyanov <xemul@openvz.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       menage@google.com, sukadev@us.ibm.com
-Subject: Re: [PATCH 5/9] Make use of permissions, returned by kobj_lookup
-Message-ID: <20080307183052.GB3898@sergelap.austin.ibm.com>
-References: <20080307173542.GA2552@sergelap.austin.ibm.com> <757539.74589.qm@web36608.mail.mud.yahoo.com>
-MIME-Version: 1.0
+	id S1758075AbYCGScj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 7 Mar 2008 13:32:39 -0500
+Date: Fri, 7 Mar 2008 19:32:55 +0100
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org
+Subject: Re: [PATCH] [8/13] Enable the mask allocator for x86
+Message-ID: <20080307183255.GB14779@uranus.ravnborg.org>
+References: <200803071007.493903088@firstfloor.org> <20080307090718.A609E1B419C@basil.firstfloor.org>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <757539.74589.qm@web36608.mail.mud.yahoo.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+In-Reply-To: <20080307090718.A609E1B419C@basil.firstfloor.org>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Quoting Casey Schaufler (casey@schaufler-ca.com):
+On Fri, Mar 07, 2008 at 10:07:18AM +0100, Andi Kleen wrote:
 > 
-> --- "Serge E. Hallyn" <serue@us.ibm.com> wrote:
-> 
-> > ...
-> > 
-> > Until user namespaces are complete, selinux seems the only good solution
-> > to offer isolation.
-> 
-> Smack does it better and cheaper. (Unless you define good==selinux)
-> (insert smiley)
+> - Disable old ZONE_DMA
+> No fixed size ZONE_DMA now anymore. All existing users of __GFP_DMA rely 
+> on the compat call to the maskable allocator in alloc/free_pages
+> - Call maskable allocator initialization functions at boot
+> - Add TRAD_DMA_MASK for the compat functions 
 
-Ah, thanks - I hadn't looked into it, but yes IIUC smack should
-definately work.  I'll have to give that a shot.
+I see TRAD_DMA_MASK used by patch 6 and patch 7, but only here
+in this later patch it is defined.
+Looks like we have build breakage - but I have not checked it.
 
-(A basic selinux policy module to isolate a container was pretty simple,
-but providing finer-grained intra-container access seems to take some
-changes to the base refpolicy.  I've been waiting a few weeks to find
-time to work on that.)
-
-thanks,
--serge
+	Sam
