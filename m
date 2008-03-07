@@ -1,136 +1,134 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761838AbYCGSgu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763202AbYCGSiA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761838AbYCGSgu (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Mar 2008 13:36:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756417AbYCGSgm
+	id S1763202AbYCGSiA (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Mar 2008 13:38:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756417AbYCGShw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Mar 2008 13:36:42 -0500
-Received: from nf-out-0910.google.com ([64.233.182.191]:48412 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755878AbYCGSgl (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Mar 2008 13:36:41 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
-        b=Np3MiJFc1msmGRUAUNrDC/dl601DxiP9lOzBSpmdZQ0E8m/KO1D2t1uxWoXjLmy/tkfycxiJtviCWifvVtIy/NUBfPquLw5ZipCYJbLSzGh+1I38Kp/ICtMxhrkqkboAXbqiewGz6FpiuRZ8G29im/hnb73hnXJGUTnMyeT/mG4=
-Date: Fri, 7 Mar 2008 21:36:05 +0300
-From: Cyrill Gorcunov <gorcunov@gmail.com>
-To: Sam Ravnborg <sam@ravnborg.org>
-Cc: Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org
-Subject: Re: [PATCH] [4/13] Prepare page_alloc for the maskable allocator
-Message-ID: <20080307183605.GC7589@cvg>
-References: <200803071007.493903088@firstfloor.org> <20080307090714.9493F1B419C@basil.firstfloor.org> <20080307181943.GA14779@uranus.ravnborg.org>
+	Fri, 7 Mar 2008 13:37:52 -0500
+Received: from mx1.riseup.net ([204.13.164.18]:55564 "EHLO mx1.riseup.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755878AbYCGShv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 7 Mar 2008 13:37:51 -0500
+Date: Fri, 7 Mar 2008 19:37:42 +0100
+From: Matthias Kaehlcke <matthias@kaehlcke.net>
+To: linux-pcmcia@lists.infradead.org, nico@cam.org, rmk@arm.linux.org.uk
+Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org
+Subject: [PATCH] drivers/pcmcia/soc_common.c: convert
+	soc_pcmcia_sockets_lock in a mutex
+Message-ID: <20080307183742.GF2783@traven>
+Mail-Followup-To: Matthias Kaehlcke <matthias@kaehlcke.net>,
+	linux-pcmcia@lists.infradead.org, nico@cam.org,
+	rmk@arm.linux.org.uk, linux-kernel@vger.kernel.org,
+	akpm@linux-foundation.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080307181943.GA14779@uranus.ravnborg.org>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[Sam Ravnborg - Fri, Mar 07, 2008 at 07:19:43PM +0100]
-| Hi Andi.
-| 
-| > Index: linux/mm/internal.h
-| > ===================================================================
-| > --- linux.orig/mm/internal.h
-| > +++ linux/mm/internal.h
-| > @@ -12,6 +12,7 @@
-| >  #define __MM_INTERNAL_H
-| >  
-| >  #include <linux/mm.h>
-| > +#include <linux/memcontrol.h>
-| >  
-| >  static inline void set_page_count(struct page *page, int v)
-| >  {
-| > @@ -48,6 +49,72 @@ static inline unsigned long page_order(s
-| >  	return page_private(page);
-| >  }
-| >  
-| > +extern void bad_page(struct page *page);
-| > +
-| > +static inline int free_pages_check(struct page *page, unsigned long addflags)
-| > +{
-| > +	if (unlikely(page_mapcount(page) |
-| > +		(page->mapping != NULL)  |
-| > +		(page_get_page_cgroup(page) != NULL) |
-| > +		(page_count(page) != 0)  |
-| > +		(page->flags & (
-| > +			addflags |
-| > +			1 << PG_lru	|
-| > +			1 << PG_private |
-| > +			1 << PG_locked	|
-| > +			1 << PG_active	|
-| > +			1 << PG_slab	|
-| > +			1 << PG_swapcache |
-| > +			1 << PG_writeback |
-| > +			1 << PG_reserved |
-| > +			1 << PG_buddy))))
-| > +		bad_page(page);
-| > +	if (PageDirty(page))
-| > +		__ClearPageDirty(page);
-| > +	/*
-| > +	 * For now, we report if PG_reserved was found set, but do not
-| > +	 * clear it, and do not free the page.  But we shall soon need
-| > +	 * to do more, for when the ZERO_PAGE count wraps negative.
-| > +	 */
-| > +	return PageReserved(page);
-| > +}
-| Looks a bit too big for an inline in a header (~9 lines of code)?
-| 
+drivers/pcmcia/soc_common.c: the semaphore soc_pcmcia_sockets_lock is
+used as a mutex, convert it to the mutex API
 
-well, it will not be that big in compiled form 'cause in real it is
+Signed-off-by: Matthias Kaehlcke <matthias@kaehlcke.net>
 
-	page->flags & (addflags | (precompiled constant))
+--
 
-| > +
-| > +/* Set up a struc page for business during allocation */
-| > +static inline int page_prep_struct(struct page *page)
-| > +{
-| > +	if (unlikely(page_mapcount(page) |
-| > +		(page->mapping != NULL)  |
-| > +		(page_get_page_cgroup(page) != NULL) |
-| > +		(page_count(page) != 0)  |
-| > +		(page->flags & (
-| > +			1 << PG_lru	|
-| > +			1 << PG_private	|
-| > +			1 << PG_locked	|
-| > +			1 << PG_active	|
-| > +			1 << PG_dirty	|
-| > +			1 << PG_slab    |
-| > +			1 << PG_swapcache |
-| > +			1 << PG_writeback |
-| > +			1 << PG_reserved |
-| > +			1 << PG_buddy))))
-| > +		bad_page(page);
-| > +
-| > +	/*
-| > +	 * For now, we report if PG_reserved was found set, but do not
-| > +	 * clear it, and do not allocate the page: as a safety net.
-| > +	 */
-| > +	if (PageReserved(page))
-| > +		return 1;
-| > +
-| > +	page->flags &= ~(1 << PG_uptodate | 1 << PG_error | 1 << PG_readahead |
-| > +			1 << PG_referenced | 1 << PG_arch_1 |
-| > +			1 << PG_owner_priv_1 | 1 << PG_mappedtodisk);
-| > +	set_page_private(page, 0);
-| > +	set_page_refcounted(page);
-| > +
-| > +	return 0;
-| > +}
-| Again - looks too big to inline..
-| 
-| But for both I do not know where they are used and how often.
-| 
-| 	Sam
-| --
-| To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-| the body of a message to majordomo@vger.kernel.org
-| More majordomo info at  http://vger.kernel.org/majordomo-info.html
-| Please read the FAQ at  http://www.tux.org/lkml/
-| 
-		- Cyrill -
+diff --git a/drivers/pcmcia/soc_common.c b/drivers/pcmcia/soc_common.c
+index aa7779d..3490431 100644
+--- a/drivers/pcmcia/soc_common.c
++++ b/drivers/pcmcia/soc_common.c
+@@ -578,7 +578,7 @@ EXPORT_SYMBOL(soc_pcmcia_enable_irqs);
+ 
+ 
+ LIST_HEAD(soc_pcmcia_sockets);
+-DECLARE_MUTEX(soc_pcmcia_sockets_lock);
++DEFINE_MUTEX(soc_pcmcia_sockets_lock);
+ 
+ static const char *skt_names[] = {
+ 	"PCMCIA socket 0",
+@@ -601,11 +601,11 @@ soc_pcmcia_notifier(struct notifier_block *nb, unsigned long val, void *data)
+ 	struct cpufreq_freqs *freqs = data;
+ 	int ret = 0;
+ 
+-	down(&soc_pcmcia_sockets_lock);
++	mutex_lock(&soc_pcmcia_sockets_lock);
+ 	list_for_each_entry(skt, &soc_pcmcia_sockets, node)
+ 		if ( skt->ops->frequency_change )
+ 			ret += skt->ops->frequency_change(skt, val, freqs);
+-	up(&soc_pcmcia_sockets_lock);
++	mutex_unlock(&soc_pcmcia_sockets_lock);
+ 
+ 	return ret;
+ }
+@@ -642,7 +642,7 @@ int soc_common_drv_pcmcia_probe(struct device *dev, struct pcmcia_low_level *ops
+ 	struct soc_pcmcia_socket *skt;
+ 	int ret, i;
+ 
+-	down(&soc_pcmcia_sockets_lock);
++	mutex_lock(&soc_pcmcia_sockets_lock);
+ 
+ 	sinfo = kzalloc(SKT_DEV_INFO_SIZE(nr), GFP_KERNEL);
+ 	if (!sinfo) {
+@@ -782,7 +782,7 @@ int soc_common_drv_pcmcia_probe(struct device *dev, struct pcmcia_low_level *ops
+ 	kfree(sinfo);
+ 
+  out:
+-	up(&soc_pcmcia_sockets_lock);
++	mutex_unlock(&soc_pcmcia_sockets_lock);
+ 	return ret;
+ }
+ 
+@@ -793,7 +793,7 @@ int soc_common_drv_pcmcia_remove(struct device *dev)
+ 
+ 	dev_set_drvdata(dev, NULL);
+ 
+-	down(&soc_pcmcia_sockets_lock);
++	mutex_lock(&soc_pcmcia_sockets_lock);
+ 	for (i = 0; i < sinfo->nskt; i++) {
+ 		struct soc_pcmcia_socket *skt = &sinfo->skt[i];
+ 
+@@ -818,7 +818,7 @@ int soc_common_drv_pcmcia_remove(struct device *dev)
+ 	if (list_empty(&soc_pcmcia_sockets))
+ 		soc_pcmcia_cpufreq_unregister();
+ 
+-	up(&soc_pcmcia_sockets_lock);
++	mutex_unlock(&soc_pcmcia_sockets_lock);
+ 
+ 	kfree(sinfo);
+ 
+diff --git a/drivers/pcmcia/soc_common.h b/drivers/pcmcia/soc_common.h
+index 6f14126..a553df5 100644
+--- a/drivers/pcmcia/soc_common.h
++++ b/drivers/pcmcia/soc_common.h
+@@ -11,6 +11,7 @@
+ 
+ /* include the world */
+ #include <linux/cpufreq.h>
++#include <linux/mutex.h>
+ #include <pcmcia/cs_types.h>
+ #include <pcmcia/cs.h>
+ #include <pcmcia/ss.h>
+@@ -133,7 +134,7 @@ extern void soc_common_pcmcia_get_timing(struct soc_pcmcia_socket *, struct soc_
+ 
+ 
+ extern struct list_head soc_pcmcia_sockets;
+-extern struct semaphore soc_pcmcia_sockets_lock;
++extern struct mutex soc_pcmcia_sockets_lock;
+ 
+ extern int soc_common_drv_pcmcia_probe(struct device *dev, struct pcmcia_low_level *ops, int first, int nr);
+ extern int soc_common_drv_pcmcia_remove(struct device *dev);
+
+-- 
+Matthias Kaehlcke
+Linux System Developer
+Barcelona
+
+    Tant qu'il y aura sur terre des hommes pour qui existe un concept
+    d' 'honneur national', la menace d'une nouvelle guerre subsistera
+                              (B. Traven)
+                                                                 .''`.
+    using free software / Debian GNU/Linux | http://debian.org  : :'  :
+                                                                `. `'`
+gpg --keyserver pgp.mit.edu --recv-keys 47D8E5D4                  `-
