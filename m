@@ -1,65 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762730AbYCGMma@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764194AbYCGMnF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762730AbYCGMma (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Mar 2008 07:42:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753573AbYCGMmV
+	id S1764194AbYCGMnF (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Mar 2008 07:43:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763013AbYCGMmt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Mar 2008 07:42:21 -0500
-Received: from 75-130-111-13.dhcp.oxfr.ma.charter.com ([75.130.111.13]:58713
-	"EHLO novell1.haskins.net" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1751063AbYCGMmU (ORCPT
+	Fri, 7 Mar 2008 07:42:49 -0500
+Received: from ecfrec.frec.bull.fr ([129.183.4.8]:40033 "EHLO
+	ecfrec.frec.bull.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759913AbYCGMms (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Mar 2008 07:42:20 -0500
-From: Gregory Haskins <ghaskins@novell.com>
-Subject: [PATCH] RESEND: fix cpus_allowed settings
-To: rostedt@goodmis.org, mingo@elte.he
-Cc: linux-kernel@vger.kernel.org, linux-rt-users@vger.kernel.org,
-       ghaskins@novell.com
-Date: Fri, 07 Mar 2008 07:11:43 -0500
-Message-ID: <20080307120644.7031.14474.stgit@novell1.haskins.net>
-User-Agent: StGIT/0.12.1
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+	Fri, 7 Mar 2008 07:42:48 -0500
+Subject: Re: [PATCH][v2] Modify loop device to be able to manage partitions
+	of the disk image
+From: Laurent Vivier <Laurent.Vivier@bull.net>
+To: Andreas Schwab <schwab@suse.de>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>
+In-Reply-To: <jepru6n283.fsf@sykes.suse.de>
+References: <12048928601734-git-send-email-Laurent.Vivier@bull.net>
+	 <jepru6n283.fsf@sykes.suse.de>
+Content-Type: text/plain; charset=utf-8
+Organization: Bull S.A.S.
+Date: Fri, 07 Mar 2008 13:45:09 +0100
+Message-Id: <1204893909.4315.32.camel@frecb07144>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.3 
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Ingo, Steve,
-  I sent this patch a few weeks ago along with the migration_disable
-series.  I think the controversy with the migration_disable feature
-may have resulted in this fix being overlooked.  This patch is against
--rt, but the bug theoretically affects both -rt and sched-devel/mainline.
-I can also whip up a sched-devel based patch if you like, but I think it
-will apply trivially to both places.
 
-Please consider it for inclusion.
+Le vendredi 07 mars 2008 à 13:33 +0100, Andreas Schwab a écrit :
+> Laurent Vivier <Laurent.Vivier@bull.net> writes:
+> 
+> > +static int __init max_part_setup(char *str)
+> > +{
+> > +	loop_max_part = simple_strtol(str, NULL, 0);
+> > +	if (loop_max_part > (1UL << (MINORBITS - 1))) {
+> > +		/* we must keep at least one bit for loop device number */
+> > +		printk(KERN_ERR
+> > +			"loop: loop_max_part cannot be greater than %d\n",
+> > +			1UL << (MINORBITS - 1));
+> 
+> Since the argument is of type unsigned long you should use %ld or %lu.
 
-Regards,
--Greg
+Yes, I wait for some more comments and I will re-send a [v3].
 
--------------------------------
-Subject: fix cpus_allowed settings
-
-We miss setting nr_cpus_allowed for the kthread case since the normal
-set_cpus_allowed() function is not used.
-
-Signed-off-by: Gregory Haskins <ghaskins@novell.com>
----
-
- kernel/kthread.c |    1 +
- 1 files changed, 1 insertions(+), 0 deletions(-)
-
-diff --git a/kernel/kthread.c b/kernel/kthread.c
-index dcfe724..b193b47 100644
---- a/kernel/kthread.c
-+++ b/kernel/kthread.c
-@@ -170,6 +170,7 @@ void kthread_bind(struct task_struct *k, unsigned int cpu)
- 	wait_task_inactive(k);
- 	set_task_cpu(k, cpu);
- 	k->cpus_allowed = cpumask_of_cpu(cpu);
-+	k->nr_cpus_allowed = 1;
- }
- EXPORT_SYMBOL(kthread_bind);
- 
+Laurent
+-- 
+----------------- Laurent.Vivier@bull.net  ------------------
+"Programmers who subconsciously view themselves as artists
+ will enjoy what they do and will do it better." D. Knuth
 
