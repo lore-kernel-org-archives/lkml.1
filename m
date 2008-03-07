@@ -1,117 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763589AbYCGMac@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763267AbYCGMdR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763589AbYCGMac (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Mar 2008 07:30:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757063AbYCGMaU
+	id S1763267AbYCGMdR (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Mar 2008 07:33:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757063AbYCGMdE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Mar 2008 07:30:20 -0500
-Received: from sacred.ru ([62.205.161.221]:46289 "EHLO sacred.ru"
+	Fri, 7 Mar 2008 07:33:04 -0500
+Received: from ns2.suse.de ([195.135.220.15]:58048 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754445AbYCGMaS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Mar 2008 07:30:18 -0500
-Message-ID: <47D12EF8.8010801@openvz.org>
-Date: Fri, 07 Mar 2008 15:03:04 +0300
-From: Pavel Emelyanov <xemul@openvz.org>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080213)
+	id S1756657AbYCGMdD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 7 Mar 2008 07:33:03 -0500
+From: Andreas Schwab <schwab@suse.de>
+To: Laurent Vivier <Laurent.Vivier@bull.net>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH][v2] Modify loop device to be able to manage partitions of the disk image
+References: <12048928601734-git-send-email-Laurent.Vivier@bull.net>
+X-Yow: All I can think of is a platter of organic PRUNE CRISPS being trampled
+ by an army of swarthy, Italian LOUNGE SINGERS...
+Date: Fri, 07 Mar 2008 13:33:00 +0100
+In-Reply-To: <12048928601734-git-send-email-Laurent.Vivier@bull.net> (Laurent
+	Vivier's message of "Fri\, 7 Mar 2008 13\:27\:40 +0100")
+Message-ID: <jepru6n283.fsf@sykes.suse.de>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/22.1 (gnu/linux)
 MIME-Version: 1.0
-To: Stephen Smalley <sds@tycho.nsa.gov>
-CC: Andrew Morton <akpm@linux-foundation.org>,
-       David Miller <davem@davemloft.net>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linux Netdev List <netdev@vger.kernel.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       James Morris <jmorris@namei.org>, Eric Paris <eparis@parisplace.org>
-Subject: Re: [PATCH] Make /proc/net a symlink on /proc/self/net (v2)
-References: <47CFB6CA.8090001@openvz.org>	 <1204821325.1397.298.camel@moss-spartans.epoch.ncsc.mil>	 <47D01F98.5010609@openvz.org> <1204832619.1397.354.camel@moss-spartans.epoch.ncsc.mil>
-In-Reply-To: <1204832619.1397.354.camel@moss-spartans.epoch.ncsc.mil>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-Greylist: Sender succeeded SMTP AUTH authentication, not delayed by milter-greylist-3.0 (sacred.ru [62.205.161.221]); Fri, 07 Mar 2008 15:03:03 +0300 (MSK)
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[snip]
+Laurent Vivier <Laurent.Vivier@bull.net> writes:
 
->>> Does this break SELinux labeling of /proc/net inodes and thus its access
->>> controls on them?
->> It should not, since the proc_dir_etries are still organized in
->> a required hierarchy.
-> 
-> Unfortunately, it does break selinux labeling of /proc/net inodes.
-> Easily seen by running ls -ZR /proc/net before and after the patch is
-> applied and comparing the results.  
-> 
-> Also, as a separate issue, a "find /proc/self/net ..." will show that
-> the hard link count is wrong for it.
+> +static int __init max_part_setup(char *str)
+> +{
+> +	loop_max_part = simple_strtol(str, NULL, 0);
+> +	if (loop_max_part > (1UL << (MINORBITS - 1))) {
+> +		/* we must keep at least one bit for loop device number */
+> +		printk(KERN_ERR
+> +			"loop: loop_max_part cannot be greater than %d\n",
+> +			1UL << (MINORBITS - 1));
 
-Oops... I've checked this thing explicitly before sending, but it looks
-like I used too old find version. I.e. 4.1.20 worked OK, but 4.2.23
-reported the nlink discrepancy.
+Since the argument is of type unsigned long you should use %ld or %lu.
 
-Anyway, this is fixed now (see below). I override the getattr method for
-/proc/net directory and update one from the net->proc_net entry, which 
-is calculated correctly.
+Andreas.
 
-> Currently the inodes get labeled by selinux_proc_get_sid() by walking up
-> the proc_dir_entry tree to generate a name and prefix matching that name
-> in policy.  Before the patch, we'd get names like "//net/tcp", i.e.
-> relative to the root of proc (the extra leading slash is due to the
-> earlier proc net rewrite which also broke selinux until we adjusted it
-> to ignore it).  After the patch, we just get "//tcp", which is ambiguous
-> since we would also get that for a /proc/tcp inode if one existed.
-
-OK, got it. Is it good if we used to get the //net/tcp, but will /net/tcp
-(without the double slash)? The patch below does exactly this. It initializes
-the name for the net->proc_net entry and makes its parent be proc_root.
-
-Can you Ack this patch, so that I can merge it with the original one and 
-re-post the combined v3?
-
-> Not trying to obstruct your proc net improvements, but just want to make
-> sure that selinux doesn't get broken in the process.
-
-diff --git a/fs/proc/proc_net.c b/fs/proc/proc_net.c
-index 18d413c..4caa5f7 100644
---- a/fs/proc/proc_net.c
-+++ b/fs/proc/proc_net.c
-@@ -96,8 +96,27 @@ static struct dentry *proc_tgid_net_lookup(struct inode *dir,
- 	return de;
- }
- 
-+static int proc_tgid_net_getattr(struct vfsmount *mnt, struct dentry *dentry,
-+		struct kstat *stat)
-+{
-+	struct inode *inode = dentry->d_inode;
-+	struct net *net;
-+
-+	net = get_proc_task_net(inode);
-+
-+	generic_fillattr(inode, stat);
-+
-+	if (net != NULL) {
-+		stat->nlink = net->proc_net->nlink;
-+		put_net(net);
-+	}
-+
-+	return 0;
-+}
-+
- const struct inode_operations proc_net_inode_operations = {
- 	.lookup		= proc_tgid_net_lookup,
-+	.getattr	= proc_tgid_net_getattr,
- };
- 
- static int proc_tgid_net_readdir(struct file *filp, void *dirent,
-@@ -162,6 +181,10 @@ static __net_init int proc_net_ns_init(struct net *net)
- 		goto out;
- 
- 	netd->data = net;
-+	netd->nlink = 2;
-+	netd->name = "net";
-+	netd->namelen = 3;
-+	netd->parent = &proc_root;
- 
- 	err = -EEXIST;
- 	net_statd = proc_net_mkdir(net, "stat", netd);
+-- 
+Andreas Schwab, SuSE Labs, schwab@suse.de
+SuSE Linux Products GmbH, Maxfeldstraße 5, 90409 Nürnberg, Germany
+PGP key fingerprint = 58CA 54C7 6D53 942B 1756  01D3 44D5 214B 8276 4ED5
+"And now for something completely different."
