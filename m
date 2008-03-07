@@ -1,95 +1,205 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761103AbYCGKvw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760286AbYCGKzR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761103AbYCGKvw (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Mar 2008 05:51:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756522AbYCGKvn
+	id S1760286AbYCGKzR (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Mar 2008 05:55:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755287AbYCGKy6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Mar 2008 05:51:43 -0500
-Received: from E23SMTP01.au.ibm.com ([202.81.18.162]:50668 "EHLO
-	e23smtp01.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755038AbYCGKvl (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Mar 2008 05:51:41 -0500
-Date: Fri, 7 Mar 2008 16:21:38 +0530
-From: Gautham R Shenoy <ego@in.ibm.com>
-To: Oleg Nesterov <oleg@tv-sign.ru>
-Cc: Yi Yang <yi.y.yang@intel.com>, Ingo Molnar <mingo@elte.hu>,
-       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [BUG 2.6.25-rc3] scheduler/hotplug: some processes are
-	dealocked when cpu is set to offline
-Message-ID: <20080307105138.GA10576@in.ibm.com>
-Reply-To: ego@in.ibm.com
-References: <1204483329.3607.8.camel@yangyi-dev.bj.intel.com> <20080303153154.GA11288@in.ibm.com> <1204555505.3842.4.camel@yangyi-dev.bj.intel.com> <20080304052613.GA28632@in.ibm.com> <20080304150107.GA564@tv-sign.ru> <20080306134400.GA1915@in.ibm.com> <20080307025451.GA201@tv-sign.ru> <20080307091049.GA8827@in.ibm.com>
+	Fri, 7 Mar 2008 05:54:58 -0500
+Received: from saeurebad.de ([85.214.36.134]:56645 "EHLO saeurebad.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753223AbYCGKy5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 7 Mar 2008 05:54:57 -0500
+From: Johannes Weiner <hannes@saeurebad.de>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org
+Subject: Re: [PATCH] [6/13] Core maskable allocator
+References: <200803071007.493903088@firstfloor.org>
+	<20080307090716.9D3E91B419C@basil.firstfloor.org>
+Date: Fri, 07 Mar 2008 11:53:30 +0100
+In-Reply-To: <20080307090716.9D3E91B419C@basil.firstfloor.org> (Andi Kleen's
+	message of "Fri, 7 Mar 2008 10:07:16 +0100 (CET)")
+Message-ID: <871w6m955h.fsf@saeurebad.de>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080307091049.GA8827@in.ibm.com>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+X-Bogosity: Ham, tests=bogofilter, spamicity=0.000000, version=1.1.3
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Mar 07, 2008 at 02:40:49PM +0530, Gautham R Shenoy wrote:
-> 
-> > 
-> > Just to be sure, there were no "bad ->cpu..." messages, yes?
-> 
-> Hopefully should be able to catch them now. If yes, it's a problem in
-> the way we do migration after cpu-hotplug as Yi suggested in an earlier
-> mail.
-> 
-> http://lkml.org/lkml/2008/3/6/437
-> 
-> This mail from akpm says the same thing.
+Hi Andi,
 
-Yup! There are a quite a few "bad->cpu" messages.
-All of them only for watchdog/1.
+Andi Kleen <andi@firstfloor.org> writes:
 
-What surprises me is the fact that the first of  task-hung messages come
-after 136 successful cpu-hotplug attempts.
+> Index: linux/mm/mask-alloc.c
+> ===================================================================
+> --- /dev/null
+> +++ linux/mm/mask-alloc.c
+> @@ -0,0 +1,504 @@
+> +/*
+> + * Generic management of low memory zone to allocate memory with a address mask.
+> + *
+> + * The maskable pool is reserved inside another zone, but managed by a
+> + * specialized bitmap allocator. The allocator is not O(1) (searches
+> + * the bitmap with a last use hint) but should be fast enough for
+> + * normal purposes.  The advantage of the allocator is that it can
+> + * allocate based on a mask.
+> + *
+> + * The allocator could be improved, but it's better to keep
+> + * things simple for now and there are relatively few users
+> + * which are usually not that speed critical. Also for simple
+> + * repetive allocation patterns it should be approximately usually
+> + * O(1) anyways due to the rotating cursor in the bitmap.
+> + *
+> + * This allocator should be only used by architectures with reasonably
+> + * continuous physical memory at least for the low normal zone.
+> + *
+> + * Note book:
+> + * Right now there are no high priority reservations (__GFP_HIGH). Iff
+> + * they are needed it would be possible to reserve some very low memory
+> + * for those.
+> + *
+> + * Copyright 2007, 2008 Andi Kleen, SUSE Labs.
+> + * Subject to the GNU Public License v.2 only.
+> + */
+> +
+> +#include <linux/mm.h>
+> +#include <linux/gfp.h>
+> +#include <linux/kernel.h>
+> +#include <linux/sched.h>
+> +#include <linux/bitops.h>
+> +#include <linux/string.h>
+> +#include <linux/wait.h>
+> +#include <linux/bootmem.h>
+> +#include <linux/module.h>
+> +#include <linux/fault-inject.h>
+> +#include <linux/ctype.h>
+> +#include <linux/kallsyms.h>
+> +#include "internal.h"
+> +
+> +#define BITS_PER_PAGE (PAGE_SIZE * 8)
+> +
+> +#define MASK_ZONE_LIMIT (2U<<30) /* 2GB max for now */
+> +
+> +#define Mprintk(x...)
+> +#define Mprint_symbol(x...)
+> +
+> +static int force_mask __read_mostly;
+> +static DECLARE_WAIT_QUEUE_HEAD(mask_zone_wait);
+> +unsigned long mask_timeout __read_mostly = 5*HZ;
+> +
+> +/*
+> + * The mask_bitmap maintains all the pages in the mask pool.
+> + * It is reversed (lowest pfn has the highest index)
+> + * to make reverse search easier.
+> + * All accesses are protected by the mask_bitmap_lock
+> + */
+> +static DEFINE_SPINLOCK(mask_bitmap_lock);
+> +static unsigned long *mask_bitmap;
+> +static unsigned long mask_max_pfn;
+> +
+> +static inline unsigned pfn_to_maskbm_index(unsigned long pfn)
+> +{
+> +	return mask_max_pfn - pfn;
+> +}
+> +
+> +static inline unsigned maskbm_index_to_pfn(unsigned index)
+> +{
+> +	return mask_max_pfn - index;
+> +}
+> +
+> +static unsigned wait_for_mask_free(unsigned left)
+> +{
+> +	DEFINE_WAIT(wait);
+> +	prepare_to_wait(&mask_zone_wait, &wait, TASK_UNINTERRUPTIBLE);
+> +	left = schedule_timeout(left);
+> +	finish_wait(&mask_zone_wait, &wait);
+> +	return left;
+> +}
+> +
 
-To answer Andrew's question, migration_call() *should* ideally be the
-first notifier called, because it's registered with the priority 10.
+If ...
 
-Unless there's some change that has recently gone in the
-notifier_call_chain subsystem that doesn't honour the registration priority
-anymore, migration_call() will be called first,
-which means the task affinity for watchdog thread is broken and hence
-we shouldn't see the message below.
+> +/* First try normal zones if possible. */
+> +static struct page *
+> +alloc_higher_pages(gfp_t gfp_mask, unsigned order, unsigned long pfn)
+> +{
+> +	struct page *p = NULL;
+> +	if (pfn > mask_max_pfn) {
+> +#ifdef CONFIG_ZONE_DMA32
+> +		if (pfn <= (0xffffffff >> PAGE_SHIFT)) {
+> +			p = alloc_pages(gfp_mask|GFP_DMA32|__GFP_NOWARN,
+> +						order);
 
-I'll probe to see if there's a change in the call order that's causing
-this hang.
+... this succeeds and allocated pages, and ...
 
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-INFO: task watchdog/1:10958 can't get CPU for more than 120 seconds.
-bad ->cpu
-       f524ffac 00000046 c011befc f5276aa0 f5276bd8 c443db80 00000001 f6130b80 
-       f524ff94 00000246 c07130f4 03d28000 00000000 f524ff9c c01438ad f524ffac 
-       00000001 c0143a1f 00000000 f524ffd0 c0143a66 00000001 c0119fea 00000000 
-Call Trace:
- [<c011befc>] ? cpu_clock+0x4e/0x59
- [<c01438ad>] ? get_timestamp+0x8/0x11
- [<c0143a1f>] ? watchdog+0x0/0x239
- [<c0143a66>] watchdog+0x47/0x239
- [<c0119fea>] ? complete+0x34/0x3e
- [<c0143a1f>] ? watchdog+0x0/0x239
- [<c012f797>] kthread+0x3b/0x64
- [<c012f75c>] ? kthread+0x0/0x64
- [<c01056eb>] kernel_thread_helper+0x7/0x10
- =======================
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+> +			if (p && page_to_pfn(p) >= pfn) {
+> +				__free_pages(p, order);
+> +				p = NULL;
+> +			}
 
+... p is and it's pfn is lower than pfn ...
 
+> +		}
+> +#endif
+> +		p = alloc_pages(gfp_mask|__GFP_NOWARN, order);
 
->
-> >
-> > Oleg.
-> 
-> -- 
-> Thanks and Regards
-> gautham
+... isn't this a leak here?
 
--- 
-Thanks and Regards
-gautham
+> +		if (p && page_to_pfn(p) >= pfn) {
+> +			__free_pages(p, order);
+> +			p = NULL;
+> +		}
+> +	}
+> +	return p;
+> +}
+> +
+> +static unsigned long alloc_mask(int pages, unsigned long max)
+> +{
+> +	static unsigned long next_bit;
+> +	unsigned long offset, flags, start, pfn;
+> +	int k;
+> +
+> +	if (max >= mask_max_pfn)
+> +		max = mask_max_pfn;
+
+Can omit the assignment when max == mask_max_pfn.
+
+> +	start = mask_max_pfn - max;
+> +
+> +	spin_lock_irqsave(&mask_bitmap_lock, flags);
+> +	offset = -1L;
+> +
+> +	if (next_bit >= start && next_bit + pages < (mask_max_pfn - (max>>1))) {
+> +		offset = find_next_zero_string(mask_bitmap, next_bit,
+> +					       mask_max_pfn, pages);
+> +		if (offset != -1L)
+> +			count_vm_events(MASK_BITMAP_SKIP, offset - next_bit);
+> +	}
+> +	if (offset == -1L) {
+> +		offset = find_next_zero_string(mask_bitmap, start,
+> +					mask_max_pfn, pages);
+> +		if (offset != -1L)
+> +			count_vm_events(MASK_BITMAP_SKIP, offset - start);
+> +	}
+> +	if (offset != -1L) {
+> +		for (k = 0; k < pages; k++) {
+> +			BUG_ON(test_bit(offset + k, mask_bitmap));
+> +			set_bit(offset + k, mask_bitmap);
+> +		}
+> +		next_bit = offset + pages;
+> +		if (next_bit >= mask_max_pfn)
+> +			next_bit = start;
+> +	}
+> +	spin_unlock_irqrestore(&mask_bitmap_lock, flags);
+> +	if (offset == -1L)
+> +		return -1L;
+> +
+> +	offset += pages - 1;
+> +	pfn = maskbm_index_to_pfn(offset);
+> +
+> +	BUG_ON(maskbm_index_to_pfn(offset) != pfn);
+> +	return pfn;
+> +}
+
+	Hannes
