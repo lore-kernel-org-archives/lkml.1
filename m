@@ -1,74 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933096AbYCGJ3F@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933178AbYCGJ3k@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933096AbYCGJ3F (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Mar 2008 04:29:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932091AbYCGJWV
+	id S933178AbYCGJ3k (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Mar 2008 04:29:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765550AbYCGJWs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Mar 2008 04:22:21 -0500
-Received: from sacred.ru ([62.205.161.221]:43416 "EHLO sacred.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932449AbYCGJWS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Mar 2008 04:22:18 -0500
-Message-ID: <47D10939.6020806@openvz.org>
-Date: Fri, 07 Mar 2008 12:22:01 +0300
-From: Pavel Emelyanov <xemul@openvz.org>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080213)
-MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: linux-kernel@vger.kernel.org, menage@google.com, sukadev@us.ibm.com,
-       serue@us.ibm.com
-Subject: Re: [PATCH 5/9] Make use of permissions, returned by kobj_lookup
-References: <47CED717.60406@openvz.org>	<47CEDA64.1070506@openvz.org> <20080305171304.f686f6de.akpm@linux-foundation.org>
-In-Reply-To: <20080305171304.f686f6de.akpm@linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1
+	Fri, 7 Mar 2008 04:22:48 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:48998 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1765499AbYCGJWq (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 7 Mar 2008 04:22:46 -0500
+Date: Fri, 7 Mar 2008 01:22:44 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: "Dave Young" <hidave.darkstar@gmail.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH RFC] add time_after_now and other macros which compare
+ with jiffies
+Message-Id: <20080307012244.ed7625ec.akpm@linux-foundation.org>
+In-Reply-To: <a8e1da0803070112p6a5e076aw569a50a69de91504@mail.gmail.com>
+References: <20080307030901.GA4375@darkstar.te-china.tietoenator.com>
+	<20080307010228.de6700b5.akpm@linux-foundation.org>
+	<a8e1da0803070112p6a5e076aw569a50a69de91504@mail.gmail.com>
+X-Mailer: Sylpheed 2.3.1 (GTK+ 2.10.11; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-Greylist: Sender succeeded SMTP AUTH authentication, not delayed by milter-greylist-3.0 (sacred.ru [62.205.161.221]); Fri, 07 Mar 2008 12:21:58 +0300 (MSK)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton wrote:
-> On Wed, 05 Mar 2008 20:37:40 +0300
-> Pavel Emelyanov <xemul@openvz.org> wrote:
-> 
->> diff --git a/include/linux/devscontrol.h b/include/linux/devscontrol.h
->> new file mode 100644
->> index 0000000..04c168b
->> --- /dev/null
->> +++ b/include/linux/devscontrol.h
->> @@ -0,0 +1,12 @@
->> +#ifndef __DEVS_CONTROL_H__
->> +#define __DEVS_CONTROL_H__
->> +static inline struct kobj_map *task_cdev_map(struct task_struct *tsk)
->> +{
->> +	return NULL;
->> +}
->> +
->> +static inline struct kobj_map *task_bdev_map(struct task_struct *tsk)
->> +{
->> +	return NULL;
->> +}
->> +#endif
-> 
-> This doesn't include sufficient headers to be compileable.
-> 
-> I'm sure there are lots of headers like this.  But we regularly need
-> to fix them.
-> 
+On Fri, 7 Mar 2008 17:12:29 +0800 "Dave Young" <hidave.darkstar@gmail.com> wrote:
 
-Not sure, whether this is still relevant after Greg's comments, but that's
-the -fix patch for this one. (It will cause a conflict with the 9th patch.)
+> Indeed, I will add proper comment before them.
 
-diff --git a/include/linux/devscontrol.h b/include/linux/devscontrol.h
-index 04c168b..52cac64 100644
---- a/include/linux/devscontrol.h
-+++ b/include/linux/devscontrol.h
-@@ -1,5 +1,8 @@
- #ifndef __DEVS_CONTROL_H__
- #define __DEVS_CONTROL_H__
-+struct kobj_map;
-+struct task_struct;
-+
- static inline struct kobj_map *task_cdev_map(struct task_struct *tsk)
- {
- 	return NULL;
+Sob.  Of the 809 usages of time_after(), it appears that over 700 are
+comparing with jiffies.  So with your (good) change, someone will get
+buried in well-meaning convert-to-time_after_now patches.
+
+I wonder who that might be?
