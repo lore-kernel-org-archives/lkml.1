@@ -1,47 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933106AbYCGA3p@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932621AbYCGAcN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933106AbYCGA3p (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Mar 2008 19:29:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761103AbYCGA3c
+	id S932621AbYCGAcN (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Mar 2008 19:32:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757533AbYCGAb6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Mar 2008 19:29:32 -0500
-Received: from mx1.mxtelecom.com ([87.86.212.101]:35396 "EHLO
-	puma.mxtelecom.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1760976AbYCGA3c (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Mar 2008 19:29:32 -0500
-X-Greylist: delayed 1477 seconds by postgrey-1.27 at vger.kernel.org; Thu, 06 Mar 2008 19:29:31 EST
-Message-ID: <47D086A4.6090103@mxtelecom.com>
-Date: Fri, 07 Mar 2008 00:04:52 +0000
-From: Matthew Hodgson <matthew@mxtelecom.com>
-Organization: MX Telecom Ltd
-User-Agent: Thunderbird 2.0.0.12 (Macintosh/20080213)
-MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-Subject: Toggling preemption on a running kernel
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Thu, 6 Mar 2008 19:31:58 -0500
+Received: from chilli.pcug.org.au ([203.10.76.44]:50672 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753142AbYCGAb5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 6 Mar 2008 19:31:57 -0500
+Date: Fri, 7 Mar 2008 11:31:50 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Olof Johansson <olof@lixom.net>
+Cc: dan.j.williams@intel.com, shannon.nelson@intel.com,
+       linuxppc-dev@ozlabs.org, pasemi-linux@ozlabs.org,
+       linux-kernel@vger.kernel.org, hskinnemoen@atmel.com
+Subject: Re: [PATCH] pasemi_dma: Driver for PA Semi PWRficient on-chip DMA
+ engine
+Message-Id: <20080307113150.c0874344.sfr@canb.auug.org.au>
+In-Reply-To: <20080306233900.GA3969@lixom.net>
+References: <20080306233900.GA3969@lixom.net>
+X-Mailer: Sylpheed 2.5.0beta1 (GTK+ 2.12.8; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Fri__7_Mar_2008_11_31_50_+1100_oaTFoPpUPFtrVWSm"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+--Signature=_Fri__7_Mar_2008_11_31_50_+1100_oaTFoPpUPFtrVWSm
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-I'm trying to compare the performance of some networking code 
-(throughput and latency when receiving various volumes of UDP streams) 
-between a preemptible and non-preemptible 2.6.24 kernel, and was 
-wondering if it is possible to temporarily disable preemption on a 
-running preemptible kernel.  Is it just a matter of loading a module 
-which calls preempt_enable() at load and preempt_disable() at unload - 
-or is that too naive?  Is there an existing way of doing this?
+Hi Olof,
 
-thanks,
+Just one thing I noticed ...
 
-Matthew.
+On Thu, 6 Mar 2008 17:39:00 -0600 Olof Johansson <olof@lixom.net> wrote:
+>
+> +	dma_dev->device_dependency_added =3D pasemi_dma_dependency_added;
 
+device_dependency_added is going away in 2.6.26 ...
 
--- 
-Matthew Hodgson <matthew@mxtelecom.com>
-Media & Systems Project Manager
-Tel: +44 (0) 845 666 7778
-http://www.mxtelecom.com
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Fri__7_Mar_2008_11_31_50_+1100_oaTFoPpUPFtrVWSm
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQFH0Iz6TgG2atn1QN8RAnm9AJ9Untb2ftwcbu9xkD/9HSVkAaFfPQCfemLP
+gWkqeNeF4p/QbQk/X9Bh6n0=
+=CBww
+-----END PGP SIGNATURE-----
+
+--Signature=_Fri__7_Mar_2008_11_31_50_+1100_oaTFoPpUPFtrVWSm--
