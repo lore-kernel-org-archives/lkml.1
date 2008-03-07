@@ -1,64 +1,176 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765673AbYCGE4Y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765210AbYCGE45@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765673AbYCGE4Y (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Mar 2008 23:56:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755604AbYCGE4N
+	id S1765210AbYCGE45 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Mar 2008 23:56:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765057AbYCGE4o
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Mar 2008 23:56:13 -0500
-Received: from mail-out3.apple.com ([17.254.13.22]:64505 "EHLO
-	mail-out3.apple.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755510AbYCGE4L (ORCPT
+	Thu, 6 Mar 2008 23:56:44 -0500
+Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:39950 "EHLO
+	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761685AbYCGE4n (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Mar 2008 23:56:11 -0500
-X-AuditID: 11807135-a2cbcbb000000a4f-9d-47d0caeadfbb
-Cc: "H. Peter Anvin" <hpa@zytor.com>,
-       Richard Guenther <richard.guenther@gmail.com>,
-       Joe Buck <Joe.Buck@synopsys.com>, Andrew Haley <aph@redhat.com>,
-       Aurelien Jarno <aurelien@aurel32.net>, Michael Matz <matz@suse.de>,
-       linux-kernel@vger.kernel.org, gcc@gcc.gnu.org
-Message-Id: <85DD8EBE-C020-4192-9914-3046350A4548@apple.com>
-From: Chris Lattner <clattner@apple.com>
-To: Andi Kleen <andi@firstfloor.org>
-In-Reply-To: <20080306220610.GB31833@one.firstfloor.org>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+	Thu, 6 Mar 2008 23:56:43 -0500
+Message-ID: <47D0CB00.1040303@cn.fujitsu.com>
+Date: Fri, 07 Mar 2008 13:56:32 +0900
+From: Li Zefan <lizf@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
+MIME-Version: 1.0
+To: balbir@linux.vnet.ibm.com
+CC: Paul Menage <menage@google.com>, Andrew Morton <akpm@linux-foundation.org>,
+       Pavel Emelianov <xemul@openvz.org>, Hugh Dickins <hugh@veritas.com>,
+       Sudhir Kumar <skumar@linux.vnet.ibm.com>,
+       YAMAMOTO Takashi <yamamoto@valinux.co.jp>, linux-kernel@vger.kernel.org,
+       taka@valinux.co.jp, linux-mm@kvack.org,
+       David Rientjes <rientjes@google.com>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Subject: Re: [PATCH] Add cgroup support for enabling controllers at boot time
+References: <20080306185952.23290.49571.sendpatchset@localhost.localdomain> <47D088BA.3080609@cn.fujitsu.com> <47D0C67E.4080009@linux.vnet.ibm.com>
+In-Reply-To: <47D0C67E.4080009@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-Mime-Version: 1.0 (Apple Message framework v919.2)
-Subject: Re: Linux doesn't follow x86/x86-64 ABI wrt direction flag
-Date: Thu, 6 Mar 2008 20:56:09 -0800
-References: <20080305202319.GA17053@volta.aurel32.net> <Pine.LNX.4.64.0803052133400.20583@wotan.suse.de> <47CF0627.2070200@zytor.com> <47CF07FE.10200@aurel32.net> <47CFBF28.4060309@redhat.com> <871w6ogjnu.fsf@basil.nowhere.org> <84fc9c000803060406u7dfa0d38ve8af3154bf5064f9@mail.gmail.com> <20080306173438.GH17267@synopsys.com> <84fc9c000803061254i5865f68ev11fcfd08b698c58f@mail.gmail.com> <47D05A70.40008@zytor.com> <20080306220610.GB31833@one.firstfloor.org>
-X-Mailer: Apple Mail (2.919.2)
-X-Brightmail-Tracker: AAAAAA==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-On Mar 6, 2008, at 2:06 PM, Andi Kleen wrote:
-
-> On Thu, Mar 06, 2008 at 12:56:16PM -0800, H. Peter Anvin wrote:
->> Richard Guenther wrote:
+Balbir Singh wrote:
+> Li Zefan wrote:
+>> Balbir Singh wrote:
+>>> From: Paul Menage <menage@google.com>
 >>>
->>> A patched GCC IMHO makes only sense if it is always-on, yet  
->>> another option
->>> won't help in corner cases.  And corner cases is exactly what  
->>> people seem
->>> to care about.  For this reason that we have this single release,  
->>> 4.3.0,
->>> that
->>> behaves "bad" is already a problem.
+>>> The effects of cgroup_disable=foo are:
 >>>
+>>> - foo doesn't show up in /proc/cgroups
+>>> - foo isn't auto-mounted if you mount all cgroups in a single hierarchy
+>>> - foo isn't visible as an individually mountable subsystem
+>>>
+>>> As a result there will only ever be one call to foo->create(), at init
+>>> time; all processes will stay in this group, and the group will never
+>>> be mounted on a visible hierarchy. Any additional effects (e.g. not
+>>> allocating metadata) are up to the foo subsystem.
+>>>
+>>> This doesn't handle early_init subsystems (their "disabled" bit isn't
+>>> set be, but it could easily be extended to do so if any of the early_init
+>>> systems wanted it - I think it would just involve some nastier parameter
+>>> processing since it would occur before the command-line argument parser
+>>> had been run.
+>>>
+>>> [Balbir added Documentation/kernel-parameters updates]
+>>>
+>>> Signed-off-by: Paul Menage <menage@google.com>
+>>> Signed-off-by: Balbir Singh <balbir@linux.vnet.ibm.com>
+>>> ---
+>>>
+>>>  Documentation/kernel-parameters.txt |    4 ++++
+>>>  include/linux/cgroup.h              |    1 +
+>>>  kernel/cgroup.c                     |   27 +++++++++++++++++++++++++--
+>>>  3 files changed, 30 insertions(+), 2 deletions(-)
+>>>
+>>> diff -puN include/linux/cgroup.h~cgroup_disable include/linux/cgroup.h
+>>> --- linux-2.6.25-rc4/include/linux/cgroup.h~cgroup_disable   
+>>> 2008-03-06 12:19:38.000000000 +0530
+>>> +++ linux-2.6.25-rc4-balbir/include/linux/cgroup.h    2008-03-06
+>>> 12:19:38.000000000 +0530
+>>> @@ -256,6 +256,7 @@ struct cgroup_subsys {
+>>>      void (*bind)(struct cgroup_subsys *ss, struct cgroup *root);
+>>>      int subsys_id;
+>>>      int active;
+>>> +    int disabled;
+>>>      int early_init;
+>>>  #define MAX_CGROUP_TYPE_NAMELEN 32
+>>>      const char *name;
+>>> diff -puN kernel/cgroup.c~cgroup_disable kernel/cgroup.c
+>>> --- linux-2.6.25-rc4/kernel/cgroup.c~cgroup_disable    2008-03-06
+>>> 12:19:38.000000000 +0530
+>>> +++ linux-2.6.25-rc4-balbir/kernel/cgroup.c    2008-03-06
+>>> 12:19:38.000000000 +0530
+>>> @@ -782,7 +782,14 @@ static int parse_cgroupfs_options(char *
+>>>          if (!*token)
+>>>              return -EINVAL;
+>>>          if (!strcmp(token, "all")) {
+>>> -            opts->subsys_bits = (1 << CGROUP_SUBSYS_COUNT) - 1;
+>>> +            /* Add all non-disabled subsystems */
+>>> +            int i;
+>>> +            opts->subsys_bits = 0;
+>>> +            for (i = 0; i < CGROUP_SUBSYS_COUNT; i++) {
+>>> +                struct cgroup_subsys *ss = subsys[i];
+>>> +                if (!ss->disabled)
+>>> +                    opts->subsys_bits |= 1ul << i;
+>>> +            }
+>>>          } else if (!strcmp(token, "noprefix")) {
+>>>              set_bit(ROOT_NOPREFIX, &opts->flags);
+>>>          } else if (!strncmp(token, "release_agent=", 14)) {
+>>> @@ -800,7 +807,8 @@ static int parse_cgroupfs_options(char *
+>>>              for (i = 0; i < CGROUP_SUBSYS_COUNT; i++) {
+>>>                  ss = subsys[i];
+>>>                  if (!strcmp(token, ss->name)) {
+>>> -                    set_bit(i, &opts->subsys_bits);
+>>> +                    if (!ss->disabled)
+>>> +                        set_bit(i, &opts->subsys_bits);
+>>>                      break;
+>>>                  }
+>>>              }
+>>> @@ -2604,6 +2612,8 @@ static int proc_cgroupstats_show(struct     
+>>> mutex_lock(&cgroup_mutex);
+>>>      for (i = 0; i < CGROUP_SUBSYS_COUNT; i++) {
+>>>          struct cgroup_subsys *ss = subsys[i];
+>>> +        if (ss->disabled)
+>>> +            continue;
+>>>          seq_printf(m, "%s\t%lu\t%d\n",
+>>>                 ss->name, ss->root->subsys_bits,
+>>>                 ss->root->number_of_cgroups);
+>>> @@ -3010,3 +3020,16 @@ static void cgroup_release_agent(struct     
+>>> spin_unlock(&release_list_lock);
+>>>      mutex_unlock(&cgroup_mutex);
+>>>  }
+>>> +
+>>> +static int __init cgroup_disable(char *str)
+>>> +{
+>>> +    int i;
+>>> +    for (i = 0; i < CGROUP_SUBSYS_COUNT; i++) {
+>>> +        struct cgroup_subsys *ss = subsys[i];
+>>> +        if (!strcmp(str, ss->name)) {
+>>> +            ss->disabled = 1;
+>>> +            break;
+>>> +        }
+>>> +    }
+>>> +}
+>>> +__setup("cgroup_disable=", cgroup_disable);
+>>> diff -puN Documentation/kernel-parameters.txt~cgroup_disable
+>>> Documentation/kernel-parameters.txt
+>>> ---
+>>> linux-2.6.25-rc4/Documentation/kernel-parameters.txt~cgroup_disable   
+>>> 2008-03-06 17:57:32.000000000 +0530
+>>> +++ linux-2.6.25-rc4-balbir/Documentation/kernel-parameters.txt   
+>>> 2008-03-06 18:00:32.000000000 +0530
+>>> @@ -383,6 +383,10 @@ and is between 256 and 4096 characters.     
+>>> ccw_timeout_log [S390]
+>>>              See Documentation/s390/CommonIO for details.
+>>>  
+>>> +    cgroup_disable= [KNL] Enable disable a particular controller
+>>> +            Format: {name of the controller}
+>>> +            See /proc/cgroups for a list of compiled controllers
+>>> +
+>> The changelog of this patch:
+>> - foo doesn't show up in /proc/cgroups
 >>
->> The option will help embedded vendors who can guarantee that it's  
->> not a
->> problem.
->
-> For very very low values of "help".
->
-> To be realistic it is very unlikely anybody will measure a difference
-> from a few more or a few less clds in a program. It's not that they're
-> expensive instructions
+>> So a disabled subsystem won't show up in /proc/cgroups. In a previous
+>> mail, I asked whether it will be useful to print out the disable bit
+>> in /proc/cgroups, so we can distinguish a subsystem from disaled and
+>> not-compiled.
+> 
+> Hi, Li,
+> 
+> That is a good idea, but can that come in later? We need to get the boot option
+> in, so that users can decide at boot time whether they want the page_container
+> overhead. I'll send out another set of patches to add that feature or work
+> with Paul to see what he thinks about it.
+> 
 
-They aren't?  According to http://www.agner.org/optimize/instruction_tables.pdf 
-, they have a latency of 52 cycles on at least one popular x86 chip.
+I'm not requiring this to be done in this patch. :)
 
--Chris
+But my exact meaning here is this sentence is confusing:
+
+	See /proc/cgroups for a list of compiled controllers
+
+It seems it is telling people that /proc/cgroups shows not only enabled
+but also disabled cgroup subsystems.
