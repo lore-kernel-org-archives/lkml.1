@@ -1,62 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762750AbYCGWcv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762170AbYCGWfv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762750AbYCGWcv (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Mar 2008 17:32:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757614AbYCGWcm
+	id S1762170AbYCGWfv (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Mar 2008 17:35:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757494AbYCGWfm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Mar 2008 17:32:42 -0500
-Received: from ns2.g-housing.de ([81.169.133.75]:37715 "EHLO mail.g-house.de"
+	Fri, 7 Mar 2008 17:35:42 -0500
+Received: from mail.windriver.com ([147.11.1.11]:62935 "EHLO mail.wrs.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757551AbYCGWcl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Mar 2008 17:32:41 -0500
-Date: Fri, 7 Mar 2008 23:32:37 +0100 (CET)
-From: Christian Kujau <lists@nerdbynature.de>
-X-X-Sender: evil@sheep.housecafe.de
-To: devzero@web.de
-cc: ingo@elte.hu, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 2.6.24] chroot= as a new kernel parameter
-In-Reply-To: <187865500@web.de>
-Message-ID: <alpine.DEB.1.00.0803072330080.7723@sheep.housecafe.de>
-References: <187865500@web.de>
-User-Agent: Alpine 1.00 (DEB 882 2007-12-20)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+	id S1757188AbYCGWfm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 7 Mar 2008 17:35:42 -0500
+From: Jason Wessel <jason.wessel@windriver.com>
+To: mingo@elte.hu
+Cc: tglx@linutronix.de, linux-kernel@vger.kernel.org
+Subject: [PATCH 0/2] kgdb: Fixes and regression tests
+Date: Fri,  7 Mar 2008 16:34:15 -0600
+Message-Id: <1204929257-9967-1-git-send-email-jason.wessel@windriver.com>
+X-Mailer: git-send-email 1.5.4
+X-OriginalArrivalTime: 07 Mar 2008 22:34:17.0890 (UTC) FILETIME=[61344820:01C880A3]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 7 Mar 2008, devzero@web.de wrote:
+To aid in the porting of additional archs for kgdb as well as to
+continue to check that new changes have not broken kgdb, a kgdb test
+suite has been created.  The objective is to test the kgdb core and
+some features of the arch support such as SW/HW breakpoints, SMP
+concurrency, single stepping and the NMI watch dog.
 
->> * H. Peter Anvin <hpa@zytor.com> wrote:
->>>       init=/path/to/any/sbin/chroot /newroot /sbin/init
+By default the kgdb test suite would not be compiled into the kernel.
+It main purpose is to test kgdb internals.
 
-Great, I was looking for something like this myself some time ago!
+Running the regression tests against kgdb has found several problems.
+The first patch in the series addresses the regressions found from
+running the kgdb test suite.  The second patch in the series is the
+kgdb test suite itself.
 
-> wouldn`t it be useful to add a hint to kernel-parameters.txt ?
+Jason.
 
-How about:
+The following changes since commit 9b747d4ea3c90a5cda4e295bd0c1257eba3091ca:
+  Jason Wessel (1):
+        kgdb: support for ARCH=arm
 
---- linux-2.6-git/Documentation/kernel-parameters.txt	2008-02-21 12:01:37.000000000 +0100
-+++ linux-2.6-git/Documentation/kernel-parameters.txt.edited	2008-03-07 23:26:39.000000000 +0100
-@@ -799,9 +799,12 @@ and is between 256 and 4096 characters.
-  			See header of drivers/scsi/in2000.c.
+are available in the git repository at:
 
-  	init=		[KNL]
--			Format: <full_path>
-+			Format: <full_path> <options>
-  			Run specified binary instead of /sbin/init as init
--			process.
-+			process. init= is able to take more than one option
-+			allowing us to do:
-+			init=/path/to/any/sbin/chroot /newroot /sbin/init
-+			...and thus booting into /newroot.
+  master.kernel.org:/pub/scm/linux/kernel/git/jwessel/linux-2.6-kgdb.git for_ingo
 
-  	initcall_debug	[KNL] Trace initcalls as they are executed.  Useful
-  			for working out where the kernel is dying during
+Jason Wessel (2):
+      kgdb: fix several kgdb regressions
+      kgdb: Add kgdb internal test suite
 
-Thanks,
-Christian.
--- 
-BOFH excuse #116:
+ arch/x86/kernel/kgdb.c     |    4 +
+ arch/x86/kernel/traps_64.c |    7 +-
+ drivers/misc/Makefile      |    1 +
+ drivers/misc/kgdbts.c      | 1083 ++++++++++++++++++++++++++++++++++++++++++++
+ kernel/kgdb.c              |   14 +-
+ lib/Kconfig.kgdb           |   13 +
+ 6 files changed, 1115 insertions(+), 7 deletions(-)
+ create mode 100644 drivers/misc/kgdbts.c
 
-the real ttys became pseudo ttys and vice-versa.
