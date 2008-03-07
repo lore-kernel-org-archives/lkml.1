@@ -1,51 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759366AbYCGDK5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762323AbYCGDMS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759366AbYCGDK5 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Mar 2008 22:10:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754602AbYCGDKr
+	id S1762323AbYCGDMS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Mar 2008 22:12:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755211AbYCGDL7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Mar 2008 22:10:47 -0500
-Received: from ns1.suse.de ([195.135.220.2]:57192 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751147AbYCGDKq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Mar 2008 22:10:46 -0500
-Date: Fri, 7 Mar 2008 04:10:44 +0100
-From: Nick Piggin <npiggin@suse.de>
-To: Christoph Lameter <clameter@sgi.com>
-Cc: David Miller <davem@davemloft.net>, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org, yanmin_zhang@linux.intel.com,
-       dada1@cosmosbay.com
-Subject: Re: [rfc][patch 1/3] slub: fix small HWCACHE_ALIGN alignment
-Message-ID: <20080307031044.GF21185@wotan.suse.de>
-References: <Pine.LNX.4.64.0803031315160.4131@schroedinger.engr.sgi.com> <20080305000637.GA1510@wotan.suse.de> <20080304.161003.129716254.davem@davemloft.net> <Pine.LNX.4.64.0803051257030.30742@schroedinger.engr.sgi.com> <20080306025758.GB27150@wotan.suse.de> <Pine.LNX.4.64.0803061453360.16212@schroedinger.engr.sgi.com> <20080307022355.GB21185@wotan.suse.de> <Pine.LNX.4.64.0803061825120.29527@schroedinger.engr.sgi.com> <20080307023223.GD21185@wotan.suse.de> <Pine.LNX.4.64.0803061841220.29959@schroedinger.engr.sgi.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0803061841220.29959@schroedinger.engr.sgi.com>
-User-Agent: Mutt/1.5.9i
+	Thu, 6 Mar 2008 22:11:59 -0500
+Received: from rn-out-0910.google.com ([64.233.170.184]:51824 "EHLO
+	rn-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754602AbYCGDL6 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 6 Mar 2008 22:11:58 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
+        b=nOSJw97SIbz3tVwXYcgcJDSIgOaPB+V1MXwVklTHLxU9uROhpjhsYbf5CtivxvxKfc06rqKDqV2ZkSauiKql8Er1LmHlaUYExxViIaFz88Tpa239mi9cPsrUWUDkA9k7x4IeuhHGIPJm1nVRXCOdJWHG9GLODv47g4dnOGO/taM=
+Message-ID: <47D0B276.1010301@gmail.com>
+Date: Fri, 07 Mar 2008 12:11:50 +0900
+From: Tejun Heo <htejun@gmail.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20070801)
+MIME-Version: 1.0
+To: Jeff Garzik <jeff@garzik.org>,
+       James Bottomley <James.Bottomley@HansenPartnership.com>
+CC: Mark Lord <liml@rtr.ca>, Matthew Wilcox <matthew@wil.cx>,
+       linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: [PATCH 2/2] libata: kill SCSI devices before detaching ata_host
+References: <20080222200951.GI16995@parisc-linux.org>	 <47BF3E54.9050609@rtr.ca>  <47CFA9A6.2040506@gmail.com>	 <1204817301.3062.3.camel@localhost.localdomain>	 <47D08478.8010700@gmail.com>	 <1204848119.3062.94.camel@localhost.localdomain>	 <47D08892.3080209@gmail.com>	 <1204849353.3062.107.camel@localhost.localdomain>	 <47D08C32.8060907@gmail.com> <1204850398.3062.111.camel@localhost.localdomain> <47D08FAA.7070001@gmail.com> <47D0B1A4.2040104@gmail.com>
+In-Reply-To: <47D0B1A4.2040104@gmail.com>
+X-Enigmail-Version: 0.95.5
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Mar 06, 2008 at 06:54:19PM -0800, Christoph Lameter wrote:
-> > It doesn't say start of cache line. It says align them *on* cachelines.
-> > 2 32 byte objects on a 64 byte cacheline are aligned on the cacheline.
-> > 2.67 24 bytes objects on a 64 byte cacheline are not aligned on the
-> > cacheline.
-> 
-> 2 32 byte objects means only one is aligned on a cache line.
-> 
-> Certainly cacheline contention is reduced and performance potentially 
-> increased if there are less objects in a cacheline.
-> 
-> The same argument can be made of aligning 8 byte objects on 32 byte 
-> boundaries. Instead of 8 objects per cacheline you only have two. Why 8?
-> 
-> Isnt all of this a bit arbitrary and contrary to the intend of avoiding 
-> cacheline contention?
+Kill SCSI devices before detaching port.  This makes drives properly
+shut down on driver unload.
 
-No, it *is not about avoiding cacheline contention*. As such, the rest
-of what you wrote below about smp_align etc is rubbish.
+Signed-off-by: Tejun Heo <htejun@gmail.com>
+---
+ drivers/ata/libata-core.c |    8 ++++++++
+ 1 file changed, 8 insertions(+)
 
-Can you actually read what I posted?
-
+Index: work1/drivers/ata/libata-core.c
+===================================================================
+--- work1.orig/drivers/ata/libata-core.c
++++ work1/drivers/ata/libata-core.c
+@@ -7236,6 +7236,14 @@ static void ata_port_detach(struct ata_p
+ 	if (!ap->ops->error_handler)
+ 		goto skip_eh;
+ 
++	/* First, tell all SCSI devices that we're going down.  Note
++	 * that there's a small race window here.  Devices which get
++	 * hotplugged after forget_host but before EH is killed won't
++	 * get shut down by SCSI layer properly and will miss cache
++	 * flush and spin down.
++	 */
++	scsi_forget_host(ap->scsi_host);
++
+ 	/* tell EH we're leaving & flush EH */
+ 	spin_lock_irqsave(ap->lock, flags);
+ 	ap->pflags |= ATA_PFLAG_UNLOADING;
