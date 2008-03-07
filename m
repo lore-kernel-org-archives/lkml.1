@@ -1,59 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932536AbYCGUor@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765898AbYCGUp2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932536AbYCGUor (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Mar 2008 15:44:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763557AbYCGUoa
+	id S1765898AbYCGUp2 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Mar 2008 15:45:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764490AbYCGUpG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Mar 2008 15:44:30 -0500
-Received: from senator.holtmann.net ([87.106.208.187]:33944 "EHLO
-	mail.holtmann.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1762826AbYCGUo2 (ORCPT
+	Fri, 7 Mar 2008 15:45:06 -0500
+Received: from fmmailgate05.web.de ([217.72.192.243]:58433 "EHLO
+	fmmailgate05.web.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1764354AbYCGUpF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Mar 2008 15:44:28 -0500
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Message-Id: <68E3DB35-04A3-475E-8C3F-B2F48E778487@holtmann.org>
-From: Marcel Holtmann <marcel@holtmann.org>
-To: Karsten Keil <kkeil@suse.de>
-In-Reply-To: <20080307201034.GA671@pingi.kke.suse.de>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+	Fri, 7 Mar 2008 15:45:05 -0500
+Date: Fri, 07 Mar 2008 21:44:07 +0100
+Message-Id: <187848749@web.de>
+MIME-Version: 1.0
+From: devzero@web.de
+To: renatoyamane@mandic.com.br
+Cc: linux-kernel@vger.kernel.org
+Subject: Re:Kernel Linux 2.6.23.16 hangs when run updatedb
+Organization: http://freemail.web.de/
+X-Provags-Id: V01U2FsdGVkX1+gKqd2fSHF4pCDp9MTKEiRgow1VdQ/1WoBvAlqEmWJLvLI+
+ Ryxq+gabHmDmKe3bZRMaPivMg8RcFHjYqLnGGUibcttjE3LGA0=
+Content-Type: text/plain; charset=iso-8859-15
 Content-Transfer-Encoding: 7bit
-Mime-Version: 1.0 (Apple Message framework v919.2)
-Subject: Re: [PATCH] [BLUETOOTH] Add another Broadcom device
-Date: Fri, 7 Mar 2008 21:43:54 +0100
-References: <20080307201034.GA671@pingi.kke.suse.de>
-X-Mailer: Apple Mail (2.919.2)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Karsten,
+Hi !
 
-> This patch adds another Broadcom BCM2045 based device to the
-> blacklist, with these settings the micro dongle works on my system.
+looks like reiserfs issue.
+maybe corrupt filesystem and improper handling of the reiserfs-driver?
+
+could you try some "find /" ?
+
+if that doesn`t trigger the problem, put your system under load and try again.
+
+regards
+roland
+
+
+>when cron start updatedb daemon, my machine hangs. None key work, so I 
+>need reset (press power button to restart).
 >
-> Signed-off-by: Karsten Keil <kkeil@suse.de>
-> ---
-> drivers/bluetooth/hci_usb.c |    1 +
-> 1 files changed, 1 insertions(+), 0 deletions(-)
+>The only way to get log is runing updatedb from terminal (CTRL + ALT + 
+>F1) and take a picture from screen:
 >
-> diff --git a/drivers/bluetooth/hci_usb.c b/drivers/bluetooth/hci_usb.c
-> index 372c7ef..f16c94c 100644
-> --- a/drivers/bluetooth/hci_usb.c
-> +++ b/drivers/bluetooth/hci_usb.c
-> @@ -116,6 +116,7 @@ static struct usb_device_id blacklist_ids[] = {
-> 	{ USB_DEVICE(0x0a5c, 0x2009), .driver_info = HCI_BCM92035 },
+>Up screen:
+><http://img137.imageshack.us/img137/7128/01pg1.jpg>
 >
-> 	/* Broadcom BCM2045 */
-> +	{ USB_DEVICE(0x0a5c, 0x2039), .driver_info = HCI_RESET |  
-> HCI_WRONG_SCO_MTU },
-> 	{ USB_DEVICE(0x0a5c, 0x2101), .driver_info = HCI_RESET |  
-> HCI_WRONG_SCO_MTU },
-
-before I sign off on this one, can you include the part from /proc/bus/ 
-usb/devices for this dongle.
-
-Regards
-
-Marcel
+>Down screen:
+><http://img100.imageshack.us/img100/1456/02kx1.jpg>
+>
+>Call trace detail:
+><http://img100.imageshack.us/img100/8233/calltracedetailsj7.jpg>
+>
+>.config is attached
+>
+>Regards,
+>Renato S. Yamane
+_________________________________________________________________________
+In 5 Schritten zur eigenen Homepage. Jetzt Domain sichern und gestalten! 
+Nur 3,99 EUR/Monat! http://www.maildomain.web.de/?mc=021114
 
