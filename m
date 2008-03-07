@@ -1,82 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933170AbYCGVYx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932872AbYCGVcb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933170AbYCGVYx (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Mar 2008 16:24:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932356AbYCGVYl
+	id S932872AbYCGVcb (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Mar 2008 16:32:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760686AbYCGVcU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Mar 2008 16:24:41 -0500
-Received: from sca-es-mail-2.Sun.COM ([192.18.43.133]:58309 "EHLO
-	sca-es-mail-2.sun.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932257AbYCGVYk (ORCPT
+	Fri, 7 Mar 2008 16:32:20 -0500
+Received: from e31.co.us.ibm.com ([32.97.110.149]:34029 "EHLO
+	e31.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760724AbYCGVcU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Mar 2008 16:24:40 -0500
-Date: Fri, 07 Mar 2008 14:24:26 -0700
-From: Andreas Dilger <adilger@sun.com>
-Subject: Re: [PATCH 3/3] jbd2: only create debugfs and stats entries if	cache
- initialisation is successful
-In-reply-to: <dcb02b202f5a84c79c9e8b1b0102e6ad52ed3b53.1204844851.git.duaneg@dghda.com>
-To: Duane Griffin <duaneg@dghda.com>
-Cc: linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Theodore Tso <tytso@mit.edu>, sct@redhat.com, akpm@linux-foundation.org,
-       adilger@clusterfs.com
-Message-id: <20080307212426.GF1881@webber.adilger.int>
-MIME-version: 1.0
-Content-type: text/plain; charset=us-ascii
-Content-transfer-encoding: 7BIT
-Content-disposition: inline
-X-GPG-Key: 1024D/0D35BED6
-X-GPG-Fingerprint: 7A37 5D79 BF1B CECA D44F  8A29 A488 39F5 0D35 BED6
-References: <5e28cd633c71f6354a203a43000cbe5fef045589.1204844851.git.duaneg@dghda.com>
- <dcb02b202f5a84c79c9e8b1b0102e6ad52ed3b53.1204844851.git.duaneg@dghda.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+	Fri, 7 Mar 2008 16:32:20 -0500
+Date: Fri, 7 Mar 2008 15:32:20 -0600
+From: "Serge E. Hallyn" <serue@us.ibm.com>
+To: Casey Schaufler <casey@schaufler-ca.com>
+Cc: Stephen Smalley <sds@tycho.nsa.gov>, "Serge E. Hallyn" <serue@us.ibm.com>,
+       Greg KH <greg@kroah.com>, Pavel Emelyanov <xemul@openvz.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       menage@google.com, sukadev@us.ibm.com
+Subject: Re: [PATCH 5/9] Make use of permissions, returned by kobj_lookup
+Message-ID: <20080307213220.GA12334@sergelap.austin.ibm.com>
+References: <1204919172.1397.541.camel@moss-spartans.epoch.ncsc.mil> <26315.23145.qm@web36606.mail.mud.yahoo.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <26315.23145.qm@web36606.mail.mud.yahoo.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mar 07, 2008  01:31 +0000, Duane Griffin wrote:
-> jbd2 debugfs and stats entries should only be created if cache initialisation
-> is successful. At the moment they are being created unconditionally which will
-> leave them dangling if cache (and hence module) initialisation fails.
+Quoting Casey Schaufler (casey@schaufler-ca.com):
 > 
-> Signed-off-by: Duane Griffin <duaneg@dghda.com>
-
-Acked-by: Andreas Dilger <adilger@sun.com>
-
-> ---
->  fs/jbd2/journal.c |    8 +++++---
->  1 files changed, 5 insertions(+), 3 deletions(-)
+> --- Stephen Smalley <sds@tycho.nsa.gov> wrote:
 > 
-> diff --git a/fs/jbd2/journal.c b/fs/jbd2/journal.c
-> index 0d8a595..9d48419 100644
-> --- a/fs/jbd2/journal.c
-> +++ b/fs/jbd2/journal.c
-> @@ -2315,10 +2315,12 @@ static int __init journal_init(void)
->  	BUILD_BUG_ON(sizeof(struct journal_superblock_s) != 1024);
->  
->  	ret = journal_init_caches();
-> -	if (ret != 0)
-> +	if (ret == 0) {
-> +		jbd2_create_debugfs_entry();
-> +		jbd2_create_jbd_stats_proc_entry();
-> +	} else {
->  		jbd2_journal_destroy_caches();
-> -	jbd2_create_debugfs_entry();
-> -	jbd2_create_jbd_stats_proc_entry();
-> +	}
->  	return ret;
->  }
->  
-> -- 
-> 1.5.3.7
+> > 
+> > On Fri, 2008-03-07 at 12:30 -0600, Serge E. Hallyn wrote:
+> > > Quoting Casey Schaufler (casey@schaufler-ca.com):
+> > > > 
+> > > > --- "Serge E. Hallyn" <serue@us.ibm.com> wrote:
+> > > > 
+> > > > > ...
+> > > > > 
+> > > > > Until user namespaces are complete, selinux seems the only good
+> > solution
+> > > > > to offer isolation.
+> > > > 
+> > > > Smack does it better and cheaper. (Unless you define good==selinux)
+> > > > (insert smiley)
+> > > 
+> > > Ah, thanks - I hadn't looked into it, but yes IIUC smack should
+> > > definately work.  I'll have to give that a shot.
+> > 
+> > Not if you want to confine uid 0.  smack doesn't control capabilities,
+> > even the ones used to override it.
+> > 
+> > So you'd have to at least configure your per-process bset and file caps
+> > rather carefully.  And even then you have to watch out for things with
+> > CAP_MAC* or CAP_SETPCAP.
 > 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-ext4" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Shrug. As if getting 800,000 lines of policy definition
+> for a thousand applications completely correct is going to be easier.
 
-Cheers, Andreas
---
-Andreas Dilger
-Sr. Staff Engineer, Lustre Group
-Sun Microsystems of Canada, Inc.
+Folks, as I get time I will try with both :)
 
+I suspect the CAP_MAC_ADMIN will mean containers won't be able to do any
+policy updates without an update to smack to do a CAP_NS_OVERRIDE type
+of thing.  For SELinux I've got my hopes on the userspace policy daemon,
+but first (my next step atm) I need to get the namespace thing going
+(vserver1.root_t etc).
+
+-serge
