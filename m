@@ -1,23 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764330AbYCGJMB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764019AbYCGJNB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764330AbYCGJMB (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Mar 2008 04:12:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761892AbYCGJHc
+	id S1764019AbYCGJNB (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Mar 2008 04:13:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761966AbYCGJHd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Mar 2008 04:07:32 -0500
-Received: from smtp-out02.alice-dsl.net ([88.44.60.12]:21250 "EHLO
-	smtp-out02.alice-dsl.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761512AbYCGJH0 (ORCPT
+	Fri, 7 Mar 2008 04:07:33 -0500
+Received: from smtp-out03.alice-dsl.net ([88.44.63.5]:62722 "EHLO
+	smtp-out03.alice-dsl.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761622AbYCGJH1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Mar 2008 04:07:26 -0500
+	Fri, 7 Mar 2008 04:07:27 -0500
 From: Andi Kleen <andi@firstfloor.org>
 References: <200803071007.493903088@firstfloor.org>
 In-Reply-To: <200803071007.493903088@firstfloor.org>
 To: linux-kernel@vger.kernel.org, linux-mm@kvack.org
-Subject: [PATCH] [10/13] Switch the 32bit dma_alloc_coherent functions over to use the maskable allocator
-Message-Id: <20080307090720.AEE1B1B419C@basil.firstfloor.org>
-Date: Fri,  7 Mar 2008 10:07:20 +0100 (CET)
-X-OriginalArrivalTime: 07 Mar 2008 09:00:50.0400 (UTC) FILETIME=[BDAC5600:01C88031]
+Subject: [PATCH] [12/13] Add vmstat statistics for new swiotlb code
+Message-Id: <20080307090722.B6BCE1B419C@basil.firstfloor.org>
+Date: Fri,  7 Mar 2008 10:07:22 +0100 (CET)
+X-OriginalArrivalTime: 07 Mar 2008 09:00:52.0447 (UTC) FILETIME=[BEE4AEF0:01C88031]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
@@ -26,59 +26,39 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 Signed-off-by: Andi Kleen <ak@suse.de>
 
 ---
- arch/x86/kernel/pci-dma_32.c |   17 ++++++++++-------
- 1 file changed, 10 insertions(+), 7 deletions(-)
+ include/linux/vmstat.h |    4 ++++
+ mm/vmstat.c            |    6 ++++++
+ 2 files changed, 10 insertions(+)
 
-Index: linux/arch/x86/kernel/pci-dma_32.c
+Index: linux/include/linux/vmstat.h
 ===================================================================
---- linux.orig/arch/x86/kernel/pci-dma_32.c
-+++ linux/arch/x86/kernel/pci-dma_32.c
-@@ -27,11 +27,12 @@ void *dma_alloc_coherent(struct device *
- {
- 	void *ret;
- 	struct dma_coherent_mem *mem = dev ? dev->dma_mem : NULL;
--	int order = get_order(size);
-+	u64 mask;
- 	/* ignore region specifiers */
--	gfp &= ~(__GFP_DMA | __GFP_HIGHMEM);
-+	gfp &= ~__GFP_HIGHMEM;
+--- linux.orig/include/linux/vmstat.h
++++ linux/include/linux/vmstat.h
+@@ -41,6 +41,10 @@ enum vm_event_item { PGPGIN, PGPGOUT, PS
+ 		MASK_ALLOC, MASK_FREE, MASK_BITMAP_SKIP, MASK_WAIT,
+ 		MASK_HIGHER, MASK_LOW_WASTE, MASK_HIGH_WASTE,
+ #endif
++#ifdef CONFIG_SWIOTLB_MASK_ALLOC
++		SWIOTLB_USED_PAGES, SWIOTLB_BYTES_WASTED, SWIOTLB_NUM_ALLOCS,
++		SWIOTLB_NUM_FREES,
++#endif
+ 		NR_VM_EVENT_ITEMS
+ };
  
- 	if (mem) {
-+		int order = get_order(size);
- 		int page = bitmap_find_free_region(mem->bitmap, mem->size,
- 						     order);
- 		if (page >= 0) {
-@@ -44,10 +45,12 @@ void *dma_alloc_coherent(struct device *
- 			return NULL;
- 	}
- 
--	if (dev == NULL || (dev->coherent_dma_mask < 0xffffffff))
--		gfp |= GFP_DMA;
-+	if (dev == NULL)
-+		mask = TRAD_DMA_MASK;
-+	else
-+		mask = dev->coherent_dma_mask;
- 
--	ret = (void *)__get_free_pages(gfp, order);
-+	ret = get_pages_mask(gfp, size, mask);
- 
- 	if (ret != NULL) {
- 		memset(ret, 0, size);
-@@ -61,15 +64,15 @@ void dma_free_coherent(struct device *de
- 			 void *vaddr, dma_addr_t dma_handle)
- {
- 	struct dma_coherent_mem *mem = dev ? dev->dma_mem : NULL;
--	int order = get_order(size);
- 
- 	WARN_ON(irqs_disabled());	/* for portability */
- 	if (mem && vaddr >= mem->virt_base && vaddr < (mem->virt_base + (mem->size << PAGE_SHIFT))) {
-+		int order = get_order(size);
- 		int page = (vaddr - mem->virt_base) >> PAGE_SHIFT;
- 
- 		bitmap_release_region(mem->bitmap, page, order);
- 	} else
--		free_pages((unsigned long)vaddr, order);
-+		free_pages_mask(vaddr, size);
- }
- EXPORT_SYMBOL(dma_free_coherent);
+Index: linux/mm/vmstat.c
+===================================================================
+--- linux.orig/mm/vmstat.c
++++ linux/mm/vmstat.c
+@@ -654,6 +654,12 @@ static const char * const vmstat_text[] 
+ 	"mask_low_waste",
+ 	"mask_high_waste",
+ #endif
++#ifdef CONFIG_SWIOTLB_MASK_ALLOC
++	"swiotlb_used_pages",
++	"swiotlb_bytes_wasted",
++	"swiotlb_num_allocs",
++	"swiotlb_num_frees",
++#endif
+ #endif
+ };
  
