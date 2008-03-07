@@ -1,94 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932532AbYCGVDO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764145AbYCGVEX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932532AbYCGVDO (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Mar 2008 16:03:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759515AbYCGVC5
+	id S1764145AbYCGVEX (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Mar 2008 16:04:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932144AbYCGVEK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Mar 2008 16:02:57 -0500
-Received: from rgminet01.oracle.com ([148.87.113.118]:57289 "EHLO
-	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756871AbYCGVC4 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Mar 2008 16:02:56 -0500
-Message-ID: <47D1AD35.6010102@oracle.com>
-Date: Fri, 07 Mar 2008 13:01:41 -0800
-From: Randy Dunlap <randy.dunlap@oracle.com>
-User-Agent: Thunderbird 1.5.0.5 (X11/20060719)
+	Fri, 7 Mar 2008 16:04:10 -0500
+Received: from kai.krose.org ([140.186.190.96]:55286 "EHLO mail.krose.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1760149AbYCGVEJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 7 Mar 2008 16:04:09 -0500
+Message-ID: <47D1ADC5.1050108@krose.org>
+Date: Fri, 07 Mar 2008 16:04:05 -0500
+From: Kyle Rose <krose@krose.org>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071229)
 MIME-Version: 1.0
-To: Pierre Peiffer <peifferp@gmail.com>
-CC: akpm@linux-foundation.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2.6.25-rc3-mm1] IPC: fix a kernel-doc warning
-References: <878847400803071236w47178fa4r79f50d537b383843@mail.gmail.com>
-In-Reply-To: <878847400803071236w47178fa4r79f50d537b383843@mail.gmail.com>
+To: Trond Myklebust <trond.myklebust@fys.uio.no>
+CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-nfs@vger.kernel.org
+Subject: Re: READDIRPLUS max mount option
+References: <47D1995E.6060501@krose.org>	 <1204919978.16746.12.camel@heimdal.trondhjem.org>	 <47D1A0F5.2070501@krose.org> <1204922570.16746.37.camel@heimdal.trondhjem.org>
+In-Reply-To: <1204922570.16746.37.camel@heimdal.trondhjem.org>
+X-Enigmail-Version: 0.95.6
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Pierre Peiffer wrote:
-> Hi,
-> 
-> This patch fixes this warning produced by kernel-doc (thanks Randy Dunlap):
-> 
-> Warning(linux-2.6.25-rc3-mm1//ipc/util.c:845):
-> No description found for parameter 'extrat_perm'
-> 
-> It is due to an inconsistency in a variable name between the C-code and
-> the associated comment.
-> 
-> Signed-off-by: Pierre Peiffer <peifferp@gmail.com>
 
-Thanks, looks good.
-Acked-by: Randy Dunlap <randy.dunlap@oracle.com>
+> The size of the actual READDIRPLUS requests is completely unaffected by
+> your patch. Your change actually means that the client will continue to
+> use READDIRPLUS on very large directories instead of falling back to
+> readdir.
+>   
+Sorry to be imprecise.  "Size of request" should be "size of response" 
+or "cost of request".  The meaning is clear, I think.
+> If you want a faster readdir(), you will find that splitting those huge
+> directories up into smaller subdirs is an alternative solution that
+> tends to scale much better on both client and server.
+>   
+Agreed that this is probably the least terrible of the available 
+solutions, but in my specific case it requires a more extensive 
+modification to my software than the relatively minor kernel change.
+> Having hundreds of mount options for minor tweaks is not an acceptable
+> practice. Each mount option needs to be abundantly justified.
+>   
+Regarding your straw man, nobody's proposing hundreds of mount options.  
+I imagine the effort required to implement each one would keep such a 
+thing from happening. ;-)
+> Since we're talking about what is really a quite arbitrary limit, I can
+> certainly see an argument for why we might want a way to change it, but
+> I'm still not convinced that we need to be setting this parameter at the
+> mountpoint level.
+Fair enough.  A proc entry to alter this globally would be an acceptable 
+compromise for me, even if my local sysadmins might not like it.
 
-> ---
->  ipc/util.c |    4 ++--
->  ipc/util.h |    2 +-
->  2 files changed, 3 insertions(+), 3 deletions(-)
-> 
-> Index: b/ipc/util.c
-> ===================================================================
-> --- a/ipc/util.c
-> +++ b/ipc/util.c
-> @@ -841,7 +841,7 @@
->   *    or an err-code without any lock held otherwise.
->   */
->  struct kern_ipc_perm *ipcctl_pre_down(struct ipc_ids *ids, int id, int cmd,
-> -				      struct ipc64_perm *perm, int extrat_perm)
-> +				      struct ipc64_perm *perm, int extra_perm)
->  {
->  	struct kern_ipc_perm *ipcp;
->  	int err;
-> @@ -858,7 +858,7 @@
->  		goto out_unlock;
-> 
->  	if (cmd == IPC_SET) {
-> -		err = audit_ipc_set_perm(extrat_perm, perm->uid,
-> +		err = audit_ipc_set_perm(extra_perm, perm->uid,
->  					 perm->gid, perm->mode);
->  		if (err)
->  			goto out_unlock;
-> Index: b/ipc/util.h
-> ===================================================================
-> --- a/ipc/util.h
-> +++ b/ipc/util.h
-> @@ -114,7 +114,7 @@
->  void ipc64_perm_to_ipc_perm(struct ipc64_perm *in, struct ipc_perm *out);
->  void ipc_update_perm(struct ipc64_perm *in, struct kern_ipc_perm *out);
->  struct kern_ipc_perm *ipcctl_pre_down(struct ipc_ids *ids, int id, int cmd,
-> -				      struct ipc64_perm *perm, int extrat_perm);
-> +				      struct ipc64_perm *perm, int extra_perm);
-> 
->  #if defined(__ia64__) || defined(__x86_64__) || defined(__hppa__) ||
-> defined(__XTENSA__)
->    /* On IA-64, we always use the "64-bit version" of the IPC structures.  */
-> 
-
-
--- 
-~Randy
+Kyle
