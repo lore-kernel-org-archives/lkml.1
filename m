@@ -1,101 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757420AbYCGHXk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759186AbYCGHYh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757420AbYCGHXk (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Mar 2008 02:23:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751430AbYCGHXb
+	id S1759186AbYCGHYh (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Mar 2008 02:24:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754515AbYCGHY2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Mar 2008 02:23:31 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:38665 "EHLO mx3.mail.elte.hu"
+	Fri, 7 Mar 2008 02:24:28 -0500
+Received: from dwdmx4.dwd.de ([141.38.3.230]:53124 "EHLO dwdmx4.dwd.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751172AbYCGHXa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Mar 2008 02:23:30 -0500
-Date: Fri, 7 Mar 2008 08:23:05 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Bob Tracy <rct@frus.com>
-Cc: linux-kernel@vger.kernel.org, linux-alpha@vger.kernel.org,
-       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-Subject: Re: [regression]2.6.25-rc4: boot panic on alpha
-Message-ID: <20080307072304.GA25351@elte.hu>
-References: <20080307034155.A8C6EDBA2@gherkin.frus.com>
+	id S1751430AbYCGHY1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 7 Mar 2008 02:24:27 -0500
+Date: Fri, 7 Mar 2008 07:24:17 +0000 (GMT)
+From: Holger Kiehl <Holger.Kiehl@dwd.de>
+X-X-Sender: kiehl@diagnostix.dwd.de
+To: Alexey Dobriyan <adobriyan@sw.ru>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>, dhaval@linux.vnet.ibm.com,
+       vatsa@linux.vnet.ibm.com, mingo@elte.hu, Greg KH <gregkh@suse.de>
+Subject: Re: sysfs: duplicate filename '74' can not be created
+In-Reply-To: <20080304160940.GC19059@localhost.sw.ru>
+Message-ID: <Pine.LNX.4.64.0803070719260.22139@diagnostix.dwd.de>
+References: <20080304160940.GC19059@localhost.sw.ru>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080307034155.A8C6EDBA2@gherkin.frus.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, 4 Mar 2008, Alexey Dobriyan wrote:
 
-[Cc:-ed FUJITA Tomonori who did the Alpha IOMMU changes - full report 
-from Bob quoted below.]
+> [Cc'ing /sys/kernel/uids guys]
+>
+>> Mar  3 13:50:01 helena kernel: sysfs: duplicate filename '74' can not be created
+>> Mar  3 13:50:01 helena kernel: WARNING: at fs/sysfs/dir.c:424 sysfs_add_one()
+>> Mar  3 13:50:01 helena kernel: Pid: 21911, comm: sshd Not tainted 2.6.24.3 #1
+>
+> I see only one suspicious place: KOBJ_ADD is sent even if sysfs file
+> creation failed and kobject is happily removed. But this almost
+> certainly separate bug.
+>
+>
+>
+> You can try this debugging patch. Post several first consecutive messages.
+> [crosses fingers]
+>
+Applied the patch and this time it oopsed immediatly. I just got one:
 
-Bob, does latest -git boot if you revert these 4 commits:
+    Mar  7 07:09:04 helena kernel: general protection fault: 0000 [1] SMP
+    Mar  7 07:09:04 helena kernel: CPU 3
+    Mar  7 07:09:04 helena kernel: Modules linked in: lm85 hwmon_vid i2c_amd756_s4882 bonding nf_conntrack_ftp nf_conntrack_netbios_ns ipt_REJECT nf_conntrack_ipv4 xt_state nf_conntrack xt_tcpudp iptable_filter ip_tables x_tables binfmt_misc video output ac floppy nvram ohci_hcd k8temp i2c_amd756 i2c_core button usbcore
+    Mar  7 07:09:04 helena kernel: Pid: 2983, comm: modprobe Not tainted 2.6.24.3-alexey #3
+    Mar  7 07:09:04 helena kernel: RIP: 0010:[<ffffffff8027931d>]  [<ffffffff8027931d>] __kmalloc_node+0x95/0xc9
+    Mar  7 07:09:04 helena kernel: RSP: 0018:ffff81017d571de8  EFLAGS: 00010046
+    Mar  7 07:09:04 helena kernel: RAX: 0000000000000000 RBX: 00000000000080d0 RCX: ffffffff8026d2b1
+    Mar  7 07:09:04 helena kernel: RDX: ffff007265776f70 RSI: 00000000000080d0 RDI: ffffffff80554e38
+    Mar  7 07:09:04 helena kernel: RBP: ffff810200026800 R08: 00000000005184b0 R09: ffffffff80554e38
+    Mar  7 07:09:04 helena kernel: R10: 0000000000000000 R11: 0000000000000002 R12: 0000000000000286
+    Mar  7 07:09:04 helena kernel: R13: 00000000ffffffff R14: 00000000ffffffff R15: 00000000005184b0
+    Mar  7 07:09:04 helena kernel: FS:  00002b66d114c6f0(0000) GS:ffff81027e30e300(0000) knlGS:0000000000000000
+    Mar  7 07:09:04 helena kernel: CS:  0010 DS: 0000 ES: 0000 CR0: 000000008005003b
+    Mar  7 07:09:04 helena kernel: CR2: 0000003254acc030 CR3: 000000017d530000 CR4: 00000000000006e0
+    Mar  7 07:09:04 helena kernel: DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
+    Mar  7 07:09:04 helena kernel: DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
+    Mar  7 07:09:04 helena kernel: Process modprobe (pid: 2983, threadinfo ffff81017d570000, task ffff81017df3d5c0)
+    Mar  7 07:09:04 helena kernel: Stack:  ffff81027d2fb740 ffffc200017e39a8 ffff81027d2fba00 00000000000000d0
+    Mar  7 07:09:04 helena kernel:  ffffc200017e33e8 ffffffff8026d2b1 0000000000000163 ffffc200017e39a8
+    Mar  7 07:09:04 helena kernel:  0000000000000018 ffffc200017e39a8 0000000000000018 ffffc200017e2f80
+    Mar  7 07:09:04 helena kernel: Call Trace:
+    Mar  7 07:09:04 helena kernel:  [<ffffffff8026d2b1>] __vmalloc_area_node+0x71/0x185
+    Mar  7 07:09:04 helena kernel:  [<ffffffff80248ec0>] sys_init_module+0x94d/0x1872
+    Mar  7 07:09:04 helena kernel:  [<ffffffff8020b61e>] system_call+0x7e/0x83
+    Mar  7 07:09:04 helena kernel:
+    Mar  7 07:09:04 helena kernel:
+    Mar  7 07:09:04 helena kernel: Code: 48 8b 04 c2 48 89 45 00 41 54 9d 31 c0 c1 eb 0f 48 85 d2 0f
+    Mar  7 07:09:04 helena kernel: RIP  [<ffffffff8027931d>] __kmalloc_node+0x95/0xc9
+    Mar  7 07:09:04 helena kernel:  RSP <ffff81017d571de8>
+    Mar  7 07:09:04 helena kernel: ---[ end trace 82b7eaeeb11c3ab5 ]---
 
-commit d5a4630a0daad241c761064295958554472ed491
-Author: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-Date:   Tue Mar 4 14:28:58 2008 -0800
+After this the system was no longer reachable. Note, as before it always
+happens on CPU3.
 
-    alpha: remove unused DEBUG_FORCEDAC define in IOMMU
+Holger
 
-commit cf5401454863df8e6dc3ebe8faad09141cbec187
-Author: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-Date:   Tue Mar 4 14:28:57 2008 -0800
-
-    alpha: make IOMMU respect the segment boundary limits
-
-commit 23d7e0390ab57cf15a5cfe8d6806192f0997e5a8
-Author: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-Date:   Tue Mar 4 14:28:57 2008 -0800
-
-    alpha: IOMMU had better access to the free space bitmap at only one place
-
-commit 3c5f1def7dd50b792f56dcf7378c2684c06947f3
-Author: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-Date:   Tue Mar 4 14:28:54 2008 -0800
-
-    alpha: convert IOMMU to use ALIGN()
-
-	Ingo
-
-* Bob Tracy <rct@frus.com> wrote:
-
-> The regression is relative to 2.6.25-rc1 + timer fixes (added when
-> I reported the problems with 2.6.25-rc1 relative to 2.6.24).  I haven't
-> tried -rc2 or -rc3.
-> 
-> Might be related to similar reports I've seen, but wanted to add the
-> Alpha platform to the list.  The -rc4 kernel boots, but at some point
-> following initialization of the SCSI layer, there's a panic with enough
-> diagnostic output that a 50-line screen can't hold it all.  Unfortunately,
-> the system logging isn't active, so nothing gets captured.
-> 
-> The panic is completely reproducible.  The "Code" line at the bottom
-> of the panic output is
-> 
-> 44220001 4821f621 4821b681 4821f62b f420004f 00000081 <0000009b> 0066c012
-> 
-> The first line of the "Trace" section is
-> 
->  [<fffffc000031a41f>] iommu_arena_alloc+0x64/0xe0
-> 
-> Platform is an Alpha PWS 433au.  gcc is version 4.1.2 (Debian 4.1.1-21).
-> 
-> -- 
-> ------------------------------------------------------------------------
-> Bob Tracy          |  "I was a beta tester for dirt.  They never did
-> rct@frus.com       |   get all the bugs out." - Steve McGrew on /.
-> ------------------------------------------------------------------------
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
