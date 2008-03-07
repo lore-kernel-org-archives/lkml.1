@@ -1,89 +1,139 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757812AbYCGOgz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760099AbYCGOhk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757812AbYCGOgz (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Mar 2008 09:36:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752553AbYCGOgq
+	id S1760099AbYCGOhk (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Mar 2008 09:37:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758389AbYCGOg6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Mar 2008 09:36:46 -0500
-Received: from g4t0016.houston.hp.com ([15.201.24.19]:10612 "EHLO
-	g4t0016.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752207AbYCGOgp (ORCPT
+	Fri, 7 Mar 2008 09:36:58 -0500
+Received: from ecfrec.frec.bull.fr ([129.183.4.8]:37091 "EHLO
+	ecfrec.frec.bull.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754844AbYCGOgv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Mar 2008 09:36:45 -0500
-Subject: Re: [BUG] 2.6.25-rc4 hang/softlockups after freeing hugepages
-From: Lee Schermerhorn <Lee.Schermerhorn@hp.com>
-To: Mel Gorman <mel@csn.ul.ie>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
-       Adam Litke <agl@us.ibm.com>, Nishanth Aravamudan <nacc@us.ibm.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Eric Whitney <eric.whitney@hp.com>
-In-Reply-To: <20080307114849.GC26229@csn.ul.ie>
-References: <1204824183.5294.62.camel@localhost>
-	 <20080307114849.GC26229@csn.ul.ie>
-Content-Type: text/plain
-Organization: HP/OSLO
-Date: Fri, 07 Mar 2008 09:36:56 -0500
-Message-Id: <1204900617.5340.2.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.6.1 
-Content-Transfer-Encoding: 7bit
+	Fri, 7 Mar 2008 09:36:51 -0500
+From: Laurent Vivier <Laurent.Vivier@bull.net>
+To: nickpiggin@yahoo.com.au
+Cc: linux-kernel@vger.kernel.org, Laurent Vivier <Laurent.Vivier@bull.net>
+Subject: [PATCH] Modify RAMDISK (brd) device to be able to manage partitions
+Date: Fri,  7 Mar 2008 15:40:01 +0100
+Message-Id: <120490080174-git-send-email-Laurent.Vivier@bull.net>
+X-Mailer: git-send-email 1.5.2.4
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2008-03-07 at 11:48 +0000, Mel Gorman wrote:
-> On (06/03/08 12:23), Lee Schermerhorn didst pronounce:
-> > Test platform:  HP Proliant DL585 server - 4 socket, dual core AMD with
-> > 32GB memory.
-> > 
-> > I first saw this on 25-rc2-mm1 with Mel's zonelist patches, while
-> > investigating the interaction of hugepages and cpusets.  Thinking that
-> > it might be caused by the zonelist patches, I went back to 25-rc2-mm1
-> > w/o the patches and saw the same thing.  It sometimes takes a while for
-> > the softlockups to start appearing, and I wanted to find a fairly
-> > minimal duplicator.  Meanwhile 25-rc3 and rc4 have come out, so I tried
-> > the latest upstream kernel and see the same thing.
-> > 
-> > To duplicate the problem, I need only:
-> > 
-> > + log into the platform as root in one window and:
-> > 
-> > 	echo N >/proc/sys/vm/nr_hugepages
-> > 	echo 0 >proc/sys/vm/nr_hugepages
-> > 
-> 
-> Uncool, I am going to try and find a machine to reproduce this one but
-> in case I have no luck, can you try setting the following in your
-> .config which may rattle out something please?
-> 
-> CONFIG_DEBUG_SPINLOCK=y
-> CONFIG_DEBUG_MUTEXES=y
-> CONFIG_DEBUG_LOCK_ALLOC=y
-> CONFIG_PROVE_LOCKING=y
-> CONFIG_DEBUG_SPINLOCK_SLEEP=y
-> CONFIG_DEBUG_VM=y
-> 
-> and as you have DEBUG_INFO, can you say what line is ffffffff8027b693 ?
+To keep in sync with loop device, this patch updates drivers/block/brd.c to 
+manage partitions.
 
-Will test and get back to you with info.  Slightly backed up here...
+Signed-off-by: Laurent Vivier <Laurent.Vivier@bull.net>
+---
+ Documentation/kernel-parameters.txt |    2 +
+ drivers/block/brd.c                 |   36 ++++++++++++++++++++++++++++++----
+ 2 files changed, 33 insertions(+), 5 deletions(-)
 
-> 
-> > In my case, N=64.  If I look, before echoing 0, I see 16 hugepages
-> > allocated on each of the 4 nodes, as expected.
-> > 
-> > + then in another window, log in again.  
-> > 
-> > Sometimes it will hang during the 2nd login and I'll never see a shell
-> > prompt. 
-> 
-> My initial guess was that is is something to do with page_table_lock but as
-> you didn't get to fault in huge pages, it doesn't make much sense.
-
-Yeah.  Most of my previous tests involved creating a hugetlb segment
-[shm or mmap'd hugetlbfs file] and faulting in the pages.  On a whim, I
-tried just allocating and freeing huge pages to/from the free list and
-see the same behavior...  I'm really hoping this isn't another dumb
-operator error :-(.
-
-Lee
+diff --git a/Documentation/kernel-parameters.txt b/Documentation/kernel-parameters.txt
+index 9a5b665..43af1dd 100644
+--- a/Documentation/kernel-parameters.txt
++++ b/Documentation/kernel-parameters.txt
+@@ -1602,6 +1602,8 @@ and is between 256 and 4096 characters. It is defined in the file
+ 	ramdisk_size=	[RAM] Sizes of RAM disks in kilobytes
+ 			See Documentation/ramdisk.txt.
+ 
++	ramdisk_max_part=	[RAM] Maximum number of partitions per RAM disk.
++
+ 	rcupdate.blimit=	[KNL,BOOT]
+ 			Set maximum number of finished RCU callbacks to process
+ 			in one batch.
+diff --git a/drivers/block/brd.c b/drivers/block/brd.c
+index 8536480..55758f5 100644
+--- a/drivers/block/brd.c
++++ b/drivers/block/brd.c
+@@ -386,10 +386,14 @@ static struct block_device_operations brd_fops = {
+  */
+ static int rd_nr;
+ int rd_size = CONFIG_BLK_DEV_RAM_SIZE;
++static int rd_max_part;
++static int part_shift;
+ module_param(rd_nr, int, 0);
+ MODULE_PARM_DESC(rd_nr, "Maximum number of brd devices");
+ module_param(rd_size, int, 0);
+ MODULE_PARM_DESC(rd_size, "Size of each RAM disk in kbytes.");
++module_param(rd_max_part, int, 0);
++MODULE_PARM_DESC(rd_max_part, "Maximum number of partition by RAM disk");
+ MODULE_LICENSE("GPL");
+ MODULE_ALIAS_BLOCKDEV_MAJOR(RAMDISK_MAJOR);
+ 
+@@ -404,8 +408,25 @@ static int __init ramdisk_size2(char *str)
+ {
+ 	return ramdisk_size(str);
+ }
++static int __init max_part_setup(char *str)
++{
++	rd_max_part = simple_strtol(str, NULL, 0);
++	if (rd_max_part < 1) {
++		/* there is at least one partition */
++		printk(KERN_ERR "nrd: max_part cannot be lesser than 1\n");
++		return 0;
++	}
++	if (rd_max_part > (1UL << (MINORBITS - 1)) {
++		/* we must keep at least one bit for nrd device number */
++		printk(KERN_ERR "nrd: max_part cannot be greater than %lu\n",
++		       1UL << (MINORBITS - 1));
++		return 0;
++	}
++	return 1;
++}
+ __setup("ramdisk=", ramdisk_size);
+ __setup("ramdisk_size=", ramdisk_size2);
++__setup("ramdisk_max_part=", max_part_setup);
+ #endif
+ 
+ /*
+@@ -434,11 +455,11 @@ static struct brd_device *brd_alloc(int i)
+ 	blk_queue_max_sectors(brd->brd_queue, 1024);
+ 	blk_queue_bounce_limit(brd->brd_queue, BLK_BOUNCE_ANY);
+ 
+-	disk = brd->brd_disk = alloc_disk(1);
++	disk = brd->brd_disk = alloc_disk(1 << part_shift);
+ 	if (!disk)
+ 		goto out_free_queue;
+ 	disk->major		= RAMDISK_MAJOR;
+-	disk->first_minor	= i;
++	disk->first_minor	= i << part_shift;
+ 	disk->fops		= &brd_fops;
+ 	disk->private_data	= brd;
+ 	disk->queue		= brd->brd_queue;
+@@ -522,7 +543,12 @@ static int __init brd_init(void)
+ 	 *     themselves and have kernel automatically instantiate actual
+ 	 *     device on-demand.
+ 	 */
+-	if (rd_nr > 1UL << MINORBITS)
++
++	part_shift = 0;
++	if (rd_max_part > 0)
++		part_shift = fls(rd_max_part);
++
++	if (rd_nr > 1UL << (MINORBITS - part_shift))
+ 		return -EINVAL;
+ 
+ 	if (rd_nr) {
+@@ -530,7 +556,7 @@ static int __init brd_init(void)
+ 		range = rd_nr;
+ 	} else {
+ 		nr = CONFIG_BLK_DEV_RAM_COUNT;
+-		range = 1UL << MINORBITS;
++		range = 1UL << (MINORBITS - part_shift);
+ 	}
+ 
+ 	if (register_blkdev(RAMDISK_MAJOR, "ramdisk"))
+@@ -569,7 +595,7 @@ static void __exit brd_exit(void)
+ 	unsigned long range;
+ 	struct brd_device *brd, *next;
+ 
+-	range = rd_nr ? rd_nr :  1UL << MINORBITS;
++	range = rd_nr ? rd_nr :  1UL << (MINORBITS - part_shift);
+ 
+ 	list_for_each_entry_safe(brd, next, &brd_devices, brd_list)
+ 		brd_del_one(brd);
+-- 
+1.5.2.4
 
