@@ -1,96 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765624AbYCGJUV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932226AbYCGJVG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765624AbYCGJUV (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Mar 2008 04:20:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764185AbYCGJL2
+	id S932226AbYCGJVG (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Mar 2008 04:21:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763919AbYCGJMj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Mar 2008 04:11:28 -0500
-Received: from E23SMTP02.au.ibm.com ([202.81.18.163]:44190 "EHLO
-	e23smtp02.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1763892AbYCGJLX (ORCPT
+	Fri, 7 Mar 2008 04:12:39 -0500
+Received: from rn-out-0910.google.com ([64.233.170.190]:19543 "EHLO
+	rn-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1762867AbYCGJMc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Mar 2008 04:11:23 -0500
-Date: Fri, 7 Mar 2008 14:40:49 +0530
-From: Gautham R Shenoy <ego@in.ibm.com>
-To: Oleg Nesterov <oleg@tv-sign.ru>
-Cc: Yi Yang <yi.y.yang@intel.com>, Ingo Molnar <mingo@elte.hu>,
-       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [BUG 2.6.25-rc3] scheduler/hotplug: some processes are
-	dealocked when cpu is set to offline
-Message-ID: <20080307091049.GA8827@in.ibm.com>
-Reply-To: ego@in.ibm.com
-References: <1204483329.3607.8.camel@yangyi-dev.bj.intel.com> <20080303153154.GA11288@in.ibm.com> <1204555505.3842.4.camel@yangyi-dev.bj.intel.com> <20080304052613.GA28632@in.ibm.com> <20080304150107.GA564@tv-sign.ru> <20080306134400.GA1915@in.ibm.com> <20080307025451.GA201@tv-sign.ru>
+	Fri, 7 Mar 2008 04:12:32 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=qOj+bVfQAcrgZVfJaDd25vNGCpgvTf7XF37JEGDu5WLGwIyB2wrNIoeEuSi+ChOUBxcNt6fz2L42VHZXIQERttDwmMTkQgvL0yd8reKkFNgV6A52WpJ0AidHtqPYmgL/IU7wzuITOFTe/WoEZOKQPrmiEogR0+jgO+jUCk28d6I=
+Message-ID: <a8e1da0803070112p6a5e076aw569a50a69de91504@mail.gmail.com>
+Date: Fri, 7 Mar 2008 17:12:29 +0800
+From: "Dave Young" <hidave.darkstar@gmail.com>
+To: "Andrew Morton" <akpm@linux-foundation.org>
+Subject: Re: [PATCH RFC] add time_after_now and other macros which compare with jiffies
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <20080307010228.de6700b5.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20080307025451.GA201@tv-sign.ru>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+References: <20080307030901.GA4375@darkstar.te-china.tietoenator.com>
+	 <20080307010228.de6700b5.akpm@linux-foundation.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Mar 07, 2008 at 05:54:51AM +0300, Oleg Nesterov wrote:
-> On 03/06, Gautham R Shenoy wrote:
-> >
-> > On Tue, Mar 04, 2008 at 06:01:07PM +0300, Oleg Nesterov wrote:
-> > > +static void check_running_task(struct task_struct *t, unsigned long now)
-> > > +{
-> > > +	if (!sysctl_hung_task_timeout_secs)
-> > > +		return;
-> > > +
-> > 
-> > This function gets called only when t->xxx == 0,
-> > so the if below doesn't mean much, does it? :)
-> > 
-> > > +	if (time_before(now, t->xxx + HZ * sysctl_hung_task_timeout_secs)
-> > > +		return;
-> > .......
-> >
-> > > @@ -192,15 +214,17 @@ static void check_hung_uninterruptible_t
-> > >  	if ((tainted & TAINT_DIE) || did_panic)
-> > >  		return;
-> > > 
-> > > -	read_lock(&tasklist_lock);
-> > > +	rcu_read_lock();
-> > >  	do_each_thread(g, t) {
-> > >  		if (!--max_count)
-> > >  			goto unlock;
-> > >  		if (t->state & TASK_UNINTERRUPTIBLE)
-> > >  			check_hung_task(t, now);
-> > > +		if (!t->xxx)
-> > > +			check_running_task(t, jiff);
-> 
-> Of course, the check above should be
-> 
-> 		if (1t->xxx)
-> 			check_running_task(t, jiff);
-> 
-> Thanks!
-> 
-> >From another message,
-> >
-> > Me too. With your patch applied there were quite a few tasks in the
-> > running state which didn't get the cpu for more than 120 seconds.
-> 
-> (I assume you fixed the patch before using it ;)
-No! Conversely, I fixed the patch because I found this behaviour a bit
-odd. Couldn't run the tests again as it was a tad bit late.
+On Fri, Mar 7, 2008 at 5:02 PM, Andrew Morton <akpm@linux-foundation.org> wrote:
+>
+> On Fri, 7 Mar 2008 11:09:01 +0800 Dave Young <hidave.darkstar@gmail.com> wrote:
+>
+>  > Most of time_after like macros users just compare jiffies and
+>  > another number, so here add some other _now macros to do it.
+>  >
+>  > Another aproach is changing original time_ macros to use jiffies to compare,
+>  > add a generic compare macro like time_compare(a, b)
+>  >
+>  > Signed-off-by: Dave Young <hidave.darkstar@gmail.com>
+>  >
+>  > ---
+>  > jiffies.h |    8 ++++++++
+>  > 1 file changed, 8 insertions(+)
+>  >
+>  > diff -upr linux/include/linux/jiffies.h linux.new/include/linux/jiffies.h
+>  > --- linux/include/linux/jiffies.h     2008-03-07 10:40:04.000000000 +0800
+>  > +++ linux.new/include/linux/jiffies.h 2008-03-07 10:50:12.000000000 +0800
+>  > @@ -134,6 +134,14 @@ static inline u64 get_jiffies_64(void)
+>  >        ((__s64)(a) - (__s64)(b) >= 0))
+>  >  #define time_before_eq64(a,b)        time_after_eq64(b,a)
+>  >
+>  > +#define time_after_now(a) time_after(jiffies, a)
+>  > +
+>  > +#define time_before_now(a) time_before(jiffies, a)
+>  > +
+>  > +#define time_after_eq_now(a) time_after_eq(jiffies, a)
+>  > +
+>  > +#define time_before_eq_now(a) time_before_eq(jiffies, a)
+>  > +
+>  >  /*
+>  >   * Have the 32 bit jiffies value wrap 5 minutes after boot
+>  >   * so jiffies wrap bugs show up earlier.
+>
+>  time_after() and friends drive me nutty.  I *always* have to go and look at
+>  the definition to make sure that people got the args the right way around.
 
-> 
-> Just to be sure, there were no "bad ->cpu..." messages, yes?
+Andrew, thanks for your patient.
 
-Hopefully should be able to catch them now. If yes, it's a problem in
-the way we do migration after cpu-hotplug as Yi suggested in an earlier
-mail.
+>
+>  (does that)
+>
+>  > * time_after(a,b) returns true if the time a is after time b.
+>
+>  so, umm, I think you got it backwards.  Your time_after_now(a) will return
+>  true if jiffies (ie: now) is after `a'.  ie: if a is before or equal to
+>  "now".
+>
+>  All this shouldn't be as hard as it is.
+>
+>  One lesson we can learn from this: whatever we do, it needs careful
+>  commenting.  Your change doesn't do that.
+>
 
-http://lkml.org/lkml/2008/3/6/437
+Indeed, I will add proper comment before them.
 
-This mail from akpm says the same thing.
-
-> 
-> Oleg.
-
--- 
-Thanks and Regards
-gautham
+Thanks again.
