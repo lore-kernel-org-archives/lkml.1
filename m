@@ -1,59 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761859AbYCGIsn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758815AbYCGIyV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761859AbYCGIsn (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Mar 2008 03:48:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761538AbYCGIsX
+	id S1758815AbYCGIyV (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Mar 2008 03:54:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754344AbYCGIyM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Mar 2008 03:48:23 -0500
-Received: from brick.kernel.dk ([87.55.233.238]:17313 "EHLO kernel.dk"
+	Fri, 7 Mar 2008 03:54:12 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:60333 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761495AbYCGIsW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Mar 2008 03:48:22 -0500
-Date: Fri, 7 Mar 2008 09:48:19 +0100
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Anders Eriksson <aeriksson@fastmail.fm>
-Cc: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-       Ingo Molnar <mingo@elte.hu>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
+	id S1753967AbYCGIyL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 7 Mar 2008 03:54:11 -0500
+Date: Fri, 7 Mar 2008 09:53:41 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Jens Axboe <jens.axboe@oracle.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
        "Rafael J. Wysocki" <rjw@sisk.pl>
 Subject: Re: Linux 2.6.25-rc4
-Message-ID: <20080307084818.GK17940@kernel.dk>
-References: <alpine.LFD.1.00.0803042044460.12253@woody.linux-foundation.org> <200803061438.22205.bzolnier@gmail.com> <20080306133347.GA23495@elte.hu> <200803061506.19449.bzolnier@gmail.com> <20080306135532.GG17940@kernel.dk> <20080306211726.2DA8C93C881@tippex.mynet.homeunix.org>
+Message-ID: <20080307085341.GA23814@elte.hu>
+References: <alpine.LFD.1.00.0803042044460.12253@woody.linux-foundation.org> <20080306090029.GA6215@elte.hu> <20080306125929.GD17940@kernel.dk> <20080306130643.GB21359@elte.hu>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080306211726.2DA8C93C881@tippex.mynet.homeunix.org>
+In-Reply-To: <20080306130643.GB21359@elte.hu>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Mar 06 2008, Anders Eriksson wrote:
+
+* Ingo Molnar <mingo@elte.hu> wrote:
+
+> > Presumably any hw issues would get noticed (like missing interrupt) 
+> > and trigger the error handler, so it looks like this IO is still 
+> > stuck in the queue somewhere. That mainly points the finger at AS, 
+> > but given that you cannot reproduce I'm not sure how best to proceed 
+> > with this...
 > 
-> jens.axboe@oracle.com said:
-> >> I was a bit unclear on this, the problem is easily reproducible but _only_
-> >> on Anders' system (I couldn't reproduce it with smartd here either).
-> 
-> > What IO scheduler is Anders using (and does it have an impact, eg does it
-> > hang with deadline as well)? 
-> 
-> CONFIG_IOSCHED_NOOP=y
-> CONFIG_IOSCHED_AS=y
-> CONFIG_IOSCHED_DEADLINE=y
-> CONFIG_IOSCHED_CFQ=y
-> CONFIG_DEFAULT_IOSCHED="cfq"
-> 
-> On request here's a sysrq-t from smartd on -rc3, you also see exactly where 
-> smartd gives up (using the gentoo default smasrtd.conf).
+> me neither... just wanted to give notice that something's brewing in 
+> this area. Will know more after tonight's qa series i guess, if it 
+> gets above 100 bootups ;-)
 
-Can you try with noop or deadline as the default, to see if it
-reproduces with them?
+no luck - a few hundred successful randconfig bootups overnight (with a 
+rather complex userspace startup to full X plus networking, and the 
+testbox is used via the network to compile the next random kernel as 
+well - etc.) and no failure at all. So there's not much we can do at 
+this point - i'll keep you updated if anything new happens in the tests.
 
-> Might a strace of smartd help?
-
-Nope, looking at the trace it'll be stuck waiting for the ioctl to
-finish.
-
--- 
-Jens Axboe
-
+	Ingo
