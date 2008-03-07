@@ -1,68 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757408AbYCGIZS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757543AbYCGIaL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757408AbYCGIZS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Mar 2008 03:25:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752281AbYCGIY7
+	id S1757543AbYCGIaL (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Mar 2008 03:30:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754030AbYCGI36
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Mar 2008 03:24:59 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:53811 "EHLO mx2.mail.elte.hu"
+	Fri, 7 Mar 2008 03:29:58 -0500
+Received: from mail.enyo.de ([212.9.189.167]:53321 "EHLO mail.enyo.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752042AbYCGIY6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Mar 2008 03:24:58 -0500
-Date: Fri, 7 Mar 2008 09:24:42 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Jan Beulich <jbeulich@novell.com>
-Cc: Miguel Boton <mboton.lkml@gmail.com>, Thomas Gleixner <tglx@linutronix.de>,
-       linux-kernel@vger.kernel.org, "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: mach_reboot_fixups()
-Message-ID: <20080307082441.GA12150@elte.hu>
-References: <47D031CD.76E4.0078.0@novell.com> <20080306174311.GA23029@elte.hu> <47D103D0.76E4.0078.0@novell.com>
+	id S1753863AbYCGI36 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 7 Mar 2008 03:29:58 -0500
+From: Florian Weimer <fw@deneb.enyo.de>
+To: Robert Dewar <dewar@adacore.com>
+Cc: "H. Peter Anvin" <hpa@zytor.com>, "H.J. Lu" <hjl.tools@gmail.com>,
+       Jakub Jelinek <jakub@redhat.com>, NightStrike <nightstrike@gmail.com>,
+       Olivier Galibert <galibert@pobox.com>,
+       Chris Lattner <clattner@apple.com>, Michael Matz <matz@suse.de>,
+       Richard Guenther <richard.guenther@gmail.com>,
+       Joe Buck <Joe.Buck@synopsys.com>, Jan Hubicka <hubicka@ucw.cz>,
+       Aurelien Jarno <aurelien@aurel32.net>, linux-kernel@vger.kernel.org,
+       gcc@gcc.gnu.org
+Subject: Re: RELEASE BLOCKER: Linux doesn't follow x86/x86-64 ABI wrt direction  flag
+References: <738B72DB-A1D6-43F8-813A-E49688D05771@apple.com>
+	<578FCA7D-D7A6-44F6-9310-4A97C13CDCBE@apple.com>
+	<47CF44E7.3020106@zytor.com> <20080306135139.GA5236@dspnet.fr.eu.org>
+	<b609cb3b0803060737xa0c3c0byb51d51af797eb81f@mail.gmail.com>
+	<6dc9ffc80803060743h502fc96bj6117ef87a8555c3a@mail.gmail.com>
+	<47D012B4.3020104@zytor.com>
+	<20080306162353.GF24887@devserv.devel.redhat.com>
+	<6dc9ffc80803060858i7d4e8b56o99ff8ad301a5cc1a@mail.gmail.com>
+	<47D024AA.9010300@zytor.com>
+	<6dc9ffc80803060914x187049a2hb24ef501baf55601@mail.gmail.com>
+	<47D0275B.4020105@adacore.com> <47D027B5.5030503@zytor.com>
+	<47D0453D.5080501@adacore.com>
+Date: Fri, 07 Mar 2008 09:28:26 +0100
+In-Reply-To: <47D0453D.5080501@adacore.com> (Robert Dewar's message of "Thu,
+	06 Mar 2008 14:25:49 -0500")
+Message-ID: <87ablb545x.fsf@mid.deneb.enyo.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <47D103D0.76E4.0078.0@novell.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+* Robert Dewar:
 
-* Jan Beulich <jbeulich@novell.com> wrote:
+> again, in the real world, there are MANY projects that are nothing
+> like this interactive when it comes to moving to new versions of
+> operating systems.
 
-> Not exactly - when rebooting through EFI or BIOS, the old code didn't 
-> go through mach_reboot_fixups(), and I think that is the correct 
-> behavior (albeit, when the EFI path fell back to the triple fault 
-> mechanism, it should have honored the fixup logic, and I think it is 
-> more correct that the new code tries the keyboard method first). 
-> Perhaps the most reasonable way to go is to honor all reboot= settings 
-> without using the override code first:
+Sure, but how many of those get to see software compiled with GCC 4.3?
 
->  		case BOOT_KBD:
-> +			mach_reboot_fixups(); /* for board specific fixups */
-
-ok, agreed.
-
-> (with the exception that reboot=keyboard will still have the effect of 
-> honoring the fixups, but I think this is better than further 
-> complicating the logic).
-
-the fixups are really "emergency exceptions" - for (a very low number 
-of) broken boards that just cannot reboot via the default BOOT_KBD 
-method. In that sense it's a small detail how widely we apply the 
-exceptions - those boards probably wont be rebooted via reboot=bios 
-[people only use reboot options when they have trouble rebooting].
-
-> In case you want to take this,
-> Signed-off-by: Jan Beulich <jbeulich@novell.com>
-
-i modified the patch and added your signoff - thanks,
-
-	Ingo
+If this has any real impact, it's more likely to show up in current
+systems, where both kernel, libc and GCC are regularly updated, and GCC
+happens to receive an update before the kernel.
