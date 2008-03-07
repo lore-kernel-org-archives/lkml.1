@@ -1,95 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760271AbYCGDH7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762106AbYCGDIo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760271AbYCGDH7 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Mar 2008 22:07:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754077AbYCGDHu
+	id S1762106AbYCGDIo (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Mar 2008 22:08:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756972AbYCGDIa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Mar 2008 22:07:50 -0500
-Received: from wf-out-1314.google.com ([209.85.200.169]:20294 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755407AbYCGDHt (ORCPT
+	Thu, 6 Mar 2008 22:08:30 -0500
+Received: from wa-out-1112.google.com ([209.85.146.181]:6382 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754998AbYCGDI3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Mar 2008 22:07:49 -0500
+	Thu, 6 Mar 2008 22:08:29 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=bGKgTsyvNa4SQFv8wAEz0ayb7RqNAYRLnZ8n2OU/jr6125Urm0OBWdBMfVCVjEsb3u5cttrUhNzQkSbjM5JWCIuwXfGt7+oX0bJ3XLIPFTYGhEc2R+jEgSUyOUsH17ifrV3wWeY+iBnESnWL1jW/mj1wnDGQOY2QEADgD0LQcbw=
-Message-ID: <a8e1da0803061907k72785f10t2dcb98ca9829e2d8@mail.gmail.com>
-Date: Fri, 7 Mar 2008 11:07:48 +0800
-From: "Dave Young" <hidave.darkstar@gmail.com>
-To: paulmck@linux.vnet.ibm.com
-Subject: Re: 2.6.25-rc4 rcupreempt.h WARNINGs while suspend/resume
-Cc: "Jike Song" <albcamus@gmail.com>,
-       "Linux Kernel" <linux-kernel@vger.kernel.org>
-In-Reply-To: <20080306162724.GA9309@linux.vnet.ibm.com>
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
+        b=JbzvQrwcbG0F90pCJMfVjoBe9XuYqDjdyEvDqY+Re/Q11rDHwcXhTQKoMO/RMH+xNYdYVBVHPvsDEdBg8mV7QS3vf6YNC4sTgIsR4TUAQmPm/HpMeDos825uL3+KhECf6rfxfB1VrfGMOGqHP7yA2mTSqO+ViNxe5INio0K9jxk=
+Message-ID: <47D0B1A4.2040104@gmail.com>
+Date: Fri, 07 Mar 2008 12:08:20 +0900
+From: Tejun Heo <htejun@gmail.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20070801)
 MIME-Version: 1.0
+To: Jeff Garzik <jeff@garzik.org>,
+       James Bottomley <James.Bottomley@HansenPartnership.com>
+CC: Mark Lord <liml@rtr.ca>, Matthew Wilcox <matthew@wil.cx>,
+       linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Jeff Garzik <jeff@garzik.org>
+Subject: [PATCH 1/2] scsi: export scsi_forget_host()
+References: <20080222200951.GI16995@parisc-linux.org>	 <47BF3E54.9050609@rtr.ca>  <47CFA9A6.2040506@gmail.com>	 <1204817301.3062.3.camel@localhost.localdomain>	 <47D08478.8010700@gmail.com>	 <1204848119.3062.94.camel@localhost.localdomain>	 <47D08892.3080209@gmail.com>	 <1204849353.3062.107.camel@localhost.localdomain>	 <47D08C32.8060907@gmail.com> <1204850398.3062.111.camel@localhost.localdomain> <47D08FAA.7070001@gmail.com>
+In-Reply-To: <47D08FAA.7070001@gmail.com>
+X-Enigmail-Version: 0.95.5
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <a8e1da0803042324ndd3873ay61cee6112d9dda9a@mail.gmail.com>
-	 <df9815e70803042335j4ea66028y96d6be21f0970aa1@mail.gmail.com>
-	 <20080305165531.GB8728@linux.vnet.ibm.com>
-	 <df9815e70803051811o4c4a42e0td56cfd32b80c66b2@mail.gmail.com>
-	 <20080306022854.GK8728@linux.vnet.ibm.com>
-	 <a8e1da0803051920t586c7fbapadda70ae895f8893@mail.gmail.com>
-	 <a8e1da0803060308o690c1545l1eaffc0c40f2bc7e@mail.gmail.com>
-	 <20080306162724.GA9309@linux.vnet.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Mar 7, 2008 at 12:27 AM, Paul E. McKenney
-<paulmck@linux.vnet.ibm.com> wrote:
->
-> On Thu, Mar 06, 2008 at 07:08:55PM +0800, Dave Young wrote:
->  > On Thu, Mar 6, 2008 at 11:20 AM, Dave Young <hidave.darkstar@gmail.com> wrote:
->  > > On Thu, Mar 6, 2008 at 10:28 AM, Paul E. McKenney
->  > >
->  > > <paulmck@linux.vnet.ibm.com> wrote:
->  > >  >
->  > >  > On Thu, Mar 06, 2008 at 10:11:26AM +0800, Jike Song wrote:
->  > >  >  > On Thu, Mar 6, 2008 at 12:55 AM, Paul E. McKenney
->  > >  >  > <paulmck@linux.vnet.ibm.com> wrote:
->  > >  >  > >  Could you please try applying Karsten Wiese's patch to see if it
->  > >  >  > >  fixes the WARNINGs?  See http://lkml.org/lkml/2008/2/26/386 for
->  > >  >  > >  the patch.
->  > >  >  > >
->  > >  >  > >                                                 Thanx, Paul
->  > >  >  >
->  > >  >  > Yes, the WARNING disappears with Karsten's patch applied.
->  > >  >  > Thanks.
->  > >
->  > >  Confirmed
->  > >
->  > >
->  > >
->  > >  >
->  > >  >  Good to hear!!!  I believe that Karsten's patch is on its way in,
->  > >  >  so hopefully that will clear things up.
->  >
->  > Hi, paul
->  >
->  > My syslog became a 2G size big file yestoday due to the warnings.
->  > How about change the WARN_ON to WARN_ON_ONCE?
->
->  Hello, Dave,
->
->  I might be convinced to make this change for 2.6.26, but the condition
->  that the WARN_ON() is complaining about is quite serious, so I don't
->  want to take a chance on it getting lost in the noise in the 2.6.25
->  series.
->
->  Seem reasonable?
+Export scsi_forget_host(), will be used by libata.
 
-IMHO, WARN_ON_ONCE is enough for my eyes :)
+Signed-off-by: Tejun Heo <htejun@gmail.com>
+Cc: James Bottomley <James.Bottomley@HansenPartnership.com>
+---
+ drivers/scsi/scsi_priv.h |    1 -
+ drivers/scsi/scsi_scan.c |    1 +
+ include/scsi/scsi_host.h |    1 +
+ 3 files changed, 2 insertions(+), 1 deletion(-)
 
->
->  Better yet, is there some sort of time-limited WARN_ON that kicks out
->  a message at most once per second or some such?  Enough to definitely
->  be noticed, but not enough to bring the machine to its knees?
-
-Seems there's no such functions/macros, but is is really needed?
-
->
->                                                         Thanx, Paul
->
+Index: work1/drivers/scsi/scsi_priv.h
+===================================================================
+--- work1.orig/drivers/scsi/scsi_priv.h
++++ work1/drivers/scsi/scsi_priv.h
+@@ -98,7 +98,6 @@ extern void scsi_exit_procfs(void);
+ /* scsi_scan.c */
+ extern int scsi_scan_host_selected(struct Scsi_Host *, unsigned int,
+ 				   unsigned int, unsigned int, int);
+-extern void scsi_forget_host(struct Scsi_Host *);
+ extern void scsi_rescan_device(struct device *);
+ 
+ /* scsi_sysctl.c */
+Index: work1/drivers/scsi/scsi_scan.c
+===================================================================
+--- work1.orig/drivers/scsi/scsi_scan.c
++++ work1/drivers/scsi/scsi_scan.c
+@@ -1845,6 +1845,7 @@ void scsi_forget_host(struct Scsi_Host *
+ 	}
+ 	spin_unlock_irqrestore(shost->host_lock, flags);
+ }
++EXPORT_SYMBOL(scsi_forget_host);
+ 
+ /*
+  * Function:    scsi_get_host_dev()
+Index: work1/include/scsi/scsi_host.h
+===================================================================
+--- work1.orig/include/scsi/scsi_host.h
++++ work1/include/scsi/scsi_host.h
+@@ -719,6 +719,7 @@ extern struct Scsi_Host *scsi_host_alloc
+ extern int __must_check scsi_add_host(struct Scsi_Host *, struct device *);
+ extern void scsi_scan_host(struct Scsi_Host *);
+ extern void scsi_rescan_device(struct device *);
++extern void scsi_forget_host(struct Scsi_Host *);
+ extern void scsi_remove_host(struct Scsi_Host *);
+ extern struct Scsi_Host *scsi_host_get(struct Scsi_Host *);
+ extern void scsi_host_put(struct Scsi_Host *t);
