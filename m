@@ -1,51 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762748AbYCGJA6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762106AbYCGJCH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762748AbYCGJA6 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Mar 2008 04:00:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759909AbYCGJAA
+	id S1762106AbYCGJCH (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Mar 2008 04:02:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756562AbYCGJBw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Mar 2008 04:00:00 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:38063 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762484AbYCGI76 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Mar 2008 03:59:58 -0500
-Date: Fri, 7 Mar 2008 09:59:41 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Dhaval Giani <dhaval@linux.vnet.ibm.com>
-Cc: vatsa@linux.vnet.ibm.com, menage@google.com, balbir@linux.vnet.ibm.com,
-       linux-kernel@vger.kernel.org, a.p.zijlstra@chello.nl,
-       akpm@linux-foundation.org, skumar@linux.vnet.ibm.com
-Subject: Re: [patch 2/2] sched: allow cpuacct stats to be reset
-Message-ID: <20080307085941.GB24047@elte.hu>
-References: <20080229043242.110741439@linux.vnet.ibm.com> <20080229043751.555866685@linux.vnet.ibm.com>
+	Fri, 7 Mar 2008 04:01:52 -0500
+Received: from smtp-out.google.com ([216.239.45.13]:61743 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756213AbYCGJBv (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 7 Mar 2008 04:01:51 -0500
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=received:message-id:date:from:to:subject:cc:in-reply-to:
+	mime-version:content-type:content-transfer-encoding:
+	content-disposition:references;
+	b=rF9GjNzqw3YZG24bs0yty3Mc3ZapJ2s1A3zuDUcw8VSYajPwWqvOtcoVqYKGDqSu3
+	5nBRBTyEZigmzMdobz2YA==
+Message-ID: <6599ad830803070101t18c4814jeabf9c8a10a35dc5@mail.gmail.com>
+Date: Fri, 7 Mar 2008 01:01:48 -0800
+From: "Paul Menage" <menage@google.com>
+To: "David Rientjes" <rientjes@google.com>
+Subject: Re: [PATCH] Add cgroup support for enabling controllers at boot time
+Cc: "Balbir Singh" <balbir@linux.vnet.ibm.com>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "Pavel Emelianov" <xemul@openvz.org>, "Hugh Dickins" <hugh@veritas.com>,
+       "Sudhir Kumar" <skumar@linux.vnet.ibm.com>,
+       "YAMAMOTO Takashi" <yamamoto@valinux.co.jp>, lizf@cn.fujitsu.com,
+       linux-kernel@vger.kernel.org, taka@valinux.co.jp, linux-mm@kvack.org,
+       "KAMEZAWA Hiroyuki" <kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <alpine.DEB.1.00.0803070055020.3470@chino.kir.corp.google.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20080229043751.555866685@linux.vnet.ibm.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+References: <20080306185952.23290.49571.sendpatchset@localhost.localdomain>
+	 <alpine.DEB.1.00.0803061108370.13110@chino.kir.corp.google.com>
+	 <47D0C76D.8050207@linux.vnet.ibm.com>
+	 <alpine.DEB.1.00.0803062111560.26462@chino.kir.corp.google.com>
+	 <6599ad830803070040i5e54f5f3u9b4c753ac5a87771@mail.gmail.com>
+	 <alpine.DEB.1.00.0803070055020.3470@chino.kir.corp.google.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, Mar 7, 2008 at 12:56 AM, David Rientjes <rientjes@google.com> wrote:
+>
+>  Ok, so the cgroup_disable= parameter should be a list of subsystem names
+>  delimited by anything other than a space that the user wants disabled.
+>  That makes more sense, thanks.
+>
 
-* Dhaval Giani <dhaval@linux.vnet.ibm.com> wrote:
+As the code stands now, it should be just a single name. Disabling
+multiple subsystems requires multiple cgroup_disable= options.
 
-> Currently the schedstats implementation does not allow the statistics 
-> to be reset. This patch aims to allow that.
-> 
-> echo 0 > cpuacct.usage
-> 
-> resets the usage. Any other value is not allowed and returns -EINVAL.
-
-i've applied this for now, please send any updates that might come out 
-of the interface discussions.
-
-	Ingo
+Paul
